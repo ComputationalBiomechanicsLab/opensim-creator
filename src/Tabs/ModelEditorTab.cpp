@@ -1,12 +1,14 @@
 #include "ModelEditorTab.hpp"
 
-#include "src/OpenSimBindings/MainEditorState.hpp"
-
 #include <SDL_events.h>
 
 #include <memory>
 #include <string>
 #include <utility>
+
+#include "src/OpenSimBindings/ForwardDynamicSimulation.hpp"
+#include "src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp"
+#include "src/OpenSimBindings/Simulation.hpp"
 
 
 // ---------------
@@ -16,10 +18,10 @@
 #include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
-#include "src/OpenSimBindings/MainEditorState.hpp"
+#include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/StoFileSimulation.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
-#include "src/Screens/ErrorScreen.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
 #include "src/Platform/Log.hpp"
@@ -28,8 +30,8 @@
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FileChangePoller.hpp"
 #include "src/Utils/ScopeGuard.hpp"
+#include "src/Tabs/ErrorTab.hpp"
 #include "src/Tabs/SimulatorTab.hpp"
-#include "src/Tabs/TabHost.hpp"
 #include "src/Widgets/CoordinateEditor.hpp"
 #include "src/Widgets/ComponentDetails.hpp"
 #include "src/Widgets/MainMenu.hpp"
@@ -46,6 +48,7 @@
 #include "src/Widgets/Select1PFPopup.hpp"
 #include "src/Widgets/Select2PFsPopup.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
+#include "src/MainUIStateAPI.hpp"
 
 #include <imgui.h>
 #include <implot.h>
@@ -237,54 +240,44 @@ static void DrawSelectionJointTypeSwitcher(osc::UndoableModelStatePair& st)
 }
 
 // try to undo currently edited model to earlier state
-static void ActionUndoCurrentlyEditedModel(osc::MainEditorState& mes)
+static void ActionUndoCurrentlyEditedModel(osc::UndoableModelStatePair& model)
 {
-    std::shared_ptr<osc::UndoableModelStatePair> editedModel = mes.editedModel();
-    if (editedModel->canUndo())
+    if (model.canUndo())
     {
-        editedModel->doUndo();
+        model.doUndo();
     }
 }
 
 // try to redo currently edited model to later state
-static void ActionRedoCurrentlyEditedModel(osc::MainEditorState& mes)
+static void ActionRedoCurrentlyEditedModel(osc::UndoableModelStatePair& model)
 {
-    std::shared_ptr<osc::UndoableModelStatePair> editedModel = mes.editedModel();
-    if (editedModel->canRedo())
+    if (model.canRedo())
     {
-        editedModel->doRedo();
+        model.doRedo();
     }
 }
 
 // disable all wrapping surfaces in the current model
-static void ActionDisableAllWrappingSurfaces(osc::MainEditorState& mes)
+static void ActionDisableAllWrappingSurfaces(osc::UndoableModelStatePair& model)
 {
-    osc::DeactivateAllWrapObjectsIn(mes.editedModel()->updModel());
-    mes.editedModel()->commit("disabled all wrapping surfaces");
+    osc::DeactivateAllWrapObjectsIn(model.updModel());
+    model.commit("disabled all wrapping surfaces");
 }
 
 // enable all wrapping surfaces in the current model
-static void ActionEnableAllWrappingSurfaces(osc::MainEditorState& mes)
+static void ActionEnableAllWrappingSurfaces(osc::UndoableModelStatePair& model)
 {
-    std::shared_ptr<osc::UndoableModelStatePair> editedModel = mes.editedModel();
-    osc::ActivateAllWrapObjectsIn(editedModel->updModel());
-    editedModel->commit("enabled all wrapping surfaces");
+    osc::ActivateAllWrapObjectsIn(model.updModel());
+    model.commit("enabled all wrapping surfaces");
 }
 
-// try to start a new simulation from the currently-edited model
-static void ActionStartSimulationFromEditedModel(osc::MainEditorState& mes)
+static void ActionClearSelectionFromEditedModel(osc::UndoableModelStatePair& model)
 {
-    StartSimulatingEditedModel(mes);
-}
-
-static void ActionClearSelectionFromEditedModel(osc::MainEditorState& mes)
-{
-    mes.editedModel()->setSelected(nullptr);
+    model.setSelected(nullptr);
 }
 
 // draw contextual actions (buttons, sliders) for a selected physical frame
-static void DrawPhysicalFrameContextualActions(osc::SelectGeometryPopup& attachGeomPopup,
-    osc::UndoableModelStatePair& uim)
+static void DrawPhysicalFrameContextualActions(osc::SelectGeometryPopup& attachGeomPopup, osc::UndoableModelStatePair& uim)
 {
     OpenSim::PhysicalFrame const* selection = uim.getSelectedAs<OpenSim::PhysicalFrame>();
 
@@ -707,15 +700,12 @@ static void DrawSelectionBreadcrumbs(osc::UndoableModelStatePair& uim)
 }
 
 
-static void DrawSelectOwnerMenu(osc::MainEditorState& st,
-    OpenSim::Component const& selected)
+static void DrawSelectOwnerMenu(osc::UndoableModelStatePair& model, OpenSim::Component const& selected)
 {
     if (ImGui::BeginMenu("Select Owner"))
     {
-        std::shared_ptr<osc::UndoableModelStatePair> editedModel = st.editedModel();
-
         OpenSim::Component const* c = &selected;
-        editedModel->setHovered(nullptr);
+        model.setHovered(nullptr);
         while (c->hasOwner())
         {
             c = &c->getOwner();
@@ -725,19 +715,18 @@ static void DrawSelectOwnerMenu(osc::MainEditorState& st,
 
             if (ImGui::MenuItem(buf))
             {
-                editedModel->setSelected(c);
+                model.setSelected(c);
             }
             if (ImGui::IsItemHovered())
             {
-                editedModel->setHovered(c);
+                model.setHovered(c);
             }
         }
         ImGui::EndMenu();
     }
 }
 
-static void DrawOutputWithSubfieldsMenu(osc::MainEditorState& st,
-    OpenSim::AbstractOutput const& o)
+static void DrawOutputWithSubfieldsMenu(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
 {
     int supportedSubfields = osc::GetSupportedSubfields(o);
 
@@ -750,7 +739,7 @@ static void DrawOutputWithSubfieldsMenu(osc::MainEditorState& st,
             {
                 if (ImGui::MenuItem(GetOutputSubfieldLabel(f)))
                 {
-                    st.addUserOutputExtractor(osc::OutputExtractor{osc::ComponentOutputExtractor{o, f}});
+                    api.addUserOutputExtractor(osc::OutputExtractor{osc::ComponentOutputExtractor{o, f}});
                 }
             }
         }
@@ -763,14 +752,13 @@ static void DrawOutputWithSubfieldsMenu(osc::MainEditorState& st,
     }
 }
 
-static void DrawOutputWithNoSubfieldsMenuItem(osc::MainEditorState& st,
-    OpenSim::AbstractOutput const& o)
+static void DrawOutputWithNoSubfieldsMenuItem(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
 {
     // can only plot top-level of output
 
     if (ImGui::MenuItem(("  " + o.getName()).c_str()))
     {
-        st.addUserOutputExtractor(osc::OutputExtractor{osc::ComponentOutputExtractor{o}});
+        api.addUserOutputExtractor(osc::OutputExtractor{osc::ComponentOutputExtractor{o}});
     }
 
     if (ImGui::IsItemHovered())
@@ -779,21 +767,19 @@ static void DrawOutputWithNoSubfieldsMenuItem(osc::MainEditorState& st,
     }
 }
 
-static void DrawRequestOutputMenuOrMenuItem(osc::MainEditorState& st,
-    OpenSim::AbstractOutput const& o)
+static void DrawRequestOutputMenuOrMenuItem(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
 {
     if (osc::GetSupportedSubfields(o) == static_cast<int>(osc::OutputSubfield::None))
     {
-        DrawOutputWithNoSubfieldsMenuItem(st, o);
+        DrawOutputWithNoSubfieldsMenuItem(api, o);
     }
     else
     {
-        DrawOutputWithSubfieldsMenu(st, o);
+        DrawOutputWithSubfieldsMenu(api, o);
     }
 }
 
-static void DrawRequestOutputsMenu(osc::MainEditorState& st,
-    OpenSim::Component const& c)
+static void DrawRequestOutputsMenu(osc::MainUIStateAPI& api, OpenSim::Component const& c)
 {
     if (ImGui::BeginMenu("Request Outputs"))
     {
@@ -818,7 +804,7 @@ static void DrawRequestOutputsMenu(osc::MainEditorState& st,
             {
                 for (auto const& [name, output] : p->getOutputs())
                 {
-                    DrawRequestOutputMenuOrMenuItem(st, *output);
+                    DrawRequestOutputMenuOrMenuItem(api, *output);
                 }
             }
 
@@ -828,41 +814,6 @@ static void DrawRequestOutputsMenu(osc::MainEditorState& st,
         }
 
         ImGui::EndMenu();
-    }
-}
-
-static void DrawAddMusclePlotMenu(osc::MainEditorState& st,
-    OpenSim::Muscle const& m)
-{
-    if (ImGui::BeginMenu("Add Muscle Plot vs:"))
-    {
-        for (OpenSim::Coordinate const& c : st.editedModel()->getModel().getComponentList<OpenSim::Coordinate>())
-        {
-            if (ImGui::MenuItem(c.getName().c_str()))
-            {
-                st.addMusclePlot(c, m);
-            }
-        }
-
-        ImGui::EndMenu();
-    }
-}
-
-// draw right-click context menu for the 3D viewer
-static void Draw3DViewerContextMenu(osc::MainEditorState& st,
-    OpenSim::Component const& selected)
-{
-    ImGui::TextUnformatted(selected.getName().c_str());
-    ImGui::SameLine();
-    ImGui::TextDisabled("%s", selected.getConcreteClassName().c_str());
-    ImGui::Separator();
-    ImGui::Dummy({0.0f, 3.0f});
-
-    DrawSelectOwnerMenu(st, selected);
-    DrawRequestOutputsMenu(st, selected);
-    if (OpenSim::Muscle const* m = dynamic_cast<OpenSim::Muscle const*>(&selected))
-    {
-        DrawAddMusclePlotMenu(st, *m);
     }
 }
 
@@ -891,9 +842,9 @@ static std::string GetRecommendedTitle(osc::UndoableModelStatePair const& uim)
 
 class osc::ModelEditorTab::Impl final {
 public:
-	Impl(TabHost* parent, std::shared_ptr<MainEditorState> mes) :
+	Impl(MainUIStateAPI* parent, std::unique_ptr<UndoableModelStatePair> model) :
 		m_Parent{std::move(parent)},
-		m_Mes{std::move(mes)}
+		m_Model{std::move(model)}
 	{
 	}
 
@@ -915,7 +866,7 @@ public:
 	void onMount()
 	{
         App::upd().makeMainEventLoopWaiting();
-        m_Name = GetRecommendedTitle(*m_Mes->editedModel());
+        m_Name = GetRecommendedTitle(*m_Model);
         ImPlot::CreateContext();
 	}
 
@@ -947,17 +898,17 @@ public:
 
 	void onTick()
 	{
-        if (m_FileChangePoller.changeWasDetected(m_Mes->editedModel()->getModel().getInputFileName()))
+        if (m_FileChangePoller.changeWasDetected(m_Model->getModel().getInputFileName()))
         {
             onBackingFileChanged();
         }
 
-        m_Name = GetRecommendedTitle(*m_Mes->editedModel());
+        m_Name = GetRecommendedTitle(*m_Model);
 	}
 
 	void onDrawMainMenu()
 	{
-        m_MainMenuFileTab.draw(m_Mes);
+        m_MainMenuFileTab.draw(m_Parent);
         drawMainMenuEditTab();
         drawMainMenuSimulateTab();
         drawMainMenuWindowTab();
@@ -980,13 +931,11 @@ private:
             try
             {
                 std::filesystem::path p{e.file};
-                std::unique_ptr<OpenSim::Model> cpy =
-                    std::make_unique<OpenSim::Model>(m_Mes->editedModel()->getModel());
+                std::unique_ptr<OpenSim::Model> cpy = std::make_unique<OpenSim::Model>(m_Model->getModel());
                 cpy->buildSystem();
                 cpy->initializeState();
-                m_Mes->addSimulation(Simulation{StoFileSimulation{std::move(cpy), p}});
 
-                UID tabID = m_Parent->addTab<SimulatorTab>(m_Parent, m_Mes);
+                UID tabID = m_Parent->addTab<SimulatorTab>(m_Parent, std::make_shared<Simulation>(StoFileSimulation{std::move(cpy), p}));
                 m_Parent->selectTab(tabID);
 
                 return true;
@@ -1002,12 +951,12 @@ private:
 
     bool onQuitEvent(SDL_QuitEvent const&)
     {
-        if (!m_Mes->editedModel()->isUpToDateWithFilesystem())
+        if (!m_Model->isUpToDateWithFilesystem())
         {
             SaveChangesPopupConfig cfg;
             cfg.onUserClickedSave = [this]()
             {
-                if (actionSaveModel(m_Mes))
+                if (actionSaveModel(m_Parent, *m_Model))
                 {
                     App::upd().requestQuit();
                     return true;
@@ -1040,7 +989,7 @@ private:
             {
                 switch (e.keysym.sym) {
                 case SDLK_z:  // Ctrl+Shift+Z : undo focused model
-                    ActionRedoCurrentlyEditedModel(*m_Mes);
+                    ActionRedoCurrentlyEditedModel(*m_Model);
                     return true;
                 }
                 return false;
@@ -1048,26 +997,20 @@ private:
 
             switch (e.keysym.sym) {
             case SDLK_z:  // Ctrl+Z: undo focused model
-                ActionUndoCurrentlyEditedModel(*m_Mes);
+                ActionUndoCurrentlyEditedModel(*m_Model);
                 return true;
             case SDLK_r:
             {
                 // Ctrl+R: start a new simulation from focused model
-                ActionStartSimulationFromEditedModel(*m_Mes);
-                UID tabID = m_Parent->addTab<SimulatorTab>(m_Parent, m_Mes);
+                auto tab = std::make_unique<SimulatorTab>(m_Parent, startSimulatingEditedModel());
+                UID tabID = tab->getID();
+                m_Parent->addTab(std::move(tab));
                 m_Parent->selectTab(tabID);
                 return true;
             }                
             case SDLK_a:  // Ctrl+A: clear selection
-                ActionClearSelectionFromEditedModel(*m_Mes);
+                ActionClearSelectionFromEditedModel(*m_Model);
                 return true;
-            case SDLK_e:
-            {
-                // Ctrl+E: show simulation screen
-                UID tabID = m_Parent->addTab<SimulatorTab>(m_Parent, m_Mes);
-                m_Parent->selectTab(tabID);
-                return true;
-            }
             }
 
             return false;
@@ -1076,7 +1019,7 @@ private:
         switch (e.keysym.sym) {
         case SDLK_BACKSPACE:
         case SDLK_DELETE:  // BACKSPACE/DELETE: delete selection
-            ActionTryDeleteSelectionFromEditedModel(*m_Mes->editedModel());
+            ActionTryDeleteSelectionFromEditedModel(*m_Model);
             return true;
         }
 
@@ -1088,14 +1031,12 @@ private:
     {
         try
         {
-            std::shared_ptr<osc::UndoableModelStatePair> editedModel = m_Mes->editedModel();
-
             osc::log::info("file change detected: loading updated file");
-            auto p = std::make_unique<OpenSim::Model>(editedModel->getModel().getInputFileName());
+            auto p = std::make_unique<OpenSim::Model>(m_Model->getModel().getInputFileName());
             osc::log::info("loaded updated file");
-            editedModel->setModel(std::move(p));
-            editedModel->setUpToDateWithFilesystem();
-            editedModel->commit("reloaded model from filesystem");
+            m_Model->setModel(std::move(p));
+            m_Model->setUpToDateWithFilesystem();
+            m_Model->commit("reloaded model from filesystem");
         }
         catch (std::exception const& ex)
         {
@@ -1105,12 +1046,45 @@ private:
         }
     }
 
+
+    void drawAddMusclePlotMenu(OpenSim::Muscle const& m)
+    {
+
+        if (ImGui::BeginMenu("Add Muscle Plot vs:"))
+        {
+            for (OpenSim::Coordinate const& c : m_Model->getModel().getComponentList<OpenSim::Coordinate>())
+            {
+                if (ImGui::MenuItem(c.getName().c_str()))
+                {
+                    addMusclePlot(c, m);
+                }
+            }
+
+            ImGui::EndMenu();
+        }
+    }
+
+    // draw right-click context menu for the 3D viewer
+    void draw3DViewerContextMenu(OpenSim::Component const& selected)
+    {
+        ImGui::TextUnformatted(selected.getName().c_str());
+        ImGui::SameLine();
+        ImGui::TextDisabled("%s", selected.getConcreteClassName().c_str());
+        ImGui::Separator();
+        ImGui::Dummy({0.0f, 3.0f});
+
+        DrawSelectOwnerMenu(*m_Model, selected);
+        DrawRequestOutputsMenu(*m_Parent, selected);
+        if (OpenSim::Muscle const* m = dynamic_cast<OpenSim::Muscle const*>(&selected))
+        {
+            drawAddMusclePlotMenu(*m);
+        }
+    }
+
     // draw contextual actions for selection
     void drawContextualActions()
     {
-        std::shared_ptr<osc::UndoableModelStatePair> editedModel = m_Mes->editedModel();
-
-        if (!editedModel->getSelected())
+        if (!m_Model->getSelected())
         {
             ImGui::TextUnformatted("cannot draw contextual actions: selection is blank (shouldn't be)");
             return;
@@ -1120,18 +1094,18 @@ private:
         ImGui::TextUnformatted("isolate in visualizer");
         ImGui::NextColumn();
 
-        if (editedModel->getSelected() != editedModel->getIsolated())
+        if (m_Model->getSelected() != m_Model->getIsolated())
         {
             if (ImGui::Button("isolate"))
             {
-                editedModel->setIsolated(editedModel->getSelected());
+                m_Model->setIsolated(m_Model->getSelected());
             }
         }
         else
         {
             if (ImGui::Button("clear isolation"))
             {
-                editedModel->setIsolated(nullptr);
+                m_Model->setIsolated(nullptr);
             }
         }
 
@@ -1151,7 +1125,7 @@ private:
         ImGui::NextColumn();
         if (ImGui::Button("copy"))
         {
-            osc::SetClipboardText(editedModel->getSelected()->getAbsolutePathString().c_str());
+            osc::SetClipboardText(m_Model->getSelected()->getAbsolutePathString().c_str());
         }
         if (ImGui::IsItemHovered())
         {
@@ -1166,46 +1140,75 @@ private:
 
         ImGui::Columns();
 
-        if (editedModel->getSelectedAs<OpenSim::Model>())
+        if (m_Model->getSelectedAs<OpenSim::Model>())
         {
-            DrawModelContextualActions(*editedModel);
+            DrawModelContextualActions(*m_Model);
         }
-        else if (editedModel->getSelectedAs<OpenSim::PhysicalFrame>())
+        else if (m_Model->getSelectedAs<OpenSim::PhysicalFrame>())
         {
-            DrawPhysicalFrameContextualActions(m_AttachGeomPopup, *editedModel);
+            DrawPhysicalFrameContextualActions(m_AttachGeomPopup, *m_Model);
         }
-        else if (editedModel->getSelectedAs<OpenSim::Joint>())
+        else if (m_Model->getSelectedAs<OpenSim::Joint>())
         {
-            DrawJointContextualActions(*editedModel);
+            DrawJointContextualActions(*m_Model);
         }
-        else if (editedModel->getSelectedAs<OpenSim::HuntCrossleyForce>())
+        else if (m_Model->getSelectedAs<OpenSim::HuntCrossleyForce>())
         {
-            DrawHCFContextualActions(*editedModel);
+            DrawHCFContextualActions(*m_Model);
         }
-        else if (editedModel->getSelectedAs<OpenSim::PathActuator>())
+        else if (m_Model->getSelectedAs<OpenSim::PathActuator>())
         {
-            DrawPathActuatorContextualParams(*editedModel);
+            DrawPathActuatorContextualParams(*m_Model);
         }
+    }
+
+    int getNumMusclePlots() const
+    {
+        return static_cast<int>(m_ModelMusclePlots.size());
+    }
+
+    ModelMusclePlotPanel const& getMusclePlot(int idx) const
+    {
+        return m_ModelMusclePlots.at(idx);
+    }
+
+    ModelMusclePlotPanel& updMusclePlot(int idx)
+    {
+        return m_ModelMusclePlots.at(idx);
+    }
+
+    ModelMusclePlotPanel& addMusclePlot()
+    {
+        return m_ModelMusclePlots.emplace_back(m_Model, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++));
+    }
+
+    ModelMusclePlotPanel& addMusclePlot(OpenSim::Coordinate const& coord, OpenSim::Muscle const& muscle)
+    {
+        return m_ModelMusclePlots.emplace_back(m_Model, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++), coord.getAbsolutePath(), muscle.getAbsolutePath());
+    }
+
+    void removeMusclePlot(int idx)
+    {
+        OSC_ASSERT(0 <= idx && idx < static_cast<int>(m_ModelMusclePlots.size()));
+        m_ModelMusclePlots.erase(m_ModelMusclePlots.begin() + idx);
     }
 
     void drawSelectionEditor()
     {
-        std::shared_ptr<osc::UndoableModelStatePair> editedModel = m_Mes->editedModel();
-
-        if (!editedModel->getSelected())
+        if (!m_Model->getSelected())
         {
             ImGui::TextUnformatted("(nothing selected)");
             return;
         }
 
-        ImGui::PushID(editedModel->getSelected());
+        ImGui::PushID(m_Model->getSelected());
 
         ImGui::Dummy({0.0f, 1.0f});
         ImGui::TextUnformatted("hierarchy:");
         ImGui::SameLine();
         osc::DrawHelpMarker("Where the selected component is in the model's component hierarchy");
         ImGui::Separator();
-        DrawSelectionBreadcrumbs(*editedModel);
+        DrawSelectionBreadcrumbs(*m_Model);
 
         // contextual actions
         ImGui::Dummy({0.0f, 5.0f});
@@ -1216,7 +1219,7 @@ private:
         drawContextualActions();
 
         // a contextual action may have changed this
-        if (!editedModel->getSelected())
+        if (!m_Model->getSelected())
         {
             return;
         }
@@ -1230,23 +1233,23 @@ private:
 
         // top-level property editors
         {
-            DrawTopLevelMembersEditor(*editedModel);
+            DrawTopLevelMembersEditor(*m_Model);
         }
 
         // top-level member edits may have changed this
-        if (!editedModel->getSelected())
+        if (!m_Model->getSelected())
         {
             return;
         }
 
         // property editors
         {
-            auto maybeUpdater = m_ObjectPropsEditor.draw(*editedModel->getSelected());
+            auto maybeUpdater = m_ObjectPropsEditor.draw(*m_Model->getSelected());
             if (maybeUpdater)
             {
-                editedModel->setDirty(true);
+                m_Model->setDirty(true);
                 maybeUpdater->updater(const_cast<OpenSim::AbstractProperty&>(maybeUpdater->prop));
-                editedModel->commit("edited component property");
+                m_Model->commit("edited component property");
             }
         }
 
@@ -1256,30 +1259,28 @@ private:
         ImGui::SameLine();
         osc::DrawHelpMarker("What components this component is connected to.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
         ImGui::Separator();
-        DrawSocketEditor(m_ReassignSocketPopup, *editedModel);
+        DrawSocketEditor(m_ReassignSocketPopup, *m_Model);
 
         ImGui::PopID();
     }
 
     void drawMainMenuEditTab()
     {
-        std::shared_ptr<osc::UndoableModelStatePair> editedModel = m_Mes->editedModel();
-
         if (ImGui::BeginMenu("Edit"))
         {
-            if (ImGui::MenuItem(ICON_FA_UNDO " Undo", "Ctrl+Z", false, editedModel->canUndo()))
+            if (ImGui::MenuItem(ICON_FA_UNDO " Undo", "Ctrl+Z", false, m_Model->canUndo()))
             {
-                ActionUndoCurrentlyEditedModel(*m_Mes);
+                ActionUndoCurrentlyEditedModel(*m_Model);
             }
 
-            if (ImGui::MenuItem(ICON_FA_REDO " Redo", "Ctrl+Shift+Z", false, editedModel->canRedo()))
+            if (ImGui::MenuItem(ICON_FA_REDO " Redo", "Ctrl+Shift+Z", false, m_Model->canRedo()))
             {
-                ActionRedoCurrentlyEditedModel(*m_Mes);
+                ActionRedoCurrentlyEditedModel(*m_Model);
             }
 
-            if (ImGui::MenuItem(ICON_FA_EYE_SLASH " Clear Isolation", nullptr, false, editedModel->getIsolated()))
+            if (ImGui::MenuItem(ICON_FA_EYE_SLASH " Clear Isolation", nullptr, false, m_Model->getIsolated()))
             {
-                editedModel->setIsolated(nullptr);
+                m_Model->setIsolated(nullptr);
             }
 
             if (ImGui::IsItemHovered())
@@ -1287,7 +1288,7 @@ private:
                 ImGui::BeginTooltip();
                 ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                 ImGui::TextUnformatted("Clear currently isolation setting. This is effectively the opposite of 'Isolate'ing a component.");
-                if (!editedModel->getIsolated())
+                if (!m_Model->getIsolated())
                 {
                     ImGui::TextDisabled("\n(disabled because nothing is currently isolated)");
                 }
@@ -1295,17 +1296,17 @@ private:
                 ImGui::EndTooltip();
             }
 
-            float scaleFactor = editedModel->getFixupScaleFactor();
+            float scaleFactor = m_Model->getFixupScaleFactor();
 
             if (ImGui::InputFloat("set scale factor", &scaleFactor))
             {
-                editedModel->setFixupScaleFactor(scaleFactor);
+                m_Model->setFixupScaleFactor(scaleFactor);
             }
 
             if (ImGui::MenuItem("autoscale scale factor"))
             {
-                float sf = osc::GetRecommendedScaleFactor(*editedModel);
-                editedModel->setFixupScaleFactor(sf);
+                float sf = osc::GetRecommendedScaleFactor(*m_Model);
+                m_Model->setFixupScaleFactor(sf);
             }
 
             if (ImGui::IsItemHovered())
@@ -1317,11 +1318,11 @@ private:
                 ImGui::EndTooltip();
             }
 
-            bool showingFrames = editedModel->getModel().get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
+            bool showingFrames = m_Model->getModel().get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
             if (ImGui::MenuItem(showingFrames ? "hide frames" : "show frames"))
             {
-                editedModel->updModel().upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
-                editedModel->commit("edited frame visibility");
+                m_Model->updModel().upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
+                m_Model->commit("edited frame visibility");
             }
 
             if (ImGui::IsItemHovered())
@@ -1333,17 +1334,17 @@ private:
                 ImGui::EndTooltip();
             }
 
-            bool modelHasBackingFile = osc::HasInputFileName(editedModel->getModel());
+            bool modelHasBackingFile = osc::HasInputFileName(m_Model->getModel());
 
             if (ImGui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", nullptr, false, modelHasBackingFile))
             {
-                std::filesystem::path p{editedModel->getModel().getInputFileName()};
+                std::filesystem::path p{m_Model->getModel().getInputFileName()};
                 osc::OpenPathInOSDefaultApplication(p.parent_path());
             }
 
             if (ImGui::MenuItem(ICON_FA_LINK " Open .osim in external editor", nullptr, false, modelHasBackingFile))
             {
-                osc::OpenPathInOSDefaultApplication(editedModel->getModel().getInputFileName());
+                osc::OpenPathInOSDefaultApplication(m_Model->getModel().getInputFileName());
             }
 
             if (ImGui::IsItemHovered())
@@ -1351,7 +1352,7 @@ private:
                 ImGui::BeginTooltip();
                 ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                 ImGui::TextUnformatted("Open the .osim file currently being edited in an external text editor. The editor that's used depends on your operating system's default for opening .osim files.");
-                if (!osc::HasInputFileName(editedModel->getModel()))
+                if (!osc::HasInputFileName(m_Model->getModel()))
                 {
                     ImGui::TextDisabled("\n(disabled because the currently-edited model has no backing file)");
                 }
@@ -1363,14 +1364,20 @@ private:
         }
     }
 
+    std::shared_ptr<Simulation> startSimulatingEditedModel()
+    {
+        BasicModelStatePair modelState{m_Model->getModel(), m_Model->getState()};
+        ForwardDynamicSimulatorParams params = FromParamBlock(m_Parent->getSimulationParams());
+        return std::make_shared<Simulation>(ForwardDynamicSimulation{std::move(modelState), std::move(params)});
+    }
+
     void drawMainMenuSimulateTab()
     {
         if (ImGui::BeginMenu("Tools"))
         {
             if (ImGui::MenuItem(ICON_FA_PLAY " Simulate", "Ctrl+R"))
             {
-                StartSimulatingEditedModel(*m_Mes);
-                auto tab = std::make_unique<SimulatorTab>(m_Parent, m_Mes);
+                auto tab = std::make_unique<SimulatorTab>(m_Parent, startSimulatingEditedModel());
                 UID tabID = tab->getID();
                 m_Parent->addTab(std::move(tab));
                 m_Parent->selectTab(tabID);
@@ -1383,12 +1390,12 @@ private:
 
             if (ImGui::MenuItem("Disable all wrapping surfaces"))
             {
-                ActionDisableAllWrappingSurfaces(*m_Mes);
+                ActionDisableAllWrappingSurfaces(*m_Model);
             }
 
             if (ImGui::MenuItem("Enable all wrapping surfaces"))
             {
-                ActionEnableAllWrappingSurfaces(*m_Mes);
+                ActionEnableAllWrappingSurfaces(*m_Model);
             }
 
             ImGui::EndMenu();
@@ -1422,7 +1429,7 @@ private:
             ImGui::Separator();
 
             // active 3D viewers (can be disabled)
-            for (int i = 0; i < m_Mes->getNumViewers(); ++i)
+            for (int i = 0; i < static_cast<int>(m_ModelViewers.size()); ++i)
             {
                 char buf[64];
                 std::snprintf(buf, sizeof(buf), "viewer%i", i);
@@ -1430,34 +1437,34 @@ private:
                 bool enabled = true;
                 if (ImGui::MenuItem(buf, nullptr, &enabled))
                 {
-                    m_Mes->removeViewer(i);
+                    m_ModelViewers.erase(m_ModelViewers.begin() + i);
                     --i;
                 }
             }
 
             if (ImGui::MenuItem("add viewer"))
             {
-                m_Mes->addViewer();
+                m_ModelViewers.emplace_back();
             }
 
             ImGui::Separator();
 
             // active muscle plots
-            for (int i = 0; i < m_Mes->getNumMusclePlots(); ++i)
+            for (int i = 0; i < getNumMusclePlots(); ++i)
             {
-                ModelMusclePlotPanel const& plot = m_Mes->getMusclePlot(i);
+                ModelMusclePlotPanel const& plot = getMusclePlot(i);
 
                 bool enabled = true;
                 if (!plot.isOpen() || ImGui::MenuItem(plot.getName().c_str(), nullptr, &enabled))
                 {
-                    m_Mes->removeMusclePlot(i);
+                    removeMusclePlot(i);
                     --i;
                 }
             }
 
             if (ImGui::MenuItem("add muscle plot"))
             {
-                m_Mes->addMusclePlot();
+                addMusclePlot();
             }
 
             ImGui::EndMenu();
@@ -1485,21 +1492,19 @@ private:
             return true;
         }
 
-        std::shared_ptr<osc::UndoableModelStatePair> editedModel = m_Mes->editedModel();
-
-        auto resp = viewer.draw(editedModel->getUiModel());
+        auto resp = viewer.draw(m_Model->getUiModel());
         ImGui::End();
 
         // update hover
-        if (resp.isMousedOver && resp.hovertestResult != editedModel->getHovered())
+        if (resp.isMousedOver && resp.hovertestResult != m_Model->getHovered())
         {
-            editedModel->setHovered(resp.hovertestResult);
+            m_Model->setHovered(resp.hovertestResult);
         }
 
         // if left-clicked, update selection
         if (resp.isMousedOver && resp.isLeftClicked)
         {
-            editedModel->setSelected(resp.hovertestResult);
+            m_Model->setSelected(resp.hovertestResult);
         }
 
         // if hovered, draw hover tooltip
@@ -1517,23 +1522,23 @@ private:
             {
                 if (resp.hovertestResult)
                 {
-                    editedModel->setSelected(resp.hovertestResult);
+                    m_Model->setSelected(resp.hovertestResult);
                 }
                 else
                 {
-                    editedModel->setSelected(nullptr);
+                    m_Model->setSelected(nullptr);
                 }
                 ImGui::OpenPopup(buf);
             }
 
-            OpenSim::Component const* selected = editedModel->getSelected();
+            OpenSim::Component const* selected = m_Model->getSelected();
 
             if (ImGui::BeginPopup(buf))
             {
                 if (selected)
                 {
                     // draw context menu for whatever's selected
-                    Draw3DViewerContextMenu(*m_Mes, *selected);
+                    draw3DViewerContextMenu(*selected);
                 }
                 else
                 {
@@ -1551,9 +1556,9 @@ private:
     // draw all user-enabled 3D model viewers
     void draw3DViewers()
     {
-        for (int i = 0; i < m_Mes->getNumViewers(); ++i)
+        for (int i = 0; i < static_cast<int>(m_ModelViewers.size()); ++i)
         {
-            osc::UiModelViewer& viewer = m_Mes->updViewer(i);
+            osc::UiModelViewer& viewer = m_ModelViewers[i];
 
             char buf[64];
             std::snprintf(buf, sizeof(buf), "viewer%i", i);
@@ -1562,7 +1567,7 @@ private:
 
             if (!isOpen)
             {
-                m_Mes->removeViewer(i);
+                m_ModelViewers.erase(m_ModelViewers.begin() + i);
                 --i;
             }
         }
@@ -1600,15 +1605,15 @@ private:
 
         // draw hierarchy viewer
         {
-            auto resp = m_ComponentHierarchyPanel.draw(*m_Mes->editedModel());
+            auto resp = m_ComponentHierarchyPanel.draw(*m_Model);
 
             if (resp.type == osc::ModelHierarchyPanel::ResponseType::SelectionChanged)
             {
-                m_Mes->editedModel()->setSelected(resp.ptr);
+                m_Model->setSelected(resp.ptr);
             }
             else if (resp.type == osc::ModelHierarchyPanel::ResponseType::HoverChanged)
             {
-                m_Mes->editedModel()->setHovered(resp.ptr);
+                m_Model->setHovered(resp.ptr);
             }
         }
 
@@ -1660,16 +1665,16 @@ private:
         }
 
         // draw model muscle plots (if applicable)
-        for (int i = 0; i < m_Mes->getNumMusclePlots(); ++i)
+        for (int i = 0; i < getNumMusclePlots(); ++i)
         {
-            m_Mes->updMusclePlot(i).draw();
+            updMusclePlot(i).draw();
         }
 
         // draw any currently-open popups
 
         if (m_ParamBlockEditorPopup.isOpen())
         {
-            m_ParamBlockEditorPopup.draw(m_Mes->updSimulationParams());
+            m_ParamBlockEditorPopup.draw(m_Parent->updSimulationParams());
         }
 
         if (m_MaybeSaveChangesPopup)
@@ -1693,38 +1698,37 @@ private:
 
             if (m_ExceptionThrownLastFrame)
             {
-                App::upd().requestTransition<ErrorScreen>(ex);
+                UID tabID = m_Parent->addTab<ErrorTab>(m_Parent, ex);
+                m_Parent->selectTab(tabID);
+                m_Parent->closeTab(m_ID);
             }
             else
             {
                 try
                 {
-                    m_Mes->editedModel()->rollback();
+                    m_Model->rollback();
                     log::error("model rollback succeeded");
                     m_ExceptionThrownLastFrame = true;
                 }
                 catch (std::exception const& ex2)
                 {
-                    App::upd().requestTransition<ErrorScreen>(ex2);
+                    UID tabID = m_Parent->addTab<ErrorTab>(m_Parent, ex2);
+                    m_Parent->selectTab(tabID);
+                    m_Parent->closeTab(m_ID);
                 }
             }
 
-            // try to put ImGui into a clean state
-            osc::ImGuiShutdown();
-            osc::ImGuiInit();
-            osc::ImGuiNewFrame();
+            m_Parent->resetImgui();
         }
     }
 
 	UID m_ID;
 	std::string m_Name = "ModelEditorTab";
-	TabHost* m_Parent;
-
-	// top-level state this screen can handle
-	std::shared_ptr<MainEditorState> m_Mes;
+	MainUIStateAPI* m_Parent;
+    std::shared_ptr<UndoableModelStatePair> m_Model;
 
 	// polls changes to a file
-	FileChangePoller m_FileChangePoller{std::chrono::milliseconds{1000}, m_Mes->editedModel()->getModel().getInputFileName()};
+	FileChangePoller m_FileChangePoller{std::chrono::milliseconds{1000}, m_Model->getModel().getInputFileName()};
 
 	// UI widgets/popups
 	MainMenuFileTab m_MainMenuFileTab;
@@ -1734,12 +1738,20 @@ private:
 	Select2PFsPopup m_Select2PFsPopup;
 	LogViewer m_LogViewer;
 	ModelHierarchyPanel m_ComponentHierarchyPanel{"Hierarchy"};
-	ModelActionsMenuItems m_ModelActionsMenuBar{m_Mes->editedModel()};
-	ModelActionsMenuItems m_ContextMenuActionsMenuBar{m_Mes->editedModel()};
-	CoordinateEditor m_CoordEditor{m_Mes->editedModel()};
+	ModelActionsMenuItems m_ModelActionsMenuBar{m_Model};
+	ModelActionsMenuItems m_ContextMenuActionsMenuBar{m_Model};
+	CoordinateEditor m_CoordEditor{m_Model};
 	SelectGeometryPopup m_AttachGeomPopup{"select geometry to add"};
 	ParamBlockEditorPopup m_ParamBlockEditorPopup{"simulation parameters"};
 	std::optional<SaveChangesPopup> m_MaybeSaveChangesPopup;
+    int m_LatestMusclePlot = 1;
+    std::vector<ModelMusclePlotPanel> m_ModelMusclePlots;
+
+    std::vector<UiModelViewer> m_ModelViewers = []()
+    {
+        std::vector<UiModelViewer> rv(1);
+        return rv;
+    }();
 
 	// flag that's set+reset each frame to prevent continual
 	// throwing
@@ -1749,8 +1761,8 @@ private:
 
 // public API
 
-osc::ModelEditorTab::ModelEditorTab(TabHost* parent, std::shared_ptr<MainEditorState> mes) :
-	m_Impl{new Impl{std::move(parent), std::move(mes)}}
+osc::ModelEditorTab::ModelEditorTab(MainUIStateAPI* parent,  std::unique_ptr<UndoableModelStatePair> model) :
+	m_Impl{new Impl{std::move(parent), std::move(model)}}
 {
 }
 

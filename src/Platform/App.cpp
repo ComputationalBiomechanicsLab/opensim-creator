@@ -11,7 +11,6 @@
 #include "src/Platform/os.hpp"
 #include "src/Platform/Screen.hpp"
 #include "src/Platform/Styling.hpp"
-#include "src/Screens/ErrorScreen.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
 #include "src/Utils/ScopeGuard.hpp"
@@ -491,33 +490,7 @@ public:
         OSC_SCOPE_GUARD({ m_CurrentScreen.reset(); });
         OSC_SCOPE_GUARD({ m_NextScreen.reset(); });
 
-        // keep looping until `break` is hit, because the implementation may swap in
-        // an error screen
-        while (m_CurrentScreen)
-        {
-            try
-            {
-                mainLoopUnguarded();
-                break;
-            }
-            catch (std::exception const& ex)
-            {
-                // if a screen was open when the exception was thrown, and that screen was not
-                // an error screen, then transition to an error screen so that the user has a
-                // chance to see the error
-                if (m_CurrentScreen && !dynamic_cast<ErrorScreen*>(m_CurrentScreen.get()))
-                {
-                    m_CurrentScreen = std::make_unique<ErrorScreen>(ex);
-                    m_NextScreen.reset();
-                    // go to top of loop
-                }
-                else
-                {
-                    log::error("unhandled exception thrown in main render loop: %s", ex.what());
-                    throw;
-                }
-            }
-        }
+        mainLoopUnguarded();
     }
 
     void requestTransition(std::unique_ptr<Screen> s)

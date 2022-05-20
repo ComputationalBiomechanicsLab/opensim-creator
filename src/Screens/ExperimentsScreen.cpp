@@ -11,9 +11,7 @@
 #include "src/Screens/MeshGenTestScreen.hpp"
 #include "src/Screens/MeshHittestScreen.hpp"
 #include "src/Screens/MeshHittestWithBVHScreen.hpp"
-#include "src/Screens/MeshImporterScreen.hpp"
 #include "src/Screens/TabTestScreen.hpp"
-#include "src/Screens/SplashScreen.hpp"
 
 #include <imgui.h>
 
@@ -52,11 +50,6 @@ public:
         else if (osc::ImGuiOnEvent(e))
         {
             return;  // ImGui handled it
-        }
-        else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-        {
-            App::upd().requestTransition<SplashScreen>();
-            return;
         }
     }
 
@@ -99,7 +92,6 @@ private:
         { "Hit testing ray-triangle intersections in a mesh", transition<MeshHittestScreen> },
         { "Random math experiments", transition<MathExperimentsScreen> },
         { "Hit testing ray-triangle, but with BVH acceleration", transition<MeshHittestWithBVHScreen> },
-        { "OpenSim mesh importer wizard", transition<MeshImporterScreen> },
         { "Instanced rendering", transition<InstancedRendererScreen> },
         { "ImGuizmo", transition<ImGuizmoDemoScreen> },
         { "ImPlot", transition<ImPlotDemoScreen> },

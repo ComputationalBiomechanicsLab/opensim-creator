@@ -25,6 +25,7 @@
 #include "src/Utils/Algorithms.hpp"
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/LogViewer.hpp"
+#include "src/MainUIStateAPI.hpp"
 
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x3.hpp>
@@ -131,7 +132,7 @@ static std::unique_ptr<SizedTexture> GenerateBackgroundImage(glm::vec2 dimension
 
 class osc::SplashTab::Impl final {
 public:
-	Impl(TabHost* parent) : m_Parent{std::move(parent)}
+	Impl(MainUIStateAPI* parent) : m_Parent{std::move(parent)}
 	{
 	}
 
@@ -164,7 +165,7 @@ public:
 	{
         if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".osim"))
 		{
-            UID tabID = m_Parent->addTab<LoadingTab>(m_Parent, m_MaybeMainEditorState, e.drop.file);
+            UID tabID = m_Parent->addTab<LoadingTab>(m_Parent, e.drop.file);
             m_Parent->selectTab(tabID);
             return true;
 		}
@@ -177,7 +178,7 @@ public:
 
 	void drawMainMenu()
 	{
-        m_MainMenuFileTab.draw(m_MaybeMainEditorState);
+        m_MainMenuFileTab.draw(m_Parent);
         m_MainMenuAboutTab.draw();
 	}
 
@@ -284,7 +285,7 @@ private:
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, OSC_POSITIVE_HOVERED_RGBA);
                 if (ImGui::Button(ICON_FA_FILE_ALT " New Model (Ctrl+N)"))
                 {
-                    actionNewModel(m_MaybeMainEditorState);
+                    actionNewModel(m_Parent);
                 }
                 ImGui::PopStyleColor(2);
             }
@@ -294,7 +295,7 @@ private:
             // `open` button
             if (ImGui::Button(ICON_FA_FOLDER_OPEN " Open Model (Ctrl+O)"))
             {
-                actionOpenModel(m_MaybeMainEditorState);
+                actionOpenModel(m_Parent);
             }
 
             ImGui::SameLine();
@@ -326,7 +327,7 @@ private:
                     ImGui::PushID(++id);
                     if (ImGui::Button(rf.path.filename().string().c_str()))
                     {
-                        UID tabID = m_Parent->addTab<LoadingTab>(m_Parent, m_MaybeMainEditorState, rf.path);
+                        UID tabID = m_Parent->addTab<LoadingTab>(m_Parent, rf.path);
                         m_Parent->selectTab(tabID);
                     }
                     ImGui::PopID();
@@ -354,7 +355,7 @@ private:
                     ImGui::PushID(++id);
                     if (ImGui::Button(ex.filename().string().c_str()))
                     {
-                        UID tabID = m_Parent->addTab<LoadingTab>(m_Parent, m_MaybeMainEditorState, ex);
+                        UID tabID = m_Parent->addTab<LoadingTab>(m_Parent, ex);
                         m_Parent->selectTab(tabID);
                     }
                     ImGui::PopID();
@@ -428,7 +429,7 @@ private:
 	std::string m_Name = "Splash Screen";
 
     // tab parent
-	TabHost* m_Parent;
+    MainUIStateAPI* m_Parent;
 
     // bg image of the floor
     std::unique_ptr<SizedTexture> m_MaybeBackgroundImage = nullptr;
@@ -446,16 +447,13 @@ private:
 	MainMenuFileTab m_MainMenuFileTab;
 	MainMenuAboutTab m_MainMenuAboutTab;
 
-	// top-level UI state that's shared between screens (can be null)
-	std::shared_ptr<MainEditorState> m_MaybeMainEditorState;
-
     LogViewer m_LogViewer;
 };
 
 
 // public API
 
-osc::SplashTab::SplashTab(TabHost* parent) :
+osc::SplashTab::SplashTab(MainUIStateAPI* parent) :
 	m_Impl{new Impl{std::move(parent)}}
 {
 }

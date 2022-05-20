@@ -2,12 +2,11 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Maths/Geometry.hpp"
-#include "src/OpenSimBindings/MainEditorState.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
-#include "src/Tabs/TabHost.hpp"
 #include "src/Tabs/ModelEditorTab.hpp"
+#include "src/MainUIStateAPI.hpp"
 
 #include <imgui.h>
 #include <SDL_events.h>
@@ -23,21 +22,11 @@
 
 class osc::LoadingTab::Impl final {
 public:
-	Impl(TabHost* parent, std::filesystem::path path) :
-		Impl{std::move(parent), std::make_shared<osc::MainEditorState>(), std::move(path)}
-	{
-	}
-
-	Impl(TabHost* parent, std::shared_ptr<MainEditorState> state, std::filesystem::path path) :
+	Impl(MainUIStateAPI* parent, std::filesystem::path path) :
 		m_Parent{std::move(parent)},
-		m_State{std::move(state)},
 		m_OsimPath{std::move(path)},
 		m_LoadingResult{std::async(std::launch::async, osc::LoadOsimIntoUndoableModel, m_OsimPath)}
 	{
-		if (!m_State)
-		{
-			m_State = std::make_shared<MainEditorState>();
-		}
 	}
 
 	UID getID() const
@@ -113,14 +102,10 @@ public:
 			// there is an existing editor state
 			//
 			// recycle it so that users can keep their running sims, local edits, etc.
-			*m_State->editedModel() = std::move(*result);
-			m_State->editedModel()->setUpToDateWithFilesystem();
-
-			UID tabID = m_Parent->addTab<ModelEditorTab>(m_Parent, m_State);
+			result->setUpToDateWithFilesystem();
+			UID tabID = m_Parent->addTab<ModelEditorTab>(m_Parent, std::move(result));
 			m_Parent->selectTab(tabID);
 			m_Parent->closeTab(m_ID);
-
-			AutoFocusAllViewers(*m_State);
 		}
 	}
 
@@ -162,7 +147,7 @@ public:
 
 				if (ImGui::Button("try again"))
 				{
-					UID tabID = m_Parent->addTab<LoadingTab>(m_Parent, m_State, m_OsimPath);
+					UID tabID = m_Parent->addTab<LoadingTab>(m_Parent, m_OsimPath);
 					m_Parent->selectTab(tabID);
 					m_Parent->closeTab(m_ID);
 				}
@@ -179,11 +164,8 @@ private:
 	// display name of the tab
 	std::string m_Name = "LoadingTab";
 
-	// the parent UI element hosting the tab
-	TabHost* m_Parent;
-
-	// a main editor state that can be recycled between tabs
-	std::shared_ptr<MainEditorState> m_State = nullptr;
+	// main UI shared state API
+	MainUIStateAPI* m_Parent;
 
 	// filesystem path to the osim being loaded
 	std::filesystem::path m_OsimPath;
@@ -206,13 +188,8 @@ private:
 
 // public API
 
-osc::LoadingTab::LoadingTab(TabHost* parent, std::filesystem::path path) :
+osc::LoadingTab::LoadingTab(MainUIStateAPI* parent, std::filesystem::path path) :
 	m_Impl{new Impl{std::move(parent), std::move(path)}}
-{
-}
-
-osc::LoadingTab::LoadingTab(TabHost* parent, std::shared_ptr<MainEditorState> state, std::filesystem::path path) :
-	m_Impl{new Impl{std::move(parent), std::move(state), std::move(path)}}
 {
 }
 

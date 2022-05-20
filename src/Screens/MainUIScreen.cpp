@@ -1,5 +1,8 @@
 #include "MainUIScreen.hpp"
 
+#include "src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp"
+#include "src/OpenSimBindings/OutputExtractor.hpp"
+#include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Tabs/CookiecutterTab.hpp"
 #include "src/Tabs/ErrorTab.hpp"
@@ -7,7 +10,7 @@
 #include "src/Tabs/MeshImporterTab.hpp"
 #include "src/Tabs/SplashTab.hpp"
 #include "src/Tabs/Tab.hpp"
-#include "src/Tabs/TabHost.hpp"
+#include "src/MainUIStateAPI.hpp"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -16,7 +19,7 @@
 #include <unordered_set>
 
 
-class osc::MainUIScreen::Impl final : public osc::TabHost {
+class osc::MainUIScreen::Impl final : public osc::MainUIStateAPI {
 public:
     Impl()
     {
@@ -27,6 +30,11 @@ public:
         m_Tabs.push_back(std::make_unique<MeshImporterTab>(this));
         m_Tabs.push_back(std::make_unique<LoadingTab>(this, osc::App::get().resource("models/Arm26/arm26.osim")));
         m_RequestedTab = m_Tabs.back()->getID();
+    }
+
+    Impl(std::filesystem::path p)
+    {
+        m_Tabs.push_back(std::make_unique<LoadingTab>(this, p));
     }
 
     void onMount()
@@ -104,9 +112,46 @@ public:
         }
     }
 
+    ParamBlock const& getSimulationParams() const override
+    {
+        return m_SimulationParams;
+    }
+
+    ParamBlock& updSimulationParams() override
+    {
+        return m_SimulationParams;
+    }
+
+    int getNumUserOutputExtractors() const override
+    {
+        return static_cast<int>(m_UserOutputExtractors.size());
+    }
+
+    OutputExtractor const& getUserOutputExtractor(int idx) const override
+    {
+        return m_UserOutputExtractors.at(idx);
+    }
+
+    void addUserOutputExtractor(OutputExtractor const& output) override
+    {
+        m_UserOutputExtractors.push_back(output);
+    }
+
+    void removeUserOutputExtractor(int idx) override
+    {
+        OSC_ASSERT(0 <= idx && idx < static_cast<int>(m_UserOutputExtractors.size()));
+        m_UserOutputExtractors.erase(m_UserOutputExtractors.begin() + idx);
+    }
+
 private:
     void drawTabUI()
     {
+        if (m_ImguiWasAggressivelyReset)
+        {
+            // because this marks the start of new ImGui calls
+            m_ImguiWasAggressivelyReset = false;
+        }
+
         constexpr ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 
         // https://github.com/ocornut/imgui/issues/3518
@@ -122,6 +167,12 @@ private:
                 if (Tab* active = getActiveTab())
                 {
                     active->onDrawMainMenu();
+
+                    if (m_ImguiWasAggressivelyReset)
+                    {
+                        m_ImguiWasAggressivelyReset = false;
+                        return;  // must return here to prevent the ImGui End calls from erroring
+                    }
                 }
                 ImGui::EndMenuBar();
             }
@@ -161,6 +212,12 @@ private:
                             if (m_RequestedTab == m_ActiveTab)
                             {
                                 m_RequestedTab.reset();
+                            }
+
+                            if (m_ImguiWasAggressivelyReset)
+                            {
+                                m_ImguiWasAggressivelyReset = false;
+                                return;
                             }
 
                             ImGui::EndTabItem();
@@ -252,11 +309,23 @@ private:
         }
     }
 
+    void implResetImgui()
+    {
+        osc::ImGuiShutdown();
+        osc::ImGuiInit();
+        osc::ImGuiNewFrame();
+        m_ImguiWasAggressivelyReset = true;
+        m_ShouldRequestRedraw = true;
+    }
+
+    ParamBlock m_SimulationParams = ToParamBlock(ForwardDynamicSimulatorParams{});  // TODO: make generic
+    std::vector<OutputExtractor> m_UserOutputExtractors;
     std::vector<std::unique_ptr<Tab>> m_Tabs;
     std::unordered_set<UID> m_DeletedTabs;
     UID m_ActiveTab;
     UID m_RequestedTab;
     bool m_ShouldRequestRedraw = false;
+    bool m_ImguiWasAggressivelyReset = false;
 };
 
 
@@ -264,6 +333,11 @@ private:
 
 osc::MainUIScreen::MainUIScreen() :
     m_Impl{new Impl{}}
+{
+}
+
+osc::MainUIScreen::MainUIScreen(std::filesystem::path p) :
+    m_Impl{new Impl{p}}
 {
 }
 

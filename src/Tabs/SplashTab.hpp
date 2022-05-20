@@ -8,11 +8,14 @@
 
 namespace osc
 {
-	class TabHost;
+	class MainUIStateAPI;
+}
 
+namespace osc
+{
 	class SplashTab final : public Tab {
 	public:
-		SplashTab(TabHost*);
+		SplashTab(MainUIStateAPI*);
 		SplashTab(SplashTab const&) = delete;
 		SplashTab(SplashTab&&) noexcept;
 		SplashTab& operator=(SplashTab const&) = delete;

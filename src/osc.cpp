@@ -1,7 +1,6 @@
 #include "src/OpenSimBindings/OpenSimApp.hpp"
 #include "src/Platform/Log.hpp"
-#include "src/Screens/LoadingScreen.hpp"
-#include "src/Screens/SplashScreen.hpp"
+#include "src/Screens/MainUIScreen.hpp"
 
 #include <iostream>
 
@@ -61,11 +60,11 @@ int main(int argc, char** argv)
 
         if (argc <= 0)
         {
-            app.show<osc::SplashScreen>();
+            app.show<osc::MainUIScreen>();
         }
         else
         {
-            app.show<osc::LoadingScreen>(argv[0]);
+            app.show<osc::MainUIScreen>(argv[0]);
         }
 
         osc::log::info("exited main application event loop: shutting down application");

@@ -11,7 +11,10 @@
 namespace osc
 {
 	class TabHost;
+}
 
+namespace osc
+{
 	class ErrorTab final : public Tab {
 	public:
 		ErrorTab(TabHost*, std::exception const&);

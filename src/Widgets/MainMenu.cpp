@@ -1,8 +1,9 @@
 #include "MainMenu.hpp"
 
+#include "osc_config.hpp"
+
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
-#include "src/OpenSimBindings/MainEditorState.hpp"
 #include "src/OpenSimBindings/StoFileSimulation.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
@@ -10,14 +11,13 @@
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Screens/ExperimentsScreen.hpp"
-#include "src/Screens/LoadingScreen.hpp"
-#include "src/Screens/MeshImporterScreen.hpp"
-#include "src/Screens/ModelEditorScreen.hpp"
-#include "src/Screens/SplashScreen.hpp"
-#include "src/Screens/SimulatorScreen.hpp"
+#include "src/Tabs/LoadingTab.hpp"
+#include "src/Tabs/MeshImporterTab.hpp"
+#include "src/Tabs/ModelEditorTab.hpp"
+#include "src/Tabs/SimulatorTab.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
-#include "osc_config.hpp"
+#include "src/MainUIStateAPI.hpp"
 
 #include <GL/glew.h>
 #include <imgui.h>
@@ -32,27 +32,34 @@
 #include <string>
 #include <utility>
 
-static void doOpenFileViaDialog(std::shared_ptr<osc::MainEditorState> st)
+
+static void OpenOsimInLoadingTab(osc::MainUIStateAPI* api, std::filesystem::path p)
+{
+    osc::UID tabID = api->addTab<osc::LoadingTab>(api, p);
+    api->selectTab(tabID);
+}
+
+static void DoOpenFileViaDialog(osc::MainUIStateAPI* api)
 {
     std::filesystem::path p = osc::PromptUserForFile("osim");
     if (!p.empty())
     {
-        osc::App::upd().requestTransition<osc::LoadingScreen>(st, p);
+        OpenOsimInLoadingTab(api, p);
     }
 }
 
-static std::optional<std::filesystem::path> promptSaveOneFile()
+static std::optional<std::filesystem::path> PromptSaveOneFile()
 {
     std::filesystem::path p = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
     return !p.empty() ? std::optional{p} : std::nullopt;
 }
 
-static bool isAnExampleFile(std::filesystem::path const& path)
+static bool IsAnExampleFile(std::filesystem::path const& path)
 {
     return osc::IsSubpath(osc::App::resource("models"), path);
 }
 
-static std::optional<std::string> tryGetModelSaveLocation(OpenSim::Model const& m)
+static std::optional<std::string> TryGetModelSaveLocation(OpenSim::Model const& m)
 {
     if (std::string const& backing_path = m.getInputFileName();
         backing_path != "Unassigned" && backing_path.size() > 0)
@@ -60,9 +67,9 @@ static std::optional<std::string> tryGetModelSaveLocation(OpenSim::Model const& 
         // the model has an associated file
         //
         // we can save over this document - *IF* it's not an example file
-        if (isAnExampleFile(backing_path))
+        if (IsAnExampleFile(backing_path))
         {
-            auto maybePath = promptSaveOneFile();
+            auto maybePath = PromptSaveOneFile();
             return maybePath ? std::optional<std::string>{maybePath->string()} : std::nullopt;
         }
         else
@@ -74,12 +81,12 @@ static std::optional<std::string> tryGetModelSaveLocation(OpenSim::Model const& 
     {
         // the model has no associated file, so prompt the user for a save
         // location
-        auto maybePath = promptSaveOneFile();
+        auto maybePath = PromptSaveOneFile();
         return maybePath ? std::optional<std::string>{maybePath->string()} : std::nullopt;
     }
 }
 
-static bool trySaveModel(OpenSim::Model const& model, std::string const& save_loc)
+static bool TrySaveModel(OpenSim::Model const& model, std::string const& save_loc)
 {
     try
     {
@@ -94,16 +101,11 @@ static bool trySaveModel(OpenSim::Model const& model, std::string const& save_lo
     }
 }
 
-static void transitionToLoadingScreen(std::shared_ptr<osc::MainEditorState> st, std::filesystem::path p)
+static void ActionSaveCurrentModelAs(osc::UndoableModelStatePair& uim)
 {
-    osc::App::upd().requestTransition<osc::LoadingScreen>(st, p);
-}
+    auto maybePath = PromptSaveOneFile();
 
-static void actionSaveCurrentModelAs(osc::UndoableModelStatePair& uim)
-{
-    auto maybePath = promptSaveOneFile();
-
-    if (maybePath && trySaveModel(uim.getModel(), maybePath->string()))
+    if (maybePath && TrySaveModel(uim.getModel(), maybePath->string()))
     {
         std::string oldPath = uim.getModel().getInputFileName();
         uim.updModel().setInputFileName(maybePath->string());
@@ -118,9 +120,7 @@ static void actionSaveCurrentModelAs(osc::UndoableModelStatePair& uim)
 }
 
 template<typename Action>
-static void actionCheckToSaveChangesAndThen(osc::MainMenuFileTab& mmft,
-                                            std::shared_ptr<osc::MainEditorState> mes,
-                                            Action action)
+static void actionCheckToSaveChangesAndThen(osc::MainMenuFileTab& mmft, osc::MainUIStateAPI* api, osc::UndoableModelStatePair* model, Action action)
 {
     if (!mes)
     {
@@ -158,39 +158,32 @@ static void actionCheckToSaveChangesAndThen(osc::MainMenuFileTab& mmft,
 
 // public API
 
-void osc::actionNewModel(std::shared_ptr<MainEditorState> st)
+void osc::actionNewModel(MainUIStateAPI* api)
 {
-    if (st)
-    {
-        st->editedModel()->updUiModel() = osc::AutoFinalizingModelStatePair{};
-        osc::AutoFocusAllViewers(*st);
-        App::upd().requestTransition<ModelEditorScreen>(st);
-    }
-    else
-    {
-        App::upd().requestTransition<ModelEditorScreen>(std::make_unique<MainEditorState>());
-    }
+
+    auto p = std::make_unique<UndoableModelStatePair>();
+    UID tabID = api->addTab<ModelEditorTab>(api, std::move(p));
+    api->selectTab(tabID);
 }
 
-void osc::actionOpenModel(std::shared_ptr<MainEditorState> mes)
+void osc::actionOpenModel(MainUIStateAPI* api)
 {
-    doOpenFileViaDialog(mes);
+    DoOpenFileViaDialog(api);
 }
 
-bool osc::actionSaveModel(std::shared_ptr<MainEditorState> mes)
+bool osc::actionSaveModel(MainUIStateAPI* api, UndoableModelStatePair& model)
 {
-    std::shared_ptr<UndoableModelStatePair> uim = mes->editedModel();
-    std::optional<std::string> maybeUserSaveLoc = tryGetModelSaveLocation(uim->getModel());
+    std::optional<std::string> maybeUserSaveLoc = TryGetModelSaveLocation(model.getModel());
 
-    if (maybeUserSaveLoc && trySaveModel(uim->getModel(), *maybeUserSaveLoc))
+    if (maybeUserSaveLoc && TrySaveModel(model.getModel(), *maybeUserSaveLoc))
     {
-        std::string oldPath = uim->getModel().getInputFileName();
-        uim->updModel().setInputFileName(*maybeUserSaveLoc);
-        uim->setFilesystemPath(*maybeUserSaveLoc);
-        uim->setUpToDateWithFilesystem();
+        std::string oldPath = model.getModel().getInputFileName();
+        model.updModel().setInputFileName(*maybeUserSaveLoc);
+        model.setFilesystemPath(*maybeUserSaveLoc);
+        model.setUpToDateWithFilesystem();
         if (*maybeUserSaveLoc != oldPath)
         {
-            uim->commit("set model path");
+            model.commit("set model path");
         }
         osc::App::upd().addRecentFile(*maybeUserSaveLoc);
         return true;
@@ -208,10 +201,8 @@ osc::MainMenuFileTab::MainMenuFileTab() :
     std::sort(exampleOsimFiles.begin(), exampleOsimFiles.end(), IsFilenameLexographicallyGreaterThan);
 }
 
-void osc::MainMenuFileTab::draw(std::shared_ptr<MainEditorState> mes)
+void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* maybeModel)
 {
-    auto& st = *this;
-
     // handle hotkeys enabled by just drawing the menu
     {
         auto const& io = ImGui::GetIO();
@@ -219,44 +210,22 @@ void osc::MainMenuFileTab::draw(std::shared_ptr<MainEditorState> mes)
 
         if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_N))
         {
-            actionCheckToSaveChangesAndThen(*this, mes, [mes]()
-            {
-                actionNewModel(mes);
-            });
+            actionNewModel(api);
         }
 
         if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_O))
         {
-            actionCheckToSaveChangesAndThen(*this, mes, [mes]()
-            {
-                actionOpenModel(mes);
-            });
+            actionOpenModel(api);
         }
 
-        if (mes && mod && ImGui::IsKeyPressed(SDL_SCANCODE_S))
+        if (maybeModel && mod && ImGui::IsKeyPressed(SDL_SCANCODE_S))
         {
-            actionSaveModel(mes);
+            actionSaveModel(api, *maybeModel);
         }
 
-        if (mes && mod && io.KeyAlt && ImGui::IsKeyPressed(SDL_SCANCODE_S))
+        if (maybeModel && mod && io.KeyAlt && ImGui::IsKeyPressed(SDL_SCANCODE_S))
         {
-            actionSaveCurrentModelAs(*mes->editedModel());
-        }
-
-        if (mes && mod && ImGui::IsKeyPressed(SDL_SCANCODE_W))
-        {
-            actionCheckToSaveChangesAndThen(*this, mes, [mes]()
-            {
-                App::upd().requestTransition<SplashScreen>();
-            });
-        }
-
-        if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_Q))
-        {
-            actionCheckToSaveChangesAndThen(*this, mes, [mes]()
-            {
-                App::upd().requestQuit();
-            });
+            actionSaveModel(api, *maybeModel);
         }
     }
 
@@ -273,35 +242,26 @@ void osc::MainMenuFileTab::draw(std::shared_ptr<MainEditorState> mes)
 
     if (ImGui::MenuItem(ICON_FA_FILE " New", "Ctrl+N"))
     {
-        actionCheckToSaveChangesAndThen(*this, mes, [mes]()
-        {
-            actionNewModel(mes);
-        });
+        actionNewModel(api);
     }
 
     if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Open", "Ctrl+O"))
     {
-        actionCheckToSaveChangesAndThen(*this, mes, [mes]()
-        {
-            actionOpenModel(mes);
-        });
+        actionOpenModel(api);
     }
 
     int imgui_id = 0;
 
-    if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN " Open Recent", !st.recentlyOpenedFiles.empty()))
+    if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN " Open Recent", !recentlyOpenedFiles.empty()))
     {
         // iterate in reverse: recent files are stored oldest --> newest
-        for (auto it = st.recentlyOpenedFiles.rbegin(); it != st.recentlyOpenedFiles.rend(); ++it)
+        for (auto it = recentlyOpenedFiles.rbegin(); it != recentlyOpenedFiles.rend(); ++it)
         {
             RecentFile const& rf = *it;
             ImGui::PushID(++imgui_id);
             if (ImGui::MenuItem(rf.path.filename().string().c_str()))
             {
-                actionCheckToSaveChangesAndThen(*this, mes, [mes, rf]
-                {
-                    transitionToLoadingScreen(mes, rf.path);
-                });
+                OpenOsimInLoadingTab(api, rf.path);
             }
             ImGui::PopID();
         }
@@ -311,15 +271,12 @@ void osc::MainMenuFileTab::draw(std::shared_ptr<MainEditorState> mes)
 
     if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN " Open Example"))
     {
-        for (std::filesystem::path const& ex : st.exampleOsimFiles)
+        for (std::filesystem::path const& ex : exampleOsimFiles)
         {
             ImGui::PushID(++imgui_id);
             if (ImGui::MenuItem(ex.filename().string().c_str()))
             {
-                actionCheckToSaveChangesAndThen(*this, mes, [mes, ex]
-                {
-                    transitionToLoadingScreen(mes, ex);
-                });
+                OpenOsimInLoadingTab(api, ex);
             }
             ImGui::PopID();
         }
@@ -327,19 +284,19 @@ void osc::MainMenuFileTab::draw(std::shared_ptr<MainEditorState> mes)
         ImGui::EndMenu();
     }
 
-    if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Load Motion", nullptr, false, mes != nullptr))
+    if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Load Motion", nullptr, false, maybeModel != nullptr))
     {
         std::filesystem::path p = osc::PromptUserForFile("sto,mot");
         if (!p.empty())
         {
             try
             {
-                std::unique_ptr<OpenSim::Model> cpy =
-                    std::make_unique<OpenSim::Model>(mes->editedModel()->getModel());
+                std::unique_ptr<OpenSim::Model> cpy = std::make_unique<OpenSim::Model>(maybeModel->getModel());
                 cpy->buildSystem();
                 cpy->initializeState();
-                mes->addSimulation(Simulation{osc::StoFileSimulation{std::move(cpy), p}});
-                osc::App::upd().requestTransition<osc::SimulatorScreen>(mes);
+
+                UID tabID = api->addTab<SimulatorTab>(api, std::make_shared<Simulation>(osc::StoFileSimulation{std::move(cpy), p}));
+                api->selectTab(tabID);
             }
             catch (std::exception const& ex)
             {
@@ -348,44 +305,24 @@ void osc::MainMenuFileTab::draw(std::shared_ptr<MainEditorState> mes)
         }
     }
 
-    if (ImGui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S", false, mes != nullptr))
+    if (ImGui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S", false, maybeModel != nullptr))
     {
-        if (mes)
-        {
-            actionSaveModel(mes);
-        }
+        actionSaveModel(api, *maybeModel);
     }
 
-    if (ImGui::MenuItem(ICON_FA_SAVE " Save As", "Shift+Ctrl+S", false, mes != nullptr))
+    if (ImGui::MenuItem(ICON_FA_SAVE " Save As", "Shift+Ctrl+S", false, maybeModel != nullptr))
     {
-        if (mes)
-        {
-            actionSaveCurrentModelAs(*mes->editedModel());
-        }
+        ActionSaveCurrentModelAs(*maybeModel);
     }
 
     if (ImGui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
     {
-        actionCheckToSaveChangesAndThen(*this, mes, []()
-        {
-            App::upd().requestTransition<MeshImporterScreen>();
-        });
-    }
-
-    if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W", false, mes != nullptr))
-    {
-        actionCheckToSaveChangesAndThen(*this, mes, []()
-        {
-            App::upd().requestTransition<SplashScreen>();
-        });
+        UID tabID = api->addTab<MeshImporterTab>(api);
     }
 
     if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
     {
-        actionCheckToSaveChangesAndThen(*this, mes, []()
-        {
-            App::upd().requestQuit();
-        });
+        App::upd().requestQuit();
     }
 
     ImGui::EndMenu();
@@ -400,13 +337,13 @@ void osc::MainMenuAboutTab::draw()
     }
 
     static constexpr float menuWidth = 400;
-    ImGui::Dummy(ImVec2(menuWidth, 0));
+    ImGui::Dummy({menuWidth, 0});
 
     ImGui::TextUnformatted("graphics");
     ImGui::SameLine();
     DrawHelpMarker("OSMV's global graphical settings");
     ImGui::Separator();
-    ImGui::Dummy(ImVec2(0.0f, 0.5f));
+    ImGui::Dummy({0.0f, 0.5f});
     {
         ImGui::Columns(2);
 
@@ -467,12 +404,12 @@ void osc::MainMenuAboutTab::draw()
         ImGui::Columns();
     }
 
-    ImGui::Dummy(ImVec2(0.0f, 2.0f));
+    ImGui::Dummy({0.0f, 2.0f});
     ImGui::TextUnformatted("properties");
     ImGui::SameLine();
     DrawHelpMarker("general software properties: useful information for bug reporting etc.");
     ImGui::Separator();
-    ImGui::Dummy(ImVec2(0.0f, 0.5f));
+    ImGui::Dummy({0.0f, 0.5f});
     {
         ImGui::Columns(2);
 
@@ -509,12 +446,12 @@ void osc::MainMenuAboutTab::draw()
         ImGui::Columns(1);
     }
 
-    ImGui::Dummy(ImVec2(0.0f, 2.5f));
+    ImGui::Dummy({0.0f, 2.5f});
     ImGui::TextUnformatted("debugging utilities:");
     ImGui::SameLine();
     DrawHelpMarker("standard utilities that can help with development, debugging, etc.");
     ImGui::Separator();
-    ImGui::Dummy(ImVec2(0.0f, 0.5f));
+    ImGui::Dummy({0.0f, 0.5f});
     int id = 0;
     {
         ImGui::Columns(2);
@@ -576,12 +513,12 @@ void osc::MainMenuAboutTab::draw()
         ImGui::Columns();
     }
 
-    ImGui::Dummy(ImVec2(0.0f, 2.5f));
+    ImGui::Dummy({0.0f, 2.5f});
     ImGui::TextUnformatted("useful links:");
     ImGui::SameLine();
     DrawHelpMarker("links to external sites that might be useful");
     ImGui::Separator();
-    ImGui::Dummy(ImVec2(0.0f, 0.5f));
+    ImGui::Dummy({0.0f, 0.5f});
     {
         ImGui::Columns(2);
 

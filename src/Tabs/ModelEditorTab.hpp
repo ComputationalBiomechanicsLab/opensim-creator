@@ -6,20 +6,17 @@
 
 #include <SDL_events.h>
 
-#include <memory>
-
 namespace osc
 {
-	class MainEditorState;
+	class MainUIStateAPI;
+	class UndoableModelStatePair;
 }
 
 namespace osc
 {
-	class TabHost;
-
 	class ModelEditorTab final : public Tab {
 	public:
-		ModelEditorTab(TabHost*, std::shared_ptr<MainEditorState>);
+		ModelEditorTab(MainUIStateAPI*, std::unique_ptr<UndoableModelStatePair>);
 		ModelEditorTab(ModelEditorTab const&) = delete;
 		ModelEditorTab(ModelEditorTab&&) noexcept;
 		ModelEditorTab& operator=(ModelEditorTab const&) = delete;

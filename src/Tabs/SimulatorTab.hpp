@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/OpenSimBindings/Simulation.hpp"
 #include "src/Tabs/Tab.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
@@ -10,16 +11,15 @@
 
 namespace osc
 {
-	class MainEditorState;
+	class MainUIStateAPI;
+	class Simulation;
 }
 
 namespace osc
 {
-	class TabHost;
-
 	class SimulatorTab final : public Tab {
 	public:
-		SimulatorTab(TabHost*, std::shared_ptr<MainEditorState>);
+		SimulatorTab(MainUIStateAPI*, std::shared_ptr<Simulation>);
 		SimulatorTab(SimulatorTab const&) = delete;
 		SimulatorTab(SimulatorTab&&) noexcept;
 		SimulatorTab& operator=(SimulatorTab const&) = delete;

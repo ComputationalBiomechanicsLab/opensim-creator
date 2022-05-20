@@ -1,20 +1,11 @@
 #include "MeshImporterTab.hpp"
 
-#include "src/Tabs/TabHost.hpp"
-#include "src/Tabs/ModelEditorTab.hpp"
-
-#include <imgui.h>
-#include <SDL_events.h>
-
-#include <string>
-#include <utility>
-
 #include "src/Bindings/GlmHelpers.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Bindings/SimTKHelpers.hpp"
 #include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
-#include "src/OpenSimBindings/MainEditorState.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Graphics/Shaders/EdgeDetectionShader.hpp"
 #include "src/Graphics/Shaders/GouraudShader.hpp"
 #include "src/Graphics/Shaders/SolidColorShader.hpp"
@@ -33,6 +24,7 @@
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
+#include "src/Tabs/ModelEditorTab.hpp"
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/LogViewer.hpp"
 #include "src/Widgets/SaveChangesPopup.hpp"
@@ -45,6 +37,7 @@
 #include "src/Utils/Cpp20Shims.hpp"
 #include "src/Utils/Spsc.hpp"
 #include "src/Utils/UID.hpp"
+#include "src/MainUIStateAPI.hpp"
 #include "osc_config.hpp"
 
 #include <glm/mat4x4.hpp>
@@ -63,6 +56,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <SimTKcommon.h>
+#include <SDL_events.h>
 
 #include <cstddef>
 #include <cctype>
@@ -71,6 +65,7 @@
 #include <stdexcept>
 #include <string.h>
 #include <string>
+#include <utility>
 #include <unordered_set>
 #include <vector>
 #include <variant>
@@ -8092,14 +8087,14 @@ namespace
 // the `ModelWizardState` class
 class osc::MeshImporterTab::Impl final {
 public:
-    Impl(TabHost* parent) :
+    Impl(MainUIStateAPI* parent) :
         m_Parent{std::move(parent)},
         m_SharedData{std::make_shared<SharedData>()},
         m_MainState{m_SharedData}
     {
     }
 
-    Impl(TabHost* parent, std::vector<std::filesystem::path> meshPaths) :
+    Impl(MainUIStateAPI* parent, std::vector<std::filesystem::path> meshPaths) :
         m_Parent{std::move(parent)},
         m_SharedData{std::make_shared<SharedData>(meshPaths)},
         m_MainState{m_SharedData}
@@ -8155,11 +8150,9 @@ public:
         // if some screen generated an OpenSim::Model, transition to the main editor
         if (m_SharedData->HasOutputModel())
         {
-            auto mainEditorState = std::make_shared<osc::MainEditorState>(std::move(m_SharedData->UpdOutputModel()));
-            mainEditorState->editedModel()->setFixupScaleFactor(m_SharedData->GetSceneScaleFactor());
-            osc::AutoFocusAllViewers(*mainEditorState);
-
-            UID tabID = m_Parent->addTab<ModelEditorTab>(m_Parent, mainEditorState);
+            auto ptr = std::make_unique<UndoableModelStatePair>(std::move(m_SharedData->UpdOutputModel()));
+            ptr->setFixupScaleFactor(m_SharedData->GetSceneScaleFactor());
+            UID tabID = m_Parent->addTab<ModelEditorTab>(m_Parent, std::move(ptr));
             m_Parent->selectTab(tabID);
         }
 
@@ -8195,7 +8188,7 @@ public:
 
 private:
     UID m_ID;
-    TabHost* m_Parent;
+    MainUIStateAPI* m_Parent;
     std::string m_Name = "MeshImporterTab";
     std::shared_ptr<SharedData> m_SharedData;
     MainUIState m_MainState;
@@ -8205,12 +8198,12 @@ private:
 
 // public API
 
-osc::MeshImporterTab::MeshImporterTab(TabHost* parent) :
+osc::MeshImporterTab::MeshImporterTab(MainUIStateAPI* parent) :
 	m_Impl{new Impl{std::move(parent)}}
 {
 }
 
-osc::MeshImporterTab::MeshImporterTab(TabHost* parent, std::vector<std::filesystem::path> files) :
+osc::MeshImporterTab::MeshImporterTab(MainUIStateAPI* parent, std::vector<std::filesystem::path> files) :
 	m_Impl{new Impl{std::move(parent), std::move(files)}}
 {
 }

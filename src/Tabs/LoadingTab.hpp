@@ -7,21 +7,17 @@
 #include <SDL_events.h>
 
 #include <filesystem>
-#include <memory>
 
 namespace osc
 {
-	class MainEditorState;
+	class MainUIStateAPI;
 }
 
 namespace osc
 {
-	class TabHost;
-
 	class LoadingTab final : public Tab {
 	public:
-		LoadingTab(TabHost*, std::filesystem::path);
-		LoadingTab(TabHost*, std::shared_ptr<MainEditorState>, std::filesystem::path);
+		LoadingTab(MainUIStateAPI*, std::filesystem::path);
 		LoadingTab(LoadingTab const&) = delete;
 		LoadingTab(LoadingTab&&) noexcept;
 		LoadingTab& operator=(LoadingTab const&) = delete;

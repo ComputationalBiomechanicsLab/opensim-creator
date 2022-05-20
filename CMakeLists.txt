@@ -369,8 +369,6 @@ add_library(osccore STATIC
     src/OpenSimBindings/IntegratorMethod.hpp
     src/OpenSimBindings/IntegratorOutputExtractor.cpp
     src/OpenSimBindings/IntegratorOutputExtractor.hpp
-    src/OpenSimBindings/MainEditorState.cpp
-    src/OpenSimBindings/MainEditorState.hpp
     src/OpenSimBindings/ModelStateCommit.cpp
     src/OpenSimBindings/ModelStateCommit.hpp
     src/OpenSimBindings/MultiBodySystemOutputExtractor.cpp
@@ -426,8 +424,6 @@ add_library(osccore STATIC
 
     src/Screens/CookiecutterScreen.cpp
     src/Screens/CookiecutterScreen.hpp
-    src/Screens/ErrorScreen.cpp
-    src/Screens/ErrorScreen.hpp
     src/Screens/ExperimentsScreen.cpp
     src/Screens/ExperimentsScreen.hpp
     src/Screens/HelloTriangleScreen.cpp
@@ -442,8 +438,6 @@ add_library(osccore STATIC
     src/Screens/ImPlotDemoScreen.hpp
     src/Screens/InstancedRendererScreen.cpp
     src/Screens/InstancedRendererScreen.hpp
-    src/Screens/LoadingScreen.cpp
-    src/Screens/LoadingScreen.hpp
     src/Screens/MainUIScreen.cpp
     src/Screens/MainUIScreen.hpp
     src/Screens/MathExperimentsScreen.cpp
@@ -454,22 +448,12 @@ add_library(osccore STATIC
     src/Screens/MeshHittestScreen.hpp
     src/Screens/MeshHittestWithBVHScreen.cpp
     src/Screens/MeshHittestWithBVHScreen.hpp
-    src/Screens/MeshImporterScreen.cpp
-    src/Screens/MeshImporterScreen.hpp
     src/Screens/MeshScreen.cpp
     src/Screens/MeshScreen.hpp
-    src/Screens/ModelEditorScreen.cpp
-    src/Screens/ModelEditorScreen.hpp
     src/Screens/RendererHelloTriangleScreen.cpp
     src/Screens/RendererHelloTriangleScreen.hpp
-    src/Screens/SimulatorScreen.cpp
-    src/Screens/SimulatorScreen.hpp
-    src/Screens/SplashScreen.cpp
-    src/Screens/SplashScreen.hpp
     src/Screens/TabTestScreen.cpp
     src/Screens/TabTestScreen.hpp
-    src/Screens/UiModelViewerScreen.cpp
-    src/Screens/UiModelViewerScreen.hpp
 
     src/Tabs/CookiecutterTab.cpp
     src/Tabs/CookiecutterTab.hpp
@@ -559,6 +543,8 @@ add_library(osccore STATIC
     src/Widgets/StandardPopup.hpp
     src/Widgets/UiModelViewer.cpp
     src/Widgets/UiModelViewer.hpp
+
+    src/MainUIStateAPI.hpp
 )
 
 # osccore: target properties

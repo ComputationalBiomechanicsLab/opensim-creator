@@ -4,11 +4,14 @@
 
 #include <SDL_events.h>
 
+#include <filesystem>
+
 namespace osc
 {
     class MainUIScreen final : public Screen {
     public:
         MainUIScreen();
+        MainUIScreen(std::filesystem::path);
         MainUIScreen(MainUIScreen const&) = delete;
         MainUIScreen(MainUIScreen&&) noexcept;
         MainUIScreen& operator=(MainUIScreen const&) = delete;

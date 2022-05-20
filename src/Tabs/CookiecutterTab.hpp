@@ -9,7 +9,10 @@
 namespace osc
 {
 	class TabHost;
+}
 
+namespace osc
+{
 	class CookiecutterTab final : public Tab {
 	public:
 		CookiecutterTab(TabHost*);

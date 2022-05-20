@@ -25,3 +25,8 @@ void osc::TabHost::closeTab(UID tabID)
 {
 	implCloseTab(std::move(tabID));
 }
+
+void osc::TabHost::resetImgui()
+{
+	implResetImgui();
+}
