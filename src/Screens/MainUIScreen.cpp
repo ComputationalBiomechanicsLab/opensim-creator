@@ -44,7 +44,7 @@ public:
         // try pumping the event into ImGui (top-prio)
         if (osc::ImGuiOnEvent(e))
         {
-            return;
+            m_ShouldRequestRedraw = true;
         }
 
         // try pumping the event into the currently-active tab
@@ -59,6 +59,7 @@ public:
 
             if (handled)
             {
+                bool m_ShouldRequestRedraw = true;
                 return;
             }
         }
@@ -95,6 +96,12 @@ public:
         drawTabUI();
 
         osc::ImGuiRender();
+
+        if (m_ShouldRequestRedraw)
+        {
+            osc::App::upd().requestRedraw();
+            m_ShouldRequestRedraw = false;
+        }
     }
 
 private:
@@ -206,9 +213,9 @@ private:
         return getTabByID(m_RequestedTab);
     }
 
-    void implAddTab(std::unique_ptr<Tab> tab) override
+    UID implAddTab(std::unique_ptr<Tab> tab) override
     {
-        m_Tabs.push_back(std::move(tab));
+        return m_Tabs.emplace_back(std::move(tab))->getID();
     }
 
     void implSelectTab(UID id) override
@@ -249,6 +256,7 @@ private:
     std::unordered_set<UID> m_DeletedTabs;
     UID m_ActiveTab;
     UID m_RequestedTab;
+    bool m_ShouldRequestRedraw = false;
 };
 
 

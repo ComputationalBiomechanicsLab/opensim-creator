@@ -3,6 +3,7 @@
 #include "src/Utils/UID.hpp"
 
 #include <memory>
+#include <utility>
 
 namespace osc
 {
@@ -12,12 +13,18 @@ namespace osc
     public:
         virtual ~TabHost() noexcept = default;
 
-        void addTab(std::unique_ptr<Tab> tab);
+        template<typename T, typename... Args>
+        UID addTab(Args... args)
+        {
+            return addTab(std::make_unique<T>(std::forward<Args>(args)...));
+        }
+
+        UID addTab(std::unique_ptr<Tab> tab);
         void selectTab(UID);
         void closeTab(UID);
 
     private:
-        virtual void implAddTab(std::unique_ptr<Tab>) = 0;
+        virtual UID implAddTab(std::unique_ptr<Tab>) = 0;
         virtual void implSelectTab(UID) = 0;
         virtual void implCloseTab(UID) = 0;
     };

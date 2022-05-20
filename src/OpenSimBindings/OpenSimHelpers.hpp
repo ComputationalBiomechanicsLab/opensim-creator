@@ -23,6 +23,7 @@ namespace OpenSim
 namespace osc
 {
     class VirtualConstModelStatePair;
+    class UndoableModelStatePair;
 }
 
 namespace SimTK
@@ -154,4 +155,7 @@ namespace osc
 
     // returns the recommended scale factor for the given model+state pair
     float GetRecommendedScaleFactor(VirtualConstModelStatePair const&);
+
+    // load an .osim file into an OpenSim model
+    std::unique_ptr<UndoableModelStatePair> LoadOsimIntoUndoableModel(std::filesystem::path);
 }

@@ -27,7 +27,8 @@
 #include "src/Platform/Config.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
-#include "src/Screens/ModelEditorScreen.hpp"
+#include "src/Tabs/ModelEditorTab.hpp"
+#include "src/Tabs/TabHost.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/Utils/Perf.hpp"
@@ -734,7 +735,9 @@ private:
                 std::shared_ptr<osc::UndoableModelStatePair> editedModel = st.editedModel();
                 editedModel->setModel(std::make_unique<OpenSim::Model>(*sim->getModel()));
                 editedModel->commit("loaded model from simulator window");
-                osc::App::upd().requestTransition<osc::ModelEditorScreen>(m_MainEditorState);
+
+                UID tabID = m_Parent->addTab<ModelEditorTab>(m_Parent, m_MainEditorState);
+                m_Parent->selectTab(tabID);
             }
 
             if (ImGui::IsItemHovered())
@@ -1260,16 +1263,6 @@ private:
 
     bool onKeyDown(SDL_KeyboardEvent const& e)
     {
-        if (e.keysym.mod & KMOD_CTRL)
-        {
-            // Ctrl
-            switch (e.keysym.sym) {
-            case SDLK_e:
-                // Ctrl + e
-                osc::App::upd().requestTransition<osc::ModelEditorScreen>(std::move(m_MainEditorState));
-                return true;
-            }
-        }
         return false;
     }
 

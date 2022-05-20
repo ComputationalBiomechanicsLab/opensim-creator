@@ -164,9 +164,7 @@ public:
 	{
         if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".osim"))
 		{
-            auto tab = std::make_unique<LoadingTab>(m_Parent, maybeMainEditorState, e.drop.file);
-            UID tabID = tab->getID();
-            m_Parent->addTab(std::move(tab));
+            UID tabID = m_Parent->addTab<LoadingTab>(m_Parent, m_MaybeMainEditorState, e.drop.file);
             m_Parent->selectTab(tabID);
             return true;
 		}
@@ -179,8 +177,8 @@ public:
 
 	void drawMainMenu()
 	{
-        mmFileTab.draw(maybeMainEditorState);
-        mmAboutTab.draw();
+        m_MainMenuFileTab.draw(m_MaybeMainEditorState);
+        m_MainMenuAboutTab.draw();
 	}
 
 	void onDraw()
@@ -250,7 +248,7 @@ private:
 
         ImGui::SetNextWindowPos(loc);
         ImGui::Begin("##osclogo", nullptr, GetMinimalWindowFlags());
-        osc::DrawTextureAsImGuiImage(logo, logoDims);
+        osc::DrawTextureAsImGuiImage(m_OscLogo, logoDims);
         ImGui::End();
     }
 
@@ -272,9 +270,7 @@ private:
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, OSC_POSITIVE_HOVERED_RGBA);
                 if (ImGui::Button(ICON_FA_MAGIC " Import Meshes"))
                 {
-                    auto tab = std::make_unique<MeshImporterTab>(m_Parent);
-                    UID tabID = tab->getID();
-                    m_Parent->addTab(std::move(tab));
+                    UID tabID = m_Parent->addTab<MeshImporterTab>(m_Parent);
                     m_Parent->selectTab(tabID);
                 }
                 ImGui::PopStyleColor(2);
@@ -288,7 +284,7 @@ private:
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, OSC_POSITIVE_HOVERED_RGBA);
                 if (ImGui::Button(ICON_FA_FILE_ALT " New Model (Ctrl+N)"))
                 {
-                    actionNewModel(maybeMainEditorState);
+                    actionNewModel(m_MaybeMainEditorState);
                 }
                 ImGui::PopStyleColor(2);
             }
@@ -298,7 +294,7 @@ private:
             // `open` button
             if (ImGui::Button(ICON_FA_FOLDER_OPEN " Open Model (Ctrl+O)"))
             {
-                actionOpenModel(maybeMainEditorState);
+                actionOpenModel(m_MaybeMainEditorState);
             }
 
             ImGui::SameLine();
@@ -321,18 +317,16 @@ private:
             ImGui::TextUnformatted("Recent files:");
             ImGui::Dummy(ImVec2{0.0f, 3.0f});
 
-            if (!mmFileTab.recentlyOpenedFiles.empty())
+            if (!m_MainMenuFileTab.recentlyOpenedFiles.empty())
             {
                 // iterate in reverse: recent files are stored oldest --> newest
-                for (auto it = mmFileTab.recentlyOpenedFiles.rbegin(); it != mmFileTab.recentlyOpenedFiles.rend(); ++it)
+                for (auto it = m_MainMenuFileTab.recentlyOpenedFiles.rbegin(); it != m_MainMenuFileTab.recentlyOpenedFiles.rend(); ++it)
                 {
                     RecentFile const& rf = *it;
                     ImGui::PushID(++id);
                     if (ImGui::Button(rf.path.filename().string().c_str()))
                     {
-                        auto tab = std::make_unique<LoadingTab>(m_Parent, maybeMainEditorState, rf.path);
-                        UID tabID = tab->getID();
-                        m_Parent->addTab(std::move(tab));
+                        UID tabID = m_Parent->addTab<LoadingTab>(m_Parent, m_MaybeMainEditorState, rf.path);
                         m_Parent->selectTab(tabID);
                     }
                     ImGui::PopID();
@@ -350,19 +344,17 @@ private:
             ImGui::NextColumn();
 
             // right column: example model files
-            if (!mmFileTab.exampleOsimFiles.empty())
+            if (!m_MainMenuFileTab.exampleOsimFiles.empty())
             {
                 ImGui::TextUnformatted("Example files:");
                 ImGui::Dummy(ImVec2{0.0f, 3.0f});
 
-                for (std::filesystem::path const& ex : mmFileTab.exampleOsimFiles)
+                for (std::filesystem::path const& ex : m_MainMenuFileTab.exampleOsimFiles)
                 {
                     ImGui::PushID(++id);
                     if (ImGui::Button(ex.filename().string().c_str()))
                     {
-                        auto tab = std::make_unique<LoadingTab>(m_Parent, maybeMainEditorState, ex);
-                        UID tabID = tab->getID();
-                        m_Parent->addTab(std::move(tab));
+                        UID tabID = m_Parent->addTab<LoadingTab>(m_Parent, m_MaybeMainEditorState, ex);
                         m_Parent->selectTab(tabID);
                     }
                     ImGui::PopID();
@@ -390,7 +382,7 @@ private:
 
         ImGui::SetNextWindowPos(loc);
         ImGui::Begin("##tudlogo", nullptr, GetMinimalWindowFlags());
-        osc::DrawTextureAsImGuiImage(tudLogo, logoDims);
+        osc::DrawTextureAsImGuiImage(m_TudLogo, logoDims);
         ImGui::End();
     }
 
@@ -409,7 +401,7 @@ private:
 
         ImGui::SetNextWindowPos(loc);
         ImGui::Begin("##czlogo", nullptr, GetMinimalWindowFlags());
-        osc::DrawTextureAsImGuiImage(czLogo, logoDims);
+        osc::DrawTextureAsImGuiImage(m_CziLogo, logoDims);
         ImGui::End();
     }
 
@@ -439,23 +431,23 @@ private:
 	TabHost* m_Parent;
 
     // bg image of the floor
-    std::unique_ptr<SizedTexture> m_MaybeBackgroundImage = nullptr;  // checked per-frame
+    std::unique_ptr<SizedTexture> m_MaybeBackgroundImage = nullptr;
 
 	// main app logo, blitted to top of the screen
-	gl::Texture2D logo = LoadImageResourceIntoTexture("logo.png");
+	gl::Texture2D m_OscLogo = LoadImageResourceIntoTexture("logo.png");
 
 	// CZI attributation logo, blitted to bottom of screen
-	gl::Texture2D czLogo = LoadImageResourceIntoTexture("chanzuckerberg_logo.png");
+	gl::Texture2D m_CziLogo = LoadImageResourceIntoTexture("chanzuckerberg_logo.png");
 
 	// TUD attributation logo, blitted to bottom of screen
-	gl::Texture2D tudLogo = LoadImageResourceIntoTexture("tud_logo.png");
+	gl::Texture2D m_TudLogo = LoadImageResourceIntoTexture("tud_logo.png");
 
 	// main menu (top bar) states
-	MainMenuFileTab mmFileTab;
-	MainMenuAboutTab mmAboutTab;
+	MainMenuFileTab m_MainMenuFileTab;
+	MainMenuAboutTab m_MainMenuAboutTab;
 
 	// top-level UI state that's shared between screens (can be null)
-	std::shared_ptr<MainEditorState> maybeMainEditorState;
+	std::shared_ptr<MainEditorState> m_MaybeMainEditorState;
 
     LogViewer m_LogViewer;
 };

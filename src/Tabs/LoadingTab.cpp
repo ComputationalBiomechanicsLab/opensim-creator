@@ -3,14 +3,13 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/OpenSimBindings/MainEditorState.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Tabs/TabHost.hpp"
 #include "src/Tabs/ModelEditorTab.hpp"
-#include "src/Utils/Assertions.hpp"
 
 #include <imgui.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <SDL_events.h>
 
 #include <chrono>
@@ -21,15 +20,6 @@
 #include <string>
 #include <utility>
 
-#include <thread>
-
-
-// the function that loads the OpenSim model
-static std::unique_ptr<osc::UndoableModelStatePair> loadOpenSimModel(std::string path)
-{
-	auto model = std::make_unique<OpenSim::Model>(path);
-	return std::make_unique<osc::UndoableModelStatePair>(std::move(model));
-}
 
 class osc::LoadingTab::Impl final {
 public:
@@ -42,7 +32,7 @@ public:
 		m_Parent{std::move(parent)},
 		m_State{std::move(state)},
 		m_OsimPath{std::move(path)},
-		m_LoadingResult{std::async(std::launch::async, loadOpenSimModel, m_OsimPath.string())}
+		m_LoadingResult{std::async(std::launch::async, osc::LoadOsimIntoUndoableModel, m_OsimPath)}
 	{
 		if (!m_State)
 		{
@@ -126,10 +116,7 @@ public:
 			*m_State->editedModel() = std::move(*result);
 			m_State->editedModel()->setUpToDateWithFilesystem();
 
-			auto tab = std::make_unique<ModelEditorTab>(m_Parent, m_State);
-			UID tabID = tab->getID();
-
-			m_Parent->addTab(std::move(tab));
+			UID tabID = m_Parent->addTab<ModelEditorTab>(m_Parent, m_State);
 			m_Parent->selectTab(tabID);
 			m_Parent->closeTab(m_ID);
 
@@ -175,11 +162,8 @@ public:
 
 				if (ImGui::Button("try again"))
 				{
-					auto p = std::make_unique<LoadingTab>(m_Parent, m_State, m_OsimPath);
-					UID id = p->getID();
-
-					m_Parent->addTab(std::move(p));
-					m_Parent->selectTab(id);
+					UID tabID = m_Parent->addTab<LoadingTab>(m_Parent, m_State, m_OsimPath);
+					m_Parent->selectTab(tabID);
 					m_Parent->closeTab(m_ID);
 				}
 			}

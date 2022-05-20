@@ -11,9 +11,9 @@
 
 // public API
 
-void osc::TabHost::addTab(std::unique_ptr<Tab> tab)
+osc::UID osc::TabHost::addTab(std::unique_ptr<Tab> tab)
 {
-	implAddTab(std::move(tab));
+	return implAddTab(std::move(tab));
 }
 
 void osc::TabHost::selectTab(UID tabID)

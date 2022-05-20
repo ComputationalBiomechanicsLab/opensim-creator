@@ -6,6 +6,7 @@
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
@@ -1207,4 +1208,10 @@ float osc::GetRecommendedScaleFactor(VirtualConstModelStatePair const& p)
     }
 
     return rv;
+}
+
+std::unique_ptr<osc::UndoableModelStatePair> osc::LoadOsimIntoUndoableModel(std::filesystem::path p)
+{
+    auto model = std::make_unique<OpenSim::Model>(p.string());
+    return std::make_unique<osc::UndoableModelStatePair>(std::move(model));
 }

@@ -8159,10 +8159,7 @@ public:
             mainEditorState->editedModel()->setFixupScaleFactor(m_SharedData->GetSceneScaleFactor());
             osc::AutoFocusAllViewers(*mainEditorState);
 
-            auto tab = std::make_unique<ModelEditorTab>(m_Parent, mainEditorState);
-            UID tabID = tab->getID();
-
-            m_Parent->addTab(std::move(tab));
+            UID tabID = m_Parent->addTab<ModelEditorTab>(m_Parent, mainEditorState);
             m_Parent->selectTab(tabID);
         }
 

@@ -962,37 +962,6 @@ public:
         drawMainMenuSimulateTab();
         drawMainMenuWindowTab();
         m_MainMenuAboutTab.draw();
-
-        ImGui::Dummy({2.0f, 0.0f});
-        if (ImGui::Button(ICON_FA_LIST_ALT " Switch to simulator (Ctrl+E)"))
-        {
-            auto tab = std::make_unique<SimulatorTab>(m_Parent, m_Mes);
-            UID tabID = tab->getID();
-            m_Parent->addTab(std::move(tab));
-            m_Parent->selectTab(tabID);
-            return;
-        }
-
-        // "switch to simulator" menu button
-        ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
-        if (ImGui::Button(ICON_FA_PLAY " Simulate (Ctrl+R)"))
-        {
-            StartSimulatingEditedModel(*m_Mes);
-
-            auto tab = std::make_unique<SimulatorTab>(m_Parent, m_Mes);
-            UID tabID = tab->getID();
-            m_Parent->addTab(std::move(tab));
-            m_Parent->selectTab(tabID);
-
-            ImGui::PopStyleColor();
-            return;
-        }
-        ImGui::PopStyleColor();
-
-        if (ImGui::Button(ICON_FA_EDIT " Edit simulation settings"))
-        {
-            m_ParamBlockEditorPopup.open();
-        }
 	}
 
 	void onDraw()
@@ -1017,9 +986,7 @@ private:
                 cpy->initializeState();
                 m_Mes->addSimulation(Simulation{StoFileSimulation{std::move(cpy), p}});
 
-                auto tab = std::make_unique<SimulatorTab>(m_Parent, m_Mes);
-                UID tabID = tab->getID();
-                m_Parent->addTab(std::move(tab));
+                UID tabID = m_Parent->addTab<SimulatorTab>(m_Parent, m_Mes);
                 m_Parent->selectTab(tabID);
 
                 return true;
@@ -1087,9 +1054,7 @@ private:
             {
                 // Ctrl+R: start a new simulation from focused model
                 ActionStartSimulationFromEditedModel(*m_Mes);
-                auto tab = std::make_unique<SimulatorTab>(m_Parent, m_Mes);
-                UID tabID = tab->getID();
-                m_Parent->addTab(std::move(tab));
+                UID tabID = m_Parent->addTab<SimulatorTab>(m_Parent, m_Mes);
                 m_Parent->selectTab(tabID);
                 return true;
             }                
@@ -1099,9 +1064,7 @@ private:
             case SDLK_e:
             {
                 // Ctrl+E: show simulation screen
-                auto tab = std::make_unique<SimulatorTab>(m_Parent, m_Mes);
-                UID tabID = tab->getID();
-                m_Parent->addTab(std::move(tab));
+                UID tabID = m_Parent->addTab<SimulatorTab>(m_Parent, m_Mes);
                 m_Parent->selectTab(tabID);
                 return true;
             }
@@ -1607,14 +1570,6 @@ private:
 
     void drawUNGUARDED()
     {
-        // check for early exit request
-        //
-        // (the main menu may have requested a screen transition)
-        if (App::get().isTransitionRequested())
-        {
-            return;
-        }
-
         // draw 3D viewers (if any)
         draw3DViewers();
 

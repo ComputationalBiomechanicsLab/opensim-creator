@@ -61,21 +61,18 @@ namespace
             {
                 std::stringstream ss;
                 ss << i++ << "_tab";
-                auto tab = std::make_unique<TabDemo1>(m_Parent, ss.str());
-                auto* tabPtr = tab.get();
 
-                m_Parent->addTab(std::move(tab));
-                m_Parent->selectTab(tabPtr->getID());
+                osc::UID tabID = m_Parent->addTab<TabDemo1>(m_Parent, ss.str());
+                m_Parent->selectTab(tabID);
             }
 
             if (ImGui::Button("add tab type 2"))
             {
                 std::stringstream ss;
                 ss << i++ << "_tab";
-                auto tab = MakeTabType2(m_Parent, ss.str());
-                auto* tabPtr = tab.get();
-                m_Parent->addTab(std::move(tab));
-                m_Parent->selectTab(tabPtr->getID());
+
+                osc::UID tabID = m_Parent->addTab(MakeTabType2(m_Parent, ss.str()));
+                m_Parent->selectTab(tabID);
             }
 
             if (ImGui::Button("remove me"))
@@ -283,9 +280,9 @@ public:
     }
 
 private:
-    void implAddTab(std::unique_ptr<Tab> tab) override
+    UID implAddTab(std::unique_ptr<Tab> tab) override
     {
-        m_Tabs.push_back(std::move(tab));
+        return m_Tabs.emplace_back(std::move(tab))->getID();
     }
 
     void implSelectTab(UID tabID) override
