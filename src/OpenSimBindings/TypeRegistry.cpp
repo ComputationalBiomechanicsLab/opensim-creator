@@ -56,141 +56,141 @@ static bool SortedByClassName(std::shared_ptr<OpenSim::Component const> a, std::
 //
 // these are used for in-UI documentation. If a component doesn't have one of these
 // then the UI should show something appropriate (e.g. "no description")
-static std::unordered_map<std::type_info const*, osc::CStringView> CreateDescriptionLut()
+static std::unordered_map<std::string, osc::CStringView> CreateDescriptionLut()
 {
     return
     {
         {
-            &typeid(OpenSim::BallJoint),
+            typeid(OpenSim::BallJoint).name(),
             "A Ball joint. The underlying implementation in Simbody is SimTK::MobilizedBody::Ball. The Ball joint implements a fixed 1-2-3 (X-Y-Z) body-fixed Euler sequence, without translations, for generalized coordinate calculation. Ball joint uses quaternions in calculation and are therefore singularity-free (unlike GimbalJoint)."
         },
         {
-            &typeid(OpenSim::EllipsoidJoint),
+            typeid(OpenSim::EllipsoidJoint).name(),
             "An Ellipsoid joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Ellipsoid. An Ellipsoid joint provides three mobilities – coordinated rotation and translation along the surface of an ellipsoid fixed to the parent body. The ellipsoid surface is determined by an input Vec3 which describes the ellipsoid radius.",
         },
         {
-            &typeid(OpenSim::FreeJoint),
+            typeid(OpenSim::FreeJoint).name(),
             "A Free joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Free. Free joint allows unrestricted motion with three rotations and three translations. Rotations are modeled similarly to BallJoint -using quaternions with no singularities- while the translational generalized coordinates are XYZ Translations along the parent axis.",
         },
         {
-            &typeid(OpenSim::GimbalJoint),
+            typeid(OpenSim::GimbalJoint).name(),
             "A Gimbal joint. The underlying implementation Simbody is a SimTK::MobilizedBody::Gimbal. The opensim Gimbal joint implementation uses a  X-Y-Z body fixed Euler sequence for generalized coordinates calculation. Gimbal joints have a singularity when Y is near \f$\frac{\\pi}{2}\f$.",
         },
         {
-            &typeid(OpenSim::PinJoint),
+            typeid(OpenSim::PinJoint).name(),
             "A Pin joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Pin. Pin provides one DOF about the common Z-axis of the joint (not body) frames in the parent and child body. If you want rotation about a different direction, rotate the joint and body frames such that the z axes are in the desired direction.",
         },
         {
-            &typeid(OpenSim::PlanarJoint),
+            typeid(OpenSim::PlanarJoint).name(),
             "A Planar joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Planar. A Planar joint provides three ordered mobilities; rotation about Z and translation in X then Y.",
         },
         {
-            &typeid(OpenSim::ScapulothoracicJoint),
+            typeid(OpenSim::ScapulothoracicJoint).name(),
             "A 4-DOF ScapulothoracicJoint. Motion of the scapula is described by an ellipsoid surface fixed to the thorax upon which the joint frame of scapul rides.",
         },
         {
-            &typeid(OpenSim::SliderJoint),
+            typeid(OpenSim::SliderJoint).name(),
             "A Slider joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Slider. The Slider provides a single coordinate along the common X-axis of the parent and child joint frames.",
         },
         {
-            &typeid(OpenSim::UniversalJoint),
+            typeid(OpenSim::UniversalJoint).name(),
             "A Universal joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Universal. Universal provides two DoF: rotation about the x axis of the joint frames, followed by a rotation about the new y axis. The joint is badly behaved when the second rotation is near 90 degrees.",
         },
         {
-            &typeid(OpenSim::WeldJoint),
+            typeid(OpenSim::WeldJoint).name(),
             "A Weld joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Weld. There is no relative motion of bodies joined by a weld. Weld joints are often used to create composite bodies from smaller simpler bodies. You can also get the reaction force at the weld in the usual manner.",
         },
         {
-            &typeid(OpenSim::ConstantDistanceConstraint),
+            typeid(OpenSim::ConstantDistanceConstraint).name(),
             "Maintains a constant distance between between two points on separate PhysicalFrames. The underlying SimTK::Constraint in Simbody is a SimTK::Constraint::Rod.",
         },
         {
-            &typeid(OpenSim::CoordinateCouplerConstraint),
+            typeid(OpenSim::CoordinateCouplerConstraint).name(),
             "Implements a CoordinateCoupler Constraint. The underlying SimTK Constraint is a Constraint::CoordinateCoupler in Simbody, which relates coordinates to one another at the position level (i.e. holonomic). Relationship between coordinates is specified by a function that equates to zero only when the coordinates satisfy the constraint function.",
         },
         {
-            &typeid(OpenSim::PointOnLineConstraint),
+            typeid(OpenSim::PointOnLineConstraint).name(),
             "Implements a Point On Line Constraint. The underlying Constraint in Simbody is a SimTK::Constraint::PointOnLine.maintains a constant distance between between two points on separate PhysicalFrames. The underlying SimTK::Constraint in Simbody is a SimTK::Constraint::Rod.",
         },
         {
-            &typeid(OpenSim::RollingOnSurfaceConstraint),
+            typeid(OpenSim::RollingOnSurfaceConstraint).name(),
             "Implements a collection of rolling-without-slipping and non-penetration constraints on a surface.",
         },
         {
-            &typeid(OpenSim::WeldConstraint),
+            typeid(OpenSim::WeldConstraint).name(),
             "Implements a Weld Constraint. A WeldConstraint eliminates up to 6 dofs of a model by fixing two PhysicalFrames together at their origins aligning their axes.  PhysicalFrames are generally Ground, Body, or PhysicalOffsetFrame attached to a PhysicalFrame. The underlying Constraint in Simbody is a SimTK::Constraint::Weld.",
         },
         {
-            &typeid(OpenSim::ContactHalfSpace),
+            typeid(OpenSim::ContactHalfSpace).name(),
             "Represents a half space (that is, everything to one side of an infinite plane) for use in contact modeling.  In its local coordinate system, all points for which x>0 are considered to be inside the geometry. Its location and orientation properties can be used to move and rotate it to represent other half spaces.Represents a spherical object for use in contact modeling.",
         },
         {
-            &typeid(OpenSim::ContactMesh),
+            typeid(OpenSim::ContactMesh).name(),
             "Represents a polygonal mesh for use in contact modeling",
         },
         {
-            &typeid(OpenSim::ContactSphere),
+            typeid(OpenSim::ContactSphere).name(),
             "Represents a spherical object for use in contact modeling.",
         },
         {
-            &typeid(OpenSim::BodyActuator),
+            typeid(OpenSim::BodyActuator).name(),
             "Apply a spatial force (that is, [torque, force]) on a given point of the given body. That is, the force is applied at the given point; torques don't have associated points. This actuator has no states; the control signal should provide a 6D vector including [torque(3D), force(3D)] that is supposed to be applied to the body. The associated controller can generate the spatial force [torque, force] both in the body and global (ground) frame. The default is assumed to be global frame. The point of application can be specified both in the body and global (ground) frame. The default is assumed to be the body frame.",
         },
         {
-            &typeid(OpenSim::BushingForce),
+            typeid(OpenSim::BushingForce).name(),
             "A Bushing Force is the force proportional to the deviation of two frames. One can think of the Bushing as being composed of 3 linear and 3 torsional spring-dampers, which act along or about the bushing frames. Orientations are measured as x-y-z body-fixed Euler rotations, which are treated as though they were uncoupled. Damping is proportional to the deflection rate of change (e.g. Euler angle derivatives) which is NOT the angular velocity between the two frames. That makes this bushing model suitable only for relatively small relative orientation deviations between the frames.",
         },
         {
-            &typeid(OpenSim::CoordinateLimitForce),
+            typeid(OpenSim::CoordinateLimitForce).name(),
             "Generate a force that acts to limit the range of motion of a coordinate. Force is experienced at upper and lower limits of the coordinate value according to a constant stiffnesses K_upper and K_lower, with a C2 continuous transition from 0 to K. The transition parameter defines how far beyond the limit the stiffness becomes constant. The integrator will like smoother (i.e. larger transition regions).",
         },
         {
-            &typeid(OpenSim::DeGrooteFregly2016Muscle),
+            typeid(OpenSim::DeGrooteFregly2016Muscle).name(),
             "This muscle model was published in De Groote et al. 2016.",
         },
         {
-            &typeid(OpenSim::ElasticFoundationForce),
+            typeid(OpenSim::ElasticFoundationForce).name(),
             "This Force subclass implements an elastic foundation contact model. It places a spring at the center of each face of each ContactMesh it acts on. Those springs interact with all objects (both meshes and other objects) the mesh comes in contact with.",
         },
         {
-            &typeid(OpenSim::HuntCrossleyForce),
+            typeid(OpenSim::HuntCrossleyForce).name(),
             "This force subclass implements a Hunt-Crossley contact model. It uses Hertz contact theory to model the interactions between a set of ContactSpheres and ContactHalfSpaces.",
         },
         {
-            &typeid(OpenSim::Millard2012EquilibriumMuscle),
+            typeid(OpenSim::Millard2012EquilibriumMuscle).name(),
             "This class implements a configurable equilibrium muscle model, as described in Millard et al. (2013).",
         },
         {
-            &typeid(OpenSim::PointToPointSpring),
+            typeid(OpenSim::PointToPointSpring).name(),
             "A simple point to point spring with a resting length and stiffness. Points are connected to bodies and are defined in the body frame.",
         },
         {
-            &typeid(OpenSim::PathSpring),
+            typeid(OpenSim::PathSpring).name(),
             "A spring that follows a one-dimensional path. A PathSpring is a massless force element which applies tension along a path connected to bodies. A path spring can also wrap over wrap surfaces.\n\nThe tension is proportional to its stretch beyond its resting length and the amount of dissipation scales with the amount of stretch.",
         },
         {
-            &typeid(OpenSim::RigidTendonMuscle),
+            typeid(OpenSim::RigidTendonMuscle).name(),
             "A class implementing a RigidTendonMuscle actuator with no states. The path information for a RigidTendonMuscle is contained in the base class, and the force-generating behavior should is defined in this class. The force (muscle tension) assumes rigid tendon so that fiber-length and velocity are kinematics dependent and the force-length force-velocity relationships are evaluated directly. The control of this model is its activation. Force production is instantaneous with no excitation-to-activation dynamics and excitation=activation.",
         },
         {
-            &typeid(OpenSim::SmoothSphereHalfSpaceForce),
+            typeid(OpenSim::SmoothSphereHalfSpaceForce).name(),
             "This compliant contact force model is similar to HuntCrossleyForce, except that this model applies force even when not in contact. Unlike HuntCrossleyForce, the normal force is differentiable as a function of penetration depth. This component is designed for use in gradient-based optimizations, in which the model is required to be differentiable. This component models contact between a single sphere and a single half space. This force does NOT use ContactGeometry objects; the description of the contact geometries is done through properties of this component.",
         },
         {
-            &typeid(OpenSim::Thelen2003Muscle),
+            typeid(OpenSim::Thelen2003Muscle).name(),
             "Implementation of a two state (activation and fiber-length) Muscle model by Thelen 2003. This a complete rewrite of a previous implementation (present in OpenSim 2.4 and earlier) contained numerous errors.",
         },
         {
-            &typeid(OpenSim::TorqueActuator),
+            typeid(OpenSim::TorqueActuator).name(),
             "A TorqueActuator applies equal and opposite torques on the two bodies (bodyA and B) that it connects. The torque is applied about an axis specified in ground (global) by default, otherwise it is in bodyA's frame. The magnitude of the torque is equal to the product of the optimal_force of the actuator and its control signal.",
         },
     };
 }
 
 // fetch cached version of the above lookup
-static std::unordered_map<std::type_info const*, osc::CStringView> const& GetDescriptionLut()
+static std::unordered_map<std::string, osc::CStringView> const& GetDescriptionLut()
 {
-    static std::unordered_map<std::type_info const*, osc::CStringView> const g_Lut = CreateDescriptionLut();
+    static std::unordered_map<std::string, osc::CStringView> const g_Lut = CreateDescriptionLut();
     return g_Lut;
 }
 
@@ -342,7 +342,7 @@ static std::vector<osc::CStringView> CreateDescriptionViews(nonstd::span<std::sh
     rv.reserve(protos.size());
     for (auto const& proto : protos)
     {
-        auto it = lut.find(&typeid(*proto));
+        auto it = lut.find(typeid(*proto).name());
         if (it != lut.end())
         {
             rv.push_back(it->second);
