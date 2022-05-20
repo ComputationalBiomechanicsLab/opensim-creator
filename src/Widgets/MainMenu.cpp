@@ -119,42 +119,6 @@ static void ActionSaveCurrentModelAs(osc::UndoableModelStatePair& uim)
     }
 }
 
-template<typename Action>
-static void actionCheckToSaveChangesAndThen(osc::MainMenuFileTab& mmft, osc::MainUIStateAPI* api, osc::UndoableModelStatePair* model, Action action)
-{
-    if (!mes)
-    {
-        action();
-    }
-    else if (mes && mes->editedModel()->isUpToDateWithFilesystem())
-    {
-        action();
-    }
-    else
-    {
-        osc::SaveChangesPopupConfig cfg;
-        cfg.onUserClickedDontSave = [action]()
-        {
-            action();
-            return true;
-        };
-        cfg.onUserClickedSave = [mes, action]()
-        {
-            if (osc::actionSaveModel(mes))
-            {
-                action();
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        };
-        mmft.maybeSaveChangesPopup = osc::SaveChangesPopup{std::move(cfg)};
-        mmft.maybeSaveChangesPopup->open();
-    }
-}
-
 
 // public API
 
