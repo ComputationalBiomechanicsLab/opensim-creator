@@ -20,8 +20,26 @@ OSC_OPENSIM_REPO=${OSC_OPENSIM_REPO:-https://github.com/opensim-org/opensim-core
 # can be any branch/tag identifier from opensim
 OSC_OPENSIM_REPO_BRANCH=${OSC_OPENSIM_REPO_BRANCH:-4.3}
 
+# base build type: used if one of the below isn't overidden
+OSC_BASE_BUILD_TYPE=${OSC_BASE_BUILD_TYPE:-Release}
+
+# build type for OpenSim's dependencies (e.g. Simbody)
+OSC_OPENSIM_DEPS_BUILD_TYPE=${OSC_OPENSIM_DEPS_BUILD_TYPE:-`echo ${OSC_BASE_BUILD_TYPE}`}
+
+# build type for OpenSim
+OSC_OPENSIM_BUILD_TYPE=${OSC_OPENSIM_BUILD_TYPE:-`echo ${OSC_BASE_BUILD_TYPE}`}
+
+# build type for OSC
+OSC_BUILD_TYPE=${OSC_BUILD_TYPE:-`echo ${OSC_BASE_BUILD_TYPE}`}
+
+# extra compiler flags for the C++ compiler
+OSC_CXX_FLAGS=${OSC_CXX_FLAGS:-`echo -fno-omit-frame-pointer`}
+
 # maximum number of build jobs to run concurrently
 OSC_BUILD_CONCURRENCY=${OSC_BUILD_CONCURRENCY:-$(sysctl -n hw.physicalcpu)}
+
+# which build system to use (e.g. Ninja, Makefile: see https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html)
+OSC_GENERATOR=${OSC_GENERATOR:-Unix Makefiles}
 
 # which OSC build target to build
 #
@@ -55,12 +73,18 @@ echo "----- printing build parameters -----"
 echo ""
 echo "    OSC_OPENSIM_REPO = ${OSC_OPENSIM_REPO}"
 echo "    OSC_OPENSIM_REPO_BRANCH = ${OSC_OPENSIM_REPO_BRANCH}"
+echo "    OSC_BASE_BUILD_TYPE = ${OSC_BASE_BUILD_TYPE}"
+echo "    OSC_OPENSIM_DEPS_BUILD_TYPE = ${OSC_OPENSIM_DEPS_BUILD_TYPE}"
+echo "    OSC_OPENSIM_BUILD_TYPE = ${OSC_OPENSIM_BUILD_TYPE}"
+echo "    OSC_BUILD_TYPE = ${OSC_BUILD_TYPE}"
 echo "    OSC_BUILD_CONCURRENCY = ${OSC_BUILD_CONCURRENCY}"
 echo "    OSC_BUILD_TARGET = ${OSC_BUILD_TARGET}"
 echo "    OSC_SKIP_BREW = ${OSC_SKIP_BREW:-OFF}"
 echo "    OSC_SKIP_OPENSIM = ${OSC_SKIP_OPENSIM:-OFF}"
 echo "    OSC_SKIP_OSC = ${OSC_SKIP_OSC:-OFF}"
 echo "    OSC_BUILD_DOCS = ${OSC_BUILD_DOCS:-OFF}"
+echo "    OSC_GENERATOR = ${OSC_GENERATOR}"
+echo "    OSC_CXX_FLAGS = ${OSC_CXX_FLAGS}"
 echo ""
 set -x
 
@@ -81,8 +105,15 @@ if [[ -z ${OSC_SKIP_BREW:+x} ]]; then
     #
     # seems to be a transitive dependency of OpenSim 4.2 (adolc)
     # uses `aclocal` for configuration
-    brew install wget automake
 
+    # `freeglut`
+    #
+    # because the simbody build seems to now also build the (OpenGL-based)
+    # simbody visualizer, but mac doesn't come with GLUT bindings anymore
+
+    brew install wget automake freeglut
+
+    # osc: docs dependencies
     [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && brew install python3
     [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && pip3 install -r docs/requirements.txt
 
@@ -92,10 +123,18 @@ else
     set -----"
 fi
 
+
+echo "----- printing system (post-dependency install) info -----"
+cc --version
+c++ --version
+cmake --version
+make --version
+
+
 if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
     echo "----- downloading, building, and installing (locally) OpenSim -----"
 
-    # get OpenSim 4.2 sources
+    # clone sources
     if [[ ! -d opensim-core/ ]]; then
         git clone \
             --single-branch \
@@ -108,10 +147,19 @@ if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
     mkdir -p opensim-dependencies-build/
     cd opensim-dependencies-build/
     cmake ../opensim-core/dependencies \
-        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_BUILD_TYPE=${OSC_OPENSIM_DEPS_BUILD_TYPE} \
         -DCMAKE_INSTALL_PREFIX=../opensim-dependencies-install \
-        -DCMAKE_CXX_FLAGS="-fno-omit-frame-pointer"
-    cmake --build . -- -j${OSC_BUILD_CONCURRENCY}
+        -DCMAKE_CXX_FLAGS=${OSC_CXX_FLAGS} \
+        -DCMAKE_GENERATOR="${OSC_GENERATOR}" \
+        -DSUPERBUILD_adolc=OFF \
+        -DSUPERBUILD_ipopt=OFF \
+        -DSUPERBUILD_casadi=OFF \
+        -DSUPERBUILD_eigen=OFF \
+        -DSUPERBUILD_colpack=OFF \
+        -DOPENSIM_WITH_CASADI=OFF \
+        -DOPENSIM_WITH_TROPTER=OFF \
+        -DOPENSIM_WITH_SIMBODY_VISUALIZER=OFF
+    cmake --build . --verbose -- -j${OSC_BUILD_CONCURRENCY}
     echo "DEBUG: listing contents of OpenSim dependencies build dir"
     ls .
     cd -
@@ -123,11 +171,14 @@ if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
         -DOPENSIM_DEPENDENCIES_DIR=../opensim-dependencies-install/ \
         -DCMAKE_INSTALL_PREFIX=../opensim-install/ \
         -DBUILD_JAVA_WRAPPING=OFF \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_CXX_FLAGS="-fno-omit-frame-pointer" \
-        -DOPENSIM_WITH_CASADI=YES \
-        -DOPENSIM_WITH_TROPTER=NO
-    cmake --build . --target install -- -j${OSC_BUILD_CONCURRENCY}
+        -DCMAKE_BUILD_TYPE=${OSC_OPENSIM_BUILD_TYPE} \
+        -DCMAKE_CXX_FLAGS=${OSC_CXX_FLAGS} \
+        -DCMAKE_GENERATOR="${OSC_GENERATOR}" \
+        -DOPENSIM_DISABLE_LOG_FILE=ON \
+        -DOPENSIM_WITH_CASADI=NO \
+        -DOPENSIM_WITH_TROPTER=NO \
+        -DOPENSIM_COPY_DEPENDENCIES=ON
+    cmake --build . --verbose --target install -- -j${OSC_BUILD_CONCURRENCY}
     echo "DEBUG: listing contents of OpenSim build dir"
     ls .
     cd -
@@ -145,11 +196,14 @@ if [[ -z ${OSC_SKIP_OSC:+x} ]]; then
     cmake .. \
         -DCMAKE_PREFIX_PATH=${PWD}/../opensim-install \
         -DCMAKE_INSTALL_PREFIX=${PWD}/../osc-install \
-        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE} \
+        -DCMAKE_CXX_FLAGS=${OSC_CXX_FLAGS} \
+        -DCMAKE_GENERATOR="${OSC_GENERATOR}" \
         ${OSC_BUILD_DOCS:+-DOSC_BUILD_DOCS=ON}
-    cmake --build . --target ${OSC_BUILD_TARGET} -- -j${OSC_BUILD_CONCURRENCY}
+    cmake --build . --verbose --target ${OSC_BUILD_TARGET} -- -j${OSC_BUILD_CONCURRENCY}
     echo "DEBUG: listing contents of final build dir"
     ls .
     cd -
+else
+    echo "----- skipping OSC build (OSC_SKIP_OSC is set) -----"
 fi
-
