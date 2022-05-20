@@ -86,6 +86,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <sstream>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -831,12 +832,14 @@ static std::string GetDocumentName(osc::UndoableModelStatePair const& uim)
 
 static std::string GetRecommendedTitle(osc::UndoableModelStatePair const& uim)
 {
-    std::string s = GetDocumentName(uim);
+    std::stringstream ss;
+    ss << ICON_FA_EDIT << " ";
+    ss << GetDocumentName(uim);
     if (!uim.isUpToDateWithFilesystem())
     {
-        s += '*';
+        ss << '*';
     }
-    return s;
+    return std::move(ss).str();
 }
 
 

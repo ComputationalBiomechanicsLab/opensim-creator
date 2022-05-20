@@ -40,6 +40,7 @@
 #include <nonstd/span.hpp>
 #include <SDL_events.h>
 
+#include <atomic>
 #include <chrono>
 #include <fstream>
 #include <filesystem>
@@ -50,6 +51,9 @@
 #include <utility>
 #include <variant>
 #include <vector>
+
+
+static std::atomic<int> g_SimulationNumber = 1;
 
 
 static std::vector<osc::OutputExtractor> GetAllUserDesiredOutputs(osc::MainUIStateAPI& api)
@@ -1134,7 +1138,7 @@ private:
     }
 
 	UID m_ID;
-	std::string m_Name = "SimulatorTab";
+    std::string m_Name = ICON_FA_PLAY " Simulation_" + std::to_string(g_SimulationNumber++);
     MainUIStateAPI* m_API;
     std::shared_ptr<Simulation> m_Simulation;
 

@@ -47,6 +47,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
+#include <IconsFontAwesome5.h>
 #include <ImGuizmo.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
@@ -3987,7 +3988,8 @@ namespace
 
         std::string GetRecommendedTitle() const
         {
-            std::string base = GetDocumentName();
+            std::stringstream ss;
+            ss << ICON_FA_CUBE << ' ' << GetDocumentName();
 
             /* TODO: broken: causes tabs to reorder
             if (!IsModelGraphUpToDateWithDisk())
@@ -3995,7 +3997,7 @@ namespace
                 base += '*';
             }
             */
-            return base;
+            return std::move(ss).str();
         }
 
         ModelGraph const& GetModelGraph() const

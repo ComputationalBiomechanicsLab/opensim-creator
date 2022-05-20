@@ -6,6 +6,7 @@
 
 #include <imgui.h>
 #include <SDL_events.h>
+#include <IconsFontAwesome5.h>
 
 #include <string>
 #include <stdexcept>
@@ -100,7 +101,7 @@ public:
 private:
 	UID m_ID;
 	TabHost* m_Parent;
-	std::string m_Name = "Error";
+	std::string m_Name = ICON_FA_SPIDER " Error";
 	std::string m_ErrorMessage;
 	osc::LogViewer m_LogViewer;
 };

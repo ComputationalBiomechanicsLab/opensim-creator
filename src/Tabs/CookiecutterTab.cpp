@@ -1,6 +1,7 @@
 #include "CookiecutterTab.hpp"
 
 #include <SDL_events.h>
+#include <IconsFontAwesome5.h>
 
 #include <string>
 #include <utility>
@@ -59,7 +60,7 @@ public:
 
 private:
 	UID m_ID;
-	std::string m_Name = "CookiecutterTab";
+	std::string m_Name = ICON_FA_COOKIE " CookiecutterTab";
 	TabHost* m_Parent;
 };
 
