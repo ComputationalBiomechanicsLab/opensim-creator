@@ -317,7 +317,7 @@ private:
         }
     }
 
-    void implResetImgui()
+    void implResetImgui() override
     {
         osc::ImGuiShutdown();
         osc::ImGuiInit();
