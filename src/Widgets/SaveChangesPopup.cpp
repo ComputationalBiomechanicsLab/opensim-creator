@@ -88,17 +88,3 @@ void osc::SaveChangesPopup::draw()
 {
     m_Impl->draw();
 }
-
-/*
- * switch (m_Action) {
-            case ActionAfter::New:
-                updSharedData().NewModelGraphForced();
-                break;
-            case ActionAfter::Close:
-                updSharedData().CloseEditorForced();
-                break;
-            case ActionAfter::Quit:
-                updSharedData().QuitEditorForced();
-                break;
-            }
-            */

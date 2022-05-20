@@ -1362,7 +1362,7 @@ osc::UiModelViewerResponse osc::UiModelViewer::draw(VirtualConstModelStatePair c
             // solidworks keybind
             impl.autoFocusCameraNextFrame = true;
         }
-        UpdatePolarCameraFromImGuiUserInput(App::get().dims(), impl.camera);
+        UpdatePolarCameraFromImGuiUserInput(Dimensions(m_Impl->renderRect), impl.camera);
     }
 
     // draw main menu

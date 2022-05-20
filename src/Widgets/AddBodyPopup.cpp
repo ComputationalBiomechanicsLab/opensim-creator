@@ -5,7 +5,6 @@
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
-#include "src/Utils/Assertions.hpp"
 #include "src/Widgets/SelectComponentPopup.hpp"
 #include "src/Widgets/SelectGeometryPopup.hpp"
 #include "src/Widgets/StandardPopup.hpp"
