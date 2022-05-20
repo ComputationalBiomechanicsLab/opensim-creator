@@ -294,7 +294,7 @@ private:
         }
     }
 
-    void implCloseTab(UID tabID)
+    void implCloseTab(UID tabID) override
     {
         auto it = std::stable_partition(m_Tabs.begin(), m_Tabs.end(), [tabID](auto const& o) { return o->getID() != tabID; });
         m_DeletedTabs.insert(m_DeletedTabs.end(), std::make_move_iterator(it), std::make_move_iterator(m_Tabs.end()));
