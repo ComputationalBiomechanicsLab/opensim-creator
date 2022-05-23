@@ -282,6 +282,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
     if (ImGui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
     {
         UID tabID = api->addTab<MeshImporterTab>(api);
+        api->selectTab(tabID);
     }
 
     if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
