@@ -610,7 +610,7 @@ target_link_options(osccore PUBLIC
 # ------------ configure test suite target ------------------ #
 
 # osctests: main exe that links to `osccore` and exercises APIs etc.
-add_executable(testosc
+add_executable(testosc EXCLUDE_FROM_ALL
 
     tests/TestOsc.cpp
     tests/TestDedupedString.cpp
