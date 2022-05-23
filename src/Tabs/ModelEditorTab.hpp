@@ -6,6 +6,8 @@
 
 #include <SDL_events.h>
 
+#include <memory>
+
 namespace osc
 {
 	class MainUIStateAPI;
