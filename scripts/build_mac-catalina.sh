@@ -39,7 +39,7 @@ OSC_CXX_FLAGS=${OSC_CXX_FLAGS:-`echo -fno-omit-frame-pointer`}
 OSC_BUILD_CONCURRENCY=${OSC_BUILD_CONCURRENCY:-$(sysctl -n hw.physicalcpu)}
 
 # which build system to use (e.g. Ninja, Makefile: see https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html)
-OSC_GENERATOR=${OSC_GENERATOR:-Unix Makefiles}
+OSC_GENERATOR=${OSC_GENERATOR:-`echo Unix Makefiles`}
 
 # which OSC build target to build
 #
@@ -91,27 +91,24 @@ set -x
 if [[ -z ${OSC_SKIP_BREW:+x} ]]; then
     echo "----- getting system-level dependencies -----"
 
-    # reinstall gcc, because OpenSim 4.2 depends on gfortran for
-    # libBLAS. This is probably a misconfigured dependency in OS4.2,
-    # because Mac actually contains libBLAS
+    # reinstall gcc
+    #
+    # this is necessary because OpenSim depends on gfortran for
+    # libBLAS. This is probably a misconfigured dependency in OpenSim,
+    # because Mac already contains an Apple-provided libBLAS
     brew reinstall gcc
 
     # `wget`
     #
-    # seems to be a transitive dependency of OpenSim 4.2 (Metis),
+    # seems to be a transitive dependency of OpenSim (Metis),
     # which uses wget to get other deps
 
     # `automake`
     #
-    # seems to be a transitive dependency of OpenSim 4.2 (adolc)
+    # seems to be a transitive dependency of OpenSim (adolc)
     # uses `aclocal` for configuration
 
-    # `freeglut`
-    #
-    # because the simbody build seems to now also build the (OpenGL-based)
-    # simbody visualizer, but mac doesn't come with GLUT bindings anymore
-
-    brew install wget automake freeglut
+    brew install wget
 
     # osc: docs dependencies
     [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && brew install python3
@@ -149,7 +146,7 @@ if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
     cmake ../opensim-core/dependencies \
         -DCMAKE_BUILD_TYPE=${OSC_OPENSIM_DEPS_BUILD_TYPE} \
         -DCMAKE_INSTALL_PREFIX=../opensim-dependencies-install \
-        -DCMAKE_CXX_FLAGS=${OSC_CXX_FLAGS} \
+        -DCMAKE_CXX_FLAGS="${OSC_CXX_FLAGS}" \
         -DCMAKE_GENERATOR="${OSC_GENERATOR}" \
         -DSUPERBUILD_adolc=OFF \
         -DSUPERBUILD_ipopt=OFF \
@@ -157,8 +154,7 @@ if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
         -DSUPERBUILD_eigen=OFF \
         -DSUPERBUILD_colpack=OFF \
         -DOPENSIM_WITH_CASADI=OFF \
-        -DOPENSIM_WITH_TROPTER=OFF \
-        -DOPENSIM_WITH_SIMBODY_VISUALIZER=OFF
+        -DOPENSIM_WITH_TROPTER=OFF
     cmake --build . --verbose -- -j${OSC_BUILD_CONCURRENCY}
     echo "DEBUG: listing contents of OpenSim dependencies build dir"
     ls .
