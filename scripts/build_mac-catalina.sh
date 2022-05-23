@@ -140,6 +140,10 @@ if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
             "${OSC_OPENSIM_REPO}"
     fi
 
+    # TODO: disable CASADI+Ipopt+metis once OpenSim 4.4 is released:
+    #
+    # https://github.com/opensim-org/opensim-core/pull/3206
+
     echo "----- building OpenSim's dependencies -----"
     mkdir -p opensim-dependencies-build/
     cd opensim-dependencies-build/
@@ -149,11 +153,11 @@ if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
         -DCMAKE_CXX_FLAGS="${OSC_CXX_FLAGS}" \
         -DCMAKE_GENERATOR="${OSC_GENERATOR}" \
         -DSUPERBUILD_adolc=OFF \
-        -DSUPERBUILD_ipopt=OFF \
+        -DSUPERBUILD_ipopt=ON \
         -DSUPERBUILD_casadi=OFF \
         -DSUPERBUILD_eigen=OFF \
         -DSUPERBUILD_colpack=OFF \
-        -DOPENSIM_WITH_CASADI=OFF \
+        -DOPENSIM_WITH_CASADI=ON \
         -DOPENSIM_WITH_TROPTER=OFF
     cmake --build . --verbose -- -j${OSC_BUILD_CONCURRENCY}
     echo "DEBUG: listing contents of OpenSim dependencies build dir"
@@ -171,8 +175,8 @@ if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
         -DCMAKE_CXX_FLAGS=${OSC_CXX_FLAGS} \
         -DCMAKE_GENERATOR="${OSC_GENERATOR}" \
         -DOPENSIM_DISABLE_LOG_FILE=ON \
-        -DOPENSIM_WITH_CASADI=NO \
-        -DOPENSIM_WITH_TROPTER=NO \
+        -DOPENSIM_WITH_CASADI=ON \
+        -DOPENSIM_WITH_TROPTER=OFF \
         -DOPENSIM_COPY_DEPENDENCIES=ON
     cmake --build . --verbose --target install -- -j${OSC_BUILD_CONCURRENCY}
     echo "DEBUG: listing contents of OpenSim build dir"
