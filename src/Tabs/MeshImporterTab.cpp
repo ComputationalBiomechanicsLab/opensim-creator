@@ -8133,11 +8133,6 @@ public:
         {
             m_SharedData->QuitEditor();
         }
-        else if (osc::ImGuiOnEvent(e))
-        {
-            m_ShouldRequestRedraw = true;
-        }
-
         m_MainState.onEvent(e);
         return true;
     }
