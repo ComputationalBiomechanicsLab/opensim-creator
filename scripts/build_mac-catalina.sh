@@ -154,7 +154,7 @@ if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
         -DCMAKE_GENERATOR="${OSC_GENERATOR}" \
         -DSUPERBUILD_adolc=OFF \
         -DSUPERBUILD_ipopt=ON \
-        -DSUPERBUILD_casadi=OFF \
+        -DSUPERBUILD_casadi=ON \
         -DSUPERBUILD_eigen=OFF \
         -DSUPERBUILD_colpack=OFF \
         -DOPENSIM_WITH_CASADI=ON \
