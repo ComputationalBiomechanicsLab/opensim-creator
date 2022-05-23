@@ -111,6 +111,22 @@ public:
 
         drawTabUI();
 
+        if (m_ImguiWasAggressivelyReset)
+        {
+            if (m_RequestedTab == UID::empty())
+            {
+                m_RequestedTab = m_ActiveTab;
+            }
+            m_ActiveTab.reset();
+
+            osc::ImGuiShutdown();
+            osc::ImGuiInit();
+            osc::App::upd().requestRedraw();
+            m_ImguiWasAggressivelyReset = false;
+
+            return;
+        }
+
         osc::ImGuiRender();
 
         if (m_ShouldRequestRedraw)
@@ -154,12 +170,6 @@ public:
 private:
     void drawTabUI()
     {
-        if (m_ImguiWasAggressivelyReset)
-        {
-            // because this marks the start of new ImGui calls
-            m_ImguiWasAggressivelyReset = false;
-        }
-
         constexpr ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 
         // https://github.com/ocornut/imgui/issues/3518
@@ -178,7 +188,6 @@ private:
 
                     if (m_ImguiWasAggressivelyReset)
                     {
-                        m_ImguiWasAggressivelyReset = false;
                         return;  // must return here to prevent the ImGui End calls from erroring
                     }
                 }
@@ -225,12 +234,11 @@ private:
 
                             if (m_RequestedTab == m_ActiveTab)
                             {
-                                m_RequestedTab.reset();
+                                m_RequestedTab = UID::empty();
                             }
 
                             if (m_ImguiWasAggressivelyReset)
                             {
-                                m_ImguiWasAggressivelyReset = false;
                                 return;
                             }
 
@@ -325,11 +333,7 @@ private:
 
     void implResetImgui() override
     {
-        osc::ImGuiShutdown();
-        osc::ImGuiInit();
-        osc::ImGuiNewFrame();
         m_ImguiWasAggressivelyReset = true;
-        m_ShouldRequestRedraw = true;
     }
 
     ParamBlock m_SimulationParams = ToParamBlock(ForwardDynamicSimulatorParams{});  // TODO: make generic
