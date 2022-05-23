@@ -25,6 +25,11 @@ osc::TabHost* osc::Tab::parent() const
 	return implParent();
 }
 
+bool osc::Tab::isUnsaved() const
+{
+	return implIsUnsaved();
+}
+
 void osc::Tab::onMount()
 {
 	implOnMount();

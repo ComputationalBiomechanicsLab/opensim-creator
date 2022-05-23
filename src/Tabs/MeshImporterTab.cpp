@@ -3990,13 +3990,6 @@ namespace
         {
             std::stringstream ss;
             ss << ICON_FA_CUBE << ' ' << GetDocumentName();
-
-            /* TODO: broken: causes tabs to reorder
-            if (!IsModelGraphUpToDateWithDisk())
-            {
-                base += '*';
-            }
-            */
             return std::move(ss).str();
         }
 
@@ -8119,6 +8112,11 @@ public:
         return m_Parent;
     }
 
+    bool isUnsaved() const
+    {
+        return !m_SharedData->IsModelGraphUpToDateWithDisk();
+    }
+
     void onMount()
     {
         App::upd().makeMainEventLoopWaiting();
@@ -8239,6 +8237,11 @@ osc::CStringView osc::MeshImporterTab::implGetName() const
 osc::TabHost* osc::MeshImporterTab::implParent() const
 {
     return m_Impl->parent();
+}
+
+bool osc::MeshImporterTab::implIsUnsaved() const
+{
+    return m_Impl->isUnsaved();
 }
 
 void osc::MeshImporterTab::implOnMount()

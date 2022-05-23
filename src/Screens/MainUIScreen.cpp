@@ -195,7 +195,13 @@ private:
                 {
                     for (int i = 0; i < m_Tabs.size(); ++i)
                     {
-                        ImGuiTabItemFlags flags = 0;
+                        ImGuiTabItemFlags flags = ImGuiTabItemFlags_NoReorder;
+
+                        if (m_Tabs[i]->isUnsaved())
+                        {
+                            flags |= ImGuiTabItemFlags_UnsavedDocument;
+                        }
+
                         if (m_RequestedTab == m_Tabs[i]->getID())
                         {
                             flags |= ImGuiTabItemFlags_SetSelected;

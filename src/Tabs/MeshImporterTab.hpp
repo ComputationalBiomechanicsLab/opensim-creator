@@ -30,6 +30,7 @@ namespace osc
 		UID implGetID() const override;
 		CStringView implGetName() const override;
 		TabHost* implParent() const override;
+		bool implIsUnsaved() const override;
 		void implOnMount() override;
 		void implOnUnmount() override;
 		bool implOnEvent(SDL_Event const&) override;

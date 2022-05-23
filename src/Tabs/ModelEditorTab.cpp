@@ -835,10 +835,6 @@ static std::string GetRecommendedTitle(osc::UndoableModelStatePair const& uim)
     std::stringstream ss;
     ss << ICON_FA_EDIT << " ";
     ss << GetDocumentName(uim);
-    if (!uim.isUpToDateWithFilesystem())
-    {
-        ss << '*';
-    }
     return std::move(ss).str();
 }
 
@@ -865,6 +861,11 @@ public:
 	{
 		return m_Parent;
 	}
+
+    bool isUnsaved() const
+    {
+        return !m_Model->isUpToDateWithFilesystem();
+    }
 
 	void onMount()
 	{
@@ -1798,6 +1799,11 @@ osc::CStringView osc::ModelEditorTab::implGetName() const
 osc::TabHost* osc::ModelEditorTab::implParent() const
 {
 	return m_Impl->parent();
+}
+
+bool osc::ModelEditorTab::implIsUnsaved() const
+{
+    return m_Impl->isUnsaved();
 }
 
 void osc::ModelEditorTab::implOnMount()
