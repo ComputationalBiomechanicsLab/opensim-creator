@@ -51,6 +51,7 @@ public:
         if (Tab* active = getActiveTab())
         {
             active->onUnmount();
+            m_ActiveTab = UID::empty();
         }
         osc::ImGuiShutdown();
     }
@@ -117,7 +118,7 @@ public:
             {
                 m_RequestedTab = m_ActiveTab;
             }
-            m_ActiveTab.reset();
+            m_ActiveTab = UID::empty();
 
             osc::ImGuiShutdown();
             osc::ImGuiInit();
@@ -196,11 +197,11 @@ private:
             ImGui::End();
         }
 
-        if (ImGui::BeginViewportSideBar("##TabBar", viewport, ImGuiDir_Up, height, window_flags))
+        if (ImGui::BeginViewportSideBar("##TabBarViewport", viewport, ImGuiDir_Up, height, window_flags))
         {
             if (ImGui::BeginMenuBar())
             {
-                if (ImGui::BeginTabBar("tabbar", tab_bar_flags))
+                if (ImGui::BeginTabBar("##TabBar", tab_bar_flags))
                 {
                     for (int i = 0; i < m_Tabs.size(); ++i)
                     {
@@ -262,11 +263,6 @@ private:
         {
             active->onDraw();
         }
-        else if (!m_Tabs.empty())
-        {
-            m_ActiveTab = m_Tabs.front()->getID();
-            m_Tabs.front()->onDraw();
-        }
 
         // clear the flagged-to-be-deleted tabs
         garbageCollectDeletedTabs();
@@ -318,6 +314,7 @@ private:
                 if (id == m_ActiveTab)
                 {
                     it->get()->onUnmount();
+                    m_ActiveTab = UID::empty();
                 }
                 m_Tabs.erase(it);
             }
@@ -336,13 +333,30 @@ private:
         m_ImguiWasAggressivelyReset = true;
     }
 
+    // global simulation params: dictates how the next simulation shall be ran
     ParamBlock m_SimulationParams = ToParamBlock(ForwardDynamicSimulatorParams{});  // TODO: make generic
+
+    // user-initiated output extractors
+    //
+    // simulators should try to hook into these, if the component exists
     std::vector<OutputExtractor> m_UserOutputExtractors;
+
+    // user-visible UI tabs
     std::vector<std::unique_ptr<Tab>> m_Tabs;
+
+    // set of tabs that should be deleted once control returns to this screen
     std::unordered_set<UID> m_DeletedTabs;
-    UID m_ActiveTab;
-    UID m_RequestedTab;
+
+    // currently-active UI tab
+    UID m_ActiveTab = UID::empty();
+
+    // a tab that should become active next frame
+    UID m_RequestedTab = UID::empty();
+
+    // true if the screen should request a redraw from the application
     bool m_ShouldRequestRedraw = false;
+
+    // true if ImGui was aggressively reset by a tab (and, therefore, this screen should reset ImGui)
     bool m_ImguiWasAggressivelyReset = false;
 };
 
