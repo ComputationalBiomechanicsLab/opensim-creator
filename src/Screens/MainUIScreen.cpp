@@ -212,9 +212,15 @@ private:
                             flags |= ImGuiTabItemFlags_UnsavedDocument;
                         }
 
-                        if (m_RequestedTab == m_Tabs[i]->getID())
+                        if (m_Tabs[i]->getID() == m_RequestedTab)
                         {
                             flags |= ImGuiTabItemFlags_SetSelected;
+                        }
+
+                        if (m_Tabs[i]->getID() == m_ActiveTab && m_Tabs[i]->getName() != m_ActiveTabNameLastFrame)
+                        {
+                            flags |= ImGuiTabItemFlags_SetSelected;
+                            m_ActiveTabNameLastFrame = m_Tabs[i]->getName();
                         }
 
                         ImGui::PushID(m_Tabs[i].get());
@@ -232,6 +238,7 @@ private:
                             }
 
                             m_ActiveTab = m_Tabs[i]->getID();
+                            m_ActiveTabNameLastFrame = m_Tabs[i]->getName();
 
                             if (m_RequestedTab == m_ActiveTab)
                             {
@@ -349,6 +356,9 @@ private:
 
     // currently-active UI tab
     UID m_ActiveTab = UID::empty();
+
+    // cached version of active tab name - used to ensure ImGui can re-focus a renamed tab
+    std::string m_ActiveTabNameLastFrame;
 
     // a tab that should become active next frame
     UID m_RequestedTab = UID::empty();
