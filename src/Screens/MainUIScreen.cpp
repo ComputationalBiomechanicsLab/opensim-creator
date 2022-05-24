@@ -58,14 +58,34 @@ public:
 
     void onEvent(SDL_Event const& e)
     {
-        // try pumping the event into ImGui (top-prio)
         if (osc::ImGuiOnEvent(e))
         {
+            // event was pumped into ImGui
+
             m_ShouldRequestRedraw = true;
             return;
         }
 
-        // try pumping the event into the currently-active tab
+        if (e.type == SDL_QUIT)
+        {
+            // it's a quit event, so try pumping it into all tabs
+
+            bool quitHandled = false;
+            for (int i = 0; i < static_cast<int>(m_Tabs.size()); ++i)
+            {
+                quitHandled = m_Tabs[i]->onEvent(e) || quitHandled;
+                garbageCollectDeletedTabs();
+            }
+
+            if (!quitHandled)
+            {
+                App::upd().requestQuit();
+            }
+
+            return;
+        }
+
+        // all other events are only pumped into the active tab
         //
         // (don't pump the event into the inactive tabs)
         if (Tab* active = getActiveTab())
@@ -80,15 +100,6 @@ public:
                 m_ShouldRequestRedraw = true;
                 return;
             }
-        }
-
-        // finally, if it's a quit event but neither ImGui nor a tab handled it itself
-        // (e.g. because the tab decided to "handle it" by prompting the user to save
-        // files) then handle the quit event at this higher level
-        if (e.type == SDL_QUIT)
-        {
-            App::upd().requestQuit();
-            return;
         }
     }
 
