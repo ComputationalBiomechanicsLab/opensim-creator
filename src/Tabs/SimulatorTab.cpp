@@ -55,7 +55,6 @@
 
 static std::atomic<int> g_SimulationNumber = 1;
 
-
 static std::vector<osc::OutputExtractor> GetAllUserDesiredOutputs(osc::MainUIStateAPI& api)
 {
     int nOutputs = api.getNumUserOutputExtractors();
@@ -329,7 +328,7 @@ public:
 	void onUnmount()
 	{
         App::upd().makeMainEventLoopPolling();
-        ImPlot::DestroyContext();        
+        ImPlot::DestroyContext();
 	}
 
 	bool onEvent(SDL_Event const& e)
@@ -406,23 +405,6 @@ private:
         }
 
         osc::Config const& config = osc::App::get().getConfig();
-
-        // draw simulations panel
-        if (bool simsPanelOldState = config.getIsPanelEnabled("Simulations"))
-        {
-            bool simsPanelState = simsPanelOldState;
-            if (ImGui::Begin("Simulations", &simsPanelState))
-            {
-                OSC_PERF("draw simulations panel");
-                drawSimulatorTab();
-            }
-            ImGui::End();
-
-            if (simsPanelState != simsPanelOldState)
-            {
-                App::upd().updConfig().setIsPanelEnabled("Simulations", simsPanelState);
-            }
-        }
 
         // draw hierarchy panel
         {
@@ -871,9 +853,8 @@ private:
         }
     }
 
-
     // draw timescrubber slider
-    void DrawSimulationScrubber(osc::Simulation& sim)
+    void drawSimulationScrubber(osc::Simulation& sim)
     {
         // play/pause buttons
         if (!m_IsPlayingBack)
@@ -977,7 +958,7 @@ private:
     }
 
     // draw a 3D model viewer
-    bool SimscreenDraw3DViewer(osc::SimulationModelStatePair& ms, osc::UiModelViewer& viewer, char const* name)
+    bool SimscreenDraw3DViewer(osc::SimulationModelStatePair& ms, osc::UiModelViewer& viewer, char const* name, int i)
     {
         bool isOpen = true;
 
@@ -997,8 +978,20 @@ private:
             return true;  // it's open, but not shown
         }
 
+        glm::vec2 pos = ImGui::GetCursorScreenPos();
+        glm::vec2 dims = ImGui::GetContentRegionAvail();
         auto resp = viewer.draw(ms);
         ImGui::End();
+
+        // draw scubber overlay
+        {
+            ImGui::SetNextWindowPos({ pos.x + 100.0f, pos.y + dims.y - 70.0f });
+            ImGui::SetNextWindowSize({ dims.x - 110.0f, 100.0f });
+            std::string scrubberName = "##scrubber_" + std::to_string(i);
+            ImGui::Begin(scrubberName.c_str(), nullptr, osc::GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs);
+            drawSimulationScrubber(*ms.updSimulation());
+            ImGui::End();
+        }
 
         if (resp.hovertestResult)
         {
@@ -1051,7 +1044,7 @@ private:
             char buf[64];
             std::snprintf(buf, sizeof(buf), "viewer%i", i);
 
-            bool isOpen = SimscreenDraw3DViewer(ms, viewer, buf);
+            bool isOpen = SimscreenDraw3DViewer(ms, viewer, buf, i);
             if (!isOpen)
             {
                 m_ModelViewers.erase(m_ModelViewers.begin() + i);
@@ -1155,11 +1148,7 @@ private:
     PerfPanel m_PerfPanel{"Performance"};
     ModelHierarchyPanel m_ModelHierarchyPanel{"Hierarchy"};
 
-    std::vector<UiModelViewer> m_ModelViewers = []()
-    {
-        std::vector<UiModelViewer> rv(1);
-        return rv;
-    }();
+    std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
 
     // scrubber/playback state
     bool m_IsPlayingBack = true;
