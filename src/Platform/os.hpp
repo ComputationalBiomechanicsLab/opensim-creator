@@ -38,6 +38,7 @@ namespace osc
 
     // try to copy a string onto the user's clipboard
     bool SetClipboardText(char const*);
+    bool SetClipboardText(std::string_view);
 
     // set an environment variable's value (process-wide)
     void SetEnv(char const* name, char const* value, bool overwrite);

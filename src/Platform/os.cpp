@@ -79,6 +79,12 @@ bool osc::SetClipboardText(char const* s)
     return SDL_SetClipboardText(s) == 0;
 }
 
+bool osc::SetClipboardText(std::string_view sv)
+{
+    std::string cstr{sv};
+    return SetClipboardText(cstr.c_str());
+}
+
 void osc::SetEnv(char const* name, char const* value, bool overwrite)
 {
     SDL_setenv(name, value, overwrite ? 1 : 0);
