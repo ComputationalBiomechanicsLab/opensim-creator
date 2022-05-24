@@ -303,7 +303,7 @@ private:
             // `docs` button
             if (ImGui::Button(ICON_FA_BOOK " Open Documentation"))
             {
-                OpenPathInOSDefaultApplication(osc::App().get().getConfig().getHTMLDocsDir() / "index.html");
+                OpenPathInOSDefaultApplication(osc::App::get().getConfig().getHTMLDocsDir() / "index.html");
             }
 
             ImGui::Dummy(ImVec2{0.0f, 10.0f});
