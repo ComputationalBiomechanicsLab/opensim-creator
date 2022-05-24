@@ -62,6 +62,7 @@ public:
         if (osc::ImGuiOnEvent(e))
         {
             m_ShouldRequestRedraw = true;
+            return;
         }
 
         // try pumping the event into the currently-active tab
