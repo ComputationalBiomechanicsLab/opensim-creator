@@ -189,6 +189,7 @@ public:
         drawMenu();
         drawTUDLogo();
         drawCZLogo();
+        drawVersionInfo();
 	}
 
 private:
