@@ -7988,17 +7988,6 @@ namespace
         {
             m_Shared->tick(dt);
 
-            // handle keyboards using ImGui's input poller
-            if (!m_Maybe3DViewerModal)
-            {
-                UpdateFromImGuiKeyboardState();
-            }
-
-            if (!m_Maybe3DViewerModal && m_Shared->IsRenderHovered() && !ImGuizmo::IsUsing())
-            {
-                UpdatePolarCameraFromImGuiUserInput(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
-            }
-
             if (m_Maybe3DViewerModal)
             {
                 auto ptr = m_Maybe3DViewerModal;  // ensure it stays alive - even if it pops itself during the drawcall
@@ -8009,6 +7998,17 @@ namespace
         void draw()
         {
             ImGuizmo::BeginFrame();
+
+            // handle keyboards using ImGui's input poller
+            if (!m_Maybe3DViewerModal)
+            {
+                UpdateFromImGuiKeyboardState();
+            }
+
+            if (!m_Maybe3DViewerModal && m_Shared->IsRenderHovered() && !ImGuizmo::IsUsing())
+            {
+                UpdatePolarCameraFromImGuiUserInput(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
+            }
 
             // draw history panel (if enabled)
             if (m_Shared->m_PanelStates[SharedData::PanelIndex_History])
