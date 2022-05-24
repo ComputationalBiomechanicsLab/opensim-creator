@@ -35,7 +35,7 @@ public:
         // action: add body
         {
             // draw button
-            if (ImGui::MenuItem(ICON_FA_PLUS " Add Body"))
+            if (ImGui::MenuItem("Add Body"))
             {
                 m_AddBodyPopup.open();
             }
@@ -73,7 +73,7 @@ private:
     void renderButton()
     {
         std::stringstream label;
-        label << ICON_FA_PLUS << " Add " << osc::TypeRegistry<T>::name();
+        label << "Add " << osc::TypeRegistry<T>::name();
 
         // action: add joint
         if (ImGui::BeginMenu(label.str().c_str()))
