@@ -5,12 +5,33 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- The UI is now a tabbed interface (#42):
+
+  - The home screen, editor screen, simulator screen, and mesh importer now
+    open in seperate closeable tabs
+
+  - This makes it easier to (e.g.) edit a mesh importer scene while (e.g.)
+    running a simulation, or editing a model
+
+  - Making a new model, mesh importer, or simulation opens a new tab containing
+    the result (previously: overwrites current screen)
+
+  - A simulator tab (previously: *the* simulator screen) now shows exactly one
+    simulation (previously: it would show one simulation, but preset a list that
+    the user can select from)
+
+  - This is still work-in-progess. Fixed: #207, #208, #210, #211, #212, #213, #214,
+    #216, #218, #219. To-fix: #221, #222, #223, #224
+
 - Fixed a multithreading bug where the simulator would occasionally crash with "Device or resource busy" (#201)
 - The forward dynamic simulator now also reports "Wall Time" and "Step Wall Time" (#202)
   - This is useful for performance debugging
 - Simplified the tooltip that's shown when hovering something in the model editor 3D viewer
 - Fixed "New Model" action not creating a new model
-- Right-clicking a 3D viewer in the model editor now shows "add stuff" context menu (#203)
+- Right-clicking a 3D viewer in the model editor now shows "add stuff" context menu (#203, #215)
+- Clicking "Open Documentation" in the splash screen should no longer crash the UI (#205, #209)
+- The Mac build now builds with fewer dependencies (internal, related: #206)
+- Hotfixed the first point in a moment arm muscle plot is always wrong (#220)
 - Added tabbed-UI testing screen (internal)
 
 
