@@ -42,7 +42,6 @@
 #include "src/Widgets/LogViewer.hpp"
 #include "src/Widgets/ObjectPropertiesEditor.hpp"
 #include "src/Widgets/ReassignSocketPopup.hpp"
-#include "src/Widgets/SaveChangesPopup.hpp"
 #include "src/Widgets/SelectComponentPopup.hpp"
 #include "src/Widgets/SelectGeometryPopup.hpp"
 #include "src/Widgets/Select1PFPopup.hpp"
@@ -870,6 +869,11 @@ public:
         return !m_Model->isUpToDateWithFilesystem();
     }
 
+    bool trySave()
+    {
+        return actionSaveModel(m_Parent, *m_Model);
+    }
+
 	void onMount()
 	{
         App::upd().makeMainEventLoopWaiting();
@@ -885,11 +889,7 @@ public:
 
 	bool onEvent(SDL_Event const& e)
 	{
-        if (e.type == SDL_QUIT)
-        {
-            return onQuitEvent(e.quit);
-        }
-        else if (e.type == SDL_KEYDOWN)
+        if (e.type == SDL_KEYDOWN)
         {
             return onKeydown(e.key);
         }
@@ -951,37 +951,6 @@ private:
             {
                 log::error("encountered error while trying to load an STO file against the model: %s", ex.what());
             }
-        }
-
-        return false;
-    }
-
-    bool onQuitEvent(SDL_QuitEvent const&)
-    {
-        if (!m_Model->isUpToDateWithFilesystem())
-        {
-            SaveChangesPopupConfig cfg;
-            cfg.onUserClickedSave = [this]()
-            {
-                if (actionSaveModel(m_Parent, *m_Model))
-                {
-                    App::upd().requestQuit();
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            };
-            cfg.onUserClickedDontSave = []()
-            {
-                App::upd().requestQuit();
-                return true;
-            };
-            m_MaybeSaveChangesPopup = SaveChangesPopup{std::move(cfg)};
-            m_MaybeSaveChangesPopup->open();
-
-            return true;
         }
 
         return false;
@@ -1683,11 +1652,6 @@ private:
         {
             m_ParamBlockEditorPopup.draw(m_Parent->updSimulationParams());
         }
-
-        if (m_MaybeSaveChangesPopup)
-        {
-            m_MaybeSaveChangesPopup->draw();
-        }
     }
 
     void drawGUARDED()
@@ -1750,7 +1714,6 @@ private:
 	CoordinateEditor m_CoordEditor{m_Model};
 	SelectGeometryPopup m_AttachGeomPopup{"select geometry to add"};
 	ParamBlockEditorPopup m_ParamBlockEditorPopup{"simulation parameters"};
-	std::optional<SaveChangesPopup> m_MaybeSaveChangesPopup;
     int m_LatestMusclePlot = 1;
     std::vector<ModelMusclePlotPanel> m_ModelMusclePlots;
 
@@ -1807,6 +1770,11 @@ osc::TabHost* osc::ModelEditorTab::implParent() const
 bool osc::ModelEditorTab::implIsUnsaved() const
 {
     return m_Impl->isUnsaved();
+}
+
+bool osc::ModelEditorTab::implTrySave()
+{
+    return m_Impl->trySave();
 }
 
 void osc::ModelEditorTab::implOnMount()

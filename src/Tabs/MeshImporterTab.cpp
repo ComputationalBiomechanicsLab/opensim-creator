@@ -27,7 +27,6 @@
 #include "src/Tabs/ModelEditorTab.hpp"
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/LogViewer.hpp"
-#include "src/Widgets/SaveChangesPopup.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/ClonePtr.hpp"
@@ -3783,44 +3782,6 @@ namespace
         // MODEL GRAPH STUFF
         //
 
-        void NewModelGraphForced()
-        {
-            m_ModelGraphSnapshots = CommittableModelGraph{};
-            m_MaybeModelGraphExportLocation.clear();
-            m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.GetCheckoutID();
-        }
-
-        void NewModelGraph()
-        {
-            if (IsModelGraphUpToDateWithDisk())
-            {
-                NewModelGraphForced();
-            }
-            else
-            {
-                osc::SaveChangesPopupConfig cfg;
-                cfg.onUserClickedDontSave = [this]()
-                {
-                    NewModelGraphForced();
-                    return true;
-                };
-                cfg.onUserClickedSave = [this]()
-                {
-                    if (ExportModelGraphAsOsimFile())
-                    {
-                        NewModelGraphForced();
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                };
-                m_MaybeSaveChangesPopup = osc::SaveChangesPopup{std::move(cfg)};
-                m_MaybeSaveChangesPopup->open();
-            }
-        }
-
         bool OpenOsimFileAsModelGraph()
         {
             std::filesystem::path osimPath = osc::PromptUserForFile("osim");
@@ -3902,76 +3863,24 @@ namespace
             return m_CloseRequested == true;
         }
 
-        void CloseEditorForced()
+        void CloseEditor()
         {
             m_CloseRequested = true;
         }
 
-        void CloseEditor()
+        bool IsNewMeshImpoterTabRequested()
         {
-            if (IsModelGraphUpToDateWithDisk())
-            {
-                CloseEditorForced();
-            }
-            else
-            {
-                osc::SaveChangesPopupConfig cfg;
-                cfg.onUserClickedDontSave = [this]()
-                {
-                    CloseEditorForced();
-                    return true;
-                };
-                cfg.onUserClickedSave = [this]()
-                {
-                    if (ExportModelGraphAsOsimFile())
-                    {
-                        CloseEditorForced();
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                };
-                m_MaybeSaveChangesPopup = osc::SaveChangesPopup{std::move(cfg)};
-                m_MaybeSaveChangesPopup->open();
-            }
+            return m_NewTabRequested == true;
         }
 
-        void QuitEditorForced()
+        void RequestNewMeshImporterTab()
         {
-            osc::App::upd().requestQuit();
+            m_NewTabRequested = true;
         }
 
-        void QuitEditor()
+        void ResetRequestNewMeshImporter()
         {
-            if (IsModelGraphUpToDateWithDisk())
-            {
-                QuitEditorForced();
-            }
-            else
-            {
-                osc::SaveChangesPopupConfig cfg;
-                cfg.onUserClickedDontSave = [this]()
-                {
-                    QuitEditorForced();
-                    return true;
-                };
-                cfg.onUserClickedSave = [this]()
-                {
-                    if (ExportModelGraphAsOsimFile())
-                    {
-                        QuitEditorForced();
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                };
-                m_MaybeSaveChangesPopup = osc::SaveChangesPopup{std::move(cfg)};
-                m_MaybeSaveChangesPopup->open();
-            }
+            m_NewTabRequested = false;
         }
 
         std::string GetDocumentName() const
@@ -5235,6 +5144,9 @@ namespace
 
         // true if the implementation wants the host to close the mesh importer UI
         bool m_CloseRequested = false;
+
+        // true if the implementation wants the host to open a new mesh importer
+        bool m_NewTabRequested = false;
     };
 }
 
@@ -6283,7 +6195,7 @@ namespace
             if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_N))
             {
                 // Ctrl+N: new scene
-                m_Shared->NewModelGraph();
+                m_Shared->RequestNewMeshImporterTab();
                 return true;
             }
             else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_O))
@@ -6313,7 +6225,7 @@ namespace
             else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_Q))
             {
                 // Ctrl+Q: quit application
-                m_Shared->QuitEditor();
+                osc::App::upd().requestQuit();
                 return true;
             }
             else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_A))
@@ -7838,7 +7750,7 @@ namespace
             {
                 if (ImGui::MenuItem(ICON_FA_FILE " New", "Ctrl+N"))
                 {
-                    m_Shared->NewModelGraph();
+                    m_Shared->RequestNewMeshImporterTab();
                 }
 
                 if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Import", "Ctrl+O"))
@@ -7863,7 +7775,7 @@ namespace
 
                 if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
                 {
-                    m_Shared->QuitEditor();
+                    osc::App::upd().requestQuit();
                 }
 
                 ImGui::EndMenu();
@@ -8117,6 +8029,20 @@ public:
         return !m_SharedData->IsModelGraphUpToDateWithDisk();
     }
 
+    bool trySave()
+    {
+        if (m_SharedData->IsModelGraphUpToDateWithDisk())
+        {
+            // nothing to save
+            return true;
+        }
+        else
+        {
+            // try to save the changes
+            return m_SharedData->ExportAsModelGraphAsOsimFile();
+        }
+    }
+
     void onMount()
     {
         App::upd().makeMainEventLoopWaiting();
@@ -8129,12 +8055,7 @@ public:
 
     bool onEvent(SDL_Event const& e)
     {
-        if (e.type == SDL_QUIT)
-        {
-            m_SharedData->QuitEditor();
-        }
-        m_MainState.onEvent(e);
-        return true;
+        return m_MainState.onEvent(e);
     }
 
     void onTick()
@@ -8156,6 +8077,13 @@ public:
         if (m_SharedData->IsCloseRequested())
         {
             m_Parent->closeTab(m_ID);
+
+        }
+
+        if (m_SharedData->IsNewMeshImpoterTabRequested())
+        {
+            m_Parent->addTab<MeshImporterTab>(m_Parent);
+            m_SharedData->ResetRequestNewMeshImporter();
         }
     }
 
@@ -8237,6 +8165,11 @@ osc::TabHost* osc::MeshImporterTab::implParent() const
 bool osc::MeshImporterTab::implIsUnsaved() const
 {
     return m_Impl->isUnsaved();
+}
+
+bool osc::MeshImporterTab::implTrySave()
+{
+    return m_Impl->trySave();
 }
 
 void osc::MeshImporterTab::implOnMount()

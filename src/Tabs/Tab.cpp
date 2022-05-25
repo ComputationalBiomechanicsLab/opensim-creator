@@ -30,6 +30,11 @@ bool osc::Tab::isUnsaved() const
 	return implIsUnsaved();
 }
 
+bool osc::Tab::trySave()
+{
+	return implTrySave();
+}
+
 void osc::Tab::onMount()
 {
 	implOnMount();

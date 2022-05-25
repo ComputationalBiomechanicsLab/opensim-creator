@@ -31,6 +31,7 @@ namespace osc
 		CStringView implGetName() const override;
 		TabHost* implParent() const override;
 		bool implIsUnsaved() const override;
+		bool implTrySave() override;
 		void implOnMount() override;
 		void implOnUnmount() override;
 		bool implOnEvent(SDL_Event const&) override;

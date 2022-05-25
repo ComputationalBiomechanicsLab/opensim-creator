@@ -17,6 +17,7 @@ namespace osc
         CStringView getName() const;
         TabHost* parent() const;
         bool isUnsaved() const;
+        bool trySave();
         void onMount();
         void onUnmount();
         bool onEvent(SDL_Event const& e);
@@ -29,6 +30,7 @@ namespace osc
         virtual CStringView implGetName() const = 0;
         virtual TabHost* implParent() const = 0;
         virtual bool implIsUnsaved() const { return false; }
+        virtual bool implTrySave() { return true; }
         virtual void implOnMount() {}
         virtual void implOnUnmount() {}
         virtual bool implOnEvent(SDL_Event const&) { return false; }

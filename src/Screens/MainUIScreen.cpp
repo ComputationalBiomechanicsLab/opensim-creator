@@ -10,10 +10,13 @@
 #include "src/Tabs/MeshImporterTab.hpp"
 #include "src/Tabs/SplashTab.hpp"
 #include "src/Tabs/Tab.hpp"
+#include "src/Utils/Algorithms.hpp"
+#include "src/Widgets/SaveChangesPopup.hpp"
 #include "src/MainUIStateAPI.hpp"
 
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <optional>
 
 #include <utility>
 #include <unordered_set>
@@ -40,6 +43,7 @@ public:
     void onMount()
     {
         osc::ImGuiInit();
+
         if (Tab* active = getActiveTab())
         {
             active->onMount();
@@ -53,6 +57,7 @@ public:
             active->onUnmount();
             m_ActiveTab = UID::empty();
         }
+
         osc::ImGuiShutdown();
     }
 
@@ -61,39 +66,54 @@ public:
         if (osc::ImGuiOnEvent(e))
         {
             // event was pumped into ImGui
-
             m_ShouldRequestRedraw = true;
             return;
         }
 
         if (e.type == SDL_QUIT)
         {
-            // it's a quit event, so try pumping it into all tabs
+            // it's a quit event, which must be pumped into all tabs
 
             bool quitHandled = false;
             for (int i = 0; i < static_cast<int>(m_Tabs.size()); ++i)
             {
                 quitHandled = m_Tabs[i]->onEvent(e) || quitHandled;
-                garbageCollectDeletedTabs();
             }
 
             if (!quitHandled)
             {
+                // if no tab handled the quit event, treat it as-if the user
+                // has tried to close all tabs
+
+                for (auto const& tab : m_Tabs)
+                {
+                    implCloseTab(tab->getID());
+                }
+                m_QuitRequested = true;
+            }
+
+            // handle any deletion-related side-effects (e.g. showing save prompt)
+            handleDeletedTabs();
+
+            if (!quitHandled && (!m_MaybeSaveChangesPopup || !m_MaybeSaveChangesPopup->isOpen()))
+            {
+                // if no tab handled a quit event and the UI isn't currently showing
+                // a save prompt then it's safe to quit the application
+
                 App::upd().requestQuit();
             }
 
             return;
         }
 
-        // all other events are only pumped into the active tab
-        //
-        // (don't pump the event into the inactive tabs)
         if (Tab* active = getActiveTab())
         {
+            // all other event types are only pumped into the active tab
+
             bool handled = active->onEvent(e);
 
-            // a `tab` may have requested deletions
-            garbageCollectDeletedTabs();
+            // the event may have triggered tab deletions
+            handleDeletedTabs();
 
             if (handled)
             {
@@ -113,7 +133,7 @@ public:
         }
 
         // clear the flagged-to-be-deleted tabs
-        garbageCollectDeletedTabs();
+        handleDeletedTabs();
     }
 
     void draw()
@@ -122,7 +142,7 @@ public:
 
         osc::ImGuiNewFrame();
 
-        drawTabUI();
+        drawUIContent();
 
         if (m_ImguiWasAggressivelyReset)
         {
@@ -181,7 +201,7 @@ public:
     }
 
 private:
-    void drawTabUI()
+    void drawUIContent()
     {
         constexpr ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 
@@ -267,7 +287,7 @@ private:
                         ImGui::PopID();
                         if (!active && i != 0)  // can't close the splash tab
                         {
-                            m_DeletedTabs.insert(m_Tabs[i]->getID());
+                            implCloseTab(m_Tabs[i]->getID());
                         }
                     }
                 }
@@ -276,7 +296,7 @@ private:
             ImGui::End();
         }
 
-        garbageCollectDeletedTabs();
+        handleDeletedTabs();
 
         if (Tab* active = getActiveTab())
         {
@@ -284,7 +304,12 @@ private:
         }
 
         // clear the flagged-to-be-deleted tabs
-        garbageCollectDeletedTabs();
+        handleDeletedTabs();
+
+        if (m_MaybeSaveChangesPopup)
+        {
+            m_MaybeSaveChangesPopup->draw();
+        }
     }
 
     Tab* getTabByID(UID id)
@@ -322,7 +347,53 @@ private:
         m_DeletedTabs.insert(id);
     }
 
-    void garbageCollectDeletedTabs()
+    // called by the "save changes?" popup when user opts to save changes
+    bool onUserSelectedSaveChangesInSavePrompt()
+    {
+        bool savingFailedSomewhere = false;
+        for (UID id : m_DeletedTabs)
+        {
+            if (Tab* tab = getTabByID(id); tab && tab->isUnsaved())
+            {
+                savingFailedSomewhere = !tab->trySave() || savingFailedSomewhere;
+            }
+        }
+
+        if (!savingFailedSomewhere)
+        {
+            nukeDeletedTabs();
+            if (m_QuitRequested)
+            {
+                osc::App::upd().requestQuit();
+            }
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    // called by the "save changes?" popup when user opts to not save changes
+    bool onUserSelectedDoNotSaveChangesInSavePrompt()
+    {
+        nukeDeletedTabs();
+        if (m_QuitRequested)
+        {
+            osc::App::upd().requestQuit();
+        }
+        return true;
+    }
+
+    // called by the "save changes?" popup when user clicks "cancel"
+    bool onUserCancelledOutOfSavePrompt()
+    {
+        m_DeletedTabs.clear();
+        m_QuitRequested = false;
+        return true;
+    }
+
+    void nukeDeletedTabs()
     {
         for (UID id : m_DeletedTabs)
         {
@@ -344,6 +415,53 @@ private:
         if (!getRequestedTab() && !getActiveTab() && !m_Tabs.empty())
         {
             m_RequestedTab = m_Tabs.front()->getID();
+        }
+    }
+
+    void handleDeletedTabs()
+    {
+        // tabs aren't immediately deleted, because they may hold onto unsaved changes
+        //
+        // this top-level screen has to handle the unsaved changes. This is because it would be
+        // annoying, from a UX PoV, to have each tab individually prompt the user. It is preferable
+        // to have all the "do you want to save changes?" things in one prompt
+
+
+        // if any of the to-be-deleted tabs have unsaved changes, then open a save changes dialog
+        // that prompts the user to decide on how to handle it
+        //
+        // don't delete the tabs yet, because the user can always cancel out of the operation
+
+        bool anyTabHasUnsavedChanges = false;
+        for (UID id : m_DeletedTabs)
+        {
+            if (Tab* t = getTabByID(id))
+            {
+                if (t->isUnsaved())
+                {
+                    anyTabHasUnsavedChanges = true;
+                    break;
+                }
+            }
+        }
+
+        if (anyTabHasUnsavedChanges)
+        {
+            // open the popup
+            osc::SaveChangesPopupConfig cfg
+            {
+                "Save Changes?",
+                [this]() { return onUserSelectedSaveChangesInSavePrompt(); },
+                [this]() { return onUserSelectedDoNotSaveChangesInSavePrompt(); },
+                [this]() { return onUserCancelledOutOfSavePrompt(); }
+            };
+            m_MaybeSaveChangesPopup.emplace(cfg);
+            m_MaybeSaveChangesPopup->open();
+        }
+        else
+        {
+            // just nuke all the tabs
+            nukeDeletedTabs();
         }
     }
 
@@ -374,6 +492,14 @@ private:
 
     // a tab that should become active next frame
     UID m_RequestedTab = UID::empty();
+
+    // a popup that is shown when a tab, or the whole screen, is requested to close
+    //
+    // effectively, shows the "do you want to save changes?" popup
+    std::optional<SaveChangesPopup> m_MaybeSaveChangesPopup;
+
+    // true if the screen is midway through trying to quit
+    bool m_QuitRequested = false;
 
     // true if the screen should request a redraw from the application
     bool m_ShouldRequestRedraw = false;
