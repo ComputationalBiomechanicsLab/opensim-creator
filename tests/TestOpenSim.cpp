@@ -7,6 +7,10 @@
 
 #include <filesystem>
 
+
+// this is a repro for
+//
+// https://github.com/opensim-org/opensim-core/issues/3211
 TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 {
 	// ensure muscles are available

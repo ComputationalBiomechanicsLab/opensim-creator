@@ -397,8 +397,6 @@ namespace
 		OpenSim::Model& model = p.updModel();
 		SimTK::State state = p.getState();
 
-		model.realizeReport(state);
-
 		// lookup relevant elements in the copies
 
 		OpenSim::Muscle const* maybeMuscle = osc::FindComponent<OpenSim::Muscle>(model, params->getMusclePath());
@@ -426,6 +424,19 @@ namespace
 
 		shared->setProgress(0.0f);
 		coord.setLocked(state, false);
+
+		// HACK: ensure `computeMomentArm` is called at least once before running
+		//       the computation. No idea why. See:
+		//
+		// https://github.com/opensim-org/opensim-core/issues/3211
+		{
+			model.realizeDynamics(state);
+			for (OpenSim::GeometryPath const& g : model.getComponentList<OpenSim::GeometryPath>())
+			{
+				g.computeMomentArm(state, coord);
+			}
+		}
+
 		for (int i = 0; i < nPoints; ++i)
 		{
 			if (stopToken.stop_requested())
@@ -436,7 +447,6 @@ namespace
 			double xVal = start + (i * step);
 
 			coord.setValue(state, xVal);
-			model.assemble(state);
 			model.equilibrateMuscles(state);
 			model.realizeReport(state);
 
@@ -585,6 +595,7 @@ namespace
 				{
 					shared->PlotParams.setNumRequestedDataPoints(m_NumPlotPointsEdited);
 				}
+
 				ImGui::EndPopup();
 			}
 
