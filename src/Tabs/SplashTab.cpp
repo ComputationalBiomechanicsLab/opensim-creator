@@ -427,7 +427,7 @@ private:
     UID m_ID;
 
     // tab name
-	std::string m_Name = ICON_FA_HOME " Home";
+    std::string m_Name = ICON_FA_HOME;
 
     // tab parent
     MainUIStateAPI* m_Parent;
