@@ -3,14 +3,18 @@
 #include "src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/ParamBlock.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Tabs/LoadingTab.hpp"
+#include "src/Tabs/MeshImporterTab.hpp"
+#include "src/Tabs/ModelEditorTab.hpp"
 #include "src/Tabs/SplashTab.hpp"
 #include "src/Tabs/Tab.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Widgets/SaveChangesPopup.hpp"
 #include "src/MainUIStateAPI.hpp"
 
+#include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <optional>
@@ -231,6 +235,11 @@ private:
                     {
                         ImGuiTabItemFlags flags = ImGuiTabItemFlags_NoReorder;
 
+                        if (i == 0)
+                        {
+                            flags |= ImGuiTabItemFlags_NoCloseButton;  // splash screen
+                        }
+
                         if (m_Tabs[i]->isUnsaved())
                         {
                             flags |= ImGuiTabItemFlags_UnsavedDocument;
@@ -282,6 +291,16 @@ private:
                             implCloseTab(m_Tabs[i]->getID());
                         }
                     }
+
+
+                    // adding buttons to tab bars: https://github.com/ocornut/imgui/issues/3291
+                    ImGui::TabItemButton(ICON_FA_PLUS);
+
+                    if (ImGui::BeginPopupContextItem("popup", ImGuiPopupFlags_MouseButtonLeft))
+                    {
+                        drawAddNewTabMenu();
+                        ImGui::EndPopup();
+                    }
                 }
                 ImGui::EndMainMenuBar();
             }
@@ -301,6 +320,19 @@ private:
         if (m_MaybeSaveChangesPopup)
         {
             m_MaybeSaveChangesPopup->draw();
+        }
+    }
+
+    void drawAddNewTabMenu()
+    {
+        if (ImGui::MenuItem(ICON_FA_EDIT " Editor"))
+        {
+            selectTab(addTab(std::make_unique<ModelEditorTab>(this, std::make_unique<UndoableModelStatePair>())));
+        }
+
+        if (ImGui::MenuItem(ICON_FA_CUBE " Mesh Importer"))
+        {
+            selectTab(addTab(std::make_unique<MeshImporterTab>(this)));
         }
     }
 

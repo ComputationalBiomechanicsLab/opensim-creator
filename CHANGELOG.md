@@ -21,7 +21,7 @@ All notable changes to this project will be documented here. The format is based
     the user can select from)
 
   - This is still work-in-progess. Fixed: #207, #208, #210, #211, #212, #213, #214,
-    #216, #218, #219. To-fix: #221, #222, #223, #224
+    #216, #218, #219, #228. To-fix: #221, #222, #223, #224
 
 - Fixed a multithreading bug where the simulator would occasionally crash with "Device or resource busy" (#201)
 - The forward dynamic simulator now also reports "Wall Time" and "Step Wall Time" (#202)
