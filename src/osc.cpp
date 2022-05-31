@@ -53,28 +53,19 @@ int main(int argc, char** argv)
         --argc;
     }
 
-    try
+    // init main app (window, OpenGL, etc.)
+    osc::OpenSimApp app;
+
+    if (argc <= 0)
     {
-        // init main app (window, OpenGL, etc.)
-        osc::OpenSimApp app;
-
-        if (argc <= 0)
-        {
-            app.show<osc::MainUIScreen>();
-        }
-        else
-        {
-            app.show<osc::MainUIScreen>(argv[0]);
-        }
-
-        osc::log::info("exited main application event loop: shutting down application");
-
-        return EXIT_SUCCESS;
+        app.show<osc::MainUIScreen>();
     }
-    catch (std::exception const& ex)
+    else
     {
-        osc::log::error("osc: encountered fatal exception: %s", ex.what());
-        osc::log::error("osc: terminating due to fatal exception");
-        throw;
+        app.show<osc::MainUIScreen>(argv[0]);
     }
+
+    osc::log::info("exited main application event loop: shutting down application");
+
+    return EXIT_SUCCESS;
 }

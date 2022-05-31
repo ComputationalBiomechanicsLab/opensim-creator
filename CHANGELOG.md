@@ -33,6 +33,8 @@ All notable changes to this project will be documented here. The format is based
 - The Mac build now builds with fewer dependencies (internal, related: #206)
 - Hotfixed the first point in a moment arm muscle plot is always wrong (#220)
 - Added tabbed-UI testing screen (internal)
+- Exceptions that propagate to `main` are now unhandled (#227)
+  - This makes debugging the exception easier, because the stacktrace will originate from the `throw`
 
 
 ## [0.1.6] - 2022/05/09
