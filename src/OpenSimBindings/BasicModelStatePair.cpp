@@ -23,6 +23,8 @@ public:
         InitModel(*m_Model);
         OSC_ASSERT(m_Model->getWorkingState().isConsistent(st));
         m_Model->updWorkingState() = st;
+        m_Model->updWorkingState().invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
+        m_Model->realizeReport(m_Model->updWorkingState());
     }
 
     Impl(Impl const& o) :

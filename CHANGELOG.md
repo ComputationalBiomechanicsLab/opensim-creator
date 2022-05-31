@@ -35,6 +35,9 @@ All notable changes to this project will be documented here. The format is based
 - Added tabbed-UI testing screen (internal)
 - Exceptions that propagate to `main` are now unhandled (#227)
   - This makes debugging the exception easier, because the stacktrace will originate from the `throw`
+- Added an integrator performance analysis tab (#226)
+  - This is an advanced feature that has been added to the `tools` menu in the editor tab
+  - This makes it easier to compare the performance of `SimTK::Integrator`s for a particular sim
 
 
 ## [0.1.6] - 2022/05/09

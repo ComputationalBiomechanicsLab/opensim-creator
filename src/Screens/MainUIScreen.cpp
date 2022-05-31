@@ -4,10 +4,7 @@
 #include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/Platform/App.hpp"
-#include "src/Tabs/CookiecutterTab.hpp"
-#include "src/Tabs/ErrorTab.hpp"
 #include "src/Tabs/LoadingTab.hpp"
-#include "src/Tabs/MeshImporterTab.hpp"
 #include "src/Tabs/SplashTab.hpp"
 #include "src/Tabs/Tab.hpp"
 #include "src/Utils/Algorithms.hpp"
@@ -27,11 +24,6 @@ public:
     Impl()
     {
         m_Tabs.push_back(std::make_unique<SplashTab>(this));
-        m_Tabs.push_back(std::make_unique<ErrorTab>(this, std::runtime_error{"hi"}));
-        m_Tabs.push_back(std::make_unique<CookiecutterTab>(this));
-        m_Tabs.push_back(std::make_unique<MeshImporterTab>(this));
-        m_Tabs.push_back(std::make_unique<MeshImporterTab>(this));
-        m_Tabs.push_back(std::make_unique<LoadingTab>(this, osc::App::get().resource("models/Arm26/arm26.osim")));
         m_RequestedTab = m_Tabs.back()->getID();
     }
 

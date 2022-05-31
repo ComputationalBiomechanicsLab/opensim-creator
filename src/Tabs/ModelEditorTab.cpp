@@ -31,6 +31,7 @@
 #include "src/Utils/FileChangePoller.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/Tabs/ErrorTab.hpp"
+#include "src/Tabs/PerformanceAnalyzerTab.hpp"
 #include "src/Tabs/SimulatorTab.hpp"
 #include "src/Widgets/CoordinateEditor.hpp"
 #include "src/Widgets/ComponentDetails.hpp"
@@ -1373,6 +1374,13 @@ private:
             {
                 ActionEnableAllWrappingSurfaces(*m_Model);
             }
+
+            if (ImGui::MenuItem("Simulate Against All Integrators (advanced)"))
+            {
+                UID tabID = m_Parent->addTab<PerformanceAnalyzerTab>(m_Parent, BasicModelStatePair{m_Model->getModel(), m_Model->getState()}, m_Parent->getSimulationParams());
+                m_Parent->selectTab(tabID);
+            }
+            osc::DrawTooltipIfItemHovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
 
             ImGui::EndMenu();
         }
