@@ -198,7 +198,7 @@ public:
     }
 
 private:
-    void drawUIContent()
+    void drawTabSpecificMenu()
     {
         if (osc::BeginMainViewportTopBar("##TabSpecificMenuBar"))
         {
@@ -218,7 +218,10 @@ private:
             ImGui::End();
             handleDeletedTabs();
         }
+    }
 
+    void drawTabBar()
+    {
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ ImGui::GetStyle().FramePadding.x + 2.0f, ImGui::GetStyle().FramePadding.y + 2.0f });
         ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2{ 5.0f, 0.0f });
         ImGui::PushStyleVar(ImGuiStyleVar_TabRounding, 10.0f);
@@ -309,6 +312,23 @@ private:
             handleDeletedTabs();
         }
         ImGui::PopStyleVar(4);
+    }
+
+    void drawUIContent()
+    {
+        drawTabSpecificMenu();
+
+        if (m_ImguiWasAggressivelyReset)
+        {
+            return;
+        }
+
+        drawTabBar();
+
+        if (m_ImguiWasAggressivelyReset)
+        {
+            return;
+        }
 
         if (Tab* active = getActiveTab())
         {
