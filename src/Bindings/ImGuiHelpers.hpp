@@ -103,4 +103,7 @@ namespace osc
     //
     // handy if (e.g.) you want to know the rect of a tab area
     Rect GetMainViewportWorkspaceScreenRect();
+
+    // begin a menu that's attached to the top of a viewport, end it with ImGui::End();
+    bool BeginMainViewportTopBar(char const* label);
 }

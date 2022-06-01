@@ -1,5 +1,6 @@
 #include "MainUIScreen.hpp"
 
+#include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/ParamBlock.hpp"
@@ -199,15 +200,7 @@ public:
 private:
     void drawUIContent()
     {
-        constexpr ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
-
-        // https://github.com/ocornut/imgui/issues/3518
-
-        ImGuiViewportP* viewport = (ImGuiViewportP*)(void*)ImGui::GetMainViewport();
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar;
-        float height = ImGui::GetFrameHeight();
-
-        if (ImGui::BeginViewportSideBar("##TabSpecificMenuBar", viewport, ImGuiDir_Up, height, window_flags))
+        if (osc::BeginMainViewportTopBar("##TabSpecificMenuBar"))
         {
             if (ImGui::BeginMenuBar())
             {
@@ -223,13 +216,18 @@ private:
                 ImGui::EndMenuBar();
             }
             ImGui::End();
+            handleDeletedTabs();
         }
 
-        if (ImGui::BeginViewportSideBar("##TabBarViewport", viewport, ImGuiDir_Up, height, window_flags))
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ ImGui::GetStyle().FramePadding.x + 2.0f, ImGui::GetStyle().FramePadding.y + 2.0f });
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2{ 5.0f, 0.0f });
+        ImGui::PushStyleVar(ImGuiStyleVar_TabRounding, 10.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
+        if (osc::BeginMainViewportTopBar("##TabBarViewport"))
         {
             if (ImGui::BeginMenuBar())
             {
-                if (ImGui::BeginTabBar("##TabBar", tab_bar_flags))
+                if (ImGui::BeginTabBar("##TabBar"))
                 {
                     for (int i = 0; i < m_Tabs.size(); ++i)
                     {
@@ -285,13 +283,13 @@ private:
 
                             ImGui::EndTabItem();
                         }
+
                         ImGui::PopID();
                         if (!active && i != 0)  // can't close the splash tab
                         {
                             implCloseTab(m_Tabs[i]->getID());
                         }
                     }
-
 
                     // adding buttons to tab bars: https://github.com/ocornut/imgui/issues/3291
                     ImGui::TabItemButton(ICON_FA_PLUS);
@@ -301,21 +299,22 @@ private:
                         drawAddNewTabMenu();
                         ImGui::EndPopup();
                     }
+
+                    ImGui::EndTabBar();
                 }
                 ImGui::EndMainMenuBar();
             }
-            ImGui::End();
-        }
 
-        handleDeletedTabs();
+            ImGui::End();
+            handleDeletedTabs();
+        }
+        ImGui::PopStyleVar(4);
 
         if (Tab* active = getActiveTab())
         {
             active->onDraw();
+            handleDeletedTabs();
         }
-
-        // clear the flagged-to-be-deleted tabs
-        handleDeletedTabs();
 
         if (m_MaybeSaveChangesPopup)
         {
