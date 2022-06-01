@@ -921,6 +921,23 @@ public:
         drawMainMenuSimulateTab();
         drawMainMenuWindowTab();
         m_MainMenuAboutTab.draw();
+
+        ImGui::Separator();
+
+        ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
+        if (ImGui::Button(ICON_FA_PLAY " Simulate (Ctrl+R)"))
+        {
+            auto tab = std::make_unique<SimulatorTab>(m_Parent, startSimulatingEditedModel());
+            UID tabID = tab->getID();
+            m_Parent->addTab(std::move(tab));
+            m_Parent->selectTab(tabID);
+        }
+        ImGui::PopStyleColor();
+
+        if (ImGui::Button(ICON_FA_EDIT " Edit simulation settings"))
+        {
+            m_ParamBlockEditorPopup.open();
+        }
 	}
 
 	void onDraw()
@@ -1280,7 +1297,7 @@ private:
                 m_Model->setFixupScaleFactor(scaleFactor);
             }
 
-            if (ImGui::MenuItem("autoscale scale factor"))
+            if (ImGui::MenuItem(ICON_FA_EXPAND_ARROWS_ALT " autoscale scale factor"))
             {
                 float sf = osc::GetRecommendedScaleFactor(*m_Model);
                 m_Model->setFixupScaleFactor(sf);
@@ -1296,7 +1313,7 @@ private:
             }
 
             bool showingFrames = m_Model->getModel().get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
-            if (ImGui::MenuItem(showingFrames ? "hide frames" : "show frames"))
+            if (ImGui::MenuItem(ICON_FA_ARROWS_ALT " toggle frames"))
             {
                 m_Model->updModel().upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
                 m_Model->commit("edited frame visibility");
