@@ -10,6 +10,7 @@ namespace osc
         std::function<bool()> onUserClickedSave = []{ return true; };
         std::function<bool()> onUserClickedDontSave = []{ return true; };
         std::function<bool()> onUserCancelled = []{ return true; };
+        std::string content = popupName;
     };
 
     class SaveChangesPopup {

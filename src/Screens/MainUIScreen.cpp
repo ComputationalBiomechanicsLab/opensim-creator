@@ -18,10 +18,11 @@
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <optional>
 
+#include <optional>
+#include <sstream>
 #include <utility>
-#include <unordered_set>
+#include <vector>
 
 
 class osc::MainUIScreen::Impl final : public osc::MainUIStateAPI {
@@ -480,28 +481,45 @@ private:
         //
         // don't delete the tabs yet, because the user can always cancel out of the operation
 
-        bool anyTabHasUnsavedChanges = false;
+        std::vector<Tab*> tabsWithUnsavedChanges;
+
         for (UID id : m_DeletedTabs)
         {
             if (Tab* t = getTabByID(id))
             {
                 if (t->isUnsaved())
                 {
-                    anyTabHasUnsavedChanges = true;
-                    break;
+                    tabsWithUnsavedChanges.push_back(t);
                 }
             }
         }
 
-        if (anyTabHasUnsavedChanges)
+        if (!tabsWithUnsavedChanges.empty())
         {
+            std::stringstream ss;
+            if (tabsWithUnsavedChanges.size() > 1)
+            {
+                ss << tabsWithUnsavedChanges.size() << " tabs have unsaved changes:\n";
+            }
+            else
+            {
+                ss << "A tab has unsaved changes:\n";
+            }
+
+            for (Tab* t : tabsWithUnsavedChanges)
+            {
+                ss << "\n  - " << t->getName();
+            }
+            ss << "\n\n";
+
             // open the popup
             osc::SaveChangesPopupConfig cfg
             {
                 "Save Changes?",
                 [this]() { return onUserSelectedSaveChangesInSavePrompt(); },
                 [this]() { return onUserSelectedDoNotSaveChangesInSavePrompt(); },
-                [this]() { return onUserCancelledOutOfSavePrompt(); }
+                [this]() { return onUserCancelledOutOfSavePrompt(); },
+                ss.str(),
             };
             m_MaybeSaveChangesPopup.emplace(cfg);
             m_MaybeSaveChangesPopup->open();
