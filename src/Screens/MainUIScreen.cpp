@@ -40,11 +40,6 @@ public:
     void onMount()
     {
         osc::ImGuiInit();
-
-        if (Tab* active = getActiveTab())
-        {
-            active->onMount();
-        }
     }
 
     void onUnmount()
