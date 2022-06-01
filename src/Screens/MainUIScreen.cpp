@@ -433,6 +433,7 @@ private:
 
     void nukeDeletedTabs()
     {
+        int lowestDeletedTab = std::numeric_limits<int>::max();
         for (UID id : m_DeletedTabs)
         {
             auto it = std::find_if(m_Tabs.begin(), m_Tabs.end(), [id](auto const& o) { return o->getID() == id; });
@@ -443,6 +444,7 @@ private:
                 {
                     it->get()->onUnmount();
                     m_ActiveTab = UID::empty();
+                    lowestDeletedTab = std::min(lowestDeletedTab, static_cast<int>(std::distance(m_Tabs.begin(), it)));
                 }
                 m_Tabs.erase(it);
             }
@@ -452,7 +454,15 @@ private:
         // coerce active tab, if it has become stale due to a deletion
         if (!getRequestedTab() && !getActiveTab() && !m_Tabs.empty())
         {
-            m_RequestedTab = m_Tabs.front()->getID();
+            // focus the tab just to the left of the closed one
+            if (1 <= lowestDeletedTab && lowestDeletedTab <= static_cast<int>(m_Tabs.size()))
+            {
+                m_RequestedTab = m_Tabs[lowestDeletedTab - 1]->getID();
+            }
+            else
+            {
+                m_RequestedTab = m_Tabs.front()->getID();
+            }
         }
     }
 
