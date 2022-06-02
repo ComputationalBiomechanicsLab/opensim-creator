@@ -163,9 +163,10 @@ static std::vector<osc::SimulationReport> ExtractReports(
 
 class osc::StoFileSimulation::Impl final {
 public:
-	Impl(std::unique_ptr<OpenSim::Model> model, std::filesystem::path stoFilePath) :
+	Impl(std::unique_ptr<OpenSim::Model> model, std::filesystem::path stoFilePath, float fixupScaleFactor) :
 		m_Model{std::move(model)},
-		m_SimulationReports{ExtractReports(*m_Model, stoFilePath)}
+		m_SimulationReports{ExtractReports(*m_Model, stoFilePath)},
+		m_FixupScaleFactor{std::move(fixupScaleFactor)}
 	{
 	}
 
@@ -234,6 +235,16 @@ public:
 		// N/A: it's never a "live" sim
 	}
 
+	float getFixupScaleFactor() const
+	{
+		return m_FixupScaleFactor;
+	}
+
+	void setFixupScaleFactor(float v)
+	{
+		m_FixupScaleFactor = std::move(v);
+	}
+
 private:
     mutable std::mutex m_ModelMutex;
     std::unique_ptr<OpenSim::Model> m_Model;
@@ -241,11 +252,11 @@ private:
 	SimulationClock::time_point m_Start = m_SimulationReports.empty() ? SimulationClock::start() : m_SimulationReports.front().getTime();
 	SimulationClock::time_point m_End = m_SimulationReports.empty() ? SimulationClock::start() : m_SimulationReports.back().getTime();
 	ParamBlock m_ParamBlock;
+	float m_FixupScaleFactor = 1.0f;
 };
 
-osc::StoFileSimulation::StoFileSimulation(std::unique_ptr<OpenSim::Model> model,
-                                          std::filesystem::path stoFilePath) :
-	m_Impl{std::make_unique<Impl>(std::move(model), std::move(stoFilePath))}
+osc::StoFileSimulation::StoFileSimulation(std::unique_ptr<OpenSim::Model> model, std::filesystem::path stoFilePath, float fixupScaleFactor) :
+	m_Impl{std::make_unique<Impl>(std::move(model), std::move(stoFilePath), std::move(fixupScaleFactor))}
 {
 }
 osc::StoFileSimulation::StoFileSimulation(StoFileSimulation&&) noexcept = default;
@@ -314,4 +325,14 @@ void osc::StoFileSimulation::requestStop()
 void osc::StoFileSimulation::stop()
 {
 	m_Impl->stop();
+}
+
+float osc::StoFileSimulation::getFixupScaleFactor() const
+{
+	return m_Impl->getFixupScaleFactor();
+}
+
+void osc::StoFileSimulation::setFixupScaleFactor(float v)
+{
+	m_Impl->setFixupScaleFactor(std::move(v));
 }

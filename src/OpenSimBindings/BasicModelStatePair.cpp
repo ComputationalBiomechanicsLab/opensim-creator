@@ -17,6 +17,11 @@ static void InitModel(OpenSim::Model& m)
 class osc::BasicModelStatePair::Impl final {
 public:
 
+    explicit Impl(VirtualModelStatePair const& p) : Impl{p.getModel(), p.getState()}
+    {
+        m_FixupScaleFactor = p.getFixupScaleFactor();
+    }
+
     Impl(OpenSim::Model const& m, SimTK::State const& st) :
         m_Model(std::make_unique<OpenSim::Model>(m))
     {
@@ -55,13 +60,28 @@ public:
         return m_Model->getWorkingState();
     }
 
+    float getFixupScaleFactor() const
+    {
+        return m_FixupScaleFactor;
+    }
+
+    void setFixupScaleFactor(float v)
+    {
+        m_FixupScaleFactor = std::move(v);
+    }
+
 private:
     std::unique_ptr<OpenSim::Model> m_Model;
+    float m_FixupScaleFactor = 1.0f;
 };
 
 
 // public API
 
+osc::BasicModelStatePair::BasicModelStatePair(VirtualModelStatePair const& p) :
+    m_Impl{new Impl{p}}
+{
+}
 osc::BasicModelStatePair::BasicModelStatePair(OpenSim::Model const& model, SimTK::State const& state) :
     m_Impl{new Impl{model, state}}
 {
@@ -85,4 +105,14 @@ OpenSim::Model& osc::BasicModelStatePair::updModel()
 SimTK::State const& osc::BasicModelStatePair::getState() const
 {
     return m_Impl->getState();
+}
+
+float osc::BasicModelStatePair::getFixupScaleFactor() const
+{
+    return m_Impl->getFixupScaleFactor();
+}
+
+void osc::BasicModelStatePair::setFixupScaleFactor(float v)
+{
+    m_Impl->setFixupScaleFactor(std::move(v));
 }

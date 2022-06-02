@@ -385,21 +385,14 @@ private:
             std::optional<osc::SimulationReport> maybeReport = TrySelectReportBasedOnScrubbing(*m_Simulation);
             if (maybeReport)
             {
-                // TODO: fixup scale factor!
-                // float sf = m_MainEditorState->editedModel()->getFixupScaleFactor();
                 if (m_ShownModelState)
                 {
                     m_ShownModelState->setSimulation(m_Simulation);
                     m_ShownModelState->setSimulationReport(*maybeReport);
-                    // TODO
-                    // m_ShownModelState->setFixupScaleFactor(sf);
                 }
                 else
                 {
-                    m_ShownModelState = std::make_unique<osc::SimulationModelStatePair>(
-                        m_Simulation,
-                        *maybeReport,
-                        1.0f);  // TODO: scale factor
+                    m_ShownModelState = std::make_unique<osc::SimulationModelStatePair>(m_Simulation, *maybeReport);
                 }
             }
         }

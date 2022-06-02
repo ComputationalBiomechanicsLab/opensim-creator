@@ -14,12 +14,9 @@
 
 class osc::SimulationModelStatePair::Impl final {
 public:
-	Impl(std::shared_ptr<Simulation> simulation,
-		 SimulationReport simulationReport,
-		 float fixupScaleFactor) :
+	Impl(std::shared_ptr<Simulation> simulation, SimulationReport simulationReport) :
 		m_Simulation{std::move(simulation)},
-		m_SimulationReport{std::move(simulationReport)},
-		m_FixupScaleFactor{std::move(fixupScaleFactor)}
+		m_SimulationReport{std::move(simulationReport)}
 	{
 	}
 
@@ -116,12 +113,12 @@ public:
 
 	float getFixupScaleFactor() const
 	{
-		return m_FixupScaleFactor;
+		return m_Simulation->getFixupScaleFactor();
 	}
 
 	void setFixupScaleFactor(float v)
 	{
-		m_FixupScaleFactor = v;
+		m_Simulation->setFixupScaleFactor(v);
 	}
 
 	std::shared_ptr<Simulation> updSimulation()
@@ -160,11 +157,10 @@ private:
 	OpenSim::ComponentPath m_Isolated;
 	std::shared_ptr<Simulation> m_Simulation;
 	SimulationReport m_SimulationReport;
-	float m_FixupScaleFactor;
 };
 
-osc::SimulationModelStatePair::SimulationModelStatePair(std::shared_ptr<Simulation> simulation, SimulationReport report, float fixupScaleFactor) :
-	m_Impl{std::make_unique<Impl>(std::move(simulation), std::move(report), std::move(fixupScaleFactor))}
+osc::SimulationModelStatePair::SimulationModelStatePair(std::shared_ptr<Simulation> simulation, SimulationReport report) :
+	m_Impl{std::make_unique<Impl>(std::move(simulation), std::move(report))}
 {
 }
 osc::SimulationModelStatePair::SimulationModelStatePair(SimulationModelStatePair&&) noexcept = default;

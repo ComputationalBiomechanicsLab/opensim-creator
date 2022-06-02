@@ -27,7 +27,8 @@ namespace osc
     // does not guarantee that everything is up-to-date after a caller mutates the model.
     class BasicModelStatePair final : public VirtualModelStatePair {
     public:
-        BasicModelStatePair(OpenSim::Model const&, SimTK::State const&);  // copies
+        explicit BasicModelStatePair(VirtualModelStatePair const&);
+        BasicModelStatePair(OpenSim::Model const&, SimTK::State const&);
         BasicModelStatePair(BasicModelStatePair const&);
         BasicModelStatePair(BasicModelStatePair&&) noexcept;
         BasicModelStatePair& operator=(BasicModelStatePair const&);
@@ -38,6 +39,9 @@ namespace osc
         OpenSim::Model& updModel() override;
 
         SimTK::State const& getState() const override;
+
+        float getFixupScaleFactor() const override;
+        void setFixupScaleFactor(float) override;
 
         class Impl;
     private:

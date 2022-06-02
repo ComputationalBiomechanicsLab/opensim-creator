@@ -141,6 +141,16 @@ public:
         m_Simulation.stop();
     }
 
+    float getFixupScaleFactor() const
+    {
+        return m_ModelState.lock()->getFixupScaleFactor();
+    }
+
+    void setFixupScaleFactor(float v)
+    {
+        m_ModelState.lock()->setFixupScaleFactor(v);
+    }
+
 private:
     // MUST be done from the UI thread
     //
@@ -262,4 +272,14 @@ void osc::ForwardDynamicSimulation::requestStop()
 void osc::ForwardDynamicSimulation::stop()
 {
     return m_Impl->stop();
+}
+
+float osc::ForwardDynamicSimulation::getFixupScaleFactor() const
+{
+    return m_Impl->getFixupScaleFactor();
+}
+
+void osc::ForwardDynamicSimulation::setFixupScaleFactor(float v)
+{
+    m_Impl->setFixupScaleFactor(std::move(v));
 }

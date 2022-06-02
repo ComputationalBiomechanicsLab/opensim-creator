@@ -259,7 +259,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
                 cpy->buildSystem();
                 cpy->initializeState();
 
-                UID tabID = api->addTab<SimulatorTab>(api, std::make_shared<Simulation>(osc::StoFileSimulation{std::move(cpy), p}));
+                UID tabID = api->addTab<SimulatorTab>(api, std::make_shared<Simulation>(osc::StoFileSimulation{std::move(cpy), p, maybeModel->getFixupScaleFactor()}));
                 api->selectTab(tabID);
             }
             catch (std::exception const& ex)

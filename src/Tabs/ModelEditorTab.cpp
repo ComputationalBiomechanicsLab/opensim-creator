@@ -841,6 +841,112 @@ static std::string GetRecommendedTitle(osc::UndoableModelStatePair const& uim)
     return std::move(ss).str();
 }
 
+static bool ActionLoadSTOFileAgainstModel(osc::MainUIStateAPI* parent, osc::UndoableModelStatePair const& uim, std::filesystem::path stoPath)
+{
+    try
+    {
+        std::unique_ptr<OpenSim::Model> cpy = std::make_unique<OpenSim::Model>(uim.getModel());
+        cpy->buildSystem();
+        cpy->initializeState();
+
+        osc::UID tabID = parent->addTab<osc::SimulatorTab>(parent, std::make_shared<osc::Simulation>(osc::StoFileSimulation{std::move(cpy), stoPath, uim.getFixupScaleFactor()}));
+        parent->selectTab(tabID);
+
+        return true;
+    }
+    catch (std::exception const& ex)
+    {
+        osc::log::error("encountered error while trying to load an STO file against the model: %s", ex.what());
+    }
+    return false;
+}
+
+static bool ActionStartSimulatingModel(osc::MainUIStateAPI* parent, osc::UndoableModelStatePair const& uim)
+{
+    osc::BasicModelStatePair modelState{uim};
+    osc::ForwardDynamicSimulatorParams params = osc::FromParamBlock(parent->getSimulationParams());
+
+    auto sim = std::make_shared<osc::Simulation>(osc::ForwardDynamicSimulation{std::move(modelState), std::move(params)});
+    auto tab = std::make_unique<osc::SimulatorTab>(parent, std::move(sim));
+
+    parent->selectTab(parent->addTab(std::move(tab)));
+
+    return true;
+}
+
+static bool ActionUpdateModelFromBackingFile(osc::UndoableModelStatePair& uim)
+{
+    try
+    {
+        osc::log::info("file change detected: loading updated file");
+        auto p = std::make_unique<OpenSim::Model>(uim.getModel().getInputFileName());
+        osc::log::info("loaded updated file");
+        uim.setModel(std::move(p));
+        uim.setUpToDateWithFilesystem();
+        uim.commit("reloaded model from filesystem");
+        return true;
+    }
+    catch (std::exception const& ex)
+    {
+        osc::log::error("error occurred while trying to automatically load a model file:");
+        osc::log::error(ex.what());
+        osc::log::error("the file will not be loaded into osc (you won't see the change in the UI)");
+        return false;
+    }
+}
+
+static bool ActionAutoscaleSceneScaleFactor(osc::UndoableModelStatePair& uim)
+{
+    float sf = osc::GetRecommendedScaleFactor(uim);
+    uim.setFixupScaleFactor(sf);
+    return true;
+}
+
+static bool ActionToggleFrames(osc::UndoableModelStatePair& uim)
+{
+    bool showingFrames = uim.getModel().get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
+    uim.updModel().upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
+    uim.commit("edited frame visibility");
+    return true;
+}
+
+static bool ActionOpenOsimParentDirectory(osc::UndoableModelStatePair& uim)
+{
+    bool hasBackingFile = osc::HasInputFileName(uim.getModel());
+
+    if (hasBackingFile)
+    {
+        std::filesystem::path p{uim.getModel().getInputFileName()};
+        osc::OpenPathInOSDefaultApplication(p.parent_path());
+        return true;
+    }
+    else
+    {
+        return false;
+    }   
+}
+
+static bool ActionOpenOsimInExternalEditor(osc::UndoableModelStatePair& uim)
+{
+    bool hasBackingFile = osc::HasInputFileName(uim.getModel());
+
+    if (hasBackingFile)
+    {
+        osc::OpenPathInOSDefaultApplication(uim.getModel().getInputFileName());
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+static bool ActionSimulateAgainstAllIntegrators(osc::MainUIStateAPI* parent, osc::UndoableModelStatePair& uim)
+{
+    osc::UID tabID = parent->addTab<osc::PerformanceAnalyzerTab>(parent, osc::BasicModelStatePair{uim}, parent->getSimulationParams());
+    parent->selectTab(tabID);
+    return true;
+}
 
 class osc::ModelEditorTab::Impl final {
 public:
@@ -908,7 +1014,7 @@ public:
 	{
         if (m_FileChangePoller.changeWasDetected(m_Model->getModel().getInputFileName()))
         {
-            onBackingFileChanged();
+            ActionUpdateModelFromBackingFile(*m_Model);
         }
 
         m_Name = GetRecommendedTitle(*m_Model);
@@ -927,10 +1033,7 @@ public:
         ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
         if (ImGui::Button(ICON_FA_PLAY " Simulate (Ctrl+R)"))
         {
-            auto tab = std::make_unique<SimulatorTab>(m_Parent, startSimulatingEditedModel());
-            UID tabID = tab->getID();
-            m_Parent->addTab(std::move(tab));
-            m_Parent->selectTab(tabID);
+            ActionStartSimulatingModel(m_Parent, *m_Model);
         }
         ImGui::PopStyleColor();
 
@@ -946,29 +1049,13 @@ public:
         drawGUARDED();
 	}
 
-
 private:
 
     bool onDropEvent(SDL_DropEvent const& e)
     {
         if (e.file != nullptr && CStrEndsWith(e.file, ".sto"))
         {
-            try
-            {
-                std::filesystem::path p{e.file};
-                std::unique_ptr<OpenSim::Model> cpy = std::make_unique<OpenSim::Model>(m_Model->getModel());
-                cpy->buildSystem();
-                cpy->initializeState();
-
-                UID tabID = m_Parent->addTab<SimulatorTab>(m_Parent, std::make_shared<Simulation>(StoFileSimulation{std::move(cpy), p}));
-                m_Parent->selectTab(tabID);
-
-                return true;
-            }
-            catch (std::exception const& ex)
-            {
-                log::error("encountered error while trying to load an STO file against the model: %s", ex.what());
-            }
+            return ActionLoadSTOFileAgainstModel(m_Parent, *m_Model, e.file);
         }
 
         return false;
@@ -996,11 +1083,7 @@ private:
             case SDLK_r:
             {
                 // Ctrl+R: start a new simulation from focused model
-                auto tab = std::make_unique<SimulatorTab>(m_Parent, startSimulatingEditedModel());
-                UID tabID = tab->getID();
-                m_Parent->addTab(std::move(tab));
-                m_Parent->selectTab(tabID);
-                return true;
+                return ActionStartSimulatingModel(m_Parent, *m_Model);
             }                
             case SDLK_a:  // Ctrl+A: clear selection
                 ActionClearSelectionFromEditedModel(*m_Model);
@@ -1019,27 +1102,6 @@ private:
 
         return false;
     }
-
-    // handle what happens when the underlying model file changes
-    void onBackingFileChanged()
-    {
-        try
-        {
-            osc::log::info("file change detected: loading updated file");
-            auto p = std::make_unique<OpenSim::Model>(m_Model->getModel().getInputFileName());
-            osc::log::info("loaded updated file");
-            m_Model->setModel(std::move(p));
-            m_Model->setUpToDateWithFilesystem();
-            m_Model->commit("reloaded model from filesystem");
-        }
-        catch (std::exception const& ex)
-        {
-            osc::log::error("error occurred while trying to automatically load a model file:");
-            osc::log::error(ex.what());
-            osc::log::error("the file will not be loaded into osc (you won't see the change in the UI)");
-        }
-    }
-
 
     void drawAddMusclePlotMenu(OpenSim::Muscle const& m)
     {
@@ -1276,93 +1338,42 @@ private:
             {
                 m_Model->setIsolated(nullptr);
             }
+            DrawTooltipIfItemHovered("Clear Isolation", "Clear current isolation setting. This is effectively the opposite of 'Isolate'ing a component.");
 
-            if (ImGui::IsItemHovered())
             {
-                ImGui::BeginTooltip();
-                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                ImGui::TextUnformatted("Clear currently isolation setting. This is effectively the opposite of 'Isolate'ing a component.");
-                if (!m_Model->getIsolated())
+                float scaleFactor = m_Model->getFixupScaleFactor();
+                if (ImGui::InputFloat("set scale factor", &scaleFactor))
                 {
-                    ImGui::TextDisabled("\n(disabled because nothing is currently isolated)");
+                    m_Model->setFixupScaleFactor(scaleFactor);
                 }
-                ImGui::PopTextWrapPos();
-                ImGui::EndTooltip();
-            }
-
-            float scaleFactor = m_Model->getFixupScaleFactor();
-
-            if (ImGui::InputFloat("set scale factor", &scaleFactor))
-            {
-                m_Model->setFixupScaleFactor(scaleFactor);
             }
 
             if (ImGui::MenuItem(ICON_FA_EXPAND_ARROWS_ALT " autoscale scale factor"))
             {
-                float sf = osc::GetRecommendedScaleFactor(*m_Model);
-                m_Model->setFixupScaleFactor(sf);
+                ActionAutoscaleSceneScaleFactor(*m_Model);
             }
+            DrawTooltipIfItemHovered("Autoscale Scale Factor", "Try to autoscale the model's scale factor based on the current dimensions of the model");
 
-            if (ImGui::IsItemHovered())
-            {
-                ImGui::BeginTooltip();
-                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                ImGui::Text("Try to autoscale the model's scale factor based on the current dimensions of the model");
-                ImGui::PopTextWrapPos();
-                ImGui::EndTooltip();
-            }
-
-            bool showingFrames = m_Model->getModel().get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
             if (ImGui::MenuItem(ICON_FA_ARROWS_ALT " toggle frames"))
             {
-                m_Model->updModel().upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
-                m_Model->commit("edited frame visibility");
+                ActionToggleFrames(*m_Model);
             }
-
-            if (ImGui::IsItemHovered())
-            {
-                ImGui::BeginTooltip();
-                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                ImGui::Text("Set the model's display properties to display physical frames");
-                ImGui::PopTextWrapPos();
-                ImGui::EndTooltip();
-            }
+            DrawTooltipIfItemHovered("Toggle Frames", "Set the model's display properties to display physical frames");
 
             bool modelHasBackingFile = osc::HasInputFileName(m_Model->getModel());
-
             if (ImGui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", nullptr, false, modelHasBackingFile))
             {
-                std::filesystem::path p{m_Model->getModel().getInputFileName()};
-                osc::OpenPathInOSDefaultApplication(p.parent_path());
+                ActionOpenOsimParentDirectory(*m_Model);
             }
 
             if (ImGui::MenuItem(ICON_FA_LINK " Open .osim in external editor", nullptr, false, modelHasBackingFile))
             {
-                osc::OpenPathInOSDefaultApplication(m_Model->getModel().getInputFileName());
+                ActionOpenOsimInExternalEditor(*m_Model);
             }
-
-            if (ImGui::IsItemHovered())
-            {
-                ImGui::BeginTooltip();
-                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                ImGui::TextUnformatted("Open the .osim file currently being edited in an external text editor. The editor that's used depends on your operating system's default for opening .osim files.");
-                if (!osc::HasInputFileName(m_Model->getModel()))
-                {
-                    ImGui::TextDisabled("\n(disabled because the currently-edited model has no backing file)");
-                }
-                ImGui::PopTextWrapPos();
-                ImGui::EndTooltip();
-            }
+            DrawTooltipIfItemHovered("Open .osim in external editor", "Open the .osim file currently being edited in an external text editor. The editor that's used depends on your operating system's default for opening .osim files.");
 
             ImGui::EndMenu();
         }
-    }
-
-    std::shared_ptr<Simulation> startSimulatingEditedModel()
-    {
-        BasicModelStatePair modelState{m_Model->getModel(), m_Model->getState()};
-        ForwardDynamicSimulatorParams params = FromParamBlock(m_Parent->getSimulationParams());
-        return std::make_shared<Simulation>(ForwardDynamicSimulation{std::move(modelState), std::move(params)});
     }
 
     void drawMainMenuSimulateTab()
@@ -1371,10 +1382,7 @@ private:
         {
             if (ImGui::MenuItem(ICON_FA_PLAY " Simulate", "Ctrl+R"))
             {
-                auto tab = std::make_unique<SimulatorTab>(m_Parent, startSimulatingEditedModel());
-                UID tabID = tab->getID();
-                m_Parent->addTab(std::move(tab));
-                m_Parent->selectTab(tabID);
+                ActionStartSimulatingModel(m_Parent, *m_Model);
             }
 
             if (ImGui::MenuItem(ICON_FA_EDIT " Edit simulation settings"))
@@ -1394,8 +1402,7 @@ private:
 
             if (ImGui::MenuItem("Simulate Against All Integrators (advanced)"))
             {
-                UID tabID = m_Parent->addTab<PerformanceAnalyzerTab>(m_Parent, BasicModelStatePair{m_Model->getModel(), m_Model->getState()}, m_Parent->getSimulationParams());
-                m_Parent->selectTab(tabID);
+                ActionSimulateAgainstAllIntegrators(m_Parent, *m_Model);
             }
             osc::DrawTooltipIfItemHovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
 
@@ -1742,11 +1749,7 @@ private:
     int m_LatestMusclePlot = 1;
     std::vector<ModelMusclePlotPanel> m_ModelMusclePlots;
 
-    std::vector<UiModelViewer> m_ModelViewers = []()
-    {
-        std::vector<UiModelViewer> rv(1);
-        return rv;
-    }();
+    std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
 
 	// flag that's set+reset each frame to prevent continual
 	// throwing

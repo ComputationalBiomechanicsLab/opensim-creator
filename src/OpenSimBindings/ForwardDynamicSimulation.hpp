@@ -60,6 +60,9 @@ namespace osc
         void requestStop() override;
         void stop() override;
 
+        float getFixupScaleFactor() const override;
+        void setFixupScaleFactor(float) override;
+
         class Impl;
     private:
         std::unique_ptr<Impl> m_Impl;
