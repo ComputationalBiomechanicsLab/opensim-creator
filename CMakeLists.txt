@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(osc VERSION 0.1.5 LANGUAGES C CXX)
+project(osc VERSION 0.1.6 LANGUAGES C CXX)
 
 enable_testing()
 
@@ -308,6 +308,8 @@ add_library(osccore STATIC
     src/Graphics/MeshGen.cpp
     src/Graphics/MeshGen.hpp
     src/Graphics/MeshTopography.hpp
+    src/Graphics/MultisampledRenderBuffers.cpp
+    src/Graphics/MultisampledRenderBuffers.hpp
     src/Graphics/Renderer.cpp
     src/Graphics/Renderer.hpp
     src/Graphics/SceneRenderer.cpp
@@ -350,8 +352,6 @@ add_library(osccore STATIC
     src/OpenSimBindings/AutoFinalizingModelStatePair.hpp
     src/OpenSimBindings/BasicModelStatePair.cpp
     src/OpenSimBindings/BasicModelStatePair.hpp
-    src/OpenSimBindings/ComponentAnnotations.cpp
-    src/OpenSimBindings/ComponentAnnotations.hpp
     src/OpenSimBindings/ComponentDecoration.cpp
     src/OpenSimBindings/ComponentDecoration.hpp
     src/OpenSimBindings/ComponentOutputExtractor.cpp
@@ -369,8 +369,6 @@ add_library(osccore STATIC
     src/OpenSimBindings/IntegratorMethod.hpp
     src/OpenSimBindings/IntegratorOutputExtractor.cpp
     src/OpenSimBindings/IntegratorOutputExtractor.hpp
-    src/OpenSimBindings/MainEditorState.cpp
-    src/OpenSimBindings/MainEditorState.hpp
     src/OpenSimBindings/ModelStateCommit.cpp
     src/OpenSimBindings/ModelStateCommit.hpp
     src/OpenSimBindings/MultiBodySystemOutputExtractor.cpp
@@ -426,8 +424,6 @@ add_library(osccore STATIC
 
     src/Screens/CookiecutterScreen.cpp
     src/Screens/CookiecutterScreen.hpp
-    src/Screens/ErrorScreen.cpp
-    src/Screens/ErrorScreen.hpp
     src/Screens/ExperimentsScreen.cpp
     src/Screens/ExperimentsScreen.hpp
     src/Screens/HelloTriangleScreen.cpp
@@ -442,8 +438,8 @@ add_library(osccore STATIC
     src/Screens/ImPlotDemoScreen.hpp
     src/Screens/InstancedRendererScreen.cpp
     src/Screens/InstancedRendererScreen.hpp
-    src/Screens/LoadingScreen.cpp
-    src/Screens/LoadingScreen.hpp
+    src/Screens/MainUIScreen.cpp
+    src/Screens/MainUIScreen.hpp
     src/Screens/MathExperimentsScreen.cpp
     src/Screens/MathExperimentsScreen.hpp
     src/Screens/MeshGenTestScreen.cpp
@@ -452,20 +448,33 @@ add_library(osccore STATIC
     src/Screens/MeshHittestScreen.hpp
     src/Screens/MeshHittestWithBVHScreen.cpp
     src/Screens/MeshHittestWithBVHScreen.hpp
-    src/Screens/MeshImporterScreen.cpp
-    src/Screens/MeshImporterScreen.hpp
     src/Screens/MeshScreen.cpp
     src/Screens/MeshScreen.hpp
-    src/Screens/ModelEditorScreen.cpp
-    src/Screens/ModelEditorScreen.hpp
     src/Screens/RendererHelloTriangleScreen.cpp
     src/Screens/RendererHelloTriangleScreen.hpp
-    src/Screens/SimulatorScreen.cpp
-    src/Screens/SimulatorScreen.hpp
-    src/Screens/SplashScreen.cpp
-    src/Screens/SplashScreen.hpp
-    src/Screens/UiModelViewerScreen.cpp
-    src/Screens/UiModelViewerScreen.hpp
+    src/Screens/TabTestScreen.cpp
+    src/Screens/TabTestScreen.hpp
+
+    src/Tabs/CookiecutterTab.cpp
+    src/Tabs/CookiecutterTab.hpp
+    src/Tabs/ErrorTab.cpp
+    src/Tabs/ErrorTab.hpp
+    src/Tabs/LoadingTab.cpp
+    src/Tabs/LoadingTab.hpp
+    src/Tabs/MeshImporterTab.cpp
+    src/Tabs/MeshImporterTab.hpp
+    src/Tabs/ModelEditorTab.cpp
+    src/Tabs/ModelEditorTab.hpp
+    src/Tabs/PerformanceAnalyzerTab.cpp
+    src/Tabs/PerformanceAnalyzerTab.hpp
+    src/Tabs/SimulatorTab.cpp
+    src/Tabs/SimulatorTab.hpp
+    src/Tabs/SplashTab.cpp
+    src/Tabs/SplashTab.hpp
+    src/Tabs/Tab.cpp
+    src/Tabs/Tab.hpp
+    src/Tabs/TabHost.cpp
+    src/Tabs/TabHost.hpp
 
     src/Utils/Algorithms.cpp
     src/Utils/Algorithms.hpp
@@ -475,8 +484,7 @@ add_library(osccore STATIC
     src/Utils/CircularBuffer.hpp
     src/Utils/ClonePtr.hpp
     src/Utils/Cpp20Shims.hpp
-    src/Utils/CStringView.hpp
-    src/Utils/Dag.hpp
+    src/Utils/CStringView.hpp    
     src/Utils/DedupedString.cpp
     src/Utils/DedupedString.hpp
     src/Utils/DefaultConstructOnCopy.hpp
@@ -508,8 +516,8 @@ add_library(osccore STATIC
     src/Widgets/LogViewer.hpp
     src/Widgets/MainMenu.cpp
     src/Widgets/MainMenu.hpp
-    src/Widgets/ModelActionsMenuBar.cpp
-    src/Widgets/ModelActionsMenuBar.hpp
+    src/Widgets/ModelActionsMenuItems.cpp
+    src/Widgets/ModelActionsMenuItems.hpp
     src/Widgets/ModelHierarchyPanel.cpp
     src/Widgets/ModelHierarchyPanel.hpp
     src/Widgets/ModelMusclePlotPanel.cpp
@@ -537,6 +545,8 @@ add_library(osccore STATIC
     src/Widgets/StandardPopup.hpp
     src/Widgets/UiModelViewer.cpp
     src/Widgets/UiModelViewer.hpp
+
+    src/MainUIStateAPI.hpp
 )
 
 # osccore: target properties
@@ -602,10 +612,11 @@ target_link_options(osccore PUBLIC
 # ------------ configure test suite target ------------------ #
 
 # osctests: main exe that links to `osccore` and exercises APIs etc.
-add_executable(testosc
+add_executable(testosc EXCLUDE_FROM_ALL
 
-    tests/TestOsc.cpp
     tests/TestDedupedString.cpp
+    tests/TestOpenSim.cpp
+    tests/TestOsc.cpp
     tests/TestRenderer.cpp
     tests/TestRendererHelloTriangleScreen.cpp
 )

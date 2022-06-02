@@ -14,7 +14,7 @@ for OpenSim Creator.
 .. warning::
     These documentation pages are work-in-progress 🚧. If they aren't helpful
     enough then feel free to open a ticket on OpenSim Creator's `GitHub`_ page.
-    This documentation is kept in the project repository `here <https://github.com/ComputationalBiomechanicsLab/opensim-creator/tree/master/docs>`_ so, if you know
+    This documentation is kept in the project repository `here <https://github.com/ComputationalBiomechanicsLab/opensim-creator/tree/main/docs>`_ so, if you know
     what you're doing, you can also try to submit a PR.
 
 

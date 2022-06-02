@@ -2,7 +2,7 @@
 
 # OpenSim Creator <img src="resources/logo.png" align="right" alt="OpenSim Creator Logo" width="128" height="128" />
 
-> A thin UI for building OpenSim models
+> A UI for building OpenSim models
 
 [📥 Download the latest release here](../../releases/latest), [▶️ Watch Introduction Videos Here](https://www.youtube.com/playlist?list=PLOPlDtRLhp8c2SWLCQKKd-l4__UainOYk)
 
@@ -12,7 +12,7 @@ OpenSim Creator (`osc`) is a standalone UI for building and editing
 [OpenSim](https://github.com/opensim-org/opensim-core) models. It is available
 as a freestanding all-in-one [installer](../../releases/latest) for Windows, Mac, and Linux.
 
-Architectrually, `osc` is a C++ codebase that is directly integrated against
+Architecturally, `osc` is a C++ codebase that is directly integrated against
 the [OpenSim core C++ API](https://github.com/opensim-org/opensim-core). It otherwise only
 uses lightweight open-source libraries that can easily be built from source (e.g. SDL2,
 OpenGL, ImGui) to implement the UI on all target platforms. This makes `osc` fairly easy
@@ -48,13 +48,6 @@ Science" grant (Chan Zuckerberg Initiative DAF, 2020-218896 (5022)).
 
 # 🚀 Installation
 
-> 🚧 **ALPHA-STAGE SOFTWARE** 🚧: OpenSim Creator is currently in development, so
-> things are prone to breaking. If a release doesn't work for you,
-> report it on the [issues](../../issues)
-> page, try a different [📥 release](../../releases)
-> or try downloading the latest passing build from [⚡ the actions page](../../actions)
-> (requires being logged into GitHub)
-
 You can download a release from the [📥 releases](../../releases) page. The latest
 release is [📥 here](../../releases/latest). Also, OpenSim Creator is regularly built
 from source using GitHub Actions, so if you want a bleeding-edge--but unreleased--build
@@ -69,10 +62,6 @@ requires being logged into GitHub; otherwise, you won't see download links).
 - Run `OpenSimCreator` by typing `OpenSimCreator` in your start menu, or browse to `C:\Program Files\OpenSimCreator\`.
 
 ### Mac
-
-> 🚧 **Warning** 🚧: `osc` may not be boot-able immediately after installing the DMG because our binaries are unsigned. You **must**
-manually open it the first time by browsing to it in `Finder`, right-clicking it, clicking `open`, and going past any
-security warnings. Only the first bootup requires doing this.
 
 - Download a `dmg` [release](../../releases)
 - Double click the `dmg` file to mount it
@@ -92,13 +81,15 @@ security warnings. Only the first bootup requires doing this.
 
 # 🏗️  Building
 
-> Because it's still early-stage, there are no full-fat build instructions available (yet).
-> However, the build is relatively simple and typically runs end-to-end on a standard C++
-> development machine (e.g. one with Visual Studio and CMake installed). The 
-> [GitHub action](.github/workflows/continuous-integration-workflow.yml) that builds OSC
-> essentially just runs scripts in the [scripts/](scripts/) folder.
+OpenSim Creator is a C++ codebase. It is primarily dependent on a C++ compiler (usually, MSVC on Windows,
+clang on Mac, and g++ on Linux) and CMake. It also depends on OpenSim. Other dependencies are included
+in-tree (see `third_party/`), either as copied-in libraries or git submodules.
 
-The build scripts below should work on a standard C++ developer's machine (as long as you have 
+Because everyone's C++ build environment is *slightly* different, there are no catch-all build instructions
+available. Instead, we recommend reading + running the automated build scripts, or reading some of the basic
+tips-and-tricks for Visual Studio or QtCreator (below).
+
+The following build scripts below should work on a standard C++ developer's machine (as long as you have 
 a C/C++ compiler, CMake, etc. installed):
 
 | OS | ⚙️ Build Script | Usage Example |
@@ -126,3 +117,9 @@ a C/C++ compiler, CMake, etc. installed):
 - Open QtCreator and then open the `opensim-creator` source directory as a folder
 - For selecting a "kit", QtCreator *usually* detects that `osc-build` already exists (side-effect of running the buildscript). You *may* need to "import existing kit/build" and then select `osc-build`, though
 - Once QtCreator knows your source dir (`opensim-creator/`) and build/kit (`opensim-creator/osc-build`), it should be good to go
+
+
+# 🥰 Contributing
+
+If you would like to contribute to OpenSim Creator then thank you 🥰: it's people like you
+that make open-source awesome! See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.

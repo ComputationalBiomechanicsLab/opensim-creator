@@ -1,11 +1,11 @@
-#include "MeshImporterScreen.hpp"
+#include "MeshImporterTab.hpp"
 
 #include "src/Bindings/GlmHelpers.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Bindings/SimTKHelpers.hpp"
 #include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
-#include "src/OpenSimBindings/MainEditorState.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Graphics/Shaders/EdgeDetectionShader.hpp"
 #include "src/Graphics/Shaders/GouraudShader.hpp"
 #include "src/Graphics/Shaders/SolidColorShader.hpp"
@@ -24,12 +24,9 @@
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
-#include "src/Screens/ModelEditorScreen.hpp"
-#include "src/Screens/SplashScreen.hpp"
-#include "src/Screens/ExperimentsScreen.hpp"
+#include "src/Tabs/ModelEditorTab.hpp"
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/LogViewer.hpp"
-#include "src/Widgets/SaveChangesPopup.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/ClonePtr.hpp"
@@ -39,6 +36,7 @@
 #include "src/Utils/Cpp20Shims.hpp"
 #include "src/Utils/Spsc.hpp"
 #include "src/Utils/UID.hpp"
+#include "src/MainUIStateAPI.hpp"
 #include "osc_config.hpp"
 
 #include <glm/mat4x4.hpp>
@@ -48,6 +46,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
+#include <IconsFontAwesome5.h>
 #include <ImGuizmo.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
@@ -57,6 +56,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <SimTKcommon.h>
+#include <SDL_events.h>
 
 #include <cstddef>
 #include <cctype>
@@ -65,6 +65,7 @@
 #include <stdexcept>
 #include <string.h>
 #include <string>
+#include <utility>
 #include <unordered_set>
 #include <vector>
 #include <variant>
@@ -87,13 +88,13 @@ using osc::Line;
 // user-facing string constants
 namespace
 {
-    #define OSC_GROUND_DESC "Ground is an inertial reference frame in which the motion of all frames and points may conveniently and efficiently be expressed. It is always defined to be at (0, 0, 0) in 'worldspace' and cannot move. All bodies in the model must eventually attach to ground via joints."
-    #define OSC_BODY_DESC "Bodies are active elements in the model. They define a 'frame' (effectively, a location + orientation) with a mass.\n\nOther body properties (e.g. inertia) can be edited in the main OpenSim Creator editor after you have converted the model into an OpenSim model."
-    #define OSC_MESH_DESC "Meshes are decorational components in the model. They can be translated, rotated, and scaled. Typically, meshes are 'attached' to other elements in the model, such as bodies. When meshes are 'attached' to something, they will 'follow' the thing they are attached to."
-    #define OSC_JOINT_DESC "Joints connect two physical frames (i.e. bodies and ground) together and specifies their relative permissible motion (e.g. PinJoints only allow rotation along one axis).\n\nIn OpenSim, joints are the 'edges' of a directed topology graph where bodies are the 'nodes'. All bodies in the model must ultimately connect to ground via joints."
-    #define OSC_STATION_DESC "Stations are points of interest in the model. They can be used to compute a 3D location in the frame of the thing they are attached to.\n\nThe utility of stations is that you can use them to visually mark points of interest. Those points of interest will then be defined with respect to whatever they are attached to. This is useful because OpenSim typically requires relative coordinates for things in the model (e.g. muscle paths)."
+#define OSC_GROUND_DESC "Ground is an inertial reference frame in which the motion of all frames and points may conveniently and efficiently be expressed. It is always defined to be at (0, 0, 0) in 'worldspace' and cannot move. All bodies in the model must eventually attach to ground via joints."
+#define OSC_BODY_DESC "Bodies are active elements in the model. They define a 'frame' (effectively, a location + orientation) with a mass.\n\nOther body properties (e.g. inertia) can be edited in the main OpenSim Creator editor after you have converted the model into an OpenSim model."
+#define OSC_MESH_DESC "Meshes are decorational components in the model. They can be translated, rotated, and scaled. Typically, meshes are 'attached' to other elements in the model, such as bodies. When meshes are 'attached' to something, they will 'follow' the thing they are attached to."
+#define OSC_JOINT_DESC "Joints connect two physical frames (i.e. bodies and ground) together and specifies their relative permissible motion (e.g. PinJoints only allow rotation along one axis).\n\nIn OpenSim, joints are the 'edges' of a directed topology graph where bodies are the 'nodes'. All bodies in the model must ultimately connect to ground via joints."
+#define OSC_STATION_DESC "Stations are points of interest in the model. They can be used to compute a 3D location in the frame of the thing they are attached to.\n\nThe utility of stations is that you can use them to visually mark points of interest. Those points of interest will then be defined with respect to whatever they are attached to. This is useful because OpenSim typically requires relative coordinates for things in the model (e.g. muscle paths)."
 
-    #define OSC_TRANSLATION_DESC  "Translation of the component in ground. OpenSim defines this as 'unitless'; however, OpenSim models typically use meters."
+#define OSC_TRANSLATION_DESC  "Translation of the component in ground. OpenSim defines this as 'unitless'; however, OpenSim models typically use meters."
 
     std::string const g_GroundLabel = "Ground";
     std::string const g_GroundLabelPluralized = "Ground";
@@ -446,10 +447,10 @@ namespace
     //
     // effectively, this is the main top-level rendering function
     void DrawScene(glm::ivec2 dims,
-                   PolarPerspectiveCamera const& camera,
-                   glm::vec4 const& bgCol,
-                   nonstd::span<DrawableThing const> drawables,
-                   gl::Texture2D& outSceneTex)
+        PolarPerspectiveCamera const& camera,
+        glm::vec4 const& bgCol,
+        nonstd::span<DrawableThing const> drawables,
+        gl::Texture2D& outSceneTex)
     {
         glm::vec3 lightDir;
         {
@@ -684,11 +685,11 @@ namespace
     class SceneElClass final {
     public:
         SceneElClass(std::string name,
-                     std::string namePluralized,
-                     std::string nameOptionallyPluralized,
-                     std::string icon,
-                     std::string description,
-                     std::unique_ptr<SceneEl> defaultObject) :
+            std::string namePluralized,
+            std::string nameOptionallyPluralized,
+            std::string icon,
+            std::string description,
+            std::unique_ptr<SceneEl> defaultObject) :
             m_ID{},
             m_Name{std::move(name)},
             m_NamePluralized{std::move(namePluralized)},
@@ -1109,9 +1110,9 @@ namespace
         }
 
         MeshEl(UIDT<MeshEl> id,
-               UID attachment,  // can be g_GroundID
-               std::shared_ptr<Mesh> meshData,
-               std::filesystem::path const& path) :
+            UID attachment,  // can be g_GroundID
+            std::shared_ptr<Mesh> meshData,
+            std::filesystem::path const& path) :
 
             ID{std::move(id)},
             Attachment{std::move(attachment)},
@@ -1121,13 +1122,13 @@ namespace
         }
 
         MeshEl(UID attachment,  // can be g_GroundID
-               std::shared_ptr<Mesh> meshData,
-               std::filesystem::path const& path) :
+            std::shared_ptr<Mesh> meshData,
+            std::filesystem::path const& path) :
 
             MeshEl{UIDT<MeshEl>{},
-                   std::move(attachment),
-                   std::move(meshData),
-                   path}
+            std::move(attachment),
+            std::move(meshData),
+            path}
         {
         }
 
@@ -1190,12 +1191,12 @@ namespace
         SceneElFlags GetFlags() const override
         {
             return SceneElFlags_CanChangeLabel |
-                    SceneElFlags_CanChangePosition |
-                    SceneElFlags_CanChangeRotation |
-                    SceneElFlags_CanChangeScale |
-                    SceneElFlags_CanDelete |
-                    SceneElFlags_CanSelect |
-                    SceneElFlags_HasPhysicalSize;
+                SceneElFlags_CanChangePosition |
+                SceneElFlags_CanChangeRotation |
+                SceneElFlags_CanChangeScale |
+                SceneElFlags_CanDelete |
+                SceneElFlags_CanSelect |
+                SceneElFlags_HasPhysicalSize;
         }
 
         UID GetID() const override
@@ -1206,13 +1207,13 @@ namespace
         std::ostream& operator<<(std::ostream& o) const override
         {
             return o << "MeshEl("
-                     << "ID = " << ID
-                     << ", Attachment = " << Attachment
-                     << ", Xform = " << Xform
-                     << ", MeshData = " << MeshData.get()
-                     << ", Path = " << Path
-                     << ", Name = " << Name
-                     << ')';
+                << "ID = " << ID
+                << ", Attachment = " << Attachment
+                << ", Xform = " << Xform
+                << ", MeshData = " << MeshData.get()
+                << ", Path = " << Path
+                << ", Name = " << Name
+                << ')';
         }
 
         osc::CStringView GetLabel() const override
@@ -1316,10 +1317,10 @@ namespace
         SceneElFlags GetFlags() const override
         {
             return SceneElFlags_CanChangeLabel |
-                    SceneElFlags_CanChangePosition |
-                    SceneElFlags_CanChangeRotation |
-                    SceneElFlags_CanDelete |
-                    SceneElFlags_CanSelect;
+                SceneElFlags_CanChangePosition |
+                SceneElFlags_CanChangeRotation |
+                SceneElFlags_CanDelete |
+                SceneElFlags_CanSelect;
         }
 
         UID GetID() const override
@@ -1330,10 +1331,10 @@ namespace
         std::ostream& operator<<(std::ostream& o) const override
         {
             return o << "BodyEl(ID = " << ID
-                     << ", Name = " << Name
-                     << ", Xform = " << Xform
-                     << ", Mass = " << Mass
-                     << ')';
+                << ", Name = " << Name
+                << ", Xform = " << Xform
+                << ", Mass = " << Mass
+                << ')';
         }
 
         osc::CStringView GetLabel() const override
@@ -1405,11 +1406,11 @@ namespace
         }
 
         JointEl(UIDT<JointEl> id,
-                size_t jointTypeIdx,
-                std::string userAssignedName,  // can be empty
-                UID parent,
-                UIDT<BodyEl> child,
-                Transform const& xform) :
+            size_t jointTypeIdx,
+            std::string userAssignedName,  // can be empty
+            UID parent,
+            UIDT<BodyEl> child,
+            Transform const& xform) :
 
             ID{std::move(id)},
             JointTypeIndex{std::move(jointTypeIdx)},
@@ -1421,17 +1422,17 @@ namespace
         }
 
         JointEl(size_t jointTypeIdx,
-                std::string userAssignedName,  // can be empty
-                UID parent,
-                UIDT<BodyEl> child,
-                Transform const& xform) :
+            std::string userAssignedName,  // can be empty
+            UID parent,
+            UIDT<BodyEl> child,
+            Transform const& xform) :
             JointEl{
-                UIDT<JointEl>{},
-                std::move(jointTypeIdx),
-                std::move(userAssignedName),
-                std::move(parent),
-                std::move(child),
-                xform}
+            UIDT<JointEl>{},
+            std::move(jointTypeIdx),
+            std::move(userAssignedName),
+            std::move(parent),
+            std::move(child),
+            xform}
         {
         }
 
@@ -1513,10 +1514,10 @@ namespace
         SceneElFlags GetFlags() const override
         {
             return SceneElFlags_CanChangeLabel |
-                    SceneElFlags_CanChangePosition |
-                    SceneElFlags_CanChangeRotation |
-                    SceneElFlags_CanDelete |
-                    SceneElFlags_CanSelect;
+                SceneElFlags_CanChangePosition |
+                SceneElFlags_CanChangeRotation |
+                SceneElFlags_CanDelete |
+                SceneElFlags_CanSelect;
         }
 
         UID GetID() const override
@@ -1527,17 +1528,17 @@ namespace
         std::ostream& operator<<(std::ostream& o) const override
         {
             return o << "JointEl(ID = " << ID
-                     << ", JointTypeIndex = " << JointTypeIndex
-                     << ", UserAssignedName = " << UserAssignedName
-                     << ", Parent = " << Parent
-                     << ", Child = " << Child
-                     << ", Xform = " << Xform
-                     << ')';
+                << ", JointTypeIndex = " << JointTypeIndex
+                << ", UserAssignedName = " << UserAssignedName
+                << ", Parent = " << Parent
+                << ", Child = " << Child
+                << ", Xform = " << Xform
+                << ')';
         }
 
         osc::CStringView GetSpecificTypeName() const
         {
-             return osc::JointRegistry::nameStrings()[JointTypeIndex];
+            return osc::JointRegistry::nameStrings()[JointTypeIndex];
         }
 
         osc::CStringView GetLabel() const override
@@ -1612,9 +1613,9 @@ namespace
 
 
         StationEl(UIDT<StationEl> id,
-                  UIDT<BodyEl> attachment,  // can be g_GroundID
-                  glm::vec3 const& position,
-                  std::string name) :
+            UIDT<BodyEl> attachment,  // can be g_GroundID
+            glm::vec3 const& position,
+            std::string name) :
             ID{std::move(id)},
             Attachment{std::move(attachment)},
             Position{std::move(position)},
@@ -1623,8 +1624,8 @@ namespace
         }
 
         StationEl(UIDT<BodyEl> attachment,  // can be g_GroundID
-                  glm::vec3 const& position,
-                  std::string name) :
+            glm::vec3 const& position,
+            std::string name) :
             ID{},
             Attachment{std::move(attachment)},
             Position{std::move(position)},
@@ -1693,9 +1694,9 @@ namespace
         SceneElFlags GetFlags() const override
         {
             return SceneElFlags_CanChangeLabel |
-                    SceneElFlags_CanChangePosition |
-                    SceneElFlags_CanDelete |
-                    SceneElFlags_CanSelect;
+                SceneElFlags_CanChangePosition |
+                SceneElFlags_CanDelete |
+                SceneElFlags_CanSelect;
         }
 
         UID GetID() const override
@@ -1708,11 +1709,11 @@ namespace
             using osc::operator<<;
 
             return o << "StationEl("
-                     << "ID = " << ID
-                     << ", Attachment = " << Attachment
-                     << ", Position = " << Position
-                     << ", Name = " << Name
-                     << ')';
+                << "ID = " << ID
+                << ", Attachment = " << Attachment
+                << ", Position = " << Position
+                << ", Name = " << Name
+                << ')';
         }
 
         osc::CStringView GetLabel() const override
@@ -1833,7 +1834,7 @@ namespace
         class Iterator {
         public:
             Iterator(std::map<UID, ClonePtr<SceneEl>>::iterator pos,
-                     std::map<UID, ClonePtr<SceneEl>>::iterator end) :
+                std::map<UID, ClonePtr<SceneEl>>::iterator end) :
                 m_Pos{pos},
                 m_End{end}
             {
@@ -2245,7 +2246,7 @@ namespace
 
         if (jointEl.Parent != g_GroundID && !modelGraph.ContainsEl<BodyEl>(jointEl.Parent))
         {
-             return true;  // has a parent ID that's invalid for this model graph
+            return true;  // has a parent ID that's invalid for this model graph
         }
 
         if (!modelGraph.ContainsEl<BodyEl>(jointEl.Child))
@@ -2258,13 +2259,13 @@ namespace
 
     // returns `true` if a body is indirectly or directly attached to ground
     bool IsBodyAttachedToGround(ModelGraph const& modelGraph,
-                                BodyEl const& body,
-                                std::unordered_set<UID>& previouslyVisitedJoints);
+        BodyEl const& body,
+        std::unordered_set<UID>& previouslyVisitedJoints);
 
     // returns `true` if `joint` is indirectly or directly attached to ground via its parent
     bool IsJointAttachedToGround(ModelGraph const& modelGraph,
-                                 JointEl const& joint,
-                                 std::unordered_set<UID>& previousVisits)
+        JointEl const& joint,
+        std::unordered_set<UID>& previousVisits)
     {
         OSC_ASSERT_ALWAYS(!IsGarbageJoint(modelGraph, joint));
 
@@ -2286,8 +2287,8 @@ namespace
 
     // returns `true` if `body` is attached to ground
     bool IsBodyAttachedToGround(ModelGraph const& modelGraph,
-                                BodyEl const& body,
-                                std::unordered_set<UID>& previouslyVisitedJoints)
+        BodyEl const& body,
+        std::unordered_set<UID>& previouslyVisitedJoints)
     {
         bool childInAtLeastOneJoint = false;
 
@@ -2442,9 +2443,9 @@ namespace
     void SelectAnythingGroupedWith(ModelGraph& mg, UID el)
     {
         ForEachIDInSelectionGroup(mg, el, [&mg](UID other)
-        {
-            mg.Select(other);
-        });
+            {
+                mg.Select(other);
+            });
     }
 
     // returns the ID of the thing the station should attach to when trying to
@@ -2520,8 +2521,8 @@ namespace
     class ModelGraphCommit {
     public:
         ModelGraphCommit(UID parentID,  // can be g_EmptyID
-                         ClonePtr<ModelGraph> modelGraph,
-                         std::string_view commitMessage) :
+            ClonePtr<ModelGraph> modelGraph,
+            std::string_view commitMessage) :
 
             m_ID{},
             m_ParentID{parentID},
@@ -3019,8 +3020,8 @@ namespace
 
     // attaches a mesh to a parent `OpenSim::PhysicalFrame` that is part of an `OpenSim::Model`
     void AttachMeshElToFrame(MeshEl const& meshEl,
-                             Transform const& parentXform,
-                             OpenSim::PhysicalFrame& parentPhysFrame)
+        Transform const& parentXform,
+        OpenSim::PhysicalFrame& parentPhysFrame)
     {
         // create a POF that attaches to the body
         auto meshPhysOffsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
@@ -3095,9 +3096,9 @@ namespace
     //
     // if the frame/body doesn't exist yet, constructs it
     JointAttachmentCachedLookupResult LookupPhysFrame(ModelGraph const& mg,
-                                                      OpenSim::Model& model,
-                                                      std::unordered_map<UID, OpenSim::Body*>& visitedBodies,
-                                                      UID elID)
+        OpenSim::Model& model,
+        std::unordered_map<UID, OpenSim::Body*>& visitedBodies,
+        UID elID)
     {
         // figure out what the parent body is. There's 3 possibilities:
         //
@@ -3141,8 +3142,8 @@ namespace
 
     // compute the name of a joint from its attached frames
     std::string CalcJointName(JointEl const& jointEl,
-                              OpenSim::PhysicalFrame const& parentFrame,
-                              OpenSim::PhysicalFrame const& childFrame)
+        OpenSim::PhysicalFrame const& parentFrame,
+        OpenSim::PhysicalFrame const& childFrame)
     {
         if (!jointEl.UserAssignedName.empty())
         {
@@ -3228,10 +3229,10 @@ namespace
     // - setting the joint's default coordinate values based on any differences
     // - RECURSING by figuring out which joints have this joint's child as a parent
     void AttachJointRecursive(ModelGraph const& mg,
-                              OpenSim::Model& model,
-                              JointEl const& joint,
-                              std::unordered_map<UID, OpenSim::Body*>& visitedBodies,
-                              std::unordered_set<UID>& visitedJoints)
+        OpenSim::Model& model,
+        JointEl const& joint,
+        std::unordered_map<UID, OpenSim::Body*>& visitedBodies,
+        std::unordered_set<UID>& visitedJoints)
     {
         {
             bool wasInserted = visitedJoints.emplace(joint.ID).second;
@@ -3313,9 +3314,9 @@ namespace
 
     // attaches `BodyEl` into `model` by directly attaching it to ground with a WeldJoint
     void AttachBodyDirectlyToGround(ModelGraph const& mg,
-                                    OpenSim::Model& model,
-                                    BodyEl const& bodyEl,
-                                    std::unordered_map<UID, OpenSim::Body*>& visitedBodies)
+        OpenSim::Model& model,
+        BodyEl const& bodyEl,
+        std::unordered_map<UID, OpenSim::Body*>& visitedBodies)
     {
         std::unique_ptr<OpenSim::Body> addedBody = CreateDetatchedBody(mg, bodyEl);
         auto weldJoint = std::make_unique<OpenSim::WeldJoint>();
@@ -3348,9 +3349,9 @@ namespace
     }
 
     void AddStationToModel(ModelGraph const& mg,
-                           OpenSim::Model& model,
-                           StationEl const& stationEl,
-                           std::unordered_map<UID, OpenSim::Body*>& visitedBodies)
+        OpenSim::Model& model,
+        StationEl const& stationEl,
+        std::unordered_map<UID, OpenSim::Body*>& visitedBodies)
     {
 
         JointAttachmentCachedLookupResult res = LookupPhysFrame(mg, model, visitedBodies, stationEl.Attachment);
@@ -3369,7 +3370,7 @@ namespace
     //
     // otherwise, returns nullptr and issuesOut will be populated with issue messages
     std::unique_ptr<OpenSim::Model> CreateOpenSimModelFromModelGraph(ModelGraph const& mg,
-                                                                     std::vector<std::string>& issuesOut)
+        std::vector<std::string>& issuesOut)
     {
         if (GetModelGraphIssues(mg, issuesOut))
         {
@@ -3601,7 +3602,7 @@ namespace
             std::shared_ptr<Mesh> meshData;
             try
             {
-                 meshData = std::make_shared<Mesh>(osc::LoadMeshViaSimTK(realLocation.string()));
+                meshData = std::make_shared<Mesh>(osc::LoadMeshViaSimTK(realLocation.string()));
             }
             catch (std::exception const& ex)
             {
@@ -3781,44 +3782,6 @@ namespace
         // MODEL GRAPH STUFF
         //
 
-        void NewModelGraphForced()
-        {
-            m_ModelGraphSnapshots = CommittableModelGraph{};
-            m_MaybeModelGraphExportLocation.clear();
-            m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.GetCheckoutID();
-        }
-
-        void NewModelGraph()
-        {
-            if (IsModelGraphUpToDateWithDisk())
-            {
-                NewModelGraphForced();
-            }
-            else
-            {
-                osc::SaveChangesPopupConfig cfg;
-                cfg.onUserClickedDontSave = [this]()
-                {
-                    NewModelGraphForced();
-                    return true;
-                };
-                cfg.onUserClickedSave = [this]()
-                {
-                    if (ExportModelGraphAsOsimFile())
-                    {
-                        NewModelGraphForced();
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                };
-                m_MaybeSaveChangesPopup = osc::SaveChangesPopup{std::move(cfg)};
-                m_MaybeSaveChangesPopup->open();
-            }
-        }
-
         bool OpenOsimFileAsModelGraph()
         {
             std::filesystem::path osimPath = osc::PromptUserForFile("osim");
@@ -3895,76 +3858,29 @@ namespace
             return m_MaybeModelGraphExportedUID == m_ModelGraphSnapshots.GetCheckoutID();
         }
 
-        void CloseEditorForced()
+        bool IsCloseRequested()
         {
-            osc::App::upd().requestTransition<osc::SplashScreen>();
+            return m_CloseRequested == true;
         }
 
         void CloseEditor()
         {
-            if (IsModelGraphUpToDateWithDisk())
-            {
-                CloseEditorForced();
-            }
-            else
-            {
-                osc::SaveChangesPopupConfig cfg;
-                cfg.onUserClickedDontSave = [this]()
-                {
-                    CloseEditorForced();
-                    return true;
-                };
-                cfg.onUserClickedSave = [this]()
-                {
-                    if (ExportModelGraphAsOsimFile())
-                    {
-                        CloseEditorForced();
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                };
-                m_MaybeSaveChangesPopup = osc::SaveChangesPopup{std::move(cfg)};
-                m_MaybeSaveChangesPopup->open();
-            }
+            m_CloseRequested = true;
         }
 
-        void QuitEditorForced()
+        bool IsNewMeshImpoterTabRequested()
         {
-            osc::App::upd().requestQuit();
+            return m_NewTabRequested == true;
         }
 
-        void QuitEditor()
+        void RequestNewMeshImporterTab()
         {
-            if (IsModelGraphUpToDateWithDisk())
-            {
-                QuitEditorForced();
-            }
-            else
-            {
-                osc::SaveChangesPopupConfig cfg;
-                cfg.onUserClickedDontSave = [this]()
-                {
-                    QuitEditorForced();
-                    return true;
-                };
-                cfg.onUserClickedSave = [this]()
-                {
-                    if (ExportModelGraphAsOsimFile())
-                    {
-                        QuitEditorForced();
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                };
-                m_MaybeSaveChangesPopup = osc::SaveChangesPopup{std::move(cfg)};
-                m_MaybeSaveChangesPopup->open();
-            }
+            m_NewTabRequested = true;
+        }
+
+        void ResetRequestNewMeshImporter()
+        {
+            m_NewTabRequested = false;
         }
 
         std::string GetDocumentName() const
@@ -3981,12 +3897,9 @@ namespace
 
         std::string GetRecommendedTitle() const
         {
-            std::string base = GetDocumentName();
-            if (!IsModelGraphUpToDateWithDisk())
-            {
-                base += '*';
-            }
-            return base;
+            std::stringstream ss;
+            ss << ICON_FA_CUBE << ' ' << GetDocumentName();
+            return std::move(ss).str();
         }
 
         ModelGraph const& GetModelGraph() const
@@ -4642,13 +4555,13 @@ namespace
         }
 
         void AppendAsFrame(UID logicalID,
-                           UID groupID,
-                           Transform const& xform,
-                           std::vector<DrawableThing>& appendOut,
-                           float alpha = 1.0f,
-                           float rimAlpha = 0.0f,
-                           glm::vec3 legLen = {1.0f, 1.0f, 1.0f},
-                           glm::vec3 coreColor = {1.0f, 1.0f, 1.0f}) const
+            UID groupID,
+            Transform const& xform,
+            std::vector<DrawableThing>& appendOut,
+            float alpha = 1.0f,
+            float rimAlpha = 0.0f,
+            glm::vec3 legLen = {1.0f, 1.0f, 1.0f},
+            glm::vec3 coreColor = {1.0f, 1.0f, 1.0f}) const
         {
             // stolen from SceneGeneratorNew.cpp
 
@@ -4697,14 +4610,14 @@ namespace
         }
 
         void AppendAsCubeThing(UID logicalID,
-                               UID groupID,
-                               Transform const& xform,
-                               std::vector<DrawableThing>& appendOut,
-                               float alpha = 1.0f,
-                               float rimAlpha = 0.0f,
-                               glm::vec3 legLen = {1.0f, 1.0f, 1.0f},
-                               glm::vec3 coreColor = {1.0f, 1.0f, 1.0f},
-                               glm::vec3 sfs = {1.0f, 1.0f, 1.0f}) const
+            UID groupID,
+            Transform const& xform,
+            std::vector<DrawableThing>& appendOut,
+            float alpha = 1.0f,
+            float rimAlpha = 0.0f,
+            glm::vec3 legLen = {1.0f, 1.0f, 1.0f},
+            glm::vec3 coreColor = {1.0f, 1.0f, 1.0f},
+            glm::vec3 sfs = {1.0f, 1.0f, 1.0f}) const
         {
             glm::mat4 baseMmtx = ToMat4(xform);
 
@@ -4986,7 +4899,7 @@ namespace
             class Visitor : public ConstSceneElVisitor {
             public:
                 Visitor(SharedData const& data,
-                        std::vector<DrawableThing>& out) :
+                    std::vector<DrawableThing>& out) :
                     m_Data{data},
                     m_Out{out}
                 {
@@ -5026,12 +4939,12 @@ namespace
                     }
 
                     m_Data.AppendAsFrame(el.ID,
-                                         g_JointGroupID,
-                                         el.Xform,
-                                         m_Out,
-                                         1.0f,
-                                         0.0f,
-                                         GetJointAxisLengths(el));
+                        g_JointGroupID,
+                        el.Xform,
+                        m_Out,
+                        1.0f,
+                        0.0f,
+                        GetJointAxisLengths(el));
                 }
                 void operator()(StationEl const& el) override
                 {
@@ -5081,15 +4994,6 @@ namespace
 
             // pop any background-loaded meshes
             PopMeshLoader();
-
-            // if some screen generated an OpenSim::Model, transition to the main editor
-            if (HasOutputModel())
-            {
-                auto mainEditorState = std::make_shared<osc::MainEditorState>(std::move(UpdOutputModel()));
-                mainEditorState->editedModel()->setFixupScaleFactor(m_SceneScaleFactor);
-                osc::AutoFocusAllViewers(*mainEditorState);
-                osc::App::upd().requestTransition<osc::ModelEditorScreen>(mainEditorState);
-            }
 
             m_ModelGraphSnapshots.GarbageCollect();
         }
@@ -5237,6 +5141,12 @@ namespace
 
         // set to true after drawing the ImGui::Image
         bool m_IsRenderHovered = false;
+
+        // true if the implementation wants the host to close the mesh importer UI
+        bool m_CloseRequested = false;
+
+        // true if the implementation wants the host to open a new mesh importer
+        bool m_NewTabRequested = false;
     };
 }
 
@@ -5264,8 +5174,8 @@ namespace
     class Select2MeshPointsLayer final : public Layer {
     public:
         Select2MeshPointsLayer(LayerHost& parent,
-                               std::shared_ptr<SharedData> shared,
-                               Select2MeshPointsOptions options) :
+            std::shared_ptr<SharedData> shared,
+            Select2MeshPointsOptions options) :
             Layer{parent},
             m_Shared{std::move(shared)},
             m_Options{std::move(options)}
@@ -5519,8 +5429,8 @@ namespace
     class ChooseElLayer final : public Layer {
     public:
         ChooseElLayer(LayerHost& parent,
-                      std::shared_ptr<SharedData> shared,
-                      ChooseElLayerOptions options) :
+            std::shared_ptr<SharedData> shared,
+            ChooseElLayerOptions options) :
             Layer{parent},
             m_Shared{std::move(shared)},
             m_Options{std::move(options)}
@@ -6131,10 +6041,10 @@ namespace
                 }
 
                 return TryTranslateBetweenTwoElements(
-                            shared->UpdCommittableModelGraph(),
-                            id,
-                            choices[0],
-                            choices[1]);
+                    shared->UpdCommittableModelGraph(),
+                    id,
+                    choices[0],
+                    choices[1]);
             };
             m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
         }
@@ -6285,7 +6195,7 @@ namespace
             if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_N))
             {
                 // Ctrl+N: new scene
-                m_Shared->NewModelGraph();
+                m_Shared->RequestNewMeshImporterTab();
                 return true;
             }
             else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_O))
@@ -6315,7 +6225,7 @@ namespace
             else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_Q))
             {
                 // Ctrl+Q: quit application
-                m_Shared->QuitEditor();
+                osc::App::upd().requestQuit();
                 return true;
             }
             else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_A))
@@ -7050,7 +6960,7 @@ namespace
             {
             public:
                 Visitor(MainUIState& state,
-                        glm::vec3 const& clickPos) :
+                    glm::vec3 const& clickPos) :
                     m_State{state},
                     m_ClickPos{clickPos}
                 {
@@ -7131,9 +7041,9 @@ namespace
 
             std::vector<ModelGraphCommit const*> commits;
             storage.ForEachCommitUnordered([&commits](ModelGraphCommit const& c)
-            {
-                commits.push_back(&c);
-            });
+                {
+                    commits.push_back(&c);
+                });
 
             auto orderedByTime = [](ModelGraphCommit const* a, ModelGraphCommit const* b)
             {
@@ -7677,9 +7587,9 @@ namespace
             bool wasUsingLastFrame = m_ImGuizmoState.wasUsingLastFrame;
             m_ImGuizmoState.wasUsingLastFrame = isUsingThisFrame;  // so next frame can know
 
-            // if the user was using the gizmo last frame, and isn't using it this frame,
-            // then they probably just finished a manipulation, which should be snapshotted
-            // for undo/redo support
+                                                                   // if the user was using the gizmo last frame, and isn't using it this frame,
+                                                                   // then they probably just finished a manipulation, which should be snapshotted
+                                                                   // for undo/redo support
             if (wasUsingLastFrame && !isUsingThisFrame)
             {
                 m_Shared->CommitCurrentModelGraph("manipulated selection");
@@ -7840,7 +7750,7 @@ namespace
             {
                 if (ImGui::MenuItem(ICON_FA_FILE " New", "Ctrl+N"))
                 {
-                    m_Shared->NewModelGraph();
+                    m_Shared->RequestNewMeshImporterTab();
                 }
 
                 if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Import", "Ctrl+O"))
@@ -7865,7 +7775,7 @@ namespace
 
                 if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
                 {
-                    m_Shared->QuitEditor();
+                    osc::App::upd().requestQuit();
                 }
 
                 ImGui::EndMenu();
@@ -7912,15 +7822,10 @@ namespace
         // draws main menu at top of screen
         void DrawMainMenu()
         {
-            if (ImGui::BeginMainMenuBar())
-            {
-                DrawMainMenuFileMenu();
-                DrawMainMenuEditMenu();
-                DrawMainMenuWindowMenu();
-                DrawMainMenuAboutMenu();
-
-                ImGui::EndMainMenuBar();
-            }
+            DrawMainMenuFileMenu();
+            DrawMainMenuEditMenu();
+            DrawMainMenuWindowMenu();
+            DrawMainMenuAboutMenu();
         }
 
         // draws main 3D viewer, or a modal (if one is active)
@@ -7930,18 +7835,18 @@ namespace
             {
                 auto ptr = m_Maybe3DViewerModal;  // ensure it stays alive - even if it pops itself during the drawcall
 
-                // open it "over" the whole UI as a "modal" - so that the user can't click things
-                // outside of the panel
+                                                  // open it "over" the whole UI as a "modal" - so that the user can't click things
+                                                  // outside of the panel
                 ImGui::OpenPopup("##visualizermodalpopup");
                 ImGui::SetNextWindowSize(m_Shared->Get3DSceneDims());
                 ImGui::SetNextWindowPos(m_Shared->Get3DSceneRect().p1);
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
 
                 ImGuiWindowFlags modalFlags =
-                        ImGuiWindowFlags_AlwaysAutoResize |
-                        ImGuiWindowFlags_NoTitleBar |
-                        ImGuiWindowFlags_NoMove |
-                        ImGuiWindowFlags_NoResize;
+                    ImGuiWindowFlags_AlwaysAutoResize |
+                    ImGuiWindowFlags_NoTitleBar |
+                    ImGuiWindowFlags_NoMove |
+                    ImGuiWindowFlags_NoResize;
 
                 if (ImGui::BeginPopupModal("##visualizermodalpopup", nullptr, modalFlags))
                 {
@@ -7995,17 +7900,6 @@ namespace
         {
             m_Shared->tick(dt);
 
-            // handle keyboards using ImGui's input poller
-            if (!m_Maybe3DViewerModal)
-            {
-                UpdateFromImGuiKeyboardState();
-            }
-
-            if (!m_Maybe3DViewerModal && m_Shared->IsRenderHovered() && !ImGuizmo::IsUsing())
-            {
-                UpdatePolarCameraFromImGuiUserInput(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
-            }
-
             if (m_Maybe3DViewerModal)
             {
                 auto ptr = m_Maybe3DViewerModal;  // ensure it stays alive - even if it pops itself during the drawcall
@@ -8017,8 +7911,16 @@ namespace
         {
             ImGuizmo::BeginFrame();
 
-            // draw main menu at top of screen
-            DrawMainMenu();
+            // handle keyboards using ImGui's input poller
+            if (!m_Maybe3DViewerModal)
+            {
+                UpdateFromImGuiKeyboardState();
+            }
+
+            if (!m_Maybe3DViewerModal && m_Shared->IsRenderHovered() && !ImGuizmo::IsUsing())
+            {
+                UpdatePolarCameraFromImGuiUserInput(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
+            }
 
             // draw history panel (if enabled)
             if (m_Shared->m_PanelStates[SharedData::PanelIndex_History])
@@ -8090,73 +7992,114 @@ namespace
 //
 // this effectively just feeds the underlying state machine pattern established by
 // the `ModelWizardState` class
-class osc::MeshImporterScreen::Impl final {
+class osc::MeshImporterTab::Impl final {
 public:
-    Impl() :
+    Impl(MainUIStateAPI* parent) :
+        m_Parent{std::move(parent)},
         m_SharedData{std::make_shared<SharedData>()},
         m_MainState{m_SharedData}
     {
     }
 
-    Impl(std::vector<std::filesystem::path> meshPaths) :
+    Impl(MainUIStateAPI* parent, std::vector<std::filesystem::path> meshPaths) :
+        m_Parent{std::move(parent)},
         m_SharedData{std::make_shared<SharedData>(meshPaths)},
         m_MainState{m_SharedData}
     {
     }
 
+    UID getID() const
+    {
+        return m_ID;
+    }
+
+
+    CStringView getName() const
+    {
+        return m_Name;
+    }
+
+    TabHost* parent()
+    {
+        return m_Parent;
+    }
+
+    bool isUnsaved() const
+    {
+        return !m_SharedData->IsModelGraphUpToDateWithDisk();
+    }
+
+    bool trySave()
+    {
+        if (m_SharedData->IsModelGraphUpToDateWithDisk())
+        {
+            // nothing to save
+            return true;
+        }
+        else
+        {
+            // try to save the changes
+            return m_SharedData->ExportAsModelGraphAsOsimFile();
+        }
+    }
+
     void onMount()
     {
-        osc::ImGuiInit();
-        App& app = App::upd();
-        app.setMainWindowSubTitle(m_SharedData->GetRecommendedTitle());
-        app.makeMainEventLoopWaiting();
+        App::upd().makeMainEventLoopWaiting();
     }
 
     void onUnmount()
     {
-        App& app = App::upd();
-        app.makeMainEventLoopPolling();
-        app.unsetMainWindowSubTitle();
-        osc::ImGuiShutdown();
+        App::upd().makeMainEventLoopPolling();
     }
 
-    void onEvent(SDL_Event const& e)
+    bool onEvent(SDL_Event const& e)
     {
-        if (e.type == SDL_QUIT)
-        {
-            m_SharedData->QuitEditor();
-        }
-        else if (osc::ImGuiOnEvent(e))
-        {
-            m_ShouldRequestRedraw = true;
-        }
-
-        m_MainState.onEvent(e);
+        return m_MainState.onEvent(e);
     }
 
-    void tick(float dt)
+    void onTick()
     {
+        float dt = osc::App::get().getDeltaSinceLastFrame().count();
         m_MainState.tick(dt);
-        App::upd().setMainWindowSubTitle(m_SharedData->GetRecommendedTitle());
+
+        // if some screen generated an OpenSim::Model, transition to the main editor
+        if (m_SharedData->HasOutputModel())
+        {
+            auto ptr = std::make_unique<UndoableModelStatePair>(std::move(m_SharedData->UpdOutputModel()));
+            ptr->setFixupScaleFactor(m_SharedData->GetSceneScaleFactor());
+            UID tabID = m_Parent->addTab<ModelEditorTab>(m_Parent, std::move(ptr));
+            m_Parent->selectTab(tabID);
+        }
+
+        m_Name = m_SharedData->GetRecommendedTitle();
+
+        if (m_SharedData->IsCloseRequested())
+        {
+            m_Parent->closeTab(m_ID);
+
+        }
+
+        if (m_SharedData->IsNewMeshImpoterTabRequested())
+        {
+            m_Parent->addTab<MeshImporterTab>(m_Parent);
+            m_SharedData->ResetRequestNewMeshImporter();
+        }
     }
 
-    void draw()
+    void drawMainMenu()
     {
-        // clear the whole screen (it's a full redraw)
-        gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // draw main menu at top of screen
+        m_MainState.DrawMainMenu();
+    }
 
-        // set up ImGui's internal datastructures
-        osc::ImGuiNewFrame();
-
+    void onDraw()
+    {
         // enable panel docking
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         // draw current state
         m_MainState.draw();
-
-        // draw ImGui
-        osc::ImGuiRender();
 
         // request another draw (e.g. because the state changed during this draw)
         if (m_ShouldRequestRedraw)
@@ -8167,77 +8110,94 @@ public:
     }
 
 private:
+    UID m_ID;
+    MainUIStateAPI* m_Parent;
+    std::string m_Name = "MeshImporterTab";
     std::shared_ptr<SharedData> m_SharedData;
     MainUIState m_MainState;
     bool m_ShouldRequestRedraw = false;
 };
 
 
-// public API (PIMPL)
+// public API
 
-// HACK: save this screen's state globally, so that users can "go back" to the screen if the
-//       model import fails
-//
-//       ideally, the screen would launch into a separate tab for the export, but the main UI
-//       doesn't support a tab interface at the moment, so this is the best we've got
-//
-//       DRAGONS: globally allocating a screen like this is bad form because `atexit` is going
-//                to be called *after* the app has shutdown the window, OpenGL context, etc.
-//                so I'm using a non-unique_ptr, because I don't want the screen's destructor
-//                to crash the `atexit` phase, which cleans up all static globals.
-osc::MeshImporterScreen::Impl* GetModelWizardScreenGLOBAL(std::vector<std::filesystem::path> paths)
-{
-    static osc::MeshImporterScreen::Impl* g_ModelImpoterScreenState = new osc::MeshImporterScreen::Impl{paths};
-    return g_ModelImpoterScreenState;
-}
-
-osc::MeshImporterScreen::MeshImporterScreen() :
-    m_Impl{GetModelWizardScreenGLOBAL({})}
+osc::MeshImporterTab::MeshImporterTab(MainUIStateAPI* parent) :
+	m_Impl{new Impl{std::move(parent)}}
 {
 }
 
-osc::MeshImporterScreen::MeshImporterScreen(std::vector<std::filesystem::path> paths) :
-    m_Impl{GetModelWizardScreenGLOBAL(paths)}
+osc::MeshImporterTab::MeshImporterTab(MainUIStateAPI* parent, std::vector<std::filesystem::path> files) :
+	m_Impl{new Impl{std::move(parent), std::move(files)}}
 {
 }
 
-osc::MeshImporterScreen::MeshImporterScreen(MeshImporterScreen&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+osc::MeshImporterTab::MeshImporterTab(MeshImporterTab&& tmp) noexcept :
+	m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
 }
 
-osc::MeshImporterScreen& osc::MeshImporterScreen::operator=(MeshImporterScreen&& tmp) noexcept
+osc::MeshImporterTab& osc::MeshImporterTab::operator=(MeshImporterTab&& tmp) noexcept
 {
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
+	std::swap(m_Impl, tmp.m_Impl);
+	return *this;
 }
 
-osc::MeshImporterScreen::~MeshImporterScreen() noexcept
+osc::MeshImporterTab::~MeshImporterTab() noexcept
 {
-    // HACK: don't delete Impl, because we're sharing it globally
+	delete m_Impl;
 }
 
-void osc::MeshImporterScreen::onMount()
+osc::UID osc::MeshImporterTab::implGetID() const
+{
+    return m_Impl->getID();
+}
+
+osc::CStringView osc::MeshImporterTab::implGetName() const
+{
+    return m_Impl->getName();
+}
+
+osc::TabHost* osc::MeshImporterTab::implParent() const
+{
+    return m_Impl->parent();
+}
+
+bool osc::MeshImporterTab::implIsUnsaved() const
+{
+    return m_Impl->isUnsaved();
+}
+
+bool osc::MeshImporterTab::implTrySave()
+{
+    return m_Impl->trySave();
+}
+
+void osc::MeshImporterTab::implOnMount()
 {
     m_Impl->onMount();
 }
 
-void osc::MeshImporterScreen::onUnmount()
+void osc::MeshImporterTab::implOnUnmount()
 {
     m_Impl->onUnmount();
 }
 
-void osc::MeshImporterScreen::onEvent(SDL_Event const& e)
+bool osc::MeshImporterTab::implOnEvent(SDL_Event const& e)
 {
-    m_Impl->onEvent(e);
+    return m_Impl->onEvent(e);
 }
 
-void osc::MeshImporterScreen::draw()
+void osc::MeshImporterTab::implOnTick()
 {
-    m_Impl->draw();
+    m_Impl->onTick();
 }
 
-void osc::MeshImporterScreen::tick(float dt)
+void osc::MeshImporterTab::implOnDrawMainMenu()
 {
-    m_Impl->tick(dt);
+    m_Impl->drawMainMenu();
+}
+
+void osc::MeshImporterTab::implOnDraw()
+{
+    m_Impl->onDraw();
 }

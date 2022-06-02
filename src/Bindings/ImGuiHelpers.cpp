@@ -12,6 +12,7 @@
 #include <glm/vec4.hpp>
 #include <nonstd/span.hpp>
 #include <imgui.h>
+#include <imgui_internal.h>
 
 #include <algorithm>
 #include <cstdint>
@@ -335,4 +336,24 @@ bool osc::InputKilogramFloat(const char* label, float* v, float step, float step
 void osc::PushID(UID const& id)
 {
     ImGui::PushID(static_cast<int>(id.get()));
+}
+
+ImGuiWindowFlags osc::GetMinimalWindowFlags()
+{
+    return ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoTitleBar;
+}
+
+osc::Rect osc::GetMainViewportWorkspaceScreenRect()
+{
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    return Rect{viewport->WorkPos, glm::vec2{viewport->WorkPos} + glm::vec2{viewport->WorkSize}};
+}
+
+bool osc::BeginMainViewportTopBar(char const* label)
+{
+    // https://github.com/ocornut/imgui/issues/3518
+    ImGuiViewportP* viewport = (ImGuiViewportP*)(void*)ImGui::GetMainViewport();
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar;
+    float height = ImGui::GetFrameHeight();
+    return ImGui::BeginViewportSideBar(label, viewport, ImGuiDir_Up, height, window_flags);
 }

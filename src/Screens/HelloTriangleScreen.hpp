@@ -4,8 +4,6 @@
 
 #include <SDL_events.h>
 
-#include <memory>
-
 namespace osc
 {
     // basic test for graphics backend: can it display a triangle

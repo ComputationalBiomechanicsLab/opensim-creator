@@ -5,11 +5,7 @@
 
 #include <optional>
 #include <memory>
-
-namespace OpenSim
-{
-    class Model;
-}
+#include <unordered_map>
 
 namespace SimTK
 {
@@ -23,8 +19,8 @@ namespace osc
     // reference-counted, immutable, simulation report
     class SimulationReport {
     public:
-        explicit SimulationReport(OpenSim::Model const&, SimTK::State);
-        SimulationReport(SimTK::MultibodySystem const&, SimTK::Integrator const&);
+        explicit SimulationReport(SimTK::State&&);
+        SimulationReport(SimTK::State&&, std::unordered_map<UID, float> auxiliaryValues);
         SimulationReport(SimulationReport const&);
         SimulationReport(SimulationReport&&) noexcept;
         SimulationReport& operator=(SimulationReport const&);

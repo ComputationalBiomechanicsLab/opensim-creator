@@ -16,6 +16,8 @@ public:
 
     void implDraw() override
     {
+        ImGui::Text(m_Config.content.c_str());
+
         if (ImGui::Button("Yes"))
         {
             if (m_Config.onUserClickedSave())
@@ -88,17 +90,3 @@ void osc::SaveChangesPopup::draw()
 {
     m_Impl->draw();
 }
-
-/*
- * switch (m_Action) {
-            case ActionAfter::New:
-                updSharedData().NewModelGraphForced();
-                break;
-            case ActionAfter::Close:
-                updSharedData().CloseEditorForced();
-                break;
-            case ActionAfter::Quit:
-                updSharedData().QuitEditorForced();
-                break;
-            }
-            */

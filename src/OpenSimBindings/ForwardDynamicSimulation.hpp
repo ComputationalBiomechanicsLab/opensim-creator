@@ -8,7 +8,6 @@
 
 #include <nonstd/span.hpp>
 
-#include <optional>
 #include <memory>
 #include <vector>
 
@@ -60,6 +59,9 @@ namespace osc
 
         void requestStop() override;
         void stop() override;
+
+        float getFixupScaleFactor() const override;
+        void setFixupScaleFactor(float) override;
 
         class Impl;
     private:

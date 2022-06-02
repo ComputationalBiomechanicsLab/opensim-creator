@@ -5,12 +5,12 @@
 
 #include <filesystem>
 #include <vector>
-#include <memory>
 #include <optional>
 
 namespace osc
 {
-    class MainEditorState;
+    class MainUIStateAPI;
+    class UndoableModelStatePair;
 }
 
 namespace OpenSim
@@ -20,9 +20,9 @@ namespace OpenSim
 
 namespace osc
 {
-    void actionNewModel(std::shared_ptr<MainEditorState>);
-    void actionOpenModel(std::shared_ptr<MainEditorState>);
-    bool actionSaveModel(std::shared_ptr<MainEditorState>);
+    void actionNewModel(MainUIStateAPI*);
+    void actionOpenModel(MainUIStateAPI*);
+    bool actionSaveModel(MainUIStateAPI*, UndoableModelStatePair&);
 
     struct MainMenuFileTab final {
         std::vector<std::filesystem::path> exampleOsimFiles;
@@ -31,7 +31,7 @@ namespace osc
 
         MainMenuFileTab();
 
-        void draw(std::shared_ptr<MainEditorState>);
+        void draw(MainUIStateAPI*, UndoableModelStatePair* = nullptr);
     };
 
     struct MainMenuAboutTab final {

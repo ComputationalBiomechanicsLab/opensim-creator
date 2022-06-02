@@ -23,11 +23,7 @@ namespace osc
 	// a readonly model+state pair from a particular step from a simulator
 	class SimulationModelStatePair : public VirtualModelStatePair {
 	public:
-		SimulationModelStatePair(
-			std::shared_ptr<Simulation>,
-			SimulationReport,
-			float fixupScaleFactor);
-
+		SimulationModelStatePair(std::shared_ptr<Simulation>, SimulationReport);
 		SimulationModelStatePair(SimulationModelStatePair const&) = delete;
 		SimulationModelStatePair(SimulationModelStatePair&&) noexcept;
 		SimulationModelStatePair& operator=(SimulationModelStatePair const&) = delete;

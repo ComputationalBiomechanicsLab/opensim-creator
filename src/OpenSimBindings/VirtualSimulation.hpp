@@ -55,5 +55,9 @@ namespace osc
 
         virtual void requestStop() = 0;
         virtual void stop() = 0;
+
+        // TODO: these are necessary right now because the fixup scale factor isn't part of the model
+        virtual float getFixupScaleFactor() const = 0;
+        virtual void setFixupScaleFactor(float) = 0;
     };
 }

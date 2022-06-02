@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/Graphics/Color.hpp"
-#include "src/Maths/AABB.hpp"
+#include "src/Maths/Rect.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -13,19 +13,25 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <functional>
 #include <iosfwd>
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
 
+namespace osc
+{
+    struct AABB;
+    struct Transform;
+}
+
 
 // 2D texture
 //
-// representation of an "image" that can be sampled by shaders
+// encapsulates an image that can be sampled by shaders
 namespace osc::experimental
 {
+    // how texels should be sampled when a texture coordinate falls outside the texture's bounds
     enum class TextureWrapMode {
         Repeat = 0,
         Clamp,
@@ -36,6 +42,7 @@ namespace osc::experimental
     std::ostream& operator<<(std::ostream&, TextureWrapMode);
     std::string to_string(TextureWrapMode);
 
+    // how sampling should handle when the sampling location falls between multiple textels
     enum class TextureFilterMode {
         Nearest = 0,
         Linear,
@@ -75,7 +82,6 @@ namespace osc::experimental
         class Impl;
     private:
         friend class GraphicsBackend;
-        friend struct std::hash<Texture2D>;
         friend bool operator==(Texture2D const&, Texture2D const&);
         friend bool operator!=(Texture2D const&, Texture2D const&);
         friend bool operator<(Texture2D const&, Texture2D const&);
@@ -98,13 +104,6 @@ namespace osc::experimental
     std::string to_string(Texture2D const&);
 }
 
-namespace std
-{
-    template<>
-    struct hash<osc::experimental::Texture2D> {
-        std::size_t operator()(osc::experimental::Texture2D const&) const;
-    };
-}
 
 // shader
 //
@@ -148,7 +147,6 @@ namespace osc::experimental
         class Impl;
     private:
         friend class GraphicsBackend;
-        friend struct std::hash<Shader>;
         friend bool operator==(Shader const&, Shader const&);
         friend bool operator!=(Shader const&, Shader const&);
         friend bool operator<(Shader const&, Shader const&);
@@ -171,17 +169,10 @@ namespace osc::experimental
     std::string to_string(Shader const&);
 }
 
-namespace std
-{
-    template<>
-    struct hash<osc::experimental::Shader> {
-        std::size_t operator()(osc::experimental::Shader const&) const;
-    };
-}
 
 // material
 //
-// pairs a shader (above) with particular properties that the shader will be called with
+// pairs a shader with properties that the shader program is used with
 namespace osc::experimental
 {
     class Material final {
@@ -225,7 +216,6 @@ namespace osc::experimental
         class Impl;
     private:
         friend class GraphicsBackend;
-        friend struct std::hash<Material>;
         friend bool operator==(Material const&, Material const&);
         friend bool operator!=(Material const&, Material const&);
         friend bool operator<(Material const&, Material const&);
@@ -248,18 +238,11 @@ namespace osc::experimental
     std::string to_string(Material const&);
 }
 
-namespace std
-{
-    template<>
-    struct hash<osc::experimental::Material> {
-        std::size_t operator()(osc::experimental::Material const&) const;
-    };
-}
 
 // material property block
 //
-// enables callers to apply per-instance properties to a drawcall (that might be using
-// the same material)
+// enables callers to apply per-instance properties when using a material (more efficiently
+// than using a different material every time)
 namespace osc::experimental
 {
     class MaterialPropertyBlock final {
@@ -304,7 +287,6 @@ namespace osc::experimental
         class Impl;
     private:
         friend class GraphicsBackend;
-        friend struct std::hash<MaterialPropertyBlock>;
         friend bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
         friend bool operator!=(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
         friend bool operator<(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
@@ -327,16 +309,14 @@ namespace osc::experimental
     std::string to_string(MaterialPropertyBlock const&);
 }
 
-namespace std
-{
-    template<>
-    struct hash<osc::experimental::MaterialPropertyBlock> {
-        std::size_t operator()(osc::experimental::MaterialPropertyBlock const&) const;
-    };
-}
 
+// mesh
+//
+// encapsulates mesh data, which may include vertices, indices, normals, texture
+// coordinates, etc.
 namespace osc::experimental
 {
+    // which primitive geometry the mesh data represents
     enum class MeshTopography {
         Triangles = 0,
         Lines,
@@ -379,7 +359,6 @@ namespace osc::experimental
         class Impl;
     private:
         friend class GraphicsBackend;
-        friend struct std::hash<Mesh>;
         friend bool operator==(Mesh const&, Mesh const&);
         friend bool operator!=(Mesh const&, Mesh const&);
         friend bool operator<(Mesh const&, Mesh const&);
@@ -402,33 +381,17 @@ namespace osc::experimental
     std::string to_string(Mesh const&);
 }
 
-namespace std
-{
-    template<>
-    struct hash<osc::experimental::Mesh> {
-        std::size_t operator()(osc::experimental::Mesh const&) const;
-    };
-}
-
+// camera
+//
+// encapsulates a camera viewport that can be drawn to, with the intention of producing
+// a 2D rendered image of the drawn elements
 namespace osc::experimental
 {
+    // the shape of the viewing frustrum that the camera uses
     enum class CameraProjection {
         Perspective = 0,
         Orthographic,
         TOTAL,
-    };
-
-    std::ostream& operator<<(std::ostream&, CameraProjection);
-    std::string to_string(CameraProjection);
-}
-
-/*
-
-namespace osc::experimental
-{
-    enum class CameraProjection {
-        Perspective,
-        Orthographic,
     };
 
     std::ostream& operator<<(std::ostream&, CameraProjection);
@@ -444,21 +407,17 @@ namespace osc::experimental
         Camera& operator=(Camera&&) noexcept;
         ~Camera() noexcept;
 
-        std::int64_t getVersion() const;  // TODO: increment on each mutation
-
-        glm::vec4 const& getBackgroundColor() const;
+        glm::vec4 getBackgroundColor() const;
         void setBackgroundColor(glm::vec4 const&);
 
         CameraProjection getCameraProjection() const;
         void setCameraProjection(CameraProjection);
 
-        // only used if orthographic
-        //
-        // e.g. https://docs.unity3d.com/ScriptReference/Camera-orthographicSize.html
+        // only used if CameraProjection == Orthographic
         float getOrthographicSize() const;
         void setOrthographicSize(float);
 
-        // only used if perspective
+        // only used if CameraProjection == Perspective
         float getCameraFOV() const;
         void setCameraFOV(float);
 
@@ -468,42 +427,48 @@ namespace osc::experimental
         float getFarClippingPlane() const;
         void setFarClippingPlane(float);
 
-        Texture2D const* getTexture() const;  // returns nullptr if drawing directly to screen
-        void setTexture(Texture2D const&);
+        std::optional<Texture2D> getTexture() const;  // returns nullptr if drawing directly to screen
+        void setTexture(Texture2D);
         void setTexture();  // resets to drawing to screen
 
         // where on the screen the camera is rendered (in screen-space)
         //
-        // returns rect at 0,0 with width and height of texture if drawing
+        // returns rect with topleft coord 0,0  and a width/height of texture if drawing
         // to a texture
-        Rect const& getPixelRect() const;
+        Rect getPixelRect() const;
         void setPixelRect(Rect const&);
 
         int getPixelWidth() const;
         int getPixelHeight() const;
         float getAspectRatio() const;
 
+        // scissor testing
+        //
+        // This tells the rendering backend to only render the fragments that occur within
+        // these bounds. It's useful when (e.g.) running an expensive fragment shader (e.g.
+        // image processing kernels) where you know that only a certain subspace is actually
+        // interesting (e.g. rim-highlighting only selected elements)
         std::optional<Rect> getScissorRect() const;  // std::nullopt if not scissor testing
         void setScissorRect(Rect const&);  // rect is in pixel space?
         void setScissorRect();  // resets to having no scissor
 
-        glm::vec3 const& getPosition() const;
+        glm::vec3 getPosition() const;
         void setPosition(glm::vec3 const&);
 
-        glm::vec3 const& getDirection() const;
+        glm::vec3 getDirection() const;
         void setDirection(glm::vec3 const&);
 
-        glm::mat4 const& getCameraToWorldMatrix() const;
+        glm::mat4 getCameraToWorldMatrix() const;
 
         // flushes any rendering commands that were queued against this camera
         //
-        // after this call completes, callers can then use the output texture/screen
+        // after this call completes, the output texture, or screen, should contain
+        // the rendered geometry
         void render();
 
         class Impl;
     private:
         friend class GraphicsBackend;
-        friend struct std::hash<Camera>;
         friend bool operator==(Camera const&, Camera const&);
         friend bool operator!=(Camera const&, Camera const&);
         friend bool operator<(Camera const&, Camera const&);
@@ -526,20 +491,14 @@ namespace osc::experimental
     std::string to_string(Camera const&);
 }
 
-namespace std
-{
-    template<>
-    struct hash<osc::experimental::Camera> {
-        std::size_t operator()(osc::experimental::Camera const&) const;
-    };
-}
-
+// rendering functions
+//
+// these perform the necessary backend steps to get something useful done
 namespace osc::experimental::Graphics
 {
-    void DrawMesh(Mesh,
-                  glm::vec3 const& pos,
-                  Material,
+    void DrawMesh(Mesh const&,
+                  Transform const&,
+                  Material const&,
                   Camera&,
                   std::optional<MaterialPropertyBlock> = std::nullopt);
 }
-*/

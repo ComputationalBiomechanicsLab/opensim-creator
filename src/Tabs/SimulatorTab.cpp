@@ -1,4 +1,4 @@
-#include "SimulatorScreen.hpp"
+#include "SimulatorTab.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Maths/BVH.hpp"
@@ -7,18 +7,21 @@
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
-#include "src/OpenSimBindings/MainEditorState.hpp"
+#include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/OpenSimBindings/SimulationModelStatePair.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/OpenSimBindings/VirtualOutputExtractor.hpp"
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
-#include "src/Screens/ModelEditorScreen.hpp"
+#include "src/Tabs/ModelEditorTab.hpp"
+#include "src/Tabs/TabHost.hpp"
+#include "src/Utils/Assertions.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/Utils/Perf.hpp"
 #include "src/Widgets/LogViewer.hpp"
@@ -27,6 +30,7 @@
 #include "src/Widgets/ModelHierarchyPanel.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
+#include "src/MainUIStateAPI.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/ComponentOutput.h>
@@ -34,7 +38,9 @@
 #include <implot/implot.h>
 #include <IconsFontAwesome5.h>
 #include <nonstd/span.hpp>
+#include <SDL_events.h>
 
+#include <atomic>
 #include <chrono>
 #include <fstream>
 #include <filesystem>
@@ -45,6 +51,22 @@
 #include <utility>
 #include <variant>
 #include <vector>
+
+
+static std::atomic<int> g_SimulationNumber = 1;
+
+static std::vector<osc::OutputExtractor> GetAllUserDesiredOutputs(osc::MainUIStateAPI& api)
+{
+    int nOutputs = api.getNumUserOutputExtractors();
+
+    std::vector<osc::OutputExtractor> rv;
+    rv.reserve(nOutputs);
+    for (int i = 0; i < nOutputs; ++i)
+    {
+        rv.push_back(api.getUserOutputExtractor(i));
+    }
+    return rv;
+}
 
 
 static void DrawSimulationParamValue(osc::ParamValue const& v)
@@ -96,14 +118,14 @@ static void DrawSimulationParams(osc::ParamBlock const& params)
 
 // export a timeseries to a CSV file and return the filepath
 static std::string ExportTimeseriesToCSV(
-        float const* ts,    // times
-        float const* vs,    // values @ each time in times
-        size_t n,           // number of datapoints
-        char const* header)  // name of values (header)
+    float const* ts,    // times
+    float const* vs,    // values @ each time in times
+    size_t n,           // number of datapoints
+    char const* header)  // name of values (header)
 {
     // try prompt user for save location
     std::filesystem::path p =
-            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+        osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
     if (p.empty())
     {
@@ -137,8 +159,8 @@ static std::string ExportTimeseriesToCSV(
 }
 
 static std::vector<float> PopulateFirstNNumericOutputValues(OpenSim::Model const& model,
-                                                            nonstd::span<osc::SimulationReport const> reports,
-                                                            osc::VirtualOutputExtractor const& output)
+    nonstd::span<osc::SimulationReport const> reports,
+    osc::VirtualOutputExtractor const& output)
 {
     std::vector<float> rv;
     rv.resize(reports.size());
@@ -158,7 +180,7 @@ static std::vector<float> PopulateFirstNTimeValues(nonstd::span<osc::SimulationR
 }
 
 static std::string TryExportNumericOutputToCSV(osc::Simulation& sim,
-                                               osc::VirtualOutputExtractor const& output)
+    osc::VirtualOutputExtractor const& output)
 {
     OSC_ASSERT(output.getOutputType() == osc::OutputType::Float);
 
@@ -167,20 +189,20 @@ static std::string TryExportNumericOutputToCSV(osc::Simulation& sim,
     std::vector<float> times = PopulateFirstNTimeValues(reports);
 
     return ExportTimeseriesToCSV(times.data(),
-                                 values.data(),
-                                 times.size(),
-                                 output.getName().c_str());
+        values.data(),
+        times.size(),
+        output.getName().c_str());
 }
 
 static std::string TryExportOutputsToCSV(osc::Simulation& sim,
-                                         std::vector<osc::OutputExtractor> outputs)
+    std::vector<osc::OutputExtractor> outputs)
 {
     std::vector<osc::SimulationReport> reports = sim.getAllSimulationReports();
     std::vector<float> times = PopulateFirstNTimeValues(reports);
 
     // try prompt user for save location
     std::filesystem::path p =
-            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+        osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
     if (p.empty())
     {
@@ -207,7 +229,6 @@ static std::string TryExportOutputsToCSV(osc::Simulation& sim,
 
     // data lines
     auto guard = sim.getModel();
-    OpenSim::Model const& m = *guard;
     for (size_t i = 0; i < reports.size(); ++i)
     {
         fout << times.at(i);  // time column
@@ -215,7 +236,7 @@ static std::string TryExportOutputsToCSV(osc::Simulation& sim,
         osc::SimulationReport r = reports[i];
         for (osc::OutputExtractor const& o : outputs)
         {
-            fout << ',' << o.getValueFloat(m, r);
+            fout << ',' << o.getValueFloat(*guard, r);
         }
 
         fout << '\n';
@@ -230,7 +251,7 @@ static std::string TryExportOutputsToCSV(osc::Simulation& sim,
 }
 
 static void DrawGenericNumericOutputContextMenuItems(osc::Simulation& sim,
-                                                     osc::VirtualOutputExtractor const& output)
+    osc::VirtualOutputExtractor const& output)
 {
     OSC_ASSERT(output.getOutputType() == osc::OutputType::Float);
 
@@ -275,160 +296,108 @@ static void DrawOutputNameColumn(osc::VirtualOutputExtractor const& output, bool
     }
 }
 
-class osc::SimulatorScreen::Impl final {
+class osc::SimulatorTab::Impl final {
 public:
-    Impl(std::shared_ptr<MainEditorState> _mes) : m_MainEditorState{std::move(_mes)}
-    {
-        // lazily init at least one viewer
-        if (m_MainEditorState->getNumViewers() == 0)
-        {
-            m_MainEditorState->addViewer();
-        }
-    }
+	Impl(MainUIStateAPI* api, std::shared_ptr<Simulation> simulation) :
+        m_API{std::move(api)},
+        m_Simulation{std::move(simulation)}
+	{
+	}
 
-    void onMount()
-    {
-        osc::ImGuiInit();
+	UID getID() const
+	{
+		return m_ID;
+	}
+
+	CStringView getName() const
+	{
+		return m_Name;
+	}
+
+	TabHost* parent()
+	{
+        return m_API;
+	}
+
+	void onMount()
+	{
         ImPlot::CreateContext();
         App::upd().makeMainEventLoopWaiting();
-    }
+	}
 
-    void onUnmount()
-    {
-        osc::ImGuiShutdown();
-        ImPlot::DestroyContext();
+	void onUnmount()
+	{
         App::upd().makeMainEventLoopPolling();
-    }
+        ImPlot::DestroyContext();
+	}
 
-    void onEvent(SDL_Event const& e)
-    {
-        if (e.type == SDL_QUIT)
+	bool onEvent(SDL_Event const& e)
+	{
+        if (e.type == SDL_KEYDOWN)
         {
-            App::upd().requestQuit();
-            return;
+            return onKeyDown(e.key);
         }
-        else if (osc::ImGuiOnEvent(e))
-        {
-            return;
-        }
-        else if (e.type == SDL_KEYDOWN)
-        {
-            onKeyDown(e.key);
-            return;
-        }
-    }
+        return false;
+	}
 
-    void tick(float dt)
-    {
+	void onTick()
+	{
         if (m_IsPlayingBack)
         {
-            osc::MainEditorState& st = *m_MainEditorState;
-            std::shared_ptr<osc::Simulation> maybeSim = st.updFocusedSimulation();
-
-            if (maybeSim)
+            auto playbackPos = getPlaybackPositionInSimTime(*m_Simulation);
+            if (playbackPos < m_Simulation->getEndTime())
             {
-                osc::Simulation& sim = *maybeSim;
-                auto playbackPos = getPlaybackPositionInSimTime(sim);
-                if (playbackPos < sim.getEndTime())
-                {
-                    osc::App::upd().requestRedraw();
-                }
-                else
-                {
-                    m_IsPlayingBack = false;
-                    return;
-                }
+                osc::App::upd().requestRedraw();
+            }
+            else
+            {
+                m_IsPlayingBack = false;
+                return;
             }
         }
-    }
+	}
 
-    void draw()
-    {
-        App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
-        osc::ImGuiNewFrame();
+	void onDrawMainMenu()
+	{
+        m_MainMenuFileTab.draw(m_API);
+        drawMainMenuWindowTab();
+        m_MainMenuAboutTab.draw();
+	}
+
+	void onDraw()
+	{
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
         drawContent();
-        osc::ImGuiRender();
-    }
+	}
 
 private:
     void drawContent()
     {
         OSC_PERF("draw simulation screen");
 
-        if (drawMainMenu())
-        {
-            return;
-        }
-
         {
             OSC_PERF("draw simulator panels");
             drawAll3DViewers();
         }
 
-        // edge-case: there are no simulations available, so
-        // show a "you need to run something, fool" dialog
-        if (m_MainEditorState->getNumSimulations() <= 0)
-        {
-            if (ImGui::Begin("Warning"))
-            {
-                ImGui::TextUnformatted("No simulations are currently running");
-                if (ImGui::Button("Run new simulation"))
-                {
-                    StartSimulatingEditedModel(*m_MainEditorState);
-                    m_IsPlayingBack = true;
-                    m_PlaybackStartSimtime = osc::SimulationClock::start();
-                    m_PlaybackStartWallTime = std::chrono::system_clock::now();
-                }
-            }
-            ImGui::End();
-            return;
-        }
-
         // ensure m_ShownModelState is populated, if possible
         {
-            std::shared_ptr<osc::Simulation> maybeSim = m_MainEditorState->updFocusedSimulation();
-            if (maybeSim)
+            std::optional<osc::SimulationReport> maybeReport = TrySelectReportBasedOnScrubbing(*m_Simulation);
+            if (maybeReport)
             {
-                std::optional<osc::SimulationReport> maybeReport = TrySelectReportBasedOnScrubbing(*maybeSim);
-                if (maybeReport)
+                if (m_ShownModelState)
                 {
-                    float sf = m_MainEditorState->editedModel()->getFixupScaleFactor();
-                    if (m_ShownModelState)
-                    {
-                        m_ShownModelState->setSimulation(maybeSim);
-                        m_ShownModelState->setSimulationReport(*maybeReport);
-                        m_ShownModelState->setFixupScaleFactor(sf);
-                    }
-                    else
-                    {
-                        m_ShownModelState = std::make_unique<osc::SimulationModelStatePair>(
-                            maybeSim,
-                            *maybeReport,
-                            sf);
-                    }
+                    m_ShownModelState->setSimulation(m_Simulation);
+                    m_ShownModelState->setSimulationReport(*maybeReport);
+                }
+                else
+                {
+                    m_ShownModelState = std::make_unique<osc::SimulationModelStatePair>(m_Simulation, *maybeReport);
                 }
             }
         }
 
         osc::Config const& config = osc::App::get().getConfig();
-
-        // draw simulations panel
-        if (bool simsPanelOldState = config.getIsPanelEnabled("Simulations"))
-        {
-            bool simsPanelState = simsPanelOldState;
-            if (ImGui::Begin("Simulations", &simsPanelState))
-            {
-                OSC_PERF("draw simulations panel");
-                drawSimulatorTab();
-            }
-            ImGui::End();
-
-            if (simsPanelState != simsPanelOldState)
-            {
-                App::upd().updConfig().setIsPanelEnabled("Simulations", simsPanelState);
-            }
-        }
 
         // draw hierarchy panel
         {
@@ -533,18 +502,7 @@ private:
 
     void drawOutputsTab()
     {
-        osc::MainEditorState& st = *m_MainEditorState;
-        std::shared_ptr<osc::Simulation> maybeSim = st.updFocusedSimulation();
-
-        if (!maybeSim)
-        {
-            ImGui::TextDisabled("(no simulation selected)");
-            return;
-        }
-
-        osc::Simulation& sim = *maybeSim;
-
-        int numOutputs = st.getNumUserOutputExtractors();
+        int numOutputs = m_API->getNumUserOutputExtractors();
 
         if (numOutputs <= 0)
         {
@@ -557,12 +515,12 @@ private:
         {
             if (ImGui::MenuItem("as CSV"))
             {
-                TryExportOutputsToCSV(sim, osc::GetAllUserDesiredOutputs(st));
+                TryExportOutputsToCSV(*m_Simulation, GetAllUserDesiredOutputs(*m_API));
             }
 
             if (ImGui::MenuItem("as CSV (and open)"))
             {
-                std::string path = TryExportOutputsToCSV(sim, osc::GetAllUserDesiredOutputs(st));
+                std::string path = TryExportOutputsToCSV(*m_Simulation, GetAllUserDesiredOutputs(*m_API));
                 if (!path.empty())
                 {
                     osc::OpenPathInOSDefaultApplication(path);
@@ -577,10 +535,10 @@ private:
 
         for (int i = 0; i < numOutputs; ++i)
         {
-            osc::OutputExtractor const& output = st.getUserOutputExtractor(i);
+            osc::OutputExtractor const& output = m_API->getUserOutputExtractor(i);
 
             ImGui::PushID(i);
-            drawOutputDataColumn(sim, output, 64.0f);
+            drawOutputDataColumn(*m_Simulation, output, 64.0f);
             DrawOutputNameColumn(output, true);
             ImGui::PopID();
         }
@@ -628,103 +586,21 @@ private:
 
     void drawSimulatorTab()
     {
-        osc::MainEditorState& st = *m_MainEditorState;
-
-        if (st.getNumSimulations() <= 0)
-        {
-            ImGui::TextDisabled("(no simulations available)");
-            return;
-        }
-
-        std::shared_ptr<osc::Simulation> maybeSim = st.updFocusedSimulation();
-
-        if (maybeSim)
-        {
-            DrawSimulationScrubber(*maybeSim);
-        }
-        else
-        {
-            ImGui::TextDisabled("(no simulation selected)");
-        }
-
-        // draw simulations list
-        ImGui::Dummy({0.0f, 1.0f});
-        ImGui::TextUnformatted("Simulations:");
-        ImGui::Separator();
-        ImGui::Dummy({0.0f, 0.3f});
-
-
-        for (int i = 0; i < st.getNumSimulations(); ++i)
-        {
-            ImGui::PushID(i);
-            drawSimulationProgressBarEtc(i);
-            ImGui::PopID();
-        }
-    }
-
-
-    void drawSimulationProgressBarEtc(int simulationIdx)
-    {
-        osc::MainEditorState& st = *m_MainEditorState;
-        std::shared_ptr<osc::Simulation> sim = st.updSimulation(simulationIdx);
-
-        bool isFocused = simulationIdx == st.getFocusedSimulationIndex();
-        float progress = sim->getProgress();
+        float progress = m_Simulation->getProgress();
         ImVec4 baseColor = progress >= 1.0f ? ImVec4{0.0f, 0.7f, 0.0f, 0.5f} : ImVec4{0.7f, 0.7f, 0.0f, 0.5f};
-
-        if (isFocused)
-        {
-            baseColor.w = 1.0f;
-        }
-
-        bool shouldErase = false;
-        if (ImGui::Button(ICON_FA_TRASH))
-        {
-            shouldErase = true;
-        }
 
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_PlotHistogram, baseColor);
         ImGui::ProgressBar(progress);
         ImGui::PopStyleColor();
 
-        if (ImGui::IsItemHovered())
-        {
-            if (ImGui::IsKeyPressed(SDL_SCANCODE_DELETE))
-            {
-                shouldErase = true;
-            }
-
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
-            ImGui::TextUnformatted(sim->getModel()->getName().c_str());
-            ImGui::Dummy({0.0f, 1.0f});
-            ImGui::PushStyleColor(ImGuiCol_Text, OSC_SLIGHTLY_GREYED_RGBA);
-            ImGui::Text("Sim time (sec): %.1f", static_cast<float>((sim->getCurTime() - sim->getStartTime()).count()));
-            ImGui::Text("Sim final time (sec): %.1f", static_cast<float>(sim->getEndTime().time_since_epoch().count()));
-            ImGui::Dummy({0.0f, 1.0f});
-            ImGui::TextUnformatted("Left-click: Select this simulation");
-            ImGui::TextUnformatted("Delete: cancel this simulation");
-            ImGui::PopStyleColor();
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
-
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
-        {
-            st.setFocusedSimulation(simulationIdx);
-        }
-
         if (ImGui::BeginPopupContextItem("simcontextmenu"))
         {
-            st.setFocusedSimulation(simulationIdx);
-
             if (ImGui::MenuItem("edit model"))
             {
-                std::shared_ptr<osc::UndoableModelStatePair> editedModel = st.editedModel();
-                editedModel->setModel(std::make_unique<OpenSim::Model>(*sim->getModel()));
-                editedModel->commit("loaded model from simulator window");
-                osc::App::upd().requestTransition<osc::ModelEditorScreen>(m_MainEditorState);
+                auto uim = std::make_unique<osc::UndoableModelStatePair>(std::make_unique<OpenSim::Model>(*m_Simulation->getModel()));
+                UID tabID = m_API->addTab<ModelEditorTab>(m_API, std::move(uim));
+                m_API->selectTab(tabID);
             }
 
             if (ImGui::IsItemHovered())
@@ -738,26 +614,10 @@ private:
 
             ImGui::EndPopup();
         }
-
-        if (shouldErase)
-        {
-            st.removeSimulation(simulationIdx);
-        }
     }
 
     void drawSimulationStats()
     {
-        osc::MainEditorState& st = *m_MainEditorState;
-        std::shared_ptr<osc::Simulation> maybeSim = st.updFocusedSimulation();
-
-        if (!maybeSim)
-        {
-            ImGui::TextDisabled("(no simulation selected)");
-            return;
-        }
-
-        osc::Simulation& sim = *maybeSim;
-
         {
             ImGui::Dummy({0.0f, 1.0f});
             ImGui::TextUnformatted("info:");
@@ -769,21 +629,21 @@ private:
             ImGui::Columns(2);
             ImGui::Text("num reports");
             ImGui::NextColumn();
-            ImGui::Text("%i", sim.getNumReports());
+            ImGui::Text("%i", m_Simulation->getNumReports());
             ImGui::NextColumn();
             ImGui::Columns();
         }
 
         {
             OSC_PERF("draw simulation params");
-            DrawSimulationParams(sim.getParams());
+            DrawSimulationParams(m_Simulation->getParams());
         }
 
         ImGui::Dummy({0.0f, 10.0f});
 
         {
             OSC_PERF("draw simulation stats");
-            drawSimulationStatPlots(sim);
+            drawSimulationStatPlots(*m_Simulation);
         }
     }
 
@@ -862,8 +722,7 @@ private:
         else if (outputType == osc::OutputType::String)
         {
             osc::SimulationReport r = TrySelectReportBasedOnScrubbing(sim).value_or(sim.getSimulationReport(nReports-1));
-            auto guard = sim.getModel();
-            ImGui::TextUnformatted(output.getValueString(*guard, r).c_str());
+            ImGui::TextUnformatted(output.getValueString(*sim.getModel(), r).c_str());
         }
     }
 
@@ -884,12 +743,10 @@ private:
 
         std::vector<float> buf;
         {
-            auto guard = sim.getModel();
-            OpenSim::Model const& model = *guard;
             OSC_PERF("collect output data");
             std::vector<osc::SimulationReport> reports = sim.getAllSimulationReports();
             buf.resize(reports.size());
-            output.getValuesFloat(model, reports, buf);
+            output.getValuesFloat(*sim.getModel(), reports, buf);
         }
 
         // draw plot
@@ -989,9 +846,8 @@ private:
         }
     }
 
-
     // draw timescrubber slider
-    void DrawSimulationScrubber(osc::Simulation& sim)
+    void drawSimulationScrubber(osc::Simulation& sim)
     {
         // play/pause buttons
         if (!m_IsPlayingBack)
@@ -1072,7 +928,7 @@ private:
             ImGui::Separator();
 
             // active viewers (can be disabled)
-            for (int i = 0; i < m_MainEditorState->getNumViewers(); ++i)
+            for (int i = 0; i < static_cast<int>(m_ModelViewers.size()); ++i)
             {
                 char buf[64];
                 std::snprintf(buf, sizeof(buf), "viewer%i", i);
@@ -1080,47 +936,22 @@ private:
                 bool enabled = true;
                 if (ImGui::MenuItem(buf, nullptr, &enabled))
                 {
-                    m_MainEditorState->removeViewer(i);
+                    m_ModelViewers.erase(m_ModelViewers.begin() + i);
                     --i;
                 }
             }
 
             if (ImGui::MenuItem("add viewer"))
             {
-                m_MainEditorState->addViewer();
+                m_ModelViewers.emplace_back();
             }
 
             ImGui::EndMenu();
         }
     }
 
-    bool drawMainMenu()
-    {
-        // draw main menu
-        if (ImGui::BeginMainMenuBar())
-        {
-            m_MainMenuFileTab.draw(m_MainEditorState);
-            drawMainMenuWindowTab();
-            m_MainMenuAboutTab.draw();
-
-            ImGui::Dummy({5.0f, 0.0f});
-
-            if (ImGui::Button(ICON_FA_CUBE " Switch to editor (Ctrl+E)"))
-            {
-                // request the transition then exit this drawcall ASAP
-                osc::App::upd().requestTransition<osc::ModelEditorScreen>(std::move(m_MainEditorState));
-                ImGui::EndMainMenuBar();
-                return true;
-            }
-
-            ImGui::EndMainMenuBar();
-        }
-
-        return false;
-    }
-
     // draw a 3D model viewer
-    bool SimscreenDraw3DViewer(osc::SimulationModelStatePair& ms, osc::UiModelViewer& viewer, char const* name)
+    bool SimscreenDraw3DViewer(osc::SimulationModelStatePair& ms, osc::UiModelViewer& viewer, char const* name, int i)
     {
         bool isOpen = true;
 
@@ -1140,8 +971,20 @@ private:
             return true;  // it's open, but not shown
         }
 
+        glm::vec2 pos = ImGui::GetCursorScreenPos();
+        glm::vec2 dims = ImGui::GetContentRegionAvail();
         auto resp = viewer.draw(ms);
         ImGui::End();
+
+        // draw scubber overlay
+        {
+            ImGui::SetNextWindowPos({ pos.x + 100.0f, pos.y + dims.y - 70.0f });
+            ImGui::SetNextWindowSize({ dims.x - 110.0f, 100.0f });
+            std::string scrubberName = "##scrubber_" + std::to_string(i);
+            ImGui::Begin(scrubberName.c_str(), nullptr, osc::GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs);
+            drawSimulationScrubber(*ms.updSimulation());
+            ImGui::End();
+        }
 
         if (resp.hovertestResult)
         {
@@ -1187,18 +1030,17 @@ private:
 
         osc::SimulationModelStatePair& ms = *m_ShownModelState;
 
-        osc::MainEditorState& st = *m_MainEditorState;
-        for (int i = 0; i < st.getNumViewers(); ++i)
+        for (int i = 0; i < static_cast<int>(m_ModelViewers.size()); ++i)
         {
-            osc::UiModelViewer& viewer = st.updViewer(i);
+            osc::UiModelViewer& viewer = m_ModelViewers[i];
 
             char buf[64];
             std::snprintf(buf, sizeof(buf), "viewer%i", i);
 
-            bool isOpen = SimscreenDraw3DViewer(ms, viewer, buf);
+            bool isOpen = SimscreenDraw3DViewer(ms, viewer, buf, i);
             if (!isOpen)
             {
-                st.removeViewer(i);
+                m_ModelViewers.erase(m_ModelViewers.begin() + i);
                 --i;
             }
         }
@@ -1271,29 +1113,20 @@ private:
         // re-realize state, because of the OpenSim pathwrap bug: https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/123
         SimTK::State& st = report.updStateHACK();
         st.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
-        auto guard = sim.getModel();
-        guard->realizeReport(st);
+        sim.getModel()->realizeReport(st);
 
         return maybeReport;
     }
 
     bool onKeyDown(SDL_KeyboardEvent const& e)
     {
-        if (e.keysym.mod & KMOD_CTRL)
-        {
-            // Ctrl
-            switch (e.keysym.sym) {
-            case SDLK_e:
-                // Ctrl + e
-                osc::App::upd().requestTransition<osc::ModelEditorScreen>(std::move(m_MainEditorState));
-                return true;
-            }
-        }
         return false;
     }
 
-    // top-level state, shared between screens
-    std::shared_ptr<MainEditorState> m_MainEditorState;
+	UID m_ID;
+    std::string m_Name = ICON_FA_PLAY " Simulation_" + std::to_string(g_SimulationNumber++);
+    MainUIStateAPI* m_API;
+    std::shared_ptr<Simulation> m_Simulation;
 
     // the modelstate that's being shown in the UI, based on scrubbing etc.
     //
@@ -1308,6 +1141,8 @@ private:
     PerfPanel m_PerfPanel{"Performance"};
     ModelHierarchyPanel m_ModelHierarchyPanel{"Hierarchy"};
 
+    std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
+
     // scrubber/playback state
     bool m_IsPlayingBack = true;
     SimulationClock::time_point m_PlaybackStartSimtime = SimulationClock::start();
@@ -1315,50 +1150,70 @@ private:
 };
 
 
-// public API (PIMPL)
+// public API
 
-osc::SimulatorScreen::SimulatorScreen(std::shared_ptr<MainEditorState> mes) :
-    m_Impl{new Impl{std::move(mes)}}
+osc::SimulatorTab::SimulatorTab(MainUIStateAPI* api, std::shared_ptr<Simulation> simulation) :
+	m_Impl{new Impl{std::move(api), std::move(simulation)}}
 {
 }
 
-osc::SimulatorScreen::SimulatorScreen(SimulatorScreen&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+osc::SimulatorTab::SimulatorTab(SimulatorTab&& tmp) noexcept :
+	m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
 }
 
-osc::SimulatorScreen& osc::SimulatorScreen::operator=(SimulatorScreen&& tmp) noexcept
+osc::SimulatorTab& osc::SimulatorTab::operator=(SimulatorTab&& tmp) noexcept
 {
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
+	std::swap(m_Impl, tmp.m_Impl);
+	return *this;
 }
 
-osc::SimulatorScreen::~SimulatorScreen() noexcept
+osc::SimulatorTab::~SimulatorTab() noexcept
 {
-    delete m_Impl;
+	delete m_Impl;
 }
 
-void osc::SimulatorScreen::onMount()
+osc::UID osc::SimulatorTab::implGetID() const
 {
-    m_Impl->onMount();
+	return m_Impl->getID();
 }
 
-void osc::SimulatorScreen::onUnmount()
+osc::CStringView osc::SimulatorTab::implGetName() const
 {
-    m_Impl->onUnmount();
+	return m_Impl->getName();
 }
 
-void osc::SimulatorScreen::onEvent(SDL_Event const& e)
+osc::TabHost* osc::SimulatorTab::implParent() const
 {
-    m_Impl->onEvent(e);
+	return m_Impl->parent();
 }
 
-void osc::SimulatorScreen::tick(float dt)
+void osc::SimulatorTab::implOnMount()
 {
-    m_Impl->tick(std::move(dt));
+	m_Impl->onMount();
 }
 
-void osc::SimulatorScreen::draw()
+void osc::SimulatorTab::implOnUnmount()
 {
-    m_Impl->draw();
+	m_Impl->onUnmount();
+}
+
+bool osc::SimulatorTab::implOnEvent(SDL_Event const& e)
+{
+	return m_Impl->onEvent(e);
+}
+
+void osc::SimulatorTab::implOnTick()
+{
+	m_Impl->onTick();
+}
+
+void osc::SimulatorTab::implOnDrawMainMenu()
+{
+	m_Impl->onDrawMainMenu();
+}
+
+void osc::SimulatorTab::implOnDraw()
+{
+	m_Impl->onDraw();
 }

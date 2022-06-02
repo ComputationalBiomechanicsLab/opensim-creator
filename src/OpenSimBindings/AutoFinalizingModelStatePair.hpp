@@ -4,10 +4,6 @@
 #include "src/Utils/ClonePtr.hpp"
 #include "src/Utils/UID.hpp"
 
-#include <nonstd/span.hpp>
-#include <glm/vec3.hpp>
-
-#include <cstddef>
 #include <memory>
 #include <string>
 

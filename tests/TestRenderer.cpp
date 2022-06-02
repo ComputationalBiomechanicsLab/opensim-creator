@@ -414,14 +414,6 @@ TEST_F(Renderer, ShaderGetPropertyTypeReturnsExpectedType)
     }
 }
 
-TEST_F(Renderer, ShaderCanBeHashed)
-{
-    // e.g. for storage in a set
-
-    osc::experimental::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
-    std::hash<osc::experimental::Shader>{}(s); // should compile and run fine
-}
-
 TEST_F(Renderer, MaterialCanBeConstructed)
 {
     GenerateMaterial();  // should compile and run fine
@@ -703,12 +695,6 @@ TEST_F(Renderer, MaterialCanConvertToString)
 {
     osc::experimental::Material m1 = GenerateMaterial();
     std::string s = osc::experimental::to_string(m1);
-}
-
-TEST_F(Renderer, MaterialCanHash)
-{
-    osc::experimental::Material m1 = GenerateMaterial();
-    std::hash<osc::experimental::Material>{}(m1);
 }
 
 // TODO: compound tests: ensure copy on write works etc
@@ -1042,11 +1028,6 @@ TEST_F(Renderer, MaterialPropertyBlockCanConvertToString)
     std::string s = osc::experimental::to_string(m);  // just ensure this compiles + runs
 }
 
-TEST_F(Renderer, MaterialPropertyBlockCanHash)
-{
-    osc::experimental::MaterialPropertyBlock m;
-    std::hash<osc::experimental::MaterialPropertyBlock>{}(m);
-}
 
 // TOOD: ensure string contains relevant stuff etc
 
@@ -1369,12 +1350,6 @@ TEST_F(Renderer, TextureCaneBeConvertedToString)
     ASSERT_FALSE(s.empty());
 }
 
-TEST_F(Renderer, TextureCanBeHashed)
-{
-    osc::experimental::Texture2D t = GenerateTexture();
-
-    std::hash<osc::experimental::Texture2D>{}(t);
-}
 
 // TODO ensure texture debug string contains useful information etc.
 
@@ -1658,13 +1633,6 @@ TEST_F(Renderer, MeshCanBeConvertedToStringForDebugging)
 }
 
 // TODO: ensure output strings are actually useful
-
-TEST_F(Renderer, MeshCanBeHashed)
-{
-    osc::experimental::Mesh m;
-    std::hash<osc::experimental::Mesh>{}(m);
-}
-
 TEST_F(Renderer, CameraProjectionCanBeStreamed)
 {
     for (int i = 0; i < static_cast<int>(osc::experimental::CameraProjection::TOTAL); ++i)
@@ -1685,3 +1653,167 @@ TEST_F(Renderer, CameraProjectionCanBeConvertedToString)
         ASSERT_FALSE(s.empty());
     }
 }
+
+TEST_F(Renderer, CameraCanDefaultConstruct)
+{
+    osc::experimental::Camera camera;  // should compile + run
+}
+
+TEST_F(Renderer, CameraDefaultConstructedHasNoTexture)
+{
+    osc::experimental::Camera camera;
+    ASSERT_FALSE(camera.getTexture().has_value());
+}
+
+TEST_F(Renderer, CameraCanBeConstructedWithTexture)
+{
+    osc::experimental::Camera camera{GenerateTexture()};  // should compile + run
+}
+
+TEST_F(Renderer, CameraConstructedWithTextureMakesGetTextureReturnNonemptyOptional)
+{
+    osc::experimental::Camera camera{GenerateTexture()};
+    ASSERT_TRUE(camera.getTexture().has_value());
+}
+
+TEST_F(Renderer, CameraConstructedWithTextureMakesGetTextureReturnTextureWithSameWidthAndHeight)
+{
+    osc::experimental::Texture2D t = GenerateTexture();
+    osc::experimental::Camera camera{t};
+
+    ASSERT_EQ(t.getWidth(), camera.getTexture()->getWidth());
+    ASSERT_EQ(t.getHeight(), camera.getTexture()->getHeight());
+}
+
+TEST_F(Renderer, CameraCanBeCopyConstructed)
+{
+    osc::experimental::Camera c;
+    osc::experimental::Camera copy{c};
+}
+
+TEST_F(Renderer, CameraThatIsCopyConstructedComparesEqual)
+{
+    osc::experimental::Camera c;
+    osc::experimental::Camera copy{c};
+
+    ASSERT_EQ(c, copy);
+}
+
+TEST_F(Renderer, CameraCanBeMoveConstructed)
+{
+    osc::experimental::Camera c;
+    osc::experimental::Camera copy{std::move(c)};
+}
+
+TEST_F(Renderer, CameraCanBeCopyAssigned)
+{
+    osc::experimental::Camera c1;
+    osc::experimental::Camera c2;
+
+    c2 = c1;
+}
+
+TEST_F(Renderer, CameraThatIsCopyAssignedComparesEqualToSource)
+{
+    osc::experimental::Camera c1;
+    osc::experimental::Camera c2;
+
+    c1 = c2;
+
+    ASSERT_EQ(c1, c2);
+}
+
+TEST_F(Renderer, CameraCanBeMoveAssigned)
+{
+    osc::experimental::Camera c1;
+    osc::experimental::Camera c2;
+
+    c2 = std::move(c1);
+}
+
+TEST_F(Renderer, CameraCanGetBackgroundColor)
+{
+    osc::experimental::Camera camera;
+
+    ASSERT_EQ(camera.getBackgroundColor(), glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+}
+
+TEST_F(Renderer, CameraCanSetBackgroundColor)
+{
+    osc::experimental::Camera camera;
+    camera.setBackgroundColor(GenerateVec4());
+}
+
+TEST_F(Renderer, CameraSetBackgroundColorMakesGetBackgroundColorReturnTheColor)
+{
+    osc::experimental::Camera camera;
+    glm::vec4 color = GenerateVec4();
+
+    camera.setBackgroundColor(color);
+
+    ASSERT_EQ(camera.getBackgroundColor(), color);
+}
+
+TEST_F(Renderer, CameraSetBackgroundColorMakesCameraCompareNonEqualWithCopySource)
+{
+    osc::experimental::Camera camera;
+    osc::experimental::Camera copy{camera};
+
+    ASSERT_EQ(camera, copy);
+
+    copy.setBackgroundColor(GenerateVec4());
+
+    ASSERT_NE(camera, copy);
+}
+
+TEST_F(Renderer, CameraGetCameraProjectionReturnsProject)
+{
+    osc::experimental::Camera camera;
+    ASSERT_EQ(camera.getCameraProjection(), osc::experimental::CameraProjection::Perspective);
+}
+
+TEST_F(Renderer, CameraCanSetCameraProjection)
+{
+    osc::experimental::Camera camera;
+    camera.setCameraProjection(osc::experimental::CameraProjection::Orthographic);
+}
+
+TEST_F(Renderer, CameraSetCameraProjectionMakesGetCameraProjectionReturnSetProjection)
+{
+    osc::experimental::Camera camera;
+    osc::experimental::CameraProjection proj = osc::experimental::CameraProjection::Orthographic;
+
+    ASSERT_NE(camera.getCameraProjection(), proj);
+
+    camera.setCameraProjection(proj);
+
+    ASSERT_EQ(camera.getCameraProjection(), proj);
+}
+
+TEST_F(Renderer, CameraSetCameraProjectionMakesCameraCompareNotEqual)
+{
+    osc::experimental::Camera camera;
+    osc::experimental::Camera copy{camera};
+    osc::experimental::CameraProjection proj = osc::experimental::CameraProjection::Orthographic;
+
+    ASSERT_NE(copy.getCameraProjection(), proj);
+
+    copy.setCameraProjection(proj);
+
+    ASSERT_NE(camera, copy);
+}
+
+// TODO: orthographic size
+// TODO: fov
+// TODO: clipping planes
+// TODO: texture
+// TODO: pixel rect
+// TODO: pixel dims
+// TODO: scissor rect
+// TODO: position
+// TODO: direction
+// TODO: matrix
+// TODO: render
+// TODO: operator<<
+// TODO: to_string
+// TODO: hash
