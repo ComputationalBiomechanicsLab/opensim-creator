@@ -1022,7 +1022,7 @@ public:
 
 	void onDrawMainMenu()
 	{
-        m_MainMenuFileTab.draw(m_Parent);
+        m_MainMenuFileTab.draw(m_Parent, m_Model.get());
         drawMainMenuEditTab();
         drawMainMenuSimulateTab();
         drawMainMenuWindowTab();
