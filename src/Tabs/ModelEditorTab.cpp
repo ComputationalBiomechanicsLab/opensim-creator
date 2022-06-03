@@ -1599,7 +1599,6 @@ private:
                 if (ImGui::BeginMenuBar())
                 {
                     m_ModelActionsMenuBar.draw();
-                    m_ModelActionsMenuBar.drawAnyOpenPopups();
                     ImGui::EndMenuBar();
                 }
             }
@@ -1684,6 +1683,8 @@ private:
         {
             m_ParamBlockEditorPopup.draw(m_Parent->updSimulationParams());
         }
+
+        m_ModelActionsMenuBar.drawAnyOpenPopups();
     }
 
     void drawGUARDED()
