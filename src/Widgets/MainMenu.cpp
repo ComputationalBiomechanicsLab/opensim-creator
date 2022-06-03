@@ -176,18 +176,15 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
         {
             actionNewModel(api);
         }
-
-        if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_O))
+        else if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_O))
         {
             actionOpenModel(api);
         }
-
-        if (maybeModel && mod && ImGui::IsKeyPressed(SDL_SCANCODE_S))
+        else if (maybeModel && mod && io.KeyShift && ImGui::IsKeyPressed(SDL_SCANCODE_S))
         {
-            actionSaveModel(api, *maybeModel);
+            ActionSaveCurrentModelAs(*maybeModel);
         }
-
-        if (maybeModel && mod && io.KeyAlt && ImGui::IsKeyPressed(SDL_SCANCODE_S))
+        else if (maybeModel && mod && ImGui::IsKeyPressed(SDL_SCANCODE_S))
         {
             actionSaveModel(api, *maybeModel);
         }
