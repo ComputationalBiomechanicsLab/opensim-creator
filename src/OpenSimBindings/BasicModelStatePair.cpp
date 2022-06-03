@@ -26,7 +26,6 @@ public:
         m_Model(std::make_unique<OpenSim::Model>(m))
     {
         InitModel(*m_Model);
-        OSC_ASSERT(m_Model->getWorkingState().isConsistent(st));
         m_Model->updWorkingState() = st;
         m_Model->updWorkingState().invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
         m_Model->realizeReport(m_Model->updWorkingState());
@@ -36,7 +35,6 @@ public:
         m_Model{std::make_unique<OpenSim::Model>(*o.m_Model)}
     {
         InitModel(*m_Model);
-        OSC_ASSERT(m_Model->getWorkingState().isConsistent(o.m_Model->getWorkingState()));
         m_Model->updWorkingState() = o.m_Model->getWorkingState();
     }
 
