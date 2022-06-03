@@ -38,6 +38,7 @@ All notable changes to this project will be documented here. The format is based
 - Added an integrator performance analysis tab (#226)
   - This is an advanced feature that has been added to the `tools` menu in the editor tab
   - This makes it easier to compare the performance of `SimTK::Integrator`s for a particular sim
+- Simulations now cancel faster, and hung simulations should be closeable in more situations (#244)
 
 
 ## [0.1.6] - 2022/05/09

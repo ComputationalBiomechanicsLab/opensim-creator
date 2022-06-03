@@ -165,6 +165,7 @@ static std::unique_ptr<SimTK::Integrator> CreateInitializedIntegrator(SimulatorT
     integ->setMaximumStepSize(params.IntegratorMaximumStepSize.count());
     integ->setAccuracy(params.IntegratorAccuracy);
     integ->setFinalTime(params.FinalTime.time_since_epoch().count());
+    integ->setReturnEveryInternalStep(true);  // so that cancellations/interrupts work
     integ->initialize(input.getState());
     return integ;
 }
@@ -232,6 +233,7 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
     // create + init a timestepper for the integrator
     SimTK::TimeStepper ts{input.getMultiBodySystem(), *integ};
     ts.initialize(integ->getState());
+    ts.setReportAllSignificantStates(true);  // so that cancellations/interrupts work
 
     // inform observers that everything has been initialized and the sim is now running
     shared.setStatus(osc::SimulationStatus::Running);
