@@ -17,7 +17,7 @@ TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 	RegisterTypes_osimActuators();
 
 	// data sources
-	std::filesystem::path modelPath{R"(C:\\Users\\adamk\\OneDrive\\Desktop\\opensim-creator\\resources\\models\\Arm26\\arm26.osim)"};
+	std::filesystem::path modelPath{R"(C:\\Users\\adamk\\OneDrive\\Desktop\\opensim-creator\\resources\\models\\Arm26\\arm26.osim)"};  // TODO: do resource lookup
 	OpenSim::ComponentPath coordinatePath = "/jointset/r_shoulder/r_shoulder_elev";
 	OpenSim::ComponentPath musclePath = "/forceset/BIClong";
 
@@ -60,4 +60,34 @@ TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 	}
 
 	ASSERT_EQ(values[0], values[1]);
+}
+
+// repro for a bug found in OpenSim Creator
+//
+// effectively, `OpenSim::Coordinate::setLocked(SimTK::State&) const` is mutating the
+// cooordinate/model (it shouldn't), because the internals rely on bad aliasing
+//
+// this test just double-checks that the bug exists until an upstream thing fixes it,
+// breaks this test, and prompts removing fixups from OSC
+TEST(OpenSimModel, EditingACoordinateLockMutatesModel)
+{
+	std::filesystem::path modelPath{R"(C:\\Users\\adamk\\OneDrive\\Desktop\\opensim-creator\\resources\\models\\Arm26\\arm26.osim)"};  // TODO: do resource lookup
+	OpenSim::ComponentPath coordinatePath = "/jointset/r_shoulder/r_shoulder_elev";
+
+	OpenSim::Model model{modelPath.string()};
+	model.buildSystem();
+	model.initializeState();
+	model.equilibrateMuscles(model.updWorkingState());
+	model.realizeReport(model.updWorkingState());
+
+	OpenSim::Coordinate const& coord = model.getComponent<OpenSim::Coordinate>(coordinatePath);
+	SimTK::State state = model.updWorkingState();
+
+	ASSERT_TRUE(model.getWorkingState().isConsistent(state));
+	ASSERT_FALSE(coord.getLocked(state));
+
+	coord.setLocked(state, true);  // required
+	model.realizeReport(state);  // required: makes the state inconsistent? Despite not changing the system?
+
+	ASSERT_FALSE(model.getWorkingState().isConsistent(state));
 }
