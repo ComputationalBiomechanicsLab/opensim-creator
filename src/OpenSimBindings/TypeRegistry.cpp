@@ -13,6 +13,7 @@
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Actuators/TorqueActuator.h>
+#include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 #include <OpenSim/Simulation/Model/BushingForce.h>
 #include <OpenSim/Simulation/Model/ContactHalfSpace.h>
@@ -23,6 +24,7 @@
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/PathSpring.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
+#include <OpenSim/Simulation/Model/Probe.h>
 #include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
 #include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
