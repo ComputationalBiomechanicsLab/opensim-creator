@@ -19,7 +19,16 @@ public:
 
     bool removeCoordinateEdit(OpenSim::Coordinate const& c)
     {
-        return m_CoordEdits.erase(c.getAbsolutePathString()) > 0;
+        auto it = m_CoordEdits.find(c.getAbsolutePathString());
+        if (it != m_CoordEdits.end())
+        {
+            it->second = CoordinateEdit{c.getDefaultValue(), c.getDefaultSpeedValue(), c.getDefaultLocked()};
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     bool applyToState(OpenSim::Model const& m, SimTK::State& st)
