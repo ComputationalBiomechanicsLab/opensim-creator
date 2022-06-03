@@ -170,7 +170,8 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
     // handle hotkeys enabled by just drawing the menu
     {
         auto const& io = ImGui::GetIO();
-        bool mod = io.KeyCtrl || io.KeySuper;
+
+        bool mod = osc::IsCtrlOrSuperDown();
 
         if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_N))
         {
