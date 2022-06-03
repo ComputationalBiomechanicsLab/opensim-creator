@@ -18,10 +18,10 @@ namespace osc
         CoordinateEditor& operator=(CoordinateEditor&&) noexcept;
         ~CoordinateEditor() noexcept;
         
-        bool draw();  // returns true if an edit was made
+        void draw();
 
-        class Impl;
     private:
+        class Impl;
         std::unique_ptr<Impl> m_Impl;
     };
 }

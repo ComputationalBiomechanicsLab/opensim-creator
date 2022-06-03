@@ -30,7 +30,7 @@ public:
     {
     }
 
-    bool draw()
+    void draw()
     {
         ImGui::Dummy({0.0f, 3.0f});
         ImGui::TextUnformatted(ICON_FA_EYE);
@@ -127,7 +127,6 @@ public:
         }
 
         int i = 0;
-        bool stateWasModified = false;
 
         for (OpenSim::Coordinate const* c : m_CoordScratch)
         {
@@ -189,7 +188,6 @@ public:
             {
                 m_Uum->updUiModel().pushCoordinateEdit(*c, CoordinateEdit{c->getValue(m_Uum->getState()), c->getSpeedValue(m_Uum->getState()), !c->getLocked(m_Uum->getState())});
                 m_Uum->commit("(un)locked coordinate");
-                stateWasModified = true;
             }
 
             if (ImGui::IsItemHovered())
@@ -212,7 +210,6 @@ public:
                     c->getSpeedValue(m_Uum->getState()),
                     c->getLocked(m_Uum->getState())
                 });
-                stateWasModified = true;
             }
 
             if (ImGui::IsItemHovered())
@@ -247,7 +244,6 @@ public:
                     ConvertCoordDisplayValueToStorageValue(*c, speed),
                     c->getLocked(m_Uum->getState())
                 });
-                stateWasModified = true;
             }
             ImGui::NextColumn();
 
@@ -256,8 +252,6 @@ public:
         ImGui::Columns();
 
         ImGui::EndChild();
-
-        return stateWasModified;
     }
 
 private:
@@ -307,7 +301,7 @@ osc::CoordinateEditor::CoordinateEditor(CoordinateEditor&&) noexcept = default;
 osc::CoordinateEditor& osc::CoordinateEditor::operator=(CoordinateEditor&&) noexcept = default;
 osc::CoordinateEditor::~CoordinateEditor() noexcept = default;
 
-bool osc::CoordinateEditor::draw()
+void osc::CoordinateEditor::draw()
 {
-    return m_Impl->draw();
+    m_Impl->draw();
 }
