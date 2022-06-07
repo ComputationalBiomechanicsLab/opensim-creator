@@ -93,19 +93,9 @@
 #include <vector>
 
 
-// draw component information as a hover tooltip
-static void DrawComponentHoverTooltip(OpenSim::Component const& hovered)
-{
-    ImGui::BeginTooltip();
-    ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
-
-    ImGui::TextUnformatted(hovered.getName().c_str());
-    ImGui::SameLine();
-    ImGui::TextDisabled("%s", hovered.getConcreteClassName().c_str());
-
-    ImGui::PopTextWrapPos();
-    ImGui::EndTooltip();
-}
+//////////
+// ACTIONS
+//////////
 
 // try to delete an undoable-model's current selection
 //
@@ -124,6 +114,165 @@ static void ActionTryDeleteSelectionFromEditedModel(osc::UndoableModelStatePair&
             uim.setDirty(false);
         }
     }
+}
+
+// try to undo currently edited model to earlier state
+static void ActionUndoCurrentlyEditedModel(osc::UndoableModelStatePair& model)
+{
+    if (model.canUndo())
+    {
+        model.doUndo();
+    }
+}
+
+// try to redo currently edited model to later state
+static void ActionRedoCurrentlyEditedModel(osc::UndoableModelStatePair& model)
+{
+    if (model.canRedo())
+    {
+        model.doRedo();
+    }
+}
+
+// disable all wrapping surfaces in the current model
+static void ActionDisableAllWrappingSurfaces(osc::UndoableModelStatePair& model)
+{
+    osc::DeactivateAllWrapObjectsIn(model.updModel());
+    model.commit("disabled all wrapping surfaces");
+}
+
+// enable all wrapping surfaces in the current model
+static void ActionEnableAllWrappingSurfaces(osc::UndoableModelStatePair& model)
+{
+    osc::ActivateAllWrapObjectsIn(model.updModel());
+    model.commit("enabled all wrapping surfaces");
+}
+
+static void ActionClearSelectionFromEditedModel(osc::UndoableModelStatePair& model)
+{
+    model.setSelected(nullptr);
+}
+
+static bool ActionLoadSTOFileAgainstModel(osc::MainUIStateAPI* parent, osc::UndoableModelStatePair const& uim, std::filesystem::path stoPath)
+{
+    try
+    {
+        std::unique_ptr<OpenSim::Model> cpy = std::make_unique<OpenSim::Model>(uim.getModel());
+        cpy->buildSystem();
+        cpy->initializeState();
+
+        osc::UID tabID = parent->addTab<osc::SimulatorTab>(parent, std::make_shared<osc::Simulation>(osc::StoFileSimulation{std::move(cpy), stoPath, uim.getFixupScaleFactor()}));
+        parent->selectTab(tabID);
+
+        return true;
+    }
+    catch (std::exception const& ex)
+    {
+        osc::log::error("encountered error while trying to load an STO file against the model: %s", ex.what());
+    }
+    return false;
+}
+
+static bool ActionStartSimulatingModel(osc::MainUIStateAPI* parent, osc::UndoableModelStatePair const& uim)
+{
+    osc::BasicModelStatePair modelState{uim};
+    osc::ForwardDynamicSimulatorParams params = osc::FromParamBlock(parent->getSimulationParams());
+
+    auto sim = std::make_shared<osc::Simulation>(osc::ForwardDynamicSimulation{std::move(modelState), std::move(params)});
+    auto tab = std::make_unique<osc::SimulatorTab>(parent, std::move(sim));
+
+    parent->selectTab(parent->addTab(std::move(tab)));
+
+    return true;
+}
+
+static bool ActionUpdateModelFromBackingFile(osc::UndoableModelStatePair& uim)
+{
+    try
+    {
+        osc::log::info("file change detected: loading updated file");
+        auto p = std::make_unique<OpenSim::Model>(uim.getModel().getInputFileName());
+        osc::log::info("loaded updated file");
+        uim.setModel(std::move(p));
+        uim.setUpToDateWithFilesystem();
+        uim.commit("reloaded model from filesystem");
+        return true;
+    }
+    catch (std::exception const& ex)
+    {
+        osc::log::error("error occurred while trying to automatically load a model file:");
+        osc::log::error(ex.what());
+        osc::log::error("the file will not be loaded into osc (you won't see the change in the UI)");
+        return false;
+    }
+}
+
+static bool ActionAutoscaleSceneScaleFactor(osc::UndoableModelStatePair& uim)
+{
+    float sf = osc::GetRecommendedScaleFactor(uim);
+    uim.setFixupScaleFactor(sf);
+    return true;
+}
+
+static bool ActionToggleFrames(osc::UndoableModelStatePair& uim)
+{
+    bool showingFrames = uim.getModel().get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
+    uim.updModel().upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
+    uim.commit("edited frame visibility");
+    return true;
+}
+
+static bool ActionOpenOsimParentDirectory(osc::UndoableModelStatePair& uim)
+{
+    bool hasBackingFile = osc::HasInputFileName(uim.getModel());
+
+    if (hasBackingFile)
+    {
+        std::filesystem::path p{uim.getModel().getInputFileName()};
+        osc::OpenPathInOSDefaultApplication(p.parent_path());
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+static bool ActionOpenOsimInExternalEditor(osc::UndoableModelStatePair& uim)
+{
+    bool hasBackingFile = osc::HasInputFileName(uim.getModel());
+
+    if (hasBackingFile)
+    {
+        osc::OpenPathInOSDefaultApplication(uim.getModel().getInputFileName());
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+static bool ActionSimulateAgainstAllIntegrators(osc::MainUIStateAPI* parent, osc::UndoableModelStatePair& uim)
+{
+    osc::UID tabID = parent->addTab<osc::PerformanceAnalyzerTab>(parent, osc::BasicModelStatePair{uim}, parent->getSimulationParams());
+    parent->selectTab(tabID);
+    return true;
+}
+
+
+// draw component information as a hover tooltip
+static void DrawComponentHoverTooltip(OpenSim::Component const& hovered)
+{
+    ImGui::BeginTooltip();
+    ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
+
+    ImGui::TextUnformatted(hovered.getName().c_str());
+    ImGui::SameLine();
+    ImGui::TextDisabled("%s", hovered.getConcreteClassName().c_str());
+
+    ImGui::PopTextWrapPos();
+    ImGui::EndTooltip();
 }
 
 // draw an editor for top-level selected Component members (e.g. name)
@@ -235,43 +384,6 @@ static void DrawSelectionJointTypeSwitcher(osc::UndoableModelStatePair& st)
     }
 
     ImGui::NextColumn();
-}
-
-// try to undo currently edited model to earlier state
-static void ActionUndoCurrentlyEditedModel(osc::UndoableModelStatePair& model)
-{
-    if (model.canUndo())
-    {
-        model.doUndo();
-    }
-}
-
-// try to redo currently edited model to later state
-static void ActionRedoCurrentlyEditedModel(osc::UndoableModelStatePair& model)
-{
-    if (model.canRedo())
-    {
-        model.doRedo();
-    }
-}
-
-// disable all wrapping surfaces in the current model
-static void ActionDisableAllWrappingSurfaces(osc::UndoableModelStatePair& model)
-{
-    osc::DeactivateAllWrapObjectsIn(model.updModel());
-    model.commit("disabled all wrapping surfaces");
-}
-
-// enable all wrapping surfaces in the current model
-static void ActionEnableAllWrappingSurfaces(osc::UndoableModelStatePair& model)
-{
-    osc::ActivateAllWrapObjectsIn(model.updModel());
-    model.commit("enabled all wrapping surfaces");
-}
-
-static void ActionClearSelectionFromEditedModel(osc::UndoableModelStatePair& model)
-{
-    model.setSelected(nullptr);
 }
 
 // draw contextual actions (buttons, sliders) for a selected physical frame
@@ -561,8 +673,7 @@ static void DrawModelContextualActions(osc::UndoableModelStatePair& uum)
 }
 
 // draw socket editor for current selection
-static void DrawSocketEditor(osc::ReassignSocketPopup& reassignSocketPopup,
-    osc::UndoableModelStatePair& uim)
+static void DrawSocketEditor(osc::ReassignSocketPopup& reassignSocketPopup, osc::UndoableModelStatePair& uim)
 {
     OpenSim::Component const* selected = uim.getSelected();
 
@@ -715,113 +826,6 @@ static std::string GetRecommendedTitle(osc::UndoableModelStatePair const& uim)
     ss << ICON_FA_EDIT << " ";
     ss << GetDocumentName(uim);
     return std::move(ss).str();
-}
-
-static bool ActionLoadSTOFileAgainstModel(osc::MainUIStateAPI* parent, osc::UndoableModelStatePair const& uim, std::filesystem::path stoPath)
-{
-    try
-    {
-        std::unique_ptr<OpenSim::Model> cpy = std::make_unique<OpenSim::Model>(uim.getModel());
-        cpy->buildSystem();
-        cpy->initializeState();
-
-        osc::UID tabID = parent->addTab<osc::SimulatorTab>(parent, std::make_shared<osc::Simulation>(osc::StoFileSimulation{std::move(cpy), stoPath, uim.getFixupScaleFactor()}));
-        parent->selectTab(tabID);
-
-        return true;
-    }
-    catch (std::exception const& ex)
-    {
-        osc::log::error("encountered error while trying to load an STO file against the model: %s", ex.what());
-    }
-    return false;
-}
-
-static bool ActionStartSimulatingModel(osc::MainUIStateAPI* parent, osc::UndoableModelStatePair const& uim)
-{
-    osc::BasicModelStatePair modelState{uim};
-    osc::ForwardDynamicSimulatorParams params = osc::FromParamBlock(parent->getSimulationParams());
-
-    auto sim = std::make_shared<osc::Simulation>(osc::ForwardDynamicSimulation{std::move(modelState), std::move(params)});
-    auto tab = std::make_unique<osc::SimulatorTab>(parent, std::move(sim));
-
-    parent->selectTab(parent->addTab(std::move(tab)));
-
-    return true;
-}
-
-static bool ActionUpdateModelFromBackingFile(osc::UndoableModelStatePair& uim)
-{
-    try
-    {
-        osc::log::info("file change detected: loading updated file");
-        auto p = std::make_unique<OpenSim::Model>(uim.getModel().getInputFileName());
-        osc::log::info("loaded updated file");
-        uim.setModel(std::move(p));
-        uim.setUpToDateWithFilesystem();
-        uim.commit("reloaded model from filesystem");
-        return true;
-    }
-    catch (std::exception const& ex)
-    {
-        osc::log::error("error occurred while trying to automatically load a model file:");
-        osc::log::error(ex.what());
-        osc::log::error("the file will not be loaded into osc (you won't see the change in the UI)");
-        return false;
-    }
-}
-
-static bool ActionAutoscaleSceneScaleFactor(osc::UndoableModelStatePair& uim)
-{
-    float sf = osc::GetRecommendedScaleFactor(uim);
-    uim.setFixupScaleFactor(sf);
-    return true;
-}
-
-static bool ActionToggleFrames(osc::UndoableModelStatePair& uim)
-{
-    bool showingFrames = uim.getModel().get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
-    uim.updModel().upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
-    uim.commit("edited frame visibility");
-    return true;
-}
-
-static bool ActionOpenOsimParentDirectory(osc::UndoableModelStatePair& uim)
-{
-    bool hasBackingFile = osc::HasInputFileName(uim.getModel());
-
-    if (hasBackingFile)
-    {
-        std::filesystem::path p{uim.getModel().getInputFileName()};
-        osc::OpenPathInOSDefaultApplication(p.parent_path());
-        return true;
-    }
-    else
-    {
-        return false;
-    }   
-}
-
-static bool ActionOpenOsimInExternalEditor(osc::UndoableModelStatePair& uim)
-{
-    bool hasBackingFile = osc::HasInputFileName(uim.getModel());
-
-    if (hasBackingFile)
-    {
-        osc::OpenPathInOSDefaultApplication(uim.getModel().getInputFileName());
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-static bool ActionSimulateAgainstAllIntegrators(osc::MainUIStateAPI* parent, osc::UndoableModelStatePair& uim)
-{
-    osc::UID tabID = parent->addTab<osc::PerformanceAnalyzerTab>(parent, osc::BasicModelStatePair{uim}, parent->getSimulationParams());
-    parent->selectTab(tabID);
-    return true;
 }
 
 class osc::ModelEditorTab::Impl final {
