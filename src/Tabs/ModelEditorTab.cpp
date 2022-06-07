@@ -253,6 +253,36 @@ static bool ActionOpenOsimInExternalEditor(osc::UndoableModelStatePair& uim)
     }
 }
 
+static bool ActionReloadOsimFromDisk(osc::UndoableModelStatePair& uim)
+{
+    bool hasBackingFile = osc::HasInputFileName(uim.getModel());
+
+    if (hasBackingFile)
+    {
+        try
+        {
+            osc::log::info("manual osim file reload requested: attempting to reload the file");
+            auto p = std::make_unique<OpenSim::Model>(uim.getModel().getInputFileName());
+            osc::log::info("loaded updated file");
+            uim.setModel(std::move(p));
+            uim.setUpToDateWithFilesystem();
+            uim.commit("reloaded model from filesystem");
+            return true;
+        }
+        catch (std::exception const& ex)
+        {
+            osc::log::error("error occurred while trying to reload a model file:");
+            osc::log::error(ex.what());
+            return false;
+        }
+    }
+    else
+    {
+        osc::log::error("cannot reload the osim file: the model doesn't appear to have a backing file (is it saved?)");
+        return false;
+    }
+}
+
 static bool ActionSimulateAgainstAllIntegrators(osc::MainUIStateAPI* parent, osc::UndoableModelStatePair& uim)
 {
     osc::UID tabID = parent->addTab<osc::PerformanceAnalyzerTab>(parent, osc::BasicModelStatePair{uim}, parent->getSimulationParams());
@@ -1209,6 +1239,13 @@ private:
             DrawTooltipIfItemHovered("Toggle Frames", "Set the model's display properties to display physical frames");
 
             bool modelHasBackingFile = osc::HasInputFileName(m_Model->getModel());
+
+            if (ImGui::MenuItem(ICON_FA_REDO " Reload osim", nullptr, false, modelHasBackingFile))
+            {
+                ActionReloadOsimFromDisk(*m_Model);
+            }
+            DrawTooltipIfItemHovered("Reload osim file", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
+
             if (ImGui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", nullptr, false, modelHasBackingFile))
             {
                 ActionOpenOsimParentDirectory(*m_Model);

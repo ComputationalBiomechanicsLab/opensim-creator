@@ -41,6 +41,11 @@ All notable changes to this project will be documented here. The format is based
 - Simulations now cancel faster, and hung simulations should be closeable in more situations (#244)
 - Right-clicking a component in the simulations tab now shows a context menu that enables users to
   select which output(s) they want to plot (#240)
+- There is now a "Reload osim" button in the model editor's edit menu, which manually reloads the osim
+  from scratch (#247)
+  - osc already automatically reloads osim files whenever the underlying file changes. This feature is
+    mostly useful for updating the editor when an un-tracked file changes (e.g. a third-party resource
+    that is indirectly loaded via a component in the model)
 
 
 ## [0.1.6] - 2022/05/09
