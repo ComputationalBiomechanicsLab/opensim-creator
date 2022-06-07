@@ -32,6 +32,8 @@ public:
 
     void draw()
     {
+        ImGui::PushID(this);
+
         // action: add body
         {
             // draw button
@@ -55,16 +57,22 @@ public:
         renderButton<OpenSim::Force>();
         renderButton<OpenSim::Controller>();
         renderButton<OpenSim::Probe>();
-        renderButton<OpenSim::Component>();        
+        renderButton<OpenSim::Component>();
+
+        ImGui::PopID();
     }
 
     void drawAnyOpenPopups()
     {
+        ImGui::PushID(this);
+
         m_AddBodyPopup.draw();
         if (m_MaybeAddComponentPopup)
         {
             m_MaybeAddComponentPopup->draw();
         }
+
+        ImGui::PopID();
     }
 
 private:
