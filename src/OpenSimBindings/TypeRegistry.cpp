@@ -4,36 +4,52 @@
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/CStringView.hpp"
 
+#include <OpenSim/Actuators/ActivationCoordinateActuator.h>
 #include <OpenSim/Actuators/BodyActuator.h>
+#include <OpenSim/Actuators/ClutchedPathSpring.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/DeGrooteFregly2016Muscle.h>
+#include <OpenSim/Actuators/McKibbenActuator.h>
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 #include <OpenSim/Actuators/PointActuator.h>
+#include <OpenSim/Actuators/PointToPointActuator.h>
 #include <OpenSim/Actuators/RigidTendonMuscle.h>
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Actuators/TorqueActuator.h>
+#include <OpenSim/ExampleComponents/ToyReflexController.h>
 #include <OpenSim/Simulation/Control/Controller.h>
+#include <OpenSim/Simulation/Control/ControlSetController.h>
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
+#include <OpenSim/Simulation/Model/Blankevoort1991Ligament.h>
 #include <OpenSim/Simulation/Model/BushingForce.h>
 #include <OpenSim/Simulation/Model/ContactHalfSpace.h>
 #include <OpenSim/Simulation/Model/ContactMesh.h>
 #include <OpenSim/Simulation/Model/ContactSphere.h>
 #include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
 #include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
+#include <OpenSim/Simulation/Model/ExternalForce.h>
+#include <OpenSim/Simulation/Model/ExpressionBasedCoordinateForce.h>
+#include <OpenSim/Simulation/Model/ExpressionBasedPointToPointForce.h>
+#include <OpenSim/Simulation/Model/FunctionBasedBushingForce.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
+#include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Simulation/Model/PathSpring.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
+#include <OpenSim/Simulation/Model/PrescribedForce.h>
 #include <OpenSim/Simulation/Model/Probe.h>
 #include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
 #include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
+#include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/RollingOnSurfaceConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
@@ -65,6 +81,10 @@ static std::unordered_map<std::string, osc::CStringView> CreateDescriptionLut()
         {
             typeid(OpenSim::BallJoint).name(),
             "A Ball joint. The underlying implementation in Simbody is SimTK::MobilizedBody::Ball. The Ball joint implements a fixed 1-2-3 (X-Y-Z) body-fixed Euler sequence, without translations, for generalized coordinate calculation. Ball joint uses quaternions in calculation and are therefore singularity-free (unlike GimbalJoint)."
+        },
+        {
+            typeid(OpenSim::CustomJoint).name(),
+            "Custom joints offer a generic joint representation, which can be used to model both conventional (pins, slider, universal, etc.) as well as more complex biomechanical joints. The behavior of a custom joint is specified by its SpatialTransform. A SpatialTransform is comprised of 6 TransformAxes (3 rotations and 3 translations) that define the spatial position of Child in Parent as a function of coordinates. Each transform axis has a function of joint coordinates that describes the motion about or along the transform axis. The order of the spatial transform is fixed with rotations first followed by translations. Subsequently, coupled motion (i.e., describing motion of two degrees of freedom as a function of one coordinate) is handled by transform axis functions that depend on the same coordinate(s).",
         },
         {
             typeid(OpenSim::EllipsoidJoint).name(),
@@ -185,6 +205,70 @@ static std::unordered_map<std::string, osc::CStringView> CreateDescriptionLut()
         {
             typeid(OpenSim::TorqueActuator).name(),
             "A TorqueActuator applies equal and opposite torques on the two bodies (bodyA and B) that it connects. The torque is applied about an axis specified in ground (global) by default, otherwise it is in bodyA's frame. The magnitude of the torque is equal to the product of the optimal_force of the actuator and its control signal.",
+        },
+        {
+            typeid(OpenSim::PointConstraint).name(),
+            "A class implementing a Point Constraint.The constraint keeps two points, one on each of two separate PhysicalFrame%s, coincident and free to rotate about that point.",
+        },
+        {
+            typeid(OpenSim::ActivationCoordinateActuator).name(),
+            "Similar to CoordinateActuator (simply produces a generalized force) but with first-order linear activation dynamics. This actuator has one state variable, `activation`, with \\f$ \\dot{a} = (x - a) / \\tau \\f$, where \\f$ a \a\f$ is activation, \\f$ x \\f$ is excitation, and \\f$ \\tau \\f$ is the activation time constant (there is no separate deactivation time constant). The statebounds_activation output is used in Moco to set default values for the activation state variable.",
+        },
+        {
+            typeid(OpenSim::Blankevoort1991Ligament).name(),
+            "This class implements a nonlinear spring ligament model introduced by Blankevoort et al.(1991) [1] and further described in Smith et al.(2016) [2]. This model is partially based on the formulation orginally proposed by Wismans et al. (1980) [3]. The ligament is represented as a passive spring with the force-strain relationship described by a quadratic \"toe\" region at low strains and a linear region at high strains. The toe region represents the uncrimping and alignment of collagen fibers and the linear region represents the subsequent stretching of the aligned fibers. The ligament model also includes a damping force that is only applied if the ligament is stretched beyond the slack length and if the ligament is lengthening.",
+        },
+        {
+            typeid(OpenSim::ClutchedPathSpring).name(),
+            "The ClutchedPathSpring is an actuator that has passive path spring behavior only when the clutch is engaged. The clutch is engaged by a control signal of 1 and is off for a control signal of 0. Off means the spring is not engaged and the path is free to change length with the motion of the bodies it is connected to. The tension produced by the spring is proportional to the stretch (z) from the instant that the clutch is engaged.\n The spring tension = x*(K*z)*(1+D*Ldot), where:\n    - x is the control signal to the actuator\n    - z is the stretch in the spring\n    - Ldot is the lengthening speed of the actuator\n    - K is the spring's linear stiffness (N/m)\n    - D is the spring's dissipation factor",
+        },
+        {
+            typeid(OpenSim::CoordinateActuator).name(),
+            "An actuator that applies a generalized force in the direction of a generalized coordinate. The applied generalized force is proportional to the input control of the CoordinateActuator. Replaces the GeneralizedForce class.",
+        },
+        {
+            typeid(OpenSim::ExpressionBasedPointToPointForce).name(),
+            "A point - to - point Force who's force magnitude is determined by a user-defined expression, with the distance (d) and its time derivative (ddot) as variables. The direction of the force is directed along the line connecting the two points.\n \"d\" and \"ddot\" are the variables names expected by the expression parser. Common C math library functions such as: exp(), pow(), sqrt(), sin(), are permitted. See Lepton/Operation.h for a complete list.\n\nFor example: string expression = \"-1.5*exp(10*(d-0.25)^2)*(1 + 2.0*ddot)\" provides a model of a nonlinear point-to point spring, while expression = \"1.25/(rd^2)\" is an electric field force between charged particles at points separated by the distance, d. i.e. K*q1*q2 = 1.25",
+        },
+        {
+            typeid(OpenSim::ExternalForce).name(),
+            "An ExternalForce is a Force class specialized at applying an external force and /or torque to a body as described by arrays(columns) of a Storage object.The source of the Storage may be experimental sensor recording or user generated data.The Storage must be able to supply(1) an array of time, (2) arrays for the x,y,z, components of forceand /or torque in time.Optionally, (3) arrays for the point of force application in time.An ExternalForce must specify the identifier(e.g.Force1.x Force1.y Force1.z) for the force components(columns) listed in the Storage either by individual labels or collectively(e.g.as \"Force1\"). Similarly, identifiers for the applied torque and optionally the point of force application must be specified.\n\nIf an identifier is supplied and it cannot uniquely identify the force data (e.g. the force, torque, or point) in the Storage, then an Exception is thrown.",
+        },
+        {
+            typeid(OpenSim::FunctionBasedBushingForce).name(),
+            "A class implementing a bushing force specified by functions of the frame deflections. These functions are user specified and can be used to capture the nonlinearities of biologic structures.  This FunctionBasedBushing does not capture coupling between the deflections (e.g. force in x due to rotation about z).\n\nA bushing force is the resistive force due to deviation between two frames. One can think of the Bushing as being composed of 3 translational and 3 torsional spring-dampers, which act along or about the bushing frame axes. Orientations are measured as x-y-z body-fixed Euler rotations.",
+        },
+        {
+            typeid(OpenSim::McKibbenActuator).name(),
+            "McKibben Pneumatic Actuator Model based on the simple cylindrical formulation described in J. Dyn. Sys., Meas., Control 122, 386-388  (1998) (3 pages); doi:10.1115/1.482478.\n\nPressure is used as a control signal. There is an optional 'cord' attached to the actuator which allows for the path length of the actuator to be shorter than the total distance spanned by the points to which the actuator is connected. By default its length is zero. Please refer to the above paper for details regarding the rest of the properties.",
+        },
+        {
+            typeid(OpenSim::PathActuator).name(),
+            "This is the base class for actuators that apply controllable tension along a geometry path. %PathActuator has no states; the control is simply the tension to be applied along a geometry path (i.e. tensionable rope).",
+        },
+        {
+            typeid(OpenSim::PointActuator).name(),
+            "A class that implements a point actuator acting on the model. This actuator has no states; the control is simply the force to be applied to the model.",
+        },
+        {
+            typeid(OpenSim::PointToPointActuator).name(),
+            "A class that implements a force actuator acting between two points on two bodies. The direction of the force is along the line between the points, with a positive value acting to expand the distance between them. This actuator has no states; the control is simply the force to be applied to the model.",
+        },
+        {
+            typeid(OpenSim::PrescribedForce).name(),
+            "This applies to a PhysicalFrame a force and /or torque that is specified as a function of time. It is defined by three sets of functions, all of which are optional:\n\n    - Three functions that specify the (x,y,z) components of a force vector to apply (at a given point) as a function of time. If these functions are not provided, no force is applied.\n\n    - Three functions that specify the (x,y,z) components of a point location at which the force should be applied. If these functions are not provided, the force is applied at the frame's origin.\n\n    - Three functions that specify the (x,y,z) components of a pure torque vector to apply. This is in addition to any torque resulting from the applied force. If these functions are not provided, no additional torque is applied.",
+        },
+        {
+            typeid(OpenSim::SpringGeneralizedForce).name(),
+            "A Force that exerts a generalized force based on spring - like characteristics (stiffness and viscosity).",
+        },
+        {
+            typeid(OpenSim::ControlSetController).name(),
+            "ControlSetController that simply assigns controls from a ControlSet",
+        },
+        {
+            typeid(OpenSim::ToyReflexController).name(),
+            "ToyReflexController is a concrete controller that excites muscles in response to muscle lengthening to simulate a simple stretch reflex. This controller is meant to serve as an example how to implement a controller in OpenSim. It is intended for demonstration purposes only.",
         },
     };
 }
