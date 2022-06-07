@@ -73,6 +73,19 @@ static void DrawRequestOutputMenuOrMenuItem(osc::MainUIStateAPI& api, OpenSim::A
 
 // public API
 
+void osc::DrawComponentHoverTooltip(OpenSim::Component const& hovered)
+{
+    ImGui::BeginTooltip();
+    ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
+
+    ImGui::TextUnformatted(hovered.getName().c_str());
+    ImGui::SameLine();
+    ImGui::TextDisabled("%s", hovered.getConcreteClassName().c_str());
+
+    ImGui::PopTextWrapPos();
+    ImGui::EndTooltip();
+}
+
 void osc::DrawSelectOwnerMenu(osc::VirtualModelStatePair& model, OpenSim::Component const& selected)
 {
     if (ImGui::BeginMenu("Select Owner"))

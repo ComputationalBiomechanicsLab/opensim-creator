@@ -260,21 +260,6 @@ static bool ActionSimulateAgainstAllIntegrators(osc::MainUIStateAPI* parent, osc
     return true;
 }
 
-
-// draw component information as a hover tooltip
-static void DrawComponentHoverTooltip(OpenSim::Component const& hovered)
-{
-    ImGui::BeginTooltip();
-    ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
-
-    ImGui::TextUnformatted(hovered.getName().c_str());
-    ImGui::SameLine();
-    ImGui::TextDisabled("%s", hovered.getConcreteClassName().c_str());
-
-    ImGui::PopTextWrapPos();
-    ImGui::EndTooltip();
-}
-
 // draw an editor for top-level selected Component members (e.g. name)
 static void DrawTopLevelMembersEditor(osc::UndoableModelStatePair& st)
 {
@@ -1354,13 +1339,13 @@ private:
         if (!isOpen)
         {
             ImGui::End();
-            return false;
+            return false;  // closed by the user
         }
 
         if (!shown)
         {
             ImGui::End();
-            return true;
+            return true;  // it's open, but not shown
         }
 
         auto resp = viewer.draw(m_Model->getUiModel());

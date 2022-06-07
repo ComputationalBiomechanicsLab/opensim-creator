@@ -24,6 +24,7 @@
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/Utils/Perf.hpp"
+#include "src/Widgets/BasicWidgets.hpp"
 #include "src/Widgets/LogViewer.hpp"
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/ComponentDetails.hpp"
@@ -950,8 +951,8 @@ private:
         }
     }
 
-    // draw a 3D model viewer
-    bool SimscreenDraw3DViewer(osc::SimulationModelStatePair& ms, osc::UiModelViewer& viewer, char const* name, int i)
+    // draw a single 3D model viewer
+    bool draw3DViewer(osc::SimulationModelStatePair& ms, osc::UiModelViewer& viewer, char const* name, int i)
     {
         bool isOpen = true;
 
@@ -986,28 +987,51 @@ private:
             ImGui::End();
         }
 
-        if (resp.hovertestResult)
+        // upate hover
+        if (resp.isMousedOver && resp.hovertestResult != ms.getHovered())
         {
-            if (resp.isLeftClicked && resp.hovertestResult != ms.getSelected())
-            {
-                ms.setSelected(resp.hovertestResult);
-                osc::App::upd().requestRedraw();
-            }
-
-            if (resp.isMousedOver && resp.hovertestResult != ms.getHovered())
-            {
-                ms.setHovered(resp.hovertestResult);
-                osc::App::upd().requestRedraw();
-            }
+            ms.setHovered(resp.hovertestResult);
+            osc::App::upd().requestRedraw();
         }
-        else
+
+        // if left-clicked, update selection (can be empty)
+        if (resp.isMousedOver && resp.isLeftClicked)
         {
-            if (resp.isLeftClicked)
+            ms.setSelected(resp.hovertestResult);
+            osc::App::upd().requestRedraw();
+        }
+
+        // if hovered, draw hover tooltip
+        if (resp.isMousedOver && resp.hovertestResult)
+        {
+            osc::DrawComponentHoverTooltip(*resp.hovertestResult);
+        }
+
+        // if right-clicked, draw a context menu
+        {
+            std::string menuName = std::string{name} + "_contextmenu";
+
+            if (resp.isMousedOver && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right))
             {
-                ms.setSelected(nullptr);
+                ms.setSelected(resp.hovertestResult);  // can be empty
+                ImGui::OpenPopup(menuName.c_str());
             }
 
-            ms.setHovered(nullptr);
+            OpenSim::Component const* selected = ms.getSelected();
+
+            if (selected && ImGui::BeginPopup(menuName.c_str()))
+            {
+                // draw context menu for whatever's selected
+                ImGui::TextUnformatted(selected->getName().c_str());
+                ImGui::SameLine();
+                ImGui::TextDisabled("%s", selected->getConcreteClassName().c_str());
+                ImGui::Separator();
+                ImGui::Dummy({0.0f, 3.0f});
+
+                DrawSelectOwnerMenu(ms, *selected);
+                DrawRequestOutputsMenu(*m_API, *selected);
+                ImGui::EndPopup();
+            }
         }
 
         return true;
@@ -1037,7 +1061,8 @@ private:
             char buf[64];
             std::snprintf(buf, sizeof(buf), "viewer%i", i);
 
-            bool isOpen = SimscreenDraw3DViewer(ms, viewer, buf, i);
+            bool isOpen = draw3DViewer(ms, viewer, buf, i);
+
             if (!isOpen)
             {
                 m_ModelViewers.erase(m_ModelViewers.begin() + i);
