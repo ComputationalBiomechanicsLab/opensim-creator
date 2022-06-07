@@ -33,6 +33,7 @@
 #include "src/Tabs/ErrorTab.hpp"
 #include "src/Tabs/PerformanceAnalyzerTab.hpp"
 #include "src/Tabs/SimulatorTab.hpp"
+#include "src/Widgets/BasicWidgets.hpp"
 #include "src/Widgets/CoordinateEditor.hpp"
 #include "src/Widgets/ComponentDetails.hpp"
 #include "src/Widgets/MainMenu.hpp"
@@ -103,13 +104,6 @@ static void DrawComponentHoverTooltip(OpenSim::Component const& hovered)
     ImGui::TextDisabled("%s", hovered.getConcreteClassName().c_str());
 
     ImGui::PopTextWrapPos();
-    ImGui::EndTooltip();
-}
-
-static void DrawOutputTooltip(OpenSim::AbstractOutput const& o)
-{
-    ImGui::BeginTooltip();
-    ImGui::Text("%s", o.getTypeName().c_str());
     ImGui::EndTooltip();
 }
 
@@ -703,124 +697,6 @@ static void DrawSelectionBreadcrumbs(osc::UndoableModelStatePair& uim)
     ImGui::TextDisabled("(%s)", (*(lst.end() - 1))->getConcreteClassName().c_str());
 }
 
-
-static void DrawSelectOwnerMenu(osc::UndoableModelStatePair& model, OpenSim::Component const& selected)
-{
-    if (ImGui::BeginMenu("Select Owner"))
-    {
-        OpenSim::Component const* c = &selected;
-        model.setHovered(nullptr);
-        while (c->hasOwner())
-        {
-            c = &c->getOwner();
-
-            char buf[128];
-            std::snprintf(buf, sizeof(buf), "%s (%s)", c->getName().c_str(), c->getConcreteClassName().c_str());
-
-            if (ImGui::MenuItem(buf))
-            {
-                model.setSelected(c);
-            }
-            if (ImGui::IsItemHovered())
-            {
-                model.setHovered(c);
-            }
-        }
-        ImGui::EndMenu();
-    }
-}
-
-static void DrawOutputWithSubfieldsMenu(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
-{
-    int supportedSubfields = osc::GetSupportedSubfields(o);
-
-    // can plot suboutputs
-    if (ImGui::BeginMenu(("  " + o.getName()).c_str()))
-    {
-        for (osc::OutputSubfield f : osc::GetAllSupportedOutputSubfields())
-        {
-            if (static_cast<int>(f) & supportedSubfields)
-            {
-                if (ImGui::MenuItem(GetOutputSubfieldLabel(f)))
-                {
-                    api.addUserOutputExtractor(osc::OutputExtractor{osc::ComponentOutputExtractor{o, f}});
-                }
-            }
-        }
-        ImGui::EndMenu();
-    }
-
-    if (ImGui::IsItemHovered())
-    {
-        DrawOutputTooltip(o);
-    }
-}
-
-static void DrawOutputWithNoSubfieldsMenuItem(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
-{
-    // can only plot top-level of output
-
-    if (ImGui::MenuItem(("  " + o.getName()).c_str()))
-    {
-        api.addUserOutputExtractor(osc::OutputExtractor{osc::ComponentOutputExtractor{o}});
-    }
-
-    if (ImGui::IsItemHovered())
-    {
-        DrawOutputTooltip(o);
-    }
-}
-
-static void DrawRequestOutputMenuOrMenuItem(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
-{
-    if (osc::GetSupportedSubfields(o) == static_cast<int>(osc::OutputSubfield::None))
-    {
-        DrawOutputWithNoSubfieldsMenuItem(api, o);
-    }
-    else
-    {
-        DrawOutputWithSubfieldsMenu(api, o);
-    }
-}
-
-static void DrawRequestOutputsMenu(osc::MainUIStateAPI& api, OpenSim::Component const& c)
-{
-    if (ImGui::BeginMenu("Request Outputs"))
-    {
-        osc::DrawHelpMarker("Request that these outputs are plotted whenever a simulation is ran. The outputs will appear in the 'outputs' tab on the simulator screen");
-
-        // iterate from the selected component upwards to the root
-        int imguiId = 0;
-        OpenSim::Component const* p = &c;
-        while (p)
-        {
-            ImGui::PushID(imguiId++);
-
-            ImGui::Dummy({0.0f, 2.0f});
-            ImGui::TextDisabled("%s (%s)", p->getName().c_str(), p->getConcreteClassName().c_str());
-            ImGui::Separator();
-
-            if (p->getNumOutputs() == 0)
-            {
-                ImGui::TextDisabled("  (has no outputs)");
-            }
-            else
-            {
-                for (auto const& [name, output] : p->getOutputs())
-                {
-                    DrawRequestOutputMenuOrMenuItem(api, *output);
-                }
-            }
-
-            ImGui::PopID();
-
-            p = p->hasOwner() ? &p->getOwner() : nullptr;
-        }
-
-        ImGui::EndMenu();
-    }
-}
-
 static std::string GetDocumentName(osc::UndoableModelStatePair const& uim)
 {
     if (uim.hasFilesystemLocation())
@@ -1117,23 +993,6 @@ private:
             }
 
             ImGui::EndMenu();
-        }
-    }
-
-    // draw right-click context menu for the 3D viewer
-    void draw3DViewerContextMenu(OpenSim::Component const& selected)
-    {
-        ImGui::TextUnformatted(selected.getName().c_str());
-        ImGui::SameLine();
-        ImGui::TextDisabled("%s", selected.getConcreteClassName().c_str());
-        ImGui::Separator();
-        ImGui::Dummy({0.0f, 3.0f});
-
-        DrawSelectOwnerMenu(*m_Model, selected);
-        DrawRequestOutputsMenu(*m_Parent, selected);
-        if (OpenSim::Muscle const* m = dynamic_cast<OpenSim::Muscle const*>(&selected))
-        {
-            drawAddMusclePlotMenu(*m);
         }
     }
 
@@ -1546,7 +1405,18 @@ private:
                 if (selected)
                 {
                     // draw context menu for whatever's selected
-                    draw3DViewerContextMenu(*selected);
+                    ImGui::TextUnformatted(selected->getName().c_str());
+                    ImGui::SameLine();
+                    ImGui::TextDisabled("%s", selected->getConcreteClassName().c_str());
+                    ImGui::Separator();
+                    ImGui::Dummy({0.0f, 3.0f});
+
+                    DrawSelectOwnerMenu(*m_Model, *selected);
+                    DrawRequestOutputsMenu(*m_Parent, *selected);
+                    if (OpenSim::Muscle const* m = dynamic_cast<OpenSim::Muscle const*>(selected))
+                    {
+                        drawAddMusclePlotMenu(*m);
+                    }
                 }
                 else
                 {

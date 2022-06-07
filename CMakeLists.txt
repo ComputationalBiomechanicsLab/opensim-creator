@@ -508,6 +508,8 @@ add_library(osccore STATIC
     src/Widgets/AddComponentPopup.hpp
     src/Widgets/BasicSceneViewer.cpp
     src/Widgets/BasicSceneViewer.hpp
+    src/Widgets/BasicWidgets.cpp
+    src/Widgets/BasicWidgets.hpp
     src/Widgets/ComponentDetails.cpp
     src/Widgets/ComponentDetails.hpp
     src/Widgets/CoordinateEditor.cpp
