@@ -93,6 +93,16 @@
 #include <vector>
 
 
+static std::array<std::string, 5> const g_EditorScreenPanels =
+{
+    "Actions",
+    "Hierarchy",
+    "Property Editor",
+    "Log",
+    "Coordinate Editor",
+};
+
+
 //////////
 // ACTIONS
 //////////
@@ -290,6 +300,121 @@ static bool ActionSimulateAgainstAllIntegrators(osc::MainUIStateAPI* parent, osc
     return true;
 }
 
+static bool ActionAddOffsetFrameToSelection(osc::UndoableModelStatePair& uim)
+{
+    OpenSim::PhysicalFrame const* selection = uim.getSelectedAs<OpenSim::PhysicalFrame>();
+
+    if (!selection)
+    {
+        return false;
+    }
+
+    auto pof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+    pof->setName(selection->getName() + "_offsetframe");
+    pof->setParentFrame(*selection);
+
+    auto pofptr = pof.get();
+    uim.updSelectedAs<OpenSim::PhysicalFrame>()->addComponent(pof.release());
+    uim.setSelected(pofptr);
+    uim.commit("added offset frame");
+
+    return true;
+}
+
+static bool ActionCanRezeroSelectedJoint(osc::UndoableModelStatePair& uim)
+{
+    OpenSim::Joint const* selection = uim.getSelectedAs<OpenSim::Joint>();
+
+    if (!selection)
+    {
+        return false;
+    }
+
+    // if the joint uses offset frames for both its parent and child frames then
+    // it is possible to reorient those frames such that the joint's new zero
+    // point is whatever the current arrangement is (effectively, by pre-transforming
+    // the parent into the child and assuming a "zeroed" joint is an identity op)
+
+    return osc::DerivesFrom<OpenSim::PhysicalOffsetFrame>(selection->getParentFrame());
+}
+
+static bool ActionRezeroSelectedJoint(osc::UndoableModelStatePair& uim)
+{
+    OpenSim::Joint const* selection = uim.getSelectedAs<OpenSim::Joint>();
+
+    if (!selection)
+    {
+        return false;
+    }
+
+    OpenSim::PhysicalOffsetFrame const* parentPOF = dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&selection->getParentFrame());
+
+    if (!parentPOF)
+    {
+        return false;
+    }
+
+    OpenSim::PhysicalFrame const& childFrame = selection->getChildFrame();
+
+    SimTK::Transform parentXform = parentPOF->getTransformInGround(uim.getState());
+    SimTK::Transform childXform = childFrame.getTransformInGround(uim.getState());
+    SimTK::Transform child2parent = parentXform.invert() * childXform;
+    SimTK::Transform newXform = parentPOF->getOffsetTransform() * child2parent;
+
+    OpenSim::PhysicalOffsetFrame* mutableParent = const_cast<OpenSim::PhysicalOffsetFrame*>(parentPOF);
+    mutableParent->setOffsetTransform(newXform);
+
+    for (int i = 0, len = selection->numCoordinates(); i < len; ++i)
+    {
+        OpenSim::Coordinate const& c = selection->get_coordinates(i);
+        uim.updUiModel().removeCoordinateEdit(c);
+    }
+
+    uim.setDirty(true);
+    uim.commit("rezeroed joint");
+
+    return true;
+}
+
+static bool ActionAddParentOffsetFrameToSelectedJoint(osc::UndoableModelStatePair& uim)
+{
+    OpenSim::Joint const* selection = uim.getSelectedAs<OpenSim::Joint>();
+
+    if (!selection)
+    {
+        return false;
+    }
+
+    auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+    pf->setParentFrame(selection->getParentFrame());
+    uim.updSelectedAs<OpenSim::Joint>()->addFrame(pf.release());
+    uim.commit("added parent offset frame");
+
+    return true;
+}
+
+static bool ActionAddChildOffsetFrameToSelectedJoint(osc::UndoableModelStatePair& uim)
+{
+    OpenSim::Joint const* selection = uim.getSelectedAs<OpenSim::Joint>();
+
+    if (!selection)
+    {
+        return false;
+    }
+
+    auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+    pf->setParentFrame(selection->getChildFrame());
+    uim.updSelectedAs<OpenSim::Joint>()->addFrame(pf.release());
+    uim.commit("added child offset frame");
+
+    return true;
+}
+
+
+//////////
+// DRAWING
+//////////
+
 // draw an editor for top-level selected Component members (e.g. name)
 static void DrawTopLevelMembersEditor(osc::UndoableModelStatePair& st)
 {
@@ -406,6 +531,11 @@ static void DrawPhysicalFrameContextualActions(osc::SelectGeometryPopup& attachG
 {
     OpenSim::PhysicalFrame const* selection = uim.getSelectedAs<OpenSim::PhysicalFrame>();
 
+    if (!selection)
+    {
+        return;
+    }
+
     ImGui::Columns(2);
 
     ImGui::TextUnformatted("geometry");
@@ -417,14 +547,7 @@ static void DrawPhysicalFrameContextualActions(osc::SelectGeometryPopup& attachG
     {
         attachGeomPopup.open();
     }
-    if (ImGui::IsItemHovered())
-    {
-        ImGui::BeginTooltip();
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted("Add geometry to this component. Geometry can be removed by selecting it in the hierarchy editor and pressing DELETE");
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
-    }
+    osc::DrawTooltipIfItemHovered("Add Geometry", "Add geometry to this component. Geometry can be removed by selecting it in the hierarchy editor and pressing DELETE");
 
     if (auto attached = attachGeomPopup.draw(); attached)
     {
@@ -437,23 +560,9 @@ static void DrawPhysicalFrameContextualActions(osc::SelectGeometryPopup& attachG
     ImGui::NextColumn();
     if (ImGui::Button("add offset frame"))
     {
-        auto pof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-        pof->setName(selection->getName() + "_offsetframe");
-        pof->setParentFrame(*selection);
-
-        auto pofptr = pof.get();
-        uim.updSelectedAs<OpenSim::PhysicalFrame>()->addComponent(pof.release());
-        uim.setSelected(pofptr);
-        uim.commit("added offset frame");
+        ActionAddOffsetFrameToSelection(uim);
     }
-    if (ImGui::IsItemHovered())
-    {
-        ImGui::BeginTooltip();
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted("Add an OpenSim::OffsetFrame as a child of this Component. Other components in the model can then connect to this OffsetFrame, rather than the base Component, so that it can connect at some offset that is relative to the parent Component");
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
-    }
+    osc::DrawTooltipIfItemHovered("Add Offset Frame", "Add an OpenSim::OffsetFrame as a child of this Component. Other components in the model can then connect to this OffsetFrame, rather than the base Component, so that it can connect at some offset that is relative to the parent Component");
     ImGui::NextColumn();
 
     ImGui::Columns();
@@ -474,40 +583,16 @@ static void DrawJointContextualActions(osc::UndoableModelStatePair& uim)
 
     DrawSelectionJointTypeSwitcher(uim);
 
-    // if the joint uses offset frames for both its parent and child frames then
-    // it is possible to reorient those frames such that the joint's new zero
-    // point is whatever the current arrangement is (effectively, by pre-transforming
-    // the parent into the child and assuming a "zeroed" joint is an identity op)
+    if (ActionCanRezeroSelectedJoint(uim))
     {
-        OpenSim::PhysicalOffsetFrame const* parentPOF = dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&selection->getParentFrame());
-        OpenSim::PhysicalFrame const& childFrame = selection->getChildFrame();
-
-        if (parentPOF)
+        ImGui::Text("rezero joint");
+        ImGui::NextColumn();
+        if (ImGui::Button("rezero"))
         {
-            ImGui::Text("rezero joint");
-            ImGui::NextColumn();
-            if (ImGui::Button("rezero"))
-            {
-                SimTK::Transform parentXform = parentPOF->getTransformInGround(uim.getState());
-                SimTK::Transform childXform = childFrame.getTransformInGround(uim.getState());
-                SimTK::Transform child2parent = parentXform.invert() * childXform;
-                SimTK::Transform newXform = parentPOF->getOffsetTransform() * child2parent;
-
-                OpenSim::PhysicalOffsetFrame* mutableParent = const_cast<OpenSim::PhysicalOffsetFrame*>(parentPOF);
-                mutableParent->setOffsetTransform(newXform);
-
-                for (int i = 0, len = selection->numCoordinates(); i < len; ++i)
-                {
-                    OpenSim::Coordinate const& c = selection->get_coordinates(i);
-                    uim.updUiModel().removeCoordinateEdit(c);
-                }
-
-                uim.setDirty(true);
-                uim.commit("rezeroed joint");
-            }
-            osc::DrawTooltipIfItemHovered("Re-zero the joint", "Given the joint's current geometry due to joint defaults, coordinate defaults, and any coordinate edits made in the coordinate editor, this will reorient the joint's parent (if it's an offset frame) to match the child's transformation. Afterwards, it will then resets all of the joints coordinates to zero. This effectively sets the 'zero point' of the joint (i.e. the geometry when all coordinates are zero) to match whatever the current geometry is.");
-            ImGui::NextColumn();
+            ActionRezeroSelectedJoint(uim);
         }
+        osc::DrawTooltipIfItemHovered("Re-zero the joint", "Given the joint's current geometry due to joint defaults, coordinate defaults, and any coordinate edits made in the coordinate editor, this will reorient the joint's parent (if it's an offset frame) to match the child's transformation. Afterwards, it will then resets all of the joints coordinates to zero. This effectively sets the 'zero point' of the joint (i.e. the geometry when all coordinates are zero) to match whatever the current geometry is.");
+        ImGui::NextColumn();
     }
 
     // BEWARE: broke
@@ -517,18 +602,12 @@ static void DrawJointContextualActions(osc::UndoableModelStatePair& uim)
 
         if (ImGui::Button("parent"))
         {
-            auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-            pf->setParentFrame(selection->getParentFrame());
-            uim.updSelectedAs<OpenSim::Joint>()->addFrame(pf.release());
-            uim.commit("added parent offset frame");
+            ActionAddParentOffsetFrameToSelectedJoint(uim);
         }
         ImGui::SameLine();
         if (ImGui::Button("child"))
         {
-            auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-            pf->setParentFrame(selection->getChildFrame());
-            uim.updSelectedAs<OpenSim::Joint>()->addFrame(pf.release());
-            uim.commit("added child offset frame");
+            ActionAddChildOffsetFrameToSelectedJoint(uim);
         }
         ImGui::NextColumn();
     }
@@ -635,20 +714,13 @@ static void DrawPathActuatorContextualParams(osc::UndoableModelStatePair& uim)
     {
         ImGui::OpenPopup(modalName);
     }
-    if (ImGui::IsItemHovered())
-    {
-        ImGui::BeginTooltip();
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted(
-            "Add a new path point, attached to an OpenSim::PhysicalFrame in the model, to the end of the sequence of path points in this OpenSim::PathActuator");
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
-    }
+    osc::DrawTooltipIfItemHovered("Add Path Point", "Add a new path point, attached to an OpenSim::PhysicalFrame in the model, to the end of the sequence of path points in this OpenSim::PathActuator");
 
     // handle popup
     {
         OpenSim::PhysicalFrame const* pf = osc::Select1PFPopup{}.draw(modalName, uim.getModel());
-        if (pf) {
+        if (pf)
+        {
             int n = pa->getGeometryPath().getPathPointSet().getSize();
             char buf[128];
             std::snprintf(buf, sizeof(buf), "%s-P%i", pa->getName().c_str(), n + 1);
@@ -676,12 +748,10 @@ static void DrawModelContextualActions(osc::UndoableModelStatePair& uum)
     ImGui::Columns(2);
     ImGui::Text("show frames");
     ImGui::NextColumn();
-    bool showingFrames = m->get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
 
-    if (ImGui::Button(showingFrames ? "hide" : "show"))
+    if (ImGui::Button("toggle"))
     {
-        uum.updSelectedAs<OpenSim::Model>()->upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
-        uum.commit("toggled frame visibility");
+        ActionToggleFrames(uum);
     }
     ImGui::NextColumn();
     ImGui::Columns();
@@ -794,7 +864,7 @@ static void DrawSelectionBreadcrumbs(osc::UndoableModelStatePair& uim)
 
     for (auto it = lst.begin(); it != lst.end() - 1; ++it)
     {
-        ImGui::Dummy(ImVec2{indent, 0.0f});
+        ImGui::Dummy({indent, 0.0f});
         ImGui::SameLine();
 
         if (ImGui::Button((*it)->getName().c_str()))
@@ -816,7 +886,7 @@ static void DrawSelectionBreadcrumbs(osc::UndoableModelStatePair& uim)
         indent += 15.0f;
     }
 
-    ImGui::Dummy(ImVec2{indent, 0.0f});
+    ImGui::Dummy({indent, 0.0f});
     ImGui::SameLine();
     ImGui::TextUnformatted((*(lst.end() - 1))->getName().c_str());
     ImGui::SameLine();
@@ -833,14 +903,6 @@ static std::string GetDocumentName(osc::UndoableModelStatePair const& uim)
     {
         return "untitled.osim";
     }
-}
-
-static std::string GetRecommendedTitle(osc::UndoableModelStatePair const& uim)
-{
-    std::stringstream ss;
-    ss << ICON_FA_EDIT << " ";
-    ss << GetDocumentName(uim);
-    return std::move(ss).str();
 }
 
 class osc::ModelEditorTab::Impl final {
@@ -879,7 +941,7 @@ public:
 	void onMount()
 	{
         App::upd().makeMainEventLoopWaiting();
-        m_Name = GetRecommendedTitle(*m_Model);
+        m_Name = computeTabName();
         ImPlot::CreateContext();
 	}
 
@@ -912,7 +974,7 @@ public:
             ActionUpdateModelFromBackingFile(*m_Model);
         }
 
-        m_Name = GetRecommendedTitle(*m_Model);
+        m_Name = computeTabName();
 	}
 
 	void onDrawMainMenu()
@@ -941,10 +1003,53 @@ public:
 	void onDraw()
 	{
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
-        drawGUARDED();
+
+        try
+        {
+            drawUNGUARDED();
+            m_ExceptionThrownLastFrame = false;
+        }
+        catch (std::exception const& ex)
+        {
+            log::error("an OpenSim::Exception was thrown while drawing the editor");
+            log::error("    message = %s", ex.what());
+            log::error("OpenSim::Exceptions typically happen when the model is damaged or made invalid by an edit (e.g. setting a property to an invalid value)");
+
+            if (m_ExceptionThrownLastFrame)
+            {
+                UID tabID = m_Parent->addTab<ErrorTab>(m_Parent, ex);
+                m_Parent->selectTab(tabID);
+                m_Parent->closeTab(m_ID);
+            }
+            else
+            {
+                try
+                {
+                    m_Model->rollback();
+                    log::error("model rollback succeeded");
+                    m_ExceptionThrownLastFrame = true;
+                }
+                catch (std::exception const& ex2)
+                {
+                    UID tabID = m_Parent->addTab<ErrorTab>(m_Parent, ex2);
+                    m_Parent->selectTab(tabID);
+                    m_Parent->closeTab(m_ID);
+                }
+            }
+
+            m_Parent->resetImgui();
+        }
 	}
 
 private:
+
+    std::string computeTabName()
+    {
+        std::stringstream ss;
+        ss << ICON_FA_EDIT << " ";
+        ss << GetDocumentName(*m_Model);
+        return std::move(ss).str();
+    }
 
     bool onDropEvent(SDL_DropEvent const& e)
     {
@@ -1000,7 +1105,6 @@ private:
 
     void drawAddMusclePlotMenu(OpenSim::Muscle const& m)
     {
-
         if (ImGui::BeginMenu("Add Muscle Plot vs:"))
         {
             for (OpenSim::Coordinate const& c : m_Model->getModel().getComponentList<OpenSim::Coordinate>())
@@ -1042,16 +1146,7 @@ private:
                 m_Model->setIsolated(nullptr);
             }
         }
-
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-            ImGui::TextUnformatted(
-                "Only show this component in the visualizer\n\nThis can be disabled from the Edit menu (Edit -> Clear Isolation)");
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
+        osc::DrawTooltipIfItemHovered("Toggle Isolation", "Only show this component in the visualizer\n\nThis can be disabled from the Edit menu (Edit -> Clear Isolation)");
         ImGui::NextColumn();
 
 
@@ -1061,15 +1156,7 @@ private:
         {
             osc::SetClipboardText(m_Model->getSelected()->getAbsolutePathString().c_str());
         }
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-            ImGui::TextUnformatted(
-                "Copy the absolute path to this component to your clipboard.\n\n(This is handy if you are separately using absolute component paths to (e.g.) manipulate the model in a script or something)");
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
+        osc::DrawTooltipIfItemHovered("Copy Component Absolute Path", "Copy the absolute path to this component to your clipboard.\n\n(This is handy if you are separately using absolute component paths to (e.g.) manipulate the model in a script or something)");
         ImGui::NextColumn();
 
         ImGui::Columns();
@@ -1297,15 +1384,6 @@ private:
 
     void drawMainMenuWindowTab()
     {
-        static std::vector<std::string> const g_EditorScreenPanels =
-        {
-            "Actions",
-            "Hierarchy",
-            "Property Editor",
-            "Log",
-            "Coordinate Editor",
-        };
-
         // draw "window" tab
         if (ImGui::BeginMenu("Window"))
         {
@@ -1408,25 +1486,17 @@ private:
 
         // if right-clicked, draw context menu
         {
-            char buf[128];
-            std::snprintf(buf, sizeof(buf), "%s_contextmenu", name);
+            std::string menuName = std::string{name} + "_contextmenu";
 
             if (resp.isMousedOver && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right))
             {
-                if (resp.hovertestResult)
-                {
-                    m_Model->setSelected(resp.hovertestResult);
-                }
-                else
-                {
-                    m_Model->setSelected(nullptr);
-                }
-                ImGui::OpenPopup(buf);
+                m_Model->setSelected(resp.hovertestResult);  // can be empty
+                ImGui::OpenPopup(menuName.c_str());
             }
 
             OpenSim::Component const* selected = m_Model->getSelected();
 
-            if (ImGui::BeginPopup(buf))
+            if (ImGui::BeginPopup(menuName.c_str()))
             {
                 if (selected)
                 {
@@ -1581,45 +1651,6 @@ private:
         }
 
         m_ModelActionsMenuBar.drawAnyOpenPopups();
-    }
-
-    void drawGUARDED()
-    {
-        try
-        {
-            drawUNGUARDED();
-            m_ExceptionThrownLastFrame = false;
-        }
-        catch (std::exception const& ex)
-        {
-            log::error("an OpenSim::Exception was thrown while drawing the editor");
-            log::error("    message = %s", ex.what());
-            log::error("OpenSim::Exceptions typically happen when the model is damaged or made invalid by an edit (e.g. setting a property to an invalid value)");
-
-            if (m_ExceptionThrownLastFrame)
-            {
-                UID tabID = m_Parent->addTab<ErrorTab>(m_Parent, ex);
-                m_Parent->selectTab(tabID);
-                m_Parent->closeTab(m_ID);
-            }
-            else
-            {
-                try
-                {
-                    m_Model->rollback();
-                    log::error("model rollback succeeded");
-                    m_ExceptionThrownLastFrame = true;
-                }
-                catch (std::exception const& ex2)
-                {
-                    UID tabID = m_Parent->addTab<ErrorTab>(m_Parent, ex2);
-                    m_Parent->selectTab(tabID);
-                    m_Parent->closeTab(m_ID);
-                }
-            }
-
-            m_Parent->resetImgui();
-        }
     }
 
 	UID m_ID;
