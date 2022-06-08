@@ -127,7 +127,7 @@ static void DrawGenericNumericOutputContextMenuItems(osc::VirtualSimulation& sim
     }
 }
 
-static std::filesystem::path TryExportOutputsToCSV(osc::VirtualSimulation& sim, nonstd::span<osc::OutputExtractor> outputs)
+static std::filesystem::path TryExportOutputsToCSV(osc::VirtualSimulation& sim, nonstd::span<osc::OutputExtractor const> outputs)
 {
     std::vector<osc::SimulationReport> reports = sim.getAllSimulationReports();
     std::vector<float> times = PopulateFirstNTimeValues(reports);
@@ -373,6 +373,11 @@ osc::SimulationOutputPlot::~SimulationOutputPlot() noexcept
 void osc::SimulationOutputPlot::draw()
 {
 	m_Impl->draw();
+}
+
+std::filesystem::path osc::TryPromptAndSaveOutputsAsCSV(SimulatorUIAPI& api, nonstd::span<OutputExtractor const> outputs)
+{
+    return TryExportOutputsToCSV(api.updSimulation(), outputs);
 }
 
 std::filesystem::path osc::TryPromptAndSaveAllUserDesiredOutputsAsCSV(SimulatorUIAPI& api)

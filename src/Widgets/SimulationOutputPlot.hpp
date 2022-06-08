@@ -28,12 +28,11 @@ namespace osc
 		void draw();
 
 	private:
-		friend std::filesystem::path TryPromptAndSaveAllAsCSV(nonstd::span<SimulationOutputPlot>);
-
 		class Impl;
 		Impl* m_Impl;
 	};
 
 	// returns empty path if not saved
+	std::filesystem::path TryPromptAndSaveOutputsAsCSV(SimulatorUIAPI&, nonstd::span<OutputExtractor const>);
 	std::filesystem::path TryPromptAndSaveAllUserDesiredOutputsAsCSV(SimulatorUIAPI&);
 }

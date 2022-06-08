@@ -21,7 +21,7 @@ namespace osc
 		virtual ~SimulatorUIAPI() noexcept = default;
 
 		virtual VirtualSimulation& updSimulation() = 0;
-		virtual SimulationClock::time_point getSimulationScrubTime() const = 0;
+		virtual SimulationClock::time_point getSimulationScrubTime() = 0;
 		virtual void setSimulationScrubTime(SimulationClock::time_point) = 0;
 		virtual std::optional<SimulationReport> trySelectReportBasedOnScrubbing() = 0;
 
