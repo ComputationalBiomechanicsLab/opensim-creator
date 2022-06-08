@@ -112,6 +112,33 @@ namespace
             return std::to_string(getValueFloat(c, report));
         }
 
+        std::size_t getHash() const override
+        {
+            return osc::HashOf(m_Name, m_Description, m_UID);
+        }
+
+        bool equals(VirtualOutputExtractor const& other) const override
+        {
+            if (&other == this)
+            {
+                return true;
+            }
+
+            auto otherT = dynamic_cast<AuxiliaryVariableOutputExtractor const*>(&other);
+
+            if (!otherT)
+            {
+                return false;
+            }
+
+            bool result =
+                m_Name == otherT->m_Name &&
+                m_Description == otherT->m_Description &&
+                m_UID == otherT->m_UID;
+
+            return result;
+        }
+
     private:
         std::string m_Name;
         std::string m_Description;

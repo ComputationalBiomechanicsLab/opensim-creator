@@ -52,6 +52,9 @@ namespace osc
         UID getAuxiliaryDataID() const;
         ExtractorFn getExtractorFunction() const;
 
+        std::size_t getHash() const override;
+        bool equals(VirtualOutputExtractor const&) const override;
+
     private:
         UID m_AuxiliaryDataID;
         std::string m_Name;

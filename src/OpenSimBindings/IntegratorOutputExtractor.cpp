@@ -3,6 +3,7 @@
 #include "src/OpenSimBindings/VirtualOutputExtractor.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/Utils/Assertions.hpp"
+#include "src/Utils/Algorithms.hpp"
 #include "src/Utils/UID.hpp"
 
 #include <simmath/Integrator.h>
@@ -159,6 +160,34 @@ osc::UID osc::IntegratorOutputExtractor::getAuxiliaryDataID() const
 osc::IntegratorOutputExtractor::ExtractorFn osc::IntegratorOutputExtractor::getExtractorFunction() const
 {
     return m_Extractor;
+}
+
+std::size_t osc::IntegratorOutputExtractor::getHash() const
+{
+    return osc::HashOf(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
+}
+
+bool osc::IntegratorOutputExtractor::equals(VirtualOutputExtractor const& other) const
+{
+    if (this == &other)
+    {
+        return true;
+    }
+
+    auto const* otherT = dynamic_cast<IntegratorOutputExtractor const*>(&other);
+
+    if (!otherT)
+    {
+        return false;
+    }
+
+    bool result =
+        m_AuxiliaryDataID == otherT->m_AuxiliaryDataID &&
+        m_Name == otherT->m_Name &&
+        m_Description == otherT->m_Description &&
+        m_Extractor == otherT->m_Extractor;
+
+    return result;
 }
 
 int osc::GetNumIntegratorOutputExtractors()

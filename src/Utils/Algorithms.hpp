@@ -67,6 +67,15 @@ namespace osc
         return std::all_of(begin(c), end(c), p);
     }
 
+    template<typename Container, typename T>
+    auto Find(Container const& c, T const& v)
+    {
+        using std::begin;
+        using std::end;
+
+        return std::find(begin(c), end(c), v);
+    }
+
     template<typename Container, typename UnaryPredicate>
     auto FindIf(Container const& c, UnaryPredicate p)
     {

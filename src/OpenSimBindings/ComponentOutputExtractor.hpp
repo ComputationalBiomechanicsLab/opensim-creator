@@ -69,6 +69,9 @@ namespace osc
         std::string getValueString(OpenSim::Component const&,
                                    SimulationReport const&) const override;
 
+        std::size_t getHash() const override;
+        bool equals(VirtualOutputExtractor const&) const override;
+
         class Impl;
     private:
         ClonePtr<Impl> m_Impl;

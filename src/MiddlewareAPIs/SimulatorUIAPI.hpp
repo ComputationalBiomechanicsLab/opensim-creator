@@ -29,5 +29,7 @@ namespace osc
 		virtual OutputExtractor const& getUserOutputExtractor(int) const = 0;
 		virtual void addUserOutputExtractor(OutputExtractor const&) = 0;
 		virtual void removeUserOutputExtractor(int) = 0;
+		virtual bool hasUserOutputExtractor(OutputExtractor const&) const = 0;
+		virtual bool removeUserOutputExtractor(OutputExtractor const&) = 0;
 	};
 }

@@ -118,7 +118,8 @@ static void DrawGenericNumericOutputContextMenuItems(osc::SimulatorUIAPI& api, o
     {
         TryExportNumericOutputToCSV(sim, output);
     }
-    else if (ImGui::MenuItem(ICON_FA_SAVE "Save as CSV (and open)"))
+
+    if (ImGui::MenuItem(ICON_FA_SAVE "Save as CSV (and open)"))
     {
         std::string p = TryExportNumericOutputToCSV(sim, output);
         if (!p.empty())
@@ -126,11 +127,19 @@ static void DrawGenericNumericOutputContextMenuItems(osc::SimulatorUIAPI& api, o
             osc::OpenPathInOSDefaultApplication(p);
         }
     }
-    else if (ImGui::MenuItem("Request Output"))
+
+    bool isWatching = api.hasUserOutputExtractor(output);
+
+    if (ImGui::MenuItem("Request Output", nullptr, nullptr, !isWatching))
     {
         api.addUserOutputExtractor(output);
     }
     osc::DrawTooltipIfItemHovered("Request Output", "Request that this output is added to the outputs window");
+
+    if (ImGui::MenuItem("Remove Output", nullptr, nullptr, isWatching))
+    {
+        api.removeUserOutputExtractor(output);
+    }
 }
 
 static std::filesystem::path TryExportOutputsToCSV(osc::VirtualSimulation& sim, nonstd::span<osc::OutputExtractor const> outputs)

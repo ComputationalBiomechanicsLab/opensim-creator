@@ -196,6 +196,16 @@ public:
         m_API->removeUserOutputExtractor(i);
     }
 
+    bool hasUserOutputExtractor(OutputExtractor const& oe) const override
+    {
+        return m_API->hasUserOutputExtractor(oe);
+    }
+
+    bool removeUserOutputExtractor(OutputExtractor const& oe) override
+    {
+        return m_API->removeUserOutputExtractor(oe);
+    }
+
 private:
     void drawContent()
     {
@@ -328,9 +338,7 @@ private:
 
     void drawOutputsTab()
     {
-        int numOutputs = m_API->getNumUserOutputExtractors();
-
-        if (numOutputs <= 0)
+        if (m_API->getNumUserOutputExtractors() <= 0)
         {
             ImGui::TextDisabled("(no outputs requested)");
             return;
@@ -359,7 +367,7 @@ private:
         ImGui::Separator();
         ImGui::Dummy({0.0f, 5.0f});
 
-        for (int i = 0; i < numOutputs; ++i)
+        for (int i = 0; i < m_API->getNumUserOutputExtractors(); ++i)
         {
             osc::OutputExtractor output = m_API->getUserOutputExtractor(i);
 

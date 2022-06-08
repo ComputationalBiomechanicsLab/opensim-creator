@@ -2,6 +2,7 @@
 
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/Utils/Assertions.hpp"
+#include "src/Utils/Algorithms.hpp"
 
 #include <simbody/internal/MultibodySystem.h>
 
@@ -94,6 +95,34 @@ osc::UID osc::MultiBodySystemOutputExtractor::getAuxiliaryDataID() const
 osc::MultiBodySystemOutputExtractor::ExtractorFn osc::MultiBodySystemOutputExtractor::getExtractorFunction() const
 {
     return m_Extractor;
+}
+
+std::size_t osc::MultiBodySystemOutputExtractor::getHash() const
+{
+    return osc::HashOf(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
+}
+
+bool osc::MultiBodySystemOutputExtractor::equals(VirtualOutputExtractor const& other) const
+{
+    if (&other == this)
+    {
+        return true;
+    }
+
+    auto otherT = dynamic_cast<MultiBodySystemOutputExtractor const*>(&other);
+
+    if (!otherT)
+    {
+        return false;
+    }
+
+    bool result =
+        m_AuxiliaryDataID == otherT->m_AuxiliaryDataID &&
+        m_Name == otherT->m_Name &&
+        m_Description == otherT->m_Description &&
+        m_Extractor == otherT->m_Extractor;
+
+    return result;
 }
 
 int osc::GetNumMultiBodySystemOutputExtractors()

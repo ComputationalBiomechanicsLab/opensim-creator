@@ -193,6 +193,26 @@ public:
         m_UserOutputExtractors.erase(m_UserOutputExtractors.begin() + idx);
     }
 
+    bool hasUserOutputExtractor(OutputExtractor const& oe) const override
+    {
+        return osc::Contains(m_UserOutputExtractors, oe);
+    }
+
+    bool removeUserOutputExtractor(OutputExtractor const& oe) override
+    {
+        auto it = osc::Find(m_UserOutputExtractors, oe);
+        if (it != m_UserOutputExtractors.end())
+        {
+            m_UserOutputExtractors.erase(it);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+
 private:
     void drawTabSpecificMenu()
     {

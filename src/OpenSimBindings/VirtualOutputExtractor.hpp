@@ -46,5 +46,19 @@ namespace osc
 
         virtual std::string getValueString(OpenSim::Component const&,
                                            SimulationReport const&) const = 0;
+
+        virtual std::size_t getHash() const = 0;
+        virtual bool equals(VirtualOutputExtractor const&) const = 0;
     };
+
+
+    inline bool operator==(VirtualOutputExtractor const& a, VirtualOutputExtractor const& b)
+    {
+        return a.equals(b);
+    }
+
+    inline bool operator!=(VirtualOutputExtractor const& a, VirtualOutputExtractor const& b)
+    {
+        return !a.equals(b);
+    }
 }

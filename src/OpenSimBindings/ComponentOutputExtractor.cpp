@@ -221,6 +221,37 @@ public:
         }
     }
 
+    std::size_t getHash() const
+    {
+        return osc::HashOf(m_ComponentAbsPath.toString(), m_OutputName, m_Label, m_OutputType, m_ExtractorFunc);
+    }
+
+    bool equals(VirtualOutputExtractor const& other)
+    {
+        auto otherT = dynamic_cast<ComponentOutputExtractor const*>(&other);
+
+        if (!otherT)
+        {
+            return false;
+        }
+
+        auto otherImpl = otherT->m_Impl.get();
+
+        if (otherImpl == this)
+        {
+            return true;
+        }
+
+        bool result =
+            m_ComponentAbsPath == otherImpl->m_ComponentAbsPath &&
+            m_OutputName == otherImpl->m_OutputName &&
+            m_Label == otherImpl->m_Label &&
+            m_OutputType == otherImpl->m_OutputType &&
+            m_ExtractorFunc == otherImpl->m_ExtractorFunc;
+
+        return result;
+    }
+
 private:
     OpenSim::ComponentPath m_ComponentAbsPath;
     std::string m_OutputName;
@@ -314,4 +345,14 @@ std::string osc::ComponentOutputExtractor::getValueString(OpenSim::Component con
                                                           SimulationReport const& r) const
 {
     return m_Impl->getValueString(c, r);
+}
+
+std::size_t osc::ComponentOutputExtractor::getHash() const
+{
+    return m_Impl->getHash();
+}
+
+bool osc::ComponentOutputExtractor::equals(VirtualOutputExtractor const& other) const
+{
+    return m_Impl->equals(other);
 }

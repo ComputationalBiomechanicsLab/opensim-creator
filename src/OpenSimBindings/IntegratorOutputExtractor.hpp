@@ -48,6 +48,9 @@ namespace osc
         std::string getValueString(OpenSim::Component const&,
                                    SimulationReport const&) const override;
 
+        std::size_t getHash() const override;
+        bool equals(VirtualOutputExtractor const&) const override;
+
         UID getAuxiliaryDataID() const;
         ExtractorFn getExtractorFunction() const;
 
