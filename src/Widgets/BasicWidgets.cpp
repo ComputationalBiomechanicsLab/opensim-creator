@@ -3,12 +3,16 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
+#include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/OpenSimBindings/VirtualModelStatePair.hpp"
 #include "src/MainUIStateAPI.hpp"
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
+
+#include <string>
+#include <variant>
 
 static void DrawOutputTooltip(OpenSim::AbstractOutput const& o)
 {
@@ -67,6 +71,26 @@ static void DrawRequestOutputMenuOrMenuItem(osc::MainUIStateAPI& api, OpenSim::A
     else
     {
         DrawOutputWithSubfieldsMenu(api, o);
+    }
+}
+
+static void DrawSimulationParamValue(osc::ParamValue const& v)
+{
+    if (std::holds_alternative<double>(v))
+    {
+        ImGui::Text("%f", static_cast<float>(std::get<double>(v)));
+    }
+    else if (std::holds_alternative<osc::IntegratorMethod>(v))
+    {
+        ImGui::Text("%s", osc::GetIntegratorMethodString(std::get<osc::IntegratorMethod>(v)));
+    }
+    else if (std::holds_alternative<int>(v))
+    {
+        ImGui::Text("%i", std::get<int>(v));
+    }
+    else
+    {
+        ImGui::Text("(unknown value type)");
     }
 }
 
@@ -148,4 +172,31 @@ void osc::DrawRequestOutputsMenu(osc::MainUIStateAPI& api, OpenSim::Component co
 
         ImGui::EndMenu();
     }
+}
+
+void osc::DrawSimulationParams(osc::ParamBlock const& params)
+{
+    ImGui::Dummy({0.0f, 1.0f});
+    ImGui::TextUnformatted("parameters:");
+    ImGui::SameLine();
+    osc::DrawHelpMarker("The parameters used when this simulation was launched. These must be set *before* running the simulation");
+    ImGui::Separator();
+    ImGui::Dummy({0.0f, 2.0f});
+
+    ImGui::Columns(2);
+    for (int i = 0, len = params.size(); i < len; ++i)
+    {
+        std::string const& name = params.getName(i);
+        std::string const& description = params.getDescription(i);
+        osc::ParamValue const& value = params.getValue(i);
+
+        ImGui::TextUnformatted(name.c_str());
+        ImGui::SameLine();
+        osc::DrawHelpMarker(name.c_str(), description.c_str());
+        ImGui::NextColumn();
+
+        DrawSimulationParamValue(value);
+        ImGui::NextColumn();
+    }
+    ImGui::Columns();
 }

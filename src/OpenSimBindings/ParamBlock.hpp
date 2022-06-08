@@ -1,17 +1,14 @@
 #pragma once
 
-#include "src/OpenSimBindings/IntegratorMethod.hpp"
+#include "src/OpenSimBindings/ParamValue.hpp"
 #include "src/Utils/ClonePtr.hpp"
 
 #include <optional>
-#include <variant>
 #include <string>
 #include <string_view>
 
 namespace osc
 {
-    using ParamValue = std::variant<double, int, IntegratorMethod>;
-
     // a generic block of parameters - usually used to generically read/write
     // values into other systems (e.g. simulators)
     class ParamBlock final {
