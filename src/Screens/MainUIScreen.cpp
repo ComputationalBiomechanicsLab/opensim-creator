@@ -1,6 +1,7 @@
 #include "MainUIScreen.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/ParamBlock.hpp"
@@ -13,7 +14,6 @@
 #include "src/Tabs/Tab.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Widgets/SaveChangesPopup.hpp"
-#include "src/MainUIStateAPI.hpp"
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>

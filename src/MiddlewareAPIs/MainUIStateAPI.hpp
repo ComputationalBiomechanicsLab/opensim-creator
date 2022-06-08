@@ -10,6 +10,9 @@ namespace osc
 
 namespace osc
 {
+	// API access to shared state between main UI tabs
+	//
+	// this is how individual UI tabs inter-communicate (e.g. by sharing data, closing other tabs, etc.)
 	class MainUIStateAPI : public TabHost {
 	public:
 		virtual ~MainUIStateAPI() noexcept = default;

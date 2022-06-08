@@ -1,11 +1,11 @@
 #include "BasicWidgets.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/OpenSimBindings/VirtualModelStatePair.hpp"
-#include "src/MainUIStateAPI.hpp"
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>

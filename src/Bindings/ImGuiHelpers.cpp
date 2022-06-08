@@ -357,3 +357,12 @@ bool osc::BeginMainViewportTopBar(char const* label)
     float height = ImGui::GetFrameHeight();
     return ImGui::BeginViewportSideBar(label, viewport, ImGuiDir_Up, height, window_flags);
 }
+
+void osc::TextCentered(std::string const& s)
+{
+    auto windowWidth = ImGui::GetWindowSize().x;
+    auto textWidth   = ImGui::CalcTextSize(s.c_str()).x;
+
+    ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
+    ImGui::TextUnformatted(s.c_str());
+}

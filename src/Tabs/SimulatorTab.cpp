@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Maths/BVH.hpp"
+#include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
 #include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
@@ -31,7 +32,6 @@
 #include "src/Widgets/ModelHierarchyPanel.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
-#include "src/MainUIStateAPI.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/ComponentOutput.h>
@@ -112,7 +112,8 @@ static std::string ExportTimeseriesToCSV(
     return p.string();
 }
 
-static std::vector<float> PopulateFirstNNumericOutputValues(OpenSim::Model const& model,
+static std::vector<float> PopulateFirstNNumericOutputValues(
+    OpenSim::Model const& model,
     nonstd::span<osc::SimulationReport const> reports,
     osc::VirtualOutputExtractor const& output)
 {
@@ -204,8 +205,7 @@ static std::string TryExportOutputsToCSV(osc::Simulation& sim,
     return p.string();
 }
 
-static void DrawGenericNumericOutputContextMenuItems(osc::Simulation& sim,
-    osc::VirtualOutputExtractor const& output)
+static void DrawGenericNumericOutputContextMenuItems(osc::Simulation& sim, osc::VirtualOutputExtractor const& output)
 {
     OSC_ASSERT(output.getOutputType() == osc::OutputType::Float);
 
@@ -223,20 +223,11 @@ static void DrawGenericNumericOutputContextMenuItems(osc::Simulation& sim,
     }
 }
 
-static void TextCentered(std::string const& s)
-{
-    auto windowWidth = ImGui::GetWindowSize().x;
-    auto textWidth   = ImGui::CalcTextSize(s.c_str()).x;
-
-    ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
-    ImGui::TextUnformatted(s.c_str());
-}
-
 static void DrawOutputNameColumn(osc::VirtualOutputExtractor const& output, bool centered = true)
 {
     if (centered)
     {
-        TextCentered(output.getName());
+        osc::TextCentered(output.getName());
     }
     else
     {
@@ -710,7 +701,7 @@ private:
 
         {
             OSC_PERF("draw output plot");
-            ;
+
             ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, ImVec2(0,0));
             ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 0.0f);
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, ImVec2(0,1));

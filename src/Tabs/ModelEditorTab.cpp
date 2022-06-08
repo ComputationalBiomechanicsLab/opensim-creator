@@ -15,6 +15,7 @@
 
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
@@ -49,7 +50,6 @@
 #include "src/Widgets/Select1PFPopup.hpp"
 #include "src/Widgets/Select2PFsPopup.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
-#include "src/MainUIStateAPI.hpp"
 
 #include <imgui.h>
 #include <implot.h>

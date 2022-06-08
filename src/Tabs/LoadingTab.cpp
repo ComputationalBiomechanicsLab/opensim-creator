@@ -1,12 +1,12 @@
 #include "LoadingTab.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Tabs/ModelEditorTab.hpp"
-#include "src/MainUIStateAPI.hpp"
 
 #include <imgui.h>
 #include <SDL_events.h>

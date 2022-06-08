@@ -3,6 +3,7 @@
 #include "src/Bindings/GlmHelpers.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Bindings/SimTKHelpers.hpp"
+#include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
@@ -36,7 +37,6 @@
 #include "src/Utils/Cpp20Shims.hpp"
 #include "src/Utils/Spsc.hpp"
 #include "src/Utils/UID.hpp"
-#include "src/MainUIStateAPI.hpp"
 #include "osc_config.hpp"
 
 #include <glm/mat4x4.hpp>

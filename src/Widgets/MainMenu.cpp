@@ -3,6 +3,7 @@
 #include "osc_config.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/StoFileSimulation.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
@@ -17,7 +18,6 @@
 #include "src/Tabs/SimulatorTab.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
-#include "src/MainUIStateAPI.hpp"
 
 #include <GL/glew.h>
 #include <imgui.h>

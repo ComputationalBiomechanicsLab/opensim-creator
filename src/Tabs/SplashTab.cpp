@@ -14,6 +14,7 @@
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
+#include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
 #include "src/Platform/Log.hpp"
@@ -25,7 +26,6 @@
 #include "src/Utils/Algorithms.hpp"
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/LogViewer.hpp"
-#include "src/MainUIStateAPI.hpp"
 
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x3.hpp>
