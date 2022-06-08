@@ -50,6 +50,7 @@ All notable changes to this project will be documented here. The format is based
   button that can be pressed to add the output to the list of monitored outputs (#241)
 - Right-clicking any output plot in the simulation tab now shows an appropriate button for removing the
   output from the user's output watch list (#250)
+- Renamed "Request Outputs" to "Watch Output(s)" and used an eye icon to indicate design intent (#251)
 
 
 ## [0.1.6] - 2022/05/09

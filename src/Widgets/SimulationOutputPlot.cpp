@@ -130,16 +130,18 @@ static void DrawGenericNumericOutputContextMenuItems(osc::SimulatorUIAPI& api, o
 
     bool isWatching = api.hasUserOutputExtractor(output);
 
-    if (ImGui::MenuItem("Request Output", nullptr, nullptr, !isWatching))
+    if (ImGui::MenuItem(ICON_FA_EYE " Watch Output", nullptr, &isWatching))
     {
-        api.addUserOutputExtractor(output);
+        if (isWatching)
+        {
+            api.addUserOutputExtractor(output);
+        }
+        else
+        {
+            api.removeUserOutputExtractor(output);
+        }
     }
-    osc::DrawTooltipIfItemHovered("Request Output", "Request that this output is added to the outputs window");
-
-    if (ImGui::MenuItem("Remove Output", nullptr, nullptr, isWatching))
-    {
-        api.removeUserOutputExtractor(output);
-    }
+    osc::DrawTooltipIfItemHovered("Watch Output", "Watch the selected output. Watching an output makes it appear in the 'output watches' panel in a simulation tab");
 }
 
 static std::filesystem::path TryExportOutputsToCSV(osc::VirtualSimulation& sim, nonstd::span<osc::OutputExtractor const> outputs)

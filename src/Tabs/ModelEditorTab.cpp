@@ -17,9 +17,7 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
-#include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
-#include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/StoFileSimulation.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
@@ -1508,7 +1506,7 @@ private:
                     ImGui::Dummy({0.0f, 3.0f});
 
                     DrawSelectOwnerMenu(*m_Model, *selected);
-                    DrawRequestOutputsMenu(*m_Parent, *selected);
+                    DrawWatchOutputMenu(*m_Parent, *selected);
                     if (OpenSim::Muscle const* m = dynamic_cast<OpenSim::Muscle const*>(selected))
                     {
                         drawAddMusclePlotMenu(*m);

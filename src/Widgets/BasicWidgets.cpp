@@ -8,6 +8,7 @@
 #include "src/OpenSimBindings/VirtualModelStatePair.hpp"
 
 #include <imgui.h>
+#include <IconsFontAwesome5.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
 
@@ -136,11 +137,11 @@ void osc::DrawSelectOwnerMenu(osc::VirtualModelStatePair& model, OpenSim::Compon
     }
 }
 
-void osc::DrawRequestOutputsMenu(osc::MainUIStateAPI& api, OpenSim::Component const& c)
+void osc::DrawWatchOutputMenu(osc::MainUIStateAPI& api, OpenSim::Component const& c)
 {
-    if (ImGui::BeginMenu("Request Outputs"))
+    if (ImGui::BeginMenu(ICON_FA_EYE " Watch Output"))
     {
-        osc::DrawHelpMarker("Request that these outputs are plotted whenever a simulation is ran. The outputs will appear in the 'outputs' tab on the simulator screen");
+        osc::DrawHelpMarker("Watch the selected output. Watching an output makes it appear in the 'output watches' panel in a simulation tab");
 
         // iterate from the selected component upwards to the root
         int imguiId = 0;

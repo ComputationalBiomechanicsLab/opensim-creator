@@ -274,19 +274,19 @@ private:
             }
         }
 
-        if (bool outputsPanelOldState = config.getIsPanelEnabled("Outputs"))
+        if (bool outputsPanelOldState = config.getIsPanelEnabled("Output Watches"))
         {
             bool outputsPanelState = outputsPanelOldState;
-            if (ImGui::Begin("Outputs", &outputsPanelState))
+            if (ImGui::Begin("Output Watches", &outputsPanelState))
             {
-                OSC_PERF("draw outputs panel");
-                drawOutputsTab();
+                OSC_PERF("draw output watches panel");
+                drawOutputWatchesTab();
             }
             ImGui::End();
 
             if (outputsPanelState != outputsPanelOldState)
             {
-                App::upd().updConfig().setIsPanelEnabled("Outputs", outputsPanelState);
+                App::upd().updConfig().setIsPanelEnabled("Output Watches", outputsPanelState);
             }
         }
 
@@ -336,7 +336,7 @@ private:
         }
     }
 
-    void drawOutputsTab()
+    void drawOutputWatchesTab()
     {
         if (m_API->getNumUserOutputExtractors() <= 0)
         {
@@ -691,7 +691,7 @@ private:
                 ImGui::Dummy({0.0f, 3.0f});
 
                 DrawSelectOwnerMenu(ms, *selected);
-                DrawRequestOutputsMenu(*m_API, *selected);
+                DrawWatchOutputMenu(*m_API, *selected);
                 ImGui::EndPopup();
             }
         }
