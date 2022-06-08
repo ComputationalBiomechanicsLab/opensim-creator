@@ -1,5 +1,6 @@
 #include "SimulationOutputPlot.hpp"
 
+#include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/MiddlewareAPIs/SimulatorUIAPI.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
@@ -109,7 +110,7 @@ static std::string TryExportNumericOutputToCSV(osc::VirtualSimulation& sim, osc:
         output.getName().c_str());
 }
 
-static void DrawGenericNumericOutputContextMenuItems(osc::VirtualSimulation& sim, osc::VirtualOutputExtractor const& output)
+static void DrawGenericNumericOutputContextMenuItems(osc::SimulatorUIAPI& api, osc::VirtualSimulation& sim, osc::OutputExtractor const& output)
 {
     OSC_ASSERT(output.getOutputType() == osc::OutputType::Float);
 
@@ -125,6 +126,11 @@ static void DrawGenericNumericOutputContextMenuItems(osc::VirtualSimulation& sim
             osc::OpenPathInOSDefaultApplication(p);
         }
     }
+    else if (ImGui::MenuItem("Request Output"))
+    {
+        api.addUserOutputExtractor(output);
+    }
+    osc::DrawTooltipIfItemHovered("Request Output", "Request that this output is added to the outputs window");
 }
 
 static std::filesystem::path TryExportOutputsToCSV(osc::VirtualSimulation& sim, nonstd::span<osc::OutputExtractor const> outputs)
@@ -281,7 +287,7 @@ private:
         // draw context menu (if user right clicks)
         if (ImGui::BeginPopupContextItem("plotcontextmenu"))
         {
-            DrawGenericNumericOutputContextMenuItems(sim, m_OutputExtractor);
+            DrawGenericNumericOutputContextMenuItems(*m_API, sim, m_OutputExtractor);
             ImGui::EndPopup();
         }
 

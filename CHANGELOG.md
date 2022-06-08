@@ -46,6 +46,8 @@ All notable changes to this project will be documented here. The format is based
   - osc already automatically reloads osim files whenever the underlying file changes. This feature is
     mostly useful for updating the editor when an un-tracked file changes (e.g. a third-party resource
     that is indirectly loaded via a component in the model)
+- Right-clicking an output plot in the simulation selection details panel now shows a "Request Output"
+  button that can be pressed to add the output to the list of monitored outputs (#241)
 
 
 ## [0.1.6] - 2022/05/09
