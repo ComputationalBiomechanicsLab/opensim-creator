@@ -361,7 +361,7 @@ private:
 
         for (int i = 0; i < numOutputs; ++i)
         {
-            osc::OutputExtractor const& output = m_API->getUserOutputExtractor(i);
+            osc::OutputExtractor output = m_API->getUserOutputExtractor(i);
 
             ImGui::PushID(i);
             SimulationOutputPlot plot{this, output, 64.0f};
