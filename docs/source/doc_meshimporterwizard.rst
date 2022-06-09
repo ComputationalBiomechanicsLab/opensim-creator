@@ -29,7 +29,7 @@ The mesh importer is "looser" than the main ``osim`` editor. However, it's disad
 Accessing
 ---------
 
-The mesh importer UI can be accessed from the File menu in the splash screen or in the editor:
+The mesh importer UI can be accessed from the File menu in the home screen or in the editor:
 
 .. figure:: _static/meshimpoterwizard_mainmenubutton.png
 

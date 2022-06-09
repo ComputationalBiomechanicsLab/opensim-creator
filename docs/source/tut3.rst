@@ -28,12 +28,12 @@ Topics Covered by this Tutorial
 Open the Mesh Importer
 ----------------------
 
-The mesh importer is a separate screen from the main ``osim`` editor. It creates/manipulates a free-form 3D scene that can be exported to an ``osim`` model. You can open the mesh importer either from the main menu (``File > Import Meshes``) or through the splash screen:
+The mesh importer is a separate screen from the main ``osim`` editor. It creates/manipulates a free-form 3D scene that can be exported to an ``osim`` model. You can open the mesh importer either from the main menu (``File > Import Meshes``) or through the home screen:
 
 .. figure:: _static/tut3_open-meshimporter.png
     :width: 60%
 
-    The mesh importer can be opened from the main splash screen (highlighted above with a red box) or through the main menu (``File > Import Meshes``).
+    The mesh importer can be opened from the main home screen (highlighted above with a red box) or through the main menu (``File > Import Meshes``).
 
 
 One opened, you will be greeted with a new mesh importer scene, which will be used for the next few steps of this tutorial:
