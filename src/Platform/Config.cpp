@@ -69,7 +69,6 @@ static std::unordered_map<std::string, bool> MakeDefaultPanelStates()
         {"Output Watches", true},
         {"Property Editor", true},
         {"Selection Details", true},
-        {"Simulations", true},
         {"Simulation Details", false},
         {"Coordinate Editor", true},
         {"Performance", false},

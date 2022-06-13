@@ -570,7 +570,6 @@ private:
             "Log",
             "Output Watches",
             "Selection Details",
-            "Simulations",
             "Simulation Details",
             "Performance",
         };
