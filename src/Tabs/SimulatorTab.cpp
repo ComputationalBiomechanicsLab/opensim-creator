@@ -568,7 +568,7 @@ private:
         {
             "Hierarchy",
             "Log",
-            "Outputs",
+            "Output Watches",
             "Selection Details",
             "Simulations",
             "Simulation Details",
