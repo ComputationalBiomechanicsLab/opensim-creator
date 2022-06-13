@@ -625,6 +625,7 @@ add_executable(testosc EXCLUDE_FROM_ALL
     tests/TestOsc.cpp
     tests/TestRenderer.cpp
     tests/TestRendererHelloTriangleScreen.cpp
+    tests/TestTypeRegistry.cpp
 )
 
 # osctests: target properties

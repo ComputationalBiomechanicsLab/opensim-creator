@@ -294,52 +294,52 @@ static std::shared_ptr<OpenSim::Joint const> JointWithCoords(std::initializer_li
 }
 
 // create a lookup of pre-initialized prototype components
-static std::unordered_map<std::type_info const*, std::shared_ptr<OpenSim::Component const>> CreatePrototypeLut()
+static std::unordered_map<std::string, std::shared_ptr<OpenSim::Component const>> CreatePrototypeLut()
 {
     return
     {
         {
-            &typeid(OpenSim::BallJoint),
+            typeid(OpenSim::BallJoint).name(),
             JointWithCoords<OpenSim::BallJoint>({"rx", "ry", "rz"}),
         },
         {
-            &typeid(OpenSim::EllipsoidJoint),
+            typeid(OpenSim::EllipsoidJoint).name(),
             JointWithCoords<OpenSim::EllipsoidJoint>({"rx", "ry", "rz"}),
         },
         {
-            &typeid(OpenSim::FreeJoint),
+            typeid(OpenSim::FreeJoint).name(),
             JointWithCoords<OpenSim::FreeJoint>({"rx", "ry", "rz", "tx", "ty", "tz"}),
         },
         {
-            &typeid(OpenSim::GimbalJoint),
+            typeid(OpenSim::GimbalJoint).name(),
             JointWithCoords<OpenSim::GimbalJoint>({"rx", "ry", "rz"}),
         },
         {
-            &typeid(OpenSim::PinJoint),
+            typeid(OpenSim::PinJoint).name(),
             JointWithCoords<OpenSim::PinJoint>({"rz"}),
         },
         {
-            &typeid(OpenSim::PlanarJoint),
+            typeid(OpenSim::PlanarJoint).name(),
             JointWithCoords<OpenSim::PlanarJoint>({"rz", "tx", "ty"}),
         },
         {
-            &typeid(OpenSim::ScapulothoracicJoint),
+            typeid(OpenSim::ScapulothoracicJoint).name(),
             JointWithCoords<OpenSim::ScapulothoracicJoint>({"rx_abduction", "ry_elevation", "rz_upwardrotation", "ryp_winging"}),
         },
         {
-            &typeid(OpenSim::SliderJoint),
+            typeid(OpenSim::SliderJoint).name(),
             JointWithCoords<OpenSim::SliderJoint>({"tx"}),
         },
         {
-            &typeid(OpenSim::UniversalJoint),
+            typeid(OpenSim::UniversalJoint).name(),
             JointWithCoords<OpenSim::UniversalJoint>({"rx", "ry"}),
         },
         {
-            &typeid(OpenSim::WeldJoint),
+            typeid(OpenSim::WeldJoint).name(),
             JointWithCoords<OpenSim::WeldJoint>({}),
         },
         {
-            &typeid(OpenSim::HuntCrossleyForce),
+            typeid(OpenSim::HuntCrossleyForce).name(),
             []() {
                 auto hcf = std::make_shared<OpenSim::HuntCrossleyForce>();
                 hcf->setStiffness(100000000.0);
@@ -351,7 +351,7 @@ static std::unordered_map<std::type_info const*, std::shared_ptr<OpenSim::Compon
             }(),
         },
         {
-            &typeid(OpenSim::PathSpring),
+            typeid(OpenSim::PathSpring).name(),
             []() {
                 auto ps = std::make_shared<OpenSim::PathSpring>();
                 ps->setRestingLength(1.0);
@@ -363,9 +363,9 @@ static std::unordered_map<std::type_info const*, std::shared_ptr<OpenSim::Compon
     };
 }
 
-static std::unordered_map<std::type_info const*, std::shared_ptr<OpenSim::Component const>> const& GetPrototypeLut()
+static std::unordered_map<std::string, std::shared_ptr<OpenSim::Component const>> const& GetPrototypeLut()
 {
-    static std::unordered_map<std::type_info const*, std::shared_ptr<OpenSim::Component const>> const g_Lut = CreatePrototypeLut();
+    static std::unordered_map<std::string, std::shared_ptr<OpenSim::Component const>> const g_Lut = CreatePrototypeLut();
     return g_Lut;
 }
 
@@ -383,7 +383,7 @@ static std::vector<std::shared_ptr<T const>> CreatePrototypeLutT()
     for (int i = 0; i < ptrs.size(); ++i)
     {
         T const& v = *ptrs[i];
-        auto it = protoLut.find(&typeid(v));
+        auto it = protoLut.find(typeid(v).name());
         if (it != protoLut.end())
         {
             std::shared_ptr<T const> p = std::dynamic_pointer_cast<T const>(it->second);
