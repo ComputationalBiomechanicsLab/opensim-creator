@@ -80,7 +80,7 @@ To attach a collidable floor (a ``ContactHalfSpace``) to the ground of the model
 
 .. figure:: _static/tut2_floor-properties.png
 
-    Properties for the ``floor_contact`` component (a ``ContactHalfSpace``) attached to the ground. Careful that ``orientation`` is set to ``-1.5707`` in Z. ``+1.5707`` behaves differently, because a ``ContactHalfSpace`` only collides on one side.
+    Properties for the ``floor_contact`` component (a ``ContactHalfSpace``) attached to the ground. Careful that ``orientation`` is set to ``-90`` (degrees) in Z. ``+90`` would behave differently, because a ``ContactHalfSpace`` only collides on one side.
 
 
 To attach a collidable sphere (a ``ContactSphere``) to ``foot``:
@@ -98,7 +98,7 @@ In OpenSim, contact geometries only express a geometry that *may* participate in
 
 To add a contact force (``HuntCrossleyForce``) to the model:
 
-* Click the ``add force/muscle`` button
+* Click the ``add force`` button
 * Click ``HuntCrossleyForce``
 * Click ``add`` to add the force and close the popup
 * Select the force
@@ -224,12 +224,24 @@ OpenSim has support for a few different constraints, such as:
 
 For our model, we want to enforce that the ``foot`` and ``head`` are constrained to always be along the ``Y`` axis (i.e. ``X = 0 && Z = 0``). This enforces that both ``foot`` and ``head`` fall and bounce vertically, which means that the ``foot_to_head_spring`` is always bounced straight-on.
 
+To constrain ``foot`` to only be allowed to roll along the Y axis, follow these steps:
+
+* Click the ``Add Constraint`` button
+* Add a ``PointOnLineConstraint``
+* Give the constraint the following properties:
+
 .. figure:: _static/tut2_foot-Y-lock-properties.png
     :width: 60%
 
     Properties for ``foot_Y_lock``. This constraint prevents the foot from being able to roll along the floor to a different X/Z coordinate in the scene by enforcing ``foot`` to *follow* the ``(0.0, 1.0, 0.0)`` line from ``ground``.
 
-After adding that constraint, you should find that ``foot`` no longer rolls around, but ``head`` still freely swings around as much as it can. To fix ``head``, we also constrain it along the Y axis:
+After adding that constraint, you should find that ``foot`` no longer rolls around, but ``head`` still freely swings around as much as it can. 
+
+To constrain ``head``, such that is only follows along Y in ``ground``, follow these steps:
+
+* Click the ``Add Constraint`` button
+* Add a ``PointOnLineConstraint``
+* Give the constraint the following properties:
 
 .. figure:: _static/tut2_head-y-lock-properties.png
     :width: 60%
