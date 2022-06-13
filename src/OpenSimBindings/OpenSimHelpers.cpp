@@ -108,7 +108,7 @@ namespace
                        float fixupScaleFactor,
                        std::vector<osc::ComponentDecoration>& out)
     {
-        float radius = fixupScaleFactor * 0.005f;
+        float radius = fixupScaleFactor * 0.0045f;  // care: must be smaller than muscle caps (Tutorial 4)
 
         osc::Transform xform;
         xform.position = osc::ToVec3(s.getLocationInGround(st));
