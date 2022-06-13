@@ -165,7 +165,7 @@ namespace
             if (pwp)
             {
                 osc::Transform body2ground = osc::ToTransform(pwp->getParentFrame().getTransformInGround(st));
-                OpenSim::Array<SimTK::Vec3> const& wrapPath = const_cast<OpenSim::PathWrapPoint*>(pwp)->getWrapPath(st);
+                OpenSim::Array<SimTK::Vec3> const& wrapPath = const_cast<OpenSim::PathWrapPoint*>(pwp)->getWrapPath();
 
                 for (int j = 0; j < wrapPath.getSize(); ++j)
                 {
