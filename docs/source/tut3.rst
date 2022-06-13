@@ -8,11 +8,11 @@ In this tutorial, we will be using the mesh importer feature of OpenSim Creator 
 .. figure:: _static/tut3_result.png
     :width: 60%
 
-    The final model made in this tutorial, as-seen in the mesh importer screen. It is a double pendulum made from two bodies and two pin joints, with decorative meshes used for the heads + struts. (:download:`📥 download model <_static/tut3_final-model.osim>`)
+    The final model made in this tutorial, as-seen in the mesh importer. It is a double pendulum made from two bodies and two pin joints, with decorative meshes used for the heads + struts. (:download:`📥 download model <_static/tut3_final-model.osim>`)
 
 The mesh importer is "looser" than the main ``osim`` editor. This can make placing and orienting bodies/joints easier. However, its disadvantage is that it doesn't directly edit an ``osim`` file. Rather, it edits a simplified "model" that can be exported to the (more complex) ``osim`` format. For this reason, the mesh importer is recommended as a *first-step* utility that helps set up the top-level ``osim`` model in preparation for the ``osim`` editor to tackle the things like adding/editing forces, contact surfaces, etc. See :ref:`doc_meshimporterwizard` for an overview of the mesh importer's main features.
 
-Although the **model** we will make in this tutorial is effectively an extension of :ref:`tut1`, the **approach** used is different. Here, we will be using the mesh importer feature of OpenSim Creator to create the model, rather than building the model directly in the OpenSim model (``.osim``) editor screen.
+Although the **model** we will make in this tutorial is effectively an extension of :ref:`tut1`, the **approach** used is different. Here, we will be using the mesh importer feature of OpenSim Creator to create the model, rather than building the model directly in the OpenSim model (``.osim``) editor.
 
 This tutorial assumes the reader knows a little bit more about OpenSim, bodies, joints, etc. Because of that, each step here will require more--but hopefully, by now, familiar--actions. You're getting faster ⚡!
 
@@ -28,12 +28,12 @@ Topics Covered by this Tutorial
 Open the Mesh Importer
 ----------------------
 
-The mesh importer is a separate screen from the main ``osim`` editor. It creates/manipulates a free-form 3D scene that can be exported to an ``osim`` model. You can open the mesh importer either from the main menu (``File > Import Meshes``) or through the home screen:
+The mesh importer is a separate UI from the main ``osim`` editor. It creates/manipulates a free-form 3D scene that can be exported to an ``osim`` model. You can open the mesh importer from the home tab through either the main menu, the ``+`` button on the tab bar, or the green button in the center of the home tab:s
 
 .. figure:: _static/tut3_open-meshimporter.png
     :width: 60%
 
-    The mesh importer can be opened from the main home screen (highlighted above with a red box) or through the main menu (``File > Import Meshes``).
+    The mesh importer can be opened from the center of the home tab, the plus button, or the main menu.
 
 
 One opened, you will be greeted with a new mesh importer scene, which will be used for the next few steps of this tutorial:
@@ -41,7 +41,7 @@ One opened, you will be greeted with a new mesh importer scene, which will be us
 .. figure:: _static/tut3_opened-meshimporter.png
     :width: 60%
 
-    The mesh importer screen, which initially loads with a blank scene that's ready for your masterpiece 🎨. The majority of this tutorial is carried out through this screen.
+    The mesh importer, which initially loads with a blank scene that's ready for your masterpiece 🎨. The majority of this tutorial is carried out through the mesh importer.
 
 
 Add Bodies & PinJoints
@@ -98,12 +98,12 @@ The above steps set up all the bodies + joints in the model. You should have som
 Convert the scene to an osim (for testing)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Next, you will (temporarily) convert the mesh importer scene into an OpenSim model (``osim``) so that you can test whether your model is correct. Conversion is a one-way process, but your progress in the mesh importer will be **not** be lost. Re-opening the mesh importer will "remember" your scene.
+Next, you will temporarily convert the mesh importer scene into an OpenSim model (``osim``) so that you can test whether your model is correct. Conversion is a one-way process, but your progress in the mesh importer will be **not** be lost.
 
 To convert the mesh importer scene into an ``osim`` (for testing), you will need to:
 
 * **Convert your scene into an OpenSim model**. Click the ``Convert to OpenSim Model``. This will convert your scene to an ``osim`` and open it in the ``osim`` editor that we used in previous tutorials. You can then see how the free-form scene was converted into an OpenSim model.
-* **Simulate the model**. Adjust the pin joint coordinates slightly to start the pendulum off at an angle. Confirm that both bodies swing like a double pendulum. If they don't, reopen the mesh importer and start fixing things 🔧.
+* **Try simulating the todel**. Adjust the pin joint coordinates (``pendulum_head_to_ground_rz`` and ``pendulum_head_2_to_pendulum_head_rz``) to start the pendulum off at an angle. Start simulating the model (``Ctrl+R``) to see it swinging. Confirm that both bodies swing like a double pendulum. If they don't, reopen the mesh importer and start fixing things 🔧.
 * **Save the model as an .osim**. After conversion, you can then save your model to disk and use external tooling (e.g. XML editors, OpenSim GUI) to further modify it.
 
 
@@ -158,6 +158,7 @@ Attach a cube mesh between the top pendulum and the ceiling (a strut)
   * Combine approaches by changing the color of the meshes to be semi-transparent (see ``Colors`` menu) and disable their interactivity.
   * Initially import the mesh by attaching it to ground, move it into place, ``Reassign Connection`` to the ``pendulum_head`` body.
   * The "best" approach depends on what kind of model you are working on.
+
 * Once the mesh is attached, move it between the ``pendulum_head`` and the pin joint that's acting as the base (``pendulum_head_to_ground``)
 * Rename it to ``pendulum_head_strut_decoration``
 * Rescale (``S``) it to make a long, thin, pendulum strut (recommended: ``(0.2, 2.5, 0.2``)).
@@ -194,7 +195,7 @@ Now that we have created a fully modelled and decorated pendulum, we can export 
 
     A basic forward-dynamic simulation of the model can be ran through the UI by tilting the pendulum slightly and running a simulation. Output plots can be used to get basic information out of the model. (:download:`📥 download model <_static/tut3_final-model.osim>`)
 
-*Et voilà*, you have created a functioning OpenSim model by mostly using the free-form mesh importer screen and got some useful data out of it 🎉. You're getting good at this.
+*Et voilà*, you have created a functioning OpenSim model by mostly using the free-form mesh importer and got some useful data out of it 🎉. You're getting good at this.
 
 
 (Optional) Extra Exercises
