@@ -118,7 +118,9 @@ This should result in most of the model being assigned. I have skipped assigning
 Add Joints Between the Bodies
 -----------------------------
 
-Now that we have roughly positioned our bodies in the scene, the next step is to place joints between those bodies. Joints express how the bodies can move relative to each other. In this (simplified) model, we will assume all parts of the finger and wrist can be attached to each other with pin joints. This isn't technically true, but it is close enough quickly build a model that can be simulated. The joint type can be changed to a more suitable joint (e.g. a custom joint) later.
+Now that we have roughly positioned our bodies in the scene, the next step is to place joints between those bodies.
+
+Joints express how the bodies can move relative to each other. In this (simplified) model, we will assume all parts of the finger and wrist can be attached to each other with pin joints. This isn't technically true, but it is close enough quickly build a model that can be simulated. The joint type can be changed to a more suitable joint (e.g. a custom joint) later.
 
 To add pin joints between each body:
 
