@@ -1,9 +1,11 @@
+#include "src/OpenSimBindings/OpenSimApp.hpp"
+#include "src/Platform/Config.hpp"
+
+#include <gtest/gtest.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
-
-#include <gtest/gtest.h>
 
 #include <filesystem>
 
@@ -13,11 +15,15 @@
 // https://github.com/opensim-org/opensim-core/issues/3211
 TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 {
+	auto config = osc::Config::load();
+	osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
+
+
 	// ensure muscles are available
 	RegisterTypes_osimActuators();
 
 	// data sources
-	std::filesystem::path modelPath{R"(C:\\Users\\adamk\\OneDrive\\Desktop\\opensim-creator\\resources\\models\\Arm26\\arm26.osim)"};  // TODO: do resource lookup
+	std::filesystem::path modelPath{config->getResourceDir() / "models" / "Arm26" / "arm26.osim"};
 	OpenSim::ComponentPath coordinatePath = "/jointset/r_shoulder/r_shoulder_elev";
 	OpenSim::ComponentPath musclePath = "/forceset/BIClong";
 
