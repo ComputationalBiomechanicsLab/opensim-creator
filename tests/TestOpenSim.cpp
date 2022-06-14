@@ -18,10 +18,6 @@ TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 	auto config = osc::Config::load();
 	osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
 
-
-	// ensure muscles are available
-	RegisterTypes_osimActuators();
-
 	// data sources
 	std::filesystem::path modelPath{config->getResourceDir() / "models" / "Arm26" / "arm26.osim"};
 	OpenSim::ComponentPath coordinatePath = "/jointset/r_shoulder/r_shoulder_elev";
@@ -77,7 +73,10 @@ TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 // breaks this test, and prompts removing fixups from OSC
 TEST(OpenSimModel, EditingACoordinateLockMutatesModel)
 {
-	std::filesystem::path modelPath{R"(C:\\Users\\adamk\\OneDrive\\Desktop\\opensim-creator\\resources\\models\\Arm26\\arm26.osim)"};  // TODO: do resource lookup
+	auto config = osc::Config::load();
+	osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
+
+	std::filesystem::path modelPath{config->getResourceDir() / "models" / "Arm26" / "arm26.osim"};
 	OpenSim::ComponentPath coordinatePath = "/jointset/r_shoulder/r_shoulder_elev";
 
 	OpenSim::Model model{modelPath.string()};
