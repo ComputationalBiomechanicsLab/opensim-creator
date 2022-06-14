@@ -1054,53 +1054,11 @@ void osc::CopyCommonJointProperties(OpenSim::Joint const& src, OpenSim::Joint& d
     // copy owned frames
     dest.updProperty_frames().assign(src.getProperty_frames());
 
-    // copy, or reference, the parent based on whether the source owns it
-    {
-        OpenSim::PhysicalFrame const& srcParent = src.getParentFrame();
-        bool parentAssigned = false;
-        for (int i = 0; i < src.getProperty_frames().size(); ++i)
-        {
-            if (&src.get_frames(i) == &srcParent)
-            {
-                // the source's parent is also owned by the source, so we need to
-                // ensure the destination refers to its own (cloned, above) copy
-                dest.connectSocket_parent_frame(dest.get_frames(i));
-                parentAssigned = true;
-                break;
-            }
-        }
-        if (!parentAssigned)
-        {
-            // the source's parent is a reference to some frame that the source
-            // doesn't, itself, own, so the destination should just also refer
-            // to the same (not-owned) frame
-            dest.connectSocket_parent_frame(srcParent);
-        }
-    }
+    // copy parent frame socket *path* (note: don't use connectSocket, pointers are evil in model manipulations)
+    dest.updSocket("parent_frame").setConnecteePath(src.getSocket("parent_frame").getConnecteePath());
 
-    // copy, or reference, the child based on whether the source owns it
-    {
-        OpenSim::PhysicalFrame const& srcChild = src.getChildFrame();
-        bool childAssigned = false;
-        for (int i = 0; i < src.getProperty_frames().size(); ++i)
-        {
-            if (&src.get_frames(i) == &srcChild)
-            {
-                // the source's child is also owned by the source, so we need to
-                // ensure the destination refers to its own (cloned, above) copy
-                dest.connectSocket_child_frame(dest.get_frames(i));
-                childAssigned = true;
-                break;
-            }
-        }
-        if (!childAssigned)
-        {
-            // the source's child is a reference to some frame that the source
-            // doesn't, itself, own, so the destination should just also refer
-            // to the same (not-owned) frame
-            dest.connectSocket_child_frame(srcChild);
-        }
-    }
+    // copy child socket *path* (note: don't use connectSocket, pointers are evil in model manipulations)
+    dest.updSocket("child_frame").setConnecteePath(src.getSocket("child_frame").getConnecteePath());
 }
 
 bool osc::DeactivateAllWrapObjectsIn(OpenSim::Model& m)
@@ -1214,4 +1172,12 @@ std::unique_ptr<osc::UndoableModelStatePair> osc::LoadOsimIntoUndoableModel(std:
 {
     auto model = std::make_unique<OpenSim::Model>(p.string());
     return std::make_unique<osc::UndoableModelStatePair>(std::move(model));
+}
+
+void osc::Initialize(OpenSim::Model& model)
+{
+    model.finalizeFromProperties();  // clears potentially-stale member components (required for `clearConnections`)
+    model.clearConnections();        // clears any potentially stale pointers that can be retained by OpenSim::Socket<T> (see #263)
+    model.buildSystem();             // creates a new underlying physics system
+    model.initializeState();         // creates a new working state
 }

@@ -187,8 +187,7 @@ public:
         {
             OSC_PERF("model update");
 
-            m_Model->buildSystem();
-            m_Model->initializeState();
+            osc::Initialize(*m_Model);
 
             m_UpdatedModelVersion = m_CurrentModelVersion;  // reset flag
         }
