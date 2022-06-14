@@ -622,6 +622,7 @@ add_executable(testosc EXCLUDE_FROM_ALL
 
     tests/TestDedupedString.cpp
     tests/TestOpenSim.cpp
+    tests/TestOpenSimHelpers.cpp
     tests/TestOsc.cpp
     tests/TestRenderer.cpp
     tests/TestRendererHelloTriangleScreen.cpp
