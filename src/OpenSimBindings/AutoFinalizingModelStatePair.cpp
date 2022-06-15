@@ -88,12 +88,6 @@ public:
         return *m_Model;
     }
 
-    OpenSim::Model& peekModelADVANCED()
-    {
-        const_cast<Impl&>(*this).updateIfDirty();
-        return *m_Model;
-    }
-
     void markModelAsModified()
     {
         m_CurrentModelVersion = UID{};
@@ -362,11 +356,6 @@ OpenSim::Model const& osc::AutoFinalizingModelStatePair::getModel() const
 OpenSim::Model& osc::AutoFinalizingModelStatePair::updModel()
 {
     return m_Impl->updModel();
-}
-
-OpenSim::Model& osc::AutoFinalizingModelStatePair::peekModelADVANCED()
-{
-    return m_Impl->peekModelADVANCED();
 }
 
 void osc::AutoFinalizingModelStatePair::markModelAsModified()

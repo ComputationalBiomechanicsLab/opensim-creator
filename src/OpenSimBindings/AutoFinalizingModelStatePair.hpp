@@ -51,9 +51,6 @@ namespace osc
 
         OpenSim::Model& updModel() override;
 
-        // update the model without modifying the version
-        OpenSim::Model& peekModelADVANCED();
-
         // manually modify the version
         void markModelAsModified();
         void setModel(std::unique_ptr<OpenSim::Model>);
