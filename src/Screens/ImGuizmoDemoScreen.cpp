@@ -41,7 +41,7 @@ public:
         }
     }
 
-    void draw()
+    void onDraw()
     {
         osc::ImGuiNewFrame();
 
@@ -127,7 +127,7 @@ void osc::ImGuizmoDemoScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::ImGuizmoDemoScreen::draw()
+void osc::ImGuizmoDemoScreen::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

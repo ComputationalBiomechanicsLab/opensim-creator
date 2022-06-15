@@ -15,6 +15,6 @@ namespace osc
         void onMount() override;
         void onUnmount() override;
         void onEvent(SDL_Event const&) override;
-        void draw() override;
+        void onDraw() override;
     };
 }

@@ -985,7 +985,7 @@ private:
             }
 
             // "tick" the screen
-            m_CurrentScreen->tick();
+            m_CurrentScreen->onTick();
             ++m_FrameCounter;
 
             if (m_QuitRequested)
@@ -1002,7 +1002,7 @@ private:
             }
 
             // "draw" the screen into the window framebuffer
-            m_CurrentScreen->draw();
+            m_CurrentScreen->onDraw();
 
             // "present" the rendered screen to the user (can block on VSYNC)
             SDL_GL_SwapWindow(m_MainWindow);

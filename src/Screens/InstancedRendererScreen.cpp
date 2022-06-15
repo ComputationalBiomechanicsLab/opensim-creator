@@ -108,7 +108,7 @@ public:
         }
     }
 
-    void tick()
+    void onTick()
     {
         // connect input state to an euler (first-person-shooter style)
         // camera
@@ -153,7 +153,7 @@ public:
         m_Camera.pitch = std::clamp(m_Camera.pitch, -fpi2 + 0.5f, fpi2 - 0.5f);
     }
 
-    void draw()
+    void onDraw()
     {
         osc::ImGuiNewFrame();
 
@@ -291,12 +291,12 @@ void osc::InstancedRendererScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::InstancedRendererScreen::tick()
+void osc::InstancedRendererScreen::onTick()
 {
-    m_Impl->tick();
+    m_Impl->onTick();
 }
 
-void osc::InstancedRendererScreen::draw()
+void osc::InstancedRendererScreen::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

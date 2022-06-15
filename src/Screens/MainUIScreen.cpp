@@ -116,7 +116,7 @@ public:
         }
     }
 
-    void tick()
+    void onTick()
     {
         // tick all the tabs, because they may internally be polling something (e.g.
         // updating something as a simulation runs)
@@ -129,7 +129,7 @@ public:
         handleDeletedTabs();
     }
 
-    void draw()
+    void onDraw()
     {
         App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
 
@@ -638,12 +638,12 @@ void osc::MainUIScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::MainUIScreen::tick()
+void osc::MainUIScreen::onTick()
 {
-    m_Impl->tick();
+    m_Impl->onTick();
 }
 
-void osc::MainUIScreen::draw()
+void osc::MainUIScreen::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

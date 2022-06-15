@@ -61,11 +61,11 @@ public:
         ImGuiOnEvent(e);
     }
 
-    void tick()
+    void onTick()
     {
     }
 
-    void draw()
+    void onDraw()
     {
         osc::ImGuiNewFrame();
         App::upd().clearScreen({});
@@ -155,12 +155,12 @@ void osc::MeshGenTestScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::MeshGenTestScreen::tick()
+void osc::MeshGenTestScreen::onTick()
 {
-    m_Impl->tick();
+    m_Impl->onTick();
 }
 
-void osc::MeshGenTestScreen::draw()
+void osc::MeshGenTestScreen::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

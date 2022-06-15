@@ -34,7 +34,7 @@ void osc::ImGuiDemoScreen::onEvent(SDL_Event const& e)
     }
 }
 
-void osc::ImGuiDemoScreen::draw()
+void osc::ImGuiDemoScreen::onDraw()
 {
     osc::ImGuiNewFrame();
 

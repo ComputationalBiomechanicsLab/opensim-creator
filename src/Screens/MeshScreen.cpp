@@ -41,12 +41,12 @@ public:
         }
     }
 
-    void tick()
+    void onTick()
     {
         UpdatePolarCameraFromImGuiUserInput(App::get().dims(), m_Camera);
     }
 
-    void draw()
+    void onDraw()
     {
         // called once per frame. Code in here should use drawing primitives, OpenGL, ImGui,
         // etc. to draw things into the screen. The application does not clear the screen
@@ -146,12 +146,12 @@ void osc::MeshScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::MeshScreen::tick()
+void osc::MeshScreen::onTick()
 {
-    m_Impl->tick();
+    m_Impl->onTick();
 }
 
-void osc::MeshScreen::draw()
+void osc::MeshScreen::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

@@ -148,7 +148,7 @@ public:
         }
     }
 
-    void tick()
+    void onTick()
     {
         m_IoPoller.onUpdate();
 
@@ -227,7 +227,7 @@ public:
         }
     }
 
-    void draw()
+    void onDraw()
     {
         App const& app = App::upd();
 
@@ -404,12 +404,12 @@ void osc::HittestScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::HittestScreen::tick()
+void osc::HittestScreen::onTick()
 {
-    m_Impl->tick();
+    m_Impl->onTick();
 }
 
-void osc::HittestScreen::draw()
+void osc::HittestScreen::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

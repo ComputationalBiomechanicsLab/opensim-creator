@@ -19,6 +19,13 @@ namespace osc
         Screen& operator=(Screen&&) noexcept = delete;
         virtual ~Screen() noexcept = default;
 
+        // returns the name of the screen (handy for debugging/logging)
+        virtual char const* name() const
+        {
+            Screen const& s = *this;
+            return typeid(s).name();
+        }
+
         // called before the app is about to start pump-/tick-/draw-ing the screen
         virtual void onMount() {}
 
@@ -29,16 +36,9 @@ namespace osc
         virtual void onEvent(SDL_Event const&) {}
 
         // called by app once per frame (float is a timedelta in seconds)
-        virtual void tick() {}
-
-        // returns the name of the screen (handy for debugging/logging)
-        virtual char const* name() const
-        {
-            Screen const& s = *this;
-            return typeid(s).name();
-        }
+        virtual void onTick() {}
 
         // called by app when the screen should render into the current framebuffer
-        virtual void draw() = 0;
+        virtual void onDraw() = 0;
     };
 }

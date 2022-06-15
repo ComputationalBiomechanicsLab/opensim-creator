@@ -52,7 +52,7 @@ public:
         }
     }
 
-    void draw()
+    void onDraw()
     {
         App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
         osc::ImGuiNewFrame();
@@ -137,7 +137,7 @@ void osc::ExperimentsScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::ExperimentsScreen::draw()
+void osc::ExperimentsScreen::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

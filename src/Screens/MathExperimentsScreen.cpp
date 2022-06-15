@@ -35,11 +35,11 @@ public:
         }
     }
 
-    void tick()
+    void onTick()
     {
     }
 
-    void draw()
+    void onDraw()
     {
         osc::ImGuiNewFrame();  // tell ImGui you're about to start drawing a new frame
 
@@ -148,12 +148,12 @@ void osc::MathExperimentsScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::MathExperimentsScreen::tick()
+void osc::MathExperimentsScreen::onTick()
 {
-    m_Impl->tick();
+    m_Impl->onTick();
 }
 
-void osc::MathExperimentsScreen::draw()
+void osc::MathExperimentsScreen::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

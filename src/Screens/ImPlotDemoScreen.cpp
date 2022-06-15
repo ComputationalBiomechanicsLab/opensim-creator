@@ -34,11 +34,11 @@ public:
         }
     }
 
-    void tick()
+    void onTick()
     {
     }
 
-    void draw()
+    void onDraw()
     {
         osc::ImGuiNewFrame();
         App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
@@ -91,12 +91,12 @@ void osc::ImPlotDemoScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::ImPlotDemoScreen::tick()
+void osc::ImPlotDemoScreen::onTick()
 {
-    m_Impl->tick();
+    m_Impl->onTick();
 }
 
-void osc::ImPlotDemoScreen::draw()
+void osc::ImPlotDemoScreen::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

@@ -111,7 +111,7 @@ public:
         }
     }
 
-    void tick()
+    void onTick()
     {
         App const& app = App::get();
         UpdatePolarCameraFromImGuiUserInput(app.dims(), m_Camera);
@@ -148,7 +148,7 @@ public:
         m_RaycastDur = std::chrono::duration_cast<std::chrono::microseconds>(raycastDt);
     }
 
-    void draw()
+    void onDraw()
     {
         osc::ImGuiNewFrame();
 
@@ -287,12 +287,12 @@ void osc::MeshHittestScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::MeshHittestScreen::tick()
+void osc::MeshHittestScreen::onTick()
 {
-    m_Impl->tick();
+    m_Impl->onTick();
 }
 
-void osc::MeshHittestScreen::draw()
+void osc::MeshHittestScreen::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

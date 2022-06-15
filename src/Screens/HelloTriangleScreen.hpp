@@ -17,8 +17,8 @@ namespace osc
         ~HelloTriangleScreen() noexcept override;
 
         void onEvent(SDL_Event const&) override;
-        void tick() override;
-        void draw() override;
+        void onTick() override;
+        void onDraw() override;
 
     private:
         class Impl;

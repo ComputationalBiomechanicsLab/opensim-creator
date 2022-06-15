@@ -106,11 +106,11 @@ public:
         }
     }
 
-    void tick()
+    void onTick()
     {
     }
 
-    void draw()
+    void onDraw()
     {
         App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
 
@@ -168,12 +168,12 @@ void osc::RendererHelloTriangleScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::RendererHelloTriangleScreen::tick()
+void osc::RendererHelloTriangleScreen::onTick()
 {
-    m_Impl->tick();
+    m_Impl->onTick();
 }
 
-void osc::RendererHelloTriangleScreen::draw()
+void osc::RendererHelloTriangleScreen::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

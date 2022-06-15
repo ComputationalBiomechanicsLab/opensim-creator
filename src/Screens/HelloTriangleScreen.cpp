@@ -71,7 +71,7 @@ public:
         }
     }
 
-    void tick()
+    void onTick()
     {
         if (m_Color.r < 0.0f || m_Color.r > 1.0f)
         {
@@ -81,7 +81,7 @@ public:
         m_Color.r -= osc::App::get().getDeltaSinceLastFrame().count() * m_FadeSpeed;
     }
 
-    void draw()
+    void onDraw()
     {
         gl::Viewport(0, 0, App::get().idims().x, App::get().idims().y);
         gl::ClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -138,12 +138,12 @@ void osc::HelloTriangleScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::HelloTriangleScreen::tick()
+void osc::HelloTriangleScreen::onTick()
 {
-    m_Impl->tick();
+    m_Impl->onTick();
 }
 
-void osc::HelloTriangleScreen::draw()
+void osc::HelloTriangleScreen::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

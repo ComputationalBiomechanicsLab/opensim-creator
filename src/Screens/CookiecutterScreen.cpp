@@ -39,7 +39,7 @@ public:
         }
     }
 
-    void tick()
+    void onTick()
     {
         // called once per frame, before drawing, with a timedelta from the last call
         // to `tick`
@@ -48,7 +48,7 @@ public:
         // file polling)
     }
 
-    void draw()
+    void onDraw()
     {
         // called once per frame. Code in here should use drawing primitives, OpenGL, ImGui,
         // etc. to draw things into the screen. The application does not clear the screen
@@ -108,12 +108,12 @@ void osc::CookiecutterScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::CookiecutterScreen::tick()
+void osc::CookiecutterScreen::onTick()
 {
-    m_Impl->tick();
+    m_Impl->onTick();
 }
 
-void osc::CookiecutterScreen::draw()
+void osc::CookiecutterScreen::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

@@ -19,8 +19,8 @@ namespace osc
         void onMount() override;
         void onUnmount() override;
         void onEvent(SDL_Event const&) override;
-        void tick() override;
-        void draw() override;
+        void onTick() override;
+        void onDraw() override;
 
     private:
         class Impl;
