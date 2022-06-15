@@ -24,8 +24,8 @@ namespace osc
         void onEvent(SDL_Event const&) override;
         void draw() override;
 
-        class Impl;
     private:
+        class Impl;
         Impl* m_Impl;
     };
 }

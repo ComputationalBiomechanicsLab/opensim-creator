@@ -22,8 +22,8 @@ namespace osc
         void tick(float) override;
         void draw() override;
 
-        class Impl;
     private:
+        class Impl;
         Impl* m_Impl;
     };
 }
