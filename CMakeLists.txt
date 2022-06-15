@@ -548,6 +548,8 @@ add_library(osccore STATIC
     src/Widgets/SelectComponentPopup.hpp
     src/Widgets/SelectGeometryPopup.cpp
     src/Widgets/SelectGeometryPopup.hpp
+    src/Widgets/SelectionEditorPanel.cpp
+    src/Widgets/SelectionEditorPanel.hpp
     src/Widgets/SimulationOutputPlot.cpp
     src/Widgets/SimulationOutputPlot.hpp
     src/Widgets/StandardPopup.cpp
