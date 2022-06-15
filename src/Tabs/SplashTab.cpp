@@ -2,6 +2,7 @@
 
 #include "osc_config.hpp"
 
+#include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/SceneRenderer.hpp"
 #include "src/Graphics/Shaders/GouraudShader.hpp"
@@ -286,7 +287,7 @@ private:
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, OSC_POSITIVE_HOVERED_RGBA);
                 if (ImGui::Button(ICON_FA_FILE_ALT " New Model (Ctrl+N)"))
                 {
-                    actionNewModel(m_Parent);
+                    ActionNewModel(m_Parent);
                 }
                 ImGui::PopStyleColor(2);
             }
@@ -296,7 +297,7 @@ private:
             // `open` button
             if (ImGui::Button(ICON_FA_FOLDER_OPEN " Open Model (Ctrl+O)"))
             {
-                actionOpenModel(m_Parent);
+                ActionOpenModel(m_Parent);
             }
 
             ImGui::SameLine();

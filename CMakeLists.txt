@@ -261,6 +261,9 @@ endif()
 add_library(osccore STATIC
     ${CMAKE_BINARY_DIR}/osc_config.hpp
 
+    src/Actions/ActionFunctions.cpp
+    src/Actions/ActionFunctions.hpp
+
     src/Bindings/GlmHelpers.cpp
     src/Bindings/GlmHelpers.hpp
     src/Bindings/ImGuiHelpers.cpp

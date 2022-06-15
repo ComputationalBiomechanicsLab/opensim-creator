@@ -76,8 +76,11 @@ namespace osc
     // returns a user-facing string that describes a coordinate's units
     CStringView GetCoordDisplayValueUnitsString(OpenSim::Coordinate const&);
 
+    // returns the names of a component's sockets
+    std::vector<std::string> GetSocketNames(OpenSim::Component const&);
+
     // returns all sockets that are directly attached to the given component
-    std::vector<OpenSim::AbstractSocket const*> GetAllSockets(OpenSim::Component&);
+    std::vector<OpenSim::AbstractSocket const*> GetAllSockets(OpenSim::Component const&);
 
     // returns a pointer if the given path resolves a component relative to root
     OpenSim::Component const* FindComponent(OpenSim::Component const& root, OpenSim::ComponentPath const&);
@@ -159,4 +162,7 @@ namespace osc
 
     // fully initialize an OpenSim model (from properties, remake SimTK::System, etc.)
     SimTK::State& Initialize(OpenSim::Model&);
+
+    // returns -1 if joint isn't in a set or cannot be found
+    int FindJointInParentJointSet(OpenSim::Joint const&);
 }

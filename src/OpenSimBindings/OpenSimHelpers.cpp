@@ -5,6 +5,7 @@
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
+#include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
@@ -786,11 +787,17 @@ osc::CStringView osc::GetCoordDisplayValueUnitsString(OpenSim::Coordinate const&
     }
 }
 
-std::vector<OpenSim::AbstractSocket const*> osc::GetAllSockets(OpenSim::Component& c)
+std::vector<std::string> osc::GetSocketNames(OpenSim::Component const& c)
+{
+    // const_cast is necessary because `getSocketNames` is somehow not-`const`
+    return const_cast<OpenSim::Component&>(c).getSocketNames();
+}
+
+std::vector<OpenSim::AbstractSocket const*> osc::GetAllSockets(OpenSim::Component const& c)
 {
     std::vector<OpenSim::AbstractSocket const*> rv;
 
-    for (std::string const& name : c.getSocketNames())
+    for (std::string const& name : GetSocketNames(c))
     {
         OpenSim::AbstractSocket const& sock = c.getSocket(name);
         rv.push_back(&sock);
@@ -1186,4 +1193,31 @@ SimTK::State& osc::Initialize(OpenSim::Model& model)
     model.clearConnections();        // clears any potentially stale pointers that can be retained by OpenSim::Socket<T> (see #263)
     model.buildSystem();             // creates a new underlying physics system
     return model.initializeState();  // creates+returns a new working state
+}
+
+// returns -1 if joint isn't in a set or cannot be found
+int osc::FindJointInParentJointSet(OpenSim::Joint const& joint)
+{
+    auto const* parentJointset =
+        joint.hasOwner() ? dynamic_cast<OpenSim::JointSet const*>(&joint.getOwner()) : nullptr;
+
+    if (!parentJointset)
+    {
+        // it's a joint, but it's not owned by a JointSet, so the implementation cannot switch
+        // the joint type
+        return -1;
+    }
+
+    OpenSim::JointSet const& js = *parentJointset;
+
+    int idx = -1;
+    for (int i = 0; i < js.getSize(); ++i) {
+        OpenSim::Joint const* j = &js[i];
+        if (j == &joint) {
+            idx = i;
+            break;
+        }
+    }
+
+    return idx;
 }

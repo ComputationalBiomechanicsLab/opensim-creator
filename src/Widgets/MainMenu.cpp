@@ -2,6 +2,7 @@
 
 #include "osc_config.hpp"
 
+#include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
@@ -34,130 +35,7 @@
 #include <utility>
 
 
-static void OpenOsimInLoadingTab(osc::MainUIStateAPI* api, std::filesystem::path p)
-{
-    osc::UID tabID = api->addTab<osc::LoadingTab>(api, p);
-    api->selectTab(tabID);
-}
-
-static void DoOpenFileViaDialog(osc::MainUIStateAPI* api)
-{
-    std::filesystem::path p = osc::PromptUserForFile("osim");
-    if (!p.empty())
-    {
-        OpenOsimInLoadingTab(api, p);
-    }
-}
-
-static std::optional<std::filesystem::path> PromptSaveOneFile()
-{
-    std::filesystem::path p = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
-    return !p.empty() ? std::optional{p} : std::nullopt;
-}
-
-static bool IsAnExampleFile(std::filesystem::path const& path)
-{
-    return osc::IsSubpath(osc::App::resource("models"), path);
-}
-
-static std::optional<std::string> TryGetModelSaveLocation(OpenSim::Model const& m)
-{
-    if (std::string const& backing_path = m.getInputFileName();
-        backing_path != "Unassigned" && backing_path.size() > 0)
-    {
-        // the model has an associated file
-        //
-        // we can save over this document - *IF* it's not an example file
-        if (IsAnExampleFile(backing_path))
-        {
-            auto maybePath = PromptSaveOneFile();
-            return maybePath ? std::optional<std::string>{maybePath->string()} : std::nullopt;
-        }
-        else
-        {
-            return backing_path;
-        }
-    }
-    else
-    {
-        // the model has no associated file, so prompt the user for a save
-        // location
-        auto maybePath = PromptSaveOneFile();
-        return maybePath ? std::optional<std::string>{maybePath->string()} : std::nullopt;
-    }
-}
-
-static bool TrySaveModel(OpenSim::Model const& model, std::string const& save_loc)
-{
-    try
-    {
-        model.print(save_loc);
-        osc::log::info("saved model to %s", save_loc.c_str());
-        return true;
-    }
-    catch (OpenSim::Exception const& ex)
-    {
-        osc::log::error("error saving model: %s", ex.what());
-        return false;
-    }
-}
-
-static void ActionSaveCurrentModelAs(osc::UndoableModelStatePair& uim)
-{
-    auto maybePath = PromptSaveOneFile();
-
-    if (maybePath && TrySaveModel(uim.getModel(), maybePath->string()))
-    {
-        std::string oldPath = uim.getModel().getInputFileName();
-        uim.updModel().setInputFileName(maybePath->string());
-        uim.setFilesystemPath(*maybePath);
-        uim.setUpToDateWithFilesystem();
-        if (*maybePath != oldPath)
-        {
-            uim.commit("set model path");
-        }
-        osc::App::upd().addRecentFile(*maybePath);
-    }
-}
-
-
 // public API
-
-void osc::actionNewModel(MainUIStateAPI* api)
-{
-
-    auto p = std::make_unique<UndoableModelStatePair>();
-    UID tabID = api->addTab<ModelEditorTab>(api, std::move(p));
-    api->selectTab(tabID);
-}
-
-void osc::actionOpenModel(MainUIStateAPI* api)
-{
-    DoOpenFileViaDialog(api);
-}
-
-bool osc::actionSaveModel(MainUIStateAPI* api, UndoableModelStatePair& model)
-{
-    std::optional<std::string> maybeUserSaveLoc = TryGetModelSaveLocation(model.getModel());
-
-    if (maybeUserSaveLoc && TrySaveModel(model.getModel(), *maybeUserSaveLoc))
-    {
-        std::string oldPath = model.getModel().getInputFileName();
-        model.updModel().setInputFileName(*maybeUserSaveLoc);
-        model.setFilesystemPath(*maybeUserSaveLoc);
-        model.setUpToDateWithFilesystem();
-        if (*maybeUserSaveLoc != oldPath)
-        {
-            model.commit("set model path");
-        }
-        osc::App::upd().addRecentFile(*maybeUserSaveLoc);
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
 
 osc::MainMenuFileTab::MainMenuFileTab() :
     exampleOsimFiles{FindAllFilesWithExtensionsRecursively(App::resource("models"), ".osim")},
@@ -176,11 +54,11 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
 
         if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_N))
         {
-            actionNewModel(api);
+            ActionNewModel(api);
         }
         else if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_O))
         {
-            actionOpenModel(api);
+            ActionOpenModel(api);
         }
         else if (maybeModel && mod && io.KeyShift && ImGui::IsKeyPressed(SDL_SCANCODE_S))
         {
@@ -188,7 +66,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
         }
         else if (maybeModel && mod && ImGui::IsKeyPressed(SDL_SCANCODE_S))
         {
-            actionSaveModel(api, *maybeModel);
+            ActionSaveModel(api, *maybeModel);
         }
     }
 
@@ -205,12 +83,12 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
 
     if (ImGui::MenuItem(ICON_FA_FILE " New", "Ctrl+N"))
     {
-        actionNewModel(api);
+        ActionNewModel(api);
     }
 
     if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Open", "Ctrl+O"))
     {
-        actionOpenModel(api);
+        ActionOpenModel(api);
     }
 
     int imgui_id = 0;
@@ -224,7 +102,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
             ImGui::PushID(++imgui_id);
             if (ImGui::MenuItem(rf.path.filename().string().c_str()))
             {
-                OpenOsimInLoadingTab(api, rf.path);
+                ActionOpenModel(api, rf.path);
             }
             ImGui::PopID();
         }
@@ -239,7 +117,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
             ImGui::PushID(++imgui_id);
             if (ImGui::MenuItem(ex.filename().string().c_str()))
             {
-                OpenOsimInLoadingTab(api, ex);
+                ActionOpenModel(api, ex);
             }
             ImGui::PopID();
         }
@@ -269,7 +147,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
 
     if (ImGui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S", false, maybeModel != nullptr))
     {
-        actionSaveModel(api, *maybeModel);
+        ActionSaveModel(api, *maybeModel);
     }
 
     if (ImGui::MenuItem(ICON_FA_SAVE " Save As", "Shift+Ctrl+S", false, maybeModel != nullptr))

@@ -20,10 +20,6 @@ namespace OpenSim
 
 namespace osc
 {
-    void actionNewModel(MainUIStateAPI*);
-    void actionOpenModel(MainUIStateAPI*);
-    bool actionSaveModel(MainUIStateAPI*, UndoableModelStatePair&);
-
     struct MainMenuFileTab final {
         std::vector<std::filesystem::path> exampleOsimFiles;
         std::vector<RecentFile> recentlyOpenedFiles;
