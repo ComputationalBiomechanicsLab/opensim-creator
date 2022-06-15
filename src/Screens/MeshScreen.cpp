@@ -41,7 +41,7 @@ public:
         }
     }
 
-    void tick(float)
+    void tick()
     {
         UpdatePolarCameraFromImGuiUserInput(App::get().dims(), m_Camera);
     }
@@ -146,9 +146,9 @@ void osc::MeshScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::MeshScreen::tick(float dt)
+void osc::MeshScreen::tick()
 {
-    m_Impl->tick(std::move(dt));
+    m_Impl->tick();
 }
 
 void osc::MeshScreen::draw()

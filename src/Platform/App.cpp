@@ -985,7 +985,7 @@ private:
             }
 
             // "tick" the screen
-            m_CurrentScreen->tick(m_TimeSinceLastFrame.count());
+            m_CurrentScreen->tick();
             ++m_FrameCounter;
 
             if (m_QuitRequested)

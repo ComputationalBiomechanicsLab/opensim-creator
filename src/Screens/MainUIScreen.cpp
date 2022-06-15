@@ -116,7 +116,7 @@ public:
         }
     }
 
-    void tick(float dt)
+    void tick()
     {
         // tick all the tabs, because they may internally be polling something (e.g.
         // updating something as a simulation runs)
@@ -638,9 +638,9 @@ void osc::MainUIScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::MainUIScreen::tick(float dt)
+void osc::MainUIScreen::tick()
 {
-    m_Impl->tick(std::move(dt));
+    m_Impl->tick();
 }
 
 void osc::MainUIScreen::draw()

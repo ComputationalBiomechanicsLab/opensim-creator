@@ -108,7 +108,7 @@ public:
         }
     }
 
-    void tick(float)
+    void tick()
     {
         // connect input state to an euler (first-person-shooter style)
         // camera
@@ -291,9 +291,9 @@ void osc::InstancedRendererScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::InstancedRendererScreen::tick(float dt)
+void osc::InstancedRendererScreen::tick()
 {
-    m_Impl->tick(std::move(dt));
+    m_Impl->tick();
 }
 
 void osc::InstancedRendererScreen::draw()

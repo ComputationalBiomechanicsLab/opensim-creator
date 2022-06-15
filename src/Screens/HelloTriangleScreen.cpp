@@ -71,14 +71,14 @@ public:
         }
     }
 
-    void tick(float dt)
+    void tick()
     {
         if (m_Color.r < 0.0f || m_Color.r > 1.0f)
         {
             m_FadeSpeed = -m_FadeSpeed;
         }
 
-        m_Color.r -= dt * m_FadeSpeed;
+        m_Color.r -= osc::App::get().getDeltaSinceLastFrame().count() * m_FadeSpeed;
     }
 
     void draw()
@@ -138,9 +138,9 @@ void osc::HelloTriangleScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::HelloTriangleScreen::tick(float dt)
+void osc::HelloTriangleScreen::tick()
 {
-    m_Impl->tick(std::move(dt));
+    m_Impl->tick();
 }
 
 void osc::HelloTriangleScreen::draw()

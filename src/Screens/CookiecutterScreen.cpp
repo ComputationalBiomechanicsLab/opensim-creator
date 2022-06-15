@@ -39,7 +39,7 @@ public:
         }
     }
 
-    void tick(float dt)
+    void tick()
     {
         // called once per frame, before drawing, with a timedelta from the last call
         // to `tick`
@@ -108,9 +108,9 @@ void osc::CookiecutterScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::CookiecutterScreen::tick(float dt)
+void osc::CookiecutterScreen::tick()
 {
-    m_Impl->tick(std::move(dt));
+    m_Impl->tick();
 }
 
 void osc::CookiecutterScreen::draw()

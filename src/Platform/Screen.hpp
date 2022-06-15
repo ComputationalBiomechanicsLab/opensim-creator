@@ -29,7 +29,7 @@ namespace osc
         virtual void onEvent(SDL_Event const&) {}
 
         // called by app once per frame (float is a timedelta in seconds)
-        virtual void tick(float) {}
+        virtual void tick() {}
 
         // returns the name of the screen (handy for debugging/logging)
         virtual char const* name() const

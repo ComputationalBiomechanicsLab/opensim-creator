@@ -148,7 +148,7 @@ public:
         }
     }
 
-    void tick(float dt)
+    void tick()
     {
         m_IoPoller.onUpdate();
 
@@ -404,9 +404,9 @@ void osc::HittestScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::HittestScreen::tick(float dt)
+void osc::HittestScreen::tick()
 {
-    m_Impl->tick(std::move(dt));
+    m_Impl->tick();
 }
 
 void osc::HittestScreen::draw()

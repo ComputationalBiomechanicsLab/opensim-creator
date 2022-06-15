@@ -61,7 +61,9 @@ public:
         ImGuiOnEvent(e);
     }
 
-    void tick(float) {}
+    void tick()
+    {
+    }
 
     void draw()
     {
@@ -153,9 +155,9 @@ void osc::MeshGenTestScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::MeshGenTestScreen::tick(float dt)
+void osc::MeshGenTestScreen::tick()
 {
-    m_Impl->tick(dt);
+    m_Impl->tick();
 }
 
 void osc::MeshGenTestScreen::draw()

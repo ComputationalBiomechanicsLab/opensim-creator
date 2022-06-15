@@ -34,7 +34,7 @@ public:
         }
     }
 
-    void tick(float dt)
+    void tick()
     {
     }
 
@@ -91,9 +91,9 @@ void osc::ImPlotDemoScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::ImPlotDemoScreen::tick(float dt)
+void osc::ImPlotDemoScreen::tick()
 {
-    m_Impl->tick(std::move(dt));
+    m_Impl->tick();
 }
 
 void osc::ImPlotDemoScreen::draw()

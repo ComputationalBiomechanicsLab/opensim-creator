@@ -111,7 +111,7 @@ public:
         }
     }
 
-    void tick(float dt)
+    void tick()
     {
         App const& app = App::get();
         UpdatePolarCameraFromImGuiUserInput(app.dims(), m_Camera);
@@ -287,9 +287,9 @@ void osc::MeshHittestScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::MeshHittestScreen::tick(float dt)
+void osc::MeshHittestScreen::tick()
 {
-    m_Impl->tick(std::move(dt));
+    m_Impl->tick();
 }
 
 void osc::MeshHittestScreen::draw()

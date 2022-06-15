@@ -17,7 +17,7 @@ namespace osc
         ~HelloTriangleScreen() noexcept override;
 
         void onEvent(SDL_Event const&) override;
-        void tick(float) override;
+        void tick() override;
         void draw() override;
 
     private:

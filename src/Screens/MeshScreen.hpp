@@ -19,7 +19,7 @@ namespace osc
         void onMount() override;
         void onUnmount() override;
         void onEvent(SDL_Event const&) override;
-        void tick(float) override;
+        void tick() override;
         void draw() override;
 
     private:

@@ -106,7 +106,7 @@ public:
         }
     }
 
-    void tick(float)
+    void tick()
     {
     }
 
@@ -168,9 +168,9 @@ void osc::RendererHelloTriangleScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::RendererHelloTriangleScreen::tick(float dt)
+void osc::RendererHelloTriangleScreen::tick()
 {
-    m_Impl->tick(dt);
+    m_Impl->tick();
 }
 
 void osc::RendererHelloTriangleScreen::draw()

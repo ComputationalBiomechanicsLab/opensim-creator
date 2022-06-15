@@ -35,7 +35,7 @@ public:
         }
     }
 
-    void tick(float)
+    void tick()
     {
     }
 
@@ -148,9 +148,9 @@ void osc::MathExperimentsScreen::onEvent(SDL_Event const& e)
     m_Impl->onEvent(e);
 }
 
-void osc::MathExperimentsScreen::tick(float dt)
+void osc::MathExperimentsScreen::tick()
 {
-    m_Impl->tick(std::move(dt));
+    m_Impl->tick();
 }
 
 void osc::MathExperimentsScreen::draw()
