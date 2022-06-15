@@ -46,15 +46,9 @@ namespace osc
         AutoFinalizingModelStatePair& operator=(AutoFinalizingModelStatePair&&) noexcept;
         ~AutoFinalizingModelStatePair() noexcept override;
 
-        // get underlying `OpenSim::Model` that the AutoFinalizingModelStatePair wraps
         OpenSim::Model const& getModel() const override;
-
         OpenSim::Model& updModel() override;
-
-        // manually modify the version
-        void markModelAsModified();
         void setModel(std::unique_ptr<OpenSim::Model>);
-
         UID getModelVersion() const override;
 
         // get associated (default + state modifications) model state

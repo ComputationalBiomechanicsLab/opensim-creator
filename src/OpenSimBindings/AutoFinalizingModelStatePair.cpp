@@ -88,11 +88,6 @@ public:
         return *m_Model;
     }
 
-    void markModelAsModified()
-    {
-        m_CurrentModelVersion = UID{};
-    }
-
     void setModel(std::unique_ptr<OpenSim::Model> m)
     {
         m_Model = std::move(m);
@@ -356,11 +351,6 @@ OpenSim::Model const& osc::AutoFinalizingModelStatePair::getModel() const
 OpenSim::Model& osc::AutoFinalizingModelStatePair::updModel()
 {
     return m_Impl->updModel();
-}
-
-void osc::AutoFinalizingModelStatePair::markModelAsModified()
-{
-    m_Impl->markModelAsModified();
 }
 
 osc::UID osc::AutoFinalizingModelStatePair::getModelVersion() const
