@@ -76,9 +76,6 @@ namespace osc
         // set the fixup scale factor used to generate scene decorations (dirties decorations)
         void setFixupScaleFactor(float) override;
 
-        // returns true if the model internally needs to update in order to return a valid model/state
-        bool isDirty() const;
-
         // sets dirty flags (advanced)
         //
         // dirty flags are usually automatically set by the various mutating

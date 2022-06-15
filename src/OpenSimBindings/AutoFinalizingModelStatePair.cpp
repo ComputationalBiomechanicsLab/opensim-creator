@@ -150,12 +150,6 @@ public:
         m_FixupScaleFactor = sf;
     }
 
-    bool isDirty() const
-    {
-        return m_CurrentModelVersion != m_UpdatedModelVersion ||
-               m_CurrentStateVersion != m_UpdatedStateVersion;
-    }
-
     void setDirty(bool v)
     {
         if (v)
@@ -418,11 +412,6 @@ float osc::AutoFinalizingModelStatePair::getFixupScaleFactor() const
 void osc::AutoFinalizingModelStatePair::setFixupScaleFactor(float sf)
 {
     m_Impl->setFixupScaleFactor(std::move(sf));
-}
-
-bool osc::AutoFinalizingModelStatePair::isDirty() const
-{
-    return m_Impl->isDirty();
 }
 
 void osc::AutoFinalizingModelStatePair::setDirty(bool v)
