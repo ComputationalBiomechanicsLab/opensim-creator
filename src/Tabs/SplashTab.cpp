@@ -307,7 +307,7 @@ private:
                 OpenPathInOSDefaultApplication(osc::App::get().getConfig().getHTMLDocsDir() / "index.html");
             }
 
-            ImGui::Dummy(ImVec2{0.0f, 10.0f});
+            ImGui::Dummy({0.0f, 10.0f});
 
             // de-dupe imgui IDs because these lists may contain duplicate
             // names
@@ -317,7 +317,7 @@ private:
 
             // left column: recent files
             ImGui::TextUnformatted("Recent files:");
-            ImGui::Dummy(ImVec2{0.0f, 3.0f});
+            ImGui::Dummy({0.0f, 3.0f});
 
             if (!m_MainMenuFileTab.recentlyOpenedFiles.empty())
             {
@@ -349,7 +349,7 @@ private:
             if (!m_MainMenuFileTab.exampleOsimFiles.empty())
             {
                 ImGui::TextUnformatted("Example files:");
-                ImGui::Dummy(ImVec2{0.0f, 3.0f});
+                ImGui::Dummy({0.0f, 3.0f});
 
                 for (std::filesystem::path const& ex : m_MainMenuFileTab.exampleOsimFiles)
                 {
