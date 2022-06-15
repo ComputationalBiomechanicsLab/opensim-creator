@@ -1174,10 +1174,11 @@ std::unique_ptr<osc::UndoableModelStatePair> osc::LoadOsimIntoUndoableModel(std:
     return std::make_unique<osc::UndoableModelStatePair>(std::move(model));
 }
 
-void osc::Initialize(OpenSim::Model& model)
+SimTK::State& osc::Initialize(OpenSim::Model& model)
 {
+    OSC_PERF("model update");
     model.finalizeFromProperties();  // clears potentially-stale member components (required for `clearConnections`)
     model.clearConnections();        // clears any potentially stale pointers that can be retained by OpenSim::Socket<T> (see #263)
     model.buildSystem();             // creates a new underlying physics system
-    model.initializeState();         // creates a new working state
+    return model.initializeState();  // creates+returns a new working state
 }

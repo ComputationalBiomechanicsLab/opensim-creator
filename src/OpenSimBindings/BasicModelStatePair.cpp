@@ -7,13 +7,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
-static void InitModel(OpenSim::Model& m)
-{
-    OSC_PERF("model update");
-    m.buildSystem();
-    m.initializeState();
-}
-
 class osc::BasicModelStatePair::Impl final {
 public:
 
@@ -25,7 +18,7 @@ public:
     Impl(OpenSim::Model const& m, SimTK::State const& st) :
         m_Model(std::make_unique<OpenSim::Model>(m))
     {
-        InitModel(*m_Model);
+        Initialize(*m_Model);
         m_Model->updWorkingState() = st;
         m_Model->updWorkingState().invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
         m_Model->realizeReport(m_Model->updWorkingState());
@@ -34,7 +27,7 @@ public:
     Impl(Impl const& o) :
         m_Model{std::make_unique<OpenSim::Model>(*o.m_Model)}
     {
-        InitModel(*m_Model);
+        Initialize(*m_Model);
         m_Model->updWorkingState() = o.m_Model->getWorkingState();
     }
 

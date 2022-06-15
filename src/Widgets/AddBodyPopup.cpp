@@ -237,6 +237,8 @@ private:
         m.addJoint(joint.release());
         OpenSim::Body* ptr = body.get();
         m.addBody(body.release());
+        m.finalizeConnections();  // ensure sockets paths are written
+
         m_Uum->setSelected(ptr);
         m_Uum->commit("added body");
     }

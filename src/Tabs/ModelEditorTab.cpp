@@ -112,9 +112,8 @@ static void ActionTryDeleteSelectionFromEditedModel(osc::UndoableModelStatePair&
 {
     if (OpenSim::Component* selected = uim.updSelected())
     {
-        if (osc::TryDeleteComponentFromModel(uim.updUiModel().peekModelADVANCED(), *selected))
+        if (osc::TryDeleteComponentFromModel(uim.updModel(), *selected))
         {
-            uim.setDirty(true);
             uim.commit("deleted compopnent");
         }
         else
@@ -166,8 +165,7 @@ static bool ActionLoadSTOFileAgainstModel(osc::MainUIStateAPI* parent, osc::Undo
     try
     {
         std::unique_ptr<OpenSim::Model> cpy = std::make_unique<OpenSim::Model>(uim.getModel());
-        cpy->buildSystem();
-        cpy->initializeState();
+        osc::Initialize(*cpy);
 
         osc::UID tabID = parent->addTab<osc::SimulatorTab>(parent, std::make_shared<osc::Simulation>(osc::StoFileSimulation{std::move(cpy), stoPath, uim.getFixupScaleFactor()}));
         parent->selectTab(tabID);

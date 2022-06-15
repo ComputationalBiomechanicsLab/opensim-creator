@@ -5,6 +5,7 @@
 #include "src/Bindings/SimTKHelpers.hpp"
 #include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Graphics/Shaders/EdgeDetectionShader.hpp"
@@ -3426,8 +3427,8 @@ namespace
         }
 
         // ensure returned model is initialized from latest graph
-        model->finalizeFromProperties();
-        model->finalizeConnections();
+        model->finalizeConnections();  // ensure all sockets are finalized to paths (#263)
+        osc::Initialize(*model);
 
         return model;
     }
@@ -3472,12 +3473,8 @@ namespace
 
     ModelGraph CreateModelGraphFromInMemoryModel(OpenSim::Model m)
     {
-        // init model
-        m.finalizeFromProperties();
-        m.finalizeConnections();
-        m.buildSystem();
-
-        SimTK::State st = m.initializeState();
+        // init model+state
+        SimTK::State st = osc::Initialize(m);
         m.equilibrateMuscles(st);
         m.realizePosition(st);
 

@@ -24,8 +24,8 @@ namespace osc
 
 namespace osc
 {
-    // a model + state pair that automatically updates (e.g. finalizeFromProperties etc.), much
-    // like `osc::UiModel`, but it can *also* can be snapshotted with .commit()
+    // a model + state pair that automatically reinitializes (i.e. like `AutoFinalizingModelStatePair`),
+    // but it also has support for snapshotting with .commit()
     class UndoableModelStatePair final : public VirtualModelStatePair {
     public:
 

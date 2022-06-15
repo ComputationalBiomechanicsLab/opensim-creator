@@ -160,5 +160,5 @@ namespace osc
     std::unique_ptr<UndoableModelStatePair> LoadOsimIntoUndoableModel(std::filesystem::path);
 
     // fully initialize an OpenSim model (from properties, remake SimTK::System, etc.)
-    void Initialize(OpenSim::Model&);
+    SimTK::State& Initialize(OpenSim::Model&);
 }

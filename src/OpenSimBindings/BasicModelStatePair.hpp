@@ -17,9 +17,7 @@ namespace osc
 {
     // an `OpenSim::Model` + `SimTK::State` that is a value type, constructed with:
     //
-    // - `model.finalizeFromProperties`
-    // - `model.finalizeConnections`
-    // - `model.buildSystem`
+    // - `osc::Initialize`
     // - (if creating a new state) `model.equilibrateMuscles(State&)`
     // - (if creating a new state) `model.realizeAcceleration(State&)`
     //
