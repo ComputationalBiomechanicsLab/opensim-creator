@@ -11,7 +11,6 @@
 #include "src/Screens/MeshGenTestScreen.hpp"
 #include "src/Screens/MeshHittestScreen.hpp"
 #include "src/Screens/MeshHittestWithBVHScreen.hpp"
-#include "src/Screens/TabTestScreen.hpp"
 
 #include <imgui.h>
 
@@ -96,8 +95,7 @@ private:
         { "ImGuizmo", transition<ImGuizmoDemoScreen> },
         { "ImPlot", transition<ImPlotDemoScreen> },
         { "ImGui", transition<ImGuiDemoScreen> },
-        { "Mesh Generation Tests", transition<MeshGenTestScreen> },
-        { "Tabbed UI", transition<TabTestScreen> }
+        { "Mesh Generation Tests", transition<MeshGenTestScreen> }
     };
 };
 

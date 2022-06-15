@@ -456,8 +456,6 @@ add_library(osccore STATIC
     src/Screens/MeshScreen.hpp
     src/Screens/RendererHelloTriangleScreen.cpp
     src/Screens/RendererHelloTriangleScreen.hpp
-    src/Screens/TabTestScreen.cpp
-    src/Screens/TabTestScreen.hpp
 
     src/Tabs/CookiecutterTab.cpp
     src/Tabs/CookiecutterTab.hpp
