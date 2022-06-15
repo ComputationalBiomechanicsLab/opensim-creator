@@ -72,8 +72,8 @@ namespace osc
         std::size_t getHash() const override;
         bool equals(VirtualOutputExtractor const&) const override;
 
-        class Impl;
     private:
+        class Impl;
         ClonePtr<Impl> m_Impl;
     };
 }

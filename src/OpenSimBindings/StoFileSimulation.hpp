@@ -54,8 +54,8 @@ namespace osc
 		float getFixupScaleFactor() const override;
 		void setFixupScaleFactor(float) override;
 
-		class Impl;
 	private:
+		class Impl;
 		std::unique_ptr<Impl> m_Impl;
 	};
 }

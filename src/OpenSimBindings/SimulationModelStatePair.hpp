@@ -58,8 +58,8 @@ namespace osc
 		SimulationReport getSimulationReport() const;
 		void setSimulationReport(SimulationReport);
 
-		class Impl;
 	private:
+		class Impl;
 		std::unique_ptr<Impl> m_Impl;
 	};
 }

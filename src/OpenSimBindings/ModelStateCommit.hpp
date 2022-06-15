@@ -56,10 +56,10 @@ namespace osc
 		OpenSim::Component const* getIsolated() const override;
 		float getFixupScaleFactor() const override;
 
-		class Impl;
 	private:
 		friend bool operator==(ModelStateCommit const& a, ModelStateCommit const& b);
 
+		class Impl;
 		std::shared_ptr<Impl> m_Impl;
 	};
 

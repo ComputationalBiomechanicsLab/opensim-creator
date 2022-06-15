@@ -18,10 +18,5 @@ namespace osc
 	class OpenSimApp : public App {
 	public:
 		OpenSimApp();
-
-	private:
-		bool m_Initialized;
 	};
-
-
 }

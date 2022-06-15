@@ -128,8 +128,7 @@ bool osc::GlobalInitOpenSim(Config const& config)
     return initializedGlobally;
 }
 
-osc::OpenSimApp::OpenSimApp() :
-    App{},
-    m_Initialized{GlobalInitOpenSim(getConfig())}
+osc::OpenSimApp::OpenSimApp() : App{}
 {
+    GlobalInitOpenSim(getConfig());
 }

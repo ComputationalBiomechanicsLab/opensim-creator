@@ -31,8 +31,8 @@ namespace osc
         bool removeCoordinateEdit(OpenSim::Coordinate const&);
         bool applyToState(OpenSim::Model const&, SimTK::State&);
 
-        class Impl;
     private:
+        class Impl;
         std::unique_ptr<Impl> m_Impl;
     };
 }

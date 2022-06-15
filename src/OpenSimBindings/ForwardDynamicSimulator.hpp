@@ -47,8 +47,8 @@ namespace osc
         void stop();  // synchronous (blocks until it stops)
         ForwardDynamicSimulatorParams const& params() const;
 
-        class Impl;
     private:
+        class Impl;
         std::unique_ptr<Impl> m_Impl;
     };
 }

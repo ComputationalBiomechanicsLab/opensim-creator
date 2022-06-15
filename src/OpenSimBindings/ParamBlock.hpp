@@ -30,8 +30,8 @@ namespace osc
         void setValue(int idx, ParamValue);  // throws if param doesn't exist
         void setValue(std::string const& name, ParamValue);  // throws if param doesn't exist
 
-        class Impl;
     private:
+        class Impl;
         ClonePtr<Impl> m_Impl;
     };
 }

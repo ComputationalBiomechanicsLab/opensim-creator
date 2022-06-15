@@ -132,8 +132,8 @@ namespace osc
         OpenSim::Component* updIsolated() override;
         void setIsolated(OpenSim::Component const* c) override;
 
-        class Impl;
     private:
+        class Impl;
         Impl* m_Impl;
     };
 }
