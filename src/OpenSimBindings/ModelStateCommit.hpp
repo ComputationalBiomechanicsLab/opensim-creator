@@ -44,7 +44,7 @@ namespace osc
 		std::chrono::system_clock::time_point getCommitTime() const;
 
 		OpenSim::Model const& getModel() const override;
-		AutoFinalizingModelStatePair const& getUiModel() const;  // TODO: shouldn't be necessary
+		AutoFinalizingModelStatePair const& getUiModel() const;  // TODO: shouldn't be necessary, but it is because the model may contain coordinate edits
 		SimTK::State const& getState() const override;
 
 		BasicModelStatePair extractModelStateThreadsafe() const;  // HACK: necessary because copy-construction isn't necessarily threadsafe in OpenSim

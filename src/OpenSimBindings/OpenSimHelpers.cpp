@@ -934,51 +934,53 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
     // from the model without breaking sockets etc., so now we use heuristics to figure
     // out how to do that
 
+    bool rv = false;
+
     if (auto* js = dynamic_cast<OpenSim::JointSet*>(&owner))
     {
-        return TryDeleteItemFromSet(*js, dynamic_cast<OpenSim::Joint*>(&c));
+        rv = TryDeleteItemFromSet(*js, dynamic_cast<OpenSim::Joint*>(&c));
     }
     else if (auto* bs = dynamic_cast<OpenSim::BodySet*>(&owner))
     {
-        return TryDeleteItemFromSet(*bs, dynamic_cast<OpenSim::Body*>(&c));
+        rv = TryDeleteItemFromSet(*bs, dynamic_cast<OpenSim::Body*>(&c));
     }
     else if (auto* wos = dynamic_cast<OpenSim::WrapObjectSet*>(&owner))
     {
-        return TryDeleteItemFromSet(*wos, dynamic_cast<OpenSim::WrapObject*>(&c));
+        rv = TryDeleteItemFromSet(*wos, dynamic_cast<OpenSim::WrapObject*>(&c));
     }
     else if (auto* cs = dynamic_cast<OpenSim::ControllerSet*>(&owner))
     {
-        return TryDeleteItemFromSet(*cs, dynamic_cast<OpenSim::Controller*>(&c));
+        rv = TryDeleteItemFromSet(*cs, dynamic_cast<OpenSim::Controller*>(&c));
     }
     else if (auto* conss = dynamic_cast<OpenSim::ConstraintSet*>(&owner))
     {
-        return TryDeleteItemFromSet(*conss, dynamic_cast<OpenSim::Constraint*>(&c));
+        rv = TryDeleteItemFromSet(*conss, dynamic_cast<OpenSim::Constraint*>(&c));
     }
     else if (auto* fs = dynamic_cast<OpenSim::ForceSet*>(&owner))
     {
-        return TryDeleteItemFromSet(*fs, dynamic_cast<OpenSim::Force*>(&c));
+        rv = TryDeleteItemFromSet(*fs, dynamic_cast<OpenSim::Force*>(&c));
     }
     else if (auto* ms = dynamic_cast<OpenSim::MarkerSet*>(&owner))
     {
-        return TryDeleteItemFromSet(*ms, dynamic_cast<OpenSim::Marker*>(&c));
+        rv = TryDeleteItemFromSet(*ms, dynamic_cast<OpenSim::Marker*>(&c));
     }
     else if (auto* cgs = dynamic_cast<OpenSim::ContactGeometrySet*>(&owner); cgs)
     {
-        return TryDeleteItemFromSet(*cgs, dynamic_cast<OpenSim::ContactGeometry*>(&c));
+        rv = TryDeleteItemFromSet(*cgs, dynamic_cast<OpenSim::ContactGeometry*>(&c));
     }
     else if (auto* ps = dynamic_cast<OpenSim::ProbeSet*>(&owner))
     {
-        return TryDeleteItemFromSet(*ps, dynamic_cast<OpenSim::Probe*>(&c));
+        rv = TryDeleteItemFromSet(*ps, dynamic_cast<OpenSim::Probe*>(&c));
     }
     else if (auto* gp = dynamic_cast<OpenSim::GeometryPath*>(&owner))
     {
         if (auto* app = dynamic_cast<OpenSim::AbstractPathPoint*>(&c))
         {
-            return TryDeleteItemFromSet(gp->updPathPointSet(), app);
+            rv = TryDeleteItemFromSet(gp->updPathPointSet(), app);
         }
         else if (auto* pw = dynamic_cast<OpenSim::PathWrap*>(&c))
         {
-            return TryDeleteItemFromSet(gp->updWrapSet(), pw);
+            rv = TryDeleteItemFromSet(gp->updWrapSet(), pw);
         }
     }
     else if (auto const* geom = FindAncestorWithType<OpenSim::Geometry>(&c))
@@ -1011,10 +1013,11 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
 
             prop.assign(*copy);
 
-            return true;
+            rv = true;
         }
     }
-    return false;
+
+    return rv;
 }
 
 void osc::GenerateModelDecorations(VirtualConstModelStatePair const& p,
@@ -1135,6 +1138,8 @@ void osc::AddComponentToModel(OpenSim::Model& m, std::unique_ptr<OpenSim::Compon
     {
         m.addComponent(c.release());
     }
+
+    m.finalizeConnections();  // necessary, because adding it may have created a new (not finalized) connection
 }
 
 float osc::GetRecommendedScaleFactor(VirtualConstModelStatePair const& p)

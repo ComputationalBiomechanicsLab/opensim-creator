@@ -128,9 +128,7 @@ namespace osc
     bool TryDeleteComponentFromModel(OpenSim::Model&, OpenSim::Component&);
 
     // generates decorations for a model + state
-    void GenerateModelDecorations(VirtualConstModelStatePair const&,
-                                  std::vector<osc::ComponentDecoration>&,
-                                  CustomDecorationOptions = {});
+    void GenerateModelDecorations(VirtualConstModelStatePair const&, std::vector<osc::ComponentDecoration>&, CustomDecorationOptions = {});
 
     // updates the given BVH with the given component decorations
     void UpdateSceneBVH(nonstd::span<ComponentDecoration const>, BVH&);
