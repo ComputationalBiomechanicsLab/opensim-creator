@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <string_view>
 
 namespace OpenSim
@@ -40,8 +39,8 @@ namespace osc
         void close();
         Response draw(VirtualConstModelStatePair const&);
 
-        class Impl;
     private:
+        class Impl;
         Impl* m_Impl;
     };
 }
