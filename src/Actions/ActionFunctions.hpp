@@ -125,4 +125,7 @@ namespace osc
 
     // sets the model's scale factor
     bool ActionSetModelSceneScaleFactorTo(UndoableModelStatePair&, float);
+
+    // saves any active (state-level) coordinate edits to the model
+    bool ActionSaveCoordinateEditsToModel(UndoableModelStatePair&);
 }

@@ -1,5 +1,6 @@
 #include "CoordinateEditor.hpp"
 
+#include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/StateModifications.hpp"
@@ -96,6 +97,15 @@ public:
         {
             Sort(m_CoordScratch, IsNameLexographicallyLessThan);
         }
+
+        // "save to model" - save current coordinate values to the model
+        if (ImGui::Button(ICON_FA_SAVE " Save to Model"))
+        {
+            osc::ActionSaveCoordinateEditsToModel(*m_Uum);
+        }
+        osc::DrawTooltipIfItemHovered("Save Coordinate Edits to Model", "Saves the current set of coordinate edits to the model file as default values. This ensures that the current set of coordinate edits are saved in the resulting osim file, and that those edits will be shown when the osim is initially loaded.");
+
+        ImGui::Dummy({0.0f, 0.5f * ImGui::GetTextLineHeight()});
 
         // draw header
         ImGui::Columns(3);

@@ -52,6 +52,9 @@ All notable changes to this project will be documented here. The format is based
   output from the user's output watch list (#250)
 - Renamed "Request Outputs" to "Watch Output(s)" and used an eye icon to indicate design intent (#251)
 - Tutorial 1 now contains links to download intermediate versions of the model (#62)
+- There is now a "Save to model" button in the coordinate editor (#265)
+  - It saves the model's current coordinate values as the model's default values for those coordinates
+  - It's an easy way to save a pose into the osim file
 
 
 ## [0.1.6] - 2022/05/09
