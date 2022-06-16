@@ -121,13 +121,29 @@ private:
     std::optional<AddComponentPopup> m_MaybeAddComponentPopup;
 };
 
+
+// public API
+
 osc::ModelActionsMenuItems::ModelActionsMenuItems(std::shared_ptr<UndoableModelStatePair> m) :
-    m_Impl{std::make_unique<Impl>(std::move(m))}
+    m_Impl{new Impl{std::move(m)}}
 {
 }
-osc::ModelActionsMenuItems::ModelActionsMenuItems(ModelActionsMenuItems&&) noexcept = default;
-osc::ModelActionsMenuItems& osc::ModelActionsMenuItems::operator=(ModelActionsMenuItems&&) noexcept = default;
-osc::ModelActionsMenuItems::~ModelActionsMenuItems() noexcept = default;
+
+osc::ModelActionsMenuItems::ModelActionsMenuItems(ModelActionsMenuItems&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
+
+osc::ModelActionsMenuItems& osc::ModelActionsMenuItems::operator=(ModelActionsMenuItems&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::ModelActionsMenuItems::~ModelActionsMenuItems() noexcept
+{
+    delete m_Impl;
+}
 
 void osc::ModelActionsMenuItems::draw()
 {
