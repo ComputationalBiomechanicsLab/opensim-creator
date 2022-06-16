@@ -5,7 +5,8 @@
 
 namespace osc
 {
-    struct SaveChangesPopupConfig {
+    class SaveChangesPopupConfig {
+    public:
         std::string popupName = "Save changes?";
         std::function<bool()> onUserClickedSave = []{ return true; };
         std::function<bool()> onUserClickedDontSave = []{ return true; };
@@ -27,8 +28,8 @@ namespace osc
         void close();
         void draw();
 
-        class Impl;
     private:
+        class Impl;
         Impl* m_Impl;
     };
 }

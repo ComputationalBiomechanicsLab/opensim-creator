@@ -10,7 +10,8 @@ namespace OpenSim
 
 namespace osc
 {
-    struct Select2PFsPopup final {
+    class Select2PFsPopup final {
+    public:
         OpenSim::PhysicalFrame const* first = nullptr;
         OpenSim::PhysicalFrame const* second = nullptr;
 

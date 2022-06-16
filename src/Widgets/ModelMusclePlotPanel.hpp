@@ -35,8 +35,8 @@ namespace osc
 		void close();
 		void draw();
 
-		class Impl;
 	private:
+		class Impl;
 		Impl* m_Impl;
 	};
 }

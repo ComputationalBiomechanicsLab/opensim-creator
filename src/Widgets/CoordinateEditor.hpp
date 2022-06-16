@@ -9,7 +9,7 @@ namespace osc
 
 namespace osc
 {
-    struct CoordinateEditor final {
+    class CoordinateEditor final {
     public:
         explicit CoordinateEditor(std::shared_ptr<UndoableModelStatePair>);
         CoordinateEditor(CoordinateEditor const&) = delete;

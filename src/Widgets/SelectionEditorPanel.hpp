@@ -9,7 +9,7 @@ namespace osc
 
 namespace osc
 {
-    struct SelectionEditorPanel final {
+    class SelectionEditorPanel final {
     public:
         explicit SelectionEditorPanel(std::shared_ptr<UndoableModelStatePair>);
         SelectionEditorPanel(SelectionEditorPanel const&) = delete;

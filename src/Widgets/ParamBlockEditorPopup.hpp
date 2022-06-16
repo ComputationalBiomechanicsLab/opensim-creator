@@ -26,8 +26,8 @@ namespace osc
         // - returns true if an edit was made
         bool draw(ParamBlock&);
 
-        class Impl;
     private:
+        class Impl;
         Impl* m_Impl;
     };
 }

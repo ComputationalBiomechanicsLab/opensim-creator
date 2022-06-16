@@ -20,7 +20,8 @@ namespace OpenSim
 
 namespace osc
 {
-    struct MainMenuFileTab final {
+    class MainMenuFileTab final {
+    public:
         std::vector<std::filesystem::path> exampleOsimFiles;
         std::vector<RecentFile> recentlyOpenedFiles;
         std::optional<SaveChangesPopup> maybeSaveChangesPopup;
@@ -30,7 +31,8 @@ namespace osc
         void draw(MainUIStateAPI*, UndoableModelStatePair* = nullptr);
     };
 
-    struct MainMenuAboutTab final {
+    class MainMenuAboutTab final {
+    public:
         void draw();
     };
 }

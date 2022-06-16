@@ -5,7 +5,8 @@
 namespace osc
 {
     template<typename T>
-    struct SelectComponentPopup final {
+    class SelectComponentPopup final {
+    public:
 
         // returns non-nullptr if user selects a component of type T
         //

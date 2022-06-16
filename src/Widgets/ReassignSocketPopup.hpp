@@ -12,7 +12,7 @@ namespace OpenSim
 
 namespace osc
 {
-    struct ReassignSocketPopup final {
+    class ReassignSocketPopup final {
     public:
 
         // assumes caller handles ImGui::OpenPopup(modal_name);

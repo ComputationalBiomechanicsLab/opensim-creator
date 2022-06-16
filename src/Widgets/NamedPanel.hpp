@@ -5,6 +5,7 @@
 
 namespace osc
 {
+	// base class for implementing a panel that has a name
 	class NamedPanel {
 	public:
 		explicit NamedPanel(std::string_view name);

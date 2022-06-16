@@ -516,7 +516,7 @@ namespace
 }
 
 // top-level implementation of the properties editor
-struct osc::ObjectPropertiesEditor::Impl final {
+class osc::ObjectPropertiesEditor::Impl final {
 
 private:
     PropertyEditor* tryLookupOrCreateEditor(OpenSim::AbstractProperty const& p)

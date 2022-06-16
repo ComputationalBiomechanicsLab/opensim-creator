@@ -25,8 +25,8 @@ namespace osc
         // returns non-nullptr when user selects an OpenSim::Mesh
         std::unique_ptr<OpenSim::Geometry> draw();
 
-        class Impl;
     private:
+        class Impl;
         std::unique_ptr<Impl> m_Impl;
     };
 }

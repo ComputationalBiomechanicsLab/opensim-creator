@@ -5,6 +5,8 @@
 
 namespace osc
 {
+	// base class for implementing a standard UI popup (that blocks the whole screen
+	// apart from the popup content)
 	class StandardPopup {
 	public:
 		explicit StandardPopup(std::string_view popupName);

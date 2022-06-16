@@ -43,8 +43,8 @@ namespace osc
         // as above, but only edit properties with the specified indices
         std::optional<Response> draw(OpenSim::Object const&, nonstd::span<int const> indices);
 
-        struct Impl;
     private:
+        class Impl;
         std::unique_ptr<Impl> m_Impl;
     };
 }

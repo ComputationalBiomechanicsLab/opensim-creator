@@ -10,7 +10,8 @@ namespace OpenSim
 
 namespace osc
 {
-    struct Select1PFPopup final {
+    class Select1PFPopup final {
+    public:
         // - assumes caller has handled calling ImGui::OpenPopup(char const*)
         // - returns non-nullptr if user selects a PF
         OpenSim::PhysicalFrame const* draw(
