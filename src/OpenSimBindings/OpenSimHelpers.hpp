@@ -12,12 +12,13 @@
 namespace OpenSim
 {
     class AbstractOutput;
+    class AbstractSocket;
     class Component;
     class ComponentPath;
-    class AbstractSocket;
-    class Model;
     class Coordinate;
+    class Geometry;
     class Joint;
+    class Model;
 }
 
 namespace osc
@@ -168,4 +169,7 @@ namespace osc
 
     // returns a string representation of the recommended document's name
     std::string GetRecommendedDocumentName(osc::UndoableModelStatePair const&);
+
+    // returns user-visible (basic) name of geometry, or underlying file name
+    std::string GetDisplayName(OpenSim::Geometry const&);
 }

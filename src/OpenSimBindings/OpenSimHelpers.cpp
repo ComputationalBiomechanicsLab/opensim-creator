@@ -1233,3 +1233,15 @@ std::string osc::GetRecommendedDocumentName(osc::UndoableModelStatePair const& u
         return "untitled.osim";
     }
 }
+
+std::string osc::GetDisplayName(OpenSim::Geometry const& g)
+{
+    if (OpenSim::Mesh const* mesh = dynamic_cast<OpenSim::Mesh const*>(&g); mesh)
+    {
+        return mesh->getGeometryFilename();
+    }
+    else
+    {
+        return g.getConcreteClassName();
+    }
+}

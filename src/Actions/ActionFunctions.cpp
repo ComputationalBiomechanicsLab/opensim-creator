@@ -1,5 +1,6 @@
 #include "ActionFunctions.hpp"
 
+#include "src/Bindings/SimTKHelpers.hpp"
 #include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/BasicModelStatePair.hpp"
@@ -9,6 +10,7 @@
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/StoFileSimulation.hpp"
+#include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
@@ -28,6 +30,7 @@
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 
 #include <memory>
@@ -677,4 +680,95 @@ bool osc::ActionSaveCoordinateEditsToModel(UndoableModelStatePair& uim)
     {
         return false;
     }
+}
+
+osc::BodyDetails::BodyDetails() :
+    CenterOfMass{0.0f, 0.0f, 0.0f},
+    Inertia{1.0f, 1.0f, 1.0f},
+    Mass{1.0f},
+    ParentFrameAbsPath{},
+    BodyName{"new_body"},
+    JointTypeIndex{static_cast<int>(osc::JointRegistry::indexOf<OpenSim::FreeJoint>().value_or(0))},
+    JointName{},
+    MaybeGeometry{nullptr},
+    AddOffsetFrames{true}
+{
+}
+
+// create a "standard" OpenSim::Joint
+static std::unique_ptr<OpenSim::Joint> MakeJoint(
+    osc::BodyDetails const& details,
+    OpenSim::Body const& b,
+    OpenSim::Joint const& jointPrototype,
+    OpenSim::PhysicalFrame const& selectedPf)
+{
+    std::unique_ptr<OpenSim::Joint> copy{jointPrototype.clone()};
+    copy->setName(details.JointName);
+
+    if (!details.AddOffsetFrames)
+    {
+        copy->connectSocket_parent_frame(selectedPf);
+        copy->connectSocket_child_frame(b);
+    }
+    else
+    {
+        // add first offset frame as joint's parent
+        {
+            auto pof1 = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+            pof1->setParentFrame(selectedPf);
+            pof1->setName(selectedPf.getName() + "_offset");
+            copy->addFrame(pof1.get());
+            copy->connectSocket_parent_frame(*pof1.release());
+        }
+
+        // add second offset frame as joint's child
+        {
+            auto pof2 = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+            pof2->setParentFrame(b);
+            pof2->setName(b.getName() + "_offset");
+            copy->addFrame(pof2.get());
+            copy->connectSocket_child_frame(*pof2.release());
+        }
+    }
+
+    return copy;
+}
+
+bool osc::ActionAddBodyToModel(UndoableModelStatePair& uim, BodyDetails const& details)
+{
+    OpenSim::PhysicalFrame const* parent = osc::FindComponent<OpenSim::PhysicalFrame>(uim.getModel(), details.ParentFrameAbsPath);
+
+    if (!parent)
+    {
+        return false;
+    }
+
+    SimTK::Vec3 com = ToSimTKVec3(details.CenterOfMass);
+    SimTK::Inertia inertia = ToSimTKInertia(details.Inertia);
+    double mass = static_cast<double>(details.Mass);
+
+    // create body
+    auto body = std::make_unique<OpenSim::Body>(details.BodyName, mass, com, inertia);
+
+    // create joint between body and whatever the frame is
+    OpenSim::Joint const& jointProto = *osc::JointRegistry::prototypes()[static_cast<size_t>(details.JointTypeIndex)];
+    auto joint = MakeJoint(details, *body, jointProto, *parent);
+
+    // attach decorative geom
+    if (details.MaybeGeometry)
+    {
+        body->attachGeometry(details.MaybeGeometry->clone());
+    }
+
+    // mutate the model and perform the edit
+    OpenSim::Model& m = uim.updModel();
+    m.addJoint(joint.release());
+    OpenSim::Body* ptr = body.get();
+    m.addBody(body.release());
+
+    m.finalizeConnections();  // ensure sockets paths are written
+    uim.setSelected(ptr);
+    uim.commit("added body");
+
+    return true;
 }

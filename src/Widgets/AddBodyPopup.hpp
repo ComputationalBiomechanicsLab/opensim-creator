@@ -21,10 +21,10 @@ namespace osc
 
         void open();
         void close();
-        bool draw();  // returns `true` if a body was just added
+        void draw();
 
-        class Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        class Impl;
+        Impl* m_Impl;
     };
 }

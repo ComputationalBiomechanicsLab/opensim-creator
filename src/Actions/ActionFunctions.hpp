@@ -2,8 +2,11 @@
 
 #include "src/Widgets/ObjectPropertiesEditor.hpp"
 
+#include <glm/vec3.hpp>
+
 #include <filesystem>
 #include <memory>
+#include <string>
 
 namespace OpenSim
 {
@@ -128,4 +131,20 @@ namespace osc
 
     // saves any active (state-level) coordinate edits to the model
     bool ActionSaveCoordinateEditsToModel(UndoableModelStatePair&);
+
+    // add a new body to the model
+    struct BodyDetails {
+        glm::vec3 CenterOfMass;
+        glm::vec3 Inertia;
+        float Mass;
+        std::string ParentFrameAbsPath;
+        std::string BodyName;
+        int JointTypeIndex;
+        std::string JointName;
+        std::unique_ptr<OpenSim::Geometry> MaybeGeometry;
+        bool AddOffsetFrames;
+
+        BodyDetails();
+    };
+    bool ActionAddBodyToModel(UndoableModelStatePair&, BodyDetails const&);
 }

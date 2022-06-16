@@ -332,6 +332,16 @@ SimTK::Inertia osc::ToSimTKInertia(float v[3])
     };
 }
 
+SimTK::Inertia osc::ToSimTKInertia(glm::vec3 const& v)
+{
+    return
+    {
+        static_cast<double>(v[0]),
+        static_cast<double>(v[1]),
+        static_cast<double>(v[2]),
+    };
+}
+
 SimTK::Transform osc::ToSimTKTransform(glm::mat4x3 const& m)
 {
     // glm::mat4 is column-major, SimTK::Transform is effectively
