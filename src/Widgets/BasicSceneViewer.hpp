@@ -36,8 +36,8 @@ namespace osc
         bool isLeftClicked() const;
         bool isRightClicked() const;
 
-        class Impl;
     private:
+        class Impl;
         Impl* m_Impl;
     };
 }

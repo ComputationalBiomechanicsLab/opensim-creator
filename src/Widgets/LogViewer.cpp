@@ -108,10 +108,26 @@ private:
 
 // public API
 
-osc::LogViewer::LogViewer() : m_Impl{std::make_unique<Impl>()} {}
-osc::LogViewer::LogViewer(LogViewer&&) noexcept = default;
-osc::LogViewer& osc::LogViewer::operator=(LogViewer&&) = default;
-osc::LogViewer::~LogViewer() noexcept = default;
+osc::LogViewer::LogViewer() :
+    m_Impl{new Impl{}}
+{
+}
+
+osc::LogViewer::LogViewer(LogViewer&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
+
+osc::LogViewer& osc::LogViewer::operator=(LogViewer&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::LogViewer::~LogViewer() noexcept
+{
+    delete m_Impl;
+}
 
 void osc::LogViewer::draw()
 {

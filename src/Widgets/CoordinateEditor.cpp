@@ -17,6 +17,8 @@
 #include <vector>
 
 
+static constexpr inline int g_FilterMaxLen = 64;
+
 // returns `true` if the name of `c1` is lexographically less than `c2`
 static bool IsNameLexographicallyLessThan(OpenSim::Coordinate const* c1,
                                           OpenSim::Coordinate const* c2)
@@ -77,7 +79,7 @@ public:
         // draw search bar
         ImGui::SameLine();
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-        osc::InputString("##coords search filter", m_Filter, m_FilterMaxLen);
+        osc::InputString("##coords search filter", m_Filter, g_FilterMaxLen);
         ImGui::Dummy({0.0f, 3.0f});
         ImGui::Separator();
         ImGui::Dummy({0.0f, 3.0f});
@@ -295,7 +297,6 @@ private:
 
     std::shared_ptr<UndoableModelStatePair> m_Uum;
     std::string m_Filter;
-    static constexpr inline int m_FilterMaxLen = 64;
     bool m_SortByName = false;
     bool m_ShowRotational = true;
     bool m_ShowTranslational = true;
@@ -303,13 +304,29 @@ private:
     std::vector<OpenSim::Coordinate const*> m_CoordScratch;
 };
 
+
+// public API
+
 osc::CoordinateEditor::CoordinateEditor(std::shared_ptr<UndoableModelStatePair> uum) :
-    m_Impl{std::make_unique<Impl>(std::move(uum))}
+    m_Impl{new Impl{std::move(uum)}}
 {
 }
-osc::CoordinateEditor::CoordinateEditor(CoordinateEditor&&) noexcept = default;
-osc::CoordinateEditor& osc::CoordinateEditor::operator=(CoordinateEditor&&) noexcept = default;
-osc::CoordinateEditor::~CoordinateEditor() noexcept = default;
+
+osc::CoordinateEditor::CoordinateEditor(CoordinateEditor&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
+
+osc::CoordinateEditor& osc::CoordinateEditor::operator=(CoordinateEditor&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::CoordinateEditor::~CoordinateEditor() noexcept
+{
+    delete m_Impl;
+}
 
 void osc::CoordinateEditor::draw()
 {

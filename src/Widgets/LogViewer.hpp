@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 namespace osc
 {
     class LogViewer final {
@@ -10,15 +8,15 @@ namespace osc
         LogViewer(LogViewer const&) = delete;
         LogViewer(LogViewer&&) noexcept;
         LogViewer& operator=(LogViewer const&) = delete;
-        LogViewer& operator=(LogViewer&&);
+        LogViewer& operator=(LogViewer&&) noexcept;
         ~LogViewer() noexcept;
 
 
         // assumes caller handles `ImGui::Begin(panel_name, nullptr, ImGuiWindowFlags_MenuBar)`
         void draw();
 
-        class Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        class Impl;
+        Impl* m_Impl;
     };
 }
