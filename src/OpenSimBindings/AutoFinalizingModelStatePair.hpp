@@ -21,7 +21,7 @@ namespace SimTK
 
 namespace osc
 {
-    struct CoordinateEdit;
+    class CoordinateEdit;
 }
 
 namespace osc

@@ -1245,3 +1245,17 @@ std::string osc::GetDisplayName(OpenSim::Geometry const& g)
         return g.getConcreteClassName();
     }
 }
+
+char const* osc::GetMotionTypeDisplayName(OpenSim::Coordinate const& c)
+{
+    switch (c.getMotionType()) {
+    case OpenSim::Coordinate::MotionType::Rotational:
+        return "Rotational";
+    case OpenSim::Coordinate::MotionType::Translational:
+        return "Translational";
+    case OpenSim::Coordinate::MotionType::Coupled:
+        return "Coupled";
+    default:
+        return "Unknown";
+    }
+}

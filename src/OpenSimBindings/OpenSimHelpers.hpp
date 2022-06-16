@@ -172,4 +172,7 @@ namespace osc
 
     // returns user-visible (basic) name of geometry, or underlying file name
     std::string GetDisplayName(OpenSim::Geometry const&);
+
+    // returns a user-visible string for a coordinate's motion type
+    char const* GetMotionTypeDisplayName(OpenSim::Coordinate const&);
 }

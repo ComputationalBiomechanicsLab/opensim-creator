@@ -55,6 +55,7 @@ All notable changes to this project will be documented here. The format is based
 - There is now a "Save to model" button in the coordinate editor (#265)
   - It saves the model's current coordinate values as the model's default values for those coordinates
   - It's an easy way to save a pose into the osim file
+- Undo/redo now remembers coordinate edits made via the coordinate editor (#267)
 
 
 ## [0.1.6] - 2022/05/09

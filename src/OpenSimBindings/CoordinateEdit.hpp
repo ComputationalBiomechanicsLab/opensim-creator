@@ -15,7 +15,8 @@ namespace osc
     // a single, user-enacted, model coordinate edit
     //
     // used to modify the default state whenever a new state is generated
-    struct CoordinateEdit final {
+    class CoordinateEdit final {
+    public:
         double value;
         double speed;
         bool locked;

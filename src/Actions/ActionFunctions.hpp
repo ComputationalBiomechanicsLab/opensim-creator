@@ -12,6 +12,7 @@ namespace OpenSim
 {
     class Component;
     class ContactGeometry;
+    class Coordinate;
     class Geometry;
     class Joint;
     class PhysicalFrame;
@@ -19,6 +20,7 @@ namespace OpenSim
 
 namespace osc
 {
+    class CoordinateEdit;
     class MainUIStateAPI;
     class UndoableModelStatePair;
 }
@@ -150,4 +152,22 @@ namespace osc
 
     // add the given component into the model graph
     bool ActionAddComponentToModel(UndoableModelStatePair&, std::unique_ptr<OpenSim::Component>);
+
+    // set the speed of a coordinate
+    bool ActionSetCoordinateSpeed(UndoableModelStatePair&, OpenSim::Coordinate const&, double);
+
+    // set the speed of a coordinate and ensure it is saved
+    bool ActionSetCoordinateSpeedAndSave(UndoableModelStatePair&, OpenSim::Coordinate const&, double);
+
+    // set a coordinate (un)locked
+    bool ActionSetCoordinateLocked(UndoableModelStatePair&, OpenSim::Coordinate const&, bool);
+
+    // set the value of a coordinate
+    bool ActionSetCoordinateValue(UndoableModelStatePair&, OpenSim::Coordinate const&, double);
+
+    // set the value of a coordinate and ensure it is saved
+    bool ActionSetCoordinateValueAndSave(UndoableModelStatePair&, OpenSim::Coordinate const&, double);
+
+    // wipe any edits made to a coordinate (i.e. set the coordinate to its default value)
+    bool ActionWipeCoordinateEdits(UndoableModelStatePair&, OpenSim::Coordinate const&);
 }

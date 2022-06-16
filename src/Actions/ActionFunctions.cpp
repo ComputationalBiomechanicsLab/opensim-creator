@@ -4,6 +4,7 @@
 #include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/BasicModelStatePair.hpp"
+#include "src/OpenSimBindings/CoordinateEdit.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulation.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulator.hpp"
@@ -36,7 +37,6 @@
 #include <memory>
 #include <stdexcept>
 #include <utility>
-
 
 
 static void OpenOsimInLoadingTab(osc::MainUIStateAPI* api, std::filesystem::path p)
@@ -779,5 +779,74 @@ bool osc::ActionAddComponentToModel(UndoableModelStatePair& model, std::unique_p
     AddComponentToModel(model.updModel(), std::move(c));
     model.setSelected(ptr);
     model.commit("added component");
+    return true;
+}
+
+bool osc::ActionSetCoordinateSpeed(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, double v)
+{
+    SimTK::State const& state = model.getState();
+    double value = coord.getValue(state);
+    bool locked = coord.getLocked(state);
+
+    model.updUiModel().pushCoordinateEdit(coord, CoordinateEdit{value, v, locked});
+
+    return true;
+}
+
+bool osc::ActionSetCoordinateSpeedAndSave(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, double v)
+{
+    if (ActionSetCoordinateSpeed(model, coord, v))
+    {
+        model.commit("set coordinate speed");
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool osc::ActionSetCoordinateLocked(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, bool v)
+{
+    SimTK::State const& state = model.getState();
+    double value = coord.getValue(state);
+    double speed = coord.getSpeedValue(state);
+
+    model.updUiModel().pushCoordinateEdit(coord, CoordinateEdit{value, speed, v});
+    model.commit(v ? "locked coordinate" : "unlocked coordinate");
+
+    return true;
+}
+
+// set the value of a coordinate
+bool osc::ActionSetCoordinateValue(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, double v)
+{
+    SimTK::State const& state = model.getState();
+    double speed = coord.getSpeedValue(state);
+    bool locked = coord.getLocked(state);
+
+    model.updUiModel().pushCoordinateEdit(coord, CoordinateEdit{v, speed, locked});
+
+    return true;
+}
+
+// set the value of a coordinate and ensure it is saved
+bool osc::ActionSetCoordinateValueAndSave(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, double v)
+{
+    if (ActionSetCoordinateSpeed(model, coord, v))
+    {
+        model.commit("set coordinate value");
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool osc::ActionWipeCoordinateEdits(UndoableModelStatePair& model, OpenSim::Coordinate const& coord)
+{
+    model.updUiModel().removeCoordinateEdit(coord);
+    model.commit("reset coordinate");
     return true;
 }
