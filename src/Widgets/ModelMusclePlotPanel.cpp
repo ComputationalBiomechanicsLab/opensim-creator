@@ -1,5 +1,6 @@
 #include "ModelMusclePlotPanel.hpp"
 
+#include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/CoordinateEdit.hpp"
@@ -576,17 +577,13 @@ namespace
 			}
 			if (isHovered && ImGui::IsMouseDown(ImGuiMouseButton_Left))
 			{
-				osc::CoordinateEdit edit
-				{
-					osc::ConvertCoordDisplayValueToStorageValue(coord, static_cast<float>(p.x)),
-					coord.getSpeedValue(shared->Uim->getState()),
-					coord.getLocked(shared->Uim->getState())
-				};
-				shared->Uim->updUiModel().pushCoordinateEdit(coord, edit);
+				double storedValue = osc::ConvertCoordDisplayValueToStorageValue(coord, static_cast<float>(p.x));
+				osc::ActionSetCoordinateValue(*shared->Uim, coord, storedValue);
 			}
 			if (isHovered && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 			{
-				shared->Uim->commit("edited coordinate");
+				double storedValue = osc::ConvertCoordDisplayValueToStorageValue(coord, static_cast<float>(p.x));
+				osc::ActionSetCoordinateValueAndSave(*shared->Uim, coord, storedValue);
 			}
 			if (ImGui::BeginPopupContextItem((title + "_contextmenu").c_str()))
 			{
