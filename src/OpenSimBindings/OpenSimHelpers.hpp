@@ -165,4 +165,7 @@ namespace osc
 
     // returns -1 if joint isn't in a set or cannot be found
     int FindJointInParentJointSet(OpenSim::Joint const&);
+
+    // returns a string representation of the recommended document's name
+    std::string GetRecommendedDocumentName(osc::UndoableModelStatePair const&);
 }

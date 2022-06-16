@@ -102,22 +102,6 @@ static std::array<std::string, 5> const g_EditorScreenPanels =
     "Coordinate Editor",
 };
 
-//////////
-// DRAWING
-//////////
-
-static std::string GetDocumentName(osc::UndoableModelStatePair const& uim)
-{
-    if (uim.hasFilesystemLocation())
-    {
-        return uim.getFilesystemPath().filename().string();
-    }
-    else
-    {
-        return "untitled.osim";
-    }
-}
-
 class osc::ModelEditorTab::Impl final {
 public:
 	Impl(MainUIStateAPI* parent, std::unique_ptr<UndoableModelStatePair> model) :
@@ -260,7 +244,7 @@ private:
     {
         std::stringstream ss;
         ss << ICON_FA_EDIT << " ";
-        ss << GetDocumentName(*m_Model);
+        ss << GetRecommendedDocumentName(*m_Model);
         return std::move(ss).str();
     }
 

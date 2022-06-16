@@ -1221,3 +1221,15 @@ int osc::FindJointInParentJointSet(OpenSim::Joint const& joint)
 
     return idx;
 }
+
+std::string osc::GetRecommendedDocumentName(osc::UndoableModelStatePair const& uim)
+{
+    if (uim.hasFilesystemLocation())
+    {
+        return uim.getFilesystemPath().filename().string();
+    }
+    else
+    {
+        return "untitled.osim";
+    }
+}
