@@ -772,3 +772,12 @@ bool osc::ActionAddBodyToModel(UndoableModelStatePair& uim, BodyDetails const& d
 
     return true;
 }
+
+bool osc::ActionAddComponentToModel(UndoableModelStatePair& model, std::unique_ptr<OpenSim::Component> c)
+{
+    auto* ptr = c.get();
+    AddComponentToModel(model.updModel(), std::move(c));
+    model.setSelected(ptr);
+    model.commit("added component");
+    return true;
+}

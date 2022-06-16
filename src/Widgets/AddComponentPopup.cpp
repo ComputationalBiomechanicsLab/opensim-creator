@@ -1,5 +1,6 @@
 #include "AddComponentPopup.hpp"
 
+#include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
@@ -22,29 +23,31 @@
 #include <string>
 #include <utility>
 
+namespace
+{
+    struct PathPoint final {
 
-struct PathPoint final {
+        // what the user chose when the clicked in the UI
+        OpenSim::ComponentPath userChoice;
 
-    // what the user chose when the clicked in the UI
-    OpenSim::ComponentPath userChoice;
+        // what the actual frame is that will be attached to
+        //
+        // (can be different from user choice because the user is permitted to click a station)
+        OpenSim::ComponentPath actualFrame;
 
-    // what the actual frame is that will be attached to
-    //
-    // (can be different from user choice because the user can click a station)
-    OpenSim::ComponentPath actualFrame;
+        // location of the point within the frame
+        SimTK::Vec3 locationInFrame;
 
-    // location of the point within the frame
-    SimTK::Vec3 locationInFrame;
-
-    PathPoint(OpenSim::ComponentPath userChoice_,
-              OpenSim::ComponentPath actualFrame_,
-              SimTK::Vec3 locationInFrame_) :
-        userChoice{std::move(userChoice_)},
-        actualFrame{std::move(actualFrame_)},
-        locationInFrame{std::move(locationInFrame_)}
-    {
-    }
-};
+        PathPoint(OpenSim::ComponentPath userChoice_,
+            OpenSim::ComponentPath actualFrame_,
+            SimTK::Vec3 locationInFrame_) :
+            userChoice{std::move(userChoice_)},
+            actualFrame{std::move(actualFrame_)},
+            locationInFrame{std::move(locationInFrame_)}
+        {
+        }
+    };
+}
 
 class osc::AddComponentPopup::Impl : public osc::StandardPopup {
 public:
@@ -56,12 +59,6 @@ public:
          m_Uum{std::move(uum)},
          m_Proto{std::move(prototype)}
     {
-    }
-
-    bool drawAndCheck()
-    {
-        draw();
-        return std::exchange(m_ComponentAddedLastDrawcall, false);
     }
 
 private:
@@ -214,7 +211,7 @@ private:
 
             // rhs: connectee choices
             ImGui::PushID(static_cast<int>(i));
-            ImGui::BeginChild("##pfselector", ImVec2{ImGui::GetContentRegionAvailWidth(), 128.0f});
+            ImGui::BeginChild("##pfselector", {ImGui::GetContentRegionAvailWidth(), 128.0f});
 
             // iterate through PFs in model and print them out
             for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>())
@@ -233,31 +230,12 @@ private:
         }
     }
 
-    void drawPathPointEditor()
+    void drawPathPointEditorChoices()
     {
         OpenSim::Model const& model = m_Uum->getModel();
 
-        OpenSim::PathActuator* protoAsPA = dynamic_cast<OpenSim::PathActuator*>(m_Proto.get());
-
-        if (!protoAsPA)
-        {
-            return;  // not a path actuator
-        }
-
-        // header
-        ImGui::TextUnformatted("Path Points (at least 2 required)");
-        ImGui::SameLine();
-        DrawHelpMarker("The Component being added is (effectively) a line that connects physical frames (e.g. bodies) in the model. For example, an OpenSim::Muscle can be described as an actuator that connects bodies in the model together. You **must** specify at least two physical frames on the line in order to add a PathActuator component.\n\nDetails: in OpenSim, some `Components` are `PathActuator`s. All `Muscle`s are defined as `PathActuator`s. A `PathActuator` is an `Actuator` that actuates along a path. Therefore, a `Model` containing a `PathActuator` with zero or one points would be invalid. This is why it is required that you specify at least two points");
-        ImGui::Separator();
-
-        osc::InputString(ICON_FA_SEARCH " search", m_PathSearchString, 128);
-
-        ImGui::Columns(2);
-
-        int imguiID = 0;
-
         // show list of choices
-        ImGui::BeginChild("##pf_ppchoices", ImVec2{ImGui::GetContentRegionAvailWidth(), 128.0f});
+        ImGui::BeginChild("##pf_ppchoices", {ImGui::GetContentRegionAvailWidth(), 128.0f});
 
         // choices
         for (OpenSim::Component const& c : model.getComponentList())
@@ -314,7 +292,6 @@ private:
                 continue;  // search failed
             }
 
-            ImGui::PushID(imguiID++);
             if (ImGui::Selectable(c.getName().c_str()))
             {
                 m_PathPoints.emplace_back(
@@ -324,25 +301,26 @@ private:
                 );
             }
             DrawTooltipIfItemHovered(c.getName().c_str(), (c.getAbsolutePathString() + " " + c.getConcreteClassName()).c_str());
-            ImGui::PopID();
         }
 
         ImGui::EndChild();
-        ImGui::NextColumn();
+    }
 
-        ImGui::BeginChild("##pf_pathpoints", ImVec2{ImGui::GetContentRegionAvailWidth(), 128.0f});
+    void drawPathPointEditorAlreadyChosenPoints()
+    {
+        OpenSim::Model const& model = m_Uum->getModel();
+
+        ImGui::BeginChild("##pf_pathpoints", {ImGui::GetContentRegionAvailWidth(), 128.0f});
 
         // selections
         for (size_t i = 0; i < m_PathPoints.size(); ++i)
         {
-            ImGui::PushID(imguiID++);
 
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
             if (ImGui::Button(ICON_FA_TRASH))
             {
                 m_PathPoints.erase(m_PathPoints.begin() + i);
                 ImGui::PopStyleVar();
-                ImGui::PopID();
                 break;
             }
             ImGui::SameLine();
@@ -350,7 +328,6 @@ private:
             {
                 std::swap(m_PathPoints[i], m_PathPoints[i-1]);
                 ImGui::PopStyleVar();
-                ImGui::PopID();
                 break;
             }
             ImGui::SameLine();
@@ -358,7 +335,6 @@ private:
             if (ImGui::Button(ICON_FA_ARROW_DOWN) && i+1 < m_PathPoints.size())
             {
                 std::swap(m_PathPoints[i], m_PathPoints[i+1]);
-                ImGui::PopID();
                 break;
             }
             ImGui::SameLine();
@@ -369,12 +345,41 @@ private:
                 OpenSim::Component const* c = FindComponent(model, m_PathPoints[i].userChoice);
                 DrawTooltip(c->getName().c_str(), c->getAbsolutePathString().c_str());
             }
-
-            ImGui::PopID();
         }
 
         ImGui::EndChild();
+    }
 
+    void drawPathPointEditor()
+    {
+        OpenSim::Model const& model = m_Uum->getModel();
+
+        OpenSim::PathActuator* protoAsPA = dynamic_cast<OpenSim::PathActuator*>(m_Proto.get());
+
+        if (!protoAsPA)
+        {
+            return;  // not a path actuator
+        }
+
+        // header
+        ImGui::TextUnformatted("Path Points (at least 2 required)");
+        ImGui::SameLine();
+        DrawHelpMarker("The Component being added is (effectively) a line that connects physical frames (e.g. bodies) in the model. For example, an OpenSim::Muscle can be described as an actuator that connects bodies in the model together. You **must** specify at least two physical frames on the line in order to add a PathActuator component.\n\nDetails: in OpenSim, some `Components` are `PathActuator`s. All `Muscle`s are defined as `PathActuator`s. A `PathActuator` is an `Actuator` that actuates along a path. Therefore, a `Model` containing a `PathActuator` with zero or one points would be invalid. This is why it is required that you specify at least two points");
+        ImGui::Separator();
+
+        osc::InputString(ICON_FA_SEARCH " search", m_PathSearchString, 128);
+
+        ImGui::Columns(2);
+        int imguiID = 0;
+
+        ImGui::PushID(imguiID++);
+        drawPathPointEditorChoices();
+        ImGui::PopID();
+        ImGui::NextColumn();
+
+        ImGui::PushID(imguiID++);
+        drawPathPointEditorAlreadyChosenPoints();
+        ImGui::PopID();
         ImGui::NextColumn();
 
         ImGui::Columns();
@@ -399,20 +404,18 @@ private:
             std::unique_ptr<OpenSim::Component> rv = tryCreateComponentFromState();
             if (rv)
             {
-                auto* ptr = rv.get();
-                osc::AddComponentToModel(m_Uum->updModel(), std::move(rv));
-                m_Uum->setSelected(ptr);
-                m_Uum->commit("added component");
-                m_ComponentAddedLastDrawcall = true;
-                requestClose();
+                if (ActionAddComponentToModel(*m_Uum, std::move(rv)))
+                {
+                    requestClose();
+                }
             }
         }
     }
 
     void implDraw()
     {
-
         drawNameEditor();
+
         drawPropertyEditors();
 
         ImGui::Dummy({0.0f, 3.0f});
@@ -435,9 +438,6 @@ private:
     // a prototypical version of the component being added
     std::unique_ptr<OpenSim::Component> m_Proto;
 
-    // returns true if a component was added last drawcall
-    bool m_ComponentAddedLastDrawcall = false;
-
     // cached sequence of OpenSim::PhysicalFrame sockets in the prototype
     std::vector<OpenSim::AbstractSocket const*> m_ProtoSockets{GetAllSockets(*m_Proto)};
 
@@ -457,18 +457,33 @@ private:
     std::string m_PathSearchString;
 };
 
+
 // public API
 
-osc::AddComponentPopup::AddComponentPopup(std::shared_ptr<UndoableModelStatePair> uum,
+osc::AddComponentPopup::AddComponentPopup(
+    std::shared_ptr<UndoableModelStatePair> uum,
     std::unique_ptr<OpenSim::Component> prototype,
     std::string_view popupName) :
 
-    m_Impl{std::make_unique<Impl>(std::move(uum), std::move(prototype), std::move(popupName))}
+    m_Impl{new Impl{std::move(uum), std::move(prototype), std::move(popupName)}}
 {
 }
-osc::AddComponentPopup::AddComponentPopup(AddComponentPopup&&) noexcept = default;
-osc::AddComponentPopup& osc::AddComponentPopup::operator=(AddComponentPopup&&) noexcept = default;
-osc::AddComponentPopup::~AddComponentPopup() noexcept = default;
+
+osc::AddComponentPopup::AddComponentPopup(AddComponentPopup&& tmp) noexcept :
+    m_Impl{std::exchange(m_Impl, tmp.m_Impl)}
+{
+}
+
+osc::AddComponentPopup& osc::AddComponentPopup::operator=(AddComponentPopup&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::AddComponentPopup::~AddComponentPopup() noexcept
+{
+    delete m_Impl;
+}
 
 void osc::AddComponentPopup::open()
 {
@@ -480,7 +495,7 @@ void osc::AddComponentPopup::close()
     m_Impl->close();
 }
 
-bool osc::AddComponentPopup::draw()
+void osc::AddComponentPopup::draw()
 {
-    return m_Impl->drawAndCheck();
+    m_Impl->draw();
 }

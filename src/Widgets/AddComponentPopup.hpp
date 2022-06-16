@@ -28,10 +28,10 @@ namespace osc
 
         void open();
         void close();
-        bool draw();  // returns `true` if component was added to model
+        void draw();
 
-        class Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        class Impl;
+        Impl* m_Impl;
     };
 }
