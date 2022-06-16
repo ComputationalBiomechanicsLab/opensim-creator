@@ -1,97 +1,50 @@
 #include "ModelEditorTab.hpp"
 
-#include <SDL_events.h>
-
-#include <memory>
-#include <string>
-#include <utility>
-
 #include "src/Actions/ActionFunctions.hpp"
-#include "src/OpenSimBindings/ForwardDynamicSimulation.hpp"
-#include "src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp"
-#include "src/OpenSimBindings/Simulation.hpp"
-
-
-// ---------------
-
-
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
-#include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
-#include "src/OpenSimBindings/StoFileSimulation.hpp"
-#include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
 #include "src/Platform/Log.hpp"
-#include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
-#include "src/Utils/Algorithms.hpp"
-#include "src/Utils/FileChangePoller.hpp"
-#include "src/Utils/ScopeGuard.hpp"
 #include "src/Tabs/ErrorTab.hpp"
-#include "src/Tabs/PerformanceAnalyzerTab.hpp"
-#include "src/Tabs/SimulatorTab.hpp"
+#include "src/Tabs/TabHost.hpp"
+#include "src/Utils/Algorithms.hpp"
+#include "src/Utils/CStringView.hpp"
+#include "src/Utils/FileChangePoller.hpp"
+#include "src/Utils/UID.hpp"
 #include "src/Widgets/BasicWidgets.hpp"
 #include "src/Widgets/CoordinateEditor.hpp"
-#include "src/Widgets/ComponentDetails.hpp"
+#include "src/Widgets/LogViewer.hpp"
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/ModelActionsMenuItems.hpp"
 #include "src/Widgets/ModelHierarchyPanel.hpp"
 #include "src/Widgets/ModelMusclePlotPanel.hpp"
 #include "src/Widgets/ParamBlockEditorPopup.hpp"
-#include "src/Widgets/LogViewer.hpp"
-#include "src/Widgets/ObjectPropertiesEditor.hpp"
-#include "src/Widgets/ReassignSocketPopup.hpp"
-#include "src/Widgets/SelectComponentPopup.hpp"
-#include "src/Widgets/SelectGeometryPopup.hpp"
 #include "src/Widgets/SelectionEditorPanel.hpp"
-#include "src/Widgets/Select1PFPopup.hpp"
-#include "src/Widgets/Select2PFsPopup.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
 
+#include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <implot.h>
 #include <OpenSim/Common/Component.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/Property.h>
-#include <OpenSim/Common/Set.h>
-#include <OpenSim/Simulation/Control/Controller.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/ContactGeometrySet.h>
-#include <OpenSim/Simulation/Model/ControllerSet.h>
-#include <OpenSim/Simulation/Model/ConstraintSet.h>
-#include <OpenSim/Simulation/Model/Frame.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Model/Geometry.h>
-#include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
-#include <OpenSim/Simulation/Model/JointSet.h>
-#include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/PathActuator.h>
-#include <OpenSim/Simulation/Model/PathPoint.h>
-#include <OpenSim/Simulation/Model/PathPointSet.h>
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
-#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Simulation/Model/ProbeSet.h>
-#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-#include <OpenSim/Simulation/Wrap/WrapObject.h>
-#include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+#include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+#include <SDL_events.h>
 #include <SDL_keyboard.h>
-#include <SimTKcommon.h>
 
 #include <array>
-#include <cstddef>
-#include <cstring>
+#include <chrono>
+#include <cstdio>
 #include <memory>
-#include <optional>
+#include <stdexcept>
 #include <string>
 #include <sstream>
-#include <stdexcept>
 #include <utility>
 #include <vector>
-
 
 static std::array<std::string, 5> const g_EditorScreenPanels =
 {
@@ -208,9 +161,9 @@ public:
         }
         catch (std::exception const& ex)
         {
-            log::error("an OpenSim::Exception was thrown while drawing the editor");
+            log::error("an std::exception was thrown while drawing the editor");
             log::error("    message = %s", ex.what());
-            log::error("OpenSim::Exceptions typically happen when the model is damaged or made invalid by an edit (e.g. setting a property to an invalid value)");
+            log::error("exceptions typically happen when the model is damaged or made invalid by an edit (e.g. setting a property to an invalid value)");
 
             if (m_ExceptionThrownLastFrame)
             {
@@ -260,8 +213,7 @@ private:
 
     bool onKeydown(SDL_KeyboardEvent const& e)
     {
-        bool superDown = e.keysym.mod & (KMOD_CTRL | KMOD_GUI);
-        if (superDown)
+        if (osc::IsCtrlOrSuperDown())
         {
             if (e.keysym.mod & KMOD_SHIFT)
             {
