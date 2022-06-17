@@ -52,10 +52,12 @@ All notable changes to this project will be documented here. The format is based
   output from the user's output watch list (#250)
 - Renamed "Request Outputs" to "Watch Output(s)" and used an eye icon to indicate design intent (#251)
 - Tutorial 1 now contains links to download intermediate versions of the model (#62)
-- There is now a "Save to model" button in the coordinate editor (#265)
-  - It saves the model's current coordinate values as the model's default values for those coordinates
-  - It's an easy way to save a pose into the osim file
 - Undo/redo now remembers coordinate edits made via the coordinate editor (#267)
+  - And it remembers coordinate edits via a muscle plot panel
+- Coordinate edits are now written to the `default_` properties of that coordinate (#242)
+  - This replaces the other idea of having people press an extra button (#265)
+- Fixed an application crash that could happen when changing a joint type (#263)
+  - It was because the backend didn't clear cached pointers to the old joint (see issue)
 
 
 ## [0.1.6] - 2022/05/09
