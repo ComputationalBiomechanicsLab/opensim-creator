@@ -806,6 +806,10 @@ bool osc::ActionSetCoordinateSpeed(UndoableModelStatePair& model, OpenSim::Coord
     }
 
     mutCoord->setDefaultSpeedValue(v);
+    mutModel.initializeState();
+    mutModel.equilibrateMuscles(mutModel.updWorkingState());
+    mutModel.realizeDynamics(mutModel.updWorkingState());
+    model.setDirty(false);  // HACK: we custom-upated the model, because coordinate edits are a special case
 
     return true;
 }
@@ -839,6 +843,10 @@ bool osc::ActionSetCoordinateLocked(UndoableModelStatePair& model, OpenSim::Coor
     }
 
     mutCoord->setDefaultLocked(v);
+    mutModel.initializeState();
+    mutModel.equilibrateMuscles(mutModel.updWorkingState());
+    mutModel.realizeDynamics(mutModel.updWorkingState());
+    model.setDirty(false);  // HACK: we custom-upated the model, because coordinate edits are a special case
 
     return true;
 }
@@ -858,7 +866,22 @@ bool osc::ActionSetCoordinateValue(UndoableModelStatePair& model, OpenSim::Coord
         return false;
     }
 
+
+    double rangeMin = std::min(mutCoord->getRangeMin(), mutCoord->getRangeMax());
+    double rangeMax = std::max(mutCoord->getRangeMin(), mutCoord->getRangeMax());
+
+    if (!(rangeMin <= v && v <= rangeMax))
+    {
+        model.setDirty(false);
+        return false;
+    }
+
+
     mutCoord->setDefaultValue(v);
+    mutModel.initializeState();
+    mutModel.equilibrateMuscles(mutModel.updWorkingState());
+    mutModel.realizeDynamics(mutModel.updWorkingState());
+    model.setDirty(false);  // HACK: we custom-upated the model, because coordinate edits are a special case
 
     return true;
 }
