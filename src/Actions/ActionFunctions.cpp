@@ -556,11 +556,27 @@ bool osc::ActionAssignContactGeometryToSelectedHCF(osc::UndoableModelStatePair& 
     return true;
 }
 
-bool osc::ActionApplyPropertyEdit(osc::UndoableModelStatePair& uim, osc::ObjectPropertiesEditor::Response& resp)
+bool osc::ActionApplyPropertyEdit(osc::UndoableModelStatePair& uim, ObjectPropertyEdit& resp)
 {
     OpenSim::Model& model = uim.updModel();
-    resp.updater(const_cast<OpenSim::AbstractProperty&>(resp.prop));
+
+    OpenSim::Component* component = osc::FindComponentMut(model, resp.getComponentAbsPath());
+
+    if (!component)
+    {
+        return false;
+    }
+
+    OpenSim::AbstractProperty* property = osc::FindPropertyMut(*component, resp.getPropertyName());
+
+    if (!property)
+    {
+        return false;
+    }
+
+    resp.apply(*property);
     uim.commit("edited property");
+
     return true;
 }
 

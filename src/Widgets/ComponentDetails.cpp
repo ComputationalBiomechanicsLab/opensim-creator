@@ -1,5 +1,7 @@
 #include "ComponentDetails.hpp"
 
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
+
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>
@@ -134,7 +136,7 @@ osc::ComponentDetails::Response osc::ComponentDetails::draw(SimTK::State const& 
     // sockets
     if (ImGui::CollapsingHeader("sockets"))
     {
-        std::vector<std::string> socknames = const_cast<OpenSim::Component&>(c).getSocketNames();
+        std::vector<std::string> socknames = osc::GetSocketNames(c);
         ImGui::Columns(2);
         for (std::string const& sn : socknames)
         {

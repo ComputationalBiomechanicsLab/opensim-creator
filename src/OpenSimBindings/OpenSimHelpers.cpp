@@ -166,6 +166,8 @@ namespace
             if (pwp)
             {
                 osc::Transform body2ground = osc::ToTransform(pwp->getParentFrame().getTransformInGround(st));
+
+                // TODO: the const_cast shouldn't be necessary in OpenSim 4.3
                 OpenSim::Array<SimTK::Vec3> const& wrapPath = const_cast<OpenSim::PathWrapPoint*>(pwp)->getWrapPath();
 
                 for (int j = 0; j < wrapPath.getSize(); ++j)
@@ -676,6 +678,11 @@ static std::vector<OpenSim::Component*> GetAnyComponentsConnectedViaSocketTo(Ope
 
 // public API
 
+OpenSim::Component* osc::UpdOwner(OpenSim::Component& c)
+{
+    return c.hasOwner() ? const_cast<OpenSim::Component*>(&c.getOwner()) : nullptr;
+}
+
 int osc::DistanceFromRoot(OpenSim::Component const& c)
 {
     OpenSim::Component const* p = &c;
@@ -833,6 +840,11 @@ bool osc::ContainsComponent(OpenSim::Component const& root, OpenSim::ComponentPa
     return FindComponent(root, cp);
 }
 
+OpenSim::AbstractProperty* osc::FindPropertyMut(OpenSim::Component& c, std::string const& name)
+{
+    return c.hasProperty(name) ? &c.updPropertyByName(name) : nullptr;
+}
+
 OpenSim::AbstractOutput const* osc::FindOutput(OpenSim::Component const& c, std::string const& outputName)
 {
     OpenSim::AbstractOutput const* rv = nullptr;
@@ -896,7 +908,9 @@ bool osc::ShouldShowInUI(OpenSim::Component const& c)
 
 bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
 {
-    if (!c.hasOwner())
+    OpenSim::Component* owner = osc::UpdOwner(c);
+
+    if (!owner)
     {
         log::error("cannot delete %s: it has no owner", c.getName().c_str());
         return false;
@@ -907,8 +921,6 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
         log::error("cannot delete %s: it is not owned by the provided model");
         return false;
     }
-
-    OpenSim::Component& owner = const_cast<OpenSim::Component&>(c.getOwner());
 
     // check if anything connects to the component via a socket
     if (auto connectees = GetAnyComponentsConnectedViaSocketTo(m, c); !connectees.empty())
@@ -943,43 +955,43 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
 
     bool rv = false;
 
-    if (auto* js = dynamic_cast<OpenSim::JointSet*>(&owner))
+    if (auto* js = dynamic_cast<OpenSim::JointSet*>(owner))
     {
         rv = TryDeleteItemFromSet(*js, dynamic_cast<OpenSim::Joint*>(&c));
     }
-    else if (auto* bs = dynamic_cast<OpenSim::BodySet*>(&owner))
+    else if (auto* bs = dynamic_cast<OpenSim::BodySet*>(owner))
     {
         rv = TryDeleteItemFromSet(*bs, dynamic_cast<OpenSim::Body*>(&c));
     }
-    else if (auto* wos = dynamic_cast<OpenSim::WrapObjectSet*>(&owner))
+    else if (auto* wos = dynamic_cast<OpenSim::WrapObjectSet*>(owner))
     {
         rv = TryDeleteItemFromSet(*wos, dynamic_cast<OpenSim::WrapObject*>(&c));
     }
-    else if (auto* cs = dynamic_cast<OpenSim::ControllerSet*>(&owner))
+    else if (auto* cs = dynamic_cast<OpenSim::ControllerSet*>(owner))
     {
         rv = TryDeleteItemFromSet(*cs, dynamic_cast<OpenSim::Controller*>(&c));
     }
-    else if (auto* conss = dynamic_cast<OpenSim::ConstraintSet*>(&owner))
+    else if (auto* conss = dynamic_cast<OpenSim::ConstraintSet*>(owner))
     {
         rv = TryDeleteItemFromSet(*conss, dynamic_cast<OpenSim::Constraint*>(&c));
     }
-    else if (auto* fs = dynamic_cast<OpenSim::ForceSet*>(&owner))
+    else if (auto* fs = dynamic_cast<OpenSim::ForceSet*>(owner))
     {
         rv = TryDeleteItemFromSet(*fs, dynamic_cast<OpenSim::Force*>(&c));
     }
-    else if (auto* ms = dynamic_cast<OpenSim::MarkerSet*>(&owner))
+    else if (auto* ms = dynamic_cast<OpenSim::MarkerSet*>(owner))
     {
         rv = TryDeleteItemFromSet(*ms, dynamic_cast<OpenSim::Marker*>(&c));
     }
-    else if (auto* cgs = dynamic_cast<OpenSim::ContactGeometrySet*>(&owner); cgs)
+    else if (auto* cgs = dynamic_cast<OpenSim::ContactGeometrySet*>(owner); cgs)
     {
         rv = TryDeleteItemFromSet(*cgs, dynamic_cast<OpenSim::ContactGeometry*>(&c));
     }
-    else if (auto* ps = dynamic_cast<OpenSim::ProbeSet*>(&owner))
+    else if (auto* ps = dynamic_cast<OpenSim::ProbeSet*>(owner))
     {
         rv = TryDeleteItemFromSet(*ps, dynamic_cast<OpenSim::Probe*>(&c));
     }
-    else if (auto* gp = dynamic_cast<OpenSim::GeometryPath*>(&owner))
+    else if (auto* gp = dynamic_cast<OpenSim::GeometryPath*>(owner))
     {
         if (auto* app = dynamic_cast<OpenSim::AbstractPathPoint*>(&c))
         {
@@ -990,11 +1002,11 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
             rv = TryDeleteItemFromSet(gp->updWrapSet(), pw);
         }
     }
-    else if (auto const* geom = FindAncestorWithType<OpenSim::Geometry>(&c))
+    else if (auto* geom = FindAncestorWithTypeMut<OpenSim::Geometry>(&c))
     {
         // delete an OpenSim::Geometry from its owning OpenSim::Frame
 
-        if (auto const* frame = FindAncestorWithType<OpenSim::Frame>(geom))
+        if (auto* frame = FindAncestorWithTypeMut<OpenSim::Frame>(geom))
         {
             // its owner is a frame, which holds the geometry in a list property
 
@@ -1005,15 +1017,16 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
             // to support list element deletion, but does support full
             // assignment
 
-            auto& mframe = const_cast<OpenSim::Frame&>(*frame);
             OpenSim::ObjectProperty<OpenSim::Geometry>& prop =
-                static_cast<OpenSim::ObjectProperty<OpenSim::Geometry>&>(mframe.updProperty_attached_geometry());
+                static_cast<OpenSim::ObjectProperty<OpenSim::Geometry>&>(frame->updProperty_attached_geometry());
 
             std::unique_ptr<OpenSim::ObjectProperty<OpenSim::Geometry>> copy{prop.clone()};
             copy->clear();
-            for (int i = 0; i < prop.size(); ++i) {
+            for (int i = 0; i < prop.size(); ++i)
+            {
                 OpenSim::Geometry& g = prop[i];
-                if (&g != geom) {
+                if (&g != geom)
+                {
                     copy->adoptAndAppendValue(g.clone());
                 }
             }

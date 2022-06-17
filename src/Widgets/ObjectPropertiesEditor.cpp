@@ -555,38 +555,38 @@ private:
         }
     }
 
-    std::optional<ObjectPropertiesEditor::Response> draw(OpenSim::AbstractProperty const& p)
+    std::optional<ObjectPropertyEdit> draw(OpenSim::Object const& obj, OpenSim::AbstractProperty const& prop)
     {
         // left column: property name
-        ImGui::Text("%s", p.getName().c_str());
+        ImGui::TextUnformatted(prop.getName().c_str());
         {
-            std::string const& comment = p.getComment();
+            std::string const& comment = prop.getComment();
             if (!comment.empty())
             {
                 ImGui::SameLine();
-                DrawHelpMarker(p.getComment().c_str());
+                DrawHelpMarker(prop.getComment().c_str());
             }
         }
         ImGui::NextColumn();
 
         // right column: editor
 
-        PropertyEditor* editor = tryLookupOrCreateEditor(p);
-        std::optional<ObjectPropertiesEditor::Response> rv;
+        PropertyEditor* editor = tryLookupOrCreateEditor(prop);
+        std::optional<ObjectPropertyEdit> rv;
 
-        ImGui::PushID(std::addressof(p));
+        ImGui::PushID(std::addressof(prop));
         if (editor)
         {
-            std::optional<UpdateFn> fn = editor->draw(p);
+            std::optional<UpdateFn> fn = editor->draw(prop);
             if (fn)
             {
-                rv.emplace(ObjectPropertiesEditor::Response{p, std::move(fn).value()});
+                rv.emplace(ObjectPropertyEdit{obj, prop, std::move(fn).value()});
             }
         }
         else
         {
             // no editor available for this type
-            ImGui::Text("%s", p.toString().c_str());
+            ImGui::TextUnformatted(prop.toString().c_str());
         }
         ImGui::PopID();
         ImGui::NextColumn();
@@ -596,11 +596,11 @@ private:
 
     void drawPropertyWithIndex(OpenSim::Object const& obj,
                                int idx,
-                               std::optional<ObjectPropertiesEditor::Response>& out)
+                               std::optional<ObjectPropertyEdit>& out)
     {
         ImGui::PushID(idx);
-        OpenSim::AbstractProperty const& p = obj.getPropertyByIndex(idx);
-        std::optional<ObjectPropertiesEditor::Response> resp = draw(p);
+        OpenSim::AbstractProperty const& prop = obj.getPropertyByIndex(idx);
+        std::optional<ObjectPropertyEdit> resp = draw(obj, prop);
         if (resp && !out)
         {
             out.emplace(std::move(resp).value());
@@ -610,9 +610,9 @@ private:
 
 public:
 
-    std::optional<ObjectPropertiesEditor::Response> draw(OpenSim::Object const& obj)
+    std::optional<ObjectPropertyEdit> draw(OpenSim::Object const& obj)
     {
-        std::optional<ObjectPropertiesEditor::Response> rv = std::nullopt;
+        std::optional<ObjectPropertyEdit> rv = std::nullopt;
 
         int numProps = obj.getNumProperties();
 
@@ -633,10 +633,10 @@ public:
         return rv;
     }
 
-    std::optional<ObjectPropertiesEditor::Response> draw(OpenSim::Object const& obj,
+    std::optional<ObjectPropertyEdit> draw(OpenSim::Object const& obj,
                                                          nonstd::span<int const> indices)
     {
-        std::optional<ObjectPropertiesEditor::Response> rv = std::nullopt;
+        std::optional<ObjectPropertyEdit> rv = std::nullopt;
 
         int highest = *std::max_element(indices.begin(), indices.end());
         int nprops = obj.getNumProperties();
@@ -669,26 +669,74 @@ private:
     OpenSim::Object const* m_PreviousObject = nullptr;
 };
 
+static std::string GetAbsPathOrEmptyIfNotAComponent(OpenSim::Object const& obj)
+{
+    if (auto c = dynamic_cast<OpenSim::Component const*>(&obj))
+    {
+        return c->getAbsolutePathString();
+    }
+    else
+    {
+        return {};
+    }
+}
+
 
 // public API
 
-osc::ObjectPropertiesEditor::ObjectPropertiesEditor() :
-    m_Impl{std::make_unique<Impl>()}
+osc::ObjectPropertyEdit::ObjectPropertyEdit(
+    OpenSim::Object const& obj,
+    OpenSim::AbstractProperty const& prop,
+    std::function<void(OpenSim::AbstractProperty&)> updater) :
+
+    m_ComponentAbsPath{GetAbsPathOrEmptyIfNotAComponent(obj)},
+    m_PropertyName{prop.getName()},
+    m_Updater{std::move(updater)}
 {
 }
 
-osc::ObjectPropertiesEditor::ObjectPropertiesEditor(ObjectPropertiesEditor&&) noexcept = default;
+std::string const& osc::ObjectPropertyEdit::getComponentAbsPath() const
+{
+    return m_ComponentAbsPath;
+}
 
-osc::ObjectPropertiesEditor& osc::ObjectPropertiesEditor::operator=(ObjectPropertiesEditor&&) noexcept = default;
+std::string const& osc::ObjectPropertyEdit::getPropertyName() const
+{
+    return m_PropertyName;
+}
 
-osc::ObjectPropertiesEditor::~ObjectPropertiesEditor() noexcept = default;
+void osc::ObjectPropertyEdit::apply(OpenSim::AbstractProperty& prop)
+{
+    m_Updater(prop);
+}
 
-std::optional<osc::ObjectPropertiesEditor::Response> osc::ObjectPropertiesEditor::draw(OpenSim::Object const& obj)
+osc::ObjectPropertiesEditor::ObjectPropertiesEditor() :
+    m_Impl{new Impl{}}
+{
+}
+
+osc::ObjectPropertiesEditor::ObjectPropertiesEditor(ObjectPropertiesEditor&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
+
+osc::ObjectPropertiesEditor& osc::ObjectPropertiesEditor::operator=(ObjectPropertiesEditor&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::ObjectPropertiesEditor::~ObjectPropertiesEditor() noexcept
+{
+    delete m_Impl;
+}
+
+std::optional<osc::ObjectPropertyEdit> osc::ObjectPropertiesEditor::draw(OpenSim::Object const& obj)
 {
     return m_Impl->draw(obj);
 }
 
-std::optional<osc::ObjectPropertiesEditor::Response> osc::ObjectPropertiesEditor::draw(
+std::optional<osc::ObjectPropertyEdit> osc::ObjectPropertiesEditor::draw(
         OpenSim::Object const& obj,
         nonstd::span<int const> indices)
 {

@@ -96,10 +96,15 @@ private:
 
     Param const& get(int idx) const
     {
-        return const_cast<Impl&>(*this).get(idx);
+        return m_Params.at(static_cast<size_t>(idx));
     }
 
     Param* find(std::string const& name)
+    {
+        return const_cast<Param*>(static_cast<Impl const>(*this).find(name));
+    }
+
+    Param const* find(std::string const& name) const
     {
         auto it = std::find_if(m_Params.begin(), m_Params.end(), [&name](Param const& param)
         {
@@ -107,11 +112,6 @@ private:
         });
 
         return it != m_Params.end() ? &(*it) : nullptr;
-    }
-
-    Param const* find(std::string const& name) const
-    {
-        return const_cast<Impl&>(*this).find(name);
     }
 
     std::vector<Param> m_Params;

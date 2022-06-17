@@ -7,6 +7,7 @@
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
+#include "src/Widgets/ObjectPropertiesEditor.hpp"
 #include "src/Widgets/ReassignSocketPopup.hpp"
 #include "src/Widgets/SelectComponentPopup.hpp"
 #include "src/Widgets/Select1PFPopup.hpp"

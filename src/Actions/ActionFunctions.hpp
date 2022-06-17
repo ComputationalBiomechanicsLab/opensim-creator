@@ -1,7 +1,5 @@
 #pragma once
 
-#include "src/Widgets/ObjectPropertiesEditor.hpp"
-
 #include <glm/vec3.hpp>
 
 #include <filesystem>
@@ -15,6 +13,7 @@ namespace OpenSim
     class Coordinate;
     class Geometry;
     class Joint;
+    class Object;
     class PhysicalFrame;
 }
 
@@ -22,6 +21,7 @@ namespace osc
 {
     class CoordinateEdit;
     class MainUIStateAPI;
+    class ObjectPropertyEdit;
     class UndoableModelStatePair;
 }
 
@@ -117,7 +117,7 @@ namespace osc
     bool ActionAssignContactGeometryToSelectedHCF(UndoableModelStatePair&, OpenSim::ContactGeometry const&);
 
     // applies a property edit to the model
-    bool ActionApplyPropertyEdit(UndoableModelStatePair&, ObjectPropertiesEditor::Response&);
+    bool ActionApplyPropertyEdit(UndoableModelStatePair&, ObjectPropertyEdit&);
 
     // adds a path point to the selected path actuator (if applicable)
     bool ActionAddPathPointToSelectedPathActuator(UndoableModelStatePair&, OpenSim::PhysicalFrame const&);

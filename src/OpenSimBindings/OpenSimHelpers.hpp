@@ -12,6 +12,7 @@
 namespace OpenSim
 {
     class AbstractOutput;
+    class AbstractProperty;
     class AbstractSocket;
     class Component;
     class ComponentPath;
@@ -35,6 +36,9 @@ namespace SimTK
 // OpenSimHelpers: a collection of various helper functions that are used by `osc`
 namespace osc
 {
+    // returns a mutable pointer to the owner (if it exists)
+    OpenSim::Component* UpdOwner(OpenSim::Component&);
+
     // returns the distance between the given `Component` and the component that is at the root of the component tree
     int DistanceFromRoot(OpenSim::Component const&);
 
@@ -63,6 +67,12 @@ namespace osc
         });
 
         return static_cast<T const*>(rv);
+    }
+
+    template<typename T>
+    T* FindAncestorWithTypeMut(OpenSim::Component* c)
+    {
+        return const_cast<T*>(FindAncestorWithType<T>(c));
     }
 
     // fills the given vector with all user-editable coordinates in the model
@@ -105,6 +115,9 @@ namespace osc
 
     // returns true if the path resolves to a component within root
     bool ContainsComponent(OpenSim::Component const& root, OpenSim::ComponentPath const&);
+
+    // returns a pointer to the property if the component has a property with the given name
+    OpenSim::AbstractProperty* FindPropertyMut(OpenSim::Component&, std::string const&);
 
     // returns non-nullptr if an `AbstractOutput` with the given name is attached to the given component
     OpenSim::AbstractOutput const* FindOutput(OpenSim::Component const&, std::string const& outputName);

@@ -176,7 +176,11 @@ private:
         auto maybeUpdater = m_PropEditor.draw(*m_Proto);
         if (maybeUpdater)
         {
-            maybeUpdater->updater(const_cast<OpenSim::AbstractProperty&>(maybeUpdater->prop));
+            OpenSim::AbstractProperty* prop = osc::FindPropertyMut(*m_Proto, maybeUpdater->getPropertyName());
+            if (prop)
+            {
+                maybeUpdater->apply(*prop);
+            }
         }
     }
 
