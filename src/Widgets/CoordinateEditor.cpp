@@ -41,9 +41,6 @@ public:
 
         ImGui::Dummy({0.0f, 3.0f});
         ImGui::Separator();
-        ImGui::Dummy({0.0f, 3.0f});
-
-        drawSaveCoordsButton();
 
         ImGui::Dummy({0.0f, 0.5f * ImGui::GetTextLineHeight()});
 
@@ -92,16 +89,6 @@ private:
         ImGui::SameLine();
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
         osc::InputString("##coords search filter", m_Filter, g_FilterMaxLen);
-    }
-
-    void drawSaveCoordsButton()
-    {
-        // "save to model" - save current coordinate values to the model
-        if (ImGui::Button(ICON_FA_SAVE " Save to Model"))
-        {
-            osc::ActionSaveCoordinateEditsToModel(*m_Uum);
-        }
-        osc::DrawTooltipIfItemHovered("Save Coordinate Edits to Model", "Saves the current set of coordinate edits to the model file as default values. This ensures that the current set of coordinate edits are saved in the resulting osim file, and that those edits will be shown when the osim is initially loaded.");
     }
 
     void drawCoordinatesTable()

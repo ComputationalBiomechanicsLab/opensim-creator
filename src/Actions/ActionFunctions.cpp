@@ -645,52 +645,6 @@ bool osc::ActionSetModelSceneScaleFactorTo(osc::UndoableModelStatePair& uim, flo
     return true;
 }
 
-bool osc::ActionSaveCoordinateEditsToModel(UndoableModelStatePair& uim)
-{
-    OpenSim::Model const& readonlyModel = uim.getModel();
-    SimTK::State st = uim.getState();
-
-    bool needsEdit = false;
-    for (OpenSim::Coordinate const& c :readonlyModel.getComponentList<OpenSim::Coordinate>())
-    {
-        double value = c.getValue(st);
-        double defaultValue = c.getDefaultValue();
-        double speed = c.getSpeedValue(st);
-        double defaultSpeed = c.getDefaultSpeedValue();
-        bool locked = c.getLocked(st);
-        bool defaultLocked = c.getDefaultLocked();
-
-        needsEdit =
-            !osc::IsEffectivelyEqual(value, defaultValue) ||
-            !osc::IsEffectivelyEqual(speed, defaultSpeed) ||
-            locked != defaultLocked;
-
-        if (needsEdit)
-        {
-            break;
-        }
-    }
-
-    if (needsEdit)
-    {
-        OpenSim::Model& writableModel = uim.updModel();
-
-        for (OpenSim::Coordinate& c : writableModel.updComponentList<OpenSim::Coordinate>())
-        {
-            c.setDefaultValue(c.getValue(st));
-            c.setDefaultSpeedValue(c.getSpeedValue(st));
-            c.setDefaultLocked(c.getLocked(st));
-        }
-
-        uim.commit("saved coordinate values to model");
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
 osc::BodyDetails::BodyDetails() :
     CenterOfMass{0.0f, 0.0f, 0.0f},
     Inertia{1.0f, 1.0f, 1.0f},
