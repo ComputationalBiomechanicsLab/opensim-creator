@@ -233,17 +233,6 @@ public:
         return FindComponent(*m_Model, m_MaybeHovered);
     }
 
-    OpenSim::Component* updHovered()
-    {
-        const_cast<Impl&>(*this).updateIfDirty();
-        OpenSim::Component* c = FindComponentMut(*m_Model, m_MaybeHovered);
-        if (c)
-        {
-            m_CurrentModelVersion = UID{};
-        }
-        return c;
-    }
-
     void setHovered(OpenSim::Component const* c)
     {
         if (c)
@@ -260,17 +249,6 @@ public:
     {
         const_cast<Impl&>(*this).updateIfDirty();
         return FindComponent(*m_Model, m_MaybeIsolated);
-    }
-
-    OpenSim::Component* updIsolated()
-    {
-        const_cast<Impl&>(*this).updateIfDirty();
-        OpenSim::Component* c = FindComponentMut(*m_Model, m_MaybeIsolated);
-        if (c)
-        {
-            m_CurrentModelVersion = UID{};
-        }
-        return c;
     }
 
     void setIsolated(OpenSim::Component const* c)
@@ -423,11 +401,6 @@ OpenSim::Component const* osc::AutoFinalizingModelStatePair::getHovered() const
     return m_Impl->getHovered();
 }
 
-OpenSim::Component* osc::AutoFinalizingModelStatePair::updHovered()
-{
-    return m_Impl->updHovered();
-}
-
 void osc::AutoFinalizingModelStatePair::setHovered(OpenSim::Component const* c)
 {
     m_Impl->setHovered(std::move(c));
@@ -436,11 +409,6 @@ void osc::AutoFinalizingModelStatePair::setHovered(OpenSim::Component const* c)
 OpenSim::Component const* osc::AutoFinalizingModelStatePair::getIsolated() const
 {
     return m_Impl->getIsolated();
-}
-
-OpenSim::Component* osc::AutoFinalizingModelStatePair::updIsolated()
-{
-    return m_Impl->updIsolated();
 }
 
 void osc::AutoFinalizingModelStatePair::setIsolated(OpenSim::Component const* c)

@@ -42,11 +42,9 @@ namespace osc
 		void setSelected(OpenSim::Component const*) override;
 
 		OpenSim::Component const* getHovered() const override;
-		OpenSim::Component* updHovered() override;  // throws
 		void setHovered(OpenSim::Component const*) override;
 
 		OpenSim::Component const* getIsolated() const override;
-		OpenSim::Component* updIsolated() override;  // throws
 		void setIsolated(OpenSim::Component const*) override;
 
 		float getFixupScaleFactor() const override;

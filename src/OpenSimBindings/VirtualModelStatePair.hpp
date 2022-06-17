@@ -29,10 +29,8 @@ namespace osc
 		virtual OpenSim::Component* updSelected() { return nullptr; }
 		virtual void setSelected(OpenSim::Component const*) {}
 
-		virtual OpenSim::Component* updHovered() { return nullptr; }
 		virtual void setHovered(OpenSim::Component const*) {}
 
-		virtual OpenSim::Component* updIsolated() { return nullptr; }
 		virtual void setIsolated(OpenSim::Component const*) {}
 
 		virtual void setFixupScaleFactor(float) {}

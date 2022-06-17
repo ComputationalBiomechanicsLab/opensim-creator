@@ -124,12 +124,10 @@ namespace osc
 
         // read/manipulate current hover (if any)
         OpenSim::Component const* getHovered() const override;
-        OpenSim::Component* updHovered() override;
         void setHovered(OpenSim::Component const* c) override;
 
         // read/manipulate current isolation (the thing that's only being drawn - if any)
         OpenSim::Component const* getIsolated() const override;
-        OpenSim::Component* updIsolated() override;
         void setIsolated(OpenSim::Component const* c) override;
 
     private:

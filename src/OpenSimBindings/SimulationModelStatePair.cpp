@@ -72,11 +72,6 @@ public:
 		return FindComponent(getModel(), m_Hovered);
 	}
 
-	OpenSim::Component* updHovered()
-	{
-		throw std::runtime_error{"cannot update simulator model's hover"};
-	}
-
 	void setHovered(OpenSim::Component const* c)
 	{
 		if (c)
@@ -92,11 +87,6 @@ public:
 	OpenSim::Component const* getIsolated() const
 	{
 		return FindComponent(getModel(), m_Isolated);
-	}
-
-	OpenSim::Component* updIsolated()
-	{
-		throw std::runtime_error{"cannot update simulator model's isolated"};
 	}
 
 	void setIsolated(OpenSim::Component const* c)
@@ -212,11 +202,6 @@ OpenSim::Component const* osc::SimulationModelStatePair::getHovered() const
 	return m_Impl->getHovered();
 }
 
-OpenSim::Component* osc::SimulationModelStatePair::updHovered()
-{
-	return m_Impl->updHovered();
-}
-
 void osc::SimulationModelStatePair::setHovered(OpenSim::Component const* c)
 {
 	m_Impl->setHovered(std::move(c));
@@ -225,11 +210,6 @@ void osc::SimulationModelStatePair::setHovered(OpenSim::Component const* c)
 OpenSim::Component const* osc::SimulationModelStatePair::getIsolated() const
 {
 	return m_Impl->getIsolated();
-}
-
-OpenSim::Component* osc::SimulationModelStatePair::updIsolated()
-{
-	return m_Impl->updIsolated();
 }
 
 void osc::SimulationModelStatePair::setIsolated(OpenSim::Component const* c)

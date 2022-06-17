@@ -102,11 +102,9 @@ namespace osc
         void setSelected(OpenSim::Component const* c) override;
 
         OpenSim::Component const* getHovered() const override;
-        OpenSim::Component* updHovered() override;
         void setHovered(OpenSim::Component const* c) override;
 
         OpenSim::Component const* getIsolated() const override;
-        OpenSim::Component* updIsolated() override;
         void setIsolated(OpenSim::Component const* c) override;
 
     private:

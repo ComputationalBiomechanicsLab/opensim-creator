@@ -191,11 +191,6 @@ public:
         return getUiModel().getHovered();
     }
 
-    OpenSim::Component* updHovered()
-    {
-        return updUiModel().updHovered();
-    }
-
     void setHovered(OpenSim::Component const* c)
     {
         updUiModel().setHovered(c);
@@ -204,11 +199,6 @@ public:
     OpenSim::Component const* getIsolated() const
     {
         return getUiModel().getIsolated();
-    }
-
-    OpenSim::Component* updIsolated()
-    {
-        return updUiModel().updIsolated();
     }
 
     void setIsolated(OpenSim::Component const* c)
@@ -727,11 +717,6 @@ OpenSim::Component const* osc::UndoableModelStatePair::getHovered() const
     return m_Impl->getHovered();
 }
 
-OpenSim::Component* osc::UndoableModelStatePair::updHovered()
-{
-    return m_Impl->updHovered();
-}
-
 void osc::UndoableModelStatePair::setHovered(OpenSim::Component const* c)
 {
     m_Impl->setHovered(std::move(c));
@@ -740,11 +725,6 @@ void osc::UndoableModelStatePair::setHovered(OpenSim::Component const* c)
 OpenSim::Component const* osc::UndoableModelStatePair::getIsolated() const
 {
     return m_Impl->getIsolated();
-}
-
-OpenSim::Component* osc::UndoableModelStatePair::updIsolated()
-{
-    return m_Impl->updIsolated();
 }
 
 void osc::UndoableModelStatePair::setIsolated(OpenSim::Component const* c)
