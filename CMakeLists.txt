@@ -362,8 +362,6 @@ add_library(osccore STATIC
     src/OpenSimBindings/ComponentDecoration.hpp
     src/OpenSimBindings/ComponentOutputExtractor.cpp
     src/OpenSimBindings/ComponentOutputExtractor.hpp
-    src/OpenSimBindings/CoordinateEdit.cpp
-    src/OpenSimBindings/CoordinateEdit.hpp
     src/OpenSimBindings/CustomDecorationOptions.hpp
     src/OpenSimBindings/ForwardDynamicSimulation.cpp
     src/OpenSimBindings/ForwardDynamicSimulation.hpp
@@ -402,8 +400,6 @@ add_library(osccore STATIC
     src/OpenSimBindings/SimulationReport.hpp
     src/OpenSimBindings/SimulationStatus.cpp
     src/OpenSimBindings/SimulationStatus.hpp
-    src/OpenSimBindings/StateModifications.cpp
-    src/OpenSimBindings/StateModifications.hpp
     src/OpenSimBindings/StoFileSimulation.hpp
     src/OpenSimBindings/StoFileSimulation.cpp
     src/OpenSimBindings/TypeRegistry.cpp

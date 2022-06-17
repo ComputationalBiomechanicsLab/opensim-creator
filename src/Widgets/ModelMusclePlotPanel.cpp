@@ -3,7 +3,6 @@
 #include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
-#include "src/OpenSimBindings/CoordinateEdit.hpp"
 #include "src/OpenSimBindings/ModelStateCommit.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
@@ -386,28 +385,38 @@ namespace
 			return std::make_unique<Plot>(*params);  // empty plot
 		}
 
-		// locally copy the model to ensure computation doesn't potentially alter
-		// the model commit (and because it's required for muscle equilibration)
-		osc::BasicModelStatePair p = params->getCommit().extractModelStateThreadsafe();
+		std::unique_ptr<OpenSim::Model> model = params->getCommit().extractUninitializedModel();
 
 		if (stopToken.stop_requested())
 		{
 			return std::make_unique<Plot>(*params);  // empty plot
 		}
 
-		OpenSim::Model& model = p.updModel();
-		SimTK::State state = p.getState();
+		osc::Initialize(*model);
+
+		if (stopToken.stop_requested())
+		{
+			return std::make_unique<Plot>(*params);  // empty plot
+		}
+
+		SimTK::State& state = model->updWorkingState();
+		model->equilibrateMuscles(state);
+
+		if (stopToken.stop_requested())
+		{
+			return std::make_unique<Plot>(*params);  // empty plot
+		}
 
 		// lookup relevant elements in the copies
 
-		OpenSim::Muscle const* maybeMuscle = osc::FindComponent<OpenSim::Muscle>(model, params->getMusclePath());
+		OpenSim::Muscle const* maybeMuscle = osc::FindComponent<OpenSim::Muscle>(*model, params->getMusclePath());
 		if (!maybeMuscle)
 		{
 			return std::make_unique<Plot>(*params);  // empty plot
 		}
 		OpenSim::Muscle const& muscle = *maybeMuscle;
 
-		OpenSim::Coordinate const* maybeCoord = osc::FindComponent<OpenSim::Coordinate>(model, params->getCoordinatePath());
+		OpenSim::Coordinate const* maybeCoord = osc::FindComponent<OpenSim::Coordinate>(*model, params->getCoordinatePath());
 		if (!maybeCoord)
 		{
 			return std::make_unique<Plot>(*params);  // empty plot
@@ -431,8 +440,8 @@ namespace
 		//
 		// https://github.com/opensim-org/opensim-core/issues/3211
 		{
-			model.realizeDynamics(state);
-			for (OpenSim::GeometryPath const& g : model.getComponentList<OpenSim::GeometryPath>())
+			model->realizeDynamics(state);
+			for (OpenSim::GeometryPath const& g : model->getComponentList<OpenSim::GeometryPath>())
 			{
 				g.computeMomentArm(state, coord);
 			}
@@ -448,8 +457,8 @@ namespace
 			double xVal = start + (i * step);
 
 			coord.setValue(state, xVal);
-			model.equilibrateMuscles(state);
-			model.realizeReport(state);
+			model->equilibrateMuscles(state);
+			model->realizeReport(state);
 
 			double yVald = params->getMuscleOutput()(state, muscle, coord);
 			float yVal = static_cast<float>(yVald);
@@ -539,7 +548,9 @@ namespace
 				return nullptr;
 			}
 
-			OpenSim::Coordinate const* maybeCoord = osc::FindComponent<OpenSim::Coordinate>(m_Plot->getParameters().getCommit().getModel(), m_Plot->getParameters().getCoordinatePath());
+			auto modelGuard = m_Plot->getParameters().getCommit().getModel();
+
+			OpenSim::Coordinate const* maybeCoord = osc::FindComponent<OpenSim::Coordinate>(*modelGuard, m_Plot->getParameters().getCoordinatePath());
 			if (!maybeCoord)
 			{
 				ImGui::Text("(no coordinate in model)");

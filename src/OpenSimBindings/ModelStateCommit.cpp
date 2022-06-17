@@ -1,6 +1,7 @@
 #include "ModelStateCommit.hpp"
 
-#include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
+#include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
+#include "src/Utils/SynchronizedValue.hpp"
 #include "src/Utils/UID.hpp"
 
 #include <OpenSim/Common/Component.h>
@@ -14,15 +15,19 @@
 
 class osc::ModelStateCommit::Impl final {
 public:
-	Impl(AutoFinalizingModelStatePair const& msp, std::string_view message) :
-		m_ModelState{msp},
-		m_CommitMessage{std::move(message)}
+	Impl(VirtualConstModelStatePair const& msp, std::string_view message) :
+		Impl{msp, message, UID::empty()}
 	{
 	}
 
-	Impl(AutoFinalizingModelStatePair const& msp, std::string_view message, UID parent) :
+	Impl(VirtualConstModelStatePair const& msp, std::string_view message, UID parent) :
+		m_AccessMutex{},
+		m_ID{},
 		m_MaybeParentID{std::move(parent)},
-		m_ModelState{msp},
+		m_CommitTime{std::chrono::system_clock::now()},
+		m_Model{std::make_unique<OpenSim::Model>(msp.getModel())},
+		m_ModelVersion{msp.getModelVersion()},
+		m_FixupScaleFactor{msp.getFixupScaleFactor()},
 		m_CommitMessage{std::move(message)}
 	{
 	}
@@ -47,91 +52,48 @@ public:
 		return m_CommitTime;
 	}
 
-	OpenSim::Model const& getModel() const
+	SynchronizedValueGuard<OpenSim::Model> getModel() const
 	{
-		std::scoped_lock guard{m_AccessMutex};
-		return m_ModelState.getModel();
+		return {m_AccessMutex, *m_Model};
 	}
 
-	AutoFinalizingModelStatePair const& getUiModel() const
+	std::unique_ptr<OpenSim::Model> extractUninitializedModel() const
 	{
-		std::scoped_lock guard{m_AccessMutex};
-		return m_ModelState;
-	}
-
-	SimTK::State const& getState() const
-	{
-		std::scoped_lock guard{m_AccessMutex};
-		return m_ModelState.getState();
-	}
-
-	BasicModelStatePair extractModelStateThreadsafe() const
-	{
-		std::scoped_lock guard{m_AccessMutex};
-		return BasicModelStatePair{m_ModelState.getModel(), m_ModelState.getState()};
+		auto guard = std::scoped_lock{m_AccessMutex};
+		return std::make_unique<OpenSim::Model>(*m_Model);
 	}
 
 	UID getModelVersion() const
 	{
-		std::scoped_lock guard{m_AccessMutex};
-		return m_ModelState.getModelVersion();
-	}
-
-	UID getStateVersion() const
-	{
-		std::scoped_lock guard{m_AccessMutex};
-		return m_ModelState.getStateVersion();
-	}
-
-	OpenSim::Component const* getSelected() const
-	{
-		std::scoped_lock guard{m_AccessMutex};
-		return m_ModelState.getSelected();
-	}
-
-	OpenSim::Component const* getHovered() const
-	{
-		std::scoped_lock guard{m_AccessMutex};
-		return m_ModelState.getHovered();
-	}
-
-	OpenSim::Component const* getIsolated() const
-	{
-		std::scoped_lock guard{m_AccessMutex};
-		return m_ModelState.getIsolated();
+		return m_ModelVersion;
 	}
 
 	float getFixupScaleFactor() const
 	{
-		std::scoped_lock guard{m_AccessMutex};
-		return m_ModelState.getFixupScaleFactor();
+		return m_FixupScaleFactor;
 	}
 
 private:
-	// HACK: this isn't entirely adequate, because we leak non-mutex-guarded references to the
-	// model+state via `getModel` and `getState`, but this might be "good enough" to ensure that
-	// multiple threads using one particular commit and only using the copying API don't nuke eachover
-	//
-	// (it is not good enough if parts of the UI plan on using a model outside of the mutex guard by
-	//  leaking out references, though)
-	mutable std::mutex m_AccessMutex;
-
+	mutable std::mutex m_AccessMutex;  // used when copying the model (assume OpenSim is not threadsafe)
 	UID m_ID;
-	UID m_MaybeParentID = UID::empty();
-	std::chrono::system_clock::time_point m_CommitTime = std::chrono::system_clock::now();
-	AutoFinalizingModelStatePair m_ModelState;
+	UID m_MaybeParentID;
+	std::chrono::system_clock::time_point m_CommitTime;
+	std::unique_ptr<OpenSim::Model> m_Model;
+	UID m_ModelVersion;
+	float m_FixupScaleFactor;
 	std::string m_CommitMessage;
 };
 
+
 // public API (PIMPL)
 
-osc::ModelStateCommit::ModelStateCommit(AutoFinalizingModelStatePair const& msp, std::string_view message) :
-	m_Impl{std::make_shared<Impl>(msp, std::move(message))}
+osc::ModelStateCommit::ModelStateCommit(VirtualConstModelStatePair const& p, std::string_view message) :
+	m_Impl{std::make_shared<Impl>(p, std::move(message))}
 {
 }
 
-osc::ModelStateCommit::ModelStateCommit(AutoFinalizingModelStatePair const& msp, std::string_view message, UID parent) :
-	m_Impl{std::make_shared<Impl>(msp, std::move(message), std::move(parent))}
+osc::ModelStateCommit::ModelStateCommit(VirtualConstModelStatePair const& p, std::string_view message, UID parent) :
+	m_Impl{std::make_shared<Impl>(p, std::move(message), std::move(parent))}
 {
 }
 
@@ -161,49 +123,19 @@ std::chrono::system_clock::time_point osc::ModelStateCommit::getCommitTime() con
 	return m_Impl->getCommitTime();
 }
 
-OpenSim::Model const& osc::ModelStateCommit::getModel() const
+osc::SynchronizedValueGuard<OpenSim::Model> osc::ModelStateCommit::getModel() const
 {
 	return m_Impl->getModel();
 }
 
-osc::AutoFinalizingModelStatePair const& osc::ModelStateCommit::getUiModel() const
+std::unique_ptr<OpenSim::Model> osc::ModelStateCommit::extractUninitializedModel() const
 {
-	return m_Impl->getUiModel();
-}
-
-SimTK::State const& osc::ModelStateCommit::getState() const
-{
-	return m_Impl->getState();
-}
-
-osc::BasicModelStatePair osc::ModelStateCommit::extractModelStateThreadsafe() const
-{
-	return m_Impl->extractModelStateThreadsafe();
+	return m_Impl->extractUninitializedModel();
 }
 
 osc::UID osc::ModelStateCommit::getModelVersion() const
 {
 	return m_Impl->getModelVersion();
-}
-
-osc::UID osc::ModelStateCommit::getStateVersion() const
-{
-	return m_Impl->getStateVersion();
-}
-
-OpenSim::Component const* osc::ModelStateCommit::getSelected() const
-{
-	return m_Impl->getSelected();
-}
-
-OpenSim::Component const* osc::ModelStateCommit::getHovered() const
-{
-	return m_Impl->getHovered();
-}
-
-OpenSim::Component const* osc::ModelStateCommit::getIsolated() const
-{
-	return m_Impl->getIsolated();
 }
 
 float osc::ModelStateCommit::getFixupScaleFactor() const

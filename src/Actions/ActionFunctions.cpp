@@ -4,7 +4,6 @@
 #include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/BasicModelStatePair.hpp"
-#include "src/OpenSimBindings/CoordinateEdit.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulation.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulator.hpp"
@@ -416,12 +415,6 @@ bool osc::ActionRezeroSelectedJoint(osc::UndoableModelStatePair& uim)
     OpenSim::PhysicalOffsetFrame* mutableParent = const_cast<OpenSim::PhysicalOffsetFrame*>(parentPOF);
     mutableParent->setOffsetTransform(newXform);
 
-    for (int i = 0, len = selection->numCoordinates(); i < len; ++i)
-    {
-        OpenSim::Coordinate const& c = selection->get_coordinates(i);
-        uim.updUiModel().removeCoordinateEdit(c);
-    }
-
     uim.setDirty(true);
     uim.commit("rezeroed joint");
 
@@ -800,11 +793,19 @@ bool osc::ActionAddComponentToModel(UndoableModelStatePair& model, std::unique_p
 
 bool osc::ActionSetCoordinateSpeed(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, double v)
 {
-    SimTK::State const& state = model.getState();
-    double value = coord.getValue(state);
-    bool locked = coord.getLocked(state);
+    auto coordPath = coord.getAbsolutePath();
 
-    model.updUiModel().pushCoordinateEdit(coord, CoordinateEdit{value, v, locked});
+    OpenSim::Model& mutModel = model.updModel();
+
+    OpenSim::Coordinate* mutCoord = osc::FindComponentMut<OpenSim::Coordinate>(mutModel, coordPath);
+
+    if (!mutCoord)
+    {
+        model.setDirty(false);
+        return false;
+    }
+
+    mutCoord->setDefaultSpeedValue(v);
 
     return true;
 }
@@ -824,12 +825,20 @@ bool osc::ActionSetCoordinateSpeedAndSave(UndoableModelStatePair& model, OpenSim
 
 bool osc::ActionSetCoordinateLocked(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, bool v)
 {
-    SimTK::State const& state = model.getState();
-    double value = coord.getValue(state);
-    double speed = coord.getSpeedValue(state);
 
-    model.updUiModel().pushCoordinateEdit(coord, CoordinateEdit{value, speed, v});
-    model.commit(v ? "locked coordinate" : "unlocked coordinate");
+    auto coordPath = coord.getAbsolutePath();
+
+    OpenSim::Model& mutModel = model.updModel();
+
+    OpenSim::Coordinate* mutCoord = osc::FindComponentMut<OpenSim::Coordinate>(mutModel, coordPath);
+
+    if (!mutCoord)
+    {
+        model.setDirty(false);
+        return false;
+    }
+
+    mutCoord->setDefaultLocked(v);
 
     return true;
 }
@@ -837,11 +846,19 @@ bool osc::ActionSetCoordinateLocked(UndoableModelStatePair& model, OpenSim::Coor
 // set the value of a coordinate
 bool osc::ActionSetCoordinateValue(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, double v)
 {
-    SimTK::State const& state = model.getState();
-    double speed = coord.getSpeedValue(state);
-    bool locked = coord.getLocked(state);
+    auto coordPath = coord.getAbsolutePath();
 
-    model.updUiModel().pushCoordinateEdit(coord, CoordinateEdit{v, speed, locked});
+    OpenSim::Model& mutModel = model.updModel();
+
+    OpenSim::Coordinate* mutCoord = osc::FindComponentMut<OpenSim::Coordinate>(mutModel, coordPath);
+
+    if (!mutCoord)
+    {
+        model.setDirty(false);
+        return false;
+    }
+
+    mutCoord->setDefaultValue(v);
 
     return true;
 }
@@ -858,11 +875,4 @@ bool osc::ActionSetCoordinateValueAndSave(UndoableModelStatePair& model, OpenSim
     {
         return false;
     }
-}
-
-bool osc::ActionWipeCoordinateEdits(UndoableModelStatePair& model, OpenSim::Coordinate const& coord)
-{
-    model.updUiModel().removeCoordinateEdit(coord);
-    model.commit("reset coordinate");
-    return true;
 }

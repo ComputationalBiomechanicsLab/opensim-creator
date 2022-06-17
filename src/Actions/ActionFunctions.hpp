@@ -167,7 +167,4 @@ namespace osc
 
     // set the value of a coordinate and ensure it is saved
     bool ActionSetCoordinateValueAndSave(UndoableModelStatePair&, OpenSim::Coordinate const&, double);
-
-    // wipe any edits made to a coordinate (i.e. set the coordinate to its default value)
-    bool ActionWipeCoordinateEdits(UndoableModelStatePair&, OpenSim::Coordinate const&);
 }

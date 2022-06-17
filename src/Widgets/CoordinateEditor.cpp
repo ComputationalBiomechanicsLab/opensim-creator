@@ -2,8 +2,6 @@
 
 #include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
-#include "src/OpenSimBindings/StateModifications.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/Styling.hpp"
@@ -266,16 +264,6 @@ private:
             ImGui::BeginTooltip();
             ImGui::Text("Ctrl-click the slider to edit");
             ImGui::EndTooltip();
-        }
-
-        // draw filter popup (checkboxes for editing filters/sort etc)
-        if (ImGui::BeginPopupContextItem("##coordinatecontextmenu"))
-        {
-            if (ImGui::MenuItem("reset"))
-            {
-                ActionWipeCoordinateEdits(*m_Uum, *c);
-            }
-            ImGui::EndPopup();
         }
 
         ImGui::PopStyleColor(stylesPushed);

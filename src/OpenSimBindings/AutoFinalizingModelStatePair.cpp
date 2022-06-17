@@ -3,7 +3,6 @@
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
-#include "src/OpenSimBindings/StateModifications.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
@@ -38,30 +37,24 @@ public:
     }
 
     Impl(std::unique_ptr<OpenSim::Model> _model) :
-        m_StateModifications{},
         m_Model{std::move(_model)},
         m_FixupScaleFactor{1.0f},
         m_MaybeSelected{},
         m_MaybeHovered{},
         m_MaybeIsolated{},
         m_UpdatedModelVersion{},
-        m_CurrentModelVersion{},
-        m_UpdatedStateVersion{},
-        m_CurrentStateVersion{}
+        m_CurrentModelVersion{}
     {
     }
 
     Impl(Impl const& other) :
-        m_StateModifications{other.m_StateModifications},
         m_Model{std::make_unique<OpenSim::Model>(*other.m_Model)},
         m_FixupScaleFactor{other.m_FixupScaleFactor},
         m_MaybeSelected{other.m_MaybeSelected},
         m_MaybeHovered{other.m_MaybeHovered},
         m_MaybeIsolated{other.m_MaybeIsolated},
         m_UpdatedModelVersion{},
-        m_CurrentModelVersion{},
-        m_UpdatedStateVersion{},
-        m_CurrentStateVersion{}
+        m_CurrentModelVersion{}
     {
     }
 
@@ -107,26 +100,7 @@ public:
 
     UID getStateVersion() const
     {
-        return m_CurrentStateVersion;
-    }
-
-    void pushCoordinateEdit(OpenSim::Coordinate const& c, CoordinateEdit const& ce)
-    {
-        m_StateModifications.pushCoordinateEdit(c, ce);
-        m_CurrentStateVersion = UID{};
-    }
-
-    bool removeCoordinateEdit(OpenSim::Coordinate const& c)
-    {
-        if (m_StateModifications.removeCoordinateEdit(c))
-        {
-            m_CurrentStateVersion = UID{};
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return m_CurrentModelVersion;
     }
 
     float getFixupScaleFactor() const
@@ -144,58 +118,38 @@ public:
         if (v)
         {
             m_CurrentModelVersion = UID{};
-            m_CurrentStateVersion = UID{};
         }
         else
         {
             m_UpdatedModelVersion = m_CurrentModelVersion;
-            m_UpdatedStateVersion = m_CurrentStateVersion;
         }
     }
 
     void updateIfDirty()
     {
+        if (m_CurrentModelVersion == m_UpdatedModelVersion)
+        {
+            return;
+        }
+
         auto guard = std::scoped_lock{m_UpdateLock};
 
-        if (m_CurrentModelVersion != m_UpdatedModelVersion)
         {
-            // a model update always induces a state update also
-            if (m_CurrentStateVersion == m_UpdatedStateVersion)
-            {
-                m_CurrentStateVersion = UID{};
-            }
-        }
-
-        if (m_CurrentModelVersion != m_UpdatedModelVersion)
-        {
-            OSC_PERF("model update");
-
+            OSC_PERF("osc::Initialize(model)");
             osc::Initialize(*m_Model);
-
-            m_UpdatedModelVersion = m_CurrentModelVersion;  // reset flag
         }
 
-        if (m_CurrentStateVersion != m_UpdatedStateVersion)
         {
-            OSC_PERF("state update");
-
-            {
-                OSC_PERF("apply state modifications");
-                m_StateModifications.applyToState(*m_Model, m_Model->updWorkingState());
-            }
-
-            {
-                OSC_PERF("equilibriate muscles");
-                m_Model->equilibrateMuscles(m_Model->updWorkingState());
-            }
-
-            {
-                OSC_PERF("realize state");
-                m_Model->realizeDynamics(m_Model->updWorkingState());
-            }
-
-            m_UpdatedStateVersion = m_CurrentStateVersion;  // reset flag
+            OSC_PERF("model.equilibriateMuscles(workingState)");
+            m_Model->equilibrateMuscles(m_Model->updWorkingState());
         }
+
+        {
+            OSC_PERF("model.realizeDynamics(workingState)");
+            m_Model->realizeDynamics(m_Model->updWorkingState());
+        }
+
+        m_UpdatedModelVersion = m_CurrentModelVersion;  // reset flag
     }
 
     OpenSim::Component const* getSelected() const
@@ -267,9 +221,6 @@ private:
     // a hack to ensure that updates are at least threadsafe-ish
     std::mutex m_UpdateLock;
 
-    // user-enacted state modifications (e.g. coordinate edits)
-    StateModifications m_StateModifications;
-
     // the model, finalized from its properties
     std::unique_ptr<OpenSim::Model> m_Model;
 
@@ -292,8 +243,6 @@ private:
     // need to be updated
     UID m_UpdatedModelVersion;
     UID m_CurrentModelVersion;
-    UID m_UpdatedStateVersion;
-    UID m_CurrentStateVersion;
 };
 
 osc::AutoFinalizingModelStatePair::AutoFinalizingModelStatePair() :
@@ -349,16 +298,6 @@ SimTK::State const& osc::AutoFinalizingModelStatePair::getState() const
 osc::UID osc::AutoFinalizingModelStatePair::getStateVersion() const
 {
     return m_Impl->getStateVersion();
-}
-
-void osc::AutoFinalizingModelStatePair::pushCoordinateEdit(OpenSim::Coordinate const& c, CoordinateEdit const& ce)
-{
-    m_Impl->pushCoordinateEdit(c, ce);
-}
-
-bool osc::AutoFinalizingModelStatePair::removeCoordinateEdit(OpenSim::Coordinate const& c)
-{
-    return m_Impl->removeCoordinateEdit(c);
 }
 
 float osc::AutoFinalizingModelStatePair::getFixupScaleFactor() const

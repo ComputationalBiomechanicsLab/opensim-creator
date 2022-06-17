@@ -404,7 +404,7 @@ private:
 
         if (c)
         {
-            AutoFinalizingModelStatePair newScratch = c->getUiModel();
+            AutoFinalizingModelStatePair newScratch{c->extractUninitializedModel()};
             if (!skipCopyingSelection)
             {
                 // care: skipping this copy can be necessary because getSelected etc. might rethrow
@@ -442,7 +442,7 @@ private:
         //
         // - user's selection state should be "sticky" between undo/redo
         // - user's scene scale factor should be "sticky" between undo/redo
-        AutoFinalizingModelStatePair newModel = parent->getUiModel();
+        AutoFinalizingModelStatePair newModel{parent->extractUninitializedModel()};
         newModel.setSelectedHoveredAndIsolatedFrom(m_Scratch);
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
         newModel.updateIfDirty();
@@ -472,7 +472,7 @@ private:
         //
         // - user's selection state should be "sticky" between undo/redo
         // - user's scene scale factor should be "sticky" between undo/redo
-        AutoFinalizingModelStatePair newModel = c->getUiModel();
+        AutoFinalizingModelStatePair newModel{c->extractUninitializedModel()};
         newModel.setSelectedHoveredAndIsolatedFrom(m_Scratch);
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
         newModel.updateIfDirty();

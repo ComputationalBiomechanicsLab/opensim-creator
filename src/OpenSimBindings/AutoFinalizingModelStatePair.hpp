@@ -55,12 +55,6 @@ namespace osc
         SimTK::State const& getState() const override;
         UID getStateVersion() const override;
 
-        // push a coordinate state modification to the model (dirties state)
-        void pushCoordinateEdit(OpenSim::Coordinate const&, CoordinateEdit const&);
-
-        // remove a state modification from the model (dirties state)
-        bool removeCoordinateEdit(OpenSim::Coordinate const&);
-
         // get the fixup scale factor used to generate scene decorations
         float getFixupScaleFactor() const override;
 
