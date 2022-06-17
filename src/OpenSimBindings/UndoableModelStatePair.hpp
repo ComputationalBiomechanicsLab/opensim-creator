@@ -18,7 +18,6 @@ namespace SimTK
 
 namespace osc
 {
-    class AutoFinalizingModelStatePair;
     class ModelStateCommit;
 }
 
@@ -71,12 +70,6 @@ namespace osc
         // manually sets if the current commit as being up to date with disk
         void setUpToDateWithFilesystem();
 
-        // get/update current UiModel
-        //
-        // note: mutating anything may trigger an undo/redo save if `isDirty` returns `true`
-        AutoFinalizingModelStatePair const& getUiModel() const;
-        AutoFinalizingModelStatePair& updUiModel();
-
         // returns latest *comitted* model state (i.e. not the one being actively edited, but the one saved into
         // the safer undo/redo buffer)
         ModelStateCommit const& getLatestCommit() const;
@@ -97,9 +90,10 @@ namespace osc
         //
         // note: mutating anything may trigger an automatic undo/redo save if `isDirty` returns `true`
         OpenSim::Model const& getModel() const override;
-        OpenSim::Model& updModel() override;
+        OpenSim::Model& updModel();
         void setModel(std::unique_ptr<OpenSim::Model>);
         UID getModelVersion() const override;
+        void setModelVersion(UID);
 
         // gets the `SimTK::State` that's valid against the current model
         SimTK::State const& getState() const override;
@@ -111,15 +105,8 @@ namespace osc
         float getFixupScaleFactor() const override;
         void setFixupScaleFactor(float) override;
 
-        // read/manipulate dirty flags
-        //
-        // these flags are used to decide which parts of the model/state/decorations need to be
-        // updated
-        void setDirty(bool);
-
         // read/manipulate current selection (if any)
         OpenSim::Component const* getSelected() const override;
-        OpenSim::Component* updSelected() override;
         void setSelected(OpenSim::Component const* c) override;
 
         // read/manipulate current hover (if any)

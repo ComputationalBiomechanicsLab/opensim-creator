@@ -31,14 +31,12 @@ namespace osc
 		~SimulationModelStatePair() noexcept;
 
 		OpenSim::Model const& getModel() const override;
-		OpenSim::Model& updModel() override;  // throws
 		UID getModelVersion() const override;
 
 		SimTK::State const& getState() const override;
 		UID getStateVersion() const override;
 
 		OpenSim::Component const* getSelected() const override;
-		OpenSim::Component* updSelected() override;  // throws
 		void setSelected(OpenSim::Component const*) override;
 
 		OpenSim::Component const* getHovered() const override;

@@ -39,6 +39,15 @@ namespace osc
     // returns a mutable pointer to the owner (if it exists)
     OpenSim::Component* UpdOwner(OpenSim::Component&);
 
+    // returns a pointer to the owner (if it exists)
+    OpenSim::Component const* GetOwner(OpenSim::Component const&);
+
+    template<typename T>
+    T const* GetOwner(OpenSim::Component const& c)
+    {
+        return dynamic_cast<T const*>(GetOwner(c));
+    }
+
     // returns the distance between the given `Component` and the component that is at the root of the component tree
     int DistanceFromRoot(OpenSim::Component const&);
 
@@ -174,8 +183,11 @@ namespace osc
     // load an .osim file into an OpenSim model
     std::unique_ptr<UndoableModelStatePair> LoadOsimIntoUndoableModel(std::filesystem::path);
 
-    // fully initialize an OpenSim model (from properties, remake SimTK::System, etc.)
-    SimTK::State& Initialize(OpenSim::Model&);
+    // fully initialize an OpenSim model (clear connections, finalize properties, remake SimTK::System)
+    void InitializeModel(OpenSim::Model&);
+
+    // fully initalize an OpenSim model's working state
+    SimTK::State& InitializeState(OpenSim::Model&);
 
     // returns -1 if joint isn't in a set or cannot be found
     int FindJointInParentJointSet(OpenSim::Joint const&);

@@ -24,9 +24,6 @@ namespace osc
 	public:
 		virtual ~VirtualModelStatePair() noexcept = default;
 
-		virtual OpenSim::Model& updModel() = 0;
-
-		virtual OpenSim::Component* updSelected() { return nullptr; }
 		virtual void setSelected(OpenSim::Component const*) {}
 
 		virtual void setHovered(OpenSim::Component const*) {}
@@ -34,14 +31,6 @@ namespace osc
 		virtual void setIsolated(OpenSim::Component const*) {}
 
 		virtual void setFixupScaleFactor(float) {}
-
-		// concrete helper methods that use the above virutal API
-
-		template<typename T>
-		T* updSelectedAs()
-		{
-			return dynamic_cast<T*>(updSelected());
-		}
 
 		virtual void setSelectedHoveredAndIsolatedFrom(VirtualModelStatePair const& other)
 		{

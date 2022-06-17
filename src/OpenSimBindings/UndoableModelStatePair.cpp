@@ -1,12 +1,12 @@
 #include "UndoableModelStatePair.hpp"
 
-#include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/ModelStateCommit.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/Perf.hpp"
 #include "src/Utils/UID.hpp"
+#include "src/Utils/ClonePtr.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -16,12 +16,176 @@
 #include <stdexcept>
 #include <utility>
 
+static std::unique_ptr<OpenSim::Model> makeNewModel()
+{
+    auto rv = std::make_unique<OpenSim::Model>();
+    rv->updDisplayHints().set_show_frames(true);
+    return rv;
+}
+
+namespace
+{
+    class UiModelStatePair final : public osc::VirtualModelStatePair {
+    public:
+
+        UiModelStatePair() :
+            UiModelStatePair{makeNewModel()}
+        {
+        }
+
+        UiModelStatePair(std::string const& osim) :
+            UiModelStatePair{std::make_unique<OpenSim::Model>(osim)}
+        {
+        }
+
+        UiModelStatePair(std::unique_ptr<OpenSim::Model> _model) :
+            m_Model{std::move(_model)},
+            m_ModelVersion{},
+            m_FixupScaleFactor{1.0f},
+            m_MaybeSelected{},
+            m_MaybeHovered{},
+            m_MaybeIsolated{}
+        {
+            osc::InitializeModel(*m_Model);
+            osc::InitializeState(*m_Model);
+        }
+
+        UiModelStatePair(UiModelStatePair const& other) :
+            m_Model{std::make_unique<OpenSim::Model>(*other.m_Model)},
+            m_ModelVersion{},
+            m_FixupScaleFactor{other.m_FixupScaleFactor},
+            m_MaybeSelected{other.m_MaybeSelected},
+            m_MaybeHovered{other.m_MaybeHovered},
+            m_MaybeIsolated{other.m_MaybeIsolated}
+        {
+            osc::InitializeModel(*m_Model);
+            osc::InitializeState(*m_Model);
+        }
+
+        UiModelStatePair(UiModelStatePair&&) noexcept = default;
+        UiModelStatePair& operator=(UiModelStatePair const&) = delete;
+        UiModelStatePair& operator=(UiModelStatePair&&) noexcept = default;
+        ~UiModelStatePair() noexcept = default;
+
+        OpenSim::Model const& getModel() const override
+        {
+            return *m_Model;
+        }
+
+        OpenSim::Model& updModel()
+        {
+            m_ModelVersion = osc::UID{};
+            return *m_Model;
+        }
+
+        osc::UID getModelVersion() const override
+        {
+            return m_ModelVersion;
+        }
+
+        void setModelVersion(osc::UID version)
+        {
+            m_ModelVersion = version;
+        }
+
+        SimTK::State const& getState() const override
+        {
+            return m_Model->getWorkingState();
+        }
+
+        osc::UID getStateVersion() const override
+        {
+            return m_ModelVersion;
+        }
+
+        float getFixupScaleFactor() const override
+        {
+            return m_FixupScaleFactor;
+        }
+
+        void setFixupScaleFactor(float sf) override
+        {
+            m_FixupScaleFactor = sf;
+        }
+
+        OpenSim::Component const* getSelected() const override
+        {
+            return osc::FindComponent(*m_Model, m_MaybeSelected);
+        }
+
+        void setSelected(OpenSim::Component const* c) override
+        {
+            if (c)
+            {
+                m_MaybeSelected = c->getAbsolutePath();
+            }
+            else
+            {
+                m_MaybeSelected = {};
+            }
+        }
+
+        OpenSim::Component const* getHovered() const override
+        {
+            return osc::FindComponent(*m_Model, m_MaybeHovered);
+        }
+
+        void setHovered(OpenSim::Component const* c) override
+        {
+            if (c)
+            {
+                m_MaybeHovered = c->getAbsolutePath();
+            }
+            else
+            {
+                m_MaybeHovered = {};
+            }
+        }
+
+        OpenSim::Component const* getIsolated() const override
+        {
+            return osc::FindComponent(*m_Model, m_MaybeIsolated);
+        }
+
+        void setIsolated(OpenSim::Component const* c) override
+        {
+            if (c)
+            {
+                m_MaybeIsolated = c->getAbsolutePath();
+            }
+            else
+            {
+                m_MaybeIsolated = {};
+            }
+        }
+
+    private:
+        // the model, finalized from its properties
+        std::unique_ptr<OpenSim::Model> m_Model;
+        osc::UID m_ModelVersion;
+
+        // fixup scale factor of the model
+        //
+        // this scales up/down the decorations of the model - used for extremely
+        // undersized models (e.g. fly leg)
+        float m_FixupScaleFactor;
+
+        // (maybe) absolute path to the current selection (empty otherwise)
+        OpenSim::ComponentPath m_MaybeSelected;
+
+        // (maybe) absolute path to the current hover (empty otherwise)
+        OpenSim::ComponentPath m_MaybeHovered;
+
+        // (maybe) absolute path to the current isolation (empty otherwise)
+        OpenSim::ComponentPath m_MaybeIsolated;
+    };
+}
+
 class osc::UndoableModelStatePair::Impl final {
 public:
 
     Impl()
     {
-        m_Scratch.updateIfDirty();
         doCommit("initial commit");  // make initial commit
     }
 
@@ -30,7 +194,6 @@ public:
         m_Scratch{std::move(m)},
         m_MaybeFilesystemLocation{TryFindInputFile(m_Scratch.getModel())}
     {
-        m_Scratch.updateIfDirty();
         doCommit("initial commit");  // make initial commit
     }
 
@@ -59,12 +222,12 @@ public:
         setFilesystemVersionToCurrent();
     }
 
-    AutoFinalizingModelStatePair const& getUiModel() const
+    UiModelStatePair const& getUiModel() const
     {
         return getScratch();
     }
 
-    AutoFinalizingModelStatePair& updUiModel()
+    UiModelStatePair& updUiModel()
     {
         return updScratch();
     }
@@ -103,13 +266,12 @@ public:
 
     void commit(std::string_view message)
     {
-        AutoFinalizingModelStatePair& scratch = updScratch();
+        UiModelStatePair& scratch = updScratch();
 
         // ensure the scratch space is clean
         try
         {
             OSC_PERF("commit model");
-            scratch.updateIfDirty();
             doCommit(std::move(message));
         }
         catch (std::exception const& ex)
@@ -138,12 +300,19 @@ public:
 
     void setModel(std::unique_ptr<OpenSim::Model> newModel)
     {
-        updUiModel().setModel(std::move(newModel));
+        UiModelStatePair p{std::move(newModel)};
+        p.setSelectedHoveredAndIsolatedFrom(getUiModel());
+        updUiModel() = std::move(p);
     }
 
     UID getModelVersion() const
     {
         return getUiModel().getModelVersion();
+    }
+
+    void setModelVersion(UID version)
+    {
+        updScratch().setModelVersion(version);
     }
 
     SimTK::State const& getState() const
@@ -166,19 +335,9 @@ public:
         updUiModel().setFixupScaleFactor(v);
     }
 
-    void setDirty(bool v)
-    {
-        updUiModel().setDirty(v);
-    }
-
     OpenSim::Component const* getSelected() const
     {
         return getUiModel().getSelected();
-    }
-
-    OpenSim::Component* updSelected()
-    {
-        return updUiModel().updSelected();
     }
 
     void setSelected(OpenSim::Component const* c)
@@ -404,14 +563,13 @@ private:
 
         if (c)
         {
-            AutoFinalizingModelStatePair newScratch{c->extractUninitializedModel()};
+            UiModelStatePair newScratch{c->extractUninitializedModel()};
             if (!skipCopyingSelection)
             {
                 // care: skipping this copy can be necessary because getSelected etc. might rethrow
                 newScratch.setSelectedHoveredAndIsolatedFrom(m_Scratch);
             }
             newScratch.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
-            newScratch.updateIfDirty();
 
             m_Scratch = std::move(newScratch);
         }
@@ -442,10 +600,9 @@ private:
         //
         // - user's selection state should be "sticky" between undo/redo
         // - user's scene scale factor should be "sticky" between undo/redo
-        AutoFinalizingModelStatePair newModel{parent->extractUninitializedModel()};
+        UiModelStatePair newModel{parent->extractUninitializedModel()};
         newModel.setSelectedHoveredAndIsolatedFrom(m_Scratch);
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
-        newModel.updateIfDirty();
 
         m_Scratch = std::move(newModel);
         m_CurrentHead = parent->getID();
@@ -472,21 +629,20 @@ private:
         //
         // - user's selection state should be "sticky" between undo/redo
         // - user's scene scale factor should be "sticky" between undo/redo
-        AutoFinalizingModelStatePair newModel{c->extractUninitializedModel()};
+        UiModelStatePair newModel{c->extractUninitializedModel()};
         newModel.setSelectedHoveredAndIsolatedFrom(m_Scratch);
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
-        newModel.updateIfDirty();
 
         m_Scratch = std::move(newModel);
         m_CurrentHead = c->getID();
     }
 
-    AutoFinalizingModelStatePair& updScratch()
+    UiModelStatePair& updScratch()
     {
         return m_Scratch;
     }
 
-    AutoFinalizingModelStatePair const& getScratch() const
+    UiModelStatePair const& getScratch() const
     {
         return m_Scratch;
     }
@@ -513,7 +669,7 @@ private:
 
 private:
     // mutable staging area that calling code can mutate
-    AutoFinalizingModelStatePair m_Scratch;
+    UiModelStatePair m_Scratch;
 
     // where scratch will commit to (i.e. the parent of the scratch area)
     UID m_CurrentHead = UID::empty();
@@ -607,16 +763,6 @@ void osc::UndoableModelStatePair::setUpToDateWithFilesystem()
     m_Impl->setUpToDateWithFilesystem();
 }
 
-osc::AutoFinalizingModelStatePair const& osc::UndoableModelStatePair::getUiModel() const
-{
-    return m_Impl->getUiModel();
-}
-
-osc::AutoFinalizingModelStatePair& osc::UndoableModelStatePair::updUiModel()
-{
-    return m_Impl->updUiModel();
-}
-
 osc::ModelStateCommit const& osc::UndoableModelStatePair::getLatestCommit() const
 {
     return m_Impl->getLatestCommit();
@@ -672,6 +818,11 @@ osc::UID osc::UndoableModelStatePair::getModelVersion() const
     return m_Impl->getModelVersion();
 }
 
+void osc::UndoableModelStatePair::setModelVersion(UID version)
+{
+    m_Impl->setModelVersion(version);
+}
+
 SimTK::State const& osc::UndoableModelStatePair::getState() const
 {
     return m_Impl->getState();
@@ -692,19 +843,9 @@ void osc::UndoableModelStatePair::setFixupScaleFactor(float v)
     m_Impl->setFixupScaleFactor(std::move(v));
 }
 
-void osc::UndoableModelStatePair::setDirty(bool v)
-{
-    m_Impl->setDirty(std::move(v));
-}
-
 OpenSim::Component const* osc::UndoableModelStatePair::getSelected() const
 {
     return m_Impl->getSelected();
-}
-
-OpenSim::Component* osc::UndoableModelStatePair::updSelected()
-{
-    return m_Impl->updSelected();
 }
 
 void osc::UndoableModelStatePair::setSelected(OpenSim::Component const* c)

@@ -1,6 +1,7 @@
 #include "ModelStateCommit.hpp"
 
 #include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 #include "src/Utils/UID.hpp"
 
@@ -30,6 +31,8 @@ public:
 		m_FixupScaleFactor{msp.getFixupScaleFactor()},
 		m_CommitMessage{std::move(message)}
 	{
+		osc::InitializeModel(*m_Model);
+		osc::InitializeState(*m_Model);
 	}
 
 	UID getID() const

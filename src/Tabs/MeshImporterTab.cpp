@@ -4,7 +4,6 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Bindings/SimTKHelpers.hpp"
 #include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
-#include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
@@ -3428,7 +3427,8 @@ namespace
 
         // ensure returned model is initialized from latest graph
         model->finalizeConnections();  // ensure all sockets are finalized to paths (#263)
-        osc::Initialize(*model);
+        osc::InitializeModel(*model);
+        osc::InitializeState(*model);
 
         return model;
     }
@@ -3474,9 +3474,8 @@ namespace
     ModelGraph CreateModelGraphFromInMemoryModel(OpenSim::Model m)
     {
         // init model+state
-        SimTK::State st = osc::Initialize(m);
-        m.equilibrateMuscles(st);
-        m.realizePosition(st);
+        osc::InitializeModel(m);
+        SimTK::State st = osc::InitializeState(m);
 
         // this is what this method populates
         ModelGraph rv;

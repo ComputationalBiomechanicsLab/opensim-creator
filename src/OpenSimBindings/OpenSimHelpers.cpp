@@ -683,6 +683,12 @@ OpenSim::Component* osc::UpdOwner(OpenSim::Component& c)
     return c.hasOwner() ? const_cast<OpenSim::Component*>(&c.getOwner()) : nullptr;
 }
 
+OpenSim::Component const* osc::GetOwner(OpenSim::Component const& c)
+{
+    return c.hasOwner() ? &c.getOwner() : nullptr;
+}
+
+
 int osc::DistanceFromRoot(OpenSim::Component const& c)
 {
     OpenSim::Component const* p = &c;
@@ -1199,13 +1205,21 @@ std::unique_ptr<osc::UndoableModelStatePair> osc::LoadOsimIntoUndoableModel(std:
     return std::make_unique<osc::UndoableModelStatePair>(std::move(model));
 }
 
-SimTK::State& osc::Initialize(OpenSim::Model& model)
+void osc::InitializeModel(OpenSim::Model& model)
 {
-    OSC_PERF("model update");
+    OSC_PERF("osc::InitializeModel");
     model.finalizeFromProperties();  // clears potentially-stale member components (required for `clearConnections`)
     model.clearConnections();        // clears any potentially stale pointers that can be retained by OpenSim::Socket<T> (see #263)
     model.buildSystem();             // creates a new underlying physics system
-    return model.initializeState();  // creates+returns a new working state
+}
+
+SimTK::State& osc::InitializeState(OpenSim::Model& model)
+{
+    OSC_PERF("osc::InitializeState");
+    SimTK::State& state = model.initializeState();  // creates+returns a new working state
+    model.equilibrateMuscles(state);
+    model.realizeDynamics(state);
+    return state;
 }
 
 // returns -1 if joint isn't in a set or cannot be found

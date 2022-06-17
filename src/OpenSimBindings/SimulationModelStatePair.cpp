@@ -25,11 +25,6 @@ public:
 		return *m_Simulation->getModel();  // TODO: UH OH - lock leak
 	}
 
-	OpenSim::Model& updModel()
-	{
-		throw std::runtime_error{"cannot update simulator model"};
-	}
-
 	UID getModelVersion() const
 	{
 		return m_ModelVersion;
@@ -48,11 +43,6 @@ public:
 	OpenSim::Component const* getSelected() const
 	{
 		return FindComponent(getModel(), m_Selected);
-	}
-
-	OpenSim::Component* updSelected()
-	{
-		throw std::runtime_error{"cannot update simulator model's selection"};
 	}
 
 	void setSelected(OpenSim::Component const* c)
@@ -162,11 +152,6 @@ OpenSim::Model const& osc::SimulationModelStatePair::getModel() const
 	return m_Impl->getModel();
 }
 
-OpenSim::Model& osc::SimulationModelStatePair::updModel()
-{
-	return m_Impl->updModel();
-}
-
 osc::UID osc::SimulationModelStatePair::getModelVersion() const
 {
 	return m_Impl->getModelVersion();
@@ -185,11 +170,6 @@ osc::UID osc::SimulationModelStatePair::getStateVersion() const
 OpenSim::Component const* osc::SimulationModelStatePair::getSelected() const
 {
 	return m_Impl->getSelected();
-}
-
-OpenSim::Component* osc::SimulationModelStatePair::updSelected()
-{
-	return m_Impl->updSelected();
 }
 
 void osc::SimulationModelStatePair::setSelected(OpenSim::Component const* c)

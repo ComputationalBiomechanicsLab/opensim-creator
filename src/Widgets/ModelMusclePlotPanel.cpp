@@ -2,7 +2,6 @@
 
 #include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/ModelStateCommit.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
@@ -392,15 +391,14 @@ namespace
 			return std::make_unique<Plot>(*params);  // empty plot
 		}
 
-		osc::Initialize(*model);
+		osc::InitializeModel(*model);
 
 		if (stopToken.stop_requested())
 		{
 			return std::make_unique<Plot>(*params);  // empty plot
 		}
 
-		SimTK::State& state = model->updWorkingState();
-		model->equilibrateMuscles(state);
+		SimTK::State& state = osc::InitializeState(*model);
 
 		if (stopToken.stop_requested())
 		{
@@ -553,7 +551,7 @@ namespace
 			OpenSim::Coordinate const* maybeCoord = osc::FindComponent<OpenSim::Coordinate>(*modelGuard, m_Plot->getParameters().getCoordinatePath());
 			if (!maybeCoord)
 			{
-				ImGui::Text("(no coordinate in model)");
+				ImGui::Text("(no coordinate named %s in model)", m_Plot->getParameters().getCoordinatePath().toString().c_str());
 				return nullptr;
 			}
 			OpenSim::Coordinate const& coord = *maybeCoord;

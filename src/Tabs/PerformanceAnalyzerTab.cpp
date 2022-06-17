@@ -1,7 +1,6 @@
 #include "PerformanceAnalyzerTab.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulation.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulator.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp"

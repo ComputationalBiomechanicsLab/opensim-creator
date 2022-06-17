@@ -354,8 +354,6 @@ add_library(osccore STATIC
     src/MiddlewareAPIs/MainUIStateAPI.hpp
     src/MiddlewareAPIs/SimulatorUIAPI.hpp
 
-    src/OpenSimBindings/AutoFinalizingModelStatePair.cpp
-    src/OpenSimBindings/AutoFinalizingModelStatePair.hpp
     src/OpenSimBindings/BasicModelStatePair.cpp
     src/OpenSimBindings/BasicModelStatePair.hpp
     src/OpenSimBindings/ComponentDecoration.cpp

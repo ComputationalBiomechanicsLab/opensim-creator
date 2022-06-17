@@ -18,7 +18,8 @@ public:
     Impl(OpenSim::Model const& m, SimTK::State const& st) :
         m_Model(std::make_unique<OpenSim::Model>(m))
     {
-        Initialize(*m_Model);
+        InitializeModel(*m_Model);
+        InitializeState(*m_Model);
         m_Model->updWorkingState() = st;
         m_Model->updWorkingState().invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
         m_Model->realizeReport(m_Model->updWorkingState());
@@ -27,7 +28,8 @@ public:
     Impl(Impl const& o) :
         m_Model{std::make_unique<OpenSim::Model>(*o.m_Model)}
     {
-        Initialize(*m_Model);
+        InitializeModel(*m_Model);
+        InitializeState(*m_Model);
         m_Model->updWorkingState() = o.m_Model->getWorkingState();
     }
 
@@ -37,11 +39,6 @@ public:
     }
 
     OpenSim::Model const& getModel() const
-    {
-        return *m_Model;
-    }
-
-    OpenSim::Model& updModel()
     {
         return *m_Model;
     }
@@ -86,11 +83,6 @@ osc::BasicModelStatePair::~BasicModelStatePair() noexcept = default;
 OpenSim::Model const& osc::BasicModelStatePair::getModel() const
 {
     return m_Impl->getModel();
-}
-
-OpenSim::Model& osc::BasicModelStatePair::updModel()
-{
-    return m_Impl->updModel();
 }
 
 SimTK::State const& osc::BasicModelStatePair::getState() const

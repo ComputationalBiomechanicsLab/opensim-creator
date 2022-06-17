@@ -34,8 +34,6 @@ namespace osc
         ~BasicModelStatePair() noexcept override;
 
         OpenSim::Model const& getModel() const override;
-        OpenSim::Model& updModel() override;
-
         SimTK::State const& getState() const override;
 
         float getFixupScaleFactor() const override;
