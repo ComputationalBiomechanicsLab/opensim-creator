@@ -221,7 +221,6 @@ private:
 
     void implementMeshFileGeometry(SimTK::DecorativeMeshFile const& d) override
     {
-        glm::vec4 boneColorHack = { 232.0f / 255.0f, 216.0f / 255.0f, 200.0f / 255.0f, 1.0f };
         m_Consumer(m_MeshCache.getMeshFile(d.getMeshFile()), ToOscTransform(d), GetColor(d));
     }
 
