@@ -567,7 +567,7 @@ namespace
             gl::BindTexture(rimsTex);
             gl::Uniform(eds.uSampler0, gl::textureIndex<GL_TEXTURE0>());
             gl::Uniform(eds.uRimRgba,  glm::vec4{0.8f, 0.5f, 0.3f, 0.8f});
-            gl::Uniform(eds.uRimThickness, 1.75f / osc::LongestDim(dims));
+            gl::Uniform(eds.uRimThickness, glm::vec2{1.75f} / glm::vec2{dims});
             auto quadMesh = osc::App::meshes().getTexturedQuadMesh();
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             gl::Enable(GL_BLEND);

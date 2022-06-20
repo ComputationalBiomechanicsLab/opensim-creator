@@ -26,7 +26,7 @@ R"(
 
     uniform sampler2D uSampler0;
     uniform vec4 uRimRgba;
-    uniform float uRimThickness;
+    uniform vec2 uRimThickness;
 
     in vec2 TexCoord;
 

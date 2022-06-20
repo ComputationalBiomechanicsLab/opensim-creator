@@ -747,7 +747,7 @@ static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, float fixupScaleFac
 
         if (hasRims)
         {
-            float rimThickness = 1.0f / std::min(renderTarg.dims.x, renderTarg.dims.y);
+            glm::vec2 rimThickness = glm::vec2{1.5f} / glm::vec2{renderTarg.dims};
 
             // care: edge-detection kernels are expensive
             //
@@ -755,22 +755,25 @@ static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, float fixupScaleFac
             // edge detection shader only had to run on a smaller subset of the screen
             osc::AABB screenspaceRimBounds = TransformAABB(rimAABB, projMtx * viewMtx);
             auto verts = ToCubeVerts(screenspaceRimBounds);
-            glm::vec2 bounds[2] = {{verts[0].x, verts[0].y}, {verts[0].x, verts[0].y}};
+
+            osc::Rect screenBounds{verts[0], verts[0]};
+
             for (size_t i = 1; i < verts.size(); ++i)
             {
-                glm::vec2 p{verts[i].x, verts[i].y};
-                bounds[0] = osc::Min(p, bounds[0]);
-                bounds[1] = osc::Max(p, bounds[1]);
+                glm::vec2 p = verts[i];  // dump Z
+                screenBounds.p1 = osc::Min(p, screenBounds.p1);
+                screenBounds.p2 = osc::Max(p, screenBounds.p2);
             }
-            bounds[0] -= rimThickness;
-            bounds[1] += rimThickness;
+            screenBounds.p1 -= rimThickness;
+            screenBounds.p2 += rimThickness;
+
             glm::ivec2 renderDims = renderTarg.dims;
             glm::ivec2 min{
-                static_cast<int>((bounds[0].x + 1.0f)/2.0f * renderDims.x),
-                static_cast<int>((bounds[0].y + 1.0f)/2.0f * renderDims.y)};
+                static_cast<int>((screenBounds.p1.x + 1.0f)/2.0f * renderDims.x),
+                static_cast<int>((screenBounds.p1.y + 1.0f)/2.0f * renderDims.y)};
             glm::ivec2 max{
-                static_cast<int>((bounds[1].x + 1.0f)/2.0f * renderDims.x),
-                static_cast<int>((bounds[1].y + 1.0f)/2.0f * renderDims.y)};
+                static_cast<int>((screenBounds.p2.x + 1.0f)/2.0f * renderDims.x),
+                static_cast<int>((screenBounds.p2.y + 1.0f)/2.0f * renderDims.y)};
 
             int x = std::max(0, min.x);
             int y = std::max(0, min.y);

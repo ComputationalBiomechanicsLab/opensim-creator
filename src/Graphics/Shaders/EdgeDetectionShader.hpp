@@ -16,7 +16,7 @@ namespace osc
         gl::UniformMat4 uMVP;
         gl::UniformSampler2D uSampler0;
         gl::UniformVec4 uRimRgba;
-        gl::UniformFloat uRimThickness;
+        gl::UniformVec2 uRimThickness;
 
         EdgeDetectionShader();
     };
