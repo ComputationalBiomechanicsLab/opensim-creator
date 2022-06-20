@@ -931,12 +931,17 @@ bool osc::ActionSetCoordinateSpeed(UndoableModelStatePair& model, OpenSim::Coord
 
     if (!mutCoord)
     {
+        // can't find the coordinate within the provided model
         model.setModelVersion(oldVersion);
         return false;
     }
 
+    // PERF HACK: don't do a full model+state re-realization here: only do it
+    //            when the caller wants to save the coordinate change
     mutCoord->setDefaultSpeedValue(v);
-    osc::InitializeState(mutModel);  // PERF HACK: skip initializing the model (it's slow and not necessary here) - users edit coordinates a lot
+    mutCoord->setSpeedValue(mutModel.updWorkingState(), v);
+    mutModel.equilibrateMuscles(mutModel.updWorkingState());
+    mutModel.realizeDynamics(mutModel.updWorkingState());
 
     return true;
 }
@@ -945,16 +950,20 @@ bool osc::ActionSetCoordinateSpeedAndSave(UndoableModelStatePair& model, OpenSim
 {
     if (ActionSetCoordinateSpeed(model, coord, v))
     {
+        OpenSim::Model& mutModel = model.updModel();
+        osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
         model.commit("set coordinate speed");
         return true;
     }
     else
     {
+        // edit wasn't made
         return false;
     }
 }
 
-bool osc::ActionSetCoordinateLocked(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, bool v)
+bool osc::ActionSetCoordinateLockedAndSave(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, bool v)
 {
 
     auto coordPath = coord.getAbsolutePath();
@@ -965,17 +974,22 @@ bool osc::ActionSetCoordinateLocked(UndoableModelStatePair& model, OpenSim::Coor
 
     if (!mutCoord)
     {
+        // can't find the coordinate within the provided model
         model.setModelVersion(oldVersion);
         return false;
     }
 
+    // PERF HACK: don't do a full model+state re-realization here: only do it
+    //            when the caller wants to save the coordinate change
     mutCoord->setDefaultLocked(v);
-    osc::InitializeState(mutModel);  // PERF HACK: skip initializing the model (it's slow and not necessary here) - users edit coordinates a lot
+    mutCoord->setLocked(mutModel.updWorkingState(), v);
+    mutModel.equilibrateMuscles(mutModel.updWorkingState());
+    mutModel.realizeDynamics(mutModel.updWorkingState());
 
     return true;
 }
 
-// set the value of a coordinate
+// set the value of a coordinate, but don't save it to the model (yet)
 bool osc::ActionSetCoordinateValue(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, double v)
 {
     auto coordPath = coord.getAbsolutePath();
@@ -986,6 +1000,7 @@ bool osc::ActionSetCoordinateValue(UndoableModelStatePair& model, OpenSim::Coord
 
     if (!mutCoord)
     {
+        // can't find the coordinate within the provided model
         model.setModelVersion(oldVersion);
         return false;
     }
@@ -995,27 +1010,35 @@ bool osc::ActionSetCoordinateValue(UndoableModelStatePair& model, OpenSim::Coord
 
     if (!(rangeMin <= v && v <= rangeMax))
     {
+        // the requested edit is outside the coordinate's allowed range
         model.setModelVersion(oldVersion);
         return false;
     }
 
-
+    // PERF HACK: don't do a full model+state re-realization here: only do it
+    //            when the caller wants to save the coordinate change
     mutCoord->setDefaultValue(v);
-    osc::InitializeState(mutModel);  // PERF HACK: skip initializing the model (it's slow and not necessary here) - users edit coordinates a lot
+    mutCoord->setValue(mutModel.updWorkingState(), v);
+    mutModel.equilibrateMuscles(mutModel.updWorkingState());
+    mutModel.realizeDynamics(mutModel.updWorkingState());
 
     return true;
 }
 
-// set the value of a coordinate and ensure it is saved
+// set the value of a coordinate and ensure it is saved into the model
 bool osc::ActionSetCoordinateValueAndSave(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, double v)
 {
     if (ActionSetCoordinateValue(model, coord, v))
     {
+        OpenSim::Model& mutModel = model.updModel();
+        osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
         model.commit("set coordinate value");
         return true;
     }
     else
     {
+        // edit wasn't made
         return false;
     }
 }

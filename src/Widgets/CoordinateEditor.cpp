@@ -224,7 +224,7 @@ private:
         if (ImGui::Button(c->getLocked(m_Uum->getState()) ? ICON_FA_LOCK : ICON_FA_UNLOCK))
         {
             bool newValue = !c->getLocked(m_Uum->getState());
-            ActionSetCoordinateLocked(*m_Uum, *c, newValue);
+            ActionSetCoordinateLockedAndSave(*m_Uum, *c, newValue);
         }
         osc::DrawTooltipIfItemHovered("Toggle Coordinate Lock", "Lock/unlock the coordinate's value.\n\nLocking a coordinate indicates whether the coordinate's value should be constrained to this value during the simulation.");
 

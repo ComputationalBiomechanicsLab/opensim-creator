@@ -157,7 +157,7 @@ namespace osc
     bool ActionSetCoordinateSpeedAndSave(UndoableModelStatePair&, OpenSim::Coordinate const&, double);
 
     // set a coordinate (un)locked
-    bool ActionSetCoordinateLocked(UndoableModelStatePair&, OpenSim::Coordinate const&, bool);
+    bool ActionSetCoordinateLockedAndSave(UndoableModelStatePair&, OpenSim::Coordinate const&, bool);
 
     // set the value of a coordinate
     bool ActionSetCoordinateValue(UndoableModelStatePair&, OpenSim::Coordinate const&, double);
