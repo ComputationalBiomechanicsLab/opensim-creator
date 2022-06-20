@@ -265,13 +265,13 @@ private:
         if (InputMetersFloat("##coordinatespeededitor", &displayedSpeed))
         {
             double storedSpeed = ConvertCoordDisplayValueToStorageValue(*c, displayedSpeed);
-            osc::ActionSetCoordinateSpeed(*m_Uum, *c, displayedSpeed);
+            osc::ActionSetCoordinateSpeed(*m_Uum, *c, storedSpeed);
         }
 
         if (ImGui::IsItemDeactivatedAfterEdit())
         {
             double storedSpeed = ConvertCoordDisplayValueToStorageValue(*c, displayedSpeed);
-            osc::ActionSetCoordinateSpeedAndSave(*m_Uum, *c, displayedSpeed);
+            osc::ActionSetCoordinateSpeedAndSave(*m_Uum, *c, storedSpeed);
         }
     }
 
