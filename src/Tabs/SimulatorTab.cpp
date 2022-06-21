@@ -804,7 +804,7 @@ private:
         return maybeReport;
     }
 
-    bool onKeyDown(SDL_KeyboardEvent const& e)
+    bool onKeyDown(SDL_KeyboardEvent const&)
     {
         return false;
     }

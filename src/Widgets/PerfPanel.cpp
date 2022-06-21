@@ -94,11 +94,11 @@ public:
             ImGui::NextColumn();
             ImGui::Text("%" PRId64, pm.getCallCount());
             ImGui::NextColumn();
-            ImGui::Text("%lld us", std::chrono::duration_cast<std::chrono::microseconds>(pm.getLastDuration()).count());
+            ImGui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getLastDuration()).count()));
             ImGui::NextColumn();
-            ImGui::Text("%lld us", std::chrono::duration_cast<std::chrono::microseconds>(pm.getAvgDuration()).count());
+            ImGui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getAvgDuration()).count()));
             ImGui::NextColumn();
-            ImGui::Text("%lld us", std::chrono::duration_cast<std::chrono::microseconds>(pm.getTotalDuration()).count());
+            ImGui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getTotalDuration()).count()));
             ImGui::NextColumn();
         }
         ImGui::Columns();

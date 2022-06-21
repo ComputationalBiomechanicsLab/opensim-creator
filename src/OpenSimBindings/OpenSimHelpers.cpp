@@ -252,7 +252,7 @@ namespace
                                 OpenSim::Muscle const& muscle,
                                 SimTK::State const& st,
                                 float fixupScaleFactor,
-                                OpenSim::ModelDisplayHints const& mdh,
+                                OpenSim::ModelDisplayHints const&,
                                 std::vector<osc::ComponentDecoration>& out)
     {
         std::vector<glm::vec3> pps = GetAllPathPoints(muscle.getGeometryPath(), st);
@@ -441,10 +441,10 @@ namespace
                                   OpenSim::Muscle const& musc,
                                   SimTK::State const& st,
                                   float fixupScaleFactor,
-                                  OpenSim::Component const** currentComponent,
+                                  OpenSim::Component const**,
                                   OpenSim::ModelDisplayHints const& mdh,
-                                  SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-                                  osc::DecorativeGeometryHandler& producer,
+                                  SimTK::Array_<SimTK::DecorativeGeometry>&,
+                                  osc::DecorativeGeometryHandler&,
                                   std::vector<osc::ComponentDecoration>& out)
     {
         std::vector<glm::vec3> pps = GetAllPathPoints(musc.getGeometryPath(), st);

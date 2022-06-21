@@ -302,7 +302,7 @@ bool osc::experimental::operator>=(Texture2D const& a, Texture2D const& b)
     return a.m_Impl >= b.m_Impl;
 }
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, Texture2D const& t)
+std::ostream& osc::experimental::operator<<(std::ostream& o, Texture2D const&)
 {
     return o << "Texture2D";
 }
@@ -882,7 +882,7 @@ bool osc::experimental::operator>=(Material const& a, Material const& b)
     return a.m_Impl >= b.m_Impl;
 }
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, Material const& material)
+std::ostream& osc::experimental::operator<<(std::ostream& o, Material const&)
 {
     return o << "Material()";
 }
@@ -1520,7 +1520,7 @@ bool osc::experimental::operator>=(Mesh const& a, Mesh const& b)
     return a.m_Impl >= b.m_Impl;
 }
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, Mesh const& mesh)
+std::ostream& osc::experimental::operator<<(std::ostream& o, Mesh const&)
 {
     return o << "Mesh()";
 }
@@ -1985,7 +1985,7 @@ bool osc::experimental::operator>=(Camera const& a, Camera const& b)
     return a.m_Impl >= b.m_Impl;
 }
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, Camera const& camera)
+std::ostream& osc::experimental::operator<<(std::ostream& o, Camera const&)
 {
     return o << "Camera()";
 }

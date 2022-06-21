@@ -99,7 +99,7 @@ namespace
 
         void getValuesFloat(OpenSim::Component const&,
                             nonstd::span<osc::SimulationReport const> reports,
-                            nonstd::span<float> overwriteOut) const
+                            nonstd::span<float> overwriteOut) const override
         {
             for (size_t i = 0; i < reports.size(); ++i)
             {
@@ -432,7 +432,7 @@ osc::ForwardDynamicSimulator::ForwardDynamicSimulator(BasicModelStatePair msp,
 }
 
 osc::ForwardDynamicSimulator::ForwardDynamicSimulator(ForwardDynamicSimulator&& tmp) noexcept :
-    m_Impl{std::exchange(m_Impl, nullptr)}
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
 }
 

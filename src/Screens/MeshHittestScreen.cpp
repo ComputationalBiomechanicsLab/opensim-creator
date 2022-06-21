@@ -155,7 +155,7 @@ public:
         // printout stats
         {
             ImGui::Begin("controls");
-            ImGui::Text("%lld microseconds", m_RaycastDur.count());
+            ImGui::Text("%ld microseconds", static_cast<long>(m_RaycastDur.count()));
             auto r = m_Ray;
             ImGui::Text("camerapos = (%.2f, %.2f, %.2f)", m_Camera.getPos().x, m_Camera.getPos().y, m_Camera.getPos().z);
             ImGui::Text("origin = (%.2f, %.2f, %.2f), dir = (%.2f, %.2f, %.2f)", r.origin.x, r.origin.y, r.origin.z, r.dir.x, r.dir.y, r.dir.z);

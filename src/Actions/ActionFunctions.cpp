@@ -143,7 +143,7 @@ void osc::ActionOpenModel(MainUIStateAPI* api, std::filesystem::path const& path
     OpenOsimInLoadingTab(api, path);
 }
 
-bool osc::ActionSaveModel(MainUIStateAPI* api, UndoableModelStatePair& model)
+bool osc::ActionSaveModel(MainUIStateAPI*, UndoableModelStatePair& model)
 {
     std::optional<std::string> maybeUserSaveLoc = TryGetModelSaveLocation(model.getModel());
 

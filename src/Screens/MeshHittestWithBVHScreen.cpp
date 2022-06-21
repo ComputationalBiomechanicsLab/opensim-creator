@@ -165,7 +165,7 @@ public:
         // printout stats
         {
             ImGui::Begin("controls");
-            ImGui::Text("raycast duration = %lld micros", m_RaycastDuration.count());
+            ImGui::Text("raycast duration = %ld micros", static_cast<long>(m_RaycastDuration.count()));
             ImGui::Checkbox("use BVH", &m_UseBVH);
             ImGui::End();
         }

@@ -16,7 +16,7 @@ public:
 
     void implDraw() override
     {
-        ImGui::Text(m_Config.content.c_str());
+        ImGui::TextUnformatted(m_Config.content.c_str());
 
         if (ImGui::Button("Yes"))
         {
