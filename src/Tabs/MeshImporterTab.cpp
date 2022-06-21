@@ -5037,7 +5037,7 @@ namespace
             glm::vec4 Stations{196.0f/255.0f, 0.0f, 0.0f, 1.0f};
             glm::vec4 ConnectionLines{0.6f, 0.6f, 0.6f, 1.0f};
             glm::vec4 SceneBackground{96.0f/255.0f, 96.0f/255.0f, 96.0f/255.0f, 1.0f};
-            glm::vec4 GridLines{156.0f/255.0f, 156.0f/255.0f, 156.0f/255.0f, 1.0f};
+            glm::vec4 GridLines{215.0f/255.0f, 215.0f/255.0f, 215.0f/255.0f, 1.0f};
         } m_Colors;
         static constexpr std::array<char const*, 6> g_ColorNames = {
             "ground",
