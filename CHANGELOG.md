@@ -61,6 +61,7 @@ All notable changes to this project will be documented here. The format is based
 - Rim highlighting looks a little bit better in high-aspect-ratio viewers (#273)
 - The 3D scene light in the editor and simulation screens now points away from the camera more (#275)
   - This makes it easier to see inside of concave geometry
+- The floor is now visible through semi-transparent geometry, such as wrapping surfaces (#276)
 
 
 ## [0.1.6] - 2022/05/09

@@ -575,6 +575,32 @@ static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, float fixupScaleFac
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         }
 
+        // draw the floor first, so that the transparent geometry in the scene also shows
+        // the floor texture
+        if (impl.flags & osc::UiModelViewerFlags_DrawFloor)
+        {
+            auto& basicShader = osc::App::shader<osc::GouraudShader>();
+
+            gl::UseProgram(basicShader.program);
+            gl::Uniform(basicShader.uProjMat, projMtx);
+            gl::Uniform(basicShader.uViewMat, viewMtx);
+            glm::mat4 mtx = GenerateFloorModelMatrix(impl, fixupScaleFactor);
+            gl::Uniform(basicShader.uModelMat, mtx);
+            gl::Uniform(basicShader.uNormalMat, osc::ToNormalMatrix(mtx));
+            gl::Uniform(basicShader.uLightDir, impl.lightDir);
+            gl::Uniform(basicShader.uLightColor, impl.lightCol);
+            gl::Uniform(basicShader.uViewPos, viewerPos);
+            gl::Uniform(basicShader.uDiffuseColor, {1.0f, 1.0f, 1.0f, 1.0f});
+            gl::Uniform(basicShader.uIsTextured, true);
+            gl::ActiveTexture(GL_TEXTURE0);
+            gl::BindTexture(impl.chequerTex);
+            gl::Uniform(basicShader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
+            auto floor = osc::App::meshes().getFloorMesh();
+            gl::BindVertexArray(floor->GetVertexArray());
+            floor->Draw();
+            gl::BindVertexArray();
+        }
+
         auto& instancedShader = osc::App::shader<osc::InstancedGouraudColorShader>();
         gl::UseProgram(instancedShader.program);
         gl::Uniform(instancedShader.uProjMat, projMtx);
@@ -619,30 +645,6 @@ static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, float fixupScaleFac
             gl::BindVertexArray();
 
             pos = end;
-        }
-
-        if (impl.flags & osc::UiModelViewerFlags_DrawFloor)
-        {
-            auto& basicShader = osc::App::shader<osc::GouraudShader>();
-
-            gl::UseProgram(basicShader.program);
-            gl::Uniform(basicShader.uProjMat, projMtx);
-            gl::Uniform(basicShader.uViewMat, viewMtx);
-            glm::mat4 mtx = GenerateFloorModelMatrix(impl, fixupScaleFactor);
-            gl::Uniform(basicShader.uModelMat, mtx);
-            gl::Uniform(basicShader.uNormalMat, osc::ToNormalMatrix(mtx));
-            gl::Uniform(basicShader.uLightDir, impl.lightDir);
-            gl::Uniform(basicShader.uLightColor, impl.lightCol);
-            gl::Uniform(basicShader.uViewPos, viewerPos);
-            gl::Uniform(basicShader.uDiffuseColor, {1.0f, 1.0f, 1.0f, 1.0f});
-            gl::Uniform(basicShader.uIsTextured, true);
-            gl::ActiveTexture(GL_TEXTURE0);
-            gl::BindTexture(impl.chequerTex);
-            gl::Uniform(basicShader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
-            auto floor = osc::App::meshes().getFloorMesh();
-            gl::BindVertexArray(floor->GetVertexArray());
-            floor->Draw();
-            gl::BindVertexArray();
         }
 
         if (impl.wireframeMode)
