@@ -66,6 +66,9 @@ All notable changes to this project will be documented here. The format is based
   - This is intended to make it easier to view the model in the editor and simulation tabs
 - The meshimporter wizard documentation page was removed (#262)
   - It was written before Tutorials 3 & 4 were written. Those tutorials explain it better
+- Saving a model should no longer trigger a model reload (#278)
+  - Previously, the system that monitors the on-disk file would notice it has been updated
+    and dutifully reload the model.
 
 
 ## [0.1.6] - 2022/05/09

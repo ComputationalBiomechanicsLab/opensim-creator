@@ -1203,7 +1203,7 @@ std::unique_ptr<osc::UndoableModelStatePair> osc::LoadOsimIntoUndoableModel(std:
 {
     auto model = std::make_unique<OpenSim::Model>(p.string());
     auto rv = std::make_unique<osc::UndoableModelStatePair>(std::move(model));
-    rv->setUpToDateWithFilesystem();
+    rv->setUpToDateWithFilesystem(std::filesystem::last_write_time(p));
     return rv;
 }
 

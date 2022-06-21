@@ -120,7 +120,7 @@ void osc::ActionSaveCurrentModelAs(osc::UndoableModelStatePair& uim)
         {
             uim.commit("set model path");
         }
-        uim.setUpToDateWithFilesystem();
+        uim.setUpToDateWithFilesystem(std::filesystem::last_write_time(*maybePath));
 
         osc::App::upd().addRecentFile(*maybePath);
     }
@@ -158,7 +158,7 @@ bool osc::ActionSaveModel(MainUIStateAPI* api, UndoableModelStatePair& model)
         {
             model.commit("set model path");
         }
-        model.setUpToDateWithFilesystem();
+        model.setUpToDateWithFilesystem(std::filesystem::last_write_time(*maybeUserSaveLoc));
 
         osc::App::upd().addRecentFile(*maybeUserSaveLoc);
         return true;
@@ -276,6 +276,24 @@ bool osc::ActionStartSimulatingModel(osc::MainUIStateAPI* parent, osc::UndoableM
 
 bool osc::ActionUpdateModelFromBackingFile(osc::UndoableModelStatePair& uim)
 {
+    if (!uim.hasFilesystemLocation())
+    {
+        // there is no backing file?
+        return false;
+    }
+
+    auto path = uim.getFilesystemPath();
+    auto lastSaveTime = std::filesystem::last_write_time(path);
+
+    if (uim.getLastFilesystemWriteTime() <= lastSaveTime)
+    {
+        // the backing file is probably up-to-date with the in-memory representation
+        //
+        // (e.g. because OSC just saved it and set the timestamp appropriately)
+        return false;
+    }
+
+    // else: there is a backing file and it's newer than what's in-memory, so reload
     try
     {
         osc::log::info("file change detected: loading updated file");
@@ -283,7 +301,7 @@ bool osc::ActionUpdateModelFromBackingFile(osc::UndoableModelStatePair& uim)
         osc::log::info("loaded updated file");
         uim.setModel(std::move(p));
         uim.commit("reloaded model from filesystem");
-        uim.setUpToDateWithFilesystem();
+        uim.setUpToDateWithFilesystem(lastSaveTime);
         return true;
     }
     catch (std::exception const& ex)
@@ -357,7 +375,7 @@ bool osc::ActionReloadOsimFromDisk(osc::UndoableModelStatePair& uim)
             osc::log::info("loaded updated file");
             uim.setModel(std::move(p));
             uim.commit("reloaded model from filesystem");
-            uim.setUpToDateWithFilesystem();
+            uim.setUpToDateWithFilesystem(std::filesystem::last_write_time(uim.getFilesystemPath()));
             return true;
         }
         catch (std::exception const& ex)

@@ -217,9 +217,15 @@ public:
         return getCheckoutID() == getFilesystemVersion();
     }
 
-    void setUpToDateWithFilesystem()
+    void setUpToDateWithFilesystem(std::filesystem::file_time_type t)
     {
-        setFilesystemVersionToCurrent();
+        m_MaybeFilesystemTimestamp = std::move(t);
+        m_MaybeCommitSavedToDisk = m_CurrentHead;
+    }
+
+    std::filesystem::file_time_type getLastFilesystemWriteTime() const
+    {
+        return m_MaybeFilesystemTimestamp;
     }
 
     UiModelStatePair const& getUiModel() const
@@ -662,11 +668,6 @@ private:
         return m_MaybeCommitSavedToDisk;
     }
 
-    void setFilesystemVersionToCurrent()
-    {
-        m_MaybeCommitSavedToDisk = m_CurrentHead;
-    }
-
 private:
     // mutable staging area that calling code can mutate
     UiModelStatePair m_Scratch;
@@ -688,6 +689,9 @@ private:
 
     // (maybe) the location of the model on-disk
     std::filesystem::path m_MaybeFilesystemLocation;
+
+    // the timestamp of the on-disk data (needed to know when to trigger a reload)
+    std::filesystem::file_time_type m_MaybeFilesystemTimestamp;
 
     // (maybe) the version of the model that was last saved to disk
     UID m_MaybeCommitSavedToDisk = UID::empty();
@@ -758,9 +762,14 @@ bool osc::UndoableModelStatePair::isUpToDateWithFilesystem() const
     return m_Impl->isUpToDateWithFilesystem();
 }
 
-void osc::UndoableModelStatePair::setUpToDateWithFilesystem()
+void osc::UndoableModelStatePair::setUpToDateWithFilesystem(std::filesystem::file_time_type t)
 {
-    m_Impl->setUpToDateWithFilesystem();
+    m_Impl->setUpToDateWithFilesystem(std::move(t));
+}
+
+std::filesystem::file_time_type osc::UndoableModelStatePair::getLastFilesystemWriteTime() const
+{
+    return m_Impl->getLastFilesystemWriteTime();
 }
 
 osc::ModelStateCommit const& osc::UndoableModelStatePair::getLatestCommit() const

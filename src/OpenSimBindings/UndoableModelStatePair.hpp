@@ -67,8 +67,11 @@ namespace osc
         // returns `false` if the model has no on-disk location
         bool isUpToDateWithFilesystem() const;
 
-        // manually sets if the current commit as being up to date with disk
-        void setUpToDateWithFilesystem();
+        // manually sets if the current commit as being up to date with disk at the given timepoint
+        void setUpToDateWithFilesystem(std::filesystem::file_time_type);
+
+        // gets the last time when the model was set as up to date with the filesystem
+        std::filesystem::file_time_type getLastFilesystemWriteTime() const;
 
         // returns latest *comitted* model state (i.e. not the one being actively edited, but the one saved into
         // the safer undo/redo buffer)
