@@ -282,8 +282,8 @@ bool osc::ActionUpdateModelFromBackingFile(osc::UndoableModelStatePair& uim)
         auto p = std::make_unique<OpenSim::Model>(uim.getModel().getInputFileName());
         osc::log::info("loaded updated file");
         uim.setModel(std::move(p));
-        uim.setUpToDateWithFilesystem();
         uim.commit("reloaded model from filesystem");
+        uim.setUpToDateWithFilesystem();
         return true;
     }
     catch (std::exception const& ex)
