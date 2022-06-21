@@ -64,6 +64,8 @@ All notable changes to this project will be documented here. The format is based
 - The floor is now visible through semi-transparent geometry, such as wrapping surfaces (#276)
 - The 3D scene now uses shader values that makes edges in the model "pop" more (#277)
   - This is intended to make it easier to view the model in the editor and simulation tabs
+- The meshimporter wizard documentation page was removed (#262)
+  - It was written before Tutorials 3 & 4 were written. Those tutorials explain it better
 
 
 ## [0.1.6] - 2022/05/09

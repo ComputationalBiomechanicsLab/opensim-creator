@@ -57,8 +57,6 @@ Table of Contents
     :maxdepth: 2
     :caption: Documentation Pages
 
-    doc_meshimporterwizard
-
 .. toctree::
     :caption: Other Links
 

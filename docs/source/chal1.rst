@@ -44,6 +44,6 @@ You can work on this exercise however you want. Here are some general hints, tho
 
 - The OpenSim Creator editor UI can be used to edit component properties, model coordinates, and add things into the model. :ref:`tut1` is a basic tutorial on that. :ref:`tut2` is a more-involved tutorial that covers it in more detail.
 
-- The :ref:`doc_meshimporterwizard` feature in OpenSim Creator makes it easier to import mesh files, add bodies, and join things with joints without having to "manually" work with OpenSim concepts. This isn't useful to know when working on *existing* OpenSim models, but it is useful to know when working on *new* models.
+- The Mesh Importer feature in OpenSim Creator makes it easier to import mesh files, add bodies, and join things with joints without having to "manually" work with OpenSim concepts. This isn't useful to know when working on *existing* OpenSim models, but it is useful to know when working on *new* models.
 
 - The OpenSim Creator editor UI automatically reloads saved ``.osim`` files whenever they are externally edited. This means you can leverage any existing OpenSim documentation/tooling that manipulates ``.osim`` files.
