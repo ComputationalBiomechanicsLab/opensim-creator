@@ -1202,7 +1202,9 @@ float osc::GetRecommendedScaleFactor(VirtualConstModelStatePair const& p)
 std::unique_ptr<osc::UndoableModelStatePair> osc::LoadOsimIntoUndoableModel(std::filesystem::path p)
 {
     auto model = std::make_unique<OpenSim::Model>(p.string());
-    return std::make_unique<osc::UndoableModelStatePair>(std::move(model));
+    auto rv = std::make_unique<osc::UndoableModelStatePair>(std::move(model));
+    rv->setUpToDateWithFilesystem();
+    return rv;
 }
 
 void osc::InitializeModel(OpenSim::Model& model)

@@ -115,12 +115,12 @@ void osc::ActionSaveCurrentModelAs(osc::UndoableModelStatePair& uim)
 
         uim.updModel().setInputFileName(maybePath->string());
         uim.setFilesystemPath(*maybePath);
-        uim.setUpToDateWithFilesystem();
 
         if (*maybePath != oldPath)
         {
             uim.commit("set model path");
         }
+        uim.setUpToDateWithFilesystem();
 
         osc::App::upd().addRecentFile(*maybePath);
     }
@@ -153,12 +153,12 @@ bool osc::ActionSaveModel(MainUIStateAPI* api, UndoableModelStatePair& model)
         std::string oldPath = model.getModel().getInputFileName();
         model.updModel().setInputFileName(*maybeUserSaveLoc);
         model.setFilesystemPath(*maybeUserSaveLoc);
-        model.setUpToDateWithFilesystem();
 
         if (*maybeUserSaveLoc != oldPath)
         {
             model.commit("set model path");
         }
+        model.setUpToDateWithFilesystem();
 
         osc::App::upd().addRecentFile(*maybeUserSaveLoc);
         return true;
@@ -356,8 +356,8 @@ bool osc::ActionReloadOsimFromDisk(osc::UndoableModelStatePair& uim)
             auto p = std::make_unique<OpenSim::Model>(uim.getModel().getInputFileName());
             osc::log::info("loaded updated file");
             uim.setModel(std::move(p));
-            uim.setUpToDateWithFilesystem();
             uim.commit("reloaded model from filesystem");
+            uim.setUpToDateWithFilesystem();
             return true;
         }
         catch (std::exception const& ex)

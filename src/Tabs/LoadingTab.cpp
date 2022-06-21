@@ -102,7 +102,6 @@ public:
 			// there is an existing editor state
 			//
 			// recycle it so that users can keep their running sims, local edits, etc.
-			result->setUpToDateWithFilesystem();
 			UID tabID = m_Parent->addTab<ModelEditorTab>(m_Parent, std::move(result));
 			m_Parent->selectTab(tabID);
 			m_Parent->closeTab(m_ID);
