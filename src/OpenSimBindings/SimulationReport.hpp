@@ -32,10 +32,10 @@ namespace osc
         SimTK::State& updStateHACK();  // necessary because of a bug in OpenSim PathWrap
         std::optional<float> getAuxiliaryValue(UID) const;
 
-        class Impl;
     private:
         friend bool operator==(SimulationReport const&, SimulationReport const&);
         friend bool operator!=(SimulationReport const&, SimulationReport const&);
+        class Impl;
         std::shared_ptr<Impl> m_Impl;
     };
 

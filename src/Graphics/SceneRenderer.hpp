@@ -28,8 +28,8 @@ namespace osc
 		void draw(BasicRenderer::Params const&, nonstd::span<BasicSceneElement const>) override;
 		gl::Texture2D& updOutputTexture() override;
 		
-		class Impl;
 	private:
+		class Impl;
 		Impl* m_Impl;
 	};
 }

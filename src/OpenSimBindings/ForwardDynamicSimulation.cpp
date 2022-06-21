@@ -202,12 +202,25 @@ private:
 // public API
 
 osc::ForwardDynamicSimulation::ForwardDynamicSimulation(BasicModelStatePair ms, ForwardDynamicSimulatorParams const& params) :
-    m_Impl{std::make_unique<Impl>(std::move(ms), params)}
+    m_Impl{new Impl{std::move(ms), params}}
 {
 }
-osc::ForwardDynamicSimulation::ForwardDynamicSimulation(ForwardDynamicSimulation&&) noexcept = default;
-osc::ForwardDynamicSimulation& osc::ForwardDynamicSimulation::operator=(ForwardDynamicSimulation&&) noexcept = default;
-osc::ForwardDynamicSimulation::~ForwardDynamicSimulation() noexcept = default;
+
+osc::ForwardDynamicSimulation::ForwardDynamicSimulation(ForwardDynamicSimulation&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
+
+osc::ForwardDynamicSimulation& osc::ForwardDynamicSimulation::operator=(ForwardDynamicSimulation&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::ForwardDynamicSimulation::~ForwardDynamicSimulation() noexcept
+{
+    delete m_Impl;
+}
 
 osc::SynchronizedValueGuard<OpenSim::Model const> osc::ForwardDynamicSimulation::getModel() const
 {

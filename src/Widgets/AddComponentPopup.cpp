@@ -474,7 +474,7 @@ osc::AddComponentPopup::AddComponentPopup(
 }
 
 osc::AddComponentPopup::AddComponentPopup(AddComponentPopup&& tmp) noexcept :
-    m_Impl{std::exchange(m_Impl, tmp.m_Impl)}
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
 }
 

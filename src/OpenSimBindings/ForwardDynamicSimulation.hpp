@@ -8,7 +8,6 @@
 
 #include <nonstd/span.hpp>
 
-#include <memory>
 #include <vector>
 
 namespace OpenSim
@@ -65,6 +64,6 @@ namespace osc
 
     private:
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        Impl* m_Impl;
     };
 }

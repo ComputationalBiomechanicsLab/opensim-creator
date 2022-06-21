@@ -36,8 +36,7 @@ namespace osc
 		bool hasParent() const;
 		UID getParentID() const;
 		std::chrono::system_clock::time_point getCommitTime() const;
-		SynchronizedValueGuard<OpenSim::Model> getModel() const;
-		std::unique_ptr<OpenSim::Model> extractUninitializedModel() const;
+		SynchronizedValueGuard<OpenSim::Model const> getModel() const;
 		UID getModelVersion() const;
 		float getFixupScaleFactor() const;
 

@@ -30,8 +30,8 @@ namespace osc
         std::shared_ptr<Mesh> getYLineMesh();
         std::shared_ptr<Mesh> getTexturedQuadMesh();
 
-        struct Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        class Impl;
+        Impl* m_Impl;
     };
 }

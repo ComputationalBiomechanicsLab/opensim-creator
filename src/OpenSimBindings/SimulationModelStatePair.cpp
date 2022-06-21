@@ -140,12 +140,25 @@ private:
 };
 
 osc::SimulationModelStatePair::SimulationModelStatePair(std::shared_ptr<Simulation> simulation, SimulationReport report) :
-	m_Impl{std::make_unique<Impl>(std::move(simulation), std::move(report))}
+	m_Impl{new Impl{std::move(simulation), std::move(report)}}
 {
 }
-osc::SimulationModelStatePair::SimulationModelStatePair(SimulationModelStatePair&&) noexcept = default;
-osc::SimulationModelStatePair& osc::SimulationModelStatePair::operator=(SimulationModelStatePair&&) noexcept = default;
-osc::SimulationModelStatePair::~SimulationModelStatePair() noexcept = default;
+
+osc::SimulationModelStatePair::SimulationModelStatePair(SimulationModelStatePair&& tmp) noexcept :
+	m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
+
+osc::SimulationModelStatePair& osc::SimulationModelStatePair::operator=(SimulationModelStatePair&& tmp) noexcept
+{
+	std::swap(m_Impl, tmp.m_Impl);
+	return *this;
+}
+
+osc::SimulationModelStatePair::~SimulationModelStatePair() noexcept
+{
+	delete m_Impl;
+}
 
 OpenSim::Model const& osc::SimulationModelStatePair::getModel() const
 {

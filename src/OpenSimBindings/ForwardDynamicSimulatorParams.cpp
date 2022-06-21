@@ -19,6 +19,20 @@ static constexpr char const* g_IntegratorMaximumStepSizeDesc = "The maximum step
 static constexpr char const* g_IntegratorAccuracyTitle = "Accuracy";
 static constexpr char const* g_IntegratorAccuracyDesc = "Target accuracy for the integrator. Mostly only relevant for error-controlled integrators that change their step size by comparing this accuracy value to measured integration error";
 
+
+// public API
+
+osc::ForwardDynamicSimulatorParams::ForwardDynamicSimulatorParams() :
+    FinalTime{SimulationClock::start() + SimulationClock::duration{10.0}},
+    IntegratorMethodUsed{IntegratorMethod::OpenSimManagerDefault},
+    ReportingInterval{1.0/100.0},
+    IntegratorStepLimit{20000},
+    IntegratorMinimumStepSize{1.0e-8},
+    IntegratorMaximumStepSize{1.0},
+    IntegratorAccuracy{1.0e-5}
+{
+}
+
 osc::ParamBlock osc::ToParamBlock(ForwardDynamicSimulatorParams const& p)
 {
     ParamBlock rv;

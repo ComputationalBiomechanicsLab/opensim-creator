@@ -55,15 +55,9 @@ public:
 		return m_CommitTime;
 	}
 
-	SynchronizedValueGuard<OpenSim::Model> getModel() const
+	SynchronizedValueGuard<OpenSim::Model const> getModel() const
 	{
 		return {m_AccessMutex, *m_Model};
-	}
-
-	std::unique_ptr<OpenSim::Model> extractUninitializedModel() const
-	{
-		auto guard = std::scoped_lock{m_AccessMutex};
-		return std::make_unique<OpenSim::Model>(*m_Model);
 	}
 
 	UID getModelVersion() const
@@ -77,7 +71,7 @@ public:
 	}
 
 private:
-	mutable std::mutex m_AccessMutex;  // used when copying the model (assume OpenSim is not threadsafe)
+	mutable std::mutex m_AccessMutex;
 	UID m_ID;
 	UID m_MaybeParentID;
 	std::chrono::system_clock::time_point m_CommitTime;
@@ -126,14 +120,9 @@ std::chrono::system_clock::time_point osc::ModelStateCommit::getCommitTime() con
 	return m_Impl->getCommitTime();
 }
 
-osc::SynchronizedValueGuard<OpenSim::Model> osc::ModelStateCommit::getModel() const
+osc::SynchronizedValueGuard<OpenSim::Model const> osc::ModelStateCommit::getModel() const
 {
 	return m_Impl->getModel();
-}
-
-std::unique_ptr<OpenSim::Model> osc::ModelStateCommit::extractUninitializedModel() const
-{
-	return m_Impl->extractUninitializedModel();
 }
 
 osc::UID osc::ModelStateCommit::getModelVersion() const

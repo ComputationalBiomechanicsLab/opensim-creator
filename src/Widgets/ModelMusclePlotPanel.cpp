@@ -384,7 +384,7 @@ namespace
 			return std::make_unique<Plot>(*params);  // empty plot
 		}
 
-		std::unique_ptr<OpenSim::Model> model = params->getCommit().extractUninitializedModel();
+		auto model = std::make_unique<OpenSim::Model>(*params->getCommit().getModel());
 
 		if (stopToken.stop_requested())
 		{

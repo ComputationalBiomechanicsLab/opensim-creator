@@ -10,7 +10,8 @@
 #include <string>
 #include <unordered_map>
 
-struct osc::MeshCache::Impl final {
+class osc::MeshCache::Impl final {
+public:
     std::shared_ptr<Mesh> sphere = std::make_shared<Mesh>(GenUntexturedUVSphere(12, 12));
     std::shared_ptr<Mesh> cylinder = std::make_shared<Mesh>(GenUntexturedSimbodyCylinder(16));
     std::shared_ptr<Mesh> cube = std::make_shared<Mesh>(GenCube());
@@ -34,11 +35,21 @@ osc::MeshCache::MeshCache() :
 {
 }
 
-osc::MeshCache::MeshCache(MeshCache&&) noexcept = default;
+osc::MeshCache::MeshCache(MeshCache&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
 
-osc::MeshCache& osc::MeshCache::operator=(MeshCache&&) noexcept = default;
+osc::MeshCache& osc::MeshCache::operator=(MeshCache&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
 
-osc::MeshCache::~MeshCache() noexcept = default;
+osc::MeshCache::~MeshCache() noexcept
+{
+    delete m_Impl;
+}
 
 std::shared_ptr<osc::Mesh> osc::MeshCache::getMeshFile(std::string const& p)
 {

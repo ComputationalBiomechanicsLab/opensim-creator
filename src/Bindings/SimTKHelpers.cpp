@@ -585,19 +585,25 @@ osc::DecorativeGeometryHandler::DecorativeGeometryHandler(MeshCache& meshCache,
                                                           SimTK::State const& state,
                                                           float fixupScaleFactor,
                                                           DecorationConsumer& decorationConsumer) :
-    m_Impl{std::make_unique<Impl>(meshCache,
-                                  matter,
-                                  state,
-                                  std::move(fixupScaleFactor),
-                                  decorationConsumer)}
+    m_Impl{new Impl{meshCache, matter, state, std::move(fixupScaleFactor), decorationConsumer}}
 {
 }
 
-osc::DecorativeGeometryHandler::DecorativeGeometryHandler(DecorativeGeometryHandler&&) noexcept = default;
+osc::DecorativeGeometryHandler::DecorativeGeometryHandler(DecorativeGeometryHandler&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
 
-osc::DecorativeGeometryHandler& osc::DecorativeGeometryHandler::operator=(DecorativeGeometryHandler&&) noexcept = default;
+osc::DecorativeGeometryHandler& osc::DecorativeGeometryHandler::operator=(DecorativeGeometryHandler&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
 
-osc::DecorativeGeometryHandler::~DecorativeGeometryHandler() noexcept = default;
+osc::DecorativeGeometryHandler::~DecorativeGeometryHandler() noexcept
+{
+    delete m_Impl;
+}
 
 void osc::DecorativeGeometryHandler::operator()(SimTK::DecorativeGeometry const& dg)
 {

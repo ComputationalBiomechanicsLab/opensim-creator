@@ -563,7 +563,7 @@ private:
 
         if (c)
         {
-            UiModelStatePair newScratch{c->extractUninitializedModel()};
+            UiModelStatePair newScratch{std::make_unique<OpenSim::Model>(*c->getModel())};
             if (!skipCopyingSelection)
             {
                 // care: skipping this copy can be necessary because getSelected etc. might rethrow
@@ -600,7 +600,7 @@ private:
         //
         // - user's selection state should be "sticky" between undo/redo
         // - user's scene scale factor should be "sticky" between undo/redo
-        UiModelStatePair newModel{parent->extractUninitializedModel()};
+        UiModelStatePair newModel{std::make_unique<OpenSim::Model>(*parent->getModel())};
         newModel.setSelectedHoveredAndIsolatedFrom(m_Scratch);
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
 
@@ -629,7 +629,7 @@ private:
         //
         // - user's selection state should be "sticky" between undo/redo
         // - user's scene scale factor should be "sticky" between undo/redo
-        UiModelStatePair newModel{c->extractUninitializedModel()};
+        UiModelStatePair newModel{std::make_unique<OpenSim::Model>(*c->getModel())};
         newModel.setSelectedHoveredAndIsolatedFrom(m_Scratch);
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
 

@@ -15,8 +15,6 @@
 #include <nonstd/span.hpp>
 
 #include <cstdint>
-#include <memory>
-#include <optional>
 #include <vector>
 
 namespace osc
@@ -78,8 +76,8 @@ namespace osc
         void Draw();
         void DrawInstanced(size_t n);
 
-        struct Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        class Impl;
+        Impl* m_Impl;
     };
 }

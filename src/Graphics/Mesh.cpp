@@ -32,7 +32,8 @@ union PackedIndex {
 static_assert(sizeof(PackedIndex) == sizeof(uint32_t));
 static_assert(alignof(PackedIndex) == alignof(uint32_t));
 
-struct osc::Mesh::Impl final {
+class osc::Mesh::Impl final {
+public:
     MeshTopography topography;
     std::vector<glm::vec3> verts;
     std::vector<glm::vec3> normals;
@@ -187,11 +188,21 @@ osc::Mesh::Mesh(MeshData cpuMesh) :
     m_Impl->gpuBuffersOutOfDate = true;
 }
 
-osc::Mesh::Mesh(Mesh&&) noexcept = default;
+osc::Mesh::Mesh(Mesh&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
 
-osc::Mesh::~Mesh() noexcept = default;
+osc::Mesh& osc::Mesh::operator=(Mesh&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
 
-osc::Mesh& osc::Mesh::operator=(Mesh&&) noexcept = default;
+osc::Mesh::~Mesh() noexcept
+{
+    delete m_Impl;
+}
 
 osc::MeshTopography osc::Mesh::getTopography() const
 {

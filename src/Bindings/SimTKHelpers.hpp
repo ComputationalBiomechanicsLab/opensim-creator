@@ -85,8 +85,8 @@ namespace osc
 
         void operator()(SimTK::DecorativeGeometry const&);
 
-        class Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        class Impl;
+        Impl* m_Impl;
     };
 }

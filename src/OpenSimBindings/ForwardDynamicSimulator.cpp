@@ -427,13 +427,25 @@ osc::OutputExtractor osc::GetFdSimulatorOutputExtractor(int idx)
 osc::ForwardDynamicSimulator::ForwardDynamicSimulator(BasicModelStatePair msp,
                                 ForwardDynamicSimulatorParams const& params,
                                 std::function<void(SimulationReport)> reportCallback) :
-    m_Impl{std::make_unique<Impl>(std::move(msp), params, std::move(reportCallback))}
+    m_Impl{new Impl{std::move(msp), params, std::move(reportCallback)}}
 {
 }
 
-osc::ForwardDynamicSimulator::ForwardDynamicSimulator(ForwardDynamicSimulator&&) noexcept = default;
-osc::ForwardDynamicSimulator& osc::ForwardDynamicSimulator::operator=(ForwardDynamicSimulator&&) noexcept = default;
-osc::ForwardDynamicSimulator::~ForwardDynamicSimulator() noexcept = default;
+osc::ForwardDynamicSimulator::ForwardDynamicSimulator(ForwardDynamicSimulator&& tmp) noexcept :
+    m_Impl{std::exchange(m_Impl, nullptr)}
+{
+}
+
+osc::ForwardDynamicSimulator& osc::ForwardDynamicSimulator::operator=(ForwardDynamicSimulator&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::ForwardDynamicSimulator::~ForwardDynamicSimulator() noexcept
+{
+    delete m_Impl;
+}
 
 osc::SimulationStatus osc::ForwardDynamicSimulator::getStatus() const
 {
