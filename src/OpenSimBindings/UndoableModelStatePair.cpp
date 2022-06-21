@@ -108,6 +108,16 @@ namespace
             m_FixupScaleFactor = sf;
         }
 
+        OpenSim::ComponentPath const& getSelectedPath() const
+        {
+            return m_MaybeSelected;
+        }
+
+        void setSelectedPath(OpenSim::ComponentPath const& p)
+        {
+            m_MaybeSelected = p;
+        }
+
         OpenSim::Component const* getSelected() const override
         {
             return osc::FindComponent(*m_Model, m_MaybeSelected);
@@ -125,6 +135,16 @@ namespace
             }
         }
 
+        OpenSim::ComponentPath const& getHoveredPath() const
+        {
+            return m_MaybeHovered;
+        }
+
+        void setHoveredPath(OpenSim::ComponentPath const& p)
+        {
+            m_MaybeHovered = p;
+        }
+
         OpenSim::Component const* getHovered() const override
         {
             return osc::FindComponent(*m_Model, m_MaybeHovered);
@@ -140,6 +160,16 @@ namespace
             {
                 m_MaybeHovered = {};
             }
+        }
+
+        OpenSim::ComponentPath const& getIsolatedPath() const
+        {
+            return m_MaybeIsolated;
+        }
+
+        void setIsolatedPath(OpenSim::ComponentPath const& p)
+        {
+            m_MaybeIsolated = p;
         }
 
         OpenSim::Component const* getIsolated() const override
@@ -179,6 +209,13 @@ namespace
         // (maybe) absolute path to the current isolation (empty otherwise)
         OpenSim::ComponentPath m_MaybeIsolated;
     };
+
+    static void CopySelectedHoveredAndIsolated(UiModelStatePair const& src, UiModelStatePair& dest)
+    {
+        dest.setSelectedPath(src.getSelectedPath());
+        dest.setHoveredPath(src.getHoveredPath());
+        dest.setIsolatedPath(src.getIsolatedPath());
+    }
 }
 
 class osc::UndoableModelStatePair::Impl final {
@@ -228,16 +265,6 @@ public:
         return m_MaybeFilesystemTimestamp;
     }
 
-    UiModelStatePair const& getUiModel() const
-    {
-        return getScratch();
-    }
-
-    UiModelStatePair& updUiModel()
-    {
-        return updScratch();
-    }
-
     ModelStateCommit const& getLatestCommit() const
     {
         return getHeadCommit();
@@ -272,8 +299,6 @@ public:
 
     void commit(std::string_view message)
     {
-        UiModelStatePair& scratch = updScratch();
-
         // ensure the scratch space is clean
         try
         {
@@ -291,84 +316,84 @@ public:
 
     void rollback()
     {
-        checkout(true);  // care: skip copying selection because a rollback is aggro
+        checkout();  // care: skip copying selection because a rollback is aggro
     }
 
     OpenSim::Model const& getModel() const
     {
-        return getScratch().getModel();
+        return m_Scratch.getModel();
     }
 
     OpenSim::Model& updModel()
     {
-        return updScratch().updModel();
+        return m_Scratch.updModel();
     }
 
     void setModel(std::unique_ptr<OpenSim::Model> newModel)
     {
         UiModelStatePair p{std::move(newModel)};
-        p.setSelectedHoveredAndIsolatedFrom(getUiModel());
-        updUiModel() = std::move(p);
+        CopySelectedHoveredAndIsolated(m_Scratch, p);
+        m_Scratch = std::move(p);
     }
 
     UID getModelVersion() const
     {
-        return getUiModel().getModelVersion();
+        return m_Scratch.getModelVersion();
     }
 
     void setModelVersion(UID version)
     {
-        updScratch().setModelVersion(version);
+        m_Scratch.setModelVersion(version);
     }
 
     SimTK::State const& getState() const
     {
-        return getUiModel().getState();
+        return m_Scratch.getState();
     }
 
     UID getStateVersion() const
     {
-        return getUiModel().getStateVersion();
+        return m_Scratch.getStateVersion();
     }
 
     float getFixupScaleFactor() const
     {
-        return getUiModel().getFixupScaleFactor();
+        return m_Scratch.getFixupScaleFactor();
     }
 
     void setFixupScaleFactor(float v)
     {
-        updUiModel().setFixupScaleFactor(v);
+        m_Scratch.setFixupScaleFactor(v);
     }
 
     OpenSim::Component const* getSelected() const
     {
-        return getUiModel().getSelected();
+        return m_Scratch.getSelected();
     }
 
     void setSelected(OpenSim::Component const* c)
     {
-        updUiModel().setSelected(c);
+        m_Scratch.setSelected(c);
     }
 
     OpenSim::Component const* getHovered() const
     {
-        return getUiModel().getHovered();
+        return m_Scratch.getHovered();
     }
 
     void setHovered(OpenSim::Component const* c)
     {
-        updUiModel().setHovered(c);
+        m_Scratch.setHovered(c);
     }
 
     OpenSim::Component const* getIsolated() const
     {
-        return getUiModel().getIsolated();
+        return m_Scratch.getIsolated();
     }
 
     void setIsolated(OpenSim::Component const* c)
     {
-        updUiModel().setIsolated(c);
+        m_Scratch.setIsolated(c);
     }
 
 private:
@@ -559,7 +584,7 @@ private:
     // checks out the current checkout to be active (scratch)
     //
     // effectively, reset the scratch space
-    void checkout(bool skipCopyingSelection = false)
+    void checkout()
     {
         // because this is a "reset", try to maintain useful state from the
         // scratch space - things like reset and scaling state, which the
@@ -570,13 +595,8 @@ private:
         if (c)
         {
             UiModelStatePair newScratch{std::make_unique<OpenSim::Model>(*c->getModel())};
-            if (!skipCopyingSelection)
-            {
-                // care: skipping this copy can be necessary because getSelected etc. might rethrow
-                newScratch.setSelectedHoveredAndIsolatedFrom(m_Scratch);
-            }
+            CopySelectedHoveredAndIsolated(m_Scratch, newScratch);
             newScratch.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
-
             m_Scratch = std::move(newScratch);
         }
     }
@@ -607,7 +627,7 @@ private:
         // - user's selection state should be "sticky" between undo/redo
         // - user's scene scale factor should be "sticky" between undo/redo
         UiModelStatePair newModel{std::make_unique<OpenSim::Model>(*parent->getModel())};
-        newModel.setSelectedHoveredAndIsolatedFrom(m_Scratch);
+        CopySelectedHoveredAndIsolated(m_Scratch, newModel);
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
 
         m_Scratch = std::move(newModel);
@@ -636,21 +656,11 @@ private:
         // - user's selection state should be "sticky" between undo/redo
         // - user's scene scale factor should be "sticky" between undo/redo
         UiModelStatePair newModel{std::make_unique<OpenSim::Model>(*c->getModel())};
-        newModel.setSelectedHoveredAndIsolatedFrom(m_Scratch);
+        CopySelectedHoveredAndIsolated(m_Scratch, newModel);
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
 
         m_Scratch = std::move(newModel);
         m_CurrentHead = c->getID();
-    }
-
-    UiModelStatePair& updScratch()
-    {
-        return m_Scratch;
-    }
-
-    UiModelStatePair const& getScratch() const
-    {
-        return m_Scratch;
     }
 
     std::filesystem::path const& getFilesystemLocation() const
@@ -771,6 +781,7 @@ std::filesystem::file_time_type osc::UndoableModelStatePair::getLastFilesystemWr
 {
     return m_Impl->getLastFilesystemWriteTime();
 }
+
 
 osc::ModelStateCommit const& osc::UndoableModelStatePair::getLatestCommit() const
 {

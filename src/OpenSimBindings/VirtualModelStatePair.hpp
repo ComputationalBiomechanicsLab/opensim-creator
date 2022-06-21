@@ -31,12 +31,5 @@ namespace osc
 		virtual void setIsolated(OpenSim::Component const*) {}
 
 		virtual void setFixupScaleFactor(float) {}
-
-		virtual void setSelectedHoveredAndIsolatedFrom(VirtualModelStatePair const& other)
-		{
-			setSelected(other.getSelected());
-			setHovered(other.getHovered());
-			setIsolated(other.getIsolated());
-		}
 	};
 }
