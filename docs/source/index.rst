@@ -49,12 +49,6 @@ Table of Contents
 
 .. toctree::
     :maxdepth: 2
-    :caption: Challenges
-
-    chal1
-
-.. toctree::
-    :maxdepth: 2
     :caption: Documentation Pages
 
 .. toctree::

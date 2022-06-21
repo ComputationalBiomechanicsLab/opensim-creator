@@ -69,6 +69,10 @@ All notable changes to this project will be documented here. The format is based
 - Saving a model should no longer trigger a model reload (#278)
   - Previously, the system that monitors the on-disk file would notice it has been updated
     and dutifully reload the model.
+- The 'challenge: model a finger' page was removed (#279)
+  - It was hastily written in earlier versions of the tutorial documentation. The main tutorials
+    supercede it
+  - Challenges/exercises may be later re-introduced, but in a more fleshed-out form
 
 
 ## [0.1.6] - 2022/05/09
