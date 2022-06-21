@@ -21,9 +21,9 @@ R"(
     out vec4 GouraudBrightness;
     out vec2 TexCoord;
 
-    const float ambientStrength = 0.7f;
-    const float diffuseStrength = 0.3f;
-    const float specularStrength = 0.1f;
+    const float ambientStrength = 0.5f;
+    const float diffuseStrength = 0.5f;
+    const float specularStrength = 0.7f;
     const float shininess = 32;
 
     void main()

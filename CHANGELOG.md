@@ -62,6 +62,8 @@ All notable changes to this project will be documented here. The format is based
 - The 3D scene light in the editor and simulation screens now points away from the camera more (#275)
   - This makes it easier to see inside of concave geometry
 - The floor is now visible through semi-transparent geometry, such as wrapping surfaces (#276)
+- The 3D scene now uses shader values that makes edges in the model "pop" more (#277)
+  - This is intended to make it easier to view the model in the editor and simulation tabs
 
 
 ## [0.1.6] - 2022/05/09
