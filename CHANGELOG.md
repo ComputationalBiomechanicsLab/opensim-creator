@@ -58,6 +58,9 @@ All notable changes to this project will be documented here. The format is based
   - This replaces the other idea of having people press an extra button (#265)
 - Fixed an application crash that could happen when changing a joint type (#263)
   - It was because the backend didn't clear cached pointers to the old joint (see issue)
+- Rim highlighting looks a little bit better in high-aspect-ratio viewers (#273)
+- The 3D scene light in the editor and simulation screens now points away from the camera more (#275)
+  - This makes it easier to see inside of concave geometry
 
 
 ## [0.1.6] - 2022/05/09

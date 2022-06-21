@@ -1379,7 +1379,7 @@ osc::UiModelViewerResponse osc::UiModelViewer::draw(VirtualConstModelStatePair c
     {
         glm::vec3 p = glm::normalize(-impl.camera.focusPoint - impl.camera.getPos());
         glm::vec3 up = {0.0f, 1.0f, 0.0f};
-        glm::vec3 mp = glm::rotate(glm::mat4{1.0f}, 1.25f * fpi4, up) * glm::vec4{p, 0.0f};
+        glm::vec3 mp = glm::rotate(glm::mat4{1.0f}, 1.05f * fpi4, up) * glm::vec4{p, 0.0f};
         impl.lightDir = glm::normalize(mp + -up);
     }
 
