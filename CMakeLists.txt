@@ -215,6 +215,8 @@ target_compile_options(osc_configuration INTERFACE
 
         # if address sanitizer is specified, use it
         $<$<BOOL:${OSC_USE_ASAN}>:-fsanitize=address>
+
+        -Wno-unused  # disable: broken by STB headers
     >
 
     # clang flags
@@ -232,7 +234,6 @@ target_compile_options(osc_configuration INTERFACE
 
     # gcc flags
     $<$<CXX_COMPILER_ID:GNU>:
-        -Wno-unused  # disable: broken by STB headers
     >
 )
 
