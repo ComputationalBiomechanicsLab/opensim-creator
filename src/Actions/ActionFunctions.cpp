@@ -441,6 +441,7 @@ bool osc::ActionRezeroSelectedJoint(osc::UndoableModelStatePair& uim)
 
     if (!selection)
     {
+        // nothing selected
         return false;
     }
 
@@ -448,6 +449,7 @@ bool osc::ActionRezeroSelectedJoint(osc::UndoableModelStatePair& uim)
 
     if (!parentPOF)
     {
+        // selection has no parent
         return false;
     }
 
@@ -458,19 +460,42 @@ bool osc::ActionRezeroSelectedJoint(osc::UndoableModelStatePair& uim)
     SimTK::Transform child2parent = parentXform.invert() * childXform;
     SimTK::Transform newXform = parentPOF->getOffsetTransform() * child2parent;
 
+    OpenSim::ComponentPath jointPath = selection->getAbsolutePath();
     OpenSim::ComponentPath parentPath = parentPOF->getAbsolutePath();
-
     UID oldVersion = uim.getModelVersion();
     OpenSim::Model& mutModel = uim.updModel();
-    OpenSim::PhysicalOffsetFrame* mutParent = osc::FindComponentMut<OpenSim::PhysicalOffsetFrame>(mutModel, parentPath);
 
-    if (!mutParent)
+    OpenSim::Joint* mutJoint = osc::FindComponentMut<OpenSim::Joint>(mutModel, jointPath);
+    if (!mutJoint)
     {
+        // cannot find mutable version of the joint
         uim.setModelVersion(oldVersion);
         return false;
     }
 
+    OpenSim::PhysicalOffsetFrame* mutParent = osc::FindComponentMut<OpenSim::PhysicalOffsetFrame>(mutModel, parentPath);
+    if (!mutParent)
+    {
+        // cannot find mutable version of the parent offset frame
+        uim.setModelVersion(oldVersion);
+        return false;
+    }
+
+    // else: perform model transformation
+
+    // first, zero all the joint's coordinates
+    //
+    // (we're assuming that the new transform performs the same function)
+    for (int i = 0, nc = mutJoint->getProperty_coordinates().size(); i < nc; ++i)
+    {
+        OpenSim::Coordinate& c = mutJoint->upd_coordinates(i);
+        c.setDefaultValue(0.0);
+    }
+
+    // then set the parent offset frame's transform to "do the work"
     mutParent->setOffsetTransform(newXform);
+
+    // and then put the model back into a valid state, ready for committing etc.
     mutModel.finalizeConnections();
     osc::InitializeModel(mutModel);
     osc::InitializeState(mutModel);
