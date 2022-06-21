@@ -19,7 +19,6 @@ namespace OpenSim
 
 namespace osc
 {
-    class CoordinateEdit;
     class MainUIStateAPI;
     class ObjectPropertyEdit;
     class UndoableModelStatePair;

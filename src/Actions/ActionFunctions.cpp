@@ -5,7 +5,6 @@
 #include "src/OpenSimBindings/BasicModelStatePair.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulation.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp"
-#include "src/OpenSimBindings/ForwardDynamicSimulator.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/StoFileSimulation.hpp"
@@ -23,19 +22,38 @@
 #include "src/Widgets/ObjectPropertiesEditor.hpp"
 
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentList.h>
+#include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Common/ComponentSocket.h>
+#include <OpenSim/Common/Exception.h>
+#include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Common/Property.h>
+#include <OpenSim/Common/PropertyObjArray.h>
+#include <OpenSim/Common/Set.h>
+#include <OpenSim/Simulation/Model/ContactGeometry.h>
+#include <OpenSim/Simulation/Model/GeometryPath.h>
+#include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
+#include <OpenSim/Simulation/Model/OffsetFrame.h>
+#include <OpenSim/Simulation/Model/PathActuator.h>
+#include <OpenSim/Simulation/Model/PathPointSet.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 
+#include <algorithm>
+#include <chrono>
+#include <exception>
 #include <memory>
-#include <stdexcept>
+#include <optional>
+#include <typeinfo>
 #include <utility>
-
+#include <vector>
 
 static void OpenOsimInLoadingTab(osc::MainUIStateAPI* api, std::filesystem::path p)
 {
