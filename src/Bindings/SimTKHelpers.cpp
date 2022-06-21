@@ -1,5 +1,6 @@
 #include "SimTKHelpers.hpp"
 
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Maths/Geometry.hpp"
