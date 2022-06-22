@@ -1,6 +1,9 @@
 #include "MuscleColoringStyle.hpp"
 
+#include <nonstd/span.hpp>
+
 #include <array>
+#include <cstddef>
 
 static std::array<osc::MuscleColoringStyle, static_cast<size_t>(osc::MuscleColoringStyle::TOTAL)> CreateDecorationStyleLut()
 {

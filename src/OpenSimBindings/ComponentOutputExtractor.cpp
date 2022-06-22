@@ -6,12 +6,19 @@
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Perf.hpp"
 
-#include <OpenSim/Simulation/Model/Model.h>
+#include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
-#include <SimTKcommon.h>
+#include <OpenSim/Common/ComponentOutput.h>
+#include <OpenSim/Common/ComponentPath.h>
+#include <SimTKcommon/SmallMatrix.h>
 
+#include <algorithm>
+#include <cmath>
+#include <memory>
 #include <typeinfo>
 #include <sstream>
+#include <utility>
+#include <vector>
 
 // named namespace is due to an MSVC internal linkage compiler bug
 namespace output_magic

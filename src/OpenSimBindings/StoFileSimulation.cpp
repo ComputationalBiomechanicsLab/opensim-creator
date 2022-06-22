@@ -4,22 +4,32 @@
 #include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/SimulationStatus.hpp"
-#include "src/OpenSimBindings/VirtualSimulation.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 
 #include <nonstd/span.hpp>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentList.h>
+#include <OpenSim/Common/StateVector.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/StatesTrajectory.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+#include <SimTKcommon.h>
+#include <SimTKcommon/Orientation.h>
+#include <SimTKcommon/Scalar.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <filesystem>
 #include <memory>
-#include <stdexcept>
-#include <unordered_set>
+#include <mutex>
+#include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 static std::vector<OpenSim::Coordinate*> GetLockedCoordinates(OpenSim::Model& m)
@@ -29,7 +39,7 @@ static std::vector<OpenSim::Coordinate*> GetLockedCoordinates(OpenSim::Model& m)
 	{
 		if (c.getDefaultLocked())
 		{
-			rv.push_back(&c);
+            rv.push_back(&c);
 		}
 	}
 	return rv;
@@ -39,7 +49,7 @@ static void SetCoordDefaultLocked(nonstd::span<OpenSim::Coordinate*> cs, bool v)
 {
 	for (OpenSim::Coordinate* c : cs)
 	{
-		c->setDefaultLocked(v);
+        c->setDefaultLocked(v);
 	}
 }
 

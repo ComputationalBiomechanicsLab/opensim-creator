@@ -9,8 +9,6 @@
 
 namespace SimTK
 {
-    class MultibodySystem;
-    class Integrator;
     class State;
 }
 

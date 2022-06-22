@@ -1,7 +1,5 @@
 #pragma once
 
-#include "src/Graphics/BasicRenderer.hpp"
-
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
 
@@ -9,7 +7,9 @@
 
 namespace osc
 {
-    struct BasicSceneElement;
+    class BasicRenderer;
+    class BasicRendererParams;
+    class BasicSceneElement;
 }
 
 namespace osc
@@ -30,7 +30,7 @@ namespace osc
         int getSamples() const;
         void setSamples(int samples);
 
-        void draw(BasicRenderer::Params const&, nonstd::span<BasicSceneElement const>);
+        void draw(BasicRendererParams const&, nonstd::span<BasicSceneElement const>);
 
         bool isHovered() const;
         bool isLeftClicked() const;

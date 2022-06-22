@@ -9,20 +9,36 @@
 #include "src/Platform/Config.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
+#include "src/Platform/RecentFile.hpp"
 #include "src/Platform/Screen.hpp"
-#include "src/Platform/Styling.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 
 #include <GL/glew.h>
+#include <glm/vec2.hpp>
+#include <glm/vec4.hpp>
+#include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <imgui/backends/imgui_impl_sdl.h>
+#include <SDL.h>
+#include <SDL_error.h>
+#include <SDL_keyboard.h>
+#include <SDL_mouse.h>
+#include <SDL_stdinc.h>
+#include <SDL_timer.h>
+#include <SDL_video.h>
 
+#include <algorithm>
+#include <cstring>
+#include <cmath>
+#include <ctime>
+#include <exception>
 #include <fstream>
-#include <locale>
+#include <mutex>
 #include <sstream>
+#include <stdexcept>
 
 
 // install backtrace dumper

@@ -3,7 +3,12 @@
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/CStringView.hpp"
+#include "src/Utils/Macros.hpp"
 
+#include <nonstd/span.hpp>
+#include <OpenSim/Common/ArrayPtrs.h>
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/Object.h>
 #include <OpenSim/Actuators/ActivationCoordinateActuator.h>
 #include <OpenSim/Actuators/BodyActuator.h>
 #include <OpenSim/Actuators/ClutchedPathSpring.h>
@@ -11,7 +16,6 @@
 #include <OpenSim/Actuators/DeGrooteFregly2016Muscle.h>
 #include <OpenSim/Actuators/McKibbenActuator.h>
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
-#include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 #include <OpenSim/Actuators/PointActuator.h>
 #include <OpenSim/Actuators/PointToPointActuator.h>
 #include <OpenSim/Actuators/RigidTendonMuscle.h>
@@ -21,19 +25,20 @@
 #include <OpenSim/ExampleComponents/ToyReflexController.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Control/ControlSetController.h>
-#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 #include <OpenSim/Simulation/Model/Blankevoort1991Ligament.h>
 #include <OpenSim/Simulation/Model/BushingForce.h>
 #include <OpenSim/Simulation/Model/ContactHalfSpace.h>
+#include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/ContactMesh.h>
 #include <OpenSim/Simulation/Model/ContactSphere.h>
 #include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
 #include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
 #include <OpenSim/Simulation/Model/ExternalForce.h>
-#include <OpenSim/Simulation/Model/ExpressionBasedCoordinateForce.h>
 #include <OpenSim/Simulation/Model/ExpressionBasedPointToPointForce.h>
+#include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/FunctionBasedBushingForce.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Simulation/Model/PathSpring.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
@@ -42,27 +47,34 @@
 #include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
 #include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
+#include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/RollingOnSurfaceConstraint.h>
-#include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 #include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 #include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 
 #include <algorithm>
-#include <array>
+#include <initializer_list>
+#include <iterator>
 #include <memory>
+#include <string>
+#include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 static bool SortedByClassName(std::shared_ptr<OpenSim::Component const> a, std::shared_ptr<OpenSim::Component const> b)

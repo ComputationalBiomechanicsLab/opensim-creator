@@ -1,21 +1,32 @@
 ﻿#pragma once
 
-#include "src/Graphics/Gl.hpp"
-#include "src/Graphics/MeshData.hpp"
 #include "src/Graphics/MeshTopography.hpp"
 #include "src/Maths/AABB.hpp"
-#include "src/Maths/BVH.hpp"
-#include "src/Maths/Line.hpp"
 #include "src/Maths/RayCollision.hpp"
-#include "src/Maths/Sphere.hpp"
-#include "src/Maths/Transform.hpp"
 
+#include <GL/glew.h>  // for GLenum
+#include <glm/mat4x3.hpp>
+#include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <vector>
+
+namespace gl
+{
+    class VertexArray;
+}
+
+namespace osc
+{
+    struct BVH;
+    struct Line;
+    struct MeshData;
+    struct Transform;
+}
 
 namespace osc
 {

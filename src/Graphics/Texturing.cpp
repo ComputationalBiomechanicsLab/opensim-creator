@@ -1,5 +1,7 @@
 #include "Texturing.hpp"
 
+#include "src/Graphics/Gl.hpp"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -8,6 +10,8 @@
 #include <stdexcept>
 #include <optional>
 #include <sstream>
+#include <type_traits>
+#include <utility>
 
 namespace stbi
 {

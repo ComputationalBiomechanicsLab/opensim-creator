@@ -4,7 +4,9 @@
 #include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/Utils/UID.hpp"
 
-#include <optional>
+#include <nonstd/span.hpp>
+
+#include <cstddef>
 #include <string>
 #include <string_view>
 

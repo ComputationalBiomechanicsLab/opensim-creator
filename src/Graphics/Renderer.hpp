@@ -1,6 +1,5 @@
 #pragma once
 
-#include "src/Graphics/Color.hpp"
 #include "src/Maths/Rect.hpp"
 
 #include <glm/vec2.hpp>
@@ -11,20 +10,20 @@
 #include <glm/mat4x3.hpp>
 #include <nonstd/span.hpp>
 
-#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace osc
 {
     struct AABB;
+    struct Rgba32;
     struct Transform;
 }
-
 
 // 2D texture
 //

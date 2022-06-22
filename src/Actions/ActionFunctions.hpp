@@ -130,7 +130,7 @@ namespace osc
     // sets the model's scale factor
     bool ActionSetModelSceneScaleFactorTo(UndoableModelStatePair&, float);
 
-    // add a new body to the model
+    // details of a body that should be added too a model
     struct BodyDetails {
         glm::vec3 CenterOfMass;
         glm::vec3 Inertia;
@@ -144,6 +144,8 @@ namespace osc
 
         BodyDetails();
     };
+
+    // add a new body to the model
     bool ActionAddBodyToModel(UndoableModelStatePair&, BodyDetails const&);
 
     // add the given component into the model graph

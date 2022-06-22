@@ -1,11 +1,14 @@
 #include "IoPoller.hpp"
 
 #include "src/Platform/App.hpp"
-#include "src/Utils/Assertions.hpp"
 
+#include <glm/vec2.hpp>
 #include <SDL_events.h>
+#include <SDL_keyboard.h>
+#include <SDL_mouse.h>
 
 #include <algorithm>
+#include <cstddef>
 
 osc::IoPoller::IoPoller() :
     DisplaySize{-1.0f, -1.0f},

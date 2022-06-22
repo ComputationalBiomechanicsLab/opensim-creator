@@ -1,9 +1,12 @@
 #pragma once
 
-#include "src/Graphics/Mesh.hpp"
-
 #include <memory>
 #include <string>
+
+namespace osc
+{
+    class Mesh;
+}
 
 namespace osc
 {

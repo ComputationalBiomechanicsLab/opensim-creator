@@ -40,7 +40,7 @@ public:
 		m_Renderer->setSamples(std::move(samples));
 	}
 
-	void draw(BasicRenderer::Params const& params, nonstd::span<BasicSceneElement const> els)
+    void draw(BasicRendererParams const& params, nonstd::span<BasicSceneElement const> els)
 	{
 		if (m_Renderer->getDimensions().x <= 0 || m_Renderer->getDimensions().y <= 0)
 		{
@@ -131,7 +131,7 @@ void osc::BasicSceneViewer::setSamples(int samples)
 	m_Impl->setSamples(std::move(samples));
 }
 
-void osc::BasicSceneViewer::draw(BasicRenderer::Params const& params, nonstd::span<BasicSceneElement const> els)
+void osc::BasicSceneViewer::draw(BasicRendererParams const& params, nonstd::span<BasicSceneElement const> els)
 {
 	m_Impl->draw(params, std::move(els));
 }

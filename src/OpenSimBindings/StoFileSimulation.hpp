@@ -4,6 +4,7 @@
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/SimulationStatus.hpp"
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
+#include "src/Utils/SynchronizedValue.hpp"
 
 #include <nonstd/span.hpp>
 
@@ -18,6 +19,7 @@ namespace OpenSim
 
 namespace osc
 {
+    class OutputExtractor;
     class ParamBlock;
 }
 

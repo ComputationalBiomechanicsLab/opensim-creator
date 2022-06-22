@@ -1,13 +1,18 @@
 #include "SimTKHelpers.hpp"
 
-#include "src/Graphics/Color.hpp"
-#include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/Mesh.hpp"
+#include "src/Graphics/MeshCache.hpp"
+#include "src/Graphics/MeshData.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Segment.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/Log.hpp"
 
+#include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/mat3x3.hpp>
+#include <glm/mat4x3.hpp>
+#include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <simbody/internal/common.h>
@@ -21,9 +26,11 @@
 #include <SimTKcommon/internal/PolygonalMesh.h>
 #include <SimTKcommon/SmallMatrix.h>
 
+#include <cstddef>
+#include <cstdint>
 #include <filesystem>
-#include <memory>
 #include <utility>
+#include <vector>
 
 static inline constexpr float g_LineThickness = 0.005f;
 static inline constexpr float g_FrameAxisLengthRescale = 0.25f;

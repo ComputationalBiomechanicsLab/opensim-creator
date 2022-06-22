@@ -5,7 +5,6 @@
 #include "src/Utils/SynchronizedValue.hpp"
 #include "src/Utils/UID.hpp"
 
-#include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <chrono>
@@ -13,18 +12,19 @@
 #include <mutex>
 #include <string>
 #include <string_view>
+#include <utility>
 
 class osc::ModelStateCommit::Impl final {
 public:
 	Impl(VirtualConstModelStatePair const& msp, std::string_view message) :
 		Impl{msp, message, UID::empty()}
-	{
+    {
 	}
 
 	Impl(VirtualConstModelStatePair const& msp, std::string_view message, UID parent) :
 		m_AccessMutex{},
 		m_ID{},
-		m_MaybeParentID{std::move(parent)},
+        m_MaybeParentID{std::move(parent)},
 		m_CommitTime{std::chrono::system_clock::now()},
 		m_Model{std::make_unique<OpenSim::Model>(msp.getModel())},
 		m_ModelVersion{msp.getModelVersion()},

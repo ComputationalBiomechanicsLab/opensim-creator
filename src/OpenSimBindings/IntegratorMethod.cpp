@@ -1,8 +1,13 @@
 #include "IntegratorMethod.hpp"
 
-#include <SimTKsimbody.h>
-#include <simmath/Integrator.h>
 #include <nonstd/span.hpp>
+#include <simmath/ExplicitEulerIntegrator.h>
+#include <simmath/RungeKutta2Integrator.h>
+#include <simmath/RungeKutta3Integrator.h>
+#include <simmath/RungeKuttaFeldbergIntegrator.h>
+#include <simmath/RungeKuttaMersonIntegrator.h>
+#include <simmath/SemiExplicitEuler2Integrator.h>
+#include <simmath/VerletIntegrator.h>
 
 #include <array>
 #include <cstddef>

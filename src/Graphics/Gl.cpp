@@ -1,5 +1,7 @@
 #include "Gl.hpp"
 
+#include <GL/glew.h>
+
 #include <sstream>
 #include <stdexcept>
 #include <vector>

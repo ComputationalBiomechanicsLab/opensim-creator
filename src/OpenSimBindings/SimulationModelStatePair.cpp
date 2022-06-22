@@ -3,6 +3,7 @@
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
+#include "src/Utils/SynchronizedValue.hpp"
 #include "src/Utils/UID.hpp"
 
 #include <OpenSim/Common/Component.h>
@@ -22,12 +23,12 @@ public:
 
 	OpenSim::Model const& getModel() const
 	{
-		return *m_Simulation->getModel();  // TODO: UH OH - lock leak
+        return *m_Simulation->getModel();  // TODO: UH OH - lock leak
 	}
 
 	UID getModelVersion() const
 	{
-		return m_ModelVersion;
+        return m_ModelVersion;
 	}
 
 	SimTK::State const& getState() const

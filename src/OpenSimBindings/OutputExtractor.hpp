@@ -1,7 +1,6 @@
 #pragma once
 
 #include "src/OpenSimBindings/VirtualOutputExtractor.hpp"
-#include "src/Utils/UID.hpp"
 
 #include <nonstd/span.hpp>
 
@@ -10,6 +9,7 @@
 #include <iosfwd>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 
@@ -22,13 +22,6 @@ namespace osc
 {
     class SimulationReport;
 }
-
-namespace SimTK
-{
-    class State;
-    class Integrator;
-}
-
 
 namespace osc
 {

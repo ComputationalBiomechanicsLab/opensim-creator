@@ -1,28 +1,45 @@
 #include "ForwardDynamicSimulator.hpp"
 
+#include "src/OpenSimBindings/BasicModelStatePair.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp"
 #include "src/OpenSimBindings/IntegratorOutputExtractor.hpp"
 #include "src/OpenSimBindings/IntegratorMethod.hpp"
 #include "src/OpenSimBindings/MultiBodySystemOutputExtractor.hpp"
+#include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/SimulationStatus.hpp"
+#include "src/OpenSimBindings/VirtualOutputExtractor.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Cpp20Shims.hpp"
+#include "src/Utils/UID.hpp"
 
+#include <nonstd/span.hpp>
+#include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <SimTKsimbody.h>
 #include <simmath/Integrator.h>
+#include <simmath/TimeStepper.h>
 
+#include <array>
 #include <atomic>
+#include <chrono>
+#include <cstddef>
+#include <exception>
 #include <functional>
 #include <memory>
-#include <stdexcept>
+#include <optional>
+#include <ratio>
 #include <string>
+#include <unordered_map>
 #include <utility>
-#include <variant>
 #include <vector>
+
+namespace OpenSim
+{
+    class Component;
+}
 
 namespace
 {

@@ -9,7 +9,8 @@
 
 namespace osc
 {
-    struct BasicSceneElement final {
+    class BasicSceneElement final {
+    public:
         Transform transform;
         glm::vec4 color;
         std::shared_ptr<Mesh> mesh;

@@ -2,14 +2,16 @@
 
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/Geometry.hpp"
-#include "src/Maths/Line.hpp"
 #include "src/Maths/RayCollision.hpp"
 #include "src/Utils/Assertions.hpp"
 
+#include <nonstd/span.hpp>
+
 #include <algorithm>
 #include <cstddef>
+#include <iterator>
 #include <limits>
-#include <utility>
+#include <memory>
 #include <cstddef>
 
 // recursively build the BVH

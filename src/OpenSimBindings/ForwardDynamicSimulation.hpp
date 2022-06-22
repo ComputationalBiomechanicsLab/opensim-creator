@@ -5,6 +5,7 @@
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/SimulationStatus.hpp"
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
+#include "src/Utils/SynchronizedValue.hpp"
 
 #include <nonstd/span.hpp>
 
@@ -13,7 +14,6 @@
 namespace OpenSim
 {
     class Model;
-    class Component;
 }
 
 namespace osc
@@ -21,12 +21,6 @@ namespace osc
     struct ForwardDynamicSimulatorParams;
     class ParamBlock;
     class OutputExtractor;
-    class SimulationReport;
-}
-
-namespace SimTK
-{
-    class State;
 }
 
 namespace osc

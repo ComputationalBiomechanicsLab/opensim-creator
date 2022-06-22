@@ -11,6 +11,7 @@
 #include <SDL_filesystem.h>
 #include <SDL_stdinc.h>
 
+#include <algorithm>
 #include <cstring>
 #include <memory>
 #include <sstream>
@@ -168,7 +169,6 @@ std::filesystem::path osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessa
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <ucontext.h>
 #include <unistd.h>
 #include <sys/types.h>

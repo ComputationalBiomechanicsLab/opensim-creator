@@ -4,6 +4,7 @@
 
 #include <filesystem>
 #include <string_view>
+#include <vector>
 
 // os: where all the icky OS/distro/filesystem-specific stuff is hidden
 namespace osc

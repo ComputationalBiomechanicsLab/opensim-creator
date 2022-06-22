@@ -3,11 +3,14 @@
 #include "src/Utils/CircularBuffer.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <cstdarg>
+#include <cstdio>
 #include <memory>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 // log: logging implementation

@@ -2,6 +2,9 @@
 
 #include "src/OpenSimBindings/SimulationClock.hpp"
 
+#include <chrono>
+#include <memory>
+#include <optional>
 #include <variant>
 
 static constexpr char const* g_FinalTimeTitle = "Final Time (sec)";

@@ -5,15 +5,21 @@
 #include "src/Platform/os.hpp"
 
 #include <OpenSim/Common/Logger.h>
+#include <OpenSim/Common/LogSink.h>
+#include <OpenSim/Common/RegisterTypes_osimCommon.h>
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
 #include <OpenSim/Analyses/RegisterTypes_osimAnalyses.h>
-#include <OpenSim/Common/RegisterTypes_osimCommon.h>
 #include <OpenSim/ExampleComponents/RegisterTypes_osimExampleComponents.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/RegisterTypes_osimSimulation.h>
 #include <OpenSim/Tools/RegisterTypes_osimTools.h>
-#include <OpenSim/Common/LogSink.h>
-#include <OpenSim/Common/Logger.h>
+
+#include <clocale>
+#include <locale>
+#include <filesystem>
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace
 {

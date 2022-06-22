@@ -6,11 +6,6 @@
 
 #include <functional>
 
-namespace OpenSim
-{
-    class Model;
-}
-
 namespace osc
 {
     struct ForwardDynamicSimulatorParams;

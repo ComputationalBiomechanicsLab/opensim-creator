@@ -1,7 +1,5 @@
 #include "Log.hpp"
 
-#include <cstdio>
-#include <exception>
 #include <iostream>
 #include <mutex>
 

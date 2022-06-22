@@ -3,10 +3,16 @@
 #include "src/Bindings/SimTKHelpers.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Maths/AABB.hpp"
+#include "src/Maths/BVH.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
-#include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "src/Maths/Segment.hpp"
+#include "src/Maths/Transform.hpp"
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
+#include "src/OpenSimBindings/CustomDecorationOptions.hpp"
+#include "src/OpenSimBindings/MuscleColoringStyle.hpp"
+#include "src/OpenSimBindings/MuscleDecorationStyle.hpp"
+#include "src/OpenSimBindings/MuscleSizingStyle.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
 #include "src/Platform/App.hpp"
@@ -15,15 +21,70 @@
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/Perf.hpp"
 
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
-#include <OpenSim/Simulation/Model/PointToPointSpring.h>
-#include <OpenSim/Simulation/Model/PathPoint.h>
-#include <Simbody.h>
+#include <glm/glm.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
+#include <nonstd/span.hpp>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentList.h>
+#include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Common/ComponentSocket.h>
+#include <OpenSim/Common/Exception.h>
+#include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Property.h>
+#include <OpenSim/Common/Set.h>
+#include <OpenSim/Simulation/Control/Controller.h>
+#include <OpenSim/Simulation/Model/AbstractPathPoint.h>
+#include <OpenSim/Simulation/Model/Appearance.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/ConstraintSet.h>
+#include <OpenSim/Simulation/Model/ContactGeometry.h>
+#include <OpenSim/Simulation/Model/ContactGeometrySet.h>
+#include <OpenSim/Simulation/Model/ControllerSet.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/Force.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
+#include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
+#include <OpenSim/Simulation/Model/GeometryPath.h>
+#include <OpenSim/Simulation/Model/JointSet.h>
+#include <OpenSim/Simulation/Model/Marker.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/Model/PathPoint.h>
+#include <OpenSim/Simulation/Model/PathPointSet.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Simulation/Model/PointToPointSpring.h>
+#include <OpenSim/Simulation/Model/Probe.h>
+#include <OpenSim/Simulation/Model/ProbeSet.h>
+#include <OpenSim/Simulation/Model/Station.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
+#include <OpenSim/Simulation/Wrap/PathWrap.h>
+#include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
+#include <OpenSim/Simulation/Wrap/PathWrapSet.h>
+#include <OpenSim/Simulation/Wrap/WrapObject.h>
+#include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+#include <SimTKcommon.h>
+#include <SimTKcommon/SmallMatrix.h>
 
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
+#include <ostream>
+#include <utility>
 #include <vector>
+
+namespace osc
+{
+    class Mesh;
+}
 
 static bool HasGreaterAlphaOrLowerMeshID(osc::ComponentDecoration const& a,
                                          osc::ComponentDecoration const& b)

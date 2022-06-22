@@ -1,6 +1,9 @@
 #include "MuscleSizingStyle.hpp"
 
+#include <nonstd/span.hpp>
+
 #include <array>
+#include <cstddef>
 
 static std::array<osc::MuscleSizingStyle, static_cast<size_t>(osc::MuscleSizingStyle::TOTAL)> CreateDecorationStyleLut()
 {

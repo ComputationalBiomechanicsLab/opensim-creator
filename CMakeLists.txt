@@ -295,6 +295,7 @@ add_library(osccore STATIC
     src/Graphics/Shaders/SolidColorShader.hpp
 
     src/Graphics/BasicRenderer.hpp
+    src/Graphics/BasicRendererParams.hpp
     src/Graphics/BasicSceneElement.hpp
     src/Graphics/Color.cpp
     src/Graphics/Color.hpp

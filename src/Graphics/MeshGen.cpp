@@ -10,7 +10,9 @@
 #include <glm/vec3.hpp>
 
 #include <array>
+#include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 namespace
@@ -201,13 +203,13 @@ osc::MeshData osc::GenUntexturedUVSphere(size_t sectors, size_t stacks)
     for (size_t stack = 0; stack <= stacks; ++stack)
     {
         float phi = fpi2 - static_cast<float>(stack) * phiStep;
-        float y = sinf(phi);
+        float y = std::sin(phi);
 
         for (unsigned sector = 0; sector <= sectors; ++sector)
         {
             float theta = sector * thetaStep;
-            float x = sinf(theta) * cosf(phi);
-            float z = -cosf(theta) * cosf(phi);
+            float x = std::sin(theta) * std::cos(phi);
+            float z = -std::cos(theta) * std::cos(phi);
             glm::vec3 pos{x, y, z};
             glm::vec3 normal{pos};
             points.push_back({pos, normal});
@@ -290,8 +292,8 @@ osc::MeshData osc::GenUntexturedSimbodyCylinder(size_t nsides)
             float thetaEnd = (i + 1) * stepAngle;
 
             // note: ensure these wind CCW (culling)
-            glm::vec3 e1 = {cosf(thetaEnd), topY, sinf(thetaEnd)};
-            glm::vec3 e2 = {cosf(thetaStart), topY, sinf(thetaStart)};
+            glm::vec3 e1 = {std::cos(thetaEnd), topY, std::sin(thetaEnd)};
+            glm::vec3 e2 = {std::cos(thetaStart), topY, std::sin(thetaStart)};
 
             push(middle, normal);
             push(e1, normal);
@@ -310,8 +312,8 @@ osc::MeshData osc::GenUntexturedSimbodyCylinder(size_t nsides)
             float thetaEnd = (i + 1) * stepAngle;
 
             // note: ensure these wind CCW (culling)
-            glm::vec3 e1 = {cosf(thetaStart), bottomY, sinf(thetaStart)};
-            glm::vec3 e2 = {cosf(thetaEnd), bottomY, sinf(thetaEnd)};
+            glm::vec3 e1 = {std::cos(thetaStart), bottomY, std::sin(thetaStart)};
+            glm::vec3 e2 = {std::cos(thetaEnd), bottomY, std::sin(thetaEnd)};
 
             push(middle, normal);
             push(e1, normal);
@@ -326,9 +328,9 @@ osc::MeshData osc::GenUntexturedSimbodyCylinder(size_t nsides)
         float thetaEnd = thetaStart + stepAngle;
         float normNormtheta = thetaStart + (stepAngle / 2.0f);
 
-        glm::vec3 normal = {cosf(normNormtheta), 0.0f, sinf(normNormtheta)};
-        glm::vec3 top1 = {cosf(thetaStart), topY, sinf(thetaStart)};
-        glm::vec3 top2 = {cosf(thetaEnd), topY, sinf(thetaEnd)};
+        glm::vec3 normal = {std::cos(normNormtheta), 0.0f, std::sin(normNormtheta)};
+        glm::vec3 top1 = {std::cos(thetaStart), topY, std::sin(thetaStart)};
+        glm::vec3 top2 = {std::cos(thetaEnd), topY, std::sin(thetaEnd)};
         glm::vec3 bottom1 = {top1.x, bottomY, top1.z};
         glm::vec3 bottom2 = {top2.x, bottomY, top2.z};
 
@@ -376,8 +378,8 @@ osc::MeshData osc::GenUntexturedSimbodyCone(size_t nsides)
             float thetaStart = i * stepAngle;
             float thetaEnd = (i + 1) * stepAngle;
 
-            glm::vec3 p1 = {cosf(thetaStart), bottomY, sinf(thetaStart)};
-            glm::vec3 p2 = {cosf(thetaEnd), bottomY, sinf(thetaEnd)};
+            glm::vec3 p1 = {std::cos(thetaStart), bottomY, std::sin(thetaStart)};
+            glm::vec3 p2 = {std::cos(thetaEnd), bottomY, std::sin(thetaEnd)};
 
             push(middle, normal);
             push(p1, normal);
@@ -395,8 +397,8 @@ osc::MeshData osc::GenUntexturedSimbodyCone(size_t nsides)
             glm::vec3 points[3] =
             {
                 {0.0f, topY, 0.0f},
-                {cosf(thetaEnd), bottomY, sinf(thetaEnd)},
-                {cosf(thetaStart), bottomY, sinf(thetaStart)},
+                {std::cos(thetaEnd), bottomY, std::sin(thetaEnd)},
+                {std::cos(thetaStart), bottomY, std::sin(thetaStart)},
             };
 
             glm::vec3 normal = osc::TriangleNormal(points);
@@ -535,8 +537,8 @@ osc::MeshData osc::GenCircle(size_t nsides)
         float theta2 = (i+1) * step;
 
         push(0.0f, 0.0f, 0.0f);
-        push(sinf(theta1), cosf(theta1), 0.0f);
-        push(sinf(theta2), cosf(theta2), 0.0f);
+        push(std::sin(theta1), std::cos(theta1), 0.0f);
+        push(std::sin(theta2), std::cos(theta2), 0.0f);
     }
 
     return rv;

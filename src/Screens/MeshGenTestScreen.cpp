@@ -1,6 +1,7 @@
 #include "MeshGenTestScreen.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Graphics/BasicRendererParams.hpp"
 #include "src/Graphics/BasicSceneElement.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
@@ -115,7 +116,7 @@ private:
     std::string m_CurrentMesh = "brick";
     std::map<std::string, std::shared_ptr<osc::Mesh>> m_AllMeshes = GenerateMeshLookup();
     BasicSceneViewer m_Viewer;
-    BasicRenderer::Params m_RenderParams;
+    BasicRendererParams m_RenderParams;
     PolarPerspectiveCamera m_Camera;
 };
 

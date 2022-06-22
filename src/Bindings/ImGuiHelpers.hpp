@@ -8,8 +8,8 @@
 #include <imgui.h>
 
 #include <cstddef>
+#include <initializer_list>
 #include <string>
-#include <utility>
 
 namespace osc
 {
@@ -41,7 +41,7 @@ namespace osc
     bool IsAnyKeyPressed(nonstd::span<int const>);
     bool IsAnyKeyPressed(std::initializer_list<int const>);
 
-    // return true if the user is pressing either left- or right-Ctrl
+    // returns true if the user is pressing either left- or right-Ctrl
     bool IsCtrlDown();
 
     // returns `true` if the user is pressing either:

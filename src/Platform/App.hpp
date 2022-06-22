@@ -2,7 +2,6 @@
 
 #include "src/Graphics/ShaderCache.hpp"
 #include "src/Platform/RecentFile.hpp"
-#include "src/Platform/Screen.hpp"
 #include "src/Utils/Assertions.hpp"
 
 #include <SDL_events.h>
@@ -10,17 +9,19 @@
 #include <glm/vec4.hpp>
 
 #include <chrono>
+#include <cstdint>
 #include <filesystem>
 #include <memory>
 #include <ratio>
+#include <string>
 #include <string_view>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
 namespace osc
 {
     class Config;
+    class Screen;
     class ShaderCache;
     class MeshCache;
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/VirtualModelStatePair.hpp"
 #include "src/Utils/UID.hpp"
@@ -11,6 +10,11 @@ namespace OpenSim
 {
 	class Component;
 	class Model;
+}
+
+namespace osc
+{
+    class Simulation;
 }
 
 namespace SimTK

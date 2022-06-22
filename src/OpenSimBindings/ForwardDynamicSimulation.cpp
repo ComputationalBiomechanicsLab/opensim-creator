@@ -3,23 +3,26 @@
 #include "src/OpenSimBindings/BasicModelStatePair.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulator.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp"
+#include "src/OpenSimBindings/OutputExtractor.hpp"
+#include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/SimulationStatus.hpp"
-#include "src/OpenSimBindings/VirtualSimulation.hpp"
 #include "src/Platform/App.hpp"
-#include "src/Utils/Algorithms.hpp"
-#include "src/Utils/UID.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 
 #include <nonstd/span.hpp>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <SimTKcommon.h>
 
 #include <algorithm>
+#include <chrono>
+#include <cstddef>
+#include <functional>
 #include <iterator>
-#include <optional>
-#include <mutex>
 #include <memory>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 // helper function for creating a simulator that's hooked up to the reports vector

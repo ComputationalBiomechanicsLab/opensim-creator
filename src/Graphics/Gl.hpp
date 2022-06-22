@@ -2,11 +2,14 @@
 
 #include <GL/glew.h>
 
+#include <cstddef>
+#include <cstdint>
 #include <exception>
 #include <initializer_list>
-#include <type_traits>
-#include <string>
 #include <limits>
+#include <string>
+#include <type_traits>
+#include <utility>
 
 #define GL_STRINGIFY(x) #x
 #define GL_TOSTRING(x) GL_STRINGIFY(x)

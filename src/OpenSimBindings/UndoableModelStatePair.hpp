@@ -1,9 +1,11 @@
 #pragma once
 
 #include "src/OpenSimBindings/VirtualModelStatePair.hpp"
+#include "src/Utils/UID.hpp"
 
 #include <filesystem>
 #include <memory>
+#include <string_view>
 
 namespace OpenSim
 {

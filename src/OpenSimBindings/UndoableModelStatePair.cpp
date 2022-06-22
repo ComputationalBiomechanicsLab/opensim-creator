@@ -5,16 +5,22 @@
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/Perf.hpp"
+#include "src/Utils/SynchronizedValue.hpp"
 #include "src/Utils/UID.hpp"
-#include "src/Utils/ClonePtr.hpp"
 
+#include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Common/PropertyObjArray.h>
+#include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
-#include <chrono>
+#include <exception>
 #include <filesystem>
 #include <memory>
-#include <stdexcept>
+#include <string>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 static std::unique_ptr<OpenSim::Model> makeNewModel()
 {

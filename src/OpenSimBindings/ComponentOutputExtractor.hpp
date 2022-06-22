@@ -5,6 +5,7 @@
 
 #include <nonstd/span.hpp>
 
+#include <cstddef>
 #include <string>
 
 
@@ -12,20 +13,12 @@ namespace OpenSim
 {
     class AbstractOutput;
     class Component;
-    class ComponentPath;
-    class Model;
 }
 
 namespace osc
 {
     class SimulationReport;
 }
-
-namespace SimTK
-{
-    class State;
-}
-
 
 namespace osc
 {

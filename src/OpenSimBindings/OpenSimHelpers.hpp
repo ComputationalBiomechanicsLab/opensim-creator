@@ -1,13 +1,14 @@
 #pragma once
 
-#include "src/OpenSimBindings/ComponentDecoration.hpp"
 #include "src/OpenSimBindings/CustomDecorationOptions.hpp"
 #include "src/Utils/CStringView.hpp"
 
+#include <nonstd/span.hpp>
+
 #include <filesystem>
 #include <memory>
+#include <string>
 #include <vector>
-#include <string_view>
 
 namespace OpenSim
 {
@@ -24,6 +25,9 @@ namespace OpenSim
 
 namespace osc
 {
+    struct BVH;
+    struct ComponentDecoration;
+    class CustomDecorationOptions;
     class VirtualConstModelStatePair;
     class UndoableModelStatePair;
 }

@@ -1,12 +1,8 @@
 #pragma once
 
 #include "src/Maths/AABB.hpp"
-#include "src/Maths/Disc.hpp"
 #include "src/Maths/Line.hpp"
-#include "src/Maths/Plane.hpp"
 #include "src/Maths/RayCollision.hpp"
-#include "src/Maths/Rect.hpp"
-#include "src/Maths/Segment.hpp"
 #include "src/Maths/Sphere.hpp"
 #include "src/Maths/Transform.hpp"
 
@@ -16,13 +12,19 @@
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x3.hpp>
 #include <glm/mat4x4.hpp>
-#include <glm/gtx/quaternion.hpp>
 #include <nonstd/span.hpp>
 
 #include <array>
 #include <cstdint>
 #include <cstddef>
-#include <vector>
+
+namespace osc
+{
+    struct Disc;
+    struct Plane;
+    struct Rect;
+    struct Segment;
+}
 
 // geometry: low-level, backend-independent, geometric maths
 namespace osc

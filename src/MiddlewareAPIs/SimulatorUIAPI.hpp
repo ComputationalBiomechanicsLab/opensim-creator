@@ -18,6 +18,11 @@ namespace osc
 	// this is how individual widgets within a simulator UI communicate with the simulator UI
 	class SimulatorUIAPI {
 	public:
+        SimulatorUIAPI() = default;
+        SimulatorUIAPI(SimulatorUIAPI const&) = delete;
+        SimulatorUIAPI(SimulatorUIAPI&&) noexcept = delete;
+        SimulatorUIAPI& operator=(SimulatorUIAPI const&) = delete;
+        SimulatorUIAPI& operator=(SimulatorUIAPI&&) noexcept = delete;
 		virtual ~SimulatorUIAPI() noexcept = default;
 
 		virtual VirtualSimulation& updSimulation() = 0;

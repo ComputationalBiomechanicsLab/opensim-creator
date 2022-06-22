@@ -1,5 +1,7 @@
 #include "SimulationStatus.hpp"
 
+#include <nonstd/span.hpp>
+
 #include <cstddef>
 #include <array>
 

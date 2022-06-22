@@ -2,7 +2,10 @@
 
 #include <SimTKcommon.h>
 
+#include <chrono>
+#include <memory>
 #include <unordered_map>
+#include <utility>
 
 class osc::SimulationReport::Impl final {
 public:

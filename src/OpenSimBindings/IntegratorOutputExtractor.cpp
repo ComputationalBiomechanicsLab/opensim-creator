@@ -6,11 +6,16 @@
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/UID.hpp"
 
+#include <nonstd/span.hpp>
 #include <simmath/Integrator.h>
 
-#include <string_view>
+#include <algorithm>
+#include <cmath>
+#include <memory>
 #include <optional>
+#include <string_view>
 #include <utility>
+#include <vector>
 
 static std::vector<osc::OutputExtractor> ConstructIntegratorOutputExtractors()
 {

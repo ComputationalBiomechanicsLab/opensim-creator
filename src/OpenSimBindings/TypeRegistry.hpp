@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <optional>
 #include <memory>
-#include <string>
 
 namespace OpenSim
 {

@@ -1,19 +1,34 @@
 #include "Renderer.hpp"
 
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Gl.hpp"
+#include "src/Maths/AABB.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
+#include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
 
+#include <glm/mat3x3.hpp>
+#include <glm/mat4x3.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+#include <nonstd/span.hpp>
+
 #include <algorithm>
 #include <array>
+#include <cstddef>
+#include <cstdint>
 #include <iostream>
+#include <iterator>
 #include <stdexcept>
 #include <sstream>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <variant>

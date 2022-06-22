@@ -1,24 +1,29 @@
 #include "Geometry.hpp"
 
+#include "src/Maths/Disc.hpp"
 #include "src/Maths/Line.hpp"
+#include "src/Maths/Plane.hpp"
+#include "src/Maths/Rect.hpp"
+#include "src/Maths/Segment.hpp"
 #include "src/Maths/RayCollision.hpp"
 #include "src/Maths/Sphere.hpp"
 #include "src/Utils/Assertions.hpp"
 
+#include <glm/glm.hpp>
 #include <glm/vec3.hpp>
-
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
-#include <iostream>
 #include <limits>
+#include <stdexcept>
 #include <utility>
 
 namespace

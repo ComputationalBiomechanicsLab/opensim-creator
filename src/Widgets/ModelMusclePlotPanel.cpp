@@ -13,6 +13,7 @@
 #include "src/Utils/Cpp20Shims.hpp"
 #include "src/Utils/UID.hpp"
 
+#include <glm/glm.hpp>
 #include <imgui.h>
 #include <implot.h>
 #include <OpenSim/Common/ComponentPath.h>

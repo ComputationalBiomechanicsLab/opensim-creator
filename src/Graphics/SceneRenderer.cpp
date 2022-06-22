@@ -1,8 +1,10 @@
 #include "SceneRenderer.hpp"
 
+#include "src/Graphics/BasicRendererParams.hpp"
 #include "src/Graphics/BasicSceneElement.hpp"
 #include "src/Graphics/Gl.hpp"
 #include "src/Graphics/GlGlm.hpp"
+#include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MultisampledRenderBuffers.hpp"
 #include "src/Graphics/ShaderCache.hpp"
 #include "src/Graphics/Shaders/GouraudShader.hpp"
@@ -13,6 +15,7 @@
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
 
+#include <memory>
 #include <optional>
 #include <utility>
 
@@ -40,7 +43,7 @@ public:
 		m_RequestedSamples = std::move(newSamples);
 	}
 
-	void draw(BasicRenderer::Params const& params, nonstd::span<BasicSceneElement const> els)
+    void draw(BasicRendererParams const& params, nonstd::span<BasicSceneElement const> els)
 	{
 		if (!m_MaybeRenderBuffers)
 		{
@@ -144,7 +147,7 @@ void osc::SceneRenderer::setSamples(int newSamples)
 	m_Impl->setSamples(std::move(newSamples));
 }
 
-void osc::SceneRenderer::draw(BasicRenderer::Params const& params, nonstd::span<BasicSceneElement const> els)
+void osc::SceneRenderer::draw(BasicRendererParams const& params, nonstd::span<BasicSceneElement const> els)
 {
 	m_Impl->draw(params, els);
 }

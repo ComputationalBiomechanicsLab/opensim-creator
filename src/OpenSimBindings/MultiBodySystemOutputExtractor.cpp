@@ -4,7 +4,15 @@
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/Algorithms.hpp"
 
+#include <nonstd/span.hpp>
 #include <simbody/internal/MultibodySystem.h>
+
+#include <algorithm>
+#include <cmath>
+#include <memory>
+#include <optional>
+#include <utility>
+#include <vector>
 
 static std::vector<osc::OutputExtractor> ConstructMultiBodySystemOutputExtractors()
 {
