@@ -6,15 +6,17 @@
 #include "src/Utils/FilesystemHelpers.hpp"
 #include "src/Widgets/StandardPopup.hpp"
 
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <imgui.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
+#include <SimTKcommon/SmallMatrix.h>
 
+#include <algorithm>
 #include <array>
 #include <filesystem>
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <optional>
 #include <vector>
 #include <utility>

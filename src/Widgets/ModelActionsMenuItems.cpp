@@ -2,21 +2,25 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
-#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/Utils/CStringView.hpp"
 #include "src/Widgets/AddBodyPopup.hpp"
 #include "src/Widgets/AddComponentPopup.hpp"
 #include "src/Widgets/Select2PFsPopup.hpp"
 
+#include <imgui.h>
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Simulation/Control/Controller.h>
+#include <OpenSim/Simulation/Model/Actuator.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Force.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include <OpenSim/Simulation/Model/Probe.h>
 #include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-#include <imgui.h>
-#include <IconsFontAwesome5.h>
 
+#include <cstddef>
 #include <optional>
+#include <string>
+#include <string_view>
 #include <sstream>
 #include <utility>
 

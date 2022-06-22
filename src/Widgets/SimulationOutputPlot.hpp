@@ -1,13 +1,10 @@
 #pragma once
 
-#include "src/Maths/Rect.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
 
 #include <nonstd/span.hpp>
 
-#include <cstdint>
 #include <filesystem>
-#include <memory>
 
 namespace osc
 {

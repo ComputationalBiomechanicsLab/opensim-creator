@@ -1,24 +1,32 @@
 #include "ObjectPropertiesEditor.hpp"
 
+#include "osc_config.hpp"
+
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/Algorithms.hpp"
-#include "src/Platform/Log.hpp"
-#include "osc_config.hpp"
 
 #include <IconsFontAwesome5.h>
+#include <imgui.h>
+#include <nonstd/span.hpp>
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Property.h>
 #include <OpenSim/Simulation/Model/Appearance.h>
-#include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
-#include <SDL_events.h>
-#include <SimTKcommon.h>
-#include <imgui.h>
+#include <SDL_scancode.h>
+#include <SimTKcommon/Constants.h>
+#include <SimTKcommon/SmallMatrix.h>
 
+#include <algorithm>
+#include <array>
 #include <cstring>
+#include <memory>
 #include <string>
+#include <type_traits>
+#include <typeinfo>
 #include <unordered_map>
+#include <utility>
 
 // returns the first value that changed between the first `n` elements of `old` and `newer`
 template<typename Coll1, typename Coll2>

@@ -1,9 +1,11 @@
 #include "ReassignSocketPopup.hpp"
 
-#include <OpenSim/Common/Component.h>
-#include <OpenSim/Common/ComponentSocket.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <imgui.h>
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentList.h>
+#include <OpenSim/Simulation/Model/Model.h>
+
+#include <utility>
 
 OpenSim::Object const* osc::ReassignSocketPopup::draw(
     char const* popupName,

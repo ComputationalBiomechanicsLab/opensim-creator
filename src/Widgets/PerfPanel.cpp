@@ -7,9 +7,11 @@
 #include <imgui.h>
 
 #include <cinttypes>
+#include <chrono>
 #include <string>
 #include <memory>
 #include <utility>
+#include <vector>
 
 static bool HighestTotalDuration(osc::PerfMeasurement const& a, osc::PerfMeasurement const& b)
 {

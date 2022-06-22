@@ -8,20 +8,33 @@
 #include "src/Widgets/ObjectPropertiesEditor.hpp"
 #include "src/Widgets/StandardPopup.hpp"
 
+#include <imgui.h>
+#include <IconsFontAwesome5.h>
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentList.h>
+#include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Common/ComponentSocket.h>
+#include <OpenSim/Simulation/Model/AbstractPathPoint.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/Station.h>
-#include <imgui.h>
-#include <IconsFontAwesome5.h>
+#include <SimTKcommon/SmallMatrix.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <vector>
 #include <sstream>
 #include <string>
 #include <utility>
+
+namespace OpenSim
+{
+    class AbstractProperty;
+}
 
 namespace
 {

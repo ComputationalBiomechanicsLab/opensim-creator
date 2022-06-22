@@ -5,20 +5,19 @@
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/Styling.hpp"
-#include "src/Platform/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
 
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
 
+#include <string>
 #include <sstream>
+#include <utility>
 #include <vector>
 
-
 static constexpr inline int g_FilterMaxLen = 64;
-
 
 // returns `true` if the name of `c1` is lexographically less than `c2`
 static bool IsNameLexographicallyLessThan(OpenSim::Component const* c1, OpenSim::Component const* c2)

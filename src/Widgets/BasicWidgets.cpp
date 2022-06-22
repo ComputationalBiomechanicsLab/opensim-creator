@@ -3,16 +3,23 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
+#include "src/OpenSimBindings/IntegratorMethod.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/ParamBlock.hpp"
+#include "src/OpenSimBindings/ParamValue.hpp"
 #include "src/OpenSimBindings/VirtualModelStatePair.hpp"
 
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
+#include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
+#include <SimTKcommon/basics.h>
 
+#include <cstdio>
+#include <map>
 #include <string>
+#include <utility>
 #include <variant>
 
 static void DrawOutputTooltip(OpenSim::AbstractOutput const& o)

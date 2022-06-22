@@ -2,22 +2,36 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/MiddlewareAPIs/SimulatorUIAPI.hpp"
-#include "src/OpenSimBindings/Simulation.hpp"
+#include "src/OpenSimBindings/SimulationClock.hpp"
+#include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
+#include "src/OpenSimBindings/VirtualOutputExtractor.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/Perf.hpp"
+#include "src/Utils/SynchronizedValue.hpp"
 
+#include <glm/vec2.hpp>
 #include <imgui.h>
 #include <implot.h>
 #include <IconsFontAwesome5.h>
 #include <nonstd/span.hpp>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <SimTKcommon.h>
 
-#include <memory>
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <chrono>
+#include <optional>
+#include <ostream>
+#include <ratio>
+#include <string>
 #include <utility>
+#include <vector>
 
 static std::vector<osc::OutputExtractor> GetAllUserDesiredOutputs(osc::SimulatorUIAPI& api)
 {

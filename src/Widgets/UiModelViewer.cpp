@@ -13,23 +13,29 @@
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
 #include "src/Graphics/Texturing.hpp"
-#include "src/OpenSimBindings/ComponentDecoration.hpp"
-#include "src/OpenSimBindings/OpenSimHelpers.hpp"
-#include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/BVH.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Line.hpp"
+#include "src/Maths/RayCollision.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
+#include "src/OpenSimBindings/ComponentDecoration.hpp"
+#include "src/OpenSimBindings/CustomDecorationOptions.hpp"
+#include "src/OpenSimBindings/MuscleColoringStyle.hpp"
+#include "src/OpenSimBindings/MuscleDecorationStyle.hpp"
+#include "src/OpenSimBindings/MuscleSizingStyle.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
+#include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
 #include "src/Platform/App.hpp"
-#include "src/Platform/Log.hpp"
 #include "src/Utils/Perf.hpp"
 #include "src/Utils/UID.hpp"
 
+#include <GL/glew.h>
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x3.hpp>
+#include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -39,10 +45,16 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <SDL_events.h>
+#include <SDL_scancode.h>
 #include <IconsFontAwesome5.h>
 
-#include <unordered_map>
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <cstdio>
+#include <limits>
+#include <string>
+#include <utility>
 #include <vector>
 
 // helper method for making a render buffer (used in Render_target)

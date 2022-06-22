@@ -14,13 +14,28 @@
 #include "src/Widgets/SelectGeometryPopup.hpp"
 
 #include <imgui.h>
+#include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentList.h>
+#include <OpenSim/Common/ComponentSocket.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Property.h>
+#include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PathActuator.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 
+#include <array>
+#include <cstddef>
+#include <optional>
 #include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 
 // draw UI element that lets user change a model joint's type

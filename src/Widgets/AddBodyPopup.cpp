@@ -5,19 +5,23 @@
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
-#include "src/Widgets/SelectComponentPopup.hpp"
 #include "src/Widgets/SelectGeometryPopup.hpp"
 #include "src/Widgets/StandardPopup.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
+#include <nonstd/span.hpp>
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentList.h>
+#include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
+#include <OpenSim/Simulation/Model/Ground.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
-#include <array>
 #include <memory>
-#include <optional>
+#include <string>
 #include <utility>
 
 static inline constexpr int g_MaxBodyNameLength = 128;

@@ -3,6 +3,7 @@
 #include <imgui.h>
 
 #include <string_view>
+#include <utility>
 
 osc::StandardPopup::StandardPopup(std::string_view popupName) :
 	StandardPopup{std::move(popupName), 512.0f, 0.0f, ImGuiWindowFlags_AlwaysAutoResize}

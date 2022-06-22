@@ -1,31 +1,45 @@
 #include "ModelMusclePlotPanel.hpp"
 
 #include "src/Actions/ActionFunctions.hpp"
-#include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/ModelStateCommit.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
-#include "src/Platform/Log.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/Cpp20Shims.hpp"
-#include "src/Utils/UID.hpp"
+#include "src/Utils/SynchronizedValue.hpp"
 
 #include <glm/glm.hpp>
 #include <imgui.h>
 #include <implot.h>
+#include <nonstd/span.hpp>
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Common/PropertyObjArray.h>
+#include <OpenSim/Common/Set.h>
+#include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
+#include <algorithm>
 #include <atomic>
+#include <chrono>
 #include <future>
 #include <memory>
 #include <string_view>
 #include <sstream>
+#include <type_traits>
 #include <utility>
+#include <vector>
+
+namespace SimTK
+{
+    class State;
+}
 
 static bool SortByComponentName(OpenSim::Component const* p1, OpenSim::Component const* p2)
 {
@@ -45,7 +59,7 @@ namespace
 
 		char const* getName() const
 		{
-			return m_Name.c_str();
+            return m_Name.c_str();
 		}
 
 		char const* getUnits() const

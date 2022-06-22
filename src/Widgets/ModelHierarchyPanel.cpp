@@ -9,6 +9,7 @@
 #include "src/Widgets/NamedPanel.hpp"
 
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
@@ -20,6 +21,8 @@
 #include <cstddef>
 #include <limits>
 #include <string>
+#include <stdexcept>
+#include <typeinfo>
 #include <utility>
 
 namespace {

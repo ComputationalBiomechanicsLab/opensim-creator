@@ -78,6 +78,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <ostream>
+#include <sstream>
 #include <utility>
 #include <vector>
 

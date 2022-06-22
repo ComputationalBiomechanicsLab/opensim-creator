@@ -13,11 +13,6 @@ namespace osc
     class UndoableModelStatePair;
 }
 
-namespace OpenSim
-{
-    class Model;
-}
-
 namespace osc
 {
     class MainMenuFileTab final {

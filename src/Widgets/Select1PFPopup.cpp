@@ -1,8 +1,14 @@
 #include "Select1PFPopup.hpp"
 
 #include <imgui.h>
+#include <nonstd/span.hpp>
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
+
+#include <algorithm>
+#include <string>
 
 OpenSim::PhysicalFrame const* osc::Select1PFPopup::draw(
     char const* popupName,

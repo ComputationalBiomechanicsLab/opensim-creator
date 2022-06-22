@@ -1,9 +1,12 @@
 #include "Select2PFsPopup.hpp"
 
+#include <imgui.h>
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
-#include <imgui.h>
+#include <string>
 
 std::optional<osc::Select2PFsPopup::Response> osc::Select2PFsPopup::draw(
     char const* popupName,

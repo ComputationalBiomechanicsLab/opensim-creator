@@ -14,24 +14,30 @@
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Screens/ExperimentsScreen.hpp"
-#include "src/Tabs/LoadingTab.hpp"
 #include "src/Tabs/MeshImporterTab.hpp"
-#include "src/Tabs/ModelEditorTab.hpp"
 #include "src/Tabs/SimulatorTab.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/Assertions.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
+#include "src/Utils/UID.hpp"
 
 #include <GL/glew.h>
 #include <imgui.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <IconsFontAwesome5.h>
+#include <OpenSim/Common/PropertyObjArray.h>
+#include <OpenSim/Common/Set.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <SDL_scancode.h>
 
 #include <algorithm>
+#include <array>
+#include <cstddef>
+#include <exception>
 #include <filesystem>
-#include <iterator>
 #include <memory>
 #include <optional>
 #include <string>
+#include <typeinfo>
 #include <utility>
 
 

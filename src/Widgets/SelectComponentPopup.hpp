@@ -1,5 +1,5 @@
-#include <OpenSim/Common/Component.h>
 #include <imgui.h>
+#include <OpenSim/Common/Component.h>
 
 // popup for selecting a component of the specified type
 namespace osc

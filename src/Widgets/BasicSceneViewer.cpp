@@ -2,7 +2,6 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/BasicRenderer.hpp"
-#include "src/Graphics/BasicSceneElement.hpp"
 #include "src/Graphics/SceneRenderer.hpp"
 
 #include <glm/vec2.hpp>
@@ -133,7 +132,7 @@ void osc::BasicSceneViewer::setSamples(int samples)
 
 void osc::BasicSceneViewer::draw(BasicRendererParams const& params, nonstd::span<BasicSceneElement const> els)
 {
-	m_Impl->draw(params, std::move(els));
+    m_Impl->draw(params, std::move(els));
 }
 
 bool osc::BasicSceneViewer::isHovered() const

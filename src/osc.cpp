@@ -2,7 +2,9 @@
 #include "src/Platform/Log.hpp"
 #include "src/Screens/MainUIScreen.hpp"
 
+#include <cstdlib>
 #include <iostream>
+#include <vector>
 
 static const char g_Usage[] = R"(usage: osc [--help] [fd] MODEL.osim
 )";

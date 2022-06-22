@@ -2,10 +2,15 @@
 
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
+#include "src/Utils/CircularBuffer.hpp"
+#include "src/Utils/SynchronizedValue.hpp"
 
 #include <imgui.h>
 
+#include <string>
 #include <sstream>
+#include <type_traits>
+#include <utility>
 
 namespace
 {

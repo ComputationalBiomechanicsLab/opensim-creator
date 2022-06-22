@@ -1,14 +1,19 @@
 #include "ParamBlockEditorPopup.hpp"
 
+#include "osc_config.hpp"
+
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/ParamBlock.hpp"
+#include "src/OpenSimBindings/ParamValue.hpp"
 #include "src/OpenSimBindings/IntegratorMethod.hpp"
-#include "osc_config.hpp"
 #include "src/Widgets/StandardPopup.hpp"
 
 #include <imgui.h>
+#include <nonstd/span.hpp>
 
+#include <string>
 #include <utility>
+#include <variant>
 
 template<class... Ts>
 struct Overloaded : Ts... { using Ts::operator()...; };
