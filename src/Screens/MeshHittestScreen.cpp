@@ -9,15 +9,25 @@
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Line.hpp"
+#include "src/Maths/RayCollision.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Screens/ExperimentsScreen.hpp"
 
+#include <GL/glew.h>
+#include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <imgui.h>
+#include <nonstd/span.hpp>
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
 
 #include <cstdint>
+#include <cstddef>
 #include <chrono>
+#include <utility>
 
 static char const g_VertexShader[] =
 R"(

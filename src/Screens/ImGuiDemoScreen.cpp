@@ -3,7 +3,10 @@
 #include "src/Platform/App.hpp"
 #include "src/Screens/ExperimentsScreen.hpp"
 
+#include <glm/vec4.hpp>
 #include <imgui.h>
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
 
 
 void osc::ImGuiDemoScreen::onMount()

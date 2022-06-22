@@ -5,8 +5,12 @@
 #include "src/Platform/Log.hpp"
 #include "src/Widgets/LogViewer.hpp"
 
-#include <utility>
+#include <glm/vec4.hpp>
 #include <imgui.h>
+
+#include <string>
+#include <utility>
+#include <vector>
 
 static char g_VertexShader[] =
 R"(

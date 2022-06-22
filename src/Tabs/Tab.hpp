@@ -11,6 +11,11 @@ namespace osc
 
     class Tab {
     public:
+        Tab() = default;
+        Tab(Tab const&) = delete;
+        Tab(Tab&&) noexcept = delete;
+        Tab& operator=(Tab const&) = delete;
+        Tab& operator=(Tab&&) noexcept = delete;
         virtual ~Tab() noexcept = default;
 
         UID getID() const;

@@ -6,7 +6,7 @@
 
 #include <SDL_events.h>
 
-#include <stdexcept>
+#include <exception>
 
 namespace osc
 {

@@ -2,6 +2,7 @@
 
 #include "src/Graphics/Gl.hpp"
 #include "src/Graphics/GlGlm.hpp"
+#include "src/Graphics/MeshData.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/Constants.hpp"
@@ -13,14 +14,23 @@
 #include "src/Maths/Sphere.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/IoPoller.hpp"
-#include "src/Platform/Log.hpp"
 #include "src/Screens/ExperimentsScreen.hpp"
 
+#include <GL/glew.h>
+#include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
+#include <SDL_scancode.h>
 
 #include <algorithm>
 #include <array>
-#include <iostream>
+#include <limits>
+#include <utility>
+#include <vector>
 
 static char const g_VertexShader[] = R"(
     #version 330 core
@@ -202,7 +212,7 @@ public:
         cameraRay.origin = m_SceneCamera.pos;
         cameraRay.dir = m_SceneCamera.getFront();
 
-        float closestEl = FLT_MAX;
+        float closestEl = std::numeric_limits<float>::max();
         SceneSphere* closestSceneSphere = nullptr;
 
         for (SceneSphere& ss : m_Spheres)

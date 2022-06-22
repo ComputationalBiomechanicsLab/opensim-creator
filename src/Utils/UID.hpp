@@ -4,12 +4,11 @@
 #include <cstdint>
 #include <functional>
 #include <iosfwd>
+#include <type_traits>
+#include <utility>
 
 namespace osc
 {
-    template<typename T>
-    class UIDT;
-
     class UID {
     public:
         static constexpr UID invalid() noexcept

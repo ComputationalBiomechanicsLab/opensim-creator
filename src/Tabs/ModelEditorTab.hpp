@@ -11,6 +11,7 @@
 namespace osc
 {
 	class MainUIStateAPI;
+    class TabHost;
 	class UndoableModelStatePair;
 }
 

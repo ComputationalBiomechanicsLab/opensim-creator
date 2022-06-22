@@ -5,6 +5,7 @@
 #include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/StoFileSimulation.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"

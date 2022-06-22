@@ -1,6 +1,5 @@
 #pragma once
 
-#include "src/OpenSimBindings/Simulation.hpp"
 #include "src/Tabs/Tab.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
@@ -13,6 +12,7 @@ namespace osc
 {
 	class MainUIStateAPI;
 	class Simulation;
+    class TabHost;
 }
 
 namespace osc

@@ -2,14 +2,15 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Maths/Geometry.hpp"
+#include "src/Maths/Rect.hpp"
 #include "src/Widgets/LogViewer.hpp"
 
+#include <glm/vec2.hpp>
 #include <imgui.h>
 #include <SDL_events.h>
 #include <IconsFontAwesome5.h>
 
 #include <string>
-#include <stdexcept>
 #include <utility>
 
 class osc::ErrorTab::Impl final {
@@ -22,7 +23,7 @@ public:
 
 	UID getID() const
 	{
-		return m_ID;
+        return m_ID;
 	}
 
 	CStringView getName() const

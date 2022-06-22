@@ -5,8 +5,14 @@
 #include "src/Platform/App.hpp"
 #include "src/Screens/ExperimentsScreen.hpp"
 
+#include <GL/glew.h>
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
+
+#include <utility>
 
 static constexpr char const g_VertexShader[] = R"(
     #version 330 core

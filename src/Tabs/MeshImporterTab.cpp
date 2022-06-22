@@ -1,12 +1,10 @@
 #include "MeshImporterTab.hpp"
 
+#include "osc_config.hpp"
+
 #include "src/Bindings/GlmHelpers.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Bindings/SimTKHelpers.hpp"
-#include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
-#include "src/OpenSimBindings/OpenSimHelpers.hpp"
-#include "src/OpenSimBindings/TypeRegistry.hpp"
-#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Graphics/Shaders/EdgeDetectionShader.hpp"
 #include "src/Graphics/Shaders/GouraudShader.hpp"
 #include "src/Graphics/Shaders/SolidColorShader.hpp"
@@ -15,57 +13,105 @@
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/MeshGen.hpp"
-#include "src/Graphics/Texturing.hpp"
+#include "src/Graphics/ShaderCache.hpp"
+#include "src/Maths/AABB.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
+#include "src/Maths/Line.hpp"
+#include "src/Maths/RayCollision.hpp"
+#include "src/Maths/Rect.hpp"
+#include "src/Maths/Sphere.hpp"
 #include "src/Maths/Segment.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
+#include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
+#include "src/OpenSimBindings/TypeRegistry.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
 #include "src/Tabs/ModelEditorTab.hpp"
-#include "src/Widgets/MainMenu.hpp"
-#include "src/Widgets/LogViewer.hpp"
-#include "src/Widgets/UiModelViewer.hpp"
+#include "src/Tabs/TabHost.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/Assertions.hpp"
 #include "src/Utils/ClonePtr.hpp"
 #include "src/Utils/DefaultConstructOnCopy.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
 #include "src/Utils/ScopeGuard.hpp"
-#include "src/Utils/Cpp20Shims.hpp"
 #include "src/Utils/Spsc.hpp"
 #include "src/Utils/UID.hpp"
-#include "osc_config.hpp"
+#include "src/Widgets/LogViewer.hpp"
+#include "src/Widgets/MainMenu.hpp"
+#include "src/Widgets/SaveChangesPopup.hpp"
 
+#include <GL/glew.h>
+#include <glm/mat3x3.hpp>
+#include <glm/mat4x3.hpp>
 #include <glm/mat4x4.hpp>
-#include <glm/vec4.hpp>
-#include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
 #include <ImGuizmo.h>
+#include <nonstd/span.hpp>
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentList.h>
+#include <OpenSim/Common/ComponentSocket.h>
+#include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Common/Property.h>
+#include <OpenSim/Simulation/Model/AbstractPathPoint.h>
+#include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
+#include <OpenSim/Simulation/Model/Ground.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/ModelVisualizer.h>
+#include <OpenSim/Simulation/Model/OffsetFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/Model/Station.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
-#include <SimTKcommon.h>
 #include <SDL_events.h>
+#include <SDL_scancode.h>
+#include <SimTKcommon.h>
+#include <SimTKcommon/Mechanics.h>
+#include <SimTKcommon/SmallMatrix.h>
 
-#include <cstddef>
+#include <algorithm>
+#include <array>
+#include <atomic>
 #include <cctype>
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <cmath>
+#include <exception>
 #include <filesystem>
+#include <functional>
+#include <iterator>
+#include <limits>
+#include <map>
 #include <memory>
+#include <optional>
 #include <stdexcept>
-#include <string.h>
 #include <string>
+#include <string_view>
+#include <sstream>
+#include <type_traits>
+#include <typeinfo>
 #include <utility>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 #include <variant>
@@ -169,7 +215,7 @@ namespace
             return 1.0f;
         }
 
-        return powf(2.0f, -5.0f*x) * sinf((x*10.0f - 0.75f) * c4) + 1.0f;
+        return std::pow(2.0f, -5.0f*x) * std::sin((x*10.0f - 0.75f) * c4) + 1.0f;
     }
 
     // returns the transform, but rotated such that the given axis points along the
@@ -1082,7 +1128,6 @@ namespace
     // the mesh will be positioned in the model, and so that the user can freely re-attach the mesh and freely
     // move meshes/bodies/joints in the mesh importer without everything else in the scene moving around (which
     // is what would happen in a relative topology-sensitive attachment graph).
-    class BodyEl;
     class MeshEl final : public SceneEl {
     public:
         static SceneElClass const& Class()
@@ -1584,7 +1629,6 @@ namespace
 
 
     // a station (point of interest)
-    class BodyEl;
     class StationEl final : public SceneEl {
     public:
         static SceneElClass const& Class()

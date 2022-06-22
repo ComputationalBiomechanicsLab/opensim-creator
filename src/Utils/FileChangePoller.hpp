@@ -2,7 +2,6 @@
 
 #include <chrono>
 #include <filesystem>
-#include <functional>
 #include <string>
 
 namespace osc

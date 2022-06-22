@@ -1,10 +1,11 @@
 #pragma once
 
-#include <filesystem>
-#include <string_view>
 #include <cstddef>
-#include <vector>
+#include <filesystem>
 #include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 namespace osc {
     // recursively find all files in `root` with any of the given extensions and

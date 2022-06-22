@@ -14,7 +14,7 @@ public:
 
 	UID getID() const
 	{
-		return m_ID;
+        return m_ID;
 	}
 
 	CStringView getName() const

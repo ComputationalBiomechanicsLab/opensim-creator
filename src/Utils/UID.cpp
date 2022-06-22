@@ -1,7 +1,7 @@
 #include "UID.hpp"
 
 #include <atomic>
-#include <iostream>
+#include <ostream>
 
 int64_t osc::UID::GetNextID() noexcept
 {

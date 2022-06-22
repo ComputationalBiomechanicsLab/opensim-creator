@@ -2,6 +2,7 @@
 
 #include "src/Platform/App.hpp"
 
+#include <glm/vec4.hpp>
 #include <imgui.h>
 
 #include <utility>
@@ -56,7 +57,7 @@ public:
 
         osc::ImGuiNewFrame();  // tell ImGui you're about to start drawing a new frame
 
-        App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});  // set app window bg color
+        App::upd().clearScreen(glm::vec4{0.0f, 0.0f, 0.0f, 0.0f});  // set app window bg color
 
         ImGui::Begin("cookiecutter panel");
         ImGui::Text("hello world");

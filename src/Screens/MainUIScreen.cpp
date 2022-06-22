@@ -13,14 +13,25 @@
 #include "src/Tabs/SplashTab.hpp"
 #include "src/Tabs/Tab.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/Assertions.hpp"
+#include "src/Utils/CStringView.hpp"
+#include "src/Utils/UID.hpp"
 #include "src/Widgets/SaveChangesPopup.hpp"
 
+#include <glm/vec4.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 
+#include <algorithm>
+#include <functional>
+#include <iterator>
+#include <limits>
+#include <memory>
 #include <optional>
 #include <sstream>
+#include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 

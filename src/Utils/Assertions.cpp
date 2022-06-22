@@ -1,7 +1,6 @@
 #include "Assertions.hpp"
 
 #include <cstdio>
-#include <cstring>
 #include <stdexcept>
 
 void osc::OnAssertionFailure(char const* failing_code,

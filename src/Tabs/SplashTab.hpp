@@ -9,6 +9,7 @@
 namespace osc
 {
 	class MainUIStateAPI;
+    class TabHost;
 }
 
 namespace osc

@@ -32,7 +32,7 @@ bool osc::Tab::isUnsaved() const
 
 bool osc::Tab::trySave()
 {
-	return implTrySave();
+    return implTrySave();
 }
 
 void osc::Tab::onMount()

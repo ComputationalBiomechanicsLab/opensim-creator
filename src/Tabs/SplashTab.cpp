@@ -4,7 +4,6 @@
 
 #include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/Graphics/SceneRenderer.hpp"
 #include "src/Graphics/Shaders/GouraudShader.hpp"
 #include "src/Graphics/Gl.hpp"
 #include "src/Graphics/GlGlm.hpp"
@@ -14,12 +13,13 @@
 #include "src/Graphics/Texturing.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
+#include "src/Maths/Rect.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
-#include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
+#include "src/Platform/RecentFile.hpp"
 #include "src/Platform/Styling.hpp"
 #include "src/Tabs/LoadingTab.hpp"
 #include "src/Tabs/MeshImporterTab.hpp"
@@ -28,16 +28,22 @@
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/LogViewer.hpp"
 
+#include <GL/glew.h>
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <IconsFontAwesome5.h>
 #include <imgui.h>
 
 #include <filesystem>
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 
 static gl::Texture2D LoadImageResourceIntoTexture(char const* res_pth)

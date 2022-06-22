@@ -1,7 +1,6 @@
 #pragma once
 
 #include "src/OpenSimBindings/BasicModelStatePair.hpp"
-#include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/Tabs/Tab.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
@@ -10,7 +9,8 @@
 
 namespace osc
 {
-	class TabHost;
+    class ParamBlock;
+    class TabHost;
 }
 
 namespace osc

@@ -5,11 +5,16 @@
 #include "src/Screens/ExperimentsScreen.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 #include <imgui.h>
 #include <ImGuizmo.h>
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
 
+#include <cstddef>
 #include <utility>
 
 class osc::ImGuizmoDemoScreen::Impl final {

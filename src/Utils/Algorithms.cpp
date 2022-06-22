@@ -1,6 +1,7 @@
 #include "Algorithms.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <cstring>
 #include <filesystem>
 #include <string>

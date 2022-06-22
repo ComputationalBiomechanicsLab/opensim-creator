@@ -3,7 +3,6 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/BasicRendererParams.hpp"
 #include "src/Graphics/BasicSceneElement.hpp"
-#include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
@@ -12,12 +11,23 @@
 #include "src/Widgets/BasicSceneViewer.hpp"
 
 #include <glm/gtx/transform.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <imgui.h>
 #include <SDL_events.h>
 
 #include <map>
 #include <memory>
+#include <string>
+#include <type_traits>
 #include <utility>
+
+namespace osc
+{
+    class Mesh;
+}
 
 static std::map<std::string, std::shared_ptr<osc::Mesh>> GenerateMeshLookup()
 {

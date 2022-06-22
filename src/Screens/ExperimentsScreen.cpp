@@ -12,9 +12,12 @@
 #include "src/Screens/MeshHittestScreen.hpp"
 #include "src/Screens/MeshHittestWithBVHScreen.hpp"
 
+#include <glm/vec2.hpp>
+#include <glm/vec4.hpp>
 #include <imgui.h>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 template<typename Screen>

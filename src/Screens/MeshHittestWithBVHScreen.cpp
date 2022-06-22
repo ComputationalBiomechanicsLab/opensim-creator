@@ -10,16 +10,26 @@
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Maths/BVH.hpp"
 #include "src/Maths/Geometry.hpp"
+#include "src/Maths/Line.hpp"
+#include "src/Maths/RayCollision.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Screens/ExperimentsScreen.hpp"
 
+#include <GL/glew.h>
 #include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <imgui.h>
+#include <nonstd/span.hpp>
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
 
+#include <cstddef>
 #include <cstdint>
 #include <chrono>
+#include <utility>
 #include <vector>
 
 static gl::VertexArray makeVAO(osc::SolidColorShader& shader,

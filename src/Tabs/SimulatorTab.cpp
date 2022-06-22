@@ -1,30 +1,21 @@
 #include "SimulatorTab.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/Maths/BVH.hpp"
 #include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/MiddlewareAPIs/SimulatorUIAPI.hpp"
 #include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
-#include "src/OpenSimBindings/ParamBlock.hpp"
-#include "src/OpenSimBindings/OpenSimHelpers.hpp"
-#include "src/OpenSimBindings/ComponentDecoration.hpp"
-#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/OpenSimBindings/SimulationModelStatePair.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
-#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/OpenSimBindings/VirtualOutputExtractor.hpp"
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
 #include "src/Platform/os.hpp"
-#include "src/Platform/Styling.hpp"
-#include "src/Tabs/ModelEditorTab.hpp"
 #include "src/Tabs/TabHost.hpp"
-#include "src/Utils/Assertions.hpp"
-#include "src/Utils/ScopeGuard.hpp"
+#include "src/Utils/SynchronizedValue.hpp"
 #include "src/Utils/Perf.hpp"
 #include "src/Widgets/BasicWidgets.hpp"
 #include "src/Widgets/LogViewer.hpp"
@@ -35,27 +26,31 @@
 #include "src/Widgets/SimulationOutputPlot.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
 
-
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Common/ComponentOutput.h>
+#include <glm/vec2.hpp>
 #include <imgui.h>
 #include <implot/implot.h>
 #include <IconsFontAwesome5.h>
 #include <nonstd/span.hpp>
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentOutput.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <SDL_events.h>
+#include <SimTKcommon/basics.h>
 
+#include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <cstdio>
 #include <fstream>
 #include <filesystem>
-#include <limits>
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
+#include <type_traits>
 #include <utility>
-#include <variant>
 #include <vector>
-
 
 static std::atomic<int> g_SimulationNumber = 1;
 

@@ -1,21 +1,30 @@
 #include "PerformanceAnalyzerTab.hpp"
 
-#include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/OpenSimBindings/BasicModelStatePair.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulation.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulator.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp"
 #include "src/OpenSimBindings/IntegratorMethod.hpp"
+#include "src/OpenSimBindings/OutputExtractor.hpp"
+#include "src/OpenSimBindings/ParamBlock.hpp"
+#include "src/OpenSimBindings/ParamValue.hpp"
+#include "src/OpenSimBindings/SimulationStatus.hpp"
 #include "src/Platform/os.hpp"
+#include "src/Utils/SynchronizedValue.hpp"
 #include "src/Widgets/ParamBlockEditorPopup.hpp"
 
 #include <SDL_events.h>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
+#include <nonstd/span.hpp>
 #include <OpenSim/Simulation/Model/Model.h>
 
+#include <algorithm>
 #include <filesystem>
-#include <memory>
+#include <optional>
+#include <ostream>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -29,7 +38,7 @@ static osc::OutputExtractor GetSimulatorOutputExtractor(std::string_view name)
 			return o;
 		}
 	}
-	throw std::runtime_error{"cannot find output"};
+    throw std::runtime_error{"cannot find output"};
 }
 
 class osc::PerformanceAnalyzerTab::Impl final {

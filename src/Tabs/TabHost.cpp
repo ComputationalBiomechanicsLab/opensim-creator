@@ -23,7 +23,7 @@ void osc::TabHost::selectTab(UID tabID)
 
 void osc::TabHost::closeTab(UID tabID)
 {
-	implCloseTab(std::move(tabID));
+    implCloseTab(std::move(tabID));
 }
 
 void osc::TabHost::resetImgui()

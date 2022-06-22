@@ -7,14 +7,26 @@
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Texturing.hpp"
-#include "src/Maths/Line.hpp"
+#include "src/Maths/RayCollision.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Platform/App.hpp"
 
-#include <imgui.h>
+#include <GL/glew.h>
+#include <glm/mat3x3.hpp>
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+#include <nonstd/span.hpp>
+#include <imgui.h>
 
+#include <algorithm>
+#include <utility>
 #include <vector>
+
+namespace osc
+{
+    struct Line;
+}
 
 class osc::MeshScreen::Impl final {
 public:
