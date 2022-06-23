@@ -191,12 +191,15 @@ public:
 
 	void onDraw()
 	{
-        drawBackground();
-        drawLogo();
-        drawMenu();
-        drawTUDLogo();
-        drawCZLogo();
-        drawVersionInfo();
+        if (Area(getTabScreenRect()) > 0.0f)
+        {
+            drawBackground();
+            drawLogo();
+            drawMenu();
+            drawTUDLogo();
+            drawCZLogo();
+            drawVersionInfo();
+        }
 	}
 
 private:
@@ -220,6 +223,7 @@ private:
     void drawBackground()
     {
         Rect screenRect = getTabScreenRect();
+
         ImGui::SetNextWindowPos(screenRect.p1);
         ImGui::SetNextWindowSize(Dimensions(screenRect));
 

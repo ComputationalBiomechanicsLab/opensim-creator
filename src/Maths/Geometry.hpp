@@ -95,6 +95,9 @@ namespace osc
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
     glm::vec3 ExtractEulerAngleXYZ(glm::mat4 const&) noexcept;
 
+    // returns the area of the rectangle
+    float Area(Rect const&) noexcept;
+
     // returns the edge dimensions of the rectangle
     glm::vec2 Dimensions(Rect const&) noexcept;
 

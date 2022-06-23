@@ -394,6 +394,12 @@ glm::vec3 osc::ExtractEulerAngleXYZ(glm::mat4 const& m) noexcept
     return v;
 }
 
+float osc::Area(Rect const& r) noexcept
+{
+    auto d = Dimensions(r);
+    return d.x * d.y;
+}
+
 glm::vec2 osc::Dimensions(Rect const& r) noexcept
 {
     return glm::abs(r.p2 - r.p1);
