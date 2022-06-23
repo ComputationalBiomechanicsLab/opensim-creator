@@ -6720,7 +6720,6 @@ namespace
             }
 
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
-            OSC_SCOPE_GUARD({ ImGui::PopStyleVar(); });
 
             for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
             {
@@ -6757,6 +6756,7 @@ namespace
                 TransitionToTranslatingElementAlongTwoMeshPoints(el);
             }
 
+            ImGui::PopStyleVar();
             ImGui::EndMenu();
         }
 
@@ -6775,7 +6775,6 @@ namespace
             osc::DrawTooltipIfItemHovered("Reorient the scene element", "Rotates the scene element in without changing its position");
 
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
-            OSC_SCOPE_GUARD({ ImGui::PopStyleVar(); });
 
             {
                 auto DrawMenuContent = [&](int axis)
@@ -6841,6 +6840,7 @@ namespace
                 m_Shared->CommitCurrentModelGraph("reset " + el.GetLabel() + " orientation");
             }
 
+            ImGui::PopStyleVar();
             ImGui::EndMenu();
         }
 
@@ -6887,7 +6887,6 @@ namespace
             if (ImGui::BeginMenu(ICON_FA_EXTERNAL_LINK_ALT " Reassign Connection"))
             {
                 ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
-                OSC_SCOPE_GUARD({ ImGui::PopStyleVar(); });
 
                 for (int i = 0; i < nRefs; ++i)
                 {
@@ -6898,6 +6897,7 @@ namespace
                     }
                 }
 
+                ImGui::PopStyleVar();
                 ImGui::EndMenu();
             }
         }
