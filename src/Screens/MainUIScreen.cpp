@@ -332,7 +332,7 @@ private:
 
                     ImGui::EndTabBar();
                 }
-                ImGui::EndMainMenuBar();
+                ImGui::EndMenuBar();
             }
 
             ImGui::End();
