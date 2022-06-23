@@ -209,6 +209,18 @@ public:
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     constexpr CircularBuffer() = default;
+    CircularBuffer(CircularBuffer const& other) = delete;
+    CircularBuffer(CircularBuffer&&) = delete;
+    CircularBuffer& operator=(CircularBuffer const&) = delete;
+    CircularBuffer& operator=(CircularBuffer&&) = delete;
+    ~CircularBuffer() noexcept
+    {
+        for (T& el : *this)
+        {
+            el.~T();
+        }
+    }
+
 
     // element access
 
