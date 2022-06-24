@@ -62,6 +62,7 @@ public:
         ImGui::Begin("cookiecutter panel");
         ImGui::Text("hello world");
         ImGui::Checkbox("checkbox_state", &m_CheckboxState);
+        ImGui::End();
 
         osc::ImGuiRender();  // tell ImGui to render any ImGui widgets since calling ImGuiNewFrame();
     }
