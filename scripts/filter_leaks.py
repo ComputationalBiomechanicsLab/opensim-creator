@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 import sys
 
 blacklist = [
@@ -26,13 +27,26 @@ blacklist = [
     # with more complicated models:
     "OpenSim::CoordinateReference::CoordinateReference(OpenSim::CoordinateReference const&)",  # OpenSim/Simulation/CoordinateReference.cpp
     "OpenSim::AssemblySolver::updateCoordinateReference(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, double, double)",  # OpenSim/Simulation/AssemblySolver.cpp:157
-
 ]
+
+pattern = re.compile("leak of (\\d+) byte")
+
+blacklist_buf = {}
+
+def bytes_leaked(lines):
+    for l in lines:
+        m = re.search(pattern, l)
+        if m:
+            return int(m.group(1))
+    return 0
 
 def dump_leak(lines):
     for l in lines:
         for b in blacklist:
             if b in l:
+                v = blacklist_buf.get(b, 0)
+                v += bytes_leaked(lines)
+                blacklist_buf[b] = v
                 return
 
     print("---")
@@ -48,6 +62,8 @@ for line in sys.stdin:
        leak_lines = []
     if "SUMMARY" in line:
         print(line, end='')
+        break
 
-
+for el,bs in blacklist_buf.items():
+    print(f"{el}    {bs}")
 
