@@ -644,6 +644,7 @@ private:
             {
                 m_CoordEditor.draw();
             }
+            ImGui::End();
 
             if (coordEdState != coordEdOldState)
             {
