@@ -448,12 +448,23 @@ namespace
 		shared->setProgress(0.0f);
 		coord.setLocked(state, false);
 
+        if (stopToken.stop_requested())
+        {
+            return std::make_unique<Plot>(*params);  // empty plot
+        }
+
 		// HACK: ensure `computeMomentArm` is called at least once before running
 		//       the computation. No idea why. See:
 		//
 		// https://github.com/opensim-org/opensim-core/issues/3211
 		{
 			model->realizeDynamics(state);
+
+            if (stopToken.stop_requested())
+            {
+                return std::make_unique<Plot>(*params);  // empty plot
+            }
+
 			for (OpenSim::GeometryPath const& g : model->getComponentList<OpenSim::GeometryPath>())
 			{
 				g.computeMomentArm(state, coord);
@@ -461,17 +472,34 @@ namespace
 		}
 
 		for (int i = 0; i < nPoints; ++i)
-		{
-			if (stopToken.stop_requested())
+        {
+            if (stopToken.stop_requested())
 			{
 				return std::make_unique<Plot>(*params);  // empty plot
 			}
 
 			double xVal = start + (i * step);
 
-			coord.setValue(state, xVal);
+            coord.setValue(state, xVal);
+
+            if (stopToken.stop_requested())
+            {
+                return std::make_unique<Plot>(*params);  // empty plot
+            }
+
 			model->equilibrateMuscles(state);
+
+            if (stopToken.stop_requested())
+            {
+                return std::make_unique<Plot>(*params);  // empty plot
+            }
+
 			model->realizeReport(state);
+
+            if (stopToken.stop_requested())
+            {
+                return std::make_unique<Plot>(*params);  // empty plot
+            }
 
 			double yVald = params->getMuscleOutput()(state, muscle, coord);
 			float yVal = static_cast<float>(yVald);
