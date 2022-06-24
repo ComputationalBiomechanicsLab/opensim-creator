@@ -987,6 +987,11 @@ private:
                     // screen requested a new screen, so perform the transition
                     transitionToNextScreen();
                 }
+
+                if (e.type == SDL_DROPTEXT || e.type == SDL_DROPFILE)
+                {
+                    SDL_free(e.drop.file);  // SDL documentation mandates that the caller frees this
+                }
             }
 
             // update clocks
