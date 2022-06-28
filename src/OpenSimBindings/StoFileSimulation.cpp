@@ -15,6 +15,7 @@
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/StateVector.h>
 #include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/TableUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
@@ -28,7 +29,9 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <sstream>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -45,7 +48,7 @@ static std::vector<OpenSim::Coordinate*> GetLockedCoordinates(OpenSim::Model& m)
 	return rv;
 }
 
-static void SetCoordDefaultLocked(nonstd::span<OpenSim::Coordinate*> cs, bool v)
+static void SetCoordsDefaultLocked(nonstd::span<OpenSim::Coordinate*> cs, bool v)
 {
 	for (OpenSim::Coordinate* c : cs)
 	{
@@ -53,67 +56,88 @@ static void SetCoordDefaultLocked(nonstd::span<OpenSim::Coordinate*> cs, bool v)
 	}
 }
 
-static std::vector<int> CreateStorageIndexToModelSvIndexLUT(OpenSim::Model const& model,
-                                                            OpenSim::Storage const& storage)
+template<typename T>
+static std::unordered_set<T> ToSet(OpenSim::Array<T> const& v)
 {
-	std::vector<int> rv;
+    std::unordered_set<T> rv;
+    for (int i = 0; i < v.size(); ++i)
+    {
+        rv.insert(v[i]);
+    }
+    return rv;
+}
+
+template<typename T>
+static int NumUniqueEntriesIn(OpenSim::Array<T> const& v)
+{
+    return static_cast<int>(ToSet(v).size());
+}
+
+static std::unordered_map<int, int> CreateStorageIndexToModelSvIndexLUT(OpenSim::Model const& model,
+                                                                        OpenSim::Storage const& storage)
+{
+    std::unordered_map<int, int> rv;
 
 	if (storage.getColumnLabels().size() <= 1)
 	{
+        osc::log::warn("the provided STO file does not contain any state variable data");
 		return rv;
 	}
 
 	if (osc::ToLower(storage.getColumnLabels()[0]) != "time")
 	{
+        osc::log::warn("the provided STO file does not contain a time column: cannot process");
 		return rv;
 	}
 
-	struct VarMapping {
-		int storageIdx = -1;
-		int modelIdx = -1;
+    // care: the storage column labels do not match the state variable names
+    // in the model 1:1
+    //
+    // STO files have changed over time. Pre-4.0 uses different naming conventions
+    // etc for the column labels, so you *need* to map the storage column strings
+    // carefully onto the model statevars
+    std::vector<std::string> missing;
+    OpenSim::Array<std::string> const& storageColumns = storage.getColumnLabels();
+    OpenSim::Array<std::string> modelStateVars = model.getStateVariableNames();
 
-		VarMapping(int storageIdx_) : storageIdx{storageIdx_} {}
-	};
+    if (NumUniqueEntriesIn(storageColumns) != storageColumns.size())
+    {
+        osc::log::error("the provided STO file contains multile columns with the same name");
+        return rv;
+    }
 
-	std::unordered_map<std::string, VarMapping> mappings;
+    // compute mapping
+    rv.reserve(modelStateVars.size());
+    for (int modelIndex = 0; modelIndex < modelStateVars.size(); ++modelIndex)
+    {
+        std::string const& svName = modelStateVars[modelIndex];
+        int storageIndex = OpenSim::TableUtilities::findStateLabelIndex(storageColumns, svName);
 
-	// populate mappings LUT with storage indices
-	{
-		OpenSim::Array<std::string> const& storageLabels = storage.getColumnLabels();
+        if (storageIndex != -1)
+        {
+            rv[storageIndex] = modelIndex;
+        }
+        else
+        {
+            missing.push_back(svName);
+        }
+    }
 
-		mappings.reserve(static_cast<size_t>(storageLabels.size()-1));  // skip time col
+    // ensure all model state variables are accounted for
+    if (!missing.empty())
+    {
+        std::stringstream ss;
+        ss << "the provided STO file is missing the following columns: ";
+        char const* delim = "";
+        for (std::string const& el : missing)
+        {
+            ss << delim << el;
+            delim = ", ";
+        }
+        osc::log::warn("%s", std::move(ss).str().c_str());
+    }
 
-		for (int i = 1; i < storageLabels.size(); ++i)
-		{
-			mappings.try_emplace(storageLabels[i], i-1);
-		}
-	}
-
-	// write model indices into mapping table
-	{
-		OpenSim::Array<std::string> svNames = model.getStateVariableNames();
-
-		for (int i = 0; i < svNames.size(); ++i)
-		{
-			auto it = mappings.find(svNames[i]);
-			if (it != mappings.end())
-			{
-				it->second.modelIdx = i;
-			}
-			else
-			{
-				osc::log::info("missing statevar: %s", svNames[i].c_str());
-			}
-		}
-	}
-
-	rv.resize(mappings.size(), -1);
-	for (auto const& [sv, mapping] : mappings)
-	{
-		rv[mapping.storageIdx] = mapping.modelIdx;
-	}
-
-	OSC_ASSERT(std::none_of(rv.begin(), rv.end(), [](int v) { return v == -1; }));
+    // else: all model state variables are accounted for
 
 	return rv;
 }
@@ -129,18 +153,16 @@ static std::vector<osc::SimulationReport> ExtractReports(
 		model.getSimbodyEngine().convertDegreesToRadians(storage);
 	}
 
-    storage.resampleLinear(1.0/100.0);  // TODO: some files can contain thousands of micro-sampled states from OpenSim-GUI
+    //storage.resampleLinear(1.0/100.0);  // TODO: some files can contain thousands of micro-sampled states from OpenSim-GUI
 
-	std::vector<int> lut =
+    std::unordered_map<int, int> lut =
 		CreateStorageIndexToModelSvIndexLUT(model, storage);
 
 	// temporarily unlock coords
 	std::vector<OpenSim::Coordinate*> lockedCoords = GetLockedCoordinates(model);
-	SetCoordDefaultLocked(lockedCoords, false);
-	OSC_SCOPE_GUARD({ SetCoordDefaultLocked(lockedCoords, true); });
+    SetCoordsDefaultLocked(lockedCoords, false);
+    OSC_SCOPE_GUARD({ SetCoordsDefaultLocked(lockedCoords, true); });
 
-	// swap space for state vals
-	SimTK::Vector stateValsBuf(static_cast<int>(lut.size()), SimTK::NaN);
 	model.initSystem();
 
 	std::vector<osc::SimulationReport> rv;
@@ -149,20 +171,19 @@ static std::vector<osc::SimulationReport> ExtractReports(
 	for (int row = 0; row < storage.getSize(); ++row)
 	{
 		OpenSim::StateVector* sv = storage.getStateVector(row);
-
-		SimTK::State st = model.getWorkingState();
-		st.updY().setToNaN();
-		st.setTime(sv->getTime());
-
 		OpenSim::Array<double> const& cols = sv->getData();
 
 		OSC_ASSERT_ALWAYS(cols.size() <= static_cast<int>(lut.size()));
 
-		for (int col = 0; col < cols.size(); ++col)
-		{
-			stateValsBuf[lut[col]] = cols[col];
-		}
+        SimTK::Vector stateValsBuf(static_cast<int>(lut.size()), SimTK::NaN);
+        for (auto [storageIdx, modelIdx] : lut)
+        {
+            stateValsBuf[modelIdx] = cols[storageIdx];
+        }
 
+        SimTK::State st = model.getWorkingState();
+        st.updY().setToNaN();
+        st.setTime(sv->getTime());
 		model.setStateVariableValues(st, stateValsBuf);
 		model.realizeReport(st);
 		rv.emplace_back(std::move(st));
