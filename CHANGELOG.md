@@ -73,6 +73,14 @@ All notable changes to this project will be documented here. The format is based
   - It was hastily written in earlier versions of the tutorial documentation. The main tutorials
     supercede it
   - Challenges/exercises may be later re-introduced, but in a more fleshed-out form
+- A wider variety of STO/MOT files can now be loaded (#284)
+  - Previously, `osc` would only accept STO/MOT files that are in a modern (OpenSim 4.0+) format,
+    with all states provided
+  - It now accepts legacy (OpenSim <4.0) STO/MOT files - even if they have state variables missing
+  - If a state variable is missing, a warning is printed to the log
+  - That warning may be upgraded to a user prompt in later versions
+  - The main utility of this feature is that it enables loading older STO/MOT files, and motion files
+    that aren't *strictly* simulation states, for tertiary analysis by the user
 
 
 ## [0.1.6] - 2022/05/09

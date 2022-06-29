@@ -1,5 +1,6 @@
 #include "StoFileSimulation.hpp"
 
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
@@ -73,6 +74,12 @@ static int NumUniqueEntriesIn(OpenSim::Array<T> const& v)
     return static_cast<int>(ToSet(v).size());
 }
 
+template<typename T>
+static bool AllElementsUnique(OpenSim::Array<T> const& v)
+{
+	return NumUniqueEntriesIn(v) == v.size();
+}
+
 static std::unordered_map<int, int> CreateStorageIndexToModelSvIndexLUT(OpenSim::Model const& model,
                                                                         OpenSim::Storage const& storage)
 {
@@ -80,14 +87,13 @@ static std::unordered_map<int, int> CreateStorageIndexToModelSvIndexLUT(OpenSim:
 
 	if (storage.getColumnLabels().size() <= 1)
 	{
-        osc::log::warn("the provided STO file does not contain any state variable data");
+		osc::log::warn("the provided STO file does not contain any state variable data");
 		return rv;
 	}
 
-	if (osc::ToLower(storage.getColumnLabels()[0]) != "time")
+	if (!osc::IsEqualCaseInsensitive(storage.getColumnLabels()[0], "time"))
 	{
-        osc::log::warn("the provided STO file does not contain a time column: cannot process");
-		return rv;
+		throw std::runtime_error{"the provided STO file does not contain a 'time' column as its first column: it cannot be processed"};
 	}
 
     // care: the storage column labels do not match the state variable names
@@ -97,13 +103,12 @@ static std::unordered_map<int, int> CreateStorageIndexToModelSvIndexLUT(OpenSim:
     // etc for the column labels, so you *need* to map the storage column strings
     // carefully onto the model statevars
     std::vector<std::string> missing;
-    OpenSim::Array<std::string> const& storageColumns = storage.getColumnLabels();
+    OpenSim::Array<std::string> const& storageColumnsIncludingTime = storage.getColumnLabels();
     OpenSim::Array<std::string> modelStateVars = model.getStateVariableNames();
 
-    if (NumUniqueEntriesIn(storageColumns) != storageColumns.size())
+    if (!AllElementsUnique(storageColumnsIncludingTime))
     {
-        osc::log::error("the provided STO file contains multile columns with the same name");
-        return rv;
+		throw std::runtime_error{"the provided STO file contains multiple columns with the same name. This creates ambiguities, which OSC can't handle"};
     }
 
     // compute mapping
@@ -111,11 +116,12 @@ static std::unordered_map<int, int> CreateStorageIndexToModelSvIndexLUT(OpenSim:
     for (int modelIndex = 0; modelIndex < modelStateVars.size(); ++modelIndex)
     {
         std::string const& svName = modelStateVars[modelIndex];
-        int storageIndex = OpenSim::TableUtilities::findStateLabelIndex(storageColumns, svName);
+        int storageIndex = OpenSim::TableUtilities::findStateLabelIndex(storageColumnsIncludingTime, svName);
+		int valueIndex = storageIndex - 1;  // the column labels include 'time', which isn't in the data elements
 
-        if (storageIndex != -1)
+        if (valueIndex >= 0)
         {
-            rv[storageIndex] = modelIndex;
+            rv[valueIndex] = modelIndex;
         }
         else
         {
@@ -127,7 +133,7 @@ static std::unordered_map<int, int> CreateStorageIndexToModelSvIndexLUT(OpenSim:
     if (!missing.empty())
     {
         std::stringstream ss;
-        ss << "the provided STO file is missing the following columns: ";
+        ss << "the provided STO file is missing the following columns:\n";
         char const* delim = "";
         for (std::string const& el : missing)
         {
@@ -135,6 +141,8 @@ static std::unordered_map<int, int> CreateStorageIndexToModelSvIndexLUT(OpenSim:
             delim = ", ";
         }
         osc::log::warn("%s", std::move(ss).str().c_str());
+		osc::log::warn("The STO file was loaded successfully, but beware: the missing state variables have been defaulted in order for this to work");
+		osc::log::warn("Therefore, do not treat the motion you are seeing as a 'true' representation of something: some state data was 'made up' to make the motion viewable");
     }
 
     // else: all model state variables are accounted for
@@ -153,7 +161,7 @@ static std::vector<osc::SimulationReport> ExtractReports(
 		model.getSimbodyEngine().convertDegreesToRadians(storage);
 	}
 
-    //storage.resampleLinear(1.0/100.0);  // TODO: some files can contain thousands of micro-sampled states from OpenSim-GUI
+    storage.resampleLinear(1.0/100.0);  // TODO: some files can contain thousands of micro-sampled states from OpenSim-GUI
 
     std::unordered_map<int, int> lut =
 		CreateStorageIndexToModelSvIndexLUT(model, storage);
@@ -163,7 +171,8 @@ static std::vector<osc::SimulationReport> ExtractReports(
     SetCoordsDefaultLocked(lockedCoords, false);
     OSC_SCOPE_GUARD({ SetCoordsDefaultLocked(lockedCoords, true); });
 
-	model.initSystem();
+	osc::InitializeModel(model);
+	osc::InitializeState(model);
 
 	std::vector<osc::SimulationReport> rv;
 	rv.reserve(storage.getSize());
@@ -173,20 +182,24 @@ static std::vector<osc::SimulationReport> ExtractReports(
 		OpenSim::StateVector* sv = storage.getStateVector(row);
 		OpenSim::Array<double> const& cols = sv->getData();
 
-		OSC_ASSERT_ALWAYS(cols.size() <= static_cast<int>(lut.size()));
-
-        SimTK::Vector stateValsBuf(static_cast<int>(lut.size()), SimTK::NaN);
-        for (auto [storageIdx, modelIdx] : lut)
+        SimTK::Vector stateValsBuf = model.getStateVariableValues(model.getWorkingState());
+        for (auto [valueIdx, modelIdx] : lut)
         {
-            stateValsBuf[modelIdx] = cols[storageIdx];
+			if (0 <= valueIdx && valueIdx < cols.size() && 0 <= modelIdx && modelIdx < stateValsBuf.size())
+			{
+				stateValsBuf[modelIdx] = cols[valueIdx];
+			}
+			else
+			{
+				throw std::runtime_error{"an index in the stroage lookup was invalid: this is probably a developer error that needs to be investigated (report it)"};
+			}
         }
 
-        SimTK::State st = model.getWorkingState();
-        st.updY().setToNaN();
+		osc::SimulationReport& report = rv.emplace_back(SimTK::State{model.getWorkingState()});
+		SimTK::State& st = report.updStateHACK();
         st.setTime(sv->getTime());
 		model.setStateVariableValues(st, stateValsBuf);
 		model.realizeReport(st);
-		rv.emplace_back(std::move(st));
 	}
 
 	return rv;
@@ -358,7 +371,7 @@ osc::ParamBlock const& osc::StoFileSimulation::getParams() const
 
 nonstd::span<osc::OutputExtractor const> osc::StoFileSimulation::getOutputExtractors() const
 {
-    return m_Impl->getOutputExtractors();
+	return m_Impl->getOutputExtractors();
 }
 
 void osc::StoFileSimulation::requestStop()
