@@ -1197,8 +1197,6 @@ bool osc::ActionSetCoordinateLockedAndSave(UndoableModelStatePair& model, OpenSi
             return false;
         }
 
-        // PERF HACK: don't do a full model+state re-realization here: only do it
-        //            when the caller wants to save the coordinate change
         mutCoord->setDefaultLocked(v);
         mutCoord->setLocked(mutModel.updWorkingState(), v);
         mutModel.equilibrateMuscles(mutModel.updWorkingState());
