@@ -1568,7 +1568,7 @@ class osc::experimental::Camera::Impl final {
 public:
     Impl() = default;
 
-    explicit Impl(Texture2D t) : m_MaybeTexture{ std::move(t) }
+    explicit Impl(RenderTexture t) : m_MaybeTexture{std::move(t)}
     {
     }
 
@@ -1632,12 +1632,12 @@ public:
         m_FarClippingPlane = std::move(distance);
     }
 
-    std::optional<Texture2D> getTexture() const
+    std::optional<RenderTexture> getTexture() const
     {
         return m_MaybeTexture;
     }
 
-    void setTexture(Texture2D t)
+    void setTexture(RenderTexture t)
     {
         m_MaybeTexture = std::move(t);
     }
@@ -1743,7 +1743,7 @@ private:
     }
 
     UID m_UID;
-    std::optional<Texture2D> m_MaybeTexture = std::nullopt;
+    std::optional<RenderTexture> m_MaybeTexture = std::nullopt;
     glm::vec4 m_BackgroundColor = { 0.0f, 0.0f, 0.0f, 0.0f };
     CameraProjection m_CameraProjection = CameraProjection::Perspective;
     float m_OrthographicSize = 10.0f;
@@ -1796,7 +1796,7 @@ osc::experimental::Camera::Camera() :
 {
 }
 
-osc::experimental::Camera::Camera(Texture2D t) :
+osc::experimental::Camera::Camera(RenderTexture t) :
     m_Impl{new Impl{std::move(t)}}
 {
 }
@@ -1877,12 +1877,12 @@ void osc::experimental::Camera::setFarClippingPlane(float d)
     m_Impl->setFarClippingPlane(std::move(d));
 }
 
-std::optional<osc::experimental::Texture2D> osc::experimental::Camera::getTexture() const
+std::optional<osc::experimental::RenderTexture> osc::experimental::Camera::getTexture() const
 {
     return m_Impl->getTexture();
 }
 
-void osc::experimental::Camera::setTexture(Texture2D t)
+void osc::experimental::Camera::setTexture(RenderTexture t)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setTexture(std::move(t));

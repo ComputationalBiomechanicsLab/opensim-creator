@@ -55,26 +55,26 @@ TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
 			continue;  // this joint doesn't count
 		}
 
-		int idx = -1;
+		int jointIdx = -1;
 		for (int i = 0; i < jointSet->getSize(); ++i)
 		{
 			OpenSim::Joint const* j = &(*jointSet)[i];
 			if (j == &joint)
 			{
-				idx = i;
+				jointIdx = i;
 			}
 		}
 
-		ASSERT_NE(idx, -1) << "the joint should exist within its parent set";
+		ASSERT_NE(jointIdx, -1) << "the joint should exist within its parent set";
 
-		auto replacement = std::unique_ptr<OpenSim::Joint>{osc::JointRegistry::prototypes()[idx]->clone()};
+		auto replacement = std::unique_ptr<OpenSim::Joint>{osc::JointRegistry::prototypes()[jointIdx]->clone()};
 
 		osc::CopyCommonJointProperties(joint, *replacement);
 
 		// update model
 		auto* ptr = replacement.get();
-		model.setDirty(true);
 		const_cast<OpenSim::JointSet&>(*jointSet).set(idx, replacement.release());
+		model.updModel();  // dirty it
 		model.commit(msg);
 
 		osc::log::info("%s", msg.c_str());

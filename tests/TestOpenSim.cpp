@@ -20,8 +20,8 @@ TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 
 	// data sources
 	std::filesystem::path modelPath{config->getResourceDir() / "models" / "Arm26" / "arm26.osim"};
-	OpenSim::ComponentPath coordinatePath = "/jointset/r_shoulder/r_shoulder_elev";
-	OpenSim::ComponentPath musclePath = "/forceset/BIClong";
+    OpenSim::ComponentPath coordinatePath{"/jointset/r_shoulder/r_shoulder_elev"};
+    OpenSim::ComponentPath musclePath{"/forceset/BIClong"};
 
 	// load osim into a base copy of the model
 	OpenSim::Model baseModel{modelPath.string()};
@@ -77,7 +77,7 @@ TEST(OpenSimModel, EditingACoordinateLockMutatesModel)
 	osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
 
 	std::filesystem::path modelPath{config->getResourceDir() / "models" / "Arm26" / "arm26.osim"};
-	OpenSim::ComponentPath coordinatePath = "/jointset/r_shoulder/r_shoulder_elev";
+    OpenSim::ComponentPath coordinatePath{"/jointset/r_shoulder/r_shoulder_elev"};
 
 	OpenSim::Model model{modelPath.string()};
 	model.buildSystem();

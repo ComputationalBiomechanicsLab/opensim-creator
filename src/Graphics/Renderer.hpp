@@ -380,6 +380,118 @@ namespace osc::experimental
     std::string to_string(Mesh const&);
 }
 
+// render texture
+//
+// a texture that can be rendered to
+namespace osc::experimental
+{
+    enum class RenderTextureFormat {
+        ARGB32 = 0,
+        TOTAL,
+    };
+
+    std::ostream& operator<<(std::ostream&, RenderTextureFormat);
+    std::string to_string(RenderTextureFormat);
+
+    enum class DepthStencilFormat {
+        D24_UNorm_S8_UInt = 0,
+        TOTAL,
+    };
+
+    std::ostream& operator<<(std::ostream&, DepthStencilFormat);
+    std::string to_string(DepthStencilFormat);
+
+    class RenderTextureDescriptor final {
+    public:
+        RenderTextureDescriptor(int width, int height);
+
+        int getWidth() const;
+        void setWidth(int);
+
+        int getHeight() const;
+        void setHeight(int);
+
+        int getAntialiasingLevel() const;
+        void setAntialiasingLevel(int);
+
+        int getDepth() const;
+        void setDepth(int);  // 0, 16, 24, or 32
+
+        RenderTextureFormat getColorFormat() const;
+        void setColorFormat(RenderTextureFormat);
+
+        DepthStencilFormat getDepthStencilFormat() const;
+        void setDepthStencilFormat(DepthStencilFormat);
+
+    private:
+        friend bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
+        friend bool operator!=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
+        friend bool operator<(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
+        friend bool operator<=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
+        friend bool operator>(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
+        friend std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
+        friend std::string to_string(RenderTextureDescriptor const&);
+
+        int m_Width;
+        int m_Height;
+        int m_AnialiasingLevel;
+        int m_Depth;
+        RenderTextureFormat m_ColorFormat;
+        DepthStencilFormat m_DepthStencilFormat;
+    };
+
+    bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
+    bool operator!=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
+    bool operator<(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
+    bool operator<=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
+    bool operator>(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
+    std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
+    std::string to_string(RenderTextureDescriptor const&);
+
+    class RenderTexture final {
+    public:
+        RenderTexture(RenderTextureDescriptor const&);
+
+        int getWidth() const;
+        void setWidth(int);
+
+        int getHeight() const;
+        void setHeight(int);
+
+        RenderTextureFormat getColorFormat() const;
+        void setColorFormat(RenderTextureFormat);
+
+        int getAntialiasingLevel() const;
+        void setAntialiasingLevel(int);
+
+        int getDepth() const;
+        void setDepth(int);
+
+        DepthStencilFormat getDepthStencilFormat() const;
+        void setDepthStencilFormat(DepthStencilFormat);
+
+        class Impl;
+    private:
+        friend bool operator==(RenderTexture const&, RenderTexture const&);
+        friend bool operator!=(RenderTexture const&, RenderTexture const&);
+        friend bool operator<(RenderTexture const&, RenderTexture const&);
+        friend bool operator<=(RenderTexture const&, RenderTexture const&);
+        friend bool operator>(RenderTexture const&, RenderTexture const&);
+        friend std::ostream& operator<<(std::ostream&, RenderTexture const&);
+        friend std::string to_string(RenderTexture const&);
+
+        std::shared_ptr<Impl> m_Impl;
+    };
+
+    bool operator==(RenderTexture const&, RenderTexture const&);
+    bool operator!=(RenderTexture const&, RenderTexture const&);
+    bool operator<(RenderTexture const&, RenderTexture const&);
+    bool operator<=(RenderTexture const&, RenderTexture const&);
+    bool operator>(RenderTexture const&, RenderTexture const&);
+    std::ostream& operator<<(std::ostream&, RenderTexture const&);
+    std::string to_string(RenderTexture const&);
+}
+
 // camera
 //
 // encapsulates a camera viewport that can be drawn to, with the intention of producing
@@ -399,7 +511,7 @@ namespace osc::experimental
     class Camera final {
     public:
         Camera();  // draws to screen
-        explicit Camera(Texture2D);  // draws to texture
+        explicit Camera(RenderTexture);  // draws to texture
         Camera(Camera const&);
         Camera(Camera&&) noexcept;
         Camera& operator=(Camera const&);
@@ -426,8 +538,8 @@ namespace osc::experimental
         float getFarClippingPlane() const;
         void setFarClippingPlane(float);
 
-        std::optional<Texture2D> getTexture() const;  // returns nullptr if drawing directly to screen
-        void setTexture(Texture2D);
+        std::optional<RenderTexture> getTexture() const;  // empty if drawing directly to screen
+        void setTexture(RenderTexture);
         void setTexture();  // resets to drawing to screen
 
         // where on the screen the camera is rendered (in screen-space)

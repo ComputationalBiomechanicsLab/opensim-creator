@@ -1,3 +1,4 @@
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Renderer.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Utils/Algorithms.hpp"
@@ -211,6 +212,12 @@ static std::vector<glm::vec3> GenerateTriangleVerts()
         rv.push_back(GenerateVec3());
     }
     return rv;
+}
+
+static osc::experimental::RenderTexture GenerateRenderTexture()
+{
+    osc::experimental::RenderTextureDescriptor d{2, 2};
+    return osc::experimental::RenderTexture{d};
 }
 
 template<typename T>
@@ -1667,18 +1674,18 @@ TEST_F(Renderer, CameraDefaultConstructedHasNoTexture)
 
 TEST_F(Renderer, CameraCanBeConstructedWithTexture)
 {
-    osc::experimental::Camera camera{GenerateTexture()};  // should compile + run
+    osc::experimental::Camera camera{GenerateRenderTexture()};  // should compile + run
 }
 
 TEST_F(Renderer, CameraConstructedWithTextureMakesGetTextureReturnNonemptyOptional)
 {
-    osc::experimental::Camera camera{GenerateTexture()};
+    osc::experimental::Camera camera{GenerateRenderTexture()};
     ASSERT_TRUE(camera.getTexture().has_value());
 }
 
 TEST_F(Renderer, CameraConstructedWithTextureMakesGetTextureReturnTextureWithSameWidthAndHeight)
 {
-    osc::experimental::Texture2D t = GenerateTexture();
+    osc::experimental::RenderTexture t = GenerateRenderTexture();
     osc::experimental::Camera camera{t};
 
     ASSERT_EQ(t.getWidth(), camera.getTexture()->getWidth());
@@ -1803,6 +1810,12 @@ TEST_F(Renderer, CameraSetCameraProjectionMakesCameraCompareNotEqual)
     ASSERT_NE(camera, copy);
 }
 
+// TODO: RenderTextureFormat <<
+// TODO: RenderTextureFormat to_string
+// TODO: DepthStencilFormat <<
+// TODO: DepthStencilFormat to_string
+// TODO: RenderTextureDescriptor (all)
+// TODO: RenderTexture (all)
 // TODO: orthographic size
 // TODO: fov
 // TODO: clipping planes
