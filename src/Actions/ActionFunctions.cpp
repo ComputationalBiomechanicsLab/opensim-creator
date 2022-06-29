@@ -326,7 +326,7 @@ bool osc::ActionUpdateModelFromBackingFile(osc::UndoableModelStatePair& uim)
     std::filesystem::path path = uim.getFilesystemPath();
     std::filesystem::file_time_type lastSaveTime = std::filesystem::last_write_time(path);
 
-    if (uim.getLastFilesystemWriteTime() <= lastSaveTime)
+    if (uim.getLastFilesystemWriteTime() >= lastSaveTime)
     {
         // the backing file is probably up-to-date with the in-memory representation
         //
