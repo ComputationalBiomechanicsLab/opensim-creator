@@ -294,9 +294,9 @@ static std::unordered_map<std::string, osc::CStringView> const& GetDescriptionLu
 
 // helper: construct a prototype joint and assign its coordinate names
 template<typename TJoint>
-static std::shared_ptr<OpenSim::Joint const> JointWithCoords(std::initializer_list<char const*> names)
+static std::shared_ptr<TJoint> JointWithCoords(std::initializer_list<char const*> names)
 {
-    std::shared_ptr<OpenSim::Joint> j = std::make_shared<TJoint>();
+    std::shared_ptr<TJoint> j = std::make_shared<TJoint>();
     int i = 0;
     for (char const* name : names)
     {
@@ -316,7 +316,12 @@ static std::unordered_map<std::string, std::shared_ptr<OpenSim::Component const>
         },
         {
             typeid(OpenSim::EllipsoidJoint).name(),
-            JointWithCoords<OpenSim::EllipsoidJoint>({"rx", "ry", "rz"}),
+            []()
+            {
+                auto joint = JointWithCoords<OpenSim::EllipsoidJoint>({"rx", "ry", "rz"});
+                joint->updProperty_radii_x_y_z() = {1.0, 1.0, 1.0};
+                return joint;
+            }()
         },
         {
             typeid(OpenSim::FreeJoint).name(),
@@ -336,7 +341,12 @@ static std::unordered_map<std::string, std::shared_ptr<OpenSim::Component const>
         },
         {
             typeid(OpenSim::ScapulothoracicJoint).name(),
-            JointWithCoords<OpenSim::ScapulothoracicJoint>({"rx_abduction", "ry_elevation", "rz_upwardrotation", "ryp_winging"}),
+            []()
+            {
+                auto joint = JointWithCoords<OpenSim::ScapulothoracicJoint>({"rx_abduction", "ry_elevation", "rz_upwardrotation", "ryp_winging"});
+                joint->updProperty_thoracic_ellipsoid_radii_x_y_z() = {1.0, 1.0, 1.0};
+                return joint;
+            }()
         },
         {
             typeid(OpenSim::SliderJoint).name(),
@@ -352,7 +362,8 @@ static std::unordered_map<std::string, std::shared_ptr<OpenSim::Component const>
         },
         {
             typeid(OpenSim::HuntCrossleyForce).name(),
-            []() {
+            []()
+            {
                 auto hcf = std::make_shared<OpenSim::HuntCrossleyForce>();
                 hcf->setStiffness(100000000.0);
                 hcf->setDissipation(0.5);
@@ -364,7 +375,8 @@ static std::unordered_map<std::string, std::shared_ptr<OpenSim::Component const>
         },
         {
             typeid(OpenSim::PathSpring).name(),
-            []() {
+            []()
+            {
                 auto ps = std::make_shared<OpenSim::PathSpring>();
                 ps->setRestingLength(1.0);
                 ps->setStiffness(1000.0);
@@ -372,6 +384,24 @@ static std::unordered_map<std::string, std::shared_ptr<OpenSim::Component const>
                 return ps;
             }(),
         },
+        {
+            typeid(OpenSim::ContactSphere).name(),
+            []()
+            {
+                auto cs = std::make_shared<OpenSim::ContactSphere>();
+                cs->setRadius(1.0);
+                return cs;
+            }()
+        },
+        {
+            typeid(OpenSim::ConstantDistanceConstraint).name(),
+            []()
+            {
+                auto cdc = std::make_shared<OpenSim::ConstantDistanceConstraint>();
+                cdc->setConstantDistance(1.0);
+                return cdc;
+            }()
+        }
     };
 }
 
