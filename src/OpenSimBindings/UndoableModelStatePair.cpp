@@ -603,6 +603,7 @@ private:
             UiModelStatePair newScratch{std::make_unique<OpenSim::Model>(*c->getModel())};
             CopySelectedHoveredAndIsolated(m_Scratch, newScratch);
             newScratch.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
+            newScratch.setIsolated(osc::FindComponent(newScratch.getModel(), c->getIsolatedAbsPath()));
             m_Scratch = std::move(newScratch);
         }
     }
@@ -635,6 +636,7 @@ private:
         UiModelStatePair newModel{std::make_unique<OpenSim::Model>(*parent->getModel())};
         CopySelectedHoveredAndIsolated(m_Scratch, newModel);
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
+        newModel.setIsolated(osc::FindComponent(newModel.getModel(), parent->getIsolatedAbsPath()));
 
         m_Scratch = std::move(newModel);
         m_CurrentHead = parent->getID();
@@ -664,6 +666,7 @@ private:
         UiModelStatePair newModel{std::make_unique<OpenSim::Model>(*c->getModel())};
         CopySelectedHoveredAndIsolated(m_Scratch, newModel);
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
+        newModel.setIsolated(osc::FindComponent(newModel.getModel(), c->getIsolatedAbsPath()));
 
         m_Scratch = std::move(newModel);
         m_CurrentHead = c->getID();
