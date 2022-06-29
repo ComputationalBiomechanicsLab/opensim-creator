@@ -1112,7 +1112,6 @@ bool osc::ActionAddComponentToModel(UndoableModelStatePair& model, std::unique_p
         OpenSim::Model& mutModel = model.updModel();
         auto* ptr = c.get();
         AddComponentToModel(mutModel, std::move(c));
-        mutModel.finalizeConnections();
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
         model.setSelected(ptr);
