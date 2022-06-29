@@ -1203,6 +1203,7 @@ bool osc::ActionSetCoordinateLockedAndSave(UndoableModelStatePair& model, OpenSi
         mutCoord->setLocked(mutModel.updWorkingState(), v);
         mutModel.equilibrateMuscles(mutModel.updWorkingState());
         mutModel.realizeDynamics(mutModel.updWorkingState());
+        model.commit(v ? "locked coordinate" : "unlocked coordinate");
         return true;
     }
     catch (std::exception const& ex)
