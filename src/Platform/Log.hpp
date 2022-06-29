@@ -156,21 +156,22 @@ namespace osc::log
             }
 
             // create the log message
-            char buf[1024];
+            thread_local std::vector<char> buf(2048);
             size_t n = 0;
             {
                 va_list args;
                 va_start(args, fmt);
-                int rv = std::vsnprintf(buf, sizeof(buf), fmt, args);
+                int rv = std::vsnprintf(buf.data(), buf.size(), fmt, args);
                 va_end(args);
 
-                if (rv < 0)
+                if (rv <= 0)
                 {
                     return;
                 }
-                n = std::min(static_cast<size_t>(rv), sizeof(buf));
+
+                n = std::min(static_cast<size_t>(rv), buf.size()-1);
             }
-            LogMessage msg{m_Name, std::string_view{buf, n}, msgLvl};
+            LogMessage msg{m_Name, std::string_view{buf.data(), n}, msgLvl};
 
             // sink it
             for (auto& sink : m_Sinks)
