@@ -24,6 +24,7 @@
 #include "src/Widgets/ModelHierarchyPanel.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 #include "src/Widgets/SimulationOutputPlot.hpp"
+#include "src/Widgets/SimulationScrubber.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
 
 #include <glm/vec2.hpp>
@@ -110,29 +111,20 @@ public:
 	}
 
 	bool onEvent(SDL_Event const& e)
-	{
-        if (e.type == SDL_KEYDOWN)
+    {
+        if (m_SimulationScrubber.onEvent(e))
         {
-            return onKeyDown(e.key);
+            return true;
         }
-        return false;
+        else
+        {
+            return false;
+        }
 	}
 
 	void onTick()
 	{
-        if (m_IsPlayingBack)
-        {
-            auto playbackPos = getPlaybackPositionInSimTime(*m_Simulation);
-            if (playbackPos < m_Simulation->getEndTime())
-            {
-                osc::App::upd().requestRedraw();
-            }
-            else
-            {
-                m_IsPlayingBack = false;
-                return;
-            }
-        }
+        m_SimulationScrubber.onTick();
 	}
 
 	void onDrawMainMenu()
@@ -157,13 +149,12 @@ public:
 
     SimulationClock::time_point getSimulationScrubTime() override
     {
-        return getPlaybackPositionInSimTime(*m_Simulation);
+        return m_SimulationScrubber.getScrubPositionInSimTime();
     }
 
     void setSimulationScrubTime(SimulationClock::time_point t) override
     {
-        m_PlaybackStartSimtime = t;
-        m_IsPlayingBack = false;
+        m_SimulationScrubber.scrubTo(t);
     }
 
     std::optional<SimulationReport> trySelectReportBasedOnScrubbing() override
@@ -504,59 +495,6 @@ private:
         ImGui::Columns();
     }
 
-    // draw timescrubber slider
-    void drawSimulationScrubber(osc::Simulation& sim)
-    {
-        // play/pause buttons
-        if (!m_IsPlayingBack)
-        {
-            if (ImGui::Button(ICON_FA_PLAY))
-            {
-                m_PlaybackStartWallTime = std::chrono::system_clock::now();
-                m_IsPlayingBack = true;
-            }
-        }
-        else
-        {
-            if (ImGui::Button(ICON_FA_PAUSE))
-            {
-                m_PlaybackStartSimtime = getPlaybackPositionInSimTime(sim);
-                m_IsPlayingBack = false;
-            }
-        }
-
-        osc::SimulationClock::time_point tStart = sim.getStartTime();
-        osc::SimulationClock::time_point tEnd = sim.getEndTime();
-        osc::SimulationClock::time_point tCur = getPlaybackPositionInSimTime(sim);
-
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-
-        float v = static_cast<float>(tCur.time_since_epoch().count());
-        bool userScrubbed = ImGui::SliderFloat("##scrubber",
-            &v,
-            static_cast<float>(tStart.time_since_epoch().count()),
-            static_cast<float>(tEnd.time_since_epoch().count()),
-            "%.2f",
-            ImGuiSliderFlags_AlwaysClamp);
-
-        if (userScrubbed)
-        {
-            m_PlaybackStartSimtime = osc::SimulationClock::start() + osc::SimulationClock::duration{static_cast<double>(v)};
-            m_PlaybackStartWallTime = std::chrono::system_clock::now();
-        }
-
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-            ImGui::TextUnformatted("Left-Click: Change simulation time being shown");
-            ImGui::TextUnformatted("Ctrl-Click: Type in the simulation time being shown");
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
-    }
-
     void drawMainMenuWindowTab()
     {
         static std::vector<std::string> const g_EditorScreenPanels =
@@ -642,7 +580,7 @@ private:
             ImGui::SetNextWindowSize({ dims.x - 1.1f*leftPadding, panelHeight });
             std::string scrubberName = "##scrubber_" + std::to_string(i);
             ImGui::Begin(scrubberName.c_str(), nullptr, osc::GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs);
-            drawSimulationScrubber(*ms.updSimulation());
+            m_SimulationScrubber.onDraw();
             ImGui::End();
         }
 
@@ -730,62 +668,9 @@ private:
         }
     }
 
-    // returns the playback position, which changes based on the wall clock (it's a playback)
-    // onto the time within a simulation
-    osc::SimulationClock::time_point getPlaybackPositionInSimTime(osc::VirtualSimulation const& sim)
-    {
-        if (!m_IsPlayingBack)
-        {
-            return m_PlaybackStartSimtime;
-        }
-        else
-        {
-            // map wall time onto sim time
-
-            int nReports = sim.getNumReports();
-            if (nReports <= 0)
-            {
-                return osc::SimulationClock::start();
-            }
-            else
-            {
-                std::chrono::system_clock::time_point wallNow = std::chrono::system_clock::now();
-                auto wallDur = wallNow - m_PlaybackStartWallTime;
-
-                osc::SimulationClock::time_point simNow = m_PlaybackStartSimtime + osc::SimulationClock::duration{wallDur};
-                osc::SimulationClock::time_point simLatest = sim.getSimulationReport(nReports-1).getTime();
-
-                return simNow <= simLatest ? simNow : simLatest;
-            }
-        }
-    }
-
-    std::optional<osc::SimulationReport> TryLookupReportBasedOnScrubbing(osc::VirtualSimulation& sim)
-    {
-        int nReports = sim.getNumReports();
-
-        if (nReports <= 0)
-        {
-            return std::nullopt;
-        }
-
-        osc::SimulationClock::time_point t = getPlaybackPositionInSimTime(sim);
-
-        for (int i = 0; i < nReports; ++i)
-        {
-            osc::SimulationReport r = sim.getSimulationReport(i);
-            if (r.getTime() >= t)
-            {
-                return r;
-            }
-        }
-
-        return sim.getSimulationReport(nReports-1);
-    }
-
     std::optional<osc::SimulationReport> TrySelectReportBasedOnScrubbing(osc::VirtualSimulation& sim)
     {
-        std::optional<osc::SimulationReport> maybeReport = TryLookupReportBasedOnScrubbing(sim);
+        std::optional<osc::SimulationReport> maybeReport = m_SimulationScrubber.tryLookupReportBasedOnScrubbing();
 
         if (!maybeReport)
         {
@@ -800,11 +685,6 @@ private:
         sim.getModel()->realizeReport(st);
 
         return maybeReport;
-    }
-
-    bool onKeyDown(SDL_KeyboardEvent const&)
-    {
-        return false;
     }
 
 	UID m_ID;
@@ -824,13 +704,8 @@ private:
     ComponentDetails m_ComponentDetailsWidget;
     PerfPanel m_PerfPanel{"Performance"};
     ModelHierarchyPanel m_ModelHierarchyPanel{"Hierarchy"};
-
+    SimulationScrubber m_SimulationScrubber{m_Simulation};
     std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
-
-    // scrubber/playback state
-    bool m_IsPlayingBack = true;
-    SimulationClock::time_point m_PlaybackStartSimtime = SimulationClock::start();
-    std::chrono::system_clock::time_point m_PlaybackStartWallTime = std::chrono::system_clock::now();
 };
 
 

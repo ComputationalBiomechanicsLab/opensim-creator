@@ -548,6 +548,8 @@ add_library(osccore STATIC
     src/Widgets/SelectionEditorPanel.hpp
     src/Widgets/SimulationOutputPlot.cpp
     src/Widgets/SimulationOutputPlot.hpp
+    src/Widgets/SimulationScrubber.cpp
+    src/Widgets/SimulationScrubber.hpp
     src/Widgets/StandardPopup.cpp
     src/Widgets/StandardPopup.hpp
     src/Widgets/UiModelViewer.cpp
