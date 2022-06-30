@@ -7399,6 +7399,8 @@ namespace
 
         void Draw3DViewerOverlayBottomBar()
         {
+            ImGui::PushID("##3DViewerOverlay");
+
             // bottom-left axes overlay
             DrawAlignmentAxesOverlayInBottomRightOf(m_Shared->GetCamera().getViewMtx(), m_Shared->Get3DSceneRect());
 
@@ -7503,6 +7505,8 @@ namespace
                 m_Shared->UpdCamera() = CreateDefaultCamera();
             }
             osc::DrawTooltipIfItemHovered("Reset camera", "Resets the camera to its default position (the position it's in when the wizard is first loaded)");
+
+            ImGui::PopID();
         }
 
         void Draw3DViewerOverlayConvertToOpenSimModelButton()
