@@ -7797,16 +7797,19 @@ namespace
                 {
                     m_Shared->OpenOsimFileAsModelGraph();
                 }
+                osc::DrawTooltipIfItemHovered("Import osim into mesh importer", "Try to import an existing osim file into the mesh importer.\n\nBEWARE: the mesh importer is *not* an OpenSim model editor. The import process will delete information from your osim in order to 'jam' it into this screen. The main purpose of this button is to export/import mesh editor scenes, not to edit existing OpenSim models.");
 
                 if (ImGui::MenuItem(ICON_FA_SAVE " Export", "Ctrl+S"))
                 {
                     m_Shared->ExportModelGraphAsOsimFile();
                 }
+                osc::DrawTooltipIfItemHovered("Export mesh impoter scene to osim", "Try to export the current mesh importer scene to an osim.\n\nBEWARE: the mesh importer scene may not map 1:1 onto an OpenSim model, so re-importing the scene *may* change a few things slightly. The main utility of this button is to try and save some progress in the mesh importer.");
 
                 if (ImGui::MenuItem(ICON_FA_SAVE " Export As", "Shift+Ctrl+S"))
                 {
                     m_Shared->ExportAsModelGraphAsOsimFile();
                 }
+                osc::DrawTooltipIfItemHovered("Export mesh impoter scene to osim", "Try to export the current mesh importer scene to an osim.\n\nBEWARE: the mesh importer scene may not map 1:1 onto an OpenSim model, so re-importing the scene *may* change a few things slightly. The main utility of this button is to try and save some progress in the mesh importer.");
 
                 if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W"))
                 {
