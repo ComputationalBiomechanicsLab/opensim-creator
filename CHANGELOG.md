@@ -81,6 +81,8 @@ All notable changes to this project will be documented here. The format is based
   - That warning may be upgraded to a user prompt in later versions
   - The main utility of this feature is that it enables loading older STO/MOT files, and motion files
     that aren't *strictly* simulation states, for tertiary analysis by the user
+- The simulation scrubber now correctly handles simulations that start at t != 0 (#304)
+  - This is mostly for loading STO and MOT files
 
 
 ## [0.1.6] - 2022/05/09

@@ -40,7 +40,7 @@ public:
             int nReports = m_Simulation->getNumReports();
             if (nReports <= 0)
             {
-                return osc::SimulationClock::start();
+                return m_Simulation->getStartTime();
             }
             else
             {
@@ -95,6 +95,7 @@ public:
             }
             else
             {
+                m_PlaybackStartSimtime = playbackPos;
                 m_IsPlayingBack = false;
                 return;
             }
@@ -161,7 +162,7 @@ public:
 private:
     std::shared_ptr<Simulation> m_Simulation;
     bool m_IsPlayingBack = true;
-    SimulationClock::time_point m_PlaybackStartSimtime = SimulationClock::start();
+    SimulationClock::time_point m_PlaybackStartSimtime = m_Simulation->getStartTime();
     std::chrono::system_clock::time_point m_PlaybackStartWallTime = std::chrono::system_clock::now();
 };
 
