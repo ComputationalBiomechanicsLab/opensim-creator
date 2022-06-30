@@ -3519,7 +3519,7 @@ namespace
     {
         // init model+state
         osc::InitializeModel(m);
-        SimTK::State st = osc::InitializeState(m);
+        SimTK::State const& st = osc::InitializeState(m);
 
         // this is what this method populates
         ModelGraph rv;
