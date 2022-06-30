@@ -802,16 +802,23 @@ namespace
 
 			ImGui::Text("select muscle:");
 
-			ImGui::BeginChild("MomentArmPlotMuscleSelection");
-			for (OpenSim::Muscle const* musc : muscles)
-			{
-				if (ImGui::Selectable(musc->getName().c_str()))
-				{
-					shared->PlotParams.setMusclePath(musc->getAbsolutePath());
-					rv = std::make_unique<PickCoordinateState>(shared);
-				}
-			}
-			ImGui::EndChild();
+            if (muscles.empty())
+            {
+                ImGui::TextDisabled("(the model contains no muscles?)");
+            }
+            else
+            {
+                ImGui::BeginChild("MomentArmPlotMuscleSelection");
+                for (OpenSim::Muscle const* musc : muscles)
+                {
+                    if (ImGui::Selectable(musc->getName().c_str()))
+                    {
+                        shared->PlotParams.setMusclePath(musc->getAbsolutePath());
+                        rv = std::make_unique<PickCoordinateState>(shared);
+                    }
+                }
+                ImGui::EndChild();
+            }
 
 			return rv;
 		}
