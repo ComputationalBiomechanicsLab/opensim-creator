@@ -104,8 +104,21 @@ public:
 
     void onDraw()
     {
+        osc::SimulationClock::time_point tStart = m_Simulation->getStartTime();
+        osc::SimulationClock::time_point tEnd = m_Simulation->getEndTime();
+        osc::SimulationClock::time_point tCur = getScrubPositionInSimTime();
+
         // play/pause buttons
-        if (!m_IsPlayingBack)
+        if (tCur >= tEnd)
+        {
+            if (ImGui::Button(ICON_FA_REDO))
+            {
+                m_PlaybackStartSimtime = tStart;
+                m_PlaybackStartWallTime = std::chrono::system_clock::now();
+                m_IsPlayingBack = true;
+            }
+        }
+        else if (!m_IsPlayingBack)
         {
             if (ImGui::Button(ICON_FA_PLAY))
             {
@@ -121,10 +134,6 @@ public:
                 m_IsPlayingBack = false;
             }
         }
-
-        osc::SimulationClock::time_point tStart = m_Simulation->getStartTime();
-        osc::SimulationClock::time_point tEnd = m_Simulation->getEndTime();
-        osc::SimulationClock::time_point tCur = getScrubPositionInSimTime();
 
         ImGui::SameLine();
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
