@@ -635,8 +635,11 @@ private:
 
         // draw scubber overlay
         {
-            ImGui::SetNextWindowPos({ pos.x + 100.0f, pos.y + dims.y - 70.0f });
-            ImGui::SetNextWindowSize({ dims.x - 110.0f, 100.0f });
+            float leftPadding = 100.0f;
+            float bottomPadding = 20.0f;
+            float panelHeight = 50.0f;
+            ImGui::SetNextWindowPos({ pos.x + leftPadding, pos.y + dims.y - panelHeight - bottomPadding });
+            ImGui::SetNextWindowSize({ dims.x - 1.1f*leftPadding, panelHeight });
             std::string scrubberName = "##scrubber_" + std::to_string(i);
             ImGui::Begin(scrubberName.c_str(), nullptr, osc::GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs);
             drawSimulationScrubber(*ms.updSimulation());
