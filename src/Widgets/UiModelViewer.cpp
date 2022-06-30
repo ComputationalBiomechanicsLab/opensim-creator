@@ -1356,13 +1356,6 @@ osc::UiModelViewerResponse osc::UiModelViewer::draw(VirtualConstModelStatePair c
                 DoFocusCameraAlongY(impl);
             }
         }
-        if (ImGui::IsKeyPressed(SDL_SCANCODE_Z))
-        {
-            if (!ctrlDown)
-            {
-                DoFocusCameraAlongZ(impl);
-            }
-        }
         if (ImGui::IsKeyPressed(SDL_SCANCODE_F))
         {
             if (ctrlDown)
