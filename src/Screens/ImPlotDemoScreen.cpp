@@ -1,6 +1,7 @@
 #include "ImPlotDemoScreen.hpp"
 
 #include "src/Platform/App.hpp"
+#include "src/Screens/ExperimentsScreen.hpp"
 
 #include <glm/vec4.hpp>
 #include <implot.h>
@@ -31,6 +32,11 @@ public:
         else if (osc::ImGuiOnEvent(e))
         {
             return;  // ImGui handled this particular event
+        }
+        else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+        {
+            App::upd().requestTransition<ExperimentsScreen>();
+            return;
         }
     }
 

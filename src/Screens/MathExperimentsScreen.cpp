@@ -3,6 +3,7 @@
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Screens/ExperimentsScreen.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
@@ -36,6 +37,11 @@ public:
         else if (osc::ImGuiOnEvent(e))
         {
             return;  // ImGui handled this particular event
+        }
+        else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+        {
+            App::upd().requestTransition<ExperimentsScreen>();
+            return;
         }
     }
 
@@ -105,6 +111,7 @@ public:
         ImGui::Text("relvec (mtx) = %.2f, %.2f", relVec.x, relVec.y);
         glm::vec2 relVecF = TransformPoint(boxTransform, glm::vec3{mousePos, 0.0f});
         ImGui::Text("relvec (func) = %.2f, %.2f", relVecF.x, relVecF.y);
+        ImGui::End();
 
         osc::ImGuiRender();  // tell ImGui to render any ImGui widgets since calling ImGuiNewFrame();
     }
