@@ -124,6 +124,24 @@ static std::string TryExportNumericOutputToCSV(osc::VirtualSimulation& sim, osc:
         output.getName().c_str());
 }
 
+static void DrawToggleWatchOutputMenuItem(osc::SimulatorUIAPI& api, osc::OutputExtractor const& output)
+{
+    bool isWatching = api.hasUserOutputExtractor(output);
+
+    if (ImGui::MenuItem(ICON_FA_EYE " Watch Output", nullptr, &isWatching))
+    {
+        if (isWatching)
+        {
+            api.addUserOutputExtractor(output);
+        }
+        else
+        {
+            api.removeUserOutputExtractor(output);
+        }
+    }
+    osc::DrawTooltipIfItemHovered("Watch Output", "Watch the selected output. Watching an output makes it appear in the 'output watches' panel in a simulation tab");
+}
+
 static void DrawGenericNumericOutputContextMenuItems(osc::SimulatorUIAPI& api, osc::VirtualSimulation& sim, osc::OutputExtractor const& output)
 {
     OSC_ASSERT(output.getOutputType() == osc::OutputType::Float);
@@ -142,20 +160,7 @@ static void DrawGenericNumericOutputContextMenuItems(osc::SimulatorUIAPI& api, o
         }
     }
 
-    bool isWatching = api.hasUserOutputExtractor(output);
-
-    if (ImGui::MenuItem(ICON_FA_EYE " Watch Output", nullptr, &isWatching))
-    {
-        if (isWatching)
-        {
-            api.addUserOutputExtractor(output);
-        }
-        else
-        {
-            api.removeUserOutputExtractor(output);
-        }
-    }
-    osc::DrawTooltipIfItemHovered("Watch Output", "Watch the selected output. Watching an output makes it appear in the 'output watches' panel in a simulation tab");
+    DrawToggleWatchOutputMenuItem(api, output);
 }
 
 static std::filesystem::path TryExportOutputsToCSV(osc::VirtualSimulation& sim, nonstd::span<osc::OutputExtractor const> outputs)
@@ -244,6 +249,13 @@ public:
 		{
 			osc::SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
 			ImGui::TextUnformatted(m_OutputExtractor.getValueString(*sim.getModel(), r).c_str());
+
+            // draw context menu (if user right clicks)
+            if (ImGui::BeginPopupContextItem("plotcontextmenu"))
+            {
+                DrawToggleWatchOutputMenuItem(*m_API, m_OutputExtractor);
+                ImGui::EndPopup();
+            }
 		}
 		else
 		{
