@@ -73,6 +73,18 @@ static void DrawOutputNameColumn(osc::VirtualOutputExtractor const& output, bool
     }
 }
 
+static bool IsAnyOutputExportableToCSV(osc::MainUIStateAPI& api)
+{
+    for (int i = 0; i < api.getNumUserOutputExtractors(); ++i)
+    {
+        if (api.getUserOutputExtractor(i).getOutputType() == osc::OutputType::Float)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 class osc::SimulatorTab::Impl final : public SimulatorUIAPI {
 public:
 	Impl(MainUIStateAPI* api, std::shared_ptr<Simulation> simulation) :
@@ -330,24 +342,27 @@ private:
             return;
         }
 
-        ImGui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
-        if (ImGui::BeginPopupContextItem("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
+        if (IsAnyOutputExportableToCSV(*m_API))
         {
-            if (ImGui::MenuItem("as CSV"))
+            ImGui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
+            if (ImGui::BeginPopupContextItem("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
             {
-                osc::TryPromptAndSaveAllUserDesiredOutputsAsCSV(*this);
-            }
-
-            if (ImGui::MenuItem("as CSV (and open)"))
-            {
-                auto p = osc::TryPromptAndSaveAllUserDesiredOutputsAsCSV(*this);
-                if (!p.empty())
+                if (ImGui::MenuItem("as CSV"))
                 {
-                    osc::OpenPathInOSDefaultApplication(p);
+                    osc::TryPromptAndSaveAllUserDesiredOutputsAsCSV(*this);
                 }
-            }
 
-            ImGui::EndPopup();
+                if (ImGui::MenuItem("as CSV (and open)"))
+                {
+                    auto p = osc::TryPromptAndSaveAllUserDesiredOutputsAsCSV(*this);
+                    if (!p.empty())
+                    {
+                        osc::OpenPathInOSDefaultApplication(p);
+                    }
+                }
+
+                ImGui::EndPopup();
+            }
         }
 
         ImGui::Separator();
