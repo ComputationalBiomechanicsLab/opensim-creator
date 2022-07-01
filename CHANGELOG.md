@@ -87,6 +87,7 @@ All notable changes to this project will be documented here. The format is based
   export-able (#125)
 - Reversed the keyboard camera panning direction in the mesh importer (#73)
 - The experimental screen now has a "return to main UI" button (#307)
+- Textual outputs can now be removed from the "output watches" panel  by right-clicking them (#306 #124)
 
 
 ## [0.1.6] - 2022/05/09
