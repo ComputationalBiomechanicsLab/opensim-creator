@@ -85,6 +85,7 @@ All notable changes to this project will be documented here. The format is based
   - This is mostly for loading STO and MOT files
 - The "Save All (to CSV)" button(s) in the output watches tab are now hidden if no outputs are
   export-able (#125)
+- Reversed the keyboard camera panning direction in the mesh importer (#73)
 
 
 ## [0.1.6] - 2022/05/09

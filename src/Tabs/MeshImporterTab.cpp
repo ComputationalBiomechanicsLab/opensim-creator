@@ -6351,7 +6351,7 @@ namespace
                 if (ctrlOrSuperDown)
                 {
                     // pan
-                    m_Shared->UpdCamera().pan(osc::AspectRatio(m_Shared->Get3DSceneDims()), {0.0f, 0.1f});
+                    m_Shared->UpdCamera().pan(osc::AspectRatio(m_Shared->Get3DSceneDims()), {0.0f, -0.1f});
                 }
                 else if (shiftDown)
                 {
@@ -6370,7 +6370,7 @@ namespace
                 if (ctrlOrSuperDown)
                 {
                     // pan
-                    m_Shared->UpdCamera().pan(osc::AspectRatio(m_Shared->Get3DSceneDims()), {0.0f, -0.1f});
+                    m_Shared->UpdCamera().pan(osc::AspectRatio(m_Shared->Get3DSceneDims()), {0.0f, +0.1f});
                 }
                 else if (shiftDown)
                 {
@@ -6389,7 +6389,7 @@ namespace
                 if (ctrlOrSuperDown)
                 {
                     // pan
-                    m_Shared->UpdCamera().pan(osc::AspectRatio(m_Shared->Get3DSceneDims()), {0.1f, 0.0f});
+                    m_Shared->UpdCamera().pan(osc::AspectRatio(m_Shared->Get3DSceneDims()), {-0.1f, 0.0f});
                 }
                 else if (shiftDown)
                 {
@@ -6408,7 +6408,7 @@ namespace
                 if (ctrlOrSuperDown)
                 {
                     // pan
-                    m_Shared->UpdCamera().pan(osc::AspectRatio(m_Shared->Get3DSceneDims()), {-0.1f, 0.0f});
+                    m_Shared->UpdCamera().pan(osc::AspectRatio(m_Shared->Get3DSceneDims()), {+0.1f, 0.0f});
                 }
                 else if (shiftDown)
                 {
