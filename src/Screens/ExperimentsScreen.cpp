@@ -7,6 +7,7 @@
 #include "src/Screens/ImPlotDemoScreen.hpp"
 #include "src/Screens/ImGuiDemoScreen.hpp"
 #include "src/Screens/InstancedRendererScreen.hpp"
+#include "src/Screens/MainUIScreen.hpp"
 #include "src/Screens/MathExperimentsScreen.hpp"
 #include "src/Screens/MeshGenTestScreen.hpp"
 #include "src/Screens/MeshHittestScreen.hpp"
@@ -14,6 +15,7 @@
 
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
+#include <IconsFontAwesome5.h>
 #include <imgui.h>
 
 #include <string>
@@ -72,6 +74,15 @@ public:
         }
 
         ImGui::Begin("select experiment");
+
+        ImGui::Dummy({0.0f, 0.5f * ImGui::GetTextLineHeight()});
+        if (ImGui::Button(ICON_FA_HOME " back to main UI"))
+        {
+            App::upd().requestTransition<osc::MainUIScreen>();
+        }
+        ImGui::Dummy({0.0f, 0.5f * ImGui::GetTextLineHeight()});
+
+        ImGui::Separator();
 
         for (auto const& e : m_Entries)
         {

@@ -86,6 +86,7 @@ All notable changes to this project will be documented here. The format is based
 - The "Save All (to CSV)" button(s) in the output watches tab are now hidden if no outputs are
   export-able (#125)
 - Reversed the keyboard camera panning direction in the mesh importer (#73)
+- The experimental screen now has a "return to main UI" button (#307)
 
 
 ## [0.1.6] - 2022/05/09
