@@ -5,10 +5,21 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
-- The UI is now a tabbed interface (#42):
+- New changes go here
+
+
+## [0.2.0]
+
+Tabbed interface support, alternate muscle visualization options, OpenSim 4.3 support,
+live muscle plotting, simulation performance measurements, and a variety of other
+improvements.
+
+Main changes (includes some changes that were released between 0.1.0 and 0.2.0):
+
+- OSC now has a tabbed interface (#42):
 
   - The home screen, editor screen, simulator screen, and mesh importer now
-    open in seperate closeable tabs
+    open in separate closeable tabs
 
   - This makes it easier to (e.g.) edit a mesh importer scene while (e.g.)
     running a simulation, or editing a model
@@ -17,15 +28,53 @@ All notable changes to this project will be documented here. The format is based
     the result (previously: overwrites current screen)
 
   - A simulator tab (previously: *the* simulator screen) now shows exactly one
-    simulation (previously: it would show one simulation, but preset a list that
+    simulation (previously: it would show one simulation, but present a list that
     the user can select from)
 
-  - This is still work-in-progess. Fixed: #207, #208, #210, #211, #212, #213, #214,
-    #216, #218, #219, #228. To-fix: #221, #222, #223, #224
+  - Naturally, doing this involved many other changes: #207, #208, #210, #211,
+    #212, #213, #214, #216, #218, #219, #228, #221, #222, #224 (and more)
+
+- Muscle tendons can now be visualized in the 3D viewer (#165, pre-released in 0.1.6)
+
+  - It's in the "options" menu of each 3D visualizer. Each viewport can have different
+    muscle visualization settings
+
+  - Work in progress: tendon locations and appropriate buttons etc. for this feature will
+    be added in an upcoming release
+
+- EXPERIMENTAL support for live muscle plotting (#191, earlier iteration released in 0.1.6)
+
+  - Right-click a muscle and "plot against" a coordinate
+
+  - This shows a muscle output (e.g. moment arm) vs. the coordinate, and
+    automatically recomputes the plot whenever the model is changed
+
+- The backend is now using OpenSim v4.3 (#192, released in 0.1.6)
+
+- Simulations now accurately report the "wall time" spent computing each simulation step
+  and the total simulation time (#202)
+
+  - These counters come directly from the simulator thread and are more accurate than
+    using something like an external stopwatch.
+
+- You can add a wider variety of components via the UI
+
+  - Some components may fail to add. This is usually because the UI doesn't support
+    editing a property of the to-be-added component that the OpenSim backend requires. The
+    UI still supports *trying* to add it, though.
+
+- Coordinate edits are now part of the model (#242)
+
+  - Editing a coordinate in the editor saves that edit to undo/redo for easier exploration
+
+  - Any coordinate edits are directly saved to the model. This makes it *much* easier to
+    create a default pose for the model (the most likely use-case, when building a model).
+
+- A wider variety of STO files can be loaded via the `Load Motions...` feature (#284)
+
+Other changes (and more details of the above):
 
 - Fixed a multithreading bug where the simulator would occasionally crash with "Device or resource busy" (#201)
-- The forward dynamic simulator now also reports "Wall Time" and "Step Wall Time" (#202)
-  - This is useful for performance debugging
 - Simplified the tooltip that's shown when hovering something in the model editor 3D viewer
 - Fixed "New Model" action not creating a new model
 - Right-clicking a 3D viewer in the model editor now shows "add stuff" context menu (#203, #215)
@@ -33,7 +82,7 @@ All notable changes to this project will be documented here. The format is based
 - The Mac build now builds with fewer dependencies (internal, related: #206)
 - Hotfixed the first point in a moment arm muscle plot is always wrong (#220)
 - Added tabbed-UI testing screen (internal)
-- Exceptions that propagate to `main` are now unhandled (#227)
+- Exceptions that propagate to `main` are now unhandled (#227, internal)
   - This makes debugging the exception easier, because the stacktrace will originate from the `throw`
 - Added an integrator performance analysis tab (#226)
   - This is an advanced feature that has been added to the `tools` menu in the editor tab
@@ -45,7 +94,7 @@ All notable changes to this project will be documented here. The format is based
   from scratch (#247)
   - osc already automatically reloads osim files whenever the underlying file changes. This feature is
     mostly useful for updating the editor when an un-tracked file changes (e.g. a third-party resource
-    that is indirectly loaded via a component in the model)
+    that is indirectly loaded via a component in the model, such as meshes)
 - Right-clicking an output plot in the simulation selection details panel now shows a "Request Output"
   button that can be pressed to add the output to the list of monitored outputs (#241)
 - Right-clicking any output plot in the simulation tab now shows an appropriate button for removing the
