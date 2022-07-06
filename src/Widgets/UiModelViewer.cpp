@@ -666,6 +666,16 @@ public:
         m_Camera.phi = fpi4;
     }
 
+    bool isLeftClicked() const
+    {
+        return m_RenderLeftClicked;
+    }
+
+    bool isRightClicked() const
+    {
+        return m_RenderRightClicked;
+    }
+
     bool isMousedOver() const
     {
         return m_RenderHovered;
@@ -690,6 +700,10 @@ public:
 
         if (!childVisible)
         {
+            m_RenderRect = {};
+            m_RenderHovered = false;
+            m_RenderLeftClicked = false;
+            m_RenderRightClicked = false;
             return rv;  // render window isn't visible - nothing drawn or hittested
         }
 
@@ -740,8 +754,6 @@ public:
             {
                 rv.mouse3DLocation = htResult.second;
             }
-            rv.isLeftClicked = m_RenderLeftClicked;
-            rv.isRightClicked = m_RenderRightClicked;
         }
 
         return rv;
@@ -1532,6 +1544,16 @@ osc::UiModelViewer& osc::UiModelViewer::operator=(UiModelViewer&& tmp) noexcept
 osc::UiModelViewer::~UiModelViewer() noexcept
 {
     delete m_Impl;
+}
+
+bool osc::UiModelViewer::isLeftClicked() const
+{
+    return m_Impl->isLeftClicked();
+}
+
+bool osc::UiModelViewer::isRightClicked() const
+{
+    return m_Impl->isRightClicked();
 }
 
 bool osc::UiModelViewer::isMousedOver() const

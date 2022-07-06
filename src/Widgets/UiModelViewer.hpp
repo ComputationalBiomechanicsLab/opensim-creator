@@ -59,8 +59,6 @@ namespace osc
         OpenSim::Component const* hovertestResult = nullptr;
         bool isMousedOver = false;
         glm::vec3 mouse3DLocation = {0.0f, 0.0f, 0.0f};
-        bool isLeftClicked = false;
-        bool isRightClicked = false;
     };
 
     // a 3D viewer for a single OpenSim::Component or OpenSim::Model
@@ -77,6 +75,8 @@ namespace osc
         ~UiModelViewer() noexcept;
 
         bool isMousedOver() const;
+        bool isLeftClicked() const;
+        bool isRightClicked() const;
         void requestAutoFocus();
         UiModelViewerResponse draw(VirtualConstModelStatePair const&);
 

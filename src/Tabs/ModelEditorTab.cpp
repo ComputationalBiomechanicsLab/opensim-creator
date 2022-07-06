@@ -487,7 +487,7 @@ private:
         }
 
         // if left-clicked, update selection
-        if (resp.isMousedOver && resp.isLeftClicked)
+        if (viewer.isLeftClicked() && resp.isMousedOver)
         {
             m_Model->setSelected(resp.hovertestResult);
         }
@@ -502,7 +502,7 @@ private:
         {
             std::string menuName = std::string{name} + "_contextmenu";
 
-            if (resp.isMousedOver && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right))
+            if (viewer.isRightClicked() && resp.isMousedOver)
             {
                 m_Model->setSelected(resp.hovertestResult);  // can be empty
                 ImGui::OpenPopup(menuName.c_str());
