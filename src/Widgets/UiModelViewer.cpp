@@ -57,25 +57,104 @@
 #include <utility>
 #include <vector>
 
-// helper method for making a render buffer (used in Render_target)
-static gl::RenderBuffer makeMultisampledRenderBuffer(int samples, GLenum format, int w, int h)
-{
-    gl::RenderBuffer rv;
-    gl::BindRenderBuffer(rv);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, format, w, h);
-    return rv;
-}
 
-static gl::RenderBuffer makeRenderBuffer(GLenum format, int w, int h)
-{
-    gl::RenderBuffer rv;
-    gl::BindRenderBuffer(rv);
-    glRenderbufferStorage(GL_RENDERBUFFER, format, w, h);
-    return rv;
-}
-
+// camera utils
 namespace
 {
+    void FocusAlongX(osc::PolarPerspectiveCamera& camera)
+    {
+        camera.theta = osc::fpi2;
+        camera.phi = 0.0f;
+    }
+
+    void FocusAlongMinusX(osc::PolarPerspectiveCamera& camera)
+    {
+        camera.theta = -osc::fpi2;
+        camera.phi = 0.0f;
+    }
+
+    void FocusAlongY(osc::PolarPerspectiveCamera& camera)
+    {
+        camera.theta = 0.0f;
+        camera.phi = osc::fpi2;
+    }
+
+    void FocusAlongMinusY(osc::PolarPerspectiveCamera& camera)
+    {
+        camera.theta = 0.0f;
+        camera.phi = -osc::fpi2;
+    }
+
+    void FocusAlongZ(osc::PolarPerspectiveCamera& camera)
+    {
+        camera.theta = 0.0f;
+        camera.phi = 0.0f;
+    }
+
+    void FocusAlongMinusZ(osc::PolarPerspectiveCamera& camera)
+    {
+        camera.theta = osc::fpi;
+        camera.phi = 0.0f;
+    }
+
+    void ZoomIn(osc::PolarPerspectiveCamera& camera)
+    {
+        camera.radius *= 0.8f;
+    }
+
+    void ZoomOut(osc::PolarPerspectiveCamera& camera)
+    {
+        camera.radius *= 1.2f;
+    }
+
+    void Reset(osc::PolarPerspectiveCamera& camera)
+    {
+        camera = {};
+        camera.theta = osc::fpi4;
+        camera.phi = osc::fpi4;
+    }
+
+    osc::PolarPerspectiveCamera CreateDefaultCamera()
+    {
+        osc::PolarPerspectiveCamera rv;
+        rv.radius = 5.0f;
+        return rv;
+    }
+
+    void AutoFocusCamera(osc::PolarPerspectiveCamera& camera, osc::BVH const& sceneBVH)
+    {
+        if (!sceneBVH.nodes.empty())
+        {
+            auto const& bvhRoot = sceneBVH.nodes[0].bounds;
+            camera.focusPoint = -Midpoint(bvhRoot);
+            camera.radius = 2.0f * LongestDim(bvhRoot);
+            camera.theta = osc::fpi4;
+            camera.phi = osc::fpi4;
+        }
+    }
+}
+
+
+// rendering utils
+namespace
+{
+    // helper method for making a render buffer (used in Render_target)
+    gl::RenderBuffer makeMultisampledRenderBuffer(int samples, GLenum format, int w, int h)
+    {
+        gl::RenderBuffer rv;
+        gl::BindRenderBuffer(rv);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, format, w, h);
+        return rv;
+    }
+
+    gl::RenderBuffer makeRenderBuffer(GLenum format, int w, int h)
+    {
+        gl::RenderBuffer rv;
+        gl::BindRenderBuffer(rv);
+        glRenderbufferStorage(GL_RENDERBUFFER, format, w, h);
+        return rv;
+    }
+
     // buffers used to render the scene
     struct RenderBuffers final {
         glm::ivec2 dims;
@@ -189,6 +268,205 @@ namespace
         int decorationIdx;
     };
 
+    glm::mat4x3 GenerateFloorModelMatrix(glm::vec3 floorLocation, float fixupScaleFactor)
+    {
+        // rotate from XY (+Z dir) to ZY (+Y dir)
+        glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, -osc::fpi2, {1.0f, 0.0f, 0.0f});
+
+        // make floor extend far in all directions
+        rv = glm::scale(glm::mat4{1.0f}, {fixupScaleFactor * 100.0f, 1.0f, fixupScaleFactor * 100.0f}) * rv;
+
+        rv = glm::translate(glm::mat4{1.0f}, fixupScaleFactor * floorLocation) * rv;
+
+        return glm::mat4x3{rv};
+    }
+
+    void BindToInstanceAttributes(size_t offset)
+    {
+        gl::AttributeMat4x3 mmtxAttr{osc::SHADER_LOC_MATRIX_MODEL};
+        gl::VertexAttribPointer(mmtxAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData)*offset + offsetof(SceneGPUInstanceData, modelMtx));
+        gl::VertexAttribDivisor(mmtxAttr, 1);
+        gl::EnableVertexAttribArray(mmtxAttr);
+
+        gl::AttributeMat3 normMtxAttr{osc::SHADER_LOC_MATRIX_NORMAL};
+        gl::VertexAttribPointer(normMtxAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData)*offset + offsetof(SceneGPUInstanceData, normalMtx));
+        gl::VertexAttribDivisor(normMtxAttr, 1);
+        gl::EnableVertexAttribArray(normMtxAttr);
+
+        gl::AttributeVec4 colorAttr{osc::SHADER_LOC_COLOR_DIFFUSE};
+        gl::VertexAttribPointer(colorAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData)*offset + offsetof(SceneGPUInstanceData, rgba));
+        gl::VertexAttribDivisor(colorAttr, 1);
+        gl::EnableVertexAttribArray(colorAttr);
+
+        gl::AttributeFloat rimAttr{osc::SHADER_LOC_COLOR_RIM};
+        gl::VertexAttribPointer(rimAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData)*offset + offsetof(SceneGPUInstanceData, rimIntensity));
+        gl::VertexAttribDivisor(rimAttr, 1);
+        gl::EnableVertexAttribArray(rimAttr);
+    }
+
+    // assumes `pos` is in-bounds
+    void DrawBVHRecursive(
+        osc::Mesh& cube,
+        gl::UniformMat4& mtxUniform,
+        osc::BVH const& bvh,
+        int pos)
+    {
+        osc::BVHNode const& n = bvh.nodes[pos];
+
+        glm::vec3 halfWidths = Dimensions(n.bounds) / 2.0f;
+        glm::vec3 center = Midpoint(n.bounds);
+
+        glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
+        glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
+        glm::mat4 mmtx = mover * scaler;
+        gl::Uniform(mtxUniform, mmtx);
+        cube.Draw();
+
+        if (n.nlhs >= 0)
+        {
+            // it's an internal node
+            DrawBVHRecursive(cube, mtxUniform, bvh, pos+1);
+            DrawBVHRecursive(cube, mtxUniform, bvh, pos+n.nlhs+1);
+        }
+    }
+
+    void DrawBVH(
+        osc::BVH const& sceneBVH,
+        glm::mat4 const& viewMtx,
+        glm::mat4 const& projMtx)
+    {
+        if (sceneBVH.nodes.empty())
+        {
+            return;
+        }
+
+        auto& shader = osc::App::shader<osc::SolidColorShader>();
+
+        // common stuff
+        gl::UseProgram(shader.program);
+        gl::Uniform(shader.uProjection, projMtx);
+        gl::Uniform(shader.uView, viewMtx);
+        gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
+
+        auto cube = osc::App::meshes().getCubeWireMesh();
+        gl::BindVertexArray(cube->GetVertexArray());
+        DrawBVHRecursive(*cube, shader.uModel, sceneBVH, 0);
+        gl::BindVertexArray();
+    }
+
+    void DrawAABBs(
+        nonstd::span<osc::ComponentDecoration const> decs,
+        glm::mat4 const& viewMtx,
+        glm::mat4 const& projMtx)
+    {
+        auto& shader = osc::App::shader<osc::SolidColorShader>();
+
+        // common stuff
+        gl::UseProgram(shader.program);
+        gl::Uniform(shader.uProjection, projMtx);
+        gl::Uniform(shader.uView, viewMtx);
+        gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
+
+        auto cube = osc::App::meshes().getCubeWireMesh();
+        gl::BindVertexArray(cube->GetVertexArray());
+
+        for (auto const& se : decs)
+        {
+            osc::AABB worldspaceAABB = GetWorldspaceAABB(se);
+            glm::vec3 halfWidths = Dimensions(worldspaceAABB) / 2.0f;
+            glm::vec3 center = Midpoint(worldspaceAABB);
+
+            glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
+            glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
+            glm::mat4 mmtx = mover * scaler;
+
+            gl::Uniform(shader.uModel, mmtx);
+            cube->Draw();
+        }
+
+        gl::BindVertexArray();
+    }
+
+    void DrawXZFloorLines(glm::mat4 const& viewMtx, glm::mat4 const& projMtx)
+    {
+        auto& shader = osc::App::shader<osc::SolidColorShader>();
+
+        // common stuff
+        gl::UseProgram(shader.program);
+        gl::Uniform(shader.uProjection, viewMtx);
+        gl::Uniform(shader.uView, projMtx);
+
+        auto yline = osc::App::meshes().getYLineMesh();
+        gl::BindVertexArray(yline->GetVertexArray());
+
+        // X
+        gl::Uniform(shader.uModel, glm::rotate(glm::mat4{1.0f}, osc::fpi2, {0.0f, 0.0f, 1.0f}));
+        gl::Uniform(shader.uColor, {1.0f, 0.0f, 0.0f, 1.0f});
+        yline->Draw();
+
+        // Z
+        gl::Uniform(shader.uModel, glm::rotate(glm::mat4{1.0f}, osc::fpi2, {1.0f, 0.0f, 0.0f}));
+        gl::Uniform(shader.uColor, {0.0f, 0.0f, 1.0f, 1.0f});
+        yline->Draw();
+
+        gl::BindVertexArray();
+    }
+
+    void DrawGrid(glm::mat4 const& rotationMatrix, glm::mat4 const& viewMtx, glm::mat4 const& projMtx)
+    {
+        auto& shader = osc::App::shader<osc::SolidColorShader>();
+
+        gl::UseProgram(shader.program);
+        gl::Uniform(shader.uModel, glm::scale(rotationMatrix, {50.0f, 50.0f, 1.0f}));
+        gl::Uniform(shader.uView, viewMtx);
+        gl::Uniform(shader.uProjection, projMtx);
+        gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
+        auto grid = osc::App::meshes().get100x100GridMesh();
+        gl::BindVertexArray(grid->GetVertexArray());
+        grid->Draw();
+        gl::BindVertexArray();
+    }
+
+    void DrawXZGrid(glm::mat4 const& viewMtx, glm::mat4 const& projMtx)
+    {
+        DrawGrid(glm::rotate(glm::mat4{1.0f}, osc::fpi2, {1.0f, 0.0f, 0.0f}), viewMtx, projMtx);
+    }
+
+    void DrawXYGrid(glm::mat4 const& viewMtx, glm::mat4 const& projMtx)
+    {
+        DrawGrid(glm::mat4{1.0f}, viewMtx, projMtx);
+    }
+
+    void DrawYZGrid(glm::mat4 const& viewMtx, glm::mat4 const& projMtx)
+    {
+        DrawGrid(glm::rotate(glm::mat4{1.0f}, osc::fpi2, {0.0f, 1.0f, 0.0f}), viewMtx, projMtx);
+    }
+
+    struct ImGuiImageDetails final {
+        osc::Rect rect = {};
+        bool isHovered = false;
+        bool isLeftClicked = false;
+        bool isRightClicked = false;
+    };
+
+    ImGuiImageDetails drawTextureAsImGuiImageAndHittest(gl::Texture2D& tex, glm::vec2 dims)
+    {
+        osc::DrawTextureAsImGuiImage(tex, dims);
+
+        ImGuiImageDetails rv;
+        rv.rect.p1 = ImGui::GetItemRectMin();
+        rv.rect.p2 = ImGui::GetItemRectMax();
+        rv.isHovered = ImGui::IsItemHovered();
+        rv.isLeftClicked = ImGui::IsItemHovered() && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
+        rv.isRightClicked = ImGui::IsItemHovered() && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
+        return rv;
+    }
+}
+
+
+// GUI ruler
+namespace
+{
     // state associated with a 3D ruler that users can use to measure things
     // in the scene
     class GuiRuler final {
@@ -198,8 +476,8 @@ namespace
 
     public:
         void draw(std::pair<OpenSim::Component const*, glm::vec3> const& htResult,
-                  osc::PolarPerspectiveCamera const& sceneCamera,
-                  osc::Rect renderRect)
+            osc::PolarPerspectiveCamera const& sceneCamera,
+            osc::Rect renderRect)
         {
             if (m_State == State::Inactive)
             {
@@ -318,17 +596,876 @@ namespace
             return m_State != State::Inactive;
         }
     };
+}
 
-    osc::PolarPerspectiveCamera CreateDefaultCamera()
+
+// OpenSim utils
+namespace
+{
+    float ComputeRimColor(OpenSim::Component const* selected,
+        OpenSim::Component const* hovered,
+        OpenSim::Component const* c)
     {
-        osc::PolarPerspectiveCamera rv;
-        rv.radius = 5.0f;
-        return rv;
+        while (c)
+        {
+            if (c == selected)
+            {
+                return 0.9f;
+            }
+            if (c == hovered)
+            {
+                return 0.4f;
+            }
+            if (!c->hasOwner())
+            {
+                return 0.0f;
+            }
+            c = &c->getOwner();
+        }
+
+        return 0.0f;
+    }
+
+    bool IsInclusiveChildOf(OpenSim::Component const* parent, OpenSim::Component const* c)
+    {
+        if (!c)
+        {
+            return false;
+        }
+
+        if (!parent)
+        {
+            return false;
+        }
+
+        for (;;)
+        {
+            if (c == parent)
+            {
+                return true;
+            }
+
+            if (!c->hasOwner())
+            {
+                return false;
+            }
+
+            c = &c->getOwner();
+        }
     }
 }
 
-struct osc::UiModelViewer::Impl final {
-    UiModelViewerFlags flags;
+
+// private IMPL
+class osc::UiModelViewer::Impl final {
+public:
+    explicit Impl(UiModelViewerFlags flags) :
+        m_Flags{std::move(flags)}
+    {
+        m_Camera.theta = fpi4;
+        m_Camera.phi = fpi4;
+    }
+
+    bool isMousedOver() const
+    {
+        return m_RenderHovered;
+    }
+
+    void requestAutoFocus()
+    {
+        m_AutoFocusCameraNextFrame = true;
+    }
+
+    osc::UiModelViewerResponse draw(VirtualConstModelStatePair const& rs)
+    {
+        UiModelViewerResponse rv;
+
+        handleUserInput();
+        drawMainMenu();
+        recomputeSceneLightPosition();
+
+        // prevent accidental panel dragging when the user drags their mouse over the scene
+        auto renderWindowFlags = ImGuiWindowFlags_NoMove;
+        bool childVisible = ImGui::BeginChild("##child", { 0.0f, 0.0f }, false, renderWindowFlags);
+
+        if (!childVisible)
+        {
+            return rv;  // render window isn't visible - nothing drawn or hittested
+        }
+
+        populateSceneDrawlist(rs);
+
+        std::pair<OpenSim::Component const*, glm::vec3> htResult = hittestRenderWindow(rs);
+
+        // auto-focus the camera, if the user requested it last frame
+        //
+        // care: indirectly depends on the scene drawlist being up-to-date
+        if (m_AutoFocusCameraNextFrame)
+        {
+            AutoFocusCamera(m_Camera, m_SceneBVH);
+            m_AutoFocusCameraNextFrame = false;
+        }
+
+        // render into texture
+        drawSceneTexture(rs.getFixupScaleFactor());
+
+        // also render in-scene overlays into the texture
+        drawInSceneOverlays();
+
+        // blit texture as an ImGui::Image
+        ImGuiImageDetails details = drawTextureAsImGuiImageAndHittest(m_RenderTarget.outputTex, ImGui::GetContentRegionAvail());
+        m_RenderRect = details.rect;
+        m_RenderHovered = details.isHovered;
+        m_RenderLeftClicked = details.isLeftClicked;
+        m_RenderRightClicked = details.isRightClicked;
+
+        // draw any ImGui-based overlays over the image
+        drawImGuiOverlays();
+
+        if (m_Ruler.IsMeasuring())
+        {
+            m_Ruler.draw(htResult, m_Camera, m_RenderRect);
+        }
+
+        ImGui::EndChild();
+
+        // handle return value
+
+        if (!m_Ruler.IsMeasuring())
+        {
+            // only populate response if the ruler isn't blocking hittesting etc.
+            rv.hovertestResult = htResult.first;
+            rv.isMousedOver = m_RenderHovered;
+            if (rv.isMousedOver)
+            {
+                rv.mouse3DLocation = htResult.second;
+            }
+            rv.isLeftClicked = m_RenderLeftClicked;
+            rv.isRightClicked = m_RenderRightClicked;
+        }
+
+        return rv;
+    }
+
+private:
+
+    void handleUserInput()
+    {
+        // update camera if necessary
+        if (m_RenderHovered)
+        {
+            bool ctrlDown = osc::IsCtrlOrSuperDown();
+
+            if (ImGui::IsKeyReleased(SDL_SCANCODE_X))
+            {
+                if (ctrlDown)
+                {
+                    FocusAlongMinusX(m_Camera);
+                } else
+                {
+                    FocusAlongX(m_Camera);
+                }
+            }
+            if (ImGui::IsKeyPressed(SDL_SCANCODE_Y))
+            {
+                if (!ctrlDown)
+                {
+                    FocusAlongY(m_Camera);
+                }
+            }
+            if (ImGui::IsKeyPressed(SDL_SCANCODE_F))
+            {
+                if (ctrlDown)
+                {
+                    m_AutoFocusCameraNextFrame = true;
+                }
+                else
+                {
+                    Reset(m_Camera);
+                }
+            }
+            if (ctrlDown && (ImGui::IsKeyPressed(SDL_SCANCODE_8)))
+            {
+                // solidworks keybind
+                m_AutoFocusCameraNextFrame = true;
+            }
+            UpdatePolarCameraFromImGuiUserInput(Dimensions(m_RenderRect), m_Camera);
+        }
+    }
+
+    void drawMainMenu()
+    {
+        if (ImGui::BeginMenuBar())
+        {
+            drawMainMenuContent();
+            ImGui::EndMenuBar();
+        }
+    }
+
+    void drawMainMenuContent()
+    {
+        if (ImGui::BeginMenu("Options"))
+        {
+            drawOptionsMenuContent();
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Scene"))
+        {
+            drawSceneMenuContent();
+            ImGui::EndMenu();
+        }
+
+        drawRulerMeasurementToggleButton();
+    }
+
+    void drawRulerMeasurementToggleButton()
+    {
+        if (m_Ruler.IsMeasuring())
+        {
+            if (ImGui::MenuItem(ICON_FA_RULER " measuring", nullptr, false, false))
+            {
+                m_Ruler.StopMeasuring();
+            }
+        }
+        else
+        {
+            if (ImGui::MenuItem(ICON_FA_RULER " measure", nullptr, false, true))
+            {
+                m_Ruler.StartMeasuring();
+            }
+            osc::DrawTooltipIfItemHovered("Measure distance", "EXPERIMENTAL: take a *rough* measurement of something in the scene - the UI for this needs to be improved, a lot ;)");
+        }
+    }
+
+    void drawOptionsMenuContent()
+    {
+        drawMuscleDecorationsStyleComboBox();
+        drawMuscleSizingStyleComboBox();
+        drawMuscleColoringStyleComboBox();
+        ImGui::Checkbox("wireframe mode", &m_WireframeMode);
+        ImGui::Checkbox("show normals", &m_DrawMeshNormals);
+        ImGui::Checkbox("draw rims", &m_DrawRims);
+        ImGui::CheckboxFlags("show XZ grid", &m_Flags, osc::UiModelViewerFlags_DrawXZGrid);
+        ImGui::CheckboxFlags("show XY grid", &m_Flags, osc::UiModelViewerFlags_DrawXYGrid);
+        ImGui::CheckboxFlags("show YZ grid", &m_Flags, osc::UiModelViewerFlags_DrawYZGrid);
+        ImGui::CheckboxFlags("show alignment axes", &m_Flags, osc::UiModelViewerFlags_DrawAlignmentAxes);
+        ImGui::CheckboxFlags("show grid lines", &m_Flags, osc::UiModelViewerFlags_DrawAxisLines);
+        ImGui::CheckboxFlags("show AABBs", &m_Flags, osc::UiModelViewerFlags_DrawAABBs);
+        ImGui::CheckboxFlags("show BVH", &m_Flags, osc::UiModelViewerFlags_DrawBVH);
+        ImGui::CheckboxFlags("show floor", &m_Flags, osc::UiModelViewerFlags_DrawFloor);
+    }
+
+    void drawMuscleDecorationsStyleComboBox()
+    {
+        osc::MuscleDecorationStyle s = m_DecorationOptions.getMuscleDecorationStyle();
+        nonstd::span<osc::MuscleDecorationStyle const> allStyles = osc::GetAllMuscleDecorationStyles();
+        nonstd::span<char const* const>  allNames = osc::GetAllMuscleDecorationStyleStrings();
+        int i = osc::GetIndexOf(s);
+
+        if (ImGui::Combo("muscle decoration style", &i, allNames.data(), static_cast<int>(allStyles.size())))
+        {
+            m_DecorationOptions.setMuscleDecorationStyle(allStyles[i]);
+        }
+    }
+
+    void drawMuscleSizingStyleComboBox()
+    {
+        osc::MuscleSizingStyle s = m_DecorationOptions.getMuscleSizingStyle();
+        nonstd::span<osc::MuscleSizingStyle const> allStyles = osc::GetAllMuscleSizingStyles();
+        nonstd::span<char const* const>  allNames = osc::GetAllMuscleSizingStyleStrings();
+        int i = osc::GetIndexOf(s);
+
+        if (ImGui::Combo("muscle sizing style", &i, allNames.data(), static_cast<int>(allStyles.size())))
+        {
+            m_DecorationOptions.setMuscleSizingStyle(allStyles[i]);
+        }
+    }
+
+    void drawMuscleColoringStyleComboBox()
+    {
+        osc::MuscleColoringStyle s = m_DecorationOptions.getMuscleColoringStyle();
+        nonstd::span<osc::MuscleColoringStyle const> allStyles = osc::GetAllMuscleColoringStyles();
+        nonstd::span<char const* const>  allNames = osc::GetAllMuscleColoringStyleStrings();
+        int i = osc::GetIndexOf(s);
+
+        if (ImGui::Combo("muscle coloring", &i, allNames.data(), static_cast<int>(allStyles.size())))
+        {
+            m_DecorationOptions.setMuscleColoringStyle(allStyles[i]);
+        }
+    }
+
+    void drawSceneMenuContent()
+    {
+        ImGui::Text("reposition camera:");
+        ImGui::Separator();
+
+        auto makeHoverTooltip = [](char const* msg)
+        {
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::TextUnformatted(msg);
+                ImGui::PopTextWrapPos();
+                ImGui::EndTooltip();
+            }
+        };
+
+        if (ImGui::Button("+X"))
+        {
+            FocusAlongX(m_Camera);
+        }
+        makeHoverTooltip("Position camera along +X, pointing towards the center. Hotkey: X");
+        ImGui::SameLine();
+        if (ImGui::Button("-X"))
+        {
+            FocusAlongMinusX(m_Camera);
+        }
+        makeHoverTooltip("Position camera along -X, pointing towards the center. Hotkey: Ctrl+X");
+
+        ImGui::SameLine();
+        if (ImGui::Button("+Y"))
+        {
+            FocusAlongY(m_Camera);
+        }
+        makeHoverTooltip("Position camera along +Y, pointing towards the center. Hotkey: Y");
+        ImGui::SameLine();
+        if (ImGui::Button("-Y"))
+        {
+            FocusAlongMinusY(m_Camera);
+        }
+        makeHoverTooltip("Position camera along -Y, pointing towards the center. (no hotkey, because Ctrl+Y is taken by 'Redo'");
+
+        ImGui::SameLine();
+        if (ImGui::Button("+Z"))
+        {
+            FocusAlongZ(m_Camera);
+        }
+        makeHoverTooltip("Position camera along +Z, pointing towards the center. Hotkey: Z");
+        ImGui::SameLine();
+        if (ImGui::Button("-Z"))
+        {
+            FocusAlongMinusZ(m_Camera);
+        }
+        makeHoverTooltip("Position camera along -Z, pointing towards the center. (no hotkey, because Ctrl+Z is taken by 'Undo')");
+
+        if (ImGui::Button("Zoom in"))
+        {
+            ZoomIn(m_Camera);
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Zoom out"))
+        {
+            ZoomOut(m_Camera);
+        }
+
+        if (ImGui::Button("reset camera"))
+        {
+            Reset(m_Camera);
+        }
+        makeHoverTooltip("Reset the camera to its initial (default) location. Hotkey: F");
+
+        if (ImGui::Button("Auto-focus camera"))
+        {
+            m_AutoFocusCameraNextFrame = true;
+        }
+        makeHoverTooltip("Try to automatically adjust the camera's zoom etc. to suit the model's dimensions. Hotkey: Ctrl+F");
+
+        ImGui::Dummy({0.0f, 10.0f});
+        ImGui::Text("advanced camera properties:");
+        ImGui::Separator();
+        osc::SliderMetersFloat("radius", &m_Camera.radius, 0.0f, 10.0f);
+        ImGui::SliderFloat("theta", &m_Camera.theta, 0.0f, 2.0f * osc::fpi);
+        ImGui::SliderFloat("phi", &m_Camera.phi, 0.0f, 2.0f * osc::fpi);
+        ImGui::InputFloat("fov", &m_Camera.fov);
+        osc::InputMetersFloat("znear", &m_Camera.znear);
+        osc::InputMetersFloat("zfar", &m_Camera.zfar);
+        ImGui::NewLine();
+        osc::SliderMetersFloat("pan_x", &m_Camera.focusPoint.x, -100.0f, 100.0f);
+        osc::SliderMetersFloat("pan_y", &m_Camera.focusPoint.y, -100.0f, 100.0f);
+        osc::SliderMetersFloat("pan_z", &m_Camera.focusPoint.z, -100.0f, 100.0f);
+
+        ImGui::Dummy({0.0f, 10.0f});
+        ImGui::Text("advanced scene properties:");
+        ImGui::Separator();
+        ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&m_LightColor));
+        ImGui::ColorEdit3("background color", reinterpret_cast<float*>(&m_BackgroundColor));
+        osc::InputMetersFloat3("floor location", &m_FloorLocation.x);
+        makeHoverTooltip("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
+    }
+
+    void recomputeSceneLightPosition()
+    {
+        // automatically change lighting position based on camera position
+        glm::vec3 p = glm::normalize(-m_Camera.focusPoint - m_Camera.getPos());
+        glm::vec3 up = {0.0f, 1.0f, 0.0f};
+        glm::vec3 mp = glm::rotate(glm::mat4{1.0f}, 1.05f * fpi4, up) * glm::vec4{p, 0.0f};
+        m_LightDirection = glm::normalize(mp + -up);
+    }
+
+    void populateSceneDrawlist(osc::VirtualConstModelStatePair const& msp)
+    {
+        OpenSim::Component const* const selected = msp.getSelected();
+        OpenSim::Component const* const hovered = msp.getHovered();
+        OpenSim::Component const* const isolated = msp.getIsolated();
+
+        if (msp.getModelVersion() != m_LastModelVersion ||
+            msp.getStateVersion() != m_LastStateVersion ||
+            selected != osc::FindComponent(msp.getModel(), m_LastSelection) ||
+            hovered != osc::FindComponent(msp.getModel(), m_LastHover) ||
+            isolated != osc::FindComponent(msp.getModel(), m_LastIsolation) ||
+            msp.getFixupScaleFactor() != m_LastFixupFactor ||
+            m_LastDecorationOptions != m_DecorationOptions)
+        {
+            m_Decorations.clear();
+
+            {
+                OSC_PERF("generate decorations");
+                osc::GenerateModelDecorations(msp, m_Decorations, m_DecorationOptions);
+            }
+
+            {
+                OSC_PERF("generate BVH");
+                osc::UpdateSceneBVH(m_Decorations, m_SceneBVH);
+            }
+
+            m_LastModelVersion = msp.getModelVersion();
+            m_LastStateVersion = msp.getStateVersion();
+            m_LastSelection = selected ? selected->getAbsolutePath() : OpenSim::ComponentPath{};
+            m_LastHover = hovered ? hovered->getAbsolutePath() : OpenSim::ComponentPath{};
+            m_LastIsolation = isolated ? isolated->getAbsolutePath() : OpenSim::ComponentPath{};
+            m_LastFixupFactor = msp.getFixupScaleFactor();
+            m_LastDecorationOptions = m_DecorationOptions;
+        }
+
+        nonstd::span<osc::ComponentDecoration const> decs = m_Decorations;
+
+        // clear it (could've been populated by the last drawcall)
+        std::vector<SceneGPUInstanceData>& buf = m_DrawListBuffer;
+        buf.clear();
+        buf.reserve(decs.size());
+
+        // populate the list with the scene
+        for (size_t i = 0; i < decs.size(); ++i)
+        {
+            osc::ComponentDecoration const& se = decs[i];
+
+            if (isolated && !IsInclusiveChildOf(isolated, se.component))
+            {
+                continue;  // skip rendering this (it's not in the isolated component)
+            }
+
+            SceneGPUInstanceData& ins = buf.emplace_back();
+            ins.modelMtx = osc::ToMat4(se.transform);
+            ins.normalMtx = osc::ToNormalMatrix(se.transform);
+            ins.rgba = se.color;
+            ins.rimIntensity = ComputeRimColor(selected, hovered, se.component);
+            ins.decorationIdx = static_cast<int>(i);
+        }
+    }
+
+    std::pair<OpenSim::Component const*, glm::vec3> hittestRenderWindow(osc::VirtualConstModelStatePair const& msp)
+    {
+        std::pair<OpenSim::Component const*, glm::vec3> rv = {nullptr, {0.0f, 0.0f, 0.0f}};
+
+        if (!m_RenderHovered ||
+            ImGui::IsMouseDragging(ImGuiMouseButton_Left) &&
+            ImGui::IsMouseDragging(ImGuiMouseButton_Middle) &&
+            ImGui::IsMouseDragging(ImGuiMouseButton_Right))
+        {
+            // only do the hit test if the user isn't currently dragging their mouse around
+            return rv;
+        }
+
+        // figure out mouse pos in panel's NDC system
+        glm::vec2 windowScreenPos = ImGui::GetWindowPos();  // where current ImGui window is in the screen
+        glm::vec2 mouseScreenPos = ImGui::GetMousePos();  // where mouse is in the screen
+        glm::vec2 mouseWindowPos = mouseScreenPos - windowScreenPos;  // where mouse is in current window
+        glm::vec2 cursorWindowPos = ImGui::GetCursorPos();  // where cursor is in current window
+        glm::vec2 mouseItemPos = mouseWindowPos - cursorWindowPos;  // where mouse is in current item
+        glm::vec2 itemDims = ImGui::GetContentRegionAvail();  // how big current window will be
+
+        // un-project the mouse position as a ray in worldspace
+        osc::Line cameraRay = m_Camera.unprojectTopLeftPosToWorldRay(mouseItemPos, itemDims);
+
+        // use scene BVH to intersect that ray with the scene
+        m_SceneHittestResults.clear();
+        BVH_GetRayAABBCollisions(m_SceneBVH, cameraRay, &m_SceneHittestResults);
+
+        // go through triangle BVHes to figure out which, if any, triangle is closest intersecting
+        int closestIdx = -1;
+        float closestDistance = std::numeric_limits<float>::max();
+        glm::vec3 closestWorldLoc = {0.0f, 0.0f, 0.0f};
+
+        // iterate through each scene-level hit and perform a triangle-level hittest
+        nonstd::span<osc::ComponentDecoration const> decs = m_Decorations;
+        OpenSim::Component const* const isolated = msp.getIsolated();
+
+        for (osc::BVHCollision const& c : m_SceneHittestResults)
+        {
+            int instanceIdx = c.primId;
+
+            if (isolated && !IsInclusiveChildOf(isolated, decs[instanceIdx].component))
+            {
+                continue;  // it's not in the current isolation
+            }
+
+            glm::mat4 instanceMmtx = ToMat4(decs[instanceIdx].transform);
+            osc::Line cameraRayModelspace = TransformLine(cameraRay, ToInverseMat4(decs[instanceIdx].transform));
+
+            auto maybeCollision = decs[instanceIdx].mesh->getClosestRayTriangleCollisionModelspace(cameraRayModelspace);
+
+            if (maybeCollision && maybeCollision.distance < closestDistance)
+            {
+                closestIdx = instanceIdx;
+                closestDistance = maybeCollision.distance;
+                glm::vec3 closestLocModelspace = cameraRayModelspace.origin + closestDistance*cameraRayModelspace.dir;
+                closestWorldLoc = glm::vec3{instanceMmtx * glm::vec4{closestLocModelspace, 1.0f}};
+            }
+        }
+
+        if (closestIdx >= 0)
+        {
+            rv.first = decs[closestIdx].component;
+            rv.second = closestWorldLoc;
+        }
+
+        return rv;
+    }
+
+    void drawSceneTexture(float fixupScaleFactor)
+    {
+        // ensure buffer sizes match ImGui panel size
+        {
+            ImVec2 contentRegion = ImGui::GetContentRegionAvail();
+            if (contentRegion.x >= 1.0f && contentRegion.y >= 1.0f)
+            {
+                glm::ivec2 dims{static_cast<int>(contentRegion.x), static_cast<int>(contentRegion.y)};
+                m_RenderTarget.setDims(dims);
+                m_RenderTarget.setSamples(osc::App::get().getMSXAASamplesRecommended());
+            }
+        }
+
+        // instance data to the GPU
+        gl::ArrayBuffer<SceneGPUInstanceData> instanceBuf{m_DrawListBuffer};
+
+        // get scene matrices
+        glm::mat4 projMtx = m_Camera.getProjMtx(AspectRatio(m_RenderTarget.dims));
+        glm::mat4 viewMtx = m_Camera.getViewMtx();
+        glm::vec3 viewerPos = m_Camera.getPos();
+
+        // setup top-level OpenGL state
+        gl::Viewport(0, 0, m_RenderTarget.dims.x, m_RenderTarget.dims.y);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        gl::Enable(GL_BLEND);
+        gl::Enable(GL_DEPTH_TEST);
+        gl::Disable(GL_SCISSOR_TEST);
+
+        // draw scene
+        {
+            gl::BindFramebuffer(GL_FRAMEBUFFER, m_RenderTarget.sceneFBO);
+            gl::ClearColor(m_BackgroundColor);
+            gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            if (m_WireframeMode)
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            }
+
+            // draw the floor first, so that the transparent geometry in the scene also shows
+            // the floor texture
+            if (m_Flags & osc::UiModelViewerFlags_DrawFloor)
+            {
+                auto& basicShader = osc::App::shader<osc::GouraudShader>();
+
+                gl::UseProgram(basicShader.program);
+                gl::Uniform(basicShader.uProjMat, projMtx);
+                gl::Uniform(basicShader.uViewMat, viewMtx);
+                glm::mat4 mtx = GenerateFloorModelMatrix(m_FloorLocation, fixupScaleFactor);
+                gl::Uniform(basicShader.uModelMat, mtx);
+                gl::Uniform(basicShader.uNormalMat, osc::ToNormalMatrix(mtx));
+                gl::Uniform(basicShader.uLightDir, m_LightDirection);
+                gl::Uniform(basicShader.uLightColor, m_LightColor);
+                gl::Uniform(basicShader.uViewPos, viewerPos);
+                gl::Uniform(basicShader.uDiffuseColor, {1.0f, 1.0f, 1.0f, 1.0f});
+                gl::Uniform(basicShader.uIsTextured, true);
+                gl::ActiveTexture(GL_TEXTURE0);
+                gl::BindTexture(m_ChequerTexture);
+                gl::Uniform(basicShader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
+                auto floor = osc::App::meshes().getFloorMesh();
+                gl::BindVertexArray(floor->GetVertexArray());
+                floor->Draw();
+                gl::BindVertexArray();
+            }
+
+            auto& instancedShader = osc::App::shader<osc::InstancedGouraudColorShader>();
+            gl::UseProgram(instancedShader.program);
+            gl::Uniform(instancedShader.uProjMat, projMtx);
+            gl::Uniform(instancedShader.uViewMat, viewMtx);
+            gl::Uniform(instancedShader.uLightDir, m_LightDirection);
+            gl::Uniform(instancedShader.uLightColor, m_LightColor);
+            gl::Uniform(instancedShader.uViewPos, viewerPos);
+
+            std::vector<SceneGPUInstanceData> const& instances = m_DrawListBuffer;
+            nonstd::span<osc::ComponentDecoration const> decs = m_Decorations;
+
+            size_t pos = 0;
+            size_t ninstances = instances.size();
+
+            while (pos < ninstances)
+            {
+                osc::ComponentDecoration const& se = decs[instances[pos].decorationIdx];
+
+                // batch
+                size_t end = pos + 1;
+                while (end < ninstances &&
+                    decs[instances[end].decorationIdx].mesh == se.mesh)
+                {
+                    ++end;
+                }
+
+                // if the last element in a batch is opaque, then all the preceding ones should be
+                // also and we can skip blend-testing the entire batch
+                if (instances[end-1].rgba.a >= 0.99f)
+                {
+                    gl::Disable(GL_BLEND);
+                }
+                else
+                {
+                    gl::Enable(GL_BLEND);
+                }
+
+                gl::BindVertexArray(se.mesh->GetVertexArray());
+                gl::BindBuffer(instanceBuf);
+                BindToInstanceAttributes(pos);
+                se.mesh->DrawInstanced(end-pos);
+                gl::BindVertexArray();
+
+                pos = end;
+            }
+
+            if (m_WireframeMode)
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
+        }
+
+        // draw mesh normals, if requested
+        if (m_DrawMeshNormals)
+        {
+            auto& normalShader = osc::App::shader<osc::NormalsShader>();
+            gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
+            gl::UseProgram(normalShader.program);
+            gl::Uniform(normalShader.uProjMat, projMtx);
+            gl::Uniform(normalShader.uViewMat, viewMtx);
+
+            std::vector<SceneGPUInstanceData> const& instances = m_DrawListBuffer;
+            nonstd::span<osc::ComponentDecoration const> decs = m_Decorations;
+
+            for (SceneGPUInstanceData const& inst : instances)
+            {
+                osc::ComponentDecoration const& se = decs[inst.decorationIdx];
+
+                gl::Uniform(normalShader.uModelMat, inst.modelMtx);
+                gl::Uniform(normalShader.uNormalMat, inst.normalMtx);
+                gl::BindVertexArray(se.mesh->GetVertexArray());
+                se.mesh->Draw();
+            }
+            gl::BindVertexArray();
+        }
+
+        // blit scene render to non-MSXAAed output texture
+        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, m_RenderTarget.sceneFBO);
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
+        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, m_RenderTarget.outputFbo);
+        gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
+        gl::BlitFramebuffer(0, 0, m_RenderTarget.dims.x, m_RenderTarget.dims.y,
+            0, 0, m_RenderTarget.dims.x, m_RenderTarget.dims.y,
+            GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+        // draw rims
+        if (m_DrawRims)
+        {
+            gl::BindFramebuffer(GL_FRAMEBUFFER, m_RenderTarget.rimsFBO);
+            gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            auto& iscs = osc::App::shader<osc::InstancedSolidColorShader>();
+            gl::UseProgram(iscs.program);
+            gl::Uniform(iscs.uVP, projMtx * viewMtx);
+
+            std::vector<SceneGPUInstanceData> const& instances = m_DrawListBuffer;
+            nonstd::span<osc::ComponentDecoration const> decs = m_Decorations;
+
+            size_t pos = 0;
+            size_t ninstances = instances.size();
+
+            // drawcalls & figure out rim AABB
+            osc::AABB rimAABB;
+            rimAABB.min = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+            rimAABB.max = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
+            bool hasRims = false;
+
+            while (pos < ninstances)
+            {
+                SceneGPUInstanceData const& inst = instances[pos];
+                osc::ComponentDecoration const& se = decs[inst.decorationIdx];
+
+                // batch
+                size_t end = pos + 1;
+                while (end < ninstances &&
+                    decs[instances[end].decorationIdx].mesh.get() == se.mesh.get() &&
+                    instances[end].rimIntensity == inst.rimIntensity)
+                {
+                    ++end;
+                }
+
+                if (inst.rimIntensity < 0.001f)
+                {
+                    pos = end;
+                    continue;  // skip rendering rimless elements
+                }
+
+                hasRims = true;
+
+                // union the rims for scissor testing later
+                for (size_t i = pos; i < end; ++i)
+                {
+                    rimAABB = Union(rimAABB, GetWorldspaceAABB(decs[instances[i].decorationIdx]));
+                }
+
+                gl::Uniform(iscs.uColor, {inst.rimIntensity, 0.0f, 0.0f, 1.0f});
+                gl::BindVertexArray(se.mesh->GetVertexArray());
+                gl::BindBuffer(instanceBuf);
+                BindToInstanceAttributes(pos);
+                se.mesh->DrawInstanced(end-pos);
+                gl::BindVertexArray();
+
+                pos = end;
+            }
+
+            if (hasRims)
+            {
+                glm::vec2 rimThickness = glm::vec2{1.5f} / glm::vec2{m_RenderTarget.dims};
+
+                // care: edge-detection kernels are expensive
+                //
+                // calculate a screenspace bounding box that surrounds the rims so that the
+                // edge detection shader only had to run on a smaller subset of the screen
+                osc::AABB screenspaceRimBounds = TransformAABB(rimAABB, projMtx * viewMtx);
+                auto verts = ToCubeVerts(screenspaceRimBounds);
+
+                osc::Rect screenBounds{verts[0], verts[0]};
+
+                for (size_t i = 1; i < verts.size(); ++i)
+                {
+                    glm::vec2 p = verts[i];  // dump Z
+                    screenBounds.p1 = osc::Min(p, screenBounds.p1);
+                    screenBounds.p2 = osc::Max(p, screenBounds.p2);
+                }
+                screenBounds.p1 -= rimThickness;
+                screenBounds.p2 += rimThickness;
+
+                glm::ivec2 renderDims = m_RenderTarget.dims;
+                glm::ivec2 min{
+                    static_cast<int>((screenBounds.p1.x + 1.0f)/2.0f * renderDims.x),
+                    static_cast<int>((screenBounds.p1.y + 1.0f)/2.0f * renderDims.y)};
+                glm::ivec2 max{
+                    static_cast<int>((screenBounds.p2.x + 1.0f)/2.0f * renderDims.x),
+                    static_cast<int>((screenBounds.p2.y + 1.0f)/2.0f * renderDims.y)};
+
+                int x = std::max(0, min.x);
+                int y = std::max(0, min.y);
+                int w = max.x - min.x;
+                int h = max.y - min.y;
+
+                // rims FBO now contains *solid* colors that need to be edge-detected
+
+                // write rims over the output output
+                gl::BindFramebuffer(GL_FRAMEBUFFER, m_RenderTarget.outputFbo);
+
+                auto& edgeDetectShader = osc::App::shader<osc::EdgeDetectionShader>();
+                gl::UseProgram(edgeDetectShader.program);
+                gl::Uniform(edgeDetectShader.uMVP, gl::identity);
+                gl::ActiveTexture(GL_TEXTURE0);
+                gl::BindTexture(m_RenderTarget.rims2DTex);
+                gl::Uniform(edgeDetectShader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
+                gl::Uniform(edgeDetectShader.uRimRgba, {0.95f, 0.40f, 0.0f, 0.70f});
+                gl::Uniform(edgeDetectShader.uRimThickness, rimThickness);
+                gl::Enable(GL_SCISSOR_TEST);
+                glScissor(x, y, w, h);
+                gl::Enable(GL_BLEND);
+                gl::Disable(GL_DEPTH_TEST);
+                auto quad = osc::App::meshes().getTexturedQuadMesh();
+                gl::BindVertexArray(quad->GetVertexArray());
+                quad->Draw();
+                gl::BindVertexArray();
+                gl::Enable(GL_DEPTH_TEST);
+                gl::Disable(GL_SCISSOR_TEST);
+            }
+        }
+
+        gl::Enable(GL_BLEND);
+        gl::Enable(GL_DEPTH_TEST);
+        gl::Disable(GL_SCISSOR_TEST);
+        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+    }
+
+    // draws overlays that are "in scene" - i.e. they are part of the rendered texture
+    void drawInSceneOverlays()
+    {
+        glm::mat4 viewMtx = m_Camera.getViewMtx();
+        glm::mat4 projMtx = m_Camera.getProjMtx(AspectRatio(m_RenderRect));
+
+        gl::BindFramebuffer(GL_FRAMEBUFFER, m_RenderTarget.outputFbo);
+        gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
+
+        if (m_Flags & osc::UiModelViewerFlags_DrawXZGrid)
+        {
+            DrawXZGrid(viewMtx, projMtx);
+        }
+
+        if (m_Flags & osc::UiModelViewerFlags_DrawXYGrid)
+        {
+            DrawXYGrid(viewMtx, projMtx);
+        }
+
+        if (m_Flags & osc::UiModelViewerFlags_DrawYZGrid)
+        {
+            DrawYZGrid(viewMtx, projMtx);
+        }
+
+        if (m_Flags & osc::UiModelViewerFlags_DrawAxisLines)
+        {
+            DrawXZFloorLines(viewMtx, projMtx);
+        }
+
+        if (m_Flags & osc::UiModelViewerFlags_DrawAABBs)
+        {
+            DrawAABBs(m_Decorations, viewMtx, projMtx);
+        }
+
+        if (m_Flags & osc::UiModelViewerFlags_DrawBVH)
+        {
+            DrawBVH(m_SceneBVH, viewMtx, projMtx);
+        }
+
+        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+    }
+
+    void drawImGuiOverlays()
+    {
+        if (m_Flags & osc::UiModelViewerFlags_DrawAlignmentAxes)
+        {
+            DrawAlignmentAxesOverlayInBottomRightOf(m_Camera.getViewMtx(), m_RenderRect);
+        }
+    }
+
+    // data
+
+    UiModelViewerFlags m_Flags;
 
     // used to cache geometry between frames
     UID m_LastModelVersion;
@@ -342,1109 +1479,72 @@ struct osc::UiModelViewer::Impl final {
     std::vector<osc::ComponentDecoration> m_Decorations;
     osc::CustomDecorationOptions m_DecorationOptions;
     osc::BVH m_SceneBVH;
-    PolarPerspectiveCamera camera = CreateDefaultCamera();
-    glm::vec3 lightDir = {-0.34f, -0.25f, 0.05f};
-    glm::vec3 lightCol = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
-    glm::vec4 backgroundCol = {0.89f, 0.89f, 0.89f, 1.0f};
-    glm::vec4 rimCol = {1.0f, 0.4f, 0.0f, 0.85f};
-    RenderBuffers renderTarg{{1, 1}, 1};
+    PolarPerspectiveCamera m_Camera = CreateDefaultCamera();
+    glm::vec3 m_LightDirection = {-0.34f, -0.25f, 0.05f};
+    glm::vec3 m_LightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
+    glm::vec4 m_BackgroundColor = {0.89f, 0.89f, 0.89f, 1.0f};
+    glm::vec4 m_RimColor = {1.0f, 0.4f, 0.0f, 0.85f};
+    RenderBuffers m_RenderTarget{{1, 1}, 1};
 
     // by default, lower the floor slightly, so that it doesn't conflict
     // with OpenSim ContactHalfSpace planes that coincidently happen to
     // lie at Z==0
-    glm::vec3 floorLocation = {0.0f, -0.001f, 0.0f};
+    glm::vec3 m_FloorLocation = {0.0f, -0.001f, 0.0f};
 
-    gl::Texture2D chequerTex = genChequeredFloorTexture();
+    gl::Texture2D m_ChequerTexture = genChequeredFloorTexture();
 
-    std::vector<BVHCollision> sceneHittestResults;
+    std::vector<BVHCollision> m_SceneHittestResults;
 
-    Rect renderRect{};
+    Rect m_RenderRect{};
 
-    bool renderHovered = false;
-    bool renderLeftClicked = false;
-    bool renderRightClicked = false;
-    bool wireframeMode = false;
-    bool drawMeshNormals = false;
-    bool drawRims = true;
-    bool autoFocusCameraNextFrame = false;
+    bool m_RenderHovered = false;
+    bool m_RenderLeftClicked = false;
+    bool m_RenderRightClicked = false;
+    bool m_WireframeMode = false;
+    bool m_DrawMeshNormals = false;
+    bool m_DrawRims = true;
+    bool m_AutoFocusCameraNextFrame = false;
 
-    std::vector<SceneGPUInstanceData> drawlistBuffer;
+    std::vector<SceneGPUInstanceData> m_DrawListBuffer;
 
-    GuiRuler ruler;
-
-    Impl(UiModelViewerFlags flags_) : flags{flags_}
-    {
-        camera.theta = fpi4;
-        camera.phi = fpi4;
-    }
+    GuiRuler m_Ruler;
 };
+
+
+// public API
 
 osc::UiModelViewer::UiModelViewer(UiModelViewerFlags flags) :
     m_Impl{new Impl{flags}}
 {
 }
 
-osc::UiModelViewer::UiModelViewer(UiModelViewer&&) noexcept = default;
+osc::UiModelViewer::UiModelViewer(UiModelViewer&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
 
-osc::UiModelViewer& osc::UiModelViewer::operator=(UiModelViewer&&) noexcept = default;
+osc::UiModelViewer& osc::UiModelViewer::operator=(UiModelViewer&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
 
-osc::UiModelViewer::~UiModelViewer() noexcept = default;
+osc::UiModelViewer::~UiModelViewer() noexcept
+{
+    delete m_Impl;
+}
 
 bool osc::UiModelViewer::isMousedOver() const
 {
-    return m_Impl->renderHovered;
-}
-
-static glm::mat4x3 GenerateFloorModelMatrix(osc::UiModelViewer::Impl const& impl,
-                                            float fixupScaleFactor)
-{
-    // rotate from XY (+Z dir) to ZY (+Y dir)
-    glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, -osc::fpi2, {1.0f, 0.0f, 0.0f});
-
-    // make floor extend far in all directions
-    rv = glm::scale(glm::mat4{1.0f}, {fixupScaleFactor * 100.0f, 1.0f, fixupScaleFactor * 100.0f}) * rv;
-
-    rv = glm::translate(glm::mat4{1.0f}, fixupScaleFactor * impl.floorLocation) * rv;
-
-    return glm::mat4x3{rv};
-}
-
-static float ComputeRimColor(OpenSim::Component const* selected,
-                             OpenSim::Component const* hovered,
-                             OpenSim::Component const* c)
-{
-    while (c)
-    {
-        if (c == selected)
-        {
-            return 0.9f;
-        }
-        if (c == hovered)
-        {
-            return 0.4f;
-        }
-        if (!c->hasOwner())
-        {
-            return 0.0f;
-        }
-        c = &c->getOwner();
-    }
-
-    return 0.0f;
-}
-
-static bool IsInclusiveChildOf(OpenSim::Component const* parent, OpenSim::Component const* c)
-{
-    if (!c)
-    {
-        return false;
-    }
-
-    if (!parent)
-    {
-        return false;
-    }
-
-    for (;;)
-    {
-        if (c == parent)
-        {
-            return true;
-        }
-
-        if (!c->hasOwner())
-        {
-            return false;
-        }
-
-        c = &c->getOwner();
-    }
-}
-
-static void PopulareSceneDrawlist(osc::UiModelViewer::Impl& impl,
-                                  osc::VirtualConstModelStatePair const& msp)
-{
-    OpenSim::Component const* const selected = msp.getSelected();
-    OpenSim::Component const* const hovered = msp.getHovered();
-    OpenSim::Component const* const isolated = msp.getIsolated();
-
-    if (msp.getModelVersion() != impl.m_LastModelVersion ||
-        msp.getStateVersion() != impl.m_LastStateVersion ||
-        selected != osc::FindComponent(msp.getModel(), impl.m_LastSelection) ||
-        hovered != osc::FindComponent(msp.getModel(), impl.m_LastHover) ||
-        isolated != osc::FindComponent(msp.getModel(), impl.m_LastIsolation) ||
-        msp.getFixupScaleFactor() != impl.m_LastFixupFactor ||
-        impl.m_LastDecorationOptions != impl.m_DecorationOptions)
-    {
-        impl.m_Decorations.clear();
-
-        {
-            OSC_PERF("generate decorations");
-            osc::GenerateModelDecorations(msp, impl.m_Decorations, impl.m_DecorationOptions);
-        }
-
-        {
-            OSC_PERF("generate BVH");
-            osc::UpdateSceneBVH(impl.m_Decorations, impl.m_SceneBVH);
-        }
-
-        impl.m_LastModelVersion = msp.getModelVersion();
-        impl.m_LastStateVersion = msp.getStateVersion();
-        impl.m_LastSelection = selected ? selected->getAbsolutePath() : OpenSim::ComponentPath{};
-        impl.m_LastHover = hovered ? hovered->getAbsolutePath() : OpenSim::ComponentPath{};
-        impl.m_LastIsolation = isolated ? isolated->getAbsolutePath() : OpenSim::ComponentPath{};
-        impl.m_LastFixupFactor = msp.getFixupScaleFactor();
-        impl.m_LastDecorationOptions = impl.m_DecorationOptions;
-    }
-
-    nonstd::span<osc::ComponentDecoration const> decs = impl.m_Decorations;
-
-    // clear it (could've been populated by the last drawcall)
-    std::vector<SceneGPUInstanceData>& buf = impl.drawlistBuffer;
-    buf.clear();
-    buf.reserve(decs.size());
-
-    // populate the list with the scene
-    for (size_t i = 0; i < decs.size(); ++i)
-    {
-        osc::ComponentDecoration const& se = decs[i];
-
-        if (isolated && !IsInclusiveChildOf(isolated, se.component))
-        {
-            continue;  // skip rendering this (it's not in the isolated component)
-        }
-
-        SceneGPUInstanceData& ins = buf.emplace_back();
-        ins.modelMtx = osc::ToMat4(se.transform);
-        ins.normalMtx = osc::ToNormalMatrix(se.transform);
-        ins.rgba = se.color;
-        ins.rimIntensity = ComputeRimColor(selected, hovered, se.component);
-        ins.decorationIdx = static_cast<int>(i);
-    }
-}
-
-static void BindToInstanceAttributes(size_t offset)
-{
-    gl::AttributeMat4x3 mmtxAttr{osc::SHADER_LOC_MATRIX_MODEL};
-    gl::VertexAttribPointer(mmtxAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData)*offset + offsetof(SceneGPUInstanceData, modelMtx));
-    gl::VertexAttribDivisor(mmtxAttr, 1);
-    gl::EnableVertexAttribArray(mmtxAttr);
-
-    gl::AttributeMat3 normMtxAttr{osc::SHADER_LOC_MATRIX_NORMAL};
-    gl::VertexAttribPointer(normMtxAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData)*offset + offsetof(SceneGPUInstanceData, normalMtx));
-    gl::VertexAttribDivisor(normMtxAttr, 1);
-    gl::EnableVertexAttribArray(normMtxAttr);
-
-    gl::AttributeVec4 colorAttr{osc::SHADER_LOC_COLOR_DIFFUSE};
-    gl::VertexAttribPointer(colorAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData)*offset + offsetof(SceneGPUInstanceData, rgba));
-    gl::VertexAttribDivisor(colorAttr, 1);
-    gl::EnableVertexAttribArray(colorAttr);
-
-    gl::AttributeFloat rimAttr{osc::SHADER_LOC_COLOR_RIM};
-    gl::VertexAttribPointer(rimAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData)*offset + offsetof(SceneGPUInstanceData, rimIntensity));
-    gl::VertexAttribDivisor(rimAttr, 1);
-    gl::EnableVertexAttribArray(rimAttr);
-}
-
-static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, float fixupScaleFactor)
-{
-    auto& renderTarg = impl.renderTarg;
-
-    // ensure buffer sizes match ImGui panel size
-    {
-        ImVec2 contentRegion = ImGui::GetContentRegionAvail();
-        if (contentRegion.x >= 1.0f && contentRegion.y >= 1.0f)
-        {
-            glm::ivec2 dims{static_cast<int>(contentRegion.x), static_cast<int>(contentRegion.y)};
-            renderTarg.setDims(dims);
-            renderTarg.setSamples(osc::App::get().getMSXAASamplesRecommended());
-        }
-    }
-
-    // instance data to the GPU
-    gl::ArrayBuffer<SceneGPUInstanceData> instanceBuf{impl.drawlistBuffer};
-
-    // get scene matrices
-    glm::mat4 projMtx = impl.camera.getProjMtx(static_cast<float>(renderTarg.dims.x)/static_cast<float>(renderTarg.dims.y));
-    glm::mat4 viewMtx = impl.camera.getViewMtx();
-    glm::vec3 viewerPos = impl.camera.getPos();
-
-    // setup top-level OpenGL state
-    gl::Viewport(0, 0, renderTarg.dims.x, renderTarg.dims.y);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    gl::Enable(GL_BLEND);
-    gl::Enable(GL_DEPTH_TEST);
-    gl::Disable(GL_SCISSOR_TEST);
-
-    // draw scene
-    {
-        gl::BindFramebuffer(GL_FRAMEBUFFER, renderTarg.sceneFBO);
-        gl::ClearColor(impl.backgroundCol);
-        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        if (impl.wireframeMode)
-        {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        }
-
-        // draw the floor first, so that the transparent geometry in the scene also shows
-        // the floor texture
-        if (impl.flags & osc::UiModelViewerFlags_DrawFloor)
-        {
-            auto& basicShader = osc::App::shader<osc::GouraudShader>();
-
-            gl::UseProgram(basicShader.program);
-            gl::Uniform(basicShader.uProjMat, projMtx);
-            gl::Uniform(basicShader.uViewMat, viewMtx);
-            glm::mat4 mtx = GenerateFloorModelMatrix(impl, fixupScaleFactor);
-            gl::Uniform(basicShader.uModelMat, mtx);
-            gl::Uniform(basicShader.uNormalMat, osc::ToNormalMatrix(mtx));
-            gl::Uniform(basicShader.uLightDir, impl.lightDir);
-            gl::Uniform(basicShader.uLightColor, impl.lightCol);
-            gl::Uniform(basicShader.uViewPos, viewerPos);
-            gl::Uniform(basicShader.uDiffuseColor, {1.0f, 1.0f, 1.0f, 1.0f});
-            gl::Uniform(basicShader.uIsTextured, true);
-            gl::ActiveTexture(GL_TEXTURE0);
-            gl::BindTexture(impl.chequerTex);
-            gl::Uniform(basicShader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
-            auto floor = osc::App::meshes().getFloorMesh();
-            gl::BindVertexArray(floor->GetVertexArray());
-            floor->Draw();
-            gl::BindVertexArray();
-        }
-
-        auto& instancedShader = osc::App::shader<osc::InstancedGouraudColorShader>();
-        gl::UseProgram(instancedShader.program);
-        gl::Uniform(instancedShader.uProjMat, projMtx);
-        gl::Uniform(instancedShader.uViewMat, viewMtx);
-        gl::Uniform(instancedShader.uLightDir, impl.lightDir);
-        gl::Uniform(instancedShader.uLightColor, impl.lightCol);
-        gl::Uniform(instancedShader.uViewPos, viewerPos);
-
-        std::vector<SceneGPUInstanceData> const& instances = impl.drawlistBuffer;
-        nonstd::span<osc::ComponentDecoration const> decs = impl.m_Decorations;
-
-        size_t pos = 0;
-        size_t ninstances = instances.size();
-
-        while (pos < ninstances)
-        {
-            osc::ComponentDecoration const& se = decs[instances[pos].decorationIdx];
-
-            // batch
-            size_t end = pos + 1;
-            while (end < ninstances &&
-                   decs[instances[end].decorationIdx].mesh.get() == se.mesh.get())
-            {
-                ++end;
-            }
-
-            // if the last element in a batch is opaque, then all the preceding ones should be
-            // also and we can skip blend-testing the entire batch
-            if (instances[end-1].rgba.a >= 0.99f)
-            {
-                gl::Disable(GL_BLEND);
-            }
-            else
-            {
-                gl::Enable(GL_BLEND);
-            }
-
-            gl::BindVertexArray(se.mesh->GetVertexArray());
-            gl::BindBuffer(instanceBuf);
-            BindToInstanceAttributes(pos);
-            se.mesh->DrawInstanced(end-pos);
-            gl::BindVertexArray();
-
-            pos = end;
-        }
-
-        if (impl.wireframeMode)
-        {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        }
-    }
-
-    // draw mesh normals, if requested
-    if (impl.drawMeshNormals)
-    {
-        auto& normalShader = osc::App::shader<osc::NormalsShader>();
-        gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
-        gl::UseProgram(normalShader.program);
-        gl::Uniform(normalShader.uProjMat, projMtx);
-        gl::Uniform(normalShader.uViewMat, viewMtx);
-
-        std::vector<SceneGPUInstanceData> const& instances = impl.drawlistBuffer;
-        nonstd::span<osc::ComponentDecoration const> decs = impl.m_Decorations;
-
-        for (SceneGPUInstanceData const& inst : instances)
-        {
-            osc::ComponentDecoration const& se = decs[inst.decorationIdx];
-
-            gl::Uniform(normalShader.uModelMat, inst.modelMtx);
-            gl::Uniform(normalShader.uNormalMat, inst.normalMtx);
-            gl::BindVertexArray(se.mesh->GetVertexArray());
-            se.mesh->Draw();
-        }
-        gl::BindVertexArray();
-    }
-
-    // blit scene render to non-MSXAAed output texture
-    gl::BindFramebuffer(GL_READ_FRAMEBUFFER, renderTarg.sceneFBO);
-    glReadBuffer(GL_COLOR_ATTACHMENT0);
-    gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, renderTarg.outputFbo);
-    gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
-    gl::BlitFramebuffer(0, 0, renderTarg.dims.x, renderTarg.dims.y,
-                        0, 0, renderTarg.dims.x, renderTarg.dims.y,
-                        GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-
-    // draw rims
-    if (impl.drawRims)
-    {
-        gl::BindFramebuffer(GL_FRAMEBUFFER, renderTarg.rimsFBO);
-        gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        auto& iscs = osc::App::shader<osc::InstancedSolidColorShader>();
-        gl::UseProgram(iscs.program);
-        gl::Uniform(iscs.uVP, projMtx * viewMtx);
-
-        std::vector<SceneGPUInstanceData> const& instances = impl.drawlistBuffer;
-        nonstd::span<osc::ComponentDecoration const> decs = impl.m_Decorations;
-
-        size_t pos = 0;
-        size_t ninstances = instances.size();
-
-        // drawcalls & figure out rim AABB
-        osc::AABB rimAABB;
-        rimAABB.min = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
-        rimAABB.max = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
-        bool hasRims = false;
-
-        while (pos < ninstances)
-        {
-            SceneGPUInstanceData const& inst = instances[pos];
-            osc::ComponentDecoration const& se = decs[inst.decorationIdx];
-
-            // batch
-            size_t end = pos + 1;
-            while (end < ninstances &&
-                   decs[instances[end].decorationIdx].mesh.get() == se.mesh.get() &&
-                   instances[end].rimIntensity == inst.rimIntensity)
-            {
-                ++end;
-            }
-
-            if (inst.rimIntensity < 0.001f)
-            {
-                pos = end;
-                continue;  // skip rendering rimless elements
-            }
-
-            hasRims = true;
-
-            // union the rims for scissor testing later
-            for (size_t i = pos; i < end; ++i)
-            {
-                rimAABB = Union(rimAABB, GetWorldspaceAABB(decs[instances[i].decorationIdx]));
-            }
-
-            gl::Uniform(iscs.uColor, {inst.rimIntensity, 0.0f, 0.0f, 1.0f});
-            gl::BindVertexArray(se.mesh->GetVertexArray());
-            gl::BindBuffer(instanceBuf);
-            BindToInstanceAttributes(pos);
-            se.mesh->DrawInstanced(end-pos);
-            gl::BindVertexArray();
-
-            pos = end;
-        }
-
-        if (hasRims)
-        {
-            glm::vec2 rimThickness = glm::vec2{1.5f} / glm::vec2{renderTarg.dims};
-
-            // care: edge-detection kernels are expensive
-            //
-            // calculate a screenspace bounding box that surrounds the rims so that the
-            // edge detection shader only had to run on a smaller subset of the screen
-            osc::AABB screenspaceRimBounds = TransformAABB(rimAABB, projMtx * viewMtx);
-            auto verts = ToCubeVerts(screenspaceRimBounds);
-
-            osc::Rect screenBounds{verts[0], verts[0]};
-
-            for (size_t i = 1; i < verts.size(); ++i)
-            {
-                glm::vec2 p = verts[i];  // dump Z
-                screenBounds.p1 = osc::Min(p, screenBounds.p1);
-                screenBounds.p2 = osc::Max(p, screenBounds.p2);
-            }
-            screenBounds.p1 -= rimThickness;
-            screenBounds.p2 += rimThickness;
-
-            glm::ivec2 renderDims = renderTarg.dims;
-            glm::ivec2 min{
-                static_cast<int>((screenBounds.p1.x + 1.0f)/2.0f * renderDims.x),
-                static_cast<int>((screenBounds.p1.y + 1.0f)/2.0f * renderDims.y)};
-            glm::ivec2 max{
-                static_cast<int>((screenBounds.p2.x + 1.0f)/2.0f * renderDims.x),
-                static_cast<int>((screenBounds.p2.y + 1.0f)/2.0f * renderDims.y)};
-
-            int x = std::max(0, min.x);
-            int y = std::max(0, min.y);
-            int w = max.x - min.x;
-            int h = max.y - min.y;
-
-            // rims FBO now contains *solid* colors that need to be edge-detected
-
-            // write rims over the output output
-            gl::BindFramebuffer(GL_FRAMEBUFFER, renderTarg.outputFbo);
-
-            auto& edgeDetectShader = osc::App::shader<osc::EdgeDetectionShader>();
-            gl::UseProgram(edgeDetectShader.program);
-            gl::Uniform(edgeDetectShader.uMVP, gl::identity);
-            gl::ActiveTexture(GL_TEXTURE0);
-            gl::BindTexture(renderTarg.rims2DTex);
-            gl::Uniform(edgeDetectShader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
-            gl::Uniform(edgeDetectShader.uRimRgba, {0.95f, 0.40f, 0.0f, 0.70f});
-            gl::Uniform(edgeDetectShader.uRimThickness, rimThickness);
-            gl::Enable(GL_SCISSOR_TEST);
-            glScissor(x, y, w, h);
-            gl::Enable(GL_BLEND);
-            gl::Disable(GL_DEPTH_TEST);
-            auto quad = osc::App::meshes().getTexturedQuadMesh();
-            gl::BindVertexArray(quad->GetVertexArray());
-            quad->Draw();
-            gl::BindVertexArray();
-            gl::Enable(GL_DEPTH_TEST);
-            gl::Disable(GL_SCISSOR_TEST);
-        }
-    }
-
-    gl::Enable(GL_BLEND);
-    gl::Enable(GL_DEPTH_TEST);
-    gl::Disable(GL_SCISSOR_TEST);
-    gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-}
-
-static void BlitSceneTexture(osc::UiModelViewer::Impl& impl)
-{
-    ImVec2 imgDims = ImGui::GetContentRegionAvail();
-    osc::DrawTextureAsImGuiImage(impl.renderTarg.outputTex, imgDims);
-
-    impl.renderRect.p1 = ImGui::GetItemRectMin();
-    impl.renderRect.p2 = ImGui::GetItemRectMax();
-    impl.renderHovered = ImGui::IsItemHovered();
-    impl.renderLeftClicked = ImGui::IsItemHovered() && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
-    impl.renderRightClicked = ImGui::IsItemHovered() && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
-}
-
-static std::pair<OpenSim::Component const*, glm::vec3> HittestDecorations(
-    osc::UiModelViewer::Impl& impl,
-    osc::VirtualConstModelStatePair const& msp)
-{
-    if (!impl.renderHovered)
-    {
-        return {nullptr, {0.0f, 0.0f, 0.0f}};
-    }
-
-    // figure out mouse pos in panel's NDC system
-    glm::vec2 windowScreenPos = ImGui::GetWindowPos();  // where current ImGui window is in the screen
-    glm::vec2 mouseScreenPos = ImGui::GetMousePos();  // where mouse is in the screen
-    glm::vec2 mouseWindowPos = mouseScreenPos - windowScreenPos;  // where mouse is in current window
-    glm::vec2 cursorWindowPos = ImGui::GetCursorPos();  // where cursor is in current window
-    glm::vec2 mouseItemPos = mouseWindowPos - cursorWindowPos;  // where mouse is in current item
-    glm::vec2 itemDims = ImGui::GetContentRegionAvail();  // how big current window will be
-
-    // un-project the mouse position as a ray in worldspace
-    osc::Line cameraRay = impl.camera.unprojectTopLeftPosToWorldRay(mouseItemPos, itemDims);
-
-    // use scene BVH to intersect that ray with the scene
-    impl.sceneHittestResults.clear();
-    BVH_GetRayAABBCollisions(impl.m_SceneBVH, cameraRay, &impl.sceneHittestResults);
-
-    // go through triangle BVHes to figure out which, if any, triangle is closest intersecting
-    int closestIdx = -1;
-    float closestDistance = std::numeric_limits<float>::max();
-    glm::vec3 closestWorldLoc = {0.0f, 0.0f, 0.0f};
-
-    // iterate through each scene-level hit and perform a triangle-level hittest
-    nonstd::span<osc::ComponentDecoration const> decs = impl.m_Decorations;
-    OpenSim::Component const* const isolated = msp.getIsolated();
-
-    for (osc::BVHCollision const& c : impl.sceneHittestResults)
-    {
-        int instanceIdx = c.primId;
-
-        if (isolated && !IsInclusiveChildOf(isolated, decs[instanceIdx].component))
-        {
-            continue;  // it's not in the current isolation
-        }
-
-        glm::mat4 instanceMmtx = ToMat4(decs[instanceIdx].transform);
-        osc::Line cameraRayModelspace = TransformLine(cameraRay, ToInverseMat4(decs[instanceIdx].transform));
-
-        auto maybeCollision = decs[instanceIdx].mesh->getClosestRayTriangleCollisionModelspace(cameraRayModelspace);
-
-        if (maybeCollision && maybeCollision.distance < closestDistance)
-        {
-            closestIdx = instanceIdx;
-            closestDistance = maybeCollision.distance;
-            glm::vec3 closestLocModelspace = cameraRayModelspace.origin + closestDistance*cameraRayModelspace.dir;
-            closestWorldLoc = glm::vec3{instanceMmtx * glm::vec4{closestLocModelspace, 1.0f}};
-        }
-    }
-
-    if (closestIdx >= 0)
-    {
-        return {decs[closestIdx].component,  closestWorldLoc};
-    }
-    else
-    {
-        return {nullptr, {0.0f, 0.0f, 0.0f}};
-    }
-}
-
-static void DrawGrid(osc::UiModelViewer::Impl& impl, glm::mat4 rotationMatrix)
-{
-    auto& shader = osc::App::shader<osc::SolidColorShader>();
-
-    gl::UseProgram(shader.program);
-    gl::Uniform(shader.uModel, glm::scale(rotationMatrix, {50.0f, 50.0f, 1.0f}));
-    gl::Uniform(shader.uView, impl.camera.getViewMtx());
-    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(AspectRatio(impl.renderRect)));
-    gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
-    auto grid = osc::App::meshes().get100x100GridMesh();
-    gl::BindVertexArray(grid->GetVertexArray());
-    grid->Draw();
-    gl::BindVertexArray();
-}
-
-static void DrawXZGrid(osc::UiModelViewer::Impl& impl)
-{
-    DrawGrid(impl, glm::rotate(glm::mat4{1.0f}, osc::fpi2, {1.0f, 0.0f, 0.0f}));
-}
-
-static void DrawXYGrid(osc::UiModelViewer::Impl& impl)
-{
-    DrawGrid(impl, glm::mat4{1.0f});
-}
-
-static void DrawYZGrid(osc::UiModelViewer::Impl& impl)
-{
-    DrawGrid(impl, glm::rotate(glm::mat4{1.0f}, osc::fpi2, {0.0f, 1.0f, 0.0f}));
-}
-
-static void DrawXZFloorLines(osc::UiModelViewer::Impl& impl)
-{
-    auto& shader = osc::App::shader<osc::SolidColorShader>();
-
-    // common stuff
-    gl::UseProgram(shader.program);
-    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(AspectRatio(impl.renderRect)));
-    gl::Uniform(shader.uView, impl.camera.getViewMtx());
-
-    auto yline = osc::App::meshes().getYLineMesh();
-    gl::BindVertexArray(yline->GetVertexArray());
-
-    // X
-    gl::Uniform(shader.uModel, glm::rotate(glm::mat4{1.0f}, osc::fpi2, {0.0f, 0.0f, 1.0f}));
-    gl::Uniform(shader.uColor, {1.0f, 0.0f, 0.0f, 1.0f});
-    yline->Draw();
-
-    // Z
-    gl::Uniform(shader.uModel, glm::rotate(glm::mat4{1.0f}, osc::fpi2, {1.0f, 0.0f, 0.0f}));
-    gl::Uniform(shader.uColor, {0.0f, 0.0f, 1.0f, 1.0f});
-    yline->Draw();
-
-    gl::BindVertexArray();
-}
-
-static void DrawAABBs(osc::UiModelViewer::Impl& impl)
-{
-    auto& shader = osc::App::shader<osc::SolidColorShader>();
-
-    // common stuff
-    gl::UseProgram(shader.program);
-    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(AspectRatio(impl.renderRect)));
-    gl::Uniform(shader.uView, impl.camera.getViewMtx());
-    gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
-
-    auto cube = osc::App::meshes().getCubeWireMesh();
-    gl::BindVertexArray(cube->GetVertexArray());
-
-    for (auto const& se : impl.m_Decorations)
-    {
-        osc::AABB worldspaceAABB = GetWorldspaceAABB(se);
-        glm::vec3 halfWidths = Dimensions(worldspaceAABB) / 2.0f;
-        glm::vec3 center = Midpoint(worldspaceAABB);
-
-        glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
-        glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
-        glm::mat4 mmtx = mover * scaler;
-
-        gl::Uniform(shader.uModel, mmtx);
-        cube->Draw();
-    }
-
-    gl::BindVertexArray();
-}
-
-// assumes `pos` is in-bounds
-static void DrawBVHRecursive(osc::Mesh& cube,
-                             gl::UniformMat4& mtxUniform,
-                             osc::BVH const& bvh, int pos)
-{
-    osc::BVHNode const& n = bvh.nodes[pos];
-
-    glm::vec3 halfWidths = Dimensions(n.bounds) / 2.0f;
-    glm::vec3 center = Midpoint(n.bounds);
-
-    glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
-    glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
-    glm::mat4 mmtx = mover * scaler;
-    gl::Uniform(mtxUniform, mmtx);
-    cube.Draw();
-
-    if (n.nlhs >= 0)
-    {
-        // it's an internal node
-        DrawBVHRecursive(cube, mtxUniform, bvh, pos+1);
-        DrawBVHRecursive(cube, mtxUniform, bvh, pos+n.nlhs+1);
-    }
-}
-
-static void DrawBVH(osc::UiModelViewer::Impl& impl)
-{
-    if (impl.m_SceneBVH.nodes.empty())
-    {
-        return;
-    }
-
-    auto& shader = osc::App::shader<osc::SolidColorShader>();
-
-    // common stuff
-    gl::UseProgram(shader.program);
-    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(AspectRatio(impl.renderRect)));
-    gl::Uniform(shader.uView, impl.camera.getViewMtx());
-    gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
-
-    auto cube = osc::App::meshes().getCubeWireMesh();
-    gl::BindVertexArray(cube->GetVertexArray());
-    DrawBVHRecursive(*cube, shader.uModel, impl.m_SceneBVH, 0);
-    gl::BindVertexArray();
-}
-
-// draws overlays that are "in scene" - i.e. they are part of the rendered texture
-static void DrawInSceneOverlays(osc::UiModelViewer::Impl& impl)
-{
-    gl::BindFramebuffer(GL_FRAMEBUFFER, impl.renderTarg.outputFbo);
-    gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
-
-    if (impl.flags & osc::UiModelViewerFlags_DrawXZGrid)
-    {
-        DrawXZGrid(impl);
-    }
-
-    if (impl.flags & osc::UiModelViewerFlags_DrawXYGrid)
-    {
-        DrawXYGrid(impl);
-    }
-
-    if (impl.flags & osc::UiModelViewerFlags_DrawYZGrid)
-    {
-        DrawYZGrid(impl);
-    }
-
-    if (impl.flags & osc::UiModelViewerFlags_DrawAxisLines)
-    {
-        DrawXZFloorLines(impl);
-    }
-
-    if (impl.flags & osc::UiModelViewerFlags_DrawAABBs)
-    {
-        DrawAABBs(impl);
-    }
-
-    if (impl.flags & osc::UiModelViewerFlags_DrawBVH)
-    {
-        DrawBVH(impl);
-    }
-
-    gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-}
-
-// draw 2D overlays that are emitted via imgui (rather than inside the rendered texture)
-static void DrawImGuiOverlays(osc::UiModelViewer::Impl& impl)
-{
-    if (impl.flags & osc::UiModelViewerFlags_DrawAlignmentAxes)
-    {
-        DrawAlignmentAxesOverlayInBottomRightOf(impl.camera.getViewMtx(), impl.renderRect);
-    }
-}
-
-static void DrawOptionsMenuContent(osc::UiModelViewer::Impl& impl)
-{
-    {
-        osc::MuscleDecorationStyle s = impl.m_DecorationOptions.getMuscleDecorationStyle();
-        nonstd::span<osc::MuscleDecorationStyle const> allStyles = osc::GetAllMuscleDecorationStyles();
-        nonstd::span<char const* const>  allNames = osc::GetAllMuscleDecorationStyleStrings();
-        int i = osc::GetIndexOf(s);
-
-        if (ImGui::Combo("muscle decoration style", &i, allNames.data(), static_cast<int>(allStyles.size())))
-        {
-            impl.m_DecorationOptions.setMuscleDecorationStyle(allStyles[i]);
-        }
-    }
-    {
-        osc::MuscleSizingStyle s = impl.m_DecorationOptions.getMuscleSizingStyle();
-        nonstd::span<osc::MuscleSizingStyle const> allStyles = osc::GetAllMuscleSizingStyles();
-        nonstd::span<char const* const>  allNames = osc::GetAllMuscleSizingStyleStrings();
-        int i = osc::GetIndexOf(s);
-
-        if (ImGui::Combo("muscle sizing style", &i, allNames.data(), static_cast<int>(allStyles.size())))
-        {
-            impl.m_DecorationOptions.setMuscleSizingStyle(allStyles[i]);
-        }
-    }
-    {
-        osc::MuscleColoringStyle s = impl.m_DecorationOptions.getMuscleColoringStyle();
-        nonstd::span<osc::MuscleColoringStyle const> allStyles = osc::GetAllMuscleColoringStyles();
-        nonstd::span<char const* const>  allNames = osc::GetAllMuscleColoringStyleStrings();
-        int i = osc::GetIndexOf(s);
-
-        if (ImGui::Combo("muscle coloring", &i, allNames.data(), static_cast<int>(allStyles.size())))
-        {
-            impl.m_DecorationOptions.setMuscleColoringStyle(allStyles[i]);
-        }
-    }
-    ImGui::Checkbox("wireframe mode", &impl.wireframeMode);
-    ImGui::Checkbox("show normals", &impl.drawMeshNormals);
-    ImGui::Checkbox("draw rims", &impl.drawRims);
-    ImGui::CheckboxFlags("show XZ grid", &impl.flags, osc::UiModelViewerFlags_DrawXZGrid);
-    ImGui::CheckboxFlags("show XY grid", &impl.flags, osc::UiModelViewerFlags_DrawXYGrid);
-    ImGui::CheckboxFlags("show YZ grid", &impl.flags, osc::UiModelViewerFlags_DrawYZGrid);
-    ImGui::CheckboxFlags("show alignment axes", &impl.flags, osc::UiModelViewerFlags_DrawAlignmentAxes);
-    ImGui::CheckboxFlags("show grid lines", &impl.flags, osc::UiModelViewerFlags_DrawAxisLines);
-    ImGui::CheckboxFlags("show AABBs", &impl.flags, osc::UiModelViewerFlags_DrawAABBs);
-    ImGui::CheckboxFlags("show BVH", &impl.flags, osc::UiModelViewerFlags_DrawBVH);
-    ImGui::CheckboxFlags("show floor", &impl.flags, osc::UiModelViewerFlags_DrawFloor);
-}
-
-static void DoFocusCameraAlongX(osc::UiModelViewer::Impl& impl)
-{
-    impl.camera.theta = osc::fpi2;
-    impl.camera.phi = 0.0f;
-}
-
-static void DoFocusCameraAlongMinusX(osc::UiModelViewer::Impl& impl)
-{
-    impl.camera.theta = -osc::fpi2;
-    impl.camera.phi = 0.0f;
-}
-
-static void DoFocusCameraAlongY(osc::UiModelViewer::Impl& impl)
-{
-    impl.camera.theta = 0.0f;
-    impl.camera.phi = osc::fpi2;
-}
-
-static void DoFocusCameraAlongMinusY(osc::UiModelViewer::Impl& impl)
-{
-    impl.camera.theta = 0.0f;
-    impl.camera.phi = -osc::fpi2;
-}
-
-static void DoFocusCameraAlongZ(osc::UiModelViewer::Impl& impl)
-{
-    impl.camera.theta = 0.0f;
-    impl.camera.phi = 0.0f;
-}
-
-static void DoFocusCameraAlongMinusZ(osc::UiModelViewer::Impl& impl)
-{
-    impl.camera.theta = osc::fpi;
-    impl.camera.phi = 0.0f;
-}
-
-static void DoResetCamera(osc::UiModelViewer::Impl& impl)
-{
-    impl.camera = {};
-    impl.camera.theta = osc::fpi4;
-    impl.camera.phi = osc::fpi4;
-}
-
-static void DoAutoFocusCamera(osc::UiModelViewer::Impl& impl)
-{
-    if (!impl.m_SceneBVH.nodes.empty())
-    {
-        auto const& bvhRoot = impl.m_SceneBVH.nodes[0].bounds;
-        impl.camera.focusPoint = -Midpoint(bvhRoot);
-        impl.camera.radius = 2.0f * LongestDim(bvhRoot);
-        impl.camera.theta = osc::fpi4;
-        impl.camera.phi = osc::fpi4;
-    }
-}
-
-static void DrawSceneMenu(osc::UiModelViewer::Impl& impl)
-{
-    ImGui::Text("reposition camera:");
-    ImGui::Separator();
-
-    auto makeHoverTooltip = [](char const* msg)
-    {
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-            ImGui::TextUnformatted(msg);
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
-    };
-
-    if (ImGui::Button("+X"))
-    {
-        DoFocusCameraAlongX(impl);
-    }
-    makeHoverTooltip("Position camera along +X, pointing towards the center. Hotkey: X");
-    ImGui::SameLine();
-    if (ImGui::Button("-X"))
-    {
-        DoFocusCameraAlongMinusX(impl);
-    }
-    makeHoverTooltip("Position camera along -X, pointing towards the center. Hotkey: Ctrl+X");
-
-    ImGui::SameLine();
-    if (ImGui::Button("+Y"))
-    {
-        DoFocusCameraAlongY(impl);
-    }
-    makeHoverTooltip("Position camera along +Y, pointing towards the center. Hotkey: Y");
-    ImGui::SameLine();
-    if (ImGui::Button("-Y"))
-    {
-        DoFocusCameraAlongMinusY(impl);
-    }
-    makeHoverTooltip("Position camera along -Y, pointing towards the center. (no hotkey, because Ctrl+Y is taken by 'Redo'");
-
-    ImGui::SameLine();
-    if (ImGui::Button("+Z"))
-    {
-        DoFocusCameraAlongZ(impl);
-    }
-    makeHoverTooltip("Position camera along +Z, pointing towards the center. Hotkey: Z");
-    ImGui::SameLine();
-    if (ImGui::Button("-Z"))
-    {
-        DoFocusCameraAlongMinusZ(impl);
-    }
-    makeHoverTooltip("Position camera along -Z, pointing towards the center. (no hotkey, because Ctrl+Z is taken by 'Undo')");
-
-    if (ImGui::Button("Zoom in"))
-    {
-        impl.camera.radius *= 0.8f;
-    }
-
-    ImGui::SameLine();
-    if (ImGui::Button("Zoom out"))
-    {
-        impl.camera.radius *= 1.2f;
-    }
-
-    if (ImGui::Button("reset camera"))
-    {
-        DoResetCamera(impl);
-    }
-    makeHoverTooltip("Reset the camera to its initial (default) location. Hotkey: F");
-
-    if (ImGui::Button("Auto-focus camera"))
-    {
-        impl.autoFocusCameraNextFrame = true;
-    }
-    makeHoverTooltip("Try to automatically adjust the camera's zoom etc. to suit the model's dimensions. Hotkey: Ctrl+F");
-
-    ImGui::Dummy({0.0f, 10.0f});
-    ImGui::Text("advanced camera properties:");
-    ImGui::Separator();
-    osc::SliderMetersFloat("radius", &impl.camera.radius, 0.0f, 10.0f);
-    ImGui::SliderFloat("theta", &impl.camera.theta, 0.0f, 2.0f * osc::fpi);
-    ImGui::SliderFloat("phi", &impl.camera.phi, 0.0f, 2.0f * osc::fpi);
-    ImGui::InputFloat("fov", &impl.camera.fov);
-    osc::InputMetersFloat("znear", &impl.camera.znear);
-    osc::InputMetersFloat("zfar", &impl.camera.zfar);
-    ImGui::NewLine();
-    osc::SliderMetersFloat("pan_x", &impl.camera.focusPoint.x, -100.0f, 100.0f);
-    osc::SliderMetersFloat("pan_y", &impl.camera.focusPoint.y, -100.0f, 100.0f);
-    osc::SliderMetersFloat("pan_z", &impl.camera.focusPoint.z, -100.0f, 100.0f);
-
-    ImGui::Dummy({0.0f, 10.0f});
-    ImGui::Text("advanced scene properties:");
-    ImGui::Separator();
-    ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&impl.lightCol));
-    ImGui::ColorEdit3("background color", reinterpret_cast<float*>(&impl.backgroundCol));
-    osc::InputMetersFloat3("floor location", &impl.floorLocation.x);
-    makeHoverTooltip("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
-}
-
-
-static void DrawMainMenuContent(osc::UiModelViewer::Impl& impl)
-{
-    if (ImGui::BeginMenu("Options"))
-    {
-        DrawOptionsMenuContent(impl);
-        ImGui::EndMenu();
-    }
-
-    if (ImGui::BeginMenu("Scene"))
-    {
-        DrawSceneMenu(impl);
-        ImGui::EndMenu();
-    }
-
-    if (impl.ruler.IsMeasuring())
-    {
-        if (ImGui::MenuItem(ICON_FA_RULER " measuring", nullptr, false, false))
-        {
-            impl.ruler.StopMeasuring();
-        }
-    }
-    else
-    {
-        if (ImGui::MenuItem(ICON_FA_RULER " measure", nullptr, false, true))
-        {
-            impl.ruler.StartMeasuring();
-        }
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-            ImGui::TextUnformatted("EXPERIMENTAL: take a *rough* measurement of something in the scene - the UI for this needs to be improved, a lot ;)");
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
-    }
+    return m_Impl->isMousedOver();
 }
 
 void osc::UiModelViewer::requestAutoFocus()
 {
-    m_Impl->autoFocusCameraNextFrame = true;
+    m_Impl->requestAutoFocus();
 }
 
 osc::UiModelViewerResponse osc::UiModelViewer::draw(VirtualConstModelStatePair const& rs)
 {
-    Impl& impl = *m_Impl;
-
-    // update camera if necessary
-    if (impl.renderHovered)
-    {
-        bool ctrlDown = osc::IsCtrlOrSuperDown();
-
-        if (ImGui::IsKeyReleased(SDL_SCANCODE_X))
-        {
-            if (ctrlDown)
-            {
-                DoFocusCameraAlongMinusX(impl);
-            } else
-            {
-                DoFocusCameraAlongX(impl);
-            }
-        }
-        if (ImGui::IsKeyPressed(SDL_SCANCODE_Y))
-        {
-            if (!ctrlDown)
-            {
-                DoFocusCameraAlongY(impl);
-            }
-        }
-        if (ImGui::IsKeyPressed(SDL_SCANCODE_F))
-        {
-            if (ctrlDown)
-            {
-                impl.autoFocusCameraNextFrame = true;
-            }
-            else
-            {
-                DoResetCamera(impl);
-            }
-        }
-        if (ctrlDown && (ImGui::IsKeyPressed(SDL_SCANCODE_8)))
-        {
-            // solidworks keybind
-            impl.autoFocusCameraNextFrame = true;
-        }
-        UpdatePolarCameraFromImGuiUserInput(Dimensions(m_Impl->renderRect), impl.camera);
-    }
-
-    // draw main menu
-    if (ImGui::BeginMenuBar())
-    {
-        DrawMainMenuContent(impl);
-        ImGui::EndMenuBar();
-    }
-
-    // automatically change lighting position based on camera position
-    {
-        glm::vec3 p = glm::normalize(-impl.camera.focusPoint - impl.camera.getPos());
-        glm::vec3 up = {0.0f, 1.0f, 0.0f};
-        glm::vec3 mp = glm::rotate(glm::mat4{1.0f}, 1.05f * fpi4, up) * glm::vec4{p, 0.0f};
-        impl.lightDir = glm::normalize(mp + -up);
-    }
-
-    // put 3D scene in an undraggable child panel, to prevent accidental panel
-    // dragging when the user drags their mouse over the scene
-    if (ImGui::BeginChild("##child", {0.0f, 0.0f}, false, ImGuiWindowFlags_NoMove))
-    {
-        PopulareSceneDrawlist(impl, rs);
-
-        // only do the hit test if the user isn't currently dragging their mouse around
-        std::pair<OpenSim::Component const*, glm::vec3> htResult{nullptr, {0.0f, 0.0f, 0.0f}};
-        if (!ImGui::IsMouseDragging(ImGuiMouseButton_Left) &&
-            !ImGui::IsMouseDragging(ImGuiMouseButton_Middle) &&
-            !ImGui::IsMouseDragging(ImGuiMouseButton_Right))
-        {
-            htResult = HittestDecorations(impl, rs);
-        }
-
-        // auto-focus the camera, if the user requested it last frame
-        //
-        // care: indirectly depends on the scene drawlist being up-to-date
-        if (impl.autoFocusCameraNextFrame)
-        {
-            DoAutoFocusCamera(impl);
-            impl.autoFocusCameraNextFrame = false;
-        }
-
-        DrawSceneTexture(impl, rs.getFixupScaleFactor());
-        DrawInSceneOverlays(impl);
-        BlitSceneTexture(impl);
-        DrawImGuiOverlays(impl);
-
-        if (impl.ruler.IsMeasuring())
-        {
-            impl.ruler.draw(htResult, impl.camera, impl.renderRect);
-        }
-
-        ImGui::EndChild();
-
-        if (impl.ruler.IsMeasuring())
-        {
-            return {};  // don't give the caller the hittest result while measuring
-        }
-        else
-        {
-            UiModelViewerResponse resp;
-            resp.hovertestResult = htResult.first;
-            resp.isMousedOver = impl.renderHovered;
-            if (resp.isMousedOver) {
-                resp.mouse3DLocation = htResult.second;
-            }
-            resp.isLeftClicked = impl.renderLeftClicked;
-            resp.isRightClicked = impl.renderRightClicked;
-            return resp;
-        }
-    }
-    else
-    {
-        return {};  // child not visible
-    }
+    return m_Impl->draw(rs);
 }

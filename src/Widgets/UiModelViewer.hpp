@@ -2,9 +2,6 @@
 
 #include <glm/vec3.hpp>
 
-#include <memory>
-
-
 namespace OpenSim
 {
     class Component;
@@ -80,13 +77,11 @@ namespace osc
         ~UiModelViewer() noexcept;
 
         bool isMousedOver() const;
-
         void requestAutoFocus();
-
         UiModelViewerResponse draw(VirtualConstModelStatePair const&);
 
-        struct Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        class Impl;
+        Impl* m_Impl;
     };
 }
