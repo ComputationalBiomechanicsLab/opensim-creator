@@ -135,6 +135,63 @@ namespace
 }
 
 
+// OpenSim utils
+namespace
+{
+    float ComputeRimColor(OpenSim::Component const* selected,
+        OpenSim::Component const* hovered,
+        OpenSim::Component const* c)
+    {
+        while (c)
+        {
+            if (c == selected)
+            {
+                return 0.9f;
+            }
+            if (c == hovered)
+            {
+                return 0.4f;
+            }
+            if (!c->hasOwner())
+            {
+                return 0.0f;
+            }
+            c = &c->getOwner();
+        }
+
+        return 0.0f;
+    }
+
+    bool IsInclusiveChildOf(OpenSim::Component const* parent, OpenSim::Component const* c)
+    {
+        if (!c)
+        {
+            return false;
+        }
+
+        if (!parent)
+        {
+            return false;
+        }
+
+        for (;;)
+        {
+            if (c == parent)
+            {
+                return true;
+            }
+
+            if (!c->hasOwner())
+            {
+                return false;
+            }
+
+            c = &c->getOwner();
+        }
+    }
+}
+
+
 // rendering utils
 namespace
 {
@@ -461,6 +518,506 @@ namespace
         rv.isRightClicked = ImGui::IsItemHovered() && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
         return rv;
     }
+
+    // populates a high-level drawlist for an OpenSim model scene
+    class CachedSceneDrawlist final {
+    public:
+        osc::UID getVersion() const
+        {
+            return m_Version;
+        }
+
+        nonstd::span<osc::ComponentDecoration const> get() const
+        {
+            return m_Decorations;
+        }
+
+        nonstd::span<osc::ComponentDecoration const> populate(
+            osc::VirtualConstModelStatePair const& msp,
+            osc::CustomDecorationOptions const& decorationOptions)
+        {
+            OpenSim::Component const* const selected = msp.getSelected();
+            OpenSim::Component const* const hovered = msp.getHovered();
+            OpenSim::Component const* const isolated = msp.getIsolated();
+
+            if (msp.getModelVersion() != m_LastModelVersion ||
+                msp.getStateVersion() != m_LastStateVersion ||
+                selected != osc::FindComponent(msp.getModel(), m_LastSelection) ||
+                hovered != osc::FindComponent(msp.getModel(), m_LastHover) ||
+                isolated != osc::FindComponent(msp.getModel(), m_LastIsolation) ||
+                msp.getFixupScaleFactor() != m_LastFixupFactor ||
+                decorationOptions != m_LastDecorationOptions)
+            {
+                // update cache checks
+                m_LastModelVersion = msp.getModelVersion();
+                m_LastStateVersion = msp.getStateVersion();
+                m_LastSelection = selected ? selected->getAbsolutePath() : OpenSim::ComponentPath{};
+                m_LastHover = hovered ? hovered->getAbsolutePath() : OpenSim::ComponentPath{};
+                m_LastIsolation = isolated ? isolated->getAbsolutePath() : OpenSim::ComponentPath{};
+                m_LastFixupFactor = msp.getFixupScaleFactor();
+                m_LastDecorationOptions = decorationOptions;
+                m_Version = osc::UID{};
+
+                // generate decorations from OpenSim/SimTK backend
+                m_Decorations.clear();
+                OSC_PERF("generate decorations");
+                osc::GenerateModelDecorations(msp, m_Decorations, decorationOptions);
+            }
+            return m_Decorations;
+        }
+
+    private:
+        osc::UID m_LastModelVersion;
+        osc::UID m_LastStateVersion;
+        OpenSim::ComponentPath m_LastSelection;
+        OpenSim::ComponentPath m_LastHover;
+        OpenSim::ComponentPath m_LastIsolation;
+        float m_LastFixupFactor;
+        osc::CustomDecorationOptions m_LastDecorationOptions;
+
+        osc::UID m_Version;
+        std::vector<osc::ComponentDecoration> m_Decorations;
+    };
+
+    class CachedBVH final {
+    public:
+        osc::UID getVersion() const
+        {
+            return m_Version;
+        }
+
+        osc::BVH const& get() const
+        {
+            return m_BVH;
+        }
+
+        osc::BVH const& populate(CachedSceneDrawlist const& drawlist)
+        {
+            if (drawlist.getVersion() == m_LastDrawlistVersion)
+            {
+                return m_BVH;
+            }
+
+            // update cache checks
+            m_LastDrawlistVersion = drawlist.getVersion();
+            m_Version = osc::UID{};
+
+            OSC_PERF("generate BVH");
+            osc::UpdateSceneBVH(drawlist.get(), m_BVH);
+            return m_BVH;
+        }
+    private:
+        osc::UID m_LastDrawlistVersion;
+        osc::UID m_Version;
+        osc::BVH m_BVH;
+    };
+
+    class CachedGPUDrawlist final {
+    public:
+        osc::UID getVersion() const
+        {
+            return m_Version;
+        }
+
+        nonstd::span<SceneGPUInstanceData const> get() const
+        {
+            return m_DrawListBuffer;
+        }
+
+        nonstd::span<SceneGPUInstanceData> populate(osc::VirtualConstModelStatePair const& msp, CachedSceneDrawlist const& drawlist)
+        {
+            if (drawlist.getVersion() == m_LastDrawlistVersion)
+            {
+                return m_DrawListBuffer;
+            }
+
+            // update cache checks
+            m_LastDrawlistVersion = drawlist.getVersion();
+            m_Version = osc::UID{};
+
+            OpenSim::Component const* const selected = msp.getSelected();
+            OpenSim::Component const* const hovered = msp.getHovered();
+            OpenSim::Component const* const isolated = msp.getIsolated();
+
+            auto decorations = drawlist.get();
+            m_DrawListBuffer.clear();
+            m_DrawListBuffer.reserve(decorations.size());
+
+            // populate the list with the scene
+            for (size_t i = 0; i < decorations.size(); ++i)
+            {
+                osc::ComponentDecoration const& se = decorations[i];
+
+                if (isolated && !IsInclusiveChildOf(isolated, se.component))
+                {
+                    continue;  // skip rendering this (it's not in the isolated component)
+                }
+
+                SceneGPUInstanceData& ins = m_DrawListBuffer.emplace_back();
+                ins.modelMtx = osc::ToMat4(se.transform);
+                ins.normalMtx = osc::ToNormalMatrix(se.transform);
+                ins.rgba = se.color;
+                ins.rimIntensity = ComputeRimColor(selected, hovered, se.component);
+                ins.decorationIdx = static_cast<int>(i);
+            }
+
+            return m_DrawListBuffer;
+        }
+    private:
+        osc::UID m_LastDrawlistVersion;
+        osc::UID m_Version;
+        std::vector<SceneGPUInstanceData> m_DrawListBuffer;
+    };
+
+    struct ModelStateRenderParams final {
+        glm::ivec2 Dimensions = {1, 1};
+        int Samples = 1;
+        bool WireframeMode = false;
+        bool DrawMeshNormals = false;
+        bool DrawRims = true;
+        bool DrawFloor = true;
+        glm::mat4 ViewMatrix{1.0f};
+        glm::mat4 ProjectionMatrix{1.0f};
+        glm::vec3 ViewPos = {0.0f, 0.0f, 0.0f};
+        glm::vec3 LightDirection = {-0.34f, -0.25f, 0.05f};
+        glm::vec3 LightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
+        glm::vec4 BackgroundColor = {0.89f, 0.89f, 0.89f, 1.0f};
+        glm::vec4 RimColor = {1.0f, 0.4f, 0.0f, 0.85f};
+        glm::vec3 FloorLocation = {0.0f, -0.001f, 0.0f};
+        float FixupScaleFactor = 1.0f;
+    };
+
+    bool operator==(ModelStateRenderParams const& a, ModelStateRenderParams const& b)
+    {
+        return
+            a.Dimensions == b.Dimensions &&
+            a.Samples == b.Samples &&
+            a.WireframeMode == b.WireframeMode &&
+            a.DrawMeshNormals == b.DrawMeshNormals &&
+            a.DrawRims == b.DrawRims &&
+            a.DrawFloor == b.DrawFloor &&
+            a.ViewMatrix == b.ViewMatrix &&
+            a.ProjectionMatrix == b.ProjectionMatrix &&
+            a.ViewPos == b.ViewPos &&
+            a.LightDirection == b.LightDirection &&
+            a.LightColor == b.LightColor &&
+            a.BackgroundColor == b.BackgroundColor &&
+            a.RimColor == b.RimColor &&
+            a.FloorLocation == b.FloorLocation &&
+            a.FixupScaleFactor == b.FixupScaleFactor;
+    }
+
+    class ModelStateRenderer final {
+    public:
+
+        glm::ivec2 getDimensions() const
+        {
+            return m_RenderTarget.dims;
+        }
+
+        int getSamples() const
+        {
+            return m_RenderTarget.samples;
+        }
+
+        void draw(ModelStateRenderParams const& params, osc::VirtualConstModelStatePair const& msp, CachedSceneDrawlist const& drawlist)
+        {
+            if (params == m_LastParams &&
+                drawlist.getVersion() == m_LastDrawlistVersion)
+            {
+                return;  // nothing changed since the last render
+            }
+
+            // update cache checks
+            m_LastParams = params;
+            m_LastDrawlistVersion = drawlist.getVersion();
+
+            // ensure underlying render target matches latest params
+            m_RenderTarget.setDims(params.Dimensions);
+            m_RenderTarget.setSamples(params.Samples);
+
+            // populate GPU-friendly representation of the (higher-level) drawlist
+            m_GPUDrawlist.populate(msp, drawlist);
+
+            // upload data to the GPU
+            gl::ArrayBuffer<SceneGPUInstanceData> instanceBuf{m_GPUDrawlist.get()};
+
+            // setup top-level OpenGL state
+            gl::Viewport(0, 0, m_RenderTarget.dims.x, m_RenderTarget.dims.y);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            gl::Enable(GL_BLEND);
+            gl::Enable(GL_DEPTH_TEST);
+            gl::Disable(GL_SCISSOR_TEST);
+
+            // draw scene
+            {
+                gl::BindFramebuffer(GL_FRAMEBUFFER, m_RenderTarget.sceneFBO);
+                gl::ClearColor(params.BackgroundColor);
+                gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                if (params.WireframeMode)
+                {
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                }
+
+                // draw the floor first, so that the transparent geometry in the scene also shows
+                // the floor texture
+                if (params.DrawFloor & osc::UiModelViewerFlags_DrawFloor)
+                {
+                    auto& basicShader = osc::App::shader<osc::GouraudShader>();
+
+                    gl::UseProgram(basicShader.program);
+                    gl::Uniform(basicShader.uProjMat, params.ProjectionMatrix);
+                    gl::Uniform(basicShader.uViewMat, params.ViewMatrix);
+                    glm::mat4 mtx = GenerateFloorModelMatrix(params.FloorLocation, params.FixupScaleFactor);
+                    gl::Uniform(basicShader.uModelMat, mtx);
+                    gl::Uniform(basicShader.uNormalMat, osc::ToNormalMatrix(mtx));
+                    gl::Uniform(basicShader.uLightDir, params.LightDirection);
+                    gl::Uniform(basicShader.uLightColor, params.LightColor);
+                    gl::Uniform(basicShader.uViewPos, params.ViewPos);
+                    gl::Uniform(basicShader.uDiffuseColor, {1.0f, 1.0f, 1.0f, 1.0f});
+                    gl::Uniform(basicShader.uIsTextured, true);
+                    gl::ActiveTexture(GL_TEXTURE0);
+                    gl::BindTexture(m_ChequerTexture);
+                    gl::Uniform(basicShader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
+                    auto floor = osc::App::meshes().getFloorMesh();
+                    gl::BindVertexArray(floor->GetVertexArray());
+                    floor->Draw();
+                    gl::BindVertexArray();
+                }
+
+                auto& instancedShader = osc::App::shader<osc::InstancedGouraudColorShader>();
+                gl::UseProgram(instancedShader.program);
+                gl::Uniform(instancedShader.uProjMat, params.ProjectionMatrix);
+                gl::Uniform(instancedShader.uViewMat, params.ViewMatrix);
+                gl::Uniform(instancedShader.uLightDir, params.LightDirection);
+                gl::Uniform(instancedShader.uLightColor, params.LightColor);
+                gl::Uniform(instancedShader.uViewPos, params.ViewPos);
+
+                nonstd::span<SceneGPUInstanceData const> instances = m_GPUDrawlist.get();
+                nonstd::span<osc::ComponentDecoration const> decs = drawlist.get();
+
+                size_t pos = 0;
+                size_t ninstances = instances.size();
+
+                while (pos < ninstances)
+                {
+                    osc::ComponentDecoration const& se = decs[instances[pos].decorationIdx];
+
+                    // batch
+                    size_t end = pos + 1;
+                    while (end < ninstances &&
+                        decs[instances[end].decorationIdx].mesh == se.mesh)
+                    {
+                        ++end;
+                    }
+
+                    // if the last element in a batch is opaque, then all the preceding ones should be
+                    // also and we can skip blend-testing the entire batch
+                    if (instances[end-1].rgba.a >= 0.99f)
+                    {
+                        gl::Disable(GL_BLEND);
+                    }
+                    else
+                    {
+                        gl::Enable(GL_BLEND);
+                    }
+
+                    gl::BindVertexArray(se.mesh->GetVertexArray());
+                    gl::BindBuffer(instanceBuf);
+                    BindToInstanceAttributes(pos);
+                    se.mesh->DrawInstanced(end-pos);
+                    gl::BindVertexArray();
+
+                    pos = end;
+                }
+
+                if (params.WireframeMode)
+                {
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                }
+            }
+
+            // draw mesh normals, if requested
+            if (params.DrawMeshNormals)
+            {
+                auto& normalShader = osc::App::shader<osc::NormalsShader>();
+                gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
+                gl::UseProgram(normalShader.program);
+                gl::Uniform(normalShader.uProjMat, params.ProjectionMatrix);
+                gl::Uniform(normalShader.uViewMat, params.ViewMatrix);
+
+                nonstd::span<SceneGPUInstanceData const> instances = m_GPUDrawlist.get();
+                nonstd::span<osc::ComponentDecoration const> decs = drawlist.get();
+
+                for (SceneGPUInstanceData const& inst : instances)
+                {
+                    osc::ComponentDecoration const& se = decs[inst.decorationIdx];
+
+                    gl::Uniform(normalShader.uModelMat, inst.modelMtx);
+                    gl::Uniform(normalShader.uNormalMat, inst.normalMtx);
+                    gl::BindVertexArray(se.mesh->GetVertexArray());
+                    se.mesh->Draw();
+                }
+                gl::BindVertexArray();
+            }
+
+            // blit scene render to non-MSXAAed output texture
+            gl::BindFramebuffer(GL_READ_FRAMEBUFFER, m_RenderTarget.sceneFBO);
+            glReadBuffer(GL_COLOR_ATTACHMENT0);
+            gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, m_RenderTarget.outputFbo);
+            gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
+            gl::BlitFramebuffer(0, 0, m_RenderTarget.dims.x, m_RenderTarget.dims.y,
+                0, 0, m_RenderTarget.dims.x, m_RenderTarget.dims.y,
+                GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+            // draw rims
+            if (params.DrawRims)
+            {
+                gl::BindFramebuffer(GL_FRAMEBUFFER, m_RenderTarget.rimsFBO);
+                gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+                gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                auto& iscs = osc::App::shader<osc::InstancedSolidColorShader>();
+                gl::UseProgram(iscs.program);
+                gl::Uniform(iscs.uVP, params.ProjectionMatrix * params.ViewMatrix);
+
+                nonstd::span<SceneGPUInstanceData const> instances = m_GPUDrawlist.get();
+                nonstd::span<osc::ComponentDecoration const> decs = drawlist.get();
+
+                size_t pos = 0;
+                size_t ninstances = instances.size();
+
+                // drawcalls & figure out rim AABB
+                osc::AABB rimAABB;
+                rimAABB.min = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+                rimAABB.max = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
+                bool hasRims = false;
+
+                while (pos < ninstances)
+                {
+                    SceneGPUInstanceData const& inst = instances[pos];
+                    osc::ComponentDecoration const& se = decs[inst.decorationIdx];
+
+                    // batch
+                    size_t end = pos + 1;
+                    while (end < ninstances &&
+                        decs[instances[end].decorationIdx].mesh == se.mesh &&
+                        instances[end].rimIntensity == inst.rimIntensity)
+                    {
+                        ++end;
+                    }
+
+                    if (inst.rimIntensity < 0.001f)
+                    {
+                        pos = end;
+                        continue;  // skip rendering rimless elements
+                    }
+
+                    hasRims = true;
+
+                    // union the rims for scissor testing later
+                    for (size_t i = pos; i < end; ++i)
+                    {
+                        rimAABB = Union(rimAABB, GetWorldspaceAABB(decs[instances[i].decorationIdx]));
+                    }
+
+                    gl::Uniform(iscs.uColor, {inst.rimIntensity, 0.0f, 0.0f, 1.0f});
+                    gl::BindVertexArray(se.mesh->GetVertexArray());
+                    gl::BindBuffer(instanceBuf);
+                    BindToInstanceAttributes(pos);
+                    se.mesh->DrawInstanced(end-pos);
+                    gl::BindVertexArray();
+
+                    pos = end;
+                }
+
+                if (hasRims)
+                {
+                    glm::vec2 rimThickness = glm::vec2{1.5f} / glm::vec2{m_RenderTarget.dims};
+
+                    // care: edge-detection kernels are expensive
+                    //
+                    // calculate a screenspace bounding box that surrounds the rims so that the
+                    // edge detection shader only had to run on a smaller subset of the screen
+                    osc::AABB screenspaceRimBounds = TransformAABB(rimAABB, params.ProjectionMatrix * params.ViewMatrix);
+                    auto verts = ToCubeVerts(screenspaceRimBounds);
+
+                    osc::Rect screenBounds{verts[0], verts[0]};
+
+                    for (size_t i = 1; i < verts.size(); ++i)
+                    {
+                        glm::vec2 p = verts[i];  // dump Z
+                        screenBounds.p1 = osc::Min(p, screenBounds.p1);
+                        screenBounds.p2 = osc::Max(p, screenBounds.p2);
+                    }
+                    screenBounds.p1 -= rimThickness;
+                    screenBounds.p2 += rimThickness;
+
+                    glm::ivec2 renderDims = m_RenderTarget.dims;
+                    glm::ivec2 min{
+                        static_cast<int>((screenBounds.p1.x + 1.0f)/2.0f * renderDims.x),
+                        static_cast<int>((screenBounds.p1.y + 1.0f)/2.0f * renderDims.y)};
+                    glm::ivec2 max{
+                        static_cast<int>((screenBounds.p2.x + 1.0f)/2.0f * renderDims.x),
+                        static_cast<int>((screenBounds.p2.y + 1.0f)/2.0f * renderDims.y)};
+
+                    int x = std::max(0, min.x);
+                    int y = std::max(0, min.y);
+                    int w = max.x - min.x;
+                    int h = max.y - min.y;
+
+                    // rims FBO now contains *solid* colors that need to be edge-detected
+
+                    // write rims over the output output
+                    gl::BindFramebuffer(GL_FRAMEBUFFER, m_RenderTarget.outputFbo);
+
+                    auto& edgeDetectShader = osc::App::shader<osc::EdgeDetectionShader>();
+                    gl::UseProgram(edgeDetectShader.program);
+                    gl::Uniform(edgeDetectShader.uMVP, gl::identity);
+                    gl::ActiveTexture(GL_TEXTURE0);
+                    gl::BindTexture(m_RenderTarget.rims2DTex);
+                    gl::Uniform(edgeDetectShader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
+                    gl::Uniform(edgeDetectShader.uRimRgba, {0.95f, 0.40f, 0.0f, 0.70f});
+                    gl::Uniform(edgeDetectShader.uRimThickness, rimThickness);
+                    gl::Enable(GL_SCISSOR_TEST);
+                    glScissor(x, y, w, h);
+                    gl::Enable(GL_BLEND);
+                    gl::Disable(GL_DEPTH_TEST);
+                    auto quad = osc::App::meshes().getTexturedQuadMesh();
+                    gl::BindVertexArray(quad->GetVertexArray());
+                    quad->Draw();
+                    gl::BindVertexArray();
+                    gl::Enable(GL_DEPTH_TEST);
+                    gl::Disable(GL_SCISSOR_TEST);
+                }
+            }
+
+            gl::Enable(GL_BLEND);
+            gl::Enable(GL_DEPTH_TEST);
+            gl::Disable(GL_SCISSOR_TEST);
+            gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+        }
+
+        gl::Texture2D& updOutputTexture()
+        {
+            return m_RenderTarget.outputTex;
+        }
+
+        gl::FrameBuffer& updOutputFBO()
+        {
+            return m_RenderTarget.outputFbo;
+        }
+
+    private:
+        // caching
+        ModelStateRenderParams m_LastParams;
+        osc::UID m_LastDrawlistVersion;
+
+        CachedGPUDrawlist m_GPUDrawlist;
+        gl::Texture2D m_ChequerTexture = osc::genChequeredFloorTexture();
+        RenderBuffers m_RenderTarget{{1, 1}, 1};
+    };
 }
 
 
@@ -599,63 +1156,6 @@ namespace
 }
 
 
-// OpenSim utils
-namespace
-{
-    float ComputeRimColor(OpenSim::Component const* selected,
-        OpenSim::Component const* hovered,
-        OpenSim::Component const* c)
-    {
-        while (c)
-        {
-            if (c == selected)
-            {
-                return 0.9f;
-            }
-            if (c == hovered)
-            {
-                return 0.4f;
-            }
-            if (!c->hasOwner())
-            {
-                return 0.0f;
-            }
-            c = &c->getOwner();
-        }
-
-        return 0.0f;
-    }
-
-    bool IsInclusiveChildOf(OpenSim::Component const* parent, OpenSim::Component const* c)
-    {
-        if (!c)
-        {
-            return false;
-        }
-
-        if (!parent)
-        {
-            return false;
-        }
-
-        for (;;)
-        {
-            if (c == parent)
-            {
-                return true;
-            }
-
-            if (!c->hasOwner())
-            {
-                return false;
-            }
-
-            c = &c->getOwner();
-        }
-    }
-}
-
-
 // private IMPL
 class osc::UiModelViewer::Impl final {
 public:
@@ -668,17 +1168,17 @@ public:
 
     bool isLeftClicked() const
     {
-        return m_RenderLeftClicked;
+        return m_RenderImage.isLeftClicked;
     }
 
     bool isRightClicked() const
     {
-        return m_RenderRightClicked;
+        return m_RenderImage.isRightClicked;
     }
 
     bool isMousedOver() const
     {
-        return m_RenderHovered;
+        return m_RenderImage.isHovered;
     }
 
     void requestAutoFocus()
@@ -692,22 +1192,19 @@ public:
 
         handleUserInput();
         drawMainMenu();
-        recomputeSceneLightPosition();
 
-        // prevent accidental panel dragging when the user drags their mouse over the scene
-        auto renderWindowFlags = ImGuiWindowFlags_NoMove;
-        bool childVisible = ImGui::BeginChild("##child", { 0.0f, 0.0f }, false, renderWindowFlags);
-
-        if (!childVisible)
+        if (!ImGui::BeginChild("##child", { 0.0f, 0.0f }, false, ImGuiWindowFlags_NoMove))
         {
-            m_RenderRect = {};
-            m_RenderHovered = false;
-            m_RenderLeftClicked = false;
-            m_RenderRightClicked = false;
-            return rv;  // render window isn't visible - nothing drawn or hittested
+            // render window isn't visible
+            m_RenderImage = {};
+            return rv;
         }
 
-        populateSceneDrawlist(rs);
+        recomputeSceneLightPosition();
+
+        // populate render buffers
+        m_SceneDrawlist.populate(rs, m_DecorationOptions);
+        m_BVH.populate(m_SceneDrawlist);
 
         std::pair<OpenSim::Component const*, glm::vec3> htResult = hittestRenderWindow(rs);
 
@@ -716,29 +1213,25 @@ public:
         // care: indirectly depends on the scene drawlist being up-to-date
         if (m_AutoFocusCameraNextFrame)
         {
-            AutoFocusCamera(m_Camera, m_SceneBVH);
+            AutoFocusCamera(m_Camera, m_BVH.get());
             m_AutoFocusCameraNextFrame = false;
         }
 
         // render into texture
-        drawSceneTexture(rs.getFixupScaleFactor());
+        drawSceneTexture(rs);
 
         // also render in-scene overlays into the texture
         drawInSceneOverlays();
 
         // blit texture as an ImGui::Image
-        ImGuiImageDetails details = drawTextureAsImGuiImageAndHittest(m_RenderTarget.outputTex, ImGui::GetContentRegionAvail());
-        m_RenderRect = details.rect;
-        m_RenderHovered = details.isHovered;
-        m_RenderLeftClicked = details.isLeftClicked;
-        m_RenderRightClicked = details.isRightClicked;
+        m_RenderImage = drawTextureAsImGuiImageAndHittest(m_Rendererer.updOutputTexture(), ImGui::GetContentRegionAvail());
 
         // draw any ImGui-based overlays over the image
         drawImGuiOverlays();
 
         if (m_Ruler.IsMeasuring())
         {
-            m_Ruler.draw(htResult, m_Camera, m_RenderRect);
+            m_Ruler.draw(htResult, m_Camera, m_RenderImage.rect);
         }
 
         ImGui::EndChild();
@@ -749,7 +1242,7 @@ public:
         {
             // only populate response if the ruler isn't blocking hittesting etc.
             rv.hovertestResult = htResult.first;
-            rv.isMousedOver = m_RenderHovered;
+            rv.isMousedOver = m_RenderImage.isHovered;
             if (rv.isMousedOver)
             {
                 rv.mouse3DLocation = htResult.second;
@@ -764,7 +1257,7 @@ private:
     void handleUserInput()
     {
         // update camera if necessary
-        if (m_RenderHovered)
+        if (m_RenderImage.isHovered)
         {
             bool ctrlDown = osc::IsCtrlOrSuperDown();
 
@@ -801,7 +1294,7 @@ private:
                 // solidworks keybind
                 m_AutoFocusCameraNextFrame = true;
             }
-            UpdatePolarCameraFromImGuiUserInput(Dimensions(m_RenderRect), m_Camera);
+            UpdatePolarCameraFromImGuiUserInput(Dimensions(m_RenderImage.rect), m_Camera);
         }
     }
 
@@ -855,9 +1348,9 @@ private:
         drawMuscleDecorationsStyleComboBox();
         drawMuscleSizingStyleComboBox();
         drawMuscleColoringStyleComboBox();
-        ImGui::Checkbox("wireframe mode", &m_WireframeMode);
-        ImGui::Checkbox("show normals", &m_DrawMeshNormals);
-        ImGui::Checkbox("draw rims", &m_DrawRims);
+        ImGui::Checkbox("wireframe mode", &m_RendererParams.WireframeMode);
+        ImGui::Checkbox("show normals", &m_RendererParams.DrawMeshNormals);
+        ImGui::Checkbox("draw rims", &m_RendererParams.DrawRims);
         ImGui::CheckboxFlags("show XZ grid", &m_Flags, osc::UiModelViewerFlags_DrawXZGrid);
         ImGui::CheckboxFlags("show XY grid", &m_Flags, osc::UiModelViewerFlags_DrawXYGrid);
         ImGui::CheckboxFlags("show YZ grid", &m_Flags, osc::UiModelViewerFlags_DrawYZGrid);
@@ -1002,9 +1495,9 @@ private:
         ImGui::Dummy({0.0f, 10.0f});
         ImGui::Text("advanced scene properties:");
         ImGui::Separator();
-        ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&m_LightColor));
-        ImGui::ColorEdit3("background color", reinterpret_cast<float*>(&m_BackgroundColor));
-        osc::InputMetersFloat3("floor location", &m_FloorLocation.x);
+        ImGui::ColorEdit3("light_color", glm::value_ptr(m_RendererParams.LightColor));
+        ImGui::ColorEdit3("background color", glm::value_ptr(m_RendererParams.BackgroundColor));
+        osc::InputMetersFloat3("floor location", glm::value_ptr(m_RendererParams.FloorLocation));
         makeHoverTooltip("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
     }
 
@@ -1014,77 +1507,16 @@ private:
         glm::vec3 p = glm::normalize(-m_Camera.focusPoint - m_Camera.getPos());
         glm::vec3 up = {0.0f, 1.0f, 0.0f};
         glm::vec3 mp = glm::rotate(glm::mat4{1.0f}, 1.05f * fpi4, up) * glm::vec4{p, 0.0f};
-        m_LightDirection = glm::normalize(mp + -up);
-    }
-
-    void populateSceneDrawlist(osc::VirtualConstModelStatePair const& msp)
-    {
-        OpenSim::Component const* const selected = msp.getSelected();
-        OpenSim::Component const* const hovered = msp.getHovered();
-        OpenSim::Component const* const isolated = msp.getIsolated();
-
-        if (msp.getModelVersion() != m_LastModelVersion ||
-            msp.getStateVersion() != m_LastStateVersion ||
-            selected != osc::FindComponent(msp.getModel(), m_LastSelection) ||
-            hovered != osc::FindComponent(msp.getModel(), m_LastHover) ||
-            isolated != osc::FindComponent(msp.getModel(), m_LastIsolation) ||
-            msp.getFixupScaleFactor() != m_LastFixupFactor ||
-            m_LastDecorationOptions != m_DecorationOptions)
-        {
-            m_Decorations.clear();
-
-            {
-                OSC_PERF("generate decorations");
-                osc::GenerateModelDecorations(msp, m_Decorations, m_DecorationOptions);
-            }
-
-            {
-                OSC_PERF("generate BVH");
-                osc::UpdateSceneBVH(m_Decorations, m_SceneBVH);
-            }
-
-            m_LastModelVersion = msp.getModelVersion();
-            m_LastStateVersion = msp.getStateVersion();
-            m_LastSelection = selected ? selected->getAbsolutePath() : OpenSim::ComponentPath{};
-            m_LastHover = hovered ? hovered->getAbsolutePath() : OpenSim::ComponentPath{};
-            m_LastIsolation = isolated ? isolated->getAbsolutePath() : OpenSim::ComponentPath{};
-            m_LastFixupFactor = msp.getFixupScaleFactor();
-            m_LastDecorationOptions = m_DecorationOptions;
-        }
-
-        nonstd::span<osc::ComponentDecoration const> decs = m_Decorations;
-
-        // clear it (could've been populated by the last drawcall)
-        std::vector<SceneGPUInstanceData>& buf = m_DrawListBuffer;
-        buf.clear();
-        buf.reserve(decs.size());
-
-        // populate the list with the scene
-        for (size_t i = 0; i < decs.size(); ++i)
-        {
-            osc::ComponentDecoration const& se = decs[i];
-
-            if (isolated && !IsInclusiveChildOf(isolated, se.component))
-            {
-                continue;  // skip rendering this (it's not in the isolated component)
-            }
-
-            SceneGPUInstanceData& ins = buf.emplace_back();
-            ins.modelMtx = osc::ToMat4(se.transform);
-            ins.normalMtx = osc::ToNormalMatrix(se.transform);
-            ins.rgba = se.color;
-            ins.rimIntensity = ComputeRimColor(selected, hovered, se.component);
-            ins.decorationIdx = static_cast<int>(i);
-        }
+        m_RendererParams.LightDirection = glm::normalize(mp + -up);
     }
 
     std::pair<OpenSim::Component const*, glm::vec3> hittestRenderWindow(osc::VirtualConstModelStatePair const& msp)
     {
         std::pair<OpenSim::Component const*, glm::vec3> rv = {nullptr, {0.0f, 0.0f, 0.0f}};
 
-        if (!m_RenderHovered ||
-            ImGui::IsMouseDragging(ImGuiMouseButton_Left) &&
-            ImGui::IsMouseDragging(ImGuiMouseButton_Middle) &&
+        if (!m_RenderImage.isHovered ||
+            ImGui::IsMouseDragging(ImGuiMouseButton_Left) ||
+            ImGui::IsMouseDragging(ImGuiMouseButton_Middle) ||
             ImGui::IsMouseDragging(ImGuiMouseButton_Right))
         {
             // only do the hit test if the user isn't currently dragging their mouse around
@@ -1103,8 +1535,8 @@ private:
         osc::Line cameraRay = m_Camera.unprojectTopLeftPosToWorldRay(mouseItemPos, itemDims);
 
         // use scene BVH to intersect that ray with the scene
-        m_SceneHittestResults.clear();
-        BVH_GetRayAABBCollisions(m_SceneBVH, cameraRay, &m_SceneHittestResults);
+        std::vector<BVHCollision> m_SceneHittestResults;
+        BVH_GetRayAABBCollisions(m_BVH.get(), cameraRay, &m_SceneHittestResults);
 
         // go through triangle BVHes to figure out which, if any, triangle is closest intersecting
         int closestIdx = -1;
@@ -1112,7 +1544,7 @@ private:
         glm::vec3 closestWorldLoc = {0.0f, 0.0f, 0.0f};
 
         // iterate through each scene-level hit and perform a triangle-level hittest
-        nonstd::span<osc::ComponentDecoration const> decs = m_Decorations;
+        nonstd::span<osc::ComponentDecoration const> decs = m_SceneDrawlist.get();
         OpenSim::Component const* const isolated = msp.getIsolated();
 
         for (osc::BVHCollision const& c : m_SceneHittestResults)
@@ -1147,291 +1579,33 @@ private:
         return rv;
     }
 
-    void drawSceneTexture(float fixupScaleFactor)
+    void drawSceneTexture(osc::VirtualConstModelStatePair const& rs)
     {
-        // ensure buffer sizes match ImGui panel size
+        // setup render params
+        ImVec2 contentRegion = ImGui::GetContentRegionAvail();
+        if (contentRegion.x >= 1.0f && contentRegion.y >= 1.0f)
         {
-            ImVec2 contentRegion = ImGui::GetContentRegionAvail();
-            if (contentRegion.x >= 1.0f && contentRegion.y >= 1.0f)
-            {
-                glm::ivec2 dims{static_cast<int>(contentRegion.x), static_cast<int>(contentRegion.y)};
-                m_RenderTarget.setDims(dims);
-                m_RenderTarget.setSamples(osc::App::get().getMSXAASamplesRecommended());
-            }
+            glm::ivec2 dims{static_cast<int>(contentRegion.x), static_cast<int>(contentRegion.y)};
+            m_RendererParams.Dimensions = dims;
+            m_RendererParams.Samples = osc::App::get().getMSXAASamplesRecommended();
         }
 
-        // instance data to the GPU
-        gl::ArrayBuffer<SceneGPUInstanceData> instanceBuf{m_DrawListBuffer};
+        m_RendererParams.DrawFloor = m_Flags & UiModelViewerFlags_DrawFloor;
+        m_RendererParams.ViewMatrix = m_Camera.getViewMtx();
+        m_RendererParams.ProjectionMatrix = m_Camera.getProjMtx(AspectRatio(m_Rendererer.getDimensions()));
+        m_RendererParams.ViewPos = m_Camera.getPos();
+        m_RendererParams.FixupScaleFactor = rs.getFixupScaleFactor();
 
-        // get scene matrices
-        glm::mat4 projMtx = m_Camera.getProjMtx(AspectRatio(m_RenderTarget.dims));
-        glm::mat4 viewMtx = m_Camera.getViewMtx();
-        glm::vec3 viewerPos = m_Camera.getPos();
-
-        // setup top-level OpenGL state
-        gl::Viewport(0, 0, m_RenderTarget.dims.x, m_RenderTarget.dims.y);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        gl::Enable(GL_BLEND);
-        gl::Enable(GL_DEPTH_TEST);
-        gl::Disable(GL_SCISSOR_TEST);
-
-        // draw scene
-        {
-            gl::BindFramebuffer(GL_FRAMEBUFFER, m_RenderTarget.sceneFBO);
-            gl::ClearColor(m_BackgroundColor);
-            gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            if (m_WireframeMode)
-            {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            }
-
-            // draw the floor first, so that the transparent geometry in the scene also shows
-            // the floor texture
-            if (m_Flags & osc::UiModelViewerFlags_DrawFloor)
-            {
-                auto& basicShader = osc::App::shader<osc::GouraudShader>();
-
-                gl::UseProgram(basicShader.program);
-                gl::Uniform(basicShader.uProjMat, projMtx);
-                gl::Uniform(basicShader.uViewMat, viewMtx);
-                glm::mat4 mtx = GenerateFloorModelMatrix(m_FloorLocation, fixupScaleFactor);
-                gl::Uniform(basicShader.uModelMat, mtx);
-                gl::Uniform(basicShader.uNormalMat, osc::ToNormalMatrix(mtx));
-                gl::Uniform(basicShader.uLightDir, m_LightDirection);
-                gl::Uniform(basicShader.uLightColor, m_LightColor);
-                gl::Uniform(basicShader.uViewPos, viewerPos);
-                gl::Uniform(basicShader.uDiffuseColor, {1.0f, 1.0f, 1.0f, 1.0f});
-                gl::Uniform(basicShader.uIsTextured, true);
-                gl::ActiveTexture(GL_TEXTURE0);
-                gl::BindTexture(m_ChequerTexture);
-                gl::Uniform(basicShader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
-                auto floor = osc::App::meshes().getFloorMesh();
-                gl::BindVertexArray(floor->GetVertexArray());
-                floor->Draw();
-                gl::BindVertexArray();
-            }
-
-            auto& instancedShader = osc::App::shader<osc::InstancedGouraudColorShader>();
-            gl::UseProgram(instancedShader.program);
-            gl::Uniform(instancedShader.uProjMat, projMtx);
-            gl::Uniform(instancedShader.uViewMat, viewMtx);
-            gl::Uniform(instancedShader.uLightDir, m_LightDirection);
-            gl::Uniform(instancedShader.uLightColor, m_LightColor);
-            gl::Uniform(instancedShader.uViewPos, viewerPos);
-
-            std::vector<SceneGPUInstanceData> const& instances = m_DrawListBuffer;
-            nonstd::span<osc::ComponentDecoration const> decs = m_Decorations;
-
-            size_t pos = 0;
-            size_t ninstances = instances.size();
-
-            while (pos < ninstances)
-            {
-                osc::ComponentDecoration const& se = decs[instances[pos].decorationIdx];
-
-                // batch
-                size_t end = pos + 1;
-                while (end < ninstances &&
-                    decs[instances[end].decorationIdx].mesh == se.mesh)
-                {
-                    ++end;
-                }
-
-                // if the last element in a batch is opaque, then all the preceding ones should be
-                // also and we can skip blend-testing the entire batch
-                if (instances[end-1].rgba.a >= 0.99f)
-                {
-                    gl::Disable(GL_BLEND);
-                }
-                else
-                {
-                    gl::Enable(GL_BLEND);
-                }
-
-                gl::BindVertexArray(se.mesh->GetVertexArray());
-                gl::BindBuffer(instanceBuf);
-                BindToInstanceAttributes(pos);
-                se.mesh->DrawInstanced(end-pos);
-                gl::BindVertexArray();
-
-                pos = end;
-            }
-
-            if (m_WireframeMode)
-            {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            }
-        }
-
-        // draw mesh normals, if requested
-        if (m_DrawMeshNormals)
-        {
-            auto& normalShader = osc::App::shader<osc::NormalsShader>();
-            gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
-            gl::UseProgram(normalShader.program);
-            gl::Uniform(normalShader.uProjMat, projMtx);
-            gl::Uniform(normalShader.uViewMat, viewMtx);
-
-            std::vector<SceneGPUInstanceData> const& instances = m_DrawListBuffer;
-            nonstd::span<osc::ComponentDecoration const> decs = m_Decorations;
-
-            for (SceneGPUInstanceData const& inst : instances)
-            {
-                osc::ComponentDecoration const& se = decs[inst.decorationIdx];
-
-                gl::Uniform(normalShader.uModelMat, inst.modelMtx);
-                gl::Uniform(normalShader.uNormalMat, inst.normalMtx);
-                gl::BindVertexArray(se.mesh->GetVertexArray());
-                se.mesh->Draw();
-            }
-            gl::BindVertexArray();
-        }
-
-        // blit scene render to non-MSXAAed output texture
-        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, m_RenderTarget.sceneFBO);
-        glReadBuffer(GL_COLOR_ATTACHMENT0);
-        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, m_RenderTarget.outputFbo);
-        gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
-        gl::BlitFramebuffer(0, 0, m_RenderTarget.dims.x, m_RenderTarget.dims.y,
-            0, 0, m_RenderTarget.dims.x, m_RenderTarget.dims.y,
-            GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-
-        // draw rims
-        if (m_DrawRims)
-        {
-            gl::BindFramebuffer(GL_FRAMEBUFFER, m_RenderTarget.rimsFBO);
-            gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            auto& iscs = osc::App::shader<osc::InstancedSolidColorShader>();
-            gl::UseProgram(iscs.program);
-            gl::Uniform(iscs.uVP, projMtx * viewMtx);
-
-            std::vector<SceneGPUInstanceData> const& instances = m_DrawListBuffer;
-            nonstd::span<osc::ComponentDecoration const> decs = m_Decorations;
-
-            size_t pos = 0;
-            size_t ninstances = instances.size();
-
-            // drawcalls & figure out rim AABB
-            osc::AABB rimAABB;
-            rimAABB.min = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
-            rimAABB.max = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
-            bool hasRims = false;
-
-            while (pos < ninstances)
-            {
-                SceneGPUInstanceData const& inst = instances[pos];
-                osc::ComponentDecoration const& se = decs[inst.decorationIdx];
-
-                // batch
-                size_t end = pos + 1;
-                while (end < ninstances &&
-                    decs[instances[end].decorationIdx].mesh.get() == se.mesh.get() &&
-                    instances[end].rimIntensity == inst.rimIntensity)
-                {
-                    ++end;
-                }
-
-                if (inst.rimIntensity < 0.001f)
-                {
-                    pos = end;
-                    continue;  // skip rendering rimless elements
-                }
-
-                hasRims = true;
-
-                // union the rims for scissor testing later
-                for (size_t i = pos; i < end; ++i)
-                {
-                    rimAABB = Union(rimAABB, GetWorldspaceAABB(decs[instances[i].decorationIdx]));
-                }
-
-                gl::Uniform(iscs.uColor, {inst.rimIntensity, 0.0f, 0.0f, 1.0f});
-                gl::BindVertexArray(se.mesh->GetVertexArray());
-                gl::BindBuffer(instanceBuf);
-                BindToInstanceAttributes(pos);
-                se.mesh->DrawInstanced(end-pos);
-                gl::BindVertexArray();
-
-                pos = end;
-            }
-
-            if (hasRims)
-            {
-                glm::vec2 rimThickness = glm::vec2{1.5f} / glm::vec2{m_RenderTarget.dims};
-
-                // care: edge-detection kernels are expensive
-                //
-                // calculate a screenspace bounding box that surrounds the rims so that the
-                // edge detection shader only had to run on a smaller subset of the screen
-                osc::AABB screenspaceRimBounds = TransformAABB(rimAABB, projMtx * viewMtx);
-                auto verts = ToCubeVerts(screenspaceRimBounds);
-
-                osc::Rect screenBounds{verts[0], verts[0]};
-
-                for (size_t i = 1; i < verts.size(); ++i)
-                {
-                    glm::vec2 p = verts[i];  // dump Z
-                    screenBounds.p1 = osc::Min(p, screenBounds.p1);
-                    screenBounds.p2 = osc::Max(p, screenBounds.p2);
-                }
-                screenBounds.p1 -= rimThickness;
-                screenBounds.p2 += rimThickness;
-
-                glm::ivec2 renderDims = m_RenderTarget.dims;
-                glm::ivec2 min{
-                    static_cast<int>((screenBounds.p1.x + 1.0f)/2.0f * renderDims.x),
-                    static_cast<int>((screenBounds.p1.y + 1.0f)/2.0f * renderDims.y)};
-                glm::ivec2 max{
-                    static_cast<int>((screenBounds.p2.x + 1.0f)/2.0f * renderDims.x),
-                    static_cast<int>((screenBounds.p2.y + 1.0f)/2.0f * renderDims.y)};
-
-                int x = std::max(0, min.x);
-                int y = std::max(0, min.y);
-                int w = max.x - min.x;
-                int h = max.y - min.y;
-
-                // rims FBO now contains *solid* colors that need to be edge-detected
-
-                // write rims over the output output
-                gl::BindFramebuffer(GL_FRAMEBUFFER, m_RenderTarget.outputFbo);
-
-                auto& edgeDetectShader = osc::App::shader<osc::EdgeDetectionShader>();
-                gl::UseProgram(edgeDetectShader.program);
-                gl::Uniform(edgeDetectShader.uMVP, gl::identity);
-                gl::ActiveTexture(GL_TEXTURE0);
-                gl::BindTexture(m_RenderTarget.rims2DTex);
-                gl::Uniform(edgeDetectShader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
-                gl::Uniform(edgeDetectShader.uRimRgba, {0.95f, 0.40f, 0.0f, 0.70f});
-                gl::Uniform(edgeDetectShader.uRimThickness, rimThickness);
-                gl::Enable(GL_SCISSOR_TEST);
-                glScissor(x, y, w, h);
-                gl::Enable(GL_BLEND);
-                gl::Disable(GL_DEPTH_TEST);
-                auto quad = osc::App::meshes().getTexturedQuadMesh();
-                gl::BindVertexArray(quad->GetVertexArray());
-                quad->Draw();
-                gl::BindVertexArray();
-                gl::Enable(GL_DEPTH_TEST);
-                gl::Disable(GL_SCISSOR_TEST);
-            }
-        }
-
-        gl::Enable(GL_BLEND);
-        gl::Enable(GL_DEPTH_TEST);
-        gl::Disable(GL_SCISSOR_TEST);
-        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+        m_Rendererer.draw(m_RendererParams, rs, m_SceneDrawlist);
     }
 
     // draws overlays that are "in scene" - i.e. they are part of the rendered texture
     void drawInSceneOverlays()
     {
         glm::mat4 viewMtx = m_Camera.getViewMtx();
-        glm::mat4 projMtx = m_Camera.getProjMtx(AspectRatio(m_RenderRect));
+        glm::mat4 projMtx = m_Camera.getProjMtx(AspectRatio(m_Rendererer.getDimensions()));
 
-        gl::BindFramebuffer(GL_FRAMEBUFFER, m_RenderTarget.outputFbo);
+        gl::BindFramebuffer(GL_FRAMEBUFFER, m_Rendererer.updOutputFBO());
         gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
 
         if (m_Flags & osc::UiModelViewerFlags_DrawXZGrid)
@@ -1456,12 +1630,12 @@ private:
 
         if (m_Flags & osc::UiModelViewerFlags_DrawAABBs)
         {
-            DrawAABBs(m_Decorations, viewMtx, projMtx);
+            DrawAABBs(m_SceneDrawlist.get(), viewMtx, projMtx);
         }
 
         if (m_Flags & osc::UiModelViewerFlags_DrawBVH)
         {
-            DrawBVH(m_SceneBVH, viewMtx, projMtx);
+            DrawBVH(m_BVH.get(), viewMtx, projMtx);
         }
 
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
@@ -1471,54 +1645,28 @@ private:
     {
         if (m_Flags & osc::UiModelViewerFlags_DrawAlignmentAxes)
         {
-            DrawAlignmentAxesOverlayInBottomRightOf(m_Camera.getViewMtx(), m_RenderRect);
+            DrawAlignmentAxesOverlayInBottomRightOf(m_Camera.getViewMtx(), m_RenderImage.rect);
         }
     }
 
-    // data
-
-    UiModelViewerFlags m_Flags;
-
-    // used to cache geometry between frames
-    UID m_LastModelVersion;
-    UID m_LastStateVersion;
-    OpenSim::ComponentPath m_LastSelection;
-    OpenSim::ComponentPath m_LastHover;
-    OpenSim::ComponentPath m_LastIsolation;
-    float m_LastFixupFactor;
-    osc::CustomDecorationOptions m_LastDecorationOptions;
-
-    std::vector<osc::ComponentDecoration> m_Decorations;
+    // widget state
+    UiModelViewerFlags m_Flags = UiModelViewerFlags_Default;
     osc::CustomDecorationOptions m_DecorationOptions;
-    osc::BVH m_SceneBVH;
-    PolarPerspectiveCamera m_Camera = CreateDefaultCamera();
-    glm::vec3 m_LightDirection = {-0.34f, -0.25f, 0.05f};
-    glm::vec3 m_LightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
-    glm::vec4 m_BackgroundColor = {0.89f, 0.89f, 0.89f, 1.0f};
-    glm::vec4 m_RimColor = {1.0f, 0.4f, 0.0f, 0.85f};
-    RenderBuffers m_RenderTarget{{1, 1}, 1};
 
-    // by default, lower the floor slightly, so that it doesn't conflict
-    // with OpenSim ContactHalfSpace planes that coincidently happen to
-    // lie at Z==0
-    glm::vec3 m_FloorLocation = {0.0f, -0.001f, 0.0f};
+    // scene state
+    CachedSceneDrawlist m_SceneDrawlist;
+    CachedBVH m_BVH;
+    PolarPerspectiveCamera m_Camera;
 
-    gl::Texture2D m_ChequerTexture = genChequeredFloorTexture();
+    // rendering input state
+    ModelStateRenderParams m_RendererParams;
+    ModelStateRenderer m_Rendererer;
 
-    std::vector<BVHCollision> m_SceneHittestResults;
+    // ImGui compositing/hittesting state
+    ImGuiImageDetails m_RenderImage;
 
-    Rect m_RenderRect{};
-
-    bool m_RenderHovered = false;
-    bool m_RenderLeftClicked = false;
-    bool m_RenderRightClicked = false;
-    bool m_WireframeMode = false;
-    bool m_DrawMeshNormals = false;
-    bool m_DrawRims = true;
+    // other stuff
     bool m_AutoFocusCameraNextFrame = false;
-
-    std::vector<SceneGPUInstanceData> m_DrawListBuffer;
-
     GuiRuler m_Ruler;
 };
 
