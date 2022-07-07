@@ -299,6 +299,8 @@ add_library(osccore STATIC
     src/Graphics/BasicSceneElement.hpp
     src/Graphics/Color.cpp
     src/Graphics/Color.hpp
+    src/Graphics/DAEWriter.cpp
+    src/Graphics/DAEWriter.hpp
     src/Graphics/Gl.cpp
     src/Graphics/Gl.hpp
     src/Graphics/GlGlm.hpp
