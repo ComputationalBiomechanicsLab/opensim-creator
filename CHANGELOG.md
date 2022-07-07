@@ -5,7 +5,21 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
-- New changes go here
+- There is now basic support for exporting any 3D viewport's content to a `.dae` file (#314)
+
+  - It's in the "Scene" menu of each 3D viewport in the editor/simulator
+
+  - This is useful for re-rendering the scene in 3rd-party software, such as Blender
+
+  - Support is very basic right now. It only supports exporting a single frame (whatever is
+    in the viewport) and does not try to group the geometry in any meaningful way
+
+- Scene rendering is now cached if nothing in a viewport changes (selection, camera position, etc.)
+
+  - The scene geometry list was already cached, this is another cache layer that caches the rendered
+    texture
+
+  - This reduces passive CPU/GPU usage when viewing, but not interacting with, the UI
 
 
 ## [0.2.0]

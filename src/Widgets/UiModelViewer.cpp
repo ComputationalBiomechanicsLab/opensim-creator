@@ -7,6 +7,8 @@
 #include "src/Graphics/Shaders/InstancedSolidColorShader.hpp"
 #include "src/Graphics/Shaders/NormalsShader.hpp"
 #include "src/Graphics/Shaders/SolidColorShader.hpp"
+#include "src/Graphics/BasicSceneElement.hpp"
+#include "src/Graphics/DAEWriter.hpp"
 #include "src/Graphics/Gl.hpp"
 #include "src/Graphics/GlGlm.hpp"
 #include "src/Graphics/Mesh.hpp"
@@ -29,6 +31,7 @@
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Platform/os.hpp"
 #include "src/Utils/Perf.hpp"
 #include "src/Utils/UID.hpp"
 
@@ -52,6 +55,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdio>
+#include <fstream>
 #include <limits>
 #include <string>
 #include <utility>
@@ -1478,6 +1482,13 @@ private:
         }
         makeHoverTooltip("Try to automatically adjust the camera's zoom etc. to suit the model's dimensions. Hotkey: Ctrl+F");
 
+        if (ImGui::Button("Export to .dae"))
+        {
+            tryExportSceneToDAE();
+
+        }
+        makeHoverTooltip("Try to export the 3D scene to a portable DAE file, so that it can be viewed in 3rd-party modelling software, such as Blender");
+
         ImGui::Dummy({0.0f, 10.0f});
         ImGui::Text("advanced camera properties:");
         ImGui::Separator();
@@ -1647,6 +1658,32 @@ private:
         {
             DrawAlignmentAxesOverlayInBottomRightOf(m_Camera.getViewMtx(), m_RenderImage.rect);
         }
+    }
+
+    void tryExportSceneToDAE()
+    {
+        std::filesystem::path p =
+            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("dae");
+
+        std::ofstream outfile{p};
+
+        if (!outfile)
+        {
+            osc::log::error("cannot save to %s: IO error", p.string().c_str());
+            return;
+        }
+
+        std::vector<osc::BasicSceneElement> basicDecs;
+        for (osc::ComponentDecoration const& dec : m_SceneDrawlist.get())
+        {
+            osc::BasicSceneElement& basic = basicDecs.emplace_back();
+            basic.transform = dec.transform;
+            basic.mesh = dec.mesh;
+            basic.color = dec.color;
+        }
+
+        osc::WriteDecorationsAsDAE(basicDecs, outfile);
+        osc::log::info("wrote scene as a DAE file to %s", p.string().c_str());
     }
 
     // widget state
