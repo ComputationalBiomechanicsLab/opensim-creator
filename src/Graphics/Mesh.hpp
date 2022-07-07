@@ -3,6 +3,7 @@
 #include "src/Graphics/MeshTopography.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/RayCollision.hpp"
+#include "src/Utils/CStringView.hpp"
 
 #include <GL/glew.h>  // for GLenum
 #include <glm/mat4x3.hpp>
@@ -43,6 +44,9 @@ namespace osc
         Mesh& operator=(Mesh const&) = delete;
         Mesh& operator=(Mesh&&) noexcept;
         ~Mesh() noexcept;
+
+        CStringView getName() const;
+        void setName(std::string_view);
 
         MeshTopography getTopography() const;
         GLenum getTopographyOpenGL() const;

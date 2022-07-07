@@ -18,12 +18,15 @@
 #include <nonstd/span.hpp>
 
 #include <algorithm>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <memory>
 #include <optional>
 #include <stdexcept>
+#include <sstream>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -35,37 +38,32 @@ union PackedIndex {
 static_assert(sizeof(PackedIndex) == sizeof(uint32_t));
 static_assert(alignof(PackedIndex) == alignof(uint32_t));
 
+static std::string GenerateName()
+{
+    static std::atomic<int> g_NextSuffix = 0;
+    std::stringstream ss;
+    ss << "Mesh_" << g_NextSuffix++;
+    return std::move(ss).str();
+}
+
 class osc::Mesh::Impl final {
 public:
-    MeshTopography topography;
-    std::vector<glm::vec3> verts;
-    std::vector<glm::vec3> normals;
-    std::vector<glm::vec2> texCoords;
-    IndexFormat indexFormat;
-    int numIndices;
-    std::unique_ptr<PackedIndex[]> indicesData;
-    AABB aabb;
-    BVH triangleBVH;
-    bool gpuBuffersOutOfDate;
+    std::string name = GenerateName();
+    MeshTopography topography = MeshTopography::Triangles;
+    std::vector<glm::vec3> verts{};
+    std::vector<glm::vec3> normals{};
+    std::vector<glm::vec2> texCoords{};
+    IndexFormat indexFormat = IndexFormat::UInt16;
+    int numIndices = 0;
+    std::unique_ptr<PackedIndex[]> indicesData = nullptr;
+    AABB aabb{};
+    BVH triangleBVH{};
+    bool gpuBuffersOutOfDate = false;
 
     // lazily-loaded on request, so that non-UI threads can make Meshes
     std::optional<gl::TypedBufferHandle<GL_ARRAY_BUFFER>> maybeVBO;
     std::optional<gl::TypedBufferHandle<GL_ELEMENT_ARRAY_BUFFER>> maybeEBO;
     std::optional<gl::VertexArray> maybeVAO;
-
-    Impl() :
-        topography{MeshTopography::Triangles},
-        verts{},
-        normals{},
-        texCoords{},
-        indexFormat{IndexFormat::UInt16},
-        numIndices{0},
-        indicesData{nullptr},
-        aabb{},
-        triangleBVH{},
-        gpuBuffersOutOfDate{false}
-    {
-    }
 };
 
 static bool isGreaterThanU16Max(uint32_t v)
@@ -205,6 +203,16 @@ osc::Mesh& osc::Mesh::operator=(Mesh&& tmp) noexcept
 osc::Mesh::~Mesh() noexcept
 {
     delete m_Impl;
+}
+
+osc::CStringView osc::Mesh::getName() const
+{
+    return m_Impl->name;
+}
+
+void osc::Mesh::setName(std::string_view name)
+{
+    m_Impl->name = name;
 }
 
 osc::MeshTopography osc::Mesh::getTopography() const

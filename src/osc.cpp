@@ -1,3 +1,6 @@
+#include "src/Graphics/DAEWriter.hpp"  // HACK
+#include <fstream>  // HACK
+
 #include "src/OpenSimBindings/OpenSimApp.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Screens/MainUIScreen.hpp"
