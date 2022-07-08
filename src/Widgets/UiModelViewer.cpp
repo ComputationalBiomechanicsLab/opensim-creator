@@ -34,6 +34,7 @@
 #include "src/Platform/os.hpp"
 #include "src/Utils/Perf.hpp"
 #include "src/Utils/UID.hpp"
+#include "src/Widgets/GuiRuler.hpp"
 
 #include <GL/glew.h>
 #include <glm/mat3x3.hpp>
@@ -1025,150 +1026,6 @@ namespace
 }
 
 
-// GUI ruler
-namespace
-{
-    struct MouseoverHit {
-        std::string Name;
-        glm::vec3 WorldPos;
-
-        MouseoverHit(std::string const& name_, glm::vec3 const& worldPos_) :
-            Name{name_},
-            WorldPos{worldPos_}
-        {
-        }
-    };
-
-    // state associated with a 3D ruler that users can use to measure things
-    // in the scene
-    class GuiRuler final {
-        enum class State { Inactive, WaitingForFirstPoint, WaitingForSecondPoint };
-        State m_State = State::Inactive;
-        glm::vec3 m_StartWorldPos = {0.0f, 0.0f, 0.0f};
-
-    public:
-        void draw(osc::PolarPerspectiveCamera const& sceneCamera, osc::Rect renderRect, std::optional<MouseoverHit> maybeMouseover)
-        {
-            if (m_State == State::Inactive)
-            {
-                return;
-            }
-
-            // users can exit measuring through these actions
-            if (ImGui::IsKeyDown(SDL_SCANCODE_ESCAPE) || ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-            {
-                StopMeasuring();
-                return;
-            }
-
-            // users can "finish" the measurement through these actions
-            if (m_State == State::WaitingForSecondPoint && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-            {
-                StopMeasuring();
-                return;
-            }
-
-            glm::vec2 mouseLoc = ImGui::GetMousePos();
-            ImDrawList* dl = ImGui::GetWindowDrawList();
-            ImU32 circleMousedOverNothingColor = ImGui::ColorConvertFloat4ToU32({1.0f, 0.0f, 0.0f, 0.6f});
-            ImU32 circleColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 0.8f});
-            ImU32 lineColor = circleColor;
-            ImU32 textBgColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
-            ImU32 textColor = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
-            float circleRadius = 5.0f;
-            float lineThickness = 3.0f;
-            glm::vec2 labelOffsetWhenNoLine = {10.0f, -10.0f};
-
-            auto drawTooltipWithBg = [&dl, &textBgColor, &textColor](glm::vec2 const& pos, char const* text)
-            {
-                glm::vec2 sz = ImGui::CalcTextSize(text);
-                float bgPad = 5.0f;
-                float edgeRounding = bgPad - 2.0f;
-
-                dl->AddRectFilled(pos - bgPad, pos + sz + bgPad, textBgColor, edgeRounding);
-                dl->AddText(pos, textColor, text);
-            };
-
-            if (m_State == State::WaitingForFirstPoint)
-            {
-                if (!maybeMouseover)
-                {
-                    // not mousing over anything
-                    dl->AddCircleFilled(mouseLoc, circleRadius, circleMousedOverNothingColor);
-                    return;
-                }
-                else
-                {
-                    // mousing over something
-                    dl->AddCircleFilled(mouseLoc, circleRadius, circleColor);
-                    char buf[1024];
-                    std::snprintf(buf, sizeof(buf), "%s @ (%.2f, %.2f, %.2f)", maybeMouseover->Name.c_str(), maybeMouseover->WorldPos.x, maybeMouseover->WorldPos.y, maybeMouseover->WorldPos.z);
-                    drawTooltipWithBg(mouseLoc + labelOffsetWhenNoLine, buf);
-
-                    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                    {
-                        m_State = State::WaitingForSecondPoint;
-                        m_StartWorldPos = maybeMouseover->WorldPos;
-                    }
-                    return;
-                }
-            }
-            else if (m_State == State::WaitingForSecondPoint)
-            {
-                glm::vec2 startScreenPos = sceneCamera.projectOntoScreenRect(m_StartWorldPos, renderRect);
-
-                if (maybeMouseover)
-                {
-                    // user is moused over something, so draw a line + circle between the two hitlocs
-                    glm::vec2 endScreenPos = mouseLoc;
-                    glm::vec2 lineScreenDir = glm::normalize(startScreenPos - endScreenPos);
-                    glm::vec2 offsetVec = 15.0f * glm::vec2{lineScreenDir.y, -lineScreenDir.x};
-                    glm::vec2 lineMidpoint = (startScreenPos + endScreenPos) / 2.0f;
-                    float lineWorldLen = glm::length(maybeMouseover->WorldPos - m_StartWorldPos);
-
-                    dl->AddCircleFilled(startScreenPos, circleRadius, circleColor);
-                    dl->AddLine(startScreenPos, endScreenPos, lineColor, lineThickness);
-                    dl->AddCircleFilled(endScreenPos, circleRadius, circleColor);
-
-                    // label the line's length
-                    {
-                        char buf[1024];
-                        std::snprintf(buf, sizeof(buf), "%.5f", lineWorldLen);
-                        drawTooltipWithBg(lineMidpoint + offsetVec, buf);
-                    }
-
-                    // label the endpoint's component + coord
-                    {
-                        char buf[1024];
-                        std::snprintf(buf, sizeof(buf), "%s @ (%.2f, %.2f, %.2f)", maybeMouseover->Name.c_str(), maybeMouseover->WorldPos.x, maybeMouseover->WorldPos.y, maybeMouseover->WorldPos.z);
-                        drawTooltipWithBg(mouseLoc + offsetVec, buf);
-                    }
-                }
-                else
-                {
-                    dl->AddCircleFilled(startScreenPos, circleRadius, circleColor);
-                }
-            }
-        }
-
-        void StartMeasuring()
-        {
-            m_State = State::WaitingForFirstPoint;
-        }
-
-        void StopMeasuring()
-        {
-            m_State = State::Inactive;
-        }
-
-        bool IsMeasuring() const
-        {
-            return m_State != State::Inactive;
-        }
-    };
-}
-
-
 // private IMPL
 class osc::UiModelViewer::Impl final {
 public:
@@ -1242,9 +1099,9 @@ public:
         // draw any ImGui-based overlays over the image
         drawImGuiOverlays();
 
-        if (m_Ruler.IsMeasuring())
+        if (m_Ruler.isMeasuring())
         {
-            std::optional<MouseoverHit> maybeHit;
+            std::optional<GuiRulerMouseHit> maybeHit;
             if (htResult.first)
             {
                 maybeHit.emplace(htResult.first->getName(), htResult.second);
@@ -1256,7 +1113,7 @@ public:
 
         // handle return value
 
-        if (!m_Ruler.IsMeasuring())
+        if (!m_Ruler.isMeasuring())
         {
             // only populate response if the ruler isn't blocking hittesting etc.
             rv.hovertestResult = htResult.first;
@@ -1344,18 +1201,18 @@ private:
 
     void drawRulerMeasurementToggleButton()
     {
-        if (m_Ruler.IsMeasuring())
+        if (m_Ruler.isMeasuring())
         {
             if (ImGui::MenuItem(ICON_FA_RULER " measuring", nullptr, false, false))
             {
-                m_Ruler.StopMeasuring();
+                m_Ruler.stopMeasuring();
             }
         }
         else
         {
             if (ImGui::MenuItem(ICON_FA_RULER " measure", nullptr, false, true))
             {
-                m_Ruler.StartMeasuring();
+                m_Ruler.startMeasuring();
             }
             osc::DrawTooltipIfItemHovered("Measure distance", "EXPERIMENTAL: take a *rough* measurement of something in the scene - the UI for this needs to be improved, a lot ;)");
         }
