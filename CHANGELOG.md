@@ -21,6 +21,8 @@ All notable changes to this project will be documented here. The format is based
 
   - This reduces passive CPU/GPU usage when viewing, but not interacting with, the UI
 
+- Added performance counters (and a performance panel) to the editor tab (#315)
+
 
 ## [0.2.0]
 

@@ -14,6 +14,7 @@
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/FileChangePoller.hpp"
+#include "src/Utils/Perf.hpp"
 #include "src/Utils/UID.hpp"
 #include "src/Widgets/BasicWidgets.hpp"
 #include "src/Widgets/CoordinateEditor.hpp"
@@ -23,6 +24,7 @@
 #include "src/Widgets/ModelHierarchyPanel.hpp"
 #include "src/Widgets/ModelMusclePlotPanel.hpp"
 #include "src/Widgets/ParamBlockEditorPopup.hpp"
+#include "src/Widgets/PerfPanel.hpp"
 #include "src/Widgets/SelectionEditorPanel.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
 
@@ -46,13 +48,14 @@
 #include <utility>
 #include <vector>
 
-static std::array<std::string, 5> const g_EditorScreenPanels =
+static std::array<std::string, 6> const g_EditorScreenPanels =
 {
     "Actions",
     "Hierarchy",
     "Property Editor",
     "Log",
     "Coordinate Editor",
+    "Performance",
 };
 
 class osc::ModelEditorTab::Impl final {
@@ -564,7 +567,10 @@ private:
     void drawUNGUARDED()
     {
         // draw 3D viewers (if any)
-        draw3DViewers();
+        {
+            OSC_PERF("draw 3D viewer(s)");
+            draw3DViewers();
+        }
 
         // draw editor actions panel
         //
@@ -573,6 +579,8 @@ private:
 
         if (bool actionsPanelOldState = config.getIsPanelEnabled("Actions"))
         {
+            OSC_PERF("draw actions bar");
+
             bool actionsPanelNewState = actionsPanelOldState;
             if (ImGui::Begin("Actions", &actionsPanelNewState, ImGuiWindowFlags_MenuBar))
             {
@@ -592,6 +600,8 @@ private:
 
         // draw hierarchy viewer
         {
+            OSC_PERF("draw component hierarchy");
+
             auto resp = m_ComponentHierarchyPanel.draw(*m_Model);
 
             if (resp.type == osc::ModelHierarchyPanel::ResponseType::SelectionChanged)
@@ -607,6 +617,8 @@ private:
         // draw property editor
         if (bool propertyEditorOldState = config.getIsPanelEnabled("Property Editor"))
         {
+            OSC_PERF("draw property editor");
+
             bool propertyEditorState = propertyEditorOldState;
             if (ImGui::Begin("Property Editor", &propertyEditorState))
             {
@@ -623,6 +635,8 @@ private:
         // draw application log
         if (bool logOldState = config.getIsPanelEnabled("Log"))
         {
+            OSC_PERF("draw log");
+
             bool logState = logOldState;
             if (ImGui::Begin("Log", &logState, ImGuiWindowFlags_MenuBar))
             {
@@ -639,6 +653,8 @@ private:
         // draw coordinate editor
         if (bool coordEdOldState = config.getIsPanelEnabled("Coordinate Editor"))
         {
+            OSC_PERF("draw coordinate editor");
+
             bool coordEdState = coordEdOldState;
             if (ImGui::Begin("Coordinate Editor", &coordEdState))
             {
@@ -652,10 +668,28 @@ private:
             }
         }
 
-        // draw model muscle plots (if applicable)
-        for (int i = 0; i < getNumMusclePlots(); ++i)
+        // draw performance viewer
+        if (bool perfOldState = config.getIsPanelEnabled("Performance"))
         {
-            updMusclePlot(i).draw();
+            OSC_PERF("draw performance panel");
+
+            m_PerfPanel.open();
+            bool state = m_PerfPanel.draw();
+
+            if (state != perfOldState)
+            {
+                osc::App::upd().updConfig().setIsPanelEnabled("Performance", state);
+            }
+        }
+
+        {
+            OSC_PERF("draw muscle plots");
+
+            // draw model muscle plots (if applicable)
+            for (int i = 0; i < getNumMusclePlots(); ++i)
+            {
+                updMusclePlot(i).draw();
+            }
         }
 
         // draw any currently-open popups
@@ -684,6 +718,7 @@ private:
 	ModelActionsMenuItems m_ModelActionsMenuBar{m_Model};
 	ModelActionsMenuItems m_ContextMenuActionsMenuBar{m_Model};
 	CoordinateEditor m_CoordEditor{m_Model};
+    PerfPanel m_PerfPanel{"Performance"};
     SelectionEditorPanel m_SelectionEditor{m_Model};
 	ParamBlockEditorPopup m_ParamBlockEditorPopup{"simulation parameters"};
     int m_LatestMusclePlot = 1;
