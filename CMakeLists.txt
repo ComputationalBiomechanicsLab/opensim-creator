@@ -304,6 +304,8 @@ add_library(osccore STATIC
     src/Graphics/Gl.cpp
     src/Graphics/Gl.hpp
     src/Graphics/GlGlm.hpp
+    src/Graphics/GraphicsHelpers.cpp
+    src/Graphics/GraphicsHelpers.hpp
     src/Graphics/InstancedRenderer.cpp
     src/Graphics/InstancedRenderer.hpp
     src/Graphics/Mesh.cpp

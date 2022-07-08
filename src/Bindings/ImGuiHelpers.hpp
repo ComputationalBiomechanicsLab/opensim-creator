@@ -24,6 +24,8 @@ namespace gl
 
 namespace osc
 {
+    inline constexpr float defaultImguiDragThreshold = 5.0f;
+
     // updates a polar comera's rotation, position, etc. based on ImGui input
     void UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, PolarPerspectiveCamera&);
 
@@ -32,6 +34,16 @@ namespace osc
 
     // draws a texutre as an ImGui::Image, assumes UV coords of (0.0, 1.0); (1.0, 0.0)
     void DrawTextureAsImGuiImage(gl::Texture2D&, glm::vec2 dims);
+
+    struct ImGuiImageHittestResult final {
+        Rect rect;
+        bool isHovered;
+        bool isLeftClickReleasedWithoutDragging;
+        bool isRightClickReleasedWithoutDragging;
+
+        ImGuiImageHittestResult();
+    };
+    ImGuiImageHittestResult DrawTextureAsImGuiImageAndHittest(gl::Texture2D& tex, glm::vec2 dims, float dragThreshold = defaultImguiDragThreshold);
 
     // returns `true` if any scancode in the provided range is currently pressed down
     bool IsAnyKeyDown(nonstd::span<int const>);
@@ -59,7 +71,10 @@ namespace osc
     bool IsAltDown();
 
     // returns `true` if the specified moouse button was released without the user dragging
-    bool IsMouseReleasedWithoutDragging(ImGuiMouseButton, float threshold = 5.0f);
+    bool IsMouseReleasedWithoutDragging(ImGuiMouseButton, float threshold = defaultImguiDragThreshold);
+
+    // draws an overlay tooltip (content only)
+    void DrawTooltipBodyOnly(char const* text);
 
     // draws an overlay tooltip with a header and description
     void DrawTooltip(char const* header, char const* description = nullptr);

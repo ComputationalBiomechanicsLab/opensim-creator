@@ -11,6 +11,7 @@
 #include "src/Graphics/DAEWriter.hpp"
 #include "src/Graphics/Gl.hpp"
 #include "src/Graphics/GlGlm.hpp"
+#include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
@@ -61,6 +62,36 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+// export utils
+namespace
+{
+    void TryExportSceneToDAE(nonstd::span<osc::ComponentDecoration const> scene)
+    {
+        std::filesystem::path p =
+            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("dae");
+
+        std::ofstream outfile{p};
+
+        if (!outfile)
+        {
+            osc::log::error("cannot save to %s: IO error", p.string().c_str());
+            return;
+        }
+
+        std::vector<osc::BasicSceneElement> basicDecs;
+        for (osc::ComponentDecoration const& dec : scene)
+        {
+            osc::BasicSceneElement& basic = basicDecs.emplace_back();
+            basic.transform = dec.transform;
+            basic.mesh = dec.mesh;
+            basic.color = dec.color;
+        }
+
+        osc::WriteDecorationsAsDAE(basicDecs, outfile);
+        osc::log::info("wrote scene as a DAE file to %s", p.string().c_str());
+    }
+}
 
 // rendering utils
 namespace
@@ -210,183 +241,39 @@ namespace
 
     void BindToInstanceAttributes(size_t offset)
     {
-        gl::AttributeMat4x3 mmtxAttr{osc::SHADER_LOC_MATRIX_MODEL};
-        gl::VertexAttribPointer(mmtxAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData)*offset + offsetof(SceneGPUInstanceData, modelMtx));
+        gl::AttributeMat4x3 mmtxAttr{ osc::SHADER_LOC_MATRIX_MODEL };
+        gl::VertexAttribPointer(mmtxAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData) * offset + offsetof(SceneGPUInstanceData, modelMtx));
         gl::VertexAttribDivisor(mmtxAttr, 1);
         gl::EnableVertexAttribArray(mmtxAttr);
 
-        gl::AttributeMat3 normMtxAttr{osc::SHADER_LOC_MATRIX_NORMAL};
-        gl::VertexAttribPointer(normMtxAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData)*offset + offsetof(SceneGPUInstanceData, normalMtx));
+        gl::AttributeMat3 normMtxAttr{ osc::SHADER_LOC_MATRIX_NORMAL };
+        gl::VertexAttribPointer(normMtxAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData) * offset + offsetof(SceneGPUInstanceData, normalMtx));
         gl::VertexAttribDivisor(normMtxAttr, 1);
         gl::EnableVertexAttribArray(normMtxAttr);
 
-        gl::AttributeVec4 colorAttr{osc::SHADER_LOC_COLOR_DIFFUSE};
-        gl::VertexAttribPointer(colorAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData)*offset + offsetof(SceneGPUInstanceData, rgba));
+        gl::AttributeVec4 colorAttr{ osc::SHADER_LOC_COLOR_DIFFUSE };
+        gl::VertexAttribPointer(colorAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData) * offset + offsetof(SceneGPUInstanceData, rgba));
         gl::VertexAttribDivisor(colorAttr, 1);
         gl::EnableVertexAttribArray(colorAttr);
 
-        gl::AttributeFloat rimAttr{osc::SHADER_LOC_COLOR_RIM};
-        gl::VertexAttribPointer(rimAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData)*offset + offsetof(SceneGPUInstanceData, rimIntensity));
+        gl::AttributeFloat rimAttr{ osc::SHADER_LOC_COLOR_RIM };
+        gl::VertexAttribPointer(rimAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData) * offset + offsetof(SceneGPUInstanceData, rimIntensity));
         gl::VertexAttribDivisor(rimAttr, 1);
         gl::EnableVertexAttribArray(rimAttr);
     }
 
-    // assumes `pos` is in-bounds
-    void DrawBVHRecursive(
-        osc::Mesh& cube,
-        gl::UniformMat4& mtxUniform,
-        osc::BVH const& bvh,
-        int pos)
-    {
-        osc::BVHNode const& n = bvh.nodes[pos];
-
-        glm::vec3 halfWidths = Dimensions(n.bounds) / 2.0f;
-        glm::vec3 center = Midpoint(n.bounds);
-
-        glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
-        glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
-        glm::mat4 mmtx = mover * scaler;
-        gl::Uniform(mtxUniform, mmtx);
-        cube.Draw();
-
-        if (n.nlhs >= 0)
-        {
-            // it's an internal node
-            DrawBVHRecursive(cube, mtxUniform, bvh, pos+1);
-            DrawBVHRecursive(cube, mtxUniform, bvh, pos+n.nlhs+1);
-        }
-    }
-
-    void DrawBVH(
-        osc::BVH const& sceneBVH,
-        glm::mat4 const& viewMtx,
-        glm::mat4 const& projMtx)
-    {
-        if (sceneBVH.nodes.empty())
-        {
-            return;
-        }
-
-        auto& shader = osc::App::shader<osc::SolidColorShader>();
-
-        // common stuff
-        gl::UseProgram(shader.program);
-        gl::Uniform(shader.uProjection, projMtx);
-        gl::Uniform(shader.uView, viewMtx);
-        gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
-
-        auto cube = osc::App::meshes().getCubeWireMesh();
-        gl::BindVertexArray(cube->GetVertexArray());
-        DrawBVHRecursive(*cube, shader.uModel, sceneBVH, 0);
-        gl::BindVertexArray();
-    }
-
-    void DrawAABBs(
+    void DrawSceneAABBs(
         nonstd::span<osc::ComponentDecoration const> decs,
         glm::mat4 const& viewMtx,
         glm::mat4 const& projMtx)
     {
-        auto& shader = osc::App::shader<osc::SolidColorShader>();
-
-        // common stuff
-        gl::UseProgram(shader.program);
-        gl::Uniform(shader.uProjection, projMtx);
-        gl::Uniform(shader.uView, viewMtx);
-        gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
-
-        auto cube = osc::App::meshes().getCubeWireMesh();
-        gl::BindVertexArray(cube->GetVertexArray());
-
-        for (auto const& se : decs)
+        std::vector<osc::AABB> aabbs;
+        aabbs.reserve(decs.size());
+        for (auto const& dec : decs)
         {
-            osc::AABB worldspaceAABB = GetWorldspaceAABB(se);
-            glm::vec3 halfWidths = Dimensions(worldspaceAABB) / 2.0f;
-            glm::vec3 center = Midpoint(worldspaceAABB);
-
-            glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
-            glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
-            glm::mat4 mmtx = mover * scaler;
-
-            gl::Uniform(shader.uModel, mmtx);
-            cube->Draw();
+            aabbs.push_back(GetWorldspaceAABB(dec));
         }
-
-        gl::BindVertexArray();
-    }
-
-    void DrawXZFloorLines(glm::mat4 const& viewMtx, glm::mat4 const& projMtx)
-    {
-        auto& shader = osc::App::shader<osc::SolidColorShader>();
-
-        // common stuff
-        gl::UseProgram(shader.program);
-        gl::Uniform(shader.uProjection, viewMtx);
-        gl::Uniform(shader.uView, projMtx);
-
-        auto yline = osc::App::meshes().getYLineMesh();
-        gl::BindVertexArray(yline->GetVertexArray());
-
-        // X
-        gl::Uniform(shader.uModel, glm::rotate(glm::mat4{1.0f}, osc::fpi2, {0.0f, 0.0f, 1.0f}));
-        gl::Uniform(shader.uColor, {1.0f, 0.0f, 0.0f, 1.0f});
-        yline->Draw();
-
-        // Z
-        gl::Uniform(shader.uModel, glm::rotate(glm::mat4{1.0f}, osc::fpi2, {1.0f, 0.0f, 0.0f}));
-        gl::Uniform(shader.uColor, {0.0f, 0.0f, 1.0f, 1.0f});
-        yline->Draw();
-
-        gl::BindVertexArray();
-    }
-
-    void DrawGrid(glm::mat4 const& rotationMatrix, glm::mat4 const& viewMtx, glm::mat4 const& projMtx)
-    {
-        auto& shader = osc::App::shader<osc::SolidColorShader>();
-
-        gl::UseProgram(shader.program);
-        gl::Uniform(shader.uModel, glm::scale(rotationMatrix, {50.0f, 50.0f, 1.0f}));
-        gl::Uniform(shader.uView, viewMtx);
-        gl::Uniform(shader.uProjection, projMtx);
-        gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
-        auto grid = osc::App::meshes().get100x100GridMesh();
-        gl::BindVertexArray(grid->GetVertexArray());
-        grid->Draw();
-        gl::BindVertexArray();
-    }
-
-    void DrawXZGrid(glm::mat4 const& viewMtx, glm::mat4 const& projMtx)
-    {
-        DrawGrid(glm::rotate(glm::mat4{1.0f}, osc::fpi2, {1.0f, 0.0f, 0.0f}), viewMtx, projMtx);
-    }
-
-    void DrawXYGrid(glm::mat4 const& viewMtx, glm::mat4 const& projMtx)
-    {
-        DrawGrid(glm::mat4{1.0f}, viewMtx, projMtx);
-    }
-
-    void DrawYZGrid(glm::mat4 const& viewMtx, glm::mat4 const& projMtx)
-    {
-        DrawGrid(glm::rotate(glm::mat4{1.0f}, osc::fpi2, {0.0f, 1.0f, 0.0f}), viewMtx, projMtx);
-    }
-
-    struct ImGuiImageDetails final {
-        osc::Rect rect = {};
-        bool isHovered = false;
-        bool isLeftClicked = false;
-        bool isRightClicked = false;
-    };
-
-    ImGuiImageDetails drawTextureAsImGuiImageAndHittest(gl::Texture2D& tex, glm::vec2 dims)
-    {
-        osc::DrawTextureAsImGuiImage(tex, dims);
-
-        ImGuiImageDetails rv;
-        rv.rect.p1 = ImGui::GetItemRectMin();
-        rv.rect.p2 = ImGui::GetItemRectMax();
-        rv.isHovered = ImGui::IsItemHovered();
-        rv.isLeftClicked = ImGui::IsItemHovered() && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
-        rv.isRightClicked = ImGui::IsItemHovered() && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
-        return rv;
+        osc::DrawAABBs(aabbs, viewMtx, projMtx);
     }
 
     // populates a high-level drawlist for an OpenSim model scene
@@ -613,6 +500,8 @@ namespace
             {
                 return;  // nothing changed since the last render
             }
+
+            OSC_PERF("perform full redraw (re-render)");
 
             // update cache checks
             m_LastParams = params;
@@ -919,12 +808,12 @@ public:
 
     bool isLeftClicked() const
     {
-        return m_RenderImage.isLeftClicked;
+        return m_RenderImage.isLeftClickReleasedWithoutDragging;
     }
 
     bool isRightClicked() const
     {
-        return m_RenderImage.isRightClicked;
+        return m_RenderImage.isRightClickReleasedWithoutDragging;
     }
 
     bool isMousedOver() const
@@ -975,7 +864,7 @@ public:
         drawInSceneOverlays();
 
         // blit texture as an ImGui::Image
-        m_RenderImage = drawTextureAsImGuiImageAndHittest(m_Rendererer.updOutputTexture(), ImGui::GetContentRegionAvail());
+        m_RenderImage = DrawTextureAsImGuiImageAndHittest(m_Rendererer.updOutputTexture(), ImGui::GetContentRegionAvail());
 
         // draw any ImGui-based overlays over the image
         drawImGuiOverlays();
@@ -1161,55 +1050,43 @@ private:
         ImGui::Text("reposition camera:");
         ImGui::Separator();
 
-        auto makeHoverTooltip = [](char const* msg)
-        {
-            if (ImGui::IsItemHovered())
-            {
-                ImGui::BeginTooltip();
-                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                ImGui::TextUnformatted(msg);
-                ImGui::PopTextWrapPos();
-                ImGui::EndTooltip();
-            }
-        };
-
         if (ImGui::Button("+X"))
         {
             FocusAlongX(m_Camera);
         }
-        makeHoverTooltip("Position camera along +X, pointing towards the center. Hotkey: X");
+        DrawTooltipBodyOnly("Position camera along +X, pointing towards the center. Hotkey: X");
         ImGui::SameLine();
         if (ImGui::Button("-X"))
         {
             FocusAlongMinusX(m_Camera);
         }
-        makeHoverTooltip("Position camera along -X, pointing towards the center. Hotkey: Ctrl+X");
+        DrawTooltipBodyOnly("Position camera along -X, pointing towards the center. Hotkey: Ctrl+X");
 
         ImGui::SameLine();
         if (ImGui::Button("+Y"))
         {
             FocusAlongY(m_Camera);
         }
-        makeHoverTooltip("Position camera along +Y, pointing towards the center. Hotkey: Y");
+        DrawTooltipBodyOnly("Position camera along +Y, pointing towards the center. Hotkey: Y");
         ImGui::SameLine();
         if (ImGui::Button("-Y"))
         {
             FocusAlongMinusY(m_Camera);
         }
-        makeHoverTooltip("Position camera along -Y, pointing towards the center. (no hotkey, because Ctrl+Y is taken by 'Redo'");
+        DrawTooltipBodyOnly("Position camera along -Y, pointing towards the center. (no hotkey, because Ctrl+Y is taken by 'Redo'");
 
         ImGui::SameLine();
         if (ImGui::Button("+Z"))
         {
             FocusAlongZ(m_Camera);
         }
-        makeHoverTooltip("Position camera along +Z, pointing towards the center. Hotkey: Z");
+        DrawTooltipBodyOnly("Position camera along +Z, pointing towards the center. Hotkey: Z");
         ImGui::SameLine();
         if (ImGui::Button("-Z"))
         {
             FocusAlongMinusZ(m_Camera);
         }
-        makeHoverTooltip("Position camera along -Z, pointing towards the center. (no hotkey, because Ctrl+Z is taken by 'Undo')");
+        DrawTooltipBodyOnly("Position camera along -Z, pointing towards the center. (no hotkey, because Ctrl+Z is taken by 'Undo')");
 
         if (ImGui::Button("Zoom in"))
         {
@@ -1226,20 +1103,20 @@ private:
         {
             Reset(m_Camera);
         }
-        makeHoverTooltip("Reset the camera to its initial (default) location. Hotkey: F");
+        DrawTooltipBodyOnly("Reset the camera to its initial (default) location. Hotkey: F");
 
         if (ImGui::Button("Auto-focus camera"))
         {
             m_AutoFocusCameraNextFrame = true;
         }
-        makeHoverTooltip("Try to automatically adjust the camera's zoom etc. to suit the model's dimensions. Hotkey: Ctrl+F");
+        DrawTooltipBodyOnly("Try to automatically adjust the camera's zoom etc. to suit the model's dimensions. Hotkey: Ctrl+F");
 
         if (ImGui::Button("Export to .dae"))
         {
-            tryExportSceneToDAE();
+            TryExportSceneToDAE(m_SceneDrawlist.get());
 
         }
-        makeHoverTooltip("Try to export the 3D scene to a portable DAE file, so that it can be viewed in 3rd-party modelling software, such as Blender");
+        DrawTooltipBodyOnly("Try to export the 3D scene to a portable DAE file, so that it can be viewed in 3rd-party modelling software, such as Blender");
 
         ImGui::Dummy({0.0f, 10.0f});
         ImGui::Text("advanced camera properties:");
@@ -1261,7 +1138,7 @@ private:
         ImGui::ColorEdit3("light_color", glm::value_ptr(m_RendererParams.LightColor));
         ImGui::ColorEdit3("background color", glm::value_ptr(m_RendererParams.BackgroundColor));
         osc::InputMetersFloat3("floor location", glm::value_ptr(m_RendererParams.FloorLocation));
-        makeHoverTooltip("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
+        DrawTooltipBodyOnly("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
     }
 
     void recomputeSceneLightPosition()
@@ -1393,7 +1270,7 @@ private:
 
         if (m_Flags & osc::UiModelViewerFlags_DrawAABBs)
         {
-            DrawAABBs(m_SceneDrawlist.get(), viewMtx, projMtx);
+            DrawSceneAABBs(m_SceneDrawlist.get(), viewMtx, projMtx);
         }
 
         if (m_Flags & osc::UiModelViewerFlags_DrawBVH)
@@ -1412,32 +1289,6 @@ private:
         }
     }
 
-    void tryExportSceneToDAE()
-    {
-        std::filesystem::path p =
-            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("dae");
-
-        std::ofstream outfile{p};
-
-        if (!outfile)
-        {
-            osc::log::error("cannot save to %s: IO error", p.string().c_str());
-            return;
-        }
-
-        std::vector<osc::BasicSceneElement> basicDecs;
-        for (osc::ComponentDecoration const& dec : m_SceneDrawlist.get())
-        {
-            osc::BasicSceneElement& basic = basicDecs.emplace_back();
-            basic.transform = dec.transform;
-            basic.mesh = dec.mesh;
-            basic.color = dec.color;
-        }
-
-        osc::WriteDecorationsAsDAE(basicDecs, outfile);
-        osc::log::info("wrote scene as a DAE file to %s", p.string().c_str());
-    }
-
     // widget state
     UiModelViewerFlags m_Flags = UiModelViewerFlags_Default;
     osc::CustomDecorationOptions m_DecorationOptions;
@@ -1452,7 +1303,7 @@ private:
     ModelStateRenderer m_Rendererer;
 
     // ImGui compositing/hittesting state
-    ImGuiImageDetails m_RenderImage;
+    ImGuiImageHittestResult m_RenderImage;
 
     // other stuff
     bool m_AutoFocusCameraNextFrame = false;

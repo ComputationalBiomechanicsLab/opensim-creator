@@ -111,6 +111,27 @@ void osc::DrawTextureAsImGuiImage(gl::Texture2D& t, glm::vec2 dims)
     ImGui::Image(textureHandle, dims, uv0, uv1);
 }
 
+osc::ImGuiImageHittestResult::ImGuiImageHittestResult() :
+    rect{},
+    isHovered{false},
+    isLeftClickReleasedWithoutDragging{false},
+    isRightClickReleasedWithoutDragging{false}
+{
+}
+
+osc::ImGuiImageHittestResult osc::DrawTextureAsImGuiImageAndHittest(gl::Texture2D& tex, glm::vec2 dims, float dragThreshold)
+{
+    osc::DrawTextureAsImGuiImage(tex, dims);
+
+    ImGuiImageHittestResult rv;
+    rv.rect.p1 = ImGui::GetItemRectMin();
+    rv.rect.p2 = ImGui::GetItemRectMax();
+    rv.isHovered = ImGui::IsItemHovered();
+    rv.isLeftClickReleasedWithoutDragging = rv.isHovered && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left, dragThreshold);
+    rv.isRightClickReleasedWithoutDragging = rv.isHovered && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right, dragThreshold);
+    return rv;
+}
+
 bool osc::IsAnyKeyDown(nonstd::span<int const> keys)
 {
     for (auto key : keys)
@@ -176,6 +197,15 @@ bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float threshold)
 
     glm::vec2 dragDelta = ImGui::GetMouseDragDelta(btn);
     return glm::length(dragDelta) < threshold;
+}
+
+void osc::DrawTooltipBodyOnly(char const* text)
+{
+    ImGui::BeginTooltip();
+    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+    ImGui::TextUnformatted(text);
+    ImGui::PopTextWrapPos();
+    ImGui::EndTooltip();
 }
 
 void osc::DrawTooltip(char const* header, char const* description)
