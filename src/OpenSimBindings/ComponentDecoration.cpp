@@ -13,11 +13,13 @@
 osc::ComponentDecoration::ComponentDecoration(std::shared_ptr<Mesh> mesh_,
                                               Transform const& transform_,
                                               glm::vec4 const& color_,
-                                              OpenSim::Component const* component_) :
+                                              OpenSim::Component const* component_,
+                                              ComponentDecorationFlags flags_) :
     mesh{std::move(mesh_)},
     transform{transform_},
     color{color_},
-    component{std::move(component_)}
+    component{std::move(component_)},
+    flags{std::move(flags_)}
 {
 }
 

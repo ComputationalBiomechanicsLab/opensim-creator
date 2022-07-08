@@ -109,6 +109,50 @@ static osc::Transform TransformInGround(OpenSim::PhysicalFrame const& pf, SimTK:
 // geometry rendering/handling support
 namespace
 {
+    osc::ComponentDecorationFlags ComputeFlags(
+        OpenSim::Component const& c,
+        OpenSim::Component const* selected,
+        OpenSim::Component const* hovered,
+        OpenSim::Component const* isolated)
+    {
+        osc::ComponentDecorationFlags rv = osc::ComponentDecorationFlags_None;
+
+        if (&c == selected)
+        {
+            rv |= osc::ComponentDecorationFlags_IsSelected;
+        }
+
+        if (&c == hovered)
+        {
+            rv |= osc::ComponentDecorationFlags_IsHovered;
+        }
+
+        if (&c == isolated)
+        {
+            rv |= osc::ComponentDecorationFlags_IsIsolated;
+        }
+
+        OpenSim::Component const* ptr = osc::GetOwner(c);
+        while (ptr)
+        {
+            if (ptr == selected)
+            {
+                rv |= osc::ComponentDecorationFlags_IsChildOfSelected;
+            }
+            if (ptr == hovered)
+            {
+                rv |= osc::ComponentDecorationFlags_IsChildOfHovered;
+            }
+            if (ptr == isolated)
+            {
+                rv |= osc::ComponentDecorationFlags_IsChildOfIsolated;
+            }
+            ptr = osc::GetOwner(*ptr);
+        }
+
+        return rv;
+    }
+
     // generic handler for any `OpenSim::Component`
     void HandleComponent(OpenSim::Component const& c,
                          SimTK::State const& st,
@@ -148,11 +192,14 @@ namespace
     // OSC-specific decoration handler for `OpenSim::PointToPointSpring`
     void HandlePointToPointSpring(OpenSim::PointToPointSpring const& p2p,
                                   SimTK::State const& st,
+                                  OpenSim::Component const* selected,
+                                  OpenSim::Component const* hovered,
+                                  OpenSim::Component const* isolated,
                                   float fixupScaleFactor,
                                   std::vector<osc::ComponentDecoration>& out)
     {
-        glm::vec3 p1 = TransformPoint(TransformInGround(p2p.getBody1(), st), osc::ToVec3(p2p.getPoint1()));
-        glm::vec3 p2 = TransformPoint(TransformInGround(p2p.getBody2(), st), osc::ToVec3(p2p.getPoint2()));
+        glm::vec3 p1 = TransformInGround(p2p.getBody1(), st) * osc::ToVec3(p2p.getPoint1());
+        glm::vec3 p2 = TransformInGround(p2p.getBody2(), st) * osc::ToVec3(p2p.getPoint2());
 
         float radius = 0.005f * fixupScaleFactor;
         osc::Transform cylinderXform = osc::SimbodyCylinderToSegmentTransform({p1, p2}, radius);
@@ -161,13 +208,17 @@ namespace
             osc::App::meshes().getCylinderMesh(),
             cylinderXform,
             glm::vec4{0.7f, 0.7f, 0.7f, 1.0f},
-            &p2p
+            &p2p,
+            ComputeFlags(p2p, selected, hovered, isolated)
         );
     }
 
     // OSC-specific decoration handler for `OpenSim::Station`
     void HandleStation(OpenSim::Station const& s,
                        SimTK::State const& st,
+                       OpenSim::Component const* selected,
+                       OpenSim::Component const* hovered,
+                       OpenSim::Component const* isolated,
                        float fixupScaleFactor,
                        std::vector<osc::ComponentDecoration>& out)
     {
@@ -181,7 +232,8 @@ namespace
             osc::App::meshes().getSphereMesh(),
             xform,
             glm::vec4{1.0f, 0.0f, 0.0f, 1.0f},
-            &s
+            &s,
+            ComputeFlags(s, selected, hovered, isolated)
         );
     }
 
@@ -189,8 +241,9 @@ namespace
     void HandleBody(OpenSim::Body const& b,
                     SimTK::State const& st,
                     float fixupScaleFactor,
-                    OpenSim::Component const*,
+                    OpenSim::Component const* selected,
                     OpenSim::Component const* hovered,
+                    OpenSim::Component const* isolated,
                     std::vector<osc::ComponentDecoration>& out,
                     OpenSim::ModelDisplayHints const& mdh,
                     SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
@@ -209,7 +262,8 @@ namespace
                 osc::App::meshes().getSphereMesh(),
                 t,
                 glm::vec4{0.0f, 0.0f, 0.0f, 1.0f},
-                &b
+                &b,
+                ComputeFlags(b, selected, hovered, isolated)
             );
         }
 
@@ -313,6 +367,9 @@ namespace
     void HandleMuscleSconeStyle(osc::CustomDecorationOptions const& opts,
                                 OpenSim::Muscle const& muscle,
                                 SimTK::State const& st,
+                                OpenSim::Component const* selected,
+                                OpenSim::Component const* hovered,
+                                OpenSim::Component const* isolated,
                                 float fixupScaleFactor,
                                 OpenSim::ModelDisplayHints const&,
                                 std::vector<osc::ComponentDecoration>& out)
@@ -331,12 +388,15 @@ namespace
         glm::vec4 const fiberColor = GetSconeStyleMuscleColor(muscle, st, opts.getMuscleColoringStyle());
         glm::vec4 const tendonColor = {204.0f/255.0f, 203.0f/255.0f, 200.0f/255.0f, 1.0f};
 
+        osc::ComponentDecorationFlags flags = ComputeFlags(muscle, selected, hovered, isolated);
+
         osc::ComponentDecoration fiberSpherePrototype =
         {
             osc::App::meshes().getSphereMesh(),
             osc::Transform{},
             fiberColor,
-            &muscle
+            &muscle,
+            flags,
         };
         fiberSpherePrototype.transform.scale = {fiberUiRadius, fiberUiRadius, fiberUiRadius};
 
@@ -356,7 +416,8 @@ namespace
                 osc::App::meshes().getCylinderMesh(),
                 cylinderXform,
                 tendonColor,
-                &muscle
+                &muscle,
+                flags
             );
         };
         auto emitFiberSphere = [&](glm::vec3 const& pos)
@@ -371,7 +432,8 @@ namespace
                 osc::App::meshes().getCylinderMesh(),
                 cylinderXform,
                 fiberColor,
-                &muscle
+                &muscle,
+                flags
             );
         };
 
@@ -502,6 +564,9 @@ namespace
     void HandleMuscleOpenSimStyle(osc::CustomDecorationOptions const& opts,
                                   OpenSim::Muscle const& musc,
                                   SimTK::State const& st,
+                                  OpenSim::Component const* selected,
+                                  OpenSim::Component const* hovered,
+                                  OpenSim::Component const* isolated,
                                   float fixupScaleFactor,
                                   OpenSim::Component const**,
                                   OpenSim::ModelDisplayHints const& mdh,
@@ -509,6 +574,7 @@ namespace
                                   osc::DecorativeGeometryHandler&,
                                   std::vector<osc::ComponentDecoration>& out)
     {
+        osc::ComponentDecorationFlags flags = ComputeFlags(musc, selected, hovered, isolated);
         std::vector<glm::vec3> pps = GetAllPathPoints(musc.getGeometryPath(), st);
 
         if (pps.empty())
@@ -529,7 +595,8 @@ namespace
                 osc::App::meshes().getSphereMesh(),
                 t,
                 fiberColor,
-                &musc
+                &musc,
+                flags
             );
         };
 
@@ -541,7 +608,8 @@ namespace
                 osc::App::meshes().getCylinderMesh(),
                 cylinderXform,
                 fiberColor,
-                &musc
+                &musc,
+                flags
             );
         };
 
@@ -565,6 +633,9 @@ namespace
     void HandleGeometryPath(osc::CustomDecorationOptions const& opts,
                             OpenSim::GeometryPath const& gp,
                             SimTK::State const& st,
+                            OpenSim::Component const* selected,
+                            OpenSim::Component const* hovered,
+                            OpenSim::Component const* isolated,
                             float fixupScaleFactor,
                             OpenSim::Component const** currentComponent,
                             OpenSim::ModelDisplayHints const& mdh,
@@ -581,12 +652,12 @@ namespace
 
                 if (opts.getMuscleDecorationStyle() == osc::MuscleDecorationStyle::Scone)
                 {
-                    HandleMuscleSconeStyle(opts, *musc, st, fixupScaleFactor, mdh, out);
+                    HandleMuscleSconeStyle(opts, *musc, st, selected, hovered, isolated, fixupScaleFactor, mdh, out);
                     return;  // don't let it fall through to the generic handler
                 }
                 else
                 {
-                    HandleMuscleOpenSimStyle(opts, *musc, st, fixupScaleFactor, currentComponent, mdh, geomList, producer, out);
+                    HandleMuscleOpenSimStyle(opts, *musc, st, selected, hovered, isolated, fixupScaleFactor, currentComponent, mdh, geomList, producer, out);
                     return;
                 }
             }
@@ -608,8 +679,10 @@ namespace
     // used whenever the SimTK backend emits something
     class OpenSimDecorationConsumer final : public osc::DecorationConsumer {
     public:
-        OpenSimDecorationConsumer(std::vector<osc::ComponentDecoration>* out,
+        OpenSimDecorationConsumer(osc::VirtualConstModelStatePair const* msp,
+                                  std::vector<osc::ComponentDecoration>* out,
                                   OpenSim::Component const** currentComponent) :
+            m_Msp{std::move(msp)},
             m_Out{std::move(out)},
             m_CurrentComponent{std::move(currentComponent)}
         {
@@ -617,42 +690,50 @@ namespace
 
         void operator()(std::shared_ptr<osc::Mesh> const& mesh, osc::Transform const& t, glm::vec4 const& color) override
         {
-            m_Out->emplace_back(mesh, t, color, *m_CurrentComponent);
+            m_Out->emplace_back(mesh, t, color, *m_CurrentComponent, ComputeFlags(**m_CurrentComponent, m_Selected, m_Hovered, m_Isolated));
         }
 
     private:
+        osc::VirtualConstModelStatePair const* m_Msp;
+        OpenSim::Component const* m_Selected = m_Msp->getSelected();
+        OpenSim::Component const* m_Hovered = m_Msp->getHovered();
+        OpenSim::Component const* m_Isolated = m_Msp->getIsolated();
         std::vector<osc::ComponentDecoration>* m_Out;
         OpenSim::Component const** m_CurrentComponent;
     };
 
-    void GenerateDecorationEls(osc::CustomDecorationOptions const& opts,
-                               OpenSim::Model const& m,
-                               SimTK::State const& st,
-                               float fixupScaleFactor,
-                               std::vector<osc::ComponentDecoration>& out,
-                               OpenSim::Component const* selected,
-                               OpenSim::Component const* hovered)
+    void GenerateDecorationEls(osc::VirtualConstModelStatePair const& msp,
+                               osc::CustomDecorationOptions const& opts,
+                               std::vector<osc::ComponentDecoration>& out)
     {
         out.clear();
 
-        OpenSim::Component const* currentComponent = nullptr;
-
-        OpenSimDecorationConsumer consumer{&out, &currentComponent};
-
+        // assumed to be valid during the decoration generation
         osc::MeshCache& meshCache = osc::App::meshes();
+        OpenSim::Model const& model = msp.getModel();
+        SimTK::State const& state = msp.getState();
+        OpenSim::Component const* selected = msp.getSelected();
+        OpenSim::Component const* hovered = msp.getHovered();
+        OpenSim::Component const* isolated = msp.getIsolated();
+        float fixupScaleFactor = msp.getFixupScaleFactor();
+        OpenSim::ModelDisplayHints const& mdh = msp.getModel().getDisplayHints();
 
-        osc::DecorativeGeometryHandler producer{
+        // gets called whenever OpenSim is emitting stuff via `generateDecorations`
+        OpenSim::Component const* currentComponent = nullptr;
+        OpenSimDecorationConsumer consumer{&msp, &out, &currentComponent};
+
+        // generates mesh/object instances for each SimTK::DecorativeGeometry it's given
+        osc::DecorativeGeometryHandler producer
+        {
             meshCache,
-            m.getSystem().getMatterSubsystem(),
-            st,
+            model.getSystem().getMatterSubsystem(),
+            state,
             fixupScaleFactor,
             consumer
         };
 
-        OpenSim::ModelDisplayHints const& mdh = m.getDisplayHints();
         SimTK::Array_<SimTK::DecorativeGeometry> geomList;
-
-        for (OpenSim::Component const& c : m.getComponentList())
+        for (OpenSim::Component const& c : model.getComponentList())
         {
             if (!osc::ShouldShowInUI(c))
             {
@@ -665,23 +746,24 @@ namespace
             // component decoration handling
             if (auto const* p2p = dynamic_cast<OpenSim::PointToPointSpring const*>(&c))
             {
-                HandlePointToPointSpring(*p2p, st, fixupScaleFactor, out);
+                HandlePointToPointSpring(*p2p, state, selected, hovered, isolated, fixupScaleFactor, out);
             }
-            else if (typeid(c) == typeid(OpenSim::Station))
+            else if (auto const* station = dynamic_cast<OpenSim::Station const*>(&c))
             {
-                HandleStation(static_cast<OpenSim::Station const&>(c), st, fixupScaleFactor, out);
+                HandleStation(*station, state, selected, hovered, isolated, fixupScaleFactor, out);
             }
             else if (auto const* body = dynamic_cast<OpenSim::Body const*>(&c))
             {
-                HandleBody(*body, st, fixupScaleFactor, selected, hovered, out, mdh, geomList, producer);
+                HandleBody(*body, state, fixupScaleFactor, selected, hovered, isolated, out, mdh, geomList, producer);
             }
             else if (auto const* gp = dynamic_cast<OpenSim::GeometryPath const*>(&c))
             {
-                HandleGeometryPath(opts, *gp, st, fixupScaleFactor, &currentComponent, mdh, geomList, producer, out);
+                HandleGeometryPath(opts, *gp, state, selected, hovered, isolated, fixupScaleFactor, &currentComponent, mdh, geomList, producer, out);
             }
             else
             {
-                HandleComponent(c, st, mdh, geomList, producer);
+                // generic handler
+                HandleComponent(c, state, mdh, geomList, producer);
             }
         }
     }
@@ -1160,7 +1242,7 @@ void osc::GenerateModelDecorations(VirtualConstModelStatePair const& p,
 
     {
         OSC_PERF("scene generation");
-        GenerateDecorationEls(opts, p.getModel(), p.getState(), p.getFixupScaleFactor(), out, p.getSelected(), p.getHovered());
+        GenerateDecorationEls(p, opts, out);
     }
 
     {

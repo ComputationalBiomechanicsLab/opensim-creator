@@ -382,7 +382,7 @@ namespace
             return m_DrawListBuffer;
         }
 
-        nonstd::span<SceneGPUInstanceData> populate(osc::VirtualConstModelStatePair const& msp, CachedSceneDrawlist const& drawlist)
+        nonstd::span<SceneGPUInstanceData> populate(CachedSceneDrawlist const& drawlist)
         {
             if (drawlist.getVersion() == m_LastDrawlistVersion)
             {
@@ -393,10 +393,6 @@ namespace
             m_LastDrawlistVersion = drawlist.getVersion();
             m_Version = osc::UID{};
 
-            OpenSim::Component const* const selected = msp.getSelected();
-            OpenSim::Component const* const hovered = msp.getHovered();
-            OpenSim::Component const* const isolated = msp.getIsolated();
-
             auto decorations = drawlist.get();
             m_DrawListBuffer.clear();
             m_DrawListBuffer.reserve(decorations.size());
@@ -406,7 +402,7 @@ namespace
             {
                 osc::ComponentDecoration const& se = decorations[i];
 
-                if (isolated && !osc::IsInclusiveChildOf(isolated, se.component))
+                if (se.flags & (osc::ComponentDecorationFlags_IsIsolated | osc::ComponentDecorationFlags_IsChildOfIsolated))
                 {
                     continue;  // skip rendering this (it's not in the isolated component)
                 }
@@ -417,21 +413,17 @@ namespace
                 ins.rgba = se.color;
                 ins.decorationIdx = static_cast<int>(i);
 
-                // compute rim color based on whether the component is an inclusive child
-                // of selected or hovered
-                OpenSim::Component const* maybeParents[] = {selected, hovered};
-                OpenSim::Component const* parent = osc::IsInclusiveChildOf(maybeParents, se.component);
-                if (parent == nullptr)
-                {
-                    ins.rimIntensity = 0.0f;
-                }
-                else if (parent == selected)
+                if (se.flags & (osc::ComponentDecorationFlags_IsSelected | osc::ComponentDecorationFlags_IsChildOfSelected))
                 {
                     ins.rimIntensity = 0.9f;
                 }
-                else
+                else if (se.flags & (osc::ComponentDecorationFlags_IsHovered | osc::ComponentDecorationFlags_IsChildOfHovered))
                 {
                     ins.rimIntensity = 0.4f;
+                }
+                else
+                {
+                    ins.rimIntensity = 0.0f;
                 }
             }
 
@@ -456,7 +448,7 @@ namespace
             return m_RenderTarget.samples;
         }
 
-        void draw(osc::ModelStateRendererParams const& params, osc::VirtualConstModelStatePair const& msp, CachedSceneDrawlist const& drawlist)
+        void draw(osc::ModelStateRendererParams const& params, CachedSceneDrawlist const& drawlist)
         {
             if (params == m_LastParams &&
                 drawlist.getVersion() == m_LastDrawlistVersion)
@@ -475,7 +467,7 @@ namespace
             m_RenderTarget.setSamples(params.Samples);
 
             // populate GPU-friendly representation of the (higher-level) drawlist
-            m_GPUDrawlist.populate(msp, drawlist);
+            m_GPUDrawlist.populate(drawlist);
 
             // upload data to the GPU
             gl::ArrayBuffer<SceneGPUInstanceData> instanceBuf{m_GPUDrawlist.get()};
@@ -1199,7 +1191,7 @@ private:
         m_RendererParams.ViewPos = m_Camera.getPos();
         m_RendererParams.FixupScaleFactor = rs.getFixupScaleFactor();
 
-        m_Rendererer.draw(m_RendererParams, rs, m_SceneDrawlist);
+        m_Rendererer.draw(m_RendererParams, m_SceneDrawlist);
     }
 
     // draws overlays that are "in scene" - i.e. they are part of the rendered texture
