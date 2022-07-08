@@ -1028,6 +1028,17 @@ namespace
 // GUI ruler
 namespace
 {
+    struct MouseoverHit {
+        std::string Name;
+        glm::vec3 WorldPos;
+
+        MouseoverHit(std::string const& name_, glm::vec3 const& worldPos_) :
+            Name{name_},
+            WorldPos{worldPos_}
+        {
+        }
+    };
+
     // state associated with a 3D ruler that users can use to measure things
     // in the scene
     class GuiRuler final {
@@ -1036,9 +1047,7 @@ namespace
         glm::vec3 m_StartWorldPos = {0.0f, 0.0f, 0.0f};
 
     public:
-        void draw(std::pair<OpenSim::Component const*, glm::vec3> const& htResult,
-            osc::PolarPerspectiveCamera const& sceneCamera,
-            osc::Rect renderRect)
+        void draw(osc::PolarPerspectiveCamera const& sceneCamera, osc::Rect renderRect, std::optional<MouseoverHit> maybeMouseover)
         {
             if (m_State == State::Inactive)
             {
@@ -1082,7 +1091,7 @@ namespace
 
             if (m_State == State::WaitingForFirstPoint)
             {
-                if (!htResult.first)
+                if (!maybeMouseover)
                 {
                     // not mousing over anything
                     dl->AddCircleFilled(mouseLoc, circleRadius, circleMousedOverNothingColor);
@@ -1093,13 +1102,13 @@ namespace
                     // mousing over something
                     dl->AddCircleFilled(mouseLoc, circleRadius, circleColor);
                     char buf[1024];
-                    std::snprintf(buf, sizeof(buf), "%s @ (%.2f, %.2f, %.2f)", htResult.first->getName().c_str(), htResult.second.x, htResult.second.y, htResult.second.z);
+                    std::snprintf(buf, sizeof(buf), "%s @ (%.2f, %.2f, %.2f)", maybeMouseover->Name.c_str(), maybeMouseover->WorldPos.x, maybeMouseover->WorldPos.y, maybeMouseover->WorldPos.z);
                     drawTooltipWithBg(mouseLoc + labelOffsetWhenNoLine, buf);
 
                     if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {
                         m_State = State::WaitingForSecondPoint;
-                        m_StartWorldPos = htResult.second;
+                        m_StartWorldPos = maybeMouseover->WorldPos;
                     }
                     return;
                 }
@@ -1108,14 +1117,14 @@ namespace
             {
                 glm::vec2 startScreenPos = sceneCamera.projectOntoScreenRect(m_StartWorldPos, renderRect);
 
-                if (htResult.first)
+                if (maybeMouseover)
                 {
                     // user is moused over something, so draw a line + circle between the two hitlocs
                     glm::vec2 endScreenPos = mouseLoc;
                     glm::vec2 lineScreenDir = glm::normalize(startScreenPos - endScreenPos);
                     glm::vec2 offsetVec = 15.0f * glm::vec2{lineScreenDir.y, -lineScreenDir.x};
                     glm::vec2 lineMidpoint = (startScreenPos + endScreenPos) / 2.0f;
-                    float lineWorldLen = glm::length(htResult.second - m_StartWorldPos);
+                    float lineWorldLen = glm::length(maybeMouseover->WorldPos - m_StartWorldPos);
 
                     dl->AddCircleFilled(startScreenPos, circleRadius, circleColor);
                     dl->AddLine(startScreenPos, endScreenPos, lineColor, lineThickness);
@@ -1131,7 +1140,7 @@ namespace
                     // label the endpoint's component + coord
                     {
                         char buf[1024];
-                        std::snprintf(buf, sizeof(buf), "%s @ (%.2f, %.2f, %.2f)", htResult.first->getName().c_str(), htResult.second.x, htResult.second.y, htResult.second.z);
+                        std::snprintf(buf, sizeof(buf), "%s @ (%.2f, %.2f, %.2f)", maybeMouseover->Name.c_str(), maybeMouseover->WorldPos.x, maybeMouseover->WorldPos.y, maybeMouseover->WorldPos.z);
                         drawTooltipWithBg(mouseLoc + offsetVec, buf);
                     }
                 }
@@ -1235,7 +1244,12 @@ public:
 
         if (m_Ruler.IsMeasuring())
         {
-            m_Ruler.draw(htResult, m_Camera, m_RenderImage.rect);
+            std::optional<MouseoverHit> maybeHit;
+            if (htResult.first)
+            {
+                maybeHit.emplace(htResult.first->getName(), htResult.second);
+            }
+            m_Ruler.draw(m_Camera, m_RenderImage.rect, maybeHit);
         }
 
         ImGui::EndChild();
