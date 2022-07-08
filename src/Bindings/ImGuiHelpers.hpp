@@ -94,6 +94,7 @@ namespace osc
     // draw an ImGui::InputText that manipulates a std::string
     bool InputString(const char* label, std::string& s, std::size_t maxLen, ImGuiInputTextFlags flags = 0);
 
+    // draw a vec3/f3 editor with a lock icon
     bool DrawF3Editor(char const* lock_id, char const* editor_id, float* v, bool* is_locked);
 
     // draw an ImGui::InputFloat that manipulates in the scene scale (note: some users work with very very small sizes)
