@@ -26,6 +26,7 @@
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
 #include "src/OpenSimBindings/CustomDecorationOptions.hpp"
+#include "src/OpenSimBindings/ModelStateRendererParams.hpp"
 #include "src/OpenSimBindings/MuscleColoringStyle.hpp"
 #include "src/OpenSimBindings/MuscleDecorationStyle.hpp"
 #include "src/OpenSimBindings/MuscleSizingStyle.hpp"
@@ -442,44 +443,6 @@ namespace
         std::vector<SceneGPUInstanceData> m_DrawListBuffer;
     };
 
-    struct ModelStateRenderParams final {
-        glm::ivec2 Dimensions = {1, 1};
-        int Samples = 1;
-        bool WireframeMode = false;
-        bool DrawMeshNormals = false;
-        bool DrawRims = true;
-        bool DrawFloor = true;
-        glm::mat4 ViewMatrix{1.0f};
-        glm::mat4 ProjectionMatrix{1.0f};
-        glm::vec3 ViewPos = {0.0f, 0.0f, 0.0f};
-        glm::vec3 LightDirection = {-0.34f, -0.25f, 0.05f};
-        glm::vec3 LightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
-        glm::vec4 BackgroundColor = {0.89f, 0.89f, 0.89f, 1.0f};
-        glm::vec4 RimColor = {1.0f, 0.4f, 0.0f, 0.85f};
-        glm::vec3 FloorLocation = {0.0f, -0.001f, 0.0f};
-        float FixupScaleFactor = 1.0f;
-    };
-
-    bool operator==(ModelStateRenderParams const& a, ModelStateRenderParams const& b)
-    {
-        return
-            a.Dimensions == b.Dimensions &&
-            a.Samples == b.Samples &&
-            a.WireframeMode == b.WireframeMode &&
-            a.DrawMeshNormals == b.DrawMeshNormals &&
-            a.DrawRims == b.DrawRims &&
-            a.DrawFloor == b.DrawFloor &&
-            a.ViewMatrix == b.ViewMatrix &&
-            a.ProjectionMatrix == b.ProjectionMatrix &&
-            a.ViewPos == b.ViewPos &&
-            a.LightDirection == b.LightDirection &&
-            a.LightColor == b.LightColor &&
-            a.BackgroundColor == b.BackgroundColor &&
-            a.RimColor == b.RimColor &&
-            a.FloorLocation == b.FloorLocation &&
-            a.FixupScaleFactor == b.FixupScaleFactor;
-    }
-
     class ModelStateRenderer final {
     public:
 
@@ -493,7 +456,7 @@ namespace
             return m_RenderTarget.samples;
         }
 
-        void draw(ModelStateRenderParams const& params, osc::VirtualConstModelStatePair const& msp, CachedSceneDrawlist const& drawlist)
+        void draw(osc::ModelStateRendererParams const& params, osc::VirtualConstModelStatePair const& msp, CachedSceneDrawlist const& drawlist)
         {
             if (params == m_LastParams &&
                 drawlist.getVersion() == m_LastDrawlistVersion)
@@ -786,7 +749,7 @@ namespace
 
     private:
         // caching
-        ModelStateRenderParams m_LastParams;
+        osc::ModelStateRendererParams m_LastParams;
         osc::UID m_LastDrawlistVersion;
 
         CachedGPUDrawlist m_GPUDrawlist;
@@ -1299,7 +1262,7 @@ private:
     PolarPerspectiveCamera m_Camera = CreateCameraWithRadius(5.0f);
 
     // rendering input state
-    ModelStateRenderParams m_RendererParams;
+    ModelStateRendererParams m_RendererParams;
     ModelStateRenderer m_Rendererer;
 
     // ImGui compositing/hittesting state
