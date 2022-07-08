@@ -130,17 +130,34 @@ namespace
         return rv;
     }
 
-
-    template<size_t N, glm::qualifier Packing>
-    nonstd::span<float const> ToFloatSpan(nonstd::span<glm::vec<N, float, Packing> const> s)
+    nonstd::span<float const> ToFloatSpan(nonstd::span<glm::vec2 const> s)
     {
-        return {glm::value_ptr(s[0]), N * s.size()};
+        return {glm::value_ptr(s[0]), 2 * s.size()};
     }
 
-    template<size_t N, glm::qualifier Packing>
-    nonstd::span<float const> ToFloatSpan(glm::vec<N, float, Packing> const& s)
+    nonstd::span<float const> ToFloatSpan(nonstd::span<glm::vec3 const> s)
     {
-        return {glm::value_ptr(s), N};
+        return {glm::value_ptr(s[0]), 3 * s.size()};
+    }
+
+    nonstd::span<float const> ToFloatSpan(nonstd::span<glm::vec4 const> s)
+    {
+        return {glm::value_ptr(s[0]), 4 * s.size()};
+    }
+
+    nonstd::span<float const> ToFloatSpan(glm::vec2 const& v)
+    {
+        return {glm::value_ptr(v), 2};
+    }
+
+    nonstd::span<float const> ToFloatSpan(glm::vec3 const& v)
+    {
+        return {glm::value_ptr(v), 3};
+    }
+
+    nonstd::span<float const> ToFloatSpan(glm::vec4 const& v)
+    {
+        return {glm::value_ptr(v), 4};
     }
 
     template<typename T>
