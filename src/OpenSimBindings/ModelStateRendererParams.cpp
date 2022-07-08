@@ -11,6 +11,7 @@ osc::ModelStateRendererParams::ModelStateRendererParams() :
     ProjectionMatrix{1.0f},
     ViewPos{0.0f, 0.0f, 0.0f},
     LightDirection{-0.34f, -0.25f, 0.05f},
+    LightColor{248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f},
     BackgroundColor{0.89f, 0.89f, 0.89f, 1.0f},
     RimColor{1.0f, 0.4f, 0.0f, 0.85f},
     FloorLocation{0.0f, -0.001f, 0.0f},
