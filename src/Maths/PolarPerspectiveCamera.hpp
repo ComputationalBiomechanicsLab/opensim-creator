@@ -8,6 +8,7 @@
 
 namespace osc
 {
+    struct AABB;
     struct Rect;
 }
 
@@ -61,4 +62,16 @@ namespace osc
         // converts a `pos` (top-left) in the output `dims` into a line in worldspace by unprojection
         Line unprojectTopLeftPosToWorldRay(glm::vec2 pos, glm::vec2 dims) const noexcept;
     };
+
+    PolarPerspectiveCamera CreateCameraWithRadius(float);
+    void FocusAlongX(PolarPerspectiveCamera&);
+    void FocusAlongMinusX(PolarPerspectiveCamera&);
+    void FocusAlongY(PolarPerspectiveCamera&);
+    void FocusAlongMinusY(PolarPerspectiveCamera&);
+    void FocusAlongZ(PolarPerspectiveCamera&);
+    void FocusAlongMinusZ(PolarPerspectiveCamera&);
+    void ZoomIn(PolarPerspectiveCamera&);
+    void ZoomOut(PolarPerspectiveCamera&);
+    void Reset(PolarPerspectiveCamera&);
+    void AutoFocus(PolarPerspectiveCamera&, AABB const& elementAABB);
 }

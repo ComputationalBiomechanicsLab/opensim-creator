@@ -62,141 +62,6 @@
 #include <utility>
 #include <vector>
 
-
-// camera utils
-namespace
-{
-    void FocusAlongX(osc::PolarPerspectiveCamera& camera)
-    {
-        camera.theta = osc::fpi2;
-        camera.phi = 0.0f;
-    }
-
-    void FocusAlongMinusX(osc::PolarPerspectiveCamera& camera)
-    {
-        camera.theta = -osc::fpi2;
-        camera.phi = 0.0f;
-    }
-
-    void FocusAlongY(osc::PolarPerspectiveCamera& camera)
-    {
-        camera.theta = 0.0f;
-        camera.phi = osc::fpi2;
-    }
-
-    void FocusAlongMinusY(osc::PolarPerspectiveCamera& camera)
-    {
-        camera.theta = 0.0f;
-        camera.phi = -osc::fpi2;
-    }
-
-    void FocusAlongZ(osc::PolarPerspectiveCamera& camera)
-    {
-        camera.theta = 0.0f;
-        camera.phi = 0.0f;
-    }
-
-    void FocusAlongMinusZ(osc::PolarPerspectiveCamera& camera)
-    {
-        camera.theta = osc::fpi;
-        camera.phi = 0.0f;
-    }
-
-    void ZoomIn(osc::PolarPerspectiveCamera& camera)
-    {
-        camera.radius *= 0.8f;
-    }
-
-    void ZoomOut(osc::PolarPerspectiveCamera& camera)
-    {
-        camera.radius *= 1.2f;
-    }
-
-    void Reset(osc::PolarPerspectiveCamera& camera)
-    {
-        camera = {};
-        camera.theta = osc::fpi4;
-        camera.phi = osc::fpi4;
-    }
-
-    osc::PolarPerspectiveCamera CreateDefaultCamera()
-    {
-        osc::PolarPerspectiveCamera rv;
-        rv.radius = 5.0f;
-        return rv;
-    }
-
-    void AutoFocusCamera(osc::PolarPerspectiveCamera& camera, osc::BVH const& sceneBVH)
-    {
-        if (!sceneBVH.nodes.empty())
-        {
-            auto const& bvhRoot = sceneBVH.nodes[0].bounds;
-            camera.focusPoint = -Midpoint(bvhRoot);
-            camera.radius = 2.0f * LongestDim(bvhRoot);
-            camera.theta = osc::fpi4;
-            camera.phi = osc::fpi4;
-        }
-    }
-}
-
-
-// OpenSim utils
-namespace
-{
-    float ComputeRimColor(OpenSim::Component const* selected,
-        OpenSim::Component const* hovered,
-        OpenSim::Component const* c)
-    {
-        while (c)
-        {
-            if (c == selected)
-            {
-                return 0.9f;
-            }
-            if (c == hovered)
-            {
-                return 0.4f;
-            }
-            if (!c->hasOwner())
-            {
-                return 0.0f;
-            }
-            c = &c->getOwner();
-        }
-
-        return 0.0f;
-    }
-
-    bool IsInclusiveChildOf(OpenSim::Component const* parent, OpenSim::Component const* c)
-    {
-        if (!c)
-        {
-            return false;
-        }
-
-        if (!parent)
-        {
-            return false;
-        }
-
-        for (;;)
-        {
-            if (c == parent)
-            {
-                return true;
-            }
-
-            if (!c->hasOwner())
-            {
-                return false;
-            }
-
-            c = &c->getOwner();
-        }
-    }
-}
-
-
 // rendering utils
 namespace
 {
@@ -653,7 +518,7 @@ namespace
             {
                 osc::ComponentDecoration const& se = decorations[i];
 
-                if (isolated && !IsInclusiveChildOf(isolated, se.component))
+                if (isolated && !osc::IsInclusiveChildOf(isolated, se.component))
                 {
                     continue;  // skip rendering this (it's not in the isolated component)
                 }
@@ -662,8 +527,24 @@ namespace
                 ins.modelMtx = osc::ToMat4(se.transform);
                 ins.normalMtx = osc::ToNormalMatrix(se.transform);
                 ins.rgba = se.color;
-                ins.rimIntensity = ComputeRimColor(selected, hovered, se.component);
                 ins.decorationIdx = static_cast<int>(i);
+
+                // compute rim color based on whether the component is an inclusive child
+                // of selected or hovered
+                OpenSim::Component const* maybeParents[] = {selected, hovered};
+                OpenSim::Component const* parent = osc::IsInclusiveChildOf(maybeParents, se.component);
+                if (parent == nullptr)
+                {
+                    ins.rimIntensity = 0.0f;
+                }
+                else if (parent == selected)
+                {
+                    ins.rimIntensity = 0.9f;
+                }
+                else
+                {
+                    ins.rimIntensity = 0.4f;
+                }
             }
 
             return m_DrawListBuffer;
@@ -1081,9 +962,9 @@ public:
         // auto-focus the camera, if the user requested it last frame
         //
         // care: indirectly depends on the scene drawlist being up-to-date
-        if (m_AutoFocusCameraNextFrame)
+        if (m_AutoFocusCameraNextFrame && !m_BVH.get().nodes.empty())
         {
-            AutoFocusCamera(m_Camera, m_BVH.get());
+            AutoFocus(m_Camera, m_BVH.get().nodes[0].bounds);
             m_AutoFocusCameraNextFrame = false;
         }
 
@@ -1564,7 +1445,7 @@ private:
     // scene state
     CachedSceneDrawlist m_SceneDrawlist;
     CachedBVH m_BVH;
-    PolarPerspectiveCamera m_Camera;
+    PolarPerspectiveCamera m_Camera = CreateCameraWithRadius(5.0f);
 
     // rendering input state
     ModelStateRenderParams m_RendererParams;

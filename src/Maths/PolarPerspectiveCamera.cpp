@@ -139,3 +139,71 @@ osc::Line osc::PolarPerspectiveCamera::unprojectTopLeftPosToWorldRay(glm::vec2 p
     rv.origin = lineOriginWorld;
     return rv;
 }
+
+osc::PolarPerspectiveCamera osc::CreateCameraWithRadius(float r)
+{
+    PolarPerspectiveCamera rv;
+    rv.radius = r;
+    return rv;
+}
+
+void osc::FocusAlongX(osc::PolarPerspectiveCamera& camera)
+{
+    camera.theta = osc::fpi2;
+    camera.phi = 0.0f;
+}
+
+void osc::FocusAlongMinusX(osc::PolarPerspectiveCamera& camera)
+{
+    camera.theta = -osc::fpi2;
+    camera.phi = 0.0f;
+}
+
+void osc::FocusAlongY(osc::PolarPerspectiveCamera& camera)
+{
+    camera.theta = 0.0f;
+    camera.phi = osc::fpi2;
+}
+
+void osc::FocusAlongMinusY(osc::PolarPerspectiveCamera& camera)
+{
+    camera.theta = 0.0f;
+    camera.phi = -osc::fpi2;
+}
+
+void osc::FocusAlongZ(osc::PolarPerspectiveCamera& camera)
+{
+    camera.theta = 0.0f;
+    camera.phi = 0.0f;
+}
+
+void osc::FocusAlongMinusZ(osc::PolarPerspectiveCamera& camera)
+{
+    camera.theta = osc::fpi;
+    camera.phi = 0.0f;
+}
+
+void osc::ZoomIn(osc::PolarPerspectiveCamera& camera)
+{
+    camera.radius *= 0.8f;
+}
+
+void osc::ZoomOut(osc::PolarPerspectiveCamera& camera)
+{
+    camera.radius *= 1.2f;
+}
+
+void osc::Reset(osc::PolarPerspectiveCamera& camera)
+{
+    camera = {};
+    camera.theta = osc::fpi4;
+    camera.phi = osc::fpi4;
+}
+
+void osc::AutoFocus(PolarPerspectiveCamera& camera, AABB const& elementAABB)
+{
+    camera.focusPoint = -Midpoint(elementAABB);
+    camera.radius = 2.0f * LongestDim(elementAABB);
+    camera.theta = osc::fpi4;
+    camera.phi = osc::fpi4;
+}

@@ -67,6 +67,14 @@ namespace osc
     // returns all components between the root (element 0) and the given component (element n-1) inclusive
     std::vector<OpenSim::Component const*> GetPathElements(OpenSim::Component const&);
 
+    // returns `true` if `c == parent` or `c` is a descendent of `parent`
+    bool IsInclusiveChildOf(OpenSim::Component const* parent, OpenSim::Component const* c);
+
+    // returns the first parent in `parents` that appears to be an inclusive parent of `c`
+    //
+    // returns `nullptr` if no element in `parents` is an inclusive parent of `c`
+    OpenSim::Component const* IsInclusiveChildOf(nonstd::span<OpenSim::Component const*> parents, OpenSim::Component const* c);
+
     // returns the first ancestor of `c` for which the given predicate returns `true`
     OpenSim::Component const* FindFirstAncestorInclusive(OpenSim::Component const*, bool(*pred)(OpenSim::Component const*));
 

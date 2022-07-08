@@ -800,6 +800,50 @@ std::vector<OpenSim::Component const*> osc::GetPathElements(OpenSim::Component c
     return rv;
 }
 
+bool osc::IsInclusiveChildOf(OpenSim::Component const* parent, OpenSim::Component const* c)
+{
+    if (!c)
+    {
+        return false;
+    }
+
+    if (!parent)
+    {
+        return false;
+    }
+
+    for (;;)
+    {
+        if (c == parent)
+        {
+            return true;
+        }
+
+        if (!c->hasOwner())
+        {
+            return false;
+        }
+
+        c = &c->getOwner();
+    }
+}
+
+OpenSim::Component const* osc::IsInclusiveChildOf(nonstd::span<OpenSim::Component const*> parents, OpenSim::Component const* c)
+{
+    while (c)
+    {
+        for (size_t i = 0; i < parents.size(); ++i)
+        {
+            if (c == parents[i])
+            {
+                return parents[i];
+            }
+        }
+        c = c->hasOwner() ? &c->getOwner() : nullptr;
+    }
+    return nullptr;
+}
+
 OpenSim::Component const* osc::FindFirstAncestorInclusive(OpenSim::Component const* c, bool(*pred)(OpenSim::Component const*))
 {
     while (c)
