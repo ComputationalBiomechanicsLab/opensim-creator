@@ -748,9 +748,9 @@ namespace
             {
                 HandlePointToPointSpring(*p2p, state, selected, hovered, isolated, fixupScaleFactor, out);
             }
-            else if (auto const* station = dynamic_cast<OpenSim::Station const*>(&c))
+            else if (typeid(c) == typeid(OpenSim::Station))  // CARE: it's a typeid comparison because OpenSim::Marker inherits from OpenSim::Station
             {
-                HandleStation(*station, state, selected, hovered, isolated, fixupScaleFactor, out);
+                HandleStation(static_cast<OpenSim::Station const&>(c), state, selected, hovered, isolated, fixupScaleFactor, out);
             }
             else if (auto const* body = dynamic_cast<OpenSim::Body const*>(&c))
             {
