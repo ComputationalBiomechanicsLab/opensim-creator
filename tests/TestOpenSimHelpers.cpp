@@ -73,7 +73,7 @@ TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
 
 		// update model
 		auto* ptr = replacement.get();
-		const_cast<OpenSim::JointSet&>(*jointSet).set(idx, replacement.release());
+		const_cast<OpenSim::JointSet&>(*jointSet).set(static_cast<int>(idx), replacement.release());
 		model.updModel();  // dirty it
 		model.commit(msg);
 
