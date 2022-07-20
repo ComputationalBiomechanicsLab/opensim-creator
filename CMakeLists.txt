@@ -379,6 +379,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/IntegratorOutputExtractor.hpp
     src/OpenSimBindings/ModelStateCommit.cpp
     src/OpenSimBindings/ModelStateCommit.hpp
+    src/OpenSimBindings/ModelStateRenderer.cpp
+    src/OpenSimBindings/ModelStateRenderer.hpp
     src/OpenSimBindings/ModelStateRendererParams.cpp
     src/OpenSimBindings/ModelStateRendererParams.hpp
     src/OpenSimBindings/MultiBodySystemOutputExtractor.cpp

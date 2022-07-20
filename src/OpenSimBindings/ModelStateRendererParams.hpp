@@ -41,4 +41,5 @@ namespace osc
     };
 
     bool operator==(ModelStateRendererParams const&, ModelStateRendererParams const&);
+    bool operator!=(ModelStateRendererParams const&, ModelStateRendererParams const&);
 }

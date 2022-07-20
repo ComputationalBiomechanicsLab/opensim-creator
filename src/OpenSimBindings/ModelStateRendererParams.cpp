@@ -38,3 +38,8 @@ bool osc::operator==(ModelStateRendererParams const& a, ModelStateRendererParams
         a.FloorLocation == b.FloorLocation &&
         a.FixupScaleFactor == b.FixupScaleFactor;
 }
+
+bool osc::operator!=(ModelStateRendererParams const& a, ModelStateRendererParams const& b)
+{
+    return !(a == b);
+}

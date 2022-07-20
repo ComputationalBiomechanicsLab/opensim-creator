@@ -26,6 +26,7 @@
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
 #include "src/OpenSimBindings/CustomDecorationOptions.hpp"
+#include "src/OpenSimBindings/ModelStateRenderer.hpp"
 #include "src/OpenSimBindings/ModelStateRendererParams.hpp"
 #include "src/OpenSimBindings/MuscleColoringStyle.hpp"
 #include "src/OpenSimBindings/MuscleDecorationStyle.hpp"
@@ -97,172 +98,6 @@ namespace
 // rendering utils
 namespace
 {
-    // helper method for making a render buffer (used in Render_target)
-    gl::RenderBuffer makeMultisampledRenderBuffer(int samples, GLenum format, int w, int h)
-    {
-        gl::RenderBuffer rv;
-        gl::BindRenderBuffer(rv);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, format, w, h);
-        return rv;
-    }
-
-    gl::RenderBuffer makeRenderBuffer(GLenum format, int w, int h)
-    {
-        gl::RenderBuffer rv;
-        gl::BindRenderBuffer(rv);
-        glRenderbufferStorage(GL_RENDERBUFFER, format, w, h);
-        return rv;
-    }
-
-    // buffers used to render the scene
-    struct RenderBuffers final {
-        glm::ivec2 dims;
-        int samples;
-
-        // scene is MSXAAed + blended color buffer
-        gl::RenderBuffer sceneRBO;
-        gl::RenderBuffer sceneDepth24StencilRBO;
-        gl::FrameBuffer sceneFBO;
-
-        // rims are single-sampled, single-color, no blending
-        gl::Texture2D rims2DTex;
-        gl::RenderBuffer rims2DDepth24Stencil8RBO;
-        gl::FrameBuffer rimsFBO;
-
-        // output of the renderer
-        gl::Texture2D outputTex;
-        gl::Texture2D outputDepth24Stencil8Tex;
-        gl::FrameBuffer outputFbo;
-
-        RenderBuffers(glm::ivec2 dims_, int samples_) :
-            dims{dims_},
-            samples{samples_},
-
-            sceneRBO{makeMultisampledRenderBuffer(samples, GL_RGBA, dims.x, dims.y)},
-            sceneDepth24StencilRBO{makeMultisampledRenderBuffer(samples, GL_DEPTH24_STENCIL8, dims.x, dims.y)},
-            sceneFBO{[this]() {
-                gl::FrameBuffer rv;
-                gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
-                gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, sceneRBO);
-                gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, sceneDepth24StencilRBO);
-                gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-                return rv;
-            }()},
-
-            rims2DTex{[this]()
-            {
-                gl::Texture2D rv;
-                gl::BindTexture(rv);
-                gl::TexImage2D(rv.type, 0, GL_RED, dims.x, dims.y, 0, GL_RED, GL_UNSIGNED_BYTE, nullptr);
-                gl::TexParameteri(rv.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
-                gl::TexParameteri(rv.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
-                gl::TexParameteri(rv.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                gl::TexParameteri(rv.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                gl::TexParameteri(rv.type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-                return rv;
-            }()},
-            rims2DDepth24Stencil8RBO{makeRenderBuffer(GL_DEPTH24_STENCIL8, dims.x, dims.y)},
-            rimsFBO{[this]()
-            {
-                gl::FrameBuffer rv;
-                gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
-                gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rims2DTex, 0);
-                gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, rims2DDepth24Stencil8RBO);
-                gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-                return rv;
-            }()},
-
-            outputTex{[this]()
-            {
-               gl::Texture2D rv;
-               gl::BindTexture(rv);
-               gl::TexImage2D(rv.type, 0, GL_RGBA, dims.x, dims.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-               gl::TexParameteri(rv.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
-               gl::TexParameteri(rv.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
-               return rv;
-           }()},
-           outputDepth24Stencil8Tex{[this]()
-            {
-               gl::Texture2D rv;
-               gl::BindTexture(rv);
-               // https://stackoverflow.com/questions/27535727/opengl-create-a-depth-stencil-texture-for-reading
-               gl::TexImage2D(rv.type, 0, GL_DEPTH24_STENCIL8, dims.x, dims.y, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
-               return rv;
-           }()},
-           outputFbo{[this]()
-           {
-               gl::FrameBuffer rv;
-               gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
-               gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, outputTex, 0);
-               gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, outputDepth24Stencil8Tex, 0);
-               gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-               return rv;
-           }()}
-        {
-            // ctor
-        }
-
-        void setDims(glm::ivec2 newDims)
-        {
-            if (newDims != dims)
-            {
-                *this = RenderBuffers{newDims, samples};
-            }
-        }
-
-        void setSamples(int newSamples)
-        {
-            if (samples != newSamples)
-            {
-                *this = RenderBuffers{dims, newSamples};
-            }
-        }
-    };
-
-    struct SceneGPUInstanceData final {
-        glm::mat4x3 modelMtx;
-        glm::mat3 normalMtx;
-        glm::vec4 rgba;
-        float rimIntensity;
-        int decorationIdx;
-    };
-
-    glm::mat4x3 GenerateFloorModelMatrix(glm::vec3 floorLocation, float fixupScaleFactor)
-    {
-        // rotate from XY (+Z dir) to ZY (+Y dir)
-        glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, -osc::fpi2, {1.0f, 0.0f, 0.0f});
-
-        // make floor extend far in all directions
-        rv = glm::scale(glm::mat4{1.0f}, {fixupScaleFactor * 100.0f, 1.0f, fixupScaleFactor * 100.0f}) * rv;
-
-        rv = glm::translate(glm::mat4{1.0f}, fixupScaleFactor * floorLocation) * rv;
-
-        return glm::mat4x3{rv};
-    }
-
-    void BindToInstanceAttributes(size_t offset)
-    {
-        gl::AttributeMat4x3 mmtxAttr{ osc::SHADER_LOC_MATRIX_MODEL };
-        gl::VertexAttribPointer(mmtxAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData) * offset + offsetof(SceneGPUInstanceData, modelMtx));
-        gl::VertexAttribDivisor(mmtxAttr, 1);
-        gl::EnableVertexAttribArray(mmtxAttr);
-
-        gl::AttributeMat3 normMtxAttr{ osc::SHADER_LOC_MATRIX_NORMAL };
-        gl::VertexAttribPointer(normMtxAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData) * offset + offsetof(SceneGPUInstanceData, normalMtx));
-        gl::VertexAttribDivisor(normMtxAttr, 1);
-        gl::EnableVertexAttribArray(normMtxAttr);
-
-        gl::AttributeVec4 colorAttr{ osc::SHADER_LOC_COLOR_DIFFUSE };
-        gl::VertexAttribPointer(colorAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData) * offset + offsetof(SceneGPUInstanceData, rgba));
-        gl::VertexAttribDivisor(colorAttr, 1);
-        gl::EnableVertexAttribArray(colorAttr);
-
-        gl::AttributeFloat rimAttr{ osc::SHADER_LOC_COLOR_RIM };
-        gl::VertexAttribPointer(rimAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData) * offset + offsetof(SceneGPUInstanceData, rimIntensity));
-        gl::VertexAttribDivisor(rimAttr, 1);
-        gl::EnableVertexAttribArray(rimAttr);
-    }
-
     void DrawSceneAABBs(
         nonstd::span<osc::ComponentDecoration const> decs,
         glm::mat4 const& viewMtx,
@@ -330,7 +165,7 @@ namespace
         OpenSim::ComponentPath m_LastSelection;
         OpenSim::ComponentPath m_LastHover;
         OpenSim::ComponentPath m_LastIsolation;
-        float m_LastFixupFactor;
+        float m_LastFixupFactor = 1.0f;
         osc::CustomDecorationOptions m_LastDecorationOptions;
 
         osc::UID m_Version;
@@ -368,385 +203,6 @@ namespace
         osc::UID m_LastDrawlistVersion;
         osc::UID m_Version;
         osc::BVH m_BVH;
-    };
-
-    class CachedGPUDrawlist final {
-    public:
-        osc::UID getVersion() const
-        {
-            return m_Version;
-        }
-
-        nonstd::span<SceneGPUInstanceData const> get() const
-        {
-            return m_DrawListBuffer;
-        }
-
-        nonstd::span<SceneGPUInstanceData> populate(CachedSceneDrawlist const& drawlist)
-        {
-            if (drawlist.getVersion() == m_LastDrawlistVersion)
-            {
-                return m_DrawListBuffer;
-            }
-
-            // update cache checks
-            m_LastDrawlistVersion = drawlist.getVersion();
-            m_Version = osc::UID{};
-
-            auto decorations = drawlist.get();
-            m_DrawListBuffer.clear();
-            m_DrawListBuffer.reserve(decorations.size());
-
-            // populate the list with the scene
-            for (size_t i = 0; i < decorations.size(); ++i)
-            {
-                osc::ComponentDecoration const& se = decorations[i];
-
-                if (se.flags & (osc::ComponentDecorationFlags_IsIsolated | osc::ComponentDecorationFlags_IsChildOfIsolated))
-                {
-                    continue;  // skip rendering this (it's not in the isolated component)
-                }
-
-                SceneGPUInstanceData& ins = m_DrawListBuffer.emplace_back();
-                ins.modelMtx = osc::ToMat4(se.transform);
-                ins.normalMtx = osc::ToNormalMatrix(se.transform);
-                ins.rgba = se.color;
-                ins.decorationIdx = static_cast<int>(i);
-
-                if (se.flags & (osc::ComponentDecorationFlags_IsSelected | osc::ComponentDecorationFlags_IsChildOfSelected))
-                {
-                    ins.rimIntensity = 0.9f;
-                }
-                else if (se.flags & (osc::ComponentDecorationFlags_IsHovered | osc::ComponentDecorationFlags_IsChildOfHovered))
-                {
-                    ins.rimIntensity = 0.4f;
-                }
-                else
-                {
-                    ins.rimIntensity = 0.0f;
-                }
-            }
-
-            return m_DrawListBuffer;
-        }
-    private:
-        osc::UID m_LastDrawlistVersion;
-        osc::UID m_Version;
-        std::vector<SceneGPUInstanceData> m_DrawListBuffer;
-    };
-
-    class ModelStateRenderer final {
-    public:
-
-        glm::ivec2 getDimensions() const
-        {
-            return m_RenderTarget.dims;
-        }
-
-        int getSamples() const
-        {
-            return m_RenderTarget.samples;
-        }
-
-        void draw(osc::ModelStateRendererParams const& params, CachedSceneDrawlist const& drawlist)
-        {
-            if (params == m_LastParams &&
-                drawlist.getVersion() == m_LastDrawlistVersion)
-            {
-                return;  // nothing changed since the last render
-            }
-
-            OSC_PERF("perform full redraw (re-render)");
-
-            // update cache checks
-            m_LastParams = params;
-            m_LastDrawlistVersion = drawlist.getVersion();
-
-            // ensure underlying render target matches latest params
-            m_RenderTarget.setDims(params.Dimensions);
-            m_RenderTarget.setSamples(params.Samples);
-
-            // populate GPU-friendly representation of the (higher-level) drawlist
-            m_GPUDrawlist.populate(drawlist);
-
-            // upload data to the GPU
-            gl::ArrayBuffer<SceneGPUInstanceData> instanceBuf{m_GPUDrawlist.get()};
-
-            // setup top-level OpenGL state
-            gl::Viewport(0, 0, m_RenderTarget.dims.x, m_RenderTarget.dims.y);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            gl::Enable(GL_BLEND);
-            gl::Enable(GL_DEPTH_TEST);
-            gl::Disable(GL_SCISSOR_TEST);
-
-            // draw scene
-            {
-                gl::BindFramebuffer(GL_FRAMEBUFFER, m_RenderTarget.sceneFBO);
-                gl::ClearColor(params.BackgroundColor);
-                gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-                if (params.WireframeMode)
-                {
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                }
-
-                // draw the floor first, so that the transparent geometry in the scene also shows
-                // the floor texture
-                if (params.DrawFloor & osc::UiModelViewerFlags_DrawFloor)
-                {
-                    auto& basicShader = osc::App::shader<osc::GouraudShader>();
-
-                    gl::UseProgram(basicShader.program);
-                    gl::Uniform(basicShader.uProjMat, params.ProjectionMatrix);
-                    gl::Uniform(basicShader.uViewMat, params.ViewMatrix);
-                    glm::mat4 mtx = GenerateFloorModelMatrix(params.FloorLocation, params.FixupScaleFactor);
-                    gl::Uniform(basicShader.uModelMat, mtx);
-                    gl::Uniform(basicShader.uNormalMat, osc::ToNormalMatrix(mtx));
-                    gl::Uniform(basicShader.uLightDir, params.LightDirection);
-                    gl::Uniform(basicShader.uLightColor, params.LightColor);
-                    gl::Uniform(basicShader.uViewPos, params.ViewPos);
-                    gl::Uniform(basicShader.uDiffuseColor, {1.0f, 1.0f, 1.0f, 1.0f});
-                    gl::Uniform(basicShader.uIsTextured, true);
-                    gl::ActiveTexture(GL_TEXTURE0);
-                    gl::BindTexture(m_ChequerTexture);
-                    gl::Uniform(basicShader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
-                    auto floor = osc::App::meshes().getFloorMesh();
-                    gl::BindVertexArray(floor->GetVertexArray());
-                    floor->Draw();
-                    gl::BindVertexArray();
-                }
-
-                auto& instancedShader = osc::App::shader<osc::InstancedGouraudColorShader>();
-                gl::UseProgram(instancedShader.program);
-                gl::Uniform(instancedShader.uProjMat, params.ProjectionMatrix);
-                gl::Uniform(instancedShader.uViewMat, params.ViewMatrix);
-                gl::Uniform(instancedShader.uLightDir, params.LightDirection);
-                gl::Uniform(instancedShader.uLightColor, params.LightColor);
-                gl::Uniform(instancedShader.uViewPos, params.ViewPos);
-
-                nonstd::span<SceneGPUInstanceData const> instances = m_GPUDrawlist.get();
-                nonstd::span<osc::ComponentDecoration const> decs = drawlist.get();
-
-                size_t pos = 0;
-                size_t ninstances = instances.size();
-
-                while (pos < ninstances)
-                {
-                    osc::ComponentDecoration const& se = decs[instances[pos].decorationIdx];
-
-                    // batch
-                    size_t end = pos + 1;
-                    while (end < ninstances &&
-                        decs[instances[end].decorationIdx].mesh == se.mesh)
-                    {
-                        ++end;
-                    }
-
-                    // if the last element in a batch is opaque, then all the preceding ones should be
-                    // also and we can skip blend-testing the entire batch
-                    if (instances[end-1].rgba.a >= 0.99f)
-                    {
-                        gl::Disable(GL_BLEND);
-                    }
-                    else
-                    {
-                        gl::Enable(GL_BLEND);
-                    }
-
-                    gl::BindVertexArray(se.mesh->GetVertexArray());
-                    gl::BindBuffer(instanceBuf);
-                    BindToInstanceAttributes(pos);
-                    se.mesh->DrawInstanced(end-pos);
-                    gl::BindVertexArray();
-
-                    pos = end;
-                }
-
-                if (params.WireframeMode)
-                {
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                }
-            }
-
-            // draw mesh normals, if requested
-            if (params.DrawMeshNormals)
-            {
-                auto& normalShader = osc::App::shader<osc::NormalsShader>();
-                gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
-                gl::UseProgram(normalShader.program);
-                gl::Uniform(normalShader.uProjMat, params.ProjectionMatrix);
-                gl::Uniform(normalShader.uViewMat, params.ViewMatrix);
-
-                nonstd::span<SceneGPUInstanceData const> instances = m_GPUDrawlist.get();
-                nonstd::span<osc::ComponentDecoration const> decs = drawlist.get();
-
-                for (SceneGPUInstanceData const& inst : instances)
-                {
-                    osc::ComponentDecoration const& se = decs[inst.decorationIdx];
-
-                    gl::Uniform(normalShader.uModelMat, inst.modelMtx);
-                    gl::Uniform(normalShader.uNormalMat, inst.normalMtx);
-                    gl::BindVertexArray(se.mesh->GetVertexArray());
-                    se.mesh->Draw();
-                }
-                gl::BindVertexArray();
-            }
-
-            // blit scene render to non-MSXAAed output texture
-            gl::BindFramebuffer(GL_READ_FRAMEBUFFER, m_RenderTarget.sceneFBO);
-            glReadBuffer(GL_COLOR_ATTACHMENT0);
-            gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, m_RenderTarget.outputFbo);
-            gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
-            gl::BlitFramebuffer(0, 0, m_RenderTarget.dims.x, m_RenderTarget.dims.y,
-                0, 0, m_RenderTarget.dims.x, m_RenderTarget.dims.y,
-                GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-
-            // draw rims
-            if (params.DrawRims)
-            {
-                gl::BindFramebuffer(GL_FRAMEBUFFER, m_RenderTarget.rimsFBO);
-                gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-                gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-                auto& iscs = osc::App::shader<osc::InstancedSolidColorShader>();
-                gl::UseProgram(iscs.program);
-                gl::Uniform(iscs.uVP, params.ProjectionMatrix * params.ViewMatrix);
-
-                nonstd::span<SceneGPUInstanceData const> instances = m_GPUDrawlist.get();
-                nonstd::span<osc::ComponentDecoration const> decs = drawlist.get();
-
-                size_t pos = 0;
-                size_t ninstances = instances.size();
-
-                // drawcalls & figure out rim AABB
-                osc::AABB rimAABB;
-                rimAABB.min = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
-                rimAABB.max = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
-                bool hasRims = false;
-
-                while (pos < ninstances)
-                {
-                    SceneGPUInstanceData const& inst = instances[pos];
-                    osc::ComponentDecoration const& se = decs[inst.decorationIdx];
-
-                    // batch
-                    size_t end = pos + 1;
-                    while (end < ninstances &&
-                        decs[instances[end].decorationIdx].mesh == se.mesh &&
-                        instances[end].rimIntensity == inst.rimIntensity)
-                    {
-                        ++end;
-                    }
-
-                    if (inst.rimIntensity < 0.001f)
-                    {
-                        pos = end;
-                        continue;  // skip rendering rimless elements
-                    }
-
-                    hasRims = true;
-
-                    // union the rims for scissor testing later
-                    for (size_t i = pos; i < end; ++i)
-                    {
-                        rimAABB = Union(rimAABB, GetWorldspaceAABB(decs[instances[i].decorationIdx]));
-                    }
-
-                    gl::Uniform(iscs.uColor, {inst.rimIntensity, 0.0f, 0.0f, 1.0f});
-                    gl::BindVertexArray(se.mesh->GetVertexArray());
-                    gl::BindBuffer(instanceBuf);
-                    BindToInstanceAttributes(pos);
-                    se.mesh->DrawInstanced(end-pos);
-                    gl::BindVertexArray();
-
-                    pos = end;
-                }
-
-                if (hasRims)
-                {
-                    glm::vec2 rimThickness = glm::vec2{1.5f} / glm::vec2{m_RenderTarget.dims};
-
-                    // care: edge-detection kernels are expensive
-                    //
-                    // calculate a screenspace bounding box that surrounds the rims so that the
-                    // edge detection shader only had to run on a smaller subset of the screen
-                    osc::AABB screenspaceRimBounds = TransformAABB(rimAABB, params.ProjectionMatrix * params.ViewMatrix);
-                    auto verts = ToCubeVerts(screenspaceRimBounds);
-
-                    osc::Rect screenBounds{verts[0], verts[0]};
-
-                    for (size_t i = 1; i < verts.size(); ++i)
-                    {
-                        glm::vec2 p = verts[i];  // dump Z
-                        screenBounds.p1 = osc::Min(p, screenBounds.p1);
-                        screenBounds.p2 = osc::Max(p, screenBounds.p2);
-                    }
-                    screenBounds.p1 -= rimThickness;
-                    screenBounds.p2 += rimThickness;
-
-                    glm::ivec2 renderDims = m_RenderTarget.dims;
-                    glm::ivec2 min{
-                        static_cast<int>((screenBounds.p1.x + 1.0f)/2.0f * renderDims.x),
-                        static_cast<int>((screenBounds.p1.y + 1.0f)/2.0f * renderDims.y)};
-                    glm::ivec2 max{
-                        static_cast<int>((screenBounds.p2.x + 1.0f)/2.0f * renderDims.x),
-                        static_cast<int>((screenBounds.p2.y + 1.0f)/2.0f * renderDims.y)};
-
-                    int x = std::max(0, min.x);
-                    int y = std::max(0, min.y);
-                    int w = max.x - min.x;
-                    int h = max.y - min.y;
-
-                    // rims FBO now contains *solid* colors that need to be edge-detected
-
-                    // write rims over the output output
-                    gl::BindFramebuffer(GL_FRAMEBUFFER, m_RenderTarget.outputFbo);
-
-                    auto& edgeDetectShader = osc::App::shader<osc::EdgeDetectionShader>();
-                    gl::UseProgram(edgeDetectShader.program);
-                    gl::Uniform(edgeDetectShader.uMVP, gl::identity);
-                    gl::ActiveTexture(GL_TEXTURE0);
-                    gl::BindTexture(m_RenderTarget.rims2DTex);
-                    gl::Uniform(edgeDetectShader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
-                    gl::Uniform(edgeDetectShader.uRimRgba, {0.95f, 0.40f, 0.0f, 0.70f});
-                    gl::Uniform(edgeDetectShader.uRimThickness, rimThickness);
-                    gl::Enable(GL_SCISSOR_TEST);
-                    glScissor(x, y, w, h);
-                    gl::Enable(GL_BLEND);
-                    gl::Disable(GL_DEPTH_TEST);
-                    auto quad = osc::App::meshes().getTexturedQuadMesh();
-                    gl::BindVertexArray(quad->GetVertexArray());
-                    quad->Draw();
-                    gl::BindVertexArray();
-                    gl::Enable(GL_DEPTH_TEST);
-                    gl::Disable(GL_SCISSOR_TEST);
-                }
-            }
-
-            gl::Enable(GL_BLEND);
-            gl::Enable(GL_DEPTH_TEST);
-            gl::Disable(GL_SCISSOR_TEST);
-            gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-        }
-
-        gl::Texture2D& updOutputTexture()
-        {
-            return m_RenderTarget.outputTex;
-        }
-
-        gl::FrameBuffer& updOutputFBO()
-        {
-            return m_RenderTarget.outputFbo;
-        }
-
-    private:
-        // caching
-        osc::ModelStateRendererParams m_LastParams;
-        osc::UID m_LastDrawlistVersion;
-
-        CachedGPUDrawlist m_GPUDrawlist;
-        gl::Texture2D m_ChequerTexture = osc::genChequeredFloorTexture();
-        RenderBuffers m_RenderTarget{{1, 1}, 1};
     };
 }
 
@@ -788,7 +244,7 @@ public:
         handleUserInput();
         drawMainMenu();
 
-        if (!ImGui::BeginChild("##child", { 0.0f, 0.0f }, false, ImGuiWindowFlags_NoMove))
+        if (!ImGui::BeginChild("##child", {0.0f, 0.0f}, false, ImGuiWindowFlags_NoMove))
         {
             // render window isn't visible
             m_RenderImage = {};
@@ -1191,7 +647,13 @@ private:
         m_RendererParams.ViewPos = m_Camera.getPos();
         m_RendererParams.FixupScaleFactor = rs.getFixupScaleFactor();
 
-        m_Rendererer.draw(m_RendererParams, m_SceneDrawlist);
+        if (m_SceneDrawlist.getVersion() != m_RendererPrevDrawlistVersion ||
+            m_RendererParams != m_RendererPrevParams)
+        {
+            m_RendererPrevDrawlistVersion = m_SceneDrawlist.getVersion();
+            m_RendererPrevParams = m_RendererParams;
+            m_Rendererer.draw(m_SceneDrawlist.get(), m_RendererParams);
+        }
     }
 
     // draws overlays that are "in scene" - i.e. they are part of the rendered texture
@@ -1246,7 +708,7 @@ private:
 
     // widget state
     UiModelViewerFlags m_Flags = UiModelViewerFlags_Default;
-    osc::CustomDecorationOptions m_DecorationOptions;
+    CustomDecorationOptions m_DecorationOptions;
 
     // scene state
     CachedSceneDrawlist m_SceneDrawlist;
@@ -1255,6 +717,8 @@ private:
 
     // rendering input state
     ModelStateRendererParams m_RendererParams;
+    ModelStateRendererParams m_RendererPrevParams;
+    UID m_RendererPrevDrawlistVersion;
     ModelStateRenderer m_Rendererer;
 
     // ImGui compositing/hittesting state
