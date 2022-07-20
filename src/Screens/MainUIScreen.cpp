@@ -568,7 +568,7 @@ private:
     }
 
     // global simulation params: dictates how the next simulation shall be ran
-    ParamBlock m_SimulationParams = ToParamBlock(ForwardDynamicSimulatorParams{});  // TODO: make generic
+    ParamBlock m_SimulationParams = ToParamBlock(ForwardDynamicSimulatorParams{});
 
     // user-initiated output extractors
     //

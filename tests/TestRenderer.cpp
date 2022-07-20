@@ -696,15 +696,11 @@ TEST_F(Renderer, MaterialCanPrintToStringStream)
     ss << m1;
 }
 
-// TODO: test print contains relevant strings etc.
-
 TEST_F(Renderer, MaterialCanConvertToString)
 {
     osc::experimental::Material m1 = GenerateMaterial();
     std::string s = osc::experimental::to_string(m1);
 }
-
-// TODO: compound tests: ensure copy on write works etc
 
 TEST_F(Renderer, MaterialSetFloatAndThenSetVec3CausesGetFloatToReturnEmpty)
 {
@@ -1035,13 +1031,6 @@ TEST_F(Renderer, MaterialPropertyBlockCanConvertToString)
     std::string s = osc::experimental::to_string(m);  // just ensure this compiles + runs
 }
 
-
-// TOOD: ensure string contains relevant stuff etc
-
-// TODO: ensure printout mentions variables etc.
-
-// TODO: compound test: set a float but read a vec, etc.
-
 TEST_F(Renderer, TextureCanConstructFromPixels)
 {
     std::vector<osc::Rgba32> pixels(4);
@@ -1357,9 +1346,6 @@ TEST_F(Renderer, TextureCaneBeConvertedToString)
     ASSERT_FALSE(s.empty());
 }
 
-
-// TODO ensure texture debug string contains useful information etc.
-
 TEST_F(Renderer, MeshTopographyAllCanBeWrittenToStream)
 {
     for (int i = 0; i < static_cast<int>(osc::experimental::MeshTopography::TOTAL); ++i)
@@ -1553,17 +1539,6 @@ TEST_F(Renderer, MeshGetNumIndicesReturnsZeroOnDefaultConstruction)
     ASSERT_EQ(m.getNumIndices(), 0);
 }
 
-TEST_F(Renderer, MeshSetIndicesU16CausesGetNumIndicesToEqualSuppliedNumberOfIndices)
-{
-    // TODO: indices checks?
-}
-
-// TODO getIndices
-// TODO setIndices U16
-// TODO setIndices U32
-// TODO ensure > 2^16 indices are allowed
-// TODO clear
-
 TEST_F(Renderer, MeshCanBeComparedForEquality)
 {
     osc::experimental::Mesh m1;
@@ -1639,7 +1614,6 @@ TEST_F(Renderer, MeshCanBeConvertedToStringForDebugging)
     ASSERT_FALSE(s.empty());
 }
 
-// TODO: ensure output strings are actually useful
 TEST_F(Renderer, CameraProjectionCanBeStreamed)
 {
     for (int i = 0; i < static_cast<int>(osc::experimental::CameraProjection::TOTAL); ++i)
@@ -1810,23 +1784,40 @@ TEST_F(Renderer, CameraSetCameraProjectionMakesCameraCompareNotEqual)
     ASSERT_NE(camera, copy);
 }
 
+// TODO: Material: test print contains relevant strings etc.
+
+// TOOD: MaterialPropertyBlocK: ensure string contains relevant stuff etc
+// TODO: MaterialPropertyBlocK: ensure printout mentions variables etc.
+// TODO: MaterialPropertyBlocK: compound test: set a float but read a vec, etc.
+
+// TODO MeshSetIndicesU16CausesGetNumIndicesToEqualSuppliedNumberOfIndices
+// TODO Mesh::getIndices
+// TODO Mesh::setIndices U16
+// TODO Mesh::setIndices U32
+// TODO Mesh ensure > 2^16 indices are allowed
+// TODO Mesh::clear
+// 
 // TODO: RenderTextureFormat <<
 // TODO: RenderTextureFormat to_string
 // TODO: DepthStencilFormat <<
 // TODO: DepthStencilFormat to_string
 // TODO: RenderTextureDescriptor (all)
 // TODO: RenderTexture (all)
-// TODO: orthographic size
-// TODO: fov
-// TODO: clipping planes
-// TODO: texture
-// TODO: pixel rect
-// TODO: pixel dims
-// TODO: scissor rect
-// TODO: position
-// TODO: direction
-// TODO: matrix
-// TODO: render
-// TODO: operator<<
-// TODO: to_string
-// TODO: hash
+
+// TODO: Texture: ensure texture debug string contains useful information etc.
+
+// TODO: Camera: orthographic size
+// TODO: Camera: fov
+// TODO: Camera: clipping planes
+// TODO: Camera: texture
+// TODO: Camera: pixel rect
+// TODO: Camera: pixel dims
+// TODO: Camera: scissor rect
+// TODO: Camera: position
+// TODO: Camera: direction
+// TODO: Camera: matrix
+// TODO: Camera: render
+// TODO: Camera: operator<<
+// TODO: Camera: to_string
+// TODO: Camera: hash
+// TODO: Camera: ensure output strings are actually useful

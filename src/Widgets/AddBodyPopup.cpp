@@ -199,7 +199,7 @@ private:
 
     void implOnClose() override
     {
-        // TODO: reset inputs
+        m_BodyDetails = BodyDetails{};
     }
 
     // the model that the body will be added to

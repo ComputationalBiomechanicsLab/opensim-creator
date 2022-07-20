@@ -685,7 +685,10 @@ namespace
                 return MeshLoadErrorResponse{msg.PreferredAttachmentPoint, path, ex.what()};
             }
         }
-        osc::App::upd().requestRedraw();  // TODO: HACK: try to make the UI thread redraw around the time this is sent
+
+        // HACK: ensure the UI thread redraws after the mesh is loaded
+        osc::App::upd().requestRedraw();
+
         return MeshLoadOKResponse{msg.PreferredAttachmentPoint, std::move(loadedMeshes)};
     }
 
@@ -3671,8 +3674,6 @@ namespace
             }
             else
             {
-                // TODO: this also has to handle joint attachments... :<
-
                 if (auto bodyIt = bodyLookup.find(static_cast<OpenSim::Body const*>(frameBodyOrGround)); bodyIt != bodyLookup.end())
                 {
                     attachment = bodyIt->second;
@@ -5440,6 +5441,7 @@ namespace
         bool CanChooseGround = true;
         bool CanChooseMeshes = true;
         bool CanChooseJoints = true;
+        bool CanChooseStations = false;
 
         // (maybe) elements the assignment is ultimately assigning
         std::unordered_set<UID> MaybeElsAttachingTo = {};
@@ -5531,7 +5533,7 @@ namespace
 
                 void operator()(StationEl const&) override
                 {
-                    // TODO
+                    m_Result = m_Opts.CanChooseStations;
                 }
 
             private:

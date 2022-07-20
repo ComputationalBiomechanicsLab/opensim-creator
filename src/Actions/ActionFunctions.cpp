@@ -841,8 +841,6 @@ bool osc::ActionAssignContactGeometryToSelectedHCF(osc::UndoableModelStatePair& 
             return false;
         }
 
-        // TODO: this should be done when the model is initially loaded
-
         // HACK: if it has no parameters, give it some. The HuntCrossleyForce implementation effectively
         // does this internally anyway to satisfy its own API (e.g. `getStaticFriction` requires that
         // the HuntCrossleyForce has a parameter)
