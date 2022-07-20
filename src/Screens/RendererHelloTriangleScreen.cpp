@@ -3,6 +3,7 @@
 #include "src/Graphics/Renderer.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
+#include "src/Utils/Algorithms.hpp"
 #include "src/Widgets/LogViewer.hpp"
 
 #include <glm/vec4.hpp>
@@ -84,7 +85,7 @@ class osc::RendererHelloTriangleScreen::Impl final {
 public:
     Impl()
     {
-        log::info("%s", osc::experimental::to_string(m_Shader).c_str());
+        log::info("%s", StreamToString(m_Shader).c_str());
     }
 
     void onMount()

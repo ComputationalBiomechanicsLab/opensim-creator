@@ -6,11 +6,13 @@
 #include <filesystem>
 #include <iterator>
 #include <limits>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <typeinfo>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace osc
@@ -228,5 +230,13 @@ namespace osc
     inline size_t HashOf(T const& v, Ts const&... vs)
     {
         return HashCombine(HashOf(v), HashOf(vs...));
+    }
+
+    template<typename T>
+    inline std::string StreamToString(T const& v)
+    {
+        std::stringstream ss;
+        ss << v;
+        return std::move(ss).str();
     }
 }

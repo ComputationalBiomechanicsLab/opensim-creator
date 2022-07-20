@@ -250,12 +250,6 @@ TEST_F(Renderer, CanStreamShaderType)
     ASSERT_EQ(ss.str(), "Bool");
 }
 
-TEST_F(Renderer, CanConvertShaderTypeToString)
-{
-    std::string s = osc::experimental::to_string(osc::experimental::ShaderType::Bool);
-    ASSERT_EQ(s, "Bool");
-}
-
 TEST_F(Renderer, CanIterateAndStringStreamAllShaderTypes)
 {
     for (int i = 0; i < static_cast<int>(osc::experimental::ShaderType::TOTAL); ++i)
@@ -263,15 +257,6 @@ TEST_F(Renderer, CanIterateAndStringStreamAllShaderTypes)
         // shouldn't crash - if it does then we've missed a case somewhere
         std::stringstream ss;
         ss << static_cast<osc::experimental::ShaderType>(i);
-    }
-}
-
-TEST_F(Renderer, CanIterateAndConvertAllShaderTypesToString)
-{
-    for (int i = 0; i < static_cast<int>(osc::experimental::ShaderType::TOTAL); ++i)
-    {
-        // shouldn't crash - if it does then we've missed a case somewhere
-        std::string s = osc::experimental::to_string(static_cast<osc::experimental::ShaderType>(i));
     }
 }
 
@@ -334,23 +319,16 @@ TEST_F(Renderer, ShaderCanBeWrittenToOutputStream)
     ASSERT_FALSE(ss.str().empty());
 }
 
-TEST_F(Renderer, ShaderCanBeConvertedToString)
-{
-    osc::experimental::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
-
-    std::string str = osc::experimental::to_string(s);
-
-    ASSERT_FALSE(str.empty());
-}
-
-TEST_F(Renderer, ShaderStringContainsExpectedInfo)
+TEST_F(Renderer, ShaderOutputStreamContainsExpectedInfo)
 {
     // this test is flakey, but is just ensuring that the string printout has enough information
     // to help debugging etc.
 
     osc::experimental::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
 
-    std::string str = osc::experimental::to_string(s);
+    std::stringstream ss;
+    ss << s;
+    std::string str{std::move(ss).str()};
 
     for (auto const& propName : g_ExpectedPropertyNames)
     {
@@ -664,42 +642,12 @@ TEST_F(Renderer, MaterialCanCompareLessThan)
     m1 < m2;  // should compile and not throw, but no guarantees about ordering
 }
 
-TEST_F(Renderer, MaterialCanCompareLessThanOrEqualsTo)
-{
-    osc::experimental::Material m1 = GenerateMaterial();
-    osc::experimental::Material m2 = GenerateMaterial();
-
-    m1 <= m2;  // should compile and not throw, but no guarantees about ordering
-}
-
-TEST_F(Renderer, MaterialCanCompareGreaterThan)
-{
-    osc::experimental::Material m1 = GenerateMaterial();
-    osc::experimental::Material m2 = GenerateMaterial();
-
-    m1 > m2;  // should compile and not throw, but no guarantees about ordering
-}
-
-TEST_F(Renderer, MaterialCanCompareGreaterThanOrEqualsTo)
-{
-    osc::experimental::Material m1 = GenerateMaterial();
-    osc::experimental::Material m2 = GenerateMaterial();
-
-    m1 >= m2;  // should compile and not throw, but no guarantees about ordering
-}
-
 TEST_F(Renderer, MaterialCanPrintToStringStream)
 {
     osc::experimental::Material m1 = GenerateMaterial();
 
     std::stringstream ss;
     ss << m1;
-}
-
-TEST_F(Renderer, MaterialCanConvertToString)
-{
-    osc::experimental::Material m1 = GenerateMaterial();
-    std::string s = osc::experimental::to_string(m1);
 }
 
 TEST_F(Renderer, MaterialSetFloatAndThenSetVec3CausesGetFloatToReturnEmpty)
@@ -982,30 +930,6 @@ TEST_F(Renderer, MaterialPropertyBlockCanCompareLessThan)
     m1 < m2;  // just ensure this compiles and runs
 }
 
-TEST_F(Renderer, MaterialPropertyBlockCanCompareLessThanOrEqualTo)
-{
-    osc::experimental::MaterialPropertyBlock m1;
-    osc::experimental::MaterialPropertyBlock m2;
-
-    m1 <= m2;  // just ensure this compiles and runs
-}
-
-TEST_F(Renderer, MaterialPropertyBlockCanCompareGreaterThan)
-{
-    osc::experimental::MaterialPropertyBlock m1;
-    osc::experimental::MaterialPropertyBlock m2;
-
-    m1 > m2;  // just ensure this compiles and runs
-}
-
-TEST_F(Renderer, MaterialPropertyBlockCanCompareGreaterThanOrEqualTo)
-{
-    osc::experimental::MaterialPropertyBlock m1;
-    osc::experimental::MaterialPropertyBlock m2;
-
-    m1 >= m2;  // just ensure this compiles and runs
-}
-
 TEST_F(Renderer, MaterialPropertyBlockCanPrintToOutputStream)
 {
     osc::experimental::MaterialPropertyBlock m1;
@@ -1022,13 +946,6 @@ TEST_F(Renderer, MaterialPropertyBlockPrintingToOutputStreamMentionsMaterialProp
     ss << m1;
 
     ASSERT_TRUE(osc::ContainsSubstring(ss.str(), "MaterialPropertyBlock"));
-}
-
-TEST_F(Renderer, MaterialPropertyBlockCanConvertToString)
-{
-    osc::experimental::MaterialPropertyBlock m;
-
-    std::string s = osc::experimental::to_string(m);  // just ensure this compiles + runs
 }
 
 TEST_F(Renderer, TextureCanConstructFromPixels)
@@ -1303,30 +1220,6 @@ TEST_F(Renderer, TextureCanBeComparedLessThan)
     t1 < t2;  // just ensure it compiles + runs
 }
 
-TEST_F(Renderer, TextureCanBeComparedLessThanOrEqualTo)
-{
-    osc::experimental::Texture2D t1 = GenerateTexture();
-    osc::experimental::Texture2D t2 = GenerateTexture();
-
-    t1 <= t2;
-}
-
-TEST_F(Renderer, TextureCanBeComparedGreaterThan)
-{
-    osc::experimental::Texture2D t1 = GenerateTexture();
-    osc::experimental::Texture2D t2 = GenerateTexture();
-
-    t1 > t2;
-}
-
-TEST_F(Renderer, TextureCanBeComparedGreaterThanOrEqualTo)
-{
-    osc::experimental::Texture2D t1 = GenerateTexture();
-    osc::experimental::Texture2D t2 = GenerateTexture();
-
-    t1 >= t2;
-}
-
 TEST_F(Renderer, TextureCanBeWrittenToOutputStream)
 {
     osc::experimental::Texture2D t = GenerateTexture();
@@ -1335,15 +1228,6 @@ TEST_F(Renderer, TextureCanBeWrittenToOutputStream)
     ss << t;
 
     ASSERT_FALSE(ss.str().empty());
-}
-
-TEST_F(Renderer, TextureCaneBeConvertedToString)
-{
-    osc::experimental::Texture2D t = GenerateTexture();
-
-    std::string s = osc::experimental::to_string(t);
-
-    ASSERT_FALSE(s.empty());
 }
 
 TEST_F(Renderer, MeshTopographyAllCanBeWrittenToStream)
@@ -1357,18 +1241,6 @@ TEST_F(Renderer, MeshTopographyAllCanBeWrittenToStream)
         ss << mt;
 
         ASSERT_FALSE(ss.str().empty());
-    }
-}
-
-TEST_F(Renderer, MeshTopographyAllCanBeConvertedToString)
-{
-    for (int i = 0; i < static_cast<int>(osc::experimental::MeshTopography::TOTAL); ++i)
-    {
-        osc::experimental::MeshTopography mt = static_cast<osc::experimental::MeshTopography>(i);
-
-        std::string s = osc::experimental::to_string(mt);
-
-        ASSERT_FALSE(s.empty());
     }
 }
 
@@ -1571,30 +1443,6 @@ TEST_F(Renderer, MeshCanBeComparedLessThan)
     m1 < m2;
 }
 
-TEST_F(Renderer, MeshCanBeComparedLessThanOrEqualTo)
-{
-    osc::experimental::Mesh m1;
-    osc::experimental::Mesh m2;
-
-    m1 <= m2;
-}
-
-TEST_F(Renderer, MeshCanBeComparedGreaterThan)
-{
-    osc::experimental::Mesh m1;
-    osc::experimental::Mesh m2;
-
-    m1 > m2;
-}
-
-TEST_F(Renderer, MeshCanBeComparedGreaterThanOrEqualTo)
-{
-    osc::experimental::Mesh m1;
-    osc::experimental::Mesh m2;
-
-    m1 >= m2;
-}
-
 TEST_F(Renderer, MeshCanBeWrittenToOutputStreamForDebugging)
 {
     osc::experimental::Mesh m;
@@ -1605,15 +1453,6 @@ TEST_F(Renderer, MeshCanBeWrittenToOutputStreamForDebugging)
     ASSERT_FALSE(ss.str().empty());
 }
 
-TEST_F(Renderer, MeshCanBeConvertedToStringForDebugging)
-{
-    osc::experimental::Mesh m;
-
-    std::string s = osc::experimental::to_string(m);
-
-    ASSERT_FALSE(s.empty());
-}
-
 TEST_F(Renderer, CameraProjectionCanBeStreamed)
 {
     for (int i = 0; i < static_cast<int>(osc::experimental::CameraProjection::TOTAL); ++i)
@@ -1622,16 +1461,6 @@ TEST_F(Renderer, CameraProjectionCanBeStreamed)
         ss << static_cast<osc::experimental::CameraProjection>(i);
 
         ASSERT_FALSE(ss.str().empty());
-    }
-}
-
-TEST_F(Renderer, CameraProjectionCanBeConvertedToString)
-{
-    for (int i = 0; i < static_cast<int>(osc::experimental::CameraProjection::TOTAL); ++i)
-    {
-        std::string s = osc::experimental::to_string(static_cast<osc::experimental::CameraProjection>(i));
-
-        ASSERT_FALSE(s.empty());
     }
 }
 

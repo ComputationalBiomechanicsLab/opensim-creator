@@ -37,9 +37,7 @@ namespace osc::experimental
         Mirror,
         TOTAL,
     };
-
     std::ostream& operator<<(std::ostream&, TextureWrapMode);
-    std::string to_string(TextureWrapMode);
 
     // how sampling should handle when the sampling location falls between multiple textels
     enum class TextureFilterMode {
@@ -47,14 +45,11 @@ namespace osc::experimental
         Linear,
         TOTAL,
     };
-
     std::ostream& operator<<(std::ostream&, TextureFilterMode);
-    std::string to_string(TextureFilterMode);
 
     // a handle to a 2D texture that can be rendered by the graphics backend
     class Texture2D final {
     public:
-        // RGBA32, SRGB
         Texture2D(int width, int height, nonstd::span<Rgba32 const> pixelsRowByRow);
         Texture2D(Texture2D const&);
         Texture2D(Texture2D&&) noexcept;
@@ -78,29 +73,21 @@ namespace osc::experimental
         TextureFilterMode getFilterMode() const;
         void setFilterMode(TextureFilterMode);
 
-        class Impl;
     private:
         friend class GraphicsBackend;
         friend bool operator==(Texture2D const&, Texture2D const&);
         friend bool operator!=(Texture2D const&, Texture2D const&);
         friend bool operator<(Texture2D const&, Texture2D const&);
-        friend bool operator<=(Texture2D const&, Texture2D const&);
-        friend bool operator>(Texture2D const&, Texture2D const&);
-        friend bool operator>=(Texture2D const&, Texture2D const&);
         friend std::ostream& operator<<(std::ostream&, Texture2D const&);
-        friend std::string to_string(Texture2D const&);
 
+        class Impl;
         std::shared_ptr<Impl> m_Impl;
     };
 
     bool operator==(Texture2D const&, Texture2D const&);
     bool operator!=(Texture2D const&, Texture2D const&);
     bool operator<(Texture2D const&, Texture2D const&);
-    bool operator<=(Texture2D const&, Texture2D const&);
-    bool operator>(Texture2D const&, Texture2D const&);
-    bool operator>=(Texture2D const&, Texture2D const&);
     std::ostream& operator<<(std::ostream&, Texture2D const&);
-    std::string to_string(Texture2D const&);
 }
 
 
@@ -123,9 +110,7 @@ namespace osc::experimental
         Unknown,
         TOTAL,
     };
-
     std::ostream& operator<<(std::ostream&, ShaderType);
-    std::string to_string(ShaderType);
 
     // a handle to a shader
     class Shader final {
@@ -143,29 +128,21 @@ namespace osc::experimental
         std::string const& getPropertyName(int propertyIndex) const;
         ShaderType getPropertyType(int propertyIndex) const;
 
-        class Impl;
     private:
         friend class GraphicsBackend;
         friend bool operator==(Shader const&, Shader const&);
         friend bool operator!=(Shader const&, Shader const&);
         friend bool operator<(Shader const&, Shader const&);
-        friend bool operator<=(Shader const&, Shader const&);
-        friend bool operator>(Shader const&, Shader const&);
-        friend bool operator>=(Shader const&, Shader const&);
         friend std::ostream& operator<<(std::ostream&, Shader const&);
-        friend std::string to_string(Shader const&);
 
+        class Impl;
         std::shared_ptr<Impl> m_Impl;
     };
 
     bool operator==(Shader const&, Shader const&);
     bool operator!=(Shader const&, Shader const&);
     bool operator<(Shader const&, Shader const&);
-    bool operator<=(Shader const&, Shader const&);
-    bool operator>(Shader const&, Shader const&);
-    bool operator>=(Shader const&, Shader const&);
     std::ostream& operator<<(std::ostream&, Shader const&);
-    std::string to_string(Shader const&);
 }
 
 
@@ -212,29 +189,21 @@ namespace osc::experimental
         std::optional<Texture2D> getTexture(std::string_view propertyName) const;
         void setTexture(std::string_view, Texture2D);
 
-        class Impl;
     private:
         friend class GraphicsBackend;
         friend bool operator==(Material const&, Material const&);
         friend bool operator!=(Material const&, Material const&);
         friend bool operator<(Material const&, Material const&);
-        friend bool operator<=(Material const&, Material const&);
-        friend bool operator>(Material const&, Material const&);
-        friend bool operator>=(Material const&, Material const&);
         friend std::ostream& operator<<(std::ostream&, Material const&);
-        friend std::string to_string(Material const&);
 
+        class Impl;
         std::shared_ptr<Impl> m_Impl;
     };
 
     bool operator==(Material const&, Material const&);
     bool operator!=(Material const&, Material const&);
     bool operator<(Material const&, Material const&);
-    bool operator<=(Material const&, Material const&);
-    bool operator>(Material const&, Material const&);
-    bool operator>=(Material const&, Material const&);
     std::ostream& operator<<(std::ostream&, Material const&);
-    std::string to_string(Material const&);
 }
 
 
@@ -283,29 +252,21 @@ namespace osc::experimental
         std::optional<Texture2D> getTexture(std::string_view propertyName) const;
         void setTexture(std::string_view, Texture2D);
 
-        class Impl;
     private:
         friend class GraphicsBackend;
         friend bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
         friend bool operator!=(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
         friend bool operator<(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
-        friend bool operator<=(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
-        friend bool operator>(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
-        friend bool operator>=(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
         friend std::ostream& operator<<(std::ostream&, MaterialPropertyBlock const&);
-        friend std::string to_string(MaterialPropertyBlock const&);
 
+        class Impl;
         std::shared_ptr<Impl> m_Impl;
     };
 
     bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
     bool operator!=(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
     bool operator<(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
-    bool operator<=(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
-    bool operator>(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
-    bool operator>=(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
     std::ostream& operator<<(std::ostream&, MaterialPropertyBlock const&);
-    std::string to_string(MaterialPropertyBlock const&);
 }
 
 
@@ -321,9 +282,7 @@ namespace osc::experimental
         Lines,
         TOTAL,
     };
-
     std::ostream& operator<<(std::ostream&, MeshTopography);
-    std::string to_string(MeshTopography);
 
     class Mesh final {
     public:
@@ -355,29 +314,21 @@ namespace osc::experimental
 
         void clear();
 
-        class Impl;
     private:
         friend class GraphicsBackend;
         friend bool operator==(Mesh const&, Mesh const&);
         friend bool operator!=(Mesh const&, Mesh const&);
         friend bool operator<(Mesh const&, Mesh const&);
-        friend bool operator<=(Mesh const&, Mesh const&);
-        friend bool operator>(Mesh const&, Mesh const&);
-        friend bool operator>=(Mesh const&, Mesh const&);
         friend std::ostream& operator<<(std::ostream&, Mesh const&);
-        friend std::string to_string(Mesh const&);
 
+        class Impl;
         std::shared_ptr<Impl> m_Impl;
     };
 
     bool operator==(Mesh const&, Mesh const&);
     bool operator!=(Mesh const&, Mesh const&);
     bool operator<(Mesh const&, Mesh const&);
-    bool operator<=(Mesh const&, Mesh const&);
-    bool operator>(Mesh const&, Mesh const&);
-    bool operator>=(Mesh const&, Mesh const&);
     std::ostream& operator<<(std::ostream&, Mesh const&);
-    std::string to_string(Mesh const&);
 }
 
 // render texture
@@ -389,21 +340,22 @@ namespace osc::experimental
         ARGB32 = 0,
         TOTAL,
     };
-
     std::ostream& operator<<(std::ostream&, RenderTextureFormat);
-    std::string to_string(RenderTextureFormat);
 
     enum class DepthStencilFormat {
         D24_UNorm_S8_UInt = 0,
         TOTAL,
     };
-
     std::ostream& operator<<(std::ostream&, DepthStencilFormat);
-    std::string to_string(DepthStencilFormat);
 
     class RenderTextureDescriptor final {
     public:
         RenderTextureDescriptor(int width, int height);
+        RenderTextureDescriptor(RenderTextureDescriptor const&);
+        RenderTextureDescriptor(RenderTextureDescriptor&&) noexcept;
+        RenderTextureDescriptor& operator=(RenderTextureDescriptor const&);
+        RenderTextureDescriptor& operator=(RenderTextureDescriptor&&) noexcept;
+        ~RenderTextureDescriptor() noexcept;
 
         int getWidth() const;
         void setWidth(int);
@@ -413,9 +365,6 @@ namespace osc::experimental
 
         int getAntialiasingLevel() const;
         void setAntialiasingLevel(int);
-
-        int getDepth() const;
-        void setDepth(int);  // 0, 16, 24, or 32
 
         RenderTextureFormat getColorFormat() const;
         void setColorFormat(RenderTextureFormat);
@@ -427,15 +376,11 @@ namespace osc::experimental
         friend bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
         friend bool operator!=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
         friend bool operator<(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
-        friend bool operator<=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
-        friend bool operator>(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
         friend std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
-        friend std::string to_string(RenderTextureDescriptor const&);
 
         int m_Width;
         int m_Height;
         int m_AnialiasingLevel;
-        int m_Depth;
         RenderTextureFormat m_ColorFormat;
         DepthStencilFormat m_DepthStencilFormat;
     };
@@ -443,14 +388,11 @@ namespace osc::experimental
     bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
     bool operator!=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
     bool operator<(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
-    bool operator<=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
-    bool operator>(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
     std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
-    std::string to_string(RenderTextureDescriptor const&);
 
     class RenderTexture final {
     public:
-        RenderTexture(RenderTextureDescriptor const&);
+        explicit RenderTexture(RenderTextureDescriptor const&);
 
         int getWidth() const;
         void setWidth(int);
@@ -470,26 +412,20 @@ namespace osc::experimental
         DepthStencilFormat getDepthStencilFormat() const;
         void setDepthStencilFormat(DepthStencilFormat);
 
-        class Impl;
     private:
         friend bool operator==(RenderTexture const&, RenderTexture const&);
         friend bool operator!=(RenderTexture const&, RenderTexture const&);
         friend bool operator<(RenderTexture const&, RenderTexture const&);
-        friend bool operator<=(RenderTexture const&, RenderTexture const&);
-        friend bool operator>(RenderTexture const&, RenderTexture const&);
         friend std::ostream& operator<<(std::ostream&, RenderTexture const&);
-        friend std::string to_string(RenderTexture const&);
 
+        class Impl;
         std::shared_ptr<Impl> m_Impl;
     };
 
     bool operator==(RenderTexture const&, RenderTexture const&);
     bool operator!=(RenderTexture const&, RenderTexture const&);
     bool operator<(RenderTexture const&, RenderTexture const&);
-    bool operator<=(RenderTexture const&, RenderTexture const&);
-    bool operator>(RenderTexture const&, RenderTexture const&);
     std::ostream& operator<<(std::ostream&, RenderTexture const&);
-    std::string to_string(RenderTexture const&);
 }
 
 // camera
@@ -504,9 +440,7 @@ namespace osc::experimental
         Orthographic,
         TOTAL,
     };
-
     std::ostream& operator<<(std::ostream&, CameraProjection);
-    std::string to_string(CameraProjection);
 
     class Camera final {
     public:
@@ -577,29 +511,21 @@ namespace osc::experimental
         // the rendered geometry
         void render();
 
-        class Impl;
     private:
         friend class GraphicsBackend;
         friend bool operator==(Camera const&, Camera const&);
         friend bool operator!=(Camera const&, Camera const&);
         friend bool operator<(Camera const&, Camera const&);
-        friend bool operator<=(Camera const&, Camera const&);
-        friend bool operator>(Camera const&, Camera const&);
-        friend bool operator>=(Camera const&, Camera const&);
         friend std::ostream& operator<<(std::ostream&, Camera const&);
-        friend std::string to_string(Camera const&);
 
+        class Impl;
         std::shared_ptr<Impl> m_Impl;
     };
 
     bool operator==(Camera const&, Camera const&);
     bool operator!=(Camera const&, Camera const&);
     bool operator<(Camera const&, Camera const&);
-    bool operator<=(Camera const&, Camera const&);
-    bool operator>(Camera const&, Camera const&);
-    bool operator>=(Camera const&, Camera const&);
     std::ostream& operator<<(std::ostream&, Camera const&);
-    std::string to_string(Camera const&);
 }
 
 // rendering functions

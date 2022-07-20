@@ -29,12 +29,11 @@
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <variant>
 #include <vector>
-
-#define OSC_THROW_NYI() throw std::runtime_error{"not yet implemented"}
 
 template<typename T>
 static void DoCopyOnWrite(std::shared_ptr<T>& p)
@@ -45,14 +44,6 @@ static void DoCopyOnWrite(std::shared_ptr<T>& p)
     }
 
     p = std::make_shared<T>(*p);
-}
-
-template<typename T>
-static std::string StreamToString(T const& v)
-{
-    std::stringstream ss;
-    ss << v;
-    return std::move(ss).str();
 }
 
 
@@ -191,20 +182,11 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, TextureWrapMode twm
     return o << g_TextureWrapModeStrings.at(static_cast<int>(twm));
 }
 
-std::string osc::experimental::to_string(TextureWrapMode twm)
-{
-    return StreamToString(twm);
-}
-
 std::ostream& osc::experimental::operator<<(std::ostream& o, TextureFilterMode twm)
 {
     return o << g_TextureFilterModeStrings.at(static_cast<int>(twm));
 }
 
-std::string osc::experimental::to_string(TextureFilterMode twm)
-{
-    return StreamToString(twm);
-}
 
 osc::experimental::Texture2D::Texture2D(int width, int height, nonstd::span<Rgba32 const> pixelsRowByRow) :
     m_Impl{std::make_shared<Impl>(std::move(width), std::move(height), std::move(pixelsRowByRow))}
@@ -302,29 +284,9 @@ bool osc::experimental::operator<(Texture2D const& a, Texture2D const& b)
     return a.m_Impl < b.m_Impl;
 }
 
-bool osc::experimental::operator<=(Texture2D const& a, Texture2D const& b)
-{
-    return a.m_Impl <= b.m_Impl;
-}
-
-bool osc::experimental::operator>(Texture2D const& a, Texture2D const& b)
-{
-    return a.m_Impl > b.m_Impl;
-}
-
-bool osc::experimental::operator>=(Texture2D const& a, Texture2D const& b)
-{
-    return a.m_Impl >= b.m_Impl;
-}
-
 std::ostream& osc::experimental::operator<<(std::ostream& o, Texture2D const&)
 {
     return o << "Texture2D";
-}
-
-std::string osc::experimental::to_string(Texture2D const& t)
-{
-    return StreamToString(t);
 }
 
 
@@ -509,11 +471,6 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, ShaderType shaderTy
     return o << g_ShaderTypeInternalStrings.at(static_cast<int>(shaderType));
 }
 
-std::string osc::experimental::to_string(ShaderType shaderType)
-{
-    return std::string{g_ShaderTypeInternalStrings.at(static_cast<int>(shaderType))};
-}
-
 osc::experimental::Shader::Shader(char const* vertexShader, char const* fragmentShader) :
     m_Impl{std::make_shared<Impl>(std::move(vertexShader), std::move(fragmentShader))}
 {
@@ -560,21 +517,6 @@ bool osc::experimental::operator<(Shader const& a, Shader const& b)
     return a.m_Impl < b.m_Impl;
 }
 
-bool osc::experimental::operator<=(Shader const& a, Shader const& b)
-{
-    return a.m_Impl <= b.m_Impl;
-}
-
-bool osc::experimental::operator>(Shader const& a, Shader const& b)
-{
-    return a.m_Impl > b.m_Impl;
-}
-
-bool osc::experimental::operator>=(Shader const& a, Shader const& b)
-{
-    return a.m_Impl >= b.m_Impl;
-}
-
 std::ostream& osc::experimental::operator<<(std::ostream& o, Shader const& shader)
 {
     o << "Shader(\n";
@@ -607,12 +549,6 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, Shader const& shade
     return o;
 }
 
-std::string osc::experimental::to_string(Shader const& shader)
-{
-    std::stringstream ss;
-    ss << shader;
-    return std::move(ss).str();
-}
 
 //////////////////////////////////
 //
@@ -882,29 +818,9 @@ bool osc::experimental::operator<(Material const& a, Material const& b)
     return a.m_Impl < b.m_Impl;
 }
 
-bool osc::experimental::operator<=(Material const& a, Material const& b)
-{
-    return a.m_Impl <= b.m_Impl;
-}
-
-bool osc::experimental::operator>(Material const& a, Material const& b)
-{
-    return a.m_Impl > b.m_Impl;
-}
-
-bool osc::experimental::operator>=(Material const& a, Material const& b)
-{
-    return a.m_Impl >= b.m_Impl;
-}
-
 std::ostream& osc::experimental::operator<<(std::ostream& o, Material const&)
 {
     return o << "Material()";
-}
-
-std::string osc::experimental::to_string(Material const& material)
-{
-    return StreamToString(material);
 }
 
 
@@ -1182,29 +1098,9 @@ bool osc::experimental::operator<(MaterialPropertyBlock const& a, MaterialProper
     return a.m_Impl < b.m_Impl;
 }
 
-bool osc::experimental::operator<=(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
-{
-    return a.m_Impl <= b.m_Impl;
-}
-
-bool osc::experimental::operator>(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
-{
-    return a.m_Impl > b.m_Impl;
-}
-
-bool osc::experimental::operator>=(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
-{
-    return a.m_Impl >= b.m_Impl;
-}
-
 std::ostream& osc::experimental::operator<<(std::ostream& o, MaterialPropertyBlock const&)
 {
     return o << "MaterialPropertyBlock()";
-}
-
-std::string osc::experimental::to_string(MaterialPropertyBlock const& material)
-{
-    return StreamToString(material);
 }
 
 
@@ -1412,11 +1308,6 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, MeshTopography mt)
     return o << g_MeshTopographyStrings.at(static_cast<int>(mt));
 }
 
-std::string osc::experimental::to_string(MeshTopography mt)
-{
-    return StreamToString(std::move(mt));
-}
-
 osc::experimental::Mesh::Mesh() :
     m_Impl{std::make_shared<Impl>()}
 {
@@ -1520,29 +1411,131 @@ bool osc::experimental::operator<(Mesh const& a, Mesh const& b)
     return a.m_Impl < b.m_Impl;
 }
 
-bool osc::experimental::operator<=(Mesh const& a, Mesh const& b)
-{
-    return a.m_Impl <= b.m_Impl;
-}
-
-bool osc::experimental::operator>(Mesh const& a, Mesh const& b)
-{
-    return a.m_Impl > b.m_Impl;
-}
-
-bool osc::experimental::operator>=(Mesh const& a, Mesh const& b)
-{
-    return a.m_Impl >= b.m_Impl;
-}
-
 std::ostream& osc::experimental::operator<<(std::ostream& o, Mesh const&)
 {
     return o << "Mesh()";
 }
 
-std::string osc::experimental::to_string(Mesh const& mesh)
+
+//////////////////////////////////
+//
+// render texture
+//
+//////////////////////////////////
+
+namespace
 {
-    return StreamToString(mesh);
+    using namespace osc::experimental;
+
+    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(RenderTextureFormat::TOTAL)> const  g_RenderTextureFormatStrings =
+    {
+        "ARGB32",
+    };
+
+    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(DepthStencilFormat::TOTAL)> const g_DepthStencilFormatStrings =
+    {
+        "D24_UNorm_S8_UInt",
+    };
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, RenderTextureFormat f)
+{
+    return o << g_RenderTextureFormatStrings.at(static_cast<int>(f));
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, DepthStencilFormat f)
+{
+    return o << g_DepthStencilFormatStrings.at(static_cast<int>(f));
+}
+
+osc::experimental::RenderTextureDescriptor::RenderTextureDescriptor(int width, int height) :
+    m_Width{width},
+    m_Height{height},
+    m_AnialiasingLevel{1},
+    m_ColorFormat{RenderTextureFormat::ARGB32},
+    m_DepthStencilFormat{DepthStencilFormat::D24_UNorm_S8_UInt}
+{
+}
+
+osc::experimental::RenderTextureDescriptor::RenderTextureDescriptor(RenderTextureDescriptor const&) = default;
+osc::experimental::RenderTextureDescriptor::RenderTextureDescriptor(RenderTextureDescriptor&&) noexcept = default;
+osc::experimental::RenderTextureDescriptor& osc::experimental::RenderTextureDescriptor::operator=(RenderTextureDescriptor const&) = default;
+osc::experimental::RenderTextureDescriptor& osc::experimental::RenderTextureDescriptor::operator=(RenderTextureDescriptor&&) noexcept = default;
+osc::experimental::RenderTextureDescriptor::~RenderTextureDescriptor() noexcept = default;
+
+int osc::experimental::RenderTextureDescriptor::getWidth() const
+{
+    return m_Width;
+}
+
+void osc::experimental::RenderTextureDescriptor::setWidth(int width)
+{
+    m_Width = width;
+}
+
+int osc::experimental::RenderTextureDescriptor::getHeight() const
+{
+    return m_Height;
+}
+
+void osc::experimental::RenderTextureDescriptor::setHeight(int height)
+{
+    m_Height = height;
+}
+
+int osc::experimental::RenderTextureDescriptor::getAntialiasingLevel() const
+{
+    return m_AnialiasingLevel;
+}
+
+void osc::experimental::RenderTextureDescriptor::setAntialiasingLevel(int level)
+{
+    m_AnialiasingLevel = level;
+}
+
+osc::experimental::RenderTextureFormat osc::experimental::RenderTextureDescriptor::getColorFormat() const
+{
+    return m_ColorFormat;
+}
+
+void osc::experimental::RenderTextureDescriptor::setColorFormat(RenderTextureFormat f)
+{
+    m_ColorFormat = f;
+}
+
+osc::experimental::DepthStencilFormat osc::experimental::RenderTextureDescriptor::getDepthStencilFormat() const
+{
+    return m_DepthStencilFormat;
+}
+
+void osc::experimental::RenderTextureDescriptor::setDepthStencilFormat(DepthStencilFormat f)
+{
+    m_DepthStencilFormat = f;
+}
+
+bool osc::experimental::operator==(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
+{
+    return 
+        a.m_Width == b.m_Width &&
+        a.m_Height == b.m_Height &&
+        a.m_AnialiasingLevel == b.m_AnialiasingLevel &&
+        a.m_ColorFormat == b.m_ColorFormat &&
+        a.m_DepthStencilFormat == b.m_DepthStencilFormat;
+}
+
+bool osc::experimental::operator!=(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
+{
+    return !(a == b);
+}
+
+bool osc::experimental::operator<(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
+{
+    return std::tie(a.m_Width, a.m_Height, a.m_AnialiasingLevel, a.m_ColorFormat, a.m_DepthStencilFormat) < std::tie(b.m_Width, b.m_Height, b.m_AnialiasingLevel, b.m_ColorFormat, b.m_DepthStencilFormat);
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, RenderTextureDescriptor const& rtd)
+{
+    return o << "RenderTextureDescriptor(width = " << rtd.m_Width << ", height = " << rtd.m_Height << ", aa = " << rtd.m_AnialiasingLevel << ", colorFormat = " << rtd.m_ColorFormat << ", depthFormat = " << rtd.m_DepthStencilFormat << ")";
 }
 
 
@@ -1786,11 +1779,6 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, CameraProjection cp
     return o << g_CameraProjectionStrings.at(static_cast<int>(cp));
 }
 
-std::string osc::experimental::to_string(CameraProjection cp)
-{
-    return StreamToString(std::move(cp));
-}
-
 osc::experimental::Camera::Camera() :
     m_Impl{new Impl{}}
 {
@@ -1802,13 +1790,9 @@ osc::experimental::Camera::Camera(RenderTexture t) :
 }
 
 osc::experimental::Camera::Camera(Camera const&) = default;
-
 osc::experimental::Camera::Camera(Camera&&) noexcept = default;
-
 osc::experimental::Camera& osc::experimental::Camera::operator=(Camera const&) = default;
-
 osc::experimental::Camera& osc::experimental::Camera::operator=(Camera&&) noexcept = default;
-
 osc::experimental::Camera::~Camera() noexcept = default;
 
 glm::vec4 osc::experimental::Camera::getBackgroundColor() const
@@ -1985,29 +1969,9 @@ bool osc::experimental::operator<(Camera const& a, Camera const& b)
     return a.m_Impl < b.m_Impl;
 }
 
-bool osc::experimental::operator<=(Camera const& a, Camera const& b)
-{
-    return a.m_Impl <= b.m_Impl;
-}
-
-bool osc::experimental::operator>(Camera const& a, Camera const& b)
-{
-    return a.m_Impl > b.m_Impl;
-}
-
-bool osc::experimental::operator>=(Camera const& a, Camera const& b)
-{
-    return a.m_Impl >= b.m_Impl;
-}
-
 std::ostream& osc::experimental::operator<<(std::ostream& o, Camera const&)
 {
     return o << "Camera()";
-}
-
-std::string osc::experimental::to_string(Camera const& camera)
-{
-    return StreamToString(camera);
 }
 
 void osc::experimental::Graphics::DrawMesh(
