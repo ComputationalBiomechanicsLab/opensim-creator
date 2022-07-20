@@ -1,13 +1,8 @@
-#include "src/Graphics/DAEWriter.hpp"  // HACK
-#include <fstream>  // HACK
-
 #include "src/OpenSimBindings/OpenSimApp.hpp"
-#include "src/Platform/Log.hpp"
 #include "src/Screens/MainUIScreen.hpp"
 
 #include <cstdlib>
 #include <iostream>
-#include <vector>
 
 static const char g_Usage[] = R"(usage: osc [--help] [fd] MODEL.osim
 )";
@@ -69,8 +64,6 @@ int main(int argc, char** argv)
     {
         app.show<osc::MainUIScreen>(argv[0]);
     }
-
-    osc::log::info("exited main application event loop: shutting down application");
 
     return EXIT_SUCCESS;
 }
