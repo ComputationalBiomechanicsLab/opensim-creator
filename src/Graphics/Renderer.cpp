@@ -1538,6 +1538,158 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, RenderTextureDescri
     return o << "RenderTextureDescriptor(width = " << rtd.m_Width << ", height = " << rtd.m_Height << ", aa = " << rtd.m_AnialiasingLevel << ", colorFormat = " << rtd.m_ColorFormat << ", depthFormat = " << rtd.m_DepthStencilFormat << ")";
 }
 
+class osc::experimental::RenderTexture::Impl final {
+public:
+    Impl(RenderTextureDescriptor const& desc) :
+        m_Width{desc.getWidth()},
+        m_Height{desc.getHeight()},
+        m_AntialiasingLevel{desc.getAntialiasingLevel()},
+        m_ColorFormat{desc.getColorFormat()},
+        m_DepthStencilFormat{desc.getDepthStencilFormat()}
+    {
+    }
+
+    int getWidth() const
+    {
+        return m_Width;
+    }
+
+    void setWidth(int width)
+    {
+        // TODO: invalidate whatever
+        m_Width = width;
+    }
+
+    int getHeight() const
+    {
+        return m_Height;
+    }
+
+    void setHeight(int height)
+    {
+        // TODO: invalidate whatever
+        m_Height = height;
+    }
+
+    RenderTextureFormat getColorFormat() const
+    {
+        return m_ColorFormat;
+    }
+
+    void setColorFormat(RenderTextureFormat format)
+    {
+        // TODO: invalidate whatever
+        m_ColorFormat = format;
+    }
+
+    int getAntialiasingLevel() const
+    {
+        return m_AntialiasingLevel;
+    }
+
+    void setAntialiasingLevel(int level)
+    {
+        // TODO: invalidate whatever
+        m_AntialiasingLevel = level;
+    }
+
+    DepthStencilFormat getDepthStencilFormat() const
+    {
+        return m_DepthStencilFormat;
+    }
+
+    void setDepthStencilFormat(DepthStencilFormat format)
+    {
+        m_DepthStencilFormat = format;
+    }
+
+private:
+    int m_Width;
+    int m_Height;
+    int m_AntialiasingLevel;
+    RenderTextureFormat m_ColorFormat;
+    DepthStencilFormat m_DepthStencilFormat;
+};
+
+osc::experimental::RenderTexture::RenderTexture(RenderTextureDescriptor const& desc) :
+    m_Impl{std::make_shared<Impl>(desc)}
+{
+}
+
+int osc::experimental::RenderTexture::getWidth() const
+{
+    return m_Impl->getWidth();
+}
+
+void osc::experimental::RenderTexture::setWidth(int width)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setWidth(width);
+}
+
+int osc::experimental::RenderTexture::getHeight() const
+{
+    return m_Impl->getHeight();
+}
+
+void osc::experimental::RenderTexture::setHeight(int height)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setHeight(height);
+}
+
+osc::experimental::RenderTextureFormat osc::experimental::RenderTexture::getColorFormat() const
+{
+    return m_Impl->getColorFormat();
+}
+
+void osc::experimental::RenderTexture::setColorFormat(RenderTextureFormat format)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setColorFormat(format);
+}
+
+int osc::experimental::RenderTexture::getAntialiasingLevel() const
+{
+    return m_Impl->getAntialiasingLevel();
+}
+
+void osc::experimental::RenderTexture::setAntialiasingLevel(int level)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setAntialiasingLevel(level);
+}
+
+osc::experimental::DepthStencilFormat osc::experimental::RenderTexture::getDepthStencilFormat() const
+{
+    return m_Impl->getDepthStencilFormat();
+}
+
+void osc::experimental::RenderTexture::setDepthStencilFormat(DepthStencilFormat format)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setDepthStencilFormat(format);
+}
+
+bool osc::experimental::operator==(RenderTexture const& a, RenderTexture const& b)
+{
+    return a.m_Impl == b.m_Impl;
+}
+
+bool osc::experimental::operator!=(RenderTexture const& a, RenderTexture const& b)
+{
+    return a.m_Impl != b.m_Impl;
+}
+
+bool osc::experimental::operator<(RenderTexture const& a, RenderTexture const& b)
+{
+    return a.m_Impl < b.m_Impl;
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, RenderTexture const& rt)
+{
+    return o << "RenderTexture()";
+}
 
 //////////////////////////////////
 //

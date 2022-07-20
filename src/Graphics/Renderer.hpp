@@ -406,9 +406,6 @@ namespace osc::experimental
         int getAntialiasingLevel() const;
         void setAntialiasingLevel(int);
 
-        int getDepth() const;
-        void setDepth(int);
-
         DepthStencilFormat getDepthStencilFormat() const;
         void setDepthStencilFormat(DepthStencilFormat);
 
