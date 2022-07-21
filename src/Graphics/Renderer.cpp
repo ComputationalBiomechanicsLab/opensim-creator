@@ -1616,6 +1616,12 @@ osc::experimental::RenderTexture::RenderTexture(RenderTextureDescriptor const& d
 {
 }
 
+osc::experimental::RenderTexture::RenderTexture(RenderTexture const&) = default;
+osc::experimental::RenderTexture::RenderTexture(RenderTexture&&) noexcept = default;
+osc::experimental::RenderTexture& osc::experimental::RenderTexture::operator=(RenderTexture const&) = default;
+osc::experimental::RenderTexture& osc::experimental::RenderTexture::operator=(RenderTexture&&) noexcept = default;
+osc::experimental::RenderTexture::~RenderTexture() noexcept = default;
+
 int osc::experimental::RenderTexture::getWidth() const
 {
     return m_Impl->getWidth();

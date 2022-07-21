@@ -393,6 +393,11 @@ namespace osc::experimental
     class RenderTexture final {
     public:
         explicit RenderTexture(RenderTextureDescriptor const&);
+        RenderTexture(RenderTexture const&);
+        RenderTexture(RenderTexture&&) noexcept;
+        RenderTexture& operator=(RenderTexture const&);
+        RenderTexture& operator=(RenderTexture&&) noexcept;
+        ~RenderTexture() noexcept;
 
         int getWidth() const;
         void setWidth(int);

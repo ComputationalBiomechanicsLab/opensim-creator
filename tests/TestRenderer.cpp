@@ -242,7 +242,7 @@ static bool SpansEqual(nonstd::span<T const> a, nonstd::span<T const> b)
 
 // TESTS
 
-TEST_F(Renderer, CanStreamShaderType)
+TEST_F(Renderer, ShaderTypeCanStreamToString)
 {
     std::stringstream ss;
     ss << osc::experimental::ShaderType::Bool;
@@ -250,7 +250,7 @@ TEST_F(Renderer, CanStreamShaderType)
     ASSERT_EQ(ss.str(), "Bool");
 }
 
-TEST_F(Renderer, CanIterateAndStringStreamAllShaderTypes)
+TEST_F(Renderer, ShaderTypeCanBeIteratedOverAndAllCanBeStreamed)
 {
     for (int i = 0; i < static_cast<int>(osc::experimental::ShaderType::TOTAL); ++i)
     {
@@ -650,6 +650,20 @@ TEST_F(Renderer, MaterialCanPrintToStringStream)
     ss << m1;
 }
 
+TEST_F(Renderer, MaterialOutputStringContainsUsefulInformation)
+{
+    osc::experimental::Material m1 = GenerateMaterial();
+    std::stringstream ss;
+
+    ss << m1;
+
+    std::string str{ss.str()};
+
+    ASSERT_TRUE(osc::ContainsSubstringCaseInsensitive(str, "Material"));
+
+    // TODO: should print more useful info, such as number of props etc.
+}
+
 TEST_F(Renderer, MaterialSetFloatAndThenSetVec3CausesGetFloatToReturnEmpty)
 {
     // compound test: when the caller sets a Vec3 then calling getInt with the same key should return empty
@@ -668,6 +682,7 @@ TEST_F(Renderer, MaterialSetFloatAndThenSetVec3CausesGetFloatToReturnEmpty)
     ASSERT_TRUE(mat.getVec3(key));
     ASSERT_FALSE(mat.getFloat(key));
 }
+
 TEST_F(Renderer, MaterialPropertyBlockCanDefaultConstruct)
 {
     osc::experimental::MaterialPropertyBlock mpb;
@@ -1453,6 +1468,220 @@ TEST_F(Renderer, MeshCanBeWrittenToOutputStreamForDebugging)
     ASSERT_FALSE(ss.str().empty());
 }
 
+TEST_F(Renderer, RenderTextureFormatCanBeIteratedOverAndStreamedToString)
+{
+    for (int i = 0; i < static_cast<int>(osc::experimental::RenderTextureFormat::TOTAL); ++i)
+    {
+        std::stringstream ss;
+        ss << static_cast<osc::experimental::RenderTextureFormat>(i);  // shouldn't throw
+    }
+}
+
+TEST_F(Renderer, DepthStencilFormatCanBeIteratedOverAndStreamedToString)
+{
+    for (int i = 0; i < static_cast<int>(osc::experimental::DepthStencilFormat::TOTAL); ++i)
+    {
+        std::stringstream ss;
+        ss << static_cast<osc::experimental::DepthStencilFormat>(i);  // shouldn't throw
+    }
+}
+
+TEST_F(Renderer, RenderTextureDescriptorCanBeConstructedFromWithAndHeight)
+{
+    osc::experimental::RenderTextureDescriptor d{1, 1};
+}
+
+TEST_F(Renderer, RenderTextureDescriptorThrowsIfGivenNegativeWidth)
+{
+    ASSERT_ANY_THROW({ osc::experimental::RenderTextureDescriptor d(-1, 1); });
+}
+
+TEST_F(Renderer, RenderTextureDescriptorThrowsIfGivenNegativeHeight)
+{
+    ASSERT_ANY_THROW({ osc::experimental::RenderTextureDescriptor d(1, -1); });
+}
+
+TEST_F(Renderer, RenderTextureDescriptorCanBeCopyConstructed)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    osc::experimental::RenderTextureDescriptor d2{d1};
+}
+
+TEST_F(Renderer, RenderTextureDescriptorCanBeMoveConstructed)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    osc::experimental::RenderTextureDescriptor d2{std::move(d1)};
+}
+
+TEST_F(Renderer, RenderTextureDescriptorCanBeCopyAssigned)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    osc::experimental::RenderTextureDescriptor d2{1, 1};
+    d1 = d2;
+}
+
+TEST_F(Renderer, RenderTextureDescriptorCanBeMoveAssigned)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    osc::experimental::RenderTextureDescriptor d2{1, 1};
+    d1 = std::move(d2);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorGetWidthReturnsConstructedWith)
+{
+    int width = 1;
+    osc::experimental::RenderTextureDescriptor d1{width, 1};
+    ASSERT_EQ(d1.getWidth(), width);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorSetWithFollowedByGetWithReturnsSetWidth)
+{
+    int newWidth = 31;
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+
+    d1.setWidth(newWidth);
+    ASSERT_EQ(d1.getWidth(), newWidth);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorSetWidthNegativeValueThrows)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    ASSERT_ANY_THROW({ d1.setWidth(-1); });
+}
+
+TEST_F(Renderer, RenderTextureDescriptorGetHeightReturnsConstructedHeight)
+{
+    int height = 1;
+    osc::experimental::RenderTextureDescriptor d1{1, height};
+    ASSERT_EQ(d1.getHeight(), height);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorSetHeightFollowedByGetHeightReturnsSetHeight)
+{
+    int newHeight = 31;
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+
+    d1.setHeight(newHeight);
+    ASSERT_EQ(d1.getHeight(), newHeight);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorGetAntialiasingLevelInitiallyReturns1)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    ASSERT_EQ(d1.getAntialiasingLevel(), 1);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingLevelMakesGetAntialiasingLevelReturnValue)
+{
+    int newAntialiasingLevel = 4;
+
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    d1.setAntialiasingLevel(newAntialiasingLevel);
+    ASSERT_EQ(d1.getAntialiasingLevel(), newAntialiasingLevel);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingLevelToZeroThrows)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    ASSERT_ANY_THROW({ d1.setAntialiasingLevel(0); });
+}
+
+TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingNegativeThrows)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    ASSERT_ANY_THROW({ d1.setAntialiasingLevel(-1); });
+}
+
+TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingLevelToInvalidValueThrows)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    ASSERT_ANY_THROW({ d1.setAntialiasingLevel(3); });
+}
+
+TEST_F(Renderer, RenderTextureDescriptorGetColorFormatReturnsARGB32ByDefault)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    ASSERT_EQ(d1.getColorFormat(), osc::experimental::RenderTextureFormat::ARGB32);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorGetDepthStencilFormatReturnsDefaultValue)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    ASSERT_EQ(d1.getDepthStencilFormat(), osc::experimental::DepthStencilFormat::D24_UNorm_S8_UInt);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorComparesEqualOnCopyConstruct)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    osc::experimental::RenderTextureDescriptor d2{d1};
+
+    ASSERT_EQ(d1, d2);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorComparesEqualWithSameConstructionVals)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    osc::experimental::RenderTextureDescriptor d2{1, 1};
+
+    ASSERT_EQ(d1, d2);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorSetWithMakesItCompareNotEqual)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    osc::experimental::RenderTextureDescriptor d2{1, 1};
+
+    d2.setWidth(2);
+
+    ASSERT_NE(d1, d2);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorSetHeightMakesItCompareNotEqual)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    osc::experimental::RenderTextureDescriptor d2{1, 1};
+
+    d2.setHeight(2);
+
+    ASSERT_NE(d1, d2);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingLevelMakesItCompareNotEqual)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    osc::experimental::RenderTextureDescriptor d2{1, 1};
+
+    d2.setAntialiasingLevel(2);
+
+    ASSERT_NE(d1, d2);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingLevelToSameValueComparesEqual)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    osc::experimental::RenderTextureDescriptor d2{1, 1};
+
+    d2.setAntialiasingLevel(d2.getAntialiasingLevel());
+
+    ASSERT_EQ(d1, d2);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorCanBeStreamedToAString)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    std::stringstream ss;
+    ss << d1;
+
+    std::string str{ss.str()};
+    ASSERT_TRUE(osc::ContainsSubstringCaseInsensitive(str, "RenderTextureDescriptor"));
+}
+
+TEST_F(Renderer, RenderTextureCanBeConstructedFromADescriptor)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    osc::experimental::RenderTexture d{d1};
+}
+
 TEST_F(Renderer, CameraProjectionCanBeStreamed)
 {
     for (int i = 0; i < static_cast<int>(osc::experimental::CameraProjection::TOTAL); ++i)
@@ -1613,12 +1842,6 @@ TEST_F(Renderer, CameraSetCameraProjectionMakesCameraCompareNotEqual)
     ASSERT_NE(camera, copy);
 }
 
-// TODO: Material: test print contains relevant strings etc.
-
-// TOOD: MaterialPropertyBlocK: ensure string contains relevant stuff etc
-// TODO: MaterialPropertyBlocK: ensure printout mentions variables etc.
-// TODO: MaterialPropertyBlocK: compound test: set a float but read a vec, etc.
-
 // TODO MeshSetIndicesU16CausesGetNumIndicesToEqualSuppliedNumberOfIndices
 // TODO Mesh::getIndices
 // TODO Mesh::setIndices U16
@@ -1626,11 +1849,6 @@ TEST_F(Renderer, CameraSetCameraProjectionMakesCameraCompareNotEqual)
 // TODO Mesh ensure > 2^16 indices are allowed
 // TODO Mesh::clear
 // 
-// TODO: RenderTextureFormat <<
-// TODO: RenderTextureFormat to_string
-// TODO: DepthStencilFormat <<
-// TODO: DepthStencilFormat to_string
-// TODO: RenderTextureDescriptor (all)
 // TODO: RenderTexture (all)
 
 // TODO: Texture: ensure texture debug string contains useful information etc.
