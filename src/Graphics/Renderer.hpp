@@ -505,6 +505,9 @@ namespace osc::experimental
         glm::vec3 getDirection() const;
         void setDirection(glm::vec3 const&);
 
+        glm::vec3 getUpwardsDirection() const;
+        void setUpwardsDirection(glm::vec3 const&);
+
         glm::mat4 getCameraToWorldMatrix() const;
 
         // flushes any rendering commands that were queued against this camera

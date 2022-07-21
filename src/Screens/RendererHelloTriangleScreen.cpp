@@ -1,6 +1,8 @@
 #include "RendererHelloTriangleScreen.hpp"
 
+#include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Renderer.hpp"
+#include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
@@ -19,49 +21,13 @@ R"(
 
     uniform mat4 uProjMat;
     uniform mat4 uViewMat;
-    uniform vec3 uLightDir;
-    uniform vec3 uLightColor;
-    uniform vec3 uViewPos;
+    uniform mat4 uModelMat;
 
     layout (location = 0) in vec3 aPos;
-    layout (location = 2) in vec3 aNormal;
-
-    layout (location = 6) in mat4x3 aModelMat;
-    layout (location = 10) in mat3 aNormalMat;
-    layout (location = 13) in vec4 aRgba0;
-
-    out vec4 GouraudBrightness;
-    out vec4 Rgba0;
-
-    const float ambientStrength = 0.7f;
-    const float diffuseStrength = 0.3f;
-    const float specularStrength = 0.1f;
-    const float shininess = 32;
 
     void main()
     {
-        mat4 modelMat = mat4(vec4(aModelMat[0], 0), vec4(aModelMat[1], 0), vec4(aModelMat[2], 0), vec4(aModelMat[3], 1));
-
-        gl_Position = uProjMat * uViewMat * modelMat * vec4(aPos, 1.0);
-
-        vec3 normalDir = normalize(aNormalMat * aNormal);
-        vec3 fragPos = vec3(modelMat * vec4(aPos, 1.0));
-        vec3 frag2viewDir = normalize(uViewPos - fragPos);
-        vec3 frag2lightDir = normalize(-uLightDir);  // light dir is in the opposite direction
-
-        vec3 ambientComponent = ambientStrength * uLightColor;
-
-        float diffuseAmount = max(dot(normalDir, frag2lightDir), 0.0);
-        vec3 diffuseComponent = diffuseStrength * diffuseAmount * uLightColor;
-
-        vec3 halfwayDir = normalize(frag2lightDir + frag2viewDir);
-        float specularAmmount = pow(max(dot(normalDir, halfwayDir), 0.0), shininess);
-        vec3 specularComponent = specularStrength * specularAmmount * uLightColor;
-
-        vec3 lightStrength = ambientComponent + diffuseComponent + specularComponent;
-
-        GouraudBrightness = vec4(uLightColor * lightStrength, 1.0);
-        Rgba0 = aRgba0;
+        gl_Position = uProjMat * uViewMat * uModelMat * vec4(aPos, 1.0);
     }
 )";
 
@@ -69,33 +35,72 @@ static char const g_FragmentShader[] =
 R"(
     #version 330 core
 
-    in vec4 GouraudBrightness;
-    in vec4 Rgba0;
+    uniform vec4 uColor;
 
-    out vec4 ColorOut;
+    out vec4 FragColor;
 
     void main()
     {
-        ColorOut = GouraudBrightness * Rgba0;
+        FragColor = uColor;
     }
 )";
 
+static osc::experimental::Mesh GenerateTriangleMesh()
+{
+    osc::experimental::Mesh m;
+    std::vector<glm::vec3> trianglePoints =
+    {
+        {-1.0f, -1.0f, 0.0f},  // bottom-left
+        { 1.0f, -1.0f, 0.0f},  // bottom-right
+        { 0.0f,  1.0f, 0.0f},  // top-middle
+    };
+    std::vector<std::uint16_t> indices = {0, 1, 2};
+
+    m.setVerts(trianglePoints);
+    m.setIndices(indices);
+    // no tex coords or normals
+    return m;
+}
 
 class osc::RendererHelloTriangleScreen::Impl final {
 public:
     Impl()
     {
+        m_Camera.setBackgroundColor({ 1.0f, 0.0f, 0.0f, 0.0f });
+        m_Camera.setPosition({ 0.0f, 0.0f, 1.0f });
+        m_Camera.setDirection({ 0.0f, 0.0f, -1.0f });
+        m_Camera.setCameraProjection(osc::experimental::CameraProjection::Orthographic);
+        m_Camera.setOrthographicSize(1.0f);
+        m_Camera.setNearClippingPlane(0.0f);
+        m_Camera.setFarClippingPlane(2.0f);
+
+        log::info("---shader---");
         log::info("%s", StreamToString(m_Shader).c_str());
+        log::info("---/shader---");
+
+        log::info("---material---");
+        log::info("%s", StreamToString(m_Material).c_str());
+        log::info("---/material---");
+
+        log::info("---mesh---");
+        log::info("%s", StreamToString(m_TriangleMesh).c_str());
+        log::info("---/mesh---");
+
+        log::info("---camera---");
+        log::info("%s", StreamToString(m_Camera).c_str());
+        log::info("---/camera---");
     }
 
     void onMount()
     {
+        osc::App::upd().makeMainEventLoopPolling();
         ImGuiInit();
     }
 
     void onUnmount()
     {
         ImGuiShutdown();
+        osc::App::upd().makeMainEventLoopWaiting();
     }
 
     void onEvent(SDL_Event const& e)
@@ -119,6 +124,9 @@ public:
     {
         App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
 
+        osc::experimental::Graphics::DrawMesh(m_TriangleMesh, osc::Transform{}, m_Material, m_Camera);
+        m_Camera.render();
+
         ImGuiNewFrame();
         if (ImGui::Begin("panel"))
         {
@@ -126,13 +134,18 @@ public:
         }
         ImGui::End();
 
+        ImGui::Begin("log");
         m_LogViewer.draw();
+        ImGui::End();
 
         ImGuiRender();
     }
 
 private:
     experimental::Shader m_Shader{g_VertexShader, g_FragmentShader};
+    experimental::Material m_Material{m_Shader};
+    experimental::Mesh m_TriangleMesh = GenerateTriangleMesh();
+    experimental::Camera m_Camera;
     LogViewer m_LogViewer;
 
 };

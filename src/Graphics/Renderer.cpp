@@ -1,5 +1,6 @@
 #include "Renderer.hpp"
 
+#include "src/Bindings/GlmHelpers.hpp"
 #include "src/Graphics/Color.hpp"
 #include "src/Graphics/Gl.hpp"
 #include "src/Maths/AABB.hpp"
@@ -7,6 +8,7 @@
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Platform/Log.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
@@ -99,7 +101,7 @@ public:
         m_Height{ std::move(height) },
         m_Pixels(pixelsRowByRow.data(), pixelsRowByRow.data() + pixelsRowByRow.size())
     {
-        OSC_ASSERT(width* height == pixelsRowByRow.size());
+        OSC_ASSERT(width * height == pixelsRowByRow.size());
     }
 
     int getWidth() const
@@ -286,7 +288,7 @@ bool osc::experimental::operator<(Texture2D const& a, Texture2D const& b)
 
 std::ostream& osc::experimental::operator<<(std::ostream& o, Texture2D const&)
 {
-    return o << "Texture2D";
+    return o << "Texture2D()";
 }
 
 
@@ -800,6 +802,7 @@ std::optional<Texture2D> osc::experimental::Material::getTexture(std::string_vie
 
 void osc::experimental::Material::setTexture(std::string_view propertyName, Texture2D t)
 {
+    DoCopyOnWrite(m_Impl);
     m_Impl->setTexture(std::move(propertyName), std::move(t));
 }
 
@@ -1080,6 +1083,7 @@ std::optional<Texture2D> osc::experimental::MaterialPropertyBlock::getTexture(st
 
 void osc::experimental::MaterialPropertyBlock::setTexture(std::string_view propertyName, Texture2D t)
 {
+    DoCopyOnWrite(m_Impl);
     m_Impl->setTexture(std::move(propertyName), std::move(t));
 }
 
@@ -1866,6 +1870,16 @@ public:
         m_Direction = position;
     }
 
+    glm::vec3 getUpwardsDirection() const
+    {
+        return m_UpwardsDirection;
+    }
+
+    void setUpwardsDirection(glm::vec3 const& v)
+    {
+        m_UpwardsDirection = v;
+    }
+
     glm::mat4 getCameraToWorldMatrix() const
     {
         return m_CameraToWorldMatrix;
@@ -1904,7 +1918,8 @@ private:
     std::optional<Rect> m_MaybeScreenPixelRect = std::nullopt;
     std::optional<Rect> m_MaybeScissorRect = std::nullopt;
     glm::vec3 m_Position = {};
-    glm::vec3 m_Direction = {1.0f, 0.0f, 0.0f};
+    glm::vec3 m_Direction = {0.0f, 0.0f, -1.0f};
+    glm::vec3 m_UpwardsDirection = {0.0f, 1.0f, 0.0f};
     glm::mat4 m_CameraToWorldMatrix{1.0f};
 
     friend class GraphicsBackend;
@@ -2101,6 +2116,17 @@ void osc::experimental::Camera::setDirection(glm::vec3 const& dir)
     m_Impl->setDirection(dir);
 }
 
+glm::vec3 osc::experimental::Camera::getUpwardsDirection() const
+{
+    return m_Impl->getUpwardsDirection();
+}
+
+void osc::experimental::Camera::setUpwardsDirection(glm::vec3 const& v)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setUpwardsDirection(v);
+}
+
 glm::mat4 osc::experimental::Camera::getCameraToWorldMatrix() const
 {
     return m_Impl->getCameraToWorldMatrix();
@@ -2127,9 +2153,10 @@ bool osc::experimental::operator<(Camera const& a, Camera const& b)
     return a.m_Impl < b.m_Impl;
 }
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, Camera const&)
+std::ostream& osc::experimental::operator<<(std::ostream& o, Camera const& camera)
 {
-    return o << "Camera()";
+    using osc::operator<<;
+    return o << "Camera(position = " << camera.getPosition() << ", direction = " << camera.getDirection() << ", projection = " << camera.getCameraProjection() << ')';
 }
 
 void osc::experimental::Graphics::DrawMesh(
@@ -2163,16 +2190,67 @@ void osc::experimental::GraphicsBackend::DrawMesh(
 
 void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 {
-    // bind to render target (screen, texture)
-    // clear render target
-    // set any scissor stuff
-    // compute any camera-level stuff (matrix, etc.)
+    // top-level graphics API settings
+    gl::Enable(GL_BLEND);
+    gl::Enable(GL_DEPTH_TEST);
 
+    // set output target
+    glm::ivec2 outputDimensions;
+    if (camera.m_MaybeTexture)
+    {
+        throw std::runtime_error{"rendering to RenderTexture NYI"};
+    }
+    else
+    {
+        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+        outputDimensions = osc::App::get().idims();
+        gl::Viewport(0, 0, outputDimensions.x, outputDimensions.y);
+    }
+
+    // clear output target
+    gl::ClearColor(camera.m_BackgroundColor.r, camera.m_BackgroundColor.g, camera.m_BackgroundColor.b, camera.m_BackgroundColor.a);
+    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    // handle scissor testing
+    if (camera.m_MaybeScissorRect)
+    {
+        osc::Rect scissorRect = *camera.m_MaybeScissorRect;
+        glm::ivec2 scissorDims = osc::Dimensions(scissorRect);
+
+        gl::Enable(GL_SCISSOR_TEST);
+        glScissor(static_cast<int>(scissorRect.p1.x), static_cast<int>(scissorRect.p1.y), scissorDims.x, scissorDims.y);
+    }
+    else
+    {
+        gl::Disable(GL_SCISSOR_TEST);
+    }
+
+    // precompute camera stuff
+    glm::mat4 viewMtx = glm::lookAt(camera.m_Position, camera.m_Position + camera.m_Direction, camera.m_UpwardsDirection);
+
+    glm::mat4 projMtx;
+    if (camera.m_CameraProjection == osc::experimental::CameraProjection::Perspective)
+    {
+        projMtx = glm::perspective(camera.m_OrthographicSize, osc::AspectRatio(outputDimensions), camera.m_NearClippingPlane, camera.m_FarClippingPlane);
+    }
+    else
+    {
+        // TODO: needs to actually calculate the matrix, rather than hack things in
+        glm::vec3 right = glm::cross(camera.m_Direction, camera.m_UpwardsDirection);
+        projMtx = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, camera.m_NearClippingPlane, camera.m_FarClippingPlane);
+    }
+
+    log::info("---start flushing---");
     for (Camera::Impl::RenderObject const& ro : camera.m_RenderQueue)
     {
         // ensure mesh is uploaded to GPU
         // bind to shader program
         // bind uniforms
         // draw
+
+        log::info("flush");
     }
+    log::info("---/start flushing---");
+
+    camera.m_RenderQueue.clear();
 }

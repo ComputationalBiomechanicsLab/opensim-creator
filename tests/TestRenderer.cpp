@@ -1862,6 +1862,7 @@ TEST_F(Renderer, CameraSetCameraProjectionMakesCameraCompareNotEqual)
 // TODO: Camera: scissor rect
 // TODO: Camera: position
 // TODO: Camera: direction
+// TODO: Camera: up
 // TODO: Camera: matrix
 // TODO: Camera: render
 // TODO: Camera: operator<<
