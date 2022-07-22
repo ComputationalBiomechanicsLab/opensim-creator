@@ -1,5 +1,6 @@
 #include "src/OpenSimBindings/OpenSimApp.hpp"
 #include "src/Screens/MainUIScreen.hpp"
+#include "src/Screens/RendererHelloTriangleScreen.hpp"
 
 #include <cstdlib>
 #include <iostream>
@@ -58,7 +59,7 @@ int main(int argc, char** argv)
 
     if (argc <= 0)
     {
-        app.show<osc::MainUIScreen>();
+        app.show<osc::RendererHelloTriangleScreen>();
     }
     else
     {

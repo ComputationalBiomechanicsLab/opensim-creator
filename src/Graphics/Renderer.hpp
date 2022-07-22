@@ -508,8 +508,6 @@ namespace osc::experimental
         glm::vec3 getUpwardsDirection() const;
         void setUpwardsDirection(glm::vec3 const&);
 
-        glm::mat4 getCameraToWorldMatrix() const;
-
         // flushes any rendering commands that were queued against this camera
         //
         // after this call completes, the output texture, or screen, should contain

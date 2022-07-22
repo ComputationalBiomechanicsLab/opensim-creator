@@ -3,14 +3,18 @@
 #include "src/Bindings/GlmHelpers.hpp"
 #include "src/Graphics/Color.hpp"
 #include "src/Graphics/Gl.hpp"
+#include "src/Graphics/GlGlm.hpp"
+#include "src/Graphics/ShaderLocationIndex.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
+#include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/CStringView.hpp"
+#include "src/Utils/DefaultConstructOnCopy.hpp"
 #include "src/Utils/UID.hpp"
 
 #include <glm/mat3x3.hpp>
@@ -37,16 +41,43 @@
 #include <variant>
 #include <vector>
 
-template<typename T>
-static void DoCopyOnWrite(std::shared_ptr<T>& p)
+// utility functions
+namespace
 {
-    if (p.use_count() == 1)
+    template<typename T>
+    void DoCopyOnWrite(std::shared_ptr<T>& p)
     {
-        return;  // sole owner: no need to copy
+        if (p.use_count() == 1)
+        {
+            return;  // sole owner: no need to copy
+        }
+
+        p = std::make_shared<T>(*p);
     }
 
-    p = std::make_shared<T>(*p);
+    void PushFloatAsBytes(float v, std::vector<std::byte>& out)
+    {
+        out.push_back(reinterpret_cast<std::byte*>(&v)[0]);
+        out.push_back(reinterpret_cast<std::byte*>(&v)[1]);
+        out.push_back(reinterpret_cast<std::byte*>(&v)[2]);
+        out.push_back(reinterpret_cast<std::byte*>(&v)[3]);
+    }
+
+    void PushVecAsBytes(glm::vec3 const& v, std::vector<std::byte>& out)
+    {
+        PushFloatAsBytes(v.x, out);
+        PushFloatAsBytes(v.y, out);
+        PushFloatAsBytes(v.z, out);
+    }
+
+    void PushVecAsBytes(glm::vec2 const& v, std::vector<std::byte>& out)
+    {
+        PushFloatAsBytes(v.x, out);
+        PushFloatAsBytes(v.y, out);
+    }
 }
+
+
 
 
 //////////////////////////////////
@@ -401,7 +432,8 @@ public:
             GLchar name[maxNameLen]; // variable name in GLSL
             GLsizei length; // name length
             glGetActiveAttrib(m_Program.get() , (GLuint)i, maxNameLen, &length, &size, &type, name);
-            m_Attributes.try_emplace(name, static_cast<int>(i), GLShaderTypeToShaderTypeInternal(type));
+            int location = static_cast<int>(glGetAttribLocation(m_Program.get(), name));
+            m_Attributes.try_emplace(name, location, GLShaderTypeToShaderTypeInternal(type));
         }
 
         m_Uniforms.reserve(numUniforms);
@@ -412,7 +444,8 @@ public:
             GLchar name[maxNameLen]; // variable name in GLSL
             GLsizei length; // name length
             glGetActiveUniform(m_Program.get(), (GLuint)i, maxNameLen, &length, &size, &type, name);
-            m_Uniforms.try_emplace(name, static_cast<int>(i), GLShaderTypeToShaderTypeInternal(type));
+            int location = static_cast<int>(glGetUniformLocation(m_Program.get(), name));
+            m_Uniforms.try_emplace(name, location, GLShaderTypeToShaderTypeInternal(type));
         }
     }
 
@@ -449,6 +482,11 @@ public:
     }
 
     // non-PIMPL APIs
+
+    gl::Program& updProgram()
+    {
+        return m_Program;
+    }
 
     std::unordered_map<std::string, ShaderElement> const& getUniforms() const
     {
@@ -685,6 +723,8 @@ private:
     }
 
     using Value = std::variant<float, glm::vec3, glm::vec4, glm::mat3, glm::mat4, glm::mat4x3, int, bool, Texture2D>;
+
+    friend class GraphicsBackend;
 
     UID m_UID;
     osc::experimental::Shader m_Shader;
@@ -1134,10 +1174,31 @@ namespace
         UInt16,
         UInt32,
     };
+
+    // the mesh data that's actually stored on the GPU
+    struct MeshGPUBuffers final {
+        osc::UID DataVersion;
+        gl::TypedBufferHandle<GL_ARRAY_BUFFER> ArrayBuffer;
+        gl::TypedBufferHandle<GL_ELEMENT_ARRAY_BUFFER> IndicesBuffer;
+        gl::VertexArray VAO;
+    };
+
+    GLenum ToOpenGLTopography(osc::experimental::MeshTopography t)
+    {
+        switch (t) {
+        case osc::experimental::MeshTopography::Triangles:
+            return GL_TRIANGLES;
+        case osc::experimental::MeshTopography::Lines:
+            return GL_LINES;
+        default:
+            throw std::runtime_error{"unsuppored topography"};
+        }
+    }
 }
 
 class osc::experimental::Mesh::Impl final {
 public:
+
     MeshTopography getTopography() const
     {
         return m_Topography;
@@ -1146,7 +1207,7 @@ public:
     void setTopography(MeshTopography t)
     {
         m_Topography = std::move(t);
-        m_Version = {};
+        m_Version->reset();
     }
 
     nonstd::span<glm::vec3 const> getVerts() const
@@ -1161,7 +1222,7 @@ public:
         std::copy(verts.begin(), verts.end(), std::back_insert_iterator{m_Vertices});
 
         recalculateBounds();
-        m_Version = {};
+        m_Version->reset();
     }
 
     nonstd::span<glm::vec3 const> getNormals() const
@@ -1175,7 +1236,7 @@ public:
         m_Normals.reserve(normals.size());
         std::copy(normals.begin(), normals.end(), std::back_insert_iterator{m_Normals});
 
-        m_Version = {};
+        m_Version->reset();
     }
 
     nonstd::span<glm::vec2 const> getTexCoords() const
@@ -1189,7 +1250,7 @@ public:
         m_TexCoords.reserve(coords.size());
         std::copy(coords.begin(), coords.end(), std::back_insert_iterator{m_TexCoords});
 
-        m_Version = {};
+        m_Version->reset();
     }
 
     int getNumIndices() const
@@ -1230,7 +1291,7 @@ public:
         std::copy(vs.begin(), vs.end(), &m_IndicesData.front().u16.a);
 
         recalculateBounds();
-        m_Version = {};
+        m_Version->reset();
     }
 
     void setIndices(nonstd::span<std::uint32_t const> vs)
@@ -1248,12 +1309,12 @@ public:
         {
             m_IndicesAre32Bit = false;
             m_NumIndices = static_cast<int>(vs.size());
-            m_IndicesData.resize((vs.size()+1)/2);
+            m_IndicesData.resize((vs.size() + 1) / 2);
             std::copy(vs.begin(), vs.end(), &m_IndicesData.front().u16.a);
         }
 
         recalculateBounds();
-        m_Version = {};
+        m_Version->reset();
     }
 
     AABB const& getBounds() const
@@ -1263,7 +1324,7 @@ public:
 
     void clear()
     {
-        m_Version = {};
+        m_Version->reset();
         m_Topography = MeshTopography::Triangles;
         m_Vertices.clear();
         m_Normals.clear();
@@ -1272,6 +1333,36 @@ public:
         m_NumIndices = 0;
         m_IndicesData.clear();
         m_AABB = {};
+    }
+
+    // non-PIMPL methods
+
+    gl::VertexArray& updVertexArray()
+    {
+        if (!*m_MaybeGPUBuffers || (*m_MaybeGPUBuffers)->DataVersion != *m_Version)
+        {
+            uploadToGPU();
+        }
+        return (*m_MaybeGPUBuffers)->VAO;
+    }
+
+    void draw()
+    {
+        gl::DrawElements(
+            ToOpenGLTopography(m_Topography),
+            m_NumIndices,
+            m_IndicesAre32Bit ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT,
+            nullptr);
+    }
+
+    void drawInstanced(std::size_t n)
+    {
+        glDrawElementsInstanced(
+            ToOpenGLTopography(m_Topography),
+            m_NumIndices,
+            m_IndicesAre32Bit ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT,
+            nullptr,
+            static_cast<GLsizei>(n));
     }
 
 private:
@@ -1293,8 +1384,90 @@ private:
         }
     }
 
-    UID m_UID;
-    UID m_Version;
+    void uploadToGPU()
+    {
+        bool hasNormals = !m_Normals.empty();
+        bool hasTexCoords = !m_TexCoords.empty();
+        std::size_t stride = sizeof(decltype(m_Vertices)::value_type);
+
+        if (hasNormals)
+        {
+            if (m_Normals.size() != m_Vertices.size())
+            {
+                throw std::runtime_error{"number of normals != number of verts"};
+            }
+            stride += sizeof(decltype(m_Normals)::value_type);
+        }
+
+        if (hasTexCoords)
+        {
+            if (m_TexCoords.size() != m_Vertices.size())
+            {
+                throw std::runtime_error{"number of uvs != number of verts"};
+            }
+            stride += sizeof(decltype(m_TexCoords)::value_type);
+        }
+
+        // pack VBO data into CPU-side buffer
+        std::vector<std::byte> data;
+        data.reserve(stride * m_Vertices.size());
+
+        for (std::size_t i = 0; i < m_Vertices.size(); ++i)
+        {
+            PushVecAsBytes(m_Vertices[i], data);
+            if (hasNormals)
+            {
+                PushVecAsBytes(m_Normals[i], data);
+            }
+            if (hasTexCoords)
+            {
+                PushVecAsBytes(m_TexCoords[i], data);
+            }
+        }
+        OSC_ASSERT(data.size() == stride*m_Vertices.size());
+
+        if (!(*m_MaybeGPUBuffers))
+        {
+            *m_MaybeGPUBuffers = MeshGPUBuffers{};
+        }
+        MeshGPUBuffers& buffers = **m_MaybeGPUBuffers;
+
+        // upload VBO data into GPU-side buffer
+        gl::BindBuffer(GL_ARRAY_BUFFER, buffers.ArrayBuffer);
+        gl::BufferData(GL_ARRAY_BUFFER, data.size(), data.data(), GL_STATIC_DRAW);
+
+        // upload indices into EBO
+        std::size_t eboNumBytes = m_NumIndices * (m_IndicesAre32Bit ? sizeof(std::uint32_t) : sizeof(std::uint16_t));
+        gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.IndicesBuffer);
+        gl::BufferData(GL_ELEMENT_ARRAY_BUFFER, eboNumBytes, m_IndicesData.data(), GL_STATIC_DRAW);
+
+        // create VAO, specifying layout etc.
+        gl::BindVertexArray(buffers.VAO);
+        gl::BindBuffer(GL_ARRAY_BUFFER, buffers.ArrayBuffer);
+        gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.IndicesBuffer);
+        int offset = 0;
+        glVertexAttribPointer(SHADER_LOC_VERTEX_POSITION, 3, GL_FLOAT, false, static_cast<GLsizei>(stride), reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
+        glEnableVertexAttribArray(SHADER_LOC_VERTEX_POSITION);
+        offset += 3 * sizeof(float);
+        if (hasNormals)
+        {
+            glVertexAttribPointer(SHADER_LOC_VERTEX_NORMAL, 3, GL_FLOAT, false, static_cast<GLsizei>(stride), reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
+            glEnableVertexAttribArray(SHADER_LOC_VERTEX_NORMAL);
+            offset += 3 * sizeof(float);
+        }
+        if (hasTexCoords)
+        {
+            glVertexAttribPointer(SHADER_LOC_VERTEX_TEXCOORD01, 2, GL_FLOAT, false, static_cast<GLsizei>(stride), reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
+            glEnableVertexAttribArray(SHADER_LOC_VERTEX_TEXCOORD01);
+            offset += 2 * sizeof(float);
+        }
+        gl::BindVertexArray();
+
+        buffers.DataVersion = *m_Version;
+    }
+
+    DefaultConstructOnCopy<UID> m_UID;
+    DefaultConstructOnCopy<UID> m_Version;
     MeshTopography m_Topography = MeshTopography::Triangles;
     std::vector<glm::vec3> m_Vertices;
     std::vector<glm::vec3> m_Normals;
@@ -1305,6 +1478,8 @@ private:
     std::vector<PackedIndex> m_IndicesData;
 
     AABB m_AABB;
+
+    DefaultConstructOnCopy<std::optional<MeshGPUBuffers>> m_MaybeGPUBuffers;
 };
 
 std::ostream& osc::experimental::operator<<(std::ostream& o, MeshTopography mt)
@@ -1880,11 +2055,6 @@ public:
         m_UpwardsDirection = v;
     }
 
-    glm::mat4 getCameraToWorldMatrix() const
-    {
-        return m_CameraToWorldMatrix;
-    }
-
     void render()
     {
         GraphicsBackend::FlushRenderQueue(*this);
@@ -1920,7 +2090,6 @@ private:
     glm::vec3 m_Position = {};
     glm::vec3 m_Direction = {0.0f, 0.0f, -1.0f};
     glm::vec3 m_UpwardsDirection = {0.0f, 1.0f, 0.0f};
-    glm::mat4 m_CameraToWorldMatrix{1.0f};
 
     friend class GraphicsBackend;
 
@@ -1944,6 +2113,7 @@ private:
         Material material;
         std::optional<MaterialPropertyBlock> maybePropBlock;
     };
+
     std::vector<RenderObject> m_RenderQueue;
 };
 
@@ -2127,11 +2297,6 @@ void osc::experimental::Camera::setUpwardsDirection(glm::vec3 const& v)
     m_Impl->setUpwardsDirection(v);
 }
 
-glm::mat4 osc::experimental::Camera::getCameraToWorldMatrix() const
-{
-    return m_Impl->getCameraToWorldMatrix();
-}
-
 void osc::experimental::Camera::render()
 {
     DoCopyOnWrite(m_Impl);
@@ -2191,6 +2356,7 @@ void osc::experimental::GraphicsBackend::DrawMesh(
 void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 {
     // top-level graphics API settings
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     gl::Enable(GL_BLEND);
     gl::Enable(GL_DEPTH_TEST);
 
@@ -2199,6 +2365,9 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     if (camera.m_MaybeTexture)
     {
         throw std::runtime_error{"rendering to RenderTexture NYI"};
+
+        gl::ClearColor(camera.m_BackgroundColor.r, camera.m_BackgroundColor.g, camera.m_BackgroundColor.b, camera.m_BackgroundColor.a);
+        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
     else
     {
@@ -2206,10 +2375,6 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         outputDimensions = osc::App::get().idims();
         gl::Viewport(0, 0, outputDimensions.x, outputDimensions.y);
     }
-
-    // clear output target
-    gl::ClearColor(camera.m_BackgroundColor.r, camera.m_BackgroundColor.g, camera.m_BackgroundColor.b, camera.m_BackgroundColor.a);
-    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     // handle scissor testing
     if (camera.m_MaybeScissorRect)
@@ -2226,6 +2391,8 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     }
 
     // precompute camera stuff
+    //
+    // TODO: this maths should just be something like `ViewMatrix(camera); ProjMatrix(camera);`
     glm::mat4 viewMtx = glm::lookAt(camera.m_Position, camera.m_Position + camera.m_Direction, camera.m_UpwardsDirection);
 
     glm::mat4 projMtx;
@@ -2235,22 +2402,83 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     }
     else
     {
-        // TODO: needs to actually calculate the matrix, rather than hack things in
-        glm::vec3 right = glm::cross(camera.m_Direction, camera.m_UpwardsDirection);
-        projMtx = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, camera.m_NearClippingPlane, camera.m_FarClippingPlane);
+        float height = camera.m_OrthographicSize;
+        float width = height * camera.getAspectRatio();
+
+        float right = 0.5f * width;
+        float left = -right;
+        float top = 0.5f * height;
+        float bottom = -top;
+
+        projMtx = glm::ortho(left, right, bottom, top, camera.m_NearClippingPlane, camera.m_FarClippingPlane);
     }
 
-    log::info("---start flushing---");
     for (Camera::Impl::RenderObject const& ro : camera.m_RenderQueue)
     {
-        // ensure mesh is uploaded to GPU
-        // bind to shader program
-        // bind uniforms
-        // draw
+        // TODO: polygon mode (e.g. wireframe)?
 
-        log::info("flush");
+        osc::experimental::Mesh::Impl& meshImpl = const_cast<osc::experimental::Mesh::Impl&>(*ro.mesh.m_Impl);
+        osc::experimental::Shader::Impl& shaderImpl = const_cast<osc::experimental::Shader::Impl&>(*ro.material.m_Impl->m_Shader.m_Impl);
+        std::unordered_map<std::string, osc::experimental::Material::Impl::Value>& materialValues = ro.material.m_Impl->m_Values;
+        osc::experimental::Material::Impl& materialImpl = const_cast<osc::experimental::Material::Impl&>(*ro.material.m_Impl);
+        osc::Transform const& transform = ro.transform;
+        std::optional<osc::experimental::MaterialPropertyBlock> const& maybePropBlock = ro.maybePropBlock;
+        std::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
+        std::unordered_map<std::string, ShaderElement> const& attributes = shaderImpl.getAttributes();
+
+        gl::UseProgram(shaderImpl.updProgram());
+
+        // try binding to uModel (standard)
+        {
+            auto it = uniforms.find("uModelMat");
+            if (it != uniforms.end() && it->second.type == osc::experimental::ShaderType::Mat4)
+            {
+                gl::UniformMat4 u{it->second.location};
+                gl::Uniform(u, ToMat4(transform));
+            }
+        }
+
+        // try binding to uView (standard)
+        {
+            auto it = uniforms.find("uViewMat");
+            if (it != uniforms.end() && it->second.type == osc::experimental::ShaderType::Mat4)
+            {
+                gl::UniformMat4 u{it->second.location};
+                gl::Uniform(u, viewMtx);
+            }
+        }
+
+        // try binding to uProjection (standard)
+        {
+            auto it = uniforms.find("uProjMat");
+            if (it != uniforms.end() && it->second.type == osc::experimental::ShaderType::Mat4)
+            {
+                gl::UniformMat4 u{it->second.location};
+                gl::Uniform(u, projMtx);
+            }
+        }
+
+        // HACK: bind color TODO
+        {
+            auto it = uniforms.find("uColor");
+            if (it != uniforms.end() && it->second.type == osc::experimental::ShaderType::Vec4)
+            {
+                gl::UniformVec4 u{it->second.location};
+                glm::vec4 color = {0.0f, 1.0f, 0.0f, 1.0f};
+                gl::Uniform(u, color);
+            }
+        }
+
+        // TODO: bind material values
+        // TODO: bind material block values
+
+        gl::BindVertexArray(meshImpl.updVertexArray());
+        meshImpl.draw();
+        gl::BindVertexArray();
+
+        gl::UseProgram();
     }
-    log::info("---/start flushing---");
+    gl::BindVertexArray();
 
     camera.m_RenderQueue.clear();
 }

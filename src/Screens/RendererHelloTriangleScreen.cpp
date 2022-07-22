@@ -2,6 +2,7 @@
 
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Renderer.hpp"
+#include "src/Maths/Constants.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
@@ -66,11 +67,11 @@ class osc::RendererHelloTriangleScreen::Impl final {
 public:
     Impl()
     {
-        m_Camera.setBackgroundColor({ 1.0f, 0.0f, 0.0f, 0.0f });
+        m_Camera.setBackgroundColor({ 0.0f, 0.0f, 0.0f, 0.0f });
         m_Camera.setPosition({ 0.0f, 0.0f, 1.0f });
         m_Camera.setDirection({ 0.0f, 0.0f, -1.0f });
         m_Camera.setCameraProjection(osc::experimental::CameraProjection::Orthographic);
-        m_Camera.setOrthographicSize(1.0f);
+        m_Camera.setOrthographicSize(2.0f);
         m_Camera.setNearClippingPlane(0.0f);
         m_Camera.setFarClippingPlane(2.0f);
 
@@ -93,6 +94,7 @@ public:
 
     void onMount()
     {
+        osc::App::upd().enableDebugMode();
         osc::App::upd().makeMainEventLoopPolling();
         ImGuiInit();
     }
@@ -122,12 +124,17 @@ public:
 
     void onDraw()
     {
+        ImGuiNewFrame();
         App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
 
+        glm::quat flipper{glm::vec3{0.0f, 0.0f, osc::fpi}};
+        osc::Transform flipped;
+        flipped.rotation = flipper;
+
         osc::experimental::Graphics::DrawMesh(m_TriangleMesh, osc::Transform{}, m_Material, m_Camera);
+        //osc::experimental::Graphics::DrawMesh(m_TriangleMesh, flipped, m_Material, m_Camera);
         m_Camera.render();
 
-        ImGuiNewFrame();
         if (ImGui::Begin("panel"))
         {
             ImGui::Text("hi");
