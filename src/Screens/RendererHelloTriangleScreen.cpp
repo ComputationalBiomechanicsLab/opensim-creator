@@ -13,7 +13,6 @@
 #include <cstdint>
 #include <string>
 #include <utility>
-#include <vector>
 
 static char g_VertexShader[] =
 R"(
@@ -47,18 +46,17 @@ R"(
 
 static osc::experimental::Mesh GenerateTriangleMesh()
 {
-    osc::experimental::Mesh m;
-    std::vector<glm::vec3> trianglePoints =
+    glm::vec3 points[] =
     {
         {-1.0f, -1.0f, 0.0f},  // bottom-left
         { 1.0f, -1.0f, 0.0f},  // bottom-right
         { 0.0f,  1.0f, 0.0f},  // top-middle
     };
-    std::vector<std::uint16_t> indices = {0, 1, 2};
+    std::uint16_t indices[] = {0, 1, 2};
 
-    m.setVerts(trianglePoints);
+    osc::experimental::Mesh m;
+    m.setVerts(points);
     m.setIndices(indices);
-    // no tex coords or normals
     return m;
 }
 
