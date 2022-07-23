@@ -1,17 +1,16 @@
 #include "RendererHelloTriangleScreen.hpp"
 
-#include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Renderer.hpp"
-#include "src/Maths/Constants.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
-#include "src/Platform/Log.hpp"
-#include "src/Utils/Algorithms.hpp"
-#include "src/Widgets/LogViewer.hpp"
+#include "src/Screens/ExperimentsScreen.hpp"
 
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
-#include <imgui.h>
+#include <SDL_events.h>
 
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
@@ -67,42 +66,16 @@ class osc::RendererHelloTriangleScreen::Impl final {
 public:
     Impl()
     {
-        m_Material.setVec4("uColor", {1.0f, 0.0f, 0.0f, 1.0f});
-
-        m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
-        m_Camera.setPosition({0.0f, 0.0f, 1.0f});
-        m_Camera.setDirection({0.0f, 0.0f, -1.0f});
         m_Camera.setViewMatrix(glm::mat4{1.0f});  // "hello triangle" is an identity transform demo
         m_Camera.setProjectionMatrix(glm::mat4{1.0f});
-
-        log::info("---shader---");
-        log::info("%s", StreamToString(m_Shader).c_str());
-        log::info("---/shader---");
-
-        log::info("---material---");
-        log::info("%s", StreamToString(m_Material).c_str());
-        log::info("---/material---");
-
-        log::info("---mesh---");
-        log::info("%s", StreamToString(m_TriangleMesh).c_str());
-        log::info("---/mesh---");
-
-        log::info("---camera---");
-        log::info("%s", StreamToString(m_Camera).c_str());
-        log::info("---/camera---");
     }
 
     void onMount()
     {
-        osc::App::upd().enableDebugMode();
-        osc::App::upd().makeMainEventLoopPolling();
-        ImGuiInit();
     }
 
     void onUnmount()
     {
-        ImGuiShutdown();
-        osc::App::upd().makeMainEventLoopWaiting();
     }
 
     void onEvent(SDL_Event const& e)
@@ -112,40 +85,30 @@ public:
             App::upd().requestQuit();
             return;
         }
-        else if (ImGuiOnEvent(e))
+        else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
+            App::upd().requestTransition<ExperimentsScreen>();
             return;
         }
     }
 
     void onTick()
     {
+        if (m_Color.r < 0.0f || m_Color.r > 1.0f)
+        {
+            m_FadeSpeed = -m_FadeSpeed;
+        }
+
+        m_Color.r -= osc::App::get().getDeltaSinceLastFrame().count() * m_FadeSpeed;
     }
 
     void onDraw()
     {
-        ImGuiNewFrame();
         App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
 
-        glm::quat flipper{glm::vec3{0.0f, 0.0f, osc::fpi}};
-        osc::Transform flipped;
-        flipped.rotation = flipper;
-
-        osc::experimental::Graphics::DrawMesh(m_TriangleMesh, osc::Transform{}, m_Material, m_Camera);
-        //osc::experimental::Graphics::DrawMesh(m_TriangleMesh, flipped, m_Material, m_Camera);
+        m_Material.setVec4("uColor", m_Color);
+        experimental::Graphics::DrawMesh(m_TriangleMesh, osc::Transform{}, m_Material, m_Camera);
         m_Camera.render();
-
-        if (ImGui::Begin("panel"))
-        {
-            ImGui::Text("hi");
-        }
-        ImGui::End();
-
-        ImGui::Begin("log");
-        m_LogViewer.draw();
-        ImGui::End();
-
-        ImGuiRender();
     }
 
 private:
@@ -153,9 +116,13 @@ private:
     experimental::Material m_Material{m_Shader};
     experimental::Mesh m_TriangleMesh = GenerateTriangleMesh();
     experimental::Camera m_Camera;
-    LogViewer m_LogViewer;
+    float m_FadeSpeed = 1.0f;
+    glm::vec4 m_Color = {1.0f, 0.0f, 0.0f, 1.0f};
 
 };
+
+
+// public API (PIMPL)
 
 osc::RendererHelloTriangleScreen::RendererHelloTriangleScreen() :
     m_Impl{new Impl{}}
