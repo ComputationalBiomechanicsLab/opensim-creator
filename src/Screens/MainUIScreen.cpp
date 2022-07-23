@@ -223,6 +223,15 @@ public:
         }
     }
 
+    UID addTab(std::unique_ptr<Tab> tab)
+    {
+        return implAddTab(std::move(tab));
+    }
+
+    TabHost* getTabHostAPI()
+    {
+        return this;
+    }
 
 private:
     void drawTabSpecificMenu()
@@ -657,4 +666,14 @@ void osc::MainUIScreen::onTick()
 void osc::MainUIScreen::onDraw()
 {
     m_Impl->onDraw();
+}
+
+osc::UID osc::MainUIScreen::addTab(std::unique_ptr<Tab> tab)
+{
+    return m_Impl->addTab(std::move(tab));
+}
+
+osc::TabHost* osc::MainUIScreen::getTabHostAPI()
+{
+    return m_Impl->getTabHostAPI();
 }

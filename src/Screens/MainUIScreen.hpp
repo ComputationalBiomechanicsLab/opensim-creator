@@ -1,10 +1,18 @@
 #pragma once
 
 #include "src/Platform/Screen.hpp"
+#include "src/Utils/UID.hpp"
 
 #include <SDL_events.h>
 
 #include <filesystem>
+#include <memory>
+
+namespace osc
+{
+    class Tab;
+    class TabHost;
+}
 
 namespace osc
 {
@@ -23,6 +31,9 @@ namespace osc
         void onEvent(SDL_Event const&) override;
         void onTick() override;
         void onDraw() override;
+
+        UID addTab(std::unique_ptr<Tab>);
+        TabHost* getTabHostAPI();
 
     private:
         class Impl;

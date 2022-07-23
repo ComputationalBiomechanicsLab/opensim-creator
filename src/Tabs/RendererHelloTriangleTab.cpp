@@ -1,4 +1,4 @@
-#include "RendererHelloTriangleScreen.hpp"
+#include "RendererHelloTriangleTab.hpp"
 
 #include "src/Graphics/Color.hpp"
 #include "src/Graphics/Renderer.hpp"
@@ -71,12 +71,27 @@ static osc::experimental::Mesh GenerateTriangleMesh()
     return m;
 }
 
-class osc::RendererHelloTriangleScreen::Impl final {
+class osc::RendererHelloTriangleTab::Impl final {
 public:
-    Impl()
+    Impl(TabHost* parent) : m_Parent{parent}
     {
         m_Camera.setViewMatrix(glm::mat4{1.0f});  // "hello triangle" is an identity transform demo
         m_Camera.setProjectionMatrix(glm::mat4{1.0f});
+    }
+
+    UID getID() const
+    {
+        return m_ID;
+    }
+
+    CStringView getName() const
+    {
+        return "Hello, Triangle!";
+    }
+
+    TabHost* getParent() const
+    {
+        return m_Parent;
     }
 
     void onMount()
@@ -87,18 +102,19 @@ public:
     {
     }
 
-    void onEvent(SDL_Event const& e)
+    bool onEvent(SDL_Event const& e)
     {
         if (e.type == SDL_QUIT)
         {
             App::upd().requestQuit();
-            return;
+            return true;
         }
         else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
             App::upd().requestTransition<ExperimentsScreen>();
-            return;
+            return true;
         }
+        return false;
     }
 
     void onTick()
@@ -111,6 +127,10 @@ public:
         m_Color.r -= osc::App::get().getDeltaSinceLastFrame().count() * m_FadeSpeed;
     }
 
+    void onDrawMainMenu()
+    {
+    }
+
     void onDraw()
     {
         App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
@@ -120,6 +140,8 @@ public:
     }
 
 private:
+    UID m_ID;
+    TabHost* m_Parent;
     experimental::Shader m_Shader{g_VertexShader, g_FragmentShader};
     experimental::Material m_Material{m_Shader};
     experimental::Mesh m_TriangleMesh = GenerateTriangleMesh();
@@ -132,48 +154,68 @@ private:
 
 // public API (PIMPL)
 
-osc::RendererHelloTriangleScreen::RendererHelloTriangleScreen() :
-    m_Impl{new Impl{}}
+osc::RendererHelloTriangleTab::RendererHelloTriangleTab(TabHost* parent) :
+    m_Impl{new Impl{std::move(parent)}}
 {
 }
 
-osc::RendererHelloTriangleScreen::RendererHelloTriangleScreen(RendererHelloTriangleScreen&& tmp) noexcept :
+osc::RendererHelloTriangleTab::RendererHelloTriangleTab(RendererHelloTriangleTab&& tmp) noexcept :
     m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
 }
 
-osc::RendererHelloTriangleScreen& osc::RendererHelloTriangleScreen::operator=(RendererHelloTriangleScreen&& tmp) noexcept
+osc::RendererHelloTriangleTab& osc::RendererHelloTriangleTab::operator=(RendererHelloTriangleTab&& tmp) noexcept
 {
     std::swap(m_Impl, tmp.m_Impl);
     return *this;
 }
 
-osc::RendererHelloTriangleScreen::~RendererHelloTriangleScreen() noexcept
+osc::RendererHelloTriangleTab::~RendererHelloTriangleTab() noexcept
 {
     delete m_Impl;
 }
 
-void osc::RendererHelloTriangleScreen::onMount()
+osc::UID osc::RendererHelloTriangleTab::implGetID() const
+{
+    return m_Impl->getID();
+}
+
+osc::CStringView osc::RendererHelloTriangleTab::implGetName() const
+{
+    return m_Impl->getName();
+}
+
+osc::TabHost* osc::RendererHelloTriangleTab::implParent() const
+{
+    return m_Impl->getParent();
+}
+
+void osc::RendererHelloTriangleTab::implOnMount()
 {
     m_Impl->onMount();
 }
 
-void osc::RendererHelloTriangleScreen::onUnmount()
+void osc::RendererHelloTriangleTab::implOnUnmount()
 {
     m_Impl->onUnmount();
 }
 
-void osc::RendererHelloTriangleScreen::onEvent(SDL_Event const& e)
+bool osc::RendererHelloTriangleTab::implOnEvent(SDL_Event const& e)
 {
-    m_Impl->onEvent(e);
+    return m_Impl->onEvent(e);
 }
 
-void osc::RendererHelloTriangleScreen::onTick()
+void osc::RendererHelloTriangleTab::implOnTick()
 {
     m_Impl->onTick();
 }
 
-void osc::RendererHelloTriangleScreen::onDraw()
+void osc::RendererHelloTriangleTab::implOnDrawMainMenu()
+{
+    m_Impl->onDrawMainMenu();
+}
+
+void osc::RendererHelloTriangleTab::implOnDraw()
 {
     m_Impl->onDraw();
 }

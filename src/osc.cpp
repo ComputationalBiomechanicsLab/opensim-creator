@@ -1,6 +1,7 @@
 #include "src/OpenSimBindings/OpenSimApp.hpp"
 #include "src/Screens/MainUIScreen.hpp"
-#include "src/Screens/RendererHelloTriangleScreen.hpp"
+#include "src/Tabs/TabHost.hpp"
+#include "src/Tabs/RendererHelloTriangleTab.hpp"
 
 #include <cstdlib>
 #include <iostream>
@@ -59,7 +60,10 @@ int main(int argc, char** argv)
 
     if (argc <= 0)
     {
-        app.show<osc::RendererHelloTriangleScreen>();
+        auto screen = std::make_unique<osc::MainUIScreen>();
+        auto tabID = screen->addTab(std::make_unique<osc::RendererHelloTriangleTab>(screen->getTabHostAPI()));
+        screen->getTabHostAPI()->selectTab(tabID);
+        app.show(std::move(screen));
     }
     else
     {

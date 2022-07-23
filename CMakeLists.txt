@@ -461,8 +461,6 @@ add_library(osccore STATIC
     src/Screens/MeshHittestWithBVHScreen.hpp
     src/Screens/MeshScreen.cpp
     src/Screens/MeshScreen.hpp
-    src/Screens/RendererHelloTriangleScreen.cpp
-    src/Screens/RendererHelloTriangleScreen.hpp
 
     src/Tabs/CookiecutterTab.cpp
     src/Tabs/CookiecutterTab.hpp
@@ -476,6 +474,8 @@ add_library(osccore STATIC
     src/Tabs/ModelEditorTab.hpp
     src/Tabs/PerformanceAnalyzerTab.cpp
     src/Tabs/PerformanceAnalyzerTab.hpp
+    src/Tabs/RendererHelloTriangleTab.cpp
+    src/Tabs/RendererHelloTriangleTab.hpp
     src/Tabs/SimulatorTab.cpp
     src/Tabs/SimulatorTab.hpp
     src/Tabs/SplashTab.cpp
