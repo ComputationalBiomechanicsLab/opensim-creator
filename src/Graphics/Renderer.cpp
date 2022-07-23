@@ -18,7 +18,6 @@
 #include "src/Utils/UID.hpp"
 
 #include <glm/mat3x3.hpp>
-#include <glm/mat4x3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -75,9 +74,42 @@ namespace
         PushFloatAsBytes(v.x, out);
         PushFloatAsBytes(v.y, out);
     }
+
+    using MaterialValue = std::variant<float, glm::vec3, glm::vec4, glm::mat3, glm::mat4, int, bool, osc::experimental::Texture2D>;
+
+    osc::experimental::ShaderType GetShaderType(MaterialValue const& v)
+    {
+        switch (v.index()) {
+        case 0:
+            static_assert(std::is_same_v<std::variant_alternative_t<0, MaterialValue>, float>);
+            return osc::experimental::ShaderType::Float;
+        case 1:
+            static_assert(std::is_same_v<std::variant_alternative_t<1, MaterialValue>, glm::vec3>);
+            return osc::experimental::ShaderType::Vec3;
+        case 2:
+            static_assert(std::is_same_v<std::variant_alternative_t<2, MaterialValue>, glm::vec4>);
+            return osc::experimental::ShaderType::Vec4;
+        case 3:
+            static_assert(std::is_same_v<std::variant_alternative_t<3, MaterialValue>, glm::mat3>);
+            return osc::experimental::ShaderType::Mat3;
+        case 4:
+            static_assert(std::is_same_v<std::variant_alternative_t<4, MaterialValue>, glm::mat4>);
+            return osc::experimental::ShaderType::Mat4;
+        case 5:
+            static_assert(std::is_same_v<std::variant_alternative_t<5, MaterialValue>, int>);
+            return osc::experimental::ShaderType::Int;
+        case 6:
+            static_assert(std::is_same_v<std::variant_alternative_t<6, MaterialValue>, bool>);
+            return osc::experimental::ShaderType::Bool;
+        case 7:
+            static_assert(std::is_same_v<std::variant_alternative_t<7, MaterialValue>, osc::experimental::Texture2D>);
+            return osc::experimental::ShaderType::Sampler2D;
+        default:
+            static_assert(std::variant_size_v<MaterialValue> == 8);
+            return osc::experimental::ShaderType::Unknown;
+        }
+    }
 }
-
-
 
 
 //////////////////////////////////
@@ -341,7 +373,6 @@ namespace
         "Vec4",
         "Mat3",
         "Mat4",
-        "Mat4x3",
         "Int",
         "Bool",
         "Sampler2D",
@@ -362,8 +393,6 @@ namespace
             return ShaderType::Mat3;
         case GL_FLOAT_MAT4:
             return ShaderType::Mat4;
-        case GL_FLOAT_MAT4x3:
-            return ShaderType::Mat4x3;
         case GL_INT:
             return ShaderType::Int;
         case GL_BOOL:
@@ -391,6 +420,7 @@ namespace
         case GL_FLOAT_MAT3x2:
         case GL_FLOAT_MAT3x4:
         case GL_FLOAT_MAT4x2:
+        case GL_FLOAT_MAT4x3:
         case GL_FLOAT_MAT2:
         case GL_FLOAT_VEC2:
         default:
@@ -657,16 +687,6 @@ public:
         setValue(std::move(propertyName), value);
     }
 
-    std::optional<glm::mat4x3> getMat4x3(std::string_view propertyName) const
-    {
-        return getValue<glm::mat4x3>(std::move(propertyName));
-    }
-
-    void setMat4x3(std::string_view propertyName, glm::mat4x3 const& value)
-    {
-        setValue(std::move(propertyName), value);
-    }
-
     std::optional<int> getInt(std::string_view propertyName) const
     {
         return getValue<int>(std::move(propertyName));
@@ -722,13 +742,11 @@ private:
         m_Values[std::string{propertyName}] = v;
     }
 
-    using Value = std::variant<float, glm::vec3, glm::vec4, glm::mat3, glm::mat4, glm::mat4x3, int, bool, Texture2D>;
-
     friend class GraphicsBackend;
 
     UID m_UID;
     osc::experimental::Shader m_Shader;
-    std::unordered_map<std::string, Value> m_Values;
+    std::unordered_map<std::string, MaterialValue> m_Values;
 };
 
 osc::experimental::Material::Material(osc::experimental::Shader shader) :
@@ -800,17 +818,6 @@ void osc::experimental::Material::setMat4(std::string_view propertyName, glm::ma
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setMat4(std::move(propertyName), mat);
-}
-
-std::optional<glm::mat4x3> osc::experimental::Material::getMat4x3(std::string_view propertyName) const
-{
-    return m_Impl->getMat4x3(std::move(propertyName));
-}
-
-void osc::experimental::Material::setMat4x3(std::string_view propertyName, glm::mat4x3 const& mat)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setMat4x3(std::move(propertyName), mat);
 }
 
 std::optional<int> osc::experimental::Material::getInt(std::string_view propertyName) const
@@ -935,16 +942,6 @@ public:
         setValue(std::move(propertyName), value);
     }
 
-    std::optional<glm::mat4x3> getMat4x3(std::string_view propertyName) const
-    {
-        return getValue<glm::mat4x3>(std::move(propertyName));
-    }
-
-    void setMat4x3(std::string_view propertyName, glm::mat4x3 const& value)
-    {
-        setValue(std::move(propertyName), value);
-    }
-
     std::optional<int> getInt(std::string_view propertyName) const
     {
         return getValue<int>(std::move(propertyName));
@@ -1000,10 +997,10 @@ private:
         m_Values[std::string{propertyName}] = v;
     }
 
-    using Value = std::variant<float, glm::vec3, glm::vec4, glm::mat3, glm::mat4, glm::mat4x3, int, bool, Texture2D>;
+    friend class GraphicsBackend;
 
     UID m_UID;
-    std::unordered_map<std::string, Value> m_Values;
+    std::unordered_map<std::string, MaterialValue> m_Values;
 };
 
 osc::experimental::MaterialPropertyBlock::MaterialPropertyBlock() :
@@ -1081,17 +1078,6 @@ void osc::experimental::MaterialPropertyBlock::setMat4(std::string_view property
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setMat4(std::move(propertyName), value);
-}
-
-std::optional<glm::mat4x3> osc::experimental::MaterialPropertyBlock::getMat4x3(std::string_view propertyName) const
-{
-    return m_Impl->getMat4x3(std::move(propertyName));
-}
-
-void osc::experimental::MaterialPropertyBlock::setMat4x3(std::string_view propertyName, glm::mat4x3 const& value)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setMat4x3(std::move(propertyName), value);
 }
 
 std::optional<int> osc::experimental::MaterialPropertyBlock::getInt(std::string_view propertyName) const
@@ -2055,6 +2041,62 @@ public:
         m_UpwardsDirection = v;
     }
 
+    glm::mat4 getViewMatrix() const
+    {
+        if (m_MaybeViewMatrixOverride)
+        {
+            return *m_MaybeViewMatrixOverride;
+        }
+        else
+        {
+            return glm::lookAt(m_Position, m_Position + m_Direction, m_UpwardsDirection);
+        }
+    }
+
+    void setViewMatrix(glm::mat4 const& m)
+    {
+        m_MaybeViewMatrixOverride = m;
+    }
+
+    void resetViewMatrix()
+    {
+        m_MaybeViewMatrixOverride.reset();
+    }
+
+    glm::mat4 getProjectionMatrix() const
+    {
+        if (m_MaybeProjectionMatrixOverride)
+        {
+            return *m_MaybeProjectionMatrixOverride;
+        }
+        else if (m_CameraProjection == osc::experimental::CameraProjection::Perspective)
+        {
+            return glm::perspective(m_OrthographicSize, getAspectRatio(), m_NearClippingPlane, m_FarClippingPlane);
+        }
+        else
+        {
+            float height = m_OrthographicSize;
+            float width = height * getAspectRatio();
+
+            float right = 0.5f * width;
+            float left = -right;
+            float top = 0.5f * height;
+            float bottom = -top;
+
+            return glm::ortho(left, right, bottom, top, m_NearClippingPlane, m_FarClippingPlane);
+        }
+    }
+
+    void setProjectionMatrix(glm::mat4 const& m)
+    {
+        m_MaybeProjectionMatrixOverride = m;
+    }
+
+    void resetProjectionMatrix()
+    {
+        m_MaybeProjectionMatrixOverride.reset();
+    }
+
     void render()
     {
         GraphicsBackend::FlushRenderQueue(*this);
@@ -2090,6 +2132,8 @@ private:
     glm::vec3 m_Position = {};
     glm::vec3 m_Direction = {0.0f, 0.0f, -1.0f};
     glm::vec3 m_UpwardsDirection = {0.0f, 1.0f, 0.0f};
+    std::optional<glm::mat4> m_MaybeViewMatrixOverride;
+    std::optional<glm::mat4> m_MaybeProjectionMatrixOverride;
 
     friend class GraphicsBackend;
 
@@ -2297,6 +2341,40 @@ void osc::experimental::Camera::setUpwardsDirection(glm::vec3 const& v)
     m_Impl->setUpwardsDirection(v);
 }
 
+glm::mat4 osc::experimental::Camera::getViewMatrix() const
+{
+    return m_Impl->getViewMatrix();
+}
+
+void osc::experimental::Camera::setViewMatrix(glm::mat4 const& m)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setViewMatrix(m);
+}
+
+void osc::experimental::Camera::resetViewMatrix()
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->resetViewMatrix();
+}
+
+glm::mat4 osc::experimental::Camera::getProjectionMatrix() const
+{
+    return m_Impl->getProjectionMatrix();
+}
+
+void osc::experimental::Camera::setProjectionMatrix(glm::mat4 const& m)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setProjectionMatrix(m);
+}
+
+void osc::experimental::Camera::resetProjectionMatrix()
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->resetProjectionMatrix();
+}
+
 void osc::experimental::Camera::render()
 {
     DoCopyOnWrite(m_Impl);
@@ -2353,6 +2431,66 @@ void osc::experimental::GraphicsBackend::DrawMesh(
     camera.m_Impl->m_RenderQueue.emplace_back(mesh, transform, material, std::move(maybeMaterialPropertyBlock));
 }
 
+static void TryBindMaterialValueToShaderElement(ShaderElement const& se, MaterialValue const& v)
+{
+    osc::experimental::ShaderType t = GetShaderType(v);
+
+    if (GetShaderType(v) != se.type)
+    {
+        return;  // mismatched types
+    }
+
+    switch (t) {
+    case osc::experimental::ShaderType::Float:
+    {
+        gl::UniformFloat u{se.location};
+        gl::Uniform(u, std::get<float>(v));
+        break;
+    }
+    case osc::experimental::ShaderType::Vec3:
+    {
+        gl::UniformVec3 u{se.location};
+        gl::Uniform(u, std::get<glm::vec3>(v));
+        break;
+    }
+    case osc::experimental::ShaderType::Vec4:
+    {
+        gl::UniformVec4 u{se.location};
+        gl::Uniform(u, std::get<glm::vec4>(v));
+        break;
+    }
+    case osc::experimental::ShaderType::Mat3:
+    {
+        gl::UniformMat3 u{se.location};
+        gl::Uniform(u, std::get<glm::mat3>(v));
+        break;
+    }
+    case osc::experimental::ShaderType::Mat4:
+    {
+        gl::UniformMat4 u{se.location};
+        gl::Uniform(u, std::get<glm::mat4>(v));
+        break;
+    }
+    case osc::experimental::ShaderType::Int:
+    {
+        gl::UniformInt u{se.location};
+        gl::Uniform(u, std::get<int>(v));
+        break;
+    }
+    case osc::experimental::ShaderType::Bool:
+    {
+        gl::UniformBool u{se.location};
+        gl::Uniform(u, std::get<bool>(v));
+        break;
+    }
+    case osc::experimental::ShaderType::Sampler2D:
+    {
+        throw std::runtime_error{"texture binding TODO"};
+        break;
+    }
+    }
+}
+
 void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 {
     // top-level graphics API settings
@@ -2391,42 +2529,23 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     }
 
     // precompute camera stuff
-    //
-    // TODO: this maths should just be something like `ViewMatrix(camera); ProjMatrix(camera);`
-    glm::mat4 viewMtx = glm::lookAt(camera.m_Position, camera.m_Position + camera.m_Direction, camera.m_UpwardsDirection);
-
-    glm::mat4 projMtx;
-    if (camera.m_CameraProjection == osc::experimental::CameraProjection::Perspective)
-    {
-        projMtx = glm::perspective(camera.m_OrthographicSize, osc::AspectRatio(outputDimensions), camera.m_NearClippingPlane, camera.m_FarClippingPlane);
-    }
-    else
-    {
-        float height = camera.m_OrthographicSize;
-        float width = height * camera.getAspectRatio();
-
-        float right = 0.5f * width;
-        float left = -right;
-        float top = 0.5f * height;
-        float bottom = -top;
-
-        projMtx = glm::ortho(left, right, bottom, top, camera.m_NearClippingPlane, camera.m_FarClippingPlane);
-    }
+    glm::mat4 viewMtx = camera.getViewMatrix();
+    glm::mat4 projMtx = camera.getProjectionMatrix();
 
     for (Camera::Impl::RenderObject const& ro : camera.m_RenderQueue)
     {
-        // TODO: polygon mode (e.g. wireframe)?
-
         osc::experimental::Mesh::Impl& meshImpl = const_cast<osc::experimental::Mesh::Impl&>(*ro.mesh.m_Impl);
         osc::experimental::Shader::Impl& shaderImpl = const_cast<osc::experimental::Shader::Impl&>(*ro.material.m_Impl->m_Shader.m_Impl);
-        std::unordered_map<std::string, osc::experimental::Material::Impl::Value>& materialValues = ro.material.m_Impl->m_Values;
         osc::experimental::Material::Impl& materialImpl = const_cast<osc::experimental::Material::Impl&>(*ro.material.m_Impl);
         osc::Transform const& transform = ro.transform;
-        std::optional<osc::experimental::MaterialPropertyBlock> const& maybePropBlock = ro.maybePropBlock;
-        std::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
-        std::unordered_map<std::string, ShaderElement> const& attributes = shaderImpl.getAttributes();
+
+        // TODO: polygon mode (e.g. wireframe)?
 
         gl::UseProgram(shaderImpl.updProgram());
+
+        // bind uniforms
+
+        std::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
         // try binding to uModel (standard)
         {
@@ -2458,19 +2577,28 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             }
         }
 
-        // HACK: bind color TODO
+        // bind material values
+        for (auto const& [name, value] : materialImpl.m_Values)
         {
-            auto it = uniforms.find("uColor");
-            if (it != uniforms.end() && it->second.type == osc::experimental::ShaderType::Vec4)
+            auto it = uniforms.find(name);
+            if (it != uniforms.end())
             {
-                gl::UniformVec4 u{it->second.location};
-                glm::vec4 color = {0.0f, 1.0f, 0.0f, 1.0f};
-                gl::Uniform(u, color);
+                TryBindMaterialValueToShaderElement(it->second, value);
             }
         }
 
-        // TODO: bind material values
-        // TODO: bind material block values
+        // bind material block values
+        if (ro.maybePropBlock)
+        {
+            for (auto const& [name, value] : ro.maybePropBlock->m_Impl->m_Values)
+            {
+                auto it = uniforms.find(name);
+                if (it != uniforms.end())
+                {
+                    TryBindMaterialValueToShaderElement(it->second, value);
+                }
+            }
+        }
 
         gl::BindVertexArray(meshImpl.updVertexArray());
         meshImpl.draw();

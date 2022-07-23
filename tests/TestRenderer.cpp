@@ -490,12 +490,6 @@ TEST_F(Renderer, MaterialGetMat4OnNewMaterialReturnsEmptyOptional)
     ASSERT_FALSE(mat.getMat4("someKey"));
 }
 
-TEST_F(Renderer, MaterialGetMat4x3OnNewMaterialReturnsEmptyOptional)
-{
-    osc::experimental::Material mat = GenerateMaterial();
-    ASSERT_FALSE(mat.getMat4x3("someKey"));
-}
-
 TEST_F(Renderer, MaterialGetIntOnNewMaterialReturnsEmptyOptional)
 {
     osc::experimental::Material mat = GenerateMaterial();
@@ -566,18 +560,6 @@ TEST_F(Renderer, MaterialSetMat4OnMaterialCausesGetMat4ToReturnTheProvidedValue)
     mat.setMat4(key, value);
 
     ASSERT_EQ(*mat.getMat4(key), value);
-}
-
-TEST_F(Renderer, MaterialSetMat4x3OnMaterialCausesGetMat4x3ToReturnTheProvidedValue)
-{
-    osc::experimental::Material mat = GenerateMaterial();
-
-    std::string key = "someKey";
-    glm::mat4x3 value = GenerateMat4x3();
-
-    mat.setMat4x3(key, value);
-
-    ASSERT_EQ(*mat.getMat4x3(key), value);
 }
 
 TEST_F(Renderer, MaterialSetIntOnMaterialCausesGetIntToReturnTheProvidedValue)
@@ -774,12 +756,6 @@ TEST_F(Renderer, MaterialPropertyBlockGetMat4ReturnsEmptyOnDefaultConstructedIns
     ASSERT_FALSE(mpb.getMat4("someKey"));
 }
 
-TEST_F(Renderer, MaterialPropertyBlockGetMat4x3ReturnsEmptyOnDefaultConstructedInstance)
-{
-    osc::experimental::MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.getMat4x3("someKey"));
-}
-
 TEST_F(Renderer, MaterialPropertyBlockGetIntReturnsEmptyOnDefaultConstructedInstance)
 {
     osc::experimental::MaterialPropertyBlock mpb;
@@ -842,19 +818,6 @@ TEST_F(Renderer, MaterialPropertyBlockSetMat3CausesGetterToReturnSetValue)
     mpb.setMat3(key, value);
     ASSERT_TRUE(mpb.getMat3(key));
     ASSERT_EQ(mpb.getMat3(key), value);
-}
-
-TEST_F(Renderer, MaterialPropertyBlockSetMat4x3CausesGetterToReturnSetValue)
-{
-    osc::experimental::MaterialPropertyBlock mpb;
-    std::string key = "someKey";
-    glm::mat4x3 value = GenerateMat4x3();
-
-    ASSERT_FALSE(mpb.getMat4x3(key));
-
-    mpb.setMat4x3(key, value);
-    ASSERT_TRUE(mpb.getMat4x3(key));
-    ASSERT_EQ(mpb.getMat4x3(key), value);
 }
 
 TEST_F(Renderer, MaterialPropertyBlockSetIntCausesGetterToReturnSetValue)
@@ -1841,6 +1804,101 @@ TEST_F(Renderer, CameraSetCameraProjectionMakesCameraCompareNotEqual)
 
     ASSERT_NE(camera, copy);
 }
+
+TEST_F(Renderer, CameraGetViewMatrixReturnsViewMatrixBasedOnPositonDirectionAndUp)
+{
+    osc::experimental::Camera camera;
+    camera.setCameraProjection(osc::experimental::CameraProjection::Orthographic);
+    camera.setPosition({0.0f, 0.0f, 0.0f});
+    camera.setDirection({0.0f, 0.0f, -1.0f});
+
+    glm::mat4 viewMatrix = camera.getViewMatrix();
+    glm::mat4 expectedMatrix{1.0f};
+
+    ASSERT_EQ(viewMatrix, expectedMatrix);
+}
+
+TEST_F(Renderer, CameraSetViewMatrixSetsANewViewMatrixThatCanBeRetrievedWithGetViewMatrix)
+{
+    osc::experimental::Camera camera;
+
+    // these shouldn't matter - they're overridden
+    camera.setCameraProjection(osc::experimental::CameraProjection::Orthographic);
+    camera.setPosition({7.0f, 5.0f, -3.0f});  
+    camera.setDirection({0.0f, 0.0f, -1.0f});
+
+    glm::mat4 viewMatrix{1.0f};
+    viewMatrix[0][1] = 9.0f;  // change some part of it
+
+    camera.setViewMatrix(viewMatrix);
+
+    ASSERT_EQ(camera.getViewMatrix(), viewMatrix);
+}
+
+TEST_F(Renderer, CameraResetViewMatrixResetsTheViewMatrixToUsingStandardCameraPositionEtc)
+{
+    osc::experimental::Camera camera;
+    glm::mat4 initialViewMatrix = camera.getViewMatrix();
+
+    glm::mat4 viewMatrix{1.0f};
+    viewMatrix[0][1] = 9.0f;  // change some part of it
+
+    camera.setViewMatrix(viewMatrix);
+    ASSERT_NE(camera.getViewMatrix(), initialViewMatrix);
+    ASSERT_EQ(camera.getViewMatrix(), viewMatrix);
+
+    camera.resetViewMatrix();
+
+    ASSERT_EQ(camera.getViewMatrix(), initialViewMatrix);
+}
+
+TEST_F(Renderer, CameraGetProjectionMatrixReturnsProjectionMatrixBasedOnPositonDirectionAndUp)
+{
+    osc::experimental::Camera camera;
+    camera.setCameraProjection(osc::experimental::CameraProjection::Orthographic);
+    camera.setPosition({0.0f, 0.0f, 0.0f});
+    camera.setDirection({0.0f, 0.0f, -1.0f});
+
+    glm::mat4 ProjectionMatrix = camera.getProjectionMatrix();
+    glm::mat4 expectedMatrix{1.0f};
+
+    ASSERT_EQ(ProjectionMatrix, expectedMatrix);
+}
+
+TEST_F(Renderer, CameraSetProjectionMatrixSetsANewProjectionMatrixThatCanBeRetrievedWithGetProjectionMatrix)
+{
+    osc::experimental::Camera camera;
+
+    // these shouldn't matter - they're overridden
+    camera.setCameraProjection(osc::experimental::CameraProjection::Orthographic);
+    camera.setPosition({7.0f, 5.0f, -3.0f});  
+    camera.setDirection({0.0f, 0.0f, -1.0f});
+
+    glm::mat4 ProjectionMatrix{1.0f};
+    ProjectionMatrix[0][1] = 9.0f;  // change some part of it
+
+    camera.setProjectionMatrix(ProjectionMatrix);
+
+    ASSERT_EQ(camera.getProjectionMatrix(), ProjectionMatrix);
+}
+
+TEST_F(Renderer, CameraResetProjectionMatrixResetsTheProjectionMatrixToUsingStandardCameraPositionEtc)
+{
+    osc::experimental::Camera camera;
+    glm::mat4 initialProjectionMatrix = camera.getProjectionMatrix();
+
+    glm::mat4 ProjectionMatrix{1.0f};
+    ProjectionMatrix[0][1] = 9.0f;  // change some part of it
+
+    camera.setProjectionMatrix(ProjectionMatrix);
+    ASSERT_NE(camera.getProjectionMatrix(), initialProjectionMatrix);
+    ASSERT_EQ(camera.getProjectionMatrix(), ProjectionMatrix);
+
+    camera.resetProjectionMatrix();
+
+    ASSERT_EQ(camera.getProjectionMatrix(), initialProjectionMatrix);
+}
+
 
 // TODO MeshSetIndicesU16CausesGetNumIndicesToEqualSuppliedNumberOfIndices
 // TODO Mesh::getIndices

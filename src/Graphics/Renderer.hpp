@@ -7,7 +7,6 @@
 #include <glm/vec4.hpp>
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x4.hpp>
-#include <glm/mat4x3.hpp>
 #include <nonstd/span.hpp>
 
 #include <cstdint>
@@ -103,7 +102,6 @@ namespace osc::experimental
         Vec4,
         Mat3,
         Mat4,
-        Mat4x3,
         Int,
         Bool,
         Sampler2D,
@@ -177,9 +175,6 @@ namespace osc::experimental
         std::optional<glm::mat4> getMat4(std::string_view propertyName) const;
         void setMat4(std::string_view propertyName, glm::mat4 const&);
 
-        std::optional<glm::mat4x3> getMat4x3(std::string_view propertyName) const;
-        void setMat4x3(std::string_view propertyName, glm::mat4x3 const&);
-
         std::optional<int> getInt(std::string_view propertyName) const;
         void setInt(std::string_view, int);
 
@@ -239,9 +234,6 @@ namespace osc::experimental
 
         std::optional<glm::mat4> getMat4(std::string_view propertyName) const;
         void setMat4(std::string_view propertyName, glm::mat4 const&);
-
-        std::optional<glm::mat4x3> getMat4x3(std::string_view propertyName) const;
-        void setMat4x3(std::string_view propertyName, glm::mat4x3 const&);
 
         std::optional<int> getInt(std::string_view propertyName) const;
         void setInt(std::string_view, int);
@@ -507,6 +499,24 @@ namespace osc::experimental
 
         glm::vec3 getUpwardsDirection() const;
         void setUpwardsDirection(glm::vec3 const&);
+
+        // view matrix (overrides)
+        //
+        // the caller can manually override the view matrix, which can be handy in certain
+        // rendering scenarios. Use `resetViewMatrix` to return to using position, direction,
+        // and upwards direction
+        glm::mat4 getViewMatrix() const;
+        void setViewMatrix(glm::mat4 const&);
+        void resetViewMatrix();
+
+        // projection matrix (overrides)
+        //
+        // the caller can manually override the projection matrix, which can be handy in certain
+        // rendering scenarios. Use `resetProjectionMatrix` to return to using position, direction,
+        // and upwards direction
+        glm::mat4 getProjectionMatrix() const;
+        void setProjectionMatrix(glm::mat4 const&);
+        void resetProjectionMatrix();
 
         // flushes any rendering commands that were queued against this camera
         //

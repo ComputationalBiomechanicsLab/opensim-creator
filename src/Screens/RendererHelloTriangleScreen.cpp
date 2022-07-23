@@ -67,13 +67,13 @@ class osc::RendererHelloTriangleScreen::Impl final {
 public:
     Impl()
     {
-        m_Camera.setBackgroundColor({ 0.0f, 0.0f, 0.0f, 0.0f });
-        m_Camera.setPosition({ 0.0f, 0.0f, 1.0f });
-        m_Camera.setDirection({ 0.0f, 0.0f, -1.0f });
-        m_Camera.setCameraProjection(osc::experimental::CameraProjection::Orthographic);
-        m_Camera.setOrthographicSize(2.0f);
-        m_Camera.setNearClippingPlane(0.0f);
-        m_Camera.setFarClippingPlane(2.0f);
+        m_Material.setVec4("uColor", {1.0f, 0.0f, 0.0f, 1.0f});
+
+        m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
+        m_Camera.setPosition({0.0f, 0.0f, 1.0f});
+        m_Camera.setDirection({0.0f, 0.0f, -1.0f});
+        m_Camera.setViewMatrix(glm::mat4{1.0f});  // "hello triangle" is an identity transform demo
+        m_Camera.setProjectionMatrix(glm::mat4{1.0f});
 
         log::info("---shader---");
         log::info("%s", StreamToString(m_Shader).c_str());
