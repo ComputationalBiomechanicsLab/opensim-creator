@@ -1383,6 +1383,23 @@ TEST_F(Renderer, MeshSetTexCoordsCausesCopiedMeshToNotBeEqualToInitialMesh)
     ASSERT_NE(m, copy);
 }
 
+TEST_F(Renderer, MeshGetColorsInitiallyReturnsEmptySpan)
+{
+    osc::experimental::Mesh m;
+    ASSERT_TRUE(m.getColors().empty());
+}
+
+TEST_F(Renderer, MeshSetColorsFollowedByGetColorsReturnsColors)
+{
+    osc::experimental::Mesh m;
+    std::array<osc::Rgba32, 3> colors{};
+
+    m.setColors(colors);
+
+    auto rv = m.getColors();
+    ASSERT_EQ(rv.size(), colors.size());
+}
+
 TEST_F(Renderer, MeshGetNumIndicesReturnsZeroOnDefaultConstruction)
 {
     osc::experimental::Mesh m;

@@ -54,7 +54,7 @@ namespace
         p = std::make_shared<T>(*p);
     }
 
-    void PushFloatAsBytes(float v, std::vector<std::byte>& out)
+    void PushAsBytes(float v, std::vector<std::byte>& out)
     {
         out.push_back(reinterpret_cast<std::byte*>(&v)[0]);
         out.push_back(reinterpret_cast<std::byte*>(&v)[1]);
@@ -62,17 +62,25 @@ namespace
         out.push_back(reinterpret_cast<std::byte*>(&v)[3]);
     }
 
-    void PushVecAsBytes(glm::vec3 const& v, std::vector<std::byte>& out)
+    void PushAsBytes(glm::vec3 const& v, std::vector<std::byte>& out)
     {
-        PushFloatAsBytes(v.x, out);
-        PushFloatAsBytes(v.y, out);
-        PushFloatAsBytes(v.z, out);
+        PushAsBytes(v.x, out);
+        PushAsBytes(v.y, out);
+        PushAsBytes(v.z, out);
     }
 
-    void PushVecAsBytes(glm::vec2 const& v, std::vector<std::byte>& out)
+    void PushAsBytes(glm::vec2 const& v, std::vector<std::byte>& out)
     {
-        PushFloatAsBytes(v.x, out);
-        PushFloatAsBytes(v.y, out);
+        PushAsBytes(v.x, out);
+        PushAsBytes(v.y, out);
+    }
+
+    void PushAsBytes(osc::Rgba32 const& c, std::vector<std::byte>& out)
+    {
+        out.push_back(static_cast<std::byte>(c.r));
+        out.push_back(static_cast<std::byte>(c.g));
+        out.push_back(static_cast<std::byte>(c.b));
+        out.push_back(static_cast<std::byte>(c.a));
     }
 
     using MaterialValue = std::variant<float, glm::vec3, glm::vec4, glm::mat3, glm::mat4, int, bool, osc::experimental::Texture2D>;
@@ -1205,7 +1213,7 @@ public:
     {
         m_Vertices.clear();
         m_Vertices.reserve(verts.size());
-        std::copy(verts.begin(), verts.end(), std::back_insert_iterator{m_Vertices});
+        std::copy(verts.begin(), verts.end(), std::back_insert_iterator{ m_Vertices });
 
         recalculateBounds();
         m_Version->reset();
@@ -1220,7 +1228,7 @@ public:
     {
         m_Normals.clear();
         m_Normals.reserve(normals.size());
-        std::copy(normals.begin(), normals.end(), std::back_insert_iterator{m_Normals});
+        std::copy(normals.begin(), normals.end(), std::back_insert_iterator{ m_Normals });
 
         m_Version->reset();
     }
@@ -1237,6 +1245,20 @@ public:
         std::copy(coords.begin(), coords.end(), std::back_insert_iterator{m_TexCoords});
 
         m_Version->reset();
+    }
+
+    nonstd::span<Rgba32 const> getColors()
+    {
+        return m_Colors;
+    }
+
+    void setColors(nonstd::span<Rgba32 const> colors)
+    {
+        m_Colors.clear();
+        m_Colors.reserve(colors.size());
+        std::copy(colors.begin(), colors.end(), std::back_insert_iterator{m_Colors});
+
+        m_Version.reset();
     }
 
     int getNumIndices() const
@@ -1315,6 +1337,7 @@ public:
         m_Vertices.clear();
         m_Normals.clear();
         m_TexCoords.clear();
+        m_Colors.clear();
         m_IndicesAre32Bit = false;
         m_NumIndices = 0;
         m_IndicesData.clear();
@@ -1374,7 +1397,9 @@ private:
     {
         bool hasNormals = !m_Normals.empty();
         bool hasTexCoords = !m_TexCoords.empty();
-        std::size_t stride = sizeof(decltype(m_Vertices)::value_type);
+        bool hasColors = !m_Colors.empty();
+
+        GLsizei stride = sizeof(decltype(m_Vertices)::value_type);
 
         if (hasNormals)
         {
@@ -1394,20 +1419,33 @@ private:
             stride += sizeof(decltype(m_TexCoords)::value_type);
         }
 
+        if (hasColors)
+        {
+            if (m_Colors.size() != m_Vertices.size())
+            {
+                throw std::runtime_error{"number of colors != number of verts"};
+            }
+            stride += sizeof(decltype(m_Colors)::value_type);
+        }
+
         // pack VBO data into CPU-side buffer
         std::vector<std::byte> data;
         data.reserve(stride * m_Vertices.size());
 
         for (std::size_t i = 0; i < m_Vertices.size(); ++i)
         {
-            PushVecAsBytes(m_Vertices[i], data);
+            PushAsBytes(m_Vertices[i], data);
             if (hasNormals)
             {
-                PushVecAsBytes(m_Normals[i], data);
+                PushAsBytes(m_Normals[i], data);
             }
             if (hasTexCoords)
             {
-                PushVecAsBytes(m_TexCoords[i], data);
+                PushAsBytes(m_TexCoords[i], data);
+            }
+            if (hasColors)
+            {
+                PushAsBytes(m_Colors[i], data);
             }
         }
         OSC_ASSERT(data.size() == stride*m_Vertices.size());
@@ -1432,20 +1470,26 @@ private:
         gl::BindBuffer(GL_ARRAY_BUFFER, buffers.ArrayBuffer);
         gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.IndicesBuffer);
         int offset = 0;
-        glVertexAttribPointer(SHADER_LOC_VERTEX_POSITION, 3, GL_FLOAT, false, static_cast<GLsizei>(stride), reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
+        glVertexAttribPointer(SHADER_LOC_VERTEX_POSITION, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
         glEnableVertexAttribArray(SHADER_LOC_VERTEX_POSITION);
         offset += 3 * sizeof(float);
         if (hasNormals)
         {
-            glVertexAttribPointer(SHADER_LOC_VERTEX_NORMAL, 3, GL_FLOAT, false, static_cast<GLsizei>(stride), reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
+            glVertexAttribPointer(SHADER_LOC_VERTEX_NORMAL, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
             glEnableVertexAttribArray(SHADER_LOC_VERTEX_NORMAL);
             offset += 3 * sizeof(float);
         }
         if (hasTexCoords)
         {
-            glVertexAttribPointer(SHADER_LOC_VERTEX_TEXCOORD01, 2, GL_FLOAT, false, static_cast<GLsizei>(stride), reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
+            glVertexAttribPointer(SHADER_LOC_VERTEX_TEXCOORD01, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
             glEnableVertexAttribArray(SHADER_LOC_VERTEX_TEXCOORD01);
             offset += 2 * sizeof(float);
+        }
+        if (hasColors)
+        {
+            glVertexAttribPointer(SHADER_LOC_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
+            glEnableVertexAttribArray(SHADER_LOC_COLOR);
+            offset += 4 * sizeof(unsigned char);
         }
         gl::BindVertexArray();
 
@@ -1458,6 +1502,7 @@ private:
     std::vector<glm::vec3> m_Vertices;
     std::vector<glm::vec3> m_Normals;
     std::vector<glm::vec2> m_TexCoords;
+    std::vector<Rgba32> m_Colors;
 
     bool m_IndicesAre32Bit = false;
     int m_NumIndices = 0;
@@ -1526,6 +1571,17 @@ void osc::experimental::Mesh::setTexCoords(nonstd::span<glm::vec2 const> coords)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setTexCoords(coords);
+}
+
+nonstd::span<osc::Rgba32 const> osc::experimental::Mesh::getColors()
+{
+    return m_Impl->getColors();
+}
+
+void osc::experimental::Mesh::setColors(nonstd::span<osc::Rgba32 const> colors)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setColors(colors);
 }
 
 int osc::experimental::Mesh::getNumIndices() const

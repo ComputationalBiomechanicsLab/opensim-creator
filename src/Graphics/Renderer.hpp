@@ -297,6 +297,9 @@ namespace osc::experimental
         nonstd::span<glm::vec2 const> getTexCoords() const;
         void setTexCoords(nonstd::span<glm::vec2 const>);
 
+        nonstd::span<Rgba32 const> getColors();
+        void setColors(nonstd::span<Rgba32 const>);
+
         int getNumIndices() const;
         std::vector<std::uint32_t> getIndices() const;
         void setIndices(nonstd::span<std::uint16_t const>);

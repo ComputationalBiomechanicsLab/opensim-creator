@@ -12,6 +12,7 @@ namespace osc
         SHADER_LOC_VERTEX_POSITION = 0,
         SHADER_LOC_VERTEX_TEXCOORD01 = 1,
         SHADER_LOC_VERTEX_NORMAL = 2,
+        SHADER_LOC_COLOR = 3,
 
         // instance locations
         SHADER_LOC_MATRIX_MODEL = 6,

@@ -1,5 +1,6 @@
 #include "RendererHelloTriangleScreen.hpp"
 
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Renderer.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
@@ -23,10 +24,14 @@ R"(
     uniform mat4 uModelMat;
 
     layout (location = 0) in vec3 aPos;
+    layout (location = 3) in vec4 aColor;
+
+    out vec4 aVertColor;
 
     void main()
     {
         gl_Position = uProjMat * uViewMat * uModelMat * vec4(aPos, 1.0);
+        aVertColor = aColor;
     }
 )";
 
@@ -34,13 +39,12 @@ static char const g_FragmentShader[] =
 R"(
     #version 330 core
 
-    uniform vec4 uColor;
-
+    in vec4 aVertColor;
     out vec4 FragColor;
 
     void main()
     {
-        FragColor = uColor;
+        FragColor = aVertColor;
     }
 )";
 
@@ -52,11 +56,18 @@ static osc::experimental::Mesh GenerateTriangleMesh()
         { 1.0f, -1.0f, 0.0f},  // bottom-right
         { 0.0f,  1.0f, 0.0f},  // top-middle
     };
+    osc::Rgba32 colors[] =
+    {
+        {0xff, 0x00, 0x00, 0xff},
+        {0x00, 0xff, 0x00, 0xff},
+        {0x00, 0x00, 0xff, 0xff},
+    };
     std::uint16_t indices[] = {0, 1, 2};
 
     osc::experimental::Mesh m;
     m.setVerts(points);
     m.setIndices(indices);
+    m.setColors(colors);
     return m;
 }
 
@@ -104,7 +115,6 @@ public:
     {
         App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
 
-        m_Material.setVec4("uColor", m_Color);
         experimental::Graphics::DrawMesh(m_TriangleMesh, osc::Transform{}, m_Material, m_Camera);
         m_Camera.render();
     }
