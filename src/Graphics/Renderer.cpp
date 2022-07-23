@@ -119,6 +119,87 @@ namespace
     }
 }
 
+// shader (backend stuff)
+namespace
+{
+    using namespace osc::experimental;
+
+    // LUT for human-readable form of the above
+    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(ShaderType::TOTAL)> const g_ShaderTypeInternalStrings =
+    {
+        "Float",
+        "Vec3",
+        "Vec4",
+        "Mat3",
+        "Mat4",
+        "Int",
+        "Bool",
+        "Sampler2D",
+        "Unknown",
+    };
+
+    // convert a GL shader type to an internal shader type
+    ShaderType GLShaderTypeToShaderTypeInternal(GLenum e)
+    {
+        switch (e) {
+        case GL_FLOAT:
+            return ShaderType::Float;
+        case GL_FLOAT_VEC3:
+            return ShaderType::Vec3;
+        case GL_FLOAT_VEC4:
+            return ShaderType::Vec4;
+        case GL_FLOAT_MAT3:
+            return ShaderType::Mat3;
+        case GL_FLOAT_MAT4:
+            return ShaderType::Mat4;
+        case GL_INT:
+            return ShaderType::Int;
+        case GL_BOOL:
+            return ShaderType::Bool;
+        case GL_SAMPLER_2D:
+            return ShaderType::Sampler2D;
+        case GL_INT_VEC2:
+        case GL_INT_VEC3:
+        case GL_INT_VEC4:
+        case GL_UNSIGNED_INT:
+        case GL_UNSIGNED_INT_VEC2:
+        case GL_UNSIGNED_INT_VEC3:
+        case GL_UNSIGNED_INT_VEC4:
+        case GL_DOUBLE:
+        case GL_DOUBLE_VEC2:
+        case GL_DOUBLE_VEC3:
+        case GL_DOUBLE_VEC4:
+        case GL_DOUBLE_MAT2:
+        case GL_DOUBLE_MAT3:
+        case GL_DOUBLE_MAT4:
+        case GL_DOUBLE_MAT2x3:
+        case GL_DOUBLE_MAT2x4:
+        case GL_FLOAT_MAT2x3:
+        case GL_FLOAT_MAT2x4:
+        case GL_FLOAT_MAT3x2:
+        case GL_FLOAT_MAT3x4:
+        case GL_FLOAT_MAT4x2:
+        case GL_FLOAT_MAT4x3:
+        case GL_FLOAT_MAT2:
+        case GL_FLOAT_VEC2:
+        default:
+            return ShaderType::Unknown;
+        }
+    }
+
+    // parsed-out description of a shader "element" (uniform/attribute)
+    struct ShaderElement final {
+        ShaderElement(int location_, ShaderType type_) :
+            location{std::move(location_)},
+            type{std::move(type_)}
+        {
+        }
+
+        int location;
+        ShaderType type;
+    };
+}
+
 
 //////////////////////////////////
 //
@@ -136,6 +217,7 @@ namespace osc::experimental {
             Camera& camera,
             std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock);
 
+        static void TryBindMaterialValueToShaderElement(ShaderElement const& se, MaterialValue const& v, int* textureSlot);
         static void FlushRenderQueue(Camera::Impl& camera);
     };
 }
@@ -163,6 +245,39 @@ namespace
         "Nearest",
         "Linear",
     };
+
+    struct TextureGPUBuffers final {
+        gl::Texture2D Texture;
+        osc::UID TextureParamsVersion;
+    };
+
+    GLint ToGLTextureFilterParam(TextureFilterMode m)
+    {
+        switch (m)
+        {
+        case TextureFilterMode::Linear:
+            return GL_LINEAR;
+        case TextureFilterMode::Nearest:
+            return GL_NEAREST;
+        default:
+            return GL_LINEAR;
+        }
+    }
+
+    GLint ToGLTextureTextureWrapParam(TextureWrapMode m)
+    {
+        switch (m)
+        {
+        case TextureWrapMode::Repeat:
+            return GL_REPEAT;
+        case TextureWrapMode::Clamp:
+            return GL_CLAMP_TO_EDGE;
+        case TextureWrapMode::Mirror:
+            return GL_MIRRORED_REPEAT;
+        default:
+            return GL_REPEAT;
+        }
+    }
 }
 
 class osc::experimental::Texture2D::Impl final {
@@ -197,7 +312,10 @@ public:
 
     void setWrapMode(TextureWrapMode twm)
     {
-        setWrapModeU(std::move(twm));
+        setWrapModeU(twm);
+        setWrapModeV(twm);
+        setWrapModeW(twm);
+        m_TextureParamsVersion.reset();
     }
 
     TextureWrapMode getWrapModeU() const
@@ -208,6 +326,7 @@ public:
     void setWrapModeU(TextureWrapMode twm)
     {
         m_WrapModeU = std::move(twm);
+        m_TextureParamsVersion.reset();
     }
 
     TextureWrapMode getWrapModeV() const
@@ -218,6 +337,7 @@ public:
     void setWrapModeV(TextureWrapMode twm)
     {
         m_WrapModeV = std::move(twm);
+        m_TextureParamsVersion.reset();
     }
 
     TextureWrapMode getWrapModeW() const
@@ -228,6 +348,7 @@ public:
     void setWrapModeW(TextureWrapMode twm)
     {
         m_WrapModeW = std::move(twm);
+        m_TextureParamsVersion.reset();
     }
 
     TextureFilterMode getFilterMode() const
@@ -238,9 +359,63 @@ public:
     void setFilterMode(TextureFilterMode tfm)
     {
         m_FilterMode = std::move(tfm);
+        m_TextureParamsVersion.reset();
+    }
+
+    // non PIMPL method
+
+    gl::Texture2D& updTexture()
+    {
+        if (!*m_MaybeGPUTexture)
+        {
+            uploadToGPU();
+        }
+        OSC_ASSERT(*m_MaybeGPUTexture);
+
+        TextureGPUBuffers& bufs = **m_MaybeGPUTexture;
+
+        if (bufs.TextureParamsVersion != m_TextureParamsVersion)
+        {
+            setTextureParams(bufs);
+        }
+
+        return bufs.Texture;
     }
 
 private:
+    void uploadToGPU()
+    {
+        *m_MaybeGPUTexture = TextureGPUBuffers{};
+
+        // one-time upload, because pixels cannot be altered
+        gl::BindTexture((*m_MaybeGPUTexture)->Texture);
+        gl::TexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RGBA,
+            m_Width,
+            m_Height,
+            0,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            &m_Pixels[0].r
+        );
+        glGenerateMipmap((*m_MaybeGPUTexture)->Texture.type);
+    }
+
+    void setTextureParams(TextureGPUBuffers& bufs)
+    {
+        gl::BindTexture(bufs.Texture);
+        gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, ToGLTextureTextureWrapParam(m_WrapModeU));
+        gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, ToGLTextureTextureWrapParam(m_WrapModeV));
+        gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, ToGLTextureTextureWrapParam(m_WrapModeW));
+        gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, ToGLTextureFilterParam(m_FilterMode));
+        gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, ToGLTextureFilterParam(m_FilterMode));
+        bufs.TextureParamsVersion = m_TextureParamsVersion;
+    }
+
+    friend class GraphicsBackend;
+
     int m_Width;
     int m_Height;
     std::vector<Rgba32> m_Pixels;
@@ -248,6 +423,9 @@ private:
     TextureWrapMode m_WrapModeV = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeW = TextureWrapMode::Repeat;
     TextureFilterMode m_FilterMode = TextureFilterMode::Nearest;
+    UID m_TextureParamsVersion;
+
+    DefaultConstructOnCopy<std::optional<TextureGPUBuffers>> m_MaybeGPUTexture;
 };
 
 std::ostream& osc::experimental::operator<<(std::ostream& o, TextureWrapMode twm)
@@ -368,86 +546,6 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, Texture2D const&)
 // shader stuff
 //
 //////////////////////////////////
-
-namespace
-{
-    using namespace osc::experimental;
-
-    // LUT for human-readable form of the above
-    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(ShaderType::TOTAL)> const g_ShaderTypeInternalStrings =
-    {
-        "Float",
-        "Vec3",
-        "Vec4",
-        "Mat3",
-        "Mat4",
-        "Int",
-        "Bool",
-        "Sampler2D",
-        "Unknown",
-    };
-
-    // convert a GL shader type to an internal shader type
-    ShaderType GLShaderTypeToShaderTypeInternal(GLenum e)
-    {
-        switch (e) {
-        case GL_FLOAT:
-            return ShaderType::Float;
-        case GL_FLOAT_VEC3:
-            return ShaderType::Vec3;
-        case GL_FLOAT_VEC4:
-            return ShaderType::Vec4;
-        case GL_FLOAT_MAT3:
-            return ShaderType::Mat3;
-        case GL_FLOAT_MAT4:
-            return ShaderType::Mat4;
-        case GL_INT:
-            return ShaderType::Int;
-        case GL_BOOL:
-            return ShaderType::Bool;
-        case GL_SAMPLER_2D:
-            return ShaderType::Sampler2D;
-        case GL_INT_VEC2:
-        case GL_INT_VEC3:
-        case GL_INT_VEC4:
-        case GL_UNSIGNED_INT:
-        case GL_UNSIGNED_INT_VEC2:
-        case GL_UNSIGNED_INT_VEC3:
-        case GL_UNSIGNED_INT_VEC4:
-        case GL_DOUBLE:
-        case GL_DOUBLE_VEC2:
-        case GL_DOUBLE_VEC3:
-        case GL_DOUBLE_VEC4:
-        case GL_DOUBLE_MAT2:
-        case GL_DOUBLE_MAT3:
-        case GL_DOUBLE_MAT4:
-        case GL_DOUBLE_MAT2x3:
-        case GL_DOUBLE_MAT2x4:
-        case GL_FLOAT_MAT2x3:
-        case GL_FLOAT_MAT2x4:
-        case GL_FLOAT_MAT3x2:
-        case GL_FLOAT_MAT3x4:
-        case GL_FLOAT_MAT4x2:
-        case GL_FLOAT_MAT4x3:
-        case GL_FLOAT_MAT2:
-        case GL_FLOAT_VEC2:
-        default:
-            return ShaderType::Unknown;
-        }
-    }
-
-    // parsed-out description of a shader "element" (uniform/attribute)
-    struct ShaderElement final {
-        ShaderElement(int location_, ShaderType type_) :
-            location{std::move(location_)},
-            type{std::move(type_)}
-        {
-        }
-
-        int location;
-        ShaderType type;
-    };
-}
 
 class osc::experimental::Shader::Impl final {
 public:
@@ -2487,7 +2585,7 @@ void osc::experimental::GraphicsBackend::DrawMesh(
     camera.m_Impl->m_RenderQueue.emplace_back(mesh, transform, material, std::move(maybeMaterialPropertyBlock));
 }
 
-static void TryBindMaterialValueToShaderElement(ShaderElement const& se, MaterialValue const& v)
+void osc::experimental::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement const& se, MaterialValue const& v, int* textureSlot)
 {
     osc::experimental::ShaderType t = GetShaderType(v);
 
@@ -2541,7 +2639,15 @@ static void TryBindMaterialValueToShaderElement(ShaderElement const& se, Materia
     }
     case osc::experimental::ShaderType::Sampler2D:
     {
-        throw std::runtime_error{"texture binding TODO"};
+        osc::experimental::Texture2D::Impl& impl = *std::get<osc::experimental::Texture2D>(v).m_Impl;
+        gl::Texture2D& texture = impl.updTexture();
+
+        gl::ActiveTexture(GL_TEXTURE0 + *textureSlot);
+        gl::BindTexture(texture);
+        gl::UniformSampler2D u{se.location};
+        gl::Uniform(u, *textureSlot);
+
+        ++(*textureSlot);
         break;
     }
     }
@@ -2643,13 +2749,15 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             }
         }
 
+        int textureSlot = 0;
+
         // bind material values
         for (auto const& [name, value] : materialImpl.m_Values)
         {
             auto it = uniforms.find(name);
             if (it != uniforms.end())
             {
-                TryBindMaterialValueToShaderElement(it->second, value);
+                TryBindMaterialValueToShaderElement(it->second, value, &textureSlot);
             }
         }
 
@@ -2661,7 +2769,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                 auto it = uniforms.find(name);
                 if (it != uniforms.end())
                 {
-                    TryBindMaterialValueToShaderElement(it->second, value);
+                    TryBindMaterialValueToShaderElement(it->second, value, &textureSlot);
                 }
             }
         }

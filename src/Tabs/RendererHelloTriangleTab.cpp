@@ -5,12 +5,10 @@
 #include "src/Graphics/Renderer.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
-#include "src/Screens/ExperimentsScreen.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
-#include <imgui.h>
 #include <SDL_events.h>
 
 #include <cstdint>
@@ -106,27 +104,11 @@ public:
 
     bool onEvent(SDL_Event const& e)
     {
-        if (e.type == SDL_QUIT)
-        {
-            App::upd().requestQuit();
-            return true;
-        }
-        else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-        {
-            App::upd().requestTransition<ExperimentsScreen>();
-            return true;
-        }
         return false;
     }
 
     void onTick()
     {
-        if (m_Color.r < 0.0f || m_Color.r > 1.0f)
-        {
-            m_FadeSpeed = -m_FadeSpeed;
-        }
-
-        m_Color.r -= osc::App::get().getDeltaSinceLastFrame().count() * m_FadeSpeed;
     }
 
     void onDrawMainMenu()
@@ -147,9 +129,6 @@ private:
     experimental::Material m_Material{m_Shader};
     experimental::Mesh m_TriangleMesh = GenerateTriangleMesh();
     experimental::Camera m_Camera;
-    float m_FadeSpeed = 1.0f;
-    glm::vec4 m_Color = {1.0f, 0.0f, 0.0f, 1.0f};
-
 };
 
 

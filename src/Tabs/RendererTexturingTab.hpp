@@ -1,0 +1,34 @@
+#pragma once
+
+#include "src/Tabs/Tab.hpp"
+#include "src/Utils/CStringView.hpp"
+#include "src/Utils/UID.hpp"
+
+#include <SDL_events.h>
+
+namespace osc
+{
+    class RendererTexturingTab final : public Tab {
+    public:
+        RendererTexturingTab(TabHost*);
+        RendererTexturingTab(RendererTexturingTab const&) = delete;
+        RendererTexturingTab(RendererTexturingTab&&) noexcept;
+        RendererTexturingTab& operator=(RendererTexturingTab const&) = delete;
+        RendererTexturingTab& operator=(RendererTexturingTab&&) noexcept;
+        ~RendererTexturingTab() noexcept override;
+
+    private:
+        UID implGetID() const override;
+        CStringView implGetName() const override;
+        TabHost* implParent() const override;
+        void implOnMount() override;
+        void implOnUnmount() override;
+        bool implOnEvent(SDL_Event const&) override;
+        void implOnTick() override;
+        void implOnDrawMainMenu() override;
+        void implOnDraw() override;
+
+        class Impl;
+        Impl* m_Impl;
+    };
+}

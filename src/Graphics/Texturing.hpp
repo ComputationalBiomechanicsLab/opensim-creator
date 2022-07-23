@@ -1,6 +1,12 @@
 #pragma once
 
 #include "src/Graphics/Gl.hpp"
+#include "src/Graphics/Color.hpp"
+
+#include <glm/vec2.hpp>
+
+#include <filesystem>
+#include <vector>
 
 namespace osc
 {
@@ -36,6 +42,12 @@ namespace osc
 
     // read an image file (.PNG, .JPEG, etc.) directly into an OpenGL (GPU) texture
     ImageTexture loadImageAsTexture(char const* path, TexFlag = TexFlag_None);
+
+    struct Rgba32Image final {
+        std::vector<Rgba32> Pixels;
+        glm::ivec2 Dimensions;
+    };
+    Rgba32Image LoadImageRgba32(std::filesystem::path const&, TexFlag = TexFlag_None);
 
     // read 6 image files into a single OpenGL cubemap (GL_TEXTURE_CUBE_MAP)
     //

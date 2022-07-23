@@ -476,6 +476,8 @@ add_library(osccore STATIC
     src/Tabs/PerformanceAnalyzerTab.hpp
     src/Tabs/RendererHelloTriangleTab.cpp
     src/Tabs/RendererHelloTriangleTab.hpp
+    src/Tabs/RendererTexturingTab.hpp
+    src/Tabs/RendererTexturingTab.cpp
     src/Tabs/SimulatorTab.cpp
     src/Tabs/SimulatorTab.hpp
     src/Tabs/SplashTab.cpp

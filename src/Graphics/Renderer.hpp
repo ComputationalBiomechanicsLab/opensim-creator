@@ -61,7 +61,7 @@ namespace osc::experimental
         float getAspectRatio() const;
 
         TextureWrapMode getWrapMode() const;  // same as getWrapModeU
-        void setWrapMode(TextureWrapMode);
+        void setWrapMode(TextureWrapMode);  // sets all axes
         TextureWrapMode getWrapModeU() const;
         void setWrapModeU(TextureWrapMode);
         TextureWrapMode getWrapModeV() const;
@@ -473,7 +473,7 @@ namespace osc::experimental
         void setTexture(RenderTexture);
         void setTexture();  // resets to drawing to screen
 
-        // where on the screen the camera is rendered (in screen-space - top-left, X rightwards, Y downwards)
+        // where on the screen the camera is rendered (in screen-space - top-left, X rightwards, Y down
         //
         // returns rect with topleft coord 0,0  and a width/height of texture if drawing
         // to a texture

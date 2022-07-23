@@ -7,6 +7,7 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <stdexcept>
 #include <optional>
 #include <sstream>
@@ -228,6 +229,78 @@ osc::ImageTexture osc::loadImageAsTexture(char const* path, TexFlag flags)
     glGenerateMipmap(t.type);
 
     return ImageTexture{std::move(t), img->width, img->height, img->channels};
+}
+
+osc::Rgba32Image osc::LoadImageRgba32(std::filesystem::path const& path, TexFlag flags)
+{
+    if (flags & TexFlag_FlipPixelsVertically)
+    {
+        stbi_set_flip_vertically_on_load(true);
+    }
+
+    auto img = stbi::Image::load(path.string().c_str());
+
+    if (!img)
+    {
+        std::stringstream ss;
+        ss << path << ": error loading image: " << stbi_failure_reason();
+        throw std::runtime_error{ std::move(ss).str() };
+    }
+
+    if (flags & TexFlag_FlipPixelsVertically)
+    {
+        stbi_set_flip_vertically_on_load(false);
+    }
+
+    osc::Rgba32Image rv;
+    rv.Dimensions = glm::ivec2{img->width, img->height};
+
+    // copy (+ potentially re-pack) the pixel data
+    std::size_t numPixels = static_cast<std::size_t>(rv.Dimensions.x) * static_cast<std::size_t>(rv.Dimensions.y);
+    rv.Pixels.resize(numPixels, osc::Rgba32{0x00, 0x00, 0x00, 0xff});
+    switch (img->channels) {
+    case 1:
+    {
+        for (std::size_t i = 0; i < numPixels; ++i)
+        {
+            rv.Pixels[i].r = img->data[i];
+        }
+        break;
+    }
+    case 2:
+    {
+        for (std::size_t i = 0; i < numPixels; ++i)
+        {
+            rv.Pixels[i].r = img->data[2*i];
+            rv.Pixels[i].g = img->data[2*i + 1];
+        }
+        break;
+    }
+    case 3:
+    {
+        for (std::size_t i = 0; i < numPixels; ++i)
+        {
+            rv.Pixels[i].r = img->data[3*i];
+            rv.Pixels[i].g = img->data[3*i + 1];
+            rv.Pixels[i].b = img->data[3*i + 2];
+        }
+        break;
+    }
+    case 4:
+    {
+        std::copy(img->data, img->data + (4 * numPixels), &rv.Pixels[0].r);
+        break;
+    }
+    default:
+    {
+        std::stringstream msg;
+        msg << path << ": error: contains " << img->channels
+            << " color channels (the implementation doesn't know how to handle this)";
+        throw std::runtime_error{std::move(msg).str()};
+    }
+    }
+
+    return rv;
 }
 
 gl::TextureCubemap osc::loadCubemapAsCubemapTexture(
