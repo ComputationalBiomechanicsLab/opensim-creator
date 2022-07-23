@@ -405,6 +405,11 @@ glm::vec2 osc::Dimensions(Rect const& r) noexcept
     return glm::abs(r.p2 - r.p1);
 }
 
+glm::vec2 osc::BottomLeft(Rect const& r) noexcept
+{
+    return glm::vec2{glm::min(r.p1.x, r.p2.x), glm::max(r.p1.y, r.p2.y)};
+}
+
 float osc::AspectRatio(Rect const& r) noexcept
 {
     glm::vec2 dims = Dimensions(r);

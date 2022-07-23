@@ -101,6 +101,9 @@ namespace osc
     // returns the edge dimensions of the rectangle
     glm::vec2 Dimensions(Rect const&) noexcept;
 
+    // returns bottom-left point of the rectangle
+    glm::vec2 BottomLeft(Rect const&) noexcept;
+
     // returns the aspect ratio (width/height) of the rectangle
     float AspectRatio(Rect const&) noexcept;
 
