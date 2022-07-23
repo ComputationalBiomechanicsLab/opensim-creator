@@ -473,7 +473,7 @@ namespace osc::experimental
         void setTexture(RenderTexture);
         void setTexture();  // resets to drawing to screen
 
-        // where on the screen the camera is rendered (in screen-space)
+        // where on the screen the camera is rendered (in screen-space - top-left, X rightwards, Y downwards)
         //
         // returns rect with topleft coord 0,0  and a width/height of texture if drawing
         // to a texture

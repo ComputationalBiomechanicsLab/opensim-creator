@@ -1,5 +1,6 @@
 #include "RendererHelloTriangleTab.hpp"
 
+#include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Color.hpp"
 #include "src/Graphics/Renderer.hpp"
 #include "src/Maths/Transform.hpp"
@@ -9,6 +10,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <imgui.h>
 #include <SDL_events.h>
 
 #include <cstdint>
@@ -133,8 +135,7 @@ public:
 
     void onDraw()
     {
-        App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
-
+        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
         experimental::Graphics::DrawMesh(m_TriangleMesh, osc::Transform{}, m_Material, m_Camera);
         m_Camera.render();
     }

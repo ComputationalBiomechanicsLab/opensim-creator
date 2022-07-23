@@ -2555,7 +2555,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     gl::Enable(GL_DEPTH_TEST);
 
     // set output target
-    glm::ivec2 outputDimensions;
+    glm::ivec2 outputDimensions{};
     if (camera.m_MaybeTexture)
     {
         throw std::runtime_error{"rendering to RenderTexture NYI"};
@@ -2566,8 +2566,18 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     else
     {
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-        outputDimensions = osc::App::get().idims();
-        gl::Viewport(0, 0, outputDimensions.x, outputDimensions.y);
+
+        osc::Rect cameraRect = camera.getPixelRect();  // in "usual" screen space - topleft
+        glm::vec2 cameraRectBottomLeft = osc::BottomLeft(cameraRect);
+        glm::vec2 windowDims = osc::App::get().dims();
+
+        outputDimensions = osc::Dimensions(cameraRect);
+        gl::Viewport(
+            static_cast<GLsizei>(cameraRectBottomLeft.x),
+            static_cast<GLsizei>(windowDims.y - cameraRectBottomLeft.y),
+            static_cast<GLsizei>(outputDimensions.x),
+            static_cast<GLsizei>(outputDimensions.y)
+        );
     }
 
     // handle scissor testing
