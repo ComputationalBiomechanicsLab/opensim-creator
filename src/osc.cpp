@@ -1,7 +1,7 @@
 #include "src/OpenSimBindings/OpenSimApp.hpp"
 #include "src/Screens/MainUIScreen.hpp"
 #include "src/Tabs/TabHost.hpp"
-#include "src/Tabs/RendererTexturingTab.hpp"
+#include "src/Tabs/Experiments/RendererTexturingTab.hpp"
 
 #include <cstdlib>
 #include <iostream>
