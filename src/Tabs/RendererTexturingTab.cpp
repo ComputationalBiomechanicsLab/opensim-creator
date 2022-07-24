@@ -1,7 +1,6 @@
 #include "RendererTexturingTab.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Renderer.hpp"
 #include "src/Graphics/Texturing.hpp"
 #include "src/Maths/Transform.hpp"
@@ -15,10 +14,6 @@
 #include <cstdint>
 #include <string>
 #include <utility>
-
-
-// HACK
-#include "src/Widgets/LogViewer.hpp"
 
 static char g_VertexShader[] =
 R"(
@@ -72,7 +67,7 @@ static osc::experimental::Mesh GenerateMesh()
 
     for (glm::vec2& coord : coords)
     {
-        coord *= 2.0f;
+        coord *= 2.0f;  // to test texture wrap modes
     }
 
     osc::experimental::Mesh m;
@@ -93,7 +88,7 @@ class osc::RendererTexturingTab::Impl final {
 public:
     Impl(TabHost* parent) : m_Parent{parent}
     {
-        m_Camera.setViewMatrix(glm::mat4{1.0f});  // "hello triangle" is an identity transform demo
+        m_Camera.setViewMatrix(glm::mat4{1.0f});
         m_Camera.setProjectionMatrix(glm::mat4{1.0f});
         auto container = LoadTexture("container.jpg");
         container.setWrapMode(osc::experimental::TextureWrapMode::Clamp);
@@ -118,7 +113,6 @@ public:
 
     void onMount()
     {
-        osc::App::upd().enableDebugMode();
     }
 
     void onUnmount()
@@ -143,10 +137,6 @@ public:
         m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
         experimental::Graphics::DrawMesh(m_Mesh, osc::Transform{}, m_Material, m_Camera);
         m_Camera.render();
-
-        ImGui::Begin("Log");
-        m_LogViewer.draw();
-        ImGui::End();
     }
 
 private:
@@ -156,7 +146,6 @@ private:
     experimental::Material m_Material{m_Shader};
     experimental::Mesh m_Mesh = GenerateMesh();
     experimental::Camera m_Camera;
-    LogViewer m_LogViewer;
 };
 
 
