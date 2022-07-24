@@ -697,6 +697,11 @@ public:
         return m_FrameStartTime;
     }
 
+    osc::App::Clock::duration getDeltaSinceAppStartup() const
+    {
+        return getCurrentTime() - m_AppStartupTime;
+    }
+
     osc::App::Clock::duration getDeltaSinceLastFrame() const
     {
         return m_TimeSinceLastFrame;
@@ -1280,6 +1285,11 @@ osc::App::Clock::time_point osc::App::getAppStartupTime() const
 osc::App::Clock::time_point osc::App::getFrameStartTime() const
 {
     return m_Impl->getFrameStartTime();
+}
+
+osc::App::Clock::duration osc::App::getDeltaSinceAppStartup() const
+{
+    return m_Impl->getDeltaSinceAppStartup();
 }
 
 osc::App::Clock::duration osc::App::getDeltaSinceLastFrame() const

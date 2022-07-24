@@ -87,6 +87,8 @@ namespace osc::experimental
     bool operator!=(Texture2D const&, Texture2D const&);
     bool operator<(Texture2D const&, Texture2D const&);
     std::ostream& operator<<(std::ostream&, Texture2D const&);
+
+    Texture2D LoadTexture2DFromImageResource(std::string_view);
 }
 
 

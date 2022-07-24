@@ -5,6 +5,7 @@
 #include "src/Graphics/Gl.hpp"
 #include "src/Graphics/GlGlm.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
+#include "src/Graphics/Texturing.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
@@ -538,6 +539,13 @@ bool osc::experimental::operator<(Texture2D const& a, Texture2D const& b)
 std::ostream& osc::experimental::operator<<(std::ostream& o, Texture2D const&)
 {
     return o << "Texture2D()";
+}
+
+osc::experimental::Texture2D osc::experimental::LoadTexture2DFromImageResource(std::string_view resource)
+{
+    osc::Rgba32Image img = osc::LoadImageRgba32(osc::App::get().resource(resource));
+    osc::experimental::Texture2D rv{img.Dimensions.x, img.Dimensions.y, img.Pixels};
+    return rv;
 }
 
 
@@ -2225,7 +2233,7 @@ public:
         }
         else if (m_CameraProjection == osc::experimental::CameraProjection::Perspective)
         {
-            return glm::perspective(m_OrthographicSize, getAspectRatio(), m_NearClippingPlane, m_FarClippingPlane);
+            return glm::perspective(m_PerspectiveFov, getAspectRatio(), m_NearClippingPlane, m_FarClippingPlane);
         }
         else
         {
@@ -2650,6 +2658,8 @@ void osc::experimental::GraphicsBackend::TryBindMaterialValueToShaderElement(Sha
         ++(*textureSlot);
         break;
     }
+    default:
+        break;  // TODO: throw?
     }
 }
 

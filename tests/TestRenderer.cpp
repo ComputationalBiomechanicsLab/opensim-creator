@@ -1222,6 +1222,18 @@ TEST_F(Renderer, MeshTopographyAllCanBeWrittenToStream)
     }
 }
 
+TEST_F(Renderer, LoadTexture2DFromImageResourceCanLoadImageFile)
+{
+    osc::experimental::Texture2D t = osc::experimental::LoadTexture2DFromImageResource("awesomeface.png");
+    ASSERT_EQ(t.getWidth(), 512);
+    ASSERT_EQ(t.getHeight(), 512);
+}
+
+TEST_F(Renderer, LoadTexture2DFromImageResourceThrowsIfResourceNotFound)
+{
+    ASSERT_ANY_THROW({ osc::experimental::LoadTexture2DFromImageResource("doesnt_exist.png"); });
+}
+
 TEST_F(Renderer, MeshCanBeDefaultConstructed)
 {
     osc::experimental::Mesh mesh;

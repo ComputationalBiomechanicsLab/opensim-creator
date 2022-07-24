@@ -211,6 +211,7 @@ namespace osc
         Clock::time_point getCurrentTime() const;  // care: always fetches the time *right now*
         Clock::time_point getAppStartupTime() const;
         Clock::time_point getFrameStartTime() const;
+        Clock::duration getDeltaSinceAppStartup() const;
         Clock::duration getDeltaSinceLastFrame() const;
 
         // makes main application event loop wait, rather than poll, for events

@@ -8,11 +8,9 @@
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <SDL_events.h>
 
 #include <cstdint>
-#include <string>
 #include <utility>
 
 static char g_VertexShader[] =

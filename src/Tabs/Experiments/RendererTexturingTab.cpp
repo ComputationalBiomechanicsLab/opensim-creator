@@ -1,6 +1,7 @@
 #include "RendererTexturingTab.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Renderer.hpp"
 #include "src/Graphics/Texturing.hpp"
 #include "src/Maths/Transform.hpp"
@@ -49,39 +50,22 @@ R"(
 
 static osc::experimental::Mesh GenerateMesh()
 {
-    glm::vec3 points[] =
-    {
-        { 0.5f,  0.5f, 0.0f}, // top right
-        { 0.5f, -0.5f, 0.0f}, // bottom right
-        {-0.5f, -0.5f, 0.0f}, // bottom left
-        {-0.5f,  0.5f, 0.0f}, // top left
-    };
-    glm::vec2 coords[] =
-    {
-        {1.0f, 1.0f}, // top right
-        {1.0f, 0.0f}, // bottom right
-        {0.0f, 0.0f}, // bottom left
-        {0.0f, 1.0f}, // top left
-    };
-    std::uint16_t indices[] = {0, 2, 1, 0, 3, 2};
+    auto quad = osc::GenTexturedQuad();
 
-    for (glm::vec2& coord : coords)
+    for (glm::vec3& vert : quad.verts)
+    {
+        vert *= 0.5f;  // to match LearnOpenGL
+    }
+    for (glm::vec2& coord : quad.texcoords)
     {
         coord *= 2.0f;  // to test texture wrap modes
     }
 
     osc::experimental::Mesh m;
-    m.setVerts(points);
-    m.setTexCoords(coords);
-    m.setIndices(indices);
+    m.setVerts(quad.verts);
+    m.setTexCoords(quad.texcoords);
+    m.setIndices(quad.indices);
     return m;
-}
-
-static osc::experimental::Texture2D LoadTexture(std::string_view resource)
-{
-    osc::Rgba32Image img = osc::LoadImageRgba32(osc::App::get().resource(resource));
-    osc::experimental::Texture2D rv{img.Dimensions.x, img.Dimensions.y, img.Pixels};
-    return rv;
 }
 
 class osc::RendererTexturingTab::Impl final {
@@ -90,10 +74,10 @@ public:
     {
         m_Camera.setViewMatrix(glm::mat4{1.0f});
         m_Camera.setProjectionMatrix(glm::mat4{1.0f});
-        auto container = LoadTexture("container.jpg");
+        auto container = osc::experimental::LoadTexture2DFromImageResource("container.jpg");
         container.setWrapMode(osc::experimental::TextureWrapMode::Clamp);
-        m_Material.setTexture("uTexture1", container);
-        m_Material.setTexture("uTexture2", LoadTexture("awesomeface.png"));
+        m_Material.setTexture("uTexture1", std::move(container));
+        m_Material.setTexture("uTexture2", osc::experimental::LoadTexture2DFromImageResource("awesomeface.png"));
     }
 
     UID getID() const

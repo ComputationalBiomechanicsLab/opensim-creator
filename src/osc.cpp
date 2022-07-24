@@ -1,7 +1,9 @@
 #include "src/OpenSimBindings/OpenSimApp.hpp"
 #include "src/Screens/MainUIScreen.hpp"
 #include "src/Tabs/TabHost.hpp"
+#include "src/Tabs/Experiments/RendererHelloTriangleTab.hpp"
 #include "src/Tabs/Experiments/RendererTexturingTab.hpp"
+#include "src/Tabs/Experiments/RendererCoordinateSystemsTab.hpp"
 
 #include <cstdlib>
 #include <iostream>
@@ -61,7 +63,9 @@ int main(int argc, char** argv)
     if (argc <= 0)
     {
         auto screen = std::make_unique<osc::MainUIScreen>();
-        auto tabID = screen->addTab(std::make_unique<osc::RendererTexturingTab>(screen->getTabHostAPI()));
+        screen->addTab(std::make_unique<osc::RendererHelloTriangleTab>(screen->getTabHostAPI()));
+        screen->addTab(std::make_unique<osc::RendererTexturingTab>(screen->getTabHostAPI()));
+        auto tabID = screen->addTab(std::make_unique<osc::RendererCoordinateSystemsTab>(screen->getTabHostAPI()));
         screen->getTabHostAPI()->selectTab(tabID);
         app.show(std::move(screen));
     }
