@@ -462,6 +462,12 @@ add_library(osccore STATIC
     src/Screens/MeshScreen.cpp
     src/Screens/MeshScreen.hpp
 
+    src/Tabs/Experiments/RendererCoordinateSystemsTab.cpp
+    src/Tabs/Experiments/RendererCoordinateSystemsTab.hpp
+    src/Tabs/Experiments/RendererHelloTriangleTab.cpp
+    src/Tabs/Experiments/RendererHelloTriangleTab.hpp
+    src/Tabs/Experiments/RendererTexturingTab.cpp
+    src/Tabs/Experiments/RendererTexturingTab.hpp
     src/Tabs/CookiecutterTab.cpp
     src/Tabs/CookiecutterTab.hpp
     src/Tabs/ErrorTab.cpp
@@ -474,10 +480,6 @@ add_library(osccore STATIC
     src/Tabs/ModelEditorTab.hpp
     src/Tabs/PerformanceAnalyzerTab.cpp
     src/Tabs/PerformanceAnalyzerTab.hpp
-    src/Tabs/RendererHelloTriangleTab.cpp
-    src/Tabs/RendererHelloTriangleTab.hpp
-    src/Tabs/RendererTexturingTab.hpp
-    src/Tabs/RendererTexturingTab.cpp
     src/Tabs/SimulatorTab.cpp
     src/Tabs/SimulatorTab.hpp
     src/Tabs/SplashTab.cpp
