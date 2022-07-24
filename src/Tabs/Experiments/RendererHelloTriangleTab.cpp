@@ -13,39 +13,6 @@
 #include <cstdint>
 #include <utility>
 
-static char g_VertexShader[] =
-R"(
-    #version 330 core
-
-    uniform mat4 uProjMat;
-    uniform mat4 uViewMat;
-    uniform mat4 uModelMat;
-
-    layout (location = 0) in vec3 aPos;
-    layout (location = 3) in vec4 aColor;
-
-    out vec4 aVertColor;
-
-    void main()
-    {
-        gl_Position = uProjMat * uViewMat * uModelMat * vec4(aPos, 1.0);
-        aVertColor = aColor;
-    }
-)";
-
-static char const g_FragmentShader[] =
-R"(
-    #version 330 core
-
-    in vec4 aVertColor;
-    out vec4 FragColor;
-
-    void main()
-    {
-        FragColor = aVertColor;
-    }
-)";
-
 static osc::experimental::Mesh GenerateTriangleMesh()
 {
     glm::vec3 points[] =
@@ -84,7 +51,7 @@ public:
 
     CStringView getName() const
     {
-        return "Hello, Triangle!";
+        return "Hello Triangle (LearnOpenGL)";
     }
 
     TabHost* getParent() const
@@ -123,7 +90,11 @@ public:
 private:
     UID m_ID;
     TabHost* m_Parent;
-    experimental::Shader m_Shader{g_VertexShader, g_FragmentShader};
+    experimental::Shader m_Shader
+    {
+        osc::App::get().slurpResource("shaders/ExperimentTriangle.vert").c_str(),
+        osc::App::get().slurpResource("shaders/ExperimentTriangle.frag").c_str(),
+    };
     experimental::Material m_Material{m_Shader};
     experimental::Mesh m_TriangleMesh = GenerateTriangleMesh();
     experimental::Camera m_Camera;

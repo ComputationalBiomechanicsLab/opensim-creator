@@ -561,7 +561,7 @@ public:
     explicit Impl(char const* vertexShader, char const* fragmentShader) :
         m_Program{gl::CreateProgramFrom(gl::CompileFromSource<gl::VertexShader>(vertexShader), gl::CompileFromSource<gl::FragmentShader>(fragmentShader))}
     {
-        constexpr GLsizei maxNameLen = 16;
+        constexpr GLsizei maxNameLen = 128;
 
         GLint numAttrs;
         glGetProgramiv(m_Program.get(), GL_ACTIVE_ATTRIBUTES, &numAttrs);
@@ -2711,6 +2711,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     // precompute camera stuff
     glm::mat4 viewMtx = camera.getViewMatrix();
     glm::mat4 projMtx = camera.getProjectionMatrix();
+    glm::mat4 viewProjMtx = projMtx * viewMtx;
 
     for (RenderObject const& ro : camera.m_RenderQueue)
     {
@@ -2737,6 +2738,16 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             }
         }
 
+        // try binding to uNormalMat (standard)
+        {
+            auto it = uniforms.find("uNormalMat");
+            if (it != uniforms.end() && it->second.type == osc::experimental::ShaderType::Mat3)
+            {
+                gl::UniformMat3 u{it->second.location};
+                gl::Uniform(u, ToNormalMatrix(transform));
+            }
+        }
+
         // try binding to uView (standard)
         {
             auto it = uniforms.find("uViewMat");
@@ -2754,6 +2765,16 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             {
                 gl::UniformMat4 u{it->second.location};
                 gl::Uniform(u, projMtx);
+            }
+        }
+
+        // try binding to uViewProjMat (standard)
+        {
+            auto it = uniforms.find("uViewProjMat");
+            if (it != uniforms.end() && it->second.type == osc::experimental::ShaderType::Mat4)
+            {
+                gl::UniformMat4 u{it->second.location};
+                gl::Uniform(u, viewProjMtx);
             }
         }
 

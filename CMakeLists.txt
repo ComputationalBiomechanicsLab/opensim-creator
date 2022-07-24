@@ -462,6 +462,8 @@ add_library(osccore STATIC
     src/Screens/MeshScreen.cpp
     src/Screens/MeshScreen.hpp
 
+    src/Tabs/Experiments/RendererBasicLightingTab.cpp
+    src/Tabs/Experiments/RendererBasicLightingTab.hpp
     src/Tabs/Experiments/RendererCoordinateSystemsTab.cpp
     src/Tabs/Experiments/RendererCoordinateSystemsTab.hpp
     src/Tabs/Experiments/RendererHelloTriangleTab.cpp

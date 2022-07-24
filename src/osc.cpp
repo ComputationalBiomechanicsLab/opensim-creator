@@ -4,6 +4,7 @@
 #include "src/Tabs/Experiments/RendererHelloTriangleTab.hpp"
 #include "src/Tabs/Experiments/RendererTexturingTab.hpp"
 #include "src/Tabs/Experiments/RendererCoordinateSystemsTab.hpp"
+#include "src/Tabs/Experiments/RendererBasicLightingTab.hpp"
 
 #include <cstdlib>
 #include <iostream>
@@ -65,7 +66,8 @@ int main(int argc, char** argv)
         auto screen = std::make_unique<osc::MainUIScreen>();
         screen->addTab(std::make_unique<osc::RendererHelloTriangleTab>(screen->getTabHostAPI()));
         screen->addTab(std::make_unique<osc::RendererTexturingTab>(screen->getTabHostAPI()));
-        auto tabID = screen->addTab(std::make_unique<osc::RendererCoordinateSystemsTab>(screen->getTabHostAPI()));
+        screen->addTab(std::make_unique<osc::RendererCoordinateSystemsTab>(screen->getTabHostAPI()));
+        auto tabID = screen->addTab(std::make_unique<osc::RendererBasicLightingTab>(screen->getTabHostAPI()));
         screen->getTabHostAPI()->selectTab(tabID);
         app.show(std::move(screen));
     }

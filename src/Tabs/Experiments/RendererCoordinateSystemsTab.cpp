@@ -20,42 +20,6 @@
 #include <string>
 #include <utility>
 
-static char const g_VertexShader[] =
-R"(
-    #version 330 core
-
-    uniform mat4 uModelMat;
-    uniform mat4 uViewMat;
-    uniform mat4 uProjMat;
-
-    layout (location = 0) in vec3 aPos;
-    layout (location = 1) in vec2 aTexCoord;
-
-    out vec2 FragTexCoord;
-
-    void main()
-    {
-	    gl_Position = uProjMat * uViewMat * uModelMat * vec4(aPos, 1.0);
-	    FragTexCoord = aTexCoord;
-    }
-)";
-
-static char const g_FragmentShader[] =
-R"(
-    #version 330 core
-
-    uniform sampler2D uTexture1;
-    uniform sampler2D uTexture2;
-
-    in vec2 FragTexCoord;
-    out vec4 FragColor;
-
-    void main()
-    {
-	    FragColor = mix(texture(uTexture1, FragTexCoord), texture(uTexture2, FragTexCoord), 0.2);
-    }
-)";
-
 // worldspace positions of each cube (step 2)
 static glm::vec3 const g_CubePositions[] =
 {
@@ -221,14 +185,20 @@ public:
 private:
     UID m_ID;
     TabHost* m_Parent;
-    experimental::Shader m_Shader{g_VertexShader, g_FragmentShader};
+    experimental::Shader m_Shader
+    {
+        osc::App::get().slurpResource("shaders/ExperimentCoordinateSystems.vert").c_str(),
+        osc::App::get().slurpResource("shaders/ExperimentCoordinateSystems.frag").c_str(),
+    };
     experimental::Material m_Material{m_Shader};
     experimental::Mesh m_Mesh = GenerateMesh();
     experimental::Camera m_Camera;
-    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
-    bool m_ShowStep1 = false;
     bool m_IsMouseCaptured = false;
+    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+
+    bool m_ShowStep1 = false;
     Transform m_Step1;
+
     PerfPanel m_PerfPanel{"perf"};
 };
 

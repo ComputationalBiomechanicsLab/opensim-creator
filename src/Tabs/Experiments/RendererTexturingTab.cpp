@@ -16,38 +16,6 @@
 #include <string>
 #include <utility>
 
-static char g_VertexShader[] =
-R"(
-    #version 330 core
-
-    layout (location = 0) in vec3 aPos;
-    layout (location = 1) in vec2 aTexCoord;
-
-    out vec2 FragTexCoord;
-
-    void main()
-    {
-	    gl_Position = vec4(aPos, 1.0);
-	    FragTexCoord = aTexCoord;
-    }
-)";
-
-static char const g_FragmentShader[] =
-R"(
-    #version 330 core
-
-    uniform sampler2D uTexture1;
-    uniform sampler2D uTexture2;
-
-    in vec2 FragTexCoord;
-    out vec4 FragColor;
-
-    void main()
-    {
-	    FragColor = mix(texture(uTexture1, FragTexCoord), texture(uTexture2, FragTexCoord), 0.2);
-    }
-)";
-
 static osc::experimental::Mesh GenerateMesh()
 {
     auto quad = osc::GenTexturedQuad();
@@ -87,7 +55,7 @@ public:
 
     CStringView getName() const
     {
-        return "Textured Rectangle";
+        return "Textures (LearnOpenGL)";
     }
 
     TabHost* getParent() const
@@ -126,7 +94,11 @@ public:
 private:
     UID m_ID;
     TabHost* m_Parent;
-    experimental::Shader m_Shader{g_VertexShader, g_FragmentShader};
+    experimental::Shader m_Shader
+    {
+        osc::App::get().slurpResource("shaders/ExperimentTexturing.vert").c_str(),
+        osc::App::get().slurpResource("shaders/ExperimentTexturing.frag").c_str(),
+    };
     experimental::Material m_Material{m_Shader};
     experimental::Mesh m_Mesh = GenerateMesh();
     experimental::Camera m_Camera;
