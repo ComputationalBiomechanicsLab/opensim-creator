@@ -1,6 +1,9 @@
 #include "ImGuiHelpers.hpp"
 
 #include "src/Graphics/Gl.hpp"
+#include "src/Graphics/Renderer.hpp"
+#include "src/Maths/Constants.hpp"
+#include "src/Maths/Geometry.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
@@ -14,6 +17,7 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <nonstd/span.hpp>
+#include <SDL_events.h>
 
 #include <algorithm>
 #include <cstdint>
@@ -92,6 +96,53 @@ void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::Polar
             camera.pan(aspectRatio, delta/viewportDims);
         }
     }
+}
+
+void osc::UpdateEulerCameraFromImGuiUserInput(experimental::Camera& camera, glm::vec3& eulers)
+{
+    glm::vec3 const front = camera.getDirection();
+    glm::vec3 const up = camera.getUpwardsDirection();
+    glm::vec3 const right = glm::cross(front, up);
+    glm::vec2 const mouseDelta = ImGui::GetIO().MouseDelta;
+
+    float const speed = 10.0f;
+    float const displacement = speed * ImGui::GetIO().DeltaTime;
+    float const sensitivity = 0.005f;
+
+    // keyboard: changes camera position
+    glm::vec3 pos = camera.getPosition();
+    if (ImGui::IsKeyDown(SDL_SCANCODE_W))
+    {
+        pos += displacement * front;
+    }
+    if (ImGui::IsKeyDown(SDL_SCANCODE_S))
+    {
+        pos -= displacement * front;
+    }
+    if (ImGui::IsKeyDown(SDL_SCANCODE_A))
+    {
+        pos -= displacement * right;
+    }
+    if (ImGui::IsKeyDown(SDL_SCANCODE_D))
+    {
+        pos += displacement * right;
+    }
+    if (ImGui::IsKeyDown(SDL_SCANCODE_SPACE))
+    {
+        pos += displacement * up;
+    }
+    if (ImGui::GetIO().KeyCtrl)
+    {
+        pos -= displacement * up;
+    }
+    camera.setPosition(pos);
+
+    eulers.x += sensitivity * -mouseDelta.y;
+    eulers.x = glm::clamp(eulers.x, -osc::fpi2 + 0.1f, osc::fpi2 - 0.1f);
+    eulers.y += sensitivity * -mouseDelta.x;
+    eulers.y = std::fmod(eulers.y, 2.0f * osc::fpi);
+
+    camera.setRotation(glm::normalize(glm::quat{eulers}));
 }
 
 osc::Rect osc::ContentRegionAvailScreenRect()
@@ -378,6 +429,14 @@ osc::Rect osc::GetMainViewportWorkspaceScreenRect()
 {
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     return Rect{viewport->WorkPos, glm::vec2{viewport->WorkPos} + glm::vec2{viewport->WorkSize}};
+}
+
+bool osc::IsMouseInMainViewportWorkspaceScreenRect()
+{
+
+    glm::vec2 mousepos = ImGui::GetIO().MousePos;
+    osc::Rect hitRect = osc::GetMainViewportWorkspaceScreenRect();
+    return osc::IsPointInRect(hitRect, mousepos);
 }
 
 bool osc::BeginMainViewportTopBar(char const* label)

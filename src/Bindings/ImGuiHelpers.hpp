@@ -17,6 +17,11 @@ namespace osc
     class PolarPerspectiveCamera;
 }
 
+namespace osc::experimental
+{
+    class Camera;
+}
+
 namespace gl
 {
     class Texture2D;
@@ -28,6 +33,7 @@ namespace osc
 
     // updates a polar comera's rotation, position, etc. based on ImGui input
     void UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, PolarPerspectiveCamera&);
+    void UpdateEulerCameraFromImGuiUserInput(experimental::Camera&, glm::vec3& eulers);
 
     // returns the ImGui content region available in screenspace as a `Rect`
     Rect ContentRegionAvailScreenRect();
@@ -119,6 +125,9 @@ namespace osc
     //
     // handy if (e.g.) you want to know the rect of a tab area
     Rect GetMainViewportWorkspaceScreenRect();
+
+    // returns `true` if the user's mouse is within the current workspace area of the main viewport
+    bool IsMouseInMainViewportWorkspaceScreenRect();
 
     // begin a menu that's attached to the top of a viewport, end it with ImGui::End();
     bool BeginMainViewportTopBar(char const* label);

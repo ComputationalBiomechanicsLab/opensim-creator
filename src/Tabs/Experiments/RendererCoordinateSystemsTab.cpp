@@ -4,8 +4,11 @@
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Renderer.hpp"
 #include "src/Graphics/Texturing.hpp"
+#include "src/Maths/Constants.hpp"
+#include "src/Maths/Geometry.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Widgets/PerfPanel.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
@@ -17,7 +20,7 @@
 #include <string>
 #include <utility>
 
-static char g_VertexShader[] =
+static char const g_VertexShader[] =
 R"(
     #version 330 core
 
@@ -53,28 +56,31 @@ R"(
     }
 )";
 
-static glm::vec3 g_CubePositions[] =
+// worldspace positions of each cube (step 2)
+static glm::vec3 const g_CubePositions[] =
 {
-    { 0.0f,  0.0f,  0.0f},
+    { 0.0f,  0.0f,  0.0f },
     { 2.0f,  5.0f, -15.0f},
-    {-1.5f, -2.2f, -2.5f},
+    {-1.5f, -2.2f, -2.5f },
     {-3.8f, -2.0f, -12.3f},
-    { 2.4f, -0.4f, -3.5f},
-    {-1.7f,  3.0f, -7.5f},
-    { 1.3f, -2.0f, -2.5f},
-    { 1.5f,  2.0f, -2.5f},
-    { 1.5f,  0.2f, -1.5f},
-    {-1.3f,  1.0f, -1.5},
+    { 2.4f, -0.4f, -3.5f },
+    {-1.7f,  3.0f, -7.5f },
+    { 1.3f, -2.0f, -2.5f },
+    { 1.5f,  2.0f, -2.5f },
+    { 1.5f,  0.2f, -1.5f },
+    {-1.3f,  1.0f, -1.5  },
 };
 
 // generate a texture-mapped cube
 static osc::experimental::Mesh GenerateMesh()
 {
     auto generatedCube = osc::GenCube();
+
     for (glm::vec3& vert : generatedCube.verts)
     {
-        vert *= 0.5f;  // to match LearnOpenGL
+        vert *= 0.5f;  // makes the verts match LearnOpenGL
     }
+
     osc::experimental::Mesh m;
     m.setVerts(generatedCube.verts);
     m.setTexCoords(generatedCube.texcoords);
@@ -84,10 +90,10 @@ static osc::experimental::Mesh GenerateMesh()
 
 class osc::RendererCoordinateSystemsTab::Impl final {
 public:
+
     Impl(TabHost* parent) : m_Parent{parent}
     {
         m_Camera.setPosition({0.0f, 0.0f, 3.0f});
-        m_Camera.setDirection({0.0f, 0.0f, -1.0f});
         m_Camera.setCameraFOV(glm::radians(45.0f));
         m_Camera.setNearClippingPlane(0.1f);
         m_Camera.setFarClippingPlane(100.0f);
@@ -112,21 +118,40 @@ public:
 
     void onMount()
     {
+        osc::App::upd().makeMainEventLoopPolling();
+        m_IsMouseCaptured = true;
     }
 
     void onUnmount()
     {
+        m_IsMouseCaptured = false;
+        osc::App::upd().setShowCursor(true);
+        osc::App::upd().makeMainEventLoopWaiting();
     }
 
     bool onEvent(SDL_Event const& e)
     {
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+        {
+            m_IsMouseCaptured = false;
+            return true;
+        }
+        else if (e.type == SDL_MOUSEBUTTONDOWN && osc::IsMouseInMainViewportWorkspaceScreenRect())
+        {
+            m_IsMouseCaptured = true;
+            return true;
+        }
         return false;
     }
 
     void onTick()
     {
-        float angle = osc::App::get().getDeltaSinceAppStartup().count() * glm::radians(50.0f);
-        m_Step1.rotation = glm::quat(angle * glm::vec3{0.5f, 1.0f, 0.0f});
+        float const rotationSpeed = glm::radians(50.0f);
+        float const dt = osc::App::get().getDeltaSinceAppStartup().count();
+        float const angle = rotationSpeed * dt;
+        glm::vec3 const axis = glm::normalize(glm::vec3{0.5f, 1.0f, 0.0f});
+
+        m_Step1.rotation = glm::angleAxis(angle, axis);
     }
 
     void onDrawMainMenu()
@@ -135,34 +160,62 @@ public:
 
     void onDraw()
     {
+        // handle mouse capturing
+        if (m_IsMouseCaptured)
+        {
+            UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+            App::upd().setShowCursor(false);
+        }
+        else
+        {
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
+            App::upd().setShowCursor(true);
+        }
+
+        // clear screen and ensure camera has correct pixel rect
         osc::App::upd().clearScreen({0.2f, 0.3f, 0.3f, 1.0f});
         m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
 
-        ImGui::Begin("Tutorial Step");
-        ImGui::Checkbox("step1", &m_ShowStep1);
-        ImGui::End();
-
+        // draw 3D scene
         if (m_ShowStep1)
         {
             experimental::Graphics::DrawMesh(m_Mesh, m_Step1, m_Material, m_Camera);
         }
         else
         {
-            // TODO: investigate why the angles here don't match the LearnOpenGL reference image
             int i = 0;
+            glm::vec3 const axis = glm::normalize(glm::vec3{1.0f, 0.3f, 0.5f});
             for (glm::vec3 const& pos : g_CubePositions)
             {
-                float angle = glm::radians(i++ * 20.0f);
+                float const angle = glm::radians(i++ * 20.0f);
 
                 Transform t;
-                t.rotation = glm::quat(glm::vec3{angle * glm::vec3{1.0f, 0.3f, 0.5f}});
+                t.rotation = glm::angleAxis(angle, axis);
                 t.position = pos;
 
                 experimental::Graphics::DrawMesh(m_Mesh, t, m_Material, m_Camera);
             }
         }
-
         m_Camera.render();
+
+        // draw UI extras
+        {
+            ImGui::Begin("Tutorial Step");
+            ImGui::Checkbox("step1", &m_ShowStep1);
+            if (m_IsMouseCaptured)
+            {
+                ImGui::Text("mouse captured (esc to uncapture)");
+            }
+
+            glm::vec3 cameraPos = m_Camera.getPosition();
+            ImGui::Text("camera pos = (%f, %f, %f)", cameraPos.x, cameraPos.y, cameraPos.z);
+            glm::vec3 cameraEulers = glm::degrees(m_CameraEulers);
+            ImGui::Text("camera eulers = (%f, %f, %f)", cameraEulers.x, cameraEulers.y, cameraEulers.z);
+            ImGui::End();
+
+            m_PerfPanel.draw();
+        }
     }
 
 private:
@@ -172,8 +225,11 @@ private:
     experimental::Material m_Material{m_Shader};
     experimental::Mesh m_Mesh = GenerateMesh();
     experimental::Camera m_Camera;
+    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
     bool m_ShowStep1 = false;
+    bool m_IsMouseCaptured = false;
     Transform m_Step1;
+    PerfPanel m_PerfPanel{"perf"};
 };
 
 

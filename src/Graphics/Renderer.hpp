@@ -7,6 +7,7 @@
 #include <glm/vec4.hpp>
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x4.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <nonstd/span.hpp>
 
 #include <cstdint>
@@ -499,11 +500,12 @@ namespace osc::experimental
         glm::vec3 getPosition() const;
         void setPosition(glm::vec3 const&);
 
-        glm::vec3 getDirection() const;
-        void setDirection(glm::vec3 const&);
+        // get rotation (from the assumed "default" rotation of the camera pointing towards -Z, Y is up)
+        glm::quat getRotation() const;
+        void setRotation(glm::quat const&);
 
+        glm::vec3 getDirection() const;
         glm::vec3 getUpwardsDirection() const;
-        void setUpwardsDirection(glm::vec3 const&);
 
         // view matrix (overrides)
         //

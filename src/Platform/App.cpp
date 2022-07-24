@@ -545,6 +545,7 @@ public:
     void setShowCursor(bool v)
     {
         SDL_ShowCursor(v ? SDL_ENABLE : SDL_DISABLE);
+        SDL_SetWindowGrab(m_MainWindow, v ? SDL_FALSE : SDL_TRUE);
     }
 
 

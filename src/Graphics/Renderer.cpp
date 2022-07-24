@@ -23,6 +23,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <nonstd/span.hpp>
 
 #include <algorithm>
@@ -543,7 +544,7 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, Texture2D const&)
 
 osc::experimental::Texture2D osc::experimental::LoadTexture2DFromImageResource(std::string_view resource)
 {
-    osc::Rgba32Image img = osc::LoadImageRgba32(osc::App::get().resource(resource));
+    osc::Rgba32Image img = osc::LoadImageRgba32(osc::App::get().resource(resource), osc::TexFlag_FlipPixelsVertically);
     osc::experimental::Texture2D rv{img.Dimensions.x, img.Dimensions.y, img.Pixels};
     return rv;
 }
@@ -1291,7 +1292,7 @@ namespace
         case osc::experimental::MeshTopography::Lines:
             return GL_LINES;
         default:
-            throw std::runtime_error{"unsuppored topography"};
+            return GL_TRIANGLES;
         }
     }
 }
@@ -2040,6 +2041,27 @@ namespace
         "Perspective",
         "Orthographic",
     };
+
+    // renderer stuff
+    struct RenderObject final {
+        RenderObject(
+            Mesh const& mesh_,
+            osc::Transform const& transform_,
+            Material const& material_,
+            std::optional<MaterialPropertyBlock> maybePropBlock_) :
+
+            mesh{mesh_},
+            transform{transform_},
+            material{material_},
+            maybePropBlock{std::move(maybePropBlock_)}
+        {
+        }
+
+        Mesh mesh;
+        osc::Transform transform;
+        Material material;
+        std::optional<MaterialPropertyBlock> maybePropBlock;
+    };
 }
 
 class osc::experimental::Camera::Impl final {
@@ -2183,24 +2205,24 @@ public:
         m_Position = position;
     }
 
-    glm::vec3 getDirection() const
+    glm::quat getRotation() const
     {
-        return m_Direction;
+        return m_Rotation;
     }
 
-    void setDirection(glm::vec3 const& position)
+    void setRotation(glm::quat const& rotation)
     {
-        m_Direction = position;
+        m_Rotation = rotation;
+    }
+
+    glm::vec3 getDirection() const
+    {
+        return m_Rotation * glm::vec3{0.0f, 0.0f, -1.0f};
     }
 
     glm::vec3 getUpwardsDirection() const
     {
-        return m_UpwardsDirection;
-    }
-
-    void setUpwardsDirection(glm::vec3 const& v)
-    {
-        m_UpwardsDirection = v;
+        return m_Rotation * glm::vec3{0.0f, 1.0f, 0.0f};
     }
 
     glm::mat4 getViewMatrix() const
@@ -2211,7 +2233,7 @@ public:
         }
         else
         {
-            return glm::lookAt(m_Position, m_Position + m_Direction, m_UpwardsDirection);
+            return glm::lookAt(m_Position, m_Position + getDirection(), getUpwardsDirection());
         }
     }
 
@@ -2281,9 +2303,11 @@ private:
         }
     }
 
+    friend class GraphicsBackend;
+
     UID m_UID;
     std::optional<RenderTexture> m_MaybeTexture = std::nullopt;
-    glm::vec4 m_BackgroundColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+    glm::vec4 m_BackgroundColor = {0.0f, 0.0f, 0.0f, 0.0f};
     CameraProjection m_CameraProjection = CameraProjection::Perspective;
     float m_OrthographicSize = 10.0f;
     float m_PerspectiveFov = fpi2;
@@ -2292,34 +2316,9 @@ private:
     std::optional<Rect> m_MaybeScreenPixelRect = std::nullopt;
     std::optional<Rect> m_MaybeScissorRect = std::nullopt;
     glm::vec3 m_Position = {};
-    glm::vec3 m_Direction = {0.0f, 0.0f, -1.0f};
-    glm::vec3 m_UpwardsDirection = {0.0f, 1.0f, 0.0f};
+    glm::quat m_Rotation = {};
     std::optional<glm::mat4> m_MaybeViewMatrixOverride;
     std::optional<glm::mat4> m_MaybeProjectionMatrixOverride;
-
-    friend class GraphicsBackend;
-
-    // renderer stuff
-    struct RenderObject final {
-        RenderObject(
-            Mesh const& mesh_,
-            Transform const& transform_,
-            Material const& material_,
-            std::optional<MaterialPropertyBlock> maybePropBlock_) :
-
-            mesh{mesh_},
-            transform{transform_},
-            material{material_},
-            maybePropBlock{std::move(maybePropBlock_)}
-        {
-        }
-
-        Mesh mesh;
-        Transform transform;
-        Material material;
-        std::optional<MaterialPropertyBlock> maybePropBlock;
-    };
-
     std::vector<RenderObject> m_RenderQueue;
 };
 
@@ -2481,26 +2480,25 @@ void osc::experimental::Camera::setPosition(glm::vec3 const& p)
     m_Impl->setPosition(p);
 }
 
+glm::quat osc::experimental::Camera::getRotation() const
+{
+    return m_Impl->getRotation();
+}
+
+void osc::experimental::Camera::setRotation(glm::quat const& rotation)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setRotation(rotation);
+}
+
 glm::vec3 osc::experimental::Camera::getDirection() const
 {
     return m_Impl->getDirection();
 }
 
-void osc::experimental::Camera::setDirection(glm::vec3 const& dir)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setDirection(dir);
-}
-
 glm::vec3 osc::experimental::Camera::getUpwardsDirection() const
 {
     return m_Impl->getUpwardsDirection();
-}
-
-void osc::experimental::Camera::setUpwardsDirection(glm::vec3 const& v)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setUpwardsDirection(v);
 }
 
 glm::mat4 osc::experimental::Camera::getViewMatrix() const
@@ -2714,7 +2712,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     glm::mat4 viewMtx = camera.getViewMatrix();
     glm::mat4 projMtx = camera.getProjectionMatrix();
 
-    for (Camera::Impl::RenderObject const& ro : camera.m_RenderQueue)
+    for (RenderObject const& ro : camera.m_RenderQueue)
     {
         osc::experimental::Mesh::Impl& meshImpl = const_cast<osc::experimental::Mesh::Impl&>(*ro.mesh.m_Impl);
         osc::experimental::Shader::Impl& shaderImpl = const_cast<osc::experimental::Shader::Impl&>(*ro.material.m_Impl->m_Shader.m_Impl);
@@ -2787,10 +2785,8 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         gl::BindVertexArray(meshImpl.updVertexArray());
         meshImpl.draw();
         gl::BindVertexArray();
-
-        gl::UseProgram();
     }
-    gl::BindVertexArray();
+    gl::UseProgram();
 
     camera.m_RenderQueue.clear();
 }
