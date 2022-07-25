@@ -1,4 +1,5 @@
 #include "src/Graphics/Color.hpp"
+#include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Renderer.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Utils/Algorithms.hpp"
@@ -1493,6 +1494,29 @@ TEST_F(Renderer, MeshCanBeWrittenToOutputStreamForDebugging)
     ASSERT_FALSE(ss.str().empty());
 }
 
+TEST_F(Renderer, LoadMeshFromMeshDataWorksAsExpected)
+{
+    osc::MeshData cube = osc::GenCube();
+    osc::experimental::Mesh mesh = osc::experimental::LoadMeshFromMeshData(cube);
+
+    ASSERT_EQ(mesh.getTopography(), osc::experimental::MeshTopography::Triangles);
+    ASSERT_TRUE(mesh.getColors().empty());
+    nonstd::span<glm::vec3 const> verts = mesh.getVerts();
+    ASSERT_TRUE(std::equal(verts.begin(), verts.end(), cube.verts.begin(), cube.verts.end()));
+    nonstd::span<glm::vec3 const> normals = mesh.getNormals();
+    ASSERT_TRUE(std::equal(normals.begin(), normals.end(), cube.normals.begin(), cube.normals.end()));
+    nonstd::span<uint32_t> indices = mesh.getIndices();
+    ASSERT_TRUE(std::equal(indices.begin(), indices.end(), cube.indices.begin(), cube.indices.end()));
+    nonstd::span<glm::vec2 const> coords = mesh.getTexCoords();
+    ASSERT_TRUE(std::equal(coords.begin(), coords.end(), cube.texcoords.begin(), cube.texcoords.end()));
+}
+
+TEST_F(Renderer, LoadMeshFromMeshDataAlsoObeysTheMeshDatasTopography)
+{
+    osc::MeshData cube = osc::GenCubeLines();
+    osc::experimental::Mesh mesh = osc::experimental::LoadMeshFromMeshData(cube);
+    ASSERT_EQ(mesh.getTopography(), osc::experimental::MeshTopography::Lines);
+}
 TEST_F(Renderer, RenderTextureFormatCanBeIteratedOverAndStreamedToString)
 {
     for (int i = 0; i < static_cast<int>(osc::experimental::RenderTextureFormat::TOTAL); ++i)

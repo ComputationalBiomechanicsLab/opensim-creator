@@ -40,7 +40,7 @@ class osc::RendererHelloTriangleTab::Impl final {
 public:
     Impl(TabHost* parent) : m_Parent{parent}
     {
-        m_Camera.setViewMatrix(glm::mat4{1.0f});  // "hello triangle" is an identity transform demo
+        m_Camera.setViewMatrix(glm::mat4{1.0f});
         m_Camera.setProjectionMatrix(glm::mat4{1.0f});
     }
 

@@ -39,18 +39,14 @@ static glm::vec3 const g_CubePositions[] =
 // generate a texture-mapped cube
 static osc::experimental::Mesh GenerateMesh()
 {
-    auto generatedCube = osc::GenCube();
+    osc::MeshData cube = osc::GenCube();
 
-    for (glm::vec3& vert : generatedCube.verts)
+    for (glm::vec3& vert : cube.verts)
     {
         vert *= 0.5f;  // makes the verts match LearnOpenGL
     }
 
-    osc::experimental::Mesh m;
-    m.setVerts(generatedCube.verts);
-    m.setTexCoords(generatedCube.texcoords);
-    m.setIndices(generatedCube.indices);
-    return m;
+    return osc::experimental::LoadMeshFromMeshData(cube);
 }
 
 class osc::RendererCoordinateSystemsTab::Impl final {

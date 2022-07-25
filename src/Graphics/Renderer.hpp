@@ -23,6 +23,7 @@ namespace osc
     struct AABB;
     struct Rgba32;
     struct Transform;
+    struct MeshData;
 }
 
 // 2D texture
@@ -327,6 +328,8 @@ namespace osc::experimental
     bool operator!=(Mesh const&, Mesh const&);
     bool operator<(Mesh const&, Mesh const&);
     std::ostream& operator<<(std::ostream&, Mesh const&);
+
+    Mesh LoadMeshFromMeshData(MeshData const&);
 }
 
 // render texture

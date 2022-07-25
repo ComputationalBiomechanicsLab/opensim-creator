@@ -26,16 +26,13 @@ static osc::experimental::Mesh GenerateMesh()
     {
         vert *= 0.5f;  // to match LearnOpenGL
     }
+
     for (glm::vec2& coord : quad.texcoords)
     {
         coord *= 2.0f;  // to test texture wrap modes
     }
 
-    osc::experimental::Mesh m;
-    m.setVerts(quad.verts);
-    m.setTexCoords(quad.texcoords);
-    m.setIndices(quad.indices);
-    return m;
+    return osc::experimental::LoadMeshFromMeshData(quad);
 }
 
 class osc::RendererTexturingTab::Impl final {

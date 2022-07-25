@@ -6,6 +6,7 @@
 #include "src/Graphics/GlGlm.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
 #include "src/Graphics/Texturing.hpp"
+#include "src/Graphics/MeshData.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
@@ -1455,7 +1456,12 @@ public:
             m_IndicesAre32Bit = false;
             m_NumIndices = static_cast<int>(vs.size());
             m_IndicesData.resize((vs.size() + 1) / 2);
-            std::copy(vs.begin(), vs.end(), &m_IndicesData.front().u16.a);
+
+            uint16_t* p = &m_IndicesData.front().u16.a;
+            for (size_t i = 0; i < vs.size(); ++i)
+            {
+                *(p + i) = static_cast<uint16_t>(vs[i]);
+            }
         }
 
         recalculateBounds();
@@ -1772,6 +1778,29 @@ bool osc::experimental::operator<(Mesh const& a, Mesh const& b)
 std::ostream& osc::experimental::operator<<(std::ostream& o, Mesh const&)
 {
     return o << "Mesh()";
+}
+
+osc::experimental::Mesh osc::experimental::LoadMeshFromMeshData(MeshData const& m)
+{
+    osc::experimental::Mesh rv;
+    rv.setVerts(m.verts);
+    rv.setNormals(m.normals);
+    rv.setTexCoords(m.texcoords);
+    rv.setIndices(m.indices);
+
+    osc::experimental::MeshTopography topography = osc::experimental::MeshTopography::Triangles;
+    switch (m.topography) {
+    case osc::MeshTopography::Lines:
+        topography = osc::experimental::MeshTopography::Lines;
+        break;
+    case osc::MeshTopography::Triangles:
+        topography = osc::experimental::MeshTopography::Triangles;
+        break;
+    default:
+        break;
+    }
+    rv.setTopography(topography);
+    return rv;
 }
 
 
