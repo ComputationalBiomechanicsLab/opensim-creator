@@ -116,6 +116,32 @@ R"(
     }
 )";
 
+static constexpr char const g_VertexShaderWithArray[] =
+R"(
+    #version 330 core
+
+    layout (location = 0) in vec3 aPos;
+
+    void main()
+    {
+        gl_Position = vec4(aPos, 1.0);
+    }
+)";
+
+static constexpr char const g_FragmentShaderWithArray[] =
+R"(
+    #version 330 core
+
+    uniform vec4 uFragColor[3];
+
+    out vec4 FragColor;
+
+    void main()
+    {
+        FragColor = uFragColor[0];
+    }
+)";
+
 // expected, based on the above shader code
 static constexpr std::array<osc::CStringView, 7> g_ExpectedPropertyNames =
 {
@@ -381,6 +407,13 @@ TEST_F(Renderer, ShaderGetPropertyNameReturnsGivenPropertyName)
         ASSERT_TRUE(idx);
         ASSERT_EQ(s.getPropertyName(*idx), propName);
     }
+}
+
+TEST_F(Renderer, ShaderGetPropertyNameStillWorksIfTheUniformIsAnArray)
+{
+    osc::experimental::Shader s{g_VertexShaderWithArray, g_FragmentShaderWithArray};
+    ASSERT_FALSE(s.findPropertyIndex("uFragColor[0]").has_value()) << "shouldn't expose 'raw' name";
+    ASSERT_TRUE(s.findPropertyIndex("uFragColor").has_value()) << "should work, because the backend should normalize array-like uniforms to the original name (not uFragColor[0])";
 }
 
 TEST_F(Renderer, ShaderGetPropertyTypeReturnsExpectedType)
@@ -1839,7 +1872,6 @@ TEST_F(Renderer, CameraGetViewMatrixReturnsViewMatrixBasedOnPositonDirectionAndU
     osc::experimental::Camera camera;
     camera.setCameraProjection(osc::experimental::CameraProjection::Orthographic);
     camera.setPosition({0.0f, 0.0f, 0.0f});
-    camera.setDirection({0.0f, 0.0f, -1.0f});
 
     glm::mat4 viewMatrix = camera.getViewMatrix();
     glm::mat4 expectedMatrix{1.0f};
@@ -1854,7 +1886,6 @@ TEST_F(Renderer, CameraSetViewMatrixSetsANewViewMatrixThatCanBeRetrievedWithGetV
     // these shouldn't matter - they're overridden
     camera.setCameraProjection(osc::experimental::CameraProjection::Orthographic);
     camera.setPosition({7.0f, 5.0f, -3.0f});  
-    camera.setDirection({0.0f, 0.0f, -1.0f});
 
     glm::mat4 viewMatrix{1.0f};
     viewMatrix[0][1] = 9.0f;  // change some part of it
@@ -1886,7 +1917,6 @@ TEST_F(Renderer, CameraGetProjectionMatrixReturnsProjectionMatrixBasedOnPositonD
     osc::experimental::Camera camera;
     camera.setCameraProjection(osc::experimental::CameraProjection::Orthographic);
     camera.setPosition({0.0f, 0.0f, 0.0f});
-    camera.setDirection({0.0f, 0.0f, -1.0f});
 
     glm::mat4 ProjectionMatrix = camera.getProjectionMatrix();
     glm::mat4 expectedMatrix{1.0f};
@@ -1901,7 +1931,6 @@ TEST_F(Renderer, CameraSetProjectionMatrixSetsANewProjectionMatrixThatCanBeRetri
     // these shouldn't matter - they're overridden
     camera.setCameraProjection(osc::experimental::CameraProjection::Orthographic);
     camera.setPosition({7.0f, 5.0f, -3.0f});  
-    camera.setDirection({0.0f, 0.0f, -1.0f});
 
     glm::mat4 ProjectionMatrix{1.0f};
     ProjectionMatrix[0][1] = 9.0f;  // change some part of it

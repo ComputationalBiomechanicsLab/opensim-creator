@@ -189,17 +189,35 @@ namespace
         }
     }
 
+    std::string NormalizeShaderElementName(char const* name)
+    {
+        std::string s{name};
+        auto loc = s.find('[');
+        if (loc != std::string::npos)
+        {
+            s.erase(loc);
+        }
+        return s;
+    }
+
     // parsed-out description of a shader "element" (uniform/attribute)
     struct ShaderElement final {
-        ShaderElement(int location_, ShaderType type_) :
-            location{std::move(location_)},
-            type{std::move(type_)}
+        ShaderElement(int location_, ShaderType type_, int size_) :
+            Location{std::move(location_)},
+            Type{std::move(type_)},
+            Size{std::move(size_)}
         {
         }
 
-        int location;
-        ShaderType type;
+        int Location;
+        ShaderType Type;
+        int Size;
     };
+
+    void PrintShaderElement(std::ostream& o, std::string_view name, ShaderElement const& se)
+    {
+        o << "ShadeElement(name = " << name << ", location = " << se.Location << ", type = " << se.Type << ", size = " << se.Size << ')';
+    }
 }
 
 
@@ -577,8 +595,13 @@ public:
             GLchar name[maxNameLen]; // variable name in GLSL
             GLsizei length; // name length
             glGetActiveAttrib(m_Program.get() , (GLuint)i, maxNameLen, &length, &size, &type, name);
-            int location = static_cast<int>(glGetAttribLocation(m_Program.get(), name));
-            m_Attributes.try_emplace(name, location, GLShaderTypeToShaderTypeInternal(type));
+
+            m_Attributes.try_emplace(
+                NormalizeShaderElementName(name),
+                static_cast<int>(glGetAttribLocation(m_Program.get(), name)),
+                GLShaderTypeToShaderTypeInternal(type),
+                static_cast<int>(size)
+            );
         }
 
         m_Uniforms.reserve(numUniforms);
@@ -589,8 +612,13 @@ public:
             GLchar name[maxNameLen]; // variable name in GLSL
             GLsizei length; // name length
             glGetActiveUniform(m_Program.get(), (GLuint)i, maxNameLen, &length, &size, &type, name);
-            int location = static_cast<int>(glGetUniformLocation(m_Program.get(), name));
-            m_Uniforms.try_emplace(name, location, GLShaderTypeToShaderTypeInternal(type));
+
+            m_Uniforms.try_emplace(
+                NormalizeShaderElementName(name),
+                static_cast<int>(glGetUniformLocation(m_Program.get(), name)),
+                GLShaderTypeToShaderTypeInternal(type),
+                size
+            );
         }
     }
 
@@ -623,7 +651,7 @@ public:
     {
         auto it = m_Uniforms.begin();
         std::advance(it, i);
-        return it->second.type;
+        return it->second.Type;
     }
 
     // non-PIMPL APIs
@@ -706,27 +734,29 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, Shader const& shade
 {
     o << "Shader(\n";
     {
-        o << "  uniforms = [";
+        o << "    uniforms = [";
 
-        char const* delim = "\n    ";
+        char const* delim = "\n        ";
         for (auto const& [name, data] : shader.m_Impl->getUniforms())
         {
-            o << delim << "{name = " << name << ", location = " << data.location << ", type = " << data.type << '}';
+            o << delim;
+            PrintShaderElement(o, name, data);
         }
 
-        o << "\n  ],\n";
+        o << "\n    ],\n";
     }
 
     {
-        o << "  attributes = [";
+        o << "    attributes = [";
 
-        char const* delim = "\n    ";
+        char const* delim = "\n        ";
         for (auto const& [name, data] : shader.m_Impl->getAttributes())
         {
-            o << delim << "{name = " << name << ", location = " << data.location << ", type = " << data.type << '}';
+            o << delim;
+            PrintShaderElement(o, name, data);
         }
 
-        o << "\n  ]\n";
+        o << "\n    ]\n";
     }
 
     o << ')';
@@ -2595,7 +2625,7 @@ void osc::experimental::GraphicsBackend::TryBindMaterialValueToShaderElement(Sha
 {
     osc::experimental::ShaderType t = GetShaderType(v);
 
-    if (GetShaderType(v) != se.type)
+    if (GetShaderType(v) != se.Type)
     {
         return;  // mismatched types
     }
@@ -2603,43 +2633,43 @@ void osc::experimental::GraphicsBackend::TryBindMaterialValueToShaderElement(Sha
     switch (t) {
     case osc::experimental::ShaderType::Float:
     {
-        gl::UniformFloat u{se.location};
+        gl::UniformFloat u{se.Location};
         gl::Uniform(u, std::get<float>(v));
         break;
     }
     case osc::experimental::ShaderType::Vec3:
     {
-        gl::UniformVec3 u{se.location};
+        gl::UniformVec3 u{se.Location};
         gl::Uniform(u, std::get<glm::vec3>(v));
         break;
     }
     case osc::experimental::ShaderType::Vec4:
     {
-        gl::UniformVec4 u{se.location};
+        gl::UniformVec4 u{se.Location};
         gl::Uniform(u, std::get<glm::vec4>(v));
         break;
     }
     case osc::experimental::ShaderType::Mat3:
     {
-        gl::UniformMat3 u{se.location};
+        gl::UniformMat3 u{se.Location};
         gl::Uniform(u, std::get<glm::mat3>(v));
         break;
     }
     case osc::experimental::ShaderType::Mat4:
     {
-        gl::UniformMat4 u{se.location};
+        gl::UniformMat4 u{se.Location};
         gl::Uniform(u, std::get<glm::mat4>(v));
         break;
     }
     case osc::experimental::ShaderType::Int:
     {
-        gl::UniformInt u{se.location};
+        gl::UniformInt u{se.Location};
         gl::Uniform(u, std::get<int>(v));
         break;
     }
     case osc::experimental::ShaderType::Bool:
     {
-        gl::UniformBool u{se.location};
+        gl::UniformBool u{se.Location};
         gl::Uniform(u, std::get<bool>(v));
         break;
     }
@@ -2650,7 +2680,7 @@ void osc::experimental::GraphicsBackend::TryBindMaterialValueToShaderElement(Sha
 
         gl::ActiveTexture(GL_TEXTURE0 + *textureSlot);
         gl::BindTexture(texture);
-        gl::UniformSampler2D u{se.location};
+        gl::UniformSampler2D u{se.Location};
         gl::Uniform(u, *textureSlot);
 
         ++(*textureSlot);
@@ -2731,9 +2761,9 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         // try binding to uModel (standard)
         {
             auto it = uniforms.find("uModelMat");
-            if (it != uniforms.end() && it->second.type == osc::experimental::ShaderType::Mat4)
+            if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat4)
             {
-                gl::UniformMat4 u{it->second.location};
+                gl::UniformMat4 u{it->second.Location};
                 gl::Uniform(u, ToMat4(transform));
             }
         }
@@ -2741,9 +2771,9 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         // try binding to uNormalMat (standard)
         {
             auto it = uniforms.find("uNormalMat");
-            if (it != uniforms.end() && it->second.type == osc::experimental::ShaderType::Mat3)
+            if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat3)
             {
-                gl::UniformMat3 u{it->second.location};
+                gl::UniformMat3 u{it->second.Location};
                 gl::Uniform(u, ToNormalMatrix(transform));
             }
         }
@@ -2751,9 +2781,9 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         // try binding to uView (standard)
         {
             auto it = uniforms.find("uViewMat");
-            if (it != uniforms.end() && it->second.type == osc::experimental::ShaderType::Mat4)
+            if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat4)
             {
-                gl::UniformMat4 u{it->second.location};
+                gl::UniformMat4 u{it->second.Location};
                 gl::Uniform(u, viewMtx);
             }
         }
@@ -2761,9 +2791,9 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         // try binding to uProjection (standard)
         {
             auto it = uniforms.find("uProjMat");
-            if (it != uniforms.end() && it->second.type == osc::experimental::ShaderType::Mat4)
+            if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat4)
             {
-                gl::UniformMat4 u{it->second.location};
+                gl::UniformMat4 u{it->second.Location};
                 gl::Uniform(u, projMtx);
             }
         }
@@ -2771,9 +2801,9 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         // try binding to uViewProjMat (standard)
         {
             auto it = uniforms.find("uViewProjMat");
-            if (it != uniforms.end() && it->second.type == osc::experimental::ShaderType::Mat4)
+            if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat4)
             {
-                gl::UniformMat4 u{it->second.location};
+                gl::UniformMat4 u{it->second.Location};
                 gl::Uniform(u, viewProjMtx);
             }
         }
