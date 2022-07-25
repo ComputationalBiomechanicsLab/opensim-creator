@@ -468,6 +468,8 @@ add_library(osccore STATIC
     src/Tabs/Experiments/RendererCoordinateSystemsTab.hpp
     src/Tabs/Experiments/RendererHelloTriangleTab.cpp
     src/Tabs/Experiments/RendererHelloTriangleTab.hpp
+    src/Tabs/Experiments/RendererLightingMapsTab.cpp
+    src/Tabs/Experiments/RendererLightingMapsTab.hpp
     src/Tabs/Experiments/RendererTexturingTab.cpp
     src/Tabs/Experiments/RendererTexturingTab.hpp
     src/Tabs/CookiecutterTab.cpp

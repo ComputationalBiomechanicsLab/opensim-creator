@@ -6,6 +6,8 @@
 #include "src/Graphics/Texturing.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Utils/CStringView.hpp"
+#include "src/Utils/UID.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>

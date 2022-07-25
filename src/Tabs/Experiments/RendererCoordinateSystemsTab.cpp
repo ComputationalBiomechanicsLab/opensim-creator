@@ -8,9 +8,10 @@
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Utils/CStringView.hpp"
+#include "src/Utils/UID.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 
-#include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <SDL_events.h>
