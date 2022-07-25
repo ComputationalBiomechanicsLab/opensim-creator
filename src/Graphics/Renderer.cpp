@@ -577,8 +577,8 @@ osc::experimental::Texture2D osc::experimental::LoadTexture2DFromImageResource(s
 
 class osc::experimental::Shader::Impl final {
 public:
-    explicit Impl(char const* vertexShader, char const* fragmentShader) :
-        m_Program{gl::CreateProgramFrom(gl::CompileFromSource<gl::VertexShader>(vertexShader), gl::CompileFromSource<gl::FragmentShader>(fragmentShader))}
+    explicit Impl(CStringView vertexShader, CStringView fragmentShader) :
+        m_Program{gl::CreateProgramFrom(gl::CompileFromSource<gl::VertexShader>(vertexShader.c_str()), gl::CompileFromSource<gl::FragmentShader>(fragmentShader.c_str()))}
     {
         constexpr GLsizei maxNameLen = 128;
 
@@ -685,7 +685,7 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, ShaderType shaderTy
     return o << g_ShaderTypeInternalStrings.at(static_cast<int>(shaderType));
 }
 
-osc::experimental::Shader::Shader(char const* vertexShader, char const* fragmentShader) :
+osc::experimental::Shader::Shader(CStringView vertexShader, CStringView fragmentShader) :
     m_Impl{std::make_shared<Impl>(std::move(vertexShader), std::move(fragmentShader))}
 {
 }

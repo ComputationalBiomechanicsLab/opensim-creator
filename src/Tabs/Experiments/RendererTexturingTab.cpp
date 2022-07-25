@@ -95,8 +95,8 @@ private:
     TabHost* m_Parent;
     experimental::Shader m_Shader
     {
-        osc::App::get().slurpResource("shaders/ExperimentTexturing.vert").c_str(),
-        osc::App::get().slurpResource("shaders/ExperimentTexturing.frag").c_str(),
+        App::slurp("shaders/ExperimentTexturing.vert"),
+        App::slurp("shaders/ExperimentTexturing.frag"),
     };
     experimental::Material m_Material{m_Shader};
     experimental::Mesh m_Mesh = GenerateMesh();

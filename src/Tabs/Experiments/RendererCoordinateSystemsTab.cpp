@@ -79,15 +79,15 @@ public:
 
     void onMount()
     {
-        osc::App::upd().makeMainEventLoopPolling();
+        App::upd().makeMainEventLoopPolling();
         m_IsMouseCaptured = true;
     }
 
     void onUnmount()
     {
         m_IsMouseCaptured = false;
-        osc::App::upd().setShowCursor(true);
-        osc::App::upd().makeMainEventLoopWaiting();
+        App::upd().setShowCursor(true);
+        App::upd().makeMainEventLoopWaiting();
     }
 
     bool onEvent(SDL_Event const& e)
@@ -108,7 +108,7 @@ public:
     void onTick()
     {
         float const rotationSpeed = glm::radians(50.0f);
-        float const dt = osc::App::get().getDeltaSinceAppStartup().count();
+        float const dt = App::get().getDeltaSinceAppStartup().count();
         float const angle = rotationSpeed * dt;
         glm::vec3 const axis = glm::normalize(glm::vec3{0.5f, 1.0f, 0.0f});
 
@@ -135,7 +135,7 @@ public:
         }
 
         // clear screen and ensure camera has correct pixel rect
-        osc::App::upd().clearScreen({0.2f, 0.3f, 0.3f, 1.0f});
+        App::upd().clearScreen({0.2f, 0.3f, 0.3f, 1.0f});
         m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
 
         // draw 3D scene
@@ -184,8 +184,8 @@ private:
     TabHost* m_Parent;
     experimental::Shader m_Shader
     {
-        osc::App::get().slurpResource("shaders/ExperimentCoordinateSystems.vert").c_str(),
-        osc::App::get().slurpResource("shaders/ExperimentCoordinateSystems.frag").c_str(),
+        App::slurp("shaders/ExperimentCoordinateSystems.vert"),
+        App::slurp("shaders/ExperimentCoordinateSystems.frag"),
     };
     experimental::Material m_Material{m_Shader};
     experimental::Mesh m_Mesh = GenerateMesh();

@@ -92,8 +92,8 @@ private:
     TabHost* m_Parent;
     experimental::Shader m_Shader
     {
-        osc::App::get().slurpResource("shaders/ExperimentTriangle.vert").c_str(),
-        osc::App::get().slurpResource("shaders/ExperimentTriangle.frag").c_str(),
+        App::slurp("shaders/ExperimentTriangle.vert"),
+        App::slurp("shaders/ExperimentTriangle.frag"),
     };
     experimental::Material m_Material{m_Shader};
     experimental::Mesh m_TriangleMesh = GenerateTriangleMesh();

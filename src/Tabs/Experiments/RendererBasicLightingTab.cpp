@@ -58,15 +58,15 @@ public:
 
     void onMount()
     {
-        osc::App::upd().makeMainEventLoopPolling();
+        App::upd().makeMainEventLoopPolling();
         m_IsMouseCaptured = true;
     }
 
     void onUnmount()
     {
         m_IsMouseCaptured = false;
-        osc::App::upd().setShowCursor(true);
-        osc::App::upd().makeMainEventLoopWaiting();
+        App::upd().setShowCursor(true);
+        App::upd().makeMainEventLoopWaiting();
     }
 
     bool onEvent(SDL_Event const& e)
@@ -108,7 +108,7 @@ public:
         }
 
         // clear screen and ensure camera has correct pixel rect
-        osc::App::upd().clearScreen({0.1f, 0.1f, 0.1f, 1.0f});
+        App::upd().clearScreen({0.1f, 0.1f, 0.1f, 1.0f});
         m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
 
         // draw cube
@@ -145,14 +145,14 @@ private:
 
     experimental::Shader m_LightingShader
     {
-        osc::App::get().slurpResource("shaders/ExperimentBasicLighting.vert").c_str(),
-        osc::App::get().slurpResource("shaders/ExperimentBasicLighting.frag").c_str(),
+        App::slurp("shaders/ExperimentBasicLighting.vert"),
+        App::slurp("shaders/ExperimentBasicLighting.frag"),
     };
     experimental::Material m_LightingMaterial{m_LightingShader};
     experimental::Shader m_LightCubeShader
     {
-        osc::App::get().slurpResource("shaders/ExperimentLightCube.vert").c_str(),
-        osc::App::get().slurpResource("shaders/ExperimentLightCube.frag").c_str(),
+        App::slurp("shaders/ExperimentLightCube.vert"),
+        App::slurp("shaders/ExperimentLightCube.frag"),
     };
     experimental::Material m_LightCubeMaterial{m_LightCubeShader};
 

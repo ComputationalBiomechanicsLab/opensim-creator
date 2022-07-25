@@ -81,6 +81,9 @@ namespace osc
         // returns a full filesystem path to a (runtime- and configuration-dependent) application resource
         static std::filesystem::path resource(std::string_view s);
 
+        // returns the contents of a runtime resource in the `resources/` dir as a string
+        static std::string slurp(std::string_view);
+
         // returns a particular shader type from the shader cache
         template<typename TShader>
         static TShader& shader()

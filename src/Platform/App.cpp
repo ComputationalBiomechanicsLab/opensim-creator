@@ -1131,7 +1131,12 @@ osc::MeshCache& osc::App::meshes()
 
 std::filesystem::path osc::App::resource(std::string_view s)
 {
-    return upd().getResource(s);
+    return get().getResource(s);
+}
+
+std::string osc::App::slurp(std::string_view s)
+{
+    return get().slurpResource(s);
 }
 
 osc::App::App() : m_Impl{new Impl{}}

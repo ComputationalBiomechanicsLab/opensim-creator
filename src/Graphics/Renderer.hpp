@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/Maths/Rect.hpp"
+#include "src/Utils/CStringView.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -117,7 +118,7 @@ namespace osc::experimental
     // a handle to a shader
     class Shader final {
     public:
-        Shader(char const* vertexShader, char const* fragmentShader);  // throws on compile error
+        Shader(CStringView vertexShader, CStringView fragmentShader);  // throws on compile error
         Shader(Shader const&);
         Shader(Shader&&) noexcept;
         Shader& operator=(Shader const&);
