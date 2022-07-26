@@ -306,6 +306,8 @@ add_library(osccore STATIC
     src/Graphics/GlGlm.hpp
     src/Graphics/GraphicsHelpers.cpp
     src/Graphics/GraphicsHelpers.hpp
+    src/Graphics/Image.cpp
+    src/Graphics/Image.hpp
     src/Graphics/InstancedRenderer.cpp
     src/Graphics/InstancedRenderer.hpp
     src/Graphics/Mesh.cpp
@@ -640,6 +642,7 @@ target_link_options(osccore PUBLIC
 add_executable(testosc EXCLUDE_FROM_ALL
 
     tests/TestDedupedString.cpp
+    tests/TestImage.cpp
     tests/TestOpenSim.cpp
     tests/TestOpenSimHelpers.cpp
     tests/TestOsc.cpp
