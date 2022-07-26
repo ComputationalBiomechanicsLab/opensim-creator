@@ -421,7 +421,7 @@ private:
     {
         *m_MaybeGPUTexture = TextureGPUBuffers{};
 
-        GLenum format;
+        GLenum format = GL_RGBA;
         switch (m_NumChannels)
         {
         case 1:
