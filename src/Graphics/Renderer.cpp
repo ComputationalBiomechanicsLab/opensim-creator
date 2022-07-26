@@ -304,11 +304,24 @@ namespace
 class osc::experimental::Texture2D::Impl final {
 public:
     Impl(int width, int height, nonstd::span<Rgba32 const> pixelsRowByRow) :
+        Impl{width, height, {&pixelsRowByRow[0].r, 4 * pixelsRowByRow.size()}, 4}
+    {
+    }
+
+    Impl(int width, int height, nonstd::span<uint8_t const> pixelsRowByRow) :
+        Impl{width, height, pixelsRowByRow, 1}
+    {
+    }
+
+    Impl(int width, int height, nonstd::span<uint8_t const> channels, int numChannels) :
         m_Width{std::move(width)},
         m_Height{ std::move(height) },
-        m_Pixels(pixelsRowByRow.data(), pixelsRowByRow.data() + pixelsRowByRow.size())
+        m_Pixels(channels.data(), channels.data() + channels.size()),
+        m_NumChannels{numChannels}
     {
-        OSC_ASSERT(width * height == pixelsRowByRow.size());
+        OSC_ASSERT_ALWAYS(m_Width >= 0 && m_Height >= 0);
+        OSC_ASSERT_ALWAYS(m_Width * m_Height == m_Pixels.size()/m_NumChannels);
+        OSC_ASSERT_ALWAYS(m_NumChannels == 1 || m_NumChannels == 3 || m_NumChannels == 4);
     }
 
     int getWidth() const
@@ -408,18 +421,32 @@ private:
     {
         *m_MaybeGPUTexture = TextureGPUBuffers{};
 
+        GLenum format;
+        switch (m_NumChannels)
+        {
+        case 1:
+            format = GL_RED;
+            break;
+        case 3:
+            format = GL_RGB;
+            break;
+        case 4:
+            format = GL_RGBA;
+            break;
+        }
+
         // one-time upload, because pixels cannot be altered
         gl::BindTexture((*m_MaybeGPUTexture)->Texture);
         gl::TexImage2D(
             GL_TEXTURE_2D,
             0,
-            GL_RGBA,
+            format,
             m_Width,
             m_Height,
             0,
-            GL_RGBA,
+            format,
             GL_UNSIGNED_BYTE,
-            &m_Pixels[0].r
+            m_Pixels.data()
         );
         glGenerateMipmap((*m_MaybeGPUTexture)->Texture.type);
     }
@@ -439,7 +466,8 @@ private:
 
     int m_Width;
     int m_Height;
-    std::vector<Rgba32> m_Pixels;
+    std::vector<std::uint8_t> m_Pixels;
+    int m_NumChannels;
     TextureWrapMode m_WrapModeU = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeV = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeW = TextureWrapMode::Repeat;
@@ -460,8 +488,18 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, TextureFilterMode t
 }
 
 
-osc::experimental::Texture2D::Texture2D(int width, int height, nonstd::span<Rgba32 const> pixelsRowByRow) :
-    m_Impl{std::make_shared<Impl>(std::move(width), std::move(height), std::move(pixelsRowByRow))}
+osc::experimental::Texture2D::Texture2D(int width, int height, nonstd::span<Rgba32 const> pixels) :
+    m_Impl{std::make_shared<Impl>(std::move(width), std::move(height), std::move(pixels))}
+{
+}
+
+osc::experimental::Texture2D::Texture2D(int width, int height, nonstd::span<std::uint8_t const> pixels) :
+    m_Impl{std::make_shared<Impl>(std::move(width), std::move(height), std::move(pixels))}
+{
+}
+
+osc::experimental::Texture2D::Texture2D(int width, int height, nonstd::span<std::uint8_t const> channels, int numChannels) :
+    m_Impl{std::make_shared<Impl>(std::move(width), std::move(height), std::move(channels), std::move(numChannels))}
 {
 }
 
@@ -561,11 +599,11 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, Texture2D const&)
     return o << "Texture2D()";
 }
 
-osc::experimental::Texture2D osc::experimental::LoadTexture2DFromImageResource(std::string_view resource)
+osc::experimental::Texture2D osc::experimental::LoadTexture2DFromImageResource(std::string_view resource, ImageFlags flags)
 {
-    osc::Rgba32Image img = osc::LoadImageRgba32(osc::App::get().resource(resource), osc::TexFlag_FlipPixelsVertically);
-    osc::experimental::Texture2D rv{img.Dimensions.x, img.Dimensions.y, img.Pixels};
-    return rv;
+    Image img = Image::Load(osc::App::get().resource(resource), flags);
+    auto dims = img.getDimensions();
+    return Texture2D{dims.x, dims.y, img.getPixelData(), img.getNumChannels()};
 }
 
 
@@ -1842,6 +1880,7 @@ osc::experimental::RenderTextureDescriptor::RenderTextureDescriptor(int width, i
     m_ColorFormat{RenderTextureFormat::ARGB32},
     m_DepthStencilFormat{DepthStencilFormat::D24_UNorm_S8_UInt}
 {
+    OSC_ASSERT_ALWAYS(m_Width >= 0 && m_Height >= 0);
 }
 
 osc::experimental::RenderTextureDescriptor::RenderTextureDescriptor(RenderTextureDescriptor const&) = default;
@@ -1857,6 +1896,7 @@ int osc::experimental::RenderTextureDescriptor::getWidth() const
 
 void osc::experimental::RenderTextureDescriptor::setWidth(int width)
 {
+    OSC_ASSERT_ALWAYS(width >= 0);
     m_Width = width;
 }
 
@@ -1867,6 +1907,7 @@ int osc::experimental::RenderTextureDescriptor::getHeight() const
 
 void osc::experimental::RenderTextureDescriptor::setHeight(int height)
 {
+    OSC_ASSERT_ALWAYS(height >= 0);
     m_Height = height;
 }
 
@@ -1877,6 +1918,7 @@ int osc::experimental::RenderTextureDescriptor::getAntialiasingLevel() const
 
 void osc::experimental::RenderTextureDescriptor::setAntialiasingLevel(int level)
 {
+    OSC_ASSERT_ALWAYS(level <= 64 && osc::NumBitsSetIn(level) == 1);
     m_AnialiasingLevel = level;
 }
 
@@ -2368,14 +2410,14 @@ private:
     std::optional<RenderTexture> m_MaybeTexture = std::nullopt;
     glm::vec4 m_BackgroundColor = {0.0f, 0.0f, 0.0f, 0.0f};
     CameraProjection m_CameraProjection = CameraProjection::Perspective;
-    float m_OrthographicSize = 10.0f;
+    float m_OrthographicSize = 2.0f;
     float m_PerspectiveFov = fpi2;
-    float m_NearClippingPlane = 0.01f;
-    float m_FarClippingPlane = 10.0f;
+    float m_NearClippingPlane = 1.0f;
+    float m_FarClippingPlane = -1.0f;
     std::optional<Rect> m_MaybeScreenPixelRect = std::nullopt;
     std::optional<Rect> m_MaybeScissorRect = std::nullopt;
     glm::vec3 m_Position = {};
-    glm::quat m_Rotation = {};
+    glm::quat m_Rotation = {1.0f, 0.0f, 0.0f, 0.0f};
     std::optional<glm::mat4> m_MaybeViewMatrixOverride;
     std::optional<glm::mat4> m_MaybeProjectionMatrixOverride;
     std::vector<RenderObject> m_RenderQueue;

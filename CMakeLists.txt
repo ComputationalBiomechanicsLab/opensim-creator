@@ -308,6 +308,7 @@ add_library(osccore STATIC
     src/Graphics/GraphicsHelpers.hpp
     src/Graphics/Image.cpp
     src/Graphics/Image.hpp
+    src/Graphics/ImageFlags.hpp
     src/Graphics/InstancedRenderer.cpp
     src/Graphics/InstancedRenderer.hpp
     src/Graphics/Mesh.cpp

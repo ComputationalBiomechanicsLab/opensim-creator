@@ -2,6 +2,7 @@
 
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
+#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 #include <cstdint>
@@ -12,14 +13,26 @@
 #include <stdexcept>
 #include <utility>
 
-osc::Image osc::Image::Load(std::filesystem::path const& p)
+
+osc::Image osc::Image::Load(std::filesystem::path const& p, ImageFlags flags)
 {
-    return Image{p};
+    return Image{p, std::move(flags)};
 }
 
-osc::Image::Image(std::filesystem::path const& path)
+osc::Image::Image(std::filesystem::path const& path, ImageFlags flags)
 {
+    if (flags & ImageFlags_FlipVertically)
+    {
+        stbi_set_flip_vertically_on_load(true);
+    }
+
     m_Pixels = stbi_load(path.string().c_str(), &m_Dimensions.x, &m_Dimensions.y, &m_NumChannels, 0);
+
+    if (flags & ImageFlags_FlipVertically)
+    {
+        stbi_set_flip_vertically_on_load(false);
+    }
+
     if (!m_Pixels)
     {
         std::stringstream ss;

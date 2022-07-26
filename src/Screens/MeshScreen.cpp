@@ -115,7 +115,7 @@ private:
     bool m_CheckboxState = false;
     GouraudShader m_Shader;
     Mesh m_Mesh{GenTexturedQuad()};
-    gl::Texture2D m_Chequer = genChequeredFloorTexture();
+    gl::Texture2D m_Chequer = GenChequeredFloorTexture();
     PolarPerspectiveCamera m_Camera;
 };
 

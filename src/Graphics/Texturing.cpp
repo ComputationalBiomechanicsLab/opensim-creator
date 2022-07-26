@@ -1,146 +1,55 @@
 #include "Texturing.hpp"
 
 #include "src/Graphics/Gl.hpp"
+#include "src/Graphics/Image.hpp"
+#include "src/Graphics/ImageFlags.hpp"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include <glm/vec2.hpp>
+#include <nonstd/span.hpp>
 
 #include <array>
 #include <cstddef>
 #include <cstdint>
-#include <stdexcept>
-#include <optional>
+#include <filesystem>
 #include <sstream>
-#include <type_traits>
-#include <utility>
+#include <stdexcept>
+#include <string>
 
-namespace stbi
-{
-    // an image loaded via STBI
-    struct Image final {
-        int width;
-        int height;
-
-        // number of color channels in the image
-        //
-        // assume one byte per channel
-        int channels;
-
-        // raw data, containing intercalated color channels, e.g.:
-        //
-        // [c0, c1, c2, c3, c0, c1, c2, c3]
-        //
-        // or, more directly:
-        //
-        // [R, G, B, A, R, G, B, A]
-        //
-        // although it's more "correct" better to think of it in terms of
-        // channels, because some images aren't color (e.g. greyscale,
-        // heightmaps, normal maps)
-        unsigned char* data;
-
-        // if empty, use `failure_reason` to retrieve the reason why
-        static std::optional<Image> load(char const* path)
-        {
-            int width;
-            int height;
-            int channels;
-            unsigned char* data = stbi_load(path, &width, &height, &channels, 0);
-
-            if (data)
-            {
-                return Image{width, height, channels, data};
-            }
-            else
-            {
-                return std::nullopt;
-            }
-        }
-
-    private:
-        // used internally by load(path)
-        Image(int w, int h, int c, unsigned char* ptr) :
-            width{w}, height{h}, channels{c}, data{ptr}
-        {
-        }
-
-    public:
-        Image(Image const&) = delete;
-
-        constexpr Image(Image&& tmp) noexcept :
-            width{tmp.width},
-            height{tmp.height},
-            channels{tmp.channels},
-            data{tmp.data}
-        {
-            tmp.data = nullptr;
-        }
-
-        ~Image() noexcept
-        {
-            if (data)
-            {
-                stbi_image_free(data);
-            }
-        }
-
-        Image& operator=(Image const&) = delete;
-
-        constexpr Image& operator=(Image&& tmp) noexcept
-        {
-            width = tmp.width;
-            height = tmp.height;
-            channels = tmp.channels;
-
-            unsigned char* ptr = data;
-            data = tmp.data;
-            tmp.data = ptr;
-
-            return *this;
-        }
-    };
-}
 
 // helper method: load a file into an image and send it to OpenGL
-static void load_cubemap_surface(char const* path, GLenum target)
+static void LoadCubemapSurface(std::filesystem::path const& path, GLenum target, osc::ImageFlags flags)
 {
-    auto img = stbi::Image::load(path);
-
-    if (!img)
-    {
-        std::stringstream ss;
-        ss << path << ": error loading cubemap surface: " << stbi_failure_reason();
-        throw std::runtime_error{std::move(ss).str()};
-    }
+    auto img = osc::Image::Load(path, flags);
 
     GLenum format;
-    if (img->channels == 1)
+    switch (img.getNumChannels())
     {
+    case 1:
         format = GL_RED;
-    }
-    else if (img->channels == 3)
-    {
+        break;
+    case 3:
         format = GL_RGB;
-    }
-    else if (img->channels == 4)
-    {
+        break;
+    case 4:
         format = GL_RGBA;
-    }
-    else
+        break;
+    default:
     {
         std::stringstream msg;
-        msg << path << ": error: contains " << img->channels
+        msg << path << ": error: contains " << img.getNumChannels()
             << " color channels (the implementation doesn't know how to handle this)";
         throw std::runtime_error{std::move(msg).str()};
     }
+    }
 
-    glTexImage2D(target, 0, format, img->width, img->height, 0, format, GL_UNSIGNED_BYTE, img->data);
+    glm::ivec2 dims = img.getDimensions();
+    glTexImage2D(target, 0, format, dims.x, dims.y, 0, format, GL_UNSIGNED_BYTE, img.getPixelData().data());
 }
 
 
 // public API
 
-gl::Texture2D osc::genChequeredFloorTexture()
+gl::Texture2D osc::GenChequeredFloorTexture()
 {
     constexpr size_t chequer_width = 32;
     constexpr size_t chequer_height = 32;
@@ -176,152 +85,65 @@ gl::Texture2D osc::genChequeredFloorTexture()
     return rv;
 }
 
-osc::ImageTexture osc::loadImageAsTexture(char const* path, TexFlag flags)
+osc::ImageTexture osc::LoadImageAsTexture(std::filesystem::path const& path, ImageFlags flags)
 {
-    gl::Texture2D t;
-
-    if (flags & TexFlag_FlipPixelsVertically)
-    {
-        stbi_set_flip_vertically_on_load(true);
-    }
-
-    auto img = stbi::Image::load(path);
-
-    if (!img)
-    {
-        std::stringstream ss;
-        ss << path << ": error loading image: " << stbi_failure_reason();
-        throw std::runtime_error{std::move(ss).str()};
-    }
-
-    if (flags & TexFlag_FlipPixelsVertically)
-    {
-        stbi_set_flip_vertically_on_load(false);
-    }
+    Image img = Image::Load(path, flags);
+    int numChannels = img.getNumChannels();
 
     GLenum internalFormat;
     GLenum format;
-    if (img->channels == 1)
+    switch (numChannels)
     {
+    case 1:
         internalFormat = GL_RED;
         format = GL_RED;
-    }
-    else if (img->channels == 3)
-    {
-        internalFormat = flags & TexFlag_SRGB ? GL_SRGB : GL_RGB;
-        format = GL_RGB;
-    }
-    else if (img->channels == 4)
-    {
-        internalFormat = flags & TexFlag_SRGB ? GL_SRGB_ALPHA : GL_RGBA;
-        format = GL_RGBA;
-    }
-    else
-    {
-        std::stringstream msg;
-        msg << path << ": error: contains " << img->channels
-            << " color channels (the implementation doesn't know how to handle this)";
-        throw std::runtime_error{std::move(msg).str()};
-    }
-
-    gl::BindTexture(t.type, t.handle());
-    gl::TexImage2D(t.type, 0, internalFormat, img->width, img->height, 0, format, GL_UNSIGNED_BYTE, img->data);
-    glGenerateMipmap(t.type);
-
-    return ImageTexture{std::move(t), img->width, img->height, img->channels};
-}
-
-osc::Rgba32Image osc::LoadImageRgba32(std::filesystem::path const& path, TexFlag flags)
-{
-    if (flags & TexFlag_FlipPixelsVertically)
-    {
-        stbi_set_flip_vertically_on_load(true);
-    }
-
-    auto img = stbi::Image::load(path.string().c_str());
-
-    if (!img)
-    {
-        std::stringstream ss;
-        ss << path << ": error loading image: " << stbi_failure_reason();
-        throw std::runtime_error{ std::move(ss).str() };
-    }
-
-    if (flags & TexFlag_FlipPixelsVertically)
-    {
-        stbi_set_flip_vertically_on_load(false);
-    }
-
-    osc::Rgba32Image rv;
-    rv.Dimensions = glm::ivec2{img->width, img->height};
-
-    // copy (+ potentially re-pack) the pixel data
-    std::size_t numPixels = static_cast<std::size_t>(rv.Dimensions.x) * static_cast<std::size_t>(rv.Dimensions.y);
-    rv.Pixels.resize(numPixels, osc::Rgba32{0x00, 0x00, 0x00, 0xff});
-    switch (img->channels) {
-    case 1:
-    {
-        for (std::size_t i = 0; i < numPixels; ++i)
-        {
-            rv.Pixels[i].r = img->data[i];
-        }
         break;
-    }
-    case 2:
-    {
-        for (std::size_t i = 0; i < numPixels; ++i)
-        {
-            rv.Pixels[i].r = img->data[2*i];
-            rv.Pixels[i].g = img->data[2*i + 1];
-        }
-        break;
-    }
     case 3:
-    {
-        for (std::size_t i = 0; i < numPixels; ++i)
-        {
-            rv.Pixels[i].r = img->data[3*i];
-            rv.Pixels[i].g = img->data[3*i + 1];
-            rv.Pixels[i].b = img->data[3*i + 2];
-        }
+        internalFormat = GL_RGB;
+        format = GL_RGB;
         break;
-    }
     case 4:
-    {
-        std::copy(img->data, img->data + (4 * numPixels), &rv.Pixels[0].r);
+        internalFormat = GL_RGBA;
+        format = GL_RGBA;
         break;
-    }
     default:
     {
         std::stringstream msg;
-        msg << path << ": error: contains " << img->channels
+        msg << path << ": error: contains " << numChannels
             << " color channels (the implementation doesn't know how to handle this)";
         throw std::runtime_error{std::move(msg).str()};
     }
     }
 
-    return rv;
+    glm::ivec2 dims = img.getDimensions();
+
+    gl::Texture2D t;
+    gl::BindTexture(t.type, t.handle());
+    gl::TexImage2D(t.type, 0, internalFormat, dims.x, dims.y, 0, format, GL_UNSIGNED_BYTE, img.getPixelData().data());
+    glGenerateMipmap(t.type);
+
+    return ImageTexture{std::move(t), dims, numChannels};
 }
 
-gl::TextureCubemap osc::loadCubemapAsCubemapTexture(
-    char const* path_pos_x,
-    char const* path_neg_x,
-    char const* path_pos_y,
-    char const* path_neg_y,
-    char const* path_pos_z,
-    char const* path_neg_z)
+gl::TextureCubemap osc::LoadCubemapAsCubemapTexture(
+    std::filesystem::path const& posX,
+    std::filesystem::path const& negX,
+    std::filesystem::path const& posY,
+    std::filesystem::path const& negY,
+    std::filesystem::path const& posZ,
+    std::filesystem::path const& negZ,
+    ImageFlags flags)
 {
-    stbi_set_flip_vertically_on_load(false);
 
     gl::TextureCubemap rv;
     gl::BindTexture(rv);
 
-    load_cubemap_surface(path_pos_x, GL_TEXTURE_CUBE_MAP_POSITIVE_X);
-    load_cubemap_surface(path_neg_x, GL_TEXTURE_CUBE_MAP_NEGATIVE_X);
-    load_cubemap_surface(path_pos_y, GL_TEXTURE_CUBE_MAP_POSITIVE_Y);
-    load_cubemap_surface(path_neg_y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y);
-    load_cubemap_surface(path_pos_z, GL_TEXTURE_CUBE_MAP_POSITIVE_Z);
-    load_cubemap_surface(path_neg_z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z);
+    LoadCubemapSurface(posX, GL_TEXTURE_CUBE_MAP_POSITIVE_X, flags);
+    LoadCubemapSurface(negX, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, flags);
+    LoadCubemapSurface(posY, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, flags);
+    LoadCubemapSurface(negY, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, flags);
+    LoadCubemapSurface(posZ, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, flags);
+    LoadCubemapSurface(negZ, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, flags);
 
     /**
      * From: https://learnopengl.com/Advanced-OpenGL/Cubemaps

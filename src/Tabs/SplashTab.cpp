@@ -48,7 +48,7 @@
 
 static gl::Texture2D LoadImageResourceIntoTexture(char const* res_pth)
 {
-	return osc::loadImageAsTexture(osc::App::resource(res_pth).string().c_str(), osc::TexFlag_FlipPixelsVertically).texture;
+    return osc::LoadImageAsTexture(osc::App::resource(res_pth).string().c_str(), osc::ImageFlags_FlipVertically).Texture;
 }
 
 static glm::mat4x3 GenerateFloorModelMatrix()
@@ -91,7 +91,7 @@ static std::unique_ptr<SizedTexture> GenerateBackgroundImage(glm::vec2 dimension
     camera.theta = osc::fpi4;
     glm::mat4 floorMat = GenerateFloorModelMatrix();
     glm::mat4 floorNormalMat = osc::ToNormalMatrix(floorMat);
-    gl::Texture2D chequer = osc::genChequeredFloorTexture();
+    gl::Texture2D chequer = osc::GenChequeredFloorTexture();
     std::shared_ptr<osc::Mesh> floorMesh = osc::App::meshes().getFloorMesh();
 
     // create render buffers

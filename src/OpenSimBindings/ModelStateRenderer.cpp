@@ -520,7 +520,7 @@ public:
 
 private:
     std::vector<SceneGPUInstanceData> m_GPUDrawlist;
-    gl::Texture2D m_ChequerTexture = osc::genChequeredFloorTexture();
+    gl::Texture2D m_ChequerTexture = GenChequeredFloorTexture();
     RenderBuffers m_RenderTarget{{1, 1}, 1};
 };
 

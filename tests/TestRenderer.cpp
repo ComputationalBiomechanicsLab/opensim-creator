@@ -960,16 +960,80 @@ TEST_F(Renderer, MaterialPropertyBlockPrintingToOutputStreamMentionsMaterialProp
     ASSERT_TRUE(osc::ContainsSubstring(ss.str(), "MaterialPropertyBlock"));
 }
 
-TEST_F(Renderer, TextureCanConstructFromPixels)
+TEST_F(Renderer, TextureCanConstructFromRGBAPixels)
 {
     std::vector<osc::Rgba32> pixels(4);
     osc::experimental::Texture2D t{2, 2, pixels};
 }
 
-TEST_F(Renderer, TextureThrowsIfDimensionsDontMatchNumberOfPixels)
+TEST_F(Renderer, TextureRGBAThrowsIfDimensionsDontMatchNumberOfPixels)
 {
     std::vector<osc::Rgba32> pixels(4);
     ASSERT_ANY_THROW({ osc::experimental::Texture2D t(1, 2, pixels); });
+}
+
+TEST_F(Renderer, TextureCanConstructFromSingleChannelPixels)
+{
+    std::vector<std::uint8_t> pixels(4);
+    osc::experimental::Texture2D t{2, 2, pixels};
+}
+
+TEST_F(Renderer, TextureSingleChannelConstructorThrowsIfDimensionsDoesNotMatchNumberOfPixels)
+{
+    std::vector<std::uint8_t> pixels(4);
+    ASSERT_ANY_THROW({ osc::experimental::Texture2D t(2, 1, pixels); });
+}
+
+TEST_F(Renderer, TextureSingleChannelConstructedReturnsCorrectValuesOnGetters)
+{
+    std::vector<std::uint8_t> pixels(4);
+    osc::experimental::Texture2D t{2, 2, pixels};
+
+    ASSERT_EQ(t.getWidth(), 2);
+    ASSERT_EQ(t.getHeight(), 2);
+    ASSERT_EQ(t.getAspectRatio(), 1.0f);
+}
+
+TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForSingleChannelData)
+{
+    std::vector<std::uint8_t> singleChannelPixels(16);
+    osc::experimental::Texture2D t{4, 4, singleChannelPixels, 1};
+
+    ASSERT_EQ(t.getWidth(), 4);
+    ASSERT_EQ(t.getHeight(), 4);
+    ASSERT_EQ(t.getAspectRatio(), 1.0f);
+}
+
+TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForRGBData)
+{
+    std::vector<std::uint8_t> rgbPixels(12);
+    osc::experimental::Texture2D t{2, 2, rgbPixels, 3};
+
+    ASSERT_EQ(t.getWidth(), 2);
+    ASSERT_EQ(t.getHeight(), 2);
+    ASSERT_EQ(t.getAspectRatio(), 1.0f);
+}
+
+TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForRGBAData)
+{
+    std::vector<std::uint8_t> rgbaPixels(16);
+    osc::experimental::Texture2D t{2, 2, rgbaPixels, 4};
+
+    ASSERT_EQ(t.getWidth(), 2);
+    ASSERT_EQ(t.getHeight(), 2);
+    ASSERT_EQ(t.getAspectRatio(), 1.0f);
+}
+
+TEST_F(Renderer, TextureWith2NumberOfChannelsThrowsException)
+{
+    std::vector<std::uint8_t> weirdPixels(8);
+    ASSERT_ANY_THROW({ osc::experimental::Texture2D t(2, 2, weirdPixels, 2); });
+}
+
+TEST_F(Renderer, TextureWith5ChannelsThrowsException)
+{
+    std::vector<std::uint8_t> weirdPixels(20);
+    ASSERT_ANY_THROW({ osc::experimental::Texture2D t(2, 2, weirdPixels, 5); });
 }
 
 TEST_F(Renderer, TextureCanCopyConstruct)
@@ -1942,10 +2006,14 @@ TEST_F(Renderer, CameraGetProjectionMatrixReturnsProjectionMatrixBasedOnPositonD
     camera.setCameraProjection(osc::experimental::CameraProjection::Orthographic);
     camera.setPosition({0.0f, 0.0f, 0.0f});
 
-    glm::mat4 ProjectionMatrix = camera.getProjectionMatrix();
-    glm::mat4 expectedMatrix{1.0f};
+    glm::mat4 mtx = camera.getProjectionMatrix();
+    glm::mat4 expected{1.0f};
 
-    ASSERT_EQ(ProjectionMatrix, expectedMatrix);
+    // only compare the Y, Z, and W columns: the X column depends on the aspect ratio of the output
+    // target
+    ASSERT_EQ(mtx[1], expected[1]);
+    ASSERT_EQ(mtx[2], expected[2]);
+    ASSERT_EQ(mtx[3], expected[3]);
 }
 
 TEST_F(Renderer, CameraSetProjectionMatrixSetsANewProjectionMatrixThatCanBeRetrievedWithGetProjectionMatrix)

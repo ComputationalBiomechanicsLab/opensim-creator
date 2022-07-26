@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/Graphics/Image.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Utils/CStringView.hpp"
 
@@ -52,7 +53,9 @@ namespace osc::experimental
     // a handle to a 2D texture that can be rendered by the graphics backend
     class Texture2D final {
     public:
-        Texture2D(int width, int height, nonstd::span<Rgba32 const> pixelsRowByRow);
+        Texture2D(int width, int height, nonstd::span<Rgba32 const> rgbaPixelsRowByRow);
+        Texture2D(int width, int height, nonstd::span<uint8_t const> singleChannelPixelsRowByRow);
+        Texture2D(int width, int height, nonstd::span<uint8_t const> channelsRowByRow, int numChannels);
         Texture2D(Texture2D const&);
         Texture2D(Texture2D&&) noexcept;
         Texture2D& operator=(Texture2D const&);
@@ -91,7 +94,7 @@ namespace osc::experimental
     bool operator<(Texture2D const&, Texture2D const&);
     std::ostream& operator<<(std::ostream&, Texture2D const&);
 
-    Texture2D LoadTexture2DFromImageResource(std::string_view);
+    Texture2D LoadTexture2DFromImageResource(std::string_view, ImageFlags = ImageFlags_None);
 }
 
 
