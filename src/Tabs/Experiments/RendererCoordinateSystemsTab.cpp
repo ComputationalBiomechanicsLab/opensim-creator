@@ -58,8 +58,8 @@ public:
         m_Camera.setCameraFOV(glm::radians(45.0f));
         m_Camera.setNearClippingPlane(0.1f);
         m_Camera.setFarClippingPlane(100.0f);
-        m_Material.setTexture("uTexture1", osc::experimental::LoadTexture2DFromImageResource("container.jpg"));
-        m_Material.setTexture("uTexture2", osc::experimental::LoadTexture2DFromImageResource("awesomeface.png"));
+        m_Material.setTexture("uTexture1", osc::experimental::LoadTexture2DFromImageResource("container.jpg", ImageFlags_FlipVertically));
+        m_Material.setTexture("uTexture2", osc::experimental::LoadTexture2DFromImageResource("awesomeface.png", ImageFlags_FlipVertically));
     }
 
     UID getID() const

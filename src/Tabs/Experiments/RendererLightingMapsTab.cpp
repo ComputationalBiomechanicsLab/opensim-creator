@@ -57,8 +57,8 @@ public:
 private:
     UID m_ID;
     TabHost* m_Parent;
-    experimental::Texture2D m_ContainerColor = experimental::LoadTexture2DFromImageResource("textures/container2.png");
-    experimental::Texture2D m_ContainerSpecular = experimental::LoadTexture2DFromImageResource("textures/container2_specular.png");
+    experimental::Texture2D m_ContainerColor = experimental::LoadTexture2DFromImageResource("textures/container2.png", ImageFlags_FlipVertically);
+    experimental::Texture2D m_ContainerSpecular = experimental::LoadTexture2DFromImageResource("textures/container2_specular.png", ImageFlags_FlipVertically);
 };
 
 
