@@ -5,8 +5,11 @@
 #include "src/Graphics/Renderer.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Platform/Log.hpp"
+#include "src/Utils/Algorithms.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
+#include "src/Widgets/LogViewer.hpp"
 
 #include <glm/vec3.hpp>
 #include <SDL_events.h>
@@ -37,6 +40,37 @@ static glm::vec3 const g_PointLightPositions[] =
     {-4.0f,  2.0f, -12.0f},
     { 0.0f,  0.0f, -3.0f },
 };
+
+// ambient color of the point lights
+static glm::vec3 const g_PointLightAmbients[] =
+{
+    {0.05f, 0.05f, 0.05f},
+    {0.05f, 0.05f, 0.05f},
+    {0.05f, 0.05f, 0.05f},
+    {0.05f, 0.05f, 0.05f},
+};
+
+// diffuse color of the point lights
+static glm::vec3 const g_PointLightDiffuses[] =
+{
+    {0.8f, 0.8f, 0.8f},
+    {0.8f, 0.8f, 0.8f},
+    {0.8f, 0.8f, 0.8f},
+    {0.8f, 0.8f, 0.8f},
+};
+
+// specular color of the point lights
+static glm::vec3 const g_PointLightSpeculars[] =
+{
+    {1.0f, 1.0f, 1.0f},
+    {1.0f, 1.0f, 1.0f},
+    {1.0f, 1.0f, 1.0f},
+    {1.0f, 1.0f, 1.0f},
+};
+
+static float const g_PointLightConstants[] = {1.0f, 1.0f, 1.0f, 1.0f};
+static float const g_PointLightLinears[] = {0.09f, 0.09f, 0.09f, 0.09f};
+static float const g_PointLightQuadratics[] = {0.032f, 0.032f, 0.032f, 0.032f};
 
 // generate a texture-mapped cube
 static osc::experimental::Mesh GenerateMesh()
@@ -71,7 +105,13 @@ public:
         m_MultipleLightsMaterial.setFloat("uSpotLightCutoff", glm::cos(glm::radians(12.5f)));
         m_MultipleLightsMaterial.setFloat("uSpotLightOuterCutoff", glm::cos(glm::radians(15.0f)));
 
-        // TODO: point lights
+        m_MultipleLightsMaterial.setVec3Array("uPointLightPos", g_PointLightPositions);
+        m_MultipleLightsMaterial.setFloatArray("uPointLightConstant", g_PointLightConstants);
+        m_MultipleLightsMaterial.setFloatArray("uPointLightLinear", g_PointLightLinears);
+        m_MultipleLightsMaterial.setFloatArray("uPointLightQuadratic", g_PointLightQuadratics);
+        m_MultipleLightsMaterial.setVec3Array("uPointLightAmbient", g_PointLightAmbients);
+        m_MultipleLightsMaterial.setVec3Array("uPointLightDiffuse", g_PointLightDiffuses);
+        m_MultipleLightsMaterial.setVec3Array("uPointLightSpecular", g_PointLightSpeculars);
 
         m_LightCubeMaterial.setVec3("uLightColor", {1.0f, 1.0f, 1.0f});
 
@@ -187,6 +227,10 @@ public:
         ImGui::Begin("controls");
         ImGui::InputFloat("uMaterialShininess", &m_MaterialShininess);
         ImGui::End();
+
+        ImGui::Begin("log");
+        m_LogViewer.draw();
+        ImGui::End();
     }
 
 private:
@@ -218,6 +262,8 @@ private:
     bool m_IsMouseCaptured = false;
 
     float m_MaterialShininess = 16.0f;
+
+    LogViewer m_LogViewer;
 };
 
 

@@ -177,7 +177,7 @@ void main()
             FragPos,
             viewDir
         );
-        //result += pointLightContribution; TODO
+        result += pointLightContribution;
     }
 
     result += CalcSpotLight(
