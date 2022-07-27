@@ -171,6 +171,9 @@ namespace osc::experimental
         std::optional<float> getFloat(std::string_view propertyName) const;
         void setFloat(std::string_view propertyName, float);
 
+        std::optional<nonstd::span<float const>> getFloatArray(std::string_view propertyName) const;
+        void setFloatArray(std::string_view propertyName, nonstd::span<float const>);
+
         std::optional<glm::vec3> getVec3(std::string_view propertyName) const;
         void setVec3(std::string_view propertyName, glm::vec3);
 

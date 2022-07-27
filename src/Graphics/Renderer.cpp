@@ -86,37 +86,56 @@ namespace
         out.push_back(static_cast<std::byte>(c.a));
     }
 
-    using MaterialValue = std::variant<float, glm::vec3, glm::vec4, glm::mat3, glm::mat4, int, bool, osc::experimental::Texture2D>;
+    template<typename Variant, typename T, std::size_t I = 0>
+    constexpr std::size_t VariantIndex()
+    {
+        if constexpr (I >= std::variant_size_v<Variant>)
+        {
+            return std::variant_size_v<Variant>;
+        }
+        else if constexpr (std::is_same_v<std::variant_alternative_t<I, Variant>, T>)
+        {
+            return I;
+        }
+        else
+        {
+            return VariantIndex<Variant, T, I + 1>();
+        }
+    }
+
+    using MaterialValue = std::variant<
+        float,
+        std::vector<float>,
+        glm::vec3,
+        glm::vec4,
+        glm::mat3,
+        glm::mat4,
+        int,
+        bool,
+        osc::experimental::Texture2D
+    >;
 
     osc::experimental::ShaderType GetShaderType(MaterialValue const& v)
     {
         switch (v.index()) {
-        case 0:
-            static_assert(std::is_same_v<std::variant_alternative_t<0, MaterialValue>, float>);
+        case VariantIndex<MaterialValue, float>():
+        case VariantIndex<MaterialValue, std::vector<float>>():
             return osc::experimental::ShaderType::Float;
-        case 1:
-            static_assert(std::is_same_v<std::variant_alternative_t<1, MaterialValue>, glm::vec3>);
+        case VariantIndex<MaterialValue, glm::vec3>():
             return osc::experimental::ShaderType::Vec3;
-        case 2:
-            static_assert(std::is_same_v<std::variant_alternative_t<2, MaterialValue>, glm::vec4>);
+        case VariantIndex<MaterialValue, glm::vec4>():
             return osc::experimental::ShaderType::Vec4;
-        case 3:
-            static_assert(std::is_same_v<std::variant_alternative_t<3, MaterialValue>, glm::mat3>);
+        case VariantIndex<MaterialValue, glm::mat3>():
             return osc::experimental::ShaderType::Mat3;
-        case 4:
-            static_assert(std::is_same_v<std::variant_alternative_t<4, MaterialValue>, glm::mat4>);
+        case VariantIndex<MaterialValue, glm::mat4>():
             return osc::experimental::ShaderType::Mat4;
-        case 5:
-            static_assert(std::is_same_v<std::variant_alternative_t<5, MaterialValue>, int>);
+        case VariantIndex<MaterialValue, int>():
             return osc::experimental::ShaderType::Int;
-        case 6:
-            static_assert(std::is_same_v<std::variant_alternative_t<6, MaterialValue>, bool>);
+        case VariantIndex<MaterialValue, bool>():
             return osc::experimental::ShaderType::Bool;
-        case 7:
-            static_assert(std::is_same_v<std::variant_alternative_t<7, MaterialValue>, osc::experimental::Texture2D>);
+        case VariantIndex<MaterialValue, osc::experimental::Texture2D>():
             return osc::experimental::ShaderType::Sampler2D;
         default:
-            static_assert(std::variant_size_v<MaterialValue> == 8);
             return osc::experimental::ShaderType::Unknown;
         }
     }
@@ -831,6 +850,16 @@ public:
         setValue(std::move(propertyName), value);
     }
 
+    std::optional<nonstd::span<float const>> getFloatArray(std::string_view propertyName) const
+    {
+        return getValue<std::vector<float>>(std::move(propertyName));
+    }
+
+    void setFloatArray(std::string_view propertyName, nonstd::span<float const> v)
+    {
+        setValue(std::move(propertyName), std::vector<float>(v.begin(), v.end()));
+    }
+
     std::optional<glm::vec3> getVec3(std::string_view propertyName) const
     {
         return getValue<glm::vec3>(std::move(propertyName));
@@ -921,9 +950,9 @@ private:
     }
 
     template<typename T>
-    void setValue(std::string_view propertyName, T const& v)
+    void setValue(std::string_view propertyName, T&& v)
     {
-        m_Values[std::string{propertyName}] = v;
+        m_Values[std::string{propertyName}] = std::forward<T&&>(v);
     }
 
     friend class GraphicsBackend;
@@ -959,6 +988,18 @@ void osc::experimental::Material::setFloat(std::string_view propertyName, float 
     DoCopyOnWrite(m_Impl);
     m_Impl->setFloat(std::move(propertyName), std::move(value));
 }
+
+std::optional<nonstd::span<float const>> osc::experimental::Material::getFloatArray(std::string_view propertyName) const
+{
+    return m_Impl->getFloatArray(std::move(propertyName));
+}
+
+void osc::experimental::Material::setFloatArray(std::string_view propertyName, nonstd::span<float const> v)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setFloatArray(std::move(propertyName), std::move(v));
+}
+
 
 std::optional<glm::vec3> osc::experimental::Material::getVec3(std::string_view propertyName) const
 {
@@ -2701,50 +2742,61 @@ void osc::experimental::GraphicsBackend::TryBindMaterialValueToShaderElement(Sha
         return;  // mismatched types
     }
 
-    switch (t) {
-    case osc::experimental::ShaderType::Float:
+    switch (v.index()) {
+    case VariantIndex<MaterialValue, float>():
     {
         gl::UniformFloat u{se.Location};
         gl::Uniform(u, std::get<float>(v));
         break;
     }
-    case osc::experimental::ShaderType::Vec3:
+    case VariantIndex<MaterialValue, std::vector<float>>():
+    {
+        std::vector<float> const& vals = std::get<std::vector<float>>(v);
+        int numToAssign = std::min(se.Size, static_cast<int>(vals.size()));
+        for (int i = 0; i < numToAssign; ++i)
+        {
+            gl::UniformFloat u{se.Location + i};
+            gl::Uniform(u, vals[i]);
+        }
+        break;
+    }
+    case VariantIndex<MaterialValue, glm::vec3>():
     {
         gl::UniformVec3 u{se.Location};
         gl::Uniform(u, std::get<glm::vec3>(v));
         break;
     }
-    case osc::experimental::ShaderType::Vec4:
+    case VariantIndex<MaterialValue, glm::vec4>():
     {
         gl::UniformVec4 u{se.Location};
         gl::Uniform(u, std::get<glm::vec4>(v));
         break;
     }
-    case osc::experimental::ShaderType::Mat3:
+    case VariantIndex<MaterialValue, glm::mat3>():
     {
         gl::UniformMat3 u{se.Location};
         gl::Uniform(u, std::get<glm::mat3>(v));
         break;
     }
-    case osc::experimental::ShaderType::Mat4:
+    case VariantIndex<MaterialValue, glm::mat4>():
     {
         gl::UniformMat4 u{se.Location};
         gl::Uniform(u, std::get<glm::mat4>(v));
         break;
     }
-    case osc::experimental::ShaderType::Int:
+    case VariantIndex<MaterialValue, int>():
     {
         gl::UniformInt u{se.Location};
         gl::Uniform(u, std::get<int>(v));
         break;
     }
-    case osc::experimental::ShaderType::Bool:
+    case VariantIndex<MaterialValue, bool>():
     {
         gl::UniformBool u{se.Location};
         gl::Uniform(u, std::get<bool>(v));
         break;
     }
-    case osc::experimental::ShaderType::Sampler2D:
+    case VariantIndex<MaterialValue, osc::experimental::Texture2D>():
     {
         osc::experimental::Texture2D::Impl& impl = *std::get<osc::experimental::Texture2D>(v).m_Impl;
         gl::Texture2D& texture = impl.updTexture();
@@ -2758,7 +2810,9 @@ void osc::experimental::GraphicsBackend::TryBindMaterialValueToShaderElement(Sha
         break;
     }
     default:
+    {
         break;  // TODO: throw?
+    }
     }
 }
 
