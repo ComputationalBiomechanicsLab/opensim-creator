@@ -506,6 +506,12 @@ TEST_F(Renderer, MaterialGetFloatArrayOnNewMaterialReturnsEmptyOptional)
     ASSERT_FALSE(mat.getFloatArray("someKey"));
 }
 
+TEST_F(Renderer, MaterialGetVec3ArrayOnNewMaterialReturnsEmptyOptional)
+{
+    osc::experimental::Material mat = GenerateMaterial();
+    ASSERT_FALSE(mat.getVec3Array("someKey"));
+}
+
 TEST_F(Renderer, MaterialGetVec3OnNewMaterialReturnsEmptyOptional)
 {
     osc::experimental::Material mat = GenerateMaterial();
@@ -564,7 +570,8 @@ TEST_F(Renderer, MaterialSetFloatArrayOnMaterialCausesGetFloatArrayToReturnThePr
 
     mat.setFloatArray(key, values);
 
-    ASSERT_EQ(*mat.getFloatArray(key), nonstd::span<float const>{values});
+    nonstd::span<float const> rv = *mat.getFloatArray(key);
+    ASSERT_TRUE(std::equal(rv.begin(), rv.end(), values.begin(), values.end()));
 }
 
 TEST_F(Renderer, MaterialSetVec3OnMaterialCausesGetVec3ToReturnTheProvidedValue)
@@ -577,6 +584,20 @@ TEST_F(Renderer, MaterialSetVec3OnMaterialCausesGetVec3ToReturnTheProvidedValue)
     mat.setVec3(key, value);
 
     ASSERT_EQ(*mat.getVec3(key), value);
+}
+
+TEST_F(Renderer, MaterialSetVec3ArrayOnMaterialCausesGetVec3ArrayToReutrnTheProvidedValues)
+{
+    osc::experimental::Material mat = GenerateMaterial();
+    std::string key = "someKey";
+    std::array<glm::vec3, 4> values = {GenerateVec3(), GenerateVec3(), GenerateVec3(), GenerateVec3()};
+
+    ASSERT_FALSE(mat.getVec3Array(key));
+
+    mat.setVec3Array(key, values);
+
+    nonstd::span<glm::vec3 const> rv = *mat.getVec3Array(key);
+    ASSERT_TRUE(std::equal(rv.begin(), rv.end(), values.begin(), values.end()));
 }
 
 TEST_F(Renderer, MaterialSetVec4OnMaterialCausesGetVec4ToReturnTheProvidedValue)

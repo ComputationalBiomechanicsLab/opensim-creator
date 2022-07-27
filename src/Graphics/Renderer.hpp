@@ -177,6 +177,9 @@ namespace osc::experimental
         std::optional<glm::vec3> getVec3(std::string_view propertyName) const;
         void setVec3(std::string_view propertyName, glm::vec3);
 
+        std::optional<nonstd::span<glm::vec3 const>> getVec3Array(std::string_view propertyName) const;
+        void setVec3Array(std::string_view propertyName, nonstd::span<glm::vec3 const>);
+
         std::optional<glm::vec4> getVec4(std::string_view propertyName) const;
         void setVec4(std::string_view propertyName, glm::vec4);
 

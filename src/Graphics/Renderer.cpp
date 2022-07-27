@@ -107,6 +107,7 @@ namespace
         float,
         std::vector<float>,
         glm::vec3,
+        std::vector<glm::vec3>,
         glm::vec4,
         glm::mat3,
         glm::mat4,
@@ -122,6 +123,7 @@ namespace
         case VariantIndex<MaterialValue, std::vector<float>>():
             return osc::experimental::ShaderType::Float;
         case VariantIndex<MaterialValue, glm::vec3>():
+        case VariantIndex<MaterialValue, std::vector<glm::vec3>>():
             return osc::experimental::ShaderType::Vec3;
         case VariantIndex<MaterialValue, glm::vec4>():
             return osc::experimental::ShaderType::Vec4;
@@ -870,6 +872,16 @@ public:
         setValue(std::move(propertyName), value);
     }
 
+    std::optional<nonstd::span<glm::vec3 const>> getVec3Array(std::string_view propertyName) const
+    {
+        return getValue<std::vector<glm::vec3>>(std::move(propertyName));
+    }
+
+    void setVec3Array(std::string_view propertyName, nonstd::span<glm::vec3 const> value)
+    {
+        setValue(std::move(propertyName), std::vector<glm::vec3>(value.begin(), value.end()));
+    }
+
     std::optional<glm::vec4> getVec4(std::string_view propertyName) const
     {
         return getValue<glm::vec4>(std::move(propertyName));
@@ -994,12 +1006,22 @@ std::optional<nonstd::span<float const>> osc::experimental::Material::getFloatAr
     return m_Impl->getFloatArray(std::move(propertyName));
 }
 
-void osc::experimental::Material::setFloatArray(std::string_view propertyName, nonstd::span<float const> v)
+void osc::experimental::Material::setFloatArray(std::string_view propertyName, nonstd::span<float const> vs)
 {
     DoCopyOnWrite(m_Impl);
-    m_Impl->setFloatArray(std::move(propertyName), std::move(v));
+    m_Impl->setFloatArray(std::move(propertyName), std::move(vs));
 }
 
+std::optional<nonstd::span<glm::vec3 const>> osc::experimental::Material::getVec3Array(std::string_view propertyName) const
+{
+    return m_Impl->getVec3Array(std::move(propertyName));
+}
+
+void osc::experimental::Material::setVec3Array(std::string_view propertyName, nonstd::span<glm::vec3 const> vs)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setVec3Array(std::move(propertyName), std::move(vs));
+}
 
 std::optional<glm::vec3> osc::experimental::Material::getVec3(std::string_view propertyName) const
 {
@@ -2751,7 +2773,7 @@ void osc::experimental::GraphicsBackend::TryBindMaterialValueToShaderElement(Sha
     }
     case VariantIndex<MaterialValue, std::vector<float>>():
     {
-        std::vector<float> const& vals = std::get<std::vector<float>>(v);
+        auto const& vals = std::get<std::vector<float>>(v);
         int numToAssign = std::min(se.Size, static_cast<int>(vals.size()));
         for (int i = 0; i < numToAssign; ++i)
         {
@@ -2764,6 +2786,17 @@ void osc::experimental::GraphicsBackend::TryBindMaterialValueToShaderElement(Sha
     {
         gl::UniformVec3 u{se.Location};
         gl::Uniform(u, std::get<glm::vec3>(v));
+        break;
+    }
+    case VariantIndex<MaterialValue, std::vector<glm::vec3>>():
+    {
+        auto const& vals = std::get<std::vector<glm::vec3>>(v);
+        int numToAssign = std::min(se.Size, static_cast<int>(vals.size()));
+        for (int i = 0; i < numToAssign; ++i)
+        {
+            gl::UniformVec3 u{se.Location + i};
+            gl::Uniform(u, vals[i]);
+        }
         break;
     }
     case VariantIndex<MaterialValue, glm::vec4>():
