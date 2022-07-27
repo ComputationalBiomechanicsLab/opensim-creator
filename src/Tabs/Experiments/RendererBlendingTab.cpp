@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Color.hpp"
+#include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Renderer.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
@@ -13,10 +14,102 @@
 #include <cstdint>
 #include <utility>
 
+static glm::vec3 const g_PlaneVertices[] =
+{
+    { 5.0f, -0.5f,  5.0f},
+    {-5.0f, -0.5f,  5.0f},
+    {-5.0f, -0.5f, -5.0f},
+
+    { 5.0f, -0.5f,  5.0f},
+    {-5.0f, -0.5f, -5.0f},
+    { 5.0f, -0.5f, -5.0f},
+};
+
+static glm::vec2 const g_PlaneTexCoords[] =
+{
+    {2.0f, 0.0f},
+    {0.0f, 0.0f},
+    {0.0f, 2.0f},
+
+    {2.0f, 0.0f},
+    {0.0f, 2.0f},
+    {2.0f, 2.0f},
+};
+
+static std::uint16_t const g_PlaneIndices[] = {0, 2, 1, 3, 5, 4};
+
+static glm::vec3 const g_TransparentVerts[] =
+{
+    {0.0f,  0.5f, 0.0f},
+    {0.0f, -0.5f, 0.0f},
+    {1.0f, -0.5f, 0.0f},
+
+    {0.0f,  0.5f, 0.0f},
+    {1.0f, -0.5f, 0.0f},
+    {1.0f,  0.5f, 0.0f},
+};
+
+static glm::vec2 const g_TransparentTexCoords[] =
+{
+    {0.0f, 0.0f},
+    {0.0f, 1.0f},
+    {1.0f, 1.0f},
+
+    {0.0f, 0.0f},
+    {1.0f, 1.0f},
+    {1.0f, 0.0f},
+};
+
+static std::uint16_t const g_TransparentIndices[] = {0, 1, 2, 3, 4, 5};
+
+static glm::vec3 const g_WindowLocations[] =
+{
+    {-1.5f, 0.0f, -0.48f},
+    { 1.5f, 0.0f,  0.51f},
+    { 0.0f, 0.0f,  0.7f},
+    {-0.3f, 0.0f, -2.3f},
+    { 0.5f, 0.0f, -0.6},
+};
+
+// generate a texture-mapped cube
+static osc::experimental::Mesh GenerateMesh()
+{
+    osc::MeshData cube = osc::GenCube();
+
+    for (glm::vec3& vert : cube.verts)
+    {
+        vert *= 0.5f;  // makes the verts match LearnOpenGL
+    }
+
+    return osc::experimental::LoadMeshFromMeshData(cube);
+}
+
+static osc::experimental::Mesh GeneratePlane()
+{
+    osc::experimental::Mesh rv;
+    rv.setVerts(g_PlaneVertices);
+    rv.setTexCoords(g_PlaneTexCoords);
+    rv.setIndices(g_PlaneIndices);
+    return rv;
+}
+
+static osc::experimental::Mesh GenerateTransparent()
+{
+    osc::experimental::Mesh rv;
+    rv.setVerts(g_TransparentVerts);
+    rv.setTexCoords(g_TransparentTexCoords);
+    rv.setIndices(g_TransparentIndices);
+    return rv;
+}
+
 class osc::RendererBlendingTab::Impl final {
 public:
     Impl(TabHost* parent) : m_Parent{parent}
     {
+        m_Camera.setPosition({0.0f, 0.0f, 3.0f});
+        m_Camera.setCameraFOV(glm::radians(45.0f));
+        m_Camera.setNearClippingPlane(0.1f);
+        m_Camera.setFarClippingPlane(100.0f);
     }
 
     UID getID() const
@@ -36,14 +129,29 @@ public:
 
     void onMount()
     {
+        App::upd().makeMainEventLoopPolling();
+        m_IsMouseCaptured = true;
     }
 
     void onUnmount()
     {
+        m_IsMouseCaptured = false;
+        App::upd().setShowCursor(true);
+        App::upd().makeMainEventLoopWaiting();
     }
 
     bool onEvent(SDL_Event const& e)
     {
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+        {
+            m_IsMouseCaptured = false;
+            return true;
+        }
+        else if (e.type == SDL_MOUSEBUTTONDOWN && osc::IsMouseInMainViewportWorkspaceScreenRect())
+        {
+            m_IsMouseCaptured = true;
+            return true;
+        }
         return false;
     }
 
@@ -57,11 +165,74 @@ public:
 
     void onDraw()
     {
+        // handle mouse capturing
+        if (m_IsMouseCaptured)
+        {
+            UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+            App::upd().setShowCursor(false);
+        }
+        else
+        {
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
+            App::upd().setShowCursor(true);
+        }
+
+        // clear screen and ensure camera has correct pixel rect
+        App::upd().clearScreen({0.1f, 0.1f, 0.1f, 1.0f});
+        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
+
+        // cubes
+        {
+            Transform t;
+            t.position = {-1.0f, 0.0f, -1.0f};
+            m_BlendingMaterial.setTexture("uTexture", m_MarbleTexture);
+
+            osc::experimental::Graphics::DrawMesh(m_CubeMesh, t, m_BlendingMaterial, m_Camera);
+
+            t.position += glm::vec3{2.0f, 0.0f, 0.0f};
+
+            osc::experimental::Graphics::DrawMesh(m_CubeMesh, t, m_BlendingMaterial, m_Camera);
+        }
+
+        // floor
+        {
+            m_BlendingMaterial.setTexture("uTexture", m_MetalTexture);
+            osc::experimental::Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_BlendingMaterial, m_Camera);
+        }
+
+        // windows
+        m_BlendingMaterial.setTexture("uTexture", m_WindowTexture);
+        for (glm::vec3 const& loc : g_WindowLocations)
+        {
+            Transform t;
+            t.position = loc;
+            osc::experimental::Graphics::DrawMesh(m_TransparentMesh, t, m_BlendingMaterial, m_Camera);
+        }
+
+        m_Camera.render();
     }
 
 private:
     UID m_ID;
     TabHost* m_Parent;
+    experimental::Material m_BlendingMaterial
+    {
+        experimental::Shader
+        {
+            App::slurp("shaders/ExperimentBlending.vert"),
+            App::slurp("shaders/ExperimentBlending.frag"),
+        }
+    };
+    experimental::Mesh m_CubeMesh = GenerateMesh();
+    experimental::Mesh m_PlaneMesh = GeneratePlane();
+    experimental::Mesh m_TransparentMesh = GenerateTransparent();
+    experimental::Camera m_Camera;
+    experimental::Texture2D m_MarbleTexture = experimental::LoadTexture2DFromImageResource("textures/marble.jpg");
+    experimental::Texture2D m_MetalTexture = experimental::LoadTexture2DFromImageResource("textures/metal.png");
+    experimental::Texture2D m_WindowTexture = experimental::LoadTexture2DFromImageResource("textures/window.png");
+    bool m_IsMouseCaptured = false;
+    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
 };
 
 
