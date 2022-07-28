@@ -9,7 +9,7 @@
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
-#include "src/Widgets/LogViewer.hpp"
+#include "src/Widgets/LogViewerPanel.hpp"
 
 #include <glm/vec3.hpp>
 #include <SDL_events.h>
@@ -119,6 +119,8 @@ public:
         m_Camera.setCameraFOV(glm::radians(45.0f));
         m_Camera.setNearClippingPlane(0.1f);
         m_Camera.setFarClippingPlane(100.0f);
+
+        m_LogViewer.open();
     }
 
     UID getID() const
@@ -228,9 +230,7 @@ public:
         ImGui::InputFloat("uMaterialShininess", &m_MaterialShininess);
         ImGui::End();
 
-        ImGui::Begin("log");
         m_LogViewer.draw();
-        ImGui::End();
     }
 
 private:
@@ -263,7 +263,7 @@ private:
 
     float m_MaterialShininess = 16.0f;
 
-    LogViewer m_LogViewer;
+    LogViewerPanel m_LogViewer{"log"};
 };
 
 

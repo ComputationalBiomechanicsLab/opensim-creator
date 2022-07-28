@@ -542,6 +542,8 @@ add_library(osccore STATIC
     src/Widgets/GuiRuler.hpp
     src/Widgets/LogViewer.cpp
     src/Widgets/LogViewer.hpp
+    src/Widgets/LogViewerPanel.cpp
+    src/Widgets/LogViewerPanel.hpp
     src/Widgets/MainMenu.cpp
     src/Widgets/MainMenu.hpp
     src/Widgets/ModelActionsMenuItems.cpp

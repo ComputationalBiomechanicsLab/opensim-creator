@@ -6,7 +6,7 @@
 #include "src/Graphics/Renderer.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
-#include "src/Widgets/LogViewer.hpp"
+#include "src/Widgets/LogViewerPanel.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 
 #include <glm/mat4x4.hpp>
@@ -112,8 +112,10 @@ public:
         m_Camera.setCameraFOV(glm::radians(45.0f));
         m_Camera.setNearClippingPlane(0.1f);
         m_Camera.setFarClippingPlane(100.0f);
-        m_PerfPanel.open();
         m_BlendingMaterial.setTransparent(true);
+
+        m_LogViewer.open();
+        m_PerfPanel.open();
     }
 
     UID getID() const
@@ -220,10 +222,7 @@ public:
         m_Camera.render();
 
         // auxiliary UI
-        ImGui::Begin("log");
         m_LogViewer.draw();
-        ImGui::End();
-
         m_PerfPanel.draw();
     }
 
@@ -248,7 +247,7 @@ private:
     experimental::Texture2D m_WindowTexture = experimental::LoadTexture2DFromImageResource("textures/window.png");
     bool m_IsMouseCaptured = false;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
-    LogViewer m_LogViewer;
+    LogViewerPanel m_LogViewer{"log"};
     PerfPanel m_PerfPanel{"perf"};
 };
 
