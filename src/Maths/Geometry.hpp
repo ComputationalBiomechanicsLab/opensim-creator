@@ -71,6 +71,9 @@ namespace osc
     // returns the midpoint between two vectors (effectively: (x+y)/2.0)
     glm::vec3 Midpoint(glm::vec3 const&, glm::vec3 const&) noexcept;
 
+    // returns the unweighted midpoint of all of the provided vectors, or {0.0f, 0.0f, 0.0f} if provided none
+    glm::vec3 Midpoint(nonstd::span<glm::vec3 const>) noexcept;
+
     // returns the sum of `n` vectors using the "Kahan Summation Algorithm" to reduce errors
     glm::vec3 KahanSum(glm::vec3 const*, size_t n) noexcept;
 
@@ -134,6 +137,9 @@ namespace osc
     // returns the dimensions of an AABB
     glm::vec3 Dimensions(AABB const&) noexcept;
 
+    // returns the volume of the AABB
+    float Volume(AABB const&) noexcept;
+
     // returns the smallest AABB that spans both of the provided AABBs
     AABB Union(AABB const&, AABB const&) noexcept;
 
@@ -160,6 +166,7 @@ namespace osc
 
     // computes an AABB of free-floating points in space
     AABB AABBFromVerts(glm::vec3 const*, size_t n) noexcept;
+    AABB AABBFromVerts(nonstd::span<glm::vec3 const>) noexcept;
 
     // computes an AABB of indexed verticies (e.g. as used in mesh data)
     AABB AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices);

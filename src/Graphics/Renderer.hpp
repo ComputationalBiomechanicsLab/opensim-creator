@@ -321,6 +321,8 @@ namespace osc::experimental
 
         AABB const& getBounds() const;  // local-space
 
+        glm::vec3 getMidpoint() const;  // local-space
+
         void clear();
 
     private:

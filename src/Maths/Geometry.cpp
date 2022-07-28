@@ -318,6 +318,17 @@ glm::vec3 osc::Midpoint(glm::vec3 const& a, glm::vec3 const& b) noexcept
     return (a+b)/2.0f;
 }
 
+glm::vec3 osc::Midpoint(nonstd::span<glm::vec3 const> vs) noexcept
+{
+    glm::vec3 rv = {};
+    for (glm::vec3 const& v : vs)
+    {
+        rv += v;
+    }
+    rv /= vs.size();
+    return rv;
+}
+
 glm::vec3 osc::KahanSum(glm::vec3 const* vs, size_t n) noexcept
 {
     glm::vec3 sum{};  // accumulator
@@ -520,12 +531,18 @@ glm::mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b) noexcept
 
 glm::vec3 osc::Midpoint(AABB const& a) noexcept
 {
-    return (a.min + a.max)/2.0f;
+    return 0.5f * (a.min + a.max);
 }
 
 glm::vec3 osc::Dimensions(AABB const& a) noexcept
 {
     return a.max - a.min;
+}
+
+float osc::Volume(AABB const& a) noexcept
+{
+    glm::vec3 d = Dimensions(a);
+    return d.x * d.y * d.z;
 }
 
 osc::AABB osc::Union(AABB const& a, AABB const& b) noexcept
@@ -666,6 +683,11 @@ osc::AABB osc::AABBFromVerts(glm::vec3 const* vs, size_t n) noexcept
     return rv;
 }
 
+osc::AABB osc::AABBFromVerts(nonstd::span<glm::vec3 const> vs) noexcept
+{
+    return AABBFromVerts(vs.data(), vs.size());
+}
+
 osc::AABB osc::AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices)
 {
     AABB rv{};
@@ -692,9 +714,12 @@ osc::AABB osc::AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd:
 
     for (uint32_t idx : indices)
     {
-        glm::vec3 const& pos = verts[idx];
-        rv.min = Min(rv.min, pos);
-        rv.max = Max(rv.max, pos);
+        if (idx < verts.size())  // ignore invalid indices
+        {
+            glm::vec3 const& pos = verts[idx];
+            rv.min = Min(rv.min, pos);
+            rv.max = Max(rv.max, pos);
+        }
     }
 
     return rv;
@@ -726,9 +751,12 @@ osc::AABB osc::AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd:
 
     for (uint16_t idx : indices)
     {
-        glm::vec3 const& pos = verts[idx];
-        rv.min = Min(rv.min, pos);
-        rv.max = Max(rv.max, pos);
+        if (idx < verts.size())  // ignore invalid indices
+        {
+            glm::vec3 const& pos = verts[idx];
+            rv.min = Min(rv.min, pos);
+            rv.max = Max(rv.max, pos);
+        }
     }
 
     return rv;

@@ -6,6 +6,8 @@
 #include "src/Graphics/Renderer.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Widgets/LogViewer.hpp"
+#include "src/Widgets/PerfPanel.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
@@ -110,6 +112,7 @@ public:
         m_Camera.setCameraFOV(glm::radians(45.0f));
         m_Camera.setNearClippingPlane(0.1f);
         m_Camera.setFarClippingPlane(100.0f);
+        m_PerfPanel.open();
     }
 
     UID getID() const
@@ -186,6 +189,7 @@ public:
         {
             Transform t;
             t.position = {-1.0f, 0.0f, -1.0f};
+
             m_BlendingMaterial.setTexture("uTexture", m_MarbleTexture);
 
             osc::experimental::Graphics::DrawMesh(m_CubeMesh, t, m_BlendingMaterial, m_Camera);
@@ -202,15 +206,24 @@ public:
         }
 
         // windows
-        m_BlendingMaterial.setTexture("uTexture", m_WindowTexture);
-        for (glm::vec3 const& loc : g_WindowLocations)
         {
-            Transform t;
-            t.position = loc;
-            osc::experimental::Graphics::DrawMesh(m_TransparentMesh, t, m_BlendingMaterial, m_Camera);
+            m_BlendingMaterial.setTexture("uTexture", m_WindowTexture);
+            for (glm::vec3 const& loc : g_WindowLocations)
+            {
+                Transform t;
+                t.position = loc;
+                osc::experimental::Graphics::DrawMesh(m_TransparentMesh, t, m_BlendingMaterial, m_Camera);
+            }
         }
 
         m_Camera.render();
+
+        // auxiliary UI
+        ImGui::Begin("log");
+        m_LogViewer.draw();
+        ImGui::End();
+
+        m_PerfPanel.draw();
     }
 
 private:
@@ -233,6 +246,8 @@ private:
     experimental::Texture2D m_WindowTexture = experimental::LoadTexture2DFromImageResource("textures/window.png");
     bool m_IsMouseCaptured = false;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    LogViewer m_LogViewer;
+    PerfPanel m_PerfPanel{"perf"};
 };
 
 

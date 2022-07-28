@@ -17,6 +17,7 @@
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/DefaultConstructOnCopy.hpp"
+#include "src/Utils/Perf.hpp"
 #include "src/Utils/UID.hpp"
 
 #include <glm/mat3x3.hpp>
@@ -970,7 +971,7 @@ private:
     friend class GraphicsBackend;
 
     UID m_UID;
-    osc::experimental::Shader m_Shader;
+    Shader m_Shader;
     std::unordered_map<std::string, MaterialValue> m_Values;
 };
 
@@ -1574,6 +1575,11 @@ public:
         return m_AABB;
     }
 
+    glm::vec3 getMidpoint() const
+    {
+        return m_Midpoint;
+    }
+
     void clear()
     {
         m_Version->reset();
@@ -1586,6 +1592,7 @@ public:
         m_NumIndices = 0;
         m_IndicesData.clear();
         m_AABB = {};
+        m_Midpoint = {};
     }
 
     // non-PIMPL methods
@@ -1635,6 +1642,7 @@ private:
             nonstd::span<uint16_t const> indices(&m_IndicesData.front().u16.a, m_NumIndices);
             m_AABB = osc::AABBFromIndexedVerts(m_Vertices, indices);
         }
+        m_Midpoint = Midpoint(m_AABB);
     }
 
     void uploadToGPU()
@@ -1678,18 +1686,18 @@ private:
 
         for (std::size_t i = 0; i < m_Vertices.size(); ++i)
         {
-            PushAsBytes(m_Vertices[i], data);
+            PushAsBytes(m_Vertices.at(i), data);
             if (hasNormals)
             {
-                PushAsBytes(m_Normals[i], data);
+                PushAsBytes(m_Normals.at(i), data);
             }
             if (hasTexCoords)
             {
-                PushAsBytes(m_TexCoords[i], data);
+                PushAsBytes(m_TexCoords.at(i), data);
             }
             if (hasColors)
             {
-                PushAsBytes(m_Colors[i], data);
+                PushAsBytes(m_Colors.at(i), data);
             }
         }
         OSC_ASSERT(data.size() == stride*m_Vertices.size());
@@ -1752,7 +1760,8 @@ private:
     int m_NumIndices = 0;
     std::vector<PackedIndex> m_IndicesData;
 
-    AABB m_AABB;
+    AABB m_AABB = {};
+    glm::vec3 m_Midpoint = {};
 
     DefaultConstructOnCopy<std::optional<MeshGPUBuffers>> m_MaybeGPUBuffers;
 };
@@ -1853,6 +1862,11 @@ void osc::experimental::Mesh::setIndices(nonstd::span<std::uint32_t const> indic
 osc::AABB const& osc::experimental::Mesh::getBounds() const
 {
     return m_Impl->getBounds();
+}
+
+glm::vec3 osc::experimental::Mesh::getMidpoint() const
+{
+    return m_Impl->getMidpoint();
 }
 
 void osc::experimental::Mesh::clear()
@@ -2208,11 +2222,12 @@ namespace
 
     // renderer stuff
     struct RenderObject final {
+
         RenderObject(
-            Mesh const& mesh_,
+            osc::experimental::Mesh const& mesh_,
             osc::Transform const& transform_,
-            Material const& material_,
-            std::optional<MaterialPropertyBlock> maybePropBlock_) :
+            osc::experimental::Material const& material_,
+            std::optional<osc::experimental::MaterialPropertyBlock> maybePropBlock_) :
 
             mesh{mesh_},
             transform{transform_},
@@ -2221,10 +2236,10 @@ namespace
         {
         }
 
-        Mesh mesh;
+        osc::experimental::Mesh mesh;
         osc::Transform transform;
-        Material material;
-        std::optional<MaterialPropertyBlock> maybePropBlock;
+        osc::experimental::Material material;
+        std::optional<osc::experimental::MaterialPropertyBlock> maybePropBlock;
     };
 }
 
@@ -2319,8 +2334,7 @@ public:
         }
         else
         {
-            glm::vec2 appDims = osc::App::get().dims();
-            return Rect{{}, appDims};
+            return Rect{{}, osc::App::get().dims()};
         }
     }
 
@@ -2851,6 +2865,8 @@ void osc::experimental::GraphicsBackend::TryBindMaterialValueToShaderElement(Sha
 
 void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 {
+    OSC_PERF("FlushRenderQueue: all");
+
     // top-level graphics API settings
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     gl::Enable(GL_BLEND);
@@ -2901,6 +2917,28 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     glm::mat4 projMtx = camera.getProjectionMatrix();
     glm::mat4 viewProjMtx = projMtx * viewMtx;
 
+    // sort render queue for opacity testing
+    //
+    // TODO: we need to know the color :<
+    auto IsCloser = [cameraPos = camera.getPosition()](RenderObject const& a, RenderObject const& b)
+    {
+        glm::vec3 aMidpointModelSpace = a.mesh.getMidpoint();
+        glm::vec3 bMidpointModelSpace = b.mesh.getMidpoint();
+        glm::vec3 aMidpointWorldSpace = a.transform * aMidpointModelSpace;
+        glm::vec3 bMidpointWorldSpace = b.transform * bMidpointModelSpace;
+        glm::vec3 camera2a = aMidpointWorldSpace - cameraPos;
+        glm::vec3 camera2b = bMidpointWorldSpace - cameraPos;
+        float camera2aDistanceSquared = glm::dot(camera2a, camera2a);
+        float camera2bDistanceSquared = glm::dot(camera2b, camera2b);
+        return camera2aDistanceSquared > camera2bDistanceSquared;
+    };
+
+    {
+        OSC_PERF("FlushRenderQueue: scene sort");
+        std::sort(camera.m_RenderQueue.begin(), camera.m_RenderQueue.end(), IsCloser);
+    }
+
+    OSC_PERF("FlushRenderQueue: draw (all)");
     for (RenderObject const& ro : camera.m_RenderQueue)
     {
         osc::experimental::Mesh::Impl& meshImpl = const_cast<osc::experimental::Mesh::Impl&>(*ro.mesh.m_Impl);
@@ -2912,76 +2950,66 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 
         gl::UseProgram(shaderImpl.updProgram());
 
-        // bind uniforms
-
-        std::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
-
-        // try binding to uModel (standard)
         {
-            auto it = uniforms.find("uModelMat");
-            if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat4)
+            // bind uniforms
+            OSC_PERF("FlushRenderQueue: bind variables");
+
+            std::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
+
+            // try binding to uModel (standard)
             {
-                gl::UniformMat4 u{it->second.Location};
-                gl::Uniform(u, ToMat4(transform));
+                auto it = uniforms.find("uModelMat");
+                if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat4)
+                {
+                    gl::UniformMat4 u{it->second.Location};
+                    gl::Uniform(u, ToMat4(transform));
+                }
             }
-        }
 
-        // try binding to uNormalMat (standard)
-        {
-            auto it = uniforms.find("uNormalMat");
-            if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat3)
+            // try binding to uNormalMat (standard)
             {
-                gl::UniformMat3 u{it->second.Location};
-                gl::Uniform(u, ToNormalMatrix(transform));
+                auto it = uniforms.find("uNormalMat");
+                if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat3)
+                {
+                    gl::UniformMat3 u{it->second.Location};
+                    gl::Uniform(u, ToNormalMatrix(transform));
+                }
             }
-        }
 
-        // try binding to uView (standard)
-        {
-            auto it = uniforms.find("uViewMat");
-            if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat4)
+            // try binding to uView (standard)
             {
-                gl::UniformMat4 u{it->second.Location};
-                gl::Uniform(u, viewMtx);
+                auto it = uniforms.find("uViewMat");
+                if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat4)
+                {
+                    gl::UniformMat4 u{it->second.Location};
+                    gl::Uniform(u, viewMtx);
+                }
             }
-        }
 
-        // try binding to uProjection (standard)
-        {
-            auto it = uniforms.find("uProjMat");
-            if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat4)
+            // try binding to uProjection (standard)
             {
-                gl::UniformMat4 u{it->second.Location};
-                gl::Uniform(u, projMtx);
+                auto it = uniforms.find("uProjMat");
+                if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat4)
+                {
+                    gl::UniformMat4 u{it->second.Location};
+                    gl::Uniform(u, projMtx);
+                }
             }
-        }
 
-        // try binding to uViewProjMat (standard)
-        {
-            auto it = uniforms.find("uViewProjMat");
-            if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat4)
+            // try binding to uViewProjMat (standard)
             {
-                gl::UniformMat4 u{it->second.Location};
-                gl::Uniform(u, viewProjMtx);
+                auto it = uniforms.find("uViewProjMat");
+                if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat4)
+                {
+                    gl::UniformMat4 u{it->second.Location};
+                    gl::Uniform(u, viewProjMtx);
+                }
             }
-        }
 
-        int textureSlot = 0;
+            int textureSlot = 0;
 
-        // bind material values
-        for (auto const& [name, value] : materialImpl.m_Values)
-        {
-            auto it = uniforms.find(name);
-            if (it != uniforms.end())
-            {
-                TryBindMaterialValueToShaderElement(it->second, value, &textureSlot);
-            }
-        }
-
-        // bind material block values
-        if (ro.maybePropBlock)
-        {
-            for (auto const& [name, value] : ro.maybePropBlock->m_Impl->m_Values)
+            // bind material values
+            for (auto const& [name, value] : materialImpl.m_Values)
             {
                 auto it = uniforms.find(name);
                 if (it != uniforms.end())
@@ -2989,8 +3017,22 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                     TryBindMaterialValueToShaderElement(it->second, value, &textureSlot);
                 }
             }
+
+            // bind material block values
+            if (ro.maybePropBlock)
+            {
+                for (auto const& [name, value] : ro.maybePropBlock->m_Impl->m_Values)
+                {
+                    auto it = uniforms.find(name);
+                    if (it != uniforms.end())
+                    {
+                        TryBindMaterialValueToShaderElement(it->second, value, &textureSlot);
+                    }
+                }
+            }
         }
 
+        OSC_PERF("FlushRenderQueue: draw call");
         gl::BindVertexArray(meshImpl.updVertexArray());
         meshImpl.draw();
         gl::BindVertexArray();

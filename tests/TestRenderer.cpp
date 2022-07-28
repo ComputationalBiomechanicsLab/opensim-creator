@@ -1,6 +1,8 @@
 #include "src/Graphics/Color.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Renderer.hpp"
+#include "src/Maths/AABB.hpp"
+#include "src/Maths/Geometry.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/CStringView.hpp"
@@ -1554,6 +1556,72 @@ TEST_F(Renderer, MeshGetNumIndicesReturnsZeroOnDefaultConstruction)
 {
     osc::experimental::Mesh m;
     ASSERT_EQ(m.getNumIndices(), 0);
+}
+
+TEST_F(Renderer, MeshGetBoundsReturnsEmptyBoundsOnInitialization)
+{
+    osc::experimental::Mesh m;
+    osc::AABB empty{};
+    ASSERT_EQ(m.getBounds(), empty);
+}
+
+TEST_F(Renderer, MeshGetBoundsReturnsEmptyForMeshWithUnindexedVerts)
+{
+    glm::vec3 pyramid[] =
+    {
+        {-1.0f, -1.0f, 0.0f},  // base: bottom-left
+        { 1.0f, -1.0f, 0.0f},  // base: bottom-right
+        { 0.0f,  1.0f, 0.0f},  // base: top-middle
+        { 0.0f,  0.0f, 1.0f},  // tip
+    };
+
+    osc::experimental::Mesh m;
+    m.setVerts(pyramid);
+    osc::AABB empty{};
+    ASSERT_EQ(m.getBounds(), empty);
+}
+
+TEST_F(Renderer, MeshGetBooundsReturnsNonemptyForIndexedVerts)
+{
+    glm::vec3 pyramid[] =
+    {
+        {-1.0f, -1.0f, 0.0f},  // base: bottom-left
+        { 1.0f, -1.0f, 0.0f},  // base: bottom-right
+        { 0.0f,  1.0f, 0.0f},  // base: top-middle
+        { 0.0f,  0.0f, 1.0f},  // tip
+    };
+    std::uint16_t pyramidIndices[] = {0, 1, 2, 3};
+
+    osc::experimental::Mesh m;
+    m.setVerts(pyramid);
+    m.setIndices(pyramidIndices);
+    osc::AABB expected = osc::AABBFromVerts(pyramid);
+    ASSERT_EQ(m.getBounds(), expected);
+}
+
+TEST_F(Renderer, MeshGetMidpointReturnsZeroVecOnInitialization)
+{
+    osc::experimental::Mesh m;
+    glm::vec3 expected = {};
+    ASSERT_EQ(m.getMidpoint(), expected);
+}
+
+TEST_F(Renderer, MeshGetMidpointReturnsExpectedMidpoint)
+{
+    glm::vec3 pyramid[] =
+    {
+        {-1.0f, -1.0f, 0.0f},  // base: bottom-left
+        { 1.0f, -1.0f, 0.0f},  // base: bottom-right
+        { 0.0f,  1.0f, 0.0f},  // base: top-middle
+        { 0.0f,  0.0f, 1.0f},  // tip
+    };
+    std::uint16_t pyramidIndices[] = {0, 1, 2, 3};
+
+    osc::experimental::Mesh m;
+    m.setVerts(pyramid);
+    m.setIndices(pyramidIndices);
+    glm::vec3 expected = osc::Midpoint(osc::AABBFromVerts(pyramid));
+    ASSERT_EQ(m.getMidpoint(), expected);
 }
 
 TEST_F(Renderer, MeshCanBeComparedForEquality)
