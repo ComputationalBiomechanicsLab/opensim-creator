@@ -198,6 +198,9 @@ namespace osc::experimental
         std::optional<Texture2D> getTexture(std::string_view propertyName) const;
         void setTexture(std::string_view, Texture2D);
 
+        bool getTransparent() const;
+        void setTransparent(bool);
+
     private:
         friend class GraphicsBackend;
         friend bool operator==(Material const&, Material const&);

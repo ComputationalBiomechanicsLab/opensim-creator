@@ -113,6 +113,7 @@ public:
         m_Camera.setNearClippingPlane(0.1f);
         m_Camera.setFarClippingPlane(100.0f);
         m_PerfPanel.open();
+        m_BlendingMaterial.setTransparent(true);
     }
 
     UID getID() const
@@ -190,19 +191,19 @@ public:
             Transform t;
             t.position = {-1.0f, 0.0f, -1.0f};
 
-            m_BlendingMaterial.setTexture("uTexture", m_MarbleTexture);
+            m_OpaqueMaterial.setTexture("uTexture", m_MarbleTexture);
 
-            osc::experimental::Graphics::DrawMesh(m_CubeMesh, t, m_BlendingMaterial, m_Camera);
+            osc::experimental::Graphics::DrawMesh(m_CubeMesh, t, m_OpaqueMaterial, m_Camera);
 
             t.position += glm::vec3{2.0f, 0.0f, 0.0f};
 
-            osc::experimental::Graphics::DrawMesh(m_CubeMesh, t, m_BlendingMaterial, m_Camera);
+            osc::experimental::Graphics::DrawMesh(m_CubeMesh, t, m_OpaqueMaterial, m_Camera);
         }
 
         // floor
         {
-            m_BlendingMaterial.setTexture("uTexture", m_MetalTexture);
-            osc::experimental::Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_BlendingMaterial, m_Camera);
+            m_OpaqueMaterial.setTexture("uTexture", m_MetalTexture);
+            osc::experimental::Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_OpaqueMaterial, m_Camera);
         }
 
         // windows
@@ -229,7 +230,7 @@ public:
 private:
     UID m_ID;
     TabHost* m_Parent;
-    experimental::Material m_BlendingMaterial
+    experimental::Material m_OpaqueMaterial
     {
         experimental::Shader
         {
@@ -237,6 +238,7 @@ private:
             App::slurp("shaders/ExperimentBlending.frag"),
         }
     };
+    experimental::Material m_BlendingMaterial = m_OpaqueMaterial;
     experimental::Mesh m_CubeMesh = GenerateMesh();
     experimental::Mesh m_PlaneMesh = GeneratePlane();
     experimental::Mesh m_TransparentMesh = GenerateTransparent();

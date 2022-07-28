@@ -676,6 +676,23 @@ TEST_F(Renderer, MaterialSetTextureOnMaterialCausesGetTextureToReturnTheTexture)
     ASSERT_TRUE(mat.getTexture(key));
 }
 
+TEST_F(Renderer, MaterialGetTransparentIsInitially)
+{
+    osc::experimental::Material mat = GenerateMaterial();
+    ASSERT_FALSE(mat.getTransparent());
+}
+
+TEST_F(Renderer, MaterialSetTransparentBehavesAsExpected)
+{
+    osc::experimental::Material mat = GenerateMaterial();
+    mat.setTransparent(true);
+    ASSERT_TRUE(mat.getTransparent());
+    mat.setTransparent(false);
+    ASSERT_FALSE(mat.getTransparent());
+    mat.setTransparent(true);
+    ASSERT_TRUE(mat.getTransparent());
+}
+
 TEST_F(Renderer, MaterialCanCompareEquals)
 {
     osc::experimental::Material mat = GenerateMaterial();

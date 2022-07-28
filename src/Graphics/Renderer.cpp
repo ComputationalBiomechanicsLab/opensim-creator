@@ -943,6 +943,16 @@ public:
         setValue(std::move(propertyName), std::move(t));
     }
 
+    bool getTransparent() const
+    {
+        return m_IsTransparent;
+    }
+
+    void setTransparent(bool v)
+    {
+        m_IsTransparent = std::move(v);
+    }
+
 private:
     template<typename T>
     std::optional<T> getValue(std::string_view propertyName) const
@@ -973,6 +983,7 @@ private:
     UID m_UID;
     Shader m_Shader;
     std::unordered_map<std::string, MaterialValue> m_Values;
+    bool m_IsTransparent = false;
 };
 
 osc::experimental::Material::Material(osc::experimental::Shader shader) :
@@ -1099,6 +1110,17 @@ void osc::experimental::Material::setTexture(std::string_view propertyName, Text
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setTexture(std::move(propertyName), std::move(t));
+}
+
+bool osc::experimental::Material::getTransparent() const
+{
+    return m_Impl->getTransparent();
+}
+
+void osc::experimental::Material::setTransparent(bool v)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setTransparent(std::move(v));
 }
 
 bool osc::experimental::operator==(Material const& a, Material const& b)
@@ -2932,10 +2954,15 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         float camera2bDistanceSquared = glm::dot(camera2b, camera2b);
         return camera2aDistanceSquared > camera2bDistanceSquared;
     };
+    auto IsOpaque = [](RenderObject const& a)
+    {
+        return !a.material.getTransparent();
+    };
 
     {
         OSC_PERF("FlushRenderQueue: scene sort");
-        std::sort(camera.m_RenderQueue.begin(), camera.m_RenderQueue.end(), IsCloser);
+        auto it = std::partition(camera.m_RenderQueue.begin(), camera.m_RenderQueue.end(), IsOpaque);
+        std::sort(it, camera.m_RenderQueue.end(), IsCloser);
     }
 
     OSC_PERF("FlushRenderQueue: draw (all)");
