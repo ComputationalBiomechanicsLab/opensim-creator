@@ -82,28 +82,41 @@ public:
             Sort(m_MeasurementBuffer, HighestTotalDuration);
         }
 
-        ImGui::Columns(6);
-        for (osc::PerfMeasurement const& pm : m_MeasurementBuffer)
+        if (ImGui::BeginTable("measurements", 6))
         {
-            if (pm.getCallCount() <= 0)
+            ImGui::TableSetupColumn("Label");
+            ImGui::TableSetupColumn("Source File");
+            ImGui::TableSetupColumn("Num Calls");
+            ImGui::TableSetupColumn("Last Duration");
+            ImGui::TableSetupColumn("Average Duration");
+            ImGui::TableSetupColumn("Total Duration");
+            ImGui::TableHeadersRow();
+
+            for (osc::PerfMeasurement const& pm : m_MeasurementBuffer)
             {
-                continue;
+                if (pm.getCallCount() <= 0)
+                {
+                    continue;
+                }
+
+                int column = 0;
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(column++);
+                ImGui::TextUnformatted(pm.getLabel().c_str());
+                ImGui::TableSetColumnIndex(column++);
+                ImGui::Text("%s:%u", pm.getFilename().c_str(), pm.getLine());
+                ImGui::TableSetColumnIndex(column++);
+                ImGui::Text("%" PRId64, pm.getCallCount());
+                ImGui::TableSetColumnIndex(column++);
+                ImGui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getLastDuration()).count()));
+                ImGui::TableSetColumnIndex(column++);
+                ImGui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getAvgDuration()).count()));
+                ImGui::TableSetColumnIndex(column++);
+                ImGui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getTotalDuration()).count()));
             }
 
-            ImGui::TextUnformatted(pm.getLabel().c_str());
-            ImGui::NextColumn();
-            ImGui::Text("%s:%u", pm.getFilename().c_str(), pm.getLine());
-            ImGui::NextColumn();
-            ImGui::Text("%" PRId64, pm.getCallCount());
-            ImGui::NextColumn();
-            ImGui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getLastDuration()).count()));
-            ImGui::NextColumn();
-            ImGui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getAvgDuration()).count()));
-            ImGui::NextColumn();
-            ImGui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getTotalDuration()).count()));
-            ImGui::NextColumn();
+            ImGui::EndTable();
         }
-        ImGui::Columns();
 
         ImGui::End();
 
