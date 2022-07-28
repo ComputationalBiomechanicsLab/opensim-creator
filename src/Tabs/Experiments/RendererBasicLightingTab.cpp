@@ -37,6 +37,7 @@ public:
         m_Camera.setCameraFOV(glm::radians(45.0f));
         m_Camera.setNearClippingPlane(0.1f);
         m_Camera.setFarClippingPlane(100.0f);
+        m_Camera.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
         m_LightTransform.position = {1.2f, 1.0f, 2.0f};
         m_LightTransform.scale *= 0.2f;
     }
@@ -108,7 +109,6 @@ public:
         }
 
         // clear screen and ensure camera has correct pixel rect
-        App::upd().clearScreen({0.1f, 0.1f, 0.1f, 1.0f});
         m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
 
         // draw cube

@@ -142,6 +142,15 @@ namespace
             return osc::experimental::ShaderType::Unknown;
         }
     }
+
+    struct RenderTextureGPUBuffers final {
+        gl::FrameBuffer MultisampledFBO;
+        gl::RenderBuffer MultisampledColorBuffer;
+        gl::RenderBuffer MultisampledDepthBuffer;
+        gl::FrameBuffer SingleSampledFBO;
+        gl::Texture2D SingleSampledColorBuffer;
+        gl::Texture2D SingleSampledDepthBuffer;
+    };
 }
 
 // shader (backend stuff)
@@ -2068,75 +2077,164 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, RenderTextureDescri
 
 class osc::experimental::RenderTexture::Impl final {
 public:
-    Impl(RenderTextureDescriptor const& desc) :
-        m_Width{desc.getWidth()},
-        m_Height{desc.getHeight()},
-        m_AntialiasingLevel{desc.getAntialiasingLevel()},
-        m_ColorFormat{desc.getColorFormat()},
-        m_DepthStencilFormat{desc.getDepthStencilFormat()}
+    Impl(RenderTextureDescriptor const& desc) : m_Descriptor{desc}
     {
     }
 
     int getWidth() const
     {
-        return m_Width;
+        return m_Descriptor.getWidth();
     }
 
     void setWidth(int width)
     {
-        // TODO: invalidate whatever
-        m_Width = width;
+        if (width != m_Descriptor.getWidth())
+        {
+            m_Descriptor.setWidth(width);
+            m_MaybeGPUBuffers->reset();
+        }
     }
 
     int getHeight() const
     {
-        return m_Height;
+        return m_Descriptor.getHeight();
     }
 
     void setHeight(int height)
     {
-        // TODO: invalidate whatever
-        m_Height = height;
+        if (height != m_Descriptor.getHeight())
+        {
+            m_Descriptor.setHeight(height);
+            m_MaybeGPUBuffers->reset();
+        }
     }
 
     RenderTextureFormat getColorFormat() const
     {
-        return m_ColorFormat;
+        return m_Descriptor.getColorFormat();
     }
 
     void setColorFormat(RenderTextureFormat format)
     {
-        // TODO: invalidate whatever
-        m_ColorFormat = format;
+        if (format != m_Descriptor.getColorFormat())
+        {
+            m_Descriptor.setColorFormat(format);
+            m_MaybeGPUBuffers->reset();
+        }
     }
 
     int getAntialiasingLevel() const
     {
-        return m_AntialiasingLevel;
+        return m_Descriptor.getAntialiasingLevel();
     }
 
     void setAntialiasingLevel(int level)
     {
-        // TODO: invalidate whatever
-        m_AntialiasingLevel = level;
+        if (level != m_Descriptor.getAntialiasingLevel())
+        {
+            m_Descriptor.setAntialiasingLevel(level);
+            m_MaybeGPUBuffers->reset();
+        }
     }
 
     DepthStencilFormat getDepthStencilFormat() const
     {
-        return m_DepthStencilFormat;
+        return m_Descriptor.getDepthStencilFormat();
     }
 
     void setDepthStencilFormat(DepthStencilFormat format)
     {
-        m_DepthStencilFormat = format;
+        if (format != m_Descriptor.getDepthStencilFormat())
+        {
+            m_Descriptor.setDepthStencilFormat(format);
+            m_MaybeGPUBuffers->reset();
+        }
+    }
+
+    void reformat(RenderTextureDescriptor const& d)
+    {
+        if (d != m_Descriptor)
+        {
+            m_Descriptor = d;
+            m_MaybeGPUBuffers->reset();
+        }
     }
 
 private:
-    int m_Width;
-    int m_Height;
-    int m_AntialiasingLevel;
-    RenderTextureFormat m_ColorFormat;
-    DepthStencilFormat m_DepthStencilFormat;
+    gl::FrameBuffer& getFrameBuffer()
+    {
+        if (!*m_MaybeGPUBuffers)
+        {
+            uploadToGPU();
+        }
+        return (*m_MaybeGPUBuffers)->MultisampledFBO;
+    }
+
+    void uploadToGPU()
+    {
+        RenderTextureGPUBuffers& bufs = m_MaybeGPUBuffers->emplace();
+
+        gl::BindRenderBuffer(bufs.MultisampledColorBuffer);
+        glRenderbufferStorageMultisample(
+            GL_RENDERBUFFER,
+            m_Descriptor.getAntialiasingLevel(),
+            GL_RGBA,
+            m_Descriptor.getWidth(),
+            m_Descriptor.getHeight()
+        );
+
+        gl::BindRenderBuffer(bufs.MultisampledDepthBuffer);
+        glRenderbufferStorageMultisample(
+            GL_RENDERBUFFER,
+            m_Descriptor.getAntialiasingLevel(),
+            GL_DEPTH24_STENCIL8,
+            m_Descriptor.getWidth(),
+            m_Descriptor.getHeight()
+        );
+
+        gl::BindFramebuffer(GL_FRAMEBUFFER, bufs.MultisampledFBO);
+        gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, bufs.MultisampledColorBuffer);
+        gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, bufs.MultisampledDepthBuffer);
+
+        gl::BindTexture(bufs.SingleSampledColorBuffer);
+        gl::TexImage2D(
+            bufs.SingleSampledColorBuffer.type,
+            0,
+            GL_RGBA,
+            m_Descriptor.getWidth(),
+            m_Descriptor.getHeight(),
+            0,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            nullptr
+        );
+        gl::TexParameteri(bufs.SingleSampledColorBuffer.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
+        gl::TexParameteri(bufs.SingleSampledColorBuffer.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
+
+        // https://stackoverflow.com/questions/27535727/opengl-create-a-depth-stencil-texture-for-reading
+        gl::BindTexture(bufs.SingleSampledDepthBuffer);
+        gl::TexImage2D(
+            bufs.SingleSampledDepthBuffer.type,
+            0,
+            GL_DEPTH24_STENCIL8,
+            m_Descriptor.getWidth(),
+            m_Descriptor.getHeight(),
+            0,
+            GL_DEPTH_STENCIL,
+            GL_UNSIGNED_INT_24_8,
+            nullptr
+        );
+
+        gl::BindFramebuffer(GL_FRAMEBUFFER, bufs.SingleSampledFBO);
+        gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, bufs.SingleSampledColorBuffer, 0);
+        gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, bufs.SingleSampledDepthBuffer, 0);
+        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+    }
+
+    friend class GraphicsBackend;
+
+    RenderTextureDescriptor m_Descriptor;
+    DefaultConstructOnCopy<std::optional<RenderTextureGPUBuffers>> m_MaybeGPUBuffers;
 };
 
 osc::experimental::RenderTexture::RenderTexture(RenderTextureDescriptor const& desc) :
@@ -2203,6 +2301,12 @@ void osc::experimental::RenderTexture::setDepthStencilFormat(DepthStencilFormat 
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setDepthStencilFormat(format);
+}
+
+void osc::experimental::RenderTexture::reformat(RenderTextureDescriptor const& d)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->reformat(d);
 }
 
 bool osc::experimental::operator==(RenderTexture const& a, RenderTexture const& b)
@@ -2338,9 +2442,16 @@ public:
         return m_MaybeTexture;
     }
 
-    void setTexture(RenderTexture t)
+    void setTexture(RenderTextureDescriptor t)
     {
-        m_MaybeTexture = std::move(t);
+        if (m_MaybeTexture)
+        {
+            m_MaybeTexture->reformat(std::move(t));
+        }
+        else
+        {
+            m_MaybeTexture.emplace(std::move(t));
+        }
     }
 
     void setTexture()
@@ -2353,6 +2464,10 @@ public:
         if (m_MaybeScreenPixelRect)
         {
             return *m_MaybeScreenPixelRect;
+        }
+        else if (m_MaybeTexture)
+        {
+            return Rect{{}, {m_MaybeTexture->getWidth(), m_MaybeTexture->getHeight()}};
         }
         else
         {
@@ -2614,10 +2729,10 @@ std::optional<osc::experimental::RenderTexture> osc::experimental::Camera::getTe
     return m_Impl->getTexture();
 }
 
-void osc::experimental::Camera::setTexture(RenderTexture t)
+void osc::experimental::Camera::setTexture(RenderTextureDescriptor desc)
 {
     DoCopyOnWrite(m_Impl);
-    m_Impl->setTexture(std::move(t));
+    m_Impl->setTexture(std::move(desc));
 }
 
 void osc::experimental::Camera::setTexture()
@@ -2894,19 +3009,19 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     gl::Enable(GL_BLEND);
     gl::Enable(GL_DEPTH_TEST);
 
-    // set output target
-    glm::ivec2 outputDimensions{};
+    // bind to output target
     if (camera.m_MaybeTexture)
     {
-        throw std::runtime_error{"rendering to RenderTexture NYI"};
-
-        gl::ClearColor(camera.m_BackgroundColor.r, camera.m_BackgroundColor.g, camera.m_BackgroundColor.b, camera.m_BackgroundColor.a);
-        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        gl::BindFramebuffer(GL_FRAMEBUFFER, camera.m_MaybeTexture->m_Impl->getFrameBuffer());
     }
     else
     {
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+    }
 
+    // setup output viewport rectangle
+    glm::ivec2 outputDimensions{};
+    {
         osc::Rect cameraRect = camera.getPixelRect();  // in "usual" screen space - topleft
         glm::vec2 cameraRectBottomLeft = osc::BottomLeft(cameraRect);
         glm::vec2 windowDims = osc::App::get().dims();
@@ -2919,6 +3034,10 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             static_cast<GLsizei>(outputDimensions.y)
         );
     }
+
+    // clear output
+    gl::ClearColor(camera.m_BackgroundColor.r, camera.m_BackgroundColor.g, camera.m_BackgroundColor.b, camera.m_BackgroundColor.a);
+    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     // handle scissor testing
     if (camera.m_MaybeScissorRect)
@@ -3064,7 +3183,32 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         meshImpl.draw();
         gl::BindVertexArray();
     }
+    camera.m_RenderQueue.clear();  // queue is fully flushed
     gl::UseProgram();
 
-    camera.m_RenderQueue.clear();
+    if (camera.m_MaybeTexture)
+    {
+        OSC_PERF("FlushRenderQueue: output blit");
+
+        // blit multisampled scene render to not-multisampled texture
+        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, (*camera.m_MaybeTexture->m_Impl->m_MaybeGPUBuffers)->MultisampledFBO);
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
+        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, (*camera.m_MaybeTexture->m_Impl->m_MaybeGPUBuffers)->SingleSampledFBO);
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        gl::BlitFramebuffer(
+            0,
+            0,
+            camera.m_MaybeTexture->m_Impl->m_Descriptor.getWidth(),
+            camera.m_MaybeTexture->m_Impl->m_Descriptor.getHeight(),
+            0,
+            0,
+            camera.m_MaybeTexture->m_Impl->m_Descriptor.getWidth(),
+            camera.m_MaybeTexture->m_Impl->m_Descriptor.getHeight(),
+            GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
+            GL_NEAREST
+        );
+
+        // rebind to the screen (we're done here)
+        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+    }
 }

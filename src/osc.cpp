@@ -8,6 +8,7 @@
 #include "src/Tabs/Experiments/RendererLightingMapsTab.hpp"
 #include "src/Tabs/Experiments/RendererMultipleLightsTab.hpp"
 #include "src/Tabs/Experiments/RendererBlendingTab.hpp"
+#include "src/Tabs/Experiments/RendererFramebuffersTab.hpp"
 
 #include <cstdlib>
 #include <iostream>
@@ -73,7 +74,8 @@ int main(int argc, char** argv)
         screen->addTab(std::make_unique<osc::RendererBasicLightingTab>(screen->getTabHostAPI()));
         screen->addTab(std::make_unique<osc::RendererLightingMapsTab>(screen->getTabHostAPI()));
         screen->addTab(std::make_unique<osc::RendererMultipleLightsTab>(screen->getTabHostAPI()));
-        auto tabID = screen->addTab(std::make_unique<osc::RendererBlendingTab>(screen->getTabHostAPI()));
+        screen->addTab(std::make_unique<osc::RendererBlendingTab>(screen->getTabHostAPI()));
+        auto tabID = screen->addTab(std::make_unique<osc::RendererFramebuffersTab>(screen->getTabHostAPI()));
         screen->getTabHostAPI()->selectTab(tabID);
         app.show(std::move(screen));
     }

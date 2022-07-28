@@ -58,6 +58,7 @@ public:
         m_Camera.setCameraFOV(glm::radians(45.0f));
         m_Camera.setNearClippingPlane(0.1f);
         m_Camera.setFarClippingPlane(100.0f);
+        m_Camera.setBackgroundColor({0.2f, 0.3f, 0.3f, 1.0f});
         m_Material.setTexture("uTexture1", osc::experimental::LoadTexture2DFromImageResource("container.jpg", ImageFlags_FlipVertically));
         m_Material.setTexture("uTexture2", osc::experimental::LoadTexture2DFromImageResource("awesomeface.png", ImageFlags_FlipVertically));
     }
@@ -135,7 +136,6 @@ public:
         }
 
         // clear screen and ensure camera has correct pixel rect
-        App::upd().clearScreen({0.2f, 0.3f, 0.3f, 1.0f});
         m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
 
         // draw 3D scene

@@ -389,6 +389,7 @@ namespace osc::experimental
         void setDepthStencilFormat(DepthStencilFormat);
 
     private:
+        friend class GraphicsBackend;
         friend bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
         friend bool operator!=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
         friend bool operator<(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
@@ -430,7 +431,10 @@ namespace osc::experimental
         DepthStencilFormat getDepthStencilFormat() const;
         void setDepthStencilFormat(DepthStencilFormat);
 
+        void reformat(RenderTextureDescriptor const& d);
+
     private:
+        friend class GraphicsBackend;
         friend bool operator==(RenderTexture const&, RenderTexture const&);
         friend bool operator!=(RenderTexture const&, RenderTexture const&);
         friend bool operator<(RenderTexture const&, RenderTexture const&);
@@ -490,8 +494,8 @@ namespace osc::experimental
         float getFarClippingPlane() const;
         void setFarClippingPlane(float);
 
-        std::optional<RenderTexture> getTexture() const;  // empty if drawing directly to screen
-        void setTexture(RenderTexture);
+        std::optional<RenderTexture> getTexture() const; // empty if drawing directly to screen
+        void setTexture(RenderTextureDescriptor);
         void setTexture();  // resets to drawing to screen
 
         // where on the screen the camera is rendered (in screen-space - top-left, X rightwards, Y down

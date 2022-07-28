@@ -471,6 +471,8 @@ add_library(osccore STATIC
     src/Tabs/Experiments/RendererBlendingTab.hpp
     src/Tabs/Experiments/RendererCoordinateSystemsTab.cpp
     src/Tabs/Experiments/RendererCoordinateSystemsTab.hpp
+    src/Tabs/Experiments/RendererFramebuffersTab.cpp
+    src/Tabs/Experiments/RendererFramebuffersTab.hpp
     src/Tabs/Experiments/RendererHelloTriangleTab.cpp
     src/Tabs/Experiments/RendererHelloTriangleTab.hpp
     src/Tabs/Experiments/RendererLightingMapsTab.cpp

@@ -10,6 +10,7 @@
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
 #include "src/Widgets/LogViewerPanel.hpp"
+#include "src/Widgets/PerfPanel.hpp"
 
 #include <glm/vec3.hpp>
 #include <SDL_events.h>
@@ -119,8 +120,10 @@ public:
         m_Camera.setCameraFOV(glm::radians(45.0f));
         m_Camera.setNearClippingPlane(0.1f);
         m_Camera.setFarClippingPlane(100.0f);
+        m_Camera.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
 
         m_LogViewer.open();
+        m_PerfPanel.open();
     }
 
     UID getID() const
@@ -190,7 +193,6 @@ public:
         }
 
         // clear screen and ensure camera has correct pixel rect
-        App::upd().clearScreen({0.1f, 0.1f, 0.1f, 1.0f});
         m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
 
         // setup per-frame material vals
@@ -231,6 +233,7 @@ public:
         ImGui::End();
 
         m_LogViewer.draw();
+        m_PerfPanel.draw();
     }
 
 private:
@@ -264,6 +267,7 @@ private:
     float m_MaterialShininess = 16.0f;
 
     LogViewerPanel m_LogViewer{"log"};
+    PerfPanel m_PerfPanel{"perf"};
 };
 
 
