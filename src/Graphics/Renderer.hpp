@@ -25,6 +25,7 @@ namespace osc
     struct AABB;
     struct Rgba32;
     struct Transform;
+    class Mesh;
     struct MeshData;
 }
 
@@ -454,6 +455,7 @@ namespace osc::experimental
     std::ostream& operator<<(std::ostream&, Mesh const&);
 
     Mesh LoadMeshFromMeshData(MeshData const&);
+    osc::experimental::Mesh LoadMeshFromLegacyMesh(osc::Mesh const&);
 }
 
 // camera

@@ -4,9 +4,10 @@
 #include "src/Graphics/Color.hpp"
 #include "src/Graphics/Gl.hpp"
 #include "src/Graphics/GlGlm.hpp"
+#include "src/Graphics/Mesh.hpp"
+#include "src/Graphics/MeshData.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
 #include "src/Graphics/Texturing.hpp"
-#include "src/Graphics/MeshData.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
@@ -2367,6 +2368,30 @@ osc::experimental::Mesh osc::experimental::LoadMeshFromMeshData(MeshData const& 
 
     osc::experimental::MeshTopography topography = osc::experimental::MeshTopography::Triangles;
     switch (m.topography) {
+    case osc::MeshTopography::Lines:
+        topography = osc::experimental::MeshTopography::Lines;
+        break;
+    case osc::MeshTopography::Triangles:
+        topography = osc::experimental::MeshTopography::Triangles;
+        break;
+    default:
+        break;
+    }
+    rv.setTopography(topography);
+    return rv;
+}
+
+osc::experimental::Mesh osc::experimental::LoadMeshFromLegacyMesh(osc::Mesh const& mesh)
+{
+    osc::experimental::Mesh rv;
+    rv.setVerts(mesh.getVerts());
+    rv.setNormals(mesh.getNormals());
+    rv.setTexCoords(mesh.getTexCoords());
+    rv.setIndices(mesh.getIndices());
+
+    osc::experimental::MeshTopography topography = osc::experimental::MeshTopography::Triangles;
+    switch (mesh.getTopography())
+    {
     case osc::MeshTopography::Lines:
         topography = osc::experimental::MeshTopography::Lines;
         break;
