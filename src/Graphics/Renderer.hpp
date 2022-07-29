@@ -28,6 +28,7 @@ namespace osc
     struct MeshData;
 }
 
+
 // 2D texture
 //
 // encapsulates an image that can be sampled by shaders
@@ -95,6 +96,110 @@ namespace osc::experimental
     std::ostream& operator<<(std::ostream&, Texture2D const&);
 
     Texture2D LoadTexture2DFromImageResource(std::string_view, ImageFlags = ImageFlags_None);
+}
+
+
+// render texture
+//
+// a texture that can be rendered to
+namespace osc::experimental
+{
+    enum class RenderTextureFormat {
+        ARGB32 = 0,
+        TOTAL,
+    };
+    std::ostream& operator<<(std::ostream&, RenderTextureFormat);
+
+    enum class DepthStencilFormat {
+        D24_UNorm_S8_UInt = 0,
+        TOTAL,
+    };
+    std::ostream& operator<<(std::ostream&, DepthStencilFormat);
+
+    class RenderTextureDescriptor final {
+    public:
+        RenderTextureDescriptor(int width, int height);
+        RenderTextureDescriptor(RenderTextureDescriptor const&);
+        RenderTextureDescriptor(RenderTextureDescriptor&&) noexcept;
+        RenderTextureDescriptor& operator=(RenderTextureDescriptor const&);
+        RenderTextureDescriptor& operator=(RenderTextureDescriptor&&) noexcept;
+        ~RenderTextureDescriptor() noexcept;
+
+        int getWidth() const;
+        void setWidth(int);
+
+        int getHeight() const;
+        void setHeight(int);
+
+        int getAntialiasingLevel() const;
+        void setAntialiasingLevel(int);
+
+        RenderTextureFormat getColorFormat() const;
+        void setColorFormat(RenderTextureFormat);
+
+        DepthStencilFormat getDepthStencilFormat() const;
+        void setDepthStencilFormat(DepthStencilFormat);
+
+    private:
+        friend class GraphicsBackend;
+        friend bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
+        friend bool operator!=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
+        friend bool operator<(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
+        friend std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
+
+        int m_Width;
+        int m_Height;
+        int m_AnialiasingLevel;
+        RenderTextureFormat m_ColorFormat;
+        DepthStencilFormat m_DepthStencilFormat;
+    };
+
+    bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
+    bool operator!=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
+    bool operator<(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
+    std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
+
+    class RenderTexture final {
+    public:
+        explicit RenderTexture(RenderTextureDescriptor const&);
+        RenderTexture(RenderTexture const&);
+        RenderTexture(RenderTexture&&) noexcept;
+        RenderTexture& operator=(RenderTexture const&);
+        RenderTexture& operator=(RenderTexture&&) noexcept;
+        ~RenderTexture() noexcept;
+
+        int getWidth() const;
+        void setWidth(int);
+
+        int getHeight() const;
+        void setHeight(int);
+
+        RenderTextureFormat getColorFormat() const;
+        void setColorFormat(RenderTextureFormat);
+
+        int getAntialiasingLevel() const;
+        void setAntialiasingLevel(int);
+
+        DepthStencilFormat getDepthStencilFormat() const;
+        void setDepthStencilFormat(DepthStencilFormat);
+
+        void reformat(RenderTextureDescriptor const& d);
+
+    private:
+        friend class GraphicsBackend;
+        friend bool operator==(RenderTexture const&, RenderTexture const&);
+        friend bool operator!=(RenderTexture const&, RenderTexture const&);
+        friend bool operator<(RenderTexture const&, RenderTexture const&);
+        friend std::ostream& operator<<(std::ostream&, RenderTexture const&);
+
+        class Impl;
+        std::shared_ptr<Impl> m_Impl;
+    };
+
+    bool operator==(RenderTexture const&, RenderTexture const&);
+    bool operator!=(RenderTexture const&, RenderTexture const&);
+    bool operator<(RenderTexture const&, RenderTexture const&);
+    std::ostream& operator<<(std::ostream&, RenderTexture const&);
 }
 
 
@@ -190,13 +295,17 @@ namespace osc::experimental
         void setMat4(std::string_view propertyName, glm::mat4 const&);
 
         std::optional<int> getInt(std::string_view propertyName) const;
-        void setInt(std::string_view, int);
+        void setInt(std::string_view propertyName, int);
 
         std::optional<bool> getBool(std::string_view propertyName) const;
         void setBool(std::string_view propertyName, bool);
 
         std::optional<Texture2D> getTexture(std::string_view propertyName) const;
-        void setTexture(std::string_view, Texture2D);
+        void setTexture(std::string_view propertyName, Texture2D);
+
+        std::optional<RenderTexture> getRenderTexture(std::string_view propertyName) const;
+        void setRenderTexture(std::string_view propertyName, RenderTexture);
+        void clearRenderTexture(std::string_view propertyName);
 
         bool getTransparent() const;
         void setTransparent(bool);
@@ -345,109 +454,6 @@ namespace osc::experimental
     std::ostream& operator<<(std::ostream&, Mesh const&);
 
     Mesh LoadMeshFromMeshData(MeshData const&);
-}
-
-// render texture
-//
-// a texture that can be rendered to
-namespace osc::experimental
-{
-    enum class RenderTextureFormat {
-        ARGB32 = 0,
-        TOTAL,
-    };
-    std::ostream& operator<<(std::ostream&, RenderTextureFormat);
-
-    enum class DepthStencilFormat {
-        D24_UNorm_S8_UInt = 0,
-        TOTAL,
-    };
-    std::ostream& operator<<(std::ostream&, DepthStencilFormat);
-
-    class RenderTextureDescriptor final {
-    public:
-        RenderTextureDescriptor(int width, int height);
-        RenderTextureDescriptor(RenderTextureDescriptor const&);
-        RenderTextureDescriptor(RenderTextureDescriptor&&) noexcept;
-        RenderTextureDescriptor& operator=(RenderTextureDescriptor const&);
-        RenderTextureDescriptor& operator=(RenderTextureDescriptor&&) noexcept;
-        ~RenderTextureDescriptor() noexcept;
-
-        int getWidth() const;
-        void setWidth(int);
-
-        int getHeight() const;
-        void setHeight(int);
-
-        int getAntialiasingLevel() const;
-        void setAntialiasingLevel(int);
-
-        RenderTextureFormat getColorFormat() const;
-        void setColorFormat(RenderTextureFormat);
-
-        DepthStencilFormat getDepthStencilFormat() const;
-        void setDepthStencilFormat(DepthStencilFormat);
-
-    private:
-        friend class GraphicsBackend;
-        friend bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
-        friend bool operator!=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
-        friend bool operator<(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
-        friend std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
-
-        int m_Width;
-        int m_Height;
-        int m_AnialiasingLevel;
-        RenderTextureFormat m_ColorFormat;
-        DepthStencilFormat m_DepthStencilFormat;
-    };
-
-    bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
-    bool operator!=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
-    bool operator<(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
-    std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
-
-    class RenderTexture final {
-    public:
-        explicit RenderTexture(RenderTextureDescriptor const&);
-        RenderTexture(RenderTexture const&);
-        RenderTexture(RenderTexture&&) noexcept;
-        RenderTexture& operator=(RenderTexture const&);
-        RenderTexture& operator=(RenderTexture&&) noexcept;
-        ~RenderTexture() noexcept;
-
-        int getWidth() const;
-        void setWidth(int);
-
-        int getHeight() const;
-        void setHeight(int);
-
-        RenderTextureFormat getColorFormat() const;
-        void setColorFormat(RenderTextureFormat);
-
-        int getAntialiasingLevel() const;
-        void setAntialiasingLevel(int);
-
-        DepthStencilFormat getDepthStencilFormat() const;
-        void setDepthStencilFormat(DepthStencilFormat);
-
-        void reformat(RenderTextureDescriptor const& d);
-
-    private:
-        friend class GraphicsBackend;
-        friend bool operator==(RenderTexture const&, RenderTexture const&);
-        friend bool operator!=(RenderTexture const&, RenderTexture const&);
-        friend bool operator<(RenderTexture const&, RenderTexture const&);
-        friend std::ostream& operator<<(std::ostream&, RenderTexture const&);
-
-        class Impl;
-        std::shared_ptr<Impl> m_Impl;
-    };
-
-    bool operator==(RenderTexture const&, RenderTexture const&);
-    bool operator!=(RenderTexture const&, RenderTexture const&);
-    bool operator<(RenderTexture const&, RenderTexture const&);
-    std::ostream& operator<<(std::ostream&, RenderTexture const&);
 }
 
 // camera

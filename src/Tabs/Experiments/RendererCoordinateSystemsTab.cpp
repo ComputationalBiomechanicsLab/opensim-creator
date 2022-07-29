@@ -108,7 +108,7 @@ public:
 
     void onTick()
     {
-        float const rotationSpeed = glm::radians(50.0f);
+        float constexpr rotationSpeed = glm::radians(50.0f);
         float const dt = App::get().getDeltaSinceAppStartup().count();
         float const angle = rotationSpeed * dt;
         glm::vec3 const axis = glm::normalize(glm::vec3{0.5f, 1.0f, 0.0f});

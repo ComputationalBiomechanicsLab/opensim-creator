@@ -114,7 +114,8 @@ namespace
         glm::mat4,
         int,
         bool,
-        osc::experimental::Texture2D
+        osc::experimental::Texture2D,
+        osc::experimental::RenderTexture
     >;
 
     osc::experimental::ShaderType GetShaderType(MaterialValue const& v)
@@ -137,6 +138,7 @@ namespace
         case VariantIndex<MaterialValue, bool>():
             return osc::experimental::ShaderType::Bool;
         case VariantIndex<MaterialValue, osc::experimental::Texture2D>():
+        case VariantIndex<MaterialValue, osc::experimental::RenderTexture>():
             return osc::experimental::ShaderType::Sampler2D;
         default:
             return osc::experimental::ShaderType::Unknown;
@@ -640,6 +642,403 @@ osc::experimental::Texture2D osc::experimental::LoadTexture2DFromImageResource(s
 
 //////////////////////////////////
 //
+// render texture
+//
+//////////////////////////////////
+
+namespace
+{
+    using namespace osc::experimental;
+
+    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(RenderTextureFormat::TOTAL)> const  g_RenderTextureFormatStrings =
+    {
+        "ARGB32",
+    };
+
+    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(DepthStencilFormat::TOTAL)> const g_DepthStencilFormatStrings =
+    {
+        "D24_UNorm_S8_UInt",
+    };
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, RenderTextureFormat f)
+{
+    return o << g_RenderTextureFormatStrings.at(static_cast<int>(f));
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, DepthStencilFormat f)
+{
+    return o << g_DepthStencilFormatStrings.at(static_cast<int>(f));
+}
+
+osc::experimental::RenderTextureDescriptor::RenderTextureDescriptor(int width, int height) :
+    m_Width{width},
+    m_Height{height},
+    m_AnialiasingLevel{1},
+    m_ColorFormat{RenderTextureFormat::ARGB32},
+    m_DepthStencilFormat{DepthStencilFormat::D24_UNorm_S8_UInt}
+{
+    OSC_ASSERT_ALWAYS(m_Width >= 0 && m_Height >= 0);
+}
+
+osc::experimental::RenderTextureDescriptor::RenderTextureDescriptor(RenderTextureDescriptor const&) = default;
+osc::experimental::RenderTextureDescriptor::RenderTextureDescriptor(RenderTextureDescriptor&&) noexcept = default;
+osc::experimental::RenderTextureDescriptor& osc::experimental::RenderTextureDescriptor::operator=(RenderTextureDescriptor const&) = default;
+osc::experimental::RenderTextureDescriptor& osc::experimental::RenderTextureDescriptor::operator=(RenderTextureDescriptor&&) noexcept = default;
+osc::experimental::RenderTextureDescriptor::~RenderTextureDescriptor() noexcept = default;
+
+int osc::experimental::RenderTextureDescriptor::getWidth() const
+{
+    return m_Width;
+}
+
+void osc::experimental::RenderTextureDescriptor::setWidth(int width)
+{
+    OSC_ASSERT_ALWAYS(width >= 0);
+    m_Width = width;
+}
+
+int osc::experimental::RenderTextureDescriptor::getHeight() const
+{
+    return m_Height;
+}
+
+void osc::experimental::RenderTextureDescriptor::setHeight(int height)
+{
+    OSC_ASSERT_ALWAYS(height >= 0);
+    m_Height = height;
+}
+
+int osc::experimental::RenderTextureDescriptor::getAntialiasingLevel() const
+{
+    return m_AnialiasingLevel;
+}
+
+void osc::experimental::RenderTextureDescriptor::setAntialiasingLevel(int level)
+{
+    OSC_ASSERT_ALWAYS(level <= 64 && osc::NumBitsSetIn(level) == 1);
+    m_AnialiasingLevel = level;
+}
+
+osc::experimental::RenderTextureFormat osc::experimental::RenderTextureDescriptor::getColorFormat() const
+{
+    return m_ColorFormat;
+}
+
+void osc::experimental::RenderTextureDescriptor::setColorFormat(RenderTextureFormat f)
+{
+    m_ColorFormat = f;
+}
+
+osc::experimental::DepthStencilFormat osc::experimental::RenderTextureDescriptor::getDepthStencilFormat() const
+{
+    return m_DepthStencilFormat;
+}
+
+void osc::experimental::RenderTextureDescriptor::setDepthStencilFormat(DepthStencilFormat f)
+{
+    m_DepthStencilFormat = f;
+}
+
+bool osc::experimental::operator==(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
+{
+    return 
+        a.m_Width == b.m_Width &&
+        a.m_Height == b.m_Height &&
+        a.m_AnialiasingLevel == b.m_AnialiasingLevel &&
+        a.m_ColorFormat == b.m_ColorFormat &&
+        a.m_DepthStencilFormat == b.m_DepthStencilFormat;
+}
+
+bool osc::experimental::operator!=(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
+{
+    return !(a == b);
+}
+
+bool osc::experimental::operator<(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
+{
+    return std::tie(a.m_Width, a.m_Height, a.m_AnialiasingLevel, a.m_ColorFormat, a.m_DepthStencilFormat) < std::tie(b.m_Width, b.m_Height, b.m_AnialiasingLevel, b.m_ColorFormat, b.m_DepthStencilFormat);
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, RenderTextureDescriptor const& rtd)
+{
+    return o << "RenderTextureDescriptor(width = " << rtd.m_Width << ", height = " << rtd.m_Height << ", aa = " << rtd.m_AnialiasingLevel << ", colorFormat = " << rtd.m_ColorFormat << ", depthFormat = " << rtd.m_DepthStencilFormat << ")";
+}
+
+class osc::experimental::RenderTexture::Impl final {
+public:
+    Impl(RenderTextureDescriptor const& desc) : m_Descriptor{desc}
+    {
+    }
+
+    int getWidth() const
+    {
+        return m_Descriptor.getWidth();
+    }
+
+    void setWidth(int width)
+    {
+        if (width != m_Descriptor.getWidth())
+        {
+            m_Descriptor.setWidth(width);
+            m_MaybeGPUBuffers->reset();
+        }
+    }
+
+    int getHeight() const
+    {
+        return m_Descriptor.getHeight();
+    }
+
+    void setHeight(int height)
+    {
+        if (height != m_Descriptor.getHeight())
+        {
+            m_Descriptor.setHeight(height);
+            m_MaybeGPUBuffers->reset();
+        }
+    }
+
+    RenderTextureFormat getColorFormat() const
+    {
+        return m_Descriptor.getColorFormat();
+    }
+
+    void setColorFormat(RenderTextureFormat format)
+    {
+        if (format != m_Descriptor.getColorFormat())
+        {
+            m_Descriptor.setColorFormat(format);
+            m_MaybeGPUBuffers->reset();
+        }
+    }
+
+    int getAntialiasingLevel() const
+    {
+        return m_Descriptor.getAntialiasingLevel();
+    }
+
+    void setAntialiasingLevel(int level)
+    {
+        if (level != m_Descriptor.getAntialiasingLevel())
+        {
+            m_Descriptor.setAntialiasingLevel(level);
+            m_MaybeGPUBuffers->reset();
+        }
+    }
+
+    DepthStencilFormat getDepthStencilFormat() const
+    {
+        return m_Descriptor.getDepthStencilFormat();
+    }
+
+    void setDepthStencilFormat(DepthStencilFormat format)
+    {
+        if (format != m_Descriptor.getDepthStencilFormat())
+        {
+            m_Descriptor.setDepthStencilFormat(format);
+            m_MaybeGPUBuffers->reset();
+        }
+    }
+
+    void reformat(RenderTextureDescriptor const& d)
+    {
+        if (d != m_Descriptor)
+        {
+            m_Descriptor = d;
+            m_MaybeGPUBuffers->reset();
+        }
+    }
+
+private:
+    gl::FrameBuffer& getFrameBuffer()
+    {
+        if (!*m_MaybeGPUBuffers)
+        {
+            uploadToGPU();
+        }
+        return (*m_MaybeGPUBuffers)->MultisampledFBO;
+    }
+
+    gl::Texture2D& getOutputTexture()
+    {
+        if (!*m_MaybeGPUBuffers)
+        {
+            uploadToGPU();
+        }
+        return (*m_MaybeGPUBuffers)->SingleSampledColorBuffer;
+    }
+
+    void uploadToGPU()
+    {
+        RenderTextureGPUBuffers& bufs = m_MaybeGPUBuffers->emplace();
+
+        gl::BindRenderBuffer(bufs.MultisampledColorBuffer);
+        glRenderbufferStorageMultisample(
+            GL_RENDERBUFFER,
+            m_Descriptor.getAntialiasingLevel(),
+            GL_RGBA,
+            m_Descriptor.getWidth(),
+            m_Descriptor.getHeight()
+        );
+
+        gl::BindRenderBuffer(bufs.MultisampledDepthBuffer);
+        glRenderbufferStorageMultisample(
+            GL_RENDERBUFFER,
+            m_Descriptor.getAntialiasingLevel(),
+            GL_DEPTH24_STENCIL8,
+            m_Descriptor.getWidth(),
+            m_Descriptor.getHeight()
+        );
+
+        gl::BindFramebuffer(GL_FRAMEBUFFER, bufs.MultisampledFBO);
+        gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, bufs.MultisampledColorBuffer);
+        gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, bufs.MultisampledDepthBuffer);
+
+        gl::BindTexture(bufs.SingleSampledColorBuffer);
+        gl::TexImage2D(
+            bufs.SingleSampledColorBuffer.type,
+            0,
+            GL_RGBA,
+            m_Descriptor.getWidth(),
+            m_Descriptor.getHeight(),
+            0,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            nullptr
+        );
+        gl::TexParameteri(bufs.SingleSampledColorBuffer.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
+        gl::TexParameteri(bufs.SingleSampledColorBuffer.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
+        gl::TexParameteri(bufs.SingleSampledColorBuffer.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        gl::TexParameteri(bufs.SingleSampledColorBuffer.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        gl::TexParameteri(bufs.SingleSampledColorBuffer.type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+        // https://stackoverflow.com/questions/27535727/opengl-create-a-depth-stencil-texture-for-reading
+        gl::BindTexture(bufs.SingleSampledDepthBuffer);
+        gl::TexImage2D(
+            bufs.SingleSampledDepthBuffer.type,
+            0,
+            GL_DEPTH24_STENCIL8,
+            m_Descriptor.getWidth(),
+            m_Descriptor.getHeight(),
+            0,
+            GL_DEPTH_STENCIL,
+            GL_UNSIGNED_INT_24_8,
+            nullptr
+        );
+        gl::TexParameteri(bufs.SingleSampledDepthBuffer.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
+        gl::TexParameteri(bufs.SingleSampledDepthBuffer.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
+        gl::TexParameteri(bufs.SingleSampledDepthBuffer.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        gl::TexParameteri(bufs.SingleSampledDepthBuffer.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        gl::TexParameteri(bufs.SingleSampledDepthBuffer.type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+        gl::BindFramebuffer(GL_FRAMEBUFFER, bufs.SingleSampledFBO);
+        gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, bufs.SingleSampledColorBuffer, 0);
+        gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, bufs.SingleSampledDepthBuffer, 0);
+        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+    }
+
+    friend class GraphicsBackend;
+
+    RenderTextureDescriptor m_Descriptor;
+    DefaultConstructOnCopy<std::optional<RenderTextureGPUBuffers>> m_MaybeGPUBuffers;
+};
+
+osc::experimental::RenderTexture::RenderTexture(RenderTextureDescriptor const& desc) :
+    m_Impl{std::make_shared<Impl>(desc)}
+{
+}
+
+osc::experimental::RenderTexture::RenderTexture(RenderTexture const&) = default;
+osc::experimental::RenderTexture::RenderTexture(RenderTexture&&) noexcept = default;
+osc::experimental::RenderTexture& osc::experimental::RenderTexture::operator=(RenderTexture const&) = default;
+osc::experimental::RenderTexture& osc::experimental::RenderTexture::operator=(RenderTexture&&) noexcept = default;
+osc::experimental::RenderTexture::~RenderTexture() noexcept = default;
+
+int osc::experimental::RenderTexture::getWidth() const
+{
+    return m_Impl->getWidth();
+}
+
+void osc::experimental::RenderTexture::setWidth(int width)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setWidth(width);
+}
+
+int osc::experimental::RenderTexture::getHeight() const
+{
+    return m_Impl->getHeight();
+}
+
+void osc::experimental::RenderTexture::setHeight(int height)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setHeight(height);
+}
+
+osc::experimental::RenderTextureFormat osc::experimental::RenderTexture::getColorFormat() const
+{
+    return m_Impl->getColorFormat();
+}
+
+void osc::experimental::RenderTexture::setColorFormat(RenderTextureFormat format)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setColorFormat(format);
+}
+
+int osc::experimental::RenderTexture::getAntialiasingLevel() const
+{
+    return m_Impl->getAntialiasingLevel();
+}
+
+void osc::experimental::RenderTexture::setAntialiasingLevel(int level)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setAntialiasingLevel(level);
+}
+
+osc::experimental::DepthStencilFormat osc::experimental::RenderTexture::getDepthStencilFormat() const
+{
+    return m_Impl->getDepthStencilFormat();
+}
+
+void osc::experimental::RenderTexture::setDepthStencilFormat(DepthStencilFormat format)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setDepthStencilFormat(format);
+}
+
+void osc::experimental::RenderTexture::reformat(RenderTextureDescriptor const& d)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->reformat(d);
+}
+
+bool osc::experimental::operator==(RenderTexture const& a, RenderTexture const& b)
+{
+    return a.m_Impl == b.m_Impl;
+}
+
+bool osc::experimental::operator!=(RenderTexture const& a, RenderTexture const& b)
+{
+    return a.m_Impl != b.m_Impl;
+}
+
+bool osc::experimental::operator<(RenderTexture const& a, RenderTexture const& b)
+{
+    return a.m_Impl < b.m_Impl;
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, RenderTexture const& rt)
+{
+    return o << "RenderTexture()";
+}
+
+
+//////////////////////////////////
+//
 // shader stuff
 //
 //////////////////////////////////
@@ -952,6 +1351,21 @@ public:
         setValue(std::move(propertyName), std::move(t));
     }
 
+    std::optional<RenderTexture> getRenderTexture(std::string_view propertyName) const
+    {
+        return getValue<RenderTexture>(std::move(propertyName));
+    }
+
+    void setRenderTexture(std::string_view propertyName, RenderTexture t)
+    {
+        setValue(std::move(propertyName), std::move(t));
+    }
+
+    void clearRenderTexture(std::string_view propertyName)
+    {
+        m_Values.erase(std::string{std::move(propertyName)});
+    }
+
     bool getTransparent() const
     {
         return m_IsTransparent;
@@ -1119,6 +1533,23 @@ void osc::experimental::Material::setTexture(std::string_view propertyName, Text
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setTexture(std::move(propertyName), std::move(t));
+}
+
+std::optional<RenderTexture> osc::experimental::Material::getRenderTexture(std::string_view propertyName) const
+{
+    return m_Impl->getRenderTexture(std::move(propertyName));
+}
+
+void osc::experimental::Material::setRenderTexture(std::string_view propertyName, RenderTexture t)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setRenderTexture(std::move(propertyName), std::move(t));
+}
+
+void osc::experimental::Material::clearRenderTexture(std::string_view propertyName)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->clearRenderTexture(std::move(propertyName));
 }
 
 bool osc::experimental::Material::getTransparent() const
@@ -1952,385 +2383,6 @@ osc::experimental::Mesh osc::experimental::LoadMeshFromMeshData(MeshData const& 
 
 //////////////////////////////////
 //
-// render texture
-//
-//////////////////////////////////
-
-namespace
-{
-    using namespace osc::experimental;
-
-    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(RenderTextureFormat::TOTAL)> const  g_RenderTextureFormatStrings =
-    {
-        "ARGB32",
-    };
-
-    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(DepthStencilFormat::TOTAL)> const g_DepthStencilFormatStrings =
-    {
-        "D24_UNorm_S8_UInt",
-    };
-}
-
-std::ostream& osc::experimental::operator<<(std::ostream& o, RenderTextureFormat f)
-{
-    return o << g_RenderTextureFormatStrings.at(static_cast<int>(f));
-}
-
-std::ostream& osc::experimental::operator<<(std::ostream& o, DepthStencilFormat f)
-{
-    return o << g_DepthStencilFormatStrings.at(static_cast<int>(f));
-}
-
-osc::experimental::RenderTextureDescriptor::RenderTextureDescriptor(int width, int height) :
-    m_Width{width},
-    m_Height{height},
-    m_AnialiasingLevel{1},
-    m_ColorFormat{RenderTextureFormat::ARGB32},
-    m_DepthStencilFormat{DepthStencilFormat::D24_UNorm_S8_UInt}
-{
-    OSC_ASSERT_ALWAYS(m_Width >= 0 && m_Height >= 0);
-}
-
-osc::experimental::RenderTextureDescriptor::RenderTextureDescriptor(RenderTextureDescriptor const&) = default;
-osc::experimental::RenderTextureDescriptor::RenderTextureDescriptor(RenderTextureDescriptor&&) noexcept = default;
-osc::experimental::RenderTextureDescriptor& osc::experimental::RenderTextureDescriptor::operator=(RenderTextureDescriptor const&) = default;
-osc::experimental::RenderTextureDescriptor& osc::experimental::RenderTextureDescriptor::operator=(RenderTextureDescriptor&&) noexcept = default;
-osc::experimental::RenderTextureDescriptor::~RenderTextureDescriptor() noexcept = default;
-
-int osc::experimental::RenderTextureDescriptor::getWidth() const
-{
-    return m_Width;
-}
-
-void osc::experimental::RenderTextureDescriptor::setWidth(int width)
-{
-    OSC_ASSERT_ALWAYS(width >= 0);
-    m_Width = width;
-}
-
-int osc::experimental::RenderTextureDescriptor::getHeight() const
-{
-    return m_Height;
-}
-
-void osc::experimental::RenderTextureDescriptor::setHeight(int height)
-{
-    OSC_ASSERT_ALWAYS(height >= 0);
-    m_Height = height;
-}
-
-int osc::experimental::RenderTextureDescriptor::getAntialiasingLevel() const
-{
-    return m_AnialiasingLevel;
-}
-
-void osc::experimental::RenderTextureDescriptor::setAntialiasingLevel(int level)
-{
-    OSC_ASSERT_ALWAYS(level <= 64 && osc::NumBitsSetIn(level) == 1);
-    m_AnialiasingLevel = level;
-}
-
-osc::experimental::RenderTextureFormat osc::experimental::RenderTextureDescriptor::getColorFormat() const
-{
-    return m_ColorFormat;
-}
-
-void osc::experimental::RenderTextureDescriptor::setColorFormat(RenderTextureFormat f)
-{
-    m_ColorFormat = f;
-}
-
-osc::experimental::DepthStencilFormat osc::experimental::RenderTextureDescriptor::getDepthStencilFormat() const
-{
-    return m_DepthStencilFormat;
-}
-
-void osc::experimental::RenderTextureDescriptor::setDepthStencilFormat(DepthStencilFormat f)
-{
-    m_DepthStencilFormat = f;
-}
-
-bool osc::experimental::operator==(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
-{
-    return 
-        a.m_Width == b.m_Width &&
-        a.m_Height == b.m_Height &&
-        a.m_AnialiasingLevel == b.m_AnialiasingLevel &&
-        a.m_ColorFormat == b.m_ColorFormat &&
-        a.m_DepthStencilFormat == b.m_DepthStencilFormat;
-}
-
-bool osc::experimental::operator!=(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
-{
-    return !(a == b);
-}
-
-bool osc::experimental::operator<(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
-{
-    return std::tie(a.m_Width, a.m_Height, a.m_AnialiasingLevel, a.m_ColorFormat, a.m_DepthStencilFormat) < std::tie(b.m_Width, b.m_Height, b.m_AnialiasingLevel, b.m_ColorFormat, b.m_DepthStencilFormat);
-}
-
-std::ostream& osc::experimental::operator<<(std::ostream& o, RenderTextureDescriptor const& rtd)
-{
-    return o << "RenderTextureDescriptor(width = " << rtd.m_Width << ", height = " << rtd.m_Height << ", aa = " << rtd.m_AnialiasingLevel << ", colorFormat = " << rtd.m_ColorFormat << ", depthFormat = " << rtd.m_DepthStencilFormat << ")";
-}
-
-class osc::experimental::RenderTexture::Impl final {
-public:
-    Impl(RenderTextureDescriptor const& desc) : m_Descriptor{desc}
-    {
-    }
-
-    int getWidth() const
-    {
-        return m_Descriptor.getWidth();
-    }
-
-    void setWidth(int width)
-    {
-        if (width != m_Descriptor.getWidth())
-        {
-            m_Descriptor.setWidth(width);
-            m_MaybeGPUBuffers->reset();
-        }
-    }
-
-    int getHeight() const
-    {
-        return m_Descriptor.getHeight();
-    }
-
-    void setHeight(int height)
-    {
-        if (height != m_Descriptor.getHeight())
-        {
-            m_Descriptor.setHeight(height);
-            m_MaybeGPUBuffers->reset();
-        }
-    }
-
-    RenderTextureFormat getColorFormat() const
-    {
-        return m_Descriptor.getColorFormat();
-    }
-
-    void setColorFormat(RenderTextureFormat format)
-    {
-        if (format != m_Descriptor.getColorFormat())
-        {
-            m_Descriptor.setColorFormat(format);
-            m_MaybeGPUBuffers->reset();
-        }
-    }
-
-    int getAntialiasingLevel() const
-    {
-        return m_Descriptor.getAntialiasingLevel();
-    }
-
-    void setAntialiasingLevel(int level)
-    {
-        if (level != m_Descriptor.getAntialiasingLevel())
-        {
-            m_Descriptor.setAntialiasingLevel(level);
-            m_MaybeGPUBuffers->reset();
-        }
-    }
-
-    DepthStencilFormat getDepthStencilFormat() const
-    {
-        return m_Descriptor.getDepthStencilFormat();
-    }
-
-    void setDepthStencilFormat(DepthStencilFormat format)
-    {
-        if (format != m_Descriptor.getDepthStencilFormat())
-        {
-            m_Descriptor.setDepthStencilFormat(format);
-            m_MaybeGPUBuffers->reset();
-        }
-    }
-
-    void reformat(RenderTextureDescriptor const& d)
-    {
-        if (d != m_Descriptor)
-        {
-            m_Descriptor = d;
-            m_MaybeGPUBuffers->reset();
-        }
-    }
-
-private:
-    gl::FrameBuffer& getFrameBuffer()
-    {
-        if (!*m_MaybeGPUBuffers)
-        {
-            uploadToGPU();
-        }
-        return (*m_MaybeGPUBuffers)->MultisampledFBO;
-    }
-
-    void uploadToGPU()
-    {
-        RenderTextureGPUBuffers& bufs = m_MaybeGPUBuffers->emplace();
-
-        gl::BindRenderBuffer(bufs.MultisampledColorBuffer);
-        glRenderbufferStorageMultisample(
-            GL_RENDERBUFFER,
-            m_Descriptor.getAntialiasingLevel(),
-            GL_RGBA,
-            m_Descriptor.getWidth(),
-            m_Descriptor.getHeight()
-        );
-
-        gl::BindRenderBuffer(bufs.MultisampledDepthBuffer);
-        glRenderbufferStorageMultisample(
-            GL_RENDERBUFFER,
-            m_Descriptor.getAntialiasingLevel(),
-            GL_DEPTH24_STENCIL8,
-            m_Descriptor.getWidth(),
-            m_Descriptor.getHeight()
-        );
-
-        gl::BindFramebuffer(GL_FRAMEBUFFER, bufs.MultisampledFBO);
-        gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, bufs.MultisampledColorBuffer);
-        gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, bufs.MultisampledDepthBuffer);
-
-        gl::BindTexture(bufs.SingleSampledColorBuffer);
-        gl::TexImage2D(
-            bufs.SingleSampledColorBuffer.type,
-            0,
-            GL_RGBA,
-            m_Descriptor.getWidth(),
-            m_Descriptor.getHeight(),
-            0,
-            GL_RGBA,
-            GL_UNSIGNED_BYTE,
-            nullptr
-        );
-        gl::TexParameteri(bufs.SingleSampledColorBuffer.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
-        gl::TexParameteri(bufs.SingleSampledColorBuffer.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
-
-        // https://stackoverflow.com/questions/27535727/opengl-create-a-depth-stencil-texture-for-reading
-        gl::BindTexture(bufs.SingleSampledDepthBuffer);
-        gl::TexImage2D(
-            bufs.SingleSampledDepthBuffer.type,
-            0,
-            GL_DEPTH24_STENCIL8,
-            m_Descriptor.getWidth(),
-            m_Descriptor.getHeight(),
-            0,
-            GL_DEPTH_STENCIL,
-            GL_UNSIGNED_INT_24_8,
-            nullptr
-        );
-
-        gl::BindFramebuffer(GL_FRAMEBUFFER, bufs.SingleSampledFBO);
-        gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, bufs.SingleSampledColorBuffer, 0);
-        gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, bufs.SingleSampledDepthBuffer, 0);
-        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-    }
-
-    friend class GraphicsBackend;
-
-    RenderTextureDescriptor m_Descriptor;
-    DefaultConstructOnCopy<std::optional<RenderTextureGPUBuffers>> m_MaybeGPUBuffers;
-};
-
-osc::experimental::RenderTexture::RenderTexture(RenderTextureDescriptor const& desc) :
-    m_Impl{std::make_shared<Impl>(desc)}
-{
-}
-
-osc::experimental::RenderTexture::RenderTexture(RenderTexture const&) = default;
-osc::experimental::RenderTexture::RenderTexture(RenderTexture&&) noexcept = default;
-osc::experimental::RenderTexture& osc::experimental::RenderTexture::operator=(RenderTexture const&) = default;
-osc::experimental::RenderTexture& osc::experimental::RenderTexture::operator=(RenderTexture&&) noexcept = default;
-osc::experimental::RenderTexture::~RenderTexture() noexcept = default;
-
-int osc::experimental::RenderTexture::getWidth() const
-{
-    return m_Impl->getWidth();
-}
-
-void osc::experimental::RenderTexture::setWidth(int width)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setWidth(width);
-}
-
-int osc::experimental::RenderTexture::getHeight() const
-{
-    return m_Impl->getHeight();
-}
-
-void osc::experimental::RenderTexture::setHeight(int height)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setHeight(height);
-}
-
-osc::experimental::RenderTextureFormat osc::experimental::RenderTexture::getColorFormat() const
-{
-    return m_Impl->getColorFormat();
-}
-
-void osc::experimental::RenderTexture::setColorFormat(RenderTextureFormat format)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setColorFormat(format);
-}
-
-int osc::experimental::RenderTexture::getAntialiasingLevel() const
-{
-    return m_Impl->getAntialiasingLevel();
-}
-
-void osc::experimental::RenderTexture::setAntialiasingLevel(int level)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setAntialiasingLevel(level);
-}
-
-osc::experimental::DepthStencilFormat osc::experimental::RenderTexture::getDepthStencilFormat() const
-{
-    return m_Impl->getDepthStencilFormat();
-}
-
-void osc::experimental::RenderTexture::setDepthStencilFormat(DepthStencilFormat format)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setDepthStencilFormat(format);
-}
-
-void osc::experimental::RenderTexture::reformat(RenderTextureDescriptor const& d)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->reformat(d);
-}
-
-bool osc::experimental::operator==(RenderTexture const& a, RenderTexture const& b)
-{
-    return a.m_Impl == b.m_Impl;
-}
-
-bool osc::experimental::operator!=(RenderTexture const& a, RenderTexture const& b)
-{
-    return a.m_Impl != b.m_Impl;
-}
-
-bool osc::experimental::operator<(RenderTexture const& a, RenderTexture const& b)
-{
-    return a.m_Impl < b.m_Impl;
-}
-
-std::ostream& osc::experimental::operator<<(std::ostream& o, RenderTexture const& rt)
-{
-    return o << "RenderTexture()";
-}
-
-//////////////////////////////////
-//
 // camera stuff
 //
 //////////////////////////////////
@@ -2615,6 +2667,18 @@ private:
         else
         {
             return osc::App::get().idims();
+        }
+    }
+
+    glm::vec2 viewportDimensions() const
+    {
+        if (m_MaybeTexture)
+        {
+            return {m_MaybeTexture->getWidth(), m_MaybeTexture->getHeight()};
+        }
+        else
+        {
+            return osc::App::get().dims();
         }
     }
 
@@ -2993,6 +3057,19 @@ void osc::experimental::GraphicsBackend::TryBindMaterialValueToShaderElement(Sha
         ++(*textureSlot);
         break;
     }
+    case VariantIndex<MaterialValue, osc::experimental::RenderTexture>():
+    {
+        osc::experimental::RenderTexture::Impl& impl = *std::get<osc::experimental::RenderTexture>(v).m_Impl;
+        gl::Texture2D& texture = impl.getOutputTexture();
+
+        gl::ActiveTexture(GL_TEXTURE0 + *textureSlot);
+        gl::BindTexture(texture);
+        gl::UniformSampler2D u{se.Location};
+        gl::Uniform(u, *textureSlot);
+
+        ++(*textureSlot);
+        break;
+    }
     default:
     {
         break;  // TODO: throw?
@@ -3024,12 +3101,12 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     {
         osc::Rect cameraRect = camera.getPixelRect();  // in "usual" screen space - topleft
         glm::vec2 cameraRectBottomLeft = osc::BottomLeft(cameraRect);
-        glm::vec2 windowDims = osc::App::get().dims();
+        glm::vec2 viewportDims = camera.viewportDimensions();
 
         outputDimensions = osc::Dimensions(cameraRect);
         gl::Viewport(
             static_cast<GLsizei>(cameraRectBottomLeft.x),
-            static_cast<GLsizei>(windowDims.y - cameraRectBottomLeft.y),
+            static_cast<GLsizei>(viewportDims.y - cameraRectBottomLeft.y),
             static_cast<GLsizei>(outputDimensions.x),
             static_cast<GLsizei>(outputDimensions.y)
         );

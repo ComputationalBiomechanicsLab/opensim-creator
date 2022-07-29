@@ -42,7 +42,7 @@ static glm::vec2 const g_PlaneTexCoords[] =
 static std::uint16_t const g_PlaneIndices[] = {0, 2, 1, 3, 5, 4};
 
 // generate a texture-mapped cube
-static osc::experimental::Mesh GenerateMesh()
+static osc::experimental::Mesh GenerateCubeMesh()
 {
     osc::MeshData cube = osc::GenCube();
 
@@ -52,6 +52,11 @@ static osc::experimental::Mesh GenerateMesh()
     }
 
     return osc::experimental::LoadMeshFromMeshData(cube);
+}
+
+static osc::experimental::Mesh GenerateQuadMesh()
+{
+    return osc::experimental::LoadMeshFromMeshData(osc::GenTexturedQuad());
 }
 
 static osc::experimental::Mesh GeneratePlane()
@@ -67,10 +72,13 @@ class osc::RendererFramebuffersTab::Impl final {
 public:
     Impl(TabHost* parent) : m_Parent{ parent }
     {
-        m_Camera.setPosition({ 0.0f, 0.0f, 3.0f });
-        m_Camera.setCameraFOV(glm::radians(45.0f));
-        m_Camera.setNearClippingPlane(0.1f);
-        m_Camera.setFarClippingPlane(100.0f);
+        m_SceneCamera.setPosition({0.0f, 0.0f, 3.0f});
+        m_SceneCamera.setCameraFOV(glm::radians(45.0f));
+        m_SceneCamera.setNearClippingPlane(0.1f);
+        m_SceneCamera.setFarClippingPlane(100.0f);
+
+        m_ScreenCamera.setViewMatrix(glm::mat4{1.0f});
+        m_ScreenCamera.setProjectionMatrix(glm::mat4{1.0f});
     }
 
     UID getID() const
@@ -129,7 +137,7 @@ public:
         // handle mouse capturing
         if (m_IsMouseCaptured)
         {
-            //UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
+            UpdateEulerCameraFromImGuiUserInput(m_SceneCamera, m_CameraEulers);
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
@@ -139,33 +147,43 @@ public:
             App::upd().setShowCursor(true);
         }
 
-        App::upd().clearScreen({ 0.1f, 0.1f, 0.1f, 1.0f });
-
         // setup render texture
-        auto viewportRect = osc::GetMainViewportWorkspaceScreenRect();
-        auto viewportRectDims = osc::Dimensions(viewportRect);
-        m_Camera.setTexture(osc::experimental::RenderTextureDescriptor
+        osc::Rect viewportRect = osc::GetMainViewportWorkspaceScreenRect();
+        glm::vec2 viewportRectDims = osc::Dimensions(viewportRect);
+        osc::experimental::RenderTextureDescriptor desc = osc::experimental::RenderTextureDescriptor
         {
-                static_cast<int>(viewportRectDims.x),
-                static_cast<int>(viewportRectDims.y),
-        });
+            static_cast<int>(viewportRectDims.x),
+            static_cast<int>(viewportRectDims.y),
+        };
+        desc.setAntialiasingLevel(osc::App::get().getMSXAASamplesRecommended());
+
+        m_SceneCamera.setTexture(desc);
 
         // render scene
         {
             // cubes
-            m_FrameBuffersMaterial.setTexture("uTexture1", m_ContainerTexture);
+            m_SceneRenderMaterial.setTexture("uTexture1", m_ContainerTexture);
             Transform t;
             t.position = { -1.0f, 0.0f, -1.0f };
-            osc::experimental::Graphics::DrawMesh(m_CubeMesh, t, m_FrameBuffersMaterial, m_Camera);
+            osc::experimental::Graphics::DrawMesh(m_CubeMesh, t, m_SceneRenderMaterial, m_SceneCamera);
             t.position = { 1.0f, 0.0f, -1.0f };
-            osc::experimental::Graphics::DrawMesh(m_CubeMesh, t, m_FrameBuffersMaterial, m_Camera);
+            osc::experimental::Graphics::DrawMesh(m_CubeMesh, t, m_SceneRenderMaterial, m_SceneCamera);
 
             // floor
-            m_FrameBuffersMaterial.setTexture("uTexture1", m_MetalTexture);
-            osc::experimental::Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_FrameBuffersMaterial, m_Camera);
+            m_SceneRenderMaterial.setTexture("uTexture1", m_MetalTexture);
+            osc::experimental::Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_SceneRenderMaterial, m_SceneCamera);
+        }
+        m_SceneCamera.render();
+
+        // render screen quad
+        {
+            m_ScreenMaterial.setRenderTexture("uScreenTexture", *m_SceneCamera.getTexture());
+            osc::experimental::Graphics::DrawMesh(m_QuadMesh, Transform{}, m_ScreenMaterial, m_ScreenCamera);
         }
 
-        m_Camera.render();
+        m_ScreenCamera.setPixelRect(viewportRect);
+        m_ScreenCamera.render();  // renders to screen
+        m_ScreenMaterial.clearRenderTexture("uScreenTexture");  // TODO: perf
 
         // auxiliary UI
         m_LogViewer.draw();
@@ -176,24 +194,35 @@ private:
     UID m_ID;
     TabHost* m_Parent;
 
-    experimental::Material m_FrameBuffersMaterial
+    experimental::Material m_SceneRenderMaterial
     {
         experimental::Shader
         {
             App::slurp("shaders/ExperimentFrameBuffers.vert"),
             App::slurp("shaders/ExperimentFrameBuffers.frag"),
-    }
+        }
     };
 
-    experimental::Camera m_Camera;
+    experimental::Camera m_SceneCamera;
     bool m_IsMouseCaptured = false;
     glm::vec3 m_CameraEulers = { 0.0f, 0.0f, 0.0f };
 
     experimental::Texture2D m_ContainerTexture = osc::experimental::LoadTexture2DFromImageResource("container.jpg");
     experimental::Texture2D m_MetalTexture = osc::experimental::LoadTexture2DFromImageResource("textures/metal.png");
 
-    experimental::Mesh m_CubeMesh = GenerateMesh();
+    experimental::Mesh m_CubeMesh = GenerateCubeMesh();
     experimental::Mesh m_PlaneMesh = GeneratePlane();
+    experimental::Mesh m_QuadMesh = GenerateQuadMesh();
+
+    experimental::Camera m_ScreenCamera;
+    experimental::Material m_ScreenMaterial
+    {
+        experimental::Shader
+        {
+            App::slurp("shaders/ExperimentFrameBuffersScreen.vert"),
+            App::slurp("shaders/ExperimentFrameBuffersScreen.frag"),
+        }
+    };
 
     LogViewerPanel m_LogViewer{"log"};
     PerfPanel m_PerfPanel{"perf"};

@@ -676,6 +676,36 @@ TEST_F(Renderer, MaterialSetTextureOnMaterialCausesGetTextureToReturnTheTexture)
     ASSERT_TRUE(mat.getTexture(key));
 }
 
+TEST_F(Renderer, MaterialSetRenderTextureCausesGetRenderTextureToReturnTheTexture)
+{
+    osc::experimental::Material mat = GenerateMaterial();
+    osc::experimental::RenderTexture renderTex = GenerateRenderTexture();
+    std::string key = "someKey";
+
+    ASSERT_FALSE(mat.getRenderTexture(key));
+
+    mat.setRenderTexture(key, renderTex);
+
+    ASSERT_EQ(*mat.getRenderTexture(key), renderTex);
+}
+
+TEST_F(Renderer, MaterialSetRenderTextureFollowedByClearRenderTextureClearsTheRenderTexture)
+{
+    osc::experimental::Material mat = GenerateMaterial();
+    osc::experimental::RenderTexture renderTex = GenerateRenderTexture();
+    std::string key = "someKey";
+
+    ASSERT_FALSE(mat.getRenderTexture(key));
+
+    mat.setRenderTexture(key, renderTex);
+
+    ASSERT_EQ(*mat.getRenderTexture(key), renderTex);
+
+    mat.clearRenderTexture(key);
+
+    ASSERT_FALSE(mat.getRenderTexture(key));
+}
+
 TEST_F(Renderer, MaterialGetTransparentIsInitially)
 {
     osc::experimental::Material mat = GenerateMaterial();
