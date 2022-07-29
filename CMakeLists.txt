@@ -481,6 +481,8 @@ add_library(osccore STATIC
     src/Tabs/Experiments/RendererLightingMapsTab.hpp
     src/Tabs/Experiments/RendererMultipleLightsTab.cpp
     src/Tabs/Experiments/RendererMultipleLightsTab.hpp
+    src/Tabs/Experiments/RendererOpenSimTab.cpp
+    src/Tabs/Experiments/RendererOpenSimTab.hpp
     src/Tabs/Experiments/RendererTexturingTab.cpp
     src/Tabs/Experiments/RendererTexturingTab.hpp
     src/Tabs/CookiecutterTab.cpp
