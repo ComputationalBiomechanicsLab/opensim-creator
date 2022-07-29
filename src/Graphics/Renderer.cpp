@@ -1046,50 +1046,16 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, RenderTexture const
 
 class osc::experimental::Shader::Impl final {
 public:
-    explicit Impl(CStringView vertexShader, CStringView fragmentShader) :
+    Impl(CStringView vertexShader, CStringView fragmentShader) :
         m_Program{gl::CreateProgramFrom(gl::CompileFromSource<gl::VertexShader>(vertexShader.c_str()), gl::CompileFromSource<gl::FragmentShader>(fragmentShader.c_str()))}
     {
-        constexpr GLsizei maxNameLen = 128;
+        parseUniformsAndAttributesFromProgram();
+    }
 
-        GLint numAttrs;
-        glGetProgramiv(m_Program.get(), GL_ACTIVE_ATTRIBUTES, &numAttrs);
-
-        GLint numUniforms;
-        glGetProgramiv(m_Program.get(), GL_ACTIVE_UNIFORMS, &numUniforms);
-
-        m_Attributes.reserve(numAttrs);
-        for (GLint i = 0; i < numAttrs; i++)
-        {
-            GLint size; // size of the variable
-            GLenum type; // type of the variable (float, vec3 or mat4, etc)
-            GLchar name[maxNameLen]; // variable name in GLSL
-            GLsizei length; // name length
-            glGetActiveAttrib(m_Program.get() , (GLuint)i, maxNameLen, &length, &size, &type, name);
-
-            m_Attributes.try_emplace(
-                NormalizeShaderElementName(name),
-                static_cast<int>(glGetAttribLocation(m_Program.get(), name)),
-                GLShaderTypeToShaderTypeInternal(type),
-                static_cast<int>(size)
-            );
-        }
-
-        m_Uniforms.reserve(numUniforms);
-        for (GLint i = 0; i < numUniforms; i++)
-        {
-            GLint size; // size of the variable
-            GLenum type; // type of the variable (float, vec3 or mat4, etc)
-            GLchar name[maxNameLen]; // variable name in GLSL
-            GLsizei length; // name length
-            glGetActiveUniform(m_Program.get(), (GLuint)i, maxNameLen, &length, &size, &type, name);
-
-            m_Uniforms.try_emplace(
-                NormalizeShaderElementName(name),
-                static_cast<int>(glGetUniformLocation(m_Program.get(), name)),
-                GLShaderTypeToShaderTypeInternal(type),
-                size
-            );
-        }
+    Impl(CStringView vertexShader, CStringView geometryShader, CStringView fragmentShader) :
+        m_Program{gl::CreateProgramFrom(gl::CompileFromSource<gl::VertexShader>(vertexShader.c_str()), gl::CompileFromSource<gl::FragmentShader>(fragmentShader.c_str()), gl::CompileFromSource<gl::GeometryShader>(geometryShader.c_str()))}
+    {
+        parseUniformsAndAttributesFromProgram();
     }
 
     std::optional<int> findPropertyIndex(std::string const& propertyName) const
@@ -1142,6 +1108,51 @@ public:
     }
 
 private:
+    void parseUniformsAndAttributesFromProgram()
+    {
+        constexpr GLsizei maxNameLen = 128;
+
+        GLint numAttrs;
+        glGetProgramiv(m_Program.get(), GL_ACTIVE_ATTRIBUTES, &numAttrs);
+
+        GLint numUniforms;
+        glGetProgramiv(m_Program.get(), GL_ACTIVE_UNIFORMS, &numUniforms);
+
+        m_Attributes.reserve(numAttrs);
+        for (GLint i = 0; i < numAttrs; i++)
+        {
+            GLint size; // size of the variable
+            GLenum type; // type of the variable (float, vec3 or mat4, etc)
+            GLchar name[maxNameLen]; // variable name in GLSL
+            GLsizei length; // name length
+            glGetActiveAttrib(m_Program.get() , (GLuint)i, maxNameLen, &length, &size, &type, name);
+
+            m_Attributes.try_emplace(
+                NormalizeShaderElementName(name),
+                static_cast<int>(glGetAttribLocation(m_Program.get(), name)),
+                GLShaderTypeToShaderTypeInternal(type),
+                static_cast<int>(size)
+            );
+        }
+
+        m_Uniforms.reserve(numUniforms);
+        for (GLint i = 0; i < numUniforms; i++)
+        {
+            GLint size; // size of the variable
+            GLenum type; // type of the variable (float, vec3 or mat4, etc)
+            GLchar name[maxNameLen]; // variable name in GLSL
+            GLsizei length; // name length
+            glGetActiveUniform(m_Program.get(), (GLuint)i, maxNameLen, &length, &size, &type, name);
+
+            m_Uniforms.try_emplace(
+                NormalizeShaderElementName(name),
+                static_cast<int>(glGetUniformLocation(m_Program.get(), name)),
+                GLShaderTypeToShaderTypeInternal(type),
+                size
+            );
+        }
+    }
+
     UID m_UID;
     gl::Program m_Program;
     std::unordered_map<std::string, ShaderElement> m_Uniforms;
@@ -1156,6 +1167,11 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, ShaderType shaderTy
 
 osc::experimental::Shader::Shader(CStringView vertexShader, CStringView fragmentShader) :
     m_Impl{std::make_shared<Impl>(std::move(vertexShader), std::move(fragmentShader))}
+{
+}
+
+osc::experimental::Shader::Shader(CStringView vertexShader, CStringView geometryShader, CStringView fragmentShader) :
+    m_Impl{std::make_shared<Impl>(std::move(vertexShader), std::move(geometryShader), std::move(fragmentShader))}
 {
 }
 
@@ -3217,10 +3233,18 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             // try binding to uNormalMat (standard)
             {
                 auto it = uniforms.find("uNormalMat");
-                if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat3)
+                if (it != uniforms.end())
                 {
-                    gl::UniformMat3 u{it->second.Location};
-                    gl::Uniform(u, ToNormalMatrix(transform));
+                    if (it->second.Type == osc::experimental::ShaderType::Mat3)
+                    {
+                        gl::UniformMat3 u{it->second.Location};
+                        gl::Uniform(u, ToNormalMatrix(transform));
+                    }
+                    else if (it->second.Type == osc::experimental::ShaderType::Mat4)
+                    {
+                        gl::UniformMat4 u{it->second.Location};
+                        gl::Uniform(u, ToNormalMatrix4(transform));
+                    }
                 }
             }
 

@@ -99,6 +99,7 @@ public:
 
         m_SceneMaterial.setVec4("uDiffuseColor", m_MeshColor);
         experimental::Graphics::DrawMesh(m_Mesh, osc::Transform{}, m_SceneMaterial, m_SceneCamera);
+        experimental::Graphics::DrawMesh(m_Mesh, osc::Transform{}, m_NormalsMaterial, m_SceneCamera);
         m_SceneCamera.render();
     }
 
@@ -112,6 +113,15 @@ private:
         {
             App::slurp("shaders/ExperimentGeometryShaderScene.vert"),
             App::slurp("shaders/ExperimentGeometryShaderScene.frag"),
+        }
+    };
+    experimental::Material m_NormalsMaterial
+    {
+        experimental::Shader
+        {
+            App::slurp("shaders/ExperimentGeometryShaderNormals.vert"),
+            App::slurp("shaders/ExperimentGeometryShaderNormals.geom"),
+            App::slurp("shaders/ExperimentGeometryShaderNormals.frag"),
         }
     };
     experimental::Mesh m_Mesh = LoadGeometry();

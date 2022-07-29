@@ -228,6 +228,7 @@ namespace osc::experimental
     class Shader final {
     public:
         Shader(CStringView vertexShader, CStringView fragmentShader);  // throws on compile error
+        Shader(CStringView vertexShader, CStringView geometryShader, CStringView fragmmentShader);  // throws on compile error
         Shader(Shader const&);
         Shader(Shader&&) noexcept;
         Shader& operator=(Shader const&);

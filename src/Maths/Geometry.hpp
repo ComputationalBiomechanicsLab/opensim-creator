@@ -209,6 +209,7 @@ namespace osc
 
     // converts a `Transform` to a normal matrix
     glm::mat3 ToNormalMatrix(Transform const&) noexcept;
+    glm::mat4 ToNormalMatrix4(Transform const&) noexcept;
 
     // decomposes the provided transform matrix into a `Transform`, throws if decomposition is not possible
     Transform ToTransform(glm::mat4 const&);

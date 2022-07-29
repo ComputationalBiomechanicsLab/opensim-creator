@@ -1074,6 +1074,11 @@ glm::mat3x3 osc::ToNormalMatrix(Transform const& t) noexcept
     return glm::toMat3(t.rotation);
 }
 
+glm::mat4 osc::ToNormalMatrix4(Transform const& t) noexcept
+{
+    return glm::toMat4(t.rotation);
+}
+
 osc::Transform osc::ToTransform(glm::mat4 const& mtx)
 {
     Transform rv;

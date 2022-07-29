@@ -95,6 +95,25 @@ R"(
     }
 )";
 
+static constexpr char const g_GeometryShaderSrc[] =
+R"(
+    #version 330 core
+
+    layout (triangles) in;
+    layout (line_strip, max_vertices = 6) out;
+
+    void main()
+    {
+        gl_Position = gl_in[0].gl_Position;
+        EmitVertex();
+        gl_Position = gl_in[1].gl_Position;
+        EmitVertex();
+        gl_Position = gl_in[2].gl_Position;
+        EmitVertex();
+        EndPrimitive();
+    }
+)";
+
 static constexpr char const g_FragmentShaderSrc[] =
 R"(
     #version 330 core
@@ -293,6 +312,11 @@ TEST_F(Renderer, ShaderTypeCanBeIteratedOverAndAllCanBeStreamed)
 TEST_F(Renderer, ShaderCanBeConstructedFromVertexAndFragmentShaderSource)
 {
     osc::experimental::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
+}
+
+TEST_F(Renderer, ShaderCanBeConstructedFromVertexGeometryAndFragmentShaderSources)
+{
+    osc::experimental::Shader s{g_VertexShaderSrc, g_GeometryShaderSrc, g_FragmentShaderSrc};
 }
 
 TEST_F(Renderer, ShaderCanBeCopyConstructed)
