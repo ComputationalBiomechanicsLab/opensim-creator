@@ -2517,7 +2517,7 @@ namespace
     bool IsOpaque(RenderObject const& ro)
     {
         return !ro.material.getTransparent();
-    };
+    }
 
     // function object that returns true if the first argument is farther from the second
     //
