@@ -504,8 +504,10 @@ namespace osc::experimental
         void setFarClippingPlane(float);
 
         std::optional<RenderTexture> getTexture() const; // empty if drawing directly to screen
+        void setTexture(RenderTexture&&);
         void setTexture(RenderTextureDescriptor);
         void setTexture();  // resets to drawing to screen
+        void swapTexture(std::optional<RenderTexture>&);  // handy if the caller wants to handle the textures
 
         // where on the screen the camera is rendered (in screen-space - top-left, X rightwards, Y down
         //
@@ -513,6 +515,7 @@ namespace osc::experimental
         // to a texture
         Rect getPixelRect() const;
         void setPixelRect(Rect const&);
+        void setPixelRect();
 
         int getPixelWidth() const;
         int getPixelHeight() const;

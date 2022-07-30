@@ -2686,6 +2686,11 @@ public:
         return m_MaybeTexture;
     }
 
+    void setTexture(RenderTexture&& t)
+    {
+        m_MaybeTexture.emplace(std::move(t));
+    }
+
     void setTexture(RenderTextureDescriptor t)
     {
         if (m_MaybeTexture)
@@ -2701,6 +2706,11 @@ public:
     void setTexture()
     {
         m_MaybeTexture = std::nullopt;
+    }
+
+    void swapTexture(std::optional<RenderTexture>& other)
+    {
+        std::swap(m_MaybeTexture, other);
     }
 
     Rect getPixelRect() const
@@ -2722,6 +2732,11 @@ public:
     void setPixelRect(Rect const& rect)
     {
         m_MaybeScreenPixelRect = rect;
+    }
+
+    void setPixelRect()
+    {
+        m_MaybeScreenPixelRect.reset();
     }
 
     int getPixelWidth() const
@@ -2985,6 +3000,12 @@ std::optional<osc::experimental::RenderTexture> osc::experimental::Camera::getTe
     return m_Impl->getTexture();
 }
 
+void osc::experimental::Camera::setTexture(RenderTexture&& t)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setTexture(std::move(t));
+}
+
 void osc::experimental::Camera::setTexture(RenderTextureDescriptor desc)
 {
     DoCopyOnWrite(m_Impl);
@@ -2997,6 +3018,12 @@ void osc::experimental::Camera::setTexture()
     m_Impl->setTexture();
 }
 
+void osc::experimental::Camera::swapTexture(std::optional<RenderTexture>& other)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->swapTexture(other);
+}
+
 osc::Rect osc::experimental::Camera::getPixelRect() const
 {
     return m_Impl->getPixelRect();
@@ -3006,6 +3033,12 @@ void osc::experimental::Camera::setPixelRect(Rect const& rect)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setPixelRect(rect);
+}
+
+void osc::experimental::Camera::setPixelRect()
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setPixelRect();
 }
 
 int osc::experimental::Camera::getPixelWidth() const
@@ -3276,6 +3309,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     // bind to output framebuffer
     if (camera.m_MaybeTexture)
     {
+        DoCopyOnWrite(camera.m_MaybeTexture->m_Impl);
         gl::BindFramebuffer(GL_FRAMEBUFFER, camera.m_MaybeTexture->m_Impl->getFrameBuffer());
     }
     else
@@ -3431,7 +3465,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             {
                 if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::experimental::ShaderType::Mat4)
                 {
-                    gl::AttributeMat4 mmtxAttr{ shaderImpl.m_MaybeInstancedNormalMatAttr->Location };
+                    gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
                     gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
                     gl::VertexAttribDivisor(mmtxAttr, 1);
                     gl::EnableVertexAttribArray(mmtxAttr);

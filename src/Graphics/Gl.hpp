@@ -460,6 +460,21 @@ namespace gl
         // else: not supported: see static_assert above
     }
 
+    template<typename TGlsl>
+    inline void DisableVertexAttribArray(Attribute<TGlsl> const& loc) noexcept {
+        static_assert(TGlsl::size <= 4 || TGlsl::type == GL_FLOAT);
+
+        if constexpr (TGlsl::size <= 4) {
+            glDisableVertexAttribArray(loc.get());
+        } else if constexpr (TGlsl::type == GL_FLOAT) {
+            for (unsigned i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i) {
+                glDisableVertexAttribArray(loc.get() + i);
+            }
+        }
+
+        // else: not supported: see static_assert above
+    }
+
     // set the attribute divisor, which tells the implementation how to "step"
     // through each attribute during an instanced draw call
     //
