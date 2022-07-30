@@ -2474,6 +2474,11 @@ namespace
         std::optional<osc::experimental::MaterialPropertyBlock> maybePropBlock;
     };
 
+    bool operator<(RenderObject const& a, RenderObject const& b)
+    {
+        return std::tie(a.material, a.maybePropBlock, a.mesh) < std::tie(b.material, b.maybePropBlock, b.mesh);
+    }
+
     // returns true if the render object is opaque
     bool IsOpaque(RenderObject const& ro)
     {
@@ -2534,12 +2539,12 @@ namespace
         osc::experimental::Mesh const& m_Mesh;
     };
 
-    std::vector<RenderObject>::iterator SortRenderQueue(std::vector<RenderObject>& renderQueue, glm::vec3 cameraPos)
+    std::vector<RenderObject>::iterator SortRenderQueue(std::vector<RenderObject>& queue, glm::vec3 cameraPos)
     {
-        // sort by transparency
-        // sort by material
-        // sort by material property block
-        // return transparenty pivot point
+        auto it = std::partition(queue.begin(), queue.end(), IsOpaque);
+        std::sort(queue.begin(), it);
+        std::sort(it, queue.end(), RenderObjectIsFartherFrom{cameraPos});
+        return it;
     }
 }
 
@@ -3310,7 +3315,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     };
 
     // helper: draw a batch of render objects that have the same material and material block
-    auto HandleBatchWithSameMatrialPropertyBlock = [&HandleBatchWithSameMesh](std::vector<RenderObject>::iterator begin, std::vector<RenderObject>::iterator end, bool canResort, int& textureSlot)
+    auto HandleBatchWithSameMatrialPropertyBlock = [&HandleBatchWithSameMesh](std::vector<RenderObject>::iterator begin, std::vector<RenderObject>::iterator end, int& textureSlot)
     {
         osc::experimental::Material::Impl& matImpl = const_cast<osc::experimental::Material::Impl&>(*begin->material.m_Impl);
         osc::experimental::Shader::Impl& shaderImpl = const_cast<osc::experimental::Shader::Impl&>(*matImpl.m_Shader.m_Impl);
@@ -3331,30 +3336,17 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         }
 
         // batch by mesh
-        if (canResort)
+        auto batchIt = begin;
+        while (batchIt != end)
         {
-            auto batchIt = begin;
-            while (batchIt != end)
-            {
-                auto batchEnd = std::partition(batchIt, end, RenderObjectHasMesh{batchIt->mesh});
-                HandleBatchWithSameMesh(batchIt, batchEnd);
-                batchIt = batchEnd;
-            }
-        }
-        else
-        {
-            auto batchIt = begin;
-            while (batchIt != end)
-            {
-                auto batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMesh{batchIt->mesh});
-                HandleBatchWithSameMesh(batchIt, batchEnd);
-                batchIt = batchEnd;
-            }
+            auto batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMesh{batchIt->mesh});
+            HandleBatchWithSameMesh(batchIt, batchEnd);
+            batchIt = batchEnd;
         }
     };
 
     // helper: draw a batch of render objects that have the same material
-    auto HandleBatchWithSameMaterial = [&viewMtx, &projMtx, &viewProjMtx, &HandleBatchWithSameMatrialPropertyBlock](std::vector<RenderObject>::iterator begin, std::vector<RenderObject>::iterator end, bool canResort)
+    auto HandleBatchWithSameMaterial = [&viewMtx, &projMtx, &viewProjMtx, &HandleBatchWithSameMatrialPropertyBlock](std::vector<RenderObject>::iterator begin, std::vector<RenderObject>::iterator end)
     {
         osc::experimental::Material::Impl& matImpl = const_cast<osc::experimental::Material::Impl&>(*begin->material.m_Impl);
         osc::experimental::Shader::Impl& shaderImpl = const_cast<osc::experimental::Shader::Impl&>(*matImpl.m_Shader.m_Impl);
@@ -3408,78 +3400,45 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             }
         }
 
-        if (canResort)
+        // batch by material property block
+        auto batchIt = begin;
+        while (batchIt != end)
         {
-            auto batchIt = begin;
-            while (batchIt != end)
-            {
-                auto batchEnd = std::partition(batchIt, end, RenderObjectHasMaterialPropertyBlock{batchIt->maybePropBlock});
-                HandleBatchWithSameMatrialPropertyBlock(batchIt, batchEnd, canResort, textureSlot);
-                batchIt = batchEnd;
-            }
-        }
-        else
-        {
-            auto batchIt = begin;
-            while (batchIt != end)
-            {
-                auto batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMaterialPropertyBlock{batchIt->maybePropBlock});
-                HandleBatchWithSameMatrialPropertyBlock(batchIt, batchEnd, canResort, textureSlot);
-                batchIt = batchEnd;
-            }
+            auto batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMaterialPropertyBlock{batchIt->maybePropBlock});
+            HandleBatchWithSameMatrialPropertyBlock(batchIt, batchEnd, textureSlot);
+            batchIt = batchEnd;
         }
 
         gl::UseProgram();
     };
 
     // helper: draw a sequence of render objects (no presumptions)
-    auto Draw = [&HandleBatchWithSameMaterial](std::vector<RenderObject>::iterator begin, std::vector<RenderObject>::iterator end, bool canResort)
+    auto Draw = [&HandleBatchWithSameMaterial](std::vector<RenderObject>::iterator begin, std::vector<RenderObject>::iterator end)
     {
         // batch by material
-        if (canResort)
+        auto batchIt = begin;
+        while (batchIt != end)
         {
-            auto batchIt = begin;
-            while (batchIt != end)
-            {
-                auto batchEnd = std::partition(batchIt, end, RenderObjectHasMaterial{batchIt->material});
-                HandleBatchWithSameMaterial(batchIt, batchEnd, canResort);
-                batchIt = batchEnd;
-            }
-        }
-        else
-        {
-            auto batchIt = begin;
-            while (batchIt != end)
-            {
-                auto batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMaterial{batchIt->material});
-                HandleBatchWithSameMaterial(batchIt, batchEnd, canResort);
-                batchIt = batchEnd;
-            }
+            auto batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMaterial{batchIt->material});
+            HandleBatchWithSameMaterial(batchIt, batchEnd);
+            batchIt = batchEnd;
         }
     };
 
     // flush the render queue
     if (auto& queue = camera.m_RenderQueue; !queue.empty())
     {
-        // partition the render queue into [opaque | transparent]
-        std::vector<RenderObject>::iterator transparentStart;
-        {
-            OSC_PERF("FlushRenderQueue: scene partition (opaque | transparent)");
-            transparentStart = std::partition(queue.begin(), queue.end(), IsOpaque);
-            std::sort(transparentStart, queue.end(), RenderObjectIsFartherFrom{camera.getPosition()});
-        }
+        auto transparentStart = SortRenderQueue(queue, camera.getPosition());
 
-        OSC_PERF("FlushRenderQueue: flush (all)");
-
-        // opaque
+        // draw opaque elments
         gl::Enable(GL_DEPTH_TEST);
         gl::Disable(GL_BLEND);
-        Draw(queue.begin(), transparentStart, true);
+        Draw(queue.begin(), transparentStart);
 
-        // transparent
+        // draw transparent elements
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         gl::Enable(GL_BLEND);
-        Draw(transparentStart, queue.end(), false);
+        Draw(transparentStart, queue.end());
 
         queue.clear();
     }
@@ -3511,5 +3470,5 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
     }
 
-    // the queue is now flushed any any output textures resolved, hooray!
+    // (hooray)
 }
