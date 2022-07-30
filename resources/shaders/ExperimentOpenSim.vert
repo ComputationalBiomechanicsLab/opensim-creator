@@ -7,8 +7,8 @@ uniform vec3 uViewPos;
 
 layout (location = 0) in vec3 aPos;
 layout (location = 2) in vec3 aNormal;
-in mat4 aModelMat;
-in mat3 aNormalMat;
+layout (location = 6) in mat4 aModelMat;
+layout (location = 10) in mat3 aNormalMat;
 
 out vec4 GouraudBrightness;
 
