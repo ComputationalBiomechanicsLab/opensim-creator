@@ -154,6 +154,19 @@ namespace
         gl::Texture2D SingleSampledColorBuffer;
         gl::Texture2D SingleSampledDepthBuffer;
     };
+
+    template<typename K, typename V, typename Key>
+    V const* TryGetValue(std::unordered_map<K, V> m, Key const& k)
+    {
+        auto it = m.find(k);
+        return it != m.end() ? &it->second : nullptr;
+    }
+
+    static std::string const g_AutomaticModelMatUniformName = "uModelMat";
+    static std::string const g_AutomaticNormalMatUniformName = "uNormalMat";
+    static std::string const g_AutomaticViewMatUniformName = "uViewMat";
+    static std::string const g_AutomaticProjMatUniformName = "uProjMat";
+    static std::string const g_AutomaticViewProjMatUniformName = "uViewProjMat";
 }
 
 // shader (backend stuff)
@@ -2460,6 +2473,74 @@ namespace
         osc::experimental::Material material;
         std::optional<osc::experimental::MaterialPropertyBlock> maybePropBlock;
     };
+
+    // returns true if the render object is opaque
+    bool IsOpaque(RenderObject const& ro)
+    {
+        return !ro.material.getTransparent();
+    };
+
+    // function object that returns true if the first argument is farther from the second
+    //
+    // (handy for scene sorting)
+    struct RenderObjectIsFartherFrom final {
+        RenderObjectIsFartherFrom(glm::vec3 const& pos) : m_Pos{pos} {}
+
+        bool operator()(RenderObject const& a, RenderObject const& b) const
+        {
+            glm::vec3 aMidpointWorldSpace = a.transform * a.mesh.getMidpoint();
+            glm::vec3 bMidpointWorldSpace = b.transform * b.mesh.getMidpoint();
+            glm::vec3 camera2a = aMidpointWorldSpace - m_Pos;
+            glm::vec3 camera2b = bMidpointWorldSpace - m_Pos;
+            float camera2aDistanceSquared = glm::dot(camera2a, camera2a);
+            float camera2bDistanceSquared = glm::dot(camera2b, camera2b);
+            return camera2aDistanceSquared > camera2bDistanceSquared;
+        }
+    private:
+        glm::vec3 m_Pos;
+    };
+
+    struct RenderObjectHasMaterial final {
+        RenderObjectHasMaterial(osc::experimental::Material const& material) : m_Material{&material} {}
+
+        bool operator()(RenderObject const& ro) const
+        {
+            return ro.material == *m_Material;
+        }
+    private:
+        osc::experimental::Material const* m_Material;
+    };
+
+    struct RenderObjectHasMaterialPropertyBlock final {
+        RenderObjectHasMaterialPropertyBlock(std::optional<osc::experimental::MaterialPropertyBlock> const& mpb) : m_Mpb{&mpb} {}
+
+        bool operator()(RenderObject const& ro) const
+        {
+            return ro.maybePropBlock == *m_Mpb;
+        }
+
+    private:
+        std::optional<osc::experimental::MaterialPropertyBlock> const* m_Mpb;
+    };
+
+    struct RenderObjectHasMesh final {
+        RenderObjectHasMesh(osc::experimental::Mesh const& mesh) : m_Mesh{mesh} {}
+
+        bool operator()(RenderObject const& ro) const
+        {
+            return ro.mesh == m_Mesh;
+        }
+    private:
+        osc::experimental::Mesh const& m_Mesh;
+    };
+
+    std::vector<RenderObject>::iterator SortRenderQueue(std::vector<RenderObject>& renderQueue, glm::vec3 cameraPos)
+    {
+        // sort by transparency
+        // sort by material
+        // sort by material property block
+        // return transparenty pivot point
+    }
 }
 
 class osc::experimental::Camera::Impl final {
@@ -3122,12 +3203,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 {
     OSC_PERF("FlushRenderQueue: all");
 
-    // top-level graphics API settings
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    gl::Enable(GL_BLEND);
-    gl::Enable(GL_DEPTH_TEST);
-
-    // bind to output target
+    // bind to output framebuffer
     if (camera.m_MaybeTexture)
     {
         gl::BindFramebuffer(GL_FRAMEBUFFER, camera.m_MaybeTexture->m_Impl->getFrameBuffer());
@@ -3137,7 +3213,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
     }
 
-    // setup output viewport rectangle
+    // setup output viewport
     glm::ivec2 outputDimensions{};
     {
         osc::Rect cameraRect = camera.getPixelRect();  // in "usual" screen space - topleft
@@ -3153,135 +3229,98 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         );
     }
 
-    // clear output
-    gl::ClearColor(camera.m_BackgroundColor.r, camera.m_BackgroundColor.g, camera.m_BackgroundColor.b, camera.m_BackgroundColor.a);
-    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-    // handle scissor testing
+    // setup scissor testing (if applicable)
     if (camera.m_MaybeScissorRect)
     {
         osc::Rect scissorRect = *camera.m_MaybeScissorRect;
         glm::ivec2 scissorDims = osc::Dimensions(scissorRect);
 
         gl::Enable(GL_SCISSOR_TEST);
-        glScissor(static_cast<int>(scissorRect.p1.x), static_cast<int>(scissorRect.p1.y), scissorDims.x, scissorDims.y);
+        glScissor(
+            static_cast<int>(scissorRect.p1.x),
+            static_cast<int>(scissorRect.p1.y),
+            scissorDims.x,
+            scissorDims.y
+        );
     }
     else
     {
         gl::Disable(GL_SCISSOR_TEST);
     }
 
-    // precompute camera stuff
+    // clear output framebuffer
+    gl::ClearColor(
+        camera.m_BackgroundColor.r,
+        camera.m_BackgroundColor.g,
+        camera.m_BackgroundColor.b,
+        camera.m_BackgroundColor.a
+    );
+    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // compute camera matrices
     glm::mat4 viewMtx = camera.getViewMatrix();
     glm::mat4 projMtx = camera.getProjectionMatrix();
     glm::mat4 viewProjMtx = projMtx * viewMtx;
 
-    // sort render queue for opacity testing
-    //
-    // TODO: we need to know the color :<
-    auto IsCloser = [cameraPos = camera.getPosition()](RenderObject const& a, RenderObject const& b)
+    // (there's a lot of helper functions here because this part is extremely algorithmic)
+
+    // helper: draw a batch of render objects that have the same material, material block, and mesh
+    auto HandleBatchWithSameMesh = [](std::vector<RenderObject>::iterator begin, std::vector<RenderObject>::iterator end)
     {
-        glm::vec3 aMidpointModelSpace = a.mesh.getMidpoint();
-        glm::vec3 bMidpointModelSpace = b.mesh.getMidpoint();
-        glm::vec3 aMidpointWorldSpace = a.transform * aMidpointModelSpace;
-        glm::vec3 bMidpointWorldSpace = b.transform * bMidpointModelSpace;
-        glm::vec3 camera2a = aMidpointWorldSpace - cameraPos;
-        glm::vec3 camera2b = bMidpointWorldSpace - cameraPos;
-        float camera2aDistanceSquared = glm::dot(camera2a, camera2a);
-        float camera2bDistanceSquared = glm::dot(camera2b, camera2b);
-        return camera2aDistanceSquared > camera2bDistanceSquared;
-    };
-    auto IsOpaque = [](RenderObject const& a)
-    {
-        return !a.material.getTransparent();
-    };
+        auto& meshImpl = const_cast<osc::experimental::Mesh::Impl&>(*begin->mesh.m_Impl);
+        Shader::Impl& shaderImpl = *begin->material.m_Impl->m_Shader.m_Impl;
+        std::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
-    {
-        OSC_PERF("FlushRenderQueue: scene sort");
-        auto it = std::partition(camera.m_RenderQueue.begin(), camera.m_RenderQueue.end(), IsOpaque);
-        std::sort(it, camera.m_RenderQueue.end(), IsCloser);
-    }
-
-    OSC_PERF("FlushRenderQueue: draw (all)");
-    for (RenderObject const& ro : camera.m_RenderQueue)
-    {
-        osc::experimental::Mesh::Impl& meshImpl = const_cast<osc::experimental::Mesh::Impl&>(*ro.mesh.m_Impl);
-        osc::experimental::Shader::Impl& shaderImpl = const_cast<osc::experimental::Shader::Impl&>(*ro.material.m_Impl->m_Shader.m_Impl);
-        osc::experimental::Material::Impl& materialImpl = const_cast<osc::experimental::Material::Impl&>(*ro.material.m_Impl);
-        osc::Transform const& transform = ro.transform;
-
-        // TODO: polygon mode (e.g. wireframe)?
-
-        gl::UseProgram(shaderImpl.updProgram());
-
+        gl::BindVertexArray(meshImpl.updVertexArray());
+        for (auto it = begin; it != end; ++it)
         {
-            // bind uniforms
-            OSC_PERF("FlushRenderQueue: bind variables");
-
-            std::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
-
-            // try binding to uModel (standard)
             {
-                auto it = uniforms.find("uModelMat");
-                if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat4)
-                {
-                    gl::UniformMat4 u{it->second.Location};
-                    gl::Uniform(u, ToMat4(transform));
-                }
-            }
+                OSC_PERF("FlushRenderQueue: bind instance variables");
 
-            // try binding to uNormalMat (standard)
-            {
-                auto it = uniforms.find("uNormalMat");
-                if (it != uniforms.end())
+                // try binding to uModel (standard)
+                if (ShaderElement const* e = TryGetValue(uniforms, g_AutomaticModelMatUniformName))
                 {
-                    if (it->second.Type == osc::experimental::ShaderType::Mat3)
+                    if (e->Type == osc::experimental::ShaderType::Mat4)
                     {
-                        gl::UniformMat3 u{it->second.Location};
-                        gl::Uniform(u, ToNormalMatrix(transform));
+                        gl::UniformMat4 u{e->Location};
+                        gl::Uniform(u, ToMat4(it->transform));
                     }
-                    else if (it->second.Type == osc::experimental::ShaderType::Mat4)
+                }
+
+                // try binding to uNormalMat (standard)
+                if (ShaderElement const* e = TryGetValue(uniforms, g_AutomaticNormalMatUniformName))
+                {
+                    if (e->Type == osc::experimental::ShaderType::Mat3)
                     {
-                        gl::UniformMat4 u{it->second.Location};
-                        gl::Uniform(u, ToNormalMatrix4(transform));
+                        gl::UniformMat3 u{e->Location};
+                        gl::Uniform(u, ToNormalMatrix(it->transform));
+                    }
+                    else if (e->Type == osc::experimental::ShaderType::Mat4)
+                    {
+                        gl::UniformMat4 u{e->Location};
+                        gl::Uniform(u, ToNormalMatrix4(it->transform));
                     }
                 }
             }
 
-            // try binding to uView (standard)
-            {
-                auto it = uniforms.find("uViewMat");
-                if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat4)
-                {
-                    gl::UniformMat4 u{it->second.Location};
-                    gl::Uniform(u, viewMtx);
-                }
-            }
+            OSC_PERF("FlushRenderQueue: draw call");
+            meshImpl.draw();
+        }
+        gl::BindVertexArray();
+    };
 
-            // try binding to uProjection (standard)
-            {
-                auto it = uniforms.find("uProjMat");
-                if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat4)
-                {
-                    gl::UniformMat4 u{it->second.Location};
-                    gl::Uniform(u, projMtx);
-                }
-            }
+    // helper: draw a batch of render objects that have the same material and material block
+    auto HandleBatchWithSameMatrialPropertyBlock = [&HandleBatchWithSameMesh](std::vector<RenderObject>::iterator begin, std::vector<RenderObject>::iterator end, bool canResort, int& textureSlot)
+    {
+        osc::experimental::Material::Impl& matImpl = const_cast<osc::experimental::Material::Impl&>(*begin->material.m_Impl);
+        osc::experimental::Shader::Impl& shaderImpl = const_cast<osc::experimental::Shader::Impl&>(*matImpl.m_Shader.m_Impl);
+        std::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
-            // try binding to uViewProjMat (standard)
-            {
-                auto it = uniforms.find("uViewProjMat");
-                if (it != uniforms.end() && it->second.Type == osc::experimental::ShaderType::Mat4)
-                {
-                    gl::UniformMat4 u{it->second.Location};
-                    gl::Uniform(u, viewProjMtx);
-                }
-            }
-
-            int textureSlot = 0;
-
-            // bind material values
-            for (auto const& [name, value] : materialImpl.m_Values)
+        // bind property block variables (if applicable)
+        if (begin->maybePropBlock)
+        {
+            OSC_PERF("FlushRenderQueue: bind material block variables");
+            for (auto const& [name, value] : begin->maybePropBlock->m_Impl->m_Values)
             {
                 auto it = uniforms.find(name);
                 if (it != uniforms.end())
@@ -3289,29 +3328,163 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                     TryBindMaterialValueToShaderElement(it->second, value, &textureSlot);
                 }
             }
+        }
 
-            // bind material block values
-            if (ro.maybePropBlock)
+        // batch by mesh
+        if (canResort)
+        {
+            auto batchIt = begin;
+            while (batchIt != end)
             {
-                for (auto const& [name, value] : ro.maybePropBlock->m_Impl->m_Values)
+                auto batchEnd = std::partition(batchIt, end, RenderObjectHasMesh{batchIt->mesh});
+                HandleBatchWithSameMesh(batchIt, batchEnd);
+                batchIt = batchEnd;
+            }
+        }
+        else
+        {
+            auto batchIt = begin;
+            while (batchIt != end)
+            {
+                auto batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMesh{batchIt->mesh});
+                HandleBatchWithSameMesh(batchIt, batchEnd);
+                batchIt = batchEnd;
+            }
+        }
+    };
+
+    // helper: draw a batch of render objects that have the same material
+    auto HandleBatchWithSameMaterial = [&viewMtx, &projMtx, &viewProjMtx, &HandleBatchWithSameMatrialPropertyBlock](std::vector<RenderObject>::iterator begin, std::vector<RenderObject>::iterator end, bool canResort)
+    {
+        osc::experimental::Material::Impl& matImpl = const_cast<osc::experimental::Material::Impl&>(*begin->material.m_Impl);
+        osc::experimental::Shader::Impl& shaderImpl = const_cast<osc::experimental::Shader::Impl&>(*matImpl.m_Shader.m_Impl);
+        std::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
+
+        // updated by various batches (which may bind to textures etc.)
+        int textureSlot = 0;
+
+        gl::UseProgram(shaderImpl.updProgram());
+
+        // bind variables
+        {
+            OSC_PERF("FlushRenderQueue: bind material variables");
+
+            // try binding to uView (standard)
+            if (ShaderElement const* e = TryGetValue(uniforms, g_AutomaticViewMatUniformName))
+            {
+                if (e->Type == osc::experimental::ShaderType::Mat4)
                 {
-                    auto it = uniforms.find(name);
-                    if (it != uniforms.end())
-                    {
-                        TryBindMaterialValueToShaderElement(it->second, value, &textureSlot);
-                    }
+                    gl::UniformMat4 u{e->Location};
+                    gl::Uniform(u, viewMtx);
+                }
+            }
+
+            // try binding to uProjection (standard)
+            if (ShaderElement const* e = TryGetValue(uniforms, g_AutomaticProjMatUniformName))
+            {
+                if (e->Type == osc::experimental::ShaderType::Mat4)
+                {
+                    gl::UniformMat4 u{e->Location};
+                    gl::Uniform(u, projMtx);
+                }
+            }
+
+            if (ShaderElement const* e = TryGetValue(uniforms, g_AutomaticViewProjMatUniformName))
+            {
+                if (e->Type == osc::experimental::ShaderType::Mat4)
+                {
+                    gl::UniformMat4 u{e->Location};
+                    gl::Uniform(u, viewProjMtx);
+                }
+            }
+
+            // bind material values
+            for (auto const& [name, value] : matImpl.m_Values)
+            {
+                if (ShaderElement const* e = TryGetValue(uniforms, name))
+                {
+                    TryBindMaterialValueToShaderElement(*e, value, &textureSlot);
                 }
             }
         }
 
-        OSC_PERF("FlushRenderQueue: draw call");
-        gl::BindVertexArray(meshImpl.updVertexArray());
-        meshImpl.draw();
-        gl::BindVertexArray();
-    }
-    camera.m_RenderQueue.clear();  // queue is fully flushed
-    gl::UseProgram();
+        if (canResort)
+        {
+            auto batchIt = begin;
+            while (batchIt != end)
+            {
+                auto batchEnd = std::partition(batchIt, end, RenderObjectHasMaterialPropertyBlock{batchIt->maybePropBlock});
+                HandleBatchWithSameMatrialPropertyBlock(batchIt, batchEnd, canResort, textureSlot);
+                batchIt = batchEnd;
+            }
+        }
+        else
+        {
+            auto batchIt = begin;
+            while (batchIt != end)
+            {
+                auto batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMaterialPropertyBlock{batchIt->maybePropBlock});
+                HandleBatchWithSameMatrialPropertyBlock(batchIt, batchEnd, canResort, textureSlot);
+                batchIt = batchEnd;
+            }
+        }
 
+        gl::UseProgram();
+    };
+
+    // helper: draw a sequence of render objects (no presumptions)
+    auto Draw = [&HandleBatchWithSameMaterial](std::vector<RenderObject>::iterator begin, std::vector<RenderObject>::iterator end, bool canResort)
+    {
+        // batch by material
+        if (canResort)
+        {
+            auto batchIt = begin;
+            while (batchIt != end)
+            {
+                auto batchEnd = std::partition(batchIt, end, RenderObjectHasMaterial{batchIt->material});
+                HandleBatchWithSameMaterial(batchIt, batchEnd, canResort);
+                batchIt = batchEnd;
+            }
+        }
+        else
+        {
+            auto batchIt = begin;
+            while (batchIt != end)
+            {
+                auto batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMaterial{batchIt->material});
+                HandleBatchWithSameMaterial(batchIt, batchEnd, canResort);
+                batchIt = batchEnd;
+            }
+        }
+    };
+
+    // flush the render queue
+    if (auto& queue = camera.m_RenderQueue; !queue.empty())
+    {
+        // partition the render queue into [opaque | transparent]
+        std::vector<RenderObject>::iterator transparentStart;
+        {
+            OSC_PERF("FlushRenderQueue: scene partition (opaque | transparent)");
+            transparentStart = std::partition(queue.begin(), queue.end(), IsOpaque);
+            std::sort(transparentStart, queue.end(), RenderObjectIsFartherFrom{camera.getPosition()});
+        }
+
+        OSC_PERF("FlushRenderQueue: flush (all)");
+
+        // opaque
+        gl::Enable(GL_DEPTH_TEST);
+        gl::Disable(GL_BLEND);
+        Draw(queue.begin(), transparentStart, true);
+
+        // transparent
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        gl::Enable(GL_BLEND);
+        Draw(transparentStart, queue.end(), false);
+
+        queue.clear();
+    }
+
+    // perform blitting, if necessary (e.g. resolve anti-aliasing)
     if (camera.m_MaybeTexture)
     {
         OSC_PERF("FlushRenderQueue: output blit");
@@ -3334,7 +3507,9 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             GL_NEAREST
         );
 
-        // rebind to the screen (we're done here)
+        // rebind to the screen (the start of FlushRenderQueue bound to the output texture)
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
     }
+
+    // the queue is now flushed any any output textures resolved, hooray!
 }
