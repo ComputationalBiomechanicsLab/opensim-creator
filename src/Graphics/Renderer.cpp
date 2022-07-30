@@ -1737,6 +1737,11 @@ public:
         setValue(std::move(propertyName), std::move(t));
     }
 
+    bool operator==(Impl const& other) const
+    {
+        return m_Values == other.m_Values;
+    }
+
 private:
     template<typename T>
     std::optional<T> getValue(std::string_view propertyName) const
@@ -1764,7 +1769,6 @@ private:
 
     friend class GraphicsBackend;
 
-    UID m_UID;
     std::unordered_map<std::string, MaterialValue> m_Values;
 };
 
@@ -1880,7 +1884,7 @@ void osc::experimental::MaterialPropertyBlock::setTexture(std::string_view prope
 
 bool osc::experimental::operator==(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
 {
-    return a.m_Impl == b.m_Impl;
+    return a.m_Impl == b.m_Impl || *a.m_Impl == *b.m_Impl;
 }
 
 bool osc::experimental::operator!=(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
@@ -3295,7 +3299,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     // (there's a lot of helper functions here because this part is extremely algorithmic)
 
     // helper: draw a batch of render objects that have the same material, material block, and mesh
-    auto HandleBatchWithSameMesh = [](std::vector<RenderObject>::iterator begin, std::vector<RenderObject>::iterator end)
+    auto HandleBatchWithSameMesh = [](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end)
     {
         auto& meshImpl = const_cast<osc::experimental::Mesh::Impl&>(*begin->mesh.m_Impl);
         Shader::Impl& shaderImpl = *begin->material.m_Impl->m_Shader.m_Impl;
@@ -3339,7 +3343,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     };
 
     // helper: draw a batch of render objects that have the same material and material block
-    auto HandleBatchWithSameMatrialPropertyBlock = [&HandleBatchWithSameMesh](std::vector<RenderObject>::iterator begin, std::vector<RenderObject>::iterator end, int& textureSlot)
+    auto HandleBatchWithSameMatrialPropertyBlock = [&HandleBatchWithSameMesh](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end, int& textureSlot)
     {
         osc::experimental::Material::Impl& matImpl = const_cast<osc::experimental::Material::Impl&>(*begin->material.m_Impl);
         osc::experimental::Shader::Impl& shaderImpl = const_cast<osc::experimental::Shader::Impl&>(*matImpl.m_Shader.m_Impl);
