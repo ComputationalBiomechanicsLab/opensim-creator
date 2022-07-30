@@ -42,3 +42,16 @@ glm::vec4 osc::GetSuggestedBoneColor() noexcept
     float brightenAmount = 0.1f;
     return glm::mix(usualDefault, white, brightenAmount);
 }
+
+glm::vec4 osc::Roundoff(glm::vec4 const& c)
+{
+    Rgba32 hex = Rgba32FromVec4(c);
+    float coef = 1.0f / 255.0f;
+    return
+    {
+        coef * hex.r,
+        coef * hex.g,
+        coef * hex.b,
+        coef * hex.a,
+    };
+}

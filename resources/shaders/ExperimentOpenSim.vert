@@ -1,14 +1,14 @@
 #version 330 core
 
 uniform mat4 uViewProjMat;
-uniform mat4 uModelMat;
-uniform mat3 uNormalMat;
 uniform vec3 uLightDir;
 uniform vec3 uLightColor;
 uniform vec3 uViewPos;
 
 layout (location = 0) in vec3 aPos;
 layout (location = 2) in vec3 aNormal;
+in mat4 aModelMat;
+in mat3 aNormalMat;
 
 out vec4 GouraudBrightness;
 
@@ -19,10 +19,10 @@ const float shininess = 32;
 
 void main()
 {
-    gl_Position = uViewProjMat * uModelMat * vec4(aPos, 1.0);
+    gl_Position = uViewProjMat * aModelMat * vec4(aPos, 1.0);
 
-    vec3 normalDir = normalize(uNormalMat * aNormal);
-    vec3 fragPos = vec3(uModelMat * vec4(aPos, 1.0));
+    vec3 normalDir = normalize(aNormalMat * aNormal);
+    vec3 fragPos = vec3(aModelMat * vec4(aPos, 1.0));
     vec3 frag2viewDir = normalize(uViewPos - fragPos);
     vec3 frag2lightDir = normalize(-uLightDir);  // light dir is in the opposite direction
     vec3 halfwayDir = 0.5 * (frag2lightDir + frag2viewDir);

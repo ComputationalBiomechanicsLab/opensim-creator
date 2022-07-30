@@ -24,4 +24,5 @@ namespace osc
     Rgba32 Rgba32FromF4(float, float, float, float) noexcept;
     Rgba32 Rgba32FromU32(std::uint32_t) noexcept;  // R at MSB
     glm::vec4 GetSuggestedBoneColor() noexcept;  // best guess, based on shaders etc.
+    glm::vec4 Roundoff(glm::vec4 const&);  // deterministically round off color values
 }
