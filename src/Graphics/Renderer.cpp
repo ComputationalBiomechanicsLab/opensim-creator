@@ -161,12 +161,6 @@ namespace
         auto it = m.find(k);
         return it != m.end() ? &it->second : nullptr;
     }
-
-    static std::string const g_AutomaticModelMatUniformName = "uModelMat";
-    static std::string const g_AutomaticNormalMatUniformName = "uNormalMat";
-    static std::string const g_AutomaticViewMatUniformName = "uViewMat";
-    static std::string const g_AutomaticProjMatUniformName = "uProjMat";
-    static std::string const g_AutomaticViewProjMatUniformName = "uViewProjMat";
 }
 
 // shader (backend stuff)
@@ -1164,12 +1158,43 @@ private:
                 size
             );
         }
+
+        // cache commonly-used "automatic" shader elements
+        //
+        // it's a perf optimization: the renderer uses this to skip lookups
+        if (ShaderElement const* e = TryGetValue(m_Uniforms, "uModelMat"))
+        {
+            m_MaybeModelMatUniform = *e;
+        }
+        if (ShaderElement const* e = TryGetValue(m_Uniforms, "uNormalMat"))
+        {
+            m_MaybeNormalMatUniform = *e;
+        }
+        if (ShaderElement const* e = TryGetValue(m_Uniforms, "uViewMat"))
+        {
+            m_MaybeViewMatUniform = *e;
+        }
+        if (ShaderElement const* e = TryGetValue(m_Uniforms, "uProjMat"))
+        {
+            m_MaybeProjMatUniform = *e;
+        }
+        if (ShaderElement const* e = TryGetValue(m_Uniforms, "uViewProjMat"))
+        {
+            m_MaybeViewProjMatUniform = *e;
+        }
     }
+
+    friend class GraphicsBackend;
 
     UID m_UID;
     gl::Program m_Program;
     std::unordered_map<std::string, ShaderElement> m_Uniforms;
     std::unordered_map<std::string, ShaderElement> m_Attributes;
+    std::optional<ShaderElement> m_MaybeModelMatUniform;
+    std::optional<ShaderElement> m_MaybeNormalMatUniform;
+    std::optional<ShaderElement> m_MaybeViewMatUniform;
+    std::optional<ShaderElement> m_MaybeProjMatUniform;
+    std::optional<ShaderElement> m_MaybeViewProjMatUniform;
 };
 
 
@@ -3274,7 +3299,6 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     {
         auto& meshImpl = const_cast<osc::experimental::Mesh::Impl&>(*begin->mesh.m_Impl);
         Shader::Impl& shaderImpl = *begin->material.m_Impl->m_Shader.m_Impl;
-        std::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
         gl::BindVertexArray(meshImpl.updVertexArray());
         for (auto it = begin; it != end; ++it)
@@ -3283,26 +3307,26 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                 OSC_PERF("FlushRenderQueue: bind instance variables");
 
                 // try binding to uModel (standard)
-                if (ShaderElement const* e = TryGetValue(uniforms, g_AutomaticModelMatUniformName))
+                if (shaderImpl.m_MaybeModelMatUniform)
                 {
-                    if (e->Type == osc::experimental::ShaderType::Mat4)
+                    if (shaderImpl.m_MaybeModelMatUniform->Type == osc::experimental::ShaderType::Mat4)
                     {
-                        gl::UniformMat4 u{e->Location};
+                        gl::UniformMat4 u{shaderImpl.m_MaybeModelMatUniform->Location};
                         gl::Uniform(u, ToMat4(it->transform));
                     }
                 }
 
                 // try binding to uNormalMat (standard)
-                if (ShaderElement const* e = TryGetValue(uniforms, g_AutomaticNormalMatUniformName))
+                if (shaderImpl.m_MaybeNormalMatUniform)
                 {
-                    if (e->Type == osc::experimental::ShaderType::Mat3)
+                    if (shaderImpl.m_MaybeNormalMatUniform->Type == osc::experimental::ShaderType::Mat3)
                     {
-                        gl::UniformMat3 u{e->Location};
+                        gl::UniformMat3 u{shaderImpl.m_MaybeNormalMatUniform->Location};
                         gl::Uniform(u, ToNormalMatrix(it->transform));
                     }
-                    else if (e->Type == osc::experimental::ShaderType::Mat4)
+                    else if (shaderImpl.m_MaybeNormalMatUniform->Type == osc::experimental::ShaderType::Mat4)
                     {
-                        gl::UniformMat4 u{e->Location};
+                        gl::UniformMat4 u{shaderImpl.m_MaybeNormalMatUniform->Location};
                         gl::Uniform(u, ToNormalMatrix4(it->transform));
                     }
                 }
@@ -3362,30 +3386,30 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             OSC_PERF("FlushRenderQueue: bind material variables");
 
             // try binding to uView (standard)
-            if (ShaderElement const* e = TryGetValue(uniforms, g_AutomaticViewMatUniformName))
+            if (shaderImpl.m_MaybeViewMatUniform)
             {
-                if (e->Type == osc::experimental::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeViewMatUniform->Type == osc::experimental::ShaderType::Mat4)
                 {
-                    gl::UniformMat4 u{e->Location};
+                    gl::UniformMat4 u{shaderImpl.m_MaybeViewMatUniform->Location};
                     gl::Uniform(u, viewMtx);
                 }
             }
 
             // try binding to uProjection (standard)
-            if (ShaderElement const* e = TryGetValue(uniforms, g_AutomaticProjMatUniformName))
+            if (shaderImpl.m_MaybeProjMatUniform)
             {
-                if (e->Type == osc::experimental::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeProjMatUniform->Type == osc::experimental::ShaderType::Mat4)
                 {
-                    gl::UniformMat4 u{e->Location};
+                    gl::UniformMat4 u{shaderImpl.m_MaybeProjMatUniform->Location};
                     gl::Uniform(u, projMtx);
                 }
             }
 
-            if (ShaderElement const* e = TryGetValue(uniforms, g_AutomaticViewProjMatUniformName))
+            if (shaderImpl.m_MaybeViewProjMatUniform)
             {
-                if (e->Type == osc::experimental::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeViewProjMatUniform->Type == osc::experimental::ShaderType::Mat4)
                 {
-                    gl::UniformMat4 u{e->Location};
+                    gl::UniformMat4 u{shaderImpl.m_MaybeViewProjMatUniform->Location};
                     gl::Uniform(u, viewProjMtx);
                 }
             }
