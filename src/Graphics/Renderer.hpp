@@ -475,6 +475,14 @@ namespace osc::experimental
     };
     std::ostream& operator<<(std::ostream&, CameraProjection);
 
+    enum class CameraClearFlags {
+        SolidColor = 0,
+        Depth,
+        Nothing,
+        TOTAL,
+        Default = SolidColor,
+    };
+
     class Camera final {
     public:
         Camera();  // draws to screen
@@ -504,6 +512,9 @@ namespace osc::experimental
 
         float getFarClippingPlane() const;
         void setFarClippingPlane(float);
+
+        CameraClearFlags getClearFlags() const;
+        void setClearFlags(CameraClearFlags);
 
         std::optional<RenderTexture> getTexture() const; // empty if drawing directly to screen
         void setTexture(RenderTexture&&);

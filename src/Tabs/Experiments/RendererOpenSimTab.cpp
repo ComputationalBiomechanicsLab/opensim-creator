@@ -215,21 +215,8 @@ public:
             m_EdgeDetectorMaterial.clearRenderTexture("uScreenTexture");  // prevents copies on next frame
         }
 
-        // combine into output and draw to screen
-        {
-            m_Camera.setTexture();
-            m_Camera.setPixelRect(viewportRect);
-            m_Camera.setViewMatrix(glm::mat4{1.0f});
-            m_Camera.setProjectionMatrix(glm::mat4{1.0f});
-
-            m_QuadMaterial.setRenderTexture("uScreenTexture", *m_RimsTex);
-
-            experimental::Graphics::DrawMesh(m_QuadMesh, Transform{}, m_QuadMaterial, m_Camera);
-
-            m_Camera.render();
-            m_Camera.setPixelRect();
-            m_QuadMaterial.clearRenderTexture("uScreenTexture");
-        }
+        BlitToScreen(*m_SceneTex, viewportRect);
+        BlitToScreen(*m_RimsTex, viewportRect);
 
         // render auxiliary 2D UI
         {
@@ -243,6 +230,22 @@ public:
     }
 
 private:
+    void BlitToScreen(experimental::RenderTexture const& renderTexture, Rect const& screenRect)
+    {
+        experimental::Camera c;
+        c.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
+        c.setPixelRect(screenRect);
+        c.setProjectionMatrix(glm::mat4{1.0f});
+        c.setViewMatrix(glm::mat4{1.0f});
+        c.setClearFlags(experimental::CameraClearFlags::Depth);
+
+        m_QuadMaterial.setRenderTexture("uTexture", renderTexture);
+        m_QuadMaterial.setTransparent(true);
+        experimental::Graphics::DrawMesh(m_QuadMesh, Transform{}, m_QuadMaterial, c);
+        c.render();
+        m_QuadMaterial.clearRenderTexture("uTexture");
+    }
+
     UID m_ID;
     TabHost* m_Parent;
 
@@ -281,8 +284,8 @@ private:
     {
         experimental::Shader
         {
-            App::slurp("shaders/ExperimentFrameBuffersScreen.vert"),
-            App::slurp("shaders/ExperimentFrameBuffersScreen.frag"),
+            App::slurp("shaders/ExperimentOpenSimQuadSampler.vert"),
+            App::slurp("shaders/ExperimentOpenSimQuadSampler.frag"),
         }
     };
 

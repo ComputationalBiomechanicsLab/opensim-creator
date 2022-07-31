@@ -2283,6 +2283,37 @@ TEST_F(Renderer, CameraResetProjectionMatrixResetsTheProjectionMatrixToUsingStan
     ASSERT_EQ(camera.getProjectionMatrix(), initialProjectionMatrix);
 }
 
+TEST_F(Renderer, CameraGetClearFlagsReturnsSolidColorOnDefaultConstruction)
+{
+    static_assert(osc::experimental::CameraClearFlags::Default == osc::experimental::CameraClearFlags::SolidColor);
+
+    osc::experimental::Camera camera;
+    ASSERT_EQ(camera.getClearFlags(), osc::experimental::CameraClearFlags::SolidColor);
+}
+
+TEST_F(Renderer, CameraSetClearFlagsCausesGetClearFlagsToReturnNewValue)
+{
+    osc::experimental::Camera camera;
+
+    ASSERT_EQ(camera.getClearFlags(), osc::experimental::CameraClearFlags::SolidColor);
+
+    camera.setClearFlags(osc::experimental::CameraClearFlags::Nothing);
+
+    ASSERT_EQ(camera.getClearFlags(), osc::experimental::CameraClearFlags::Nothing);
+}
+
+TEST_F(Renderer, CameraSetClearFlagsCausesCopyToReturnNonEqual)
+{
+    osc::experimental::Camera camera;
+    osc::experimental::Camera copy{camera};
+
+    ASSERT_EQ(camera, copy);
+    ASSERT_EQ(camera.getClearFlags(), osc::experimental::CameraClearFlags::SolidColor);
+
+    camera.setClearFlags(osc::experimental::CameraClearFlags::Nothing);
+
+    ASSERT_NE(camera, copy);
+}
 
 // TODO MeshSetIndicesU16CausesGetNumIndicesToEqualSuppliedNumberOfIndices
 // TODO Mesh::getIndices

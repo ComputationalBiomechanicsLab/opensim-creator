@@ -278,7 +278,6 @@ namespace osc::experimental {
             Material const& material,
             Camera& camera,
             std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock);
-
         static void TryBindMaterialValueToShaderElement(ShaderElement const& se, MaterialValue const& v, int* textureSlot);
         static void FlushRenderQueue(Camera::Impl& camera);
     };
@@ -866,6 +865,15 @@ private:
             uploadToGPU();
         }
         return (*m_MaybeGPUBuffers)->MultisampledFBO;
+    }
+
+    gl::FrameBuffer& getOutputFrameBuffer()
+    {
+        if (!*m_MaybeGPUBuffers)
+        {
+            uploadToGPU();
+        }
+        return (*m_MaybeGPUBuffers)->SingleSampledFBO;
     }
 
     gl::Texture2D& getOutputTexture()
@@ -2693,6 +2701,16 @@ public:
         m_FarClippingPlane = std::move(distance);
     }
 
+    CameraClearFlags getClearFlags() const
+    {
+        return m_ClearFlags;
+    }
+
+    void setClearFlags(CameraClearFlags flags)
+    {
+        m_ClearFlags = std::move(flags);
+    }
+
     std::optional<RenderTexture> getTexture() const
     {
         return m_MaybeTexture;
@@ -2911,6 +2929,7 @@ private:
     float m_PerspectiveFov = fpi2;
     float m_NearClippingPlane = 1.0f;
     float m_FarClippingPlane = -1.0f;
+    CameraClearFlags m_ClearFlags = CameraClearFlags::Default;
     std::optional<Rect> m_MaybeScreenPixelRect = std::nullopt;
     std::optional<Rect> m_MaybeScissorRect = std::nullopt;
     glm::vec3 m_Position = {};
@@ -3005,6 +3024,17 @@ void osc::experimental::Camera::setFarClippingPlane(float d)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setFarClippingPlane(std::move(d));
+}
+
+osc::experimental::CameraClearFlags osc::experimental::Camera::getClearFlags() const
+{
+    return m_Impl->getClearFlags();
+}
+
+void osc::experimental::Camera::setClearFlags(CameraClearFlags flags)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setClearFlags(std::move(flags));
 }
 
 std::optional<osc::experimental::RenderTexture> osc::experimental::Camera::getTexture() const
@@ -3318,17 +3348,6 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 {
     OSC_PERF("FlushRenderQueue: all");
 
-    // bind to output framebuffer
-    if (camera.m_MaybeTexture)
-    {
-        DoCopyOnWrite(camera.m_MaybeTexture->m_Impl);
-        gl::BindFramebuffer(GL_FRAMEBUFFER, camera.m_MaybeTexture->m_Impl->getFrameBuffer());
-    }
-    else
-    {
-        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-    }
-
     // setup output viewport
     glm::ivec2 outputDimensions{};
     {
@@ -3364,14 +3383,40 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         gl::Disable(GL_SCISSOR_TEST);
     }
 
-    // clear output framebuffer
+    // bind to output framebuffer and perform clear(s) (if required)
     gl::ClearColor(
         camera.m_BackgroundColor.r,
         camera.m_BackgroundColor.g,
         camera.m_BackgroundColor.b,
         camera.m_BackgroundColor.a
     );
-    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    GLenum clearFlags = camera.m_ClearFlags == experimental::CameraClearFlags::SolidColor ? GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT : GL_DEPTH_BUFFER_BIT;
+    if (camera.m_MaybeTexture)
+    {
+        DoCopyOnWrite(camera.m_MaybeTexture->m_Impl);
+        if (camera.m_ClearFlags != experimental::CameraClearFlags::Nothing)
+        {
+            // clear the MSXAA-resolved output texture
+            gl::BindFramebuffer(GL_FRAMEBUFFER, camera.m_MaybeTexture->m_Impl->getOutputFrameBuffer());
+            gl::Clear(clearFlags);
+
+            // clear the written-to MSXAA texture
+            gl::BindFramebuffer(GL_FRAMEBUFFER, camera.m_MaybeTexture->m_Impl->getFrameBuffer());
+            gl::Clear(clearFlags);
+        }
+        else
+        {
+            gl::BindFramebuffer(GL_FRAMEBUFFER, camera.m_MaybeTexture->m_Impl->getFrameBuffer());
+        }
+    }
+    else
+    {
+        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+        if (camera.m_ClearFlags != experimental::CameraClearFlags::Nothing)
+        {
+            gl::Clear(clearFlags);
+        }
+    }
 
     // compute camera matrices
     glm::mat4 viewMtx = camera.getViewMatrix();
