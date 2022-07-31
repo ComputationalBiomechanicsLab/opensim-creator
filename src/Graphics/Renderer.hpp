@@ -107,6 +107,7 @@ namespace osc::experimental
 {
     enum class RenderTextureFormat {
         ARGB32 = 0,
+        RED,
         TOTAL,
     };
     std::ostream& operator<<(std::ostream&, RenderTextureFormat);

@@ -88,6 +88,20 @@ namespace
         out.push_back(static_cast<std::byte>(c.a));
     }
 
+    template<typename K, typename V, typename Key>
+    V const* TryGetValue(std::unordered_map<K, V> m, Key const& k)
+    {
+        auto it = m.find(k);
+        return it != m.end() ? &it->second : nullptr;
+    }
+
+    template<typename T, std::size_t N, typename... Initializers>
+    constexpr auto MakeArray(Initializers&&... args) -> std::array<T, sizeof...(args)>
+    {
+        static_assert(sizeof...(args) == N);
+        return {std::forward<Initializers>(args)...};
+    }
+
     template<typename Variant, typename T, std::size_t I = 0>
     constexpr std::size_t VariantIndex()
     {
@@ -154,13 +168,6 @@ namespace
         gl::Texture2D SingleSampledColorBuffer;
         gl::Texture2D SingleSampledDepthBuffer;
     };
-
-    template<typename K, typename V, typename Key>
-    V const* TryGetValue(std::unordered_map<K, V> m, Key const& k)
-    {
-        auto it = m.find(k);
-        return it != m.end() ? &it->second : nullptr;
-    }
 }
 
 // shader (backend stuff)
@@ -169,8 +176,7 @@ namespace
     using namespace osc::experimental;
 
     // LUT for human-readable form of the above
-    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(ShaderType::TOTAL)> const g_ShaderTypeInternalStrings =
-    {
+    static constexpr auto const g_ShaderTypeInternalStrings = MakeArray<osc::CStringView, static_cast<std::size_t>(ShaderType::TOTAL)>(
         "Float",
         "Vec3",
         "Vec4",
@@ -179,8 +185,8 @@ namespace
         "Int",
         "Bool",
         "Sampler2D",
-        "Unknown",
-    };
+        "Unknown"
+    );
 
     // convert a GL shader type to an internal shader type
     ShaderType GLShaderTypeToShaderTypeInternal(GLenum e)
@@ -294,18 +300,18 @@ namespace
 {
     using namespace osc::experimental;
 
-    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(TextureWrapMode::TOTAL)> const g_TextureWrapModeStrings =
-    {
+    static constexpr auto const g_TextureWrapModeStrings = MakeArray<osc::CStringView, static_cast<std::size_t>(TextureWrapMode::TOTAL)>
+    (
         "Repeat",
         "Clamp",
-        "Mirror",
-    };
+        "Mirror"
+    );
 
-    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(TextureFilterMode::TOTAL)> const g_TextureFilterModeStrings =
-    {
+    static constexpr auto const g_TextureFilterModeStrings = MakeArray<osc::CStringView, static_cast<std::size_t>(osc::experimental::TextureFilterMode::TOTAL)>
+    (
         "Nearest",
-        "Linear",
-    };
+        "Linear"
+    );
 
     struct TextureGPUBuffers final {
         gl::Texture2D Texture;
@@ -657,15 +663,29 @@ namespace
 {
     using namespace osc::experimental;
 
-    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(RenderTextureFormat::TOTAL)> const  g_RenderTextureFormatStrings =
-    {
+    static constexpr auto const  g_RenderTextureFormatStrings = MakeArray<osc::CStringView, static_cast<std::size_t>(osc::experimental::RenderTextureFormat::TOTAL)>
+    (
         "ARGB32",
-    };
+        "RED"
+    );
 
-    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(DepthStencilFormat::TOTAL)> const g_DepthStencilFormatStrings =
+    static constexpr auto const g_DepthStencilFormatStrings = MakeArray<osc::CStringView, static_cast<std::size_t>(osc::experimental::DepthStencilFormat::TOTAL)>
+    (
+        "D24_UNorm_S8_UInt"
+    );
+
+    GLenum ToOpenGLColorFormat(osc::experimental::RenderTextureFormat f)
     {
-        "D24_UNorm_S8_UInt",
-    };
+        switch (f)
+        {
+        case osc::experimental::RenderTextureFormat::ARGB32:
+            return GL_RGBA;
+        case osc::experimental::RenderTextureFormat::RED:
+        default:
+            static_assert(static_cast<int>(osc::experimental::RenderTextureFormat::RED) + 1 == static_cast<int>(osc::experimental::RenderTextureFormat::TOTAL));
+            return GL_RED;
+        }
+    }
 }
 
 std::ostream& osc::experimental::operator<<(std::ostream& o, RenderTextureFormat f)
@@ -893,7 +913,7 @@ private:
         glRenderbufferStorageMultisample(
             GL_RENDERBUFFER,
             m_Descriptor.getAntialiasingLevel(),
-            GL_RGBA,
+            ToOpenGLColorFormat(getColorFormat()),
             m_Descriptor.getWidth(),
             m_Descriptor.getHeight()
         );
@@ -915,11 +935,11 @@ private:
         gl::TexImage2D(
             bufs.SingleSampledColorBuffer.type,
             0,
-            GL_RGBA,
+            ToOpenGLColorFormat(getColorFormat()),
             m_Descriptor.getWidth(),
             m_Descriptor.getHeight(),
             0,
-            GL_RGBA,
+            ToOpenGLColorFormat(getColorFormat()),
             GL_UNSIGNED_BYTE,
             nullptr
         );
@@ -1941,11 +1961,11 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, MaterialPropertyBlo
 
 namespace
 {
-    static constexpr std::array<osc::CStringView, 2> g_MeshTopographyStrings =
-    {
+    static constexpr auto g_MeshTopographyStrings = MakeArray<osc::CStringView, static_cast<std::size_t>(osc::experimental::MeshTopography::TOTAL)>
+    (
         "Triangles",
-        "Lines",
-    };
+        "Lines"
+    );
 
     union PackedIndex {
         uint32_t u32;
@@ -2505,11 +2525,11 @@ namespace
     using namespace osc::experimental;
 
     // LUT for human-readable form of the above
-    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(CameraProjection::TOTAL)> const g_CameraProjectionStrings =
-    {
+    static constexpr auto const g_CameraProjectionStrings = MakeArray<osc::CStringView, static_cast<std::size_t>(CameraProjection::TOTAL)>
+    (
         "Perspective",
-        "Orthographic",
-    };
+        "Orthographic"
+    );
 
     // renderer stuff
     struct RenderObject final {

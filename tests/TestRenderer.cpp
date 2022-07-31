@@ -1912,6 +1912,17 @@ TEST_F(Renderer, RenderTextureDescriptorGetColorFormatReturnsARGB32ByDefault)
     ASSERT_EQ(d1.getColorFormat(), osc::experimental::RenderTextureFormat::ARGB32);
 }
 
+TEST_F(Renderer, RenderTextureDescriptorSetColorFormatMakesGetColorFormatReturnTheFormat)
+{
+    osc::experimental::RenderTextureDescriptor d{1, 1};
+
+    ASSERT_EQ(d.getColorFormat(), osc::experimental::RenderTextureFormat::ARGB32);
+
+    d.setColorFormat(osc::experimental::RenderTextureFormat::RED);
+
+    ASSERT_EQ(d.getColorFormat(), osc::experimental::RenderTextureFormat::RED);
+}
+
 TEST_F(Renderer, RenderTextureDescriptorGetDepthStencilFormatReturnsDefaultValue)
 {
     osc::experimental::RenderTextureDescriptor d1{1, 1};
@@ -1995,15 +2006,30 @@ TEST_F(Renderer, RenderTextureFromDescriptorHasExpectedValues)
     int width = 5;
     int height = 8;
     int aaLevel = 4;
+    osc::experimental::RenderTextureFormat format = osc::experimental::RenderTextureFormat::RED;
 
     osc::experimental::RenderTextureDescriptor desc{width, height};
     desc.setAntialiasingLevel(aaLevel);
+    desc.setColorFormat(format);
 
     osc::experimental::RenderTexture tex{desc};
 
     ASSERT_EQ(tex.getWidth(), width);
     ASSERT_EQ(tex.getHeight(), height);
     ASSERT_EQ(tex.getAntialiasingLevel(), aaLevel);
+    ASSERT_EQ(tex.getColorFormat(), format);
+}
+
+TEST_F(Renderer, RenderTextureSetColorFormatCausesGetColorFormatToReturnValue)
+{
+    osc::experimental::RenderTextureDescriptor d1{1, 1};
+    osc::experimental::RenderTexture d{d1};
+
+    ASSERT_EQ(d.getColorFormat(), osc::experimental::RenderTextureFormat::ARGB32);
+
+    d.setColorFormat(osc::experimental::RenderTextureFormat::RED);
+
+    ASSERT_EQ(d.getColorFormat(), osc::experimental::RenderTextureFormat::RED);
 }
 
 TEST_F(Renderer, EmplaceOrReformatWorksAsExpected)

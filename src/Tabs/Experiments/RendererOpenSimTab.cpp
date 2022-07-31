@@ -102,21 +102,6 @@ namespace
         return osc::experimental::Texture2D(static_cast<int>(w), static_cast<int>(h), nonstd::span<uint8_t const>{&pixels[0].r, 4*pixels.size()}, 4);
     }
 
-
-    glm::mat4x3 GenerateFloorModelMatrix(glm::vec3 floorLocation, float fixupScaleFactor)
-    {
-        // rotate from XY (+Z dir) to ZY (+Y dir)
-        glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, -osc::fpi2, {1.0f, 0.0f, 0.0f});
-
-        // make floor extend far in all directions
-        rv = glm::scale(glm::mat4{1.0f}, {fixupScaleFactor * 100.0f, 1.0f, fixupScaleFactor * 100.0f}) * rv;
-
-        rv = glm::translate(glm::mat4{1.0f}, fixupScaleFactor * floorLocation) * rv;
-
-        return glm::mat4x3{rv};
-    }
-
-
     osc::Transform GetFloorTransform()
     {
         osc::Transform rv;
@@ -186,7 +171,9 @@ public:
 
             desc.setAntialiasingLevel(App::get().getMSXAASamplesRecommended());
             EmplaceOrReformat(m_SceneTex, desc);
+            desc.setColorFormat(osc::experimental::RenderTextureFormat::);
             EmplaceOrReformat(m_SelectedTex, desc);
+            desc.setColorFormat(osc::experimental::RenderTextureFormat::ARGB32);
             EmplaceOrReformat(m_RimsTex, desc);
         }
 
