@@ -18,6 +18,7 @@
 #include "src/Widgets/LogViewerPanel.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -92,7 +93,8 @@ namespace
         constexpr osc::Rgba32 on_color = {0xff, 0xff, 0xff, 0xff};
         constexpr osc::Rgba32 off_color = {0xf3, 0xf3, 0xf3, 0xff};
 
-        std::array<osc::Rgba32, w * h> pixels;
+        std::unique_ptr<osc::Rgba32[]> pixels{new osc::Rgba32[w * h]};
+
         for (size_t row = 0; row < h; ++row)
         {
             size_t row_start = row * w;
@@ -104,7 +106,7 @@ namespace
             }
         }
 
-        return osc::experimental::Texture2D(static_cast<int>(w), static_cast<int>(h), nonstd::span<uint8_t const>{&pixels[0].r, 4*pixels.size()}, 4);
+        return osc::experimental::Texture2D(static_cast<int>(w), static_cast<int>(h), nonstd::span<uint8_t const>{&pixels[0].r, 4*w*h}, 4);
     }
 
     osc::Transform GetFloorTransform()
@@ -120,6 +122,10 @@ class osc::RendererOpenSimTab::Impl final {
 public:
     Impl(TabHost* parent) : m_Parent{parent}
     {
+        m_SolidColorMaterial.setVec4("uDiffuseColor", {1.0f, 0.0f, 0.0f, 1.0f});
+        m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_FloorTexture);
+        m_SceneTexturedElementsMaterial.setVec2("uTextureScale", {200.0f, 200.0f});
+
         m_LogPanel.open();
         m_PerfPanel.open();
     }
@@ -194,7 +200,7 @@ public:
         {
             m_SceneColoredElementsMaterial.setVec3("uViewPos", m_PolarCamera.getPos());
             m_SceneColoredElementsMaterial.setVec3("uLightDir", lightDir);
-            m_SceneColoredElementsMaterial.setVec3("uLightColor", {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f});
+            m_SceneColoredElementsMaterial.setVec3("uLightColor", m_LightColor);
 
             experimental::MaterialPropertyBlock propBlock;
             glm::vec4 lastColor = {-1.0f, -1.0f, -1.0f, 0.0f};
@@ -208,19 +214,19 @@ public:
 
                 experimental::Graphics::DrawMesh(*dec.Mesh, dec.Transform, m_SceneColoredElementsMaterial, m_Camera, propBlock);
 
+                // if normals are requested, render the scene element via a normals geometry shader
                 if (m_DrawNormals)
                 {
                     experimental::Graphics::DrawMesh(*dec.Mesh, dec.Transform, m_NormalsMaterial, m_Camera);
                 }
             }
 
+            // if a floor is requested, append a textured floor
             if (m_DrawFloor)
             {
                 m_SceneTexturedElementsMaterial.setVec3("uViewPos", m_PolarCamera.getPos());
                 m_SceneTexturedElementsMaterial.setVec3("uLightDir", lightDir);
-                m_SceneTexturedElementsMaterial.setVec3("uLightColor", {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f});
-                m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_FloorTexture);
-                m_SceneTexturedElementsMaterial.setVec2("uTextureScale", {200.0f, 200.0f});
+                m_SceneTexturedElementsMaterial.setVec3("uLightColor", m_LightColor);
 
                 experimental::Graphics::DrawMesh(m_QuadMesh, m_FloorTransform, m_SceneTexturedElementsMaterial, m_Camera);
             }
@@ -230,17 +236,19 @@ public:
             m_Camera.swapTexture(m_SceneTex);
         }
 
-        // render selected objects as a solid color to a seperate texture
+        // keep track of the AABBs of selected objects
         AABB rimAABBWorldspace = InvertedAABB();
         bool hasRims = false;
-        {
-            m_SolidColorMaterial.setVec4("uDiffuseColor", {1.0f, 0.0f, 0.0f, 1.0f});
 
+        // render selected objects as a solid color to a seperate texture
+        {
             for (NewDecoration const& dec : m_Decorations)
             {
                 if (dec.IsHovered)
                 {
                     experimental::Graphics::DrawMesh(*dec.Mesh, dec.Transform, m_SolidColorMaterial, m_Camera);
+
+                    // union selection AABBs (scissor-test optimization)
                     rimAABBWorldspace = Union(rimAABBWorldspace, WorldpaceAABB(dec));
                     hasRims = true;
                 }
@@ -251,10 +259,12 @@ public:
             m_Camera.swapTexture(m_SelectedTex);
         }
 
-        // sample the solid color through an edge-detection kernel (rim highlighting)
+        // if the scene has rims, sample the solid color texture
+        //
+        // use an edge-detection kernel to turn the solid shapes into "rims"
         if (hasRims)
         {
-            glm::vec2 rimThickness = glm::vec2{1.5f} / glm::vec2{viewportRectDims};
+            glm::vec2 rimThickness = glm::vec2{m_RimThickness} / glm::vec2{viewportRectDims};
             Rect rimNdcRect = WorldpsaceAABBToNdcRect(rimAABBWorldspace, m_Camera.getViewProjectionMatrix());
             rimNdcRect = Expand(rimNdcRect, rimThickness);
             Rect rimScreenRect = NdcRectToScreenspaceViewportRect(rimNdcRect, Rect{{}, viewportRectDims});
@@ -265,7 +275,7 @@ public:
             m_Camera.setClearFlags(experimental::CameraClearFlags::Depth);
 
             m_EdgeDetectorMaterial.setRenderTexture("uScreenTexture", *m_SelectedTex);
-            m_EdgeDetectorMaterial.setVec4("uRimRgba", {1.0f, 0.4f, 0.0f, 0.85f});
+            m_EdgeDetectorMaterial.setVec4("uRimRgba", m_RimRgba);
             m_EdgeDetectorMaterial.setVec2("uRimThickness", rimThickness);
             m_EdgeDetectorMaterial.setTransparent(true);
 
@@ -284,11 +294,15 @@ public:
         // blit the anti-aliased render to the screen
         BlitToScreen(*m_SceneTex, viewportRect);
 
+
         // render auxiliary 2D UI
         {
             ImGui::Begin("controls");
             ImGui::Checkbox("draw normals", &m_DrawNormals);
             ImGui::Checkbox("draw floor", &m_DrawFloor);
+            ImGui::InputFloat3("light color", glm::value_ptr(m_LightColor));
+            ImGui::InputFloat("rim thickness", &m_RimThickness);
+            ImGui::InputFloat4("rim rgba", glm::value_ptr(m_RimRgba));
             ImGui::End();
 
             m_LogPanel.draw();
@@ -320,6 +334,9 @@ private:
     PolarPerspectiveCamera m_PolarCamera = CreateCameraWithRadius(5.0f);
     bool m_DrawNormals = false;
     bool m_DrawFloor = true;
+    glm::vec3 m_LightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
+    float m_RimThickness = 1.5f;
+    glm::vec4 m_RimRgba = {1.0f, 0.4f, 0.0f, 0.85f};
 
     experimental::Material m_SceneColoredElementsMaterial
     {
