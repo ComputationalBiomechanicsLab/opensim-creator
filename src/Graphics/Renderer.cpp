@@ -1044,6 +1044,18 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, RenderTexture const
     return o << "RenderTexture()";
 }
 
+void osc::experimental::EmplaceOrReformat(std::optional<RenderTexture>& t, RenderTextureDescriptor const& desc)
+{
+    if (t)
+    {
+        t->reformat(desc);
+    }
+    else
+    {
+        t.emplace(desc);
+    }
+}
+
 
 //////////////////////////////////
 //

@@ -64,6 +64,7 @@ namespace osc
     };
 
     PolarPerspectiveCamera CreateCameraWithRadius(float);
+    glm::vec3 RecommendedLightDirection(PolarPerspectiveCamera const&);
     void FocusAlongX(PolarPerspectiveCamera&);
     void FocusAlongMinusX(PolarPerspectiveCamera&);
     void FocusAlongY(PolarPerspectiveCamera&);

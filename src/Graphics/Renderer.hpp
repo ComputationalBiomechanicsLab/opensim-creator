@@ -201,6 +201,8 @@ namespace osc::experimental
     bool operator!=(RenderTexture const&, RenderTexture const&);
     bool operator<(RenderTexture const&, RenderTexture const&);
     std::ostream& operator<<(std::ostream&, RenderTexture const&);
+
+    void EmplaceOrReformat(std::optional<RenderTexture>& t, RenderTextureDescriptor const& desc);
 }
 
 

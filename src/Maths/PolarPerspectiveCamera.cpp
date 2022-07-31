@@ -147,6 +147,17 @@ osc::PolarPerspectiveCamera osc::CreateCameraWithRadius(float r)
     return rv;
 }
 
+glm::vec3 osc::RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
+{
+    constexpr glm::vec3 sceneUpDir = {0.0f, 1.0f, 0.0f};
+    constexpr float cameraOffsetAngle = 1.25f * osc::fpi4;
+
+    glm::vec3 const camera2focusDir = glm::normalize(-c.focusPoint - c.getPos());
+    glm::vec3 const camera2focusRotatedDir = glm::angleAxis(cameraOffsetAngle, sceneUpDir) * camera2focusDir;
+
+    return 0.5f * (camera2focusRotatedDir + -sceneUpDir);
+}
+
 void osc::FocusAlongX(osc::PolarPerspectiveCamera& camera)
 {
     camera.theta = osc::fpi2;

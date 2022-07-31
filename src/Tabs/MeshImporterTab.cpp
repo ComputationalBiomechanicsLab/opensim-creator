@@ -498,14 +498,7 @@ namespace
         nonstd::span<DrawableThing const> drawables,
         gl::Texture2D& outSceneTex)
     {
-        glm::vec3 lightDir;
-        {
-            glm::vec3 p = glm::normalize(-camera.focusPoint - camera.getPos());
-            glm::vec3 up = {0.0f, 1.0f, 0.0f};
-            glm::vec3 mp = glm::rotate(glm::mat4{1.0f}, 1.25f * fpi4, up) * glm::vec4{p, 0.0f};
-            lightDir = glm::normalize(mp + -up);
-        }
-
+        glm::vec3 lightDir = osc::RecommendedLightDirection(camera);
         glm::vec3 lightCol = {1.0f, 1.0f, 1.0f};
 
         glm::mat4 projMat = camera.getProjMtx(osc::AspectRatio(dims));

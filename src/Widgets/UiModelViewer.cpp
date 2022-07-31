@@ -251,7 +251,7 @@ public:
             return rv;
         }
 
-        recomputeSceneLightPosition();
+        m_RendererParams.LightDirection = RecommendedLightDirection(m_Camera);
 
         // populate render buffers
         m_SceneDrawlist.populate(rs, m_DecorationOptions);
@@ -550,15 +550,6 @@ private:
         ImGui::ColorEdit3("background color", glm::value_ptr(m_RendererParams.BackgroundColor));
         osc::InputMetersFloat3("floor location", glm::value_ptr(m_RendererParams.FloorLocation));
         DrawTooltipBodyOnly("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
-    }
-
-    void recomputeSceneLightPosition()
-    {
-        // automatically change lighting position based on camera position
-        glm::vec3 p = glm::normalize(-m_Camera.focusPoint - m_Camera.getPos());
-        glm::vec3 up = {0.0f, 1.0f, 0.0f};
-        glm::vec3 mp = glm::rotate(glm::mat4{1.0f}, 1.05f * fpi4, up) * glm::vec4{p, 0.0f};
-        m_RendererParams.LightDirection = glm::normalize(mp + -up);
     }
 
     std::pair<OpenSim::Component const*, glm::vec3> hittestRenderWindow(osc::VirtualConstModelStatePair const& msp)

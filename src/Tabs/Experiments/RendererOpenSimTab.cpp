@@ -76,29 +76,6 @@ namespace
         }
         return rv;
     }
-
-    void EmplaceOrReformat(std::optional<osc::experimental::RenderTexture>& t, osc::experimental::RenderTextureDescriptor const& desc)
-    {
-        if (t)
-        {
-            t->reformat(desc);
-        }
-        else
-        {
-            t.emplace(desc);
-        }
-    }
-
-    glm::vec3 RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
-    {
-        constexpr glm::vec3 sceneUpDir = {0.0f, 1.0f, 0.0f};
-        constexpr float cameraOffsetAngle = 1.05f * osc::fpi4;
-
-        glm::vec3 const camera2focusDir = glm::normalize(-c.focusPoint - c.getPos());
-        glm::vec3 const camera2focusRotatedDir = glm::angleAxis(cameraOffsetAngle, sceneUpDir) * camera2focusDir;
-
-        return 0.5f * (camera2focusRotatedDir + -sceneUpDir);
-    }
 }
 
 class osc::RendererOpenSimTab::Impl final {
@@ -245,7 +222,7 @@ public:
             m_Camera.setViewMatrix(glm::mat4{1.0f});
             m_Camera.setProjectionMatrix(glm::mat4{1.0f});
 
-            m_QuadMaterial.setRenderTexture("uScreenTexture", *m_SceneTex);
+            m_QuadMaterial.setRenderTexture("uScreenTexture", *m_RimsTex);
 
             experimental::Graphics::DrawMesh(m_QuadMesh, Transform{}, m_QuadMaterial, m_Camera);
 
@@ -270,7 +247,7 @@ private:
     TabHost* m_Parent;
 
     std::vector<NewDecoration> m_Decorations = GenerateDecorations();
-    PolarPerspectiveCamera m_PolarCamera;
+    PolarPerspectiveCamera m_PolarCamera = CreateCameraWithRadius(5.0f);
     bool m_DrawNormals = false;
 
     experimental::Material m_Material

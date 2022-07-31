@@ -1990,6 +1990,45 @@ TEST_F(Renderer, RenderTextureCanBeConstructedFromADescriptor)
     osc::experimental::RenderTexture d{d1};
 }
 
+TEST_F(Renderer, RenderTextureFromDescriptorHasExpectedValues)
+{
+    int width = 5;
+    int height = 8;
+    int aaLevel = 4;
+
+    osc::experimental::RenderTextureDescriptor desc{width, height};
+    desc.setAntialiasingLevel(aaLevel);
+
+    osc::experimental::RenderTexture tex{desc};
+
+    ASSERT_EQ(tex.getWidth(), width);
+    ASSERT_EQ(tex.getHeight(), height);
+    ASSERT_EQ(tex.getAntialiasingLevel(), aaLevel);
+}
+
+TEST_F(Renderer, EmplaceOrReformatWorksAsExpected)
+{
+    std::optional<osc::experimental::RenderTexture> opt;
+
+    osc::experimental::RenderTextureDescriptor desc1{5, 6};
+
+    ASSERT_FALSE(opt.has_value());
+
+    osc::experimental::EmplaceOrReformat(opt, desc1);
+
+    ASSERT_TRUE(opt.has_value());
+    ASSERT_EQ(opt->getWidth(), desc1.getWidth());
+    ASSERT_EQ(opt->getHeight(), desc1.getHeight());
+
+    osc::experimental::RenderTextureDescriptor desc2{7, 8};
+
+    osc::experimental::EmplaceOrReformat(opt, desc2);
+
+    ASSERT_TRUE(opt.has_value());
+    ASSERT_EQ(opt->getWidth(), desc2.getWidth());
+    ASSERT_EQ(opt->getHeight(), desc2.getHeight());
+}
+
 TEST_F(Renderer, CameraProjectionCanBeStreamed)
 {
     for (int i = 0; i < static_cast<int>(osc::experimental::CameraProjection::TOTAL); ++i)
