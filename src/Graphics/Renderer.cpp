@@ -2050,7 +2050,7 @@ public:
     {
         m_Vertices.clear();
         m_Vertices.reserve(verts.size());
-        std::copy(verts.begin(), verts.end(), std::back_insert_iterator{ m_Vertices });
+        std::copy(verts.begin(), verts.end(), std::back_insert_iterator{m_Vertices});
 
         recalculateBounds();
         m_Version->reset();
@@ -3527,8 +3527,8 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                 }
             }
 
-            std::vector<float> buf;
-            buf.reserve(stride/sizeof(float) * nEls);
+            std::unique_ptr<float[]> buf{new float[nEls * stride]};
+            std::size_t bufPos = 0;
 
             for (auto it = begin; it != end; ++it)
             {
@@ -3536,28 +3536,32 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                 {
                     if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == osc::experimental::ShaderType::Mat4)
                     {
-                        glm::mat4 m = ToMat4(it->transform);
-                        std::copy(glm::value_ptr(m), glm::value_ptr(m) + 16, std::back_inserter(buf));
+                        static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
+                        reinterpret_cast<glm::mat4&>(buf[bufPos]) = ToMat4(it->transform);
+                        bufPos += 16;
                     }
                 }
                 if (shaderImpl.m_MaybeInstancedNormalMatAttr)
                 {
                     if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::experimental::ShaderType::Mat4)
                     {
-                        glm::mat4 m = ToNormalMatrix4(it->transform);
-                        std::copy(glm::value_ptr(m), glm::value_ptr(m) + 16, std::back_inserter(buf));
+                        static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
+                        reinterpret_cast<glm::mat4&>(buf[bufPos]) = ToMat4(it->transform);
+                        bufPos += 16;
                     }
                     else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::experimental::ShaderType::Mat3)
                     {
-                        glm::mat3 m = ToNormalMatrix(it->transform);
-                        std::copy(glm::value_ptr(m), glm::value_ptr(m) + 9, std::back_inserter(buf));
+                        static_assert(alignof(glm::mat3) == alignof(float) && sizeof(glm::mat3) == 9 * sizeof(float));
+                        reinterpret_cast<glm::mat3&>(buf[bufPos]) = ToNormalMatrix(it->transform);
+                        bufPos += 9;
                     }
                 }
             }
+            OSC_ASSERT(bufPos <= nEls * stride);
 
             gl::ArrayBuffer<float>& vbo = maybeInstancingState.emplace(stride).Buf;
             gl::BindBuffer(vbo);
-            gl::BufferData(vbo.BufferType, sizeof(float) * buf.size(), buf.data(), GL_STREAM_DRAW);
+            gl::BufferData(vbo.BufferType, sizeof(float) * bufPos, buf.get(), GL_STREAM_DRAW);
         }
         return maybeInstancingState;
     };

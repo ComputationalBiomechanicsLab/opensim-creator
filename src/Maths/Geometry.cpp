@@ -1130,11 +1130,25 @@ glm::vec4 osc::TopleftRelPosToNDCCube(glm::vec2 relpos)
 
 glm::mat4 osc::ToMat4(Transform const& t) noexcept
 {
-    glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, t.scale);
-    glm::mat4 rotater = glm::toMat4(t.rotation);
-    glm::mat4 translater = glm::translate(glm::mat4{1.0f}, t.position);
+    glm::mat4 rv = glm::toMat4(t.rotation);
 
-    return translater * rotater * scaler;
+    rv[3][0] = t.position.x;
+    rv[3][1] = t.position.y;
+    rv[3][2] = t.position.z;
+
+    rv[0][0] *= t.scale.x;
+    rv[0][1] *= t.scale.x;
+    rv[0][2] *= t.scale.x;
+
+    rv[1][0] *= t.scale.y;
+    rv[1][1] *= t.scale.y;
+    rv[1][2] *= t.scale.y;
+
+    rv[2][0] *= t.scale.z;
+    rv[2][1] *= t.scale.z;
+    rv[2][2] *= t.scale.z;
+
+    return rv;
 }
 
 glm::mat4 osc::ToInverseMat4(Transform const& t) noexcept

@@ -174,7 +174,7 @@ public:
                 static_cast<int>(viewportRectDims.y),
             };
 
-            desc.setAntialiasingLevel(App::get().getMSXAASamplesRecommended());
+            desc.setAntialiasingLevel(osc::App::get().getMSXAASamplesRecommended());
             EmplaceOrReformat(m_SelectedTex, desc);
             EmplaceOrReformat(m_SceneTex, desc);
         }
