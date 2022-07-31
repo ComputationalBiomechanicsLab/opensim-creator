@@ -3495,8 +3495,6 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             for (auto it = begin; it != end; ++it)
             {
                 {
-                    OSC_PERF("FlushRenderQueue: bind instance variables");
-
                     // try binding to uModel (standard)
                     if (shaderImpl.m_MaybeModelMatUniform)
                     {
@@ -3555,7 +3553,6 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         // bind property block variables (if applicable)
         if (begin->maybePropBlock)
         {
-            OSC_PERF("FlushRenderQueue: bind material block variables");
             for (auto const& [name, value] : begin->maybePropBlock->m_Impl->m_Values)
             {
                 auto it = uniforms.find(name);
@@ -3593,8 +3590,6 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 
         // bind material variables
         {
-            OSC_PERF("FlushRenderQueue: bind material variables");
-
             // try binding to uView (standard)
             if (shaderImpl.m_MaybeViewMatUniform)
             {

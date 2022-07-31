@@ -88,6 +88,17 @@ namespace
             t.emplace(desc);
         }
     }
+
+    glm::vec3 RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
+    {
+        constexpr glm::vec3 sceneUpDir = {0.0f, 1.0f, 0.0f};
+        constexpr float cameraOffsetAngle = 1.05f * osc::fpi4;
+
+        glm::vec3 const camera2focusDir = glm::normalize(-c.focusPoint - c.getPos());
+        glm::vec3 const camera2focusRotatedDir = glm::angleAxis(cameraOffsetAngle, sceneUpDir) * camera2focusDir;
+
+        return 0.5f * (camera2focusRotatedDir + -sceneUpDir);
+    }
 }
 
 class osc::RendererOpenSimTab::Impl final {
@@ -136,113 +147,131 @@ public:
 
     void onDraw()
     {
-        // configure render textures owned by this tab
-        osc::Rect viewportRect = osc::GetMainViewportWorkspaceScreenRect();
-        glm::vec2 viewportRectDims = osc::Dimensions(viewportRect);
-        osc::experimental::RenderTextureDescriptor desc = osc::experimental::RenderTextureDescriptor
+        // compute viewport stuff (the render fills the viewport)
+        Rect const viewportRect = osc::GetMainViewportWorkspaceScreenRect();
+        glm::vec2 const viewportRectDims = osc::Dimensions(viewportRect);
+
+        // configure render textures to match viewport dimensions
         {
-            static_cast<int>(viewportRectDims.x),
-            static_cast<int>(viewportRectDims.y),
-        };
-        desc.setAntialiasingLevel(osc::App::get().getMSXAASamplesRecommended());
-        EmplaceOrReformat(m_SceneTex, desc);
-        EmplaceOrReformat(m_SelectedTex, desc);
-        EmplaceOrReformat(m_RimsTex, desc);
+            experimental::RenderTextureDescriptor desc = osc::experimental::RenderTextureDescriptor
+            {
+                static_cast<int>(viewportRectDims.x),
+                static_cast<int>(viewportRectDims.y),
+            };
 
-        // update polar camera from user input
+            desc.setAntialiasingLevel(App::get().getMSXAASamplesRecommended());
+            EmplaceOrReformat(m_SceneTex, desc);
+            EmplaceOrReformat(m_SelectedTex, desc);
+            EmplaceOrReformat(m_RimsTex, desc);
+        }
+
+        // update the (purely mathematical) polar camera from user input
         osc::UpdatePolarCameraFromImGuiUserInput(viewportRectDims, m_PolarCamera);
+        glm::vec3 const lightDir = RecommendedLightDirection(m_PolarCamera);
 
-        // update the rendered-to scene camera
+        // update the (rendered to) scene camera
         m_Camera.setPosition(m_PolarCamera.getPos());
         m_Camera.setViewMatrix(m_PolarCamera.getViewMtx());
         m_Camera.setProjectionMatrix(m_PolarCamera.getProjMtx(AspectRatio(viewportRectDims)));
         m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
 
-        // render OpenSim scene to tab-owned texture
-        m_Material.setVec3("uViewPos", m_PolarCamera.getPos());
-        m_Material.setVec3("uLightDir", lightPosition());
-        m_Material.setVec3("uLightColor", {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f});
-        for (NewDecoration const& dec : m_Decorations)
+        // render scene to the scene texture
         {
-            osc::experimental::MaterialPropertyBlock b;
-            b.setVec4("uDiffuseColor", dec.Color);
-            osc::experimental::Graphics::DrawMesh(*dec.Mesh, dec.Transform, m_Material, m_Camera, std::move(b));
+            m_Material.setVec3("uViewPos", m_PolarCamera.getPos());
+            m_Material.setVec3("uLightDir", lightDir);
+            m_Material.setVec3("uLightColor", {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f});
 
-            // (if applicable): also append normals shader element
+            experimental::MaterialPropertyBlock propBlock;
+            for (NewDecoration const& dec : m_Decorations)
+            {
+                propBlock.setVec4("uDiffuseColor", dec.Color);
+                experimental::Graphics::DrawMesh(*dec.Mesh, dec.Transform, m_Material, m_Camera, propBlock);
+
+                if (m_DrawNormals)
+                {
+                    experimental::Graphics::DrawMesh(*dec.Mesh, dec.Transform, m_NormalsMaterial, m_Camera);
+                }
+            }
+            // (if applicable): draw the textured floor TODO
+
+            m_Camera.swapTexture(m_SceneTex);
+            m_Camera.render();
+            m_Camera.swapTexture(m_SceneTex);
         }
-        // (if applicable): draw the textured floor
-        m_Camera.swapTexture(m_SceneTex);
-        m_Camera.render();
-        m_Camera.swapTexture(m_SceneTex);
-        OSC_ASSERT(m_SceneTex.has_value());
 
         // render selected objects as a solid color to a seperate texture
-        m_SolidColorMaterial.setVec3("uViewPos", m_PolarCamera.getPos());
-        m_SolidColorMaterial.setVec3("uLightColor", {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f});
-        m_SolidColorMaterial.setVec3("uLightDir", lightPosition());
-        osc::experimental::MaterialPropertyBlock b;
-        b.setVec4("uDiffuseColor", {1.0f, 0.0f, 0.0f, 1.0f});
-        for (NewDecoration const& dec : m_Decorations)
         {
-            if (dec.IsHovered)
+            m_SolidColorMaterial.setVec3("uViewPos", m_PolarCamera.getPos());
+            m_SolidColorMaterial.setVec3("uLightColor", {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f});
+            m_SolidColorMaterial.setVec3("uLightDir", lightDir);
+            m_SolidColorMaterial.setVec4("uDiffuseColor", {1.0f, 0.0f, 0.0f, 1.0f});
+
+            for (NewDecoration const& dec : m_Decorations)
             {
-                osc::experimental::Graphics::DrawMesh(*dec.Mesh, dec.Transform, m_SolidColorMaterial, m_Camera, b);
+                if (dec.IsHovered)
+                {
+                    experimental::Graphics::DrawMesh(*dec.Mesh, dec.Transform, m_SolidColorMaterial, m_Camera);
+                }
             }
+
+            m_Camera.swapTexture(m_SelectedTex);
+            m_Camera.render();
+            m_Camera.swapTexture(m_SelectedTex);
         }
-        m_Camera.swapTexture(m_SelectedTex);
-        m_Camera.render();
-        m_Camera.swapTexture(m_SelectedTex);
-        OSC_ASSERT(m_SelectedTex.has_value());
 
-        // sample the solid color texture through an edge-detection kernel to the scene texture
-        m_EdgeDetectorMaterial.setRenderTexture("uScreenTexture", *m_SelectedTex);
-        m_EdgeDetectorMaterial.setVec4("uRimRgba", {1.0f, 0.4f, 0.0f, 0.85f});
-        m_EdgeDetectorMaterial.setFloat("uRimThickness", (glm::vec2{1.5f} / glm::vec2{viewportRectDims}).x);  // TODO: must be vec2
-        experimental::Graphics::DrawMesh(m_QuadMesh, Transform{}, m_EdgeDetectorMaterial, m_Camera);
+        // sample the solid color through an edge-detection kernel (rim highlighting)
+        {
+            m_Camera.setViewMatrix(glm::mat4{1.0f});  // it's a fullscreen quad
+            m_Camera.setProjectionMatrix(glm::mat4{1.0f});  // it's a fullscreen quad
 
-        // TODO: scissor
-        m_Camera.setViewMatrix(glm::mat4{1.0f});
-        m_Camera.setProjectionMatrix(glm::mat4{1.0f});
-        m_Camera.swapTexture(m_RimsTex);
-        m_Camera.render();
-        m_Camera.swapTexture(m_RimsTex);
-        OSC_ASSERT(m_SceneTex.has_value());
-        m_EdgeDetectorMaterial.clearRenderTexture("uScreenTexture");
-        m_EdgeDetectorMaterial.setTransparent(true);
+            m_EdgeDetectorMaterial.setRenderTexture("uScreenTexture", *m_SelectedTex);
+            m_EdgeDetectorMaterial.setVec4("uRimRgba", {1.0f, 0.4f, 0.0f, 0.85f});
+            m_EdgeDetectorMaterial.setFloat("uRimThickness", (glm::vec2{1.5f} / glm::vec2{viewportRectDims}).x);  // TODO: must be vec2
+            m_EdgeDetectorMaterial.setTransparent(true);
 
-        // blit scene texture to screen
-        m_Camera.setTexture();
-        m_Camera.setPixelRect(viewportRect);
-        m_Camera.setViewMatrix(glm::mat4{1.0f});
-        m_Camera.setProjectionMatrix(glm::mat4{1.0f});
-        m_QuadMaterial.setRenderTexture("uScreenTexture", *m_SceneTex);
-        osc::experimental::Graphics::DrawMesh(m_QuadMesh, Transform{}, m_QuadMaterial, m_Camera);
-        m_Camera.render();
-        m_Camera.setPixelRect();
-        m_QuadMaterial.clearRenderTexture("uScreenTexture");
+            experimental::Graphics::DrawMesh(m_QuadMesh, Transform{}, m_EdgeDetectorMaterial, m_Camera);
 
-        // TODO: allow normals visualization
-        // TODO: allow grid visualization
+            m_Camera.swapTexture(m_RimsTex);
+            m_Camera.render();
+            m_Camera.swapTexture(m_RimsTex);
 
-        m_LogPanel.draw();
-        m_PerfPanel.draw();
+            m_EdgeDetectorMaterial.clearRenderTexture("uScreenTexture");  // prevents copies on next frame
+        }
+
+        // combine into output and draw to screen
+        {
+            m_Camera.setTexture();
+            m_Camera.setPixelRect(viewportRect);
+            m_Camera.setViewMatrix(glm::mat4{1.0f});
+            m_Camera.setProjectionMatrix(glm::mat4{1.0f});
+
+            m_QuadMaterial.setRenderTexture("uScreenTexture", *m_SceneTex);
+
+            experimental::Graphics::DrawMesh(m_QuadMesh, Transform{}, m_QuadMaterial, m_Camera);
+
+            m_Camera.render();
+            m_Camera.setPixelRect();
+            m_QuadMaterial.clearRenderTexture("uScreenTexture");
+        }
+
+        // render auxiliary 2D UI
+        {
+            ImGui::Begin("controls");
+            ImGui::Checkbox("draw normals", &m_DrawNormals);
+            ImGui::End();
+
+            m_LogPanel.draw();
+            m_PerfPanel.draw();
+        }
     }
 
 private:
-    glm::vec3 lightPosition() const
-    {
-        // automatically change lighting position based on camera position
-        glm::vec3 p = glm::normalize(-m_PolarCamera.focusPoint - m_PolarCamera.getPos());
-        glm::vec3 up = {0.0f, 1.0f, 0.0f};
-        glm::vec3 mp = glm::rotate(glm::mat4{1.0f}, 1.05f * fpi4, up) * glm::vec4{p, 0.0f};
-        return glm::normalize(mp + -up);
-    }
-
     UID m_ID;
     TabHost* m_Parent;
 
     std::vector<NewDecoration> m_Decorations = GenerateDecorations();
     PolarPerspectiveCamera m_PolarCamera;
+    bool m_DrawNormals = false;
 
     experimental::Material m_Material
     {
@@ -277,6 +306,16 @@ private:
         {
             App::slurp("shaders/ExperimentFrameBuffersScreen.vert"),
             App::slurp("shaders/ExperimentFrameBuffersScreen.frag"),
+        }
+    };
+
+    experimental::Material m_NormalsMaterial
+    {
+        experimental::Shader
+        {
+            App::slurp("shaders/ExperimentGeometryShaderNormals.vert"),
+            App::slurp("shaders/ExperimentGeometryShaderNormals.geom"),
+            App::slurp("shaders/ExperimentGeometryShaderNormals.frag"),
         }
     };
 
