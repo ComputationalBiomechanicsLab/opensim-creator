@@ -171,7 +171,7 @@ public:
 
             desc.setAntialiasingLevel(App::get().getMSXAASamplesRecommended());
             EmplaceOrReformat(m_SceneTex, desc);
-            desc.setColorFormat(osc::experimental::RenderTextureFormat::);
+            desc.setColorFormat(osc::experimental::RenderTextureFormat::RED);
             EmplaceOrReformat(m_SelectedTex, desc);
             desc.setColorFormat(osc::experimental::RenderTextureFormat::ARGB32);
             EmplaceOrReformat(m_RimsTex, desc);
