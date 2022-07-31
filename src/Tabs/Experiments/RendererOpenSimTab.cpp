@@ -197,9 +197,15 @@ public:
             m_SceneColoredElementsMaterial.setVec3("uLightColor", {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f});
 
             experimental::MaterialPropertyBlock propBlock;
+            glm::vec4 lastColor = {-1.0f, -1.0f, -1.0f, 0.0f};
             for (NewDecoration const& dec : m_Decorations)
             {
-                propBlock.setVec4("uDiffuseColor", dec.Color);
+                if (dec.Color != lastColor)
+                {
+                    propBlock.setVec4("uDiffuseColor", dec.Color);
+                    lastColor = dec.Color;
+                }
+
                 experimental::Graphics::DrawMesh(*dec.Mesh, dec.Transform, m_SceneColoredElementsMaterial, m_Camera, propBlock);
 
                 if (m_DrawNormals)
@@ -214,7 +220,7 @@ public:
                 m_SceneTexturedElementsMaterial.setVec3("uLightDir", lightDir);
                 m_SceneTexturedElementsMaterial.setVec3("uLightColor", {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f});
                 m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_FloorTexture);
-                m_SceneTexturedElementsMaterial.setVec2("uTextureScale", {200.0f, 100.0f});
+                m_SceneTexturedElementsMaterial.setVec2("uTextureScale", {200.0f, 200.0f});
 
                 experimental::Graphics::DrawMesh(m_QuadMesh, m_FloorTransform, m_SceneTexturedElementsMaterial, m_Camera);
             }

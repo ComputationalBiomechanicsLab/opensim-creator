@@ -2972,7 +2972,6 @@ private:
 
     friend class GraphicsBackend;
 
-    UID m_UID;
     std::optional<RenderTexture> m_MaybeTexture = std::nullopt;
     glm::vec4 m_BackgroundColor = {0.0f, 0.0f, 0.0f, 0.0f};
     CameraProjection m_CameraProjection = CameraProjection::Perspective;
@@ -3488,8 +3487,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     // (there's a lot of helper functions here because this part is extremely algorithmic)
 
     struct InstancingState final {
-        InstancingState(gl::ArrayBuffer<float, GL_STATIC_DRAW> buf, std::size_t stride) :
-            Buf{std::move(buf)},
+        InstancingState(std::size_t stride) :
             Stride{std::move(stride)}
         {
         }
@@ -3500,7 +3498,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     };
 
     // helper: upload instancing data for a batch
-    auto UploadInstancingData = [](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end, Shader::Impl const& shaderImpl)
+    auto UploadInstancingData = [&camera](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end, Shader::Impl const& shaderImpl)
     {
         // preemptively upload instancing data
         std::optional<InstancingState> maybeInstancingState;
@@ -3557,13 +3555,15 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                 }
             }
 
-            maybeInstancingState.emplace(std::move(buf), stride);
+            gl::ArrayBuffer<float>& vbo = maybeInstancingState.emplace(stride).Buf;
+            gl::BindBuffer(vbo);
+            gl::BufferData(vbo.BufferType, sizeof(float) * buf.size(), buf.data(), GL_STREAM_DRAW);
         }
         return maybeInstancingState;
     };
 
     // helper: binds to instanced attributes (per-drawcall)
-    auto BindToInstancedAttributes = [](Shader::Impl const& shaderImpl, std::optional<InstancingState>& ins)
+    auto BindToInstancedAttributes = [&](Shader::Impl const& shaderImpl, std::optional<InstancingState>& ins)
     {
         if (ins)
         {
