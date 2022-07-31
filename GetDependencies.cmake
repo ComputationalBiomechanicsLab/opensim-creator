@@ -307,6 +307,13 @@ if(TRUE)
     target_include_directories(stb INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb)
 endif()
 
+# DEPENDENCY: robin-hood-hashing
+#     header-only library, used for high-perf associative lookups
+if(TRUE)
+    add_library(robin-hood-hashing INTERFACE)
+    target_include_directories(stb INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/robin-hood-hashing)
+endif()
+
 # DEPENDENCY: tomlplusplus
 #     header-only library, used to parse toml config files
 if(TRUE)

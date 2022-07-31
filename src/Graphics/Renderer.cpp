@@ -28,6 +28,7 @@
 #include <glm/vec4.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <nonstd/span.hpp>
+#include <robin-hood-hashing/robin_hood.h>
 
 #include <algorithm>
 #include <array>
@@ -40,7 +41,6 @@
 #include <string>
 #include <type_traits>
 #include <tuple>
-#include <unordered_map>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -86,13 +86,6 @@ namespace
         out.push_back(static_cast<std::byte>(c.g));
         out.push_back(static_cast<std::byte>(c.b));
         out.push_back(static_cast<std::byte>(c.a));
-    }
-
-    template<typename K, typename V, typename Key>
-    V const* TryGetValue(std::unordered_map<K, V> m, Key const& k)
-    {
-        auto it = m.find(k);
-        return it != m.end() ? &it->second : nullptr;
     }
 
     template<typename T, std::size_t N, typename... Initializers>
@@ -266,6 +259,13 @@ namespace
         ShaderType Type;
         int Size;
     };
+
+    template<typename Key>
+    ShaderElement const* TryGetValue(robin_hood::unordered_map<std::string, ShaderElement> m, Key const& k)
+    {
+        auto it = m.find(k);
+        return it != m.end() ? &it->second : nullptr;
+    }
 
     void PrintShaderElement(std::ostream& o, std::string_view name, ShaderElement const& se)
     {
@@ -1149,12 +1149,12 @@ public:
         return m_Program;
     }
 
-    std::unordered_map<std::string, ShaderElement> const& getUniforms() const
+    robin_hood::unordered_map<std::string, ShaderElement> const& getUniforms() const
     {
         return m_Uniforms;
     }
 
-    std::unordered_map<std::string, ShaderElement> const& getAttributes() const
+    robin_hood::unordered_map<std::string, ShaderElement> const& getAttributes() const
     {
         return m_Attributes;
     }
@@ -1241,8 +1241,8 @@ private:
 
     UID m_UID;
     gl::Program m_Program;
-    std::unordered_map<std::string, ShaderElement> m_Uniforms;
-    std::unordered_map<std::string, ShaderElement> m_Attributes;
+    robin_hood::unordered_map<std::string, ShaderElement> m_Uniforms;
+    robin_hood::unordered_map<std::string, ShaderElement> m_Attributes;
     std::optional<ShaderElement> m_MaybeModelMatUniform;
     std::optional<ShaderElement> m_MaybeNormalMatUniform;
     std::optional<ShaderElement> m_MaybeViewMatUniform;
@@ -1525,7 +1525,7 @@ private:
 
     UID m_UID;
     Shader m_Shader;
-    std::unordered_map<std::string, MaterialValue> m_Values;
+    robin_hood::unordered_map<std::string, MaterialValue> m_Values;
     bool m_IsTransparent = false;
 };
 
@@ -1845,7 +1845,7 @@ private:
 
     friend class GraphicsBackend;
 
-    std::unordered_map<std::string, MaterialValue> m_Values;
+    robin_hood::unordered_map<std::string, MaterialValue> m_Values;
 };
 
 osc::experimental::MaterialPropertyBlock::MaterialPropertyBlock() :
@@ -3671,7 +3671,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     {
         osc::experimental::Material::Impl& matImpl = const_cast<osc::experimental::Material::Impl&>(*begin->material.m_Impl);
         osc::experimental::Shader::Impl& shaderImpl = const_cast<osc::experimental::Shader::Impl&>(*matImpl.m_Shader.m_Impl);
-        std::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
+        robin_hood::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
         // bind property block variables (if applicable)
         if (begin->maybePropBlock)
@@ -3701,7 +3701,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     {
         osc::experimental::Material::Impl& matImpl = const_cast<osc::experimental::Material::Impl&>(*begin->material.m_Impl);
         osc::experimental::Shader::Impl& shaderImpl = const_cast<osc::experimental::Shader::Impl&>(*matImpl.m_Shader.m_Impl);
-        std::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
+        robin_hood::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
         // preemptively upload instance data
         std::optional<InstancingState> maybeInstances = UploadInstancingData(begin, end, shaderImpl);
