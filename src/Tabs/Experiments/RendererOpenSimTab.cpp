@@ -170,11 +170,8 @@ public:
             };
 
             desc.setAntialiasingLevel(App::get().getMSXAASamplesRecommended());
-            EmplaceOrReformat(m_SceneTex, desc);
-            desc.setColorFormat(osc::experimental::RenderTextureFormat::RED);
             EmplaceOrReformat(m_SelectedTex, desc);
-            desc.setColorFormat(osc::experimental::RenderTextureFormat::ARGB32);
-            EmplaceOrReformat(m_RimsTex, desc);
+            EmplaceOrReformat(m_SceneTex, desc);
         }
 
         // update the (purely mathematical) polar camera from user input
@@ -182,12 +179,13 @@ public:
         glm::vec3 const lightDir = RecommendedLightDirection(m_PolarCamera);
 
         // update the (rendered to) scene camera
+        m_Camera.setClearFlags(experimental::CameraClearFlags::SolidColor);
+        m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
         m_Camera.setPosition(m_PolarCamera.getPos());
         m_Camera.setViewMatrix(m_PolarCamera.getViewMtx());
         m_Camera.setProjectionMatrix(m_PolarCamera.getProjMtx(AspectRatio(viewportRectDims)));
-        m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
 
-        // render scene to the scene texture
+        // render scene to the screen
         {
             m_SceneColoredElementsMaterial.setVec3("uViewPos", m_PolarCamera.getPos());
             m_SceneColoredElementsMaterial.setVec3("uLightDir", lightDir);
@@ -242,6 +240,7 @@ public:
         {
             m_Camera.setViewMatrix(glm::mat4{1.0f});  // it's a fullscreen quad
             m_Camera.setProjectionMatrix(glm::mat4{1.0f});  // it's a fullscreen quad
+            m_Camera.setClearFlags(experimental::CameraClearFlags::Depth);
 
             m_EdgeDetectorMaterial.setRenderTexture("uScreenTexture", *m_SelectedTex);
             m_EdgeDetectorMaterial.setVec4("uRimRgba", {1.0f, 0.4f, 0.0f, 0.85f});
@@ -250,15 +249,17 @@ public:
 
             experimental::Graphics::DrawMesh(m_QuadMesh, Transform{}, m_EdgeDetectorMaterial, m_Camera);
 
-            m_Camera.swapTexture(m_RimsTex);
+            m_Camera.setClearFlags(experimental::CameraClearFlags::Depth);
+            m_Camera.swapTexture(m_SceneTex);
             m_Camera.render();
-            m_Camera.swapTexture(m_RimsTex);
+            m_Camera.swapTexture(m_SceneTex);
+            m_Camera.setClearFlags(experimental::CameraClearFlags::SolidColor);
 
             m_EdgeDetectorMaterial.clearRenderTexture("uScreenTexture");  // prevents copies on next frame
         }
 
+        // blit the anti-aliased render to the screen
         BlitToScreen(*m_SceneTex, viewportRect);
-        BlitToScreen(*m_RimsTex, viewportRect);
 
         // render auxiliary 2D UI
         {
@@ -357,7 +358,6 @@ private:
     osc::Transform m_FloorTransform = GetFloorTransform();
     std::optional<experimental::RenderTexture> m_SceneTex;
     std::optional<experimental::RenderTexture> m_SelectedTex;
-    std::optional<experimental::RenderTexture> m_RimsTex;
     experimental::Camera m_Camera;
 
     LogViewerPanel m_LogPanel{"log"};
