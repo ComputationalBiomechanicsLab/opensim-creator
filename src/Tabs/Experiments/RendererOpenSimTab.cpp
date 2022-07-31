@@ -264,10 +264,10 @@ public:
         // use an edge-detection kernel to turn the solid shapes into "rims"
         if (hasRims)
         {
-            glm::vec2 rimThickness = glm::vec2{m_RimThickness} / glm::vec2{viewportRectDims};
-            Rect rimNdcRect = WorldpsaceAABBToNdcRect(rimAABBWorldspace, m_Camera.getViewProjectionMatrix());
-            rimNdcRect = Expand(rimNdcRect, rimThickness);
-            Rect rimScreenRect = NdcRectToScreenspaceViewportRect(rimNdcRect, Rect{{}, viewportRectDims});
+            glm::vec2 rimThicknessNDC = glm::vec2{m_RimThickness} / glm::vec2{viewportRectDims};
+            Rect rimRectNDC = WorldpsaceAABBToNdcRect(rimAABBWorldspace, m_Camera.getViewProjectionMatrix());
+            rimRectNDC = Expand(rimRectNDC, rimThicknessNDC);
+            Rect rimScreenRect = NdcRectToScreenspaceViewportRect(rimRectNDC, Rect{{}, viewportRectDims});
 
             m_Camera.setScissorRect(rimScreenRect);
             m_Camera.setViewMatrix(glm::mat4{1.0f});  // it's a fullscreen quad
@@ -276,7 +276,7 @@ public:
 
             m_EdgeDetectorMaterial.setRenderTexture("uScreenTexture", *m_SelectedTex);
             m_EdgeDetectorMaterial.setVec4("uRimRgba", m_RimRgba);
-            m_EdgeDetectorMaterial.setVec2("uRimThickness", rimThickness);
+            m_EdgeDetectorMaterial.setVec2("uRimThickness", rimThicknessNDC);
             m_EdgeDetectorMaterial.setTransparent(true);
 
             experimental::Graphics::DrawMesh(m_QuadMesh, Transform{}, m_EdgeDetectorMaterial, m_Camera);
@@ -293,7 +293,6 @@ public:
 
         // blit the anti-aliased render to the screen
         BlitToScreen(*m_SceneTex, viewportRect);
-
 
         // render auxiliary 2D UI
         {
