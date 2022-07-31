@@ -577,6 +577,9 @@ namespace osc::experimental
         void setProjectionMatrix(glm::mat4 const&);
         void resetProjectionMatrix();
 
+        // returns getProjectionMatrix() * getViewMatrix()
+        glm::mat4 getViewProjectionMatrix() const;
+
         // flushes any rendering commands that were queued against this camera
         //
         // after this call completes, the output texture, or screen, should contain

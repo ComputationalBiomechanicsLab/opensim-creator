@@ -13,3 +13,8 @@ bool osc::operator==(AABB const& a, AABB const& b) noexcept
 {
     return a.min == b.min && a.max == b.max;
 }
+
+bool osc::operator!=(AABB const& a, AABB const& b) noexcept
+{
+    return !(a == b);
+}

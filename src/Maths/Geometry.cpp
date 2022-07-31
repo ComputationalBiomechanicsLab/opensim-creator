@@ -427,6 +427,33 @@ float osc::AspectRatio(Rect const& r) noexcept
     return dims.x/dims.y;
 }
 
+osc::Rect osc::Expand(Rect const& rect, float amt) noexcept
+{
+    Rect rv
+    {
+        Min(rect.p1, rect.p2),
+        Max(rect.p1, rect.p2)
+    };
+    rv.p1.x -= amt;
+    rv.p2.x += amt;
+    rv.p1.y -= amt;
+    rv.p2.y += amt;
+    return rv;
+}
+
+osc::Rect osc::Expand(Rect const& rect, glm::vec2 amt) noexcept
+{
+    Rect rv
+    {
+        Min(rect.p1, rect.p2),
+        Max(rect.p1, rect.p2)
+    };
+    rv.p1.x -= amt.x;
+    rv.p2.x += amt.x;
+    rv.p1.y -= amt.y;
+    rv.p2.y += amt.y;
+    return rv;
+}
 
 bool osc::IsPointInRect(Rect const& r, glm::vec2 const& p) noexcept
 {
@@ -527,6 +554,14 @@ glm::mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b) noexcept
     glm::mat4 translator = glm::translate(glm::mat4{1.0f}, b.origin-a.origin);
 
     return translator * rotator * scaler;
+}
+
+osc::AABB osc::InvertedAABB() noexcept
+{
+    AABB rv;
+    rv.min = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+    rv.max = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
+    return rv;
 }
 
 glm::vec3 osc::Midpoint(AABB const& a) noexcept
@@ -758,6 +793,48 @@ osc::AABB osc::AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd:
             rv.max = Max(rv.max, pos);
         }
     }
+
+    return rv;
+}
+
+osc::Rect osc::WorldpsaceAABBToNdcRect(AABB const& aabb, glm::mat4 const& m)
+{
+    // project the AABB's points
+    auto verts = ToCubeVerts(aabb);
+    for (glm::vec3& vert : verts)
+    {
+        glm::vec4 p = m * glm::vec4{vert, 1.0f};  // project
+        vert = glm::vec3{p} / p.w;  // perspective divide
+    }
+
+    // compute bounds of (the XY components of) the points
+    static_assert(verts.size() > 1);
+    glm::vec2 const first = glm::vec2{verts[0]};
+
+    Rect rv = {first, first};
+    for (std::size_t i = 1; i < verts.size(); ++i)
+    {
+        glm::vec2 p = glm::vec2{verts[i]};
+        rv.p1 = Min(rv.p1, p);
+        rv.p2 = Max(rv.p2, p);
+    }
+    return rv;
+}
+
+osc::Rect osc::NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const& viewport) noexcept
+{
+    glm::vec2 const viewportDims = Dimensions(viewport);
+
+    // remap [-1, 1] into [0, viewportDims]
+    Rect rv
+    {
+        0.5f * (ndcRect.p1 + 1.0f) * viewportDims,
+        0.5f * (ndcRect.p2 + 1.0f) * viewportDims,
+    };
+
+    // offset by viewport's top-left
+    rv.p1 += viewport.p1;
+    rv.p2 += viewport.p1;
 
     return rv;
 }

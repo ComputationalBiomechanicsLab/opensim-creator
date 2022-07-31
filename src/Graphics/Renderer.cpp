@@ -2931,6 +2931,11 @@ public:
         m_MaybeProjectionMatrixOverride.reset();
     }
 
+    glm::mat4 getViewProjectionMatrix() const
+    {
+        return getProjectionMatrix() * getViewMatrix();
+    }
+
     void render()
     {
         GraphicsBackend::FlushRenderQueue(*this);
@@ -3225,6 +3230,11 @@ void osc::experimental::Camera::resetProjectionMatrix()
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->resetProjectionMatrix();
+}
+
+glm::mat4 osc::experimental::Camera::getViewProjectionMatrix() const
+{
+    return m_Impl->getViewProjectionMatrix();
 }
 
 void osc::experimental::Camera::render()

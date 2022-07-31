@@ -59,6 +59,11 @@ namespace
         }
     };
 
+    osc::AABB WorldpaceAABB(NewDecoration const& d)
+    {
+        return osc::TransformAABB(d.Mesh->getBounds(), d.Transform);
+    }
+
     std::vector<NewDecoration> GenerateDecorations()
     {
         osc::UndoableModelStatePair p{std::make_unique<OpenSim::Model>(osc::App::resource("models/RajagopalModel/Rajagopal2015.osim").string())};
@@ -220,6 +225,8 @@ public:
         }
 
         // render selected objects as a solid color to a seperate texture
+        AABB rimAABBWorldspace = InvertedAABB();
+        bool hasRims = false;
         {
             m_SolidColorMaterial.setVec4("uDiffuseColor", {1.0f, 0.0f, 0.0f, 1.0f});
 
@@ -228,6 +235,8 @@ public:
                 if (dec.IsHovered)
                 {
                     experimental::Graphics::DrawMesh(*dec.Mesh, dec.Transform, m_SolidColorMaterial, m_Camera);
+                    rimAABBWorldspace = Union(rimAABBWorldspace, WorldpaceAABB(dec));
+                    hasRims = true;
                 }
             }
 
@@ -237,23 +246,31 @@ public:
         }
 
         // sample the solid color through an edge-detection kernel (rim highlighting)
+        if (hasRims)
         {
+            glm::vec2 rimThickness = glm::vec2{1.5f} / glm::vec2{viewportRectDims};
+            Rect rimNdcRect = WorldpsaceAABBToNdcRect(rimAABBWorldspace, m_Camera.getViewProjectionMatrix());
+            rimNdcRect = Expand(rimNdcRect, rimThickness);
+            Rect rimScreenRect = NdcRectToScreenspaceViewportRect(rimNdcRect, Rect{{}, viewportRectDims});
+
+            m_Camera.setScissorRect(rimScreenRect);
             m_Camera.setViewMatrix(glm::mat4{1.0f});  // it's a fullscreen quad
             m_Camera.setProjectionMatrix(glm::mat4{1.0f});  // it's a fullscreen quad
             m_Camera.setClearFlags(experimental::CameraClearFlags::Depth);
 
             m_EdgeDetectorMaterial.setRenderTexture("uScreenTexture", *m_SelectedTex);
             m_EdgeDetectorMaterial.setVec4("uRimRgba", {1.0f, 0.4f, 0.0f, 0.85f});
-            m_EdgeDetectorMaterial.setVec2("uRimThickness", glm::vec2{1.5f} / glm::vec2{viewportRectDims});
+            m_EdgeDetectorMaterial.setVec2("uRimThickness", rimThickness);
             m_EdgeDetectorMaterial.setTransparent(true);
 
             experimental::Graphics::DrawMesh(m_QuadMesh, Transform{}, m_EdgeDetectorMaterial, m_Camera);
 
-            m_Camera.setClearFlags(experimental::CameraClearFlags::Depth);
             m_Camera.swapTexture(m_SceneTex);
             m_Camera.render();
             m_Camera.swapTexture(m_SceneTex);
+
             m_Camera.setClearFlags(experimental::CameraClearFlags::SolidColor);
+            m_Camera.setScissorRect();
 
             m_EdgeDetectorMaterial.clearRenderTexture("uScreenTexture");  // prevents copies on next frame
         }

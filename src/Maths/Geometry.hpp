@@ -110,6 +110,12 @@ namespace osc
     // returns the aspect ratio (width/height) of the rectangle
     float AspectRatio(Rect const&) noexcept;
 
+    // returns a rectangle that has been expanded along each edge by the given amount
+    //
+    // (e.g. expand 1.0f adds 1.0f to both the left edge and the right edge)
+    Rect Expand(Rect const&, float) noexcept;
+    Rect Expand(Rect const&, glm::vec2) noexcept;
+
     // returns true if the given point is within the rect's bounds
     bool IsPointInRect(Rect const&, glm::vec2 const&) noexcept;
 
@@ -130,6 +136,12 @@ namespace osc
 
     // returns an xform that maps a disc to another disc
     glm::mat4 DiscToDiscMat4(Disc const&, Disc const&) noexcept;
+
+    // returns an AABB that is "inverted", such that it's minimum is the largest
+    // possible value and its maximum is the smallest possible value
+    //
+    // handy as a "seed" when union-ing many AABBs, because it won't
+    AABB InvertedAABB() noexcept;
 
     // returns the centerpoint of an AABB
     glm::vec3 Midpoint(AABB const&) noexcept;
@@ -171,6 +183,14 @@ namespace osc
     // computes an AABB of indexed verticies (e.g. as used in mesh data)
     AABB AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices);
     AABB AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices);
+
+    // returns a Normalized Device Coordinates (NDC) rectangle that contains the given AABB, after
+    // projecting it using the provided view+projection matrix
+    Rect WorldpsaceAABBToNdcRect(AABB const&, glm::mat4 const& world2Ndc);
+
+    // returns a rect, created by mapping an Normalized Device Coordinates (NDC) rect
+    // (i.e. -1.0 to 1.0) within a screenspace viewport (pixel units, topleft == (0, 0))
+    Rect NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const& viewport) noexcept;
 
     // returns an xform that maps a path segment to another path segment
     glm::mat4 SegmentToSegmentMat4(Segment const&, Segment const&) noexcept;
