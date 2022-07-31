@@ -12,7 +12,7 @@ out vec3 Normal;
 
 void main()
 {
-    FragPos = vec3(uModelMat vec4(aPos, 1.0));
+    FragPos = vec3(uModelMat * vec4(aPos, 1.0));
     Normal = uNormalMat * aNormal;
 
     gl_Position = uViewProjMat * vec4(FragPos, 1.0);
