@@ -209,7 +209,7 @@ public:
                 m_SceneTexturedElementsMaterial.setVec3("uLightDir", lightDir);
                 m_SceneTexturedElementsMaterial.setVec3("uLightColor", {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f});
                 m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_FloorTexture);
-                m_SceneTexturedElementsMaterial.setFloat("uTextureScale", 200.0f);  // TODO: vec2
+                m_SceneTexturedElementsMaterial.setVec2("uTextureScale", {200.0f, 100.0f});
 
                 experimental::Graphics::DrawMesh(m_QuadMesh, m_FloorTransform, m_SceneTexturedElementsMaterial, m_Camera);
             }
@@ -244,7 +244,7 @@ public:
 
             m_EdgeDetectorMaterial.setRenderTexture("uScreenTexture", *m_SelectedTex);
             m_EdgeDetectorMaterial.setVec4("uRimRgba", {1.0f, 0.4f, 0.0f, 0.85f});
-            m_EdgeDetectorMaterial.setFloat("uRimThickness", (glm::vec2{1.5f} / glm::vec2{viewportRectDims}).x);  // TODO: must be vec2
+            m_EdgeDetectorMaterial.setVec2("uRimThickness", glm::vec2{1.5f} / glm::vec2{viewportRectDims});
             m_EdgeDetectorMaterial.setTransparent(true);
 
             experimental::Graphics::DrawMesh(m_QuadMesh, Transform{}, m_EdgeDetectorMaterial, m_Camera);

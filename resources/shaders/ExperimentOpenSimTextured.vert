@@ -4,7 +4,7 @@ uniform mat4 uViewProjMat;
 uniform vec3 uLightDir;
 uniform vec3 uLightColor;
 uniform vec3 uViewPos;
-uniform float uTextureScale = 1.0;
+uniform vec2 uTextureScale = vec2(1.0, 1.0);
 
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoord;

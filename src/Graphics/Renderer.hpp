@@ -215,6 +215,7 @@ namespace osc::experimental
     // data type of a material-assignable property parsed from the shader code
     enum class ShaderType {
         Float = 0,
+        Vec2,
         Vec3,
         Vec4,
         Mat3,
@@ -283,6 +284,9 @@ namespace osc::experimental
 
         std::optional<nonstd::span<float const>> getFloatArray(std::string_view propertyName) const;
         void setFloatArray(std::string_view propertyName, nonstd::span<float const>);
+
+        std::optional<glm::vec2> getVec2(std::string_view propertyName) const;
+        void setVec2(std::string_view propertyName, glm::vec2);
 
         std::optional<glm::vec3> getVec3(std::string_view propertyName) const;
         void setVec3(std::string_view propertyName, glm::vec3);

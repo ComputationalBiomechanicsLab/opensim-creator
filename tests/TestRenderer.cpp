@@ -533,16 +533,22 @@ TEST_F(Renderer, MaterialGetFloatArrayOnNewMaterialReturnsEmptyOptional)
     ASSERT_FALSE(mat.getFloatArray("someKey"));
 }
 
-TEST_F(Renderer, MaterialGetVec3ArrayOnNewMaterialReturnsEmptyOptional)
+TEST_F(Renderer, MaterialGetVec2OnNewMaterialReturnsEmptyOptional)
 {
     osc::experimental::Material mat = GenerateMaterial();
-    ASSERT_FALSE(mat.getVec3Array("someKey"));
+    ASSERT_FALSE(mat.getVec2("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetVec3OnNewMaterialReturnsEmptyOptional)
 {
     osc::experimental::Material mat = GenerateMaterial();
     ASSERT_FALSE(mat.getVec3("someKey"));
+}
+
+TEST_F(Renderer, MaterialGetVec3ArrayOnNewMaterialReturnsEmptyOptional)
+{
+    osc::experimental::Material mat = GenerateMaterial();
+    ASSERT_FALSE(mat.getVec3Array("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetVec4OnNewMaterialReturnsEmptyOptional)
@@ -599,6 +605,47 @@ TEST_F(Renderer, MaterialSetFloatArrayOnMaterialCausesGetFloatArrayToReturnThePr
 
     nonstd::span<float const> rv = *mat.getFloatArray(key);
     ASSERT_TRUE(std::equal(rv.begin(), rv.end(), values.begin(), values.end()));
+}
+
+TEST_F(Renderer, MaterialSetVec2OnMaterialCausesGetVec2ToReturnTheProvidedValue)
+{
+    osc::experimental::Material mat = GenerateMaterial();
+
+    std::string key = "someKey";
+    glm::vec2 value = GenerateVec2();
+
+    mat.setVec2(key, value);
+
+    ASSERT_EQ(*mat.getVec2(key), value);
+}
+
+TEST_F(Renderer, MaterialSetVec2AndThenSetVec3CausesGetVec2ToReturnEmpty)
+{
+    osc::experimental::Material mat = GenerateMaterial();
+
+    std::string key = "someKey";
+    glm::vec2 value = GenerateVec2();
+
+    ASSERT_FALSE(mat.getVec2(key).has_value());
+
+    mat.setVec2(key, value);
+
+    ASSERT_TRUE(mat.getVec2(key).has_value());
+
+    mat.setVec3(key, {});
+
+    ASSERT_TRUE(mat.getVec3(key));
+    ASSERT_FALSE(mat.getVec2(key));
+}
+
+TEST_F(Renderer, MaterialSetVec2CausesMaterialToCompareNotEqualToCopy)
+{
+    osc::experimental::Material mat = GenerateMaterial();
+    osc::experimental::Material copy{mat};
+
+    mat.setVec2("someKey", GenerateVec2());
+
+    ASSERT_NE(mat, copy);
 }
 
 TEST_F(Renderer, MaterialSetVec3OnMaterialCausesGetVec3ToReturnTheProvidedValue)

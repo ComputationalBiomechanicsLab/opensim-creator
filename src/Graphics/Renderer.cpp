@@ -122,6 +122,7 @@ namespace
     using MaterialValue = std::variant<
         float,
         std::vector<float>,
+        glm::vec2,
         glm::vec3,
         std::vector<glm::vec3>,
         glm::vec4,
@@ -136,6 +137,8 @@ namespace
     osc::experimental::ShaderType GetShaderType(MaterialValue const& v)
     {
         switch (v.index()) {
+        case VariantIndex<MaterialValue, glm::vec2>():
+            return osc::experimental::ShaderType::Vec2;
         case VariantIndex<MaterialValue, float>():
         case VariantIndex<MaterialValue, std::vector<float>>():
             return osc::experimental::ShaderType::Float;
@@ -178,6 +181,7 @@ namespace
     // LUT for human-readable form of the above
     static constexpr auto const g_ShaderTypeInternalStrings = MakeArray<osc::CStringView, static_cast<std::size_t>(ShaderType::TOTAL)>(
         "Float",
+            "Vec2",
         "Vec3",
         "Vec4",
         "Mat3",
@@ -194,6 +198,8 @@ namespace
         switch (e) {
         case GL_FLOAT:
             return ShaderType::Float;
+        case GL_FLOAT_VEC2:
+            return ShaderType::Vec2;
         case GL_FLOAT_VEC3:
             return ShaderType::Vec3;
         case GL_FLOAT_VEC4:
@@ -231,7 +237,6 @@ namespace
         case GL_FLOAT_MAT4x2:
         case GL_FLOAT_MAT4x3:
         case GL_FLOAT_MAT2:
-        case GL_FLOAT_VEC2:
         default:
             return ShaderType::Unknown;
         }
@@ -1376,6 +1381,16 @@ public:
         setValue(std::move(propertyName), std::vector<float>(v.begin(), v.end()));
     }
 
+    std::optional<glm::vec2> getVec2(std::string_view propertyName) const
+    {
+        return getValue<glm::vec2>(std::move(propertyName));
+    }
+
+    void setVec2(std::string_view propertyName, glm::vec2 value)
+    {
+        setValue(std::move(propertyName), std::move(value));
+    }
+
     std::optional<glm::vec3> getVec3(std::string_view propertyName) const
     {
         return getValue<glm::vec3>(std::move(propertyName));
@@ -1550,6 +1565,17 @@ void osc::experimental::Material::setFloatArray(std::string_view propertyName, n
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setFloatArray(std::move(propertyName), std::move(vs));
+}
+
+std::optional<glm::vec2> osc::experimental::Material::getVec2(std::string_view propertyName) const
+{
+    return m_Impl->getVec2(std::move(propertyName));
+}
+
+void osc::experimental::Material::setVec2(std::string_view propertyName, glm::vec2 value)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setVec2(std::move(propertyName), std::move(value));
 }
 
 std::optional<nonstd::span<glm::vec3 const>> osc::experimental::Material::getVec3Array(std::string_view propertyName) const
@@ -3282,6 +3308,12 @@ void osc::experimental::GraphicsBackend::TryBindMaterialValueToShaderElement(Sha
             gl::UniformFloat u{se.Location + i};
             gl::Uniform(u, vals[i]);
         }
+        break;
+    }
+    case VariantIndex<MaterialValue, glm::vec2>():
+    {
+        gl::UniformVec2 u{se.Location};
+        gl::Uniform(u, std::get<glm::vec2>(v));
         break;
     }
     case VariantIndex<MaterialValue, glm::vec3>():

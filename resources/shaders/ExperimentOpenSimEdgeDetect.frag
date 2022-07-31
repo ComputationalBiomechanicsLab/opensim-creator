@@ -2,7 +2,7 @@
 
 uniform sampler2D uScreenTexture;
 uniform vec4 uRimRgba;
-uniform float uRimThickness;
+uniform vec2 uRimThickness;
 
 in vec2 TexCoords;
 out vec4 FragColor;
