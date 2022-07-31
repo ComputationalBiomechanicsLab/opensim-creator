@@ -1,0 +1,40 @@
+#version 330 core
+
+uniform mat4 uViewProjMat;
+uniform vec3 uLightDir;
+uniform vec3 uLightColor;
+uniform vec3 uViewPos;
+uniform float uTextureScale = 1.0;
+
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aTexCoord;
+layout (location = 2) in vec3 aNormal;
+layout (location = 6) in mat4 aModelMat;
+layout (location = 10) in mat3 aNormalMat;
+
+out vec2 TexCoord;
+out vec4 GouraudBrightness;
+
+const float ambientStrength = 0.5f;
+const float diffuseStrength = 0.5f;
+const float specularStrength = 0.7f;
+const float shininess = 32;
+
+void main()
+{
+    vec3 normalDir = normalize(aNormalMat * aNormal);
+    vec3 fragPos = vec3(aModelMat * vec4(aPos, 1.0));
+    vec3 frag2viewDir = normalize(uViewPos - fragPos);
+    vec3 frag2lightDir = normalize(-uLightDir);  // light dir is in the opposite direction
+    vec3 halfwayDir = 0.5 * (frag2lightDir + frag2viewDir);
+
+    float ambientAmt = ambientStrength;
+    float diffuseAmt = diffuseStrength * max(dot(normalDir, frag2lightDir), 0.0);
+    float specularAmt = specularStrength * pow(max(dot(normalDir, halfwayDir), 0.0), shininess);
+
+    float lightAmt = clamp(ambientAmt + diffuseAmt + specularAmt, 0.0, 1.0);
+
+    GouraudBrightness = vec4(lightAmt * uLightColor, 1.0);
+    TexCoord = uTextureScale * aTexCoord;
+    gl_Position = uViewProjMat * aModelMat * vec4(aPos, 1.0);
+}

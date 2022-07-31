@@ -76,6 +76,54 @@ namespace
         }
         return rv;
     }
+
+    osc::experimental::Texture2D GenChequeredFloorTexture()
+    {
+        constexpr size_t chequer_width = 32;
+        constexpr size_t chequer_height = 32;
+        constexpr size_t w = 2 * chequer_width;
+        constexpr size_t h = 2 * chequer_height;
+
+        constexpr osc::Rgba32 on_color = {0xff, 0xff, 0xff, 0xff};
+        constexpr osc::Rgba32 off_color = {0xf3, 0xf3, 0xf3, 0xff};
+
+        std::array<osc::Rgba32, w * h> pixels;
+        for (size_t row = 0; row < h; ++row)
+        {
+            size_t row_start = row * w;
+            bool y_on = (row / chequer_height) % 2 == 0;
+            for (size_t col = 0; col < w; ++col)
+            {
+                bool x_on = (col / chequer_width) % 2 == 0;
+                pixels[row_start + col] = y_on ^ x_on ? on_color : off_color;
+            }
+        }
+
+        return osc::experimental::Texture2D(static_cast<int>(w), static_cast<int>(h), nonstd::span<uint8_t const>{&pixels[0].r, 4*pixels.size()}, 4);
+    }
+
+
+    glm::mat4x3 GenerateFloorModelMatrix(glm::vec3 floorLocation, float fixupScaleFactor)
+    {
+        // rotate from XY (+Z dir) to ZY (+Y dir)
+        glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, -osc::fpi2, {1.0f, 0.0f, 0.0f});
+
+        // make floor extend far in all directions
+        rv = glm::scale(glm::mat4{1.0f}, {fixupScaleFactor * 100.0f, 1.0f, fixupScaleFactor * 100.0f}) * rv;
+
+        rv = glm::translate(glm::mat4{1.0f}, fixupScaleFactor * floorLocation) * rv;
+
+        return glm::mat4x3{rv};
+    }
+
+
+    osc::Transform GetFloorTransform()
+    {
+        osc::Transform rv;
+        rv.rotation = glm::angleAxis(-osc::fpi2, glm::vec3{1.0f, 0.0f, 0.0f});
+        rv.scale = {100.0f, 100.0f, 1.0f};
+        return rv;
+    }
 }
 
 class osc::RendererOpenSimTab::Impl final {
@@ -154,22 +202,32 @@ public:
 
         // render scene to the scene texture
         {
-            m_Material.setVec3("uViewPos", m_PolarCamera.getPos());
-            m_Material.setVec3("uLightDir", lightDir);
-            m_Material.setVec3("uLightColor", {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f});
+            m_SceneColoredElementsMaterial.setVec3("uViewPos", m_PolarCamera.getPos());
+            m_SceneColoredElementsMaterial.setVec3("uLightDir", lightDir);
+            m_SceneColoredElementsMaterial.setVec3("uLightColor", {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f});
 
             experimental::MaterialPropertyBlock propBlock;
             for (NewDecoration const& dec : m_Decorations)
             {
                 propBlock.setVec4("uDiffuseColor", dec.Color);
-                experimental::Graphics::DrawMesh(*dec.Mesh, dec.Transform, m_Material, m_Camera, propBlock);
+                experimental::Graphics::DrawMesh(*dec.Mesh, dec.Transform, m_SceneColoredElementsMaterial, m_Camera, propBlock);
 
                 if (m_DrawNormals)
                 {
                     experimental::Graphics::DrawMesh(*dec.Mesh, dec.Transform, m_NormalsMaterial, m_Camera);
                 }
             }
-            // (if applicable): draw the textured floor TODO
+
+            if (m_DrawFloor)
+            {
+                m_SceneTexturedElementsMaterial.setVec3("uViewPos", m_PolarCamera.getPos());
+                m_SceneTexturedElementsMaterial.setVec3("uLightDir", lightDir);
+                m_SceneTexturedElementsMaterial.setVec3("uLightColor", {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f});
+                m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_FloorTexture);
+                m_SceneTexturedElementsMaterial.setFloat("uTextureScale", 200.0f);  // TODO: vec2
+
+                experimental::Graphics::DrawMesh(m_QuadMesh, m_FloorTransform, m_SceneTexturedElementsMaterial, m_Camera);
+            }
 
             m_Camera.swapTexture(m_SceneTex);
             m_Camera.render();
@@ -178,9 +236,6 @@ public:
 
         // render selected objects as a solid color to a seperate texture
         {
-            m_SolidColorMaterial.setVec3("uViewPos", m_PolarCamera.getPos());
-            m_SolidColorMaterial.setVec3("uLightColor", {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f});
-            m_SolidColorMaterial.setVec3("uLightDir", lightDir);
             m_SolidColorMaterial.setVec4("uDiffuseColor", {1.0f, 0.0f, 0.0f, 1.0f});
 
             for (NewDecoration const& dec : m_Decorations)
@@ -222,6 +277,7 @@ public:
         {
             ImGui::Begin("controls");
             ImGui::Checkbox("draw normals", &m_DrawNormals);
+            ImGui::Checkbox("draw floor", &m_DrawFloor);
             ImGui::End();
 
             m_LogPanel.draw();
@@ -252,13 +308,23 @@ private:
     std::vector<NewDecoration> m_Decorations = GenerateDecorations();
     PolarPerspectiveCamera m_PolarCamera = CreateCameraWithRadius(5.0f);
     bool m_DrawNormals = false;
+    bool m_DrawFloor = true;
 
-    experimental::Material m_Material
+    experimental::Material m_SceneColoredElementsMaterial
     {
         experimental::Shader
         {
             App::slurp("shaders/ExperimentOpenSim.vert"),
             App::slurp("shaders/ExperimentOpenSim.frag"),
+        }
+    };
+
+    experimental::Material m_SceneTexturedElementsMaterial
+    {
+        experimental::Shader
+        {
+            App::slurp("shaders/ExperimentOpenSimTextured.vert"),
+            App::slurp("shaders/ExperimentOpenSimTextured.frag"),
         }
     };
 
@@ -300,6 +366,8 @@ private:
     };
 
     experimental::Mesh m_QuadMesh = osc::experimental::LoadMeshFromMeshData(osc::GenTexturedQuad());
+    experimental::Texture2D m_FloorTexture = GenChequeredFloorTexture();
+    osc::Transform m_FloorTransform = GetFloorTransform();
     std::optional<experimental::RenderTexture> m_SceneTex;
     std::optional<experimental::RenderTexture> m_SelectedTex;
     std::optional<experimental::RenderTexture> m_RimsTex;
