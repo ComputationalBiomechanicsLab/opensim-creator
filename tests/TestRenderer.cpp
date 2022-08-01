@@ -2279,6 +2279,49 @@ TEST_F(Renderer, CameraSetCameraProjectionMakesCameraCompareNotEqual)
     ASSERT_NE(camera, copy);
 }
 
+TEST_F(Renderer, CameraSetDirectionToStandardDirectionCausesGetDirectionToReturnTheDirection)
+{
+    // this test kind of sucks, because it's assuming that the direction isn't touched if it's
+    // a default one - that isn't strictly true because it is identity transformed
+    //
+    // the main reason this test exists is just to sanity-check parts of the direction API
+
+    osc::experimental::Camera camera;
+
+    glm::vec3 defaultDirection = {0.0f, 0.0f, -1.0f};
+
+    ASSERT_EQ(camera.getDirection(), defaultDirection);
+
+    glm::vec3 differentDirection = glm::normalize(glm::vec3{1.0f, 2.0f, -0.5f});
+    camera.setDirection(differentDirection);
+
+    // not guaranteed: the camera stores *rotation*, not *direction*
+    camera.getDirection() == differentDirection;
+
+    camera.setDirection(defaultDirection);
+
+    ASSERT_EQ(camera.getDirection(), defaultDirection);
+}
+
+TEST_F(Renderer, CameraSetDirectionToDifferentDirectionGivesAccurateEnoughResults)
+{
+    // this kind of test sucks, because it's effectively saying "is the result good enough"
+    //
+    // the reason why the camera can't be *precise* about storing directions is because it
+    // only guarantees storing the position + rotation accurately - the Z direction vector
+    // is computed *from*  the rotation and may change a little bit between set/get
+
+    osc::experimental::Camera camera;
+
+    glm::vec3 newDirection = glm::normalize(glm::vec3{1.0f, 1.0f, 1.0f});
+
+    camera.setDirection(newDirection);
+
+    glm::vec3 returnedDirection = camera.getDirection();
+
+    ASSERT_GT(glm::dot(newDirection, returnedDirection), 0.999f);
+}
+
 TEST_F(Renderer, CameraGetViewMatrixReturnsViewMatrixBasedOnPositonDirectionAndUp)
 {
     osc::experimental::Camera camera;

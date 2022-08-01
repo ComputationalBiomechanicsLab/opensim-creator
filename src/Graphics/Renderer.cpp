@@ -2940,6 +2940,11 @@ public:
         return m_Rotation * glm::vec3{0.0f, 0.0f, -1.0f};
     }
 
+    void setDirection(glm::vec3 const& d)
+    {
+        todo
+    }
+
     glm::vec3 getUpwardsDirection() const
     {
         return m_Rotation * glm::vec3{0.0f, 1.0f, 0.0f};
@@ -3265,6 +3270,12 @@ void osc::experimental::Camera::setRotation(glm::quat const& rotation)
 glm::vec3 osc::experimental::Camera::getDirection() const
 {
     return m_Impl->getDirection();
+}
+
+void osc::experimental::Camera::setDirection(glm::vec3 const& d)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setDirection(d);
 }
 
 glm::vec3 osc::experimental::Camera::getUpwardsDirection() const

@@ -561,7 +561,13 @@ namespace osc::experimental
         glm::quat getRotation() const;
         void setRotation(glm::quat const&);
 
+        // careful: the camera doesn't *store* a direction vector - it assumes the direction is along -Z,
+        // and that +Y is "upwards" and figures out how to rotate from that to your desired direction
+        //
+        // if you want to "roll" the camera (i.e. Y isn't upwards) then use `setRotation`
         glm::vec3 getDirection() const;
+        void setDirection(glm::vec3 const&);
+
         glm::vec3 getUpwardsDirection() const;
 
         // view matrix (overrides)
