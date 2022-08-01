@@ -657,14 +657,28 @@ namespace osc::experimental
 // these perform the necessary backend steps to get something useful done
 namespace osc::experimental::Graphics
 {
-    void DrawMesh(Mesh const&,
-                  Transform const&,
-                  Material const&,
-                  Camera&,
-                  std::optional<MaterialPropertyBlock> = std::nullopt);
-    void DrawMesh(Mesh const&,
+    void DrawMesh(
+        Mesh const&,
+        Transform const&,
+        Material const&,
+        Camera&,
+        std::optional<MaterialPropertyBlock> = std::nullopt);
+
+    void DrawMesh(
+        Mesh const&,
         glm::mat4 const&,
         Material const&,
         Camera&,
         std::optional<MaterialPropertyBlock> = std::nullopt);
+
+    enum class BlitFlags {
+        None,
+        AlphaBlend,
+    };
+
+    void BlitToScreen(
+        RenderTexture const&,
+        Rect const&,
+        BlitFlags = BlitFlags::None
+    );
 }

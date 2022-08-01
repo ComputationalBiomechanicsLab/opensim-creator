@@ -7,6 +7,7 @@
 #include "src/Graphics/GlGlm.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshData.hpp"
+#include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
 #include "src/Graphics/Texturing.hpp"
 #include "src/Maths/AABB.hpp"
@@ -45,6 +46,35 @@
 #include <utility>
 #include <variant>
 #include <vector>
+
+static char const g_QuadVertexShaderSrc[] = R"(
+    #version 330 core
+
+    layout (location = 0) in vec3 aPos;
+    layout (location = 1) in vec2 aTexCoord;
+
+    out vec2 TexCoord;
+
+    void main()
+    {
+        TexCoord = aTexCoord;
+        gl_Position = vec4(aPos, 1.0);
+    }
+)";
+
+static char const g_QuadFragmentShaderSrc[] = R"(
+    #version 330 core
+
+    uniform sampler2D uTexture;
+
+    in vec2 TexCoord;
+    out vec4 FragColor;
+
+    void main()
+    {
+        FragColor = texture(uTexture, TexCoord);
+    }
+)";
 
 // utility functions
 namespace
@@ -298,6 +328,11 @@ namespace osc::experimental {
             std::optional<MaterialPropertyBlock>);
         static void TryBindMaterialValueToShaderElement(ShaderElement const& se, MaterialValue const& v, int* textureSlot);
         static void FlushRenderQueue(Camera::Impl& camera);
+        static void BlitToScreen(
+            RenderTexture const&,
+            Rect const&,
+            osc::experimental::Graphics::BlitFlags
+        );
     };
 }
 
@@ -3686,9 +3721,23 @@ public:
     }
 
 private:
+
     sdl::GLContext m_GLContext;
     int m_MaxMSXAASamples = GetOpenGLMaxMSXAASamples(m_GLContext);
     bool m_DebugModeEnabled = false;
+
+public:
+
+    experimental::Material m_QuadMaterial
+    {
+        experimental::Shader
+        {
+            g_QuadVertexShaderSrc,
+            g_QuadFragmentShaderSrc,
+        }
+    };
+
+    experimental::Mesh m_QuadMesh = osc::experimental::LoadMeshFromMeshData(osc::GenTexturedQuad());
 };
 
 static std::unique_ptr<osc::experimental::GraphicsContext::Impl> g_GraphicsContextImpl = nullptr;
@@ -3783,6 +3832,14 @@ void osc::experimental::Graphics::DrawMesh(
     std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock)
 {
     GraphicsBackend::DrawMesh(mesh, transform, material, camera, std::move(maybeMaterialPropertyBlock));
+}
+
+void osc::experimental::Graphics::BlitToScreen(
+    RenderTexture const& t,
+    Rect const& rect,
+    BlitFlags flags)
+{
+    GraphicsBackend::BlitToScreen(t, rect, std::move(flags));
 }
 
 /////////////////////////
@@ -4390,4 +4447,24 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     }
 
     // (hooray)
+}
+
+void osc::experimental::GraphicsBackend::BlitToScreen(
+    RenderTexture const& t,
+    Rect const& rect,
+    osc::experimental::Graphics::BlitFlags)
+{
+    OSC_ASSERT(g_GraphicsContextImpl);
+
+    experimental::Camera c;
+    c.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
+    c.setPixelRect(rect);
+    c.setProjectionMatrix(glm::mat4{1.0f});
+    c.setViewMatrix(glm::mat4{1.0f});
+    c.setClearFlags(osc::experimental::CameraClearFlags::Nothing);
+
+    g_GraphicsContextImpl->m_QuadMaterial.setRenderTexture("uTexture", t);
+    experimental::Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, g_GraphicsContextImpl->m_QuadMaterial, c);
+    c.render();
+    g_GraphicsContextImpl->m_QuadMaterial.clearRenderTexture("uTexture");
 }
