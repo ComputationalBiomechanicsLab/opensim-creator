@@ -2942,7 +2942,7 @@ public:
 
     void setDirection(glm::vec3 const& d)
     {
-        todo
+        m_Rotation = glm::rotation(glm::vec3{0.0f, 0.0f, -1.0f}, d);
     }
 
     glm::vec3 getUpwardsDirection() const
