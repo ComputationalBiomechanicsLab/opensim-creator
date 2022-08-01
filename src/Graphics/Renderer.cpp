@@ -285,11 +285,17 @@ namespace osc::experimental {
     class GraphicsBackend final {
     public:
         static void DrawMesh(
-            Mesh const& mesh,
-            Transform const& transform,
-            Material const& material,
-            Camera& camera,
-            std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock);
+            Mesh const&,
+            Transform const&,
+            Material const&,
+            Camera&,
+            std::optional<MaterialPropertyBlock>);
+        static void DrawMesh(
+            Mesh const&,
+            glm::mat4 const&,
+            Material const&,
+            Camera&,
+            std::optional<MaterialPropertyBlock>);
         static void TryBindMaterialValueToShaderElement(ShaderElement const& se, MaterialValue const& v, int* textureSlot);
         static void FlushRenderQueue(Camera::Impl& camera);
     };
@@ -2590,14 +2596,30 @@ namespace
             std::optional<osc::experimental::MaterialPropertyBlock> maybePropBlock_) :
 
             mesh{mesh_},
+            transform{ToMat4(transform_)},
+            normalMatrix{ToNormalMatrix(transform_)},
+            material{material_},
+            maybePropBlock{std::move(maybePropBlock_)}
+        {
+        }
+
+        RenderObject(
+            osc::experimental::Mesh const& mesh_,
+            glm::mat4 const& transform_,
+            osc::experimental::Material const& material_,
+            std::optional<osc::experimental::MaterialPropertyBlock> maybePropBlock_) :
+
+            mesh{mesh_},
             transform{transform_},
+            normalMatrix{osc::ToNormalMatrix(transform_)},
             material{material_},
             maybePropBlock{std::move(maybePropBlock_)}
         {
         }
 
         osc::experimental::Mesh mesh;
-        osc::Transform transform;
+        glm::mat4 transform;
+        glm::mat4 normalMatrix;
         osc::experimental::Material material;
         std::optional<osc::experimental::MaterialPropertyBlock> maybePropBlock;
     };
@@ -2613,6 +2635,26 @@ namespace
         return ro.material.getDepthTested();
     }
 
+    glm::mat4 ModelMatrix(RenderObject const& ro)
+    {
+        return ro.transform;
+    }
+
+    glm::mat3 NormalMatrix(RenderObject const& ro)
+    {
+        return ro.normalMatrix;
+    }
+
+    glm::mat4 NormalMatrix4(RenderObject const& ro)
+    {
+        return glm::mat4{ ro.normalMatrix};
+    }
+
+    glm::vec3 WorldMidpoint(RenderObject const& ro)
+    {
+        return ro.transform * glm::vec4{ro.mesh.getMidpoint(), 1.0f};
+    }
+
     // function object that returns true if the first argument is farther from the second
     //
     // (handy for scene sorting)
@@ -2621,8 +2663,8 @@ namespace
 
         bool operator()(RenderObject const& a, RenderObject const& b) const
         {
-            glm::vec3 aMidpointWorldSpace = a.transform * a.mesh.getMidpoint();
-            glm::vec3 bMidpointWorldSpace = b.transform * b.mesh.getMidpoint();
+            glm::vec3 aMidpointWorldSpace = WorldMidpoint(a);
+            glm::vec3 bMidpointWorldSpace = WorldMidpoint(b);
             glm::vec3 camera2a = aMidpointWorldSpace - m_Pos;
             glm::vec3 camera2b = bMidpointWorldSpace - m_Pos;
             float camera2aDistanceSquared = glm::dot(camera2a, camera2a);
@@ -3712,7 +3754,15 @@ void osc::experimental::Graphics::DrawMesh(
     GraphicsBackend::DrawMesh(mesh, transform, material, camera, std::move(maybeMaterialPropertyBlock));
 }
 
-
+void DrawMesh(
+    Mesh const& mesh,
+    glm::mat4 const& transform,
+    Material const& material,
+    Camera& camera,
+    std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock)
+{
+    GraphicsBackend::DrawMesh(mesh, transform, material, camera, std::move(maybeMaterialPropertyBlock));
+}
 
 /////////////////////////
 //
@@ -3723,6 +3773,17 @@ void osc::experimental::Graphics::DrawMesh(
 void osc::experimental::GraphicsBackend::DrawMesh(
     Mesh const& mesh,
     Transform const& transform,
+    Material const& material,
+    Camera& camera,
+    std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock)
+{
+    DoCopyOnWrite(camera.m_Impl);
+    camera.m_Impl->m_RenderQueue.emplace_back(mesh, transform, material, std::move(maybeMaterialPropertyBlock));
+}
+
+void osc::experimental::GraphicsBackend::DrawMesh(
+    Mesh const& mesh,
+    glm::mat4 const& transform,
     Material const& material,
     Camera& camera,
     std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock)
@@ -3978,7 +4039,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                     if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == osc::experimental::ShaderType::Mat4)
                     {
                         static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
-                        reinterpret_cast<glm::mat4&>(buf[bufPos]) = ToMat4(it->transform);
+                        reinterpret_cast<glm::mat4&>(buf[bufPos]) = ModelMatrix(*it);
                         bufPos += 16;
                     }
                 }
@@ -3987,13 +4048,13 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                     if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::experimental::ShaderType::Mat4)
                     {
                         static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
-                        reinterpret_cast<glm::mat4&>(buf[bufPos]) = ToMat4(it->transform);
+                        reinterpret_cast<glm::mat4&>(buf[bufPos]) = ModelMatrix(*it);
                         bufPos += 16;
                     }
                     else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::experimental::ShaderType::Mat3)
                     {
                         static_assert(alignof(glm::mat3) == alignof(float) && sizeof(glm::mat3) == 9 * sizeof(float));
-                        reinterpret_cast<glm::mat3&>(buf[bufPos]) = ToNormalMatrix(it->transform);
+                        reinterpret_cast<glm::mat3&>(buf[bufPos]) = NormalMatrix(*it);
                         bufPos += 9;
                     }
                 }
@@ -4065,7 +4126,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                         if (shaderImpl.m_MaybeModelMatUniform->Type == osc::experimental::ShaderType::Mat4)
                         {
                             gl::UniformMat4 u{shaderImpl.m_MaybeModelMatUniform->Location};
-                            gl::Uniform(u, ToMat4(it->transform));
+                            gl::Uniform(u, ModelMatrix(*it));
                         }
                     }
 
@@ -4075,12 +4136,12 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                         if (shaderImpl.m_MaybeNormalMatUniform->Type == osc::experimental::ShaderType::Mat3)
                         {
                             gl::UniformMat3 u{shaderImpl.m_MaybeNormalMatUniform->Location};
-                            gl::Uniform(u, ToNormalMatrix(it->transform));
+                            gl::Uniform(u, NormalMatrix(*it));
                         }
                         else if (shaderImpl.m_MaybeNormalMatUniform->Type == osc::experimental::ShaderType::Mat4)
                         {
                             gl::UniformMat4 u{shaderImpl.m_MaybeNormalMatUniform->Location};
-                            gl::Uniform(u, ToNormalMatrix4(it->transform));
+                            gl::Uniform(u, NormalMatrix4(*it));
                         }
                     }
                 }

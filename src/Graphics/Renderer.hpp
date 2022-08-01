@@ -653,4 +653,9 @@ namespace osc::experimental::Graphics
                   Material const&,
                   Camera&,
                   std::optional<MaterialPropertyBlock> = std::nullopt);
+    void DrawMesh(Mesh const&,
+        glm::mat4 const&,
+        Material const&,
+        Camera&,
+        std::optional<MaterialPropertyBlock> = std::nullopt);
 }
