@@ -3754,7 +3754,7 @@ void osc::experimental::Graphics::DrawMesh(
     GraphicsBackend::DrawMesh(mesh, transform, material, camera, std::move(maybeMaterialPropertyBlock));
 }
 
-void DrawMesh(
+void osc::experimental::Graphics::DrawMesh(
     Mesh const& mesh,
     glm::mat4 const& transform,
     Material const& material,

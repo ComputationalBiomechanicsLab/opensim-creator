@@ -190,14 +190,41 @@ public:
         glm::vec3 const lightDir = RecommendedLightDirection(m_PolarCamera);
 
         // update the (rendered to) scene camera
-        m_Camera.setClearFlags(experimental::CameraClearFlags::SolidColor);
-        m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
         m_Camera.setPosition(m_PolarCamera.getPos());
         m_Camera.setViewMatrix(m_PolarCamera.getViewMtx());
         m_Camera.setProjectionMatrix(m_PolarCamera.getProjMtx(AspectRatio(viewportRectDims)));
 
+        // render selected objects as a solid color to a seperate texture
+        AABB rimAABBWorldspace = InvertedAABB();
+        bool hasRims = false;
+        if (m_DrawRims)
+        {
+            for (NewDecoration const& dec : m_Decorations)
+            {
+                if (dec.IsHovered)
+                {
+                    experimental::Graphics::DrawMesh(*dec.Mesh, dec.Transform, m_SolidColorMaterial, m_Camera);
+
+                    rimAABBWorldspace = Union(rimAABBWorldspace, WorldpaceAABB(dec));
+                    hasRims = true;
+                }
+            }
+
+            // TODO: resize texture based on AABB
+            // Rect rimRectNDC = WorldpsaceAABBToNdcRect(rimAABBWorldspace, m_Camera.getViewProjectionMatrix());
+            // rimRectNDC = Expand(rimRectNDC, rimThicknessNDC);
+            // Rect rimScreenRect = NdcRectToScreenspaceViewportRect(rimRectNDC, Rect{{}, viewportRectDims});
+
+            m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
+            m_Camera.swapTexture(m_SelectedTex);
+            m_Camera.render();
+            m_Camera.swapTexture(m_SelectedTex);
+            m_Camera.setBackgroundColor(m_SceneBgColor);
+        }
+
         // render scene to the screen
         {
+            // draw OpenSim scene elements
             m_SceneColoredElementsMaterial.setVec3("uViewPos", m_PolarCamera.getPos());
             m_SceneColoredElementsMaterial.setVec3("uLightDir", lightDir);
             m_SceneColoredElementsMaterial.setVec3("uLightColor", m_LightColor);
@@ -221,7 +248,7 @@ public:
                 }
             }
 
-            // if a floor is requested, append a textured floor
+            // if a floor is requested, draw a textured floor
             if (m_DrawFloor)
             {
                 m_SceneTexturedElementsMaterial.setVec3("uViewPos", m_PolarCamera.getPos());
@@ -231,64 +258,26 @@ public:
                 experimental::Graphics::DrawMesh(m_QuadMesh, m_FloorTransform, m_SceneTexturedElementsMaterial, m_Camera);
             }
 
-            m_Camera.swapTexture(m_SceneTex);
-            m_Camera.render();
-            m_Camera.swapTexture(m_SceneTex);
-        }
-
-        // keep track of the AABBs of selected objects
-        AABB rimAABBWorldspace = InvertedAABB();
-        bool hasRims = false;
-
-        // render selected objects as a solid color to a seperate texture
-        {
-            for (NewDecoration const& dec : m_Decorations)
+            // if rims are requested, draw them
+            if (hasRims)
             {
-                if (dec.IsHovered)
-                {
-                    experimental::Graphics::DrawMesh(*dec.Mesh, dec.Transform, m_SolidColorMaterial, m_Camera);
+                glm::vec2 rimThicknessNDC = glm::vec2{m_RimThickness} / glm::vec2{viewportRectDims};
 
-                    // union selection AABBs (scissor-test optimization)
-                    rimAABBWorldspace = Union(rimAABBWorldspace, WorldpaceAABB(dec));
-                    hasRims = true;
-                }
+                m_EdgeDetectorMaterial.setRenderTexture("uScreenTexture", *m_SelectedTex);
+                m_EdgeDetectorMaterial.setVec4("uRimRgba", m_RimRgba);
+                m_EdgeDetectorMaterial.setVec2("uRimThickness", rimThicknessNDC);
+                m_EdgeDetectorMaterial.setTransparent(true);
+                m_EdgeDetectorMaterial.setDepthTested(false);
+
+                // TODO: camera should provide inverse (it can internally use tricks)
+                experimental::Graphics::DrawMesh(m_QuadMesh, glm::inverse(m_Camera.getViewProjectionMatrix()), m_EdgeDetectorMaterial, m_Camera);
+
+                m_EdgeDetectorMaterial.clearRenderTexture("uScreenTexture");  // prevents copies on next frame
             }
 
-            m_Camera.swapTexture(m_SelectedTex);
-            m_Camera.render();
-            m_Camera.swapTexture(m_SelectedTex);
-        }
-
-        // if the scene has rims, sample the solid color texture
-        //
-        // use an edge-detection kernel to turn the solid shapes into "rims"
-        if (hasRims)
-        {
-            glm::vec2 rimThicknessNDC = glm::vec2{m_RimThickness} / glm::vec2{viewportRectDims};
-            Rect rimRectNDC = WorldpsaceAABBToNdcRect(rimAABBWorldspace, m_Camera.getViewProjectionMatrix());
-            rimRectNDC = Expand(rimRectNDC, rimThicknessNDC);
-            Rect rimScreenRect = NdcRectToScreenspaceViewportRect(rimRectNDC, Rect{{}, viewportRectDims});
-
-            m_Camera.setScissorRect(rimScreenRect);
-            m_Camera.setViewMatrix(glm::mat4{1.0f});  // it's a fullscreen quad
-            m_Camera.setProjectionMatrix(glm::mat4{1.0f});  // it's a fullscreen quad
-            m_Camera.setClearFlags(experimental::CameraClearFlags::Depth);
-
-            m_EdgeDetectorMaterial.setRenderTexture("uScreenTexture", *m_SelectedTex);
-            m_EdgeDetectorMaterial.setVec4("uRimRgba", m_RimRgba);
-            m_EdgeDetectorMaterial.setVec2("uRimThickness", rimThicknessNDC);
-            m_EdgeDetectorMaterial.setTransparent(true);
-
-            experimental::Graphics::DrawMesh(m_QuadMesh, Transform{}, m_EdgeDetectorMaterial, m_Camera);
-
             m_Camera.swapTexture(m_SceneTex);
             m_Camera.render();
             m_Camera.swapTexture(m_SceneTex);
-
-            m_Camera.setClearFlags(experimental::CameraClearFlags::SolidColor);
-            m_Camera.setScissorRect();
-
-            m_EdgeDetectorMaterial.clearRenderTexture("uScreenTexture");  // prevents copies on next frame
         }
 
         // blit the anti-aliased render to the screen
@@ -299,7 +288,9 @@ public:
             ImGui::Begin("controls");
             ImGui::Checkbox("draw normals", &m_DrawNormals);
             ImGui::Checkbox("draw floor", &m_DrawFloor);
+            ImGui::Checkbox("draw rims", &m_DrawRims);
             ImGui::InputFloat3("light color", glm::value_ptr(m_LightColor));
+            ImGui::InputFloat4("background color", glm::value_ptr(m_SceneBgColor));
             ImGui::InputFloat("rim thickness", &m_RimThickness);
             ImGui::InputFloat4("rim rgba", glm::value_ptr(m_RimRgba));
             ImGui::End();
@@ -333,7 +324,9 @@ private:
     PolarPerspectiveCamera m_PolarCamera = CreateCameraWithRadius(5.0f);
     bool m_DrawNormals = false;
     bool m_DrawFloor = true;
+    bool m_DrawRims = true;
     glm::vec3 m_LightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
+    glm::vec4 m_SceneBgColor = {0.89f, 0.89f, 0.89f, 1.0f};
     float m_RimThickness = 1.5f;
     glm::vec4 m_RimRgba = {1.0f, 0.4f, 0.0f, 0.85f};
 
