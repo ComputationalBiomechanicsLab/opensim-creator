@@ -4295,7 +4295,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 
             if (batchEnd != end)
             {
-                auto transparentEnd = std::find_if(batchIt, end, IsOpaque);
+                auto transparentEnd = std::find_if(batchEnd, end, IsOpaque);
 
                 // transparent elements (assumed already sorted)
                 gl::Enable(GL_BLEND);
