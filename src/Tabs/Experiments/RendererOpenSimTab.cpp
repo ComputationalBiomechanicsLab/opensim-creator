@@ -212,7 +212,7 @@ public:
             if (hasRims)
             {
                 // the thickness of the rims within the screen's NDC space
-                glm::vec2 rimThicknessNDC = glm::vec2{m_RimThickness} / glm::vec2{viewportRectDims};
+                glm::vec2 const rimThicknessNDC = 2.0f*glm::vec2{m_RimThickness} / glm::vec2{viewportRectDims};
 
                 // compute rim rect in Normalized Device Coordinates (NDC) and constrain to the
                 // screen's NDC bounds ((-1,-1) to (1, 1))
@@ -222,11 +222,11 @@ public:
                 rimRectNDC.p2 = glm::min(rimRectNDC.p2, glm::vec2{1.0f, 1.0f});
 
                 // compute rim rect in screenspace (pixels)
-                Rect rimRectScreen = NdcRectToScreenspaceViewportRect(rimRectNDC, Rect{{}, viewportRectDims});
+                Rect const rimRectScreen = NdcRectToScreenspaceViewportRect(rimRectNDC, Rect{{}, viewportRectDims});
 
                 // compute dimensions of those rims
-                glm::vec2 rimDimsNDC = osc::Dimensions(rimRectNDC);
-                glm::vec2 rimDimsScreen = osc::Dimensions(rimRectScreen);
+                glm::vec2 const rimDimsNDC = osc::Dimensions(rimRectNDC);
+                glm::vec2 const rimDimsScreen = osc::Dimensions(rimRectScreen);
 
                 // resize rim texture (pixel) dimensions to match the rim dimensions
                 experimental::RenderTextureDescriptor selectedDesc{sceneTextureDescriptor};
@@ -236,19 +236,19 @@ public:
                 EmplaceOrReformat(m_SelectedTex, selectedDesc);
 
                 // create a transform matrix that makes the rims perfectly fill clipspace
-                glm::vec2 scale = 2.0f / rimDimsNDC;
-                glm::vec2 bottomLeftNDC = {-1.0f, -1.0f};
-                glm::vec2 position = bottomLeftNDC - (scale * glm::vec2{ glm::min(rimRectNDC.p1.x, rimRectNDC.p2.x), glm::min(rimRectNDC.p1.y, rimRectNDC.p2.y) });
+                glm::vec2 const scale = 2.0f / rimDimsNDC;
+                glm::vec2 const bottomLeftNDC = {-1.0f, -1.0f};
+                glm::vec2 const position = bottomLeftNDC - (scale * glm::vec2{ glm::min(rimRectNDC.p1.x, rimRectNDC.p2.x), glm::min(rimRectNDC.p1.y, rimRectNDC.p2.y) });
                 Transform rimsToNDCtransform;
                 rimsToNDCtransform.scale = {scale, 1.0f};
                 rimsToNDCtransform.position = {position, 0.0f};
 
-                glm::mat4 rimsToNDCmat = ToMat4(rimsToNDCtransform);
+                glm::mat4 const rimsToNDCmat = ToMat4(rimsToNDCtransform);
                 ndcToRimsMat = ToInverseMat4(rimsToNDCtransform);
                 rimOffsets = glm::vec2{m_RimThickness} / rimDimsScreen;
 
                 // draw to the screen, which will fill the screen with the rim elements
-                glm::mat4 originalProjMat = m_Camera.getProjectionMatrix();
+                glm::mat4 const originalProjMat = m_Camera.getProjectionMatrix();
                 m_Camera.setProjectionMatrix(rimsToNDCmat * originalProjMat);
                 m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
                 m_Camera.swapTexture(m_SelectedTex);
@@ -315,6 +315,8 @@ public:
         }
 
         // blit the anti-aliased render to the screen
+        //
+        // TODO: needs to be a backend method
         BlitToScreen(*m_SceneTex, viewportRect);
 
         // render auxiliary 2D UI
@@ -361,7 +363,7 @@ private:
     bool m_DrawRims = true;
     glm::vec3 m_LightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
     glm::vec4 m_SceneBgColor = {0.89f, 0.89f, 0.89f, 1.0f};
-    float m_RimThickness = 3.0f;
+    float m_RimThickness = 1.25;
     glm::vec4 m_RimRgba = {1.0f, 0.4f, 0.0f, 0.85f};
 
     experimental::Material m_SceneColoredElementsMaterial
