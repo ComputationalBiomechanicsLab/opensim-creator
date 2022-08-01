@@ -172,18 +172,14 @@ public:
         Rect const viewportRect = osc::GetMainViewportWorkspaceScreenRect();
         glm::vec2 const viewportRectDims = osc::Dimensions(viewportRect);
 
-        // configure render textures to match viewport dimensions
+        // configure scene texture to match viewport dimensions
+        experimental::RenderTextureDescriptor sceneTextureDescriptor
         {
-            experimental::RenderTextureDescriptor desc = osc::experimental::RenderTextureDescriptor
-            {
-                static_cast<int>(viewportRectDims.x),
-                static_cast<int>(viewportRectDims.y),
-            };
-
-            desc.setAntialiasingLevel(osc::App::get().getMSXAASamplesRecommended());
-            EmplaceOrReformat(m_SelectedTex, desc);
-            EmplaceOrReformat(m_SceneTex, desc);
-        }
+            static_cast<int>(viewportRectDims.x),
+            static_cast<int>(viewportRectDims.y),
+        };
+        sceneTextureDescriptor.setAntialiasingLevel(osc::App::get().getMSXAASamplesRecommended());
+        EmplaceOrReformat(m_SceneTex, sceneTextureDescriptor);
 
         // update the (purely mathematical) polar camera from user input
         osc::UpdatePolarCameraFromImGuiUserInput(viewportRectDims, m_PolarCamera);
@@ -197,6 +193,9 @@ public:
         // render selected objects as a solid color to a seperate texture
         AABB rimAABBWorldspace = InvertedAABB();
         bool hasRims = false;
+        glm::mat4 ndcToRimsMat{1.0f};
+        glm::vec2 rimOffsets = {0.0f, 0.0f};  // in "rim space"
+
         if (m_DrawRims)
         {
             for (NewDecoration const& dec : m_Decorations)
@@ -210,16 +209,54 @@ public:
                 }
             }
 
-            // TODO: resize texture based on AABB
-            // Rect rimRectNDC = WorldpsaceAABBToNdcRect(rimAABBWorldspace, m_Camera.getViewProjectionMatrix());
-            // rimRectNDC = Expand(rimRectNDC, rimThicknessNDC);
-            // Rect rimScreenRect = NdcRectToScreenspaceViewportRect(rimRectNDC, Rect{{}, viewportRectDims});
+            if (hasRims)
+            {
+                // the thickness of the rims within the screen's NDC space
+                glm::vec2 rimThicknessNDC = glm::vec2{m_RimThickness} / glm::vec2{viewportRectDims};
 
-            m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
-            m_Camera.swapTexture(m_SelectedTex);
-            m_Camera.render();
-            m_Camera.swapTexture(m_SelectedTex);
-            m_Camera.setBackgroundColor(m_SceneBgColor);
+                // compute rim rect in Normalized Device Coordinates (NDC) and constrain to the
+                // screen's NDC bounds ((-1,-1) to (1, 1))
+                Rect rimRectNDC = WorldpsaceAABBToNdcRect(rimAABBWorldspace, m_Camera.getViewProjectionMatrix());
+                rimRectNDC = osc::Expand(rimRectNDC, rimThicknessNDC);
+                rimRectNDC.p1 = glm::max(rimRectNDC.p1, glm::vec2{-1.0f, -1.0f});
+                rimRectNDC.p2 = glm::min(rimRectNDC.p2, glm::vec2{1.0f, 1.0f});
+
+                // compute rim rect in screenspace (pixels)
+                Rect rimRectScreen = NdcRectToScreenspaceViewportRect(rimRectNDC, Rect{{}, viewportRectDims});
+
+                // compute dimensions of those rims
+                glm::vec2 rimDimsNDC = osc::Dimensions(rimRectNDC);
+                glm::vec2 rimDimsScreen = osc::Dimensions(rimRectScreen);
+
+                // resize rim texture (pixel) dimensions to match the rim dimensions
+                experimental::RenderTextureDescriptor selectedDesc{sceneTextureDescriptor};
+                selectedDesc.setWidth(static_cast<int>(rimDimsScreen.x));
+                selectedDesc.setHeight(static_cast<int>(rimDimsScreen.y));
+                selectedDesc.setColorFormat(experimental::RenderTextureFormat::RED);
+                EmplaceOrReformat(m_SelectedTex, selectedDesc);
+
+                // create a transform matrix that makes the rims perfectly fill clipspace
+                glm::vec2 scale = 2.0f / rimDimsNDC;
+                glm::vec2 bottomLeftNDC = {-1.0f, -1.0f};
+                glm::vec2 position = bottomLeftNDC - (scale * glm::vec2{ glm::min(rimRectNDC.p1.x, rimRectNDC.p2.x), glm::min(rimRectNDC.p1.y, rimRectNDC.p2.y) });
+                Transform rimsToNDCtransform;
+                rimsToNDCtransform.scale = {scale, 1.0f};
+                rimsToNDCtransform.position = {position, 0.0f};
+
+                glm::mat4 rimsToNDCmat = ToMat4(rimsToNDCtransform);
+                ndcToRimsMat = ToInverseMat4(rimsToNDCtransform);
+                rimOffsets = glm::vec2{m_RimThickness} / rimDimsScreen;
+
+                // draw to the screen, which will fill the screen with the rim elements
+                glm::mat4 originalProjMat = m_Camera.getProjectionMatrix();
+                m_Camera.setProjectionMatrix(rimsToNDCmat * originalProjMat);
+                m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
+                m_Camera.swapTexture(m_SelectedTex);
+                m_Camera.render();
+                m_Camera.swapTexture(m_SelectedTex);
+                m_Camera.setBackgroundColor(m_SceneBgColor);
+                m_Camera.setProjectionMatrix(originalProjMat);
+            }
         }
 
         // render scene to the screen
@@ -261,15 +298,13 @@ public:
             // if rims are requested, draw them
             if (hasRims)
             {
-                glm::vec2 rimThicknessNDC = glm::vec2{m_RimThickness} / glm::vec2{viewportRectDims};
-
                 m_EdgeDetectorMaterial.setRenderTexture("uScreenTexture", *m_SelectedTex);
                 m_EdgeDetectorMaterial.setVec4("uRimRgba", m_RimRgba);
-                m_EdgeDetectorMaterial.setVec2("uRimThickness", rimThicknessNDC);
+                m_EdgeDetectorMaterial.setVec2("uRimThickness", rimOffsets);
                 m_EdgeDetectorMaterial.setTransparent(true);
                 m_EdgeDetectorMaterial.setDepthTested(false);
 
-                experimental::Graphics::DrawMesh(m_QuadMesh, m_Camera.getInverseViewProjectionMatrix(), m_EdgeDetectorMaterial, m_Camera);
+                experimental::Graphics::DrawMesh(m_QuadMesh, m_Camera.getInverseViewProjectionMatrix() * ndcToRimsMat, m_EdgeDetectorMaterial, m_Camera);
 
                 m_EdgeDetectorMaterial.clearRenderTexture("uScreenTexture");  // prevents copies on next frame
             }
@@ -326,7 +361,7 @@ private:
     bool m_DrawRims = true;
     glm::vec3 m_LightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
     glm::vec4 m_SceneBgColor = {0.89f, 0.89f, 0.89f, 1.0f};
-    float m_RimThickness = 1.5f;
+    float m_RimThickness = 3.0f;
     glm::vec4 m_RimRgba = {1.0f, 0.4f, 0.0f, 0.85f};
 
     experimental::Material m_SceneColoredElementsMaterial
