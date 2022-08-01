@@ -328,7 +328,7 @@ public:
             ImGui::InputFloat3("light color", glm::value_ptr(m_LightColor));
             ImGui::InputFloat4("background color", glm::value_ptr(m_SceneBgColor));
             ImGui::InputFloat("rim thickness", &m_RimThickness);
-            ImGui::InputFloat4("rim rgba", glm::value_ptr(m_RimRgba));
+            ImGui::ColorEdit4("rim rgba", glm::value_ptr(m_RimRgba));
             ImGui::End();
 
             m_LogPanel.draw();
@@ -344,10 +344,9 @@ private:
         c.setPixelRect(screenRect);
         c.setProjectionMatrix(glm::mat4{1.0f});
         c.setViewMatrix(glm::mat4{1.0f});
-        c.setClearFlags(experimental::CameraClearFlags::Depth);
+        c.setClearFlags(osc::experimental::CameraClearFlags::Nothing);
 
         m_QuadMaterial.setRenderTexture("uTexture", renderTexture);
-        m_QuadMaterial.setTransparent(true);
         experimental::Graphics::DrawMesh(m_QuadMesh, Transform{}, m_QuadMaterial, c);
         c.render();
         m_QuadMaterial.clearRenderTexture("uTexture");
