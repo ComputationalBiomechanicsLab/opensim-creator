@@ -1497,6 +1497,16 @@ public:
         m_IsTransparent = std::move(v);
     }
 
+    bool getDepthTested() const
+    {
+        return m_IsDepthTested;
+    }
+
+    void setDepthTested(bool v)
+    {
+        m_IsDepthTested = std::move(v);
+    }
+
 private:
     template<typename T>
     std::optional<T> getValue(std::string_view propertyName) const
@@ -1528,6 +1538,7 @@ private:
     Shader m_Shader;
     robin_hood::unordered_map<std::string, MaterialValue> m_Values;
     bool m_IsTransparent = false;
+    bool m_IsDepthTested = true;
 };
 
 osc::experimental::Material::Material(osc::experimental::Shader shader) :
@@ -1693,6 +1704,17 @@ void osc::experimental::Material::setTransparent(bool v)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setTransparent(std::move(v));
+}
+
+bool osc::experimental::Material::getDepthTested() const
+{
+    return m_Impl->getDepthTested();
+}
+
+void osc::experimental::Material::setDepthTested(bool v)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setDepthTested(std::move(v));
 }
 
 bool osc::experimental::operator==(Material const& a, Material const& b)
@@ -2586,6 +2608,11 @@ namespace
         return !ro.material.getTransparent();
     }
 
+    bool IsDepthTested(RenderObject const& ro)
+    {
+        return ro.material.getDepthTested();
+    }
+
     // function object that returns true if the first argument is farther from the second
     //
     // (handy for scene sorting)
@@ -2640,15 +2667,15 @@ namespace
         osc::experimental::Mesh const& m_Mesh;
     };
 
-    std::vector<RenderObject>::iterator SortRenderQueue(std::vector<RenderObject>& queue, glm::vec3 cameraPos)
+    std::vector<RenderObject>::iterator SortRenderQueue(std::vector<RenderObject>::iterator begin, std::vector<RenderObject>::iterator end, glm::vec3 cameraPos)
     {
         // split queue into [opaque | transparent]
-        auto opaqueEnd = std::partition(queue.begin(), queue.end(), IsOpaque);
+        auto opaqueEnd = std::partition(begin, end, IsOpaque);
 
         // optimize the opaque partition (it can be reordered safely)
         {
             // first, sub-parititon by material (top-level batch)
-            auto materialBatchStart = queue.begin();
+            auto materialBatchStart = begin;
             while (materialBatchStart != opaqueEnd)
             {
                 auto materialBatchEnd = std::partition(materialBatchStart, opaqueEnd, RenderObjectHasMaterial{materialBatchStart->material});
@@ -2674,7 +2701,7 @@ namespace
         }
 
         // sort the transparent partition by distance from camera (back-to-front)
-        std::sort(opaqueEnd, queue.end(), RenderObjectIsFartherFrom{cameraPos});
+        std::sort(opaqueEnd, end, RenderObjectIsFartherFrom{cameraPos});
 
         return opaqueEnd;
     }
@@ -3891,6 +3918,8 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         }
     }
 
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     // compute camera matrices
     glm::mat4 viewMtx = camera.getViewMatrix();
     glm::mat4 projMtx = camera.getProjectionMatrix();
@@ -4177,7 +4206,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     };
 
     // helper: draw a sequence of render objects (no presumptions)
-    auto Draw = [&HandleBatchWithSameMaterial](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end)
+    auto DrawBatchedByMaterial = [&HandleBatchWithSameMaterial](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end)
     {
         // batch by material
         auto batchIt = begin;
@@ -4189,21 +4218,65 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         }
     };
 
+    auto DrawBatchedByOpaqueness = [&DrawBatchedByMaterial](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end)
+    {
+        auto batchIt = begin;
+        while (batchIt != end)
+        {
+            auto batchEnd = std::find_if_not(batchIt, end, IsOpaque);
+
+            if (batchEnd != batchIt)
+            {
+                // opaque elements
+                gl::Disable(GL_BLEND);
+                DrawBatchedByMaterial(batchIt, batchEnd);
+            }
+
+            if (batchEnd != end)
+            {
+                auto transparentEnd = std::find_if(batchIt, end, IsOpaque);
+
+                // transparent elements (assumed already sorted)
+                gl::Enable(GL_BLEND);
+                DrawBatchedByMaterial(batchEnd, transparentEnd);
+
+                batchEnd = transparentEnd;
+            }
+
+            batchIt = batchEnd;
+        }
+    };
+
+    glm::vec3 cameraPos = camera.getPosition();
+
     // flush the render queue
     if (auto& queue = camera.m_RenderQueue; !queue.empty())
     {
-        auto transparentStart = SortRenderQueue(queue, camera.getPosition());
+        // first, batch by depth testing
 
-        // draw opaque elments
         gl::Enable(GL_DEPTH_TEST);
-        gl::Disable(GL_BLEND);
-        Draw(queue.begin(), transparentStart);
 
-        // draw transparent elements
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        gl::Enable(GL_BLEND);
-        Draw(transparentStart, queue.end());
+        auto batchIt = queue.begin();
+        while (batchIt != queue.end())
+        {
+            auto end = std::find_if_not(batchIt, queue.end(), IsDepthTested);
 
+            // these elements are depth-tested and, therefore, elegible for reordering
+            SortRenderQueue(batchIt, end, cameraPos);
+            DrawBatchedByOpaqueness(batchIt, end);
+
+            if (end != queue.end())
+            {
+                auto ignoreDepthTestEnd = std::find_if(end, queue.end(), IsDepthTested);
+
+                // these elements aren't depth-tested and should just be drawn as-is
+                gl::Disable(GL_DEPTH_TEST);
+                DrawBatchedByOpaqueness(end, ignoreDepthTestEnd);
+                gl::Enable(GL_DEPTH_TEST);
+                end = ignoreDepthTestEnd;
+            }
+            batchIt = end;
+        }
         queue.clear();
     }
 

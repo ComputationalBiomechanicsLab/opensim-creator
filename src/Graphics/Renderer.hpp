@@ -321,6 +321,9 @@ namespace osc::experimental
         bool getTransparent() const;
         void setTransparent(bool);
 
+        bool getDepthTested() const;
+        void setDepthTested(bool);
+
     private:
         friend class GraphicsBackend;
         friend bool operator==(Material const&, Material const&);
