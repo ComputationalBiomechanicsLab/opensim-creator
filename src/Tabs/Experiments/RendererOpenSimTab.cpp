@@ -168,7 +168,7 @@ public:
 
     void onDraw()
     {
-        // compute viewport stuff (the render fills the viewport)
+        // compute viewport rect+dimensions (the render fills the viewport)
         Rect const viewportRect = osc::GetMainViewportWorkspaceScreenRect();
         glm::vec2 const viewportRectDims = osc::Dimensions(viewportRect);
 
@@ -198,6 +198,7 @@ public:
 
         if (m_DrawRims)
         {
+            // queue the meshes for drawing, while also computing the bounds of the geometry
             for (NewDecoration const& dec : m_Decorations)
             {
                 if (dec.IsHovered)
@@ -211,43 +212,56 @@ public:
 
             if (hasRims)
             {
-                // the thickness of the rims within the screen's NDC space
+                // calculate the thickness of the rims within Normalized Device Coordinates (NDC)
                 glm::vec2 const rimThicknessNDC = 2.0f*glm::vec2{m_RimThickness} / glm::vec2{viewportRectDims};
 
-                // compute rim rect in Normalized Device Coordinates (NDC) and constrain to the
-                // screen's NDC bounds ((-1,-1) to (1, 1))
+                // calculate the bounding rectangle of the solid geometry in NDC
                 Rect rimRectNDC = WorldpsaceAABBToNdcRect(rimAABBWorldspace, m_Camera.getViewProjectionMatrix());
+
+                // expand by the rim thickness, so that the output has space for the rims
                 rimRectNDC = osc::Expand(rimRectNDC, rimThicknessNDC);
+
+                // constrain the result of the above maths to within clip space
                 rimRectNDC.p1 = glm::max(rimRectNDC.p1, glm::vec2{-1.0f, -1.0f});
                 rimRectNDC.p2 = glm::min(rimRectNDC.p2, glm::vec2{1.0f, 1.0f});
 
-                // compute rim rect in screenspace (pixels)
+                // calculate rim rect in screenspace (pixels)
                 Rect const rimRectScreen = NdcRectToScreenspaceViewportRect(rimRectNDC, Rect{{}, viewportRectDims});
 
-                // compute dimensions of those rims
+                // calculate the dimensions of the rims in both NDC- and screen-space
                 glm::vec2 const rimDimsNDC = osc::Dimensions(rimRectNDC);
                 glm::vec2 const rimDimsScreen = osc::Dimensions(rimRectScreen);
 
-                // resize rim texture (pixel) dimensions to match the rim dimensions
+                // resize the output texture (pixel) dimensions to match the (expanded) bounding rect
                 experimental::RenderTextureDescriptor selectedDesc{sceneTextureDescriptor};
                 selectedDesc.setWidth(static_cast<int>(rimDimsScreen.x));
                 selectedDesc.setHeight(static_cast<int>(rimDimsScreen.y));
                 selectedDesc.setColorFormat(experimental::RenderTextureFormat::RED);
                 EmplaceOrReformat(m_SelectedTex, selectedDesc);
 
-                // create a transform matrix that makes the rims perfectly fill clipspace
+                // calculate a transform matrix that maps the bounding rect to the edges of clipspace
+                //
+                // this is so that the solid geometry render fills the output texture perfectly
+
+                // scale output width (dims) to clipspace width (2.0f)
                 glm::vec2 const scale = 2.0f / rimDimsNDC;
+
+                // move output location to the edge of clipspace
                 glm::vec2 const bottomLeftNDC = {-1.0f, -1.0f};
                 glm::vec2 const position = bottomLeftNDC - (scale * glm::vec2{ glm::min(rimRectNDC.p1.x, rimRectNDC.p2.x), glm::min(rimRectNDC.p1.y, rimRectNDC.p2.y) });
+
+                // compute transforms of the above
                 Transform rimsToNDCtransform;
                 rimsToNDCtransform.scale = {scale, 1.0f};
                 rimsToNDCtransform.position = {position, 0.0f};
 
+                // create matrices that render the rims to the edges of the output texture, and an inverse
+                // matrix that maps this clipspace-sized quad back into its original dimensions
                 glm::mat4 const rimsToNDCmat = ToMat4(rimsToNDCtransform);
                 ndcToRimsMat = ToInverseMat4(rimsToNDCtransform);
                 rimOffsets = glm::vec2{m_RimThickness} / rimDimsScreen;
 
-                // draw to the screen, which will fill the screen with the rim elements
+                // draw the solid geometry that was stretched over clipspace
                 glm::mat4 const originalProjMat = m_Camera.getProjectionMatrix();
                 m_Camera.setProjectionMatrix(rimsToNDCmat * originalProjMat);
                 m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
