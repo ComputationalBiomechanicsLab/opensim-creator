@@ -20,6 +20,8 @@
 #include <string_view>
 #include <vector>
 
+struct SDL_Window;
+
 namespace osc
 {
     struct AABB;
@@ -601,6 +603,41 @@ namespace osc::experimental
     bool operator!=(Camera const&, Camera const&);
     bool operator<(Camera const&, Camera const&);
     std::ostream& operator<<(std::ostream&, Camera const&);
+}
+
+// graphics context
+//
+// should be initialized exactly once by the application
+namespace osc::experimental
+{
+    class GraphicsContext final {
+    public:
+        GraphicsContext(SDL_Window*);
+        GraphicsContext(GraphicsContext const&) = delete;
+        GraphicsContext(GraphicsContext&&) noexcept = delete;
+        GraphicsContext& operator=(GraphicsContext const&) = delete;
+        GraphicsContext& operator=(GraphicsContext&&) noexcept = delete;
+        ~GraphicsContext() noexcept;
+
+        int getMaxMSXAASamples() const;
+
+        bool isVsyncEnabled() const;
+        void enableVsync();
+        void disableVsync();
+
+        bool isInDebugMode() const;
+        void enableDebugMode();
+        void disableDebugMode();
+
+        void clearProgram();
+        void clearScreen(glm::vec4 const&);
+
+        void* updRawGLContextHandle();  // needed by ImGui
+
+        class Impl;
+    private:
+        // no data - it uses globals (you can only have one of these)
+    };
 }
 
 // rendering functions

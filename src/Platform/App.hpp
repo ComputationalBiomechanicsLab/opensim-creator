@@ -295,13 +295,14 @@ namespace osc
         // returns the application-wide (global) mesh cache
         MeshCache& getMeshCache();
 
-        class Impl;
     private:
         friend void ImGuiInit();
         friend void ImGuiNewFrame();
+        friend void ImGuiRender();
 
         // set when App is constructed for the first time
         static App* g_Current;
+        class Impl;
         std::unique_ptr<Impl> m_Impl;
     };
 

@@ -3,7 +3,8 @@
 #include "osc_config.hpp"
 
 #include "src/Bindings/SDL2Helpers.hpp"
-#include "src/Graphics/Gl.hpp"
+#include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Graphics/Renderer.hpp"
 #include "src/Graphics/ShaderCache.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Platform/Config.hpp"
@@ -15,7 +16,6 @@
 #include "src/Utils/FilesystemHelpers.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 
-#include <GL/glew.h>
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 #include <IconsFontAwesome5.h>
@@ -64,8 +64,6 @@ static std::filesystem::path GetResource(osc::Config const& c, std::string_view 
     return c.getResourceDir() / p;
 }
 
-
-
 // handy macro for calling SDL_GL_SetAttribute with error checking
 #define OSC_SDL_GL_SetAttribute_CHECK(attr, value)                                                                     \
     {                                                                                                                  \
@@ -101,243 +99,6 @@ static sdl::Window CreateMainAppWindow()
     return sdl::CreateWindoww(g_BaseWindowTitle, x, y, width, height, flags);
 }
 
-// create an OpenGL context for an application window
-static sdl::GLContext CreateOpenGLContext(SDL_Window* window)
-{
-    osc::log::info("initializing application OpenGL context");
-
-    sdl::GLContext ctx = sdl::GL_CreateContext(window);
-
-    // enable the context
-    if (SDL_GL_MakeCurrent(window, ctx) != 0)
-    {
-        throw std::runtime_error{std::string{"SDL_GL_MakeCurrent failed: "} + SDL_GetError()};
-    }
-
-    // enable vsync by default
-    //
-    // vsync can feel a little laggy on some systems, but vsync reduces CPU usage
-    // on *constrained* systems (e.g. laptops, which the majority of users are using)
-    if (SDL_GL_SetSwapInterval(-1) != 0)
-    {
-        SDL_GL_SetSwapInterval(1);
-    }
-
-    // initialize GLEW
-    //
-    // effectively, enables the OpenGL API used by this application
-    if (auto err = glewInit(); err != GLEW_OK)
-    {
-        std::stringstream ss;
-        ss << "glewInit() failed: ";
-        ss << glewGetErrorString(err);
-        throw std::runtime_error{ss.str()};
-    }
-
-    // depth testing used to ensure geometry overlaps correctly
-    glEnable(GL_DEPTH_TEST);
-
-    // MSXAA is used to smooth out the model
-    glEnable(GL_MULTISAMPLE);
-
-    // all vertices in the render are backface-culled
-    glEnable(GL_CULL_FACE);
-
-    // print OpenGL information if in debug mode
-    osc::log::info(
-        "OpenGL initialized: info: %s, %s, (%s), GLSL %s",
-        glGetString(GL_VENDOR),
-        glGetString(GL_RENDERER),
-        glGetString(GL_VERSION),
-        glGetString(GL_SHADING_LANGUAGE_VERSION));
-
-    return ctx;
-}
-
-// returns the maximum numbers of MSXAA samples the active OpenGL context supports
-static GLint GetOpenGLMaxMSXAASamples(sdl::GLContext const&)
-{
-    GLint v = 1;
-    glGetIntegerv(GL_MAX_SAMPLES, &v);
-
-    // OpenGL spec: "the value must be at least 4"
-    // see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glGet.xhtml
-    if (v < 4)
-    {
-        static bool warnOnce = [&]()
-        {
-            osc::log::warn("the current OpenGl backend only supports %i samples. Technically, this is invalid (4 *should* be the minimum)", v);
-            return true;
-        }();
-        (void)warnOnce;
-    }
-    OSC_ASSERT(v < 1<<16 && "number of samples is greater than the maximum supported by the application");
-
-    return v;
-}
-
-// maps an OpenGL debug message severity level to a log level
-static constexpr osc::log::level::LevelEnum OpenGLDebugSevToLogLvl(GLenum sev) noexcept
-{
-    switch (sev) {
-    case GL_DEBUG_SEVERITY_HIGH: return osc::log::level::err;
-    case GL_DEBUG_SEVERITY_MEDIUM: return osc::log::level::warn;
-    case GL_DEBUG_SEVERITY_LOW: return osc::log::level::debug;
-    case GL_DEBUG_SEVERITY_NOTIFICATION: return osc::log::level::trace;
-    default: return osc::log::level::info;
-    }
-}
-
-// returns a string representation of an OpenGL debug message severity level
-static constexpr char const* OpenGLDebugSevToCStr(GLenum sev) noexcept
-{
-    switch (sev) {
-    case GL_DEBUG_SEVERITY_HIGH: return "GL_DEBUG_SEVERITY_HIGH";
-    case GL_DEBUG_SEVERITY_MEDIUM: return "GL_DEBUG_SEVERITY_MEDIUM";
-    case GL_DEBUG_SEVERITY_LOW: return "GL_DEBUG_SEVERITY_LOW";
-    case GL_DEBUG_SEVERITY_NOTIFICATION: return "GL_DEBUG_SEVERITY_NOTIFICATION";
-    default: return "GL_DEBUG_SEVERITY_UNKNOWN";
-    }
-}
-
-// returns a string representation of an OpenGL debug message source
-static constexpr char const* OpenGLDebugSrcToCStr(GLenum src) noexcept
-{
-    switch (src) {
-    case GL_DEBUG_SOURCE_API: return "GL_DEBUG_SOURCE_API";
-    case GL_DEBUG_SOURCE_WINDOW_SYSTEM: return "GL_DEBUG_SOURCE_WINDOW_SYSTEM";
-    case GL_DEBUG_SOURCE_SHADER_COMPILER: return "GL_DEBUG_SOURCE_SHADER_COMPILER";
-    case GL_DEBUG_SOURCE_THIRD_PARTY: return "GL_DEBUG_SOURCE_THIRD_PARTY";
-    case GL_DEBUG_SOURCE_APPLICATION: return "GL_DEBUG_SOURCE_APPLICATION";
-    case GL_DEBUG_SOURCE_OTHER: return "GL_DEBUG_SOURCE_OTHER";
-    default: return "GL_DEBUG_SOURCE_UNKNOWN";
-    }
-}
-
-// returns a string representation of an OpenGL debug message type
-static constexpr char const* OpenGLDebugTypeToCStr(GLenum type) noexcept
-{
-    switch (type) {
-    case GL_DEBUG_TYPE_ERROR: return "GL_DEBUG_TYPE_ERROR";
-    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR";
-    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: return "GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR";
-    case GL_DEBUG_TYPE_PORTABILITY: return "GL_DEBUG_TYPE_PORTABILITY";
-    case GL_DEBUG_TYPE_PERFORMANCE: return "GL_DEBUG_TYPE_PERFORMANCE";
-    case GL_DEBUG_TYPE_MARKER: return "GL_DEBUG_TYPE_MARKER";
-    case GL_DEBUG_TYPE_PUSH_GROUP: return "GL_DEBUG_TYPE_PUSH_GROUP";
-    case GL_DEBUG_TYPE_POP_GROUP: return "GL_DEBUG_TYPE_POP_GROUP";
-    case GL_DEBUG_TYPE_OTHER: return "GL_DEBUG_TYPE_OTHER";
-    default: return "GL_DEBUG_TYPE_UNKNOWN";
-    }
-}
-
-// returns `true` if current OpenGL context is in debug mode
-static bool IsOpenGLInDebugMode()
-{
-    // if context is not debug-mode, then some of the glGet*s below can fail
-    // (e.g. GL_DEBUG_OUTPUT_SYNCHRONOUS on apple).
-    {
-        GLint flags;
-        glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-        if (!(flags & GL_CONTEXT_FLAG_DEBUG_BIT))
-        {
-            return false;
-        }
-    }
-
-    {
-        GLboolean b = false;
-        glGetBooleanv(GL_DEBUG_OUTPUT, &b);
-        if (!b)
-        {
-            return false;
-        }
-    }
-
-    {
-        GLboolean b = false;
-        glGetBooleanv(GL_DEBUG_OUTPUT_SYNCHRONOUS, &b);
-        if (!b)
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-// raw handler function that can be used with `glDebugMessageCallback`
-static void OpenGLDebugMessageHandler(
-    GLenum source,
-    GLenum type,
-    unsigned int id,
-    GLenum severity,
-    GLsizei,
-    const char* message,
-    void const*)
-{
-    osc::log::level::LevelEnum lvl = OpenGLDebugSevToLogLvl(severity);
-    char const* sourceCStr = OpenGLDebugSrcToCStr(source);
-    char const* typeCStr = OpenGLDebugTypeToCStr(type);
-    char const* severityCStr = OpenGLDebugSevToCStr(severity);
-
-    osc::log::log(lvl,
-R"(OpenGL Debug message:
-id = %u
-message = %s
-source = %s
-type = %s
-severity = %s
-)", id, message, sourceCStr, typeCStr, severityCStr);
-}
-
-// enable OpenGL API debugging
-static void EnableOpenGLDebugMessages()
-{
-    if (IsOpenGLInDebugMode())
-    {
-        osc::log::info("application appears to already be in OpenGL debug mode: skipping enabling it");
-        return;
-    }
-
-    int flags;
-    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
-    {
-        glEnable(GL_DEBUG_OUTPUT);
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback(OpenGLDebugMessageHandler, nullptr);
-        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-        osc::log::info("enabled OpenGL debug mode");
-    }
-    else
-    {
-        osc::log::error("cannot enable OpenGL debug mode: the context does not have GL_CONTEXT_FLAG_DEBUG_BIT set");
-    }
-}
-
-// disable OpenGL API debugging
-static void DisableOpenGLDebugMessages()
-{
-    if (!IsOpenGLInDebugMode())
-    {
-        osc::log::info("application does not need to disable OpenGL debug mode: already in it: skipping");
-        return;
-    }
-
-    int flags;
-    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
-    {
-        glDisable(GL_DEBUG_OUTPUT);
-        osc::log::info("disabled OpenGL debug mode");
-    }
-    else
-    {
-        osc::log::error("cannot disable OpenGL debug mode: the context does not have a GL_CONTEXT_FLAG_DEBUG_BIT set");
-    }
-}
-
 // returns refresh rate of highest refresh rate display on the computer
 static int GetHighestRefreshRateDisplay()
 {
@@ -360,66 +121,6 @@ static int GetHighestRefreshRateDisplay()
         }
     }
     return highestRefreshRate;
-}
-
-static void ImGuiApplyDarkTheme()
-{
-    // see: https://github.com/ocornut/imgui/issues/707
-    // this one: https://github.com/ocornut/imgui/issues/707#issuecomment-512669512
-
-    ImGui::GetStyle().FrameRounding = 2.0f;
-    ImGui::GetStyle().GrabRounding = 20.0f;
-    ImGui::GetStyle().GrabMinSize = 10.0f;
-
-    ImVec4* colors = ImGui::GetStyle().Colors;
-    colors[ImGuiCol_Text] = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
-    colors[ImGuiCol_TextDisabled] = ImVec4(0.36f, 0.42f, 0.47f, 1.00f);
-    colors[ImGuiCol_WindowBg] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
-    colors[ImGuiCol_ChildBg] = ImVec4(0.15f, 0.18f, 0.22f, 1.00f);
-    colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
-    colors[ImGuiCol_Border] = ImVec4(0.08f, 0.10f, 0.12f, 1.00f);
-    colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-    colors[ImGuiCol_FrameBg] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
-    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.12f, 0.20f, 0.28f, 1.00f);
-    colors[ImGuiCol_FrameBgActive] = ImVec4(0.09f, 0.12f, 0.14f, 1.00f);
-    colors[ImGuiCol_TitleBg] = ImVec4(0.09f, 0.12f, 0.14f, 0.65f);
-    colors[ImGuiCol_TitleBgActive] = ImVec4(0.08f, 0.10f, 0.12f, 1.00f);
-    colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
-    colors[ImGuiCol_MenuBarBg] = ImVec4(0.15f, 0.18f, 0.22f, 1.00f);
-    colors[ImGuiCol_ScrollbarBg] = ImVec4(0.02f, 0.02f, 0.02f, 0.39f);
-    colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
-    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.18f, 0.22f, 0.25f, 1.00f);
-    colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.09f, 0.21f, 0.31f, 1.00f);
-    colors[ImGuiCol_CheckMark] = ImVec4(0.28f, 0.56f, 1.00f, 1.00f);
-    colors[ImGuiCol_SliderGrab] = ImVec4(0.28f, 0.56f, 1.00f, 1.00f);
-    colors[ImGuiCol_SliderGrabActive] = ImVec4(0.37f, 0.61f, 1.00f, 1.00f);
-    colors[ImGuiCol_Button] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
-    colors[ImGuiCol_ButtonHovered] = ImVec4(0.28f, 0.56f, 1.00f, 1.00f);
-    colors[ImGuiCol_ButtonActive] = ImVec4(0.06f, 0.53f, 0.98f, 1.00f);
-    colors[ImGuiCol_Header] = ImVec4(0.20f, 0.25f, 0.29f, 0.55f);
-    colors[ImGuiCol_HeaderHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
-    colors[ImGuiCol_HeaderActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-    colors[ImGuiCol_Separator] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
-    colors[ImGuiCol_SeparatorHovered] = ImVec4(0.10f, 0.40f, 0.75f, 0.78f);
-    colors[ImGuiCol_SeparatorActive] = ImVec4(0.10f, 0.40f, 0.75f, 1.00f);
-    colors[ImGuiCol_ResizeGrip] = ImVec4(0.26f, 0.59f, 0.98f, 0.25f);
-    colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
-    colors[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
-    colors[ImGuiCol_Tab] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
-    colors[ImGuiCol_TabHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
-    colors[ImGuiCol_TabActive] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
-    colors[ImGuiCol_TabUnfocused] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
-    colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
-    colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
-    colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
-    colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
-    colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
-    colors[ImGuiCol_TextSelectedBg] = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
-    colors[ImGuiCol_DragDropTarget] = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
-    colors[ImGuiCol_NavHighlight] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-    colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
-    colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
-    colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 }
 
 // load the "recent files" file that osc persists to disk
@@ -548,7 +249,6 @@ public:
         SDL_SetWindowGrab(m_MainWindow, v ? SDL_FALSE : SDL_TRUE);
     }
 
-
     bool isWindowFocused() const
     {
         return SDL_GetWindowFlags(m_MainWindow) & SDL_WINDOW_INPUT_FOCUS;
@@ -596,76 +296,49 @@ public:
 
     int getMSXAASamplesMax() const
     {
-        return m_MaxMSXAASamples;
+        return m_GraphicsContext.getMaxMSXAASamples();
     }
 
     bool isInDebugMode() const
     {
-        return m_DebugModeEnabled;
+        return m_GraphicsContext.isInDebugMode();
     }
 
     void enableDebugMode()
     {
-        if (IsOpenGLInDebugMode())
-        {
-            return;  // already in debug mode
-        }
-
-        log::info("enabling debug mode");
-        EnableOpenGLDebugMessages();
-        m_DebugModeEnabled = true;
+        m_GraphicsContext.enableDebugMode();
     }
 
     void disableDebugMode()
     {
-        if (!IsOpenGLInDebugMode())
-        {
-            return;  // already not in debug mode
-        }
-
-        log::info("disabling debug mode");
-        DisableOpenGLDebugMessages();
-        m_DebugModeEnabled = false;
+        m_GraphicsContext.disableDebugMode();
     }
 
     bool isVsyncEnabled() const
     {
-        // adaptive vsync (-1) and vsync (1) are treated as "vsync is enabled"
-        return SDL_GL_GetSwapInterval() != 0;
+        return m_GraphicsContext.isVsyncEnabled();
     }
 
     void setVsync(bool v)
     {
         if (v)
         {
-            enableVsync();
+            m_GraphicsContext.enableVsync();
         }
         else
         {
-            disableVsync();
+            m_GraphicsContext.disableVsync();
         }
     }
 
     void enableVsync()
     {
-        // try using adaptive vsync
-        if (SDL_GL_SetSwapInterval(-1) == 0)
-        {
-            return;
-        }
-
-        // if adaptive vsync doesn't work, then try normal vsync
-        if (SDL_GL_SetSwapInterval(1) == 0)
-        {
-            return;
-        }
-
-        // otherwise, setting vsync isn't supported by the system
+        m_GraphicsContext.enableVsync();
     }
 
     void disableVsync()
     {
-        SDL_GL_SetSwapInterval(0);
+        m_GraphicsContext.disableVsync();
     }
 
     uint64_t getFrameCount() const
@@ -739,10 +412,8 @@ public:
 
     void clearScreen(glm::vec4 const& color)
     {
-        gl::ClearColor(color.r, color.g, color.b, color.a);
-        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        m_GraphicsContext.clearScreen(color);
     }
-
 
     osc::App::MouseState getMouseState() const
     {
@@ -905,9 +576,14 @@ public:
         return m_MainWindow;
     }
 
-    sdl::GLContext& updGLContext()
+    osc::experimental::GraphicsContext& updGraphicsContext()
     {
-        return m_OpenGLContext;
+        return m_GraphicsContext;
+    }
+
+    void* updRawGLContextHandle()
+    {
+        return m_GraphicsContext.updRawGLContextHandle();
     }
 
 private:
@@ -1061,6 +737,9 @@ private:
     // init main application window
     sdl::Window m_MainWindow = CreateMainAppWindow();
 
+    // init graphics context
+    experimental::GraphicsContext m_GraphicsContext{m_MainWindow};
+
     // get performance counter frequency (for the delta clocks)
     Uint64 m_AppCounterFq = SDL_GetPerformanceFrequency();
 
@@ -1079,26 +758,17 @@ private:
     // time since the frame before the current frame (set each frame)
     App::Clock::duration m_TimeSinceLastFrame = {};
 
-    // init OpenGL (globally)
-    sdl::GLContext m_OpenGLContext = CreateOpenGLContext(m_MainWindow);
-
     // init global shader cache
     ShaderCache m_ShaderCache{};
 
     // init global mesh cache
     MeshCache m_MeshCache{};
 
-    // figure out maximum number of samples supported by the OpenGL backend
-    GLint m_MaxMSXAASamples = GetOpenGLMaxMSXAASamples(m_OpenGLContext);
-
     // how many samples the implementation should actually use
-    GLint m_CurrentMSXAASamples = std::min(m_MaxMSXAASamples, m_ApplicationConfig->getNumMSXAASamples());
+    int m_CurrentMSXAASamples = std::min(m_GraphicsContext.getMaxMSXAASamples(), m_ApplicationConfig->getNumMSXAASamples());
 
     // set to true if the application should quit
     bool m_QuitRequested = false;
-
-    // set to true if application is in debug mode
-    bool m_DebugModeEnabled = false;
 
     // set to true if the main loop should pause on events
     //
@@ -1459,7 +1129,7 @@ void osc::ImGuiInit()
 
     // init ImGui for SDL2 /w OpenGL
     App::Impl& impl = *App::upd().m_Impl;
-    ImGui_ImplSDL2_InitForOpenGL(impl.updWindow(), impl.updGLContext());
+    ImGui_ImplSDL2_InitForOpenGL(impl.updWindow(), impl.updRawGLContextHandle());
 
     // init ImGui for OpenGL
     ImGui_ImplOpenGL3_Init(OSC_GLSL_VERSION);
@@ -1504,7 +1174,8 @@ void osc::ImGuiNewFrame()
 
 void osc::ImGuiRender()
 {
-    gl::UseProgram();  // bound program can sometimes cause issues
+    // bound program can sometimes cause issues
+    App::upd().m_Impl->updGraphicsContext().clearProgram();
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

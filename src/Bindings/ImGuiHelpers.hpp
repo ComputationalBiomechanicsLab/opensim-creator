@@ -31,6 +31,9 @@ namespace osc
 {
     inline constexpr float defaultImguiDragThreshold = 5.0f;
 
+    // applies "dark" theme to current ImGui context
+    void ImGuiApplyDarkTheme();
+
     // updates a polar comera's rotation, position, etc. based on ImGui input
     void UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, PolarPerspectiveCamera&);
     void UpdateEulerCameraFromImGuiUserInput(experimental::Camera&, glm::vec3& eulers);
