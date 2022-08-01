@@ -681,4 +681,12 @@ namespace osc::experimental::Graphics
         Rect const&,
         BlitFlags = BlitFlags::None
     );
+
+    // assigns the source RenderTexture to uniform "uTexture"
+    void BlitToScreen(
+        RenderTexture const&,
+        Rect const&,
+        Material const&,
+        BlitFlags = BlitFlags::None
+    );
 }

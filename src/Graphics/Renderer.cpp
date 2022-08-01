@@ -333,6 +333,12 @@ namespace osc::experimental {
             Rect const&,
             osc::experimental::Graphics::BlitFlags
         );
+        static void BlitToScreen(
+            RenderTexture const&,
+            Rect const&,
+            Material const&,
+            osc::experimental::Graphics::BlitFlags
+        );
     };
 }
 
@@ -3842,6 +3848,15 @@ void osc::experimental::Graphics::BlitToScreen(
     GraphicsBackend::BlitToScreen(t, rect, std::move(flags));
 }
 
+void osc::experimental::Graphics::BlitToScreen(
+    RenderTexture const& t,
+    Rect const& rect,
+    Material const& material,
+    BlitFlags flags)
+{
+    GraphicsBackend::BlitToScreen(t, rect, material, std::move(flags));
+}
+
 /////////////////////////
 //
 // backend implementation
@@ -4467,4 +4482,27 @@ void osc::experimental::GraphicsBackend::BlitToScreen(
     experimental::Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, g_GraphicsContextImpl->m_QuadMaterial, c);
     c.render();
     g_GraphicsContextImpl->m_QuadMaterial.clearRenderTexture("uTexture");
+}
+
+void osc::experimental::GraphicsBackend::BlitToScreen(
+    RenderTexture const& t,
+    Rect const& rect,
+    Material const& material,
+    osc::experimental::Graphics::BlitFlags)
+{
+    OSC_ASSERT(g_GraphicsContextImpl);
+
+    experimental::Camera c;
+    c.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
+    c.setPixelRect(rect);
+    c.setProjectionMatrix(glm::mat4{1.0f});
+    c.setViewMatrix(glm::mat4{1.0f});
+    c.setClearFlags(osc::experimental::CameraClearFlags::Nothing);
+
+    experimental::Material copy{material};
+
+    copy.setRenderTexture("uTexture", t);
+    experimental::Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, copy, c);
+    c.render();
+    copy.clearRenderTexture("uTexture");
 }

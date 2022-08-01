@@ -1,6 +1,6 @@
 #version 330 core
 
-uniform sampler2D uScreenTexture;
+uniform sampler2D uTexture;
 
 in vec2 TexCoords;
 out vec4 FragColor;
@@ -30,7 +30,7 @@ void main()
     vec3 sampleTex[9];
     for(int i = 0; i < 9; i++)
     {
-        sampleTex[i] = vec3(texture(uScreenTexture, TexCoords.st + offsets[i]));
+        sampleTex[i] = vec3(texture(uTexture, TexCoords.st + offsets[i]));
     }
 
     vec3 col = vec3(0.0);

@@ -175,15 +175,8 @@ public:
         }
         m_SceneCamera.render();
 
-        // render screen quad
-        {
-            m_ScreenMaterial.setRenderTexture("uScreenTexture", *m_SceneCamera.getTexture());
-            osc::experimental::Graphics::DrawMesh(m_QuadMesh, Transform{}, m_ScreenMaterial, m_ScreenCamera);
-        }
-
-        m_ScreenCamera.setPixelRect(viewportRect);
-        m_ScreenCamera.render();  // renders to screen
-        m_ScreenMaterial.clearRenderTexture("uScreenTexture");  // TODO: perf
+        // render via a effect sampler
+        experimental::Graphics::BlitToScreen(*m_SceneCamera.getTexture(), viewportRect, m_ScreenMaterial);
 
         // auxiliary UI
         m_LogViewer.draw();
