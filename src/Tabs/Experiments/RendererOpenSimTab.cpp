@@ -269,8 +269,7 @@ public:
                 m_EdgeDetectorMaterial.setTransparent(true);
                 m_EdgeDetectorMaterial.setDepthTested(false);
 
-                // TODO: camera should provide inverse (it can internally use tricks)
-                experimental::Graphics::DrawMesh(m_QuadMesh, glm::inverse(m_Camera.getViewProjectionMatrix()), m_EdgeDetectorMaterial, m_Camera);
+                experimental::Graphics::DrawMesh(m_QuadMesh, m_Camera.getInverseViewProjectionMatrix(), m_EdgeDetectorMaterial, m_Camera);
 
                 m_EdgeDetectorMaterial.clearRenderTexture("uScreenTexture");  // prevents copies on next frame
             }

@@ -2391,6 +2391,24 @@ TEST_F(Renderer, CameraGetViewProjectionMatrixReturnsViewMatrixMultipliedByProje
     ASSERT_EQ(camera.getViewProjectionMatrix(), expected);
 }
 
+TEST_F(Renderer, CameraGetInverseViewProjectionMatrixReturnsExpectedAnswerWhenUsingOverriddenMatrices)
+{
+    osc::experimental::Camera camera;
+
+    glm::mat4 viewMatrix{1.0f};
+    viewMatrix[0][3] = 2.5f;  // change some part of it
+
+    glm::mat4 projectionMatrix{1.0f};
+    projectionMatrix[0][1] = 9.0f;  // change some part of it
+
+    glm::mat4 expected = glm::inverse(projectionMatrix * viewMatrix);
+
+    camera.setViewMatrix(viewMatrix);
+    camera.setProjectionMatrix(projectionMatrix);
+
+    ASSERT_EQ(camera.getInverseViewProjectionMatrix(), expected);
+}
+
 TEST_F(Renderer, CameraGetClearFlagsReturnsSolidColorOnDefaultConstruction)
 {
     static_assert(osc::experimental::CameraClearFlags::Default == osc::experimental::CameraClearFlags::SolidColor);

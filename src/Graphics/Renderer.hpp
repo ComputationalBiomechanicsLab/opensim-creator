@@ -582,8 +582,11 @@ namespace osc::experimental
         void setProjectionMatrix(glm::mat4 const&);
         void resetProjectionMatrix();
 
-        // returns getProjectionMatrix() * getViewMatrix()
+        // returns the equivalent of getProjectionMatrix() * getViewMatrix()
         glm::mat4 getViewProjectionMatrix() const;
+
+        // returns the equivalent of inverse(getViewProjectionMatrix())
+        glm::mat4 getInverseViewProjectionMatrix() const;
 
         // flushes any rendering commands that were queued against this camera
         //

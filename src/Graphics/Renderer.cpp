@@ -3006,6 +3006,11 @@ public:
         return getProjectionMatrix() * getViewMatrix();
     }
 
+    glm::mat4 getInverseViewProjectionMatrix() const
+    {
+        return glm::inverse(getViewProjectionMatrix());
+    }
+
     void render()
     {
         GraphicsBackend::FlushRenderQueue(*this);
@@ -3304,6 +3309,11 @@ void osc::experimental::Camera::resetProjectionMatrix()
 glm::mat4 osc::experimental::Camera::getViewProjectionMatrix() const
 {
     return m_Impl->getViewProjectionMatrix();
+}
+
+glm::mat4 osc::experimental::Camera::getInverseViewProjectionMatrix() const
+{
+    return m_Impl->getInverseViewProjectionMatrix();
 }
 
 void osc::experimental::Camera::render()
