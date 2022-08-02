@@ -71,17 +71,17 @@ int main(int argc, char** argv)
     if (argc <= 0)
     {
         auto screen = std::make_unique<osc::MainUIScreen>();
-        screen->addTab(std::make_unique<osc::RendererHelloTriangleTab>(screen->getTabHostAPI()));
-        screen->addTab(std::make_unique<osc::RendererTexturingTab>(screen->getTabHostAPI()));
-        screen->addTab(std::make_unique<osc::RendererCoordinateSystemsTab>(screen->getTabHostAPI()));
-        screen->addTab(std::make_unique<osc::RendererBasicLightingTab>(screen->getTabHostAPI()));
-        screen->addTab(std::make_unique<osc::RendererLightingMapsTab>(screen->getTabHostAPI()));
-        screen->addTab(std::make_unique<osc::RendererMultipleLightsTab>(screen->getTabHostAPI()));
-        screen->addTab(std::make_unique<osc::RendererBlendingTab>(screen->getTabHostAPI()));
-        screen->addTab(std::make_unique<osc::RendererFramebuffersTab>(screen->getTabHostAPI()));
-        screen->addTab(std::make_unique<osc::RendererGeometryShaderTab>(screen->getTabHostAPI()));
-        auto tabID = screen->addTab(std::make_unique<osc::RendererOpenSimTab>(screen->getTabHostAPI()));
-        screen->getTabHostAPI()->selectTab(tabID);
+        //screen->addTab(std::make_unique<osc::RendererHelloTriangleTab>(screen->getTabHostAPI()));
+        //screen->addTab(std::make_unique<osc::RendererTexturingTab>(screen->getTabHostAPI()));
+        //screen->addTab(std::make_unique<osc::RendererCoordinateSystemsTab>(screen->getTabHostAPI()));
+        //screen->addTab(std::make_unique<osc::RendererBasicLightingTab>(screen->getTabHostAPI()));
+        //screen->addTab(std::make_unique<osc::RendererLightingMapsTab>(screen->getTabHostAPI()));
+        //screen->addTab(std::make_unique<osc::RendererMultipleLightsTab>(screen->getTabHostAPI()));
+        //screen->addTab(std::make_unique<osc::RendererBlendingTab>(screen->getTabHostAPI()));
+        //screen->addTab(std::make_unique<osc::RendererFramebuffersTab>(screen->getTabHostAPI()));
+        //screen->addTab(std::make_unique<osc::RendererGeometryShaderTab>(screen->getTabHostAPI()));
+        //auto tabID = screen->addTab(std::make_unique<osc::RendererOpenSimTab>(screen->getTabHostAPI()));
+        //screen->getTabHostAPI()->selectTab(tabID);
         app.show(std::move(screen));
     }
     else
