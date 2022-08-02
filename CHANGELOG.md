@@ -37,6 +37,10 @@ All notable changes to this project will be documented here. The format is based
   - This is related to backface culling, because OpenSim Creator uses the mesh
     winding order to determine the surface normal (cross product)
 
+- The hierarchy viewer now uses left-click to select/navigate stuff, and no
+  longer auto-opens the children of your selection unless you explicitly click
+  the arrow (#323)
+
 
 ## [0.2.0]
 

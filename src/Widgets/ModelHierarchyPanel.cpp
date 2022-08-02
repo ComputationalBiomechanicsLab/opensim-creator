@@ -125,7 +125,8 @@ namespace {
     }
 
     bool pathContains(ComponentPath const& p, OpenSim::Component const* c) {
-        return std::find(p.begin(), p.end(), c) != p.end();
+        auto end = p.begin() == p.end() ? p.end() : p.end()-1;
+        return std::find(p.begin(), end, c) != end;
     }
 }
 
@@ -317,7 +318,7 @@ public:
 
             // handle display mode (node vs leaf)
             bool isInternalNode = currentPath.size() < 3 || lookaheadPath.size() > currentPath.size();
-            ImGuiTreeNodeFlags nodeFlags = isInternalNode ? ImGuiTreeNodeFlags_None : (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet);
+            ImGuiTreeNodeFlags nodeFlags = isInternalNode ? ImGuiTreeNodeFlags_OpenOnArrow : (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet);
 
             // handle coloring
             int styles = 0;
@@ -368,7 +369,7 @@ public:
                 ImGui::EndTooltip();
             }
 
-            if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || (!isInternalNode && ImGui::IsItemClicked(ImGuiMouseButton_Left)))
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
             {
                 m_Response.type = ModelHierarchyPanel::ResponseType::SelectionChanged;
                 m_Response.ptr = cur;
