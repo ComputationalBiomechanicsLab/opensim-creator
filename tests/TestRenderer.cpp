@@ -1362,6 +1362,19 @@ TEST_F(Renderer, TextureSetFilterModeCausesGetFilterModeToReturnValue)
     ASSERT_EQ(t.getFilterMode(), tfm);
 }
 
+TEST_F(Renderer, TextureSetFilterModeMipmapReturnsMipmapOnGetFilterMode)
+{
+    osc::experimental::Texture2D t = GenerateTexture();
+
+    osc::experimental::TextureFilterMode tfm = osc::experimental::TextureFilterMode::Mipmap;
+
+    ASSERT_NE(t.getFilterMode(), tfm);
+
+    t.setFilterMode(tfm);
+
+    ASSERT_EQ(t.getFilterMode(), tfm);
+}
+
 TEST_F(Renderer, TextureCanBeComparedForEquality)
 {
     osc::experimental::Texture2D t1 = GenerateTexture();

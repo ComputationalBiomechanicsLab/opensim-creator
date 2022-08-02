@@ -50,6 +50,7 @@ namespace osc::experimental
     enum class TextureFilterMode {
         Nearest = 0,
         Linear,
+        Mipmap,
         TOTAL,
     };
     std::ostream& operator<<(std::ostream&, TextureFilterMode);

@@ -122,6 +122,8 @@ class osc::RendererOpenSimTab::Impl final {
 public:
     Impl(TabHost* parent) : m_Parent{parent}
     {
+        m_FloorTexture.setFilterMode(experimental::TextureFilterMode::Mipmap);
+
         m_SolidColorMaterial.setVec4("uDiffuseColor", {1.0f, 0.0f, 0.0f, 1.0f});
         m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_FloorTexture);
         m_SceneTexturedElementsMaterial.setVec2("uTextureScale", {200.0f, 200.0f});
@@ -383,7 +385,7 @@ private:
     bool m_DrawRims = true;
     glm::vec3 m_LightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
     glm::vec4 m_SceneBgColor = {0.89f, 0.89f, 0.89f, 1.0f};
-    float m_RimThickness = 1.25;
+    float m_RimThickness = 1.0f;
     glm::vec4 m_RimRgba = {1.0f, 0.4f, 0.0f, 0.85f};
 
     experimental::Material m_SceneColoredElementsMaterial

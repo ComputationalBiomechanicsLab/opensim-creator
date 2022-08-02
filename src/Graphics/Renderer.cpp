@@ -363,7 +363,8 @@ namespace
     static constexpr auto const g_TextureFilterModeStrings = MakeArray<osc::CStringView, static_cast<std::size_t>(osc::experimental::TextureFilterMode::TOTAL)>
     (
         "Nearest",
-        "Linear"
+        "Linear",
+        "Mipmap"
     );
 
     struct TextureGPUBuffers final {
@@ -375,10 +376,12 @@ namespace
     {
         switch (m)
         {
-        case TextureFilterMode::Linear:
-            return GL_LINEAR;
         case TextureFilterMode::Nearest:
             return GL_NEAREST;
+        case TextureFilterMode::Linear:
+            return GL_LINEAR;
+        case TextureFilterMode::Mipmap:
+            return GL_LINEAR_MIPMAP_LINEAR;
         default:
             return GL_LINEAR;
         }
