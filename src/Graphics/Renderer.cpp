@@ -4470,7 +4470,7 @@ void osc::experimental::GraphicsBackend::BlitToScreen(
     Graphics::BlitFlags flags)
 {
     OSC_ASSERT(g_GraphicsContextImpl);
-    OSC_ASSERT(t.m_Impl->m_MaybeGPUBuffers && "the input texture has not been rendered to");
+    OSC_ASSERT(*t.m_Impl->m_MaybeGPUBuffers && "the input texture has not been rendered to");
 
     if (flags == Graphics::BlitFlags::AlphaBlend)
     {
@@ -4525,7 +4525,7 @@ void osc::experimental::GraphicsBackend::BlitToScreen(
     osc::experimental::Graphics::BlitFlags)
 {
     OSC_ASSERT(g_GraphicsContextImpl);
-    OSC_ASSERT(t.m_Impl->m_MaybeGPUBuffers && "the input texture has not been rendered to");
+    OSC_ASSERT(*t.m_Impl->m_MaybeGPUBuffers && "the input texture has not been rendered to");
 
     experimental::Camera c;
     c.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
