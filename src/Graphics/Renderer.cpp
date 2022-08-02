@@ -3443,9 +3443,6 @@ namespace
         // MSXAA is used to smooth out the model
         glEnable(GL_MULTISAMPLE);
 
-        // all vertices in the render are backface-culled
-        glEnable(GL_CULL_FACE);
-
         // print OpenGL information if in debug mode
         osc::log::info(
             "OpenGL initialized: info: %s, %s, (%s), GLSL %s",

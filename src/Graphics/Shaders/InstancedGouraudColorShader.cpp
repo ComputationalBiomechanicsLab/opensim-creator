@@ -40,11 +40,11 @@ R"(
 
         vec3 ambientComponent = ambientStrength * uLightColor;
 
-        float diffuseAmount = max(dot(normalDir, frag2lightDir), 0.0);
+        float diffuseAmount = abs(dot(normalDir, frag2lightDir));
         vec3 diffuseComponent = diffuseStrength * diffuseAmount * uLightColor;
 
         vec3 halfwayDir = normalize(frag2lightDir + frag2viewDir);
-        float specularAmmount = pow(max(dot(normalDir, halfwayDir), 0.0), shininess);
+        float specularAmmount = pow(abs(dot(normalDir, halfwayDir)), shininess);
         vec3 specularComponent = specularStrength * specularAmmount * uLightColor;
 
         vec3 lightStrength = ambientComponent + diffuseComponent + specularComponent;

@@ -23,6 +23,20 @@ All notable changes to this project will be documented here. The format is based
 
 - Added performance counters (and a performance panel) to the editor tab (#315)
 
+- Mesh backface culling is now disabled by default (#318)
+
+  - It causes issues when loading mesh files from sources that do not treat
+    their triangle winding correctly (i.e. anti-clockwise). Those meshes were
+    drawing their inner-edge, which is super annoying when working with (e.g.)
+    XRay scans etc.
+
+- Mesh normals are now rendered in a double-sided (#318)
+
+  - This causes shading to work correctly if the mesh file contains inverted
+    normals.
+  - This is related to backface culling, because OpenSim Creator uses the mesh
+    winding order to determine the surface normal (cross product)
+
 
 ## [0.2.0]
 
