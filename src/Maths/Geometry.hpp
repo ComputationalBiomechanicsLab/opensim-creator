@@ -17,6 +17,7 @@
 #include <array>
 #include <cstdint>
 #include <cstddef>
+#include <optional>
 
 namespace osc
 {
@@ -184,9 +185,15 @@ namespace osc
     AABB AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices);
     AABB AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices);
 
-    // returns a Normalized Device Coordinates (NDC) rectangle that contains the given AABB, after
-    // projecting it using the provided view+projection matrix
-    Rect WorldpsaceAABBToNdcRect(AABB const&, glm::mat4 const& world2Ndc);
+    // (tries to) return a Normalized Device Coordinate (NDC) rectangle, clamped to the NDC clipping
+    // bounds ((-1,-1) to (1, 1)), where the rectangle loosely bounds the given worldspace AABB after
+    // projecting it into NDC
+    std::optional<Rect> AABBToScreenNDCRect(
+        AABB const&,
+        glm::mat4 const& viewMat,
+        glm::mat4 const& projMat,
+        float znear,
+        float zfar);
 
     // returns a rect, created by mapping an Normalized Device Coordinates (NDC) rect
     // (i.e. -1.0 to 1.0) within a screenspace viewport (pixel units, topleft == (0, 0))

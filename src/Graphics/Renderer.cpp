@@ -4467,21 +4467,55 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 void osc::experimental::GraphicsBackend::BlitToScreen(
     RenderTexture const& t,
     Rect const& rect,
-    osc::experimental::Graphics::BlitFlags)
+    Graphics::BlitFlags flags)
 {
     OSC_ASSERT(g_GraphicsContextImpl);
+    OSC_ASSERT(t.m_Impl->m_MaybeGPUBuffers && "the input texture has not been rendered to");
 
-    experimental::Camera c;
-    c.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
-    c.setPixelRect(rect);
-    c.setProjectionMatrix(glm::mat4{1.0f});
-    c.setViewMatrix(glm::mat4{1.0f});
-    c.setClearFlags(osc::experimental::CameraClearFlags::Nothing);
+    if (flags == Graphics::BlitFlags::AlphaBlend)
+    {
+        experimental::Camera c;
+        c.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
+        c.setPixelRect(rect);
+        c.setProjectionMatrix(glm::mat4{1.0f});
+        c.setViewMatrix(glm::mat4{1.0f});
+        c.setClearFlags(osc::experimental::CameraClearFlags::Nothing);
 
-    g_GraphicsContextImpl->m_QuadMaterial.setRenderTexture("uTexture", t);
-    experimental::Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, g_GraphicsContextImpl->m_QuadMaterial, c);
-    c.render();
-    g_GraphicsContextImpl->m_QuadMaterial.clearRenderTexture("uTexture");
+        g_GraphicsContextImpl->m_QuadMaterial.setRenderTexture("uTexture", t);
+        experimental::Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, g_GraphicsContextImpl->m_QuadMaterial, c);
+        c.render();
+        g_GraphicsContextImpl->m_QuadMaterial.clearRenderTexture("uTexture");
+    }
+    else
+    {
+        // rect is currently top-left, must be converted to bottom-left
+
+        int windowHeight = App::get().idims().y;
+        int rectHeight = static_cast<int>(rect.p2.y - rect.p1.y);
+        int p1y = static_cast<int>((windowHeight - rect.p1.y) - rectHeight);
+        int p2y = static_cast<int>(windowHeight - rect.p1.y);
+
+        // blit multisampled scene render to not-multisampled texture
+        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, (*t.m_Impl->m_MaybeGPUBuffers)->SingleSampledFBO);
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
+        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, gl::windowFbo);
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        gl::BlitFramebuffer(
+            0,
+            0,
+            t.getWidth(),
+            t.getHeight(),
+            static_cast<int>(rect.p1.x),
+            static_cast<int>(p1y),
+            static_cast<int>(rect.p2.x),
+            static_cast<int>(p2y),
+            GL_COLOR_BUFFER_BIT,
+            GL_NEAREST
+        );
+
+        // rebind to the screen (the start of FlushRenderQueue bound to the output texture)
+        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+    }
 }
 
 void osc::experimental::GraphicsBackend::BlitToScreen(
@@ -4491,6 +4525,7 @@ void osc::experimental::GraphicsBackend::BlitToScreen(
     osc::experimental::Graphics::BlitFlags)
 {
     OSC_ASSERT(g_GraphicsContextImpl);
+    OSC_ASSERT(t.m_Impl->m_MaybeGPUBuffers && "the input texture has not been rendered to");
 
     experimental::Camera c;
     c.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});

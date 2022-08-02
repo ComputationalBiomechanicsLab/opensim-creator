@@ -797,27 +797,43 @@ osc::AABB osc::AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd:
     return rv;
 }
 
-osc::Rect osc::WorldpsaceAABBToNdcRect(AABB const& aabb, glm::mat4 const& m)
+std::optional<osc::Rect> osc::AABBToScreenNDCRect(
+    AABB const& aabb,
+    glm::mat4 const& viewMat,
+    glm::mat4 const& projMat,
+    float znear,
+    float zfar)
 {
-    // project the AABB's points
-    auto verts = ToCubeVerts(aabb);
-    for (glm::vec3& vert : verts)
+    // create a new AABB in viewspace that bounds the worldspace AABB
+    AABB viewspaceAABB = TransformAABB(aabb, viewMat);
+
+    // z-test the viewspace AABB to see if any part of it it falls within the
+    // camera's clipping planes
+    //
+    // care: znear and zfar are usually defined as positive distances from the
+    //       camera but viewspace points along -Z
+
+    if (viewspaceAABB.min.z > -znear && viewspaceAABB.max.z > -znear)
     {
-        glm::vec4 p = m * glm::vec4{vert, 1.0f};  // project
-        vert = glm::vec3{p} / p.w;  // perspective divide
+        return std::nullopt;
+    }
+    if (viewspaceAABB.min.z < -zfar && viewspaceAABB.max.z < -zfar)
+    {
+        return std::nullopt;
     }
 
-    // compute bounds of (the XY components of) the points
-    static_assert(verts.size() > 1);
-    glm::vec2 const first = glm::vec2{verts[0]};
+    // clamp the viewspace AABB to within the camera's clipping planes
+    viewspaceAABB.min.z = glm::clamp(viewspaceAABB.min.z, -zfar, -znear);
+    viewspaceAABB.max.z = glm::clamp(viewspaceAABB.max.z, -zfar, -znear);
 
-    Rect rv = {first, first};
-    for (std::size_t i = 1; i < verts.size(); ++i)
-    {
-        glm::vec2 p = glm::vec2{verts[i]};
-        rv.p1 = Min(rv.p1, p);
-        rv.p2 = Max(rv.p2, p);
-    }
+    // transform it into an NDC-aligned NDC-space AABB
+    AABB ndcAABB = TransformAABB(viewspaceAABB, projMat);
+
+    // take the X and Y coordinates of that AABB and ensure they are clamped to within bounds
+    Rect rv{glm::vec2{ndcAABB.min}, glm::vec2{ndcAABB.max}};
+    rv.p1 = glm::clamp(rv.p1, {-1.0f, -1.0f}, {1.0f, 1.0f});
+    rv.p2 = glm::clamp(rv.p2, { -1.0f, -1.0f }, {1.0f, 1.0f});
+
     return rv;
 }
 

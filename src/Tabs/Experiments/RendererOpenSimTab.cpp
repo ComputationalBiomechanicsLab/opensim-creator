@@ -187,10 +187,15 @@ public:
 
         // update the (rendered to) scene camera
         m_Camera.setPosition(m_PolarCamera.getPos());
+        m_Camera.setNearClippingPlane(m_PolarCamera.znear);
+        m_Camera.setFarClippingPlane(m_PolarCamera.zfar);
         m_Camera.setViewMatrix(m_PolarCamera.getViewMtx());
         m_Camera.setProjectionMatrix(m_PolarCamera.getProjMtx(AspectRatio(viewportRectDims)));
 
-        // render selected objects as a solid color to a seperate texture
+        // these variables are updated if rims are in the render
+        //
+        // they're used as an optimization: the edge-detection algorithm ideally only
+        // highlights where the rims are, rather than the whole screen
         AABB rimAABBWorldspace = InvertedAABB();
         bool hasRims = false;
         glm::mat4 ndcToRimsMat{1.0f};
@@ -198,25 +203,38 @@ public:
 
         if (m_DrawRims)
         {
-            // queue the meshes for drawing, while also computing the bounds of the geometry
+            // compute the worldspace bounds of the rim-highlighted geometry
+            AABB rimAABBWorldspace = InvertedAABB();
             for (NewDecoration const& dec : m_Decorations)
             {
                 if (dec.IsHovered)
                 {
-                    experimental::Graphics::DrawMesh(*dec.Mesh, dec.Transform, m_SolidColorMaterial, m_Camera);
-
                     rimAABBWorldspace = Union(rimAABBWorldspace, WorldpaceAABB(dec));
                     hasRims = true;
                 }
             }
 
+            // figure out if the rims actually appear on the screen and (roughly) where
+            std::optional<Rect> maybeRimRectNDC = hasRims ?
+                AABBToScreenNDCRect(
+                    rimAABBWorldspace,
+                    m_Camera.getViewMatrix(),
+                    m_Camera.getProjectionMatrix(),
+                    m_Camera.getNearClippingPlane(),
+                    m_Camera.getFarClippingPlane()) :
+                std::nullopt;
+
+            hasRims = maybeRimRectNDC.has_value();
+
+            // if the scene has rims, and they can be projected onto the screen, then
+            // render the rim geometry as a solid color and precompute the relevant
+            // texture coordinates, quad transform, etc. for the (later) edge-detection
+            // step
             if (hasRims)
             {
-                // calculate the thickness of the rims within Normalized Device Coordinates (NDC)
-                glm::vec2 const rimThicknessNDC = 2.0f*glm::vec2{m_RimThickness} / glm::vec2{viewportRectDims};
+                Rect& rimRectNDC = *maybeRimRectNDC;
 
-                // calculate the bounding rectangle of the solid geometry in NDC
-                Rect rimRectNDC = WorldpsaceAABBToNdcRect(rimAABBWorldspace, m_Camera.getViewProjectionMatrix());
+                glm::vec2 const rimThicknessNDC = 2.0f*glm::vec2{m_RimThickness} / glm::vec2{viewportRectDims};
 
                 // expand by the rim thickness, so that the output has space for the rims
                 rimRectNDC = osc::Expand(rimRectNDC, rimThicknessNDC);
@@ -262,6 +280,13 @@ public:
                 rimOffsets = glm::vec2{m_RimThickness} / rimDimsScreen;
 
                 // draw the solid geometry that was stretched over clipspace
+                for (NewDecoration const& dec : m_Decorations)
+                {
+                    if (dec.IsHovered)
+                    {
+                        experimental::Graphics::DrawMesh(*dec.Mesh, dec.Transform, m_SolidColorMaterial, m_Camera);
+                    }
+                }
                 glm::mat4 const originalProjMat = m_Camera.getProjectionMatrix();
                 m_Camera.setProjectionMatrix(rimsToNDCmat * originalProjMat);
                 m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
