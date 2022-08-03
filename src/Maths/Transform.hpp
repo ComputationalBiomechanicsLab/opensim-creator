@@ -26,8 +26,8 @@ namespace osc
         // construct at a given position and rotation with an identity scale
         constexpr Transform(glm::vec3 const& position_,
                             glm::quat const& rotation_) noexcept :
-            position{position_},
-            rotation{rotation_}
+            rotation{rotation_},
+            position{position_}
         {
         }
 
@@ -35,9 +35,9 @@ namespace osc
         constexpr Transform(glm::vec3 const& position_,
                             glm::quat const& rotation_,
                             glm::vec3 const& scale_) noexcept :
-            position{position_},
+            scale{scale_},
             rotation{rotation_},
-            scale{scale_}
+            position{position_}
         {
         }
 
