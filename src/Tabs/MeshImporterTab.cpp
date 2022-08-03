@@ -3465,6 +3465,20 @@ namespace
             AddStationToModel(mg, *model, el, visitedBodies);
         }
 
+        // invalidate all properties, so that model.finalizeFromProperties() *must*
+        // reload everything with no caching
+        //
+        // otherwise, parts of the model (cough cough, OpenSim::Geometry::finalizeFromProperties)
+        // will fail to load data because it will internally set itself as up to date, even though
+        // it failed to load a mesh file because a parent was missing. See #330
+        for (OpenSim::Component& c : model->updComponentList())
+        {
+            for (int i = 0; i < c.getNumProperties(); ++i)
+            {
+                c.updPropertyByIndex(i);
+            }
+        }
+
         // ensure returned model is initialized from latest graph
         model->finalizeConnections();  // ensure all sockets are finalized to paths (#263)
         osc::InitializeModel(*model);
