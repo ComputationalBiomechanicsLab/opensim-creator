@@ -33,7 +33,7 @@ jobs:
     - name: run build script
       run: |
         cd $GITHUB_WORKSPACE/osc
-        OSC_BASE_BUILD_TYPE=Release OSC_BUILD_TYPE=RelWithDebInfo ./scripts/build_debian-buster.sh
+        ./scripts/build_debian-buster.sh
     - uses: actions/upload-artifact@v2
       with:
         name: OpenSimCreator_Deb.zip

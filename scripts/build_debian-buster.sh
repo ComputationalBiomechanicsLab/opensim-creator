@@ -20,10 +20,10 @@ set -xeuo pipefail
 OSC_OPENSIM_REPO=${OSC_OPENSIM_REPO:-https://github.com/opensim-org/opensim-core}
 
 # can be any branch identifier from opensim-core
-OSC_OPENSIM_REPO_BRANCH=${OSC_OPENSIM_REPO_BRANCH:-4.3}
+OSC_OPENSIM_REPO_BRANCH=${OSC_OPENSIM_REPO_BRANCH:-4.4}
 
 # base build type: used if one of the below isn't overridden
-OSC_BASE_BUILD_TYPE=${OSC_BASE_BUILD_TYPE:-RelWithDebInfo}
+OSC_BASE_BUILD_TYPE=${OSC_BASE_BUILD_TYPE:-Release}
 
 # build type for OpenSim's dependencies (e.g. Simbody)
 OSC_OPENSIM_DEPS_BUILD_TYPE=${OSC_OPENSIM_DEPS_BUILD_TYPE:-`echo ${OSC_BASE_BUILD_TYPE}`}
@@ -141,7 +141,9 @@ if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
     cd opensim-dependencies-build/
     cmake ../opensim-core/dependencies \
         -DCMAKE_BUILD_TYPE=${OSC_OPENSIM_DEPS_BUILD_TYPE} \
-        -DCMAKE_INSTALL_PREFIX=../opensim-dependencies-install
+        -DCMAKE_INSTALL_PREFIX=../opensim-dependencies-install \
+        -DOPENSIM_WITH_CASADI=OFF \
+        -DOPENSIM_WITH_TROPTER=OFF
     cmake --build . -j${OSC_BUILD_CONCURRENCY}
     echo "DEBUG: listing contents of OpenSim dependencies build dir"
     ls .
@@ -155,8 +157,9 @@ if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
         -DCMAKE_INSTALL_PREFIX=../opensim-install/ \
         -DBUILD_JAVA_WRAPPING=OFF \
         -DCMAKE_BUILD_TYPE=${OSC_OPENSIM_BUILD_TYPE} \
-        -DOPENSIM_WITH_CASADI=NO \
-        -DOPENSIM_WITH_TROPTER=NO \
+        -DOPENSIM_DISABLE_LOG_FILE=ON \
+        -DOPENSIM_WITH_CASADI=OFF \
+        -DOPENSIM_WITH_TROPTER=OFF \
         -DOPENSIM_COPY_DEPENDENCIES=ON
     cmake --build . --target install -j${OSC_BUILD_CONCURRENCY}
     echo "DEBUG: listing contents of OpenSim build dir"
@@ -176,6 +179,7 @@ if [[ -z ${OSC_SKIP_OSC:+x} ]]; then
     cmake .. \
         -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE} \
         -DCMAKE_PREFIX_PATH=${PWD}/../opensim-install \
+        -DCMAKE_INSTALL_PREFIX=${PWD}/../osc-install \
         ${OSC_BUILD_DOCS:+-DOSC_BUILD_DOCS=ON}
     cmake --build . --target ${OSC_BUILD_TARGET} -j${OSC_BUILD_CONCURRENCY}
     echo "DEBUG: listing contents of final build dir"
