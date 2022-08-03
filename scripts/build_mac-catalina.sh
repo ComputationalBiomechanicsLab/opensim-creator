@@ -18,7 +18,7 @@ set -xeuo pipefail
 OSC_OPENSIM_REPO=${OSC_OPENSIM_REPO:-https://github.com/opensim-org/opensim-core}
 
 # can be any branch/tag identifier from opensim
-OSC_OPENSIM_REPO_BRANCH=${OSC_OPENSIM_REPO_BRANCH:-4.3}
+OSC_OPENSIM_REPO_BRANCH=${OSC_OPENSIM_REPO_BRANCH:-4.4}
 
 # base build type: used if one of the below isn't overidden
 OSC_BASE_BUILD_TYPE=${OSC_BASE_BUILD_TYPE:-Release}
@@ -152,12 +152,7 @@ if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
         -DCMAKE_INSTALL_PREFIX=../opensim-dependencies-install \
         -DCMAKE_CXX_FLAGS="${OSC_CXX_FLAGS}" \
         -DCMAKE_GENERATOR="${OSC_GENERATOR}" \
-        -DSUPERBUILD_adolc=OFF \
-        -DSUPERBUILD_ipopt=ON \
-        -DSUPERBUILD_casadi=ON \
-        -DSUPERBUILD_eigen=OFF \
-        -DSUPERBUILD_colpack=OFF \
-        -DOPENSIM_WITH_CASADI=ON \
+        -DOPENSIM_WITH_CASADI=OFF \
         -DOPENSIM_WITH_TROPTER=OFF
     cmake --build . --verbose -- -j${OSC_BUILD_CONCURRENCY}
     echo "DEBUG: listing contents of OpenSim dependencies build dir"
@@ -175,7 +170,7 @@ if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
         -DCMAKE_CXX_FLAGS=${OSC_CXX_FLAGS} \
         -DCMAKE_GENERATOR="${OSC_GENERATOR}" \
         -DOPENSIM_DISABLE_LOG_FILE=ON \
-        -DOPENSIM_WITH_CASADI=ON \
+        -DOPENSIM_WITH_CASADI=OFF \
         -DOPENSIM_WITH_TROPTER=OFF \
         -DOPENSIM_COPY_DEPENDENCIES=ON
     cmake --build . --verbose --target install -- -j${OSC_BUILD_CONCURRENCY}
