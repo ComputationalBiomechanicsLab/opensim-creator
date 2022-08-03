@@ -41,6 +41,51 @@ All notable changes to this project will be documented here. The format is based
   longer auto-opens the children of your selection unless you explicitly click
   the arrow (#323)
 
+- Mac releases are now built using the `macos-11` container (#329)
+
+- Removed the ability to add wrapping geometry via the "Add Component" menu (#333)
+
+  - The reason this was removed is because it causes the UI to crash if you use it.
+
+  - The reason it causes a UI crash is because wrap objects implicitly require custom
+    code to call `setFrame`. If it isn't called, it can result in crashes
+
+  - Later releases will include custom support for adding wrapping surfaces. This just
+    (effectively) disables a "crash the UI" button
+
+- Removed the ability to add `CustomJoint`s via the "Add Joints" menu (#331)
+
+  - The reason it was removes is because it causes the UI to crash if you use it.
+
+  - The reason it causes a UI crash is because `CustomJoint`s *require* that the
+    coordinates are fully set up before putting it into the model. The UI's automated
+    support for adding stuff (joints, forces, etc.) can't automatically handle these
+    requirements right now.
+
+  - Later releases will include support for creating (and visualizing) `CustomJoint`s
+    in-UI. This just (effectively) disables a "crash the UI" button
+
+  - Note: you can still *load* and edit models containing `CustomJoints`, and edit
+    osim files with hot-reloading. This change only removes the `Add Custom Joint`
+    button because OSC cannot automatically gather all the necessary information to
+    ensure no crash happens.
+
+- Fixed the mesh importer crashing when converting a mesh importer scene into an
+  OpenSim model (#331)
+
+  - Related to the above. 0.2.0 added more components types, including `CustomJoint`,
+    which was automatically added to the mesh importer
+
+  - The mesh importer *also* cannot automatically create a valid `CustomJoint` and was
+    crashing when it had to convert mesh importer scenes, which don't use OpenSim into
+    `OpenSim::Model`s (which do)
+
+  - Again, support for `CustomJoint`s is on the roadmap: this just disables unintended
+    functionality that was causing the UI to hard-crash
+
+- Removed duplicated components in the "Add components" menu that already appear in the
+  grouped ("Add Joints, Add Muscles") menus (#312)
+
 
 ## [0.2.0]
 
