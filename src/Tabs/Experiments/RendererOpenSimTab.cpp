@@ -198,7 +198,6 @@ public:
         //
         // they're used as an optimization: the edge-detection algorithm ideally only
         // highlights where the rims are, rather than the whole screen
-        AABB rimAABBWorldspace = InvertedAABB();
         bool hasRims = false;
         glm::mat4 ndcToRimsMat{1.0f};
         glm::vec2 rimOffsets = {0.0f, 0.0f};  // in "rim space"
