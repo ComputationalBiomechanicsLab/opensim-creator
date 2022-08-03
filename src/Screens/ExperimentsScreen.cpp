@@ -1,14 +1,11 @@
 #include "ExperimentsScreen.hpp"
 
 #include "src/Platform/App.hpp"
-#include "src/Screens/HelloTriangleScreen.hpp"
 #include "src/Screens/HittestScreen.hpp"
 #include "src/Screens/ImGuizmoDemoScreen.hpp"
 #include "src/Screens/ImPlotDemoScreen.hpp"
 #include "src/Screens/ImGuiDemoScreen.hpp"
-#include "src/Screens/InstancedRendererScreen.hpp"
 #include "src/Screens/MainUIScreen.hpp"
-#include "src/Screens/MathExperimentsScreen.hpp"
 #include "src/Screens/MeshGenTestScreen.hpp"
 #include "src/Screens/MeshHittestScreen.hpp"
 #include "src/Screens/MeshHittestWithBVHScreen.hpp"
@@ -100,12 +97,9 @@ public:
 private:
     std::vector<Entry> m_Entries =
     {
-        { "Hello Triangle (OpenGL test)", transition<HelloTriangleScreen> },
         { "Hit testing analytical geometry (AABBs, Spheres, etc.)", transition<HittestScreen> },
         { "Hit testing ray-triangle intersections in a mesh", transition<MeshHittestScreen> },
-        { "Random math experiments", transition<MathExperimentsScreen> },
         { "Hit testing ray-triangle, but with BVH acceleration", transition<MeshHittestWithBVHScreen> },
-        { "Instanced rendering", transition<InstancedRendererScreen> },
         { "ImGuizmo", transition<ImGuizmoDemoScreen> },
         { "ImPlot", transition<ImPlotDemoScreen> },
         { "ImGui", transition<ImGuiDemoScreen> },

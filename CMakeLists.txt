@@ -273,12 +273,8 @@ add_library(osccore STATIC
     src/Bindings/SimTKHelpers.cpp
     src/Bindings/SimTKHelpers.hpp
 
-    src/Graphics/Shaders/ColormappedPlainTextureShader.cpp
-    src/Graphics/Shaders/ColormappedPlainTextureShader.hpp
     src/Graphics/Shaders/EdgeDetectionShader.cpp
     src/Graphics/Shaders/EdgeDetectionShader.hpp
-    src/Graphics/Shaders/GouraudMrtShader.cpp
-    src/Graphics/Shaders/GouraudMrtShader.hpp
     src/Graphics/Shaders/GouraudShader.cpp
     src/Graphics/Shaders/GouraudShader.hpp
     src/Graphics/Shaders/InstancedGouraudColorShader.cpp
@@ -287,10 +283,6 @@ add_library(osccore STATIC
     src/Graphics/Shaders/InstancedSolidColorShader.hpp
     src/Graphics/Shaders/NormalsShader.cpp
     src/Graphics/Shaders/NormalsShader.hpp
-    src/Graphics/Shaders/PlainTextureShader.cpp
-    src/Graphics/Shaders/PlainTextureShader.hpp
-    src/Graphics/Shaders/SkipMSXAABlitterShader.cpp
-    src/Graphics/Shaders/SkipMSXAABlitterShader.hpp
     src/Graphics/Shaders/SolidColorShader.cpp
     src/Graphics/Shaders/SolidColorShader.hpp
 
@@ -309,8 +301,6 @@ add_library(osccore STATIC
     src/Graphics/Image.cpp
     src/Graphics/Image.hpp
     src/Graphics/ImageFlags.hpp
-    src/Graphics/InstancedRenderer.cpp
-    src/Graphics/InstancedRenderer.hpp
     src/Graphics/Mesh.cpp
     src/Graphics/Mesh.hpp
     src/Graphics/MeshCache.cpp
@@ -440,8 +430,6 @@ add_library(osccore STATIC
     src/Screens/CookiecutterScreen.hpp
     src/Screens/ExperimentsScreen.cpp
     src/Screens/ExperimentsScreen.hpp
-    src/Screens/HelloTriangleScreen.cpp
-    src/Screens/HelloTriangleScreen.hpp
     src/Screens/HittestScreen.cpp
     src/Screens/HittestScreen.hpp
     src/Screens/ImGuiDemoScreen.cpp
@@ -450,12 +438,8 @@ add_library(osccore STATIC
     src/Screens/ImGuizmoDemoScreen.hpp
     src/Screens/ImPlotDemoScreen.cpp
     src/Screens/ImPlotDemoScreen.hpp
-    src/Screens/InstancedRendererScreen.cpp
-    src/Screens/InstancedRendererScreen.hpp
     src/Screens/MainUIScreen.cpp
     src/Screens/MainUIScreen.hpp
-    src/Screens/MathExperimentsScreen.cpp
-    src/Screens/MathExperimentsScreen.hpp
     src/Screens/MeshGenTestScreen.cpp
     src/Screens/MeshGenTestScreen.hpp
     src/Screens/MeshHittestScreen.cpp
