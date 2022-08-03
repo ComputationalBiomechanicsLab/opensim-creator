@@ -11,7 +11,7 @@ REM handy to override if you are developing against a fork, locally, etc.
 IF NOT DEFINED OSC_OPENSIM_REPO (set OSC_OPENSIM_REPO=https://github.com/opensim-org/opensim-core)
 
 REM can be any branch identifier from opensim-core
-IF NOT DEFINED OSC_OPENSIM_REPO_BRANCH (set OSC_OPENSIM_REPO_BRANCH=4.3)
+IF NOT DEFINED OSC_OPENSIM_REPO_BRANCH (set OSC_OPENSIM_REPO_BRANCH=4.4)
 
 REM where the sources are checked out to
 IF NOT DEFINED OSC_OPENSIM_SRC_DIR (set OSC_OPENSIM_SRC_DIR=opensim-core)
@@ -21,9 +21,9 @@ REM
 REM DRAGONS: it seems that this *must* be a `Release` build in OpenSim >4.2
 REM DRAGONS: because the upstream developers lazily packaged Release-mode
 REM DRAGONS: library binaries
-IF NOT DEFINED OSC_OPENSIM_DEPS_BUILD_TYPE (set OSC_OPENSIM_DEPS_BUILD_TYPE=RelWithDebInfo)
-IF NOT DEFINED OSC_OPENSIM_BUILD_TYPE (set OSC_OPENSIM_BUILD_TYPE=RelWithDebInfo)
-IF NOT DEFINED OSC_BUILD_TYPE (set OSC_BUILD_TYPE=RelWithDebInfo)
+IF NOT DEFINED OSC_OPENSIM_DEPS_BUILD_TYPE (set OSC_OPENSIM_DEPS_BUILD_TYPE=Release)
+IF NOT DEFINED OSC_OPENSIM_BUILD_TYPE (set OSC_OPENSIM_BUILD_TYPE=Release)
+IF NOT DEFINED OSC_BUILD_TYPE (set OSC_BUILD_TYPE=Release)
 
 REM maximum number of build jobs to run concurrently
 IF NOT DEFINED OSC_BUILD_CONCURRENCY (set OSC_BUILD_CONCURRENCY=%NUM_PROCESSORS%)
@@ -82,7 +82,7 @@ dir %OSC_OPENSIM_SRC_DIR%
 echo "----- building OpenSim's dependencies (e.g. Simbody) -----"
 mkdir opensim-dependencies-build
 cd opensim-dependencies-build
-cmake ../%OSC_OPENSIM_SRC_DIR%/dependencies %OSC_CMAKE_GENFLAGS% -DCMAKE_INSTALL_PREFIX=../dependencies-install || exit /b
+cmake ../%OSC_OPENSIM_SRC_DIR%/dependencies %OSC_CMAKE_GENFLAGS% -DOPENSIM_WITH_CASADI=OFF -DOPENSIM_WITH_TROPTER=OFF -DCMAKE_INSTALL_PREFIX=../dependencies-install || exit /b
 cmake --build . --config %OSC_OPENSIM_DEPS_BUILD_TYPE% -j%OSC_BUILD_CONCURRENCY% || exit /b
 
 echo "----- dependencies built, printing build dir -----"
@@ -98,7 +98,7 @@ cd ..
 echo "----- building OpenSim -----"
 mkdir opensim-build
 cd opensim-build
-cmake ../%OSC_OPENSIM_SRC_DIR% %OSC_CMAKE_GENFLAGS% -DOPENSIM_DEPENDENCIES_DIR=../dependencies-install -DBUILD_JAVA_WRAPPING=OFF -DCMAKE_INSTALL_PREFIX=../opensim-install || exit /b
+cmake ../%OSC_OPENSIM_SRC_DIR% %OSC_CMAKE_GENFLAGS% -DOPENSIM_WITH_CASADI=OFF -DOPENSIM_WITH_TROPTER=OFF -DBUILD_API_ONLY=ON -DOPENSIM_DISABLE_LOG_FILE=ON -DOPENSIM_BUILD_INDIVIDUAL_APPS=OFF -DOPENSIM_DEPENDENCIES_DIR=../dependencies-install -DBUILD_JAVA_WRAPPING=OFF -DCMAKE_INSTALL_PREFIX=../opensim-install || exit /b
 cmake --build . --config %OSC_OPENSIM_BUILD_TYPE% --target install -j%OSC_BUILD_CONCURRENCY% || exit /b
 
 echo "----- OpenSim built, printing build dir -----"
