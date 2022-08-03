@@ -1,5 +1,7 @@
 #include "FilesystemHelpers.hpp"
 
+#include <cerrno>
+#include <cstring>
 #include <string>
 #include <filesystem>
 #include <fstream>
@@ -73,12 +75,28 @@ std::vector<std::filesystem::path> osc::GetAllFilesInDirRecursively(std::filesys
 
 std::string osc::SlurpFileIntoString(std::filesystem::path const& p)
 {
-    std::ifstream f;
+    std::ifstream f{p, std::ios::binary | std::ios::in};
+
+    if (!f)
+    {
+        std::stringstream msg;
+        msg << p << ": error opening file: " << strerror(errno);
+        throw std::runtime_error{std::move(msg).str()};
+    }
+
     f.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    f.open(p, std::ios::binary | std::ios::in);
 
     std::stringstream ss;
-    ss << f.rdbuf();
+    try
+    {
+        ss << f.rdbuf();
+    }
+    catch (std::exception const& ex)
+    {
+        std::stringstream msg;
+        msg << p << ": error reading file: " << ex.what() << "(strerror = " << strerror(errno) << ')';
+        throw std::runtime_error{std::move(msg).str()};
+    }
 
     return std::move(ss).str();
 }

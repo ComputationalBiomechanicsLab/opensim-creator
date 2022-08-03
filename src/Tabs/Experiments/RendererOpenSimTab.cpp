@@ -409,8 +409,8 @@ private:
     {
         experimental::Shader
         {
-            App::slurp("shaders/ExperimentOpensimSolidColor.vert"),
-            App::slurp("shaders/ExperimentOpensimSolidColor.frag"),
+            App::slurp("shaders/ExperimentOpenSimSolidColor.vert"),
+            App::slurp("shaders/ExperimentOpenSimSolidColor.frag"),
         }
     };
 

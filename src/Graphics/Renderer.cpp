@@ -292,7 +292,7 @@ namespace
     };
 
     template<typename Key>
-    ShaderElement const* TryGetValue(robin_hood::unordered_map<std::string, ShaderElement> m, Key const& k)
+    ShaderElement const* TryGetValue(robin_hood::unordered_map<std::string, ShaderElement> const& m, Key const& k)
     {
         auto it = m.find(k);
         return it != m.end() ? &it->second : nullptr;
