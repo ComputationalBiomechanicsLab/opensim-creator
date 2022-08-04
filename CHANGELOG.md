@@ -86,6 +86,8 @@ All notable changes to this project will be documented here. The format is based
 - Removed duplicated components in the "Add components" menu that already appear in the
   grouped ("Add Joints, Add Muscles") menus (#312)
 
+- Upgraded OpenSim to v4.4 (#330)
+
 
 ## [0.2.0]
 
