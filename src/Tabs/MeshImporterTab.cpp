@@ -344,6 +344,108 @@ namespace
         return acc;
     }
 
+    struct Tetrahedron final {
+
+        glm::vec3 Verts[4];
+
+        glm::vec3 const& operator[](size_t i) const
+        {
+            return Verts[i];
+        }
+        glm::vec3& operator[](size_t i)
+        {
+            return Verts[i];
+        }
+        constexpr size_t size() const
+        {
+            return 4;
+        }
+    };
+
+    // returns the volume of a given tetrahedron, defined as 4 points in space
+    float Volume(Tetrahedron const& t)
+    {
+        // sources:
+        //
+        // http://forums.cgsociety.org/t/how-to-calculate-center-of-mass-for-triangular-mesh/1309966
+        // https://stackoverflow.com/questions/9866452/calculate-volume-of-any-tetrahedron-given-4-points
+
+        glm::mat4 m
+        {
+            glm::vec4{t[0], 1.0},
+            glm::vec4{t[1], 1.0},
+            glm::vec4{t[2], 1.0},
+            glm::vec4{t[3], 1.0},
+        };
+
+        return glm::determinant(m) / 6.0f;
+    }
+
+    // returns spatial centerpoint of a given tetrahedron
+    glm::vec3 Center(Tetrahedron const& t)
+    {
+        // arithmetic mean of tetrahedron vertices
+
+        glm::vec3 acc = t[0];
+        for (size_t i = 1; i < t.size(); ++i)
+        {
+            acc += t[i];
+        }
+        acc /= static_cast<float>(t.size());
+        return acc;
+    }
+
+    // returns the "mass center" of a mesh
+    //
+    // assumes:
+    //
+    // - the mesh volume has a constant density
+    // - the mesh is entirely enclosed
+    // - all mesh normals are correct
+    glm::vec3 MassCenter(Mesh const& m)
+    {
+        // hastily implemented from: http://forums.cgsociety.org/t/how-to-calculate-center-of-mass-for-triangular-mesh/1309966
+        //
+        // effectively:
+        //
+        // - compute the centerpoint and volume of tetrahedrons created from
+        //   some arbitrary point in space to each triangle in the mesh
+        //
+        // - compute the weighted sum: sum(volume * center) / sum(volume)
+        //
+        // this yields a 3D location that is a "mass center", *but* the volume
+        // calculation is signed based on vertex winding (normal), so if the user
+        // submits an invalid mesh, this calculation could potentially produce a
+        // volume that's *way* off
+
+        if (m.getTopography() != osc::MeshTopography::Triangles)
+        {
+            return {0.0f, 0.0f, 0.0f};
+        }
+
+        nonstd::span<glm::vec3 const> const verts = m.getVerts();
+        std::vector<uint32_t> const indices = m.getIndices();
+        size_t const len = (indices.size() / 3) * 3;  // paranioa
+
+        float totalVolume = 0.0f;
+        glm::vec3 weightedCenterOfMass = {0.0f, 0.0f, 0.0f};
+        for (size_t i = 0; i < len; i += 3)
+        {
+            Tetrahedron tetrahedron;
+            tetrahedron[0] = {0.0f, 0.0f, 0.0f};  // reference point
+            tetrahedron[1] = verts[indices[i]];
+            tetrahedron[2] = verts[indices[i+1]];
+            tetrahedron[3] = verts[indices[i+2]];
+
+            float const volume = Volume(tetrahedron);
+            glm::vec3 const centerOfMass = Center(tetrahedron);
+
+            totalVolume += volume;
+            weightedCenterOfMass += volume * centerOfMass;
+        }
+        return weightedCenterOfMass / totalVolume;
+    }
+
     // see: https://stackoverflow.com/questions/56466282/stop-compilation-if-if-constexpr-does-not-match
     template <auto A, typename...> auto dependent_value = A;
 }
@@ -2964,6 +3066,35 @@ namespace
         glm::vec3 const boundsMidpoint = Midpoint(mesh->CalcBounds());
 
         el->SetPos(boundsMidpoint);
+        cmg.Commit("moved " + el->GetLabel());
+
+        return true;
+    }
+
+    bool TryTranslateToMeshMassCenter(CommittableModelGraph& cmg, UID id, UID meshID)
+    {
+        ModelGraph& mg = cmg.UpdScratch();
+
+        SceneEl* const el = mg.TryUpdElByID(id);
+
+        if (!el)
+        {
+            return false;
+        }
+
+        MeshEl const* mesh = mg.TryGetElByID<MeshEl>(meshID);
+
+        if (!mesh)
+        {
+            return false;
+        }
+
+        Mesh const& meshData = *mesh->MeshData;
+
+        glm::vec3 const massCenterInModelSpace = MassCenter(meshData);
+        glm::vec3 const massCenterInWorldSpace = mesh->GetXform() * massCenterInModelSpace;
+
+        el->SetPos(massCenterInWorldSpace);
         cmg.Commit("moved " + el->GetLabel());
 
         return true;
@@ -6260,6 +6391,26 @@ namespace
             m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
         }
 
+        void TransitionToTranslatingElementToMeshMassCenter(SceneEl& el)
+        {
+            ChooseElLayerOptions opts;
+            opts.CanChooseBodies = false;
+            opts.CanChooseGround = false;
+            opts.CanChooseJoints = false;
+            opts.CanChooseMeshes = true;
+            opts.Header = "choose a mesh (ESC to cancel)";
+            opts.OnUserChoice = [shared = m_Shared, id = el.GetID()](nonstd::span<UID> choices)
+            {
+                if (choices.empty())
+                {
+                    return false;
+                }
+
+                return TryTranslateToMeshMassCenter(shared->UpdCommittableModelGraph(), id, choices.front());
+            };
+            m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
+        }
+
         // transition the shown UI layer to one where the user is choosing another element that
         // the element should be translated to the midpoint of
         void TransitionToTranslatingElementToAnotherElementsCenter(SceneEl& el)
@@ -6893,6 +7044,12 @@ namespace
                 TransitionToTranslatingElementToMeshAverageCenter(el);
             }
             osc::DrawTooltipIfItemHovered("Translate to mesh average center", "Translates the given element to the average center point of vertices in the selected mesh.\n\nEffectively, this adds each vertex location in the mesh, divides the sum by the number of vertices in the mesh, and sets the translation of the given object to that location.");
+
+            if (ImGui::MenuItem("To mesh mass center"))
+            {
+                TransitionToTranslatingElementToMeshMassCenter(el);
+            }
+            osc::DrawTooltipIfItemHovered("Translate to mesh mess center", "Translates the given element to the mass center of the selected mesh.\n\nCAREFUL: the algorithm used to do this heavily relies on your triangle winding (i.e. normals) being correct and your mesh being a closed surface. If your mesh doesn't meet these requirements, you might get strange results (apologies: the only way to get around that problems involves complicated voxelization and leak-detection algorithms :( )");
 
             ImGui::PopStyleVar();
             ImGui::EndMenu();
