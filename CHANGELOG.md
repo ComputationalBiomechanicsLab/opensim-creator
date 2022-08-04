@@ -92,7 +92,15 @@ All notable changes to this project will be documented here. The format is based
 
   - It's currently exposed a checkbox under the "scene" menu
 
-- There is now a 'translate to mesh bounds center' option in the mesh importer (#88)
+- There is now a 'translate to mesh bounds center' menu item in the mesh importer (#88)
+
+- There is now a 'translate to mesh average center' menu item in mesh importer:
+
+  - It takes the average center by adding up all the vertices and dividing by the number
+    of vertices
+
+  - This can sometimes be a handy approximation of "mass center", when the mesh isn't a
+    closed surface (a requirement, if you want to compute an actual mass center)
 
 
 ## [0.2.0]
