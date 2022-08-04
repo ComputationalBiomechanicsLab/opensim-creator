@@ -110,6 +110,8 @@ All notable changes to this project will be documented here. The format is based
   - This means that the resulting mass depends on the provided mesh being a closed surface
     with correct normals etc.
 
+- Added a "Hidden" option for muscle decoration style, which enables hiding all muscles in the model (#338)
+
 
 ## [0.2.0]
 

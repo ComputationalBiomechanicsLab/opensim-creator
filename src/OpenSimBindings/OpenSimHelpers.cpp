@@ -682,13 +682,15 @@ namespace
                 // owner is a muscle, coerce selection "hit" to the muscle
                 *currentComponent = musc;
 
-                if (opts.getMuscleDecorationStyle() == osc::MuscleDecorationStyle::Scone)
+                switch (opts.getMuscleDecorationStyle())
                 {
+                case osc::MuscleDecorationStyle::Scone:
                     HandleMuscleSconeStyle(opts, *musc, st, selected, hovered, isolated, fixupScaleFactor, mdh, out);
-                    return;  // don't let it fall through to the generic handler
-                }
-                else
-                {
+                    return;
+                case osc::MuscleDecorationStyle::Hidden:
+                    return;  // just don't generate them
+                case osc::MuscleDecorationStyle::OpenSim:
+                default:
                     HandleMuscleOpenSimStyle(opts, *musc, st, selected, hovered, isolated, fixupScaleFactor, currentComponent, mdh, geomList, producer, out);
                     return;
                 }

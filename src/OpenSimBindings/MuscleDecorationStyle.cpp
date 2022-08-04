@@ -11,6 +11,7 @@ static std::array<osc::MuscleDecorationStyle, static_cast<size_t>(osc::MuscleDec
     {
         osc::MuscleDecorationStyle::OpenSim,
         osc::MuscleDecorationStyle::Scone,
+        osc::MuscleDecorationStyle::Hidden,
     };
 }
 
@@ -20,6 +21,7 @@ static std::array<char const*, static_cast<size_t>(osc::MuscleDecorationStyle::T
     {
         "OpenSim (lines)",
         "SCONE (tendons + fibers)",
+        "Hidden",
     };
 }
 
