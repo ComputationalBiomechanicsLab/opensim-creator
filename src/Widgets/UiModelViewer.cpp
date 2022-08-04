@@ -407,6 +407,11 @@ private:
         ImGui::Checkbox("wireframe mode", &m_RendererParams.WireframeMode);
         ImGui::Checkbox("show normals", &m_RendererParams.DrawMeshNormals);
         ImGui::Checkbox("draw rims", &m_RendererParams.DrawRims);
+        bool isDrawingScapulothoracicJoints = m_DecorationOptions.getShouldShowScapulo();
+        if (ImGui::Checkbox("draw scapulothoracic joints", &isDrawingScapulothoracicJoints))
+        {
+            m_DecorationOptions.setShouldShowScapulo(isDrawingScapulothoracicJoints);
+        }
         ImGui::CheckboxFlags("show XZ grid", &m_Flags, osc::UiModelViewerFlags_DrawXZGrid);
         ImGui::CheckboxFlags("show XY grid", &m_Flags, osc::UiModelViewerFlags_DrawXYGrid);
         ImGui::CheckboxFlags("show YZ grid", &m_Flags, osc::UiModelViewerFlags_DrawYZGrid);

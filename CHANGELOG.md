@@ -88,6 +88,10 @@ All notable changes to this project will be documented here. The format is based
 
 - Upgraded OpenSim to v4.4 (#330)
 
+- Added basic support for drawing the ellipsoid of ScapulothoracicJoints (#334)
+
+  - It's currently exposed a checkbox under the "scene" menu
+
 
 ## [0.2.0]
 

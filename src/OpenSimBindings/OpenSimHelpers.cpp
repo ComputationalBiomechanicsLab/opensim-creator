@@ -66,6 +66,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
+#include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 #include <OpenSim/Simulation/Wrap/PathWrapSet.h>
@@ -109,6 +110,7 @@ static osc::Transform TransformInGround(OpenSim::PhysicalFrame const& pf, SimTK:
 // geometry rendering/handling support
 namespace
 {
+    // helper: compute the decoration flags for a given component
     osc::ComponentDecorationFlags ComputeFlags(
         OpenSim::Component const& c,
         OpenSim::Component const* selected,
@@ -153,7 +155,109 @@ namespace
         return rv;
     }
 
-    // generic handler for any `OpenSim::Component`
+    // helper: returns path points in a GeometryPath as a sequence of 3D vectors
+    std::vector<glm::vec3> GetAllPathPoints(OpenSim::GeometryPath const& gp, SimTK::State const& st)
+    {
+        std::vector<glm::vec3> rv;
+
+        OpenSim::Array<OpenSim::AbstractPathPoint*> const& pps = gp.getCurrentPath(st);
+
+        for (int i = 0; i < pps.getSize(); ++i)
+        {
+            OpenSim::PathWrapPoint const* pwp = dynamic_cast<OpenSim::PathWrapPoint const*>(pps[i]);
+            if (pwp)
+            {
+                osc::Transform body2ground = osc::ToTransform(pwp->getParentFrame().getTransformInGround(st));
+
+                // TODO: the const_cast shouldn't be necessary in OpenSim 4.3
+                OpenSim::Array<SimTK::Vec3> const& wrapPath = const_cast<OpenSim::PathWrapPoint*>(pwp)->getWrapPath(st);
+
+                for (int j = 0; j < wrapPath.getSize(); ++j)
+                {
+                    rv.push_back(body2ground * osc::ToVec3(wrapPath[j]));
+                }
+            }
+            else
+            {
+                rv.push_back(osc::ToVec3(pps[i]->getLocationInGround(st)));
+            }
+        }
+
+        return rv;
+    }
+
+    // helper: calculates the radius of a muscle based on isometric force
+    //
+    // similar to how SCONE does it, so that users can compare between the two apps
+    float GetSconeStyleAutomaticMuscleRadiusCalc(OpenSim::Muscle const& m)
+    {
+        float f = static_cast<float>(m.getMaxIsometricForce());
+        float specificTension = 0.25e6f;  // magic number?
+        float pcsa = f / specificTension;
+        float widthFactor = 0.25f;
+        return widthFactor * std::sqrt(pcsa / osc::fpi);
+    }
+
+    // returns value between [0.0f, 1.0f]
+    float GetMuscleColorFactor(OpenSim::Muscle const& musc, SimTK::State const& st, osc::MuscleColoringStyle s)
+    {
+        switch (s) {
+        case osc::MuscleColoringStyle::Activation:
+            return static_cast<float>(musc.getActivation(st));
+        case osc::MuscleColoringStyle::Excitation:
+            return static_cast<float>(musc.getExcitation(st));
+        case osc::MuscleColoringStyle::Force:
+            return static_cast<float>(musc.getActuation(st)) / static_cast<float>(musc.getMaxIsometricForce());
+        case osc::MuscleColoringStyle::FiberLength:
+        {
+            float nfl = static_cast<float>(musc.getNormalizedFiberLength(st));  // 1.0f == ideal length
+            float fl = nfl - 1.0f;
+            fl = std::abs(fl);
+            fl = std::min(fl, 1.0f);
+            return fl;
+        }
+        default:
+            return 1.0f;
+        }
+    }
+
+    // helper: returns the color a muscle would have if it were to be rendered by SCONE
+    //
+    // this is just a rough estimation of how SCONE is coloring things
+    glm::vec4 GetSconeStyleMuscleColor(OpenSim::Muscle const& musc, SimTK::State const& st, osc::MuscleColoringStyle s)
+    {
+        if (s == osc::MuscleColoringStyle::OpenSim)
+        {
+            // use the same color that OpenSim emits (which is usually just activation-based, but might
+            // change in the future)
+            SimTK::Vec3 c = musc.getGeometryPath().getColor(st);
+            return glm::vec4{osc::ToVec3(c), 1.0f};
+        }
+        else
+        {
+            // compute the color from the chosen color option
+            glm::vec4 const zeroColor = {50.0f/255.0f, 50.0f/255.0f, 166.0f/255.0f, 1.0f};
+            glm::vec4 const fullColor = {255.0f/255.0f, 25.0f/255.0f, 25.0f/255.0f, 1.0f};
+            float const factor = GetMuscleColorFactor(musc, st, s);
+            return zeroColor + factor * (fullColor - zeroColor);
+        }
+    }
+
+    // helper: returns the size (radius) of a muscle based on caller-provided sizing flags
+    float GetMuscleSize(OpenSim::Muscle const& musc, float fixupScaleFactor, osc::MuscleSizingStyle s)
+    {
+        switch (s) {
+        case osc::MuscleSizingStyle::SconePCSA:
+            return GetSconeStyleAutomaticMuscleRadiusCalc(musc);
+        case osc::MuscleSizingStyle::SconeNonPCSA:
+            return 0.01f * fixupScaleFactor;
+        case osc::MuscleSizingStyle::OpenSim:
+        default:
+            return 0.005f * fixupScaleFactor;
+        }
+    }
+
+    // generic decoration handler for any `OpenSim::Component`
     void HandleComponent(OpenSim::Component const& c,
                          SimTK::State const& st,
                          OpenSim::ModelDisplayHints const& mdh,
@@ -237,6 +341,26 @@ namespace
         );
     }
 
+    void HandleScapulothoracicJoint(OpenSim::ScapulothoracicJoint const& j,
+                                    SimTK::State const& st,
+                                    OpenSim::Component const* selected,
+                                    OpenSim::Component const* hovered,
+                                    OpenSim::Component const* isolated,
+                                    float fixupScaleFactor,
+                                    std::vector<osc::ComponentDecoration>& out)
+    {
+        osc::Transform t = osc::ToTransform(j.getParentFrame().getTransformInGround(st));
+        t.scale = osc::ToVec3(j.get_thoracic_ellipsoid_radii_x_y_z());
+
+        out.emplace_back(
+            osc::App::meshes().getSphereMesh(),
+            t,
+            glm::vec4{ 1.0f, 1.0f, 0.0f, 0.2f },
+            &j,
+            ComputeFlags(j, selected, hovered, isolated)
+        );
+    }
+
     // OSC-specific decoration handler for `OpenSim::Body`
     void HandleBody(OpenSim::Body const& b,
                     SimTK::State const& st,
@@ -270,100 +394,7 @@ namespace
         HandleComponent(b, st, mdh, geomList, producer);
     }
 
-    std::vector<glm::vec3> GetAllPathPoints(OpenSim::GeometryPath const& gp, SimTK::State const& st)
-    {
-        std::vector<glm::vec3> rv;
-
-        OpenSim::Array<OpenSim::AbstractPathPoint*> const& pps = gp.getCurrentPath(st);
-
-        for (int i = 0; i < pps.getSize(); ++i)
-        {
-            OpenSim::PathWrapPoint const* pwp = dynamic_cast<OpenSim::PathWrapPoint const*>(pps[i]);
-            if (pwp)
-            {
-                osc::Transform body2ground = osc::ToTransform(pwp->getParentFrame().getTransformInGround(st));
-
-                // TODO: the const_cast shouldn't be necessary in OpenSim 4.3
-                OpenSim::Array<SimTK::Vec3> const& wrapPath = const_cast<OpenSim::PathWrapPoint*>(pwp)->getWrapPath(st);
-
-                for (int j = 0; j < wrapPath.getSize(); ++j)
-                {
-                    rv.push_back(body2ground * osc::ToVec3(wrapPath[j]));
-                }
-            }
-            else
-            {
-                rv.push_back(osc::ToVec3(pps[i]->getLocationInGround(st)));
-            }
-        }
-
-        return rv;
-    }
-
-    float GetSconeStyleAutomaticMuscleRadiusCalc(OpenSim::Muscle const& m)
-    {
-        float f = static_cast<float>(m.getMaxIsometricForce());
-        float specificTension = 0.25e6f;  // SCONE magic number?
-        float pcsa = f / specificTension;
-        float widthFactor = 0.25f;
-        return widthFactor * std::sqrt(pcsa / osc::fpi);
-    }
-
-    // returns value between [0.0f, 1.0f]
-    float GetMuscleColorFactor(OpenSim::Muscle const& musc, SimTK::State const& st, osc::MuscleColoringStyle s)
-    {
-        switch (s) {
-        case osc::MuscleColoringStyle::Activation:
-            return static_cast<float>(musc.getActivation(st));
-        case osc::MuscleColoringStyle::Excitation:
-            return static_cast<float>(musc.getExcitation(st));
-        case osc::MuscleColoringStyle::Force:
-            return static_cast<float>(musc.getActuation(st)) / static_cast<float>(musc.getMaxIsometricForce());
-        case osc::MuscleColoringStyle::FiberLength:
-        {
-            float nfl = static_cast<float>(musc.getNormalizedFiberLength(st));  // 1.0f == ideal length
-            float fl = nfl - 1.0f;
-            fl = std::abs(fl);
-            fl = std::min(fl, 1.0f);
-            return fl;
-        }
-        default:
-            return 1.0f;
-        }
-    }
-
-    glm::vec4 GetSconeStyleMuscleColor(OpenSim::Muscle const& musc, SimTK::State const& st, osc::MuscleColoringStyle s)
-    {
-        if (s == osc::MuscleColoringStyle::OpenSim)
-        {
-            // use the same color that OpenSim emits (which is usually just activation-based, but might
-            // change in the future)
-            SimTK::Vec3 c = musc.getGeometryPath().getColor(st);
-            return glm::vec4{osc::ToVec3(c), 1.0f};
-        }
-        else
-        {
-            // compute the color from the chosen color option
-            glm::vec4 const zeroColor = {50.0f/255.0f, 50.0f/255.0f, 166.0f/255.0f, 1.0f};
-            glm::vec4 const fullColor = {255.0f/255.0f, 25.0f/255.0f, 25.0f/255.0f, 1.0f};
-            float const factor = GetMuscleColorFactor(musc, st, s);
-            return zeroColor + factor * (fullColor - zeroColor);
-        }
-    }
-
-    float GetMuscleSize(OpenSim::Muscle const& musc, float fixupScaleFactor, osc::MuscleSizingStyle s)
-    {
-        switch (s) {
-        case osc::MuscleSizingStyle::SconePCSA:
-            return GetSconeStyleAutomaticMuscleRadiusCalc(musc);
-        case osc::MuscleSizingStyle::SconeNonPCSA:
-            return 0.01f * fixupScaleFactor;
-        case osc::MuscleSizingStyle::OpenSim:
-        default:
-            return 0.005f * fixupScaleFactor;
-        }
-    }
-
+    // OSC-specific decoration handler for `OpenSim::Muscle` ("SCONE"-style: i.e. tendons + muscle)
     void HandleMuscleSconeStyle(osc::CustomDecorationOptions const& opts,
                                 OpenSim::Muscle const& muscle,
                                 SimTK::State const& st,
@@ -561,6 +592,7 @@ namespace
         }
     }
 
+    // OSC-specific decoration handler for `OpenSim::Muscle`
     void HandleMuscleOpenSimStyle(osc::CustomDecorationOptions const& opts,
                                   OpenSim::Muscle const& musc,
                                   SimTK::State const& st,
@@ -676,7 +708,7 @@ namespace
         }
     }
 
-    // used whenever the SimTK backend emits something
+    // a class that is called whenever the SimTK backend emits `DecorativeGeometry`
     class OpenSimDecorationConsumer final : public osc::DecorationConsumer {
     public:
         OpenSimDecorationConsumer(osc::VirtualConstModelStatePair const* msp,
@@ -702,6 +734,7 @@ namespace
         OpenSim::Component const** m_CurrentComponent;
     };
 
+    // generates a sequence of OSC decoration from an OpenSim model + state
     void GenerateDecorationEls(osc::VirtualConstModelStatePair const& msp,
                                osc::CustomDecorationOptions const& opts,
                                std::vector<osc::ComponentDecoration>& out)
@@ -751,6 +784,10 @@ namespace
             else if (typeid(c) == typeid(OpenSim::Station))  // CARE: it's a typeid comparison because OpenSim::Marker inherits from OpenSim::Station
             {
                 HandleStation(static_cast<OpenSim::Station const&>(c), state, selected, hovered, isolated, fixupScaleFactor, out);
+            }
+            else if (auto const* scapulo = dynamic_cast<OpenSim::ScapulothoracicJoint const*>(&c); scapulo && opts.getShouldShowScapulo())
+            {
+                HandleScapulothoracicJoint(*scapulo, state, selected, hovered, isolated, fixupScaleFactor, out);
             }
             else if (auto const* body = dynamic_cast<OpenSim::Body const*>(&c))
             {
