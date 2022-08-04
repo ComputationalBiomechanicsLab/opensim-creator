@@ -119,13 +119,6 @@ namespace
         out.push_back(static_cast<std::byte>(c.a));
     }
 
-    template<typename T, std::size_t N, typename... Initializers>
-    constexpr auto MakeArray(Initializers&&... args) -> std::array<T, sizeof...(args)>
-    {
-        static_assert(sizeof...(args) == N);
-        return {std::forward<Initializers>(args)...};
-    }
-
     template<typename Variant, typename T, std::size_t I = 0>
     constexpr std::size_t VariantIndex()
     {
@@ -203,9 +196,9 @@ namespace
     using namespace osc::experimental;
 
     // LUT for human-readable form of the above
-    static constexpr auto const g_ShaderTypeInternalStrings = MakeArray<osc::CStringView, static_cast<std::size_t>(ShaderType::TOTAL)>(
+    static constexpr auto const g_ShaderTypeInternalStrings = osc::MakeArray<osc::CStringView, static_cast<std::size_t>(ShaderType::TOTAL)>(
         "Float",
-            "Vec2",
+        "Vec2",
         "Vec3",
         "Vec4",
         "Mat3",
@@ -353,14 +346,14 @@ namespace
 {
     using namespace osc::experimental;
 
-    static constexpr auto const g_TextureWrapModeStrings = MakeArray<osc::CStringView, static_cast<std::size_t>(TextureWrapMode::TOTAL)>
+    static constexpr auto const g_TextureWrapModeStrings = osc::MakeArray<osc::CStringView, static_cast<std::size_t>(TextureWrapMode::TOTAL)>
     (
         "Repeat",
         "Clamp",
         "Mirror"
     );
 
-    static constexpr auto const g_TextureFilterModeStrings = MakeArray<osc::CStringView, static_cast<std::size_t>(osc::experimental::TextureFilterMode::TOTAL)>
+    static constexpr auto const g_TextureFilterModeStrings = osc::MakeArray<osc::CStringView, static_cast<std::size_t>(osc::experimental::TextureFilterMode::TOTAL)>
     (
         "Nearest",
         "Linear",
@@ -719,13 +712,13 @@ namespace
 {
     using namespace osc::experimental;
 
-    static constexpr auto const  g_RenderTextureFormatStrings = MakeArray<osc::CStringView, static_cast<std::size_t>(osc::experimental::RenderTextureFormat::TOTAL)>
+    static constexpr auto const  g_RenderTextureFormatStrings = osc::MakeArray<osc::CStringView, static_cast<std::size_t>(osc::experimental::RenderTextureFormat::TOTAL)>
     (
         "ARGB32",
         "RED"
     );
 
-    static constexpr auto const g_DepthStencilFormatStrings = MakeArray<osc::CStringView, static_cast<std::size_t>(osc::experimental::DepthStencilFormat::TOTAL)>
+    static constexpr auto const g_DepthStencilFormatStrings = osc::MakeArray<osc::CStringView, static_cast<std::size_t>(osc::experimental::DepthStencilFormat::TOTAL)>
     (
         "D24_UNorm_S8_UInt"
     );
@@ -2060,7 +2053,7 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, MaterialPropertyBlo
 
 namespace
 {
-    static constexpr auto g_MeshTopographyStrings = MakeArray<osc::CStringView, static_cast<std::size_t>(osc::experimental::MeshTopography::TOTAL)>
+    static constexpr auto g_MeshTopographyStrings = osc::MakeArray<osc::CStringView, static_cast<std::size_t>(osc::experimental::MeshTopography::TOTAL)>
     (
         "Triangles",
         "Lines"
@@ -2624,7 +2617,7 @@ namespace
     using namespace osc::experimental;
 
     // LUT for human-readable form of the above
-    static constexpr auto const g_CameraProjectionStrings = MakeArray<osc::CStringView, static_cast<std::size_t>(CameraProjection::TOTAL)>
+    static constexpr auto const g_CameraProjectionStrings = osc::MakeArray<osc::CStringView, static_cast<std::size_t>(CameraProjection::TOTAL)>
     (
         "Perspective",
         "Orthographic"
