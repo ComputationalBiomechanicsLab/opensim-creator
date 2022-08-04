@@ -12,6 +12,7 @@
 #include "src/Tabs/Experiments/RendererGeometryShaderTab.hpp"
 #include "src/Tabs/Experiments/RendererTexturingTab.hpp"
 #include "src/Tabs/Experiments/RendererOpenSimTab.hpp"
+#include "src/Tabs/Experiments/PreviewExperimentalDataTab.hpp"
 
 #include <cstdlib>
 #include <iostream>
@@ -80,7 +81,8 @@ int main(int argc, char** argv)
         //screen->addTab(std::make_unique<osc::RendererBlendingTab>(screen->getTabHostAPI()));
         //screen->addTab(std::make_unique<osc::RendererFramebuffersTab>(screen->getTabHostAPI()));
         //screen->addTab(std::make_unique<osc::RendererGeometryShaderTab>(screen->getTabHostAPI()));
-        //auto tabID = screen->addTab(std::make_unique<osc::RendererOpenSimTab>(screen->getTabHostAPI()));
+        //screen->addTab(std::make_unique<osc::RendererOpenSimTab>(screen->getTabHostAPI()));
+        //auto tabID = screen->addTab(std::make_unique<osc::PreviewExperimentalDataTab>(screen->getTabHostAPI()));
         //screen->getTabHostAPI()->selectTab(tabID);
         app.show(std::move(screen));
     }
