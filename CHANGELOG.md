@@ -92,6 +92,8 @@ All notable changes to this project will be documented here. The format is based
 
   - It's currently exposed a checkbox under the "scene" menu
 
+- There is now a 'translate to mesh bounds center' option in the mesh importer (#88)
+
 
 ## [0.2.0]
 
