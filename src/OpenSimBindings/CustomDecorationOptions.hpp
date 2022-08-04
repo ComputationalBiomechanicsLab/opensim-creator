@@ -27,7 +27,7 @@ namespace osc
 		MuscleDecorationStyle m_MuscleDecorationStyle = MuscleDecorationStyle::Default;
 		MuscleColoringStyle m_MuscleColoringStyle = MuscleColoringStyle::Default;
 		MuscleSizingStyle m_MuscleSizingStyle = MuscleSizingStyle::Default;
-		bool m_ShouldShowScapulo = true;
+		bool m_ShouldShowScapulo = false;
 	};
 
 	inline bool operator==(CustomDecorationOptions const& a, CustomDecorationOptions const& b)
