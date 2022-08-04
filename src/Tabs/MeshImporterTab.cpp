@@ -2892,6 +2892,54 @@ namespace
         return true;
     }
 
+    glm::vec3 AverageCenterpoint(Mesh const& m)
+    {
+        nonstd::span<glm::vec3 const> const verts = m.getVerts();
+
+        glm::vec3 acc = {0.0f, 0.0f, 0.0f};
+        for (glm::vec3 const& v : verts)
+        {
+            acc += v;
+        }
+        acc /= static_cast<float>(verts.size());
+
+        return acc;
+    }
+
+    bool TryTranslateToMeshAverageCenter(CommittableModelGraph& cmg, UID id, UID meshID)
+    {
+        ModelGraph& mg = cmg.UpdScratch();
+
+        SceneEl* el = mg.TryUpdElByID(id);
+
+        if (!el)
+        {
+            return false;
+        }
+
+        MeshEl const* mesh = mg.TryGetElByID<MeshEl>(meshID);
+
+        if (!mesh)
+        {
+            return false;
+        }
+
+        Mesh const& meshData = *mesh->MeshData;
+
+        if (meshData.getVerts().empty())
+        {
+            return false;
+        }
+
+        glm::vec3 centerpointInModelSpace = AverageCenterpoint(meshData);
+        glm::vec3 centerpointInWorldSpace = mesh->GetXform() * centerpointInModelSpace;
+
+        el->SetPos(centerpointInWorldSpace);
+        cmg.Commit("moved " + el->GetLabel());
+
+        return true;
+    }
+
     bool TryReassignCrossref(CommittableModelGraph& cmg, UID id, int crossref, UID other)
     {
         if (other == id)
@@ -6143,6 +6191,26 @@ namespace
             m_Maybe3DViewerModal = std::make_shared<Select2MeshPointsLayer>(*this, m_Shared, opts);
         }
 
+        void TransitionToTranslatingElementToMeshAverageCenter(SceneEl& el)
+        {
+            ChooseElLayerOptions opts;
+            opts.CanChooseBodies = false;
+            opts.CanChooseGround = false;
+            opts.CanChooseJoints = false;
+            opts.CanChooseMeshes = true;
+            opts.Header = "choose a mesh (ESC to cancel)";
+            opts.OnUserChoice = [shared = m_Shared, id = el.GetID()](nonstd::span<UID> choices)
+            {
+                if (choices.empty())
+                {
+                    return false;
+                }
+
+                return TryTranslateToMeshAverageCenter(shared->UpdCommittableModelGraph(), id, choices.front());
+            };
+            m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
+        }
+
         // transition the shown UI layer to one where the user is choosing another element that
         // the element should be translated to the midpoint of
         void TransitionToTranslatingElementToAnotherElementsCenter(SceneEl& el)
@@ -6755,7 +6823,7 @@ namespace
                 }
             }
 
-            if (ImGui::MenuItem("Between (select 2 things)"))
+            if (ImGui::MenuItem("Between two scene elements"))
             {
                 TransitionToChoosingElementsToTranslateBetween(el);
             }
@@ -6764,6 +6832,12 @@ namespace
             {
                 TransitionToTranslatingElementAlongTwoMeshPoints(el);
             }
+
+            if (ImGui::MenuItem("To mesh average center"))
+            {
+                TransitionToTranslatingElementToMeshAverageCenter(el);
+            }
+            osc::DrawTooltipIfItemHovered("Translate to mesh average center", "Translates the given element to the average center point of vertices in the selected mesh.\n\nEffectively, this adds each vertex location in the mesh, divides the sum by the number of vertices in the mesh, and sets the translation of the given object to that location.");
 
             ImGui::PopStyleVar();
             ImGui::EndMenu();
