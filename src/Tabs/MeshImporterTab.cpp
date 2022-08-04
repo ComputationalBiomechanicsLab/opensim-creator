@@ -363,35 +363,35 @@ namespace
     };
 
     // returns the volume of a given tetrahedron, defined as 4 points in space
-    float Volume(Tetrahedron const& t)
+    double Volume(Tetrahedron const& t)
     {
         // sources:
         //
         // http://forums.cgsociety.org/t/how-to-calculate-center-of-mass-for-triangular-mesh/1309966
         // https://stackoverflow.com/questions/9866452/calculate-volume-of-any-tetrahedron-given-4-points
 
-        glm::mat4 m
+        glm::mat<4, 4, double> m
         {
-            glm::vec4{t[0], 1.0},
-            glm::vec4{t[1], 1.0},
-            glm::vec4{t[2], 1.0},
-            glm::vec4{t[3], 1.0},
+            glm::vec<4, double>{t[0], 1.0},
+            glm::vec<4, double>{t[1], 1.0},
+            glm::vec<4, double>{t[2], 1.0},
+            glm::vec<4, double>{t[3], 1.0},
         };
 
-        return glm::determinant(m) / 6.0f;
+        return glm::determinant(m) / 6.0;
     }
 
     // returns spatial centerpoint of a given tetrahedron
-    glm::vec3 Center(Tetrahedron const& t)
+    glm::vec<3, double> Center(Tetrahedron const& t)
     {
         // arithmetic mean of tetrahedron vertices
 
-        glm::vec3 acc = t[0];
+        glm::vec<3, double> acc = t[0];
         for (size_t i = 1; i < t.size(); ++i)
         {
             acc += t[i];
         }
-        acc /= static_cast<float>(t.size());
+        acc /= static_cast<double>(t.size());
         return acc;
     }
 
@@ -427,8 +427,8 @@ namespace
         std::vector<uint32_t> const indices = m.getIndices();
         size_t const len = (indices.size() / 3) * 3;  // paranioa
 
-        float totalVolume = 0.0f;
-        glm::vec3 weightedCenterOfMass = {0.0f, 0.0f, 0.0f};
+        double totalVolume = 0.0f;
+        glm::vec<3, double> weightedCenterOfMass = {0.0, 0.0, 0.0};
         for (size_t i = 0; i < len; i += 3)
         {
             Tetrahedron tetrahedron;
@@ -437,8 +437,8 @@ namespace
             tetrahedron[2] = verts[indices[i+1]];
             tetrahedron[3] = verts[indices[i+2]];
 
-            float const volume = Volume(tetrahedron);
-            glm::vec3 const centerOfMass = Center(tetrahedron);
+            double const volume = Volume(tetrahedron);
+            glm::vec<3, double> const centerOfMass = Center(tetrahedron);
 
             totalVolume += volume;
             weightedCenterOfMass += volume * centerOfMass;
