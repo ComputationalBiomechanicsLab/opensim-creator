@@ -102,7 +102,7 @@ All notable changes to this project will be documented here. The format is based
   - This can sometimes be a handy approximation of "mass center", when the mesh isn't a
     closed surface (a requirement, if you want to compute an actual mass center)
 
-- (Experimental) There is now a 'translate to mesh mass center' menu item in the mesh importer:
+- (Experimental) There is now a 'translate to mesh mass center' menu item in the mesh importer (#92):
 
   - It uses "signed tetrahedron volumes" to do this, rather than something expensive like
     voxelization
