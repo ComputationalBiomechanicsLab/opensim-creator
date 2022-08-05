@@ -5,15 +5,13 @@
 #include "src/Bindings/GlmHelpers.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Bindings/SimTKHelpers.hpp"
-#include "src/Graphics/Shaders/EdgeDetectionShader.hpp"
-#include "src/Graphics/Shaders/GouraudShader.hpp"
-#include "src/Graphics/Shaders/SolidColorShader.hpp"
-#include "src/Graphics/Gl.hpp"
-#include "src/Graphics/GlGlm.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/ShaderCache.hpp"
+#include "src/Graphics/SceneDecoration.hpp"
+#include "src/Graphics/SceneRenderer.hpp"
+#include "src/Graphics/SceneRendererParams.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
@@ -46,7 +44,6 @@
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/SaveChangesPopup.hpp"
 
-#include <GL/glew.h>
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x3.hpp>
 #include <glm/mat4x4.hpp>
@@ -502,78 +499,6 @@ namespace
         return t;
     }
 
-    // returns a multiampled render buffer with the given format + dimensions
-    gl::RenderBuffer MultisampledRenderBuffer(int samples, GLenum format, glm::ivec2 dims)
-    {
-        gl::RenderBuffer rv;
-        gl::BindRenderBuffer(rv);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, format, dims.x, dims.y);
-        return rv;
-    }
-
-    // sets the supplied texture with the appropriate dimensions, parameters, etc. to be used as a scene texture
-    void SetTextureAsSceneTextureTex(gl::Texture2D& out, GLint level, GLint internalFormat, glm::ivec2 dims, GLenum format, GLenum type)
-    {
-        gl::BindTexture(out);
-        gl::TexImage2D(out.type, level, internalFormat, dims.x, dims.y, 0, format, type, nullptr);
-        gl::TexParameteri(out.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
-        gl::TexParameteri(out.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
-        gl::TexParameteri(out.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        gl::TexParameteri(out.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        gl::TexParameteri(out.type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        gl::BindTexture();
-    }
-
-    // declares a type that can bind an OpenGL buffer type to an FBO in the current OpenGL context
-    struct FboBinding {
-        virtual ~FboBinding() noexcept = default;
-        virtual void Bind() = 0;
-    };
-
-    // defines a way of binding to a render buffer to the current FBO
-    struct RboBinding final : FboBinding {
-        GLenum attachment;
-        gl::RenderBuffer& rbo;
-
-        RboBinding(GLenum attachment_, gl::RenderBuffer& rbo_) :
-            attachment{attachment_}, rbo{rbo_}
-        {
-        }
-
-        void Bind() override
-        {
-            gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, rbo);
-        }
-    };
-
-    // defines a way of binding to a texture buffer to the current FBO
-    struct TexBinding final : FboBinding {
-        GLenum attachment;
-        gl::Texture2D& tex;
-        GLint level;
-
-        TexBinding(GLenum attachment_, gl::Texture2D& tex_, GLint level_) :
-            attachment{attachment_}, tex{tex_}, level{level_}
-        {
-        }
-
-        void Bind() override
-        {
-            gl::FramebufferTexture2D(GL_FRAMEBUFFER, attachment, tex, level);
-        }
-    };
-
-    // returns an OpenGL framebuffer that is bound to the specified `FboBinding`s
-    template<typename... Binding>
-    gl::FrameBuffer FrameBufferWithBindings(Binding... bindings)
-    {
-        gl::FrameBuffer rv;
-        gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
-        (bindings.Bind(), ...);
-        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-        return rv;
-    }
-
     // something that is being drawn in the scene
     struct DrawableThing final {
         UID id = g_EmptyID;
@@ -581,158 +506,12 @@ namespace
         std::shared_ptr<Mesh> mesh;
         Transform transform;
         glm::vec4 color;
-        float rimColor;
+        osc::SceneDecorationFlags flags;
     };
-
-    glm::mat4x3 ModelMatrix(DrawableThing const& dt)
-    {
-        return osc::ToMat4(dt.transform);
-    }
-
-    glm::mat3x3 NormalMatrix(DrawableThing const& dt)
-    {
-        return osc::ToNormalMatrix(dt.transform);
-    }
 
     AABB CalcBounds(DrawableThing const& dt)
     {
         return dt.mesh->getWorldspaceAABB(dt.transform);
-    }
-
-    // an instance of something that is being drawn, once uploaded to the GPU
-    struct SceneGPUInstanceData final {
-        glm::mat4x3 modelMtx;
-        glm::mat3 normalMtx;
-        glm::vec4 rgba;
-    };
-
-    // a predicate used for drawcall ordering
-    bool OptimalDrawOrder(DrawableThing const& a, DrawableThing const& b)
-    {
-        if (a.color.a != b.color.a) {
-            return a.color.a > b.color.a;  // alpha descending
-        } else {
-            return a.mesh < b.mesh;
-        }
-    }
-
-    // draws the drawables to the output texture
-    //
-    // effectively, this is the main top-level rendering function
-    void DrawScene(glm::ivec2 dims,
-        PolarPerspectiveCamera const& camera,
-        glm::vec4 const& bgCol,
-        nonstd::span<DrawableThing const> drawables,
-        gl::Texture2D& outSceneTex)
-    {
-        glm::vec3 lightDir = osc::RecommendedLightDirection(camera);
-        glm::vec3 lightCol = {1.0f, 1.0f, 1.0f};
-
-        glm::mat4 projMat = camera.getProjMtx(osc::AspectRatio(dims));
-        glm::mat4 viewMat = camera.getViewMtx();
-        glm::vec3 viewPos = camera.getPos();
-
-        auto samples = osc::App::upd().getMSXAASamplesRecommended();
-
-        gl::RenderBuffer sceneRBO = MultisampledRenderBuffer(samples, GL_RGB, dims);
-        gl::RenderBuffer sceneDepth24Stencil8RBO = MultisampledRenderBuffer(samples, GL_DEPTH24_STENCIL8, dims);
-        gl::FrameBuffer sceneFBO = FrameBufferWithBindings(
-            RboBinding{GL_COLOR_ATTACHMENT0, sceneRBO},
-            RboBinding{GL_DEPTH_STENCIL_ATTACHMENT, sceneDepth24Stencil8RBO}
-        );
-
-        gl::Viewport(0, 0, dims.x, dims.y);
-
-        gl::BindFramebuffer(GL_FRAMEBUFFER, sceneFBO);
-        gl::ClearColor(bgCol);
-        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // draw the scene to the scene FBO
-        if (true)
-        {
-            auto& shader = osc::App::upd().getShaderCache().getShader<osc::GouraudShader>();
-
-            gl::UseProgram(shader.program);
-            gl::Uniform(shader.uProjMat, projMat);
-            gl::Uniform(shader.uViewMat, viewMat);
-            gl::Uniform(shader.uLightDir, lightDir);
-            gl::Uniform(shader.uLightColor, lightCol);
-            gl::Uniform(shader.uViewPos, viewPos);
-            for (DrawableThing const& d : drawables)
-            {
-                gl::Uniform(shader.uModelMat, ModelMatrix(d));
-                gl::Uniform(shader.uNormalMat, NormalMatrix(d));
-                gl::Uniform(shader.uDiffuseColor, d.color + (d.rimColor > 0.05f ? 0.1f : 0.0f));  // HACK: also brigten the element a little bit if it's rim highlighted
-                gl::Uniform(shader.uIsTextured, false);
-                gl::BindVertexArray(d.mesh->GetVertexArray());
-                d.mesh->Draw();
-                gl::BindVertexArray();
-            }
-        }
-
-        // blit it to the (non-MSXAAed) output texture
-
-        SetTextureAsSceneTextureTex(outSceneTex, 0, GL_RGBA, dims, GL_RGBA, GL_UNSIGNED_BYTE);
-        gl::FrameBuffer outputFBO = FrameBufferWithBindings(
-            TexBinding{GL_COLOR_ATTACHMENT0, outSceneTex, 0}
-        );
-
-        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, sceneFBO);
-        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, outputFBO);
-        gl::BlitFramebuffer(0, 0, dims.x, dims.y, 0, 0, dims.x, dims.y, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-
-        // draw rims directly over the output texture
-        {
-            gl::Texture2D rimsTex;
-            SetTextureAsSceneTextureTex(rimsTex, 0, GL_RED, dims, GL_RED, GL_UNSIGNED_BYTE);
-            gl::FrameBuffer rimsFBO = FrameBufferWithBindings(
-                TexBinding{GL_COLOR_ATTACHMENT0, rimsTex, 0}
-            );
-
-            gl::BindFramebuffer(GL_FRAMEBUFFER, rimsFBO);
-            gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            gl::Clear(GL_COLOR_BUFFER_BIT);
-
-            auto& scs = osc::App::upd().getShaderCache().getShader<osc::SolidColorShader>();
-            gl::UseProgram(scs.program);
-            gl::Uniform(scs.uProjection, projMat);
-            gl::Uniform(scs.uView, viewMat);
-
-            gl::Disable(GL_DEPTH_TEST);
-            for (DrawableThing const& d : drawables)
-            {
-                if (d.rimColor <= 0.05f)
-                {
-                    continue;
-                }
-
-                gl::Uniform(scs.uColor, {d.rimColor, 0.0f, 0.0f, 1.0f});
-                gl::Uniform(scs.uModel, ModelMatrix(d));
-                gl::BindVertexArray(d.mesh->GetVertexArray());
-                d.mesh->Draw();
-                gl::BindVertexArray();
-            }
-            gl::Enable(GL_DEPTH_TEST);
-
-
-            gl::BindFramebuffer(GL_FRAMEBUFFER, outputFBO);
-            auto& eds = osc::App::upd().getShaderCache().getShader<osc::EdgeDetectionShader>();
-            gl::UseProgram(eds.program);
-            gl::Uniform(eds.uMVP, gl::identity);
-            gl::ActiveTexture(GL_TEXTURE0);
-            gl::BindTexture(rimsTex);
-            gl::Uniform(eds.uSampler0, gl::textureIndex<GL_TEXTURE0>());
-            gl::Uniform(eds.uRimRgba,  glm::vec4{0.8f, 0.5f, 0.3f, 0.8f});
-            gl::Uniform(eds.uRimThickness, glm::vec2{1.75f} / glm::vec2{dims});
-            auto quadMesh = osc::App::meshes().getTexturedQuadMesh();
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            gl::Enable(GL_BLEND);
-            gl::BindVertexArray(quadMesh->GetVertexArray());
-            quadMesh->Draw();
-            gl::BindVertexArray();
-        }
-
-        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
     }
 }
 
@@ -2641,23 +2420,27 @@ namespace
     }
 
     // returns recommended rim intensity for an element in the model graph
-    float CalcRimIntensity(ModelGraph const& mg, UID id, UID hoverID = g_EmptyID)
+    osc::SceneDecorationFlags ComputeFlags(ModelGraph const& mg, UID id, UID hoverID = g_EmptyID)
     {
         if (id == g_EmptyID)
         {
-            return 0.0f;
+            return osc::SceneDecorationFlags_None;
         }
         else if (mg.IsSelected(id))
         {
-            return 1.0f;
+            return osc::SceneDecorationFlags_IsSelected;
+        }
+        else if (id == hoverID)
+        {
+            return osc::SceneDecorationFlags_IsHovered | osc::SceneDecorationFlags_IsChildOfHovered;
         }
         else if (IsInSelectionGroupOf(mg, hoverID, id))
         {
-            return 0.6f;
+            return osc::SceneDecorationFlags_IsChildOfHovered;
         }
         else
         {
-            return 0.0f;
+            return osc::SceneDecorationFlags_None;
         }
     }
 }
@@ -4542,19 +4325,32 @@ namespace
 
         void DrawScene(nonstd::span<DrawableThing> drawables)
         {
-            // sort for (potentially) instanced rendering
-            osc::Sort(drawables, OptimalDrawOrder);
+            // setup rendering params
+            osc::SceneRendererParams p;
+            p.dimensions = osc::Dimensions(Get3DSceneRect());
+            p.samples = osc::App::get().getMSXAASamplesRecommended();
+            p.drawRims = true;
+            p.drawFloor = false;
+            p.viewMatrix = m_3DSceneCamera.getViewMtx();
+            p.projectionMatrix = m_3DSceneCamera.getProjMtx(osc::AspectRatio(p.dimensions));
+            p.viewPos = m_3DSceneCamera.getPos();
+            p.lightDirection = osc::RecommendedLightDirection(m_3DSceneCamera);
+            p.lightColor = {1.0f, 1.0f, 1.0f};
+            p.backgroundColor = GetColorSceneBackground();
+            p.rimColor = glm::vec4{0.8f, 0.5f, 0.3f, 0.8f};
 
-            // draw 3D scene to texture
-            ::DrawScene(
-                osc::Dimensions(Get3DSceneRect()),
-                GetCamera(),
-                GetColorSceneBackground(),
-                drawables,
-                UpdSceneTex());
+            std::vector<osc::SceneDecoration> decs;
+            decs.reserve(drawables.size());
+            for (DrawableThing const& dt : drawables)
+            {
+                decs.emplace_back(dt.mesh, dt.transform, dt.color, std::string{}, dt.flags);
+            }
+
+            // render
+            m_SceneRenderer.draw(decs, p);
 
             // send texture to ImGui
-            osc::DrawTextureAsImGuiImage(UpdSceneTex(), osc::Dimensions(Get3DSceneRect()));
+            osc::DrawTextureAsImGuiImage(m_SceneRenderer.updOutputTexture(), m_SceneRenderer.getDimensions());
 
             // handle hittesting, etc.
             SetIsRenderHovered(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
@@ -4602,7 +4398,7 @@ namespace
 
         gl::Texture2D& UpdSceneTex()
         {
-            return m_3DSceneTex;
+            return m_SceneRenderer.updOutputTexture();
         }
 
         nonstd::span<glm::vec4 const> GetColors() const
@@ -4794,7 +4590,7 @@ namespace
             t.scale *= 0.5f;
             dt.transform = t;
             dt.color = m_Colors.GridLines;
-            dt.rimColor = 0.0f;
+            dt.flags = osc::SceneDecorationFlags_None;
             return dt;
         }
 
@@ -4814,7 +4610,7 @@ namespace
             Transform const& xform,
             std::vector<DrawableThing>& appendOut,
             float alpha = 1.0f,
-            float rimAlpha = 0.0f,
+            osc::SceneDecorationFlags flags = osc::SceneDecorationFlags_None,
             glm::vec3 legLen = {1.0f, 1.0f, 1.0f},
             glm::vec3 coreColor = {1.0f, 1.0f, 1.0f}) const
         {
@@ -4837,7 +4633,7 @@ namespace
                 sphere.mesh = m_SphereMesh;
                 sphere.transform = t;
                 sphere.color = {coreColor, alpha};
-                sphere.rimColor = rimAlpha;
+                sphere.flags = flags;
             }
 
             // emit "legs"
@@ -4871,7 +4667,7 @@ namespace
                 se.mesh = m_CylinderMesh;
                 se.transform = t;
                 se.color = color;
-                se.rimColor = rimAlpha;
+                se.flags = flags;
             }
         }
 
@@ -4893,7 +4689,7 @@ namespace
                 originCube.mesh = osc::App::upd().meshes().getBrickMesh();
                 originCube.transform = scaled;
                 originCube.color = glm::vec4{1.0f, 1.0f, 1.0f, 1.0f};
-                originCube.rimColor = 0.0f;
+                originCube.flags = osc::SceneDecorationFlags_None;
             }
 
             // legs
@@ -4922,7 +4718,7 @@ namespace
                 legCube.mesh = osc::App::upd().meshes().getConeMesh();
                 legCube.transform = t;
                 legCube.color = color;
-                legCube.rimColor = 0.0f;
+                legCube.flags = osc::SceneDecorationFlags_None;
             }
         }
 
@@ -5098,7 +4894,7 @@ namespace
             rv.mesh = meshEl.MeshData;
             rv.transform = meshEl.Xform;
             rv.color = meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID ? RedifyColor(GetColorMesh()) : GetColorMesh();
-            rv.rimColor = 0.0f;
+            rv.flags = osc::SceneDecorationFlags_None;
             return rv;
         }
 
@@ -5110,7 +4906,7 @@ namespace
             rv.mesh = m_SphereMesh;
             rv.transform = SphereMeshToSceneSphereTransform(SphereAtTranslation(bodyEl.Xform.position));
             rv.color = color;
-            rv.rimColor = 0.0f;
+            rv.flags = osc::SceneDecorationFlags_None;
             return rv;
         }
 
@@ -5122,7 +4918,7 @@ namespace
             rv.mesh = m_SphereMesh;
             rv.transform = SphereMeshToSceneSphereTransform(SphereAtTranslation({0.0f, 0.0f, 0.0f}));
             rv.color = color;
-            rv.rimColor = 0.0f;
+            rv.flags = osc::SceneDecorationFlags_None;
             return rv;
         }
 
@@ -5134,7 +4930,7 @@ namespace
             rv.mesh = m_SphereMesh;
             rv.transform = SphereMeshToSceneSphereTransform(SphereAtTranslation(el.GetPos()));
             rv.color = color;
-            rv.rimColor = 0.0f;
+            rv.flags = osc::SceneDecorationFlags_None;
             return rv;
         }
 
@@ -5197,7 +4993,7 @@ namespace
                         el.Xform,
                         m_Out,
                         1.0f,
-                        0.0f,
+                        osc::SceneDecorationFlags_None,
                         GetJointAxisLengths(el));
                 }
                 void operator()(StationEl const& el) override
@@ -5280,11 +5076,8 @@ namespace
         // screenspace rect where the 3D scene is currently being drawn to
         osc::Rect m_3DSceneRect = {};
 
-        // texture the 3D scene is being rendered to
-        //
-        // CAREFUL: must survive beyond the end of the drawcall because ImGui needs it to be
-        //          alive during rendering
-        gl::Texture2D m_3DSceneTex;
+        // renderer that draws the scene
+        osc::SceneRenderer m_SceneRenderer;
 
         // COLORS
         //
@@ -5295,7 +5088,7 @@ namespace
             glm::vec4 Stations{196.0f/255.0f, 0.0f, 0.0f, 1.0f};
             glm::vec4 ConnectionLines{0.6f, 0.6f, 0.6f, 1.0f};
             glm::vec4 SceneBackground{96.0f/255.0f, 96.0f/255.0f, 96.0f/255.0f, 1.0f};
-            glm::vec4 GridLines{215.0f/255.0f, 215.0f/255.0f, 215.0f/255.0f, 1.0f};
+            glm::vec4 GridLines{128.0f/255.0f, 128.0f/255.0f, 128.0f/255.0f, 1.0f};
         } m_Colors;
         static constexpr std::array<char const*, 6> g_ColorNames = {
             "ground",
@@ -5799,19 +5592,19 @@ namespace
             }
         }
 
-        float RimColor(SceneEl const& el) const
+        osc::SceneDecorationFlags ComputeFlags(SceneEl const& el) const
         {
             if (IsSelected(el))
             {
-                return 1.0f;
+                return osc::SceneDecorationFlags_IsSelected;
             }
             else if (IsHovered(el))
             {
-                return 0.8f;
+                return osc::SceneDecorationFlags_IsHovered;
             }
             else
             {
-                return 0.0f;
+                return osc::SceneDecorationFlags_None;
             }
         }
 
@@ -5832,12 +5625,12 @@ namespace
                 size_t end = m_DrawablesBuffer.size();
 
                 bool isSelectable = IsSelectable(el);
-                float rimColor = RimColor(el);
+                osc::SceneDecorationFlags flags = ComputeFlags(el);
 
                 for (size_t i = start; i < end; ++i)
                 {
                     DrawableThing& d = m_DrawablesBuffer[i];
-                    d.rimColor = rimColor;
+                    d.flags = flags;
 
                     if (!isSelectable)
                     {
@@ -8052,7 +7845,7 @@ namespace
             // assign rim highlights based on hover
             for (DrawableThing& dt : sceneEls)
             {
-                dt.rimColor = CalcRimIntensity(m_Shared->GetModelGraph(), dt.id, m_MaybeHover.ID);
+                dt.flags = ComputeFlags(m_Shared->GetModelGraph(), dt.id, m_MaybeHover.ID);
             }
 
             // draw 3D scene (effectively, as an ImGui::Image)

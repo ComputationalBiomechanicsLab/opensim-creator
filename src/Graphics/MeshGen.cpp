@@ -428,6 +428,7 @@ osc::MeshData osc::GenNbyNGrid(size_t n)
     MeshData rv;
     rv.verts.reserve(4*nlines);
     rv.indices.reserve(4*nlines);
+    rv.normals.reserve(4*nlines);
     rv.topography = MeshTopography::Lines;
 
     unsigned short index = 0;
@@ -435,6 +436,7 @@ osc::MeshData osc::GenNbyNGrid(size_t n)
     {
         rv.verts.push_back(pos);
         rv.indices.push_back(index++);
+        rv.normals.push_back(glm::vec3{0.0f, 0.0f, 1.0f});
     };
 
     // lines parallel to X axis
@@ -456,7 +458,7 @@ osc::MeshData osc::GenNbyNGrid(size_t n)
     }
 
     OSC_ASSERT(rv.verts.size() % 2 == 0);  // lines, not triangles
-    OSC_ASSERT(rv.normals.empty());  // lines have no normals
+    OSC_ASSERT(rv.normals.size() == rv.verts.size());  // they contain dummy normals
     OSC_ASSERT(rv.verts.size() == rv.indices.size());
 
     return rv;
