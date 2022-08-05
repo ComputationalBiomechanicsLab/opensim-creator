@@ -14,6 +14,9 @@
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
+#include "src/Graphics/SceneDecorationNew.hpp"
+#include "src/Graphics/SceneRendererNew.hpp"
+#include "src/Graphics/SceneRendererNewParams.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
 #include "src/Graphics/Texturing.hpp"
 #include "src/Maths/AABB.hpp"
@@ -24,10 +27,7 @@
 #include "src/Maths/RayCollision.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
-#include "src/OpenSimBindings/ComponentDecoration.hpp"
 #include "src/OpenSimBindings/CustomDecorationOptions.hpp"
-#include "src/OpenSimBindings/ModelStateRenderer.hpp"
-#include "src/OpenSimBindings/ModelStateRendererParams.hpp"
 #include "src/OpenSimBindings/MuscleColoringStyle.hpp"
 #include "src/OpenSimBindings/MuscleDecorationStyle.hpp"
 #include "src/OpenSimBindings/MuscleSizingStyle.hpp"
@@ -35,6 +35,7 @@
 #include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/os.hpp"
+#include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Perf.hpp"
 #include "src/Utils/UID.hpp"
 #include "src/Widgets/GuiRuler.hpp"
@@ -68,7 +69,7 @@
 // export utils
 namespace
 {
-    void TryExportSceneToDAE(nonstd::span<osc::ComponentDecoration const> scene)
+    void TryExportSceneToDAE(nonstd::span<osc::SceneDecorationNew const> scene)
     {
         std::filesystem::path p =
             osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("dae");
@@ -82,7 +83,7 @@ namespace
         }
 
         std::vector<osc::BasicSceneElement> basicDecs;
-        for (osc::ComponentDecoration const& dec : scene)
+        for (osc::SceneDecorationNew const& dec : scene)
         {
             osc::BasicSceneElement& basic = basicDecs.emplace_back();
             basic.transform = dec.transform;
@@ -99,7 +100,7 @@ namespace
 namespace
 {
     void DrawSceneAABBs(
-        nonstd::span<osc::ComponentDecoration const> decs,
+        nonstd::span<osc::SceneDecorationNew const> decs,
         glm::mat4 const& viewMtx,
         glm::mat4 const& projMtx)
     {
@@ -120,12 +121,12 @@ namespace
             return m_Version;
         }
 
-        nonstd::span<osc::ComponentDecoration const> get() const
+        nonstd::span<osc::SceneDecorationNew const> get() const
         {
             return m_Decorations;
         }
 
-        nonstd::span<osc::ComponentDecoration const> populate(
+        nonstd::span<osc::SceneDecorationNew const> populate(
             osc::VirtualConstModelStatePair const& msp,
             osc::CustomDecorationOptions const& decorationOptions)
         {
@@ -169,7 +170,7 @@ namespace
         osc::CustomDecorationOptions m_LastDecorationOptions;
 
         osc::UID m_Version;
-        std::vector<osc::ComponentDecoration> m_Decorations;
+        std::vector<osc::SceneDecorationNew> m_Decorations;
     };
 
     class CachedBVH final {
@@ -251,7 +252,7 @@ public:
             return rv;
         }
 
-        m_RendererParams.LightDirection = RecommendedLightDirection(m_Camera);
+        m_RendererParams.lightDirection = RecommendedLightDirection(m_Camera);
 
         // populate render buffers
         m_SceneDrawlist.populate(rs, m_DecorationOptions);
@@ -404,9 +405,9 @@ private:
         drawMuscleDecorationsStyleComboBox();
         drawMuscleSizingStyleComboBox();
         drawMuscleColoringStyleComboBox();
-        ImGui::Checkbox("wireframe mode", &m_RendererParams.WireframeMode);
-        ImGui::Checkbox("show normals", &m_RendererParams.DrawMeshNormals);
-        ImGui::Checkbox("draw rims", &m_RendererParams.DrawRims);
+        ImGui::Checkbox("wireframe mode", &m_RendererParams.wireframeMode);
+        ImGui::Checkbox("show normals", &m_RendererParams.drawMeshNormals);
+        ImGui::Checkbox("draw rims", &m_RendererParams.drawRims);
         bool isDrawingScapulothoracicJoints = m_DecorationOptions.getShouldShowScapulo();
         if (ImGui::Checkbox("draw scapulothoracic joints", &isDrawingScapulothoracicJoints))
         {
@@ -551,9 +552,9 @@ private:
         ImGui::Dummy({0.0f, 10.0f});
         ImGui::Text("advanced scene properties:");
         ImGui::Separator();
-        ImGui::ColorEdit3("light_color", glm::value_ptr(m_RendererParams.LightColor));
-        ImGui::ColorEdit3("background color", glm::value_ptr(m_RendererParams.BackgroundColor));
-        osc::InputMetersFloat3("floor location", glm::value_ptr(m_RendererParams.FloorLocation));
+        ImGui::ColorEdit3("light_color", glm::value_ptr(m_RendererParams.lightColor));
+        ImGui::ColorEdit3("background color", glm::value_ptr(m_RendererParams.backgroundColor));
+        osc::InputMetersFloat3("floor location", glm::value_ptr(m_RendererParams.floorLocation));
         DrawTooltipBodyOnly("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
     }
 
@@ -591,14 +592,14 @@ private:
         glm::vec3 closestWorldLoc = {0.0f, 0.0f, 0.0f};
 
         // iterate through each scene-level hit and perform a triangle-level hittest
-        nonstd::span<osc::ComponentDecoration const> decs = m_SceneDrawlist.get();
-        OpenSim::Component const* const isolated = msp.getIsolated();
+        nonstd::span<osc::SceneDecorationNew const> decs = m_SceneDrawlist.get();
+        std::string const isolatedPath = msp.getIsolated() ? msp.getIsolated()->getAbsolutePathString() : std::string{};
 
         for (osc::BVHCollision const& c : m_SceneHittestResults)
         {
             int instanceIdx = c.primId;
 
-            if (isolated && !IsInclusiveChildOf(isolated, decs[instanceIdx].component))
+            if (!osc::StartsWith(decs[instanceIdx].id, isolatedPath))
             {
                 continue;  // it's not in the current isolation
             }
@@ -619,7 +620,7 @@ private:
 
         if (closestIdx >= 0)
         {
-            rv.first = decs[closestIdx].component;
+            rv.first = osc::FindComponent(msp.getModel(), decs[closestIdx].id);
             rv.second = closestWorldLoc;
         }
 
@@ -633,15 +634,15 @@ private:
         if (contentRegion.x >= 1.0f && contentRegion.y >= 1.0f)
         {
             glm::ivec2 dims{static_cast<int>(contentRegion.x), static_cast<int>(contentRegion.y)};
-            m_RendererParams.Dimensions = dims;
-            m_RendererParams.Samples = osc::App::get().getMSXAASamplesRecommended();
+            m_RendererParams.dimensions = dims;
+            m_RendererParams.samples = osc::App::get().getMSXAASamplesRecommended();
         }
 
-        m_RendererParams.DrawFloor = m_Flags & UiModelViewerFlags_DrawFloor;
-        m_RendererParams.ViewMatrix = m_Camera.getViewMtx();
-        m_RendererParams.ProjectionMatrix = m_Camera.getProjMtx(AspectRatio(m_Rendererer.getDimensions()));
-        m_RendererParams.ViewPos = m_Camera.getPos();
-        m_RendererParams.FixupScaleFactor = rs.getFixupScaleFactor();
+        m_RendererParams.drawFloor = m_Flags & UiModelViewerFlags_DrawFloor;
+        m_RendererParams.viewMatrix = m_Camera.getViewMtx();
+        m_RendererParams.projectionMatrix = m_Camera.getProjMtx(AspectRatio(m_Rendererer.getDimensions()));
+        m_RendererParams.viewPos = m_Camera.getPos();
+        m_RendererParams.fixupScaleFactor = rs.getFixupScaleFactor();
 
         if (m_SceneDrawlist.getVersion() != m_RendererPrevDrawlistVersion ||
             m_RendererParams != m_RendererPrevParams)
@@ -712,10 +713,10 @@ private:
     PolarPerspectiveCamera m_Camera = CreateCameraWithRadius(5.0f);
 
     // rendering input state
-    ModelStateRendererParams m_RendererParams;
-    ModelStateRendererParams m_RendererPrevParams;
+    SceneRendererNewParams m_RendererParams;
+    SceneRendererNewParams m_RendererPrevParams;
     UID m_RendererPrevDrawlistVersion;
-    ModelStateRenderer m_Rendererer;
+    SceneRendererNew m_Rendererer;
 
     // ImGui compositing/hittesting state
     ImGuiImageHittestResult m_RenderImage;

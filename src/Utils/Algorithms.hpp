@@ -202,7 +202,7 @@ namespace osc
     bool IsSubpath(std::filesystem::path const& dir, std::filesystem::path const& path);
 
     // returns true if `str` contains the supplied substring
-    bool ContainsSubstring(std::string const& str, std::string const& substr);
+    bool ContainsSubstring(std::string const& str, std::string_view substr);
 
     // returns a lower-cased version of a string
     std::string ToLower(std::string const&);
@@ -246,4 +246,7 @@ namespace osc
         ss << v;
         return std::move(ss).str();
     }
+
+    // returns true if `s` begins with `prefix`
+    bool StartsWith(std::string_view s, std::string_view prefix);
 }

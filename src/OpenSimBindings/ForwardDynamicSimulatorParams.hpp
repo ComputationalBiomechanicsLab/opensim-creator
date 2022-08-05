@@ -18,12 +18,12 @@ namespace osc
         // the time interval, in simulation time, between report updates
         SimulationClock::duration ReportingInterval;
 
-                                                                 // max number of *internal* steps that may be taken within a single call
-                                                                 // to the integrator's stepTo or stepBy function
-                                                                 //
-                                                                 // this is mostly an internal concern, but can affect how regularly the
-                                                                 // simulator reports updates (e.g. a lower number here *may* mean more
-                                                                 // frequent per-significant-step updates)
+        // max number of *internal* steps that may be taken within a single call
+        // to the integrator's stepTo or stepBy function
+        //
+        // this is mostly an internal concern, but can affect how regularly the
+        // simulator reports updates (e.g. a lower number here *may* mean more
+        // frequent per-significant-step updates)
         int IntegratorStepLimit;
 
         // minimum step, in time, that the integrator should attempt

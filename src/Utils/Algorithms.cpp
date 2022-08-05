@@ -83,7 +83,7 @@ bool osc::IsSubpath(std::filesystem::path const& dir, std::filesystem::path cons
     return std::equal(dir.begin(), dir.end(), pth.begin());
 }
 
-bool osc::ContainsSubstring(std::string const& str, std::string const& substr)
+bool osc::ContainsSubstring(std::string const& str, std::string_view substr)
 {
     return str.find(substr) != std::string::npos;
 }
@@ -140,4 +140,9 @@ bool osc::CStrEndsWith(char const* s, std::string_view suffix)
 bool osc::Contains(char const* s, char c)
 {
     return std::strchr(s, c) != nullptr;
+}
+
+bool osc::StartsWith(std::string_view s, std::string_view prefix)
+{
+    return prefix.size() <= s.size() && std::equal(prefix.begin(), prefix.end(), s.begin());
 }

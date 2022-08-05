@@ -1,6 +1,5 @@
 #pragma once
 
-#include "src/OpenSimBindings/CustomDecorationOptions.hpp"
 #include "src/Utils/CStringView.hpp"
 
 #include <nonstd/span.hpp>
@@ -26,7 +25,7 @@ namespace OpenSim
 namespace osc
 {
     struct BVH;
-    struct ComponentDecoration;
+    class SceneDecorationNew;
     class CustomDecorationOptions;
     class VirtualConstModelStatePair;
     class UndoableModelStatePair;
@@ -166,10 +165,11 @@ namespace osc
     bool TryDeleteComponentFromModel(OpenSim::Model&, OpenSim::Component&);
 
     // generates decorations for a model + state
-    void GenerateModelDecorations(VirtualConstModelStatePair const&, std::vector<osc::ComponentDecoration>&, CustomDecorationOptions = {});
+    void GenerateModelDecorations(VirtualConstModelStatePair const&, std::vector<SceneDecorationNew>&, CustomDecorationOptions const&);
+    void GenerateModelDecorations(VirtualConstModelStatePair const&, std::vector<SceneDecorationNew>&);  // default decoration options
 
     // updates the given BVH with the given component decorations
-    void UpdateSceneBVH(nonstd::span<ComponentDecoration const>, BVH&);
+    void UpdateSceneBVH(nonstd::span<SceneDecorationNew const>, BVH&);
 
     // copy common joint properties from a `src` to `dest`
     //

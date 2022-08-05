@@ -4,12 +4,12 @@
 #include "src/Graphics/Color.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshGen.hpp"
+#include "src/Graphics/SceneDecorationNew.hpp"
 #include "src/Graphics/Renderer.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
-#include "src/OpenSimBindings/ComponentDecoration.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
@@ -51,11 +51,11 @@ namespace
         glm::vec4 Color;
         bool IsHovered;
 
-        NewDecoration(osc::ComponentDecoration const& d) :
+        NewDecoration(osc::SceneDecorationNew const& d) :
             Mesh{GetExperimentalMesh(d.mesh)},
             Transform{d.transform},
             Color{d.color},
-            IsHovered{static_cast<bool>(d.flags & osc::ComponentDecorationFlags_IsHovered)}
+            IsHovered{static_cast<bool>(d.flags & osc::SceneDecorationNewFlags_IsHovered)}
         {
         }
     };
@@ -68,14 +68,14 @@ namespace
     std::vector<NewDecoration> GenerateDecorations()
     {
         osc::UndoableModelStatePair p{std::make_unique<OpenSim::Model>(osc::App::resource("models/RajagopalModel/Rajagopal2015.osim").string())};
-        std::vector<osc::ComponentDecoration> decs;
+        std::vector<osc::SceneDecorationNew> decs;
         osc::GenerateModelDecorations(p, decs);
         std::vector<NewDecoration> rv;
         rv.reserve(decs.size());
-        for (osc::ComponentDecoration const& dec : decs)
+        for (osc::SceneDecorationNew const& dec : decs)
         {
             auto& d = rv.emplace_back(dec);
-            if (dec.component && dec.component->getName() == "torso_geom_4")
+            if (osc::ContainsSubstring(dec.id, "torso_geom_4"))
             {
                 d.IsHovered = true;
             }

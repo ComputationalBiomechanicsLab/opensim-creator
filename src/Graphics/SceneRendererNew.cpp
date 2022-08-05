@@ -1,4 +1,4 @@
-#include "ModelStateRenderer.hpp"
+#include "SceneRendererNew.hpp"
 
 #include "src/Graphics/Shaders/EdgeDetectionShader.hpp"
 #include "src/Graphics/Shaders/GouraudShader.hpp"
@@ -8,14 +8,14 @@
 #include "src/Graphics/Gl.hpp"
 #include "src/Graphics/GlGlm.hpp"
 #include "src/Graphics/MeshCache.hpp"
+#include "src/Graphics/SceneDecorationNew.hpp"
+#include "src/Graphics/SceneDecorationNewFlags.hpp"
+#include "src/Graphics/SceneRendererNewParams.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
 #include "src/Graphics/Texturing.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Rect.hpp"
-#include "src/OpenSimBindings/ComponentDecoration.hpp"
-#include "src/OpenSimBindings/ComponentDecorationFlags.hpp"
-#include "src/OpenSimBindings/ModelStateRendererParams.hpp"
 #include "src/Platform/App.hpp"
 
 #include <glm/mat4x3.hpp>
@@ -196,7 +196,7 @@ namespace
         gl::EnableVertexAttribArray(rimAttr);
     }
 
-    void PopulateGPUDrawlist(nonstd::span<osc::ComponentDecoration const> in, std::vector<SceneGPUInstanceData>& out)
+    void PopulateGPUDrawlist(nonstd::span<osc::SceneDecorationNew const> in, std::vector<SceneGPUInstanceData>& out)
     {
         out.clear();
         out.reserve(in.size());
@@ -204,9 +204,9 @@ namespace
         // populate the list with the scene
         for (size_t i = 0; i < in.size(); ++i)
         {
-            osc::ComponentDecoration const& se = in[i];
+            osc::SceneDecorationNew const& se = in[i];
 
-            if (se.flags & (osc::ComponentDecorationFlags_IsIsolated | osc::ComponentDecorationFlags_IsChildOfIsolated))
+            if (se.flags & (osc::SceneDecorationNewFlags_IsIsolated | osc::SceneDecorationNewFlags_IsChildOfIsolated))
             {
                 continue;  // skip rendering this (it's not in the isolated component)
             }
@@ -217,11 +217,11 @@ namespace
             ins.rgba = se.color;
             ins.decorationIdx = static_cast<int>(i);
 
-            if (se.flags & (osc::ComponentDecorationFlags_IsSelected | osc::ComponentDecorationFlags_IsChildOfSelected))
+            if (se.flags & (osc::SceneDecorationNewFlags_IsSelected | osc::SceneDecorationNewFlags_IsChildOfSelected))
             {
                 ins.rimIntensity = 0.9f;
             }
-            else if (se.flags & (osc::ComponentDecorationFlags_IsHovered | osc::ComponentDecorationFlags_IsChildOfHovered))
+            else if (se.flags & (osc::SceneDecorationNewFlags_IsHovered | osc::SceneDecorationNewFlags_IsChildOfHovered))
             {
                 ins.rimIntensity = 0.4f;
             }
@@ -234,7 +234,7 @@ namespace
 }
 
 
-class osc::ModelStateRenderer::Impl final {
+class osc::SceneRendererNew::Impl final {
 public:
     glm::ivec2 getDimensions() const
     {
@@ -246,11 +246,11 @@ public:
         return m_RenderTarget.samples;
     }
 
-    void draw(nonstd::span<ComponentDecoration const> decorations, ModelStateRendererParams const& params)
+    void draw(nonstd::span<SceneDecorationNew const> decorations, SceneRendererNewParams const& params)
     {
         // ensure underlying render target matches latest params
-        m_RenderTarget.setDims(params.Dimensions);
-        m_RenderTarget.setSamples(params.Samples);
+        m_RenderTarget.setDims(params.dimensions);
+        m_RenderTarget.setSamples(params.samples);
 
         // populate GPU-friendly representation of the (higher-level) drawlist
         PopulateGPUDrawlist(decorations, m_GPUDrawlist);
@@ -268,29 +268,29 @@ public:
         // draw scene
         {
             gl::BindFramebuffer(GL_FRAMEBUFFER, m_RenderTarget.sceneFBO);
-            gl::ClearColor(params.BackgroundColor);
+            gl::ClearColor(params.backgroundColor);
             gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            if (params.WireframeMode)
+            if (params.wireframeMode)
             {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             }
 
             // draw the floor first, so that the transparent geometry in the scene also shows
             // the floor texture
-            if (params.DrawFloor)
+            if (params.drawFloor)
             {
                 auto& basicShader = osc::App::shader<osc::GouraudShader>();
 
                 gl::UseProgram(basicShader.program);
-                gl::Uniform(basicShader.uProjMat, params.ProjectionMatrix);
-                gl::Uniform(basicShader.uViewMat, params.ViewMatrix);
-                glm::mat4 mtx = GenerateFloorModelMatrix(params.FloorLocation, params.FixupScaleFactor);
+                gl::Uniform(basicShader.uProjMat, params.projectionMatrix);
+                gl::Uniform(basicShader.uViewMat, params.viewMatrix);
+                glm::mat4 mtx = GenerateFloorModelMatrix(params.floorLocation, params.fixupScaleFactor);
                 gl::Uniform(basicShader.uModelMat, mtx);
                 gl::Uniform(basicShader.uNormalMat, osc::ToNormalMatrix(mtx));
-                gl::Uniform(basicShader.uLightDir, params.LightDirection);
-                gl::Uniform(basicShader.uLightColor, params.LightColor);
-                gl::Uniform(basicShader.uViewPos, params.ViewPos);
+                gl::Uniform(basicShader.uLightDir, params.lightDirection);
+                gl::Uniform(basicShader.uLightColor, params.lightColor);
+                gl::Uniform(basicShader.uViewPos, params.viewPos);
                 gl::Uniform(basicShader.uDiffuseColor, {1.0f, 1.0f, 1.0f, 1.0f});
                 gl::Uniform(basicShader.uIsTextured, true);
                 gl::ActiveTexture(GL_TEXTURE0);
@@ -304,11 +304,11 @@ public:
 
             auto& instancedShader = osc::App::shader<osc::InstancedGouraudColorShader>();
             gl::UseProgram(instancedShader.program);
-            gl::Uniform(instancedShader.uProjMat, params.ProjectionMatrix);
-            gl::Uniform(instancedShader.uViewMat, params.ViewMatrix);
-            gl::Uniform(instancedShader.uLightDir, params.LightDirection);
-            gl::Uniform(instancedShader.uLightColor, params.LightColor);
-            gl::Uniform(instancedShader.uViewPos, params.ViewPos);
+            gl::Uniform(instancedShader.uProjMat, params.projectionMatrix);
+            gl::Uniform(instancedShader.uViewMat, params.viewMatrix);
+            gl::Uniform(instancedShader.uLightDir, params.lightDirection);
+            gl::Uniform(instancedShader.uLightColor, params.lightColor);
+            gl::Uniform(instancedShader.uViewPos, params.viewPos);
 
             nonstd::span<SceneGPUInstanceData const> instances = m_GPUDrawlist;
 
@@ -317,7 +317,7 @@ public:
 
             while (pos < ninstances)
             {
-                osc::ComponentDecoration const& se = decorations[instances[pos].decorationIdx];
+                osc::SceneDecorationNew const& se = decorations[instances[pos].decorationIdx];
 
                 // batch
                 size_t end = pos + 1;
@@ -347,24 +347,24 @@ public:
                 pos = end;
             }
 
-            if (params.WireframeMode)
+            if (params.wireframeMode)
             {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             }
         }
 
         // draw mesh normals, if requested
-        if (params.DrawMeshNormals)
+        if (params.drawMeshNormals)
         {
             auto& normalShader = osc::App::shader<osc::NormalsShader>();
             gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
             gl::UseProgram(normalShader.program);
-            gl::Uniform(normalShader.uProjMat, params.ProjectionMatrix);
-            gl::Uniform(normalShader.uViewMat, params.ViewMatrix);
+            gl::Uniform(normalShader.uProjMat, params.projectionMatrix);
+            gl::Uniform(normalShader.uViewMat, params.viewMatrix);
 
             for (SceneGPUInstanceData const& inst : m_GPUDrawlist)
             {
-                osc::ComponentDecoration const& se = decorations[inst.decorationIdx];
+                osc::SceneDecorationNew const& se = decorations[inst.decorationIdx];
 
                 gl::Uniform(normalShader.uModelMat, inst.modelMtx);
                 gl::Uniform(normalShader.uNormalMat, inst.normalMtx);
@@ -384,7 +384,7 @@ public:
             GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
         // draw rims
-        if (params.DrawRims)
+        if (params.drawRims)
         {
             gl::BindFramebuffer(GL_FRAMEBUFFER, m_RenderTarget.rimsFBO);
             gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -392,7 +392,7 @@ public:
 
             auto& iscs = osc::App::shader<osc::InstancedSolidColorShader>();
             gl::UseProgram(iscs.program);
-            gl::Uniform(iscs.uVP, params.ProjectionMatrix * params.ViewMatrix);
+            gl::Uniform(iscs.uVP, params.projectionMatrix * params.viewMatrix);
 
             size_t pos = 0;
             size_t ninstances = m_GPUDrawlist.size();
@@ -406,7 +406,7 @@ public:
             while (pos < ninstances)
             {
                 SceneGPUInstanceData const& inst = m_GPUDrawlist[pos];
-                osc::ComponentDecoration const& se = decorations[inst.decorationIdx];
+                osc::SceneDecorationNew const& se = decorations[inst.decorationIdx];
 
                 // batch
                 size_t end = pos + 1;
@@ -449,7 +449,7 @@ public:
                 //
                 // calculate a screenspace bounding box that surrounds the rims so that the
                 // edge detection shader only had to run on a smaller subset of the screen
-                osc::AABB screenspaceRimBounds = TransformAABB(rimAABB, params.ProjectionMatrix * params.ViewMatrix);
+                osc::AABB screenspaceRimBounds = TransformAABB(rimAABB, params.projectionMatrix * params.viewMatrix);
                 auto verts = ToCubeVerts(screenspaceRimBounds);
 
                 osc::Rect screenBounds{verts[0], verts[0]};
@@ -524,48 +524,48 @@ private:
     RenderBuffers m_RenderTarget{{1, 1}, 1};
 };
 
-osc::ModelStateRenderer::ModelStateRenderer() :
+osc::SceneRendererNew::SceneRendererNew() :
     m_Impl{new Impl{}}
 {
 }
 
-osc::ModelStateRenderer::ModelStateRenderer(ModelStateRenderer&& tmp) noexcept :
+osc::SceneRendererNew::SceneRendererNew(SceneRendererNew && tmp) noexcept :
     m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
 }
 
-osc::ModelStateRenderer& osc::ModelStateRenderer::operator=(ModelStateRenderer&& tmp) noexcept
+osc::SceneRendererNew& osc::SceneRendererNew::operator=(SceneRendererNew&& tmp) noexcept
 {
     std::swap(m_Impl, tmp.m_Impl);
     return *this;
 }
 
-osc::ModelStateRenderer::~ModelStateRenderer() noexcept
+osc::SceneRendererNew::~SceneRendererNew() noexcept
 {
     delete m_Impl;
 }
 
-glm::ivec2 osc::ModelStateRenderer::getDimensions() const
+glm::ivec2 osc::SceneRendererNew::getDimensions() const
 {
     return m_Impl->getDimensions();
 }
 
-int osc::ModelStateRenderer::getSamples() const
+int osc::SceneRendererNew::getSamples() const
 {
     return m_Impl->getSamples();
 }
 
-void osc::ModelStateRenderer::draw(nonstd::span<ComponentDecoration const> decs, ModelStateRendererParams const& params)
+void osc::SceneRendererNew::draw(nonstd::span<SceneDecorationNew const> decs, SceneRendererNewParams const& params)
 {
     m_Impl->draw(std::move(decs), params);
 }
 
-gl::Texture2D& osc::ModelStateRenderer::updOutputTexture()
+gl::Texture2D& osc::SceneRendererNew::updOutputTexture()
 {
     return m_Impl->updOutputTexture();
 }
 
-gl::FrameBuffer& osc::ModelStateRenderer::updOutputFBO()
+gl::FrameBuffer& osc::SceneRendererNew::updOutputFBO()
 {
     return m_Impl->updOutputFBO();
 }

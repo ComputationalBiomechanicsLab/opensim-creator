@@ -314,6 +314,13 @@ add_library(osccore STATIC
     src/Graphics/MultisampledRenderBuffers.hpp
     src/Graphics/Renderer.cpp
     src/Graphics/Renderer.hpp
+    src/Graphics/SceneDecorationNew.cpp
+    src/Graphics/SceneDecorationNew.hpp
+    src/Graphics/SceneDecorationNewFlags.hpp
+    src/Graphics/SceneRendererNew.cpp
+    src/Graphics/SceneRendererNew.hpp
+    src/Graphics/SceneRendererNewParams.cpp
+    src/Graphics/SceneRendererNewParams.hpp
     src/Graphics/SceneRenderer.cpp
     src/Graphics/SceneRenderer.hpp
     src/Graphics/Shader.hpp
@@ -355,8 +362,6 @@ add_library(osccore STATIC
 
     src/OpenSimBindings/BasicModelStatePair.cpp
     src/OpenSimBindings/BasicModelStatePair.hpp
-    src/OpenSimBindings/ComponentDecoration.cpp
-    src/OpenSimBindings/ComponentDecoration.hpp
     src/OpenSimBindings/ComponentOutputExtractor.cpp
     src/OpenSimBindings/ComponentOutputExtractor.hpp
     src/OpenSimBindings/CustomDecorationOptions.hpp
@@ -372,10 +377,6 @@ add_library(osccore STATIC
     src/OpenSimBindings/IntegratorOutputExtractor.hpp
     src/OpenSimBindings/ModelStateCommit.cpp
     src/OpenSimBindings/ModelStateCommit.hpp
-    src/OpenSimBindings/ModelStateRenderer.cpp
-    src/OpenSimBindings/ModelStateRenderer.hpp
-    src/OpenSimBindings/ModelStateRendererParams.cpp
-    src/OpenSimBindings/ModelStateRendererParams.hpp
     src/OpenSimBindings/MultiBodySystemOutputExtractor.cpp
     src/OpenSimBindings/MultiBodySystemOutputExtractor.hpp
     src/OpenSimBindings/MuscleColoringStyle.cpp

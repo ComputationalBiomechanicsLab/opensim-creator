@@ -81,7 +81,7 @@ int main(int argc, char** argv)
         //screen->addTab(std::make_unique<osc::RendererBlendingTab>(screen->getTabHostAPI()));
         //screen->addTab(std::make_unique<osc::RendererFramebuffersTab>(screen->getTabHostAPI()));
         //screen->addTab(std::make_unique<osc::RendererGeometryShaderTab>(screen->getTabHostAPI()));
-        //screen->addTab(std::make_unique<osc::RendererOpenSimTab>(screen->getTabHostAPI()));
+        screen->addTab(std::make_unique<osc::RendererOpenSimTab>(screen->getTabHostAPI()));
         //auto tabID = screen->addTab(std::make_unique<osc::PreviewExperimentalDataTab>(screen->getTabHostAPI()));
         //screen->getTabHostAPI()->selectTab(tabID);
         app.show(std::move(screen));
