@@ -76,7 +76,8 @@ namespace osc
 
         T&& value() &&
         {
-            return std::move(*lock());
+            auto guard = std::lock_guard{m_Mutex};
+            return std::move(m_Value);
         }
 
         std::mutex& mutex() const

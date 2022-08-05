@@ -1,18 +1,5 @@
 #include "src/OpenSimBindings/OpenSimApp.hpp"
 #include "src/Screens/MainUIScreen.hpp"
-#include "src/Tabs/TabHost.hpp"
-#include "src/Tabs/Experiments/RendererHelloTriangleTab.hpp"
-#include "src/Tabs/Experiments/RendererTexturingTab.hpp"
-#include "src/Tabs/Experiments/RendererCoordinateSystemsTab.hpp"
-#include "src/Tabs/Experiments/RendererBasicLightingTab.hpp"
-#include "src/Tabs/Experiments/RendererLightingMapsTab.hpp"
-#include "src/Tabs/Experiments/RendererMultipleLightsTab.hpp"
-#include "src/Tabs/Experiments/RendererBlendingTab.hpp"
-#include "src/Tabs/Experiments/RendererFramebuffersTab.hpp"
-#include "src/Tabs/Experiments/RendererGeometryShaderTab.hpp"
-#include "src/Tabs/Experiments/RendererTexturingTab.hpp"
-#include "src/Tabs/Experiments/RendererOpenSimTab.hpp"
-#include "src/Tabs/Experiments/PreviewExperimentalDataTab.hpp"
 
 #include <cstdlib>
 #include <iostream>
@@ -71,20 +58,7 @@ int main(int argc, char** argv)
 
     if (argc <= 0)
     {
-        auto screen = std::make_unique<osc::MainUIScreen>();
-        //screen->addTab(std::make_unique<osc::RendererHelloTriangleTab>(screen->getTabHostAPI()));
-        //screen->addTab(std::make_unique<osc::RendererTexturingTab>(screen->getTabHostAPI()));
-        //screen->addTab(std::make_unique<osc::RendererCoordinateSystemsTab>(screen->getTabHostAPI()));
-        //screen->addTab(std::make_unique<osc::RendererBasicLightingTab>(screen->getTabHostAPI()));
-        //screen->addTab(std::make_unique<osc::RendererLightingMapsTab>(screen->getTabHostAPI()));
-        //screen->addTab(std::make_unique<osc::RendererMultipleLightsTab>(screen->getTabHostAPI()));
-        //screen->addTab(std::make_unique<osc::RendererBlendingTab>(screen->getTabHostAPI()));
-        //screen->addTab(std::make_unique<osc::RendererFramebuffersTab>(screen->getTabHostAPI()));
-        //screen->addTab(std::make_unique<osc::RendererGeometryShaderTab>(screen->getTabHostAPI()));
-        screen->addTab(std::make_unique<osc::RendererOpenSimTab>(screen->getTabHostAPI()));
-        //auto tabID = screen->addTab(std::make_unique<osc::PreviewExperimentalDataTab>(screen->getTabHostAPI()));
-        //screen->getTabHostAPI()->selectTab(tabID);
-        app.show(std::move(screen));
+        app.show<osc::MainUIScreen>();
     }
     else
     {

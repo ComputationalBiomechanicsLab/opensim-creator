@@ -12,6 +12,7 @@
 #include "src/Tabs/ModelEditorTab.hpp"
 #include "src/Tabs/SplashTab.hpp"
 #include "src/Tabs/Tab.hpp"
+#include "src/Tabs/TabRegistry.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/CStringView.hpp"
@@ -388,6 +389,24 @@ private:
         if (ImGui::MenuItem(ICON_FA_CUBE " Mesh Importer"))
         {
             selectTab(addTab(std::make_unique<MeshImporterTab>(this)));
+        }
+
+        int numRegisteredTabs = osc::GetNumRegisteredTabs();
+
+        if (numRegisteredTabs > 0)
+        {
+            if (ImGui::BeginMenu("Experimental Tabs"))
+            {
+                for (int i = 0; i < numRegisteredTabs; ++i)
+                {
+                    TabRegistryEntry e = GetRegisteredTab(i);
+                    if (ImGui::MenuItem(e.getName().c_str()))
+                    {
+                        selectTab(addTab(e.createTab(this)));
+                    }
+                }
+                ImGui::EndMenu();
+            }
         }
     }
 

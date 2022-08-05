@@ -6,6 +6,8 @@
 #include "src/Graphics/Texturing.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Tabs/Tab.hpp"
+#include "src/Tabs/TabRegistry.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
 
