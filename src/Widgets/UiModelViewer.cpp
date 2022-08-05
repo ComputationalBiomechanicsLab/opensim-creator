@@ -15,7 +15,7 @@
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/SceneDecorationNew.hpp"
 #include "src/Graphics/SceneRendererNew.hpp"
-#include "src/Graphics/SceneRendererNewParams.hpp"
+#include "src/Graphics/SceneRendererParams.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
 #include "src/Graphics/Texturing.hpp"
 #include "src/Maths/AABB.hpp"
@@ -703,8 +703,8 @@ private:
     PolarPerspectiveCamera m_Camera = CreateCameraWithRadius(5.0f);
 
     // rendering input state
-    SceneRendererNewParams m_RendererParams;
-    SceneRendererNewParams m_RendererPrevParams;
+    SceneRendererParams m_RendererParams;
+    SceneRendererParams m_RendererPrevParams;
     UID m_RendererPrevDrawlistVersion;
     SceneRendererNew m_Rendererer;
 

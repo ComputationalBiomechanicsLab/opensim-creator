@@ -6,7 +6,7 @@
 namespace osc
 {
     class SceneDecorationNew;
-    class SceneRendererNewParams;
+    class SceneRendererParams;
 }
 
 namespace osc
@@ -21,7 +21,7 @@ namespace osc
         SceneViewer& operator=(SceneViewer&&) noexcept;
         ~SceneViewer() noexcept;
 
-        void draw(nonstd::span<SceneDecorationNew const>, SceneRendererNewParams const&);
+        void draw(nonstd::span<SceneDecorationNew const>, SceneRendererParams const&);
 
         bool isHovered() const;
         bool isLeftClicked() const;

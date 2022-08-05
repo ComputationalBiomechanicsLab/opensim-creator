@@ -10,7 +10,7 @@
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/SceneDecorationNew.hpp"
 #include "src/Graphics/SceneDecorationNewFlags.hpp"
-#include "src/Graphics/SceneRendererNewParams.hpp"
+#include "src/Graphics/SceneRendererParams.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
 #include "src/Graphics/Texturing.hpp"
 #include "src/Maths/Constants.hpp"
@@ -246,7 +246,7 @@ public:
         return m_RenderTarget.samples;
     }
 
-    void draw(nonstd::span<SceneDecorationNew const> decorations, SceneRendererNewParams const& params)
+    void draw(nonstd::span<SceneDecorationNew const> decorations, SceneRendererParams const& params)
     {
         // ensure underlying render target matches latest params
         m_RenderTarget.setDims(params.dimensions);
@@ -555,7 +555,7 @@ int osc::SceneRendererNew::getSamples() const
     return m_Impl->getSamples();
 }
 
-void osc::SceneRendererNew::draw(nonstd::span<SceneDecorationNew const> decs, SceneRendererNewParams const& params)
+void osc::SceneRendererNew::draw(nonstd::span<SceneDecorationNew const> decs, SceneRendererParams const& params)
 {
     m_Impl->draw(std::move(decs), params);
 }

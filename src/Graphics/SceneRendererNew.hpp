@@ -12,7 +12,7 @@ namespace gl
 namespace osc
 {
     class SceneDecorationNew;
-    class SceneRendererNewParams;
+    class SceneRendererParams;
 }
 
 namespace osc
@@ -28,7 +28,7 @@ namespace osc
 
         glm::ivec2 getDimensions() const;
         int getSamples() const;
-        void draw(nonstd::span<SceneDecorationNew const>, SceneRendererNewParams const&);
+        void draw(nonstd::span<SceneDecorationNew const>, SceneRendererParams const&);
         gl::Texture2D& updOutputTexture();
         gl::FrameBuffer& updOutputFBO();
 

@@ -7,7 +7,7 @@
 
 namespace osc
 {
-    class SceneRendererNewParams final {
+    class SceneRendererParams final {
     public:
         glm::ivec2 dimensions;
         int samples;
@@ -25,14 +25,14 @@ namespace osc
         glm::vec3 floorLocation;
         float fixupScaleFactor;
 
-        SceneRendererNewParams();
-        SceneRendererNewParams(SceneRendererNewParams const&);
-        SceneRendererNewParams(SceneRendererNewParams&&) noexcept;
-        SceneRendererNewParams& operator=(SceneRendererNewParams const&);
-        SceneRendererNewParams& operator=(SceneRendererNewParams&&) noexcept;
-        ~SceneRendererNewParams() noexcept;
+        SceneRendererParams();
+        SceneRendererParams(SceneRendererParams const&);
+        SceneRendererParams(SceneRendererParams&&) noexcept;
+        SceneRendererParams& operator=(SceneRendererParams const&);
+        SceneRendererParams& operator=(SceneRendererParams&&) noexcept;
+        ~SceneRendererParams() noexcept;
     };
 
-    bool operator==(SceneRendererNewParams const&, SceneRendererNewParams const&);
-    bool operator!=(SceneRendererNewParams const&, SceneRendererNewParams const&);
+    bool operator==(SceneRendererParams const&, SceneRendererParams const&);
+    bool operator!=(SceneRendererParams const&, SceneRendererParams const&);
 }

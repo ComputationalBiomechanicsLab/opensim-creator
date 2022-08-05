@@ -1,6 +1,6 @@
-#include "SceneRendererNewParams.hpp"
+#include "SceneRendererParams.hpp"
 
-osc::SceneRendererNewParams::SceneRendererNewParams() :
+osc::SceneRendererParams::SceneRendererParams() :
     dimensions{1, 1},
     samples{1},
     wireframeMode{false},
@@ -19,13 +19,13 @@ osc::SceneRendererNewParams::SceneRendererNewParams() :
 {
 }
 
-osc::SceneRendererNewParams::SceneRendererNewParams(SceneRendererNewParams const&) = default;
-osc::SceneRendererNewParams::SceneRendererNewParams(SceneRendererNewParams&&) noexcept = default;
-osc::SceneRendererNewParams& osc::SceneRendererNewParams::operator=(SceneRendererNewParams const&) = default;
-osc::SceneRendererNewParams& osc::SceneRendererNewParams::operator=(SceneRendererNewParams&&) noexcept = default;
-osc::SceneRendererNewParams::~SceneRendererNewParams() noexcept = default;
+osc::SceneRendererParams::SceneRendererParams(SceneRendererParams const&) = default;
+osc::SceneRendererParams::SceneRendererParams(SceneRendererParams&&) noexcept = default;
+osc::SceneRendererParams& osc::SceneRendererParams::operator=(SceneRendererParams const&) = default;
+osc::SceneRendererParams& osc::SceneRendererParams::operator=(SceneRendererParams&&) noexcept = default;
+osc::SceneRendererParams::~SceneRendererParams() noexcept = default;
 
-bool osc::operator==(SceneRendererNewParams const& a, SceneRendererNewParams const& b)
+bool osc::operator==(SceneRendererParams const& a, SceneRendererParams const& b)
 {
     return
         a.dimensions == b.dimensions &&
@@ -45,7 +45,7 @@ bool osc::operator==(SceneRendererNewParams const& a, SceneRendererNewParams con
         a.fixupScaleFactor == b.fixupScaleFactor;
 }
 
-bool osc::operator!=(SceneRendererNewParams const& a, SceneRendererNewParams const& b)
+bool osc::operator!=(SceneRendererParams const& a, SceneRendererParams const& b)
 {
     return !(a == b);
 }

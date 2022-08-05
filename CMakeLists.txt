@@ -316,8 +316,8 @@ add_library(osccore STATIC
     src/Graphics/SceneDecorationNewFlags.hpp
     src/Graphics/SceneRendererNew.cpp
     src/Graphics/SceneRendererNew.hpp
-    src/Graphics/SceneRendererNewParams.cpp
-    src/Graphics/SceneRendererNewParams.hpp
+    src/Graphics/SceneRendererParams.cpp
+    src/Graphics/SceneRendererParams.hpp
     src/Graphics/Shader.hpp
     src/Graphics/ShaderCache.cpp
     src/Graphics/ShaderCache.hpp
