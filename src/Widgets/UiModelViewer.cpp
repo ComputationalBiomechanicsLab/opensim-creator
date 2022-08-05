@@ -14,7 +14,7 @@
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/SceneDecorationNew.hpp"
-#include "src/Graphics/SceneRendererNew.hpp"
+#include "src/Graphics/SceneRenderer.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
 #include "src/Graphics/Texturing.hpp"
@@ -706,7 +706,7 @@ private:
     SceneRendererParams m_RendererParams;
     SceneRendererParams m_RendererPrevParams;
     UID m_RendererPrevDrawlistVersion;
-    SceneRendererNew m_Rendererer;
+    SceneRenderer m_Rendererer;
 
     // ImGui compositing/hittesting state
     ImGuiImageHittestResult m_RenderImage;

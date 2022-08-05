@@ -2,7 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/SceneDecorationNew.hpp"
-#include "src/Graphics/SceneRendererNew.hpp"
+#include "src/Graphics/SceneRenderer.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
 
 #include <glm/vec2.hpp>
@@ -41,7 +41,7 @@ public:
 	}
 
 private:
-	SceneRendererNew m_Renderer;
+	SceneRenderer m_Renderer;
 	bool m_IsHovered = false;
 	bool m_IsLeftClicked = false;
 	bool m_IsRightClicked = false;

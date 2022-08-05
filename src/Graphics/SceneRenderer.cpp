@@ -1,4 +1,4 @@
-#include "SceneRendererNew.hpp"
+#include "SceneRenderer.hpp"
 
 #include "src/Graphics/Shaders/EdgeDetectionShader.hpp"
 #include "src/Graphics/Shaders/GouraudShader.hpp"
@@ -234,7 +234,7 @@ namespace
 }
 
 
-class osc::SceneRendererNew::Impl final {
+class osc::SceneRenderer::Impl final {
 public:
     glm::ivec2 getDimensions() const
     {
@@ -524,48 +524,48 @@ private:
     RenderBuffers m_RenderTarget{{1, 1}, 1};
 };
 
-osc::SceneRendererNew::SceneRendererNew() :
+osc::SceneRenderer::SceneRenderer() :
     m_Impl{new Impl{}}
 {
 }
 
-osc::SceneRendererNew::SceneRendererNew(SceneRendererNew && tmp) noexcept :
+osc::SceneRenderer::SceneRenderer(SceneRenderer && tmp) noexcept :
     m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
 }
 
-osc::SceneRendererNew& osc::SceneRendererNew::operator=(SceneRendererNew&& tmp) noexcept
+osc::SceneRenderer& osc::SceneRenderer::operator=(SceneRenderer&& tmp) noexcept
 {
     std::swap(m_Impl, tmp.m_Impl);
     return *this;
 }
 
-osc::SceneRendererNew::~SceneRendererNew() noexcept
+osc::SceneRenderer::~SceneRenderer() noexcept
 {
     delete m_Impl;
 }
 
-glm::ivec2 osc::SceneRendererNew::getDimensions() const
+glm::ivec2 osc::SceneRenderer::getDimensions() const
 {
     return m_Impl->getDimensions();
 }
 
-int osc::SceneRendererNew::getSamples() const
+int osc::SceneRenderer::getSamples() const
 {
     return m_Impl->getSamples();
 }
 
-void osc::SceneRendererNew::draw(nonstd::span<SceneDecorationNew const> decs, SceneRendererParams const& params)
+void osc::SceneRenderer::draw(nonstd::span<SceneDecorationNew const> decs, SceneRendererParams const& params)
 {
     m_Impl->draw(std::move(decs), params);
 }
 
-gl::Texture2D& osc::SceneRendererNew::updOutputTexture()
+gl::Texture2D& osc::SceneRenderer::updOutputTexture()
 {
     return m_Impl->updOutputTexture();
 }
 
-gl::FrameBuffer& osc::SceneRendererNew::updOutputFBO()
+gl::FrameBuffer& osc::SceneRenderer::updOutputFBO()
 {
     return m_Impl->updOutputFBO();
 }

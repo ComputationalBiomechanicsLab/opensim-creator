@@ -17,14 +17,14 @@ namespace osc
 
 namespace osc
 {
-    class SceneRendererNew final {
+    class SceneRenderer final {
     public:
-        SceneRendererNew();
-        SceneRendererNew(SceneRendererNew const&) = delete;
-        SceneRendererNew(SceneRendererNew&&) noexcept;
-        SceneRendererNew& operator=(SceneRendererNew const&) = delete;
-        SceneRendererNew& operator=(SceneRendererNew&&) noexcept;
-        ~SceneRendererNew() noexcept;
+        SceneRenderer();
+        SceneRenderer(SceneRenderer const&) = delete;
+        SceneRenderer(SceneRenderer&&) noexcept;
+        SceneRenderer& operator=(SceneRenderer const&) = delete;
+        SceneRenderer& operator=(SceneRenderer&&) noexcept;
+        ~SceneRenderer() noexcept;
 
         glm::ivec2 getDimensions() const;
         int getSamples() const;
