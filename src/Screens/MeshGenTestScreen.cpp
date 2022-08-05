@@ -1,15 +1,16 @@
 #include "MeshGenTestScreen.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/Graphics/BasicRendererParams.hpp"
-#include "src/Graphics/BasicSceneElement.hpp"
+#include "src/Graphics/SceneRendererNewParams.hpp"
+#include "src/Graphics/SceneDecorationNew.hpp"
+#include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Screens/ExperimentsScreen.hpp"
-#include "src/Widgets/BasicSceneViewer.hpp"
+#include "src/Widgets/SceneViewer.hpp"
 
 #include <glm/gtx/transform.hpp>
 #include <glm/mat4x4.hpp>
@@ -105,11 +106,11 @@ public:
                 }
                 ImGui::SameLine();
             }
-            ImGui::SetCursorPos(pos);
+            ImGui::NewLine();
 
             glm::vec2 contentRegion = ImGui::GetContentRegionAvail();
-            m_Viewer.setDimensions(contentRegion);
-            m_Viewer.setSamples(osc::App::get().getMSXAASamplesRecommended());
+            m_RenderParams.dimensions = contentRegion;
+            m_RenderParams.samples = osc::App::get().getMSXAASamplesRecommended();
 
             {
                 glm::vec3 p = glm::normalize(-m_Camera.focusPoint - m_Camera.getPos());
@@ -117,12 +118,21 @@ public:
                 glm::vec3 mp = glm::rotate(glm::mat4{1.0f}, 1.25f * fpi4, up) * glm::vec4{p, 0.0f};
 
                 m_RenderParams.lightDirection = glm::normalize(mp + -up);
-                m_RenderParams.projectionMatrix = m_Camera.getProjMtx(AspectRatio(m_Viewer.getDimensions()));
+                m_RenderParams.projectionMatrix = m_Camera.getProjMtx(AspectRatio(m_RenderParams.dimensions));
                 m_RenderParams.viewMatrix = m_Camera.getViewMtx();
                 m_RenderParams.viewPos = m_Camera.getPos();
+                m_RenderParams.drawFloor = false;
 
-                BasicSceneElement bse{ {}, {1.0f, 1.0f, 1.0f, 1.0f}, m_AllMeshes[m_CurrentMesh]};
-                m_Viewer.draw(m_RenderParams, {&bse, 1});
+                SceneDecorationNew d
+                {
+                    m_AllMeshes[m_CurrentMesh],
+                    Transform{},
+                    {1.0f, 1.0f, 1.0f, 1.0f},
+                    "NO_ID",
+                    SceneDecorationNewFlags{}
+                };
+
+                m_Viewer.draw(nonstd::span<SceneDecorationNew const>{&d, 1}, m_RenderParams);
             }
         }
         ImGui::End();
@@ -133,8 +143,8 @@ public:
 private:
     std::string m_CurrentMesh = "brick";
     std::map<std::string, std::shared_ptr<osc::Mesh>> m_AllMeshes = GenerateMeshLookup();
-    BasicSceneViewer m_Viewer;
-    BasicRendererParams m_RenderParams;
+    SceneViewer m_Viewer;
+    SceneRendererNewParams m_RenderParams;
     PolarPerspectiveCamera m_Camera;
 };
 

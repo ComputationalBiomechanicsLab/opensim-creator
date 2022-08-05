@@ -7,7 +7,6 @@
 #include "src/Graphics/Shaders/InstancedSolidColorShader.hpp"
 #include "src/Graphics/Shaders/NormalsShader.hpp"
 #include "src/Graphics/Shaders/SolidColorShader.hpp"
-#include "src/Graphics/BasicSceneElement.hpp"
 #include "src/Graphics/DAEWriter.hpp"
 #include "src/Graphics/Gl.hpp"
 #include "src/Graphics/GlGlm.hpp"
@@ -82,16 +81,7 @@ namespace
             return;
         }
 
-        std::vector<osc::BasicSceneElement> basicDecs;
-        for (osc::SceneDecorationNew const& dec : scene)
-        {
-            osc::BasicSceneElement& basic = basicDecs.emplace_back();
-            basic.transform = dec.transform;
-            basic.mesh = dec.mesh;
-            basic.color = dec.color;
-        }
-
-        osc::WriteDecorationsAsDAE(basicDecs, outfile);
+        osc::WriteDecorationsAsDAE(scene, outfile);
         osc::log::info("wrote scene as a DAE file to %s", p.string().c_str());
     }
 }

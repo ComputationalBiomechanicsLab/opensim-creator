@@ -286,9 +286,6 @@ add_library(osccore STATIC
     src/Graphics/Shaders/SolidColorShader.cpp
     src/Graphics/Shaders/SolidColorShader.hpp
 
-    src/Graphics/BasicRenderer.hpp
-    src/Graphics/BasicRendererParams.hpp
-    src/Graphics/BasicSceneElement.hpp
     src/Graphics/Color.cpp
     src/Graphics/Color.hpp
     src/Graphics/DAEWriter.cpp
@@ -321,8 +318,6 @@ add_library(osccore STATIC
     src/Graphics/SceneRendererNew.hpp
     src/Graphics/SceneRendererNewParams.cpp
     src/Graphics/SceneRendererNewParams.hpp
-    src/Graphics/SceneRenderer.cpp
-    src/Graphics/SceneRenderer.hpp
     src/Graphics/Shader.hpp
     src/Graphics/ShaderCache.cpp
     src/Graphics/ShaderCache.hpp
@@ -523,8 +518,6 @@ add_library(osccore STATIC
     src/Widgets/AddBodyPopup.hpp
     src/Widgets/AddComponentPopup.cpp
     src/Widgets/AddComponentPopup.hpp
-    src/Widgets/BasicSceneViewer.cpp
-    src/Widgets/BasicSceneViewer.hpp
     src/Widgets/BasicWidgets.cpp
     src/Widgets/BasicWidgets.hpp
     src/Widgets/ComponentDetails.cpp
@@ -557,6 +550,8 @@ add_library(osccore STATIC
     src/Widgets/ReassignSocketPopup.hpp
     src/Widgets/SaveChangesPopup.cpp
     src/Widgets/SaveChangesPopup.hpp
+    src/Widgets/SceneViewer.cpp
+    src/Widgets/SceneViewer.hpp
     src/Widgets/Select1PFPopup.cpp
     src/Widgets/Select1PFPopup.hpp
     src/Widgets/Select2PFsPopup.cpp
