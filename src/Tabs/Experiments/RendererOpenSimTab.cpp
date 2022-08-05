@@ -4,7 +4,7 @@
 #include "src/Graphics/Color.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshGen.hpp"
-#include "src/Graphics/SceneDecorationNew.hpp"
+#include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/Renderer.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
@@ -51,11 +51,11 @@ namespace
         glm::vec4 Color;
         bool IsHovered;
 
-        NewDecoration(osc::SceneDecorationNew const& d) :
+        NewDecoration(osc::SceneDecoration const& d) :
             Mesh{GetExperimentalMesh(d.mesh)},
             Transform{d.transform},
             Color{d.color},
-            IsHovered{static_cast<bool>(d.flags & osc::SceneDecorationNewFlags_IsHovered)}
+            IsHovered{static_cast<bool>(d.flags & osc::SceneDecorationFlags_IsHovered)}
         {
         }
     };
@@ -68,11 +68,11 @@ namespace
     std::vector<NewDecoration> GenerateDecorations()
     {
         osc::UndoableModelStatePair p{std::make_unique<OpenSim::Model>(osc::App::resource("models/RajagopalModel/Rajagopal2015.osim").string())};
-        std::vector<osc::SceneDecorationNew> decs;
+        std::vector<osc::SceneDecoration> decs;
         osc::GenerateModelDecorations(p, decs);
         std::vector<NewDecoration> rv;
         rv.reserve(decs.size());
-        for (osc::SceneDecorationNew const& dec : decs)
+        for (osc::SceneDecoration const& dec : decs)
         {
             auto& d = rv.emplace_back(dec);
             if (osc::ContainsSubstring(dec.id, "torso_geom_4"))

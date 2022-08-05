@@ -2,7 +2,7 @@
 
 #include "osc_config.hpp"
 
-#include "src/Graphics/SceneDecorationNew.hpp"
+#include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Utils/Algorithms.hpp"
@@ -86,7 +86,7 @@ namespace
         std::vector<DAEInstance> Instances;
     };
 
-    DAESceneGraph ToDAESceneGraph(nonstd::span<osc::SceneDecorationNew const> els)
+    DAESceneGraph ToDAESceneGraph(nonstd::span<osc::SceneDecoration const> els)
     {
         DAESceneGraph rv;
 
@@ -96,7 +96,7 @@ namespace
         std::unordered_map<glm::vec4, std::string> color2materialid;
         int latestInstance = 0;
 
-        for (osc::SceneDecorationNew const& el : els)
+        for (osc::SceneDecoration const& el : els)
         {
             if (el.mesh->getTopography() != osc::MeshTopography::Triangles)
             {
@@ -495,7 +495,7 @@ R"(        <vertices id="{}-vertices">
     }
 }
 
-void osc::WriteDecorationsAsDAE(nonstd::span<SceneDecorationNew const> els, std::ostream& o)
+void osc::WriteDecorationsAsDAE(nonstd::span<SceneDecoration const> els, std::ostream& o)
 {
     DAESceneGraph graph = ToDAESceneGraph(els);
 

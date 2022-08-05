@@ -2,7 +2,7 @@
 
 #include "src/Bindings/SimTKHelpers.hpp"
 #include "src/Graphics/MeshCache.hpp"
-#include "src/Graphics/SceneDecorationNew.hpp"
+#include "src/Graphics/SceneDecoration.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/BVH.hpp"
 #include "src/Maths/Constants.hpp"
@@ -88,8 +88,8 @@ namespace osc
     class Mesh;
 }
 
-static bool HasGreaterAlphaOrLowerMeshID(osc::SceneDecorationNew const& a,
-                                         osc::SceneDecorationNew const& b)
+static bool HasGreaterAlphaOrLowerMeshID(osc::SceneDecoration const& a,
+                                         osc::SceneDecoration const& b)
 {
     if (a.color.a != b.color.a)
     {
@@ -111,27 +111,27 @@ static osc::Transform TransformInGround(OpenSim::PhysicalFrame const& pf, SimTK:
 namespace
 {
     // helper: compute the decoration flags for a given component
-    osc::SceneDecorationNewFlags ComputeFlags(
+    osc::SceneDecorationFlags ComputeFlags(
         OpenSim::Component const& c,
         OpenSim::Component const* selected,
         OpenSim::Component const* hovered,
         OpenSim::Component const* isolated)
     {
-        osc::SceneDecorationNewFlags rv = osc::SceneDecorationNewFlags_None;
+        osc::SceneDecorationFlags rv = osc::SceneDecorationFlags_None;
 
         if (&c == selected)
         {
-            rv |= osc::SceneDecorationNewFlags_IsSelected;
+            rv |= osc::SceneDecorationFlags_IsSelected;
         }
 
         if (&c == hovered)
         {
-            rv |= osc::SceneDecorationNewFlags_IsHovered;
+            rv |= osc::SceneDecorationFlags_IsHovered;
         }
 
         if (&c == isolated)
         {
-            rv |= osc::SceneDecorationNewFlags_IsIsolated;
+            rv |= osc::SceneDecorationFlags_IsIsolated;
         }
 
         OpenSim::Component const* ptr = osc::GetOwner(c);
@@ -139,15 +139,15 @@ namespace
         {
             if (ptr == selected)
             {
-                rv |= osc::SceneDecorationNewFlags_IsChildOfSelected;
+                rv |= osc::SceneDecorationFlags_IsChildOfSelected;
             }
             if (ptr == hovered)
             {
-                rv |= osc::SceneDecorationNewFlags_IsChildOfHovered;
+                rv |= osc::SceneDecorationFlags_IsChildOfHovered;
             }
             if (ptr == isolated)
             {
-                rv |= osc::SceneDecorationNewFlags_IsChildOfIsolated;
+                rv |= osc::SceneDecorationFlags_IsChildOfIsolated;
             }
             ptr = osc::GetOwner(*ptr);
         }
@@ -300,7 +300,7 @@ namespace
                                   OpenSim::Component const* hovered,
                                   OpenSim::Component const* isolated,
                                   float fixupScaleFactor,
-                                  std::vector<osc::SceneDecorationNew>& out)
+                                  std::vector<osc::SceneDecoration>& out)
     {
         glm::vec3 p1 = TransformInGround(p2p.getBody1(), st) * osc::ToVec3(p2p.getPoint1());
         glm::vec3 p2 = TransformInGround(p2p.getBody2(), st) * osc::ToVec3(p2p.getPoint2());
@@ -324,7 +324,7 @@ namespace
                        OpenSim::Component const* hovered,
                        OpenSim::Component const* isolated,
                        float fixupScaleFactor,
-                       std::vector<osc::SceneDecorationNew>& out)
+                       std::vector<osc::SceneDecoration>& out)
     {
         float radius = fixupScaleFactor * 0.0045f;  // care: must be smaller than muscle caps (Tutorial 4)
 
@@ -347,7 +347,7 @@ namespace
                                     OpenSim::Component const* hovered,
                                     OpenSim::Component const* isolated,
                                     float fixupScaleFactor,
-                                    std::vector<osc::SceneDecorationNew>& out)
+                                    std::vector<osc::SceneDecoration>& out)
     {
         osc::Transform t = osc::ToTransform(j.getParentFrame().getTransformInGround(st));
         t.scale = osc::ToVec3(j.get_thoracic_ellipsoid_radii_x_y_z());
@@ -368,7 +368,7 @@ namespace
                     OpenSim::Component const* selected,
                     OpenSim::Component const* hovered,
                     OpenSim::Component const* isolated,
-                    std::vector<osc::SceneDecorationNew>& out,
+                    std::vector<osc::SceneDecoration>& out,
                     OpenSim::ModelDisplayHints const& mdh,
                     SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
                     osc::DecorativeGeometryHandler& producer)
@@ -403,7 +403,7 @@ namespace
                                 OpenSim::Component const* isolated,
                                 float fixupScaleFactor,
                                 OpenSim::ModelDisplayHints const&,
-                                std::vector<osc::SceneDecorationNew>& out)
+                                std::vector<osc::SceneDecoration>& out)
     {
         std::vector<glm::vec3> const pps = GetAllPathPoints(muscle.getGeometryPath(), st);
         std::string const muscleAbsPath = muscle.getAbsolutePathString();
@@ -420,9 +420,9 @@ namespace
         glm::vec4 const fiberColor = GetSconeStyleMuscleColor(muscle, st, opts.getMuscleColoringStyle());
         glm::vec4 const tendonColor = {204.0f/255.0f, 203.0f/255.0f, 200.0f/255.0f, 1.0f};
 
-        osc::SceneDecorationNewFlags flags = ComputeFlags(muscle, selected, hovered, isolated);
+        osc::SceneDecorationFlags flags = ComputeFlags(muscle, selected, hovered, isolated);
 
-        osc::SceneDecorationNew fiberSpherePrototype =
+        osc::SceneDecoration fiberSpherePrototype =
         {
             osc::App::meshes().getSphereMesh(),
             osc::Transform{},
@@ -432,7 +432,7 @@ namespace
         };
         fiberSpherePrototype.transform.scale = {fiberUiRadius, fiberUiRadius, fiberUiRadius};
 
-        osc::SceneDecorationNew tendonSpherePrototype{fiberSpherePrototype};
+        osc::SceneDecoration tendonSpherePrototype{fiberSpherePrototype};
         tendonSpherePrototype.transform.scale = {tendonUiRadius, tendonUiRadius, tendonUiRadius};
         tendonSpherePrototype.color = tendonColor;
 
@@ -605,9 +605,9 @@ namespace
                                   OpenSim::ModelDisplayHints const& mdh,
                                   SimTK::Array_<SimTK::DecorativeGeometry>&,
                                   osc::DecorativeGeometryHandler&,
-                                  std::vector<osc::SceneDecorationNew>& out)
+                                  std::vector<osc::SceneDecoration>& out)
     {
-        osc::SceneDecorationNewFlags const flags = ComputeFlags(musc, selected, hovered, isolated);
+        osc::SceneDecorationFlags const flags = ComputeFlags(musc, selected, hovered, isolated);
         std::vector<glm::vec3> const pps = GetAllPathPoints(musc.getGeometryPath(), st);
         std::string const absPath = musc.getAbsolutePathString();
 
@@ -675,7 +675,7 @@ namespace
                             OpenSim::ModelDisplayHints const& mdh,
                             SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
                             osc::DecorativeGeometryHandler& producer,
-                            std::vector<osc::SceneDecorationNew>& out)
+                            std::vector<osc::SceneDecoration>& out)
     {
         if (gp.hasOwner())
         {
@@ -716,7 +716,7 @@ namespace
     class OpenSimDecorationConsumer final : public osc::DecorationConsumer {
     public:
         OpenSimDecorationConsumer(osc::VirtualConstModelStatePair const* msp,
-                                  std::vector<osc::SceneDecorationNew>* out,
+                                  std::vector<osc::SceneDecoration>* out,
                                   OpenSim::Component const** currentComponent) :
             m_Msp{std::move(msp)},
             m_Out{std::move(out)},
@@ -735,14 +735,14 @@ namespace
         OpenSim::Component const* m_Selected = m_Msp->getSelected();
         OpenSim::Component const* m_Hovered = m_Msp->getHovered();
         OpenSim::Component const* m_Isolated = m_Msp->getIsolated();
-        std::vector<osc::SceneDecorationNew>* m_Out;
+        std::vector<osc::SceneDecoration>* m_Out;
         OpenSim::Component const** m_CurrentComponent;
     };
 
     // generates a sequence of OSC decoration from an OpenSim model + state
     void GenerateDecorationEls(osc::VirtualConstModelStatePair const& msp,
                                osc::CustomDecorationOptions const& opts,
-                               std::vector<osc::SceneDecorationNew>& out)
+                               std::vector<osc::SceneDecoration>& out)
     {
         out.clear();
 
@@ -1277,7 +1277,7 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
 }
 
 void osc::GenerateModelDecorations(VirtualConstModelStatePair const& p,
-                                   std::vector<SceneDecorationNew>& out,
+                                   std::vector<SceneDecoration>& out,
                                    CustomDecorationOptions const& opts)
 {
     out.clear();
@@ -1294,12 +1294,12 @@ void osc::GenerateModelDecorations(VirtualConstModelStatePair const& p,
 }
 
 void osc::GenerateModelDecorations(VirtualConstModelStatePair const& p,
-                                   std::vector<SceneDecorationNew>& out)
+                                   std::vector<SceneDecoration>& out)
 {
     GenerateModelDecorations(p, out, CustomDecorationOptions{});
 }
 
-void osc::UpdateSceneBVH(nonstd::span<SceneDecorationNew const> sceneEls, BVH& bvh)
+void osc::UpdateSceneBVH(nonstd::span<SceneDecoration const> sceneEls, BVH& bvh)
 {
     std::vector<AABB> aabbs;
     aabbs.reserve(sceneEls.size());
@@ -1409,7 +1409,7 @@ float osc::GetRecommendedScaleFactor(VirtualConstModelStatePair const& p)
     // generate decorations as if they were empty-sized and union their
     // AABBs to get an idea of what the "true" scale of the model probably
     // is (without the model containing oversized frames, etc.)
-    std::vector<SceneDecorationNew> ses;
+    std::vector<SceneDecoration> ses;
     GenerateModelDecorations(p, ses);
 
     if (ses.empty())

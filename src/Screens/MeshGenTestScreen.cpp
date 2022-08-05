@@ -2,7 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
-#include "src/Graphics/SceneDecorationNew.hpp"
+#include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Maths/Constants.hpp"
@@ -123,16 +123,16 @@ public:
                 m_RenderParams.viewPos = m_Camera.getPos();
                 m_RenderParams.drawFloor = false;
 
-                SceneDecorationNew d
+                SceneDecoration d
                 {
                     m_AllMeshes[m_CurrentMesh],
                     Transform{},
                     {1.0f, 1.0f, 1.0f, 1.0f},
                     "NO_ID",
-                    SceneDecorationNewFlags{}
+                    SceneDecorationFlags{}
                 };
 
-                m_Viewer.draw(nonstd::span<SceneDecorationNew const>{&d, 1}, m_RenderParams);
+                m_Viewer.draw(nonstd::span<SceneDecoration const>{&d, 1}, m_RenderParams);
             }
         }
         ImGui::End();

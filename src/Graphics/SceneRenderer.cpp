@@ -8,8 +8,8 @@
 #include "src/Graphics/Gl.hpp"
 #include "src/Graphics/GlGlm.hpp"
 #include "src/Graphics/MeshCache.hpp"
-#include "src/Graphics/SceneDecorationNew.hpp"
-#include "src/Graphics/SceneDecorationNewFlags.hpp"
+#include "src/Graphics/SceneDecoration.hpp"
+#include "src/Graphics/SceneDecorationFlags.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
 #include "src/Graphics/Texturing.hpp"
@@ -196,7 +196,7 @@ namespace
         gl::EnableVertexAttribArray(rimAttr);
     }
 
-    void PopulateGPUDrawlist(nonstd::span<osc::SceneDecorationNew const> in, std::vector<SceneGPUInstanceData>& out)
+    void PopulateGPUDrawlist(nonstd::span<osc::SceneDecoration const> in, std::vector<SceneGPUInstanceData>& out)
     {
         out.clear();
         out.reserve(in.size());
@@ -204,9 +204,9 @@ namespace
         // populate the list with the scene
         for (size_t i = 0; i < in.size(); ++i)
         {
-            osc::SceneDecorationNew const& se = in[i];
+            osc::SceneDecoration const& se = in[i];
 
-            if (se.flags & (osc::SceneDecorationNewFlags_IsIsolated | osc::SceneDecorationNewFlags_IsChildOfIsolated))
+            if (se.flags & (osc::SceneDecorationFlags_IsIsolated | osc::SceneDecorationFlags_IsChildOfIsolated))
             {
                 continue;  // skip rendering this (it's not in the isolated component)
             }
@@ -217,11 +217,11 @@ namespace
             ins.rgba = se.color;
             ins.decorationIdx = static_cast<int>(i);
 
-            if (se.flags & (osc::SceneDecorationNewFlags_IsSelected | osc::SceneDecorationNewFlags_IsChildOfSelected))
+            if (se.flags & (osc::SceneDecorationFlags_IsSelected | osc::SceneDecorationFlags_IsChildOfSelected))
             {
                 ins.rimIntensity = 0.9f;
             }
-            else if (se.flags & (osc::SceneDecorationNewFlags_IsHovered | osc::SceneDecorationNewFlags_IsChildOfHovered))
+            else if (se.flags & (osc::SceneDecorationFlags_IsHovered | osc::SceneDecorationFlags_IsChildOfHovered))
             {
                 ins.rimIntensity = 0.4f;
             }
@@ -246,7 +246,7 @@ public:
         return m_RenderTarget.samples;
     }
 
-    void draw(nonstd::span<SceneDecorationNew const> decorations, SceneRendererParams const& params)
+    void draw(nonstd::span<SceneDecoration const> decorations, SceneRendererParams const& params)
     {
         // ensure underlying render target matches latest params
         m_RenderTarget.setDims(params.dimensions);
@@ -317,7 +317,7 @@ public:
 
             while (pos < ninstances)
             {
-                osc::SceneDecorationNew const& se = decorations[instances[pos].decorationIdx];
+                osc::SceneDecoration const& se = decorations[instances[pos].decorationIdx];
 
                 // batch
                 size_t end = pos + 1;
@@ -364,7 +364,7 @@ public:
 
             for (SceneGPUInstanceData const& inst : m_GPUDrawlist)
             {
-                osc::SceneDecorationNew const& se = decorations[inst.decorationIdx];
+                osc::SceneDecoration const& se = decorations[inst.decorationIdx];
 
                 gl::Uniform(normalShader.uModelMat, inst.modelMtx);
                 gl::Uniform(normalShader.uNormalMat, inst.normalMtx);
@@ -406,7 +406,7 @@ public:
             while (pos < ninstances)
             {
                 SceneGPUInstanceData const& inst = m_GPUDrawlist[pos];
-                osc::SceneDecorationNew const& se = decorations[inst.decorationIdx];
+                osc::SceneDecoration const& se = decorations[inst.decorationIdx];
 
                 // batch
                 size_t end = pos + 1;
@@ -555,7 +555,7 @@ int osc::SceneRenderer::getSamples() const
     return m_Impl->getSamples();
 }
 
-void osc::SceneRenderer::draw(nonstd::span<SceneDecorationNew const> decs, SceneRendererParams const& params)
+void osc::SceneRenderer::draw(nonstd::span<SceneDecoration const> decs, SceneRendererParams const& params)
 {
     m_Impl->draw(std::move(decs), params);
 }

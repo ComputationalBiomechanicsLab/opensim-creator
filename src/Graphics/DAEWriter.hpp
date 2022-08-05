@@ -6,10 +6,10 @@
 
 namespace osc
 {
-    class SceneDecorationNew;
+    class SceneDecoration;
 }
 
 namespace osc
 {
-    void WriteDecorationsAsDAE(nonstd::span<SceneDecorationNew const>, std::ostream&);
+    void WriteDecorationsAsDAE(nonstd::span<SceneDecoration const>, std::ostream&);
 }

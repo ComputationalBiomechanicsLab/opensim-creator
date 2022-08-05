@@ -1,7 +1,7 @@
 #include "SceneViewer.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/Graphics/SceneDecorationNew.hpp"
+#include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/SceneRenderer.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
 
@@ -14,7 +14,7 @@
 
 class osc::SceneViewer::Impl final {
 public:
-    void draw(nonstd::span<SceneDecorationNew const> els, SceneRendererParams const& params)
+    void draw(nonstd::span<SceneDecoration const> els, SceneRendererParams const& params)
 	{
 		m_Renderer.draw(els, params);
 
@@ -71,7 +71,7 @@ osc::SceneViewer::~SceneViewer() noexcept
 	delete m_Impl;
 }
 
-void osc::SceneViewer::draw(nonstd::span<SceneDecorationNew const> els, SceneRendererParams const& params)
+void osc::SceneViewer::draw(nonstd::span<SceneDecoration const> els, SceneRendererParams const& params)
 {
     m_Impl->draw(std::move(els), params);
 }

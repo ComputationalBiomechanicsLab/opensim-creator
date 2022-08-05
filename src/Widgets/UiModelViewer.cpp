@@ -13,7 +13,7 @@
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
-#include "src/Graphics/SceneDecorationNew.hpp"
+#include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/SceneRenderer.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
@@ -68,7 +68,7 @@
 // export utils
 namespace
 {
-    void TryExportSceneToDAE(nonstd::span<osc::SceneDecorationNew const> scene)
+    void TryExportSceneToDAE(nonstd::span<osc::SceneDecoration const> scene)
     {
         std::filesystem::path p =
             osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("dae");
@@ -90,7 +90,7 @@ namespace
 namespace
 {
     void DrawSceneAABBs(
-        nonstd::span<osc::SceneDecorationNew const> decs,
+        nonstd::span<osc::SceneDecoration const> decs,
         glm::mat4 const& viewMtx,
         glm::mat4 const& projMtx)
     {
@@ -111,12 +111,12 @@ namespace
             return m_Version;
         }
 
-        nonstd::span<osc::SceneDecorationNew const> get() const
+        nonstd::span<osc::SceneDecoration const> get() const
         {
             return m_Decorations;
         }
 
-        nonstd::span<osc::SceneDecorationNew const> populate(
+        nonstd::span<osc::SceneDecoration const> populate(
             osc::VirtualConstModelStatePair const& msp,
             osc::CustomDecorationOptions const& decorationOptions)
         {
@@ -160,7 +160,7 @@ namespace
         osc::CustomDecorationOptions m_LastDecorationOptions;
 
         osc::UID m_Version;
-        std::vector<osc::SceneDecorationNew> m_Decorations;
+        std::vector<osc::SceneDecoration> m_Decorations;
     };
 
     class CachedBVH final {
@@ -582,7 +582,7 @@ private:
         glm::vec3 closestWorldLoc = {0.0f, 0.0f, 0.0f};
 
         // iterate through each scene-level hit and perform a triangle-level hittest
-        nonstd::span<osc::SceneDecorationNew const> decs = m_SceneDrawlist.get();
+        nonstd::span<osc::SceneDecoration const> decs = m_SceneDrawlist.get();
         std::string const isolatedPath = msp.getIsolated() ? msp.getIsolated()->getAbsolutePathString() : std::string{};
 
         for (osc::BVHCollision const& c : m_SceneHittestResults)

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/Graphics/Mesh.hpp"
-#include "src/Graphics/SceneDecorationNewFlags.hpp"
+#include "src/Graphics/SceneDecorationFlags.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/Transform.hpp"
 
@@ -13,19 +13,19 @@
 namespace osc
 {
     // represents a renderable decoration for a component in a model
-    class SceneDecorationNew final {
+    class SceneDecoration final {
     public:
         std::shared_ptr<Mesh> mesh;
         Transform transform;
         glm::vec4 color;
         std::string id;
-        SceneDecorationNewFlags flags;
+        SceneDecorationFlags flags;
 
-        SceneDecorationNew(std::shared_ptr<Mesh> mesh_,
+        SceneDecoration(std::shared_ptr<Mesh> mesh_,
                            Transform const& transform_,
                            glm::vec4 const& color_,
                            std::string id_,
-                           SceneDecorationNewFlags flags_) :
+                           SceneDecorationFlags flags_) :
             mesh{std::move(mesh_)},
             transform{transform_},
             color{color_},
@@ -35,5 +35,5 @@ namespace osc
         }
     };
 
-    AABB GetWorldspaceAABB(SceneDecorationNew const&);
+    AABB GetWorldspaceAABB(SceneDecoration const&);
 }
