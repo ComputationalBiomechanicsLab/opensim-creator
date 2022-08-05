@@ -307,8 +307,6 @@ add_library(osccore STATIC
     src/Graphics/MeshGen.cpp
     src/Graphics/MeshGen.hpp
     src/Graphics/MeshTopography.hpp
-    src/Graphics/MultisampledRenderBuffers.cpp
-    src/Graphics/MultisampledRenderBuffers.hpp
     src/Graphics/Renderer.cpp
     src/Graphics/Renderer.hpp
     src/Graphics/SceneDecoration.cpp
