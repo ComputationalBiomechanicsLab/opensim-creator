@@ -4,13 +4,9 @@
 
 #include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/Graphics/Shaders/GouraudShader.hpp"
-#include "src/Graphics/Gl.hpp"
-#include "src/Graphics/GlGlm.hpp"
-#include "src/Graphics/Mesh.hpp"
-#include "src/Graphics/MeshCache.hpp"
-#include "src/Graphics/MultisampledRenderBuffers.hpp"
 #include "src/Graphics/Texturing.hpp"
+#include "src/Graphics/SceneRenderer.hpp"
+#include "src/Graphics/SceneRendererParams.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Rect.hpp"
@@ -28,22 +24,15 @@
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/LogViewer.hpp"
 
-#include <GL/glew.h>
-#include <glm/mat3x3.hpp>
-#include <glm/mat4x3.hpp>
-#include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
+#include <nonstd/span.hpp>
 
 #include <filesystem>
-#include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 
 static gl::Texture2D LoadImageResourceIntoTexture(char const* res_pth)
@@ -51,90 +40,25 @@ static gl::Texture2D LoadImageResourceIntoTexture(char const* res_pth)
     return osc::LoadImageAsTexture(osc::App::resource(res_pth).string().c_str(), osc::ImageFlags_FlipVertically).Texture;
 }
 
-static glm::mat4x3 GenerateFloorModelMatrix()
+static osc::PolarPerspectiveCamera GetSplashScreenDefaultPolarCamera()
 {
-	// rotate from XY (+Z dir) to ZY (+Y dir)
-	glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, -osc::fpi2, {1.0f, 0.0f, 0.0f});
-
-	// make floor extend far in all directions
-	rv = glm::scale(glm::mat4{1.0f}, {100.0f, 1.0f, 100.0f}) * rv;
-
-	// lower slightly, so that it doesn't conflict with OpenSim model planes
-	// that happen to lie at Z==0
-	rv = glm::translate(glm::mat4{1.0f}, {0.0f, -0.0001f, 0.0f}) * rv;
-
-	return glm::mat4x3{rv};
+    osc::PolarPerspectiveCamera rv;
+    rv.phi = osc::fpi4/1.5f;
+    rv.radius = 10.0f;
+    rv.theta = osc::fpi4;
+    return rv;
 }
 
-namespace
+static osc::SceneRendererParams GetSplashScreenDefaultRenderParams(osc::PolarPerspectiveCamera const& camera)
 {
-    struct SizedTexture {
-        gl::Texture2D texture;
-        glm::vec2 dimensions;
-
-        SizedTexture(gl::Texture2D texture_, glm::vec2 dimensions_) :
-            texture{std::move(texture_)},
-            dimensions{std::move(dimensions_)}
-        {
-        }
-    };
-}
-
-static std::unique_ptr<SizedTexture> GenerateBackgroundImage(glm::vec2 dimensions)
-{
-    glm::vec3 lightDir = {-0.34f, -0.25f, 0.05f};
-    glm::vec3 lightCol = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
-    glm::vec4 backgroundCol = {0.89f, 0.89f, 0.89f, 1.0f};
-    osc::PolarPerspectiveCamera camera;
-    camera.phi = osc::fpi4/1.5f;
-    camera.radius = 10.0f;
-    camera.theta = osc::fpi4;
-    glm::mat4 floorMat = GenerateFloorModelMatrix();
-    glm::mat4 floorNormalMat = osc::ToNormalMatrix(floorMat);
-    gl::Texture2D chequer = osc::GenChequeredFloorTexture();
-    std::shared_ptr<osc::Mesh> floorMesh = osc::App::meshes().getFloorMesh();
-
-    // create render buffers
-    osc::MultisampledRenderBuffers bufs{dimensions, osc::App::get().getMSXAASamplesRecommended()};
-
-    // setup top-level drawcall state
-    gl::Viewport(0, 0, bufs.getWidth(), bufs.getHeight());
-    gl::Enable(GL_DEPTH_TEST);
-    gl::BindFramebuffer(GL_FRAMEBUFFER, bufs.updRenderingFBO());
-    gl::ClearColor(1.0f, 0.0f, 0.0f, 0.0f);
-    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // set up shader state
-    osc::GouraudShader& s = osc::App::shader<osc::GouraudShader>();
-    gl::UseProgram(s.program);
-    gl::Uniform(s.uProjMat, camera.getProjMtx(dimensions.x/dimensions.y));
-    gl::Uniform(s.uViewMat, camera.getViewMtx());
-    gl::Uniform(s.uModelMat, floorMat);
-    gl::Uniform(s.uNormalMat, floorNormalMat);
-    gl::Uniform(s.uDiffuseColor, {1.0f, 1.0f, 1.0f, 1.0f});
-    gl::Uniform(s.uLightDir, lightDir);
-    gl::Uniform(s.uLightColor, lightCol);
-    gl::Uniform(s.uViewPos, camera.getPos());
-    gl::Uniform(s.uIsTextured, true);
-    gl::ActiveTexture(GL_TEXTURE0);
-    gl::BindTexture(chequer);
-    gl::Uniform(s.uSampler0, gl::textureIndex<GL_TEXTURE0>());
-
-    // draw
-    gl::BindVertexArray(floorMesh->GetVertexArray());
-    floorMesh->Draw();
-    gl::BindVertexArray();
-
-    // blit to not-antialiased texture
-    gl::BindFramebuffer(GL_READ_FRAMEBUFFER, bufs.updRenderingFBO());
-    glReadBuffer(GL_COLOR_ATTACHMENT0);
-    gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, bufs.updSceneFBO());
-    gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
-    gl::BlitFramebuffer(0, 0, bufs.getWidth(), bufs.getHeight(), 0, 0, bufs.getWidth(), bufs.getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-    gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-
-    // extract texture to output
-    return std::make_unique<SizedTexture>(std::move(bufs.updSceneTexture()), dimensions);    
+    osc::SceneRendererParams rv;
+    rv.drawRims = false;
+    rv.viewMatrix = camera.getViewMtx();
+    rv.viewPos = camera.getPos();
+    rv.lightDirection = {-0.34f, -0.25f, 0.05f};
+    rv.lightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
+    rv.backgroundColor = {0.89f, 0.89f, 0.89f, 1.0f};
+    return rv;
 }
 
 class osc::SplashTab::Impl final {
@@ -231,17 +155,18 @@ private:
         ImGui::Begin("##splashscreenbackground", nullptr, GetMinimalWindowFlags());
         ImGui::PopStyleVar();
 
-        if (!m_MaybeBackgroundImage)
+        SceneRendererParams params{m_LastSceneRendererParams};
+        params.dimensions = Dimensions(screenRect);
+        params.samples = App::get().getMSXAASamplesRecommended();
+        params.projectionMatrix = m_Camera.getProjMtx(AspectRatio(screenRect));
+
+        if (params != m_LastSceneRendererParams)
         {
-            m_MaybeBackgroundImage = GenerateBackgroundImage(Dimensions(screenRect));
-        }
-        else if (m_MaybeBackgroundImage->dimensions != Dimensions(screenRect))
-        {
-            m_MaybeBackgroundImage.reset();
-            m_MaybeBackgroundImage = GenerateBackgroundImage(Dimensions(screenRect));
+            m_SceneRenderer.draw({}, params);
+            m_LastSceneRendererParams = params;
         }
 
-        osc::DrawTextureAsImGuiImage(m_MaybeBackgroundImage->texture, m_MaybeBackgroundImage->dimensions);
+        osc::DrawTextureAsImGuiImage(m_SceneRenderer.updOutputTexture(), m_SceneRenderer.getDimensions());
 
         ImGui::End();
     }
@@ -443,8 +368,10 @@ private:
     // tab parent
     MainUIStateAPI* m_Parent;
 
-    // bg image of the floor
-    std::unique_ptr<SizedTexture> m_MaybeBackgroundImage = nullptr;
+    // for rendering the 3D scene
+    osc::PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();
+    SceneRenderer m_SceneRenderer;
+    SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);
 
 	// main app logo, blitted to top of the screen
 	gl::Texture2D m_OscLogo = LoadImageResourceIntoTexture("logo.png");
