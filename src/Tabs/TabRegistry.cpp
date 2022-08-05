@@ -120,6 +120,16 @@ osc::TabRegistryEntry osc::GetRegisteredTab(int i)
     return GetRegisteredTabsTable()->at(static_cast<size_t>(i));
 }
 
+std::optional<osc::TabRegistryEntry> osc::GetRegisteredTabByName(std::string_view s)
+{
+    auto lock = GetRegisteredTabsTable();
+    auto it = std::find_if(lock->begin(), lock->end(), [&s](osc::TabRegistryEntry const& e)
+    {
+        return e.getName() == s;
+    });
+    return it != lock->end() ? *it : std::optional<osc::TabRegistryEntry>{};
+}
+
 bool osc::RegisterTab(CStringView name, std::unique_ptr<Tab>(*ctor_)(TabHost*))
 {
     auto lock = GetRegisteredTabsTable();

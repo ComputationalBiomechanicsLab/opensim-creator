@@ -81,6 +81,7 @@ public:
     bool useMultiViewport;
     static constexpr int numMSXAASamples = 4;
     std::unordered_map<std::string, bool> m_PanelsEnabledState = MakeDefaultPanelStates();
+    std::optional<std::string> m_MaybeInitialTab;
 };
 
 static void TryUpdateConfigFromConfigFile(osc::Config::Impl& cfg)
@@ -129,6 +130,12 @@ static void TryUpdateConfigFromConfigFile(osc::Config::Impl& cfg)
         std::string pth = (*docs.as_string()).get();
         fs::path configFileDir = maybeConfigPath->parent_path();
         cfg.htmlDocsDir = configFileDir / pth;
+    }
+
+    // init `initial_tab`
+    if (auto initialTabName = config["initial_tab"]; initialTabName)
+    {
+        cfg.m_MaybeInitialTab = initialTabName.as_string()->get();
     }
 
     // init `use_multi_viewport`
@@ -206,4 +213,9 @@ bool osc::Config::getIsPanelEnabled(std::string const& panelName) const
 void osc::Config::setIsPanelEnabled(std::string const& panelName, bool v)
 {
     m_Impl->m_PanelsEnabledState[panelName] = v;
+}
+
+std::optional<std::string> osc::Config::getInitialTabOverride() const
+{
+    return m_Impl->m_MaybeInitialTab;
 }

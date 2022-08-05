@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace osc
@@ -35,6 +36,8 @@ namespace osc
         // get if a given UI panel is enabled or not
         bool getIsPanelEnabled(std::string const& panelName) const;
         void setIsPanelEnabled(std::string const& panelName, bool v);
+
+        std::optional<std::string> getInitialTabOverride() const;
 
     private:
         Impl* m_Impl;

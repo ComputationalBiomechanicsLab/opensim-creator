@@ -3,6 +3,8 @@
 #include "src/Utils/CStringView.hpp"
 
 #include <memory>
+#include <optional>
+#include <string_view>
 
 namespace osc
 {
@@ -33,5 +35,6 @@ namespace osc
 
     int GetNumRegisteredTabs();
     TabRegistryEntry GetRegisteredTab(int);
+    std::optional<TabRegistryEntry> GetRegisteredTabByName(std::string_view);
     bool RegisterTab(CStringView name, std::unique_ptr<Tab>(*ctor_)(TabHost*));
 }

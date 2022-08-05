@@ -1,6 +1,9 @@
 resources = "resources"
 docs = "share/doc/html"
 
+# handy for auto-opening an in-development tab
+# initial_tab = "OpenSim/PreviewExperimentalData"
+
 [experimental_feature_flags]
 
 # enable dragging panels out of the host window and into their own window

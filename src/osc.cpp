@@ -1,5 +1,10 @@
 #include "src/OpenSimBindings/OpenSimApp.hpp"
+#include "src/Platform/Config.hpp"
+#include "src/Platform/Log.hpp"
 #include "src/Screens/MainUIScreen.hpp"
+#include "src/Tabs/Tab.hpp"
+#include "src/Tabs/TabHost.hpp"
+#include "src/Tabs/TabRegistry.hpp"
 
 #include <cstdlib>
 #include <iostream>
@@ -56,14 +61,33 @@ int main(int argc, char** argv)
     // init main app (window, OpenGL, etc.)
     osc::OpenSimApp app;
 
-    if (argc <= 0)
+    // init top-level screen (tab host)
+    auto screen = argc <= 0 ?
+        std::make_unique<osc::MainUIScreen>() :
+        std::make_unique<osc::MainUIScreen>(argv[0]);
+
+    // if the config requested that an initial tab should be opened, try looking it up
+    // and loading it
+    if (auto maybeRequestedTab = app.getConfig().getInitialTabOverride())
     {
-        app.show<osc::MainUIScreen>();
+        if (auto registeredTab = osc::GetRegisteredTabByName(*maybeRequestedTab))
+        {
+            osc::TabHost* api = screen->getTabHostAPI();
+            api->selectTab(api->addTab(registeredTab->createTab(api)));
+        }
+        else
+        {
+            osc::log::warn("%s: cannot find a tab with this name in the tab registry: ignoring", maybeRequestedTab->c_str());
+            osc::log::warn("available tabs are:");
+            for (int i = 0, len = osc::GetNumRegisteredTabs(); i < len; ++i)
+            {
+                osc::log::warn("    %s", osc::GetRegisteredTab(i).getName().c_str());
+            }
+        }
     }
-    else
-    {
-        app.show<osc::MainUIScreen>(argv[0]);
-    }
+
+    // enter main application loop
+    app.show(std::move(screen));
 
     return EXIT_SUCCESS;
 }
