@@ -128,6 +128,7 @@ namespace osc
 
     // returns an xform that maps a sphere to another sphere
     glm::mat4 SphereToSphereMat4(Sphere const&, Sphere const&) noexcept;
+    Transform SphereToSphereTransform(Sphere const&, Sphere const&) noexcept;
 
     // returns an AABB that contains the sphere
     AABB ToAABB(Sphere const&) noexcept;

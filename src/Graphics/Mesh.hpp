@@ -82,6 +82,7 @@ namespace osc
 
         // as above, but works in worldspace (requires a model matrix to map the worldspace line into modelspace)
         RayCollision getRayMeshCollisionInWorldspace(glm::mat4 const& model2world, Line const& worldspaceLine) const;
+        RayCollision getRayMeshCollisionInWorldspace(Transform const& model2world, Line const& worldspaceLine) const;
 
         void clear();
         void recalculateBounds();

@@ -494,10 +494,12 @@ namespace
 {
     // returns a transform that maps a sphere mesh (defined to be @ 0,0,0 with radius 1)
     // to some sphere in the scene (e.g. a body/ground)
-    glm::mat4 SphereMeshToSceneSphereXform(Sphere const& sceneSphere)
+    Transform SphereMeshToSceneSphereTransform(Sphere const& sceneSphere)
     {
-        Sphere sphereMesh{{0.0f, 0.0f, 0.0f}, 1.0f};
-        return SphereToSphereMat4(sphereMesh, sceneSphere);
+        Transform t;
+        t.scale *= sceneSphere.radius;
+        t.position = sceneSphere.origin;
+        return t;
     }
 
     // returns a multiampled render buffer with the given format + dimensions
@@ -577,16 +579,24 @@ namespace
         UID id = g_EmptyID;
         UID groupId = g_EmptyID;
         std::shared_ptr<Mesh> mesh;
-        glm::mat4x3 modelMatrix;
-        glm::mat3x3 normalMatrix;
+        Transform transform;
         glm::vec4 color;
         float rimColor;
-        std::shared_ptr<gl::Texture2D> maybeDiffuseTex;
     };
+
+    glm::mat4x3 ModelMatrix(DrawableThing const& dt)
+    {
+        return osc::ToMat4(dt.transform);
+    }
+
+    glm::mat3x3 NormalMatrix(DrawableThing const& dt)
+    {
+        return osc::ToNormalMatrix(dt.transform);
+    }
 
     AABB CalcBounds(DrawableThing const& dt)
     {
-        return dt.mesh->getWorldspaceAABB(dt.modelMatrix);
+        return dt.mesh->getWorldspaceAABB(dt.transform);
     }
 
     // an instance of something that is being drawn, once uploaded to the GPU
@@ -650,20 +660,10 @@ namespace
             gl::Uniform(shader.uViewPos, viewPos);
             for (DrawableThing const& d : drawables)
             {
-                gl::Uniform(shader.uModelMat, d.modelMatrix);
-                gl::Uniform(shader.uNormalMat, d.normalMatrix);
+                gl::Uniform(shader.uModelMat, ModelMatrix(d));
+                gl::Uniform(shader.uNormalMat, NormalMatrix(d));
                 gl::Uniform(shader.uDiffuseColor, d.color + (d.rimColor > 0.05f ? 0.1f : 0.0f));  // HACK: also brigten the element a little bit if it's rim highlighted
-                if (d.maybeDiffuseTex)
-                {
-                    gl::ActiveTexture(GL_TEXTURE0);
-                    gl::BindTexture(*d.maybeDiffuseTex);
-                    gl::Uniform(shader.uIsTextured, true);
-                    gl::Uniform(shader.uSampler0, GL_TEXTURE0-GL_TEXTURE0);
-                }
-                else
-                {
-                    gl::Uniform(shader.uIsTextured, false);
-                }
+                gl::Uniform(shader.uIsTextured, false);
                 gl::BindVertexArray(d.mesh->GetVertexArray());
                 d.mesh->Draw();
                 gl::BindVertexArray();
@@ -707,7 +707,7 @@ namespace
                 }
 
                 gl::Uniform(scs.uColor, {d.rimColor, 0.0f, 0.0f, 1.0f});
-                gl::Uniform(scs.uModel, d.modelMatrix);
+                gl::Uniform(scs.uModel, ModelMatrix(d));
                 gl::BindVertexArray(d.mesh->GetVertexArray());
                 d.mesh->Draw();
                 gl::BindVertexArray();
@@ -4776,14 +4776,12 @@ namespace
             m_VisibilityFlags.StationConnectionLines = newIsShowing;
         }
 
-        glm::mat4 GetFloorModelMtx() const
+        Transform GetFloorTransform() const
         {
-            glm::mat4 rv{1.0f};
-
-            rv = glm::rotate(rv, fpi2, {-1.0, 0.0, 0.0});
-            rv = glm::scale(rv, {m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f});
-
-            return rv;
+            Transform t;
+            t.rotation = glm::angleAxis(fpi2, glm::vec3{-1.0f, 0.0f, 0.0f});
+            t.scale = {m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f};
+            return t;
         }
 
         DrawableThing GenerateFloorDrawable() const
@@ -4792,11 +4790,11 @@ namespace
             dt.id = g_EmptyID;
             dt.groupId = g_EmptyID;
             dt.mesh = osc::App::meshes().get100x100GridMesh();
-            dt.modelMatrix = GetFloorModelMtx() * glm::scale(glm::mat4{1.0f}, glm::vec3{0.5f, 0.5f, 0.5f});
-            dt.normalMatrix = osc::ToNormalMatrix(dt.modelMatrix);
+            Transform t = GetFloorTransform();
+            t.scale *= 0.5f;
+            dt.transform = t;
             dt.color = m_Colors.GridLines;
             dt.rimColor = 0.0f;
-            dt.maybeDiffuseTex = nullptr;
             return dt;
         }
 
@@ -4810,7 +4808,8 @@ namespace
             return Sphere{translation, GetSphereRadius()};
         }
 
-        void AppendAsFrame(UID logicalID,
+        void AppendAsFrame(
+            UID logicalID,
             UID groupID,
             Transform const& xform,
             std::vector<DrawableThing>& appendOut,
@@ -4819,104 +4818,111 @@ namespace
             glm::vec3 legLen = {1.0f, 1.0f, 1.0f},
             glm::vec3 coreColor = {1.0f, 1.0f, 1.0f}) const
         {
-            // stolen from SceneGeneratorNew.cpp
+            float const coreRadius = GetSphereRadius();
+            float const legThickness = 0.5f * coreRadius;
 
-            glm::vec3 origin = xform.position;
-            glm::mat3 rotation = glm::toMat3(xform.rotation);
+            // this is how much the cylinder has to be "pulled in" to the core to hide the edges
+            float const cylinderPullback = coreRadius * std::sin((osc::fpi * legThickness) / coreRadius);
 
             // emit origin sphere
             {
-                Sphere centerSphere{origin, GetSphereRadius()};
+                Transform t;
+                t.scale *= coreRadius;
+                t.rotation = xform.rotation;
+                t.position = xform.position;
 
                 DrawableThing& sphere = appendOut.emplace_back();
                 sphere.id = logicalID;
                 sphere.groupId = groupID;
                 sphere.mesh = m_SphereMesh;
-                sphere.modelMatrix = SphereMeshToSceneSphereXform(centerSphere);
-                sphere.normalMatrix = osc::ToNormalMatrix(sphere.modelMatrix);
-                sphere.color = {coreColor.r, coreColor.g, coreColor.b, alpha};
+                sphere.transform = t;
+                sphere.color = {coreColor, alpha};
                 sphere.rimColor = rimAlpha;
-                sphere.maybeDiffuseTex = nullptr;
             }
 
             // emit "legs"
-            Segment cylinderline{{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
             for (int i = 0; i < 3; ++i)
             {
-                glm::vec3 dir = {0.0f, 0.0f, 0.0f};
-                dir[i] = 4.0f * legLen[i] * GetSphereRadius();
-                Segment axisline{origin, origin + rotation*dir};
+                // cylinder meshes are -1.0f to 1.0f in Y, so create a transform that maps the
+                // mesh onto the legs, which are:
+                //
+                // - 4.0f * leglen[leg] * radius long
+                // - 0.5f * radius thick                
 
-                float frameAxisThickness = GetSphereRadius()/2.0f;
-                glm::vec3 prescale = {frameAxisThickness, 1.0f, frameAxisThickness};
-                glm::mat4 prescaleMtx = glm::scale(glm::mat4{1.0f}, prescale);
-                glm::vec4 color{0.0f, 0.0f, 0.0f, alpha};
+                glm::vec3 const meshDirection = {0.0f, 1.0f, 0.0f};
+                glm::vec3 cylinderDirection = {};
+                cylinderDirection[i] = 1.0f;
+
+                float const actualLegLen = 4.0f * legLen[i] * coreRadius;
+
+                Transform t;
+                t.scale.x = legThickness;
+                t.scale.y = 0.5f * actualLegLen;  // cylinder is 2 units high
+                t.scale.z = legThickness;
+                t.rotation = glm::normalize(xform.rotation * glm::rotation(meshDirection, cylinderDirection));
+                t.position = xform.position + (t.rotation * (((GetSphereRadius() + (0.5f * actualLegLen)) - cylinderPullback) * meshDirection));
+
+                glm::vec4 color = {0.0f, 0.0f, 0.0f, alpha};
                 color[i] = 1.0f;
 
                 DrawableThing& se = appendOut.emplace_back();
                 se.id = logicalID;
                 se.groupId = groupID;
                 se.mesh = m_CylinderMesh;
-                se.modelMatrix = SegmentToSegmentMat4(cylinderline, axisline) * prescaleMtx;
-                se.normalMatrix = osc::ToNormalMatrix(se.modelMatrix);
+                se.transform = t;
                 se.color = color;
                 se.rimColor = rimAlpha;
-                se.maybeDiffuseTex = nullptr;
             }
         }
 
         void AppendAsCubeThing(UID logicalID,
             UID groupID,
             Transform const& xform,
-            std::vector<DrawableThing>& appendOut,
-            float alpha = 1.0f,
-            float rimAlpha = 0.0f,
-            glm::vec3 legLen = {1.0f, 1.0f, 1.0f},
-            glm::vec3 coreColor = {1.0f, 1.0f, 1.0f},
-            glm::vec3 sfs = {1.0f, 1.0f, 1.0f}) const
+            std::vector<DrawableThing>& appendOut) const
         {
-            glm::mat4 baseMmtx = ToMat4(xform);
+            float const halfWidth = 1.5f * GetSphereRadius();
 
-            float halfWidths = 1.5f * GetSphereRadius();
-            glm::vec3 scaleFactors = halfWidths * sfs;
-
-            glm::mat4 mmtx = baseMmtx * glm::scale(glm::mat4{1.0f}, glm::vec3{scaleFactors});
-
+            // core
             {
+                Transform scaled{xform};
+                scaled.scale *= halfWidth;
+
                 DrawableThing& originCube = appendOut.emplace_back();
                 originCube.id = logicalID;
                 originCube.groupId = groupID;
                 originCube.mesh = osc::App::upd().meshes().getBrickMesh();
-                originCube.modelMatrix = mmtx;
-                originCube.normalMatrix = osc::ToNormalMatrix(mmtx);
-                originCube.color = glm::vec4{coreColor, alpha};
-                originCube.rimColor = rimAlpha;
-                originCube.maybeDiffuseTex = nullptr;
+                originCube.transform = scaled;
+                originCube.color = glm::vec4{1.0f, 1.0f, 1.0f, 1.0f};
+                originCube.rimColor = 0.0f;
             }
 
-            // stretch origin cube for legs
+            // legs
             for (int i = 0; i < 3; ++i)
             {
-                Segment coneLine{glm::vec3{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
-                Segment outputLine{};
-                outputLine.p1[i] = halfWidths;
-                outputLine.p2[i] = 1.75f * halfWidths * legLen[i];
+                // cone mesh has a source height of 2, stretches from -1 to +1 in Y
+                float const coneHeight = 0.75f * halfWidth;
 
-                glm::mat4 segXform = SegmentToSegmentMat4(coneLine, outputLine);
-                segXform = baseMmtx * segXform * glm::scale(glm::mat4{1.0f}, glm::vec3{halfWidths/2.0f, 1.0f, halfWidths/2.0f});
+                glm::vec3 const meshDirection = {0.0f, 1.0f, 0.0f};
+                glm::vec3 coneDirection = {};
+                coneDirection[i] = 1.0f;
 
-                glm::vec4 color = {0.0f, 0.0f, 0.0f, alpha};
+                Transform t;
+                t.scale.x = 0.5f * halfWidth;
+                t.scale.y = 0.5f * coneHeight;
+                t.scale.z = 0.5f * halfWidth;
+                t.rotation = xform.rotation * glm::rotation(meshDirection, coneDirection);
+                t.position = xform.position + (t.rotation * ((halfWidth + (0.5f * coneHeight)) * meshDirection));
+
+                glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
                 color[i] = 1.0f;
 
                 DrawableThing& legCube = appendOut.emplace_back();
                 legCube.id = logicalID;
                 legCube.groupId = groupID;
                 legCube.mesh = osc::App::upd().meshes().getConeMesh();
-                legCube.modelMatrix = segXform;
-                legCube.normalMatrix = osc::ToNormalMatrix(segXform);
+                legCube.transform = t;
                 legCube.color = color;
-                legCube.rimColor = rimAlpha;
-                legCube.maybeDiffuseTex = nullptr;
+                legCube.rimColor = 0.0f;
             }
         }
 
@@ -5058,7 +5064,7 @@ namespace
                     continue;
                 }
 
-                osc::RayCollision rc = drawable.mesh->getRayMeshCollisionInWorldspace(drawable.modelMatrix, ray);
+                osc::RayCollision rc = drawable.mesh->getRayMeshCollisionInWorldspace(drawable.transform, ray);
                 if (rc.hit && rc.distance < closestDist)
                 {
                     closestID = drawable.id;
@@ -5090,11 +5096,9 @@ namespace
             rv.id = meshEl.ID;
             rv.groupId = g_MeshGroupID;
             rv.mesh = meshEl.MeshData;
-            rv.modelMatrix = ToMat4(meshEl.Xform);
-            rv.normalMatrix = ToNormalMatrix(meshEl.Xform);
+            rv.transform = meshEl.Xform;
             rv.color = meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID ? RedifyColor(GetColorMesh()) : GetColorMesh();
             rv.rimColor = 0.0f;
-            rv.maybeDiffuseTex = nullptr;
             return rv;
         }
 
@@ -5104,11 +5108,9 @@ namespace
             rv.id = bodyEl.ID;
             rv.groupId = g_BodyGroupID;
             rv.mesh = m_SphereMesh;
-            rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation(bodyEl.Xform.position));
-            rv.normalMatrix = osc::ToNormalMatrix(rv.modelMatrix);
+            rv.transform = SphereMeshToSceneSphereTransform(SphereAtTranslation(bodyEl.Xform.position));
             rv.color = color;
             rv.rimColor = 0.0f;
-            rv.maybeDiffuseTex = nullptr;
             return rv;
         }
 
@@ -5118,11 +5120,9 @@ namespace
             rv.id = g_GroundID;
             rv.groupId = g_GroundGroupID;
             rv.mesh = m_SphereMesh;
-            rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation({0.0f, 0.0f, 0.0f}));
-            rv.normalMatrix = osc::ToNormalMatrix(rv.modelMatrix);
+            rv.transform = SphereMeshToSceneSphereTransform(SphereAtTranslation({0.0f, 0.0f, 0.0f}));
             rv.color = color;
             rv.rimColor = 0.0f;
-            rv.maybeDiffuseTex = nullptr;
             return rv;
         }
 
@@ -5132,11 +5132,9 @@ namespace
             rv.id = el.GetID();
             rv.groupId = g_StationGroupID;
             rv.mesh = m_SphereMesh;
-            rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation(el.GetPos()));
-            rv.normalMatrix = osc::ToNormalMatrix(rv.modelMatrix);
+            rv.transform = SphereMeshToSceneSphereTransform(SphereAtTranslation(el.GetPos()));
             rv.color = color;
             rv.rimColor = 0.0f;
-            rv.maybeDiffuseTex = nullptr;
             return rv;
         }
 
@@ -5849,7 +5847,7 @@ namespace
                     }
                     else
                     {
-                        d.modelMatrix = d.modelMatrix * glm::scale(glm::mat4{1.0f}, glm::vec3{animScale, animScale, animScale});
+                        d.transform.scale *= animScale;
                     }
                 }
             }

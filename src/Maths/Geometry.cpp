@@ -503,6 +503,14 @@ glm::mat4 osc::SphereToSphereMat4(Sphere const& a, Sphere const& b) noexcept
     return mover * scaler;
 }
 
+osc::Transform osc::SphereToSphereTransform(Sphere const& a, Sphere const& b) noexcept
+{
+    Transform t;
+    t.scale *= (b.radius / a.radius);
+    t.position = b.origin - a.origin;
+    return t;
+}
+
 osc::AABB osc::ToAABB(Sphere const& s) noexcept
 {
     AABB rv;
