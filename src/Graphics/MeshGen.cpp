@@ -266,87 +266,125 @@ osc::MeshData osc::GenUntexturedUVSphere(size_t sectors, size_t stacks)
 
 osc::MeshData osc::GenUntexturedSimbodyCylinder(size_t nsides)
 {
-    MeshData rv;
-    rv.reserve(4*3*nsides);
+    constexpr float c_TopY = +1.0f;
+    constexpr float c_BottomY = -1.0f;
+    constexpr float c_Radius = 1.0f;
+    constexpr float c_TopDirection = c_TopY;
+    constexpr float c_BottomDirection = c_BottomY;
 
-    constexpr float topY = +1.0f;
-    constexpr float bottomY = -1.0f;
+    OSC_ASSERT(3 <= nsides && nsides < 1000000 && "the backend only supports 32-bit indices, you should double-check that this code would work (change this assertion if it does)");
+
     const float stepAngle = 2.0f*fpi / nsides;
 
-    unsigned short index = 0;
-    auto push = [&rv, &index](glm::vec3 const& pos, glm::vec3 const& norm)
+    MeshData rv;
+
+    // helper: push mesh *data* (i.e. vert and normal) to the output
+    auto pushData = [&rv](glm::vec3 const& pos, glm::vec3 const& norm)
     {
+        uint32_t idx = static_cast<uint32_t>(rv.verts.size());
         rv.verts.push_back(pos);
         rv.normals.push_back(norm);
-        rv.indices.push_back(index++);
+        return idx;
     };
 
-    // top
+    // helper: push primitive *indices* (into data) to the output
+    auto pushTriangle = [&rv](uint32_t p0Index, uint32_t p1Index, uint32_t p2Index)
     {
-        glm::vec3 normal = {0.0f, 1.0f, 0.0f};
-        glm::vec3 middle = {0.0f, topY, 0.0f};
+        rv.indices.push_back(p0Index);
+        rv.indices.push_back(p1Index);
+        rv.indices.push_back(p2Index);
+    };
 
-        for (size_t i = 0; i < nsides; ++i)
+    // top: a triangle fan
+    {
+        // preemptively push the middle and the first point and hold onto their indices
+        // because the middle is used for all triangles in the fan and the first point
+        // is used when completing the loop
+
+        glm::vec3 const topNormal = {0.0f, c_TopDirection, 0.0f};
+        uint32_t const midpointIndex = pushData({0.0f, c_TopY, 0.0f}, topNormal);
+        uint32_t const loopStartIndex = pushData({c_Radius, c_TopY, 0.0f}, topNormal);
+
+        // then go through each outer vertex one-by-one, creating a triangle between
+        // the new vertex, the middle, and the previous vertex
+
+        uint32_t p1Index = loopStartIndex;
+        for (size_t side = 1; side < nsides; ++side)
         {
-            float thetaStart = i * stepAngle;
-            float thetaEnd = (i + 1) * stepAngle;
+            float const theta = side * stepAngle;
+            glm::vec3 const p2 = {std::cos(theta), c_TopY, std::sin(theta)};
+            uint32_t const p2Index = pushData(p2, topNormal);
 
-            // note: ensure these wind CCW (culling)
-            glm::vec3 e1 = {std::cos(thetaEnd), topY, std::sin(thetaEnd)};
-            glm::vec3 e2 = {std::cos(thetaStart), topY, std::sin(thetaStart)};
-
-            push(middle, normal);
-            push(e1, normal);
-            push(e2, normal);
+            pushTriangle(midpointIndex, p1Index, p2Index);
+            p1Index = p2Index;
         }
+
+        // finish loop
+        pushTriangle(midpointIndex, p1Index, loopStartIndex);
     }
 
-    // bottom
+    // bottom: another triangle fan
     {
-        glm::vec3 normal = {0.0f, -1.0f, 0.0f};
-        glm::vec3 middle = {0.0f, bottomY, 0.0f};
+        // preemptively push the middle and the first point and hold onto their indices
+        // because the middle is used for all triangles in the fan and the first point
+        // is used when completing the loop
 
-        for (size_t i = 0; i < nsides; ++i)
+        glm::vec3 const bottomNormal = {0.0f, c_BottomDirection, 0.0f};
+        uint32_t const midpointIndex = pushData({0.0f, c_BottomY, 0.0f}, bottomNormal);
+        uint32_t const loopStartIndex = pushData({c_Radius, c_BottomY, 0.0f}, bottomNormal);
+
+        // then go through each outer vertex one-by-one, creating a triangle between
+        // the new vertex, the middle, and the previous vertex
+
+        uint32_t p1Index = loopStartIndex;
+        for (size_t side = 1; side < nsides; ++side)
         {
-            float thetaStart = i * stepAngle;
-            float thetaEnd = (i + 1) * stepAngle;
+            float const theta = side * stepAngle;
+            glm::vec3 const p2 = {c_Radius * std::cos(theta), c_BottomY, c_Radius * std::sin(theta)};
+            uint32_t const p2Index = pushData(p2, bottomNormal);
 
-            // note: ensure these wind CCW (culling)
-            glm::vec3 e1 = {std::cos(thetaStart), bottomY, std::sin(thetaStart)};
-            glm::vec3 e2 = {std::cos(thetaEnd), bottomY, std::sin(thetaEnd)};
-
-            push(middle, normal);
-            push(e1, normal);
-            push(e2, normal);
+            pushTriangle(midpointIndex, p1Index, p2Index);
+            p1Index = p2Index;
         }
+
+        // finish loop
+        pushTriangle(midpointIndex, p1Index, loopStartIndex);
     }
 
-    // sides
-    for (size_t i = 0; i < nsides; ++i)
+    // sides: a loop of quads along the edges
+    constexpr bool smoothShaded = true;
+    static_assert(smoothShaded, "if you want rigid edges then it requires copying edge loops etc");
+
+    if (smoothShaded)
     {
-        float thetaStart = i * stepAngle;
-        float thetaEnd = thetaStart + stepAngle;
-        float normNormtheta = thetaStart + (stepAngle / 2.0f);
+        glm::vec3 const initialNormal = glm::vec3{1.0f, 0.0f, 0.0f};
+        uint32_t firstEdgeTop = pushData({c_Radius, c_TopY, 0.0f}, initialNormal);
+        uint32_t firstEdgeBottom = pushData({c_Radius, c_BottomY, 0.0f}, initialNormal);
 
-        glm::vec3 normal = {std::cos(normNormtheta), 0.0f, std::sin(normNormtheta)};
-        glm::vec3 top1 = {std::cos(thetaStart), topY, std::sin(thetaStart)};
-        glm::vec3 top2 = {std::cos(thetaEnd), topY, std::sin(thetaEnd)};
-        glm::vec3 bottom1 = {top1.x, bottomY, top1.z};
-        glm::vec3 bottom2 = {top2.x, bottomY, top2.z};
+        uint32_t e1TopIdx = firstEdgeTop;
+        uint32_t e1BottomIdx = firstEdgeBottom;
+        for (size_t i = 1; i < nsides; ++i)
+        {
+            float const theta = i * stepAngle;
+            float const xDir = std::cos(theta);
+            float const zDir = std::sin(theta);
+            float const x = c_Radius * xDir;
+            float const z = c_Radius * zDir;
 
-        // draw quads CCW for each side
+            glm::vec3 const normal = {xDir, 0.0f, zDir};
+            uint32_t const e2TopIdx = pushData({x, c_TopY, z}, normal);
+            uint32_t const e2BottomIdx = pushData({x, c_BottomY, z}, normal);
 
-        push(top1, normal);
-        push(top2, normal);
-        push(bottom1, normal);
+            pushTriangle(e1TopIdx, e1BottomIdx, e2BottomIdx);
+            pushTriangle(e2BottomIdx, e2TopIdx, e1TopIdx);
 
-        push(bottom2, normal);
-        push(bottom1, normal);
-        push(top2, normal);
+            e1TopIdx = e2TopIdx;
+            e1BottomIdx = e2BottomIdx;
+        }
+        // finish loop
+        pushTriangle(firstEdgeTop, firstEdgeBottom, e1BottomIdx);
+        pushTriangle(e1BottomIdx, e1TopIdx, firstEdgeTop);
     }
-
-    OSC_ASSERT(rv.verts.size() % 3 == 0);
-    OSC_ASSERT(rv.verts.size() == rv.normals.size() && rv.verts.size() == rv.indices.size());
 
     return rv;
 }

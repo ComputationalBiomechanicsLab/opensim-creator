@@ -112,6 +112,8 @@ All notable changes to this project will be documented here. The format is based
 
 - Added a "Hidden" option for muscle decoration style, which enables hiding all muscles in the model (#338)
 
+- Cylinders (e.g. those used in muscles) are now smooth-shaded, and cost less to render (#316)
+
 
 ## [0.2.0]
 
