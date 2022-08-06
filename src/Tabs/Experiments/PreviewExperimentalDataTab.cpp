@@ -1,20 +1,33 @@
 #include "PreviewExperimentalDataTab.hpp"
 
-#include "src/Graphics/Renderer.hpp"
+#include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Graphics/MeshCache.hpp"
+#include "src/Graphics/SceneDecoration.hpp"
+#include "src/Graphics/SceneDecorationFlags.hpp"
+#include "src/Graphics/SceneRenderer.hpp"
+#include "src/Graphics/SceneRendererParams.hpp"
 #include "src/Maths/BVH.hpp"
+#include "src/Maths/Constants.hpp"
+#include "src/Maths/Geometry.hpp"
+#include "src/Maths/PolarPerspectiveCamera.hpp"
+#include "src/Maths/Rect.hpp"
 #include "src/Maths/Transform.hpp"
+#include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Widgets/LogViewerPanel.hpp"
 
+#include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
+#include <imgui.h>
 #include <IconsFontAwesome5.h>
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/Storage.h>
 #include <SDL_events.h>
 
+#include <functional>
 #include <iostream>
 #include <regex>
 #include <string>
@@ -83,13 +96,34 @@ namespace
     // if the next N columns don't match any matchers, assume the column is `ColumnDataType::Unknown`
     static std::vector<ColumnDataTypeMatcher> const g_Matchers =
     {
-        {ColumnDataType::PointForce, {"_vx", "_vy", "_vz", "_px", "_py", "_pz"}},
-        {ColumnDataType::Point, {"_vx", "_vy", "_vz"}},
-        {ColumnDataType::Point, {"_tx", "_ty", "_tz"}},
-        {ColumnDataType::Point, {"_px", "_py", "_pz"}},
-        {ColumnDataType::Orientation, {"_1", "_2", "_3", "_4"}},
-        {ColumnDataType::Point, {"_1", "_2", "_3"}},
-        {ColumnDataType::BodyForce, {"_fx", "_fy", "_fz"}},
+        {
+            ColumnDataType::PointForce,
+            {"_vx", "_vy", "_vz", "_px", "_py", "_pz"}
+        },
+        {
+            ColumnDataType::Point,
+            {"_vx", "_vy", "_vz"}
+        },
+        {
+            ColumnDataType::Point,
+            {"_tx", "_ty", "_tz"}
+        },
+        {
+            ColumnDataType::Point,
+            {"_px", "_py", "_pz"}
+        },
+        {
+            ColumnDataType::Orientation,
+            {"_1", "_2", "_3", "_4"}
+        },
+        {
+            ColumnDataType::Point,
+            {"_1", "_2", "_3"}
+        },
+        {
+            ColumnDataType::BodyForce,
+            {"_fx", "_fy", "_fz"}
+        },
     };
 
     // returns the number of columns the data type would require
@@ -209,6 +243,12 @@ namespace
         std::vector<double> Data;
     };
 
+    // returns the number of rows a loaded motion has
+    size_t NumRows(LoadedMotion const& lm)
+    {
+        return lm.Data.size() / lm.RowStride;
+    }
+
     // prints `LoadedMotion` in a human-readable format
     std::ostream& operator<<(std::ostream& o, LoadedMotion const& mot)
     {
@@ -220,7 +260,7 @@ namespace
         }
         o << "\n    ],";
         o << "\n    RowStride = " << mot.RowStride << ',';
-        o << "\n    Data = [... " << mot.Data.size() << " values (" << mot.Data.size()/mot.RowStride << " rows)...]";
+        o << "\n    Data = [... " << mot.Data.size() << " values (" << NumRows(mot) << " rows)...]";
         o << "\n)";
 
         return o;
@@ -293,11 +333,91 @@ namespace
         return rv;
     }
 
-    // load motion from disk
-    static LoadedMotion LoadData()
+    // retuns a scene decoration for the floor grid
+    osc::SceneDecoration GenerateFloorGrid()
     {
-        std::string const inputFileName = R"(E:\OneDrive\work_current\Gijs - IMU fitting\abduction_bad2.sto)";
-        OpenSim::Storage const storage{inputFileName};
+        osc::Transform t;
+        t.rotation = glm::angleAxis(osc::fpi2, glm::vec3{-1.0f, 0.0f, 0.0f});
+        t.scale = {50.0f, 50.0f, 1.0f};
+        glm::vec4 color = {128.0f/255.0f, 128.0f/255.0f, 128.0f/255.0f, 1.0f};
+
+        return osc::SceneDecoration
+        {
+            osc::App::meshes().get100x100GridMesh(),
+            t,
+            color,
+            std::string{},
+            osc::SceneDecorationFlags_None
+        };
+    }
+
+    // defines a "consumer" that "eats" decorations emitted from the various helper methods
+    using DecorationConsumer = std::function<void(osc::SceneDecoration const&)>;
+
+    // templated: generate decorations for a compile-time-known type of column data (requires specialization)
+    template<ColumnDataType T>
+    void GenerateDecorations(LoadedMotion const& motion, size_t row, ColumnDescription const& columnDescription, DecorationConsumer& out);
+
+    // template specialization: generate decorations for orientation data
+    template<>
+    void GenerateDecorations<ColumnDataType::Orientation>(LoadedMotion const& motion, size_t row, ColumnDescription const& columnDescription, DecorationConsumer& out)
+    {
+        OSC_ASSERT(columnDescription.DataType == ColumnDataType::Orientation);
+
+        size_t const dataStart = motion.RowStride * row + columnDescription.Offset;
+        glm::quat q
+        {
+            static_cast<float>(motion.Data.at(dataStart)),
+            static_cast<float>(motion.Data.at(dataStart + 1)),
+            static_cast<float>(motion.Data.at(dataStart + 2)),
+            static_cast<float>(motion.Data.at(dataStart + 3)),
+        };
+        q = glm::normalize(q);
+
+        osc::Transform cylinderTransform;
+        cylinderTransform.scale.x *= 0.05f;
+        cylinderTransform.scale.z *= 0.05f;
+        cylinderTransform.rotation = q;
+        cylinderTransform.position = q * glm::vec3{0.0f, 1.0f, 0.0f};
+
+        // cylinder represents Y axis, so color it green
+        glm::vec4 const cylinderColor = {0.0f, 1.0f, 0.0f, 1.0f};
+
+        osc::SceneDecoration cylinder
+        {
+            osc::App::meshes().getCylinderMesh(),
+            cylinderTransform,
+            cylinderColor,
+            columnDescription.Label,
+            osc::SceneDecorationFlags_None
+        };
+
+        out(cylinder);
+    }
+
+    // generic: generate decorations for a runtime-checked type of column data
+    void GenerateDecorations(LoadedMotion const& motion, size_t row, ColumnDescription const& desc, DecorationConsumer& out)
+    {
+        if (desc.DataType == ColumnDataType::Orientation)
+        {
+            GenerateDecorations<ColumnDataType::Orientation>(motion, row, desc, out);
+        }
+    }
+
+    // generate decorations for a all columns of a particular row in the provided motion data
+    void GenerateDecorations(LoadedMotion const& motion, size_t row, DecorationConsumer& out)
+    {
+        // generate decorations for each "column" in the row
+        for (ColumnDescription const& desc : motion.ColumnDescriptions)
+        {
+            GenerateDecorations(motion, row, desc, out);
+        }
+    }
+
+    // returns a parsed motion, read from disk motion from disk
+    static LoadedMotion LoadData(std::filesystem::path const& sourceFile)
+    {
+        OpenSim::Storage const storage{sourceFile.string()};
 
         LoadedMotion rv;
         rv.ColumnDescriptions = ParseColumnDescriptions(storage.getColumnLabels());
@@ -307,6 +427,7 @@ namespace
     }
 }
 
+// osc::Tab implementation for the visualizer
 class osc::PreviewExperimentalDataTab::Impl final {
 public:
     Impl(TabHost* parent) : m_Parent{std::move(parent)}
@@ -356,21 +477,95 @@ public:
 
     void onDraw()
     {
+        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+
+        ImGui::Begin("render");
+        glm::vec2 dims = ImGui::GetContentRegionAvail();
+        if (m_RenderIsMousedOver)
+        {
+            osc::UpdatePolarCameraFromImGuiUserInput(dims, m_Camera);
+        }
+
+        if (m_ActiveRow < NumRows(*m_Motion))
+        {
+            gl::Texture2D& t = render3DScene(dims);
+            osc::DrawTextureAsImGuiImage(t, dims);
+            m_RenderIsMousedOver = ImGui::IsItemHovered();
+        }
+        else
+        {
+            ImGui::Text("no rows found in the given data? Cannot render");
+            m_RenderIsMousedOver = false;
+        }
+
+        ImGui::End();
+
         m_LogViewer.draw();
     }
 
 
 private:
+    gl::Texture2D& render3DScene(glm::vec2 dims)
+    {
+        SceneRendererParams params = generateRenderParams(dims);
+
+        if (params != m_LastRendererParams)
+        {
+            generateSceneDecorations();
+            m_Renderer.draw(m_Decorations, params);
+            m_LastRendererParams = params;
+        }
+
+        return m_Renderer.updOutputTexture();
+    }
+
+    SceneRendererParams generateRenderParams(glm::vec2 dims) const
+    {
+        SceneRendererParams params{m_LastRendererParams};
+        params.dimensions = dims;
+        params.samples = osc::App::get().getMSXAASamplesRecommended();
+        params.drawRims = true;
+        params.drawFloor = false;
+        params.viewMatrix = m_Camera.getViewMtx();
+        params.projectionMatrix = m_Camera.getProjMtx(AspectRatio(params.dimensions));
+        params.viewPos = m_Camera.getPos();
+        params.lightDirection = osc::RecommendedLightDirection(m_Camera);
+        params.lightColor = {1.0f, 1.0f, 1.0f};
+        params.backgroundColor = {96.0f / 255.0f, 96.0f / 255.0f, 96.0f / 255.0f, 1.0f};
+        return params;
+    }
+
+    void generateSceneDecorations()
+    {
+        m_Decorations.clear();
+        m_Decorations.push_back(GenerateFloorGrid());
+        DecorationConsumer c = [this](SceneDecoration const& d) { m_Decorations.push_back(d); };
+        GenerateDecorations(*m_Motion, 0, c);
+    }
+
+    // tab data
     UID m_ID;
     std::string m_Name = ICON_FA_DOT_CIRCLE " Experimental Data";
     TabHost* m_Parent;
 
+    // motion data (loaded from STO, MOT, TRC, etc.)
+    std::shared_ptr<LoadedMotion const> m_Motion = std::make_shared<LoadedMotion>(LoadData(R"(E:\OneDrive\work_current\Gijs - IMU fitting\abduction_bad2.sto)"));
+    int m_ActiveRow = NumRows(*m_Motion) <= 0 ? -1 : 0;
+
+    // 3D scene
+    std::vector<SceneDecoration> m_Decorations;
+    BVH m_SceneBVH;
+
+    // UI stuff
     LogViewerPanel m_LogViewer{"Log"};
-    LoadedMotion m_Motion = LoadData();
+    PolarPerspectiveCamera m_Camera;
+    bool m_RenderIsMousedOver = false;
+    SceneRendererParams m_LastRendererParams;
+    SceneRenderer m_Renderer;
 };
 
 
-// public API
+// public API (PIMPL)
 
 osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(TabHost* parent) :
     m_Impl{new Impl{std::move(parent)}}
