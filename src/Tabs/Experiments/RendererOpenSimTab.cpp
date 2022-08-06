@@ -331,6 +331,9 @@ public:
                 m_SceneTexturedElementsMaterial.setVec3("uViewPos", m_PolarCamera.getPos());
                 m_SceneTexturedElementsMaterial.setVec3("uLightDir", lightDir);
                 m_SceneTexturedElementsMaterial.setVec3("uLightColor", m_LightColor);
+                m_SceneTexturedElementsMaterial.setFloat("uNear", m_Camera.getNearClippingPlane());
+                m_SceneTexturedElementsMaterial.setFloat("uFar", m_Camera.getFarClippingPlane());
+                m_SceneTexturedElementsMaterial.setTransparent(true);  // fog
 
                 experimental::Graphics::DrawMesh(m_QuadMesh, m_FloorTransform, m_SceneTexturedElementsMaterial, m_Camera);
             }
