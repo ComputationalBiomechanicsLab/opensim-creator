@@ -22,10 +22,10 @@ namespace osc
         SceneDecorationFlags flags;
 
         SceneDecoration(std::shared_ptr<Mesh> mesh_,
-                           Transform const& transform_,
-                           glm::vec4 const& color_,
-                           std::string id_,
-                           SceneDecorationFlags flags_) :
+                        Transform const& transform_,
+                        glm::vec4 const& color_,
+                        std::string id_,
+                        SceneDecorationFlags flags_) :
             mesh{std::move(mesh_)},
             transform{transform_},
             color{color_},
