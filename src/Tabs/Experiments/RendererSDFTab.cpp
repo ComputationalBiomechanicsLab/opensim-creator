@@ -31,21 +31,43 @@ static FontTexture CreateFontTexture()
 {
 	std::vector<uint8_t> const ttfData = osc::App::slurpBinary("c:/windows/fonts/times.ttf");
 
+	// get number of fonts in the TTF file
 	int numFonts = stbtt_GetNumberOfFonts(ttfData.data());
 	osc::log::info("stbtt_GetNumberOfFonts = %i", numFonts);
 
+	// get dump info for each font in the TTF file
 	for (int i = 0; i < numFonts; ++i)
 	{
 		int offset = stbtt_GetFontOffsetForIndex(ttfData.data(), i);
 		osc::log::info("stbtt_GetFontOffsetForIndex(data, %i): %i", i, offset);
+
+		stbtt_fontinfo info{};
+		if (stbtt_InitFont(&info, ttfData.data(), i))
+		{
+			osc::log::info("    info.fontStart = %i", info.fontstart);
+			osc::log::info("    info.numGlyphs = %i", info.numGlyphs);
+
+			// table offsets within the TTF file
+			osc::log::info("    info.loca = %i", info.loca);
+			osc::log::info("    info.head = %i", info.head);
+			osc::log::info("    info.glyf = %i", info.glyf);
+			osc::log::info("    info.hhea = %i", info.hhea);
+			osc::log::info("    info.hmtx = %i", info.hmtx);
+			osc::log::info("    info.kern = %i", info.kern);
+			osc::log::info("    info.gpos = %i", info.gpos);
+			osc::log::info("    info.svg = %i", info.svg);
+
+			// cmap mapping for our chosen character encoding
+			osc::log::info("    info.index_map = %i", info.index_map);
+			osc::log::info("    info.indexToLocFormat = %i", info.indexToLocFormat);
+		}
 	}
 
 	CharMetadata glyphData;
+	std::vector<uint8_t> pixels(512 * 512);
 
-	unsigned char temp_bitmap[512*512];
-
-	stbtt_BakeFontBitmap(ttfData.data(), 0, 64., temp_bitmap, 512, 512, 32, 96, glyphData.storage); // no guarantee this fits!
-	auto t = osc::experimental::Texture2D{512, 512, temp_bitmap, 1};
+	stbtt_BakeFontBitmap(ttfData.data(), 0, 64., pixels.data(), 512, 512, 32, 96, glyphData.storage); // no guarantee this fits!
+	auto t = osc::experimental::Texture2D{512, 512, pixels, 1};
 	t.setFilterMode(osc::experimental::TextureFilterMode::Linear);
 
 	return FontTexture{t, glyphData};
@@ -99,7 +121,7 @@ public:
 
 	void onDraw()
 	{
-		printText(0.0f, 0.0f, "Hello, Font Renderer!");
+		printText(0.0f, 0.0f, "Hello, lack of SDF support!");
 		m_LogViewer.draw();
 	}
 
