@@ -561,7 +561,7 @@ osc::MeshData osc::GenCircle(size_t nsides)
 {
     MeshData rv;
     rv.verts.reserve(3*nsides);
-    rv.topography = MeshTopography::Lines;
+    rv.topography = MeshTopography::Triangles;
 
     unsigned short index = 0;
     auto push = [&rv, &index](float x, float y, float z)

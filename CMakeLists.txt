@@ -424,8 +424,6 @@ add_library(osccore STATIC
     src/Screens/CookiecutterScreen.hpp
     src/Screens/ExperimentsScreen.cpp
     src/Screens/ExperimentsScreen.hpp
-    src/Screens/HittestScreen.cpp
-    src/Screens/HittestScreen.hpp
     src/Screens/MainUIScreen.cpp
     src/Screens/MainUIScreen.hpp
     src/Screens/MeshHittestScreen.cpp
@@ -433,6 +431,8 @@ add_library(osccore STATIC
     src/Screens/MeshHittestWithBVHScreen.cpp
     src/Screens/MeshHittestWithBVHScreen.hpp
 
+    src/Tabs/Experiments/HittestTab.cpp
+    src/Tabs/Experiments/HittestTab.hpp
     src/Tabs/Experiments/ImGuiDemoTab.cpp
     src/Tabs/Experiments/ImGuiDemoTab.hpp
     src/Tabs/Experiments/ImGuizmoDemoTab.cpp

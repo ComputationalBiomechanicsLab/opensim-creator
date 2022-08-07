@@ -5,9 +5,11 @@
 #include "src/Utils/SynchronizedValue.hpp"
 
 // registered tabs
+#include "src/Tabs/Experiments/HittestTab.hpp"
 #include "src/Tabs/Experiments/ImGuiDemoTab.hpp"
 #include "src/Tabs/Experiments/ImGuizmoDemoTab.hpp"
 #include "src/Tabs/Experiments/ImPlotDemoTab.hpp"
+#include "src/Tabs/Experiments/MeshGenTestTab.hpp"
 #include "src/Tabs/Experiments/PreviewExperimentalDataTab.hpp"
 #include "src/Tabs/Experiments/RendererBasicLightingTab.hpp"
 #include "src/Tabs/Experiments/RendererBlendingTab.hpp"
@@ -20,7 +22,6 @@
 #include "src/Tabs/Experiments/RendererOpenSimTab.hpp"
 #include "src/Tabs/Experiments/RendererSDFTab.hpp"
 #include "src/Tabs/Experiments/RendererTexturingTab.hpp"
-#include "src/Tabs/Experiments/MeshGenTestTab.hpp"
 
 #include <algorithm>
 #include <memory>
@@ -64,6 +65,7 @@ namespace
         osc::SynchronizedValue<std::vector<osc::TabRegistryEntry>> rv;
 
         auto lock = rv.lock();
+        lock->emplace_back("Hittest/AnalyticGeometry", TabConstructor<osc::HittestTab>);
         lock->emplace_back("OpenSim/PreviewExperimentalData", TabConstructor<osc::PreviewExperimentalDataTab>);
         lock->emplace_back("Renderer/BasicLighting", TabConstructor<osc::RendererBasicLightingTab>);
         lock->emplace_back("Renderer/Blending", TabConstructor<osc::RendererBlendingTab>);
