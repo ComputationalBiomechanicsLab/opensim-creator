@@ -20,6 +20,7 @@
 #include "src/Tabs/Experiments/RendererOpenSimTab.hpp"
 #include "src/Tabs/Experiments/RendererSDFTab.hpp"
 #include "src/Tabs/Experiments/RendererTexturingTab.hpp"
+#include "src/Tabs/Experiments/MeshGenTestTab.hpp"
 
 #include <algorithm>
 #include <memory>
@@ -78,6 +79,7 @@ namespace
         lock->emplace_back("Demos/ImGui", TabConstructor<osc::ImGuiDemoTab>);
         lock->emplace_back("Demos/ImPlot", TabConstructor<osc::ImPlotDemoTab>);
         lock->emplace_back("Demos/ImGuizmo", TabConstructor<osc::ImGuizmoDemoTab>);
+        lock->emplace_back("MeshGen/Test", TabConstructor<osc::MeshGenTestTab>);
 
         std::sort(lock->begin(), lock->end());
 
