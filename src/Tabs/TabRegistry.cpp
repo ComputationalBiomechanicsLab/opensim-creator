@@ -22,6 +22,7 @@
 #include "src/Tabs/Experiments/RendererOpenSimTab.hpp"
 #include "src/Tabs/Experiments/RendererSDFTab.hpp"
 #include "src/Tabs/Experiments/RendererTexturingTab.hpp"
+#include "src/Tabs/Experiments/MeshHittestTab.hpp"
 
 #include <algorithm>
 #include <memory>
@@ -66,6 +67,7 @@ namespace
 
         auto lock = rv.lock();
         lock->emplace_back("Hittest/AnalyticGeometry", TabConstructor<osc::HittestTab>);
+        lock->emplace_back("Hittest/Meshes", TabConstructor<osc::MeshHittestTab>);
         lock->emplace_back("OpenSim/PreviewExperimentalData", TabConstructor<osc::PreviewExperimentalDataTab>);
         lock->emplace_back("Renderer/BasicLighting", TabConstructor<osc::RendererBasicLightingTab>);
         lock->emplace_back("Renderer/Blending", TabConstructor<osc::RendererBlendingTab>);
