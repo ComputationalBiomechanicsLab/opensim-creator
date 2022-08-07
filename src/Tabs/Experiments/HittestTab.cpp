@@ -21,33 +21,6 @@
 
 namespace
 {
-	char const g_VertexShader[] = R"(
-		#version 330 core
-
-		uniform mat4 uModelMat;
-		uniform mat4 uViewProjMat;
-
-		layout (location = 0) in vec3 aPos;
-
-		void main()
-		{
-			gl_Position = uViewProjMat * uModelMat * vec4(aPos, 1.0);
-		}
-	)";
-
-	char const g_FragmentShader[] = R"(
-		#version 330 core
-
-		uniform vec4 uColor;
-
-		out vec4 FragColor;
-
-		void main()
-		{
-			FragColor = uColor;
-		}
-	)";
-
 	std::array<glm::vec3, 4> const g_CrosshairVerts =
 	{{
 		// -X to +X
@@ -327,7 +300,14 @@ private:
 
 	// rendering
 	experimental::Camera m_Camera;
-	experimental::Material m_Material{experimental::Shader{g_VertexShader, g_FragmentShader}};
+	experimental::Material m_Material
+	{
+		experimental::Shader
+		{
+			App::slurp("shaders/SolidColor.vert"),
+			App::slurp("shaders/SolidColor.frag"),
+		}
+	};
 	experimental::Mesh m_SphereMesh = experimental::LoadMeshFromMeshData(GenUntexturedUVSphere(12, 12));
 	experimental::Mesh m_WireframeCubeMesh = experimental::LoadMeshFromMeshData(GenCubeLines());
 	experimental::Mesh m_CircleMesh = experimental::LoadMeshFromMeshData(GenCircle(36));
