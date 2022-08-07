@@ -1,7 +1,7 @@
 #include "CookiecutterTab.hpp"
 
-#include <SDL_events.h>
 #include <IconsFontAwesome5.h>
+#include <SDL_events.h>
 
 #include <string>
 #include <utility>
