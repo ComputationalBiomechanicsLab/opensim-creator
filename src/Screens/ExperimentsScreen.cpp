@@ -2,7 +2,6 @@
 
 #include "src/Platform/App.hpp"
 #include "src/Screens/MainUIScreen.hpp"
-#include "src/Screens/MeshHittestWithBVHScreen.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
@@ -91,7 +90,6 @@ public:
 private:
     std::vector<Entry> m_Entries =
     {
-        { "Hit testing ray-triangle, but with BVH acceleration", transition<MeshHittestWithBVHScreen> },
     };
 };
 

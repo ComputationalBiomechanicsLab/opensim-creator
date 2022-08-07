@@ -5,9 +5,11 @@
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Renderer.hpp"
+#include "src/Maths/BVH.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Maths/Line.hpp"
+#include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Utils/UID.hpp"
 #include "src/Widgets/PerfPanel.hpp"
@@ -21,11 +23,43 @@
 #include <string>
 #include <utility>
 
+namespace
+{
+	void DrawBVHRecursive(osc::BVH const& bvh, osc::experimental::Mesh const& cubeLinesMesh, osc::experimental::Material const& material, osc::experimental::Camera& camera, int pos)
+	{
+		osc::BVHNode const& n = bvh.nodes[pos];
+		glm::vec3 const halfWidths = 0.5f * osc::Dimensions(n.bounds);
+		glm::vec3 const midpoint = osc::Midpoint(n.bounds);
+
+		osc::Transform t;
+		t.scale *= halfWidths;
+		t.position = midpoint;
+
+		osc::experimental::Graphics::DrawMesh(cubeLinesMesh, t, material, camera);
+
+		if (n.nlhs >= 0)
+		{
+			DrawBVHRecursive(bvh, cubeLinesMesh, material, camera, pos + 1);
+			DrawBVHRecursive(bvh, cubeLinesMesh, material, camera, pos + n.nlhs + 1);
+		}
+	}
+
+	void DrawBVH(osc::BVH const& bvh, osc::experimental::Mesh const& cubeLinesMesh, osc::experimental::Material const& material, osc::experimental::Camera& camera)
+	{
+		if (bvh.nodes.empty())
+		{
+			return;
+		}
+		DrawBVHRecursive(bvh, cubeLinesMesh, material, camera, 0);
+	}
+}
+
 class osc::MeshHittestTab::Impl final {
 public:
 	Impl(TabHost* parent) : m_Parent{std::move(parent)}
 	{
 		m_Camera.setBackgroundColor({1.0f, 1.0f, 1.0f, 1.0f});
+		BVH_BuildFromIndexedTriangles(m_BVH, m_Mesh.getVerts(), m_Mesh.getIndices());
 	}
 
 	UID getID() const
@@ -64,26 +98,40 @@ public:
 		// handle hittest
 		auto raycastStart = std::chrono::high_resolution_clock::now();
 		{
-
 			Rect r = osc::GetMainViewportWorkspaceScreenRect();
 			glm::vec2 d = osc::Dimensions(r);
 			m_Ray = m_PolarCamera.unprojectTopLeftPosToWorldRay(glm::vec2{ ImGui::GetIO().MousePos } - r.p1, d);
 
 			m_IsMousedOver = false;
-			nonstd::span<glm::vec3 const> tris = m_Mesh.getVerts();
-			for (size_t i = 0; i < tris.size(); i += 3)
+			if (m_UseBVH)
 			{
-				RayCollision res = GetRayCollisionTriangle(m_Ray, tris.data() + i);
-				if (res.hit)
+				BVHCollision collision;
+				if (BVH_GetClosestRayIndexedTriangleCollision(m_BVH, m_Mesh.getVerts(), m_Mesh.getIndices(), m_Ray, &collision))
 				{
-					m_HitPos = m_Ray.origin + res.distance * m_Ray.dir;
+					uint16_t index = m_Mesh.getIndices()[collision.primId];
 					m_IsMousedOver = true;
+					m_Tris[0] = m_Mesh.getVerts()[index];
+					m_Tris[1] = m_Mesh.getVerts()[index+1];
+					m_Tris[2] = m_Mesh.getVerts()[index+2];
+				}
+			}
+			else
+			{
+				nonstd::span<glm::vec3 const> tris = m_Mesh.getVerts();
+				for (size_t i = 0; i < tris.size(); i += 3)
+				{
+					RayCollision res = GetRayCollisionTriangle(m_Ray, tris.data() + i);
+					if (res.hit)
+					{
+						m_HitPos = m_Ray.origin + res.distance * m_Ray.dir;
+						m_IsMousedOver = true;
 
-					m_Tris[0] = tris[i];
-					m_Tris[1] = tris[i + 1];
-					m_Tris[2] = tris[i + 2];
+						m_Tris[0] = tris[i];
+						m_Tris[1] = tris[i + 1];
+						m_Tris[2] = tris[i + 2];
 
-					break;
+						break;
+					}
 				}
 			}
 		}
@@ -130,6 +178,14 @@ public:
 			experimental::Graphics::DrawMesh(m, Transform{}, m_Material, m_Camera);
 		}
 
+		if (m_UseBVH)
+		{
+			// draw BVH AABBs
+			m_Material.setVec4("uColor", {0.0f, 0.0f, 0.0f, 1.0f});
+			m_Material.setDepthTested(true);
+			DrawBVH(m_BVH, m_CubeLinesMesh, m_Material, m_Camera);
+		}
+
 		// draw scene onto viewport
 		m_Camera.render();
 
@@ -138,6 +194,7 @@ public:
 		if (true)
 		{
 			ImGui::Begin("controls");
+			ImGui::Checkbox("BVH", &m_UseBVH);
 			ImGui::Text("%ld microseconds", static_cast<long>(m_RaycastDuration.count()));
 			auto r = m_Ray;
 			ImGui::Text("camerapos = (%.2f, %.2f, %.2f)", m_Camera.getPosition().x, m_Camera.getPosition().y, m_Camera.getPosition().z);
@@ -174,8 +231,11 @@ private:
 	};
 	experimental::Mesh m_Mesh = experimental::LoadMeshFromLegacyMesh(LoadMeshViaSimTK(App::resource("geometry/hat_ribs.vtp")));
 	experimental::Mesh m_SphereMesh = experimental::LoadMeshFromMeshData(GenUntexturedUVSphere(12, 12));
+	experimental::Mesh m_CubeLinesMesh = experimental::LoadMeshFromMeshData(GenCubeLines());
 
 	// other state
+	BVH m_BVH;
+	bool m_UseBVH = false;
 	glm::vec3 m_Tris[3]{};
 	std::chrono::microseconds m_RaycastDuration{0};
 	PolarPerspectiveCamera m_PolarCamera;
