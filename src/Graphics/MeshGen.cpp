@@ -382,8 +382,8 @@ osc::MeshData osc::GenUntexturedSimbodyCylinder(size_t nsides)
             e1BottomIdx = e2BottomIdx;
         }
         // finish loop
-        pushTriangle(firstEdgeTop, firstEdgeBottom, e1BottomIdx);
-        pushTriangle(e1BottomIdx, e1TopIdx, firstEdgeTop);
+        pushTriangle(e1TopIdx, e1BottomIdx, firstEdgeBottom);
+        pushTriangle(firstEdgeBottom, firstEdgeTop, e1TopIdx);
     }
 
     return rv;
