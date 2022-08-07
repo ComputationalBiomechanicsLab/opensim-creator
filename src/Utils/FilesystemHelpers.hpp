@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <filesystem>
 #include <string>
 #include <string_view>
@@ -42,6 +43,9 @@ namespace osc {
 
     // slurp a file's contents into a string
     std::string SlurpFileIntoString(std::filesystem::path const&);
+
+    // slurp a file's contents into a vector
+    std::vector<uint8_t> SlurpFileIntoVector(std::filesystem::path const&);
 
     // returns the given path's filename without an extension (e.g. /dir/model.osim --> model)
     std::string FileNameWithoutExtension(std::filesystem::path const&);
