@@ -143,7 +143,7 @@ private:
 
 		while (*text)
 		{
-			if (*text >= 32 && *text <= 128)
+			if (*text >= 32 && *text <= 127)
 			{
 				// the Y axis is screenspace (Y goes down)
 				stbtt_aligned_quad q;
