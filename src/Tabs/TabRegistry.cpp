@@ -6,6 +6,7 @@
 
 // registered tabs
 #include "src/Tabs/Experiments/ImGuiDemoTab.hpp"
+#include "src/Tabs/Experiments/ImPlotDemoTab.hpp"
 #include "src/Tabs/Experiments/PreviewExperimentalDataTab.hpp"
 #include "src/Tabs/Experiments/RendererBasicLightingTab.hpp"
 #include "src/Tabs/Experiments/RendererBlendingTab.hpp"
@@ -74,6 +75,7 @@ namespace
         lock->emplace_back("Renderer/Texturing", TabConstructor<osc::RendererTexturingTab>);
         lock->emplace_back("Renderer/SDFTab", TabConstructor<osc::RendererSDFTab>);
         lock->emplace_back("Demos/ImGui", TabConstructor<osc::ImGuiDemoTab>);
+        lock->emplace_back("Demos/ImPlot", TabConstructor<osc::ImPlotDemoTab>);
 
         std::sort(lock->begin(), lock->end());
 
