@@ -131,7 +131,7 @@ namespace
                 hovered != osc::FindComponent(msp.getModel(), m_LastHover) ||
                 isolated != osc::FindComponent(msp.getModel(), m_LastIsolation) ||
                 msp.getFixupScaleFactor() != m_LastFixupFactor ||
-                decorationOptions != m_LastDecorationOptions,
+                decorationOptions != m_LastDecorationOptions ||
                 panelFlags != m_LastPanelFlags)
             {
                 // update cache checks
