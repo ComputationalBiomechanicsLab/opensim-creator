@@ -143,7 +143,7 @@ private:
 
 		while (*text)
 		{
-			if (*text >= 32 && *text <= 127)
+			if (*text >= 32)  // max value of type is 127, which is the also conveniently the end of the table
 			{
 				// the Y axis is screenspace (Y goes down)
 				stbtt_aligned_quad q;
