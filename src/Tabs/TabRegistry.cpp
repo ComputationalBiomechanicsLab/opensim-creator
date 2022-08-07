@@ -5,6 +5,7 @@
 #include "src/Utils/SynchronizedValue.hpp"
 
 // registered tabs
+#include "src/Tabs/Experiments/ImGuiDemoTab.hpp"
 #include "src/Tabs/Experiments/PreviewExperimentalDataTab.hpp"
 #include "src/Tabs/Experiments/RendererBasicLightingTab.hpp"
 #include "src/Tabs/Experiments/RendererBlendingTab.hpp"
@@ -72,6 +73,7 @@ namespace
         lock->emplace_back("Renderer/OpenSimModel", TabConstructor<osc::RendererOpenSimTab>);
         lock->emplace_back("Renderer/Texturing", TabConstructor<osc::RendererTexturingTab>);
         lock->emplace_back("Renderer/SDFTab", TabConstructor<osc::RendererSDFTab>);
+        lock->emplace_back("Demos/ImGui", TabConstructor<osc::ImGuiDemoTab>);
 
         std::sort(lock->begin(), lock->end());
 

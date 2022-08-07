@@ -426,8 +426,6 @@ add_library(osccore STATIC
     src/Screens/ExperimentsScreen.hpp
     src/Screens/HittestScreen.cpp
     src/Screens/HittestScreen.hpp
-    src/Screens/ImGuiDemoScreen.cpp
-    src/Screens/ImGuiDemoScreen.hpp
     src/Screens/ImGuizmoDemoScreen.cpp
     src/Screens/ImGuizmoDemoScreen.hpp
     src/Screens/ImPlotDemoScreen.cpp
@@ -443,6 +441,8 @@ add_library(osccore STATIC
     src/Screens/MeshScreen.cpp
     src/Screens/MeshScreen.hpp
 
+    src/Tabs/Experiments/ImGuiDemoTab.cpp
+    src/Tabs/Experiments/ImGuiDemoTab.hpp
     src/Tabs/Experiments/PreviewExperimentalDataTab.cpp
     src/Tabs/Experiments/PreviewExperimentalDataTab.hpp
     src/Tabs/Experiments/RendererBasicLightingTab.cpp

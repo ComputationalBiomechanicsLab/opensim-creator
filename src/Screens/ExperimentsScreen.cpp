@@ -4,7 +4,6 @@
 #include "src/Screens/HittestScreen.hpp"
 #include "src/Screens/ImGuizmoDemoScreen.hpp"
 #include "src/Screens/ImPlotDemoScreen.hpp"
-#include "src/Screens/ImGuiDemoScreen.hpp"
 #include "src/Screens/MainUIScreen.hpp"
 #include "src/Screens/MeshGenTestScreen.hpp"
 #include "src/Screens/MeshHittestScreen.hpp"
@@ -102,7 +101,6 @@ private:
         { "Hit testing ray-triangle, but with BVH acceleration", transition<MeshHittestWithBVHScreen> },
         { "ImGuizmo", transition<ImGuizmoDemoScreen> },
         { "ImPlot", transition<ImPlotDemoScreen> },
-        { "ImGui", transition<ImGuiDemoScreen> },
         { "Mesh Generation Tests", transition<MeshGenTestScreen> }
     };
 };
