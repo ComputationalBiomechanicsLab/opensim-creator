@@ -84,6 +84,9 @@ namespace osc
         // returns the contents of a runtime resource in the `resources/` dir as a string
         static std::string slurp(std::string_view);
 
+        // returns the contents of a runtime resource in the `resources/` dir as a binary blob
+        static std::vector<uint8_t> slurpBinary(std::string_view);
+
         // returns a particular shader type from the shader cache
         template<typename TShader>
         static TShader& shader()
@@ -278,6 +281,9 @@ namespace osc
 
         // returns the contents of a runtime resource in the `resources/` dir as a string
         std::string slurpResource(std::string_view) const;
+
+        // returns the contents of a runtime resource in the `resources/` dir as an unsigned byte sequence
+        std::vector<uint8_t> slurpBinaryResource(std::string_view) const;
 
         // returns all files that were recently opened by the user in the app
         //
