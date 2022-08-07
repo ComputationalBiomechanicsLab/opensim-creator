@@ -29,11 +29,22 @@ struct FontTexture final {
 
 static FontTexture CreateFontTexture()
 {
+	std::vector<uint8_t> const ttfData = osc::App::slurpBinary("c:/windows/fonts/times.ttf");
+
+	int numFonts = stbtt_GetNumberOfFonts(ttfData.data());
+	osc::log::info("stbtt_GetNumberOfFonts = %i", numFonts);
+
+	for (int i = 0; i < numFonts; ++i)
+	{
+		int offset = stbtt_GetFontOffsetForIndex(ttfData.data(), i);
+		osc::log::info("stbtt_GetFontOffsetForIndex(data, %i): %i", i, offset);
+	}
+
 	CharMetadata glyphData;
 
-	std::string const content = osc::App::get().slurp("c:/windows/fonts/times.ttf");
 	unsigned char temp_bitmap[512*512];
-	stbtt_BakeFontBitmap(reinterpret_cast<unsigned char const*>(content.c_str()), 0, 32., temp_bitmap, 512, 512, 32, 96, glyphData.storage); // no guarantee this fits!
+
+	stbtt_BakeFontBitmap(ttfData.data(), 0, 64., temp_bitmap, 512, 512, 32, 96, glyphData.storage); // no guarantee this fits!
 	auto t = osc::experimental::Texture2D{512, 512, temp_bitmap, 1};
 	t.setFilterMode(osc::experimental::TextureFilterMode::Linear);
 
@@ -88,7 +99,7 @@ public:
 
 	void onDraw()
 	{
-		printText(0.0f, 0.0f, "Hello, World!");
+		printText(0.0f, 0.0f, "Hello, Font Renderer!");
 		m_LogViewer.draw();
 	}
 
@@ -110,11 +121,11 @@ private:
 
 		while (*text)
 		{
-			if (*text >= 32 && *text < 128)
+			if (*text >= 32 && *text <= 128)
 			{
+				// the Y axis is screenspace (Y goes down)
 				stbtt_aligned_quad q;
 				stbtt_GetBakedQuad(m_FontTexture.metadata.storage, 512,512, *text-32, &x, &y, &q, 1);  //1=opengl & d3d10+,0=d3d9
-				log::info("(%f %f) (%f %f)", q.x0, q.y0, q.x1, q.y1);
 
 				glm::vec3 verts[] = { {q.x0, -q.y0, 0.0f}, { q.x1, -q.y0, 0.0f }, { q.x1, -q.y1, 0.0f }, { q.x0, -q.y0, 0.0f }, { q.x0, -q.y1, 0.0f }, { q.x1, -q.y1, 0.0f } };
 				glm::vec2 coords[] = { { q.s0, q.t0 }, { q.s1, q.t0 }, { q.s1, q.t1 }, { q.s0, q.t0 }, { q.s0, q.t1 }, { q.s1, q.t1 } };
@@ -134,7 +145,7 @@ private:
 	}
 
 	UID m_ID;
-	std::string m_Name = ICON_FA_FONT " RendererSDFTab";
+	std::string m_Name = ICON_FA_FONT " RendererSDF";
 	TabHost* m_Parent;
 
 	// rendering stuff
