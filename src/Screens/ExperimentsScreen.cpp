@@ -2,7 +2,6 @@
 
 #include "src/Platform/App.hpp"
 #include "src/Screens/HittestScreen.hpp"
-#include "src/Screens/ImGuizmoDemoScreen.hpp"
 #include "src/Screens/MainUIScreen.hpp"
 #include "src/Screens/MeshGenTestScreen.hpp"
 #include "src/Screens/MeshHittestScreen.hpp"
@@ -98,7 +97,6 @@ private:
         { "Hit testing analytical geometry (AABBs, Spheres, etc.)", transition<HittestScreen> },
         { "Hit testing ray-triangle intersections in a mesh", transition<MeshHittestScreen> },
         { "Hit testing ray-triangle, but with BVH acceleration", transition<MeshHittestWithBVHScreen> },
-        { "ImGuizmo", transition<ImGuizmoDemoScreen> },
         { "Mesh Generation Tests", transition<MeshGenTestScreen> }
     };
 };
