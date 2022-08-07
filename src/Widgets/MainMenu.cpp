@@ -13,7 +13,6 @@
 #include "src/Platform/Config.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
-#include "src/Screens/ExperimentsScreen.hpp"
 #include "src/Tabs/MeshImporterTab.hpp"
 #include "src/Tabs/SimulatorTab.hpp"
 #include "src/Utils/Algorithms.hpp"
@@ -303,18 +302,6 @@ void osc::MainMenuAboutTab::draw()
     int id = 0;
     {
         ImGui::Columns(2);
-
-        ImGui::TextUnformatted("Experimental Screens");
-        ImGui::SameLine();
-        DrawHelpMarker("opens a test screen for experimental features - you probably don't care about this, but it's useful for testing hardware features in prod");
-        ImGui::NextColumn();
-        ImGui::PushID(id++);
-        if (ImGui::Button(ICON_FA_EYE " show"))
-        {
-            App::upd().requestTransition<ExperimentsScreen>();
-        }
-        ImGui::PopID();
-        ImGui::NextColumn();
 
         ImGui::TextUnformatted("OSC Install Location");
         ImGui::SameLine();

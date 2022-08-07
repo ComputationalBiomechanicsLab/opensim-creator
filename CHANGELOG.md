@@ -114,6 +114,8 @@ All notable changes to this project will be documented here. The format is based
 
 - Cylinders (e.g. those used in muscles) are now smooth-shaded, and cost less to render (#316)
 
+- All experimental screens are now tabs, available from the + menu (#264)
+
 
 ## [0.2.0]
 

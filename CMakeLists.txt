@@ -422,8 +422,6 @@ add_library(osccore STATIC
 
     src/Screens/CookiecutterScreen.cpp
     src/Screens/CookiecutterScreen.hpp
-    src/Screens/ExperimentsScreen.cpp
-    src/Screens/ExperimentsScreen.hpp
     src/Screens/MainUIScreen.cpp
     src/Screens/MainUIScreen.hpp
 
