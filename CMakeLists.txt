@@ -434,8 +434,6 @@ add_library(osccore STATIC
     src/Screens/MeshHittestScreen.hpp
     src/Screens/MeshHittestWithBVHScreen.cpp
     src/Screens/MeshHittestWithBVHScreen.hpp
-    src/Screens/MeshScreen.cpp
-    src/Screens/MeshScreen.hpp
 
     src/Tabs/Experiments/ImGuiDemoTab.cpp
     src/Tabs/Experiments/ImGuiDemoTab.hpp
