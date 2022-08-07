@@ -118,7 +118,8 @@ namespace
 
         nonstd::span<osc::SceneDecoration const> populate(
             osc::VirtualConstModelStatePair const& msp,
-            osc::CustomDecorationOptions const& decorationOptions)
+            osc::CustomDecorationOptions const& decorationOptions,
+            osc::UiModelViewerFlags const& panelFlags)
         {
             OpenSim::Component const* const selected = msp.getSelected();
             OpenSim::Component const* const hovered = msp.getHovered();
@@ -130,7 +131,8 @@ namespace
                 hovered != osc::FindComponent(msp.getModel(), m_LastHover) ||
                 isolated != osc::FindComponent(msp.getModel(), m_LastIsolation) ||
                 msp.getFixupScaleFactor() != m_LastFixupFactor ||
-                decorationOptions != m_LastDecorationOptions)
+                decorationOptions != m_LastDecorationOptions,
+                panelFlags != m_LastPanelFlags)
             {
                 // update cache checks
                 m_LastModelVersion = msp.getModelVersion();
@@ -140,6 +142,7 @@ namespace
                 m_LastIsolation = isolated ? isolated->getAbsolutePath() : OpenSim::ComponentPath{};
                 m_LastFixupFactor = msp.getFixupScaleFactor();
                 m_LastDecorationOptions = decorationOptions;
+                m_LastPanelFlags = panelFlags;
                 m_Version = osc::UID{};
 
                 // generate decorations from OpenSim/SimTK backend
@@ -158,6 +161,7 @@ namespace
         OpenSim::ComponentPath m_LastIsolation;
         float m_LastFixupFactor = 1.0f;
         osc::CustomDecorationOptions m_LastDecorationOptions;
+        osc::UiModelViewerFlags m_LastPanelFlags = osc::UiModelViewerFlags_None;
 
         osc::UID m_Version;
         std::vector<osc::SceneDecoration> m_Decorations;
@@ -245,7 +249,7 @@ public:
         m_RendererParams.lightDirection = RecommendedLightDirection(m_Camera);
 
         // populate render buffers
-        m_SceneDrawlist.populate(rs, m_DecorationOptions);
+        m_SceneDrawlist.populate(rs, m_DecorationOptions, m_Flags);
         m_BVH.populate(m_SceneDrawlist);
 
         std::pair<OpenSim::Component const*, glm::vec3> htResult = hittestRenderWindow(rs);
