@@ -89,20 +89,6 @@ namespace
 // rendering utils
 namespace
 {
-    void DrawSceneAABBs(
-        nonstd::span<osc::SceneDecoration const> decs,
-        glm::mat4 const& viewMtx,
-        glm::mat4 const& projMtx)
-    {
-        std::vector<osc::AABB> aabbs;
-        aabbs.reserve(decs.size());
-        for (auto const& dec : decs)
-        {
-            aabbs.push_back(GetWorldspaceAABB(dec));
-        }
-        osc::DrawAABBs(aabbs, viewMtx, projMtx);
-    }
-
     // populates a high-level drawlist for an OpenSim model scene
     class CachedSceneDrawlist final {
     public:
@@ -658,40 +644,57 @@ private:
     // draws overlays that are "in scene" - i.e. they are part of the rendered texture
     void drawInSceneOverlays()
     {
-        glm::mat4 viewMtx = m_Camera.getViewMtx();
-        glm::mat4 projMtx = m_Camera.getProjMtx(AspectRatio(m_Rendererer.getDimensions()));
-
-        gl::BindFramebuffer(GL_FRAMEBUFFER, m_Rendererer.updOutputFBO());
-        gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
+        std::vector<SceneDecoration> decs;
 
         if (m_Flags & osc::UiModelViewerFlags_DrawXZGrid)
         {
-            DrawXZGrid(viewMtx, projMtx);
+            DrawXZGrid(decs);
         }
 
         if (m_Flags & osc::UiModelViewerFlags_DrawXYGrid)
         {
-            DrawXYGrid(viewMtx, projMtx);
+            DrawXYGrid(decs);
         }
 
         if (m_Flags & osc::UiModelViewerFlags_DrawYZGrid)
         {
-            DrawYZGrid(viewMtx, projMtx);
+            DrawYZGrid(decs);
         }
 
         if (m_Flags & osc::UiModelViewerFlags_DrawAxisLines)
         {
-            DrawXZFloorLines(viewMtx, projMtx);
+            DrawXZFloorLines(decs);
         }
 
         if (m_Flags & osc::UiModelViewerFlags_DrawAABBs)
         {
-            DrawSceneAABBs(m_SceneDrawlist.get(), viewMtx, projMtx);
+            for (SceneDecoration const& dec : m_SceneDrawlist.get())
+            {
+                DrawAABB(GetWorldspaceAABB(dec), decs);
+            }
         }
 
         if (m_Flags & osc::UiModelViewerFlags_DrawBVH)
         {
-            DrawBVH(m_BVH.get(), viewMtx, projMtx);
+            DrawBVH(m_BVH.get(), decs);
+        }
+
+        auto& shader = osc::App::shader<osc::SolidColorShader>();
+        glm::mat4 viewMtx = m_Camera.getViewMtx();
+        glm::mat4 projMtx = m_Camera.getProjMtx(AspectRatio(m_Rendererer.getDimensions()));
+        gl::BindFramebuffer(GL_FRAMEBUFFER, m_Rendererer.updOutputFBO());
+        gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
+        gl::UseProgram(shader.program);
+        gl::Uniform(shader.uView, viewMtx);
+        gl::Uniform(shader.uProjection, projMtx);
+
+        for (SceneDecoration const& dec : decs)
+        {
+            gl::Uniform(shader.uModel, ToMat4(dec.transform));
+            gl::Uniform(shader.uColor, dec.color);
+            gl::BindVertexArray(dec.mesh->GetVertexArray());
+            dec.mesh->Draw();
+            gl::BindVertexArray();
         }
 
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);

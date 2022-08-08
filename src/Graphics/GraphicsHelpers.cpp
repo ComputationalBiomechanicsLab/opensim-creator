@@ -1,8 +1,5 @@
 #include "GraphicsHelpers.hpp"
 
-#include "src/Graphics/Shaders/SolidColorShader.hpp"
-#include "src/Graphics/Gl.hpp"
-#include "src/Graphics/GlGlm.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
@@ -22,136 +19,122 @@ namespace
     // assumes `pos` is in-bounds
     void DrawBVHRecursive(
         osc::Mesh& cube,
-        gl::UniformMat4& mtxUniform,
+        std::shared_ptr<osc::Mesh> const& mesh,
         osc::BVH const& bvh,
-        int pos)
+        int pos,
+        std::vector<osc::SceneDecoration>& out)
     {
         osc::BVHNode const& n = bvh.nodes[pos];
 
-        glm::vec3 halfWidths = Dimensions(n.bounds) / 2.0f;
-        glm::vec3 center = Midpoint(n.bounds);
+        osc::Transform t;
+        t.scale *= 0.5f * Dimensions(n.bounds);
+        t.position = Midpoint(n.bounds);
 
-        glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
-        glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
-        glm::mat4 mmtx = mover * scaler;
-        gl::Uniform(mtxUniform, mmtx);
-        cube.Draw();
+        glm::vec4 const color = {0.0f, 0.0f, 0.0f, 1.0f};
+
+        out.emplace_back(mesh, t, color);
 
         if (n.nlhs >= 0)
         {
             // it's an internal node
-            DrawBVHRecursive(cube, mtxUniform, bvh, pos+1);
-            DrawBVHRecursive(cube, mtxUniform, bvh, pos+n.nlhs+1);
+            DrawBVHRecursive(cube, mesh, bvh, pos+1, out);
+            DrawBVHRecursive(cube, mesh, bvh, pos+n.nlhs+1, out);
         }
     }
 
-    void DrawGrid(glm::mat4 const& rotationMatrix, glm::mat4 const& viewMtx, glm::mat4 const& projMtx)
+    void DrawGrid(glm::quat const& rotation, std::vector<osc::SceneDecoration>& out)
     {
-        auto& shader = osc::App::shader<osc::SolidColorShader>();
+        std::shared_ptr<osc::Mesh> grid = osc::App::meshes().get100x100GridMesh();
 
-        gl::UseProgram(shader.program);
-        gl::Uniform(shader.uModel, glm::scale(rotationMatrix, {50.0f, 50.0f, 1.0f}));
-        gl::Uniform(shader.uView, viewMtx);
-        gl::Uniform(shader.uProjection, projMtx);
-        gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
-        auto grid = osc::App::meshes().get100x100GridMesh();
-        gl::BindVertexArray(grid->GetVertexArray());
-        grid->Draw();
-        gl::BindVertexArray();
+        osc::Transform t;
+        t.scale *= glm::vec3{50.0f, 50.0f, 1.0f};
+        t.rotation = rotation;
+
+        glm::vec4 const color = {0.7f, 0.7f, 0.7f, 0.15f};
+
+        out.emplace_back(grid, t, color);
     }
 }
 
-void osc::DrawBVH(
-    BVH const& sceneBVH,
-    glm::mat4 const& viewMtx,
-    glm::mat4 const& projMtx)
+void osc::DrawBVH(BVH const& sceneBVH, std::vector<SceneDecoration>& out)
 {
     if (sceneBVH.nodes.empty())
     {
         return;
     }
 
-    auto& shader = osc::App::shader<osc::SolidColorShader>();
-
-    // common stuff
-    gl::UseProgram(shader.program);
-    gl::Uniform(shader.uProjection, projMtx);
-    gl::Uniform(shader.uView, viewMtx);
-    gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
-
-    auto cube = osc::App::meshes().getCubeWireMesh();
-    gl::BindVertexArray(cube->GetVertexArray());
-    DrawBVHRecursive(*cube, shader.uModel, sceneBVH, 0);
-    gl::BindVertexArray();
+    std::shared_ptr<osc::Mesh> cube = osc::App::meshes().getCubeWireMesh();
+    DrawBVHRecursive(*cube, cube, sceneBVH, 0, out);
 }
 
-void osc::DrawAABBs(nonstd::span<AABB const> aabbs, glm::mat4 const& viewMtx, glm::mat4 const& projMtx)
+void osc::DrawAABB(AABB const& aabb, std::vector<SceneDecoration>& out)
 {
-    auto& shader = osc::App::shader<osc::SolidColorShader>();
+    std::shared_ptr<Mesh> cube = osc::App::meshes().getCubeWireMesh();
+    glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
 
-    // common stuff
-    gl::UseProgram(shader.program);
-    gl::Uniform(shader.uProjection, projMtx);
-    gl::Uniform(shader.uView, viewMtx);
-    gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
+    Transform t;
+    t.scale = 0.5f * Dimensions(aabb);
+    t.position = Midpoint(aabb);
 
-    auto cube = osc::App::meshes().getCubeWireMesh();
-    gl::BindVertexArray(cube->GetVertexArray());
+    out.emplace_back(cube, t, color);
+}
+
+void osc::DrawAABBs(nonstd::span<AABB const> aabbs, std::vector<SceneDecoration>& out)
+{
+    std::shared_ptr<Mesh> cube = osc::App::meshes().getCubeWireMesh();
+    glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
 
     for (AABB const& aabb : aabbs)
     {
-        glm::vec3 halfWidths = Dimensions(aabb) / 2.0f;
-        glm::vec3 center = Midpoint(aabb);
+        Transform t;
+        t.scale = 0.5f * Dimensions(aabb);
+        t.position = Midpoint(aabb);
 
-        glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
-        glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
-        glm::mat4 mmtx = mover * scaler;
+        out.emplace_back(cube, t, color);
+    }
+}
 
-        gl::Uniform(shader.uModel, mmtx);
-        cube->Draw();
+void osc::DrawXZFloorLines(std::vector<SceneDecoration>& out)
+{
+    std::shared_ptr<Mesh> yLine = App::meshes().getYLineMesh();
+
+    // X line
+    {
+        glm::vec4 const color = {1.0f, 0.0f, 0.0f, 1.0f};
+
+        Transform t;
+        t.rotation = glm::angleAxis(fpi2, glm::vec3{0.0f, 0.0f, 1.0f});
+
+        out.emplace_back(yLine, t, color);
     }
 
-    gl::BindVertexArray();
+    // Z line
+    {
+        glm::vec4 const color = {0.0f, 1.0f, 0.0f, 1.0f};
+
+        Transform t;
+        t.rotation = glm::angleAxis(fpi2, glm::vec3{1.0f, 0.0f, 0.0f});
+
+        out.emplace_back(yLine, t, color);
+    }
 }
 
-void osc::DrawXZFloorLines(glm::mat4 const& viewMtx, glm::mat4 const& projMtx)
+void osc::DrawXZGrid(std::vector<SceneDecoration>& out)
 {
-    auto& shader = osc::App::shader<osc::SolidColorShader>();
-
-    // common stuff
-    gl::UseProgram(shader.program);
-    gl::Uniform(shader.uProjection, viewMtx);
-    gl::Uniform(shader.uView, projMtx);
-
-    auto yline = osc::App::meshes().getYLineMesh();
-    gl::BindVertexArray(yline->GetVertexArray());
-
-    // X
-    gl::Uniform(shader.uModel, glm::rotate(glm::mat4{1.0f}, osc::fpi2, {0.0f, 0.0f, 1.0f}));
-    gl::Uniform(shader.uColor, {1.0f, 0.0f, 0.0f, 1.0f});
-    yline->Draw();
-
-    // Z
-    gl::Uniform(shader.uModel, glm::rotate(glm::mat4{1.0f}, osc::fpi2, {1.0f, 0.0f, 0.0f}));
-    gl::Uniform(shader.uColor, {0.0f, 0.0f, 1.0f, 1.0f});
-    yline->Draw();
-
-    gl::BindVertexArray();
+    glm::quat const rotation = glm::angleAxis(fpi2, glm::vec3{1.0f, 0.0f, 0.0f});
+    DrawGrid(rotation, out);
 }
 
-void osc::DrawXZGrid(glm::mat4 const& viewMtx, glm::mat4 const& projMtx)
+void osc::DrawXYGrid(std::vector<SceneDecoration>& out)
 {
-    DrawGrid(glm::rotate(glm::mat4{1.0f}, osc::fpi2, {1.0f, 0.0f, 0.0f}), viewMtx, projMtx);
+    glm::quat const rotation = glm::identity<glm::quat>();
+    DrawGrid(rotation, out);
 }
 
-void osc::DrawXYGrid(glm::mat4 const& viewMtx, glm::mat4 const& projMtx)
+void osc::DrawYZGrid(std::vector<SceneDecoration>& out)
 {
-    DrawGrid(glm::mat4{1.0f}, viewMtx, projMtx);
-}
-
-void osc::DrawYZGrid(glm::mat4 const& viewMtx, glm::mat4 const& projMtx)
-{
-    DrawGrid(glm::rotate(glm::mat4{1.0f}, osc::fpi2, {0.0f, 1.0f, 0.0f}), viewMtx, projMtx);
+    glm::quat rotation = glm::angleAxis(fpi2, glm::vec3{0.0f, 1.0f, 0.0f});
+    DrawGrid(rotation, out);
 }
 
 void osc::UpdateSceneBVH(nonstd::span<SceneDecoration const> sceneEls, BVH& bvh)

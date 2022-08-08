@@ -1,6 +1,5 @@
 #pragma once
 
-#include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 
@@ -17,12 +16,13 @@ namespace osc
 
 namespace osc
 {
-    void DrawBVH(BVH const&, glm::mat4 const& viewMtx, glm::mat4 const& projMtx);
-    void DrawAABBs(nonstd::span<AABB const>, glm::mat4 const& viewMtx, glm::mat4 const& projMtx);
-    void DrawXZFloorLines(glm::mat4 const& viewMtx, glm::mat4 const& projMtx);
-    void DrawXZGrid(glm::mat4 const& viewMtx, glm::mat4 const& projMtx);
-    void DrawXYGrid(glm::mat4 const& viewMtx, glm::mat4 const& projMtx);
-    void DrawYZGrid(glm::mat4 const& viewMtx, glm::mat4 const& projMtx);
+    void DrawBVH(BVH const&, std::vector<SceneDecoration>&);
+    void DrawAABB(AABB const&, std::vector<SceneDecoration>&);
+    void DrawAABBs(nonstd::span<AABB const>, std::vector<SceneDecoration>&);
+    void DrawXZFloorLines(std::vector<SceneDecoration>&);
+    void DrawXZGrid(std::vector<SceneDecoration>&);
+    void DrawXYGrid(std::vector<SceneDecoration>&);
+    void DrawYZGrid(std::vector<SceneDecoration>&);
 
     // updates the given BVH with the given component decorations
     void UpdateSceneBVH(nonstd::span<SceneDecoration const>, BVH& bvh);

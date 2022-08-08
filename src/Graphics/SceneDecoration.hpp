@@ -19,7 +19,16 @@ namespace osc
         Transform transform;
         glm::vec4 color;
         std::string id;
-        SceneDecorationFlags flags;
+        SceneDecorationFlags flags = SceneDecorationFlags_None;
+
+        SceneDecoration(std::shared_ptr<Mesh> mesh_,
+                        Transform const& transform_,
+                        glm::vec4 const& color_) :
+            mesh{std::move(mesh_)},
+            transform{transform_},
+            color{color_}
+        {
+        }
 
         SceneDecoration(std::shared_ptr<Mesh> mesh_,
                         Transform const& transform_,
