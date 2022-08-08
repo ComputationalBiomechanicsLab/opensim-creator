@@ -266,9 +266,6 @@ public:
         // render into texture
         drawSceneTexture(rs);
 
-        // also render in-scene overlays into the texture
-        drawInSceneOverlays();
-
         // blit texture as an ImGui::Image
         m_RenderImage = DrawTextureAsImGuiImageAndHittest(m_Rendererer.updOutputTexture(), ImGui::GetContentRegionAvail());
 
@@ -644,6 +641,13 @@ private:
             m_RendererPrevDrawlistVersion = m_SceneDrawlist.getVersion();
             m_RendererPrevParams = m_RendererParams;
             m_Rendererer.draw(m_SceneDrawlist.get(), m_RendererParams);
+
+            // also render in-scene overlays into the texture
+            //
+            // this *must* be done at this point, rather than every frame, because you can otherwise
+            // end up with weird overdraw bugs from other viewports inducing (non-cached, for overlays)
+            // redraws on eachover (#341)
+            drawInSceneOverlays();
         }
     }
 
