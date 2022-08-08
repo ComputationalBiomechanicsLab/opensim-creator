@@ -6,7 +6,8 @@ namespace osc
         bool hit;
         float distance;
 
-        operator bool () {
+        operator bool () const
+        {
             return hit;
         }
     };
