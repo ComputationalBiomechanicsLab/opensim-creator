@@ -5,6 +5,7 @@
 #include "src/Graphics/GlGlm.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
+#include "src/Graphics/SceneDecoration.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/BVH.hpp"
 #include "src/Maths/Constants.hpp"
@@ -151,4 +152,17 @@ void osc::DrawXYGrid(glm::mat4 const& viewMtx, glm::mat4 const& projMtx)
 void osc::DrawYZGrid(glm::mat4 const& viewMtx, glm::mat4 const& projMtx)
 {
     DrawGrid(glm::rotate(glm::mat4{1.0f}, osc::fpi2, {0.0f, 1.0f, 0.0f}), viewMtx, projMtx);
+}
+
+void osc::UpdateSceneBVH(nonstd::span<SceneDecoration const> sceneEls, BVH& bvh)
+{
+    std::vector<AABB> aabbs;
+    aabbs.reserve(sceneEls.size());
+
+    for (auto const& el : sceneEls)
+    {
+        aabbs.push_back(GetWorldspaceAABB(el));
+    }
+
+    BVH_BuildFromAABBs(bvh, aabbs.data(), aabbs.size());
 }

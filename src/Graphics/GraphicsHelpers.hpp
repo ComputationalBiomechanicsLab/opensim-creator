@@ -7,6 +7,7 @@ namespace osc
 {
     struct AABB;
     struct BVH;
+    class SceneDecoration;
 }
 
 namespace osc
@@ -17,4 +18,7 @@ namespace osc
     void DrawXZGrid(glm::mat4 const& viewMtx, glm::mat4 const& projMtx);
     void DrawXYGrid(glm::mat4 const& viewMtx, glm::mat4 const& projMtx);
     void DrawYZGrid(glm::mat4 const& viewMtx, glm::mat4 const& projMtx);
+
+    // updates the given BVH with the given component decorations
+    void UpdateSceneBVH(nonstd::span<SceneDecoration const>, BVH& bvh);
 }

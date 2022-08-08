@@ -4,7 +4,6 @@
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Maths/AABB.hpp"
-#include "src/Maths/BVH.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Segment.hpp"
@@ -1278,19 +1277,6 @@ void osc::GenerateModelDecorations(VirtualConstModelStatePair const& p,
                                    std::vector<SceneDecoration>& out)
 {
     GenerateModelDecorations(p, out, CustomDecorationOptions{});
-}
-
-void osc::UpdateSceneBVH(nonstd::span<SceneDecoration const> sceneEls, BVH& bvh)
-{
-    std::vector<AABB> aabbs;
-    aabbs.reserve(sceneEls.size());
-
-    for (auto const& el : sceneEls)
-    {
-        aabbs.push_back(GetWorldspaceAABB(el));
-    }
-
-    BVH_BuildFromAABBs(bvh, aabbs.data(), aabbs.size());
 }
 
 void osc::CopyCommonJointProperties(OpenSim::Joint const& src, OpenSim::Joint& dest)

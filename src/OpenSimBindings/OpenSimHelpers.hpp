@@ -24,7 +24,6 @@ namespace OpenSim
 
 namespace osc
 {
-    struct BVH;
     class SceneDecoration;
     class CustomDecorationOptions;
     class VirtualConstModelStatePair;
@@ -167,9 +166,6 @@ namespace osc
     // generates decorations for a model + state
     void GenerateModelDecorations(VirtualConstModelStatePair const&, std::vector<SceneDecoration>&, CustomDecorationOptions const&);
     void GenerateModelDecorations(VirtualConstModelStatePair const&, std::vector<SceneDecoration>&);  // default decoration options
-
-    // updates the given BVH with the given component decorations
-    void UpdateSceneBVH(nonstd::span<SceneDecoration const>, BVH&);
 
     // copy common joint properties from a `src` to `dest`
     //
