@@ -17,6 +17,7 @@
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Utils/Perf.hpp"
 
 #include <glm/mat4x3.hpp>
 #include <glm/mat4x4.hpp>
@@ -26,6 +27,7 @@
 #include <glm/gtx/transform.hpp>
 #include <nonstd/span.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <utility>
 #include <vector>
@@ -231,6 +233,21 @@ namespace
             }
         }
     }
+
+    static bool HasGreaterAlphaOrLowerMeshID(
+        osc::SceneDecoration const& a,
+        osc::SceneDecoration const& b)
+    {
+        if (a.color.a != b.color.a)
+        {
+            // alpha descending, so non-opaque stuff is drawn last
+            return a.color.a > b.color.a;
+        }
+        else
+        {
+            return a.mesh.get() < b.mesh.get();
+        }
+    }
 }
 
 
@@ -246,8 +263,19 @@ public:
         return m_RenderTarget.samples;
     }
 
-    void draw(nonstd::span<SceneDecoration const> decorations, SceneRendererParams const& params)
+    void draw(nonstd::span<SceneDecoration const> srcDecorations, SceneRendererParams const& params)
     {
+        std::vector<SceneDecoration> decorations;
+        {
+            OSC_PERF("drawlist copying");
+            decorations = std::vector<SceneDecoration>{srcDecorations.begin(), srcDecorations.end()};
+        }
+
+        {
+            OSC_PERF("scene sorting");
+            std::sort(decorations.begin(), decorations.end(), HasGreaterAlphaOrLowerMeshID);
+        }
+
         // ensure underlying render target matches latest params
         m_RenderTarget.setDims(params.dimensions);
         m_RenderTarget.setSamples(params.samples);

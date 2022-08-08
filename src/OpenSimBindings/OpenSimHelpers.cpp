@@ -88,20 +88,6 @@ namespace osc
     class Mesh;
 }
 
-static bool HasGreaterAlphaOrLowerMeshID(osc::SceneDecoration const& a,
-                                         osc::SceneDecoration const& b)
-{
-    if (a.color.a != b.color.a)
-    {
-        // alpha descending, so non-opaque stuff is drawn last
-        return a.color.a > b.color.a;
-    }
-    else
-    {
-        return a.mesh.get() < b.mesh.get();
-    }
-}
-
 static osc::Transform TransformInGround(OpenSim::PhysicalFrame const& pf, SimTK::State const& st)
 {
     return osc::ToTransform(pf.getTransformInGround(st));
@@ -1285,11 +1271,6 @@ void osc::GenerateModelDecorations(VirtualConstModelStatePair const& p,
     {
         OSC_PERF("scene generation");
         GenerateDecorationEls(p, opts, out);
-    }
-
-    {
-        OSC_PERF("scene sorting");
-        Sort(out, HasGreaterAlphaOrLowerMeshID);
     }
 }
 
