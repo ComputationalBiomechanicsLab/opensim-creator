@@ -329,12 +329,13 @@ namespace
     // returns the average centerpoint of all vertices in a mesh
     glm::vec3 AverageCenterpoint(Mesh const& m)
     {
+        std::vector<uint32_t> indices = m.getIndices();
         nonstd::span<glm::vec3 const> const verts = m.getVerts();
 
         glm::vec3 acc = {0.0f, 0.0f, 0.0f};
-        for (glm::vec3 const& v : verts)
+        for (uint32_t index : indices)
         {
-            acc += v;
+            acc += verts[index];
         }
         acc /= static_cast<float>(verts.size());
 
@@ -1747,6 +1748,18 @@ namespace
 
         return g_Classes;
     }
+
+    glm::vec3 AverageCenter(MeshEl const& el)
+    {
+        glm::vec3 const centerpointInModelSpace = AverageCenterpoint(*el.MeshData);
+        return el.GetXform() * centerpointInModelSpace;
+    }
+
+    glm::vec3 MassCenter(MeshEl const& el)
+    {
+        glm::vec3 const massCenterInModelSpace = MassCenter(*el.MeshData);
+        return el.GetXform() * massCenterInModelSpace;
+    }
 }
 
 // modelgraph support
@@ -2810,17 +2823,7 @@ namespace
             return false;
         }
 
-        Mesh const& meshData = *mesh->MeshData;
-
-        if (meshData.getVerts().empty())
-        {
-            return false;
-        }
-
-        glm::vec3 centerpointInModelSpace = AverageCenterpoint(meshData);
-        glm::vec3 centerpointInWorldSpace = mesh->GetXform() * centerpointInModelSpace;
-
-        el->SetPos(centerpointInWorldSpace);
+        el->SetPos(AverageCenter(*mesh));
         cmg.Commit("moved " + el->GetLabel());
 
         return true;
@@ -2872,12 +2875,7 @@ namespace
             return false;
         }
 
-        Mesh const& meshData = *mesh->MeshData;
-
-        glm::vec3 const massCenterInModelSpace = MassCenter(meshData);
-        glm::vec3 const massCenterInWorldSpace = mesh->GetXform() * massCenterInModelSpace;
-
-        el->SetPos(massCenterInWorldSpace);
+        el->SetPos(MassCenter(*mesh));
         cmg.Commit("moved " + el->GetLabel());
 
         return true;
@@ -6641,13 +6639,34 @@ namespace
                     }
                     osc::DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
 
-                    if (Is<MeshEl>(el))
+                    if (ImGui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
+                    {
+                        AddBody(m_Shared->UpdCommittableModelGraph());
+                    }
+                    osc::DrawTooltipIfItemHovered("Add body", OSC_STATION_DESC);
+
+                    if (MeshEl const* meshEl = dynamic_cast<MeshEl const*>(&el))
                     {
                         if (ImGui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
                         {
-                            AddBody(m_Shared->UpdCommittableModelGraph(), Midpoint(el.CalcBounds()), el.GetID());
+                            glm::vec3 const location = Midpoint(meshEl->CalcBounds());
+                            AddBody(m_Shared->UpdCommittableModelGraph(), location, meshEl->GetID());
                         }
                         osc::DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
+
+                        if (ImGui::MenuItem(ICON_FA_DIVIDE " at mesh average center"))
+                        {
+                            glm::vec3 const location = AverageCenter(*meshEl);
+                            AddBody(m_Shared->UpdCommittableModelGraph(), location, meshEl->GetID());
+                        }
+                        osc::DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
+
+                        if (ImGui::MenuItem(ICON_FA_WEIGHT " at mesh mass center"))
+                        {
+                            glm::vec3 const location = MassCenter(*meshEl);
+                            AddBody(m_Shared->UpdCommittableModelGraph(), location, meshEl->GetID());
+                        }
+                        osc::DrawTooltipIfItemHovered("Add body", OSC_STATION_DESC);
                     }
 
                     ImGui::EndMenu();
