@@ -20,6 +20,7 @@ namespace osc
 namespace osc::experimental
 {
     class Camera;
+    class Texture2D;
 }
 
 namespace gl
@@ -43,6 +44,7 @@ namespace osc
 
     // draws a texutre as an ImGui::Image, assumes UV coords of (0.0, 1.0); (1.0, 0.0)
     void DrawTextureAsImGuiImage(gl::Texture2D&, glm::vec2 dims);
+    void DrawTextureAsImGuiImage(experimental::Texture2D&, glm::vec2 dims);
 
     struct ImGuiImageHittestResult final {
         Rect rect;

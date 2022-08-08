@@ -4,7 +4,7 @@
 
 #include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/Graphics/Texturing.hpp"
+#include "src/Graphics/Renderer.hpp"
 #include "src/Graphics/SceneRenderer.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
 #include "src/Maths/Constants.hpp"
@@ -34,12 +34,6 @@
 #include <string>
 #include <utility>
 
-
-static gl::Texture2D LoadImageResourceIntoTexture(char const* res_pth)
-{
-    return osc::LoadImageAsTexture(osc::App::resource(res_pth).string().c_str(), osc::ImageFlags_FlipVertically).Texture;
-}
-
 static osc::PolarPerspectiveCamera GetSplashScreenDefaultPolarCamera()
 {
     osc::PolarPerspectiveCamera rv;
@@ -65,6 +59,9 @@ class osc::SplashTab::Impl final {
 public:
 	Impl(MainUIStateAPI* parent) : m_Parent{std::move(parent)}
 	{
+        m_OscLogo.setFilterMode(osc::experimental::TextureFilterMode::Linear);
+        m_CziLogo.setFilterMode(osc::experimental::TextureFilterMode::Linear);
+        m_TudLogo.setFilterMode(osc::experimental::TextureFilterMode::Linear);
 	}
 
     UID getID() const
@@ -374,13 +371,13 @@ private:
     SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);
 
 	// main app logo, blitted to top of the screen
-	gl::Texture2D m_OscLogo = LoadImageResourceIntoTexture("logo.png");
+	experimental::Texture2D m_OscLogo = experimental::LoadTexture2DFromImageResource("logo.png", ImageFlags_FlipVertically);
 
 	// CZI attributation logo, blitted to bottom of screen
-	gl::Texture2D m_CziLogo = LoadImageResourceIntoTexture("chanzuckerberg_logo.png");
+	experimental::Texture2D m_CziLogo = experimental::LoadTexture2DFromImageResource("chanzuckerberg_logo.png", ImageFlags_FlipVertically);
 
 	// TUD attributation logo, blitted to bottom of screen
-	gl::Texture2D m_TudLogo = LoadImageResourceIntoTexture("tud_logo.png");
+	experimental::Texture2D m_TudLogo = experimental::LoadTexture2DFromImageResource("tud_logo.png", ImageFlags_FlipVertically);
 
 	// main menu (top bar) states
 	MainMenuFileTab m_MainMenuFileTab;

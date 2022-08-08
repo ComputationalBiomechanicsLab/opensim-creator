@@ -31,6 +31,11 @@ namespace osc
     struct MeshData;
 }
 
+namespace gl
+{
+    class Texture2D;  // needed as a temporary hack for ImGui compatibility
+}
+
 
 // 2D texture
 //
@@ -83,7 +88,9 @@ namespace osc::experimental
         TextureFilterMode getFilterMode() const;
         void setFilterMode(TextureFilterMode);
 
+        gl::Texture2D& updTextureHandleHACK();  // used by ImGui... for now
     private:
+
         friend class GraphicsBackend;
         friend bool operator==(Texture2D const&, Texture2D const&);
         friend bool operator!=(Texture2D const&, Texture2D const&);

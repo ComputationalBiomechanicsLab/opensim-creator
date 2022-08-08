@@ -491,6 +491,11 @@ public:
         m_TextureParamsVersion.reset();
     }
 
+    gl::Texture2D& updTextureHandleHACK()
+    {
+        return updTexture();
+    }
+
     // non PIMPL method
 
     gl::Texture2D& updTexture()
@@ -672,6 +677,12 @@ void osc::experimental::Texture2D::setFilterMode(TextureFilterMode twm)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setFilterMode(std::move(twm));
+}
+
+gl::Texture2D& osc::experimental::Texture2D::updTextureHandleHACK()
+{
+    DoCopyOnWrite(m_Impl);
+    return m_Impl->updTextureHandleHACK();
 }
 
 bool osc::experimental::operator==(Texture2D const& a, Texture2D const& b)
