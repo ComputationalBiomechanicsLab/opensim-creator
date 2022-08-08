@@ -166,3 +166,31 @@ void osc::UpdateSceneBVH(nonstd::span<SceneDecoration const> sceneEls, BVH& bvh)
 
     BVH_BuildFromAABBs(bvh, aabbs.data(), aabbs.size());
 }
+
+// returns all collisions along a ray
+std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(BVH const& bvh, nonstd::span<SceneDecoration const> decorations, Line const& ray)
+{
+    // use scene BVH to intersect the ray with the scene
+    std::vector<BVHCollision> sceneCollisions;
+    BVH_GetRayAABBCollisions(bvh, ray, &sceneCollisions);
+
+    // perform ray-triangle intersections tests on the scene hits
+    std::vector<SceneCollision> rv;
+    for (BVHCollision const& c : sceneCollisions)
+    {
+        SceneDecoration const& decoration = decorations[c.primId];
+
+        Line const rayModelspace = TransformLine(ray, ToInverseMat4(decoration.transform));
+        RayCollision const maybeCollision = decoration.mesh->getClosestRayTriangleCollisionModelspace(rayModelspace);
+
+        if (maybeCollision)
+        {
+            glm::vec3 const locationModelspace = rayModelspace.origin + maybeCollision.distance * rayModelspace.dir;
+            glm::vec3 const locationWorldspace = decoration.transform * locationModelspace;
+            float distance = glm::length(locationWorldspace - ray.origin);
+
+            rv.emplace_back(locationWorldspace, static_cast<size_t>(c.primId), distance);
+        }
+    }
+    return rv;
+}
