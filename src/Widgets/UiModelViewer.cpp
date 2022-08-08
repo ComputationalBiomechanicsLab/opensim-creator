@@ -562,6 +562,8 @@ private:
             return rv;
         }
 
+        OSC_PERF("scene hittest");
+
         // figure out mouse pos in panel's NDC system
         glm::vec2 windowScreenPos = ImGui::GetWindowPos();  // where current ImGui window is in the screen
         glm::vec2 mouseScreenPos = ImGui::GetMousePos();  // where mouse is in the screen
@@ -571,47 +573,49 @@ private:
         glm::vec2 itemDims = ImGui::GetContentRegionAvail();  // how big current window will be
 
         // un-project the mouse position as a ray in worldspace
-        osc::Line cameraRay = m_Camera.unprojectTopLeftPosToWorldRay(mouseItemPos, itemDims);
+        Line const cameraRay = m_Camera.unprojectTopLeftPosToWorldRay(mouseItemPos, itemDims);
 
-        // use scene BVH to intersect that ray with the scene
-        std::vector<BVHCollision> m_SceneHittestResults;
-        BVH_GetRayAABBCollisions(m_BVH.get(), cameraRay, &m_SceneHittestResults);
+        // get decorations list (used for later testing/filtering)
+        nonstd::span<osc::SceneDecoration const> decorations = m_SceneDrawlist.get();
 
-        // go through triangle BVHes to figure out which, if any, triangle is closest intersecting
+        // find all collisions along the camera ray
+        std::vector<SceneCollision> const collisions = GetAllSceneCollisions(m_BVH.get(), decorations, cameraRay);
+
+        // find the substring that describes what's isolated in the scene
+        std::string const isolatedPath = msp.getIsolated() ? msp.getIsolated()->getAbsolutePathString() : std::string{};
+
+        // filter through the collisions list
         int closestIdx = -1;
         float closestDistance = std::numeric_limits<float>::max();
         glm::vec3 closestWorldLoc = {0.0f, 0.0f, 0.0f};
 
-        // iterate through each scene-level hit and perform a triangle-level hittest
-        nonstd::span<osc::SceneDecoration const> decs = m_SceneDrawlist.get();
-        std::string const isolatedPath = msp.getIsolated() ? msp.getIsolated()->getAbsolutePathString() : std::string{};
-
-        for (osc::BVHCollision const& c : m_SceneHittestResults)
+        for (SceneCollision const& c : collisions)
         {
-            int instanceIdx = c.primId;
-
-            if (!osc::StartsWith(decs[instanceIdx].id, isolatedPath))
+            if (c.distanceFromRayOrigin > closestDistance)
             {
-                continue;  // it's not in the current isolation
+                continue;  // it's further away than the current closest collision
             }
 
-            glm::mat4 instanceMmtx = ToMat4(decs[instanceIdx].transform);
-            osc::Line cameraRayModelspace = TransformLine(cameraRay, ToInverseMat4(decs[instanceIdx].transform));
+            SceneDecoration const& decoration = decorations[c.decorationIndex];
 
-            auto maybeCollision = decs[instanceIdx].mesh->getClosestRayTriangleCollisionModelspace(cameraRayModelspace);
-
-            if (maybeCollision && maybeCollision.distance < closestDistance)
+            if (decoration.id.empty())
             {
-                closestIdx = instanceIdx;
-                closestDistance = maybeCollision.distance;
-                glm::vec3 closestLocModelspace = cameraRayModelspace.origin + closestDistance*cameraRayModelspace.dir;
-                closestWorldLoc = glm::vec3{instanceMmtx * glm::vec4{closestLocModelspace, 1.0f}};
+                continue;  // it isn't labelled geometry, so probably shouldn't participate
             }
+
+            if (!StartsWith(decoration.id, isolatedPath))
+            {
+                continue;  // it's not in the current isolation set
+            }
+
+            closestIdx = static_cast<int>(c.decorationIndex);
+            closestDistance = c.distanceFromRayOrigin;
+            closestWorldLoc = c.worldspaceLocation;
         }
 
         if (closestIdx >= 0)
         {
-            rv.first = osc::FindComponent(msp.getModel(), decs[closestIdx].id);
+            rv.first = osc::FindComponent(msp.getModel(), decorations[closestIdx].id);
             rv.second = closestWorldLoc;
         }
 
