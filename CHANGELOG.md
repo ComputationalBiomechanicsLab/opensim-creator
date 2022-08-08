@@ -117,7 +117,7 @@ All notable changes to this project will be documented here. The format is based
 - All experimental screens are now tabs, available from the + menu (#264)
 
 
-## [0.2.0]
+## [0.2.0] - 2022/07/04
 
 Tabbed interface support, alternate muscle visualization options, OpenSim 4.3 support,
 live muscle plotting, simulation performance measurements, and a variety of other
