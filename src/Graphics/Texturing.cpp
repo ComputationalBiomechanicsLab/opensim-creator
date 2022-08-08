@@ -3,6 +3,7 @@
 #include "src/Graphics/Gl.hpp"
 #include "src/Graphics/Image.hpp"
 #include "src/Graphics/ImageFlags.hpp"
+#include "src/Graphics/ImageGen.hpp"
 
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
@@ -20,31 +21,12 @@
 
 gl::Texture2D osc::GenChequeredFloorTexture()
 {
-    constexpr size_t chequer_width = 32;
-    constexpr size_t chequer_height = 32;
-    constexpr size_t w = 2 * chequer_width;
-    constexpr size_t h = 2 * chequer_height;
-
-    struct Rgb { unsigned char r, g, b; };
-    constexpr Rgb on_color = {0xff, 0xff, 0xff};
-    constexpr Rgb off_color = {0xf3, 0xf3, 0xf3};
-
-    std::array<Rgb, w * h> pixels;
-    for (size_t row = 0; row < h; ++row)
-    {
-        size_t row_start = row * w;
-        bool y_on = (row / chequer_height) % 2 == 0;
-        for (size_t col = 0; col < w; ++col)
-        {
-            bool x_on = (col / chequer_width) % 2 == 0;
-            pixels[row_start + col] = y_on ^ x_on ? on_color : off_color;
-        }
-    }
+    Image img = GenerateChequeredFloorImage();
 
     gl::Texture2D rv;
     gl::ActiveTexture(GL_TEXTURE0);
     gl::BindTexture(rv.type, rv.handle());
-    glTexImage2D(rv.type, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
+    glTexImage2D(rv.type, 0, GL_RGB, img.getDimensions().x, img.getDimensions().y, 0, GL_RGB, GL_UNSIGNED_BYTE, img.getPixelData().data());
     glGenerateMipmap(rv.type);
     gl::TexParameteri(rv.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     gl::TexParameteri(rv.type, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

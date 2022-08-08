@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <memory>
 
 namespace osc
 {
@@ -14,6 +15,7 @@ namespace osc
     public:
         static Image Load(std::filesystem::path const&, ImageFlags = ImageFlags_None);
 
+        Image(glm::ivec2 dimensions, nonstd::span<uint8_t const> channelsRowByRow, int numChannels);
         Image(Image const&) = delete;
         Image(Image&&) noexcept;
         Image& operator=(Image const&) = delete;
@@ -25,10 +27,8 @@ namespace osc
         nonstd::span<uint8_t const> getPixelData() const;
 
     private:
-        Image(std::filesystem::path const&, ImageFlags);
-
         glm::ivec2 m_Dimensions;
         int m_NumChannels;
-        unsigned char* m_Pixels;
+        std::unique_ptr<uint8_t[]> m_Pixels;
     };
 }
