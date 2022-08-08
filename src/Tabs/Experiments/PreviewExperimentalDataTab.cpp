@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/MeshCache.hpp"
+#include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/SceneDecorationFlags.hpp"
 #include "src/Graphics/SceneRenderer.hpp"
@@ -14,6 +15,7 @@
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
+#include "src/Platform/os.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/CStringView.hpp"
@@ -333,6 +335,9 @@ namespace
         return rv;
     }
 
+    // defines a "consumer" that "eats" decorations emitted from the various helper methods
+    using DecorationConsumer = std::function<void(osc::SceneDecoration const&)>;
+
     // retuns a scene decoration for the floor grid
     osc::SceneDecoration GenerateFloorGrid()
     {
@@ -351,8 +356,77 @@ namespace
         };
     }
 
-    // defines a "consumer" that "eats" decorations emitted from the various helper methods
-    using DecorationConsumer = std::function<void(osc::SceneDecoration const&)>;
+    // high-level caller-provided description of an arrow that they would like to generate
+    // decorations for
+    struct DecorativeArrow final
+    {
+        glm::vec3 p0 = {};
+        glm::vec3 p1 = {};
+        glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f};
+        float neckThickness = 0.025f;
+        float headThickness = 0.05f;
+        float percentageHead = 0.15f;
+        std::string label;
+
+        DecorativeArrow() = default;
+    };
+
+    // writes relevant geometry to output for drawing an arrow between two points in space
+    void GenerateDecorations(DecorativeArrow const& arrow, DecorationConsumer& out)
+    {
+        // calculate arrow vectors/directions
+        const glm::vec3 startToFinishVec = arrow.p1 - arrow.p0;
+        const float startToFinishLength = glm::length(startToFinishVec);
+        const glm::vec3 startToFinishDir = (1.0f / startToFinishLength) * startToFinishVec;
+
+        // calculate arrow length in worldspace
+        const float neckPercentage = 1.0f - arrow.percentageHead;
+        const float neckLength = neckPercentage * startToFinishLength;
+        const float headLength = arrow.percentageHead * startToFinishLength;
+
+        // calculate mesh-to-arrow rotation (meshes point along Y)
+        const glm::quat rotation = glm::rotation(glm::vec3{0.0f, 1.0f, 0.0f}, startToFinishDir);
+
+        // calculate arrow (head/neck) midpoints for translation
+        const float neckMidpointPercentage = 0.5f * neckPercentage;
+        const glm::vec3 neckMidpoint = arrow.p0 + (neckMidpointPercentage * startToFinishVec);
+        const float headMidpointPercentage = 0.5f * (1.0f + neckPercentage);
+        const glm::vec3 headMidpoint = arrow.p0 + (headMidpointPercentage * startToFinishVec);
+
+        // emit neck (note: meshes have a height of 2 in mesh-space)
+        {
+            osc::Transform t;
+            t.scale = {arrow.neckThickness, 0.5f * neckLength, arrow.neckThickness};
+            t.rotation = rotation;
+            t.position = neckMidpoint;
+
+            out(osc::SceneDecoration
+            {
+                osc::App::meshes().getCylinderMesh(),
+                t,
+                arrow.color,
+                arrow.label,
+                osc::SceneDecorationFlags_None,
+            });
+        }
+
+        // emit head (note: meshes have a height of 2 in mesh-space)
+        {
+            osc::Transform t;
+            t.scale = {arrow.headThickness, 0.5f * headLength, arrow.headThickness};
+            t.rotation = rotation;
+            t.position = headMidpoint;
+
+            out(osc::SceneDecoration
+            {
+                osc::App::meshes().getConeMesh(),
+                t,
+                arrow.color,
+                arrow.label,
+                osc::SceneDecorationFlags_None,
+            });
+        }
+    }
 
     // templated: generate decorations for a compile-time-known type of column data (requires specialization)
     template<ColumnDataType T>
@@ -374,25 +448,14 @@ namespace
         };
         q = glm::normalize(q);
 
-        osc::Transform cylinderTransform;
-        cylinderTransform.scale.x *= 0.05f;
-        cylinderTransform.scale.z *= 0.05f;
-        cylinderTransform.rotation = q;
-        cylinderTransform.position = q * glm::vec3{0.0f, 1.0f, 0.0f};
+        // draw Y axis arrow
+        DecorativeArrow arrow;
+        arrow.p0 = {0.0f, 0.0f, 0.0f};
+        arrow.p1 = q * glm::vec3{0.0f, 1.0f, 0.0f};
+        arrow.color = {0.0f, 1.0f, 0.0f, 1.0f};
+        arrow.label = columnDescription.Label;
 
-        // cylinder represents Y axis, so color it green
-        glm::vec4 const cylinderColor = {0.0f, 1.0f, 0.0f, 1.0f};
-
-        osc::SceneDecoration cylinder
-        {
-            osc::App::meshes().getCylinderMesh(),
-            cylinderTransform,
-            cylinderColor,
-            columnDescription.Label,
-            osc::SceneDecorationFlags_None
-        };
-
-        out(cylinder);
+        GenerateDecorations(arrow, out);
     }
 
     // generic: generate decorations for a runtime-checked type of column data
@@ -415,7 +478,7 @@ namespace
     }
 
     // returns a parsed motion, read from disk motion from disk
-    static LoadedMotion LoadData(std::filesystem::path const& sourceFile)
+    LoadedMotion LoadData(std::filesystem::path const& sourceFile)
     {
         OpenSim::Storage const storage{sourceFile.string()};
 
@@ -425,6 +488,33 @@ namespace
         rv.Data = LoadRowValues(storage, rv.RowStride);
         return rv;
     }
+
+    // tries to load the given path; otherwise, falls back to asking the user for a file
+    LoadedMotion TryLoadOrPrompt(std::filesystem::path const& sourceFile)
+    {
+        if (std::filesystem::exists(sourceFile))
+        {
+            return LoadData(sourceFile);
+        }
+        else
+        {
+            std::filesystem::path p = osc::PromptUserForFile("sto,mot");
+            if (!p.empty())
+            {
+                return LoadData(p);
+            }
+            else
+            {
+                return LoadedMotion{};
+            }
+        }
+    }
+
+    // annotations associated with the current scene (what's selected, etc.)
+    struct SceneAnnotations final {
+        std::string hovered;
+        std::string selected;
+    };
 }
 
 // osc::Tab implementation for the visualizer
@@ -437,7 +527,7 @@ public:
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
@@ -540,28 +630,52 @@ private:
         m_Decorations.clear();
         m_Decorations.push_back(GenerateFloorGrid());
         DecorationConsumer c = [this](SceneDecoration const& d) { m_Decorations.push_back(d); };
-        GenerateDecorations(*m_Motion, 0, c);
+        GenerateDecorations(*m_Motion, m_ActiveRow, c);
+        UpdateSceneBVH(m_Decorations, m_SceneBVH);
     }
 
-    // tab data
-    UID m_ID;
+    void updateScene3DHittest()
+    {
+        if (!m_RenderIsMousedOver)
+        {
+            return;  // only hittest while the user is moused over the viewport
+        }
+
+        if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) ||
+            ImGui::IsMouseDragging(ImGuiMouseButton_Middle) ||
+            ImGui::IsMouseDragging(ImGuiMouseButton_Right))
+        {
+            return;  // don't hittest while a user is dragging around
+        }
+
+        // get camera ray
+        // intersect it with scene
+        // get closest collision
+        // use it to set scene annotations based on whether user is clicking or not
+    }
+
+    // tab state
+    UID m_TabID;
     std::string m_Name = ICON_FA_DOT_CIRCLE " Experimental Data";
     TabHost* m_Parent;
 
-    // motion data (loaded from STO, MOT, TRC, etc.)
-    std::shared_ptr<LoadedMotion const> m_Motion = std::make_shared<LoadedMotion>(LoadData(R"(E:\OneDrive\work_current\Gijs - IMU fitting\abduction_bad2.sto)"));
+    // scene state
+    std::shared_ptr<LoadedMotion const> m_Motion = std::make_shared<LoadedMotion>(TryLoadOrPrompt(R"(E:\OneDrive\work_current\Gijs - IMU fitting\abduction_bad2.sto)"));
     int m_ActiveRow = NumRows(*m_Motion) <= 0 ? -1 : 0;
 
-    // 3D scene
+    // extra scene state
+    SceneAnnotations m_Annotations;
+
+    // rendering state
     std::vector<SceneDecoration> m_Decorations;
     BVH m_SceneBVH;
-
-    // UI stuff
-    LogViewerPanel m_LogViewer{"Log"};
     PolarPerspectiveCamera m_Camera;
-    bool m_RenderIsMousedOver = false;
     SceneRendererParams m_LastRendererParams;
     SceneRenderer m_Renderer;
+    bool m_RenderIsMousedOver = false;
+
+    // 2D UI state
+    LogViewerPanel m_LogViewer{"Log"};
 };
 
 
