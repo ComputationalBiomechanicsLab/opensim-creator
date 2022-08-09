@@ -5,6 +5,7 @@
 #include "src/Bindings/GlmHelpers.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Bindings/SimTKHelpers.hpp"
+#include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/MeshGen.hpp"
@@ -4858,7 +4859,7 @@ namespace
                     continue;
                 }
 
-                osc::RayCollision rc = drawable.mesh->getRayMeshCollisionInWorldspace(drawable.transform, ray);
+                osc::RayCollision const rc = osc::GetClosestWorldspaceRayCollision(*drawable.mesh, drawable.transform, ray);
                 if (rc.hit && rc.distance < closestDist)
                 {
                     closestID = drawable.id;

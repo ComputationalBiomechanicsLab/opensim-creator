@@ -73,10 +73,6 @@ namespace osc
         // returns !hit if the line doesn't intersect it *or* the topography is not triangular
         RayCollision getClosestRayTriangleCollisionModelspace(Line const& modelspaceLine) const;
 
-        // as above, but works in worldspace (requires a model matrix to map the worldspace line into modelspace)
-        RayCollision getRayMeshCollisionInWorldspace(glm::mat4 const& model2world, Line const& worldspaceLine) const;
-        RayCollision getRayMeshCollisionInWorldspace(Transform const& model2world, Line const& worldspaceLine) const;
-
         void clear();
         void recalculateBounds();
         void uploadToGPU();  // must be called from GPU thread

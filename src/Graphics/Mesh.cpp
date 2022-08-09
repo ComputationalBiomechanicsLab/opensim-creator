@@ -441,50 +441,6 @@ osc::RayCollision osc::Mesh::getClosestRayTriangleCollisionModelspace(Line const
     }
 }
 
-osc::RayCollision osc::Mesh::getRayMeshCollisionInWorldspace(glm::mat4 const& model2world, Line const& worldspaceLine) const
-{
-    // do a fast ray-to-AABB collision test
-    AABB modelspaceAABB = getAABB();
-    AABB worldspaceAABB = TransformAABB(modelspaceAABB, model2world);
-
-    RayCollision rayAABBCollision = GetRayCollisionAABB(worldspaceLine, worldspaceAABB);
-
-    if (!rayAABBCollision.hit)
-    {
-        return rayAABBCollision;  // missed the AABB, so *definitely* missed the mesh
-    }
-
-    // it hit the AABB, so it *may* have hit a triangle in the mesh
-    //
-    // refine the hittest by doing a slower ray-to-triangle test
-    glm::mat4 world2model = glm::inverse(model2world);
-    Line modelspaceLine = TransformLine(worldspaceLine, world2model);
-
-    return getClosestRayTriangleCollisionModelspace(modelspaceLine);
-}
-
-osc::RayCollision osc::Mesh::getRayMeshCollisionInWorldspace(Transform const& model2world, Line const& worldspaceLine) const
-{
-    // do a fast ray-to-AABB collision test
-    AABB modelspaceAABB = getAABB();
-    AABB worldspaceAABB = TransformAABB(modelspaceAABB, model2world);
-
-    RayCollision rayAABBCollision = GetRayCollisionAABB(worldspaceLine, worldspaceAABB);
-
-    if (!rayAABBCollision.hit)
-    {
-        return rayAABBCollision;  // missed the AABB, so *definitely* missed the mesh
-    }
-
-    // it hit the AABB, so it *may* have hit a triangle in the mesh
-    //
-    // refine the hittest by doing a slower ray-to-triangle test
-    glm::mat4 world2model = osc::ToInverseMat4(model2world);
-    Line modelspaceLine = TransformLine(worldspaceLine, world2model);
-
-    return getClosestRayTriangleCollisionModelspace(modelspaceLine);
-}
-
 void osc::Mesh::clear()
 {
     m_Impl->verts.clear();

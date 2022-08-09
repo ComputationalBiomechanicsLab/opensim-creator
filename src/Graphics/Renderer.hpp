@@ -454,7 +454,6 @@ namespace osc::experimental
         void setIndices(nonstd::span<std::uint32_t const>);
 
         AABB const& getBounds() const;  // local-space
-
         glm::vec3 getMidpoint() const;  // local-space
 
         void clear();

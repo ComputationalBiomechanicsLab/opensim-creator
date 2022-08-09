@@ -162,18 +162,33 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(BVH const& bvh, nons
     for (BVHCollision const& c : sceneCollisions)
     {
         SceneDecoration const& decoration = decorations[c.primId];
-
-        Line const rayModelspace = TransformLine(ray, ToInverseMat4(decoration.transform));
-        RayCollision const maybeCollision = decoration.mesh->getClosestRayTriangleCollisionModelspace(rayModelspace);
+        RayCollision const maybeCollision = GetClosestWorldspaceRayCollision(*decoration.mesh, decoration.transform, ray);
 
         if (maybeCollision)
         {
-            glm::vec3 const locationModelspace = rayModelspace.origin + maybeCollision.distance * rayModelspace.dir;
-            glm::vec3 const locationWorldspace = decoration.transform * locationModelspace;
-            float distance = glm::length(locationWorldspace - ray.origin);
-
-            rv.emplace_back(locationWorldspace, static_cast<size_t>(c.primId), distance);
+            rv.emplace_back(ray.origin + maybeCollision.distance * ray.dir, static_cast<size_t>(c.primId), maybeCollision.distance);
         }
+    }
+    return rv;
+}
+
+osc::RayCollision osc::GetClosestWorldspaceRayCollision(Mesh const& mesh, Transform const& transform, Line const& worldspaceRay)
+{
+    Line const modelspaceRay = TransformLine(worldspaceRay, ToInverseMat4(transform));
+    RayCollision const maybeModelspaceCollision = mesh.getClosestRayTriangleCollisionModelspace(modelspaceRay);
+
+    RayCollision rv{};
+    if (maybeModelspaceCollision)
+    {
+        glm::vec3 const locationModelspace = modelspaceRay.origin + maybeModelspaceCollision.distance * modelspaceRay.dir;
+        glm::vec3 const locationWorldspace = transform * locationModelspace;
+
+        rv.hit = true;
+        rv.distance = glm::length(locationWorldspace - worldspaceRay.origin);
+    }
+    else
+    {
+        rv.hit = false;
     }
     return rv;
 }

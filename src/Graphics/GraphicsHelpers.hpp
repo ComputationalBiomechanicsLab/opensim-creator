@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/Maths/RayCollision.hpp"
+
 #include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 
@@ -11,6 +13,8 @@ namespace osc
     struct AABB;
     struct BVH;
     struct Line;
+    struct Transform;
+    class Mesh;
     class SceneDecoration;
 }
 
@@ -47,4 +51,7 @@ namespace osc
         nonstd::span<SceneDecoration const> sceneDecorations,
         Line const& worldspaceRay
     );
+
+    // returns closest ray-triangle collision in worldspace
+    RayCollision GetClosestWorldspaceRayCollision(Mesh const&, Transform const&, Line const& worldspaceRay);
 }
