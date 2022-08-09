@@ -512,7 +512,7 @@ namespace
 
     AABB CalcBounds(DrawableThing const& dt)
     {
-        return dt.mesh->getWorldspaceAABB(dt.transform);
+        return osc::TransformAABB(dt.mesh->getAABB(), dt.transform);
     }
 }
 
@@ -1176,7 +1176,7 @@ namespace
 
         AABB CalcBounds() const override
         {
-            return MeshData->getWorldspaceAABB(Xform);
+            return osc::TransformAABB(MeshData->getAABB(), Xform);
         }
 
         UIDT<MeshEl> ID;

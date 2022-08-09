@@ -400,16 +400,6 @@ osc::AABB const& osc::Mesh::getAABB() const
     return m_Impl->aabb;
 }
 
-osc::AABB osc::Mesh::getWorldspaceAABB(Transform const& localToWorldXform) const
-{
-    return TransformAABB(m_Impl->aabb, ToMat4(localToWorldXform));
-}
-
-osc::AABB osc::Mesh::getWorldspaceAABB(glm::mat4x3 const& modelMatrix) const
-{
-    return TransformAABB(m_Impl->aabb, modelMatrix);
-}
-
 osc::BVH const& osc::Mesh::getTriangleBVH() const
 {
     return m_Impl->triangleBVH;
