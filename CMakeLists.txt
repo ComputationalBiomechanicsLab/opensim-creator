@@ -307,8 +307,8 @@ add_library(osccore STATIC
     src/Graphics/ShaderCache.cpp
     src/Graphics/ShaderCache.hpp
     src/Graphics/ShaderLocationIndex.hpp
-    src/Graphics/Texturing.cpp
-    src/Graphics/Texturing.hpp
+    src/Graphics/TextureGen.cpp
+    src/Graphics/TextureGen.hpp
 
     src/Maths/AABB.cpp
     src/Maths/AABB.hpp

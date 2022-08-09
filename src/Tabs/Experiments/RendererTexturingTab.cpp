@@ -3,7 +3,6 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Renderer.hpp"
-#include "src/Graphics/Texturing.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Tabs/Tab.hpp"

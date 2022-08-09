@@ -8,7 +8,7 @@
 #include "src/Graphics/SceneDecorationFlags.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
-#include "src/Graphics/Texturing.hpp"
+#include "src/Graphics/TextureGen.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Rect.hpp"
@@ -540,7 +540,7 @@ public:
     }
 
 private:
-    gl::Texture2D m_ChequerTexture = GenChequeredFloorTexture();
+    experimental::Texture2D m_ChequerTexture = GenChequeredFloorTexture();
     experimental::RenderTexture m_RenderTexture{experimental::RenderTextureDescriptor{1, 1}};
 };
 

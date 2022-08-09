@@ -3,8 +3,9 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Color.hpp"
 #include "src/Graphics/MeshGen.hpp"
-#include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/Renderer.hpp"
+#include "src/Graphics/SceneDecoration.hpp"
+#include "src/Graphics/TextureGen.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Transform.hpp"
@@ -68,32 +69,6 @@ namespace
             }
         }
         return rv;
-    }
-
-    osc::experimental::Texture2D GenChequeredFloorTexture()
-    {
-        constexpr size_t chequer_width = 32;
-        constexpr size_t chequer_height = 32;
-        constexpr size_t w = 2 * chequer_width;
-        constexpr size_t h = 2 * chequer_height;
-
-        constexpr osc::Rgba32 on_color = {0xff, 0xff, 0xff, 0xff};
-        constexpr osc::Rgba32 off_color = {0xf3, 0xf3, 0xf3, 0xff};
-
-        std::unique_ptr<osc::Rgba32[]> pixels{new osc::Rgba32[w * h]};
-
-        for (size_t row = 0; row < h; ++row)
-        {
-            size_t row_start = row * w;
-            bool y_on = (row / chequer_height) % 2 == 0;
-            for (size_t col = 0; col < w; ++col)
-            {
-                bool x_on = (col / chequer_width) % 2 == 0;
-                pixels[row_start + col] = y_on ^ x_on ? on_color : off_color;
-            }
-        }
-
-        return osc::experimental::Texture2D(static_cast<int>(w), static_cast<int>(h), nonstd::span<uint8_t const>{&pixels[0].r, 4*w*h}, 4);
     }
 
     osc::Transform GetFloorTransform()

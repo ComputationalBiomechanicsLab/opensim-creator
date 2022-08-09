@@ -10,7 +10,6 @@
 #include "src/Graphics/SceneRenderer.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
-#include "src/Graphics/Texturing.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/BVH.hpp"
 #include "src/Maths/Constants.hpp"

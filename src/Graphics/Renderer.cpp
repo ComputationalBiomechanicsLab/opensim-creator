@@ -8,7 +8,6 @@
 #include "src/Graphics/MeshData.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
-#include "src/Graphics/Texturing.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/BVH.hpp"
 #include "src/Maths/Constants.hpp"
