@@ -1,13 +1,9 @@
 #include "SceneRenderer.hpp"
 
-#include "src/Graphics/Shaders/EdgeDetectionShader.hpp"
-#include "src/Graphics/Shaders/GouraudShader.hpp"
-#include "src/Graphics/Shaders/InstancedGouraudColorShader.hpp"
-#include "src/Graphics/Shaders/InstancedSolidColorShader.hpp"
-#include "src/Graphics/Shaders/NormalsShader.hpp"
 #include "src/Graphics/Gl.hpp"
 #include "src/Graphics/GlGlm.hpp"
 #include "src/Graphics/MeshCache.hpp"
+#include "src/Graphics/Renderer.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/SceneDecorationFlags.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
@@ -255,16 +251,17 @@ class osc::SceneRenderer::Impl final {
 public:
     glm::ivec2 getDimensions() const
     {
-        return m_RenderTarget.dims;
+        return {m_RenderTexture.getWidth(), m_RenderTexture.getHeight()};
     }
 
     int getSamples() const
     {
-        return m_RenderTarget.samples;
+        return m_RenderTexture.getAntialiasingLevel();
     }
 
     void draw(nonstd::span<SceneDecoration const> srcDecorations, SceneRendererParams const& params)
     {
+        /*
         std::vector<SceneDecoration> decorations;
         {
             OSC_PERF("drawlist copying");
@@ -534,22 +531,17 @@ public:
         gl::Enable(GL_DEPTH_TEST);
         gl::Disable(GL_SCISSOR_TEST);
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+        */
     }
 
-    gl::Texture2D& updOutputTexture()
+    experimental::RenderTexture& updRenderTexture()
     {
-        return m_RenderTarget.outputTex;
-    }
-
-    gl::FrameBuffer& updOutputFBO()
-    {
-        return m_RenderTarget.outputFbo;
+        return m_RenderTexture;
     }
 
 private:
-    std::vector<SceneGPUInstanceData> m_GPUDrawlist;
     gl::Texture2D m_ChequerTexture = GenChequeredFloorTexture();
-    RenderBuffers m_RenderTarget{{1, 1}, 1};
+    experimental::RenderTexture m_RenderTexture{experimental::RenderTextureDescriptor{1, 1}};
 };
 
 osc::SceneRenderer::SceneRenderer() :
@@ -588,12 +580,7 @@ void osc::SceneRenderer::draw(nonstd::span<SceneDecoration const> decs, SceneRen
     m_Impl->draw(std::move(decs), params);
 }
 
-gl::Texture2D& osc::SceneRenderer::updOutputTexture()
+osc::experimental::RenderTexture& osc::SceneRenderer::updRenderTexture()
 {
-    return m_Impl->updOutputTexture();
-}
-
-gl::FrameBuffer& osc::SceneRenderer::updOutputFBO()
-{
-    return m_Impl->updOutputFBO();
+    return m_Impl->updRenderTexture();
 }

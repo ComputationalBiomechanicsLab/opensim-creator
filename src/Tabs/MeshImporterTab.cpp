@@ -6,9 +6,9 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Bindings/SimTKHelpers.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
-#include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/MeshGen.hpp"
+#include "src/Graphics/Renderer.hpp"
 #include "src/Graphics/ShaderCache.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/SceneRenderer.hpp"
@@ -122,7 +122,7 @@ using osc::fpi2;
 using osc::fpi4;
 using osc::AABB;
 using osc::Sphere;
-using osc::Mesh;
+using osc::experimental::Mesh;
 using osc::Transform;
 using osc::PolarPerspectiveCamera;
 using osc::Segment;
@@ -417,7 +417,7 @@ namespace
         // submits an invalid mesh, this calculation could potentially produce a
         // volume that's *way* off
 
-        if (m.getTopography() != osc::MeshTopography::Triangles)
+        if (m.getTopography() != osc::experimental::MeshTopography::Triangles)
         {
             return {0.0f, 0.0f, 0.0f};
         }
@@ -505,7 +505,7 @@ namespace
     struct DrawableThing final {
         UID id = g_EmptyID;
         UID groupId = g_EmptyID;
-        std::shared_ptr<Mesh> mesh;
+        std::shared_ptr<Mesh const> mesh;
         Transform transform;
         glm::vec4 color;
         osc::SceneDecorationFlags flags;
@@ -513,7 +513,7 @@ namespace
 
     AABB CalcBounds(DrawableThing const& dt)
     {
-        return osc::TransformAABB(dt.mesh->getAABB(), dt.transform);
+        return osc::TransformAABB(dt.mesh->getBounds(), dt.transform);
     }
 }
 
@@ -1177,7 +1177,7 @@ namespace
 
         AABB CalcBounds() const override
         {
-            return osc::TransformAABB(MeshData->getAABB(), Xform);
+            return osc::TransformAABB(MeshData->getBounds(), Xform);
         }
 
         UIDT<MeshEl> ID;
@@ -4349,7 +4349,7 @@ namespace
             m_SceneRenderer.draw(decs, p);
 
             // send texture to ImGui
-            osc::DrawTextureAsImGuiImage(m_SceneRenderer.updOutputTexture(), m_SceneRenderer.getDimensions());
+            osc::DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture(), m_SceneRenderer.getDimensions());
 
             // handle hittesting, etc.
             SetIsRenderHovered(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
@@ -4395,9 +4395,9 @@ namespace
             m_3DSceneCamera.focusPoint = -focusPoint;
         }
 
-        gl::Texture2D& UpdSceneTex()
+        osc::experimental::RenderTexture& UpdSceneTex()
         {
-            return m_SceneRenderer.updOutputTexture();
+            return m_SceneRenderer.updRenderTexture();
         }
 
         nonstd::span<glm::vec4 const> GetColors() const
@@ -5064,10 +5064,10 @@ namespace
         MeshLoader m_MeshLoader;
 
         // sphere mesh used by various scene elements
-        std::shared_ptr<Mesh> m_SphereMesh = std::make_shared<Mesh>(osc::GenUntexturedUVSphere(12, 12));
+        std::shared_ptr<Mesh const> m_SphereMesh = std::make_shared<Mesh>(osc::experimental::LoadMeshFromMeshData(osc::GenUntexturedUVSphere(12, 12)));
 
         // cylinder mesh used by various scene elements
-        std::shared_ptr<Mesh> m_CylinderMesh = std::make_shared<Mesh>(osc::GenUntexturedSimbodyCylinder(16));
+        std::shared_ptr<Mesh const> m_CylinderMesh = std::make_shared<Mesh>(osc::experimental::LoadMeshFromMeshData(osc::GenUntexturedSimbodyCylinder(16)));
 
         // main 3D scene camera
         PolarPerspectiveCamera m_3DSceneCamera = CreateDefaultCamera();

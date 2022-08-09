@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 
-namespace osc
+namespace osc::experimental
 {
     class Mesh;
 }
@@ -21,17 +21,17 @@ namespace osc
         ~MeshCache() noexcept;
 
         // prints error to log and returns dummy mesh if load error happens
-        std::shared_ptr<Mesh> getMeshFile(std::string const&);
+        std::shared_ptr<experimental::Mesh const> getMeshFile(std::string const&);
 
-        std::shared_ptr<Mesh> getSphereMesh();
-        std::shared_ptr<Mesh> getCylinderMesh();
-        std::shared_ptr<Mesh> getBrickMesh();
-        std::shared_ptr<Mesh> getConeMesh();
-        std::shared_ptr<Mesh> getFloorMesh();
-        std::shared_ptr<Mesh> get100x100GridMesh();
-        std::shared_ptr<Mesh> getCubeWireMesh();
-        std::shared_ptr<Mesh> getYLineMesh();
-        std::shared_ptr<Mesh> getTexturedQuadMesh();
+        std::shared_ptr<experimental::Mesh const> getSphereMesh();
+        std::shared_ptr<experimental::Mesh const> getCylinderMesh();
+        std::shared_ptr<experimental::Mesh const> getBrickMesh();
+        std::shared_ptr<experimental::Mesh const> getConeMesh();
+        std::shared_ptr<experimental::Mesh const> getFloorMesh();
+        std::shared_ptr<experimental::Mesh const> get100x100GridMesh();
+        std::shared_ptr<experimental::Mesh const> getCubeWireMesh();
+        std::shared_ptr<experimental::Mesh const> getYLineMesh();
+        std::shared_ptr<experimental::Mesh const> getTexturedQuadMesh();
 
     private:
         class Impl;

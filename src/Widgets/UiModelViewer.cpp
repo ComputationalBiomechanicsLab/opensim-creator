@@ -1,17 +1,10 @@
 #include "UiModelViewer.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/Graphics/Shaders/EdgeDetectionShader.hpp"
-#include "src/Graphics/Shaders/GouraudShader.hpp"
-#include "src/Graphics/Shaders/InstancedGouraudColorShader.hpp"
-#include "src/Graphics/Shaders/InstancedSolidColorShader.hpp"
-#include "src/Graphics/Shaders/NormalsShader.hpp"
-#include "src/Graphics/Shaders/SolidColorShader.hpp"
 #include "src/Graphics/DAEWriter.hpp"
 #include "src/Graphics/Gl.hpp"
 #include "src/Graphics/GlGlm.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
-#include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/SceneRenderer.hpp"
@@ -253,7 +246,7 @@ public:
         drawSceneTexture(rs);
 
         // blit texture as an ImGui::Image
-        m_RenderImage = DrawTextureAsImGuiImageAndHittest(m_Rendererer.updOutputTexture(), ImGui::GetContentRegionAvail());
+        m_RenderImage = DrawTextureAsImGuiImageAndHittest(m_Rendererer.updRenderTexture(), ImGui::GetContentRegionAvail());
 
         // draw any ImGui-based overlays over the image
         drawImGuiOverlays();
@@ -679,6 +672,8 @@ private:
             DrawBVH(m_BVH.get(), decs);
         }
 
+        /* TODO: rendering solid geometry overlays
+
         auto& shader = osc::App::shader<osc::SolidColorShader>();
         glm::mat4 viewMtx = m_Camera.getViewMtx();
         glm::mat4 projMtx = m_Camera.getProjMtx(AspectRatio(m_Rendererer.getDimensions()));
@@ -698,6 +693,7 @@ private:
         }
 
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+        */
     }
 
     void drawImGuiOverlays()

@@ -1,8 +1,8 @@
 #include "MeshCache.hpp"
 
 #include "src/Bindings/SimTKHelpers.hpp"
-#include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshGen.hpp"
+#include "src/Graphics/Renderer.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 
@@ -10,25 +10,32 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 class osc::MeshCache::Impl final {
 public:
-    std::shared_ptr<Mesh> sphere = std::make_shared<Mesh>(GenUntexturedUVSphere(12, 12));
-    std::shared_ptr<Mesh> cylinder = std::make_shared<Mesh>(GenUntexturedSimbodyCylinder(16));
-    std::shared_ptr<Mesh> cube = std::make_shared<Mesh>(GenCube());
-    std::shared_ptr<Mesh> cone = std::make_shared<Mesh>(GenUntexturedSimbodyCone(12));
-    std::shared_ptr<Mesh> floor = []()
+    std::shared_ptr<experimental::Mesh const> sphere = std::make_shared<experimental::Mesh>(experimental::LoadMeshFromMeshData(GenUntexturedUVSphere(12, 12)));
+    std::shared_ptr<experimental::Mesh const> cylinder = std::make_shared<experimental::Mesh>(experimental::LoadMeshFromMeshData(GenUntexturedSimbodyCylinder(16)));
+    std::shared_ptr<experimental::Mesh const> cube = std::make_shared<experimental::Mesh>(experimental::LoadMeshFromMeshData(GenCube()));
+    std::shared_ptr<experimental::Mesh const> cone = std::make_shared<experimental::Mesh>(experimental::LoadMeshFromMeshData(GenUntexturedSimbodyCone(12)));
+    std::shared_ptr<experimental::Mesh const> floor = []()
     {
-        std::shared_ptr<Mesh> rv = std::make_shared<Mesh>(GenTexturedQuad());
-        rv->scaleTexCoords(200.0f);
+        std::shared_ptr<experimental::Mesh> rv = std::make_shared<experimental::Mesh>(experimental::LoadMeshFromMeshData(GenTexturedQuad()));
+        nonstd::span<glm::vec2 const> oldCoords = rv->getTexCoords();
+        std::vector<glm::vec2> newCoords;
+        newCoords.reserve(oldCoords.size());
+        for (glm::vec2 const& oldCoord : oldCoords)
+        {
+            newCoords.push_back(200.0f * oldCoord);
+        }
         return rv;
     }();
-    std::shared_ptr<Mesh> grid100x100 = std::make_shared<Mesh>(GenNbyNGrid(1000));
-    std::shared_ptr<Mesh> cubeWire = std::make_shared<Mesh>(GenCubeLines());
-    std::shared_ptr<Mesh> yLine = std::make_shared<Mesh>(GenYLine());
-    std::shared_ptr<Mesh> texturedQuad = std::make_shared<Mesh>(GenTexturedQuad());
+    std::shared_ptr<experimental::Mesh const> grid100x100 = std::make_shared<experimental::Mesh>(experimental::LoadMeshFromMeshData(GenNbyNGrid(1000)));
+    std::shared_ptr<experimental::Mesh const> cubeWire = std::make_shared<experimental::Mesh>(experimental::LoadMeshFromMeshData(GenCubeLines()));
+    std::shared_ptr<experimental::Mesh const> yLine = std::make_shared<experimental::Mesh>(experimental::LoadMeshFromMeshData(GenYLine()));
+    std::shared_ptr<experimental::Mesh const> texturedQuad = std::make_shared<experimental::Mesh>(experimental::LoadMeshFromMeshData(GenTexturedQuad()));
 
-    SynchronizedValue<std::unordered_map<std::string, std::shared_ptr<Mesh>>> fileCache;
+    SynchronizedValue<std::unordered_map<std::string, std::shared_ptr<experimental::Mesh const>>> fileCache;
 };
 
 osc::MeshCache::MeshCache() :
@@ -52,7 +59,7 @@ osc::MeshCache::~MeshCache() noexcept
     delete m_Impl;
 }
 
-std::shared_ptr<osc::Mesh> osc::MeshCache::getMeshFile(std::string const& p)
+std::shared_ptr<osc::experimental::Mesh const> osc::MeshCache::getMeshFile(std::string const& p)
 {
     auto guard = m_Impl->fileCache.lock();
 
@@ -62,7 +69,7 @@ std::shared_ptr<osc::Mesh> osc::MeshCache::getMeshFile(std::string const& p)
     {
         try
         {
-            auto mesh = std::make_shared<Mesh>(osc::LoadMeshViaSimTK(p));
+            auto mesh = std::make_shared<experimental::Mesh>(osc::LoadMeshViaSimTK(p));
             it->second = std::move(mesh);
         }
         catch (...)
@@ -75,47 +82,47 @@ std::shared_ptr<osc::Mesh> osc::MeshCache::getMeshFile(std::string const& p)
     return it->second;
 }
 
-std::shared_ptr<osc::Mesh> osc::MeshCache::getSphereMesh()
+std::shared_ptr<osc::experimental::Mesh const> osc::MeshCache::getSphereMesh()
 {
     return m_Impl->sphere;
 }
 
-std::shared_ptr<osc::Mesh> osc::MeshCache::getCylinderMesh()
+std::shared_ptr<osc::experimental::Mesh const> osc::MeshCache::getCylinderMesh()
 {
     return m_Impl->cylinder;
 }
 
-std::shared_ptr<osc::Mesh> osc::MeshCache::getBrickMesh()
+std::shared_ptr<osc::experimental::Mesh const> osc::MeshCache::getBrickMesh()
 {
     return m_Impl->cube;
 }
 
-std::shared_ptr<osc::Mesh> osc::MeshCache::getConeMesh()
+std::shared_ptr<osc::experimental::Mesh const> osc::MeshCache::getConeMesh()
 {
     return m_Impl->cone;
 }
 
-std::shared_ptr<osc::Mesh> osc::MeshCache::getFloorMesh()
+std::shared_ptr<osc::experimental::Mesh const> osc::MeshCache::getFloorMesh()
 {
     return m_Impl->floor;
 }
 
-std::shared_ptr<osc::Mesh> osc::MeshCache::get100x100GridMesh()
+std::shared_ptr<osc::experimental::Mesh const> osc::MeshCache::get100x100GridMesh()
 {
     return m_Impl->grid100x100;
 }
 
-std::shared_ptr<osc::Mesh> osc::MeshCache::getCubeWireMesh()
+std::shared_ptr<osc::experimental::Mesh const> osc::MeshCache::getCubeWireMesh()
 {
     return m_Impl->cubeWire;
 }
 
-std::shared_ptr<osc::Mesh> osc::MeshCache::getYLineMesh()
+std::shared_ptr<osc::experimental::Mesh const> osc::MeshCache::getYLineMesh()
 {
     return m_Impl->yLine;
 }
 
-std::shared_ptr<osc::Mesh> osc::MeshCache::getTexturedQuadMesh()
+std::shared_ptr<osc::experimental::Mesh const> osc::MeshCache::getTexturedQuadMesh()
 {
     return m_Impl->texturedQuad;
 }

@@ -214,15 +214,15 @@ osc::Rect osc::ContentRegionAvailScreenRect()
     return Rect{topLeft, bottomRight};
 }
 
-void osc::DrawTextureAsImGuiImage(gl::Texture2D& t, glm::vec2 dims)
+void osc::DrawTextureAsImGuiImage(experimental::Texture2D& t, glm::vec2 dims)
 {
-    void* textureHandle = reinterpret_cast<void*>(static_cast<uintptr_t>(t.get()));
+    void* textureHandle = reinterpret_cast<void*>(static_cast<uintptr_t>(t.updTextureHandleHACK().get()));
     ImVec2 uv0{0.0f, 1.0f};
     ImVec2 uv1{1.0f, 0.0f};
     ImGui::Image(textureHandle, dims, uv0, uv1);
 }
 
-void osc::DrawTextureAsImGuiImage(experimental::Texture2D& t, glm::vec2 dims)
+void osc::DrawTextureAsImGuiImage(experimental::RenderTexture& t, glm::vec2 dims)
 {
     void* textureHandle = reinterpret_cast<void*>(static_cast<uintptr_t>(t.updTextureHandleHACK().get()));
     ImVec2 uv0{0.0f, 1.0f};
@@ -238,7 +238,20 @@ osc::ImGuiImageHittestResult::ImGuiImageHittestResult() :
 {
 }
 
-osc::ImGuiImageHittestResult osc::DrawTextureAsImGuiImageAndHittest(gl::Texture2D& tex, glm::vec2 dims, float dragThreshold)
+osc::ImGuiImageHittestResult osc::DrawTextureAsImGuiImageAndHittest(experimental::Texture2D& tex, glm::vec2 dims, float dragThreshold)
+{
+    osc::DrawTextureAsImGuiImage(tex, dims);
+
+    ImGuiImageHittestResult rv;
+    rv.rect.p1 = ImGui::GetItemRectMin();
+    rv.rect.p2 = ImGui::GetItemRectMax();
+    rv.isHovered = ImGui::IsItemHovered();
+    rv.isLeftClickReleasedWithoutDragging = rv.isHovered && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left, dragThreshold);
+    rv.isRightClickReleasedWithoutDragging = rv.isHovered && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right, dragThreshold);
+    return rv;
+}
+
+osc::ImGuiImageHittestResult osc::DrawTextureAsImGuiImageAndHittest(experimental::RenderTexture& tex, glm::vec2 dims, float dragThreshold)
 {
     osc::DrawTextureAsImGuiImage(tex, dims);
 

@@ -1,7 +1,7 @@
 #include "GraphicsHelpers.hpp"
 
-#include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
+#include "src/Graphics/Renderer.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/BVH.hpp"
@@ -18,8 +18,7 @@ namespace
 {
     // assumes `pos` is in-bounds
     void DrawBVHRecursive(
-        osc::Mesh& cube,
-        std::shared_ptr<osc::Mesh> const& mesh,
+        std::shared_ptr<osc::experimental::Mesh const> const& mesh,
         osc::BVH const& bvh,
         int pos,
         std::vector<osc::SceneDecoration>& out)
@@ -37,14 +36,14 @@ namespace
         if (n.nlhs >= 0)
         {
             // it's an internal node
-            DrawBVHRecursive(cube, mesh, bvh, pos+1, out);
-            DrawBVHRecursive(cube, mesh, bvh, pos+n.nlhs+1, out);
+            DrawBVHRecursive(mesh, bvh, pos+1, out);
+            DrawBVHRecursive(mesh, bvh, pos+n.nlhs+1, out);
         }
     }
 
     void DrawGrid(glm::quat const& rotation, std::vector<osc::SceneDecoration>& out)
     {
-        std::shared_ptr<osc::Mesh> grid = osc::App::meshes().get100x100GridMesh();
+        std::shared_ptr<osc::experimental::Mesh const> grid = osc::App::meshes().get100x100GridMesh();
 
         osc::Transform t;
         t.scale *= glm::vec3{50.0f, 50.0f, 1.0f};
@@ -63,13 +62,13 @@ void osc::DrawBVH(BVH const& sceneBVH, std::vector<SceneDecoration>& out)
         return;
     }
 
-    std::shared_ptr<osc::Mesh> cube = osc::App::meshes().getCubeWireMesh();
-    DrawBVHRecursive(*cube, cube, sceneBVH, 0, out);
+    std::shared_ptr<experimental::Mesh const> cube = App::meshes().getCubeWireMesh();
+    DrawBVHRecursive(cube, sceneBVH, 0, out);
 }
 
 void osc::DrawAABB(AABB const& aabb, std::vector<SceneDecoration>& out)
 {
-    std::shared_ptr<Mesh> cube = osc::App::meshes().getCubeWireMesh();
+    std::shared_ptr<experimental::Mesh const> cube = App::meshes().getCubeWireMesh();
     glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
 
     Transform t;
@@ -81,7 +80,7 @@ void osc::DrawAABB(AABB const& aabb, std::vector<SceneDecoration>& out)
 
 void osc::DrawAABBs(nonstd::span<AABB const> aabbs, std::vector<SceneDecoration>& out)
 {
-    std::shared_ptr<Mesh> cube = osc::App::meshes().getCubeWireMesh();
+    std::shared_ptr<experimental::Mesh const> cube = App::meshes().getCubeWireMesh();
     glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
 
     for (AABB const& aabb : aabbs)
@@ -96,7 +95,7 @@ void osc::DrawAABBs(nonstd::span<AABB const> aabbs, std::vector<SceneDecoration>
 
 void osc::DrawXZFloorLines(std::vector<SceneDecoration>& out)
 {
-    std::shared_ptr<Mesh> yLine = App::meshes().getYLineMesh();
+    std::shared_ptr<experimental::Mesh const> yLine = App::meshes().getYLineMesh();
 
     // X line
     {
@@ -172,23 +171,29 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(BVH const& bvh, nons
     return rv;
 }
 
-osc::RayCollision osc::GetClosestWorldspaceRayCollision(Mesh const& mesh, Transform const& transform, Line const& worldspaceRay)
+osc::RayCollision osc::GetClosestWorldspaceRayCollision(experimental::Mesh const& mesh, Transform const& transform, Line const& worldspaceRay)
 {
-    Line const modelspaceRay = TransformLine(worldspaceRay, ToInverseMat4(transform));
-    RayCollision const maybeModelspaceCollision = mesh.getClosestRayTriangleCollisionModelspace(modelspaceRay);
+    RayCollision rv{false, 0.0f};
 
-    RayCollision rv{};
-    if (maybeModelspaceCollision)
+    if (mesh.getTopography() != osc::experimental::MeshTopography::Triangles)
     {
-        glm::vec3 const locationModelspace = modelspaceRay.origin + maybeModelspaceCollision.distance * modelspaceRay.dir;
+        return rv;
+    }
+
+    Line const modelspaceRay = TransformLine(worldspaceRay, ToInverseMat4(transform));
+
+    // TODO: this is going to be hellishly slow
+    std::vector<uint32_t> const indices = mesh.getIndices();
+
+    BVHCollision collision;
+    if (BVH_GetClosestRayIndexedTriangleCollision(mesh.getBVH(), mesh.getVerts(), indices, modelspaceRay, &collision))
+    {
+        glm::vec3 const locationModelspace = modelspaceRay.origin + collision.distance * modelspaceRay.dir;
         glm::vec3 const locationWorldspace = transform * locationModelspace;
 
         rv.hit = true;
         rv.distance = glm::length(locationWorldspace - worldspaceRay.origin);
     }
-    else
-    {
-        rv.hit = false;
-    }
+
     return rv;
 }

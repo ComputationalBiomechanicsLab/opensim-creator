@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Graphics/Mesh.hpp"
+#include "src/Graphics/Renderer.hpp"
 #include "src/Maths/Transform.hpp"
 
 #include <glm/gtx/quaternion.hpp>
@@ -50,7 +50,7 @@ namespace osc
     Transform ToTransform(SimTK::Transform const&);
 
     // mesh loading
-    Mesh LoadMeshViaSimTK(std::filesystem::path const&);
+    experimental::Mesh LoadMeshViaSimTK(std::filesystem::path const&);
 
     // rendering
 
@@ -65,7 +65,7 @@ namespace osc
         DecorationConsumer& operator=(DecorationConsumer&&) noexcept = delete;
         virtual ~DecorationConsumer() noexcept = default;
 
-        virtual void operator()(std::shared_ptr<Mesh> const&, Transform const&, glm::vec4 const& color) = 0;
+        virtual void operator()(std::shared_ptr<experimental::Mesh const> const&, Transform const&, glm::vec4 const& color) = 0;
     };
 
     // consumes SimTK::DecorativeGeometry and emits appropriate decorations back to

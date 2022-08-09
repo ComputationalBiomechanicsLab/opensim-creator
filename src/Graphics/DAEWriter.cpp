@@ -2,8 +2,8 @@
 
 #include "osc_config.hpp"
 
+#include "src/Graphics/Renderer.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
-#include "src/Graphics/Mesh.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Utils/Algorithms.hpp"
 
@@ -38,9 +38,9 @@ namespace
 {
     struct DAEGeometry final {
         std::string GeometryID;
-        std::shared_ptr<osc::Mesh> Mesh;
+        std::shared_ptr<osc::experimental::Mesh const> Mesh;
 
-        DAEGeometry(std::string geometryID_, std::shared_ptr<osc::Mesh> mesh_) :
+        DAEGeometry(std::string geometryID_, std::shared_ptr<osc::experimental::Mesh const> mesh_) :
             GeometryID{std::move(geometryID_)},
             Mesh{std::move(mesh_)}
         {
@@ -92,13 +92,13 @@ namespace
 
         int latestMesh = 0;
         int latestMaterial = 0;
-        std::unordered_map<std::shared_ptr<osc::Mesh>, std::string> mesh2id;
+        std::unordered_map<std::shared_ptr<osc::experimental::Mesh const>, std::string> mesh2id;
         std::unordered_map<glm::vec4, std::string> color2materialid;
         int latestInstance = 0;
 
         for (osc::SceneDecoration const& el : els)
         {
-            if (el.mesh->getTopography() != osc::MeshTopography::Triangles)
+            if (el.mesh->getTopography() != osc::experimental::MeshTopography::Triangles)
             {
                 continue;  // unsupported
             }

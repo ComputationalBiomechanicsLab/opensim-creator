@@ -1,5 +1,4 @@
 #include "src/Graphics/Color.hpp"
-#include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Renderer.hpp"
 #include "src/Maths/AABB.hpp"
@@ -1865,20 +1864,6 @@ TEST_F(Renderer, LoadMeshFromMeshDataAlsoObeysTheMeshDatasTopography)
     osc::MeshData cube = osc::GenCubeLines();
     osc::experimental::Mesh mesh = osc::experimental::LoadMeshFromMeshData(cube);
     ASSERT_EQ(mesh.getTopography(), osc::experimental::MeshTopography::Lines);
-}
-
-TEST_F(Renderer, LoadMeshFromLegacyMeshWorksAsExpected)
-{
-    osc::MeshData data = osc::GenCube();
-    osc::Mesh legacyMesh{data};
-    osc::experimental::Mesh convertedMesh = osc::experimental::LoadMeshFromLegacyMesh(legacyMesh);
-
-    ASSERT_EQ(convertedMesh.getTopography(), osc::experimental::MeshTopography::Triangles);
-    ASSERT_TRUE(SpansEqual(legacyMesh.getVerts(), convertedMesh.getVerts()));
-    ASSERT_TRUE(SpansEqual(legacyMesh.getNormals(), convertedMesh.getNormals()));
-    ASSERT_TRUE(SpansEqual(legacyMesh.getTexCoords(), convertedMesh.getTexCoords()));
-    ASSERT_EQ(legacyMesh.getIndices(), convertedMesh.getIndices());
-    ASSERT_EQ(legacyMesh.getAABB(), convertedMesh.getBounds());
 }
 
 TEST_F(Renderer, RenderTextureFormatCanBeIteratedOverAndStreamedToString)

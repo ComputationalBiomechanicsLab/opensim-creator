@@ -19,7 +19,7 @@ public:
 		m_Renderer.draw(els, params);
 
 		// emit the texture to ImGui
-		osc::DrawTextureAsImGuiImage(m_Renderer.updOutputTexture(), m_Renderer.getDimensions());
+		osc::DrawTextureAsImGuiImage(m_Renderer.updRenderTexture(), m_Renderer.getDimensions());
 		m_IsHovered = ImGui::IsItemHovered();
 		m_IsLeftClicked = ImGui::IsItemHovered() && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
 		m_IsRightClicked = ImGui::IsItemHovered() && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);

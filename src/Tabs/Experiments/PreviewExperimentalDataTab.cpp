@@ -578,8 +578,7 @@ public:
 
         if (m_ActiveRow < NumRows(*m_Motion))
         {
-            gl::Texture2D& t = render3DScene(dims);
-            osc::DrawTextureAsImGuiImage(t, dims);
+            osc::DrawTextureAsImGuiImage(render3DScene(dims), dims);
             m_RenderIsMousedOver = ImGui::IsItemHovered();
         }
         else
@@ -595,7 +594,7 @@ public:
 
 
 private:
-    gl::Texture2D& render3DScene(glm::vec2 dims)
+    experimental::RenderTexture& render3DScene(glm::vec2 dims)
     {
         SceneRendererParams params = generateRenderParams(dims);
 
@@ -606,7 +605,7 @@ private:
             m_LastRendererParams = params;
         }
 
-        return m_Renderer.updOutputTexture();
+        return m_Renderer.updRenderTexture();
     }
 
     SceneRendererParams generateRenderParams(glm::vec2 dims) const

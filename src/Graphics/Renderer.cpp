@@ -5,7 +5,6 @@
 #include "src/Graphics/Color.hpp"
 #include "src/Graphics/Gl.hpp"
 #include "src/Graphics/GlGlm.hpp"
-#include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshData.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
@@ -938,6 +937,11 @@ public:
         }
     }
 
+    gl::Texture2D& updTextureHandleHACK()
+    {
+        return getOutputTexture();
+    }
+
 private:
     gl::FrameBuffer& getFrameBuffer()
     {
@@ -1111,6 +1115,12 @@ void osc::experimental::RenderTexture::reformat(RenderTextureDescriptor const& d
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->reformat(d);
+}
+
+gl::Texture2D& osc::experimental::RenderTexture::updTextureHandleHACK()
+{
+    DoCopyOnWrite(m_Impl);
+    return m_Impl->updTextureHandleHACK();
 }
 
 bool osc::experimental::operator==(RenderTexture const& a, RenderTexture const& b)
@@ -2600,10 +2610,6 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, Mesh const&)
 osc::experimental::Mesh osc::experimental::LoadMeshFromMeshData(MeshData const& m)
 {
     osc::experimental::Mesh rv;
-    rv.setVerts(m.verts);
-    rv.setNormals(m.normals);
-    rv.setTexCoords(m.texcoords);
-    rv.setIndices(m.indices);
 
     osc::experimental::MeshTopography topography = osc::experimental::MeshTopography::Triangles;
     switch (m.topography) {
@@ -2617,30 +2623,13 @@ osc::experimental::Mesh osc::experimental::LoadMeshFromMeshData(MeshData const& 
         break;
     }
     rv.setTopography(topography);
-    return rv;
-}
 
-osc::experimental::Mesh osc::experimental::LoadMeshFromLegacyMesh(osc::Mesh const& mesh)
-{
-    osc::experimental::Mesh rv;
-    rv.setVerts(mesh.getVerts());
-    rv.setNormals(mesh.getNormals());
-    rv.setTexCoords(mesh.getTexCoords());
-    rv.setIndices(mesh.getIndices());
+    rv.setVerts(m.verts);
+    rv.setNormals(m.normals);
+    rv.setTexCoords(m.texcoords);
+    rv.setIndices(m.indices);
 
-    osc::experimental::MeshTopography topography = osc::experimental::MeshTopography::Triangles;
-    switch (mesh.getTopography())
-    {
-    case osc::MeshTopography::Lines:
-        topography = osc::experimental::MeshTopography::Lines;
-        break;
-    case osc::MeshTopography::Triangles:
-        topography = osc::experimental::MeshTopography::Triangles;
-        break;
-    default:
-        break;
-    }
-    rv.setTopography(topography);
+
     return rv;
 }
 

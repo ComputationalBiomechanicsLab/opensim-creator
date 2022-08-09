@@ -163,7 +163,7 @@ private:
             m_LastSceneRendererParams = params;
         }
 
-        osc::DrawTextureAsImGuiImage(m_SceneRenderer.updOutputTexture(), m_SceneRenderer.getDimensions());
+        osc::DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture(), m_SceneRenderer.getDimensions());
 
         ImGui::End();
     }

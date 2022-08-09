@@ -3,16 +3,15 @@
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
 
-namespace gl
-{
-    class FrameBuffer;
-    class Texture2D;
-}
-
 namespace osc
 {
     class SceneDecoration;
     class SceneRendererParams;
+}
+
+namespace osc::experimental
+{
+    class RenderTexture;
 }
 
 namespace osc
@@ -29,8 +28,7 @@ namespace osc
         glm::ivec2 getDimensions() const;
         int getSamples() const;
         void draw(nonstd::span<SceneDecoration const>, SceneRendererParams const&);
-        gl::Texture2D& updOutputTexture();
-        gl::FrameBuffer& updOutputFBO();
+        experimental::RenderTexture& updRenderTexture();
 
     private:
         class Impl;

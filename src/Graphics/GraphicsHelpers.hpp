@@ -14,8 +14,12 @@ namespace osc
     struct BVH;
     struct Line;
     struct Transform;
-    class Mesh;
     class SceneDecoration;
+}
+
+namespace osc::experimental
+{
+    class Mesh;
 }
 
 namespace osc
@@ -53,5 +57,5 @@ namespace osc
     );
 
     // returns closest ray-triangle collision in worldspace
-    RayCollision GetClosestWorldspaceRayCollision(Mesh const&, Transform const&, Line const& worldspaceRay);
+    RayCollision GetClosestWorldspaceRayCollision(experimental::Mesh const&, Transform const&, Line const& worldspaceRay);
 }

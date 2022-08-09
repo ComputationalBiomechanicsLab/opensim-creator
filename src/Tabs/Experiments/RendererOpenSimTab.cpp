@@ -2,7 +2,6 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Color.hpp"
-#include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/Renderer.hpp"
@@ -33,18 +32,6 @@
 
 namespace
 {
-    std::unordered_map<std::shared_ptr<osc::Mesh>, std::shared_ptr<osc::experimental::Mesh const>> g_MeshLookup;
-
-    std::shared_ptr<osc::experimental::Mesh const> GetExperimentalMesh(std::shared_ptr<osc::Mesh> const& m)
-    {
-        auto [it, inserted] = g_MeshLookup.try_emplace(m);
-        if (inserted)
-        {
-            it->second = std::make_shared<osc::experimental::Mesh>(osc::experimental::LoadMeshFromLegacyMesh(*m));
-        }
-        return it->second;
-    }
-
     struct NewDecoration final {
         std::shared_ptr<osc::experimental::Mesh const> Mesh;
         osc::Transform Transform;
@@ -52,7 +39,7 @@ namespace
         bool IsHovered;
 
         NewDecoration(osc::SceneDecoration const& d) :
-            Mesh{GetExperimentalMesh(d.mesh)},
+            Mesh{d.mesh},
             Transform{d.transform},
             Color{d.color},
             IsHovered{static_cast<bool>(d.flags & osc::SceneDecorationFlags_IsHovered)}

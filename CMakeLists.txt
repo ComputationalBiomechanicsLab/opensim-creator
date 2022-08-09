@@ -273,19 +273,6 @@ add_library(osccore STATIC
     src/Bindings/SimTKHelpers.cpp
     src/Bindings/SimTKHelpers.hpp
 
-    src/Graphics/Shaders/EdgeDetectionShader.cpp
-    src/Graphics/Shaders/EdgeDetectionShader.hpp
-    src/Graphics/Shaders/GouraudShader.cpp
-    src/Graphics/Shaders/GouraudShader.hpp
-    src/Graphics/Shaders/InstancedGouraudColorShader.cpp
-    src/Graphics/Shaders/InstancedGouraudColorShader.hpp
-    src/Graphics/Shaders/InstancedSolidColorShader.cpp
-    src/Graphics/Shaders/InstancedSolidColorShader.hpp
-    src/Graphics/Shaders/NormalsShader.cpp
-    src/Graphics/Shaders/NormalsShader.hpp
-    src/Graphics/Shaders/SolidColorShader.cpp
-    src/Graphics/Shaders/SolidColorShader.hpp
-
     src/Graphics/Color.cpp
     src/Graphics/Color.hpp
     src/Graphics/DAEWriter.cpp
@@ -300,8 +287,6 @@ add_library(osccore STATIC
     src/Graphics/ImageFlags.hpp
     src/Graphics/ImageGen.cpp
     src/Graphics/ImageGen.hpp
-    src/Graphics/Mesh.cpp
-    src/Graphics/Mesh.hpp
     src/Graphics/MeshCache.cpp
     src/Graphics/MeshCache.hpp
     src/Graphics/MeshData.cpp

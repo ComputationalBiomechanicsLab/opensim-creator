@@ -25,11 +25,14 @@ struct SDL_Window;
 namespace osc::experimental
 {
     class Texture2D;
+    class RenderTexture;
 }
 
 namespace osc
 {
-    void DrawTextureAsImGuiImage(osc::experimental::Texture2D& t, glm::vec2 dims);
+    void DrawTextureAsImGuiImage(osc::experimental::Texture2D&, glm::vec2);
+    void DrawTextureAsImGuiImage(osc::experimental::RenderTexture&, glm::vec2);
+
     struct AABB;
     struct BVH;
     struct Rgba32;
@@ -96,7 +99,7 @@ namespace osc::experimental
         void setFilterMode(TextureFilterMode);
 
     private:
-        friend void osc::DrawTextureAsImGuiImage(osc::experimental::Texture2D& t, glm::vec2 dims);
+        friend void osc::DrawTextureAsImGuiImage(osc::experimental::Texture2D&, glm::vec2);
         gl::Texture2D& updTextureHandleHACK();  // used by ImGui... for now
 
         friend class GraphicsBackend;
@@ -206,6 +209,9 @@ namespace osc::experimental
         void reformat(RenderTextureDescriptor const& d);
 
     private:
+        friend void osc::DrawTextureAsImGuiImage(osc::experimental::RenderTexture&, glm::vec2);
+        gl::Texture2D& updTextureHandleHACK();  // used by ImGui... for now
+
         friend class GraphicsBackend;
         friend bool operator==(RenderTexture const&, RenderTexture const&);
         friend bool operator!=(RenderTexture const&, RenderTexture const&);
@@ -488,7 +494,6 @@ namespace osc::experimental
     std::ostream& operator<<(std::ostream&, Mesh const&);
 
     Mesh LoadMeshFromMeshData(MeshData const&);
-    osc::experimental::Mesh LoadMeshFromLegacyMesh(osc::Mesh const&);
 }
 
 // camera

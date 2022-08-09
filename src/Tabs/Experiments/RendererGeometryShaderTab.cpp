@@ -16,8 +16,7 @@
 
 static osc::experimental::Mesh LoadGeometry()
 {
-    auto p = osc::App::resource("geometry/hat_ribs_scap.vtp");
-    return osc::experimental::LoadMeshFromLegacyMesh(osc::LoadMeshViaSimTK(p));
+    return osc::LoadMeshViaSimTK(osc::App::resource("geometry/hat_ribs_scap.vtp"));
 }
 
 class osc::RendererGeometryShaderTab::Impl final {

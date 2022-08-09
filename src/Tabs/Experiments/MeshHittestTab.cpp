@@ -2,7 +2,6 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Bindings/SimTKHelpers.hpp"
-#include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Renderer.hpp"
 #include "src/Maths/BVH.hpp"
@@ -229,7 +228,7 @@ private:
 			App::slurp("shaders/SolidColor.frag"),
 		}
 	};
-	experimental::Mesh m_Mesh = experimental::LoadMeshFromLegacyMesh(LoadMeshViaSimTK(App::resource("geometry/hat_ribs.vtp")));
+	experimental::Mesh m_Mesh = LoadMeshViaSimTK(App::resource("geometry/hat_ribs.vtp"));
 	experimental::Mesh m_SphereMesh = experimental::LoadMeshFromMeshData(GenUntexturedUVSphere(12, 12));
 	experimental::Mesh m_CubeLinesMesh = experimental::LoadMeshFromMeshData(GenCubeLines());
 

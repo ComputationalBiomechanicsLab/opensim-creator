@@ -1,6 +1,6 @@
 #include "SimTKHelpers.hpp"
 
-#include "src/Graphics/Mesh.hpp"
+#include "src/Graphics/Renderer.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/MeshData.hpp"
 #include "src/Maths/Geometry.hpp"
@@ -466,7 +466,7 @@ osc::Transform osc::ToTransform(SimTK::Transform const& t)
 
 // mesh loading
 
-osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
+osc::experimental::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
 {
     SimTK::DecorativeMeshFile dmf{p.string()};
     SimTK::PolygonalMesh const& mesh = dmf.getMesh();
@@ -581,7 +581,7 @@ osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
         }
     }
 
-    return osc::Mesh{std::move(rv)};
+    return osc::experimental::LoadMeshFromMeshData(rv);
 }
 
 
