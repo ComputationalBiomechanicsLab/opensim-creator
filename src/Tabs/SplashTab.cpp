@@ -48,6 +48,8 @@ static osc::SceneRendererParams GetSplashScreenDefaultRenderParams(osc::PolarPer
     osc::SceneRendererParams rv;
     rv.drawRims = false;
     rv.viewMatrix = camera.getViewMtx();
+    rv.nearClippingPlane = camera.znear;
+    rv.farClippingPlane = camera.zfar;
     rv.viewPos = camera.getPos();
     rv.lightDirection = {-0.34f, -0.25f, 0.05f};
     rv.lightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};

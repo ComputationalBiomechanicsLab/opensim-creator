@@ -126,6 +126,8 @@ public:
 				m_RenderParams.projectionMatrix = m_Camera.getProjMtx(AspectRatio(m_RenderParams.dimensions));
 				m_RenderParams.viewMatrix = m_Camera.getViewMtx();
 				m_RenderParams.viewPos = m_Camera.getPos();
+				m_RenderParams.nearClippingPlane = m_Camera.znear;
+				m_RenderParams.farClippingPlane = m_Camera.zfar;
 				m_RenderParams.drawFloor = false;
 
 				SceneDecoration d

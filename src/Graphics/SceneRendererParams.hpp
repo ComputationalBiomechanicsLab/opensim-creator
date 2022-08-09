@@ -15,6 +15,8 @@ namespace osc
         bool drawMeshNormals;
         bool drawRims;
         bool drawFloor;
+        float nearClippingPlane;
+        float farClippingPlane;
         glm::mat4 viewMatrix;
         glm::mat4 projectionMatrix;
         glm::vec3 viewPos;

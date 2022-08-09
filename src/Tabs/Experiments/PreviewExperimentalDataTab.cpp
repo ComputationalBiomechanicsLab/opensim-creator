@@ -617,6 +617,8 @@ private:
         params.drawFloor = false;
         params.viewMatrix = m_Camera.getViewMtx();
         params.projectionMatrix = m_Camera.getProjMtx(AspectRatio(params.dimensions));
+        params.nearClippingPlane = m_Camera.znear;
+        params.farClippingPlane = m_Camera.zfar;
         params.viewPos = m_Camera.getPos();
         params.lightDirection = osc::RecommendedLightDirection(m_Camera);
         params.lightColor = {1.0f, 1.0f, 1.0f};

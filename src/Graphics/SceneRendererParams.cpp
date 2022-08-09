@@ -7,6 +7,8 @@ osc::SceneRendererParams::SceneRendererParams() :
     drawMeshNormals{false},
     drawRims{true},
     drawFloor{true},
+    nearClippingPlane{0.1f},
+    farClippingPlane{100.0f},
     viewMatrix{1.0f},
     projectionMatrix{1.0f},
     viewPos{0.0f, 0.0f, 0.0f},

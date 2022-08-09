@@ -614,6 +614,8 @@ private:
         m_RendererParams.drawFloor = m_Flags & UiModelViewerFlags_DrawFloor;
         m_RendererParams.viewMatrix = m_Camera.getViewMtx();
         m_RendererParams.projectionMatrix = m_Camera.getProjMtx(AspectRatio(m_Rendererer.getDimensions()));
+        m_RendererParams.nearClippingPlane = m_Camera.znear;
+        m_RendererParams.farClippingPlane = m_Camera.zfar;
         m_RendererParams.viewPos = m_Camera.getPos();
         m_RendererParams.fixupScaleFactor = rs.getFixupScaleFactor();
 
