@@ -400,11 +400,6 @@ osc::AABB const& osc::Mesh::getAABB() const
     return m_Impl->aabb;
 }
 
-osc::BVH const& osc::Mesh::getTriangleBVH() const
-{
-    return m_Impl->triangleBVH;
-}
-
 osc::RayCollision osc::Mesh::getClosestRayTriangleCollisionModelspace(Line const& ray) const
 {
     if (m_Impl->topography != MeshTopography::Triangles)
