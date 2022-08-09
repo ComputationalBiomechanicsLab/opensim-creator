@@ -25,6 +25,7 @@ struct SDL_Window;
 namespace osc
 {
     struct AABB;
+    struct BVH;
     struct Rgba32;
     struct Transform;
     class Mesh;
@@ -455,6 +456,11 @@ namespace osc::experimental
 
         AABB const& getBounds() const;  // local-space
         glm::vec3 getMidpoint() const;  // local-space
+
+        // local-space: this is a hack that's only here to make porting from
+        // the legacy `osc::Mesh` API easier - later iterations *should*
+        // seperately associate the BVH with the mesh (e.g. via a BVH cache)
+        BVH const& getBVH() const;
 
         void clear();
 

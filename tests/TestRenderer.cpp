@@ -3,6 +3,7 @@
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Renderer.hpp"
 #include "src/Maths/AABB.hpp"
+#include "src/Maths/BVH.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Utils/Algorithms.hpp"
@@ -1737,9 +1738,8 @@ TEST_F(Renderer, MeshGetBooundsReturnsNonemptyForIndexedVerts)
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
         { 0.0f,  1.0f, 0.0f},  // base: top-middle
-        { 0.0f,  0.0f, 1.0f},  // tip
     };
-    std::uint16_t pyramidIndices[] = {0, 1, 2, 3};
+    std::uint16_t pyramidIndices[] = {0, 1, 2};
 
     osc::experimental::Mesh m;
     m.setVerts(pyramid);
@@ -1762,15 +1762,43 @@ TEST_F(Renderer, MeshGetMidpointReturnsExpectedMidpoint)
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
         { 0.0f,  1.0f, 0.0f},  // base: top-middle
-        { 0.0f,  0.0f, 1.0f},  // tip
     };
-    std::uint16_t pyramidIndices[] = {0, 1, 2, 3};
+    std::uint16_t pyramidIndices[] = {0, 1, 2};
 
     osc::experimental::Mesh m;
     m.setVerts(pyramid);
     m.setIndices(pyramidIndices);
     glm::vec3 expected = osc::Midpoint(osc::AABBFromVerts(pyramid));
     ASSERT_EQ(m.getMidpoint(), expected);
+}
+
+TEST_F(Renderer, MeshGetBVHReturnsEmptyBVHOnInitialization)
+{
+    osc::experimental::Mesh m;
+    osc::BVH const& bvh = m.getBVH();
+    ASSERT_TRUE(bvh.nodes.empty());
+}
+
+TEST_F(Renderer, MeshGetBVHReturnsExpectedRootNode)
+{
+    glm::vec3 pyramid[] =
+    {
+        {-1.0f, -1.0f, 0.0f},  // base: bottom-left
+        { 1.0f, -1.0f, 0.0f},  // base: bottom-right
+        { 0.0f,  1.0f, 0.0f},  // base: top-middle
+    };
+    std::uint16_t pyramidIndices[] = {0, 1, 2};
+
+    osc::experimental::Mesh m;
+    m.setVerts(pyramid);
+    m.setIndices(pyramidIndices);
+
+    osc::AABB const expectedRoot = osc::AABBFromVerts(pyramid);
+
+    osc::BVH const& bvh = m.getBVH();
+
+    ASSERT_FALSE(bvh.nodes.empty());
+    ASSERT_EQ(expectedRoot, bvh.nodes.front().bounds);
 }
 
 TEST_F(Renderer, MeshCanBeComparedForEquality)

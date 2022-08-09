@@ -11,6 +11,7 @@
 #include "src/Graphics/ShaderLocationIndex.hpp"
 #include "src/Graphics/Texturing.hpp"
 #include "src/Maths/AABB.hpp"
+#include "src/Maths/BVH.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Transform.hpp"
@@ -2254,6 +2255,11 @@ public:
         return m_Midpoint;
     }
 
+    BVH const& getBVH() const
+    {
+        return m_TriangleBVH;
+    }
+
     void clear()
     {
         m_Version->reset();
@@ -2310,11 +2316,27 @@ private:
         {
             nonstd::span<uint32_t const> indices(&m_IndicesData.front().u32, m_NumIndices);
             m_AABB = osc::AABBFromIndexedVerts(m_Vertices, indices);
+            if (m_Topography == osc::experimental::MeshTopography::Triangles)
+            {
+                BVH_BuildFromIndexedTriangles(m_TriangleBVH, m_Vertices, indices);
+            }
+            else
+            {
+                m_TriangleBVH.clear();
+            }
         }
         else
         {
             nonstd::span<uint16_t const> indices(&m_IndicesData.front().u16.a, m_NumIndices);
             m_AABB = osc::AABBFromIndexedVerts(m_Vertices, indices);
+            if (m_Topography == osc::experimental::MeshTopography::Triangles)
+            {
+                BVH_BuildFromIndexedTriangles(m_TriangleBVH, m_Vertices, indices);
+            }
+            else
+            {
+                m_TriangleBVH.clear();
+            }
         }
         m_Midpoint = Midpoint(m_AABB);
     }
@@ -2436,6 +2458,7 @@ private:
 
     AABB m_AABB = {};
     glm::vec3 m_Midpoint = {};
+    BVH m_TriangleBVH;
 
     DefaultConstructOnCopy<std::optional<MeshGPUBuffers>> m_MaybeGPUBuffers;
 };
@@ -2541,6 +2564,11 @@ osc::AABB const& osc::experimental::Mesh::getBounds() const
 glm::vec3 osc::experimental::Mesh::getMidpoint() const
 {
     return m_Impl->getMidpoint();
+}
+
+osc::BVH const& osc::experimental::Mesh::getBVH() const
+{
+    return m_Impl->getBVH();
 }
 
 void osc::experimental::Mesh::clear()
