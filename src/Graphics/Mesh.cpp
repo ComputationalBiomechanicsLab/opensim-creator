@@ -205,16 +205,6 @@ osc::Mesh::~Mesh() noexcept
     delete m_Impl;
 }
 
-osc::CStringView osc::Mesh::getName() const
-{
-    return m_Impl->name;
-}
-
-void osc::Mesh::setName(std::string_view name)
-{
-    m_Impl->name = name;
-}
-
 osc::MeshTopography osc::Mesh::getTopography() const
 {
     return m_Impl->topography;

@@ -45,9 +45,6 @@ namespace osc
         Mesh& operator=(Mesh&&) noexcept;
         ~Mesh() noexcept;
 
-        CStringView getName() const;
-        void setName(std::string_view);
-
         MeshTopography getTopography() const;
         GLenum getTopographyOpenGL() const;
         void setTopography(MeshTopography);

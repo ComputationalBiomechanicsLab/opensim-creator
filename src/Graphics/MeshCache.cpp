@@ -29,19 +29,6 @@ public:
     std::shared_ptr<Mesh> texturedQuad = std::make_shared<Mesh>(GenTexturedQuad());
 
     SynchronizedValue<std::unordered_map<std::string, std::shared_ptr<Mesh>>> fileCache;
-
-    Impl()
-    {
-        sphere->setName("Sphere");
-        cylinder->setName("Cylinder");
-        cube->setName("Cube");
-        cone->setName("Cone");
-        floor->setName("Floor");
-        grid100x100->setName("Grid");
-        cubeWire->setName("CubeWireframe");
-        yLine->setName("YLine");
-        texturedQuad->setName("TexturedQuad");
-    }
 };
 
 osc::MeshCache::MeshCache() :
@@ -76,7 +63,6 @@ std::shared_ptr<osc::Mesh> osc::MeshCache::getMeshFile(std::string const& p)
         try
         {
             auto mesh = std::make_shared<Mesh>(osc::LoadMeshViaSimTK(p));
-            mesh->setName(std::filesystem::path{p}.filename().string());
             it->second = std::move(mesh);
         }
         catch (...)
