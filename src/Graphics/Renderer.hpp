@@ -22,8 +22,14 @@
 
 struct SDL_Window;
 
+namespace osc::experimental
+{
+    class Texture2D;
+}
+
 namespace osc
 {
+    void DrawTextureAsImGuiImage(osc::experimental::Texture2D& t, glm::vec2 dims);
     struct AABB;
     struct BVH;
     struct Rgba32;
@@ -89,8 +95,9 @@ namespace osc::experimental
         TextureFilterMode getFilterMode() const;
         void setFilterMode(TextureFilterMode);
 
-        gl::Texture2D& updTextureHandleHACK();  // used by ImGui... for now
     private:
+        friend void osc::DrawTextureAsImGuiImage(osc::experimental::Texture2D& t, glm::vec2 dims);
+        gl::Texture2D& updTextureHandleHACK();  // used by ImGui... for now
 
         friend class GraphicsBackend;
         friend bool operator==(Texture2D const&, Texture2D const&);
