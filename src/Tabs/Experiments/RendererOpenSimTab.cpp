@@ -398,7 +398,7 @@ private:
         }
     };
 
-    experimental::Mesh m_QuadMesh = osc::experimental::LoadMeshFromMeshData(osc::GenTexturedQuad());
+    experimental::Mesh m_QuadMesh = GenTexturedQuad();
     experimental::Texture2D m_FloorTexture = GenChequeredFloorTexture();
     osc::Transform m_FloorTransform = GetFloorTransform();
     std::optional<experimental::RenderTexture> m_SceneTex;

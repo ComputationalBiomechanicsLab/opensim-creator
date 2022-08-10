@@ -5064,10 +5064,10 @@ namespace
         MeshLoader m_MeshLoader;
 
         // sphere mesh used by various scene elements
-        std::shared_ptr<Mesh const> m_SphereMesh = std::make_shared<Mesh>(osc::experimental::LoadMeshFromMeshData(osc::GenUntexturedUVSphere(12, 12)));
+        std::shared_ptr<Mesh const> m_SphereMesh = std::make_shared<Mesh>(osc::GenUntexturedUVSphere(12, 12));
 
         // cylinder mesh used by various scene elements
-        std::shared_ptr<Mesh const> m_CylinderMesh = std::make_shared<Mesh>(osc::experimental::LoadMeshFromMeshData(osc::GenUntexturedSimbodyCylinder(16)));
+        std::shared_ptr<Mesh const> m_CylinderMesh = std::make_shared<Mesh>(osc::GenUntexturedSimbodyCylinder(16));
 
         // main 3D scene camera
         PolarPerspectiveCamera m_3DSceneCamera = CreateDefaultCamera();

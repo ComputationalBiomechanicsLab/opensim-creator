@@ -229,8 +229,8 @@ private:
 		}
 	};
 	experimental::Mesh m_Mesh = LoadMeshViaSimTK(App::resource("geometry/hat_ribs.vtp"));
-	experimental::Mesh m_SphereMesh = experimental::LoadMeshFromMeshData(GenUntexturedUVSphere(12, 12));
-	experimental::Mesh m_CubeLinesMesh = experimental::LoadMeshFromMeshData(GenCubeLines());
+	experimental::Mesh m_SphereMesh = GenUntexturedUVSphere(12, 12);
+	experimental::Mesh m_CubeLinesMesh = GenCubeLines();
 
 	// other state
 	BVH m_BVH;

@@ -21,19 +21,23 @@
 
 static osc::experimental::Mesh GenerateMesh()
 {
-    auto quad = osc::GenTexturedQuad();
+    osc::experimental::Mesh quad = osc::GenTexturedQuad();
 
-    for (glm::vec3& vert : quad.verts)
+    std::vector<glm::vec3> verts{quad.getVerts().begin(), quad.getVerts().end()};
+    for (glm::vec3& vert : verts)
     {
         vert *= 0.5f;  // to match LearnOpenGL
     }
+    quad.setVerts(verts);
 
-    for (glm::vec2& coord : quad.texcoords)
+    std::vector<glm::vec2> coords{quad.getTexCoords().begin(), quad.getTexCoords().end()};
+    for (glm::vec2& coord : coords)
     {
         coord *= 2.0f;  // to test texture wrap modes
     }
+    quad.setTexCoords(coords);
 
-    return osc::experimental::LoadMeshFromMeshData(quad);
+    return quad;
 }
 
 class osc::RendererTexturingTab::Impl final {

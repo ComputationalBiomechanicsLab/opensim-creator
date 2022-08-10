@@ -35,19 +35,6 @@ static glm::vec3 const g_CubePositions[] =
     {-1.3f,  1.0f, -1.5  },
 };
 
-// generate a texture-mapped cube
-static osc::experimental::Mesh GenerateMesh()
-{
-    osc::MeshData cube = osc::GenCube();
-
-    for (glm::vec3& vert : cube.verts)
-    {
-        vert *= 0.5f;  // makes the verts match LearnOpenGL
-    }
-
-    return osc::experimental::LoadMeshFromMeshData(cube);
-}
-
 class osc::RendererCoordinateSystemsTab::Impl final {
 public:
 
@@ -187,7 +174,7 @@ private:
         App::slurp("shaders/ExperimentCoordinateSystems.frag"),
     };
     experimental::Material m_Material{m_Shader};
-    experimental::Mesh m_Mesh = GenerateMesh();
+    experimental::Mesh m_Mesh = GenLearnOpenGLCube();
     experimental::Camera m_Camera;
     bool m_IsMouseCaptured = false;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};

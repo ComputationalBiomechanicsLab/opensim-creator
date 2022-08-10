@@ -308,9 +308,9 @@ private:
 			App::slurp("shaders/SolidColor.frag"),
 		}
 	};
-	experimental::Mesh m_SphereMesh = experimental::LoadMeshFromMeshData(GenUntexturedUVSphere(12, 12));
-	experimental::Mesh m_WireframeCubeMesh = experimental::LoadMeshFromMeshData(GenCubeLines());
-	experimental::Mesh m_CircleMesh = experimental::LoadMeshFromMeshData(GenCircle(36));
+	experimental::Mesh m_SphereMesh = GenUntexturedUVSphere(12, 12);
+	experimental::Mesh m_WireframeCubeMesh = GenCubeLines();
+	experimental::Mesh m_CircleMesh = GenCircle(36);
 	experimental::Mesh m_CrosshairMesh = GenerateCrosshairMesh();
 	experimental::Mesh m_TriangleMesh = GenerateTriangleMesh();
 	experimental::MaterialPropertyBlock m_BlackColorMaterialProps = GeneratePropertyBlock({0.0f, 0.0f, 0.0f, 1.0f});

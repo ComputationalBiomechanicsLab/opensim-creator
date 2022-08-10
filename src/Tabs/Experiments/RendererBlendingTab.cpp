@@ -73,19 +73,6 @@ static glm::vec3 const g_WindowLocations[] =
     { 0.5f, 0.0f, -0.6},
 };
 
-// generate a texture-mapped cube
-static osc::experimental::Mesh GenerateMesh()
-{
-    osc::MeshData cube = osc::GenCube();
-
-    for (glm::vec3& vert : cube.verts)
-    {
-        vert *= 0.5f;  // makes the verts match LearnOpenGL
-    }
-
-    return osc::experimental::LoadMeshFromMeshData(cube);
-}
-
 static osc::experimental::Mesh GeneratePlane()
 {
     osc::experimental::Mesh rv;
@@ -238,7 +225,7 @@ private:
         }
     };
     experimental::Material m_BlendingMaterial = m_OpaqueMaterial;
-    experimental::Mesh m_CubeMesh = GenerateMesh();
+    experimental::Mesh m_CubeMesh = GenLearnOpenGLCube();
     experimental::Mesh m_PlaneMesh = GeneratePlane();
     experimental::Mesh m_TransparentMesh = GenerateTransparent();
     experimental::Camera m_Camera;

@@ -41,24 +41,6 @@ static glm::vec2 const g_PlaneTexCoords[] =
 
 static std::uint16_t const g_PlaneIndices[] = {0, 2, 1, 3, 5, 4};
 
-// generate a texture-mapped cube
-static osc::experimental::Mesh GenerateCubeMesh()
-{
-    osc::MeshData cube = osc::GenCube();
-
-    for (glm::vec3& vert : cube.verts)
-    {
-        vert *= 0.5f;  // makes the verts match LearnOpenGL
-    }
-
-    return osc::experimental::LoadMeshFromMeshData(cube);
-}
-
-static osc::experimental::Mesh GenerateQuadMesh()
-{
-    return osc::experimental::LoadMeshFromMeshData(osc::GenTexturedQuad());
-}
-
 static osc::experimental::Mesh GeneratePlane()
 {
     osc::experimental::Mesh rv;
@@ -203,9 +185,9 @@ private:
     experimental::Texture2D m_ContainerTexture = osc::experimental::LoadTexture2DFromImageResource("container.jpg");
     experimental::Texture2D m_MetalTexture = osc::experimental::LoadTexture2DFromImageResource("textures/metal.png");
 
-    experimental::Mesh m_CubeMesh = GenerateCubeMesh();
+    experimental::Mesh m_CubeMesh = GenLearnOpenGLCube();
     experimental::Mesh m_PlaneMesh = GeneratePlane();
-    experimental::Mesh m_QuadMesh = GenerateQuadMesh();
+    experimental::Mesh m_QuadMesh = GenTexturedQuad();
 
     experimental::Camera m_ScreenCamera;
     experimental::Material m_ScreenMaterial

@@ -5,7 +5,6 @@
 #include "src/Bindings/GlmHelpers.hpp"
 #include "src/Bindings/SDL2Helpers.hpp"
 #include "src/Graphics/Color.hpp"
-#include "src/Graphics/MeshData.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
 #include "src/Maths/AABB.hpp"
@@ -2629,17 +2628,6 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, Mesh const&)
     return o << "Mesh()";
 }
 
-osc::experimental::Mesh osc::experimental::LoadMeshFromMeshData(MeshData const& m)
-{
-    osc::experimental::Mesh rv;
-    rv.setTopography(m.topography);
-    rv.setVerts(m.verts);
-    rv.setNormals(m.normals);
-    rv.setTexCoords(m.texcoords);
-    rv.setIndices(m.indices);
-    return rv;
-}
-
 
 //////////////////////////////////
 //
@@ -3795,7 +3783,7 @@ public:
         }
     };
 
-    experimental::Mesh m_QuadMesh = osc::experimental::LoadMeshFromMeshData(osc::GenTexturedQuad());
+    experimental::Mesh m_QuadMesh = osc::GenTexturedQuad();
 };
 
 static std::unique_ptr<osc::experimental::GraphicsContext::Impl> g_GraphicsContextImpl = nullptr;

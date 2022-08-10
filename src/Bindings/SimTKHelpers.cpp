@@ -2,7 +2,6 @@
 
 #include "src/Graphics/Renderer.hpp"
 #include "src/Graphics/MeshCache.hpp"
-#include "src/Graphics/MeshData.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Segment.hpp"
 #include "src/Maths/Transform.hpp"
@@ -471,15 +470,20 @@ osc::experimental::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
     SimTK::DecorativeMeshFile dmf{p.string()};
     SimTK::PolygonalMesh const& mesh = dmf.getMesh();
 
-    MeshData rv;
-    rv.reserve(static_cast<size_t>(mesh.getNumVertices()));
+    std::vector<glm::vec3> verts;
+    std::vector<glm::vec3> normals;
+    std::vector<uint32_t> indices;
+
+    verts.reserve(static_cast<size_t>(mesh.getNumVertices()));
+    normals.reserve(static_cast<size_t>(mesh.getNumVertices()));
+    indices.reserve(static_cast<size_t>(mesh.getNumVertices()));
 
     uint32_t index = 0;
-    auto push = [&rv, &index](glm::vec3 const& pos, glm::vec3 const& normal)
+    auto push = [&verts, &normals, &indices, &index](glm::vec3 const& pos, glm::vec3 const& normal)
     {
-        rv.verts.push_back(pos);
-        rv.normals.push_back(normal);
-        rv.indices.push_back(index++);
+        verts.push_back(pos);
+        normals.push_back(normal);
+        indices.push_back(index++);
     };
 
     for (int face = 0, nfaces = mesh.getNumFaces(); face < nfaces; ++face)
@@ -581,7 +585,12 @@ osc::experimental::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
         }
     }
 
-    return osc::experimental::LoadMeshFromMeshData(rv);
+    experimental::Mesh rv;
+    rv.setTopography(experimental::MeshTopography::Triangles);
+    rv.setVerts(verts);
+    rv.setNormals(normals);
+    rv.setIndices(indices);
+    return rv;
 }
 
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Graphics/MeshData.hpp"
+#include "src/Graphics/Renderer.hpp"
 
 #include <cstddef>
 
@@ -10,29 +10,32 @@ namespace osc
     //
     // - positions: Z == 0, X == [-1, 1], and Y == [-1, 1]
     // - texcoords: (0, 0) to (1, 1)
-    MeshData GenTexturedQuad();
+    experimental::Mesh GenTexturedQuad();
 
     // generates UV sphere centered at (0,0,0) with radius = 1
-    MeshData GenUntexturedUVSphere(size_t sectors, size_t stacks);
+    experimental::Mesh GenUntexturedUVSphere(size_t sectors, size_t stacks);
 
     // generates a "Simbody" cylinder, where the bottom/top are -1.0f/+1.0f in Y
-    MeshData GenUntexturedSimbodyCylinder(size_t nsides);
+    experimental::Mesh GenUntexturedSimbodyCylinder(size_t nsides);
 
     // generates a "Simbody" cone, where the bottom/top are -1.0f/+1.0f in Y
-    MeshData GenUntexturedSimbodyCone(size_t nsides);
+    experimental::Mesh GenUntexturedSimbodyCone(size_t nsides);
 
     // generates 2D grid lines at Z == 0, X/Y == [-1,+1]
-    MeshData GenNbyNGrid(size_t nticks);
+    experimental::Mesh GenNbyNGrid(size_t nticks);
 
     // generates a single two-point line from (0,-1,0) to (0,+1,0)
-    MeshData GenYLine();
+    experimental::Mesh GenYLine();
 
     // generates a cube with [-1,+1] in each dimension
-    MeshData GenCube();
+    experimental::Mesh GenCube();
 
     // generates the *lines* of a cube with [-1,+1] in each dimension
-    MeshData GenCubeLines();
+    experimental::Mesh GenCubeLines();
 
     // generates a circle at Z == 0, X/Y == [-1, +1] (r = 1)
-    MeshData GenCircle(size_t nsides);
+    experimental::Mesh GenCircle(size_t nsides);
+
+    // generates a cube that matches some of the LearnOpenGL's cube
+    experimental::Mesh GenLearnOpenGLCube();
 }

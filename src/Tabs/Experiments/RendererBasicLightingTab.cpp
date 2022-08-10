@@ -15,19 +15,6 @@
 
 #include <utility>
 
-// generate a texture-mapped cube
-static osc::experimental::Mesh GenerateMesh()
-{
-    osc::MeshData cube = osc::GenCube();
-
-    for (glm::vec3& vert : cube.verts)
-    {
-        vert *= 0.5f;  // makes the verts match LearnOpenGL
-    }
-
-    return osc::experimental::LoadMeshFromMeshData(cube);
-}
-
 class osc::RendererBasicLightingTab::Impl final {
 public:
 
@@ -156,7 +143,7 @@ private:
     };
     experimental::Material m_LightCubeMaterial{m_LightCubeShader};
 
-    experimental::Mesh m_CubeMesh = GenerateMesh();
+    experimental::Mesh m_CubeMesh = GenLearnOpenGLCube();
 
     experimental::Camera m_Camera;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};

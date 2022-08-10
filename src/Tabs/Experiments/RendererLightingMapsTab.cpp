@@ -14,19 +14,6 @@
 
 #include <utility>
 
-// generate a texture-mapped cube
-static osc::experimental::Mesh GenerateMesh()
-{
-    osc::MeshData cube = osc::GenCube();
-
-    for (glm::vec3& vert : cube.verts)
-    {
-        vert *= 0.5f;  // makes the verts match LearnOpenGL
-    }
-
-    return osc::experimental::LoadMeshFromMeshData(cube);
-}
-
 class osc::RendererLightingMapsTab::Impl final {
 public:
     Impl(TabHost* parent) : m_Parent{parent}
@@ -157,7 +144,7 @@ private:
             App::slurp("shaders/ExperimentLightCube.frag"),
         }
     };
-    experimental::Mesh m_Mesh = GenerateMesh();
+    experimental::Mesh m_Mesh = GenLearnOpenGLCube();
     experimental::Texture2D m_DiffuseMap = experimental::LoadTexture2DFromImageResource("textures/container2.png", ImageFlags_FlipVertically);
     experimental::Texture2D m_SpecularMap = experimental::LoadTexture2DFromImageResource("textures/container2_specular.png", ImageFlags_FlipVertically);
 

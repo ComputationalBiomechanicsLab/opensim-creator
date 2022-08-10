@@ -1,6 +1,5 @@
 #include "MeshGen.hpp"
 
-#include "src/Graphics/MeshData.hpp"
 #include "src/Graphics/Renderer.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
@@ -27,6 +26,42 @@ namespace
         glm::vec3 norm;
         glm::vec2 uv;
     };
+
+    struct NewMeshData final {
+        std::vector<glm::vec3> verts;
+        std::vector<glm::vec3> normals;
+        std::vector<glm::vec2> texcoords;
+        std::vector<uint32_t> indices;
+        osc::experimental::MeshTopography topography = osc::experimental::MeshTopography::Triangles;
+
+        void clear()
+        {
+            verts.clear();
+            normals.clear();
+            texcoords.clear();
+            indices.clear();
+            topography = osc::experimental::MeshTopography::Triangles;
+        }
+
+        void reserve(size_t s)
+        {
+            verts.reserve(s);
+            normals.reserve(s);
+            texcoords.reserve(s);
+            indices.reserve(s);
+        }
+    };
+
+    osc::experimental::Mesh CreateMeshFromData(NewMeshData&& data)
+    {
+        osc::experimental::Mesh rv;
+        rv.setTopography(data.topography);
+        rv.setVerts(data.verts);
+        rv.setNormals(data.normals);
+        rv.setTexCoords(data.texcoords);
+        rv.setIndices(data.indices);
+        return rv;
+    }
 }
 
 // standard textured cube with dimensions [-1, +1] in xyz and uv coords of
@@ -157,30 +192,30 @@ static constexpr std::array<UntexturedVert, 24> g_CubeEdgeLines = {{
     {{+1.0f, +1.0f, -1.0f}, {+1.0f, +1.0f, -1.0f}}
 }};
 
-osc::MeshData osc::GenTexturedQuad()
+osc::experimental::Mesh osc::GenTexturedQuad()
 {
-    MeshData rv;
-    rv.reserve(g_ShadedTexturedQuadVerts.size());
+    NewMeshData data;
+    data.reserve(g_ShadedTexturedQuadVerts.size());
 
-    unsigned short index = 0;
+    uint16_t index = 0;
     for (TexturedVert const& v : g_ShadedTexturedQuadVerts)
     {
-        rv.verts.push_back(v.pos);
-        rv.normals.push_back(v.norm);
-        rv.texcoords.push_back(v.uv);
-        rv.indices.push_back(index++);
+        data.verts.push_back(v.pos);
+        data.normals.push_back(v.norm);
+        data.texcoords.push_back(v.uv);
+        data.indices.push_back(index++);
     }
 
-    OSC_ASSERT(rv.verts.size() % 3 == 0);
-    OSC_ASSERT(rv.verts.size() == rv.normals.size() && rv.verts.size() == rv.indices.size());
+    OSC_ASSERT(data.verts.size() % 3 == 0);
+    OSC_ASSERT(data.verts.size() == data.normals.size() && data.verts.size() == data.indices.size());
 
-    return rv;
+    return CreateMeshFromData(std::move(data));
 }
 
-osc::MeshData osc::GenUntexturedUVSphere(size_t sectors, size_t stacks)
+osc::experimental::Mesh osc::GenUntexturedUVSphere(size_t sectors, size_t stacks)
 {
-    MeshData rv;
-    rv.reserve(2*3*stacks*sectors);
+    NewMeshData data;
+    data.reserve(2*3*stacks*sectors);
 
     // this is a shitty alg that produces a shitty UV sphere. I don't have
     // enough time to implement something better, like an isosphere, or
@@ -219,12 +254,12 @@ osc::MeshData osc::GenUntexturedUVSphere(size_t sectors, size_t stacks)
     // the points are not triangles. They are *points of a triangle*, so the
     // points must be triangulated
 
-    unsigned short index = 0;
-    auto push = [&rv, &index](UntexturedVert const& v)
+    uint16_t index = 0;
+    auto push = [&data, &index](UntexturedVert const& v)
     {
-        rv.verts.push_back(v.pos);
-        rv.normals.push_back(v.norm);
-        rv.indices.push_back(index++);
+        data.verts.push_back(v.pos);
+        data.normals.push_back(v.norm);
+        data.indices.push_back(index++);
     };
 
     for (size_t stack = 0; stack < stacks; ++stack)
@@ -258,13 +293,13 @@ osc::MeshData osc::GenUntexturedUVSphere(size_t sectors, size_t stacks)
         }
     }
 
-    OSC_ASSERT(rv.verts.size() % 3 == 0);
-    OSC_ASSERT(rv.verts.size() == rv.normals.size() && rv.verts.size() == rv.indices.size());
+    OSC_ASSERT(data.verts.size() % 3 == 0);
+    OSC_ASSERT(data.verts.size() == data.normals.size() && data.verts.size() == data.indices.size());
 
-    return rv;
+    return CreateMeshFromData(std::move(data));
 }
 
-osc::MeshData osc::GenUntexturedSimbodyCylinder(size_t nsides)
+osc::experimental::Mesh osc::GenUntexturedSimbodyCylinder(size_t nsides)
 {
     constexpr float c_TopY = +1.0f;
     constexpr float c_BottomY = -1.0f;
@@ -276,23 +311,23 @@ osc::MeshData osc::GenUntexturedSimbodyCylinder(size_t nsides)
 
     const float stepAngle = 2.0f*fpi / nsides;
 
-    MeshData rv;
+    NewMeshData data;
 
     // helper: push mesh *data* (i.e. vert and normal) to the output
-    auto pushData = [&rv](glm::vec3 const& pos, glm::vec3 const& norm)
+    auto pushData = [&data](glm::vec3 const& pos, glm::vec3 const& norm)
     {
-        uint32_t idx = static_cast<uint32_t>(rv.verts.size());
-        rv.verts.push_back(pos);
-        rv.normals.push_back(norm);
+        uint32_t idx = static_cast<uint32_t>(data.verts.size());
+        data.verts.push_back(pos);
+        data.normals.push_back(norm);
         return idx;
     };
 
     // helper: push primitive *indices* (into data) to the output
-    auto pushTriangle = [&rv](uint32_t p0Index, uint32_t p1Index, uint32_t p2Index)
+    auto pushTriangle = [&data](uint32_t p0Index, uint32_t p1Index, uint32_t p2Index)
     {
-        rv.indices.push_back(p0Index);
-        rv.indices.push_back(p1Index);
-        rv.indices.push_back(p2Index);
+        data.indices.push_back(p0Index);
+        data.indices.push_back(p1Index);
+        data.indices.push_back(p2Index);
     };
 
     // top: a triangle fan
@@ -386,24 +421,24 @@ osc::MeshData osc::GenUntexturedSimbodyCylinder(size_t nsides)
         pushTriangle(firstEdgeBottom, firstEdgeTop, e1TopIdx);
     }
 
-    return rv;
+    return CreateMeshFromData(std::move(data));
 }
 
-osc::MeshData osc::GenUntexturedSimbodyCone(size_t nsides)
+osc::experimental::Mesh osc::GenUntexturedSimbodyCone(size_t nsides)
 {
-    MeshData rv;
-    rv.reserve(2*3*nsides);
+    NewMeshData data;
+    data.reserve(2*3*nsides);
 
     constexpr float topY = +1.0f;
     constexpr float bottomY = -1.0f;
     const float stepAngle = 2.0f*fpi / nsides;
 
     unsigned short index = 0;
-    auto push = [&rv, &index](glm::vec3 const& pos, glm::vec3 const& norm)
+    auto push = [&data, &index](glm::vec3 const& pos, glm::vec3 const& norm)
     {
-        rv.verts.push_back(pos);
-        rv.normals.push_back(norm);
-        rv.indices.push_back(index++);
+        data.verts.push_back(pos);
+        data.normals.push_back(norm);
+        data.indices.push_back(index++);
     };
 
     // bottom
@@ -447,13 +482,13 @@ osc::MeshData osc::GenUntexturedSimbodyCone(size_t nsides)
         }
     }
 
-    OSC_ASSERT(rv.verts.size() % 3 == 0);
-    OSC_ASSERT(rv.verts.size() == rv.normals.size() && rv.verts.size() == rv.indices.size());
+    OSC_ASSERT(data.verts.size() % 3 == 0);
+    OSC_ASSERT(data.verts.size() == data.normals.size() && data.verts.size() == data.indices.size());
 
-    return rv;
+    return CreateMeshFromData(std::move(data));
 }
 
-osc::MeshData osc::GenNbyNGrid(size_t n)
+osc::experimental::Mesh osc::GenNbyNGrid(size_t n)
 {
     static constexpr float z = 0.0f;
     static constexpr float min = -1.0f;
@@ -463,18 +498,16 @@ osc::MeshData osc::GenNbyNGrid(size_t n)
 
     size_t nlines = n + 1;
 
-    MeshData rv;
-    rv.verts.reserve(4*nlines);
-    rv.indices.reserve(4*nlines);
-    rv.normals.reserve(4*nlines);
-    rv.topography = experimental::MeshTopography::Lines;
+    NewMeshData data;
+    data.reserve(4 * nlines);
+    data.topography = experimental::MeshTopography::Lines;
 
     unsigned short index = 0;
-    auto push = [&index, &rv](glm::vec3 const& pos)
+    auto push = [&index, &data](glm::vec3 const& pos)
     {
-        rv.verts.push_back(pos);
-        rv.indices.push_back(index++);
-        rv.normals.push_back(glm::vec3{0.0f, 0.0f, 1.0f});
+        data.verts.push_back(pos);
+        data.indices.push_back(index++);
+        data.normals.push_back(glm::vec3{0.0f, 0.0f, 1.0f});
     };
 
     // lines parallel to X axis
@@ -495,80 +528,80 @@ osc::MeshData osc::GenNbyNGrid(size_t n)
         push({x, +1.0f, z});
     }
 
-    OSC_ASSERT(rv.verts.size() % 2 == 0);  // lines, not triangles
-    OSC_ASSERT(rv.normals.size() == rv.verts.size());  // they contain dummy normals
-    OSC_ASSERT(rv.verts.size() == rv.indices.size());
+    OSC_ASSERT(data.verts.size() % 2 == 0);  // lines, not triangles
+    OSC_ASSERT(data.normals.size() == data.verts.size());  // they contain dummy normals
+    OSC_ASSERT(data.verts.size() == data.indices.size());
 
-    return rv;
+    return CreateMeshFromData(std::move(data));
 }
 
-osc::MeshData osc::GenYLine()
+osc::experimental::Mesh osc::GenYLine()
 {
-    MeshData rv;
-    rv.verts = {{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
-    rv.normals = {{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}};  // just give them *something* in-case they are rendered through a shader that requires normals
-    rv.indices = {0, 1};
-    rv.topography = experimental::MeshTopography::Lines;
+    NewMeshData data;
+    data.verts = {{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
+    data.normals = {{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}};  // just give them *something* in-case they are rendered through a shader that requires normals
+    data.indices = {0, 1};
+    data.topography = experimental::MeshTopography::Lines;
 
-    OSC_ASSERT(rv.verts.size() % 2 == 0);
-    OSC_ASSERT(rv.normals.size() % 2 == 0);
-    OSC_ASSERT(rv.verts.size() == rv.indices.size());
+    OSC_ASSERT(data.verts.size() % 2 == 0);
+    OSC_ASSERT(data.normals.size() % 2 == 0);
+    OSC_ASSERT(data.verts.size() == data.indices.size());
 
-    return rv;
+    return CreateMeshFromData(std::move(data));
 }
 
-osc::MeshData osc::GenCube()
+osc::experimental::Mesh osc::GenCube()
 {
-    MeshData rv;
-    rv.reserve(g_ShadedTexturedCubeVerts.size());
+    NewMeshData data;
+    data.reserve(g_ShadedTexturedCubeVerts.size());
 
-    unsigned short index = 0;
+    uint16_t index = 0;
     for (auto const& v : g_ShadedTexturedCubeVerts)
     {
-        rv.verts.push_back(v.pos);
-        rv.normals.push_back(v.norm);
-        rv.texcoords.push_back(v.uv);
-        rv.indices.push_back(index++);
+        data.verts.push_back(v.pos);
+        data.normals.push_back(v.norm);
+        data.texcoords.push_back(v.uv);
+        data.indices.push_back(index++);
     }
 
-    OSC_ASSERT(rv.verts.size() % 3 == 0);
-    OSC_ASSERT(rv.verts.size() == rv.normals.size() && rv.verts.size() == rv.indices.size());
+    OSC_ASSERT(data.verts.size() % 3 == 0);
+    OSC_ASSERT(data.verts.size() == data.normals.size() && data.verts.size() == data.indices.size());
 
-    return rv;
+    return CreateMeshFromData(std::move(data));
 }
 
-osc::MeshData osc::GenCubeLines()
+osc::experimental::Mesh osc::GenCubeLines()
 {
-    MeshData rv;
-    rv.verts.reserve(g_CubeEdgeLines.size());
-    rv.indices.reserve(g_CubeEdgeLines.size());
-    rv.topography = experimental::MeshTopography::Lines;
+    NewMeshData data;
+    data.verts.reserve(g_CubeEdgeLines.size());
+    data.indices.reserve(g_CubeEdgeLines.size());
+    data.topography = experimental::MeshTopography::Lines;
 
-    unsigned short index = 0;
+    uint16_t index = 0;
     for (auto const& v : g_CubeEdgeLines)
     {
-        rv.verts.push_back(v.pos);
-        rv.indices.push_back(index++);
+        data.verts.push_back(v.pos);
+        data.indices.push_back(index++);
     }
 
-    OSC_ASSERT(rv.verts.size() % 2 == 0);  // lines, not triangles
-    OSC_ASSERT(rv.normals.empty());
-    OSC_ASSERT(rv.verts.size() == rv.indices.size());
+    OSC_ASSERT(data.verts.size() % 2 == 0);  // lines, not triangles
+    OSC_ASSERT(data.normals.empty());
+    OSC_ASSERT(data.verts.size() == data.indices.size());
 
-    return rv;
+    return CreateMeshFromData(std::move(data));
 }
 
-osc::MeshData osc::GenCircle(size_t nsides)
+osc::experimental::Mesh osc::GenCircle(size_t nsides)
 {
-    MeshData rv;
-    rv.verts.reserve(3*nsides);
-    rv.topography = experimental::MeshTopography::Triangles;
+    NewMeshData data;
+    data.verts.reserve(3*nsides);
+    data.topography = experimental::MeshTopography::Triangles;
 
-    unsigned short index = 0;
-    auto push = [&rv, &index](float x, float y, float z)
+    uint16_t index = 0;
+    auto push = [&data, &index](float x, float y, float z)
     {
-        rv.verts.push_back({x, y, z});
-        rv.indices.push_back(index++);
+        data.verts.push_back({x, y, z});
+        data.indices.push_back(index++);
     };
 
     float step = 2.0f*fpi / static_cast<float>(nsides);
@@ -582,5 +615,19 @@ osc::MeshData osc::GenCircle(size_t nsides)
         push(std::sin(theta2), std::cos(theta2), 0.0f);
     }
 
-    return rv;
+    return CreateMeshFromData(std::move(data));
+}
+
+osc::experimental::Mesh osc::GenLearnOpenGLCube()
+{
+    osc::experimental::Mesh cube = osc::GenCube();
+
+    std::vector<glm::vec3> verts{cube.getVerts().begin(), cube.getVerts().end()};
+    for (glm::vec3& vert : verts)
+    {
+        vert *= 0.5f;  // makes the verts match LearnOpenGL
+    }
+    cube.setVerts(verts);
+
+    return cube;
 }
