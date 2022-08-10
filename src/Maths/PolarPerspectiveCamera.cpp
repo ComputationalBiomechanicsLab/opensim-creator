@@ -12,6 +12,19 @@
 
 #include <cmath>
 
+
+namespace
+{
+    glm::vec3 PolarToCartesian(glm::vec3 focus, float radius, float theta, float phi)
+    {
+        float x = radius * std::sin(theta) * std::cos(phi);
+        float y = radius * std::sin(phi);
+        float z = radius * std::cos(theta) * std::cos(phi);
+
+        return -focus + glm::vec3{x, y, z};
+    }
+}
+
 osc::PolarPerspectiveCamera::PolarPerspectiveCamera() :
     radius{1.0f},
     theta{0.0f},
@@ -92,11 +105,7 @@ glm::mat4 osc::PolarPerspectiveCamera::getProjMtx(float aspectRatio) const noexc
 
 glm::vec3 osc::PolarPerspectiveCamera::getPos() const noexcept
 {
-    float x = radius * std::sin(theta) * std::cos(phi);
-    float y = radius * std::sin(phi);
-    float z = radius * std::cos(theta) * std::cos(phi);
-
-    return -focusPoint + glm::vec3{x, y, z};
+    return PolarToCartesian(focusPoint, radius, theta, phi);
 }
 
 glm::vec2 osc::PolarPerspectiveCamera::projectOntoScreenRect(glm::vec3 const& worldspaceLoc, Rect const& screenRect) const noexcept
@@ -149,13 +158,8 @@ osc::PolarPerspectiveCamera osc::CreateCameraWithRadius(float r)
 
 glm::vec3 osc::RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
 {
-    constexpr glm::vec3 sceneUpDir = {0.0f, 1.0f, 0.0f};
-    constexpr float cameraOffsetAngle = 1.25f * osc::fpi4;
-
-    glm::vec3 const camera2focusDir = glm::normalize(-c.focusPoint - c.getPos());
-    glm::vec3 const camera2focusRotatedDir = glm::angleAxis(cameraOffsetAngle, sceneUpDir) * camera2focusDir;
-
-    return 0.5f * (camera2focusRotatedDir + -sceneUpDir);
+    glm::vec3 p = PolarToCartesian(c.focusPoint, c.radius, c.theta - 0.75f*fpi4, glm::clamp(c.phi + 0.25f*fpi4, 0.0f, fpi2));
+    return glm::normalize(-c.focusPoint - p);
 }
 
 void osc::FocusAlongX(osc::PolarPerspectiveCamera& camera)
