@@ -60,6 +60,7 @@
 // export utils
 namespace
 {
+    // prompts the user for a save location and then exports a DAE file containing the 3D scene
     void TryExportSceneToDAE(nonstd::span<osc::SceneDecoration const> scene)
     {
         std::filesystem::path p =
@@ -81,20 +82,25 @@ namespace
 // rendering utils
 namespace
 {
-    // populates a high-level drawlist for an OpenSim model scene
-    class CachedSceneDrawlist final {
+    // caches + versions scene state
+    class CachedScene final {
     public:
         osc::UID getVersion() const
         {
             return m_Version;
         }
 
-        nonstd::span<osc::SceneDecoration const> get() const
+        nonstd::span<osc::SceneDecoration const> getDrawlist() const
         {
             return m_Decorations;
         }
 
-        nonstd::span<osc::SceneDecoration const> populate(
+        osc::BVH const& getBVH() const
+        {
+            return m_BVH;
+        }
+
+        void populate(
             osc::VirtualConstModelStatePair const& msp,
             osc::CustomDecorationOptions const& decorationOptions,
             osc::UiModelViewerFlags const& panelFlags)
@@ -127,8 +133,44 @@ namespace
                 m_Decorations.clear();
                 OSC_PERF("generate decorations");
                 osc::GenerateModelDecorations(msp, m_Decorations, decorationOptions);
+
+                // create a BVH from the not-overlay parts of the scene
+                osc::UpdateSceneBVH(m_Decorations, m_BVH);
+
+                // generate screen-specific overlays
+                if (panelFlags & osc::UiModelViewerFlags_DrawAABBs)
+                {
+                    for (size_t i = 0, len = m_Decorations.size(); i < len; ++i)
+                    {
+                        DrawAABB(GetWorldspaceAABB(m_Decorations[i]), m_Decorations);
+                    }
+                }
+
+                if (panelFlags & osc::UiModelViewerFlags_DrawBVH)
+                {
+                    DrawBVH(m_BVH, m_Decorations);
+                }
+
+                if (panelFlags & osc::UiModelViewerFlags_DrawXZGrid)
+                {
+                    DrawXZGrid(m_Decorations);
+                }
+
+                if (panelFlags & osc::UiModelViewerFlags_DrawXYGrid)
+                {
+                    DrawXYGrid(m_Decorations);
+                }
+
+                if (panelFlags & osc::UiModelViewerFlags_DrawYZGrid)
+                {
+                    DrawYZGrid(m_Decorations);
+                }
+
+                if (panelFlags & osc::UiModelViewerFlags_DrawAxisLines)
+                {
+                    DrawXZFloorLines(m_Decorations);
+                }
             }
-            return m_Decorations;
         }
 
     private:
@@ -143,38 +185,6 @@ namespace
 
         osc::UID m_Version;
         std::vector<osc::SceneDecoration> m_Decorations;
-    };
-
-    class CachedBVH final {
-    public:
-        osc::UID getVersion() const
-        {
-            return m_Version;
-        }
-
-        osc::BVH const& get() const
-        {
-            return m_BVH;
-        }
-
-        osc::BVH const& populate(CachedSceneDrawlist const& drawlist)
-        {
-            if (drawlist.getVersion() == m_LastDrawlistVersion)
-            {
-                return m_BVH;
-            }
-
-            // update cache checks
-            m_LastDrawlistVersion = drawlist.getVersion();
-            m_Version = osc::UID{};
-
-            OSC_PERF("generate BVH");
-            osc::UpdateSceneBVH(drawlist.get(), m_BVH);
-            return m_BVH;
-        }
-    private:
-        osc::UID m_LastDrawlistVersion;
-        osc::UID m_Version;
         osc::BVH m_BVH;
     };
 }
@@ -227,17 +237,16 @@ public:
         m_RendererParams.lightDirection = RecommendedLightDirection(m_Camera);
 
         // populate render buffers
-        m_SceneDrawlist.populate(rs, m_DecorationOptions, m_Flags);
-        m_BVH.populate(m_SceneDrawlist);
+        m_Scene.populate(rs, m_DecorationOptions, m_Flags);
 
         std::pair<OpenSim::Component const*, glm::vec3> htResult = hittestRenderWindow(rs);
 
         // auto-focus the camera, if the user requested it last frame
         //
         // care: indirectly depends on the scene drawlist being up-to-date
-        if (m_AutoFocusCameraNextFrame && !m_BVH.get().nodes.empty())
+        if (m_AutoFocusCameraNextFrame && !m_Scene.getBVH().nodes.empty())
         {
-            AutoFocus(m_Camera, m_BVH.get().nodes[0].bounds);
+            AutoFocus(m_Camera, m_Scene.getBVH().nodes[0].bounds);
             m_AutoFocusCameraNextFrame = false;
         }
 
@@ -499,7 +508,7 @@ private:
 
         if (ImGui::Button("Export to .dae"))
         {
-            TryExportSceneToDAE(m_SceneDrawlist.get());
+            TryExportSceneToDAE(m_Scene.getDrawlist());
 
         }
         DrawTooltipBodyOnly("Try to export the 3D scene to a portable DAE file, so that it can be viewed in 3rd-party modelling software, such as Blender");
@@ -554,10 +563,10 @@ private:
         Line const cameraRay = m_Camera.unprojectTopLeftPosToWorldRay(mouseItemPos, itemDims);
 
         // get decorations list (used for later testing/filtering)
-        nonstd::span<osc::SceneDecoration const> decorations = m_SceneDrawlist.get();
+        nonstd::span<osc::SceneDecoration const> decorations = m_Scene.getDrawlist();
 
         // find all collisions along the camera ray
-        std::vector<SceneCollision> const collisions = GetAllSceneCollisions(m_BVH.get(), decorations, cameraRay);
+        std::vector<SceneCollision> const collisions = GetAllSceneCollisions(m_Scene.getBVH(), decorations, cameraRay);
 
         // find the substring that describes what's isolated in the scene
         std::string const isolatedPath = msp.getIsolated() ? msp.getIsolated()->getAbsolutePathString() : std::string{};
@@ -619,82 +628,13 @@ private:
         m_RendererParams.viewPos = m_Camera.getPos();
         m_RendererParams.fixupScaleFactor = rs.getFixupScaleFactor();
 
-        if (m_SceneDrawlist.getVersion() != m_RendererPrevDrawlistVersion ||
+        if (m_Scene.getVersion() != m_RendererPrevDrawlistVersion ||
             m_RendererParams != m_RendererPrevParams)
         {
-            m_RendererPrevDrawlistVersion = m_SceneDrawlist.getVersion();
+            m_RendererPrevDrawlistVersion = m_Scene.getVersion();
             m_RendererPrevParams = m_RendererParams;
-            m_Rendererer.draw(m_SceneDrawlist.get(), m_RendererParams);
-
-            // also render in-scene overlays into the texture
-            //
-            // this *must* be done at this point, rather than every frame, because you can otherwise
-            // end up with weird overdraw bugs from other viewports inducing (non-cached, for overlays)
-            // redraws on eachover (#341)
-            drawInSceneOverlays();
+            m_Rendererer.draw(m_Scene.getDrawlist(), m_RendererParams);
         }
-    }
-
-    // draws overlays that are "in scene" - i.e. they are part of the rendered texture
-    void drawInSceneOverlays()
-    {
-        std::vector<SceneDecoration> decs;
-
-        if (m_Flags & osc::UiModelViewerFlags_DrawXZGrid)
-        {
-            DrawXZGrid(decs);
-        }
-
-        if (m_Flags & osc::UiModelViewerFlags_DrawXYGrid)
-        {
-            DrawXYGrid(decs);
-        }
-
-        if (m_Flags & osc::UiModelViewerFlags_DrawYZGrid)
-        {
-            DrawYZGrid(decs);
-        }
-
-        if (m_Flags & osc::UiModelViewerFlags_DrawAxisLines)
-        {
-            DrawXZFloorLines(decs);
-        }
-
-        if (m_Flags & osc::UiModelViewerFlags_DrawAABBs)
-        {
-            for (SceneDecoration const& dec : m_SceneDrawlist.get())
-            {
-                DrawAABB(GetWorldspaceAABB(dec), decs);
-            }
-        }
-
-        if (m_Flags & osc::UiModelViewerFlags_DrawBVH)
-        {
-            DrawBVH(m_BVH.get(), decs);
-        }
-
-        /* TODO: rendering solid geometry overlays
-
-        auto& shader = osc::App::shader<osc::SolidColorShader>();
-        glm::mat4 viewMtx = m_Camera.getViewMtx();
-        glm::mat4 projMtx = m_Camera.getProjMtx(AspectRatio(m_Rendererer.getDimensions()));
-        gl::BindFramebuffer(GL_FRAMEBUFFER, m_Rendererer.updOutputFBO());
-        gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
-        gl::UseProgram(shader.program);
-        gl::Uniform(shader.uView, viewMtx);
-        gl::Uniform(shader.uProjection, projMtx);
-
-        for (SceneDecoration const& dec : decs)
-        {
-            gl::Uniform(shader.uModel, ToMat4(dec.transform));
-            gl::Uniform(shader.uColor, dec.color);
-            gl::BindVertexArray(dec.mesh->GetVertexArray());
-            dec.mesh->Draw();
-            gl::BindVertexArray();
-        }
-
-        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-        */
     }
 
     void drawImGuiOverlays()
@@ -710,8 +650,7 @@ private:
     CustomDecorationOptions m_DecorationOptions;
 
     // scene state
-    CachedSceneDrawlist m_SceneDrawlist;
-    CachedBVH m_BVH;
+    CachedScene m_Scene;
     PolarPerspectiveCamera m_Camera = CreateCameraWithRadius(5.0f);
 
     // rendering input state

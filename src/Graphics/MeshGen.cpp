@@ -506,11 +506,12 @@ osc::MeshData osc::GenYLine()
 {
     MeshData rv;
     rv.verts = {{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
+    rv.normals = {{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}};  // just give them *something* in-case they are rendered through a shader that requires normals
     rv.indices = {0, 1};
     rv.topography = MeshTopography::Lines;
 
     OSC_ASSERT(rv.verts.size() % 2 == 0);
-    OSC_ASSERT(rv.normals.empty());
+    OSC_ASSERT(rv.normals.size() % 2 == 0);
     OSC_ASSERT(rv.verts.size() == rv.indices.size());
 
     return rv;
