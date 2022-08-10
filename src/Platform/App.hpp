@@ -1,6 +1,5 @@
 #pragma once
 
-#include "src/Graphics/ShaderCache.hpp"
 #include "src/Platform/RecentFile.hpp"
 #include "src/Utils/Assertions.hpp"
 
@@ -86,13 +85,6 @@ namespace osc
 
         // returns the contents of a runtime resource in the `resources/` dir as a binary blob
         static std::vector<uint8_t> slurpBinary(std::string_view);
-
-        // returns a particular shader type from the shader cache
-        template<typename TShader>
-        static TShader& shader()
-        {
-            return shaders().getShader<TShader>();
-        }
 
         // constructs an app by initializing it from a config at the default app config location
         //

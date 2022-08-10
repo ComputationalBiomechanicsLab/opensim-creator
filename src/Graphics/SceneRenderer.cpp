@@ -5,6 +5,7 @@
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/SceneDecorationFlags.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
+#include "src/Graphics/ShaderCache.hpp"
 #include "src/Graphics/TextureGen.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
@@ -64,9 +65,7 @@ public:
 
     void draw(nonstd::span<SceneDecoration const> decorations, SceneRendererParams const& params)
     {
-        constexpr glm::vec2 rimThickness{1.25f};
-
-        // TODO: wireframe mode?
+        constexpr glm::vec2 rimThickness{1.0f};
 
         // configure output texture to match requested dimensions/samples
         experimental::RenderTextureDescriptor desc
@@ -278,48 +277,27 @@ public:
 private:
     experimental::Material m_SceneColoredElementsMaterial
     {
-        experimental::Shader
-        {
-            App::slurp("shaders/ExperimentOpenSim.vert"),
-            App::slurp("shaders/ExperimentOpenSim.frag"),
-        }
+        ShaderCache::get("shaders/ExperimentOpenSim.vert", "shaders/ExperimentOpenSim.frag")
     };
 
     experimental::Material m_SceneTexturedElementsMaterial
     {
-        experimental::Shader
-        {
-            App::slurp("shaders/ExperimentOpenSimTextured.vert"),
-            App::slurp("shaders/ExperimentOpenSimTextured.frag"),
-        }
+        ShaderCache::get("shaders/ExperimentOpenSimTextured.vert", "shaders/ExperimentOpenSimTextured.frag")
     };
 
     experimental::Material m_SolidColorMaterial
     {
-        experimental::Shader
-        {
-            App::slurp("shaders/ExperimentOpenSimSolidColor.vert"),
-            App::slurp("shaders/ExperimentOpenSimSolidColor.frag"),
-        }
+        ShaderCache::get("shaders/ExperimentOpenSimSolidColor.vert", "shaders/ExperimentOpenSimSolidColor.frag")
     };
 
     experimental::Material m_EdgeDetectorMaterial
     {
-        experimental::Shader
-        {
-            App::slurp("shaders/ExperimentOpenSimEdgeDetect.vert"),
-            App::slurp("shaders/ExperimentOpenSimEdgeDetect.frag"),
-        }
+        ShaderCache::get("shaders/ExperimentOpenSimEdgeDetect.vert", "shaders/ExperimentOpenSimEdgeDetect.frag")
     };
 
     experimental::Material m_NormalsMaterial
     {
-        experimental::Shader
-        {
-            App::slurp("shaders/ExperimentGeometryShaderNormals.vert"),
-            App::slurp("shaders/ExperimentGeometryShaderNormals.geom"),
-            App::slurp("shaders/ExperimentGeometryShaderNormals.frag"),
-        }
+        ShaderCache::get("shaders/ExperimentGeometryShaderNormals.vert", "shaders/ExperimentGeometryShaderNormals.geom", "shaders/ExperimentGeometryShaderNormals.frag")
     };
 
     std::shared_ptr<experimental::Mesh const> m_QuadMesh = App::meshes().getTexturedQuadMesh();

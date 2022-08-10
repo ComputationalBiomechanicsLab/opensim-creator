@@ -289,11 +289,8 @@ add_library(osccore STATIC
     src/Graphics/ImageGen.hpp
     src/Graphics/MeshCache.cpp
     src/Graphics/MeshCache.hpp
-    src/Graphics/MeshData.cpp
-    src/Graphics/MeshData.hpp
     src/Graphics/MeshGen.cpp
     src/Graphics/MeshGen.hpp
-    src/Graphics/MeshTopography.hpp
     src/Graphics/Renderer.cpp
     src/Graphics/Renderer.hpp
     src/Graphics/SceneDecoration.cpp
@@ -303,7 +300,6 @@ add_library(osccore STATIC
     src/Graphics/SceneRenderer.hpp
     src/Graphics/SceneRendererParams.cpp
     src/Graphics/SceneRendererParams.hpp
-    src/Graphics/Shader.hpp
     src/Graphics/ShaderCache.cpp
     src/Graphics/ShaderCache.hpp
     src/Graphics/ShaderLocationIndex.hpp
