@@ -2632,26 +2632,11 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, Mesh const&)
 osc::experimental::Mesh osc::experimental::LoadMeshFromMeshData(MeshData const& m)
 {
     osc::experimental::Mesh rv;
-
-    osc::experimental::MeshTopography topography = osc::experimental::MeshTopography::Triangles;
-    switch (m.topography) {
-    case osc::MeshTopography::Lines:
-        topography = osc::experimental::MeshTopography::Lines;
-        break;
-    case osc::MeshTopography::Triangles:
-        topography = osc::experimental::MeshTopography::Triangles;
-        break;
-    default:
-        break;
-    }
-    rv.setTopography(topography);
-
+    rv.setTopography(m.topography);
     rv.setVerts(m.verts);
     rv.setNormals(m.normals);
     rv.setTexCoords(m.texcoords);
     rv.setIndices(m.indices);
-
-
     return rv;
 }
 

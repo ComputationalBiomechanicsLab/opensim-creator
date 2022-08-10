@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Graphics/MeshTopography.hpp"
+#include "src/Graphics/Renderer.hpp"
 
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
@@ -26,7 +26,7 @@ namespace osc
         std::vector<glm::vec3> normals;
         std::vector<glm::vec2> texcoords;
         std::vector<uint32_t> indices;
-        MeshTopography topography = MeshTopography::Triangles;
+        experimental::MeshTopography topography = experimental::MeshTopography::Triangles;
 
         void clear();
         void reserve(size_t);

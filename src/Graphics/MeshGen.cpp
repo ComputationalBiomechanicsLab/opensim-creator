@@ -1,7 +1,7 @@
 #include "MeshGen.hpp"
 
 #include "src/Graphics/MeshData.hpp"
-#include "src/Graphics/MeshTopography.hpp"
+#include "src/Graphics/Renderer.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Utils/Assertions.hpp"
@@ -467,7 +467,7 @@ osc::MeshData osc::GenNbyNGrid(size_t n)
     rv.verts.reserve(4*nlines);
     rv.indices.reserve(4*nlines);
     rv.normals.reserve(4*nlines);
-    rv.topography = MeshTopography::Lines;
+    rv.topography = experimental::MeshTopography::Lines;
 
     unsigned short index = 0;
     auto push = [&index, &rv](glm::vec3 const& pos)
@@ -508,7 +508,7 @@ osc::MeshData osc::GenYLine()
     rv.verts = {{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
     rv.normals = {{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}};  // just give them *something* in-case they are rendered through a shader that requires normals
     rv.indices = {0, 1};
-    rv.topography = MeshTopography::Lines;
+    rv.topography = experimental::MeshTopography::Lines;
 
     OSC_ASSERT(rv.verts.size() % 2 == 0);
     OSC_ASSERT(rv.normals.size() % 2 == 0);
@@ -542,7 +542,7 @@ osc::MeshData osc::GenCubeLines()
     MeshData rv;
     rv.verts.reserve(g_CubeEdgeLines.size());
     rv.indices.reserve(g_CubeEdgeLines.size());
-    rv.topography = MeshTopography::Lines;
+    rv.topography = experimental::MeshTopography::Lines;
 
     unsigned short index = 0;
     for (auto const& v : g_CubeEdgeLines)
@@ -562,7 +562,7 @@ osc::MeshData osc::GenCircle(size_t nsides)
 {
     MeshData rv;
     rv.verts.reserve(3*nsides);
-    rv.topography = MeshTopography::Triangles;
+    rv.topography = experimental::MeshTopography::Triangles;
 
     unsigned short index = 0;
     auto push = [&rv, &index](float x, float y, float z)
