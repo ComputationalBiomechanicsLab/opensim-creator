@@ -201,6 +201,9 @@ public:
             m_SceneColoredElementsMaterial.setVec3("uViewPos", m_Camera.getPosition());
             m_SceneColoredElementsMaterial.setVec3("uLightDir", params.lightDirection);
             m_SceneColoredElementsMaterial.setVec3("uLightColor", params.lightColor);
+            m_SceneColoredElementsMaterial.setFloat("uNear", m_Camera.getNearClippingPlane());
+            m_SceneColoredElementsMaterial.setFloat("uFar", m_Camera.getFarClippingPlane());
+
 
             experimental::Material transparentMaterial = m_SceneColoredElementsMaterial;
             transparentMaterial.setTransparent(true);

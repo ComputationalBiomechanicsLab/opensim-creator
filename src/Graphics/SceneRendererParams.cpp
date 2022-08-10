@@ -3,7 +3,6 @@
 osc::SceneRendererParams::SceneRendererParams() :
     dimensions{1, 1},
     samples{1},
-    wireframeMode{false},
     drawMeshNormals{false},
     drawRims{true},
     drawFloor{true},
@@ -32,7 +31,6 @@ bool osc::operator==(SceneRendererParams const& a, SceneRendererParams const& b)
     return
         a.dimensions == b.dimensions &&
         a.samples == b.samples &&
-        a.wireframeMode == b.wireframeMode &&
         a.drawMeshNormals == b.drawMeshNormals &&
         a.drawRims == b.drawRims &&
         a.drawFloor == b.drawFloor &&

@@ -383,7 +383,6 @@ private:
         drawMuscleDecorationsStyleComboBox();
         drawMuscleSizingStyleComboBox();
         drawMuscleColoringStyleComboBox();
-        ImGui::Checkbox("wireframe mode", &m_RendererParams.wireframeMode);
         ImGui::Checkbox("show normals", &m_RendererParams.drawMeshNormals);
         ImGui::Checkbox("draw rims", &m_RendererParams.drawRims);
         bool isDrawingScapulothoracicJoints = m_DecorationOptions.getShouldShowScapulo();

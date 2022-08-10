@@ -11,7 +11,6 @@ namespace osc
     public:
         glm::ivec2 dimensions;
         int samples;
-        bool wireframeMode;
         bool drawMeshNormals;
         bool drawRims;
         bool drawFloor;

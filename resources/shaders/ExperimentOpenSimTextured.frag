@@ -22,5 +22,6 @@ float LinearizeDepth(float depth)
 void main()
 {
     Color0Out = GouraudBrightness * texture(uDiffuseTexture, TexCoord);
-    Color0Out.a = 1.0 - (LinearizeDepth(gl_FragCoord.z) / uFar);
+    Color0Out.a = Color0Out.a - (LinearizeDepth(gl_FragCoord.z) / uFar);
+    Color0Out.a = clamp(Color0Out.a, 0.0, 1.0);
 }
