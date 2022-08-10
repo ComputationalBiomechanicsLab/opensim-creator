@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Graphics/Gl.hpp"
+#include "src/Bindings/Gl.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat3x3.hpp>

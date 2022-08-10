@@ -272,14 +272,14 @@ add_library(osccore STATIC
     src/Bindings/SDL2Helpers.hpp
     src/Bindings/SimTKHelpers.cpp
     src/Bindings/SimTKHelpers.hpp
+    src/Bindings/Gl.cpp
+    src/Bindings/Gl.hpp
+    src/Bindings/GlGlm.hpp
 
     src/Graphics/Color.cpp
     src/Graphics/Color.hpp
     src/Graphics/DAEWriter.cpp
     src/Graphics/DAEWriter.hpp
-    src/Graphics/Gl.cpp
-    src/Graphics/Gl.hpp
-    src/Graphics/GlGlm.hpp
     src/Graphics/GraphicsHelpers.cpp
     src/Graphics/GraphicsHelpers.hpp
     src/Graphics/Image.cpp

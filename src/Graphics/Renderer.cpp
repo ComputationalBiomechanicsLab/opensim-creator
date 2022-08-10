@@ -1,10 +1,10 @@
 #include "Renderer.hpp"
 
+#include "src/Bindings/Gl.hpp"
+#include "src/Bindings/GlGlm.hpp"
 #include "src/Bindings/GlmHelpers.hpp"
 #include "src/Bindings/SDL2Helpers.hpp"
 #include "src/Graphics/Color.hpp"
-#include "src/Graphics/Gl.hpp"
-#include "src/Graphics/GlGlm.hpp"
 #include "src/Graphics/MeshData.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
@@ -22,6 +22,7 @@
 #include "src/Utils/Perf.hpp"
 #include "src/Utils/UID.hpp"
 
+#include <GL/glew.h>
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
