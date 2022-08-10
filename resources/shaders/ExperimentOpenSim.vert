@@ -12,10 +12,10 @@ layout (location = 10) in mat3 aNormalMat;
 
 out vec4 GouraudBrightness;
 
-const float ambientStrength = 0.3f;
-const float diffuseStrength = 0.8f;
-const float specularStrength = 0.7f;
-const float shininess = 64;
+const float ambientStrength = 0.15f;
+const float diffuseStrength = 0.85f;
+const float specularStrength = 0.4f;
+const float shininess = 8;
 
 void main()
 {
