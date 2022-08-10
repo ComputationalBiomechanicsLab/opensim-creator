@@ -198,7 +198,6 @@ target_compile_options(osc_configuration INTERFACE
         -Wdangling-else
         -Wdate-time
         -Wno-multichar
-        -Wredundant-decls
         -Wvla
         -Wdisabled-optimization
         -Wpacked
@@ -217,6 +216,7 @@ target_compile_options(osc_configuration INTERFACE
         $<$<BOOL:${OSC_USE_ASAN}>:-fsanitize=address>
 
         -Wno-unused  # disable: broken by STB headers
+        # -Wredundant-decls  # disabled: doesn't work in some contexts where forward declarations are necessary
     >
 
     # clang flags
