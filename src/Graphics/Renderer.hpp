@@ -41,12 +41,6 @@ namespace osc
     struct MeshData;
 }
 
-namespace gl
-{
-    class Texture2D;  // needed as a temporary hack for ImGui compatibility
-}
-
-
 // 2D texture
 //
 // encapsulates an image that can be sampled by shaders
@@ -100,7 +94,7 @@ namespace osc::experimental
 
     private:
         friend void osc::DrawTextureAsImGuiImage(osc::experimental::Texture2D&, glm::vec2);
-        gl::Texture2D& updTextureHandleHACK();  // used by ImGui... for now
+        void* updTextureHandleHACK();  // used by ImGui... for now
 
         friend class GraphicsBackend;
         friend bool operator==(Texture2D const&, Texture2D const&);
@@ -210,7 +204,7 @@ namespace osc::experimental
 
     private:
         friend void osc::DrawTextureAsImGuiImage(osc::experimental::RenderTexture&, glm::vec2);
-        gl::Texture2D& updTextureHandleHACK();  // used by ImGui... for now
+        void* updTextureHandleHACK();  // used by ImGui... for now
 
         friend class GraphicsBackend;
         friend bool operator==(RenderTexture const&, RenderTexture const&);

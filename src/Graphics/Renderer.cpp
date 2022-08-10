@@ -490,9 +490,9 @@ public:
         m_TextureParamsVersion.reset();
     }
 
-    gl::Texture2D& updTextureHandleHACK()
+    void* updTextureHandleHACK()
     {
-        return updTexture();
+        return reinterpret_cast<void*>(static_cast<uintptr_t>(updTexture().get()));
     }
 
     // non PIMPL method
@@ -678,7 +678,7 @@ void osc::experimental::Texture2D::setFilterMode(TextureFilterMode twm)
     m_Impl->setFilterMode(std::move(twm));
 }
 
-gl::Texture2D& osc::experimental::Texture2D::updTextureHandleHACK()
+void* osc::experimental::Texture2D::updTextureHandleHACK()
 {
     DoCopyOnWrite(m_Impl);
     return m_Impl->updTextureHandleHACK();
@@ -936,9 +936,9 @@ public:
         }
     }
 
-    gl::Texture2D& updTextureHandleHACK()
+    void* updTextureHandleHACK()
     {
-        return getOutputTexture();
+        return reinterpret_cast<void*>(static_cast<uintptr_t>(getOutputTexture().get()));
     }
 
 private:
@@ -1116,7 +1116,7 @@ void osc::experimental::RenderTexture::reformat(RenderTextureDescriptor const& d
     m_Impl->reformat(d);
 }
 
-gl::Texture2D& osc::experimental::RenderTexture::updTextureHandleHACK()
+void* osc::experimental::RenderTexture::updTextureHandleHACK()
 {
     DoCopyOnWrite(m_Impl);
     return m_Impl->updTextureHandleHACK();

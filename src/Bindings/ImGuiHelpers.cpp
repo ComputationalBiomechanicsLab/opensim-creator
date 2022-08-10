@@ -1,6 +1,5 @@
 #include "ImGuiHelpers.hpp"
 
-#include "src/Graphics/Gl.hpp"
 #include "src/Graphics/Renderer.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
@@ -216,18 +215,16 @@ osc::Rect osc::ContentRegionAvailScreenRect()
 
 void osc::DrawTextureAsImGuiImage(experimental::Texture2D& t, glm::vec2 dims)
 {
-    void* textureHandle = reinterpret_cast<void*>(static_cast<uintptr_t>(t.updTextureHandleHACK().get()));
     ImVec2 uv0{0.0f, 1.0f};
     ImVec2 uv1{1.0f, 0.0f};
-    ImGui::Image(textureHandle, dims, uv0, uv1);
+    ImGui::Image(t.updTextureHandleHACK(), dims, uv0, uv1);
 }
 
 void osc::DrawTextureAsImGuiImage(experimental::RenderTexture& t, glm::vec2 dims)
 {
-    void* textureHandle = reinterpret_cast<void*>(static_cast<uintptr_t>(t.updTextureHandleHACK().get()));
     ImVec2 uv0{0.0f, 1.0f};
     ImVec2 uv1{1.0f, 0.0f};
-    ImGui::Image(textureHandle, dims, uv0, uv1);
+    ImGui::Image(t.updTextureHandleHACK(), dims, uv0, uv1);
 }
 
 osc::ImGuiImageHittestResult::ImGuiImageHittestResult() :

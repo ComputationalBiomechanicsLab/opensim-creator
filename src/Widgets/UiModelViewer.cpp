@@ -2,8 +2,6 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/DAEWriter.hpp"
-#include "src/Graphics/Gl.hpp"
-#include "src/Graphics/GlGlm.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
@@ -37,6 +35,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/transform.hpp>
 #include <imgui.h>
 #include <nonstd/span.hpp>
