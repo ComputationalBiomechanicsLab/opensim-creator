@@ -488,16 +488,16 @@ osc::experimental::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
 
     for (int face = 0, nfaces = mesh.getNumFaces(); face < nfaces; ++face)
     {
-        int verts = mesh.getNumVerticesForFace(face);
+        int nVerts = mesh.getNumVerticesForFace(face);
 
-        if (verts < 3)
+        if (nVerts < 3)
         {
             // line/point
 
             // ignore
 
         }
-        else if (verts == 3)
+        else if (nVerts == 3)
         {
             // triangle
 
@@ -514,7 +514,7 @@ osc::experimental::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
             push(vs[2], normal);
 
         }
-        else if (verts == 4)
+        else if (nVerts == 4)
         {
             // quad: render as two triangles
 
@@ -548,13 +548,13 @@ osc::experimental::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
             // every two verices to the center as triangles.
 
             glm::vec3 center = {0.0f, 0.0f, 0.0f};
-            for (int vert = 0; vert < verts; ++vert)
+            for (int vert = 0; vert < nVerts; ++vert)
             {
                 center += GetFaceVertex(mesh, face, vert);
             }
-            center /= verts;
+            center /= nVerts;
 
-            for (int vert = 0; vert < verts - 1; ++vert)
+            for (int vert = 0; vert < nVerts - 1; ++vert)
             {
 
                 glm::vec3 vs[] =
@@ -573,7 +573,7 @@ osc::experimental::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
             // complete the polygon loop
             glm::vec3 vs[] =
             {
-                GetFaceVertex(mesh, face, verts - 1),
+                GetFaceVertex(mesh, face, nVerts - 1),
                 GetFaceVertex(mesh, face, 0),
                 center,
             };
