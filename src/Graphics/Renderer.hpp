@@ -346,6 +346,9 @@ namespace osc::experimental
         bool getDepthTested() const;
         void setDepthTested(bool);
 
+        bool getWireframeMode() const;
+        void setWireframeMode(bool);
+
     private:
         friend class GraphicsBackend;
         friend bool operator==(Material const&, Material const&);

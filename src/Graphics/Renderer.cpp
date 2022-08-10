@@ -1571,6 +1571,16 @@ public:
         m_IsDepthTested = std::move(v);
     }
 
+    bool getWireframeMode() const
+    {
+        return m_IsWireframeMode;
+    }
+
+    void setWireframeMode(bool v)
+    {
+        m_IsWireframeMode = std::move(v);
+    }
+
 private:
     template<typename T>
     std::optional<T> getValue(std::string_view propertyName) const
@@ -1603,6 +1613,7 @@ private:
     robin_hood::unordered_map<std::string, MaterialValue> m_Values;
     bool m_IsTransparent = false;
     bool m_IsDepthTested = true;
+    bool m_IsWireframeMode = false;
 };
 
 osc::experimental::Material::Material(osc::experimental::Shader shader) :
@@ -1779,6 +1790,17 @@ void osc::experimental::Material::setDepthTested(bool v)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setDepthTested(std::move(v));
+}
+
+bool osc::experimental::Material::getWireframeMode() const
+{
+    return m_Impl->getWireframeMode();
+}
+
+void osc::experimental::Material::setWireframeMode(bool v)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setWireframeMode(std::move(v));
 }
 
 bool osc::experimental::operator==(Material const& a, Material const& b)
@@ -4326,6 +4348,11 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 
         gl::UseProgram(shaderImpl.updProgram());
 
+        if (matImpl.getWireframeMode())
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+
         // bind material variables
         {
             // try binding to uView (standard)
@@ -4374,6 +4401,11 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             auto batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMaterialPropertyBlock{batchIt->maybePropBlock});
             HandleBatchWithSameMatrialPropertyBlock(batchIt, batchEnd, textureSlot, maybeInstances);
             batchIt = batchEnd;
+        }
+
+        if (matImpl.getWireframeMode())
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
 
         gl::UseProgram();

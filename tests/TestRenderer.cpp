@@ -812,6 +812,33 @@ TEST_F(Renderer, MaterialSetDepthTestedBehavesAsExpected)
     ASSERT_FALSE(mat.getDepthTested());
 }
 
+TEST_F(Renderer, MaterialGetWireframeModeIsInitiallyFalse)
+{
+    osc::experimental::Material mat = GenerateMaterial();
+    ASSERT_FALSE(mat.getWireframeMode());
+}
+
+TEST_F(Renderer, MaterialSetWireframeModeBehavesAsExpected)
+{
+    osc::experimental::Material mat = GenerateMaterial();
+    mat.setWireframeMode(false);
+    ASSERT_FALSE(mat.getWireframeMode());
+    mat.setWireframeMode(true);
+    ASSERT_TRUE(mat.getWireframeMode());
+    mat.setWireframeMode(false);
+    ASSERT_FALSE(mat.getWireframeMode());
+}
+
+TEST_F(Renderer, MaterialSetWireframeModeCausesMaterialCopiesToReturnNonEqual)
+{
+    osc::experimental::Material mat = GenerateMaterial();
+    ASSERT_FALSE(mat.getWireframeMode());
+    osc::experimental::Material copy{mat};
+    ASSERT_EQ(mat, copy);
+    copy.setWireframeMode(true);
+    ASSERT_NE(mat, copy);
+}
+
 TEST_F(Renderer, MaterialCanCompareEquals)
 {
     osc::experimental::Material mat = GenerateMaterial();
