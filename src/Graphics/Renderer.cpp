@@ -3768,6 +3768,30 @@ public:
         return m_GLContext;
     }
 
+    std::string getBackendVendorString() const
+    {
+        GLubyte const* s = glGetString(GL_VENDOR);
+        return reinterpret_cast<char const*>(s);
+    }
+
+    std::string getBackendRendererString() const
+    {
+        GLubyte const* s = glGetString(GL_RENDERER);
+        return reinterpret_cast<char const*>(s);
+    }
+
+    std::string getBackendVersionString() const
+    {
+        GLubyte const* s = glGetString(GL_VERSION);
+        return reinterpret_cast<char const*>(s);
+    }
+
+    std::string getBackendShadingLanguageVersionString() const
+    {
+        GLubyte const* s = glGetString(GL_SHADING_LANGUAGE_VERSION);
+        return reinterpret_cast<char const*>(s);
+    }
+
 private:
 
     sdl::GLContext m_GLContext;
@@ -3853,6 +3877,26 @@ void osc::experimental::GraphicsContext::clearScreen(glm::vec4 const& color)
 void* osc::experimental::GraphicsContext::updRawGLContextHandle()
 {
     return g_GraphicsContextImpl->updRawGLContextHandle();
+}
+
+std::string osc::experimental::GraphicsContext::getBackendVendorString() const
+{
+    return g_GraphicsContextImpl->getBackendVendorString();
+}
+
+std::string osc::experimental::GraphicsContext::getBackendRendererString() const
+{
+    return g_GraphicsContextImpl->getBackendRendererString();
+}
+
+std::string osc::experimental::GraphicsContext::getBackendVersionString() const
+{
+    return g_GraphicsContextImpl->getBackendVersionString();
+}
+
+std::string osc::experimental::GraphicsContext::getBackendShadingLanguageVersionString() const
+{
+    return g_GraphicsContextImpl->getBackendShadingLanguageVersionString();
 }
 
 

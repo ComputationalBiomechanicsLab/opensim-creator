@@ -674,6 +674,12 @@ namespace osc::experimental
 
         void* updRawGLContextHandle();  // needed by ImGui
 
+        // human-readable identifier strings: useful for printouts/debugging
+        std::string getBackendVendorString() const;
+        std::string getBackendRendererString() const;
+        std::string getBackendVersionString() const;
+        std::string getBackendShadingLanguageVersionString() const;
+
         class Impl;
     private:
         // no data - it uses globals (you can only have one of these)

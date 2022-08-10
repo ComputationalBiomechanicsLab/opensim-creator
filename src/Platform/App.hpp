@@ -195,6 +195,12 @@ namespace osc
         void enableVsync();
         void disableVsync();
 
+        // returns human-readable strings representing (parts of) the graphics backend (e.g. OpenGL)
+        std::string getGraphicsBackendVendorString() const;
+        std::string getGraphicsBackendRendererString() const;
+        std::string getGraphicsBackendVersionString() const;
+        std::string getGraphicsBackendShadingLanguageVersionString() const;
+
         // returns the number of times the application has drawn a frame to the screen
         uint64_t getFrameCount() const;
 

@@ -341,6 +341,26 @@ public:
         m_GraphicsContext.disableVsync();
     }
 
+    std::string getGraphicsBackendVendorString() const
+    {
+        return m_GraphicsContext.getBackendVendorString();
+    }
+
+    std::string getGraphicsBackendRendererString() const
+    {
+        return m_GraphicsContext.getBackendRendererString();
+    }
+
+    std::string getGraphicsBackendVersionString() const
+    {
+        return m_GraphicsContext.getBackendVersionString();
+    }
+
+    std::string getGraphicsBackendShadingLanguageVersionString() const
+    {
+        return m_GraphicsContext.getBackendShadingLanguageVersionString();
+    }
+
     uint64_t getFrameCount() const
     {
         return m_FrameCounter;
@@ -942,6 +962,26 @@ void osc::App::enableVsync()
 void osc::App::disableVsync()
 {
     m_Impl->disableVsync();
+}
+
+std::string osc::App::getGraphicsBackendVendorString() const
+{
+    return m_Impl->getGraphicsBackendVendorString();
+}
+
+std::string osc::App::getGraphicsBackendRendererString() const
+{
+    return m_Impl->getGraphicsBackendRendererString();
+}
+
+std::string osc::App::getGraphicsBackendVersionString() const
+{
+    return m_Impl->getGraphicsBackendVersionString();
+}
+
+std::string osc::App::getGraphicsBackendShadingLanguageVersionString() const
+{
+    return m_Impl->getGraphicsBackendShadingLanguageVersionString();
 }
 
 uint64_t osc::App::getFrameCount() const

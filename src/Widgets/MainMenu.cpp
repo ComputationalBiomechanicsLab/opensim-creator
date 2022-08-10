@@ -20,7 +20,6 @@
 #include "src/Utils/FilesystemHelpers.hpp"
 #include "src/Utils/UID.hpp"
 
-#include <GL/glew.h>
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
 #include <OpenSim/Common/PropertyObjArray.h>
@@ -270,24 +269,24 @@ void osc::MainMenuAboutTab::draw()
         ImGui::TextUnformatted(OSC_BUILD_ID);
         ImGui::NextColumn();
 
-        ImGui::TextUnformatted("GL_VENDOR");
+        ImGui::TextUnformatted("Graphics vendor");
         ImGui::NextColumn();
-        ImGui::Text("%s", glGetString(GL_VENDOR));
-        ImGui::NextColumn();
-
-        ImGui::TextUnformatted("GL_RENDERER");
-        ImGui::NextColumn();
-        ImGui::Text("%s", glGetString(GL_RENDERER));
+        ImGui::Text("%s", App::get().getGraphicsBackendVendorString().c_str());
         ImGui::NextColumn();
 
-        ImGui::TextUnformatted("GL_VERSION");
+        ImGui::TextUnformatted("Graphics renderer");
         ImGui::NextColumn();
-        ImGui::Text("%s", glGetString(GL_VERSION));
+        ImGui::Text("%s", App::get().getGraphicsBackendRendererString().c_str());
         ImGui::NextColumn();
 
-        ImGui::TextUnformatted("GL_SHADING_LANGUAGE_VERSION");
+        ImGui::TextUnformatted("Graphics renderer version");
         ImGui::NextColumn();
-        ImGui::Text("%s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+        ImGui::Text("%s", App::get().getGraphicsBackendVersionString().c_str());
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted("Graphics shader version");
+        ImGui::NextColumn();
+        ImGui::Text("%s", App::get().getGraphicsBackendShadingLanguageVersionString().c_str());
         ImGui::NextColumn();
 
         ImGui::Columns(1);
