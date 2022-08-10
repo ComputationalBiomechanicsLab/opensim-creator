@@ -4330,13 +4330,14 @@ namespace
             p.samples = osc::App::get().getMSXAASamplesRecommended();
             p.drawRims = true;
             p.drawFloor = false;
+            p.nearClippingPlane = m_3DSceneCamera.znear;
+            p.farClippingPlane = m_3DSceneCamera.zfar;
             p.viewMatrix = m_3DSceneCamera.getViewMtx();
             p.projectionMatrix = m_3DSceneCamera.getProjMtx(osc::AspectRatio(p.dimensions));
             p.viewPos = m_3DSceneCamera.getPos();
             p.lightDirection = osc::RecommendedLightDirection(m_3DSceneCamera);
             p.lightColor = {1.0f, 1.0f, 1.0f};
             p.backgroundColor = GetColorSceneBackground();
-            p.rimColor = glm::vec4{0.8f, 0.5f, 0.3f, 0.8f};
 
             std::vector<osc::SceneDecoration> decs;
             decs.reserve(drawables.size());
