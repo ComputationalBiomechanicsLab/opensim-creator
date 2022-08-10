@@ -18,7 +18,7 @@ namespace
         std::filesystem::path vertexShaderPath;
         std::filesystem::path geometryShaderPath;
         std::filesystem::path fragmentShaderPath;
-        size_t hash = osc::HashOf(vertexShaderPath, geometryShaderPath, fragmentShaderPath);
+        size_t hash = osc::HashOf(std::filesystem::hash_value(vertexShaderPath), std::filesystem::hash_value(geometryShaderPath), std::filesystem::hash_value(fragmentShaderPath));
 
         ShaderInputs(
             std::filesystem::path const& vertexShaderPath_,
