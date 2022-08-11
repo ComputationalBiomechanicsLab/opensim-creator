@@ -5,6 +5,7 @@
 #include "src/Bindings/GlmHelpers.hpp"
 #include "src/Bindings/SDL2Helpers.hpp"
 #include "src/Graphics/Color.hpp"
+#include "src/Graphics/Image.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
 #include "src/Maths/AABB.hpp"
@@ -118,8 +119,8 @@ namespace
         out.push_back(static_cast<std::byte>(c.a));
     }
 
-    template<typename Variant, typename T, std::size_t I = 0>
-    constexpr std::size_t VariantIndex()
+    template<typename Variant, typename T, size_t I = 0>
+    constexpr size_t VariantIndex()
     {
         if constexpr (I >= std::variant_size_v<Variant>)
         {
@@ -195,7 +196,7 @@ namespace
     using namespace osc::experimental;
 
     // LUT for human-readable form of the above
-    static constexpr auto const g_ShaderTypeInternalStrings = osc::MakeArray<osc::CStringView, static_cast<std::size_t>(ShaderType::TOTAL)>(
+    static constexpr auto const g_ShaderTypeInternalStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(ShaderType::TOTAL)>(
         "Float",
         "Vec2",
         "Vec3",
@@ -345,14 +346,14 @@ namespace
 {
     using namespace osc::experimental;
 
-    static constexpr auto const g_TextureWrapModeStrings = osc::MakeArray<osc::CStringView, static_cast<std::size_t>(TextureWrapMode::TOTAL)>
+    static constexpr auto const g_TextureWrapModeStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(TextureWrapMode::TOTAL)>
     (
         "Repeat",
         "Clamp",
         "Mirror"
     );
 
-    static constexpr auto const g_TextureFilterModeStrings = osc::MakeArray<osc::CStringView, static_cast<std::size_t>(osc::experimental::TextureFilterMode::TOTAL)>
+    static constexpr auto const g_TextureFilterModeStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::experimental::TextureFilterMode::TOTAL)>
     (
         "Nearest",
         "Linear",
@@ -565,7 +566,7 @@ private:
 
     int m_Width;
     int m_Height;
-    std::vector<std::uint8_t> m_Pixels;
+    std::vector<uint8_t> m_Pixels;
     int m_NumChannels;
     TextureWrapMode m_WrapModeU = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeV = TextureWrapMode::Repeat;
@@ -592,12 +593,12 @@ osc::experimental::Texture2D::Texture2D(int width, int height, nonstd::span<Rgba
 {
 }
 
-osc::experimental::Texture2D::Texture2D(int width, int height, nonstd::span<std::uint8_t const> pixels) :
+osc::experimental::Texture2D::Texture2D(int width, int height, nonstd::span<uint8_t const> pixels) :
     m_Impl{std::make_shared<Impl>(std::move(width), std::move(height), std::move(pixels))}
 {
 }
 
-osc::experimental::Texture2D::Texture2D(int width, int height, nonstd::span<std::uint8_t const> channels, int numChannels) :
+osc::experimental::Texture2D::Texture2D(int width, int height, nonstd::span<uint8_t const> channels, int numChannels) :
     m_Impl{std::make_shared<Impl>(std::move(width), std::move(height), std::move(channels), std::move(numChannels))}
 {
 }
@@ -722,13 +723,13 @@ namespace
 {
     using namespace osc::experimental;
 
-    static constexpr auto const  g_RenderTextureFormatStrings = osc::MakeArray<osc::CStringView, static_cast<std::size_t>(osc::experimental::RenderTextureFormat::TOTAL)>
+    static constexpr auto const  g_RenderTextureFormatStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::experimental::RenderTextureFormat::TOTAL)>
     (
         "ARGB32",
         "RED"
     );
 
-    static constexpr auto const g_DepthStencilFormatStrings = osc::MakeArray<osc::CStringView, static_cast<std::size_t>(osc::experimental::DepthStencilFormat::TOTAL)>
+    static constexpr auto const g_DepthStencilFormatStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::experimental::DepthStencilFormat::TOTAL)>
     (
         "D24_UNorm_S8_UInt"
     );
@@ -2096,7 +2097,7 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, MaterialPropertyBlo
 
 namespace
 {
-    static constexpr auto g_MeshTopographyStrings = osc::MakeArray<osc::CStringView, static_cast<std::size_t>(osc::experimental::MeshTopography::TOTAL)>
+    static constexpr auto g_MeshTopographyStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::experimental::MeshTopography::TOTAL)>
     (
         "Triangles",
         "Lines"
@@ -2174,7 +2175,7 @@ public:
     {
         m_Normals.clear();
         m_Normals.reserve(normals.size());
-        std::copy(normals.begin(), normals.end(), std::back_insert_iterator{ m_Normals });
+        std::copy(normals.begin(), normals.end(), std::back_insert_iterator{m_Normals});
 
         m_Version->reset();
     }
@@ -2212,9 +2213,9 @@ public:
         return m_NumIndices;
     }
 
-    std::vector<std::uint32_t> getIndices() const
+    std::vector<uint32_t> getIndices() const
     {
-        std::vector<std::uint32_t> rv;
+        std::vector<uint32_t> rv;
 
         if (m_NumIndices <= 0)
         {
@@ -2230,14 +2231,14 @@ public:
         }
         else
         {
-            nonstd::span<std::uint16_t const> data(&m_IndicesData.front().u16.a, m_NumIndices);
+            nonstd::span<uint16_t const> data(&m_IndicesData.front().u16.a, m_NumIndices);
             std::copy(data.begin(), data.end(), std::back_insert_iterator{rv});
         }
 
         return rv;
     }
 
-    void setIndices(nonstd::span<std::uint16_t const> vs)
+    void setIndices(nonstd::span<uint16_t const> vs)
     {
         m_IndicesAre32Bit = false;
         m_NumIndices = static_cast<int>(vs.size());
@@ -2326,7 +2327,7 @@ public:
             nullptr);
     }
 
-    void drawInstanced(std::size_t n)
+    void drawInstanced(size_t n)
     {
         glDrawElementsInstanced(
             ToOpenGLTopography(m_Topography),
@@ -2411,7 +2412,7 @@ private:
         std::vector<std::byte> data;
         data.reserve(stride * m_Vertices.size());
 
-        for (std::size_t i = 0; i < m_Vertices.size(); ++i)
+        for (size_t i = 0; i < m_Vertices.size(); ++i)
         {
             PushAsBytes(m_Vertices.at(i), data);
             if (hasNormals)
@@ -2440,7 +2441,7 @@ private:
         gl::BufferData(GL_ARRAY_BUFFER, data.size(), data.data(), GL_STATIC_DRAW);
 
         // upload indices into EBO
-        std::size_t eboNumBytes = m_NumIndices * (m_IndicesAre32Bit ? sizeof(std::uint32_t) : sizeof(std::uint16_t));
+        size_t eboNumBytes = m_NumIndices * (m_IndicesAre32Bit ? sizeof(uint32_t) : sizeof(uint16_t));
         gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.IndicesBuffer);
         gl::BufferData(GL_ELEMENT_ARRAY_BUFFER, eboNumBytes, m_IndicesData.data(), GL_STATIC_DRAW);
 
@@ -2570,18 +2571,18 @@ int osc::experimental::Mesh::getNumIndices() const
     return m_Impl->getNumIndices();
 }
 
-std::vector<std::uint32_t> osc::experimental::Mesh::getIndices() const
+std::vector<uint32_t> osc::experimental::Mesh::getIndices() const
 {
     return m_Impl->getIndices();
 }
 
-void osc::experimental::Mesh::setIndices(nonstd::span<std::uint16_t const> indices)
+void osc::experimental::Mesh::setIndices(nonstd::span<uint16_t const> indices)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setIndices(std::move(indices));
 }
 
-void osc::experimental::Mesh::setIndices(nonstd::span<std::uint32_t const> indices)
+void osc::experimental::Mesh::setIndices(nonstd::span<uint32_t const> indices)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setIndices(std::move(indices));
@@ -2640,7 +2641,7 @@ namespace
     using namespace osc::experimental;
 
     // LUT for human-readable form of the above
-    static constexpr auto const g_CameraProjectionStrings = osc::MakeArray<osc::CStringView, static_cast<std::size_t>(CameraProjection::TOTAL)>
+    static constexpr auto const g_CameraProjectionStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(CameraProjection::TOTAL)>
     (
         "Perspective",
         "Orthographic"
@@ -4142,14 +4143,14 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     // (there's a lot of helper functions here because this part is extremely algorithmic)
 
     struct InstancingState final {
-        InstancingState(std::size_t stride) :
+        InstancingState(size_t stride) :
             Stride{std::move(stride)}
         {
         }
 
         gl::ArrayBuffer<float> Buf;
-        std::size_t Stride = 0;
-        std::size_t BaseOffset = 0;
+        size_t Stride = 0;
+        size_t BaseOffset = 0;
     };
 
     // helper: upload instancing data for a batch
@@ -4183,7 +4184,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             }
 
             std::unique_ptr<float[]> buf{new float[nEls * stride]};
-            std::size_t bufPos = 0;
+            size_t bufPos = 0;
 
             for (auto it = begin; it != end; ++it)
             {

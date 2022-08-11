@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Graphics/Image.hpp"
+#include "src/Graphics/ImageFlags.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Utils/CStringView.hpp"
 
@@ -458,9 +458,9 @@ namespace osc::experimental
         void setColors(nonstd::span<Rgba32 const>);
 
         int getNumIndices() const;
-        std::vector<std::uint32_t> getIndices() const;
-        void setIndices(nonstd::span<std::uint16_t const>);
-        void setIndices(nonstd::span<std::uint32_t const>);
+        std::vector<uint32_t> getIndices() const;
+        void setIndices(nonstd::span<uint16_t const>);
+        void setIndices(nonstd::span<uint32_t const>);
 
         AABB const& getBounds() const;  // local-space
         glm::vec3 getMidpoint() const;  // local-space
