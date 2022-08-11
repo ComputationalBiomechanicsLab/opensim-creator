@@ -216,7 +216,7 @@ public:
 private:
     UID m_ID;
     TabHost* m_Parent;
-    experimental::Material m_OpaqueMaterial
+    Material m_OpaqueMaterial
     {
         Shader
         {
@@ -224,7 +224,7 @@ private:
             App::slurp("shaders/ExperimentBlending.frag"),
         }
     };
-    experimental::Material m_BlendingMaterial = m_OpaqueMaterial;
+    Material m_BlendingMaterial = m_OpaqueMaterial;
     experimental::Mesh m_CubeMesh = GenLearnOpenGLCube();
     experimental::Mesh m_PlaneMesh = GeneratePlane();
     experimental::Mesh m_TransparentMesh = GenerateTransparent();

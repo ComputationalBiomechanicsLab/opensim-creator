@@ -95,7 +95,7 @@ private:
         App::slurp("shaders/ExperimentTriangle.vert"),
         App::slurp("shaders/ExperimentTriangle.frag"),
     };
-    experimental::Material m_Material{m_Shader};
+    Material m_Material{m_Shader};
     experimental::Mesh m_TriangleMesh = GenerateTriangleMesh();
     experimental::Camera m_Camera;
 };

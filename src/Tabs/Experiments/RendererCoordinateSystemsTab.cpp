@@ -173,7 +173,7 @@ private:
         App::slurp("shaders/ExperimentCoordinateSystems.vert"),
         App::slurp("shaders/ExperimentCoordinateSystems.frag"),
     };
-    experimental::Material m_Material{m_Shader};
+    Material m_Material{m_Shader};
     experimental::Mesh m_Mesh = GenLearnOpenGLCube();
     experimental::Camera m_Camera;
     bool m_IsMouseCaptured = false;

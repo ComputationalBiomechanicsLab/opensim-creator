@@ -283,7 +283,7 @@ namespace osc
 // material
 //
 // pairs a shader with properties that the shader program is used with
-namespace osc::experimental
+namespace osc
 {
     class Material final {
     public:
@@ -343,7 +343,7 @@ namespace osc::experimental
         void setWireframeMode(bool);
 
     private:
-        friend class GraphicsBackend;
+        friend class osc::experimental::GraphicsBackend;
         friend bool operator==(Material const&, Material const&);
         friend bool operator!=(Material const&, Material const&);
         friend bool operator<(Material const&, Material const&);
@@ -364,7 +364,7 @@ namespace osc::experimental
 //
 // enables callers to apply per-instance properties when using a material (more efficiently
 // than using a different material every time)
-namespace osc::experimental
+namespace osc
 {
     class MaterialPropertyBlock final {
     public:
@@ -403,7 +403,7 @@ namespace osc::experimental
         void setTexture(std::string_view, osc::Texture2D);
 
     private:
-        friend class GraphicsBackend;
+        friend class osc::experimental::GraphicsBackend;
         friend bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
         friend bool operator!=(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
         friend bool operator<(MaterialPropertyBlock const&, MaterialPropertyBlock const&);

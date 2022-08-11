@@ -135,13 +135,13 @@ private:
         App::slurp("shaders/ExperimentBasicLighting.vert"),
         App::slurp("shaders/ExperimentBasicLighting.frag"),
     };
-    experimental::Material m_LightingMaterial{m_LightingShader};
+    Material m_LightingMaterial{m_LightingShader};
     Shader m_LightCubeShader
     {
         App::slurp("shaders/ExperimentLightCube.vert"),
         App::slurp("shaders/ExperimentLightCube.frag"),
     };
-    experimental::Material m_LightCubeMaterial{m_LightCubeShader};
+    Material m_LightCubeMaterial{m_LightCubeShader};
 
     experimental::Mesh m_CubeMesh = GenLearnOpenGLCube();
 

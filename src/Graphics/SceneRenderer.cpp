@@ -166,9 +166,9 @@ public:
                 ndcToRimsMat = ToInverseMat4(rimsToNDCtransform);
                 rimOffsets = rimThickness / rimDimsScreen;
 
-                experimental::MaterialPropertyBlock selectedColor;
+                MaterialPropertyBlock selectedColor;
                 selectedColor.setVec4("uDiffuseColor", {0.9f, 0.0f, 0.0f, 1.0f});
-                experimental::MaterialPropertyBlock hoveredColor;
+                MaterialPropertyBlock hoveredColor;
                 hoveredColor.setVec4("uDiffuseColor", {0.4, 0.0f, 0.0f, 1.0f});
 
                 // draw the solid geometry that was stretched over clipspace
@@ -204,10 +204,10 @@ public:
             m_SceneColoredElementsMaterial.setFloat("uFar", m_Camera.getFarClippingPlane());
 
 
-            experimental::Material transparentMaterial = m_SceneColoredElementsMaterial;
+            Material transparentMaterial = m_SceneColoredElementsMaterial;
             transparentMaterial.setTransparent(true);
 
-            experimental::MaterialPropertyBlock propBlock;
+            MaterialPropertyBlock propBlock;
             glm::vec4 lastColor = {-1.0f, -1.0f, -1.0f, 0.0f};
             for (SceneDecoration const& dec : decorations)
             {
@@ -275,27 +275,27 @@ public:
     }
 
 private:
-    experimental::Material m_SceneColoredElementsMaterial
+    Material m_SceneColoredElementsMaterial
     {
         ShaderCache::get("shaders/ExperimentOpenSim.vert", "shaders/ExperimentOpenSim.frag")
     };
 
-    experimental::Material m_SceneTexturedElementsMaterial
+    Material m_SceneTexturedElementsMaterial
     {
         ShaderCache::get("shaders/ExperimentOpenSimTextured.vert", "shaders/ExperimentOpenSimTextured.frag")
     };
 
-    experimental::Material m_SolidColorMaterial
+    Material m_SolidColorMaterial
     {
         ShaderCache::get("shaders/ExperimentOpenSimSolidColor.vert", "shaders/ExperimentOpenSimSolidColor.frag")
     };
 
-    experimental::Material m_EdgeDetectorMaterial
+    Material m_EdgeDetectorMaterial
     {
         ShaderCache::get("shaders/ExperimentOpenSimEdgeDetect.vert", "shaders/ExperimentOpenSimEdgeDetect.frag")
     };
 
-    experimental::Material m_NormalsMaterial
+    Material m_NormalsMaterial
     {
         ShaderCache::get("shaders/ExperimentGeometryShaderNormals.vert", "shaders/ExperimentGeometryShaderNormals.geom", "shaders/ExperimentGeometryShaderNormals.frag")
     };

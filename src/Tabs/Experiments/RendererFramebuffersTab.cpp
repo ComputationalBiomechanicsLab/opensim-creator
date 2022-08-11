@@ -169,7 +169,7 @@ private:
     UID m_ID;
     TabHost* m_Parent;
 
-    experimental::Material m_SceneRenderMaterial
+    Material m_SceneRenderMaterial
     {
         Shader
         {
@@ -190,7 +190,7 @@ private:
     experimental::Mesh m_QuadMesh = GenTexturedQuad();
 
     experimental::Camera m_ScreenCamera;
-    experimental::Material m_ScreenMaterial
+    Material m_ScreenMaterial
     {
         Shader
         {

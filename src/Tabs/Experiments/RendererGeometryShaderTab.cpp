@@ -106,7 +106,7 @@ private:
     UID m_ID;
     TabHost* m_Parent;
 
-    experimental::Material m_SceneMaterial
+    Material m_SceneMaterial
     {
         Shader
         {
@@ -114,7 +114,7 @@ private:
             App::slurp("shaders/ExperimentGeometryShaderScene.frag"),
         }
     };
-    experimental::Material m_NormalsMaterial
+    Material m_NormalsMaterial
     {
         Shader
         {

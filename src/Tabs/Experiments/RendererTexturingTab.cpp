@@ -103,7 +103,7 @@ private:
         App::slurp("shaders/ExperimentTexturing.vert"),
         App::slurp("shaders/ExperimentTexturing.frag"),
     };
-    experimental::Material m_Material{m_Shader};
+    Material m_Material{m_Shader};
     experimental::Mesh m_Mesh = GenerateMesh();
     experimental::Camera m_Camera;
 };

@@ -87,9 +87,9 @@ namespace
 		return rv;
 	}
 
-	osc::experimental::MaterialPropertyBlock GeneratePropertyBlock(glm::vec4 const& v)
+	osc::MaterialPropertyBlock GeneratePropertyBlock(glm::vec4 const& v)
 	{
-		osc::experimental::MaterialPropertyBlock p;
+		osc::MaterialPropertyBlock p;
 		p.setVec4("uColor", v);
 		return p;
 	}
@@ -300,7 +300,7 @@ private:
 
 	// rendering
 	experimental::Camera m_Camera;
-	experimental::Material m_Material
+	Material m_Material
 	{
 		Shader
 		{
@@ -313,9 +313,9 @@ private:
 	experimental::Mesh m_CircleMesh = GenCircle(36);
 	experimental::Mesh m_CrosshairMesh = GenerateCrosshairMesh();
 	experimental::Mesh m_TriangleMesh = GenerateTriangleMesh();
-	experimental::MaterialPropertyBlock m_BlackColorMaterialProps = GeneratePropertyBlock({0.0f, 0.0f, 0.0f, 1.0f});
-	experimental::MaterialPropertyBlock m_BlueColorMaterialProps = GeneratePropertyBlock({0.0f, 0.0f, 1.0f, 1.0f});
-	experimental::MaterialPropertyBlock m_RedColorMaterialProps = GeneratePropertyBlock({1.0f, 0.0f, 0.0f, 1.0f});
+	MaterialPropertyBlock m_BlackColorMaterialProps = GeneratePropertyBlock({0.0f, 0.0f, 0.0f, 1.0f});
+	MaterialPropertyBlock m_BlueColorMaterialProps = GeneratePropertyBlock({0.0f, 0.0f, 1.0f, 1.0f});
+	MaterialPropertyBlock m_RedColorMaterialProps = GeneratePropertyBlock({1.0f, 0.0f, 0.0f, 1.0f});
 
 	// scene state
 	std::vector<SceneSphere> m_SceneSpheres = GenerateSceneSpheres();

@@ -227,7 +227,7 @@ private:
     UID m_ID;
     TabHost* m_Parent;
 
-    experimental::Material m_MultipleLightsMaterial
+    Material m_MultipleLightsMaterial
     {
         Shader
         {
@@ -235,7 +235,7 @@ private:
             App::slurp("shaders/ExperimentMultipleLights.frag"),
     }
     };
-    experimental::Material m_LightCubeMaterial
+    Material m_LightCubeMaterial
     {
         Shader
         {

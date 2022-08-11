@@ -1410,7 +1410,7 @@ std::ostream& osc::operator<<(std::ostream& o, Shader const& shader)
 //
 //////////////////////////////////
 
-class osc::experimental::Material::Impl final {
+class osc::Material::Impl final {
 public:
     Impl(osc::Shader shader) : m_Shader{std::move(shader)}
     {
@@ -1601,7 +1601,7 @@ private:
         m_Values[std::string{propertyName}] = std::forward<T&&>(v);
     }
 
-    friend class GraphicsBackend;
+    friend class osc::experimental::GraphicsBackend;
 
     UID m_UID;
     Shader m_Shader;
@@ -1611,209 +1611,209 @@ private:
     bool m_IsWireframeMode = false;
 };
 
-osc::experimental::Material::Material(osc::Shader shader) :
+osc::Material::Material(osc::Shader shader) :
     m_Impl{std::make_shared<Impl>(std::move(shader))}
 {
 }
 
-osc::experimental::Material::Material(Material const&) = default;
-osc::experimental::Material::Material(Material&&) noexcept = default;
-osc::experimental::Material& osc::experimental::Material::operator=(Material const&) = default;
-osc::experimental::Material& osc::experimental::Material::operator=(Material&&) noexcept = default;
-osc::experimental::Material::~Material() noexcept = default;
+osc::Material::Material(Material const&) = default;
+osc::Material::Material(Material&&) noexcept = default;
+osc::Material& osc::Material::operator=(Material const&) = default;
+osc::Material& osc::Material::operator=(Material&&) noexcept = default;
+osc::Material::~Material() noexcept = default;
 
-osc::Shader const& osc::experimental::Material::getShader() const
+osc::Shader const& osc::Material::getShader() const
 {
     return m_Impl->getShader();
 }
 
-std::optional<float> osc::experimental::Material::getFloat(std::string_view propertyName) const
+std::optional<float> osc::Material::getFloat(std::string_view propertyName) const
 {
     return m_Impl->getFloat(std::move(propertyName));
 }
 
-void osc::experimental::Material::setFloat(std::string_view propertyName, float value)
+void osc::Material::setFloat(std::string_view propertyName, float value)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setFloat(std::move(propertyName), std::move(value));
 }
 
-std::optional<nonstd::span<float const>> osc::experimental::Material::getFloatArray(std::string_view propertyName) const
+std::optional<nonstd::span<float const>> osc::Material::getFloatArray(std::string_view propertyName) const
 {
     return m_Impl->getFloatArray(std::move(propertyName));
 }
 
-void osc::experimental::Material::setFloatArray(std::string_view propertyName, nonstd::span<float const> vs)
+void osc::Material::setFloatArray(std::string_view propertyName, nonstd::span<float const> vs)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setFloatArray(std::move(propertyName), std::move(vs));
 }
 
-std::optional<glm::vec2> osc::experimental::Material::getVec2(std::string_view propertyName) const
+std::optional<glm::vec2> osc::Material::getVec2(std::string_view propertyName) const
 {
     return m_Impl->getVec2(std::move(propertyName));
 }
 
-void osc::experimental::Material::setVec2(std::string_view propertyName, glm::vec2 value)
+void osc::Material::setVec2(std::string_view propertyName, glm::vec2 value)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setVec2(std::move(propertyName), std::move(value));
 }
 
-std::optional<nonstd::span<glm::vec3 const>> osc::experimental::Material::getVec3Array(std::string_view propertyName) const
+std::optional<nonstd::span<glm::vec3 const>> osc::Material::getVec3Array(std::string_view propertyName) const
 {
     return m_Impl->getVec3Array(std::move(propertyName));
 }
 
-void osc::experimental::Material::setVec3Array(std::string_view propertyName, nonstd::span<glm::vec3 const> vs)
+void osc::Material::setVec3Array(std::string_view propertyName, nonstd::span<glm::vec3 const> vs)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setVec3Array(std::move(propertyName), std::move(vs));
 }
 
-std::optional<glm::vec3> osc::experimental::Material::getVec3(std::string_view propertyName) const
+std::optional<glm::vec3> osc::Material::getVec3(std::string_view propertyName) const
 {
     return m_Impl->getVec3(std::move(propertyName));
 }
 
-void osc::experimental::Material::setVec3(std::string_view propertyName, glm::vec3 value)
+void osc::Material::setVec3(std::string_view propertyName, glm::vec3 value)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setVec3(std::move(propertyName), std::move(value));
 }
 
-std::optional<glm::vec4> osc::experimental::Material::getVec4(std::string_view propertyName) const
+std::optional<glm::vec4> osc::Material::getVec4(std::string_view propertyName) const
 {
     return m_Impl->getVec4(std::move(propertyName));
 }
 
-void osc::experimental::Material::setVec4(std::string_view propertyName, glm::vec4 value)
+void osc::Material::setVec4(std::string_view propertyName, glm::vec4 value)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setVec4(std::move(propertyName), std::move(value));
 }
 
-std::optional<glm::mat3> osc::experimental::Material::getMat3(std::string_view propertyName) const
+std::optional<glm::mat3> osc::Material::getMat3(std::string_view propertyName) const
 {
     return m_Impl->getMat3(std::move(propertyName));
 }
 
-void osc::experimental::Material::setMat3(std::string_view propertyName, glm::mat3 const& mat)
+void osc::Material::setMat3(std::string_view propertyName, glm::mat3 const& mat)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setMat3(std::move(propertyName), mat);
 }
 
-std::optional<glm::mat4> osc::experimental::Material::getMat4(std::string_view propertyName) const
+std::optional<glm::mat4> osc::Material::getMat4(std::string_view propertyName) const
 {
     return m_Impl->getMat4(std::move(propertyName));
 }
 
-void osc::experimental::Material::setMat4(std::string_view propertyName, glm::mat4 const& mat)
+void osc::Material::setMat4(std::string_view propertyName, glm::mat4 const& mat)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setMat4(std::move(propertyName), mat);
 }
 
-std::optional<int> osc::experimental::Material::getInt(std::string_view propertyName) const
+std::optional<int> osc::Material::getInt(std::string_view propertyName) const
 {
     return m_Impl->getInt(std::move(propertyName));
 }
 
-void osc::experimental::Material::setInt(std::string_view propertyName, int value)
+void osc::Material::setInt(std::string_view propertyName, int value)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setInt(std::move(propertyName), std::move(value));
 }
 
-std::optional<bool> osc::experimental::Material::getBool(std::string_view propertyName) const
+std::optional<bool> osc::Material::getBool(std::string_view propertyName) const
 {
     return m_Impl->getBool(std::move(propertyName));
 }
 
-void osc::experimental::Material::setBool(std::string_view propertyName, bool value)
+void osc::Material::setBool(std::string_view propertyName, bool value)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setBool(std::move(propertyName), std::move(value));
 }
 
-std::optional<osc::Texture2D> osc::experimental::Material::getTexture(std::string_view propertyName) const
+std::optional<osc::Texture2D> osc::Material::getTexture(std::string_view propertyName) const
 {
     return m_Impl->getTexture(std::move(propertyName));
 }
 
-void osc::experimental::Material::setTexture(std::string_view propertyName, osc::Texture2D t)
+void osc::Material::setTexture(std::string_view propertyName, osc::Texture2D t)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setTexture(std::move(propertyName), std::move(t));
 }
 
-std::optional<osc::RenderTexture> osc::experimental::Material::getRenderTexture(std::string_view propertyName) const
+std::optional<osc::RenderTexture> osc::Material::getRenderTexture(std::string_view propertyName) const
 {
     return m_Impl->getRenderTexture(std::move(propertyName));
 }
 
-void osc::experimental::Material::setRenderTexture(std::string_view propertyName, RenderTexture t)
+void osc::Material::setRenderTexture(std::string_view propertyName, RenderTexture t)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setRenderTexture(std::move(propertyName), std::move(t));
 }
 
-void osc::experimental::Material::clearRenderTexture(std::string_view propertyName)
+void osc::Material::clearRenderTexture(std::string_view propertyName)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->clearRenderTexture(std::move(propertyName));
 }
 
-bool osc::experimental::Material::getTransparent() const
+bool osc::Material::getTransparent() const
 {
     return m_Impl->getTransparent();
 }
 
-void osc::experimental::Material::setTransparent(bool v)
+void osc::Material::setTransparent(bool v)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setTransparent(std::move(v));
 }
 
-bool osc::experimental::Material::getDepthTested() const
+bool osc::Material::getDepthTested() const
 {
     return m_Impl->getDepthTested();
 }
 
-void osc::experimental::Material::setDepthTested(bool v)
+void osc::Material::setDepthTested(bool v)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setDepthTested(std::move(v));
 }
 
-bool osc::experimental::Material::getWireframeMode() const
+bool osc::Material::getWireframeMode() const
 {
     return m_Impl->getWireframeMode();
 }
 
-void osc::experimental::Material::setWireframeMode(bool v)
+void osc::Material::setWireframeMode(bool v)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setWireframeMode(std::move(v));
 }
 
-bool osc::experimental::operator==(Material const& a, Material const& b)
+bool osc::operator==(Material const& a, Material const& b)
 {
     return a.m_Impl == b.m_Impl;
 }
 
-bool osc::experimental::operator!=(Material const& a, Material const& b)
+bool osc::operator!=(Material const& a, Material const& b)
 {
     return a.m_Impl != b.m_Impl;
 }
 
-bool osc::experimental::operator<(Material const& a, Material const& b)
+bool osc::operator<(Material const& a, Material const& b)
 {
     return a.m_Impl < b.m_Impl;
 }
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, Material const&)
+std::ostream& osc::operator<<(std::ostream& o, Material const&)
 {
     return o << "Material()";
 }
@@ -1825,7 +1825,7 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, Material const&)
 //
 //////////////////////////////////
 
-class osc::experimental::MaterialPropertyBlock::Impl final {
+class osc::MaterialPropertyBlock::Impl final {
 public:
     void clear()
     {
@@ -1947,137 +1947,137 @@ private:
         m_Values[std::string{propertyName}] = v;
     }
 
-    friend class GraphicsBackend;
+    friend class osc::experimental::GraphicsBackend;
 
     robin_hood::unordered_map<std::string, MaterialValue> m_Values;
 };
 
-osc::experimental::MaterialPropertyBlock::MaterialPropertyBlock() :
+osc::MaterialPropertyBlock::MaterialPropertyBlock() :
     m_Impl{std::make_shared<Impl>()}
 {
 }
 
-osc::experimental::MaterialPropertyBlock::MaterialPropertyBlock(MaterialPropertyBlock const&) = default;
-osc::experimental::MaterialPropertyBlock::MaterialPropertyBlock(MaterialPropertyBlock&&) noexcept = default;
-osc::experimental::MaterialPropertyBlock& osc::experimental::MaterialPropertyBlock::operator=(MaterialPropertyBlock const&) = default;
-osc::experimental::MaterialPropertyBlock& osc::experimental::MaterialPropertyBlock::operator=(MaterialPropertyBlock&&) noexcept = default;
-osc::experimental::MaterialPropertyBlock::~MaterialPropertyBlock() noexcept = default;
+osc::MaterialPropertyBlock::MaterialPropertyBlock(MaterialPropertyBlock const&) = default;
+osc::MaterialPropertyBlock::MaterialPropertyBlock(MaterialPropertyBlock&&) noexcept = default;
+osc::MaterialPropertyBlock& osc::MaterialPropertyBlock::operator=(MaterialPropertyBlock const&) = default;
+osc::MaterialPropertyBlock& osc::MaterialPropertyBlock::operator=(MaterialPropertyBlock&&) noexcept = default;
+osc::MaterialPropertyBlock::~MaterialPropertyBlock() noexcept = default;
 
-void osc::experimental::MaterialPropertyBlock::clear()
+void osc::MaterialPropertyBlock::clear()
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->clear();
 }
 
-bool osc::experimental::MaterialPropertyBlock::isEmpty() const
+bool osc::MaterialPropertyBlock::isEmpty() const
 {
     return m_Impl->isEmpty();
 }
 
-std::optional<float> osc::experimental::MaterialPropertyBlock::getFloat(std::string_view propertyName) const
+std::optional<float> osc::MaterialPropertyBlock::getFloat(std::string_view propertyName) const
 {
     return m_Impl->getFloat(std::move(propertyName));
 }
 
-void osc::experimental::MaterialPropertyBlock::setFloat(std::string_view propertyName, float value)
+void osc::MaterialPropertyBlock::setFloat(std::string_view propertyName, float value)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setFloat(std::move(propertyName), std::move(value));
 }
 
-std::optional<glm::vec3> osc::experimental::MaterialPropertyBlock::getVec3(std::string_view propertyName) const
+std::optional<glm::vec3> osc::MaterialPropertyBlock::getVec3(std::string_view propertyName) const
 {
     return m_Impl->getVec3(std::move(propertyName));
 }
 
-void osc::experimental::MaterialPropertyBlock::setVec3(std::string_view propertyName, glm::vec3 value)
+void osc::MaterialPropertyBlock::setVec3(std::string_view propertyName, glm::vec3 value)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setVec3(std::move(propertyName), std::move(value));
 }
 
-std::optional<glm::vec4> osc::experimental::MaterialPropertyBlock::getVec4(std::string_view propertyName) const
+std::optional<glm::vec4> osc::MaterialPropertyBlock::getVec4(std::string_view propertyName) const
 {
     return m_Impl->getVec4(std::move(propertyName));
 }
 
-void osc::experimental::MaterialPropertyBlock::setVec4(std::string_view propertyName, glm::vec4 value)
+void osc::MaterialPropertyBlock::setVec4(std::string_view propertyName, glm::vec4 value)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setVec4(std::move(propertyName), std::move(value));
 }
 
-std::optional<glm::mat3> osc::experimental::MaterialPropertyBlock::getMat3(std::string_view propertyName) const
+std::optional<glm::mat3> osc::MaterialPropertyBlock::getMat3(std::string_view propertyName) const
 {
     return m_Impl->getMat3(std::move(propertyName));
 }
 
-void osc::experimental::MaterialPropertyBlock::setMat3(std::string_view propertyName, glm::mat3 const& value)
+void osc::MaterialPropertyBlock::setMat3(std::string_view propertyName, glm::mat3 const& value)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setMat3(std::move(propertyName), value);
 }
 
-std::optional<glm::mat4> osc::experimental::MaterialPropertyBlock::getMat4(std::string_view propertyName) const
+std::optional<glm::mat4> osc::MaterialPropertyBlock::getMat4(std::string_view propertyName) const
 {
     return m_Impl->getMat4(std::move(propertyName));
 }
 
-void osc::experimental::MaterialPropertyBlock::setMat4(std::string_view propertyName, glm::mat4 const& value)
+void osc::MaterialPropertyBlock::setMat4(std::string_view propertyName, glm::mat4 const& value)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setMat4(std::move(propertyName), value);
 }
 
-std::optional<int> osc::experimental::MaterialPropertyBlock::getInt(std::string_view propertyName) const
+std::optional<int> osc::MaterialPropertyBlock::getInt(std::string_view propertyName) const
 {
     return m_Impl->getInt(std::move(propertyName));
 }
 
-void osc::experimental::MaterialPropertyBlock::setInt(std::string_view propertyName, int value)
+void osc::MaterialPropertyBlock::setInt(std::string_view propertyName, int value)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setInt(std::move(propertyName), std::move(value));
 }
 
-std::optional<bool> osc::experimental::MaterialPropertyBlock::getBool(std::string_view propertyName) const
+std::optional<bool> osc::MaterialPropertyBlock::getBool(std::string_view propertyName) const
 {
     return m_Impl->getBool(std::move(propertyName));
 }
 
-void osc::experimental::MaterialPropertyBlock::setBool(std::string_view propertyName, bool value)
+void osc::MaterialPropertyBlock::setBool(std::string_view propertyName, bool value)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setBool(std::move(propertyName), std::move(value));
 }
 
-std::optional<osc::Texture2D> osc::experimental::MaterialPropertyBlock::getTexture(std::string_view propertyName) const
+std::optional<osc::Texture2D> osc::MaterialPropertyBlock::getTexture(std::string_view propertyName) const
 {
     return m_Impl->getTexture(std::move(propertyName));
 }
 
-void osc::experimental::MaterialPropertyBlock::setTexture(std::string_view propertyName, Texture2D t)
+void osc::MaterialPropertyBlock::setTexture(std::string_view propertyName, Texture2D t)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setTexture(std::move(propertyName), std::move(t));
 }
 
-bool osc::experimental::operator==(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
+bool osc::operator==(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
 {
     return a.m_Impl == b.m_Impl || *a.m_Impl == *b.m_Impl;
 }
 
-bool osc::experimental::operator!=(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
+bool osc::operator!=(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
 {
     return a.m_Impl != b.m_Impl;
 }
 
-bool osc::experimental::operator<(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
+bool osc::operator<(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
 {
     return a.m_Impl < b.m_Impl;
 }
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, MaterialPropertyBlock const&)
+std::ostream& osc::operator<<(std::ostream& o, MaterialPropertyBlock const&)
 {
     return o << "MaterialPropertyBlock()";
 }
@@ -2645,8 +2645,8 @@ namespace
         RenderObject(
             osc::experimental::Mesh const& mesh_,
             osc::Transform const& transform_,
-            osc::experimental::Material const& material_,
-            std::optional<osc::experimental::MaterialPropertyBlock> maybePropBlock_) :
+            osc::Material const& material_,
+            std::optional<osc::MaterialPropertyBlock> maybePropBlock_) :
 
             mesh{mesh_},
             transform{ToMat4(transform_)},
@@ -2659,8 +2659,8 @@ namespace
         RenderObject(
             osc::experimental::Mesh const& mesh_,
             glm::mat4 const& transform_,
-            osc::experimental::Material const& material_,
-            std::optional<osc::experimental::MaterialPropertyBlock> maybePropBlock_) :
+            osc::Material const& material_,
+            std::optional<osc::MaterialPropertyBlock> maybePropBlock_) :
 
             mesh{mesh_},
             transform{transform_},
@@ -2673,8 +2673,8 @@ namespace
         osc::experimental::Mesh mesh;
         glm::mat4 transform;
         glm::mat4 normalMatrix;
-        osc::experimental::Material material;
-        std::optional<osc::experimental::MaterialPropertyBlock> maybePropBlock;
+        osc::Material material;
+        std::optional<osc::MaterialPropertyBlock> maybePropBlock;
     };
 
     // returns true if the render object is opaque
@@ -2729,18 +2729,18 @@ namespace
     };
 
     struct RenderObjectHasMaterial final {
-        RenderObjectHasMaterial(osc::experimental::Material const& material) : m_Material{&material} {}
+        RenderObjectHasMaterial(osc::Material const& material) : m_Material{&material} {}
 
         bool operator()(RenderObject const& ro) const
         {
             return ro.material == *m_Material;
         }
     private:
-        osc::experimental::Material const* m_Material;
+        osc::Material const* m_Material;
     };
 
     struct RenderObjectHasMaterialPropertyBlock final {
-        RenderObjectHasMaterialPropertyBlock(std::optional<osc::experimental::MaterialPropertyBlock> const& mpb) : m_Mpb{&mpb} {}
+        RenderObjectHasMaterialPropertyBlock(std::optional<osc::MaterialPropertyBlock> const& mpb) : m_Mpb{&mpb} {}
 
         bool operator()(RenderObject const& ro) const
         {
@@ -2748,7 +2748,7 @@ namespace
         }
 
     private:
-        std::optional<osc::experimental::MaterialPropertyBlock> const* m_Mpb;
+        std::optional<osc::MaterialPropertyBlock> const* m_Mpb;
     };
 
     struct RenderObjectHasMesh final {
@@ -3767,7 +3767,7 @@ private:
 
 public:
 
-    experimental::Material m_QuadMaterial
+    Material m_QuadMaterial
     {
         Shader
         {
@@ -4317,7 +4317,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     // helper: draw a batch of render objects that have the same material and material block
     auto HandleBatchWithSameMatrialPropertyBlock = [&HandleBatchWithSameMesh](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end, int& textureSlot, std::optional<InstancingState>& ins)
     {
-        osc::experimental::Material::Impl& matImpl = const_cast<osc::experimental::Material::Impl&>(*begin->material.m_Impl);
+        osc::Material::Impl& matImpl = const_cast<osc::Material::Impl&>(*begin->material.m_Impl);
         osc::Shader::Impl& shaderImpl = const_cast<osc::Shader::Impl&>(*matImpl.m_Shader.m_Impl);
         robin_hood::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
@@ -4347,7 +4347,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     // helper: draw a batch of render objects that have the same material
     auto HandleBatchWithSameMaterial = [&viewMtx, &projMtx, &viewProjMtx, &HandleBatchWithSameMatrialPropertyBlock, &UploadInstancingData](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end)
     {
-        osc::experimental::Material::Impl& matImpl = const_cast<osc::experimental::Material::Impl&>(*begin->material.m_Impl);
+        osc::Material::Impl& matImpl = const_cast<osc::Material::Impl&>(*begin->material.m_Impl);
         osc::Shader::Impl& shaderImpl = const_cast<osc::Shader::Impl&>(*matImpl.m_Shader.m_Impl);
         robin_hood::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
@@ -4597,7 +4597,7 @@ void osc::experimental::GraphicsBackend::BlitToScreen(
     c.setViewMatrix(glm::mat4{1.0f});
     c.setClearFlags(osc::experimental::CameraClearFlags::Nothing);
 
-    experimental::Material copy{material};
+    Material copy{material};
 
     copy.setRenderTexture("uTexture", t);
     experimental::Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, copy, c);
