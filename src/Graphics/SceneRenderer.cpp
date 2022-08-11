@@ -1,7 +1,11 @@
 #include "SceneRenderer.hpp"
 
+#include "src/Graphics/Camera.hpp"
+#include "src/Graphics/Graphics.hpp"
+#include "src/Graphics/Material.hpp"
+#include "src/Graphics/MaterialPropertyBlock.hpp"
 #include "src/Graphics/MeshCache.hpp"
-#include "src/Graphics/Renderer.hpp"
+#include "src/Graphics/RenderTexture.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/SceneDecorationFlags.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"

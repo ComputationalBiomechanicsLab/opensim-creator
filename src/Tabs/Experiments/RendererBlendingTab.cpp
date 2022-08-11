@@ -1,9 +1,12 @@
 #include "RendererBlendingTab.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Graphics/Camera.hpp"
 #include "src/Graphics/Color.hpp"
+#include "src/Graphics/Graphics.hpp"
+#include "src/Graphics/Material.hpp"
 #include "src/Graphics/MeshGen.hpp"
-#include "src/Graphics/Renderer.hpp"
+#include "src/Graphics/Texture2D.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Widgets/LogViewerPanel.hpp"
@@ -182,17 +185,17 @@ public:
 
             m_OpaqueMaterial.setTexture("uTexture", m_MarbleTexture);
 
-            osc::Graphics::DrawMesh(m_CubeMesh, t, m_OpaqueMaterial, m_Camera);
+            Graphics::DrawMesh(m_CubeMesh, t, m_OpaqueMaterial, m_Camera);
 
             t.position += glm::vec3{2.0f, 0.0f, 0.0f};
 
-            osc::Graphics::DrawMesh(m_CubeMesh, t, m_OpaqueMaterial, m_Camera);
+            Graphics::DrawMesh(m_CubeMesh, t, m_OpaqueMaterial, m_Camera);
         }
 
         // floor
         {
             m_OpaqueMaterial.setTexture("uTexture", m_MetalTexture);
-            osc::Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_OpaqueMaterial, m_Camera);
+            Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_OpaqueMaterial, m_Camera);
         }
 
         // windows
@@ -202,7 +205,7 @@ public:
             {
                 Transform t;
                 t.position = loc;
-                osc::Graphics::DrawMesh(m_TransparentMesh, t, m_BlendingMaterial, m_Camera);
+                Graphics::DrawMesh(m_TransparentMesh, t, m_BlendingMaterial, m_Camera);
             }
         }
 

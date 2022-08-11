@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Graphics/Renderer.hpp"
+#include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/SceneDecorationFlags.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/Transform.hpp"

@@ -1,8 +1,12 @@
 #include "RendererHelloTriangleTab.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Graphics/Camera.hpp"
 #include "src/Graphics/Color.hpp"
-#include "src/Graphics/Renderer.hpp"
+#include "src/Graphics/Graphics.hpp"
+#include "src/Graphics/Material.hpp"
+#include "src/Graphics/Mesh.hpp"
+#include "src/Graphics/Shader.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
 

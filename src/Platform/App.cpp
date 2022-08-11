@@ -4,7 +4,7 @@
 
 #include "src/Bindings/SDL2Helpers.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/Graphics/Renderer.hpp"
+#include "src/Graphics/GraphicsContext.hpp"
 #include "src/Graphics/ShaderCache.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Platform/Config.hpp"

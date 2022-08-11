@@ -1,8 +1,12 @@
 #include "RendererCoordinateSystemsTab.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Graphics/Camera.hpp"
+#include "src/Graphics/Graphics.hpp"
+#include "src/Graphics/Material.hpp"
 #include "src/Graphics/MeshGen.hpp"
-#include "src/Graphics/Renderer.hpp"
+#include "src/Graphics/Shader.hpp"
+#include "src/Graphics/Texture2D.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Transform.hpp"

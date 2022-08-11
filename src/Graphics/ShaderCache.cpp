@@ -1,6 +1,6 @@
 #include "ShaderCache.hpp"
 
-#include "src/Graphics/Renderer.hpp"
+#include "src/Graphics/Shader.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"

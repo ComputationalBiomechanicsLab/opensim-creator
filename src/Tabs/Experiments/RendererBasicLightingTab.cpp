@@ -1,8 +1,11 @@
 #include "RendererBasicLightingTab.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Graphics/Camera.hpp"
+#include "src/Graphics/Graphics.hpp"
+#include "src/Graphics/Material.hpp"
 #include "src/Graphics/MeshGen.hpp"
-#include "src/Graphics/Renderer.hpp"
+#include "src/Graphics/Shader.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Utils/CStringView.hpp"
@@ -106,11 +109,11 @@ public:
         m_LightingMaterial.setFloat("uAmbientStrength", m_AmbientStrength);
         m_LightingMaterial.setFloat("uDiffuseStrength", m_DiffuseStrength);
         m_LightingMaterial.setFloat("uSpecularStrength", m_SpecularStrength);
-        osc::Graphics::DrawMesh(m_CubeMesh, osc::Transform{}, m_LightingMaterial, m_Camera);
+        Graphics::DrawMesh(m_CubeMesh, osc::Transform{}, m_LightingMaterial, m_Camera);
 
         // draw lamp
         m_LightCubeMaterial.setVec3("uLightColor", m_LightColor);
-        osc::Graphics::DrawMesh(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
+        Graphics::DrawMesh(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
 
         // render to output (window)
         m_Camera.render();

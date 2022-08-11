@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Graphics/Renderer.hpp"
+#include "src/Graphics/Texture2D.hpp"
 
 namespace osc
 {

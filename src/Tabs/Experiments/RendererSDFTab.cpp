@@ -1,8 +1,11 @@
 #include "RendererSDFTab.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Graphics/Camera.hpp"
+#include "src/Graphics/Graphics.hpp"
+#include "src/Graphics/Material.hpp"
 #include "src/Graphics/MeshGen.hpp"
-#include "src/Graphics/Renderer.hpp"
+#include "src/Graphics/Texture2D.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"

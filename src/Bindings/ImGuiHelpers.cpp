@@ -1,6 +1,8 @@
 #include "ImGuiHelpers.hpp"
 
-#include "src/Graphics/Renderer.hpp"
+#include "src/Graphics/Camera.hpp"
+#include "src/Graphics/RenderTexture.hpp"
+#include "src/Graphics/Texture2D.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Rect.hpp"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Graphics/Renderer.hpp"
+#include "src/Graphics/Mesh.hpp"
 #include "src/Maths/Transform.hpp"
 
 #include <glm/gtx/quaternion.hpp>

@@ -2,7 +2,7 @@
 
 #include "osc_config.hpp"
 
-#include "src/Graphics/Renderer.hpp"
+#include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Utils/Algorithms.hpp"

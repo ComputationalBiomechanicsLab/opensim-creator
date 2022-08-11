@@ -1,6 +1,6 @@
 #include "src/Graphics/Color.hpp"
 #include "src/Graphics/MeshGen.hpp"
-#include "src/Graphics/Renderer.hpp"
+#include "src/Graphics/GraphicsLazyMode.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/BVH.hpp"
 #include "src/Maths/Geometry.hpp"

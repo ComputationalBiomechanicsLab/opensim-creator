@@ -4,7 +4,8 @@
 
 #include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/Graphics/Renderer.hpp"
+#include "src/Graphics/Texture2D.hpp"
+#include "src/Graphics/TextureFilterMode.hpp"
 #include "src/Graphics/SceneRenderer.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
 #include "src/Maths/Constants.hpp"

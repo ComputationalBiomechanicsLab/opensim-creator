@@ -1,8 +1,8 @@
 #include "MeshCache.hpp"
 
 #include "src/Bindings/SimTKHelpers.hpp"
+#include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshGen.hpp"
-#include "src/Graphics/Renderer.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 

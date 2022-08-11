@@ -2,7 +2,6 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/MeshCache.hpp"
-#include "src/Graphics/Renderer.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/SceneDecorationFlags.hpp"
 #include "src/Graphics/SceneRenderer.hpp"

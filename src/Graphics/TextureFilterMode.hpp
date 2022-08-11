@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iosfwd>
+
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {

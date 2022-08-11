@@ -1,7 +1,7 @@
 #include "GraphicsHelpers.hpp"
 
+#include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
-#include "src/Graphics/Renderer.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/BVH.hpp"
@@ -175,7 +175,7 @@ osc::RayCollision osc::GetClosestWorldspaceRayCollision(Mesh const& mesh, Transf
 {
     RayCollision rv{false, 0.0f};
 
-    if (mesh.getTopography() != osc::MeshTopography::Triangles)
+    if (mesh.getTopography() != MeshTopography::Triangles)
     {
         return rv;
     }
