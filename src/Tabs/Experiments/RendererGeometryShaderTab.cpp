@@ -124,7 +124,7 @@ private:
         }
     };
     Mesh m_Mesh = LoadGeometry();
-    experimental::Camera m_SceneCamera;
+    Camera m_SceneCamera;
 
     bool m_IsMouseCaptured = false;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};

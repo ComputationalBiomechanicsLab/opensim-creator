@@ -24,7 +24,7 @@
 
 namespace
 {
-	void DrawBVHRecursive(osc::BVH const& bvh, osc::Mesh const& cubeLinesMesh, osc::Material const& material, osc::experimental::Camera& camera, int pos)
+	void DrawBVHRecursive(osc::BVH const& bvh, osc::Mesh const& cubeLinesMesh, osc::Material const& material, osc::Camera& camera, int pos)
 	{
 		osc::BVHNode const& n = bvh.nodes[pos];
 		glm::vec3 const halfWidths = 0.5f * osc::Dimensions(n.bounds);
@@ -43,7 +43,7 @@ namespace
 		}
 	}
 
-	void DrawBVH(osc::BVH const& bvh, osc::Mesh const& cubeLinesMesh, osc::Material const& material, osc::experimental::Camera& camera)
+	void DrawBVH(osc::BVH const& bvh, osc::Mesh const& cubeLinesMesh, osc::Material const& material, osc::Camera& camera)
 	{
 		if (bvh.nodes.empty())
 		{
@@ -219,7 +219,7 @@ private:
 	TabHost* m_Parent;
 
 	// rendering
-	experimental::Camera m_Camera;
+	Camera m_Camera;
 	Material m_Material
 	{
 		Shader

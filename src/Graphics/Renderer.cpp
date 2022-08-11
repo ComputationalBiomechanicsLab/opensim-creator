@@ -2633,7 +2633,7 @@ std::ostream& osc::operator<<(std::ostream& o, Mesh const&)
 namespace
 {
     // LUT for human-readable form of the above
-    static constexpr auto const g_CameraProjectionStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::experimental::CameraProjection::TOTAL)>
+    static constexpr auto const g_CameraProjectionStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::CameraProjection::TOTAL)>
     (
         "Perspective",
         "Orthographic"
@@ -2802,7 +2802,7 @@ namespace
     }
 }
 
-class osc::experimental::Camera::Impl final {
+class osc::Camera::Impl final {
 public:
     Impl() = default;
 
@@ -3031,7 +3031,7 @@ public:
         {
             return *m_MaybeProjectionMatrixOverride;
         }
-        else if (m_CameraProjection == osc::experimental::CameraProjection::Perspective)
+        else if (m_CameraProjection == osc::CameraProjection::Perspective)
         {
             return glm::perspective(m_PerspectiveFov, getAspectRatio(), m_NearClippingPlane, m_FarClippingPlane);
         }
@@ -3071,7 +3071,7 @@ public:
 
     void render()
     {
-        GraphicsBackend::FlushRenderQueue(*this);
+        experimental::GraphicsBackend::FlushRenderQueue(*this);
     }
 
 private:
@@ -3103,7 +3103,7 @@ private:
         }
     }
 
-    friend class GraphicsBackend;
+    friend class osc::experimental::GraphicsBackend;
 
     std::optional<RenderTexture> m_MaybeTexture = std::nullopt;
     glm::vec4 m_BackgroundColor = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -3122,286 +3122,286 @@ private:
     std::vector<RenderObject> m_RenderQueue;
 };
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, CameraProjection cp)
+std::ostream& osc::operator<<(std::ostream& o, CameraProjection cp)
 {
     return o << g_CameraProjectionStrings.at(static_cast<int>(cp));
 }
 
-osc::experimental::Camera::Camera() :
+osc::Camera::Camera() :
     m_Impl{new Impl{}}
 {
 }
 
-osc::experimental::Camera::Camera(RenderTexture t) :
+osc::Camera::Camera(RenderTexture t) :
     m_Impl{new Impl{std::move(t)}}
 {
 }
 
-osc::experimental::Camera::Camera(Camera const&) = default;
-osc::experimental::Camera::Camera(Camera&&) noexcept = default;
-osc::experimental::Camera& osc::experimental::Camera::operator=(Camera const&) = default;
-osc::experimental::Camera& osc::experimental::Camera::operator=(Camera&&) noexcept = default;
-osc::experimental::Camera::~Camera() noexcept = default;
+osc::Camera::Camera(Camera const&) = default;
+osc::Camera::Camera(Camera&&) noexcept = default;
+osc::Camera& osc::Camera::operator=(Camera const&) = default;
+osc::Camera& osc::Camera::operator=(Camera&&) noexcept = default;
+osc::Camera::~Camera() noexcept = default;
 
-glm::vec4 osc::experimental::Camera::getBackgroundColor() const
+glm::vec4 osc::Camera::getBackgroundColor() const
 {
     return m_Impl->getBackgroundColor();
 }
 
-void osc::experimental::Camera::setBackgroundColor(glm::vec4 const& v)
+void osc::Camera::setBackgroundColor(glm::vec4 const& v)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setBackgroundColor(v);
 }
 
-osc::experimental::CameraProjection osc::experimental::Camera::getCameraProjection() const
+osc::CameraProjection osc::Camera::getCameraProjection() const
 {
     return m_Impl->getCameraProjection();
 }
 
-void osc::experimental::Camera::setCameraProjection(CameraProjection projection)
+void osc::Camera::setCameraProjection(CameraProjection projection)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setCameraProjection(std::move(projection));
 }
 
-float osc::experimental::Camera::getOrthographicSize() const
+float osc::Camera::getOrthographicSize() const
 {
     return m_Impl->getOrthographicSize();
 }
 
-void osc::experimental::Camera::setOrthographicSize(float sz)
+void osc::Camera::setOrthographicSize(float sz)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setOrthographicSize(std::move(sz));
 }
 
-float osc::experimental::Camera::getCameraFOV() const
+float osc::Camera::getCameraFOV() const
 {
     return m_Impl->getCameraFOV();
 }
 
-void osc::experimental::Camera::setCameraFOV(float fov)
+void osc::Camera::setCameraFOV(float fov)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setCameraFOV(std::move(fov));
 }
 
-float osc::experimental::Camera::getNearClippingPlane() const
+float osc::Camera::getNearClippingPlane() const
 {
     return m_Impl->getNearClippingPlane();
 }
 
-void osc::experimental::Camera::setNearClippingPlane(float d)
+void osc::Camera::setNearClippingPlane(float d)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setNearClippingPlane(std::move(d));
 }
 
-float osc::experimental::Camera::getFarClippingPlane() const
+float osc::Camera::getFarClippingPlane() const
 {
     return m_Impl->getFarClippingPlane();
 }
 
-void osc::experimental::Camera::setFarClippingPlane(float d)
+void osc::Camera::setFarClippingPlane(float d)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setFarClippingPlane(std::move(d));
 }
 
-osc::experimental::CameraClearFlags osc::experimental::Camera::getClearFlags() const
+osc::CameraClearFlags osc::Camera::getClearFlags() const
 {
     return m_Impl->getClearFlags();
 }
 
-void osc::experimental::Camera::setClearFlags(CameraClearFlags flags)
+void osc::Camera::setClearFlags(CameraClearFlags flags)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setClearFlags(std::move(flags));
 }
 
-std::optional<osc::RenderTexture> osc::experimental::Camera::getTexture() const
+std::optional<osc::RenderTexture> osc::Camera::getTexture() const
 {
     return m_Impl->getTexture();
 }
 
-void osc::experimental::Camera::setTexture(RenderTexture&& t)
+void osc::Camera::setTexture(RenderTexture&& t)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setTexture(std::move(t));
 }
 
-void osc::experimental::Camera::setTexture(RenderTextureDescriptor desc)
+void osc::Camera::setTexture(RenderTextureDescriptor desc)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setTexture(std::move(desc));
 }
 
-void osc::experimental::Camera::setTexture()
+void osc::Camera::setTexture()
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setTexture();
 }
 
-void osc::experimental::Camera::swapTexture(std::optional<RenderTexture>& other)
+void osc::Camera::swapTexture(std::optional<RenderTexture>& other)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->swapTexture(other);
 }
 
-osc::Rect osc::experimental::Camera::getPixelRect() const
+osc::Rect osc::Camera::getPixelRect() const
 {
     return m_Impl->getPixelRect();
 }
 
-void osc::experimental::Camera::setPixelRect(Rect const& rect)
+void osc::Camera::setPixelRect(Rect const& rect)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setPixelRect(rect);
 }
 
-void osc::experimental::Camera::setPixelRect()
+void osc::Camera::setPixelRect()
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setPixelRect();
 }
 
-int osc::experimental::Camera::getPixelWidth() const
+int osc::Camera::getPixelWidth() const
 {
     return m_Impl->getPixelWidth();
 }
 
-int osc::experimental::Camera::getPixelHeight() const
+int osc::Camera::getPixelHeight() const
 {
     return m_Impl->getPixelHeight();
 }
 
-float osc::experimental::Camera::getAspectRatio() const
+float osc::Camera::getAspectRatio() const
 {
     return m_Impl->getAspectRatio();
 }
 
-std::optional<osc::Rect> osc::experimental::Camera::getScissorRect() const
+std::optional<osc::Rect> osc::Camera::getScissorRect() const
 {
     return m_Impl->getScissorRect();
 }
 
-void osc::experimental::Camera::setScissorRect(Rect const& rect)
+void osc::Camera::setScissorRect(Rect const& rect)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setScissorRect(rect);
 }
 
-void osc::experimental::Camera::setScissorRect()
+void osc::Camera::setScissorRect()
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setScissorRect();
 }
 
-glm::vec3 osc::experimental::Camera::getPosition() const
+glm::vec3 osc::Camera::getPosition() const
 {
     return m_Impl->getPosition();
 }
 
-void osc::experimental::Camera::setPosition(glm::vec3 const& p)
+void osc::Camera::setPosition(glm::vec3 const& p)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setPosition(p);
 }
 
-glm::quat osc::experimental::Camera::getRotation() const
+glm::quat osc::Camera::getRotation() const
 {
     return m_Impl->getRotation();
 }
 
-void osc::experimental::Camera::setRotation(glm::quat const& rotation)
+void osc::Camera::setRotation(glm::quat const& rotation)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setRotation(rotation);
 }
 
-glm::vec3 osc::experimental::Camera::getDirection() const
+glm::vec3 osc::Camera::getDirection() const
 {
     return m_Impl->getDirection();
 }
 
-void osc::experimental::Camera::setDirection(glm::vec3 const& d)
+void osc::Camera::setDirection(glm::vec3 const& d)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setDirection(d);
 }
 
-glm::vec3 osc::experimental::Camera::getUpwardsDirection() const
+glm::vec3 osc::Camera::getUpwardsDirection() const
 {
     return m_Impl->getUpwardsDirection();
 }
 
-glm::mat4 osc::experimental::Camera::getViewMatrix() const
+glm::mat4 osc::Camera::getViewMatrix() const
 {
     return m_Impl->getViewMatrix();
 }
 
-void osc::experimental::Camera::setViewMatrix(glm::mat4 const& m)
+void osc::Camera::setViewMatrix(glm::mat4 const& m)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setViewMatrix(m);
 }
 
-void osc::experimental::Camera::resetViewMatrix()
+void osc::Camera::resetViewMatrix()
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->resetViewMatrix();
 }
 
-glm::mat4 osc::experimental::Camera::getProjectionMatrix() const
+glm::mat4 osc::Camera::getProjectionMatrix() const
 {
     return m_Impl->getProjectionMatrix();
 }
 
-void osc::experimental::Camera::setProjectionMatrix(glm::mat4 const& m)
+void osc::Camera::setProjectionMatrix(glm::mat4 const& m)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setProjectionMatrix(m);
 }
 
-void osc::experimental::Camera::resetProjectionMatrix()
+void osc::Camera::resetProjectionMatrix()
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->resetProjectionMatrix();
 }
 
-glm::mat4 osc::experimental::Camera::getViewProjectionMatrix() const
+glm::mat4 osc::Camera::getViewProjectionMatrix() const
 {
     return m_Impl->getViewProjectionMatrix();
 }
 
-glm::mat4 osc::experimental::Camera::getInverseViewProjectionMatrix() const
+glm::mat4 osc::Camera::getInverseViewProjectionMatrix() const
 {
     return m_Impl->getInverseViewProjectionMatrix();
 }
 
-void osc::experimental::Camera::render()
+void osc::Camera::render()
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->render();
 }
 
-bool osc::experimental::operator==(Camera const& a, Camera const& b)
+bool osc::operator==(Camera const& a, Camera const& b)
 {
     return a.m_Impl == b.m_Impl;
 }
 
-bool osc::experimental::operator!=(Camera const& a, Camera const& b)
+bool osc::operator!=(Camera const& a, Camera const& b)
 {
     return a.m_Impl != b.m_Impl;
 }
 
-bool osc::experimental::operator<(Camera const& a, Camera const& b)
+bool osc::operator<(Camera const& a, Camera const& b)
 {
     return a.m_Impl < b.m_Impl;
 }
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, Camera const& camera)
+std::ostream& osc::operator<<(std::ostream& o, Camera const& camera)
 {
     using osc::operator<<;
     return o << "Camera(position = " << camera.getPosition() << ", direction = " << camera.getDirection() << ", projection = " << camera.getCameraProjection() << ')';
@@ -4097,11 +4097,11 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         camera.m_BackgroundColor.b,
         camera.m_BackgroundColor.a
     );
-    GLenum clearFlags = camera.m_ClearFlags == experimental::CameraClearFlags::SolidColor ? GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT : GL_DEPTH_BUFFER_BIT;
+    GLenum clearFlags = camera.m_ClearFlags == CameraClearFlags::SolidColor ? GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT : GL_DEPTH_BUFFER_BIT;
     if (camera.m_MaybeTexture)
     {
         DoCopyOnWrite(camera.m_MaybeTexture->m_Impl);
-        if (camera.m_ClearFlags != experimental::CameraClearFlags::Nothing)
+        if (camera.m_ClearFlags != CameraClearFlags::Nothing)
         {
             // clear the MSXAA-resolved output texture
             gl::BindFramebuffer(GL_FRAMEBUFFER, camera.m_MaybeTexture->m_Impl->getOutputFrameBuffer());
@@ -4119,7 +4119,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     else
     {
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-        if (camera.m_ClearFlags != experimental::CameraClearFlags::Nothing)
+        if (camera.m_ClearFlags != CameraClearFlags::Nothing)
         {
             gl::Clear(clearFlags);
         }
@@ -4537,12 +4537,12 @@ void osc::experimental::GraphicsBackend::BlitToScreen(
 
     if (flags == Graphics::BlitFlags::AlphaBlend)
     {
-        experimental::Camera c;
+        Camera c;
         c.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
         c.setPixelRect(rect);
         c.setProjectionMatrix(glm::mat4{1.0f});
         c.setViewMatrix(glm::mat4{1.0f});
-        c.setClearFlags(osc::experimental::CameraClearFlags::Nothing);
+        c.setClearFlags(osc::CameraClearFlags::Nothing);
 
         g_GraphicsContextImpl->m_QuadMaterial.setRenderTexture("uTexture", t);
         experimental::Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, g_GraphicsContextImpl->m_QuadMaterial, c);
@@ -4590,12 +4590,12 @@ void osc::experimental::GraphicsBackend::BlitToScreen(
     OSC_ASSERT(g_GraphicsContextImpl);
     OSC_ASSERT(*t.m_Impl->m_MaybeGPUBuffers && "the input texture has not been rendered to");
 
-    experimental::Camera c;
+    Camera c;
     c.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
     c.setPixelRect(rect);
     c.setProjectionMatrix(glm::mat4{1.0f});
     c.setViewMatrix(glm::mat4{1.0f});
-    c.setClearFlags(osc::experimental::CameraClearFlags::Nothing);
+    c.setClearFlags(osc::CameraClearFlags::Nothing);
 
     Material copy{material};
 

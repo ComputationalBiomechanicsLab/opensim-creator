@@ -247,7 +247,7 @@ private:
     Texture2D m_DiffuseMap = LoadTexture2DFromImageResource("textures/container2.png", ImageFlags_FlipVertically);
     Texture2D m_SpecularMap = LoadTexture2DFromImageResource("textures/container2_specular.png", ImageFlags_FlipVertically);
 
-    experimental::Camera m_Camera;
+    Camera m_Camera;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
     bool m_IsMouseCaptured = false;
 

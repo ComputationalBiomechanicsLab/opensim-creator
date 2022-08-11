@@ -13,15 +13,11 @@
 
 namespace osc
 {
+    class Camera;
     class UID;
     class PolarPerspectiveCamera;
     class Texture2D;
     class RenderTexture;
-}
-
-namespace osc::experimental
-{
-    class Camera;
 }
 
 namespace osc
@@ -33,7 +29,7 @@ namespace osc
 
     // updates a polar comera's rotation, position, etc. based on ImGui input
     void UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, PolarPerspectiveCamera&);
-    void UpdateEulerCameraFromImGuiUserInput(experimental::Camera&, glm::vec3& eulers);
+    void UpdateEulerCameraFromImGuiUserInput(Camera&, glm::vec3& eulers);
 
     // returns the ImGui content region available in screenspace as a `Rect`
     Rect ContentRegionAvailScreenRect();

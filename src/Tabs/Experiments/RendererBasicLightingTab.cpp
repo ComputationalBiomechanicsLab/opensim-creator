@@ -145,7 +145,7 @@ private:
 
     Mesh m_CubeMesh = GenLearnOpenGLCube();
 
-    experimental::Camera m_Camera;
+    Camera m_Camera;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
     bool m_IsMouseCaptured = false;
 

@@ -175,7 +175,7 @@ private:
     };
     Material m_Material{m_Shader};
     Mesh m_Mesh = GenLearnOpenGLCube();
-    experimental::Camera m_Camera;
+    Camera m_Camera;
     bool m_IsMouseCaptured = false;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
 

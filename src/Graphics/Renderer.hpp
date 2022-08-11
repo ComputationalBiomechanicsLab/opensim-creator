@@ -494,7 +494,7 @@ namespace osc
 //
 // encapsulates a camera viewport that can be drawn to, with the intention of producing
 // a 2D rendered image of the drawn elements
-namespace osc::experimental
+namespace osc
 {
     // the shape of the viewing frustrum that the camera uses
     enum class CameraProjection {
@@ -515,7 +515,7 @@ namespace osc::experimental
     class Camera final {
     public:
         Camera();  // draws to screen
-        explicit Camera(osc::RenderTexture);  // draws to texture
+        explicit Camera(RenderTexture);  // draws to texture
         Camera(Camera const&);
         Camera(Camera&&) noexcept;
         Camera& operator=(Camera const&);
@@ -545,11 +545,11 @@ namespace osc::experimental
         CameraClearFlags getClearFlags() const;
         void setClearFlags(CameraClearFlags);
 
-        std::optional<osc::RenderTexture> getTexture() const; // empty if drawing directly to screen
-        void setTexture(osc::RenderTexture&&);
-        void setTexture(osc::RenderTextureDescriptor);
+        std::optional<RenderTexture> getTexture() const; // empty if drawing directly to screen
+        void setTexture(RenderTexture&&);
+        void setTexture(RenderTextureDescriptor);
         void setTexture();  // resets to drawing to screen
-        void swapTexture(std::optional<osc::RenderTexture>&);  // handy if the caller wants to handle the textures
+        void swapTexture(std::optional<RenderTexture>&);  // handy if the caller wants to handle the textures
 
         // where on the screen the camera is rendered (in screen-space - top-left, X rightwards, Y down
         //
@@ -620,7 +620,7 @@ namespace osc::experimental
         void render();
 
     private:
-        friend class GraphicsBackend;
+        friend class osc::experimental::GraphicsBackend;
         friend bool operator==(Camera const&, Camera const&);
         friend bool operator!=(Camera const&, Camera const&);
         friend bool operator<(Camera const&, Camera const&);

@@ -178,7 +178,7 @@ private:
         }
     };
 
-    experimental::Camera m_SceneCamera;
+    Camera m_SceneCamera;
     bool m_IsMouseCaptured = false;
     glm::vec3 m_CameraEulers = { 0.0f, 0.0f, 0.0f };
 
@@ -189,7 +189,7 @@ private:
     Mesh m_PlaneMesh = GeneratePlane();
     Mesh m_QuadMesh = GenTexturedQuad();
 
-    experimental::Camera m_ScreenCamera;
+    Camera m_ScreenCamera;
     Material m_ScreenMaterial
     {
         Shader

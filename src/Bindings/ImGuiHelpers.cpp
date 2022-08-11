@@ -157,7 +157,7 @@ void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::Polar
     }
 }
 
-void osc::UpdateEulerCameraFromImGuiUserInput(experimental::Camera& camera, glm::vec3& eulers)
+void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, glm::vec3& eulers)
 {
     glm::vec3 const front = camera.getDirection();
     glm::vec3 const up = camera.getUpwardsDirection();

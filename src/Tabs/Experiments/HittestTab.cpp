@@ -94,7 +94,7 @@ namespace
 		return p;
 	}
 
-	osc::Line GetCameraRay(osc::experimental::Camera const& camera)
+	osc::Line GetCameraRay(osc::Camera const& camera)
 	{
 		return
 		{
@@ -299,7 +299,7 @@ private:
 	TabHost* m_Parent;
 
 	// rendering
-	experimental::Camera m_Camera;
+	Camera m_Camera;
 	Material m_Material
 	{
 		Shader

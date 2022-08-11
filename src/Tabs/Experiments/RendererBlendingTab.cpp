@@ -228,7 +228,7 @@ private:
     Mesh m_CubeMesh = GenLearnOpenGLCube();
     Mesh m_PlaneMesh = GeneratePlane();
     Mesh m_TransparentMesh = GenerateTransparent();
-    experimental::Camera m_Camera;
+    Camera m_Camera;
     Texture2D m_MarbleTexture = LoadTexture2DFromImageResource("textures/marble.jpg");
     Texture2D m_MetalTexture = LoadTexture2DFromImageResource("textures/metal.png");
     Texture2D m_WindowTexture = LoadTexture2DFromImageResource("textures/window.png");

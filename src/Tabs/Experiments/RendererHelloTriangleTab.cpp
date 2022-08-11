@@ -97,7 +97,7 @@ private:
     };
     Material m_Material{m_Shader};
     Mesh m_TriangleMesh = GenerateTriangleMesh();
-    experimental::Camera m_Camera;
+    Camera m_Camera;
 };
 
 

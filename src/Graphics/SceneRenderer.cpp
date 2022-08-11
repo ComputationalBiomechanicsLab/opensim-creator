@@ -302,7 +302,7 @@ private:
 
     std::shared_ptr<Mesh const> m_QuadMesh = App::meshes().getTexturedQuadMesh();
     Texture2D m_ChequerTexture = GenChequeredFloorTexture();
-    experimental::Camera m_Camera;
+    Camera m_Camera;
 
     // outputs
     std::optional<RenderTexture> m_MaybeSelectedTexture;

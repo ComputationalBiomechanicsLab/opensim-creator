@@ -129,8 +129,8 @@ public:
 private:
 	void printText(float x, float y, char const* text)
 	{
-		osc::experimental::Camera camera;
-		camera.setCameraProjection(osc::experimental::CameraProjection::Orthographic);
+		osc::Camera camera;
+		camera.setCameraProjection(osc::CameraProjection::Orthographic);
 		camera.setOrthographicSize(osc::App::get().dims().y);
 		camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
 		camera.setPosition({ 0.0f, 0.0f, 1.0f });
