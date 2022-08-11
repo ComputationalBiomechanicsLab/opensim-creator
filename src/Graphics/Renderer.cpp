@@ -703,7 +703,7 @@ std::ostream& osc::operator<<(std::ostream& o, Texture2D const&)
 
 osc::Texture2D osc::LoadTexture2DFromImageResource(std::string_view resource, ImageFlags flags)
 {
-    Image img = Image::Load(osc::App::get().resource(resource), flags);
+    Image img = Image::Load(App::get().resource(resource), flags);
     auto dims = img.getDimensions();
     return Texture2D{dims.x, dims.y, img.getPixelData(), img.getNumChannels()};
 }
@@ -1033,7 +1033,7 @@ private:
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
     }
 
-    friend class osc::GraphicsBackend;
+    friend class GraphicsBackend;
 
     RenderTextureDescriptor m_Descriptor;
     DefaultConstructOnCopy<std::optional<RenderTextureGPUBuffers>> m_MaybeGPUBuffers;
@@ -1297,7 +1297,7 @@ private:
         }
     }
 
-    friend class osc::GraphicsBackend;
+    friend class GraphicsBackend;
 
     UID m_UID;
     gl::Program m_Program;
@@ -1412,7 +1412,7 @@ std::ostream& osc::operator<<(std::ostream& o, Shader const& shader)
 
 class osc::Material::Impl final {
 public:
-    Impl(osc::Shader shader) : m_Shader{std::move(shader)}
+    Impl(Shader shader) : m_Shader{std::move(shader)}
     {
     }
 
@@ -1521,12 +1521,12 @@ public:
         setValue(std::move(propertyName), value);
     }
 
-    std::optional<osc::Texture2D> getTexture(std::string_view propertyName) const
+    std::optional<Texture2D> getTexture(std::string_view propertyName) const
     {
-        return getValue<osc::Texture2D>(std::move(propertyName));
+        return getValue<Texture2D>(std::move(propertyName));
     }
 
-    void setTexture(std::string_view propertyName, osc::Texture2D t)
+    void setTexture(std::string_view propertyName, Texture2D t)
     {
         setValue(std::move(propertyName), std::move(t));
     }
@@ -1601,7 +1601,7 @@ private:
         m_Values[std::string{propertyName}] = std::forward<T&&>(v);
     }
 
-    friend class osc::GraphicsBackend;
+    friend class GraphicsBackend;
 
     UID m_UID;
     Shader m_Shader;
@@ -1611,7 +1611,7 @@ private:
     bool m_IsWireframeMode = false;
 };
 
-osc::Material::Material(osc::Shader shader) :
+osc::Material::Material(Shader shader) :
     m_Impl{std::make_shared<Impl>(std::move(shader))}
 {
 }
@@ -1742,7 +1742,7 @@ std::optional<osc::Texture2D> osc::Material::getTexture(std::string_view propert
     return m_Impl->getTexture(std::move(propertyName));
 }
 
-void osc::Material::setTexture(std::string_view propertyName, osc::Texture2D t)
+void osc::Material::setTexture(std::string_view propertyName, Texture2D t)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setTexture(std::move(propertyName), std::move(t));
@@ -1947,7 +1947,7 @@ private:
         m_Values[std::string{propertyName}] = v;
     }
 
-    friend class osc::GraphicsBackend;
+    friend class GraphicsBackend;
 
     robin_hood::unordered_map<std::string, MaterialValue> m_Values;
 };
@@ -2341,8 +2341,8 @@ private:
         else if (m_IndicesAre32Bit)
         {
             nonstd::span<uint32_t const> indices(&m_IndicesData.front().u32, m_NumIndices);
-            m_AABB = osc::AABBFromIndexedVerts(m_Vertices, indices);
-            if (m_Topography == osc::MeshTopography::Triangles)
+            m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
+            if (m_Topography == MeshTopography::Triangles)
             {
                 BVH_BuildFromIndexedTriangles(m_TriangleBVH, m_Vertices, indices);
             }
@@ -2354,8 +2354,8 @@ private:
         else
         {
             nonstd::span<uint16_t const> indices(&m_IndicesData.front().u16.a, m_NumIndices);
-            m_AABB = osc::AABBFromIndexedVerts(m_Vertices, indices);
-            if (m_Topography == osc::MeshTopography::Triangles)
+            m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
+            if (m_Topography == MeshTopography::Triangles)
             {
                 BVH_BuildFromIndexedTriangles(m_TriangleBVH, m_Vertices, indices);
             }
@@ -2924,7 +2924,7 @@ public:
         }
         else
         {
-            return Rect{{}, osc::App::get().dims()};
+            return Rect{{}, App::get().dims()};
         }
     }
 
@@ -3031,7 +3031,7 @@ public:
         {
             return *m_MaybeProjectionMatrixOverride;
         }
-        else if (m_CameraProjection == osc::CameraProjection::Perspective)
+        else if (m_CameraProjection == CameraProjection::Perspective)
         {
             return glm::perspective(m_PerspectiveFov, getAspectRatio(), m_NearClippingPlane, m_FarClippingPlane);
         }
@@ -3087,7 +3087,7 @@ private:
         }
         else
         {
-            return osc::App::get().idims();
+            return App::get().idims();
         }
     }
 
@@ -3099,11 +3099,11 @@ private:
         }
         else
         {
-            return osc::App::get().dims();
+            return App::get().dims();
         }
     }
 
-    friend class osc::GraphicsBackend;
+    friend class GraphicsBackend;
 
     std::optional<RenderTexture> m_MaybeTexture = std::nullopt;
     glm::vec4 m_BackgroundColor = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -3403,7 +3403,6 @@ bool osc::operator<(Camera const& a, Camera const& b)
 
 std::ostream& osc::operator<<(std::ostream& o, Camera const& camera)
 {
-    using osc::operator<<;
     return o << "Camera(position = " << camera.getPosition() << ", direction = " << camera.getDirection() << ", projection = " << camera.getCameraProjection() << ')';
 }
 
@@ -3776,7 +3775,7 @@ public:
         }
     };
 
-    Mesh m_QuadMesh = osc::GenTexturedQuad();
+    Mesh m_QuadMesh = GenTexturedQuad();
 };
 
 static std::unique_ptr<osc::GraphicsContext::Impl> g_GraphicsContextImpl = nullptr;
@@ -3940,7 +3939,7 @@ void osc::GraphicsBackend::DrawMesh(
 
 void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement const& se, MaterialValue const& v, int* textureSlot)
 {
-    osc::ShaderType t = GetShaderType(v);
+    ShaderType t = GetShaderType(v);
 
     if (GetShaderType(v) != se.Type)
     {
@@ -4018,9 +4017,9 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement con
         gl::Uniform(u, std::get<bool>(v));
         break;
     }
-    case VariantIndex<MaterialValue, osc::Texture2D>():
+    case VariantIndex<MaterialValue, Texture2D>():
     {
-        osc::Texture2D::Impl& impl = *std::get<osc::Texture2D>(v).m_Impl;
+        Texture2D::Impl& impl = *std::get<Texture2D>(v).m_Impl;
         gl::Texture2D& texture = impl.updTexture();
 
         gl::ActiveTexture(GL_TEXTURE0 + *textureSlot);
@@ -4031,9 +4030,9 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement con
         ++(*textureSlot);
         break;
     }
-    case VariantIndex<MaterialValue, osc::RenderTexture>():
+    case VariantIndex<MaterialValue, RenderTexture>():
     {
-        osc::RenderTexture::Impl& impl = *std::get<osc::RenderTexture>(v).m_Impl;
+        RenderTexture::Impl& impl = *std::get<RenderTexture>(v).m_Impl;
         gl::Texture2D& texture = impl.getOutputTexture();
 
         gl::ActiveTexture(GL_TEXTURE0 + *textureSlot);
@@ -4058,11 +4057,11 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     // setup output viewport
     glm::ivec2 outputDimensions{};
     {
-        osc::Rect cameraRect = camera.getPixelRect();  // in "usual" screen space - topleft
-        glm::vec2 cameraRectBottomLeft = osc::BottomLeft(cameraRect);
+        Rect cameraRect = camera.getPixelRect();  // in "usual" screen space - topleft
+        glm::vec2 cameraRectBottomLeft = BottomLeft(cameraRect);
         glm::vec2 viewportDims = camera.viewportDimensions();
 
-        outputDimensions = osc::Dimensions(cameraRect);
+        outputDimensions = Dimensions(cameraRect);
         gl::Viewport(
             static_cast<GLsizei>(cameraRectBottomLeft.x),
             static_cast<GLsizei>(viewportDims.y - cameraRectBottomLeft.y),
@@ -4074,8 +4073,8 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     // setup scissor testing (if applicable)
     if (camera.m_MaybeScissorRect)
     {
-        osc::Rect scissorRect = *camera.m_MaybeScissorRect;
-        glm::ivec2 scissorDims = osc::Dimensions(scissorRect);
+        Rect scissorRect = *camera.m_MaybeScissorRect;
+        glm::ivec2 scissorDims = Dimensions(scissorRect);
 
         gl::Enable(GL_SCISSOR_TEST);
         glScissor(
@@ -4157,7 +4156,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 
             if (shaderImpl.m_MaybeInstancedModelMatAttr)
             {
-                if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == osc::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == ShaderType::Mat4)
                 {
                     stride += sizeof(float) * 16;
                 }
@@ -4165,11 +4164,11 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 
             if (shaderImpl.m_MaybeInstancedNormalMatAttr)
             {
-                if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat4)
                 {
                     stride += sizeof(float) * 16;
                 }
-                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat3)
+                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat3)
                 {
                     stride += sizeof(float) * 9;
                 }
@@ -4182,7 +4181,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             {
                 if (shaderImpl.m_MaybeInstancedModelMatAttr)
                 {
-                    if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == osc::ShaderType::Mat4)
+                    if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == ShaderType::Mat4)
                     {
                         static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
                         reinterpret_cast<glm::mat4&>(buf[bufPos]) = ModelMatrix(*it);
@@ -4191,13 +4190,13 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                 }
                 if (shaderImpl.m_MaybeInstancedNormalMatAttr)
                 {
-                    if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat4)
+                    if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat4)
                     {
                         static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
                         reinterpret_cast<glm::mat4&>(buf[bufPos]) = ModelMatrix(*it);
                         bufPos += 16;
                     }
-                    else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat3)
+                    else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat3)
                     {
                         static_assert(alignof(glm::mat3) == alignof(float) && sizeof(glm::mat3) == 9 * sizeof(float));
                         reinterpret_cast<glm::mat3&>(buf[bufPos]) = NormalMatrix(*it);
@@ -4223,7 +4222,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             int offset = 0;
             if (shaderImpl.m_MaybeInstancedModelMatAttr)
             {
-                if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == osc::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == ShaderType::Mat4)
                 {
                     gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->Location};
                     gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
@@ -4234,7 +4233,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             }
             if (shaderImpl.m_MaybeInstancedNormalMatAttr)
             {
-                if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat4)
                 {
                     gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
                     gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
@@ -4242,7 +4241,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                     gl::EnableVertexAttribArray(mmtxAttr);
                     offset += sizeof(float) * 16;
                 }
-                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat3)
+                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat3)
                 {
                     gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
                     gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
@@ -4257,7 +4256,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     // helper: draw a batch of render objects that have the same material, material block, and mesh
     auto HandleBatchWithSameMesh = [&BindToInstancedAttributes](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end, std::optional<InstancingState>& ins)
     {
-        auto& meshImpl = const_cast<osc::Mesh::Impl&>(*begin->mesh.m_Impl);
+        auto& meshImpl = const_cast<Mesh::Impl&>(*begin->mesh.m_Impl);
         Shader::Impl& shaderImpl = *begin->material.m_Impl->m_Shader.m_Impl;
 
         gl::BindVertexArray(meshImpl.updVertexArray());
@@ -4269,7 +4268,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                     // try binding to uModel (standard)
                     if (shaderImpl.m_MaybeModelMatUniform)
                     {
-                        if (shaderImpl.m_MaybeModelMatUniform->Type == osc::ShaderType::Mat4)
+                        if (shaderImpl.m_MaybeModelMatUniform->Type == ShaderType::Mat4)
                         {
                             gl::UniformMat4 u{shaderImpl.m_MaybeModelMatUniform->Location};
                             gl::Uniform(u, ModelMatrix(*it));
@@ -4317,8 +4316,8 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     // helper: draw a batch of render objects that have the same material and material block
     auto HandleBatchWithSameMatrialPropertyBlock = [&HandleBatchWithSameMesh](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end, int& textureSlot, std::optional<InstancingState>& ins)
     {
-        osc::Material::Impl& matImpl = const_cast<osc::Material::Impl&>(*begin->material.m_Impl);
-        osc::Shader::Impl& shaderImpl = const_cast<osc::Shader::Impl&>(*matImpl.m_Shader.m_Impl);
+        Material::Impl& matImpl = const_cast<Material::Impl&>(*begin->material.m_Impl);
+        Shader::Impl& shaderImpl = const_cast<Shader::Impl&>(*matImpl.m_Shader.m_Impl);
         robin_hood::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
         // bind property block variables (if applicable)
@@ -4347,8 +4346,8 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     // helper: draw a batch of render objects that have the same material
     auto HandleBatchWithSameMaterial = [&viewMtx, &projMtx, &viewProjMtx, &HandleBatchWithSameMatrialPropertyBlock, &UploadInstancingData](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end)
     {
-        osc::Material::Impl& matImpl = const_cast<osc::Material::Impl&>(*begin->material.m_Impl);
-        osc::Shader::Impl& shaderImpl = const_cast<osc::Shader::Impl&>(*matImpl.m_Shader.m_Impl);
+        Material::Impl& matImpl = const_cast<Material::Impl&>(*begin->material.m_Impl);
+        Shader::Impl& shaderImpl = const_cast<Shader::Impl&>(*matImpl.m_Shader.m_Impl);
         robin_hood::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
         // preemptively upload instance data
@@ -4369,7 +4368,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             // try binding to uView (standard)
             if (shaderImpl.m_MaybeViewMatUniform)
             {
-                if (shaderImpl.m_MaybeViewMatUniform->Type == osc::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeViewMatUniform->Type == ShaderType::Mat4)
                 {
                     gl::UniformMat4 u{shaderImpl.m_MaybeViewMatUniform->Location};
                     gl::Uniform(u, viewMtx);
@@ -4379,7 +4378,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             // try binding to uProjection (standard)
             if (shaderImpl.m_MaybeProjMatUniform)
             {
-                if (shaderImpl.m_MaybeProjMatUniform->Type == osc::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeProjMatUniform->Type == ShaderType::Mat4)
                 {
                     gl::UniformMat4 u{shaderImpl.m_MaybeProjMatUniform->Location};
                     gl::Uniform(u, projMtx);
@@ -4388,7 +4387,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 
             if (shaderImpl.m_MaybeViewProjMatUniform)
             {
-                if (shaderImpl.m_MaybeViewProjMatUniform->Type == osc::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeViewProjMatUniform->Type == ShaderType::Mat4)
                 {
                     gl::UniformMat4 u{shaderImpl.m_MaybeViewProjMatUniform->Location};
                     gl::Uniform(u, viewProjMtx);
@@ -4542,7 +4541,7 @@ void osc::GraphicsBackend::BlitToScreen(
         c.setPixelRect(rect);
         c.setProjectionMatrix(glm::mat4{1.0f});
         c.setViewMatrix(glm::mat4{1.0f});
-        c.setClearFlags(osc::CameraClearFlags::Nothing);
+        c.setClearFlags(CameraClearFlags::Nothing);
 
         g_GraphicsContextImpl->m_QuadMaterial.setRenderTexture("uTexture", t);
         Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, g_GraphicsContextImpl->m_QuadMaterial, c);
@@ -4585,7 +4584,7 @@ void osc::GraphicsBackend::BlitToScreen(
     RenderTexture const& t,
     Rect const& rect,
     Material const& material,
-    osc::Graphics::BlitFlags)
+    Graphics::BlitFlags)
 {
     OSC_ASSERT(g_GraphicsContextImpl);
     OSC_ASSERT(*t.m_Impl->m_MaybeGPUBuffers && "the input texture has not been rendered to");
@@ -4595,7 +4594,7 @@ void osc::GraphicsBackend::BlitToScreen(
     c.setPixelRect(rect);
     c.setProjectionMatrix(glm::mat4{1.0f});
     c.setViewMatrix(glm::mat4{1.0f});
-    c.setClearFlags(osc::CameraClearFlags::Nothing);
+    c.setClearFlags(CameraClearFlags::Nothing);
 
     Material copy{material};
 

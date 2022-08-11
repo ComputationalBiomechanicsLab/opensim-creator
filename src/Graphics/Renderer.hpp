@@ -31,8 +31,8 @@ namespace osc
     struct Rgba32;
     struct Transform;
 
-    void DrawTextureAsImGuiImage(osc::Texture2D&, glm::vec2);
-    void DrawTextureAsImGuiImage(osc::RenderTexture&, glm::vec2);
+    void DrawTextureAsImGuiImage(Texture2D&, glm::vec2);
+    void DrawTextureAsImGuiImage(RenderTexture&, glm::vec2);
 }
 
 // 2D texture
@@ -87,7 +87,7 @@ namespace osc
         void setFilterMode(TextureFilterMode);
 
     private:
-        friend void osc::DrawTextureAsImGuiImage(osc::Texture2D&, glm::vec2);
+        friend void osc::DrawTextureAsImGuiImage(Texture2D&, glm::vec2);
         void* updTextureHandleHACK();  // used by ImGui... for now
 
         friend class GraphicsBackend;
@@ -197,7 +197,7 @@ namespace osc
         void reformat(RenderTextureDescriptor const& d);
 
     private:
-        friend void osc::DrawTextureAsImGuiImage(osc::RenderTexture&, glm::vec2);
+        friend void osc::DrawTextureAsImGuiImage(RenderTexture&, glm::vec2);
         void* updTextureHandleHACK();  // used by ImGui... for now
 
         friend class GraphicsBackend;
@@ -321,11 +321,11 @@ namespace osc
         std::optional<bool> getBool(std::string_view propertyName) const;
         void setBool(std::string_view propertyName, bool);
 
-        std::optional<osc::Texture2D> getTexture(std::string_view propertyName) const;
-        void setTexture(std::string_view propertyName, osc::Texture2D);
+        std::optional<Texture2D> getTexture(std::string_view propertyName) const;
+        void setTexture(std::string_view propertyName, Texture2D);
 
-        std::optional<osc::RenderTexture> getRenderTexture(std::string_view propertyName) const;
-        void setRenderTexture(std::string_view propertyName, osc::RenderTexture);
+        std::optional<RenderTexture> getRenderTexture(std::string_view propertyName) const;
+        void setRenderTexture(std::string_view propertyName, RenderTexture);
         void clearRenderTexture(std::string_view propertyName);
 
         bool getTransparent() const;
@@ -394,8 +394,8 @@ namespace osc
         std::optional<bool> getBool(std::string_view propertyName) const;
         void setBool(std::string_view propertyName, bool);
 
-        std::optional<osc::Texture2D> getTexture(std::string_view propertyName) const;
-        void setTexture(std::string_view, osc::Texture2D);
+        std::optional<Texture2D> getTexture(std::string_view propertyName) const;
+        void setTexture(std::string_view, Texture2D);
 
     private:
         friend class GraphicsBackend;
@@ -697,14 +697,14 @@ namespace osc::Graphics
     };
 
     void BlitToScreen(
-        osc::RenderTexture const&,
+        RenderTexture const&,
         Rect const&,
         BlitFlags = BlitFlags::None
     );
 
     // assigns the source RenderTexture to uniform "uTexture"
     void BlitToScreen(
-        osc::RenderTexture const&,
+        RenderTexture const&,
         Rect const&,
         Material const&,
         BlitFlags = BlitFlags::None
