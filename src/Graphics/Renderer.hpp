@@ -22,11 +22,6 @@
 
 struct SDL_Window;
 
-namespace osc::experimental
-{
-    class GraphicsBackend;
-}
-
 namespace osc
 {
     class Texture2D;
@@ -95,7 +90,7 @@ namespace osc
         friend void osc::DrawTextureAsImGuiImage(osc::Texture2D&, glm::vec2);
         void* updTextureHandleHACK();  // used by ImGui... for now
 
-        friend class osc::experimental::GraphicsBackend;
+        friend class GraphicsBackend;
         friend bool operator==(Texture2D const&, Texture2D const&);
         friend bool operator!=(Texture2D const&, Texture2D const&);
         friend bool operator<(Texture2D const&, Texture2D const&);
@@ -157,7 +152,7 @@ namespace osc
         void setDepthStencilFormat(DepthStencilFormat);
 
     private:
-        friend class osc::experimental::GraphicsBackend;
+        friend class GraphicsBackend;
         friend bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
         friend bool operator!=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
         friend bool operator<(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
@@ -205,7 +200,7 @@ namespace osc
         friend void osc::DrawTextureAsImGuiImage(osc::RenderTexture&, glm::vec2);
         void* updTextureHandleHACK();  // used by ImGui... for now
 
-        friend class osc::experimental::GraphicsBackend;
+        friend class GraphicsBackend;
         friend bool operator==(RenderTexture const&, RenderTexture const&);
         friend bool operator!=(RenderTexture const&, RenderTexture const&);
         friend bool operator<(RenderTexture const&, RenderTexture const&);
@@ -263,7 +258,7 @@ namespace osc
         ShaderType getPropertyType(int propertyIndex) const;
 
     private:
-        friend class osc::experimental::GraphicsBackend;
+        friend class GraphicsBackend;
         friend bool operator==(Shader const&, Shader const&);
         friend bool operator!=(Shader const&, Shader const&);
         friend bool operator<(Shader const&, Shader const&);
@@ -343,7 +338,7 @@ namespace osc
         void setWireframeMode(bool);
 
     private:
-        friend class osc::experimental::GraphicsBackend;
+        friend class GraphicsBackend;
         friend bool operator==(Material const&, Material const&);
         friend bool operator!=(Material const&, Material const&);
         friend bool operator<(Material const&, Material const&);
@@ -403,7 +398,7 @@ namespace osc
         void setTexture(std::string_view, osc::Texture2D);
 
     private:
-        friend class osc::experimental::GraphicsBackend;
+        friend class GraphicsBackend;
         friend bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
         friend bool operator!=(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
         friend bool operator<(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
@@ -474,7 +469,7 @@ namespace osc
         void clear();
 
     private:
-        friend class osc::experimental::GraphicsBackend;
+        friend class GraphicsBackend;
         friend bool operator==(Mesh const&, Mesh const&);
         friend bool operator!=(Mesh const&, Mesh const&);
         friend bool operator<(Mesh const&, Mesh const&);
@@ -620,7 +615,7 @@ namespace osc
         void render();
 
     private:
-        friend class osc::experimental::GraphicsBackend;
+        friend class GraphicsBackend;
         friend bool operator==(Camera const&, Camera const&);
         friend bool operator!=(Camera const&, Camera const&);
         friend bool operator<(Camera const&, Camera const&);

@@ -302,7 +302,7 @@ namespace
 //
 //////////////////////////////////
 
-namespace osc::experimental {
+namespace osc {
     class GraphicsBackend final {
     public:
         static void DrawMesh(
@@ -1033,7 +1033,7 @@ private:
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
     }
 
-    friend class osc::experimental::GraphicsBackend;
+    friend class osc::GraphicsBackend;
 
     RenderTextureDescriptor m_Descriptor;
     DefaultConstructOnCopy<std::optional<RenderTextureGPUBuffers>> m_MaybeGPUBuffers;
@@ -1297,7 +1297,7 @@ private:
         }
     }
 
-    friend class osc::experimental::GraphicsBackend;
+    friend class osc::GraphicsBackend;
 
     UID m_UID;
     gl::Program m_Program;
@@ -1601,7 +1601,7 @@ private:
         m_Values[std::string{propertyName}] = std::forward<T&&>(v);
     }
 
-    friend class osc::experimental::GraphicsBackend;
+    friend class osc::GraphicsBackend;
 
     UID m_UID;
     Shader m_Shader;
@@ -1947,7 +1947,7 @@ private:
         m_Values[std::string{propertyName}] = v;
     }
 
-    friend class osc::experimental::GraphicsBackend;
+    friend class osc::GraphicsBackend;
 
     robin_hood::unordered_map<std::string, MaterialValue> m_Values;
 };
@@ -3071,7 +3071,7 @@ public:
 
     void render()
     {
-        experimental::GraphicsBackend::FlushRenderQueue(*this);
+        GraphicsBackend::FlushRenderQueue(*this);
     }
 
 private:
@@ -3103,7 +3103,7 @@ private:
         }
     }
 
-    friend class osc::experimental::GraphicsBackend;
+    friend class osc::GraphicsBackend;
 
     std::optional<RenderTexture> m_MaybeTexture = std::nullopt;
     glm::vec4 m_BackgroundColor = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -3880,7 +3880,7 @@ void osc::Graphics::DrawMesh(
     Camera& camera,
     std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock)
 {
-    experimental::GraphicsBackend::DrawMesh(mesh, transform, material, camera, std::move(maybeMaterialPropertyBlock));
+    GraphicsBackend::DrawMesh(mesh, transform, material, camera, std::move(maybeMaterialPropertyBlock));
 }
 
 void osc::Graphics::DrawMesh(
@@ -3890,7 +3890,7 @@ void osc::Graphics::DrawMesh(
     Camera& camera,
     std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock)
 {
-    experimental::GraphicsBackend::DrawMesh(mesh, transform, material, camera, std::move(maybeMaterialPropertyBlock));
+    GraphicsBackend::DrawMesh(mesh, transform, material, camera, std::move(maybeMaterialPropertyBlock));
 }
 
 void osc::Graphics::BlitToScreen(
@@ -3898,7 +3898,7 @@ void osc::Graphics::BlitToScreen(
     Rect const& rect,
     BlitFlags flags)
 {
-    experimental::GraphicsBackend::BlitToScreen(t, rect, std::move(flags));
+    GraphicsBackend::BlitToScreen(t, rect, std::move(flags));
 }
 
 void osc::Graphics::BlitToScreen(
@@ -3907,7 +3907,7 @@ void osc::Graphics::BlitToScreen(
     Material const& material,
     BlitFlags flags)
 {
-    experimental::GraphicsBackend::BlitToScreen(t, rect, material, std::move(flags));
+    GraphicsBackend::BlitToScreen(t, rect, material, std::move(flags));
 }
 
 /////////////////////////
@@ -3916,7 +3916,7 @@ void osc::Graphics::BlitToScreen(
 //
 /////////////////////////
 
-void osc::experimental::GraphicsBackend::DrawMesh(
+void osc::GraphicsBackend::DrawMesh(
     Mesh const& mesh,
     Transform const& transform,
     Material const& material,
@@ -3927,7 +3927,7 @@ void osc::experimental::GraphicsBackend::DrawMesh(
     camera.m_Impl->m_RenderQueue.emplace_back(mesh, transform, material, std::move(maybeMaterialPropertyBlock));
 }
 
-void osc::experimental::GraphicsBackend::DrawMesh(
+void osc::GraphicsBackend::DrawMesh(
     Mesh const& mesh,
     glm::mat4 const& transform,
     Material const& material,
@@ -3938,7 +3938,7 @@ void osc::experimental::GraphicsBackend::DrawMesh(
     camera.m_Impl->m_RenderQueue.emplace_back(mesh, transform, material, std::move(maybeMaterialPropertyBlock));
 }
 
-void osc::experimental::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement const& se, MaterialValue const& v, int* textureSlot)
+void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement const& se, MaterialValue const& v, int* textureSlot)
 {
     osc::ShaderType t = GetShaderType(v);
 
@@ -4051,7 +4051,7 @@ void osc::experimental::GraphicsBackend::TryBindMaterialValueToShaderElement(Sha
     }
 }
 
-void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
+void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 {
     OSC_PERF("FlushRenderQueue: all");
 
@@ -4527,7 +4527,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     // (hooray)
 }
 
-void osc::experimental::GraphicsBackend::BlitToScreen(
+void osc::GraphicsBackend::BlitToScreen(
     RenderTexture const& t,
     Rect const& rect,
     Graphics::BlitFlags flags)
@@ -4581,7 +4581,7 @@ void osc::experimental::GraphicsBackend::BlitToScreen(
     }
 }
 
-void osc::experimental::GraphicsBackend::BlitToScreen(
+void osc::GraphicsBackend::BlitToScreen(
     RenderTexture const& t,
     Rect const& rect,
     Material const& material,
