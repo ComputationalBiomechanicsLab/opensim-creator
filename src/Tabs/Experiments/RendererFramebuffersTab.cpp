@@ -171,7 +171,7 @@ private:
 
     experimental::Material m_SceneRenderMaterial
     {
-        experimental::Shader
+        Shader
         {
             App::slurp("shaders/ExperimentFrameBuffers.vert"),
             App::slurp("shaders/ExperimentFrameBuffers.frag"),
@@ -192,7 +192,7 @@ private:
     experimental::Camera m_ScreenCamera;
     experimental::Material m_ScreenMaterial
     {
-        experimental::Shader
+        Shader
         {
             App::slurp("shaders/ExperimentFrameBuffersScreen.vert"),
             App::slurp("shaders/ExperimentFrameBuffersScreen.frag"),

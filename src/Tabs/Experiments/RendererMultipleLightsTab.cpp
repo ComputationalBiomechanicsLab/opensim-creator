@@ -229,7 +229,7 @@ private:
 
     experimental::Material m_MultipleLightsMaterial
     {
-        experimental::Shader
+        Shader
         {
             App::slurp("shaders/ExperimentMultipleLights.vert"),
             App::slurp("shaders/ExperimentMultipleLights.frag"),
@@ -237,7 +237,7 @@ private:
     };
     experimental::Material m_LightCubeMaterial
     {
-        experimental::Shader
+        Shader
         {
             App::slurp("shaders/ExperimentLightCube.vert"),
             App::slurp("shaders/ExperimentLightCube.frag"),

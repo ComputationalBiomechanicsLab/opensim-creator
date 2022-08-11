@@ -130,7 +130,7 @@ private:
 
     experimental::Material m_LightingMapsMaterial
     {
-        experimental::Shader
+        Shader
         {
             App::slurp("shaders/ExperimentLightingMaps.vert"),
             App::slurp("shaders/ExperimentLightingMaps.frag"),
@@ -138,7 +138,7 @@ private:
     };
     experimental::Material m_LightCubeMaterial
     {
-        experimental::Shader
+        Shader
         {
             App::slurp("shaders/ExperimentLightCube.vert"),
             App::slurp("shaders/ExperimentLightCube.frag"),

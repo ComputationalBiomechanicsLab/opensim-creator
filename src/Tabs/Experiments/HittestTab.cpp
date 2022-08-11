@@ -302,7 +302,7 @@ private:
 	experimental::Camera m_Camera;
 	experimental::Material m_Material
 	{
-		experimental::Shader
+		Shader
 		{
 			App::slurp("shaders/SolidColor.vert"),
 			App::slurp("shaders/SolidColor.frag"),

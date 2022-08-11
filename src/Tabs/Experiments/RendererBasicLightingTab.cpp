@@ -130,13 +130,13 @@ private:
     UID m_ID;
     TabHost* m_Parent;
 
-    experimental::Shader m_LightingShader
+    Shader m_LightingShader
     {
         App::slurp("shaders/ExperimentBasicLighting.vert"),
         App::slurp("shaders/ExperimentBasicLighting.frag"),
     };
     experimental::Material m_LightingMaterial{m_LightingShader};
-    experimental::Shader m_LightCubeShader
+    Shader m_LightCubeShader
     {
         App::slurp("shaders/ExperimentLightCube.vert"),
         App::slurp("shaders/ExperimentLightCube.frag"),

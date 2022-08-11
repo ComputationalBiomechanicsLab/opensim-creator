@@ -108,7 +108,7 @@ private:
 
     experimental::Material m_SceneMaterial
     {
-        experimental::Shader
+        Shader
         {
             App::slurp("shaders/ExperimentGeometryShaderScene.vert"),
             App::slurp("shaders/ExperimentGeometryShaderScene.frag"),
@@ -116,7 +116,7 @@ private:
     };
     experimental::Material m_NormalsMaterial
     {
-        experimental::Shader
+        Shader
         {
             App::slurp("shaders/ExperimentGeometryShaderNormals.vert"),
             App::slurp("shaders/ExperimentGeometryShaderNormals.geom"),

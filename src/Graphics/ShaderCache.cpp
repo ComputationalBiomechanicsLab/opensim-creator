@@ -64,12 +64,12 @@ namespace std
 
 class osc::ShaderCache::Impl final {
 public:
-    experimental::Shader const& get(std::string_view vertexShaderResource, std::string_view fragmentShaderResource)
+    Shader const& get(std::string_view vertexShaderResource, std::string_view fragmentShaderResource)
     {
         auto lock = std::lock_guard{m_CacheMutex};
 
         ShaderInputs key{App::resource(vertexShaderResource), App::resource(fragmentShaderResource)};
-        auto [it, inserted] = m_Cache.try_emplace(key, std::unique_ptr<experimental::Shader>{});
+        auto [it, inserted] = m_Cache.try_emplace(key, std::unique_ptr<Shader>{});
 
         if (inserted)
         {
@@ -77,7 +77,7 @@ public:
             {
                 std::string vertexShaderSrc = SlurpFileIntoString(key.vertexShaderPath);
                 std::string fragmentShaderSrc = SlurpFileIntoString(key.fragmentShaderPath);
-                it->second = std::make_unique<experimental::Shader>(vertexShaderSrc, fragmentShaderSrc);
+                it->second = std::make_unique<Shader>(vertexShaderSrc, fragmentShaderSrc);
             }
             catch (...)
             {
@@ -88,12 +88,12 @@ public:
 
         return *it->second;
     }
-    experimental::Shader const& get(std::string_view vertexShaderResource, std::string_view geometryShaderResource, std::string_view fragmentShaderResource)
+    Shader const& get(std::string_view vertexShaderResource, std::string_view geometryShaderResource, std::string_view fragmentShaderResource)
     {
         auto lock = std::lock_guard{m_CacheMutex};
 
         ShaderInputs key{App::resource(vertexShaderResource), App::resource(geometryShaderResource), App::resource(fragmentShaderResource)};
-        auto [it, inserted] = m_Cache.try_emplace(key, std::unique_ptr<experimental::Shader>{});
+        auto [it, inserted] = m_Cache.try_emplace(key, std::unique_ptr<Shader>{});
 
         if (inserted)
         {
@@ -102,7 +102,7 @@ public:
                 std::string vertexShaderSrc = SlurpFileIntoString(key.vertexShaderPath);
                 std::string geometryShaderSrc = SlurpFileIntoString(key.geometryShaderPath);
                 std::string fragmentShaderSrc = SlurpFileIntoString(key.fragmentShaderPath);
-                it->second = std::make_unique<experimental::Shader>(vertexShaderSrc, geometryShaderSrc, fragmentShaderSrc);
+                it->second = std::make_unique<Shader>(vertexShaderSrc, geometryShaderSrc, fragmentShaderSrc);
             }
             catch (...)
             {
@@ -115,17 +115,17 @@ public:
     }
 private:
     std::mutex m_CacheMutex;
-    std::unordered_map<ShaderInputs, std::unique_ptr<experimental::Shader>> m_Cache;
+    std::unordered_map<ShaderInputs, std::unique_ptr<Shader>> m_Cache;
 };
 
 // public API
 
-osc::experimental::Shader const& osc::ShaderCache::get(std::string_view vertexShaderResource, std::string_view fragmentShaderResource)
+osc::Shader const& osc::ShaderCache::get(std::string_view vertexShaderResource, std::string_view fragmentShaderResource)
 {
     return App::shaders().m_Impl->get(std::move(vertexShaderResource), std::move(fragmentShaderResource));
 }
 
-osc::experimental::Shader const& osc::ShaderCache::get(std::string_view vertexShaderResource, std::string_view geometryShaderResource, std::string_view fragmentShaderResource)
+osc::Shader const& osc::ShaderCache::get(std::string_view vertexShaderResource, std::string_view geometryShaderResource, std::string_view fragmentShaderResource)
 {
     return App::shaders().m_Impl->get(std::move(vertexShaderResource), std::move(geometryShaderResource), std::move(fragmentShaderResource));
 }

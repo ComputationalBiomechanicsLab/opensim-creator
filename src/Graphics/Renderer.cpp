@@ -151,32 +151,32 @@ namespace
         osc::RenderTexture
     >;
 
-    osc::experimental::ShaderType GetShaderType(MaterialValue const& v)
+    osc::ShaderType GetShaderType(MaterialValue const& v)
     {
         switch (v.index()) {
         case VariantIndex<MaterialValue, glm::vec2>():
-            return osc::experimental::ShaderType::Vec2;
+            return osc::ShaderType::Vec2;
         case VariantIndex<MaterialValue, float>():
         case VariantIndex<MaterialValue, std::vector<float>>():
-            return osc::experimental::ShaderType::Float;
+            return osc::ShaderType::Float;
         case VariantIndex<MaterialValue, glm::vec3>():
         case VariantIndex<MaterialValue, std::vector<glm::vec3>>():
-            return osc::experimental::ShaderType::Vec3;
+            return osc::ShaderType::Vec3;
         case VariantIndex<MaterialValue, glm::vec4>():
-            return osc::experimental::ShaderType::Vec4;
+            return osc::ShaderType::Vec4;
         case VariantIndex<MaterialValue, glm::mat3>():
-            return osc::experimental::ShaderType::Mat3;
+            return osc::ShaderType::Mat3;
         case VariantIndex<MaterialValue, glm::mat4>():
-            return osc::experimental::ShaderType::Mat4;
+            return osc::ShaderType::Mat4;
         case VariantIndex<MaterialValue, int>():
-            return osc::experimental::ShaderType::Int;
+            return osc::ShaderType::Int;
         case VariantIndex<MaterialValue, bool>():
-            return osc::experimental::ShaderType::Bool;
+            return osc::ShaderType::Bool;
         case VariantIndex<MaterialValue, osc::Texture2D>():
         case VariantIndex<MaterialValue, osc::RenderTexture>():
-            return osc::experimental::ShaderType::Sampler2D;
+            return osc::ShaderType::Sampler2D;
         default:
-            return osc::experimental::ShaderType::Unknown;
+            return osc::ShaderType::Unknown;
         }
     }
 
@@ -194,7 +194,7 @@ namespace
 namespace
 {
     // LUT for human-readable form of the above
-    static constexpr auto const g_ShaderTypeInternalStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::experimental::ShaderType::TOTAL)>(
+    static constexpr auto const g_ShaderTypeInternalStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::ShaderType::TOTAL)>(
         "Float",
         "Vec2",
         "Vec3",
@@ -208,27 +208,27 @@ namespace
     );
 
     // convert a GL shader type to an internal shader type
-    osc::experimental::ShaderType GLShaderTypeToShaderTypeInternal(GLenum e)
+    osc::ShaderType GLShaderTypeToShaderTypeInternal(GLenum e)
     {
         switch (e) {
         case GL_FLOAT:
-            return osc::experimental::ShaderType::Float;
+            return osc::ShaderType::Float;
         case GL_FLOAT_VEC2:
-            return osc::experimental::ShaderType::Vec2;
+            return osc::ShaderType::Vec2;
         case GL_FLOAT_VEC3:
-            return osc::experimental::ShaderType::Vec3;
+            return osc::ShaderType::Vec3;
         case GL_FLOAT_VEC4:
-            return osc::experimental::ShaderType::Vec4;
+            return osc::ShaderType::Vec4;
         case GL_FLOAT_MAT3:
-            return osc::experimental::ShaderType::Mat3;
+            return osc::ShaderType::Mat3;
         case GL_FLOAT_MAT4:
-            return osc::experimental::ShaderType::Mat4;
+            return osc::ShaderType::Mat4;
         case GL_INT:
-            return osc::experimental::ShaderType::Int;
+            return osc::ShaderType::Int;
         case GL_BOOL:
-            return osc::experimental::ShaderType::Bool;
+            return osc::ShaderType::Bool;
         case GL_SAMPLER_2D:
-            return osc::experimental::ShaderType::Sampler2D;
+            return osc::ShaderType::Sampler2D;
         case GL_INT_VEC2:
         case GL_INT_VEC3:
         case GL_INT_VEC4:
@@ -253,7 +253,7 @@ namespace
         case GL_FLOAT_MAT4x3:
         case GL_FLOAT_MAT2:
         default:
-            return osc::experimental::ShaderType::Unknown;
+            return osc::ShaderType::Unknown;
         }
     }
 
@@ -270,7 +270,7 @@ namespace
 
     // parsed-out description of a shader "element" (uniform/attribute)
     struct ShaderElement final {
-        ShaderElement(int location_, osc::experimental::ShaderType type_, int size_) :
+        ShaderElement(int location_, osc::ShaderType type_, int size_) :
             Location{std::move(location_)},
             Type{std::move(type_)},
             Size{std::move(size_)}
@@ -278,7 +278,7 @@ namespace
         }
 
         int Location;
-        osc::experimental::ShaderType Type;
+        osc::ShaderType Type;
         int Size;
     };
 
@@ -1156,7 +1156,7 @@ void osc::EmplaceOrReformat(std::optional<RenderTexture>& t, RenderTextureDescri
 //
 //////////////////////////////////
 
-class osc::experimental::Shader::Impl final {
+class osc::Shader::Impl final {
 public:
     Impl(CStringView vertexShader, CStringView fragmentShader) :
         m_Program{gl::CreateProgramFrom(gl::CompileFromSource<gl::VertexShader>(vertexShader.c_str()), gl::CompileFromSource<gl::FragmentShader>(fragmentShader.c_str()))}
@@ -1297,7 +1297,7 @@ private:
         }
     }
 
-    friend class GraphicsBackend;
+    friend class osc::experimental::GraphicsBackend;
 
     UID m_UID;
     gl::Program m_Program;
@@ -1313,63 +1313,63 @@ private:
 };
 
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, ShaderType shaderType)
+std::ostream& osc::operator<<(std::ostream& o, ShaderType shaderType)
 {
     return o << g_ShaderTypeInternalStrings.at(static_cast<int>(shaderType));
 }
 
-osc::experimental::Shader::Shader(CStringView vertexShader, CStringView fragmentShader) :
+osc::Shader::Shader(CStringView vertexShader, CStringView fragmentShader) :
     m_Impl{std::make_shared<Impl>(std::move(vertexShader), std::move(fragmentShader))}
 {
 }
 
-osc::experimental::Shader::Shader(CStringView vertexShader, CStringView geometryShader, CStringView fragmentShader) :
+osc::Shader::Shader(CStringView vertexShader, CStringView geometryShader, CStringView fragmentShader) :
     m_Impl{std::make_shared<Impl>(std::move(vertexShader), std::move(geometryShader), std::move(fragmentShader))}
 {
 }
 
-osc::experimental::Shader::Shader(osc::experimental::Shader const&) = default;
-osc::experimental::Shader::Shader(osc::experimental::Shader&&) noexcept = default;
-osc::experimental:: Shader& osc::experimental::Shader::operator=(osc::experimental::Shader const&) = default;
-osc::experimental::Shader& osc::experimental::Shader::operator=(osc::experimental::Shader&&) noexcept = default;
-osc::experimental::Shader::~Shader() noexcept = default;
+osc::Shader::Shader(Shader const&) = default;
+osc::Shader::Shader(Shader&&) noexcept = default;
+osc::Shader& osc::Shader::operator=(Shader const&) = default;
+osc::Shader& osc::Shader::operator=(Shader&&) noexcept = default;
+osc::Shader::~Shader() noexcept = default;
 
-std::optional<int> osc::experimental::Shader::findPropertyIndex(std::string const& propertyName) const
+std::optional<int> osc::Shader::findPropertyIndex(std::string const& propertyName) const
 {
     return m_Impl->findPropertyIndex(propertyName);
 }
 
-int osc::experimental::Shader::getPropertyCount() const
+int osc::Shader::getPropertyCount() const
 {
     return m_Impl->getPropertyCount();
 }
 
-std::string const& osc::experimental::Shader::getPropertyName(int propertyIndex) const
+std::string const& osc::Shader::getPropertyName(int propertyIndex) const
 {
     return m_Impl->getPropertyName(std::move(propertyIndex));
 }
 
-osc::experimental::ShaderType osc::experimental::Shader::getPropertyType(int propertyIndex) const
+osc::ShaderType osc::Shader::getPropertyType(int propertyIndex) const
 {
     return m_Impl->getPropertyType(std::move(propertyIndex));
 }
 
-bool osc::experimental::operator==(Shader const& a, Shader const& b)
+bool osc::operator==(Shader const& a, Shader const& b)
 {
     return a.m_Impl == b.m_Impl;
 }
 
-bool osc::experimental::operator!=(Shader const& a, Shader const& b)
+bool osc::operator!=(Shader const& a, Shader const& b)
 {
     return a.m_Impl != b.m_Impl;
 }
 
-bool osc::experimental::operator<(Shader const& a, Shader const& b)
+bool osc::operator<(Shader const& a, Shader const& b)
 {
     return a.m_Impl < b.m_Impl;
 }
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, Shader const& shader)
+std::ostream& osc::operator<<(std::ostream& o, Shader const& shader)
 {
     o << "Shader(\n";
     {
@@ -1412,7 +1412,7 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, Shader const& shade
 
 class osc::experimental::Material::Impl final {
 public:
-    Impl(osc::experimental::Shader shader) : m_Shader{std::move(shader)}
+    Impl(osc::Shader shader) : m_Shader{std::move(shader)}
     {
     }
 
@@ -1611,7 +1611,7 @@ private:
     bool m_IsWireframeMode = false;
 };
 
-osc::experimental::Material::Material(osc::experimental::Shader shader) :
+osc::experimental::Material::Material(osc::Shader shader) :
     m_Impl{std::make_shared<Impl>(std::move(shader))}
 {
 }
@@ -1622,7 +1622,7 @@ osc::experimental::Material& osc::experimental::Material::operator=(Material con
 osc::experimental::Material& osc::experimental::Material::operator=(Material&&) noexcept = default;
 osc::experimental::Material::~Material() noexcept = default;
 
-osc::experimental::Shader const& osc::experimental::Material::getShader() const
+osc::Shader const& osc::experimental::Material::getShader() const
 {
     return m_Impl->getShader();
 }
@@ -3769,7 +3769,7 @@ public:
 
     experimental::Material m_QuadMaterial
     {
-        experimental::Shader
+        Shader
         {
             g_QuadVertexShaderSrc,
             g_QuadFragmentShaderSrc,
@@ -3940,7 +3940,7 @@ void osc::experimental::GraphicsBackend::DrawMesh(
 
 void osc::experimental::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement const& se, MaterialValue const& v, int* textureSlot)
 {
-    osc::experimental::ShaderType t = GetShaderType(v);
+    osc::ShaderType t = GetShaderType(v);
 
     if (GetShaderType(v) != se.Type)
     {
@@ -4157,7 +4157,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 
             if (shaderImpl.m_MaybeInstancedModelMatAttr)
             {
-                if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == osc::experimental::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == osc::ShaderType::Mat4)
                 {
                     stride += sizeof(float) * 16;
                 }
@@ -4165,11 +4165,11 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 
             if (shaderImpl.m_MaybeInstancedNormalMatAttr)
             {
-                if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::experimental::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat4)
                 {
                     stride += sizeof(float) * 16;
                 }
-                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::experimental::ShaderType::Mat3)
+                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat3)
                 {
                     stride += sizeof(float) * 9;
                 }
@@ -4182,7 +4182,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             {
                 if (shaderImpl.m_MaybeInstancedModelMatAttr)
                 {
-                    if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == osc::experimental::ShaderType::Mat4)
+                    if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == osc::ShaderType::Mat4)
                     {
                         static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
                         reinterpret_cast<glm::mat4&>(buf[bufPos]) = ModelMatrix(*it);
@@ -4191,13 +4191,13 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                 }
                 if (shaderImpl.m_MaybeInstancedNormalMatAttr)
                 {
-                    if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::experimental::ShaderType::Mat4)
+                    if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat4)
                     {
                         static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
                         reinterpret_cast<glm::mat4&>(buf[bufPos]) = ModelMatrix(*it);
                         bufPos += 16;
                     }
-                    else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::experimental::ShaderType::Mat3)
+                    else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat3)
                     {
                         static_assert(alignof(glm::mat3) == alignof(float) && sizeof(glm::mat3) == 9 * sizeof(float));
                         reinterpret_cast<glm::mat3&>(buf[bufPos]) = NormalMatrix(*it);
@@ -4223,7 +4223,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             int offset = 0;
             if (shaderImpl.m_MaybeInstancedModelMatAttr)
             {
-                if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == osc::experimental::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == osc::ShaderType::Mat4)
                 {
                     gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->Location};
                     gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
@@ -4234,7 +4234,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             }
             if (shaderImpl.m_MaybeInstancedNormalMatAttr)
             {
-                if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::experimental::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat4)
                 {
                     gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
                     gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
@@ -4242,7 +4242,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                     gl::EnableVertexAttribArray(mmtxAttr);
                     offset += sizeof(float) * 16;
                 }
-                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::experimental::ShaderType::Mat3)
+                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat3)
                 {
                     gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
                     gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
@@ -4269,7 +4269,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                     // try binding to uModel (standard)
                     if (shaderImpl.m_MaybeModelMatUniform)
                     {
-                        if (shaderImpl.m_MaybeModelMatUniform->Type == osc::experimental::ShaderType::Mat4)
+                        if (shaderImpl.m_MaybeModelMatUniform->Type == osc::ShaderType::Mat4)
                         {
                             gl::UniformMat4 u{shaderImpl.m_MaybeModelMatUniform->Location};
                             gl::Uniform(u, ModelMatrix(*it));
@@ -4279,12 +4279,12 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                     // try binding to uNormalMat (standard)
                     if (shaderImpl.m_MaybeNormalMatUniform)
                     {
-                        if (shaderImpl.m_MaybeNormalMatUniform->Type == osc::experimental::ShaderType::Mat3)
+                        if (shaderImpl.m_MaybeNormalMatUniform->Type == osc::ShaderType::Mat3)
                         {
                             gl::UniformMat3 u{shaderImpl.m_MaybeNormalMatUniform->Location};
                             gl::Uniform(u, NormalMatrix(*it));
                         }
-                        else if (shaderImpl.m_MaybeNormalMatUniform->Type == osc::experimental::ShaderType::Mat4)
+                        else if (shaderImpl.m_MaybeNormalMatUniform->Type == osc::ShaderType::Mat4)
                         {
                             gl::UniformMat4 u{shaderImpl.m_MaybeNormalMatUniform->Location};
                             gl::Uniform(u, NormalMatrix4(*it));
@@ -4318,7 +4318,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     auto HandleBatchWithSameMatrialPropertyBlock = [&HandleBatchWithSameMesh](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end, int& textureSlot, std::optional<InstancingState>& ins)
     {
         osc::experimental::Material::Impl& matImpl = const_cast<osc::experimental::Material::Impl&>(*begin->material.m_Impl);
-        osc::experimental::Shader::Impl& shaderImpl = const_cast<osc::experimental::Shader::Impl&>(*matImpl.m_Shader.m_Impl);
+        osc::Shader::Impl& shaderImpl = const_cast<osc::Shader::Impl&>(*matImpl.m_Shader.m_Impl);
         robin_hood::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
         // bind property block variables (if applicable)
@@ -4348,7 +4348,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     auto HandleBatchWithSameMaterial = [&viewMtx, &projMtx, &viewProjMtx, &HandleBatchWithSameMatrialPropertyBlock, &UploadInstancingData](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end)
     {
         osc::experimental::Material::Impl& matImpl = const_cast<osc::experimental::Material::Impl&>(*begin->material.m_Impl);
-        osc::experimental::Shader::Impl& shaderImpl = const_cast<osc::experimental::Shader::Impl&>(*matImpl.m_Shader.m_Impl);
+        osc::Shader::Impl& shaderImpl = const_cast<osc::Shader::Impl&>(*matImpl.m_Shader.m_Impl);
         robin_hood::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
         // preemptively upload instance data
@@ -4369,7 +4369,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             // try binding to uView (standard)
             if (shaderImpl.m_MaybeViewMatUniform)
             {
-                if (shaderImpl.m_MaybeViewMatUniform->Type == osc::experimental::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeViewMatUniform->Type == osc::ShaderType::Mat4)
                 {
                     gl::UniformMat4 u{shaderImpl.m_MaybeViewMatUniform->Location};
                     gl::Uniform(u, viewMtx);
@@ -4379,7 +4379,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             // try binding to uProjection (standard)
             if (shaderImpl.m_MaybeProjMatUniform)
             {
-                if (shaderImpl.m_MaybeProjMatUniform->Type == osc::experimental::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeProjMatUniform->Type == osc::ShaderType::Mat4)
                 {
                     gl::UniformMat4 u{shaderImpl.m_MaybeProjMatUniform->Location};
                     gl::Uniform(u, projMtx);
@@ -4388,7 +4388,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 
             if (shaderImpl.m_MaybeViewProjMatUniform)
             {
-                if (shaderImpl.m_MaybeViewProjMatUniform->Type == osc::experimental::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeViewProjMatUniform->Type == osc::ShaderType::Mat4)
                 {
                     gl::UniformMat4 u{shaderImpl.m_MaybeViewProjMatUniform->Location};
                     gl::Uniform(u, viewProjMtx);

@@ -90,7 +90,7 @@ public:
 private:
     UID m_ID;
     TabHost* m_Parent;
-    experimental::Shader m_Shader
+    Shader m_Shader
     {
         App::slurp("shaders/ExperimentTriangle.vert"),
         App::slurp("shaders/ExperimentTriangle.frag"),

@@ -218,7 +218,7 @@ private:
     TabHost* m_Parent;
     experimental::Material m_OpaqueMaterial
     {
-        experimental::Shader
+        Shader
         {
             App::slurp("shaders/ExperimentBlending.vert"),
             App::slurp("shaders/ExperimentBlending.frag"),

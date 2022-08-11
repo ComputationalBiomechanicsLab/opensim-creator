@@ -227,7 +227,7 @@ namespace osc
 // shader
 //
 // encapsulates a shader program that has been compiled + initialized by the backend
-namespace osc::experimental
+namespace osc
 {
     // data type of a material-assignable property parsed from the shader code
     enum class ShaderType {
@@ -263,7 +263,7 @@ namespace osc::experimental
         ShaderType getPropertyType(int propertyIndex) const;
 
     private:
-        friend class GraphicsBackend;
+        friend class osc::experimental::GraphicsBackend;
         friend bool operator==(Shader const&, Shader const&);
         friend bool operator!=(Shader const&, Shader const&);
         friend bool operator<(Shader const&, Shader const&);
