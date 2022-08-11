@@ -709,7 +709,7 @@ namespace
         {
         }
 
-        void operator()(std::shared_ptr<osc::experimental::Mesh const> const& mesh, osc::Transform const& t, glm::vec4 const& color) override
+        void operator()(std::shared_ptr<osc::Mesh const> const& mesh, osc::Transform const& t, glm::vec4 const& color) override
         {
             std::string absPath = (*m_CurrentComponent) ? (*m_CurrentComponent)->getAbsolutePathString() : std::string{};
             m_Out->emplace_back(mesh, t, color, std::move(absPath), ComputeFlags(**m_CurrentComponent, m_Selected, m_Hovered, m_Isolated));

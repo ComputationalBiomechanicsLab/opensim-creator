@@ -15,13 +15,13 @@ namespace osc
     // represents a renderable decoration for a component in a model
     class SceneDecoration final {
     public:
-        std::shared_ptr<experimental::Mesh const> mesh;
+        std::shared_ptr<Mesh const> mesh;
         Transform transform;
         glm::vec4 color;
         std::string id;
         SceneDecorationFlags flags = SceneDecorationFlags_None;
 
-        SceneDecoration(std::shared_ptr<experimental::Mesh const> mesh_,
+        SceneDecoration(std::shared_ptr<Mesh const> mesh_,
                         Transform const& transform_,
                         glm::vec4 const& color_) :
             mesh{std::move(mesh_)},
@@ -30,7 +30,7 @@ namespace osc
         {
         }
 
-        SceneDecoration(std::shared_ptr<experimental::Mesh const> mesh_,
+        SceneDecoration(std::shared_ptr<Mesh const> mesh_,
                         Transform const& transform_,
                         glm::vec4 const& color_,
                         std::string id_,

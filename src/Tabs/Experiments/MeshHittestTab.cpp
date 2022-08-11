@@ -24,7 +24,7 @@
 
 namespace
 {
-	void DrawBVHRecursive(osc::BVH const& bvh, osc::experimental::Mesh const& cubeLinesMesh, osc::Material const& material, osc::experimental::Camera& camera, int pos)
+	void DrawBVHRecursive(osc::BVH const& bvh, osc::Mesh const& cubeLinesMesh, osc::Material const& material, osc::experimental::Camera& camera, int pos)
 	{
 		osc::BVHNode const& n = bvh.nodes[pos];
 		glm::vec3 const halfWidths = 0.5f * osc::Dimensions(n.bounds);
@@ -43,7 +43,7 @@ namespace
 		}
 	}
 
-	void DrawBVH(osc::BVH const& bvh, osc::experimental::Mesh const& cubeLinesMesh, osc::Material const& material, osc::experimental::Camera& camera)
+	void DrawBVH(osc::BVH const& bvh, osc::Mesh const& cubeLinesMesh, osc::Material const& material, osc::experimental::Camera& camera)
 	{
 		if (bvh.nodes.empty())
 		{
@@ -167,7 +167,7 @@ public:
 		// draw hit triangle while mousing over
 		if (m_IsMousedOver)
 		{
-			experimental::Mesh m;
+			Mesh m;
 			m.setVerts(m_Tris);
 			uint16_t indices[] = {0, 1, 2};
 			m.setIndices(indices);
@@ -228,9 +228,9 @@ private:
 			App::slurp("shaders/SolidColor.frag"),
 		}
 	};
-	experimental::Mesh m_Mesh = LoadMeshViaSimTK(App::resource("geometry/hat_ribs.vtp"));
-	experimental::Mesh m_SphereMesh = GenUntexturedUVSphere(12, 12);
-	experimental::Mesh m_CubeLinesMesh = GenCubeLines();
+	Mesh m_Mesh = LoadMeshViaSimTK(App::resource("geometry/hat_ribs.vtp"));
+	Mesh m_SphereMesh = GenUntexturedUVSphere(12, 12);
+	Mesh m_CubeLinesMesh = GenCubeLines();
 
 	// other state
 	BVH m_BVH;

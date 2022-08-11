@@ -18,7 +18,7 @@ namespace
 {
     // assumes `pos` is in-bounds
     void DrawBVHRecursive(
-        std::shared_ptr<osc::experimental::Mesh const> const& mesh,
+        std::shared_ptr<osc::Mesh const> const& mesh,
         osc::BVH const& bvh,
         int pos,
         std::vector<osc::SceneDecoration>& out)
@@ -43,7 +43,7 @@ namespace
 
     void DrawGrid(glm::quat const& rotation, std::vector<osc::SceneDecoration>& out)
     {
-        std::shared_ptr<osc::experimental::Mesh const> grid = osc::App::meshes().get100x100GridMesh();
+        std::shared_ptr<osc::Mesh const> grid = osc::App::meshes().get100x100GridMesh();
 
         osc::Transform t;
         t.scale *= glm::vec3{50.0f, 50.0f, 1.0f};
@@ -62,13 +62,13 @@ void osc::DrawBVH(BVH const& sceneBVH, std::vector<SceneDecoration>& out)
         return;
     }
 
-    std::shared_ptr<experimental::Mesh const> cube = App::meshes().getCubeWireMesh();
+    std::shared_ptr<Mesh const> cube = App::meshes().getCubeWireMesh();
     DrawBVHRecursive(cube, sceneBVH, 0, out);
 }
 
 void osc::DrawAABB(AABB const& aabb, std::vector<SceneDecoration>& out)
 {
-    std::shared_ptr<experimental::Mesh const> cube = App::meshes().getCubeWireMesh();
+    std::shared_ptr<Mesh const> cube = App::meshes().getCubeWireMesh();
     glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
 
     Transform t;
@@ -80,7 +80,7 @@ void osc::DrawAABB(AABB const& aabb, std::vector<SceneDecoration>& out)
 
 void osc::DrawAABBs(nonstd::span<AABB const> aabbs, std::vector<SceneDecoration>& out)
 {
-    std::shared_ptr<experimental::Mesh const> cube = App::meshes().getCubeWireMesh();
+    std::shared_ptr<Mesh const> cube = App::meshes().getCubeWireMesh();
     glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
 
     for (AABB const& aabb : aabbs)
@@ -95,7 +95,7 @@ void osc::DrawAABBs(nonstd::span<AABB const> aabbs, std::vector<SceneDecoration>
 
 void osc::DrawXZFloorLines(std::vector<SceneDecoration>& out)
 {
-    std::shared_ptr<experimental::Mesh const> yLine = App::meshes().getYLineMesh();
+    std::shared_ptr<Mesh const> yLine = App::meshes().getYLineMesh();
 
     // X line
     {
@@ -171,11 +171,11 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(BVH const& bvh, nons
     return rv;
 }
 
-osc::RayCollision osc::GetClosestWorldspaceRayCollision(experimental::Mesh const& mesh, Transform const& transform, Line const& worldspaceRay)
+osc::RayCollision osc::GetClosestWorldspaceRayCollision(Mesh const& mesh, Transform const& transform, Line const& worldspaceRay)
 {
     RayCollision rv{false, 0.0f};
 
-    if (mesh.getTopography() != osc::experimental::MeshTopography::Triangles)
+    if (mesh.getTopography() != osc::MeshTopography::Triangles)
     {
         return rv;
     }

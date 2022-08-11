@@ -143,7 +143,7 @@ private:
     };
     Material m_LightCubeMaterial{m_LightCubeShader};
 
-    experimental::Mesh m_CubeMesh = GenLearnOpenGLCube();
+    Mesh m_CubeMesh = GenLearnOpenGLCube();
 
     experimental::Camera m_Camera;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};

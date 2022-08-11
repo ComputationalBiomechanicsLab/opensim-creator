@@ -122,7 +122,7 @@ using osc::fpi2;
 using osc::fpi4;
 using osc::AABB;
 using osc::Sphere;
-using osc::experimental::Mesh;
+using osc::Mesh;
 using osc::Transform;
 using osc::PolarPerspectiveCamera;
 using osc::Segment;
@@ -417,7 +417,7 @@ namespace
         // submits an invalid mesh, this calculation could potentially produce a
         // volume that's *way* off
 
-        if (m.getTopography() != osc::experimental::MeshTopography::Triangles)
+        if (m.getTopography() != osc::MeshTopography::Triangles)
         {
             return {0.0f, 0.0f, 0.0f};
         }

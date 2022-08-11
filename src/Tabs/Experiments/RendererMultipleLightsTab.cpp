@@ -243,7 +243,7 @@ private:
             App::slurp("shaders/ExperimentLightCube.frag"),
     }
     };
-    experimental::Mesh m_Mesh = GenLearnOpenGLCube();
+    Mesh m_Mesh = GenLearnOpenGLCube();
     Texture2D m_DiffuseMap = LoadTexture2DFromImageResource("textures/container2.png", ImageFlags_FlipVertically);
     Texture2D m_SpecularMap = LoadTexture2DFromImageResource("textures/container2_specular.png", ImageFlags_FlipVertically);
 

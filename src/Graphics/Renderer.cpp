@@ -2091,7 +2091,7 @@ std::ostream& osc::operator<<(std::ostream& o, MaterialPropertyBlock const&)
 
 namespace
 {
-    static constexpr auto g_MeshTopographyStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::experimental::MeshTopography::TOTAL)>
+    static constexpr auto g_MeshTopographyStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::MeshTopography::TOTAL)>
     (
         "Triangles",
         "Lines"
@@ -2118,12 +2118,12 @@ namespace
         gl::VertexArray VAO;
     };
 
-    GLenum ToOpenGLTopography(osc::experimental::MeshTopography t)
+    GLenum ToOpenGLTopography(osc::MeshTopography t)
     {
         switch (t) {
-        case osc::experimental::MeshTopography::Triangles:
+        case osc::MeshTopography::Triangles:
             return GL_TRIANGLES;
-        case osc::experimental::MeshTopography::Lines:
+        case osc::MeshTopography::Lines:
             return GL_LINES;
         default:
             return GL_TRIANGLES;
@@ -2131,7 +2131,7 @@ namespace
     }
 }
 
-class osc::experimental::Mesh::Impl final {
+class osc::Mesh::Impl final {
 public:
 
     MeshTopography getTopography() const
@@ -2342,7 +2342,7 @@ private:
         {
             nonstd::span<uint32_t const> indices(&m_IndicesData.front().u32, m_NumIndices);
             m_AABB = osc::AABBFromIndexedVerts(m_Vertices, indices);
-            if (m_Topography == osc::experimental::MeshTopography::Triangles)
+            if (m_Topography == osc::MeshTopography::Triangles)
             {
                 BVH_BuildFromIndexedTriangles(m_TriangleBVH, m_Vertices, indices);
             }
@@ -2355,7 +2355,7 @@ private:
         {
             nonstd::span<uint16_t const> indices(&m_IndicesData.front().u16.a, m_NumIndices);
             m_AABB = osc::AABBFromIndexedVerts(m_Vertices, indices);
-            if (m_Topography == osc::experimental::MeshTopography::Triangles)
+            if (m_Topography == osc::MeshTopography::Triangles)
             {
                 BVH_BuildFromIndexedTriangles(m_TriangleBVH, m_Vertices, indices);
             }
@@ -2489,136 +2489,136 @@ private:
     DefaultConstructOnCopy<std::optional<MeshGPUBuffers>> m_MaybeGPUBuffers;
 };
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, MeshTopography mt)
+std::ostream& osc::operator<<(std::ostream& o, MeshTopography mt)
 {
     return o << g_MeshTopographyStrings.at(static_cast<int>(mt));
 }
 
-osc::experimental::Mesh::Mesh() :
+osc::Mesh::Mesh() :
     m_Impl{std::make_shared<Impl>()}
 {
 }
 
-osc::experimental::Mesh::Mesh(Mesh const&) = default;
-osc::experimental::Mesh::Mesh(Mesh&&) noexcept = default;
-osc::experimental::Mesh& osc::experimental::Mesh::operator=(Mesh const&) = default;
-osc::experimental::Mesh& osc::experimental::Mesh::operator=(Mesh&&) noexcept = default;
-osc::experimental::Mesh::~Mesh() noexcept = default;
+osc::Mesh::Mesh(Mesh const&) = default;
+osc::Mesh::Mesh(Mesh&&) noexcept = default;
+osc::Mesh& osc::Mesh::operator=(Mesh const&) = default;
+osc::Mesh& osc::Mesh::operator=(Mesh&&) noexcept = default;
+osc::Mesh::~Mesh() noexcept = default;
 
-osc::experimental::MeshTopography osc::experimental::Mesh::getTopography() const
+osc::MeshTopography osc::Mesh::getTopography() const
 {
     return m_Impl->getTopography();
 }
 
-void osc::experimental::Mesh::setTopography(MeshTopography topography)
+void osc::Mesh::setTopography(MeshTopography topography)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setTopography(std::move(topography));
 }
 
-nonstd::span<glm::vec3 const> osc::experimental::Mesh::getVerts() const
+nonstd::span<glm::vec3 const> osc::Mesh::getVerts() const
 {
     return m_Impl->getVerts();
 }
 
-void osc::experimental::Mesh::setVerts(nonstd::span<glm::vec3 const> verts)
+void osc::Mesh::setVerts(nonstd::span<glm::vec3 const> verts)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setVerts(std::move(verts));
 }
 
-nonstd::span<glm::vec3 const> osc::experimental::Mesh::getNormals() const
+nonstd::span<glm::vec3 const> osc::Mesh::getNormals() const
 {
     return m_Impl->getNormals();
 }
 
-void osc::experimental::Mesh::setNormals(nonstd::span<glm::vec3 const> verts)
+void osc::Mesh::setNormals(nonstd::span<glm::vec3 const> verts)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setNormals(std::move(verts));
 }
 
-nonstd::span<glm::vec2 const> osc::experimental::Mesh::getTexCoords() const
+nonstd::span<glm::vec2 const> osc::Mesh::getTexCoords() const
 {
     return m_Impl->getTexCoords();
 }
 
-void osc::experimental::Mesh::setTexCoords(nonstd::span<glm::vec2 const> coords)
+void osc::Mesh::setTexCoords(nonstd::span<glm::vec2 const> coords)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setTexCoords(coords);
 }
 
-nonstd::span<osc::Rgba32 const> osc::experimental::Mesh::getColors()
+nonstd::span<osc::Rgba32 const> osc::Mesh::getColors()
 {
     return m_Impl->getColors();
 }
 
-void osc::experimental::Mesh::setColors(nonstd::span<osc::Rgba32 const> colors)
+void osc::Mesh::setColors(nonstd::span<osc::Rgba32 const> colors)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setColors(colors);
 }
 
-int osc::experimental::Mesh::getNumIndices() const
+int osc::Mesh::getNumIndices() const
 {
     return m_Impl->getNumIndices();
 }
 
-std::vector<uint32_t> osc::experimental::Mesh::getIndices() const
+std::vector<uint32_t> osc::Mesh::getIndices() const
 {
     return m_Impl->getIndices();
 }
 
-void osc::experimental::Mesh::setIndices(nonstd::span<uint16_t const> indices)
+void osc::Mesh::setIndices(nonstd::span<uint16_t const> indices)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setIndices(std::move(indices));
 }
 
-void osc::experimental::Mesh::setIndices(nonstd::span<uint32_t const> indices)
+void osc::Mesh::setIndices(nonstd::span<uint32_t const> indices)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setIndices(std::move(indices));
 }
 
-osc::AABB const& osc::experimental::Mesh::getBounds() const
+osc::AABB const& osc::Mesh::getBounds() const
 {
     return m_Impl->getBounds();
 }
 
-glm::vec3 osc::experimental::Mesh::getMidpoint() const
+glm::vec3 osc::Mesh::getMidpoint() const
 {
     return m_Impl->getMidpoint();
 }
 
-osc::BVH const& osc::experimental::Mesh::getBVH() const
+osc::BVH const& osc::Mesh::getBVH() const
 {
     return m_Impl->getBVH();
 }
 
-void osc::experimental::Mesh::clear()
+void osc::Mesh::clear()
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->clear();
 }
 
-bool osc::experimental::operator==(Mesh const& a, Mesh const& b)
+bool osc::operator==(Mesh const& a, Mesh const& b)
 {
     return a.m_Impl == b.m_Impl;
 }
 
-bool osc::experimental::operator!=(Mesh const& a, Mesh const& b)
+bool osc::operator!=(Mesh const& a, Mesh const& b)
 {
     return a.m_Impl != b.m_Impl;
 }
 
-bool osc::experimental::operator<(Mesh const& a, Mesh const& b)
+bool osc::operator<(Mesh const& a, Mesh const& b)
 {
     return a.m_Impl < b.m_Impl;
 }
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, Mesh const&)
+std::ostream& osc::operator<<(std::ostream& o, Mesh const&)
 {
     return o << "Mesh()";
 }
@@ -2643,7 +2643,7 @@ namespace
     struct RenderObject final {
 
         RenderObject(
-            osc::experimental::Mesh const& mesh_,
+            osc::Mesh const& mesh_,
             osc::Transform const& transform_,
             osc::Material const& material_,
             std::optional<osc::MaterialPropertyBlock> maybePropBlock_) :
@@ -2657,7 +2657,7 @@ namespace
         }
 
         RenderObject(
-            osc::experimental::Mesh const& mesh_,
+            osc::Mesh const& mesh_,
             glm::mat4 const& transform_,
             osc::Material const& material_,
             std::optional<osc::MaterialPropertyBlock> maybePropBlock_) :
@@ -2670,7 +2670,7 @@ namespace
         {
         }
 
-        osc::experimental::Mesh mesh;
+        osc::Mesh mesh;
         glm::mat4 transform;
         glm::mat4 normalMatrix;
         osc::Material material;
@@ -2752,14 +2752,14 @@ namespace
     };
 
     struct RenderObjectHasMesh final {
-        RenderObjectHasMesh(osc::experimental::Mesh const& mesh) : m_Mesh{mesh} {}
+        RenderObjectHasMesh(osc::Mesh const& mesh) : m_Mesh{mesh} {}
 
         bool operator()(RenderObject const& ro) const
         {
             return ro.mesh == m_Mesh;
         }
     private:
-        osc::experimental::Mesh const& m_Mesh;
+        osc::Mesh const& m_Mesh;
     };
 
     std::vector<RenderObject>::iterator SortRenderQueue(std::vector<RenderObject>::iterator begin, std::vector<RenderObject>::iterator end, glm::vec3 cameraPos)
@@ -3776,7 +3776,7 @@ public:
         }
     };
 
-    experimental::Mesh m_QuadMesh = osc::GenTexturedQuad();
+    Mesh m_QuadMesh = osc::GenTexturedQuad();
 };
 
 static std::unique_ptr<osc::experimental::GraphicsContext::Impl> g_GraphicsContextImpl = nullptr;
@@ -4257,7 +4257,7 @@ void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     // helper: draw a batch of render objects that have the same material, material block, and mesh
     auto HandleBatchWithSameMesh = [&BindToInstancedAttributes](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end, std::optional<InstancingState>& ins)
     {
-        auto& meshImpl = const_cast<osc::experimental::Mesh::Impl&>(*begin->mesh.m_Impl);
+        auto& meshImpl = const_cast<osc::Mesh::Impl&>(*begin->mesh.m_Impl);
         Shader::Impl& shaderImpl = *begin->material.m_Impl->m_Shader.m_Impl;
 
         gl::BindVertexArray(meshImpl.updVertexArray());

@@ -14,7 +14,7 @@
 #include <cstdint>
 #include <utility>
 
-static osc::experimental::Mesh LoadGeometry()
+static osc::Mesh LoadGeometry()
 {
     return osc::LoadMeshViaSimTK(osc::App::resource("geometry/hat_ribs_scap.vtp"));
 }
@@ -123,7 +123,7 @@ private:
             App::slurp("shaders/ExperimentGeometryShaderNormals.frag"),
         }
     };
-    experimental::Mesh m_Mesh = LoadGeometry();
+    Mesh m_Mesh = LoadGeometry();
     experimental::Camera m_SceneCamera;
 
     bool m_IsMouseCaptured = false;

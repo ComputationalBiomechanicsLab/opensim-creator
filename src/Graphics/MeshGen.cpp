@@ -32,7 +32,7 @@ namespace
         std::vector<glm::vec3> normals;
         std::vector<glm::vec2> texcoords;
         std::vector<uint32_t> indices;
-        osc::experimental::MeshTopography topography = osc::experimental::MeshTopography::Triangles;
+        osc::MeshTopography topography = osc::MeshTopography::Triangles;
 
         void clear()
         {
@@ -40,7 +40,7 @@ namespace
             normals.clear();
             texcoords.clear();
             indices.clear();
-            topography = osc::experimental::MeshTopography::Triangles;
+            topography = osc::MeshTopography::Triangles;
         }
 
         void reserve(size_t s)
@@ -52,9 +52,9 @@ namespace
         }
     };
 
-    osc::experimental::Mesh CreateMeshFromData(NewMeshData&& data)
+    osc::Mesh CreateMeshFromData(NewMeshData&& data)
     {
-        osc::experimental::Mesh rv;
+        osc::Mesh rv;
         rv.setTopography(data.topography);
         rv.setVerts(data.verts);
         rv.setNormals(data.normals);
@@ -192,7 +192,7 @@ static constexpr std::array<UntexturedVert, 24> g_CubeEdgeLines = {{
     {{+1.0f, +1.0f, -1.0f}, {+1.0f, +1.0f, -1.0f}}
 }};
 
-osc::experimental::Mesh osc::GenTexturedQuad()
+osc::Mesh osc::GenTexturedQuad()
 {
     NewMeshData data;
     data.reserve(g_ShadedTexturedQuadVerts.size());
@@ -212,7 +212,7 @@ osc::experimental::Mesh osc::GenTexturedQuad()
     return CreateMeshFromData(std::move(data));
 }
 
-osc::experimental::Mesh osc::GenUntexturedUVSphere(size_t sectors, size_t stacks)
+osc::Mesh osc::GenUntexturedUVSphere(size_t sectors, size_t stacks)
 {
     NewMeshData data;
     data.reserve(2*3*stacks*sectors);
@@ -299,7 +299,7 @@ osc::experimental::Mesh osc::GenUntexturedUVSphere(size_t sectors, size_t stacks
     return CreateMeshFromData(std::move(data));
 }
 
-osc::experimental::Mesh osc::GenUntexturedSimbodyCylinder(size_t nsides)
+osc::Mesh osc::GenUntexturedSimbodyCylinder(size_t nsides)
 {
     constexpr float c_TopY = +1.0f;
     constexpr float c_BottomY = -1.0f;
@@ -424,7 +424,7 @@ osc::experimental::Mesh osc::GenUntexturedSimbodyCylinder(size_t nsides)
     return CreateMeshFromData(std::move(data));
 }
 
-osc::experimental::Mesh osc::GenUntexturedSimbodyCone(size_t nsides)
+osc::Mesh osc::GenUntexturedSimbodyCone(size_t nsides)
 {
     NewMeshData data;
     data.reserve(2*3*nsides);
@@ -488,7 +488,7 @@ osc::experimental::Mesh osc::GenUntexturedSimbodyCone(size_t nsides)
     return CreateMeshFromData(std::move(data));
 }
 
-osc::experimental::Mesh osc::GenNbyNGrid(size_t n)
+osc::Mesh osc::GenNbyNGrid(size_t n)
 {
     static constexpr float z = 0.0f;
     static constexpr float min = -1.0f;
@@ -500,7 +500,7 @@ osc::experimental::Mesh osc::GenNbyNGrid(size_t n)
 
     NewMeshData data;
     data.reserve(4 * nlines);
-    data.topography = experimental::MeshTopography::Lines;
+    data.topography = MeshTopography::Lines;
 
     unsigned short index = 0;
     auto push = [&index, &data](glm::vec3 const& pos)
@@ -535,13 +535,13 @@ osc::experimental::Mesh osc::GenNbyNGrid(size_t n)
     return CreateMeshFromData(std::move(data));
 }
 
-osc::experimental::Mesh osc::GenYLine()
+osc::Mesh osc::GenYLine()
 {
     NewMeshData data;
     data.verts = {{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
     data.normals = {{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}};  // just give them *something* in-case they are rendered through a shader that requires normals
     data.indices = {0, 1};
-    data.topography = experimental::MeshTopography::Lines;
+    data.topography = MeshTopography::Lines;
 
     OSC_ASSERT(data.verts.size() % 2 == 0);
     OSC_ASSERT(data.normals.size() % 2 == 0);
@@ -550,7 +550,7 @@ osc::experimental::Mesh osc::GenYLine()
     return CreateMeshFromData(std::move(data));
 }
 
-osc::experimental::Mesh osc::GenCube()
+osc::Mesh osc::GenCube()
 {
     NewMeshData data;
     data.reserve(g_ShadedTexturedCubeVerts.size());
@@ -570,12 +570,12 @@ osc::experimental::Mesh osc::GenCube()
     return CreateMeshFromData(std::move(data));
 }
 
-osc::experimental::Mesh osc::GenCubeLines()
+osc::Mesh osc::GenCubeLines()
 {
     NewMeshData data;
     data.verts.reserve(g_CubeEdgeLines.size());
     data.indices.reserve(g_CubeEdgeLines.size());
-    data.topography = experimental::MeshTopography::Lines;
+    data.topography = MeshTopography::Lines;
 
     uint16_t index = 0;
     for (auto const& v : g_CubeEdgeLines)
@@ -591,11 +591,11 @@ osc::experimental::Mesh osc::GenCubeLines()
     return CreateMeshFromData(std::move(data));
 }
 
-osc::experimental::Mesh osc::GenCircle(size_t nsides)
+osc::Mesh osc::GenCircle(size_t nsides)
 {
     NewMeshData data;
     data.verts.reserve(3*nsides);
-    data.topography = experimental::MeshTopography::Triangles;
+    data.topography = MeshTopography::Triangles;
 
     uint16_t index = 0;
     auto push = [&data, &index](float x, float y, float z)
@@ -618,9 +618,9 @@ osc::experimental::Mesh osc::GenCircle(size_t nsides)
     return CreateMeshFromData(std::move(data));
 }
 
-osc::experimental::Mesh osc::GenLearnOpenGLCube()
+osc::Mesh osc::GenLearnOpenGLCube()
 {
-    osc::experimental::Mesh cube = osc::GenCube();
+    osc::Mesh cube = osc::GenCube();
 
     std::vector<glm::vec3> verts{cube.getVerts().begin(), cube.getVerts().end()};
     for (glm::vec3& vert : verts)

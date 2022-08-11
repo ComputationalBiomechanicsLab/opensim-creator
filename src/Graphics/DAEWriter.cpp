@@ -38,9 +38,9 @@ namespace
 {
     struct DAEGeometry final {
         std::string GeometryID;
-        std::shared_ptr<osc::experimental::Mesh const> Mesh;
+        std::shared_ptr<osc::Mesh const> Mesh;
 
-        DAEGeometry(std::string geometryID_, std::shared_ptr<osc::experimental::Mesh const> mesh_) :
+        DAEGeometry(std::string geometryID_, std::shared_ptr<osc::Mesh const> mesh_) :
             GeometryID{std::move(geometryID_)},
             Mesh{std::move(mesh_)}
         {
@@ -92,13 +92,13 @@ namespace
 
         int latestMesh = 0;
         int latestMaterial = 0;
-        std::unordered_map<std::shared_ptr<osc::experimental::Mesh const>, std::string> mesh2id;
+        std::unordered_map<std::shared_ptr<osc::Mesh const>, std::string> mesh2id;
         std::unordered_map<glm::vec4, std::string> color2materialid;
         int latestInstance = 0;
 
         for (osc::SceneDecoration const& el : els)
         {
-            if (el.mesh->getTopography() != osc::experimental::MeshTopography::Triangles)
+            if (el.mesh->getTopography() != osc::MeshTopography::Triangles)
             {
                 continue;  // unsupported
             }

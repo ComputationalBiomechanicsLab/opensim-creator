@@ -465,7 +465,7 @@ osc::Transform osc::ToTransform(SimTK::Transform const& t)
 
 // mesh loading
 
-osc::experimental::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
+osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
 {
     SimTK::DecorativeMeshFile dmf{p.string()};
     SimTK::PolygonalMesh const& mesh = dmf.getMesh();
@@ -585,8 +585,8 @@ osc::experimental::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
         }
     }
 
-    experimental::Mesh rv;
-    rv.setTopography(experimental::MeshTopography::Triangles);
+    Mesh rv;
+    rv.setTopography(MeshTopography::Triangles);
     rv.setVerts(verts);
     rv.setNormals(normals);
     rv.setIndices(indices);

@@ -73,18 +73,18 @@ static glm::vec3 const g_WindowLocations[] =
     { 0.5f, 0.0f, -0.6},
 };
 
-static osc::experimental::Mesh GeneratePlane()
+static osc::Mesh GeneratePlane()
 {
-    osc::experimental::Mesh rv;
+    osc::Mesh rv;
     rv.setVerts(g_PlaneVertices);
     rv.setTexCoords(g_PlaneTexCoords);
     rv.setIndices(g_PlaneIndices);
     return rv;
 }
 
-static osc::experimental::Mesh GenerateTransparent()
+static osc::Mesh GenerateTransparent()
 {
-    osc::experimental::Mesh rv;
+    osc::Mesh rv;
     rv.setVerts(g_TransparentVerts);
     rv.setTexCoords(g_TransparentTexCoords);
     rv.setIndices(g_TransparentIndices);
@@ -225,9 +225,9 @@ private:
         }
     };
     Material m_BlendingMaterial = m_OpaqueMaterial;
-    experimental::Mesh m_CubeMesh = GenLearnOpenGLCube();
-    experimental::Mesh m_PlaneMesh = GeneratePlane();
-    experimental::Mesh m_TransparentMesh = GenerateTransparent();
+    Mesh m_CubeMesh = GenLearnOpenGLCube();
+    Mesh m_PlaneMesh = GeneratePlane();
+    Mesh m_TransparentMesh = GenerateTransparent();
     experimental::Camera m_Camera;
     Texture2D m_MarbleTexture = LoadTexture2DFromImageResource("textures/marble.jpg");
     Texture2D m_MetalTexture = LoadTexture2DFromImageResource("textures/metal.png");

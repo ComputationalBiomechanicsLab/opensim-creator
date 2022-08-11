@@ -41,9 +41,9 @@ static glm::vec2 const g_PlaneTexCoords[] =
 
 static std::uint16_t const g_PlaneIndices[] = {0, 2, 1, 3, 5, 4};
 
-static osc::experimental::Mesh GeneratePlane()
+static osc::Mesh GeneratePlane()
 {
-    osc::experimental::Mesh rv;
+    osc::Mesh rv;
     rv.setVerts(g_PlaneVertices);
     rv.setTexCoords(g_PlaneTexCoords);
     rv.setIndices(g_PlaneIndices);
@@ -185,9 +185,9 @@ private:
     Texture2D m_ContainerTexture = osc::LoadTexture2DFromImageResource("container.jpg");
     Texture2D m_MetalTexture = osc::LoadTexture2DFromImageResource("textures/metal.png");
 
-    experimental::Mesh m_CubeMesh = GenLearnOpenGLCube();
-    experimental::Mesh m_PlaneMesh = GeneratePlane();
-    experimental::Mesh m_QuadMesh = GenTexturedQuad();
+    Mesh m_CubeMesh = GenLearnOpenGLCube();
+    Mesh m_PlaneMesh = GeneratePlane();
+    Mesh m_QuadMesh = GenTexturedQuad();
 
     experimental::Camera m_ScreenCamera;
     Material m_ScreenMaterial

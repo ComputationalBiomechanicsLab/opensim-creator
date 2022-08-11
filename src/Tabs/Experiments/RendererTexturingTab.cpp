@@ -19,9 +19,9 @@
 #include <string>
 #include <utility>
 
-static osc::experimental::Mesh GenerateMesh()
+static osc::Mesh GenerateMesh()
 {
-    osc::experimental::Mesh quad = osc::GenTexturedQuad();
+    osc::Mesh quad = osc::GenTexturedQuad();
 
     std::vector<glm::vec3> verts{quad.getVerts().begin(), quad.getVerts().end()};
     for (glm::vec3& vert : verts)
@@ -104,7 +104,7 @@ private:
         App::slurp("shaders/ExperimentTexturing.frag"),
     };
     Material m_Material{m_Shader};
-    experimental::Mesh m_Mesh = GenerateMesh();
+    Mesh m_Mesh = GenerateMesh();
     experimental::Camera m_Camera;
 };
 

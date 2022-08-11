@@ -70,18 +70,18 @@ namespace
 		return rv;
 	}
 
-	osc::experimental::Mesh GenerateCrosshairMesh()
+	osc::Mesh GenerateCrosshairMesh()
 	{
-		osc::experimental::Mesh rv;
-		rv.setTopography(osc::experimental::MeshTopography::Lines);
+		osc::Mesh rv;
+		rv.setTopography(osc::MeshTopography::Lines);
 		rv.setVerts(g_CrosshairVerts);
 		rv.setIndices(g_CrosshairIndices);
 		return rv;
 	}
 
-	osc::experimental::Mesh GenerateTriangleMesh()
+	osc::Mesh GenerateTriangleMesh()
 	{
-		osc::experimental::Mesh rv;
+		osc::Mesh rv;
 		rv.setVerts(g_TriangleVerts);
 		rv.setIndices(g_TriangleIndices);
 		return rv;
@@ -308,11 +308,11 @@ private:
 			App::slurp("shaders/SolidColor.frag"),
 		}
 	};
-	experimental::Mesh m_SphereMesh = GenUntexturedUVSphere(12, 12);
-	experimental::Mesh m_WireframeCubeMesh = GenCubeLines();
-	experimental::Mesh m_CircleMesh = GenCircle(36);
-	experimental::Mesh m_CrosshairMesh = GenerateCrosshairMesh();
-	experimental::Mesh m_TriangleMesh = GenerateTriangleMesh();
+	Mesh m_SphereMesh = GenUntexturedUVSphere(12, 12);
+	Mesh m_WireframeCubeMesh = GenCubeLines();
+	Mesh m_CircleMesh = GenCircle(36);
+	Mesh m_CrosshairMesh = GenerateCrosshairMesh();
+	Mesh m_TriangleMesh = GenerateTriangleMesh();
 	MaterialPropertyBlock m_BlackColorMaterialProps = GeneratePropertyBlock({0.0f, 0.0f, 0.0f, 1.0f});
 	MaterialPropertyBlock m_BlueColorMaterialProps = GeneratePropertyBlock({0.0f, 0.0f, 1.0f, 1.0f});
 	MaterialPropertyBlock m_RedColorMaterialProps = GeneratePropertyBlock({1.0f, 0.0f, 0.0f, 1.0f});

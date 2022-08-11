@@ -13,7 +13,7 @@
 #include <cstdint>
 #include <utility>
 
-static osc::experimental::Mesh GenerateTriangleMesh()
+static osc::Mesh GenerateTriangleMesh()
 {
     glm::vec3 points[] =
     {
@@ -29,7 +29,7 @@ static osc::experimental::Mesh GenerateTriangleMesh()
     };
     std::uint16_t indices[] = {0, 1, 2};
 
-    osc::experimental::Mesh m;
+    osc::Mesh m;
     m.setVerts(points);
     m.setIndices(indices);
     m.setColors(colors);
@@ -96,7 +96,7 @@ private:
         App::slurp("shaders/ExperimentTriangle.frag"),
     };
     Material m_Material{m_Shader};
-    experimental::Mesh m_TriangleMesh = GenerateTriangleMesh();
+    Mesh m_TriangleMesh = GenerateTriangleMesh();
     experimental::Camera m_Camera;
 };
 

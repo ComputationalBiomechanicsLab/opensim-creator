@@ -28,7 +28,7 @@
 #include <string>
 #include <utility>
 
-static std::map<std::string, std::shared_ptr<osc::experimental::Mesh const>> GenerateMeshLookup()
+static std::map<std::string, std::shared_ptr<osc::Mesh const>> GenerateMeshLookup()
 {
 	return
 	{
@@ -152,7 +152,7 @@ private:
 	TabHost* m_Parent;
 
 	std::string m_CurrentMesh = "brick";
-	std::map<std::string, std::shared_ptr<osc::experimental::Mesh const>> m_AllMeshes = GenerateMeshLookup();
+	std::map<std::string, std::shared_ptr<osc::Mesh const>> m_AllMeshes = GenerateMeshLookup();
 	SceneViewer m_Viewer;
 	SceneRendererParams m_RenderParams;
 	PolarPerspectiveCamera m_Camera;

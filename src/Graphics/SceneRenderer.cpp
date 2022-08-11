@@ -300,7 +300,7 @@ private:
         ShaderCache::get("shaders/ExperimentGeometryShaderNormals.vert", "shaders/ExperimentGeometryShaderNormals.geom", "shaders/ExperimentGeometryShaderNormals.frag")
     };
 
-    std::shared_ptr<experimental::Mesh const> m_QuadMesh = App::meshes().getTexturedQuadMesh();
+    std::shared_ptr<Mesh const> m_QuadMesh = App::meshes().getTexturedQuadMesh();
     Texture2D m_ChequerTexture = GenChequeredFloorTexture();
     experimental::Camera m_Camera;
 

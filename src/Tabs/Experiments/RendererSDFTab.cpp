@@ -153,7 +153,7 @@ private:
 				glm::vec2 coords[] = { { q.s0, q.t0 }, { q.s1, q.t0 }, { q.s1, q.t1 }, { q.s0, q.t0 }, { q.s0, q.t1 }, { q.s1, q.t1 } };
 				uint16_t indices[] = { 0, 1, 2, 3, 4, 5 };
 
-				osc::experimental::Mesh m;
+				osc::Mesh m;
 				m.setVerts(verts);
 				m.setTexCoords(coords);
 				m.setIndices(indices);

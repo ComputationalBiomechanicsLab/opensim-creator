@@ -424,7 +424,7 @@ namespace osc
 //
 // encapsulates mesh data, which may include vertices, indices, normals, texture
 // coordinates, etc.
-namespace osc::experimental
+namespace osc
 {
     // which primitive geometry the mesh data represents
     enum class MeshTopography {
@@ -474,7 +474,7 @@ namespace osc::experimental
         void clear();
 
     private:
-        friend class GraphicsBackend;
+        friend class osc::experimental::GraphicsBackend;
         friend bool operator==(Mesh const&, Mesh const&);
         friend bool operator!=(Mesh const&, Mesh const&);
         friend bool operator<(Mesh const&, Mesh const&);
