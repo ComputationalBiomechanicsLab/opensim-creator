@@ -602,7 +602,7 @@ public:
         return m_MainWindow;
     }
 
-    osc::experimental::GraphicsContext& updGraphicsContext()
+    osc::GraphicsContext& updGraphicsContext()
     {
         return m_GraphicsContext;
     }
@@ -764,7 +764,7 @@ private:
     sdl::Window m_MainWindow = CreateMainAppWindow();
 
     // init graphics context
-    experimental::GraphicsContext m_GraphicsContext{m_MainWindow};
+    GraphicsContext m_GraphicsContext{m_MainWindow};
 
     // get performance counter frequency (for the delta clocks)
     Uint64 m_AppCounterFq = SDL_GetPerformanceFrequency();

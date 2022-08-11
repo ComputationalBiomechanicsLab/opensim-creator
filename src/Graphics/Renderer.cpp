@@ -3651,7 +3651,7 @@ severity = %s
     }
 }
 
-class osc::experimental::GraphicsContext::Impl final {
+class osc::GraphicsContext::Impl final {
 public:
     Impl(SDL_Window* window) : m_GLContext{CreateOpenGLContext(window)}
     {
@@ -3779,9 +3779,9 @@ public:
     Mesh m_QuadMesh = osc::GenTexturedQuad();
 };
 
-static std::unique_ptr<osc::experimental::GraphicsContext::Impl> g_GraphicsContextImpl = nullptr;
+static std::unique_ptr<osc::GraphicsContext::Impl> g_GraphicsContextImpl = nullptr;
 
-osc::experimental::GraphicsContext::GraphicsContext(SDL_Window* window)
+osc::GraphicsContext::GraphicsContext(SDL_Window* window)
 {
     if (g_GraphicsContextImpl)
     {
@@ -3791,77 +3791,77 @@ osc::experimental::GraphicsContext::GraphicsContext(SDL_Window* window)
     g_GraphicsContextImpl = std::make_unique<GraphicsContext::Impl>(window);
 }
 
-osc::experimental::GraphicsContext::~GraphicsContext() noexcept
+osc::GraphicsContext::~GraphicsContext() noexcept
 {
     g_GraphicsContextImpl.reset();
 }
 
-int osc::experimental::GraphicsContext::getMaxMSXAASamples() const
+int osc::GraphicsContext::getMaxMSXAASamples() const
 {
     return g_GraphicsContextImpl->getMaxMSXAASamples();
 }
 
-bool osc::experimental::GraphicsContext::isVsyncEnabled() const
+bool osc::GraphicsContext::isVsyncEnabled() const
 {
     return g_GraphicsContextImpl->isVsyncEnabled();
 }
 
-void osc::experimental::GraphicsContext::enableVsync()
+void osc::GraphicsContext::enableVsync()
 {
     g_GraphicsContextImpl->enableVsync();
 }
 
-void osc::experimental::GraphicsContext::disableVsync()
+void osc::GraphicsContext::disableVsync()
 {
     g_GraphicsContextImpl->disableVsync();
 }
 
-bool osc::experimental::GraphicsContext::isInDebugMode() const
+bool osc::GraphicsContext::isInDebugMode() const
 {
     return g_GraphicsContextImpl->isInDebugMode();
 }
 
-void osc::experimental::GraphicsContext::enableDebugMode()
+void osc::GraphicsContext::enableDebugMode()
 {
     g_GraphicsContextImpl->enableDebugMode();
 }
 
-void osc::experimental::GraphicsContext::disableDebugMode()
+void osc::GraphicsContext::disableDebugMode()
 {
     g_GraphicsContextImpl->disableDebugMode();
 }
 
-void osc::experimental::GraphicsContext::clearProgram()
+void osc::GraphicsContext::clearProgram()
 {
     g_GraphicsContextImpl->clearProgram();
 }
 
-void osc::experimental::GraphicsContext::clearScreen(glm::vec4 const& color)
+void osc::GraphicsContext::clearScreen(glm::vec4 const& color)
 {
     g_GraphicsContextImpl->clearScreen(color);
 }
 
-void* osc::experimental::GraphicsContext::updRawGLContextHandle()
+void* osc::GraphicsContext::updRawGLContextHandle()
 {
     return g_GraphicsContextImpl->updRawGLContextHandle();
 }
 
-std::string osc::experimental::GraphicsContext::getBackendVendorString() const
+std::string osc::GraphicsContext::getBackendVendorString() const
 {
     return g_GraphicsContextImpl->getBackendVendorString();
 }
 
-std::string osc::experimental::GraphicsContext::getBackendRendererString() const
+std::string osc::GraphicsContext::getBackendRendererString() const
 {
     return g_GraphicsContextImpl->getBackendRendererString();
 }
 
-std::string osc::experimental::GraphicsContext::getBackendVersionString() const
+std::string osc::GraphicsContext::getBackendVersionString() const
 {
     return g_GraphicsContextImpl->getBackendVersionString();
 }
 
-std::string osc::experimental::GraphicsContext::getBackendShadingLanguageVersionString() const
+std::string osc::GraphicsContext::getBackendShadingLanguageVersionString() const
 {
     return g_GraphicsContextImpl->getBackendShadingLanguageVersionString();
 }

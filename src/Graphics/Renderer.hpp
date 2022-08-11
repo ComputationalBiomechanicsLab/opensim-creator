@@ -639,7 +639,7 @@ namespace osc
 // graphics context
 //
 // should be initialized exactly once by the application
-namespace osc::experimental
+namespace osc
 {
     class GraphicsContext final {
     public:
