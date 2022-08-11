@@ -229,9 +229,9 @@ private:
     experimental::Mesh m_PlaneMesh = GeneratePlane();
     experimental::Mesh m_TransparentMesh = GenerateTransparent();
     experimental::Camera m_Camera;
-    experimental::Texture2D m_MarbleTexture = experimental::LoadTexture2DFromImageResource("textures/marble.jpg");
-    experimental::Texture2D m_MetalTexture = experimental::LoadTexture2DFromImageResource("textures/metal.png");
-    experimental::Texture2D m_WindowTexture = experimental::LoadTexture2DFromImageResource("textures/window.png");
+    Texture2D m_MarbleTexture = LoadTexture2DFromImageResource("textures/marble.jpg");
+    Texture2D m_MetalTexture = LoadTexture2DFromImageResource("textures/metal.png");
+    Texture2D m_WindowTexture = LoadTexture2DFromImageResource("textures/window.png");
     bool m_IsMouseCaptured = false;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
     LogViewerPanel m_LogViewer{"log"};

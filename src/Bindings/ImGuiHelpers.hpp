@@ -15,13 +15,13 @@ namespace osc
 {
     class UID;
     class PolarPerspectiveCamera;
+    class Texture2D;
 }
 
 namespace osc::experimental
 {
     class Camera;
     class RenderTexture;
-    class Texture2D;
 }
 
 namespace osc
@@ -39,7 +39,7 @@ namespace osc
     Rect ContentRegionAvailScreenRect();
 
     // draws a texutre as an ImGui::Image, assumes UV coords of (0.0, 1.0); (1.0, 0.0)
-    void DrawTextureAsImGuiImage(experimental::Texture2D&, glm::vec2 dims);
+    void DrawTextureAsImGuiImage(Texture2D&, glm::vec2 dims);
     void DrawTextureAsImGuiImage(experimental::RenderTexture&, glm::vec2 dims);
 
     struct ImGuiImageHittestResult final {
@@ -50,7 +50,7 @@ namespace osc
 
         ImGuiImageHittestResult();
     };
-    ImGuiImageHittestResult DrawTextureAsImGuiImageAndHittest(experimental::Texture2D&, glm::vec2 dims, float dragThreshold = defaultImguiDragThreshold);
+    ImGuiImageHittestResult DrawTextureAsImGuiImageAndHittest(Texture2D&, glm::vec2 dims, float dragThreshold = defaultImguiDragThreshold);
     ImGuiImageHittestResult DrawTextureAsImGuiImageAndHittest(experimental::RenderTexture&, glm::vec2 dims, float dragThreshold = defaultImguiDragThreshold);
 
     // returns `true` if any scancode in the provided range is currently pressed down

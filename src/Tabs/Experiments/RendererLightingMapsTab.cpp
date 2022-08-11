@@ -145,8 +145,8 @@ private:
         }
     };
     experimental::Mesh m_Mesh = GenLearnOpenGLCube();
-    experimental::Texture2D m_DiffuseMap = experimental::LoadTexture2DFromImageResource("textures/container2.png", ImageFlags_FlipVertically);
-    experimental::Texture2D m_SpecularMap = experimental::LoadTexture2DFromImageResource("textures/container2_specular.png", ImageFlags_FlipVertically);
+    Texture2D m_DiffuseMap = LoadTexture2DFromImageResource("textures/container2.png", ImageFlags_FlipVertically);
+    Texture2D m_SpecularMap = LoadTexture2DFromImageResource("textures/container2_specular.png", ImageFlags_FlipVertically);
 
     experimental::Camera m_Camera;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};

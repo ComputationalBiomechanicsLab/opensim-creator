@@ -46,10 +46,10 @@ public:
     {
         m_Camera.setViewMatrix(glm::mat4{1.0f});
         m_Camera.setProjectionMatrix(glm::mat4{1.0f});
-        auto container = osc::experimental::LoadTexture2DFromImageResource("container.jpg", ImageFlags_FlipVertically);
-        container.setWrapMode(osc::experimental::TextureWrapMode::Clamp);
+        auto container = osc::LoadTexture2DFromImageResource("container.jpg", ImageFlags_FlipVertically);
+        container.setWrapMode(osc::TextureWrapMode::Clamp);
         m_Material.setTexture("uTexture1", std::move(container));
-        m_Material.setTexture("uTexture2", osc::experimental::LoadTexture2DFromImageResource("awesomeface.png", ImageFlags_FlipVertically));
+        m_Material.setTexture("uTexture2", osc::LoadTexture2DFromImageResource("awesomeface.png", ImageFlags_FlipVertically));
     }
 
     UID getID() const

@@ -61,9 +61,9 @@ class osc::SplashTab::Impl final {
 public:
 	Impl(MainUIStateAPI* parent) : m_Parent{std::move(parent)}
 	{
-        m_OscLogo.setFilterMode(osc::experimental::TextureFilterMode::Linear);
-        m_CziLogo.setFilterMode(osc::experimental::TextureFilterMode::Linear);
-        m_TudLogo.setFilterMode(osc::experimental::TextureFilterMode::Linear);
+        m_OscLogo.setFilterMode(osc::TextureFilterMode::Linear);
+        m_CziLogo.setFilterMode(osc::TextureFilterMode::Linear);
+        m_TudLogo.setFilterMode(osc::TextureFilterMode::Linear);
 	}
 
     UID getID() const
@@ -373,13 +373,13 @@ private:
     SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);
 
 	// main app logo, blitted to top of the screen
-	experimental::Texture2D m_OscLogo = experimental::LoadTexture2DFromImageResource("logo.png", ImageFlags_FlipVertically);
+	Texture2D m_OscLogo = LoadTexture2DFromImageResource("logo.png", ImageFlags_FlipVertically);
 
 	// CZI attributation logo, blitted to bottom of screen
-	experimental::Texture2D m_CziLogo = experimental::LoadTexture2DFromImageResource("chanzuckerberg_logo.png", ImageFlags_FlipVertically);
+	Texture2D m_CziLogo = LoadTexture2DFromImageResource("chanzuckerberg_logo.png", ImageFlags_FlipVertically);
 
 	// TUD attributation logo, blitted to bottom of screen
-	experimental::Texture2D m_TudLogo = experimental::LoadTexture2DFromImageResource("tud_logo.png", ImageFlags_FlipVertically);
+	Texture2D m_TudLogo = LoadTexture2DFromImageResource("tud_logo.png", ImageFlags_FlipVertically);
 
 	// main menu (top bar) states
 	MainMenuFileTab m_MainMenuFileTab;

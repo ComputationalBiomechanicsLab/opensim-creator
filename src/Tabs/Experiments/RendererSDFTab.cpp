@@ -23,7 +23,7 @@ struct CharMetadata final {
 };
 
 struct FontTexture final {
-	osc::experimental::Texture2D texture;
+	osc::Texture2D texture;
 	CharMetadata metadata;
 };
 
@@ -67,8 +67,8 @@ static FontTexture CreateFontTexture()
 	std::vector<uint8_t> pixels(512 * 512);
 
 	stbtt_BakeFontBitmap(ttfData.data(), 0, 64., pixels.data(), 512, 512, 32, 96, glyphData.storage); // no guarantee this fits!
-	auto t = osc::experimental::Texture2D{512, 512, pixels, 1};
-	t.setFilterMode(osc::experimental::TextureFilterMode::Linear);
+	auto t = osc::Texture2D{512, 512, pixels, 1};
+	t.setFilterMode(osc::TextureFilterMode::Linear);
 
 	return FontTexture{t, glyphData};
 }

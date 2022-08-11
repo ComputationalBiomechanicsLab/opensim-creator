@@ -301,7 +301,7 @@ private:
     };
 
     std::shared_ptr<experimental::Mesh const> m_QuadMesh = App::meshes().getTexturedQuadMesh();
-    experimental::Texture2D m_ChequerTexture = GenChequeredFloorTexture();
+    Texture2D m_ChequerTexture = GenChequeredFloorTexture();
     experimental::Camera m_Camera;
 
     // outputs

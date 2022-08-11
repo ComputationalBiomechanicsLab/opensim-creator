@@ -24,25 +24,26 @@ struct SDL_Window;
 
 namespace osc::experimental
 {
-    class Texture2D;
+    class GraphicsBackend;
     class RenderTexture;
 }
 
 namespace osc
 {
-    void DrawTextureAsImGuiImage(osc::experimental::Texture2D&, glm::vec2);
-    void DrawTextureAsImGuiImage(osc::experimental::RenderTexture&, glm::vec2);
-
+    class Texture2D;
     struct AABB;
     struct BVH;
     struct Rgba32;
     struct Transform;
+
+    void DrawTextureAsImGuiImage(osc::Texture2D&, glm::vec2);
+    void DrawTextureAsImGuiImage(osc::experimental::RenderTexture&, glm::vec2);
 }
 
 // 2D texture
 //
 // encapsulates an image that can be sampled by shaders
-namespace osc::experimental
+namespace osc
 {
     // how texels should be sampled when a texture coordinate falls outside the texture's bounds
     enum class TextureWrapMode {
@@ -91,10 +92,10 @@ namespace osc::experimental
         void setFilterMode(TextureFilterMode);
 
     private:
-        friend void osc::DrawTextureAsImGuiImage(osc::experimental::Texture2D&, glm::vec2);
+        friend void osc::DrawTextureAsImGuiImage(osc::Texture2D&, glm::vec2);
         void* updTextureHandleHACK();  // used by ImGui... for now
 
-        friend class GraphicsBackend;
+        friend class osc::experimental::GraphicsBackend;
         friend bool operator==(Texture2D const&, Texture2D const&);
         friend bool operator!=(Texture2D const&, Texture2D const&);
         friend bool operator<(Texture2D const&, Texture2D const&);
@@ -325,8 +326,8 @@ namespace osc::experimental
         std::optional<bool> getBool(std::string_view propertyName) const;
         void setBool(std::string_view propertyName, bool);
 
-        std::optional<Texture2D> getTexture(std::string_view propertyName) const;
-        void setTexture(std::string_view propertyName, Texture2D);
+        std::optional<osc::Texture2D> getTexture(std::string_view propertyName) const;
+        void setTexture(std::string_view propertyName, osc::Texture2D);
 
         std::optional<RenderTexture> getRenderTexture(std::string_view propertyName) const;
         void setRenderTexture(std::string_view propertyName, RenderTexture);
@@ -398,8 +399,8 @@ namespace osc::experimental
         std::optional<bool> getBool(std::string_view propertyName) const;
         void setBool(std::string_view propertyName, bool);
 
-        std::optional<Texture2D> getTexture(std::string_view propertyName) const;
-        void setTexture(std::string_view, Texture2D);
+        std::optional<osc::Texture2D> getTexture(std::string_view propertyName) const;
+        void setTexture(std::string_view, osc::Texture2D);
 
     private:
         friend class GraphicsBackend;

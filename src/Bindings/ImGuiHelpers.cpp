@@ -213,7 +213,7 @@ osc::Rect osc::ContentRegionAvailScreenRect()
     return Rect{topLeft, bottomRight};
 }
 
-void osc::DrawTextureAsImGuiImage(experimental::Texture2D& t, glm::vec2 dims)
+void osc::DrawTextureAsImGuiImage(Texture2D& t, glm::vec2 dims)
 {
     ImVec2 uv0{0.0f, 1.0f};
     ImVec2 uv1{1.0f, 0.0f};
@@ -235,7 +235,7 @@ osc::ImGuiImageHittestResult::ImGuiImageHittestResult() :
 {
 }
 
-osc::ImGuiImageHittestResult osc::DrawTextureAsImGuiImageAndHittest(experimental::Texture2D& tex, glm::vec2 dims, float dragThreshold)
+osc::ImGuiImageHittestResult osc::DrawTextureAsImGuiImageAndHittest(Texture2D& tex, glm::vec2 dims, float dragThreshold)
 {
     osc::DrawTextureAsImGuiImage(tex, dims);
 

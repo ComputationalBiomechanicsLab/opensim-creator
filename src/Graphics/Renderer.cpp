@@ -147,7 +147,7 @@ namespace
         glm::mat4,
         int,
         bool,
-        osc::experimental::Texture2D,
+        osc::Texture2D,
         osc::experimental::RenderTexture
     >;
 
@@ -172,7 +172,7 @@ namespace
             return osc::experimental::ShaderType::Int;
         case VariantIndex<MaterialValue, bool>():
             return osc::experimental::ShaderType::Bool;
-        case VariantIndex<MaterialValue, osc::experimental::Texture2D>():
+        case VariantIndex<MaterialValue, osc::Texture2D>():
         case VariantIndex<MaterialValue, osc::experimental::RenderTexture>():
             return osc::experimental::ShaderType::Sampler2D;
         default:
@@ -344,16 +344,14 @@ namespace osc::experimental {
 
 namespace
 {
-    using namespace osc::experimental;
-
-    static constexpr auto const g_TextureWrapModeStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(TextureWrapMode::TOTAL)>
+    static constexpr auto const g_TextureWrapModeStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::TextureWrapMode::TOTAL)>
     (
         "Repeat",
         "Clamp",
         "Mirror"
     );
 
-    static constexpr auto const g_TextureFilterModeStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::experimental::TextureFilterMode::TOTAL)>
+    static constexpr auto const g_TextureFilterModeStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::TextureFilterMode::TOTAL)>
     (
         "Nearest",
         "Linear",
@@ -365,30 +363,30 @@ namespace
         osc::UID TextureParamsVersion;
     };
 
-    GLint ToGLTextureFilterParam(TextureFilterMode m)
+    GLint ToGLTextureFilterParam(osc::TextureFilterMode m)
     {
         switch (m)
         {
-        case TextureFilterMode::Nearest:
+        case osc::TextureFilterMode::Nearest:
             return GL_NEAREST;
-        case TextureFilterMode::Linear:
+        case osc::TextureFilterMode::Linear:
             return GL_LINEAR;
-        case TextureFilterMode::Mipmap:
+        case osc::TextureFilterMode::Mipmap:
             return GL_LINEAR_MIPMAP_LINEAR;
         default:
             return GL_LINEAR;
         }
     }
 
-    GLint ToGLTextureTextureWrapParam(TextureWrapMode m)
+    GLint ToGLTextureTextureWrapParam(osc::TextureWrapMode m)
     {
         switch (m)
         {
-        case TextureWrapMode::Repeat:
+        case osc::TextureWrapMode::Repeat:
             return GL_REPEAT;
-        case TextureWrapMode::Clamp:
+        case osc::TextureWrapMode::Clamp:
             return GL_CLAMP_TO_EDGE;
-        case TextureWrapMode::Mirror:
+        case osc::TextureWrapMode::Mirror:
             return GL_MIRRORED_REPEAT;
         default:
             return GL_REPEAT;
@@ -396,7 +394,7 @@ namespace
     }
 }
 
-class osc::experimental::Texture2D::Impl final {
+class osc::Texture2D::Impl final {
 public:
     Impl(int width, int height, nonstd::span<Rgba32 const> pixelsRowByRow) :
         Impl{width, height, {&pixelsRowByRow[0].r, 4 * pixelsRowByRow.size()}, 4}
@@ -577,135 +575,135 @@ private:
     DefaultConstructOnCopy<std::optional<TextureGPUBuffers>> m_MaybeGPUTexture;
 };
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, TextureWrapMode twm)
+std::ostream& osc::operator<<(std::ostream& o, TextureWrapMode twm)
 {
     return o << g_TextureWrapModeStrings.at(static_cast<int>(twm));
 }
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, TextureFilterMode twm)
+std::ostream& osc::operator<<(std::ostream& o, TextureFilterMode twm)
 {
     return o << g_TextureFilterModeStrings.at(static_cast<int>(twm));
 }
 
 
-osc::experimental::Texture2D::Texture2D(int width, int height, nonstd::span<Rgba32 const> pixels) :
+osc::Texture2D::Texture2D(int width, int height, nonstd::span<Rgba32 const> pixels) :
     m_Impl{std::make_shared<Impl>(std::move(width), std::move(height), std::move(pixels))}
 {
 }
 
-osc::experimental::Texture2D::Texture2D(int width, int height, nonstd::span<uint8_t const> pixels) :
+osc::Texture2D::Texture2D(int width, int height, nonstd::span<uint8_t const> pixels) :
     m_Impl{std::make_shared<Impl>(std::move(width), std::move(height), std::move(pixels))}
 {
 }
 
-osc::experimental::Texture2D::Texture2D(int width, int height, nonstd::span<uint8_t const> channels, int numChannels) :
+osc::Texture2D::Texture2D(int width, int height, nonstd::span<uint8_t const> channels, int numChannels) :
     m_Impl{std::make_shared<Impl>(std::move(width), std::move(height), std::move(channels), std::move(numChannels))}
 {
 }
 
-osc::experimental::Texture2D::Texture2D(Texture2D const&) = default;
-osc::experimental::Texture2D::Texture2D(Texture2D&&) noexcept = default;
-osc::experimental::Texture2D& osc::experimental::Texture2D::operator=(Texture2D const&) = default;
-osc::experimental::Texture2D& osc::experimental::Texture2D::operator=(Texture2D&&) noexcept = default;
-osc::experimental::Texture2D::~Texture2D() noexcept = default;
+osc::Texture2D::Texture2D(Texture2D const&) = default;
+osc::Texture2D::Texture2D(Texture2D&&) noexcept = default;
+osc::Texture2D& osc::Texture2D::operator=(Texture2D const&) = default;
+osc::Texture2D& osc::Texture2D::operator=(Texture2D&&) noexcept = default;
+osc::Texture2D::~Texture2D() noexcept = default;
 
-int osc::experimental::Texture2D::getWidth() const
+int osc::Texture2D::getWidth() const
 {
     return m_Impl->getWidth();
 }
 
-int osc::experimental::Texture2D::getHeight() const
+int osc::Texture2D::getHeight() const
 {
     return m_Impl->getHeight();
 }
 
-float osc::experimental::Texture2D::getAspectRatio() const
+float osc::Texture2D::getAspectRatio() const
 {
     return m_Impl->getAspectRatio();
 }
 
-osc::experimental::TextureWrapMode osc::experimental::Texture2D::getWrapMode() const
+osc::TextureWrapMode osc::Texture2D::getWrapMode() const
 {
     return m_Impl->getWrapMode();
 }
 
-void osc::experimental::Texture2D::setWrapMode(TextureWrapMode twm)
+void osc::Texture2D::setWrapMode(TextureWrapMode twm)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setWrapMode(std::move(twm));
 }
 
-osc::experimental::TextureWrapMode osc::experimental::Texture2D::getWrapModeU() const
+osc::TextureWrapMode osc::Texture2D::getWrapModeU() const
 {
     return m_Impl->getWrapModeU();
 }
 
-void osc::experimental::Texture2D::setWrapModeU(TextureWrapMode twm)
+void osc::Texture2D::setWrapModeU(TextureWrapMode twm)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setWrapModeU(std::move(twm));
 }
 
-osc::experimental::TextureWrapMode osc::experimental::Texture2D::getWrapModeV() const
+osc::TextureWrapMode osc::Texture2D::getWrapModeV() const
 {
     return m_Impl->getWrapModeV();
 }
 
-void osc::experimental::Texture2D::setWrapModeV(TextureWrapMode twm)
+void osc::Texture2D::setWrapModeV(TextureWrapMode twm)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setWrapModeV(std::move(twm));
 }
 
-osc::experimental::TextureWrapMode osc::experimental::Texture2D::getWrapModeW() const
+osc::TextureWrapMode osc::Texture2D::getWrapModeW() const
 {
     return m_Impl->getWrapModeW();
 }
 
-void osc::experimental::Texture2D::setWrapModeW(TextureWrapMode twm)
+void osc::Texture2D::setWrapModeW(TextureWrapMode twm)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setWrapModeW(std::move(twm));
 }
 
-osc::experimental::TextureFilterMode osc::experimental::Texture2D::getFilterMode() const
+osc::TextureFilterMode osc::Texture2D::getFilterMode() const
 {
     return m_Impl->getFilterMode();
 }
 
-void osc::experimental::Texture2D::setFilterMode(TextureFilterMode twm)
+void osc::Texture2D::setFilterMode(TextureFilterMode twm)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setFilterMode(std::move(twm));
 }
 
-void* osc::experimental::Texture2D::updTextureHandleHACK()
+void* osc::Texture2D::updTextureHandleHACK()
 {
     DoCopyOnWrite(m_Impl);
     return m_Impl->updTextureHandleHACK();
 }
 
-bool osc::experimental::operator==(Texture2D const& a, Texture2D const& b)
+bool osc::operator==(Texture2D const& a, Texture2D const& b)
 {
     return a.m_Impl == b.m_Impl;
 }
 
-bool osc::experimental::operator!=(Texture2D const& a, Texture2D const& b)
+bool osc::operator!=(Texture2D const& a, Texture2D const& b)
 {
     return a.m_Impl != b.m_Impl;
 }
 
-bool osc::experimental::operator<(Texture2D const& a, Texture2D const& b)
+bool osc::operator<(Texture2D const& a, Texture2D const& b)
 {
     return a.m_Impl < b.m_Impl;
 }
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, Texture2D const&)
+std::ostream& osc::operator<<(std::ostream& o, Texture2D const&)
 {
     return o << "Texture2D()";
 }
 
-osc::experimental::Texture2D osc::experimental::LoadTexture2DFromImageResource(std::string_view resource, ImageFlags flags)
+osc::Texture2D osc::LoadTexture2DFromImageResource(std::string_view resource, ImageFlags flags)
 {
     Image img = Image::Load(osc::App::get().resource(resource), flags);
     auto dims = img.getDimensions();
@@ -1527,12 +1525,12 @@ public:
         setValue(std::move(propertyName), value);
     }
 
-    std::optional<Texture2D> getTexture(std::string_view propertyName) const
+    std::optional<osc::Texture2D> getTexture(std::string_view propertyName) const
     {
-        return getValue<Texture2D>(std::move(propertyName));
+        return getValue<osc::Texture2D>(std::move(propertyName));
     }
 
-    void setTexture(std::string_view propertyName, Texture2D t)
+    void setTexture(std::string_view propertyName, osc::Texture2D t)
     {
         setValue(std::move(propertyName), std::move(t));
     }
@@ -1743,12 +1741,12 @@ void osc::experimental::Material::setBool(std::string_view propertyName, bool va
     m_Impl->setBool(std::move(propertyName), std::move(value));
 }
 
-std::optional<Texture2D> osc::experimental::Material::getTexture(std::string_view propertyName) const
+std::optional<osc::Texture2D> osc::experimental::Material::getTexture(std::string_view propertyName) const
 {
     return m_Impl->getTexture(std::move(propertyName));
 }
 
-void osc::experimental::Material::setTexture(std::string_view propertyName, Texture2D t)
+void osc::experimental::Material::setTexture(std::string_view propertyName, osc::Texture2D t)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setTexture(std::move(propertyName), std::move(t));
@@ -2057,7 +2055,7 @@ void osc::experimental::MaterialPropertyBlock::setBool(std::string_view property
     m_Impl->setBool(std::move(propertyName), std::move(value));
 }
 
-std::optional<Texture2D> osc::experimental::MaterialPropertyBlock::getTexture(std::string_view propertyName) const
+std::optional<osc::Texture2D> osc::experimental::MaterialPropertyBlock::getTexture(std::string_view propertyName) const
 {
     return m_Impl->getTexture(std::move(propertyName));
 }
@@ -4026,9 +4024,9 @@ void osc::experimental::GraphicsBackend::TryBindMaterialValueToShaderElement(Sha
         gl::Uniform(u, std::get<bool>(v));
         break;
     }
-    case VariantIndex<MaterialValue, osc::experimental::Texture2D>():
+    case VariantIndex<MaterialValue, osc::Texture2D>():
     {
-        osc::experimental::Texture2D::Impl& impl = *std::get<osc::experimental::Texture2D>(v).m_Impl;
+        osc::Texture2D::Impl& impl = *std::get<osc::Texture2D>(v).m_Impl;
         gl::Texture2D& texture = impl.updTexture();
 
         gl::ActiveTexture(GL_TEXTURE0 + *textureSlot);
