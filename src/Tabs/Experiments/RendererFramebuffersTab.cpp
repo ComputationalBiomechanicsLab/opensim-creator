@@ -132,7 +132,7 @@ public:
         // setup render texture
         osc::Rect viewportRect = osc::GetMainViewportWorkspaceScreenRect();
         glm::vec2 viewportRectDims = osc::Dimensions(viewportRect);
-        osc::experimental::RenderTextureDescriptor desc = osc::experimental::RenderTextureDescriptor
+        osc::RenderTextureDescriptor desc = osc::RenderTextureDescriptor
         {
             static_cast<int>(viewportRectDims.x),
             static_cast<int>(viewportRectDims.y),

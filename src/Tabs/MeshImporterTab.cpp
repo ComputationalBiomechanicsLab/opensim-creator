@@ -4396,7 +4396,7 @@ namespace
             m_3DSceneCamera.focusPoint = -focusPoint;
         }
 
-        osc::experimental::RenderTexture& UpdSceneTex()
+        osc::RenderTexture& UpdSceneTex()
         {
             return m_SceneRenderer.updRenderTexture();
         }

@@ -220,7 +220,7 @@ void osc::DrawTextureAsImGuiImage(Texture2D& t, glm::vec2 dims)
     ImGui::Image(t.updTextureHandleHACK(), dims, uv0, uv1);
 }
 
-void osc::DrawTextureAsImGuiImage(experimental::RenderTexture& t, glm::vec2 dims)
+void osc::DrawTextureAsImGuiImage(RenderTexture& t, glm::vec2 dims)
 {
     ImVec2 uv0{0.0f, 1.0f};
     ImVec2 uv1{1.0f, 0.0f};
@@ -248,7 +248,7 @@ osc::ImGuiImageHittestResult osc::DrawTextureAsImGuiImageAndHittest(Texture2D& t
     return rv;
 }
 
-osc::ImGuiImageHittestResult osc::DrawTextureAsImGuiImageAndHittest(experimental::RenderTexture& tex, glm::vec2 dims, float dragThreshold)
+osc::ImGuiImageHittestResult osc::DrawTextureAsImGuiImageAndHittest(RenderTexture& tex, glm::vec2 dims, float dragThreshold)
 {
     osc::DrawTextureAsImGuiImage(tex, dims);
 

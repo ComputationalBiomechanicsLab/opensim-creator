@@ -594,7 +594,7 @@ public:
 
 
 private:
-    experimental::RenderTexture& render3DScene(glm::vec2 dims)
+    RenderTexture& render3DScene(glm::vec2 dims)
     {
         SceneRendererParams params = generateRenderParams(dims);
 

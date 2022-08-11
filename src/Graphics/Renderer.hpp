@@ -25,19 +25,19 @@ struct SDL_Window;
 namespace osc::experimental
 {
     class GraphicsBackend;
-    class RenderTexture;
 }
 
 namespace osc
 {
     class Texture2D;
+    class RenderTexture;
     struct AABB;
     struct BVH;
     struct Rgba32;
     struct Transform;
 
     void DrawTextureAsImGuiImage(osc::Texture2D&, glm::vec2);
-    void DrawTextureAsImGuiImage(osc::experimental::RenderTexture&, glm::vec2);
+    void DrawTextureAsImGuiImage(osc::RenderTexture&, glm::vec2);
 }
 
 // 2D texture
@@ -117,7 +117,7 @@ namespace osc
 // render texture
 //
 // a texture that can be rendered to
-namespace osc::experimental
+namespace osc
 {
     enum class RenderTextureFormat {
         ARGB32 = 0,
@@ -157,7 +157,7 @@ namespace osc::experimental
         void setDepthStencilFormat(DepthStencilFormat);
 
     private:
-        friend class GraphicsBackend;
+        friend class osc::experimental::GraphicsBackend;
         friend bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
         friend bool operator!=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
         friend bool operator<(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
@@ -202,10 +202,10 @@ namespace osc::experimental
         void reformat(RenderTextureDescriptor const& d);
 
     private:
-        friend void osc::DrawTextureAsImGuiImage(osc::experimental::RenderTexture&, glm::vec2);
+        friend void osc::DrawTextureAsImGuiImage(osc::RenderTexture&, glm::vec2);
         void* updTextureHandleHACK();  // used by ImGui... for now
 
-        friend class GraphicsBackend;
+        friend class osc::experimental::GraphicsBackend;
         friend bool operator==(RenderTexture const&, RenderTexture const&);
         friend bool operator!=(RenderTexture const&, RenderTexture const&);
         friend bool operator<(RenderTexture const&, RenderTexture const&);
@@ -329,8 +329,8 @@ namespace osc::experimental
         std::optional<osc::Texture2D> getTexture(std::string_view propertyName) const;
         void setTexture(std::string_view propertyName, osc::Texture2D);
 
-        std::optional<RenderTexture> getRenderTexture(std::string_view propertyName) const;
-        void setRenderTexture(std::string_view propertyName, RenderTexture);
+        std::optional<osc::RenderTexture> getRenderTexture(std::string_view propertyName) const;
+        void setRenderTexture(std::string_view propertyName, osc::RenderTexture);
         void clearRenderTexture(std::string_view propertyName);
 
         bool getTransparent() const;
@@ -515,7 +515,7 @@ namespace osc::experimental
     class Camera final {
     public:
         Camera();  // draws to screen
-        explicit Camera(RenderTexture);  // draws to texture
+        explicit Camera(osc::RenderTexture);  // draws to texture
         Camera(Camera const&);
         Camera(Camera&&) noexcept;
         Camera& operator=(Camera const&);
@@ -545,11 +545,11 @@ namespace osc::experimental
         CameraClearFlags getClearFlags() const;
         void setClearFlags(CameraClearFlags);
 
-        std::optional<RenderTexture> getTexture() const; // empty if drawing directly to screen
-        void setTexture(RenderTexture&&);
-        void setTexture(RenderTextureDescriptor);
+        std::optional<osc::RenderTexture> getTexture() const; // empty if drawing directly to screen
+        void setTexture(osc::RenderTexture&&);
+        void setTexture(osc::RenderTextureDescriptor);
         void setTexture();  // resets to drawing to screen
-        void swapTexture(std::optional<RenderTexture>&);  // handy if the caller wants to handle the textures
+        void swapTexture(std::optional<osc::RenderTexture>&);  // handy if the caller wants to handle the textures
 
         // where on the screen the camera is rendered (in screen-space - top-left, X rightwards, Y down
         //
@@ -702,14 +702,14 @@ namespace osc::experimental::Graphics
     };
 
     void BlitToScreen(
-        RenderTexture const&,
+        osc::RenderTexture const&,
         Rect const&,
         BlitFlags = BlitFlags::None
     );
 
     // assigns the source RenderTexture to uniform "uTexture"
     void BlitToScreen(
-        RenderTexture const&,
+        osc::RenderTexture const&,
         Rect const&,
         Material const&,
         BlitFlags = BlitFlags::None

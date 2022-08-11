@@ -68,13 +68,13 @@ public:
         constexpr glm::vec2 rimThickness{1.0f};
 
         // configure output texture to match requested dimensions/samples
-        experimental::RenderTextureDescriptor desc
+        RenderTextureDescriptor desc
         {
             static_cast<int>(params.dimensions.x),
             static_cast<int>(params.dimensions.y),
         };
         desc.setAntialiasingLevel(params.samples);
-        experimental::EmplaceOrReformat(m_MaybeRenderTexture, desc);
+        EmplaceOrReformat(m_MaybeRenderTexture, desc);
 
         // update rendererd-to camera from params
         m_Camera.setPosition(params.viewPos);
@@ -138,11 +138,11 @@ public:
                 glm::vec2 const rimDimsScreen = osc::Dimensions(rimRectScreen);
 
                 // resize the output texture (pixel) dimensions to match the (expanded) bounding rect
-                experimental::RenderTextureDescriptor selectedDesc{desc};
+                RenderTextureDescriptor selectedDesc{desc};
                 selectedDesc.setWidth(static_cast<int>(rimDimsScreen.x));
                 selectedDesc.setHeight(static_cast<int>(rimDimsScreen.y));
-                selectedDesc.setColorFormat(experimental::RenderTextureFormat::RED);
-                experimental::EmplaceOrReformat(m_MaybeSelectedTexture, selectedDesc);
+                selectedDesc.setColorFormat(RenderTextureFormat::RED);
+                EmplaceOrReformat(m_MaybeSelectedTexture, selectedDesc);
 
                 // calculate a transform matrix that maps the bounding rect to the edges of clipspace
                 //
@@ -269,7 +269,7 @@ public:
         }
     }
 
-    experimental::RenderTexture& updRenderTexture()
+    RenderTexture& updRenderTexture()
     {
         return m_MaybeRenderTexture.value();
     }
@@ -305,8 +305,8 @@ private:
     experimental::Camera m_Camera;
 
     // outputs
-    std::optional<experimental::RenderTexture> m_MaybeSelectedTexture;
-    std::optional<experimental::RenderTexture> m_MaybeRenderTexture{experimental::RenderTextureDescriptor{1, 1}};
+    std::optional<RenderTexture> m_MaybeSelectedTexture;
+    std::optional<RenderTexture> m_MaybeRenderTexture{RenderTextureDescriptor{1, 1}};
 };
 
 osc::SceneRenderer::SceneRenderer() :
@@ -345,7 +345,7 @@ void osc::SceneRenderer::draw(nonstd::span<SceneDecoration const> decs, SceneRen
     m_Impl->draw(std::move(decs), params);
 }
 
-osc::experimental::RenderTexture& osc::SceneRenderer::updRenderTexture()
+osc::RenderTexture& osc::SceneRenderer::updRenderTexture()
 {
     return m_Impl->updRenderTexture();
 }

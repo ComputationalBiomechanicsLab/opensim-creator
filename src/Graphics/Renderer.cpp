@@ -148,7 +148,7 @@ namespace
         int,
         bool,
         osc::Texture2D,
-        osc::experimental::RenderTexture
+        osc::RenderTexture
     >;
 
     osc::experimental::ShaderType GetShaderType(MaterialValue const& v)
@@ -173,7 +173,7 @@ namespace
         case VariantIndex<MaterialValue, bool>():
             return osc::experimental::ShaderType::Bool;
         case VariantIndex<MaterialValue, osc::Texture2D>():
-        case VariantIndex<MaterialValue, osc::experimental::RenderTexture>():
+        case VariantIndex<MaterialValue, osc::RenderTexture>():
             return osc::experimental::ShaderType::Sampler2D;
         default:
             return osc::experimental::ShaderType::Unknown;
@@ -193,10 +193,8 @@ namespace
 // shader (backend stuff)
 namespace
 {
-    using namespace osc::experimental;
-
     // LUT for human-readable form of the above
-    static constexpr auto const g_ShaderTypeInternalStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(ShaderType::TOTAL)>(
+    static constexpr auto const g_ShaderTypeInternalStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::experimental::ShaderType::TOTAL)>(
         "Float",
         "Vec2",
         "Vec3",
@@ -210,27 +208,27 @@ namespace
     );
 
     // convert a GL shader type to an internal shader type
-    ShaderType GLShaderTypeToShaderTypeInternal(GLenum e)
+    osc::experimental::ShaderType GLShaderTypeToShaderTypeInternal(GLenum e)
     {
         switch (e) {
         case GL_FLOAT:
-            return ShaderType::Float;
+            return osc::experimental::ShaderType::Float;
         case GL_FLOAT_VEC2:
-            return ShaderType::Vec2;
+            return osc::experimental::ShaderType::Vec2;
         case GL_FLOAT_VEC3:
-            return ShaderType::Vec3;
+            return osc::experimental::ShaderType::Vec3;
         case GL_FLOAT_VEC4:
-            return ShaderType::Vec4;
+            return osc::experimental::ShaderType::Vec4;
         case GL_FLOAT_MAT3:
-            return ShaderType::Mat3;
+            return osc::experimental::ShaderType::Mat3;
         case GL_FLOAT_MAT4:
-            return ShaderType::Mat4;
+            return osc::experimental::ShaderType::Mat4;
         case GL_INT:
-            return ShaderType::Int;
+            return osc::experimental::ShaderType::Int;
         case GL_BOOL:
-            return ShaderType::Bool;
+            return osc::experimental::ShaderType::Bool;
         case GL_SAMPLER_2D:
-            return ShaderType::Sampler2D;
+            return osc::experimental::ShaderType::Sampler2D;
         case GL_INT_VEC2:
         case GL_INT_VEC3:
         case GL_INT_VEC4:
@@ -255,7 +253,7 @@ namespace
         case GL_FLOAT_MAT4x3:
         case GL_FLOAT_MAT2:
         default:
-            return ShaderType::Unknown;
+            return osc::experimental::ShaderType::Unknown;
         }
     }
 
@@ -272,7 +270,7 @@ namespace
 
     // parsed-out description of a shader "element" (uniform/attribute)
     struct ShaderElement final {
-        ShaderElement(int location_, ShaderType type_, int size_) :
+        ShaderElement(int location_, osc::experimental::ShaderType type_, int size_) :
             Location{std::move(location_)},
             Type{std::move(type_)},
             Size{std::move(size_)}
@@ -280,7 +278,7 @@ namespace
         }
 
         int Location;
-        ShaderType Type;
+        osc::experimental::ShaderType Type;
         int Size;
     };
 
@@ -719,44 +717,42 @@ osc::Texture2D osc::LoadTexture2DFromImageResource(std::string_view resource, Im
 
 namespace
 {
-    using namespace osc::experimental;
-
-    static constexpr auto const  g_RenderTextureFormatStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::experimental::RenderTextureFormat::TOTAL)>
+    static constexpr auto const  g_RenderTextureFormatStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::RenderTextureFormat::TOTAL)>
     (
         "ARGB32",
         "RED"
     );
 
-    static constexpr auto const g_DepthStencilFormatStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::experimental::DepthStencilFormat::TOTAL)>
+    static constexpr auto const g_DepthStencilFormatStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::DepthStencilFormat::TOTAL)>
     (
         "D24_UNorm_S8_UInt"
     );
 
-    GLenum ToOpenGLColorFormat(osc::experimental::RenderTextureFormat f)
+    GLenum ToOpenGLColorFormat(osc::RenderTextureFormat f)
     {
         switch (f)
         {
-        case osc::experimental::RenderTextureFormat::ARGB32:
+        case osc::RenderTextureFormat::ARGB32:
             return GL_RGBA;
-        case osc::experimental::RenderTextureFormat::RED:
+        case osc::RenderTextureFormat::RED:
         default:
-            static_assert(static_cast<int>(osc::experimental::RenderTextureFormat::RED) + 1 == static_cast<int>(osc::experimental::RenderTextureFormat::TOTAL));
+            static_assert(static_cast<int>(osc::RenderTextureFormat::RED) + 1 == static_cast<int>(osc::RenderTextureFormat::TOTAL));
             return GL_RED;
         }
     }
 }
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, RenderTextureFormat f)
+std::ostream& osc::operator<<(std::ostream& o, RenderTextureFormat f)
 {
     return o << g_RenderTextureFormatStrings.at(static_cast<int>(f));
 }
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, DepthStencilFormat f)
+std::ostream& osc::operator<<(std::ostream& o, DepthStencilFormat f)
 {
     return o << g_DepthStencilFormatStrings.at(static_cast<int>(f));
 }
 
-osc::experimental::RenderTextureDescriptor::RenderTextureDescriptor(int width, int height) :
+osc::RenderTextureDescriptor::RenderTextureDescriptor(int width, int height) :
     m_Width{width},
     m_Height{height},
     m_AnialiasingLevel{1},
@@ -766,66 +762,66 @@ osc::experimental::RenderTextureDescriptor::RenderTextureDescriptor(int width, i
     OSC_ASSERT_ALWAYS(m_Width >= 0 && m_Height >= 0);
 }
 
-osc::experimental::RenderTextureDescriptor::RenderTextureDescriptor(RenderTextureDescriptor const&) = default;
-osc::experimental::RenderTextureDescriptor::RenderTextureDescriptor(RenderTextureDescriptor&&) noexcept = default;
-osc::experimental::RenderTextureDescriptor& osc::experimental::RenderTextureDescriptor::operator=(RenderTextureDescriptor const&) = default;
-osc::experimental::RenderTextureDescriptor& osc::experimental::RenderTextureDescriptor::operator=(RenderTextureDescriptor&&) noexcept = default;
-osc::experimental::RenderTextureDescriptor::~RenderTextureDescriptor() noexcept = default;
+osc::RenderTextureDescriptor::RenderTextureDescriptor(RenderTextureDescriptor const&) = default;
+osc::RenderTextureDescriptor::RenderTextureDescriptor(RenderTextureDescriptor&&) noexcept = default;
+osc::RenderTextureDescriptor& osc::RenderTextureDescriptor::operator=(RenderTextureDescriptor const&) = default;
+osc::RenderTextureDescriptor& osc::RenderTextureDescriptor::operator=(RenderTextureDescriptor&&) noexcept = default;
+osc::RenderTextureDescriptor::~RenderTextureDescriptor() noexcept = default;
 
-int osc::experimental::RenderTextureDescriptor::getWidth() const
+int osc::RenderTextureDescriptor::getWidth() const
 {
     return m_Width;
 }
 
-void osc::experimental::RenderTextureDescriptor::setWidth(int width)
+void osc::RenderTextureDescriptor::setWidth(int width)
 {
     OSC_ASSERT_ALWAYS(width >= 0);
     m_Width = width;
 }
 
-int osc::experimental::RenderTextureDescriptor::getHeight() const
+int osc::RenderTextureDescriptor::getHeight() const
 {
     return m_Height;
 }
 
-void osc::experimental::RenderTextureDescriptor::setHeight(int height)
+void osc::RenderTextureDescriptor::setHeight(int height)
 {
     OSC_ASSERT_ALWAYS(height >= 0);
     m_Height = height;
 }
 
-int osc::experimental::RenderTextureDescriptor::getAntialiasingLevel() const
+int osc::RenderTextureDescriptor::getAntialiasingLevel() const
 {
     return m_AnialiasingLevel;
 }
 
-void osc::experimental::RenderTextureDescriptor::setAntialiasingLevel(int level)
+void osc::RenderTextureDescriptor::setAntialiasingLevel(int level)
 {
     OSC_ASSERT_ALWAYS(level <= 64 && osc::NumBitsSetIn(level) == 1);
     m_AnialiasingLevel = level;
 }
 
-osc::experimental::RenderTextureFormat osc::experimental::RenderTextureDescriptor::getColorFormat() const
+osc::RenderTextureFormat osc::RenderTextureDescriptor::getColorFormat() const
 {
     return m_ColorFormat;
 }
 
-void osc::experimental::RenderTextureDescriptor::setColorFormat(RenderTextureFormat f)
+void osc::RenderTextureDescriptor::setColorFormat(RenderTextureFormat f)
 {
     m_ColorFormat = f;
 }
 
-osc::experimental::DepthStencilFormat osc::experimental::RenderTextureDescriptor::getDepthStencilFormat() const
+osc::DepthStencilFormat osc::RenderTextureDescriptor::getDepthStencilFormat() const
 {
     return m_DepthStencilFormat;
 }
 
-void osc::experimental::RenderTextureDescriptor::setDepthStencilFormat(DepthStencilFormat f)
+void osc::RenderTextureDescriptor::setDepthStencilFormat(DepthStencilFormat f)
 {
     m_DepthStencilFormat = f;
 }
 
-bool osc::experimental::operator==(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
+bool osc::operator==(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
 {
     return 
         a.m_Width == b.m_Width &&
@@ -835,22 +831,22 @@ bool osc::experimental::operator==(RenderTextureDescriptor const& a, RenderTextu
         a.m_DepthStencilFormat == b.m_DepthStencilFormat;
 }
 
-bool osc::experimental::operator!=(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
+bool osc::operator!=(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
 {
     return !(a == b);
 }
 
-bool osc::experimental::operator<(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
+bool osc::operator<(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
 {
     return std::tie(a.m_Width, a.m_Height, a.m_AnialiasingLevel, a.m_ColorFormat, a.m_DepthStencilFormat) < std::tie(b.m_Width, b.m_Height, b.m_AnialiasingLevel, b.m_ColorFormat, b.m_DepthStencilFormat);
 }
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, RenderTextureDescriptor const& rtd)
+std::ostream& osc::operator<<(std::ostream& o, RenderTextureDescriptor const& rtd)
 {
     return o << "RenderTextureDescriptor(width = " << rtd.m_Width << ", height = " << rtd.m_Height << ", aa = " << rtd.m_AnialiasingLevel << ", colorFormat = " << rtd.m_ColorFormat << ", depthFormat = " << rtd.m_DepthStencilFormat << ")";
 }
 
-class osc::experimental::RenderTexture::Impl final {
+class osc::RenderTexture::Impl final {
 public:
     Impl(RenderTextureDescriptor const& desc) : m_Descriptor{desc}
     {
@@ -1037,111 +1033,111 @@ private:
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
     }
 
-    friend class GraphicsBackend;
+    friend class osc::experimental::GraphicsBackend;
 
     RenderTextureDescriptor m_Descriptor;
     DefaultConstructOnCopy<std::optional<RenderTextureGPUBuffers>> m_MaybeGPUBuffers;
 };
 
-osc::experimental::RenderTexture::RenderTexture(RenderTextureDescriptor const& desc) :
+osc::RenderTexture::RenderTexture(RenderTextureDescriptor const& desc) :
     m_Impl{std::make_shared<Impl>(desc)}
 {
 }
 
-osc::experimental::RenderTexture::RenderTexture(RenderTexture const&) = default;
-osc::experimental::RenderTexture::RenderTexture(RenderTexture&&) noexcept = default;
-osc::experimental::RenderTexture& osc::experimental::RenderTexture::operator=(RenderTexture const&) = default;
-osc::experimental::RenderTexture& osc::experimental::RenderTexture::operator=(RenderTexture&&) noexcept = default;
-osc::experimental::RenderTexture::~RenderTexture() noexcept = default;
+osc::RenderTexture::RenderTexture(RenderTexture const&) = default;
+osc::RenderTexture::RenderTexture(RenderTexture&&) noexcept = default;
+osc::RenderTexture& osc::RenderTexture::operator=(RenderTexture const&) = default;
+osc::RenderTexture& osc::RenderTexture::operator=(RenderTexture&&) noexcept = default;
+osc::RenderTexture::~RenderTexture() noexcept = default;
 
-int osc::experimental::RenderTexture::getWidth() const
+int osc::RenderTexture::getWidth() const
 {
     return m_Impl->getWidth();
 }
 
-void osc::experimental::RenderTexture::setWidth(int width)
+void osc::RenderTexture::setWidth(int width)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setWidth(width);
 }
 
-int osc::experimental::RenderTexture::getHeight() const
+int osc::RenderTexture::getHeight() const
 {
     return m_Impl->getHeight();
 }
 
-void osc::experimental::RenderTexture::setHeight(int height)
+void osc::RenderTexture::setHeight(int height)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setHeight(height);
 }
 
-osc::experimental::RenderTextureFormat osc::experimental::RenderTexture::getColorFormat() const
+osc::RenderTextureFormat osc::RenderTexture::getColorFormat() const
 {
     return m_Impl->getColorFormat();
 }
 
-void osc::experimental::RenderTexture::setColorFormat(RenderTextureFormat format)
+void osc::RenderTexture::setColorFormat(RenderTextureFormat format)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setColorFormat(format);
 }
 
-int osc::experimental::RenderTexture::getAntialiasingLevel() const
+int osc::RenderTexture::getAntialiasingLevel() const
 {
     return m_Impl->getAntialiasingLevel();
 }
 
-void osc::experimental::RenderTexture::setAntialiasingLevel(int level)
+void osc::RenderTexture::setAntialiasingLevel(int level)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setAntialiasingLevel(level);
 }
 
-osc::experimental::DepthStencilFormat osc::experimental::RenderTexture::getDepthStencilFormat() const
+osc::DepthStencilFormat osc::RenderTexture::getDepthStencilFormat() const
 {
     return m_Impl->getDepthStencilFormat();
 }
 
-void osc::experimental::RenderTexture::setDepthStencilFormat(DepthStencilFormat format)
+void osc::RenderTexture::setDepthStencilFormat(DepthStencilFormat format)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setDepthStencilFormat(format);
 }
 
-void osc::experimental::RenderTexture::reformat(RenderTextureDescriptor const& d)
+void osc::RenderTexture::reformat(RenderTextureDescriptor const& d)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->reformat(d);
 }
 
-void* osc::experimental::RenderTexture::updTextureHandleHACK()
+void* osc::RenderTexture::updTextureHandleHACK()
 {
     DoCopyOnWrite(m_Impl);
     return m_Impl->updTextureHandleHACK();
 }
 
-bool osc::experimental::operator==(RenderTexture const& a, RenderTexture const& b)
+bool osc::operator==(RenderTexture const& a, RenderTexture const& b)
 {
     return a.m_Impl == b.m_Impl;
 }
 
-bool osc::experimental::operator!=(RenderTexture const& a, RenderTexture const& b)
+bool osc::operator!=(RenderTexture const& a, RenderTexture const& b)
 {
     return a.m_Impl != b.m_Impl;
 }
 
-bool osc::experimental::operator<(RenderTexture const& a, RenderTexture const& b)
+bool osc::operator<(RenderTexture const& a, RenderTexture const& b)
 {
     return a.m_Impl < b.m_Impl;
 }
 
-std::ostream& osc::experimental::operator<<(std::ostream& o, RenderTexture const& rt)
+std::ostream& osc::operator<<(std::ostream& o, RenderTexture const& rt)
 {
     return o << "RenderTexture()";
 }
 
-void osc::experimental::EmplaceOrReformat(std::optional<RenderTexture>& t, RenderTextureDescriptor const& desc)
+void osc::EmplaceOrReformat(std::optional<RenderTexture>& t, RenderTextureDescriptor const& desc)
 {
     if (t)
     {
@@ -1752,7 +1748,7 @@ void osc::experimental::Material::setTexture(std::string_view propertyName, osc:
     m_Impl->setTexture(std::move(propertyName), std::move(t));
 }
 
-std::optional<RenderTexture> osc::experimental::Material::getRenderTexture(std::string_view propertyName) const
+std::optional<osc::RenderTexture> osc::experimental::Material::getRenderTexture(std::string_view propertyName) const
 {
     return m_Impl->getRenderTexture(std::move(propertyName));
 }
@@ -2636,10 +2632,8 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, Mesh const&)
 
 namespace
 {
-    using namespace osc::experimental;
-
     // LUT for human-readable form of the above
-    static constexpr auto const g_CameraProjectionStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(CameraProjection::TOTAL)>
+    static constexpr auto const g_CameraProjectionStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::experimental::CameraProjection::TOTAL)>
     (
         "Perspective",
         "Orthographic"
@@ -3226,7 +3220,7 @@ void osc::experimental::Camera::setClearFlags(CameraClearFlags flags)
     m_Impl->setClearFlags(std::move(flags));
 }
 
-std::optional<osc::experimental::RenderTexture> osc::experimental::Camera::getTexture() const
+std::optional<osc::RenderTexture> osc::experimental::Camera::getTexture() const
 {
     return m_Impl->getTexture();
 }
@@ -4037,9 +4031,9 @@ void osc::experimental::GraphicsBackend::TryBindMaterialValueToShaderElement(Sha
         ++(*textureSlot);
         break;
     }
-    case VariantIndex<MaterialValue, osc::experimental::RenderTexture>():
+    case VariantIndex<MaterialValue, osc::RenderTexture>():
     {
-        osc::experimental::RenderTexture::Impl& impl = *std::get<osc::experimental::RenderTexture>(v).m_Impl;
+        osc::RenderTexture::Impl& impl = *std::get<osc::RenderTexture>(v).m_Impl;
         gl::Texture2D& texture = impl.getOutputTexture();
 
         gl::ActiveTexture(GL_TEXTURE0 + *textureSlot);

@@ -7,10 +7,6 @@ namespace osc
 {
     class SceneDecoration;
     class SceneRendererParams;
-}
-
-namespace osc::experimental
-{
     class RenderTexture;
 }
 
@@ -28,7 +24,7 @@ namespace osc
         glm::ivec2 getDimensions() const;
         int getSamples() const;
         void draw(nonstd::span<SceneDecoration const>, SceneRendererParams const&);
-        experimental::RenderTexture& updRenderTexture();
+        RenderTexture& updRenderTexture();
 
     private:
         class Impl;
