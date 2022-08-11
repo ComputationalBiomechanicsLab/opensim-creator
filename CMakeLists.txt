@@ -288,6 +288,7 @@ add_library(osccore STATIC
     src/Graphics/GraphicsContext.hpp
     src/Graphics/GraphicsHelpers.cpp
     src/Graphics/GraphicsHelpers.hpp
+    src/Graphics/GraphicsImplementation.cpp
     src/Graphics/Image.cpp
     src/Graphics/Image.hpp
     src/Graphics/ImageFlags.hpp
@@ -301,7 +302,6 @@ add_library(osccore STATIC
     src/Graphics/MeshGen.hpp
     src/Graphics/Mesh.hpp
     src/Graphics/MeshTopography.hpp
-    src/Graphics/Renderer.cpp
     src/Graphics/Renderer.hpp
     src/Graphics/RenderTexture.hpp
     src/Graphics/RenderTextureDescriptor.hpp
