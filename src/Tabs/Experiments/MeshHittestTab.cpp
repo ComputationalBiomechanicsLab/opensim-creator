@@ -34,7 +34,7 @@ namespace
 		t.scale *= halfWidths;
 		t.position = midpoint;
 
-		osc::experimental::Graphics::DrawMesh(cubeLinesMesh, t, material, camera);
+		osc::Graphics::DrawMesh(cubeLinesMesh, t, material, camera);
 
 		if (n.nlhs >= 0)
 		{
@@ -162,7 +162,7 @@ public:
 		// draw mesh
 		m_Material.setVec4("uColor", m_IsMousedOver ? glm::vec4{0.0f, 1.0f, 0.0f, 1.0f} : glm::vec4{1.0f, 0.0f, 0.0f, 1.0f});
 		m_Material.setDepthTested(true);
-		experimental::Graphics::DrawMesh(m_Mesh, Transform{}, m_Material, m_Camera);
+		Graphics::DrawMesh(m_Mesh, Transform{}, m_Material, m_Camera);
 
 		// draw hit triangle while mousing over
 		if (m_IsMousedOver)
@@ -174,7 +174,7 @@ public:
 
 			m_Material.setVec4("uColor", {0.0f, 0.0f, 0.0f, 1.0f});
 			m_Material.setDepthTested(false);
-			experimental::Graphics::DrawMesh(m, Transform{}, m_Material, m_Camera);
+			Graphics::DrawMesh(m, Transform{}, m_Material, m_Camera);
 		}
 
 		if (m_UseBVH)

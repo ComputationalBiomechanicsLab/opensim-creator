@@ -147,18 +147,18 @@ public:
             m_SceneRenderMaterial.setTexture("uTexture1", m_ContainerTexture);
             Transform t;
             t.position = { -1.0f, 0.0f, -1.0f };
-            osc::experimental::Graphics::DrawMesh(m_CubeMesh, t, m_SceneRenderMaterial, m_SceneCamera);
+            osc::Graphics::DrawMesh(m_CubeMesh, t, m_SceneRenderMaterial, m_SceneCamera);
             t.position = { 1.0f, 0.0f, -1.0f };
-            osc::experimental::Graphics::DrawMesh(m_CubeMesh, t, m_SceneRenderMaterial, m_SceneCamera);
+            osc::Graphics::DrawMesh(m_CubeMesh, t, m_SceneRenderMaterial, m_SceneCamera);
 
             // floor
             m_SceneRenderMaterial.setTexture("uTexture1", m_MetalTexture);
-            osc::experimental::Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_SceneRenderMaterial, m_SceneCamera);
+            osc::Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_SceneRenderMaterial, m_SceneCamera);
         }
         m_SceneCamera.render();
 
         // render via a effect sampler
-        experimental::Graphics::BlitToScreen(*m_SceneCamera.getTexture(), viewportRect, m_ScreenMaterial);
+        Graphics::BlitToScreen(*m_SceneCamera.getTexture(), viewportRect, m_ScreenMaterial);
 
         // auxiliary UI
         m_LogViewer.draw();

@@ -105,11 +105,11 @@ public:
         m_LightingMapsMaterial.setVec3("uLightDiffuse", m_LightDiffuse);
         m_LightingMapsMaterial.setVec3("uLightSpecular", m_LightSpecular);
         m_LightingMapsMaterial.setFloat("uMaterialShininess", m_MaterialShininess);
-        experimental::Graphics::DrawMesh(m_Mesh, Transform{}, m_LightingMapsMaterial, m_Camera);
+        Graphics::DrawMesh(m_Mesh, Transform{}, m_LightingMapsMaterial, m_Camera);
 
         // draw lamp
         m_LightCubeMaterial.setVec3("uLightColor", {1.0f, 1.0f, 1.0f});
-        osc::experimental::Graphics::DrawMesh(m_Mesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
+        osc::Graphics::DrawMesh(m_Mesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
 
         // render to output (window)
         m_Camera.render();

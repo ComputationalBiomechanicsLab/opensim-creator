@@ -680,7 +680,7 @@ namespace osc
 // rendering functions
 //
 // these perform the necessary backend steps to get something useful done
-namespace osc::experimental::Graphics
+namespace osc::Graphics
 {
     void DrawMesh(
         Mesh const&,

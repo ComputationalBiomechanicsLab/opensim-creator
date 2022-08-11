@@ -322,13 +322,13 @@ namespace osc::experimental {
         static void BlitToScreen(
             RenderTexture const&,
             Rect const&,
-            osc::experimental::Graphics::BlitFlags
+            osc::Graphics::BlitFlags
         );
         static void BlitToScreen(
             RenderTexture const&,
             Rect const&,
             Material const&,
-            osc::experimental::Graphics::BlitFlags
+            osc::Graphics::BlitFlags
         );
     };
 }
@@ -3873,41 +3873,41 @@ std::string osc::GraphicsContext::getBackendShadingLanguageVersionString() const
 //
 /////////////////////////////
 
-void osc::experimental::Graphics::DrawMesh(
+void osc::Graphics::DrawMesh(
     Mesh const& mesh,
     Transform const& transform,
     Material const& material,
     Camera& camera,
     std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock)
 {
-    GraphicsBackend::DrawMesh(mesh, transform, material, camera, std::move(maybeMaterialPropertyBlock));
+    experimental::GraphicsBackend::DrawMesh(mesh, transform, material, camera, std::move(maybeMaterialPropertyBlock));
 }
 
-void osc::experimental::Graphics::DrawMesh(
+void osc::Graphics::DrawMesh(
     Mesh const& mesh,
     glm::mat4 const& transform,
     Material const& material,
     Camera& camera,
     std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock)
 {
-    GraphicsBackend::DrawMesh(mesh, transform, material, camera, std::move(maybeMaterialPropertyBlock));
+    experimental::GraphicsBackend::DrawMesh(mesh, transform, material, camera, std::move(maybeMaterialPropertyBlock));
 }
 
-void osc::experimental::Graphics::BlitToScreen(
+void osc::Graphics::BlitToScreen(
     RenderTexture const& t,
     Rect const& rect,
     BlitFlags flags)
 {
-    GraphicsBackend::BlitToScreen(t, rect, std::move(flags));
+    experimental::GraphicsBackend::BlitToScreen(t, rect, std::move(flags));
 }
 
-void osc::experimental::Graphics::BlitToScreen(
+void osc::Graphics::BlitToScreen(
     RenderTexture const& t,
     Rect const& rect,
     Material const& material,
     BlitFlags flags)
 {
-    GraphicsBackend::BlitToScreen(t, rect, material, std::move(flags));
+    experimental::GraphicsBackend::BlitToScreen(t, rect, material, std::move(flags));
 }
 
 /////////////////////////
@@ -4545,7 +4545,7 @@ void osc::experimental::GraphicsBackend::BlitToScreen(
         c.setClearFlags(osc::CameraClearFlags::Nothing);
 
         g_GraphicsContextImpl->m_QuadMaterial.setRenderTexture("uTexture", t);
-        experimental::Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, g_GraphicsContextImpl->m_QuadMaterial, c);
+        Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, g_GraphicsContextImpl->m_QuadMaterial, c);
         c.render();
         g_GraphicsContextImpl->m_QuadMaterial.clearRenderTexture("uTexture");
     }
@@ -4585,7 +4585,7 @@ void osc::experimental::GraphicsBackend::BlitToScreen(
     RenderTexture const& t,
     Rect const& rect,
     Material const& material,
-    osc::experimental::Graphics::BlitFlags)
+    osc::Graphics::BlitFlags)
 {
     OSC_ASSERT(g_GraphicsContextImpl);
     OSC_ASSERT(*t.m_Impl->m_MaybeGPUBuffers && "the input texture has not been rendered to");
@@ -4600,7 +4600,7 @@ void osc::experimental::GraphicsBackend::BlitToScreen(
     Material copy{material};
 
     copy.setRenderTexture("uTexture", t);
-    experimental::Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, copy, c);
+    Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, copy, c);
     c.render();
     copy.clearRenderTexture("uTexture");
 }

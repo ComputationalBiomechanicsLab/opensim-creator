@@ -106,11 +106,11 @@ public:
         m_LightingMaterial.setFloat("uAmbientStrength", m_AmbientStrength);
         m_LightingMaterial.setFloat("uDiffuseStrength", m_DiffuseStrength);
         m_LightingMaterial.setFloat("uSpecularStrength", m_SpecularStrength);
-        osc::experimental::Graphics::DrawMesh(m_CubeMesh, osc::Transform{}, m_LightingMaterial, m_Camera);
+        osc::Graphics::DrawMesh(m_CubeMesh, osc::Transform{}, m_LightingMaterial, m_Camera);
 
         // draw lamp
         m_LightCubeMaterial.setVec3("uLightColor", m_LightColor);
-        osc::experimental::Graphics::DrawMesh(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
+        osc::Graphics::DrawMesh(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
 
         // render to output (window)
         m_Camera.render();

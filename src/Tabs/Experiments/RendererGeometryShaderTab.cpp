@@ -97,8 +97,8 @@ public:
         m_SceneCamera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
 
         m_SceneMaterial.setVec4("uDiffuseColor", m_MeshColor);
-        experimental::Graphics::DrawMesh(m_Mesh, osc::Transform{}, m_SceneMaterial, m_SceneCamera);
-        experimental::Graphics::DrawMesh(m_Mesh, osc::Transform{}, m_NormalsMaterial, m_SceneCamera);
+        Graphics::DrawMesh(m_Mesh, osc::Transform{}, m_SceneMaterial, m_SceneCamera);
+        Graphics::DrawMesh(m_Mesh, osc::Transform{}, m_NormalsMaterial, m_SceneCamera);
         m_SceneCamera.render();
     }
 

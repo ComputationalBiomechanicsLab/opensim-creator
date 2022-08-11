@@ -182,17 +182,17 @@ public:
 
             m_OpaqueMaterial.setTexture("uTexture", m_MarbleTexture);
 
-            osc::experimental::Graphics::DrawMesh(m_CubeMesh, t, m_OpaqueMaterial, m_Camera);
+            osc::Graphics::DrawMesh(m_CubeMesh, t, m_OpaqueMaterial, m_Camera);
 
             t.position += glm::vec3{2.0f, 0.0f, 0.0f};
 
-            osc::experimental::Graphics::DrawMesh(m_CubeMesh, t, m_OpaqueMaterial, m_Camera);
+            osc::Graphics::DrawMesh(m_CubeMesh, t, m_OpaqueMaterial, m_Camera);
         }
 
         // floor
         {
             m_OpaqueMaterial.setTexture("uTexture", m_MetalTexture);
-            osc::experimental::Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_OpaqueMaterial, m_Camera);
+            osc::Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_OpaqueMaterial, m_Camera);
         }
 
         // windows
@@ -202,7 +202,7 @@ public:
             {
                 Transform t;
                 t.position = loc;
-                osc::experimental::Graphics::DrawMesh(m_TransparentMesh, t, m_BlendingMaterial, m_Camera);
+                osc::Graphics::DrawMesh(m_TransparentMesh, t, m_BlendingMaterial, m_Camera);
             }
         }
 

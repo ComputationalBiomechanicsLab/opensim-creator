@@ -127,7 +127,7 @@ public:
         // draw 3D scene
         if (m_ShowStep1)
         {
-            experimental::Graphics::DrawMesh(m_Mesh, m_Step1, m_Material, m_Camera);
+            Graphics::DrawMesh(m_Mesh, m_Step1, m_Material, m_Camera);
         }
         else
         {
@@ -141,7 +141,7 @@ public:
                 t.rotation = glm::angleAxis(angle, axis);
                 t.position = pos;
 
-                experimental::Graphics::DrawMesh(m_Mesh, t, m_Material, m_Camera);
+                Graphics::DrawMesh(m_Mesh, t, m_Material, m_Camera);
             }
         }
         m_Camera.render();

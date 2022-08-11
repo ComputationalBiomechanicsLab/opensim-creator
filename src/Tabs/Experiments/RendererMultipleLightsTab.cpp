@@ -199,7 +199,7 @@ public:
             t.rotation = glm::angleAxis(angle, axis);
             t.position = pos;
 
-            experimental::Graphics::DrawMesh(m_Mesh, t, m_MultipleLightsMaterial, m_Camera);
+            Graphics::DrawMesh(m_Mesh, t, m_MultipleLightsMaterial, m_Camera);
         }
 
         // render lamps
@@ -208,7 +208,7 @@ public:
         for (glm::vec3 const& pos : g_PointLightPositions)
         {
             lampXform.position = pos;
-            experimental::Graphics::DrawMesh(m_Mesh, lampXform, m_LightCubeMaterial, m_Camera);
+            Graphics::DrawMesh(m_Mesh, lampXform, m_LightCubeMaterial, m_Camera);
         }
 
         // render to output (window)

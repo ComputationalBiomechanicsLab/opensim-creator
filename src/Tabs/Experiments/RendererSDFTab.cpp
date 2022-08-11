@@ -159,7 +159,7 @@ private:
 				m.setIndices(indices);
 
 				// bind texture
-				osc::experimental::Graphics::DrawMesh(m, Transform{}, m_Material, camera);
+				osc::Graphics::DrawMesh(m, Transform{}, m_Material, camera);
 			}
 			++text;
 		}

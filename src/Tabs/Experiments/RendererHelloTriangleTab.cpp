@@ -83,7 +83,7 @@ public:
     void onDraw()
     {
         m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
-        experimental::Graphics::DrawMesh(m_TriangleMesh, osc::Transform{}, m_Material, m_Camera);
+        Graphics::DrawMesh(m_TriangleMesh, osc::Transform{}, m_Material, m_Camera);
         m_Camera.render();
     }
 

@@ -176,11 +176,11 @@ public:
                 {
                     if (dec.flags & (SceneDecorationFlags_IsSelected | SceneDecorationFlags_IsChildOfSelected))
                     {
-                        experimental::Graphics::DrawMesh(*dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, selectedColor);
+                        Graphics::DrawMesh(*dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, selectedColor);
                     }
                     else if (dec.flags & (SceneDecorationFlags_IsHovered | SceneDecorationFlags_IsChildOfHovered))
                     {
-                        experimental::Graphics::DrawMesh(*dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, hoveredColor);
+                        Graphics::DrawMesh(*dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, hoveredColor);
                     }
                 }
 
@@ -219,17 +219,17 @@ public:
 
                 if (dec.color.a > 0.99f)
                 {
-                    experimental::Graphics::DrawMesh(*dec.mesh, dec.transform, m_SceneColoredElementsMaterial, m_Camera, propBlock);
+                    Graphics::DrawMesh(*dec.mesh, dec.transform, m_SceneColoredElementsMaterial, m_Camera, propBlock);
                 }
                 else
                 {
-                    experimental::Graphics::DrawMesh(*dec.mesh, dec.transform, transparentMaterial, m_Camera, propBlock);
+                    Graphics::DrawMesh(*dec.mesh, dec.transform, transparentMaterial, m_Camera, propBlock);
                 }
 
                 // if normals are requested, render the scene element via a normals geometry shader
                 if (params.drawMeshNormals)
                 {
-                    experimental::Graphics::DrawMesh(*dec.mesh, dec.transform, m_NormalsMaterial, m_Camera);
+                    Graphics::DrawMesh(*dec.mesh, dec.transform, m_NormalsMaterial, m_Camera);
                 }
             }
 
@@ -245,7 +245,7 @@ public:
 
                 Transform t = GetFloorTransform(params.floorLocation, params.fixupScaleFactor);
 
-                experimental::Graphics::DrawMesh(*m_QuadMesh, t, m_SceneTexturedElementsMaterial, m_Camera);
+                Graphics::DrawMesh(*m_QuadMesh, t, m_SceneTexturedElementsMaterial, m_Camera);
             }
 
             // if rims are requested, draw them
@@ -257,7 +257,7 @@ public:
                 m_EdgeDetectorMaterial.setTransparent(true);
                 m_EdgeDetectorMaterial.setDepthTested(false);
 
-                experimental::Graphics::DrawMesh(*m_QuadMesh, m_Camera.getInverseViewProjectionMatrix() * ndcToRimsMat, m_EdgeDetectorMaterial, m_Camera);
+                Graphics::DrawMesh(*m_QuadMesh, m_Camera.getInverseViewProjectionMatrix() * ndcToRimsMat, m_EdgeDetectorMaterial, m_Camera);
 
                 m_EdgeDetectorMaterial.clearRenderTexture("uScreenTexture");  // prevents copies on next frame
             }

@@ -214,7 +214,7 @@ public:
 			Transform t;
 			t.position = sphere.pos;
 
-			experimental::Graphics::DrawMesh(
+			Graphics::DrawMesh(
 				m_SphereMesh,
 				t,
 				m_Material,
@@ -229,7 +229,7 @@ public:
 				aabbTransform.position = sphere.pos;
 				aabbTransform.scale = 0.5f * Dimensions(m_SceneSphereAABB);
 
-				experimental::Graphics::DrawMesh(
+				Graphics::DrawMesh(
 					m_WireframeCubeMesh,
 					aabbTransform,
 					m_Material,
@@ -255,7 +255,7 @@ public:
 			meshDisc.normal = {0.0f, 0.0f, 1.0f};
 			meshDisc.radius = 1.0f;
 
-			experimental::Graphics::DrawMesh(
+			Graphics::DrawMesh(
 				m_CircleMesh,
 				DiscToDiscMat4(meshDisc, sceneDisc),
 				m_Material,
@@ -269,7 +269,7 @@ public:
 			Line ray = GetCameraRay(m_Camera);
 			RayCollision collision = GetRayCollisionTriangle(ray, g_TriangleVerts.data());
 
-			experimental::Graphics::DrawMesh(
+			Graphics::DrawMesh(
 				m_TriangleMesh,
 				Transform{},
 				m_Material,
@@ -279,7 +279,7 @@ public:
 		}
 
 		// draw crosshair overlay
-		experimental::Graphics::DrawMesh(
+		Graphics::DrawMesh(
 			m_CrosshairMesh,
 			m_Camera.getInverseViewProjectionMatrix(),
 			m_Material,
