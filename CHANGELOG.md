@@ -116,6 +116,9 @@ All notable changes to this project will be documented here. The format is based
 
 - All experimental screens are now tabs, available from the + menu (#264)
 
+- The coordinate editor should no longer jump around when editing the coordinates of highly constrained
+  models (#345)
+
 
 ## [0.2.0] - 2022/07/04
 

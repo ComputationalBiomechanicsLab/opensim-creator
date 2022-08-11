@@ -1260,6 +1260,20 @@ bool osc::ActionSetCoordinateValueAndSave(UndoableModelStatePair& model, OpenSim
     if (ActionSetCoordinateValue(model, coord, v))
     {
         OpenSim::Model& mutModel = model.updModel();
+
+        // CAREFUL: ensure that *all* coordinate's default values are updated to reflect
+        //          the current state
+        //
+        // You might be thinking "but, the caller only wanted to set one coordinate". You're
+        // right, but OpenSim models can contain constraints where editing one coordinate causes
+        // a bunch of other coordinates to change.
+        //
+        // See #345 for a longer explanation
+        for (OpenSim::Coordinate& c : mutModel.updComponentList<OpenSim::Coordinate>())
+        {
+            c.setDefaultValue(c.getValue(model.getState()));
+        }
+
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
         model.commit("set coordinate value");
