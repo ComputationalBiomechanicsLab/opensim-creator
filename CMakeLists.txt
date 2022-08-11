@@ -276,10 +276,16 @@ add_library(osccore STATIC
     src/Bindings/Gl.hpp
     src/Bindings/GlGlm.hpp
 
+    src/Graphics/Camera.hpp
+    src/Graphics/CameraClearFlags.hpp
+    src/Graphics/CameraProjection.hpp
     src/Graphics/Color.cpp
     src/Graphics/Color.hpp
     src/Graphics/DAEWriter.cpp
     src/Graphics/DAEWriter.hpp
+    src/Graphics/DepthStencilFormat.hpp
+    src/Graphics/Graphics.hpp
+    src/Graphics/GraphicsContext.hpp
     src/Graphics/GraphicsHelpers.cpp
     src/Graphics/GraphicsHelpers.hpp
     src/Graphics/Image.cpp
@@ -287,12 +293,19 @@ add_library(osccore STATIC
     src/Graphics/ImageFlags.hpp
     src/Graphics/ImageGen.cpp
     src/Graphics/ImageGen.hpp
+    src/Graphics/Material.hpp
+    src/Graphics/MaterialPropertyBlock.hpp
     src/Graphics/MeshCache.cpp
     src/Graphics/MeshCache.hpp
     src/Graphics/MeshGen.cpp
     src/Graphics/MeshGen.hpp
+    src/Graphics/Mesh.hpp
+    src/Graphics/MeshTopography.hpp
     src/Graphics/Renderer.cpp
     src/Graphics/Renderer.hpp
+    src/Graphics/RenderTexture.hpp
+    src/Graphics/RenderTextureDescriptor.hpp
+    src/Graphics/RenderTextureFormat.hpp
     src/Graphics/SceneDecoration.cpp
     src/Graphics/SceneDecoration.hpp
     src/Graphics/SceneDecorationFlags.hpp
@@ -300,11 +313,16 @@ add_library(osccore STATIC
     src/Graphics/SceneRenderer.hpp
     src/Graphics/SceneRendererParams.cpp
     src/Graphics/SceneRendererParams.hpp
+    src/Graphics/Shader.hpp
     src/Graphics/ShaderCache.cpp
     src/Graphics/ShaderCache.hpp
     src/Graphics/ShaderLocationIndex.hpp
+    src/Graphics/ShaderType.hpp
+    src/Graphics/Texture2D.hpp
+    src/Graphics/TextureFilterMode.hpp
     src/Graphics/TextureGen.cpp
     src/Graphics/TextureGen.hpp
+    src/Graphics/TextureWrapMode.hpp
 
     src/Maths/AABB.cpp
     src/Maths/AABB.hpp
