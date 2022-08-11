@@ -19,7 +19,6 @@
 #include "src/Tabs/Experiments/RendererHelloTriangleTab.hpp"
 #include "src/Tabs/Experiments/RendererLightingMapsTab.hpp"
 #include "src/Tabs/Experiments/RendererMultipleLightsTab.hpp"
-#include "src/Tabs/Experiments/RendererOpenSimTab.hpp"
 #include "src/Tabs/Experiments/RendererSDFTab.hpp"
 #include "src/Tabs/Experiments/RendererTexturingTab.hpp"
 #include "src/Tabs/Experiments/MeshHittestTab.hpp"
@@ -77,7 +76,6 @@ namespace
         lock->emplace_back("Renderer/HelloTriangle", TabConstructor<osc::RendererHelloTriangleTab>);
         lock->emplace_back("Renderer/LightingMaps", TabConstructor<osc::RendererLightingMapsTab>);
         lock->emplace_back("Renderer/MultipleLights", TabConstructor<osc::RendererMultipleLightsTab>);
-        lock->emplace_back("Renderer/OpenSimModel", TabConstructor<osc::RendererOpenSimTab>);
         lock->emplace_back("Renderer/Texturing", TabConstructor<osc::RendererTexturingTab>);
         lock->emplace_back("Renderer/SDFTab", TabConstructor<osc::RendererSDFTab>);
         lock->emplace_back("Demos/ImGui", TabConstructor<osc::ImGuiDemoTab>);
