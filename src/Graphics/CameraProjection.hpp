@@ -2,7 +2,7 @@
 
 #include <iosfwd>
 
-// note: implementation is in `Renderer.cpp`
+// note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
     // the shape of the viewing frustrum that the camera uses

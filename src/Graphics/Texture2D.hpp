@@ -20,7 +20,7 @@ namespace osc
     void DrawTextureAsImGuiImage(Texture2D&, glm::vec2);
 }
 
-// note: implementation is in `Renderer.cpp`
+// note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
     // a handle to a 2D texture that can be rendered by the graphics backend

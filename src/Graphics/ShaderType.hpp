@@ -2,7 +2,7 @@
 
 #include <iosfwd>
 
-// note: implementation is in `Renderer.cpp`
+// note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
     // data type of a material-assignable property parsed from the shader code

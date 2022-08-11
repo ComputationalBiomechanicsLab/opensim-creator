@@ -15,7 +15,7 @@
 #include <memory>
 #include <optional>
 
-// note: implementation is in `Renderer.cpp`
+// note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
     // camera
