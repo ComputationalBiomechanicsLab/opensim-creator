@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/Graphics/Material.hpp"
+#include "src/Graphics/MaterialPropertyBlock.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/SceneDecorationFlags.hpp"
 #include "src/Maths/AABB.hpp"
@@ -8,6 +10,7 @@
 #include <glm/vec4.hpp>
 
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace osc
@@ -20,6 +23,8 @@ namespace osc
         glm::vec4 color;
         std::string id;
         SceneDecorationFlags flags = SceneDecorationFlags_None;
+        std::optional<Material> maybeMaterial = std::nullopt;
+        std::optional<MaterialPropertyBlock> maybeMaterialProps = std::nullopt;
 
         SceneDecoration(std::shared_ptr<Mesh const> mesh_,
                         Transform const& transform_,
@@ -40,6 +45,23 @@ namespace osc
             color{color_},
             id{std::move(id_)},
             flags{std::move(flags_)}
+        {
+        }
+
+        SceneDecoration(std::shared_ptr<Mesh const> mesh_,
+            Transform const& transform_,
+            glm::vec4 const& color_,
+            std::string id_,
+            SceneDecorationFlags flags_,
+            std::optional<Material> maybeMaterial_,
+            std::optional<MaterialPropertyBlock> maybeProps_ = std::nullopt) :
+            mesh{std::move(mesh_)},
+            transform{transform_},
+            color{color_},
+            id{std::move(id_)},
+            flags{std::move(flags_)},
+            maybeMaterial{std::move(maybeMaterial_)},
+            maybeMaterialProps{std::move(maybeProps_)}
         {
         }
     };

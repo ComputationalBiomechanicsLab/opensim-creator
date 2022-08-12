@@ -207,7 +207,6 @@ public:
             m_SceneColoredElementsMaterial.setFloat("uNear", m_Camera.getNearClippingPlane());
             m_SceneColoredElementsMaterial.setFloat("uFar", m_Camera.getFarClippingPlane());
 
-
             Material transparentMaterial = m_SceneColoredElementsMaterial;
             transparentMaterial.setTransparent(true);
 
@@ -221,7 +220,11 @@ public:
                     lastColor = dec.color;
                 }
 
-                if (dec.color.a > 0.99f)
+                if (dec.maybeMaterial)
+                {
+                    Graphics::DrawMesh(*dec.mesh, dec.transform, *dec.maybeMaterial, m_Camera, dec.maybeMaterialProps);
+                }
+                else if (dec.color.a > 0.99f)
                 {
                     Graphics::DrawMesh(*dec.mesh, dec.transform, m_SceneColoredElementsMaterial, m_Camera, propBlock);
                 }
