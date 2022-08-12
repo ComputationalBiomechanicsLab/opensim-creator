@@ -509,6 +509,8 @@ namespace
         Transform transform;
         glm::vec4 color;
         osc::SceneDecorationFlags flags;
+        std::optional<osc::Material> maybeMaterial;
+        std::optional<osc::MaterialPropertyBlock> maybePropertyBlock;
     };
 
     AABB CalcBounds(DrawableThing const& dt)
@@ -4343,7 +4345,7 @@ namespace
             decs.reserve(drawables.size());
             for (DrawableThing const& dt : drawables)
             {
-                decs.emplace_back(dt.mesh, dt.transform, dt.color, std::string{}, dt.flags);
+                decs.emplace_back(dt.mesh, dt.transform, dt.color, std::string{}, dt.flags, dt.maybeMaterial, dt.maybePropertyBlock);
             }
 
             // render
@@ -4582,15 +4584,20 @@ namespace
 
         DrawableThing GenerateFloorDrawable() const
         {
+            Transform t = GetFloorTransform();
+            t.scale *= 0.5f;
+
+            osc::Material material{osc::ShaderCache::get("shaders/SolidColor.vert", "shaders/SolidColor.frag")};
+            material.setVec4("uColor", m_Colors.GridLines);
+
             DrawableThing dt;
             dt.id = g_EmptyID;
             dt.groupId = g_EmptyID;
             dt.mesh = osc::App::meshes().get100x100GridMesh();
-            Transform t = GetFloorTransform();
-            t.scale *= 0.5f;
             dt.transform = t;
             dt.color = m_Colors.GridLines;
             dt.flags = osc::SceneDecorationFlags_None;
+            dt.maybeMaterial = std::move(material);
             return dt;
         }
 
@@ -5088,7 +5095,7 @@ namespace
             glm::vec4 Stations{196.0f/255.0f, 0.0f, 0.0f, 1.0f};
             glm::vec4 ConnectionLines{0.6f, 0.6f, 0.6f, 1.0f};
             glm::vec4 SceneBackground{96.0f/255.0f, 96.0f/255.0f, 96.0f/255.0f, 1.0f};
-            glm::vec4 GridLines{128.0f/255.0f, 128.0f/255.0f, 128.0f/255.0f, 1.0f};
+            glm::vec4 GridLines{112.0f/255.0f, 112.0f/255.0f, 112.0f/255.0f, 1.0f};
         } m_Colors;
         static constexpr std::array<char const*, 6> g_ColorNames = {
             "ground",
