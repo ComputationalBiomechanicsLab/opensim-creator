@@ -158,7 +158,7 @@ osc::PolarPerspectiveCamera osc::CreateCameraWithRadius(float r)
 
 glm::vec3 osc::RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
 {
-    glm::vec3 p = PolarToCartesian(c.focusPoint, c.radius, c.theta - 0.75f*fpi4, glm::clamp(c.phi + 0.25f*fpi4, 0.0f, fpi2));
+    glm::vec3 p = PolarToCartesian(c.focusPoint, c.radius, c.theta - 0.75f*fpi4, glm::clamp(c.phi + (c.phi > 0.0f ? 0.25f*fpi4 : -0.25f*fpi4), -fpi2 + 0.05f, fpi2 - 0.05f));
     return glm::normalize(-c.focusPoint - p);
 }
 
