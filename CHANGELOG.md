@@ -119,6 +119,8 @@ All notable changes to this project will be documented here. The format is based
 - The coordinate editor should no longer jump around when editing the coordinates of highly constrained
   models (#345)
 
+- Fixed being unable to edit the parameters of a `HuntCrossleyForce` (#348)
+
 
 ## [0.2.0] - 2022/07/04
 

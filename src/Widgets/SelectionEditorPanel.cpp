@@ -209,30 +209,6 @@ static void DrawHCFContextualActions(osc::UndoableModelStatePair& uim)
     ImGui::NextColumn();
 
     ImGui::Columns();
-
-    // render standard, easy to render, props of the contact params
-    if (hcf->get_contact_parameters().getSize() > 0)
-    {
-        OpenSim::HuntCrossleyForce::ContactParameters const& params = hcf->get_contact_parameters()[0];
-
-        auto easyToHandleProps = std::array<int, 6>
-        {
-            params.PropertyIndex_geometry,
-                params.PropertyIndex_stiffness,
-                params.PropertyIndex_dissipation,
-                params.PropertyIndex_static_friction,
-                params.PropertyIndex_dynamic_friction,
-                params.PropertyIndex_viscous_friction,
-        };
-
-        osc::ObjectPropertiesEditor st;
-        auto maybe_updater = st.draw(params, easyToHandleProps);
-
-        if (maybe_updater)
-        {
-            osc::ActionApplyPropertyEdit(uim, *maybe_updater);
-        }
-    }
 }
 
 // draw contextual actions (buttons, sliders) for a selected path actuator

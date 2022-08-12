@@ -14,6 +14,7 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Simulation/Model/Appearance.h>
+#include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <SDL_scancode.h>
 #include <SimTKcommon/Constants.h>
 #include <SimTKcommon/SmallMatrix.h>
@@ -192,6 +193,30 @@ static void Draw2DoubleValueEditor(
     }
 }
 
+
+static void DrawPropertyName(OpenSim::AbstractProperty const& prop)
+{
+    ImGui::TextUnformatted(prop.getName().c_str());
+    std::string const& comment = prop.getComment();
+    if (!comment.empty())
+    {
+        ImGui::SameLine();
+        osc::DrawHelpMarker(prop.getComment().c_str());
+    }
+}
+
+static std::string GetAbsPathOrEmptyIfNotAComponent(OpenSim::Object const& obj)
+{
+    if (auto c = dynamic_cast<OpenSim::Component const*>(&obj))
+    {
+        return c->getAbsolutePathString();
+    }
+    else
+    {
+        return {};
+    }
+}
+
 namespace
 {
     // type-erased property editor
@@ -244,6 +269,9 @@ namespace
     private:
         std::optional<UpdateFn> drawDowncastedImpl(PropertyType const& prop) override
         {
+            DrawPropertyName(prop);
+            ImGui::NextColumn();
+
             std::optional<UpdateFn> rv = std::nullopt;
 
             int nEls = std::max(prop.size(), 1);  // care: optional properties have size==0
@@ -255,6 +283,8 @@ namespace
                 ImGui::PopID();
             }
 
+            ImGui::NextColumn();
+
             return rv;
         }
     };
@@ -263,6 +293,9 @@ namespace
     private:
         std::optional<UpdateFn> drawDowncastedImpl(PropertyType const& prop) override
         {
+            DrawPropertyName(prop);
+            ImGui::NextColumn();
+
             std::optional<UpdateFn> rv = std::nullopt;
 
             if (!prop.isListProperty() && prop.size() == 0)
@@ -282,6 +315,8 @@ namespace
                 ImGui::Text("%s", prop.toString().c_str());
             }
 
+            ImGui::NextColumn();
+
             return rv;
         }
     };
@@ -290,19 +325,25 @@ namespace
     private:
         std::optional<UpdateFn> drawDowncastedImpl(PropertyType const& prop) override
         {
+            DrawPropertyName(prop);
+            ImGui::NextColumn();
+
             std::optional<UpdateFn> rv = std::nullopt;
 
             if (prop.isListProperty())
             {
                 ImGui::Text("%s", prop.toString().c_str());
+                ImGui::NextColumn();
                 return rv;
             }
 
             bool v = prop.getValue();
             if (ImGui::Checkbox("##booleditor", &v))
             {
+                ImGui::NextColumn();
                 return MakePropValueSetter<bool>(v);
             }
+            ImGui::NextColumn();
 
             return rv;
         }
@@ -312,11 +353,15 @@ namespace
     private:
         std::optional<UpdateFn> drawDowncastedImpl(PropertyType const& prop) override
         {
+            DrawPropertyName(prop);
+            ImGui::NextColumn();
+
             std::optional<UpdateFn> rv = std::nullopt;
 
             if (prop.isListProperty())
             {
                 ImGui::Text("%s", prop.toString().c_str());
+                ImGui::NextColumn();
                 return rv;
             }
 
@@ -370,6 +415,8 @@ namespace
                 rv = MakePropValueSetter<SimTK::Vec3>(m_RetainedValue);
             }
 
+            ImGui::NextColumn();
+
             return rv;
         }
 
@@ -381,11 +428,15 @@ namespace
     private:
         std::optional<UpdateFn> drawDowncastedImpl(PropertyType const& prop) override
         {
+            DrawPropertyName(prop);
+            ImGui::NextColumn();
+
             std::optional<UpdateFn> rv = std::nullopt;
 
             if (prop.isListProperty())
             {
                 ImGui::Text("%s", prop.toString().c_str());
+                ImGui::NextColumn();
                 return rv;
             }
 
@@ -417,6 +468,8 @@ namespace
                 rv = MakePropValueSetter<SimTK::Vec6>(m_RetainedValue);
             }
 
+            ImGui::NextColumn();
+
             return rv;
         }
 
@@ -427,6 +480,9 @@ namespace
     private:
         std::optional<UpdateFn> drawDowncastedImpl(PropertyType const& prop) override
         {
+            DrawPropertyName(prop);
+            ImGui::NextColumn();
+
             std::optional<UpdateFn> rv = std::nullopt;
 
             OpenSim::Appearance const& app = prop.getValue();
@@ -469,8 +525,50 @@ namespace
             }
             ImGui::PopID();
 
+            ImGui::NextColumn();
+
             return rv;
         }
+    };
+
+    class ContactParameterSetEditor final : public PropertyEditorT<OpenSim::ObjectProperty<OpenSim::HuntCrossleyForce::ContactParametersSet>> {
+    private:
+        std::optional<UpdateFn> drawDowncastedImpl(OpenSim::ObjectProperty<OpenSim::HuntCrossleyForce::ContactParametersSet> const& cps) override
+        {
+            std::optional<UpdateFn> rv;
+            if (cps.getValue().getSize() > 0)
+            {
+                OpenSim::HuntCrossleyForce::ContactParameters const& params = cps.getValue()[0];
+
+                ImGui::Columns();
+                auto resp = m_NestedEditors.draw(params);
+                ImGui::Columns(2);
+
+                if (resp)
+                {
+                    // careful here: the response has a correct updater but doesn't know the full
+                    // path to the housing component, so we have to wrap the updater with
+                    // appropriate lookups etc
+
+                    rv = [=](OpenSim::AbstractProperty& p) mutable
+                    {
+                        auto* downcasted = dynamic_cast<OpenSim::Property<OpenSim::HuntCrossleyForce::ContactParametersSet>*>(&p);
+                        if (downcasted && downcasted->getValue().getSize() > 0)
+                        {
+                            OpenSim::HuntCrossleyForce::ContactParameters& params = downcasted->getValue()[0];
+                            if (params.hasProperty(resp->getPropertyName()))
+                            {
+                                OpenSim::AbstractProperty& p = params.updPropertyByName(resp->getPropertyName());
+                                resp->apply(p);
+                            }
+                        }
+                    };
+                }
+            }
+            return rv;
+        }
+
+        osc::ObjectPropertiesEditor m_NestedEditors;
     };
 
     using PropEditorCtor = std::unique_ptr<PropertyEditor>(*)(void);
@@ -495,7 +593,8 @@ namespace
             MakeLookupEntry<BoolPropertyEditor>(),
             MakeLookupEntry<Vec3PropertyEditor>(),
             MakeLookupEntry<Vec6PropertyEditor>(),
-            MakeLookupEntry<AppearancePropertyEditor>()
+            MakeLookupEntry<AppearancePropertyEditor>(),
+            MakeLookupEntry<ContactParameterSetEditor>(),
         };
 
         return g_PropertyEditors;
@@ -554,31 +653,8 @@ private:
         return it->second.get();
     }
 
-    void ensurePropertyEditorsValidFor(OpenSim::Object const& obj)
+    std::optional<ObjectPropertyEdit> drawPropertyEditor(OpenSim::Object const& obj, OpenSim::AbstractProperty const& prop)
     {
-        if (m_PreviousObject != &obj)
-        {
-            m_PropertyEditors.clear();
-            m_PreviousObject = &obj;
-        }
-    }
-
-    std::optional<ObjectPropertyEdit> draw(OpenSim::Object const& obj, OpenSim::AbstractProperty const& prop)
-    {
-        // left column: property name
-        ImGui::TextUnformatted(prop.getName().c_str());
-        {
-            std::string const& comment = prop.getComment();
-            if (!comment.empty())
-            {
-                ImGui::SameLine();
-                DrawHelpMarker(prop.getComment().c_str());
-            }
-        }
-        ImGui::NextColumn();
-
-        // right column: editor
-
         PropertyEditor* editor = tryLookupOrCreateEditor(prop);
         std::optional<ObjectPropertyEdit> rv;
 
@@ -594,77 +670,43 @@ private:
         else
         {
             // no editor available for this type
+            DrawPropertyName(prop);
+            ImGui::NextColumn();
             ImGui::TextUnformatted(prop.toString().c_str());
+            ImGui::NextColumn();
         }
         ImGui::PopID();
-        ImGui::NextColumn();
 
         return rv;
-    }
-
-    void drawPropertyWithIndex(OpenSim::Object const& obj,
-                               int idx,
-                               std::optional<ObjectPropertyEdit>& out)
-    {
-        ImGui::PushID(idx);
-        OpenSim::AbstractProperty const& prop = obj.getPropertyByIndex(idx);
-        std::optional<ObjectPropertyEdit> resp = draw(obj, prop);
-        if (resp && !out)
-        {
-            out.emplace(std::move(resp).value());
-        }
-        ImGui::PopID();
     }
 
 public:
 
     std::optional<ObjectPropertyEdit> draw(OpenSim::Object const& obj)
     {
+        // clear cache, if necessary
+        if (m_PreviousObject != &obj)
+        {
+            m_PropertyEditors.clear();
+            m_PreviousObject = &obj;
+        }
+
         std::optional<ObjectPropertyEdit> rv = std::nullopt;
 
-        int numProps = obj.getNumProperties();
-
-        if (numProps <= 0)
-        {
-            return rv;
-        }
-
-        ensurePropertyEditorsValidFor(obj);
-
         ImGui::Columns(2);
-        for (int i = 0; i < numProps; ++i)
+        for (int i = 0; i < obj.getNumProperties(); ++i)
         {
-            drawPropertyWithIndex(obj, i, rv);
-        }
-        ImGui::Columns();
+            ImGui::PushID(i);
 
-        return rv;
-    }
+            OpenSim::AbstractProperty const& prop = obj.getPropertyByIndex(i);
+            std::optional<ObjectPropertyEdit> resp = drawPropertyEditor(obj, prop);
 
-    std::optional<ObjectPropertyEdit> draw(OpenSim::Object const& obj,
-                                                         nonstd::span<int const> indices)
-    {
-        std::optional<ObjectPropertyEdit> rv = std::nullopt;
+            if (resp && !rv)
+            {
+                rv.emplace(std::move(resp).value());
+            }
 
-        int highest = *std::max_element(indices.begin(), indices.end());
-        int nprops = obj.getNumProperties();
-
-        if (highest < 0)
-        {
-            return rv;
-        }
-
-        if (nprops < highest)
-        {
-            return rv;
-        }
-
-        ensurePropertyEditorsValidFor(obj);
-
-        ImGui::Columns(2);
-        for (int propidx : indices)
-        {
-            drawPropertyWithIndex(obj, propidx, rv);
+            ImGui::PopID();
         }
         ImGui::Columns();
 
@@ -672,22 +714,9 @@ public:
     }
 
 private:
-
     std::unordered_map<std::string, std::unique_ptr<PropertyEditor>> m_PropertyEditors;
     OpenSim::Object const* m_PreviousObject = nullptr;
 };
-
-static std::string GetAbsPathOrEmptyIfNotAComponent(OpenSim::Object const& obj)
-{
-    if (auto c = dynamic_cast<OpenSim::Component const*>(&obj))
-    {
-        return c->getAbsolutePathString();
-    }
-    else
-    {
-        return {};
-    }
-}
 
 
 // public API
@@ -742,11 +771,4 @@ osc::ObjectPropertiesEditor::~ObjectPropertiesEditor() noexcept
 std::optional<osc::ObjectPropertyEdit> osc::ObjectPropertiesEditor::draw(OpenSim::Object const& obj)
 {
     return m_Impl->draw(obj);
-}
-
-std::optional<osc::ObjectPropertyEdit> osc::ObjectPropertiesEditor::draw(
-        OpenSim::Object const& obj,
-        nonstd::span<int const> indices)
-{
-    return m_Impl->draw(obj, indices);
 }

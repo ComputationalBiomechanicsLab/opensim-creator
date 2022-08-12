@@ -44,10 +44,6 @@ namespace osc
         // callers apply the edit
         std::optional<ObjectPropertyEdit> draw(OpenSim::Object const&);
 
-        // if the user tries to edit an Object's properties, returns a response that lets
-        // callers apply the edit
-        std::optional<ObjectPropertyEdit> draw(OpenSim::Object const&, nonstd::span<int const> indices);
-
     private:
         class Impl;
         Impl* m_Impl;
