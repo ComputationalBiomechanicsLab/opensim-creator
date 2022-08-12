@@ -21,6 +21,10 @@ namespace osc
         glm::vec3 viewPos;
         glm::vec3 lightDirection;
         glm::vec3 lightColor;
+        float ambientStrength;
+        float diffuseStrength;
+        float specularStrength;
+        float shininess;
         glm::vec4 backgroundColor;
         glm::vec4 rimColor;
         glm::vec3 floorLocation;

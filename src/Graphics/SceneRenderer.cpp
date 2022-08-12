@@ -204,6 +204,10 @@ public:
             m_SceneColoredElementsMaterial.setVec3("uViewPos", m_Camera.getPosition());
             m_SceneColoredElementsMaterial.setVec3("uLightDir", params.lightDirection);
             m_SceneColoredElementsMaterial.setVec3("uLightColor", params.lightColor);
+            m_SceneColoredElementsMaterial.setFloat("uAmbientStrength", params.ambientStrength);
+            m_SceneColoredElementsMaterial.setFloat("uDiffuseStrength", params.diffuseStrength);
+            m_SceneColoredElementsMaterial.setFloat("uSpecularStrength", params.specularStrength);
+            m_SceneColoredElementsMaterial.setFloat("uShininess", params.shininess);
             m_SceneColoredElementsMaterial.setFloat("uNear", m_Camera.getNearClippingPlane());
             m_SceneColoredElementsMaterial.setFloat("uFar", m_Camera.getFarClippingPlane());
 
@@ -246,6 +250,13 @@ public:
                 m_SceneTexturedElementsMaterial.setVec3("uViewPos", m_Camera.getPosition());
                 m_SceneTexturedElementsMaterial.setVec3("uLightDir", params.lightDirection);
                 m_SceneTexturedElementsMaterial.setVec3("uLightColor", params.lightColor);
+                // don't set shading parameters for the floor: it's a special case because the caller just
+                // wants the standard floor
+                //
+                // m_SceneTexturedElementsMaterial.setFloat("uAmbientStrength", params.ambientStrength);
+                // m_SceneTexturedElementsMaterial.setFloat("uDiffuseStrength", params.diffuseStrength);
+                // m_SceneTexturedElementsMaterial.setFloat("uSpecularStrength", params.specularStrength);
+                // m_SceneTexturedElementsMaterial.setFloat("uShininess", params.shininess);
                 m_SceneTexturedElementsMaterial.setFloat("uNear", m_Camera.getNearClippingPlane());
                 m_SceneTexturedElementsMaterial.setFloat("uFar", m_Camera.getFarClippingPlane());
                 m_SceneTexturedElementsMaterial.setTransparent(true);  // fog
