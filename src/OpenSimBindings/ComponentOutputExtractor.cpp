@@ -161,6 +161,11 @@ public:
         return std::make_unique<Impl>(*this);
     }
 
+    OpenSim::ComponentPath const& getComponentAbsPath() const
+    {
+        return m_ComponentAbsPath;
+    }
+
     std::string const& getName() const
     {
         return m_Label;
@@ -319,6 +324,11 @@ osc::ComponentOutputExtractor::ComponentOutputExtractor(ComponentOutputExtractor
 osc::ComponentOutputExtractor& osc::ComponentOutputExtractor::operator=(ComponentOutputExtractor const&) = default;
 osc::ComponentOutputExtractor& osc::ComponentOutputExtractor::operator=(ComponentOutputExtractor&&) noexcept = default;
 osc::ComponentOutputExtractor::~ComponentOutputExtractor() noexcept = default;
+
+OpenSim::ComponentPath const& osc::ComponentOutputExtractor::getComponentAbsPath() const
+{
+    return m_Impl->getComponentAbsPath();
+}
 
 std::string const& osc::ComponentOutputExtractor::getName() const
 {

@@ -5,6 +5,7 @@
 #include "src/MiddlewareAPIs/SimulatorUIAPI.hpp"
 #include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/OpenSimBindings/SimulationModelStatePair.hpp"
@@ -55,7 +56,7 @@
 
 static std::atomic<int> g_SimulationNumber = 1;
 
-static void DrawOutputNameColumn(osc::VirtualOutputExtractor const& output, bool centered = true)
+static void DrawOutputNameColumn(osc::VirtualOutputExtractor const& output, bool centered = true, osc::SimulationModelStatePair* maybeActiveSate = nullptr)
 {
     if (centered)
     {
@@ -64,6 +65,25 @@ static void DrawOutputNameColumn(osc::VirtualOutputExtractor const& output, bool
     else
     {
         ImGui::TextUnformatted(output.getName().c_str());
+    }
+
+    // if it's specifically a component ouptut, then hover/clicking the text should
+    // propagate to the rest of the UI
+    //
+    // (e.g. if the user mouses over the name of a component output it should make
+    // the associated component the current hover to provide immediate feedback to
+    // the user)
+    if (auto const* co = dynamic_cast<osc::ComponentOutputExtractor const*>(&output); co && maybeActiveSate)
+    {
+        if (ImGui::IsItemHovered())
+        {
+            maybeActiveSate->setHovered(osc::FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
+        }
+
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+        {
+            maybeActiveSate->setSelected(osc::FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
+        }
     }
 
     if (!output.getDescription().empty())
@@ -375,7 +395,7 @@ private:
             ImGui::PushID(i);
             SimulationOutputPlot plot{this, output, 64.0f};
             plot.draw();
-            DrawOutputNameColumn(output, true);
+            DrawOutputNameColumn(output, true, m_ShownModelState.get());
             ImGui::PopID();
         }
     }

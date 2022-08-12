@@ -13,6 +13,7 @@ namespace OpenSim
 {
     class AbstractOutput;
     class Component;
+    class ComponentPath;
 }
 
 namespace osc
@@ -50,6 +51,7 @@ namespace osc
         ComponentOutputExtractor& operator=(ComponentOutputExtractor&&) noexcept;
         ~ComponentOutputExtractor() noexcept;
 
+        OpenSim::ComponentPath const& getComponentAbsPath() const;
         std::string const& getName() const override;
         std::string const& getDescription() const override;
 

@@ -121,6 +121,9 @@ All notable changes to this project will be documented here. The format is based
 
 - Fixed being unable to edit the parameters of a `HuntCrossleyForce` (#348)
 
+- Hovering/clicking the title of an output plot in the simulator tab now hovers/selects the associated
+  component, if applicable (#347)
+
 
 ## [0.2.0] - 2022/07/04
 
