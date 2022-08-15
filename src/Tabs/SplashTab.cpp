@@ -137,7 +137,7 @@ private:
         constexpr glm::vec2 menuDims = {700.0f, 500.0f};
 
         Rect tabRect = getTabScreenRect();
-        
+
         Rect rv{};
         rv.p1 = tabRect.p1 + (Dimensions(tabRect) - menuDims) / 2.0f;
         rv.p2 = rv.p1 + menuDims;
@@ -176,7 +176,7 @@ private:
         constexpr glm::vec2 logoDims = {128.0f, 128.0f};
         constexpr float padding = 25.0f;
 
-        Rect mmr = getMainMenuRect();       
+        Rect mmr = getMainMenuRect();
 
         glm::vec2 loc
         {
@@ -198,7 +198,7 @@ private:
             ImGui::SetNextWindowPos(mmr.p1);
             ImGui::SetNextWindowSize(ImVec2(Dimensions(mmr).x, -1));
             ImGui::SetNextWindowSizeConstraints(Dimensions(mmr), Dimensions(mmr));
-        }        
+        }
 
         if (ImGui::Begin("Splash screen", nullptr, ImGuiWindowFlags_NoTitleBar))
         {

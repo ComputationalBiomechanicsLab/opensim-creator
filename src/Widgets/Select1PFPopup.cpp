@@ -55,6 +55,6 @@ OpenSim::PhysicalFrame const* osc::Select1PFPopup::draw(
     }
 
     ImGui::EndPopup();
-    
+
     return selected;
 }

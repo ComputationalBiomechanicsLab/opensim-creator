@@ -238,7 +238,7 @@ private:
             {
                 // Ctrl+R: start a new simulation from focused model
                 return osc::ActionStartSimulatingModel(m_Parent, *m_Model);
-            }                
+            }
             case SDLK_a:  // Ctrl+A: clear selection
                 osc::ActionClearSelectionFromEditedModel(*m_Model);
                 return true;

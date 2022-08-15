@@ -19,7 +19,7 @@ public:
     Impl(std::string_view panelName_,
         std::shared_ptr<UndoableModelStatePair> model_,
         MainUIStateAPI* api_) :
-        
+
         NamedPanel{std::move(panelName_)},
         m_Model{std::move(model_)},
         m_API{std::move(api_)}
@@ -58,7 +58,7 @@ private:
             ImGui::EndTable();
         }
 
-        
+
     }
 
     std::shared_ptr<UndoableModelStatePair> m_Model;

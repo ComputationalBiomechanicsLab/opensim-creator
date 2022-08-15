@@ -203,7 +203,7 @@ namespace
         return std::nullopt;
     }
 
-    // returns a string that has had the 
+    // returns a string that has had the
     std::string RemoveLastNCharacters(std::string const& s, size_t n)
     {
         if (n > s.length())

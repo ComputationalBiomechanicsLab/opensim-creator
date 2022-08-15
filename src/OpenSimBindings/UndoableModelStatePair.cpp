@@ -300,7 +300,7 @@ public:
         if (canRedo())
         {
             redo();
-        }        
+        }
     }
 
     void commit(std::string_view message)

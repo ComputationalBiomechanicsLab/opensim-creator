@@ -119,7 +119,7 @@ namespace
                 std::stringstream id;
                 id << "material_" << latestMaterial++;
                 materialIt->second = std::move(id).str();
-                
+
                 rv.Materials.emplace_back(materialIt->second, materialIt->first);
             }
 

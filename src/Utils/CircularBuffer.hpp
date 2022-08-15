@@ -30,7 +30,7 @@ class CircularBuffer final {
     //   spin into position 0 once it is equal to N (this is
     //   in constrast to non-circular storage, where _end
     //   typically points one past the end of the storage range)
-    // 
+    //
     // - this behavior makes the implementation simpler, because
     //   you don't have to handle _begin == _end edge cases and
     //   one-past-the end out-of-bounds checks

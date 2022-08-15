@@ -844,7 +844,7 @@ void osc::RenderTextureDescriptor::setDepthStencilFormat(DepthStencilFormat f)
 
 bool osc::operator==(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
 {
-    return 
+    return
         a.m_Width == b.m_Width &&
         a.m_Height == b.m_Height &&
         a.m_AnialiasingLevel == b.m_AnialiasingLevel &&

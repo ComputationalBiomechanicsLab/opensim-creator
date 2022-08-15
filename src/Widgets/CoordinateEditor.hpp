@@ -17,7 +17,7 @@ namespace osc
         CoordinateEditor& operator=(CoordinateEditor const&) = delete;
         CoordinateEditor& operator=(CoordinateEditor&&) noexcept;
         ~CoordinateEditor() noexcept;
-        
+
         void draw();
 
     private:

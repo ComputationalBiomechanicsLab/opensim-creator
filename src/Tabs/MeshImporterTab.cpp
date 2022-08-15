@@ -4654,7 +4654,7 @@ namespace
                 // mesh onto the legs, which are:
                 //
                 // - 4.0f * leglen[leg] * radius long
-                // - 0.5f * radius thick                
+                // - 0.5f * radius thick
 
                 glm::vec3 const meshDirection = {0.0f, 1.0f, 0.0f};
                 glm::vec3 cylinderDirection = {};

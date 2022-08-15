@@ -111,7 +111,7 @@ private:
             ImGui::BeginChild("join targets", ImVec2(0, 128.0f), true, ImGuiWindowFlags_HorizontalScrollbar);
             for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>())
             {
-                if (ImGui::Selectable(pf.getName().c_str(), &pf == selectedPf)) 
+                if (ImGui::Selectable(pf.getName().c_str(), &pf == selectedPf))
                 {
                     selectedPf = &pf;
                     m_BodyDetails.ParentFrameAbsPath = selectedPf->getAbsolutePathString();
