@@ -1,6 +1,7 @@
 #include "ModelMusclePlotPanel.hpp"
 
 #include "src/Actions/ActionFunctions.hpp"
+#include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/ModelStateCommit.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
@@ -630,13 +631,27 @@ namespace
 			}
 			if (isHovered && ImGui::IsMouseDown(ImGuiMouseButton_Left))
 			{
-				double storedValue = osc::ConvertCoordDisplayValueToStorageValue(coord, static_cast<float>(p.x));
-				osc::ActionSetCoordinateValue(*shared->Uim, coord, storedValue);
+				if (coord.getDefaultLocked())
+				{
+					osc::DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
+				}
+				else
+				{
+					double storedValue = osc::ConvertCoordDisplayValueToStorageValue(coord, static_cast<float>(p.x));
+					osc::ActionSetCoordinateValue(*shared->Uim, coord, storedValue);
+				}
 			}
 			if (isHovered && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 			{
-				double storedValue = osc::ConvertCoordDisplayValueToStorageValue(coord, static_cast<float>(p.x));
-				osc::ActionSetCoordinateValueAndSave(*shared->Uim, coord, storedValue);
+				if (coord.getDefaultLocked())
+				{
+					osc::DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
+				}
+				else
+				{
+					double storedValue = osc::ConvertCoordDisplayValueToStorageValue(coord, static_cast<float>(p.x));
+					osc::ActionSetCoordinateValueAndSave(*shared->Uim, coord, storedValue);
+				}
 			}
 			if (ImGui::BeginPopupContextItem((title + "_contextmenu").c_str()))
 			{

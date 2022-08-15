@@ -126,6 +126,8 @@ All notable changes to this project will be documented here. The format is based
 
 - Fixed live muscle plots not plotting if the muscle being plotted is locked (#352)
 
+- Disabled being able to (unsucessfully) scrub a muscle output plot if the coordinate is locked (#346)
+
 
 ## [0.2.0] - 2022/07/04
 
