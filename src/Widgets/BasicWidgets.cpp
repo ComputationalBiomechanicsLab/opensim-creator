@@ -148,7 +148,7 @@ void osc::DrawWatchOutputMenu(osc::MainUIStateAPI& api, OpenSim::Component const
 {
     if (ImGui::BeginMenu(ICON_FA_EYE " Watch Output"))
     {
-        osc::DrawHelpMarker("Watch the selected output. Watching an output makes it appear in the 'output watches' panel in a simulation tab");
+        osc::DrawHelpMarker("Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
 
         // iterate from the selected component upwards to the root
         int imguiId = 0;

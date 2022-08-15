@@ -292,19 +292,19 @@ private:
             }
         }
 
-        if (bool outputsPanelOldState = config.getIsPanelEnabled("Output Watches"))
+        if (bool outputsPanelOldState = config.getIsPanelEnabled("Output Plots"))
         {
             bool outputsPanelState = outputsPanelOldState;
-            if (ImGui::Begin("Output Watches", &outputsPanelState))
+            if (ImGui::Begin("Output Plots", &outputsPanelState))
             {
-                OSC_PERF("draw output watches panel");
+                OSC_PERF("draw output plots panel");
                 drawOutputWatchesTab();
             }
             ImGui::End();
 
             if (outputsPanelState != outputsPanelOldState)
             {
-                App::upd().updConfig().setIsPanelEnabled("Output Watches", outputsPanelState);
+                App::upd().updConfig().setIsPanelEnabled("Output Plots", outputsPanelState);
             }
         }
 
@@ -536,7 +536,7 @@ private:
         {
             "Hierarchy",
             "Log",
-            "Output Watches",
+            "Output Plots",
             "Selection Details",
             "Simulation Details",
             "Performance",

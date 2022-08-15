@@ -64,13 +64,14 @@ static std::unordered_map<std::string, bool> MakeDefaultPanelStates()
         {"Actions", true},
         {"Hierarchy", true},
         {"Log", true},
-        {"Output Watches", true},
         {"Property Editor", true},
         {"Selection Details", true},
         {"Simulation Details", false},
         {"Coordinate Editor", true},
         {"Performance", false},
         {"Muscle Plot", false},
+        {"Output Watches", false},
+        {"Output Plots", true},
     };
 }
 

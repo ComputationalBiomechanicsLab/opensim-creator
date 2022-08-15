@@ -537,6 +537,8 @@ add_library(osccore STATIC
     src/Widgets/NamedPanel.hpp
     src/Widgets/ObjectPropertiesEditor.cpp
     src/Widgets/ObjectPropertiesEditor.hpp
+    src/Widgets/OutputWatchesPanel.cpp
+    src/Widgets/OutputWatchesPanel.hpp
     src/Widgets/ParamBlockEditorPopup.cpp
     src/Widgets/ParamBlockEditorPopup.hpp
     src/Widgets/PerfPanel.cpp

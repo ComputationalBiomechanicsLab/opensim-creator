@@ -23,6 +23,7 @@
 #include "src/Widgets/ModelActionsMenuItems.hpp"
 #include "src/Widgets/ModelHierarchyPanel.hpp"
 #include "src/Widgets/ModelMusclePlotPanel.hpp"
+#include "src/Widgets/OutputWatchesPanel.hpp"
 #include "src/Widgets/ParamBlockEditorPopup.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 #include "src/Widgets/SelectionEditorPanel.hpp"
@@ -48,7 +49,7 @@
 #include <utility>
 #include <vector>
 
-static std::array<std::string, 6> const g_EditorScreenPanels =
+static std::array<std::string, 7> const g_EditorScreenPanels =
 {
     "Actions",
     "Hierarchy",
@@ -56,6 +57,7 @@ static std::array<std::string, 6> const g_EditorScreenPanels =
     "Log",
     "Coordinate Editor",
     "Performance",
+    "Output Watches",
 };
 
 class osc::ModelEditorTab::Impl final {
@@ -668,6 +670,18 @@ private:
             }
         }
 
+        if (bool oldState = config.getIsPanelEnabled("Output Watches"))
+        {
+            OSC_PERF("draw output watches panel");
+
+            m_OutputWatchesPanel.open();
+            bool newState = m_OutputWatchesPanel.draw();
+            if (newState != oldState)
+            {
+                osc::App::upd().updConfig().setIsPanelEnabled("Output Watches", newState);
+            }
+        }
+
         // draw performance viewer
         if (bool perfOldState = config.getIsPanelEnabled("Performance"))
         {
@@ -719,6 +733,7 @@ private:
 	ModelActionsMenuItems m_ContextMenuActionsMenuBar{m_Model};
 	CoordinateEditor m_CoordEditor{m_Model};
     PerfPanel m_PerfPanel{"Performance"};
+    OutputWatchesPanel m_OutputWatchesPanel{"Output Watches", m_Model, m_Parent};
     SelectionEditorPanel m_SelectionEditor{m_Model};
 	ParamBlockEditorPopup m_ParamBlockEditorPopup{"simulation parameters"};
     int m_LatestMusclePlot = 1;

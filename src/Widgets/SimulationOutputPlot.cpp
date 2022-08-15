@@ -139,7 +139,7 @@ static void DrawToggleWatchOutputMenuItem(osc::SimulatorUIAPI& api, osc::OutputE
             api.removeUserOutputExtractor(output);
         }
     }
-    osc::DrawTooltipIfItemHovered("Watch Output", "Watch the selected output. Watching an output makes it appear in the 'output watches' panel in a simulation tab");
+    osc::DrawTooltipIfItemHovered("Watch Output", "Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
 }
 
 static void DrawGenericNumericOutputContextMenuItems(osc::SimulatorUIAPI& api, osc::VirtualSimulation& sim, osc::OutputExtractor const& output)
