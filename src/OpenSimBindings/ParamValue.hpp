@@ -6,5 +6,5 @@
 
 namespace osc
 {
-	using ParamValue = std::variant<double, int, IntegratorMethod>;
+    using ParamValue = std::variant<double, int, IntegratorMethod>;
 }

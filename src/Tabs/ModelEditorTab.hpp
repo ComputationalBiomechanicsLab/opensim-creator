@@ -10,36 +10,36 @@
 
 namespace osc
 {
-	class MainUIStateAPI;
+    class MainUIStateAPI;
     class TabHost;
-	class UndoableModelStatePair;
+    class UndoableModelStatePair;
 }
 
 namespace osc
 {
-	class ModelEditorTab final : public Tab {
-	public:
-		ModelEditorTab(MainUIStateAPI*, std::unique_ptr<UndoableModelStatePair>);
-		ModelEditorTab(ModelEditorTab const&) = delete;
-		ModelEditorTab(ModelEditorTab&&) noexcept;
-		ModelEditorTab& operator=(ModelEditorTab const&) = delete;
-		ModelEditorTab& operator=(ModelEditorTab&&) noexcept;
-		~ModelEditorTab() noexcept override;
+    class ModelEditorTab final : public Tab {
+    public:
+        ModelEditorTab(MainUIStateAPI*, std::unique_ptr<UndoableModelStatePair>);
+        ModelEditorTab(ModelEditorTab const&) = delete;
+        ModelEditorTab(ModelEditorTab&&) noexcept;
+        ModelEditorTab& operator=(ModelEditorTab const&) = delete;
+        ModelEditorTab& operator=(ModelEditorTab&&) noexcept;
+        ~ModelEditorTab() noexcept override;
 
-	private:
-		UID implGetID() const override;
-		CStringView implGetName() const override;
-		TabHost* implParent() const override;
-		bool implIsUnsaved() const override;
-		bool implTrySave() override;
-		void implOnMount() override;
-		void implOnUnmount() override;
-		bool implOnEvent(SDL_Event const&) override;
-		void implOnTick() override;
-		void implOnDrawMainMenu() override;
-		void implOnDraw() override;
+    private:
+        UID implGetID() const override;
+        CStringView implGetName() const override;
+        TabHost* implParent() const override;
+        bool implIsUnsaved() const override;
+        bool implTrySave() override;
+        void implOnMount() override;
+        void implOnUnmount() override;
+        bool implOnEvent(SDL_Event const&) override;
+        void implOnTick() override;
+        void implOnDrawMainMenu() override;
+        void implOnDraw() override;
 
-		class Impl;
-		Impl* m_Impl;
-	};
+        class Impl;
+        Impl* m_Impl;
+    };
 }

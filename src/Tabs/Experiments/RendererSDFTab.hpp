@@ -8,32 +8,32 @@
 
 namespace osc
 {
-	class TabHost;
+    class TabHost;
 }
 
 namespace osc
 {
-	class RendererSDFTab final : public Tab {
-	public:
-		RendererSDFTab(TabHost*);
-		RendererSDFTab(RendererSDFTab const&) = delete;
-		RendererSDFTab(RendererSDFTab&&) noexcept;
-		RendererSDFTab& operator=(RendererSDFTab const&) = delete;
-		RendererSDFTab& operator=(RendererSDFTab&&) noexcept;
-		~RendererSDFTab() noexcept override;
+    class RendererSDFTab final : public Tab {
+    public:
+        RendererSDFTab(TabHost*);
+        RendererSDFTab(RendererSDFTab const&) = delete;
+        RendererSDFTab(RendererSDFTab&&) noexcept;
+        RendererSDFTab& operator=(RendererSDFTab const&) = delete;
+        RendererSDFTab& operator=(RendererSDFTab&&) noexcept;
+        ~RendererSDFTab() noexcept override;
 
-	private:
-		UID implGetID() const override;
-		CStringView implGetName() const override;
-		TabHost* implParent() const override;
-		void implOnMount() override;
-		void implOnUnmount() override;
-		bool implOnEvent(SDL_Event const&) override;
-		void implOnTick() override;
-		void implOnDrawMainMenu() override;
-		void implOnDraw() override;
+    private:
+        UID implGetID() const override;
+        CStringView implGetName() const override;
+        TabHost* implParent() const override;
+        void implOnMount() override;
+        void implOnUnmount() override;
+        bool implOnEvent(SDL_Event const&) override;
+        void implOnTick() override;
+        void implOnDrawMainMenu() override;
+        void implOnDraw() override;
 
-		class Impl;
-		Impl* m_Impl;
-	};
+        class Impl;
+        Impl* m_Impl;
+    };
 }

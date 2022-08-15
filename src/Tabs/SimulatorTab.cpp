@@ -107,42 +107,42 @@ static bool IsAnyOutputExportableToCSV(osc::MainUIStateAPI& api)
 
 class osc::SimulatorTab::Impl final : public SimulatorUIAPI {
 public:
-	Impl(MainUIStateAPI* api, std::shared_ptr<Simulation> simulation) :
+    Impl(MainUIStateAPI* api, std::shared_ptr<Simulation> simulation) :
         m_API{std::move(api)},
         m_Simulation{std::move(simulation)}
-	{
-	}
+    {
+    }
 
     // tab API
 
-	UID getID() const
-	{
-		return m_ID;
-	}
+    UID getID() const
+    {
+        return m_ID;
+    }
 
-	CStringView getName() const
-	{
-		return m_Name;
-	}
+    CStringView getName() const
+    {
+        return m_Name;
+    }
 
-	TabHost* parent()
-	{
+    TabHost* parent()
+    {
         return m_API;
-	}
+    }
 
-	void onMount()
-	{
+    void onMount()
+    {
         ImPlot::CreateContext();
         App::upd().makeMainEventLoopWaiting();
-	}
+    }
 
-	void onUnmount()
-	{
+    void onUnmount()
+    {
         App::upd().makeMainEventLoopPolling();
         ImPlot::DestroyContext();
-	}
+    }
 
-	bool onEvent(SDL_Event const& e)
+    bool onEvent(SDL_Event const& e)
     {
         if (m_SimulationScrubber.onEvent(e))
         {
@@ -152,25 +152,25 @@ public:
         {
             return false;
         }
-	}
+    }
 
-	void onTick()
-	{
+    void onTick()
+    {
         m_SimulationScrubber.onTick();
-	}
+    }
 
-	void onDrawMainMenu()
-	{
+    void onDrawMainMenu()
+    {
         m_MainMenuFileTab.draw(m_API);
         drawMainMenuWindowTab();
         m_MainMenuAboutTab.draw();
-	}
+    }
 
-	void onDraw()
-	{
+    void onDraw()
+    {
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
         drawContent();
-	}
+    }
 
     // simulator UI API
 
@@ -722,7 +722,7 @@ private:
         return maybeReport;
     }
 
-	UID m_ID;
+    UID m_ID;
     std::string m_Name = ICON_FA_PLAY " Simulation_" + std::to_string(g_SimulationNumber++);
     MainUIStateAPI* m_API;
     std::shared_ptr<Simulation> m_Simulation;
@@ -747,67 +747,67 @@ private:
 // public API
 
 osc::SimulatorTab::SimulatorTab(MainUIStateAPI* api, std::shared_ptr<Simulation> simulation) :
-	m_Impl{new Impl{std::move(api), std::move(simulation)}}
+    m_Impl{new Impl{std::move(api), std::move(simulation)}}
 {
 }
 
 osc::SimulatorTab::SimulatorTab(SimulatorTab&& tmp) noexcept :
-	m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
 }
 
 osc::SimulatorTab& osc::SimulatorTab::operator=(SimulatorTab&& tmp) noexcept
 {
-	std::swap(m_Impl, tmp.m_Impl);
-	return *this;
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
 }
 
 osc::SimulatorTab::~SimulatorTab() noexcept
 {
-	delete m_Impl;
+    delete m_Impl;
 }
 
 osc::UID osc::SimulatorTab::implGetID() const
 {
-	return m_Impl->getID();
+    return m_Impl->getID();
 }
 
 osc::CStringView osc::SimulatorTab::implGetName() const
 {
-	return m_Impl->getName();
+    return m_Impl->getName();
 }
 
 osc::TabHost* osc::SimulatorTab::implParent() const
 {
-	return m_Impl->parent();
+    return m_Impl->parent();
 }
 
 void osc::SimulatorTab::implOnMount()
 {
-	m_Impl->onMount();
+    m_Impl->onMount();
 }
 
 void osc::SimulatorTab::implOnUnmount()
 {
-	m_Impl->onUnmount();
+    m_Impl->onUnmount();
 }
 
 bool osc::SimulatorTab::implOnEvent(SDL_Event const& e)
 {
-	return m_Impl->onEvent(e);
+    return m_Impl->onEvent(e);
 }
 
 void osc::SimulatorTab::implOnTick()
 {
-	m_Impl->onTick();
+    m_Impl->onTick();
 }
 
 void osc::SimulatorTab::implOnDrawMainMenu()
 {
-	m_Impl->onDrawMainMenu();
+    m_Impl->onDrawMainMenu();
 }
 
 void osc::SimulatorTab::implOnDraw()
 {
-	m_Impl->onDraw();
+    m_Impl->onDraw();
 }

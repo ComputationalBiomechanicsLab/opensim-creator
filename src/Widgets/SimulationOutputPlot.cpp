@@ -220,35 +220,35 @@ static std::filesystem::path TryExportOutputsToCSV(osc::VirtualSimulation& sim, 
 
 class osc::SimulationOutputPlot::Impl final {
 public:
-	Impl(SimulatorUIAPI* api, OutputExtractor outputExtractor, float height) :
-		m_API{std::move(api)},
-		m_OutputExtractor{std::move(outputExtractor)},
-		m_Height{std::move(height)}
-	{
-	}
+    Impl(SimulatorUIAPI* api, OutputExtractor outputExtractor, float height) :
+        m_API{std::move(api)},
+        m_OutputExtractor{std::move(outputExtractor)},
+        m_Height{std::move(height)}
+    {
+    }
 
-	void draw()
-	{
-		m_FrameCountOnLastDrawcall = osc::App::get().getFrameCount();
+    void draw()
+    {
+        m_FrameCountOnLastDrawcall = osc::App::get().getFrameCount();
 
-		VirtualSimulation& sim = m_API->updSimulation();
+        VirtualSimulation& sim = m_API->updSimulation();
 
-		int nReports = sim.getNumReports();
-		osc::OutputType outputType = m_OutputExtractor.getOutputType();
+        int nReports = sim.getNumReports();
+        osc::OutputType outputType = m_OutputExtractor.getOutputType();
 
-		if (nReports <= 0)
-		{
-			ImGui::Text("no data (yet)");
-		}
-		else if (outputType == osc::OutputType::Float)
-		{
-			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-			drawFloatOutputPlot(sim);
-		}
-		else if (outputType == osc::OutputType::String)
-		{
-			osc::SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
-			ImGui::TextUnformatted(m_OutputExtractor.getValueString(*sim.getModel(), r).c_str());
+        if (nReports <= 0)
+        {
+            ImGui::Text("no data (yet)");
+        }
+        else if (outputType == osc::OutputType::Float)
+        {
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+            drawFloatOutputPlot(sim);
+        }
+        else if (outputType == osc::OutputType::String)
+        {
+            osc::SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
+            ImGui::TextUnformatted(m_OutputExtractor.getValueString(*sim.getModel(), r).c_str());
 
             // draw context menu (if user right clicks)
             if (ImGui::BeginPopupContextItem("plotcontextmenu"))
@@ -256,16 +256,16 @@ public:
                 DrawToggleWatchOutputMenuItem(*m_API, m_OutputExtractor);
                 ImGui::EndPopup();
             }
-		}
-		else
-		{
-			ImGui::Text("unknown output type");
-		}
-	}
+        }
+        else
+        {
+            ImGui::Text("unknown output type");
+        }
+    }
 
 private:
-	void drawFloatOutputPlot(VirtualSimulation& sim)
-	{
+    void drawFloatOutputPlot(VirtualSimulation& sim)
+    {
         OSC_ASSERT(m_OutputExtractor.getOutputType() == osc::OutputType::Float);
 
         ImU32 const currentTimeLineColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 0.0f, 0.6f});
@@ -381,41 +381,41 @@ private:
                 m_API->setSimulationScrubTime(timeLoc);
             }
         }
-	}
+    }
 
-	SimulatorUIAPI* m_API;
-	OutputExtractor m_OutputExtractor;
-	float m_Height;
-	std::uint64_t m_FrameCountOnLastDrawcall = 0;
+    SimulatorUIAPI* m_API;
+    OutputExtractor m_OutputExtractor;
+    float m_Height;
+    std::uint64_t m_FrameCountOnLastDrawcall = 0;
 };
 
 
 // public API
 
 osc::SimulationOutputPlot::SimulationOutputPlot(SimulatorUIAPI* api, OutputExtractor outputExtractor, float height) :
-	m_Impl{new Impl{std::move(api), std::move(outputExtractor), std::move(height)}}
+    m_Impl{new Impl{std::move(api), std::move(outputExtractor), std::move(height)}}
 {
 }
 
 osc::SimulationOutputPlot::SimulationOutputPlot(SimulationOutputPlot&& tmp) noexcept :
-	m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
 }
 
 osc::SimulationOutputPlot& osc::SimulationOutputPlot::operator=(SimulationOutputPlot && tmp) noexcept
 {
-	std::swap(m_Impl, tmp.m_Impl);
-	return *this;
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
 }
 
 osc::SimulationOutputPlot::~SimulationOutputPlot() noexcept
 {
-	delete m_Impl;
+    delete m_Impl;
 }
 
 void osc::SimulationOutputPlot::draw()
 {
-	m_Impl->draw();
+    m_Impl->draw();
 }
 
 std::filesystem::path osc::TryPromptAndSaveOutputsAsCSV(SimulatorUIAPI& api, nonstd::span<OutputExtractor const> outputs)

@@ -8,32 +8,32 @@
 
 namespace osc
 {
-	class TabHost;
+    class TabHost;
 }
 
 namespace osc
 {
-	class ImGuizmoDemoTab final : public Tab {
-	public:
-		ImGuizmoDemoTab(TabHost*);
-		ImGuizmoDemoTab(ImGuizmoDemoTab const&) = delete;
-		ImGuizmoDemoTab(ImGuizmoDemoTab&&) noexcept;
-		ImGuizmoDemoTab& operator=(ImGuizmoDemoTab const&) = delete;
-		ImGuizmoDemoTab& operator=(ImGuizmoDemoTab&&) noexcept;
-		~ImGuizmoDemoTab() noexcept override;
+    class ImGuizmoDemoTab final : public Tab {
+    public:
+        ImGuizmoDemoTab(TabHost*);
+        ImGuizmoDemoTab(ImGuizmoDemoTab const&) = delete;
+        ImGuizmoDemoTab(ImGuizmoDemoTab&&) noexcept;
+        ImGuizmoDemoTab& operator=(ImGuizmoDemoTab const&) = delete;
+        ImGuizmoDemoTab& operator=(ImGuizmoDemoTab&&) noexcept;
+        ~ImGuizmoDemoTab() noexcept override;
 
-	private:
-		UID implGetID() const override;
-		CStringView implGetName() const override;
-		TabHost* implParent() const override;
-		void implOnMount() override;
-		void implOnUnmount() override;
-		bool implOnEvent(SDL_Event const&) override;
-		void implOnTick() override;
-		void implOnDrawMainMenu() override;
-		void implOnDraw() override;
+    private:
+        UID implGetID() const override;
+        CStringView implGetName() const override;
+        TabHost* implParent() const override;
+        void implOnMount() override;
+        void implOnUnmount() override;
+        bool implOnEvent(SDL_Event const&) override;
+        void implOnTick() override;
+        void implOnDrawMainMenu() override;
+        void implOnDraw() override;
 
-		class Impl;
-		Impl* m_Impl;
-	};
+        class Impl;
+        Impl* m_Impl;
+    };
 }

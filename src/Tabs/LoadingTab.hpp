@@ -10,33 +10,33 @@
 
 namespace osc
 {
-	class MainUIStateAPI;
+    class MainUIStateAPI;
     class TabHost;
 }
 
 namespace osc
 {
-	class LoadingTab final : public Tab {
-	public:
-		LoadingTab(MainUIStateAPI*, std::filesystem::path);
-		LoadingTab(LoadingTab const&) = delete;
-		LoadingTab(LoadingTab&&) noexcept;
-		LoadingTab& operator=(LoadingTab const&) = delete;
-		LoadingTab& operator=(LoadingTab&&) noexcept;
-		~LoadingTab() noexcept override;
+    class LoadingTab final : public Tab {
+    public:
+        LoadingTab(MainUIStateAPI*, std::filesystem::path);
+        LoadingTab(LoadingTab const&) = delete;
+        LoadingTab(LoadingTab&&) noexcept;
+        LoadingTab& operator=(LoadingTab const&) = delete;
+        LoadingTab& operator=(LoadingTab&&) noexcept;
+        ~LoadingTab() noexcept override;
 
-	private:
-		UID implGetID() const override;
-		CStringView implGetName() const override;
-		TabHost* implParent() const override;
-		void implOnMount() override;
-		void implOnUnmount() override;
-		bool implOnEvent(SDL_Event const&) override;
-		void implOnTick() override;
-		void implOnDrawMainMenu() override;
-		void implOnDraw() override;
+    private:
+        UID implGetID() const override;
+        CStringView implGetName() const override;
+        TabHost* implParent() const override;
+        void implOnMount() override;
+        void implOnUnmount() override;
+        bool implOnEvent(SDL_Event const&) override;
+        void implOnTick() override;
+        void implOnDrawMainMenu() override;
+        void implOnDraw() override;
 
-		class Impl;
-		Impl* m_Impl;
-	};
+        class Impl;
+        Impl* m_Impl;
+    };
 }

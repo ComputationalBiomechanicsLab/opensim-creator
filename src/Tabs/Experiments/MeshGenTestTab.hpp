@@ -8,32 +8,32 @@
 
 namespace osc
 {
-	class TabHost;
+    class TabHost;
 }
 
 namespace osc
 {
-	class MeshGenTestTab final : public Tab {
-	public:
-		MeshGenTestTab(TabHost*);
-		MeshGenTestTab(MeshGenTestTab const&) = delete;
-		MeshGenTestTab(MeshGenTestTab&&) noexcept;
-		MeshGenTestTab& operator=(MeshGenTestTab const&) = delete;
-		MeshGenTestTab& operator=(MeshGenTestTab&&) noexcept;
-		~MeshGenTestTab() noexcept override;
+    class MeshGenTestTab final : public Tab {
+    public:
+        MeshGenTestTab(TabHost*);
+        MeshGenTestTab(MeshGenTestTab const&) = delete;
+        MeshGenTestTab(MeshGenTestTab&&) noexcept;
+        MeshGenTestTab& operator=(MeshGenTestTab const&) = delete;
+        MeshGenTestTab& operator=(MeshGenTestTab&&) noexcept;
+        ~MeshGenTestTab() noexcept override;
 
-	private:
-		UID implGetID() const override;
-		CStringView implGetName() const override;
-		TabHost* implParent() const override;
-		void implOnMount() override;
-		void implOnUnmount() override;
-		bool implOnEvent(SDL_Event const&) override;
-		void implOnTick() override;
-		void implOnDrawMainMenu() override;
-		void implOnDraw() override;
+    private:
+        UID implGetID() const override;
+        CStringView implGetName() const override;
+        TabHost* implParent() const override;
+        void implOnMount() override;
+        void implOnUnmount() override;
+        bool implOnEvent(SDL_Event const&) override;
+        void implOnTick() override;
+        void implOnDrawMainMenu() override;
+        void implOnDraw() override;
 
-		class Impl;
-		Impl* m_Impl;
-	};
+        class Impl;
+        Impl* m_Impl;
+    };
 }

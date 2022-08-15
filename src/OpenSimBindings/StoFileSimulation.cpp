@@ -38,23 +38,23 @@
 
 static std::vector<OpenSim::Coordinate*> GetLockedCoordinates(OpenSim::Model& m)
 {
-	std::vector<OpenSim::Coordinate*> rv;
-	for (OpenSim::Coordinate& c : m.updComponentList<OpenSim::Coordinate>())
-	{
-		if (c.getDefaultLocked())
-		{
+    std::vector<OpenSim::Coordinate*> rv;
+    for (OpenSim::Coordinate& c : m.updComponentList<OpenSim::Coordinate>())
+    {
+        if (c.getDefaultLocked())
+        {
             rv.push_back(&c);
-		}
-	}
-	return rv;
+        }
+    }
+    return rv;
 }
 
 static void SetCoordsDefaultLocked(nonstd::span<OpenSim::Coordinate*> cs, bool v)
 {
-	for (OpenSim::Coordinate* c : cs)
-	{
+    for (OpenSim::Coordinate* c : cs)
+    {
         c->setDefaultLocked(v);
-	}
+    }
 }
 
 template<typename T>
@@ -77,7 +77,7 @@ static int NumUniqueEntriesIn(OpenSim::Array<T> const& v)
 template<typename T>
 static bool AllElementsUnique(OpenSim::Array<T> const& v)
 {
-	return NumUniqueEntriesIn(v) == v.size();
+    return NumUniqueEntriesIn(v) == v.size();
 }
 
 static std::unordered_map<int, int> CreateStorageIndexToModelSvIndexLUT(OpenSim::Model const& model,
@@ -85,16 +85,16 @@ static std::unordered_map<int, int> CreateStorageIndexToModelSvIndexLUT(OpenSim:
 {
     std::unordered_map<int, int> rv;
 
-	if (storage.getColumnLabels().size() <= 1)
-	{
-		osc::log::warn("the provided STO file does not contain any state variable data");
-		return rv;
-	}
+    if (storage.getColumnLabels().size() <= 1)
+    {
+        osc::log::warn("the provided STO file does not contain any state variable data");
+        return rv;
+    }
 
-	if (!osc::IsEqualCaseInsensitive(storage.getColumnLabels()[0], "time"))
-	{
-		throw std::runtime_error{"the provided STO file does not contain a 'time' column as its first column: it cannot be processed"};
-	}
+    if (!osc::IsEqualCaseInsensitive(storage.getColumnLabels()[0], "time"))
+    {
+        throw std::runtime_error{"the provided STO file does not contain a 'time' column as its first column: it cannot be processed"};
+    }
 
     // care: the storage column labels do not match the state variable names
     // in the model 1:1
@@ -108,7 +108,7 @@ static std::unordered_map<int, int> CreateStorageIndexToModelSvIndexLUT(OpenSim:
 
     if (!AllElementsUnique(storageColumnsIncludingTime))
     {
-		throw std::runtime_error{"the provided STO file contains multiple columns with the same name. This creates ambiguities, which OSC can't handle"};
+        throw std::runtime_error{"the provided STO file contains multiple columns with the same name. This creates ambiguities, which OSC can't handle"};
     }
 
     // compute mapping
@@ -117,7 +117,7 @@ static std::unordered_map<int, int> CreateStorageIndexToModelSvIndexLUT(OpenSim:
     {
         std::string const& svName = modelStateVars[modelIndex];
         int storageIndex = OpenSim::TableUtilities::findStateLabelIndex(storageColumnsIncludingTime, svName);
-		int valueIndex = storageIndex - 1;  // the column labels include 'time', which isn't in the data elements
+        int valueIndex = storageIndex - 1;  // the column labels include 'time', which isn't in the data elements
 
         if (valueIndex >= 0)
         {
@@ -141,258 +141,258 @@ static std::unordered_map<int, int> CreateStorageIndexToModelSvIndexLUT(OpenSim:
             delim = ", ";
         }
         osc::log::warn("%s", std::move(ss).str().c_str());
-		osc::log::warn("The STO file was loaded successfully, but beware: the missing state variables have been defaulted in order for this to work");
-		osc::log::warn("Therefore, do not treat the motion you are seeing as a 'true' representation of something: some state data was 'made up' to make the motion viewable");
+        osc::log::warn("The STO file was loaded successfully, but beware: the missing state variables have been defaulted in order for this to work");
+        osc::log::warn("Therefore, do not treat the motion you are seeing as a 'true' representation of something: some state data was 'made up' to make the motion viewable");
     }
 
     // else: all model state variables are accounted for
 
-	return rv;
+    return rv;
 }
 
 static std::vector<osc::SimulationReport> ExtractReports(
-	OpenSim::Model& model,
-	std::filesystem::path stoFilePath)
+    OpenSim::Model& model,
+    std::filesystem::path stoFilePath)
 {
-	OpenSim::Storage storage{stoFilePath.string()};
+    OpenSim::Storage storage{stoFilePath.string()};
 
-	if (storage.isInDegrees())
-	{
-		model.getSimbodyEngine().convertDegreesToRadians(storage);
-	}
+    if (storage.isInDegrees())
+    {
+        model.getSimbodyEngine().convertDegreesToRadians(storage);
+    }
 
-	// TODO: some files can contain thousands of micro-sampled states from OpenSim-GUI
-	//
-	// the fix for this is to implement a faster way of holding sequences of model states
+    // TODO: some files can contain thousands of micro-sampled states from OpenSim-GUI
+    //
+    // the fix for this is to implement a faster way of holding sequences of model states
     storage.resampleLinear(1.0/100.0);
 
     std::unordered_map<int, int> lut =
-		CreateStorageIndexToModelSvIndexLUT(model, storage);
+        CreateStorageIndexToModelSvIndexLUT(model, storage);
 
-	// temporarily unlock coords
-	std::vector<OpenSim::Coordinate*> lockedCoords = GetLockedCoordinates(model);
+    // temporarily unlock coords
+    std::vector<OpenSim::Coordinate*> lockedCoords = GetLockedCoordinates(model);
     SetCoordsDefaultLocked(lockedCoords, false);
     OSC_SCOPE_GUARD({ SetCoordsDefaultLocked(lockedCoords, true); });
 
-	osc::InitializeModel(model);
-	osc::InitializeState(model);
+    osc::InitializeModel(model);
+    osc::InitializeState(model);
 
-	std::vector<osc::SimulationReport> rv;
-	rv.reserve(storage.getSize());
+    std::vector<osc::SimulationReport> rv;
+    rv.reserve(storage.getSize());
 
-	for (int row = 0; row < storage.getSize(); ++row)
-	{
-		OpenSim::StateVector* sv = storage.getStateVector(row);
-		OpenSim::Array<double> const& cols = sv->getData();
+    for (int row = 0; row < storage.getSize(); ++row)
+    {
+        OpenSim::StateVector* sv = storage.getStateVector(row);
+        OpenSim::Array<double> const& cols = sv->getData();
 
         SimTK::Vector stateValsBuf = model.getStateVariableValues(model.getWorkingState());
         for (auto [valueIdx, modelIdx] : lut)
         {
-			if (0 <= valueIdx && valueIdx < cols.size() && 0 <= modelIdx && modelIdx < stateValsBuf.size())
-			{
-				stateValsBuf[modelIdx] = cols[valueIdx];
-			}
-			else
-			{
-				throw std::runtime_error{"an index in the stroage lookup was invalid: this is probably a developer error that needs to be investigated (report it)"};
-			}
+            if (0 <= valueIdx && valueIdx < cols.size() && 0 <= modelIdx && modelIdx < stateValsBuf.size())
+            {
+                stateValsBuf[modelIdx] = cols[valueIdx];
+            }
+            else
+            {
+                throw std::runtime_error{"an index in the stroage lookup was invalid: this is probably a developer error that needs to be investigated (report it)"};
+            }
         }
 
-		osc::SimulationReport& report = rv.emplace_back(SimTK::State{model.getWorkingState()});
-		SimTK::State& st = report.updStateHACK();
+        osc::SimulationReport& report = rv.emplace_back(SimTK::State{model.getWorkingState()});
+        SimTK::State& st = report.updStateHACK();
         st.setTime(sv->getTime());
-		model.setStateVariableValues(st, stateValsBuf);
-		model.realizeReport(st);
-	}
+        model.setStateVariableValues(st, stateValsBuf);
+        model.realizeReport(st);
+    }
 
-	return rv;
+    return rv;
 }
 
 class osc::StoFileSimulation::Impl final {
 public:
-	Impl(std::unique_ptr<OpenSim::Model> model, std::filesystem::path stoFilePath, float fixupScaleFactor) :
-		m_Model{std::move(model)},
-		m_SimulationReports{ExtractReports(*m_Model, stoFilePath)},
-		m_FixupScaleFactor{std::move(fixupScaleFactor)}
-	{
-	}
+    Impl(std::unique_ptr<OpenSim::Model> model, std::filesystem::path stoFilePath, float fixupScaleFactor) :
+        m_Model{std::move(model)},
+        m_SimulationReports{ExtractReports(*m_Model, stoFilePath)},
+        m_FixupScaleFactor{std::move(fixupScaleFactor)}
+    {
+    }
 
     SynchronizedValueGuard<OpenSim::Model const> getModel() const
-	{
+    {
         return {m_ModelMutex, *m_Model};
-	}
+    }
 
-	int getNumReports() const
-	{
-		return static_cast<int>(m_SimulationReports.size());
-	}
+    int getNumReports() const
+    {
+        return static_cast<int>(m_SimulationReports.size());
+    }
 
-	SimulationReport getSimulationReport(int reportIndex) const
-	{
-		return m_SimulationReports.at(reportIndex);
-	}
+    SimulationReport getSimulationReport(int reportIndex) const
+    {
+        return m_SimulationReports.at(reportIndex);
+    }
 
-	std::vector<SimulationReport> getAllSimulationReports() const
-	{
-		return m_SimulationReports;
-	}
+    std::vector<SimulationReport> getAllSimulationReports() const
+    {
+        return m_SimulationReports;
+    }
 
-	SimulationStatus getStatus() const
-	{
-		return SimulationStatus::Completed;
-	}
+    SimulationStatus getStatus() const
+    {
+        return SimulationStatus::Completed;
+    }
 
-	SimulationClock::time_point getCurTime() const
-	{
-		return m_End;
-	}
+    SimulationClock::time_point getCurTime() const
+    {
+        return m_End;
+    }
 
-	SimulationClock::time_point getStartTime() const
-	{
-		return m_Start;
-	}
+    SimulationClock::time_point getStartTime() const
+    {
+        return m_Start;
+    }
 
-	SimulationClock::time_point getEndTime() const
-	{
-		return m_End;
-	}
+    SimulationClock::time_point getEndTime() const
+    {
+        return m_End;
+    }
 
-	float getProgress() const
-	{
-		return 1.0f;
-	}
+    float getProgress() const
+    {
+        return 1.0f;
+    }
 
-	ParamBlock const& getParams() const
-	{
-		return m_ParamBlock;
-	}
+    ParamBlock const& getParams() const
+    {
+        return m_ParamBlock;
+    }
 
     nonstd::span<OutputExtractor const> getOutputExtractors() const
-	{
-		return {};
-	}
+    {
+        return {};
+    }
 
-	void requestStop()
-	{
-		// N/A: it's never a "live" sim
-	}
+    void requestStop()
+    {
+        // N/A: it's never a "live" sim
+    }
 
-	void stop()
-	{
-		// N/A: it's never a "live" sim
-	}
+    void stop()
+    {
+        // N/A: it's never a "live" sim
+    }
 
-	float getFixupScaleFactor() const
-	{
-		return m_FixupScaleFactor;
-	}
+    float getFixupScaleFactor() const
+    {
+        return m_FixupScaleFactor;
+    }
 
-	void setFixupScaleFactor(float v)
-	{
-		m_FixupScaleFactor = std::move(v);
-	}
+    void setFixupScaleFactor(float v)
+    {
+        m_FixupScaleFactor = std::move(v);
+    }
 
 private:
     mutable std::mutex m_ModelMutex;
     std::unique_ptr<OpenSim::Model> m_Model;
-	std::vector<SimulationReport> m_SimulationReports;
-	SimulationClock::time_point m_Start = m_SimulationReports.empty() ? SimulationClock::start() : m_SimulationReports.front().getTime();
-	SimulationClock::time_point m_End = m_SimulationReports.empty() ? SimulationClock::start() : m_SimulationReports.back().getTime();
-	ParamBlock m_ParamBlock;
-	float m_FixupScaleFactor = 1.0f;
+    std::vector<SimulationReport> m_SimulationReports;
+    SimulationClock::time_point m_Start = m_SimulationReports.empty() ? SimulationClock::start() : m_SimulationReports.front().getTime();
+    SimulationClock::time_point m_End = m_SimulationReports.empty() ? SimulationClock::start() : m_SimulationReports.back().getTime();
+    ParamBlock m_ParamBlock;
+    float m_FixupScaleFactor = 1.0f;
 };
 
 osc::StoFileSimulation::StoFileSimulation(std::unique_ptr<OpenSim::Model> model, std::filesystem::path stoFilePath, float fixupScaleFactor) :
-	m_Impl{new Impl{std::move(model), std::move(stoFilePath), std::move(fixupScaleFactor)}}
+    m_Impl{new Impl{std::move(model), std::move(stoFilePath), std::move(fixupScaleFactor)}}
 {
 }
 
 osc::StoFileSimulation::StoFileSimulation(StoFileSimulation&& tmp) noexcept :
-	m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
 }
 
 osc::StoFileSimulation& osc::StoFileSimulation::operator=(StoFileSimulation&& tmp) noexcept
 {
-	std::swap(m_Impl, tmp.m_Impl);
-	return *this;
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
 }
 
 osc::StoFileSimulation::~StoFileSimulation() noexcept
 {
-	delete m_Impl;
+    delete m_Impl;
 }
 
 osc::SynchronizedValueGuard<OpenSim::Model const> osc::StoFileSimulation::getModel() const
 {
-	return m_Impl->getModel();
+    return m_Impl->getModel();
 }
 
 int osc::StoFileSimulation::getNumReports() const
 {
-	return m_Impl->getNumReports();
+    return m_Impl->getNumReports();
 }
 
 osc::SimulationReport osc::StoFileSimulation::getSimulationReport(int reportIndex) const
 {
-	return m_Impl->getSimulationReport(std::move(reportIndex));
+    return m_Impl->getSimulationReport(std::move(reportIndex));
 }
 std::vector<osc::SimulationReport> osc::StoFileSimulation::getAllSimulationReports() const
 {
-	return m_Impl->getAllSimulationReports();
+    return m_Impl->getAllSimulationReports();
 }
 
 osc::SimulationStatus osc::StoFileSimulation::getStatus() const
 {
-	return m_Impl->getStatus();
+    return m_Impl->getStatus();
 }
 
 osc::SimulationClock::time_point osc::StoFileSimulation::getCurTime() const
 {
-	return m_Impl->getCurTime();
+    return m_Impl->getCurTime();
 }
 
 osc::SimulationClock::time_point osc::StoFileSimulation::getStartTime() const
 {
-	return m_Impl->getStartTime();
+    return m_Impl->getStartTime();
 }
 
 osc::SimulationClock::time_point osc::StoFileSimulation::getEndTime() const
 {
-	return m_Impl->getEndTime();
+    return m_Impl->getEndTime();
 }
 
 float osc::StoFileSimulation::getProgress() const
 {
-	return m_Impl->getProgress();
+    return m_Impl->getProgress();
 }
 
 osc::ParamBlock const& osc::StoFileSimulation::getParams() const
 {
-	return m_Impl->getParams();
+    return m_Impl->getParams();
 }
 
 nonstd::span<osc::OutputExtractor const> osc::StoFileSimulation::getOutputExtractors() const
 {
-	return m_Impl->getOutputExtractors();
+    return m_Impl->getOutputExtractors();
 }
 
 void osc::StoFileSimulation::requestStop()
 {
-	m_Impl->requestStop();
+    m_Impl->requestStop();
 }
 
 void osc::StoFileSimulation::stop()
 {
-	m_Impl->stop();
+    m_Impl->stop();
 }
 
 float osc::StoFileSimulation::getFixupScaleFactor() const
 {
-	return m_Impl->getFixupScaleFactor();
+    return m_Impl->getFixupScaleFactor();
 }
 
 void osc::StoFileSimulation::setFixupScaleFactor(float v)
 {
-	m_Impl->setFixupScaleFactor(std::move(v));
+    m_Impl->setFixupScaleFactor(std::move(v));
 }

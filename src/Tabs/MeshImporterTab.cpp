@@ -8287,29 +8287,29 @@ private:
 // public API
 
 osc::MeshImporterTab::MeshImporterTab(MainUIStateAPI* parent) :
-	m_Impl{new Impl{std::move(parent)}}
+    m_Impl{new Impl{std::move(parent)}}
 {
 }
 
 osc::MeshImporterTab::MeshImporterTab(MainUIStateAPI* parent, std::vector<std::filesystem::path> files) :
-	m_Impl{new Impl{std::move(parent), std::move(files)}}
+    m_Impl{new Impl{std::move(parent), std::move(files)}}
 {
 }
 
 osc::MeshImporterTab::MeshImporterTab(MeshImporterTab&& tmp) noexcept :
-	m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
 }
 
 osc::MeshImporterTab& osc::MeshImporterTab::operator=(MeshImporterTab&& tmp) noexcept
 {
-	std::swap(m_Impl, tmp.m_Impl);
-	return *this;
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
 }
 
 osc::MeshImporterTab::~MeshImporterTab() noexcept
 {
-	delete m_Impl;
+    delete m_Impl;
 }
 
 osc::UID osc::MeshImporterTab::implGetID() const

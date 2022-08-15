@@ -62,26 +62,26 @@ static std::array<std::string, 7> const g_EditorScreenPanels =
 
 class osc::ModelEditorTab::Impl final {
 public:
-	Impl(MainUIStateAPI* parent, std::unique_ptr<UndoableModelStatePair> model) :
-		m_Parent{std::move(parent)},
-		m_Model{std::move(model)}
-	{
-	}
+    Impl(MainUIStateAPI* parent, std::unique_ptr<UndoableModelStatePair> model) :
+        m_Parent{std::move(parent)},
+        m_Model{std::move(model)}
+    {
+    }
 
-	UID getID() const
-	{
-		return m_ID;
-	}
+    UID getID() const
+    {
+        return m_ID;
+    }
 
-	CStringView getName() const
-	{
-		return m_Name;
-	}
+    CStringView getName() const
+    {
+        return m_Name;
+    }
 
-	TabHost* parent()
-	{
-		return m_Parent;
-	}
+    TabHost* parent()
+    {
+        return m_Parent;
+    }
 
     bool isUnsaved() const
     {
@@ -93,21 +93,21 @@ public:
         return ActionSaveModel(m_Parent, *m_Model);
     }
 
-	void onMount()
-	{
+    void onMount()
+    {
         App::upd().makeMainEventLoopWaiting();
         m_Name = computeTabName();
         ImPlot::CreateContext();
-	}
+    }
 
-	void onUnmount()
-	{
+    void onUnmount()
+    {
         ImPlot::DestroyContext();
         App::upd().makeMainEventLoopPolling();
-	}
+    }
 
-	bool onEvent(SDL_Event const& e)
-	{
+    bool onEvent(SDL_Event const& e)
+    {
         if (e.type == SDL_KEYDOWN)
         {
             return onKeydown(e.key);
@@ -120,20 +120,20 @@ public:
         {
             return false;
         }
-	}
+    }
 
-	void onTick()
-	{
+    void onTick()
+    {
         if (m_FileChangePoller.changeWasDetected(m_Model->getModel().getInputFileName()))
         {
             osc::ActionUpdateModelFromBackingFile(*m_Model);
         }
 
         m_Name = computeTabName();
-	}
+    }
 
-	void onDrawMainMenu()
-	{
+    void onDrawMainMenu()
+    {
         m_MainMenuFileTab.draw(m_Parent, m_Model.get());
         drawMainMenuEditTab();
         drawMainMenuSimulateTab();
@@ -153,10 +153,10 @@ public:
         {
             m_ParamBlockEditorPopup.open();
         }
-	}
+    }
 
-	void onDraw()
-	{
+    void onDraw()
+    {
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         try
@@ -194,7 +194,7 @@ public:
 
             m_Parent->resetImgui();
         }
-	}
+    }
 
 private:
 
@@ -716,73 +716,73 @@ private:
         m_ModelActionsMenuBar.drawAnyOpenPopups();
     }
 
-	UID m_ID;
-	std::string m_Name = "ModelEditorTab";
-	MainUIStateAPI* m_Parent;
+    UID m_ID;
+    std::string m_Name = "ModelEditorTab";
+    MainUIStateAPI* m_Parent;
     std::shared_ptr<UndoableModelStatePair> m_Model;
 
-	// polls changes to a file
-	FileChangePoller m_FileChangePoller{std::chrono::milliseconds{1000}, m_Model->getModel().getInputFileName()};
+    // polls changes to a file
+    FileChangePoller m_FileChangePoller{std::chrono::milliseconds{1000}, m_Model->getModel().getInputFileName()};
 
-	// UI widgets/popups
-	MainMenuFileTab m_MainMenuFileTab;
-	MainMenuAboutTab m_MainMenuAboutTab;
-	LogViewer m_LogViewer;
-	ModelHierarchyPanel m_ComponentHierarchyPanel{"Hierarchy"};
-	ModelActionsMenuItems m_ModelActionsMenuBar{m_Model};
-	ModelActionsMenuItems m_ContextMenuActionsMenuBar{m_Model};
-	CoordinateEditor m_CoordEditor{m_Model};
+    // UI widgets/popups
+    MainMenuFileTab m_MainMenuFileTab;
+    MainMenuAboutTab m_MainMenuAboutTab;
+    LogViewer m_LogViewer;
+    ModelHierarchyPanel m_ComponentHierarchyPanel{"Hierarchy"};
+    ModelActionsMenuItems m_ModelActionsMenuBar{m_Model};
+    ModelActionsMenuItems m_ContextMenuActionsMenuBar{m_Model};
+    CoordinateEditor m_CoordEditor{m_Model};
     PerfPanel m_PerfPanel{"Performance"};
     OutputWatchesPanel m_OutputWatchesPanel{"Output Watches", m_Model, m_Parent};
     SelectionEditorPanel m_SelectionEditor{m_Model};
-	ParamBlockEditorPopup m_ParamBlockEditorPopup{"simulation parameters"};
+    ParamBlockEditorPopup m_ParamBlockEditorPopup{"simulation parameters"};
     int m_LatestMusclePlot = 1;
     std::vector<ModelMusclePlotPanel> m_ModelMusclePlots;
 
     std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
 
-	// flag that's set+reset each frame to prevent continual
-	// throwing
-	bool m_ExceptionThrownLastFrame = false;
+    // flag that's set+reset each frame to prevent continual
+    // throwing
+    bool m_ExceptionThrownLastFrame = false;
 };
 
 
 // public API
 
 osc::ModelEditorTab::ModelEditorTab(MainUIStateAPI* parent,  std::unique_ptr<UndoableModelStatePair> model) :
-	m_Impl{new Impl{std::move(parent), std::move(model)}}
+    m_Impl{new Impl{std::move(parent), std::move(model)}}
 {
 }
 
 osc::ModelEditorTab::ModelEditorTab(ModelEditorTab&& tmp) noexcept :
-	m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
 }
 
 osc::ModelEditorTab& osc::ModelEditorTab::operator=(ModelEditorTab&& tmp) noexcept
 {
-	std::swap(m_Impl, tmp.m_Impl);
-	return *this;
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
 }
 
 osc::ModelEditorTab::~ModelEditorTab() noexcept
 {
-	delete m_Impl;
+    delete m_Impl;
 }
 
 osc::UID osc::ModelEditorTab::implGetID() const
 {
-	return m_Impl->getID();
+    return m_Impl->getID();
 }
 
 osc::CStringView osc::ModelEditorTab::implGetName() const
 {
-	return m_Impl->getName();
+    return m_Impl->getName();
 }
 
 osc::TabHost* osc::ModelEditorTab::implParent() const
 {
-	return m_Impl->parent();
+    return m_Impl->parent();
 }
 
 bool osc::ModelEditorTab::implIsUnsaved() const
@@ -797,30 +797,30 @@ bool osc::ModelEditorTab::implTrySave()
 
 void osc::ModelEditorTab::implOnMount()
 {
-	m_Impl->onMount();
+    m_Impl->onMount();
 }
 
 void osc::ModelEditorTab::implOnUnmount()
 {
-	m_Impl->onUnmount();
+    m_Impl->onUnmount();
 }
 
 bool osc::ModelEditorTab::implOnEvent(SDL_Event const& e)
 {
-	return m_Impl->onEvent(e);
+    return m_Impl->onEvent(e);
 }
 
 void osc::ModelEditorTab::implOnTick()
 {
-	m_Impl->onTick();
+    m_Impl->onTick();
 }
 
 void osc::ModelEditorTab::implOnDrawMainMenu()
 {
-	m_Impl->onDrawMainMenu();
+    m_Impl->onDrawMainMenu();
 }
 
 void osc::ModelEditorTab::implOnDraw()
 {
-	m_Impl->onDraw();
+    m_Impl->onDraw();
 }

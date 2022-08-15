@@ -128,6 +128,8 @@ All notable changes to this project will be documented here. The format is based
 
 - Disabled being able to (unsucessfully) scrub a muscle output plot if the coordinate is locked (#346)
 
+- Replaced all tabs with spaces in the source code (#357)
+
 
 ## [0.2.0] - 2022/07/04
 

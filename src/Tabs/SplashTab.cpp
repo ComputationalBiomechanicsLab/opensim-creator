@@ -60,12 +60,12 @@ static osc::SceneRendererParams GetSplashScreenDefaultRenderParams(osc::PolarPer
 
 class osc::SplashTab::Impl final {
 public:
-	Impl(MainUIStateAPI* parent) : m_Parent{std::move(parent)}
-	{
+    Impl(MainUIStateAPI* parent) : m_Parent{std::move(parent)}
+    {
         m_OscLogo.setFilterMode(osc::TextureFilterMode::Linear);
         m_CziLogo.setFilterMode(osc::TextureFilterMode::Linear);
         m_TudLogo.setFilterMode(osc::TextureFilterMode::Linear);
-	}
+    }
 
     UID getID() const
     {
@@ -82,39 +82,39 @@ public:
         return m_Parent;
     }
 
-	void onMount()
-	{
-		App::upd().makeMainEventLoopWaiting();
-	}
+    void onMount()
+    {
+        App::upd().makeMainEventLoopWaiting();
+    }
 
-	void onUnmount()
-	{
-		App::upd().makeMainEventLoopPolling();
-	}
+    void onUnmount()
+    {
+        App::upd().makeMainEventLoopPolling();
+    }
 
-	bool onEvent(SDL_Event const& e)
-	{
+    bool onEvent(SDL_Event const& e)
+    {
         if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".osim"))
-		{
+        {
             UID tabID = m_Parent->addTab<LoadingTab>(m_Parent, e.drop.file);
             m_Parent->selectTab(tabID);
             return true;
-		}
+        }
         return false;
-	}
+    }
 
-	void onTick()
-	{
-	}
+    void onTick()
+    {
+    }
 
-	void drawMainMenu()
-	{
+    void drawMainMenu()
+    {
         m_MainMenuFileTab.draw(m_Parent);
         m_MainMenuAboutTab.draw();
-	}
+    }
 
-	void onDraw()
-	{
+    void onDraw()
+    {
         if (Area(getTabScreenRect()) > 0.0f)
         {
             drawBackground();
@@ -124,7 +124,7 @@ public:
             drawCZLogo();
             drawVersionInfo();
         }
-	}
+    }
 
 private:
     Rect getTabScreenRect()
@@ -373,18 +373,18 @@ private:
     SceneRenderer m_SceneRenderer;
     SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);
 
-	// main app logo, blitted to top of the screen
-	Texture2D m_OscLogo = LoadTexture2DFromImageResource("logo.png", ImageFlags_FlipVertically);
+    // main app logo, blitted to top of the screen
+    Texture2D m_OscLogo = LoadTexture2DFromImageResource("logo.png", ImageFlags_FlipVertically);
 
-	// CZI attributation logo, blitted to bottom of screen
-	Texture2D m_CziLogo = LoadTexture2DFromImageResource("chanzuckerberg_logo.png", ImageFlags_FlipVertically);
+    // CZI attributation logo, blitted to bottom of screen
+    Texture2D m_CziLogo = LoadTexture2DFromImageResource("chanzuckerberg_logo.png", ImageFlags_FlipVertically);
 
-	// TUD attributation logo, blitted to bottom of screen
-	Texture2D m_TudLogo = LoadTexture2DFromImageResource("tud_logo.png", ImageFlags_FlipVertically);
+    // TUD attributation logo, blitted to bottom of screen
+    Texture2D m_TudLogo = LoadTexture2DFromImageResource("tud_logo.png", ImageFlags_FlipVertically);
 
-	// main menu (top bar) states
-	MainMenuFileTab m_MainMenuFileTab;
-	MainMenuAboutTab m_MainMenuAboutTab;
+    // main menu (top bar) states
+    MainMenuFileTab m_MainMenuFileTab;
+    MainMenuAboutTab m_MainMenuAboutTab;
 
     LogViewer m_LogViewer;
 };
@@ -393,24 +393,24 @@ private:
 // public API
 
 osc::SplashTab::SplashTab(MainUIStateAPI* parent) :
-	m_Impl{new Impl{std::move(parent)}}
+    m_Impl{new Impl{std::move(parent)}}
 {
 }
 
 osc::SplashTab::SplashTab(SplashTab&& tmp) noexcept :
-	m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
 }
 
 osc::SplashTab& osc::SplashTab::operator=(SplashTab&& tmp) noexcept
 {
-	std::swap(m_Impl, tmp.m_Impl);
-	return *this;
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
 }
 
 osc::SplashTab::~SplashTab() noexcept
 {
-	delete m_Impl;
+    delete m_Impl;
 }
 
 osc::UID osc::SplashTab::implGetID() const

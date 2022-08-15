@@ -10,32 +10,32 @@
 
 namespace osc
 {
-	class TabHost;
+    class TabHost;
 }
 
 namespace osc
 {
-	class ErrorTab final : public Tab {
-	public:
-		ErrorTab(TabHost*, std::exception const&);
-		ErrorTab(ErrorTab const&) = delete;
-		ErrorTab(ErrorTab&&) noexcept;
-		ErrorTab& operator=(ErrorTab const&) = delete;
-		ErrorTab& operator=(ErrorTab&&) noexcept;
-		~ErrorTab() noexcept override;
+    class ErrorTab final : public Tab {
+    public:
+        ErrorTab(TabHost*, std::exception const&);
+        ErrorTab(ErrorTab const&) = delete;
+        ErrorTab(ErrorTab&&) noexcept;
+        ErrorTab& operator=(ErrorTab const&) = delete;
+        ErrorTab& operator=(ErrorTab&&) noexcept;
+        ~ErrorTab() noexcept override;
 
-	private:
-		UID implGetID() const override;
-		CStringView implGetName() const override;
-		TabHost* implParent() const override;
-		void implOnMount() override;
-		void implOnUnmount() override;
-		bool implOnEvent(SDL_Event const&) override;
-		void implOnTick() override;
-		void implOnDrawMainMenu() override;
-		void implOnDraw() override;
+    private:
+        UID implGetID() const override;
+        CStringView implGetName() const override;
+        TabHost* implParent() const override;
+        void implOnMount() override;
+        void implOnUnmount() override;
+        bool implOnEvent(SDL_Event const&) override;
+        void implOnTick() override;
+        void implOnDrawMainMenu() override;
+        void implOnDraw() override;
 
-		class Impl;
-		Impl* m_Impl;
-	};
+        class Impl;
+        Impl* m_Impl;
+    };
 }

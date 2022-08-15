@@ -440,10 +440,10 @@ static void DrawSocketEditor(osc::ReassignSocketPopup& reassignSocketPopup, osc:
 
 class osc::SelectionEditorPanel::Impl final {
 public:
-	Impl(std::shared_ptr<UndoableModelStatePair> model) :
-		m_Model{std::move(model)}
-	{
-	}
+    Impl(std::shared_ptr<UndoableModelStatePair> model) :
+        m_Model{std::move(model)}
+    {
+    }
 
     void draw()
     {
@@ -579,14 +579,14 @@ private:
         }
     }
 
-	std::shared_ptr<UndoableModelStatePair> m_Model;
+    std::shared_ptr<UndoableModelStatePair> m_Model;
     SelectGeometryPopup m_AttachGeomPopup{"select geometry to add"};
     ReassignSocketPopup m_ReassignSocketPopup;
     ObjectPropertiesEditor m_ObjectPropsEditor;
 };
 
 osc::SelectionEditorPanel::SelectionEditorPanel(std::shared_ptr<UndoableModelStatePair> model) :
-	m_Impl{new Impl{std::move(model)}}
+    m_Impl{new Impl{std::move(model)}}
 {
 }
 osc::SelectionEditorPanel::SelectionEditorPanel(SelectionEditorPanel&&) noexcept = default;
@@ -595,5 +595,5 @@ osc::SelectionEditorPanel::~SelectionEditorPanel() noexcept = default;
 
 void osc::SelectionEditorPanel::draw()
 {
-	m_Impl->draw();
+    m_Impl->draw();
 }

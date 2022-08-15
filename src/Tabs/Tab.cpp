@@ -12,22 +12,22 @@
 
 osc::UID osc::Tab::getID() const
 {
-	return implGetID();
+    return implGetID();
 }
 
 osc::CStringView osc::Tab::getName() const
 {
-	return implGetName();
+    return implGetName();
 }
 
 osc::TabHost* osc::Tab::parent() const
 {
-	return implParent();
+    return implParent();
 }
 
 bool osc::Tab::isUnsaved() const
 {
-	return implIsUnsaved();
+    return implIsUnsaved();
 }
 
 bool osc::Tab::trySave()
@@ -37,30 +37,30 @@ bool osc::Tab::trySave()
 
 void osc::Tab::onMount()
 {
-	implOnMount();
+    implOnMount();
 }
 
 void osc::Tab::onUnmount()
 {
-	implOnUnmount();
+    implOnUnmount();
 }
 
 bool osc::Tab::onEvent(SDL_Event const& e)
 {
-	return implOnEvent(e);
+    return implOnEvent(e);
 }
 
 void osc::Tab::onTick()
 {
-	implOnTick();
+    implOnTick();
 }
 
 void osc::Tab::onDrawMainMenu()
 {
-	implOnDrawMainMenu();
+    implOnDrawMainMenu();
 }
 
 void osc::Tab::onDraw()
 {
-	implOnDraw();
+    implOnDraw();
 }

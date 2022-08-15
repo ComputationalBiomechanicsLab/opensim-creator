@@ -4,15 +4,15 @@
 
 namespace osc
 {
-	enum class MuscleDecorationStyle {
-		OpenSim = 0,
-		Scone,
-		Hidden,
-		TOTAL,
-		Default = OpenSim,
-	};
+    enum class MuscleDecorationStyle {
+        OpenSim = 0,
+        Scone,
+        Hidden,
+        TOTAL,
+        Default = OpenSim,
+    };
 
-	nonstd::span<MuscleDecorationStyle const> GetAllMuscleDecorationStyles();
-	nonstd::span<char const* const> GetAllMuscleDecorationStyleStrings();
-	int GetIndexOf(MuscleDecorationStyle);
+    nonstd::span<MuscleDecorationStyle const> GetAllMuscleDecorationStyles();
+    nonstd::span<char const* const> GetAllMuscleDecorationStyleStrings();
+    int GetIndexOf(MuscleDecorationStyle);
 }

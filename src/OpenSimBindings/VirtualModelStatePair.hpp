@@ -7,29 +7,29 @@
 
 namespace OpenSim
 {
-	class Component;
-	class Model;	
+    class Component;
+    class Model;
 }
 
 namespace SimTK
 {
-	class State;
+    class State;
 }
 
 namespace osc
 {
-	// virtual read+write accessor to an `OpenSim::Model` + `SimTK::State` pair, with
-	// additional opt-in overrides to aid rendering/UX etc.
-	class VirtualModelStatePair : public VirtualConstModelStatePair {
-	public:
-		virtual ~VirtualModelStatePair() noexcept = default;
+    // virtual read+write accessor to an `OpenSim::Model` + `SimTK::State` pair, with
+    // additional opt-in overrides to aid rendering/UX etc.
+    class VirtualModelStatePair : public VirtualConstModelStatePair {
+    public:
+        virtual ~VirtualModelStatePair() noexcept = default;
 
-		virtual void setSelected(OpenSim::Component const*) {}
+        virtual void setSelected(OpenSim::Component const*) {}
 
-		virtual void setHovered(OpenSim::Component const*) {}
+        virtual void setHovered(OpenSim::Component const*) {}
 
-		virtual void setIsolated(OpenSim::Component const*) {}
+        virtual void setIsolated(OpenSim::Component const*) {}
 
-		virtual void setFixupScaleFactor(float) {}
-	};
+        virtual void setFixupScaleFactor(float) {}
+    };
 }

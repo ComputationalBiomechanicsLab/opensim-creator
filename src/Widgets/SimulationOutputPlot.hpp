@@ -8,28 +8,28 @@
 
 namespace osc
 {
-	class SimulatorUIAPI;
+    class SimulatorUIAPI;
 }
 
 namespace osc
 {
-	class SimulationOutputPlot final {
-	public:
-		SimulationOutputPlot(SimulatorUIAPI*, OutputExtractor, float height);
-		SimulationOutputPlot(SimulationOutputPlot const&) = delete;
-		SimulationOutputPlot(SimulationOutputPlot&&) noexcept;
-		SimulationOutputPlot& operator=(SimulationOutputPlot const&) = delete;
-		SimulationOutputPlot& operator=(SimulationOutputPlot&&) noexcept;
-		~SimulationOutputPlot() noexcept;
+    class SimulationOutputPlot final {
+    public:
+        SimulationOutputPlot(SimulatorUIAPI*, OutputExtractor, float height);
+        SimulationOutputPlot(SimulationOutputPlot const&) = delete;
+        SimulationOutputPlot(SimulationOutputPlot&&) noexcept;
+        SimulationOutputPlot& operator=(SimulationOutputPlot const&) = delete;
+        SimulationOutputPlot& operator=(SimulationOutputPlot&&) noexcept;
+        ~SimulationOutputPlot() noexcept;
 
-		void draw();
+        void draw();
 
-	private:
-		class Impl;
-		Impl* m_Impl;
-	};
+    private:
+        class Impl;
+        Impl* m_Impl;
+    };
 
-	// returns empty path if not saved
-	std::filesystem::path TryPromptAndSaveOutputsAsCSV(SimulatorUIAPI&, nonstd::span<OutputExtractor const>);
-	std::filesystem::path TryPromptAndSaveAllUserDesiredOutputsAsCSV(SimulatorUIAPI&);
+    // returns empty path if not saved
+    std::filesystem::path TryPromptAndSaveOutputsAsCSV(SimulatorUIAPI&, nonstd::span<OutputExtractor const>);
+    std::filesystem::path TryPromptAndSaveAllUserDesiredOutputsAsCSV(SimulatorUIAPI&);
 }

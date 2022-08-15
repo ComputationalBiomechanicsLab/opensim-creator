@@ -4,19 +4,19 @@
 
 namespace osc
 {
-	class Config;
+    class Config;
 }
 
 namespace osc
 {
-	// manually ensure OpenSim is initialized
-	//
-	// e.g. initializes OpenSim logging, registering components, etc.
-	bool GlobalInitOpenSim(Config const&);
+    // manually ensure OpenSim is initialized
+    //
+    // e.g. initializes OpenSim logging, registering components, etc.
+    bool GlobalInitOpenSim(Config const&);
 
-	// an `osc::App` that also calls `GlobalInitOpenSim`
-	class OpenSimApp : public App {
-	public:
-		OpenSimApp();
-	};
+    // an `osc::App` that also calls `GlobalInitOpenSim`
+    class OpenSimApp : public App {
+    public:
+        OpenSimApp();
+    };
 }
