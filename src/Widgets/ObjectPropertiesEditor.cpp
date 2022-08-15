@@ -555,10 +555,10 @@ namespace
                         auto* downcasted = dynamic_cast<OpenSim::Property<OpenSim::HuntCrossleyForce::ContactParametersSet>*>(&p);
                         if (downcasted && downcasted->getValue().getSize() > 0)
                         {
-                            OpenSim::HuntCrossleyForce::ContactParameters& params = downcasted->getValue()[0];
+                            OpenSim::HuntCrossleyForce::ContactParameters& contactParams = downcasted->getValue()[0];
                             if (params.hasProperty(resp->getPropertyName()))
                             {
-                                OpenSim::AbstractProperty& p = params.updPropertyByName(resp->getPropertyName());
+                                OpenSim::AbstractProperty& p = contactParams.updPropertyByName(resp->getPropertyName());
                                 resp->apply(p);
                             }
                         }
