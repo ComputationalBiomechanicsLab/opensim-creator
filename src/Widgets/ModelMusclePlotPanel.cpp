@@ -478,8 +478,7 @@ namespace
 			}
 
 			double xVal = start + (i * step);
-
-			coord.setValue(state, xVal, false);
+			coord.setValue(state, xVal);
 
             if (stopToken.stop_requested())
             {
