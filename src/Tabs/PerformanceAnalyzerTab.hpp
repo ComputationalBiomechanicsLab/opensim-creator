@@ -7,11 +7,8 @@
 
 #include <SDL_events.h>
 
-namespace osc
-{
-    class ParamBlock;
-    class TabHost;
-}
+namespace osc { class ParamBlock; }
+namespace osc { class TabHost; }
 
 namespace osc
 {

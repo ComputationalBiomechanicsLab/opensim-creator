@@ -38,10 +38,7 @@
 #include <utility>
 #include <vector>
 
-namespace SimTK
-{
-    class State;
-}
+namespace SimTK { class State; }
 
 static bool SortByComponentName(OpenSim::Component const* p1, OpenSim::Component const* p2)
 {

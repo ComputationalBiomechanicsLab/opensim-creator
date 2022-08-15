@@ -19,13 +19,10 @@
 #include <cstddef>
 #include <optional>
 
-namespace osc
-{
-    struct Disc;
-    struct Plane;
-    struct Rect;
-    struct Segment;
-}
+namespace osc { struct Disc; }
+namespace osc { struct Plane; }
+namespace osc { struct Rect; }
+namespace osc { struct Segment; }
 
 // geometry: low-level, backend-independent, geometric maths
 namespace osc

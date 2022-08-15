@@ -13,15 +13,8 @@
 #include <utility>
 
 
-namespace OpenSim
-{
-    class Component;
-}
-
-namespace osc
-{
-    class SimulationReport;
-}
+namespace OpenSim { class Component; }
+namespace osc { class SimulationReport; }
 
 namespace osc
 {

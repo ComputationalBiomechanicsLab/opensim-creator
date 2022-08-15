@@ -8,11 +8,8 @@
 
 #include <filesystem>
 
-namespace osc
-{
-    class MainUIStateAPI;
-    class TabHost;
-}
+namespace osc { class MainUIStateAPI; }
+namespace osc { class TabHost; }
 
 namespace osc
 {

@@ -3,15 +3,8 @@
 #include "src/OpenSimBindings/VirtualModelStatePair.hpp"
 #include "src/Utils/ClonePtr.hpp"
 
-namespace SimTK
-{
-    class State;
-}
-
-namespace OpenSim
-{
-    class Model;
-}
+namespace OpenSim { class Model; }
+namespace SimTK { class State; }
 
 namespace osc
 {

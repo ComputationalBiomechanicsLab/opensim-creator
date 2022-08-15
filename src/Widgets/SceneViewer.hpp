@@ -3,11 +3,8 @@
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
 
-namespace osc
-{
-    class SceneDecoration;
-    class SceneRendererParams;
-}
+namespace osc { class SceneDecoration; }
+namespace osc { class SceneRendererParams; }
 
 namespace osc
 {

@@ -8,12 +8,9 @@
 
 #include <memory>
 
-namespace osc
-{
-    class MainUIStateAPI;
-    class Simulation;
-    class TabHost;
-}
+namespace osc { class MainUIStateAPI; }
+namespace osc { class Simulation; }
+namespace osc { class TabHost; }
 
 namespace osc
 {

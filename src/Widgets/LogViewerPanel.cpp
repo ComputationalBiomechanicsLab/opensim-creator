@@ -10,6 +10,7 @@
 
 class osc::LogViewerPanel::Impl final : public NamedPanel {
 public:
+
     Impl(std::string_view panelName) : NamedPanel{std::move(panelName), ImGuiWindowFlags_MenuBar}
     {
     }

@@ -12,16 +12,9 @@
 #include <memory>
 #include <vector>
 
-namespace OpenSim
-{
-    class Model;
-}
-
-namespace osc
-{
-    class OutputExtractor;
-    class ParamBlock;
-}
+namespace OpenSim { class Model; }
+namespace osc { class OutputExtractor; }
+namespace osc { class ParamBlock; }
 
 namespace osc
 {

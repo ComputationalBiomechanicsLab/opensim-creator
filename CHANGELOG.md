@@ -138,6 +138,8 @@ All notable changes to this project will be documented here. The format is based
     the live muscle plots feature with a more generic "live output plots" equivalent
   - Beware, it is quite slow right now (due to internal APIs)
 
+- Forward declares in the source code now use the Include What You Use style (#283)
+
 
 ## [0.2.0] - 2022/07/04
 

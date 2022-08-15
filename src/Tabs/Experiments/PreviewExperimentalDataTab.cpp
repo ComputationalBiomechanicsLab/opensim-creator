@@ -520,6 +520,7 @@ namespace
 // osc::Tab implementation for the visualizer
 class osc::PreviewExperimentalDataTab::Impl final {
 public:
+
     Impl(TabHost* parent) : m_Parent{std::move(parent)}
     {
         osc::log::info("%s", StreamToString(m_Motion).c_str());

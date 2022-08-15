@@ -4,15 +4,12 @@
 
 #include <optional>
 
-namespace osc
-{
-    class Camera;
-    class Mesh;
-    class Material;
-    struct Rect;
-    class RenderTexture;
-    struct Transform;
-}
+namespace osc { class Camera; }
+namespace osc { class Mesh; }
+namespace osc { class Material; }
+namespace osc { struct Rect; }
+namespace osc { class RenderTexture; }
+namespace osc { struct Transform; }
 
 // rendering functions
 //

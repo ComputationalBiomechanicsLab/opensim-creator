@@ -4,11 +4,8 @@
 
 #include <memory>
 
-namespace SimTK
-{
-    class Integrator;
-    class System;
-}
+namespace SimTK { class Integrator; }
+namespace SimTK { class System; }
 
 namespace osc
 {

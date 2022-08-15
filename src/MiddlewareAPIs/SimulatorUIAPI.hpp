@@ -5,11 +5,8 @@
 
 #include <optional>
 
-namespace osc
-{
-    class VirtualSimulation;
-    class OutputExtractor;
-}
+namespace osc { class VirtualSimulation; }
+namespace osc { class OutputExtractor; }
 
 namespace osc
 {

@@ -5,10 +5,10 @@
 #include <memory>
 #include <utility>
 
+namespace osc { class Tab; }
+
 namespace osc
 {
-    class Tab;
-
     class TabHost {
     public:
         virtual ~TabHost() noexcept = default;

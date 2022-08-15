@@ -11,14 +11,11 @@
 #include <initializer_list>
 #include <string>
 
-namespace osc
-{
-    class Camera;
-    class UID;
-    class PolarPerspectiveCamera;
-    class Texture2D;
-    class RenderTexture;
-}
+namespace osc { class Camera; }
+namespace osc { class UID; }
+namespace osc { class PolarPerspectiveCamera; }
+namespace osc { class Texture2D; }
+namespace osc { class RenderTexture; }
 
 namespace osc
 {

@@ -24,6 +24,7 @@
 
 class osc::LoadingTab::Impl final {
 public:
+
     Impl(MainUIStateAPI* parent, std::filesystem::path path) :
         m_Parent{std::move(parent)},
         m_OsimPath{std::move(path)},

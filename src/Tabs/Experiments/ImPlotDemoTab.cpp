@@ -11,6 +11,7 @@
 
 class osc::ImPlotDemoTab::Impl final {
 public:
+
     Impl(TabHost* parent) : m_Parent{std::move(parent)}
     {
     }

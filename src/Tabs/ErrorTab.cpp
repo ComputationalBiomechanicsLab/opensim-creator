@@ -15,6 +15,7 @@
 
 class osc::ErrorTab::Impl final {
 public:
+
     Impl(TabHost* parent, std::exception const& ex) :
         m_Parent{std::move(parent)},
         m_ErrorMessage{ex.what()}

@@ -3,10 +3,7 @@
 #include <memory>
 #include <string_view>
 
-namespace osc
-{
-    class UndoableModelStatePair;
-}
+namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {

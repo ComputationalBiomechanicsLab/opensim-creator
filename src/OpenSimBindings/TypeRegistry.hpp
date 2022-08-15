@@ -8,16 +8,13 @@
 #include <optional>
 #include <memory>
 
-namespace OpenSim
-{
-    class Joint;
-    class Constraint;
-    class Component;
-    class ContactGeometry;
-    class Force;
-    class Controller;
-    class Probe;
-}
+namespace OpenSim { class Joint; }
+namespace OpenSim { class Constraint; }
+namespace OpenSim { class Component; }
+namespace OpenSim { class ContactGeometry; }
+namespace OpenSim { class Force; }
+namespace OpenSim { class Controller; }
+namespace OpenSim { class Probe; }
 
 namespace osc
 {

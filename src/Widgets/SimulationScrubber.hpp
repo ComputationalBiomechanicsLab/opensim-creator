@@ -8,10 +8,7 @@
 #include <memory>
 #include <optional>
 
-namespace osc
-{
-    class Simulation;
-}
+namespace osc { class Simulation; }
 
 namespace osc
 {

@@ -1,14 +1,7 @@
 #pragma once
 
-namespace SimTK
-{
-    class State;
-}
-
-namespace OpenSim
-{
-    class Component;
-}
+namespace OpenSim { class Component; }
+namespace SimTK { class State; }
 
 namespace osc
 {

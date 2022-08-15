@@ -4,10 +4,7 @@
 
 #include <iosfwd>
 
-namespace osc
-{
-    class SceneDecoration;
-}
+namespace osc { class SceneDecoration; }
 
 namespace osc
 {

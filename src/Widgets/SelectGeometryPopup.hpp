@@ -3,10 +3,7 @@
 #include <memory>
 #include <string_view>
 
-namespace OpenSim
-{
-    class Geometry;
-}
+namespace OpenSim { class Geometry; }
 
 namespace osc
 {

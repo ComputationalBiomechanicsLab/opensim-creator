@@ -109,6 +109,7 @@ namespace
 
 class osc::HittestTab::Impl final {
 public:
+
     Impl(TabHost* parent) : m_Parent{std::move(parent)}
     {
         m_Camera.setBackgroundColor({1.0f, 1.0f, 1.0f, 0.0f});

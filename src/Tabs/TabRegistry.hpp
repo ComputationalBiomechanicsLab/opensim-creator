@@ -6,11 +6,8 @@
 #include <optional>
 #include <string_view>
 
-namespace osc
-{
-    class Tab;
-    class TabHost;
-}
+namespace osc { class Tab; }
+namespace osc { class TabHost; }
 
 namespace osc
 {

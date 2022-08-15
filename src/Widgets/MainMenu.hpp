@@ -7,11 +7,8 @@
 #include <vector>
 #include <optional>
 
-namespace osc
-{
-    class MainUIStateAPI;
-    class UndoableModelStatePair;
-}
+namespace osc { class MainUIStateAPI; }
+namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {

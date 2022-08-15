@@ -13,12 +13,9 @@
 #include <memory>
 #include <string_view>
 
-namespace osc
-{
-    struct Rgba32;
-    class Texture2D;
-    void DrawTextureAsImGuiImage(Texture2D&, glm::vec2);
-}
+namespace osc { struct Rgba32; }
+namespace osc { class Texture2D; }
+namespace osc { void DrawTextureAsImGuiImage(Texture2D&, glm::vec2); }
 
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc

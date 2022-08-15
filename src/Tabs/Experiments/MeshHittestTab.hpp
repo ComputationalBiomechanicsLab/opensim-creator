@@ -6,10 +6,7 @@
 
 #include <SDL_events.h>
 
-namespace osc
-{
-    class TabHost;
-}
+namespace osc { class TabHost; }
 
 namespace osc
 {

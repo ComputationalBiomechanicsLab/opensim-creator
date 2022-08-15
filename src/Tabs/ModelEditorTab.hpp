@@ -8,12 +8,9 @@
 
 #include <memory>
 
-namespace osc
-{
-    class MainUIStateAPI;
-    class TabHost;
-    class UndoableModelStatePair;
-}
+namespace osc { class MainUIStateAPI; }
+namespace osc { class TabHost; }
+namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {

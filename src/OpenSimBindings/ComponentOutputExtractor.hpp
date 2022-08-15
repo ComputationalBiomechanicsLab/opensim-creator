@@ -8,18 +8,10 @@
 #include <cstddef>
 #include <string>
 
-
-namespace OpenSim
-{
-    class AbstractOutput;
-    class Component;
-    class ComponentPath;
-}
-
-namespace osc
-{
-    class SimulationReport;
-}
+namespace OpenSim { class AbstractOutput; }
+namespace OpenSim { class Component; }
+namespace OpenSim { class ComponentPath; }
+namespace osc { class SimulationReport; }
 
 namespace osc
 {

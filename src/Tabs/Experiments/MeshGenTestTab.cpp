@@ -45,6 +45,7 @@ static std::map<std::string, std::shared_ptr<osc::Mesh const>> GenerateMeshLooku
 
 class osc::MeshGenTestTab::Impl final {
 public:
+
     Impl(TabHost* parent) : m_Parent{std::move(parent)}
     {
         m_Camera.radius = 5.0f;

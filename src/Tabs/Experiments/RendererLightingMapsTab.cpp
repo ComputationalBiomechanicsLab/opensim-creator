@@ -18,6 +18,7 @@
 
 class osc::RendererLightingMapsTab::Impl final {
 public:
+
     Impl(TabHost* parent) : m_Parent{parent}
     {
         m_LightingMapsMaterial.setTexture("uMaterialDiffuse", m_DiffuseMap);

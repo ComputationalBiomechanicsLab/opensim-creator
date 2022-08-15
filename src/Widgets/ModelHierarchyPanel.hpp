@@ -2,15 +2,8 @@
 
 #include <string_view>
 
-namespace OpenSim
-{
-    class Component;
-}
-
-namespace osc
-{
-    class VirtualConstModelStatePair;
-}
+namespace OpenSim { class Component; }
+namespace osc { class VirtualConstModelStatePair; }
 
 namespace osc
 {

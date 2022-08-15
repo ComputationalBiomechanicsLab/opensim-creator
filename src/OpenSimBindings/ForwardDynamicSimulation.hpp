@@ -11,17 +11,10 @@
 
 #include <vector>
 
-namespace OpenSim
-{
-    class Model;
-}
-
-namespace osc
-{
-    struct ForwardDynamicSimulatorParams;
-    class ParamBlock;
-    class OutputExtractor;
-}
+namespace OpenSim { class Model; }
+namespace osc { struct ForwardDynamicSimulatorParams; }
+namespace osc { class ParamBlock; }
+namespace osc { class OutputExtractor; }
 
 namespace osc
 {

@@ -60,6 +60,7 @@ static osc::SceneRendererParams GetSplashScreenDefaultRenderParams(osc::PolarPer
 
 class osc::SplashTab::Impl final {
 public:
+
     Impl(MainUIStateAPI* parent) : m_Parent{std::move(parent)}
     {
         m_OscLogo.setFilterMode(osc::TextureFilterMode::Linear);

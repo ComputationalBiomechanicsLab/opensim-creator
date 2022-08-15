@@ -9,10 +9,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace osc
-{
-    struct Line;
-}
+namespace osc { struct Line; }
 
 namespace osc
 {

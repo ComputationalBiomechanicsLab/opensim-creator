@@ -2,15 +2,8 @@
 
 #include <glm/vec3.hpp>
 
-namespace OpenSim
-{
-    class Component;
-}
-
-namespace osc
-{
-    class VirtualConstModelStatePair;
-}
+namespace OpenSim { class Component; }
+namespace osc { class VirtualConstModelStatePair; }
 
 namespace osc
 {

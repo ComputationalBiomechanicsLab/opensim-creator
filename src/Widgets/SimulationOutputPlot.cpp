@@ -220,6 +220,7 @@ static std::filesystem::path TryExportOutputsToCSV(osc::VirtualSimulation& sim, 
 
 class osc::SimulationOutputPlot::Impl final {
 public:
+
     Impl(SimulatorUIAPI* api, OutputExtractor outputExtractor, float height) :
         m_API{std::move(api)},
         m_OutputExtractor{std::move(outputExtractor)},

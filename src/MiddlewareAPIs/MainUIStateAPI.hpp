@@ -2,11 +2,8 @@
 
 #include "src/Tabs/TabHost.hpp"
 
-namespace osc
-{
-    class ParamBlock;
-    class OutputExtractor;
-}
+namespace osc { class ParamBlock; }
+namespace osc { class OutputExtractor; }
 
 namespace osc
 {

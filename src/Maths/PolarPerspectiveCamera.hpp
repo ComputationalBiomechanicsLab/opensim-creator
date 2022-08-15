@@ -6,11 +6,8 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
-namespace osc
-{
-    struct AABB;
-    struct Rect;
-}
+namespace osc { struct AABB; }
+namespace osc { struct Rect; }
 
 namespace osc
 {

@@ -9,16 +9,9 @@
 
 #include <vector>
 
-namespace osc
-{
-    class OutputExtractor;
-    class ParamBlock;
-}
-
-namespace OpenSim
-{
-    class Model;
-}
+namespace osc { class OutputExtractor; }
+namespace osc { class ParamBlock; }
+namespace OpenSim { class Model; }
 
 namespace osc
 {

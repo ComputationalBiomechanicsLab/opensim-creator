@@ -2,10 +2,7 @@
 
 #include <string_view>
 
-namespace osc
-{
-    class Shader;
-}
+namespace osc { class Shader; }
 
 namespace osc
 {

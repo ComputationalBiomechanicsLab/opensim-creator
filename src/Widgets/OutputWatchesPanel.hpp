@@ -3,11 +3,8 @@
 #include <memory>
 #include <string_view>
 
-namespace osc
-{
-    class MainUIStateAPI;
-    class UndoableModelStatePair;
-}
+namespace osc { class MainUIStateAPI; }
+namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {

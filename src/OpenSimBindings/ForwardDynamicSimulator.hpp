@@ -6,11 +6,8 @@
 
 #include <functional>
 
-namespace osc
-{
-    struct ForwardDynamicSimulatorParams;
-    class SimulationReport;
-}
+namespace osc { struct ForwardDynamicSimulatorParams; }
+namespace osc { class SimulationReport; }
 
 namespace osc
 {

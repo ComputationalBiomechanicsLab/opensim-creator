@@ -39,6 +39,7 @@
 
 class osc::MainUIScreen::Impl final : public osc::MainUIStateAPI {
 public:
+
     Impl()
     {
         m_Tabs.push_back(std::make_unique<SplashTab>(this));

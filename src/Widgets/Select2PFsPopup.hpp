@@ -2,11 +2,8 @@
 
 #include <optional>
 
-namespace OpenSim
-{
-    class PhysicalFrame;
-    class Model;
-}
+namespace OpenSim { class PhysicalFrame; }
+namespace OpenSim { class Model; }
 
 namespace osc
 {

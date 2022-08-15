@@ -1,16 +1,9 @@
 #pragma once
 
-namespace osc
-{
-    class MainUIStateAPI;
-    class ParamBlock;
-    class VirtualModelStatePair;
-}
-
-namespace OpenSim
-{
-    class Component;
-}
+namespace osc { class MainUIStateAPI; }
+namespace osc { class ParamBlock; }
+namespace osc { class VirtualModelStatePair; }
+namespace OpenSim { class Component; }
 
 namespace osc
 {

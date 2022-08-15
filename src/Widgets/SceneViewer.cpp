@@ -14,6 +14,7 @@
 
 class osc::SceneViewer::Impl final {
 public:
+
     void draw(nonstd::span<SceneDecoration const> els, SceneRendererParams const& params)
     {
         m_Renderer.draw(els, params);

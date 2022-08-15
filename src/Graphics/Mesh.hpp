@@ -11,12 +11,9 @@
 #include <memory>
 #include <vector>
 
-namespace osc
-{
-    struct AABB;
-    struct BVH;
-    struct Rgba32;
-}
+namespace osc { struct AABB; }
+namespace osc { struct BVH; }
+namespace osc { struct Rgba32; }
 
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc

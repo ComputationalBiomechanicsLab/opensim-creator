@@ -2,10 +2,7 @@
 
 #include <memory>
 
-namespace osc
-{
-    class UndoableModelStatePair;
-}
+namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {

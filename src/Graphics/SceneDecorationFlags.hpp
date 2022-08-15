@@ -3,6 +3,7 @@
 namespace osc
 {
     using SceneDecorationFlags = int;
+
     enum SceneDecorationFlags_ {
         SceneDecorationFlags_None = 0,
         SceneDecorationFlags_IsSelected = 1<<0,

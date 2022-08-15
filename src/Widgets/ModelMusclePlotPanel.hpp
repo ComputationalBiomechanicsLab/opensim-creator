@@ -4,15 +4,8 @@
 #include <string>
 #include <string_view>
 
-namespace OpenSim
-{
-    class ComponentPath;
-}
-
-namespace osc
-{
-    class UndoableModelStatePair;
-}
+namespace OpenSim { class ComponentPath; }
+namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {

@@ -6,11 +6,8 @@
 
 #include <SDL_events.h>
 
-namespace osc
-{
-    class MainUIStateAPI;
-    class TabHost;
-}
+namespace osc { class MainUIStateAPI; }
+namespace osc { class TabHost; }
 
 namespace osc
 {

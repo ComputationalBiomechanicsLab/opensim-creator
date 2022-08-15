@@ -3,12 +3,9 @@
 #include <string>
 #include <string_view>
 
-namespace OpenSim
-{
-    class Model;
-    class AbstractSocket;
-    class Object;
-}
+namespace OpenSim { class Model; }
+namespace OpenSim { class AbstractSocket; }
+namespace OpenSim { class Object; }
 
 namespace osc
 {

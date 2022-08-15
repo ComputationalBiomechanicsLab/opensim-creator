@@ -10,20 +10,9 @@
 #include <string>
 #include <string_view>
 
-namespace OpenSim
-{
-    class Component;
-}
-
-namespace osc
-{
-    class SimulationReport;
-}
-
-namespace SimTK
-{
-    class MultibodySystem;
-}
+namespace OpenSim { class Component; }
+namespace osc { class SimulationReport; }
+namespace SimTK { class MultibodySystem; }
 
 namespace osc
 {

@@ -42,6 +42,7 @@ static osc::Mesh GenerateTriangleMesh()
 
 class osc::RendererHelloTriangleTab::Impl final {
 public:
+
     Impl(TabHost* parent) : m_Parent{parent}
     {
         m_Camera.setViewMatrix(glm::mat4{1.0f});

@@ -6,6 +6,8 @@
 
 #include <SDL_events.h>
 
+namespace osc { class TabHost; }
+
 namespace osc
 {
     class RendererCoordinateSystemsTab final : public Tab {

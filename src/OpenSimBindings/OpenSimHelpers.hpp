@@ -9,31 +9,20 @@
 #include <string>
 #include <vector>
 
-namespace OpenSim
-{
-    class AbstractOutput;
-    class AbstractProperty;
-    class AbstractSocket;
-    class Component;
-    class ComponentPath;
-    class Coordinate;
-    class Geometry;
-    class Joint;
-    class Model;
-}
-
-namespace osc
-{
-    class SceneDecoration;
-    class CustomDecorationOptions;
-    class VirtualConstModelStatePair;
-    class UndoableModelStatePair;
-}
-
-namespace SimTK
-{
-    class State;
-}
+namespace OpenSim { class AbstractOutput; }
+namespace OpenSim { class AbstractProperty; }
+namespace OpenSim { class AbstractSocket; }
+namespace OpenSim { class Component; }
+namespace OpenSim { class ComponentPath; }
+namespace OpenSim { class Coordinate; }
+namespace OpenSim { class Geometry; }
+namespace OpenSim { class Joint; }
+namespace OpenSim { class Model; }
+namespace osc { class SceneDecoration; }
+namespace osc { class CustomDecorationOptions; }
+namespace osc { class VirtualConstModelStatePair; }
+namespace osc { class UndoableModelStatePair; }
+namespace SimTK { class State; }
 
 // OpenSimHelpers: a collection of various helper functions that are used by `osc`
 namespace osc

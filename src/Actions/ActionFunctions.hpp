@@ -6,23 +6,16 @@
 #include <memory>
 #include <string>
 
-namespace OpenSim
-{
-    class Component;
-    class ContactGeometry;
-    class Coordinate;
-    class Geometry;
-    class Joint;
-    class Object;
-    class PhysicalFrame;
-}
-
-namespace osc
-{
-    class MainUIStateAPI;
-    class ObjectPropertyEdit;
-    class UndoableModelStatePair;
-}
+namespace OpenSim { class Component; }
+namespace OpenSim { class ContactGeometry; }
+namespace OpenSim { class Coordinate; }
+namespace OpenSim { class Geometry; }
+namespace OpenSim { class Joint; }
+namespace OpenSim { class Object; }
+namespace OpenSim { class PhysicalFrame; }
+namespace osc { class MainUIStateAPI; }
+namespace osc { class ObjectPropertyEdit; }
+namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {

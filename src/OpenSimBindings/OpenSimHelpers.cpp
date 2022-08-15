@@ -82,10 +82,7 @@
 #include <utility>
 #include <vector>
 
-namespace osc
-{
-    class Mesh;
-}
+namespace osc { class Mesh; }
 
 static osc::Transform TransformInGround(OpenSim::PhysicalFrame const& pf, SimTK::State const& st)
 {

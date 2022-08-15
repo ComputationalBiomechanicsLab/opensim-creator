@@ -8,6 +8,7 @@
 
 class osc::SaveChangesPopup::Impl final : public StandardPopup {
 public:
+
     Impl(SaveChangesPopupConfig config) :
         StandardPopup{config.popupName},
         m_Config{std::move(config)}

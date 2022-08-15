@@ -7,16 +7,9 @@
 #include <memory>
 #include <string_view>
 
-namespace OpenSim
-{
-    class ComponentPath;
-    class Model;
-}
-
-namespace osc
-{
-    class VirtualConstModelStatePair;
-}
+namespace OpenSim { class ComponentPath; }
+namespace OpenSim { class Model; }
+namespace osc { class VirtualConstModelStatePair; }
 
 namespace osc
 {

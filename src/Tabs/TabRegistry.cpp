@@ -30,6 +30,7 @@
 
 class osc::TabRegistryEntry::Impl final {
 public:
+
     Impl(CStringView name_, std::unique_ptr<Tab>(*ctor_)(TabHost*)) :
         m_Name{std::move(name_)},
         m_Constructor{std::move(ctor_)}

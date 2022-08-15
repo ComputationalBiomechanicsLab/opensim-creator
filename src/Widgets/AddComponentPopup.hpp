@@ -3,15 +3,8 @@
 #include <memory>
 #include <string_view>
 
-namespace OpenSim
-{
-    class Component;
-}
-
-namespace osc
-{
-    class UndoableModelStatePair;
-}
+namespace OpenSim { class Component; }
+namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {

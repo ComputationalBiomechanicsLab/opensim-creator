@@ -8,10 +8,7 @@
 
 #include <exception>
 
-namespace osc
-{
-    class TabHost;
-}
+namespace osc { class TabHost; }
 
 namespace osc
 {

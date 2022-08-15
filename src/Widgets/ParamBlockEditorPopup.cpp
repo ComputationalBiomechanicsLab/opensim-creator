@@ -77,6 +77,7 @@ static bool DrawEditor(osc::ParamBlock& b, int idx)
 
 class osc::ParamBlockEditorPopup::Impl final : protected StandardPopup {
 public:
+
     Impl(std::string_view popupName) :
         StandardPopup{std::move(popupName), 512.0f, 0.0f, ImGuiWindowFlags_AlwaysAutoResize}
     {

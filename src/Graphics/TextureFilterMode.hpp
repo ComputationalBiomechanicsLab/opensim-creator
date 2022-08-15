@@ -12,5 +12,6 @@ namespace osc
         Mipmap,
         TOTAL,
     };
+
     std::ostream& operator<<(std::ostream&, TextureFilterMode);
 }

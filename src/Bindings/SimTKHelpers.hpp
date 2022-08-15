@@ -17,17 +17,10 @@
 #include <filesystem>
 #include <memory>
 
-namespace SimTK
-{
-    class DecorativeGeometry;
-    class SimbodyMatterSubsystem;
-    class State;
-}
-
-namespace osc
-{
-    class MeshCache;
-}
+namespace osc { class MeshCache; }
+namespace SimTK { class DecorativeGeometry; }
+namespace SimTK { class SimbodyMatterSubsystem; }
+namespace SimTK { class State; }
 
 namespace osc
 {

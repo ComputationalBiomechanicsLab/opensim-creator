@@ -27,6 +27,7 @@ static bool IsNameLexographicallyLessThan(OpenSim::Component const* c1, OpenSim:
 
 class osc::CoordinateEditor::Impl final {
 public:
+
     Impl(std::shared_ptr<UndoableModelStatePair> uum) :
         m_Uum{std::move(uum)}
     {

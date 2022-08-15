@@ -26,6 +26,7 @@
 
 class osc::ModelActionsMenuItems::Impl final {
 public:
+
     Impl(std::shared_ptr<UndoableModelStatePair> uum_) :
         m_Uum{uum_},
         m_AddBodyPopup{uum_, "add body"},

@@ -78,6 +78,7 @@ static FontTexture CreateFontTexture()
 
 class osc::RendererSDFTab::Impl final {
 public:
+
     Impl(TabHost* parent) : m_Parent{std::move(parent)}
     {
     }

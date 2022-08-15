@@ -6,21 +6,10 @@
 
 #include <memory>
 
-namespace OpenSim
-{
-    class Component;
-    class Model;
-}
-
-namespace osc
-{
-    class Simulation;
-}
-
-namespace SimTK
-{
-    class State;
-}
+namespace OpenSim { class Component; }
+namespace OpenSim { class Model; }
+namespace osc { class Simulation; }
+namespace SimTK { class State; }
 
 namespace osc
 {

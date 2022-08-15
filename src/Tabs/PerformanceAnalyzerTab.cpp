@@ -43,6 +43,7 @@ static osc::OutputExtractor GetSimulatorOutputExtractor(std::string_view name)
 
 class osc::PerformanceAnalyzerTab::Impl final {
 public:
+
     Impl(TabHost* parent, BasicModelStatePair baseModel, osc::ParamBlock const& params) :
         m_Parent{std::move(parent)},
         m_BaseModel{std::move(baseModel)},

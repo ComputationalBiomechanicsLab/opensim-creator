@@ -7,10 +7,7 @@
 #include <memory>
 #include <unordered_map>
 
-namespace SimTK
-{
-    class State;
-}
+namespace SimTK { class State; }
 
 namespace osc
 {

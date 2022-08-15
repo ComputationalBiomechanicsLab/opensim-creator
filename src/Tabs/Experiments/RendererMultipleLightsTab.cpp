@@ -78,6 +78,7 @@ static float const g_PointLightQuadratics[] = {0.032f, 0.032f, 0.032f, 0.032f};
 
 class osc::RendererMultipleLightsTab::Impl final {
 public:
+
     Impl(TabHost* parent) : m_Parent{parent}
     {
         m_MultipleLightsMaterial.setTexture("uMaterialDiffuse", m_DiffuseMap);

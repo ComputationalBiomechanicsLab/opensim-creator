@@ -19,5 +19,6 @@ namespace osc
         Unknown,
         TOTAL,
     };
+
     std::ostream& operator<<(std::ostream&, ShaderType);
 }

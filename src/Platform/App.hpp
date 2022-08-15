@@ -17,13 +17,10 @@
 #include <utility>
 #include <vector>
 
-namespace osc
-{
-    class Config;
-    class Screen;
-    class ShaderCache;
-    class MeshCache;
-}
+namespace osc { class Config; }
+namespace osc { class Screen; }
+namespace osc { class ShaderCache; }
+namespace osc { class MeshCache; }
 
 namespace osc
 {

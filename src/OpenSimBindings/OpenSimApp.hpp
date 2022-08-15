@@ -2,10 +2,7 @@
 
 #include "src/Platform/App.hpp"
 
-namespace osc
-{
-    class Config;
-}
+namespace osc { class Config; }
 
 namespace osc
 {

@@ -8,15 +8,12 @@
 #include <cstddef>
 #include <vector>
 
-namespace osc
-{
-    struct AABB;
-    struct BVH;
-    struct Line;
-    struct Transform;
-    class Mesh;
-    class SceneDecoration;
-}
+namespace osc { struct AABB; }
+namespace osc { struct BVH; }
+namespace osc { struct Line; }
+namespace osc { struct Transform; }
+namespace osc { class Mesh; }
+namespace osc { class SceneDecoration; }
 
 namespace osc
 {

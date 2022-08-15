@@ -14,6 +14,7 @@ namespace osc
         Error,
         TOTAL,
     };
+
     nonstd::span<SimulationStatus const> GetAllSimulationStatuses();
     nonstd::span<char const* const> GetAllSimulationStatusStrings();
 }

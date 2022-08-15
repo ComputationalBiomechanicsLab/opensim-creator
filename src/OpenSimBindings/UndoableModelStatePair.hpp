@@ -7,21 +7,10 @@
 #include <memory>
 #include <string_view>
 
-namespace OpenSim
-{
-    class Model;
-    class Component;
-}
-
-namespace SimTK
-{
-    class State;
-}
-
-namespace osc
-{
-    class ModelStateCommit;
-}
+namespace OpenSim { class Model; }
+namespace OpenSim { class Component; }
+namespace osc { class ModelStateCommit; }
+namespace SimTK { class State; }
 
 namespace osc
 {

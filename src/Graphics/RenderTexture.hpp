@@ -9,11 +9,8 @@
 #include <memory>
 #include <optional>
 
-namespace osc
-{
-    class RenderTexture;
-    void DrawTextureAsImGuiImage(RenderTexture&, glm::vec2);
-}
+namespace osc { class RenderTexture; }
+namespace osc { void DrawTextureAsImGuiImage(RenderTexture&, glm::vec2); }
 
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc

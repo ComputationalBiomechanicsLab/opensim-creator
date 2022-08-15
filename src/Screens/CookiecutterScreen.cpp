@@ -9,6 +9,7 @@
 
 class osc::CookiecutterScreen::Impl final {
 public:
+
     void onMount()
     {
         // called when app receives the screen, but before it starts pumping events

@@ -11,5 +11,6 @@ namespace osc
         Lines,
         TOTAL,
     };
+
     std::ostream& operator<<(std::ostream&, MeshTopography);
 }

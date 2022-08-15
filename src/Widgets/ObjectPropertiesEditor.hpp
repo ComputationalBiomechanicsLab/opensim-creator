@@ -6,11 +6,8 @@
 #include <optional>
 #include <string>
 
-namespace OpenSim
-{
-    class Object;
-    class AbstractProperty;
-}
+namespace OpenSim { class Object; }
+namespace OpenSim { class AbstractProperty; }
 
 namespace osc
 {

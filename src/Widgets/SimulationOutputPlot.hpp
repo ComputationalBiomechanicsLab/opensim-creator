@@ -6,10 +6,7 @@
 
 #include <filesystem>
 
-namespace osc
-{
-    class SimulatorUIAPI;
-}
+namespace osc { class SimulatorUIAPI; }
 
 namespace osc
 {

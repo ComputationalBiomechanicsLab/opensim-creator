@@ -3,10 +3,7 @@
 #include <memory>
 #include <string>
 
-namespace osc
-{
-    class Mesh;
-}
+namespace osc { class Mesh; }
 
 namespace osc
 {

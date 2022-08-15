@@ -15,6 +15,7 @@
 
 class osc::SimulationScrubber::Impl final {
 public:
+
     Impl(std::shared_ptr<Simulation> sim) :
         m_Simulation{std::move(sim)}
     {

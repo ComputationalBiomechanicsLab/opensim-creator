@@ -8,11 +8,8 @@
 #include <filesystem>
 #include <memory>
 
-namespace osc
-{
-    class Tab;
-    class TabHost;
-}
+namespace osc { class Tab; }
+namespace osc { class TabHost; }
 
 namespace osc
 {

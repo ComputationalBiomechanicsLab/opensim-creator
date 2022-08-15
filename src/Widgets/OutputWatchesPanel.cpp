@@ -16,6 +16,7 @@
 
 class osc::OutputWatchesPanel::Impl final : public osc::NamedPanel {
 public:
+
     Impl(std::string_view panelName_,
         std::shared_ptr<UndoableModelStatePair> model_,
         MainUIStateAPI* api_) :

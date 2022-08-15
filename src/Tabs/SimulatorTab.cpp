@@ -107,6 +107,7 @@ static bool IsAnyOutputExportableToCSV(osc::MainUIStateAPI& api)
 
 class osc::SimulatorTab::Impl final : public SimulatorUIAPI {
 public:
+
     Impl(MainUIStateAPI* api, std::shared_ptr<Simulation> simulation) :
         m_API{std::move(api)},
         m_Simulation{std::move(simulation)}

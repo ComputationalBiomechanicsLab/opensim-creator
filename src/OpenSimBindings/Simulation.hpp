@@ -11,21 +11,11 @@
 #include <memory>
 #include <vector>
 
-namespace osc
-{
-    class OutputExtractor;
-    class ParamBlock;
-}
+namespace osc { class OutputExtractor; }
+namespace osc { class ParamBlock; }
+namespace OpenSim { class Model; }
+namespace SimTK { class State; }
 
-namespace OpenSim
-{
-    class Model;
-}
-
-namespace SimTK
-{
-    class State;
-}
 namespace osc
 {
     // a concrete value type wrapper for an `osc::VirtualSimulation`

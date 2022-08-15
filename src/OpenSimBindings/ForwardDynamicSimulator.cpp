@@ -36,10 +36,7 @@
 #include <utility>
 #include <vector>
 
-namespace OpenSim
-{
-    class Component;
-}
+namespace OpenSim { class Component; }
 
 namespace
 {

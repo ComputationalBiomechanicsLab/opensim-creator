@@ -55,6 +55,7 @@ static osc::Mesh GeneratePlane()
 
 class osc::RendererFramebuffersTab::Impl final {
 public:
+
     Impl(TabHost* parent) : m_Parent{ parent }
     {
         m_SceneCamera.setPosition({0.0f, 0.0f, 3.0f});

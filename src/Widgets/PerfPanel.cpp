@@ -20,6 +20,7 @@ static bool HighestTotalDuration(osc::PerfMeasurement const& a, osc::PerfMeasure
 
 class osc::PerfPanel::Impl final {
 public:
+
     Impl(std::string_view panelName) :
         m_PanelName{std::move(panelName)}
     {
