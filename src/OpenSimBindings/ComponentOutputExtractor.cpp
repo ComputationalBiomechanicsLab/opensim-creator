@@ -225,7 +225,14 @@ public:
         OpenSim::AbstractOutput const* ao = FindOutput(c, m_ComponentAbsPath, m_OutputName);
         if (ao)
         {
-            return ao->getValueAsString(r.getState());
+            if (m_ExtractorFunc)
+            {
+                return std::to_string(m_ExtractorFunc(*ao, r.getState()));
+            }
+            else
+            {
+                return ao->getValueAsString(r.getState());
+            }
         }
         else
         {
