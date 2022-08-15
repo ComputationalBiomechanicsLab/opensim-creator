@@ -124,6 +124,8 @@ All notable changes to this project will be documented here. The format is based
 - Hovering/clicking the title of an output plot in the simulator tab now hovers/selects the associated
   component, if applicable (#347)
 
+- Fixed live muscle plots not plotting if the muscle being plotted is locked (#352)
+
 
 ## [0.2.0] - 2022/07/04
 

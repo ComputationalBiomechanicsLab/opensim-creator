@@ -5,6 +5,7 @@
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Platform/Log.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/CStringView.hpp"
@@ -396,43 +397,47 @@ namespace
 	{
 		if (params->getNumRequestedDataPoints() <= 0)
 		{
-			return std::make_unique<Plot>(*params);  // empty plot
+			// no datapoints requested: exit early with an empty plot
+			return std::make_unique<Plot>(*params);
 		}
 
 		auto model = std::make_unique<OpenSim::Model>(*params->getCommit().getModel());
 
 		if (stopToken.stop_requested())
 		{
-			return std::make_unique<Plot>(*params);  // empty plot
+			// cancel requested: exit early with an empty plot
+			return std::make_unique<Plot>(*params);
 		}
 
 		osc::InitializeModel(*model);
 
 		if (stopToken.stop_requested())
 		{
-			return std::make_unique<Plot>(*params);  // empty plot
+			// cancel requested: exit early with an empty plot
+			return std::make_unique<Plot>(*params);
 		}
 
 		SimTK::State& state = osc::InitializeState(*model);
 
 		if (stopToken.stop_requested())
 		{
-			return std::make_unique<Plot>(*params);  // empty plot
+			// cancel requested: exit early with an empty plot
+			return std::make_unique<Plot>(*params);
 		}
-
-		// lookup relevant elements in the copies
 
 		OpenSim::Muscle const* maybeMuscle = osc::FindComponent<OpenSim::Muscle>(*model, params->getMusclePath());
 		if (!maybeMuscle)
 		{
-			return std::make_unique<Plot>(*params);  // empty plot
+			// cannot find the requested muscle: exit early with an empty plot
+			return std::make_unique<Plot>(*params);
 		}
 		OpenSim::Muscle const& muscle = *maybeMuscle;
 
-		OpenSim::Coordinate const* maybeCoord = osc::FindComponent<OpenSim::Coordinate>(*model, params->getCoordinatePath());
+		OpenSim::Coordinate const* maybeCoord = osc::FindComponentMut<OpenSim::Coordinate>(*model, params->getCoordinatePath());
 		if (!maybeCoord)
 		{
-			return std::make_unique<Plot>(*params);  // empty plot
+			// cannot find the requested coordinate: exit early with an empty plot
+			return std::make_unique<Plot>(*params);
 		}
 		OpenSim::Coordinate const& coord = *maybeCoord;
 
@@ -448,57 +453,54 @@ namespace
 		shared->setProgress(0.0f);
 		coord.setLocked(state, false);
 
+		// this fixes an unusual bug (#352), where the underlying assembly solver in the
+		// model ends up retaining invalid values across a coordinate (un)lock, which makes
+		// it sets coordinate values from X (what we want) to 0 after model assembly
+		//
+		// I don't exactly know *why* it's doing it - it looks like OpenSim holds a solver
+		// internally that, itself, retains invalid coordinate values or something
+		//
+		// see #352 for a lengthier explanation
+		model->updateAssemblyConditions(state);
+
         if (stopToken.stop_requested())
         {
-            return std::make_unique<Plot>(*params);  // empty plot
+			// cancel requested: exit early with an empty plot
+            return std::make_unique<Plot>(*params);
         }
-
-		// HACK: ensure `computeMomentArm` is called at least once before running
-		//       the computation. No idea why. See:
-		//
-		// https://github.com/opensim-org/opensim-core/issues/3211
-		{
-			model->realizeDynamics(state);
-
-            if (stopToken.stop_requested())
-            {
-                return std::make_unique<Plot>(*params);  // empty plot
-            }
-
-			for (OpenSim::GeometryPath const& g : model->getComponentList<OpenSim::GeometryPath>())
-			{
-				g.computeMomentArm(state, coord);
-			}
-		}
 
 		for (int i = 0; i < nPoints; ++i)
         {
             if (stopToken.stop_requested())
 			{
-				return std::make_unique<Plot>(*params);  // empty plot
+				// cancel requested: exit early with an empty plot
+				return std::make_unique<Plot>(*params);
 			}
 
 			double xVal = start + (i * step);
 
-            coord.setValue(state, xVal);
+			coord.setValue(state, xVal, false);
 
             if (stopToken.stop_requested())
             {
-                return std::make_unique<Plot>(*params);  // empty plot
+				// cancel requested: exit early with an empty plot
+                return std::make_unique<Plot>(*params);
             }
 
 			model->equilibrateMuscles(state);
 
             if (stopToken.stop_requested())
             {
-                return std::make_unique<Plot>(*params);  // empty plot
+				// cancel requested: exit early with an empty plot
+                return std::make_unique<Plot>(*params);
             }
 
 			model->realizeReport(state);
 
             if (stopToken.stop_requested())
             {
-                return std::make_unique<Plot>(*params);  // empty plot
+				// cancel requested: exit early with an empty plot
+                return std::make_unique<Plot>(*params);
             }
 
 			double yVald = params->getMuscleOutput()(state, muscle, coord);
