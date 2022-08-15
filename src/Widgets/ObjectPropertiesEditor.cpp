@@ -558,8 +558,8 @@ namespace
                             OpenSim::HuntCrossleyForce::ContactParameters& contactParams = downcasted->getValue()[0];
                             if (params.hasProperty(resp->getPropertyName()))
                             {
-                                OpenSim::AbstractProperty& p = contactParams.updPropertyByName(resp->getPropertyName());
-                                resp->apply(p);
+                                OpenSim::AbstractProperty& childP = contactParams.updPropertyByName(resp->getPropertyName());
+                                resp->apply(childP);
                             }
                         }
                     };
