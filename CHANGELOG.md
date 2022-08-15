@@ -130,6 +130,14 @@ All notable changes to this project will be documented here. The format is based
 
 - Replaced all tabs with spaces in the source code (#357)
 
+- EXPERIMENTAL: added support for watching outputs in the editor (#356)
+
+  - It shows the value of a model output for the model's default (initial) state
+  - Eventually this panel will contain support for searching and removing output plots
+  - Long-term the plan is to support plotting any watched output against a model coordinate, to replace
+    the live muscle plots feature with a more generic "live output plots" equivalent
+  - Beware, it is quite slow right now (due to internal APIs)
+
 
 ## [0.2.0] - 2022/07/04
 
