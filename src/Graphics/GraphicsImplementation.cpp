@@ -4066,7 +4066,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement con
     }
     default:
     {
-        break;  // TODO: throw?
+        break;
     }
     }
 }

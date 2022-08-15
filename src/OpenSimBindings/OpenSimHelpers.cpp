@@ -153,9 +153,7 @@ namespace
             if (pwp)
             {
                 osc::Transform body2ground = osc::ToTransform(pwp->getParentFrame().getTransformInGround(st));
-
-                // TODO: the const_cast shouldn't be necessary in OpenSim 4.3
-                OpenSim::Array<SimTK::Vec3> const& wrapPath = const_cast<OpenSim::PathWrapPoint*>(pwp)->getWrapPath(st);
+                OpenSim::Array<SimTK::Vec3> const& wrapPath = pwp->getWrapPath(st);
 
                 for (int j = 0; j < wrapPath.getSize(); ++j)
                 {
