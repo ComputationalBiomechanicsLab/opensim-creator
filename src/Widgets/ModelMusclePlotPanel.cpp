@@ -10,6 +10,7 @@
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/CStringView.hpp"
+#include "src/Utils/CircularBuffer.hpp"
 #include "src/Utils/Cpp20Shims.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 
@@ -654,18 +655,48 @@ namespace
                 ImPlot::SetupAxes(xAxisLabel.c_str(), yAxisLabel.c_str(), xAxisFlags, yAxisFlags);
                 ImPlot::SetupAxisLimits(ImAxis_X1, osc::ConvertCoordValueToDisplayValue(coord, GetFirstXValue(latestParams, coord)), osc::ConvertCoordValueToDisplayValue(coord, GetLastXValue(latestParams, coord)));
 
-                auto plotLock = m_ActivePlot.lock();
+                glm::vec4 const baseColor = {1.0f, 1.0f, 1.0f, 1.0f};
 
-                std::string plotTitle = latestParams.getMusclePath().getComponentName();
-                nonstd::span<float const> xValues = plotLock->getXValues();
-                nonstd::span<float const> yValues = plotLock->getYValues();
+                // plot previous plots
+                {
+                    glm::vec4 color = baseColor;
+                    size_t i = 1;
+                    for (auto it = m_PreviousPlots.rbegin(); it != m_PreviousPlots.rend(); ++it)
+                    {
+                        std::stringstream ss;
+                        ss << "previous (" << i++ << ')';
+                        std::string const title = std::move(ss).str();
 
-                ImPlot::PlotLine(
-                    plotTitle.c_str(),
-                    xValues.data(),
-                    yValues.data(),
-                    static_cast<int>(xValues.size())
-                );
+                        color *= 0.75f;
+
+                        Plot const& previousPlot = *it;
+
+                        ImPlot::PushStyleColor(ImPlotCol_Line, color);
+                        ImPlot::PlotLine(
+                            title.c_str(),
+                            previousPlot.getXValues().data(),
+                            previousPlot.getYValues().data(),
+                            static_cast<int>(previousPlot.getXValues().size())
+                        );
+                        ImPlot::PopStyleColor(ImPlotCol_Line);
+                    }
+                }
+
+                // then plot currently active plot
+                {
+                    auto plotLock = m_ActivePlot.lock();
+
+                    std::string plotTitle = latestParams.getMusclePath().getComponentName();
+
+                    ImPlot::PushStyleColor(ImPlotCol_Line, baseColor);
+                    ImPlot::PlotLine(
+                        plotTitle.c_str(),
+                        plotLock->getXValues().data(),
+                        plotLock->getYValues().data(),
+                        static_cast<int>(plotLock->getXValues().size())
+                    );
+                    ImPlot::PopStyleColor(ImPlotCol_Line);
+                }
 
                 ImPlot::TagX(currentX, { 1.0f, 1.0f, 1.0f, 1.0f });
                 isHovered = ImPlot::IsPlotHovered();
@@ -793,12 +824,25 @@ namespace
             // a new plotting task
             if (m_ActivePlot.lock()->getParameters() != shared->PlotParams)
             {
+                // cancel current plotting task, to prevent unusual thread races while we
+                // shuffle data around
+                m_MaybeActivePlottingTask->cancelAndWait();
+
+                // (edge-case): if the user selected a different muscle output then you need
+                // to clear all previous plots
+                if (m_ActivePlot.lock()->getParameters().getMuscleOutput() != shared->PlotParams.getMuscleOutput())
+                {
+                    m_PreviousPlots.clear();
+                }
+
+                // set new active plot
+                Plot plot{shared->PlotParams};
+                auto lock = m_ActivePlot.lock();
+                std::swap(*lock, plot);
+                m_PreviousPlots.push_back(std::move(plot));
+
                 // start new plotting task
                 m_MaybeActivePlottingTask = std::make_unique<PlottingTask>(shared->PlotParams, [this](PlotDataPoint p) { onDataFromPlottingTask(p); });
-
-                // clear old active task
-                auto lock = m_ActivePlot.lock();
-                *lock = Plot{shared->PlotParams};
             }
         }
 
@@ -810,6 +854,7 @@ namespace
 
         std::unique_ptr<PlottingTask> m_MaybeActivePlottingTask = std::make_unique<PlottingTask>(shared->PlotParams, [this](PlotDataPoint p) { onDataFromPlottingTask(p); });
         osc::SynchronizedValue<Plot> m_ActivePlot{shared->PlotParams};
+        osc::CircularBuffer<Plot, 6> m_PreviousPlots;
     };
 
     // state in which a user is being prompted to select a coordinate in the model

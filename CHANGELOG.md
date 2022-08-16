@@ -140,6 +140,10 @@ All notable changes to this project will be documented here. The format is based
 
 - Forward declares in the source code now use the Include What You Use style (#283)
 
+- Live muscle plots now plot the data as it's being computed, rather than showing a loading bar (#354)
+
+- Live muscle plots now show the previous few plot lines, for easier comparison (#355)
+
 
 ## [0.2.0] - 2022/07/04
 
