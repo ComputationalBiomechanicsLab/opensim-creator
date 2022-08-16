@@ -828,18 +828,20 @@ namespace
                 // shuffle data around
                 m_MaybeActivePlottingTask->cancelAndWait();
 
-                // (edge-case): if the user selected a different muscle output then you need
-                // to clear all previous plots
-                if (m_ActivePlot.lock()->getParameters().getMuscleOutput() != shared->PlotParams.getMuscleOutput())
-                {
-                    m_PreviousPlots.clear();
-                }
+                // (edge-case): if the user selected a different muscle output then the previous
+                // plots have to be cleared out
+                bool clearPrevious = m_ActivePlot.lock()->getParameters().getMuscleOutput() != shared->PlotParams.getMuscleOutput();
 
                 // set new active plot
                 Plot plot{shared->PlotParams};
                 auto lock = m_ActivePlot.lock();
                 std::swap(*lock, plot);
                 m_PreviousPlots.push_back(std::move(plot));
+
+                if (clearPrevious)
+                {
+                    m_PreviousPlots.clear();
+                }
 
                 // start new plotting task
                 m_MaybeActivePlottingTask = std::make_unique<PlottingTask>(shared->PlotParams, [this](PlotDataPoint p) { onDataFromPlottingTask(p); });
