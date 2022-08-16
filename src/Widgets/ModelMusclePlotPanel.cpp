@@ -341,7 +341,7 @@ namespace
 
     double GetLastXValue(PlotParameters const& p, OpenSim::Coordinate const& c)
     {
-        return c.getRangeMin();
+        return c.getRangeMax();
     }
 
     double GetStepBetweenXValues(PlotParameters const& p, OpenSim::Coordinate const& c)
@@ -523,9 +523,11 @@ namespace
 
                 float const yVal = static_cast<float>(m_Parameters.getMuscleOutput()(state, muscle, coord));
 
-                m_DataPointConsumer(PlotDataPoint{ osc::ConvertCoordValueToDisplayValue(coord, xVal), yVal });
+                m_DataPointConsumer(PlotDataPoint{osc::ConvertCoordValueToDisplayValue(coord, xVal), yVal});
                 m_Progress = static_cast<float>(i+1) / static_cast<float>(numDataPoints);
             }
+
+            m_Status = PlottingTaskStatus::Finished;
         }
 
         PlotParameters m_Parameters;
@@ -542,16 +544,8 @@ namespace
         explicit Plot(PlotParameters const& parameters) :
             m_Parameters{parameters}
         {
-        }
-
-        Plot(PlotParameters const& parameters,
-             std::vector<float> xValues,
-             std::vector<float> yValues) :
-
-            m_Parameters{parameters},
-            m_XValues{std::move(xValues)},
-            m_YValues{std::move(yValues)}
-        {
+            m_XValues.reserve(m_Parameters.getNumRequestedDataPoints());
+            m_YValues.reserve(m_Parameters.getNumRequestedDataPoints());
         }
 
         PlotParameters const& getParameters() const
@@ -569,148 +563,17 @@ namespace
             return m_YValues;
         }
 
+        void append(PlotDataPoint const& p)
+        {
+            m_XValues.push_back(p.x);
+            m_YValues.push_back(p.y);
+        }
+
     private:
         PlotParameters m_Parameters;
         std::vector<float> m_XValues;
         std::vector<float> m_YValues;
     };
-
-    class ThreadsafeSharedState final {
-    public:
-        float getProgress() const { return m_Progress; }
-        void setProgress(float v)
-        {
-            m_Progress = v;
-            // HACK: the UI needs to redraw a progress upate
-            osc::App::upd().requestRedraw();
-        }
-
-    private:
-        std::atomic<float> m_Progress = 0.0f;
-    };
-
-    std::unique_ptr<Plot> ComputePlotSynchronously(osc::stop_token stopToken,
-                                                   std::unique_ptr<PlotParameters> params,
-                                                   std::shared_ptr<ThreadsafeSharedState> shared)
-    {
-        if (params->getNumRequestedDataPoints() <= 0)
-        {
-            // no datapoints requested: exit early with an empty plot
-            return std::make_unique<Plot>(*params);
-        }
-
-        std::unique_ptr<OpenSim::Model> model = std::make_unique<OpenSim::Model>(*params->getCommit().getModel());
-
-        if (stopToken.stop_requested())
-        {
-            // cancel requested: exit early with an empty plot
-            return std::make_unique<Plot>(*params);
-        }
-
-        osc::InitializeModel(*model);
-
-        if (stopToken.stop_requested())
-        {
-            // cancel requested: exit early with an empty plot
-            return std::make_unique<Plot>(*params);
-        }
-
-        SimTK::State& state = osc::InitializeState(*model);
-
-        if (stopToken.stop_requested())
-        {
-            // cancel requested: exit early with an empty plot
-            return std::make_unique<Plot>(*params);
-        }
-
-        OpenSim::Muscle const* maybeMuscle = osc::FindComponent<OpenSim::Muscle>(*model, params->getMusclePath());
-        if (!maybeMuscle)
-        {
-            // cannot find the requested muscle: exit early with an empty plot
-            return std::make_unique<Plot>(*params);
-        }
-        OpenSim::Muscle const& muscle = *maybeMuscle;
-
-        OpenSim::Coordinate const* maybeCoord = osc::FindComponentMut<OpenSim::Coordinate>(*model, params->getCoordinatePath());
-        if (!maybeCoord)
-        {
-            // cannot find the requested coordinate: exit early with an empty plot
-            return std::make_unique<Plot>(*params);
-        }
-        OpenSim::Coordinate const& coord = *maybeCoord;
-
-        int const numDataPoints = params->getNumRequestedDataPoints();
-        double const firstXValue = GetFirstXValue(*params, coord);
-        double const stepBetweenXValues = GetStepBetweenXValues(*params, coord);
-
-        std::vector<float> xValues;
-        xValues.reserve(numDataPoints);
-
-        std::vector<float> yValues;
-        yValues.reserve(numDataPoints);
-
-        shared->setProgress(0.0f);
-
-        // this fixes an unusual bug (#352), where the underlying assembly solver in the
-        // model ends up retaining invalid values across a coordinate (un)lock, which makes
-        // it sets coordinate values from X (what we want) to 0 after model assembly
-        //
-        // I don't exactly know *why* it's doing it - it looks like OpenSim holds a solver
-        // internally that, itself, retains invalid coordinate values or something
-        //
-        // see #352 for a lengthier explanation
-        coord.setLocked(state, false);
-        model->updateAssemblyConditions(state);
-
-        if (stopToken.stop_requested())
-        {
-            // cancel requested: exit early with an empty plot
-            return std::make_unique<Plot>(*params);
-        }
-
-        for (int i = 0; i < numDataPoints; ++i)
-        {
-            if (stopToken.stop_requested())
-            {
-                // cancel requested: exit early with an empty plot
-                return std::make_unique<Plot>(*params);
-            }
-
-            double xVal = firstXValue + (i * stepBetweenXValues);
-            coord.setValue(state, xVal);
-
-            if (stopToken.stop_requested())
-            {
-                // cancel requested: exit early with an empty plot
-                return std::make_unique<Plot>(*params);
-            }
-
-            model->equilibrateMuscles(state);
-
-            if (stopToken.stop_requested())
-            {
-                // cancel requested: exit early with an empty plot
-                return std::make_unique<Plot>(*params);
-            }
-
-            model->realizeReport(state);
-
-            if (stopToken.stop_requested())
-            {
-                // cancel requested: exit early with an empty plot
-                return std::make_unique<Plot>(*params);
-            }
-
-            float const yVal = static_cast<float>(params->getMuscleOutput()(state, muscle, coord));
-
-            xValues.push_back(osc::ConvertCoordValueToDisplayValue(coord, xVal));
-            yValues.push_back(yVal);
-
-            shared->setProgress(static_cast<float>(i+1) / static_cast<float>(numDataPoints));
-        }
-
-        return std::make_unique<Plot>(*params, std::move(xValues), std::move(yValues));
-    }
 }
 
 // state stuff
@@ -751,49 +614,25 @@ namespace
         SharedStateData* shared;
     };
 
-    std::unique_ptr<MusclePlotState> CreateChooseCoordinateState(SharedStateData*);
-    std::unique_ptr<MusclePlotState> CreateChooseMuscleState(SharedStateData*);
-    std::unique_ptr<MusclePlotState> CreateLoadDataState(SharedStateData*);
-    std::unique_ptr<MusclePlotState> CreateShowPlotState(SharedStateData*, std::unique_ptr<Plot>);
-
     // state in which the plot is being shown to the user
     class ShowingPlotState final : public MusclePlotState {
     public:
-        explicit ShowingPlotState(SharedStateData* shared_, std::unique_ptr<Plot> plot) :
-            MusclePlotState{std::move(shared_)},
-            m_Plot{std::move(plot)}
+        explicit ShowingPlotState(SharedStateData* shared_) :
+            MusclePlotState{std::move(shared_)}
         {
         }
 
         std::unique_ptr<MusclePlotState> draw() override
         {
-            // ensure latest requested params reflects the latest version of the model
-            shared->PlotParams.setCommit(shared->Uim->getLatestCommit());
+            pollForPlotParameterChanges();
 
-            // if the current plot doesn't match the latest requested params, replot
-            if (m_Plot->getParameters() != shared->PlotParams)
-            {
-                return CreateLoadDataState(shared);
-            }
+            PlotParameters const& latestParams = shared->PlotParams;
+            auto modelGuard = latestParams.getCommit().getModel();
 
-            if (m_Plot->getXValues().empty())
-            {
-                ImGui::Text("(no X values)");
-                return nullptr;
-            }
-
-            if (m_Plot->getYValues().empty())
-            {
-                ImGui::Text("(no Y values)");
-                return nullptr;
-            }
-
-            auto modelGuard = m_Plot->getParameters().getCommit().getModel();
-
-            OpenSim::Coordinate const* maybeCoord = osc::FindComponent<OpenSim::Coordinate>(*modelGuard, m_Plot->getParameters().getCoordinatePath());
+            OpenSim::Coordinate const* maybeCoord = osc::FindComponent<OpenSim::Coordinate>(*modelGuard, latestParams.getCoordinatePath());
             if (!maybeCoord)
             {
-                ImGui::Text("(no coordinate named %s in model)", m_Plot->getParameters().getCoordinatePath().toString().c_str());
+                ImGui::Text("(no coordinate named %s in model)", latestParams.getCoordinatePath().toString().c_str());
                 return nullptr;
             }
             OpenSim::Coordinate const& coord = *maybeCoord;
@@ -810,13 +649,24 @@ namespace
             ImPlotPoint p = {};
             if (ImPlot::BeginPlot(title.c_str(), availSize, ImPlotFlags_AntiAliased | ImPlotFlags_NoTitle | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame))
             {
-                ImPlotAxisFlags xAxisFlags = ImPlotAxisFlags_AutoFit;
+                ImPlotAxisFlags xAxisFlags = ImPlotAxisFlags_Lock;
                 ImPlotAxisFlags yAxisFlags = ImPlotAxisFlags_AutoFit;
                 ImPlot::SetupAxes(xAxisLabel.c_str(), yAxisLabel.c_str(), xAxisFlags, yAxisFlags);
-                ImPlot::PlotLine(m_Plot->getParameters().getMusclePath().getComponentName().c_str(),
-                    m_Plot->getXValues().data(),
-                    m_Plot->getYValues().data(),
-                    static_cast<int>(m_Plot->getXValues().size()));
+                ImPlot::SetupAxisLimits(ImAxis_X1, osc::ConvertCoordValueToDisplayValue(coord, GetFirstXValue(latestParams, coord)), osc::ConvertCoordValueToDisplayValue(coord, GetLastXValue(latestParams, coord)));
+
+                auto plotLock = m_ActivePlot.lock();
+
+                std::string plotTitle = latestParams.getMusclePath().getComponentName();
+                nonstd::span<float const> xValues = plotLock->getXValues();
+                nonstd::span<float const> yValues = plotLock->getYValues();
+
+                ImPlot::PlotLine(
+                    plotTitle.c_str(),
+                    xValues.data(),
+                    yValues.data(),
+                    static_cast<int>(xValues.size())
+                );
+
                 ImPlot::TagX(currentX, { 1.0f, 1.0f, 1.0f, 1.0f });
                 isHovered = ImPlot::IsPlotHovered();
                 p = ImPlot::GetPlotMousePos();
@@ -826,6 +676,11 @@ namespace
                 }
                 ImPlot::EndPlot();
             }
+
+            // if the plot is hovered and the user is holding their left-mouse button down,
+            // then "scrub" through the coordinate in the model
+            //
+            // this is handy for users to visually see how a coordinate affects the model
             if (isHovered && ImGui::IsMouseDown(ImGuiMouseButton_Left))
             {
                 if (coord.getDefaultLocked())
@@ -838,6 +693,9 @@ namespace
                     osc::ActionSetCoordinateValue(*shared->Uim, coord, storedValue);
                 }
             }
+
+            // when the user stops dragging their left-mouse around, commit the scrubbed-to
+            // coordinate to model storage
             if (isHovered && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
             {
                 if (coord.getDefaultLocked())
@@ -850,12 +708,15 @@ namespace
                     osc::ActionSetCoordinateValueAndSave(*shared->Uim, coord, storedValue);
                 }
             }
+
+            // draw a context menu with helpful options (set num data points, export, etc.)
             if (ImGui::BeginPopupContextItem((title + "_contextmenu").c_str()))
             {
                 drawPlotDataTypeSelector();
-                if (ImGui::InputInt("num data points", &m_NumPlotPointsEdited, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue))
+                int currentDataPoints = shared->PlotParams.getNumRequestedDataPoints();
+                if (ImGui::InputInt("num data points", &currentDataPoints, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue))
                 {
-                    shared->PlotParams.setNumRequestedDataPoints(m_NumPlotPointsEdited);
+                    shared->PlotParams.setNumRequestedDataPoints(currentDataPoints);
                 }
 
                 ImGui::EndPopup();
@@ -876,7 +737,7 @@ namespace
             {
                 MuscleOutput const& o = allOutputs[i];
                 names.push_back(o.getName());
-                if (o == m_Plot->getParameters().getMuscleOutput())
+                if (o == shared->PlotParams.getMuscleOutput())
                 {
                     active = i;
                 }
@@ -899,7 +760,7 @@ namespace
 
         void appendYAxisName(std::stringstream& ss)
         {
-            ss << m_Plot->getParameters().getMuscleOutput().getName();
+            ss << shared->PlotParams.getMuscleOutput().getName();
         }
 
         void appendXAxisName(OpenSim::Coordinate const& c, std::stringstream& ss)
@@ -911,7 +772,7 @@ namespace
         {
             std::stringstream ss;
             appendYAxisName(ss);
-            ss << " [" << m_Plot->getParameters().getMuscleOutput().getUnits() << ']';
+            ss << " [" << shared->PlotParams.getMuscleOutput().getUnits() << ']';
             return std::move(ss).str();
         }
 
@@ -923,37 +784,32 @@ namespace
             return std::move(ss).str();
         }
 
-        std::unique_ptr<Plot> m_Plot;
-        int m_NumPlotPointsEdited = shared->PlotParams.getNumRequestedDataPoints();
-    };
-
-    class LoadDataState final : public MusclePlotState {
-    public:
-        explicit LoadDataState(SharedStateData* shared_) :
-            MusclePlotState{std::move(shared_)},
-            m_LoadingResult{std::async(std::launch::async, ComputePlotSynchronously, m_StopSource.get_token(), std::make_unique<PlotParameters>(shared->PlotParams), m_SharedState)}
+        void pollForPlotParameterChanges()
         {
-        }
+            // ensure latest requested params reflects the latest version of the model
+            shared->PlotParams.setCommit(shared->Uim->getLatestCommit());
 
-        std::unique_ptr<MusclePlotState> draw() override
-        {
-            ImGui::Text("computing plot");
-            ImGui::ProgressBar(m_SharedState->getProgress());
+            // if the current plot doesn't match the latest requested params, kick off
+            // a new plotting task
+            if (m_ActivePlot.lock()->getParameters() != shared->PlotParams)
+            {
+                // start new plotting task
+                m_MaybeActivePlottingTask = std::make_unique<PlottingTask>(shared->PlotParams, [this](PlotDataPoint p) { onDataFromPlottingTask(p); });
 
-            if (m_LoadingResult.wait_for(std::chrono::seconds{0}) == std::future_status::ready)
-            {
-                return CreateShowPlotState(shared, m_LoadingResult.get());
-            }
-            else
-            {
-                return nullptr;
+                // clear old active task
+                auto lock = m_ActivePlot.lock();
+                *lock = Plot{shared->PlotParams};
             }
         }
 
-    private:
-        osc::stop_source m_StopSource;
-        std::shared_ptr<ThreadsafeSharedState> m_SharedState = std::make_shared<ThreadsafeSharedState>();
-        std::future<std::unique_ptr<Plot>> m_LoadingResult;
+        void onDataFromPlottingTask(PlotDataPoint p)
+        {
+            osc::App::upd().requestRedraw();
+            m_ActivePlot.lock()->append(p);
+        }
+
+        std::unique_ptr<PlottingTask> m_MaybeActivePlottingTask = std::make_unique<PlottingTask>(shared->PlotParams, [this](PlotDataPoint p) { onDataFromPlottingTask(p); });
+        osc::SynchronizedValue<Plot> m_ActivePlot{shared->PlotParams};
     };
 
     // state in which a user is being prompted to select a coordinate in the model
@@ -984,7 +840,7 @@ namespace
                 if (ImGui::Selectable(coord->getName().c_str()))
                 {
                     shared->PlotParams.setCoordinatePath(coord->getAbsolutePath());
-                    rv = std::make_unique<LoadDataState>(shared);
+                    rv = std::make_unique<ShowingPlotState>(shared);
                 }
             }
             ImGui::EndChild();
@@ -1036,30 +892,15 @@ namespace
             return rv;
         }
     };
-
-    std::unique_ptr<MusclePlotState> CreateChooseCoordinateState(SharedStateData* shared)
-    {
-        return std::make_unique<PickCoordinateState>(std::move(shared));
-    }
-
-    std::unique_ptr<MusclePlotState> CreateChooseMuscleState(SharedStateData* shared)
-    {
-        return std::make_unique<PickMuscleState>(std::move(shared));
-    }
-
-    std::unique_ptr<MusclePlotState> CreateLoadDataState(SharedStateData* shared)
-    {
-        return std::make_unique<LoadDataState>(std::move(shared));
-    }
-    std::unique_ptr<MusclePlotState> CreateShowPlotState(SharedStateData* shared, std::unique_ptr<Plot> plot)
-    {
-        return std::make_unique<ShowingPlotState>(std::move(shared), std::move(plot));
-    }
 }
 
-// private IMPL for the muscle plot (effectively, a state machine host)
+// private IMPL for the muscle plot panel
+//
+// this effectively operates as a state-machine host, where each state (e.g.
+// "choose a muscle", "choose a coordinate") is mostly independent
 class osc::ModelMusclePlotPanel::Impl final {
 public:
+
     Impl(std::shared_ptr<UndoableModelStatePair> uim, std::string_view panelName) :
         m_SharedData{std::move(uim)},
         m_ActiveState{std::make_unique<PickMuscleState>(&m_SharedData)},
@@ -1072,7 +913,7 @@ public:
          OpenSim::ComponentPath const& coordPath,
          OpenSim::ComponentPath const& musclePath) :
         m_SharedData{std::move(uim), coordPath, musclePath},
-        m_ActiveState{std::make_unique<LoadDataState>(&m_SharedData)},
+        m_ActiveState{std::make_unique<ShowingPlotState>(&m_SharedData)},
         m_PanelName{std::move(panelName)}
     {
     }
