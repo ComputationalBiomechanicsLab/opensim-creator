@@ -144,6 +144,8 @@ All notable changes to this project will be documented here. The format is based
 
 - Live muscle plots now show the previous few plot lines, for easier comparison (#355)
 
+- Muscle plotting (e.g. muscle missing) errors are now propagated to the muscle plot panel (#353)
+
 
 ## [0.2.0] - 2022/07/04
 
