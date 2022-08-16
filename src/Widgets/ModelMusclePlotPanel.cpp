@@ -352,7 +352,191 @@ namespace
         return (end - start) / std::max(1, p.getNumRequestedDataPoints()-1);
     }
 
-    // a plot, constructed according to input parameters
+    // a single data point in the plot, as emitted by the plotting backend
+    struct PlotDataPoint final {
+        float x;
+        float y;
+    };
+
+    // the status of a "live" plotting task
+    enum class PlottingTaskStatus {
+        Running,
+        Cancelled,
+        Finished,
+        Error,
+    };
+
+    // a "live" plotting task that computes plot datapoints on a background thread
+    class PlottingTask final {
+    public:
+        PlottingTask(PlotParameters const& params, std::function<void(PlotDataPoint)> callback) :
+            m_Parameters{params},
+            m_DataPointConsumer{std::move(callback)},
+            m_WorkerThread{[this](osc::stop_token t) { run(std::move(t)); }}
+        {
+        }
+
+        void wait()
+        {
+            if (m_WorkerThread.joinable())
+            {
+                m_WorkerThread.join();
+            }
+        }
+
+        void cancelAndWait()
+        {
+            m_WorkerThread.request_stop();
+            wait();
+        }
+
+        PlottingTaskStatus getStatus() const
+        {
+            return m_Status.load();
+        }
+
+        std::optional<std::string> getErrorString() const
+        {
+            return *m_ErrorString.lock();
+        }
+
+        PlotParameters const& getParameters() const
+        {
+            return m_Parameters;
+        }
+
+        float getProgress() const
+        {
+            return m_Progress.load();
+        }
+
+    private:
+        void run(osc::stop_token stopToken)
+        {
+            // TODO: exception handling
+
+            if (m_Parameters.getNumRequestedDataPoints() <= 0)
+            {
+                auto errorLock = m_ErrorString.lock();
+                *errorLock = "<= 0 data points requested: cannot create a plot";
+                m_Status = PlottingTaskStatus::Error;
+                return;
+            }
+
+            std::unique_ptr<OpenSim::Model> model = std::make_unique<OpenSim::Model>(*m_Parameters.getCommit().getModel());
+
+            if (stopToken.stop_requested())
+            {
+                m_Status = PlottingTaskStatus::Cancelled;
+                return;
+            }
+
+            osc::InitializeModel(*model);
+
+            if (stopToken.stop_requested())
+            {
+                m_Status = PlottingTaskStatus::Cancelled;
+                return;
+            }
+
+            SimTK::State& state = osc::InitializeState(*model);
+
+            if (stopToken.stop_requested())
+            {
+                m_Status = PlottingTaskStatus::Cancelled;
+                return;
+            }
+
+            OpenSim::Muscle const* maybeMuscle = osc::FindComponent<OpenSim::Muscle>(*model, m_Parameters.getMusclePath());
+            if (!maybeMuscle)
+            {
+                auto errorLock = m_ErrorString.lock();
+                *errorLock = m_Parameters.getMusclePath().toString() + ": cannot find a muscle with this name";
+                m_Status = PlottingTaskStatus::Error;
+                return;
+            }
+            OpenSim::Muscle const& muscle = *maybeMuscle;
+
+            OpenSim::Coordinate const* maybeCoord = osc::FindComponentMut<OpenSim::Coordinate>(*model, m_Parameters.getCoordinatePath());
+            if (!maybeCoord)
+            {
+                auto errorLock = m_ErrorString.lock();
+                *errorLock = m_Parameters.getCoordinatePath().toString() + ": cannot find a coordinate with this name";
+                m_Status = PlottingTaskStatus::Error;
+                return;
+            }
+            OpenSim::Coordinate const& coord = *maybeCoord;
+
+            int const numDataPoints = m_Parameters.getNumRequestedDataPoints();
+            double const firstXValue = GetFirstXValue(m_Parameters, coord);
+            double const stepBetweenXValues = GetStepBetweenXValues(m_Parameters, coord);
+
+            // this fixes an unusual bug (#352), where the underlying assembly solver in the
+            // model ends up retaining invalid values across a coordinate (un)lock, which makes
+            // it sets coordinate values from X (what we want) to 0 after model assembly
+            //
+            // I don't exactly know *why* it's doing it - it looks like OpenSim holds a solver
+            // internally that, itself, retains invalid coordinate values or something
+            //
+            // see #352 for a lengthier explanation
+            coord.setLocked(state, false);
+            model->updateAssemblyConditions(state);
+
+            if (stopToken.stop_requested())
+            {
+                m_Status = PlottingTaskStatus::Cancelled;
+                return;
+            }
+
+            for (int i = 0; i < numDataPoints; ++i)
+            {
+                if (stopToken.stop_requested())
+                {
+                    m_Status = PlottingTaskStatus::Cancelled;
+                    return;
+                }
+
+                double xVal = firstXValue + (i * stepBetweenXValues);
+                coord.setValue(state, xVal);
+
+                if (stopToken.stop_requested())
+                {
+                    m_Status = PlottingTaskStatus::Cancelled;
+                    return;
+                }
+
+                model->equilibrateMuscles(state);
+
+                if (stopToken.stop_requested())
+                {
+                    m_Status = PlottingTaskStatus::Cancelled;
+                    return;
+                }
+
+                model->realizeReport(state);
+
+                if (stopToken.stop_requested())
+                {
+                    m_Status = PlottingTaskStatus::Cancelled;
+                    return;
+                }
+
+                float const yVal = static_cast<float>(m_Parameters.getMuscleOutput()(state, muscle, coord));
+
+                m_DataPointConsumer(PlotDataPoint{ osc::ConvertCoordValueToDisplayValue(coord, xVal), yVal });
+                m_Progress = static_cast<float>(i+1) / static_cast<float>(numDataPoints);
+            }
+        }
+
+        PlotParameters m_Parameters;
+        std::function<void(PlotDataPoint)> m_DataPointConsumer;
+        std::atomic<PlottingTaskStatus> m_Status = PlottingTaskStatus::Running;
+        std::atomic<float> m_Progress = 0.0f;
+        osc::SynchronizedValue<std::string> m_ErrorString;
+        osc::jthread m_WorkerThread;
+    };
+
+    // a plot, created from the data produced by the plotting task
     class Plot final {
     public:
         explicit Plot(PlotParameters const& parameters) :
