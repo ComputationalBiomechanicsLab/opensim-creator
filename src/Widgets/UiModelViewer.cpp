@@ -1,7 +1,7 @@
 #include "UiModelViewer.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/Graphics/DAEWriter.hpp"
+#include "src/Formats/DAE.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/SceneDecoration.hpp"

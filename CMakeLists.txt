@@ -276,13 +276,14 @@ add_library(osccore STATIC
     src/Bindings/Gl.hpp
     src/Bindings/GlGlm.hpp
 
+    src/Formats/DAE.hpp
+    src/Formats/DAE.cpp
+
     src/Graphics/Camera.hpp
     src/Graphics/CameraClearFlags.hpp
     src/Graphics/CameraProjection.hpp
     src/Graphics/Color.cpp
     src/Graphics/Color.hpp
-    src/Graphics/DAEWriter.cpp
-    src/Graphics/DAEWriter.hpp
     src/Graphics/DepthStencilFormat.hpp
     src/Graphics/Graphics.hpp
     src/Graphics/GraphicsContext.hpp
