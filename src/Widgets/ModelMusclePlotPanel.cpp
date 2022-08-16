@@ -627,6 +627,12 @@ namespace
         {
             pollForPlotParameterChanges();
 
+            if (m_MaybeActivePlottingTask->getStatus() == PlottingTaskStatus::Error)
+            {
+                ImGui::Text("error: cannot show plot: %s", m_MaybeActivePlottingTask->getErrorString().value().c_str());
+                return nullptr;
+            }
+
             PlotParameters const& latestParams = shared->PlotParams;
             auto modelGuard = latestParams.getCommit().getModel();
 
