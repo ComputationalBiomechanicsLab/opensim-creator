@@ -750,6 +750,11 @@ namespace
                     shared->PlotParams.setNumRequestedDataPoints(currentDataPoints);
                 }
 
+                if (ImGui::MenuItem("clear previous plots"))
+                {
+                    m_PreviousPlots.clear();
+                }
+
                 ImGui::EndPopup();
             }
 
