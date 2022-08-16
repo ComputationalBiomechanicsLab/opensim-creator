@@ -19,12 +19,6 @@
 
 static constexpr inline int g_FilterMaxLen = 64;
 
-// returns `true` if the name of `c1` is lexographically less than `c2`
-static bool IsNameLexographicallyLessThan(OpenSim::Component const* c1, OpenSim::Component const* c2)
-{
-    return c1->getName() < c2->getName();
-}
-
 class osc::CoordinateEditor::Impl final {
 public:
 
@@ -154,7 +148,7 @@ private:
         // sort coords
         if (m_SortByName)
         {
-            Sort(rv, IsNameLexographicallyLessThan);
+            Sort(rv, osc::IsNameLexographicallyLowerThan<OpenSim::Component const*>);
         }
 
         return rv;

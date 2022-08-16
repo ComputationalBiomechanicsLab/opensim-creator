@@ -844,6 +844,16 @@ static std::vector<OpenSim::Component*> GetAnyComponentsConnectedViaSocketTo(Ope
 
 // public API
 
+bool osc::IsConcreteClassNameLexographicallyLowerThan(OpenSim::Component const& a, OpenSim::Component const& b)
+{
+    return a.getConcreteClassName() < b.getConcreteClassName();
+}
+
+bool osc::IsNameLexographicallyLowerThan(OpenSim::Component const& a, OpenSim::Component const& b)
+{
+    return a.getName() < b.getName();
+}
+
 OpenSim::Component* osc::UpdOwner(OpenSim::Component& c)
 {
     return c.hasOwner() ? const_cast<OpenSim::Component*>(&c.getOwner()) : nullptr;

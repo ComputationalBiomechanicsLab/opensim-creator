@@ -27,6 +27,27 @@ namespace SimTK { class State; }
 // OpenSimHelpers: a collection of various helper functions that are used by `osc`
 namespace osc
 {
+    // returns true if the first argument has a lexographically lower class name
+    bool IsConcreteClassNameLexographicallyLowerThan(OpenSim::Component const&, OpenSim::Component const&);
+
+    // returns true if the first argument points to a component that has a lexographically lower class
+    // name than the component pointed to by second argument
+    //
+    // (it's a helper method that's handy for use with pointers, unique_ptr, shared_ptr, etc.)
+    template<typename ComponentPtrLike>
+    bool IsConcreteClassNameLexographicallyLowerThan(ComponentPtrLike const& a, ComponentPtrLike const& b)
+    {
+        return IsConcreteClassNameLexographicallyLowerThan(*a, *b);
+    }
+
+    bool IsNameLexographicallyLowerThan(OpenSim::Component const&, OpenSim::Component const&);
+
+    template<typename ComponentPtrLike>
+    bool IsNameLexographicallyLowerThan(ComponentPtrLike const& a, ComponentPtrLike const& b)
+    {
+        return IsNameLexographicallyLowerThan(*a, *b);
+    }
+
     // returns a mutable pointer to the owner (if it exists)
     OpenSim::Component* UpdOwner(OpenSim::Component&);
 

@@ -40,11 +40,6 @@
 
 namespace SimTK { class State; }
 
-static bool SortByComponentName(OpenSim::Component const* p1, OpenSim::Component const* p2)
-{
-    return p1->getName() < p2->getName();
-}
-
 namespace
 {
     class MuscleOutput {
@@ -254,6 +249,7 @@ namespace
                        OpenSim::ComponentPath musclePath,
                        MuscleOutput output,
                        int requestedNumDataPoints) :
+
             m_Commit{std::move(commit)},
             m_CoordinatePath{std::move(coordinatePath)},
             m_MusclePath{std::move(musclePath)},
@@ -348,6 +344,7 @@ namespace
         Plot(PlotParameters const& parameters,
              std::vector<float> xValues,
              std::vector<float> yValues) :
+
             m_Parameters{parameters},
             m_XValues{std::move(xValues)},
             m_YValues{std::move(yValues)}
@@ -774,7 +771,7 @@ namespace
             {
                 coordinates.push_back(&coord);
             }
-            osc::Sort(coordinates, SortByComponentName);
+            osc::Sort(coordinates, osc::IsNameLexographicallyLowerThan<OpenSim::Component const*>);
 
             ImGui::Text("select coordinate:");
 
@@ -811,7 +808,7 @@ namespace
             {
                 muscles.push_back(&musc);
             }
-            osc::Sort(muscles, SortByComponentName);
+            osc::Sort(muscles, osc::IsNameLexographicallyLowerThan<OpenSim::Component const*>);
 
             ImGui::Text("select muscle:");
 

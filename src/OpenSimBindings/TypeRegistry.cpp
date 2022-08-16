@@ -1,5 +1,6 @@
 #include "TypeRegistry.hpp"
 
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/CStringView.hpp"
@@ -43,11 +44,6 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
-static bool SortedByClassName(std::shared_ptr<OpenSim::Component const> a, std::shared_ptr<OpenSim::Component const> b)
-{
-    return a->getConcreteClassName() < b->getConcreteClassName();
-}
 
 // create a lookup for user-facing description strings
 //
@@ -503,7 +499,7 @@ static std::vector<std::shared_ptr<T const>> CreatePrototypeLutT()
         }
     }
 
-    osc::Sort(rv, SortedByClassName);
+    osc::Sort(rv, osc::IsConcreteClassNameLexographicallyLowerThan<std::shared_ptr<OpenSim::Component const>>);
 
     return rv;
 }
@@ -943,7 +939,7 @@ static std::vector<std::shared_ptr<OpenSim::Component const>> CreateOtherCompone
         rv.emplace_back(c.clone());
     }
 
-    osc::Sort(rv, SortedByClassName);
+    osc::Sort(rv, osc::IsConcreteClassNameLexographicallyLowerThan<std::shared_ptr<OpenSim::Component const>>);
 
     return rv;
 }
