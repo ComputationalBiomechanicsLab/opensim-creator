@@ -321,7 +321,8 @@ namespace
 
     bool operator==(PlotParameters const& a, PlotParameters const& b)
     {
-        return a.m_Commit == b.m_Commit &&
+        return
+            a.m_Commit == b.m_Commit &&
             a.m_CoordinatePath == b.m_CoordinatePath &&
             a.m_MusclePath == b.m_MusclePath &&
             a.m_Output == b.m_Output &&
@@ -331,6 +332,24 @@ namespace
     bool operator!=(PlotParameters const& a, PlotParameters const& b)
     {
         return !(a == b);
+    }
+
+    double GetFirstXValue(PlotParameters const& p, OpenSim::Coordinate const& c)
+    {
+        return c.getRangeMin();
+    }
+
+    double GetLastXValue(PlotParameters const& p, OpenSim::Coordinate const& c)
+    {
+        return c.getRangeMin();
+    }
+
+    double GetStepBetweenXValues(PlotParameters const& p, OpenSim::Coordinate const& c)
+    {
+        double start = GetFirstXValue(p, c);
+        double end = GetLastXValue(p, c);
+
+        return (end - start) / std::max(1, p.getNumRequestedDataPoints()-1);
     }
 
     // a plot, constructed according to input parameters
@@ -396,7 +415,7 @@ namespace
             return std::make_unique<Plot>(*params);
         }
 
-        auto model = std::make_unique<OpenSim::Model>(*params->getCommit().getModel());
+        std::unique_ptr<OpenSim::Model> model = std::make_unique<OpenSim::Model>(*params->getCommit().getModel());
 
         if (stopToken.stop_requested())
         {
@@ -436,17 +455,17 @@ namespace
         }
         OpenSim::Coordinate const& coord = *maybeCoord;
 
-        int nPoints = params->getNumRequestedDataPoints();
-        double start = coord.getRangeMin();
-        double end = coord.getRangeMax();
-        double step = (end - start) / std::max(1, nPoints-1);
+        int const numDataPoints = params->getNumRequestedDataPoints();
+        double const firstXValue = GetFirstXValue(*params, coord);
+        double const stepBetweenXValues = GetStepBetweenXValues(*params, coord);
+
         std::vector<float> xValues;
-        xValues.reserve(nPoints);
+        xValues.reserve(numDataPoints);
+
         std::vector<float> yValues;
-        yValues.reserve(nPoints);
+        yValues.reserve(numDataPoints);
 
         shared->setProgress(0.0f);
-        coord.setLocked(state, false);
 
         // this fixes an unusual bug (#352), where the underlying assembly solver in the
         // model ends up retaining invalid values across a coordinate (un)lock, which makes
@@ -456,6 +475,7 @@ namespace
         // internally that, itself, retains invalid coordinate values or something
         //
         // see #352 for a lengthier explanation
+        coord.setLocked(state, false);
         model->updateAssemblyConditions(state);
 
         if (stopToken.stop_requested())
@@ -464,7 +484,7 @@ namespace
             return std::make_unique<Plot>(*params);
         }
 
-        for (int i = 0; i < nPoints; ++i)
+        for (int i = 0; i < numDataPoints; ++i)
         {
             if (stopToken.stop_requested())
             {
@@ -472,7 +492,7 @@ namespace
                 return std::make_unique<Plot>(*params);
             }
 
-            double xVal = start + (i * step);
+            double xVal = firstXValue + (i * stepBetweenXValues);
             coord.setValue(state, xVal);
 
             if (stopToken.stop_requested())
@@ -497,13 +517,12 @@ namespace
                 return std::make_unique<Plot>(*params);
             }
 
-            double yVald = params->getMuscleOutput()(state, muscle, coord);
-            float yVal = static_cast<float>(yVald);
+            float const yVal = static_cast<float>(params->getMuscleOutput()(state, muscle, coord));
 
             xValues.push_back(osc::ConvertCoordValueToDisplayValue(coord, xVal));
             yValues.push_back(yVal);
 
-            shared->setProgress(static_cast<float>(i+1) / static_cast<float>(nPoints));
+            shared->setProgress(static_cast<float>(i+1) / static_cast<float>(numDataPoints));
         }
 
         return std::make_unique<Plot>(*params, std::move(xValues), std::move(yValues));
