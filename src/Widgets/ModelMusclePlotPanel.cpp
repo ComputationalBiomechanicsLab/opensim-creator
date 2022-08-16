@@ -665,7 +665,7 @@ namespace
                     {
                         std::stringstream ss;
                         ss << "previous (" << i++ << ')';
-                        std::string const title = std::move(ss).str();
+                        std::string const previousPlotTitle = std::move(ss).str();
 
                         color *= 0.75f;
 
@@ -673,7 +673,7 @@ namespace
 
                         ImPlot::PushStyleColor(ImPlotCol_Line, color);
                         ImPlot::PlotLine(
-                            title.c_str(),
+                            previousPlotTitle.c_str(),
                             previousPlot.getXValues().data(),
                             previousPlot.getYValues().data(),
                             static_cast<int>(previousPlot.getXValues().size())
