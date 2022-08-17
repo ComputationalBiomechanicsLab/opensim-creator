@@ -63,6 +63,9 @@ namespace osc
     // reload the given model from its backing file (if applicable)
     bool ActionUpdateModelFromBackingFile(UndoableModelStatePair&);
 
+    // copies the full absolute path to the osim to the clipboard
+    bool ActionCopyModelPathToClipboard(UndoableModelStatePair const&);
+
     // try to automatically set the model's scale factor based on how big the scene is
     bool ActionAutoscaleSceneScaleFactor(UndoableModelStatePair&);
 

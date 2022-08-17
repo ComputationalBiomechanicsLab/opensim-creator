@@ -352,6 +352,12 @@ private:
             }
             DrawTooltipIfItemHovered("Reload osim file", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
 
+            if (ImGui::MenuItem(ICON_FA_CLIPBOARD " Copy .osim path to clipboard", nullptr, false, modelHasBackingFile))
+            {
+                osc::ActionCopyModelPathToClipboard(*m_Model);
+            }
+            DrawTooltipIfItemHovered("Copy .osim path to clipboard", "Copies the absolute path to the model's .osim file into your clipboard.\n\nThis is handy if you want to (e.g.) load the osim via a script, open it from the command line in an other app, etc.");
+
             if (ImGui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", nullptr, false, modelHasBackingFile))
             {
                 osc::ActionOpenOsimParentDirectory(*m_Model);

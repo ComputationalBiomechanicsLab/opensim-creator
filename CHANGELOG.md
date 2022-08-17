@@ -146,6 +146,8 @@ All notable changes to this project will be documented here. The format is based
 
 - Muscle plotting (e.g. muscle missing) errors are now propagated to the muscle plot panel (#353)
 
+- There is a now a "copy .osim path to clipboard" button in the edit menu of the model editor (#365)
+
 
 ## [0.2.0] - 2022/07/04
 

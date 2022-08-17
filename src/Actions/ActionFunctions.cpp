@@ -353,6 +353,21 @@ bool osc::ActionUpdateModelFromBackingFile(osc::UndoableModelStatePair& uim)
     }
 }
 
+bool osc::ActionCopyModelPathToClipboard(UndoableModelStatePair const& uim)
+{
+    if (!uim.hasFilesystemLocation())
+    {
+        // there is no backing file?
+        return false;
+    }
+
+    std::filesystem::path absPath = std::filesystem::absolute(uim.getFilesystemPath());
+
+    osc::SetClipboardText(absPath.string().c_str());
+
+    return true;
+}
+
 bool osc::ActionAutoscaleSceneScaleFactor(osc::UndoableModelStatePair& uim)
 {
     float sf = osc::GetRecommendedScaleFactor(uim);
