@@ -660,6 +660,7 @@ namespace
                 ImPlotAxisFlags yAxisFlags = ImPlotAxisFlags_AutoFit;
                 ImPlot::SetupAxes(xAxisLabel.c_str(), yAxisLabel.c_str(), xAxisFlags, yAxisFlags);
                 ImPlot::SetupAxisLimits(ImAxis_X1, osc::ConvertCoordValueToDisplayValue(coord, GetFirstXValue(latestParams, coord)), osc::ConvertCoordValueToDisplayValue(coord, GetLastXValue(latestParams, coord)));
+                ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, ImVec2{ 0.0f, 0.05f });
 
                 glm::vec4 const baseColor = {1.0f, 1.0f, 1.0f, 1.0f};
 
@@ -711,7 +712,10 @@ namespace
                 {
                     ImPlot::TagX(p.x, { 1.0f, 1.0f, 1.0f, 0.6f });
                 }
+
                 ImPlot::EndPlot();
+
+                ImPlot::PopStyleVar();
             }
 
             // if the plot is hovered and the user is holding their left-mouse button down,

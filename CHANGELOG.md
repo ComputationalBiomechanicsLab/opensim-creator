@@ -148,6 +148,8 @@ All notable changes to this project will be documented here. The format is based
 
 - There is a now a "copy .osim path to clipboard" button in the edit menu of the model editor (#365)
 
+- The plot line now has a little bit of padding along the Y axis, to prevent it touching the axis lines (#364)
+
 
 ## [0.2.0] - 2022/07/04
 
