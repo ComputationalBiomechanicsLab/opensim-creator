@@ -1043,7 +1043,7 @@ namespace
         osc::SynchronizedValue<Plot> m_ActivePlot{shared->PlotParams};
         osc::CircularBuffer<Plot, 6> m_PreviousPlots;
         bool m_ShowMarkers = true;
-        bool m_SnapCursor = true;
+        bool m_SnapCursor = false;
     };
 
     // state in which a user is being prompted to select a coordinate in the model
