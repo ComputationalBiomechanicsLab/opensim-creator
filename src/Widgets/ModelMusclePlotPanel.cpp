@@ -575,6 +575,91 @@ namespace
         std::vector<float> m_XValues;
         std::vector<float> m_YValues;
     };
+
+    float lerp(float a, float b, float t)
+    {
+        return (1.0f - t) * a + t * b;
+    }
+
+    std::optional<float> ComputeLERPedY(Plot const& p, float x)
+    {
+        nonstd::span<float const> const xVals = p.getXValues();
+        nonstd::span<float const> const yVals = p.getYValues();
+        OSC_ASSERT(xVals.size() == yVals.size());
+
+        if (xVals.empty())
+        {
+            // there are no X values
+            return std::nullopt;
+        }
+
+        auto const it = std::lower_bound(xVals.begin(), xVals.end(), x);
+
+        if (it == xVals.end())
+        {
+            // X is out of bounds
+            return std::nullopt;
+        }
+
+        if (it == xVals.begin())
+        {
+            // X if off the left-hand side
+            return yVals[0];
+        }
+
+        size_t const aboveIdx = std::distance(xVals.begin(), it);
+        size_t const belowIdx = aboveIdx - 1;
+
+        float const belowX = xVals[belowIdx];
+        float const aboveX = xVals[aboveIdx];
+        float const t = (x - belowX) / (aboveX - belowX); // [0..1]
+
+        float const belowY = yVals[belowIdx];
+        float const aboveY = yVals[aboveIdx];
+
+        return lerp(belowY, aboveY, t);
+    }
+
+    std::optional<PlotDataPoint> FindNearestPoint(Plot const& p, float x)
+    {
+        nonstd::span<float const> const xVals = p.getXValues();
+        nonstd::span<float const> const yVals = p.getYValues();
+
+        OSC_ASSERT(xVals.size() == yVals.size() && "a plot should have an equal number of X and Y values");
+
+        if (xVals.empty())
+        {
+            // there are no X values
+            return std::nullopt;
+        }
+
+        auto const it = std::lower_bound(xVals.begin(), xVals.end(), x);
+
+        if (it == xVals.begin())
+        {
+            // closest is the leftmost point
+            return PlotDataPoint{xVals.front(), yVals.front()};
+        }
+
+        if (it == xVals.end())
+        {
+            // closest is the rightmost point
+            return PlotDataPoint{xVals.back(), yVals.back()};
+        }
+
+        size_t const aboveIdx = std::distance(xVals.begin(), it);
+        size_t const belowIdx = aboveIdx - 1;
+
+        // else: the iterator is pointing to the element above the X location and we
+        //       need to figure out if that's closer than the element below the X
+        //       location
+        float const belowX = xVals[aboveIdx - 1];
+        float const aboveX = xVals[aboveIdx];
+
+        size_t const closestIdx = (aboveX - x) > (x - belowX) ? aboveIdx : belowIdx;
+
+        return PlotDataPoint{xVals[closestIdx], yVals[closestIdx]};
+    }
 }
 
 // state stuff
@@ -650,7 +735,7 @@ namespace
             std::string xAxisLabel = computePlotXAxisTitle(coord);
             std::string yAxisLabel = computePlotYAxisTitle();
 
-            double currentX = osc::ConvertCoordValueToDisplayValue(coord, coord.getValue(shared->Uim->getState()));
+            double coordinateXInDegrees = osc::ConvertCoordValueToDisplayValue(coord, coord.getValue(shared->Uim->getState()));
 
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, ImVec2{ 0.025f, 0.05f });
             if (ImPlot::BeginPlot(title.c_str(), availSize, ImPlotFlags_AntiAliased | ImPlotFlags_NoTitle | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame))
@@ -715,15 +800,15 @@ namespace
                 bool isHovered = ImPlot::IsPlotHovered();
                 ImPlotPoint p = ImPlot::GetPlotMousePos();
 
-                // draw vertical drop line where the coordinate currently is
+                // draw vertical drop line where the coordinate's value currently is
                 {
-                    double v = currentX;
+                    double v = coordinateXInDegrees;
                     ImPlot::DragLineX(10, &v, {1.0f, 1.0f, 0.0f, 0.6f}, 1.0f, ImPlotDragToolFlags_NoInputs);
                 }
 
-                // also, draw an X tag on the axes where the coordinate currently is
+                // also, draw an X tag on the axes where the coordinate's value currently is
                 {
-                    ImPlot::TagX(currentX, { 1.0f, 1.0f, 1.0f, 1.0f });
+                    ImPlot::TagX(coordinateXInDegrees, { 1.0f, 1.0f, 1.0f, 1.0f });
                 }
 
                 // draw faded vertial drop line where the mouse currently is
@@ -737,6 +822,36 @@ namespace
                 if (isHovered)
                 {
                     ImPlot::TagX(p.x, { 1.0f, 1.0f, 1.0f, 0.6f });
+                }
+
+                // Y values: BEWARE
+                //
+                // the X values for the droplines/tags above come directly from either the model or
+                // mouse: both of which are *continuous* (give or take)
+                //
+                // the Y values are computed from those continous values by searching through the
+                // *discrete* data values of the plot and LERPing them
+                {
+                    std::optional<float> maybeCoordinateY;
+                    std::optional<float> maybeHoverY;
+
+                    auto plotLock = m_ActivePlot.lock();
+                    maybeCoordinateY = ComputeLERPedY(*plotLock, static_cast<float>(coordinateXInDegrees));
+                    maybeHoverY = ComputeLERPedY(*plotLock, static_cast<float>(p.x));
+
+                    if (maybeCoordinateY)
+                    {
+                        double v = *maybeCoordinateY;
+                        ImPlot::DragLineY(13, &v, {1.0f, 1.0f, 0.0f, 0.6f}, 1.0f, ImPlotDragToolFlags_NoInputs);
+                        ImPlot::Annotation(static_cast<float>(coordinateXInDegrees), *maybeCoordinateY, { 1.0f, 1.0f, 1.0f, 1.0f }, { 10.0f, 10.0f }, true, "%f", *maybeCoordinateY);
+                    }
+
+                    if (isHovered && maybeHoverY)
+                    {
+                        double v = *maybeHoverY;
+                        ImPlot::DragLineY(14, &v, {1.0f, 1.0f, 0.0f, 0.3f}, 1.0f, ImPlotDragToolFlags_NoInputs);
+                        ImPlot::Annotation(p.x, *maybeHoverY, { 1.0f, 1.0f, 1.0f, 0.6f }, { 10.0f, 10.0f }, true, "%f", *maybeHoverY);
+                    }
                 }
 
                 // if the plot is hovered and the user is holding their left-mouse button down,
