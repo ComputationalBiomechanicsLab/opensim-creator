@@ -73,7 +73,9 @@ int main(int argc, char** argv)
         if (auto registeredTab = osc::GetRegisteredTabByName(*maybeRequestedTab))
         {
             osc::TabHost* api = screen->getTabHostAPI();
-            api->selectTab(api->addTab(registeredTab->createTab(api)));
+            std::unique_ptr<osc::Tab> initialTab = registeredTab->createTab(api);
+            osc::UID initialTabUID = api->addTab(std::move(initialTab));
+            api->selectTab(initialTabUID);
         }
         else
         {
