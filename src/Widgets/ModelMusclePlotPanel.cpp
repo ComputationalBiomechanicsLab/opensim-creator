@@ -656,7 +656,10 @@ namespace
         float const belowX = xVals[aboveIdx - 1];
         float const aboveX = xVals[aboveIdx];
 
-        size_t const closestIdx = (aboveX - x) > (x - belowX) ? aboveIdx : belowIdx;
+        float const aboveDistance = std::abs(aboveX - x);
+        float const belowDistance = std::abs(belowX - x);
+
+        size_t const closestIdx =  aboveDistance < belowDistance  ? aboveIdx : belowIdx;
 
         return PlotDataPoint{xVals[closestIdx], yVals[closestIdx]};
     }
@@ -737,7 +740,7 @@ namespace
 
             double coordinateXInDegrees = osc::ConvertCoordValueToDisplayValue(coord, coord.getValue(shared->Uim->getState()));
 
-            ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, ImVec2{ 0.025f, 0.05f });
+            ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, ImVec2{0.025f, 0.05f});
             if (ImPlot::BeginPlot(title.c_str(), availSize, ImPlotFlags_AntiAliased | ImPlotFlags_NoTitle | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame))
             {
                 ImPlotAxisFlags xAxisFlags = ImPlotAxisFlags_Lock;
@@ -799,6 +802,16 @@ namespace
                 // figure out mouse hover position
                 bool isHovered = ImPlot::IsPlotHovered();
                 ImPlotPoint p = ImPlot::GetPlotMousePos();
+
+                if (m_SnapCursor)
+                {
+                    auto plotLock = m_ActivePlot.lock();
+                    auto maybeNearest = FindNearestPoint(*plotLock, static_cast<float>(p.x));
+                    if (maybeNearest)
+                    {
+                        p.x = maybeNearest->x;
+                    }
+                }
 
                 // draw vertical drop line where the coordinate's value currently is
                 {
@@ -906,6 +919,7 @@ namespace
                 }
 
                 ImGui::MenuItem("show markers", nullptr, &m_ShowMarkers);
+                ImGui::MenuItem("snap cursor to datapoints", nullptr, &m_SnapCursor);
 
                 ImGui::EndPopup();
             }
@@ -1015,6 +1029,7 @@ namespace
         osc::SynchronizedValue<Plot> m_ActivePlot{shared->PlotParams};
         osc::CircularBuffer<Plot, 6> m_PreviousPlots;
         bool m_ShowMarkers = true;
+        bool m_SnapCursor = true;
     };
 
     // state in which a user is being prompted to select a coordinate in the model

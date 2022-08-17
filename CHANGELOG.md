@@ -150,6 +150,8 @@ All notable changes to this project will be documented here. The format is based
 
 - The plot line now has a little bit of padding along the Y axis, to prevent it touching the axis lines (#364)
 
+- The plot line now annotates the current coordinate and hover Y values, along with showing where the datapoints are (#363)
+
 
 ## [0.2.0] - 2022/07/04
 
