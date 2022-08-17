@@ -2,6 +2,7 @@
 
 #include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
+#include "src/Utils/CStringView.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 #include "src/Utils/UID.hpp"
 
@@ -54,6 +55,11 @@ public:
     std::chrono::system_clock::time_point getCommitTime() const
     {
         return m_CommitTime;
+    }
+
+    CStringView getCommitMessage() const
+    {
+        return m_CommitMessage;
     }
 
     SynchronizedValueGuard<OpenSim::Model const> getModel() const
@@ -125,6 +131,11 @@ osc::UID osc::ModelStateCommit::getParentID() const
 std::chrono::system_clock::time_point osc::ModelStateCommit::getCommitTime() const
 {
     return m_Impl->getCommitTime();
+}
+
+osc::CStringView osc::ModelStateCommit::getCommitMessage() const
+{
+    return m_Impl->getCommitMessage();
 }
 
 osc::SynchronizedValueGuard<OpenSim::Model const> osc::ModelStateCommit::getModel() const

@@ -676,6 +676,18 @@ namespace
 
         return xVals.front() <= x && x <= xVals.back();
     }
+
+    std::string ComputePlotLineName(Plot const& p, char const* suffix = nullptr)
+    {
+        osc::ModelStateCommit const& commit = p.getParameters().getCommit();
+        std::stringstream ss;
+        ss << commit.getCommitMessage();
+        if (suffix)
+        {
+            ss << ' ' << suffix;
+        }
+        return std::move(ss).str();
+    }
 }
 
 // state stuff
@@ -754,7 +766,7 @@ namespace
             double coordinateXInDegrees = osc::ConvertCoordValueToDisplayValue(coord, coord.getValue(shared->Uim->getState()));
 
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, ImVec2{0.025f, 0.05f});
-            if (ImPlot::BeginPlot(title.c_str(), availSize, ImPlotFlags_AntiAliased | ImPlotFlags_NoTitle | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame))
+            if (ImPlot::BeginPlot(title.c_str(), availSize, ImPlotFlags_AntiAliased | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame))
             {
                 ImPlotAxisFlags xAxisFlags = ImPlotAxisFlags_Lock;
                 ImPlotAxisFlags yAxisFlags = ImPlotAxisFlags_AutoFit;
@@ -766,24 +778,22 @@ namespace
                 // plot previous plots
                 {
                     glm::vec4 color = baseColor;
-                    size_t i = 1;
+                    int i = 1;
                     for (auto it = m_PreviousPlots.rbegin(); it != m_PreviousPlots.rend(); ++it)
                     {
-                        std::stringstream ss;
-                        ss << "previous (" << i++ << ')';
-                        std::string const previousPlotTitle = std::move(ss).str();
+                        Plot const& previousPlot = *it;
 
                         color *= 0.75f;
 
-                        Plot const& previousPlot = *it;
-
                         ImPlot::PushStyleColor(ImPlotCol_Line, color);
+                        ImGui::PushID(i++);
                         ImPlot::PlotLine(
-                            previousPlotTitle.c_str(),
+                            ComputePlotLineName(previousPlot).c_str(),
                             previousPlot.getXValues().data(),
                             previousPlot.getYValues().data(),
                             static_cast<int>(previousPlot.getXValues().size())
                         );
+                        ImGui::PopID();
                         ImPlot::PopStyleColor(ImPlotCol_Line);
                     }
                 }
@@ -800,11 +810,9 @@ namespace
                 {
                     auto plotLock = m_ActivePlot.lock();
 
-                    std::string plotTitle = latestParams.getMusclePath().getComponentName();
-
                     ImPlot::PushStyleColor(ImPlotCol_Line, baseColor);
                     ImPlot::PlotLine(
-                        plotTitle.c_str(),
+                        ComputePlotLineName(*plotLock, "(current)").c_str(),
                         plotLock->getXValues().data(),
                         plotLock->getYValues().data(),
                         static_cast<int>(plotLock->getXValues().size())
@@ -968,6 +976,7 @@ namespace
         std::string computePlotTitle(OpenSim::Coordinate const& c)
         {
             std::stringstream ss;
+            ss << shared->PlotParams.getMusclePath().getComponentName() << ' ';
             appendYAxisName(ss);
             ss << " vs ";
             appendXAxisName(c, ss);

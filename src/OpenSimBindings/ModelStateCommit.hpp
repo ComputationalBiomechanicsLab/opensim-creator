@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/Utils/CStringView.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 #include "src/Utils/UID.hpp"
 
@@ -29,6 +30,7 @@ namespace osc
         bool hasParent() const;
         UID getParentID() const;
         std::chrono::system_clock::time_point getCommitTime() const;
+        CStringView getCommitMessage() const;
         SynchronizedValueGuard<OpenSim::Model const> getModel() const;
         UID getModelVersion() const;
         float getFixupScaleFactor() const;
