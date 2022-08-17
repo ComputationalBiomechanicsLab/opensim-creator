@@ -585,6 +585,7 @@ namespace
     {
         nonstd::span<float const> const xVals = p.getXValues();
         nonstd::span<float const> const yVals = p.getYValues();
+
         OSC_ASSERT(xVals.size() == yVals.size());
 
         if (xVals.empty())
@@ -662,6 +663,18 @@ namespace
         size_t const closestIdx =  aboveDistance < belowDistance  ? aboveIdx : belowIdx;
 
         return PlotDataPoint{xVals[closestIdx], yVals[closestIdx]};
+    }
+
+    bool IsXInRange(Plot const& p, float x)
+    {
+        nonstd::span<float const> const xVals = p.getXValues();
+
+        if (xVals.size() <= 1)
+        {
+            return false;
+        }
+
+        return xVals.front() <= x && x <= xVals.back();
     }
 }
 
@@ -803,11 +816,12 @@ namespace
                 bool isHovered = ImPlot::IsPlotHovered();
                 ImPlotPoint p = ImPlot::GetPlotMousePos();
 
-                if (m_SnapCursor)
+                if (m_SnapCursor && isHovered)
                 {
                     auto plotLock = m_ActivePlot.lock();
                     auto maybeNearest = FindNearestPoint(*plotLock, static_cast<float>(p.x));
-                    if (maybeNearest)
+
+                    if (IsXInRange(*plotLock, static_cast<float>(p.x)) && maybeNearest)
                     {
                         p.x = maybeNearest->x;
                     }
