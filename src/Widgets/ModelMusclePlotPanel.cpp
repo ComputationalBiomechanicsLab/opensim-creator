@@ -652,15 +652,13 @@ namespace
 
             double currentX = osc::ConvertCoordValueToDisplayValue(coord, coord.getValue(shared->Uim->getState()));
 
-            bool isHovered = false;
-            ImPlotPoint p = {};
+            ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, ImVec2{ 0.025f, 0.05f });
             if (ImPlot::BeginPlot(title.c_str(), availSize, ImPlotFlags_AntiAliased | ImPlotFlags_NoTitle | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame))
             {
                 ImPlotAxisFlags xAxisFlags = ImPlotAxisFlags_Lock;
                 ImPlotAxisFlags yAxisFlags = ImPlotAxisFlags_AutoFit;
                 ImPlot::SetupAxes(xAxisLabel.c_str(), yAxisLabel.c_str(), xAxisFlags, yAxisFlags);
                 ImPlot::SetupAxisLimits(ImAxis_X1, osc::ConvertCoordValueToDisplayValue(coord, GetFirstXValue(latestParams, coord)), osc::ConvertCoordValueToDisplayValue(coord, GetLastXValue(latestParams, coord)));
-                ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, ImVec2{ 0.0f, 0.05f });
 
                 glm::vec4 const baseColor = {1.0f, 1.0f, 1.0f, 1.0f};
 
@@ -689,6 +687,14 @@ namespace
                     }
                 }
 
+                // show markers for the active plot, so that the user can see where the points
+                // were evaluated
+                if (m_ShowMarkers)
+                {
+                    glm::vec4 const markerColor = baseColor;
+                    ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
+                }
+
                 // then plot currently active plot
                 {
                     auto plotLock = m_ActivePlot.lock();
@@ -705,50 +711,69 @@ namespace
                     ImPlot::PopStyleColor(ImPlotCol_Line);
                 }
 
-                ImPlot::TagX(currentX, { 1.0f, 1.0f, 1.0f, 1.0f });
-                isHovered = ImPlot::IsPlotHovered();
-                p = ImPlot::GetPlotMousePos();
+                // figure out mouse hover position
+                bool isHovered = ImPlot::IsPlotHovered();
+                ImPlotPoint p = ImPlot::GetPlotMousePos();
+
+                // draw vertical drop line where the coordinate currently is
+                {
+                    double v = currentX;
+                    ImPlot::DragLineX(10, &v, {1.0f, 1.0f, 0.0f, 0.6f}, 1.0f, ImPlotDragToolFlags_NoInputs);
+                }
+
+                // also, draw an X tag on the axes where the coordinate currently is
+                {
+                    ImPlot::TagX(currentX, { 1.0f, 1.0f, 1.0f, 1.0f });
+                }
+
+                // draw faded vertial drop line where the mouse currently is
+                if (isHovered)
+                {
+                    double v = p.x;
+                    ImPlot::DragLineX(11, &v, {1.0f, 1.0f, 0.0f, 0.3f}, 1.0f, ImPlotDragToolFlags_NoInputs);
+                }
+
+                // also, draw a faded X tag on the axes where the mouse currently is (in X)
                 if (isHovered)
                 {
                     ImPlot::TagX(p.x, { 1.0f, 1.0f, 1.0f, 0.6f });
                 }
 
+                // if the plot is hovered and the user is holding their left-mouse button down,
+                // then "scrub" through the coordinate in the model
+                //
+                // this is handy for users to visually see how a coordinate affects the model
+                if (isHovered && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+                {
+                    if (coord.getDefaultLocked())
+                    {
+                        osc::DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
+                    }
+                    else
+                    {
+                        double storedValue = osc::ConvertCoordDisplayValueToStorageValue(coord, static_cast<float>(p.x));
+                        osc::ActionSetCoordinateValue(*shared->Uim, coord, storedValue);
+                    }
+                }
+
+                // when the user stops dragging their left-mouse around, commit the scrubbed-to
+                // coordinate to model storage
+                if (isHovered && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+                {
+                    if (coord.getDefaultLocked())
+                    {
+                        osc::DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
+                    }
+                    else
+                    {
+                        double storedValue = osc::ConvertCoordDisplayValueToStorageValue(coord, static_cast<float>(p.x));
+                        osc::ActionSetCoordinateValueAndSave(*shared->Uim, coord, storedValue);
+                    }
+                }
+
                 ImPlot::EndPlot();
-
-                ImPlot::PopStyleVar();
             }
-
-            // if the plot is hovered and the user is holding their left-mouse button down,
-            // then "scrub" through the coordinate in the model
-            //
-            // this is handy for users to visually see how a coordinate affects the model
-            if (isHovered && ImGui::IsMouseDown(ImGuiMouseButton_Left))
-            {
-                if (coord.getDefaultLocked())
-                {
-                    osc::DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
-                }
-                else
-                {
-                    double storedValue = osc::ConvertCoordDisplayValueToStorageValue(coord, static_cast<float>(p.x));
-                    osc::ActionSetCoordinateValue(*shared->Uim, coord, storedValue);
-                }
-            }
-
-            // when the user stops dragging their left-mouse around, commit the scrubbed-to
-            // coordinate to model storage
-            if (isHovered && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-            {
-                if (coord.getDefaultLocked())
-                {
-                    osc::DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
-                }
-                else
-                {
-                    double storedValue = osc::ConvertCoordDisplayValueToStorageValue(coord, static_cast<float>(p.x));
-                    osc::ActionSetCoordinateValueAndSave(*shared->Uim, coord, storedValue);
-                }
-            }
+            ImPlot::PopStyleVar();
 
             // draw a context menu with helpful options (set num data points, export, etc.)
             if (ImGui::BeginPopupContextItem((title + "_contextmenu").c_str()))
@@ -764,6 +789,8 @@ namespace
                 {
                     m_PreviousPlots.clear();
                 }
+
+                ImGui::MenuItem("show markers", nullptr, &m_ShowMarkers);
 
                 ImGui::EndPopup();
             }
@@ -872,6 +899,7 @@ namespace
         std::unique_ptr<PlottingTask> m_MaybeActivePlottingTask = std::make_unique<PlottingTask>(shared->PlotParams, [this](PlotDataPoint p) { onDataFromPlottingTask(p); });
         osc::SynchronizedValue<Plot> m_ActivePlot{shared->PlotParams};
         osc::CircularBuffer<Plot, 6> m_PreviousPlots;
+        bool m_ShowMarkers = true;
     };
 
     // state in which a user is being prompted to select a coordinate in the model
