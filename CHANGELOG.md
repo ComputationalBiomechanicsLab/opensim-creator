@@ -156,6 +156,8 @@ All notable changes to this project will be documented here. The format is based
 
 - Previous muscle curves now constrast slightly more and can have their datapoint markers optionally enabled (#362)
 
+- Previous muscle curves can now be deleted by right-clicking in the legend (#361)
+
 
 ## [0.2.0] - 2022/07/04
 

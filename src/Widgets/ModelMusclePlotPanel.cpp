@@ -15,6 +15,7 @@
 #include "src/Utils/SynchronizedValue.hpp"
 
 #include <glm/glm.hpp>
+#include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <implot.h>
 #include <nonstd/span.hpp>
@@ -676,18 +677,6 @@ namespace
 
         return xVals.front() <= x && x <= xVals.back();
     }
-
-    std::string ComputePlotLineName(Plot const& p, char const* suffix = nullptr)
-    {
-        osc::ModelStateCommit const& commit = p.getParameters().getCommit();
-        std::stringstream ss;
-        ss << commit.getCommitMessage();
-        if (suffix)
-        {
-            ss << ' ' << suffix;
-        }
-        return std::move(ss).str();
-    }
 }
 
 // state stuff
@@ -762,6 +751,7 @@ namespace
             std::string title = computePlotTitle(coord);
             std::string xAxisLabel = computePlotXAxisTitle(coord);
             std::string yAxisLabel = computePlotYAxisTitle();
+            int previousPlotTaggedForDeletion = -1;
 
             double coordinateXInDegrees = osc::ConvertCoordValueToDisplayValue(coord, coord.getValue(shared->Uim->getState()));
 
@@ -770,36 +760,53 @@ namespace
             {
                 ImPlotAxisFlags xAxisFlags = ImPlotAxisFlags_Lock;
                 ImPlotAxisFlags yAxisFlags = ImPlotAxisFlags_AutoFit;
+
                 ImPlot::SetupLegend(m_LegendLocation, m_LegendFlags);
                 ImPlot::SetupAxes(xAxisLabel.c_str(), yAxisLabel.c_str(), xAxisFlags, yAxisFlags);
                 ImPlot::SetupAxisLimits(ImAxis_X1, osc::ConvertCoordValueToDisplayValue(coord, GetFirstXValue(latestParams, coord)), osc::ConvertCoordValueToDisplayValue(coord, GetLastXValue(latestParams, coord)));
+                ImPlot::SetupFinish();
 
                 glm::vec4 const baseColor = {1.0f, 1.0f, 1.0f, 1.0f};
+                bool legendPopupOpen = false;
 
                 // plot previous plots
                 {
-                    int i = 0;
-                    for (Plot const& previousPlot : m_PreviousPlots)
+                    for (size_t i = 0; i < m_PreviousPlots.size(); ++i)
                     {
+                        Plot const& previousPlot = m_PreviousPlots[i];
+
                         glm::vec4 color = baseColor;
 
-                        color.a *= static_cast<float>(i + 1) / static_cast<float>(m_PreviousPlots.size() + 1);
+                        color.a *= static_cast<float>(i+1) / static_cast<float>(m_PreviousPlots.size() + 1);
 
                         if (m_ShowMarkersOnPreviousPlots)
                         {
                             ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
                         }
 
+                        std::stringstream ss;
+                        ss << i+1 << ") " << previousPlot.getParameters().getCommit().getCommitMessage();
+                        std::string const lineName = std::move(ss).str();
+
                         ImPlot::PushStyleColor(ImPlotCol_Line, color);
-                        ImGui::PushID(i++);
                         ImPlot::PlotLine(
-                            ComputePlotLineName(previousPlot).c_str(),
+                            lineName.c_str(),
                             previousPlot.getXValues().data(),
                             previousPlot.getYValues().data(),
                             static_cast<int>(previousPlot.getXValues().size())
                         );
-                        ImGui::PopID();
                         ImPlot::PopStyleColor(ImPlotCol_Line);
+
+                        if (ImPlot::BeginLegendPopup(lineName.c_str()))
+                        {
+                            legendPopupOpen = true;
+
+                            if (ImGui::MenuItem(ICON_FA_TRASH " delete"))
+                            {
+                                previousPlotTaggedForDeletion = static_cast<int>(i);
+                            }
+                            ImPlot::EndLegendPopup();
+                        }
                     }
                 }
 
@@ -814,9 +821,13 @@ namespace
                 {
                     auto plotLock = m_ActivePlot.lock();
 
+                    std::stringstream ss;
+                    ss << m_PreviousPlots.size()+1 << ") " << plotLock->getParameters().getCommit().getCommitMessage();
+                    std::string const lineName = std::move(ss).str();
+
                     ImPlot::PushStyleColor(ImPlotCol_Line, baseColor);
                     ImPlot::PlotLine(
-                        ComputePlotLineName(*plotLock, "(current)").c_str(),
+                        lineName.c_str(),
                         plotLock->getXValues().data(),
                         plotLock->getYValues().data(),
                         static_cast<int>(plotLock->getXValues().size())
@@ -926,7 +937,7 @@ namespace
                 }
 
                 // draw a context menu with helpful options (set num data points, export, etc.)
-                if (ImGui::BeginPopupContextItem((title + "_contextmenu").c_str()))
+                if (!legendPopupOpen && ImGui::BeginPopupContextItem((title + "_contextmenu").c_str()))
                 {
                     drawPlotDataTypeSelector();
 
@@ -957,6 +968,13 @@ namespace
                 ImPlot::EndPlot();
             }
             ImPlot::PopStyleVar();
+
+            if (0 <= previousPlotTaggedForDeletion && previousPlotTaggedForDeletion < m_PreviousPlots.size())
+            {
+                Plot* ptr = &m_PreviousPlots[previousPlotTaggedForDeletion];
+                std::stable_partition(m_PreviousPlots.begin(), m_PreviousPlots.end(), [ptr](Plot const& p) { return &p != ptr; });
+                m_PreviousPlots.pop_back();
+            }
 
             return nullptr;
         }
