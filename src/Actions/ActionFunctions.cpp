@@ -51,6 +51,7 @@
 #include <exception>
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <typeinfo>
 #include <utility>
 #include <vector>
@@ -136,7 +137,7 @@ void osc::ActionSaveCurrentModelAs(osc::UndoableModelStatePair& uim)
 
         if (*maybePath != oldPath)
         {
-            uim.commit("set model path");
+            uim.commit("changed osim path");
         }
         uim.setUpToDateWithFilesystem(std::filesystem::last_write_time(*maybePath));
 
@@ -173,7 +174,7 @@ bool osc::ActionSaveModel(MainUIStateAPI*, UndoableModelStatePair& model)
 
         if (*maybeUserSaveLoc != oldPath)
         {
-            model.commit("set model path");
+            model.commit("changed osim path");
         }
         model.setUpToDateWithFilesystem(std::filesystem::last_write_time(*maybeUserSaveLoc));
 
@@ -204,14 +205,21 @@ void osc::ActionTryDeleteSelectionFromEditedModel(osc::UndoableModelStatePair& u
     if (!mutComponent)
     {
         uim.setModelVersion(oldVersion);
+        return;
     }
-    else if (osc::TryDeleteComponentFromModel(mutModel, *mutComponent))
+
+    std::string const selectedComponentName = mutComponent->getName();
+
+    if (osc::TryDeleteComponentFromModel(mutModel, *mutComponent))
     {
         try
         {
             osc::InitializeModel(mutModel);
             osc::InitializeState(mutModel);
-            uim.commit("deleted component");
+
+            std::stringstream ss;
+            ss << "deleted " << selectedComponentName;
+            uim.commit(std::move(ss).str());
         }
         catch (std::exception const& ex)
         {
@@ -341,7 +349,7 @@ bool osc::ActionUpdateModelFromBackingFile(osc::UndoableModelStatePair& uim)
         auto p = std::make_unique<OpenSim::Model>(uim.getModel().getInputFileName());
         osc::log::info("loaded updated file");
         uim.setModel(std::move(p));
-        uim.commit("reloaded model from filesystem");
+        uim.commit("reloaded osim");
         uim.setUpToDateWithFilesystem(lastSaveTime);
         return true;
     }
@@ -384,7 +392,7 @@ bool osc::ActionToggleFrames(osc::UndoableModelStatePair& uim)
         mutModel.upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
-        uim.commit("edited frame visibility");
+        uim.commit(showingFrames ? "hidden frames" : "shown frames");
         return true;
     }
     catch (std::exception const& ex)
@@ -438,7 +446,7 @@ bool osc::ActionReloadOsimFromDisk(osc::UndoableModelStatePair& uim)
             auto p = std::make_unique<OpenSim::Model>(uim.getModel().getInputFileName());
             osc::log::info("loaded updated file");
             uim.setModel(std::move(p));
-            uim.commit("reloaded model from filesystem");
+            uim.commit("reloaded from filesystem");
             uim.setUpToDateWithFilesystem(std::filesystem::last_write_time(uim.getFilesystemPath()));
             return true;
         }
@@ -474,11 +482,13 @@ bool osc::ActionAddOffsetFrameToSelection(osc::UndoableModelStatePair& uim)
 
     OpenSim::ComponentPath selectionPath = selection->getAbsolutePath();
 
+    std::string const newPofName = selection->getName() + "_offsetframe";
+
     auto pof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-    pof->setName(selection->getName() + "_offsetframe");
+    pof->setName(newPofName);
     pof->setParentFrame(*selection);
 
-    auto pofptr = pof.get();
+    OpenSim::PhysicalOffsetFrame* pofptr = pof.get();
 
     UID oldVersion = uim.getModelVersion();
 
@@ -498,7 +508,11 @@ bool osc::ActionAddOffsetFrameToSelection(osc::UndoableModelStatePair& uim)
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
         uim.setSelected(pofptr);
-        uim.commit("added offset frame");
+
+        std::stringstream ss;
+        ss << "added " << newPofName;
+        uim.commit(std::move(ss).str());
+
         return true;
     }
     catch (std::exception const& ex)
@@ -576,6 +590,8 @@ bool osc::ActionRezeroSelectedJoint(osc::UndoableModelStatePair& uim)
 
         // else: perform model transformation
 
+        std::string const jointName = mutJoint->getName();
+
         // first, zero all the joint's coordinates
         //
         // (we're assuming that the new transform performs the same function)
@@ -592,7 +608,10 @@ bool osc::ActionRezeroSelectedJoint(osc::UndoableModelStatePair& uim)
         mutModel.finalizeConnections();
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
-        uim.commit("rezeroed joint");
+
+        std::stringstream ss;
+        ss << "rezeroed " << jointName;
+        uim.commit(std::move(ss).str());
 
         return true;
     }
@@ -618,7 +637,7 @@ bool osc::ActionAddParentOffsetFrameToSelectedJoint(osc::UndoableModelStatePair&
     auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
     pf->setParentFrame(selection->getParentFrame());
 
-    osc::UID oldVersion = uim.getModelVersion();
+    UID oldVersion = uim.getModelVersion();
 
     try
     {
@@ -631,11 +650,16 @@ bool osc::ActionAddParentOffsetFrameToSelectedJoint(osc::UndoableModelStatePair&
             return false;
         }
 
+        std::string const jointName = mutJoint->getName();
+
         mutJoint->addFrame(pf.release());
         mutModel.finalizeConnections();
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
-        uim.commit("added parent offset frame");
+
+        std::stringstream ss;
+        ss << "added " << jointName;
+        uim.commit(std::move(ss).str());
 
         return true;
     }
@@ -674,11 +698,16 @@ bool osc::ActionAddChildOffsetFrameToSelectedJoint(osc::UndoableModelStatePair& 
             return false;
         }
 
+        std::string const jointName = mutJoint->getName();
+
         mutJoint->addFrame(pf.release());
         mutModel.finalizeConnections();
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
-        uim.commit("added child offset frame");
+
+        std::stringstream ss;
+        ss << "added " << jointName;
+        uim.commit(std::move(ss).str());
 
         return true;
     }
@@ -719,12 +748,16 @@ bool osc::ActionSetSelectedComponentName(osc::UndoableModelStatePair& uim, std::
             return false;
         }
 
+        std::string const oldName = mutComponent->getName();
         mutComponent->setName(newName);
         mutModel.finalizeConnections();  // because pointers need to know the new name
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
         uim.setSelected(mutComponent);  // because the name changed
-        uim.commit("changed component name");
+
+        std::stringstream ss;
+        ss << "renamed " << oldName << " to " << newName;
+        uim.commit(std::move(ss).str());
 
         return true;
     }
@@ -738,6 +771,8 @@ bool osc::ActionSetSelectedComponentName(osc::UndoableModelStatePair& uim, std::
 
 bool osc::ActionChangeSelectedJointTypeTo(osc::UndoableModelStatePair& uim, std::unique_ptr<OpenSim::Joint> newType)
 {
+    OSC_ASSERT(newType != nullptr);
+
     OpenSim::Joint const* selection = uim.getSelectedAs<OpenSim::Joint>();
 
     if (!selection)
@@ -761,6 +796,9 @@ bool osc::ActionChangeSelectedJointTypeTo(osc::UndoableModelStatePair& uim, std:
         return false;
     }
 
+    std::string const oldTypeName = selection->getConcreteClassName();
+    std::string const newTypeName = newType->getConcreteClassName();
+
     osc::CopyCommonJointProperties(*selection, *newType);
 
     // update: overwrite old joint in model
@@ -780,7 +818,10 @@ bool osc::ActionChangeSelectedJointTypeTo(osc::UndoableModelStatePair& uim, std:
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
         uim.setSelected(ptr);
-        uim.commit("changed joint type");
+
+        std::stringstream ss;
+        ss << "changed " << oldTypeName << " to " << newTypeName;
+        uim.commit(std::move(ss).str());
 
         return true;
     }
@@ -816,11 +857,16 @@ bool osc::ActionAttachGeometryToSelectedPhysicalFrame(osc::UndoableModelStatePai
             return false;
         }
 
+        std::string const pofName = mutPof->getName();
+
         mutPof->attachGeometry(geom.release());
         mutModel.finalizeConnections();
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
-        uim.commit("attached geometry");
+
+        std::stringstream ss;
+        ss << "attached geometry to " << pofName;
+        uim.commit(std::move(ss).str());
 
         return true;
     }
@@ -866,6 +912,7 @@ bool osc::ActionAssignContactGeometryToSelectedHCF(osc::UndoableModelStatePair& 
 
         mutHCF->updContactParametersSet()[0].updGeometry().appendValue(geom.getName());
         mutModel.finalizeConnections();
+
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
         uim.commit("added contact geometry");
@@ -896,18 +943,26 @@ bool osc::ActionApplyPropertyEdit(osc::UndoableModelStatePair& uim, ObjectProper
             return false;
         }
 
-        OpenSim::AbstractProperty* property = osc::FindPropertyMut(*component, resp.getPropertyName());
+        OpenSim::AbstractProperty* prop = osc::FindPropertyMut(*component, resp.getPropertyName());
 
-        if (!property)
+        if (!prop)
         {
             uim.setModelVersion(oldVersion);
             return false;
         }
 
-        resp.apply(*property);
+        std::string const propName = prop->getName();
+
+        resp.apply(*prop);
+
+        std::string const newValue = prop->toStringForDisplay(3);
+
         osc::InitializeModel(model);
         osc::InitializeState(model);
-        uim.commit("edited property");
+
+        std::stringstream ss;
+        ss << "set " << propName << " to " << newValue;
+        uim.commit(std::move(ss).str());
 
         return true;
     }
@@ -938,11 +993,19 @@ bool osc::ActionAddPathPointToSelectedPathActuator(osc::UndoableModelStatePair& 
     {
         OpenSim::Model& mutModel = uim.updModel();
         OpenSim::PathActuator* mutPA = osc::FindComponentMut<OpenSim::PathActuator>(mutModel, selectionPath);
+        OSC_ASSERT(mutPA);
+
+        std::string const paName = mutPA->getName();
+
         mutPA->addNewPathPoint(name, pf, pos);
         mutModel.finalizeConnections();
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
-        uim.commit("added path point to path actuator");
+
+        std::stringstream ss;
+        ss << "added path point to " << paName;
+        uim.commit(std::move(ss).str());
+
         return true;
     }
     catch (std::exception const& ex)
@@ -1008,7 +1071,18 @@ bool osc::ActionReassignSelectedComponentSocket(osc::UndoableModelStatePair& uim
 bool osc::ActionSetModelIsolationTo(osc::UndoableModelStatePair& uim, OpenSim::Component const* c)
 {
     uim.setIsolated(c);
-    uim.commit("changed isolation");
+
+    if (c)
+    {
+        std::stringstream ss;
+        ss << "isolated " << c->getName();
+        uim.commit(std::move(ss).str());
+    }
+    else
+    {
+        uim.commit("cleared isolation");
+    }
+
     return true;
 }
 
@@ -1106,8 +1180,13 @@ bool osc::ActionAddBodyToModel(UndoableModelStatePair& uim, BodyDetails const& d
         mutModel.finalizeConnections();
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
+
         uim.setSelected(ptr);
-        uim.commit("added body");
+
+        std::stringstream ss;
+        ss << "added " << ptr->getName();
+        uim.commit(std::move(ss).str());
+
         return true;
     }
     catch (std::exception const& ex)
@@ -1128,7 +1207,12 @@ bool osc::ActionAddComponentToModel(UndoableModelStatePair& model, std::unique_p
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
         model.setSelected(ptr);
-        model.commit("added component");
+        std::string const name = ptr->getName();
+
+        std::stringstream ss;
+        ss << "added " << name;
+        model.commit(std::move(ss).str());
+
         return true;
     }
     catch (std::exception const& ex)
@@ -1181,7 +1265,11 @@ bool osc::ActionSetCoordinateSpeedAndSave(UndoableModelStatePair& model, OpenSim
         OpenSim::Model& mutModel = model.updModel();
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
-        model.commit("set coordinate speed");
+
+        std::stringstream ss;
+        ss << "set " << coord.getName() << "'s speed";
+        model.commit(std::move(ss).str());
+
         return true;
     }
     else
@@ -1213,7 +1301,11 @@ bool osc::ActionSetCoordinateLockedAndSave(UndoableModelStatePair& model, OpenSi
         mutCoord->setLocked(mutModel.updWorkingState(), v);
         mutModel.equilibrateMuscles(mutModel.updWorkingState());
         mutModel.realizeDynamics(mutModel.updWorkingState());
-        model.commit(v ? "locked coordinate" : "unlocked coordinate");
+
+        std::stringstream ss;
+        ss << (v ? "locked " : "unlocked ") << mutCoord->getName();
+        model.commit(std::move(ss).str());
+
         return true;
     }
     catch (std::exception const& ex)
@@ -1291,7 +1383,11 @@ bool osc::ActionSetCoordinateValueAndSave(UndoableModelStatePair& model, OpenSim
 
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
-        model.commit("set coordinate value");
+
+        std::stringstream ss;
+        ss << "set " << coord.getName() << " to " << osc::ConvertCoordValueToDisplayValue(coord, v);
+        model.commit(std::move(ss).str());
+
         return true;
     }
     else

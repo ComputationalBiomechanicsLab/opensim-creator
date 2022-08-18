@@ -152,6 +152,8 @@ All notable changes to this project will be documented here. The format is based
 
 - The plot line now annotates the current coordinate and hover Y values, along with showing where the datapoints are (#363)
 
+- The legend in each muscle plot now lists kind of edits that were made for each line of the plot (#366)
+
 
 ## [0.2.0] - 2022/07/04
 
