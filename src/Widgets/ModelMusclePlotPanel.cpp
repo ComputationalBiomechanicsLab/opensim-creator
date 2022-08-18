@@ -777,13 +777,11 @@ namespace
 
                 // plot previous plots
                 {
-                    glm::vec4 color = baseColor;
-                    int i = 1;
-                    for (auto it = m_PreviousPlots.rbegin(); it != m_PreviousPlots.rend(); ++it)
+                    int i = 0;
+                    for (Plot const& previousPlot : m_PreviousPlots)
                     {
-                        Plot const& previousPlot = *it;
-
-                        color *= 0.75f;
+                        glm::vec4 color = baseColor;
+                        color.a *= static_cast<float>(i + 1) / static_cast<float>(m_PreviousPlots.size() + 1);
 
                         ImPlot::PushStyleColor(ImPlotCol_Line, color);
                         ImGui::PushID(i++);
