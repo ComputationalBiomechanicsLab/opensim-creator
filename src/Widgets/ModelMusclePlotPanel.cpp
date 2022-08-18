@@ -766,10 +766,11 @@ namespace
             double coordinateXInDegrees = osc::ConvertCoordValueToDisplayValue(coord, coord.getValue(shared->Uim->getState()));
 
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, ImVec2{0.025f, 0.05f});
-            if (ImPlot::BeginPlot(title.c_str(), availSize, ImPlotFlags_AntiAliased | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame))
+            if (ImPlot::BeginPlot(title.c_str(), availSize, m_PlotFlags))
             {
                 ImPlotAxisFlags xAxisFlags = ImPlotAxisFlags_Lock;
                 ImPlotAxisFlags yAxisFlags = ImPlotAxisFlags_AutoFit;
+                ImPlot::SetupLegend(m_LegendLocation, m_LegendFlags);
                 ImPlot::SetupAxes(xAxisLabel.c_str(), yAxisLabel.c_str(), xAxisFlags, yAxisFlags);
                 ImPlot::SetupAxisLimits(ImAxis_X1, osc::ConvertCoordValueToDisplayValue(coord, GetFirstXValue(latestParams, coord)), osc::ConvertCoordValueToDisplayValue(coord, GetLastXValue(latestParams, coord)));
 
@@ -924,31 +925,38 @@ namespace
                     }
                 }
 
+                // draw a context menu with helpful options (set num data points, export, etc.)
+                if (ImGui::BeginPopupContextItem((title + "_contextmenu").c_str()))
+                {
+                    drawPlotDataTypeSelector();
+
+                    int currentDataPoints = shared->PlotParams.getNumRequestedDataPoints();
+                    if (ImGui::InputInt("num data points", &currentDataPoints, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue))
+                    {
+                        shared->PlotParams.setNumRequestedDataPoints(currentDataPoints);
+                    }
+
+                    if (ImGui::MenuItem("clear previous plots"))
+                    {
+                        m_PreviousPlots.clear();
+                    }
+
+                    if (ImGui::BeginMenu("legend"))
+                    {
+                        drawLegendContextMenuContent();
+                        ImGui::EndMenu();
+                    }
+
+                    ImGui::MenuItem("show markers", nullptr, &m_ShowMarkers);
+                    ImGui::MenuItem("show markers on previous plots", nullptr, &m_ShowMarkersOnPreviousPlots);
+                    ImGui::MenuItem("snap cursor to datapoints", nullptr, &m_SnapCursor);
+
+                    ImGui::EndPopup();
+                }
+
                 ImPlot::EndPlot();
             }
             ImPlot::PopStyleVar();
-
-            // draw a context menu with helpful options (set num data points, export, etc.)
-            if (ImGui::BeginPopupContextItem((title + "_contextmenu").c_str()))
-            {
-                drawPlotDataTypeSelector();
-                int currentDataPoints = shared->PlotParams.getNumRequestedDataPoints();
-                if (ImGui::InputInt("num data points", &currentDataPoints, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue))
-                {
-                    shared->PlotParams.setNumRequestedDataPoints(currentDataPoints);
-                }
-
-                if (ImGui::MenuItem("clear previous plots"))
-                {
-                    m_PreviousPlots.clear();
-                }
-
-                ImGui::MenuItem("show markers", nullptr, &m_ShowMarkers);
-                ImGui::MenuItem("show markers on previous plots", nullptr, &m_ShowMarkersOnPreviousPlots);
-                ImGui::MenuItem("snap cursor to datapoints", nullptr, &m_SnapCursor);
-
-                ImGui::EndPopup();
-            }
 
             return nullptr;
         }
@@ -975,6 +983,25 @@ namespace
             {
                 shared->PlotParams.setMuscleOutput(allOutputs[active]);
             }
+        }
+
+        void drawLegendContextMenuContent()
+        {
+            ImGui::CheckboxFlags("Hide", (unsigned int*)&m_PlotFlags, ImPlotFlags_NoLegend);
+            ImGui::CheckboxFlags("Outside",(unsigned int*)&m_LegendFlags, ImPlotLegendFlags_Outside);
+
+            const float s = ImGui::GetFrameHeight();
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2,2));
+            if (ImGui::Button("NW",ImVec2(1.5f*s,s))) { m_LegendLocation = ImPlotLocation_NorthWest; } ImGui::SameLine();
+            if (ImGui::Button("N", ImVec2(1.5f*s,s))) { m_LegendLocation = ImPlotLocation_North;     } ImGui::SameLine();
+            if (ImGui::Button("NE",ImVec2(1.5f*s,s))) { m_LegendLocation = ImPlotLocation_NorthEast; }
+            if (ImGui::Button("W", ImVec2(1.5f*s,s))) { m_LegendLocation = ImPlotLocation_West;      } ImGui::SameLine();
+            if (ImGui::InvisibleButton("C", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_Center; } ImGui::SameLine();
+            if (ImGui::Button("E", ImVec2(1.5f*s,s))) { m_LegendLocation = ImPlotLocation_East;      }
+            if (ImGui::Button("SW",ImVec2(1.5f*s,s))) { m_LegendLocation = ImPlotLocation_SouthWest; } ImGui::SameLine();
+            if (ImGui::Button("S", ImVec2(1.5f*s,s))) { m_LegendLocation = ImPlotLocation_South;     } ImGui::SameLine();
+            if (ImGui::Button("SE",ImVec2(1.5f*s,s))) { m_LegendLocation = ImPlotLocation_SouthEast; }
+            ImGui::PopStyleVar();
         }
 
         std::string computePlotTitle(OpenSim::Coordinate const& c)
@@ -1058,6 +1085,9 @@ namespace
         bool m_ShowMarkers = true;
         bool m_ShowMarkersOnPreviousPlots = false;
         bool m_SnapCursor = false;
+        ImPlotFlags m_PlotFlags = ImPlotFlags_AntiAliased | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame;
+        ImPlotLocation m_LegendLocation = ImPlotLocation_NorthWest;
+        ImPlotLegendFlags m_LegendFlags = ImPlotLegendFlags_None;
     };
 
     // state in which a user is being prompted to select a coordinate in the model
