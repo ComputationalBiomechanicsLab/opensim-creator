@@ -781,7 +781,13 @@ namespace
                     for (Plot const& previousPlot : m_PreviousPlots)
                     {
                         glm::vec4 color = baseColor;
+
                         color.a *= static_cast<float>(i + 1) / static_cast<float>(m_PreviousPlots.size() + 1);
+
+                        if (m_ShowMarkersOnPreviousPlots)
+                        {
+                            ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
+                        }
 
                         ImPlot::PushStyleColor(ImPlotCol_Line, color);
                         ImGui::PushID(i++);
@@ -800,7 +806,6 @@ namespace
                 // were evaluated
                 if (m_ShowMarkers)
                 {
-                    glm::vec4 const markerColor = baseColor;
                     ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
                 }
 
@@ -939,6 +944,7 @@ namespace
                 }
 
                 ImGui::MenuItem("show markers", nullptr, &m_ShowMarkers);
+                ImGui::MenuItem("show markers on previous plots", nullptr, &m_ShowMarkersOnPreviousPlots);
                 ImGui::MenuItem("snap cursor to datapoints", nullptr, &m_SnapCursor);
 
                 ImGui::EndPopup();
@@ -1050,6 +1056,7 @@ namespace
         osc::SynchronizedValue<Plot> m_ActivePlot{shared->PlotParams};
         osc::CircularBuffer<Plot, 6> m_PreviousPlots;
         bool m_ShowMarkers = true;
+        bool m_ShowMarkersOnPreviousPlots = false;
         bool m_SnapCursor = false;
     };
 

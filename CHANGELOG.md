@@ -154,6 +154,8 @@ All notable changes to this project will be documented here. The format is based
 
 - The legend in each muscle plot now lists kind of edits that were made for each line of the plot (#366)
 
+- Previous muscle curves now constrast slightly more and can have their datapoint markers optionally enabled (#362)
+
 
 ## [0.2.0] - 2022/07/04
 
