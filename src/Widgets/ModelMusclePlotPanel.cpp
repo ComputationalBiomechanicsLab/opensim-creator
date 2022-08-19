@@ -42,8 +42,13 @@
 
 namespace SimTK { class State; }
 
+// muscle outputs
+//
+// wraps OpenSim::Muscle member methods in a higher-level API that the UI
+// can present to the user
 namespace
 {
+    // describes a single output from an OpenSim::Muscle
     class MuscleOutput {
     public:
         MuscleOutput(char const* name, char const* units, double(*getter)(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const& c)) :
@@ -92,158 +97,156 @@ namespace
     {
         return !(a == b);
     }
+
+    double GetMomentArm(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const& c)
+    {
+        return muscle.getGeometryPath().computeMomentArm(st, c);
+    }
+
+    double GetFiberLength(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getFiberLength(st);
+    }
+
+    double GetTendonLength(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getTendonLength(st);
+    }
+
+    double GetPennationAngle(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return glm::degrees(muscle.getPennationAngle(st));
+    }
+
+    double GetNormalizedFiberLength(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getNormalizedFiberLength(st);
+    }
+
+    double GetTendonStrain(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getTendonStrain(st);
+    }
+
+    double GetFiberPotentialEnergy(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getFiberPotentialEnergy(st);
+    }
+
+    double GetTendonPotentialEnergy(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getTendonPotentialEnergy(st);
+    }
+
+    double GetMusclePotentialEnergy(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getMusclePotentialEnergy(st);
+    }
+
+    double GetTendonForce(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getTendonForce(st);
+    }
+
+    double GetActiveFiberForce(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getActiveFiberForce(st);
+    }
+
+    double GetPassiveFiberForce(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getPassiveFiberForce(st);
+    }
+
+    double GetTotalFiberForce(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getFiberForce(st);
+    }
+
+    double GetFiberStiffness(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getFiberStiffness(st);
+    }
+
+    double GetFiberStiffnessAlongTendon(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getFiberStiffnessAlongTendon(st);
+    }
+
+    double GetTendonStiffness(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getTendonStiffness(st);
+    }
+
+    double GetMuscleStiffness(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getMuscleStiffness(st);
+    }
+
+    double GetFiberActivePower(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getFiberActivePower(st);
+    }
+
+    double GetFiberPassivePower(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getFiberActivePower(st);
+    }
+
+    double GetTendonPower(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getTendonPower(st);
+    }
+
+    double GetMusclePower(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
+    {
+        return muscle.getTendonPower(st);
+    }
+
+    MuscleOutput GetDefaultMuscleOutput()
+    {
+        return MuscleOutput{"Moment Arm", "Unitless", GetMomentArm};
+    }
+
+    std::vector<MuscleOutput> GenerateMuscleOutputs()
+    {
+        std::vector<MuscleOutput> rv =
+        {{
+            GetDefaultMuscleOutput(),
+            {"Tendon Length", "m", GetTendonLength},
+            {"Fiber Length", "m", GetFiberLength},
+            {"Pennation Angle", "deg", GetPennationAngle},
+            {"Normalized Fiber Length", "Unitless", GetNormalizedFiberLength},
+            {"Tendon Strain", "Unitless", GetTendonStrain},
+            {"Fiber Potential Energy", "J", GetFiberPotentialEnergy},
+            {"Tendon Potential Energy", "J", GetTendonPotentialEnergy},
+            {"Muscle Potential Energy", "J", GetMusclePotentialEnergy},
+            {"Tendon Force", "N", GetTendonForce},
+            {"Active Fiber Force", "N", GetActiveFiberForce},
+            {"Passive Fiber Force", "N", GetPassiveFiberForce},
+            {"Total Fiber Force", "N", GetTotalFiberForce},
+            {"Fiber Stiffness", "N/m", GetFiberStiffness},
+            {"Fiber Stiffness Along Tendon", "N/m", GetFiberStiffnessAlongTendon},
+            {"Tendon Stiffness", "N/m", GetTendonStiffness},
+            {"Muscle Stiffness", "N/m", GetMuscleStiffness},
+            {"Fiber Active Power", "W", GetFiberActivePower},
+            {"Fiber Passive Power", "W", GetFiberPassivePower},
+            {"Tendon Power", "W", GetTendonPower},
+            {"Muscle Power", "W", GetMusclePower},
+            }};
+        std::sort(rv.begin(), rv.end());
+        return rv;
+    }
 }
 
-static double GetMomentArm(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const& c)
-{
-    return muscle.getGeometryPath().computeMomentArm(st, c);
-}
-
-static double GetFiberLength(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getFiberLength(st);
-}
-
-static double GetTendonLength(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getTendonLength(st);
-}
-
-static double GetPennationAngle(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return glm::degrees(muscle.getPennationAngle(st));
-}
-
-static double GetNormalizedFiberLength(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getNormalizedFiberLength(st);
-}
-
-static double GetTendonStrain(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getTendonStrain(st);
-}
-
-static double GetFiberPotentialEnergy(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getFiberPotentialEnergy(st);
-}
-
-static double GetTendonPotentialEnergy(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getTendonPotentialEnergy(st);
-}
-
-static double GetMusclePotentialEnergy(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getMusclePotentialEnergy(st);
-}
-
-static double GetTendonForce(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getTendonForce(st);
-}
-
-static double GetActiveFiberForce(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getActiveFiberForce(st);
-}
-
-static double GetPassiveFiberForce(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getPassiveFiberForce(st);
-}
-
-static double GetTotalFiberForce(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getFiberForce(st);
-}
-
-static double GetFiberStiffness(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getFiberStiffness(st);
-}
-
-static double GetFiberStiffnessAlongTendon(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getFiberStiffnessAlongTendon(st);
-}
-
-static double GetTendonStiffness(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getTendonStiffness(st);
-}
-
-static double GetMuscleStiffness(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getMuscleStiffness(st);
-}
-
-static double GetFiberActivePower(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getFiberActivePower(st);
-}
-
-static double GetFiberPassivePower(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getFiberActivePower(st);
-}
-
-static double GetTendonPower(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getTendonPower(st);
-}
-
-static double GetMusclePower(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const&)
-{
-    return muscle.getTendonPower(st);
-}
-
-static MuscleOutput GetDefaultMuscleOutput()
-{
-    return MuscleOutput{"Moment Arm", "Unitless", GetMomentArm};
-}
-
-static std::vector<MuscleOutput> InitMuscleOutputs()
-{
-    std::vector<MuscleOutput> rv =
-    {{
-        GetDefaultMuscleOutput(),
-        {"Tendon Length", "m", GetTendonLength},
-        {"Fiber Length", "m", GetFiberLength},
-        {"Pennation Angle", "deg", GetPennationAngle},
-        {"Normalized Fiber Length", "Unitless", GetNormalizedFiberLength},
-        {"Tendon Strain", "Unitless", GetTendonStrain},
-        {"Fiber Potential Energy", "J", GetFiberPotentialEnergy},
-        {"Tendon Potential Energy", "J", GetTendonPotentialEnergy},
-        {"Muscle Potential Energy", "J", GetMusclePotentialEnergy},
-        {"Tendon Force", "N", GetTendonForce},
-        {"Active Fiber Force", "N", GetActiveFiberForce},
-        {"Passive Fiber Force", "N", GetPassiveFiberForce},
-        {"Total Fiber Force", "N", GetTotalFiberForce},
-        {"Fiber Stiffness", "N/m", GetFiberStiffness},
-        {"Fiber Stiffness Along Tendon", "N/m", GetFiberStiffnessAlongTendon},
-        {"Tendon Stiffness", "N/m", GetTendonStiffness},
-        {"Muscle Stiffness", "N/m", GetMuscleStiffness},
-        {"Fiber Active Power", "W", GetFiberActivePower},
-        {"Fiber Passive Power", "W", GetFiberPassivePower},
-        {"Tendon Power", "W", GetTendonPower},
-        {"Muscle Power", "W", GetMusclePower},
-    }};
-    std::sort(rv.begin(), rv.end());
-    return rv;
-}
-
-static std::vector<MuscleOutput> const& GetMuscleOutputs()
-{
-    static std::vector<MuscleOutput> g_MuscleOutputs = InitMuscleOutputs();
-    return g_MuscleOutputs;
-}
-
-// background computing stuff
+// backend datastructures
+//
+// these are the datastructures that the widget mostly plays around with
 namespace
 {
-    // parameters used to create a plot
+    // parameters for generating a plot line
+    //
+    // i.e. changing any part of the parameters may produce a different curve
     class PlotParameters final {
     public:
         PlotParameters(osc::ModelStateCommit commit,
@@ -354,7 +357,7 @@ namespace
         return (end - start) / std::max(1, p.getNumRequestedDataPoints()-1);
     }
 
-    // a single data point in the plot, as emitted by the plotting backend
+    // a single data point in the plot, as emitted by a PlottingTask
     struct PlotDataPoint final {
         float x;
         float y;
@@ -368,179 +371,209 @@ namespace
         Error,
     };
 
-    // a "live" plotting task that computes plot datapoints on a background thread
-    class PlottingTask final {
+    // mutable data that is shared between the plot worker thread and the top-level
+    // plotting task
+    class PlottingTaskThreadsafeSharedData final {
     public:
-        PlottingTask(PlotParameters const& params, std::function<void(PlotDataPoint)> callback) :
-            m_Parameters{params},
-            m_DataPointConsumer{std::move(callback)},
-            m_WorkerThread{[this](osc::stop_token t) { run(std::move(t)); }}
-        {
-        }
-
-        void wait()
-        {
-            if (m_WorkerThread.joinable())
-            {
-                m_WorkerThread.join();
-            }
-        }
-
-        void cancelAndWait()
-        {
-            m_WorkerThread.request_stop();
-            wait();
-        }
-
         PlottingTaskStatus getStatus() const
         {
             return m_Status.load();
         }
 
-        std::optional<std::string> getErrorString() const
+        std::optional<std::string> getErrorMessage() const
         {
-            return *m_ErrorString.lock();
+            auto lock = m_ErrorMessage.lock();
+            return *lock;
         }
 
-        PlotParameters const& getParameters() const
+        void setErrorMessage(std::string s)
         {
-            return m_Parameters;
+            auto lock = m_ErrorMessage.lock();
+            *lock = std::move(s);
         }
 
-        float getProgress() const
+        void setStatus(PlottingTaskStatus s)
         {
-            return m_Progress.load();
+            m_Status = s;
         }
 
     private:
-        void run(osc::stop_token stopToken)
+        std::atomic<PlottingTaskStatus> m_Status = PlottingTaskStatus::Running;
+        osc::SynchronizedValue<std::string> m_ErrorMessage;
+    };
+
+    // all inputs to the plotting function
+    struct PlottingTaskInputs final {
+        PlottingTaskInputs(
+            std::shared_ptr<PlottingTaskThreadsafeSharedData> shared_,
+            PlotParameters const& plotParameters_,
+            std::function<void(PlotDataPoint)> dataPointConsumer_) :
+
+            shared{std::move(shared_)},
+            plotParameters{plotParameters_},
+            dataPointConsumer{std::move(dataPointConsumer_)}
         {
-            // TODO: exception handling
-
-            if (m_Parameters.getNumRequestedDataPoints() <= 0)
-            {
-                auto errorLock = m_ErrorString.lock();
-                *errorLock = "<= 0 data points requested: cannot create a plot";
-                m_Status = PlottingTaskStatus::Error;
-                return;
-            }
-
-            std::unique_ptr<OpenSim::Model> model = std::make_unique<OpenSim::Model>(*m_Parameters.getCommit().getModel());
-
-            if (stopToken.stop_requested())
-            {
-                m_Status = PlottingTaskStatus::Cancelled;
-                return;
-            }
-
-            osc::InitializeModel(*model);
-
-            if (stopToken.stop_requested())
-            {
-                m_Status = PlottingTaskStatus::Cancelled;
-                return;
-            }
-
-            SimTK::State& state = osc::InitializeState(*model);
-
-            if (stopToken.stop_requested())
-            {
-                m_Status = PlottingTaskStatus::Cancelled;
-                return;
-            }
-
-            OpenSim::Muscle const* maybeMuscle = osc::FindComponent<OpenSim::Muscle>(*model, m_Parameters.getMusclePath());
-            if (!maybeMuscle)
-            {
-                auto errorLock = m_ErrorString.lock();
-                *errorLock = m_Parameters.getMusclePath().toString() + ": cannot find a muscle with this name";
-                m_Status = PlottingTaskStatus::Error;
-                return;
-            }
-            OpenSim::Muscle const& muscle = *maybeMuscle;
-
-            OpenSim::Coordinate const* maybeCoord = osc::FindComponentMut<OpenSim::Coordinate>(*model, m_Parameters.getCoordinatePath());
-            if (!maybeCoord)
-            {
-                auto errorLock = m_ErrorString.lock();
-                *errorLock = m_Parameters.getCoordinatePath().toString() + ": cannot find a coordinate with this name";
-                m_Status = PlottingTaskStatus::Error;
-                return;
-            }
-            OpenSim::Coordinate const& coord = *maybeCoord;
-
-            int const numDataPoints = m_Parameters.getNumRequestedDataPoints();
-            double const firstXValue = GetFirstXValue(m_Parameters, coord);
-            double const stepBetweenXValues = GetStepBetweenXValues(m_Parameters, coord);
-
-            // this fixes an unusual bug (#352), where the underlying assembly solver in the
-            // model ends up retaining invalid values across a coordinate (un)lock, which makes
-            // it sets coordinate values from X (what we want) to 0 after model assembly
-            //
-            // I don't exactly know *why* it's doing it - it looks like OpenSim holds a solver
-            // internally that, itself, retains invalid coordinate values or something
-            //
-            // see #352 for a lengthier explanation
-            coord.setLocked(state, false);
-            model->updateAssemblyConditions(state);
-
-            if (stopToken.stop_requested())
-            {
-                m_Status = PlottingTaskStatus::Cancelled;
-                return;
-            }
-
-            for (int i = 0; i < numDataPoints; ++i)
-            {
-                if (stopToken.stop_requested())
-                {
-                    m_Status = PlottingTaskStatus::Cancelled;
-                    return;
-                }
-
-                double xVal = firstXValue + (i * stepBetweenXValues);
-                coord.setValue(state, xVal);
-
-                if (stopToken.stop_requested())
-                {
-                    m_Status = PlottingTaskStatus::Cancelled;
-                    return;
-                }
-
-                model->equilibrateMuscles(state);
-
-                if (stopToken.stop_requested())
-                {
-                    m_Status = PlottingTaskStatus::Cancelled;
-                    return;
-                }
-
-                model->realizeReport(state);
-
-                if (stopToken.stop_requested())
-                {
-                    m_Status = PlottingTaskStatus::Cancelled;
-                    return;
-                }
-
-                float const yVal = static_cast<float>(m_Parameters.getMuscleOutput()(state, muscle, coord));
-
-                m_DataPointConsumer(PlotDataPoint{osc::ConvertCoordValueToDisplayValue(coord, xVal), yVal});
-                m_Progress = static_cast<float>(i+1) / static_cast<float>(numDataPoints);
-            }
-
-            m_Status = PlottingTaskStatus::Finished;
         }
 
-        PlotParameters m_Parameters;
-        std::function<void(PlotDataPoint)> m_DataPointConsumer;
-        std::atomic<PlottingTaskStatus> m_Status = PlottingTaskStatus::Running;
-        std::atomic<float> m_Progress = 0.0f;
-        osc::SynchronizedValue<std::string> m_ErrorString;
+        std::shared_ptr<PlottingTaskThreadsafeSharedData> shared;
+        PlotParameters plotParameters;
+        std::function<void(PlotDataPoint)> dataPointConsumer;
+    };
+
+    // inner (exception unsafe) plot function
+    //
+    // this is the function that actually does the "work" of computing plot points
+    PlottingTaskStatus ComputePlotPointsUnguarded(osc::stop_token const& stopToken, PlottingTaskInputs& inputs)
+    {
+        PlottingTaskThreadsafeSharedData& shared = *inputs.shared;
+        PlotParameters const& params = inputs.plotParameters;
+        std::function<void(PlotDataPoint)> const& callback = inputs.dataPointConsumer;
+
+        if (params.getNumRequestedDataPoints() <= 0)
+        {
+            return PlottingTaskStatus::Finished;
+        }
+
+        // create a local copy of the model
+        std::unique_ptr<OpenSim::Model> model = std::make_unique<OpenSim::Model>(*params.getCommit().getModel());
+
+        if (stopToken.stop_requested())
+        {
+            return PlottingTaskStatus::Cancelled;
+        }
+
+        // init the model + state
+
+        osc::InitializeModel(*model);
+
+        if (stopToken.stop_requested())
+        {
+            return PlottingTaskStatus::Cancelled;
+        }
+
+        SimTK::State& state = osc::InitializeState(*model);
+
+        if (stopToken.stop_requested())
+        {
+            return PlottingTaskStatus::Cancelled;
+        }
+
+        OpenSim::Muscle const* maybeMuscle = osc::FindComponent<OpenSim::Muscle>(*model, params.getMusclePath());
+        if (!maybeMuscle)
+        {
+            shared.setErrorMessage(params.getMusclePath().toString() + ": cannot find a muscle with this name");
+            return PlottingTaskStatus::Error;
+        }
+        OpenSim::Muscle const& muscle = *maybeMuscle;
+
+        OpenSim::Coordinate const* maybeCoord = osc::FindComponentMut<OpenSim::Coordinate>(*model, params.getCoordinatePath());
+        if (!maybeCoord)
+        {
+            shared.setErrorMessage(params.getCoordinatePath().toString() + ": cannot find a coordinate with this name");
+            return PlottingTaskStatus::Error;
+        }
+        OpenSim::Coordinate const& coord = *maybeCoord;
+
+        int const numDataPoints = params.getNumRequestedDataPoints();
+        double const firstXValue = GetFirstXValue(params, coord);
+        double const stepBetweenXValues = GetStepBetweenXValues(params, coord);
+
+        // this fixes an unusual bug (#352), where the underlying assembly solver in the
+        // model ends up retaining invalid values across a coordinate (un)lock, which makes
+        // it sets coordinate values from X (what we want) to 0 after model assembly
+        //
+        // I don't exactly know *why* it's doing it - it looks like OpenSim holds a solver
+        // internally that, itself, retains invalid coordinate values or something
+        //
+        // see #352 for a lengthier explanation
+        coord.setLocked(state, false);
+        model->updateAssemblyConditions(state);
+
+        if (stopToken.stop_requested())
+        {
+            return PlottingTaskStatus::Cancelled;
+        }
+
+        for (int i = 0; i < numDataPoints; ++i)
+        {
+            if (stopToken.stop_requested())
+            {
+                return PlottingTaskStatus::Cancelled;
+            }
+
+            double xVal = firstXValue + (i * stepBetweenXValues);
+            coord.setValue(state, xVal);
+
+            model->equilibrateMuscles(state);
+
+            if (stopToken.stop_requested())
+            {
+                return PlottingTaskStatus::Cancelled;
+            }
+
+            model->realizeReport(state);
+
+            if (stopToken.stop_requested())
+            {
+                return PlottingTaskStatus::Cancelled;
+            }
+
+            float const yVal = static_cast<float>(params.getMuscleOutput()(state, muscle, coord));
+
+            callback(PlotDataPoint{osc::ConvertCoordValueToDisplayValue(coord, xVal), yVal});
+        }
+
+        return PlottingTaskStatus::Finished;
+    }
+
+    // top-level "main" function that the Plotting task worker thread executes
+    //
+    // catches exceptions and propagates them to the task
+    int ComputePlotPointsMain(osc::stop_token const& stopToken, PlottingTaskInputs inputs)
+    {
+        try
+        {
+            inputs.shared->setStatus(PlottingTaskStatus::Running);
+            PlottingTaskStatus status = ComputePlotPointsUnguarded(stopToken, inputs);
+            inputs.shared->setStatus(status);
+            return 0;
+        }
+        catch (std::exception const& ex)
+        {
+            inputs.shared->setErrorMessage(ex.what());
+            inputs.shared->setStatus(PlottingTaskStatus::Error);
+            return -1;
+        }
+    }
+
+    // a "live" plotting task that is being executed on a background thread
+    //
+    // the plotting task emits each plotpoint through the callback without any mutexes, so
+    // it's up to the user of this class to ensure each emitted point is handled correctly
+    class PlottingTask final {
+    public:
+        PlottingTask(PlotParameters const& params, std::function<void(PlotDataPoint)> callback) :
+            m_WorkerThread{ComputePlotPointsMain, PlottingTaskInputs{m_Shared, params, std::move(callback)}}
+        {
+        }
+
+        PlottingTaskStatus getStatus() const
+        {
+            return m_Shared->getStatus();
+        }
+
+        std::optional<std::string> getErrorString() const
+        {
+            return m_Shared->getErrorMessage();
+        }
+
+    private:
+        std::shared_ptr<PlottingTaskThreadsafeSharedData> m_Shared = std::make_shared<PlottingTaskThreadsafeSharedData>();
         osc::jthread m_WorkerThread;
     };
 
-    // a plot, created from the data produced by the plotting task
+    // a data plot (line), potentially computed from a background thread, or loaded via a
+    // file
     class Plot final {
     public:
         explicit Plot(PlotParameters const& parameters) :
@@ -785,7 +818,7 @@ namespace
                         }
 
                         std::stringstream ss;
-                        ss << i+1 << ") " << previousPlot.getParameters().getCommit().getCommitMessage();
+                        ss << i + 1 << ") " << previousPlot.getParameters().getCommit().getCommitMessage();
                         std::string const lineName = std::move(ss).str();
 
                         ImPlot::PushStyleColor(ImPlotCol_Line, color);
@@ -983,13 +1016,11 @@ namespace
 
         void drawPlotDataTypeSelector()
         {
-            nonstd::span<MuscleOutput const> allOutputs = GetMuscleOutputs();
-
             std::vector<char const*> names;
             int active = -1;
-            for (int i = 0; i < static_cast<int>(allOutputs.size()); ++i)
+            for (int i = 0; i < static_cast<int>(m_AvailableMuscleOutputs.size()); ++i)
             {
-                MuscleOutput const& o = allOutputs[i];
+                MuscleOutput const& o = m_AvailableMuscleOutputs[i];
                 names.push_back(o.getName());
                 if (o == shared->PlotParams.getMuscleOutput())
                 {
@@ -999,7 +1030,7 @@ namespace
 
             if (ImGui::Combo("data type", &active, names.data(), static_cast<int>(names.size())))
             {
-                shared->PlotParams.setMuscleOutput(allOutputs[active]);
+                shared->PlotParams.setMuscleOutput(m_AvailableMuscleOutputs[active]);
             }
         }
 
@@ -1069,7 +1100,7 @@ namespace
             {
                 // cancel current plotting task, to prevent unusual thread races while we
                 // shuffle data around
-                m_MaybeActivePlottingTask->cancelAndWait();
+                m_MaybeActivePlottingTask.reset();
 
                 // (edge-case): if the user selected a different muscle output then the previous
                 // plots have to be cleared out
@@ -1097,6 +1128,7 @@ namespace
             m_ActivePlot.lock()->append(p);
         }
 
+        std::vector<MuscleOutput> m_AvailableMuscleOutputs = GenerateMuscleOutputs();
         std::unique_ptr<PlottingTask> m_MaybeActivePlottingTask = std::make_unique<PlottingTask>(shared->PlotParams, [this](PlotDataPoint p) { onDataFromPlottingTask(p); });
         osc::SynchronizedValue<Plot> m_ActivePlot{shared->PlotParams};
         osc::CircularBuffer<Plot, 6> m_PreviousPlots;
