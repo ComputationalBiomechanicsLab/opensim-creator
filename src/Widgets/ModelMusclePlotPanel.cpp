@@ -369,6 +369,20 @@ namespace
         return a.x < b.x;
     }
 
+    // virtual interface to a thing that can receive datapoints from a plotter
+    class PlotDataPointConsumer {
+    protected:
+        PlotDataPointConsumer() = default;
+    public:
+        PlotDataPointConsumer(PlotDataPointConsumer const&) = delete;
+        PlotDataPointConsumer(PlotDataPointConsumer&&) noexcept = delete;
+        PlotDataPointConsumer& operator=(PlotDataPointConsumer const&) = delete;
+        PlotDataPointConsumer& operator=(PlotDataPointConsumer&&) noexcept = delete;
+        virtual ~PlotDataPointConsumer() noexcept = default;
+
+        virtual void operator()(PlotDataPoint) = 0;
+    };
+
     // the status of a "live" plotting task
     enum class PlottingTaskStatus {
         Running,
@@ -413,7 +427,7 @@ namespace
         PlottingTaskInputs(
             std::shared_ptr<PlottingTaskThreadsafeSharedData> shared_,
             PlotParameters const& plotParameters_,
-            std::function<void(PlotDataPoint)> dataPointConsumer_) :
+            std::shared_ptr<PlotDataPointConsumer> dataPointConsumer_) :
 
             shared{ std::move(shared_) },
             plotParameters{ plotParameters_ },
@@ -423,7 +437,7 @@ namespace
 
         std::shared_ptr<PlottingTaskThreadsafeSharedData> shared;
         PlotParameters plotParameters;
-        std::function<void(PlotDataPoint)> dataPointConsumer;
+        std::shared_ptr<PlotDataPointConsumer> dataPointConsumer;
     };
 
     // inner (exception unsafe) plot function
@@ -433,7 +447,7 @@ namespace
     {
         PlottingTaskThreadsafeSharedData& shared = *inputs.shared;
         PlotParameters const& params = inputs.plotParameters;
-        std::function<void(PlotDataPoint)> const& callback = inputs.dataPointConsumer;
+        PlotDataPointConsumer& callback = *inputs.dataPointConsumer;
 
         if (params.getNumRequestedDataPoints() <= 0)
         {
@@ -534,9 +548,10 @@ namespace
                 return PlottingTaskStatus::Cancelled;
             }
 
+            float const xDisplayVal = osc::ConvertCoordValueToDisplayValue(coord, xVal);
             float const yVal = static_cast<float>(params.getMuscleOutput()(state, muscle, coord));
 
-            callback(PlotDataPoint{ osc::ConvertCoordValueToDisplayValue(coord, xVal), yVal });
+            callback(PlotDataPoint{xDisplayVal, yVal});
         }
 
         return PlottingTaskStatus::Finished;
@@ -568,8 +583,8 @@ namespace
     // it's up to the user of this class to ensure each emitted point is handled correctly
     class PlottingTask final {
     public:
-        PlottingTask(PlotParameters const& params, std::function<void(PlotDataPoint)> callback) :
-            m_WorkerThread{ ComputePlotPointsMain, PlottingTaskInputs{m_Shared, params, std::move(callback)} }
+        PlottingTask(PlotParameters const& params, std::shared_ptr<PlotDataPointConsumer> consumer_) :
+            m_WorkerThread{ComputePlotPointsMain, PlottingTaskInputs{m_Shared, params, std::move(consumer_)}}
         {
         }
 
@@ -590,12 +605,12 @@ namespace
 
     // a data plot (line), potentially computed from a background thread, or loaded via a
     // file
-    class Plot final {
+    class Plot final : public PlotDataPointConsumer {
     public:
         explicit Plot(PlotParameters const& parameters) :
-            m_Parameters{ parameters }
+            m_Parameters{parameters}
         {
-            m_DataPoints.reserve(m_Parameters.getNumRequestedDataPoints());
+            m_DataPoints.lock()->reserve(m_Parameters.getNumRequestedDataPoints());
         }
 
         PlotParameters const& getParameters() const
@@ -603,37 +618,26 @@ namespace
             return m_Parameters;
         }
 
-        nonstd::span<PlotDataPoint const> getDataPoints() const
+        osc::SynchronizedValueGuard<std::vector<PlotDataPoint> const> lockDataPoints() const
         {
-            return m_DataPoints;
+            return m_DataPoints.lock();
         }
 
-        void append(PlotDataPoint const& p)
+        void operator()(PlotDataPoint p) override
         {
-            m_DataPoints.push_back(p);
+            {
+                auto lock = m_DataPoints.lock();
+                lock->push_back(p);
+            }
+
+            // HACK: something happened on a background thread, the UI thread should probably redraw
+            osc::App::upd().requestRedraw();
         }
 
     private:
         PlotParameters m_Parameters;
-        std::vector<PlotDataPoint> m_DataPoints;
+        osc::SynchronizedValue<std::vector<PlotDataPoint>> m_DataPoints;
     };
-
-    float const* XValuePtr(Plot const& p)
-    {
-        nonstd::span<PlotDataPoint const> points = p.getDataPoints();
-        return !points.empty() ? &points.front().x : nullptr;
-    }
-
-    float const* YValuePtr(Plot const& p)
-    {
-        nonstd::span<PlotDataPoint const> points = p.getDataPoints();
-        return !points.empty() ? &points.front().y : nullptr;
-    }
-
-    int ValueStride(Plot const& p)
-    {
-        return static_cast<int>(sizeof(PlotDataPoint));
-    }
 }
 
 // helpers
@@ -648,7 +652,8 @@ namespace
 
     std::optional<float> ComputeLERPedY(Plot const& p, float x)
     {
-        nonstd::span<PlotDataPoint const> const points = p.getDataPoints();
+        auto lock = p.lockDataPoints();
+        nonstd::span<PlotDataPoint const> const points = *lock;
 
         if (points.empty())
         {
@@ -684,7 +689,8 @@ namespace
 
     std::optional<PlotDataPoint> FindNearestPoint(Plot const& p, float x)
     {
-        nonstd::span<PlotDataPoint const> points = p.getDataPoints();
+        auto lock = p.lockDataPoints();
+        nonstd::span<PlotDataPoint const> points = *lock;
 
         if (points.empty())
         {
@@ -724,7 +730,8 @@ namespace
 
     bool IsXInRange(Plot const& p, float x)
     {
-        nonstd::span<PlotDataPoint const> const points = p.getDataPoints();
+        auto lock = p.lockDataPoints();
+        nonstd::span<PlotDataPoint const> const points = *lock;
 
         if (points.size() <= 1)
         {
@@ -736,13 +743,25 @@ namespace
 
     void PlotLine(osc::CStringView lineName, Plot const& p)
     {
+        auto lock = p.lockDataPoints();
+        nonstd::span<PlotDataPoint const> points = *lock;
+
+
+        float const* xPtr = nullptr;
+        float const* yPtr = nullptr;
+        if (!points.empty())
+        {
+            xPtr = &points.front().x;
+            yPtr = &points.front().y;
+        }
+
         ImPlot::PlotLine(
             lineName.c_str(),
-            XValuePtr(p),
-            YValuePtr(p),
-            static_cast<int>(p.getDataPoints().size()),
+            xPtr,
+            yPtr,
+            static_cast<int>(points.size()),
             0,
-            ValueStride(p)
+            sizeof(PlotDataPoint)
         );
     }
 }
@@ -810,9 +829,12 @@ namespace
         {
             onBeforeDrawing();  // perform pre-draw cleanups/updates etc.
 
-            if (m_MaybeActivePlottingTask->getStatus() == PlottingTaskStatus::Error)
+            if (m_PlottingTask.getStatus() == PlottingTaskStatus::Error)
             {
-                ImGui::Text("error: cannot show plot: %s", m_MaybeActivePlottingTask->getErrorString().value().c_str());
+                if (auto maybeErrorString = m_PlottingTask.getErrorString())
+                {
+                    ImGui::Text("error: cannot show plot: %s", maybeErrorString->c_str());
+                }
                 return nullptr;
             }
 
@@ -878,8 +900,8 @@ namespace
             // carry out user-enacted deletions
             if (0 <= m_PlotTaggedForDeletion && m_PlotTaggedForDeletion < m_PreviousPlots.size())
             {
-                Plot* ptr = &m_PreviousPlots[m_PlotTaggedForDeletion];
-                std::stable_partition(m_PreviousPlots.begin(), m_PreviousPlots.end(), [ptr](Plot const& p) { return &p != ptr; });
+                std::shared_ptr<Plot> p = m_PreviousPlots[m_PlotTaggedForDeletion];
+                std::stable_partition(m_PreviousPlots.begin(), m_PreviousPlots.end(), [p](std::shared_ptr<Plot> el) { return el != p; });
                 m_PreviousPlots.pop_back();
                 m_PlotTaggedForDeletion = -1;
             }
@@ -889,21 +911,16 @@ namespace
 
             // if the current plot doesn't match the latest requested params, kick off
             // a new plotting task
-            if (m_ActivePlot.lock()->getParameters() != shared->PlotParams)
+            if (m_ActivePlot->getParameters() != shared->PlotParams)
             {
-                // cancel current plotting task, to prevent unusual thread races while we
-                // shuffle data around
-                m_MaybeActivePlottingTask.reset();
-
                 // (edge-case): if the user selected a different muscle output then the previous
                 // plots have to be cleared out
-                bool clearPrevious = m_ActivePlot.lock()->getParameters().getMuscleOutput() != shared->PlotParams.getMuscleOutput();
+                bool clearPrevious = m_ActivePlot->getParameters().getMuscleOutput() != shared->PlotParams.getMuscleOutput();
 
                 // set new active plot
-                Plot plot{ shared->PlotParams };
-                auto lock = m_ActivePlot.lock();
-                std::swap(*lock, plot);
-                m_PreviousPlots.push_back(std::move(plot));
+                std::shared_ptr<Plot> p = std::make_shared<Plot>(shared->PlotParams);
+                std::swap(p, m_ActivePlot);
+                m_PreviousPlots.push_back(p);
 
                 if (clearPrevious)
                 {
@@ -911,15 +928,8 @@ namespace
                 }
 
                 // start new plotting task
-                m_MaybeActivePlottingTask = std::make_unique<PlottingTask>(shared->PlotParams, [this](PlotDataPoint p) { onDataFromPlottingTask(p); });
+                m_PlottingTask = PlottingTask{m_ActivePlot->getParameters(), m_ActivePlot};
             }
-        }
-
-        // called by the background thread - be careful about mutexes etc. here
-        void onDataFromPlottingTask(PlotDataPoint p)
-        {
-            m_ActivePlot.lock()->append(p);
-            osc::App::upd().requestRedraw();
         }
 
         // tries to hittest the mouse's X position in plot-space
@@ -932,10 +942,9 @@ namespace
             // handle snapping the mouse's X position
             if (isHovered && m_SnapCursor)
             {
-                auto plotLock = m_ActivePlot.lock();
-                auto maybeNearest = FindNearestPoint(*plotLock, mouseX);
+                auto maybeNearest = FindNearestPoint(*m_ActivePlot, mouseX);
 
-                if (IsXInRange(*plotLock, mouseX) && maybeNearest)
+                if (IsXInRange(*m_ActivePlot, mouseX) && maybeNearest)
                 {
                     mouseX = maybeNearest->x;
                 }
@@ -950,7 +959,7 @@ namespace
             // plot previous plots
             for (size_t i = 0; i < m_PreviousPlots.size(); ++i)
             {
-                Plot const& previousPlot = m_PreviousPlots[i];
+                Plot const& previousPlot = *m_PreviousPlots[i];
 
                 glm::vec4 color = m_ComputedPlotLineBaseColor;
 
@@ -990,14 +999,12 @@ namespace
 
             // then plot currently active plot
             {
-                auto plotLock = m_ActivePlot.lock();
-
                 std::stringstream ss;
-                ss << m_PreviousPlots.size() + 1 << ") " << plotLock->getParameters().getCommit().getCommitMessage();
+                ss << m_PreviousPlots.size() + 1 << ") " << m_ActivePlot->getParameters().getCommit().getCommitMessage();
                 std::string const lineName = std::move(ss).str();
 
                 ImPlot::PushStyleColor(ImPlotCol_Line, m_ComputedPlotLineBaseColor);
-                PlotLine(lineName, *plotLock);
+                PlotLine(lineName, *m_ActivePlot);
                 ImPlot::PopStyleColor(ImPlotCol_Line);
             }
         }
@@ -1037,11 +1044,9 @@ namespace
             // the Y values are computed from those continous values by searching through the
             // *discrete* data values of the plot and LERPing them
             {
-                auto plotLock = m_ActivePlot.lock();
-
                 // draw current coordinate value as a solid dropline
                 {
-                    std::optional<float> maybeCoordinateY = ComputeLERPedY(*plotLock, static_cast<float>(coordinateXInDegrees));
+                    std::optional<float> maybeCoordinateY = ComputeLERPedY(*m_ActivePlot, static_cast<float>(coordinateXInDegrees));
 
                     if (maybeCoordinateY)
                     {
@@ -1054,7 +1059,7 @@ namespace
                 // (try to) draw the hovered coordinate value as a faded dropline
                 if (maybeMouseX)
                 {
-                    std::optional<float> const maybeHoverY = ComputeLERPedY(*plotLock, *maybeMouseX);
+                    std::optional<float> const maybeHoverY = ComputeLERPedY(*m_ActivePlot, *maybeMouseX);
                     if (maybeHoverY)
                     {
                         double v = *maybeHoverY;
@@ -1209,13 +1214,16 @@ namespace
             return std::move(ss).str();
         }
 
+        // plotting/data state
         std::vector<MuscleOutput> m_AvailableMuscleOutputs = GenerateMuscleOutputs();
-        std::unique_ptr<PlottingTask> m_MaybeActivePlottingTask = std::make_unique<PlottingTask>(shared->PlotParams, [this](PlotDataPoint p) { onDataFromPlottingTask(p); });
-        osc::SynchronizedValue<Plot> m_ActivePlot{ shared->PlotParams };
-        osc::CircularBuffer<Plot, 6> m_PreviousPlots;
+        std::shared_ptr<Plot> m_ActivePlot = std::make_shared<Plot>(shared->PlotParams);
+        PlottingTask m_PlottingTask{shared->PlotParams, m_ActivePlot};
+        osc::CircularBuffer<std::shared_ptr<Plot>, 6> m_PreviousPlots;
+        int m_PlotTaggedForDeletion = -1;
+
+        // UI/drawing/widget state
         glm::vec4 m_ComputedPlotLineBaseColor = {1.0f, 1.0f, 1.0f, 1.0f};
         bool m_LegendPopupIsOpen = false;
-        int m_PlotTaggedForDeletion = -1;
         bool m_ShowMarkers = true;
         bool m_ShowMarkersOnPreviousPlots = false;
         bool m_SnapCursor = false;

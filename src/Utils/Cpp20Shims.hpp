@@ -92,7 +92,18 @@ namespace osc {
         // threads are moveable: the moved-from value is a non-joinable thread that
         // does not represent a thread
         jthread(jthread&& tmp) = default;
-        jthread& operator=(jthread&&) = default;
+
+        jthread& operator=(jthread&& other)
+        {
+            if (joinable())
+            {
+                m_StopSource.request_stop();
+                m_Thread.join();
+            }
+            std::swap(m_StopSource, other.m_StopSource);
+            std::swap(m_Thread, other.m_Thread);
+            return *this;
+        }
 
         // jthreads (or "joining threads") cancel + join on destruction
         ~jthread() noexcept
