@@ -255,11 +255,11 @@ namespace
             MuscleOutput output,
             int requestedNumDataPoints) :
 
-            m_Commit{ std::move(commit) },
-            m_CoordinatePath{ std::move(coordinatePath) },
-            m_MusclePath{ std::move(musclePath) },
-            m_Output{ std::move(output) },
-            m_RequestedNumDataPoints{ std::move(requestedNumDataPoints) }
+            m_Commit{std::move(commit)},
+            m_CoordinatePath{std::move(coordinatePath)},
+            m_MusclePath{std::move(musclePath)},
+            m_Output{std::move(output)},
+            m_RequestedNumDataPoints{std::move(requestedNumDataPoints)}
         {
         }
 
@@ -764,6 +764,99 @@ namespace
             sizeof(PlotDataPoint)
         );
     }
+
+    std::string IthPlotLineName(Plot const& p, size_t i)
+    {
+        std::stringstream ss;
+        ss << i + 1 << ") " << p.getParameters().getCommit().getCommitMessage();
+        return std::move(ss).str();
+    }
+
+    // holds a collection of plotlines that are to-be-drawn on the plot
+    class PlotLines final {
+    public:
+        PlotLines(PlotParameters const& params) :
+            m_ActivePlot{std::make_shared<Plot>(params)}
+        {
+        }
+
+        void onBeforeDrawing(osc::UndoableModelStatePair const& model, PlotParameters const& desiredParams)
+        {
+            // perform any datastructure invariant checks etc.
+
+            // carry out user-enacted deletions
+            if (0 <= m_PlotTaggedForDeletion && m_PlotTaggedForDeletion < m_PreviousPlots.size())
+            {
+                std::shared_ptr<Plot> p = m_PreviousPlots[m_PlotTaggedForDeletion];
+                std::stable_partition(m_PreviousPlots.begin(), m_PreviousPlots.end(), [p](std::shared_ptr<Plot> el) { return el != p; });
+                m_PreviousPlots.pop_back();
+                m_PlotTaggedForDeletion = -1;
+            }
+
+            // if the current plot doesn't match the latest requested params, kick off
+            // a new plotting task
+            if (m_ActivePlot->getParameters() != desiredParams)
+            {
+                // (edge-case): if the user selected a different muscle output then the previous
+                // plots have to be cleared out
+                bool clearPrevious = m_ActivePlot->getParameters().getMuscleOutput() != desiredParams.getMuscleOutput();
+
+                // set new active plot
+                std::shared_ptr<Plot> p = std::make_shared<Plot>(desiredParams);
+                std::swap(p, m_ActivePlot);
+                m_PreviousPlots.push_back(p);
+
+                if (clearPrevious)
+                {
+                    m_PreviousPlots.clear();
+                }
+
+                // start new plotting task
+                m_PlottingTask = PlottingTask{m_ActivePlot->getParameters(), m_ActivePlot};
+            }
+        }
+
+        void clearPreviousPlots()
+        {
+            m_PreviousPlots.clear();
+        }
+
+        PlottingTaskStatus getPlottingTaskStatus() const
+        {
+            return m_PlottingTask.getStatus();
+        }
+
+        std::optional<std::string> tryGetPlottingTaskErrorMessage() const
+        {
+            return m_PlottingTask.getErrorString();
+        }
+
+        Plot const& getActivePlot() const
+        {
+            return *m_ActivePlot;
+        }
+
+        size_t getNumPreviousPlot() const
+        {
+            return m_PreviousPlots.size();
+        }
+
+        Plot const& getPreviousPlot(size_t i) const
+        {
+            return *m_PreviousPlots.at(i);
+        }
+
+        void tagPreviousPlotForDeletion(size_t i)
+        {
+            m_PlotTaggedForDeletion = static_cast<int>(i);
+        }
+
+    private:
+        std::shared_ptr<Plot> m_ActivePlot;
+        PlottingTask m_PlottingTask{m_ActivePlot->getParameters(), m_ActivePlot};
+        osc::CircularBuffer<std::shared_ptr<Plot>, 6> m_PreviousPlots;
+        int m_PlotTaggedForDeletion = -1;
+    };
 }
 
 // UI state
@@ -821,7 +914,8 @@ namespace
     class ShowingPlotState final : public MusclePlotState {
     public:
         explicit ShowingPlotState(SharedStateData* shared_) :
-            MusclePlotState{std::move(shared_)}
+            MusclePlotState{std::move(shared_)},
+            m_Lines{shared->PlotParams}
         {
         }
 
@@ -829,9 +923,9 @@ namespace
         {
             onBeforeDrawing();  // perform pre-draw cleanups/updates etc.
 
-            if (m_PlottingTask.getStatus() == PlottingTaskStatus::Error)
+            if (m_Lines.getPlottingTaskStatus() == PlottingTaskStatus::Error)
             {
-                if (auto maybeErrorString = m_PlottingTask.getErrorString())
+                if (auto maybeErrorString = m_Lines.tryGetPlottingTaskErrorMessage())
                 {
                     ImGui::Text("error: cannot show plot: %s", maybeErrorString->c_str());
                 }
@@ -892,44 +986,17 @@ namespace
 
     private:
 
-        // called at the start of each `draw` call - it GCs datastructures etc
+        // called at the start of each `draw` call - it GCs datastructures etc.
         void onBeforeDrawing()
         {
+            // ensure the legend test is reset (it's checked every frame)
             m_LegendPopupIsOpen = false;
-
-            // carry out user-enacted deletions
-            if (0 <= m_PlotTaggedForDeletion && m_PlotTaggedForDeletion < m_PreviousPlots.size())
-            {
-                std::shared_ptr<Plot> p = m_PreviousPlots[m_PlotTaggedForDeletion];
-                std::stable_partition(m_PreviousPlots.begin(), m_PreviousPlots.end(), [p](std::shared_ptr<Plot> el) { return el != p; });
-                m_PreviousPlots.pop_back();
-                m_PlotTaggedForDeletion = -1;
-            }
 
             // ensure latest requested params reflects the latest version of the model
             shared->PlotParams.setCommit(shared->Uim->getLatestCommit());
 
-            // if the current plot doesn't match the latest requested params, kick off
-            // a new plotting task
-            if (m_ActivePlot->getParameters() != shared->PlotParams)
-            {
-                // (edge-case): if the user selected a different muscle output then the previous
-                // plots have to be cleared out
-                bool clearPrevious = m_ActivePlot->getParameters().getMuscleOutput() != shared->PlotParams.getMuscleOutput();
-
-                // set new active plot
-                std::shared_ptr<Plot> p = std::make_shared<Plot>(shared->PlotParams);
-                std::swap(p, m_ActivePlot);
-                m_PreviousPlots.push_back(p);
-
-                if (clearPrevious)
-                {
-                    m_PreviousPlots.clear();
-                }
-
-                // start new plotting task
-                m_PlottingTask = PlottingTask{m_ActivePlot->getParameters(), m_ActivePlot};
-            }
+            // ensure plot lines are valid, given the current model + desired params
+            m_Lines.onBeforeDrawing(*shared->Uim, shared->PlotParams);
         }
 
         // tries to hittest the mouse's X position in plot-space
@@ -942,9 +1009,9 @@ namespace
             // handle snapping the mouse's X position
             if (isHovered && m_SnapCursor)
             {
-                auto maybeNearest = FindNearestPoint(*m_ActivePlot, mouseX);
+                auto maybeNearest = FindNearestPoint(m_Lines.getActivePlot(), mouseX);
 
-                if (IsXInRange(*m_ActivePlot, mouseX) && maybeNearest)
+                if (IsXInRange(m_Lines.getActivePlot(), mouseX) && maybeNearest)
                 {
                     mouseX = maybeNearest->x;
                 }
@@ -957,22 +1024,20 @@ namespace
         void drawPlotLines()
         {
             // plot previous plots
-            for (size_t i = 0; i < m_PreviousPlots.size(); ++i)
+            for (size_t i = 0, len = m_Lines.getNumPreviousPlot(); i < len; ++i)
             {
-                Plot const& previousPlot = *m_PreviousPlots[i];
+                Plot const& previousPlot = m_Lines.getPreviousPlot(i);
 
                 glm::vec4 color = m_ComputedPlotLineBaseColor;
 
-                color.a *= static_cast<float>(i + 1) / static_cast<float>(m_PreviousPlots.size() + 1);
+                color.a *= static_cast<float>(i + 1) / static_cast<float>(len + 1);
 
                 if (m_ShowMarkersOnPreviousPlots)
                 {
                     ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
                 }
 
-                std::stringstream ss;
-                ss << i + 1 << ") " << previousPlot.getParameters().getCommit().getCommitMessage();
-                std::string const lineName = std::move(ss).str();
+                std::string const lineName = IthPlotLineName(previousPlot, i + 1);
 
                 ImPlot::PushStyleColor(ImPlotCol_Line, color);
                 PlotLine(lineName, previousPlot);
@@ -984,7 +1049,7 @@ namespace
 
                     if (ImGui::MenuItem(ICON_FA_TRASH " delete"))
                     {
-                        m_PlotTaggedForDeletion = static_cast<int>(i);
+                        m_Lines.tagPreviousPlotForDeletion(i);
                     }
                     ImPlot::EndLegendPopup();
                 }
@@ -999,12 +1064,11 @@ namespace
 
             // then plot currently active plot
             {
-                std::stringstream ss;
-                ss << m_PreviousPlots.size() + 1 << ") " << m_ActivePlot->getParameters().getCommit().getCommitMessage();
-                std::string const lineName = std::move(ss).str();
+                Plot const& p = m_Lines.getActivePlot();
+                std::string const lineName = IthPlotLineName(p, m_Lines.getNumPreviousPlot() + 1);
 
                 ImPlot::PushStyleColor(ImPlotCol_Line, m_ComputedPlotLineBaseColor);
-                PlotLine(lineName, *m_ActivePlot);
+                PlotLine(lineName, p);
                 ImPlot::PopStyleColor(ImPlotCol_Line);
             }
         }
@@ -1046,7 +1110,7 @@ namespace
             {
                 // draw current coordinate value as a solid dropline
                 {
-                    std::optional<float> maybeCoordinateY = ComputeLERPedY(*m_ActivePlot, static_cast<float>(coordinateXInDegrees));
+                    std::optional<float> maybeCoordinateY = ComputeLERPedY(m_Lines.getActivePlot(), static_cast<float>(coordinateXInDegrees));
 
                     if (maybeCoordinateY)
                     {
@@ -1059,7 +1123,7 @@ namespace
                 // (try to) draw the hovered coordinate value as a faded dropline
                 if (maybeMouseX)
                 {
-                    std::optional<float> const maybeHoverY = ComputeLERPedY(*m_ActivePlot, *maybeMouseX);
+                    std::optional<float> const maybeHoverY = ComputeLERPedY(m_Lines.getActivePlot(), *maybeMouseX);
                     if (maybeHoverY)
                     {
                         double v = *maybeHoverY;
@@ -1120,7 +1184,7 @@ namespace
 
                 if (ImGui::MenuItem("clear previous plots"))
                 {
-                    m_PreviousPlots.clear();
+                    m_Lines.clearPreviousPlots();
                 }
 
                 if (ImGui::BeginMenu("legend"))
@@ -1214,14 +1278,11 @@ namespace
             return std::move(ss).str();
         }
 
-        // plotting/data state
-        std::vector<MuscleOutput> m_AvailableMuscleOutputs = GenerateMuscleOutputs();
-        std::shared_ptr<Plot> m_ActivePlot = std::make_shared<Plot>(shared->PlotParams);
-        PlottingTask m_PlottingTask{shared->PlotParams, m_ActivePlot};
-        osc::CircularBuffer<std::shared_ptr<Plot>, 6> m_PreviousPlots;
-        int m_PlotTaggedForDeletion = -1;
+        // plot data state
+        PlotLines m_Lines;
 
         // UI/drawing/widget state
+        std::vector<MuscleOutput> m_AvailableMuscleOutputs = GenerateMuscleOutputs();
         glm::vec4 m_ComputedPlotLineBaseColor = {1.0f, 1.0f, 1.0f, 1.0f};
         bool m_LegendPopupIsOpen = false;
         bool m_ShowMarkers = true;

@@ -246,6 +246,11 @@ namespace osc
             return *std::launder(reinterpret_cast<T*>(raw_storage.data() + idx));
         }
 
+        [[nodiscard]] constexpr const_reference operator[](size_type pos) const noexcept {
+            size_type idx = (static_cast<size_type>(_begin) + pos) % N;
+            return *std::launder(reinterpret_cast<T const*>(raw_storage.data() + idx));
+        }
+
         [[nodiscard]] constexpr reference front() noexcept {
             return *std::launder(reinterpret_cast<T*>(raw_storage.data() + static_cast<size_type>(_begin)));
         }
