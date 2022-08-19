@@ -634,8 +634,19 @@ namespace
             osc::App::upd().requestRedraw();
         }
 
+        bool getIsLocked() const
+        {
+            return m_IsLocked;
+        }
+
+        void setIsLocked(bool v)
+        {
+            m_IsLocked = std::move(v);
+        }
+
     private:
         PlotParameters m_Parameters;
+        bool m_IsLocked = false;
         osc::SynchronizedValue<std::vector<PlotDataPoint>> m_DataPoints;
     };
 }
@@ -768,7 +779,7 @@ namespace
     std::string IthPlotLineName(Plot const& p, size_t i)
     {
         std::stringstream ss;
-        ss << i + 1 << ") " << p.getParameters().getCommit().getCommitMessage();
+        ss << i << ") " << p.getParameters().getCommit().getCommitMessage();
         return std::move(ss).str();
     }
 
@@ -816,7 +827,7 @@ namespace
             }
         }
 
-        void clearPreviousPlots()
+        void clearUnlockedPlots()
         {
             m_PreviousPlots.clear();
         }
@@ -836,17 +847,17 @@ namespace
             return *m_ActivePlot;
         }
 
-        size_t getNumPreviousPlot() const
+        size_t getNumOtherPlots() const
         {
             return m_PreviousPlots.size();
         }
 
-        Plot const& getPreviousPlot(size_t i) const
+        Plot const& getOtherPlot(size_t i) const
         {
             return *m_PreviousPlots.at(i);
         }
 
-        void tagPreviousPlotForDeletion(size_t i)
+        void tagOtherPlotForDeletion(size_t i)
         {
             m_PlotTaggedForDeletion = static_cast<int>(i);
         }
@@ -1023,24 +1034,23 @@ namespace
         // draws the actual plot lines in the plot
         void drawPlotLines()
         {
-            // plot previous plots
-            for (size_t i = 0, len = m_Lines.getNumPreviousPlot(); i < len; ++i)
+            // plot not-active plots
+            for (size_t i = 0, len = m_Lines.getNumOtherPlots(); i < len; ++i)
             {
-                Plot const& previousPlot = m_Lines.getPreviousPlot(i);
+                Plot const& plot = m_Lines.getOtherPlot(i);
 
                 glm::vec4 color = m_ComputedPlotLineBaseColor;
-
                 color.a *= static_cast<float>(i + 1) / static_cast<float>(len + 1);
 
-                if (m_ShowMarkersOnPreviousPlots)
+                if (m_ShowMarkersOnOtherPlots)
                 {
                     ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
                 }
 
-                std::string const lineName = IthPlotLineName(previousPlot, i + 1);
+                std::string const lineName = IthPlotLineName(plot, i + 1);
 
                 ImPlot::PushStyleColor(ImPlotCol_Line, color);
-                PlotLine(lineName, previousPlot);
+                PlotLine(lineName, plot);
                 ImPlot::PopStyleColor(ImPlotCol_Line);
 
                 if (ImPlot::BeginLegendPopup(lineName.c_str()))
@@ -1049,23 +1059,21 @@ namespace
 
                     if (ImGui::MenuItem(ICON_FA_TRASH " delete"))
                     {
-                        m_Lines.tagPreviousPlotForDeletion(i);
+                        m_Lines.tagOtherPlotForDeletion(i);
                     }
                     ImPlot::EndLegendPopup();
                 }
             }
 
-            // show markers for the active plot, so that the user can see where the points
-            // were evaluated
-            if (m_ShowMarkers)
-            {
-                ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
-            }
-
-            // then plot currently active plot
+            // then plot the active plot
             {
                 Plot const& p = m_Lines.getActivePlot();
-                std::string const lineName = IthPlotLineName(p, m_Lines.getNumPreviousPlot() + 1);
+                std::string const lineName = IthPlotLineName(p, m_Lines.getNumOtherPlots() + 1);
+
+                if (m_ShowMarkersOnActivePlot)
+                {
+                    ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
+                }
 
                 ImPlot::PushStyleColor(ImPlotCol_Line, m_ComputedPlotLineBaseColor);
                 PlotLine(lineName, p);
@@ -1182,9 +1190,9 @@ namespace
                     shared->PlotParams.setNumRequestedDataPoints(currentDataPoints);
                 }
 
-                if (ImGui::MenuItem("clear previous plots"))
+                if (ImGui::MenuItem("clear unlocked plots"))
                 {
-                    m_Lines.clearPreviousPlots();
+                    m_Lines.clearUnlockedPlots();
                 }
 
                 if (ImGui::BeginMenu("legend"))
@@ -1193,8 +1201,8 @@ namespace
                     ImGui::EndMenu();
                 }
 
-                ImGui::MenuItem("show markers", nullptr, &m_ShowMarkers);
-                ImGui::MenuItem("show markers on previous plots", nullptr, &m_ShowMarkersOnPreviousPlots);
+                ImGui::MenuItem("show markers", nullptr, &m_ShowMarkersOnActivePlot);
+                ImGui::MenuItem("show markers on other plots", nullptr, &m_ShowMarkersOnOtherPlots);
                 ImGui::MenuItem("snap cursor to datapoints", nullptr, &m_SnapCursor);
 
                 ImGui::EndPopup();
@@ -1285,8 +1293,8 @@ namespace
         std::vector<MuscleOutput> m_AvailableMuscleOutputs = GenerateMuscleOutputs();
         glm::vec4 m_ComputedPlotLineBaseColor = {1.0f, 1.0f, 1.0f, 1.0f};
         bool m_LegendPopupIsOpen = false;
-        bool m_ShowMarkers = true;
-        bool m_ShowMarkersOnPreviousPlots = false;
+        bool m_ShowMarkersOnActivePlot = true;
+        bool m_ShowMarkersOnOtherPlots = false;
         bool m_SnapCursor = false;
         ImPlotFlags m_PlotFlags = ImPlotFlags_AntiAliased | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame;
         ImPlotLocation m_LegendLocation = ImPlotLocation_NorthWest;

@@ -211,7 +211,7 @@ namespace osc
         using reverse_iterator = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-        constexpr CircularBuffer() = default;
+        CircularBuffer() = default;
         CircularBuffer(CircularBuffer const& other) = delete;
         CircularBuffer(CircularBuffer&&) = delete;
         CircularBuffer& operator=(CircularBuffer const&) = delete;
