@@ -808,7 +808,7 @@ namespace
 
         std::unique_ptr<MusclePlotState> draw() override
         {
-            pollForPlotParameterChanges();
+            onBeforeDrawing();  // perform pre-draw cleanups/updates etc.
 
             if (m_MaybeActivePlottingTask->getStatus() == PlottingTaskStatus::Error)
             {
@@ -827,234 +827,316 @@ namespace
             }
             OpenSim::Coordinate const& coord = *maybeCoord;
 
-            glm::vec2 availSize = ImGui::GetContentRegionAvail();
+            std::string const plotTitle = computePlotTitle(coord);
 
-            std::string title = computePlotTitle(coord);
-            std::string xAxisLabel = computePlotXAxisTitle(coord);
-            std::string yAxisLabel = computePlotYAxisTitle();
-            int previousPlotTaggedForDeletion = -1;
-
-            double coordinateXInDegrees = osc::ConvertCoordValueToDisplayValue(coord, coord.getValue(shared->Uim->getState()));
-
-            ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, ImVec2{ 0.025f, 0.05f });
-            if (ImPlot::BeginPlot(title.c_str(), availSize, m_PlotFlags))
+            ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.025f, 0.05f});
+            if (ImPlot::BeginPlot(plotTitle.c_str(), ImGui::GetContentRegionAvail(), m_PlotFlags))
             {
-                ImPlotAxisFlags xAxisFlags = ImPlotAxisFlags_Lock;
-                ImPlotAxisFlags yAxisFlags = ImPlotAxisFlags_AutoFit;
+                PlotParameters const& plotParams = shared->PlotParams;
 
-                ImPlot::SetupLegend(m_LegendLocation, m_LegendFlags);
-                ImPlot::SetupAxes(xAxisLabel.c_str(), yAxisLabel.c_str(), xAxisFlags, yAxisFlags);
-                ImPlot::SetupAxisLimits(ImAxis_X1, osc::ConvertCoordValueToDisplayValue(coord, GetFirstXValue(latestParams, coord)), osc::ConvertCoordValueToDisplayValue(coord, GetLastXValue(latestParams, coord)));
+                ImPlot::SetupLegend(
+                    m_LegendLocation,
+                    m_LegendFlags
+                );
+                ImPlot::SetupAxes(
+                    computePlotXAxisTitle(coord).c_str(),
+                    computePlotYAxisTitle().c_str(),
+                    ImPlotAxisFlags_Lock,
+                    ImPlotAxisFlags_AutoFit
+                );
+                ImPlot::SetupAxisLimits(
+                    ImAxis_X1,
+                    osc::ConvertCoordValueToDisplayValue(coord, GetFirstXValue(plotParams, coord)),
+                    osc::ConvertCoordValueToDisplayValue(coord, GetLastXValue(plotParams, coord))
+                );
                 ImPlot::SetupFinish();
 
-                glm::vec4 const baseColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-                bool legendPopupOpen = false;
-
-                // plot previous plots
+                std::optional<float> maybeMouseX = tryGetMouseXPositionInPlot();
+                drawPlotLines();
+                drawOverlays(coord, maybeMouseX);
+                handleMouseEvents(coord, maybeMouseX);
+                if (!m_LegendPopupIsOpen)
                 {
-                    for (size_t i = 0; i < m_PreviousPlots.size(); ++i)
-                    {
-                        Plot const& previousPlot = m_PreviousPlots[i];
-
-                        glm::vec4 color = baseColor;
-
-                        color.a *= static_cast<float>(i + 1) / static_cast<float>(m_PreviousPlots.size() + 1);
-
-                        if (m_ShowMarkersOnPreviousPlots)
-                        {
-                            ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
-                        }
-
-                        std::stringstream ss;
-                        ss << i + 1 << ") " << previousPlot.getParameters().getCommit().getCommitMessage();
-                        std::string const lineName = std::move(ss).str();
-
-                        ImPlot::PushStyleColor(ImPlotCol_Line, color);
-                        PlotLine(lineName, previousPlot);
-                        ImPlot::PopStyleColor(ImPlotCol_Line);
-
-                        if (ImPlot::BeginLegendPopup(lineName.c_str()))
-                        {
-                            legendPopupOpen = true;
-
-                            if (ImGui::MenuItem(ICON_FA_TRASH " delete"))
-                            {
-                                previousPlotTaggedForDeletion = static_cast<int>(i);
-                            }
-                            ImPlot::EndLegendPopup();
-                        }
-                    }
-                }
-
-                // show markers for the active plot, so that the user can see where the points
-                // were evaluated
-                if (m_ShowMarkers)
-                {
-                    ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
-                }
-
-                // then plot currently active plot
-                {
-                    auto plotLock = m_ActivePlot.lock();
-
-                    std::stringstream ss;
-                    ss << m_PreviousPlots.size() + 1 << ") " << plotLock->getParameters().getCommit().getCommitMessage();
-                    std::string const lineName = std::move(ss).str();
-
-                    ImPlot::PushStyleColor(ImPlotCol_Line, baseColor);
-                    PlotLine(lineName, *plotLock);
-                    ImPlot::PopStyleColor(ImPlotCol_Line);
-                }
-
-                // figure out mouse hover position
-                bool isHovered = ImPlot::IsPlotHovered();
-                ImPlotPoint p = ImPlot::GetPlotMousePos();
-
-                if (m_SnapCursor && isHovered)
-                {
-                    auto plotLock = m_ActivePlot.lock();
-                    auto maybeNearest = FindNearestPoint(*plotLock, static_cast<float>(p.x));
-
-                    if (IsXInRange(*plotLock, static_cast<float>(p.x)) && maybeNearest)
-                    {
-                        p.x = maybeNearest->x;
-                    }
-                }
-
-                // draw vertical drop line where the coordinate's value currently is
-                {
-                    double v = coordinateXInDegrees;
-                    ImPlot::DragLineX(10, &v, { 1.0f, 1.0f, 0.0f, 0.6f }, 1.0f, ImPlotDragToolFlags_NoInputs);
-                }
-
-                // also, draw an X tag on the axes where the coordinate's value currently is
-                {
-                    ImPlot::TagX(coordinateXInDegrees, { 1.0f, 1.0f, 1.0f, 1.0f });
-                }
-
-                // draw faded vertial drop line where the mouse currently is
-                if (isHovered)
-                {
-                    double v = p.x;
-                    ImPlot::DragLineX(11, &v, { 1.0f, 1.0f, 0.0f, 0.3f }, 1.0f, ImPlotDragToolFlags_NoInputs);
-                }
-
-                // also, draw a faded X tag on the axes where the mouse currently is (in X)
-                if (isHovered)
-                {
-                    ImPlot::TagX(p.x, { 1.0f, 1.0f, 1.0f, 0.6f });
-                }
-
-                // Y values: BEWARE
-                //
-                // the X values for the droplines/tags above come directly from either the model or
-                // mouse: both of which are *continuous* (give or take)
-                //
-                // the Y values are computed from those continous values by searching through the
-                // *discrete* data values of the plot and LERPing them
-                {
-                    std::optional<float> maybeCoordinateY;
-                    std::optional<float> maybeHoverY;
-
-                    auto plotLock = m_ActivePlot.lock();
-                    maybeCoordinateY = ComputeLERPedY(*plotLock, static_cast<float>(coordinateXInDegrees));
-                    maybeHoverY = ComputeLERPedY(*plotLock, static_cast<float>(p.x));
-
-                    if (maybeCoordinateY)
-                    {
-                        double v = *maybeCoordinateY;
-                        ImPlot::DragLineY(13, &v, { 1.0f, 1.0f, 0.0f, 0.6f }, 1.0f, ImPlotDragToolFlags_NoInputs);
-                        ImPlot::Annotation(static_cast<float>(coordinateXInDegrees), *maybeCoordinateY, { 1.0f, 1.0f, 1.0f, 1.0f }, { 10.0f, 10.0f }, true, "%f", *maybeCoordinateY);
-                    }
-
-                    if (isHovered && maybeHoverY)
-                    {
-                        double v = *maybeHoverY;
-                        ImPlot::DragLineY(14, &v, { 1.0f, 1.0f, 0.0f, 0.3f }, 1.0f, ImPlotDragToolFlags_NoInputs);
-                        ImPlot::Annotation(p.x, *maybeHoverY, { 1.0f, 1.0f, 1.0f, 0.6f }, { 10.0f, 10.0f }, true, "%f", *maybeHoverY);
-                    }
-                }
-
-                // if the plot is hovered and the user is holding their left-mouse button down,
-                // then "scrub" through the coordinate in the model
-                //
-                // this is handy for users to visually see how a coordinate affects the model
-                if (isHovered && ImGui::IsMouseDown(ImGuiMouseButton_Left))
-                {
-                    if (coord.getDefaultLocked())
-                    {
-                        osc::DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
-                    }
-                    else
-                    {
-                        double storedValue = osc::ConvertCoordDisplayValueToStorageValue(coord, static_cast<float>(p.x));
-                        osc::ActionSetCoordinateValue(*shared->Uim, coord, storedValue);
-                    }
-                }
-
-                // when the user stops dragging their left-mouse around, commit the scrubbed-to
-                // coordinate to model storage
-                if (isHovered && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-                {
-                    if (coord.getDefaultLocked())
-                    {
-                        osc::DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
-                    }
-                    else
-                    {
-                        double storedValue = osc::ConvertCoordDisplayValueToStorageValue(coord, static_cast<float>(p.x));
-                        osc::ActionSetCoordinateValueAndSave(*shared->Uim, coord, storedValue);
-                    }
-                }
-
-                // draw a context menu with helpful options (set num data points, export, etc.)
-                if (!legendPopupOpen && ImGui::BeginPopupContextItem((title + "_contextmenu").c_str()))
-                {
-                    drawPlotDataTypeSelector();
-
-                    int currentDataPoints = shared->PlotParams.getNumRequestedDataPoints();
-                    if (ImGui::InputInt("num data points", &currentDataPoints, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue))
-                    {
-                        shared->PlotParams.setNumRequestedDataPoints(currentDataPoints);
-                    }
-
-                    if (ImGui::MenuItem("clear previous plots"))
-                    {
-                        m_PreviousPlots.clear();
-                    }
-
-                    if (ImGui::BeginMenu("legend"))
-                    {
-                        drawLegendContextMenuContent();
-                        ImGui::EndMenu();
-                    }
-
-                    ImGui::MenuItem("show markers", nullptr, &m_ShowMarkers);
-                    ImGui::MenuItem("show markers on previous plots", nullptr, &m_ShowMarkersOnPreviousPlots);
-                    ImGui::MenuItem("snap cursor to datapoints", nullptr, &m_SnapCursor);
-
-                    ImGui::EndPopup();
+                    tryDrawGeneralPlotPopup(plotTitle);
                 }
 
                 ImPlot::EndPlot();
             }
-            ImPlot::PopStyleVar();
 
-            if (0 <= previousPlotTaggedForDeletion && previousPlotTaggedForDeletion < m_PreviousPlots.size())
-            {
-                Plot* ptr = &m_PreviousPlots[previousPlotTaggedForDeletion];
-                std::stable_partition(m_PreviousPlots.begin(), m_PreviousPlots.end(), [ptr](Plot const& p) { return &p != ptr; });
-                m_PreviousPlots.pop_back();
-            }
+            ImPlot::PopStyleVar();
 
             return nullptr;
         }
 
     private:
 
+        // called at the start of each `draw` call - it GCs datastructures etc
+        void onBeforeDrawing()
+        {
+            m_LegendPopupIsOpen = false;
+
+            // carry out user-enacted deletions
+            if (0 <= m_PlotTaggedForDeletion && m_PlotTaggedForDeletion < m_PreviousPlots.size())
+            {
+                Plot* ptr = &m_PreviousPlots[m_PlotTaggedForDeletion];
+                std::stable_partition(m_PreviousPlots.begin(), m_PreviousPlots.end(), [ptr](Plot const& p) { return &p != ptr; });
+                m_PreviousPlots.pop_back();
+                m_PlotTaggedForDeletion = -1;
+            }
+
+            // ensure latest requested params reflects the latest version of the model
+            shared->PlotParams.setCommit(shared->Uim->getLatestCommit());
+
+            // if the current plot doesn't match the latest requested params, kick off
+            // a new plotting task
+            if (m_ActivePlot.lock()->getParameters() != shared->PlotParams)
+            {
+                // cancel current plotting task, to prevent unusual thread races while we
+                // shuffle data around
+                m_MaybeActivePlottingTask.reset();
+
+                // (edge-case): if the user selected a different muscle output then the previous
+                // plots have to be cleared out
+                bool clearPrevious = m_ActivePlot.lock()->getParameters().getMuscleOutput() != shared->PlotParams.getMuscleOutput();
+
+                // set new active plot
+                Plot plot{ shared->PlotParams };
+                auto lock = m_ActivePlot.lock();
+                std::swap(*lock, plot);
+                m_PreviousPlots.push_back(std::move(plot));
+
+                if (clearPrevious)
+                {
+                    m_PreviousPlots.clear();
+                }
+
+                // start new plotting task
+                m_MaybeActivePlottingTask = std::make_unique<PlottingTask>(shared->PlotParams, [this](PlotDataPoint p) { onDataFromPlottingTask(p); });
+            }
+        }
+
+        // called by the background thread - be careful about mutexes etc. here
+        void onDataFromPlottingTask(PlotDataPoint p)
+        {
+            m_ActivePlot.lock()->append(p);
+            osc::App::upd().requestRedraw();
+        }
+
+        // tries to hittest the mouse's X position in plot-space
+        std::optional<float> tryGetMouseXPositionInPlot() const
+        {
+            // figure out mouse hover position
+            bool const isHovered = ImPlot::IsPlotHovered();
+            float mouseX = static_cast<float>(ImPlot::GetPlotMousePos().x);
+
+            // handle snapping the mouse's X position
+            if (isHovered && m_SnapCursor)
+            {
+                auto plotLock = m_ActivePlot.lock();
+                auto maybeNearest = FindNearestPoint(*plotLock, mouseX);
+
+                if (IsXInRange(*plotLock, mouseX) && maybeNearest)
+                {
+                    mouseX = maybeNearest->x;
+                }
+            }
+
+            return isHovered ? mouseX : std::optional<float>{};
+        }
+
+        // draws the actual plot lines in the plot
+        void drawPlotLines()
+        {
+            // plot previous plots
+            for (size_t i = 0; i < m_PreviousPlots.size(); ++i)
+            {
+                Plot const& previousPlot = m_PreviousPlots[i];
+
+                glm::vec4 color = m_ComputedPlotLineBaseColor;
+
+                color.a *= static_cast<float>(i + 1) / static_cast<float>(m_PreviousPlots.size() + 1);
+
+                if (m_ShowMarkersOnPreviousPlots)
+                {
+                    ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
+                }
+
+                std::stringstream ss;
+                ss << i + 1 << ") " << previousPlot.getParameters().getCommit().getCommitMessage();
+                std::string const lineName = std::move(ss).str();
+
+                ImPlot::PushStyleColor(ImPlotCol_Line, color);
+                PlotLine(lineName, previousPlot);
+                ImPlot::PopStyleColor(ImPlotCol_Line);
+
+                if (ImPlot::BeginLegendPopup(lineName.c_str()))
+                {
+                    m_LegendPopupIsOpen = true;
+
+                    if (ImGui::MenuItem(ICON_FA_TRASH " delete"))
+                    {
+                        m_PlotTaggedForDeletion = static_cast<int>(i);
+                    }
+                    ImPlot::EndLegendPopup();
+                }
+            }
+
+            // show markers for the active plot, so that the user can see where the points
+            // were evaluated
+            if (m_ShowMarkers)
+            {
+                ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
+            }
+
+            // then plot currently active plot
+            {
+                auto plotLock = m_ActivePlot.lock();
+
+                std::stringstream ss;
+                ss << m_PreviousPlots.size() + 1 << ") " << plotLock->getParameters().getCommit().getCommitMessage();
+                std::string const lineName = std::move(ss).str();
+
+                ImPlot::PushStyleColor(ImPlotCol_Line, m_ComputedPlotLineBaseColor);
+                PlotLine(lineName, *plotLock);
+                ImPlot::PopStyleColor(ImPlotCol_Line);
+            }
+        }
+
+        // draw overlays over the plot lines
+        void drawOverlays(OpenSim::Coordinate const& coord, std::optional<float> maybeMouseX)
+        {
+            double coordinateXInDegrees = osc::ConvertCoordValueToDisplayValue(coord, coord.getValue(shared->Uim->getState()));
+
+            // draw vertical drop line where the coordinate's value currently is
+            {
+                double v = coordinateXInDegrees;
+                ImPlot::DragLineX(10, &v, {1.0f, 1.0f, 0.0f, 0.6f}, 1.0f, ImPlotDragToolFlags_NoInputs);
+            }
+
+            // also, draw an X tag on the axes where the coordinate's value currently is
+            ImPlot::TagX(coordinateXInDegrees, {1.0f, 1.0f, 1.0f, 1.0f});
+
+            // draw faded vertial drop line where the mouse currently is
+            if (maybeMouseX)
+            {
+                double v = *maybeMouseX;
+                ImPlot::DragLineX(11, &v, {1.0f, 1.0f, 0.0f, 0.3f}, 1.0f, ImPlotDragToolFlags_NoInputs);
+            }
+
+            // also, draw a faded X tag on the axes where the mouse currently is (in X)
+            if (maybeMouseX)
+            {
+                ImPlot::TagX(*maybeMouseX, {1.0f, 1.0f, 1.0f, 0.6f});
+            }
+
+            // Y values: BEWARE
+            //
+            // the X values for the droplines/tags above come directly from either the model or
+            // mouse: both of which are *continuous* (give or take)
+            //
+            // the Y values are computed from those continous values by searching through the
+            // *discrete* data values of the plot and LERPing them
+            {
+                auto plotLock = m_ActivePlot.lock();
+
+                // draw current coordinate value as a solid dropline
+                {
+                    std::optional<float> maybeCoordinateY = ComputeLERPedY(*plotLock, static_cast<float>(coordinateXInDegrees));
+
+                    if (maybeCoordinateY)
+                    {
+                        double v = *maybeCoordinateY;
+                        ImPlot::DragLineY(13, &v, {1.0f, 1.0f, 0.0f, 0.6f}, 1.0f, ImPlotDragToolFlags_NoInputs);
+                        ImPlot::Annotation(static_cast<float>(coordinateXInDegrees), *maybeCoordinateY, {1.0f, 1.0f, 1.0f, 1.0f}, {10.0f, 10.0f}, true, "%f", *maybeCoordinateY);
+                    }
+                }
+
+                // (try to) draw the hovered coordinate value as a faded dropline
+                if (maybeMouseX)
+                {
+                    std::optional<float> const maybeHoverY = ComputeLERPedY(*plotLock, *maybeMouseX);
+                    if (maybeHoverY)
+                    {
+                        double v = *maybeHoverY;
+                        ImPlot::DragLineY(14, &v, {1.0f, 1.0f, 0.0f, 0.3f}, 1.0f, ImPlotDragToolFlags_NoInputs);
+                        ImPlot::Annotation(*maybeMouseX, *maybeHoverY, {1.0f, 1.0f, 1.0f, 0.6f}, {10.0f, 10.0f}, true, "%f", *maybeHoverY);
+                    }
+                }
+            }
+        }
+
+        void handleMouseEvents(OpenSim::Coordinate const& coord, std::optional<float> maybeMouseX)
+        {
+            // if the plot is hovered and the user is holding their left-mouse button down,
+            // then "scrub" through the coordinate in the model
+            //
+            // this is handy for users to visually see how a coordinate affects the model
+            if (maybeMouseX && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+            {
+                if (coord.getDefaultLocked())
+                {
+                    osc::DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
+                }
+                else
+                {
+                    double storedValue = osc::ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
+                    osc::ActionSetCoordinateValue(*shared->Uim, coord, storedValue);
+                }
+            }
+
+            // when the user stops dragging their left-mouse around, commit the scrubbed-to
+            // coordinate to model storage
+            if (maybeMouseX && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+            {
+                if (coord.getDefaultLocked())
+                {
+                    osc::DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
+                }
+                else
+                {
+                    double storedValue = osc::ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
+                    osc::ActionSetCoordinateValueAndSave(*shared->Uim, coord, storedValue);
+                }
+            }
+        }
+
+        void tryDrawGeneralPlotPopup(std::string const& plotTitle)
+        {
+            // draw a context menu with helpful options (set num data points, export, etc.)
+            if (ImGui::BeginPopupContextItem((plotTitle + "_contextmenu").c_str()))
+            {
+                drawPlotDataTypeSelector();
+
+                int currentDataPoints = shared->PlotParams.getNumRequestedDataPoints();
+                if (ImGui::InputInt("num data points", &currentDataPoints, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue))
+                {
+                    shared->PlotParams.setNumRequestedDataPoints(currentDataPoints);
+                }
+
+                if (ImGui::MenuItem("clear previous plots"))
+                {
+                    m_PreviousPlots.clear();
+                }
+
+                if (ImGui::BeginMenu("legend"))
+                {
+                    drawLegendContextMenuContent();
+                    ImGui::EndMenu();
+                }
+
+                ImGui::MenuItem("show markers", nullptr, &m_ShowMarkers);
+                ImGui::MenuItem("show markers on previous plots", nullptr, &m_ShowMarkersOnPreviousPlots);
+                ImGui::MenuItem("snap cursor to datapoints", nullptr, &m_SnapCursor);
+
+                ImGui::EndPopup();
+            }
+        }
+
         void drawPlotDataTypeSelector()
         {
             std::vector<char const*> names;
+            names.reserve(m_AvailableMuscleOutputs.size());
+
             int active = -1;
             for (int i = 0; i < static_cast<int>(m_AvailableMuscleOutputs.size()); ++i)
             {
@@ -1127,49 +1209,13 @@ namespace
             return std::move(ss).str();
         }
 
-        void pollForPlotParameterChanges()
-        {
-            // ensure latest requested params reflects the latest version of the model
-            shared->PlotParams.setCommit(shared->Uim->getLatestCommit());
-
-            // if the current plot doesn't match the latest requested params, kick off
-            // a new plotting task
-            if (m_ActivePlot.lock()->getParameters() != shared->PlotParams)
-            {
-                // cancel current plotting task, to prevent unusual thread races while we
-                // shuffle data around
-                m_MaybeActivePlottingTask.reset();
-
-                // (edge-case): if the user selected a different muscle output then the previous
-                // plots have to be cleared out
-                bool clearPrevious = m_ActivePlot.lock()->getParameters().getMuscleOutput() != shared->PlotParams.getMuscleOutput();
-
-                // set new active plot
-                Plot plot{ shared->PlotParams };
-                auto lock = m_ActivePlot.lock();
-                std::swap(*lock, plot);
-                m_PreviousPlots.push_back(std::move(plot));
-
-                if (clearPrevious)
-                {
-                    m_PreviousPlots.clear();
-                }
-
-                // start new plotting task
-                m_MaybeActivePlottingTask = std::make_unique<PlottingTask>(shared->PlotParams, [this](PlotDataPoint p) { onDataFromPlottingTask(p); });
-            }
-        }
-
-        void onDataFromPlottingTask(PlotDataPoint p)
-        {
-            osc::App::upd().requestRedraw();
-            m_ActivePlot.lock()->append(p);
-        }
-
         std::vector<MuscleOutput> m_AvailableMuscleOutputs = GenerateMuscleOutputs();
         std::unique_ptr<PlottingTask> m_MaybeActivePlottingTask = std::make_unique<PlottingTask>(shared->PlotParams, [this](PlotDataPoint p) { onDataFromPlottingTask(p); });
         osc::SynchronizedValue<Plot> m_ActivePlot{ shared->PlotParams };
         osc::CircularBuffer<Plot, 6> m_PreviousPlots;
+        glm::vec4 m_ComputedPlotLineBaseColor = {1.0f, 1.0f, 1.0f, 1.0f};
+        bool m_LegendPopupIsOpen = false;
+        int m_PlotTaggedForDeletion = -1;
         bool m_ShowMarkers = true;
         bool m_ShowMarkersOnPreviousPlots = false;
         bool m_SnapCursor = false;
