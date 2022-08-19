@@ -250,16 +250,16 @@ namespace
     class PlotParameters final {
     public:
         PlotParameters(osc::ModelStateCommit commit,
-                       OpenSim::ComponentPath coordinatePath,
-                       OpenSim::ComponentPath musclePath,
-                       MuscleOutput output,
-                       int requestedNumDataPoints) :
+            OpenSim::ComponentPath coordinatePath,
+            OpenSim::ComponentPath musclePath,
+            MuscleOutput output,
+            int requestedNumDataPoints) :
 
-            m_Commit{std::move(commit)},
-            m_CoordinatePath{std::move(coordinatePath)},
-            m_MusclePath{std::move(musclePath)},
-            m_Output{std::move(output)},
-            m_RequestedNumDataPoints{std::move(requestedNumDataPoints)}
+            m_Commit{ std::move(commit) },
+            m_CoordinatePath{ std::move(coordinatePath) },
+            m_MusclePath{ std::move(musclePath) },
+            m_Output{ std::move(output) },
+            m_RequestedNumDataPoints{ std::move(requestedNumDataPoints) }
         {
         }
 
@@ -354,7 +354,7 @@ namespace
         double start = GetFirstXValue(p, c);
         double end = GetLastXValue(p, c);
 
-        return (end - start) / std::max(1, p.getNumRequestedDataPoints()-1);
+        return (end - start) / std::max(1, p.getNumRequestedDataPoints() - 1);
     }
 
     // a single data point in the plot, as emitted by a PlottingTask
@@ -362,6 +362,12 @@ namespace
         float x;
         float y;
     };
+
+    // plot data points are naturally ordered by their independent (X) variable
+    bool operator<(PlotDataPoint const& a, PlotDataPoint const& b)
+    {
+        return a.x < b.x;
+    }
 
     // the status of a "live" plotting task
     enum class PlottingTaskStatus {
@@ -409,9 +415,9 @@ namespace
             PlotParameters const& plotParameters_,
             std::function<void(PlotDataPoint)> dataPointConsumer_) :
 
-            shared{std::move(shared_)},
-            plotParameters{plotParameters_},
-            dataPointConsumer{std::move(dataPointConsumer_)}
+            shared{ std::move(shared_) },
+            plotParameters{ plotParameters_ },
+            dataPointConsumer{ std::move(dataPointConsumer_) }
         {
         }
 
@@ -476,7 +482,17 @@ namespace
 
         int const numDataPoints = params.getNumRequestedDataPoints();
         double const firstXValue = GetFirstXValue(params, coord);
+        double const lastXValue = GetLastXValue(params, coord);
         double const stepBetweenXValues = GetStepBetweenXValues(params, coord);
+
+        if (firstXValue > lastXValue)
+        {
+            // this invariant is necessary because other algorithms assume X increases over
+            // the datapoint collection (e.g. for optimized binary searches, std::lower_bound etc.)
+
+            shared.setErrorMessage(params.getCoordinatePath().toString() + ": cannot plot a coordinate with reversed min/max");
+            return PlottingTaskStatus::Error;
+        }
 
         // this fixes an unusual bug (#352), where the underlying assembly solver in the
         // model ends up retaining invalid values across a coordinate (un)lock, which makes
@@ -520,7 +536,7 @@ namespace
 
             float const yVal = static_cast<float>(params.getMuscleOutput()(state, muscle, coord));
 
-            callback(PlotDataPoint{osc::ConvertCoordValueToDisplayValue(coord, xVal), yVal});
+            callback(PlotDataPoint{ osc::ConvertCoordValueToDisplayValue(coord, xVal), yVal });
         }
 
         return PlottingTaskStatus::Finished;
@@ -553,7 +569,7 @@ namespace
     class PlottingTask final {
     public:
         PlottingTask(PlotParameters const& params, std::function<void(PlotDataPoint)> callback) :
-            m_WorkerThread{ComputePlotPointsMain, PlottingTaskInputs{m_Shared, params, std::move(callback)}}
+            m_WorkerThread{ ComputePlotPointsMain, PlottingTaskInputs{m_Shared, params, std::move(callback)} }
         {
         }
 
@@ -577,10 +593,9 @@ namespace
     class Plot final {
     public:
         explicit Plot(PlotParameters const& parameters) :
-            m_Parameters{parameters}
+            m_Parameters{ parameters }
         {
-            m_XValues.reserve(m_Parameters.getNumRequestedDataPoints());
-            m_YValues.reserve(m_Parameters.getNumRequestedDataPoints());
+            m_DataPoints.reserve(m_Parameters.getNumRequestedDataPoints());
         }
 
         PlotParameters const& getParameters() const
@@ -588,28 +603,44 @@ namespace
             return m_Parameters;
         }
 
-        nonstd::span<float const> getXValues() const
+        nonstd::span<PlotDataPoint const> getDataPoints() const
         {
-            return m_XValues;
-        }
-
-        nonstd::span<float const> getYValues() const
-        {
-            return m_YValues;
+            return m_DataPoints;
         }
 
         void append(PlotDataPoint const& p)
         {
-            m_XValues.push_back(p.x);
-            m_YValues.push_back(p.y);
+            m_DataPoints.push_back(p);
         }
 
     private:
         PlotParameters m_Parameters;
-        std::vector<float> m_XValues;
-        std::vector<float> m_YValues;
+        std::vector<PlotDataPoint> m_DataPoints;
     };
 
+    float const* XValuePtr(Plot const& p)
+    {
+        nonstd::span<PlotDataPoint const> points = p.getDataPoints();
+        return !points.empty() ? &points.front().x : nullptr;
+    }
+
+    float const* YValuePtr(Plot const& p)
+    {
+        nonstd::span<PlotDataPoint const> points = p.getDataPoints();
+        return !points.empty() ? &points.front().y : nullptr;
+    }
+
+    int ValueStride(Plot const& p)
+    {
+        return static_cast<int>(sizeof(PlotDataPoint));
+    }
+}
+
+// helpers
+//
+// used for various UI tasks (e.g. finding the closest point for "snapping" and so on)
+namespace
+{
     float lerp(float a, float b, float t)
     {
         return (1.0f - t) * a + t * b;
@@ -617,128 +648,135 @@ namespace
 
     std::optional<float> ComputeLERPedY(Plot const& p, float x)
     {
-        nonstd::span<float const> const xVals = p.getXValues();
-        nonstd::span<float const> const yVals = p.getYValues();
+        nonstd::span<PlotDataPoint const> const points = p.getDataPoints();
 
-        OSC_ASSERT(xVals.size() == yVals.size());
-
-        if (xVals.empty())
+        if (points.empty())
         {
-            // there are no X values
+            // there are no data points
             return std::nullopt;
         }
 
-        auto const it = std::lower_bound(xVals.begin(), xVals.end(), x);
+        auto const it = std::lower_bound(points.begin(), points.end(), PlotDataPoint{x, 0.0f});
 
-        if (it == xVals.end())
+        if (it == points.end())
         {
             // X is out of bounds
             return std::nullopt;
         }
 
-        if (it == xVals.begin())
+        if (it == points.begin())
         {
             // X if off the left-hand side
-            return yVals[0];
+            return points.front().y;
         }
 
-        size_t const aboveIdx = std::distance(xVals.begin(), it);
+        // else: the iterator is pointing somewhere in the middle of the data
+        //       and we need to potentially LERP between two points
+        size_t const aboveIdx = std::distance(points.begin(), it);
         size_t const belowIdx = aboveIdx - 1;
+        PlotDataPoint const below = points[belowIdx];
+        PlotDataPoint const above = points[aboveIdx];
 
-        float const belowX = xVals[belowIdx];
-        float const aboveX = xVals[aboveIdx];
-        float const t = (x - belowX) / (aboveX - belowX); // [0..1]
+        float const t = (x - below.x) / (above.x - below.x); // [0..1]
 
-        float const belowY = yVals[belowIdx];
-        float const aboveY = yVals[aboveIdx];
-
-        return lerp(belowY, aboveY, t);
+        return lerp(below.y, above.y, t);
     }
 
     std::optional<PlotDataPoint> FindNearestPoint(Plot const& p, float x)
     {
-        nonstd::span<float const> const xVals = p.getXValues();
-        nonstd::span<float const> const yVals = p.getYValues();
+        nonstd::span<PlotDataPoint const> points = p.getDataPoints();
 
-        OSC_ASSERT(xVals.size() == yVals.size() && "a plot should have an equal number of X and Y values");
-
-        if (xVals.empty())
+        if (points.empty())
         {
-            // there are no X values
+            // there are no data points
             return std::nullopt;
         }
 
-        auto const it = std::lower_bound(xVals.begin(), xVals.end(), x);
+        auto const it = std::lower_bound(points.begin(), points.end(), PlotDataPoint{x, 0.0f});
 
-        if (it == xVals.begin())
+        if (it == points.begin())
         {
             // closest is the leftmost point
-            return PlotDataPoint{xVals.front(), yVals.front()};
+            return points.front();
         }
 
-        if (it == xVals.end())
+        if (it == points.end())
         {
             // closest is the rightmost point
-            return PlotDataPoint{xVals.back(), yVals.back()};
+            return points.back();
         }
-
-        size_t const aboveIdx = std::distance(xVals.begin(), it);
-        size_t const belowIdx = aboveIdx - 1;
 
         // else: the iterator is pointing to the element above the X location and we
         //       need to figure out if that's closer than the element below the X
         //       location
-        float const belowX = xVals[aboveIdx - 1];
-        float const aboveX = xVals[aboveIdx];
+        size_t const aboveIdx = std::distance(points.begin(), it);
+        size_t const belowIdx = aboveIdx - 1;
+        PlotDataPoint const below = points[belowIdx];
+        PlotDataPoint const above = points[aboveIdx];
 
-        float const aboveDistance = std::abs(aboveX - x);
-        float const belowDistance = std::abs(belowX - x);
+        float const belowDistance = std::abs(below.x - x);
+        float const aboveDistance = std::abs(above.x - x);
 
         size_t const closestIdx =  aboveDistance < belowDistance  ? aboveIdx : belowIdx;
 
-        return PlotDataPoint{xVals[closestIdx], yVals[closestIdx]};
+        return points[closestIdx];
     }
 
     bool IsXInRange(Plot const& p, float x)
     {
-        nonstd::span<float const> const xVals = p.getXValues();
+        nonstd::span<PlotDataPoint const> const points = p.getDataPoints();
 
-        if (xVals.size() <= 1)
+        if (points.size() <= 1)
         {
             return false;
         }
 
-        return xVals.front() <= x && x <= xVals.back();
+        return points.front().x <= x && x <= points.back().x;
+    }
+
+    void PlotLine(osc::CStringView lineName, Plot const& p)
+    {
+        ImPlot::PlotLine(
+            lineName.c_str(),
+            XValuePtr(p),
+            YValuePtr(p),
+            static_cast<int>(p.getDataPoints().size()),
+            0,
+            ValueStride(p)
+        );
     }
 }
 
-// state stuff
+// UI state
+//
+// top-level state API - all "states" of the widget share this info and implement the
+// relevant state API
 namespace
 {
-    // data that is shared between all states
+    // data that is shared between all states of the widget
     struct SharedStateData final {
-        explicit SharedStateData(std::shared_ptr<osc::UndoableModelStatePair> uim) : Uim{std::move(uim)}
+        explicit SharedStateData(std::shared_ptr<osc::UndoableModelStatePair> uim) : Uim{ std::move(uim) }
         {
             OSC_ASSERT(Uim != nullptr);
         }
 
         SharedStateData(std::shared_ptr<osc::UndoableModelStatePair> uim,
-                        OpenSim::ComponentPath const& coordPath,
-                        OpenSim::ComponentPath const& musclePath) :
-            Uim{std::move(uim)},
-            PlotParams{Uim->getLatestCommit(), coordPath, musclePath, GetDefaultMuscleOutput(), 180}
+            OpenSim::ComponentPath const& coordPath,
+            OpenSim::ComponentPath const& musclePath) :
+            Uim{ std::move(uim) },
+            PlotParams{ Uim->getLatestCommit(), coordPath, musclePath, GetDefaultMuscleOutput(), 180 }
         {
             OSC_ASSERT(Uim != nullptr);
         }
 
         std::shared_ptr<osc::UndoableModelStatePair> Uim;
-        PlotParameters PlotParams{Uim->getLatestCommit(), OpenSim::ComponentPath{}, OpenSim::ComponentPath{}, GetDefaultMuscleOutput(), 180 };
+        PlotParameters PlotParams{ Uim->getLatestCommit(), OpenSim::ComponentPath{}, OpenSim::ComponentPath{}, GetDefaultMuscleOutput(), 180 };
     };
 
     // base class for a single widget state
     class MusclePlotState {
     protected:
-        MusclePlotState(SharedStateData* shared_) : shared{std::move(shared_)}
+        MusclePlotState(SharedStateData* shared_) : shared{ std::move(shared_) }
         {
             OSC_ASSERT(shared != nullptr);
         }
@@ -750,7 +788,17 @@ namespace
         SharedStateData* shared;
     };
 
+}
+
+// "showing plot" state
+//
+// this is the biggest, most important, state of the widget: it is what's used when
+// the widget is showing a muscle curve to the user
+namespace
+{
     // state in which the plot is being shown to the user
+    //
+    // this is the most important state of the state machine
     class ShowingPlotState final : public MusclePlotState {
     public:
         explicit ShowingPlotState(SharedStateData* shared_) :
@@ -788,7 +836,7 @@ namespace
 
             double coordinateXInDegrees = osc::ConvertCoordValueToDisplayValue(coord, coord.getValue(shared->Uim->getState()));
 
-            ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, ImVec2{0.025f, 0.05f});
+            ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, ImVec2{ 0.025f, 0.05f });
             if (ImPlot::BeginPlot(title.c_str(), availSize, m_PlotFlags))
             {
                 ImPlotAxisFlags xAxisFlags = ImPlotAxisFlags_Lock;
@@ -799,7 +847,7 @@ namespace
                 ImPlot::SetupAxisLimits(ImAxis_X1, osc::ConvertCoordValueToDisplayValue(coord, GetFirstXValue(latestParams, coord)), osc::ConvertCoordValueToDisplayValue(coord, GetLastXValue(latestParams, coord)));
                 ImPlot::SetupFinish();
 
-                glm::vec4 const baseColor = {1.0f, 1.0f, 1.0f, 1.0f};
+                glm::vec4 const baseColor = { 1.0f, 1.0f, 1.0f, 1.0f };
                 bool legendPopupOpen = false;
 
                 // plot previous plots
@@ -810,7 +858,7 @@ namespace
 
                         glm::vec4 color = baseColor;
 
-                        color.a *= static_cast<float>(i+1) / static_cast<float>(m_PreviousPlots.size() + 1);
+                        color.a *= static_cast<float>(i + 1) / static_cast<float>(m_PreviousPlots.size() + 1);
 
                         if (m_ShowMarkersOnPreviousPlots)
                         {
@@ -822,12 +870,7 @@ namespace
                         std::string const lineName = std::move(ss).str();
 
                         ImPlot::PushStyleColor(ImPlotCol_Line, color);
-                        ImPlot::PlotLine(
-                            lineName.c_str(),
-                            previousPlot.getXValues().data(),
-                            previousPlot.getYValues().data(),
-                            static_cast<int>(previousPlot.getXValues().size())
-                        );
+                        PlotLine(lineName, previousPlot);
                         ImPlot::PopStyleColor(ImPlotCol_Line);
 
                         if (ImPlot::BeginLegendPopup(lineName.c_str()))
@@ -855,16 +898,11 @@ namespace
                     auto plotLock = m_ActivePlot.lock();
 
                     std::stringstream ss;
-                    ss << m_PreviousPlots.size()+1 << ") " << plotLock->getParameters().getCommit().getCommitMessage();
+                    ss << m_PreviousPlots.size() + 1 << ") " << plotLock->getParameters().getCommit().getCommitMessage();
                     std::string const lineName = std::move(ss).str();
 
                     ImPlot::PushStyleColor(ImPlotCol_Line, baseColor);
-                    ImPlot::PlotLine(
-                        lineName.c_str(),
-                        plotLock->getXValues().data(),
-                        plotLock->getYValues().data(),
-                        static_cast<int>(plotLock->getXValues().size())
-                    );
+                    PlotLine(lineName, *plotLock);
                     ImPlot::PopStyleColor(ImPlotCol_Line);
                 }
 
@@ -886,7 +924,7 @@ namespace
                 // draw vertical drop line where the coordinate's value currently is
                 {
                     double v = coordinateXInDegrees;
-                    ImPlot::DragLineX(10, &v, {1.0f, 1.0f, 0.0f, 0.6f}, 1.0f, ImPlotDragToolFlags_NoInputs);
+                    ImPlot::DragLineX(10, &v, { 1.0f, 1.0f, 0.0f, 0.6f }, 1.0f, ImPlotDragToolFlags_NoInputs);
                 }
 
                 // also, draw an X tag on the axes where the coordinate's value currently is
@@ -898,7 +936,7 @@ namespace
                 if (isHovered)
                 {
                     double v = p.x;
-                    ImPlot::DragLineX(11, &v, {1.0f, 1.0f, 0.0f, 0.3f}, 1.0f, ImPlotDragToolFlags_NoInputs);
+                    ImPlot::DragLineX(11, &v, { 1.0f, 1.0f, 0.0f, 0.3f }, 1.0f, ImPlotDragToolFlags_NoInputs);
                 }
 
                 // also, draw a faded X tag on the axes where the mouse currently is (in X)
@@ -925,14 +963,14 @@ namespace
                     if (maybeCoordinateY)
                     {
                         double v = *maybeCoordinateY;
-                        ImPlot::DragLineY(13, &v, {1.0f, 1.0f, 0.0f, 0.6f}, 1.0f, ImPlotDragToolFlags_NoInputs);
+                        ImPlot::DragLineY(13, &v, { 1.0f, 1.0f, 0.0f, 0.6f }, 1.0f, ImPlotDragToolFlags_NoInputs);
                         ImPlot::Annotation(static_cast<float>(coordinateXInDegrees), *maybeCoordinateY, { 1.0f, 1.0f, 1.0f, 1.0f }, { 10.0f, 10.0f }, true, "%f", *maybeCoordinateY);
                     }
 
                     if (isHovered && maybeHoverY)
                     {
                         double v = *maybeHoverY;
-                        ImPlot::DragLineY(14, &v, {1.0f, 1.0f, 0.0f, 0.3f}, 1.0f, ImPlotDragToolFlags_NoInputs);
+                        ImPlot::DragLineY(14, &v, { 1.0f, 1.0f, 0.0f, 0.3f }, 1.0f, ImPlotDragToolFlags_NoInputs);
                         ImPlot::Annotation(p.x, *maybeHoverY, { 1.0f, 1.0f, 1.0f, 0.6f }, { 10.0f, 10.0f }, true, "%f", *maybeHoverY);
                     }
                 }
@@ -1037,19 +1075,19 @@ namespace
         void drawLegendContextMenuContent()
         {
             ImGui::CheckboxFlags("Hide", (unsigned int*)&m_PlotFlags, ImPlotFlags_NoLegend);
-            ImGui::CheckboxFlags("Outside",(unsigned int*)&m_LegendFlags, ImPlotLegendFlags_Outside);
+            ImGui::CheckboxFlags("Outside", (unsigned int*)&m_LegendFlags, ImPlotLegendFlags_Outside);
 
             const float s = ImGui::GetFrameHeight();
-            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2,2));
-            if (ImGui::Button("NW",ImVec2(1.5f*s,s))) { m_LegendLocation = ImPlotLocation_NorthWest; } ImGui::SameLine();
-            if (ImGui::Button("N", ImVec2(1.5f*s,s))) { m_LegendLocation = ImPlotLocation_North;     } ImGui::SameLine();
-            if (ImGui::Button("NE",ImVec2(1.5f*s,s))) { m_LegendLocation = ImPlotLocation_NorthEast; }
-            if (ImGui::Button("W", ImVec2(1.5f*s,s))) { m_LegendLocation = ImPlotLocation_West;      } ImGui::SameLine();
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 2));
+            if (ImGui::Button("NW", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_NorthWest; } ImGui::SameLine();
+            if (ImGui::Button("N", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_North; } ImGui::SameLine();
+            if (ImGui::Button("NE", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_NorthEast; }
+            if (ImGui::Button("W", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_West; } ImGui::SameLine();
             if (ImGui::InvisibleButton("C", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_Center; } ImGui::SameLine();
-            if (ImGui::Button("E", ImVec2(1.5f*s,s))) { m_LegendLocation = ImPlotLocation_East;      }
-            if (ImGui::Button("SW",ImVec2(1.5f*s,s))) { m_LegendLocation = ImPlotLocation_SouthWest; } ImGui::SameLine();
-            if (ImGui::Button("S", ImVec2(1.5f*s,s))) { m_LegendLocation = ImPlotLocation_South;     } ImGui::SameLine();
-            if (ImGui::Button("SE",ImVec2(1.5f*s,s))) { m_LegendLocation = ImPlotLocation_SouthEast; }
+            if (ImGui::Button("E", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_East; }
+            if (ImGui::Button("SW", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_SouthWest; } ImGui::SameLine();
+            if (ImGui::Button("S", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_South; } ImGui::SameLine();
+            if (ImGui::Button("SE", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_SouthEast; }
             ImGui::PopStyleVar();
         }
 
@@ -1107,7 +1145,7 @@ namespace
                 bool clearPrevious = m_ActivePlot.lock()->getParameters().getMuscleOutput() != shared->PlotParams.getMuscleOutput();
 
                 // set new active plot
-                Plot plot{shared->PlotParams};
+                Plot plot{ shared->PlotParams };
                 auto lock = m_ActivePlot.lock();
                 std::swap(*lock, plot);
                 m_PreviousPlots.push_back(std::move(plot));
@@ -1130,7 +1168,7 @@ namespace
 
         std::vector<MuscleOutput> m_AvailableMuscleOutputs = GenerateMuscleOutputs();
         std::unique_ptr<PlottingTask> m_MaybeActivePlottingTask = std::make_unique<PlottingTask>(shared->PlotParams, [this](PlotDataPoint p) { onDataFromPlottingTask(p); });
-        osc::SynchronizedValue<Plot> m_ActivePlot{shared->PlotParams};
+        osc::SynchronizedValue<Plot> m_ActivePlot{ shared->PlotParams };
         osc::CircularBuffer<Plot, 6> m_PreviousPlots;
         bool m_ShowMarkers = true;
         bool m_ShowMarkersOnPreviousPlots = false;
@@ -1139,7 +1177,11 @@ namespace
         ImPlotLocation m_LegendLocation = ImPlotLocation_NorthWest;
         ImPlotLegendFlags m_LegendFlags = ImPlotLegendFlags_None;
     };
+}
 
+// other states
+ namespace
+ {
     // state in which a user is being prompted to select a coordinate in the model
     class PickCoordinateState final : public MusclePlotState {
     public:
