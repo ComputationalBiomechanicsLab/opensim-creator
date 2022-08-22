@@ -872,6 +872,31 @@ namespace
             ensurePreviousCurvesDoesNotExceedMax();
         }
 
+        void revertToPreviousPlot(osc::UndoableModelStatePair& model, size_t i)
+        {
+            // fetch the to-be-reverted-to curve
+            std::shared_ptr<Plot> ptr = m_PreviousPlots.at(i);
+
+            // try to revert the current model to use the plot's commit
+            if (model.tryCheckout(ptr->getParameters().getCommit()))
+            {
+                // it checked out successfully, so update this plotting widget
+                // accordingly
+
+                /// remove it from the history list (it'll become active)
+                m_PreviousPlots.erase(m_PreviousPlots.begin() + i);
+
+                // swap it with the active curve
+                std::swap(ptr, m_ActivePlot);
+
+                // push the active curve into the history
+                m_PreviousPlots.push_back(ptr);
+
+                // and GC the history
+                ensurePreviousCurvesDoesNotExceedMax();
+            }
+        }
+
     private:
         void checkForParameterChangesAndStartPlotting(PlotParameters const& desiredParams)
         {
@@ -1156,6 +1181,10 @@ namespace
                     {
                         m_Lines.setOtherPlotLocked(i, false);
                     }
+                    if (ImGui::MenuItem(ICON_FA_UNDO " revert to this"))
+                    {
+                        m_Lines.revertToPreviousPlot(*shared->Uim, i);
+                    }
                     ImPlot::EndLegendPopup();
                 }
             }
@@ -1271,8 +1300,10 @@ namespace
 
                     // trick: we "know" that the last edit to the model was a coordinate edit in this plot's
                     //        independent variable, so we can skip recomputing it
-                    auto commitAfter = shared->Uim->getLatestCommit();
-                    m_Lines.pushPlotAsActive(m_Lines.getActivePlot().withCommit(commitAfter));
+                    osc::ModelStateCommit const& commitAfter = shared->Uim->getLatestCommit();
+                    Plot p = m_Lines.getActivePlot().withCommit(commitAfter);
+                    p.setIsLocked(false);  // don't copy locking status
+                    m_Lines.pushPlotAsActive(p);
                 }
             }
         }

@@ -80,6 +80,9 @@ namespace osc
         // try to rollback the model to a recent-as-possible state
         void rollback();
 
+        // try to checkout the given commit as the latest commit
+        bool tryCheckout(ModelStateCommit const&);
+
         // read/manipulate underlying OpenSim::Model
         //
         // note: mutating anything may trigger an automatic undo/redo save if `isDirty` returns `true`

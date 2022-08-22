@@ -335,6 +335,20 @@ public:
         checkout();  // care: skip copying selection because a rollback is aggro
     }
 
+    bool tryCheckout(ModelStateCommit const& commit)
+    {
+        auto it = m_Commits.find(commit.getID());
+
+        if (it == m_Commits.end())
+        {
+            return false;  // commit isn't in this model's storage (is it from another model?)
+        }
+
+        m_CurrentHead = commit.getID();
+        checkout();
+        return true;
+    }
+
     OpenSim::Model const& getModel() const
     {
         return m_Scratch.getModel();
@@ -618,8 +632,6 @@ private:
         }
     }
 
-
-
     // performs an undo, if possible
     //
     // effectively, checks out HEAD~1
@@ -835,6 +847,11 @@ void osc::UndoableModelStatePair::commit(std::string_view message)
 void osc::UndoableModelStatePair::rollback()
 {
     m_Impl->rollback();
+}
+
+bool osc::UndoableModelStatePair::tryCheckout(ModelStateCommit const& commit)
+{
+    return m_Impl->tryCheckout(commit);
 }
 
 OpenSim::Model const& osc::UndoableModelStatePair::getModel() const
