@@ -372,13 +372,12 @@ namespace
     class PlotDataPointConsumer {
     protected:
         PlotDataPointConsumer() = default;
+        PlotDataPointConsumer(PlotDataPointConsumer const&) = default;
+        PlotDataPointConsumer(PlotDataPointConsumer&&) noexcept = default;
+        PlotDataPointConsumer& operator=(PlotDataPointConsumer const&) = default;
+        PlotDataPointConsumer& operator=(PlotDataPointConsumer&&) noexcept = default;
     public:
-        PlotDataPointConsumer(PlotDataPointConsumer const&) = delete;
-        PlotDataPointConsumer(PlotDataPointConsumer&&) noexcept = delete;
-        PlotDataPointConsumer& operator=(PlotDataPointConsumer const&) = delete;
-        PlotDataPointConsumer& operator=(PlotDataPointConsumer&&) noexcept = delete;
         virtual ~PlotDataPointConsumer() noexcept = default;
-
         virtual void operator()(PlotDataPoint) = 0;
     };
 
@@ -643,6 +642,13 @@ namespace
             m_IsLocked = std::move(v);
         }
 
+        Plot withCommit(osc::ModelStateCommit const& c) const
+        {
+            Plot rv{*this};
+            rv.m_Parameters.setCommit(c);
+            return rv;
+        }
+
     private:
         PlotParameters m_Parameters;
         bool m_IsLocked = false;
@@ -798,83 +804,14 @@ namespace
         {
             // perform any datastructure invariant checks etc.
 
-            // additions/changes
-            //
-            // if the current plot doesn't match the latest requested params, kick off
-            // a new plotting task
-            if (m_ActivePlot->getParameters() != desiredParams)
-            {
-                // (edge-case): if the user selected a different muscle output then the previous
-                // plots should also be cleared
-                bool const clearPrevious = m_ActivePlot->getParameters().getMuscleOutput() != desiredParams.getMuscleOutput();
-
-                // create new active plot and swap the old active plot into the previous plots
-                {
-                    std::shared_ptr<Plot> p = std::make_shared<Plot>(desiredParams);
-                    std::swap(p, m_ActivePlot);
-                    m_PreviousPlots.push_back(p);
-                }
-
-                if (clearPrevious)
-                {
-                    m_PreviousPlots.clear();
-                }
-
-                // kick off a new plotting task
-                m_PlottingTask = PlottingTask{m_ActivePlot->getParameters(), m_ActivePlot};
-            }
-
-            // deletions
-            //
-            // handle any user-requested deletions by removing the curve from the collection
-            if (0 <= m_PlotTaggedForDeletion && m_PlotTaggedForDeletion < m_PreviousPlots.size())
-            {
-                m_PreviousPlots.erase(m_PreviousPlots.begin() + m_PlotTaggedForDeletion);
-                m_PlotTaggedForDeletion = -1;
-            }
-
-            // cleanups/reductions
-            //
-            // handle removing previous plots, if there are too many currently stored
-            {
-                // algorithm:
-                //
-                // - go backwards through the history list and count up *unlocked* elements until
-                //   either the beginning is hit (there are too few - nothing to GC) or the maximum
-                //   number of history entries is hit (`hmax`)s
-                //
-                // - go forwards through the history list, deleting any *unlocked* elements until
-                //   `hmax` is hit
-                //
-                // - you now have a list containing 0..`hmax` unlocked elements, plus locked elements,
-                //   where the unlocked elements are the most recently used
-
-                auto isFirstDeleteablePlot = [nth = 1, max = this->m_MaxHistoryEntries](std::shared_ptr<Plot> const& p) mutable
-                {
-                    if (p->getIsLocked())
-                    {
-                        return false;
-                    }
-                    return nth++ > max;
-                };
-
-                auto const backwardIt = std::find_if(m_PreviousPlots.rbegin(), m_PreviousPlots.rend(), isFirstDeleteablePlot);
-                auto const forwardIt = backwardIt.base();
-                size_t const idxOfDeleteableEnd = std::distance(m_PreviousPlots.begin(), forwardIt);
-
-                auto shouldDelete = [i = 0, idxOfDeleteableEnd](std::shared_ptr<Plot> const& p) mutable
-                {
-                    return i++ < idxOfDeleteableEnd && !p->getIsLocked();
-                };
-
-                auto it = std::remove_if(m_PreviousPlots.begin(), m_PreviousPlots.end(), shouldDelete);
-                m_PreviousPlots.erase(it, m_PreviousPlots.end());
-            }
+            checkForParameterChangesAndStartPlotting(desiredParams);
+            handleUserEnactedDeletions();
+            ensurePreviousCurvesDoesNotExceedMax();
         }
 
         void clearUnlockedPlots()
         {
-            m_PreviousPlots.clear();
+            osc::RemoveErase(m_PreviousPlots, [](std::shared_ptr<Plot> const& p) { return !p->getIsLocked(); });
         }
 
         PlottingTaskStatus getPlottingTaskStatus() const
@@ -926,7 +863,92 @@ namespace
             m_MaxHistoryEntries = std::move(i);
         }
 
+        void pushPlotAsActive(Plot p)
+        {
+            std::shared_ptr<Plot> ptr = std::make_shared<Plot>(std::move(p));
+            std::swap(ptr, m_ActivePlot);
+            m_PreviousPlots.push_back(ptr);
+
+            ensurePreviousCurvesDoesNotExceedMax();
+        }
+
     private:
+        void checkForParameterChangesAndStartPlotting(PlotParameters const& desiredParams)
+        {
+            // additions/changes
+            //
+            // if the current plot doesn't match the latest requested params, kick off
+            // a new plotting task
+            if (m_ActivePlot->getParameters() != desiredParams)
+            {
+                // (edge-case): if the user selected a different muscle output then the previous
+                // plots should also be cleared
+                bool const clearPrevious = m_ActivePlot->getParameters().getMuscleOutput() != desiredParams.getMuscleOutput();
+
+                // create new active plot and swap the old active plot into the previous plots
+                {
+                    std::shared_ptr<Plot> p = std::make_shared<Plot>(desiredParams);
+                    std::swap(p, m_ActivePlot);
+                    m_PreviousPlots.push_back(p);
+                }
+
+                if (clearPrevious)
+                {
+                    m_PreviousPlots.clear();
+                }
+
+                // kick off a new plotting task
+                m_PlottingTask = PlottingTask{m_ActivePlot->getParameters(), m_ActivePlot};
+            }
+        }
+
+        void handleUserEnactedDeletions()
+        {
+            // deletions
+            //
+            // handle any user-requested deletions by removing the curve from the collection
+            if (0 <= m_PlotTaggedForDeletion && m_PlotTaggedForDeletion < m_PreviousPlots.size())
+            {
+                m_PreviousPlots.erase(m_PreviousPlots.begin() + m_PlotTaggedForDeletion);
+                m_PlotTaggedForDeletion = -1;
+            }
+        }
+
+        void ensurePreviousCurvesDoesNotExceedMax()
+        {
+            // algorithm:
+            //
+            // - go backwards through the history list and count up *unlocked* elements until
+            //   either the beginning is hit (there are too few - nothing to GC) or the maximum
+            //   number of history entries is hit (`hmax`)s
+            //
+            // - go forwards through the history list, deleting any *unlocked* elements until
+            //   `hmax` is hit
+            //
+            // - you now have a list containing 0..`hmax` unlocked elements, plus locked elements,
+            //   where the unlocked elements are the most recently used
+
+            auto isFirstDeleteablePlot = [nth = 1, max = this->m_MaxHistoryEntries](std::shared_ptr<Plot> const& p) mutable
+            {
+                if (p->getIsLocked())
+                {
+                    return false;
+                }
+                return nth++ > max;
+            };
+
+            auto const backwardIt = std::find_if(m_PreviousPlots.rbegin(), m_PreviousPlots.rend(), isFirstDeleteablePlot);
+            auto const forwardIt = backwardIt.base();
+            size_t const idxOfDeleteableEnd = std::distance(m_PreviousPlots.begin(), forwardIt);
+
+            auto shouldDelete = [i = 0, idxOfDeleteableEnd](std::shared_ptr<Plot> const& p) mutable
+            {
+                return i++ < idxOfDeleteableEnd && !p->getIsLocked();
+            };
+
+            osc::RemoveErase(m_PreviousPlots, shouldDelete);
+        }
+
         std::shared_ptr<Plot> m_ActivePlot;
         PlottingTask m_PlottingTask{m_ActivePlot->getParameters(), m_ActivePlot};
         std::vector<std::shared_ptr<Plot>> m_PreviousPlots;
@@ -1246,6 +1268,11 @@ namespace
                 {
                     double storedValue = osc::ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
                     osc::ActionSetCoordinateValueAndSave(*shared->Uim, coord, storedValue);
+
+                    // trick: we "know" that the last edit to the model was a coordinate edit in this plot's
+                    //        independent variable, so we can skip recomputing it
+                    auto commitAfter = shared->Uim->getLatestCommit();
+                    m_Lines.pushPlotAsActive(m_Lines.getActivePlot().withCommit(commitAfter));
                 }
             }
         }

@@ -160,6 +160,8 @@ All notable changes to this project will be documented here. The format is based
 
 - Previous muscle curves can now be locked by right-clicking them in the legend (#367)
 
+- Muscle curves should no longer replot if the user edits the coordinate in the viewer (#359)
+
 
 ## [0.2.0] - 2022/07/04
 
