@@ -10,7 +10,6 @@
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/CStringView.hpp"
-#include "src/Utils/CircularBuffer.hpp"
 #include "src/Utils/Cpp20Shims.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 
@@ -780,6 +779,10 @@ namespace
     {
         std::stringstream ss;
         ss << i << ") " << p.getParameters().getCommit().getCommitMessage();
+        if (p.getIsLocked())
+        {
+            ss << " " ICON_FA_LOCK;
+        }
         return std::move(ss).str();
     }
 
@@ -795,35 +798,77 @@ namespace
         {
             // perform any datastructure invariant checks etc.
 
-            // carry out user-enacted deletions
-            if (0 <= m_PlotTaggedForDeletion && m_PlotTaggedForDeletion < m_PreviousPlots.size())
-            {
-                std::shared_ptr<Plot> p = m_PreviousPlots[m_PlotTaggedForDeletion];
-                std::stable_partition(m_PreviousPlots.begin(), m_PreviousPlots.end(), [p](std::shared_ptr<Plot> el) { return el != p; });
-                m_PreviousPlots.pop_back();
-                m_PlotTaggedForDeletion = -1;
-            }
-
+            // additions/changes
+            //
             // if the current plot doesn't match the latest requested params, kick off
             // a new plotting task
             if (m_ActivePlot->getParameters() != desiredParams)
             {
                 // (edge-case): if the user selected a different muscle output then the previous
-                // plots have to be cleared out
-                bool clearPrevious = m_ActivePlot->getParameters().getMuscleOutput() != desiredParams.getMuscleOutput();
+                // plots should also be cleared
+                bool const clearPrevious = m_ActivePlot->getParameters().getMuscleOutput() != desiredParams.getMuscleOutput();
 
-                // set new active plot
-                std::shared_ptr<Plot> p = std::make_shared<Plot>(desiredParams);
-                std::swap(p, m_ActivePlot);
-                m_PreviousPlots.push_back(p);
+                // create new active plot and swap the old active plot into the previous plots
+                {
+                    std::shared_ptr<Plot> p = std::make_shared<Plot>(desiredParams);
+                    std::swap(p, m_ActivePlot);
+                    m_PreviousPlots.push_back(p);
+                }
 
                 if (clearPrevious)
                 {
                     m_PreviousPlots.clear();
                 }
 
-                // start new plotting task
+                // kick off a new plotting task
                 m_PlottingTask = PlottingTask{m_ActivePlot->getParameters(), m_ActivePlot};
+            }
+
+            // deletions
+            //
+            // handle any user-requested deletions by removing the curve from the collection
+            if (0 <= m_PlotTaggedForDeletion && m_PlotTaggedForDeletion < m_PreviousPlots.size())
+            {
+                m_PreviousPlots.erase(m_PreviousPlots.begin() + m_PlotTaggedForDeletion);
+                m_PlotTaggedForDeletion = -1;
+            }
+
+            // cleanups/reductions
+            //
+            // handle removing previous plots, if there are too many currently stored
+            {
+                // algorithm:
+                //
+                // - go backwards through the history list and count up *unlocked* elements until
+                //   either the beginning is hit (there are too few - nothing to GC) or the maximum
+                //   number of history entries is hit (`hmax`)s
+                //
+                // - go forwards through the history list, deleting any *unlocked* elements until
+                //   `hmax` is hit
+                //
+                // - you now have a list containing 0..`hmax` unlocked elements, plus locked elements,
+                //   where the unlocked elements are the most recently used
+
+                auto isFirstDeleteablePlot = [nth = 1, max = this->m_MaxHistoryEntries](std::shared_ptr<Plot> const& p) mutable
+                {
+                    if (p->getIsLocked())
+                    {
+                        return false;
+                    }
+                    return nth++ > max;
+                };
+
+                auto const backwardIt = std::find_if(m_PreviousPlots.rbegin(), m_PreviousPlots.rend(), isFirstDeleteablePlot);
+                auto const forwardIt = backwardIt.base();
+                size_t const idxOfDeleteableEnd = std::distance(m_PreviousPlots.begin(), forwardIt);
+
+                auto shouldDelete = [i = 0, idxOfDeleteableEnd](std::shared_ptr<Plot> const& p) mutable
+                {
+                    return i++ < idxOfDeleteableEnd && !p->getIsLocked();
+                };
+
+                auto it = std::remove_if(m_PreviousPlots.begin(), m_PreviousPlots.end(), shouldDelete);
+                m_PreviousPlots.erase(it, m_PreviousPlots.end());
             }
         }
 
@@ -862,11 +907,31 @@ namespace
             m_PlotTaggedForDeletion = static_cast<int>(i);
         }
 
+        void setOtherPlotLocked(size_t i, bool v)
+        {
+            m_PreviousPlots.at(i)->setIsLocked(v);
+        }
+
+        int getMaxHistoryEntries() const
+        {
+            return m_MaxHistoryEntries;
+        }
+
+        void setMaxHistoryEntries(int i)
+        {
+            if (i < 0)
+            {
+                return;
+            }
+            m_MaxHistoryEntries = std::move(i);
+        }
+
     private:
         std::shared_ptr<Plot> m_ActivePlot;
         PlottingTask m_PlottingTask{m_ActivePlot->getParameters(), m_ActivePlot};
-        osc::CircularBuffer<std::shared_ptr<Plot>, 6> m_PreviousPlots;
+        std::vector<std::shared_ptr<Plot>> m_PreviousPlots;
         int m_PlotTaggedForDeletion = -1;
+        int m_MaxHistoryEntries = 6;
     };
 }
 
@@ -1061,6 +1126,14 @@ namespace
                     {
                         m_Lines.tagOtherPlotForDeletion(i);
                     }
+                    if (!plot.getIsLocked() && ImGui::MenuItem(ICON_FA_LOCK " lock"))
+                    {
+                        m_Lines.setOtherPlotLocked(i, true);
+                    }
+                    if (plot.getIsLocked() && ImGui::MenuItem(ICON_FA_UNLOCK " unlock"))
+                    {
+                        m_Lines.setOtherPlotLocked(i, false);
+                    }
                     ImPlot::EndLegendPopup();
                 }
             }
@@ -1184,10 +1257,28 @@ namespace
             {
                 drawPlotDataTypeSelector();
 
-                int currentDataPoints = shared->PlotParams.getNumRequestedDataPoints();
-                if (ImGui::InputInt("num data points", &currentDataPoints, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue))
+                // editor: max data points
                 {
-                    shared->PlotParams.setNumRequestedDataPoints(currentDataPoints);
+                    int currentDataPoints = shared->PlotParams.getNumRequestedDataPoints();
+                    if (ImGui::InputInt("num data points", &currentDataPoints, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue))
+                    {
+                        if (currentDataPoints >= 0)
+                        {
+                            shared->PlotParams.setNumRequestedDataPoints(currentDataPoints);
+                        }
+                    }
+                }
+
+                // editor: max history entries
+                {
+                    int maxHistoryEntries = m_Lines.getMaxHistoryEntries();
+                    if (ImGui::InputInt("max history size", &maxHistoryEntries, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue))
+                    {
+                        if (maxHistoryEntries >= 0)
+                        {
+                            m_Lines.setMaxHistoryEntries(maxHistoryEntries);
+                        }
+                    }
                 }
 
                 if (ImGui::MenuItem("clear unlocked plots"))
