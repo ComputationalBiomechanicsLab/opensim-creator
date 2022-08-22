@@ -17,6 +17,7 @@
 #include <exception>
 #include <filesystem>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -229,7 +230,7 @@ public:
 
     Impl()
     {
-        doCommit("initial commit");  // make initial commit
+        doCommit("created a new model");  // make initial commit
     }
 
     // crete a new commit graph that contains a backup of the given model
@@ -237,7 +238,16 @@ public:
         m_Scratch{std::move(m)},
         m_MaybeFilesystemLocation{TryFindInputFile(m_Scratch.getModel())}
     {
-        doCommit("initial commit");  // make initial commit
+        std::stringstream ss;
+        if (!m_MaybeFilesystemLocation.empty())
+        {
+            ss << "loaded " << m_MaybeFilesystemLocation.filename().string();
+        }
+        else
+        {
+            ss << "loaded model";
+        }
+        doCommit(std::move(ss).str());  // make initial commit
     }
 
     bool hasFilesystemLocation() const
