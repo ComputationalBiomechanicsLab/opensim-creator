@@ -1152,7 +1152,15 @@ namespace
                 Plot const& plot = m_Lines.getOtherPlot(i);
 
                 glm::vec4 color = m_ComputedPlotLineBaseColor;
+
+                // previous curves should fade as they get older
                 color.a *= static_cast<float>(i + 1) / static_cast<float>(len + 1);
+
+                // locked curves should have a blue tint
+                if (plot.getIsLocked())
+                {
+                    color *= glm::vec4{0.5f, 0.5f, 1.0f, 1.1f};
+                }
 
                 if (m_ShowMarkersOnOtherPlots)
                 {
@@ -1194,12 +1202,19 @@ namespace
                 Plot const& p = m_Lines.getActivePlot();
                 std::string const lineName = IthPlotLineName(p, m_Lines.getNumOtherPlots() + 1);
 
+                // locked curves should have a blue tint
+                glm::vec4 color = m_ComputedPlotLineBaseColor;
+                if (p.getIsLocked())
+                {
+                    color *= glm::vec4{0.5f, 0.5f, 1.0f, 1.1f};
+                }
+
                 if (m_ShowMarkersOnActivePlot)
                 {
                     ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
                 }
 
-                ImPlot::PushStyleColor(ImPlotCol_Line, m_ComputedPlotLineBaseColor);
+                ImPlot::PushStyleColor(ImPlotCol_Line, color);
                 PlotLine(lineName, p);
                 ImPlot::PopStyleColor(ImPlotCol_Line);
             }

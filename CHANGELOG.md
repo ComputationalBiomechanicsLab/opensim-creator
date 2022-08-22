@@ -162,6 +162,12 @@ All notable changes to this project will be documented here. The format is based
 
 - Muscle curves should no longer replot if the user edits the coordinate in the viewer (#359)
 
+- The muscle curve history now displays "loaded $OSIM" rather than "initial commit" (#370)
+
+- Previous muscle curves can now be reverted to by right-clicking them in the legend (#368)
+
+- Locked muscle curves now have a blue tint (#371)
+
 
 ## [0.2.0] - 2022/07/04
 
