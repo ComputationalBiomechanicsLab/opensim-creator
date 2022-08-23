@@ -1018,6 +1018,11 @@ namespace
         }
 
     private:
+        void clearComputedPlots()
+        {
+            osc::RemoveErase(m_PreviousPlots, [](auto const& ptr) { return ptr->tryGetParameters() != nullptr; });
+        }
+
         void checkForParameterChangesAndStartPlotting(PlotParameters const& desiredParams)
         {
             // additions/changes
@@ -1042,7 +1047,7 @@ namespace
 
                 if (clearPrevious)
                 {
-                    m_PreviousPlots.clear();
+                    clearComputedPlots();
                 }
 
                 // kick off a new plotting task
