@@ -33,6 +33,12 @@ public:
     std::optional<std::vector<std::string>> next()
     {
         std::istream& in = *m_Input;
+
+        if (in.eof())
+        {
+            return std::nullopt;
+        }
+
         std::vector<std::string> cols;
         std::string s;
         bool insideQuotes = false;

@@ -129,6 +129,21 @@ TEST(CSVReader, CallingNextWithNestedQuotesWorksAsExpectedExcelExample)
     ASSERT_EQ(rv->at(1), "col2");
 }
 
+TEST(CSVReader, CallingNextAfterEOFReturnsEmptyOptional)
+{
+    std::istringstream stream{"col1,col2,col3"};
+    osc::CSVReader reader{stream};
+    std::vector<std::string> expected = {"col1", "col2", "col3"};
+
+    std::optional<std::vector<std::string>> rv = reader.next();
+
+    ASSERT_TRUE(rv.has_value());
+    ASSERT_EQ(*rv, expected);
+
+    std::optional<std::vector<std::string>> rv2 = reader.next();
+
+    ASSERT_FALSE(rv2.has_value());
+}
 TEST(CSVReader, EdgeCase1)
 {
     // e.g. https://stackoverflow.com/questions/9714322/parsing-a-csv-edge-cases
