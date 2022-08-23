@@ -168,6 +168,8 @@ All notable changes to this project will be documented here. The format is based
 
 - Locked muscle curves now have a blue tint (#371)
 
+- Muscle curves can be imported externally from a CSV file (#230)
+
 
 ## [0.2.0] - 2022/07/04
 
