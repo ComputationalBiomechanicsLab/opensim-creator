@@ -166,6 +166,18 @@ namespace osc
         return std::abs(a - b) < scaledEpsilon;
     }
 
+    inline bool IsLessThanOrEffectivelyEqual(double a, double b) noexcept
+    {
+        if (a <= b)
+        {
+            return true;
+        }
+        else
+        {
+            return IsEffectivelyEqual(a, b);
+        }
+    }
+
     template<typename T, typename U>
     inline bool Is(U const& v)
     {
