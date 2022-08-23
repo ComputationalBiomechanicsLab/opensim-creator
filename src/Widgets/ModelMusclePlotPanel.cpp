@@ -817,18 +817,18 @@ namespace
         return o << params.getMuscleOutput().getName();
     }
 
-    std::ostream& WriteXAxisName(OpenSim::Coordinate const& c, std::ostream& o)
+    std::ostream& WriteXAxisName(PlotParameters const& params, std::ostream& o)
     {
-        return o << c.getName();
+        return o << params.getCoordinatePath().getComponentName();
     }
 
-    std::string ComputePlotTitle(PlotParameters const& params, OpenSim::Coordinate const& c)
+    std::string ComputePlotTitle(PlotParameters const& params)
     {
         std::stringstream ss;
         ss << params.getMusclePath().getComponentName() << ' ';
         WriteYAxisName(params, ss);
         ss << " vs ";
-        WriteXAxisName(c, ss);
+        WriteXAxisName(params, ss);
         return std::move(ss).str();
     }
 
@@ -840,11 +840,11 @@ namespace
         return std::move(ss).str();
     }
 
-    std::string ComputePlotXAxisTitle(OpenSim::Coordinate const& c)
+    std::string ComputePlotXAxisTitle(PlotParameters const& params, OpenSim::Coordinate const& coord)
     {
         std::stringstream ss;
-        WriteXAxisName(c, ss);
-        ss << " value [" << osc::GetCoordDisplayValueUnitsString(c) << ']';
+        WriteXAxisName(params, ss);
+        ss << " value [" << osc::GetCoordDisplayValueUnitsString(coord) << ']';
         return std::move(ss).str();
     }
 
@@ -900,6 +900,36 @@ namespace
         }
 
         return Plot{p.filename().string(), std::move(datapoints)};
+    }
+
+    void TrySavePlotToCSV(OpenSim::Coordinate const& coord, PlotParameters const& params, Plot const& plot, std::filesystem::path const& outPath)
+    {
+        std::ofstream f{outPath};
+
+        if (!f)
+        {
+            return;  // error opening outfile
+        }
+
+        osc::CSVWriter writer{f};
+
+        // write header
+        writer.writerow({ ComputePlotXAxisTitle(params, coord), ComputePlotYAxisTitle(params) });
+
+        // write data rows
+        auto lock = plot.lockDataPoints();
+        for (PlotDataPoint p : *lock)
+        {
+            writer.writerow({ std::to_string(p.x), std::to_string(p.y) });
+        }
+    }
+
+    void ActionPromptUserToSavePlotToCSV(OpenSim::Coordinate const& coord, PlotParameters const& params, Plot const& plot)
+    {
+        if (std::filesystem::path const p = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv"); !p.empty())
+        {
+            TrySavePlotToCSV(coord, params, plot, p);
+        }
     }
 
     // holds a collection of plotlines that are to-be-drawn on the plot
@@ -1231,7 +1261,7 @@ namespace
             }
             OpenSim::Coordinate const& coord = *maybeCoord;
 
-            std::string const plotTitle = ComputePlotTitle(latestParams, coord);
+            std::string const plotTitle = ComputePlotTitle(latestParams);
 
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.025f, 0.05f});
             if (ImPlot::BeginPlot(plotTitle.c_str(), ImGui::GetContentRegionAvail(), m_PlotFlags))
@@ -1243,7 +1273,7 @@ namespace
                     m_LegendFlags
                 );
                 ImPlot::SetupAxes(
-                    ComputePlotXAxisTitle(coord).c_str(),
+                    ComputePlotXAxisTitle(latestParams, coord).c_str(),
                     ComputePlotYAxisTitle(latestParams).c_str(),
                     ImPlotAxisFlags_Lock,
                     ImPlotAxisFlags_AutoFit
@@ -1256,7 +1286,7 @@ namespace
                 ImPlot::SetupFinish();
 
                 std::optional<float> maybeMouseX = TryGetMouseXPositionInPlot(m_Lines, m_SnapCursor);
-                drawPlotLines();
+                drawPlotLines(coord);
                 drawOverlays(coord, maybeMouseX);
                 handleMouseEvents(coord, maybeMouseX);
                 if (!m_LegendPopupIsOpen)
@@ -1288,7 +1318,7 @@ namespace
         }
 
         // draws the actual plot lines in the plot
-        void drawPlotLines()
+        void drawPlotLines(OpenSim::Coordinate const& coord)
         {
             // plot not-active plots
             for (size_t i = 0, len = m_Lines.getNumOtherPlots(); i < len; ++i)
@@ -1341,6 +1371,10 @@ namespace
                     if (plot.tryGetParameters() && ImGui::MenuItem(ICON_FA_UNDO " revert to this"))
                     {
                         m_Lines.revertToPreviousPlot(*shared->Uim, i);
+                    }
+                    if (ImGui::MenuItem(ICON_FA_FILE_EXPORT " export to CSV"))
+                    {
+                        ActionPromptUserToSavePlotToCSV(coord, shared->PlotParams, plot);
                     }
                     ImPlot::EndLegendPopup();
                 }
