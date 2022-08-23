@@ -170,6 +170,10 @@ All notable changes to this project will be documented here. The format is based
 
 - Muscle curves can be imported externally from a CSV file (#230)
 
+- A single muscle curve can be exported by right-clicking it in the legend (#231)
+
+- All plotted lines in a single muscle plot can be exported to a sparse CSV file (#231)
+
 
 ## [0.2.0] - 2022/07/04
 

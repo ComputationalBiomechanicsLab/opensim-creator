@@ -636,6 +636,12 @@ namespace
             return m_Parameters.has_value() ? &m_Parameters.value() : nullptr;
         }
 
+        std::vector<PlotDataPoint> copyDataPoints() const
+        {
+            auto lock = m_DataPoints.lock();
+            return *lock;
+        }
+
         osc::SynchronizedValueGuard<std::vector<PlotDataPoint> const> lockDataPoints() const
         {
             return m_DataPoints.lock();
@@ -1160,6 +1166,170 @@ namespace
         return isHovered ? mouseX : std::optional<float>{};
     }
 
+    // returns a vector of all the headers a CSV file will contain if plotting the given lines
+    std::vector<std::string> GetAllCSVHeaders(
+        OpenSim::Coordinate const& coord,
+        PlotParameters const& params,
+        PlotLines const& lines)
+    {
+        std::vector<std::string> headers;
+        headers.reserve(1 + lines.getNumOtherPlots() + 1);
+
+        headers.push_back(ComputePlotXAxisTitle(params, coord));
+        for (size_t i = 0, len = lines.getNumOtherPlots(); i < len; ++i)
+        {
+            headers.push_back(std::string{lines.getOtherPlot(i).getName()});
+        }
+        headers.push_back(std::string{lines.getActivePlot().getName()});
+        return headers;
+    }
+
+    // algorithm helper class: wraps a data + cursor together
+    struct LineCursor {
+        explicit LineCursor(Plot const& plot) : m_Data{plot.copyDataPoints()}
+        {
+        }
+
+        std::optional<float> peekX() const
+        {
+            return m_Cursor != m_Data.end() ? m_Cursor->x : std::optional<float>{};
+        }
+
+        std::optional<PlotDataPoint> peek() const
+        {
+            return m_Cursor != m_Data.end() ? *m_Cursor : std::optional<PlotDataPoint>{};
+        }
+
+        LineCursor& operator++()
+        {
+            OSC_ASSERT(m_Cursor != m_Data.end());
+            ++m_Cursor;
+            return *this;
+        }
+
+    private:
+        std::vector<PlotDataPoint> m_Data;
+        std::vector<PlotDataPoint>::const_iterator m_Cursor = m_Data.begin();
+    };
+
+    // returns true if the given `LineCursor` is still pointing at data (rather than off the end)
+    bool HasData(LineCursor const& c)
+    {
+        return c.peek().has_value();
+    }
+
+    bool LessThanAssumingEmptyHighest(std::optional<float> const& a, std::optional<float> const& b)
+    {
+        // this is defined differently from the C++ standard, which makes the
+        // empty optional the "minimum" value, logically
+        //
+        // see cppreference's definition for `std::optional<T>::operator<`
+
+        if (!a)
+        {
+            return false;
+        }
+        if (!b)
+        {
+            return true;
+        }
+        return *a < *b;
+    }
+
+    // returns true if `a` has a lower X value than `b` - assumes an empty X value is the "highest"
+    bool HasLowerX(LineCursor const& a, LineCursor const& b)
+    {
+        return LessThanAssumingEmptyHighest(a.peekX(), b.peekX());
+    }
+
+    // returns data-owning cursors to all lines in the given plotlines
+    std::vector<LineCursor> GetCursorsToAllPlotLines(PlotLines const& lines)
+    {
+        std::vector<LineCursor> cursors;
+        cursors.reserve(lines.getNumOtherPlots() + 1);
+        for (size_t i = 0, len = lines.getNumOtherPlots(); i < len; ++i)
+        {
+            cursors.emplace_back(lines.getOtherPlot(i));
+        }
+        cursors.emplace_back(lines.getActivePlot());
+        return cursors;
+    }
+
+    // returns the smallest X value accross all given plot lines - if an X value exists
+    std::optional<float> CalcSmallestX(nonstd::span<LineCursor const> cursors)
+    {
+        auto it = std::min_element(cursors.begin(), cursors.end(), HasLowerX);
+        return it != cursors.end() ? it->peekX() : std::optional<float>{};
+    }
+
+    // try to save the given collection of plotlines to an on-disk CSV file
+    //
+    // the resulting CSV may be sparsely populated, because each line may have a different
+    // number of, and location of, values
+    void TrySavePlotLinesToCSV(
+        OpenSim::Coordinate const& coord,
+        PlotParameters const& params,
+        PlotLines const& lines,
+        std::filesystem::path const& outPath)
+    {
+        std::ofstream f{outPath};
+
+        if (!f)
+        {
+            return;  // error opening outfile
+        }
+
+        osc::CSVWriter writer{f};
+
+        // write header
+        writer.writerow(GetAllCSVHeaders(coord, params, lines));
+
+        // get incrementable cursors to all curves in the plot
+        std::vector<LineCursor> cursors = GetCursorsToAllPlotLines(lines);
+
+        // calculate smallest X value among all curves (if applicable - they may all be empty)
+        std::optional<float> maybeX = CalcSmallestX(cursors);
+
+        // keep an eye out for the *next* lowest X value as we iterate
+        std::optional<float> maybeNextX;
+
+        while (maybeX)
+        {
+            std::vector<std::string> cols;
+            cols.reserve(1 + cursors.size());
+
+            // emit (potentially deduped) X
+            cols.push_back(std::to_string(*maybeX));
+
+            // emit all columns that match up with X
+            for (LineCursor& cursor : cursors)
+            {
+                std::optional<PlotDataPoint> data = cursor.peek();
+
+                if (data && osc::IsLessThanOrEffectivelyEqual(data->x, *maybeX))
+                {
+                    cols.push_back(std::to_string(data->y));
+                    ++cursor;
+                    data = cursor.peek();  // to test the next X
+                }
+                else
+                {
+                    cols.push_back({});  // blank cell
+                }
+
+                std::optional<float> maybeDataX = data ? std::optional<float>{data->x} : std::optional<float>{};
+                if (LessThanAssumingEmptyHighest(maybeDataX, maybeNextX))
+                {
+                    maybeNextX = maybeDataX;
+                }
+            }
+
+            writer.writerow(cols);
+            maybeX = maybeNextX;
+            maybeNextX = std::nullopt;
+        }
+    }
+
     // a UI action in which the user in prompted for a CSV file that they would like to overlay
     // over the current plot
     void ActionPromptUserForCSVOverlayFile(PlotLines& lines)
@@ -1173,6 +1343,17 @@ namespace
                 plot->setIsLocked(true);
                 lines.pushPlotAsPrevious(std::move(plot).value());
             }
+        }
+    }
+
+    // a UI action in which the user is prompted to save a CSV file to the filesystem and then, if
+    // the user selects a filesystem location, writes a sparse CSV file containing all plotlines to
+    // that location
+    void ActionPromptUserToSavePlotLinesToCSV(OpenSim::Coordinate const& coord, PlotParameters const& params, PlotLines const& lines)
+    {
+        if (std::filesystem::path const p = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv"); !p.empty())
+        {
+            TrySavePlotLinesToCSV(coord, params, lines, p);
         }
     }
 }
@@ -1291,7 +1472,7 @@ namespace
                 handleMouseEvents(coord, maybeMouseX);
                 if (!m_LegendPopupIsOpen)
                 {
-                    tryDrawGeneralPlotPopup(plotTitle);
+                    tryDrawGeneralPlotPopup(coord, plotTitle);
                 }
 
                 ImPlot::EndPlot();
@@ -1528,7 +1709,7 @@ namespace
             }
         }
 
-        void tryDrawGeneralPlotPopup(std::string const& plotTitle)
+        void tryDrawGeneralPlotPopup(OpenSim::Coordinate const& coord, std::string const& plotTitle)
         {
             // draw a context menu with helpful options (set num data points, export, etc.)
             if (ImGui::BeginPopupContextItem((plotTitle + "_contextmenu").c_str()))
@@ -1579,6 +1760,12 @@ namespace
                     ActionPromptUserForCSVOverlayFile(m_Lines);
                 }
                 osc::DrawTooltipIfItemHovered("import CSV overlay", "Imports the specified CSV file as an overlay over the current plot. This is handy fitting muscle curves against externally-supplied data.\n\nThe provided CSV file must contain a header row and at least two columns of numeric data on each data row (additional columns are ignored, rows containing too few columns are ignored). The values in the columns must match this plot's axes.");
+
+                if (ImGui::MenuItem("export to CSV"))
+                {
+                    ActionPromptUserToSavePlotLinesToCSV(coord, shared->PlotParams, m_Lines);
+                }
+                osc::DrawTooltipIfItemHovered("export to CSV", "Exports all curves in the plot to a CSV file.\n\nThe implementation will try to group things together by X value, but the CSV file *may* contain sparse rows if (e.g.) some curves have a different number of plot points, or some curves were loaded from another CSV, etc.");
 
                 ImGui::EndPopup();
             }
