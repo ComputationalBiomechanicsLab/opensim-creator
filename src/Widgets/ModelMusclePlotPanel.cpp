@@ -609,18 +609,39 @@ namespace
     // file
     class Plot final : public PlotDataPointConsumer {
     public:
+
+        // assumed to be a plot that is probably being computed elsewhere
         explicit Plot(PlotParameters const& parameters) :
-            m_Parameters{parameters}
+            m_Parameters{parameters},
+            m_Name{parameters.getCommit().getCommitMessage()}
         {
-            m_DataPoints.lock()->reserve(m_Parameters.getNumRequestedDataPoints());
+            m_DataPoints.lock()->reserve(m_Parameters->getNumRequestedDataPoints());
         }
 
-        PlotParameters const& getParameters() const
+        // assumed to be a plot that was loaded from disk
+        Plot(std::string name, std::vector<PlotDataPoint> data) :
+            m_Parameters{std::nullopt},
+            m_Name{std::move(name)},
+            m_DataPoints{std::move(data)}
         {
-            return m_Parameters;
+        }
+
+        osc::CStringView getName() const
+        {
+            return m_Name;
+        }
+
+        PlotParameters const* tryGetParameters() const
+        {
+            return m_Parameters.has_value() ? &m_Parameters.value() : nullptr;
         }
 
         osc::SynchronizedValueGuard<std::vector<PlotDataPoint> const> lockDataPoints() const
+        {
+            return m_DataPoints.lock();
+        }
+
+        osc::SynchronizedValueGuard<std::vector<PlotDataPoint>> lockDataPoints()
         {
             return m_DataPoints.lock();
         }
@@ -646,15 +667,9 @@ namespace
             m_IsLocked = std::move(v);
         }
 
-        Plot withCommit(osc::ModelStateCommit const& c) const
-        {
-            Plot rv{*this};
-            rv.m_Parameters.setCommit(c);
-            return rv;
-        }
-
     private:
-        PlotParameters m_Parameters;
+        std::optional<PlotParameters> m_Parameters;
+        std::string m_Name;
         bool m_IsLocked = false;
         osc::SynchronizedValue<std::vector<PlotDataPoint>> m_DataPoints;
     };
@@ -788,7 +803,8 @@ namespace
     std::string IthPlotLineName(Plot const& p, size_t i)
     {
         std::stringstream ss;
-        ss << i << ") " << p.getParameters().getCommit().getCommitMessage();
+
+        ss << i << ") " << p.getName();
         if (p.getIsLocked())
         {
             ss << " " ICON_FA_LOCK;
@@ -887,7 +903,8 @@ namespace
     class PlotLines final {
     public:
         PlotLines(PlotParameters const& params) :
-            m_ActivePlot{std::make_shared<Plot>(params)}
+            m_ActivePlot{std::make_shared<Plot>(params)},
+            m_PlottingTask{params, m_ActivePlot}
         {
         }
 
@@ -975,8 +992,10 @@ namespace
             // fetch the to-be-reverted-to curve
             std::shared_ptr<Plot> ptr = m_PreviousPlots.at(i);
 
+            PlotParameters const* maybeParams = ptr->tryGetParameters();
+
             // try to revert the current model to use the plot's commit
-            if (model.tryCheckout(ptr->getParameters().getCommit()))
+            if (maybeParams && model.tryCheckout(maybeParams->getCommit()))
             {
                 // it checked out successfully, so update this plotting widget
                 // accordingly
@@ -1002,11 +1021,14 @@ namespace
             //
             // if the current plot doesn't match the latest requested params, kick off
             // a new plotting task
-            if (m_ActivePlot->getParameters() != desiredParams)
+
+            PlotParameters const* maybeParams = m_ActivePlot->tryGetParameters();
+
+            if (!maybeParams || (*maybeParams) != desiredParams)
             {
                 // (edge-case): if the user selected a different muscle output then the previous
                 // plots should also be cleared
-                bool const clearPrevious = m_ActivePlot->getParameters().getMuscleOutput() != desiredParams.getMuscleOutput();
+                bool const clearPrevious = maybeParams && maybeParams->getMuscleOutput() != desiredParams.getMuscleOutput();
 
                 // create new active plot and swap the old active plot into the previous plots
                 {
@@ -1021,7 +1043,7 @@ namespace
                 }
 
                 // kick off a new plotting task
-                m_PlottingTask = PlottingTask{m_ActivePlot->getParameters(), m_ActivePlot};
+                m_PlottingTask = PlottingTask{desiredParams, m_ActivePlot};
             }
         }
 
@@ -1073,7 +1095,7 @@ namespace
         }
 
         std::shared_ptr<Plot> m_ActivePlot;
-        PlottingTask m_PlottingTask{m_ActivePlot->getParameters(), m_ActivePlot};
+        PlottingTask m_PlottingTask;
         std::vector<std::shared_ptr<Plot>> m_PreviousPlots;
         int m_PlotTaggedForDeletion = -1;
         int m_MaxHistoryEntries = 6;
@@ -1430,9 +1452,24 @@ namespace
                     // trick: we "know" that the last edit to the model was a coordinate edit in this plot's
                     //        independent variable, so we can skip recomputing it
                     osc::ModelStateCommit const& commitAfter = shared->Uim->getLatestCommit();
-                    Plot p = m_Lines.getActivePlot().withCommit(commitAfter);
-                    p.setIsLocked(false);  // don't copy locking status
-                    m_Lines.pushPlotAsActive(p);
+
+                    Plot const& active = m_Lines.getActivePlot();
+                    if (PlotParameters const* oldParams = active.tryGetParameters())
+                    {
+                        PlotParameters newParams{*oldParams};
+                        newParams.setCommit(commitAfter);
+
+                        Plot newPlot{newParams};
+                        newPlot.setIsLocked(false);  // don't copy locking status
+
+                        {
+                            auto oldDataLock = active.lockDataPoints();
+                            auto newDataLock = newPlot.lockDataPoints();
+                            *newDataLock = *oldDataLock;
+                        }
+
+                        m_Lines.pushPlotAsActive(std::move(newPlot));
+                    }
                 }
             }
         }
