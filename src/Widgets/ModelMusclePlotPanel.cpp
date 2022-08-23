@@ -1295,10 +1295,15 @@ namespace
                 // previous curves should fade as they get older
                 color.a *= static_cast<float>(i + 1) / static_cast<float>(len + 1);
 
-                // locked curves should have a blue tint
-                if (plot.getIsLocked())
+                if (!plot.tryGetParameters())
                 {
-                    color *= glm::vec4{0.5f, 0.5f, 1.0f, 1.1f};
+                    // externally-provided curves should be tinted
+                    color *= m_LoadedCurveTint;
+                }
+                else if (plot.getIsLocked())
+                {
+                    // locked curves should be tinted as such
+                    color *= m_LockedCurveTint;
                 }
 
                 if (m_ShowMarkersOnOtherPlots)
@@ -1328,7 +1333,7 @@ namespace
                     {
                         m_Lines.setOtherPlotLocked(i, false);
                     }
-                    if (ImGui::MenuItem(ICON_FA_UNDO " revert to this"))
+                    if (plot.tryGetParameters() && ImGui::MenuItem(ICON_FA_UNDO " revert to this"))
                     {
                         m_Lines.revertToPreviousPlot(*shared->Uim, i);
                     }
@@ -1343,9 +1348,16 @@ namespace
 
                 // locked curves should have a blue tint
                 glm::vec4 color = m_ComputedPlotLineBaseColor;
-                if (p.getIsLocked())
+
+                if (!p.tryGetParameters())
                 {
-                    color *= glm::vec4{0.5f, 0.5f, 1.0f, 1.1f};
+                    // externally-provided curves should be tinted
+                    color *= m_LoadedCurveTint;
+                }
+                else if (p.getIsLocked())
+                {
+                    // locked curves should be tinted as such
+                    color *= m_LockedCurveTint;
                 }
 
                 if (m_ShowMarkersOnActivePlot)
@@ -1587,6 +1599,8 @@ namespace
         ImPlotFlags m_PlotFlags = ImPlotFlags_AntiAliased | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame;
         ImPlotLocation m_LegendLocation = ImPlotLocation_NorthWest;
         ImPlotLegendFlags m_LegendFlags = ImPlotLegendFlags_None;
+        glm::vec4 m_LockedCurveTint = {0.5f, 0.5f, 1.0f, 1.1f};
+        glm::vec4 m_LoadedCurveTint = {0.5f, 1.0f, 0.5f, 1.0f};
     };
 }
 
