@@ -65,8 +65,7 @@ public:
 
     SynchronizedValueGuard<OpenSim::Model const> getModel() const
     {
-        OpenSim::Model const& ref = m_ModelState.lock()->getModel();
-        return {m_ModelState.mutex(), ref};
+        return m_ModelState.lockChild<OpenSim::Model>([](BasicModelStatePair const& p) { return p.getModel(); });
     }
 
     int getNumReports() const
