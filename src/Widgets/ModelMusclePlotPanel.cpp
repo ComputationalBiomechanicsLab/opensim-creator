@@ -1540,7 +1540,7 @@ namespace
                 ImGui::MenuItem("show markers on other plots", nullptr, &m_ShowMarkersOnOtherPlots);
                 ImGui::MenuItem("snap cursor to datapoints", nullptr, &m_SnapCursor);
 
-                if (ImGui::MenuItem("import CSV overlay (NYI)"))
+                if (ImGui::MenuItem("import CSV overlay"))
                 {
                     ActionPromptUserForCSVOverlayFile(m_Lines);
                 }
