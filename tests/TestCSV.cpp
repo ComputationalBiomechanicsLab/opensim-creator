@@ -275,3 +275,81 @@ TEST(CSVReader, EdgeCase10)
         ASSERT_EQ(*rv, expected[i]);
     }
 }
+
+TEST(CSVWriter, CanBeConstructedFromStringStream)
+{
+    std::stringstream stream;
+    osc::CSVWriter writer{stream};
+}
+
+TEST(CSVWriter, CanBeMoveConstructed)
+{
+    std::stringstream stream;
+
+    osc::CSVWriter a{stream};
+    osc::CSVWriter b{std::move(a)};
+}
+
+TEST(CSVWriter, CanBeMoveAssigned)
+{
+    std::stringstream stream1;
+    osc::CSVWriter a{stream1};
+
+    std::stringstream stream2;
+    osc::CSVWriter b{stream2};
+
+    b = std::move(a);
+}
+
+TEST(CSVWriter, WriteRowWritesExpectedContentForBasicExample)
+{
+    std::stringstream stream;
+    osc::CSVWriter writer{stream};
+
+    std::vector<std::string> input = {"a", "b", "c"};
+    std::string expectedOutput = "a,b,c\n";
+
+    writer.writerow(input);
+
+    ASSERT_EQ(stream.str(), expectedOutput);
+}
+
+TEST(CSVWriter, WriteRowWritesExpectedContentForMultilineExample)
+{
+    std::stringstream stream;
+    osc::CSVWriter writer{stream};
+
+    std::vector<std::vector<std::string>> inputs =
+    {
+        {"col1", "col2", "col3"},
+        {"a", "b", "c"},
+    };
+    std::string expectedOutput = "col1,col2,col3\na,b,c\n";
+
+    for (std::vector<std::string> const& input : inputs)
+    {
+        writer.writerow(input);
+    }
+
+    ASSERT_EQ(stream.str(), expectedOutput);
+}
+
+TEST(CSVWriter, EdgeCase1)
+{
+    std::stringstream stream;
+    osc::CSVWriter writer{stream};
+
+    std::vector<std::vector<std::string>> inputs =
+    {
+        {"\"quoted column\"", "column, with comma", "nested\nnewline"},
+        {"a", "b", "\"hardmode, maybe?\nwho knows"},
+    };
+    std::string expectedOutput = "\"\"\"quoted column\"\"\",\"column, with comma\",\"nested\nnewline\"\na,b,\"\"\"hardmode, maybe?\nwho knows\"\n";
+
+    for (std::vector<std::string> const& input : inputs)
+    {
+        writer.writerow(input);
+    }
+
+    ASSERT_EQ(stream.str(), expectedOutput);
+}

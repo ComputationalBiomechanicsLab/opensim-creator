@@ -2,9 +2,27 @@
 
 #include "src/Utils/Assertions.hpp"
 
+#include <algorithm>
 #include <iostream>
+#include <string>
+#include <string_view>
 #include <utility>
 
+// helpers
+namespace
+{
+    bool IsSpecialCSVCharacter(char c)
+    {
+        return c == ',' || c == '\r' || c == '\n' || c == '"';
+    }
+
+    bool ShouldBeQuoted(std::string_view v)
+    {
+        return std::any_of(v.begin(), v.end(), IsSpecialCSVCharacter);
+    }
+}
+
+// CSV reader implementation
 class osc::CSVReader::Impl final {
 public:
     Impl(std::istream& input) : m_Input{&input}
@@ -93,6 +111,55 @@ private:
     std::istream* m_Input;
 };
 
+// CSV writer implementation
+class osc::CSVWriter::Impl final {
+public:
+    Impl(std::ostream& output) : m_Output{&output}
+    {
+        OSC_ASSERT(m_Output != nullptr);
+    }
+
+    void writerow(std::vector<std::string> const& cols)
+    {
+        std::ostream& out = *m_Output;
+
+        char const* delim = "";
+        for (std::string const& col : cols)
+        {
+            bool const quoted = ShouldBeQuoted(col);
+
+            out << delim;
+            if (quoted)
+            {
+                out << '"';
+            }
+
+            for (char c : col)
+            {
+                if (c != '"')
+                {
+                    out << c;
+                }
+                else
+                {
+                    out << '"' << '"';
+                }
+            }
+
+            if (quoted)
+            {
+                out << '"';
+            }
+
+            delim = ",";
+        }
+        out << '\n';
+    }
+
+private:
+    std::ostream* m_Output;
+};
+
 
 // public API (PIMPL)
 
@@ -120,4 +187,31 @@ osc::CSVReader::~CSVReader() noexcept
 std::optional<std::vector<std::string>> osc::CSVReader::next()
 {
     return m_Impl->next();
+}
+
+
+osc::CSVWriter::CSVWriter(std::ostream& output) :
+    m_Impl{new Impl{output}}
+{
+}
+
+osc::CSVWriter::CSVWriter(CSVWriter&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
+
+osc::CSVWriter& osc::CSVWriter::operator=(CSVWriter&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::CSVWriter::~CSVWriter() noexcept
+{
+    delete m_Impl;
+}
+
+void osc::CSVWriter::writerow(std::vector<std::string> const& cols)
+{
+    m_Impl->writerow(cols);
 }
