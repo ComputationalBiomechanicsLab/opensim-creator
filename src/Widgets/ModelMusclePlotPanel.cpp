@@ -2,11 +2,13 @@
 
 #include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Formats/CSV.hpp"
 #include "src/OpenSimBindings/ModelStateCommit.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
+#include "src/Platform/os.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/CStringView.hpp"
@@ -30,9 +32,11 @@
 
 #include <algorithm>
 #include <atomic>
+#include <charconv>
 #include <chrono>
 #include <future>
 #include <memory>
+#include <string>
 #include <string_view>
 #include <sstream>
 #include <type_traits>
@@ -792,6 +796,93 @@ namespace
         return std::move(ss).str();
     }
 
+    std::ostream& WriteYAxisName(PlotParameters const& params, std::ostream& o)
+    {
+        return o << params.getMuscleOutput().getName();
+    }
+
+    std::ostream& WriteXAxisName(OpenSim::Coordinate const& c, std::ostream& o)
+    {
+        return o << c.getName();
+    }
+
+    std::string ComputePlotTitle(PlotParameters const& params, OpenSim::Coordinate const& c)
+    {
+        std::stringstream ss;
+        ss << params.getMusclePath().getComponentName() << ' ';
+        WriteYAxisName(params, ss);
+        ss << " vs ";
+        WriteXAxisName(c, ss);
+        return std::move(ss).str();
+    }
+
+    std::string ComputePlotYAxisTitle(PlotParameters const& params)
+    {
+        std::stringstream ss;
+        WriteYAxisName(params, ss);
+        ss << " [" << params.getMuscleOutput().getUnits() << ']';
+        return std::move(ss).str();
+    }
+
+    std::string ComputePlotXAxisTitle(OpenSim::Coordinate const& c)
+    {
+        std::stringstream ss;
+        WriteXAxisName(c, ss);
+        ss << " value [" << osc::GetCoordDisplayValueUnitsString(c) << ']';
+        return std::move(ss).str();
+    }
+
+    std::optional<Plot> TryLoadCSVFileAsPlot(std::filesystem::path const& p)
+    {
+        std::ifstream f{p};
+
+        if (!f)
+        {
+            return std::nullopt;  // error opening path
+        }
+        f.exceptions(std::ios_base::badbit);
+
+        osc::CSVReader reader{f};
+        reader.next();  // skip header
+
+        while (std::optional<std::vector<std::string>> row = reader.next())
+        {
+            if (row->size() < 2)
+            {
+                // ignore rows that do not contain enough columns
+                continue;
+            }
+
+            std::string_view const col1 = (*row)[0];
+            std::string_view const col2 = (*row)[1];
+            // (ignore excess columns)
+
+            // parse first column as a number
+            float v1 = 0.0f;
+            std::from_chars_result r1 = std::from_chars(col1.data(), col1.data() + col1.size(), v1);
+
+            if (r1.ec != std::errc{})
+            {
+                // parsing error: skip this row
+                continue;
+            }
+
+            // parse second column as a number
+            float v2 = 0.0f;
+            std::from_chars_result r2 = std::from_chars(col1.data(), col1.data() + col1.size(), v1);
+
+            if (r2.ec != std::errc{})
+            {
+                // parsing error: skip this row
+                continue;
+            }
+
+            // else: row is parsed as at least two numbers, push them
+        }
+
+        return std::nullopt;
+    }
+
     // holds a collection of plotlines that are to-be-drawn on the plot
     class PlotLines final {
     public:
@@ -868,6 +959,13 @@ namespace
             std::shared_ptr<Plot> ptr = std::make_shared<Plot>(std::move(p));
             std::swap(ptr, m_ActivePlot);
             m_PreviousPlots.push_back(ptr);
+
+            ensurePreviousCurvesDoesNotExceedMax();
+        }
+
+        void pushPlotAsPrevious(Plot p)
+        {
+            m_PreviousPlots.push_back(std::make_shared<Plot>(std::move(p)));
 
             ensurePreviousCurvesDoesNotExceedMax();
         }
@@ -980,6 +1078,43 @@ namespace
         int m_PlotTaggedForDeletion = -1;
         int m_MaxHistoryEntries = 6;
     };
+
+    // tries to hittest the mouse's X position in plot-space
+    std::optional<float> TryGetMouseXPositionInPlot(PlotLines const& lines, bool snapToNearest)
+    {
+        // figure out mouse hover position
+        bool const isHovered = ImPlot::IsPlotHovered();
+        float mouseX = static_cast<float>(ImPlot::GetPlotMousePos().x);
+
+        // handle snapping the mouse's X position
+        if (isHovered && snapToNearest)
+        {
+            auto maybeNearest = FindNearestPoint(lines.getActivePlot(), mouseX);
+
+            if (IsXInRange(lines.getActivePlot(), mouseX) && maybeNearest)
+            {
+                mouseX = maybeNearest->x;
+            }
+        }
+
+        return isHovered ? mouseX : std::optional<float>{};
+    }
+
+    // a UI action in which the user in prompted for a CSV file that they would like to overlay
+    // over the current plot
+    void ActionPromptUserForCSVOverlayFile(PlotLines& lines)
+    {
+        // TODO: error propagation?
+
+        if (std::filesystem::path const csvPath = osc::PromptUserForFile("csv"); !csvPath.empty())
+        {
+            if (std::optional<Plot> plot = TryLoadCSVFileAsPlot(csvPath))
+            {
+                plot->setIsLocked(true);
+                lines.pushPlotAsPrevious(std::move(plot).value());
+            }
+        }
+    }
 }
 
 // UI state
@@ -1066,7 +1201,7 @@ namespace
             }
             OpenSim::Coordinate const& coord = *maybeCoord;
 
-            std::string const plotTitle = computePlotTitle(coord);
+            std::string const plotTitle = ComputePlotTitle(latestParams, coord);
 
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.025f, 0.05f});
             if (ImPlot::BeginPlot(plotTitle.c_str(), ImGui::GetContentRegionAvail(), m_PlotFlags))
@@ -1078,8 +1213,8 @@ namespace
                     m_LegendFlags
                 );
                 ImPlot::SetupAxes(
-                    computePlotXAxisTitle(coord).c_str(),
-                    computePlotYAxisTitle().c_str(),
+                    ComputePlotXAxisTitle(coord).c_str(),
+                    ComputePlotYAxisTitle(latestParams).c_str(),
                     ImPlotAxisFlags_Lock,
                     ImPlotAxisFlags_AutoFit
                 );
@@ -1090,7 +1225,7 @@ namespace
                 );
                 ImPlot::SetupFinish();
 
-                std::optional<float> maybeMouseX = tryGetMouseXPositionInPlot();
+                std::optional<float> maybeMouseX = TryGetMouseXPositionInPlot(m_Lines, m_SnapCursor);
                 drawPlotLines();
                 drawOverlays(coord, maybeMouseX);
                 handleMouseEvents(coord, maybeMouseX);
@@ -1120,27 +1255,6 @@ namespace
 
             // ensure plot lines are valid, given the current model + desired params
             m_Lines.onBeforeDrawing(*shared->Uim, shared->PlotParams);
-        }
-
-        // tries to hittest the mouse's X position in plot-space
-        std::optional<float> tryGetMouseXPositionInPlot() const
-        {
-            // figure out mouse hover position
-            bool const isHovered = ImPlot::IsPlotHovered();
-            float mouseX = static_cast<float>(ImPlot::GetPlotMousePos().x);
-
-            // handle snapping the mouse's X position
-            if (isHovered && m_SnapCursor)
-            {
-                auto maybeNearest = FindNearestPoint(m_Lines.getActivePlot(), mouseX);
-
-                if (IsXInRange(m_Lines.getActivePlot(), mouseX) && maybeNearest)
-                {
-                    mouseX = maybeNearest->x;
-                }
-            }
-
-            return isHovered ? mouseX : std::optional<float>{};
         }
 
         // draws the actual plot lines in the plot
@@ -1369,6 +1483,12 @@ namespace
                 ImGui::MenuItem("show markers on other plots", nullptr, &m_ShowMarkersOnOtherPlots);
                 ImGui::MenuItem("snap cursor to datapoints", nullptr, &m_SnapCursor);
 
+                if (ImGui::MenuItem("import CSV overlay (NYI)"))
+                {
+                    ActionPromptUserForCSVOverlayFile(m_Lines);
+                }
+                osc::DrawTooltipIfItemHovered("import CSV overlay", "Imports the specified CSV file as an overlay over the current plot. This is handy fitting muscle curves against externally-supplied data.\n\nThe provided CSV file must contain a header row and at least two columns of numeric data on each data row (additional columns are ignored, rows containing too few columns are ignored). The values in the columns must match this plot's axes.");
+
                 ImGui::EndPopup();
             }
         }
@@ -1412,42 +1532,6 @@ namespace
             if (ImGui::Button("S", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_South; } ImGui::SameLine();
             if (ImGui::Button("SE", ImVec2(1.5f * s, s))) { m_LegendLocation = ImPlotLocation_SouthEast; }
             ImGui::PopStyleVar();
-        }
-
-        std::string computePlotTitle(OpenSim::Coordinate const& c)
-        {
-            std::stringstream ss;
-            ss << shared->PlotParams.getMusclePath().getComponentName() << ' ';
-            appendYAxisName(ss);
-            ss << " vs ";
-            appendXAxisName(c, ss);
-            return std::move(ss).str();
-        }
-
-        void appendYAxisName(std::stringstream& ss)
-        {
-            ss << shared->PlotParams.getMuscleOutput().getName();
-        }
-
-        void appendXAxisName(OpenSim::Coordinate const& c, std::stringstream& ss)
-        {
-            ss << c.getName();
-        }
-
-        std::string computePlotYAxisTitle()
-        {
-            std::stringstream ss;
-            appendYAxisName(ss);
-            ss << " [" << shared->PlotParams.getMuscleOutput().getUnits() << ']';
-            return std::move(ss).str();
-        }
-
-        std::string computePlotXAxisTitle(OpenSim::Coordinate const& c)
-        {
-            std::stringstream ss;
-            appendXAxisName(c, ss);
-            ss << " value [" << osc::GetCoordDisplayValueUnitsString(c) << ']';
-            return std::move(ss).str();
         }
 
         // plot data state
