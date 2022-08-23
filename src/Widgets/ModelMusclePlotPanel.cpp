@@ -861,6 +861,7 @@ namespace
         osc::CSVReader reader{f};
         reader.next();  // skip header
 
+        std::vector<PlotDataPoint> datapoints;
         while (std::optional<std::vector<std::string>> row = reader.next())
         {
             if (row->size() < 2)
@@ -871,6 +872,7 @@ namespace
 
             std::string_view const col1 = (*row)[0];
             std::string_view const col2 = (*row)[1];
+
             // (ignore excess columns)
 
             // parse first column as a number
@@ -885,7 +887,7 @@ namespace
 
             // parse second column as a number
             float v2 = 0.0f;
-            std::from_chars_result r2 = std::from_chars(col1.data(), col1.data() + col1.size(), v1);
+            std::from_chars_result r2 = std::from_chars(col2.data(), col2.data() + col2.size(), v2);
 
             if (r2.ec != std::errc{})
             {
@@ -894,9 +896,10 @@ namespace
             }
 
             // else: row is parsed as at least two numbers, push them
+            datapoints.push_back({v1, v2});
         }
 
-        return std::nullopt;
+        return Plot{p.filename().string(), std::move(datapoints)};
     }
 
     // holds a collection of plotlines that are to-be-drawn on the plot
