@@ -174,6 +174,10 @@ All notable changes to this project will be documented here. The format is based
 
 - All plotted lines in a single muscle plot can be exported to a sparse CSV file (#231)
 
+- The mesh importer, when given multiple mesh files, will try to import as many as
+  possible, emitting an error message to the log for each failure (previously: would
+  refuse to import all mesh files if any in the batch were erroneous, #303)
+
 
 ## [0.2.0] - 2022/07/04
 

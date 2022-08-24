@@ -575,7 +575,14 @@ namespace
             }
             catch (std::exception const& ex)
             {
-                return MeshLoadErrorResponse{msg.PreferredAttachmentPoint, path, ex.what()};
+                // swallow the exception and emit a log error
+                //
+                // older implementations used to cancel loading the entire batch by returning
+                // an MeshLoadErrorResponse, but that wasn't a good idea because there are
+                // times when a user will drag in a bunch of files and expect all the valid
+                // ones to load (#303)
+
+                osc::log::error("%s: error loading mesh file: %s", path.string().c_str(), ex.what());
             }
         }
 
