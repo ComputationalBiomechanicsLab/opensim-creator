@@ -32,7 +32,6 @@
 
 #include <algorithm>
 #include <atomic>
-#include <charconv>
 #include <chrono>
 #include <future>
 #include <memory>
@@ -247,6 +246,8 @@ namespace
 // these are the datastructures that the widget mostly plays around with
 namespace
 {
+    constexpr int g_DefaultNumPlotPoints = 65;
+
     // parameters for generating a plot line
     //
     // i.e. changing any part of the parameters may produce a different curve
@@ -876,33 +877,22 @@ namespace
                 continue;
             }
 
-            std::string_view const col1 = (*row)[0];
-            std::string_view const col2 = (*row)[1];
-
-            // (ignore excess columns)
-
             // parse first column as a number
-            float v1 = 0.0f;
-            std::from_chars_result r1 = std::from_chars(col1.data(), col1.data() + col1.size(), v1);
-
-            if (r1.ec != std::errc{})
+            std::optional<float> v1 = osc::FromCharsStripWhitespace((*row)[0]);
+            if (!v1)
             {
-                // parsing error: skip this row
-                continue;
+                continue;  // parsing error: skip this row
             }
 
             // parse second column as a number
-            float v2 = 0.0f;
-            std::from_chars_result r2 = std::from_chars(col2.data(), col2.data() + col2.size(), v2);
-
-            if (r2.ec != std::errc{})
+            std::optional<float> v2 = osc::FromCharsStripWhitespace((*row)[1]);
+            if (!v2)
             {
-                // parsing error: skip this row
-                continue;
+                continue;  // parsing error: skip this row
             }
 
             // else: row is parsed as at least two numbers, push them
-            datapoints.push_back({v1, v2});
+            datapoints.push_back({*v1, *v2});
         }
 
         return Plot{p.filename().string(), std::move(datapoints)};
@@ -1374,8 +1364,8 @@ namespace
         SharedStateData(std::shared_ptr<osc::UndoableModelStatePair> uim,
             OpenSim::ComponentPath const& coordPath,
             OpenSim::ComponentPath const& musclePath) :
-            Uim{ std::move(uim) },
-            PlotParams{ Uim->getLatestCommit(), coordPath, musclePath, GetDefaultMuscleOutput(), 180 }
+            Uim{std::move(uim)},
+            PlotParams{Uim->getLatestCommit(), coordPath, musclePath, GetDefaultMuscleOutput(), g_DefaultNumPlotPoints}
         {
             OSC_ASSERT(Uim != nullptr);
         }

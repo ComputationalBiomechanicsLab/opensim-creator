@@ -4,7 +4,9 @@
 #include <cctype>
 #include <cstring>
 #include <filesystem>
+#include <stdexcept>
 #include <string>
+#include <string_view>
 
 int osc::NumBitsSetIn(int v)
 {
@@ -61,10 +63,6 @@ bool osc::IsStringCaseInsensitiveGreaterThan(std::string const& a, std::string c
     }
 }
 
-
-// returns true if `b` is lexographically greater than `a`, ignoring case
-//
-// e.g. "b" > "a", "B" > "a" (this isn't true if case-sensitive)
 bool osc::IsFilenameLexographicallyGreaterThan(std::filesystem::path const& p1, std::filesystem::path const& p2)
 {
     return IsStringCaseInsensitiveGreaterThan(p1.filename().string(), p2.filename().string());
@@ -145,4 +143,43 @@ bool osc::Contains(char const* s, char c)
 bool osc::StartsWith(std::string_view s, std::string_view prefix)
 {
     return prefix.size() <= s.size() && std::equal(prefix.begin(), prefix.end(), s.begin());
+}
+
+std::string_view osc::TrimLeadingAndTrailingWhitespace(std::string_view v)
+{
+    std::string_view::const_iterator const front = std::find_if_not(v.begin(), v.end(), ::isspace);
+    std::string_view::const_iterator const back = std::find_if_not(v.rbegin(), std::string_view::const_reverse_iterator{front}, ::isspace).base();
+    return {v.data() + std::distance(v.begin(), front), static_cast<size_t>(std::distance(front, back))};
+}
+
+std::optional<float> osc::FromCharsStripWhitespace(std::string_view v)
+{
+    v = TrimLeadingAndTrailingWhitespace(v);
+
+    if (v.empty())
+    {
+        return std::nullopt;
+    }
+
+    size_t i = 0;
+    float fpv = 0.0f;
+
+    try
+    {
+        fpv = std::stof(std::string{v}, &i);
+    }
+    catch (std::invalid_argument const&)
+    {
+        // no conversion could be performed
+        return std::nullopt;
+    }
+    catch (std::out_of_range const&)
+    {
+        // value is out of the range of representable values of a float
+        return std::nullopt;
+    }
+
+    // else: it m
+
+    return i == v.size() ? std::optional<float>{fpv} : std::optional<float>{};
 }

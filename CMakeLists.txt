@@ -489,7 +489,7 @@ add_library(osccore STATIC
     src/Utils/Algorithms.cpp
     src/Utils/Algorithms.hpp
     src/Utils/Assertions.cpp
-    src/Utils/Assertions.hpp
+    src/Utils/Assertions.hpp    
     src/Utils/CheckedIndex.hpp
     src/Utils/CircularBuffer.hpp
     src/Utils/ClonePtr.hpp
@@ -636,6 +636,7 @@ target_link_options(osccore PUBLIC
 # osctests: main exe that links to `osccore` and exercises APIs etc.
 add_executable(testosc EXCLUDE_FROM_ALL
 
+    tests/TestAlgorithms.cpp
     tests/TestCSV.cpp
     tests/TestDedupedString.cpp
     tests/TestImage.cpp

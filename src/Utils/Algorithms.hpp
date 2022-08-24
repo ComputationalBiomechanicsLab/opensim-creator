@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <iterator>
 #include <limits>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -261,4 +262,24 @@ namespace osc
 
     // returns true if `s` begins with `prefix`
     bool StartsWith(std::string_view s, std::string_view prefix);
+
+    // returns a string view without its leading/trailing whitespace
+    std::string_view TrimLeadingAndTrailingWhitespace(std::string_view);
+
+    // (tries to) convert a char sequence into a floating point number
+    //
+    // - strips leading and trailing whitespace
+    //
+    // - parses the remaining characters as a locale-dependent floating point
+    //   number, internally using something like std::strtof (which depends
+    //   on C locale - careful)
+    //
+    // returns the resulting float if sucessful, or std::nullopt if it fails
+    //
+    // the reason this function exists is because, at time of writing, C++'s
+    // <charconv> `std::from_chars` function isn't implemented in Mac OSX
+    // or linux. When they are, feel free to nuke this from orbit.
+    //
+    // see the unittest suite for some of the more unusual things to consider
+    std::optional<float> FromCharsStripWhitespace(std::string_view);
 }
