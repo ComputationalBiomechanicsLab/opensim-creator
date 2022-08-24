@@ -680,6 +680,16 @@ namespace
         bool m_IsLocked = false;
         osc::SynchronizedValue<std::vector<PlotDataPoint>> m_DataPoints;
     };
+
+    bool IsExternallyProvided(Plot const& plot)
+    {
+        return !plot.tryGetParameters();
+    }
+
+    bool IsLocked(Plot const& plot)
+    {
+        return plot.getIsLocked();
+    }
 }
 
 // helpers
@@ -1135,6 +1145,32 @@ namespace
         int m_MaxHistoryEntries = 6;
     };
 
+    struct PlotLineCounts final {
+        size_t external;
+        size_t locked;
+        size_t total;
+    };
+
+    PlotLineCounts CountOtherPlotTypes(PlotLines const& lines)
+    {
+        PlotLineCounts rv{};
+        for (size_t i = 0; i < lines.getNumOtherPlots(); ++i)
+        {
+            Plot const& p = lines.getOtherPlot(i);
+
+            if (IsExternallyProvided(p))
+            {
+                ++rv.external;
+            }
+            else if (IsLocked(p))
+            {
+                ++rv.locked;
+            }
+            ++rv.total;
+        }
+        return rv;
+    }
+
     // tries to hittest the mouse's X position in plot-space
     std::optional<float> TryGetMouseXPositionInPlot(PlotLines const& lines, bool snapToNearest)
     {
@@ -1492,24 +1528,31 @@ namespace
         void drawPlotLines(OpenSim::Coordinate const& coord)
         {
             // plot not-active plots
-            for (size_t i = 0, len = m_Lines.getNumOtherPlots(); i < len; ++i)
+            PlotLineCounts const counts = CountOtherPlotTypes(m_Lines);
+            size_t externalCounter = 0;
+            size_t lockedCounter = 0;
+            for (size_t i = 0; i < m_Lines.getNumOtherPlots(); ++i)
             {
                 Plot const& plot = m_Lines.getOtherPlot(i);
 
                 glm::vec4 color = m_ComputedPlotLineBaseColor;
 
-                // previous curves should fade as they get older
-                color.a *= static_cast<float>(i + 1) / static_cast<float>(len + 1);
-
-                if (!plot.tryGetParameters())
+                if (IsExternallyProvided(plot))
                 {
                     // externally-provided curves should be tinted
                     color *= m_LoadedCurveTint;
+                    color.a *= static_cast<float>(++externalCounter) / static_cast<float>(counts.external);
                 }
-                else if (plot.getIsLocked())
+                else if (IsLocked(plot))
                 {
                     // locked curves should be tinted as such
                     color *= m_LockedCurveTint;
+                    color.a *= static_cast<float>(++lockedCounter) / static_cast<float>(counts.locked);
+                }
+                else
+                {
+                    // previous curves should fade as they get older
+                    color.a *= static_cast<float>(i + 1) / static_cast<float>(counts.total + 1);
                 }
 
                 if (m_ShowMarkersOnOtherPlots)
@@ -1559,12 +1602,12 @@ namespace
                 // locked curves should have a blue tint
                 glm::vec4 color = m_ComputedPlotLineBaseColor;
 
-                if (!p.tryGetParameters())
+                if (IsExternallyProvided(p))
                 {
                     // externally-provided curves should be tinted
                     color *= m_LoadedCurveTint;
                 }
-                else if (p.getIsLocked())
+                else if (IsLocked(p))
                 {
                     // locked curves should be tinted as such
                     color *= m_LockedCurveTint;
