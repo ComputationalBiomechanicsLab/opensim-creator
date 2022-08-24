@@ -186,7 +186,7 @@
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright [yyyy] [name of copyright owner]
+   Copyright [2022] [Adam Kewley]
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -199,3 +199,14 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+
+TU DELFT DISCLAIMER:
+
+Technische Universiteit Delft hereby disclaims all copyright interest in the
+program "OpenSim Creator" (a desktop graphical editor for OpenSim Models) written
+by Adam Kewley.
+
+    Prof. Dr. Ir. Fred van Keulen, Dean of 3mE (TU Delft)
+
+(this is a standard disclaimer, taken from "TU Delft Guidelines on Research Software (2011)")
