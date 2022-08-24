@@ -996,6 +996,11 @@ namespace
             m_PreviousPlots.at(i)->setIsLocked(v);
         }
 
+        void setActivePlotLocked(bool v)
+        {
+            m_ActivePlot->setIsLocked(v);
+        }
+
         int getMaxHistoryEntries() const
         {
             return m_MaxHistoryEntries;
@@ -1596,18 +1601,18 @@ namespace
 
             // then plot the active plot
             {
-                Plot const& p = m_Lines.getActivePlot();
-                std::string const lineName = IthPlotLineName(p, m_Lines.getNumOtherPlots() + 1);
+                Plot const& plot = m_Lines.getActivePlot();
+                std::string const lineName = IthPlotLineName(plot, m_Lines.getNumOtherPlots() + 1);
 
                 // locked curves should have a blue tint
                 glm::vec4 color = m_ComputedPlotLineBaseColor;
 
-                if (IsExternallyProvided(p))
+                if (IsExternallyProvided(plot))
                 {
                     // externally-provided curves should be tinted
                     color *= m_LoadedCurveTint;
                 }
-                else if (IsLocked(p))
+                else if (IsLocked(plot))
                 {
                     // locked curves should be tinted as such
                     color *= m_LockedCurveTint;
@@ -1619,8 +1624,27 @@ namespace
                 }
 
                 ImPlot::PushStyleColor(ImPlotCol_Line, color);
-                PlotLine(lineName, p);
+                PlotLine(lineName, plot);
                 ImPlot::PopStyleColor(ImPlotCol_Line);
+
+                if (ImPlot::BeginLegendPopup(lineName.c_str()))
+                {
+                    m_LegendPopupIsOpen = true;
+
+                    if (!plot.getIsLocked() && ImGui::MenuItem(ICON_FA_LOCK " lock"))
+                    {
+                        m_Lines.setActivePlotLocked(true);
+                    }
+                    if (plot.getIsLocked() && ImGui::MenuItem(ICON_FA_UNLOCK " unlock"))
+                    {
+                        m_Lines.setActivePlotLocked(false);
+                    }
+                    if (ImGui::MenuItem(ICON_FA_FILE_EXPORT " export to CSV"))
+                    {
+                        ActionPromptUserToSavePlotToCSV(coord, shared->PlotParams, plot);
+                    }
+                    ImPlot::EndLegendPopup();
+                }
             }
         }
 
