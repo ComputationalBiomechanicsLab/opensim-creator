@@ -178,6 +178,9 @@ All notable changes to this project will be documented here. The format is based
   possible, emitting an error message to the log for each failure (previously: would
   refuse to import all mesh files if any in the batch were erroneous, #303)
 
+- The "reassign socket" popup will now display error messages more clearly when a
+  connection reassignment cannot be made (#332)
+
 
 ## [0.2.0] - 2022/07/04
 
