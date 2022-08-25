@@ -5,6 +5,7 @@
 #include "src/Utils/SynchronizedValue.hpp"
 
 // registered tabs
+#include "src/Tabs/Experiments/CustomWidgetsTab.hpp"
 #include "src/Tabs/Experiments/HittestTab.hpp"
 #include "src/Tabs/Experiments/ImGuiDemoTab.hpp"
 #include "src/Tabs/Experiments/ImGuizmoDemoTab.hpp"
@@ -66,6 +67,7 @@ namespace
         osc::SynchronizedValue<std::vector<osc::TabRegistryEntry>> rv;
 
         auto lock = rv.lock();
+        lock->emplace_back("UI/CustomWidgets", TabConstructor<osc::CustomWidgetsTab>);
         lock->emplace_back("Hittest/AnalyticGeometry", TabConstructor<osc::HittestTab>);
         lock->emplace_back("Hittest/Meshes", TabConstructor<osc::MeshHittestTab>);
         lock->emplace_back("OpenSim/PreviewExperimentalData", TabConstructor<osc::PreviewExperimentalDataTab>);

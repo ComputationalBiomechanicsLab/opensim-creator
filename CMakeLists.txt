@@ -429,6 +429,8 @@ add_library(osccore STATIC
     src/Screens/MainUIScreen.cpp
     src/Screens/MainUIScreen.hpp
 
+    src/Tabs/Experiments/CustomWidgetsTab.cpp
+    src/Tabs/Experiments/CustomWidgetsTab.hpp
     src/Tabs/Experiments/HittestTab.cpp
     src/Tabs/Experiments/HittestTab.hpp
     src/Tabs/Experiments/ImGuiDemoTab.cpp
