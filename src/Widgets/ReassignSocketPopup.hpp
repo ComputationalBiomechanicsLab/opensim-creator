@@ -1,31 +1,32 @@
 ﻿#pragma once
 
-#include <string>
+#include <memory>
 #include <string_view>
 
-namespace OpenSim { class Model; }
-namespace OpenSim { class AbstractSocket; }
-namespace OpenSim { class Object; }
+namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
     class ReassignSocketPopup final {
     public:
+        explicit ReassignSocketPopup(
+            std::string_view popupName,
+            std::shared_ptr<UndoableModelStatePair>,
+            std::string_view componentAbsPath,
+            std::string_view socketName);
+        ReassignSocketPopup(ReassignSocketPopup const&) = delete;
+        ReassignSocketPopup(ReassignSocketPopup&&) noexcept;
+        ReassignSocketPopup& operator=(ReassignSocketPopup const&) = delete;
+        ReassignSocketPopup& operator=(ReassignSocketPopup&&) noexcept;
+        ~ReassignSocketPopup() noexcept;
 
-        // assumes caller handles ImGui::OpenPopup(modal_name);
-        //
-        // returns != nullptr with a pointer to the new connectee if viewer chooses
-        // one in UI
-        OpenSim::Object const* draw(
-                char const* popupName,
-                OpenSim::Model const&,
-                OpenSim::AbstractSocket const&);
-
-        void clear();
-        void setError(std::string_view);
+        bool isOpen() const;
+        void open();
+        void close();
+        void draw();
 
     private:
-        std::string error;
-        char search[128]{};
+        class Impl;
+        Impl* m_Impl;
     };
 }

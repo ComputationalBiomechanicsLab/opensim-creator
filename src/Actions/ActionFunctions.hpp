@@ -7,6 +7,7 @@
 #include <string>
 
 namespace OpenSim { class Component; }
+namespace OpenSim { class ComponentPath; }
 namespace OpenSim { class ContactGeometry; }
 namespace OpenSim { class Coordinate; }
 namespace OpenSim { class Geometry; }
@@ -118,7 +119,7 @@ namespace osc
     bool ActionAddPathPointToSelectedPathActuator(UndoableModelStatePair&, OpenSim::PhysicalFrame const&);
 
     // attempts to reassign a component's socket connection (returns false and writes to `error` on failure)
-    bool ActionReassignSelectedComponentSocket(UndoableModelStatePair&, std::string const& socketName, OpenSim::Object const& connectee, std::string& error);
+    bool ActionReassignSelectedComponentSocket(UndoableModelStatePair&, OpenSim::ComponentPath const& componentAbsPath, std::string const& socketName, OpenSim::Object const& connectee, std::string& error);
 
     // sets the model's isolation to the provided component (can be nullptr)
     bool ActionSetModelIsolationTo(UndoableModelStatePair&, OpenSim::Component const*);

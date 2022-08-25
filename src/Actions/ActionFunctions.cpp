@@ -1016,9 +1016,9 @@ bool osc::ActionAddPathPointToSelectedPathActuator(osc::UndoableModelStatePair& 
     }
 }
 
-bool osc::ActionReassignSelectedComponentSocket(osc::UndoableModelStatePair& uim, std::string const& socketName, OpenSim::Object const& connectee, std::string& error)
+bool osc::ActionReassignSelectedComponentSocket(osc::UndoableModelStatePair& uim, OpenSim::ComponentPath const& componentAbsPath, std::string const& socketName, OpenSim::Object const& connectee, std::string& error)
 {
-    OpenSim::Component const* selected = uim.getSelected();
+    OpenSim::Component const* selected = osc::FindComponent(uim.getModel(), componentAbsPath);
 
     if (!selected)
     {

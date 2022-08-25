@@ -358,9 +358,9 @@ static void DrawSelectionBreadcrumbs(osc::UndoableModelStatePair& uim)
 
 
 // draw socket editor for current selection
-static void DrawSocketEditor(osc::ReassignSocketPopup& reassignSocketPopup, osc::UndoableModelStatePair& uim)
+static void DrawSocketEditor(std::optional<osc::ReassignSocketPopup>& reassignPopup, std::shared_ptr<osc::UndoableModelStatePair> const& uim)
 {
-    OpenSim::Component const* selected = uim.getSelected();
+    OpenSim::Component const* selected = uim->getSelected();
 
     if (!selected)
     {
@@ -393,7 +393,8 @@ static void DrawSocketEditor(osc::ReassignSocketPopup& reassignSocketPopup, osc:
 
         if (ImGui::Button(sockname.c_str()))
         {
-            ImGui::OpenPopup(popupname.c_str());
+            reassignPopup.emplace(popupname, uim, selected->getAbsolutePathString(), socket.getName());
+            reassignPopup->open();
         }
 
         if (ImGui::IsItemHovered())
@@ -412,25 +413,14 @@ static void DrawSocketEditor(osc::ReassignSocketPopup& reassignSocketPopup, osc:
 
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right) && dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject()))
         {
-            uim.setSelected(dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject()));
+            uim->setSelected(dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject()));
             ImGui::NextColumn();
             break;  // don't continue to traverse the sockets, because the selection changed
         }
 
-        if (OpenSim::Object const* connectee = reassignSocketPopup.draw(popupname.c_str(), uim.getModel(), socket); connectee)
+        if (reassignPopup)
         {
-            ImGui::CloseCurrentPopup();
-
-            std::string error;
-            if (osc::ActionReassignSelectedComponentSocket(uim, sn, *connectee, error))
-            {
-                reassignSocketPopup.clear();
-                ImGui::CloseCurrentPopup();
-            }
-            else
-            {
-                reassignSocketPopup.setError(error);
-            }
+            reassignPopup->draw();
         }
 
         ImGui::NextColumn();
@@ -509,7 +499,7 @@ public:
         ImGui::SameLine();
         osc::DrawHelpMarker("What components this component is connected to.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
         ImGui::Separator();
-        DrawSocketEditor(m_ReassignSocketPopup, *m_Model);
+        DrawSocketEditor(m_MaybeReassignSocketPopup, m_Model);
 
         ImGui::PopID();
     }
@@ -581,7 +571,7 @@ private:
 
     std::shared_ptr<UndoableModelStatePair> m_Model;
     SelectGeometryPopup m_AttachGeomPopup{"select geometry to add"};
-    ReassignSocketPopup m_ReassignSocketPopup;
+    std::optional<ReassignSocketPopup> m_MaybeReassignSocketPopup;
     ObjectPropertiesEditor m_ObjectPropsEditor;
 };
 

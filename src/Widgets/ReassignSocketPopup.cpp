@@ -1,72 +1,139 @@
 #include "ReassignSocketPopup.hpp"
 
+#include "src/Actions/ActionFunctions.hpp"
+#include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/Widgets/StandardPopup.hpp"
+
+#include <glm/vec2.hpp>
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
+#include <memory>
+#include <string>
+#include <string_view>
 #include <utility>
 
-OpenSim::Object const* osc::ReassignSocketPopup::draw(
-    char const* popupName,
-    OpenSim::Model const& model,
-    OpenSim::AbstractSocket const&)
-{
-    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+class osc::ReassignSocketPopup::Impl final : public osc::StandardPopup {
+public:
+    Impl(std::string_view popupName,
+         std::shared_ptr<UndoableModelStatePair> model,
+         std::string_view componentAbsPath,
+         std::string_view socketName) :
 
-    if (!ImGui::BeginPopupModal(popupName, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        StandardPopup{std::move(popupName)},
+        m_Model{std::move(model)},
+        m_ComponentPath{std::string{componentAbsPath}},
+        m_SocketName{std::move(socketName)}
     {
-        return nullptr;
     }
 
-    ImGui::InputText("search", search, sizeof(search));
-
-    ImGui::TextUnformatted("objects:");
-    ImGui::BeginChild("obj list", ImVec2(512, 256), true, ImGuiWindowFlags_HorizontalScrollbar);
-
-    OpenSim::Object const* rv = nullptr;
-
-    for (OpenSim::Component const& c : model.getComponentList())
+private:
+    void implDraw() override
     {
-        std::string const& name = c.getName();
-        if (name.find(search) != std::string::npos)
+        osc::InputString("search", m_Search, 128);
+
+        ImGui::TextUnformatted("components:");
+
+        OpenSim::Component const* chosenComponent = nullptr;
+
+        ImGui::BeginChild("##componentlist", ImVec2(512, 256), true, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar);
+
+        int id = 0;
+        for (OpenSim::Component const& c : m_Model->getModel().getComponentList())
         {
-            if (ImGui::Selectable(name.c_str()))
+            std::string const& name = c.getName();
+
+            if (name.find(m_Search) != std::string::npos)
             {
-                if (rv == nullptr)
+                ImGui::PushID(id++);
+                if (ImGui::Selectable(name.c_str()))
                 {
-                    rv = &c;
+                    chosenComponent = &c;
                 }
+                ImGui::PopID();
             }
         }
-    }
-    ImGui::EndChild();
+        ImGui::EndChild();
 
-    if (!error.empty())
+        if (!m_Error.empty())
+        {
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+            ImGui::TextWrapped("%s", m_Error.c_str());
+        }
+
+        if (ImGui::Button("Cancel"))
+        {
+            requestClose();
+        }
+
+        if (chosenComponent && osc::ActionReassignSelectedComponentSocket(*m_Model, m_ComponentPath, m_SocketName, *chosenComponent, m_Error))
+        {
+            requestClose();
+        }
+    }
+
+    void implOnClose() override
     {
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-        ImGui::TextWrapped("%s", error.c_str());
+        m_Search.clear();
+        m_Error.clear();
     }
 
-    if (ImGui::Button("Cancel"))
-    {
-        clear();
-        ImGui::CloseCurrentPopup();
-    }
+    std::shared_ptr<UndoableModelStatePair> m_Model;
+    OpenSim::ComponentPath m_ComponentPath;
+    std::string m_SocketName;
+    std::string m_Search;
+    std::string m_Error;
+};
 
-    ImGui::EndPopup();
 
-    return rv;
+// public API (PIMPL)
+
+osc::ReassignSocketPopup::ReassignSocketPopup(
+    std::string_view popupName,
+    std::shared_ptr<UndoableModelStatePair> model,
+    std::string_view componentAbsPath,
+    std::string_view socketName) :
+
+    m_Impl{new Impl{std::move(popupName), std::move(model), std::move(componentAbsPath), std::move(socketName)}}
+{
 }
 
-void osc::ReassignSocketPopup::clear()
+osc::ReassignSocketPopup::ReassignSocketPopup(ReassignSocketPopup&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
-    search[0] = '\0';
-    error.clear();
 }
 
-void osc::ReassignSocketPopup::setError(std::string_view sv)
+osc::ReassignSocketPopup& osc::ReassignSocketPopup::operator=(ReassignSocketPopup&& tmp) noexcept
 {
-    error = std::move(sv);
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::ReassignSocketPopup::~ReassignSocketPopup() noexcept
+{
+    delete m_Impl;
+}
+
+bool osc::ReassignSocketPopup::isOpen() const
+{
+    return m_Impl->isOpen();
+}
+
+void osc::ReassignSocketPopup::open()
+{
+    m_Impl->open();
+}
+
+void osc::ReassignSocketPopup::close()
+{
+    m_Impl->close();
+}
+
+void osc::ReassignSocketPopup::draw()
+{
+    m_Impl->draw();
 }
