@@ -1808,7 +1808,7 @@ namespace
                     ImGui::EndMenu();
                 }
 
-                ImGui::MenuItem("show markers", nullptr, &m_ShowMarkersOnActivePlot);
+                ImGui::MenuItem("show markers on active plot", nullptr, &m_ShowMarkersOnActivePlot);
                 ImGui::MenuItem("show markers on other plots", nullptr, &m_ShowMarkersOnOtherPlots);
                 ImGui::MenuItem("snap cursor to datapoints", nullptr, &m_SnapCursor);
 
