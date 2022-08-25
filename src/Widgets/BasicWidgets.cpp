@@ -208,3 +208,30 @@ void osc::DrawSimulationParams(osc::ParamBlock const& params)
     }
     ImGui::Columns();
 }
+
+void osc::DrawSearchBar(std::string& out, int maxLen)
+{
+    if (!out.empty())
+    {
+        if (ImGui::Button("X"))
+        {
+            out.clear();
+        }
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::BeginTooltip();
+            ImGui::Text("Clear the search string");
+            ImGui::EndTooltip();
+        }
+    }
+    else
+    {
+        ImGui::Text(ICON_FA_SEARCH);
+    }
+
+    // draw search bar
+
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+    osc::InputString("##hirarchtsearchbar", out, maxLen);
+}

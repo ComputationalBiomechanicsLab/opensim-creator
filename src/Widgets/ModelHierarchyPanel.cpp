@@ -6,6 +6,7 @@
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
+#include "src/Widgets/BasicWidgets.hpp"
 #include "src/Widgets/NamedPanel.hpp"
 
 #include <OpenSim/Common/Component.h>
@@ -185,30 +186,8 @@ public:
             ImGui::EndPopup();
         }
         ImGui::SameLine();
+        osc::DrawSearchBar(m_CurrentSearch, 256);
 
-        if (!m_CurrentSearch.empty())
-        {
-            if (ImGui::Button("X"))
-            {
-                m_CurrentSearch.clear();
-            }
-            if (ImGui::IsItemHovered())
-            {
-                ImGui::BeginTooltip();
-                ImGui::Text("Clear the search string");
-                ImGui::EndTooltip();
-            }
-        }
-        else
-        {
-            ImGui::TextUnformatted(ICON_FA_SEARCH);
-        }
-
-        // draw search bar
-
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-        osc::InputString("##hirarchtsearchbar", m_CurrentSearch, 256);
         ImGui::Dummy({0.0f, 3.0f});
         ImGui::Separator();
         ImGui::Dummy({0.0f, 3.0f});

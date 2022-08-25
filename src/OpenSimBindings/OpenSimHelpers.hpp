@@ -135,7 +135,7 @@ namespace osc
     // returns a mutable pointer if the given path resolves a component relative to root
     OpenSim::Component* FindComponentMut(OpenSim::Component& root, OpenSim::ComponentPath const&);
 
-    // return non-nullptr if the given path resolves a component of type T relative to root
+    // returns non-nullptr if the given path resolves a component of type T relative to root
     template<typename T>
     T* FindComponentMut(OpenSim::Component& root, OpenSim::ComponentPath const& cp)
     {
@@ -144,6 +144,15 @@ namespace osc
 
     // returns true if the path resolves to a component within root
     bool ContainsComponent(OpenSim::Component const& root, OpenSim::ComponentPath const&);
+
+    // returns non-nullptr if a socket with the given name is found within the given component
+    OpenSim::AbstractSocket const* FindSocket(OpenSim::Component const&, std::string const& socketName);
+
+    // returns non-nullptr if a socket with the given name is found within the given component
+    OpenSim::AbstractSocket* FindSocketMut(OpenSim::Component&, std::string const& socketName);
+
+    // returns true if the socket is able to connect to the component
+    bool IsAbleToConnectTo(OpenSim::AbstractSocket const&, OpenSim::Component const&);
 
     // returns a pointer to the property if the component has a property with the given name
     OpenSim::AbstractProperty* FindPropertyMut(OpenSim::Component&, std::string const&);

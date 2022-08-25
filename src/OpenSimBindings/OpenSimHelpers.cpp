@@ -1066,6 +1066,46 @@ bool osc::ContainsComponent(OpenSim::Component const& root, OpenSim::ComponentPa
     return FindComponent(root, cp);
 }
 
+OpenSim::AbstractSocket const* osc::FindSocket(OpenSim::Component const& c, std::string const& name)
+{
+    try
+    {
+        return &c.getSocket(name);
+    }
+    catch (OpenSim::SocketNotFound const&)
+    {
+        return nullptr;  // :(
+    }
+}
+
+OpenSim::AbstractSocket* osc::FindSocketMut(OpenSim::Component& c, std::string const& name)
+{
+    try
+    {
+        return &c.updSocket(name);
+    }
+    catch (OpenSim::SocketNotFound const&)
+    {
+        return nullptr;  // :(
+    }
+}
+
+bool osc::IsAbleToConnectTo(OpenSim::AbstractSocket const& s, OpenSim::Component const& c)
+{
+    // yes, this is very very bad
+
+    std::unique_ptr<OpenSim::AbstractSocket> copy{s.clone()};
+    try
+    {
+        copy->connect(c);
+        return true;
+    }
+    catch (OpenSim::Exception const&)
+    {
+        return false;
+    }
+}
+
 OpenSim::AbstractProperty* osc::FindPropertyMut(OpenSim::Component& c, std::string const& name)
 {
     return c.hasProperty(name) ? &c.updPropertyByName(name) : nullptr;

@@ -2,7 +2,9 @@
 
 #include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/Widgets/BasicWidgets.hpp"
 #include "src/Widgets/StandardPopup.hpp"
 
 #include <glm/vec2.hpp>
@@ -34,20 +36,38 @@ public:
 private:
     void implDraw() override
     {
-        osc::InputString("search", m_Search, 128);
+        // ensure the "from" side of the socket still exists etc.
+        OpenSim::Component const* c = osc::FindComponent(m_Model->getModel(), m_ComponentPath);
+        if (!c)
+        {
+            requestClose();
+            return;
+        }
 
-        ImGui::TextUnformatted("components:");
+        // ensure the socket still exists
+        OpenSim::AbstractSocket const* socket = osc::FindSocket(*c, m_SocketName);
+        if (!socket)
+        {
+            requestClose();
+            return;
+        }
+
+        ImGui::Text("connect %s (%s) to:", socket->getName().c_str(), socket->getConnecteeTypeName().c_str());
+
+        ImGui::Dummy({0.0f, 0.1f * ImGui::GetTextLineHeight()});
+        ImGui::Separator();
+        ImGui::Dummy({0.0f, 0.25f * ImGui::GetTextLineHeight()});
+
+        osc::DrawSearchBar(m_Search, 256);
 
         OpenSim::Component const* chosenComponent = nullptr;
-
-        ImGui::BeginChild("##componentlist", ImVec2(512, 256), true, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar);
-
         int id = 0;
+        ImGui::BeginChild("##componentlist", ImVec2(512, 256), true, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar);
         for (OpenSim::Component const& c : m_Model->getModel().getComponentList())
         {
             std::string const& name = c.getName();
 
-            if (name.find(m_Search) != std::string::npos)
+            if (name.find(m_Search) != std::string::npos && IsAbleToConnectTo(*socket, c))
             {
                 ImGui::PushID(id++);
                 if (ImGui::Selectable(name.c_str()))
@@ -68,11 +88,13 @@ private:
         if (ImGui::Button("Cancel"))
         {
             requestClose();
+            return;
         }
 
         if (chosenComponent && osc::ActionReassignSelectedComponentSocket(*m_Model, m_ComponentPath, m_SocketName, *chosenComponent, m_Error))
         {
             requestClose();
+            return;
         }
     }
 

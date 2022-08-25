@@ -1019,7 +1019,6 @@ bool osc::ActionAddPathPointToSelectedPathActuator(osc::UndoableModelStatePair& 
 bool osc::ActionReassignSelectedComponentSocket(osc::UndoableModelStatePair& uim, OpenSim::ComponentPath const& componentAbsPath, std::string const& socketName, OpenSim::Object const& connectee, std::string& error)
 {
     OpenSim::Component const* selected = osc::FindComponent(uim.getModel(), componentAbsPath);
-
     if (!selected)
     {
         return false;
@@ -1029,19 +1028,15 @@ bool osc::ActionReassignSelectedComponentSocket(osc::UndoableModelStatePair& uim
 
     UID oldVersion = uim.getModelVersion();
     OpenSim::Model& mutModel = uim.updModel();
-    OpenSim::Component* mutComponent = osc::FindComponentMut(mutModel, selectedPath);
 
-    OpenSim::AbstractSocket* socket = nullptr;
-    try
-    {
-        socket = &mutComponent->updSocket(socketName);
-    }
-    catch (std::exception const&)
+    OpenSim::Component* mutComponent = osc::FindComponentMut(mutModel, selectedPath);
+    if (!mutComponent)
     {
         uim.setModelVersion(oldVersion);
         return false;
     }
 
+    OpenSim::AbstractSocket* socket = osc::FindSocketMut(*mutComponent, socketName);
     if (!socket)
     {
         uim.setModelVersion(oldVersion);

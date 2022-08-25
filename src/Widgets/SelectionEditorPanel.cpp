@@ -389,7 +389,7 @@ static void DrawSocketEditor(std::optional<osc::ReassignSocketPopup>& reassignPo
 
         OpenSim::AbstractSocket const& socket = selected->getSocket(sn);
         std::string sockname = socket.getConnecteePath();
-        std::string popupname = std::string{"reassign"} + sockname;
+        std::string popupname = std::string{"reassign "} + sockname;
 
         if (ImGui::Button(sockname.c_str()))
         {
@@ -418,14 +418,14 @@ static void DrawSocketEditor(std::optional<osc::ReassignSocketPopup>& reassignPo
             break;  // don't continue to traverse the sockets, because the selection changed
         }
 
-        if (reassignPopup)
-        {
-            reassignPopup->draw();
-        }
-
         ImGui::NextColumn();
     }
     ImGui::Columns();
+
+    if (reassignPopup)
+    {
+        reassignPopup->draw();
+    }
 }
 
 class osc::SelectionEditorPanel::Impl final {

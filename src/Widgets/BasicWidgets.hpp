@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace osc { class MainUIStateAPI; }
 namespace osc { class ParamBlock; }
 namespace osc { class VirtualModelStatePair; }
@@ -11,4 +13,5 @@ namespace osc
     void DrawSelectOwnerMenu(osc::VirtualModelStatePair&, OpenSim::Component const&);
     void DrawWatchOutputMenu(osc::MainUIStateAPI&, OpenSim::Component const&);
     void DrawSimulationParams(osc::ParamBlock const&);
+    void DrawSearchBar(std::string&, int maxLen);
 }
