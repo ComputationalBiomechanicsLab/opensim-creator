@@ -181,6 +181,10 @@ All notable changes to this project will be documented here. The format is based
 - The "reassign socket" popup will now display error messages more clearly when a
   connection reassignment cannot be made (#332)
 
+- The "reassign socket" popup will now only display sockets that the component can
+  actually connect to (#381), and the popup is optimized to ensure that creating
+  the candidate list is fast (#384)
+
 
 ## [0.2.0] - 2022/07/04
 
