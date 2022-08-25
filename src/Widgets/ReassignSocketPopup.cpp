@@ -4,6 +4,7 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/Utils/Algorithms.hpp"
 #include "src/Widgets/BasicWidgets.hpp"
 #include "src/Widgets/StandardPopup.hpp"
 
@@ -37,15 +38,15 @@ private:
     void implDraw() override
     {
         // ensure the "from" side of the socket still exists etc.
-        OpenSim::Component const* c = osc::FindComponent(m_Model->getModel(), m_ComponentPath);
-        if (!c)
+        OpenSim::Component const* component = osc::FindComponent(m_Model->getModel(), m_ComponentPath);
+        if (!component)
         {
             requestClose();
             return;
         }
 
         // ensure the socket still exists
-        OpenSim::AbstractSocket const* socket = osc::FindSocket(*c, m_SocketName);
+        OpenSim::AbstractSocket const* socket = osc::FindSocket(*component, m_SocketName);
         if (!socket)
         {
             requestClose();
@@ -63,16 +64,18 @@ private:
         OpenSim::Component const* chosenComponent = nullptr;
         int id = 0;
         ImGui::BeginChild("##componentlist", ImVec2(512, 256), true, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar);
-        for (OpenSim::Component const& c : m_Model->getModel().getComponentList())
+        for (OpenSim::Component const& possibleConnectee : m_Model->getModel().getComponentList())
         {
-            std::string const& name = c.getName();
+            std::string const& name = possibleConnectee.getName();
 
-            if (name.find(m_Search) != std::string::npos && IsAbleToConnectTo(*socket, c))
+            if (&possibleConnectee != component &&
+                ContainsSubstring(name, m_Search) &&
+                IsAbleToConnectTo(*socket, possibleConnectee))
             {
                 ImGui::PushID(id++);
                 if (ImGui::Selectable(name.c_str()))
                 {
-                    chosenComponent = &c;
+                    chosenComponent = &possibleConnectee;
                 }
                 ImGui::PopID();
             }
