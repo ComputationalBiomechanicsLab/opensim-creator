@@ -11,7 +11,15 @@
 class osc::BasicModelStatePair::Impl final {
 public:
 
-    explicit Impl(VirtualModelStatePair const& p) : Impl{p.getModel(), p.getState()}
+    Impl() :
+        m_Model{std::make_unique<OpenSim::Model>()}
+    {
+        InitializeModel(*m_Model);
+        InitializeState(*m_Model);
+    }
+
+    Impl(VirtualModelStatePair const& p) :
+        Impl{p.getModel(), p.getState()}
     {
         m_FixupScaleFactor = p.getFixupScaleFactor();
     }
@@ -66,6 +74,11 @@ private:
 
 
 // public API
+
+osc::BasicModelStatePair::BasicModelStatePair() :
+    m_Impl{new Impl{}}
+{
+}
 
 osc::BasicModelStatePair::BasicModelStatePair(VirtualModelStatePair const& p) :
     m_Impl{new Impl{p}}

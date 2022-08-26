@@ -47,6 +47,8 @@ namespace osc
         ForwardDynamicSimulatorParams();
     };
 
+    bool operator==(ForwardDynamicSimulatorParams const& a, ForwardDynamicSimulatorParams const& b);
+
     // convert to a generic parameter block (for UI binding)
     ParamBlock ToParamBlock(ForwardDynamicSimulatorParams const&);
     ForwardDynamicSimulatorParams FromParamBlock(ParamBlock const&);

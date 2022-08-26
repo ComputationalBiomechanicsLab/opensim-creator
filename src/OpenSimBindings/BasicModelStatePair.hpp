@@ -18,6 +18,7 @@ namespace osc
     // does not guarantee that everything is up-to-date after a caller mutates the model.
     class BasicModelStatePair final : public VirtualModelStatePair {
     public:
+        BasicModelStatePair();
         explicit BasicModelStatePair(VirtualModelStatePair const&);
         BasicModelStatePair(OpenSim::Model const&, SimTK::State const&);
         BasicModelStatePair(BasicModelStatePair const&);
