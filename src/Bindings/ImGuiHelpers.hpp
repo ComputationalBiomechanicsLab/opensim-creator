@@ -127,6 +127,9 @@ namespace osc
     // begin a menu that's attached to the top of a viewport, end it with ImGui::End();
     bool BeginMainViewportTopBar(char const* label);
 
+    // begin a menu that's attached to the bottom of a viewport, end it with ImGui::End();
+    bool BeginMainViewportBottomBar(char const* label);
+
     // draw text, but centered on the current window/line
     void TextCentered(std::string const& s);
 }

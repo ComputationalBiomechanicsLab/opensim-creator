@@ -528,6 +528,15 @@ bool osc::BeginMainViewportTopBar(char const* label)
     return ImGui::BeginViewportSideBar(label, viewport, ImGuiDir_Up, height, window_flags);
 }
 
+bool osc::BeginMainViewportBottomBar(char const* label)
+{
+    // https://github.com/ocornut/imgui/issues/3518
+    ImGuiViewportP* viewport = (ImGuiViewportP*)(void*)ImGui::GetMainViewport();
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
+    float height = ImGui::GetFrameHeight() + ImGui::GetStyle().WindowPadding.y;
+    return ImGui::BeginViewportSideBar(label, viewport, ImGuiDir_Down, height, window_flags);
+}
+
 void osc::TextCentered(std::string const& s)
 {
     auto windowWidth = ImGui::GetWindowSize().x;

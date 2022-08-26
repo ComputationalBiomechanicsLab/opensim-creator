@@ -183,3 +183,18 @@ std::optional<float> osc::FromCharsStripWhitespace(std::string_view v)
 
     return i == v.size() ? std::optional<float>{fpv} : std::optional<float>{};
 }
+
+std::string osc::Ellipsis(std::string_view v, int maxLen)
+{
+    if (v.length() <= maxLen)
+    {
+        return std::string{v};
+    }
+
+    std::string_view substr = v.substr(0, std::max(0, maxLen-3));
+    std::string rv;
+    rv.reserve(substr.length() + 3);
+    rv = substr;
+    rv += "...";
+    return rv;
+}

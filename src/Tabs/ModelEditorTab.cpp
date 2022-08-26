@@ -18,6 +18,7 @@
 #include "src/Utils/UID.hpp"
 #include "src/Widgets/BasicWidgets.hpp"
 #include "src/Widgets/CoordinateEditor.hpp"
+#include "src/Widgets/EditorTabStatusBar.hpp"
 #include "src/Widgets/LogViewer.hpp"
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/ModelActionsMenuItems.hpp"
@@ -720,6 +721,8 @@ private:
         }
 
         m_ModelActionsMenuBar.drawAnyOpenPopups();
+
+        m_StatusBar.draw();
     }
 
     UID m_ID;
@@ -744,6 +747,7 @@ private:
     ParamBlockEditorPopup m_ParamBlockEditorPopup{"simulation parameters"};
     int m_LatestMusclePlot = 1;
     std::vector<ModelMusclePlotPanel> m_ModelMusclePlots;
+    EditorTabStatusBar m_StatusBar{m_Model};
 
     std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
 

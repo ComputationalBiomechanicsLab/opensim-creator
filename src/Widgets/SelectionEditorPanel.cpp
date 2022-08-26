@@ -497,18 +497,6 @@ public:
         {
             return;
         }
-
-        ImGui::Dummy({0.0f, 1.0f});
-        ImGui::TextUnformatted("hierarchy:");
-        ImGui::SameLine();
-        osc::DrawHelpMarker("Where the selected component is in the model's component hierarchy");
-        ImGui::Separator();
-        DrawSelectionBreadcrumbs(*m_Model);
-
-        if (!m_Model->getSelected())
-        {
-            return;
-        }
     }
 
 private:

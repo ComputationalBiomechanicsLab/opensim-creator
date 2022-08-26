@@ -524,6 +524,8 @@ add_library(osccore STATIC
     src/Widgets/ComponentDetails.hpp
     src/Widgets/CoordinateEditor.cpp
     src/Widgets/CoordinateEditor.hpp
+    src/Widgets/EditorTabStatusBar.cpp
+    src/Widgets/EditorTabStatusBar.hpp
     src/Widgets/GuiRuler.cpp
     src/Widgets/GuiRuler.hpp
     src/Widgets/LogViewer.cpp
