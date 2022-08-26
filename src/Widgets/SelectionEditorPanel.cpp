@@ -7,6 +7,7 @@
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
+#include "src/Utils/ScopeGuard.hpp"
 #include "src/Widgets/ObjectPropertiesEditor.hpp"
 #include "src/Widgets/ReassignSocketPopup.hpp"
 #include "src/Widgets/SelectComponentPopup.hpp"
@@ -444,41 +445,13 @@ public:
         }
 
         ImGui::PushID(m_Model->getSelected());
-
-        ImGui::Dummy({0.0f, 1.0f});
-        ImGui::TextUnformatted("hierarchy:");
-        ImGui::SameLine();
-        osc::DrawHelpMarker("Where the selected component is in the model's component hierarchy");
-        ImGui::Separator();
-        DrawSelectionBreadcrumbs(*m_Model);
-
-        // contextual actions
-        ImGui::Dummy({0.0f, 5.0f});
-        ImGui::TextUnformatted("contextual actions:");
-        ImGui::SameLine();
-        osc::DrawHelpMarker("Actions that are specific to the type of OpenSim::Component that is currently selected");
-        ImGui::Separator();
-        drawContextualActions();
-
-        // a contextual action may have changed this
-        if (!m_Model->getSelected())
-        {
-            return;
-        }
-
-        // property editors
-        ImGui::Dummy({0.0f, 5.0f});
-        ImGui::TextUnformatted("properties:");
-        ImGui::SameLine();
-        osc::DrawHelpMarker("Properties of the selected OpenSim::Component. These are declared in the Component's implementation.");
-        ImGui::Separator();
+        OSC_SCOPE_GUARD({ ImGui::PopID(); });
 
         // top-level property editors
         {
             DrawTopLevelMembersEditor(*m_Model);
         }
 
-        // top-level member edits may have changed this
         if (!m_Model->getSelected())
         {
             return;
@@ -493,6 +466,23 @@ public:
             }
         }
 
+        if (!m_Model->getSelected())
+        {
+            return;
+        }
+
+        ImGui::Dummy({0.0f, 1.0f});
+        ImGui::TextUnformatted("hierarchy:");
+        ImGui::SameLine();
+        osc::DrawHelpMarker("Where the selected component is in the model's component hierarchy");
+        ImGui::Separator();
+        DrawSelectionBreadcrumbs(*m_Model);
+
+        if (!m_Model->getSelected())
+        {
+            return;
+        }
+
         // socket editor
         ImGui::Dummy({0.0f, 5.0f});
         ImGui::TextUnformatted("sockets:");
@@ -501,7 +491,24 @@ public:
         ImGui::Separator();
         DrawSocketEditor(m_MaybeReassignSocketPopup, m_Model);
 
-        ImGui::PopID();
+        if (!m_Model->getSelected())
+        {
+            return;
+        }
+
+        // contextual actions
+        ImGui::Dummy({0.0f, 5.0f});
+        ImGui::TextUnformatted("contextual actions:");
+        ImGui::SameLine();
+        osc::DrawHelpMarker("Actions that are specific to the type of OpenSim::Component that is currently selected");
+        ImGui::Separator();
+        drawContextualActions();
+
+        // a contextual action may have changed this
+        if (!m_Model->getSelected())
+        {
+            return;
+        }
     }
 
 private:
