@@ -471,18 +471,6 @@ public:
             return;
         }
 
-        ImGui::Dummy({0.0f, 1.0f});
-        ImGui::TextUnformatted("hierarchy:");
-        ImGui::SameLine();
-        osc::DrawHelpMarker("Where the selected component is in the model's component hierarchy");
-        ImGui::Separator();
-        DrawSelectionBreadcrumbs(*m_Model);
-
-        if (!m_Model->getSelected())
-        {
-            return;
-        }
-
         // socket editor
         ImGui::Dummy({0.0f, 5.0f});
         ImGui::TextUnformatted("sockets:");
@@ -505,6 +493,18 @@ public:
         drawContextualActions();
 
         // a contextual action may have changed this
+        if (!m_Model->getSelected())
+        {
+            return;
+        }
+
+        ImGui::Dummy({0.0f, 1.0f});
+        ImGui::TextUnformatted("hierarchy:");
+        ImGui::SameLine();
+        osc::DrawHelpMarker("Where the selected component is in the model's component hierarchy");
+        ImGui::Separator();
+        DrawSelectionBreadcrumbs(*m_Model);
+
         if (!m_Model->getSelected())
         {
             return;
