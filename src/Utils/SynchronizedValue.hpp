@@ -91,7 +91,7 @@ namespace osc
         template<typename U, typename Getter, typename TGuard = std::lock_guard<std::mutex>>
         SynchronizedValueGuard<U const, TGuard> lockChild(Getter f) const
         {
-            static_assert(std::is_same_v<std::decay_t<decltype(f(std::declval<T>()))>, U>, "getter function should return reference to inner child");
+            static_assert(std::is_same_v<decltype(f(std::declval<T>())), U const&>, "getter function should return reference to inner child");
             return SynchronizedValueGuard<U const, TGuard>{m_Mutex, f(m_Value)};
         }
 
