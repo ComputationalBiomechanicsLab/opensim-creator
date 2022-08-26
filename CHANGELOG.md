@@ -185,6 +185,10 @@ All notable changes to this project will be documented here. The format is based
   actually connect to (#381), and the popup is optimized to ensure that creating
   the candidate list is fast (#384)
 
+- The property editor panel now shows the properties at the very top of the panel (#392)
+
+- The editor tab now has a status bar, which shows breadcrumbs to the current selection (#403)
+
 
 ## [0.2.0] - 2022/07/04
 
