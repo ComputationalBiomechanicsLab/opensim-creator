@@ -1,5 +1,8 @@
 #include "Select1PFPopup.hpp"
 
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/Widgets/StandardPopup.hpp"
+
 #include <imgui.h>
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
@@ -10,51 +13,89 @@
 #include <algorithm>
 #include <string>
 
-OpenSim::PhysicalFrame const* osc::Select1PFPopup::draw(
-    char const* popupName,
-    OpenSim::Model const& model,
-    nonstd::span<OpenSim::PhysicalFrame const*> exclusions)
+class osc::Select1PFPopup::Impl final : public StandardPopup {
+public:
+
+    Impl(std::string_view popupName,
+         std::shared_ptr<UndoableModelStatePair> model,
+         std::function<void(OpenSim::ComponentPath const&)> onSelection) :
+
+        StandardPopup{std::move(popupName)},
+        m_Model{std::move(model)},
+        m_OnSelection{std::move(onSelection)}
+    {
+    }
+
+private:
+    void implDraw() override
+    {
+        OpenSim::PhysicalFrame const* selected = nullptr;
+
+        ImGui::BeginChild("pflist", ImVec2(256, 256), true, ImGuiWindowFlags_HorizontalScrollbar);
+        for (auto const& pf : m_Model->getModel().getComponentList<OpenSim::PhysicalFrame>())
+        {
+            if (ImGui::Selectable(pf.getName().c_str()))
+            {
+                selected = &pf;
+            }
+        }
+        ImGui::EndChild();
+
+        if (selected)
+        {
+            m_OnSelection(selected->getAbsolutePath());
+            requestClose();
+        }
+    }
+
+    std::shared_ptr<UndoableModelStatePair> m_Model;
+    std::function<void(OpenSim::ComponentPath const&)> m_OnSelection;
+};
+
+
+// public API (PIMPL)
+
+osc::Select1PFPopup::Select1PFPopup(
+    std::string_view popupName,
+    std::shared_ptr<UndoableModelStatePair> model,
+    std::function<void(OpenSim::ComponentPath const&)> onSelection) :
+
+    m_Impl{new Impl{std::move(popupName), std::move(model), std::move(onSelection)}}
 {
-    // center the modal
-    {
-        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-        ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-        ImGui::SetNextWindowSize(ImVec2(512, 0));
-    }
+}
 
-    // try to show modal
-    if (!ImGui::BeginPopupModal(popupName, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-    {
-        // modal not showing
-        return nullptr;
-    }
+osc::Select1PFPopup::Select1PFPopup(Select1PFPopup&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
 
-    // list the PFs
-    OpenSim::PhysicalFrame const* selected = nullptr;
+osc::Select1PFPopup& osc::Select1PFPopup::operator=(Select1PFPopup&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
 
-    ImGui::BeginChild("pflist", ImVec2(256, 256), true, ImGuiWindowFlags_HorizontalScrollbar);
-    for (auto const& pf : model.getComponentList<OpenSim::PhysicalFrame>())
-    {
-        bool excluded = std::find(exclusions.begin(), exclusions.end(), &pf) != exclusions.end();
+osc::Select1PFPopup::~Select1PFPopup() noexcept
+{
+    delete m_Impl;
+}
 
-        if (excluded)
-        {
-            continue;
-        }
+bool osc::Select1PFPopup::isOpen() const
+{
+    return m_Impl->isOpen();
+}
 
-        if (ImGui::Selectable(pf.getName().c_str()))
-        {
-            selected = &pf;
-        }
-    }
-    ImGui::EndChild();
+void osc::Select1PFPopup::open()
+{
+    m_Impl->open();
+}
 
-    if (selected)
-    {
-        ImGui::CloseCurrentPopup();
-    }
+void osc::Select1PFPopup::close()
+{
+    m_Impl->close();
+}
 
-    ImGui::EndPopup();
-
-    return selected;
+void osc::Select1PFPopup::draw()
+{
+    m_Impl->draw();
 }

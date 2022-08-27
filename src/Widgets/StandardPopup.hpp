@@ -27,6 +27,8 @@ namespace osc
     protected:
         bool isPopupOpenedThisFrame() const;
         void requestClose();
+        bool isModal() const;
+        void setModal(bool);
 
     private:
         virtual void implDraw() = 0;
@@ -40,5 +42,6 @@ namespace osc
         bool m_ShouldClose;
         bool m_JustOpened;
         bool m_IsOpen;
+        bool m_IsModal;
     };
 }

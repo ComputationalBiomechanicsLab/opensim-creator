@@ -2,6 +2,7 @@
 
 #include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/MiddlewareAPIs/EditorAPI.hpp"
 #include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
@@ -27,6 +28,7 @@
 #include "src/Widgets/OutputWatchesPanel.hpp"
 #include "src/Widgets/ParamBlockEditorPopup.hpp"
 #include "src/Widgets/PerfPanel.hpp"
+#include "src/Widgets/Popup.hpp"
 #include "src/Widgets/SelectionEditorPanel.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
 
@@ -61,7 +63,7 @@ static std::array<std::string, 7> const g_EditorScreenPanels =
     "Output Watches",
 };
 
-class osc::ModelEditorTab::Impl final {
+class osc::ModelEditorTab::Impl final : public EditorAPI {
 public:
     Impl(MainUIStateAPI* parent, std::unique_ptr<UndoableModelStatePair> model) :
         m_Parent{std::move(parent)},
@@ -723,6 +725,20 @@ private:
         m_ModelActionsMenuBar.drawAnyOpenPopups();
 
         m_StatusBar.draw();
+
+        // draw generic popups pushed to this layer
+        {
+            osc::RemoveErase(m_Popups, [](auto const& ptr) -> bool { return !ptr->isOpen(); });
+            for (auto const& ptr : m_Popups)
+            {
+                ptr->draw();
+            }
+        }
+    }
+
+    void pushPopup(std::unique_ptr<Popup> popup) override
+    {
+        m_Popups.push_back(std::move(popup));
     }
 
     UID m_ID;
@@ -747,9 +763,9 @@ private:
     ParamBlockEditorPopup m_ParamBlockEditorPopup{"simulation parameters"};
     int m_LatestMusclePlot = 1;
     std::vector<ModelMusclePlotPanel> m_ModelMusclePlots;
-    EditorTabStatusBar m_StatusBar{m_Model};
-
+    EditorTabStatusBar m_StatusBar{this, m_Model};
     std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
+    std::vector<std::unique_ptr<Popup>> m_Popups;
 
     // flag that's set+reset each frame to prevent continual
     // throwing

@@ -1,19 +1,35 @@
 #pragma once
 
-#include <nonstd/span.hpp>
+#include "src/Widgets/Popup.hpp"
 
-namespace OpenSim { class PhysicalFrame; }
-namespace OpenSim { class Model; }
+#include <functional>
+#include <memory>
+#include <string_view>
+
+namespace OpenSim { class ComponentPath; }
+namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class Select1PFPopup final {
+    class Select1PFPopup final : public Popup {
     public:
-        // - assumes caller has handled calling ImGui::OpenPopup(char const*)
-        // - returns non-nullptr if user selects a PF
-        OpenSim::PhysicalFrame const* draw(
-            char const* popupName,
-            OpenSim::Model const&,
-            nonstd::span<OpenSim::PhysicalFrame const*> exclude = {});
+        Select1PFPopup(
+            std::string_view popupName,
+            std::shared_ptr<UndoableModelStatePair>,
+            std::function<void(OpenSim::ComponentPath const&)>);
+        Select1PFPopup(Select1PFPopup const&) = delete;
+        Select1PFPopup(Select1PFPopup&&) noexcept;
+        Select1PFPopup& operator=(Select1PFPopup const&) = delete;
+        Select1PFPopup& operator=(Select1PFPopup&&) noexcept;
+        ~Select1PFPopup() noexcept;
+
+        bool isOpen() const override;
+        void open() override;
+        void close() override;
+        void draw() override;
+
+    private:
+        class Impl;
+        Impl* m_Impl;
     };
 }

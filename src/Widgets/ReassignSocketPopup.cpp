@@ -192,7 +192,7 @@ private:
         if (userSelection)
         {
             OpenSim::Component const* selected = osc::FindComponent(m_Model->getModel(), *userSelection);
-            if (selected && osc::ActionReassignSelectedComponentSocket(*m_Model, m_Params.path, m_Params.socketName, *selected, m_Error))
+            if (selected && osc::ActionReassignComponentSocket(*m_Model, m_Params.path, m_Params.socketName, *selected, m_Error))
             {
                 requestClose();
                 return;

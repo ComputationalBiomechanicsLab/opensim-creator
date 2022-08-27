@@ -86,40 +86,40 @@ namespace osc
     bool ActionSimulateAgainstAllIntegrators(MainUIStateAPI*, UndoableModelStatePair const&);
 
     // add an offset frame to the current selection (if applicable)
-    bool ActionAddOffsetFrameToSelection(UndoableModelStatePair&);
+    bool ActionAddOffsetFrameToPhysicalFrame(UndoableModelStatePair&, OpenSim::ComponentPath const& physFramePath);
 
-    // returns true if the selected joint (if applicable) can be re-zeroed
-    bool CanRezeroSelectedJoint(UndoableModelStatePair&);
+    // returns true if the specified joint (if valid) can be re-zeroed
+    bool CanRezeroJoint(UndoableModelStatePair&, OpenSim::ComponentPath const& jointPath);
 
     // re-zeroes the selected joint (if applicable)
-    bool ActionRezeroSelectedJoint(UndoableModelStatePair&);
+    bool ActionRezeroJoint(UndoableModelStatePair&, OpenSim::ComponentPath const& jointPath);
 
     // adds a parent offset frame to the selected joint (if applicable)
-    bool ActionAddParentOffsetFrameToSelectedJoint(UndoableModelStatePair&);
+    bool ActionAddParentOffsetFrameToJoint(UndoableModelStatePair&, OpenSim::ComponentPath const& jointPath);
 
     // adds a child offset frame to the selected joint (if applicable)
-    bool ActionAddChildOffsetFrameToSelectedJoint(UndoableModelStatePair&);
+    bool ActionAddChildOffsetFrameToJoint(UndoableModelStatePair&, OpenSim::ComponentPath const& jointPath);
 
     // sets the name of the selected component (if applicable)
-    bool ActionSetSelectedComponentName(UndoableModelStatePair&, std::string const&);
+    bool ActionSetComponentName(UndoableModelStatePair&, OpenSim::ComponentPath const& componentPath, std::string const&);
 
     // changes the type of the selected joint (if applicable) to the provided joint
-    bool ActionChangeSelectedJointTypeTo(UndoableModelStatePair&, std::unique_ptr<OpenSim::Joint>);
+    bool ActionChangeJointTypeTo(UndoableModelStatePair&, OpenSim::ComponentPath const& jointPath, std::unique_ptr<OpenSim::Joint>);
 
     // attaches geometry to the selected physical frame (if applicable)
-    bool ActionAttachGeometryToSelectedPhysicalFrame(UndoableModelStatePair&, std::unique_ptr<OpenSim::Geometry>);
+    bool ActionAttachGeometryToPhysicalFrame(UndoableModelStatePair&, OpenSim::ComponentPath const& physFramePath, std::unique_ptr<OpenSim::Geometry>);
 
     // assigns contact geometry to the selected HCF (if applicable)
-    bool ActionAssignContactGeometryToSelectedHCF(UndoableModelStatePair&, OpenSim::ContactGeometry const&);
+    bool ActionAssignContactGeometryToHCF(UndoableModelStatePair&, OpenSim::ComponentPath const& hcfPath, OpenSim::ComponentPath const& contactGeomPath);
 
     // applies a property edit to the model
     bool ActionApplyPropertyEdit(UndoableModelStatePair&, ObjectPropertyEdit&);
 
     // adds a path point to the selected path actuator (if applicable)
-    bool ActionAddPathPointToSelectedPathActuator(UndoableModelStatePair&, OpenSim::PhysicalFrame const&);
+    bool ActionAddPathPointToPathActuator(UndoableModelStatePair&, OpenSim::ComponentPath const& pathActuatorPath, OpenSim::ComponentPath const& pointPhysFrame);
 
     // attempts to reassign a component's socket connection (returns false and writes to `error` on failure)
-    bool ActionReassignSelectedComponentSocket(UndoableModelStatePair&, OpenSim::ComponentPath const& componentAbsPath, std::string const& socketName, OpenSim::Object const& connectee, std::string& error);
+    bool ActionReassignComponentSocket(UndoableModelStatePair&, OpenSim::ComponentPath const& componentAbsPath, std::string const& socketName, OpenSim::Object const& connectee, std::string& error);
 
     // sets the model's isolation to the provided component (can be nullptr)
     bool ActionSetModelIsolationTo(UndoableModelStatePair&, OpenSim::Component const*);

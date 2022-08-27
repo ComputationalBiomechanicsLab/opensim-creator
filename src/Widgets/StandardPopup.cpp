@@ -23,7 +23,8 @@ osc::StandardPopup::StandardPopup(
     m_ShouldOpen{false},
     m_ShouldClose{false},
     m_JustOpened{false},
-    m_IsOpen{false}
+    m_IsOpen{false},
+    m_IsModal{true}
 {
 }
 
@@ -54,20 +55,34 @@ void osc::StandardPopup::draw()
         m_JustOpened = true;
     }
 
-    // center the modal
+    if (m_IsModal)
     {
-        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-        ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2{0.5f, 0.5f});
-        ImGui::SetNextWindowSize({m_Width, m_Height});
+        // center the modal
+        {
+            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2{0.5f, 0.5f});
+            ImGui::SetNextWindowSize({m_Width, m_Height});
+        }
+
+        // try to show modal
+        if (!ImGui::BeginPopupModal(m_PopupName.c_str(), nullptr, m_PopupFlags))
+        {
+            // modal not showing
+            m_IsOpen = false;
+            return;
+        }
+    }
+    else
+    {
+        // try to show popup
+        if (!ImGui::BeginPopup(m_PopupName.c_str(), m_PopupFlags))
+        {
+            // popup now showing
+            m_IsOpen = false;
+            return;
+        }
     }
 
-    // try to show modal
-    if (!ImGui::BeginPopupModal(m_PopupName.c_str(), nullptr, m_PopupFlags))
-    {
-        // modal not showing
-        m_IsOpen = false;
-        return;
-    }
 
     m_IsOpen = true;
 
@@ -98,3 +113,14 @@ void osc::StandardPopup::requestClose()
     m_ShouldClose = true;
     m_ShouldOpen = false;
 }
+
+bool osc::StandardPopup::isModal() const
+{
+    return m_IsModal;
+}
+
+void osc::StandardPopup::setModal(bool v)
+{
+    m_IsModal = std::move(v);
+}
+

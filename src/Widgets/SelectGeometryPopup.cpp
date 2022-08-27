@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <array>
 #include <filesystem>
+#include <functional>
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -21,31 +22,49 @@
 #include <vector>
 #include <utility>
 
-namespace {
+namespace
+{
     using Geom_ctor_fn = std::unique_ptr<OpenSim::Geometry>(*)(void);
     constexpr std::array<Geom_ctor_fn const, 7> g_GeomCtors = {
-        []() {
+        []()
+        {
             auto ptr = std::make_unique<OpenSim::Brick>();
             ptr->set_half_lengths(SimTK::Vec3{0.1, 0.1, 0.1});
             return std::unique_ptr<OpenSim::Geometry>(std::move(ptr));
         },
-        []() {
+        []()
+        {
             auto ptr = std::make_unique<OpenSim::Sphere>();
             ptr->set_radius(0.1);
             return std::unique_ptr<OpenSim::Geometry>{std::move(ptr)};
         },
-        []() {
+        []()
+        {
             auto ptr = std::make_unique<OpenSim::Cylinder>();
             ptr->set_radius(0.1);
             ptr->set_half_height(0.1);
             return std::unique_ptr<OpenSim::Geometry>{std::move(ptr)};
         },
-        []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::LineGeometry{}}; },
-        []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Ellipsoid{}}; },
-        []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Arrow{}}; },
-        []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Cone{}}; },
+        []()
+        {
+            return std::unique_ptr<OpenSim::Geometry>{new OpenSim::LineGeometry{}};
+        },
+        []()
+        {
+            return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Ellipsoid{}};
+        },
+        []()
+        {
+            return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Arrow{}};
+        },
+        []()
+        {
+            return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Cone{}};
+        },
     };
-    constexpr std::array<char const* const, 7> g_GeomNames = {
+
+    constexpr std::array<char const* const, 7> g_GeomNames =
+    {
         "Brick",
         "Sphere",
         "Cylinder",
@@ -56,26 +75,29 @@ namespace {
     };
     static_assert(g_GeomCtors.size() == g_GeomNames.size());
 
-
-    std::optional<std::filesystem::path> promptOpenVTP()
+    std::optional<std::filesystem::path> PromptUserForGeometryFile()
     {
         std::filesystem::path p = osc::PromptUserForFile("vtp,stl");
         return !p.empty() ? std::optional{p.string()} : std::nullopt;
+    }
+
+    std::unique_ptr<OpenSim::Mesh> LoadGeometryFile(std::filesystem::path const& p)
+    {
+        return std::make_unique<OpenSim::Mesh>(p.string());
     }
 }
 
 class osc::SelectGeometryPopup::Impl final : public osc::StandardPopup {
 public:
-    Impl(std::string_view popupName) :
-        StandardPopup{std::move(popupName)}
+    Impl(std::string_view popupName, 
+         std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection) :
+
+        StandardPopup{std::move(popupName)},
+        m_OnSelection{std::move(onSelection)}
     {
     }
 
-    std::unique_ptr<OpenSim::Geometry> drawCheckResult()
-    {
-        draw();
-        return std::exchange(m_Result, nullptr);
-    }
+private:
 
     void implDraw() override
     {
@@ -93,10 +115,8 @@ public:
             int item = -1;
             if (ImGui::Combo("##premade", &item, g_GeomNames.data(), static_cast<int>(g_GeomNames.size())))
             {
-                auto const& ctor = g_GeomCtors[static_cast<size_t>(item)];
+                auto const& ctor = g_GeomCtors.at(static_cast<size_t>(item));
                 m_Result = ctor();
-                m_Search.clear();
-                requestClose();
             }
         }
 
@@ -138,7 +158,7 @@ public:
         {
             ImGui::TextDisabled("  (from Geometry/ dir)");
         }
-        for (std::filesystem::path const& p : m_Vtps)
+        for (std::filesystem::path const& p : m_GeometryFiles)
         {
             auto resp = tryDrawFileChoice(p);
             if (resp)
@@ -151,19 +171,12 @@ public:
 
         if (ImGui::Button("Open Mesh File"))
         {
-            if (auto maybeVTP = promptOpenVTP(); maybeVTP)
+            if (auto maybeVTP = PromptUserForGeometryFile())
             {
                 m_Result = onVTPChoiceMade(std::move(maybeVTP).value());
             }
         }
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-            ImGui::TextUnformatted("Open a mesh file on the filesystem");
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
+        osc::DrawTooltipIfItemHovered("Open Mesh File", "Open a mesh file on the filesystem");
 
         ImGui::Dummy({0.0f, 5.0f});
 
@@ -172,12 +185,18 @@ public:
             m_Search.clear();
             requestClose();
         }
+
+        if (m_Result)
+        {
+            m_OnSelection(std::move(m_Result));
+            m_Search.clear();
+            requestClose();
+        }
     }
 
-private:
     std::unique_ptr<OpenSim::Mesh> onVTPChoiceMade(std::filesystem::path path)
     {
-        auto rv = std::make_unique<OpenSim::Mesh>(path.string());
+        auto rv = LoadGeometryFile(path);
 
         // add to recent list
         m_RecentUserChoices.push_back(std::move(path));
@@ -202,8 +221,14 @@ private:
         return nullptr;
     }
 
-    // vtps found in the user's/installation's `Geometry/` dir
-    std::vector<std::filesystem::path> m_Vtps = GetAllFilesInDirRecursively(App::resource("geometry"));
+    // holding space for result
+    std::unique_ptr<OpenSim::Geometry> m_Result;
+
+    // callback that's called with the geometry
+    std::function<void(std::unique_ptr<OpenSim::Geometry>)> m_OnSelection;
+
+    // geometry files found in the user's/installation's `Geometry/` dir
+    std::vector<std::filesystem::path> m_GeometryFiles = GetAllFilesInDirRecursively(App::resource("geometry"));
 
     // recent file choices by the user
     std::vector<std::filesystem::path> m_RecentUserChoices;
@@ -213,20 +238,36 @@ private:
 
     // maximum length of the search string
     static inline constexpr int m_SearchMaxLen = 128;
-
-    // return value (what the user wants)
-    std::unique_ptr<OpenSim::Geometry> m_Result = nullptr;
 };
 
-// public API
 
-osc::SelectGeometryPopup::SelectGeometryPopup(std::string_view popupName) :
-    m_Impl{std::make_unique<Impl>(std::move(popupName))}
+// public API (PIMPL)
+
+osc::SelectGeometryPopup::SelectGeometryPopup(std::string_view popupName, std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection) :
+    m_Impl{new Impl{std::move(popupName), std::move(onSelection)}}
 {
 }
-osc::SelectGeometryPopup::SelectGeometryPopup(SelectGeometryPopup&&) noexcept = default;
-osc::SelectGeometryPopup& osc::SelectGeometryPopup::operator=(SelectGeometryPopup&&) noexcept = default;
-osc::SelectGeometryPopup::~SelectGeometryPopup() noexcept = default;
+
+osc::SelectGeometryPopup::SelectGeometryPopup(SelectGeometryPopup&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
+
+osc::SelectGeometryPopup& osc::SelectGeometryPopup::operator=(SelectGeometryPopup&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::SelectGeometryPopup::~SelectGeometryPopup() noexcept
+{
+    delete m_Impl;
+}
+
+bool osc::SelectGeometryPopup::isOpen() const
+{
+    return m_Impl->isOpen();
+}
 
 void osc::SelectGeometryPopup::open()
 {
@@ -238,7 +279,7 @@ void osc::SelectGeometryPopup::close()
     m_Impl->close();
 }
 
-std::unique_ptr<OpenSim::Geometry> osc::SelectGeometryPopup::draw()
+void osc::SelectGeometryPopup::draw()
 {
-    return m_Impl->drawCheckResult();
+    m_Impl->draw();
 }

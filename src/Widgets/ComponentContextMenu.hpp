@@ -1,0 +1,37 @@
+#pragma once
+
+#include "src/Widgets/Popup.hpp"
+
+#include <memory>
+#include <string_view>
+
+
+namespace OpenSim { class ComponentPath; }
+namespace osc { class EditorAPI; }
+namespace osc { class UndoableModelStatePair; }
+
+namespace osc
+{
+    class ComponentContextMenu final : public Popup {
+    public:
+        ComponentContextMenu(
+            std::string_view popupName,
+            EditorAPI*,
+            std::shared_ptr<UndoableModelStatePair>,
+            OpenSim::ComponentPath const&);
+        ComponentContextMenu(ComponentContextMenu const&) = delete;
+        ComponentContextMenu(ComponentContextMenu&&) noexcept;
+        ComponentContextMenu& operator=(ComponentContextMenu const&) = delete;
+        ComponentContextMenu& operator=(ComponentContextMenu&&) noexcept;
+        ~ComponentContextMenu() noexcept;
+
+        bool isOpen() const override;
+        void open() override;
+        void close() override;
+        void draw() override;
+
+    private:
+        class Impl;
+        Impl* m_Impl;
+    };
+}

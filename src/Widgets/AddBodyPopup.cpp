@@ -169,10 +169,7 @@ private:
                     m_AttachGeometryPopup.open();
                 }
 
-                if (auto attached = m_AttachGeometryPopup.draw(); attached)
-                {
-                    m_BodyDetails.MaybeGeometry = std::move(attached);
-                }
+                m_AttachGeometryPopup.draw();
             }
             ImGui::NextColumn();
         }
@@ -202,11 +199,16 @@ private:
         m_BodyDetails = BodyDetails{};
     }
 
+    void onGeometrySelection(std::unique_ptr<OpenSim::Geometry> ptr)
+    {
+        m_BodyDetails.MaybeGeometry = std::move(ptr);
+    }
+
     // the model that the body will be added to
     std::shared_ptr<UndoableModelStatePair> m_Uum;
 
     // state for the "attach geometry" popup
-    SelectGeometryPopup m_AttachGeometryPopup{"addbody_attachgeometry"};
+    SelectGeometryPopup m_AttachGeometryPopup{"addbody_attachgeometry", [this](auto ptr) { onGeometrySelection(std::move(ptr)); }};
 
     // details of the to-be-added body
     BodyDetails m_BodyDetails;

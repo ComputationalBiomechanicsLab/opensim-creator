@@ -354,6 +354,7 @@ add_library(osccore STATIC
     src/Maths/Transform.cpp
     src/Maths/Transform.hpp
 
+    src/MiddlewareAPIs/EditorAPI.hpp
     src/MiddlewareAPIs/MainUIStateAPI.hpp
     src/MiddlewareAPIs/SimulatorUIAPI.hpp
 
@@ -491,12 +492,12 @@ add_library(osccore STATIC
     src/Utils/Algorithms.cpp
     src/Utils/Algorithms.hpp
     src/Utils/Assertions.cpp
-    src/Utils/Assertions.hpp    
+    src/Utils/Assertions.hpp
     src/Utils/CheckedIndex.hpp
     src/Utils/CircularBuffer.hpp
     src/Utils/ClonePtr.hpp
     src/Utils/Cpp20Shims.hpp
-    src/Utils/CStringView.hpp    
+    src/Utils/CStringView.hpp
     src/Utils/DedupedString.cpp
     src/Utils/DedupedString.hpp
     src/Utils/DefaultConstructOnCopy.hpp
@@ -520,6 +521,8 @@ add_library(osccore STATIC
     src/Widgets/AddComponentPopup.hpp
     src/Widgets/BasicWidgets.cpp
     src/Widgets/BasicWidgets.hpp
+    src/Widgets/ComponentContextMenu.cpp
+    src/Widgets/ComponentContextMenu.hpp
     src/Widgets/ComponentDetails.cpp
     src/Widgets/ComponentDetails.hpp
     src/Widgets/CoordinateEditor.cpp
@@ -550,6 +553,7 @@ add_library(osccore STATIC
     src/Widgets/ParamBlockEditorPopup.hpp
     src/Widgets/PerfPanel.cpp
     src/Widgets/PerfPanel.hpp
+    src/Widgets/Popup.hpp
     src/Widgets/ReassignSocketPopup.cpp
     src/Widgets/ReassignSocketPopup.hpp
     src/Widgets/SaveChangesPopup.cpp
@@ -560,6 +564,7 @@ add_library(osccore STATIC
     src/Widgets/Select1PFPopup.hpp
     src/Widgets/Select2PFsPopup.cpp
     src/Widgets/Select2PFsPopup.hpp
+    src/Widgets/SelectComponentPopup.cpp
     src/Widgets/SelectComponentPopup.hpp
     src/Widgets/SelectGeometryPopup.cpp
     src/Widgets/SelectGeometryPopup.hpp
