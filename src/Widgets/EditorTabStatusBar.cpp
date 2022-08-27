@@ -16,8 +16,11 @@
 
 class osc::EditorTabStatusBar::Impl final {
 public:
-    Impl(EditorAPI* api, std::shared_ptr<UndoableModelStatePair> model) :
-        m_API{std::move(api)},
+    Impl(MainUIStateAPI* mainUIStateAPI,
+         EditorAPI* editorAPI,
+         std::shared_ptr<UndoableModelStatePair> model) :
+        m_MainUIStateAPI{std::move(mainUIStateAPI)},
+        m_EditorAPI{std::move(editorAPI)},
         m_Model{std::move(model)}
     {
     }
@@ -77,20 +80,21 @@ private:
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
-            auto menu = std::make_unique<ComponentContextMenu>("##hovermenu", m_API, m_Model, c.getAbsolutePath());
+            auto menu = std::make_unique<ComponentContextMenu>("##hovermenu", m_MainUIStateAPI, m_EditorAPI, m_Model, c.getAbsolutePath());
             menu->open();
-            m_API->pushPopup(std::move(menu));
+            m_EditorAPI->pushPopup(std::move(menu));
         }
     }
 
-    EditorAPI* m_API;
+    MainUIStateAPI* m_MainUIStateAPI;
+    EditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Model;
 };
 
 // public API
 
-osc::EditorTabStatusBar::EditorTabStatusBar(EditorAPI* api, std::shared_ptr<UndoableModelStatePair> model) :
-    m_Impl{new Impl{std::move(api), std::move(model)}}
+osc::EditorTabStatusBar::EditorTabStatusBar(MainUIStateAPI* mainUIStateAPI, EditorAPI* editorAPI, std::shared_ptr<UndoableModelStatePair> model) :
+    m_Impl{new Impl{std::move(mainUIStateAPI), std::move(editorAPI), std::move(model)}}
 {
 }
 

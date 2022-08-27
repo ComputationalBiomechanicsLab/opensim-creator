@@ -279,7 +279,17 @@ void osc::SelectGeometryPopup::close()
     m_Impl->close();
 }
 
-void osc::SelectGeometryPopup::draw()
+bool osc::SelectGeometryPopup::beginPopup()
 {
-    m_Impl->draw();
+    return m_Impl->beginPopup();
+}
+
+void osc::SelectGeometryPopup::drawPopupContent()
+{
+    m_Impl->drawPopupContent();
+}
+
+void osc::SelectGeometryPopup::endPopup()
+{
+    m_Impl->endPopup();
 }

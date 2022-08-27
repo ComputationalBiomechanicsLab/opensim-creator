@@ -152,7 +152,11 @@ public:
 
         ImGui::End();
 
-        m_ParamEditor.draw(m_BaseParams);
+        if (m_ParamEditor.beginPopup())
+        {
+            m_ParamEditor.drawPopupContent();
+            m_ParamEditor.endPopup();
+        }
     }
 
 
@@ -241,7 +245,7 @@ private:
 
     osc::OutputExtractor m_WalltimeExtractor = GetSimulatorOutputExtractor("Wall time");
     osc::OutputExtractor m_StepsTakenExtractor = GetSimulatorOutputExtractor("NumStepsTaken");
-    osc::ParamBlockEditorPopup m_ParamEditor{"parameditor"};
+    osc::ParamBlockEditorPopup m_ParamEditor{"parameditor", &m_BaseParams};
 };
 
 

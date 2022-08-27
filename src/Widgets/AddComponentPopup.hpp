@@ -1,27 +1,35 @@
 #pragma once
 
+#include "src/Widgets/Popup.hpp"
+
 #include <memory>
 #include <string_view>
 
 namespace OpenSim { class Component; }
+namespace osc { class EditorAPI; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class AddComponentPopup final {
+    class AddComponentPopup final : public Popup {
     public:
-        AddComponentPopup(std::shared_ptr<UndoableModelStatePair>,
-                          std::unique_ptr<OpenSim::Component> prototype,
-                          std::string_view popupName);
+        AddComponentPopup(
+            EditorAPI*,
+            std::shared_ptr<UndoableModelStatePair>,
+            std::unique_ptr<OpenSim::Component> prototype,
+            std::string_view popupName);
         AddComponentPopup(AddComponentPopup const&) = delete;
         AddComponentPopup(AddComponentPopup&&) noexcept;
         AddComponentPopup& operator=(AddComponentPopup const&) = delete;
         AddComponentPopup& operator=(AddComponentPopup&&) noexcept;
         ~AddComponentPopup() noexcept;
 
-        void open();
-        void close();
-        void draw();
+        bool isOpen() const override;
+        void open() override;
+        void close() override;
+        bool beginPopup() override;
+        void drawPopupContent() override;
+        void endPopup() override;
 
     private:
         class Impl;

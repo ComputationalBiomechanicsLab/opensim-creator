@@ -26,7 +26,9 @@ namespace osc
         bool isOpen() const override;
         void open() override;
         void close() override;
-        void draw() override;
+        bool beginPopup() override;
+        void drawPopupContent() override;
+        void endPopup() override;
 
     private:
         class Impl;

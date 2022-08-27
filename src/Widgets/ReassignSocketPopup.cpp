@@ -259,5 +259,9 @@ void osc::ReassignSocketPopup::close()
 
 void osc::ReassignSocketPopup::draw()
 {
-    m_Impl->draw();
+    if (m_Impl->beginPopup())
+    {
+        m_Impl->drawPopupContent();
+        m_Impl->endPopup();
+    }
 }

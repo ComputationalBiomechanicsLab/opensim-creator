@@ -95,7 +95,17 @@ void osc::Select1PFPopup::close()
     m_Impl->close();
 }
 
-void osc::Select1PFPopup::draw()
+bool osc::Select1PFPopup::beginPopup()
 {
-    m_Impl->draw();
+    return m_Impl->beginPopup();
+}
+
+void osc::Select1PFPopup::drawPopupContent()
+{
+    m_Impl->drawPopupContent();
+}
+
+void osc::Select1PFPopup::endPopup()
+{
+    m_Impl->endPopup();
 }

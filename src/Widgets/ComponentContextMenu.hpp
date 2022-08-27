@@ -8,6 +8,7 @@
 
 namespace OpenSim { class ComponentPath; }
 namespace osc { class EditorAPI; }
+namespace osc { class MainUIStateAPI; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc
@@ -16,6 +17,7 @@ namespace osc
     public:
         ComponentContextMenu(
             std::string_view popupName,
+            MainUIStateAPI*,
             EditorAPI*,
             std::shared_ptr<UndoableModelStatePair>,
             OpenSim::ComponentPath const&);
@@ -28,7 +30,9 @@ namespace osc
         bool isOpen() const override;
         void open() override;
         void close() override;
-        void draw() override;
+        bool beginPopup() override;
+        void drawPopupContent() override;
+        void endPopup() override;
 
     private:
         class Impl;

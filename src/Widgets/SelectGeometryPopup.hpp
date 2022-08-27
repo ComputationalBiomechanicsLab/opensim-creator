@@ -12,7 +12,9 @@ namespace osc
 {
     class SelectGeometryPopup final : public Popup {
     public:
-        explicit SelectGeometryPopup(std::string_view popupName, std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection);
+        explicit SelectGeometryPopup(
+            std::string_view popupName,
+            std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection);
         SelectGeometryPopup(SelectGeometryPopup const&) = delete;
         SelectGeometryPopup(SelectGeometryPopup&&) noexcept;
         SelectGeometryPopup& operator=(SelectGeometryPopup const&) = delete;
@@ -22,7 +24,9 @@ namespace osc
         bool isOpen() const override;
         void open() override;
         void close() override;
-        void draw() override;
+        bool beginPopup() override;
+        void drawPopupContent() override;
+        void endPopup() override;
 
     private:
         class Impl;

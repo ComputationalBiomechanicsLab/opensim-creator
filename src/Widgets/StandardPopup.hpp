@@ -22,7 +22,9 @@ namespace osc
         bool isOpen() const;
         void open();
         void close();
-        void draw();
+        bool beginPopup();
+        void drawPopupContent();
+        void endPopup();
 
     protected:
         bool isPopupOpenedThisFrame() const;

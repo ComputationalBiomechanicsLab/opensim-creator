@@ -75,41 +75,13 @@ static bool DrawEditor(osc::ParamBlock& b, int idx)
     return rv;
 }
 
-class osc::ParamBlockEditorPopup::Impl final : protected StandardPopup {
+class osc::ParamBlockEditorPopup::Impl final : public StandardPopup {
 public:
 
-    Impl(std::string_view popupName) :
-        StandardPopup{std::move(popupName), 512.0f, 0.0f, ImGuiWindowFlags_AlwaysAutoResize}
+    Impl(std::string_view popupName, ParamBlock* paramBlock) :
+        StandardPopup{std::move(popupName), 512.0f, 0.0f, ImGuiWindowFlags_AlwaysAutoResize},
+        m_ParamBlock{std::move(paramBlock)}
     {
-    }
-
-    bool isOpen() const
-    {
-        return static_cast<StandardPopup const&>(*this).isOpen();
-    }
-
-    void open()
-    {
-        static_cast<StandardPopup&>(*this).open();
-    }
-
-    void close()
-    {
-        static_cast<StandardPopup&>(*this).close();
-    }
-
-    bool draw(ParamBlock& pb)
-    {
-        m_ParamBlock = &pb;
-        if (m_ParamBlock)
-        {
-            static_cast<StandardPopup&>(*this).draw();
-            return m_WasEdited;
-        }
-        else
-        {
-            return false;
-        }
     }
 
 private:
@@ -154,8 +126,8 @@ private:
     ParamBlock* m_ParamBlock = nullptr;
 };
 
-osc::ParamBlockEditorPopup::ParamBlockEditorPopup(std::string_view popupName) :
-    m_Impl{new Impl{std::move(popupName)}}
+osc::ParamBlockEditorPopup::ParamBlockEditorPopup(std::string_view popupName, ParamBlock* paramBlock) :
+    m_Impl{new Impl{std::move(popupName), std::move(paramBlock)}}
 {
 }
 
@@ -190,7 +162,17 @@ void osc::ParamBlockEditorPopup::close()
     m_Impl->close();
 }
 
-bool osc::ParamBlockEditorPopup::draw(ParamBlock& pb)
+bool osc::ParamBlockEditorPopup::beginPopup()
 {
-    return m_Impl->draw(pb);
+    return m_Impl->beginPopup();
+}
+
+void osc::ParamBlockEditorPopup::drawPopupContent()
+{
+    m_Impl->drawPopupContent();
+}
+
+void osc::ParamBlockEditorPopup::endPopup()
+{
+    m_Impl->endPopup();
 }

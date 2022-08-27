@@ -562,8 +562,6 @@ add_library(osccore STATIC
     src/Widgets/SceneViewer.hpp
     src/Widgets/Select1PFPopup.cpp
     src/Widgets/Select1PFPopup.hpp
-    src/Widgets/Select2PFsPopup.cpp
-    src/Widgets/Select2PFsPopup.hpp
     src/Widgets/SelectComponentPopup.cpp
     src/Widgets/SelectComponentPopup.hpp
     src/Widgets/SelectGeometryPopup.cpp

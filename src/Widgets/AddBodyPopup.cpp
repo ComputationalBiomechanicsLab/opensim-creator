@@ -2,9 +2,11 @@
 
 #include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/MiddlewareAPIs/EditorAPI.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/Platform/Log.hpp"
 #include "src/Widgets/SelectGeometryPopup.hpp"
 #include "src/Widgets/StandardPopup.hpp"
 
@@ -29,8 +31,12 @@ static inline constexpr int g_MaxJointNameLength = 128;
 
 class osc::AddBodyPopup::Impl : public osc::StandardPopup {
 public:
-    Impl(std::shared_ptr<UndoableModelStatePair> uum, std::string_view popupName) :
+    Impl(EditorAPI* api,
+         std::shared_ptr<UndoableModelStatePair> uum,
+         std::string_view popupName) :
+
         StandardPopup{std::move(popupName)},
+        m_EditorAPI{std::move(api)},
         m_Uum{std::move(uum)}
     {
     }
@@ -166,10 +172,11 @@ private:
 
                 if (ImGui::Button(label.c_str()))
                 {
-                    m_AttachGeometryPopup.open();
+                    // open geometry selection popup
+                    auto popup = std::make_unique<SelectGeometryPopup>("addbody_attachgeometry", [this](auto ptr) { onGeometrySelection(std::move(ptr)); });
+                    popup->open();
+                    m_EditorAPI->pushPopup(std::move(popup));
                 }
-
-                m_AttachGeometryPopup.draw();
             }
             ImGui::NextColumn();
         }
@@ -204,11 +211,11 @@ private:
         m_BodyDetails.MaybeGeometry = std::move(ptr);
     }
 
+    // ability to push popups to the main UI
+    EditorAPI* m_EditorAPI;
+
     // the model that the body will be added to
     std::shared_ptr<UndoableModelStatePair> m_Uum;
-
-    // state for the "attach geometry" popup
-    SelectGeometryPopup m_AttachGeometryPopup{"addbody_attachgeometry", [this](auto ptr) { onGeometrySelection(std::move(ptr)); }};
 
     // details of the to-be-added body
     BodyDetails m_BodyDetails;
@@ -217,9 +224,12 @@ private:
 
 // public API
 
-osc::AddBodyPopup::AddBodyPopup(std::shared_ptr<UndoableModelStatePair> uum,
-                                std::string_view popupName) :
-    m_Impl{new Impl{std::move(uum), std::move(popupName)}}
+osc::AddBodyPopup::AddBodyPopup(
+    EditorAPI* api,
+    std::shared_ptr<UndoableModelStatePair> uum,
+    std::string_view popupName) :
+
+    m_Impl{new Impl{std::move(api), std::move(uum), std::move(popupName)}}
 {
 }
 osc::AddBodyPopup::AddBodyPopup(AddBodyPopup&& tmp) noexcept :
@@ -238,6 +248,11 @@ osc::AddBodyPopup::~AddBodyPopup() noexcept
     delete m_Impl;
 }
 
+bool osc::AddBodyPopup::isOpen() const
+{
+    return m_Impl->isOpen();
+}
+
 void osc::AddBodyPopup::open()
 {
     m_Impl->open();
@@ -248,7 +263,17 @@ void osc::AddBodyPopup::close()
     m_Impl->close();
 }
 
-void osc::AddBodyPopup::draw()
+bool osc::AddBodyPopup::beginPopup()
 {
-    m_Impl->draw();
+    return m_Impl->beginPopup();
+}
+
+void osc::AddBodyPopup::drawPopupContent()
+{
+    m_Impl->drawPopupContent();
+}
+
+void osc::AddBodyPopup::endPopup()
+{
+    m_Impl->endPopup();
 }

@@ -18,6 +18,7 @@
 #include "src/Utils/Perf.hpp"
 #include "src/Utils/UID.hpp"
 #include "src/Widgets/BasicWidgets.hpp"
+#include "src/Widgets/ComponentContextMenu.hpp"
 #include "src/Widgets/CoordinateEditor.hpp"
 #include "src/Widgets/EditorTabStatusBar.hpp"
 #include "src/Widgets/LogViewer.hpp"
@@ -54,7 +55,6 @@
 
 static std::array<std::string, 7> const g_EditorScreenPanels =
 {
-    "Actions",
     "Hierarchy",
     "Property Editor",
     "Log",
@@ -154,7 +154,7 @@ public:
 
         if (ImGui::Button(ICON_FA_EDIT " Edit simulation settings"))
         {
-            m_ParamBlockEditorPopup.open();
+            pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_Parent->updSimulationParams()));
         }
     }
 
@@ -291,14 +291,14 @@ private:
         return m_ModelMusclePlots.at(idx);
     }
 
-    ModelMusclePlotPanel& addMusclePlot()
+    void addMusclePlot()
     {
-        return m_ModelMusclePlots.emplace_back(m_Model, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++));
+        m_ModelMusclePlots.emplace_back(m_Model, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++));
     }
 
-    ModelMusclePlotPanel& addMusclePlot(OpenSim::Coordinate const& coord, OpenSim::Muscle const& muscle)
+    void addMusclePlot(OpenSim::Coordinate const& coord, OpenSim::Muscle const& muscle) override
     {
-        return m_ModelMusclePlots.emplace_back(m_Model, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++), coord.getAbsolutePath(), muscle.getAbsolutePath());
+        m_ModelMusclePlots.emplace_back(m_Model, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++), coord.getAbsolutePath(), muscle.getAbsolutePath());
     }
 
     void removeMusclePlot(int idx)
@@ -387,7 +387,7 @@ private:
 
             if (ImGui::MenuItem(ICON_FA_EDIT " Edit simulation settings"))
             {
-                m_ParamBlockEditorPopup.open();
+                pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_Parent->updSimulationParams()));
             }
 
             if (ImGui::MenuItem("Disable all wrapping surfaces"))
@@ -513,43 +513,11 @@ private:
         }
 
         // if right-clicked, draw context menu
+        if (viewer.isRightClicked() && resp.isMousedOver)
         {
             std::string menuName = std::string{name} + "_contextmenu";
-
-            if (viewer.isRightClicked() && resp.isMousedOver)
-            {
-                m_Model->setSelected(resp.hovertestResult);  // can be empty
-                ImGui::OpenPopup(menuName.c_str());
-            }
-
-            OpenSim::Component const* selected = m_Model->getSelected();
-
-            if (ImGui::BeginPopup(menuName.c_str()))
-            {
-                if (selected)
-                {
-                    // draw context menu for whatever's selected
-                    ImGui::TextUnformatted(selected->getName().c_str());
-                    ImGui::SameLine();
-                    ImGui::TextDisabled("%s", selected->getConcreteClassName().c_str());
-                    ImGui::Separator();
-                    ImGui::Dummy({0.0f, 3.0f});
-
-                    DrawSelectOwnerMenu(*m_Model, *selected);
-                    DrawWatchOutputMenu(*m_Parent, *selected);
-                    if (OpenSim::Muscle const* m = dynamic_cast<OpenSim::Muscle const*>(selected))
-                    {
-                        drawAddMusclePlotMenu(*m);
-                    }
-                }
-                else
-                {
-                    // draw context menu that's shown when nothing was right-clicked
-                    m_ContextMenuActionsMenuBar.draw();
-                }
-                ImGui::EndPopup();
-            }
-            m_ContextMenuActionsMenuBar.drawAnyOpenPopups();
+            OpenSim::ComponentPath path = resp.hovertestResult ? resp.hovertestResult->getAbsolutePath() : OpenSim::ComponentPath{};
+            pushPopup(std::make_unique<ComponentContextMenu>(menuName, m_Parent, this, m_Model, path));
         }
 
         return true;
@@ -587,27 +555,6 @@ private:
         //
         // contains top-level actions (e.g. "add body")
         osc::Config const& config = osc::App::get().getConfig();
-
-        if (bool actionsPanelOldState = config.getIsPanelEnabled("Actions"))
-        {
-            OSC_PERF("draw actions bar");
-
-            bool actionsPanelNewState = actionsPanelOldState;
-            if (ImGui::Begin("Actions", &actionsPanelNewState, ImGuiWindowFlags_MenuBar))
-            {
-                if (ImGui::BeginMenuBar())
-                {
-                    m_ModelActionsMenuBar.draw();
-                    ImGui::EndMenuBar();
-                }
-            }
-            ImGui::End();
-
-            if (actionsPanelNewState != actionsPanelOldState)
-            {
-                osc::App::upd().updConfig().setIsPanelEnabled("Actions", actionsPanelNewState);
-            }
-        }
 
         // draw hierarchy viewer
         {
@@ -715,29 +662,41 @@ private:
             }
         }
 
-        // draw any currently-open popups
-
-        if (m_ParamBlockEditorPopup.isOpen())
-        {
-            m_ParamBlockEditorPopup.draw(m_Parent->updSimulationParams());
-        }
-
-        m_ModelActionsMenuBar.drawAnyOpenPopups();
-
+        // draw bottom status bar
         m_StatusBar.draw();
 
-        // draw generic popups pushed to this layer
+        // draw any generic popups pushed to this layer
         {
-            osc::RemoveErase(m_Popups, [](auto const& ptr) -> bool { return !ptr->isOpen(); });
-            for (auto const& ptr : m_Popups)
+            // begin and (if applicable) draw bottom-to-top in a nested fashion
+            int nOpened = 0;
+            int nPopups = static_cast<int>(m_Popups.size());  // only draw the popups that existed at the start of this frame, not the ones added during this frame
+            for (int i = 0; i < nPopups; ++i)
             {
-                ptr->draw();
+                if (m_Popups[i]->beginPopup())
+                {
+                    m_Popups[i]->drawPopupContent();
+                    ++nOpened;
+                }
+                else
+                {
+                    break;
+                }
             }
+
+            // end the opened popups top-to-bottom
+            for (int i = nOpened-1; i >= 0; --i)
+            {
+                m_Popups[i]->endPopup();
+            }
+
+            // garbage-collect any closed popups
+            osc::RemoveErase(m_Popups, [](auto const& ptr) { return !ptr->isOpen(); });
         }
     }
 
     void pushPopup(std::unique_ptr<Popup> popup) override
     {
+        popup->open();
         m_Popups.push_back(std::move(popup));
     }
 
@@ -754,16 +713,13 @@ private:
     MainMenuAboutTab m_MainMenuAboutTab;
     LogViewer m_LogViewer;
     ModelHierarchyPanel m_ComponentHierarchyPanel{"Hierarchy"};
-    ModelActionsMenuItems m_ModelActionsMenuBar{m_Model};
-    ModelActionsMenuItems m_ContextMenuActionsMenuBar{m_Model};
     CoordinateEditor m_CoordEditor{m_Model};
     PerfPanel m_PerfPanel{"Performance"};
     OutputWatchesPanel m_OutputWatchesPanel{"Output Watches", m_Model, m_Parent};
     SelectionEditorPanel m_SelectionEditor{m_Model};
-    ParamBlockEditorPopup m_ParamBlockEditorPopup{"simulation parameters"};
     int m_LatestMusclePlot = 1;
     std::vector<ModelMusclePlotPanel> m_ModelMusclePlots;
-    EditorTabStatusBar m_StatusBar{this, m_Model};
+    EditorTabStatusBar m_StatusBar{m_Parent, this, m_Model};
     std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
     std::vector<std::unique_ptr<Popup>> m_Popups;
 

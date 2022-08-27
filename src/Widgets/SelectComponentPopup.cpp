@@ -101,7 +101,17 @@ void osc::SelectComponentPopup::close()
     m_Impl->close();
 }
 
-void osc::SelectComponentPopup::draw()
+bool osc::SelectComponentPopup::beginPopup()
 {
-    m_Impl->draw();
+    return m_Impl->beginPopup();
+}
+
+void osc::SelectComponentPopup::drawPopupContent()
+{
+    m_Impl->drawPopupContent();
+}
+
+void osc::SelectComponentPopup::endPopup()
+{
+    m_Impl->endPopup();
 }

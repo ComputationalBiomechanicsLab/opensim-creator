@@ -89,5 +89,9 @@ void osc::SaveChangesPopup::close()
 
 void osc::SaveChangesPopup::draw()
 {
-    m_Impl->draw();
+    if (m_Impl->beginPopup())
+    {
+        m_Impl->drawPopupContent();
+        m_Impl->endPopup();
+    }
 }

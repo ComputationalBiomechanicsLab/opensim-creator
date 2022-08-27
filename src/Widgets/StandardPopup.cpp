@@ -45,7 +45,7 @@ void osc::StandardPopup::close()
     m_ShouldOpen = false;
 }
 
-void osc::StandardPopup::draw()
+bool osc::StandardPopup::beginPopup()
 {
     if (m_ShouldOpen)
     {
@@ -69,7 +69,7 @@ void osc::StandardPopup::draw()
         {
             // modal not showing
             m_IsOpen = false;
-            return;
+            return false;
         }
     }
     else
@@ -77,15 +77,18 @@ void osc::StandardPopup::draw()
         // try to show popup
         if (!ImGui::BeginPopup(m_PopupName.c_str(), m_PopupFlags))
         {
-            // popup now showing
+            // popup not showing
             m_IsOpen = false;
-            return;
+            return false;
         }
     }
 
-
     m_IsOpen = true;
+    return true;
+}
 
+void osc::StandardPopup::drawPopupContent()
+{
     if (m_ShouldClose)
     {
         implOnClose();
@@ -98,7 +101,10 @@ void osc::StandardPopup::draw()
     }
 
     implDraw();
+}
 
+void osc::StandardPopup::endPopup()
+{
     ImGui::EndPopup();
     m_JustOpened = false;
 }

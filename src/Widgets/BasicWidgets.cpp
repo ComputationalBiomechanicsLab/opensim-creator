@@ -146,7 +146,7 @@ void osc::DrawSelectOwnerMenu(osc::VirtualModelStatePair& model, OpenSim::Compon
 
 void osc::DrawWatchOutputMenu(osc::MainUIStateAPI& api, OpenSim::Component const& c)
 {
-    if (ImGui::BeginMenu(ICON_FA_EYE " Watch Output"))
+    if (ImGui::BeginMenu("Watch Output"))
     {
         osc::DrawHelpMarker("Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
 

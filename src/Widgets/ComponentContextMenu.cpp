@@ -10,6 +10,8 @@
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/ScopeGuard.hpp"
+#include "src/Widgets/BasicWidgets.hpp"
+#include "src/Widgets/ModelActionsMenuItems.hpp"
 #include "src/Widgets/SelectComponentPopup.hpp"
 #include "src/Widgets/Select1PFPopup.hpp"
 #include "src/Widgets/SelectGeometryPopup.hpp"
@@ -59,7 +61,7 @@ static void DrawSelectionJointTypeSwitcher(
 
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
     if (ImGui::Combo(
-        "joint type",
+        "Joint Type",
         &typeIndex,
         jointNames.data(),
         static_cast<int>(jointNames.size())) &&
@@ -77,7 +79,7 @@ static void DrawPhysicalFrameContextualActions(
     std::shared_ptr<osc::UndoableModelStatePair> uim,
     OpenSim::ComponentPath pfPath)
 {
-    if (ImGui::MenuItem("add geometry"))
+    if (ImGui::MenuItem("Add Geometry"))
     {
         std::function<void(std::unique_ptr<OpenSim::Geometry>)> callback = [uim, pfPath](auto geom) { osc::ActionAttachGeometryToPhysicalFrame(*uim, pfPath, std::move(geom)); };
         std::unique_ptr<osc::Popup> p = std::make_unique<osc::SelectGeometryPopup>("select geometry to attach", callback);
@@ -86,7 +88,7 @@ static void DrawPhysicalFrameContextualActions(
     }
     osc::DrawTooltipIfItemHovered("Add Geometry", "Add geometry to this component. Geometry can be removed by selecting it in the hierarchy editor and pressing DELETE");
 
-    if (ImGui::MenuItem("add offset frame"))
+    if (ImGui::MenuItem("Add Offset Frame"))
     {
         osc::ActionAddOffsetFrameToPhysicalFrame(*uim, pfPath);
     }
@@ -103,19 +105,19 @@ static void DrawJointContextualActions(
 
     if (CanRezeroJoint(uim, jointPath))
     {
-        if (ImGui::MenuItem("rezero joint"))
+        if (ImGui::MenuItem("Rezero Joint"))
         {
             osc::ActionRezeroJoint(uim, jointPath);
         }
         osc::DrawTooltipIfItemHovered("Re-zero the joint", "Given the joint's current geometry due to joint defaults, coordinate defaults, and any coordinate edits made in the coordinate editor, this will reorient the joint's parent (if it's an offset frame) to match the child's transformation. Afterwards, it will then resets all of the joints coordinates to zero. This effectively sets the 'zero point' of the joint (i.e. the geometry when all coordinates are zero) to match whatever the current geometry is.");
     }
 
-    if (ImGui::MenuItem("add parent offset frame"))
+    if (ImGui::MenuItem("Add Parent Offset Frame"))
     {
         osc::ActionAddParentOffsetFrameToJoint(uim, jointPath);
     }
 
-    if (ImGui::MenuItem("add child offset frame"))
+    if (ImGui::MenuItem("Add Child Offset Frame"))
     {
         osc::ActionAddChildOffsetFrameToJoint(uim, jointPath);
     }
@@ -138,7 +140,7 @@ static void DrawHCFContextualActions(
         return;  // cannot edit: has more than one HuntCrossleyForce::Parameter
     }
 
-    if (ImGui::MenuItem("add contact geometry"))
+    if (ImGui::MenuItem("Add Contact Geometry"))
     {
         auto onSelection = [uim, hcfPath](OpenSim::ComponentPath const& geomPath)
         {
@@ -148,7 +150,7 @@ static void DrawHCFContextualActions(
         {
             return dynamic_cast<OpenSim::ContactGeometry const*>(&c);
         };
-        auto popup = std::make_unique<osc::SelectComponentPopup>("select contact geometry", uim, onSelection, filter);
+        auto popup = std::make_unique<osc::SelectComponentPopup>("Select Contact Geometry", uim, onSelection, filter);
         popup->open();
         api->pushPopup(std::move(popup));
     }
@@ -161,12 +163,10 @@ static void DrawPathActuatorContextualParams(
     std::shared_ptr<osc::UndoableModelStatePair> uim,
     OpenSim::ComponentPath paPath)
 {
-    char const* modalName = "select physical frame";
-
-    if (ImGui::MenuItem("add path point"))
+    if (ImGui::MenuItem("Add Path Point"))
     {
         auto onSelection = [uim, paPath](OpenSim::ComponentPath const& pfPath) { osc::ActionAddPathPointToPathActuator(*uim, paPath, pfPath); };
-        auto popup = std::make_unique<osc::Select1PFPopup>("select physical frame", uim, onSelection);
+        auto popup = std::make_unique<osc::Select1PFPopup>("Select Physical Frame", uim, onSelection);
         popup->open();
         api->pushPopup(std::move(popup));
     }
@@ -175,7 +175,7 @@ static void DrawPathActuatorContextualParams(
 
 static void DrawModelContextualActions(osc::UndoableModelStatePair& uim)
 {
-    if (ImGui::MenuItem("toggle frames"))
+    if (ImGui::MenuItem("Toggle Frames"))
     {
         osc::ActionToggleFrames(uim);
     }
@@ -184,12 +184,14 @@ static void DrawModelContextualActions(osc::UndoableModelStatePair& uim)
 class osc::ComponentContextMenu::Impl final : public osc::StandardPopup {
 public:
     Impl(std::string_view popupName,
-         EditorAPI* editor,
+         MainUIStateAPI* mainUIStateAPI,
+         EditorAPI* editorAPI,
          std::shared_ptr<UndoableModelStatePair> model,
          OpenSim::ComponentPath const& path) :
 
         StandardPopup{popupName, 10.0f, 10.0f, ImGuiWindowFlags_NoMove},
-        m_EditorAPI{std::move(editor)},
+        m_MainUIStateAPI{std::move(mainUIStateAPI)},
+        m_EditorAPI{std::move(editorAPI)},
         m_Model{std::move(model)},
         m_Path{path}
     {
@@ -203,27 +205,44 @@ private:
         OpenSim::Component const* c = osc::FindComponent(m_Model->getModel(), m_Path);
         if (!c)
         {
-            ImGui::TextDisabled("(cannot find %s in the model)", m_Path.toString().c_str());
+            // draw context menu content that's shown when nothing was right-clicked
+            ImGui::TextDisabled("(nothing selected)");
+            ImGui::Separator();
+            ImGui::Dummy({0.0f, 3.0f});
+            if (ImGui::BeginMenu("Add (to model)"))
+            {
+                m_ModelActionsMenuBar.draw();
+                ImGui::EndMenu();
+            }
             return;
         }
 
+        ImGui::TextUnformatted(c->getName().c_str());
+        ImGui::SameLine();
+        ImGui::TextDisabled("%s", c->getConcreteClassName().c_str());
+        ImGui::Separator();
+        ImGui::Dummy({0.0f, 3.0f});
+
+        //DrawSelectOwnerMenu(*m_Model, *c);
+        DrawWatchOutputMenu(*m_MainUIStateAPI, *c);
+
         if (c != m_Model->getIsolated())
         {
-            if (ImGui::MenuItem("isolate"))
+            if (ImGui::MenuItem("Isolate"))
             {
                 osc::ActionSetModelIsolationTo(*m_Model, c);
             }
         }
         else
         {
-            if (ImGui::MenuItem("clear isolation"))
+            if (ImGui::MenuItem("Clear Isolation"))
             {
                 osc::ActionSetModelIsolationTo(*m_Model, nullptr);
             }
         }
         osc::DrawTooltipIfItemHovered("Toggle Isolation", "Only show this component in the visualizer\n\nThis can be disabled from the Edit menu (Edit -> Clear Isolation)");
 
-        if (ImGui::MenuItem("copy absolute path to clipboard"))
+        if (ImGui::MenuItem("Copy Absolute Path to Clipboard"))
         {
             std::string path = c->getAbsolutePathString();
             osc::SetClipboardText(path.c_str());
@@ -246,15 +265,38 @@ private:
         {
             DrawHCFContextualActions(m_EditorAPI, m_Model, m_Path);
         }
+        else if (OpenSim::Muscle const* m = dynamic_cast<OpenSim::Muscle const*>(c))
+        {
+            drawAddMusclePlotMenu(*m);
+            DrawPathActuatorContextualParams(m_EditorAPI, m_Model, m_Path);  // a muscle is a path actuator
+        }
         else if (auto const* pa = dynamic_cast<OpenSim::PathActuator const*>(c))
         {
             DrawPathActuatorContextualParams(m_EditorAPI, m_Model, m_Path);
         }
     }
 
+    void drawAddMusclePlotMenu(OpenSim::Muscle const& m)
+    {
+        if (ImGui::BeginMenu("Plot vs. Coordinate"))
+        {
+            for (OpenSim::Coordinate const& c : m_Model->getModel().getComponentList<OpenSim::Coordinate>())
+            {
+                if (ImGui::MenuItem(c.getName().c_str()))
+                {
+                    m_EditorAPI->addMusclePlot(c, m);
+                }
+            }
+
+            ImGui::EndMenu();
+        }
+    }
+
+    MainUIStateAPI* m_MainUIStateAPI = nullptr;
     EditorAPI* m_EditorAPI = nullptr;
     std::shared_ptr<UndoableModelStatePair> m_Model;
     OpenSim::ComponentPath m_Path;
+    ModelActionsMenuItems m_ModelActionsMenuBar{m_EditorAPI, m_Model};
 };
 
 
@@ -262,11 +304,12 @@ private:
 
 osc::ComponentContextMenu::ComponentContextMenu(
     std::string_view popupName,
-    EditorAPI* api,
+    MainUIStateAPI* mainUIStateAPI,
+    EditorAPI* editorAPI,
     std::shared_ptr<UndoableModelStatePair> model,
     OpenSim::ComponentPath const& path) :
 
-    m_Impl{new Impl{std::move(popupName), std::move(api), std::move(model), path}}
+    m_Impl{new Impl{std::move(popupName), std::move(mainUIStateAPI), std::move(editorAPI), std::move(model), path}}
 {
 }
 
@@ -301,7 +344,17 @@ void osc::ComponentContextMenu::close()
     m_Impl->close();
 }
 
-void osc::ComponentContextMenu::draw()
+bool osc::ComponentContextMenu::beginPopup()
 {
-    m_Impl->draw();
+    return m_Impl->beginPopup();
+}
+
+void osc::ComponentContextMenu::drawPopupContent()
+{
+    m_Impl->drawPopupContent();
+}
+
+void osc::ComponentContextMenu::endPopup()
+{
+    m_Impl->endPopup();
 }

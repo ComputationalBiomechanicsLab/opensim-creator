@@ -1,11 +1,11 @@
 #include "ModelActionsMenuItems.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/MiddlewareAPIs/EditorAPI.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Widgets/AddBodyPopup.hpp"
 #include "src/Widgets/AddComponentPopup.hpp"
-#include "src/Widgets/Select2PFsPopup.hpp"
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
@@ -27,11 +27,9 @@
 class osc::ModelActionsMenuItems::Impl final {
 public:
 
-    Impl(std::shared_ptr<UndoableModelStatePair> uum_) :
-        m_Uum{uum_},
-        m_AddBodyPopup{uum_, "add body"},
-        m_Select2PFsPopup{},
-        m_MaybeAddComponentPopup{std::nullopt}
+    Impl(EditorAPI* api, std::shared_ptr<UndoableModelStatePair> uum_) :
+        m_EditorAPI{std::move(api)},
+        m_Uum{uum_}
     {
     }
 
@@ -42,9 +40,11 @@ public:
         // action: add body
         {
             // draw button
-            if (ImGui::MenuItem("Add Body"))
+            if (ImGui::MenuItem("Body"))
             {
-                m_AddBodyPopup.open();
+                auto popup = std::make_unique<AddBodyPopup>(m_EditorAPI, m_Uum, "add body");
+                popup->open();
+                m_EditorAPI->pushPopup(std::move(popup));
             }
 
             // draw tooltip (if hovered)
@@ -67,26 +67,13 @@ public:
         ImGui::PopID();
     }
 
-    void drawAnyOpenPopups()
-    {
-        ImGui::PushID(this);
-
-        m_AddBodyPopup.draw();
-        if (m_MaybeAddComponentPopup)
-        {
-            m_MaybeAddComponentPopup->draw();
-        }
-
-        ImGui::PopID();
-    }
-
 private:
 
     template<typename T>
     void renderButton()
     {
         std::stringstream label;
-        label << "Add " << osc::TypeRegistry<T>::name();
+        label << osc::TypeRegistry<T>::name();
 
         // action: add joint
         if (ImGui::BeginMenu(label.str().c_str()))
@@ -98,8 +85,9 @@ private:
                 if (ImGui::MenuItem(names[i]))
                 {
                     std::unique_ptr<T> copy{osc::TypeRegistry<T>::prototypes()[i]->clone()};
-                    m_MaybeAddComponentPopup = osc::AddComponentPopup{m_Uum, std::move(copy), "Add " + osc::TypeRegistry<T>::name()};
-                    m_MaybeAddComponentPopup->open();
+                    auto popup = std::make_unique<AddComponentPopup>(m_EditorAPI, m_Uum, std::move(copy), "Add " + osc::TypeRegistry<T>::name());
+                    popup->open();
+                    m_EditorAPI->pushPopup(std::move(popup));
                 }
 
                 if (ImGui::IsItemHovered())
@@ -120,17 +108,15 @@ private:
         }
     }
 
+    EditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Uum;
-    AddBodyPopup m_AddBodyPopup;
-    Select2PFsPopup m_Select2PFsPopup;
-    std::optional<AddComponentPopup> m_MaybeAddComponentPopup;
 };
 
 
 // public API
 
-osc::ModelActionsMenuItems::ModelActionsMenuItems(std::shared_ptr<UndoableModelStatePair> m) :
-    m_Impl{new Impl{std::move(m)}}
+osc::ModelActionsMenuItems::ModelActionsMenuItems(EditorAPI* api, std::shared_ptr<UndoableModelStatePair> m) :
+    m_Impl{new Impl{std::move(api), std::move(m)}}
 {
 }
 
@@ -153,9 +139,4 @@ osc::ModelActionsMenuItems::~ModelActionsMenuItems() noexcept
 void osc::ModelActionsMenuItems::draw()
 {
     m_Impl->draw();
-}
-
-void osc::ModelActionsMenuItems::drawAnyOpenPopups()
-{
-    m_Impl->drawAnyOpenPopups();
 }

@@ -64,11 +64,13 @@ namespace
 
 class osc::AddComponentPopup::Impl : public osc::StandardPopup {
 public:
-    Impl(std::shared_ptr<UndoableModelStatePair> uum,
+    Impl(EditorAPI* api,
+         std::shared_ptr<UndoableModelStatePair> uum,
          std::unique_ptr<OpenSim::Component> prototype,
          std::string_view popupName) :
 
          StandardPopup{std::move(popupName)},
+         m_EditorAPI{std::move(api)},
          m_Uum{std::move(uum)},
          m_Proto{std::move(prototype)}
     {
@@ -449,6 +451,8 @@ private:
     }
 
 private:
+    EditorAPI* m_EditorAPI;
+
     // the model that the component should be added to
     std::shared_ptr<UndoableModelStatePair> m_Uum;
 
@@ -478,11 +482,12 @@ private:
 // public API
 
 osc::AddComponentPopup::AddComponentPopup(
+    EditorAPI* api,
     std::shared_ptr<UndoableModelStatePair> uum,
     std::unique_ptr<OpenSim::Component> prototype,
     std::string_view popupName) :
 
-    m_Impl{new Impl{std::move(uum), std::move(prototype), std::move(popupName)}}
+    m_Impl{new Impl{std::move(api), std::move(uum), std::move(prototype), std::move(popupName)}}
 {
 }
 
@@ -502,6 +507,11 @@ osc::AddComponentPopup::~AddComponentPopup() noexcept
     delete m_Impl;
 }
 
+bool osc::AddComponentPopup::isOpen() const
+{
+    return m_Impl->isOpen();
+}
+
 void osc::AddComponentPopup::open()
 {
     m_Impl->open();
@@ -512,7 +522,17 @@ void osc::AddComponentPopup::close()
     m_Impl->close();
 }
 
-void osc::AddComponentPopup::draw()
+bool osc::AddComponentPopup::beginPopup()
 {
-    m_Impl->draw();
+    return m_Impl->beginPopup();
+}
+
+void osc::AddComponentPopup::drawPopupContent()
+{
+    m_Impl->drawPopupContent();
+}
+
+void osc::AddComponentPopup::endPopup()
+{
+    m_Impl->endPopup();
 }

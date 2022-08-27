@@ -15,6 +15,8 @@ namespace osc
         virtual bool isOpen() const = 0;
         virtual void open() = 0;
         virtual void close() = 0;
-        virtual void draw() = 0;
+        virtual bool beginPopup() = 0;
+        virtual void drawPopupContent() = 0;
+        virtual void endPopup() = 0;
     };
 }
