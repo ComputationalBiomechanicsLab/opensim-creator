@@ -257,11 +257,17 @@ void osc::ReassignSocketPopup::close()
     m_Impl->close();
 }
 
-void osc::ReassignSocketPopup::draw()
+bool osc::ReassignSocketPopup::beginPopup()
 {
-    if (m_Impl->beginPopup())
-    {
-        m_Impl->drawPopupContent();
-        m_Impl->endPopup();
-    }
+    return m_Impl->beginPopup();
+}
+
+void osc::ReassignSocketPopup::drawPopupContent()
+{
+    m_Impl->drawPopupContent();
+}
+
+void osc::ReassignSocketPopup::endPopup()
+{
+    m_Impl->endPopup();
 }

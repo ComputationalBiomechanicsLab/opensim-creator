@@ -8,10 +8,12 @@
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
+#include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/Widgets/BasicWidgets.hpp"
 #include "src/Widgets/ModelActionsMenuItems.hpp"
+#include "src/Widgets/ReassignSocketPopup.hpp"
 #include "src/Widgets/SelectComponentPopup.hpp"
 #include "src/Widgets/Select1PFPopup.hpp"
 #include "src/Widgets/SelectGeometryPopup.hpp"
@@ -53,22 +55,33 @@ static void DrawSelectionJointTypeSwitcher(
         return;
     }
 
-    // look the Joint up in the type registry so we know where it should be in the ImGui::Combo
-    std::optional<size_t> maybeTypeIndex = osc::JointRegistry::indexOf(*joint);
-    int typeIndex = maybeTypeIndex ? static_cast<int>(*maybeTypeIndex) : -1;
+    int selectedIdx = -1;
+    if (ImGui::BeginMenu("Change Joint Type"))
+    {
+        // look the Joint up in the type registry so we know where it should be in the ImGui::Combo
+        std::optional<size_t> maybeTypeIndex = osc::JointRegistry::indexOf(*joint);
+        int typeIndex = maybeTypeIndex ? static_cast<int>(*maybeTypeIndex) : -1;
+        auto jointNames = osc::JointRegistry::nameCStrings();
 
-    auto jointNames = osc::JointRegistry::nameCStrings();
+        for (int i = 0; i < static_cast<int>(jointNames.size()); ++i)
+        {
+            bool selected = i == typeIndex;
+            bool wasSelected = selected;
+            if (ImGui::MenuItem(jointNames[i], nullptr, &selected))
+            {
+                if (!wasSelected)
+                {
+                    selectedIdx = i;
+                }
+            }
+        }
+        ImGui::EndMenu();
+    }
 
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-    if (ImGui::Combo(
-        "Joint Type",
-        &typeIndex,
-        jointNames.data(),
-        static_cast<int>(jointNames.size())) &&
-        typeIndex >= 0)
+    if (0 <= selectedIdx && selectedIdx < osc::JointRegistry::prototypes().size())
     {
         // copy + fixup  a prototype of the user's selection
-        std::unique_ptr<OpenSim::Joint> newJoint{osc::JointRegistry::prototypes()[static_cast<size_t>(typeIndex)]->clone()};
+        std::unique_ptr<OpenSim::Joint> newJoint{osc::JointRegistry::prototypes()[static_cast<size_t>(selectedIdx)]->clone()};
         osc::ActionChangeJointTypeTo(uim, jointPath, std::move(newJoint));
     }
 }
@@ -209,7 +222,7 @@ private:
             ImGui::TextDisabled("(nothing selected)");
             ImGui::Separator();
             ImGui::Dummy({0.0f, 3.0f});
-            if (ImGui::BeginMenu("Add (to model)"))
+            if (ImGui::BeginMenu("Add"))
             {
                 m_ModelActionsMenuBar.draw();
                 ImGui::EndMenu();
@@ -217,7 +230,7 @@ private:
             return;
         }
 
-        ImGui::TextUnformatted(c->getName().c_str());
+        ImGui::TextUnformatted(osc::Ellipsis(c->getName(), 15).c_str());
         ImGui::SameLine();
         ImGui::TextDisabled("%s", c->getConcreteClassName().c_str());
         ImGui::Separator();
@@ -249,6 +262,8 @@ private:
         }
         osc::DrawTooltipIfItemHovered("Copy Component Absolute Path", "Copy the absolute path to this component to your clipboard.\n\n(This is handy if you are separately using absolute component paths to (e.g.) manipulate the model in a script or something)");
 
+        drawSocketMenu(*c);
+
         if (dynamic_cast<OpenSim::Model const*>(c))
         {
             DrawModelContextualActions(*m_Model);
@@ -273,6 +288,76 @@ private:
         else if (auto const* pa = dynamic_cast<OpenSim::PathActuator const*>(c))
         {
             DrawPathActuatorContextualParams(m_EditorAPI, m_Model, m_Path);
+        }
+    }
+
+    void drawSocketMenu(OpenSim::Component const& c)
+    {
+        if (ImGui::BeginMenu("Sockets"))
+        {
+            std::vector<std::string> socketNames = osc::GetSocketNames(c);
+
+            if (!socketNames.empty())
+            {
+                if (ImGui::BeginTable("sockets table", 3, ImGuiTableFlags_SizingStretchProp))
+                {
+                    ImGui::TableSetupColumn("Socket Name");
+                    ImGui::TableSetupColumn("Connectee Name");
+                    ImGui::TableSetupColumn("Actions");
+
+                    int id = 0;
+                    for (std::string const& socketName : socketNames)
+                    {
+                        OpenSim::AbstractSocket const& socket = c.getSocket(socketName);
+
+                        int column = 0;
+                        ImGui::PushID(id++);
+                        ImGui::TableNextRow();
+
+                        ImGui::TableSetColumnIndex(column++);
+                        ImGui::TextDisabled("%s", socketName.c_str());
+
+                        ImGui::TableSetColumnIndex(column++);
+                        if (ImGui::SmallButton(socket.getConnecteeAsObject().getName().c_str()))
+                        {
+                            m_Model->setSelected(dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject()));
+                            requestClose();
+                        }
+                        if (ImGui::IsItemHovered())
+                        {
+                            m_Model->setHovered(dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject()));
+                            osc::DrawTooltipBodyOnly("Click to select");
+                        }
+
+                        ImGui::TableSetColumnIndex(column++);
+                        if (ImGui::SmallButton(ICON_FA_EDIT))
+                        {
+                            auto popup = std::make_unique<ReassignSocketPopup>(
+                                "Reassign " + socket.getName(),
+                                m_Model,
+                                c.getAbsolutePathString(),
+                                socketName
+                            );
+                            popup->open();
+                            m_EditorAPI->pushPopup(std::move(popup));
+                        }
+                        if (ImGui::IsItemHovered())
+                        {
+                            osc::DrawTooltipBodyOnly("Click to edit");
+                        }
+
+                        ImGui::PopID();
+                    }
+
+                    ImGui::EndTable();
+                }
+            }
+            else
+            {
+                ImGui::TextDisabled("%s has no sockets", c.getName().c_str());
+            }
+
+            ImGui::EndMenu();
         }
     }
 

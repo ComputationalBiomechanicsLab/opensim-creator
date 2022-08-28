@@ -7,6 +7,7 @@
 #include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Platform/Config.hpp"
 #include "src/Tabs/LoadingTab.hpp"
 #include "src/Tabs/MeshImporterTab.hpp"
 #include "src/Tabs/ModelEditorTab.hpp"
@@ -198,6 +199,7 @@ public:
     void addUserOutputExtractor(OutputExtractor const& output) override
     {
         m_UserOutputExtractors.push_back(output);
+        osc::App::upd().updConfig().setIsPanelEnabled("Output Watches", true);
     }
 
     void removeUserOutputExtractor(int idx) override

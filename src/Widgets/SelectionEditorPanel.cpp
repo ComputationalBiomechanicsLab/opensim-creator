@@ -70,77 +70,6 @@ static void DrawTopLevelMembersEditor(osc::UndoableModelStatePair& uim)
     ImGui::PopID();
 }
 
-// draw socket editor for current selection
-static void DrawSocketEditor(std::optional<osc::ReassignSocketPopup>& reassignPopup, std::shared_ptr<osc::UndoableModelStatePair> const& uim)
-{
-    OpenSim::Component const* selected = uim->getSelected();
-
-    if (!selected)
-    {
-        ImGui::TextUnformatted("cannot draw socket editor: selection is blank (shouldn't be)");
-        return;
-    }
-
-    std::vector<std::string> socknames = osc::GetSocketNames(*selected);
-
-    if (socknames.empty())
-    {
-        ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
-        ImGui::Text("    (OpenSim::%s has no sockets)", selected->getConcreteClassName().c_str());
-        ImGui::PopStyleColor();
-        return;
-    }
-
-    // else: it has sockets with names, list each socket and provide the user
-    //       with the ability to reassign the socket's connectee
-
-    ImGui::Columns(2);
-    for (std::string const& sn : socknames)
-    {
-        ImGui::TextUnformatted(sn.c_str());
-        ImGui::NextColumn();
-
-        OpenSim::AbstractSocket const& socket = selected->getSocket(sn);
-        std::string sockname = socket.getConnecteePath();
-        std::string popupname = std::string{"reassign "} + sockname;
-
-        if (ImGui::Button(sockname.c_str()))
-        {
-            reassignPopup.emplace(popupname, uim, selected->getAbsolutePathString(), socket.getName());
-            reassignPopup->open();
-        }
-
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-            ImGui::TextUnformatted(socket.getConnecteeAsObject().getName().c_str());
-            ImGui::SameLine();
-            ImGui::TextDisabled("%s", socket.getConnecteeAsObject().getConcreteClassName().c_str());
-            ImGui::NewLine();
-            ImGui::TextDisabled("Left-Click: Reassign this socket's connectee");
-            ImGui::TextDisabled("Right-Click: Select the connectee");
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
-
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Right) && dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject()))
-        {
-            uim->setSelected(dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject()));
-            ImGui::NextColumn();
-            break;  // don't continue to traverse the sockets, because the selection changed
-        }
-
-        ImGui::NextColumn();
-    }
-    ImGui::Columns();
-
-    if (reassignPopup)
-    {
-        reassignPopup->draw();
-    }
-}
-
 class osc::SelectionEditorPanel::Impl final {
 public:
     Impl(std::shared_ptr<UndoableModelStatePair> model) :
@@ -177,34 +106,36 @@ public:
                 osc::ActionApplyPropertyEdit(*m_Model, *maybeUpdater);
             }
         }
-
-        if (!m_Model->getSelected())
-        {
-            return;
-        }
-
-        // socket editor
-        ImGui::Dummy({0.0f, 5.0f});
-        ImGui::TextUnformatted("sockets:");
-        ImGui::SameLine();
-        osc::DrawHelpMarker("What components this component is connected to.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
-        ImGui::Separator();
-        DrawSocketEditor(m_MaybeReassignSocketPopup, m_Model);
     }
 
 private:
     std::shared_ptr<UndoableModelStatePair> m_Model;
-    std::optional<ReassignSocketPopup> m_MaybeReassignSocketPopup;
     ObjectPropertiesEditor m_ObjectPropsEditor;
 };
+
+
+// public API (PIMPL)
 
 osc::SelectionEditorPanel::SelectionEditorPanel(std::shared_ptr<UndoableModelStatePair> model) :
     m_Impl{new Impl{std::move(model)}}
 {
 }
-osc::SelectionEditorPanel::SelectionEditorPanel(SelectionEditorPanel&&) noexcept = default;
-osc::SelectionEditorPanel& osc::SelectionEditorPanel::operator=(SelectionEditorPanel&&) noexcept = default;
-osc::SelectionEditorPanel::~SelectionEditorPanel() noexcept = default;
+
+osc::SelectionEditorPanel::SelectionEditorPanel(SelectionEditorPanel&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
+
+osc::SelectionEditorPanel& osc::SelectionEditorPanel::operator=(SelectionEditorPanel&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::SelectionEditorPanel::~SelectionEditorPanel() noexcept
+{
+    delete m_Impl;
+}
 
 void osc::SelectionEditorPanel::draw()
 {

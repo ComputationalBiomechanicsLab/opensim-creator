@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "src/Widgets/Popup.hpp"
+
 #include <memory>
 #include <string_view>
 
@@ -7,7 +9,7 @@ namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class ReassignSocketPopup final {
+    class ReassignSocketPopup final : public Popup {
     public:
         explicit ReassignSocketPopup(
             std::string_view popupName,
@@ -20,10 +22,13 @@ namespace osc
         ReassignSocketPopup& operator=(ReassignSocketPopup&&) noexcept;
         ~ReassignSocketPopup() noexcept;
 
-        bool isOpen() const;
-        void open();
-        void close();
-        void draw();
+
+        bool isOpen() const override;
+        void open() override;
+        void close() override;
+        bool beginPopup() override;
+        void drawPopupContent() override;
+        void endPopup() override;
 
     private:
         class Impl;
