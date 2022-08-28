@@ -2,10 +2,12 @@
 
 #include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/MiddlewareAPIs/EditorAPI.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Widgets/ComponentContextMenu.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
@@ -22,7 +24,9 @@ static constexpr inline int g_FilterMaxLen = 64;
 class osc::CoordinateEditor::Impl final {
 public:
 
-    Impl(std::shared_ptr<UndoableModelStatePair> uum) :
+    Impl(MainUIStateAPI* mainUIStateAPI, EditorAPI* editorAPI, std::shared_ptr<UndoableModelStatePair> uum) :
+        m_MainUIStateAPI{std::move(mainUIStateAPI)},
+        m_EditorAPI{std::move(editorAPI)},
         m_Uum{std::move(uum)}
     {
     }
@@ -199,9 +203,15 @@ private:
             osc::DrawTooltip(c->getName().c_str(), ss.str().c_str());
         }
 
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsItemClicked(ImGuiMouseButton_Left))
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
         {
             m_Uum->setSelected(c);
+        }
+        else if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+        {
+            auto popup = std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_MainUIStateAPI, m_EditorAPI, m_Uum, c->getAbsolutePath());
+            popup->open();
+            m_EditorAPI->pushPopup(std::move(popup));
         }
     }
 
@@ -296,6 +306,8 @@ private:
         }
     }
 
+    MainUIStateAPI* m_MainUIStateAPI;
+    EditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Uum;
     std::string m_Filter;
     bool m_SortByName = false;
@@ -307,8 +319,8 @@ private:
 
 // public API
 
-osc::CoordinateEditor::CoordinateEditor(std::shared_ptr<UndoableModelStatePair> uum) :
-    m_Impl{new Impl{std::move(uum)}}
+osc::CoordinateEditor::CoordinateEditor(MainUIStateAPI* mainUIStateAPI, EditorAPI* editorAPI, std::shared_ptr<UndoableModelStatePair> uum) :
+    m_Impl{new Impl{std::move(mainUIStateAPI), std::move(editorAPI), std::move(uum)}}
 {
 }
 
