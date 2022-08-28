@@ -712,7 +712,7 @@ private:
     MainMenuFileTab m_MainMenuFileTab;
     MainMenuAboutTab m_MainMenuAboutTab;
     LogViewer m_LogViewer;
-    ModelHierarchyPanel m_ComponentHierarchyPanel{"Hierarchy"};
+    ModelHierarchyPanel m_ComponentHierarchyPanel{"Hierarchy", [this](OpenSim::ComponentPath const& p)  { this->pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_Parent, this, m_Model, p)); }};
     CoordinateEditor m_CoordEditor{m_Parent, this, m_Model};
     PerfPanel m_PerfPanel{"Performance"};
     OutputWatchesPanel m_OutputWatchesPanel{"Output Watches", m_Model, m_Parent};

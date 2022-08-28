@@ -1,8 +1,10 @@
 #pragma once
 
+#include <functional>
 #include <string_view>
 
 namespace OpenSim { class Component; }
+namespace OpenSim { class ComponentPath; }
 namespace osc { class VirtualConstModelStatePair; }
 
 namespace osc
@@ -20,7 +22,7 @@ namespace osc
             ResponseType type = ResponseType::NothingHappened;
         };
 
-        ModelHierarchyPanel(std::string_view panelName);
+        ModelHierarchyPanel(std::string_view panelName, std::function<void(OpenSim::ComponentPath const&)> onRightClick = [](auto const&){});
         ModelHierarchyPanel(ModelHierarchyPanel const&) = delete;
         ModelHierarchyPanel(ModelHierarchyPanel&&) noexcept;
         ModelHierarchyPanel& operator=(ModelHierarchyPanel const&) = delete;

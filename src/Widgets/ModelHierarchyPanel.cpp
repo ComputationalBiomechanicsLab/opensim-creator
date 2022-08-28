@@ -145,7 +145,9 @@ static bool isSearchHit(std::string const& searchStr, ComponentPath const& cp)
 
 class osc::ModelHierarchyPanel::Impl final : public NamedPanel {
 public:
-    Impl(std::string_view panelName) :NamedPanel{std::move(panelName)}
+    Impl(std::string_view panelName, std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
+        NamedPanel{std::move(panelName)},
+        m_OnRightClick{std::move(onRightClick)}
     {
     }
 
@@ -353,6 +355,11 @@ public:
                 m_Response.type = ModelHierarchyPanel::ResponseType::SelectionChanged;
                 m_Response.ptr = cur;
             }
+
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+            {
+                m_OnRightClick(cur->getAbsolutePath());
+            }
         }
 
         // pop remaining dangling tree elements
@@ -366,6 +373,7 @@ public:
     }
 
 private:
+    std::function<void(OpenSim::ComponentPath const&)> m_OnRightClick;
     std::string m_CurrentSearch;
     bool m_ShowFrames = false;
     VirtualConstModelStatePair const* m_ModelState = nullptr;
@@ -375,8 +383,8 @@ private:
 
 // public API (PIMPL)
 
-osc::ModelHierarchyPanel::ModelHierarchyPanel(std::string_view panelName) :
-    m_Impl{new Impl{std::move(panelName)}}
+osc::ModelHierarchyPanel::ModelHierarchyPanel(std::string_view panelName, std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
+    m_Impl{new Impl{std::move(panelName), std::move(onRightClick)}}
 {
 }
 
