@@ -3,6 +3,8 @@
 #include "osc_config.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Maths/Constants.hpp"
+#include "src/Platform/Log.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/Algorithms.hpp"
 
@@ -365,7 +367,7 @@ namespace
                 return rv;
             }
 
-            SimTK::Vec3 v = prop.getValue();
+            SimTK::Vec3 originalValue = prop.getValue();
 
             double conversionCoefficient = 1.0;
 
@@ -374,45 +376,169 @@ namespace
             {
                 if (m_OrientationValsAreInRadians)
                 {
-                    if (ImGui::Button("R"))
+                    if (ImGui::Button("radians"))
                     {
                         m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                     }
-                    osc::DrawTooltipIfItemHovered("Radians", "This quantity is edited in radians (click to switch to degrees)");
+                    osc::DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in radians (click to switch to degrees)");
                 }
                 else
                 {
-                    if (ImGui::Button("D"))
+                    if (ImGui::Button("degrees"))
                     {
                         m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                     }
-                    osc::DrawTooltipIfItemHovered("Degrees", "This quantity is edited in degrees (click to switch to radians)");
+                    osc::DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in degrees (click to switch to radians)");
                 }
-                ImGui::SameLine();
 
                 conversionCoefficient = m_OrientationValsAreInRadians ? 1.0 : SimTK_RADIAN_TO_DEGREE;
             }
 
             std::array<float, 3> fv =
             {
-                static_cast<float>(conversionCoefficient * v[0]),
-                static_cast<float>(conversionCoefficient * v[1]),
-                static_cast<float>(conversionCoefficient * v[2])
+                static_cast<float>(conversionCoefficient * originalValue[0]),
+                static_cast<float>(conversionCoefficient * originalValue[1]),
+                static_cast<float>(conversionCoefficient * originalValue[2]),
             };
 
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-
-            if (ImGui::InputFloat3("##vec3editor", fv.data(), OSC_DEFAULT_FLOAT_INPUT_FORMAT))
+            bool save = false;
+            for (int i = 0; i < static_cast<int>(fv.size()); ++i)
             {
-                double inverseConversionCoefficient = 1.0/conversionCoefficient;
-                m_RetainedValue[0] = inverseConversionCoefficient * static_cast<double>(fv[0]);
-                m_RetainedValue[1] = inverseConversionCoefficient * static_cast<double>(fv[1]);
-                m_RetainedValue[2] = inverseConversionCoefficient * static_cast<double>(fv[2]);
+                ImGui::PushID(i);
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+
+                ImGui::PushStyleColor(ImGuiCol_Border, {1.0f, 0.0f, 0.0f, 1.0f});
+                if (ImGui::InputScalar("##valueinput", ImGuiDataType_Float, &fv[i], &m_StepSize, nullptr, OSC_DEFAULT_FLOAT_INPUT_FORMAT))
+                {
+                    double inverseConversionCoefficient = 1.0/conversionCoefficient;
+                    m_ActiveEdits[i] = inverseConversionCoefficient * static_cast<double>(fv[i]);
+                }
+                ImGui::PopStyleColor();
+                if (ItemValueShouldBeSaved())
+                {
+                    save = true;
+                }
+                if (ImGui::BeginPopupContextItem("##valuecontextmenu"))
+                {
+                    ImGui::Text("Set Step Size");
+                    ImGui::SameLine();
+                    osc::DrawHelpMarker("Sets the decrement/increment of the + and - buttons. Can be handy for tweaking property values");
+                    ImGui::Dummy({0.0f, 0.1f*ImGui::GetTextLineHeight()});
+                    ImGui::Separator();
+                    ImGui::Dummy({0.0f, 0.2f*ImGui::GetTextLineHeight()});
+
+                    if (ImGui::BeginTable("CommonChoicesTable", 2, ImGuiTableFlags_SizingStretchProp))
+                    {
+                        ImGui::TableSetupColumn("Type");
+                        ImGui::TableSetupColumn("Options");
+
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("Custom");
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::InputFloat("##stepsizeinput", &m_StepSize, 0.0f, 0.0f, OSC_DEFAULT_FLOAT_INPUT_FORMAT);
+
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("Lengths");
+                        ImGui::TableSetColumnIndex(1);
+                        if (ImGui::Button("10 cm"))
+                        {
+                            m_StepSize = 0.1f;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("1 cm"))
+                        {
+                            m_StepSize = 0.01f;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("1 mm"))
+                        {
+                            m_StepSize = 0.001f;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("0.1 mm"))
+                        {
+                            m_StepSize = 0.0001f;
+                        }
+
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("Angles (Degrees)");
+                        ImGui::TableSetColumnIndex(1);
+                        if (ImGui::Button("180"))
+                        {
+                            m_StepSize = 180.0f;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("90"))
+                        {
+                            m_StepSize = 90.0f;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("45"))
+                        {
+                            m_StepSize = 45.0f;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("10"))
+                        {
+                            m_StepSize = 10.0f;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("1"))
+                        {
+                            m_StepSize = 1.0f;
+                        }
+
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("Angles (Radians)");
+                        ImGui::TableSetColumnIndex(1);
+                        if (ImGui::Button("1 pi"))
+                        {
+                            m_StepSize = 180.0f;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("1/2 pi"))
+                        {
+                            m_StepSize = 90.0f;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("1/4 pi"))
+                        {
+                            m_StepSize = 45.0f;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("10/180 pi"))
+                        {
+                            m_StepSize = 10.0f;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("1/180 pi"))
+                        {
+                            m_StepSize = 1.0f;
+                        }
+
+                        ImGui::EndTable();
+                    }
+
+                    ImGui::EndPopup();
+                }
+                ImGui::PopID();
             }
 
-            if (ItemValueShouldBeSaved())
+            if (save)
             {
-                rv = MakePropValueSetter<SimTK::Vec3>(m_RetainedValue);
+                SimTK::Vec3 newValue = originalValue;
+                for (int i = 0; i < static_cast<int>(m_ActiveEdits.size()); ++i)
+                {
+                    if (m_ActiveEdits[i])
+                    {
+                        newValue[i] = *m_ActiveEdits[i];
+                    }
+                }
+                rv = MakePropValueSetter<SimTK::Vec3>(newValue);
             }
 
             ImGui::NextColumn();
@@ -420,8 +546,9 @@ namespace
             return rv;
         }
 
+        float m_StepSize = 0.001f;
         bool m_OrientationValsAreInRadians = false;
-        SimTK::Vec3 m_RetainedValue{};
+        std::array<std::optional<double>, 3> m_ActiveEdits{};
     };
 
     class Vec6PropertyEditor final : public PropertyEditorT<OpenSim::SimpleProperty<SimTK::Vec6>> {

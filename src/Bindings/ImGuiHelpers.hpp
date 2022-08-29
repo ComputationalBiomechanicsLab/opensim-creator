@@ -77,6 +77,9 @@ namespace osc
     // draws an overlay tooltip (content only)
     void DrawTooltipBodyOnly(char const* text);
 
+    // draws an overlay tooltip (content only) if the last item is hovered
+    void DrawTooltipBodyOnlyIfItemHovered(char const*);
+
     // draws an overlay tooltip with a header and description
     void DrawTooltip(char const* header, char const* description = nullptr);
 

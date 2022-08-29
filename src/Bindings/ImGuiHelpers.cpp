@@ -339,6 +339,14 @@ void osc::DrawTooltipBodyOnly(char const* text)
     ImGui::EndTooltip();
 }
 
+void osc::DrawTooltipBodyOnlyIfItemHovered(char const* text)
+{
+    if (ImGui::IsItemHovered())
+    {
+        DrawTooltipBodyOnly(text);
+    }
+}
+
 void osc::DrawTooltip(char const* header, char const* description)
 {
     ImGui::BeginTooltip();
