@@ -51,7 +51,7 @@ namespace
             m_FixupScaleFactor{1.0f},
             m_MaybeSelected{},
             m_MaybeHovered{},
-            m_MaybeIsolated{}
+            m_MaybeShowingOnly{}
         {
             osc::InitializeModel(*m_Model);
             osc::InitializeState(*m_Model);
@@ -63,7 +63,7 @@ namespace
             m_FixupScaleFactor{other.m_FixupScaleFactor},
             m_MaybeSelected{other.m_MaybeSelected},
             m_MaybeHovered{other.m_MaybeHovered},
-            m_MaybeIsolated{other.m_MaybeIsolated}
+            m_MaybeShowingOnly{other.m_MaybeShowingOnly}
         {
             osc::InitializeModel(*m_Model);
             osc::InitializeState(*m_Model);
@@ -169,30 +169,30 @@ namespace
             }
         }
 
-        OpenSim::ComponentPath const& getIsolatedPath() const
+        OpenSim::ComponentPath const& getShowingOnlyPath() const
         {
-            return m_MaybeIsolated;
+            return m_MaybeShowingOnly;
         }
 
-        void setIsolatedPath(OpenSim::ComponentPath const& p)
+        void setShowingOnlyPath(OpenSim::ComponentPath const& p)
         {
-            m_MaybeIsolated = p;
+            m_MaybeShowingOnly = p;
         }
 
-        OpenSim::Component const* getIsolated() const override
+        OpenSim::Component const* getShowingOnly() const override
         {
-            return osc::FindComponent(*m_Model, m_MaybeIsolated);
+            return osc::FindComponent(*m_Model, m_MaybeShowingOnly);
         }
 
-        void setIsolated(OpenSim::Component const* c) override
+        void setShowingOnly(OpenSim::Component const* c) override
         {
             if (c)
             {
-                m_MaybeIsolated = c->getAbsolutePath();
+                m_MaybeShowingOnly = c->getAbsolutePath();
             }
             else
             {
-                m_MaybeIsolated = {};
+                m_MaybeShowingOnly = {};
             }
         }
 
@@ -214,14 +214,14 @@ namespace
         OpenSim::ComponentPath m_MaybeHovered;
 
         // (maybe) absolute path to the current isolation (empty otherwise)
-        OpenSim::ComponentPath m_MaybeIsolated;
+        OpenSim::ComponentPath m_MaybeShowingOnly;
     };
 
-    static void CopySelectedHoveredAndIsolated(UiModelStatePair const& src, UiModelStatePair& dest)
+    static void CopySelectedHoveredAndShowingOnly(UiModelStatePair const& src, UiModelStatePair& dest)
     {
         dest.setSelectedPath(src.getSelectedPath());
         dest.setHoveredPath(src.getHoveredPath());
-        dest.setIsolatedPath(src.getIsolatedPath());
+        dest.setShowingOnlyPath(src.getShowingOnlyPath());
     }
 }
 
@@ -362,7 +362,7 @@ public:
     void setModel(std::unique_ptr<OpenSim::Model> newModel)
     {
         UiModelStatePair p{std::move(newModel)};
-        CopySelectedHoveredAndIsolated(m_Scratch, p);
+        CopySelectedHoveredAndShowingOnly(m_Scratch, p);
         m_Scratch = std::move(p);
     }
 
@@ -416,14 +416,14 @@ public:
         m_Scratch.setHovered(c);
     }
 
-    OpenSim::Component const* getIsolated() const
+    OpenSim::Component const* getShowingOnly() const
     {
-        return m_Scratch.getIsolated();
+        return m_Scratch.getShowingOnly();
     }
 
-    void setIsolated(OpenSim::Component const* c)
+    void setShowingOnly(OpenSim::Component const* c)
     {
-        m_Scratch.setIsolated(c);
+        m_Scratch.setShowingOnly(c);
     }
 
 private:
@@ -625,9 +625,9 @@ private:
         if (c)
         {
             UiModelStatePair newScratch{std::make_unique<OpenSim::Model>(*c->getModel())};
-            CopySelectedHoveredAndIsolated(m_Scratch, newScratch);
+            CopySelectedHoveredAndShowingOnly(m_Scratch, newScratch);
             newScratch.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
-            newScratch.setIsolated(osc::FindComponent(newScratch.getModel(), c->getIsolatedAbsPath()));
+            newScratch.setShowingOnly(osc::FindComponent(newScratch.getModel(), c->getShowingOnlyAbsPath()));
             m_Scratch = std::move(newScratch);
         }
     }
@@ -656,9 +656,9 @@ private:
         // - user's selection state should be "sticky" between undo/redo
         // - user's scene scale factor should be "sticky" between undo/redo
         UiModelStatePair newModel{std::make_unique<OpenSim::Model>(*parent->getModel())};
-        CopySelectedHoveredAndIsolated(m_Scratch, newModel);
+        CopySelectedHoveredAndShowingOnly(m_Scratch, newModel);
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
-        newModel.setIsolated(osc::FindComponent(newModel.getModel(), parent->getIsolatedAbsPath()));
+        newModel.setShowingOnly(osc::FindComponent(newModel.getModel(), parent->getShowingOnlyAbsPath()));
 
         m_Scratch = std::move(newModel);
         m_CurrentHead = parent->getID();
@@ -686,9 +686,9 @@ private:
         // - user's selection state should be "sticky" between undo/redo
         // - user's scene scale factor should be "sticky" between undo/redo
         UiModelStatePair newModel{std::make_unique<OpenSim::Model>(*c->getModel())};
-        CopySelectedHoveredAndIsolated(m_Scratch, newModel);
+        CopySelectedHoveredAndShowingOnly(m_Scratch, newModel);
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
-        newModel.setIsolated(osc::FindComponent(newModel.getModel(), c->getIsolatedAbsPath()));
+        newModel.setShowingOnly(osc::FindComponent(newModel.getModel(), c->getShowingOnlyAbsPath()));
 
         m_Scratch = std::move(newModel);
         m_CurrentHead = c->getID();
@@ -919,12 +919,12 @@ void osc::UndoableModelStatePair::setHovered(OpenSim::Component const* c)
     m_Impl->setHovered(std::move(c));
 }
 
-OpenSim::Component const* osc::UndoableModelStatePair::getIsolated() const
+OpenSim::Component const* osc::UndoableModelStatePair::getShowingOnly() const
 {
-    return m_Impl->getIsolated();
+    return m_Impl->getShowingOnly();
 }
 
-void osc::UndoableModelStatePair::setIsolated(OpenSim::Component const* c)
+void osc::UndoableModelStatePair::setShowingOnly(OpenSim::Component const* c)
 {
-    m_Impl->setIsolated(std::move(c));
+    m_Impl->setShowingOnly(std::move(c));
 }

@@ -321,11 +321,11 @@ private:
                 osc::ActionRedoCurrentlyEditedModel(*m_Model);
             }
 
-            if (ImGui::MenuItem(ICON_FA_EYE_SLASH " Clear Isolation", nullptr, false, m_Model->getIsolated()))
+            if (ImGui::MenuItem(ICON_FA_EYE_SLASH " Clear Showing Only", nullptr, false, m_Model->getShowingOnly()))
             {
-                osc::ActionSetModelIsolationTo(*m_Model, nullptr);
+                osc::ActionSetModelShowingOnlyTo(*m_Model, nullptr);
             }
-            DrawTooltipIfItemHovered("Clear Isolation", "Clear current isolation setting. This is effectively the opposite of 'Isolate'ing a component.");
+            DrawTooltipIfItemHovered("Clear Showing Only", "Clear current component from being the only one that is shown. This is effectively the opposite of 'Show only'ing a component.");
 
             {
                 float scaleFactor = m_Model->getFixupScaleFactor();

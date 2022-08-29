@@ -105,13 +105,13 @@ namespace
         {
             OpenSim::Component const* const selected = msp.getSelected();
             OpenSim::Component const* const hovered = msp.getHovered();
-            OpenSim::Component const* const isolated = msp.getIsolated();
+            OpenSim::Component const* const showingOnly = msp.getShowingOnly();
 
             if (msp.getModelVersion() != m_LastModelVersion ||
                 msp.getStateVersion() != m_LastStateVersion ||
                 selected != osc::FindComponent(msp.getModel(), m_LastSelection) ||
                 hovered != osc::FindComponent(msp.getModel(), m_LastHover) ||
-                isolated != osc::FindComponent(msp.getModel(), m_LastIsolation) ||
+                showingOnly != osc::FindComponent(msp.getModel(), m_LastShowingOnly) ||
                 msp.getFixupScaleFactor() != m_LastFixupFactor ||
                 decorationOptions != m_LastDecorationOptions ||
                 panelFlags != m_LastPanelFlags)
@@ -121,7 +121,7 @@ namespace
                 m_LastStateVersion = msp.getStateVersion();
                 m_LastSelection = selected ? selected->getAbsolutePath() : OpenSim::ComponentPath{};
                 m_LastHover = hovered ? hovered->getAbsolutePath() : OpenSim::ComponentPath{};
-                m_LastIsolation = isolated ? isolated->getAbsolutePath() : OpenSim::ComponentPath{};
+                m_LastShowingOnly = showingOnly ? showingOnly->getAbsolutePath() : OpenSim::ComponentPath{};
                 m_LastFixupFactor = msp.getFixupScaleFactor();
                 m_LastDecorationOptions = decorationOptions;
                 m_LastPanelFlags = panelFlags;
@@ -133,10 +133,10 @@ namespace
                 {
                     osc::GenerateModelDecorations(msp, m_Decorations, decorationOptions);
 
-                    // cull isolated decorations
-                    if (msp.getIsolated())
+                    // cull 'show only' (isolated) decorations
+                    if (msp.getShowingOnly())
                     {
-                        osc::RemoveErase(m_Decorations, [](osc::SceneDecoration const& dec) { return !(dec.flags & (osc::SceneDecorationFlags_IsIsolated | osc::SceneDecorationFlags_IsChildOfIsolated)); });
+                        osc::RemoveErase(m_Decorations, [](osc::SceneDecoration const& dec) { return !(dec.flags & (osc::SceneDecorationFlags_IsShowingOnly| osc::SceneDecorationFlags_IsChildOfShowingOnly)); });
                     }
                 }
 
@@ -184,7 +184,7 @@ namespace
         osc::UID m_LastStateVersion;
         OpenSim::ComponentPath m_LastSelection;
         OpenSim::ComponentPath m_LastHover;
-        OpenSim::ComponentPath m_LastIsolation;
+        OpenSim::ComponentPath m_LastShowingOnly;
         float m_LastFixupFactor = 1.0f;
         osc::CustomDecorationOptions m_LastDecorationOptions;
         osc::UiModelViewerFlags m_LastPanelFlags = osc::UiModelViewerFlags_None;
@@ -573,9 +573,6 @@ private:
         // find all collisions along the camera ray
         std::vector<SceneCollision> const collisions = GetAllSceneCollisions(m_Scene.getBVH(), decorations, cameraRay);
 
-        // find the substring that describes what's isolated in the scene
-        std::string const isolatedPath = msp.getIsolated() ? msp.getIsolated()->getAbsolutePathString() : std::string{};
-
         // filter through the collisions list
         int closestIdx = -1;
         float closestDistance = std::numeric_limits<float>::max();
@@ -593,11 +590,6 @@ private:
             if (decoration.id.empty())
             {
                 continue;  // it isn't labelled geometry, so probably shouldn't participate
-            }
-
-            if (!StartsWith(decoration.id, isolatedPath))
-            {
-                continue;  // it's not in the current isolation set
             }
 
             closestIdx = static_cast<int>(c.decorationIndex);

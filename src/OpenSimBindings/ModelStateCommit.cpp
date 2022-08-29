@@ -30,7 +30,7 @@ public:
         m_Model{std::make_unique<OpenSim::Model>(msp.getModel())},
         m_ModelVersion{msp.getModelVersion()},
         m_FixupScaleFactor{msp.getFixupScaleFactor()},
-        m_IsolatedAbsPath{msp.getIsolated() ? msp.getIsolated()->getAbsolutePath() : OpenSim::ComponentPath{}},
+        m_ShowingOnlyAbsPath{msp.getShowingOnly() ? msp.getShowingOnly()->getAbsolutePath() : OpenSim::ComponentPath{}},
         m_CommitMessage{std::move(message)}
     {
         osc::InitializeModel(*m_Model);
@@ -77,9 +77,9 @@ public:
         return m_FixupScaleFactor;
     }
 
-    OpenSim::ComponentPath const& getIsolatedAbsPath() const
+    OpenSim::ComponentPath const& getShowingOnlyAbsPath() const
     {
-        return m_IsolatedAbsPath;
+        return m_ShowingOnlyAbsPath;
     }
 
 private:
@@ -90,7 +90,7 @@ private:
     std::unique_ptr<OpenSim::Model> m_Model;
     UID m_ModelVersion;
     float m_FixupScaleFactor;
-    OpenSim::ComponentPath m_IsolatedAbsPath;
+    OpenSim::ComponentPath m_ShowingOnlyAbsPath;
     std::string m_CommitMessage;
 };
 
@@ -153,7 +153,7 @@ float osc::ModelStateCommit::getFixupScaleFactor() const
     return m_Impl->getFixupScaleFactor();
 }
 
-OpenSim::ComponentPath const& osc::ModelStateCommit::getIsolatedAbsPath() const
+OpenSim::ComponentPath const& osc::ModelStateCommit::getShowingOnlyAbsPath() const
 {
-    return m_Impl->getIsolatedAbsPath();
+    return m_Impl->getShowingOnlyAbsPath();
 }

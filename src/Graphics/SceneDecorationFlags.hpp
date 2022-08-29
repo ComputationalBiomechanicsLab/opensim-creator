@@ -10,7 +10,7 @@ namespace osc
         SceneDecorationFlags_IsChildOfSelected = 1<<1,
         SceneDecorationFlags_IsHovered = 1<<2,
         SceneDecorationFlags_IsChildOfHovered = 1<<3,
-        SceneDecorationFlags_IsIsolated = 1<<4,
-        SceneDecorationFlags_IsChildOfIsolated = 1<<5,
+        SceneDecorationFlags_IsShowingOnly = 1<<4,
+        SceneDecorationFlags_IsChildOfShowingOnly = 1<<5,
     };
 }

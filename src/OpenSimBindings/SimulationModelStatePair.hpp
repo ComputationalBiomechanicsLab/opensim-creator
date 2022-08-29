@@ -35,8 +35,8 @@ namespace osc
         OpenSim::Component const* getHovered() const override;
         void setHovered(OpenSim::Component const*) override;
 
-        OpenSim::Component const* getIsolated() const override;
-        void setIsolated(OpenSim::Component const*) override;
+        OpenSim::Component const* getShowingOnly() const override;
+        void setShowingOnly(OpenSim::Component const*) override;
 
         float getFixupScaleFactor() const override;
         void setFixupScaleFactor(float) override;

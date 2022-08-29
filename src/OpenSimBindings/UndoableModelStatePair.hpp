@@ -111,8 +111,8 @@ namespace osc
         void setHovered(OpenSim::Component const* c) override;
 
         // read/manipulate current isolation (the thing that's only being drawn - if any)
-        OpenSim::Component const* getIsolated() const override;
-        void setIsolated(OpenSim::Component const* c) override;
+        OpenSim::Component const* getShowingOnly() const override;
+        void setShowingOnly(OpenSim::Component const* c) override;
 
     private:
         class Impl;

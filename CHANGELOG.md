@@ -201,6 +201,8 @@ All notable changes to this project will be documented here. The format is based
   lines, with `-` and `+` buttons for stepping the associated value down/up. The step size can
   be adjusted by right-clicking the input (#401).
 
+- Renamed 'isolate'/'clear isolation' to 'show only'/'show all'/'clear show only' (#393)
+
 
 ## [0.2.0] - 2022/07/04
 

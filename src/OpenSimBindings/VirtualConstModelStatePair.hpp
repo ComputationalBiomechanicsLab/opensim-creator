@@ -50,7 +50,7 @@ namespace osc
             return nullptr;
         }
 
-        virtual OpenSim::Component const* getIsolated() const
+        virtual OpenSim::Component const* getShowingOnly() const
         {
             return nullptr;
         }

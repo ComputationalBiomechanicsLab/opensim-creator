@@ -1067,19 +1067,19 @@ bool osc::ActionReassignComponentSocket(
     }
 }
 
-bool osc::ActionSetModelIsolationTo(osc::UndoableModelStatePair& uim, OpenSim::Component const* c)
+bool osc::ActionSetModelShowingOnlyTo(osc::UndoableModelStatePair& uim, OpenSim::Component const* c)
 {
-    uim.setIsolated(c);
+    uim.setShowingOnly(c);
 
     if (c)
     {
         std::stringstream ss;
-        ss << "isolated " << c->getName();
+        ss << "showing only " << c->getName();
         uim.commit(std::move(ss).str());
     }
     else
     {
-        uim.commit("cleared isolation");
+        uim.commit("showing all");
     }
 
     return true;

@@ -239,21 +239,22 @@ private:
         //DrawSelectOwnerMenu(*m_Model, *c);
         DrawWatchOutputMenu(*m_MainUIStateAPI, *c);
 
-        if (c != m_Model->getIsolated())
+        if (c != m_Model->getShowingOnly())
         {
-            if (ImGui::MenuItem("Isolate"))
+            if (ImGui::MenuItem("Show Only This"))
             {
-                osc::ActionSetModelIsolationTo(*m_Model, c);
+                osc::ActionSetModelShowingOnlyTo(*m_Model, c);
             }
+            osc::DrawTooltipIfItemHovered("Show Only This", "Only show this component in the 3D viewers");
         }
         else
         {
-            if (ImGui::MenuItem("Clear Isolation"))
+            if (ImGui::MenuItem("Show All"))
             {
-                osc::ActionSetModelIsolationTo(*m_Model, nullptr);
+                osc::ActionSetModelShowingOnlyTo(*m_Model, nullptr);
             }
+            osc::DrawTooltipIfItemHovered("Show All", "Stop showing only this component and return to showing all components in the model");
         }
-        osc::DrawTooltipIfItemHovered("Toggle Isolation", "Only show this component in the visualizer\n\nThis can be disabled from the Edit menu (Edit -> Clear Isolation)");
 
         if (ImGui::MenuItem("Copy Absolute Path to Clipboard"))
         {

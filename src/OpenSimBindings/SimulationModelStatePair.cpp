@@ -75,20 +75,20 @@ public:
         }
     }
 
-    OpenSim::Component const* getIsolated() const
+    OpenSim::Component const* getShowingOnly() const
     {
-        return FindComponent(getModel(), m_Isolated);
+        return FindComponent(getModel(), m_ShowingOnly);
     }
 
-    void setIsolated(OpenSim::Component const* c)
+    void setShowingOnly(OpenSim::Component const* c)
     {
         if (c)
         {
-            m_Isolated = c->getAbsolutePath();
+            m_ShowingOnly = c->getAbsolutePath();
         }
         else
         {
-            m_Isolated = {};
+            m_ShowingOnly = {};
         }
     }
 
@@ -135,7 +135,7 @@ private:
     UID m_StateVersion;
     OpenSim::ComponentPath m_Selected;
     OpenSim::ComponentPath m_Hovered;
-    OpenSim::ComponentPath m_Isolated;
+    OpenSim::ComponentPath m_ShowingOnly;
     std::shared_ptr<Simulation> m_Simulation;
     SimulationReport m_SimulationReport;
 };
@@ -201,14 +201,14 @@ void osc::SimulationModelStatePair::setHovered(OpenSim::Component const* c)
     m_Impl->setHovered(std::move(c));
 }
 
-OpenSim::Component const* osc::SimulationModelStatePair::getIsolated() const
+OpenSim::Component const* osc::SimulationModelStatePair::getShowingOnly() const
 {
-    return m_Impl->getIsolated();
+    return m_Impl->getShowingOnly();
 }
 
-void osc::SimulationModelStatePair::setIsolated(OpenSim::Component const* c)
+void osc::SimulationModelStatePair::setShowingOnly(OpenSim::Component const* c)
 {
-    m_Impl->setIsolated(std::move(c));
+    m_Impl->setShowingOnly(std::move(c));
 }
 
 float osc::SimulationModelStatePair::getFixupScaleFactor() const
