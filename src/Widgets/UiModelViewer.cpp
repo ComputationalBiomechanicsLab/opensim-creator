@@ -130,7 +130,15 @@ namespace
                 // generate decorations from OpenSim/SimTK backend
                 m_Decorations.clear();
                 OSC_PERF("generate decorations");
-                osc::GenerateModelDecorations(msp, m_Decorations, decorationOptions);
+                {
+                    osc::GenerateModelDecorations(msp, m_Decorations, decorationOptions);
+
+                    // cull isolated decorations
+                    if (msp.getIsolated())
+                    {
+                        osc::RemoveErase(m_Decorations, [](osc::SceneDecoration const& dec) { return !(dec.flags & (osc::SceneDecorationFlags_IsIsolated | osc::SceneDecorationFlags_IsChildOfIsolated)); });
+                    }
+                }
 
                 // create a BVH from the not-overlay parts of the scene
                 osc::UpdateSceneBVH(m_Decorations, m_BVH);
