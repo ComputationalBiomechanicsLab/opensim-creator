@@ -239,22 +239,19 @@ private:
         //DrawSelectOwnerMenu(*m_Model, *c);
         DrawWatchOutputMenu(*m_MainUIStateAPI, *c);
 
-        if (c != m_Model->getShowingOnly())
+        bool selected = c == m_Model->getShowingOnly();
+        if (ImGui::MenuItem("Show Only This", nullptr, &selected))
         {
-            if (ImGui::MenuItem("Show Only This"))
+            if (selected)
             {
                 osc::ActionSetModelShowingOnlyTo(*m_Model, c);
             }
-            osc::DrawTooltipIfItemHovered("Show Only This", "Only show this component in the 3D viewers");
-        }
-        else
-        {
-            if (ImGui::MenuItem("Show All"))
+            else
             {
                 osc::ActionSetModelShowingOnlyTo(*m_Model, nullptr);
             }
-            osc::DrawTooltipIfItemHovered("Show All", "Stop showing only this component and return to showing all components in the model");
         }
+        osc::DrawTooltipIfItemHovered("Show Only This", "Only show this component in the 3D viewers");
 
         if (ImGui::MenuItem("Copy Absolute Path to Clipboard"))
         {
