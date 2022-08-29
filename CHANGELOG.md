@@ -203,6 +203,9 @@ All notable changes to this project will be documented here. The format is based
 
 - Renamed 'isolate'/'clear isolation' to 'show only'/'show all'/'clear show only' (#393)
 
+- The muscle plotting widget's "export CSV" now has a submenu that enables users to select
+  which (or all) curves they want to export (#394)
+
 
 ## [0.2.0] - 2022/07/04
 

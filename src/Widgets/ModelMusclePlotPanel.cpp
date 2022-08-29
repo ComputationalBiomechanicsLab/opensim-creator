@@ -1818,11 +1818,40 @@ namespace
                 }
                 osc::DrawTooltipIfItemHovered("import CSV overlay", "Imports the specified CSV file as an overlay over the current plot. This is handy fitting muscle curves against externally-supplied data.\n\nThe provided CSV file must contain a header row and at least two columns of numeric data on each data row (additional columns are ignored, rows containing too few columns are ignored). The values in the columns must match this plot's axes.");
 
-                if (ImGui::MenuItem("export to CSV"))
+                if (ImGui::BeginMenu("export CSV"))
                 {
-                    ActionPromptUserToSavePlotLinesToCSV(coord, shared->PlotParams, m_Lines);
+                    int id = 0;
+
+                    for (int i = 0; i < m_Lines.getNumOtherPlots(); ++i)
+                    {
+                        ImGui::PushID(id++);
+                        if (ImGui::MenuItem(m_Lines.getOtherPlot(i).getName().c_str()))
+                        {
+                            ActionPromptUserToSavePlotToCSV(coord, shared->PlotParams, m_Lines.getOtherPlot(i));
+                        }
+                        ImGui::PopID();
+                    }
+
+                    ImGui::PushID(id++);
+                    if (ImGui::MenuItem(m_Lines.getActivePlot().getName().c_str()))
+                    {
+                        ActionPromptUserToSavePlotToCSV(coord, shared->PlotParams, m_Lines.getActivePlot());
+                    }
+
+                    ImGui::PopID();
+
+                    ImGui::Separator();
+
+                    ImGui::PushID(id++);
+                    if (ImGui::MenuItem("Export All Curves"))
+                    {
+                        ActionPromptUserToSavePlotLinesToCSV(coord, shared->PlotParams, m_Lines);
+                    }
+                    osc::DrawTooltipIfItemHovered("Export All Curves to CSV", "Exports all curves in the plot to a CSV file.\n\nThe implementation will try to group things together by X value, but the CSV file *may* contain sparse rows if (e.g.) some curves have a different number of plot points, or some curves were loaded from another CSV, etc.");
+                    ImGui::PopID();
+
+                    ImGui::EndMenu();
                 }
-                osc::DrawTooltipIfItemHovered("export to CSV", "Exports all curves in the plot to a CSV file.\n\nThe implementation will try to group things together by X value, but the CSV file *may* contain sparse rows if (e.g.) some curves have a different number of plot points, or some curves were loaded from another CSV, etc.");
 
                 ImGui::EndPopup();
             }
