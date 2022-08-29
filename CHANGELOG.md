@@ -214,6 +214,8 @@ All notable changes to this project will be documented here. The format is based
   the same coordinate and muscle, but it does not (yet) copy the chosen output or previous
   curves (#398)
 
+- The editor screen's main menu now has an `Add` menu for adding components (#405)
+
 
 ## [0.2.0] - 2022/07/04
 

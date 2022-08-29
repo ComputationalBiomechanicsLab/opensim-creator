@@ -139,7 +139,8 @@ public:
     {
         m_MainMenuFileTab.draw(m_Parent, m_Model.get());
         drawMainMenuEditTab();
-        drawMainMenuSimulateTab();
+        drawMainMenuAddTab();
+        drawMainMenuToolsTab();
         drawMainMenuWindowTab();
         m_MainMenuAboutTab.draw();
 
@@ -376,7 +377,16 @@ private:
         }
     }
 
-    void drawMainMenuSimulateTab()
+    void drawMainMenuAddTab()
+    {
+        if (ImGui::BeginMenu("Add"))
+        {
+            m_MainMenuAddTabMenuItems.draw();
+            ImGui::EndMenu();
+        }
+    }
+
+    void drawMainMenuToolsTab()
     {
         if (ImGui::BeginMenu("Tools"))
         {
@@ -710,6 +720,7 @@ private:
 
     // UI widgets/popups
     MainMenuFileTab m_MainMenuFileTab;
+    ModelActionsMenuItems m_MainMenuAddTabMenuItems{this, m_Model};
     MainMenuAboutTab m_MainMenuAboutTab;
     LogViewer m_LogViewer;
     ModelHierarchyPanel m_ComponentHierarchyPanel{"Hierarchy", [this](OpenSim::ComponentPath const& p)  { this->pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_Parent, this, m_Model, p)); }};
