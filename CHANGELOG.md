@@ -206,6 +206,8 @@ All notable changes to this project will be documented here. The format is based
 - The muscle plotting widget's "export CSV" now has a submenu that enables users to select
   which (or all) curves they want to export (#394)
 
+- Updated ImPlot to e80e42e (#409) - contains perf improvements etc.
+
 
 ## [0.2.0] - 2022/07/04
 
