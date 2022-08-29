@@ -197,6 +197,10 @@ All notable changes to this project will be documented here. The format is based
     whenever something is right-clicked
   - See #403
 
+- Vec3 properties in the property editor panel now show the X, Y, and Z components on separate
+  lines, with `-` and `+` buttons for stepping the associated value down/up. The step size can
+  be adjusted by right-clicking the input (#401).
+
 
 ## [0.2.0] - 2022/07/04
 
