@@ -1620,12 +1620,12 @@ namespace
             if (ImGui::BeginCombo("##coordname", coordName.c_str(), ImGuiComboFlags_NoArrowButton))
             {
                 OpenSim::Coordinate const* current = osc::FindComponent<OpenSim::Coordinate>(shared->Uim->getModel(), shared->PlotParams.getCoordinatePath());
-                for (OpenSim::Coordinate const& coord : shared->Uim->getModel().getComponentList<OpenSim::Coordinate>())
+                for (OpenSim::Coordinate const& c : shared->Uim->getModel().getComponentList<OpenSim::Coordinate>())
                 {
-                    bool selected = &coord == current;
-                    if (ImGui::Selectable(coord.getName().c_str(), &selected))
+                    bool selected = &c == current;
+                    if (ImGui::Selectable(c.getName().c_str(), &selected))
                     {
-                        shared->PlotParams.setCoordinatePath(coord.getAbsolutePath());
+                        shared->PlotParams.setCoordinatePath(c.getAbsolutePath());
                     }
                 }
                 ImGui::EndCombo();
