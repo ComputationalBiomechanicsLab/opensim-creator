@@ -3,6 +3,7 @@
 #include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Formats/CSV.hpp"
+#include "src/MiddlewareAPIs/EditorAPI.hpp"
 #include "src/OpenSimBindings/ModelStateCommit.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
@@ -1402,22 +1403,32 @@ namespace
 {
     // data that is shared between all states of the widget
     struct SharedStateData final {
-        explicit SharedStateData(std::shared_ptr<osc::UndoableModelStatePair> uim) : Uim{ std::move(uim) }
+        explicit SharedStateData(
+            osc::EditorAPI* editorAPI,
+            std::shared_ptr<osc::UndoableModelStatePair> uim) :
+
+            m_EditorAPI{std::move(editorAPI)},
+            Uim{ std::move(uim) }
         {
             OSC_ASSERT(Uim != nullptr);
         }
 
-        SharedStateData(std::shared_ptr<osc::UndoableModelStatePair> uim,
+        SharedStateData(
+            osc::EditorAPI* editorAPI,
+            std::shared_ptr<osc::UndoableModelStatePair> uim,
             OpenSim::ComponentPath const& coordPath,
             OpenSim::ComponentPath const& musclePath) :
+
+            m_EditorAPI{std::move(editorAPI)},
             Uim{std::move(uim)},
             PlotParams{Uim->getLatestCommit(), coordPath, musclePath, GetDefaultMuscleOutput(), g_DefaultNumPlotPoints}
         {
             OSC_ASSERT(Uim != nullptr);
         }
 
+        osc::EditorAPI* m_EditorAPI;
         std::shared_ptr<osc::UndoableModelStatePair> Uim;
-        PlotParameters PlotParams{ Uim->getLatestCommit(), OpenSim::ComponentPath{}, OpenSim::ComponentPath{}, GetDefaultMuscleOutput(), 180 };
+        PlotParameters PlotParams{Uim->getLatestCommit(), OpenSim::ComponentPath{}, OpenSim::ComponentPath{}, GetDefaultMuscleOutput(), 180};
     };
 
     // base class for a single widget state
@@ -1907,6 +1918,15 @@ namespace
                 ImGui::MenuItem("show markers on other plots", nullptr, &m_ShowMarkersOnOtherPlots);
                 ImGui::MenuItem("snap cursor to datapoints", nullptr, &m_SnapCursor);
 
+                if (ImGui::MenuItem("duplicate plot"))
+                {
+                    OpenSim::Muscle const* musc = osc::FindComponent<OpenSim::Muscle>(shared->Uim->getModel(), shared->PlotParams.getMusclePath());
+                    if (musc)
+                    {
+                        shared->m_EditorAPI->addMusclePlot(coord, *musc);
+                    }
+                }
+
                 if (ImGui::MenuItem("import CSV overlay"))
                 {
                     ActionPromptUserForCSVOverlayFile(m_Lines);
@@ -2103,18 +2123,25 @@ namespace
 class osc::ModelMusclePlotPanel::Impl final {
 public:
 
-    Impl(std::shared_ptr<UndoableModelStatePair> uim, std::string_view panelName) :
-        m_SharedData{std::move(uim)},
+    Impl(
+        EditorAPI* editorAPI,
+        std::shared_ptr<UndoableModelStatePair> uim,
+        std::string_view panelName) :
+
+        m_SharedData{std::move(editorAPI), std::move(uim)},
         m_ActiveState{std::make_unique<PickMuscleState>(&m_SharedData)},
         m_PanelName{std::move(panelName)}
     {
     }
 
-    Impl(std::shared_ptr<UndoableModelStatePair> uim,
-         std::string_view panelName,
-         OpenSim::ComponentPath const& coordPath,
-         OpenSim::ComponentPath const& musclePath) :
-        m_SharedData{std::move(uim), coordPath, musclePath},
+    Impl(
+        EditorAPI* editorAPI,
+        std::shared_ptr<UndoableModelStatePair> uim,
+        std::string_view panelName,
+        OpenSim::ComponentPath const& coordPath,
+        OpenSim::ComponentPath const& musclePath) :
+
+        m_SharedData{std::move(editorAPI), std::move(uim), coordPath, musclePath},
         m_ActiveState{std::make_unique<ShowingPlotState>(&m_SharedData)},
         m_PanelName{std::move(panelName)}
     {
@@ -2179,17 +2206,23 @@ private:
 
 // public API (PIMPL)
 
-osc::ModelMusclePlotPanel::ModelMusclePlotPanel(std::shared_ptr<UndoableModelStatePair> uim,
-                                                std::string_view panelName) :
-    m_Impl{new Impl{std::move(uim), std::move(panelName)}}
+osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
+    EditorAPI* editorAPI,
+    std::shared_ptr<UndoableModelStatePair> uim,
+    std::string_view panelName) :
+
+    m_Impl{new Impl{std::move(editorAPI), std::move(uim), std::move(panelName)}}
 {
 }
 
-osc::ModelMusclePlotPanel::ModelMusclePlotPanel(std::shared_ptr<UndoableModelStatePair> uim,
-                                                std::string_view panelName,
-                                                OpenSim::ComponentPath const& coordPath,
-                                                OpenSim::ComponentPath const& musclePath) :
-    m_Impl{new Impl{std::move(uim), std::move(panelName), coordPath, musclePath}}
+osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
+    EditorAPI* editorAPI,
+    std::shared_ptr<UndoableModelStatePair> uim,
+    std::string_view panelName,
+    OpenSim::ComponentPath const& coordPath,
+    OpenSim::ComponentPath const& musclePath) :
+
+    m_Impl{new Impl{std::move(editorAPI), std::move(uim), std::move(panelName), coordPath, musclePath}}
 {
 }
 

@@ -210,6 +210,10 @@ All notable changes to this project will be documented here. The format is based
 
 - You can now change the muscle, output, and coordinate of any muscle plot via the title (#397)
 
+- Muscle plots now have a "duplicate plot" action, which creates a separate plot panel with
+  the same coordinate and muscle, but it does not (yet) copy the chosen output or previous
+  curves (#398)
+
 
 ## [0.2.0] - 2022/07/04
 

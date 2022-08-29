@@ -293,12 +293,12 @@ private:
 
     void addMusclePlot()
     {
-        m_ModelMusclePlots.emplace_back(m_Model, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++));
+        m_ModelMusclePlots.emplace_back(this, m_Model, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++));
     }
 
     void addMusclePlot(OpenSim::Coordinate const& coord, OpenSim::Muscle const& muscle) override
     {
-        m_ModelMusclePlots.emplace_back(m_Model, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++), coord.getAbsolutePath(), muscle.getAbsolutePath());
+        m_ModelMusclePlots.emplace_back(this, m_Model, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++), coord.getAbsolutePath(), muscle.getAbsolutePath());
     }
 
     void removeMusclePlot(int idx)
