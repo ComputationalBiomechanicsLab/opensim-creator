@@ -675,6 +675,15 @@ namespace
             m_IsLocked = std::move(v);
         }
 
+        void setCommit(osc::ModelStateCommit const& commit)
+        {
+            if (m_Parameters)
+            {
+                m_Parameters->setCommit(commit);
+                m_Name = m_Parameters->getCommit().getCommitMessage();
+            }
+        }
+
     private:
         std::optional<PlotParameters> m_Parameters;
         std::string m_Name;
@@ -1017,13 +1026,9 @@ namespace
             m_MaxHistoryEntries = std::move(i);
         }
 
-        void pushPlotAsActive(Plot p)
+        void setActivePlotCommit(osc::ModelStateCommit const& commit)
         {
-            std::shared_ptr<Plot> ptr = std::make_shared<Plot>(std::move(p));
-            std::swap(ptr, m_ActivePlot);
-            m_PreviousPlots.push_back(ptr);
-
-            ensurePreviousCurvesDoesNotExceedMax();
+            m_ActivePlot->setCommit(commit);
         }
 
         void pushPlotAsPrevious(Plot p)
@@ -1850,24 +1855,7 @@ namespace
                     // trick: we "know" that the last edit to the model was a coordinate edit in this plot's
                     //        independent variable, so we can skip recomputing it
                     osc::ModelStateCommit const& commitAfter = shared->Uim->getLatestCommit();
-
-                    Plot const& active = m_Lines.getActivePlot();
-                    if (PlotParameters const* oldParams = active.tryGetParameters())
-                    {
-                        PlotParameters newParams{*oldParams};
-                        newParams.setCommit(commitAfter);
-
-                        Plot newPlot{newParams};
-                        newPlot.setIsLocked(false);  // don't copy locking status
-
-                        {
-                            auto oldDataLock = active.lockDataPoints();
-                            auto newDataLock = newPlot.lockDataPoints();
-                            *newDataLock = *oldDataLock;
-                        }
-
-                        m_Lines.pushPlotAsActive(std::move(newPlot));
-                    }
+                    m_Lines.setActivePlotCommit(commitAfter);
                 }
             }
         }

@@ -216,6 +216,9 @@ All notable changes to this project will be documented here. The format is based
 
 - The editor screen's main menu now has an `Add` menu for adding components (#405)
 
+- Editing a coordinate via a muscle plot no longer causes the edit to add a curve to the
+  curve history list (#395)
+
 
 ## [0.2.0] - 2022/07/04
 
