@@ -813,6 +813,7 @@ namespace
             yPtr,
             static_cast<int>(points.size()),
             0,
+            0,
             sizeof(PlotDataPoint)
         );
     }
@@ -1075,9 +1076,13 @@ namespace
 
             if (!maybeParams || (*maybeParams) != desiredParams)
             {
-                // (edge-case): if the user selected a different muscle output then the previous
-                // plots should also be cleared
-                bool const clearPrevious = maybeParams && maybeParams->getMuscleOutput() != desiredParams.getMuscleOutput();
+                // (edge-case): if the user selection fundamentally changes what's being plotted
+                // then previous plots should be cleared
+                bool const clearPrevious =
+                    maybeParams &&
+                    (maybeParams->getMuscleOutput() != desiredParams.getMuscleOutput() ||
+                     maybeParams->getCoordinatePath() != desiredParams.getCoordinatePath() ||
+                     maybeParams->getMusclePath() != desiredParams.getMusclePath());
 
                 // create new active plot and swap the old active plot into the previous plots
                 {
@@ -1475,6 +1480,7 @@ namespace
 
             std::string const plotTitle = ComputePlotTitle(latestParams);
 
+            drawPlotTitle(coord, plotTitle);  // draw a custom title bar
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.025f, 0.05f});
             if (ImPlot::BeginPlot(plotTitle.c_str(), ImGui::GetContentRegionAvail(), m_PlotFlags))
             {
@@ -1527,6 +1533,95 @@ namespace
 
             // ensure plot lines are valid, given the current model + desired params
             m_Lines.onBeforeDrawing(*shared->Uim, shared->PlotParams);
+        }
+
+        void drawPlotTitle(OpenSim::Coordinate const& coord, std::string const& plotTitle)
+        {
+            // the plot title should contain combo boxes that users can use to change plot
+            // parameters visually (#397)
+
+            std::string muscleName = osc::Ellipsis(shared->PlotParams.getMusclePath().getComponentName(), 15);
+            float muscleNameWidth = ImGui::CalcTextSize(muscleName.c_str()).x + 2.0f*ImGui::GetStyle().FramePadding.x;
+            std::string outputName = osc::Ellipsis(shared->PlotParams.getMuscleOutput().getName(), 15);
+            float outputNameWidth = ImGui::CalcTextSize(outputName.c_str()).x + 2.0f*ImGui::GetStyle().FramePadding.x;
+            std::string coordName = osc::Ellipsis(shared->PlotParams.getCoordinatePath().getComponentName(), 15);
+            float coordNameWidth = ImGui::CalcTextSize(coordName.c_str()).x + 2.0f*ImGui::GetStyle().FramePadding.x;
+
+            float totalWidth =
+                muscleNameWidth +
+                ImGui::CalcTextSize("'s").x +
+                ImGui::GetStyle().ItemSpacing.x +
+                outputNameWidth +
+                ImGui::GetStyle().ItemSpacing.x +
+                ImGui::CalcTextSize("vs.").x +
+                ImGui::GetStyle().ItemSpacing.x +
+                coordNameWidth +
+                ImGui::GetStyle().ItemSpacing.x +
+                ImGui::GetStyle().FramePadding.x +
+                ImGui::CalcTextSize(ICON_FA_BARS " Options").x +
+                ImGui::GetStyle().FramePadding.x;
+
+            float cursorStart = 0.5f*(ImGui::GetContentRegionAvailWidth() - totalWidth);
+            ImGui::SetCursorPosX(cursorStart);
+
+            ImGui::SetNextItemWidth(muscleNameWidth);
+            if (ImGui::BeginCombo("##musclename", muscleName.c_str(), ImGuiComboFlags_NoArrowButton))
+            {
+                OpenSim::Muscle const* current = osc::FindComponent<OpenSim::Muscle>(shared->Uim->getModel(), shared->PlotParams.getMusclePath());
+                for (OpenSim::Muscle const& musc : shared->Uim->getModel().getComponentList<OpenSim::Muscle>())
+                {
+                    bool selected = &musc == current;
+                    if (ImGui::Selectable(musc.getName().c_str(), &selected))
+                    {
+                        shared->PlotParams.setMusclePath(musc.getAbsolutePath());
+                    }
+                }
+                ImGui::EndCombo();
+            }
+
+            ImGui::SameLine();
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ImGui::GetStyle().ItemSpacing.x);
+            ImGui::Text("'s");
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(outputNameWidth);
+            if (ImGui::BeginCombo("##outputname", outputName.c_str(), ImGuiComboFlags_NoArrowButton))
+            {
+                MuscleOutput current = shared->PlotParams.getMuscleOutput();
+                for (MuscleOutput const& output : m_AvailableMuscleOutputs)
+                {
+                    bool selected = output == current;
+                    if (ImGui::Selectable(output.getName(), &selected))
+                    {
+                        shared->PlotParams.setMuscleOutput(output);
+                    }
+                }
+                ImGui::EndCombo();
+            }
+            ImGui::SameLine();
+            ImGui::TextUnformatted("vs.");
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(coordNameWidth);
+            if (ImGui::BeginCombo("##coordname", coordName.c_str(), ImGuiComboFlags_NoArrowButton))
+            {
+                OpenSim::Coordinate const* current = osc::FindComponent<OpenSim::Coordinate>(shared->Uim->getModel(), shared->PlotParams.getCoordinatePath());
+                for (OpenSim::Coordinate const& coord : shared->Uim->getModel().getComponentList<OpenSim::Coordinate>())
+                {
+                    bool selected = &coord == current;
+                    if (ImGui::Selectable(coord.getName().c_str(), &selected))
+                    {
+                        shared->PlotParams.setCoordinatePath(coord.getAbsolutePath());
+                    }
+                }
+                ImGui::EndCombo();
+            }
+            ImGui::SameLine();
+
+            // draw little options button that opens the context menu
+            //
+            // it's easier for users to figure out than having to guess they need to
+            // right-click the plot (#399)
+            ImGui::Button(ICON_FA_BARS " Options");
+            tryDrawGeneralPlotPopup(coord, plotTitle, ImGuiPopupFlags_MouseButtonLeft);
         }
 
         // draws the actual plot lines in the plot
@@ -1766,10 +1861,10 @@ namespace
             }
         }
 
-        void tryDrawGeneralPlotPopup(OpenSim::Coordinate const& coord, std::string const& plotTitle)
+        void tryDrawGeneralPlotPopup(OpenSim::Coordinate const& coord, std::string const& plotTitle, ImGuiPopupFlags flags = ImGuiPopupFlags_MouseButtonRight)
         {
             // draw a context menu with helpful options (set num data points, export, etc.)
-            if (ImGui::BeginPopupContextItem((plotTitle + "_contextmenu").c_str()))
+            if (ImGui::BeginPopupContextItem((plotTitle + "_contextmenu").c_str(), flags))
             {
                 drawPlotDataTypeSelector();
 
@@ -1908,7 +2003,7 @@ namespace
         bool m_ShowMarkersOnActivePlot = true;
         bool m_ShowMarkersOnOtherPlots = false;
         bool m_SnapCursor = false;
-        ImPlotFlags m_PlotFlags = ImPlotFlags_AntiAliased | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame;
+        ImPlotFlags m_PlotFlags = ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame | ImPlotFlags_NoTitle;
         ImPlotLocation m_LegendLocation = ImPlotLocation_NorthWest;
         ImPlotLegendFlags m_LegendFlags = ImPlotLegendFlags_None;
         glm::vec4 m_LockedCurveTint = {0.5f, 0.5f, 1.0f, 1.1f};

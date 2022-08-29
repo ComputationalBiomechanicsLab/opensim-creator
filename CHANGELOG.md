@@ -208,6 +208,8 @@ All notable changes to this project will be documented here. The format is based
 
 - Updated ImPlot to e80e42e (#409) - contains perf improvements etc.
 
+- You can now change the muscle, output, and coordinate of any muscle plot via the title (#397)
+
 
 ## [0.2.0] - 2022/07/04
 
