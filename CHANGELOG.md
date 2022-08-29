@@ -189,6 +189,14 @@ All notable changes to this project will be documented here. The format is based
 
 - The editor tab now has a status bar, which shows breadcrumbs to the current selection (#403)
 
+- The properties editor panel now only shows properties (previous: component hierarchy path,
+  contextual actions, and properties)
+
+  - The model hierarchy now shows in a status bar at the bottom of the editor
+  - Contextual actions are now always available via the general context menu that appears
+    whenever something is right-clicked
+  - See #403
+
 
 ## [0.2.0] - 2022/07/04
 
