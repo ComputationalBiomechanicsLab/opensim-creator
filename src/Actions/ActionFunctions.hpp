@@ -121,9 +121,6 @@ namespace osc
     // attempts to reassign a component's socket connection (returns false and writes to `error` on failure)
     bool ActionReassignComponentSocket(UndoableModelStatePair&, OpenSim::ComponentPath const& componentAbsPath, std::string const& socketName, OpenSim::Object const& connectee, std::string& error);
 
-    // sets the model's showing only to the provided component (can be nullptr)
-    bool ActionSetModelShowingOnlyTo(UndoableModelStatePair&, OpenSim::Component const*);
-
     // sets the model's scale factor
     bool ActionSetModelSceneScaleFactorTo(UndoableModelStatePair&, float);
 
@@ -162,4 +159,11 @@ namespace osc
 
     // set the value of a coordinate and ensure it is saved
     bool ActionSetCoordinateValueAndSave(UndoableModelStatePair&, OpenSim::Coordinate const&, double);
+
+    // sets the `Appearance` property of the pointed-to component, and all its children, to have visible = bool
+    bool ActionSetComponentAndAllChildrensIsVisibleTo(UndoableModelStatePair&, OpenSim::ComponentPath const&, bool visible);
+
+    // sets the `Appearance` property of all components in the model to `visible = false`, followed by setting the
+    // `Appearance` property of the pointed-to component, and all its children, to `visible = true`
+    bool ActionShowOnlyComponentAndAllChildren(UndoableModelStatePair&, OpenSim::ComponentPath const&);
 }

@@ -1067,24 +1067,6 @@ bool osc::ActionReassignComponentSocket(
     }
 }
 
-bool osc::ActionSetModelShowingOnlyTo(osc::UndoableModelStatePair& uim, OpenSim::Component const* c)
-{
-    uim.setShowingOnly(c);
-
-    if (c)
-    {
-        std::stringstream ss;
-        ss << "showing only " << c->getName();
-        uim.commit(std::move(ss).str());
-    }
-    else
-    {
-        uim.commit("showing all");
-    }
-
-    return true;
-}
-
 bool osc::ActionSetModelSceneScaleFactorTo(osc::UndoableModelStatePair& uim, float v)
 {
     uim.setFixupScaleFactor(v);
@@ -1392,6 +1374,86 @@ bool osc::ActionSetCoordinateValueAndSave(UndoableModelStatePair& model, OpenSim
     else
     {
         // edit wasn't made
+        return false;
+    }
+}
+
+bool osc::ActionSetComponentAndAllChildrensIsVisibleTo(UndoableModelStatePair& model, OpenSim::ComponentPath const& path, bool visible)
+{
+    if (!FindComponent(model.getModel(), path))
+    {
+        return false;  // root component does not exist
+    }
+
+    // else: it does exist and we should start a mutation
+    try
+    {
+        OpenSim::Model& mutModel = model.updModel();
+        OpenSim::Component* mutComponent = osc::FindComponentMut(mutModel, path);
+        OSC_ASSERT(mutComponent != nullptr && "the check above this line should already guarantee this");
+
+        TrySetAppearancePropertyIsVisibleTo(*mutComponent, visible);
+        for (OpenSim::Component& c : mutComponent->updComponentList())
+        {
+            TrySetAppearancePropertyIsVisibleTo(c, visible);
+        }
+
+        osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
+
+        std::stringstream ss;
+        ss << "set " << path.getComponentName() << " visibility to " << visible;
+        model.commit(std::move(ss).str());
+        return true;
+    }
+    catch (std::exception const& ex)
+    {
+        osc::log::error("error detected while trying to hide a component: %s", ex.what());
+        model.rollback();
+        return false;
+    }
+}
+
+bool osc::ActionShowOnlyComponentAndAllChildren(UndoableModelStatePair& model, OpenSim::ComponentPath const& path)
+{
+    if (!FindComponent(model.getModel(), path))
+    {
+        return false;  // root component does not exist
+    }
+
+    // else: it does exist and we should start a mutation
+    try
+    {
+        OpenSim::Model& mutModel = model.updModel();
+        OpenSim::Component* mutComponent = osc::FindComponentMut(mutModel, path);
+        OSC_ASSERT(mutComponent != nullptr && "the check above this line should already guarantee this");
+
+        // first, hide everything in the model
+        for (OpenSim::Component& c : mutModel.updComponentList())
+        {
+            TrySetAppearancePropertyIsVisibleTo(c, false);
+        }
+
+        // then show the intended component and its children
+        TrySetAppearancePropertyIsVisibleTo(*mutComponent, true);
+        for (OpenSim::Component& c : mutComponent->updComponentList())
+        {
+            TrySetAppearancePropertyIsVisibleTo(c, true);
+        }
+
+        // reinitialize etc.
+        osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
+
+        std::stringstream ss;
+        ss << "showing only " << path.getComponentName();
+        model.commit(std::move(ss).str());
+        return true;
+    }
+    catch (std::exception const& ex)
+    {
+        osc::log::error("error detected while trying to hide a component: %s", ex.what());
+        model.rollback();
         return false;
     }
 }

@@ -50,8 +50,7 @@ namespace
             m_ModelVersion{},
             m_FixupScaleFactor{1.0f},
             m_MaybeSelected{},
-            m_MaybeHovered{},
-            m_MaybeShowingOnly{}
+            m_MaybeHovered{}
         {
             osc::InitializeModel(*m_Model);
             osc::InitializeState(*m_Model);
@@ -62,8 +61,7 @@ namespace
             m_ModelVersion{},
             m_FixupScaleFactor{other.m_FixupScaleFactor},
             m_MaybeSelected{other.m_MaybeSelected},
-            m_MaybeHovered{other.m_MaybeHovered},
-            m_MaybeShowingOnly{other.m_MaybeShowingOnly}
+            m_MaybeHovered{other.m_MaybeHovered}
         {
             osc::InitializeModel(*m_Model);
             osc::InitializeState(*m_Model);
@@ -169,33 +167,6 @@ namespace
             }
         }
 
-        OpenSim::ComponentPath const& getShowingOnlyPath() const
-        {
-            return m_MaybeShowingOnly;
-        }
-
-        void setShowingOnlyPath(OpenSim::ComponentPath const& p)
-        {
-            m_MaybeShowingOnly = p;
-        }
-
-        OpenSim::Component const* getShowingOnly() const override
-        {
-            return osc::FindComponent(*m_Model, m_MaybeShowingOnly);
-        }
-
-        void setShowingOnly(OpenSim::Component const* c) override
-        {
-            if (c)
-            {
-                m_MaybeShowingOnly = c->getAbsolutePath();
-            }
-            else
-            {
-                m_MaybeShowingOnly = {};
-            }
-        }
-
     private:
         // the model, finalized from its properties
         std::unique_ptr<OpenSim::Model> m_Model;
@@ -212,16 +183,12 @@ namespace
 
         // (maybe) absolute path to the current hover (empty otherwise)
         OpenSim::ComponentPath m_MaybeHovered;
-
-        // (maybe) absolute path to the current isolation (empty otherwise)
-        OpenSim::ComponentPath m_MaybeShowingOnly;
     };
 
-    static void CopySelectedHoveredAndShowingOnly(UiModelStatePair const& src, UiModelStatePair& dest)
+    static void CopySelectedAndHovered(UiModelStatePair const& src, UiModelStatePair& dest)
     {
         dest.setSelectedPath(src.getSelectedPath());
         dest.setHoveredPath(src.getHoveredPath());
-        dest.setShowingOnlyPath(src.getShowingOnlyPath());
     }
 }
 
@@ -362,7 +329,7 @@ public:
     void setModel(std::unique_ptr<OpenSim::Model> newModel)
     {
         UiModelStatePair p{std::move(newModel)};
-        CopySelectedHoveredAndShowingOnly(m_Scratch, p);
+        CopySelectedAndHovered(m_Scratch, p);
         m_Scratch = std::move(p);
     }
 
@@ -414,16 +381,6 @@ public:
     void setHovered(OpenSim::Component const* c)
     {
         m_Scratch.setHovered(c);
-    }
-
-    OpenSim::Component const* getShowingOnly() const
-    {
-        return m_Scratch.getShowingOnly();
-    }
-
-    void setShowingOnly(OpenSim::Component const* c)
-    {
-        m_Scratch.setShowingOnly(c);
     }
 
 private:
@@ -625,9 +582,8 @@ private:
         if (c)
         {
             UiModelStatePair newScratch{std::make_unique<OpenSim::Model>(*c->getModel())};
-            CopySelectedHoveredAndShowingOnly(m_Scratch, newScratch);
+            CopySelectedAndHovered(m_Scratch, newScratch);
             newScratch.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
-            newScratch.setShowingOnly(osc::FindComponent(newScratch.getModel(), c->getShowingOnlyAbsPath()));
             m_Scratch = std::move(newScratch);
         }
     }
@@ -656,9 +612,8 @@ private:
         // - user's selection state should be "sticky" between undo/redo
         // - user's scene scale factor should be "sticky" between undo/redo
         UiModelStatePair newModel{std::make_unique<OpenSim::Model>(*parent->getModel())};
-        CopySelectedHoveredAndShowingOnly(m_Scratch, newModel);
+        CopySelectedAndHovered(m_Scratch, newModel);
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
-        newModel.setShowingOnly(osc::FindComponent(newModel.getModel(), parent->getShowingOnlyAbsPath()));
 
         m_Scratch = std::move(newModel);
         m_CurrentHead = parent->getID();
@@ -686,9 +641,8 @@ private:
         // - user's selection state should be "sticky" between undo/redo
         // - user's scene scale factor should be "sticky" between undo/redo
         UiModelStatePair newModel{std::make_unique<OpenSim::Model>(*c->getModel())};
-        CopySelectedHoveredAndShowingOnly(m_Scratch, newModel);
+        CopySelectedAndHovered(m_Scratch, newModel);
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
-        newModel.setShowingOnly(osc::FindComponent(newModel.getModel(), c->getShowingOnlyAbsPath()));
 
         m_Scratch = std::move(newModel);
         m_CurrentHead = c->getID();
@@ -917,14 +871,4 @@ OpenSim::Component const* osc::UndoableModelStatePair::getHovered() const
 void osc::UndoableModelStatePair::setHovered(OpenSim::Component const* c)
 {
     m_Impl->setHovered(std::move(c));
-}
-
-OpenSim::Component const* osc::UndoableModelStatePair::getShowingOnly() const
-{
-    return m_Impl->getShowingOnly();
-}
-
-void osc::UndoableModelStatePair::setShowingOnly(OpenSim::Component const* c)
-{
-    m_Impl->setShowingOnly(std::move(c));
 }

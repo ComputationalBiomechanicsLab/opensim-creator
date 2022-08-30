@@ -21,8 +21,6 @@ namespace osc
 
         virtual void setHovered(OpenSim::Component const*) {}
 
-        virtual void setShowingOnly(OpenSim::Component const*) {}
-
         virtual void setFixupScaleFactor(float) {}
     };
 }

@@ -34,7 +34,6 @@ namespace osc
         SynchronizedValueGuard<OpenSim::Model const> getModel() const;
         UID getModelVersion() const;
         float getFixupScaleFactor() const;
-        OpenSim::ComponentPath const& getShowingOnlyAbsPath() const;  // can be empty
 
     private:
         friend bool operator==(ModelStateCommit const& a, ModelStateCommit const& b);

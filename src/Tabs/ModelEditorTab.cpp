@@ -322,12 +322,6 @@ private:
                 osc::ActionRedoCurrentlyEditedModel(*m_Model);
             }
 
-            if (ImGui::MenuItem(ICON_FA_EYE_SLASH " Clear Showing Only", nullptr, false, m_Model->getShowingOnly()))
-            {
-                osc::ActionSetModelShowingOnlyTo(*m_Model, nullptr);
-            }
-            DrawTooltipIfItemHovered("Clear Showing Only", "Clear current component from being the only one that is shown. This is effectively the opposite of 'Show only'ing a component.");
-
             {
                 float scaleFactor = m_Model->getFixupScaleFactor();
                 if (ImGui::InputFloat("set scale factor", &scaleFactor))

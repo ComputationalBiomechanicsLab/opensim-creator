@@ -223,6 +223,18 @@ All notable changes to this project will be documented here. The format is based
 
 - The splash screen now has an improved layout that fits better on smaller laptop screens (#41)
 
+- Fixed the `is_visible` flag being ignored for `GeometryPath` components (#414)
+
+- Replaced "isolated" and "showing only" functionality with OpenSim-GUI style actions (#415):
+
+  - The contextual (right-click) menu of every component in the model now has a "Display"
+    menu containing "Show", "Show Only", and "Hide" actions, which behave similarly to
+    OpenSim GUI
+
+  - This replaces the OSC-specific "isolate" system. If you want to clear your isolation,
+    you can right-click on the model and use "Display -> Show" to show all components in
+    the model (like OpenSim)
+
 
 ## [0.2.0] - 2022/07/04
 

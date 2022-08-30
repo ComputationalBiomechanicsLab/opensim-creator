@@ -236,4 +236,10 @@ namespace osc
 
     // returns a user-visible string for a coordinate's motion type
     char const* GetMotionTypeDisplayName(OpenSim::Coordinate const&);
+
+    // tries to set the given component's appearance property's visibility field to the given bool
+    //
+    // returns `false` if the component doesn't have an appearance property, `true` if it does (and
+    // the value was set)
+    bool TrySetAppearancePropertyIsVisibleTo(OpenSim::Component&, bool);
 }

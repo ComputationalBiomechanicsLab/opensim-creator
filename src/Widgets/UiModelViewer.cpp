@@ -105,13 +105,11 @@ namespace
         {
             OpenSim::Component const* const selected = msp.getSelected();
             OpenSim::Component const* const hovered = msp.getHovered();
-            OpenSim::Component const* const showingOnly = msp.getShowingOnly();
 
             if (msp.getModelVersion() != m_LastModelVersion ||
                 msp.getStateVersion() != m_LastStateVersion ||
                 selected != osc::FindComponent(msp.getModel(), m_LastSelection) ||
                 hovered != osc::FindComponent(msp.getModel(), m_LastHover) ||
-                showingOnly != osc::FindComponent(msp.getModel(), m_LastShowingOnly) ||
                 msp.getFixupScaleFactor() != m_LastFixupFactor ||
                 decorationOptions != m_LastDecorationOptions ||
                 panelFlags != m_LastPanelFlags)
@@ -121,23 +119,16 @@ namespace
                 m_LastStateVersion = msp.getStateVersion();
                 m_LastSelection = selected ? selected->getAbsolutePath() : OpenSim::ComponentPath{};
                 m_LastHover = hovered ? hovered->getAbsolutePath() : OpenSim::ComponentPath{};
-                m_LastShowingOnly = showingOnly ? showingOnly->getAbsolutePath() : OpenSim::ComponentPath{};
                 m_LastFixupFactor = msp.getFixupScaleFactor();
                 m_LastDecorationOptions = decorationOptions;
                 m_LastPanelFlags = panelFlags;
                 m_Version = osc::UID{};
 
                 // generate decorations from OpenSim/SimTK backend
-                m_Decorations.clear();
-                OSC_PERF("generate decorations");
                 {
+                    OSC_PERF("generate decorations");
+                    m_Decorations.clear();
                     osc::GenerateModelDecorations(msp, m_Decorations, decorationOptions);
-
-                    // cull 'show only' (isolated) decorations
-                    if (msp.getShowingOnly())
-                    {
-                        osc::RemoveErase(m_Decorations, [](osc::SceneDecoration const& dec) { return !(dec.flags & (osc::SceneDecorationFlags_IsShowingOnly| osc::SceneDecorationFlags_IsChildOfShowingOnly)); });
-                    }
                 }
 
                 // create a BVH from the not-overlay parts of the scene
@@ -184,7 +175,6 @@ namespace
         osc::UID m_LastStateVersion;
         OpenSim::ComponentPath m_LastSelection;
         OpenSim::ComponentPath m_LastHover;
-        OpenSim::ComponentPath m_LastShowingOnly;
         float m_LastFixupFactor = 1.0f;
         osc::CustomDecorationOptions m_LastDecorationOptions;
         osc::UiModelViewerFlags m_LastPanelFlags = osc::UiModelViewerFlags_None;

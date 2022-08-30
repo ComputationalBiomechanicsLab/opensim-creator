@@ -50,11 +50,6 @@ namespace osc
             return nullptr;
         }
 
-        virtual OpenSim::Component const* getShowingOnly() const
-        {
-            return nullptr;
-        }
-
         // used to scale weird models (e.g. fly leg) in the UI
         virtual float getFixupScaleFactor() const
         {

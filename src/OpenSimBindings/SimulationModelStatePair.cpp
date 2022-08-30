@@ -75,23 +75,6 @@ public:
         }
     }
 
-    OpenSim::Component const* getShowingOnly() const
-    {
-        return FindComponent(getModel(), m_ShowingOnly);
-    }
-
-    void setShowingOnly(OpenSim::Component const* c)
-    {
-        if (c)
-        {
-            m_ShowingOnly = c->getAbsolutePath();
-        }
-        else
-        {
-            m_ShowingOnly = {};
-        }
-    }
-
     float getFixupScaleFactor() const
     {
         return m_Simulation->getFixupScaleFactor();
@@ -135,7 +118,6 @@ private:
     UID m_StateVersion;
     OpenSim::ComponentPath m_Selected;
     OpenSim::ComponentPath m_Hovered;
-    OpenSim::ComponentPath m_ShowingOnly;
     std::shared_ptr<Simulation> m_Simulation;
     SimulationReport m_SimulationReport;
 };
@@ -199,16 +181,6 @@ OpenSim::Component const* osc::SimulationModelStatePair::getHovered() const
 void osc::SimulationModelStatePair::setHovered(OpenSim::Component const* c)
 {
     m_Impl->setHovered(std::move(c));
-}
-
-OpenSim::Component const* osc::SimulationModelStatePair::getShowingOnly() const
-{
-    return m_Impl->getShowingOnly();
-}
-
-void osc::SimulationModelStatePair::setShowingOnly(OpenSim::Component const* c)
-{
-    m_Impl->setShowingOnly(std::move(c));
 }
 
 float osc::SimulationModelStatePair::getFixupScaleFactor() const
