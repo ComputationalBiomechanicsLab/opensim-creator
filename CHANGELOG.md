@@ -219,6 +219,8 @@ All notable changes to this project will be documented here. The format is based
 - Editing a coordinate via a muscle plot no longer causes the edit to add a curve to the
   curve history list (#395)
 
+- The coordinate editor panel now has a more space-efficient layout (#413)
+
 
 ## [0.2.0] - 2022/07/04
 

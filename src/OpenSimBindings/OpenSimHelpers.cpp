@@ -971,6 +971,13 @@ OpenSim::Component const* osc::FindFirstAncestorInclusive(OpenSim::Component con
     return nullptr;
 }
 
+std::vector<OpenSim::Coordinate const*> osc::GetCoordinatesInModel(OpenSim::Model const& model)
+{
+    std::vector<OpenSim::Coordinate const*> rv;
+    GetCoordinatesInModel(model, rv);
+    return rv;
+}
+
 void osc::GetCoordinatesInModel(OpenSim::Model const& m,
                                 std::vector<OpenSim::Coordinate const*>& out)
 {

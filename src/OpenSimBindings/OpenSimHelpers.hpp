@@ -48,6 +48,12 @@ namespace osc
         return IsNameLexographicallyLowerThan(*a, *b);
     }
 
+    template<typename ComponentPtrLike>
+    bool IsNameLexographicallyGreaterThan(ComponentPtrLike const& a, ComponentPtrLike const& b)
+    {
+        return !IsNameLexographicallyLowerThan<ComponentPtrLike>(a, b);
+    }
+
     // returns a mutable pointer to the owner (if it exists)
     OpenSim::Component* UpdOwner(OpenSim::Component&);
 
@@ -103,6 +109,9 @@ namespace osc
     {
         return const_cast<T*>(FindAncestorWithType<T>(c));
     }
+
+    // returns a vector containing points to all user-editable coordinates in the model
+    std::vector<OpenSim::Coordinate const*> GetCoordinatesInModel(OpenSim::Model const&);
 
     // fills the given vector with all user-editable coordinates in the model
     void GetCoordinatesInModel(OpenSim::Model const&, std::vector<OpenSim::Coordinate const*>&);
