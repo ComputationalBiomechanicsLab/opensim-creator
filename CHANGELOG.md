@@ -221,6 +221,8 @@ All notable changes to this project will be documented here. The format is based
 
 - The coordinate editor panel now has a more space-efficient layout (#413)
 
+- The splash screen now has an improved layout that fits better on smaller laptop screens (#41)
+
 
 ## [0.2.0] - 2022/07/04
 
