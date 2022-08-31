@@ -246,6 +246,8 @@ All notable changes to this project will be documented here. The format is based
 
 - Fixed UI 3D viewers showing tooltips, regardless of hover state (#417)
 
+- Right-clicking on nothing now shows a display menu with a "Show All" option (#422)
+
 
 ## [0.2.0] - 2022/07/04
 
