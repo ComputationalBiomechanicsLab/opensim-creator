@@ -234,6 +234,9 @@ All notable changes to this project will be documented here. The format is based
   - This replaces the OSC-specific "isolate" system. If you want to clear your isolation,
     you can right-click on the model and use "Display -> Show" to show all components in
     the model (like OpenSim)
+    
+- The property editor now contains a little "actions" lightning button to open the component's
+  context menu (#426)
 
 
 ## [0.2.0] - 2022/07/04

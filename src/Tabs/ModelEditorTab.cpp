@@ -698,6 +698,18 @@ private:
         }
     }
 
+    void pushComponentContextMenuPopup(OpenSim::ComponentPath const& path) override
+    {
+        auto popup = std::make_unique<ComponentContextMenu>(
+            "##componentcontextmenu",
+            m_Parent,
+            this,
+            m_Model,
+            path
+        );
+        pushPopup(std::move(popup));
+    }
+
     void pushPopup(std::unique_ptr<Popup> popup) override
     {
         popup->open();
@@ -721,7 +733,7 @@ private:
     CoordinateEditor m_CoordEditor{m_Parent, this, m_Model};
     PerfPanel m_PerfPanel{"Performance"};
     OutputWatchesPanel m_OutputWatchesPanel{"Output Watches", m_Model, m_Parent};
-    SelectionEditorPanel m_SelectionEditor{m_Model};
+    SelectionEditorPanel m_SelectionEditor{this, m_Model};
     int m_LatestMusclePlot = 1;
     std::vector<ModelMusclePlotPanel> m_ModelMusclePlots;
     EditorTabStatusBar m_StatusBar{m_Parent, this, m_Model};

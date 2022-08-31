@@ -2,13 +2,14 @@
 
 #include <memory>
 
+namespace osc { class EditorAPI; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
     class SelectionEditorPanel final {
     public:
-        explicit SelectionEditorPanel(std::shared_ptr<UndoableModelStatePair>);
+        explicit SelectionEditorPanel(EditorAPI*, std::shared_ptr<UndoableModelStatePair>);
         SelectionEditorPanel(SelectionEditorPanel const&) = delete;
         SelectionEditorPanel(SelectionEditorPanel&&) noexcept;
         SelectionEditorPanel& operator=(SelectionEditorPanel const&) = delete;

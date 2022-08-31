@@ -2,17 +2,20 @@
 
 #include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/MiddlewareAPIs/EditorAPI.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/ScopeGuard.hpp"
+#include "src/Widgets/ComponentContextMenu.hpp"
 #include "src/Widgets/ObjectPropertiesEditor.hpp"
 #include "src/Widgets/ReassignSocketPopup.hpp"
 #include "src/Widgets/SelectComponentPopup.hpp"
 #include "src/Widgets/SelectGeometryPopup.hpp"
 
+#include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
@@ -36,6 +39,30 @@
 #include <string_view>
 #include <utility>
 #include <vector>
+
+
+static void DrawActionsMenu(osc::EditorAPI* editorAPI, std::shared_ptr<osc::UndoableModelStatePair> const& model)
+{
+    OpenSim::Component const* selection = model->getSelected();
+    if (!selection)
+    {
+        return;
+    }
+
+    ImGui::Columns(2);
+    ImGui::TextUnformatted("actions");
+    ImGui::SameLine();
+    osc::DrawHelpMarker("Shows a menu containing extra actions that can be performed on this component.\n\nYou can also access the same menu by right-clicking the component in the 3D viewer, bottom status bar, or hierarchy panel.");
+    ImGui::NextColumn();
+    ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 1.0f, 0.0f, 1.0f});
+    if (ImGui::Button(ICON_FA_BOLT))
+    {
+        editorAPI->pushComponentContextMenuPopup(selection->getAbsolutePath());
+    }
+    ImGui::PopStyleColor();
+    ImGui::NextColumn();
+    ImGui::Columns();
+}
 
 // draw an editor for top-level selected Component members (e.g. name)
 static void DrawTopLevelMembersEditor(osc::UndoableModelStatePair& uim)
@@ -72,7 +99,8 @@ static void DrawTopLevelMembersEditor(osc::UndoableModelStatePair& uim)
 
 class osc::SelectionEditorPanel::Impl final {
 public:
-    Impl(std::shared_ptr<UndoableModelStatePair> model) :
+    Impl(EditorAPI* editorAPI, std::shared_ptr<UndoableModelStatePair> model) :
+        m_EditorAPI{std::move(editorAPI)},
         m_Model{std::move(model)}
     {
     }
@@ -88,10 +116,13 @@ public:
         ImGui::PushID(m_Model->getSelected());
         OSC_SCOPE_GUARD({ ImGui::PopID(); });
 
-        // top-level property editors
-        {
-            DrawTopLevelMembersEditor(*m_Model);
-        }
+        // draw an actions row with a button that opens the context menu
+        //
+        // it's helpful to reveal to users that actions are available (#426)
+        DrawActionsMenu(m_EditorAPI, m_Model);
+
+        // draw top-level (not property) editors (e.g. name editor)
+        DrawTopLevelMembersEditor(*m_Model);
 
         if (!m_Model->getSelected())
         {
@@ -109,6 +140,7 @@ public:
     }
 
 private:
+    EditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Model;
     ObjectPropertiesEditor m_ObjectPropsEditor;
 };
@@ -116,8 +148,8 @@ private:
 
 // public API (PIMPL)
 
-osc::SelectionEditorPanel::SelectionEditorPanel(std::shared_ptr<UndoableModelStatePair> model) :
-    m_Impl{new Impl{std::move(model)}}
+osc::SelectionEditorPanel::SelectionEditorPanel(EditorAPI* editorAPI, std::shared_ptr<UndoableModelStatePair> model) :
+    m_Impl{new Impl{std::move(editorAPI), std::move(model)}}
 {
 }
 
