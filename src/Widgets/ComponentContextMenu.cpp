@@ -227,6 +227,22 @@ private:
                 m_ModelActionsMenuBar.draw();
                 ImGui::EndMenu();
             }
+
+            // draw a display menu to match the display menu that appears when right-clicking
+            // something, but this display menu only contains the functionality to show everything
+            // in the model
+            //
+            // it's handy when users have selectively hidden this-or-that, or have hidden everything
+            // in the model (#422)
+            if (ImGui::BeginMenu("Display"))
+            {
+                if (ImGui::MenuItem("Show All"))
+                {
+                    osc::ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, osc::GetRootComponentPath(), true);
+                }
+                osc::DrawTooltipIfItemHovered("Show All", "Sets the visiblity of all components within the model to 'visible', handy for undoing selective hiding etc.");
+                ImGui::EndMenu();
+            }
             return;
         }
 

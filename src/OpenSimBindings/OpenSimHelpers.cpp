@@ -874,6 +874,12 @@ OpenSim::ComponentPath const& osc::GetEmptyComponentPath()
     return p;
 }
 
+OpenSim::ComponentPath const& osc::GetRootComponentPath()
+{
+    static OpenSim::ComponentPath p{"/"};
+    return p;
+}
+
 bool osc::IsEmpty(OpenSim::ComponentPath const& cp)
 {
     return cp == GetEmptyComponentPath();
