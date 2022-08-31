@@ -10,7 +10,7 @@ namespace osc
         Popup& operator=(Popup const&) = default;
         Popup& operator=(Popup&&) noexcept = default;
     public:
-        ~Popup() noexcept = default;
+        virtual ~Popup() noexcept = default;
 
         virtual bool isOpen() const = 0;
         virtual void open() = 0;
