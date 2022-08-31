@@ -444,39 +444,39 @@ private:
         {
             FocusAlongX(m_Camera);
         }
-        DrawTooltipBodyOnly("Position camera along +X, pointing towards the center. Hotkey: X");
+        DrawTooltipBodyOnlyIfItemHovered("Position camera along +X, pointing towards the center. Hotkey: X");
         ImGui::SameLine();
         if (ImGui::Button("-X"))
         {
             FocusAlongMinusX(m_Camera);
         }
-        DrawTooltipBodyOnly("Position camera along -X, pointing towards the center. Hotkey: Ctrl+X");
+        DrawTooltipBodyOnlyIfItemHovered("Position camera along -X, pointing towards the center. Hotkey: Ctrl+X");
 
         ImGui::SameLine();
         if (ImGui::Button("+Y"))
         {
             FocusAlongY(m_Camera);
         }
-        DrawTooltipBodyOnly("Position camera along +Y, pointing towards the center. Hotkey: Y");
+        DrawTooltipBodyOnlyIfItemHovered("Position camera along +Y, pointing towards the center. Hotkey: Y");
         ImGui::SameLine();
         if (ImGui::Button("-Y"))
         {
             FocusAlongMinusY(m_Camera);
         }
-        DrawTooltipBodyOnly("Position camera along -Y, pointing towards the center. (no hotkey, because Ctrl+Y is taken by 'Redo'");
+        DrawTooltipBodyOnlyIfItemHovered("Position camera along -Y, pointing towards the center. (no hotkey, because Ctrl+Y is taken by 'Redo'");
 
         ImGui::SameLine();
         if (ImGui::Button("+Z"))
         {
             FocusAlongZ(m_Camera);
         }
-        DrawTooltipBodyOnly("Position camera along +Z, pointing towards the center. Hotkey: Z");
+        DrawTooltipBodyOnlyIfItemHovered("Position camera along +Z, pointing towards the center. Hotkey: Z");
         ImGui::SameLine();
         if (ImGui::Button("-Z"))
         {
             FocusAlongMinusZ(m_Camera);
         }
-        DrawTooltipBodyOnly("Position camera along -Z, pointing towards the center. (no hotkey, because Ctrl+Z is taken by 'Undo')");
+        DrawTooltipBodyOnlyIfItemHovered("Position camera along -Z, pointing towards the center. (no hotkey, because Ctrl+Z is taken by 'Undo')");
 
         if (ImGui::Button("Zoom in"))
         {
@@ -493,20 +493,20 @@ private:
         {
             Reset(m_Camera);
         }
-        DrawTooltipBodyOnly("Reset the camera to its initial (default) location. Hotkey: F");
+        DrawTooltipBodyOnlyIfItemHovered("Reset the camera to its initial (default) location. Hotkey: F");
 
         if (ImGui::Button("Auto-focus camera"))
         {
             m_AutoFocusCameraNextFrame = true;
         }
-        DrawTooltipBodyOnly("Try to automatically adjust the camera's zoom etc. to suit the model's dimensions. Hotkey: Ctrl+F");
+        DrawTooltipBodyOnlyIfItemHovered("Try to automatically adjust the camera's zoom etc. to suit the model's dimensions. Hotkey: Ctrl+F");
 
         if (ImGui::Button("Export to .dae"))
         {
             TryExportSceneToDAE(m_Scene.getDrawlist());
 
         }
-        DrawTooltipBodyOnly("Try to export the 3D scene to a portable DAE file, so that it can be viewed in 3rd-party modelling software, such as Blender");
+        DrawTooltipBodyOnlyIfItemHovered("Try to export the 3D scene to a portable DAE file, so that it can be viewed in 3rd-party modelling software, such as Blender");
 
         ImGui::Dummy({0.0f, 10.0f});
         ImGui::Text("advanced camera properties:");
@@ -528,7 +528,7 @@ private:
         ImGui::ColorEdit3("light_color", glm::value_ptr(m_RendererParams.lightColor));
         ImGui::ColorEdit3("background color", glm::value_ptr(m_RendererParams.backgroundColor));
         osc::InputMetersFloat3("floor location", glm::value_ptr(m_RendererParams.floorLocation));
-        DrawTooltipBodyOnly("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
+        DrawTooltipBodyOnlyIfItemHovered("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
     }
 
     std::pair<OpenSim::Component const*, glm::vec3> hittestRenderWindow(osc::VirtualConstModelStatePair const& msp)
