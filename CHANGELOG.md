@@ -238,6 +238,8 @@ All notable changes to this project will be documented here. The format is based
 - The property editor now contains a little "actions" lightning button to open the component's
   context menu (#426)
 
+- Fixed osc not opening the splash tab when opening files provided via the argument list (#427)
+
 
 ## [0.2.0] - 2022/07/04
 
