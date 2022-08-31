@@ -58,13 +58,11 @@ int main(int argc, char** argv)
         --argc;
     }
 
-    // init main app (window, OpenGL, etc.)
+    // init top-level application state (window, OpenGL, etc.)
     osc::OpenSimApp app;
 
     // init top-level screen (tab host)
-    auto screen = argc <= 0 ?
-        std::make_unique<osc::MainUIScreen>() :
-        std::make_unique<osc::MainUIScreen>(argv[0]);
+    auto screen = std::make_unique<osc::MainUIScreen>(std::vector<std::filesystem::path>(argv, argv + argc));
 
     // if the config requested that an initial tab should be opened, try looking it up
     // and loading it

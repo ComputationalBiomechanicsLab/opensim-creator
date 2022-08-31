@@ -43,13 +43,26 @@ public:
 
     Impl()
     {
+        // always ensure the splash tab is open
         m_Tabs.push_back(std::make_unique<SplashTab>(this));
+
+        // and that it's focused
         m_RequestedTab = m_Tabs.back()->getID();
     }
 
-    Impl(std::filesystem::path p)
+    Impl(std::vector<std::filesystem::path> paths)
     {
-        m_Tabs.push_back(std::make_unique<LoadingTab>(this, p));
+        // always ensure the splash tab is open
+        m_Tabs.push_back(std::make_unique<SplashTab>(this));
+
+        // and open a tab for each supplied path (i.e. load the path)
+        for (std::filesystem::path const& path : paths)
+        {
+            m_Tabs.push_back(std::make_unique<LoadingTab>(this, path));
+        }
+
+        // and open the rightmost tab
+        m_RequestedTab = m_Tabs.back()->getID();
     }
 
     void onMount()
@@ -644,8 +657,8 @@ osc::MainUIScreen::MainUIScreen() :
 {
 }
 
-osc::MainUIScreen::MainUIScreen(std::filesystem::path p) :
-    m_Impl{new Impl{p}}
+osc::MainUIScreen::MainUIScreen(std::vector<std::filesystem::path> paths) :
+    m_Impl{new Impl{std::move(paths)}}
 {
 }
 

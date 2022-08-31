@@ -7,6 +7,7 @@
 
 #include <filesystem>
 #include <memory>
+#include <vector>
 
 namespace osc { class Tab; }
 namespace osc { class TabHost; }
@@ -16,7 +17,7 @@ namespace osc
     class MainUIScreen final : public Screen {
     public:
         MainUIScreen();
-        MainUIScreen(std::filesystem::path);
+        MainUIScreen(std::vector<std::filesystem::path>);
         MainUIScreen(MainUIScreen const&) = delete;
         MainUIScreen(MainUIScreen&&) noexcept;
         MainUIScreen& operator=(MainUIScreen const&) = delete;
