@@ -62,11 +62,10 @@ private:
         UpdateCachedSimulationReportIfNecessary(*m_Model, m_CachedReport);
 
         int nOutputs = m_API->getNumUserOutputExtractors();
-        if (nOutputs > 0 && ImGui::BeginTable("output watches table", 3, ImGuiTableFlags_SizingStretchProp))
+        if (nOutputs > 0 && ImGui::BeginTable("##OutputWatchesTable", 2, ImGuiTableFlags_SizingStretchProp))
         {
             ImGui::TableSetupColumn("Output", ImGuiTableColumnFlags_WidthStretch);
             ImGui::TableSetupColumn("Value");
-            ImGui::TableSetupColumn("Actions");
             ImGui::TableHeadersRow();
 
             for (int outputIdx = 0; outputIdx < nOutputs; ++outputIdx)
@@ -74,17 +73,26 @@ private:
                 int column = 0;
                 OutputExtractor const& o = m_API->getUserOutputExtractor(outputIdx);
 
+                ImGui::PushID(outputIdx);
+
                 ImGui::TableNextRow();
+
                 ImGui::TableSetColumnIndex(column++);
+                if (ImGui::SmallButton("X"))
+                {
+                    m_API->removeUserOutputExtractor(outputIdx);
+                }
+                ImGui::SameLine();
                 ImGui::TextUnformatted(o.getName().c_str());
+
                 ImGui::TableSetColumnIndex(column++);
                 ImGui::TextUnformatted(o.getValueString(m_Model->getModel(), m_CachedReport.simulationReport).c_str());
+
+                ImGui::PopID();
             }
 
             ImGui::EndTable();
         }
-
-
     }
 
     MainUIStateAPI* m_API;
