@@ -9,6 +9,7 @@
 
 class osc::SimulationReport::Impl final {
 public:
+    Impl() = default;
 
     explicit Impl(SimTK::State&& st) :
         m_State{std::move(st)}
@@ -54,6 +55,11 @@ private:
 
 
 // public API
+
+osc::SimulationReport::SimulationReport() :
+    m_Impl{std::make_shared<Impl>()}
+{
+}
 
 osc::SimulationReport::SimulationReport(SimTK::State&& st) :
     m_Impl{std::make_shared<Impl>(std::move(st))}

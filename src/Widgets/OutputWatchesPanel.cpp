@@ -4,6 +4,7 @@
 #include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/Utils/UID.hpp"
 #include "src/Widgets/NamedPanel.hpp"
 
 #include <imgui.h>
@@ -14,6 +15,34 @@
 #include <string_view>
 #include <utility>
 
+namespace
+{
+    struct CachedSimulationReport final {
+        osc::UID sourceModelVersion;
+        osc::UID sourceStateVersion;
+        osc::SimulationReport simulationReport;
+    };
+
+    void UpdateCachedSimulationReportIfNecessary(osc::VirtualConstModelStatePair const& src, CachedSimulationReport& cache)
+    {
+        osc::UID const modelVersion = src.getModelVersion();
+        osc::UID const stateVersion = src.getStateVersion();
+
+        if (cache.sourceModelVersion == modelVersion &&
+            cache.sourceStateVersion == stateVersion)
+        {
+            return;  // it's already up-to-date
+        }
+
+        SimTK::State s = src.getState();
+        src.getModel().realizeReport(s);
+
+        cache.simulationReport = osc::SimulationReport{std::move(s)};
+        cache.sourceModelVersion = modelVersion;
+        cache.sourceStateVersion = stateVersion;
+    }
+}
+
 class osc::OutputWatchesPanel::Impl final : public osc::NamedPanel {
 public:
 
@@ -22,19 +51,15 @@ public:
         MainUIStateAPI* api_) :
 
         NamedPanel{std::move(panelName_)},
-        m_Model{std::move(model_)},
-        m_API{std::move(api_)}
+        m_API{std::move(api_)},
+        m_Model{std::move(model_)}
     {
     }
 
 private:
     void implDraw() override
     {
-        // this implementation is extremely slow because the outputs API requires a complete
-        // simulation report (the editor has to manufacture it)
-        SimTK::State s = m_Model->getState();
-        m_Model->getModel().realizeReport(s);
-        SimulationReport sr{std::move(s), {}};
+        UpdateCachedSimulationReportIfNecessary(*m_Model, m_CachedReport);
 
         int nOutputs = m_API->getNumUserOutputExtractors();
         if (nOutputs > 0 && ImGui::BeginTable("output watches table", 3, ImGuiTableFlags_SizingStretchProp))
@@ -53,7 +78,7 @@ private:
                 ImGui::TableSetColumnIndex(column++);
                 ImGui::TextUnformatted(o.getName().c_str());
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::TextUnformatted(o.getValueString(m_Model->getModel(), sr).c_str());
+                ImGui::TextUnformatted(o.getValueString(m_Model->getModel(), m_CachedReport.simulationReport).c_str());
             }
 
             ImGui::EndTable();
@@ -62,8 +87,9 @@ private:
 
     }
 
-    std::shared_ptr<UndoableModelStatePair> m_Model;
     MainUIStateAPI* m_API;
+    std::shared_ptr<UndoableModelStatePair> m_Model;
+    CachedSimulationReport m_CachedReport;
 };
 
 

@@ -14,6 +14,7 @@ namespace osc
     // reference-counted, immutable, simulation report
     class SimulationReport {
     public:
+        SimulationReport();
         explicit SimulationReport(SimTK::State&&);
         SimulationReport(SimTK::State&&, std::unordered_map<UID, float> auxiliaryValues);
         SimulationReport(SimulationReport const&);
