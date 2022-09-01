@@ -414,11 +414,12 @@ namespace
                     m_ActiveEdits[i] = inverseConversionCoefficient * static_cast<double>(fv[i]);
                 }
                 ImGui::PopStyleVar();
-
                 if (ItemValueShouldBeSaved())
                 {
                     save = true;
                 }
+                osc::DrawTooltipIfItemHovered("Step Size", "You can right-click to adjust the step size of the buttons");
+
                 if (ImGui::BeginPopupContextItem("##valuecontextmenu"))
                 {
                     ImGui::Text("Set Step Size");
