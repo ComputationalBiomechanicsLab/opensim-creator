@@ -127,29 +127,52 @@ namespace
         return rv;
     }
 
+    // simplification of a point in a geometry path
+    struct GeometryPathPoint final {
+
+        // set to be != nullptr if the point is associated with a (probably, user defined)
+        // path point
+        OpenSim::PathPoint const* maybePathPoint = nullptr;
+        glm::vec3 location = {};
+
+        explicit GeometryPathPoint(glm::vec3 const& location_) :
+            location{location_}
+        {
+        }
+
+        GeometryPathPoint(OpenSim::PathPoint const& pathPoint, glm::vec3 const& location_) :
+            maybePathPoint{&pathPoint},
+            location{location_}
+        {
+        }
+    };
+
     // helper: returns path points in a GeometryPath as a sequence of 3D vectors
-    std::vector<glm::vec3> GetAllPathPoints(OpenSim::GeometryPath const& gp, SimTK::State const& st)
+    std::vector<GeometryPathPoint> GetAllPathPoints(OpenSim::GeometryPath const& gp, SimTK::State const& st)
     {
-        std::vector<glm::vec3> rv;
+        std::vector<GeometryPathPoint> rv;
 
         OpenSim::Array<OpenSim::AbstractPathPoint*> const& pps = gp.getCurrentPath(st);
 
         for (int i = 0; i < pps.getSize(); ++i)
         {
-            OpenSim::PathWrapPoint const* pwp = dynamic_cast<OpenSim::PathWrapPoint const*>(pps[i]);
-            if (pwp)
+            if (OpenSim::PathWrapPoint const* pwp = dynamic_cast<OpenSim::PathWrapPoint const*>(pps[i]))
             {
                 osc::Transform body2ground = osc::ToTransform(pwp->getParentFrame().getTransformInGround(st));
                 OpenSim::Array<SimTK::Vec3> const& wrapPath = pwp->getWrapPath(st);
 
                 for (int j = 0; j < wrapPath.getSize(); ++j)
                 {
-                    rv.push_back(body2ground * osc::ToVec3(wrapPath[j]));
+                    rv.emplace_back(body2ground * osc::ToVec3(wrapPath[j]));
                 }
+            }
+            else if (OpenSim::PathPoint const* pp = dynamic_cast<OpenSim::PathPoint const*>(pps[i]))
+            {
+                rv.emplace_back(*pp, osc::ToVec3(pps[i]->getLocationInGround(st)));
             }
             else
             {
-                rv.push_back(osc::ToVec3(pps[i]->getLocationInGround(st)));
+                rv.emplace_back(osc::ToVec3(pps[i]->getLocationInGround(st)));
             }
         }
 
@@ -191,10 +214,10 @@ namespace
         }
     }
 
-    // helper: returns the color a muscle would have if it were to be rendered by SCONE
+    // helper: returns the color a muscle should have, based on a variety of options (style, user-defined stuff in OpenSim, etc.)
     //
     // this is just a rough estimation of how SCONE is coloring things
-    glm::vec4 GetSconeStyleMuscleColor(OpenSim::Muscle const& musc, SimTK::State const& st, osc::MuscleColoringStyle s)
+    glm::vec4 GetMuscleColor(OpenSim::Muscle const& musc, SimTK::State const& st, osc::MuscleColoringStyle s)
     {
         if (s == osc::MuscleColoringStyle::OpenSim)
         {
@@ -370,7 +393,7 @@ namespace
                                 OpenSim::ModelDisplayHints const&,
                                 std::vector<osc::SceneDecoration>& out)
     {
-        std::vector<glm::vec3> const pps = GetAllPathPoints(muscle.getGeometryPath(), st);
+        std::vector<GeometryPathPoint> const pps = GetAllPathPoints(muscle.getGeometryPath(), st);
         std::string const muscleAbsPath = muscle.getAbsolutePathString();
 
         if (pps.empty())
@@ -382,7 +405,7 @@ namespace
         float const fiberUiRadius = GetMuscleSize(muscle, fixupScaleFactor, opts.getMuscleSizingStyle());
         float const tendonUiRadius = 0.618f * fiberUiRadius;  // or fixupScaleFactor * 0.005f;
 
-        glm::vec4 const fiberColor = GetSconeStyleMuscleColor(muscle, st, opts.getMuscleColoringStyle());
+        glm::vec4 const fiberColor = GetMuscleColor(muscle, st, opts.getMuscleColoringStyle());
         glm::vec4 const tendonColor = {204.0f/255.0f, 203.0f/255.0f, 200.0f/255.0f, 1.0f};
 
         osc::SceneDecorationFlags flags = ComputeFlags(muscle, selected, hovered);
@@ -439,7 +462,7 @@ namespace
             // edge-case: the muscle is a single point in space: just emit a sphere
             //
             // (this really should never happen, but you never know)
-            emitFiberSphere(pps.front());
+            emitFiberSphere(pps.front().location);
             return;
         }
 
@@ -454,21 +477,21 @@ namespace
         float const fiberEnd = tendonLen + fiberLen;
 
         size_t i = 1;
-        glm::vec3 prevPos = pps.front();
+        GeometryPathPoint prevPoint = pps.front();
         float prevTraversalPos = 0.0f;
 
         // draw first tendon
         if (prevTraversalPos < tendonLen)
         {
             // emit first tendon sphere
-            emitTendonSphere(prevPos);
+            emitTendonSphere(prevPoint.location);
         }
         while (i < pps.size() && prevTraversalPos < tendonLen)
         {
             // emit remaining tendon cylinder + spheres
 
-            glm::vec3 const& pos = pps[i];
-            glm::vec3 prevToPos = pos - prevPos;
+            GeometryPathPoint const& point = pps[i];
+            glm::vec3 const prevToPos = point.location - prevPoint.location;
             float prevToPosLen = glm::length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
             float excess = traversalPos - tendonLen;
@@ -476,21 +499,21 @@ namespace
             if (excess > 0.0f)
             {
                 float scaler = (prevToPosLen - excess)/prevToPosLen;
-                glm::vec3 tendonEnd = prevPos + scaler * prevToPos;
+                glm::vec3 tendonEnd = prevPoint.location + scaler * prevToPos;
 
-                emitTendonCylinder(prevPos, tendonEnd);
+                emitTendonCylinder(prevPoint.location, tendonEnd);
                 emitTendonSphere(tendonEnd);
 
-                prevPos = tendonEnd;
+                prevPoint.location = tendonEnd;
                 prevTraversalPos = tendonLen;
             }
             else
             {
-                emitTendonCylinder(prevPos, pos);
-                emitTendonSphere(pos);
+                emitTendonCylinder(prevPoint.location, point.location);
+                emitTendonSphere(point.location);
 
                 i++;
-                prevPos = pos;
+                prevPoint = point;
                 prevTraversalPos = traversalPos;
             }
         }
@@ -499,14 +522,14 @@ namespace
         if (i < pps.size() && prevTraversalPos < fiberEnd)
         {
             // emit first fiber sphere
-            emitFiberSphere(prevPos);
+            emitFiberSphere(prevPoint.location);
         }
         while (i < pps.size() && prevTraversalPos < fiberEnd)
         {
             // emit remaining fiber cylinder + spheres
 
-            glm::vec3 const& pos = pps[i];
-            glm::vec3 prevToPos = pos - prevPos;
+            GeometryPathPoint const& point = pps[i];
+            glm::vec3 prevToPos = point.location - prevPoint.location;
             float prevToPosLen = glm::length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
             float excess = traversalPos - fiberEnd;
@@ -515,21 +538,21 @@ namespace
             {
                 // emit end point and then exit
                 float scaler = (prevToPosLen - excess)/prevToPosLen;
-                glm::vec3 fiberEndPos = prevPos + scaler * prevToPos;
+                glm::vec3 fiberEndPos = prevPoint.location + scaler * prevToPos;
 
-                emitFiberCylinder(prevPos, fiberEndPos);
+                emitFiberCylinder(prevPoint.location, fiberEndPos);
                 emitFiberSphere(fiberEndPos);
 
-                prevPos = fiberEndPos;
+                prevPoint.location = fiberEndPos;
                 prevTraversalPos = fiberEnd;
             }
             else
             {
-                emitFiberCylinder(prevPos, pos);
-                emitFiberSphere(pos);
+                emitFiberCylinder(prevPoint.location, point.location);
+                emitFiberSphere(point.location);
 
                 i++;
-                prevPos = pos;
+                prevPoint = point;
                 prevTraversalPos = traversalPos;
             }
         }
@@ -538,22 +561,22 @@ namespace
         if (i < pps.size())
         {
             // emit first tendon sphere
-            emitTendonSphere(prevPos);
+            emitTendonSphere(prevPoint.location);
         }
         while (i < pps.size())
         {
             // emit remaining fiber cylinder + spheres
 
-            glm::vec3 pos = pps[i];
-            glm::vec3 prevToPos = pos - prevPos;
+            GeometryPathPoint const& point = pps[i];
+            glm::vec3 prevToPos = point.location - prevPoint.location;
             float prevToPosLen = glm::length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
 
-            emitTendonCylinder(prevPos, pos);
-            emitTendonSphere(pos);
+            emitTendonCylinder(prevPoint.location, point.location);
+            emitTendonSphere(point.location);
 
             i++;
-            prevPos = pos;
+            prevPoint = point;
             prevTraversalPos = traversalPos;
         }
     }
@@ -572,7 +595,7 @@ namespace
                                   std::vector<osc::SceneDecoration>& out)
     {
         osc::SceneDecorationFlags const flags = ComputeFlags(musc, selected, hovered);
-        std::vector<glm::vec3> const pps = GetAllPathPoints(musc.getGeometryPath(), st);
+        std::vector<GeometryPathPoint> const pps = GetAllPathPoints(musc.getGeometryPath(), st);
         std::string const absPath = musc.getAbsolutePathString();
 
         if (pps.empty())
@@ -581,19 +604,25 @@ namespace
         }
 
         float const fiberUiRadius = GetMuscleSize(musc, fixupScaleFactor, opts.getMuscleSizingStyle());
-        glm::vec4 const fiberColor = GetSconeStyleMuscleColor(musc, st, opts.getMuscleColoringStyle());
+        glm::vec4 const fiberColor = GetMuscleColor(musc, st, opts.getMuscleColoringStyle());
 
-        auto emitSphere = [&](glm::vec3 const& pos)
+        auto emitSphere = [&](GeometryPathPoint const& pp)
         {
+            // ensure that user-defined path points are independently selectable (#425)
+            //
+            // TODO: SCONE-style etc. should also support this
+            OpenSim::Component const& c = pp.maybePathPoint ? *pp.maybePathPoint : static_cast<OpenSim::Component const&>(musc);
+            osc::SceneDecorationFlags const flags = ComputeFlags(c, selected, hovered);
+
             osc::Transform t;
             t.scale *= fiberUiRadius;
-            t.position = pos;
+            t.position = pp.location;
 
             out.emplace_back(
                 osc::App::meshes().getSphereMesh(),
                 t,
                 fiberColor,
-                absPath,
+                pp.maybePathPoint ? pp.maybePathPoint->getAbsolutePathString() : absPath,
                 flags
             );
         };
@@ -615,10 +644,9 @@ namespace
         {
             emitSphere(pps.front());
         }
-
         for (std::size_t i = 1; i < pps.size(); ++i)
         {
-            emitCylinder(pps[i - 1], pps[i]);
+            emitCylinder(pps[i - 1].location, pps[i].location);
 
             if (mdh.get_show_path_points())
             {

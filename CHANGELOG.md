@@ -240,6 +240,10 @@ All notable changes to this project will be documented here. The format is based
 
 - Fixed osc not opening the splash tab when opening files provided via the argument list (#427)
 
+- User-defined muscle path points are now individually hoverable/selectable in 3D viewports.
+  Selecting a user-defined muscle path point highlights it in the 3D viewport, making muscle
+  adjustments a bit easier (#425)
+
 
 ## [0.2.0] - 2022/07/04
 
