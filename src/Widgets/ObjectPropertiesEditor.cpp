@@ -407,13 +407,14 @@ namespace
                 ImGui::PushID(i);
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
 
-                ImGui::PushStyleColor(ImGuiCol_Border, {1.0f, 0.0f, 0.0f, 1.0f});
+                ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, {1.0f, 0.0f});
                 if (ImGui::InputScalar("##valueinput", ImGuiDataType_Float, &fv[i], &m_StepSize, nullptr, OSC_DEFAULT_FLOAT_INPUT_FORMAT))
                 {
                     double inverseConversionCoefficient = 1.0/conversionCoefficient;
                     m_ActiveEdits[i] = inverseConversionCoefficient * static_cast<double>(fv[i]);
                 }
-                ImGui::PopStyleColor();
+                ImGui::PopStyleVar();
+
                 if (ItemValueShouldBeSaved())
                 {
                     save = true;
