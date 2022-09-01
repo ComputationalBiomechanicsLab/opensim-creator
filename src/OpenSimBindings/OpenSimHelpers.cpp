@@ -612,7 +612,7 @@ namespace
             //
             // TODO: SCONE-style etc. should also support this
             OpenSim::Component const& c = pp.maybePathPoint ? *pp.maybePathPoint : static_cast<OpenSim::Component const&>(musc);
-            osc::SceneDecorationFlags const flags = ComputeFlags(c, selected, hovered);
+            osc::SceneDecorationFlags const sphereFlags = ComputeFlags(c, selected, hovered);
 
             osc::Transform t;
             t.scale *= fiberUiRadius;
@@ -623,7 +623,7 @@ namespace
                 t,
                 fiberColor,
                 pp.maybePathPoint ? pp.maybePathPoint->getAbsolutePathString() : absPath,
-                flags
+                sphereFlags
             );
         };
 
