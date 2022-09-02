@@ -21,8 +21,8 @@
 #include "src/Widgets/BasicWidgets.hpp"
 #include "src/Widgets/LogViewer.hpp"
 #include "src/Widgets/MainMenu.hpp"
+#include "src/Widgets/NavigatorPanel.hpp"
 #include "src/Widgets/ComponentDetails.hpp"
-#include "src/Widgets/ModelHierarchyPanel.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 #include "src/Widgets/SimulationOutputPlot.hpp"
 #include "src/Widgets/SimulationScrubber.hpp"
@@ -254,7 +254,7 @@ private:
 
         osc::Config const& config = osc::App::get().getConfig();
 
-        // draw hierarchy panel
+        // draw navigator panel
         {
             if (!m_ShownModelState)
             {
@@ -264,13 +264,13 @@ private:
 
             osc::SimulationModelStatePair& ms = *m_ShownModelState;
 
-            auto resp = m_ModelHierarchyPanel.draw(ms);
+            auto resp = m_NavigatorPanel.draw(ms);
 
-            if (resp.type == osc::ModelHierarchyPanel::ResponseType::SelectionChanged)
+            if (resp.type == osc::NavigatorPanel::ResponseType::SelectionChanged)
             {
                 ms.setSelected(resp.ptr);
             }
-            else if (resp.type == osc::ModelHierarchyPanel::ResponseType::HoverChanged)
+            else if (resp.type == osc::NavigatorPanel::ResponseType::HoverChanged)
             {
                 ms.setHovered(resp.ptr);
             }
@@ -535,7 +535,7 @@ private:
     {
         static std::vector<std::string> const g_EditorScreenPanels =
         {
-            "Hierarchy",
+            "Navigator",
             "Log",
             "Output Plots",
             "Selection Details",
@@ -739,7 +739,7 @@ private:
     MainMenuAboutTab m_MainMenuAboutTab;
     ComponentDetails m_ComponentDetailsWidget;
     PerfPanel m_PerfPanel{"Performance"};
-    ModelHierarchyPanel m_ModelHierarchyPanel{"Hierarchy"};
+    NavigatorPanel m_NavigatorPanel{"Navigator"};
     SimulationScrubber m_SimulationScrubber{m_Simulation};
     std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
 };

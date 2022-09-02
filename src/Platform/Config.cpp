@@ -62,7 +62,7 @@ static std::unordered_map<std::string, bool> MakeDefaultPanelStates()
     return
     {
         {"Actions", true},
-        {"Hierarchy", true},
+        {"Navigator", true},
         {"Log", true},
         {"Property Editor", true},
         {"Selection Details", true},

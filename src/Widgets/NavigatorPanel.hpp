@@ -9,7 +9,7 @@ namespace osc { class VirtualConstModelStatePair; }
 
 namespace osc
 {
-    class ModelHierarchyPanel final {
+    class NavigatorPanel final {
     public:
         enum class ResponseType {
             NothingHappened,
@@ -22,12 +22,12 @@ namespace osc
             ResponseType type = ResponseType::NothingHappened;
         };
 
-        ModelHierarchyPanel(std::string_view panelName, std::function<void(OpenSim::ComponentPath const&)> onRightClick = [](auto const&){});
-        ModelHierarchyPanel(ModelHierarchyPanel const&) = delete;
-        ModelHierarchyPanel(ModelHierarchyPanel&&) noexcept;
-        ModelHierarchyPanel& operator=(ModelHierarchyPanel const&) = delete;
-        ModelHierarchyPanel& operator=(ModelHierarchyPanel&&) noexcept;
-        ~ModelHierarchyPanel() noexcept;
+        NavigatorPanel(std::string_view panelName, std::function<void(OpenSim::ComponentPath const&)> onRightClick = [](auto const&){});
+        NavigatorPanel(NavigatorPanel const&) = delete;
+        NavigatorPanel(NavigatorPanel&&) noexcept;
+        NavigatorPanel& operator=(NavigatorPanel const&) = delete;
+        NavigatorPanel& operator=(NavigatorPanel&&) noexcept;
+        ~NavigatorPanel() noexcept;
 
         bool isOpen() const;
         void open();

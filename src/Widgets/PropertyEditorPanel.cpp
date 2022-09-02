@@ -52,7 +52,7 @@ static void DrawActionsMenu(osc::EditorAPI* editorAPI, std::shared_ptr<osc::Undo
     ImGui::Columns(2);
     ImGui::TextUnformatted("actions");
     ImGui::SameLine();
-    osc::DrawHelpMarker("Shows a menu containing extra actions that can be performed on this component.\n\nYou can also access the same menu by right-clicking the component in the 3D viewer, bottom status bar, or hierarchy panel.");
+    osc::DrawHelpMarker("Shows a menu containing extra actions that can be performed on this component.\n\nYou can also access the same menu by right-clicking the component in the 3D viewer, bottom status bar, or navigator panel.");
     ImGui::NextColumn();
     ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 1.0f, 0.0f, 1.0f});
     if (ImGui::Button(ICON_FA_BOLT))

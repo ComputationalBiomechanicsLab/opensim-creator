@@ -23,8 +23,8 @@
 #include "src/Widgets/EditorTabStatusBar.hpp"
 #include "src/Widgets/LogViewer.hpp"
 #include "src/Widgets/MainMenu.hpp"
+#include "src/Widgets/NavigatorPanel.hpp"
 #include "src/Widgets/ModelActionsMenuItems.hpp"
-#include "src/Widgets/ModelHierarchyPanel.hpp"
 #include "src/Widgets/ModelMusclePlotPanel.hpp"
 #include "src/Widgets/OutputWatchesPanel.hpp"
 #include "src/Widgets/ParamBlockEditorPopup.hpp"
@@ -55,7 +55,7 @@
 
 static std::array<std::string, 7> const g_EditorScreenPanels =
 {
-    "Hierarchy",
+    "Navigator",
     "Property Editor",
     "Log",
     "Coordinate Editor",
@@ -560,17 +560,17 @@ private:
         // contains top-level actions (e.g. "add body")
         osc::Config const& config = osc::App::get().getConfig();
 
-        // draw hierarchy viewer
+        // draw navigator
         {
-            OSC_PERF("draw component hierarchy");
+            OSC_PERF("draw navigator panel");
 
-            auto resp = m_ComponentHierarchyPanel.draw(*m_Model);
+            auto resp = m_NavigatorPanel.draw(*m_Model);
 
-            if (resp.type == osc::ModelHierarchyPanel::ResponseType::SelectionChanged)
+            if (resp.type == osc::NavigatorPanel::ResponseType::SelectionChanged)
             {
                 m_Model->setSelected(resp.ptr);
             }
-            else if (resp.type == osc::ModelHierarchyPanel::ResponseType::HoverChanged)
+            else if (resp.type == osc::NavigatorPanel::ResponseType::HoverChanged)
             {
                 m_Model->setHovered(resp.ptr);
             }
@@ -729,7 +729,7 @@ private:
     ModelActionsMenuItems m_MainMenuAddTabMenuItems{this, m_Model};
     MainMenuAboutTab m_MainMenuAboutTab;
     LogViewer m_LogViewer;
-    ModelHierarchyPanel m_ComponentHierarchyPanel{"Hierarchy", [this](OpenSim::ComponentPath const& p)  { this->pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_Parent, this, m_Model, p)); }};
+    NavigatorPanel m_NavigatorPanel{"Navigator", [this](OpenSim::ComponentPath const& p)  { this->pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_Parent, this, m_Model, p)); }};
     CoordinateEditor m_CoordEditor{m_Parent, this, m_Model};
     PerfPanel m_PerfPanel{"Performance"};
     OutputWatchesPanel m_OutputWatchesPanel{"Output Watches", m_Model, m_Parent};

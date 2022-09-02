@@ -99,7 +99,7 @@ static void DrawPhysicalFrameContextualActions(
         p->open();
         editorAPI->pushPopup(std::move(p));
     }
-    osc::DrawTooltipIfItemHovered("Add Geometry", "Add geometry to this component. Geometry can be removed by selecting it in the hierarchy editor and pressing DELETE");
+    osc::DrawTooltipIfItemHovered("Add Geometry", "Add geometry to this component. Geometry can be removed by selecting it in the navigator and pressing DELETE");
 
     if (ImGui::MenuItem("Add Offset Frame"))
     {

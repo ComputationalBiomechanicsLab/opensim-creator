@@ -5173,12 +5173,12 @@ namespace
         std::array<bool, 3> m_PanelStates{false, true, false};
         static constexpr std::array<char const*, 3> g_OpenedPanelNames = {
             "History",
-            "Hierarchy",
+            "Navigator",
             "Log",
         };
         enum PanelIndex_ {
             PanelIndex_History = 0,
-            PanelIndex_Hierarchy,
+            PanelIndex_Navigator,
             PanelIndex_Log,
             PanelIndex_COUNT,
         };
@@ -7231,7 +7231,7 @@ namespace
             }
         }
 
-        void DrawHierarchyElement(SceneElClass const& c)
+        void DrawNavigatorElement(SceneElClass const& c)
         {
             ModelGraph& mg = m_Shared->UpdModelGraph();
 
@@ -7298,17 +7298,17 @@ namespace
             ImGui::Unindent();
         }
 
-        void DrawHierarchyPanelContent()
+        void DrawNavigatorPanelContent()
         {
             for (SceneElClass const* c : GetSceneElClasses())
             {
-                DrawHierarchyElement(*c);
+                DrawNavigatorElement(*c);
                 SpacerDummy();
             }
 
-            // a hierarchy element might have opened the context menu in the hierarchy panel
+            // a navigator element might have opened the context menu in the navigator panel
             //
-            // this can happen when the user right-clicks something in the hierarchy
+            // this can happen when the user right-clicks something in the navigator
             if (ImGui::BeginPopup("##maincontextmenu"))
             {
                 DrawContextMenuContent();
@@ -8104,12 +8104,12 @@ namespace
                 ImGui::End();
             }
 
-            // draw hierarchy panel (if enabled)
-            if (m_Shared->m_PanelStates[SharedData::PanelIndex_Hierarchy])
+            // draw navigator panel (if enabled)
+            if (m_Shared->m_PanelStates[SharedData::PanelIndex_Navigator])
             {
-                if (ImGui::Begin("hierarchy", &m_Shared->m_PanelStates[SharedData::PanelIndex_Hierarchy]))
+                if (ImGui::Begin("navigator", &m_Shared->m_PanelStates[SharedData::PanelIndex_Navigator]))
                 {
-                    DrawHierarchyPanelContent();
+                    DrawNavigatorPanelContent();
                 }
                 ImGui::End();
             }

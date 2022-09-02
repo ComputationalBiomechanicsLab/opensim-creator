@@ -250,6 +250,8 @@ All notable changes to this project will be documented here. The format is based
 
 - `osc::SelectionEditorPanel` is now called `osc::PropertyEditorPanel` (#428)
 
+- The "Hierarchy Panel" is now called "Navigator" to match OpenSim's existing nomenclature (#429)
+
 
 ## [0.2.0] - 2022/07/04
 

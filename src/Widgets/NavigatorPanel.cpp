@@ -1,4 +1,4 @@
-#include "ModelHierarchyPanel.hpp"
+#include "NavigatorPanel.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
@@ -46,7 +46,7 @@ namespace {
 
         void push_back(T v) {
             if (static_cast<size_t>(n) >= N) {
-                throw std::runtime_error{"cannot render a component_hierarchy widget: the Model/Component tree is too deep"};
+                throw std::runtime_error{"cannot render a navigator: the Model/Component tree is too deep"};
             }
             els[n++] = v;
         }
@@ -143,7 +143,7 @@ static bool isSearchHit(std::string const& searchStr, ComponentPath const& cp)
     return false;
 }
 
-class osc::ModelHierarchyPanel::Impl final : public NamedPanel {
+class osc::NavigatorPanel::Impl final : public NamedPanel {
 public:
     Impl(std::string_view panelName, std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
         NamedPanel{std::move(panelName)},
@@ -166,7 +166,7 @@ public:
         return static_cast<NamedPanel&>(*this).close();
     }
 
-    osc::ModelHierarchyPanel::Response draw(VirtualConstModelStatePair const& modelState)
+    osc::NavigatorPanel::Response draw(VirtualConstModelStatePair const& modelState)
     {
         m_Response = Response{};
         m_ModelState = &modelState;
@@ -196,7 +196,7 @@ public:
 
         // draw content
 
-        ImGui::BeginChild("##componenthierarchyvieweritems");
+        ImGui::BeginChild("##componentnavigatorvieweritems");
 
         OpenSim::Component const* root = &m_ModelState->getModel();
         OpenSim::Component const* selection = m_ModelState->getSelected();
@@ -340,7 +340,7 @@ public:
 
             if (ImGui::IsItemHovered())
             {
-                m_Response.type = ModelHierarchyPanel::ResponseType::HoverChanged;
+                m_Response.type = NavigatorPanel::ResponseType::HoverChanged;
                 m_Response.ptr = cur;
 
                 ImGui::BeginTooltip();
@@ -352,7 +352,7 @@ public:
 
             if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
             {
-                m_Response.type = ModelHierarchyPanel::ResponseType::SelectionChanged;
+                m_Response.type = NavigatorPanel::ResponseType::SelectionChanged;
                 m_Response.ptr = cur;
             }
 
@@ -377,49 +377,49 @@ private:
     std::string m_CurrentSearch;
     bool m_ShowFrames = false;
     VirtualConstModelStatePair const* m_ModelState = nullptr;
-    ModelHierarchyPanel::Response m_Response;
+    NavigatorPanel::Response m_Response;
 };
 
 
 // public API (PIMPL)
 
-osc::ModelHierarchyPanel::ModelHierarchyPanel(std::string_view panelName, std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
+osc::NavigatorPanel::NavigatorPanel(std::string_view panelName, std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
     m_Impl{new Impl{std::move(panelName), std::move(onRightClick)}}
 {
 }
 
-osc::ModelHierarchyPanel::ModelHierarchyPanel(ModelHierarchyPanel&& tmp) noexcept :
+osc::NavigatorPanel::NavigatorPanel(NavigatorPanel&& tmp) noexcept :
     m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
 }
 
-osc::ModelHierarchyPanel& osc::ModelHierarchyPanel::operator=(ModelHierarchyPanel&& tmp) noexcept
+osc::NavigatorPanel& osc::NavigatorPanel::operator=(NavigatorPanel&& tmp) noexcept
 {
     std::swap(m_Impl, tmp.m_Impl);
     return *this;
 }
 
-osc::ModelHierarchyPanel::~ModelHierarchyPanel() noexcept
+osc::NavigatorPanel::~NavigatorPanel() noexcept
 {
     delete m_Impl;
 }
 
-bool osc::ModelHierarchyPanel::isOpen() const
+bool osc::NavigatorPanel::isOpen() const
 {
     return m_Impl->isOpen();
 }
 
-void osc::ModelHierarchyPanel::open()
+void osc::NavigatorPanel::open()
 {
     m_Impl->open();
 }
 
-void osc::ModelHierarchyPanel::close()
+void osc::NavigatorPanel::close()
 {
     m_Impl->close();
 }
 
-osc::ModelHierarchyPanel::Response osc::ModelHierarchyPanel::draw(VirtualConstModelStatePair const& modelState)
+osc::NavigatorPanel::Response osc::NavigatorPanel::draw(VirtualConstModelStatePair const& modelState)
 {
     return m_Impl->draw(modelState);
 }

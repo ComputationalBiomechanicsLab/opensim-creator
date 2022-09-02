@@ -539,12 +539,12 @@ add_library(osccore STATIC
     src/Widgets/MainMenu.hpp
     src/Widgets/ModelActionsMenuItems.cpp
     src/Widgets/ModelActionsMenuItems.hpp
-    src/Widgets/ModelHierarchyPanel.cpp
-    src/Widgets/ModelHierarchyPanel.hpp
     src/Widgets/ModelMusclePlotPanel.cpp
     src/Widgets/ModelMusclePlotPanel.hpp
     src/Widgets/NamedPanel.cpp
     src/Widgets/NamedPanel.hpp
+    src/Widgets/NavigatorPanel.cpp
+    src/Widgets/NavigatorPanel.hpp
     src/Widgets/ObjectPropertiesEditor.cpp
     src/Widgets/ObjectPropertiesEditor.hpp
     src/Widgets/OutputWatchesPanel.cpp
