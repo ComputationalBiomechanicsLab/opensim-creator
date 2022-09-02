@@ -64,7 +64,7 @@ static std::unordered_map<std::string, bool> MakeDefaultPanelStates()
         {"Actions", true},
         {"Navigator", true},
         {"Log", true},
-        {"Property Editor", true},
+        {"Properties", true},
         {"Selection Details", true},
         {"Simulation Details", false},
         {"Coordinates", true},

@@ -1,4 +1,4 @@
-#include "PropertyEditorPanel.hpp"
+#include "PropertiesPanel.hpp"
 
 #include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
@@ -97,7 +97,7 @@ static void DrawTopLevelMembersEditor(osc::UndoableModelStatePair& uim)
     ImGui::PopID();
 }
 
-class osc::PropertyEditorPanel::Impl final {
+class osc::PropertiesPanel::Impl final {
 public:
     Impl(EditorAPI* editorAPI, std::shared_ptr<UndoableModelStatePair> model) :
         m_EditorAPI{std::move(editorAPI)},
@@ -148,28 +148,28 @@ private:
 
 // public API (PIMPL)
 
-osc::PropertyEditorPanel::PropertyEditorPanel(EditorAPI* editorAPI, std::shared_ptr<UndoableModelStatePair> model) :
+osc::PropertiesPanel::PropertiesPanel(EditorAPI* editorAPI, std::shared_ptr<UndoableModelStatePair> model) :
     m_Impl{new Impl{std::move(editorAPI), std::move(model)}}
 {
 }
 
-osc::PropertyEditorPanel::PropertyEditorPanel(PropertyEditorPanel&& tmp) noexcept :
+osc::PropertiesPanel::PropertiesPanel(PropertiesPanel&& tmp) noexcept :
     m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
 }
 
-osc::PropertyEditorPanel& osc::PropertyEditorPanel::operator=(PropertyEditorPanel&& tmp) noexcept
+osc::PropertiesPanel& osc::PropertiesPanel::operator=(PropertiesPanel&& tmp) noexcept
 {
     std::swap(m_Impl, tmp.m_Impl);
     return *this;
 }
 
-osc::PropertyEditorPanel::~PropertyEditorPanel() noexcept
+osc::PropertiesPanel::~PropertiesPanel() noexcept
 {
     delete m_Impl;
 }
 
-void osc::PropertyEditorPanel::draw()
+void osc::PropertiesPanel::draw()
 {
     m_Impl->draw();
 }

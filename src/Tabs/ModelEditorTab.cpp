@@ -30,7 +30,7 @@
 #include "src/Widgets/ParamBlockEditorPopup.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 #include "src/Widgets/Popup.hpp"
-#include "src/Widgets/PropertyEditorPanel.hpp"
+#include "src/Widgets/PropertiesPanel.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
 
 #include <IconsFontAwesome5.h>
@@ -56,7 +56,7 @@
 static std::array<std::string, 7> const g_EditorScreenPanels =
 {
     "Navigator",
-    "Property Editor",
+    "Properties",
     "Log",
     "Coordinates",
     "Performance",
@@ -577,20 +577,20 @@ private:
         }
 
         // draw property editor
-        if (bool propertyEditorOldState = config.getIsPanelEnabled("Property Editor"))
+        if (bool propertyEditorOldState = config.getIsPanelEnabled("Properties"))
         {
-            OSC_PERF("draw property editor panel");
+            OSC_PERF("draw properties panel");
 
             bool propertyEditorState = propertyEditorOldState;
-            if (ImGui::Begin("Property Editor", &propertyEditorState))
+            if (ImGui::Begin("Properties", &propertyEditorState))
             {
-                m_PropertyEditor.draw();
+                m_PropertiesPanel.draw();
             }
             ImGui::End();
 
             if (propertyEditorState != propertyEditorOldState)
             {
-                osc::App::upd().updConfig().setIsPanelEnabled("Property Editor", propertyEditorState);
+                osc::App::upd().updConfig().setIsPanelEnabled("Properties", propertyEditorState);
             }
         }
 
@@ -733,7 +733,7 @@ private:
     CoordinateEditor m_CoordEditor{m_Parent, this, m_Model};
     PerfPanel m_PerfPanel{"Performance"};
     OutputWatchesPanel m_OutputWatchesPanel{"Output Watches", m_Model, m_Parent};
-    PropertyEditorPanel m_PropertyEditor{this, m_Model};
+    PropertiesPanel m_PropertiesPanel{this, m_Model};
     int m_LatestMusclePlot = 1;
     std::vector<ModelMusclePlotPanel> m_ModelMusclePlots;
     EditorTabStatusBar m_StatusBar{m_Parent, this, m_Model};

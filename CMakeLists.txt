@@ -554,8 +554,8 @@ add_library(osccore STATIC
     src/Widgets/PerfPanel.cpp
     src/Widgets/PerfPanel.hpp
     src/Widgets/Popup.hpp
-    src/Widgets/PropertyEditorPanel.cpp
-    src/Widgets/PropertyEditorPanel.hpp
+    src/Widgets/PropertiesPanel.cpp
+    src/Widgets/PropertiesPanel.hpp
     src/Widgets/ReassignSocketPopup.cpp
     src/Widgets/ReassignSocketPopup.hpp
     src/Widgets/SaveChangesPopup.cpp

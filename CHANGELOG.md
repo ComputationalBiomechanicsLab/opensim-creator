@@ -254,6 +254,8 @@ All notable changes to this project will be documented here. The format is based
 
 - The "Coordinate Editor" panel is now called "Coordinates" to match OpenSim's existing nomenclature (#435)
 
+- The "Properties Editor" panel is now called "Properties" (#436)
+
 
 ## [0.2.0] - 2022/07/04
 
