@@ -248,6 +248,8 @@ All notable changes to this project will be documented here. The format is based
 
 - Right-clicking on nothing now shows a display menu with a "Show All" option (#422)
 
+- `osc::SelectionEditorPanel` is now called `osc::PropertyEditorPanel` (#428)
+
 
 ## [0.2.0] - 2022/07/04
 

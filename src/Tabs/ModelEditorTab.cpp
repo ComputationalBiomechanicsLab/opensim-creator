@@ -30,7 +30,7 @@
 #include "src/Widgets/ParamBlockEditorPopup.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 #include "src/Widgets/Popup.hpp"
-#include "src/Widgets/SelectionEditorPanel.hpp"
+#include "src/Widgets/PropertyEditorPanel.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
 
 #include <IconsFontAwesome5.h>
@@ -584,7 +584,7 @@ private:
             bool propertyEditorState = propertyEditorOldState;
             if (ImGui::Begin("Property Editor", &propertyEditorState))
             {
-                m_SelectionEditor.draw();
+                m_PropertyEditor.draw();
             }
             ImGui::End();
 
@@ -733,7 +733,7 @@ private:
     CoordinateEditor m_CoordEditor{m_Parent, this, m_Model};
     PerfPanel m_PerfPanel{"Performance"};
     OutputWatchesPanel m_OutputWatchesPanel{"Output Watches", m_Model, m_Parent};
-    SelectionEditorPanel m_SelectionEditor{this, m_Model};
+    PropertyEditorPanel m_PropertyEditor{this, m_Model};
     int m_LatestMusclePlot = 1;
     std::vector<ModelMusclePlotPanel> m_ModelMusclePlots;
     EditorTabStatusBar m_StatusBar{m_Parent, this, m_Model};

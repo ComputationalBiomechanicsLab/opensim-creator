@@ -554,6 +554,8 @@ add_library(osccore STATIC
     src/Widgets/PerfPanel.cpp
     src/Widgets/PerfPanel.hpp
     src/Widgets/Popup.hpp
+    src/Widgets/PropertyEditorPanel.cpp
+    src/Widgets/PropertyEditorPanel.hpp
     src/Widgets/ReassignSocketPopup.cpp
     src/Widgets/ReassignSocketPopup.hpp
     src/Widgets/SaveChangesPopup.cpp
@@ -566,8 +568,6 @@ add_library(osccore STATIC
     src/Widgets/SelectComponentPopup.hpp
     src/Widgets/SelectGeometryPopup.cpp
     src/Widgets/SelectGeometryPopup.hpp
-    src/Widgets/SelectionEditorPanel.cpp
-    src/Widgets/SelectionEditorPanel.hpp
     src/Widgets/SimulationOutputPlot.cpp
     src/Widgets/SimulationOutputPlot.hpp
     src/Widgets/SimulationScrubber.cpp
