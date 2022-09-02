@@ -252,6 +252,8 @@ All notable changes to this project will be documented here. The format is based
 
 - The "Hierarchy Panel" is now called "Navigator" to match OpenSim's existing nomenclature (#429)
 
+- The "Coordinate Editor" panel is now called "Coordinates" to match OpenSim's existing nomenclature (#435)
+
 
 ## [0.2.0] - 2022/07/04
 

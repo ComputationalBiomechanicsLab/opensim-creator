@@ -58,7 +58,7 @@ static std::array<std::string, 7> const g_EditorScreenPanels =
     "Navigator",
     "Property Editor",
     "Log",
-    "Coordinate Editor",
+    "Coordinates",
     "Performance",
     "Output Watches",
 };
@@ -579,7 +579,7 @@ private:
         // draw property editor
         if (bool propertyEditorOldState = config.getIsPanelEnabled("Property Editor"))
         {
-            OSC_PERF("draw property editor");
+            OSC_PERF("draw property editor panel");
 
             bool propertyEditorState = propertyEditorOldState;
             if (ImGui::Begin("Property Editor", &propertyEditorState))
@@ -597,7 +597,7 @@ private:
         // draw application log
         if (bool logOldState = config.getIsPanelEnabled("Log"))
         {
-            OSC_PERF("draw log");
+            OSC_PERF("draw log panel");
 
             bool logState = logOldState;
             if (ImGui::Begin("Log", &logState, ImGuiWindowFlags_MenuBar))
@@ -613,12 +613,12 @@ private:
         }
 
         // draw coordinate editor
-        if (bool coordEdOldState = config.getIsPanelEnabled("Coordinate Editor"))
+        if (bool coordEdOldState = config.getIsPanelEnabled("Coordinates"))
         {
-            OSC_PERF("draw coordinate editor");
+            OSC_PERF("draw coordinates panel");
 
             bool coordEdState = coordEdOldState;
-            if (ImGui::Begin("Coordinate Editor", &coordEdState))
+            if (ImGui::Begin("Coordinates", &coordEdState))
             {
                 m_CoordEditor.draw();
             }
@@ -626,7 +626,7 @@ private:
 
             if (coordEdState != coordEdOldState)
             {
-                osc::App::upd().updConfig().setIsPanelEnabled("Coordinate Editor", coordEdState);
+                osc::App::upd().updConfig().setIsPanelEnabled("Coordinates", coordEdState);
             }
         }
 
