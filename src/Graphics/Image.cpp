@@ -1,11 +1,14 @@
 #include "Image.hpp"
 
+#include "src/Utils/Assertions.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
 
 #include <cstdint>
 #include <cstddef>
@@ -54,7 +57,15 @@ osc::Image::Image(glm::ivec2 dimensions, nonstd::span<uint8_t const> channelsRow
     std::copy(channelsRowByRow.begin(), channelsRowByRow.end(), m_Pixels.get());
 }
 
-osc::Image::Image(Image&& tmp) noexcept = default;
+osc::Image::Image(Image const& other) :
+    m_Dimensions{other.m_Dimensions},
+    m_NumChannels{other.m_NumChannels},
+    m_Pixels{new uint8_t[m_Dimensions.x * m_Dimensions.y * m_NumChannels]}
+{
+    std::copy(other.m_Pixels.get(), other.m_Pixels.get() + (m_Dimensions.x*m_Dimensions.y*m_NumChannels), m_Pixels.get());
+}
+
+osc::Image::Image(Image&&) noexcept = default;
 osc::Image& osc::Image::operator=(Image&& tmp) noexcept = default;
 osc::Image::~Image() noexcept = default;
 
@@ -71,4 +82,19 @@ int osc::Image::getNumChannels() const
 nonstd::span<uint8_t const> osc::Image::getPixelData() const
 {
     return {m_Pixels.get(), static_cast<std::size_t>(m_Dimensions.x * m_Dimensions.y * m_NumChannels)};
+}
+
+void osc::WriteToPNG(Image const& image, std::filesystem::path const& outpath)
+{
+    std::string const pathStr = outpath.string();
+    int const w = image.getDimensions().x;
+    int const h = image.getDimensions().y;
+    int const strideBetweenRows = w * image.getNumChannels();
+
+
+    stbi_flip_vertically_on_write(true);
+    int const rv = stbi_write_png(pathStr.c_str(), w, h, image.getNumChannels(), image.getPixelData().data(), strideBetweenRows);
+    stbi_flip_vertically_on_write(false);
+
+    OSC_ASSERT(rv != 0);
 }

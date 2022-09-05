@@ -341,6 +341,11 @@ public:
         m_GraphicsContext.disableVsync();
     }
 
+    std::future<Image> requestScreenshot()
+    {
+        return m_GraphicsContext.requestScreenshot();
+    }
+
     std::string getGraphicsBackendVendorString() const
     {
         return m_GraphicsContext.getBackendVendorString();
@@ -734,7 +739,7 @@ private:
             m_CurrentScreen->onDraw();
 
             // "present" the rendered screen to the user (can block on VSYNC)
-            SDL_GL_SwapWindow(m_MainWindow);
+            m_GraphicsContext.doSwapBuffers(m_MainWindow);
 
             if (m_QuitRequested)
             {
@@ -962,6 +967,11 @@ void osc::App::enableVsync()
 void osc::App::disableVsync()
 {
     m_Impl->disableVsync();
+}
+
+std::future<osc::Image> osc::App::requestScreenshot()
+{
+    return m_Impl->requestScreenshot();
 }
 
 std::string osc::App::getGraphicsBackendVendorString() const

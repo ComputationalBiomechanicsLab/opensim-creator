@@ -1,7 +1,10 @@
 #pragma once
 
+#include "src/Graphics/Image.hpp"
+
 #include <glm/vec4.hpp>
 
+#include <future>
 #include <string>
 
 struct SDL_Window;
@@ -34,7 +37,14 @@ namespace osc
         void clearProgram();
         void clearScreen(glm::vec4 const&);
 
-        void* updRawGLContextHandle();  // needed by ImGui
+        // HACK: this is needed by ImGui, because it uses OpenGL "in the raw"
+        void* updRawGLContextHandle();
+
+        // returns a future that asynchronously yields a complete screenshot of the next frame
+        std::future<Image> requestScreenshot();
+
+        // execure the "swap chain" operation, which makes the current backbuffer the frontbuffer,
+        void doSwapBuffers(SDL_Window*);
 
         // human-readable identifier strings: useful for printouts/debugging
         std::string getBackendVendorString() const;

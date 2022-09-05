@@ -1,6 +1,8 @@
 #include "MainUIScreen.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Graphics/Graphics.hpp"
+#include "src/Graphics/Image.hpp"
 #include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
@@ -8,6 +10,8 @@
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
+#include "src/Platform/Log.hpp"
+#include "src/Platform/os.hpp"
 #include "src/Tabs/LoadingTab.hpp"
 #include "src/Tabs/MeshImporterTab.hpp"
 #include "src/Tabs/ModelEditorTab.hpp"
@@ -141,6 +145,13 @@ public:
                 return;
             }
         }
+
+        // else: no tab handled the event: this is the place that we can handle any screen-level
+        //       event stuff
+        if (e.type == SDL_KEYUP && e.key.keysym.scancode == SDL_SCANCODE_F11)
+        {
+            m_MaybeScreenshotRequest = osc::App::upd().requestScreenshot();
+        }
     }
 
     void onTick()
@@ -154,6 +165,9 @@ public:
 
         // clear the flagged-to-be-deleted tabs
         handleDeletedTabs();
+
+        // handle any currently-active user screenshot requests
+        tryHandleScreenshotRequest();
     }
 
     void onDraw()
@@ -611,6 +625,29 @@ private:
         m_ImguiWasAggressivelyReset = true;
     }
 
+    void tryHandleScreenshotRequest()
+    {
+        if (!m_MaybeScreenshotRequest.valid())
+        {
+            return;  // probably empty/errored
+        }
+
+        if (m_MaybeScreenshotRequest.valid() && m_MaybeScreenshotRequest.wait_for(std::chrono::seconds{0}) == std::future_status::ready)
+        {
+            Image img = m_MaybeScreenshotRequest.get();
+            std::filesystem::path maybePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("png");
+            if (!maybePath.empty())
+            {
+                osc::WriteToPNG(img, maybePath);
+                osc::log::info("screenshot: created: path = %s, dimensions = (%i, %i)", maybePath.string().c_str(), img.getDimensions().x, img.getDimensions().y);
+            }
+            else
+            {
+                osc::log::info("screenshot: cancelled (cancelled out of selecting a save location)");
+            }
+        }
+    }
+
     // global simulation params: dictates how the next simulation shall be ran
     ParamBlock m_SimulationParams = ToParamBlock(ForwardDynamicSimulatorParams{});
 
@@ -647,6 +684,9 @@ private:
 
     // true if ImGui was aggressively reset by a tab (and, therefore, this screen should reset ImGui)
     bool m_ImguiWasAggressivelyReset = false;
+
+    // `valid` if the user has requested a screenshot (that hasn't yet been handled)
+    std::future<Image> m_MaybeScreenshotRequest;
 };
 
 

@@ -3754,6 +3754,36 @@ public:
         return m_GLContext;
     }
 
+    std::future<Image> requestScreenshot()
+    {
+        return m_ActiveScreenshotRequests.emplace_back().get_future();
+    }
+
+    void doSwapBuffers(SDL_Window* window)
+    {
+        // flush outstanding screenshot requests
+        if (!m_ActiveScreenshotRequests.empty())
+        {
+            // copy GPU-side window framebuffer into CPU-side `osc::Image` object
+            gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+            auto dims = osc::App::get().idims();
+            std::vector<uint8_t> pixels(4*dims.x*dims.y);
+            glReadPixels(0, 0, dims.x, dims.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+            Image screenshot{dims, pixels, 4};
+
+            // copy image to requests [0..n-2]
+            for (int i = 0, len = static_cast<int>(m_ActiveScreenshotRequests.size())-1; i < len; ++i)
+            {
+                m_ActiveScreenshotRequests[i].set_value(screenshot);
+            }
+            // move image to request `n-1`
+            m_ActiveScreenshotRequests.back().set_value(std::move(screenshot));
+            m_ActiveScreenshotRequests.clear();
+        }
+
+        SDL_GL_SwapWindow(window);
+    }
+
     std::string getBackendVendorString() const
     {
         GLubyte const* s = glGetString(GL_VENDOR);
@@ -3779,10 +3809,10 @@ public:
     }
 
 private:
-
     sdl::GLContext m_GLContext;
     int m_MaxMSXAASamples = GetOpenGLMaxMSXAASamples(m_GLContext);
     bool m_DebugModeEnabled = false;
+    std::vector<std::promise<Image>> m_ActiveScreenshotRequests;
 
 public:
 
@@ -3863,6 +3893,16 @@ void osc::GraphicsContext::clearScreen(glm::vec4 const& color)
 void* osc::GraphicsContext::updRawGLContextHandle()
 {
     return g_GraphicsContextImpl->updRawGLContextHandle();
+}
+
+void osc::GraphicsContext::doSwapBuffers(SDL_Window* window)
+{
+    g_GraphicsContextImpl->doSwapBuffers(window);
+}
+
+std::future<osc::Image> osc::GraphicsContext::requestScreenshot()
+{
+    return g_GraphicsContextImpl->requestScreenshot();
 }
 
 std::string osc::GraphicsContext::getBackendVendorString() const

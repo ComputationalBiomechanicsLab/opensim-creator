@@ -16,7 +16,7 @@ namespace osc
         static Image Load(std::filesystem::path const&, ImageFlags = ImageFlags_None);
 
         Image(glm::ivec2 dimensions, nonstd::span<uint8_t const> channelsRowByRow, int numChannels);
-        Image(Image const&) = delete;
+        Image(Image const&);
         Image(Image&&) noexcept;
         Image& operator=(Image const&) = delete;
         Image& operator=(Image&&) noexcept;
@@ -31,4 +31,6 @@ namespace osc
         int m_NumChannels;
         std::unique_ptr<uint8_t[]> m_Pixels;
     };
+
+    void WriteToPNG(Image const&, std::filesystem::path const&);
 }

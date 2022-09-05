@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/Graphics/Image.hpp"
 #include "src/Platform/RecentFile.hpp"
 #include "src/Utils/Assertions.hpp"
 
@@ -10,6 +11,7 @@
 #include <chrono>
 #include <cstdint>
 #include <filesystem>
+#include <future>
 #include <memory>
 #include <ratio>
 #include <string>
@@ -183,6 +185,9 @@ namespace osc
         void setVsync(bool);
         void enableVsync();
         void disableVsync();
+
+        // returns a future that asynchronously yields a complete screenshot of the next frame
+        std::future<Image> requestScreenshot();
 
         // returns human-readable strings representing (parts of) the graphics backend (e.g. OpenGL)
         std::string getGraphicsBackendVendorString() const;
