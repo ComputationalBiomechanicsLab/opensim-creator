@@ -8,10 +8,10 @@ REM typical usage in cmd.exe: `set OSC_OPENSIM_REPO=https://github.com/custom/re
 REM where to clone the OpenSim source from
 REM
 REM handy to override if you are developing against a fork, locally, etc.
-IF NOT DEFINED OSC_OPENSIM_REPO (set OSC_OPENSIM_REPO=https://github.com/opensim-org/opensim-core)
+IF NOT DEFINED OSC_OPENSIM_REPO (set OSC_OPENSIM_REPO=https://github.com/ComputationalBiomechanicsLab/opensim-core)
 
 REM can be any branch identifier from opensim-core
-IF NOT DEFINED OSC_OPENSIM_REPO_BRANCH (set OSC_OPENSIM_REPO_BRANCH=4.4)
+IF NOT DEFINED OSC_OPENSIM_REPO_BRANCH (set OSC_OPENSIM_REPO_BRANCH=opensim-creator)
 
 REM where the sources are checked out to
 IF NOT DEFINED OSC_OPENSIM_SRC_DIR (set OSC_OPENSIM_SRC_DIR=opensim-core)
