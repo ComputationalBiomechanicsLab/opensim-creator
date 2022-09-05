@@ -114,7 +114,7 @@ public:
             ImGui::NewLine();
 
             glm::vec2 contentRegion = ImGui::GetContentRegionAvail();
-            m_RenderParams.dimensions = contentRegion;
+            m_RenderParams.dimensions = osc::Max(contentRegion, {0.0f, 0.0f});
             m_RenderParams.samples = osc::App::get().getMSXAASamplesRecommended();
 
             {

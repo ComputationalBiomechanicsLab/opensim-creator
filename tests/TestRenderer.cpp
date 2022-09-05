@@ -1892,14 +1892,18 @@ TEST_F(Renderer, RenderTextureDescriptorCanBeConstructedFromWithAndHeight)
     osc::RenderTextureDescriptor d{1, 1};
 }
 
-TEST_F(Renderer, RenderTextureDescriptorThrowsIfGivenNegativeWidth)
+TEST_F(Renderer, RenderTextureDescriptorCoercesNegativeWidthsToZero)
 {
-    ASSERT_ANY_THROW({ osc::RenderTextureDescriptor d(-1, 1); });
+    osc::RenderTextureDescriptor d{-1, 1};
+
+    ASSERT_EQ(d.getWidth(), 0);
 }
 
-TEST_F(Renderer, RenderTextureDescriptorThrowsIfGivenNegativeHeight)
+TEST_F(Renderer, RenderTextureDescriptorCoercesNegativeHeightsToZero)
 {
-    ASSERT_ANY_THROW({ osc::RenderTextureDescriptor d(1, -1); });
+    osc::RenderTextureDescriptor d{1, -1};
+
+    ASSERT_EQ(d.getHeight(), 0);
 }
 
 TEST_F(Renderer, RenderTextureDescriptorCanBeCopyConstructed)

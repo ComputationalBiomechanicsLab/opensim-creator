@@ -774,13 +774,12 @@ std::ostream& osc::operator<<(std::ostream& o, DepthStencilFormat f)
 }
 
 osc::RenderTextureDescriptor::RenderTextureDescriptor(int width, int height) :
-    m_Width{width},
-    m_Height{height},
+    m_Width{std::max(0, width)},
+    m_Height{std::max(0, height)},
     m_AnialiasingLevel{1},
     m_ColorFormat{RenderTextureFormat::ARGB32},
     m_DepthStencilFormat{DepthStencilFormat::D24_UNorm_S8_UInt}
 {
-    OSC_ASSERT_ALWAYS(m_Width >= 0 && m_Height >= 0);
 }
 
 osc::RenderTextureDescriptor::RenderTextureDescriptor(RenderTextureDescriptor const&) = default;
