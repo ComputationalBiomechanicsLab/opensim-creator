@@ -184,6 +184,34 @@ static osc::App::Clock::time_point ConvertPerfCounterToFClock(Uint64 ticks, Uint
     return osc::App::Clock::time_point{ConvertPerfTicksToFClockDuration(ticks, frequency)};
 }
 
+namespace
+{
+    // an "active" request for an annotated screenshot
+    //
+    // has a data depencency on the backend first providing a "raw" image, which is then
+    // tagged with annotations
+    struct AnnotatedScreenshotRequest final {
+
+        // the frame on which the screenshot was requested
+        uint64_t frameRequested;
+
+        // underlying (to-be-waited-on) future for the screenshot
+        std::future<osc::Image> underlyingScreenshotFuture;
+
+        // our promise to the caller, who is waiting for an annotated image
+        std::promise<osc::AnnotatedImage> resultPromise;
+
+        // annotations made during the requested frame (if any)
+        std::vector<osc::AnnotatedImage::Annotation> annotations;
+
+        AnnotatedScreenshotRequest(uint64_t frameRequested_, std::future<osc::Image> underlyingFuture_) :
+            frameRequested{std::move(frameRequested_)},
+            underlyingScreenshotFuture{std::move(underlyingFuture_)}
+        {
+        }
+    };
+}
+
 // main application state
 //
 // this is what "booting the application" actually initializes
@@ -341,9 +369,20 @@ public:
         m_GraphicsContext.disableVsync();
     }
 
+    void addFrameAnnotation(std::string_view label, Rect screenRect)
+    {
+        m_FrameAnnotations.push_back(AnnotatedImage::Annotation{std::string{label}, std::move(screenRect)});
+    }
+
     std::future<Image> requestScreenshot()
     {
         return m_GraphicsContext.requestScreenshot();
+    }
+
+    std::future<AnnotatedImage> requestAnnotatedScreenshot()
+    {
+        AnnotatedScreenshotRequest& req = m_ActiveAnnotatedScreenshotRequests.emplace_back(m_FrameCounter, requestScreenshot());
+        return req.resultPromise.get_future();
     }
 
     std::string getGraphicsBackendVendorString() const
@@ -720,7 +759,6 @@ private:
 
             // "tick" the screen
             m_CurrentScreen->onTick();
-            ++m_FrameCounter;
 
             if (m_QuitRequested)
             {
@@ -740,6 +778,39 @@ private:
 
             // "present" the rendered screen to the user (can block on VSYNC)
             m_GraphicsContext.doSwapBuffers(m_MainWindow);
+
+            // handle annotated screenshot requests (if any)
+            {
+                // save this frame's annotations into the requests, if necessary
+                for (AnnotatedScreenshotRequest& req : m_ActiveAnnotatedScreenshotRequests)
+                {
+                    if (req.frameRequested == m_FrameCounter)
+                    {
+                        req.annotations = m_FrameAnnotations;
+                    }
+                }
+                m_FrameAnnotations.clear();  // this frame's annotations are now saved (if necessary)
+
+                // complete any requests for which screenshot data has arrived
+                for (AnnotatedScreenshotRequest& req : m_ActiveAnnotatedScreenshotRequests)
+                {
+                    if (req.underlyingScreenshotFuture.valid() &&
+                        req.underlyingScreenshotFuture.wait_for(std::chrono::seconds{0}) == std::future_status::ready)
+                    {
+                        // screenshot is ready: create an annotated screenshot and send it to
+                        // the caller
+                        req.resultPromise.set_value(AnnotatedImage{req.underlyingScreenshotFuture.get(), std::move(req.annotations)});
+                    }
+                }
+
+                // gc any invalid (i.e. handled) requests
+                osc::RemoveErase(m_ActiveAnnotatedScreenshotRequests, [](AnnotatedScreenshotRequest const& req) { return !req.underlyingScreenshotFuture.valid(); });
+            }
+
+            // care: only update the frame counter here because the above methods
+            // and checks depend on it being consistient throughout a single crank
+            // of the application loop
+            ++m_FrameCounter;
 
             if (m_QuitRequested)
             {
@@ -814,6 +885,12 @@ private:
 
     // the *next* screen the application should show
     std::unique_ptr<Screen> m_NextScreen = nullptr;
+
+    // frame annotations made during this frame
+    std::vector<AnnotatedImage::Annotation> m_FrameAnnotations;
+
+    // any active promises for an annotated frame
+    std::vector<AnnotatedScreenshotRequest> m_ActiveAnnotatedScreenshotRequests;
 };
 
 // public API
@@ -969,9 +1046,19 @@ void osc::App::disableVsync()
     m_Impl->disableVsync();
 }
 
+void osc::App::addFrameAnnotation(std::string_view label, Rect screenRect)
+{
+    m_Impl->addFrameAnnotation(std::move(label), std::move(screenRect));
+}
+
 std::future<osc::Image> osc::App::requestScreenshot()
 {
     return m_Impl->requestScreenshot();
+}
+
+std::future<osc::AnnotatedImage> osc::App::requestAnnotatedScreenshot()
+{
+    return m_Impl->requestAnnotatedScreenshot();
 }
 
 std::string osc::App::getGraphicsBackendVendorString() const

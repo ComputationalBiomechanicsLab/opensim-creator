@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <initializer_list>
 #include <string>
+#include <string_view>
 
 namespace osc { class Camera; }
 namespace osc { class UID; }
@@ -135,4 +136,7 @@ namespace osc
 
     // draw text, but centered on the current window/line
     void TextCentered(std::string const& s);
+
+    // add an application-level frame annotation to the last-drawn ImGui item
+    void AddFrameAnnotationToLastItem(std::string_view);
 }

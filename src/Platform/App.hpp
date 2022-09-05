@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/Graphics/AnnotatedImage.hpp"
 #include "src/Graphics/Image.hpp"
 #include "src/Platform/RecentFile.hpp"
 #include "src/Utils/Assertions.hpp"
@@ -186,8 +187,18 @@ namespace osc
         void enableVsync();
         void disableVsync();
 
+        // add an annotation to the current frame
+        //
+        // the annotation is added to the data returned by `App::requestAnnotatedScreenshot`
+        void addFrameAnnotation(std::string_view label, Rect screenRect);
+
         // returns a future that asynchronously yields a complete screenshot of the next frame
         std::future<Image> requestScreenshot();
+
+        // returns a future that asynchronously yields a complete annotated screenshot of the next frame
+        //
+        // client code can submit annotations with `App::addFrameAnnotation`
+        std::future<AnnotatedImage> requestAnnotatedScreenshot();
 
         // returns human-readable strings representing (parts of) the graphics backend (e.g. OpenGL)
         std::string getGraphicsBackendVendorString() const;
