@@ -686,7 +686,7 @@ namespace gl
         GLuint m_VaoHandle;
 
     public:
-        static constexpr GLuint senteniel = -1;
+        static constexpr GLuint senteniel = std::numeric_limits<GLuint>::max();
 
         VertexArray() {
             glGenVertexArrays(1, &m_VaoHandle);

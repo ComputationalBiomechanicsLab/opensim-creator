@@ -1152,7 +1152,7 @@ bool osc::operator<(RenderTexture const& a, RenderTexture const& b)
     return a.m_Impl < b.m_Impl;
 }
 
-std::ostream& osc::operator<<(std::ostream& o, RenderTexture const& rt)
+std::ostream& osc::operator<<(std::ostream& o, RenderTexture const&)
 {
     return o << "RenderTexture()";
 }
@@ -3999,8 +3999,6 @@ void osc::GraphicsBackend::DrawMesh(
 
 void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement const& se, MaterialValue const& v, int* textureSlot)
 {
-    ShaderType t = GetShaderType(v);
-
     if (GetShaderType(v) != se.Type)
     {
         return;  // mismatched types

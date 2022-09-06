@@ -165,11 +165,9 @@ target_compile_options(osc_configuration INTERFACE
 
     # msvc (Windows) flags
     $<$<CXX_COMPILER_ID:MSVC>:
+
         # disable warning 4996: Simbody uses a deprecated iterator class
         /wd4996
-
-        # disable warning 4455: incorrectly flags std::string::literals::"s"
-        /wd4455
 
         # turn warning level up to "production grade" (note: /W4 explodes because of Simbody)
         /W3
@@ -201,8 +199,16 @@ target_compile_options(osc_configuration INTERFACE
         -Wvla
         -Wdisabled-optimization
         -Wpacked
-        -Wno-sign-compare  # disable: broken by STB headers
         -Wformat-security
+
+        # disable: broken by STB headers
+        -Wno-unused
+
+        # disable: broken by STB headers
+        -Wno-sign-compare
+
+        # disable: broken by STB headers
+        -Wno-missing-field-initializers
 
         # regardless of debug/release, pin the frame pointer register
         # so that stack traces are sane when debugging (even in Release).
@@ -215,8 +221,8 @@ target_compile_options(osc_configuration INTERFACE
         # if address sanitizer is specified, use it
         $<$<BOOL:${OSC_USE_ASAN}>:-fsanitize=address>
 
-        -Wno-unused  # disable: broken by STB headers
-        # -Wredundant-decls  # disabled: doesn't work in some contexts where forward declarations are necessary
+        # disabled: doesn't work in some contexts where forward declarations are necessary
+        # -Wredundant-decls
     >
 
     # clang flags
@@ -281,6 +287,7 @@ add_library(osccore STATIC
     src/Formats/DAE.hpp
     src/Formats/DAE.cpp
 
+    src/Graphics/AnnotatedImage.hpp
     src/Graphics/Camera.hpp
     src/Graphics/CameraClearFlags.hpp
     src/Graphics/CameraProjection.hpp

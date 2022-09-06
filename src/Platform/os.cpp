@@ -19,7 +19,7 @@
 #include <string>
 #include <utility>
 
-using std::literals::string_literals::operator""s;
+using namespace std::literals::string_literals;
 
 static std::filesystem::path convertSDLPathToStdpath(char const* methodname, char* p)
 {
