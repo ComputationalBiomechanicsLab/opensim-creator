@@ -15,6 +15,7 @@
 #include "src/Tabs/LoadingTab.hpp"
 #include "src/Tabs/MeshImporterTab.hpp"
 #include "src/Tabs/ModelEditorTab.hpp"
+#include "src/Tabs/ScreenshotTab.hpp"
 #include "src/Tabs/SplashTab.hpp"
 #include "src/Tabs/Tab.hpp"
 #include "src/Tabs/TabRegistry.hpp"
@@ -150,7 +151,7 @@ public:
         //       event stuff
         if (e.type == SDL_KEYUP && e.key.keysym.scancode == SDL_SCANCODE_F11)
         {
-            m_MaybeScreenshotRequest = osc::App::upd().requestScreenshot();
+            m_MaybeScreenshotRequest = osc::App::upd().requestAnnotatedScreenshot();
         }
     }
 
@@ -634,17 +635,8 @@ private:
 
         if (m_MaybeScreenshotRequest.valid() && m_MaybeScreenshotRequest.wait_for(std::chrono::seconds{0}) == std::future_status::ready)
         {
-            Image img = m_MaybeScreenshotRequest.get();
-            std::filesystem::path maybePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("png");
-            if (!maybePath.empty())
-            {
-                osc::WriteToPNG(img, maybePath);
-                osc::log::info("screenshot: created: path = %s, dimensions = (%i, %i)", maybePath.string().c_str(), img.getDimensions().x, img.getDimensions().y);
-            }
-            else
-            {
-                osc::log::info("screenshot: cancelled (cancelled out of selecting a save location)");
-            }
+            UID tabID = addTab(std::make_unique<ScreenshotTab>(this, m_MaybeScreenshotRequest.get()));
+            selectTab(tabID);
         }
     }
 
@@ -686,7 +678,7 @@ private:
     bool m_ImguiWasAggressivelyReset = false;
 
     // `valid` if the user has requested a screenshot (that hasn't yet been handled)
-    std::future<Image> m_MaybeScreenshotRequest;
+    std::future<AnnotatedImage> m_MaybeScreenshotRequest;
 };
 
 
