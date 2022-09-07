@@ -133,6 +133,7 @@ static void DrawIthStringEditor(
     {
         edited = true;
     }
+    osc::AddFrameAnnotationToLastItem("ObjectPropertiesEditor::StringEditor/" + prop.getName());
 
     bool shouldUpdate = edited && !rv && ItemValueShouldBeSaved();
     if (shouldUpdate)
@@ -160,6 +161,7 @@ static void Draw1DoubleValueEditor(
         double dv = static_cast<double>(fv);
         rv = MakePropValueSetter<double>(dv);
     }
+    osc::AddFrameAnnotationToLastItem("ObjectPropertiesEditor::DoubleEditor/" + prop.getName());
 }
 
 // draw a property editor for 2 double values in a list
@@ -193,6 +195,7 @@ static void Draw2DoubleValueEditor(
             pd->setValue(1, static_cast<double>(vs[1]));
         };
     }
+    osc::AddFrameAnnotationToLastItem("ObjectPropertiesEditor::2DoubleEditor/" + prop.getName());
 }
 
 
@@ -380,6 +383,7 @@ namespace
                     {
                         m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                     }
+                    osc::AddFrameAnnotationToLastItem("ObjectPropertiesEditor::OrientationToggle/" + prop.getName());
                     osc::DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in radians (click to switch to degrees)");
                 }
                 else
@@ -388,6 +392,7 @@ namespace
                     {
                         m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                     }
+                    osc::AddFrameAnnotationToLastItem("ObjectPropertiesEditor::OrientationToggle/" + prop.getName());
                     osc::DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in degrees (click to switch to radians)");
                 }
 
@@ -412,6 +417,14 @@ namespace
                 {
                     double inverseConversionCoefficient = 1.0/conversionCoefficient;
                     m_ActiveEdits[i] = inverseConversionCoefficient * static_cast<double>(fv[i]);
+                }
+                {
+                    std::stringstream annotation;
+                    annotation << "ObjectPropertiesEditor::Vec3/";
+                    annotation << i;
+                    annotation << '/';
+                    annotation << prop.getName();
+                    osc::AddFrameAnnotationToLastItem(std::move(annotation).str());
                 }
                 ImGui::PopStyleVar();
                 if (ItemValueShouldBeSaved())
@@ -588,6 +601,7 @@ namespace
                     m_RetainedValue[3*i + 1] = static_cast<double>(fv[3*i + 1]);
                     m_RetainedValue[3*i + 2] = static_cast<double>(fv[3*i + 2]);
                 }
+                osc::AddFrameAnnotationToLastItem("ObjectPropertiesEditor::Vec6Editor/" + prop.getName());
                 shouldSave = shouldSave || ItemValueShouldBeSaved();
                 ImGui::PopID();
             }

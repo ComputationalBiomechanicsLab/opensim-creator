@@ -71,6 +71,7 @@ private:
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             osc::InputString("##bodyname", m_BodyDetails.BodyName, g_MaxBodyNameLength);
+            osc::AddFrameAnnotationToLastItem("AddBodyPopup::BodyNameInput");
             ImGui::NextColumn();
         }
 
@@ -122,6 +123,10 @@ private:
                     selectedPf = &pf;
                     m_BodyDetails.ParentFrameAbsPath = selectedPf->getAbsolutePathString();
                 }
+                if (&pf == selectedPf)
+                {
+                    osc::AddFrameAnnotationToLastItem(pf.getName());
+                }
             }
             ImGui::EndChild();
             ImGui::NextColumn();
@@ -136,6 +141,7 @@ private:
             {
                 auto names = osc::JointRegistry::nameCStrings();
                 ImGui::Combo("##jointtype", &m_BodyDetails.JointTypeIndex, names.data(), static_cast<int>(names.size()));
+                osc::AddFrameAnnotationToLastItem("AddBodyPopup::JointTypeInput");
             }
             ImGui::NextColumn();
         }
@@ -148,6 +154,7 @@ private:
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             osc::InputString("##jointnameinput", m_BodyDetails.JointName, g_MaxJointNameLength);
+            osc::AddFrameAnnotationToLastItem("AddBodyPopup::JointNameInput");
             ImGui::NextColumn();
         }
 
@@ -158,6 +165,7 @@ private:
             DrawHelpMarker("Whether osc should automatically add intermediate offset frames to the OpenSim::Joint. A joint can attach to the two bodies (this added one, plus the selected one) directly. However, many OpenSim model designs instead make the joint attach to offset frames which, themselves, attach to the bodies. The utility of doing this is that the offset frames can be manually adjusted later, rather than *having* to attach the center of the joint to the center of the body");
             ImGui::NextColumn();
             ImGui::Checkbox("##addoffsetframescheckbox", &m_BodyDetails.AddOffsetFrames);
+            osc::AddFrameAnnotationToLastItem("AddBodyPopup::AddOffsetFramesInput");
             ImGui::NextColumn();
         }
 
@@ -177,6 +185,7 @@ private:
                     popup->open();
                     m_EditorAPI->pushPopup(std::move(popup));
                 }
+                osc::AddFrameAnnotationToLastItem("AddBodyPopup::GeometryButton");
             }
             ImGui::NextColumn();
         }

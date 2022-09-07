@@ -173,6 +173,7 @@ private:
         ImGui::NextColumn();
 
         osc::InputString("##componentname", m_Name, 128);
+        osc::AddFrameAnnotationToLastItem("AddComponentPopup::ComponentNameInput");
 
         ImGui::NextColumn();
 
@@ -240,6 +241,11 @@ private:
                 if (ImGui::Selectable(pf.getName().c_str(), selected))
                 {
                     connectee = pf.getAbsolutePath();
+                }
+
+                if (selected)
+                {
+                    osc::AddFrameAnnotationToLastItem(pf.getName());
                 }
             }
 

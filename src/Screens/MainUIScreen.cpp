@@ -88,6 +88,12 @@ public:
 
     void onEvent(SDL_Event const& e)
     {
+        // special: F11 always operates as a "take a screenshot" event
+        if (e.type == SDL_KEYUP && e.key.keysym.scancode == SDL_SCANCODE_F11)
+        {
+            m_MaybeScreenshotRequest = osc::App::upd().requestAnnotatedScreenshot();
+        }
+
         if (osc::ImGuiOnEvent(e))
         {
             // event was pumped into ImGui
@@ -145,13 +151,6 @@ public:
                 m_ShouldRequestRedraw = true;
                 return;
             }
-        }
-
-        // else: no tab handled the event: this is the place that we can handle any screen-level
-        //       event stuff
-        if (e.type == SDL_KEYUP && e.key.keysym.scancode == SDL_SCANCODE_F11)
-        {
-            m_MaybeScreenshotRequest = osc::App::upd().requestAnnotatedScreenshot();
         }
     }
 
