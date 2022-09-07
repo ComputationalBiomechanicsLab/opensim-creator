@@ -49,6 +49,13 @@ osc::Image osc::Image::Load(std::filesystem::path const& p, ImageFlags flags)
     return Image{dims, dataSpan, channels};
 }
 
+osc::Image::Image() :
+    m_Dimensions{glm::ivec2{0, 0}},
+    m_NumChannels{4},
+    m_Pixels{nullptr}
+{
+}
+
 osc::Image::Image(glm::ivec2 dimensions, nonstd::span<uint8_t const> channelsRowByRow, int numChannels) :
     m_Dimensions{std::move(dimensions)},
     m_NumChannels{std::move(numChannels)},
@@ -65,6 +72,12 @@ osc::Image::Image(Image const& other) :
     std::copy(other.m_Pixels.get(), other.m_Pixels.get() + (m_Dimensions.x*m_Dimensions.y*m_NumChannels), m_Pixels.get());
 }
 
+osc::Image& osc::Image::operator=(Image const& other)
+{
+    Image copy{other};
+    std::swap(*this, copy);
+    return *this;
+}
 osc::Image::Image(Image&&) noexcept = default;
 osc::Image& osc::Image::operator=(Image&& tmp) noexcept = default;
 osc::Image::~Image() noexcept = default;

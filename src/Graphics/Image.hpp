@@ -15,10 +15,11 @@ namespace osc
     public:
         static Image Load(std::filesystem::path const&, ImageFlags = ImageFlags_None);
 
+        Image();
         Image(glm::ivec2 dimensions, nonstd::span<uint8_t const> channelsRowByRow, int numChannels);
         Image(Image const&);
         Image(Image&&) noexcept;
-        Image& operator=(Image const&) = delete;
+        Image& operator=(Image const&);
         Image& operator=(Image&&) noexcept;
         ~Image() noexcept;
 
