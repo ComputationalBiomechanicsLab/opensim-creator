@@ -126,23 +126,9 @@ public:
             ImGui::Begin("Screenshot");
             ImGui::PopStyleVar();
 
-            // draw the screenshot
-            glm::vec2 const screenTopLeft = ImGui::GetCursorScreenPos();
-            Rect const windowRect = {screenTopLeft, screenTopLeft + glm::vec2{ImGui::GetContentRegionAvail()}};
-            Rect const imageRect = ShrinkToFit(windowRect, osc::AspectRatio(m_AnnotatedImage.image.getDimensions()));
-            ImGui::SetCursorScreenPos(imageRect.p1);
-            DrawTextureAsImGuiImage(m_ImageTexture, osc::Dimensions(imageRect));
+            Rect imageRect = drawScreenshot();
+            drawOverlays(imageRect);
 
-            // draw overlays
-            Rect const imageSourceRect = {{0.0f, 0.0f}, m_AnnotatedImage.image.getDimensions()};
-            ImDrawList* drawlist = ImGui::GetWindowDrawList();
-            ImU32 const red = ImGui::ColorConvertFloat4ToU32({1.0f, 0.0f, 0.0f, 1.0f});
-
-            for (AnnotatedImage::Annotation const& annotation : m_AnnotatedImage.annotations)
-            {
-                Rect const r = MapRect(imageSourceRect, imageRect, annotation.rect);                
-                drawlist->AddRect(r.p1, r.p2, red, 3.0f, 0, 3.0f);
-            }
             ImGui::End();
         }
 
@@ -161,6 +147,34 @@ public:
     }
 
 private:
+
+    // returns screenspace rect of the screenshot within the UI
+    Rect drawScreenshot()
+    {
+        glm::vec2 const screenTopLeft = ImGui::GetCursorScreenPos();
+        Rect const windowRect = {screenTopLeft, screenTopLeft + glm::vec2{ImGui::GetContentRegionAvail()}};
+        Rect const imageRect = ShrinkToFit(windowRect, osc::AspectRatio(m_AnnotatedImage.image.getDimensions()));
+        ImGui::SetCursorScreenPos(imageRect.p1);
+        DrawTextureAsImGuiImage(m_ImageTexture, osc::Dimensions(imageRect));
+        return imageRect;
+    }
+
+    void drawOverlays(Rect const& imageRect)
+    {
+        Rect const imageSourceRect = {{0.0f, 0.0f}, m_AnnotatedImage.image.getDimensions()};
+        ImU32 const red = ImGui::ColorConvertFloat4ToU32({1.0f, 0.0f, 0.0f, 1.0f});
+
+        //ImDrawList drawlist{ImGui::GetDrawListSharedData()};
+        ImDrawList& drawlist = *ImGui::GetWindowDrawList();
+        drawlist.AddDrawCmd();
+
+        for (AnnotatedImage::Annotation const& annotation : m_AnnotatedImage.annotations)
+        {
+            Rect const r = MapRect(imageSourceRect, imageRect, annotation.rect);
+            drawlist.AddRect(r.p1, r.p2, red, 3.0f, 0, 3.0f);
+        }
+    }
+
     UID m_ID;
     std::string m_Name = ICON_FA_COOKIE " ScreenshotTab";
     TabHost* m_Parent;
