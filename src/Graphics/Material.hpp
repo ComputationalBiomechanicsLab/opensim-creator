@@ -62,6 +62,7 @@ namespace osc
 
         std::optional<Texture2D> getTexture(std::string_view propertyName) const;
         void setTexture(std::string_view propertyName, Texture2D);
+        void clearTexture(std::string_view propertyName);
 
         std::optional<RenderTexture> getRenderTexture(std::string_view propertyName) const;
         void setRenderTexture(std::string_view propertyName, RenderTexture);

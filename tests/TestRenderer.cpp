@@ -748,6 +748,24 @@ TEST_F(Renderer, MaterialSetTextureOnMaterialCausesGetTextureToReturnTheTexture)
     ASSERT_TRUE(mat.getTexture(key));
 }
 
+TEST_F(Renderer, MaterialClearTextureOnMaterialCausesGetTextureToReturnNothing)
+{
+    osc::Material mat = GenerateMaterial();
+
+    std::string key = "someKey";
+    osc::Texture2D t = GenerateTexture();
+
+    ASSERT_FALSE(mat.getTexture(key));
+
+    mat.setTexture(key, t);
+
+    ASSERT_TRUE(mat.getTexture(key));
+
+    mat.clearTexture(key);
+
+    ASSERT_FALSE(mat.getTexture(key));
+}
+
 TEST_F(Renderer, MaterialSetRenderTextureCausesGetRenderTextureToReturnTheTexture)
 {
     osc::Material mat = GenerateMaterial();

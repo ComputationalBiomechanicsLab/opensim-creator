@@ -351,6 +351,14 @@ namespace osc {
             Material const&,
             osc::Graphics::BlitFlags
         );
+        static void Blit(
+            Texture2D const&,
+            RenderTexture& dest
+        );
+        static void ReadPixels(
+            RenderTexture const&,
+            Image& dest
+        );
     };
 }
 
@@ -759,6 +767,20 @@ namespace
         default:
             static_assert(static_cast<int>(osc::RenderTextureFormat::RED) + 1 == static_cast<int>(osc::RenderTextureFormat::TOTAL));
             return GL_RED;
+        }
+    }
+
+    int GetNumChannels(osc::RenderTextureFormat f)
+    {
+        switch (f)
+        {
+        case osc::RenderTextureFormat::ARGB32:
+            return 4;
+        case osc::RenderTextureFormat::RED:
+            return 1;
+        default:
+            static_assert(static_cast<int>(osc::RenderTextureFormat::TOTAL) == 2);
+            return 1;
         }
     }
 }
@@ -1551,6 +1573,11 @@ public:
         setValue(std::move(propertyName), std::move(t));
     }
 
+    void clearTexture(std::string_view propertyName)
+    {
+        m_Values.erase(std::string{std::move(propertyName)});
+    }
+
     std::optional<RenderTexture> getRenderTexture(std::string_view propertyName) const
     {
         return getValue<RenderTexture>(std::move(propertyName));
@@ -1766,6 +1793,12 @@ void osc::Material::setTexture(std::string_view propertyName, Texture2D t)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setTexture(std::move(propertyName), std::move(t));
+}
+
+void osc::Material::clearTexture(std::string_view propertyName)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->clearTexture(std::move(propertyName));
 }
 
 std::optional<osc::RenderTexture> osc::Material::getRenderTexture(std::string_view propertyName) const
@@ -3674,6 +3707,7 @@ class osc::GraphicsContext::Impl final {
 public:
     Impl(SDL_Window* window) : m_GLContext{CreateOpenGLContext(window)}
     {
+        m_QuadMaterial.setDepthTested(false);  // it's for fullscreen rendering
     }
 
     int getMaxMSXAASamples() const
@@ -3950,6 +3984,16 @@ void osc::Graphics::DrawMesh(
     std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock)
 {
     GraphicsBackend::DrawMesh(mesh, transform, material, camera, std::move(maybeMaterialPropertyBlock));
+}
+
+void osc::Graphics::Blit(Texture2D const& source, RenderTexture& dest)
+{
+    GraphicsBackend::Blit(source, dest);
+}
+
+void osc::Graphics::ReadPixels(RenderTexture const& source, Image& dest)
+{
+    GraphicsBackend::ReadPixels(source, dest);
 }
 
 void osc::Graphics::BlitToScreen(
@@ -4660,4 +4704,39 @@ void osc::GraphicsBackend::BlitToScreen(
     Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, copy, c);
     c.render();
     copy.clearRenderTexture("uTexture");
+}
+
+void osc::GraphicsBackend::Blit(Texture2D const& source, RenderTexture& dest)
+{
+    Camera c;
+    c.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
+    c.setProjectionMatrix(glm::mat4{1.0f});
+    c.setViewMatrix(glm::mat4{1.0f});
+
+    g_GraphicsContextImpl->m_QuadMaterial.setTexture("uTexture", source);
+
+    std::optional<RenderTexture> swapTex{std::move(dest)};
+    c.swapTexture(swapTex);
+    Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, g_GraphicsContextImpl->m_QuadMaterial, c);
+    c.render();
+    c.swapTexture(swapTex);
+
+    g_GraphicsContextImpl->m_QuadMaterial.clearTexture("uTexture");
+
+    dest = std::move(swapTex).value();
+}
+
+void osc::GraphicsBackend::ReadPixels(RenderTexture const& source, Image& dest)
+{
+    glm::ivec2 const dims = {source.getWidth(), source.getHeight()};
+    int const channels = GetNumChannels(source.getColorFormat());
+
+    std::vector<uint8_t> pixels(channels*dims.x*dims.y);
+
+    gl::BindFramebuffer(GL_FRAMEBUFFER, source.m_Impl->getOutputFrameBuffer());
+    glViewport(0, 0, dims.x, dims.y);
+    glReadPixels(0, 0, dims.x, dims.y, ToOpenGLColorFormat(source.getColorFormat()), GL_UNSIGNED_BYTE, pixels.data());
+    gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+
+    dest = Image{dims, pixels, channels};
 }

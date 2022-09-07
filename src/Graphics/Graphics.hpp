@@ -5,10 +5,12 @@
 #include <optional>
 
 namespace osc { class Camera; }
+namespace osc { class Image; }
 namespace osc { class Mesh; }
 namespace osc { class Material; }
 namespace osc { struct Rect; }
 namespace osc { class RenderTexture; }
+namespace osc { class Texture2D; }
 namespace osc { struct Transform; }
 
 // rendering functions
@@ -34,6 +36,9 @@ namespace osc::Graphics
         None,
         AlphaBlend,
     };
+
+    void Blit(Texture2D const&, RenderTexture& dest);
+    void ReadPixels(RenderTexture const&, Image& dest);
 
     void BlitToScreen(
         RenderTexture const&,
