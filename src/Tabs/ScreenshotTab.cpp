@@ -2,9 +2,18 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/AnnotatedImage.hpp"
+#include "src/Graphics/Camera.hpp"
+#include "src/Graphics/Graphics.hpp"
+#include "src/Graphics/Material.hpp"
+#include "src/Graphics/RenderTexture.hpp"
+#include "src/Graphics/Shader.hpp"
+#include "src/Graphics/ShaderCache.hpp"
+#include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/Texture2D.hpp"
 #include "src/Maths/Geometry.hpp"
+#include "src/Platform/App.hpp"
 #include "src/Platform/os.hpp"
+#include "src/Utils/Algorithms.hpp"
 
 #include <IconsFontAwesome5.h>
 #include <SDL_events.h>
@@ -13,6 +22,7 @@
 #include <future>
 #include <string>
 #include <utility>
+#include <unordered_set>
 
 namespace
 {
@@ -50,6 +60,17 @@ namespace
         {
             targetRect.p1 + scale*(rect.p1 - sourceRect.p1),
             targetRect.p1 + scale*(rect.p2 - sourceRect.p1),
+        };
+    }
+
+    osc::Texture2D ToTexture(osc::Image const& img)
+    {
+        return osc::Texture2D
+        {
+            img.getDimensions().x,
+            img.getDimensions().y,
+            img.getPixelData(),
+            img.getNumChannels(),
         };
     }
 }
@@ -105,12 +126,7 @@ public:
         {
             if (ImGui::MenuItem("Save"))
             {
-                std::filesystem::path maybePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("png");
-                if (!maybePath.empty())
-                {
-                    osc::WriteToPNG(m_AnnotatedImage.image, maybePath);
-                    osc::log::info("screenshot: created: path = %s, dimensions = (%i, %i)", maybePath.string().c_str(), m_AnnotatedImage.image.getDimensions().x, m_AnnotatedImage.image.getDimensions().y);
-                }
+                actionSaveOutputImage();
             }
             ImGui::EndMenu();
         }
@@ -127,7 +143,7 @@ public:
             ImGui::PopStyleVar();
 
             Rect imageRect = drawScreenshot();
-            drawOverlays(imageRect);
+            drawOverlays(*ImGui::GetWindowDrawList(), imageRect, m_UnselectedColor, m_SelectedColor);
 
             ImGui::End();
         }
@@ -159,27 +175,172 @@ private:
         return imageRect;
     }
 
-    void drawOverlays(Rect const& imageRect)
+    void drawOverlays(ImDrawList& drawlist, Rect const& imageRect, glm::vec4 const& unselectedColor, glm::vec4 const& selectedColor)
     {
+        glm::vec2 const mousePos = ImGui::GetMousePos();
+        bool const leftClickReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
         Rect const imageSourceRect = {{0.0f, 0.0f}, m_AnnotatedImage.image.getDimensions()};
-        ImU32 const red = ImGui::ColorConvertFloat4ToU32({1.0f, 0.0f, 0.0f, 1.0f});
-
-        //ImDrawList drawlist{ImGui::GetDrawListSharedData()};
-        ImDrawList& drawlist = *ImGui::GetWindowDrawList();
-        drawlist.AddDrawCmd();
 
         for (AnnotatedImage::Annotation const& annotation : m_AnnotatedImage.annotations)
         {
-            Rect const r = MapRect(imageSourceRect, imageRect, annotation.rect);
-            drawlist.AddRect(r.p1, r.p2, red, 3.0f, 0, 3.0f);
+            Rect const annotationRectScreenSpace = MapRect(imageSourceRect, imageRect, annotation.rect);
+            bool const selected =  Contains(m_SelectedAnnotations, annotation.label);
+            bool const hovered = osc::IsPointInRect(annotationRectScreenSpace, mousePos);
+
+            glm::vec4 color = selected ? selectedColor : unselectedColor;
+            if (hovered)
+            {
+                color.a = glm::clamp(color.a + 0.3f, 0.0f, 1.0f);
+            }
+
+            if (hovered && leftClickReleased)
+            {
+                if (selected)
+                {
+                    m_SelectedAnnotations.erase(annotation.label);
+                }
+                else
+                {
+                    m_SelectedAnnotations.insert(annotation.label);
+                }
+            }
+
+            drawlist.AddRect(
+                annotationRectScreenSpace.p1,
+                annotationRectScreenSpace.p2,
+                ImGui::ColorConvertFloat4ToU32(color),
+                3.0f,
+                0,
+                3.0f
+            );
         }
+    }
+
+    void actionSaveOutputImage()
+    {
+        std::filesystem::path maybePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("png");
+        if (!maybePath.empty())
+        {
+            Image outputImage = renderOutputImage();
+            osc::WriteToPNG(outputImage, maybePath);
+            osc::OpenPathInOSDefaultApplication(maybePath);
+        }
+    }
+
+    Image renderOutputImage()
+    {
+        std::optional<RenderTexture> rt;
+        rt.emplace(RenderTextureDescriptor{m_ImageTexture.getWidth(), m_ImageTexture.getHeight()});
+
+        // blit the screenshot into the output
+        Graphics::Blit(m_ImageTexture, *rt);
+
+        // draw overlays to a local ImGui drawlist
+        ImDrawList drawlist{ImGui::GetDrawListSharedData()};
+        drawlist.Flags |= ImDrawListFlags_AntiAliasedLines;
+        drawlist.AddDrawCmd();
+        glm::vec4 outlineColor = m_SelectedColor;
+        outlineColor.a = 1.0f;
+        drawOverlays(
+            drawlist, 
+            Rect{{0.0f, 0.0f}, {m_ImageTexture.getWidth(), m_ImageTexture.getHeight()}},
+            {0.0f, 0.0f, 0.0f, 0.0f},
+            outlineColor
+        );
+
+        // render drawlist to output
+        {
+            // upload vertex positions/colors
+            Mesh mesh;
+            {
+                // verts
+                {
+                    std::vector<glm::vec3> verts;
+                    verts.reserve(drawlist.VtxBuffer.size());
+                    for (int i = 0; i < drawlist.VtxBuffer.size(); ++i)
+                    {
+                        verts.push_back(glm::vec3{glm::vec2{drawlist.VtxBuffer[i].pos}, 0.0f});
+                    }
+                    mesh.setVerts(verts);
+                }
+
+                // colors
+                {
+                    std::vector<Rgba32> colors;
+                    colors.reserve(drawlist.VtxBuffer.size());
+                    for (int i = 0; i < drawlist.VtxBuffer.size(); ++i)
+                    {
+                        ImU32 colorImgui = drawlist.VtxBuffer[i].col;
+                        glm::vec4 linearColor = ImGui::ColorConvertU32ToFloat4(colorImgui);
+                        colors.push_back(Rgba32FromVec4(linearColor));
+                    }
+                    mesh.setColors(colors);
+                }
+            }
+
+            // solid color material
+            Material material
+            {
+                Shader
+                {
+                    App::slurp("shaders/PerVertexColor.vert"),
+                    App::slurp("shaders/PerVertexColor.frag"),
+                }
+            };
+
+            Camera c;
+            c.setViewMatrix(glm::mat4{1.0f});
+
+            {
+                // project screenspace overlays into NDC
+                float L = 0.0f;
+                float R = static_cast<float>(m_ImageTexture.getWidth());
+                float T = 0.0f;
+                float B = static_cast<float>(m_ImageTexture.getHeight());
+                glm::mat4 const proj =
+                {
+                    { 2.0f/(R-L),   0.0f,         0.0f,   0.0f },
+                    { 0.0f,         2.0f/(T-B),   0.0f,   0.0f },
+                    { 0.0f,         0.0f,        -1.0f,   0.0f },
+                    { (R+L)/(L-R),  (T+B)/(B-T),  0.0f,   1.0f },
+                };
+                c.setProjectionMatrix(proj);
+            }
+            c.setClearFlags(CameraClearFlags::Nothing);
+
+            c.swapTexture(rt);
+            for (int cmdIdx = 0; cmdIdx < drawlist.CmdBuffer.Size; ++cmdIdx)
+            {
+                ImDrawCmd const& cmd = drawlist.CmdBuffer[cmdIdx];
+                {
+                    // upload indices
+                    std::vector<uint16_t> indices;
+                    indices.reserve(cmd.ElemCount);
+                    for (unsigned int i = cmd.IdxOffset; i < cmd.IdxOffset + cmd.ElemCount; ++i)
+                    {
+                        indices.push_back(drawlist.IdxBuffer[i]);
+                    }
+                    mesh.setIndices(indices);
+                }
+                Graphics::DrawMesh(mesh, Transform{}, material, c);
+            }
+            c.render();
+            c.swapTexture(rt);
+        }
+
+        Image rv;
+        Graphics::ReadPixels(*rt, rv);
+        return rv;
     }
 
     UID m_ID;
     std::string m_Name = ICON_FA_COOKIE " ScreenshotTab";
     TabHost* m_Parent;
     AnnotatedImage m_AnnotatedImage;
-    Texture2D m_ImageTexture{m_AnnotatedImage.image.getDimensions().x, m_AnnotatedImage.image.getDimensions().y, m_AnnotatedImage.image.getPixelData(), m_AnnotatedImage.image.getNumChannels()};
+    Texture2D m_ImageTexture = ToTexture(m_AnnotatedImage.image);
+    std::unordered_set<std::string> m_SelectedAnnotations;
+    glm::vec4 m_UnselectedColor = {1.0f, 1.0f, 1.0f, 0.4f};
+    glm::vec4 m_SelectedColor = {1.0f, 0.0f, 0.0f, 0.8f};
 };
 
 
