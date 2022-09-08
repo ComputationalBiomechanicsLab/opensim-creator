@@ -12,6 +12,7 @@
 #include "src/Platform/Config.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
+#include "src/Tabs/ErrorTab.hpp"
 #include "src/Tabs/LoadingTab.hpp"
 #include "src/Tabs/MeshImporterTab.hpp"
 #include "src/Tabs/ModelEditorTab.hpp"
@@ -66,7 +67,7 @@ public:
             m_Tabs.push_back(std::make_unique<LoadingTab>(this, path));
         }
 
-        // and open the rightmost tab
+        // open the rightmost tab
         m_RequestedTab = m_Tabs.back()->getID();
     }
 
@@ -77,9 +78,22 @@ public:
 
     void onUnmount()
     {
+        // unmount the active tab before unmounting this (host) screen
         if (Tab* active = getActiveTab())
         {
-            active->onUnmount();
+            try
+            {
+                active->onUnmount();
+            }
+            catch (std::exception const& ex)
+            {
+                // - the tab is faulty in some way
+                // - soak up the exception to prevent the whole application from terminating
+                // - and emit the error to the log, because we have to assume that this
+                //   screen is about to die (it's being unmounted)
+                log::info("MainUIScreen::onUnmount: unmounting active tab threw an exception: %s", ex.what());
+            }
+
             m_ActiveTab = UID::empty();
         }
 
@@ -88,27 +102,41 @@ public:
 
     void onEvent(SDL_Event const& e)
     {
-        // special: F11 always operates as a "take a screenshot" event
-        if (e.type == SDL_KEYUP && e.key.keysym.scancode == SDL_SCANCODE_F11)
+        if (e.type == SDL_KEYUP &&
+            e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
+            e.key.keysym.scancode == SDL_SCANCODE_P)
         {
+            // Ctrl+/Super+P operates as a "take a screenshot" request
             m_MaybeScreenshotRequest = osc::App::upd().requestAnnotatedScreenshot();
         }
-
-        if (osc::ImGuiOnEvent(e))
+        else if (osc::ImGuiOnEvent(e))
         {
-            // event was pumped into ImGui
+            // event was pumped into ImGui - it shouldn't be pumped into the active tab
             m_ShouldRequestRedraw = true;
-            return;
         }
-
-        if (e.type == SDL_QUIT)
+        else if (e.type == SDL_QUIT)
         {
-            // it's a quit event, which must be pumped into all tabs
+            // it's a quit *request* event, which must be pumped into all tabs
+            //
+            // note: some tabs may block the quit event, e.g. because they need to
+            //       ask the user whether they want to save changes or not
 
             bool quitHandled = false;
             for (int i = 0; i < static_cast<int>(m_Tabs.size()); ++i)
             {
-                quitHandled = m_Tabs[i]->onEvent(e) || quitHandled;
+                try
+                {
+                    quitHandled = m_Tabs[i]->onEvent(e) || quitHandled;
+                }
+                catch (std::exception const& ex)
+                {
+                    // - the tab is faulty in some way
+                    // - soak up the exception to prevent the whole application from terminating
+                    // - then create a new tab containing the error message, so the user can see the error
+                    UID id = addTab(std::make_unique<ErrorTab>(this, ex));
+                    selectTab(id);
+                    implCloseTab(m_Tabs[i]->getID());
+                }
             }
 
             if (!quitHandled)
@@ -128,20 +156,31 @@ public:
 
             if (!quitHandled && (!m_MaybeSaveChangesPopup || !m_MaybeSaveChangesPopup->isOpen()))
             {
-                // if no tab handled a quit event and the UI isn't currently showing
-                // a save prompt then it's safe to quit the application
+                // - if no tab handled a quit event
+                // - and the UI isn't currently showing a save prompt
+                // - then it's safe to outright quit the application from this screen
 
                 App::upd().requestQuit();
             }
-
-            return;
         }
-
-        if (Tab* active = getActiveTab())
+        else if (Tab* active = getActiveTab())
         {
             // all other event types are only pumped into the active tab
 
-            bool handled = active->onEvent(e);
+            bool handled = false;
+            try
+            {
+                handled = active->onEvent(e);
+            }
+            catch (std::exception const& ex)
+            {
+                // - the tab is faulty in some way
+                // - soak up the exception to prevent the whole application from terminating
+                // - then create a new tab containing the error message, so the user can see the error
+                UID id = addTab(std::make_unique<ErrorTab>(this, ex));
+                selectTab(id);
+                implCloseTab(active->getID());
+            }
 
             // the event may have triggered tab deletions
             handleDeletedTabs();
@@ -160,7 +199,19 @@ public:
         // updating something as a simulation runs)
         for (int i = 0; i < m_Tabs.size(); ++i)
         {
-            m_Tabs[i]->onTick();
+            try
+            {
+                m_Tabs[i]->onTick();
+            }
+            catch (std::exception const& ex)
+            {
+                // - the tab is faulty in some way
+                // - soak up the exception to prevent the whole application from terminating
+                // - then create a new tab containing the error message, so the user can see the error
+                UID id = addTab(std::make_unique<ErrorTab>(this, ex));
+                selectTab(id);
+                implCloseTab(m_Tabs[i]->getID());
+            }
         }
 
         // clear the flagged-to-be-deleted tabs
@@ -273,7 +324,19 @@ private:
             {
                 if (Tab* active = getActiveTab())
                 {
-                    active->onDrawMainMenu();
+                    try
+                    {
+                        active->onDrawMainMenu();
+                    }
+                    catch (std::exception const& ex)
+                    {
+                        // - the tab is faulty in some way
+                        // - soak up the exception to prevent the whole application from terminating
+                        // - then create a new tab containing the error message, so the user can see the error
+                        UID id = addTab(std::make_unique<ErrorTab>(this, ex));
+                        selectTab(id);
+                        implCloseTab(active->getID());
+                    }
 
                     if (m_ImguiWasAggressivelyReset)
                     {
@@ -397,10 +460,32 @@ private:
             return;
         }
 
+        // draw the active tab (if any)
         if (Tab* active = getActiveTab())
         {
-            active->onDraw();
+            try
+            {
+                active->onDraw();
+            }
+            catch (std::exception const& ex)
+            {
+                // - the tab is faulty in some way
+                // - soak up the exception to prevent the whole application from terminating
+                // - then create a new tab containing the error message, so the user can see the error
+                // - and indicate that ImGui was aggressively reset, because the drawcall may have thrown midway
+                //   through doing stuff in ImGui
+                UID id = addTab(std::make_unique<ErrorTab>(this, ex));
+                selectTab(id);
+                implCloseTab(active->getID());
+                resetImgui();
+            }
+
             handleDeletedTabs();
+        }
+
+        if (m_ImguiWasAggressivelyReset)
+        {
+            return;
         }
 
         if (m_MaybeSaveChangesPopup)
