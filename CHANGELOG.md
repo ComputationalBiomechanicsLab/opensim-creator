@@ -258,6 +258,8 @@ All notable changes to this project will be documented here. The format is based
 
 - Added the ability to take a screenshot of the entire UI by pressing F11 while in the main UI (#442)
 
+- On Windows, fatal application errors now write a crash file to the user data directory before exiting (#441)
+
 
 ## [0.2.0] - 2022/07/04
 

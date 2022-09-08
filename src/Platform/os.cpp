@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <fstream>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
@@ -440,10 +441,75 @@ void osc::WriteTracebackToLog(log::level::LevelEnum lvl)
     // viewing it: https://stackoverflow.com/questions/54022914/c-is-there-any-command-likes-addr2line-on-windows
 }
 
+namespace
+{
+    // temporarily attach a crash logger to the log
+    struct CrashFileSink final : public osc::log::Sink
+    {
+        explicit CrashFileSink(std::ostream& out_) : m_Out{out_}
+        {
+        }
+
+        void log(osc::log::LogMessage const& msg) override
+        {
+            if (m_Out)
+            {
+                m_Out << '[' << msg.loggerName << "] [" << osc::log::toStringView(msg.level) << "] " << msg.payload << std::endl;
+            }
+        }
+    private:
+        std::ostream& m_Out;
+    };
+
+    // returns a unix timestamp in seconds since the epoch
+    std::chrono::seconds GetCurrentTimeAsUnixTimestamp()
+    {
+        return std::chrono::seconds(std::time(nullptr));
+    }
+
+    std::filesystem::path GetCrashReportPath()
+    {
+        std::stringstream filename;
+        filename << GetCurrentTimeAsUnixTimestamp().count();
+        filename << "_CrashReport.txt";
+        return osc::GetUserDataDir() / std::move(filename).str();
+    }
+}
+
 static LONG crash_handler(EXCEPTION_POINTERS* info)
 {
     osc::log::error("exception propagated to root of OSC: might be a segfault?");
-    osc::WriteTracebackToLog(osc::log::level::err);
+
+    std::filesystem::path const crashReportPath = GetCrashReportPath();
+    std::ofstream crashReportFile{crashReportPath};
+
+    // dump out the log history (it's handy for context)
+    if (crashReportFile)
+    {
+        crashReportFile << "----- log -----\n";
+        auto guard = osc::log::getTracebackLog().lock();
+        for (osc::log::OwnedLogMessage const& msg : *guard)
+        {
+            crashReportFile << '[' << msg.loggerName << "] [" << osc::log::toStringView(msg.level) << "] " << msg.payload << '\n';
+        }
+        crashReportFile << "----- /log -----\n";
+    }
+
+    // then write a traceback to both the log (in case the user is running from a console)
+    // *and* the crash dump (in case the user is running from a GUI and wants to report it)
+    if (crashReportFile)
+    {
+        crashReportFile << "----- traceback -----\n";
+
+        std::shared_ptr<osc::log::Sink> sink = std::make_shared<CrashFileSink>(crashReportFile);
+
+        osc::log::defaultLogger()->sinks().push_back(sink);
+        osc::WriteTracebackToLog(osc::log::level::err);
+        osc::log::defaultLogger()->sinks().erase(osc::log::defaultLogger()->sinks().end() - 1);
+
+        crashReportFile << "----- /traceback -----\n";
+    }
+
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
