@@ -7,6 +7,7 @@
 #include "src/Utils/UID.hpp"
 #include "src/Widgets/NamedPanel.hpp"
 
+#include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <Simbody.h>
@@ -61,24 +62,23 @@ private:
     {
         UpdateCachedSimulationReportIfNecessary(*m_Model, m_CachedReport);
 
-        int nOutputs = m_API->getNumUserOutputExtractors();
-        if (nOutputs > 0 && ImGui::BeginTable("##OutputWatchesTable", 2, ImGuiTableFlags_SizingStretchProp))
+        if (m_API->getNumUserOutputExtractors() > 0 && ImGui::BeginTable("##OutputWatchesTable", 2, ImGuiTableFlags_SizingStretchProp))
         {
             ImGui::TableSetupColumn("Output", ImGuiTableColumnFlags_WidthStretch);
             ImGui::TableSetupColumn("Value");
             ImGui::TableHeadersRow();
 
-            for (int outputIdx = 0; outputIdx < nOutputs; ++outputIdx)
+            for (int outputIdx = 0; outputIdx < m_API->getNumUserOutputExtractors(); ++outputIdx)
             {
                 int column = 0;
-                OutputExtractor const& o = m_API->getUserOutputExtractor(outputIdx);
+                OutputExtractor o = m_API->getUserOutputExtractor(outputIdx);
 
                 ImGui::PushID(outputIdx);
 
                 ImGui::TableNextRow();
 
                 ImGui::TableSetColumnIndex(column++);
-                if (ImGui::SmallButton("X"))
+                if (ImGui::SmallButton(ICON_FA_TRASH))
                 {
                     m_API->removeUserOutputExtractor(outputIdx);
                 }
@@ -92,6 +92,10 @@ private:
             }
 
             ImGui::EndTable();
+        }
+        else
+        {
+            ImGui::TextWrapped("No outputs are being watched. You can watch outputs by right-clicking something in the model.");
         }
     }
 
