@@ -42,13 +42,13 @@ The first thing we need to add to our model is the ``foot`` body. As explained i
 Using similar steps to what was taught in :ref:`tut1`:
 
 * Add a body called ``foot`` into the model. It should have a mass of ``1 kg`` (the default) and be joined to ``ground`` with a ``FreeJoint`` called ``foot_to_ground``. Attach a ``Sphere`` geometry to it.
-* Click the sphere and change its ``Appearance`` to a red color.
+* Click the sphere in the 3D viewport and use the properties panel to change its ``Appearance`` property to a red color.
 
 You can then raise ``foot`` above the ground slightly by altering the ``foot_to_ground`` joint's ``ty`` coordinate:
 
-* Select the ``foot_to_ground`` joint
-* Select the ``ty`` coordinate
-* Change ``ty``'s ``default_value`` from ``0.0`` to ``0.5``
+* Use the navigator panel to select the ``foot_to_ground`` joint within the model's ``jointset``
+* Expand ``foot_to_ground`` in the navigator panel and select the ``ty`` coordinate
+* Use the properties panel to change ``ty``'s ``default_value`` property from ``0.0`` to ``0.5``
 
 This should produce a model with a red sphere (``foot``) that is raised above the ground:
 
@@ -69,14 +69,15 @@ This should produce a model with a red sphere (``foot``) that is raised above th
 Add Contact Surfaces & Forces
 -----------------------------
 
-If you simulate the model at this point, the ``foot`` will just fall through the floor. The reason this happens is because the chequered floor and red sphere are decorative and the ``foot`` body is effectively a 0D point in space.
+If you simulate the model at this point, ``foot`` will just fall through the floor. The reason this happens is because the chequered floor and red sphere geometry are only decorative: the ``foot`` body is effectively a 0D point in space and has nothing to collide with.
 
-In order to give these things a "size" that can "collide", we need to explicitly add ``ContactGeometry`` into the model at locations where we *logically* expect collisions to take place. In this case, we will add ``ContactGeometry`` at the same location as the decorations.
+In order to give ``foot`` a "size" that can "collide" with stuff, we need to explicitly add ``ContactGeometry`` into the model at locations where we *logically* expect collisions to take place. In this case, we will add ``ContactGeometry`` at the same location as the decorations.
 
 To attach a collidable floor (a ``ContactHalfSpace``) to the ground of the model:
 
-* Click the ``add contact geometry`` button, then ``ContactHalfSpace``
-* Give the ``ContactHalfSpace`` the following properties:
+* Open the ``Add`` menu from the main menu, or by right-clicking an empty part of the 3D scene
+* Open the ``Contact Geometry`` sub-menu and click ``ContactHalfSpace``
+* In the popup, create a ``ContactHalfSpace`` with the following properties:
 
 .. figure:: _static/tut2_floor-properties.png
 
@@ -85,8 +86,9 @@ To attach a collidable floor (a ``ContactHalfSpace``) to the ground of the model
 
 To attach a collidable sphere (a ``ContactSphere``) to ``foot``:
 
-* Click the ``add contact geometry`` button, then click ``ContactSphere``
-* Give the ``ContactSphere`` the following properties:
+* Open the ``Add`` menu from the main menu, or by right-clicking an empty part of the 3D scene
+* Open the ``Contact Geometry`` sub-menu and click ``ContactSphere``
+* In the popup, create a ``ContactSphere`` with the following properties:
 
 .. figure:: _static/tut2_footcontact-properties.png
 
@@ -98,13 +100,20 @@ In OpenSim, contact geometries only express a geometry that *may* participate in
 
 To add a contact force (``HuntCrossleyForce``) to the model:
 
-* Click the ``add force`` button
-* Click ``HuntCrossleyForce``
-* Click ``add`` to add the force and close the popup
-* Select the force
-* In the properties editor, click ``add contact geometry`` and add ``floor_contact`` and ``foot_contact`` to the force
+* Open the ``Add`` menu from the main menu, or by right-clicking an empty part of the 3D scene
+* Open the ``Force`` sub-menu and click ``HuntCrossleyForce``
+* In the popup, just click the ``add force`` button (don't edit anything)
+* If it isn't selected, select the force in the navigator panel (``forceset/HuntCrossleyForce``)
+* Open the force's context menu by right-clicking it in the navigator panel, or click by clicking the lightning ("actions") icon
+* Click ``Add Contact Geometry`` button
+* Use that action to add ``floor_contact`` and ``foot_contact`` to the force. They should end up being listed in ``HuntCrossleyForce``'s properties
 
-With the contact force added, a simulation of this model should show ``foot`` hit ``floor``, bounce a little, then stop. You can change the ``HuntCrossleyForce``'s properties to change how stiff the contact force is, how much energy is dissipated by the contact, etc.
+.. figure:: _static/tut2_assigncontactgeometry.png
+    :width: 60%
+
+    The model after assigning ``floor_contact`` and ``foot_contact`` to  ``HuntCrossleyForce``.
+
+With the contact force added, simulating this model should show ``foot`` hit ``floor``, bounce a little, then stop. You can change the ``HuntCrossleyForce``'s properties to change how stiff the contact force is, how much energy is dissipated by the contact, etc.
 
 .. figure:: _static/tut2_collision-forces-added.png
     :width: 60%
@@ -120,14 +129,14 @@ The next step is to add a "knee" and "head" to our ``foot``. This mostly involve
 To add the ``knee`` to the model:
 
 * Add a body called ``knee`` into the model. It should have a mass of ``1 kg`` and be joined to ``foot`` with a ``PinJoint`` called ``foot_to_knee``. Attach a sphere geometry to it.
-* Change the ``foot_offset`` of the ``foot_to_knee`` joint from ``(0, 0, 0)`` to ``(0, 0.5, 0)``, so that the ``foot`` is offset from the origin of the ``foot_to_knee`` and ``knee`` is co-located with it (i.e. it swings at the knee).
-* Make the sphere geometry red
+* Use the properties panel to change the ``translation`` property of the ``foot_offset`` (``/jointset/foot_to_knee/foot_offset``) from ``(0, 0, 0)`` to ``(0, 0.5, 0)``. This is so that the ``foot`` is offset from the origin of the ``foot_to_knee`` and ``knee`` is co-located with it (i.e. it swings at the knee).
+* Click on the new ``knee_geom_1`` sphere and use the properties panel to change the ``Appearance`` property such that the sphere is red.
 
 To add the ``head`` to the model:
 
-* Add a body called ``head`` into the model. It should have a mass of ``1 kg`` and be joined to ``knee`` with a ``PinJoint`` called ``knee_to_head``. Attach a ``Brick``. Attach a brick geometry to it.
-* Change the ``knee_offset`` of the ``knee_to_head`` joint from ``(0, 0, 0)`` to ``(0, 0.5, 0)``, so that the ``knee`` is offset from the origin of ``knee_to_head`` and ``head`` is co-located with it (i.e. it swings at the head).
-* Make the cube geometry red
+* Add a body called ``head`` into the model. It should have a mass of ``1 kg`` and be joined to ``knee`` with a ``PinJoint`` called ``knee_to_head``. Attach a brick geometry to it.
+* Use the properties panel to change the ``translation`` property of the ``knee_offset`` (``/jointset/knee_to_head/knee_offset``) from  ``(0, 0, 0)`` to ``(0, 0.5, 0)``. This is so that the ``knee`` is offset from the origin of ``knee_to_head`` and ``head`` is co-located with it (i.e. it swings at the head).
+* Click on the new ``head_geom_1`` cube and use the properties panel to change the ``Appearance`` property such that the cube is red
 
 These steps should create all the necessary bodies in the system, but it will look a little bit unusual (the "links" are missing):
 
@@ -141,18 +150,31 @@ Much like at the end of :ref:`tut1`, we can make the model look better by adding
 
 To add a decorative link between the ``foot`` and ``knee``:
 
-* Select the ``foot`` body, add an offset frame to it with the ``add offset frame`` button
-* Set the offset frame's ``translation`` property to ``(0.0, 0.25, 0.0)`` so that the offset frame sits between ``foot`` and ``knee``
-* Attach a ``Brick`` geometry to the offset frame
-* Change the ``Brick``'s ``half_widths`` property to something like ``(0.025, 0.25, 0.025)`` to create a thin "rod" between ``foot`` and ``knee``
+* Right-click the ``foot`` body (``/bodyset/foot``) in the navigator panel to open its context menu.
+* Click ``Add Offset Frame`` in the context menu
+* Select the created offset frame (``/bodyset/foot/foot_offsetframe``)
+* Use the properties panel to change the offset frame's ``translation`` property to ``(0.0, 0.25, 0.0)``. This makes the offset frame sit between ``foot`` and ``knee``.
+* Right-click the offset frame in the navigator, or click the lightning icon ("Actions") in the properies panel to open the offset frame's context menu
+* Click ``Add Geometry`` and attach a ``Brick`` geometry to the offset frame
+* Select the brick through the navigator (``/bodyset/foot/foot_offsetframe/foot_offsetframe_geom_1``), or by clicking it in the 3D viewport
+* Use the properties panel to edit the brick's ``half_widths`` property to something like ``(0.025, 0.25, 0.025)``. This creates a thin "rod" between ``foot`` and ``knee``
+
+.. figure:: _static/tut2_after-adding-first-decorative-link.png
+    :width: 60%
+
+    The model after adding the first decorative link. (:download:`📥 download model <_static/tut2_after-adding-first-decorative-link.osim>`)
 
 
 To add a decorative link between the ``knee`` and ``head``:
 
-* Select ``knee``, add an offset frame to it with the ``add offset frame`` button
-* Set the offset frame's ``translation`` property to ``(0.0, 0.25, 0.0)`` so that it sits between ``knee`` and ``head``
-* Attach a ``Brick`` geometry to the offset frame
-* Change the ``Brick``'s ``half_widths`` property to something like ``(0.025, 0.25, 0.025)`` to create a thin "rod" between ``knee`` and ``head``
+* Right-click the ``knee`` body (``/bodyset/knee``) in the navigator panel to open its context menu
+* Click ``Add Offset Frame`` in the context menu
+* Select the created offset frame (``/bodyset/knee/knee_offsetframe``)
+* Use the properties panel to change the offset frame's ``translation`` property to ``(0.0, 0.25, 0.0)``. This makes the offset frame sit between ``knee`` and ``head``.
+* Right-click the offset frame in the navigator, or click the lightning icon ("Actions") in the properies panel to open the offset frame's context menu
+* Click ``Add Geometry`` and attach a ``Brick`` geometry to the offset frame
+* Select the brick through the navigator (``/bodyset/knee/knee_offsetframe/knee_offsetframe_geom_1``), or by clicking it in the 3D viewport
+* Use the properties panel to edit the brick's ``half_widths`` property to something like ``(0.025, 0.25, 0.025)``. This creates a thin "rod" between ``knee`` and ``head``
 
 
 These steps add *decorative* features to the model that make it easier to see what's going on. After doing them, you should have something that looks like this:
@@ -167,8 +189,8 @@ If you try simulating this model, you will find that it falls vertically and rem
 
 To make the simulation more interesting, we are going to angle the whole model and also change the initial joint angle of ``foot_to_knee`` to give the knee a "kink". To do this:
 
-* Angle the whole model by selecting the ``rz`` coordinate in the ``ground_to_foot`` ``FreeJoint``. Change the coordinate's ``default_value`` property to ``0.698``. 
-* Give the knee a "kink" by selecting the ``rz`` coordinate in the ``foot_to_knee`` ``PinJoint``. Change the coordinate's ``default_value`` property to ``-1.396``.
+* Angle the whole model by selecting ``ground_to_foot``'s ``rz`` coordinate (``/jointset/ground_to_foot/rz``). Use the properties panel to change the coordinate's ``default_value`` property to ``0.698``. 
+* Give the knee a "kink" by selecting ``foot_to_knee``'s ``rz`` coordinate (``/jointset/foot_to_knee/rz``). Use the properties panel to change the coordinate's ``default_value`` property to ``-1.396``.
 
 These steps should put the model into a more interesting arrangement:
 
@@ -181,7 +203,7 @@ These steps should put the model into a more interesting arrangement:
 Add a Spring between ``foot`` and ``head``
 ------------------------------------------
 
-We have now added all of the the bodies and joints that make up the model. However, the only forces acting on the model are gravity and the foot collision. Consequently, a simulation of the model won't be very impressive. The model will fall a little, then ``foot`` will collide with ``floor``, then the rest of the (non-colliding) model will roll around and clip through the floor.
+We have now added all of the bodies and joints that make up the model. However, the only forces acting on the model are gravity and the foot collision. Consequently, a simulation of the model won't be very impressive. The model will fall a little, then ``foot`` will collide with ``floor``, then the rest of the (non-colliding) model will roll around and clip through the floor.
 
 The reason this model is unexciting is because there are no forces between the model's bodies. We have attached three bodies (``foot``, ``knee``, and ``head``) with two ``PinJoint`` s and let them drop through space. The joints merely enforce constraints between the bodies. So the model is acts like a passive hinged device that flops around.
 
@@ -189,9 +211,9 @@ We can add **forces** to this model to make it more interesting. Specifically, w
 
 To add a ``PointToPointSpring`` between ``foot`` and ``head``:
 
-* Click the ``add force/muscle`` button
-* Click ``PointToPointSpring``
-* Give the spring the following properties:
+* Open the ``Add`` menu from the main menu, or by right-clicking an empty part of the 3D scene
+* Open the ``Force`` sub-menu and click ``PointToPointSpring``
+* In the popup menu, give the spring the following properties:
 
 .. figure:: _static/tut2_add-spring-popup.png
     :width: 60%
@@ -226,22 +248,22 @@ For our model, we want to enforce that the ``foot`` and ``head`` are constrained
 
 To constrain ``foot`` to only be allowed to roll along the Y axis, follow these steps:
 
-* Click the ``Add Constraint`` button
-* Add a ``PointOnLineConstraint``
-* Give the constraint the following properties:
+* Open the ``Add`` menu from the main menu, or by right-clicking an empty part of the 3D scene
+* Open the ``Constraint`` sub-menu and click ``PointOnLineConstraint``
+* In the popup menu, give the constraint the following properties:
 
 .. figure:: _static/tut2_foot-Y-lock-properties.png
     :width: 60%
 
     Properties for ``foot_Y_lock``. This constraint prevents the foot from being able to roll along the floor to a different X/Z coordinate in the scene by enforcing ``foot`` to *follow* the ``(0.0, 1.0, 0.0)`` line from ``ground``.
 
-After adding that constraint, you should find that ``foot`` no longer rolls around, but ``head`` still freely swings around as much as it can. 
+After adding that constraint, you should find that ``foot`` no longer rolls around the scene, but ``head`` still freely swings around ``foot`` as much as it can.
 
 To constrain ``head``, such that is only follows along Y in ``ground``, follow these steps:
 
-* Click the ``Add Constraint`` button
-* Add a ``PointOnLineConstraint``
-* Give the constraint the following properties:
+* Open the ``Add`` menu from the main menu, or by right-clicking an empty part of the 3D scene
+* Open the ``Constraint`` sub-menu and click ``PointOnLineConstraint``
+* In the popup menu, give the constraint the following properties:
 
 .. figure:: _static/tut2_head-y-lock-properties.png
     :width: 60%
