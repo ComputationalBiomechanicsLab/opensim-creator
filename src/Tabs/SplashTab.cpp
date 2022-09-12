@@ -222,6 +222,7 @@ private:
                     UID tabID = m_Parent->addTab<MeshImporterTab>(m_Parent);
                     m_Parent->selectTab(tabID);
                 }
+                osc::AddFrameAnnotationToLastItem("SplashTab/ImportMeshesMenuItem");
                 if (ImGui::MenuItem(ICON_FA_BOOK " Open Documentation"))
                 {
                     OpenPathInOSDefaultApplication(osc::App::get().getConfig().getHTMLDocsDir() / "index.html");
