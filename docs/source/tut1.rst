@@ -46,7 +46,9 @@ You should see a 3D viewer with a chequered floor and a set of axes in the middl
 Add a Body with a WeldJoint
 ---------------------------
 
-In the UI, click the ``Add body`` button. A dialog should pop up that prompts you to fill in the body's details. Create a body with the following details:
+In the UI, open the ``Add`` menu at the top, or right-click an empty part of the 3D scene and open the ``Add`` menu, followed by clicking the ``Body`` button.
+
+A dialog should pop up that prompts you to fill in the body's details. Create a body with the following details:
 
 .. figure:: _static/tut1_addbodymodal.png
 
@@ -78,11 +80,11 @@ The reason we add joints is because bodies must be connected in a **model topolo
 
 .. note::
 
-    OpenSim models are **stored** in a **hierarchy**. The top-level model "root" contains child components--things like **bodies** and **joints**--and those children, in turn, contain child components--e.g. things like **offset frames** and **decorative geometry**. Clicking something in OpenSim Creator typically selects the exact component you clicked on, so clicking the ``Brick`` in the 3D scene will select the ``Brick`` geometry child of ``pendulum_base``. You can use the hierarchy viewer to see where the selected component is in the model's hierarchy.
+    OpenSim models are **stored** in a **hierarchy**. The top-level model "root" contains child components--things like **bodies** and **joints**--and those children, in turn, contain child components--e.g. things like **offset frames** and **decorative geometry**. Clicking something in OpenSim Creator typically selects the exact component you clicked on, so clicking the ``Brick`` in the 3D scene will select the ``Brick`` geometry child of ``pendulum_base``. You can use the navigator panel, or the component path in the status bar at the bottom of the UI, to see where the selected component is in the model's hierarchy.
 
     Components in an OpenSim model can also use **sockets** to form a **graph-like** connection to some other component. This enables components--which are **stored** in a hierarchy--to connect to each other in a non-hierarchical manner. For example, bodies and joints are direct children of a model--they are, *hierarchically speaking*, siblings--but joints use sockets (``parent_frame`` and ``child_frame``) to connect to two frames/bodies and establish a **joint topology graph**.
 
-    When these tutorials write about the **topology** of the model, they're usually referring to how the various bodies, joints, and frames *physically* affect each other. That topology is usually dictated by the socket connectivity graph. By contrast, the model hierarchy, as shown in OpenSim Creator's hierarchy viewer, is focused on the **storage** of the model. Storage affects things like where the component's data is ultimately saved in the resulting ``.osim`` model file.
+    When these tutorials write about the **topology** of the model, they're usually referring to how the various bodies, joints, and frames *physically* affect each other. That topology is usually dictated by the socket connectivity graph. By contrast, the model hierarchy, as shown in OpenSim Creator's navigator panel, is focused on the **storage** of the model. Storage affects things like where the component's data is ultimately saved in the resulting ``.osim`` model file.
 
 
 Reposition the Body
@@ -96,17 +98,17 @@ So, to reposition ``pendulum_base`` in the scene, we can change the offset frame
 
 To move  ``pendulum_base`` away from ground in the scene, take the following steps:
 
-* Find ``jointset`` in the hierarchy viewer panel
-* Find the ``WeldJoint``, ``pendulum_base_to_ground``, in the ``jointset``
+* Find ``jointset`` in the navigator panel and expand it
+* Find the ``WeldJoint``, ``pendulum_base_to_ground``, in the ``jointset`` and expand it
 * Find ``ground_offset`` and click it
-* Change its ``translation`` property to ``(0.00, 1.00, 0.00)`` in the property editor panel
+* Use the properties panel to change ``ground_offset``'s ``translation`` property to ``(0.00, 1.00, 0.00)``    
 
 This will move the ``ground_offset`` frame +1 in Y (in ``ground``'s reference frame). Because ``ground``'s reference frame is the same as the world's Y, it will move ``ground_offset`` vertically upwards. This has the effect of *also* moving ``pendulum_base`` upwards because it's attached to ``ground_offset`` via the joint:
 
 .. figure:: _static/tut1_firstbodymoved.png
     :width: 60%
 
-    The scene after changing ``ground_offset``'s ``translation`` property. Changing it also changed where ``pendulum_base`` is in the scene because of the topographical relationship between ``pendulum_base`` and ``ground_offset`` (:download:`📥 download model <_static/tut1_firstbodymoved.osim>`).
+    Edit ``ground_offset``'s ``translation`` Y value to move the ``pendulum_base`` away from ground in the scene. Changing it also changed where ``pendulum_base`` is in the scene because of the topographical relationship between ``pendulum_base`` and ``ground_offset`` (:download:`📥 download model <_static/tut1_firstbodymoved.osim>`).
 
 .. note::
 
@@ -120,7 +122,7 @@ Add the Pendulum Head
 
 In the previous step, we created ``pendulum_base``, which is a body that is "welded" into the scene at some vertical (Y) offset. The next step is to create a ``pendulum_head`` that is attached to ``pendulum_base`` with a ``PinJoint``. A ``PinJoint`` has one rotational degree of freedom along Z, which will enable the ``pendulum_head`` to swing relative to ``pendulum_base``.
 
-In the UI, click the ``Add body`` button. Create a body with the following details:
+In the UI, add another body. Create it with the following details:
 
 .. figure:: _static/tut1_addpendulumhead.png
 
@@ -141,17 +143,17 @@ The model's topology may look complicated but keep our main goal in mind: we wan
 
 To change the offset between the pendulum head and the ``PinJoint`` it swings on:
 
-* Find ``jointset`` in the Hierarchy Viewer
-* Find ``pendulum_head_to_pendulum_base`` in the ``jointset``
+* Find ``jointset`` in the Navigator panel and expand it
+* Find ``pendulum_head_to_pendulum_base`` in the ``jointset`` and expand it
 * Find ``pendulum_head_offset`` under that and click it
-* Change the ``translation`` property to ``(0.0, 0.5, 0.0)``
+* Use the properties panel to change ``pendulum_head_offset``'s ``translation`` property to ``(0.0, 0.5, 0.0)``
 
 After setting ``pendulum_head_offset``'s ``translation`` to ``(0.0, 0.5, 0.0)``, you should be able to see the pendulum head floating below the ``pendulum_base``:
 
 .. figure:: _static/tut1_secondbodymoved.png
     :width: 60%
 
-    How the scene should look after adding ``pendulum_head`` (a ``Body``) and setting ``pendulum_head_offset``'s ``translation`` to ``(0.0, 0.5, 0.0)``. The sphere is the decoration for ``pendulum_head`` and the cube is the decoration for ``pendulum_base`` (:download:`📥 download model <_static/tut1_secondbodymoved.osim>`).
+    How the scene should look after adding ``pendulum_head`` (a ``Body``) and setting ``pendulum_head_offset``'s ``translation`` property to ``(0.0, 0.5, 0.0)``. The sphere is the decoration for ``pendulum_head`` and the cube is the decoration for ``pendulum_base`` (:download:`📥 download model <_static/tut1_secondbodymoved.osim>`).
 
 .. note::
 
@@ -173,9 +175,10 @@ We can "pre-swing" ``pendulum_head`` a little by starting it off at an angle. Th
 
 To change the ``rx`` coordinate of ``pendulum_head_to_pendulum_base``:
 
-* Find ``pendulum_head_to_pendulum_base`` under ``jointset`` in the hierarchy viewer.
-* Click ``rz`` to edit the ``rz`` model coordinate
-* Use the Properties Editor to change ``rz``'s ``default_value`` property to ``1.0`` (radians)
+* Find ``jointset`` in the Navigator panel and expand it
+* Find ``pendulum_head_to_pendulum_base`` in the ``jointset`` and expand it
+* Find ``rz`` and click it
+* Use the properties panel to change ``rz``'s ``default_value`` property to ``1.0`` (radians)
 
 After changing ``rz``, the pendulum head should be rotated slightly:
 
@@ -187,6 +190,11 @@ After changing ``rz``, the pendulum head should be rotated slightly:
 
 Simulate the Model
 ------------------
+
+.. figure:: _static/tut1_startsimulating.png
+    :width: 60%
+
+    Pressing the green ``Simulate`` button (or ``Ctrl+R``) will start a forward-dynamic simulation of your model.
 
 OpenSim Creator contains buttons to start a forward-dynamic (FD) simulation. An FD simulation will simulate your model's traversal through time by integrating things like forces, velocities, and positions over time.
 
@@ -210,22 +218,33 @@ Although we have *logically* modelled a pendulum that meets our requirements (i.
 
 First, we can make the base into a thinner ceiling-like brick by changing the ``Brick``'s ``half_lengths`` property:
 
-* Click the ``pendulum_base``'s cube in the visualizer, or browse to ``pendulum_base_geom_1`` in the hierarchy
-* Change the ``half_lengths`` property to something like ``(0.2, 0.01, 0.2)``. This property only represents the *appearance* of the model, not the *behavior*.
+* Click the ``pendulum_base``'s cube in the visualizer, or browse to ``pendulum_base_geom_1`` in the navigator panel
+* Use the properties panel to change ``pendulum_base_geom_1``'s ``half_lengths`` property to something like ``(0.2, 0.01, 0.2)``. This property only represents the *appearance* of the model, not the *behavior*.
 
 Next, we can make the pendulum head a little smaller by changing the ``Sphere``'s ``radius`` property:
 
-* Click the ``pendulum_head``'s sphere in the visualizer, or browse to ``pendulum_head_geom_1`` in the hierarchy
-* Change the ``radius`` property to something like ``0.05``
+* Click the ``pendulum_head``'s sphere in the visualizer, or browse to ``pendulum_head_geom_1`` in the navigator panel
+* Use the properties panel to change ``pendulum_head_geom_1``'s ``radius`` property to something like ``0.05``
 
 Finally--and this is the hardest part--we need to add a ``Cylinder`` between the ``pendulum_head`` and the ``PinJoint``. The cylinder will act as the pendulum's neck. The easiest way to do this is to add an offset frame between the base and the head (i.e. 0.25Y above ``pendulum_head``) and attach a ``Cylinder`` decoration to that frame. To do this:
 
-* Select the ``pendulum_head`` in the hierarchy
-* Click ``add offset frame`` in the properties editor, which should create and select ``pendulum_head_offsetframe``
-* Set ``pendulum_head_offsetframe``'s ``translation`` to ``(0.0, 0.25, 0.0)``. This moves the offset frame between the base and the head.
-* Click ``add geometry`` in the properties editor to add a ``Cylinder`` to ``pendulum_head_offsetframe``.
-* Click the cylinder in the visualizer, or find ``pendulum_head_offsetframe_geom_1`` in the hierarchy
-* Set the ``Cylinder``'s ``radius`` property to ``0.01`` and its ``half_height`` property to ``0.25``
+* Select ``pendulum_head`` in the navigator panel (under ``bodyset``)
+* Open ``pendulum_head``'s context menu by either:
+
+  * Right-clicking it in the navigator panel
+  * Clicking the lightning ("actions") icon
+
+* Click ``add offset frame`` in ``pendulum_head``'s context menu
+* This should create and select ``pendulum_head_offsetframe``
+* Use the properties panel to set ``pendulum_head_offsetframe``'s ``translation`` property to ``(0.0, 0.25, 0.0)``. This moves ``pendulum_head_offsetframe`` between the base and the head.
+* Open ``pendulum_head_offsetframe``'s context menu by either:
+
+  * Right-clicking it in the navigator panel
+  * Clicking the lightning ("actions") icon
+
+* Click ``add geometry`` in the properties panel to add a ``Cylinder`` to ``pendulum_head_offsetframe`` (``pendulum_head_offsetframe_geom_1``).
+* Click the cylinder in the visualizer, or find ``pendulum_head_offsetframe_geom_1`` in the navigator panel
+* Use the properties panel to set ``pendulum_head_offsetframe_geom_1``'s ``radius`` property to ``0.01`` and its ``half_height`` property to ``0.25``
 
 Once you've done that, you should end up with a more convincing-looking pendulum:
 
@@ -238,7 +257,7 @@ Once you've done that, you should end up with a more convincing-looking pendulum
 (Optional) Extra Exercises
 --------------------------
 
-* **Make a double pendulum**. Using similar steps to the ones used to set up ``pendulum_head``, create a second pendulum head that attaches to ``pendulum_head`` rather than ``pendulum_base``. This will create a double pendulum. An alternative solution to this exercise is covered in :ref:`tut3`.
+* **Make a double pendulum**. Using similar steps to the ones above, create a second pendulum head that attaches to ``pendulum_head`` rather than ``pendulum_base``. This will create a double pendulum. An alternative solution to this exercise is covered in :ref:`tut3`.
 
 * **Open the pendulum in the official OpenSim GUI**. Save your pendulum to an ``.osim`` file and open it in the official `OpenSim GUI`_. This will give you the chance to view your model in other software, which might give you extra modelling options (e.g. different plotting tools, more functionality).
 
