@@ -102,8 +102,8 @@ Next, you will temporarily convert the mesh importer scene into an OpenSim model
 
 To convert the mesh importer scene into an ``osim`` (for testing), you will need to:
 
-* **Convert your scene into an OpenSim model**. Click the ``Convert to OpenSim Model``. This will convert your scene to an ``osim`` and open it in the ``osim`` editor that we used in previous tutorials. You can then see how the free-form scene was converted into an OpenSim model.
-* **Try simulating the todel**. Adjust the pin joint coordinates (``pendulum_head_to_ground_rz`` and ``pendulum_head_2_to_pendulum_head_rz``) to start the pendulum off at an angle. Start simulating the model (``Ctrl+R``) to see it swinging. Confirm that both bodies swing like a double pendulum. If they don't, reopen the mesh importer and start fixing things 🔧.
+* **Convert your scene into an OpenSim model**. Click the ``Convert to OpenSim Model``. This will convert your scene to an ``osim`` and open it in an ``osim`` editor tab. You can then see how the free-form scene was converted into an OpenSim model.
+* **Try simulating the todel**. Adjust the pin joint coordinates (``pendulum_head_to_ground_rz`` and ``pendulum_head_2_to_pendulum_head_rz``) to start the pendulum off at an angle. Start simulating the model (``Ctrl+R``) to see it swinging. Confirm that both bodies swing like a double pendulum. If they don't, close the simulation (and editor), then reopen the mesh importer tab and start fixing things 🔧.
 * **Save the model as an .osim**. After conversion, you can then save your model to disk and use external tooling (e.g. XML editors, OpenSim GUI) to further modify it.
 
 
@@ -118,7 +118,7 @@ Add Decorative Geometry
 
 .. note::
 
-    These next steps are performed in the mesh importer (converting to an osim was purely for testing). To return to the mesh importer, browse to ``File > Import Meshes`` in the main menu.
+    These next steps are performed in the mesh importer (converting to an osim was purely for testing). You can close the editor (& simulator) tabs and return to the mesh importer tab for these next steps.
 
 Although the previous steps create a *functionally* complete model, the model doesn't look like a particularly convincing pendulum. These steps add decorative geometry to fix that.
 
@@ -126,42 +126,72 @@ The mesh importer has the ability to add **meshes** into the scene, freely move/
 
 To decorate the model, complete the following sub-steps:
 
+
 Attach a cube mesh to ground (the ceiling)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Right-click in an empty space in the scene, use the ``Add Other > Meshes`` menu to attach ``block.vtp`` to ground.
-* Rename it to ``ceiling_decoration``
+* Right-click in an empty space in the scene, use the ``Add Other > Meshes`` menu to open the mesh file import popup
+* In the popup, browse to OpenSim Creator's install directory, which contains a ``resources/geometry`` subdirectory
+* Select ``block.vtp`` from that directory. This is a pre-made block mesh file.
+* Rename  the block mesh to ``ceiling_decoration``
 * Move the mesh to the location of the highest pin joint (``pendulum_head_to_ground``)
 * Rescale the mesh so that it's displayed as a thin "ceiling" cuboid the pendulum hangs from, rather than a cube. To do this, use scale property in the mesh's context menu (right-click it) **or** the scaling gizmo (press ``S`` or change the manipulation dropdown at the top of the screen from ``translate`` to ``scale``). Recommended scale factors: ``(5.0, 0.1, 5.0)``.
+
+.. figure:: _static/tut3_after-adding-ceiling-mesh.png
+    :width: 60%
+
+    Mesh importer scene after adding ``ceiling_decoration``. It is red-tinted because it is attached to ground, rather than to a body (:download:`📥 download model <_static/tut3_after-adding-ceiling-mesh.osim>`).
+
 
 Attach a cube mesh to the top pendulum
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Right-click the body of the top pendulum (``pendulum_head``) and use the ``Add > Meshes`` to attach ``block.vtp`` to it.
+* Right-click the body of the top pendulum (``pendulum_head``) and use the ``Add > Meshes`` to open the mesh file import popup
+* Select the same (as above) ``block.vtp`` mesh file
 * Rename it to ``pendulum_head_decoration``
 * Move (``G``), Rotate (``R``), or Scale (``S``) the mesh however you like (recommended: leave it as-is) by either using the in-UI draggable gizmos or typing values into the context menu.
+
+.. figure:: _static/tut3_after-adding-top-pendulum-mesh.png
+    :width: 60%
+
+    Mesh importer scene after adding ``pendulum_head_decoration`` to ``pendulum_head`` (:download:`📥 download model <_static/tut3_after-adding-top-pendulum-mesh.osim>`).
+
 
 Attach a cube mesh to the bottom pendulum
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * As above, but right-click the bottom pendulum body (``pendulum_head_2``) and name it ``pendulum_head_2_decoration``.
 
+.. figure:: _static/tut3_after-adding-bottom-pendulum-mesh.png
+    :width: 60%
+
+    Mesh importer scene after adding ``pendulum_head_2_decoration`` to ``pendulum_head_2`` (:download:`📥 download model <_static/tut3_after-adding-bottom-pendulum-mesh.osim>`).
+
+
 Attach a cube mesh between the top pendulum and the ceiling (a strut)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* This mesh will act as a strut between the top pendulum and the ceiling. Therefore, it will move whenever the pendulum moves, so it should also be attached to the highest pendulum body (``pendulum_head``).
-* As in previous steps, you can attach it by right-clicking the pendulum body (``pendulum_head``). However, the pendulum body might now be occluded by the cube you added in the previous step. To work around this, you can:
+* This step adds another ``block.vtp`` mesh into the scene. This one will act as a strut between the top pendulum and the ceiling.
+* It will move whenever the pendulum moves, so it should also be attached to the highest pendulum body (``pendulum_head``).
+* As in previous steps, you can attach it by right-clicking the pendulum body (``pendulum_head``)  followed by ``Add > Meshes``.
+* However, the pendulum body might now be occluded by the cube you added in the previous step  (``pendulum_head_decoration``). To work around this, you can either:
 
-  * Right-click the body in the hierarchy viewer, which will show the same menu as right-clicking it in the 3D viewer.
+  * Right-click ``pendulum_head`` in the navigator panel, which will show the same menu as right-clicking it in the 3D viewer.
   * Temporarily make meshes invisible (in the ``Visibility`` menu).
   * Temporarily exclude meshes from being clickable (in the ``Interactivity`` menu).
   * Combine approaches by changing the color of the meshes to be semi-transparent (see ``Colors`` menu) and disable their interactivity.
   * Initially import the mesh by attaching it to ground, move it into place, ``Reassign Connection`` to the ``pendulum_head`` body.
   * The "best" approach depends on what kind of model you are working on.
 
-* Once the mesh is attached, move it between the ``pendulum_head`` and the pin joint that's acting as the base (``pendulum_head_to_ground``)
+* Once the mesh is attached, move it between the ``pendulum_head`` and ``pendulum_head_to_ground`` (right-click, ``Translate > Between Two Scene Elements`` or set translation to ``(0.0, 0.625. 0.0)``.
 * Rename it to ``pendulum_head_strut_decoration``
 * Rescale (``S``) it to make a long, thin, pendulum strut (recommended: ``(0.2, 2.5, 0.2``)).
+
+.. figure:: _static/tut3_after-adding-top-strut-mesh.png
+    :width: 60%
+
+    Mesh importer scene after adding ``pendulum_head_strut_decoration`` between ``pendulum_head`` and ``pendulum_head_to_ground`` (:download:`📥 download model <_static/tut3_after-adding-top-strut-mesh.osim>`).
+
 
 Attach a cube mesh between the bottom and top pendulums
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -186,7 +216,7 @@ Now that we have created a fully modelled and decorated pendulum, we can export 
 
 * **Convert the model to an osim**. Click the ``Convert to OpenSim Model`` button in the mesh importer.
 * **Tilt a pendulum head slightly**. Use the ``coordinates`` panel to change one of the joint's rotational ``value``, so that the pendulum is tilted slightly.
-* **Request a pendulum head's velocity is plotted**. Right-click a pendulum head in the 3D viewer, go to ``Request outputs > pendulum_head > linear velocity`` and click ``magnitude``.
+* **Request a pendulum head's velocity is plotted**. Right-click a pendulum head in the 3D viewer, go to ``Watch Output > pendulum_head > linear velocity`` and click ``magnitude``.
 * **Simulate the model**. Press ``Ctrl+R`` (run simulation) to start running a forward-dynamic simulation. This should show the pendulum swinging.
 * **View outputs**. Ensure the ``Outputs`` panel is showing (``Window > Outputs`` should be enabled). The requested output (magnitude of ``linear velocity``) should show a basic data plot of a pendulum head's linear velocity.
 
