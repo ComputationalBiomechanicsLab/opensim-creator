@@ -43,8 +43,8 @@
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
+#include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 
 #include <algorithm>
 #include <chrono>
@@ -1079,7 +1079,7 @@ osc::BodyDetails::BodyDetails() :
     Mass{1.0f},
     ParentFrameAbsPath{},
     BodyName{"new_body"},
-    JointTypeIndex{static_cast<int>(osc::JointRegistry::indexOf<OpenSim::FreeJoint>().value_or(0))},
+    JointTypeIndex{static_cast<int>(osc::JointRegistry::indexOf<OpenSim::WeldJoint>().value_or(0))},
     JointName{},
     MaybeGeometry{nullptr},
     AddOffsetFrames{true}
