@@ -21,7 +21,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>5 0.10000000149011612 5</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\opensim-creator\resources\geometry\block.vtp</mesh_file>
+							<mesh_file>block.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
