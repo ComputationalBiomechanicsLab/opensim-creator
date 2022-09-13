@@ -264,6 +264,8 @@ All notable changes to this project will be documented here. The format is based
 - The UI is now more resilient to exceptions. It will now try to show them inside the UI as
   an error tab, rather than completely crashing the application (#440)
 
+- All documentation was updated to reflect the latest UI changes (#452)
+
 
 ## [0.2.0] - 2022/07/04
 
