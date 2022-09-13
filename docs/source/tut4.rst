@@ -13,6 +13,9 @@ In this tutorial, we will be using OpenSim Creator to create a basic human hand 
 
 This tutorial will use the **mesh importer** to import mesh files that represent an arm, followed by using the mesh importer to assign the meshes to custom-placed **bodies** and **joints**. Once those are placed, the tutorial then introduces using **stations** to mark "points of interest" that can be used in the ``osim`` editor to define **muscle paths**.
 
+Prerequisites
+-------------
+
 This is a harder tutorial that builds on top of several techniques that were demonstrated in previous tutorials:
 
 * :ref:`tut1`: Adding components into an osim, editing component values
@@ -61,15 +64,26 @@ The next step is to place bodies in the model. As described previous tutorials, 
 
     Change the mesh importer's ``scene scale factor`` to **0.1** for this, which is smaller than the default (1.0). The scale factor has no effect on the model, but makes it easier to place bodies/joints in smaller meshes.
 
+    .. figure:: _static/tut4_set-scalefactor-hint.png
+        :width: 60%
+
+        Adjust the scene scale factor to **0.1**.
+
 To keep things short, we will initially only assign bodies to the model's index finger. To do that:
 
 * For each of the four bone meshes in the index finger (``arm_r_2distph``, ``arm_r_2midph``, ``arm_r_2proxph``, and ``arm_r_2mc``):
   
-  * Right-click the mesh then navigate to ``Add > Body`` and click ``At Bounds Center`` to add a mesh at the center of the mesh's bounds. Alternatively, hover the mesh and press the ``B`` (add body) hotkey, which does the same thing.
+  * Right-click the mesh then navigate to ``Add > Body`` and click ``At Bounds Center`` to add a mesh at the center of the mesh's bounds. Alternatively, hover the mesh and press the ``B`` (add body) hotkey, which places a body where the mouse is currently hovered.
   * Right-click the added body, rename it to the mesh name followed by ``_b`` (to indicate body). E.g. ``arm_r_2distph_b``
 
 * As a simplification, only add one body to the mesh in the middle of the wrist. For example, add one to ``arm_r_capitate`` and call it ``arm_r_wrist_b`` (because it will act as a body for all wrist bones).
 * As a simplification, only add one body to the arm and move it between the arm mesh bones. For example, add one to ``arm_r_radius`` and call it ``arm_r_b`` (because it will act as the body for both the ``radius`` and ``ulna``).
+
+.. note::
+
+    Sage tip 🧙: when you're having problems seeing/clicking things, try changing your visualization options.
+
+    The mesh importer has options for changing the ``colors``, ``visibility``, and ``interactivity`` of various scene elements (e.g. meshes). These options can be **very** useful when working on complicated models, like this one, because your scene may end up containing a lot of overlapping geometry (e.g. bodies embedded inside meshes).
 
 This will yield a model with all the meshes imported and **six** bodies added into the scene. In my case, the six bodies were called:
 
@@ -91,17 +105,13 @@ The model should look something like this:
 Assign Unassigned Meshes to Appropriate Bodies
 ----------------------------------------------
 
-We also need to assign the appropriate meshes to each body. When we imported the meshes, they were imported as **unassigned** (i.e. attached to ground). Unassigned meshes are slightly red-tinted compared to assigned meshes.
+We also need to assign the unassigned meshes to each body.
 
-.. note::
-
-    Sage tip 🧙: when you're having problems seeing/clicking things, try changing your visualization options.
-
-    The mesh importer has options for changing the ``colors``, ``visibility``, and ``interactivity`` of various scene elements (e.g. meshes). These options can be **very** useful when working on complicated models, like this one, because your scene may end up containing a lot of overlapping geometry (e.g. bodies embedded inside meshes).
+When we imported the meshes, they were imported as **unassigned** (i.e. attached to ground). Unassigned meshes are slightly red-tinted compared to assigned meshes.
 
 For this model, we will assign the finger, wrist, and arm meshes to the appropriate bodies. The other finger meshes are attached to the wrist body so that they move whenever the wrist moves - even though they haven't had all of their bodies/joints assigned yet.
 
-To assign assign a mesh, right-click the mesh, click ``reassign connection > parent``, then click the body the mesh should be attached to. Alternatively, you can hover over the mesh and press ``A`` (assign). You need to assign the following meshes:
+To (re)assign a mesh, right-click the mesh, click ``reassign connection > parent``, then click the body the mesh should be attached to. Alternatively, you can hover over the mesh and press ``A`` (assign). You need to assign the following meshes:
 
 * Attach all wrist bone meshes to the wrist body (``arm_r_wrist_b``)
 * Attach the unassigned ulna arm bone mesh (``arm_r_ulna``) to the arm body (``arm_r_b``)
@@ -112,7 +122,7 @@ This should result in most of the model being assigned. I have skipped assigning
 .. figure:: _static/tut4_after-assigning-meshes-to-bodies.png
    :width: 60%
 
-   The scene after assigning the bone meshes to the corresponding bodies. Here, I have left the other finger meshes unassigned, but you can (optionally) assign them to the wrist body (``arm_r_wrist_b``) if you'd like them to track along with the wrist. :download:`📥 download model <_static/tut4_after-assigning-meshes-to-bodies.osim>`
+   The scene after assigning the bone meshes to the corresponding bodies. Here, the other finger meshes are left unassigned. You can (optionally) assign them to the wrist body (``arm_r_wrist_b``) if you would like them to track along with the wrist. :download:`📥 download model <_static/tut4_after-assigning-meshes-to-bodies.osim>`
 
 
 Add Joints Between the Bodies
@@ -126,8 +136,8 @@ To add pin joints between each body:
 
 * Right-click the body at the end of the finger (e.g. ``arm_r_2distph_b``) and click ``Join To``. Alternatively, hover over the body/mesh and press ``J`` (join to).
 * Select the body it should attach to (e.g. ``arm_r_2midph_b``), this will create a ``WeldJoint`` joint center between the two bodies.
-* Right-click the joint center and change its joint type to a ``PinJoint``.
-* Right-click the joint center and change its name to something that describes the connection (e.g. ``arm_r_2distph_to_2midph``)
+* Right-click the joint center and change its joint type to a ``PinJoint``. Alternatively, you can right-click the joint in the navigator panel.
+* Right-click the joint center and change its name to something that describes the connection (e.g. ``arm_r_2distph_to_2midph``).
 * Move the joint center to where it should be (i.e. between the bones). The ``Translate > between two mesh points`` menu can be handy here.
 * Rotate the joint center such that :red:`X` is oriented toward the parent (here: ``arm_r_2midph_b``) and :blue:`Z` is where the "pin" should be. The ``Reorient > X > towards`` menu is handy for this, follow it up by rotating (``R``) along the ``local`` X axis to position ``Z``.
 
@@ -176,7 +186,7 @@ Now that we've added bodies, meshes, and joints, the next step is to think about
 
 Although the mesh importer doesn't directly support defining muscles, it does support placing **stations** in the scene. A **station** is some location in the scene that is attached to something else (typically, a body). When the scene is converted into an ``osim``, the station will be attached to the appropriate exported object and expressed in OpenSim's **relative** coordinate system.
 
-The utility of adding stations is that they're relatively easy to (re)attach, and move around while working in the mesh importer. Once exported, the exported (``OpenSim``) stations can later be used to easily define a **muscle path**. Usually, defining a muscle path is challenging because it requires figuring out the relative coordinates of each muscle-path-point within each frame. However, stations already cover the point-within-a-frame part of that definition, leaving you to focus on connecting them to create paths.
+The utility of adding stations is that they're relatively easy to (re)attach, and move around, while working in the mesh importer. Once exported, the exported (``OpenSim``) stations can later be used to easily define a **muscle path**. Usually, defining a muscle path is challenging because it requires figuring out the relative coordinates of each muscle-path-point within each frame. However, stations already cover the point-within-a-frame part of that definition, leaving you to focus on connecting them to create paths.
 
 To add stations into the model:
 
@@ -219,7 +229,7 @@ To convert and check the model:
 * Press the ``Convert to OpenSim model`` button:
 
   * This imports the mesh importer scene into the ``osim`` editor
-  * Your progress in the mesh importer is not lost, if you reopen the mesh importer you should still be able to see your scene as it was before converting it
+  * Your progress in the mesh importer is not lost, if you reopen the mesh importer tab you should still be able to see your scene as it was before converting it
 
 * Experiment with changing model coordinates:
 
@@ -247,9 +257,10 @@ Now that we have an actual ``OpenSim`` model (``osim``), we can add any OpenSim 
 
 To add muscles between the **stations** we added in previous steps:
 
-* In the ``osim`` editor, click ``add force/muscle`` and add a ``Millard2012EquilibriumMuscle``
-
-* In the ``Add Force`` dialog that pops up, choose path points between the stations we previously defined, e.g.:
+* Make sure you have an ``osim`` editor window open (e.g. by exporing the model from the mesh importer)
+* Open the ``Add`` menu from the main menu, or by right-clicking an empty part of the 3D scene
+* Open the ``Force`` submenu and click ``Millard2012EquilibriumMuscle``
+* In popup, choose path points between the stations we previously defined, e.g.:
 
   * Add ``arm_r_2midph_origin`` as the first path point and ``arm_r_2distph_insertion`` as the second path point to create a muscle between the two
   * Click ``Add`` to add the muscle into the model

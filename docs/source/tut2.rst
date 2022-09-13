@@ -12,9 +12,12 @@ In this tutorial, we will be making a bouncing block using OpenSim Creator:
 
 In :ref:`tut1`, we created a pendulum: one of the most basic physical systems that can be modelled. This tutorial reinforces concepts from that tutorial by building a slightly more complex model that contains **collisions**, **forces**, and **constraints**. This tutorial builds the model *incrementally* (i.e. from the ground up), so that we can explore each model-making decision one step at a time.
 
-.. warning::
+Prerequisites
+-------------
 
-    This tutorial also assumes that you have already completed :ref:`tut1`. Because of that, the content here will skip over some steps. If you feel lost at any point, there should be partial solutions available along the way. Keep an eye out for the :download:`📥 download model <_static/tut2_constraints-added.osim>` links.
+This tutorial assumes that you have already completed :ref:`tut1`. Because of that, the content here will skip over some steps.
+
+If you feel lost at any point, there should be partial solutions available along the way. Keep an eye out for the :download:`📥 download model <_static/tut2_constraints-added.osim>` links.
 
 
 Topics Covered by this Tutorial

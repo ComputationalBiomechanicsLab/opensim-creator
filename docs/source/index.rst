@@ -16,6 +16,7 @@ and introduction tutorials.
     This documentation is kept in the project repository `here <https://github.com/ComputationalBiomechanicsLab/opensim-creator/tree/main/docs>`_ so, if you know
     what you're doing, you can also try to submit a PR.
 
+.. _gettingstarted:
 
 Getting Started
 ---------------

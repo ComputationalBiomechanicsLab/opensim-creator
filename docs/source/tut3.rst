@@ -14,6 +14,9 @@ The mesh importer is "looser" than the main ``osim`` editor. This can make placi
 
 Although the **model** we will make in this tutorial is effectively an extension of :ref:`tut1`, the **approach** used is different. Here, we will be using the mesh importer feature of OpenSim Creator to create the model, rather than building the model directly in the OpenSim model (``.osim``) editor.
 
+Prerequisites
+-------------
+
 This tutorial assumes the reader knows a little bit more about OpenSim, bodies, joints, etc. Because of that, each step here will require more--but hopefully, by now, familiar--actions. You're getting faster ⚡!
 
 

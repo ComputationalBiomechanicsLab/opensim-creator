@@ -12,6 +12,10 @@ In this first tutorial, we will be making a conventional pendulum using OpenSim 
 
 OpenSim is based on `Simbody`_, a physics library for science- and engineering-quality simulations of articulated mechanisms. This means that OpenSim Creator can be used to simulate things like pendulums, robots, and biomechanical systems. This tutorial focuses on creating a pendulum--one of the simplest physical systems--because it introduces core concepts that are common to all kinds of models.
 
+Prerequisites
+-------------
+
+This is a beginner-level introduction. The only thing you need to ensure is that you have followed the :ref:`gettingstarted` steps.
 
 Topics Covered by this Tutorial
 -------------------------------
