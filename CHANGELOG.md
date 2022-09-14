@@ -5,6 +5,56 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+
+## [0.3.0] - 2022/09/14
+
+Live muscle plotting, output watching, better+faster graphics, and many other bugfixes/improvements.
+
+### Summary
+
+This is a general summary that contains *some* of the changes in 0.3.0. Read the "Raw Changelist" for an unsorted list
+of all of the changes.
+
+- NEW: "Muscle Plotting" (right-click a muscle, "Plot vs. Coordinate") is now greatly improved. It live-plots a muscle
+  curve whenever edits are made, saves previous curves, enables users to lock previous curves, and revert to previous
+  model versions, along with support for CSV import/export (#352 #346 #354 #355 #353 #365 #364 #363 #366 #362 #361
+  #367 #359 #370 #368 #371 #230 #231 #394 #409 #398 #395).
+
+- NEW: "Output Watches" panel in the editor. You can now right-click anything in the 3D editor, hierarchy, etc.
+  and watch any associated OpenSim output of that thing (e.g. muscle stiffness, model kinetic energy, etc.).
+  Editing the model automatically updates the output watch's value (#356).
+
+- The 3D rendering backend was entirely rewritten. In general, 3D renders should look better, and have better
+  performance. Please report any funky behavior/crashes to the GitHub issues page.
+
+- The backend was upgraded from OpenSim 4.3 to OpenSim 4.4. In general, it is a little bit faster and is more
+  stable in multithreaded contexts (#330)
+
+- You can now show/hide model components more easily in the editor. The behavior is similar to OpenSim GUI (#415).
+
+- The mesh importer has more translation options (e.g. "translate to mass center", #88, #92).
+
+- There is now basic support for exporting any 3D viewport's content to a `.dae` file, for rendering the scene in external
+  software, such as Blender (#314)
+
+- The new rendererer is more resillient to meshes that that have inconsistent triangle windings or normals (#318)
+
+- The mouse is handled more consistently in the editor screen's panels. Left-click usually selects stuff. Right-click
+  usually opens a context menu.
+
+- Some (effectively) "crash the UI" buttons have been temporarily removed until the backend can handle the
+  edge-cases better (#329 #331). This also applies to the mesh importer (#331)
+
+- The "Add Component" menus in the editor have been put into the main menu and right-click context menu. They
+  are now cleaner and contain fewer duplicated entries (#312)
+
+- You can now visualize ScapulothoracicJoints by ticking a checkbox in a 3D viewport's "scene" menu (#334)
+
+- Plus a bunch of other UX improvements, stability improvements, crash hardening, etc. changes (see CHANGELOG.md)
+
+
+### Raw Changelist
+
 - There is now basic support for exporting any 3D viewport's content to a `.dae` file (#314)
 
   - It's in the "Scene" menu of each 3D viewport in the editor/simulator
