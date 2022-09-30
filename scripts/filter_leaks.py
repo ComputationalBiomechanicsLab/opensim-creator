@@ -27,6 +27,13 @@ blacklist = [
     # with more complicated models:
     "OpenSim::CoordinateReference::CoordinateReference(OpenSim::CoordinateReference const&)",  # OpenSim/Simulation/CoordinateReference.cpp
     "OpenSim::AssemblySolver::updateCoordinateReference(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, double, double)",  # OpenSim/Simulation/AssemblySolver.cpp:157
+
+    # with models containing OpenSim::Controller, which have a leak:
+    #
+    # https://github.com/opensim-org/opensim-core/pull/3247
+    "OpenSim::Controller",
+    "OpenSim::Set<OpenSim::Actuator const, OpenSim::Object>",
+    "OpenSim::ArrayPtrs<OpenSim::Actuator const>",
 ]
 
 pattern = re.compile("leak of (\\d+) byte")
