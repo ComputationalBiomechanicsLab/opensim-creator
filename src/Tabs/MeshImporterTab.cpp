@@ -1565,7 +1565,7 @@ namespace
             std::string name) :
             ID{std::move(id)},
             Attachment{std::move(attachment)},
-            Position{std::move(position)},
+            Position{position},
             Name{SanitizeToOpenSimComponentName(name)}
         {
         }
@@ -4879,6 +4879,7 @@ namespace
                 }
 
                 osc::RayCollision const rc = osc::GetClosestWorldspaceRayCollision(*drawable.mesh, drawable.transform, ray);
+
                 if (rc.hit && rc.distance < closestDist)
                 {
                     closestID = drawable.id;
