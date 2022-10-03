@@ -653,6 +653,7 @@ target_link_options(osccore PUBLIC
 add_executable(testosc EXCLUDE_FROM_ALL
 
     tests/TestAlgorithms.cpp
+    tests/TestBVH.cpp
     tests/TestCSV.cpp
     tests/TestDedupedString.cpp
     tests/TestForwardDynamicSimulation.cpp

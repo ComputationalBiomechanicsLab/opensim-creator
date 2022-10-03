@@ -12,7 +12,7 @@
 #include <iterator>
 #include <limits>
 #include <memory>
-#include <cstddef>
+#include <stack>
 
 // recursively build the BVH
 static void BVH_RecursiveBuild(osc::BVH& bvh, int begin, int n)
@@ -384,4 +384,43 @@ bool osc::BVH_GetRayAABBCollisions(
     }
 
     return BVH_GetRayAABBCollisionsRecursive(bvh, ray, 0, *appendTo);
+}
+
+int32_t osc::BVH_GetMaxDepth(BVH const& bvh)
+{
+    int32_t cur = 0;
+    int32_t maxdepth = 0;
+    std::stack<int32_t, std::vector<int32_t>> stack;
+
+    while (0 <= cur && cur < bvh.nodes.size())
+    {
+        if (bvh.nodes[cur].nlhs < 0)
+        {
+            // leaf node: compute its depth and continue traversal (if applicable)
+
+            maxdepth = std::max(maxdepth, static_cast<int32_t>(stack.size()) + 1);
+
+            if (stack.empty())
+            {
+                break;  // nowhere to traverse to: exit
+            }
+            else
+            {
+                // traverse up to a parent node and try the right-hand side
+                int32_t const next = stack.top();
+                stack.pop();
+                cur = next + bvh.nodes[next].nlhs + 1;
+            }
+        }
+        else
+        {
+            // internal node: push into the (right-hand) history stack and then
+            //                traverse to the left-hand side
+
+            stack.push(cur);
+            cur += 1;
+        }
+    }
+
+    return maxdepth;
 }

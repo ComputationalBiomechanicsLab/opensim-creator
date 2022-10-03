@@ -65,4 +65,7 @@ namespace osc
     //
     // returns true if at least one collision was found and appended to the output
     bool BVH_GetRayAABBCollisions(BVH const&, Line const&, std::vector<BVHCollision>* appendTo);
+
+    // returns the maximum depth of the given BVH tree
+    int32_t BVH_GetMaxDepth(BVH const&);
 }
