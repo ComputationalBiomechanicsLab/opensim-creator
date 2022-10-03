@@ -51,4 +51,16 @@ namespace osc
 
     // returns closest ray-triangle collision in worldspace
     RayCollision GetClosestWorldspaceRayCollision(Mesh const&, Transform const&, Line const& worldspaceRay);
+
+    // returns the "mass center" of a mesh
+    //
+    // assumes:
+    //
+    // - the mesh volume has a constant density
+    // - the mesh is entirely enclosed
+    // - all mesh normals are correct
+    glm::vec3 MassCenter(Mesh const&);
+
+    // returns the average centerpoint of all vertices in a mesh
+    glm::vec3 AverageCenterpoint(Mesh const&);
 }

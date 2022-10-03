@@ -53,6 +53,58 @@ namespace
 
         out.emplace_back(grid, t, color);
     }
+
+
+    struct Tetrahedron final {
+
+        glm::vec3 Verts[4];
+
+        glm::vec3 const& operator[](size_t i) const
+        {
+            return Verts[i];
+        }
+        glm::vec3& operator[](size_t i)
+        {
+            return Verts[i];
+        }
+        constexpr size_t size() const
+        {
+            return 4;
+        }
+    };
+
+    // returns the volume of a given tetrahedron, defined as 4 points in space
+    double Volume(Tetrahedron const& t)
+    {
+        // sources:
+        //
+        // http://forums.cgsociety.org/t/how-to-calculate-center-of-mass-for-triangular-mesh/1309966
+        // https://stackoverflow.com/questions/9866452/calculate-volume-of-any-tetrahedron-given-4-points
+
+        glm::mat<4, 4, double> m
+        {
+            glm::vec<4, double>{t[0], 1.0},
+            glm::vec<4, double>{t[1], 1.0},
+            glm::vec<4, double>{t[2], 1.0},
+            glm::vec<4, double>{t[3], 1.0},
+        };
+
+        return glm::determinant(m) / 6.0;
+    }
+
+    // returns spatial centerpoint of a given tetrahedron
+    glm::vec<3, double> Center(Tetrahedron const& t)
+    {
+        // arithmetic mean of tetrahedron vertices
+
+        glm::vec<3, double> acc = t[0];
+        for (size_t i = 1; i < t.size(); ++i)
+        {
+            acc += t[i];
+        }
+        acc /= static_cast<double>(t.size());
+        return acc;
+    }
 }
 
 void osc::DrawBVH(BVH const& sceneBVH, std::vector<SceneDecoration>& out)
@@ -196,4 +248,63 @@ osc::RayCollision osc::GetClosestWorldspaceRayCollision(Mesh const& mesh, Transf
     }
 
     return rv;
+}
+
+glm::vec3 osc::MassCenter(Mesh const& m)
+{
+    // hastily implemented from: http://forums.cgsociety.org/t/how-to-calculate-center-of-mass-for-triangular-mesh/1309966
+    //
+    // effectively:
+    //
+    // - compute the centerpoint and volume of tetrahedrons created from
+    //   some arbitrary point in space to each triangle in the mesh
+    //
+    // - compute the weighted sum: sum(volume * center) / sum(volume)
+    //
+    // this yields a 3D location that is a "mass center", *but* the volume
+    // calculation is signed based on vertex winding (normal), so if the user
+    // submits an invalid mesh, this calculation could potentially produce a
+    // volume that's *way* off
+
+    if (m.getTopography() != osc::MeshTopography::Triangles)
+    {
+        return {0.0f, 0.0f, 0.0f};
+    }
+
+    nonstd::span<glm::vec3 const> const verts = m.getVerts();
+    std::vector<uint32_t> const indices = m.getIndices();
+    size_t const len = (indices.size() / 3) * 3;  // paranioa
+
+    double totalVolume = 0.0f;
+    glm::vec<3, double> weightedCenterOfMass = {0.0, 0.0, 0.0};
+    for (size_t i = 0; i < len; i += 3)
+    {
+        Tetrahedron tetrahedron;
+        tetrahedron[0] = {0.0f, 0.0f, 0.0f};  // reference point
+        tetrahedron[1] = verts[indices[i]];
+        tetrahedron[2] = verts[indices[i+1]];
+        tetrahedron[3] = verts[indices[i+2]];
+
+        double const volume = Volume(tetrahedron);
+        glm::vec<3, double> const centerOfMass = Center(tetrahedron);
+
+        totalVolume += volume;
+        weightedCenterOfMass += volume * centerOfMass;
+    }
+    return weightedCenterOfMass / totalVolume;
+}
+
+glm::vec3 osc::AverageCenterpoint(Mesh const& m)
+{
+    std::vector<uint32_t> indices = m.getIndices();
+    nonstd::span<glm::vec3 const> const verts = m.getVerts();
+
+    glm::vec3 acc = {0.0f, 0.0f, 0.0f};
+    for (uint32_t index : indices)
+    {
+        acc += verts[index];
+    }
+    acc /= static_cast<float>(verts.size());
+
+    return acc;
 }

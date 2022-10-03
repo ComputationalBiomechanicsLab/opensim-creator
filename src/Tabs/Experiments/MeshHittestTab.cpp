@@ -4,9 +4,11 @@
 #include "src/Bindings/SimTKHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
 #include "src/Graphics/Graphics.hpp"
+#include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshGen.hpp"
+#include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/Shader.hpp"
 #include "src/Maths/BVH.hpp"
 #include "src/Maths/Geometry.hpp"
@@ -26,44 +28,12 @@
 #include <string>
 #include <utility>
 
-namespace
-{
-    void DrawBVHRecursive(osc::BVH const& bvh, osc::Mesh const& cubeLinesMesh, osc::Material const& material, osc::Camera& camera, int pos)
-    {
-        osc::BVHNode const& n = bvh.nodes[pos];
-        glm::vec3 const halfWidths = 0.5f * osc::Dimensions(n.bounds);
-        glm::vec3 const midpoint = osc::Midpoint(n.bounds);
-
-        osc::Transform t;
-        t.scale *= halfWidths;
-        t.position = midpoint;
-
-        osc::Graphics::DrawMesh(cubeLinesMesh, t, material, camera);
-
-        if (n.nlhs >= 0)
-        {
-            DrawBVHRecursive(bvh, cubeLinesMesh, material, camera, pos + 1);
-            DrawBVHRecursive(bvh, cubeLinesMesh, material, camera, pos + n.nlhs + 1);
-        }
-    }
-
-    void DrawBVH(osc::BVH const& bvh, osc::Mesh const& cubeLinesMesh, osc::Material const& material, osc::Camera& camera)
-    {
-        if (bvh.nodes.empty())
-        {
-            return;
-        }
-        DrawBVHRecursive(bvh, cubeLinesMesh, material, camera, 0);
-    }
-}
-
 class osc::MeshHittestTab::Impl final {
 public:
 
     Impl(TabHost* parent) : m_Parent{std::move(parent)}
     {
         m_Camera.setBackgroundColor({1.0f, 1.0f, 1.0f, 1.0f});
-        BVH_BuildFromIndexedTriangles(m_BVH, m_Mesh.getVerts(), m_Mesh.getIndices());
     }
 
     UID getID() const
@@ -110,7 +80,7 @@ public:
             if (m_UseBVH)
             {
                 BVHCollision collision;
-                if (BVH_GetClosestRayIndexedTriangleCollision(m_BVH, m_Mesh.getVerts(), m_Mesh.getIndices(), m_Ray, &collision))
+                if (BVH_GetClosestRayIndexedTriangleCollision(m_Mesh.getBVH(), m_Mesh.getVerts(), m_Mesh.getIndices(), m_Ray, &collision))
                 {
                     uint16_t index = m_Mesh.getIndices()[collision.primId];
                     m_IsMousedOver = true;
@@ -187,7 +157,12 @@ public:
             // draw BVH AABBs
             m_Material.setVec4("uColor", {0.0f, 0.0f, 0.0f, 1.0f});
             m_Material.setDepthTested(true);
-            DrawBVH(m_BVH, m_CubeLinesMesh, m_Material, m_Camera);
+            std::vector<osc::SceneDecoration> decs;
+            osc::DrawBVH(m_Mesh.getBVH(), decs);
+            for (osc::SceneDecoration const& dec : decs)
+            {
+                osc::Graphics::DrawMesh(m_CubeLinesMesh, dec.transform, m_Material, m_Camera);
+            }
         }
 
         // draw scene onto viewport
@@ -238,7 +213,6 @@ private:
     Mesh m_CubeLinesMesh = GenCubeLines();
 
     // other state
-    BVH m_BVH;
     bool m_UseBVH = false;
     glm::vec3 m_Tris[3]{};
     std::chrono::microseconds m_RaycastDuration{0};
