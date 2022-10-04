@@ -1,6 +1,24 @@
+#include "src/Graphics/Camera.hpp"
+#include "src/Graphics/CameraClearFlags.hpp"
+#include "src/Graphics/CameraProjection.hpp"
 #include "src/Graphics/Color.hpp"
+#include "src/Graphics/DepthStencilFormat.hpp"
+#include "src/Graphics/Graphics.hpp"
+#include "src/Graphics/GraphicsContext.hpp"
+#include "src/Graphics/Material.hpp"
+#include "src/Graphics/MaterialPropertyBlock.hpp"
+#include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshGen.hpp"
-#include "src/Graphics/GraphicsLazyMode.hpp"
+#include "src/Graphics/MeshTopography.hpp"
+#include "src/Graphics/RenderTexture.hpp"
+#include "src/Graphics/RenderTextureDescriptor.hpp"
+#include "src/Graphics/RenderTextureFormat.hpp"
+#include "src/Graphics/Texture2D.hpp"
+#include "src/Graphics/TextureWrapMode.hpp"
+#include "src/Graphics/TextureFilterMode.hpp"
+#include "src/Graphics/Shader.hpp"
+#include "src/Graphics/ShaderType.hpp"
+
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/BVH.hpp"
 #include "src/Maths/Geometry.hpp"
@@ -2539,6 +2557,7 @@ TEST_F(Renderer, CameraSetClearFlagsCausesCopyToReturnNonEqual)
 // TODO Mesh::getIndices
 // TODO Mesh::setIndices U16
 // TODO Mesh::setIndices U32
+// TODO Mesh::setIndices MeshIndicesView
 // TODO Mesh ensure > 2^16 indices are allowed
 // TODO Mesh::clear
 // 

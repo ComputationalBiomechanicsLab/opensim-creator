@@ -1,6 +1,5 @@
 #pragma once
 
-#include "src/Graphics/Color.hpp"
 #include "src/Graphics/ImageFlags.hpp"
 #include "src/Graphics/TextureFilterMode.hpp"
 #include "src/Graphics/TextureWrapMode.hpp"

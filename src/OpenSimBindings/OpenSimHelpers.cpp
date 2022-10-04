@@ -1580,3 +1580,11 @@ bool osc::TrySetAppearancePropertyIsVisibleTo(OpenSim::Component& c, bool v)
     maybeAppearance->updValue().set_visible(v);
     return true;
 }
+
+glm::vec4 osc::GetSuggestedBoneColor() noexcept
+{
+    glm::vec4 usualDefault = {232.0f / 255.0f, 216.0f / 255.0f, 200.0f/255.0f, 1.0f};
+    glm::vec4 white = {1.0f, 1.0f, 1.0f, 1.0f};
+    float brightenAmount = 0.1f;
+    return glm::mix(usualDefault, white, brightenAmount);
+}

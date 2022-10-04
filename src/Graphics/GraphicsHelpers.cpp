@@ -43,7 +43,7 @@ namespace
 
     void DrawGrid(glm::quat const& rotation, std::vector<osc::SceneDecoration>& out)
     {
-        std::shared_ptr<osc::Mesh const> grid = osc::App::meshes().get100x100GridMesh();
+        std::shared_ptr<osc::Mesh const> const grid = osc::App::meshes().get100x100GridMesh();
 
         osc::Transform t;
         t.scale *= glm::vec3{50.0f, 50.0f, 1.0f};
@@ -63,10 +63,12 @@ namespace
         {
             return Verts[i];
         }
+
         glm::vec3& operator[](size_t i)
         {
             return Verts[i];
         }
+
         constexpr size_t size() const
         {
             return 4;
@@ -81,7 +83,7 @@ namespace
         // http://forums.cgsociety.org/t/how-to-calculate-center-of-mass-for-triangular-mesh/1309966
         // https://stackoverflow.com/questions/9866452/calculate-volume-of-any-tetrahedron-given-4-points
 
-        glm::mat<4, 4, double> m
+        glm::mat<4, 4, double> const m
         {
             glm::vec<4, double>{t[0], 1.0},
             glm::vec<4, double>{t[1], 1.0},
@@ -114,14 +116,14 @@ void osc::DrawBVH(BVH const& sceneBVH, std::vector<SceneDecoration>& out)
         return;
     }
 
-    std::shared_ptr<Mesh const> cube = App::meshes().getCubeWireMesh();
+    std::shared_ptr<Mesh const> const cube = App::meshes().getCubeWireMesh();
     DrawBVHRecursive(cube, sceneBVH, 0, out);
 }
 
 void osc::DrawAABB(AABB const& aabb, std::vector<SceneDecoration>& out)
 {
-    std::shared_ptr<Mesh const> cube = App::meshes().getCubeWireMesh();
-    glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
+    std::shared_ptr<Mesh const> const cube = App::meshes().getCubeWireMesh();
+    glm::vec4 const color = {0.0f, 0.0f, 0.0f, 1.0f};
 
     Transform t;
     t.scale = 0.5f * Dimensions(aabb);
@@ -132,8 +134,8 @@ void osc::DrawAABB(AABB const& aabb, std::vector<SceneDecoration>& out)
 
 void osc::DrawAABBs(nonstd::span<AABB const> aabbs, std::vector<SceneDecoration>& out)
 {
-    std::shared_ptr<Mesh const> cube = App::meshes().getCubeWireMesh();
-    glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
+    std::shared_ptr<Mesh const> const cube = App::meshes().getCubeWireMesh();
+    glm::vec4 const color = {0.0f, 0.0f, 0.0f, 1.0f};
 
     for (AABB const& aabb : aabbs)
     {
@@ -147,7 +149,7 @@ void osc::DrawAABBs(nonstd::span<AABB const> aabbs, std::vector<SceneDecoration>
 
 void osc::DrawXZFloorLines(std::vector<SceneDecoration>& out)
 {
-    std::shared_ptr<Mesh const> yLine = App::meshes().getYLineMesh();
+    std::shared_ptr<Mesh const> const yLine = App::meshes().getYLineMesh();
 
     // X line
     {
@@ -298,7 +300,7 @@ glm::vec3 osc::MassCenter(Mesh const& m)
 
 glm::vec3 osc::AverageCenterpoint(Mesh const& m)
 {
-    MeshIndicesView indices = m.getIndices();
+    MeshIndicesView const indices = m.getIndices();
     nonstd::span<glm::vec3 const> const verts = m.getVerts();
 
     glm::vec3 acc = {0.0f, 0.0f, 0.0f};

@@ -1,11 +1,11 @@
 #pragma once
 
+#include "src/Graphics/SceneCollision.hpp"
 #include "src/Maths/RayCollision.hpp"
 
 #include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 
-#include <cstddef>
 #include <vector>
 
 namespace osc { struct AABB; }
@@ -28,20 +28,6 @@ namespace osc
     // updates the given BVH with the given component decorations
     void UpdateSceneBVH(nonstd::span<SceneDecoration const>, BVH& bvh);
 
-    // describes a collision between a ray and a decoration in the scene
-    struct SceneCollision final {
-        glm::vec3 worldspaceLocation;
-        size_t decorationIndex;
-        float distanceFromRayOrigin;
-
-        SceneCollision(glm::vec3 const& worldspaceLocation_, size_t decorationIndex_, float distanceFromRayOrigin_) :
-            worldspaceLocation{worldspaceLocation_},
-            decorationIndex{decorationIndex_},
-            distanceFromRayOrigin{distanceFromRayOrigin_}
-        {
-        }
-    };
-
     // returns all collisions along a ray
     std::vector<SceneCollision> GetAllSceneCollisions(
         BVH const& sceneBVH,
@@ -50,7 +36,11 @@ namespace osc
     );
 
     // returns closest ray-triangle collision in worldspace
-    RayCollision GetClosestWorldspaceRayCollision(Mesh const&, Transform const&, Line const& worldspaceRay);
+    RayCollision GetClosestWorldspaceRayCollision(
+        Mesh const&,
+        Transform const&,
+        Line const& worldspaceRay
+    );
 
     // returns the "mass center" of a mesh
     //

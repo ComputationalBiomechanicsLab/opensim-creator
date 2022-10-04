@@ -11,6 +11,7 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
+#include <cstdint>
 #include <iosfwd>
 #include <memory>
 #include <optional>
@@ -68,9 +69,8 @@ namespace osc
         Rect getPixelRect() const;
         void setPixelRect(Rect const&);
         void setPixelRect();
-
-        int getPixelWidth() const;
-        int getPixelHeight() const;
+        int32_t getPixelWidth() const;
+        int32_t getPixelHeight() const;
         float getAspectRatio() const;
 
         // scissor testing

@@ -2,6 +2,7 @@
 
 #include "src/Utils/CStringView.hpp"
 
+#include <glm/vec4.hpp>
 #include <nonstd/span.hpp>
 
 #include <filesystem>
@@ -246,4 +247,6 @@ namespace osc
     // returns `false` if the component doesn't have an appearance property, `true` if it does (and
     // the value was set)
     bool TrySetAppearancePropertyIsVisibleTo(OpenSim::Component&, bool);
+
+    glm::vec4 GetSuggestedBoneColor() noexcept;  // best guess, based on shaders etc.
 }

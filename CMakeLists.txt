@@ -299,7 +299,6 @@ add_library(osccore STATIC
     src/Graphics/GraphicsHelpers.cpp
     src/Graphics/GraphicsHelpers.hpp
     src/Graphics/GraphicsImplementation.cpp
-    src/Graphics/GraphicsLazyMode.hpp
     src/Graphics/Image.cpp
     src/Graphics/Image.hpp
     src/Graphics/ImageAnnotation.hpp
@@ -318,6 +317,8 @@ add_library(osccore STATIC
     src/Graphics/RenderTexture.hpp
     src/Graphics/RenderTextureDescriptor.hpp
     src/Graphics/RenderTextureFormat.hpp
+    src/Graphics/Rgba32.hpp
+    src/Graphics/SceneCollision.hpp
     src/Graphics/SceneDecoration.cpp
     src/Graphics/SceneDecoration.hpp
     src/Graphics/SceneDecorationFlags.hpp

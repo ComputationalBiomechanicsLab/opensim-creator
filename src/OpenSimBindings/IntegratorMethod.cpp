@@ -15,7 +15,8 @@
 
 static std::array<osc::IntegratorMethod, static_cast<size_t>(osc::IntegratorMethod::TOTAL)> CreateIntegratorMethodsLut()
 {
-    return {
+    return
+    {
         osc::IntegratorMethod::OpenSimManagerDefault,
         osc::IntegratorMethod::ExplicitEuler,
         osc::IntegratorMethod::RungeKutta2,
@@ -29,7 +30,8 @@ static std::array<osc::IntegratorMethod, static_cast<size_t>(osc::IntegratorMeth
 
 static std::array<char const*, static_cast<size_t>(osc::IntegratorMethod::TOTAL)> CreateIntegratorMethodStringsLut()
 {
-    return {
+    return
+    {
         "OpenSim::Manager Default",
         "Explicit Euler",
         "Runge Kutta 2",

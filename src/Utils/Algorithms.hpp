@@ -286,4 +286,29 @@ namespace osc
     // returns a string that *may* be truncated with ellipsis (...) if the length
     // of the input character sequence exceeds the given maximum length
     std::string Ellipsis(std::string_view, int maxLen);
+
+    // returns the index of the given variant type (impl)
+    template<typename Variant, typename T, size_t I = 0>
+    [[nodiscard]] constexpr size_t VariantIndexImpl() noexcept
+    {
+        if constexpr (I >= std::variant_size_v<Variant>)
+        {
+            return std::variant_size_v<Variant>;
+        }
+        else if constexpr (std::is_same_v<std::variant_alternative_t<I, Variant>, T>)
+        {
+            return I;
+        }
+        else
+        {
+            return VariantIndexImpl<Variant, T, I + 1>();
+        }
+    }
+
+    // returns the index of the given variant type
+    template<typename Variant, typename T>
+    [[nodiscard]] constexpr size_t VariantIndex() noexcept
+    {
+        return VariantIndexImpl<Variant, T>();
+    }
 }

@@ -23,14 +23,16 @@ namespace osc::Graphics
         Transform const&,
         Material const&,
         Camera&,
-        std::optional<MaterialPropertyBlock> = std::nullopt);
+        std::optional<MaterialPropertyBlock> = std::nullopt
+    );
 
     void DrawMesh(
         Mesh const&,
         glm::mat4 const&,
         Material const&,
         Camera&,
-        std::optional<MaterialPropertyBlock> = std::nullopt);
+        std::optional<MaterialPropertyBlock> = std::nullopt
+    );
 
     enum class BlitFlags {
         None,

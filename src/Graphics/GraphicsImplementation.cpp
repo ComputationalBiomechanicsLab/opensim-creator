@@ -25,9 +25,9 @@
 #include "src/Bindings/GlGlm.hpp"
 #include "src/Bindings/GlmHelpers.hpp"
 #include "src/Bindings/SDL2Helpers.hpp"
-#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Image.hpp"
 #include "src/Graphics/MeshGen.hpp"
+#include "src/Graphics/Rgba32.hpp"
 #include "src/Graphics/ShaderLocationIndex.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/BVH.hpp"
@@ -113,14 +113,16 @@ namespace
 
     void PushAsBytes(float v, std::vector<std::byte>& out)
     {
-        out.push_back(reinterpret_cast<std::byte*>(&v)[0]);
-        out.push_back(reinterpret_cast<std::byte*>(&v)[1]);
-        out.push_back(reinterpret_cast<std::byte*>(&v)[2]);
-        out.push_back(reinterpret_cast<std::byte*>(&v)[3]);
+        out.reserve(out.size() + sizeof(float));
+        for (size_t i = 0; i < sizeof(float); ++i)
+        {
+            out.push_back(reinterpret_cast<std::byte*>(&v)[i]);
+        }
     }
 
     void PushAsBytes(glm::vec3 const& v, std::vector<std::byte>& out)
     {
+        out.reserve(out.size() + sizeof(v));
         PushAsBytes(v.x, out);
         PushAsBytes(v.y, out);
         PushAsBytes(v.z, out);
@@ -128,33 +130,18 @@ namespace
 
     void PushAsBytes(glm::vec2 const& v, std::vector<std::byte>& out)
     {
+        out.reserve(out.size() + sizeof(v));
         PushAsBytes(v.x, out);
         PushAsBytes(v.y, out);
     }
 
     void PushAsBytes(osc::Rgba32 const& c, std::vector<std::byte>& out)
     {
+        out.reserve(out.size() + sizeof(osc::Rgba32));
         out.push_back(static_cast<std::byte>(c.r));
         out.push_back(static_cast<std::byte>(c.g));
         out.push_back(static_cast<std::byte>(c.b));
         out.push_back(static_cast<std::byte>(c.a));
-    }
-
-    template<typename Variant, typename T, size_t I = 0>
-    constexpr size_t VariantIndex()
-    {
-        if constexpr (I >= std::variant_size_v<Variant>)
-        {
-            return std::variant_size_v<Variant>;
-        }
-        else if constexpr (std::is_same_v<std::variant_alternative_t<I, Variant>, T>)
-        {
-            return I;
-        }
-        else
-        {
-            return VariantIndex<Variant, T, I + 1>();
-        }
     }
 
     using MaterialValue = std::variant<
@@ -174,7 +161,10 @@ namespace
 
     osc::ShaderType GetShaderType(MaterialValue const& v)
     {
-        switch (v.index()) {
+        using osc::VariantIndex;
+
+        switch (v.index())
+        {
         case VariantIndex<MaterialValue, glm::vec2>():
             return osc::ShaderType::Vec2;
         case VariantIndex<MaterialValue, float>():
@@ -231,7 +221,8 @@ namespace
     // convert a GL shader type to an internal shader type
     osc::ShaderType GLShaderTypeToShaderTypeInternal(GLenum e)
     {
-        switch (e) {
+        switch (e)
+        {
         case GL_FLOAT:
             return osc::ShaderType::Float;
         case GL_FLOAT_VEC2:
@@ -306,7 +297,7 @@ namespace
     template<typename Key>
     ShaderElement const* TryGetValue(robin_hood::unordered_map<std::string, ShaderElement> const& m, Key const& k)
     {
-        auto it = m.find(k);
+        auto const it = m.find(k);
         return it != m.end() ? &it->second : nullptr;
     }
 
@@ -323,7 +314,8 @@ namespace
 //
 //////////////////////////////////
 
-namespace osc {
+namespace osc
+{
     class GraphicsBackend final {
     public:
         static void DrawMesh(
@@ -331,30 +323,45 @@ namespace osc {
             Transform const&,
             Material const&,
             Camera&,
-            std::optional<MaterialPropertyBlock>);
+            std::optional<MaterialPropertyBlock>
+        );
+
         static void DrawMesh(
             Mesh const&,
             glm::mat4 const&,
             Material const&,
             Camera&,
-            std::optional<MaterialPropertyBlock>);
-        static void TryBindMaterialValueToShaderElement(ShaderElement const& se, MaterialValue const& v, int* textureSlot);
-        static void FlushRenderQueue(Camera::Impl& camera);
+            std::optional<MaterialPropertyBlock>
+        );
+
+        static void TryBindMaterialValueToShaderElement(
+            ShaderElement const& se,
+            MaterialValue const& v,
+            int* textureSlot
+        );
+
+        static void FlushRenderQueue(
+            Camera::Impl& camera
+        );
+
         static void BlitToScreen(
             RenderTexture const&,
             Rect const&,
             osc::Graphics::BlitFlags
         );
+
         static void BlitToScreen(
             RenderTexture const&,
             Rect const&,
             Material const&,
             osc::Graphics::BlitFlags
         );
+
         static void Blit(
             Texture2D const&,
             RenderTexture& dest
         );
+
         static void ReadPixels(
             RenderTexture const&,
             Image& dest
@@ -604,12 +611,12 @@ private:
 
 std::ostream& osc::operator<<(std::ostream& o, TextureWrapMode twm)
 {
-    return o << g_TextureWrapModeStrings.at(static_cast<int>(twm));
+    return o << g_TextureWrapModeStrings.at(static_cast<size_t>(twm));
 }
 
 std::ostream& osc::operator<<(std::ostream& o, TextureFilterMode twm)
 {
-    return o << g_TextureFilterModeStrings.at(static_cast<int>(twm));
+    return o << g_TextureFilterModeStrings.at(static_cast<size_t>(twm));
 }
 
 
@@ -732,8 +739,8 @@ std::ostream& osc::operator<<(std::ostream& o, Texture2D const&)
 
 osc::Texture2D osc::LoadTexture2DFromImageResource(std::string_view resource, ImageFlags flags)
 {
-    Image img = Image::Load(App::get().resource(resource), flags);
-    auto dims = img.getDimensions();
+    Image const img = Image::Load(App::get().resource(resource), flags);
+    glm::ivec2 const dims = img.getDimensions();
     return Texture2D{dims.x, dims.y, img.getPixelData(), img.getNumChannels()};
 }
 
@@ -787,12 +794,12 @@ namespace
 
 std::ostream& osc::operator<<(std::ostream& o, RenderTextureFormat f)
 {
-    return o << g_RenderTextureFormatStrings.at(static_cast<int>(f));
+    return o << g_RenderTextureFormatStrings.at(static_cast<size_t>(f));
 }
 
 std::ostream& osc::operator<<(std::ostream& o, DepthStencilFormat f)
 {
-    return o << g_DepthStencilFormatStrings.at(static_cast<int>(f));
+    return o << g_DepthStencilFormatStrings.at(static_cast<size_t>(f));
 }
 
 osc::RenderTextureDescriptor::RenderTextureDescriptor(int width, int height) :
@@ -1214,7 +1221,8 @@ public:
 
     std::optional<int> findPropertyIndex(std::string const& propertyName) const
     {
-        auto it = m_Uniforms.find(propertyName);
+        auto const it = m_Uniforms.find(propertyName);
+
         if (it != m_Uniforms.end())
         {
             return static_cast<int>(std::distance(m_Uniforms.begin(), it));
@@ -1357,7 +1365,7 @@ private:
 
 std::ostream& osc::operator<<(std::ostream& o, ShaderType shaderType)
 {
-    return o << g_ShaderTypeInternalStrings.at(static_cast<int>(shaderType));
+    return o << g_ShaderTypeInternalStrings.at(static_cast<size_t>(shaderType));
 }
 
 osc::Shader::Shader(CStringView vertexShader, CStringView fragmentShader) :
@@ -1627,7 +1635,7 @@ private:
     template<typename T>
     std::optional<T> getValue(std::string_view propertyName) const
     {
-        auto it = m_Values.find(std::string{std::move(propertyName)});
+        auto const it = m_Values.find(std::string{std::move(propertyName)});
 
         if (it == m_Values.end())
         {
@@ -1979,7 +1987,7 @@ private:
     template<typename T>
     std::optional<T> getValue(std::string_view propertyName) const
     {
-        auto it = m_Values.find(std::string{std::move(propertyName)});
+        auto const it = m_Values.find(std::string{std::move(propertyName)});
 
         if (it == m_Values.end())
         {
@@ -2158,11 +2166,6 @@ namespace
     static_assert(sizeof(PackedIndex) == sizeof(uint32_t));
     static_assert(alignof(PackedIndex) == alignof(uint32_t));
 
-    enum class IndexFormat {
-        UInt16,
-        UInt32,
-    };
-
     // the mesh data that's actually stored on the GPU
     struct MeshGPUBuffers final {
         osc::UID DataVersion;
@@ -2173,7 +2176,8 @@ namespace
 
     GLenum ToOpenGLTopography(osc::MeshTopography t)
     {
-        switch (t) {
+        switch (t)
+        {
         case osc::MeshTopography::Triangles:
             return GL_TRIANGLES;
         case osc::MeshTopography::Lines:
@@ -2205,9 +2209,7 @@ public:
 
     void setVerts(nonstd::span<glm::vec3 const> verts)
     {
-        m_Vertices.clear();
-        m_Vertices.reserve(verts.size());
-        std::copy(verts.begin(), verts.end(), std::back_insert_iterator{m_Vertices});
+        m_Vertices.assign(verts.begin(), verts.end());
 
         recalculateBounds();
         m_Version->reset();
@@ -2220,9 +2222,7 @@ public:
 
     void setNormals(nonstd::span<glm::vec3 const> normals)
     {
-        m_Normals.clear();
-        m_Normals.reserve(normals.size());
-        std::copy(normals.begin(), normals.end(), std::back_insert_iterator{m_Normals});
+        m_Normals.assign(normals.begin(), normals.end());
 
         m_Version->reset();
     }
@@ -2234,9 +2234,7 @@ public:
 
     void setTexCoords(nonstd::span<glm::vec2 const> coords)
     {
-        m_TexCoords.clear();
-        m_TexCoords.reserve(coords.size());
-        std::copy(coords.begin(), coords.end(), std::back_insert_iterator{m_TexCoords});
+        m_TexCoords.assign(coords.begin(), coords.end());
 
         m_Version->reset();
     }
@@ -2248,9 +2246,7 @@ public:
 
     void setColors(nonstd::span<Rgba32 const> colors)
     {
-        m_Colors.clear();
-        m_Colors.reserve(colors.size());
-        std::copy(colors.begin(), colors.end(), std::back_insert_iterator{m_Colors});
+        m_Colors.assign(colors.begin(), colors.end());
 
         m_Version.reset();
     }
@@ -2289,7 +2285,10 @@ public:
 
     void setIndices(nonstd::span<std::uint32_t const> vs)
     {
-        auto isGreaterThanU16Max = [](uint32_t v) { return v > std::numeric_limits<uint16_t>::max(); };
+        auto const isGreaterThanU16Max = [](uint32_t v)
+        {
+            return v > std::numeric_limits<uint16_t>::max();
+        };
 
         if (std::any_of(vs.begin(), vs.end(), isGreaterThanU16Max))
         {
@@ -2304,7 +2303,7 @@ public:
             m_NumIndices = vs.size();
             m_IndicesData.resize((vs.size() + 1) / 2);
 
-            uint16_t* p = &m_IndicesData.front().u16.a;
+            uint16_t* const p = &m_IndicesData.front().u16.a;
             for (size_t i = 0; i < vs.size(); ++i)
             {
                 *(p + i) = static_cast<uint16_t>(vs[i]);
@@ -2387,7 +2386,7 @@ private:
         }
         else if (m_IndicesAre32Bit)
         {
-            nonstd::span<uint32_t const> indices(&m_IndicesData.front().u32, m_NumIndices);
+            nonstd::span<uint32_t const> const indices(&m_IndicesData.front().u32, m_NumIndices);
             m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
             if (m_Topography == MeshTopography::Triangles)
             {
@@ -2400,7 +2399,7 @@ private:
         }
         else
         {
-            nonstd::span<uint16_t const> indices(&m_IndicesData.front().u16.a, m_NumIndices);
+            nonstd::span<uint16_t const> const indices(&m_IndicesData.front().u16.a, m_NumIndices);
             m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
             if (m_Topography == MeshTopography::Triangles)
             {
@@ -2416,9 +2415,9 @@ private:
 
     void uploadToGPU()
     {
-        bool hasNormals = !m_Normals.empty();
-        bool hasTexCoords = !m_TexCoords.empty();
-        bool hasColors = !m_Colors.empty();
+        bool const hasNormals = !m_Normals.empty();
+        bool const hasTexCoords = !m_TexCoords.empty();
+        bool const hasColors = !m_Colors.empty();
 
         GLsizei stride = sizeof(decltype(m_Vertices)::value_type);
 
@@ -2482,7 +2481,7 @@ private:
         gl::BufferData(GL_ARRAY_BUFFER, data.size(), data.data(), GL_STATIC_DRAW);
 
         // upload indices into EBO
-        size_t eboNumBytes = m_NumIndices * (m_IndicesAre32Bit ? sizeof(uint32_t) : sizeof(uint16_t));
+        size_t const eboNumBytes = m_NumIndices * (m_IndicesAre32Bit ? sizeof(uint32_t) : sizeof(uint16_t));
         gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.IndicesBuffer);
         gl::BufferData(GL_ELEMENT_ARRAY_BUFFER, eboNumBytes, m_IndicesData.data(), GL_STATIC_DRAW);
 
@@ -2490,6 +2489,7 @@ private:
         gl::BindVertexArray(buffers.VAO);
         gl::BindBuffer(GL_ARRAY_BUFFER, buffers.ArrayBuffer);
         gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.IndicesBuffer);
+
         int offset = 0;
         glVertexAttribPointer(SHADER_LOC_VERTEX_POSITION, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
         glEnableVertexAttribArray(SHADER_LOC_VERTEX_POSITION);
@@ -2538,7 +2538,7 @@ private:
 
 std::ostream& osc::operator<<(std::ostream& o, MeshTopography mt)
 {
-    return o << g_MeshTopographyStrings.at(static_cast<int>(mt));
+    return o << g_MeshTopographyStrings.at(static_cast<size_t>(mt));
 }
 
 osc::Mesh::Mesh() :
@@ -2764,12 +2764,12 @@ namespace
 
         bool operator()(RenderObject const& a, RenderObject const& b) const
         {
-            glm::vec3 aMidpointWorldSpace = WorldMidpoint(a);
-            glm::vec3 bMidpointWorldSpace = WorldMidpoint(b);
-            glm::vec3 camera2a = aMidpointWorldSpace - m_Pos;
-            glm::vec3 camera2b = bMidpointWorldSpace - m_Pos;
-            float camera2aDistanceSquared = glm::dot(camera2a, camera2a);
-            float camera2bDistanceSquared = glm::dot(camera2b, camera2b);
+            glm::vec3 const aMidpointWorldSpace = WorldMidpoint(a);
+            glm::vec3 const bMidpointWorldSpace = WorldMidpoint(b);
+            glm::vec3 const camera2a = aMidpointWorldSpace - m_Pos;
+            glm::vec3 const camera2b = bMidpointWorldSpace - m_Pos;
+            float const camera2aDistanceSquared = glm::dot(camera2a, camera2a);
+            float const camera2bDistanceSquared = glm::dot(camera2b, camera2b);
             return camera2aDistanceSquared > camera2bDistanceSquared;
         }
     private:
@@ -2813,7 +2813,7 @@ namespace
     std::vector<RenderObject>::iterator SortRenderQueue(std::vector<RenderObject>::iterator begin, std::vector<RenderObject>::iterator end, glm::vec3 cameraPos)
     {
         // split queue into [opaque | transparent]
-        auto opaqueEnd = std::partition(begin, end, IsOpaque);
+        auto const opaqueEnd = std::partition(begin, end, IsOpaque);
 
         // optimize the opaque partition (it can be reordered safely)
         {
@@ -2821,19 +2821,19 @@ namespace
             auto materialBatchStart = begin;
             while (materialBatchStart != opaqueEnd)
             {
-                auto materialBatchEnd = std::partition(materialBatchStart, opaqueEnd, RenderObjectHasMaterial{materialBatchStart->material});
+                auto const materialBatchEnd = std::partition(materialBatchStart, opaqueEnd, RenderObjectHasMaterial{materialBatchStart->material});
 
                 // then sub-sub-partition by material property block
                 auto propBatchStart = materialBatchStart;
                 while (propBatchStart != materialBatchEnd)
                 {
-                    auto propBatchEnd = std::partition(propBatchStart, materialBatchEnd, RenderObjectHasMaterialPropertyBlock{propBatchStart->maybePropBlock});
+                    auto const propBatchEnd = std::partition(propBatchStart, materialBatchEnd, RenderObjectHasMaterialPropertyBlock{propBatchStart->maybePropBlock});
 
                     // then sub-sub-sub-partition by mesh
                     auto meshBatchStart = propBatchStart;
                     while (meshBatchStart != propBatchEnd)
                     {
-                        auto meshBatchEnd = std::partition(meshBatchStart, propBatchEnd, RenderObjectHasMesh{meshBatchStart->mesh});
+                        auto const meshBatchEnd = std::partition(meshBatchStart, propBatchEnd, RenderObjectHasMesh{meshBatchStart->mesh});
 
                         meshBatchStart = meshBatchEnd;
                     }
@@ -2986,12 +2986,12 @@ public:
         m_MaybeScreenPixelRect.reset();
     }
 
-    int getPixelWidth() const
+    int32_t getPixelWidth() const
     {
         return getiDims().x;
     }
 
-    int getPixelHeight() const
+    int32_t getPixelHeight() const
     {
         return getiDims().y;
     }
@@ -3085,13 +3085,13 @@ public:
         }
         else
         {
-            float height = m_OrthographicSize;
-            float width = height * getAspectRatio();
+            float const height = m_OrthographicSize;
+            float const width = height * getAspectRatio();
 
-            float right = 0.5f * width;
-            float left = -right;
-            float top = 0.5f * height;
-            float bottom = -top;
+            float const right = 0.5f * width;
+            float const left = -right;
+            float const top = 0.5f * height;
+            float const bottom = -top;
 
             return glm::ortho(left, right, bottom, top, m_NearClippingPlane, m_FarClippingPlane);
         }
@@ -3172,7 +3172,7 @@ private:
 
 std::ostream& osc::operator<<(std::ostream& o, CameraProjection cp)
 {
-    return o << g_CameraProjectionStrings.at(static_cast<int>(cp));
+    return o << g_CameraProjectionStrings.at(static_cast<size_t>(cp));
 }
 
 osc::Camera::Camera() :
@@ -3314,12 +3314,12 @@ void osc::Camera::setPixelRect()
     m_Impl->setPixelRect();
 }
 
-int osc::Camera::getPixelWidth() const
+int32_t osc::Camera::getPixelWidth() const
 {
     return m_Impl->getPixelWidth();
 }
 
-int osc::Camera::getPixelHeight() const
+int32_t osc::Camera::getPixelHeight() const
 {
     return m_Impl->getPixelHeight();
 }
@@ -3464,7 +3464,7 @@ std::ostream& osc::operator<<(std::ostream& o, Camera const& camera)
 namespace
 {
     // create an OpenGL context for an application window
-    static sdl::GLContext CreateOpenGLContext(SDL_Window* window)
+    sdl::GLContext CreateOpenGLContext(SDL_Window* window)
     {
         osc::log::info("initializing application OpenGL context");
 
@@ -3488,7 +3488,7 @@ namespace
         // initialize GLEW
         //
         // effectively, enables the OpenGL API used by this application
-        if (auto err = glewInit(); err != GLEW_OK)
+        if (auto const err = glewInit(); err != GLEW_OK)
         {
             std::stringstream ss;
             ss << "glewInit() failed: ";
@@ -3514,7 +3514,7 @@ namespace
     }
 
     // returns the maximum numbers of MSXAA samples the active OpenGL context supports
-    static GLint GetOpenGLMaxMSXAASamples(sdl::GLContext const&)
+    GLint GetOpenGLMaxMSXAASamples(sdl::GLContext const&)
     {
         GLint v = 1;
         glGetIntegerv(GL_MAX_SAMPLES, &v);
@@ -3523,12 +3523,12 @@ namespace
         // see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glGet.xhtml
         if (v < 4)
         {
-            static bool warnOnce = [&]()
+            static bool g_ShowWarningOnce = [&]()
             {
                 osc::log::warn("the current OpenGl backend only supports %i samples. Technically, this is invalid (4 *should* be the minimum)", v);
                 return true;
             }();
-            (void)warnOnce;
+            (void)g_ShowWarningOnce;
         }
         OSC_ASSERT(v < 1<<16 && "number of samples is greater than the maximum supported by the application");
 
@@ -3536,62 +3536,93 @@ namespace
     }
 
     // maps an OpenGL debug message severity level to a log level
-    static constexpr osc::log::level::LevelEnum OpenGLDebugSevToLogLvl(GLenum sev) noexcept
+    constexpr osc::log::level::LevelEnum OpenGLDebugSevToLogLvl(GLenum sev) noexcept
     {
-        switch (sev) {
-        case GL_DEBUG_SEVERITY_HIGH: return osc::log::level::err;
-        case GL_DEBUG_SEVERITY_MEDIUM: return osc::log::level::warn;
-        case GL_DEBUG_SEVERITY_LOW: return osc::log::level::debug;
-        case GL_DEBUG_SEVERITY_NOTIFICATION: return osc::log::level::trace;
-        default: return osc::log::level::info;
+        switch (sev)
+        {
+        case GL_DEBUG_SEVERITY_HIGH:
+            return osc::log::level::err;
+        case GL_DEBUG_SEVERITY_MEDIUM:
+            return osc::log::level::warn;
+        case GL_DEBUG_SEVERITY_LOW:
+            return osc::log::level::debug;
+        case GL_DEBUG_SEVERITY_NOTIFICATION:
+            return osc::log::level::trace;
+        default:
+            return osc::log::level::info;
         }
     }
 
     // returns a string representation of an OpenGL debug message severity level
-    static constexpr char const* OpenGLDebugSevToCStr(GLenum sev) noexcept
+    constexpr char const* OpenGLDebugSevToCStr(GLenum sev) noexcept
     {
-        switch (sev) {
-        case GL_DEBUG_SEVERITY_HIGH: return "GL_DEBUG_SEVERITY_HIGH";
-        case GL_DEBUG_SEVERITY_MEDIUM: return "GL_DEBUG_SEVERITY_MEDIUM";
-        case GL_DEBUG_SEVERITY_LOW: return "GL_DEBUG_SEVERITY_LOW";
-        case GL_DEBUG_SEVERITY_NOTIFICATION: return "GL_DEBUG_SEVERITY_NOTIFICATION";
-        default: return "GL_DEBUG_SEVERITY_UNKNOWN";
+        switch (sev)
+        {
+        case GL_DEBUG_SEVERITY_HIGH:
+            return "GL_DEBUG_SEVERITY_HIGH";
+        case GL_DEBUG_SEVERITY_MEDIUM:
+            return "GL_DEBUG_SEVERITY_MEDIUM";
+        case GL_DEBUG_SEVERITY_LOW:
+            return "GL_DEBUG_SEVERITY_LOW";
+        case GL_DEBUG_SEVERITY_NOTIFICATION:
+            return "GL_DEBUG_SEVERITY_NOTIFICATION";
+        default:
+            return "GL_DEBUG_SEVERITY_UNKNOWN";
         }
     }
 
     // returns a string representation of an OpenGL debug message source
-    static constexpr char const* OpenGLDebugSrcToCStr(GLenum src) noexcept
+    constexpr char const* OpenGLDebugSrcToCStr(GLenum src) noexcept
     {
-        switch (src) {
-        case GL_DEBUG_SOURCE_API: return "GL_DEBUG_SOURCE_API";
-        case GL_DEBUG_SOURCE_WINDOW_SYSTEM: return "GL_DEBUG_SOURCE_WINDOW_SYSTEM";
-        case GL_DEBUG_SOURCE_SHADER_COMPILER: return "GL_DEBUG_SOURCE_SHADER_COMPILER";
-        case GL_DEBUG_SOURCE_THIRD_PARTY: return "GL_DEBUG_SOURCE_THIRD_PARTY";
-        case GL_DEBUG_SOURCE_APPLICATION: return "GL_DEBUG_SOURCE_APPLICATION";
-        case GL_DEBUG_SOURCE_OTHER: return "GL_DEBUG_SOURCE_OTHER";
-        default: return "GL_DEBUG_SOURCE_UNKNOWN";
+        switch (src)
+        {
+        case GL_DEBUG_SOURCE_API:
+            return "GL_DEBUG_SOURCE_API";
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+            return "GL_DEBUG_SOURCE_WINDOW_SYSTEM";
+        case GL_DEBUG_SOURCE_SHADER_COMPILER:
+            return "GL_DEBUG_SOURCE_SHADER_COMPILER";
+        case GL_DEBUG_SOURCE_THIRD_PARTY:
+            return "GL_DEBUG_SOURCE_THIRD_PARTY";
+        case GL_DEBUG_SOURCE_APPLICATION:
+            return "GL_DEBUG_SOURCE_APPLICATION";
+        case GL_DEBUG_SOURCE_OTHER:
+            return "GL_DEBUG_SOURCE_OTHER";
+        default:
+            return "GL_DEBUG_SOURCE_UNKNOWN";
         }
     }
 
     // returns a string representation of an OpenGL debug message type
-    static constexpr char const* OpenGLDebugTypeToCStr(GLenum type) noexcept
+    constexpr char const* OpenGLDebugTypeToCStr(GLenum type) noexcept
     {
-        switch (type) {
-        case GL_DEBUG_TYPE_ERROR: return "GL_DEBUG_TYPE_ERROR";
-        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR";
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: return "GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR";
-        case GL_DEBUG_TYPE_PORTABILITY: return "GL_DEBUG_TYPE_PORTABILITY";
-        case GL_DEBUG_TYPE_PERFORMANCE: return "GL_DEBUG_TYPE_PERFORMANCE";
-        case GL_DEBUG_TYPE_MARKER: return "GL_DEBUG_TYPE_MARKER";
-        case GL_DEBUG_TYPE_PUSH_GROUP: return "GL_DEBUG_TYPE_PUSH_GROUP";
-        case GL_DEBUG_TYPE_POP_GROUP: return "GL_DEBUG_TYPE_POP_GROUP";
-        case GL_DEBUG_TYPE_OTHER: return "GL_DEBUG_TYPE_OTHER";
-        default: return "GL_DEBUG_TYPE_UNKNOWN";
+        switch (type)
+        {
+        case GL_DEBUG_TYPE_ERROR:
+            return "GL_DEBUG_TYPE_ERROR";
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+            return "GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR";
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+            return "GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR";
+        case GL_DEBUG_TYPE_PORTABILITY:
+            return "GL_DEBUG_TYPE_PORTABILITY";
+        case GL_DEBUG_TYPE_PERFORMANCE:
+            return "GL_DEBUG_TYPE_PERFORMANCE";
+        case GL_DEBUG_TYPE_MARKER:
+            return "GL_DEBUG_TYPE_MARKER";
+        case GL_DEBUG_TYPE_PUSH_GROUP:
+            return "GL_DEBUG_TYPE_PUSH_GROUP";
+        case GL_DEBUG_TYPE_POP_GROUP:
+            return "GL_DEBUG_TYPE_POP_GROUP";
+        case GL_DEBUG_TYPE_OTHER:
+            return "GL_DEBUG_TYPE_OTHER";
+        default:
+            return "GL_DEBUG_TYPE_UNKNOWN";
         }
     }
 
     // returns `true` if current OpenGL context is in debug mode
-    static bool IsOpenGLInDebugMode()
+    bool IsOpenGLInDebugMode()
     {
         // if context is not debug-mode, then some of the glGet*s below can fail
         // (e.g. GL_DEBUG_OUTPUT_SYNCHRONOUS on apple).
@@ -3626,7 +3657,7 @@ namespace
     }
 
     // raw handler function that can be used with `glDebugMessageCallback`
-    static void OpenGLDebugMessageHandler(
+    void OpenGLDebugMessageHandler(
         GLenum source,
         GLenum type,
         unsigned int id,
@@ -3636,9 +3667,9 @@ namespace
         void const*)
     {
         osc::log::level::LevelEnum lvl = OpenGLDebugSevToLogLvl(severity);
-        char const* sourceCStr = OpenGLDebugSrcToCStr(source);
-        char const* typeCStr = OpenGLDebugTypeToCStr(type);
-        char const* severityCStr = OpenGLDebugSevToCStr(severity);
+        char const* const sourceCStr = OpenGLDebugSrcToCStr(source);
+        char const* const typeCStr = OpenGLDebugTypeToCStr(type);
+        char const* const severityCStr = OpenGLDebugSevToCStr(severity);
 
         osc::log::log(lvl,
             R"(OpenGL Debug message:
@@ -3651,7 +3682,7 @@ severity = %s
     }
 
     // enable OpenGL API debugging
-    static void EnableOpenGLDebugMessages()
+    void EnableOpenGLDebugMessages()
     {
         if (IsOpenGLInDebugMode())
         {
@@ -3676,7 +3707,7 @@ severity = %s
     }
 
     // disable OpenGL API debugging
-    static void DisableOpenGLDebugMessages()
+    void DisableOpenGLDebugMessages()
     {
         if (!IsOpenGLInDebugMode())
         {
@@ -3795,9 +3826,11 @@ public:
         {
             // copy GPU-side window framebuffer into CPU-side `osc::Image` object
             gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-            auto dims = osc::App::get().idims();
+            glm::ivec2 const dims = osc::App::get().idims();
+
             std::vector<uint8_t> pixels(4*dims.x*dims.y);
             glReadPixels(0, 0, dims.x, dims.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+
             Image screenshot{dims, pixels, 4};
 
             // copy image to requests [0..n-2]
@@ -3815,25 +3848,29 @@ public:
 
     std::string getBackendVendorString() const
     {
-        GLubyte const* s = glGetString(GL_VENDOR);
+        GLubyte const* const s = glGetString(GL_VENDOR);
+        static_assert(sizeof(GLubyte) == sizeof(char));
         return reinterpret_cast<char const*>(s);
     }
 
     std::string getBackendRendererString() const
     {
-        GLubyte const* s = glGetString(GL_RENDERER);
+        GLubyte const* const s = glGetString(GL_RENDERER);
+        static_assert(sizeof(GLubyte) == sizeof(char));
         return reinterpret_cast<char const*>(s);
     }
 
     std::string getBackendVersionString() const
     {
-        GLubyte const* s = glGetString(GL_VERSION);
+        GLubyte const* const s = glGetString(GL_VERSION);
+        static_assert(sizeof(GLubyte) == sizeof(char));
         return reinterpret_cast<char const*>(s);
     }
 
     std::string getBackendShadingLanguageVersionString() const
     {
-        GLubyte const* s = glGetString(GL_SHADING_LANGUAGE_VERSION);
+        GLubyte const* const s = glGetString(GL_SHADING_LANGUAGE_VERSION);
+        static_assert(sizeof(GLubyte) == sizeof(char));
         return reinterpret_cast<char const*>(s);
     }
 
@@ -4043,7 +4080,8 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement con
         return;  // mismatched types
     }
 
-    switch (v.index()) {
+    switch (v.index())
+    {
     case VariantIndex<MaterialValue, float>():
     {
         gl::UniformFloat u{se.Location};
@@ -4053,7 +4091,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement con
     case VariantIndex<MaterialValue, std::vector<float>>():
     {
         auto const& vals = std::get<std::vector<float>>(v);
-        int numToAssign = std::min(se.Size, static_cast<int>(vals.size()));
+        int const numToAssign = std::min(se.Size, static_cast<int>(vals.size()));
         for (int i = 0; i < numToAssign; ++i)
         {
             gl::UniformFloat u{se.Location + i};
@@ -4076,7 +4114,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement con
     case VariantIndex<MaterialValue, std::vector<glm::vec3>>():
     {
         auto const& vals = std::get<std::vector<glm::vec3>>(v);
-        int numToAssign = std::min(se.Size, static_cast<int>(vals.size()));
+        int const numToAssign = std::min(se.Size, static_cast<int>(vals.size()));
         for (int i = 0; i < numToAssign; ++i)
         {
             gl::UniformVec3 u{se.Location + i};
@@ -4154,9 +4192,9 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     // setup output viewport
     glm::ivec2 outputDimensions{};
     {
-        Rect cameraRect = camera.getPixelRect();  // in "usual" screen space - topleft
-        glm::vec2 cameraRectBottomLeft = BottomLeft(cameraRect);
-        glm::vec2 viewportDims = camera.viewportDimensions();
+        Rect const cameraRect = camera.getPixelRect();  // in "usual" screen space - topleft
+        glm::vec2 const cameraRectBottomLeft = BottomLeft(cameraRect);
+        glm::vec2 const viewportDims = camera.viewportDimensions();
 
         outputDimensions = Dimensions(cameraRect);
         gl::Viewport(
@@ -4170,13 +4208,13 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     // setup scissor testing (if applicable)
     if (camera.m_MaybeScissorRect)
     {
-        Rect scissorRect = *camera.m_MaybeScissorRect;
-        glm::ivec2 scissorDims = Dimensions(scissorRect);
+        Rect const scissorRect = *camera.m_MaybeScissorRect;
+        glm::ivec2 const scissorDims = Dimensions(scissorRect);
 
         gl::Enable(GL_SCISSOR_TEST);
         glScissor(
-            static_cast<int>(scissorRect.p1.x),
-            static_cast<int>(scissorRect.p1.y),
+            static_cast<GLint>(scissorRect.p1.x),
+            static_cast<GLint>(scissorRect.p1.y),
             scissorDims.x,
             scissorDims.y
         );
@@ -4193,7 +4231,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         camera.m_BackgroundColor.b,
         camera.m_BackgroundColor.a
     );
-    GLenum clearFlags = camera.m_ClearFlags == CameraClearFlags::SolidColor ? GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT : GL_DEPTH_BUFFER_BIT;
+    GLenum const clearFlags = camera.m_ClearFlags == CameraClearFlags::SolidColor ? GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT : GL_DEPTH_BUFFER_BIT;
     if (camera.m_MaybeTexture)
     {
         DoCopyOnWrite(camera.m_MaybeTexture->m_Impl);
@@ -4224,9 +4262,9 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // compute camera matrices
-    glm::mat4 viewMtx = camera.getViewMatrix();
-    glm::mat4 projMtx = camera.getProjectionMatrix();
-    glm::mat4 viewProjMtx = projMtx * viewMtx;
+    glm::mat4 const viewMtx = camera.getViewMatrix();
+    glm::mat4 const projMtx = camera.getProjectionMatrix();
+    glm::mat4 const viewProjMtx = projMtx * viewMtx;
 
     // (there's a lot of helper functions here because this part is extremely algorithmic)
 
@@ -4248,8 +4286,8 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         std::optional<InstancingState> maybeInstancingState;
         if (shaderImpl.m_MaybeInstancedModelMatAttr || shaderImpl.m_MaybeInstancedNormalMatAttr)
         {
-            std::size_t nEls = std::distance(begin, end);
-            std::size_t stride = 0;
+            size_t const nEls = std::distance(begin, end);
+            size_t stride = 0;
 
             if (shaderImpl.m_MaybeInstancedModelMatAttr)
             {
@@ -4271,7 +4309,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
                 }
             }
 
-            std::unique_ptr<float[]> buf{new float[nEls * stride]};
+            std::unique_ptr<float[]> const buf{new float[nEls * stride]};
             size_t bufPos = 0;
 
             for (auto it = begin; it != end; ++it)
@@ -4316,7 +4354,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         if (ins)
         {
             gl::BindBuffer(ins->Buf);
-            int offset = 0;
+            size_t offset = 0;
             if (shaderImpl.m_MaybeInstancedModelMatAttr)
             {
                 if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == ShaderType::Mat4)
@@ -4422,7 +4460,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         {
             for (auto const& [name, value] : begin->maybePropBlock->m_Impl->m_Values)
             {
-                auto it = uniforms.find(name);
+                auto const it = uniforms.find(name);
                 if (it != uniforms.end())
                 {
                     TryBindMaterialValueToShaderElement(it->second, value, &textureSlot);
@@ -4434,7 +4472,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         auto batchIt = begin;
         while (batchIt != end)
         {
-            auto batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMesh{batchIt->mesh});
+            auto const batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMesh{batchIt->mesh});
             HandleBatchWithSameMesh(batchIt, batchEnd, ins);
             batchIt = batchEnd;
         }
@@ -4525,7 +4563,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         auto batchIt = begin;
         while (batchIt != end)
         {
-            auto batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMaterial{batchIt->material});
+            auto const batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMaterial{batchIt->material});
             HandleBatchWithSameMaterial(batchIt, batchEnd);
             batchIt = batchEnd;
         }
@@ -4560,7 +4598,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         }
     };
 
-    glm::vec3 cameraPos = camera.getPosition();
+    glm::vec3 const cameraPos = camera.getPosition();
 
     // flush the render queue
     if (auto& queue = camera.m_RenderQueue; !queue.empty())
@@ -4649,10 +4687,10 @@ void osc::GraphicsBackend::BlitToScreen(
     {
         // rect is currently top-left, must be converted to bottom-left
 
-        int windowHeight = App::get().idims().y;
-        int rectHeight = static_cast<int>(rect.p2.y - rect.p1.y);
-        int p1y = static_cast<int>((windowHeight - rect.p1.y) - rectHeight);
-        int p2y = static_cast<int>(windowHeight - rect.p1.y);
+        int const windowHeight = App::get().idims().y;
+        int const rectHeight = static_cast<int>(rect.p2.y - rect.p1.y);
+        int const p1y = static_cast<int>((windowHeight - rect.p1.y) - rectHeight);
+        int const p2y = static_cast<int>(windowHeight - rect.p1.y);
 
         // blit multisampled scene render to not-multisampled texture
         gl::BindFramebuffer(GL_READ_FRAMEBUFFER, (*t.m_Impl->m_MaybeGPUBuffers)->SingleSampledFBO);
@@ -4664,10 +4702,10 @@ void osc::GraphicsBackend::BlitToScreen(
             0,
             t.getWidth(),
             t.getHeight(),
-            static_cast<int>(rect.p1.x),
-            static_cast<int>(p1y),
-            static_cast<int>(rect.p2.x),
-            static_cast<int>(p2y),
+            static_cast<GLint>(rect.p1.x),
+            static_cast<GLint>(p1y),
+            static_cast<GLint>(rect.p2.x),
+            static_cast<GLint>(p2y),
             GL_COLOR_BUFFER_BIT,
             GL_NEAREST
         );
