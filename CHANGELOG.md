@@ -5,6 +5,8 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- The mouseover hittest was re-optimized to match 0.2's performance (#349)
+
 
 ## [0.3.0] - 2022/09/14
 

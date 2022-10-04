@@ -234,11 +234,13 @@ osc::RayCollision osc::GetClosestWorldspaceRayCollision(Mesh const& mesh, Transf
 
     Line const modelspaceRay = TransformLine(worldspaceRay, ToInverseMat4(transform));
 
-    // TODO: this is going to be hellishly slow
-    std::vector<uint32_t> const indices = mesh.getIndices();
-
     BVHCollision collision;
-    if (BVH_GetClosestRayIndexedTriangleCollision(mesh.getBVH(), mesh.getVerts(), indices, modelspaceRay, &collision))
+    MeshIndicesView const indices = mesh.getIndices();
+    bool const collided = indices.isU16() ?
+        BVH_GetClosestRayIndexedTriangleCollision(mesh.getBVH(), mesh.getVerts(), indices.toU16Span(), modelspaceRay, &collision) :
+        BVH_GetClosestRayIndexedTriangleCollision(mesh.getBVH(), mesh.getVerts(), indices.toU32Span(), modelspaceRay, &collision);
+
+    if (collided)
     {
         glm::vec3 const locationModelspace = modelspaceRay.origin + collision.distance * modelspaceRay.dir;
         glm::vec3 const locationWorldspace = transform * locationModelspace;
@@ -272,7 +274,7 @@ glm::vec3 osc::MassCenter(Mesh const& m)
     }
 
     nonstd::span<glm::vec3 const> const verts = m.getVerts();
-    std::vector<uint32_t> const indices = m.getIndices();
+    MeshIndicesView const indices = m.getIndices();
     size_t const len = (indices.size() / 3) * 3;  // paranioa
 
     double totalVolume = 0.0f;
@@ -296,7 +298,7 @@ glm::vec3 osc::MassCenter(Mesh const& m)
 
 glm::vec3 osc::AverageCenterpoint(Mesh const& m)
 {
-    std::vector<uint32_t> indices = m.getIndices();
+    MeshIndicesView indices = m.getIndices();
     nonstd::span<glm::vec3 const> const verts = m.getVerts();
 
     glm::vec3 acc = {0.0f, 0.0f, 0.0f};

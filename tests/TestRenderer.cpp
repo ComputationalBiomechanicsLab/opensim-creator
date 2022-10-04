@@ -1749,7 +1749,7 @@ TEST_F(Renderer, MeshSetColorsFollowedByGetColorsReturnsColors)
 TEST_F(Renderer, MeshGetNumIndicesReturnsZeroOnDefaultConstruction)
 {
     osc::Mesh m;
-    ASSERT_EQ(m.getNumIndices(), 0);
+    ASSERT_EQ(m.getIndices().size(), 0);
 }
 
 TEST_F(Renderer, MeshGetBoundsReturnsEmptyBoundsOnInitialization)

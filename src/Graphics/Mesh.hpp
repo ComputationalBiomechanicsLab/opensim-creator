@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/Graphics/MeshIndicesView.hpp"
 #include "src/Graphics/MeshTopography.hpp"
 
 #include <glm/vec2.hpp>
@@ -46,8 +47,8 @@ namespace osc
         nonstd::span<Rgba32 const> getColors();
         void setColors(nonstd::span<Rgba32 const>);
 
-        int getNumIndices() const;
-        std::vector<uint32_t> getIndices() const;
+        MeshIndicesView getIndices() const;
+        void setIndices(MeshIndicesView);
         void setIndices(nonstd::span<uint16_t const>);
         void setIndices(nonstd::span<uint32_t const>);
 

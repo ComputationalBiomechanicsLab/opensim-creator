@@ -362,7 +362,7 @@ R"(        <vertices id="{}-vertices">
 
     void WriteMeshTriangles(std::ostream& o, DAEGeometry const& geom)
     {
-        std::vector<uint32_t> const indices = geom.Mesh->getIndices();
+        osc::MeshIndicesView const indices = geom.Mesh->getIndices();
         int const numTriangles = static_cast<int>(indices.size()) / 3;
 
         o << fmt::format(R"(        <triangles count="{}">)", numTriangles);

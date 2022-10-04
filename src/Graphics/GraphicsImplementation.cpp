@@ -2255,40 +2255,31 @@ public:
         m_Version.reset();
     }
 
-    int getNumIndices() const
+    MeshIndicesView getIndices() const
     {
-        return m_NumIndices;
-    }
-
-    std::vector<uint32_t> getIndices() const
-    {
-        std::vector<uint32_t> rv;
-
         if (m_NumIndices <= 0)
         {
-            return rv;
+            return {};
         }
-
-        rv.reserve(m_NumIndices);
-
-        if (m_IndicesAre32Bit)
+        else if (m_IndicesAre32Bit)
         {
-            nonstd::span<uint32_t const> data(&m_IndicesData.front().u32, m_NumIndices);
-            std::copy(data.begin(), data.end(), std::back_insert_iterator{rv});
+            return {&m_IndicesData.front().u32, m_NumIndices};
         }
         else
         {
-            nonstd::span<uint16_t const> data(&m_IndicesData.front().u16.a, m_NumIndices);
-            std::copy(data.begin(), data.end(), std::back_insert_iterator{rv});
+            return {&m_IndicesData.front().u16.a, m_NumIndices};
         }
+    }
 
-        return rv;
+    void setIndices(MeshIndicesView indices)
+    {
+        indices.isU16() ? setIndices(indices.toU16Span()) : setIndices(indices.toU32Span());
     }
 
     void setIndices(nonstd::span<uint16_t const> vs)
     {
         m_IndicesAre32Bit = false;
-        m_NumIndices = static_cast<int>(vs.size());
+        m_NumIndices = vs.size();
         m_IndicesData.resize((vs.size()+1)/2);
         std::copy(vs.begin(), vs.end(), &m_IndicesData.front().u16.a);
 
@@ -2303,14 +2294,14 @@ public:
         if (std::any_of(vs.begin(), vs.end(), isGreaterThanU16Max))
         {
             m_IndicesAre32Bit = true;
-            m_NumIndices = static_cast<int>(vs.size());
+            m_NumIndices = vs.size();
             m_IndicesData.resize(vs.size());
             std::copy(vs.begin(), vs.end(), &m_IndicesData.front().u32);
         }
         else
         {
             m_IndicesAre32Bit = false;
-            m_NumIndices = static_cast<int>(vs.size());
+            m_NumIndices = vs.size();
             m_IndicesData.resize((vs.size() + 1) / 2);
 
             uint16_t* p = &m_IndicesData.front().u16.a;
@@ -2369,22 +2360,25 @@ public:
     {
         gl::DrawElements(
             ToOpenGLTopography(m_Topography),
-            m_NumIndices,
+            static_cast<GLsizei>(m_NumIndices),
             m_IndicesAre32Bit ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT,
-            nullptr);
+            nullptr
+        );
     }
 
     void drawInstanced(size_t n)
     {
         glDrawElementsInstanced(
             ToOpenGLTopography(m_Topography),
-            m_NumIndices,
+            static_cast<GLsizei>(m_NumIndices),
             m_IndicesAre32Bit ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT,
             nullptr,
-            static_cast<GLsizei>(n));
+            static_cast<GLsizei>(n)
+        );
     }
 
 private:
+
     void recalculateBounds()
     {
         if (m_NumIndices == 0)
@@ -2532,7 +2526,7 @@ private:
     std::vector<Rgba32> m_Colors;
 
     bool m_IndicesAre32Bit = false;
-    int m_NumIndices = 0;
+    size_t m_NumIndices = 0;
     std::vector<PackedIndex> m_IndicesData;
 
     AABB m_AABB = {};
@@ -2613,14 +2607,15 @@ void osc::Mesh::setColors(nonstd::span<osc::Rgba32 const> colors)
     m_Impl->setColors(colors);
 }
 
-int osc::Mesh::getNumIndices() const
-{
-    return m_Impl->getNumIndices();
-}
-
-std::vector<uint32_t> osc::Mesh::getIndices() const
+osc::MeshIndicesView osc::Mesh::getIndices() const
 {
     return m_Impl->getIndices();
+}
+
+void osc::Mesh::setIndices(MeshIndicesView indices)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setIndices(std::move(indices));
 }
 
 void osc::Mesh::setIndices(nonstd::span<uint16_t const> indices)
