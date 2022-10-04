@@ -13,10 +13,10 @@
 #include <string_view>
 
 namespace osc { class Camera; }
-namespace osc { class UID; }
 namespace osc { class PolarPerspectiveCamera; }
-namespace osc { class Texture2D; }
 namespace osc { class RenderTexture; }
+namespace osc { class Texture2D; }
+namespace osc { class UID; }
 
 namespace osc
 {
@@ -76,7 +76,7 @@ namespace osc
     bool IsMouseReleasedWithoutDragging(ImGuiMouseButton, float threshold = defaultImguiDragThreshold);
 
     // draws an overlay tooltip (content only)
-    void DrawTooltipBodyOnly(char const* text);
+    void DrawTooltipBodyOnly(char const*);
 
     // draws an overlay tooltip (content only) if the last item is hovered
     void DrawTooltipBodyOnlyIfItemHovered(char const*);
@@ -94,7 +94,7 @@ namespace osc
     void DrawHelpMarker(char const* header, char const* desc);
 
     // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
-    void DrawHelpMarker(char const* desc);
+    void DrawHelpMarker(char const*);
 
     // draw an ImGui::InputText that manipulates a std::string
     bool InputString(const char* label, std::string& s, std::size_t maxLen, ImGuiInputTextFlags flags = 0);
@@ -135,7 +135,7 @@ namespace osc
     bool BeginMainViewportBottomBar(char const* label);
 
     // draw text, but centered on the current window/line
-    void TextCentered(std::string const& s);
+    void TextCentered(std::string const&);
 
     // add an application-level frame annotation to the last-drawn ImGui item
     void AddFrameAnnotationToLastItem(std::string_view);

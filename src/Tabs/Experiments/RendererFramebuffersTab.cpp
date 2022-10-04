@@ -42,7 +42,7 @@ static glm::vec2 const g_PlaneTexCoords[] =
     {2.0f, 2.0f},
 };
 
-static std::uint16_t const g_PlaneIndices[] = {0, 2, 1, 3, 5, 4};
+static uint16_t const g_PlaneIndices[] = {0, 2, 1, 3, 5, 4};
 
 static osc::Mesh GeneratePlane()
 {

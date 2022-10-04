@@ -31,7 +31,7 @@ static osc::Mesh GenerateTriangleMesh()
         {0x00, 0xff, 0x00, 0xff},
         {0x00, 0x00, 0xff, 0xff},
     };
-    std::uint16_t indices[] = {0, 1, 2};
+    uint16_t indices[] = {0, 1, 2};
 
     osc::Mesh m;
     m.setVerts(points);

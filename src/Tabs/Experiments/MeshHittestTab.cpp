@@ -82,7 +82,7 @@ public:
                 BVHCollision collision;
                 if (BVH_GetClosestRayIndexedTriangleCollision(m_Mesh.getBVH(), m_Mesh.getVerts(), m_Mesh.getIndices(), m_Ray, &collision))
                 {
-                    uint16_t index = m_Mesh.getIndices()[collision.primId];
+                    uint32_t index = m_Mesh.getIndices()[collision.primId];
                     m_IsMousedOver = true;
                     m_Tris[0] = m_Mesh.getVerts()[index];
                     m_Tris[1] = m_Mesh.getVerts()[index+1];

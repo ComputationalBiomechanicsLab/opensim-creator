@@ -1502,8 +1502,7 @@ SimTK::State& osc::InitializeState(OpenSim::Model& model)
     return state;
 }
 
-// returns -1 if joint isn't in a set or cannot be found
-int osc::FindJointInParentJointSet(OpenSim::Joint const& joint)
+std::optional<int> osc::FindJointInParentJointSet(OpenSim::Joint const& joint)
 {
     auto const* parentJointset =
         joint.hasOwner() ? dynamic_cast<OpenSim::JointSet const*>(&joint.getOwner()) : nullptr;
@@ -1512,21 +1511,20 @@ int osc::FindJointInParentJointSet(OpenSim::Joint const& joint)
     {
         // it's a joint, but it's not owned by a JointSet, so the implementation cannot switch
         // the joint type
-        return -1;
+        return std::nullopt;
     }
 
     OpenSim::JointSet const& js = *parentJointset;
 
-    int idx = -1;
-    for (int i = 0; i < js.getSize(); ++i) {
+    for (int i = 0; i < js.getSize(); ++i)
+    {
         OpenSim::Joint const* j = &js[i];
-        if (j == &joint) {
-            idx = i;
-            break;
+        if (j == &joint)
+        {
+            return i;
         }
     }
-
-    return idx;
+    return std::nullopt;
 }
 
 std::string osc::GetRecommendedDocumentName(osc::UndoableModelStatePair const& uim)

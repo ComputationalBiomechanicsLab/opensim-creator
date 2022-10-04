@@ -433,7 +433,7 @@ osc::Mesh osc::GenUntexturedSimbodyCone(size_t nsides)
     constexpr float bottomY = -1.0f;
     const float stepAngle = 2.0f*fpi / nsides;
 
-    unsigned short index = 0;
+    uint16_t index = 0;
     auto push = [&data, &index](glm::vec3 const& pos, glm::vec3 const& norm)
     {
         data.verts.push_back(pos);
@@ -502,7 +502,7 @@ osc::Mesh osc::GenNbyNGrid(size_t n)
     data.reserve(4 * nlines);
     data.topography = MeshTopography::Lines;
 
-    unsigned short index = 0;
+    uint16_t index = 0;
     auto push = [&index, &data](glm::vec3 const& pos)
     {
         data.verts.push_back(pos);

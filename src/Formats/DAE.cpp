@@ -22,6 +22,9 @@
 
 namespace std
 {
+    // declare a hash function for glm::vec4, so it can be used as a key in
+    // unordered maps
+
     template<>
     class hash<glm::vec4> final {
     public:
@@ -32,37 +35,34 @@ namespace std
     };
 }
 
-
-// internal stuff
+// scene-to-graph conversion stuff
 namespace
 {
     struct DAEGeometry final {
-        std::string GeometryID;
-        std::shared_ptr<osc::Mesh const> Mesh;
 
         DAEGeometry(std::string geometryID_, std::shared_ptr<osc::Mesh const> mesh_) :
             GeometryID{std::move(geometryID_)},
             Mesh{std::move(mesh_)}
         {
         }
+
+        std::string GeometryID;
+        std::shared_ptr<osc::Mesh const> Mesh;
     };
 
     struct DAEMaterial final {
-        std::string MaterialID;
-        glm::vec4 Color;
 
         explicit DAEMaterial(std::string materialID_, glm::vec4 const& color_) :
             MaterialID{std::move(materialID_)},
             Color{color_}
         {
         }
+
+        std::string MaterialID;
+        glm::vec4 Color;
     };
 
     struct DAEInstance final {
-        std::string InstanceID;
-        std::string GeometryID;
-        std::string MaterialID;
-        osc::Transform Transform;
 
         DAEInstance(
             std::string instanceID_,
@@ -76,6 +76,11 @@ namespace
             Transform{transform_}
         {
         }
+
+        std::string InstanceID;
+        std::string GeometryID;
+        std::string MaterialID;
+        osc::Transform Transform;
     };
 
     // internal representation of a datastructure that more closely resembles
@@ -130,7 +135,11 @@ namespace
 
         return rv;
     }
+}
 
+// graph-writing stuff
+namespace
+{
     nonstd::span<float const> ToFloatSpan(nonstd::span<glm::vec2 const> s)
     {
         return {glm::value_ptr(s[0]), 2 * s.size()};
@@ -265,9 +274,9 @@ R"(  <asset>
 
     void WriteMeshPositionsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        nonstd::span<glm::vec3 const> vals = geom.Mesh->getVerts();
-        int floatCount = 3*static_cast<int>(vals.size());
-        int vertCount = static_cast<int>(vals.size());
+        nonstd::span<glm::vec3 const> const vals = geom.Mesh->getVerts();
+        int const floatCount = 3*static_cast<int>(vals.size());
+        int const vertCount = static_cast<int>(vals.size());
 
         o << fmt::format(
 R"(        <source id="{}-positions">
@@ -291,9 +300,9 @@ R"(        <source id="{}-positions">
 
     void WriteMeshNormalsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        nonstd::span<glm::vec3 const> vals = geom.Mesh->getNormals();
-        int floatCount = 3*static_cast<int>(vals.size());
-        int normalCount = static_cast<int>(vals.size());
+        nonstd::span<glm::vec3 const> const vals = geom.Mesh->getNormals();
+        int const floatCount = 3*static_cast<int>(vals.size());
+        int const normalCount = static_cast<int>(vals.size());
 
         o << fmt::format(
 R"(        <source id="{}-normals">
@@ -317,9 +326,9 @@ R"(        <source id="{}-normals">
 
     void WriteMeshTextureCoordsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        nonstd::span<glm::vec2 const> vals = geom.Mesh->getTexCoords();
-        int floatCount = 2*static_cast<int>(vals.size());
-        int coordCount = static_cast<int>(vals.size());
+        nonstd::span<glm::vec2 const> const vals = geom.Mesh->getTexCoords();
+        int const floatCount = 2*static_cast<int>(vals.size());
+        int const coordCount = static_cast<int>(vals.size());
 
 o << fmt::format(
 R"(        <source id="{}-map-0">
@@ -353,8 +362,8 @@ R"(        <vertices id="{}-vertices">
 
     void WriteMeshTriangles(std::ostream& o, DAEGeometry const& geom)
     {
-        std::vector<uint32_t> indices = geom.Mesh->getIndices();
-        int numTriangles = static_cast<int>(indices.size()) / 3;
+        std::vector<uint32_t> const indices = geom.Mesh->getIndices();
+        int const numTriangles = static_cast<int>(indices.size()) / 3;
 
         o << fmt::format(R"(        <triangles count="{}">)", numTriangles);
         o << '\n';
@@ -424,7 +433,7 @@ R"(        <vertices id="{}-vertices">
 
     void WriteTransformMatrix(std::ostream& o, osc::Transform const& t)
     {
-        glm::mat4 m = osc::ToMat4(t);
+        glm::mat4 const m = osc::ToMat4(t);
 
         // row-major
         o << R"(        <matrix sid="transform">)";
@@ -497,7 +506,7 @@ R"(        <vertices id="{}-vertices">
 
 void osc::WriteDecorationsAsDAE(nonstd::span<SceneDecoration const> els, std::ostream& o)
 {
-    DAESceneGraph graph = ToDAESceneGraph(els);
+    DAESceneGraph const graph = ToDAESceneGraph(els);
 
     WriteXMLHeader(o);
     WriteCOLLADARootNodeBEGIN(o);

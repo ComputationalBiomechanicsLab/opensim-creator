@@ -6,6 +6,7 @@
 
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -228,8 +229,8 @@ namespace osc
     // fully initalize an OpenSim model's working state
     SimTK::State& InitializeState(OpenSim::Model&);
 
-    // returns -1 if joint isn't in a set or cannot be found
-    int FindJointInParentJointSet(OpenSim::Joint const&);
+    // returns optional{index} if joint is found in parent jointset (otherwise: std::nullopt)
+    std::optional<int> FindJointInParentJointSet(OpenSim::Joint const&);
 
     // returns a string representation of the recommended document's name
     std::string GetRecommendedDocumentName(osc::UndoableModelStatePair const&);

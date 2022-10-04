@@ -2,6 +2,7 @@
 
 #include <glm/vec3.hpp>
 
+#include <cstddef>
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -21,7 +22,7 @@ namespace osc { class UndoableModelStatePair; }
 namespace osc
 {
     // prompt the user for a save location and then save the model to the specified location
-    void ActionSaveCurrentModelAs(osc::UndoableModelStatePair&);
+    void ActionSaveCurrentModelAs(UndoableModelStatePair&);
 
     // create a new model and show it in a new tab
     void ActionNewModel(MainUIStateAPI*);
@@ -131,7 +132,7 @@ namespace osc
         float Mass;
         std::string ParentFrameAbsPath;
         std::string BodyName;
-        int JointTypeIndex;
+        size_t JointTypeIndex;
         std::string JointName;
         std::unique_ptr<OpenSim::Geometry> MaybeGeometry;
         bool AddOffsetFrames;

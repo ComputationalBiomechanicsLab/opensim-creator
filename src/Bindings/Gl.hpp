@@ -357,7 +357,7 @@ namespace gl
     // This is just a uniform that points to the first element. The utility of
     // this class is that it disambiguates overloads (so that calling code can
     // assign sequences of values to uniform arrays)
-    template<typename TGlsl, int N>
+    template<typename TGlsl, size_t N>
     class UniformArray final : public Uniform_<TGlsl> {
         static_assert(N >= 0);
 
@@ -369,11 +369,11 @@ namespace gl
         }
 
         [[nodiscard]] constexpr size_t size() const noexcept {
-            return static_cast<size_t>(N);
+            return N;
         }
 
         [[nodiscard]] constexpr int sizei() const noexcept {
-            return N;
+            return static_cast<int>(N);
         }
     };
 
@@ -1024,7 +1024,7 @@ namespace gl
         glDrawBuffer(mode);
     }
 
-    inline int GetInteger(GLenum pname) noexcept {
+    inline GLint GetInteger(GLenum pname) noexcept {
         GLint out;
         glGetIntegerv(pname, &out);
         return out;

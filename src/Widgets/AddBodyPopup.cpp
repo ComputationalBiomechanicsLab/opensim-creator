@@ -140,7 +140,9 @@ private:
             ImGui::NextColumn();
             {
                 auto names = osc::JointRegistry::nameCStrings();
-                ImGui::Combo("##jointtype", &m_BodyDetails.JointTypeIndex, names.data(), static_cast<int>(names.size()));
+                int idx = static_cast<int>(m_BodyDetails.JointTypeIndex);
+                ImGui::Combo("##jointtype", &idx, names.data(), static_cast<int>(names.size()));
+                m_BodyDetails.JointTypeIndex = static_cast<size_t>(idx);
                 osc::AddFrameAnnotationToLastItem("AddBodyPopup::JointTypeInput");
             }
             ImGui::NextColumn();

@@ -104,10 +104,8 @@ void osc::ImGuiApplyDarkTheme()
 
 void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::PolarPerspectiveCamera& camera)
 {
-    using osc::operator<<;
-
     // handle mousewheel scrolling
-    camera.radius *= 1.0f - ImGui::GetIO().MouseWheel/10.0f;
+    camera.radius *= 1.0f - 0.1f*ImGui::GetIO().MouseWheel;
     camera.rescaleZNearAndZFarBasedOnRadius();
 
     // these camera controls try to be the union of OpenSim and Blender
@@ -124,12 +122,12 @@ void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::Polar
     // users who use modelling software like Blender (which is more popular
     // among newer users looking to make new models)
 
-    float aspectRatio = viewportDims.x / viewportDims.y;
+    float const aspectRatio = viewportDims.x / viewportDims.y;
 
-    bool leftDragging = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
-    bool middleDragging = ImGui::IsMouseDragging(ImGuiMouseButton_Middle);
+    bool const leftDragging = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
+    bool const middleDragging = ImGui::IsMouseDragging(ImGuiMouseButton_Middle);
 
-    glm::vec2 delta = ImGui::GetIO().MouseDelta;
+    glm::vec2 const delta = ImGui::GetIO().MouseDelta;
 
     if (leftDragging || middleDragging)
     {
@@ -209,24 +207,26 @@ void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, glm::vec3& eulers)
 
 osc::Rect osc::ContentRegionAvailScreenRect()
 {
-    glm::vec2 topLeft = ImGui::GetCursorScreenPos();
-    glm::vec2 dims = ImGui::GetContentRegionAvail();
-    glm::vec2 bottomRight = topLeft + dims;
+    glm::vec2 const topLeft = ImGui::GetCursorScreenPos();
+    glm::vec2 const dims = ImGui::GetContentRegionAvail();
+    glm::vec2 const bottomRight = topLeft + dims;
 
     return Rect{topLeft, bottomRight};
 }
 
 void osc::DrawTextureAsImGuiImage(Texture2D& t, glm::vec2 dims)
 {
-    ImVec2 uv0{0.0f, 1.0f};
-    ImVec2 uv1{1.0f, 0.0f};
+    glm::vec2 const uv0 = {0.0f, 1.0f};
+    glm::vec2 const uv1 = {1.0f, 0.0f};
+
     ImGui::Image(t.updTextureHandleHACK(), dims, uv0, uv1);
 }
 
 void osc::DrawTextureAsImGuiImage(RenderTexture& t, glm::vec2 dims)
 {
-    ImVec2 uv0{0.0f, 1.0f};
-    ImVec2 uv1{1.0f, 0.0f};
+    glm::vec2 const uv0 = {0.0f, 1.0f};
+    glm::vec2 const uv1 = {1.0f, 0.0f};
+
     ImGui::Image(t.updTextureHandleHACK(), dims, uv0, uv1);
 }
 
@@ -278,7 +278,6 @@ bool osc::IsAnyKeyDown(nonstd::span<int const> keys)
 
 bool osc::IsAnyKeyDown(std::initializer_list<int const> keys)
 {
-
     return IsAnyKeyDown(nonstd::span<int const>{keys.begin(), keys.end()});
 }
 
@@ -320,14 +319,13 @@ bool osc::IsAltDown()
 
 bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float threshold)
 {
-    using osc::operator<<;
-
     if (!ImGui::IsMouseReleased(btn))
     {
         return false;
     }
 
-    glm::vec2 dragDelta = ImGui::GetMouseDragDelta(btn);
+    glm::vec2 const dragDelta = ImGui::GetMouseDragDelta(btn);
+
     return glm::length(dragDelta) < threshold;
 }
 
@@ -376,35 +374,41 @@ void osc::DrawTooltipIfItemHovered(char const* header, char const* description)
 
 void osc::DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect const& renderRect)
 {
+    float constexpr linelen = 35.0f;
+    float const fontSize = ImGui::GetFontSize();
+    float const circleRadius = fontSize/1.5f;
+    float const padding = circleRadius + 3.0f;
+    ImU32 const whiteColorU32 = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
+
+    glm::vec2 const origin =
+    {
+        renderRect.p1.x + (linelen + padding),
+        renderRect.p2.y - (linelen + padding),
+    };
+
+    char const* const labels[] = {"X", "Y", "Z"};
+
     ImDrawList* dd = ImGui::GetWindowDrawList();
-
-    constexpr float linelen = 35.0f;
-    float fontSize = ImGui::GetFontSize();
-    float circleRadius = fontSize/1.5f;
-    float padding = circleRadius + 3.0f;
-    glm::vec2 origin{renderRect.p1.x, renderRect.p2.y};
-    origin.x += linelen + padding;
-    origin.y -= linelen + padding;
-
-    char const* labels[] = {"X", "Y", "Z"};
-
     for (int i = 0; i < 3; ++i)
     {
         glm::vec4 world = {0.0f, 0.0f, 0.0f, 0.0f};
         world[i] = 1.0f;
+
         glm::vec2 view = glm::vec2{viewMtx * world};
         view.y = -view.y;  // y goes down in screen-space
 
-        glm::vec2 p1 = origin;
-        glm::vec2 p2 = origin + linelen*view;
+        glm::vec2 const p1 = origin;
+        glm::vec2 const p2 = origin + linelen*view;
 
         glm::vec4 color = {0.2f, 0.2f, 0.2f, 1.0f};
         color[i] = 0.7f;
-        ImVec4 col{color.x, color.y, color.z, color.a};
-        dd->AddLine(p1, p2, ImGui::ColorConvertFloat4ToU32(col), 3.0f);
-        dd->AddCircleFilled(p2, circleRadius, ImGui::ColorConvertFloat4ToU32(col));
-        glm::vec2 ts = ImGui::CalcTextSize(labels[i]);
-        dd->AddText(p2 - ts/2.0f, ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f}), labels[i]);
+        ImU32 const colorU32 = ImGui::ColorConvertFloat4ToU32(color);
+
+        glm::vec2 const ts = ImGui::CalcTextSize(labels[i]);
+
+        dd->AddLine(p1, p2, colorU32, 3.0f);
+        dd->AddCircleFilled(p2, circleRadius, colorU32);
+        dd->AddText(p2 - ts/2.0f, whiteColorU32, labels[i]);
     }
 }
 
@@ -426,20 +430,21 @@ bool osc::InputString(const char* label, std::string& s, std::size_t maxLen, ImG
 {
     static SynchronizedValue<std::string> g_Buf;
 
-    auto buf = g_Buf.lock();
+    auto bufGuard = g_Buf.lock();
 
-    *buf = s;
-    buf->resize(std::max(maxLen, s.size()));
-    (*buf)[s.size()] = '\0';
+    *bufGuard = s;
+    bufGuard->resize(std::max(maxLen, s.size()));
+    (*bufGuard)[s.size()] = '\0';
 
-    bool rv = ImGui::InputText(label, buf->data(), maxLen, flags);
-
-    if (rv)
+    if (ImGui::InputText(label, bufGuard->data(), maxLen, flags))
     {
-        s = buf->data();
+        s = bufGuard->data();
+        return true;
     }
-
-    return rv;
+    else
+    {
+        return false;
+    }
 }
 
 bool osc::DrawF3Editor(char const* lockID, char const* editorID, float* v, bool* isLocked)
@@ -458,10 +463,7 @@ bool osc::DrawF3Editor(char const* lockID, char const* editorID, float* v, bool*
 
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
-    float copy[3];
-    copy[0] = v[0];
-    copy[1] = v[1];
-    copy[2] = v[2];
+    float copy[3] = {v[0], v[1], v[2]};
 
     if (ImGui::InputFloat3(editorID, copy, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue))
     {
@@ -511,47 +513,65 @@ void osc::PushID(UID const& id)
 
 ImGuiWindowFlags osc::GetMinimalWindowFlags()
 {
-    return ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoTitleBar;
+    return
+        ImGuiWindowFlags_NoBackground |
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoDecoration |
+        ImGuiWindowFlags_NoDocking |
+        ImGuiWindowFlags_NoInputs |
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoNav |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoSavedSettings |
+        ImGuiWindowFlags_NoScrollbar |
+        ImGuiWindowFlags_NoTitleBar;
 }
 
 osc::Rect osc::GetMainViewportWorkspaceScreenRect()
 {
-    ImGuiViewport* viewport = ImGui::GetMainViewport();
-    return Rect{viewport->WorkPos, glm::vec2{viewport->WorkPos} + glm::vec2{viewport->WorkSize}};
+    ImGuiViewport const* const viewport = ImGui::GetMainViewport();
+
+    return Rect
+    {
+        viewport->WorkPos,
+        glm::vec2{viewport->WorkPos} + glm::vec2{viewport->WorkSize}
+    };
 }
 
 bool osc::IsMouseInMainViewportWorkspaceScreenRect()
 {
+    glm::vec2 const mousepos = ImGui::GetIO().MousePos;
+    osc::Rect const hitRect = osc::GetMainViewportWorkspaceScreenRect();
 
-    glm::vec2 mousepos = ImGui::GetIO().MousePos;
-    osc::Rect hitRect = osc::GetMainViewportWorkspaceScreenRect();
     return osc::IsPointInRect(hitRect, mousepos);
 }
 
 bool osc::BeginMainViewportTopBar(char const* label)
 {
     // https://github.com/ocornut/imgui/issues/3518
-    ImGuiViewportP* viewport = (ImGuiViewportP*)(void*)ImGui::GetMainViewport();
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar;
-    float height = ImGui::GetFrameHeight();
-    return ImGui::BeginViewportSideBar(label, viewport, ImGuiDir_Up, height, window_flags);
+    ImGuiViewportP* const viewport = (ImGuiViewportP*)(void*)ImGui::GetMainViewport();
+    ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar;
+    float const height = ImGui::GetFrameHeight();
+
+    return ImGui::BeginViewportSideBar(label, viewport, ImGuiDir_Up, height, flags);
 }
 
 bool osc::BeginMainViewportBottomBar(char const* label)
 {
     // https://github.com/ocornut/imgui/issues/3518
-    ImGuiViewportP* viewport = (ImGuiViewportP*)(void*)ImGui::GetMainViewport();
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
-    float height = ImGui::GetFrameHeight() + ImGui::GetStyle().WindowPadding.y;
-    return ImGui::BeginViewportSideBar(label, viewport, ImGuiDir_Down, height, window_flags);
+    ImGuiViewportP* const viewport = (ImGuiViewportP*)(void*)ImGui::GetMainViewport();
+    ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
+    float const height = ImGui::GetFrameHeight() + ImGui::GetStyle().WindowPadding.y;
+
+    return ImGui::BeginViewportSideBar(label, viewport, ImGuiDir_Down, height, flags);
 }
 
 void osc::TextCentered(std::string const& s)
 {
-    auto windowWidth = ImGui::GetWindowSize().x;
-    auto textWidth   = ImGui::CalcTextSize(s.c_str()).x;
+    float const windowWidth = ImGui::GetWindowSize().x;
+    float const textWidth   = ImGui::CalcTextSize(s.c_str()).x;
 
-    ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
+    ImGui::SetCursorPosX(0.5f*(windowWidth - textWidth));
     ImGui::TextUnformatted(s.c_str());
 }
 

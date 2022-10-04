@@ -48,12 +48,13 @@ static void DrawSelectionJointTypeSwitcher(
         return;
     }
 
-    int idx = osc::FindJointInParentJointSet(*joint);
+    std::optional<int> maybeIdx = osc::FindJointInParentJointSet(*joint);
 
-    if (idx == -1)
+    if (!maybeIdx)
     {
         return;
     }
+    int idx = *maybeIdx;
 
     int selectedIdx = -1;
     if (ImGui::BeginMenu("Change Joint Type"))

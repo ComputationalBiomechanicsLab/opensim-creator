@@ -35,48 +35,57 @@ static inline constexpr float g_LineThickness = 0.005f;
 static inline constexpr float g_FrameAxisLengthRescale = 0.25f;
 static inline constexpr float g_FrameAxisThickness = 0.0025f;
 
-// extracts scale factors from geometry
-static glm::vec3 GetScaleFactors(SimTK::DecorativeGeometry const& geom)
+// helper functions
+namespace
 {
-    SimTK::Vec3 sf = geom.getScaleFactors();
-    for (int i = 0; i < 3; ++i)
+    // extracts scale factors from geometry
+    glm::vec3 GetScaleFactors(SimTK::DecorativeGeometry const& geom)
     {
-        sf[i] = sf[i] <= 0 ? 1.0 : sf[i];
+        SimTK::Vec3 sf = geom.getScaleFactors();
+
+        for (int i = 0; i < 3; ++i)
+        {
+            sf[i] = sf[i] <= 0 ? 1.0 : sf[i];
+        }
+
+        return osc::ToVec3(sf);
     }
-    return glm::vec3{sf[0], sf[1], sf[2]};
-}
 
-// extracts RGBA from geometry
-static glm::vec4 GetColor(SimTK::DecorativeGeometry const& geom)
-{
-    SimTK::Vec3 const& rgb = geom.getColor();
-    float ar = static_cast<float>(geom.getOpacity());
-    ar = ar < 0.0f ? 1.0f : ar;
-    return osc::ToVec4(rgb, ar);
-}
+    // extracts RGBA from geometry
+    glm::vec4 GetColor(SimTK::DecorativeGeometry const& geom)
+    {
+        SimTK::Vec3 const& rgb = geom.getColor();
 
-// creates a geometry-to-ground transform for the given geometry
-static osc::Transform ToOscTransform(
-    SimTK::SimbodyMatterSubsystem const& matter,
-    SimTK::State const& state,
-    SimTK::DecorativeGeometry const& g)
-{
-    SimTK::MobilizedBody const& mobod = matter.getMobilizedBody(SimTK::MobilizedBodyIndex(g.getBodyId()));
-    SimTK::Transform const& body2ground = mobod.getBodyTransform(state);
-    SimTK::Transform const& decoration2body = g.getTransform();
+        float ar = static_cast<float>(geom.getOpacity());
+        ar = ar < 0.0f ? 1.0f : ar;
 
-    osc::Transform rv = osc::ToTransform(body2ground * decoration2body);
-    rv.scale = GetScaleFactors(g);
+        return osc::ToVec4(rgb, ar);
+    }
 
-    return rv;
-}
+    // creates a geometry-to-ground transform for the given geometry
+    osc::Transform ToOscTransform(
+        SimTK::SimbodyMatterSubsystem const& matter,
+        SimTK::State const& state,
+        SimTK::DecorativeGeometry const& g)
+    {
+        SimTK::MobilizedBody const& mobod = matter.getMobilizedBody(SimTK::MobilizedBodyIndex(g.getBodyId()));
+        SimTK::Transform const& body2ground = mobod.getBodyTransform(state);
+        SimTK::Transform const& decoration2body = g.getTransform();
 
-// get the `vert`th vertex of the `face`th face
-static glm::vec3 GetFaceVertex(SimTK::PolygonalMesh const& mesh, int face, int vert)
-{
-    int vertidx = mesh.getFaceVertex(face, vert);
-    SimTK::Vec3 const& data = mesh.getVertexPosition(vertidx);
-    return osc::ToVec3(data);
+        osc::Transform rv = osc::ToTransform(body2ground * decoration2body);
+        rv.scale = GetScaleFactors(g);
+
+        return rv;
+    }
+
+    // get the `vert`th vertex of the `face`th face
+    glm::vec3 GetFaceVertex(SimTK::PolygonalMesh const& mesh, int face, int vert)
+    {
+        int const vertidx = mesh.getFaceVertex(face, vert);
+        SimTK::Vec3 const& pos = mesh.getVertexPosition(vertidx);
+
+        return osc::ToVec3(pos);
+    }
 }
 
 // an implementation of SimTK::DecorativeGeometryImplementation that emits generic
@@ -105,22 +114,22 @@ private:
 
     void implementPointGeometry(SimTK::DecorativePoint const&) override
     {
-        static bool shown_once = []()
+        static bool const g_ShownWarningOnce = []()
         {
             log::warn("this model uses implementPointGeometry, which is not yet implemented in OSC");
             return true;
         }();
-        (void)shown_once;
+        (void)g_ShownWarningOnce;
     }
 
     void implementLineGeometry(SimTK::DecorativeLine const& d) override
     {
-        Transform t = ToOscTransform(d);
+        Transform const t = ToOscTransform(d);
 
-        glm::vec3 p1 = TransformPoint(t, ToVec4(d.getPoint1()));
-        glm::vec3 p2 = TransformPoint(t, ToVec4(d.getPoint2()));
+        glm::vec3 const p1 = TransformPoint(t, ToVec4(d.getPoint1()));
+        glm::vec3 const p2 = TransformPoint(t, ToVec4(d.getPoint2()));
 
-        float thickness = g_LineThickness * m_FixupScaleFactor;
+        float const thickness = g_LineThickness * m_FixupScaleFactor;
 
         Transform cylinderXform = SimbodyCylinderToSegmentTransform({p1, p2}, thickness);
         cylinderXform.scale *= t.scale;
@@ -138,7 +147,7 @@ private:
 
     void implementCylinderGeometry(SimTK::DecorativeCylinder const& d) override
     {
-        float radius = static_cast<float>(d.getRadius());
+        float const radius = static_cast<float>(d.getRadius());
 
         Transform t = ToOscTransform(d);
         t.scale.x *= radius;
@@ -150,12 +159,12 @@ private:
 
     void implementCircleGeometry(SimTK::DecorativeCircle const&) override
     {
-        static bool shownWarning = []()
+        static bool const g_ShownWarningOnce = []()
         {
             log::warn("this model uses implementCircleGeometry, which is not yet implemented in OSC");
             return true;
         }();
-        (void)shownWarning;
+        (void)g_ShownWarningOnce;
     }
 
     void implementSphereGeometry(SimTK::DecorativeSphere const& d) override
@@ -176,28 +185,28 @@ private:
 
     void implementFrameGeometry(SimTK::DecorativeFrame const& d) override
     {
-        Transform t = ToOscTransform(d);
+        Transform const t = ToOscTransform(d);
 
         // emit origin sphere
         {
-            float r = 0.05f * g_FrameAxisLengthRescale * m_FixupScaleFactor;
-            Transform sphereXform = t.withScale(r);
-            glm::vec4 white = {1.0f, 1.0f, 1.0f, 1.0f};
+            float const radius = 0.05f * g_FrameAxisLengthRescale * m_FixupScaleFactor;
+            Transform const sphereXform = t.withScale(radius);
+            glm::vec4 const white = {1.0f, 1.0f, 1.0f, 1.0f};
 
             m_Consumer(m_MeshCache.getSphereMesh(), sphereXform, white);
         }
 
         // emit leg cylinders
-        glm::vec3 axisLengths = t.scale * static_cast<float>(d.getAxisLength());
-        float legLen = g_FrameAxisLengthRescale * m_FixupScaleFactor;
-        float legThickness = g_FrameAxisThickness * m_FixupScaleFactor;
+        glm::vec3 const axisLengths = t.scale * static_cast<float>(d.getAxisLength());
+        float const legLen = g_FrameAxisLengthRescale * m_FixupScaleFactor;
+        float const legThickness = g_FrameAxisThickness * m_FixupScaleFactor;
         for (int axis = 0; axis < 3; ++axis)
         {
             glm::vec3 dir = {0.0f, 0.0f, 0.0f};
             dir[axis] = legLen * axisLengths[axis];
 
-            Segment line{t.position, t.position + TransformDirection(t, dir)};
-            Transform legXform = SimbodyCylinderToSegmentTransform(line, legThickness);
+            Segment const line{t.position, t.position + TransformDirection(t, dir)};
+            Transform const legXform = SimbodyCylinderToSegmentTransform(line, legThickness);
 
             glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
             color[axis] = 1.0f;
@@ -208,81 +217,84 @@ private:
 
     void implementTextGeometry(SimTK::DecorativeText const&) override
     {
-        static bool shownWarning = []()
+        static bool const g_ShownWarningOnce = []()
         {
             log::warn("this model uses implementTextGeometry, which is not yet implemented in OSC");
             return true;
         }();
-        (void)shownWarning;
+        (void)g_ShownWarningOnce;
     }
 
     void implementMeshGeometry(SimTK::DecorativeMesh const&) override
     {
-        static bool shownWarning = []()
+        static bool const g_ShownWarningOnce = []()
         {
             log::warn("this model uses implementMeshGeometry, which is not yet implemented in OSC");
             return true;
         }();
-        (void)shownWarning;
+        (void)g_ShownWarningOnce;
     }
 
     void implementMeshFileGeometry(SimTK::DecorativeMeshFile const& d) override
     {
-        m_Consumer(m_MeshCache.getMeshFile(d.getMeshFile()), ToOscTransform(d), GetColor(d));
+        std::shared_ptr<Mesh const> const mesh = m_MeshCache.getMeshFile(d.getMeshFile());
+
+        m_Consumer(mesh, ToOscTransform(d), GetColor(d));
     }
 
     void implementArrowGeometry(SimTK::DecorativeArrow const& d) override
     {
-        Transform t = ToOscTransform(d);
+        Transform const t = ToOscTransform(d);
 
-        glm::vec3 startBase = ToVec3(d.getStartPoint());
-        glm::vec3 endBase = ToVec3(d.getEndPoint());
+        glm::vec3 const startBase = ToVec3(d.getStartPoint());
+        glm::vec3 const endBase = ToVec3(d.getEndPoint());
 
-        glm::vec3 start = TransformPoint(t, startBase);
-        glm::vec3 end = TransformPoint(t, endBase);
+        glm::vec3 const start = TransformPoint(t, startBase);
+        glm::vec3 const end = TransformPoint(t, endBase);
 
-        glm::vec3 dir = glm::normalize(end - start);
+        glm::vec3 const dir = glm::normalize(end - start);
 
-        glm::vec3 neckStart = start;
-        glm::vec3 neckEnd = end - (static_cast<float>(d.getTipLength()) * dir);
-        glm::vec3 const& headStart = neckEnd;
-        glm::vec3 const& headEnd = end;
+        glm::vec3 const neckStart = start;
+        glm::vec3 const neckEnd = end - (static_cast<float>(d.getTipLength()) * dir);
+        glm::vec3 const headStart = neckEnd;
+        glm::vec3 const headEnd = end;
 
         constexpr float neckThickness = 0.005f;
         constexpr float headThickness = 0.02f;
 
-        glm::vec4 color = GetColor(d);
+        glm::vec4 const color = GetColor(d);
 
         // emit neck cylinder
-        Transform neckXform = SimbodyCylinderToSegmentTransform({neckStart, neckEnd}, neckThickness);
+        Transform const neckXform = SimbodyCylinderToSegmentTransform({neckStart, neckEnd}, neckThickness);
         m_Consumer(m_MeshCache.getCylinderMesh(), neckXform, color);
 
         // emit head cone
-        Transform headXform = SimbodyCylinderToSegmentTransform({headStart, headEnd}, headThickness);
+        Transform const headXform = SimbodyCylinderToSegmentTransform({headStart, headEnd}, headThickness);
         m_Consumer(m_MeshCache.getConeMesh(), headXform, color);
     }
 
     void implementTorusGeometry(SimTK::DecorativeTorus const&) override
     {
-        static bool shownWarning = []() {
+        static bool const g_ShownWarningOnce = []()
+        {
             log::warn("this model uses implementTorusGeometry, which is not yet implemented in OSC");
             return true;
         }();
-        (void)shownWarning;
+        (void)g_ShownWarningOnce;
     }
 
     void implementConeGeometry(SimTK::DecorativeCone const& d) override
     {
-        Transform t = ToOscTransform(d);
+        Transform const t = ToOscTransform(d);
 
-        glm::vec3 posBase = ToVec3(d.getOrigin());
-        glm::vec3 posDir = ToVec3(d.getDirection());
+        glm::vec3 const posBase = ToVec3(d.getOrigin());
+        glm::vec3 const posDir = ToVec3(d.getDirection());
 
-        glm::vec3 pos = TransformPoint(t, posBase);
-        glm::vec3 dir = TransformDirection(t, posDir);
+        glm::vec3 const pos = TransformPoint(t, posBase);
+        glm::vec3 const dir = TransformDirection(t, posDir);
 
-        float radius = static_cast<float>(d.getBaseRadius());
-        float height = static_cast<float>(d.getHeight());
+        float const radius = static_cast<float>(d.getBaseRadius());
+        float const height = static_cast<float>(d.getHeight());
 
         Transform coneXform = SimbodyCylinderToSegmentTransform({pos, pos + height*dir}, radius);
         coneXform.scale *= t.scale;
@@ -322,10 +334,11 @@ SimTK::Vec3 osc::ToSimTKVec3(glm::vec3 const& v)
 
 SimTK::Mat33 osc::ToSimTKMat3(glm::mat3 const& m)
 {
-    return SimTK::Mat33{
+    return SimTK::Mat33
+    {
         static_cast<double>(m[0][0]), static_cast<double>(m[1][0]), static_cast<double>(m[2][0]),
         static_cast<double>(m[0][1]), static_cast<double>(m[1][1]), static_cast<double>(m[2][1]),
-        static_cast<double>(m[0][2]), static_cast<double>(m[1][2]), static_cast<double>(m[2][2])
+        static_cast<double>(m[0][2]), static_cast<double>(m[1][2]), static_cast<double>(m[2][2]),
     };
 }
 
@@ -351,17 +364,15 @@ SimTK::Inertia osc::ToSimTKInertia(glm::vec3 const& v)
 
 SimTK::Transform osc::ToSimTKTransform(glm::mat4x3 const& m)
 {
-    // glm::mat4 is column-major, SimTK::Transform is effectively
-    // row-major
+    // glm::mat4 is column-major, SimTK::Transform is effectively row-major
 
-    SimTK::Mat33 mtx(
+    SimTK::Rotation const rot{SimTK::Mat33
+    {
         static_cast<double>(m[0][0]), static_cast<double>(m[1][0]), static_cast<double>(m[2][0]),
         static_cast<double>(m[0][1]), static_cast<double>(m[1][1]), static_cast<double>(m[2][1]),
         static_cast<double>(m[0][2]), static_cast<double>(m[1][2]), static_cast<double>(m[2][2])
-    );
-    SimTK::Vec3 translation{m[3][0], m[3][1], m[3][2]};
-
-    SimTK::Rotation rot{mtx};
+    }};
+    SimTK::Vec3 const translation = ToSimTKVec3(m[3]);
 
     return SimTK::Transform{rot, translation};
 }
@@ -382,7 +393,7 @@ glm::vec3 osc::ToVec3(SimTK::Vec3 const& v)
     {
         static_cast<float>(v[0]),
         static_cast<float>(v[1]),
-        static_cast<float>(v[2])
+        static_cast<float>(v[2]),
     };
 }
 
@@ -406,7 +417,7 @@ glm::mat4x3 osc::ToMat4x3(SimTK::Transform const& t)
     // SimTK is row-major, carefully read the sourcecode for
     // `SimTK::Transform`.
 
-    glm::mat4x3 m;
+    glm::mat4x3 m{};
 
     // x0 y0 z0 w0
     SimTK::Rotation const& r = t.R();
@@ -446,7 +457,7 @@ glm::mat4x4 osc::ToMat4x4(SimTK::Transform const& t)
 
 glm::quat osc::ToQuat(SimTK::Rotation const& r)
 {
-    SimTK::Quaternion q = r.convertRotationToQuaternion();
+    SimTK::Quaternion const q = r.convertRotationToQuaternion();
 
     return glm::quat
     {
@@ -467,7 +478,7 @@ osc::Transform osc::ToTransform(SimTK::Transform const& t)
 
 osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
 {
-    SimTK::DecorativeMeshFile dmf{p.string()};
+    SimTK::DecorativeMeshFile const dmf{p.string()};
     SimTK::PolygonalMesh const& mesh = dmf.getMesh();
 
     std::vector<glm::vec3> verts;
@@ -488,14 +499,11 @@ osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
 
     for (int face = 0, nfaces = mesh.getNumFaces(); face < nfaces; ++face)
     {
-        int nVerts = mesh.getNumVerticesForFace(face);
+        int const nVerts = mesh.getNumVerticesForFace(face);
 
         if (nVerts < 3)
         {
-            // line/point
-
-            // ignore
-
+            // line/point (ignore it)
         }
         else if (nVerts == 3)
         {
@@ -512,13 +520,12 @@ osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
             push(vs[0], normal);
             push(vs[1], normal);
             push(vs[2], normal);
-
         }
         else if (nVerts == 4)
         {
-            // quad: render as two triangles
+            // quad (render as two triangles)
 
-            glm::vec3 vs[] =
+            glm::vec3 const vs[] =
             {
                 GetFaceVertex(mesh, face, 0),
                 GetFaceVertex(mesh, face, 1),
@@ -526,7 +533,7 @@ osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
                 GetFaceVertex(mesh, face, 3),
             };
 
-            glm::vec3 norms[] =
+            glm::vec3 const norms[] =
             {
                 TriangleNormal(vs[0], vs[1], vs[2]),
                 TriangleNormal(vs[2], vs[3], vs[0]),
@@ -557,13 +564,13 @@ osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
             for (int vert = 0; vert < nVerts - 1; ++vert)
             {
 
-                glm::vec3 vs[] =
+                glm::vec3 const vs[] =
                 {
                     GetFaceVertex(mesh, face, vert),
                     GetFaceVertex(mesh, face, vert + 1),
                     center,
                 };
-                glm::vec3 normal = TriangleNormal(vs);
+                glm::vec3 const normal = TriangleNormal(vs);
 
                 push(vs[0], normal);
                 push(vs[1], normal);
@@ -571,13 +578,13 @@ osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
             }
 
             // complete the polygon loop
-            glm::vec3 vs[] =
+            glm::vec3 const vs[] =
             {
                 GetFaceVertex(mesh, face, nVerts - 1),
                 GetFaceVertex(mesh, face, 0),
                 center,
             };
-            glm::vec3 normal = TriangleNormal(vs);
+            glm::vec3 const normal = TriangleNormal(vs);
 
             push(vs[0], normal);
             push(vs[1], normal);
@@ -587,12 +594,12 @@ osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
 
     Mesh rv;
     rv.setTopography(MeshTopography::Triangles);
-    rv.setVerts(verts);
-    rv.setNormals(normals);
-    rv.setIndices(indices);
+    rv.setVerts(std::move(verts));
+    rv.setNormals(std::move(normals));
+    rv.setIndices(std::move(indices));
+
     return rv;
 }
-
 
 
 // osc::DecorativeGeometryHandler
