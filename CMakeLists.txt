@@ -302,6 +302,7 @@ add_library(osccore STATIC
     src/Graphics/GraphicsLazyMode.hpp
     src/Graphics/Image.cpp
     src/Graphics/Image.hpp
+    src/Graphics/ImageAnnotation.hpp
     src/Graphics/ImageFlags.hpp
     src/Graphics/ImageGen.cpp
     src/Graphics/ImageGen.hpp

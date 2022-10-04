@@ -152,7 +152,7 @@ public:
         {
             int id = 0;
             ImGui::Begin("Controls");
-            for (AnnotatedImage::Annotation const& annotation : m_AnnotatedImage.annotations)
+            for (ImageAnnotation const& annotation : m_AnnotatedImage.annotations)
             {
                 ImGui::PushID(id++);
                 ImGui::Text(annotation.label.c_str());
@@ -181,7 +181,7 @@ private:
         bool const leftClickReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
         Rect const imageSourceRect = {{0.0f, 0.0f}, m_AnnotatedImage.image.getDimensions()};
 
-        for (AnnotatedImage::Annotation const& annotation : m_AnnotatedImage.annotations)
+        for (ImageAnnotation const& annotation : m_AnnotatedImage.annotations)
         {
             Rect const annotationRectScreenSpace = MapRect(imageSourceRect, imageRect, annotation.rect);
             bool const selected =  Contains(m_SelectedAnnotations, annotation.label);

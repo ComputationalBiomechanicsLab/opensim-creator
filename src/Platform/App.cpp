@@ -202,7 +202,7 @@ namespace
         std::promise<osc::AnnotatedImage> resultPromise;
 
         // annotations made during the requested frame (if any)
-        std::vector<osc::AnnotatedImage::Annotation> annotations;
+        std::vector<osc::ImageAnnotation> annotations;
 
         AnnotatedScreenshotRequest(uint64_t frameRequested_, std::future<osc::Image> underlyingFuture_) :
             frameRequested{std::move(frameRequested_)},
@@ -371,7 +371,7 @@ public:
 
     void addFrameAnnotation(std::string_view label, Rect screenRect)
     {
-        m_FrameAnnotations.push_back(AnnotatedImage::Annotation{std::string{label}, std::move(screenRect)});
+        m_FrameAnnotations.push_back(ImageAnnotation{std::string{label}, std::move(screenRect)});
     }
 
     std::future<Image> requestScreenshot()
@@ -887,7 +887,7 @@ private:
     std::unique_ptr<Screen> m_NextScreen = nullptr;
 
     // frame annotations made during this frame
-    std::vector<AnnotatedImage::Annotation> m_FrameAnnotations;
+    std::vector<ImageAnnotation> m_FrameAnnotations;
 
     // any active promises for an annotated frame
     std::vector<AnnotatedScreenshotRequest> m_ActiveAnnotatedScreenshotRequests;
