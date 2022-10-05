@@ -355,6 +355,20 @@ namespace
         osc::Material material;
         std::optional<osc::MaterialPropertyBlock> maybePropBlock;
     };
+
+    struct SceneState final {
+        glm::vec3 CameraPos;
+        glm::mat4 ViewMatrix;
+        glm::mat4 ProjectionMatrix;
+        glm::mat4 ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
+
+        SceneState(glm::vec3 const& cameraPos_, glm::mat4 const& viewMatrix_, glm::mat4 const& projectionMatrix_) :
+            CameraPos{cameraPos_},
+            ViewMatrix{viewMatrix_},
+            ProjectionMatrix{projectionMatrix_}
+        {
+        }
+    };
 }
 
 
@@ -368,9 +382,47 @@ namespace osc
 {
     class GraphicsBackend final {
     public:
-        class InstanceDataUploader;
-        static void BindToInstancedAttributes(Shader::Impl const& shaderImpl, std::optional<InstancingState>& ins);
-        static void HandleBatchWithSameMesh(std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end, std::optional<InstancingState>& ins);
+        static void BindToInstancedAttributes(
+            Shader::Impl const& shaderImpl,
+            std::optional<InstancingState>& ins
+        );
+
+        static void HandleBatchWithSameMesh(
+            std::vector<RenderObject>::const_iterator begin,
+            std::vector<RenderObject>::const_iterator end,
+            std::optional<InstancingState>& ins
+        );
+
+        static void HandleBatchWithSameMatrialPropertyBlock(
+            std::vector<RenderObject>::const_iterator begin,
+            std::vector<RenderObject>::const_iterator end,
+            int& textureSlot,
+            std::optional<InstancingState>& ins
+        );
+
+        static std::optional<InstancingState> UploadInstanceData(
+            std::vector<RenderObject>::const_iterator begin,
+            std::vector<RenderObject>::const_iterator end,
+            osc::Shader::Impl const& shaderImpl
+        );
+
+        static void HandleBatchWithSameMaterial(
+            SceneState const&,
+            std::vector<RenderObject>::const_iterator begin,
+            std::vector<RenderObject>::const_iterator end
+        );
+
+        static void DrawBatchedByMaterial(
+            SceneState const&,
+            std::vector<RenderObject>::const_iterator begin,
+            std::vector<RenderObject>::const_iterator end
+        );
+
+        static void DrawBatchedByOpaqueness(
+            SceneState const&,
+            std::vector<RenderObject>::const_iterator begin,
+            std::vector<RenderObject>::const_iterator end
+        );
 
         static void DrawMesh(
             Mesh const&,
@@ -395,6 +447,10 @@ namespace osc
         );
 
         static void FlushRenderQueue(
+            Camera::Impl& camera
+        );
+
+        static void RenderScene(
             Camera::Impl& camera
         );
 
@@ -3135,7 +3191,7 @@ public:
 
     void render()
     {
-        GraphicsBackend::FlushRenderQueue(*this);
+        GraphicsBackend::RenderScene(*this);
     }
 
 private:
@@ -4068,85 +4124,76 @@ void osc::Graphics::BlitToScreen(
 /////////////////////////
 
 // helper: upload instancing data for a batch
-struct osc::GraphicsBackend::InstanceDataUploader final {
-    explicit InstanceDataUploader(osc::Camera::Impl& camera) : m_Camera{camera}
+std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
+    std::vector<RenderObject>::const_iterator begin,
+    std::vector<RenderObject>::const_iterator end,
+    osc::Shader::Impl const& shaderImpl)
+{
+    // preemptively upload instancing data
+    std::optional<InstancingState> maybeInstancingState;
+    if (shaderImpl.m_MaybeInstancedModelMatAttr || shaderImpl.m_MaybeInstancedNormalMatAttr)
     {
-    }
+        size_t const nEls = std::distance(begin, end);
+        size_t stride = 0;
 
-    std::optional<InstancingState> operator()(
-        std::vector<RenderObject>::const_iterator begin,
-        std::vector<RenderObject>::const_iterator end,
-        osc::Shader::Impl const& shaderImpl)
-    {
-        // preemptively upload instancing data
-        std::optional<InstancingState> maybeInstancingState;
-        if (shaderImpl.m_MaybeInstancedModelMatAttr || shaderImpl.m_MaybeInstancedNormalMatAttr)
+        if (shaderImpl.m_MaybeInstancedModelMatAttr)
         {
-            size_t const nEls = std::distance(begin, end);
-            size_t stride = 0;
+            if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == osc::ShaderType::Mat4)
+            {
+                stride += sizeof(float) * 16;
+            }
+        }
 
+        if (shaderImpl.m_MaybeInstancedNormalMatAttr)
+        {
+            if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat4)
+            {
+                stride += sizeof(float) * 16;
+            }
+            else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat3)
+            {
+                stride += sizeof(float) * 9;
+            }
+        }
+
+        std::unique_ptr<float[]> const buf{new float[nEls * stride]};
+        size_t bufPos = 0;
+
+        for (auto it = begin; it != end; ++it)
+        {
             if (shaderImpl.m_MaybeInstancedModelMatAttr)
             {
                 if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == osc::ShaderType::Mat4)
                 {
-                    stride += sizeof(float) * 16;
+                    static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
+                    reinterpret_cast<glm::mat4&>(buf[bufPos]) = ModelMatrix(*it);
+                    bufPos += 16;
                 }
             }
-
             if (shaderImpl.m_MaybeInstancedNormalMatAttr)
             {
                 if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat4)
                 {
-                    stride += sizeof(float) * 16;
+                    static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
+                    reinterpret_cast<glm::mat4&>(buf[bufPos]) = ModelMatrix(*it);
+                    bufPos += 16;
                 }
                 else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat3)
                 {
-                    stride += sizeof(float) * 9;
+                    static_assert(alignof(glm::mat3) == alignof(float) && sizeof(glm::mat3) == 9 * sizeof(float));
+                    reinterpret_cast<glm::mat3&>(buf[bufPos]) = NormalMatrix(*it);
+                    bufPos += 9;
                 }
             }
-
-            std::unique_ptr<float[]> const buf{new float[nEls * stride]};
-            size_t bufPos = 0;
-
-            for (auto it = begin; it != end; ++it)
-            {
-                if (shaderImpl.m_MaybeInstancedModelMatAttr)
-                {
-                    if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == osc::ShaderType::Mat4)
-                    {
-                        static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
-                        reinterpret_cast<glm::mat4&>(buf[bufPos]) = ModelMatrix(*it);
-                        bufPos += 16;
-                    }
-                }
-                if (shaderImpl.m_MaybeInstancedNormalMatAttr)
-                {
-                    if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat4)
-                    {
-                        static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
-                        reinterpret_cast<glm::mat4&>(buf[bufPos]) = ModelMatrix(*it);
-                        bufPos += 16;
-                    }
-                    else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat3)
-                    {
-                        static_assert(alignof(glm::mat3) == alignof(float) && sizeof(glm::mat3) == 9 * sizeof(float));
-                        reinterpret_cast<glm::mat3&>(buf[bufPos]) = NormalMatrix(*it);
-                        bufPos += 9;
-                    }
-                }
-            }
-            OSC_ASSERT(bufPos <= nEls * stride);
-
-            gl::ArrayBuffer<float>& vbo = maybeInstancingState.emplace(stride).Buf;
-            gl::BindBuffer(vbo);
-            gl::BufferData(vbo.BufferType, sizeof(float) * bufPos, buf.get(), GL_STREAM_DRAW);
         }
-        return maybeInstancingState;
-    }
+        OSC_ASSERT(bufPos <= nEls * stride);
 
-private:
-    osc::Camera::Impl& m_Camera;
-};
+        gl::ArrayBuffer<float>& vbo = maybeInstancingState.emplace(stride).Buf;
+        gl::BindBuffer(vbo);
+        gl::BufferData(vbo.BufferType, sizeof(float) * bufPos, buf.get(), GL_STREAM_DRAW);
+    }
+    return maybeInstancingState;
+}
 
 // helper: binds to instanced attributes (per-drawcall)
 void osc::GraphicsBackend::BindToInstancedAttributes(
@@ -4190,6 +4237,7 @@ void osc::GraphicsBackend::BindToInstancedAttributes(
     }
 }
 
+// helper: draw a batch of render objects that have the same material, material block, and mesh
 void osc::GraphicsBackend::HandleBatchWithSameMesh(
     std::vector<RenderObject>::const_iterator begin,
     std::vector<RenderObject>::const_iterator end,
@@ -4230,7 +4278,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
                 }
             }
 
-            OSC_PERF("FlushRenderQueue: single draw call");
+            OSC_PERF("HandleBatchWithSameMesh::draw");
             meshImpl.draw();
             if (ins)
             {
@@ -4240,7 +4288,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
     }
     else
     {
-        OSC_PERF("FlushRenderQueue: instanced draw call");
+        OSC_PERF("HandleBatchWithSameMesh::instanced draw");
         auto n = std::distance(begin, end);
         BindToInstancedAttributes(shaderImpl, ins);
         meshImpl.drawInstanced(n);
@@ -4250,6 +4298,222 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
         }
     }
     gl::BindVertexArray();
+}
+
+// helper: draw a batch of render objects that have the same material and material block
+void osc::GraphicsBackend::HandleBatchWithSameMatrialPropertyBlock(
+    std::vector<RenderObject>::const_iterator begin,
+    std::vector<RenderObject>::const_iterator end,
+    int& textureSlot,
+    std::optional<InstancingState>& ins)
+{
+    Material::Impl& matImpl = const_cast<Material::Impl&>(*begin->material.m_Impl);
+    Shader::Impl& shaderImpl = const_cast<Shader::Impl&>(*matImpl.m_Shader.m_Impl);
+    robin_hood::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
+
+    // bind property block variables (if applicable)
+    if (begin->maybePropBlock)
+    {
+        for (auto const& [name, value] : begin->maybePropBlock->m_Impl->m_Values)
+        {
+            auto const it = uniforms.find(name);
+            if (it != uniforms.end())
+            {
+                TryBindMaterialValueToShaderElement(it->second, value, &textureSlot);
+            }
+        }
+    }
+
+    // batch by mesh
+    auto batchIt = begin;
+    while (batchIt != end)
+    {
+        auto const batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMesh{batchIt->mesh});
+        HandleBatchWithSameMesh(batchIt, batchEnd, ins);
+        batchIt = batchEnd;
+    }
+}
+
+// helper: draw a batch of render objects that have the same material
+void osc::GraphicsBackend::HandleBatchWithSameMaterial(
+    SceneState const& scene,
+    std::vector<RenderObject>::const_iterator begin,
+    std::vector<RenderObject>::const_iterator end)
+{
+    Material::Impl& matImpl = const_cast<Material::Impl&>(*begin->material.m_Impl);
+    Shader::Impl& shaderImpl = const_cast<Shader::Impl&>(*matImpl.m_Shader.m_Impl);
+    robin_hood::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
+
+    // preemptively upload instance data
+    std::optional<InstancingState> maybeInstances = UploadInstanceData(begin, end, shaderImpl);
+
+    // updated by various batches (which may bind to textures etc.)
+    int textureSlot = 0;
+
+    gl::UseProgram(shaderImpl.updProgram());
+
+    if (matImpl.getWireframeMode())
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+
+    // bind material variables
+    {
+        // try binding to uView (standard)
+        if (shaderImpl.m_MaybeViewMatUniform)
+        {
+            if (shaderImpl.m_MaybeViewMatUniform->Type == ShaderType::Mat4)
+            {
+                gl::UniformMat4 u{shaderImpl.m_MaybeViewMatUniform->Location};
+                gl::Uniform(u, scene.ViewMatrix);
+            }
+        }
+
+        // try binding to uProjection (standard)
+        if (shaderImpl.m_MaybeProjMatUniform)
+        {
+            if (shaderImpl.m_MaybeProjMatUniform->Type == ShaderType::Mat4)
+            {
+                gl::UniformMat4 u{shaderImpl.m_MaybeProjMatUniform->Location};
+                gl::Uniform(u, scene.ProjectionMatrix);
+            }
+        }
+
+        if (shaderImpl.m_MaybeViewProjMatUniform)
+        {
+            if (shaderImpl.m_MaybeViewProjMatUniform->Type == ShaderType::Mat4)
+            {
+                gl::UniformMat4 u{shaderImpl.m_MaybeViewProjMatUniform->Location};
+                gl::Uniform(u, scene.ViewProjectionMatrix);
+            }
+        }
+
+        // bind material values
+        for (auto const& [name, value] : matImpl.m_Values)
+        {
+            if (ShaderElement const* e = TryGetValue(uniforms, name))
+            {
+                TryBindMaterialValueToShaderElement(*e, value, &textureSlot);
+            }
+        }
+    }
+
+    // batch by material property block
+    auto batchIt = begin;
+    while (batchIt != end)
+    {
+        auto batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMaterialPropertyBlock{batchIt->maybePropBlock});
+        HandleBatchWithSameMatrialPropertyBlock(batchIt, batchEnd, textureSlot, maybeInstances);
+        batchIt = batchEnd;
+    }
+
+    if (matImpl.getWireframeMode())
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+
+    gl::UseProgram();
+}
+
+// helper: draw a sequence of render objects (no presumptions)
+void osc::GraphicsBackend::DrawBatchedByMaterial(
+    SceneState const& scene,
+    std::vector<RenderObject>::const_iterator begin,
+    std::vector<RenderObject>::const_iterator end)
+{
+    // batch by material
+    auto batchIt = begin;
+    while (batchIt != end)
+    {
+        auto const batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMaterial{batchIt->material});
+        HandleBatchWithSameMaterial(scene, batchIt, batchEnd);
+        batchIt = batchEnd;
+    }
+}
+
+void osc::GraphicsBackend::DrawBatchedByOpaqueness(
+    SceneState const& scene,
+    std::vector<RenderObject>::const_iterator begin,
+    std::vector<RenderObject>::const_iterator end)
+{
+    auto batchIt = begin;
+    while (batchIt != end)
+    {
+        auto batchEnd = std::find_if_not(batchIt, end, IsOpaque);
+
+        if (batchEnd != batchIt)
+        {
+            // opaque elements
+            gl::Disable(GL_BLEND);
+            DrawBatchedByMaterial(scene, batchIt, batchEnd);
+        }
+
+        if (batchEnd != end)
+        {
+            auto transparentEnd = std::find_if(batchEnd, end, IsOpaque);
+
+            // transparent elements (assumed already sorted)
+            gl::Enable(GL_BLEND);
+            DrawBatchedByMaterial(scene, batchEnd, transparentEnd);
+
+            batchEnd = transparentEnd;
+        }
+
+        batchIt = batchEnd;
+    }
+}
+
+void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
+{
+    // flush the render queue in batches based on what's being rendered:
+    //
+    // - not-depth-tested elements (can't be reordered)
+    // - depth-tested elements (can be reordered):
+    //   - opaqueness (opaque first, then transparent back-to-front)
+    //   - material
+    //   - material property block
+    //   - mesh
+
+    std::vector<RenderObject>& queue = camera.m_RenderQueue;
+    if (queue.empty())
+    {
+        return;
+    }
+
+    // precompute any scene state used by the rendering algs
+    SceneState const scene
+    {
+        camera.getPosition(),
+        camera.getViewMatrix(),
+        camera.getProjectionMatrix(),
+    };
+
+    gl::Enable(GL_DEPTH_TEST);
+
+    auto batchIt = queue.begin();
+    while (batchIt != queue.end())
+    {
+        auto end = std::find_if_not(batchIt, queue.end(), IsDepthTested);
+
+        // these elements are depth-tested and, therefore, elegible for reordering
+        SortRenderQueue(batchIt, end, scene.CameraPos);
+        DrawBatchedByOpaqueness(scene, batchIt, end);
+
+        if (end != queue.end())
+        {
+            auto ignoreDepthTestEnd = std::find_if(end, queue.end(), IsDepthTested);
+
+            // these elements aren't depth-tested and should just be drawn as-is
+            gl::Disable(GL_DEPTH_TEST);
+            DrawBatchedByOpaqueness(scene, end, ignoreDepthTestEnd);
+            gl::Enable(GL_DEPTH_TEST);
+            end = ignoreDepthTestEnd;
+        }
+        batchIt = end;
+    }
+
+    // queue flushed: clear it
+    queue.clear();
 }
 
 void osc::GraphicsBackend::DrawMesh(
@@ -4386,18 +4650,22 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement con
     }
 }
 
-void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
+void osc::GraphicsBackend::RenderScene(Camera::Impl& camera)
 {
-    OSC_PERF("FlushRenderQueue: all");
+    OSC_PERF("RenderScene");
+
+    // setup generic pipeline state
+    {
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
 
     // setup output viewport
-    glm::ivec2 outputDimensions{};
     {
         Rect const cameraRect = camera.getPixelRect();  // in "usual" screen space - topleft
         glm::vec2 const cameraRectBottomLeft = BottomLeft(cameraRect);
         glm::vec2 const viewportDims = camera.viewportDimensions();
+        glm::ivec2 const outputDimensions = Dimensions(cameraRect);
 
-        outputDimensions = Dimensions(cameraRect);
         gl::Viewport(
             static_cast<GLsizei>(cameraRectBottomLeft.x),
             static_cast<GLsizei>(viewportDims.y - cameraRectBottomLeft.y),
@@ -4425,19 +4693,21 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         gl::Disable(GL_SCISSOR_TEST);
     }
 
-    // bind to output framebuffer and perform clear(s) (if required)
-    gl::ClearColor(
-        camera.m_BackgroundColor.r,
-        camera.m_BackgroundColor.g,
-        camera.m_BackgroundColor.b,
-        camera.m_BackgroundColor.a
-    );
-    GLenum const clearFlags = camera.m_ClearFlags == CameraClearFlags::SolidColor ? GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT : GL_DEPTH_BUFFER_BIT;
-    if (camera.m_MaybeTexture)
+    // clear output (if applicable)
+    if (camera.m_ClearFlags != CameraClearFlags::Nothing)
     {
-        DoCopyOnWrite(camera.m_MaybeTexture->m_Impl);
-        if (camera.m_ClearFlags != CameraClearFlags::Nothing)
+        gl::ClearColor(
+            camera.m_BackgroundColor.r,
+            camera.m_BackgroundColor.g,
+            camera.m_BackgroundColor.b,
+            camera.m_BackgroundColor.a
+        );
+        GLenum const clearFlags = camera.m_ClearFlags == CameraClearFlags::SolidColor ? GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT : GL_DEPTH_BUFFER_BIT;
+
+        if (camera.m_MaybeTexture)
         {
+            DoCopyOnWrite(camera.m_MaybeTexture->m_Impl);
+
             // clear the MSXAA-resolved output texture
             gl::BindFramebuffer(GL_FRAMEBUFFER, camera.m_MaybeTexture->m_Impl->getOutputFrameBuffer());
             gl::Clear(clearFlags);
@@ -4448,216 +4718,30 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
         }
         else
         {
-            gl::BindFramebuffer(GL_FRAMEBUFFER, camera.m_MaybeTexture->m_Impl->getFrameBuffer());
-        }
-    }
-    else
-    {
-        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-        if (camera.m_ClearFlags != CameraClearFlags::Nothing)
-        {
+            gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
             gl::Clear(clearFlags);
         }
     }
 
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // compute camera matrices
-    glm::mat4 const viewMtx = camera.getViewMatrix();
-    glm::mat4 const projMtx = camera.getProjectionMatrix();
-    glm::mat4 const viewProjMtx = projMtx * viewMtx;
-
-    // (there's a lot of helper functions here because this part is extremely algorithmic)
-
-    InstanceDataUploader UploadInstancingData{camera};
-
-    // helper: draw a batch of render objects that have the same material and material block
-    auto HandleBatchWithSameMatrialPropertyBlock = [](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end, int& textureSlot, std::optional<InstancingState>& ins)
-    {
-        Material::Impl& matImpl = const_cast<Material::Impl&>(*begin->material.m_Impl);
-        Shader::Impl& shaderImpl = const_cast<Shader::Impl&>(*matImpl.m_Shader.m_Impl);
-        robin_hood::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
-
-        // bind property block variables (if applicable)
-        if (begin->maybePropBlock)
-        {
-            for (auto const& [name, value] : begin->maybePropBlock->m_Impl->m_Values)
-            {
-                auto const it = uniforms.find(name);
-                if (it != uniforms.end())
-                {
-                    TryBindMaterialValueToShaderElement(it->second, value, &textureSlot);
-                }
-            }
-        }
-
-        // batch by mesh
-        auto batchIt = begin;
-        while (batchIt != end)
-        {
-            auto const batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMesh{batchIt->mesh});
-            HandleBatchWithSameMesh(batchIt, batchEnd, ins);
-            batchIt = batchEnd;
-        }
-    };
-
-    // helper: draw a batch of render objects that have the same material
-    auto HandleBatchWithSameMaterial = [&viewMtx, &projMtx, &viewProjMtx, &HandleBatchWithSameMatrialPropertyBlock, &UploadInstancingData](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end)
-    {
-        Material::Impl& matImpl = const_cast<Material::Impl&>(*begin->material.m_Impl);
-        Shader::Impl& shaderImpl = const_cast<Shader::Impl&>(*matImpl.m_Shader.m_Impl);
-        robin_hood::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
-
-        // preemptively upload instance data
-        std::optional<InstancingState> maybeInstances = UploadInstancingData(begin, end, shaderImpl);
-
-        // updated by various batches (which may bind to textures etc.)
-        int textureSlot = 0;
-
-        gl::UseProgram(shaderImpl.updProgram());
-
-        if (matImpl.getWireframeMode())
-        {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        }
-
-        // bind material variables
-        {
-            // try binding to uView (standard)
-            if (shaderImpl.m_MaybeViewMatUniform)
-            {
-                if (shaderImpl.m_MaybeViewMatUniform->Type == ShaderType::Mat4)
-                {
-                    gl::UniformMat4 u{shaderImpl.m_MaybeViewMatUniform->Location};
-                    gl::Uniform(u, viewMtx);
-                }
-            }
-
-            // try binding to uProjection (standard)
-            if (shaderImpl.m_MaybeProjMatUniform)
-            {
-                if (shaderImpl.m_MaybeProjMatUniform->Type == ShaderType::Mat4)
-                {
-                    gl::UniformMat4 u{shaderImpl.m_MaybeProjMatUniform->Location};
-                    gl::Uniform(u, projMtx);
-                }
-            }
-
-            if (shaderImpl.m_MaybeViewProjMatUniform)
-            {
-                if (shaderImpl.m_MaybeViewProjMatUniform->Type == ShaderType::Mat4)
-                {
-                    gl::UniformMat4 u{shaderImpl.m_MaybeViewProjMatUniform->Location};
-                    gl::Uniform(u, viewProjMtx);
-                }
-            }
-
-            // bind material values
-            for (auto const& [name, value] : matImpl.m_Values)
-            {
-                if (ShaderElement const* e = TryGetValue(uniforms, name))
-                {
-                    TryBindMaterialValueToShaderElement(*e, value, &textureSlot);
-                }
-            }
-        }
-
-        // batch by material property block
-        auto batchIt = begin;
-        while (batchIt != end)
-        {
-            auto batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMaterialPropertyBlock{batchIt->maybePropBlock});
-            HandleBatchWithSameMatrialPropertyBlock(batchIt, batchEnd, textureSlot, maybeInstances);
-            batchIt = batchEnd;
-        }
-
-        if (matImpl.getWireframeMode())
-        {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        }
-
-        gl::UseProgram();
-    };
-
-    // helper: draw a sequence of render objects (no presumptions)
-    auto DrawBatchedByMaterial = [&HandleBatchWithSameMaterial](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end)
-    {
-        // batch by material
-        auto batchIt = begin;
-        while (batchIt != end)
-        {
-            auto const batchEnd = std::find_if_not(batchIt, end, RenderObjectHasMaterial{batchIt->material});
-            HandleBatchWithSameMaterial(batchIt, batchEnd);
-            batchIt = batchEnd;
-        }
-    };
-
-    auto DrawBatchedByOpaqueness = [&DrawBatchedByMaterial](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end)
-    {
-        auto batchIt = begin;
-        while (batchIt != end)
-        {
-            auto batchEnd = std::find_if_not(batchIt, end, IsOpaque);
-
-            if (batchEnd != batchIt)
-            {
-                // opaque elements
-                gl::Disable(GL_BLEND);
-                DrawBatchedByMaterial(batchIt, batchEnd);
-            }
-
-            if (batchEnd != end)
-            {
-                auto transparentEnd = std::find_if(batchEnd, end, IsOpaque);
-
-                // transparent elements (assumed already sorted)
-                gl::Enable(GL_BLEND);
-                DrawBatchedByMaterial(batchEnd, transparentEnd);
-
-                batchEnd = transparentEnd;
-            }
-
-            batchIt = batchEnd;
-        }
-    };
-
-    glm::vec3 const cameraPos = camera.getPosition();
-
-    // flush the render queue
-    if (auto& queue = camera.m_RenderQueue; !queue.empty())
-    {
-        // first, batch by depth testing
-
-        gl::Enable(GL_DEPTH_TEST);
-
-        auto batchIt = queue.begin();
-        while (batchIt != queue.end())
-        {
-            auto end = std::find_if_not(batchIt, queue.end(), IsDepthTested);
-
-            // these elements are depth-tested and, therefore, elegible for reordering
-            SortRenderQueue(batchIt, end, cameraPos);
-            DrawBatchedByOpaqueness(batchIt, end);
-
-            if (end != queue.end())
-            {
-                auto ignoreDepthTestEnd = std::find_if(end, queue.end(), IsDepthTested);
-
-                // these elements aren't depth-tested and should just be drawn as-is
-                gl::Disable(GL_DEPTH_TEST);
-                DrawBatchedByOpaqueness(end, ignoreDepthTestEnd);
-                gl::Enable(GL_DEPTH_TEST);
-                end = ignoreDepthTestEnd;
-            }
-            batchIt = end;
-        }
-        queue.clear();
-    }
-
-    // perform blitting, if necessary (e.g. resolve anti-aliasing)
+    // bind to output framebuffer (if applicable)
     if (camera.m_MaybeTexture)
     {
-        OSC_PERF("FlushRenderQueue: output blit");
+        gl::BindFramebuffer(GL_FRAMEBUFFER, camera.m_MaybeTexture->m_Impl->getFrameBuffer());
+    }
+    else
+    {
+        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+    }
+
+    // DRAW: flush the render queue
+    {
+        FlushRenderQueue(camera);
+    }
+
+    // blit output to resolve MSXAA samples (if appliicable)
+    if (camera.m_MaybeTexture)
+    {
+        OSC_PERF("RenderScene::BlitOutput (resolve MSXAA)");
 
         // blit multisampled scene render to not-multisampled texture
         gl::BindFramebuffer(GL_READ_FRAMEBUFFER, (*camera.m_MaybeTexture->m_Impl->m_MaybeGPUBuffers)->MultisampledFBO);
@@ -4677,11 +4761,9 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
             GL_NEAREST
         );
 
-        // rebind to the screen (the start of FlushRenderQueue bound to the output texture)
+        // rebind to the screen (the start of RenderScene bound to the output texture)
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
     }
-
-    // (hooray)
 }
 
 void osc::GraphicsBackend::BlitToScreen(
@@ -4733,7 +4815,7 @@ void osc::GraphicsBackend::BlitToScreen(
             GL_NEAREST
         );
 
-        // rebind to the screen (the start of FlushRenderQueue bound to the output texture)
+        // rebind to the screen (the start bound to the output texture)
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
     }
 }
