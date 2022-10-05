@@ -72,8 +72,7 @@ int main(int argc, char** argv)
         {
             osc::TabHost* api = screen->getTabHostAPI();
             std::unique_ptr<osc::Tab> initialTab = registeredTab->createTab(api);
-            osc::UID initialTabUID = api->addTab(std::move(initialTab));
-            api->selectTab(initialTabUID);
+            api->selectTab(api->addTab(std::move(initialTab)));
         }
         else
         {
