@@ -681,42 +681,52 @@ osc::AABB osc::TransformAABB(AABB const& aabb, glm::mat4 const& m) noexcept
 
 osc::AABB osc::TransformAABB(AABB const& aabb, Transform const& t) noexcept
 {
-    auto verts = ToCubeVerts(aabb);
+    // from real-time collision detection (the book)
+    //
+    // screenshot: https://twitter.com/Herschel/status/1188613724665335808
 
-    for (auto& vert : verts)
+    glm::mat3 const m = ToMat3(t);
+    glm::vec3 const pos = t.position;
+
+    AABB rv;
+    for (int i = 0; i < 3; ++i)
     {
-        vert = t * vert;
-    }
+        // add in translation
+        rv.min[i] = pos[i];
+        rv.max[i] = pos[i];
 
-    return AABBFromVerts(verts.data(), verts.size());
+        // form extent by summing smaller and larger terms repsectively
+        for (int j = 0; j < 3; ++j)
+        {
+            float const e = m[i][j] * aabb.min[j];
+            float const f = m[i][j] * aabb.max[j];
+
+            if (e < f)
+            {
+                rv.min[i] += e;
+                rv.max[i] += f;
+            }
+            else
+            {
+                rv.min[i] += f;
+                rv.max[i] += e;
+            }
+        }
+    }
+    return rv;
 }
 
 osc::AABB osc::AABBFromVerts(glm::vec3 const* vs, size_t n) noexcept
 {
-    AABB rv{};
-
     // edge-case: no points provided
     if (n == 0)
     {
-        return rv;
+        return AABB{};
     }
 
-    rv.min =
-    {
-        std::numeric_limits<float>::max(),
-        std::numeric_limits<float>::max(),
-        std::numeric_limits<float>::max(),
-    };
-
-    rv.max =
-    {
-        std::numeric_limits<float>::lowest(),
-        std::numeric_limits<float>::lowest(),
-        std::numeric_limits<float>::lowest(),
-    };
-
     // otherwise, compute bounds
-    for (size_t i = 0; i < n; ++i)
+    AABB rv{vs[0], vs[0]};
+    for (size_t i = 1; i < n; ++i)
     {
         glm::vec3 const& pos = vs[i];
         rv.min = Min(rv.min, pos);
@@ -1152,13 +1162,9 @@ glm::vec4 osc::TopleftRelPosToNDCCube(glm::vec2 relpos)
     return {TopleftRelPosToNDCPoint(relpos), -1.0f, 1.0f};
 }
 
-glm::mat4 osc::ToMat4(Transform const& t) noexcept
+glm::mat3 osc::ToMat3(Transform const& t) noexcept
 {
-    glm::mat4 rv = glm::toMat4(t.rotation);
-
-    rv[3][0] = t.position.x;
-    rv[3][1] = t.position.y;
-    rv[3][2] = t.position.z;
+    glm::mat3 rv = glm::toMat3(t.rotation);
 
     rv[0][0] *= t.scale.x;
     rv[0][1] *= t.scale.x;
@@ -1171,6 +1177,29 @@ glm::mat4 osc::ToMat4(Transform const& t) noexcept
     rv[2][0] *= t.scale.z;
     rv[2][1] *= t.scale.z;
     rv[2][2] *= t.scale.z;
+
+    return rv;
+}
+
+glm::mat4 osc::ToMat4(Transform const& t) noexcept
+{
+    glm::mat4 rv = glm::toMat4(t.rotation);
+
+    rv[0][0] *= t.scale.x;
+    rv[0][1] *= t.scale.x;
+    rv[0][2] *= t.scale.x;
+
+    rv[1][0] *= t.scale.y;
+    rv[1][1] *= t.scale.y;
+    rv[1][2] *= t.scale.y;
+
+    rv[2][0] *= t.scale.z;
+    rv[2][1] *= t.scale.z;
+    rv[2][2] *= t.scale.z;
+
+    rv[3][0] = t.position.x;
+    rv[3][1] = t.position.y;
+    rv[3][2] = t.position.z;
 
     return rv;
 }

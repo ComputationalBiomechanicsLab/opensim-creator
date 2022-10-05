@@ -226,6 +226,9 @@ namespace osc
     // i.e. {X_ndc, Y_ndc, -1.0f, 1.0f}
     glm::vec4 TopleftRelPosToNDCCube(glm::vec2 relpos);
 
+    // converts a `Transform` to a 3x3 transform matrix (ignores position)
+    glm::mat3 ToMat3(Transform const&) noexcept;
+
     // converts a `Transform` to a standard 4x4 transform matrix
     glm::mat4 ToMat4(Transform const&) noexcept;
 
