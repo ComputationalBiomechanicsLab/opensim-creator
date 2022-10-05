@@ -330,6 +330,7 @@ namespace
             mesh{mesh_},
             transform{ToMat4(transform_)},
             normalMatrix{ToNormalMatrix(transform_)},
+            worldMidpoint{osc::TransformPoint(transform_, mesh.getMidpoint())},
             material{material_},
             maybePropBlock{std::move(maybePropBlock_)}
         {
@@ -344,6 +345,7 @@ namespace
             mesh{mesh_},
             transform{transform_},
             normalMatrix{osc::ToNormalMatrix(transform_)},
+            worldMidpoint{transform * glm::vec4{mesh.getMidpoint(), 1.0f}},
             material{material_},
             maybePropBlock{std::move(maybePropBlock_)}
         {
@@ -352,6 +354,7 @@ namespace
         osc::Mesh mesh;
         glm::mat4 transform;
         glm::mat4 normalMatrix;
+        glm::vec3 worldMidpoint;
         osc::Material material;
         std::optional<osc::MaterialPropertyBlock> maybePropBlock;
     };
@@ -392,7 +395,7 @@ namespace osc
             std::optional<InstancingState>& ins
         );
 
-        static void HandleBatchWithSameMatrialPropertyBlock(
+        static void HandleBatchWithSameMaterialPropertyBlock(
             nonstd::span<RenderObject const>,
             int& textureSlot,
             std::optional<InstancingState>& ins
@@ -2814,12 +2817,12 @@ namespace
 
     glm::mat4 NormalMatrix4(RenderObject const& ro)
     {
-        return glm::mat4{ ro.normalMatrix};
+        return glm::mat4{ro.normalMatrix};
     }
 
-    glm::vec3 WorldMidpoint(RenderObject const& ro)
+    glm::vec3 const& WorldMidpoint(RenderObject const& ro)
     {
-        return ro.transform * glm::vec4{ro.mesh.getMidpoint(), 1.0f};
+        return ro.worldMidpoint;
     }
 
     // function object that returns true if the first argument is farther from the second
@@ -4192,39 +4195,41 @@ void osc::GraphicsBackend::BindToInstancedAttributes(
         Shader::Impl const& shaderImpl,
         std::optional<InstancingState>& ins)
 {
-    if (ins)
+    if (!ins)
     {
-        gl::BindBuffer(ins->Buf);
-        size_t offset = 0;
-        if (shaderImpl.m_MaybeInstancedModelMatAttr)
+        return;
+    }
+
+    gl::BindBuffer(ins->Buf);
+    size_t offset = 0;
+    if (shaderImpl.m_MaybeInstancedModelMatAttr)
+    {
+        if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == ShaderType::Mat4)
         {
-            if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == ShaderType::Mat4)
-            {
-                gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->Location};
-                gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
-                gl::VertexAttribDivisor(mmtxAttr, 1);
-                gl::EnableVertexAttribArray(mmtxAttr);
-                offset += sizeof(float) * 16;
-            }
+            gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->Location};
+            gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
+            gl::VertexAttribDivisor(mmtxAttr, 1);
+            gl::EnableVertexAttribArray(mmtxAttr);
+            offset += sizeof(float) * 16;
         }
-        if (shaderImpl.m_MaybeInstancedNormalMatAttr)
+    }
+    if (shaderImpl.m_MaybeInstancedNormalMatAttr)
+    {
+        if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat4)
         {
-            if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat4)
-            {
-                gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
-                gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
-                gl::VertexAttribDivisor(mmtxAttr, 1);
-                gl::EnableVertexAttribArray(mmtxAttr);
-                offset += sizeof(float) * 16;
-            }
-            else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat3)
-            {
-                gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
-                gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
-                gl::VertexAttribDivisor(mmtxAttr, 1);
-                gl::EnableVertexAttribArray(mmtxAttr);
-                offset += sizeof(float) * 9;
-            }
+            gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
+            gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
+            gl::VertexAttribDivisor(mmtxAttr, 1);
+            gl::EnableVertexAttribArray(mmtxAttr);
+            offset += sizeof(float) * 16;
+        }
+        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat3)
+        {
+            gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
+            gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
+            gl::VertexAttribDivisor(mmtxAttr, 1);
+            gl::EnableVertexAttribArray(mmtxAttr);
+            offset += sizeof(float) * 9;
         }
     }
 }
@@ -4291,7 +4296,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
 }
 
 // helper: draw a batch of render objects that have the same material and material block
-void osc::GraphicsBackend::HandleBatchWithSameMatrialPropertyBlock(
+void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
     nonstd::span<RenderObject const> els,
     int& textureSlot,
     std::optional<InstancingState>& ins)
@@ -4504,7 +4509,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
     while (batchIt != els.end())
     {
         auto batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasMaterialPropertyBlock{batchIt->maybePropBlock});
-        HandleBatchWithSameMatrialPropertyBlock({batchIt, batchEnd}, textureSlot, maybeInstances);
+        HandleBatchWithSameMaterialPropertyBlock({batchIt, batchEnd}, textureSlot, maybeInstances);
         batchIt = batchEnd;
     }
 
