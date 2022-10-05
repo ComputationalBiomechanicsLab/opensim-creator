@@ -305,6 +305,56 @@ namespace
     {
         o << "ShadeElement(name = " << name << ", location = " << se.Location << ", type = " << se.Type << ", size = " << se.Size << ')';
     }
+
+
+    struct InstancingState final {
+        InstancingState(size_t stride) :
+            Stride{std::move(stride)}
+        {
+        }
+
+        gl::ArrayBuffer<float> Buf;
+        size_t Stride = 0;
+        size_t BaseOffset = 0;
+    };
+
+    // renderer stuff
+    struct RenderObject final {
+
+        RenderObject(
+            osc::Mesh const& mesh_,
+            osc::Transform const& transform_,
+            osc::Material const& material_,
+            std::optional<osc::MaterialPropertyBlock> maybePropBlock_) :
+
+            mesh{mesh_},
+            transform{ToMat4(transform_)},
+            normalMatrix{ToNormalMatrix(transform_)},
+            material{material_},
+            maybePropBlock{std::move(maybePropBlock_)}
+        {
+        }
+
+        RenderObject(
+            osc::Mesh const& mesh_,
+            glm::mat4 const& transform_,
+            osc::Material const& material_,
+            std::optional<osc::MaterialPropertyBlock> maybePropBlock_) :
+
+            mesh{mesh_},
+            transform{transform_},
+            normalMatrix{osc::ToNormalMatrix(transform_)},
+            material{material_},
+            maybePropBlock{std::move(maybePropBlock_)}
+        {
+        }
+
+        osc::Mesh mesh;
+        glm::mat4 transform;
+        glm::mat4 normalMatrix;
+        osc::Material material;
+        std::optional<osc::MaterialPropertyBlock> maybePropBlock;
+    };
 }
 
 
@@ -318,6 +368,10 @@ namespace osc
 {
     class GraphicsBackend final {
     public:
+        class InstanceDataUploader;
+        static void BindToInstancedAttributes(Shader::Impl const& shaderImpl, std::optional<InstancingState>& ins);
+        static void HandleBatchWithSameMesh(std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end, std::optional<InstancingState>& ins);
+
         static void DrawMesh(
             Mesh const&,
             Transform const&,
@@ -2687,44 +2741,6 @@ namespace
         "Orthographic"
     );
 
-    // renderer stuff
-    struct RenderObject final {
-
-        RenderObject(
-            osc::Mesh const& mesh_,
-            osc::Transform const& transform_,
-            osc::Material const& material_,
-            std::optional<osc::MaterialPropertyBlock> maybePropBlock_) :
-
-            mesh{mesh_},
-            transform{ToMat4(transform_)},
-            normalMatrix{ToNormalMatrix(transform_)},
-            material{material_},
-            maybePropBlock{std::move(maybePropBlock_)}
-        {
-        }
-
-        RenderObject(
-            osc::Mesh const& mesh_,
-            glm::mat4 const& transform_,
-            osc::Material const& material_,
-            std::optional<osc::MaterialPropertyBlock> maybePropBlock_) :
-
-            mesh{mesh_},
-            transform{transform_},
-            normalMatrix{osc::ToNormalMatrix(transform_)},
-            material{material_},
-            maybePropBlock{std::move(maybePropBlock_)}
-        {
-        }
-
-        osc::Mesh mesh;
-        glm::mat4 transform;
-        glm::mat4 normalMatrix;
-        osc::Material material;
-        std::optional<osc::MaterialPropertyBlock> maybePropBlock;
-    };
-
     // returns true if the render object is opaque
     bool IsOpaque(RenderObject const& ro)
     {
@@ -4051,6 +4067,191 @@ void osc::Graphics::BlitToScreen(
 //
 /////////////////////////
 
+// helper: upload instancing data for a batch
+struct osc::GraphicsBackend::InstanceDataUploader final {
+    explicit InstanceDataUploader(osc::Camera::Impl& camera) : m_Camera{camera}
+    {
+    }
+
+    std::optional<InstancingState> operator()(
+        std::vector<RenderObject>::const_iterator begin,
+        std::vector<RenderObject>::const_iterator end,
+        osc::Shader::Impl const& shaderImpl)
+    {
+        // preemptively upload instancing data
+        std::optional<InstancingState> maybeInstancingState;
+        if (shaderImpl.m_MaybeInstancedModelMatAttr || shaderImpl.m_MaybeInstancedNormalMatAttr)
+        {
+            size_t const nEls = std::distance(begin, end);
+            size_t stride = 0;
+
+            if (shaderImpl.m_MaybeInstancedModelMatAttr)
+            {
+                if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == osc::ShaderType::Mat4)
+                {
+                    stride += sizeof(float) * 16;
+                }
+            }
+
+            if (shaderImpl.m_MaybeInstancedNormalMatAttr)
+            {
+                if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat4)
+                {
+                    stride += sizeof(float) * 16;
+                }
+                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat3)
+                {
+                    stride += sizeof(float) * 9;
+                }
+            }
+
+            std::unique_ptr<float[]> const buf{new float[nEls * stride]};
+            size_t bufPos = 0;
+
+            for (auto it = begin; it != end; ++it)
+            {
+                if (shaderImpl.m_MaybeInstancedModelMatAttr)
+                {
+                    if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == osc::ShaderType::Mat4)
+                    {
+                        static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
+                        reinterpret_cast<glm::mat4&>(buf[bufPos]) = ModelMatrix(*it);
+                        bufPos += 16;
+                    }
+                }
+                if (shaderImpl.m_MaybeInstancedNormalMatAttr)
+                {
+                    if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat4)
+                    {
+                        static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
+                        reinterpret_cast<glm::mat4&>(buf[bufPos]) = ModelMatrix(*it);
+                        bufPos += 16;
+                    }
+                    else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat3)
+                    {
+                        static_assert(alignof(glm::mat3) == alignof(float) && sizeof(glm::mat3) == 9 * sizeof(float));
+                        reinterpret_cast<glm::mat3&>(buf[bufPos]) = NormalMatrix(*it);
+                        bufPos += 9;
+                    }
+                }
+            }
+            OSC_ASSERT(bufPos <= nEls * stride);
+
+            gl::ArrayBuffer<float>& vbo = maybeInstancingState.emplace(stride).Buf;
+            gl::BindBuffer(vbo);
+            gl::BufferData(vbo.BufferType, sizeof(float) * bufPos, buf.get(), GL_STREAM_DRAW);
+        }
+        return maybeInstancingState;
+    }
+
+private:
+    osc::Camera::Impl& m_Camera;
+};
+
+// helper: binds to instanced attributes (per-drawcall)
+void osc::GraphicsBackend::BindToInstancedAttributes(
+        Shader::Impl const& shaderImpl,
+        std::optional<InstancingState>& ins)
+{
+    if (ins)
+    {
+        gl::BindBuffer(ins->Buf);
+        size_t offset = 0;
+        if (shaderImpl.m_MaybeInstancedModelMatAttr)
+        {
+            if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == ShaderType::Mat4)
+            {
+                gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->Location};
+                gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
+                gl::VertexAttribDivisor(mmtxAttr, 1);
+                gl::EnableVertexAttribArray(mmtxAttr);
+                offset += sizeof(float) * 16;
+            }
+        }
+        if (shaderImpl.m_MaybeInstancedNormalMatAttr)
+        {
+            if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat4)
+            {
+                gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
+                gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
+                gl::VertexAttribDivisor(mmtxAttr, 1);
+                gl::EnableVertexAttribArray(mmtxAttr);
+                offset += sizeof(float) * 16;
+            }
+            else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat3)
+            {
+                gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
+                gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
+                gl::VertexAttribDivisor(mmtxAttr, 1);
+                gl::EnableVertexAttribArray(mmtxAttr);
+                offset += sizeof(float) * 9;
+            }
+        }
+    }
+}
+
+void osc::GraphicsBackend::HandleBatchWithSameMesh(
+    std::vector<RenderObject>::const_iterator begin,
+    std::vector<RenderObject>::const_iterator end,
+    std::optional<InstancingState>& ins)
+{
+    auto& meshImpl = const_cast<Mesh::Impl&>(*begin->mesh.m_Impl);
+    Shader::Impl& shaderImpl = *begin->material.m_Impl->m_Shader.m_Impl;
+
+    gl::BindVertexArray(meshImpl.updVertexArray());
+    if (shaderImpl.m_MaybeModelMatUniform || shaderImpl.m_MaybeNormalMatUniform)
+    {
+        for (auto it = begin; it != end; ++it)
+        {
+            {
+                // try binding to uModel (standard)
+                if (shaderImpl.m_MaybeModelMatUniform)
+                {
+                    if (shaderImpl.m_MaybeModelMatUniform->Type == ShaderType::Mat4)
+                    {
+                        gl::UniformMat4 u{shaderImpl.m_MaybeModelMatUniform->Location};
+                        gl::Uniform(u, ModelMatrix(*it));
+                    }
+                }
+
+                // try binding to uNormalMat (standard)
+                if (shaderImpl.m_MaybeNormalMatUniform)
+                {
+                    if (shaderImpl.m_MaybeNormalMatUniform->Type == osc::ShaderType::Mat3)
+                    {
+                        gl::UniformMat3 u{shaderImpl.m_MaybeNormalMatUniform->Location};
+                        gl::Uniform(u, NormalMatrix(*it));
+                    }
+                    else if (shaderImpl.m_MaybeNormalMatUniform->Type == osc::ShaderType::Mat4)
+                    {
+                        gl::UniformMat4 u{shaderImpl.m_MaybeNormalMatUniform->Location};
+                        gl::Uniform(u, NormalMatrix4(*it));
+                    }
+                }
+            }
+
+            OSC_PERF("FlushRenderQueue: single draw call");
+            meshImpl.draw();
+            if (ins)
+            {
+                ins->BaseOffset += ins->Stride;
+            }
+        }
+    }
+    else
+    {
+        OSC_PERF("FlushRenderQueue: instanced draw call");
+        auto n = std::distance(begin, end);
+        BindToInstancedAttributes(shaderImpl, ins);
+        meshImpl.drawInstanced(n);
+        if (ins)
+        {
+            ins->BaseOffset += n * ins->Stride;
+        }
+    }
+    gl::BindVertexArray();
+}
+
 void osc::GraphicsBackend::DrawMesh(
     Mesh const& mesh,
     Transform const& transform,
@@ -4268,188 +4469,10 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 
     // (there's a lot of helper functions here because this part is extremely algorithmic)
 
-    struct InstancingState final {
-        InstancingState(size_t stride) :
-            Stride{std::move(stride)}
-        {
-        }
-
-        gl::ArrayBuffer<float> Buf;
-        size_t Stride = 0;
-        size_t BaseOffset = 0;
-    };
-
-    // helper: upload instancing data for a batch
-    auto UploadInstancingData = [&camera](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end, Shader::Impl const& shaderImpl)
-    {
-        // preemptively upload instancing data
-        std::optional<InstancingState> maybeInstancingState;
-        if (shaderImpl.m_MaybeInstancedModelMatAttr || shaderImpl.m_MaybeInstancedNormalMatAttr)
-        {
-            size_t const nEls = std::distance(begin, end);
-            size_t stride = 0;
-
-            if (shaderImpl.m_MaybeInstancedModelMatAttr)
-            {
-                if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == ShaderType::Mat4)
-                {
-                    stride += sizeof(float) * 16;
-                }
-            }
-
-            if (shaderImpl.m_MaybeInstancedNormalMatAttr)
-            {
-                if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat4)
-                {
-                    stride += sizeof(float) * 16;
-                }
-                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat3)
-                {
-                    stride += sizeof(float) * 9;
-                }
-            }
-
-            std::unique_ptr<float[]> const buf{new float[nEls * stride]};
-            size_t bufPos = 0;
-
-            for (auto it = begin; it != end; ++it)
-            {
-                if (shaderImpl.m_MaybeInstancedModelMatAttr)
-                {
-                    if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == ShaderType::Mat4)
-                    {
-                        static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
-                        reinterpret_cast<glm::mat4&>(buf[bufPos]) = ModelMatrix(*it);
-                        bufPos += 16;
-                    }
-                }
-                if (shaderImpl.m_MaybeInstancedNormalMatAttr)
-                {
-                    if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat4)
-                    {
-                        static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
-                        reinterpret_cast<glm::mat4&>(buf[bufPos]) = ModelMatrix(*it);
-                        bufPos += 16;
-                    }
-                    else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat3)
-                    {
-                        static_assert(alignof(glm::mat3) == alignof(float) && sizeof(glm::mat3) == 9 * sizeof(float));
-                        reinterpret_cast<glm::mat3&>(buf[bufPos]) = NormalMatrix(*it);
-                        bufPos += 9;
-                    }
-                }
-            }
-            OSC_ASSERT(bufPos <= nEls * stride);
-
-            gl::ArrayBuffer<float>& vbo = maybeInstancingState.emplace(stride).Buf;
-            gl::BindBuffer(vbo);
-            gl::BufferData(vbo.BufferType, sizeof(float) * bufPos, buf.get(), GL_STREAM_DRAW);
-        }
-        return maybeInstancingState;
-    };
-
-    // helper: binds to instanced attributes (per-drawcall)
-    auto BindToInstancedAttributes = [&](Shader::Impl const& shaderImpl, std::optional<InstancingState>& ins)
-    {
-        if (ins)
-        {
-            gl::BindBuffer(ins->Buf);
-            size_t offset = 0;
-            if (shaderImpl.m_MaybeInstancedModelMatAttr)
-            {
-                if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == ShaderType::Mat4)
-                {
-                    gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->Location};
-                    gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
-                    gl::VertexAttribDivisor(mmtxAttr, 1);
-                    gl::EnableVertexAttribArray(mmtxAttr);
-                    offset += sizeof(float) * 16;
-                }
-            }
-            if (shaderImpl.m_MaybeInstancedNormalMatAttr)
-            {
-                if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat4)
-                {
-                    gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
-                    gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
-                    gl::VertexAttribDivisor(mmtxAttr, 1);
-                    gl::EnableVertexAttribArray(mmtxAttr);
-                    offset += sizeof(float) * 16;
-                }
-                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat3)
-                {
-                    gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
-                    gl::VertexAttribPointer(mmtxAttr, false, ins->Stride, ins->BaseOffset + offset);
-                    gl::VertexAttribDivisor(mmtxAttr, 1);
-                    gl::EnableVertexAttribArray(mmtxAttr);
-                    offset += sizeof(float) * 9;
-                }
-            }
-        }
-    };
-
-    // helper: draw a batch of render objects that have the same material, material block, and mesh
-    auto HandleBatchWithSameMesh = [&BindToInstancedAttributes](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end, std::optional<InstancingState>& ins)
-    {
-        auto& meshImpl = const_cast<Mesh::Impl&>(*begin->mesh.m_Impl);
-        Shader::Impl& shaderImpl = *begin->material.m_Impl->m_Shader.m_Impl;
-
-        gl::BindVertexArray(meshImpl.updVertexArray());
-        if (shaderImpl.m_MaybeModelMatUniform || shaderImpl.m_MaybeNormalMatUniform)
-        {
-            for (auto it = begin; it != end; ++it)
-            {
-                {
-                    // try binding to uModel (standard)
-                    if (shaderImpl.m_MaybeModelMatUniform)
-                    {
-                        if (shaderImpl.m_MaybeModelMatUniform->Type == ShaderType::Mat4)
-                        {
-                            gl::UniformMat4 u{shaderImpl.m_MaybeModelMatUniform->Location};
-                            gl::Uniform(u, ModelMatrix(*it));
-                        }
-                    }
-
-                    // try binding to uNormalMat (standard)
-                    if (shaderImpl.m_MaybeNormalMatUniform)
-                    {
-                        if (shaderImpl.m_MaybeNormalMatUniform->Type == osc::ShaderType::Mat3)
-                        {
-                            gl::UniformMat3 u{shaderImpl.m_MaybeNormalMatUniform->Location};
-                            gl::Uniform(u, NormalMatrix(*it));
-                        }
-                        else if (shaderImpl.m_MaybeNormalMatUniform->Type == osc::ShaderType::Mat4)
-                        {
-                            gl::UniformMat4 u{shaderImpl.m_MaybeNormalMatUniform->Location};
-                            gl::Uniform(u, NormalMatrix4(*it));
-                        }
-                    }
-                }
-
-                OSC_PERF("FlushRenderQueue: single draw call");
-                meshImpl.draw();
-                if (ins)
-                {
-                    ins->BaseOffset += ins->Stride;
-                }
-            }
-        }
-        else
-        {
-            OSC_PERF("FlushRenderQueue: instanced draw call");
-            auto n = std::distance(begin, end);
-            BindToInstancedAttributes(shaderImpl, ins);
-            meshImpl.drawInstanced(n);
-            if (ins)
-            {
-                ins->BaseOffset += n * ins->Stride;
-            }
-        }
-        gl::BindVertexArray();
-    };
+    InstanceDataUploader UploadInstancingData{camera};
 
     // helper: draw a batch of render objects that have the same material and material block
-    auto HandleBatchWithSameMatrialPropertyBlock = [&HandleBatchWithSameMesh](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end, int& textureSlot, std::optional<InstancingState>& ins)
+    auto HandleBatchWithSameMatrialPropertyBlock = [](std::vector<RenderObject>::const_iterator begin, std::vector<RenderObject>::const_iterator end, int& textureSlot, std::optional<InstancingState>& ins)
     {
         Material::Impl& matImpl = const_cast<Material::Impl&>(*begin->material.m_Impl);
         Shader::Impl& shaderImpl = const_cast<Shader::Impl&>(*matImpl.m_Shader.m_Impl);
