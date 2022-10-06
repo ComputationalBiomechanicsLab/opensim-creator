@@ -338,31 +338,20 @@ add_library(osccore STATIC
     src/Graphics/TextureGen.hpp
     src/Graphics/TextureWrapMode.hpp
 
-    src/Maths/AABB.cpp
     src/Maths/AABB.hpp
-    src/Maths/BVH.cpp
     src/Maths/BVH.hpp
     src/Maths/Constants.hpp
-    src/Maths/Disc.cpp
     src/Maths/Disc.hpp
-    src/Maths/EulerPerspectiveCamera.cpp
     src/Maths/EulerPerspectiveCamera.hpp
-    src/Maths/Geometry.cpp
     src/Maths/Geometry.hpp
-    src/Maths/Line.cpp
     src/Maths/Line.hpp
-    src/Maths/Plane.cpp
+    src/Maths/MathsImplementation.cpp
     src/Maths/Plane.hpp
-    src/Maths/PolarPerspectiveCamera.cpp
     src/Maths/PolarPerspectiveCamera.hpp
     src/Maths/RayCollision.hpp
-    src/Maths/Rect.cpp
     src/Maths/Rect.hpp
-    src/Maths/Segment.cpp
     src/Maths/Segment.hpp
-    src/Maths/Sphere.cpp
     src/Maths/Sphere.hpp
-    src/Maths/Transform.cpp
     src/Maths/Transform.hpp
 
     src/MiddlewareAPIs/EditorAPI.hpp
