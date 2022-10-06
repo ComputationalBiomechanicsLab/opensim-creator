@@ -268,16 +268,11 @@ endif()
 add_library(osccore STATIC
     ${CMAKE_BINARY_DIR}/osc_config.hpp
 
-    src/Actions/ActionFunctions.cpp
-    src/Actions/ActionFunctions.hpp
-
     src/Bindings/GlmHelpers.cpp
     src/Bindings/GlmHelpers.hpp
     src/Bindings/ImGuiHelpers.cpp
     src/Bindings/ImGuiHelpers.hpp
     src/Bindings/SDL2Helpers.hpp
-    src/Bindings/SimTKHelpers.cpp
-    src/Bindings/SimTKHelpers.hpp
     src/Bindings/Gl.cpp
     src/Bindings/Gl.hpp
     src/Bindings/GlGlm.hpp
@@ -354,10 +349,75 @@ add_library(osccore STATIC
     src/Maths/Sphere.hpp
     src/Maths/Transform.hpp
 
-    src/MiddlewareAPIs/EditorAPI.hpp
-    src/MiddlewareAPIs/MainUIStateAPI.hpp
-    src/MiddlewareAPIs/SimulatorUIAPI.hpp
-
+    src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp
+    src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp
+    src/OpenSimBindings/MiddlewareAPIs/SimulatorUIAPI.hpp
+    src/OpenSimBindings/Screens/MainUIScreen.cpp
+    src/OpenSimBindings/Screens/MainUIScreen.hpp
+    src/OpenSimBindings/Tabs/Experimental/RendererGeometryShaderTab.cpp
+    src/OpenSimBindings/Tabs/Experimental/RendererGeometryShaderTab.hpp
+    src/OpenSimBindings/Tabs/Experimental/MeshHittestTab.cpp
+    src/OpenSimBindings/Tabs/Experimental/MeshHittestTab.hpp
+    src/OpenSimBindings/Tabs/Experimental/PreviewExperimentalDataTab.cpp
+    src/OpenSimBindings/Tabs/Experimental/PreviewExperimentalDataTab.hpp
+    src/OpenSimBindings/Tabs/LoadingTab.cpp
+    src/OpenSimBindings/Tabs/LoadingTab.hpp
+    src/OpenSimBindings/Tabs/MeshImporterTab.cpp
+    src/OpenSimBindings/Tabs/MeshImporterTab.hpp
+    src/OpenSimBindings/Tabs/ModelEditorTab.cpp
+    src/OpenSimBindings/Tabs/ModelEditorTab.hpp
+    src/OpenSimBindings/Tabs/PerformanceAnalyzerTab.cpp
+    src/OpenSimBindings/Tabs/PerformanceAnalyzerTab.hpp
+    src/OpenSimBindings/Tabs/SimulatorTab.cpp
+    src/OpenSimBindings/Tabs/SimulatorTab.hpp
+    src/OpenSimBindings/Tabs/SplashTab.cpp
+    src/OpenSimBindings/Tabs/SplashTab.hpp
+    src/OpenSimBindings/Widgets/AddBodyPopup.cpp
+    src/OpenSimBindings/Widgets/AddBodyPopup.hpp
+    src/OpenSimBindings/Widgets/AddComponentPopup.cpp
+    src/OpenSimBindings/Widgets/AddComponentPopup.hpp
+    src/OpenSimBindings/Widgets/BasicWidgets.cpp
+    src/OpenSimBindings/Widgets/BasicWidgets.hpp
+    src/OpenSimBindings/Widgets/ComponentContextMenu.cpp
+    src/OpenSimBindings/Widgets/ComponentContextMenu.hpp
+    src/OpenSimBindings/Widgets/ComponentDetails.cpp
+    src/OpenSimBindings/Widgets/ComponentDetails.hpp
+    src/OpenSimBindings/Widgets/CoordinateEditor.cpp
+    src/OpenSimBindings/Widgets/CoordinateEditor.hpp
+    src/OpenSimBindings/Widgets/EditorTabStatusBar.cpp
+    src/OpenSimBindings/Widgets/EditorTabStatusBar.hpp
+    src/OpenSimBindings/Widgets/MainMenu.cpp
+    src/OpenSimBindings/Widgets/MainMenu.hpp
+    src/OpenSimBindings/Widgets/ModelActionsMenuItems.cpp
+    src/OpenSimBindings/Widgets/ModelActionsMenuItems.hpp
+    src/OpenSimBindings/Widgets/ModelMusclePlotPanel.cpp
+    src/OpenSimBindings/Widgets/ModelMusclePlotPanel.hpp
+    src/OpenSimBindings/Widgets/NavigatorPanel.cpp
+    src/OpenSimBindings/Widgets/NavigatorPanel.hpp
+    src/OpenSimBindings/Widgets/ObjectPropertiesEditor.cpp
+    src/OpenSimBindings/Widgets/ObjectPropertiesEditor.hpp
+    src/OpenSimBindings/Widgets/OutputWatchesPanel.cpp
+    src/OpenSimBindings/Widgets/OutputWatchesPanel.hpp
+    src/OpenSimBindings/Widgets/ParamBlockEditorPopup.cpp
+    src/OpenSimBindings/Widgets/ParamBlockEditorPopup.hpp
+    src/OpenSimBindings/Widgets/PropertiesPanel.cpp
+    src/OpenSimBindings/Widgets/PropertiesPanel.hpp
+    src/OpenSimBindings/Widgets/ReassignSocketPopup.cpp
+    src/OpenSimBindings/Widgets/ReassignSocketPopup.hpp
+    src/OpenSimBindings/Widgets/Select1PFPopup.cpp
+    src/OpenSimBindings/Widgets/Select1PFPopup.hpp
+    src/OpenSimBindings/Widgets/SelectComponentPopup.cpp
+    src/OpenSimBindings/Widgets/SelectComponentPopup.hpp
+    src/OpenSimBindings/Widgets/SelectGeometryPopup.cpp
+    src/OpenSimBindings/Widgets/SelectGeometryPopup.hpp
+    src/OpenSimBindings/Widgets/SimulationOutputPlot.cpp
+    src/OpenSimBindings/Widgets/SimulationOutputPlot.hpp
+    src/OpenSimBindings/Widgets/SimulationScrubber.cpp
+    src/OpenSimBindings/Widgets/SimulationScrubber.hpp
+    src/OpenSimBindings/Widgets/UiModelViewer.cpp
+    src/OpenSimBindings/Widgets/UiModelViewer.hpp
+    src/OpenSimBindings/ActionFunctions.cpp
+    src/OpenSimBindings/ActionFunctions.hpp
     src/OpenSimBindings/BasicModelStatePair.cpp
     src/OpenSimBindings/BasicModelStatePair.hpp
     src/OpenSimBindings/ComponentOutputExtractor.cpp
@@ -392,6 +452,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/ParamBlock.hpp
     src/OpenSimBindings/ParamBlock.cpp
     src/OpenSimBindings/ParamValue.hpp
+    src/OpenSimBindings/SimTKHelpers.cpp
+    src/OpenSimBindings/SimTKHelpers.hpp
     src/OpenSimBindings/Simulation.hpp
     src/OpenSimBindings/SimulationClock.hpp
     src/OpenSimBindings/SimulationModelStatePair.cpp
@@ -427,8 +489,6 @@ add_library(osccore STATIC
 
     src/Screens/CookiecutterScreen.cpp
     src/Screens/CookiecutterScreen.hpp
-    src/Screens/MainUIScreen.cpp
-    src/Screens/MainUIScreen.hpp
 
     src/Tabs/Experiments/CustomWidgetsTab.cpp
     src/Tabs/Experiments/CustomWidgetsTab.hpp
@@ -442,10 +502,6 @@ add_library(osccore STATIC
     src/Tabs/Experiments/ImPlotDemoTab.hpp
     src/Tabs/Experiments/MeshGenTestTab.cpp
     src/Tabs/Experiments/MeshGenTestTab.hpp
-    src/Tabs/Experiments/MeshHittestTab.cpp
-    src/Tabs/Experiments/MeshHittestTab.hpp
-    src/Tabs/Experiments/PreviewExperimentalDataTab.cpp
-    src/Tabs/Experiments/PreviewExperimentalDataTab.hpp
     src/Tabs/Experiments/RendererBasicLightingTab.cpp
     src/Tabs/Experiments/RendererBasicLightingTab.hpp
     src/Tabs/Experiments/RendererBlendingTab.cpp
@@ -454,8 +510,6 @@ add_library(osccore STATIC
     src/Tabs/Experiments/RendererCoordinateSystemsTab.hpp
     src/Tabs/Experiments/RendererFramebuffersTab.cpp
     src/Tabs/Experiments/RendererFramebuffersTab.hpp
-    src/Tabs/Experiments/RendererGeometryShaderTab.cpp
-    src/Tabs/Experiments/RendererGeometryShaderTab.hpp
     src/Tabs/Experiments/RendererHelloTriangleTab.cpp
     src/Tabs/Experiments/RendererHelloTriangleTab.hpp
     src/Tabs/Experiments/RendererLightingMapsTab.cpp
@@ -470,20 +524,8 @@ add_library(osccore STATIC
     src/Tabs/CookiecutterTab.hpp
     src/Tabs/ErrorTab.cpp
     src/Tabs/ErrorTab.hpp
-    src/Tabs/LoadingTab.cpp
-    src/Tabs/LoadingTab.hpp
-    src/Tabs/MeshImporterTab.cpp
-    src/Tabs/MeshImporterTab.hpp
-    src/Tabs/ModelEditorTab.cpp
-    src/Tabs/ModelEditorTab.hpp
-    src/Tabs/PerformanceAnalyzerTab.cpp
-    src/Tabs/PerformanceAnalyzerTab.hpp
     src/Tabs/ScreenshotTab.cpp
     src/Tabs/ScreenshotTab.hpp
-    src/Tabs/SimulatorTab.cpp
-    src/Tabs/SimulatorTab.hpp
-    src/Tabs/SplashTab.cpp
-    src/Tabs/SplashTab.hpp
     src/Tabs/Tab.cpp
     src/Tabs/Tab.hpp
     src/Tabs/TabHost.cpp
@@ -517,67 +559,23 @@ add_library(osccore STATIC
     src/Utils/UID.cpp
     src/Utils/UID.hpp
 
-    src/Widgets/AddBodyPopup.cpp
-    src/Widgets/AddBodyPopup.hpp
-    src/Widgets/AddComponentPopup.cpp
-    src/Widgets/AddComponentPopup.hpp
-    src/Widgets/BasicWidgets.cpp
-    src/Widgets/BasicWidgets.hpp
-    src/Widgets/ComponentContextMenu.cpp
-    src/Widgets/ComponentContextMenu.hpp
-    src/Widgets/ComponentDetails.cpp
-    src/Widgets/ComponentDetails.hpp
-    src/Widgets/CoordinateEditor.cpp
-    src/Widgets/CoordinateEditor.hpp
-    src/Widgets/EditorTabStatusBar.cpp
-    src/Widgets/EditorTabStatusBar.hpp
     src/Widgets/GuiRuler.cpp
     src/Widgets/GuiRuler.hpp
     src/Widgets/LogViewer.cpp
     src/Widgets/LogViewer.hpp
     src/Widgets/LogViewerPanel.cpp
     src/Widgets/LogViewerPanel.hpp
-    src/Widgets/MainMenu.cpp
-    src/Widgets/MainMenu.hpp
-    src/Widgets/ModelActionsMenuItems.cpp
-    src/Widgets/ModelActionsMenuItems.hpp
-    src/Widgets/ModelMusclePlotPanel.cpp
-    src/Widgets/ModelMusclePlotPanel.hpp
     src/Widgets/NamedPanel.cpp
     src/Widgets/NamedPanel.hpp
-    src/Widgets/NavigatorPanel.cpp
-    src/Widgets/NavigatorPanel.hpp
-    src/Widgets/ObjectPropertiesEditor.cpp
-    src/Widgets/ObjectPropertiesEditor.hpp
-    src/Widgets/OutputWatchesPanel.cpp
-    src/Widgets/OutputWatchesPanel.hpp
-    src/Widgets/ParamBlockEditorPopup.cpp
-    src/Widgets/ParamBlockEditorPopup.hpp
     src/Widgets/PerfPanel.cpp
     src/Widgets/PerfPanel.hpp
     src/Widgets/Popup.hpp
-    src/Widgets/PropertiesPanel.cpp
-    src/Widgets/PropertiesPanel.hpp
-    src/Widgets/ReassignSocketPopup.cpp
-    src/Widgets/ReassignSocketPopup.hpp
     src/Widgets/SaveChangesPopup.cpp
     src/Widgets/SaveChangesPopup.hpp
     src/Widgets/SceneViewer.cpp
     src/Widgets/SceneViewer.hpp
-    src/Widgets/Select1PFPopup.cpp
-    src/Widgets/Select1PFPopup.hpp
-    src/Widgets/SelectComponentPopup.cpp
-    src/Widgets/SelectComponentPopup.hpp
-    src/Widgets/SelectGeometryPopup.cpp
-    src/Widgets/SelectGeometryPopup.hpp
-    src/Widgets/SimulationOutputPlot.cpp
-    src/Widgets/SimulationOutputPlot.hpp
-    src/Widgets/SimulationScrubber.cpp
-    src/Widgets/SimulationScrubber.hpp
     src/Widgets/StandardPopup.cpp
     src/Widgets/StandardPopup.hpp
-    src/Widgets/UiModelViewer.cpp
-    src/Widgets/UiModelViewer.hpp
 )
 
 # osccore: target properties
