@@ -318,6 +318,49 @@ namespace
         size_t BaseOffset = 0;
     };
 
+    // transform storage: either as a matrix or a transform
+    //
+    // calling code is allowed to submit transforms as either osc::Transform (preferred) or
+    // glm::mat4 (can be handier)
+    //
+    // these need to be stored as-is, because that's the smallest possible representation and
+    // the drawing algorithm needs to traverse + sort the render objects at runtime (so size
+    // is important)
+    using Mat4OrTransform = std::variant<glm::mat4, osc::Transform>;
+
+    template<typename... Ts>
+    struct Overload : Ts... {
+        using Ts::operator()...;
+    };
+    template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
+
+    glm::mat4 ToMat4(Mat4OrTransform const& t)
+    {
+        return std::visit(Overload
+        {
+            [](glm::mat4 const& m) { return m; },
+            [](osc::Transform const& t) { return ToMat4(t); }
+        }, t);
+    }
+
+    glm::mat4 ToNormalMat4(Mat4OrTransform const& t)
+    {
+        return std::visit(Overload
+        {
+            [](glm::mat4 const& m) { return osc::ToNormalMatrix4(m); },
+            [](osc::Transform const& t) { return osc::ToNormalMatrix4(t); }
+        }, t);
+    }
+
+    glm::mat4 ToNormalMat3(Mat4OrTransform const& t)
+    {
+        return std::visit(Overload
+        {
+            [](glm::mat4 const& m) { return osc::ToNormalMatrix(m); },
+            [](osc::Transform const& t) { return osc::ToNormalMatrix(t); }
+        }, t);
+    }
+
     // renderer stuff
     struct RenderObject final {
 
@@ -328,8 +371,7 @@ namespace
             std::optional<osc::MaterialPropertyBlock> maybePropBlock_) :
 
             mesh{mesh_},
-            transform{ToMat4(transform_)},
-            normalMatrix{ToNormalMatrix(transform_)},
+            transform{transform_},
             worldMidpoint{osc::TransformPoint(transform_, mesh.getMidpoint())},
             material{material_},
             maybePropBlock{std::move(maybePropBlock_)}
@@ -344,16 +386,14 @@ namespace
 
             mesh{mesh_},
             transform{transform_},
-            normalMatrix{osc::ToNormalMatrix(transform_)},
-            worldMidpoint{transform * glm::vec4{mesh.getMidpoint(), 1.0f}},
+            worldMidpoint{transform_ * glm::vec4{mesh.getMidpoint(), 1.0f}},
             material{material_},
             maybePropBlock{std::move(maybePropBlock_)}
         {
         }
 
         osc::Mesh mesh;
-        glm::mat4 transform;
-        glm::mat4 normalMatrix;
+        Mat4OrTransform transform;
         glm::vec3 worldMidpoint;
         osc::Material material;
         std::optional<osc::MaterialPropertyBlock> maybePropBlock;
@@ -2807,17 +2847,17 @@ namespace
 
     glm::mat4 ModelMatrix(RenderObject const& ro)
     {
-        return ro.transform;
+        return ToMat4(ro.transform);
     }
 
     glm::mat3 NormalMatrix(RenderObject const& ro)
     {
-        return ro.normalMatrix;
+        return ToNormalMat3(ro.transform);
     }
 
     glm::mat4 NormalMatrix4(RenderObject const& ro)
     {
-        return glm::mat4{ro.normalMatrix};
+        return ToNormalMat4(ro.transform);
     }
 
     glm::vec3 const& WorldMidpoint(RenderObject const& ro)
