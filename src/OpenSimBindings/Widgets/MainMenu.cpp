@@ -2,9 +2,11 @@
 
 #include "osc_config.hpp"
 
-#include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "src/OpenSimBindings/Tabs/MeshImporterTab.hpp"
+#include "src/OpenSimBindings/Tabs/SimulatorTab.hpp"
+#include "src/OpenSimBindings/ActionFunctions.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/StoFileSimulation.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
@@ -13,8 +15,6 @@
 #include "src/Platform/Config.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
-#include "src/Tabs/MeshImporterTab.hpp"
-#include "src/Tabs/SimulatorTab.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"

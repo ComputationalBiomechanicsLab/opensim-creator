@@ -1,13 +1,13 @@
 #include "CoordinateEditor.hpp"
 
-#include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/MiddlewareAPIs/EditorAPI.hpp"
+#include "src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp"
+#include "src/OpenSimBindings/Widgets/ComponentContextMenu.hpp"
+#include "src/OpenSimBindings/ActionFunctions.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/Algorithms.hpp"
-#include "src/Widgets/ComponentContextMenu.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>

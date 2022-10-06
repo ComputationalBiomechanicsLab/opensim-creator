@@ -1,14 +1,15 @@
 #include "RendererGeometryShaderTab.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/Bindings/SimTKHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/Shader.hpp"
 #include "src/Maths/Transform.hpp"
+#include "src/OpenSimBindings/SimTKHelpers.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Tabs/TabRegistry.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
@@ -16,6 +17,12 @@
 
 #include <cstdint>
 #include <utility>
+
+static bool const g_TabRegistered = []()
+{
+    osc::RegisterTab("Renderer/GeometryShader", [](osc::TabHost* h) -> std::unique_ptr<osc::Tab> { return std::make_unique<osc::RendererGeometryShaderTab>(h); });
+    return true;
+}();
 
 static osc::Mesh LoadGeometry()
 {

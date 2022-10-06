@@ -1,19 +1,19 @@
 #include "PropertiesPanel.hpp"
 
-#include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/MiddlewareAPIs/EditorAPI.hpp"
+#include "src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp"
+#include "src/OpenSimBindings/Widgets/ComponentContextMenu.hpp"
+#include "src/OpenSimBindings/Widgets/ObjectPropertiesEditor.hpp"
+#include "src/OpenSimBindings/Widgets/ReassignSocketPopup.hpp"
+#include "src/OpenSimBindings/Widgets/SelectComponentPopup.hpp"
+#include "src/OpenSimBindings/Widgets/SelectGeometryPopup.hpp"
+#include "src/OpenSimBindings/ActionFunctions.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/ScopeGuard.hpp"
-#include "src/Widgets/ComponentContextMenu.hpp"
-#include "src/Widgets/ObjectPropertiesEditor.hpp"
-#include "src/Widgets/ReassignSocketPopup.hpp"
-#include "src/Widgets/SelectComponentPopup.hpp"
-#include "src/Widgets/SelectGeometryPopup.hpp"
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>

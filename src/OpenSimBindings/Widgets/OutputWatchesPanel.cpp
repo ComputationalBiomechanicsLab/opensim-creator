@@ -1,6 +1,6 @@
 #include "OutputWatchesPanel.hpp"
 
-#include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"

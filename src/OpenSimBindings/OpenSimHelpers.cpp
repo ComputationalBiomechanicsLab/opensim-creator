@@ -1,6 +1,5 @@
 #include "OpenSimHelpers.hpp"
 
-#include "src/Bindings/SimTKHelpers.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Maths/AABB.hpp"
@@ -12,6 +11,7 @@
 #include "src/OpenSimBindings/MuscleColoringStyle.hpp"
 #include "src/OpenSimBindings/MuscleDecorationStyle.hpp"
 #include "src/OpenSimBindings/MuscleSizingStyle.hpp"
+#include "src/OpenSimBindings/SimTKHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
 #include "src/Platform/App.hpp"

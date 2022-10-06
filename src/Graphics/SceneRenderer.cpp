@@ -199,7 +199,7 @@ public:
 
         // render scene to the screen
         {
-            // draw OpenSim scene elements
+            // draw scene elements
             m_SceneColoredElementsMaterial.setVec3("uViewPos", m_Camera.getPosition());
             m_SceneColoredElementsMaterial.setVec3("uLightDir", params.lightDirection);
             m_SceneColoredElementsMaterial.setVec3("uLightColor", params.lightColor);

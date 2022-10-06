@@ -11,18 +11,15 @@
 #include "src/Tabs/Experiments/ImGuizmoDemoTab.hpp"
 #include "src/Tabs/Experiments/ImPlotDemoTab.hpp"
 #include "src/Tabs/Experiments/MeshGenTestTab.hpp"
-#include "src/Tabs/Experiments/PreviewExperimentalDataTab.hpp"
 #include "src/Tabs/Experiments/RendererBasicLightingTab.hpp"
 #include "src/Tabs/Experiments/RendererBlendingTab.hpp"
 #include "src/Tabs/Experiments/RendererCoordinateSystemsTab.hpp"
 #include "src/Tabs/Experiments/RendererFramebuffersTab.hpp"
-#include "src/Tabs/Experiments/RendererGeometryShaderTab.hpp"
 #include "src/Tabs/Experiments/RendererHelloTriangleTab.hpp"
 #include "src/Tabs/Experiments/RendererLightingMapsTab.hpp"
 #include "src/Tabs/Experiments/RendererMultipleLightsTab.hpp"
 #include "src/Tabs/Experiments/RendererSDFTab.hpp"
 #include "src/Tabs/Experiments/RendererTexturingTab.hpp"
-#include "src/Tabs/Experiments/MeshHittestTab.hpp"
 
 #include <algorithm>
 #include <memory>
@@ -69,13 +66,10 @@ namespace
         auto lock = rv.lock();
         lock->emplace_back("UI/CustomWidgets", TabConstructor<osc::CustomWidgetsTab>);
         lock->emplace_back("Hittest/AnalyticGeometry", TabConstructor<osc::HittestTab>);
-        lock->emplace_back("Hittest/Meshes", TabConstructor<osc::MeshHittestTab>);
-        lock->emplace_back("OpenSim/PreviewExperimentalData", TabConstructor<osc::PreviewExperimentalDataTab>);
         lock->emplace_back("Renderer/BasicLighting", TabConstructor<osc::RendererBasicLightingTab>);
         lock->emplace_back("Renderer/Blending", TabConstructor<osc::RendererBlendingTab>);
         lock->emplace_back("Renderer/CoordinateSystems", TabConstructor<osc::RendererCoordinateSystemsTab>);
         lock->emplace_back("Renderer/Framebuffers", TabConstructor<osc::RendererFramebuffersTab>);
-        lock->emplace_back("Renderer/GeometryShader", TabConstructor<osc::RendererGeometryShaderTab>);
         lock->emplace_back("Renderer/HelloTriangle", TabConstructor<osc::RendererHelloTriangleTab>);
         lock->emplace_back("Renderer/LightingMaps", TabConstructor<osc::RendererLightingMapsTab>);
         lock->emplace_back("Renderer/MultipleLights", TabConstructor<osc::RendererMultipleLightsTab>);

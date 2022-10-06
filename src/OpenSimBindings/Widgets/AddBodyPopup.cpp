@@ -1,13 +1,13 @@
 #include "AddBodyPopup.hpp"
 
-#include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/MiddlewareAPIs/EditorAPI.hpp"
+#include "src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp"
+#include "src/OpenSimBindings/Widgets/SelectGeometryPopup.hpp"
+#include "src/OpenSimBindings/ActionFunctions.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/Log.hpp"
-#include "src/Widgets/SelectGeometryPopup.hpp"
 #include "src/Widgets/StandardPopup.hpp"
 
 #include <glm/gtc/type_ptr.hpp>

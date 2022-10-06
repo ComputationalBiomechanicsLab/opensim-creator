@@ -1,11 +1,11 @@
 #include "ModelActionsMenuItems.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/MiddlewareAPIs/EditorAPI.hpp"
+#include "src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp"
+#include "src/OpenSimBindings/Widgets/AddBodyPopup.hpp"
+#include "src/OpenSimBindings/Widgets/AddComponentPopup.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/Utils/CStringView.hpp"
-#include "src/Widgets/AddBodyPopup.hpp"
-#include "src/Widgets/AddComponentPopup.hpp"
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>

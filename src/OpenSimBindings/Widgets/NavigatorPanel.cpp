@@ -1,12 +1,12 @@
 #include "NavigatorPanel.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/OpenSimBindings/Widgets/BasicWidgets.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
-#include "src/Widgets/BasicWidgets.hpp"
 #include "src/Widgets/NamedPanel.hpp"
 
 #include <OpenSim/Common/Component.h>

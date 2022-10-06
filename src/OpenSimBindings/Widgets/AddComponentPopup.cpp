@@ -1,11 +1,11 @@
 #include "AddComponentPopup.hpp"
 
-#include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/OpenSimBindings/Widgets/ObjectPropertiesEditor.hpp"
+#include "src/OpenSimBindings/ActionFunctions.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Utils/Algorithms.hpp"
-#include "src/Widgets/ObjectPropertiesEditor.hpp"
 #include "src/Widgets/StandardPopup.hpp"
 
 #include <imgui.h>

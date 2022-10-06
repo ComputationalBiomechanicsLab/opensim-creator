@@ -1,8 +1,15 @@
 #include "SimulatorTab.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
-#include "src/MiddlewareAPIs/SimulatorUIAPI.hpp"
+#include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "src/OpenSimBindings/MiddlewareAPIs/SimulatorUIAPI.hpp"
+#include "src/OpenSimBindings/Widgets/BasicWidgets.hpp"
+#include "src/OpenSimBindings/Widgets/MainMenu.hpp"
+#include "src/OpenSimBindings/Widgets/NavigatorPanel.hpp"
+#include "src/OpenSimBindings/Widgets/ComponentDetails.hpp"
+#include "src/OpenSimBindings/Widgets/SimulationOutputPlot.hpp"
+#include "src/OpenSimBindings/Widgets/SimulationScrubber.hpp"
+#include "src/OpenSimBindings/Widgets/UiModelViewer.hpp"
 #include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
@@ -18,15 +25,8 @@
 #include "src/Tabs/TabHost.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 #include "src/Utils/Perf.hpp"
-#include "src/Widgets/BasicWidgets.hpp"
 #include "src/Widgets/LogViewer.hpp"
-#include "src/Widgets/MainMenu.hpp"
-#include "src/Widgets/NavigatorPanel.hpp"
-#include "src/Widgets/ComponentDetails.hpp"
 #include "src/Widgets/PerfPanel.hpp"
-#include "src/Widgets/SimulationOutputPlot.hpp"
-#include "src/Widgets/SimulationScrubber.hpp"
-#include "src/Widgets/UiModelViewer.hpp"
 
 #include <glm/vec2.hpp>
 #include <imgui.h>

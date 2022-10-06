@@ -277,8 +277,7 @@ namespace osc
     void ApplyWorldspaceRotation(Transform& applicationTarget, glm::vec3 const& eulerAngles, glm::vec3 const& rotationCenter) noexcept;
 
     // returns XYZ (pitch, yaw, roll) Euler angles for a one-by-one application of an
-    // intrinsic rotations. These rotations are what (e.g.) OpenSim uses for joint
-    // coordinates.
+    // intrinsic rotations.
     //
     // Each rotation is applied one-at-a-time, to the transformed space, so we have:
     //

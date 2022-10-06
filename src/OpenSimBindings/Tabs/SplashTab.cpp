@@ -2,7 +2,6 @@
 
 #include "osc_config.hpp"
 
-#include "src/Actions/ActionFunctions.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Texture2D.hpp"
 #include "src/Graphics/TextureFilterMode.hpp"
@@ -12,17 +11,18 @@
 #include "src/Maths/Geometry.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
-#include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "src/OpenSimBindings/Widgets/MainMenu.hpp"
+#include "src/OpenSimBindings/Tabs/LoadingTab.hpp"
+#include "src/OpenSimBindings/Tabs/MeshImporterTab.hpp"
+#include "src/OpenSimBindings/ActionFunctions.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/RecentFile.hpp"
 #include "src/Platform/Styling.hpp"
-#include "src/Tabs/LoadingTab.hpp"
-#include "src/Tabs/MeshImporterTab.hpp"
 #include "src/Tabs/TabHost.hpp"
 #include "src/Utils/Algorithms.hpp"
-#include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/LogViewer.hpp"
 
 #include <glm/vec2.hpp>

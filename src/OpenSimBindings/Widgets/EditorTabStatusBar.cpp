@@ -1,11 +1,11 @@
 #include "EditorTabStatusBar.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/MiddlewareAPIs/EditorAPI.hpp"
+#include "src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp"
+#include "src/OpenSimBindings/Widgets/ComponentContextMenu.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Utils/Algorithms.hpp"
-#include "src/Widgets/ComponentContextMenu.hpp"
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>

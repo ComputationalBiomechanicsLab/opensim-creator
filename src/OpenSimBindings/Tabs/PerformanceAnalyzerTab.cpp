@@ -1,5 +1,6 @@
 #include "PerformanceAnalyzerTab.hpp"
 
+#include "src/OpenSimBindings/Widgets/ParamBlockEditorPopup.hpp"
 #include "src/OpenSimBindings/BasicModelStatePair.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulation.hpp"
 #include "src/OpenSimBindings/ForwardDynamicSimulator.hpp"
@@ -11,7 +12,6 @@
 #include "src/OpenSimBindings/SimulationStatus.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
-#include "src/Widgets/ParamBlockEditorPopup.hpp"
 
 #include <SDL_events.h>
 #include <IconsFontAwesome5.h>

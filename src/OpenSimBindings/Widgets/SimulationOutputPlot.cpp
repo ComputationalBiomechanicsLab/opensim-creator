@@ -1,7 +1,7 @@
 #include "SimulationOutputPlot.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/MiddlewareAPIs/SimulatorUIAPI.hpp"
+#include "src/OpenSimBindings/MiddlewareAPIs/SimulatorUIAPI.hpp"
 #include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"

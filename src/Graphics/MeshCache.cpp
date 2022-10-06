@@ -1,11 +1,11 @@
 #include "MeshCache.hpp"
 
-#include "src/Bindings/SimTKHelpers.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -59,22 +59,26 @@ osc::MeshCache::~MeshCache() noexcept
     delete m_Impl;
 }
 
-std::shared_ptr<osc::Mesh const> osc::MeshCache::getMeshFile(std::string const& p)
+std::shared_ptr<osc::Mesh const> osc::MeshCache::get(std::string const& key, std::function<std::shared_ptr<osc::Mesh const>()> const& getter)
 {
     auto guard = m_Impl->fileCache.lock();
 
-    auto [it, inserted] = guard->try_emplace(p, nullptr);
+    auto [it, inserted] = guard->try_emplace(key, nullptr);
 
     if (inserted)
     {
         try
         {
-            auto mesh = std::make_shared<Mesh>(osc::LoadMeshViaSimTK(p));
-            it->second = std::move(mesh);
+            it->second = getter();
+            if (!it->second)
+            {
+                log::error("%s: a mesh getter returned null: it will be replaced with a dummy cube", key.c_str());
+                it->second = m_Impl->cube;  // dummy entry
+            }
         }
-        catch (...)
+        catch (std::exception const& ex)
         {
-            log::error("error loading mesh file %s: it will be replaced with a cube", p.c_str());
+            log::error("%s: error getting a mesh via a getter: it will be replaced with a dummy cube: %s", key.c_str(), ex.what());
             it->second = m_Impl->cube;  // dummy entry
         }
     }

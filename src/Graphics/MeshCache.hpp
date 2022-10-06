@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -8,7 +9,6 @@ namespace osc { class Mesh; }
 namespace osc
 {
     class MeshCache final {
-
     public:
         MeshCache();
         MeshCache(MeshCache const&) = delete;
@@ -17,8 +17,8 @@ namespace osc
         MeshCache& operator=(MeshCache&&) noexcept;
         ~MeshCache() noexcept;
 
-        // prints error to log and returns dummy mesh if load error happens
-        std::shared_ptr<Mesh const> getMeshFile(std::string const&);
+        // always returns non-nullptr (it will use a dummy cube and print a log error if something fails)
+        std::shared_ptr<Mesh const> get(std::string const& key, std::function<std::shared_ptr<Mesh const>()> const& getter);
 
         std::shared_ptr<Mesh const> getSphereMesh();
         std::shared_ptr<Mesh const> getCylinderMesh();

@@ -1,7 +1,7 @@
+#include "src/OpenSimBindings/Screens/MainUIScreen.hpp"
 #include "src/OpenSimBindings/OpenSimApp.hpp"
 #include "src/Platform/Config.hpp"
 #include "src/Platform/Log.hpp"
-#include "src/Screens/MainUIScreen.hpp"
 #include "src/Tabs/Tab.hpp"
 #include "src/Tabs/TabHost.hpp"
 #include "src/Tabs/TabRegistry.hpp"

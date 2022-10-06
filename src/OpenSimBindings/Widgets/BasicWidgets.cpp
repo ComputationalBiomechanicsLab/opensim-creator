@@ -1,7 +1,7 @@
 #include "BasicWidgets.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
 #include "src/OpenSimBindings/IntegratorMethod.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
