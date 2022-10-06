@@ -317,6 +317,7 @@ add_library(osccore STATIC
     src/Graphics/RenderTexture.hpp
     src/Graphics/RenderTextureDescriptor.hpp
     src/Graphics/RenderTextureFormat.hpp
+    src/Graphics/Rgb24.hpp
     src/Graphics/Rgba32.hpp
     src/Graphics/SceneCollision.hpp
     src/Graphics/SceneDecoration.cpp
