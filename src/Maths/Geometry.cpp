@@ -379,6 +379,11 @@ glm::mat3 osc::ToNormalMatrix(glm::mat4x3 const& m) noexcept
     return glm::inverse(glm::transpose(topLeft));
 }
 
+glm::mat4 osc::ToNormalMatrix4(glm::mat4 const& m) noexcept
+{
+    return ToNormalMatrix(m);
+}
+
 glm::mat4 osc::Dir1ToDir2Xform(glm::vec3 const& a, glm::vec3 const& b) noexcept
 {
     float cosAng = glm::dot(a, b);
@@ -525,6 +530,15 @@ osc::Line osc::TransformLine(Line const& l, glm::mat4 const& m) noexcept
     rv.dir = m * glm::vec4{l.dir, 0.0f};
     rv.origin = m * glm::vec4{l.origin, 1.0f};
     return rv;
+}
+
+osc::Line osc::InverseTransformLine(Line const& l, Transform const& t) noexcept
+{
+    return Line
+    {
+        InverseTransformPoint(t, l.origin),
+        InverseTransformDirection(t, l.dir),
+    };
 }
 
 glm::mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b) noexcept

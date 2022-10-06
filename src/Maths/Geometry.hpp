@@ -90,6 +90,12 @@ namespace osc
     // returns a normal matrix created from the supplied xform matrix
     glm::mat3 ToNormalMatrix(glm::mat4x3 const&) noexcept;
 
+    // returns a noraml matrix created from the supplied xform matrix
+    //
+    // this is just a padded version of the 3x3 matrix (but is handy for when downstream
+    // callers ultimately just want a 4x4 matrix)
+    glm::mat4 ToNormalMatrix4(glm::mat4 const&) noexcept;
+
     // returns matrix that rotates dir1 to point in the same direction as dir2
     glm::mat4 Dir1ToDir2Xform(glm::vec3 const& dir1, glm::vec3 const& dir2) noexcept;
 
@@ -132,6 +138,9 @@ namespace osc
 
     // returns a line that has been transformed by the supplied transform matrix
     Line TransformLine(Line const&, glm::mat4 const&) noexcept;
+
+    // returns a line that has been transformed by the inverse of the supplied transform
+    Line InverseTransformLine(Line const&, Transform const&) noexcept;
 
     // returns an xform that maps a disc to another disc
     glm::mat4 DiscToDiscMat4(Disc const&, Disc const&) noexcept;
