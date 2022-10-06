@@ -234,7 +234,8 @@ osc::RayCollision osc::GetClosestWorldspaceRayCollision(Mesh const& mesh, Transf
         return rv;
     }
 
-    Line const modelspaceRay = TransformLine(worldspaceRay, ToInverseMat4(transform));
+    // map the ray into the mesh's modelspace, so that we compute a ray-mesh collision
+    Line const modelspaceRay = InverseTransformLine(worldspaceRay, transform);
 
     BVHCollision collision;
     MeshIndicesView const indices = mesh.getIndices();
@@ -244,6 +245,8 @@ osc::RayCollision osc::GetClosestWorldspaceRayCollision(Mesh const& mesh, Transf
 
     if (collided)
     {
+        // map the ray back into worldspace
+
         glm::vec3 const locationModelspace = modelspaceRay.origin + collision.distance * modelspaceRay.dir;
         glm::vec3 const locationWorldspace = transform * locationModelspace;
 
