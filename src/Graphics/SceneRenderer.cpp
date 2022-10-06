@@ -52,7 +52,6 @@ class osc::SceneRenderer::Impl final {
 public:
     Impl()
     {
-        m_SolidColorMaterial.setTransparent(true);
         m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_ChequerTexture);
         m_SceneTexturedElementsMaterial.setVec2("uTextureScale", {200.0f, 200.0f});
     }

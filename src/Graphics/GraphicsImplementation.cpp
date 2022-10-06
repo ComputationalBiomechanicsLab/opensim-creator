@@ -4223,6 +4223,7 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
         }
         OSC_ASSERT(bufPos <= els.size() * stride);
 
+        OSC_PERF("GraphicsBackend::UploadInstanceData");
         gl::ArrayBuffer<float>& vbo = maybeInstancingState.emplace(stride).Buf;
         gl::BindBuffer(vbo);
         gl::BufferData(vbo.BufferType, sizeof(float) * bufPos, buf.get(), GL_STREAM_DRAW);
