@@ -51,7 +51,7 @@ public:
     {
         m_Camera.setViewMatrix(glm::mat4{1.0f});
         m_Camera.setProjectionMatrix(glm::mat4{1.0f});
-        auto container = osc::LoadTexture2DFromImageResource("container.jpg", ImageFlags_FlipVertically);
+        Texture2D container = osc::LoadTexture2DFromImageResource("container.jpg", ImageFlags_FlipVertically);
         container.setWrapMode(osc::TextureWrapMode::Clamp);
         m_Material.setTexture("uTexture1", std::move(container));
         m_Material.setTexture("uTexture2", osc::LoadTexture2DFromImageResource("awesomeface.png", ImageFlags_FlipVertically));
@@ -96,7 +96,7 @@ public:
     void onDraw()
     {
         m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
-        Graphics::DrawMesh(m_Mesh, osc::Transform{}, m_Material, m_Camera);
+        Graphics::DrawMesh(m_Mesh, Transform{}, m_Material, m_Camera);
         m_Camera.render();
     }
 

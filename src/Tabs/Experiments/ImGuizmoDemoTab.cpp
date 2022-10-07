@@ -88,8 +88,9 @@ public:
             glm::value_ptr(m_ModelMatrix),
             NULL,
             NULL, //&snap[0],   // snap
-            NULL,   // bound sizing?
-            NULL);  // bound sizing snap
+            NULL, // bound sizing?
+            NULL  // bound sizing snap
+        );
     }
 
 

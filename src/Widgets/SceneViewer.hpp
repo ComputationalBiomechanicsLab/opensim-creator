@@ -1,6 +1,5 @@
 #pragma once
 
-#include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
 
 namespace osc { class SceneDecoration; }

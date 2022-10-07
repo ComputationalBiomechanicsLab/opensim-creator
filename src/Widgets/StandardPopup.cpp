@@ -17,8 +17,7 @@ osc::StandardPopup::StandardPopup(
     int popupFlags) :
 
     m_PopupName{std::move(popupName)},
-    m_Width{std::move(width)},
-    m_Height{std::move(height)},
+    m_Dimensions{static_cast<int>(width), static_cast<int>(height)},
     m_PopupFlags{std::move(popupFlags)},
     m_ShouldOpen{false},
     m_ShouldClose{false},
@@ -61,7 +60,7 @@ bool osc::StandardPopup::beginPopup()
         {
             ImVec2 center = ImGui::GetMainViewport()->GetCenter();
             ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2{0.5f, 0.5f});
-            ImGui::SetNextWindowSize({m_Width, m_Height});
+            ImGui::SetNextWindowSize(glm::vec2{m_Dimensions});
         }
 
         // try to show modal

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/vec2.hpp>
+
 #include <string>
 #include <string_view>
 
@@ -37,8 +39,7 @@ namespace osc
         virtual void implOnClose() {}
 
         std::string m_PopupName;
-        float m_Width;
-        float m_Height;
+        glm::ivec2 m_Dimensions;
         int m_PopupFlags;
         bool m_ShouldOpen;
         bool m_ShouldClose;

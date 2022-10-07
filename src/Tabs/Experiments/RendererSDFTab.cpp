@@ -175,7 +175,15 @@ private:
     TabHost* m_Parent;
 
     // rendering stuff
-    Material m_Material{ Shader{App::slurp("shaders/ExperimentSDF.vert"), App::slurp("shaders/ExperimentSDF.frag")} };
+    Material m_Material
+    {
+        Shader
+        {
+            App::slurp("shaders/ExperimentSDF.vert"),
+            App::slurp("shaders/ExperimentSDF.frag"),
+        }
+    };
+
     FontTexture m_FontTexture = CreateFontTexture();
 
     LogViewerPanel m_LogViewer{"log"};
