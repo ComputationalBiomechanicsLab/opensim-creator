@@ -1,7 +1,7 @@
 #include "LoadingTab.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/Maths/Geometry.hpp"
+#include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/Tabs/ModelEditorTab.hpp"

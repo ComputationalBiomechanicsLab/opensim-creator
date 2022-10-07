@@ -7,8 +7,9 @@
 #include "src/Graphics/MaterialPropertyBlock.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Maths/Disc.hpp"
-#include "src/Maths/Geometry.hpp"
 #include "src/Maths/Line.hpp"
+#include "src/Maths/CollisionTests.hpp"
+#include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Sphere.hpp"
 #include "src/Platform/App.hpp"
 

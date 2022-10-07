@@ -1,7 +1,7 @@
 #include "ImGuizmoDemoTab.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/Maths/Geometry.hpp"
+#include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Maths/Rect.hpp"
 

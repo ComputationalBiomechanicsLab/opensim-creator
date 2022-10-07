@@ -4,7 +4,7 @@
 #include "src/Graphics/RenderTexture.hpp"
 #include "src/Graphics/Texture2D.hpp"
 #include "src/Maths/Constants.hpp"
-#include "src/Maths/Geometry.hpp"
+#include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Platform/App.hpp"

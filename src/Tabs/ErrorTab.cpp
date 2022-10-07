@@ -1,7 +1,7 @@
 #include "ErrorTab.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/Maths/Geometry.hpp"
+#include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Widgets/LogViewer.hpp"
 

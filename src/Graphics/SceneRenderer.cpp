@@ -12,7 +12,7 @@
 #include "src/Graphics/ShaderCache.hpp"
 #include "src/Graphics/TextureGen.hpp"
 #include "src/Maths/Constants.hpp"
-#include "src/Maths/Geometry.hpp"
+#include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"

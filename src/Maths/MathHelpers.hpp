@@ -2,7 +2,6 @@
 
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/Line.hpp"
-#include "src/Maths/RayCollision.hpp"
 #include "src/Maths/Sphere.hpp"
 #include "src/Maths/Transform.hpp"
 
@@ -24,9 +23,12 @@ namespace osc { struct Plane; }
 namespace osc { struct Rect; }
 namespace osc { struct Segment; }
 
-// geometry: low-level, backend-independent, geometric maths
+// math helpers: generally handy math functions that aren't attached to a particular
+//               osc struct
 namespace osc
 {
+    // ----- glm::vecX/glm::matX helpers -----
+
     // returns true if the provided vectors are at the same location
     bool AreAtSameLocation(glm::vec3 const&, glm::vec3 const&) noexcept;
 
@@ -73,10 +75,10 @@ namespace osc
     glm::vec3 Midpoint(nonstd::span<glm::vec3 const>) noexcept;
 
     // returns the sum of `n` vectors using the "Kahan Summation Algorithm" to reduce errors
-    glm::vec3 KahanSum(glm::vec3 const*, size_t n) noexcept;
+    glm::vec3 KahanSum(nonstd::span<glm::vec3 const>) noexcept;
 
     // returns the average of `n` vectors using whichever numerically stable average happens to work
-    glm::vec3 NumericallyStableAverage(glm::vec3 const*, size_t n) noexcept;
+    glm::vec3 NumericallyStableAverage(nonstd::span<glm::vec3 const>) noexcept;
 
     // returns a normal vector of the supplied (pointed to) triangle (i.e. (v[1]-v[0]) x (v[2]-v[0]))
     glm::vec3 TriangleNormal(glm::vec3 const*) noexcept;
@@ -102,6 +104,19 @@ namespace osc
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
     glm::vec3 ExtractEulerAngleXYZ(glm::mat4 const&) noexcept;
 
+    // converts a topleft-origin RELATIVE `pos` (0 to 1 in XY starting topleft) into an
+    // XY location in NDC (-1 to +1 in XY starting in the middle)
+    glm::vec2 TopleftRelPosToNDCPoint(glm::vec2 relpos);
+
+    // converts a topleft-origin RELATIVE `pos` (0 to 1 in XY, starting topleft) into
+    // the equivalent POINT on the front of the NDC cube (i.e. "as if" a viewer was there)
+    //
+    // i.e. {X_ndc, Y_ndc, -1.0f, 1.0f}
+    glm::vec4 TopleftRelPosToNDCCube(glm::vec2 relpos);
+
+
+    // ----- osc::Rect helpers -----
+
     // returns the area of the rectangle
     float Area(Rect const&) noexcept;
 
@@ -123,6 +138,13 @@ namespace osc
     // returns true if the given point is within the rect's bounds
     bool IsPointInRect(Rect const&, glm::vec2 const&) noexcept;
 
+    // returns a rect, created by mapping an Normalized Device Coordinates (NDC) rect
+    // (i.e. -1.0 to 1.0) within a screenspace viewport (pixel units, topleft == (0, 0))
+    Rect NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const& viewport) noexcept;
+
+
+    // ----- osc::Sphere helpers -----
+
     // returns a sphere that bounds the given vertices
     Sphere BoundingSphereOf(glm::vec3 const*, size_t n) noexcept;
 
@@ -136,14 +158,23 @@ namespace osc
     // returns an AABB that contains the sphere
     AABB ToAABB(Sphere const&) noexcept;
 
+
+    // ----- osc::Line helpers -----
+
     // returns a line that has been transformed by the supplied transform matrix
     Line TransformLine(Line const&, glm::mat4 const&) noexcept;
 
     // returns a line that has been transformed by the inverse of the supplied transform
     Line InverseTransformLine(Line const&, Transform const&) noexcept;
 
+
+    // ----- osc::Disc helpers -----
+
     // returns an xform that maps a disc to another disc
     glm::mat4 DiscToDiscMat4(Disc const&, Disc const&) noexcept;
+
+
+    // ----- osc::AABB helpers -----
 
     // returns an AABB that is "inverted", such that it's minimum is the largest
     // possible value and its maximum is the smallest possible value
@@ -200,11 +231,11 @@ namespace osc
         glm::mat4 const& viewMat,
         glm::mat4 const& projMat,
         float znear,
-        float zfar);
+        float zfar
+    );
 
-    // returns a rect, created by mapping an Normalized Device Coordinates (NDC) rect
-    // (i.e. -1.0 to 1.0) within a screenspace viewport (pixel units, topleft == (0, 0))
-    Rect NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const& viewport) noexcept;
+
+    // ----- osc::Segment helpers -----
 
     // returns an xform that maps a path segment to another path segment
     glm::mat4 SegmentToSegmentMat4(Segment const&, Segment const&) noexcept;
@@ -212,28 +243,14 @@ namespace osc
     // returns a transform that maps a path segment to another path segment
     Transform SegmentToSegmentTransform(Segment const&, Segment const&) noexcept;
 
-    // collision tests
-    RayCollision GetRayCollisionSphere(Line const&, Sphere const&) noexcept;
-    RayCollision GetRayCollisionAABB(Line const&, AABB const&) noexcept;
-    RayCollision GetRayCollisionPlane(Line const&, Plane const&) noexcept;
-    RayCollision GetRayCollisionDisc(Line const&, Disc const&) noexcept;
-    RayCollision GetRayCollisionTriangle(Line const&, glm::vec3 const*) noexcept;
-
     // returns a transform that maps a simbody standard cylinder to a segment with the given radius
     Transform SimbodyCylinderToSegmentTransform(Segment const&, float radius) noexcept;
 
     // returns a transform that maps a simbody standard cone to a segment with the given radius
     Transform SimbodyConeToSegmentTransform(Segment const&, float radius) noexcept;
 
-    // converts a topleft-origin RELATIVE `pos` (0 to 1 in XY starting topleft) into an
-    // XY location in NDC (-1 to +1 in XY starting in the middle)
-    glm::vec2 TopleftRelPosToNDCPoint(glm::vec2 relpos);
 
-    // converts a topleft-origin RELATIVE `pos` (0 to 1 in XY, starting topleft) into
-    // the equivalent POINT on the front of the NDC cube (i.e. "as if" a viewer was there)
-    //
-    // i.e. {X_ndc, Y_ndc, -1.0f, 1.0f}
-    glm::vec4 TopleftRelPosToNDCCube(glm::vec2 relpos);
+    // ----- osc::Transform helpers -----
 
     // converts a `Transform` to a 3x3 transform matrix (ignores position)
     glm::mat3 ToMat3(Transform const&) noexcept;

@@ -336,11 +336,12 @@ add_library(osccore STATIC
 
     src/Maths/AABB.hpp
     src/Maths/BVH.hpp
+    src/Maths/CollisionTests.hpp
     src/Maths/Constants.hpp
     src/Maths/Disc.hpp
     src/Maths/EulerPerspectiveCamera.hpp
-    src/Maths/Geometry.hpp
     src/Maths/Line.hpp
+    src/Maths/MathHelpers.hpp
     src/Maths/MathsImplementation.cpp
     src/Maths/Plane.hpp
     src/Maths/PolarPerspectiveCamera.hpp

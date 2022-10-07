@@ -1,12 +1,14 @@
 #include "src/Bindings/GlmHelpers.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/BVH.hpp"
+#include "src/Maths/CollisionTests.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Disc.hpp"
-#include "src/Maths/Geometry.hpp"
+#include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/RayCollision.hpp"
 #include "src/Maths/EulerPerspectiveCamera.hpp"
 #include "src/Maths/Line.hpp"
+#include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Plane.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Maths/RayCollision.hpp"
@@ -1025,7 +1027,7 @@ static osc::RayCollision GetRayCollisionSphereAnalytic(osc::Sphere const& s, osc
 }
 
 
-// public API
+// MathHelpers
 
 bool osc::AreAtSameLocation(glm::vec3 const& a, glm::vec3 const& b) noexcept
 {
@@ -1155,12 +1157,15 @@ glm::vec3 osc::Midpoint(nonstd::span<glm::vec3 const> vs) noexcept
     return rv;
 }
 
-glm::vec3 osc::KahanSum(glm::vec3 const* vs, size_t n) noexcept
+
+// Geometry
+
+glm::vec3 osc::KahanSum(nonstd::span<glm::vec3 const> vs) noexcept
 {
     glm::vec3 sum{};  // accumulator
     glm::vec3 c{};    // running compensation of low-order bits
 
-    for (size_t i = 0; i < n; ++i)
+    for (size_t i = 0; i < vs.size(); ++i)
     {
         glm::vec3 y = vs[i] - c;  // subtract the compensation amount from the next number
         glm::vec3 t = sum + y;    // perform the summation (might lose information)
@@ -1171,10 +1176,10 @@ glm::vec3 osc::KahanSum(glm::vec3 const* vs, size_t n) noexcept
     return sum;
 }
 
-glm::vec3 osc::NumericallyStableAverage(glm::vec3 const* vs, size_t n) noexcept
+glm::vec3 osc::NumericallyStableAverage(nonstd::span<glm::vec3 const> vs) noexcept
 {
-    glm::vec3 sum = KahanSum(vs, n);
-    return sum / static_cast<float>(n);
+    glm::vec3 sum = KahanSum(vs);
+    return sum / static_cast<float>(vs.size());
 }
 
 glm::vec3 osc::TriangleNormal(glm::vec3 const* v) noexcept
@@ -1236,6 +1241,17 @@ glm::vec3 osc::ExtractEulerAngleXYZ(glm::mat4 const& m) noexcept
     return v;
 }
 
+glm::vec2 osc::TopleftRelPosToNDCPoint(glm::vec2 relpos)
+{
+    relpos.y = 1.0f - relpos.y;
+    return 2.0f*relpos - 1.0f;
+}
+
+glm::vec4 osc::TopleftRelPosToNDCCube(glm::vec2 relpos)
+{
+    return {TopleftRelPosToNDCPoint(relpos), -1.0f, 1.0f};
+}
+
 float osc::Area(Rect const& r) noexcept
 {
     auto d = Dimensions(r);
@@ -1291,6 +1307,24 @@ bool osc::IsPointInRect(Rect const& r, glm::vec2 const& p) noexcept
     glm::vec2 relPos = p - r.p1;
     glm::vec2 dims = Dimensions(r);
     return (0.0f <= relPos.x && relPos.x <= dims.x) && (0.0f <= relPos.y && relPos.y <= dims.y);
+}
+
+osc::Rect osc::NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const& viewport) noexcept
+{
+    glm::vec2 const viewportDims = Dimensions(viewport);
+
+    // remap [-1, 1] into [0, viewportDims]
+    Rect rv
+    {
+        0.5f * (ndcRect.p1 + 1.0f) * viewportDims,
+        0.5f * (ndcRect.p2 + 1.0f) * viewportDims,
+    };
+
+    // offset by viewport's top-left
+    rv.p1 += viewport.p1;
+    rv.p2 += viewport.p1;
+
+    return rv;
 }
 
 osc::Sphere osc::BoundingSphereOf(glm::vec3 const* vs, size_t n) noexcept
@@ -1695,24 +1729,6 @@ std::optional<osc::Rect> osc::AABBToScreenNDCRect(
     return rv;
 }
 
-osc::Rect osc::NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const& viewport) noexcept
-{
-    glm::vec2 const viewportDims = Dimensions(viewport);
-
-    // remap [-1, 1] into [0, viewportDims]
-    Rect rv
-    {
-        0.5f * (ndcRect.p1 + 1.0f) * viewportDims,
-        0.5f * (ndcRect.p2 + 1.0f) * viewportDims,
-    };
-
-    // offset by viewport's top-left
-    rv.p1 += viewport.p1;
-    rv.p2 += viewport.p1;
-
-    return rv;
-}
-
 glm::mat4 osc::SegmentToSegmentMat4(Segment const& a, Segment const& b) noexcept
 {
     glm::vec3 a1ToA2 = a.p2 - a.p1;
@@ -1760,6 +1776,142 @@ osc::Transform osc::SegmentToSegmentTransform(Segment const& a, Segment const& b
     t.position = bMid - aMid;
 
     return t;
+}
+
+osc::Transform osc::SimbodyCylinderToSegmentTransform(Segment const& s, float radius) noexcept
+{
+    Segment cylinderLine{{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
+    Transform t = SegmentToSegmentTransform(cylinderLine, s);
+    t.scale.x = radius;
+    t.scale.z = radius;
+    return t;
+}
+
+osc::Transform osc::SimbodyConeToSegmentTransform(Segment const& s, float radius) noexcept
+{
+    return SimbodyCylinderToSegmentTransform(s, radius);
+}
+
+glm::mat3 osc::ToMat3(Transform const& t) noexcept
+{
+    glm::mat3 rv = glm::toMat3(t.rotation);
+
+    rv[0][0] *= t.scale.x;
+    rv[0][1] *= t.scale.x;
+    rv[0][2] *= t.scale.x;
+
+    rv[1][0] *= t.scale.y;
+    rv[1][1] *= t.scale.y;
+    rv[1][2] *= t.scale.y;
+
+    rv[2][0] *= t.scale.z;
+    rv[2][1] *= t.scale.z;
+    rv[2][2] *= t.scale.z;
+
+    return rv;
+}
+
+glm::mat4 osc::ToMat4(Transform const& t) noexcept
+{
+    glm::mat4 rv = glm::toMat4(t.rotation);
+
+    rv[0][0] *= t.scale.x;
+    rv[0][1] *= t.scale.x;
+    rv[0][2] *= t.scale.x;
+
+    rv[1][0] *= t.scale.y;
+    rv[1][1] *= t.scale.y;
+    rv[1][2] *= t.scale.y;
+
+    rv[2][0] *= t.scale.z;
+    rv[2][1] *= t.scale.z;
+    rv[2][2] *= t.scale.z;
+
+    rv[3][0] = t.position.x;
+    rv[3][1] = t.position.y;
+    rv[3][2] = t.position.z;
+
+    return rv;
+}
+
+glm::mat4 osc::ToInverseMat4(Transform const& t) noexcept
+{
+    glm::mat4 translater = glm::translate(glm::mat4{1.0f}, -t.position);
+    glm::mat4 rotater = glm::toMat4(glm::conjugate(t.rotation));
+    glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, 1.0f/t.scale);
+
+    return scaler * rotater * translater;
+}
+
+glm::mat3x3 osc::ToNormalMatrix(Transform const& t) noexcept
+{
+    return glm::toMat3(t.rotation);
+}
+
+glm::mat4 osc::ToNormalMatrix4(Transform const& t) noexcept
+{
+    return glm::toMat4(t.rotation);
+}
+
+osc::Transform osc::ToTransform(glm::mat4 const& mtx)
+{
+    Transform rv;
+    glm::vec3 skew;
+    glm::vec4 perspective;
+    if (!glm::decompose(mtx, rv.scale, rv.rotation, rv.position, skew, perspective))
+    {
+        throw std::runtime_error{"failed to decompose a matrix into scale, rotation, etc."};
+    }
+    return rv;
+}
+
+glm::vec3 osc::TransformDirection(Transform const& t, glm::vec3 const& localDir) noexcept
+{
+    return t.rotation * localDir;
+}
+
+glm::vec3 osc::InverseTransformDirection(Transform const& t, glm::vec3 const& worldDir) noexcept
+{
+    return glm::conjugate(t.rotation) * worldDir;
+}
+
+glm::vec3 osc::TransformPoint(Transform const& t, glm::vec3 const& localPoint) noexcept
+{
+    glm::vec3 rv{localPoint};
+    rv *= t.scale;
+    rv = t.rotation * rv;
+    rv += t.position;
+    return rv;
+}
+
+glm::vec3 osc::InverseTransformPoint(Transform const& t, glm::vec3 const& worldPoint) noexcept
+{
+    glm::vec3 rv = worldPoint;
+    rv -= t.position;
+    rv = glm::conjugate(t.rotation) * rv;
+    rv /= t.scale;
+    return rv;
+}
+
+void osc::ApplyWorldspaceRotation(Transform& t,
+    glm::vec3 const& eulerAngles,
+    glm::vec3 const& rotationCenter) noexcept
+{
+    glm::quat q{eulerAngles};
+    t.position = q*(t.position - rotationCenter) + rotationCenter;
+    t.rotation = glm::normalize(q*t.rotation);
+}
+
+glm::vec3 osc::ExtractEulerAngleXYZ(Transform const& t) noexcept
+{
+    glm::vec3 rv;
+    glm::extractEulerAngleXYZ(glm::toMat4(t.rotation), rv.x, rv.y, rv.z);
+    return rv;
+}
+
+glm::vec3 osc::ExtractExtrinsicEulerAnglesXYZ(Transform const& t) noexcept
+{
+    return glm::eulerAngles(t.rotation);
 }
 
 osc::RayCollision osc::GetRayCollisionSphere(Line const& l, Sphere const& s) noexcept
@@ -1971,155 +2123,4 @@ osc::RayCollision osc::GetRayCollisionTriangle(Line const& l, glm::vec3 const* v
     rv.hit = true;
     rv.distance = t;
     return rv;
-}
-
-osc::Transform osc::SimbodyCylinderToSegmentTransform(Segment const& s, float radius) noexcept
-{
-    Segment cylinderLine{{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
-    Transform t = SegmentToSegmentTransform(cylinderLine, s);
-    t.scale.x = radius;
-    t.scale.z = radius;
-    return t;
-}
-
-osc::Transform osc::SimbodyConeToSegmentTransform(Segment const& s, float radius) noexcept
-{
-    return SimbodyCylinderToSegmentTransform(s, radius);
-}
-
-glm::vec2 osc::TopleftRelPosToNDCPoint(glm::vec2 relpos)
-{
-    relpos.y = 1.0f - relpos.y;
-    return 2.0f*relpos - 1.0f;
-}
-
-// converts a topleft-origin RELATIVE `pos` (0 to 1 in XY, starting topleft) into
-// the equivalent POINT on the front of the NDC cube (i.e. "as if" a viewer was there)
-//
-// i.e. {X_ndc, Y_ndc, -1.0f, 1.0f}
-glm::vec4 osc::TopleftRelPosToNDCCube(glm::vec2 relpos)
-{
-    return {TopleftRelPosToNDCPoint(relpos), -1.0f, 1.0f};
-}
-
-glm::mat3 osc::ToMat3(Transform const& t) noexcept
-{
-    glm::mat3 rv = glm::toMat3(t.rotation);
-
-    rv[0][0] *= t.scale.x;
-    rv[0][1] *= t.scale.x;
-    rv[0][2] *= t.scale.x;
-
-    rv[1][0] *= t.scale.y;
-    rv[1][1] *= t.scale.y;
-    rv[1][2] *= t.scale.y;
-
-    rv[2][0] *= t.scale.z;
-    rv[2][1] *= t.scale.z;
-    rv[2][2] *= t.scale.z;
-
-    return rv;
-}
-
-glm::mat4 osc::ToMat4(Transform const& t) noexcept
-{
-    glm::mat4 rv = glm::toMat4(t.rotation);
-
-    rv[0][0] *= t.scale.x;
-    rv[0][1] *= t.scale.x;
-    rv[0][2] *= t.scale.x;
-
-    rv[1][0] *= t.scale.y;
-    rv[1][1] *= t.scale.y;
-    rv[1][2] *= t.scale.y;
-
-    rv[2][0] *= t.scale.z;
-    rv[2][1] *= t.scale.z;
-    rv[2][2] *= t.scale.z;
-
-    rv[3][0] = t.position.x;
-    rv[3][1] = t.position.y;
-    rv[3][2] = t.position.z;
-
-    return rv;
-}
-
-glm::mat4 osc::ToInverseMat4(Transform const& t) noexcept
-{
-    glm::mat4 translater = glm::translate(glm::mat4{1.0f}, -t.position);
-    glm::mat4 rotater = glm::toMat4(glm::conjugate(t.rotation));
-    glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, 1.0f/t.scale);
-
-    return scaler * rotater * translater;
-}
-
-glm::mat3x3 osc::ToNormalMatrix(Transform const& t) noexcept
-{
-    return glm::toMat3(t.rotation);
-}
-
-glm::mat4 osc::ToNormalMatrix4(Transform const& t) noexcept
-{
-    return glm::toMat4(t.rotation);
-}
-
-osc::Transform osc::ToTransform(glm::mat4 const& mtx)
-{
-    Transform rv;
-    glm::vec3 skew;
-    glm::vec4 perspective;
-    if (!glm::decompose(mtx, rv.scale, rv.rotation, rv.position, skew, perspective))
-    {
-        throw std::runtime_error{"failed to decompose a matrix into scale, rotation, etc."};
-    }
-    return rv;
-}
-
-glm::vec3 osc::TransformDirection(Transform const& t, glm::vec3 const& localDir) noexcept
-{
-    return t.rotation * localDir;
-}
-
-glm::vec3 osc::InverseTransformDirection(Transform const& t, glm::vec3 const& worldDir) noexcept
-{
-    return glm::conjugate(t.rotation) * worldDir;
-}
-
-glm::vec3 osc::TransformPoint(Transform const& t, glm::vec3 const& localPoint) noexcept
-{
-    glm::vec3 rv{localPoint};
-    rv *= t.scale;
-    rv = t.rotation * rv;
-    rv += t.position;
-    return rv;
-}
-
-glm::vec3 osc::InverseTransformPoint(Transform const& t, glm::vec3 const& worldPoint) noexcept
-{
-    glm::vec3 rv = worldPoint;
-    rv -= t.position;
-    rv = glm::conjugate(t.rotation) * rv;
-    rv /= t.scale;
-    return rv;
-}
-
-void osc::ApplyWorldspaceRotation(Transform& t,
-    glm::vec3 const& eulerAngles,
-    glm::vec3 const& rotationCenter) noexcept
-{
-    glm::quat q{eulerAngles};
-    t.position = q*(t.position - rotationCenter) + rotationCenter;
-    t.rotation = glm::normalize(q*t.rotation);
-}
-
-glm::vec3 osc::ExtractEulerAngleXYZ(Transform const& t) noexcept
-{
-    glm::vec3 rv;
-    glm::extractEulerAngleXYZ(glm::toMat4(t.rotation), rv.x, rv.y, rv.z);
-    return rv;
-}
-
-glm::vec3 osc::ExtractExtrinsicEulerAnglesXYZ(Transform const& t) noexcept
-{
-    return glm::eulerAngles(t.rotation);
 }

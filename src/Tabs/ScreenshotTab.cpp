@@ -11,7 +11,7 @@
 #include "src/Graphics/ShaderCache.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/Texture2D.hpp"
-#include "src/Maths/Geometry.hpp"
+#include "src/Maths/MathHelpers.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Utils/Algorithms.hpp"

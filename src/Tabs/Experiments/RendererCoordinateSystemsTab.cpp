@@ -8,7 +8,6 @@
 #include "src/Graphics/Shader.hpp"
 #include "src/Graphics/Texture2D.hpp"
 #include "src/Maths/Constants.hpp"
-#include "src/Maths/Geometry.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Utils/CStringView.hpp"

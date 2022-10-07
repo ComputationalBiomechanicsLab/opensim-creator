@@ -11,7 +11,7 @@
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/BVH.hpp"
 #include "src/Maths/Constants.hpp"
-#include "src/Maths/Geometry.hpp"
+#include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Line.hpp"
 #include "src/Maths/RayCollision.hpp"
 #include "src/Maths/Rect.hpp"

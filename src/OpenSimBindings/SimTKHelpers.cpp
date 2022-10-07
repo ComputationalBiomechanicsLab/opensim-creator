@@ -2,7 +2,7 @@
 
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
-#include "src/Maths/Geometry.hpp"
+#include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Segment.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/Log.hpp"

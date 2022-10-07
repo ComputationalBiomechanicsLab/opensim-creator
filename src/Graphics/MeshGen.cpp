@@ -2,7 +2,7 @@
 
 #include "src/Graphics/Mesh.hpp"
 #include "src/Maths/Constants.hpp"
-#include "src/Maths/Geometry.hpp"
+#include "src/Maths/MathHelpers.hpp"
 #include "src/Utils/Assertions.hpp"
 
 #include <glm/vec2.hpp>

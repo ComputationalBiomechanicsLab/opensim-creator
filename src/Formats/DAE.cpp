@@ -4,7 +4,7 @@
 
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
-#include "src/Maths/Geometry.hpp"
+#include "src/Maths/MathHelpers.hpp"
 #include "src/Utils/Algorithms.hpp"
 
 #include <fmt/chrono.h>
