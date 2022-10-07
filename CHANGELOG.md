@@ -7,6 +7,7 @@ All notable changes to this project will be documented here. The format is based
 
 - The mouseover hittest was re-optimized to match 0.2's performance (#349)
 - Scene rendering performance has been improved by around ~10-30 % on typical machines
+- The performance panel can now be opened in the mesh importer screen (#465)
 
 
 ## [0.3.0] - 2022/09/14

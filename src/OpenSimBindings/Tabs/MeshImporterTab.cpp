@@ -43,6 +43,7 @@
 #include "src/Utils/Spsc.hpp"
 #include "src/Utils/UID.hpp"
 #include "src/Widgets/LogViewer.hpp"
+#include "src/Widgets/PerfPanel.hpp"
 #include "src/Widgets/SaveChangesPopup.hpp"
 
 #include <glm/mat3x3.hpp>
@@ -5053,19 +5054,22 @@ namespace
         // WINDOWS
         //
         // these are runtime-editable flags that dictate which panels are open
-        std::array<bool, 3> m_PanelStates{false, true, false};
-        static constexpr std::array<char const*, 3> g_OpenedPanelNames = {
+        std::array<bool, 4> m_PanelStates{false, true, false, false};
+        static constexpr std::array<char const*, 4> g_OpenedPanelNames = {
             "History",
             "Navigator",
             "Log",
+            "Performance",
         };
         enum PanelIndex_ {
             PanelIndex_History = 0,
             PanelIndex_Navigator,
             PanelIndex_Log,
+            PanelIndex_Performance,
             PanelIndex_COUNT,
         };
         osc::LogViewer m_Logviewer;
+        osc::PerfPanel m_PerfPanel{"Performance"};
 
         std::optional<osc::SaveChangesPopup> m_MaybeSaveChangesPopup;
     private:
@@ -8005,6 +8009,12 @@ namespace
                     m_Shared->m_Logviewer.draw();
                 }
                 ImGui::End();
+            }
+
+            // draw performance panel (if enabled)
+            if (m_Shared->m_PanelStates[SharedData::PanelIndex_Performance])
+            {
+                m_Shared->m_PerfPanel.draw();
             }
 
             // draw contextual 3D modal (if there is one), else: draw standard 3D viewer
