@@ -478,12 +478,14 @@ add_library(osccore STATIC
 
     src/Platform/App.cpp
     src/Platform/App.hpp
+    src/Platform/AppClock.hpp
     src/Platform/Config.cpp
     src/Platform/Config.hpp
     src/Platform/IoPoller.cpp
     src/Platform/IoPoller.hpp
     src/Platform/Log.cpp
     src/Platform/Log.hpp
+    src/Platform/MouseState.hpp
     src/Platform/os.cpp
     src/Platform/os.hpp
     src/Platform/RecentFile.hpp

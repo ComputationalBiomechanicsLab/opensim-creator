@@ -19,6 +19,7 @@
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/Widgets/StandardPopup.hpp"
 
+#include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>

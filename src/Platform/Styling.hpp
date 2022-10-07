@@ -1,8 +1,5 @@
 #pragma once
 
-// expose macros for in-app icons
-#include "third_party/IconsFontAwesome5.h"
-
 // theme color for positive things (saving, opening, adding)
 #define OSC_POSITIVE_RGBA {0.0f, 0.6f, 0.0f, 1.0f}
 #define OSC_POSITIVE_HOVERED_RGBA {0.0f, 0.7f, 0.0f, 1.0f}

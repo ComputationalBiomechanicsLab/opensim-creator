@@ -2,6 +2,8 @@
 
 #include "src/Graphics/AnnotatedImage.hpp"
 #include "src/Graphics/Image.hpp"
+#include "src/Platform/AppClock.hpp"
+#include "src/Platform/MouseState.hpp"
 #include "src/Platform/RecentFile.hpp"
 #include "src/Utils/Assertions.hpp"
 
@@ -34,30 +36,6 @@ namespace osc
     class App {
     public:
 
-        // definition of application's runtime clock
-        struct Clock {
-            using rep = float;
-            using period = std::ratio<1>;
-            using duration = std::chrono::duration<rep, period>;
-            using time_point = std::chrono::time_point<Clock>;
-        };
-        using Nanos = std::chrono::duration<Clock::rep, std::nano>;
-        using Micros = std::chrono::duration<Clock::rep, std::micro>;
-        using Millis = std::chrono::duration<Clock::rep, std::milli>;
-        using Seconds = std::chrono::duration<Clock::rep>;
-        using Minutes = std::chrono::duration<Clock::rep, std::ratio<60>>;
-        using Hours = std::chrono::duration<Clock::rep, std::ratio<3600>>;
-
-        // data structure representing the current application mouse state
-        struct MouseState final {
-            glm::ivec2 pos;
-            bool LeftDown;
-            bool RightDown;
-            bool MiddleDown;
-            bool X1Down;
-            bool X2Down;
-        };
-
         // returns the currently-active application global
         static App& upd()
         {
@@ -78,7 +56,7 @@ namespace osc
         static MeshCache& meshes();
 
         // returns a full filesystem path to a (runtime- and configuration-dependent) application resource
-        static std::filesystem::path resource(std::string_view s);
+        static std::filesystem::path resource(std::string_view);
 
         // returns the contents of a runtime resource in the `resources/` dir as a string
         static std::string slurp(std::string_view);
@@ -225,11 +203,11 @@ namespace osc
         //       be used infrequently: animations etc. should use the frame-based clocks|
         uint64_t getTickFrequency() const;
 
-        Clock::time_point getCurrentTime() const;  // care: always fetches the time *right now*
-        Clock::time_point getAppStartupTime() const;
-        Clock::time_point getFrameStartTime() const;
-        Clock::duration getDeltaSinceAppStartup() const;
-        Clock::duration getDeltaSinceLastFrame() const;
+        AppClock::time_point getCurrentTime() const;  // care: always fetches the time *right now*
+        AppClock::time_point getAppStartupTime() const;
+        AppClock::time_point getFrameStartTime() const;
+        AppClock::duration getDeltaSinceAppStartup() const;
+        AppClock::duration getDeltaSinceLastFrame() const;
 
         // makes main application event loop wait, rather than poll, for events
         //

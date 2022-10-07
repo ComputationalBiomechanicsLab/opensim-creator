@@ -7,6 +7,7 @@
 #include "src/Graphics/GraphicsContext.hpp"
 #include "src/Graphics/ShaderCache.hpp"
 #include "src/Graphics/MeshCache.hpp"
+#include "src/Platform/AppClock.hpp"
 #include "src/Platform/Config.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
@@ -171,17 +172,17 @@ static std::chrono::seconds GetCurrentTimeAsUnixTimestamp()
     return std::chrono::seconds(std::time(nullptr));
 }
 
-static osc::App::Clock::duration ConvertPerfTicksToFClockDuration(Uint64 ticks, Uint64 frequency)
+static osc::AppClock::duration ConvertPerfTicksToFClockDuration(Uint64 ticks, Uint64 frequency)
 {
     double dticks = static_cast<double>(ticks);
     double fq = static_cast<double>(frequency);
     float dur = static_cast<float>(dticks/fq);
-    return osc::App::Clock::duration{dur};
+    return osc::AppClock::duration{dur};
 }
 
-static osc::App::Clock::time_point ConvertPerfCounterToFClock(Uint64 ticks, Uint64 frequency)
+static osc::AppClock::time_point ConvertPerfCounterToFClock(Uint64 ticks, Uint64 frequency)
 {
-    return osc::App::Clock::time_point{ConvertPerfTicksToFClockDuration(ticks, frequency)};
+    return osc::AppClock::time_point{ConvertPerfTicksToFClockDuration(ticks, frequency)};
 }
 
 namespace
@@ -420,27 +421,27 @@ public:
         return SDL_GetPerformanceFrequency();
     }
 
-    osc::App::Clock::time_point getCurrentTime() const
+    osc::AppClock::time_point getCurrentTime() const
     {
         return ConvertPerfCounterToFClock(SDL_GetPerformanceCounter(), m_AppCounterFq);
     }
 
-    osc::App::Clock::time_point getAppStartupTime() const
+    osc::AppClock::time_point getAppStartupTime() const
     {
         return m_AppStartupTime;
     }
 
-    osc::App::Clock::time_point getFrameStartTime() const
+    osc::AppClock::time_point getFrameStartTime() const
     {
         return m_FrameStartTime;
     }
 
-    osc::App::Clock::duration getDeltaSinceAppStartup() const
+    osc::AppClock::duration getDeltaSinceAppStartup() const
     {
         return getCurrentTime() - m_AppStartupTime;
     }
 
-    osc::App::Clock::duration getDeltaSinceLastFrame() const
+    osc::AppClock::duration getDeltaSinceLastFrame() const
     {
         return m_TimeSinceLastFrame;
     }
@@ -479,7 +480,7 @@ public:
         m_GraphicsContext.clearScreen(color);
     }
 
-    osc::App::MouseState getMouseState() const
+    osc::MouseState getMouseState() const
     {
         MouseState rv;
 
@@ -705,7 +706,7 @@ private:
         m_AppCounter = SDL_GetPerformanceCounter();
         m_FrameCounter = 0;
         m_FrameStartTime = ConvertPerfCounterToFClock(m_AppCounter, m_AppCounterFq);
-        m_TimeSinceLastFrame = osc::App::Clock::duration{1.0f/60.0f};  // hack, for first frame
+        m_TimeSinceLastFrame = AppClock::duration{1.0f/60.0f};  // hack, for first frame
 
         while (true)  // gameloop
         {
@@ -852,13 +853,13 @@ private:
     uint64_t m_FrameCounter = 0;
 
     // when the application started up (set now)
-    App::Clock::time_point m_AppStartupTime = ConvertPerfCounterToFClock(SDL_GetPerformanceCounter(), m_AppCounterFq);
+    AppClock::time_point m_AppStartupTime = ConvertPerfCounterToFClock(SDL_GetPerformanceCounter(), m_AppCounterFq);
 
     // when the current frame started (set each frame)
-    App::Clock::time_point m_FrameStartTime = m_AppStartupTime;
+    AppClock::time_point m_FrameStartTime = m_AppStartupTime;
 
     // time since the frame before the current frame (set each frame)
-    App::Clock::duration m_TimeSinceLastFrame = {};
+    AppClock::duration m_TimeSinceLastFrame = {};
 
     // init global shader cache
     ShaderCache m_ShaderCache{};
@@ -1096,27 +1097,27 @@ uint64_t osc::App::getTickFrequency() const
     return m_Impl->getTickFrequency();
 }
 
-osc::App::Clock::time_point osc::App::getCurrentTime() const
+osc::AppClock::time_point osc::App::getCurrentTime() const
 {
     return m_Impl->getCurrentTime();
 }
 
-osc::App::Clock::time_point osc::App::getAppStartupTime() const
+osc::AppClock::time_point osc::App::getAppStartupTime() const
 {
     return m_Impl->getAppStartupTime();
 }
 
-osc::App::Clock::time_point osc::App::getFrameStartTime() const
+osc::AppClock::time_point osc::App::getFrameStartTime() const
 {
     return m_Impl->getFrameStartTime();
 }
 
-osc::App::Clock::duration osc::App::getDeltaSinceAppStartup() const
+osc::AppClock::duration osc::App::getDeltaSinceAppStartup() const
 {
     return m_Impl->getDeltaSinceAppStartup();
 }
 
-osc::App::Clock::duration osc::App::getDeltaSinceLastFrame() const
+osc::AppClock::duration osc::App::getDeltaSinceLastFrame() const
 {
     return m_Impl->getDeltaSinceLastFrame();
 }
@@ -1151,7 +1152,7 @@ void osc::App::clearScreen(glm::vec4 const& color)
     m_Impl->clearScreen(color);
 }
 
-osc::App::MouseState osc::App::getMouseState() const
+osc::MouseState osc::App::getMouseState() const
 {
     return m_Impl->getMouseState();
 }
