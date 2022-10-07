@@ -262,7 +262,7 @@ static glm::mat4x3 GenerateMat4x3()
 static osc::Texture2D GenerateTexture()
 {
     std::vector<osc::Rgba32> pixels(4);
-    return osc::Texture2D{2, 2, pixels};
+    return osc::Texture2D{{2, 2}, pixels};
 }
 
 static osc::Material GenerateMaterial()
@@ -1204,77 +1204,73 @@ TEST_F(Renderer, MaterialPropertyBlockPrintingToOutputStreamMentionsMaterialProp
 TEST_F(Renderer, TextureCanConstructFromRGBAPixels)
 {
     std::vector<osc::Rgba32> pixels(4);
-    osc::Texture2D t{2, 2, pixels};
+    osc::Texture2D t{{2, 2}, pixels};
 }
 
 TEST_F(Renderer, TextureRGBAThrowsIfDimensionsDontMatchNumberOfPixels)
 {
     std::vector<osc::Rgba32> pixels(4);
-    ASSERT_ANY_THROW({ osc::Texture2D t(1, 2, pixels); });
+    ASSERT_ANY_THROW({ osc::Texture2D t({1, 2}, pixels); });
 }
 
 TEST_F(Renderer, TextureCanConstructFromSingleChannelPixels)
 {
     std::vector<std::uint8_t> pixels(4);
-    osc::Texture2D t{2, 2, pixels};
+    osc::Texture2D t{{2, 2}, pixels};
 }
 
 TEST_F(Renderer, TextureSingleChannelConstructorThrowsIfDimensionsDoesNotMatchNumberOfPixels)
 {
     std::vector<std::uint8_t> pixels(4);
-    ASSERT_ANY_THROW({ osc::Texture2D t(2, 1, pixels); });
+    ASSERT_ANY_THROW({ osc::Texture2D t({2, 1}, pixels); });
 }
 
 TEST_F(Renderer, TextureSingleChannelConstructedReturnsCorrectValuesOnGetters)
 {
     std::vector<std::uint8_t> pixels(4);
-    osc::Texture2D t{2, 2, pixels};
+    osc::Texture2D t{{2, 2}, pixels};
 
-    ASSERT_EQ(t.getWidth(), 2);
-    ASSERT_EQ(t.getHeight(), 2);
+    ASSERT_EQ(t.getDimensions(), glm::ivec2(2,2));
     ASSERT_EQ(t.getAspectRatio(), 1.0f);
 }
 
 TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForSingleChannelData)
 {
     std::vector<std::uint8_t> singleChannelPixels(16);
-    osc::Texture2D t{4, 4, singleChannelPixels, 1};
+    osc::Texture2D t{{4, 4}, singleChannelPixels, 1};
 
-    ASSERT_EQ(t.getWidth(), 4);
-    ASSERT_EQ(t.getHeight(), 4);
+    ASSERT_EQ(t.getDimensions(), glm::ivec2(4,4));
     ASSERT_EQ(t.getAspectRatio(), 1.0f);
 }
 
 TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForRGBData)
 {
     std::vector<std::uint8_t> rgbPixels(12);
-    osc::Texture2D t{2, 2, rgbPixels, 3};
+    osc::Texture2D t{{2, 2}, rgbPixels, 3};
 
-    ASSERT_EQ(t.getWidth(), 2);
-    ASSERT_EQ(t.getHeight(), 2);
+    ASSERT_EQ(t.getDimensions(), glm::ivec2(2,2));
     ASSERT_EQ(t.getAspectRatio(), 1.0f);
 }
 
 TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForRGBAData)
 {
     std::vector<std::uint8_t> rgbaPixels(16);
-    osc::Texture2D t{2, 2, rgbaPixels, 4};
+    osc::Texture2D t{{2, 2}, rgbaPixels, 4};
 
-    ASSERT_EQ(t.getWidth(), 2);
-    ASSERT_EQ(t.getHeight(), 2);
+    ASSERT_EQ(t.getDimensions(), glm::ivec2(2,2));
     ASSERT_EQ(t.getAspectRatio(), 1.0f);
 }
 
 TEST_F(Renderer, TextureWith2NumberOfChannelsThrowsException)
 {
     std::vector<std::uint8_t> weirdPixels(8);
-    ASSERT_ANY_THROW({ osc::Texture2D t(2, 2, weirdPixels, 2); });
+    ASSERT_ANY_THROW({ osc::Texture2D t({2, 2}, weirdPixels, 2); });
 }
 
 TEST_F(Renderer, TextureWith5ChannelsThrowsException)
 {
     std::vector<std::uint8_t> weirdPixels(20);
-    ASSERT_ANY_THROW({ osc::Texture2D t(2, 2, weirdPixels, 5); });
+    ASSERT_ANY_THROW({ osc::Texture2D t({2, 2}, weirdPixels, 5); });
 }
 
 TEST_F(Renderer, TextureCanCopyConstruct)
@@ -1311,9 +1307,9 @@ TEST_F(Renderer, TextureGetWidthReturnsSuppliedWidth)
     int height = 6;
     std::vector<osc::Rgba32> pixels(width*height);
 
-    osc::Texture2D t{width, height, pixels};
+    osc::Texture2D t{{width, height}, pixels};
 
-    ASSERT_EQ(t.getWidth(), width);
+    ASSERT_EQ(t.getDimensions().x, width);
 }
 
 TEST_F(Renderer, TextureGetHeightReturnsSuppliedHeight)
@@ -1322,9 +1318,9 @@ TEST_F(Renderer, TextureGetHeightReturnsSuppliedHeight)
     int height = 6;
     std::vector<osc::Rgba32> pixels(width*height);
 
-    osc::Texture2D t{width, height, pixels};
+    osc::Texture2D t{{width, height}, pixels};
 
-    ASSERT_EQ(t.getHeight(), height);
+    ASSERT_EQ(t.getDimensions().y, height);
 }
 
 TEST_F(Renderer, TextureGetAspectRatioReturnsExpectedRatio)
@@ -1333,7 +1329,7 @@ TEST_F(Renderer, TextureGetAspectRatioReturnsExpectedRatio)
     int height = 37;
     std::vector<osc::Rgba32> pixels(width*height);
 
-    osc::Texture2D t{width, height, pixels};
+    osc::Texture2D t{{width, height}, pixels};
 
     float expected = static_cast<float>(width) / static_cast<float>(height);
 
@@ -1577,8 +1573,7 @@ TEST_F(Renderer, MeshTopographyAllCanBeWrittenToStream)
 TEST_F(Renderer, LoadTexture2DFromImageResourceCanLoadImageFile)
 {
     osc::Texture2D t = osc::LoadTexture2DFromImageResource("awesomeface.png");
-    ASSERT_EQ(t.getWidth(), 512);
-    ASSERT_EQ(t.getHeight(), 512);
+    ASSERT_EQ(t.getDimensions(), glm::ivec2(512, 512));
 }
 
 TEST_F(Renderer, LoadTexture2DFromImageResourceThrowsIfResourceNotFound)
