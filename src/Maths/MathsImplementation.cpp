@@ -13,6 +13,7 @@
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/Segment.hpp"
 #include "src/Maths/Sphere.hpp"
+#include "src/Maths/Tetrahedron.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Utils/Assertions.hpp"
 
@@ -779,6 +780,43 @@ std::ostream& osc::operator<<(std::ostream& o, Segment const& d)
 std::ostream& osc::operator<<(std::ostream& o, Sphere const& s)
 {
     return o << "Sphere(origin = " << s.origin << ", radius = " << s.radius << ')';
+}
+
+
+// osc::Tetrahedron implementatioon
+
+// returns the volume of a given tetrahedron, defined as 4 points in space
+float osc::Volume(Tetrahedron const& t)
+{
+    // sources:
+    //
+    // http://forums.cgsociety.org/t/how-to-calculate-center-of-mass-for-triangular-mesh/1309966
+    // https://stackoverflow.com/questions/9866452/calculate-volume-of-any-tetrahedron-given-4-points
+
+    glm::mat4 const m
+    {
+        glm::vec4{t[0], 1.0f},
+        glm::vec4{t[1], 1.0f},
+        glm::vec4{t[2], 1.0f},
+        glm::vec4{t[3], 1.0f},
+    };
+
+    return glm::determinant(m) / 6.0f;
+}
+
+// returns spatial centerpoint of a given tetrahedron
+glm::vec3 osc::Center(Tetrahedron const& t)
+{
+    // arithmetic mean of tetrahedron vertices
+
+    glm::vec<3, double> acc = t[0];
+    for (size_t i = 1; i < t.size(); ++i)
+    {
+        acc += t[i];
+    }
+    acc /= static_cast<double>(t.size());
+
+    return acc;
 }
 
 

@@ -494,14 +494,14 @@ namespace osc
         static void BlitToScreen(
             RenderTexture const&,
             Rect const&,
-            osc::Graphics::BlitFlags
+            osc::BlitFlags
         );
 
         static void BlitToScreen(
             RenderTexture const&,
             Rect const&,
             Material const&,
-            osc::Graphics::BlitFlags
+            osc::BlitFlags
         );
 
         static void Blit(
@@ -4805,12 +4805,12 @@ void osc::GraphicsBackend::DrawMesh(
 void osc::GraphicsBackend::BlitToScreen(
     RenderTexture const& t,
     Rect const& rect,
-    Graphics::BlitFlags flags)
+    BlitFlags flags)
 {
     OSC_ASSERT(g_GraphicsContextImpl);
     OSC_ASSERT(*t.m_Impl->m_MaybeGPUBuffers && "the input texture has not been rendered to");
 
-    if (flags == Graphics::BlitFlags::AlphaBlend)
+    if (flags == BlitFlags::AlphaBlend)
     {
         Camera c;
         c.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
@@ -4860,7 +4860,7 @@ void osc::GraphicsBackend::BlitToScreen(
     RenderTexture const& t,
     Rect const& rect,
     Material const& material,
-    Graphics::BlitFlags)
+    BlitFlags)
 {
     OSC_ASSERT(g_GraphicsContextImpl);
     OSC_ASSERT(*t.m_Impl->m_MaybeGPUBuffers && "the input texture has not been rendered to");

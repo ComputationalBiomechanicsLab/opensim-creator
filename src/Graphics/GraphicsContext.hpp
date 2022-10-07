@@ -54,6 +54,6 @@ namespace osc
 
         class Impl;
     private:
-        // no data - it uses globals (you can only have one of these)
+        // no data - it uses globals (you can only have one of these, globally)
     };
 }

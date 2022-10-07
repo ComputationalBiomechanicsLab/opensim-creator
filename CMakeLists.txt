@@ -283,6 +283,7 @@ add_library(osccore STATIC
     src/Formats/DAE.cpp
 
     src/Graphics/AnnotatedImage.hpp
+    src/Graphics/BlitFlags.hpp
     src/Graphics/Camera.hpp
     src/Graphics/CameraClearFlags.hpp
     src/Graphics/CameraProjection.hpp
@@ -347,6 +348,7 @@ add_library(osccore STATIC
     src/Maths/Rect.hpp
     src/Maths/Segment.hpp
     src/Maths/Sphere.hpp
+    src/Maths/Tetrahedron.hpp
     src/Maths/Transform.hpp
 
     src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp

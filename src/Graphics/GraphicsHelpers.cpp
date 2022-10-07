@@ -7,6 +7,7 @@
 #include "src/Maths/BVH.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
+#include "src/Maths/Tetrahedron.hpp"
 #include "src/Platform/App.hpp"
 
 #include <glm/mat4x4.hpp>
@@ -52,60 +53,6 @@ namespace
         glm::vec4 const color = {0.7f, 0.7f, 0.7f, 0.15f};
 
         out.emplace_back(grid, t, color);
-    }
-
-
-    struct Tetrahedron final {
-
-        glm::vec3 Verts[4];
-
-        glm::vec3 const& operator[](size_t i) const
-        {
-            return Verts[i];
-        }
-
-        glm::vec3& operator[](size_t i)
-        {
-            return Verts[i];
-        }
-
-        constexpr size_t size() const
-        {
-            return 4;
-        }
-    };
-
-    // returns the volume of a given tetrahedron, defined as 4 points in space
-    double Volume(Tetrahedron const& t)
-    {
-        // sources:
-        //
-        // http://forums.cgsociety.org/t/how-to-calculate-center-of-mass-for-triangular-mesh/1309966
-        // https://stackoverflow.com/questions/9866452/calculate-volume-of-any-tetrahedron-given-4-points
-
-        glm::mat<4, 4, double> const m
-        {
-            glm::vec<4, double>{t[0], 1.0},
-            glm::vec<4, double>{t[1], 1.0},
-            glm::vec<4, double>{t[2], 1.0},
-            glm::vec<4, double>{t[3], 1.0},
-        };
-
-        return glm::determinant(m) / 6.0;
-    }
-
-    // returns spatial centerpoint of a given tetrahedron
-    glm::vec<3, double> Center(Tetrahedron const& t)
-    {
-        // arithmetic mean of tetrahedron vertices
-
-        glm::vec<3, double> acc = t[0];
-        for (size_t i = 1; i < t.size(); ++i)
-        {
-            acc += t[i];
-        }
-        acc /= static_cast<double>(t.size());
-        return acc;
     }
 }
 

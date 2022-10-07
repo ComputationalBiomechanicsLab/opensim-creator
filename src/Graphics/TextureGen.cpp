@@ -10,7 +10,13 @@ osc::Texture2D osc::GenChequeredFloorTexture()
 {
     Image img = GenerateChequeredFloorImage();
 
-    Texture2D rv{static_cast<int>(img.getDimensions().x), static_cast<int>(img.getDimensions().y), img.getPixelData(), img.getNumChannels()};
+    Texture2D rv
+    {
+        static_cast<int>(img.getDimensions().x),
+        static_cast<int>(img.getDimensions().y),
+        img.getPixelData(),
+        img.getNumChannels()
+    };
     rv.setFilterMode(TextureFilterMode::Mipmap);
     rv.setWrapMode(TextureWrapMode::Repeat);
 

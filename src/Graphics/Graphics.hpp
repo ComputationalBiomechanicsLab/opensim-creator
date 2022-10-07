@@ -1,5 +1,7 @@
 #include "src/Graphics/MaterialPropertyBlock.hpp"
 
+#include "src/Graphics/BlitFlags.hpp"
+
 #include <glm/mat4x4.hpp>
 
 #include <optional>
@@ -34,13 +36,15 @@ namespace osc::Graphics
         std::optional<MaterialPropertyBlock> = std::nullopt
     );
 
-    enum class BlitFlags {
-        None,
-        AlphaBlend,
-    };
+    void Blit(
+        Texture2D const&,
+        RenderTexture& dest
+    );
 
-    void Blit(Texture2D const&, RenderTexture& dest);
-    void ReadPixels(RenderTexture const&, Image& dest);
+    void ReadPixels(
+        RenderTexture const&,
+        Image& dest
+    );
 
     void BlitToScreen(
         RenderTexture const&,
