@@ -293,27 +293,27 @@ public:
 private:
     Material m_SceneColoredElementsMaterial
     {
-        ShaderCache::get("shaders/ExperimentOpenSim.vert", "shaders/ExperimentOpenSim.frag")
+        ShaderCache::get("shaders/SceneShader.vert", "shaders/SceneShader.frag")
     };
 
     Material m_SceneTexturedElementsMaterial
     {
-        ShaderCache::get("shaders/ExperimentOpenSimTextured.vert", "shaders/ExperimentOpenSimTextured.frag")
+        ShaderCache::get("shaders/SceneTexturedShader.vert", "shaders/SceneTexturedShader.frag")
     };
 
     Material m_SolidColorMaterial
     {
-        ShaderCache::get("shaders/ExperimentOpenSimSolidColor.vert", "shaders/ExperimentOpenSimSolidColor.frag")
+        ShaderCache::get("shaders/SceneSolidColor.vert", "shaders/SceneSolidColor.frag")
     };
 
     Material m_EdgeDetectorMaterial
     {
-        ShaderCache::get("shaders/ExperimentOpenSimEdgeDetect.vert", "shaders/ExperimentOpenSimEdgeDetect.frag")
+        ShaderCache::get("shaders/SceneEdgeDetector.vert", "shaders/SceneEdgeDetector.frag")
     };
 
     Material m_NormalsMaterial
     {
-        ShaderCache::get("shaders/ExperimentGeometryShaderNormals.vert", "shaders/ExperimentGeometryShaderNormals.geom", "shaders/ExperimentGeometryShaderNormals.frag")
+        ShaderCache::get("shaders/SceneNormalsShader.vert", "shaders/SceneNormalsShader.geom", "shaders/SceneNormalsShader.frag")
     };
 
     std::shared_ptr<Mesh const> m_QuadMesh = App::meshes().getTexturedQuadMesh();
