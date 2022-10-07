@@ -334,31 +334,31 @@ namespace
     };
     template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
 
-    glm::mat4 ToMat4(Mat4OrTransform const& t)
+    glm::mat4 ToMat4(Mat4OrTransform const& matrixOrTransform)
     {
         return std::visit(Overload
         {
-            [](glm::mat4 const& m) { return m; },
-            [](osc::Transform const& t) { return ToMat4(t); }
-        }, t);
+            [](glm::mat4 const& matrix) { return matrix; },
+            [](osc::Transform const& transform) { return ToMat4(transform); }
+        }, matrixOrTransform);
     }
 
-    glm::mat4 ToNormalMat4(Mat4OrTransform const& t)
+    glm::mat4 ToNormalMat4(Mat4OrTransform const& matrixOrTransform)
     {
         return std::visit(Overload
         {
-            [](glm::mat4 const& m) { return osc::ToNormalMatrix4(m); },
-            [](osc::Transform const& t) { return osc::ToNormalMatrix4(t); }
-        }, t);
+            [](glm::mat4 const& matrix) { return osc::ToNormalMatrix4(matrix); },
+            [](osc::Transform const& transform) { return osc::ToNormalMatrix4(transform); }
+        }, matrixOrTransform);
     }
 
-    glm::mat4 ToNormalMat3(Mat4OrTransform const& t)
+    glm::mat4 ToNormalMat3(Mat4OrTransform const& matrixOrTransform)
     {
         return std::visit(Overload
         {
-            [](glm::mat4 const& m) { return osc::ToNormalMatrix(m); },
-            [](osc::Transform const& t) { return osc::ToNormalMatrix(t); }
-        }, t);
+            [](glm::mat4 const& matrix) { return osc::ToNormalMatrix(matrix); },
+            [](osc::Transform const& transform) { return osc::ToNormalMatrix(transform); }
+        }, matrixOrTransform);
     }
 
     // renderer stuff
