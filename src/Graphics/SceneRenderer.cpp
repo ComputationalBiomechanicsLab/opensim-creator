@@ -58,7 +58,7 @@ public:
 
     glm::ivec2 getDimensions() const
     {
-        return {m_MaybeRenderTexture->getWidth(), m_MaybeRenderTexture->getHeight()};
+        return m_MaybeRenderTexture->getDimensions();
     }
 
     int getSamples() const
@@ -71,11 +71,11 @@ public:
         constexpr glm::vec2 rimThickness{1.0f};
 
         // configure output texture to match requested dimensions/samples
-        RenderTextureDescriptor desc
+        RenderTextureDescriptor desc{glm::ivec2
         {
             static_cast<int>(params.dimensions.x),
             static_cast<int>(params.dimensions.y),
-        };
+        }};
         desc.setAntialiasingLevel(params.samples);
         EmplaceOrReformat(m_MaybeRenderTexture, desc);
 
@@ -142,8 +142,7 @@ public:
 
                 // resize the output texture (pixel) dimensions to match the (expanded) bounding rect
                 RenderTextureDescriptor selectedDesc{desc};
-                selectedDesc.setWidth(static_cast<int>(rimDimsScreen.x));
-                selectedDesc.setHeight(static_cast<int>(rimDimsScreen.y));
+                selectedDesc.setDimensions(glm::ivec2{rimDimsScreen});
                 selectedDesc.setColorFormat(RenderTextureFormat::RED);
                 EmplaceOrReformat(m_MaybeSelectedTexture, selectedDesc);
 
@@ -323,7 +322,7 @@ private:
 
     // outputs
     std::optional<RenderTexture> m_MaybeSelectedTexture;
-    std::optional<RenderTexture> m_MaybeRenderTexture{RenderTextureDescriptor{1, 1}};
+    std::optional<RenderTexture> m_MaybeRenderTexture{RenderTextureDescriptor{glm::ivec2{1, 1}}};
 };
 
 osc::SceneRenderer::SceneRenderer() :

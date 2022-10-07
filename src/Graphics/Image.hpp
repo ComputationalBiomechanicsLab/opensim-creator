@@ -16,7 +16,11 @@ namespace osc
         static Image Load(std::filesystem::path const&, ImageFlags = ImageFlags_None);
 
         Image();
-        Image(glm::ivec2 dimensions, nonstd::span<uint8_t const> channelsRowByRow, int numChannels);
+        Image(
+            glm::ivec2 dimensions,
+            nonstd::span<uint8_t const> channelsRowByRow,
+            int32_t numChannels
+        );
         Image(Image const&);
         Image(Image&&) noexcept;
         Image& operator=(Image const&);
@@ -24,12 +28,12 @@ namespace osc
         ~Image() noexcept;
 
         glm::ivec2 getDimensions() const;
-        int getNumChannels() const;
+        int32_t getNumChannels() const;
         nonstd::span<uint8_t const> getPixelData() const;
 
     private:
         glm::ivec2 m_Dimensions;
-        int m_NumChannels;
+        int32_t m_NumChannels;
         std::unique_ptr<uint8_t[]> m_Pixels;
     };
 

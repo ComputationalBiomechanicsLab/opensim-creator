@@ -577,40 +577,34 @@ namespace
 
 class osc::Texture2D::Impl final {
 public:
-    Impl(int width, int height, nonstd::span<Rgba32 const> pixelsRowByRow) :
-        Impl{width, height, {&pixelsRowByRow[0].r, 4 * pixelsRowByRow.size()}, 4}
+    Impl(glm::ivec2 dimensions, nonstd::span<Rgba32 const> pixelsRowByRow) :
+        Impl{std::move(dimensions), {&pixelsRowByRow[0].r, 4 * pixelsRowByRow.size()}, 4}
     {
     }
 
-    Impl(int width, int height, nonstd::span<uint8_t const> pixelsRowByRow) :
-        Impl{width, height, pixelsRowByRow, 1}
+    Impl(glm::ivec2 dimensions, nonstd::span<uint8_t const> pixelsRowByRow) :
+        Impl{std::move(dimensions), std::move(pixelsRowByRow), 1}
     {
     }
 
-    Impl(int width, int height, nonstd::span<uint8_t const> channels, int numChannels) :
-        m_Width{std::move(width)},
-        m_Height{ std::move(height) },
+    Impl(glm::ivec2 dimensions, nonstd::span<uint8_t const> channels, int numChannels) :
+        m_Dimensions{std::move(dimensions)},
         m_Pixels(channels.data(), channels.data() + channels.size()),
         m_NumChannels{numChannels}
     {
-        OSC_ASSERT_ALWAYS(m_Width >= 0 && m_Height >= 0);
-        OSC_ASSERT_ALWAYS(m_Width * m_Height == m_Pixels.size()/m_NumChannels);
+        OSC_ASSERT_ALWAYS(m_Dimensions.x >= 0 && m_Dimensions.y >= 0);
+        OSC_ASSERT_ALWAYS(m_Dimensions.x * m_Dimensions.y == m_Pixels.size()/m_NumChannels);
         OSC_ASSERT_ALWAYS(m_NumChannels == 1 || m_NumChannels == 3 || m_NumChannels == 4);
     }
 
-    int getWidth() const
+    glm::ivec2 getDimensions() const
     {
-        return m_Width;
-    }
-
-    int getHeight() const
-    {
-        return m_Height;
+        return m_Dimensions;
     }
 
     float getAspectRatio() const
     {
-        return static_cast<float>(m_Width) / static_cast<float>(m_Height);
+        return AspectRatio(m_Dimensions);
     }
 
     TextureWrapMode getWrapMode() const
@@ -720,8 +714,8 @@ private:
             GL_TEXTURE_2D,
             0,
             format,
-            m_Width,
-            m_Height,
+            m_Dimensions.x,
+            m_Dimensions.y,
             0,
             format,
             GL_UNSIGNED_BYTE,
@@ -743,8 +737,7 @@ private:
 
     friend class GraphicsBackend;
 
-    int m_Width;
-    int m_Height;
+    glm::ivec2 m_Dimensions;
     std::vector<uint8_t> m_Pixels;
     int m_NumChannels;
     TextureWrapMode m_WrapModeU = TextureWrapMode::Repeat;
@@ -767,18 +760,18 @@ std::ostream& osc::operator<<(std::ostream& o, TextureFilterMode twm)
 }
 
 
-osc::Texture2D::Texture2D(int width, int height, nonstd::span<Rgba32 const> pixels) :
-    m_Impl{std::make_shared<Impl>(std::move(width), std::move(height), std::move(pixels))}
+osc::Texture2D::Texture2D(glm::ivec2 dimensions, nonstd::span<Rgba32 const> pixels) :
+    m_Impl{std::make_shared<Impl>(std::move(dimensions), std::move(pixels))}
 {
 }
 
-osc::Texture2D::Texture2D(int width, int height, nonstd::span<uint8_t const> pixels) :
-    m_Impl{std::make_shared<Impl>(std::move(width), std::move(height), std::move(pixels))}
+osc::Texture2D::Texture2D(glm::ivec2 dimensions, nonstd::span<uint8_t const> pixels) :
+    m_Impl{std::make_shared<Impl>(std::move(dimensions), std::move(pixels))}
 {
 }
 
-osc::Texture2D::Texture2D(int width, int height, nonstd::span<uint8_t const> channels, int numChannels) :
-    m_Impl{std::make_shared<Impl>(std::move(width), std::move(height), std::move(channels), std::move(numChannels))}
+osc::Texture2D::Texture2D(glm::ivec2 dimensions, nonstd::span<uint8_t const> channels, int numChannels) :
+    m_Impl{std::make_shared<Impl>(std::move(dimensions), std::move(channels), std::move(numChannels))}
 {
 }
 
@@ -788,14 +781,9 @@ osc::Texture2D& osc::Texture2D::operator=(Texture2D const&) = default;
 osc::Texture2D& osc::Texture2D::operator=(Texture2D&&) noexcept = default;
 osc::Texture2D::~Texture2D() noexcept = default;
 
-int osc::Texture2D::getWidth() const
+glm::ivec2 osc::Texture2D::getDimensions() const
 {
-    return m_Impl->getWidth();
-}
-
-int osc::Texture2D::getHeight() const
-{
-    return m_Impl->getHeight();
+    return m_Impl->getDimensions();
 }
 
 float osc::Texture2D::getAspectRatio() const
@@ -887,8 +875,7 @@ std::ostream& osc::operator<<(std::ostream& o, Texture2D const&)
 osc::Texture2D osc::LoadTexture2DFromImageResource(std::string_view resource, ImageFlags flags)
 {
     Image const img = Image::Load(App::get().resource(resource), flags);
-    glm::ivec2 const dims = img.getDimensions();
-    return Texture2D{dims.x, dims.y, img.getPixelData(), img.getNumChannels()};
+    return Texture2D{img.getDimensions(), img.getPixelData(), img.getNumChannels()};
 }
 
 
@@ -949,9 +936,8 @@ std::ostream& osc::operator<<(std::ostream& o, DepthStencilFormat f)
     return o << g_DepthStencilFormatStrings.at(static_cast<size_t>(f));
 }
 
-osc::RenderTextureDescriptor::RenderTextureDescriptor(int width, int height) :
-    m_Width{std::max(0, width)},
-    m_Height{std::max(0, height)},
+osc::RenderTextureDescriptor::RenderTextureDescriptor(glm::ivec2 dimensions) :
+    m_Dimensions{Max(dimensions, glm::ivec2{0, 0})},
     m_AnialiasingLevel{1},
     m_ColorFormat{RenderTextureFormat::ARGB32},
     m_DepthStencilFormat{DepthStencilFormat::D24_UNorm_S8_UInt}
@@ -964,26 +950,15 @@ osc::RenderTextureDescriptor& osc::RenderTextureDescriptor::operator=(RenderText
 osc::RenderTextureDescriptor& osc::RenderTextureDescriptor::operator=(RenderTextureDescriptor&&) noexcept = default;
 osc::RenderTextureDescriptor::~RenderTextureDescriptor() noexcept = default;
 
-int osc::RenderTextureDescriptor::getWidth() const
+glm::ivec2 osc::RenderTextureDescriptor::getDimensions() const
 {
-    return m_Width;
+    return m_Dimensions;
 }
 
-void osc::RenderTextureDescriptor::setWidth(int width)
+void osc::RenderTextureDescriptor::setDimensions(glm::ivec2 d)
 {
-    OSC_ASSERT_ALWAYS(width >= 0);
-    m_Width = width;
-}
-
-int osc::RenderTextureDescriptor::getHeight() const
-{
-    return m_Height;
-}
-
-void osc::RenderTextureDescriptor::setHeight(int height)
-{
-    OSC_ASSERT_ALWAYS(height >= 0);
-    m_Height = height;
+    OSC_ASSERT_ALWAYS(d.x >= 0 && d.y >= 0);
+    m_Dimensions = d;
 }
 
 int osc::RenderTextureDescriptor::getAntialiasingLevel() const
@@ -1020,8 +995,7 @@ void osc::RenderTextureDescriptor::setDepthStencilFormat(DepthStencilFormat f)
 bool osc::operator==(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
 {
     return
-        a.m_Width == b.m_Width &&
-        a.m_Height == b.m_Height &&
+        a.m_Dimensions == b.m_Dimensions &&
         a.m_AnialiasingLevel == b.m_AnialiasingLevel &&
         a.m_ColorFormat == b.m_ColorFormat &&
         a.m_DepthStencilFormat == b.m_DepthStencilFormat;
@@ -1034,12 +1008,12 @@ bool osc::operator!=(RenderTextureDescriptor const& a, RenderTextureDescriptor c
 
 bool osc::operator<(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
 {
-    return std::tie(a.m_Width, a.m_Height, a.m_AnialiasingLevel, a.m_ColorFormat, a.m_DepthStencilFormat) < std::tie(b.m_Width, b.m_Height, b.m_AnialiasingLevel, b.m_ColorFormat, b.m_DepthStencilFormat);
+    return std::tie(a.m_Dimensions.x, a.m_Dimensions.y, a.m_AnialiasingLevel, a.m_ColorFormat, a.m_DepthStencilFormat) < std::tie(b.m_Dimensions.x, a.m_Dimensions.y, b.m_AnialiasingLevel, b.m_ColorFormat, b.m_DepthStencilFormat);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, RenderTextureDescriptor const& rtd)
 {
-    return o << "RenderTextureDescriptor(width = " << rtd.m_Width << ", height = " << rtd.m_Height << ", aa = " << rtd.m_AnialiasingLevel << ", colorFormat = " << rtd.m_ColorFormat << ", depthFormat = " << rtd.m_DepthStencilFormat << ")";
+    return o << "RenderTextureDescriptor(width = " << rtd.m_Dimensions.x << ", height = " << rtd.m_Dimensions.y << ", aa = " << rtd.m_AnialiasingLevel << ", colorFormat = " << rtd.m_ColorFormat << ", depthFormat = " << rtd.m_DepthStencilFormat << ")";
 }
 
 class osc::RenderTexture::Impl final {
@@ -1048,30 +1022,16 @@ public:
     {
     }
 
-    int getWidth() const
+    glm::ivec2 getDimensions() const
     {
-        return m_Descriptor.getWidth();
+        return m_Descriptor.getDimensions();
     }
 
-    void setWidth(int width)
+    void setDimensions(glm::ivec2 d)
     {
-        if (width != m_Descriptor.getWidth())
+        if (d != getDimensions())
         {
-            m_Descriptor.setWidth(width);
-            m_MaybeGPUBuffers->reset();
-        }
-    }
-
-    int getHeight() const
-    {
-        return m_Descriptor.getHeight();
-    }
-
-    void setHeight(int height)
-    {
-        if (height != m_Descriptor.getHeight())
-        {
-            m_Descriptor.setHeight(height);
+            m_Descriptor.setDimensions(d);
             m_MaybeGPUBuffers->reset();
         }
     }
@@ -1163,14 +1123,15 @@ private:
     void uploadToGPU()
     {
         RenderTextureGPUBuffers& bufs = m_MaybeGPUBuffers->emplace();
+        glm::ivec2 const dimensions = m_Descriptor.getDimensions();
 
         gl::BindRenderBuffer(bufs.MultisampledColorBuffer);
         glRenderbufferStorageMultisample(
             GL_RENDERBUFFER,
             m_Descriptor.getAntialiasingLevel(),
             ToOpenGLColorFormat(getColorFormat()),
-            m_Descriptor.getWidth(),
-            m_Descriptor.getHeight()
+            dimensions.x,
+            dimensions.y
         );
 
         gl::BindRenderBuffer(bufs.MultisampledDepthBuffer);
@@ -1178,8 +1139,8 @@ private:
             GL_RENDERBUFFER,
             m_Descriptor.getAntialiasingLevel(),
             GL_DEPTH24_STENCIL8,
-            m_Descriptor.getWidth(),
-            m_Descriptor.getHeight()
+            dimensions.x,
+            dimensions.y
         );
 
         gl::BindFramebuffer(GL_FRAMEBUFFER, bufs.MultisampledFBO);
@@ -1191,8 +1152,8 @@ private:
             bufs.SingleSampledColorBuffer.type,
             0,
             ToOpenGLColorFormat(getColorFormat()),
-            m_Descriptor.getWidth(),
-            m_Descriptor.getHeight(),
+            dimensions.x,
+            dimensions.y,
             0,
             ToOpenGLColorFormat(getColorFormat()),
             GL_UNSIGNED_BYTE,
@@ -1210,8 +1171,8 @@ private:
             bufs.SingleSampledDepthBuffer.type,
             0,
             GL_DEPTH24_STENCIL8,
-            m_Descriptor.getWidth(),
-            m_Descriptor.getHeight(),
+            dimensions.x,
+            dimensions.y,
             0,
             GL_DEPTH_STENCIL,
             GL_UNSIGNED_INT_24_8,
@@ -1246,26 +1207,15 @@ osc::RenderTexture& osc::RenderTexture::operator=(RenderTexture const&) = defaul
 osc::RenderTexture& osc::RenderTexture::operator=(RenderTexture&&) noexcept = default;
 osc::RenderTexture::~RenderTexture() noexcept = default;
 
-int osc::RenderTexture::getWidth() const
+glm::ivec2 osc::RenderTexture::getDimensions() const
 {
-    return m_Impl->getWidth();
+    return m_Impl->getDimensions();
 }
 
-void osc::RenderTexture::setWidth(int width)
+void osc::RenderTexture::setDimensions(glm::ivec2 d)
 {
     DoCopyOnWrite(m_Impl);
-    m_Impl->setWidth(width);
-}
-
-int osc::RenderTexture::getHeight() const
-{
-    return m_Impl->getHeight();
-}
-
-void osc::RenderTexture::setHeight(int height)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setHeight(height);
+    m_Impl->setDimensions(std::move(d));
 }
 
 osc::RenderTextureFormat osc::RenderTexture::getColorFormat() const
@@ -3077,7 +3027,7 @@ public:
         }
         else if (m_MaybeTexture)
         {
-            return Rect{{}, {m_MaybeTexture->getWidth(), m_MaybeTexture->getHeight()}};
+            return Rect{{}, glm::vec2{m_MaybeTexture->getDimensions()}};
         }
         else
         {
@@ -3093,16 +3043,6 @@ public:
     void setPixelRect()
     {
         m_MaybeScreenPixelRect.reset();
-    }
-
-    int32_t getPixelWidth() const
-    {
-        return getiDims().x;
-    }
-
-    int32_t getPixelHeight() const
-    {
-        return getiDims().y;
     }
 
     float getAspectRatio() const
@@ -3236,7 +3176,7 @@ private:
     {
         if (m_MaybeTexture)
         {
-            return glm::ivec2{m_MaybeTexture->getWidth(), m_MaybeTexture->getHeight()};
+            return m_MaybeTexture->getDimensions();
         }
         else if (m_MaybeScreenPixelRect)
         {
@@ -3252,7 +3192,7 @@ private:
     {
         if (m_MaybeTexture)
         {
-            return {m_MaybeTexture->getWidth(), m_MaybeTexture->getHeight()};
+            return {m_MaybeTexture->getDimensions()};
         }
         else
         {
@@ -3421,16 +3361,6 @@ void osc::Camera::setPixelRect()
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setPixelRect();
-}
-
-int32_t osc::Camera::getPixelWidth() const
-{
-    return m_Impl->getPixelWidth();
-}
-
-int32_t osc::Camera::getPixelHeight() const
-{
-    return m_Impl->getPixelHeight();
 }
 
 float osc::Camera::getAspectRatio() const
@@ -4757,6 +4687,8 @@ void osc::GraphicsBackend::RenderScene(Camera::Impl& camera)
     {
         OSC_PERF("RenderScene::BlitOutput (resolve MSXAA)");
 
+        glm::ivec2 const dimensions = camera.m_MaybeTexture->m_Impl->m_Descriptor.getDimensions();
+
         // blit multisampled scene render to not-multisampled texture
         gl::BindFramebuffer(GL_READ_FRAMEBUFFER, (*camera.m_MaybeTexture->m_Impl->m_MaybeGPUBuffers)->MultisampledFBO);
         glReadBuffer(GL_COLOR_ATTACHMENT0);
@@ -4765,12 +4697,12 @@ void osc::GraphicsBackend::RenderScene(Camera::Impl& camera)
         gl::BlitFramebuffer(
             0,
             0,
-            camera.m_MaybeTexture->m_Impl->m_Descriptor.getWidth(),
-            camera.m_MaybeTexture->m_Impl->m_Descriptor.getHeight(),
+            dimensions.x,
+            dimensions.y,
             0,
             0,
-            camera.m_MaybeTexture->m_Impl->m_Descriptor.getWidth(),
-            camera.m_MaybeTexture->m_Impl->m_Descriptor.getHeight(),
+            dimensions.x,
+            dimensions.y,
             GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
             GL_NEAREST
         );
@@ -4832,6 +4764,7 @@ void osc::GraphicsBackend::BlitToScreen(
         int const rectHeight = static_cast<int>(rect.p2.y - rect.p1.y);
         int const p1y = static_cast<int>((windowHeight - rect.p1.y) - rectHeight);
         int const p2y = static_cast<int>(windowHeight - rect.p1.y);
+        glm::ivec2 texDimensions = t.getDimensions();
 
         // blit multisampled scene render to not-multisampled texture
         gl::BindFramebuffer(GL_READ_FRAMEBUFFER, (*t.m_Impl->m_MaybeGPUBuffers)->SingleSampledFBO);
@@ -4841,8 +4774,8 @@ void osc::GraphicsBackend::BlitToScreen(
         gl::BlitFramebuffer(
             0,
             0,
-            t.getWidth(),
-            t.getHeight(),
+            texDimensions.x,
+            texDimensions.y,
             static_cast<GLint>(rect.p1.x),
             static_cast<GLint>(p1y),
             static_cast<GLint>(rect.p2.x),
@@ -4902,7 +4835,7 @@ void osc::GraphicsBackend::Blit(Texture2D const& source, RenderTexture& dest)
 
 void osc::GraphicsBackend::ReadPixels(RenderTexture const& source, Image& dest)
 {
-    glm::ivec2 const dims = {source.getWidth(), source.getHeight()};
+    glm::ivec2 const dims = source.getDimensions();
     int const channels = GetNumChannels(source.getColorFormat());
 
     std::vector<uint8_t> pixels(channels*dims.x*dims.y);

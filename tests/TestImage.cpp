@@ -1,5 +1,5 @@
 #include "src/Graphics/Image.hpp"
-#include "src/Maths/Geometry.hpp"
+#include "src/Maths/MathHelpers.hpp"
 #include "src/Platform/Config.hpp"
 
 #include <gtest/gtest.h>

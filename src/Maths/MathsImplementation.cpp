@@ -1057,6 +1057,15 @@ glm::vec2 osc::Min(glm::vec2 const& a, glm::vec2 const& b) noexcept
     };
 }
 
+glm::ivec2 osc::Min(glm::ivec2 const& a, glm::ivec2 const& b) noexcept
+{
+    return glm::ivec2
+    {
+        std::min(a.x, b.x),
+        std::min(a.y, b.y),
+    };
+}
+
 glm::vec3 osc::Max(glm::vec3 const& a, glm::vec3 const& b) noexcept
 {
     return glm::vec3
@@ -1070,6 +1079,15 @@ glm::vec3 osc::Max(glm::vec3 const& a, glm::vec3 const& b) noexcept
 glm::vec2 osc::Max(glm::vec2 const& a, glm::vec2 const& b) noexcept
 {
     return glm::vec2
+    {
+        std::max(a.x, b.x),
+        std::max(a.y, b.y),
+    };
+}
+
+glm::ivec2 osc::Max(glm::ivec2 const& a, glm::ivec2 const& b) noexcept
+{
+    return glm::ivec2
     {
         std::max(a.x, b.x),
         std::max(a.y, b.y),

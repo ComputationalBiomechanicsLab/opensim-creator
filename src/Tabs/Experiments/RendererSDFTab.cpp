@@ -70,7 +70,7 @@ static FontTexture CreateFontTexture()
     std::vector<uint8_t> pixels(512 * 512);
 
     stbtt_BakeFontBitmap(ttfData.data(), 0, 64., pixels.data(), 512, 512, 32, 96, glyphData.storage); // no guarantee this fits!
-    auto t = osc::Texture2D{512, 512, pixels, 1};
+    auto t = osc::Texture2D{{512, 512}, pixels, 1};
     t.setFilterMode(osc::TextureFilterMode::Linear);
 
     return FontTexture{t, glyphData};

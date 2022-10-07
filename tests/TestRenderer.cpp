@@ -21,7 +21,7 @@
 
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/BVH.hpp"
-#include "src/Maths/Geometry.hpp"
+#include "src/Maths/MathHelpers.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/CStringView.hpp"
@@ -283,7 +283,7 @@ static std::vector<glm::vec3> GenerateTriangleVerts()
 
 static osc::RenderTexture GenerateRenderTexture()
 {
-    osc::RenderTextureDescriptor d{2, 2};
+    osc::RenderTextureDescriptor d{{2, 2}};
     return osc::RenderTexture{d};
 }
 
@@ -1925,90 +1925,97 @@ TEST_F(Renderer, DepthStencilFormatCanBeIteratedOverAndStreamedToString)
 
 TEST_F(Renderer, RenderTextureDescriptorCanBeConstructedFromWithAndHeight)
 {
-    osc::RenderTextureDescriptor d{1, 1};
+    osc::RenderTextureDescriptor d{{1, 1}};
 }
 
 TEST_F(Renderer, RenderTextureDescriptorCoercesNegativeWidthsToZero)
 {
-    osc::RenderTextureDescriptor d{-1, 1};
+    osc::RenderTextureDescriptor d{{-1, 1}};
 
-    ASSERT_EQ(d.getWidth(), 0);
+    ASSERT_EQ(d.getDimensions().x, 0);
 }
 
 TEST_F(Renderer, RenderTextureDescriptorCoercesNegativeHeightsToZero)
 {
-    osc::RenderTextureDescriptor d{1, -1};
+    osc::RenderTextureDescriptor d{{1, -1}};
 
-    ASSERT_EQ(d.getHeight(), 0);
+    ASSERT_EQ(d.getDimensions().y, 0);
 }
 
 TEST_F(Renderer, RenderTextureDescriptorCanBeCopyConstructed)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
     osc::RenderTextureDescriptor d2{d1};
 }
 
 TEST_F(Renderer, RenderTextureDescriptorCanBeMoveConstructed)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
     osc::RenderTextureDescriptor d2{std::move(d1)};
 }
 
 TEST_F(Renderer, RenderTextureDescriptorCanBeCopyAssigned)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
-    osc::RenderTextureDescriptor d2{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
+    osc::RenderTextureDescriptor d2{{1, 1}};
     d1 = d2;
 }
 
 TEST_F(Renderer, RenderTextureDescriptorCanBeMoveAssigned)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
-    osc::RenderTextureDescriptor d2{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
+    osc::RenderTextureDescriptor d2{{1, 1}};
     d1 = std::move(d2);
 }
 
 TEST_F(Renderer, RenderTextureDescriptorGetWidthReturnsConstructedWith)
 {
     int width = 1;
-    osc::RenderTextureDescriptor d1{width, 1};
-    ASSERT_EQ(d1.getWidth(), width);
+    osc::RenderTextureDescriptor d1{{width, 1}};
+    ASSERT_EQ(d1.getDimensions().x, width);
 }
 
 TEST_F(Renderer, RenderTextureDescriptorSetWithFollowedByGetWithReturnsSetWidth)
 {
-    int newWidth = 31;
-    osc::RenderTextureDescriptor d1{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
 
-    d1.setWidth(newWidth);
-    ASSERT_EQ(d1.getWidth(), newWidth);
+
+    int newWidth = 31;
+    glm::ivec2 d = d1.getDimensions();
+    d.x = newWidth;
+
+    d1.setDimensions(d);
+    ASSERT_EQ(d1.getDimensions(), d);
 }
 
 TEST_F(Renderer, RenderTextureDescriptorSetWidthNegativeValueThrows)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
-    ASSERT_ANY_THROW({ d1.setWidth(-1); });
+    osc::RenderTextureDescriptor d1{{1, 1}};
+    ASSERT_ANY_THROW({ d1.setDimensions({-1, 1}); });
 }
 
 TEST_F(Renderer, RenderTextureDescriptorGetHeightReturnsConstructedHeight)
 {
     int height = 1;
-    osc::RenderTextureDescriptor d1{1, height};
-    ASSERT_EQ(d1.getHeight(), height);
+    osc::RenderTextureDescriptor d1{{1, height}};
+    ASSERT_EQ(d1.getDimensions().y, height);
 }
 
 TEST_F(Renderer, RenderTextureDescriptorSetHeightFollowedByGetHeightReturnsSetHeight)
 {
-    int newHeight = 31;
-    osc::RenderTextureDescriptor d1{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
 
-    d1.setHeight(newHeight);
-    ASSERT_EQ(d1.getHeight(), newHeight);
+    glm::ivec2 d = d1.getDimensions();
+    d.y = 31;
+
+    d1.setDimensions(d);
+
+    ASSERT_EQ(d1.getDimensions(), d);
 }
 
 TEST_F(Renderer, RenderTextureDescriptorGetAntialiasingLevelInitiallyReturns1)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
     ASSERT_EQ(d1.getAntialiasingLevel(), 1);
 }
 
@@ -2016,38 +2023,38 @@ TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingLevelMakesGetAntialiasing
 {
     int newAntialiasingLevel = 4;
 
-    osc::RenderTextureDescriptor d1{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
     d1.setAntialiasingLevel(newAntialiasingLevel);
     ASSERT_EQ(d1.getAntialiasingLevel(), newAntialiasingLevel);
 }
 
 TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingLevelToZeroThrows)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
     ASSERT_ANY_THROW({ d1.setAntialiasingLevel(0); });
 }
 
 TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingNegativeThrows)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
     ASSERT_ANY_THROW({ d1.setAntialiasingLevel(-1); });
 }
 
 TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingLevelToInvalidValueThrows)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
     ASSERT_ANY_THROW({ d1.setAntialiasingLevel(3); });
 }
 
 TEST_F(Renderer, RenderTextureDescriptorGetColorFormatReturnsARGB32ByDefault)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
     ASSERT_EQ(d1.getColorFormat(), osc::RenderTextureFormat::ARGB32);
 }
 
 TEST_F(Renderer, RenderTextureDescriptorSetColorFormatMakesGetColorFormatReturnTheFormat)
 {
-    osc::RenderTextureDescriptor d{1, 1};
+    osc::RenderTextureDescriptor d{{1, 1}};
 
     ASSERT_EQ(d.getColorFormat(), osc::RenderTextureFormat::ARGB32);
 
@@ -2058,13 +2065,13 @@ TEST_F(Renderer, RenderTextureDescriptorSetColorFormatMakesGetColorFormatReturnT
 
 TEST_F(Renderer, RenderTextureDescriptorGetDepthStencilFormatReturnsDefaultValue)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
     ASSERT_EQ(d1.getDepthStencilFormat(), osc::DepthStencilFormat::D24_UNorm_S8_UInt);
 }
 
 TEST_F(Renderer, RenderTextureDescriptorComparesEqualOnCopyConstruct)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
     osc::RenderTextureDescriptor d2{d1};
 
     ASSERT_EQ(d1, d2);
@@ -2072,36 +2079,36 @@ TEST_F(Renderer, RenderTextureDescriptorComparesEqualOnCopyConstruct)
 
 TEST_F(Renderer, RenderTextureDescriptorComparesEqualWithSameConstructionVals)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
-    osc::RenderTextureDescriptor d2{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
+    osc::RenderTextureDescriptor d2{{1, 1}};
 
     ASSERT_EQ(d1, d2);
 }
 
-TEST_F(Renderer, RenderTextureDescriptorSetWithMakesItCompareNotEqual)
+TEST_F(Renderer, RenderTextureDescriptorSetDimensionsWidthMakesItCompareNotEqual)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
-    osc::RenderTextureDescriptor d2{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
+    osc::RenderTextureDescriptor d2{{1, 1}};
 
-    d2.setWidth(2);
+    d2.setDimensions({2, 1});
 
     ASSERT_NE(d1, d2);
 }
 
-TEST_F(Renderer, RenderTextureDescriptorSetHeightMakesItCompareNotEqual)
+TEST_F(Renderer, RenderTextureDescriptorSetDimensionsHeightMakesItCompareNotEqual)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
-    osc::RenderTextureDescriptor d2{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
+    osc::RenderTextureDescriptor d2{{1, 1}};
 
-    d2.setHeight(2);
+    d2.setDimensions({1, 2});
 
     ASSERT_NE(d1, d2);
 }
 
 TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingLevelMakesItCompareNotEqual)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
-    osc::RenderTextureDescriptor d2{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
+    osc::RenderTextureDescriptor d2{{1, 1}};
 
     d2.setAntialiasingLevel(2);
 
@@ -2110,8 +2117,8 @@ TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingLevelMakesItCompareNotEqu
 
 TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingLevelToSameValueComparesEqual)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
-    osc::RenderTextureDescriptor d2{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
+    osc::RenderTextureDescriptor d2{{1, 1}};
 
     d2.setAntialiasingLevel(d2.getAntialiasingLevel());
 
@@ -2120,7 +2127,7 @@ TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingLevelToSameValueComparesE
 
 TEST_F(Renderer, RenderTextureDescriptorCanBeStreamedToAString)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
     std::stringstream ss;
     ss << d1;
 
@@ -2130,7 +2137,7 @@ TEST_F(Renderer, RenderTextureDescriptorCanBeStreamedToAString)
 
 TEST_F(Renderer, RenderTextureCanBeConstructedFromADescriptor)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
     osc::RenderTexture d{d1};
 }
 
@@ -2141,21 +2148,20 @@ TEST_F(Renderer, RenderTextureFromDescriptorHasExpectedValues)
     int aaLevel = 4;
     osc::RenderTextureFormat format = osc::RenderTextureFormat::RED;
 
-    osc::RenderTextureDescriptor desc{width, height};
+    osc::RenderTextureDescriptor desc{{width, height}};
     desc.setAntialiasingLevel(aaLevel);
     desc.setColorFormat(format);
 
     osc::RenderTexture tex{desc};
 
-    ASSERT_EQ(tex.getWidth(), width);
-    ASSERT_EQ(tex.getHeight(), height);
+    ASSERT_EQ(tex.getDimensions(), glm::ivec2(width, height));
     ASSERT_EQ(tex.getAntialiasingLevel(), aaLevel);
     ASSERT_EQ(tex.getColorFormat(), format);
 }
 
 TEST_F(Renderer, RenderTextureSetColorFormatCausesGetColorFormatToReturnValue)
 {
-    osc::RenderTextureDescriptor d1{1, 1};
+    osc::RenderTextureDescriptor d1{{1, 1}};
     osc::RenderTexture d{d1};
 
     ASSERT_EQ(d.getColorFormat(), osc::RenderTextureFormat::ARGB32);
@@ -2169,23 +2175,21 @@ TEST_F(Renderer, EmplaceOrReformatWorksAsExpected)
 {
     std::optional<osc::RenderTexture> opt;
 
-    osc::RenderTextureDescriptor desc1{5, 6};
+    osc::RenderTextureDescriptor desc1{{5, 6}};
 
     ASSERT_FALSE(opt.has_value());
 
     osc::EmplaceOrReformat(opt, desc1);
 
     ASSERT_TRUE(opt.has_value());
-    ASSERT_EQ(opt->getWidth(), desc1.getWidth());
-    ASSERT_EQ(opt->getHeight(), desc1.getHeight());
+    ASSERT_EQ(opt->getDimensions(), desc1.getDimensions());
 
-    osc::RenderTextureDescriptor desc2{7, 8};
+    osc::RenderTextureDescriptor desc2{{7, 8}};
 
     osc::EmplaceOrReformat(opt, desc2);
 
     ASSERT_TRUE(opt.has_value());
-    ASSERT_EQ(opt->getWidth(), desc2.getWidth());
-    ASSERT_EQ(opt->getHeight(), desc2.getHeight());
+    ASSERT_EQ(opt->getDimensions(), desc2.getDimensions());
 }
 
 TEST_F(Renderer, CameraProjectionCanBeStreamed)
@@ -2226,8 +2230,7 @@ TEST_F(Renderer, CameraConstructedWithTextureMakesGetTextureReturnTextureWithSam
     osc::RenderTexture t = GenerateRenderTexture();
     osc::Camera camera{t};
 
-    ASSERT_EQ(t.getWidth(), camera.getTexture()->getWidth());
-    ASSERT_EQ(t.getHeight(), camera.getTexture()->getHeight());
+    ASSERT_EQ(t.getDimensions(), camera.getTexture()->getDimensions());
 }
 
 TEST_F(Renderer, CameraCanBeCopyConstructed)

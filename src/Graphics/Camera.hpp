@@ -69,8 +69,6 @@ namespace osc
         Rect getPixelRect() const;
         void setPixelRect(Rect const&);
         void setPixelRect();
-        int32_t getPixelWidth() const;
-        int32_t getPixelHeight() const;
         float getAspectRatio() const;
 
         // scissor testing

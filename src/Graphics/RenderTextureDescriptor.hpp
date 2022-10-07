@@ -3,24 +3,23 @@
 #include "src/Graphics/RenderTextureFormat.hpp"
 #include "src/Graphics/DepthStencilFormat.hpp"
 
+#include <glm/vec2.hpp>
+
 #include <iosfwd>
 
 namespace osc
 {
     class RenderTextureDescriptor final {
     public:
-        RenderTextureDescriptor(int width, int height);
+        RenderTextureDescriptor(glm::ivec2 dimensions);
         RenderTextureDescriptor(RenderTextureDescriptor const&);
         RenderTextureDescriptor(RenderTextureDescriptor&&) noexcept;
         RenderTextureDescriptor& operator=(RenderTextureDescriptor const&);
         RenderTextureDescriptor& operator=(RenderTextureDescriptor&&) noexcept;
         ~RenderTextureDescriptor() noexcept;
 
-        int getWidth() const;
-        void setWidth(int);
-
-        int getHeight() const;
-        void setHeight(int);
+        glm::ivec2 getDimensions() const;
+        void setDimensions(glm::ivec2);
 
         int getAntialiasingLevel() const;
         void setAntialiasingLevel(int);
@@ -38,8 +37,7 @@ namespace osc
         friend bool operator<(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
         friend std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
 
-        int m_Width;
-        int m_Height;
+        glm::ivec2 m_Dimensions;
         int m_AnialiasingLevel;
         RenderTextureFormat m_ColorFormat;
         DepthStencilFormat m_DepthStencilFormat;

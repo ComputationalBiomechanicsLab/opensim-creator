@@ -12,5 +12,4 @@ namespace osc
     Rgba32 Rgba32FromVec4(glm::vec4 const&) noexcept;
     Rgba32 Rgba32FromF4(float, float, float, float) noexcept;
     Rgba32 Rgba32FromU32(uint32_t) noexcept;  // R at MSB
-    glm::vec4 Roundoff(glm::vec4 const&);  // deterministically round off color values
 }

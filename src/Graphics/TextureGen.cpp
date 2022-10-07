@@ -12,10 +12,9 @@ osc::Texture2D osc::GenChequeredFloorTexture()
 
     Texture2D rv
     {
-        static_cast<int>(img.getDimensions().x),
-        static_cast<int>(img.getDimensions().y),
+        img.getDimensions(),
         img.getPixelData(),
-        img.getNumChannels()
+        img.getNumChannels(),
     };
     rv.setFilterMode(TextureFilterMode::Mipmap);
     rv.setWrapMode(TextureWrapMode::Repeat);

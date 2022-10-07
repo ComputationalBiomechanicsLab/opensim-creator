@@ -28,7 +28,7 @@ osc::Image osc::Image::Load(std::filesystem::path const& p, ImageFlags flags)
     }
 
     glm::ivec2 dims = {0, 0};
-    int channels = 0;
+    int32_t channels = 0;
     stbi_uc* pixels = stbi_load(p.string().c_str(), &dims.x, &dims.y, &channels, 0);
     OSC_SCOPE_GUARD_IF(pixels, { stbi_image_free(pixels); });
 
@@ -56,7 +56,11 @@ osc::Image::Image() :
 {
 }
 
-osc::Image::Image(glm::ivec2 dimensions, nonstd::span<uint8_t const> channelsRowByRow, int numChannels) :
+osc::Image::Image(
+    glm::ivec2 dimensions,
+    nonstd::span<uint8_t const> channelsRowByRow,
+    int32_t numChannels) :
+
     m_Dimensions{std::move(dimensions)},
     m_NumChannels{std::move(numChannels)},
     m_Pixels{new uint8_t[dimensions.x * dimensions.y * numChannels]}
@@ -87,7 +91,7 @@ glm::ivec2 osc::Image::getDimensions() const
     return m_Dimensions;
 }
 
-int osc::Image::getNumChannels() const
+int32_t osc::Image::getNumChannels() const
 {
     return m_NumChannels;
 }

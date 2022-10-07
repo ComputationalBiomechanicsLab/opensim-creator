@@ -37,17 +37,3 @@ osc::Rgba32 osc::Rgba32FromU32(std::uint32_t v) noexcept
         static_cast<unsigned char>((v >> 0) & 0xff),
     };
 }
-
-glm::vec4 osc::Roundoff(glm::vec4 const& c)
-{
-    Rgba32 const hex = Rgba32FromVec4(c);
-    float const coef = 1.0f / 255.0f;
-
-    return
-    {
-        coef * hex.r,
-        coef * hex.g,
-        coef * hex.b,
-        coef * hex.a,
-    };
-}

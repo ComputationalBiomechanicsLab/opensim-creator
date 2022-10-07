@@ -27,11 +27,8 @@ namespace osc
         RenderTexture& operator=(RenderTexture&&) noexcept;
         ~RenderTexture() noexcept;
 
-        int getWidth() const;
-        void setWidth(int);
-
-        int getHeight() const;
-        void setHeight(int);
+        glm::ivec2 getDimensions() const;
+        void setDimensions(glm::ivec2);
 
         RenderTextureFormat getColorFormat() const;
         void setColorFormat(RenderTextureFormat);

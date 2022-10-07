@@ -135,11 +135,11 @@ public:
         // setup render texture
         osc::Rect viewportRect = osc::GetMainViewportWorkspaceScreenRect();
         glm::vec2 viewportRectDims = osc::Dimensions(viewportRect);
-        osc::RenderTextureDescriptor desc = osc::RenderTextureDescriptor
+        osc::RenderTextureDescriptor desc = osc::RenderTextureDescriptor{glm::ivec2
         {
             static_cast<int>(viewportRectDims.x),
             static_cast<int>(viewportRectDims.y),
-        };
+        }};
         desc.setAntialiasingLevel(osc::App::get().getMSXAASamplesRecommended());
 
         m_SceneCamera.setTexture(desc);

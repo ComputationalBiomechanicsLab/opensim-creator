@@ -68,8 +68,7 @@ namespace
     {
         return osc::Texture2D
         {
-            img.getDimensions().x,
-            img.getDimensions().y,
+            img.getDimensions(),
             img.getPixelData(),
             img.getNumChannels(),
         };
@@ -231,7 +230,7 @@ private:
     Image renderOutputImage()
     {
         std::optional<RenderTexture> rt;
-        rt.emplace(RenderTextureDescriptor{m_ImageTexture.getWidth(), m_ImageTexture.getHeight()});
+        rt.emplace(RenderTextureDescriptor{m_ImageTexture.getDimensions()});
 
         // blit the screenshot into the output
         Graphics::Blit(m_ImageTexture, *rt);
@@ -244,7 +243,7 @@ private:
         outlineColor.a = 1.0f;
         drawOverlays(
             drawlist, 
-            Rect{{0.0f, 0.0f}, {m_ImageTexture.getWidth(), m_ImageTexture.getHeight()}},
+            Rect{{0.0f, 0.0f}, m_ImageTexture.getDimensions()},
             {0.0f, 0.0f, 0.0f, 0.0f},
             outlineColor
         );
@@ -295,9 +294,9 @@ private:
             {
                 // project screenspace overlays into NDC
                 float L = 0.0f;
-                float R = static_cast<float>(m_ImageTexture.getWidth());
+                float R = static_cast<float>(m_ImageTexture.getDimensions().x);
                 float T = 0.0f;
-                float B = static_cast<float>(m_ImageTexture.getHeight());
+                float B = static_cast<float>(m_ImageTexture.getDimensions().y);
                 glm::mat4 const proj =
                 {
                     { 2.0f/(R-L),   0.0f,         0.0f,   0.0f },

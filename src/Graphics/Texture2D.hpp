@@ -22,17 +22,16 @@ namespace osc
     // a handle to a 2D texture that can be rendered by the graphics backend
     class Texture2D final {
     public:
-        Texture2D(int width, int height, nonstd::span<Rgba32 const> rgbaPixelsRowByRow);
-        Texture2D(int width, int height, nonstd::span<uint8_t const> singleChannelPixelsRowByRow);
-        Texture2D(int width, int height, nonstd::span<uint8_t const> channelsRowByRow, int numChannels);
+        Texture2D(glm::ivec2 dimensions, nonstd::span<Rgba32 const> rgbaPixelsRowByRow);
+        Texture2D(glm::ivec2 dimensions, nonstd::span<uint8_t const> singleChannelPixelsRowByRow);
+        Texture2D(glm::ivec2 dimensions, nonstd::span<uint8_t const> channelsRowByRow, int numChannels);
         Texture2D(Texture2D const&);
         Texture2D(Texture2D&&) noexcept;
         Texture2D& operator=(Texture2D const&);
         Texture2D& operator=(Texture2D&&) noexcept;
         ~Texture2D() noexcept;
 
-        int getWidth() const;
-        int getHeight() const;
+        glm::ivec2 getDimensions() const;
         float getAspectRatio() const;
 
         TextureWrapMode getWrapMode() const;  // same as getWrapModeU

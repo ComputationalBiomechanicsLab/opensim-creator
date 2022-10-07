@@ -350,7 +350,7 @@ private:
     Texture2D m_TudLogo = LoadTexture2DFromImageResource("tud_logo.png", ImageFlags_FlipVertically);
 
     // dimensions of stuff
-    glm::vec2 m_TopLogoDims = {m_OscLogo.getWidth() / (m_OscLogo.getHeight()/128.0f), 128.0f};
+    glm::vec2 m_TopLogoDims = [d = m_OscLogo.getDimensions()]() { return glm::vec2{d.x / (d.y/128.0f), 128.0f}; }();
     glm::vec2 m_TopLogoPadding = {25.0f, 25.0f};
     glm::vec2 m_AttributationLogoDims = {64.0f, 64.0f};
     glm::vec2 m_AttributationLogoPadding = {16.0f, 16.0f};
