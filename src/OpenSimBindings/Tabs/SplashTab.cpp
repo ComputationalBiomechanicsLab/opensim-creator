@@ -343,11 +343,11 @@ private:
     glm::vec2 m_MenuMaxDims = {640.0f, 512.0f};
 
     // main app logo, blitted to top of the screen
-    Texture2D m_OscLogo = LoadTexture2DFromImageResource("logo.png", ImageFlags_FlipVertically);
+    Texture2D m_OscLogo = LoadTexture2DFromImageResource("textures/logo.png", ImageFlags_FlipVertically);
 
     // attributation logos, blitted to bottom of screen
-    Texture2D m_CziLogo = LoadTexture2DFromImageResource("chanzuckerberg_logo.png", ImageFlags_FlipVertically);
-    Texture2D m_TudLogo = LoadTexture2DFromImageResource("tud_logo.png", ImageFlags_FlipVertically);
+    Texture2D m_CziLogo = LoadTexture2DFromImageResource("textures/chanzuckerberg_logo.png", ImageFlags_FlipVertically);
+    Texture2D m_TudLogo = LoadTexture2DFromImageResource("textures/tud_logo.png", ImageFlags_FlipVertically);
 
     // dimensions of stuff
     glm::vec2 m_TopLogoDims = [d = m_OscLogo.getDimensions()]() { return glm::vec2{d.x / (d.y/128.0f), 128.0f}; }();

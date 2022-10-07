@@ -30,14 +30,14 @@ Science" grant (Chan Zuckerberg Initiative DAF, 2020-218896 (5022)).
   <tr>
     <td align="center">
       <a href="https://www.tudelft.nl/3me/over/afdelingen/biomechanical-engineering">
-        <img src="resources/tud_logo.png" alt="TUD logo" width="128" height="128" />
+        <img src="resources/textures/tud_logo.png" alt="TUD logo" width="128" height="128" />
         <br />
         Biomechanical Engineering at TU Delft
       </a>
     </td>
     <td align="center">
       <a href="https://chanzuckerberg.com/">
-        <img src="resources/chanzuckerberg_logo.png" alt="CZI logo" width="128" height="128" />
+        <img src="resources/textures/chanzuckerberg_logo.png" alt="CZI logo" width="128" height="128" />
         <br />
         Chan Zuckerberg Initiative
       </a>

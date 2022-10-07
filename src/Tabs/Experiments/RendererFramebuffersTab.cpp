@@ -185,7 +185,7 @@ private:
     bool m_IsMouseCaptured = false;
     glm::vec3 m_CameraEulers = { 0.0f, 0.0f, 0.0f };
 
-    Texture2D m_ContainerTexture = osc::LoadTexture2DFromImageResource("container.jpg");
+    Texture2D m_ContainerTexture = osc::LoadTexture2DFromImageResource("textures/container.jpg");
     Texture2D m_MetalTexture = osc::LoadTexture2DFromImageResource("textures/metal.png");
 
     Mesh m_CubeMesh = GenLearnOpenGLCube();
