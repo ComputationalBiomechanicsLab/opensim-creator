@@ -1578,20 +1578,15 @@ osc::AABB osc::TransformAABB(AABB const& aabb, Transform const& t) noexcept
     // screenshot: https://twitter.com/Herschel/status/1188613724665335808
 
     glm::mat3 const m = ToMat3(t);
-    glm::vec3 const pos = t.position;
 
-    AABB rv;
+    AABB rv{t.position, t.position};  // add in the translation
     for (int i = 0; i < 3; ++i)
     {
-        // add in translation
-        rv.min[i] = pos[i];
-        rv.max[i] = pos[i];
-
         // form extent by summing smaller and larger terms repsectively
         for (int j = 0; j < 3; ++j)
         {
-            float const e = m[i][j] * aabb.min[j];
-            float const f = m[i][j] * aabb.max[j];
+            float const e = m[j][i] * aabb.min[j];
+            float const f = m[j][i] * aabb.max[j];
 
             if (e < f)
             {
@@ -1885,26 +1880,26 @@ osc::Transform osc::ToTransform(glm::mat4 const& mtx)
 
 glm::vec3 osc::TransformDirection(Transform const& t, glm::vec3 const& localDir) noexcept
 {
-    return t.rotation * localDir;
+    return glm::normalize(t.rotation * t.scale * localDir);
 }
 
-glm::vec3 osc::InverseTransformDirection(Transform const& t, glm::vec3 const& worldDir) noexcept
+glm::vec3 osc::InverseTransformDirection(Transform const& t, glm::vec3 const& dir) noexcept
 {
-    return glm::conjugate(t.rotation) * worldDir;
+    return glm::normalize((glm::conjugate(t.rotation) * dir) / t.scale);
 }
 
-glm::vec3 osc::TransformPoint(Transform const& t, glm::vec3 const& localPoint) noexcept
+glm::vec3 osc::TransformPoint(Transform const& t, glm::vec3 const& p) noexcept
 {
-    glm::vec3 rv{localPoint};
+    glm::vec3 rv = p;
     rv *= t.scale;
     rv = t.rotation * rv;
     rv += t.position;
     return rv;
 }
 
-glm::vec3 osc::InverseTransformPoint(Transform const& t, glm::vec3 const& worldPoint) noexcept
+glm::vec3 osc::InverseTransformPoint(Transform const& t, glm::vec3 const& p) noexcept
 {
-    glm::vec3 rv = worldPoint;
+    glm::vec3 rv = p;
     rv -= t.position;
     rv = glm::conjugate(t.rotation) * rv;
     rv /= t.scale;
