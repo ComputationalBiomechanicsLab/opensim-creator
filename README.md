@@ -1,6 +1,6 @@
 ![workflow](https://github.com/ComputationalBiomechanicsLab/opensim-creator/actions/workflows/continuous-integration-workflow.yml/badge.svg)
 
-# OpenSim Creator <img src="resources/logo.png" align="right" alt="OpenSim Creator Logo" width="128" height="128" />
+# OpenSim Creator <img src="resources/textures/logo.png" align="right" alt="OpenSim Creator Logo" width="128" height="128" />
 
 > A UI for building OpenSim models
 
