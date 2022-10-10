@@ -16,7 +16,6 @@
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
-#include "src/Tabs/TabRegistry.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/CStringView.hpp"
@@ -35,12 +34,6 @@
 #include <regex>
 #include <string>
 #include <utility>
-
-static bool const g_TabRegistered = []()
-{
-    osc::RegisterTab("OpenSim/PreviewExperimentalData", [](osc::TabHost* h) -> std::unique_ptr<osc::Tab> { return std::make_unique<osc::PreviewExperimentalDataTab>(h); });
-    return true;
-}();
 
 namespace
 {

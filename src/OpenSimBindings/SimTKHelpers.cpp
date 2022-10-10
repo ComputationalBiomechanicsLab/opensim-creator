@@ -210,7 +210,6 @@ private:
                 t.position,
                 t.position + (legLen * axisLengths[axis] * TransformDirection(t, dir))
             };
-
             Transform const legXform = SimbodyCylinderToSegmentTransform(line, legThickness);
 
             glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};

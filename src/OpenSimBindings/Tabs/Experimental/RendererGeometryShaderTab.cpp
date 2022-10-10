@@ -9,7 +9,6 @@
 #include "src/Maths/Transform.hpp"
 #include "src/OpenSimBindings/SimTKHelpers.hpp"
 #include "src/Platform/App.hpp"
-#include "src/Tabs/TabRegistry.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
@@ -17,17 +16,6 @@
 
 #include <cstdint>
 #include <utility>
-
-static bool const g_TabRegistered = []()
-{
-    osc::RegisterTab("Renderer/GeometryShader", [](osc::TabHost* h) -> std::unique_ptr<osc::Tab> { return std::make_unique<osc::RendererGeometryShaderTab>(h); });
-    return true;
-}();
-
-static osc::Mesh LoadGeometry()
-{
-    return osc::LoadMeshViaSimTK(osc::App::resource("geometry/hat_ribs_scap.vtp"));
-}
 
 class osc::RendererGeometryShaderTab::Impl final {
 public:
@@ -125,6 +113,7 @@ private:
             App::slurp("shaders/ExperimentGeometryShaderScene.frag"),
         }
     };
+
     Material m_NormalsMaterial
     {
         Shader
@@ -134,12 +123,11 @@ private:
             App::slurp("shaders/ExperimentGeometryShaderNormals.frag"),
         }
     };
-    Mesh m_Mesh = LoadGeometry();
-    Camera m_SceneCamera;
 
+    Mesh m_Mesh = osc::LoadMeshViaSimTK(osc::App::resource("geometry/hat_ribs_scap.vtp"));
+    Camera m_SceneCamera;
     bool m_IsMouseCaptured = false;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
-
     glm::vec4 m_MeshColor = {1.0f, 1.0f, 1.0f, 1.0f};
 };
 

@@ -328,15 +328,9 @@ namespace
     // is important)
     using Mat4OrTransform = std::variant<glm::mat4, osc::Transform>;
 
-    template<typename... Ts>
-    struct Overload : Ts... {
-        using Ts::operator()...;
-    };
-    template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
-
     glm::mat4 ToMat4(Mat4OrTransform const& matrixOrTransform)
     {
-        return std::visit(Overload
+        return std::visit(osc::Overload
         {
             [](glm::mat4 const& matrix) { return matrix; },
             [](osc::Transform const& transform) { return ToMat4(transform); }
@@ -345,7 +339,7 @@ namespace
 
     glm::mat4 ToNormalMat4(Mat4OrTransform const& matrixOrTransform)
     {
-        return std::visit(Overload
+        return std::visit(osc::Overload
         {
             [](glm::mat4 const& matrix) { return osc::ToNormalMatrix4(matrix); },
             [](osc::Transform const& transform) { return osc::ToNormalMatrix4(transform); }
@@ -354,7 +348,7 @@ namespace
 
     glm::mat4 ToNormalMat3(Mat4OrTransform const& matrixOrTransform)
     {
-        return std::visit(Overload
+        return std::visit(osc::Overload
         {
             [](glm::mat4 const& matrix) { return osc::ToNormalMatrix(matrix); },
             [](osc::Transform const& transform) { return osc::ToNormalMatrix(transform); }

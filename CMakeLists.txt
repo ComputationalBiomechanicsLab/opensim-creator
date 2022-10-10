@@ -525,6 +525,8 @@ add_library(osccore STATIC
     src/Tabs/Experiments/RendererSDFTab.hpp
     src/Tabs/Experiments/RendererTexturingTab.cpp
     src/Tabs/Experiments/RendererTexturingTab.hpp
+    src/Tabs/Experiments/ThinPlateWarpTab.cpp
+    src/Tabs/Experiments/ThinPlateWarpTab.hpp
     src/Tabs/CookiecutterTab.cpp
     src/Tabs/CookiecutterTab.hpp
     src/Tabs/ErrorTab.cpp

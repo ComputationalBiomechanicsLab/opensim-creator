@@ -17,7 +17,6 @@
 #include "src/Maths/Transform.hpp"
 #include "src/OpenSimBindings/SimTKHelpers.hpp"
 #include "src/Platform/App.hpp"
-#include "src/Tabs/TabRegistry.hpp"
 #include "src/Utils/UID.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 
@@ -29,12 +28,6 @@
 #include <chrono>
 #include <string>
 #include <utility>
-
-static bool const g_TabRegistered = []()
-{
-    osc::RegisterTab("Hittest/Meshes", [](osc::TabHost* h) -> std::unique_ptr<osc::Tab> { return std::make_unique<osc::MeshHittestTab>(h); });
-    return true;
-}();
 
 class osc::MeshHittestTab::Impl final {
 public:

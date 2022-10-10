@@ -312,4 +312,10 @@ namespace osc
     {
         return VariantIndexImpl<Variant, T>();
     }
+
+    template<typename... Ts>
+    struct Overload : Ts... {
+        using Ts::operator()...;
+    };
+    template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
 }

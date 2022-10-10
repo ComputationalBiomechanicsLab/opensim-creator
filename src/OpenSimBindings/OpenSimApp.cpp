@@ -3,6 +3,11 @@
 #include "src/Platform/Config.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
+#include "src/Tabs/TabRegistry.hpp"
+
+#include "src/OpenSimBindings/Tabs/Experimental/MeshHittestTab.hpp"
+#include "src/OpenSimBindings/Tabs/Experimental/PreviewExperimentalDataTab.hpp"
+#include "src/OpenSimBindings/Tabs/Experimental/RendererGeometryShaderTab.hpp"
 
 #include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/LogSink.h>
@@ -121,6 +126,11 @@ static bool InitializeOpenSim(osc::Config const& config)
     osc::log::info("registering OpenSim geometry search path to use osc resources");
     OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(geometryDir.string());
     osc::log::info("added geometry search path entry: %s", geometryDir.string().c_str());
+
+    // register any opensim-specific tabs
+    osc::RegisterTab("Hittest/Meshes", [](osc::TabHost* h) -> std::unique_ptr<osc::Tab> { return std::make_unique<osc::MeshHittestTab>(h); });
+    osc::RegisterTab("OpenSim/PreviewExperimentalData", [](osc::TabHost* h) -> std::unique_ptr<osc::Tab> { return std::make_unique<osc::PreviewExperimentalDataTab>(h); });
+    osc::RegisterTab("Renderer/GeometryShader", [](osc::TabHost* h) -> std::unique_ptr<osc::Tab> { return std::make_unique<osc::RendererGeometryShaderTab>(h); });
 
     return true;
 }
