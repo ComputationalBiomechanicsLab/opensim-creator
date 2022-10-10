@@ -74,13 +74,13 @@ namespace osc
     // returns the aspect ratio of the vec (effectively: x/y)
     float AspectRatio(glm::vec2) noexcept;
 
-    // returns the midpoint between two vectors (effectively: (x+y)/2.0)
+    // returns the midpoint between two vectors (effectively: 0.5 * (x+y))
     glm::vec3 Midpoint(glm::vec3 const&, glm::vec3 const&) noexcept;
 
-    // returns the unweighted midpoint of all of the provided vectors, or {0.0f, 0.0f, 0.0f} if provided none
+    // returns the unweighted midpoint of all of the provided vectors, or {0.0f, 0.0f, 0.0f} if provided no inputs
     glm::vec3 Midpoint(nonstd::span<glm::vec3 const>) noexcept;
 
-    // returns the sum of `n` vectors using the "Kahan Summation Algorithm" to reduce errors
+    // returns the sum of `n` vectors using the "Kahan Summation Algorithm" to reduce errors, returns {0.0f, 0.0f, 0.0f} if provided no inputs
     glm::vec3 KahanSum(nonstd::span<glm::vec3 const>) noexcept;
 
     // returns the average of `n` vectors using whichever numerically stable average happens to work
@@ -89,7 +89,7 @@ namespace osc
     // returns a normal vector of the supplied (pointed to) triangle (i.e. (v[1]-v[0]) x (v[2]-v[0]))
     glm::vec3 TriangleNormal(glm::vec3 const*) noexcept;
 
-    // returns a normal vector of the supplied triangle (i.e. (B-A) x (C-A))
+    // returns a normal vector of the supplied triangle points (i.e. (b-a) x (c-a))
     glm::vec3 TriangleNormal(glm::vec3 const&, glm::vec3 const&, glm::vec3 const&) noexcept;
 
     // returns a normal matrix created from the supplied xform matrix
@@ -100,24 +100,31 @@ namespace osc
 
     // returns a noraml matrix created from the supplied xform matrix
     //
-    // this is just a padded version of the 3x3 matrix (but is handy for when downstream
-    // callers ultimately just want a 4x4 matrix)
+    // equivalent to mat4{ToNormalMatrix(m)}
     glm::mat4 ToNormalMatrix4(glm::mat4 const&) noexcept;
 
-    // returns matrix that rotates dir1 to point in the same direction as dir2
+    // returns a transform matrix that rotates dir1 to point in the same direction as dir2
     glm::mat4 Dir1ToDir2Xform(glm::vec3 const& dir1, glm::vec3 const& dir2) noexcept;
 
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
     glm::vec3 ExtractEulerAngleXYZ(glm::mat4 const&) noexcept;
 
-    // converts a topleft-origin RELATIVE `pos` (0 to 1 in XY starting topleft) into an
-    // XY location in NDC (-1 to +1 in XY starting in the middle)
+    // returns an XY NDC point converted from a screen point
+    //
+    // - input screen point has origin in top-left, Y goes down
+    // - input screen point has range: (0,0) is top-left, (1, 1) is bottom-right
+    // - output NDC point has origin in middle, Y goes up
+    // - output NDC point has range: (-1, 1) is top-left, (1, -1) is bottom-right
     glm::vec2 TopleftRelPosToNDCPoint(glm::vec2 relpos);
 
-    // converts a topleft-origin RELATIVE `pos` (0 to 1 in XY, starting topleft) into
-    // the equivalent POINT on the front of the NDC cube (i.e. "as if" a viewer was there)
+    // returns an NDC affine point vector (i.e. {x, y, z, 1.0}) converted from a screen point
     //
-    // i.e. {X_ndc, Y_ndc, -1.0f, 1.0f}
+    // - input screen point has origin in top-left, Y goes down
+    // - input screen point has range: (0,0) is top-left, (1, 1) is bottom-right
+    // - output NDC point has origin in middle, Y goes up
+    // - output NDC point has range -1 to +1 in each dimension
+    // - output assumes Z is "at the front of the cube" (Z = -1.0f)
+    // - output will therefore be: {xNDC, yNDC, -1.0f, 1.0f}
     glm::vec4 TopleftRelPosToNDCCube(glm::vec2 relpos);
 
 
@@ -126,7 +133,7 @@ namespace osc
     // returns the area of the rectangle
     float Area(Rect const&) noexcept;
 
-    // returns the edge dimensions of the rectangle
+    // returns the dimensions of the rectangle
     glm::vec2 Dimensions(Rect const&) noexcept;
 
     // returns bottom-left point of the rectangle
@@ -141,9 +148,6 @@ namespace osc
     Rect Expand(Rect const&, float) noexcept;
     Rect Expand(Rect const&, glm::vec2) noexcept;
 
-    // returns true if the given point is within the rect's bounds
-    bool IsPointInRect(Rect const&, glm::vec2 const&) noexcept;
-
     // returns a rect, created by mapping an Normalized Device Coordinates (NDC) rect
     // (i.e. -1.0 to 1.0) within a screenspace viewport (pixel units, topleft == (0, 0))
     Rect NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const& viewport) noexcept;
@@ -152,7 +156,7 @@ namespace osc
     // ----- osc::Sphere helpers -----
 
     // returns a sphere that bounds the given vertices
-    Sphere BoundingSphereOf(glm::vec3 const*, size_t n) noexcept;
+    Sphere BoundingSphereOf(nonstd::span<glm::vec3 const>) noexcept;
 
     // returns an xform that maps an origin centered r=1 sphere into an in-scene sphere
     glm::mat4 FromUnitSphereMat4(Sphere const&) noexcept;
@@ -215,18 +219,19 @@ namespace osc
     // returns the eight corner points of the cuboid representation of the AABB
     std::array<glm::vec3, 8> ToCubeVerts(AABB const&) noexcept;
 
-    // apply a transformation matrix to the AABB
-    //
-    // note: don't do this repeatably, because it can keep growing the AABB
+    // returns an AABB that has been transformed by the given matrix
     AABB TransformAABB(AABB const&, glm::mat4 const&) noexcept;
+
+    // returns an AABB that has been transformed by the given transform
     AABB TransformAABB(AABB const&, Transform const&) noexcept;
 
-    // computes an AABB of free-floating points in space
-    AABB AABBFromVerts(glm::vec3 const*, size_t n) noexcept;
+    // returns an AABB that tightly bounds the provided points
     AABB AABBFromVerts(nonstd::span<glm::vec3 const>) noexcept;
 
-    // computes an AABB of indexed verticies (e.g. as used in mesh data)
+    // returns an AABB that tightly bounds the points indexed by the provided 32-bit indices
     AABB AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices);
+
+    // returns an AABB that tightly bounds the points indexed by the provided 16-bit indices
     AABB AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices);
 
     // (tries to) return a Normalized Device Coordinate (NDC) rectangle, clamped to the NDC clipping
@@ -243,7 +248,7 @@ namespace osc
 
     // ----- osc::Segment helpers -----
 
-    // returns an xform that maps a path segment to another path segment
+    // returns a transform matrix that maps a path segment to another path segment
     glm::mat4 SegmentToSegmentMat4(Segment const&, Segment const&) noexcept;
 
     // returns a transform that maps a path segment to another path segment
@@ -258,42 +263,42 @@ namespace osc
 
     // ----- osc::Transform helpers -----
 
-    // converts a `Transform` to a 3x3 transform matrix (ignores position)
+    // returns a 3x3 transform matrix equivalent to the provided transform (ignores position)
     glm::mat3 ToMat3(Transform const&) noexcept;
 
-    // converts a `Transform` to a standard 4x4 transform matrix
+    // returns a 4x4 transform matrix equivalent to the provided transform
     glm::mat4 ToMat4(Transform const&) noexcept;
 
-    // inverses `Transform` and converts it to a standard 4x4 transformation matrix
+    // returns a 4x4 transform matrix equivalent to the inverse of the provided transform
     glm::mat4 ToInverseMat4(Transform const&) noexcept;
 
-    // converts a `Transform` to a normal matrix
+    // returns a 3x3 normal matrix for the provided transform
     glm::mat3 ToNormalMatrix(Transform const&) noexcept;
+
+    // returns a 4x4 normal matrix for the provided transform
     glm::mat4 ToNormalMatrix4(Transform const&) noexcept;
 
-    // decomposes the provided transform matrix into a `Transform`, throws if decomposition is not possible
+    // returns a transform that *tries to* perform the equivalent transform as the provided mat4
+    //
+    // - not all 4x4 matrices can be expressed as an `osc::Transform` (e.g. those containing skews)
+    // - uses matrix decomposition to break up the provided matrix
+    // - throws if decomposition of the provided matrix is not possible
     Transform ToTransform(glm::mat4 const&);
 
-    // transforms the direction of a vector
+    // returns a unit-length vector that is the equivalent of the provided direction vector after applying the transform
     //
-    // not affected by scale or position of the transform. The returned vector has the
-    // same length as the provided vector
+    // effectively, apply the Transform but ignore the `position` (translation) component
     glm::vec3 TransformDirection(Transform const&, glm::vec3 const&) noexcept;
 
-    // inverse-transforms the direction of a vector
+    // returns a unit-length vector that is the equivalent of the provided direction vector after applying the inverse of the transform
     //
-    // not affected by scale or position of the transform. The returned vector has the same
-    // length as the provided vector
+    // effectively, apply the inverse transform but ignore the `position` (translation) component
     glm::vec3 InverseTransformDirection(Transform const&, glm::vec3 const&) noexcept;
 
-    // transforms a point
-    //
-    // the returned point is affected by the position, rotation, and scale of the transform.
+    // returns a vector that is the equivalent of the provided vector after applying the transform
     glm::vec3 TransformPoint(Transform const&, glm::vec3 const&) noexcept;
 
-    // inverse-transforms a point
-    //
-    // the returned point is affected by the position, rotation, and scale of the transform.
+    // returns a vector that is the equivalent of the provided vector after applying the inverse of the transform
     glm::vec3 InverseTransformPoint(Transform const&, glm::vec3 const&) noexcept;
 
     // applies a world-space rotation to the transform

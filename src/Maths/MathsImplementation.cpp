@@ -49,16 +49,6 @@ std::ostream& osc::operator<<(std::ostream& o, AABB const& aabb)
     return o << "AABB(min = " << aabb.min << ", max = " << aabb.max << ')';
 }
 
-bool osc::operator==(AABB const& a, AABB const& b) noexcept
-{
-    return a.min == b.min && a.max == b.max;
-}
-
-bool osc::operator!=(AABB const& a, AABB const& b) noexcept
-{
-    return !(a == b);
-}
-
 
 // BVH implementation
 
@@ -90,10 +80,12 @@ namespace
         OSC_ASSERT(n > 1 && "trying to treat a lone node as if it were an internal node - this shouldn't be possible (the implementation should have already handled the leaf case)");
 
         // compute bounding box of remaining prims
-        osc::AABB aabb = Union(bvh.prims.data() + begin,
+        osc::AABB aabb = Union(
+            bvh.prims.data() + begin,
             end-begin,
             sizeof(osc::BVHPrim),
-            offsetof(osc::BVHPrim, bounds));
+            offsetof(osc::BVHPrim, bounds)
+        );
 
         // edge-case: if it's empty, return a leaf node
         if (IsEffectivelyEmpty(aabb))
@@ -344,7 +336,7 @@ namespace
                 verts[indices[i+2]],
             };
             osc::BVHPrim& prim = bvh.prims.emplace_back();
-            prim.bounds = osc::AABBFromVerts(triangleVerts, 3);
+            prim.bounds = osc::AABBFromVerts({triangleVerts, 3});
             prim.id = static_cast<int>(i);
         }
 
@@ -866,11 +858,12 @@ namespace
 // solve a quadratic formula
 //
 // only real-valued results supported - no complex-plane results
-static QuadraticFormulaResult solveQuadratic(float a, float b, float c) {
+static QuadraticFormulaResult solveQuadratic(float a, float b, float c)
+{
     QuadraticFormulaResult res;
 
     // b2 - 4ac
-    float discriminant = b*b - 4.0f*a*c;
+    float const discriminant = b*b - 4.0f*a*c;
 
     if (discriminant < 0.0f)
     {
@@ -879,7 +872,7 @@ static QuadraticFormulaResult solveQuadratic(float a, float b, float c) {
     }
 
     // q = -1/2 * (b +- sqrt(b2 - 4ac))
-    float q = -0.5f * (b + std::copysign(std::sqrt(discriminant), b));
+    float const q = -0.5f * (b + std::copysign(std::sqrt(discriminant), b));
 
     // you might be wondering why this doesn't just compute a textbook
     // version of the quadratic equation (-b +- sqrt(disc))/2a
@@ -1031,10 +1024,11 @@ static osc::RayCollision GetRayCollisionSphereAnalytic(osc::Sphere const& s, osc
 
 bool osc::AreAtSameLocation(glm::vec3 const& a, glm::vec3 const& b) noexcept
 {
-    float eps = std::numeric_limits<float>::epsilon();
-    float eps2 = eps * eps;
-    glm::vec3 b2a = a - b;
-    float len2 = glm::dot(b2a, b2a);
+    constexpr float eps2 = std::numeric_limits<float>::epsilon() * std::numeric_limits<float>::epsilon();
+
+    glm::vec3 const b2a = a - b;
+    float const len2 = glm::dot(b2a, b2a);
+
     return len2 > eps2;
 }
 
@@ -1118,7 +1112,7 @@ glm::vec2::length_type osc::LongestDimIndex(glm::vec2 v) noexcept
     }
     else
     {
-        return 1;
+        return 1;  // Y is longest
     }
 }
 
@@ -1130,7 +1124,7 @@ glm::ivec2::length_type osc::LongestDimIndex(glm::ivec2 v) noexcept
     }
     else
     {
-        return 1;
+        return 1;  // Y is longest
     }
 }
 
@@ -1161,7 +1155,7 @@ float osc::AspectRatio(glm::vec2 v) noexcept
 
 glm::vec3 osc::Midpoint(glm::vec3 const& a, glm::vec3 const& b) noexcept
 {
-    return (a+b)/2.0f;
+    return 0.5f*(a+b);
 }
 
 glm::vec3 osc::Midpoint(nonstd::span<glm::vec3 const> vs) noexcept
@@ -1196,35 +1190,35 @@ glm::vec3 osc::KahanSum(nonstd::span<glm::vec3 const> vs) noexcept
 
 glm::vec3 osc::NumericallyStableAverage(nonstd::span<glm::vec3 const> vs) noexcept
 {
-    glm::vec3 sum = KahanSum(vs);
+    glm::vec3 const sum = KahanSum(vs);
     return sum / static_cast<float>(vs.size());
 }
 
 glm::vec3 osc::TriangleNormal(glm::vec3 const* v) noexcept
 {
-    glm::vec3 ab = v[1] - v[0];
-    glm::vec3 ac = v[2] - v[0];
-    glm::vec3 perpendiular = glm::cross(ab, ac);
+    glm::vec3 const ab = v[1] - v[0];
+    glm::vec3 const ac = v[2] - v[0];
+    glm::vec3 const perpendiular = glm::cross(ab, ac);
     return glm::normalize(perpendiular);
 }
 
 glm::vec3 osc::TriangleNormal(glm::vec3 const& a, glm::vec3 const& b, glm::vec3 const& c) noexcept
 {
-    glm::vec3 ab = b - a;
-    glm::vec3 ac = c - a;
-    glm::vec3 perpendiular = glm::cross(ab, ac);
+    glm::vec3 const ab = b - a;
+    glm::vec3 const ac = c - a;
+    glm::vec3 const perpendiular = glm::cross(ab, ac);
     return glm::normalize(perpendiular);
 }
 
 glm::mat3 osc::ToNormalMatrix(glm::mat4 const& m) noexcept
 {
-    glm::mat3 topLeft{m};
+    glm::mat3 const topLeft{m};
     return glm::inverse(glm::transpose(topLeft));
 }
 
 glm::mat3 osc::ToNormalMatrix(glm::mat4x3 const& m) noexcept
 {
-    glm::mat3 topLeft{m};
+    glm::mat3 const topLeft{m};
     return glm::inverse(glm::transpose(topLeft));
 }
 
@@ -1233,23 +1227,46 @@ glm::mat4 osc::ToNormalMatrix4(glm::mat4 const& m) noexcept
     return ToNormalMatrix(m);
 }
 
+#include <glm/gtx/vector_angle.hpp>
+
 glm::mat4 osc::Dir1ToDir2Xform(glm::vec3 const& a, glm::vec3 const& b) noexcept
 {
-    float cosAng = glm::dot(a, b);
+    // this is effectively a rewrite of glm::rotation(vec3 const&, vec3 const& dest);
 
-    if (std::fabs(cosAng) > 0.999f)
+    float const cosTheta = glm::dot(a, b);
+
+    if(cosTheta >= static_cast<float>(1.0f) - std::numeric_limits<float>::epsilon())
     {
-        // the vectors can't form a parallelogram, so the cross product is going
-        // to be zero
-        //
-        // "More generally, the magnitude of the product equals the area of a parallelogram
-        //  with the vectors for sides" - https://en.wikipedia.org/wiki/Cross_product
+        // `a` and `b` point in the same direction: return identity transform
         return glm::mat4{1.0f};
     }
 
-    glm::vec3 rotAxis = glm::cross(a, b);
-    float angle = glm::acos(cosAng);
-    return glm::rotate(glm::mat4{1.0f}, angle, rotAxis);
+    float theta;
+    glm::vec3 rotationAxis;
+    if(cosTheta < static_cast<float>(-1.0f) + std::numeric_limits<float>::epsilon())
+    {
+        // `a` and `b` point in opposite directions
+        //
+        // - there is no "ideal" rotation axis
+        // - so we try "guessing" one and hope it's good (then try another if it isn't)
+
+        rotationAxis = glm::cross(glm::vec3{0.0f, 0.0f, 1.0f}, a);
+        if (glm::length2(rotationAxis) < std::numeric_limits<float>::epsilon())
+        {
+            // bad luck: they were parallel - use a different axis
+            rotationAxis = glm::cross(glm::vec3{1.0f, 0.0f, 0.0f}, a);
+        }
+
+        theta = osc::fpi;
+        rotationAxis = glm::normalize(rotationAxis);
+    }
+    else
+    {
+        theta = glm::acos(cosTheta);
+        rotationAxis = glm::normalize(glm::cross(a, b));
+    }
+
+    return glm::rotate(glm::mat4{1.0f}, theta, rotationAxis);
 }
 
 glm::vec3 osc::ExtractEulerAngleXYZ(glm::mat4 const& m) noexcept
@@ -1320,13 +1337,6 @@ osc::Rect osc::Expand(Rect const& rect, glm::vec2 amt) noexcept
     return rv;
 }
 
-bool osc::IsPointInRect(Rect const& r, glm::vec2 const& p) noexcept
-{
-    glm::vec2 relPos = p - r.p1;
-    glm::vec2 dims = Dimensions(r);
-    return (0.0f <= relPos.x && relPos.x <= dims.x) && (0.0f <= relPos.y && relPos.y <= dims.y);
-}
-
 osc::Rect osc::NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const& viewport) noexcept
 {
     glm::vec2 const viewportDims = Dimensions(viewport);
@@ -1345,24 +1355,23 @@ osc::Rect osc::NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const&
     return rv;
 }
 
-osc::Sphere osc::BoundingSphereOf(glm::vec3 const* vs, size_t n) noexcept
+osc::Sphere osc::BoundingSphereOf(nonstd::span<glm::vec3 const> points) noexcept
 {
-    AABB aabb = AABBFromVerts(vs, n);
+    AABB aabb = AABBFromVerts(points);
 
     Sphere rv{};
     rv.origin = (aabb.min + aabb.max) / 2.0f;
     rv.radius = 0.0f;
 
     // edge-case: no points provided
-    if (n == 0)
+    if (points.size() == 0)
     {
         return rv;
     }
 
     float biggestR2 = 0.0f;
-    for (size_t i = 0; i < n; ++i)
+    for (glm::vec3 const& pos : points)
     {
-        glm::vec3 const& pos = vs[i];
         glm::vec3 pos2rv = pos - rv.origin;
         float r2 = glm::dot(pos2rv, pos2rv);
         biggestR2 = std::max(biggestR2, r2);
@@ -1568,7 +1577,7 @@ osc::AABB osc::TransformAABB(AABB const& aabb, glm::mat4 const& m) noexcept
         vert = glm::vec3{p / p.w}; // perspective divide
     }
 
-    return AABBFromVerts(verts.data(), verts.size());
+    return AABBFromVerts(verts);
 }
 
 osc::AABB osc::TransformAABB(AABB const& aabb, Transform const& t) noexcept
@@ -1603,17 +1612,17 @@ osc::AABB osc::TransformAABB(AABB const& aabb, Transform const& t) noexcept
     return rv;
 }
 
-osc::AABB osc::AABBFromVerts(glm::vec3 const* vs, size_t n) noexcept
+osc::AABB osc::AABBFromVerts(nonstd::span<glm::vec3 const> vs) noexcept
 {
     // edge-case: no points provided
-    if (n == 0)
+    if (vs.empty())
     {
         return AABB{};
     }
 
     // otherwise, compute bounds
     AABB rv{vs[0], vs[0]};
-    for (size_t i = 1; i < n; ++i)
+    for (size_t i = 1; i < vs.size(); ++i)
     {
         glm::vec3 const& pos = vs[i];
         rv.min = Min(rv.min, pos);
@@ -1621,11 +1630,6 @@ osc::AABB osc::AABBFromVerts(glm::vec3 const* vs, size_t n) noexcept
     }
 
     return rv;
-}
-
-osc::AABB osc::AABBFromVerts(nonstd::span<glm::vec3 const> vs) noexcept
-{
-    return AABBFromVerts(vs.data(), vs.size());
 }
 
 osc::AABB osc::AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices)
@@ -1858,12 +1862,30 @@ glm::mat4 osc::ToInverseMat4(Transform const& t) noexcept
 
 glm::mat3x3 osc::ToNormalMatrix(Transform const& t) noexcept
 {
-    return glm::toMat3(t.rotation);
+    // ignoring translation, the `Transform` class applies a non-uniform, orthogonal scale, followed
+    // by a rotation. Skews aren't possible, so we can skip the usual "inverse of transpose" matrix
+    // stuff that other sources use (see: "On the Transformation of Surface Normals, Andrew Glassner")
+    //
+    // given an input point P, input normal N, scale s, rotation r, and normal matrix T:
+    //
+    // P' = rsP                         // the `Transform` class scales and then rotates the input point
+    // N' = TN                          // we want T, a matrix that transforms the input normal into the output normal
+    // dot(P, N) == 0                   // the input point is orthogonal to the input normal
+    // dot(P', N') == 0                 // the output point should be orthogonal to the output normal
+    //
+    // dot(sP, sN) = s * dot(P, N) = 0  // orthogonally scaling the inputs doesn't affect the outputs' orthogonality
+    // dot(r(sP), r(sN)) = 0            // rotating the inputs doesn't affect the outputs' orthogonality (geometry)
+    // dot(rsP, rsN) = 0                // therefore, applying both a scale and a rotation doesn't affect the outputs' orthogonality
+    // dot(rsP, ToMat3(rs) * N) = 0     // the scale -> rotation transform can be re-expressed as a 3x3 matrix
+    //
+    // T = ToMat3(t)                    // therefore, the normal matrix is the mat3 representation of the transform
+
+    return ToMat3(t);
 }
 
 glm::mat4 osc::ToNormalMatrix4(Transform const& t) noexcept
 {
-    return glm::toMat4(t.rotation);
+    return ToMat3(t);
 }
 
 osc::Transform osc::ToTransform(glm::mat4 const& mtx)
@@ -1880,7 +1902,7 @@ osc::Transform osc::ToTransform(glm::mat4 const& mtx)
 
 glm::vec3 osc::TransformDirection(Transform const& t, glm::vec3 const& localDir) noexcept
 {
-    return glm::normalize(t.rotation * t.scale * localDir);
+    return glm::normalize(t.rotation * (t.scale * localDir));
 }
 
 glm::vec3 osc::InverseTransformDirection(Transform const& t, glm::vec3 const& dir) noexcept
@@ -1925,6 +1947,13 @@ glm::vec3 osc::ExtractEulerAngleXYZ(Transform const& t) noexcept
 glm::vec3 osc::ExtractExtrinsicEulerAnglesXYZ(Transform const& t) noexcept
 {
     return glm::eulerAngles(t.rotation);
+}
+
+bool osc::IsPointInRect(Rect const& r, glm::vec2 const& p) noexcept
+{
+    glm::vec2 relPos = p - r.p1;
+    glm::vec2 dims = Dimensions(r);
+    return (0.0f <= relPos.x && relPos.x <= dims.x) && (0.0f <= relPos.y && relPos.y <= dims.y);
 }
 
 osc::RayCollision osc::GetRayCollisionSphere(Line const& l, Sphere const& s) noexcept

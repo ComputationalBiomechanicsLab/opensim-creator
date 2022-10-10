@@ -9,6 +9,7 @@ namespace osc
         Popup(Popup&&) noexcept = default;
         Popup& operator=(Popup const&) = default;
         Popup& operator=(Popup&&) noexcept = default;
+
     public:
         virtual ~Popup() noexcept = default;
 

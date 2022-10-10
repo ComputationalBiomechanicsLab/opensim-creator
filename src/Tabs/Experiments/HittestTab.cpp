@@ -324,8 +324,8 @@ private:
 
     // scene state
     std::vector<SceneSphere> m_SceneSpheres = GenerateSceneSpheres();
-    AABB m_SceneSphereAABB = AABBFromVerts(m_SphereMesh.getVerts().data(), m_SphereMesh.getVerts().size());
-    Sphere m_SceneSphereBoundingSphere = BoundingSphereOf(m_SphereMesh.getVerts().data(), m_SphereMesh.getVerts().size());
+    AABB m_SceneSphereAABB = m_SphereMesh.getBounds();
+    Sphere m_SceneSphereBoundingSphere = BoundingSphereOf(m_SphereMesh.getVerts());
     bool m_IsMouseCaptured = false;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
     bool m_IsShowingAABBs = true;

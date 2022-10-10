@@ -13,6 +13,7 @@
 #include "src/Graphics/SceneRenderer.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
 #include "src/Maths/AABB.hpp"
+#include "src/Maths/CollisionTests.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Line.hpp"
 #include "src/Maths/MathHelpers.hpp"

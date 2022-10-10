@@ -203,9 +203,14 @@ private:
         for (int axis = 0; axis < 3; ++axis)
         {
             glm::vec3 dir = {0.0f, 0.0f, 0.0f};
-            dir[axis] = legLen * axisLengths[axis];
+            dir[axis] = 1.0f;
 
-            Segment const line{t.position, t.position + TransformDirection(t, dir)};
+            Segment const line =
+            {
+                t.position,
+                t.position + (legLen * axisLengths[axis] * TransformDirection(t, dir))
+            };
+
             Transform const legXform = SimbodyCylinderToSegmentTransform(line, legThickness);
 
             glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};

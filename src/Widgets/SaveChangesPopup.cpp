@@ -51,6 +51,9 @@ private:
     SaveChangesPopupConfig m_Config;
 };
 
+
+// public API (PIMPL)
+
 osc::SaveChangesPopup::SaveChangesPopup(SaveChangesPopupConfig config) :
     m_Impl{new Impl{std::move(config)}}
 {
