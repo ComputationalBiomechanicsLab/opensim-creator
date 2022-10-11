@@ -12,4 +12,6 @@ namespace osc
     };
 
     std::ostream& operator<<(std::ostream&, AABB const&);
+    bool operator==(AABB const&, AABB const&) noexcept;
+    bool operator!=(AABB const&, AABB const&) noexcept;
 }
