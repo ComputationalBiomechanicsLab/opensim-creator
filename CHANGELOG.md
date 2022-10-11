@@ -9,6 +9,7 @@ All notable changes to this project will be documented here. The format is based
 - Scene rendering performance has been improved by around ~10-30 % on typical machines
 - The performance panel can now be opened in the mesh importer screen (#465)
 - Vec3 property editors are now color-coded (#459)
+- Added runtime bounds-checking to mesh indices (#460)
 
 
 ## [0.3.0] - 2022/09/14

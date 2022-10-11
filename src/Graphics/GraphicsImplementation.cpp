@@ -2572,6 +2572,23 @@ private:
         gl::BufferData(GL_ARRAY_BUFFER, data.size(), data.data(), GL_STATIC_DRAW);
 
         // upload indices into EBO
+        {
+            // before uploading, bounds-check the indices, to ensure nothing bizzare
+            // happens at runtime (e.g. GPU driver behaving bizzarely, #460)
+            if (m_NumIndices > 0)
+            {
+                if (m_IndicesAre32Bit)
+                {
+                    nonstd::span<uint32_t const> const indices(&m_IndicesData.front().u32, m_NumIndices);
+                    OSC_ASSERT_ALWAYS(std::all_of(indices.begin(), indices.end(), [nVerts = m_Vertices.size()](uint32_t i) { return i < nVerts; }));
+                }
+                else
+                {
+                    nonstd::span<uint16_t const> const indices(&m_IndicesData.front().u16.a, m_NumIndices);
+                    OSC_ASSERT_ALWAYS(std::all_of(indices.begin(), indices.end(), [nVerts = m_Vertices.size()](uint16_t i) { return i < nVerts; }));
+                }
+            }
+        }
         size_t const eboNumBytes = m_NumIndices * (m_IndicesAre32Bit ? sizeof(uint32_t) : sizeof(uint16_t));
         gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.IndicesBuffer);
         gl::BufferData(GL_ELEMENT_ARRAY_BUFFER, eboNumBytes, m_IndicesData.data(), GL_STATIC_DRAW);
