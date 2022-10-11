@@ -1,4 +1,6 @@
+#include "src/OpenSimBindings/ActionFunctions.hpp"
 #include "src/OpenSimBindings/OpenSimApp.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/Config.hpp"
 
 #include <gtest/gtest.h>
@@ -95,4 +97,25 @@ TEST(OpenSimModel, EditingACoordinateLockMutatesModel)
 	model.realizeReport(state);  // required: makes the state inconsistent? Despite not changing the system?
 
 	ASSERT_FALSE(model.getWorkingState().isConsistent(state));
+}
+
+// repro for an OpenSim bug found in #382
+//
+// effectively, it is possible to segfault OpenSim by giving it incorrect socket
+// assignments: even if the incorrect socket assignmments are provided via an
+// `osim` file (i.e. it's not a code bug in OpenSim Creator)
+TEST(OpenSimModel, ReassigningRajagopalSocketDoesNotSegfault)
+{
+	auto config = osc::Config::load();
+	osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
+
+	std::filesystem::path modelPath{config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim"};
+
+	osc::UndoableModelStatePair undoablePair{std::make_unique<OpenSim::Model>(modelPath.string())};
+
+	std::string err;
+	if (!osc::ActionReassignComponentSocket(undoablePair, OpenSim::ComponentPath{"/jointset/hip_r"}, "child_frame", undoablePair.getModel().getGround(), err))
+	{
+		throw std::runtime_error{err};
+	}
 }
