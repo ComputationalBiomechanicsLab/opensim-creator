@@ -412,12 +412,27 @@ namespace
                 ImGui::PushID(i);
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
 
+                // dimension hint
+                {
+                    glm::vec4 color = {0.0f, 0.0f, 0.0f, 0.6f};
+                    color[i] = 1.0f;
+
+                    ImDrawList* l = ImGui::GetWindowDrawList();
+                    glm::vec2 p = ImGui::GetCursorScreenPos();
+                    float h = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y + 2.0f*ImGui::GetStyle().FrameBorderSize;
+                    glm::vec2 dims = glm::vec2{4.0f, h};
+                    l->AddRectFilled(p, p + dims, ImGui::ColorConvertFloat4ToU32(color));
+                    ImGui::SetCursorScreenPos({p.x + 4.0f, p.y});
+                }
                 ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, {1.0f, 0.0f});
                 if (ImGui::InputScalar("##valueinput", ImGuiDataType_Float, &fv[i], &m_StepSize, nullptr, OSC_DEFAULT_FLOAT_INPUT_FORMAT))
                 {
                     double inverseConversionCoefficient = 1.0/conversionCoefficient;
                     m_ActiveEdits[i] = inverseConversionCoefficient * static_cast<double>(fv[i]);
                 }
+                ImGui::PopStyleVar();
+
+                // annotate the control, for screenshots
                 {
                     std::stringstream annotation;
                     annotation << "ObjectPropertiesEditor::Vec3/";
@@ -426,7 +441,7 @@ namespace
                     annotation << prop.getName();
                     osc::AddFrameAnnotationToLastItem(std::move(annotation).str());
                 }
-                ImGui::PopStyleVar();
+
                 if (ItemValueShouldBeSaved())
                 {
                     save = true;
@@ -840,6 +855,8 @@ public:
         for (int i = 0; i < obj.getNumProperties(); ++i)
         {
             ImGui::PushID(i);
+
+            ImGui::Separator();
 
             OpenSim::AbstractProperty const& prop = obj.getPropertyByIndex(i);
             std::optional<ObjectPropertyEdit> resp = drawPropertyEditor(obj, prop);

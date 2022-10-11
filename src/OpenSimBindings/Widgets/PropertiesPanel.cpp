@@ -78,6 +78,7 @@ static void DrawTopLevelMembersEditor(osc::UndoableModelStatePair& uim)
     ImGui::PushID(selection);
     ImGui::Columns(2);
 
+    ImGui::Separator();
     ImGui::TextUnformatted("name");
     ImGui::SameLine();
     osc::DrawHelpMarker("The name of the component", "The component's name can be important. It can be used when components want to refer to eachover. E.g. a joint will name the two frames it attaches to.");
