@@ -1058,18 +1058,18 @@ bool osc::ActionReassignComponentSocket(
         return false;
     }
 
-    OpenSim::AbstractSocket* const socket = osc::FindSocketMut(*mutComponent, socketName);
-    if (!socket)
+    OpenSim::AbstractSocket* const mutSocket = osc::FindSocketMut(*mutComponent, socketName);
+    if (!mutSocket)
     {
         uim.setModelVersion(oldVersion);
         return false;
     }
 
-    OpenSim::Object const& existing = socket->getConnecteeAsObject();
+    OpenSim::Object const& previousConnectee = mutSocket->getConnecteeAsObject();
 
     try
     {
-        socket->connect(connectee);
+        mutSocket->connect(connectee);
         mutModel.finalizeConnections();
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
@@ -1080,9 +1080,7 @@ bool osc::ActionReassignComponentSocket(
     catch (std::exception const& ex)
     {
         error = ex.what();
-        socket->connect(existing);
-        uim.setModelVersion(oldVersion);
-
+        uim.rollback();
         return false;
     }
 }

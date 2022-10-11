@@ -10,6 +10,8 @@ All notable changes to this project will be documented here. The format is based
 - The performance panel can now be opened in the mesh importer screen (#465)
 - Vec3 property editors are now color-coded (#459)
 - Added runtime bounds-checking to mesh indices (#460)
+- Socket reassignment failure now fully rolls back the model to a pre-assignment state (previously:
+  would erroneously hold some changes, #382)
 
 
 ## [0.3.0] - 2022/09/14
