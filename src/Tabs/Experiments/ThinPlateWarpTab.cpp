@@ -115,14 +115,89 @@ namespace
     struct GUIFirstClickMouseState final { glm::vec2 imgPos; };
     using GUIMouseState = std::variant<GUIInitialMouseState, GUIFirstClickMouseState>;
 
-    struct LandmarkPair final {
-        glm::vec2 srcPos;
-        glm::vec2 destPos;
+    // a single source-to-destination landmark pair in 2D space
+    struct LandmarkPair2D final {
+        glm::vec2 src;
+        glm::vec2 dest;
     };
 
-    osc::Mesh ComputeOutputGrid(osc::Mesh const& inputGrid)
+    // this is effectviely the "U" term in the TPS algorithm literature (assumes r^2 * log(r^2) func)
+    //
+    // i.e. U(||controlPoint - p||) is equivalent to `DifferenceRadialBasisFunction2D(controlPoint, p)`
+    float DifferenceRadialBasisFunction2D(glm::vec2 controlPoint, glm::vec2 p)
     {
-        return inputGrid;
+        glm::vec2 const diff = controlPoint - p;
+        float const r2 = glm::dot(diff, diff);
+        return r2 * std::log(r2);
+    }
+
+    // a single weight term of the summation part of the linear combination
+    //
+    // i.e. in wi * U(||controlPoint - p||), this stores `wi` and `controlPoint`
+    struct TPSWeightTerm2D final {
+        float weight;
+        glm::vec2 controlPoint;
+    };
+
+    // all linear coefficients in the TPS equation
+    //
+    // i.e. these are the a1, aXY, and w (+ control point) terms of the equation
+    struct TPSCoefficients2D final {
+        glm::vec2 a1 = {0.0f, 0.0f};
+        glm::vec2 aXY = {1.0f, 1.0f};
+        std::vector<TPSWeightTerm2D> weights;
+    };
+
+    // use the provided coefficients to evaluate (transform) the provided point
+    glm::vec2 Evaluate(TPSCoefficients2D const& coefs, glm::vec2 p)
+    {
+        glm::vec2 rv = coefs.a1 + coefs.aXY * p;
+        for (TPSWeightTerm2D const& wt : coefs.weights)
+        {
+            rv += wt.weight * DifferenceRadialBasisFunction2D(wt.controlPoint, p);
+        }
+        return rv;
+    }
+
+    TPSCoefficients2D CalcCoefficients(nonstd::span<LandmarkPair2D const> landmarkPairs)
+    {
+        return {};
+    }
+
+    class ThinPlateWarper2D final {
+    public:
+        ThinPlateWarper2D(nonstd::span<LandmarkPair2D const> landmarkPairs) :
+            m_Coefficients{CalcCoefficients(landmarkPairs)}
+        {
+        }
+
+        glm::vec2 transform(glm::vec2 p) const
+        {
+            return Evaluate(m_Coefficients, p);
+        }
+
+    private:
+        TPSCoefficients2D m_Coefficients;
+    };
+
+    // apply a thin-plate warp to each of the points in the source mesh
+    osc::Mesh ApplyThinPlateWarpToMesh(ThinPlateWarper2D const& t, osc::Mesh const& inputGrid)
+    {
+        // load source points
+        nonstd::span<glm::vec3 const> srcPoints = inputGrid.getVerts();
+
+        // map each source point via the warper
+        std::vector<glm::vec3> destPoints;
+        destPoints.reserve(srcPoints.size());
+        for (glm::vec3 const& srcPoint : srcPoints)
+        {
+            destPoints.push_back(glm::vec3{t.transform(srcPoint), srcPoint.z});
+        }
+
+        // upload the new points into the returned mesh
+        osc::Mesh rv = inputGrid;
+        rv.setVerts(destPoints);
+        return rv;
     }
 }
 
@@ -209,9 +284,10 @@ public:
             float const minDim = glm::min(windowDims.x, windowDims.y);
             glm::ivec2 const texDims = glm::ivec2{minDim, minDim};
 
-            osc::Mesh outputGrid = ComputeOutputGrid(m_InputGrid);
+            ThinPlateWarper2D warper{m_LandmarkPairs};
+            m_OutputGrid = ApplyThinPlateWarpToMesh(warper, m_InputGrid);
 
-            renderGridMeshToRenderTexture(outputGrid, texDims, m_OutputRender);
+            renderGridMeshToRenderTexture(m_OutputGrid, texDims, m_OutputRender);
             OSC_ASSERT(m_OutputRender.has_value());
 
             // draw rendered texture via ImGui
@@ -250,10 +326,10 @@ private:
         ImDrawList* drawlist = ImGui::GetWindowDrawList();
 
         // render all fully-established landmark pairs
-        for (LandmarkPair const& p : m_LandmarkPairs)
+        for (LandmarkPair2D const& p : m_LandmarkPairs)
         {
-            glm::vec2 const p1 = ht.rect.p1 + p.srcPos;
-            glm::vec2 const p2 = ht.rect.p1 + p.destPos;
+            glm::vec2 const p1 = ht.rect.p1 + p.src;
+            glm::vec2 const p2 = ht.rect.p1 + p.dest;
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist->AddCircleFilled(p1, 10.0f, m_SrcCircleColor);
@@ -307,7 +383,7 @@ private:
 
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
         {
-            m_LandmarkPairs.push_back(LandmarkPair{st.imgPos, imgPos});
+            m_LandmarkPairs.push_back({st.imgPos, imgPos});
             m_MouseState = GUIInitialMouseState{};
         }
     }
@@ -317,6 +393,7 @@ private:
     TabHost* m_Parent;
 
     Mesh m_InputGrid = GenerateNxNPointGridLines({-1.0f, -1.0f}, {1.0f, 1.0f}, {20, 20});
+    Mesh m_OutputGrid = m_InputGrid;
     Material m_Material = Material{App::shaders().get("shaders/SolidColor.vert", "shaders/SolidColor.frag")};
     Camera m_Camera;
     std::optional<RenderTexture> m_InputRender;
@@ -327,7 +404,7 @@ private:
     ImU32 m_ConnectionLineColor = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 0.6f});
 
     GUIMouseState m_MouseState = GUIInitialMouseState{};
-    std::vector<LandmarkPair> m_LandmarkPairs;
+    std::vector<LandmarkPair2D> m_LandmarkPairs;
 };
 
 
