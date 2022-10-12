@@ -161,7 +161,9 @@ namespace
 
     TPSCoefficients2D CalcCoefficients(nonstd::span<LandmarkPair2D const> landmarkPairs)
     {
-        return {};
+        TPSCoefficients2D rv;
+        rv.weights.resize(landmarkPairs.size());  // TODO: just ensuring the evaluation method works with identity (0) terms
+        return rv;
     }
 
     class ThinPlateWarper2D final {
@@ -191,7 +193,7 @@ namespace
         destPoints.reserve(srcPoints.size());
         for (glm::vec3 const& srcPoint : srcPoints)
         {
-            destPoints.push_back(glm::vec3{t.transform(srcPoint), srcPoint.z});
+            destPoints.emplace_back(t.transform(srcPoint), srcPoint.z);
         }
 
         // upload the new points into the returned mesh
@@ -291,7 +293,7 @@ public:
             OSC_ASSERT(m_OutputRender.has_value());
 
             // draw rendered texture via ImGui
-            ImGuiImageHittestResult const ht = osc::DrawTextureAsImGuiImageAndHittest(*m_InputRender, texDims);
+            ImGuiImageHittestResult const ht = osc::DrawTextureAsImGuiImageAndHittest(*m_OutputRender, texDims);
 
             // draw warning msg
             {
