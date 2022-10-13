@@ -9,12 +9,15 @@
 #include "src/Graphics/ShaderCache.hpp"
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Platform/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Widgets/LogViewerPanel.hpp"
 
 #include <glm/vec2.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <SDL_events.h>
+#include <Simbody.h>
 
 #include <cstdint>
 #include <string>
@@ -112,7 +115,7 @@ namespace
 
     // used to hold the user's mouse click state (they need to click twice)
     struct GUIInitialMouseState final {};
-    struct GUIFirstClickMouseState final { glm::vec2 imgPos; };
+    struct GUIFirstClickMouseState final { glm::vec2 srcNDCPos; };
     using GUIMouseState = std::variant<GUIInitialMouseState, GUIFirstClickMouseState>;
 
     // a single source-to-destination landmark pair in 2D space
@@ -121,6 +124,13 @@ namespace
         glm::vec2 dest;
     };
 
+    std::ostream& operator<<(std::ostream& o, LandmarkPair2D const& p)
+    {
+        using osc::operator<<;
+        o << "LandmarkPair2D{src = " << p.src << ", dest = " << p.dest << '}';
+        return o;
+    }
+
     // this is effectviely the "U" term in the TPS algorithm literature (assumes r^2 * log(r^2) func)
     //
     // i.e. U(||controlPoint - p||) is equivalent to `DifferenceRadialBasisFunction2D(controlPoint, p)`
@@ -128,30 +138,58 @@ namespace
     {
         glm::vec2 const diff = controlPoint - p;
         float const r2 = glm::dot(diff, diff);
-        return r2 * std::log(r2);
+
+        if (r2 == 0.0f)
+        {
+            // this is to ensure that the result is always non-zero and non-NaN
+            return std::numeric_limits<float>::min();
+        }
+        else
+        {
+            return r2 * std::log(r2);
+        }
     }
 
     // a single weight term of the summation part of the linear combination
     //
     // i.e. in wi * U(||controlPoint - p||), this stores `wi` and `controlPoint`
     struct TPSWeightTerm2D final {
-        float weight;
+        glm::vec2 weight;
         glm::vec2 controlPoint;
     };
+
+    std::ostream& operator<<(std::ostream& o, TPSWeightTerm2D const& wt)
+    {
+        using osc::operator<<;
+        return o << "TPSWeightTerm2D{weight = " << wt.weight << ", controlPoint = " << wt.controlPoint << '}';
+    }
 
     // all linear coefficients in the TPS equation
     //
     // i.e. these are the a1, aXY, and w (+ control point) terms of the equation
     struct TPSCoefficients2D final {
         glm::vec2 a1 = {0.0f, 0.0f};
-        glm::vec2 aXY = {1.0f, 1.0f};
+        glm::vec2 a2x = {1.0f, 1.0f};
+        glm::vec2 a2y = {1.0f, 1.0f};
         std::vector<TPSWeightTerm2D> weights;
     };
+
+    std::ostream& operator<<(std::ostream& o, TPSCoefficients2D const& coefs)
+    {
+        using osc::operator<<;
+        o << "TPSCoefficients2D{a1 = " << coefs.a1 << ", a2x = " << coefs.a2x << ", a2y = " << coefs.a2y;
+        for (size_t i = 0; i < coefs.weights.size(); ++i)
+        {
+            o << ", w" << i << " = " << coefs.weights[i];
+        }
+        o << '}';
+        return o;
+    }
 
     // use the provided coefficients to evaluate (transform) the provided point
     glm::vec2 Evaluate(TPSCoefficients2D const& coefs, glm::vec2 p)
     {
-        glm::vec2 rv = coefs.a1 + coefs.aXY * p;
+        glm::vec2 rv = coefs.a1 + coefs.a2x * p; + coefs.a2y * p;
         for (TPSWeightTerm2D const& wt : coefs.weights)
         {
             rv += wt.weight * DifferenceRadialBasisFunction2D(wt.controlPoint, p);
@@ -161,8 +199,178 @@ namespace
 
     TPSCoefficients2D CalcCoefficients(nonstd::span<LandmarkPair2D const> landmarkPairs)
     {
+        // this is based on the Bookstein Thin Plate Sline (TPS) warping algorithm
+        //
+        // 1. A TPS warp is (simplifying here) a linear combination:
+        //
+        //     f(p) = a1 + a2*p + SUM{ wi * U(||controlPoint_i - p||) }
+        //
+        //    which can be represented as a matrix multiplication between the terms (1, p,
+        //    U(||cpi - p||)) and the linear coefficients (a1, a2, wi..)
+        //
+        // 2. The caller provides "landmark pairs": these are (effectively) the input
+        //    arguments and the expected output
+        //
+        // 3. This algorithm uses the input + output to solve for the linear coefficients.
+        //    Once those coefficients are known, we then have a linear equation that we
+        //    we can pump new inputs into (e.g. mesh points, muscle points)
+        //
+        // 4. So, given the equation L * [w a] = [v o], where L is a matrix of linear terms,
+        //    [w a] is a vector of the linear coefficients (we're solving for these), and [v o]
+        //    is the expected output (v), with some (padding) zero elements (o)
+        //
+        // 5. Create matrix L:
+        //
+        //   |K  P|
+        //   |PT 0|
+        //
+        //     where:
+        //
+        //     - K is a symmetric matrix of each *input* landmark pair evaluated via the
+        //       basis function:
+        //
+        //        |U(p00) U(p01) U(p02)  ...  |
+        //        |U(p10) U(p11) U(p12)  ...  |
+        //        | ...    ...    ...   U(pnn)|
+        //
+        //     - P is a n-row 3-column matrix containing the number 1 (the constant term),
+        //       x, and y (effectively, the p term):
+        //
+        //       |1 x1 y1|
+        //       |1 x2 y2|
+        //
+        //     - PT is the transpose of P
+        //     - 0 is the zero matrix (padding)
+        //
+        // 6. Invert it to yield L^-1
+        // 7. Multiply L^-1 * [v o] (desired output values) to yield [w a] (the coefficients)
+        // 8. Return the coefficients
+        //
+        // TODO: this isn't a very efficient implementation. A better one would take advantage
+        //       of the fact that U(p01) == U(p10), which makes the entire matrix symmetric, and
+        //       the coefficients much easier to compute (via LU decomposition, rather than a
+        //       full-fat matrix inversion)
+
+        int const numPairs = static_cast<int>(landmarkPairs.size());
+
+        if (numPairs == 0)
+        {
+            return {};  // edge-case: there are no pairs, so return an identity-like transform
+        }
+
+        // construct matrix L
+        SimTK::Matrix_<float> L(numPairs + 3, numPairs + 3);
+
+        // populate the K part of matrix L (upper-left)
+        for (int row = 0; row < numPairs; ++row)
+        {
+            for (int col = 0; col < numPairs; ++col)
+            {
+                glm::vec2 const& pi = landmarkPairs[row].src;
+                glm::vec2 const& pj = landmarkPairs[col].src;
+
+                L(row, col) = DifferenceRadialBasisFunction2D(pi, pj);
+            }
+        }
+
+        // populate the P part of matrix L (upper-right)
+        {
+            int const pStartColumn = numPairs;
+
+            for (int row = 0; row < numPairs; ++row)
+            {
+                L(row, pStartColumn)     = 1.0f;
+                L(row, pStartColumn + 1) = landmarkPairs[row].src.x;
+                L(row, pStartColumn + 2) = landmarkPairs[row].src.y;
+            }
+        }
+
+        // populate the PT part of matrix L (bottom-left)
+        {
+            int const ptStartRow = numPairs;
+
+            for (int col = 0; col < numPairs; ++col)
+            {
+                L(ptStartRow, col)     = 1.0f;
+                L(ptStartRow + 1, col) = landmarkPairs[col].src.x;
+                L(ptStartRow + 2, col) = landmarkPairs[col].src.y;
+            }
+        }
+
+        // populate the 0 part of matrix L (bottom-right)
+        {
+            int const zeroStartRow = numPairs;
+            int const zeroStartCol = numPairs;
+
+            for (int row = 0; row < 3; ++row)
+            {
+                for (int col = 0; col < 3; ++col)
+                {
+                    L(zeroStartRow + row, zeroStartCol + col) = 0.0f;
+                }
+            }
+        }
+
+        // invert L
+        L.invertInPlace();
+
+        // use inverted matrix to compute each coefficient (wi, a1, and a2)
         TPSCoefficients2D rv;
-        rv.weights.resize(landmarkPairs.size());  // TODO: just ensuring the evaluation method works with identity (0) terms
+        rv.weights.reserve(numPairs);
+
+        // compute w1...wi
+        for (int row = 0; row < numPairs; ++row)
+        {
+            glm::vec2 wi = {0.0f, 0.0f};
+            for (int col = 0; col < numPairs; ++col)
+            {
+                wi += static_cast<float>(L(row, col)) * landmarkPairs[col].dest;
+            }
+            rv.weights.push_back(TPSWeightTerm2D{wi, landmarkPairs[row].src});
+
+            // note: we ignore the last 3 columns because they would effectively just multiply
+            //       with the padding zero elements in the result vector
+        }
+
+        // a1
+        {
+            int const a1Row = numPairs;
+
+            glm::vec2 a1 = {0.0f, 0.0f};
+            for (int col = 0; col < numPairs; ++col)
+            {
+                a1 += static_cast<float>(L(a1Row, col)) * landmarkPairs[col].dest;
+            }
+            rv.a1 = a1;
+
+            // note: we ignore the last 3 columns because they would effectively just multiply
+            //       with the padding zero elements in the result vector
+        }
+
+        // a2x
+        {
+            int const a2xRow = numPairs + 1;
+
+            glm::vec2 a2x = {0.0f, 0.0f};
+            for (int col = 0; col < numPairs; ++col)
+            {
+                a2x += static_cast<float>(L(a2xRow, col)) * landmarkPairs[col].dest;
+            }
+            rv.a2x = a2x;
+        }
+
+        // a2y
+        {
+            int const a2yRow = numPairs + 2;
+
+            glm::vec2 a2y = {0.0f, 0.0f};
+            for (int col = 0; col < numPairs; ++col)
+            {
+                a2y += static_cast<float>(L(a2yRow, col)) * landmarkPairs[col].dest;
+            }
+            rv.a2y = a2y;
+        }
+
         return rv;
     }
 
@@ -293,28 +501,19 @@ public:
             OSC_ASSERT(m_OutputRender.has_value());
 
             // draw rendered texture via ImGui
-            ImGuiImageHittestResult const ht = osc::DrawTextureAsImGuiImageAndHittest(*m_OutputRender, texDims);
-
-            // draw warning msg
-            {
-                glm::vec2 p = ImGui::GetCursorScreenPos();
-
-                ImGui::SetCursorScreenPos(ht.rect.p1 + glm::vec2{10.0f, 10.0f});
-                ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 0.0f, 0.0f, 1.0f});
-                ImGui::Text("Warning: warping algorithm is not yet implemented");
-                ImGui::PopStyleColor();
-
-                ImGui::SetCursorScreenPos(p);
-            }
+            osc::DrawTextureAsImGuiImage(*m_OutputRender, texDims);
         }
         ImGui::End();
+
+        // draw log panel (debugging)
+        m_LogViewerPanel.draw();
     }
 
 
 private:
     void renderGridMeshToRenderTexture(Mesh const& mesh, glm::ivec2 dims, std::optional<RenderTexture>& out)
     {
-        RenderTextureDescriptor desc = {dims};
+        RenderTextureDescriptor desc{dims};
         desc.setAntialiasingLevel(App::get().getMSXAASamplesRecommended());
         out.emplace(desc);
         osc::Graphics::DrawMesh(mesh, osc::Transform{}, m_Material, m_Camera);
@@ -330,8 +529,8 @@ private:
         // render all fully-established landmark pairs
         for (LandmarkPair2D const& p : m_LandmarkPairs)
         {
-            glm::vec2 const p1 = ht.rect.p1 + p.src;
-            glm::vec2 const p2 = ht.rect.p1 + p.dest;
+            glm::vec2 const p1 = ht.rect.p1 + Dimensions(ht.rect)*(0.5f*((p.src * glm::vec2{1.0f, -1.0f}) + 1.0f));
+            glm::vec2 const p2 = ht.rect.p1 + Dimensions(ht.rect)*(0.5f*((p.dest * glm::vec2{1.0f, -1.0f}) + 1.0f));
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist->AddCircleFilled(p1, 10.0f, m_SrcCircleColor);
@@ -343,7 +542,7 @@ private:
         {
             GUIFirstClickMouseState const& st = std::get<GUIFirstClickMouseState>(m_MouseState);
 
-            glm::vec2 const p1 = ht.rect.p1 + st.imgPos;
+            glm::vec2 const p1 = ht.rect.p1 + Dimensions(ht.rect)*(0.5f*((st.srcNDCPos * glm::vec2{1.0f, -1.0f}) + 1.0f));
             glm::vec2 const p2 = ImGui::GetMousePos();
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
@@ -365,13 +564,13 @@ private:
     {
         glm::vec2 const mp = ImGui::GetMousePos();
         glm::vec2 const imgPos = mp - ht.rect.p1;
-        std::string const txt = StreamToString(imgPos);
+        glm::vec2 const ndcPos = ((2.0f * imgPos/Dimensions(ht.rect)) - 1.0f) * glm::vec2{1.0f, -1.0f};
 
-        osc::DrawTooltipBodyOnly(txt.c_str());
+        osc::DrawTooltipBodyOnly(StreamToString(ndcPos).c_str());
 
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
         {
-            m_MouseState = GUIFirstClickMouseState{imgPos};
+            m_MouseState = GUIFirstClickMouseState{ndcPos};
         }
     }
 
@@ -379,13 +578,13 @@ private:
     {
         glm::vec2 const mp = ImGui::GetMousePos();
         glm::vec2 const imgPos = mp - ht.rect.p1;
-        std::string const txt = StreamToString(imgPos) + "*";
+        glm::vec2 const ndcPos = ((2.0f * imgPos/Dimensions(ht.rect)) - 1.0f) * glm::vec2{1.0f, -1.0f};
 
-        osc::DrawTooltipBodyOnly(txt.c_str());
+        osc::DrawTooltipBodyOnly((StreamToString(ndcPos) + "*").c_str());
 
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
         {
-            m_LandmarkPairs.push_back({st.imgPos, imgPos});
+            m_LandmarkPairs.push_back({st.srcNDCPos, ndcPos});
             m_MouseState = GUIInitialMouseState{};
         }
     }
@@ -393,6 +592,8 @@ private:
     UID m_ID;
     std::string m_Name = ICON_FA_BEZIER_CURVE " ThinPlateWarpTab";
     TabHost* m_Parent;
+
+    LogViewerPanel m_LogViewerPanel{"Log"};
 
     Mesh m_InputGrid = GenerateNxNPointGridLines({-1.0f, -1.0f}, {1.0f, 1.0f}, {20, 20});
     Mesh m_OutputGrid = m_InputGrid;
