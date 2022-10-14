@@ -24,53 +24,56 @@ namespace gl
         std::string m_Msg;
 
     public:
-        OpenGlException(std::string s) : m_Msg{std::move(s)} {
+        OpenGlException(std::string s) : m_Msg{std::move(s)}
+        {
         }
 
         char const* what() const noexcept override;
     };
 
-    static inline constexpr void swap(GLuint& a, GLuint& b) noexcept {
-        GLuint tmp = a;
-        a = b;
-        b = tmp;
-    }
-
     // a moveable handle to an OpenGL shader
     class ShaderHandle {
-        GLuint m_ShaderHandle;
-
     public:
-        static constexpr GLuint senteniel = 0;
-
-        explicit ShaderHandle(GLenum type) : m_ShaderHandle{glCreateShader(type)} {
-            if (m_ShaderHandle == senteniel) {
+        explicit ShaderHandle(GLenum type) :
+            m_ShaderHandle{glCreateShader(type)}
+        {
+            if (m_ShaderHandle == g_EmptyShaderSenteniel)
+            {
                 throw OpenGlException{GL_SOURCELOC ": glCreateShader() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
 
         ShaderHandle(ShaderHandle const&) = delete;
 
-        constexpr ShaderHandle(ShaderHandle&& tmp) noexcept : m_ShaderHandle{tmp.m_ShaderHandle} {
-            tmp.m_ShaderHandle = senteniel;
+        ShaderHandle(ShaderHandle&& tmp) noexcept :
+            m_ShaderHandle{std::exchange(tmp.m_ShaderHandle, g_EmptyShaderSenteniel)}
+        {
         }
 
         ShaderHandle& operator=(ShaderHandle const&) = delete;
 
-        constexpr ShaderHandle& operator=(ShaderHandle&& tmp) noexcept {
-            swap(m_ShaderHandle, tmp.m_ShaderHandle);
+        ShaderHandle& operator=(ShaderHandle&& tmp) noexcept
+        {
+            std::swap(m_ShaderHandle, tmp.m_ShaderHandle);
             return *this;
         }
 
-        ~ShaderHandle() noexcept {
-            if (m_ShaderHandle != senteniel) {
+        ~ShaderHandle() noexcept
+        {
+            if (m_ShaderHandle != g_EmptyShaderSenteniel)
+            {
                 glDeleteShader(m_ShaderHandle);
             }
         }
 
-        [[nodiscard]] constexpr GLuint get() const noexcept {
+        GLuint get() const noexcept
+        {
             return m_ShaderHandle;
         }
+
+    private:
+        static constexpr GLuint g_EmptyShaderSenteniel = 0;
+        GLuint m_ShaderHandle;
     };
 
     // compile a shader from source
@@ -80,25 +83,28 @@ namespace gl
     // shader handle
     template<GLuint ShaderType>
     class Shader {
-        ShaderHandle m_ShaderHandle;
-
     public:
         static constexpr GLuint type = ShaderType;
 
-        Shader() : m_ShaderHandle{type} {
-        }
+        Shader() : m_ShaderHandle{type} {}
 
-        [[nodiscard]] constexpr decltype(m_ShaderHandle.get()) get() const noexcept {
+        GLuint get() const noexcept
+        {
             return m_ShaderHandle.get();
         }
 
-        [[nodiscard]] constexpr ShaderHandle& handle() noexcept {
+        ShaderHandle& handle() noexcept
+        {
             return m_ShaderHandle;
         }
 
-        [[nodiscard]] constexpr ShaderHandle const& handle() const noexcept {
+        ShaderHandle const& handle() const noexcept
+        {
             return m_ShaderHandle;
         }
+
+    private:
+        ShaderHandle m_ShaderHandle;
     };
 
     class VertexShader : public Shader<GL_VERTEX_SHADER> {};
@@ -106,7 +112,8 @@ namespace gl
     class GeometryShader : public Shader<GL_GEOMETRY_SHADER> {};
 
     template<typename TShader>
-    inline TShader CompileFromSource(const char* src) {
+    inline TShader CompileFromSource(const char* src)
+    {
         TShader rv;
         CompileFromSource(rv.handle(), src);
         return rv;
@@ -114,64 +121,76 @@ namespace gl
 
     // an OpenGL program (i.e. n shaders linked into one pipeline)
     class Program final {
-        GLuint m_ProgramHandle;
-
     public:
-        static constexpr GLuint senteniel = 0;
-
-        Program() : m_ProgramHandle{glCreateProgram()} {
-            if (m_ProgramHandle == senteniel) {
+        Program() : m_ProgramHandle{glCreateProgram()}
+        {
+            if (m_ProgramHandle == g_EmptyProgramSenteniel)
+            {
                 throw OpenGlException{GL_SOURCELOC "glCreateProgram() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
 
         Program(Program const&) = delete;
 
-        constexpr Program(Program&& tmp) noexcept : m_ProgramHandle{tmp.m_ProgramHandle} {
-            tmp.m_ProgramHandle = senteniel;
+        Program(Program&& tmp) noexcept :
+            m_ProgramHandle{std::exchange(tmp.m_ProgramHandle, g_EmptyProgramSenteniel)}
+        {
         }
 
         Program& operator=(Program const&) = delete;
 
-        constexpr Program& operator=(Program&& tmp) noexcept {
-            swap(m_ProgramHandle, tmp.m_ProgramHandle);
+        Program& operator=(Program&& tmp) noexcept
+        {
+            std::swap(m_ProgramHandle, tmp.m_ProgramHandle);
             return *this;
         }
 
-        ~Program() noexcept {
-            if (m_ProgramHandle != senteniel) {
+        ~Program() noexcept
+        {
+            if (m_ProgramHandle != g_EmptyProgramSenteniel)
+            {
                 glDeleteProgram(m_ProgramHandle);
             }
         }
 
-        [[nodiscard]] constexpr GLuint get() const noexcept {
+        GLuint get() const noexcept
+        {
             return m_ProgramHandle;
         }
+
+    private:
+        static constexpr GLuint g_EmptyProgramSenteniel = 0;
+        GLuint m_ProgramHandle;
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUseProgram.xhtml
-    inline void UseProgram(Program const& p) noexcept {
+    inline void UseProgram(Program const& p) noexcept
+    {
         glUseProgram(p.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUseProgram.xhtml
-    inline void UseProgram() noexcept {
+    inline void UseProgram() noexcept
+    {
         glUseProgram(static_cast<GLuint>(0));
     }
 
-    inline void AttachShader(Program& p, ShaderHandle const& sh) noexcept {
+    inline void AttachShader(Program& p, ShaderHandle const& sh) noexcept
+    {
         glAttachShader(p.get(), sh.get());
     }
 
     template<GLuint ShaderType>
-    inline void AttachShader(Program& p, Shader<ShaderType> const& s) noexcept {
+    inline void AttachShader(Program& p, Shader<ShaderType> const& s) noexcept
+    {
         glAttachShader(p.get(), s.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glLinkProgram.xhtml
     void LinkProgram(Program& prog);
 
-    inline gl::Program CreateProgramFrom(VertexShader const& vs, FragmentShader const& fs) {
+    inline gl::Program CreateProgramFrom(VertexShader const& vs, FragmentShader const& fs)
+    {
         gl::Program p;
         AttachShader(p, vs);
         AttachShader(p, fs);
@@ -179,9 +198,8 @@ namespace gl
         return p;
     }
 
-    inline gl::Program
-        CreateProgramFrom(VertexShader const& vs, FragmentShader const& fs, GeometryShader const& gs) {
-
+    inline gl::Program CreateProgramFrom(VertexShader const& vs, FragmentShader const& fs, GeometryShader const& gs)
+    {
         gl::Program p;
         AttachShader(p, vs);
         AttachShader(p, fs);
@@ -192,17 +210,21 @@ namespace gl
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGetUniformLocation.xhtml
     //     *throws on error
-    [[nodiscard]] inline GLint GetUniformLocation(Program const& p, GLchar const* name) {
+    [[nodiscard]] inline GLint GetUniformLocation(Program const& p, GLchar const* name)
+    {
         GLint handle = glGetUniformLocation(p.get(), name);
-        if (handle == -1) {
+        if (handle == -1)
+        {
             throw OpenGlException{std::string{"glGetUniformLocation() failed: cannot get "} + name};
         }
         return handle;
     }
 
-    [[nodiscard]] inline GLint GetAttribLocation(Program const& p, GLchar const* name) {
+    [[nodiscard]] inline GLint GetAttribLocation(Program const& p, GLchar const* name)
+    {
         GLint handle = glGetAttribLocation(p.get(), name);
-        if (handle == -1) {
+        if (handle == -1)
+        {
             throw OpenGlException{std::string{"glGetAttribLocation() failed: cannot get "} + name};
         }
         return handle;
@@ -495,40 +517,47 @@ namespace gl
 
     // a moveable handle to an OpenGL buffer (e.g. GL_ARRAY_BUFFER)
     class BufferHandle {
-        GLuint m_BufferHandle;
-
     public:
-        static constexpr GLuint senteniel = static_cast<GLuint>(-1);
-
-        BufferHandle() {
+        BufferHandle()
+        {
             glGenBuffers(1, &m_BufferHandle);
-            if (m_BufferHandle == senteniel) {
+
+            if (m_BufferHandle == g_EmptyBufferHandleSenteniel)
+            {
                 throw OpenGlException{GL_SOURCELOC "glGenBuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
 
         BufferHandle(BufferHandle const&) = delete;
 
-        constexpr BufferHandle(BufferHandle&& tmp) noexcept : m_BufferHandle{tmp.m_BufferHandle} {
-            tmp.m_BufferHandle = senteniel;
+        BufferHandle(BufferHandle&& tmp) noexcept :
+            m_BufferHandle{std::exchange(tmp.m_BufferHandle, g_EmptyBufferHandleSenteniel)}
+        {
         }
 
         BufferHandle& operator=(BufferHandle const&) = delete;
 
-        constexpr BufferHandle& operator=(BufferHandle&& tmp) noexcept {
-            swap(m_BufferHandle, tmp.m_BufferHandle);
+        BufferHandle& operator=(BufferHandle&& tmp) noexcept {
+            std::swap(m_BufferHandle, tmp.m_BufferHandle);
             return *this;
         }
 
-        ~BufferHandle() noexcept {
-            if (m_BufferHandle != senteniel) {
+        ~BufferHandle() noexcept
+        {
+            if (m_BufferHandle != g_EmptyBufferHandleSenteniel)
+            {
                 glDeleteBuffers(1, &m_BufferHandle);
             }
         }
 
-        [[nodiscard]] constexpr GLuint get() const noexcept {
+        GLuint get() const noexcept
+        {
             return m_BufferHandle;
         }
+
+    private:
+        static constexpr GLuint g_EmptyBufferHandleSenteniel = static_cast<GLuint>(-1);
+        GLuint m_BufferHandle;
     };
 
     // a buffer handle that is locked against a particular type (e.g. GL_ELEMENT_ARRAY_BUFFER)
@@ -683,88 +712,105 @@ namespace gl
 
     // a handle to an OpenGL VAO with RAII semantics for glGenVertexArrays etc.
     class VertexArray final {
-        GLuint m_VaoHandle;
-
     public:
-        static constexpr GLuint senteniel = std::numeric_limits<GLuint>::max();
-
-        VertexArray() {
+        VertexArray()
+        {
             glGenVertexArrays(1, &m_VaoHandle);
-            if (m_VaoHandle == senteniel) {
+
+            if (m_VaoHandle == g_EmptyVAOHandleSenteniel)
+            {
                 throw OpenGlException{GL_SOURCELOC "glGenVertexArrays() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
 
         VertexArray(VertexArray const&) = delete;
 
-        constexpr VertexArray(VertexArray&& tmp) noexcept : m_VaoHandle{tmp.m_VaoHandle} {
-            tmp.m_VaoHandle = senteniel;
+        VertexArray(VertexArray&& tmp) noexcept :
+            m_VaoHandle{std::exchange(tmp.m_VaoHandle, g_EmptyVAOHandleSenteniel)}
+        {
         }
 
         VertexArray& operator=(VertexArray const&) = delete;
 
-        constexpr VertexArray& operator=(VertexArray&& tmp) noexcept {
-            swap(m_VaoHandle, tmp.m_VaoHandle);
+        VertexArray& operator=(VertexArray&& tmp) noexcept
+        {
+            std::swap(m_VaoHandle, tmp.m_VaoHandle);
             return *this;
         }
 
-        ~VertexArray() noexcept {
-            if (m_VaoHandle != senteniel) {
+        ~VertexArray() noexcept
+        {
+            if (m_VaoHandle != g_EmptyVAOHandleSenteniel)
+            {
                 glDeleteVertexArrays(1, &m_VaoHandle);
             }
         }
 
-        [[nodiscard]] constexpr GLuint get() const noexcept {
+        GLuint get() const noexcept
+        {
             return m_VaoHandle;
         }
+
+    private:
+        static constexpr GLuint g_EmptyVAOHandleSenteniel = std::numeric_limits<GLuint>::max();
+        GLuint m_VaoHandle;
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
-    inline void BindVertexArray(VertexArray const& vao) noexcept {
+    inline void BindVertexArray(VertexArray const& vao) noexcept
+    {
         glBindVertexArray(vao.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
-    inline void BindVertexArray() noexcept {
+    inline void BindVertexArray() noexcept
+    {
         glBindVertexArray(static_cast<GLuint>(0));
     }
 
     // moveable RAII handle to an OpenGL texture (e.g. GL_TEXTURE_2D)
     class TextureHandle {
-        GLuint m_TextureHandle;
-
     public:
-        static constexpr GLuint senteniel = static_cast<GLuint>(-1);
-
-        TextureHandle() {
+        TextureHandle()
+        {
             glGenTextures(1, &m_TextureHandle);
-            if (m_TextureHandle == senteniel) {
+
+            if (m_TextureHandle == g_EmptyTextureHandleSenteniel)
+            {
                 throw OpenGlException{GL_SOURCELOC "glGenTextures() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
 
         TextureHandle(TextureHandle const&) = delete;
 
-        constexpr TextureHandle(TextureHandle&& tmp) noexcept : m_TextureHandle{tmp.m_TextureHandle} {
-            tmp.m_TextureHandle = senteniel;
+        TextureHandle(TextureHandle&& tmp) noexcept :
+            m_TextureHandle{std::exchange(tmp.m_TextureHandle, g_EmptyTextureHandleSenteniel)}
+        {
         }
 
         TextureHandle& operator=(TextureHandle const&) = delete;
 
-        constexpr TextureHandle& operator=(TextureHandle&& tmp) noexcept {
-            swap(m_TextureHandle, tmp.m_TextureHandle);
+        TextureHandle& operator=(TextureHandle&& tmp) noexcept
+        {
+            std::swap(m_TextureHandle, tmp.m_TextureHandle);
             return *this;
         }
 
-        ~TextureHandle() noexcept {
-            if (m_TextureHandle != senteniel) {
+        ~TextureHandle() noexcept
+        {
+            if (m_TextureHandle != g_EmptyTextureHandleSenteniel)
+            {
                 glDeleteTextures(1, &m_TextureHandle);
             }
         }
 
-        [[nodiscard]] constexpr GLuint get() const noexcept {
+        GLuint get() const noexcept
+        {
             return m_TextureHandle;
         }
+    private:
+        static constexpr GLuint g_EmptyTextureHandleSenteniel = static_cast<GLuint>(-1);
+        GLuint m_TextureHandle;
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glActiveTexture.xhtml
@@ -818,97 +864,115 @@ namespace gl
 
     // moveable RAII handle to an OpenGL framebuffer (i.e. a render target)
     class FrameBuffer final {
-        GLuint m_FboHandle;
-
     public:
-        static constexpr GLuint senteniel = static_cast<GLuint>(-1);
-
-        FrameBuffer() {
+        FrameBuffer()
+        {
             glGenFramebuffers(1, &m_FboHandle);
-            if (m_FboHandle == senteniel) {
+
+            if (m_FboHandle == g_EmptyFBOSenteniel)
+            {
                 throw OpenGlException{GL_SOURCELOC "glGenFramebuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
 
         FrameBuffer(FrameBuffer const&) = delete;
 
-        constexpr FrameBuffer(FrameBuffer&& tmp) noexcept : m_FboHandle{tmp.m_FboHandle} {
-            tmp.m_FboHandle = senteniel;
+        FrameBuffer(FrameBuffer&& tmp) noexcept :
+            m_FboHandle{std::exchange(tmp.m_FboHandle, g_EmptyFBOSenteniel)}
+        {
         }
 
         FrameBuffer& operator=(FrameBuffer const&) = delete;
 
-        constexpr FrameBuffer& operator=(FrameBuffer&& tmp) noexcept {
-            swap(m_FboHandle, tmp.m_FboHandle);
+        FrameBuffer& operator=(FrameBuffer&& tmp) noexcept
+        {
+            std::swap(m_FboHandle, tmp.m_FboHandle);
             return *this;
         }
 
-        ~FrameBuffer() noexcept {
-            if (m_FboHandle != senteniel) {
+        ~FrameBuffer() noexcept
+        {
+            if (m_FboHandle != g_EmptyFBOSenteniel)
+            {
                 glDeleteFramebuffers(1, &m_FboHandle);
             }
         }
 
-        [[nodiscard]] constexpr GLuint get() const noexcept {
+        GLuint get() const noexcept
+        {
             return m_FboHandle;
         }
+
+    private:
+        static constexpr GLuint g_EmptyFBOSenteniel = static_cast<GLuint>(-1);
+        GLuint m_FboHandle;
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindFramebuffer.xhtml
-    inline void BindFramebuffer(GLenum target, FrameBuffer const& fb) noexcept {
+    inline void BindFramebuffer(GLenum target, FrameBuffer const& fb) noexcept
+    {
         glBindFramebuffer(target, fb.get());
     }
 
     // bind to the main Window FBO for the current OpenGL context
     struct WindowFbo final {};
     static constexpr WindowFbo windowFbo{};
-    inline void BindFramebuffer(GLenum target, WindowFbo) noexcept {
+    inline void BindFramebuffer(GLenum target, WindowFbo) noexcept
+    {
         glBindFramebuffer(target, 0);
     }
 
     // assign a 2D texture to the framebuffer (so that subsequent draws/reads
     // to/from the FBO use the texture)
     template<typename Texture>
-    inline void FramebufferTexture2D(GLenum target, GLenum attachment, Texture const& t, GLint level) noexcept {
+    inline void FramebufferTexture2D(GLenum target, GLenum attachment, Texture const& t, GLint level) noexcept
+    {
         glFramebufferTexture2D(target, attachment, t.type, t.get(), level);
     }
 
     // moveable RAII handle to an OpenGL render buffer
     class RenderBuffer final {
-        GLuint m_RenderBuffer;
-
     public:
-        static constexpr GLuint senteniel = 0;
-
-        RenderBuffer() {
+        RenderBuffer()
+        {
             glGenRenderbuffers(1, &m_RenderBuffer);
-            if (m_RenderBuffer == senteniel) {
+
+            if (m_RenderBuffer == senteniel)
+            {
                 throw OpenGlException{GL_SOURCELOC "glGenRenderBuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
 
         RenderBuffer(RenderBuffer const&) = delete;
 
-        constexpr RenderBuffer(RenderBuffer&& tmp) noexcept : m_RenderBuffer{tmp.m_RenderBuffer} {
-            tmp.m_RenderBuffer = senteniel;
+        RenderBuffer(RenderBuffer&& tmp) noexcept :
+            m_RenderBuffer{std::exchange(tmp.m_RenderBuffer, senteniel)}
+        {
         }
 
         RenderBuffer& operator=(RenderBuffer const&) = delete;
 
-        constexpr RenderBuffer& operator=(RenderBuffer&& tmp) noexcept {
-            swap(m_RenderBuffer, tmp.m_RenderBuffer);
+        RenderBuffer& operator=(RenderBuffer&& tmp) noexcept
+        {
+            std::swap(m_RenderBuffer, tmp.m_RenderBuffer);
             return *this;
         }
 
-        ~RenderBuffer() noexcept {
-            if (m_RenderBuffer != senteniel) {
+        ~RenderBuffer() noexcept
+        {
+            if (m_RenderBuffer != senteniel)
+            {
                 glDeleteRenderbuffers(1, &m_RenderBuffer);
             }
         }
 
-        [[nodiscard]] constexpr GLuint get() const noexcept {
+        GLuint get() const noexcept
+        {
             return m_RenderBuffer;
         }
+    private:
+        static constexpr GLuint senteniel = 0;
+        GLuint m_RenderBuffer;
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glBindRenderbuffer.xml
