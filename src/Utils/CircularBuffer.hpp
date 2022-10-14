@@ -46,6 +46,7 @@ namespace osc
         // first index (T-based, not raw byte based) *after* the last element
         int _end = 0;
 
+        // iterator implementation
         template<bool IsConst>
         class Iterator final {
             T* data = nullptr;
@@ -61,60 +62,72 @@ namespace osc
 
             constexpr Iterator() = default;
 
-            constexpr Iterator(T* _data, int _pos) noexcept : data{_data}, pos{_pos} {
+            constexpr Iterator(T* _data, int _pos) noexcept :
+                data{_data},
+                pos{_pos}
+            {
             }
 
             // implicit conversion from non-const iterator to a const one
 
             template<bool _IsConst = IsConst>
-            [[nodiscard]] constexpr operator typename std::enable_if_t<!_IsConst, Iterator<true>>() const noexcept {
+            [[nodiscard]] constexpr operator typename std::enable_if_t<!_IsConst, Iterator<true>>() const noexcept
+            {
                 return Iterator<true>{data, pos};
             }
 
             // LegacyIterator
 
-            constexpr Iterator& operator++() noexcept {
+            constexpr Iterator& operator++() noexcept
+            {
                 pos = (pos + 1) % N;
                 return *this;
             }
 
             template<bool _IsConst = IsConst>
-            [[nodiscard]] constexpr typename std::enable_if_t<_IsConst, T const&> operator*() const noexcept {
+            [[nodiscard]] constexpr typename std::enable_if_t<_IsConst, T const&> operator*() const noexcept
+            {
                 return data[pos];
             }
 
             template<bool _IsConst = IsConst>
-            [[nodiscard]] constexpr typename std::enable_if_t<!_IsConst, T&> operator*() const noexcept {
+            [[nodiscard]] constexpr typename std::enable_if_t<!_IsConst, T&> operator*() const noexcept
+            {
                 return data[pos];
             }
 
             // EqualityComparable
 
             template<bool OtherConst>
-            [[nodiscard]] constexpr bool operator!=(Iterator<OtherConst> const& other) const noexcept {
+            [[nodiscard]] constexpr bool operator!=(Iterator<OtherConst> const& other) const noexcept
+            {
                 return pos != other.pos;
             }
 
             template<bool OtherConst>
-            [[nodiscard]] constexpr bool operator==(Iterator<OtherConst> const& other) const noexcept {
+            [[nodiscard]] constexpr bool operator==(Iterator<OtherConst> const& other) const noexcept
+            {
                 return !(*this != other);
             }
 
             // LegacyInputIterator
 
             template<bool _IsConst = IsConst>
-            [[nodiscard]] constexpr typename std::enable_if_t<_IsConst, T const*> operator->() const noexcept {
+            [[nodiscard]] constexpr typename std::enable_if_t<_IsConst, T const*> operator->() const noexcept
+            {
                 return &data[pos];
             }
 
             template<bool _IsConst = IsConst>
-            [[nodiscard]] constexpr typename std::enable_if_t<!_IsConst, T*> operator->() const noexcept {
+            [[nodiscard]] constexpr typename std::enable_if_t<!_IsConst, T*> operator->() const noexcept
+            {
                 return &data[pos];
             }
 
             // LegacyForwardIterator
 
-            constexpr Iterator operator++(int) noexcept {
+            constexpr Iterator operator++(int) noexcept
+            {
                 Iterator copy{*this};
                 ++(*this);
                 return copy;
@@ -122,12 +135,14 @@ namespace osc
 
             // LegacyBidirectionalIterator
 
-            constexpr Iterator& operator--() noexcept {
+            constexpr Iterator& operator--() noexcept
+            {
                 pos = pos == 0 ? N - 1 : pos - 1;
                 return *this;
             }
 
-            constexpr Iterator operator--(int) noexcept {
+            constexpr Iterator operator--(int) noexcept
+            {
                 Iterator copy{*this};
                 --(*this);
                 return copy;
@@ -135,68 +150,81 @@ namespace osc
 
             // LegacyRandomAccessIterator
 
-            constexpr Iterator& operator+=(difference_type i) noexcept {
+            constexpr Iterator& operator+=(difference_type i) noexcept
+            {
                 pos = (pos + i) % N;
                 return *this;
             }
 
-            constexpr Iterator operator+(difference_type i) const noexcept {
+            constexpr Iterator operator+(difference_type i) const noexcept
+            {
                 Iterator copy{*this};
                 copy += i;
                 return copy;
             }
 
-            constexpr Iterator& operator-=(difference_type i) noexcept {
+            constexpr Iterator& operator-=(difference_type i) noexcept
+            {
                 difference_type im = (i % N);
 
-                if (im > pos) {
+                if (im > pos)
+                {
                     pos = N - (im - pos);
-                } else {
+                }
+                else
+                {
                     pos = pos - im;
                 }
 
                 return *this;
             }
 
-            constexpr Iterator operator-(difference_type i) const noexcept {
+            constexpr Iterator operator-(difference_type i) const noexcept
+            {
                 Iterator copy{*this};
                 copy -= i;
                 return copy;
             }
 
             template<bool OtherConst>
-            constexpr difference_type operator-(Iterator<OtherConst> const& other) const noexcept {
+            constexpr difference_type operator-(Iterator<OtherConst> const& other) const noexcept
+            {
                 return pos - other.pos;
             }
 
             template<bool _IsConst = IsConst>
-            [[nodiscard]] constexpr typename std::enable_if_t<_IsConst, T const&> operator[](difference_type i) const
-                noexcept {
+            [[nodiscard]] constexpr typename std::enable_if_t<_IsConst, T const&> operator[](difference_type i) const noexcept
+            {
                 return data[(pos + i) % N];
             }
 
             template<bool _IsConst = IsConst>
-            [[nodiscard]] constexpr typename std::enable_if_t<!_IsConst, T&> operator[](difference_type i) const noexcept {
+            [[nodiscard]] constexpr typename std::enable_if_t<!_IsConst, T&> operator[](difference_type i) const noexcept
+            {
                 return data[(pos + i) % N];
             }
 
             template<bool OtherConst>
-            constexpr bool operator<(Iterator<OtherConst> const& other) const noexcept {
+            constexpr bool operator<(Iterator<OtherConst> const& other) const noexcept
+            {
                 return pos < other.pos;
             }
 
             template<bool OtherConst>
-            constexpr bool operator>(Iterator<OtherConst> const& other) const noexcept {
+            constexpr bool operator>(Iterator<OtherConst> const& other) const noexcept
+            {
                 return pos > other.pos;
             }
 
             template<bool OtherConst>
-            constexpr bool operator>=(Iterator<OtherConst> const& other) const noexcept {
+            constexpr bool operator>=(Iterator<OtherConst> const& other) const noexcept
+            {
                 return !(*this < other);
             }
 
             template<bool OtherConst>
-            constexpr bool operator<=(Iterator<OtherConst> const& other) const noexcept {
+            constexpr bool operator<=(Iterator<OtherConst> const& other) const noexcept
+            {
                 return !(*this > other);
             }
         };
@@ -212,7 +240,7 @@ namespace osc
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
         CircularBuffer() = default;
-        CircularBuffer(CircularBuffer const& other) = delete;
+        CircularBuffer(CircularBuffer const&) = delete;
         CircularBuffer(CircularBuffer&&) = delete;
         CircularBuffer& operator=(CircularBuffer const&) = delete;
         CircularBuffer& operator=(CircularBuffer&&) = delete;
@@ -343,8 +371,10 @@ namespace osc
         // so that the backing storage does not have a strict requirement of
         // having to contain redundant default-constrcuted elements
 
-        constexpr void clear() noexcept {
-            for (T& el : *this) {
+        constexpr void clear() noexcept
+        {
+            for (T& el : *this)
+            {
                 el.~T();
             }
 
@@ -353,10 +383,12 @@ namespace osc
         }
 
         template<typename... Args>
-        constexpr T& emplace_back(Args&&... args) {
+        constexpr T& emplace_back(Args&&... args)
+        {
             int new_end = (_end + 1) % N;
 
-            if (new_end == _begin) {
+            if (new_end == _begin)
+            {
                 // wraparound case: this is a fixed-size non-blocking circular
                 // buffer
                 //
@@ -377,18 +409,22 @@ namespace osc
             return *constructed_el;
         }
 
-        constexpr void push_back(T const& v) {
+        constexpr void push_back(T const& v)
+        {
             emplace_back(v);
         }
 
-        constexpr void push_back(T&& v) {
+        constexpr void push_back(T&& v)
+        {
             emplace_back(std::move(v));
         }
 
-        constexpr iterator erase(iterator first, iterator last) {
+        constexpr iterator erase(iterator first, iterator last)
+        {
             assert(last == end() && "can currently only erase elements from end of circular buffer");
 
-            for (auto it = first; it < last; ++it) {
+            for (auto it = first; it < last; ++it)
+            {
                 it->~T();
             }
 
@@ -397,10 +433,12 @@ namespace osc
             return end();
         }
 
-        constexpr std::optional<T> try_pop_back() {
+        constexpr std::optional<T> try_pop_back()
+        {
             std::optional<T> rv = std::nullopt;
 
-            if (empty()) {
+            if (empty())
+            {
                 return rv;
             }
 
@@ -410,8 +448,10 @@ namespace osc
             return rv;
         }
 
-        constexpr T pop_back() {
-            if (empty()) {
+        constexpr T pop_back()
+        {
+            if (empty())
+            {
                 throw std::runtime_error{"tried to call Circular_buffer::pop_back on an empty circular buffer"};
             }
 
