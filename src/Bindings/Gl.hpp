@@ -709,7 +709,7 @@ namespace gl
         }
 
         ~VertexArray() noexcept {
-            if (m_VaoHandle == static_cast<GLuint>(-1)) {
+            if (m_VaoHandle != senteniel) {
                 glDeleteVertexArrays(1, &m_VaoHandle);
             }
         }
