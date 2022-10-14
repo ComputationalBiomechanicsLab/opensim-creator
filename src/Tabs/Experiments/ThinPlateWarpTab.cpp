@@ -21,6 +21,7 @@
 
 #include <cstdint>
 #include <string>
+#include <sstream>
 #include <limits>
 #include <utility>
 #include <variant>
@@ -141,7 +142,7 @@ namespace
 
         if (r2 == 0.0f)
         {
-            // this is to ensure that the result is always non-zero and non-NaN
+            // this ensures that the result is always non-zero and non-NaN (might be necessary for linear solvers?)
             return std::numeric_limits<float>::min();
         }
         else
@@ -156,6 +157,8 @@ namespace
     struct TPSWeightTerm2D final {
         glm::vec2 weight;
         glm::vec2 controlPoint;
+
+        TPSWeightTerm2D(glm::vec2 weight_, glm::vec2 controlPoint_) : weight{weight_}, controlPoint{controlPoint_} {}
     };
 
     std::ostream& operator<<(std::ostream& o, TPSWeightTerm2D const& wt)
@@ -169,15 +172,15 @@ namespace
     // i.e. these are the a1, aXY, and w (+ control point) terms of the equation
     struct TPSCoefficients2D final {
         glm::vec2 a1 = {0.0f, 0.0f};
-        glm::vec2 a2x = {1.0f, 1.0f};
-        glm::vec2 a2y = {1.0f, 1.0f};
+        glm::vec2 a2 = {1.0f, 0.0f};
+        glm::vec2 a3 = {0.0f, 1.0f};
         std::vector<TPSWeightTerm2D> weights;
     };
 
     std::ostream& operator<<(std::ostream& o, TPSCoefficients2D const& coefs)
     {
         using osc::operator<<;
-        o << "TPSCoefficients2D{a1 = " << coefs.a1 << ", a2x = " << coefs.a2x << ", a2y = " << coefs.a2y;
+        o << "TPSCoefficients2D{a1 = " << coefs.a1 << ", a2 = " << coefs.a2 << ", a3 = " << coefs.a3;
         for (size_t i = 0; i < coefs.weights.size(); ++i)
         {
             o << ", w" << i << " = " << coefs.weights[i];
@@ -189,12 +192,28 @@ namespace
     // use the provided coefficients to evaluate (transform) the provided point
     glm::vec2 Evaluate(TPSCoefficients2D const& coefs, glm::vec2 p)
     {
-        glm::vec2 rv = coefs.a1 + coefs.a2x * p; + coefs.a2y * p;
+        // calculate the displacement vector
+        glm::vec2 d = coefs.a1 + (coefs.a2 * glm::vec2{p.x, p.x}) + (coefs.a3 * glm::vec2{p.y, p.y});
         for (TPSWeightTerm2D const& wt : coefs.weights)
         {
-            rv += wt.weight * DifferenceRadialBasisFunction2D(wt.controlPoint, p);
+            d += wt.weight * DifferenceRadialBasisFunction2D(wt.controlPoint, p);
         }
-        return rv;
+        return d;
+    }
+
+    std::string FormatAsOutputVector(nonstd::span<LandmarkPair2D const> landmarkPairs)
+    {
+        using osc::operator<<;
+        std::stringstream ss;
+        ss << '[';
+        char const* delim = "";
+        for (LandmarkPair2D const& p : landmarkPairs)
+        {
+            ss << delim << p.dest;
+            delim = " ";
+        }
+        ss << ']';
+        return std::move(ss).str();
     }
 
     TPSCoefficients2D CalcCoefficients(nonstd::span<LandmarkPair2D const> landmarkPairs)
@@ -259,7 +278,7 @@ namespace
         }
 
         // construct matrix L
-        SimTK::Matrix_<float> L(numPairs + 3, numPairs + 3);
+        SimTK::Matrix L(numPairs + 3, numPairs + 3);
 
         // populate the K part of matrix L (upper-left)
         for (int row = 0; row < numPairs; ++row)
@@ -279,7 +298,7 @@ namespace
 
             for (int row = 0; row < numPairs; ++row)
             {
-                L(row, pStartColumn)     = 1.0f;
+                L(row, pStartColumn)     = 1.0;
                 L(row, pStartColumn + 1) = landmarkPairs[row].src.x;
                 L(row, pStartColumn + 2) = landmarkPairs[row].src.y;
             }
@@ -291,7 +310,7 @@ namespace
 
             for (int col = 0; col < numPairs; ++col)
             {
-                L(ptStartRow, col)     = 1.0f;
+                L(ptStartRow, col)     = 1.0;
                 L(ptStartRow + 1, col) = landmarkPairs[col].src.x;
                 L(ptStartRow + 2, col) = landmarkPairs[col].src.y;
             }
@@ -306,69 +325,49 @@ namespace
             {
                 for (int col = 0; col < 3; ++col)
                 {
-                    L(zeroStartRow + row, zeroStartCol + col) = 0.0f;
+                    L(zeroStartRow + row, zeroStartCol + col) = 0.0;
                 }
             }
         }
 
-        // invert L
-        L.invertInPlace();
-
-        // use inverted matrix to compute each coefficient (wi, a1, and a2)
-        TPSCoefficients2D rv;
-        rv.weights.reserve(numPairs);
-
-        // compute w1...wi
+        // construct "result" vectors Vx and Vy (these hold the "desintation" locations)
+        SimTK::Vector Vx(numPairs + 3, 0.0);
+        SimTK::Vector Vy(numPairs + 3, 0.0);
         for (int row = 0; row < numPairs; ++row)
         {
-            glm::vec2 wi = {0.0f, 0.0f};
-            for (int col = 0; col < numPairs; ++col)
-            {
-                wi += static_cast<float>(L(row, col)) * landmarkPairs[col].dest;
-            }
-            rv.weights.push_back(TPSWeightTerm2D{wi, landmarkPairs[row].src});
-
-            // note: we ignore the last 3 columns because they would effectively just multiply
-            //       with the padding zero elements in the result vector
+            Vx[row] = landmarkPairs[row].dest.x;
+            Vy[row] = landmarkPairs[row].dest.y;
         }
 
-        // a1
+        // construct coefficient vectors that will receive the result of solving the linear
+        // system
+        SimTK::Vector Cx(numPairs + 3, 0.0);
+        SimTK::Vector Cy(numPairs + 3, 0.0);
+
+        // solve the linear system
+        SimTK::FactorQTZ F(L);
+        F.solve(Vx, Cx);
+        F.solve(Vy, Cy);
+
+        // the coefficient vectors now contain (e.g. for X): [w1, w2, ... wx, a0, a1x, a1y]
+        //
+        // extract them into the return value
+        TPSCoefficients2D rv;
+        rv.weights.reserve(numPairs);
+        for (int i = 0; i < numPairs; ++i)
         {
-            int const a1Row = numPairs;
-
-            glm::vec2 a1 = {0.0f, 0.0f};
-            for (int col = 0; col < numPairs; ++col)
-            {
-                a1 += static_cast<float>(L(a1Row, col)) * landmarkPairs[col].dest;
-            }
-            rv.a1 = a1;
-
-            // note: we ignore the last 3 columns because they would effectively just multiply
-            //       with the padding zero elements in the result vector
+            glm::vec2 weight = {Cx[i], Cy[i]};
+            glm::vec2 controlPoint = landmarkPairs[i].src;
+            rv.weights.emplace_back(weight, controlPoint);
         }
+        rv.a1 = {Cx[numPairs],   Cy[numPairs]  };
+        rv.a2 = {Cx[numPairs+1], Cy[numPairs+1]};
+        rv.a3 = {Cx[numPairs+2], Cy[numPairs+2]};
 
-        // a2x
+        for (LandmarkPair2D const& lp : landmarkPairs)
         {
-            int const a2xRow = numPairs + 1;
-
-            glm::vec2 a2x = {0.0f, 0.0f};
-            for (int col = 0; col < numPairs; ++col)
-            {
-                a2x += static_cast<float>(L(a2xRow, col)) * landmarkPairs[col].dest;
-            }
-            rv.a2x = a2x;
-        }
-
-        // a2y
-        {
-            int const a2yRow = numPairs + 2;
-
-            glm::vec2 a2y = {0.0f, 0.0f};
-            for (int col = 0; col < numPairs; ++col)
-            {
-                a2y += static_cast<float>(L(a2yRow, col)) * landmarkPairs[col].dest;
-            }
-            rv.a2y = a2y;
+            glm::vec2 solved = Evaluate(rv, lp.src);
+            osc::log::info("src = %s, dest = %s, solved = %s", osc::StreamToString(lp.src).c_str(), osc::StreamToString(lp.dest).c_str(), osc::StreamToString(solved).c_str());
         }
 
         return rv;
