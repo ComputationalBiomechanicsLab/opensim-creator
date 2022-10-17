@@ -714,3 +714,87 @@ osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max
     rv.setIndices(indices);
     return rv;
 }
+
+osc::Mesh osc::GenNxMTriangleQuad2DGrid(glm::ivec2 steps)
+{
+    // all Z values in the returned mesh shall be 0
+    constexpr float zValue = 0.0f;
+
+    if (steps.x <= 0 || steps.y <= 0)
+    {
+        // edge case: no steps specified: return empty mesh
+        return {};
+    }
+
+    // ensure the indices can fit the requested grid
+    {
+        OSC_ASSERT(steps.x*steps.y <= std::numeric_limits<int32_t>::max() && "requested a grid size that is too large for the mesh class");
+    }
+
+    // create a vector of triangle verts
+    std::vector<glm::vec3> verts;
+    verts.reserve(static_cast<size_t>(steps.x * steps.y));
+
+    // create a vector of texture coordinates (1:1 with verts)
+    std::vector<glm::vec2> coords;
+    coords.reserve(static_cast<size_t>(steps.x * steps.y));
+
+    // create a vector of triangle primitive indices (2 triangles, or 6 indices, per grid cell)
+    std::vector<uint32_t> indices;
+    indices.reserve(static_cast<size_t>(6 * (steps.x-1) * (steps.y-1)));
+
+    // precompute step/min in each direction
+    glm::vec2 const vectorStep = glm::vec2{2.0f, 2.0f} / glm::vec2{steps - 1};
+    glm::vec2 const uvStep = glm::vec2{1.0f, 1.0f} / glm::vec2{steps - 1};
+    glm::vec2 const vectorMin = {-1.0f, -1.0f};
+    glm::vec2 const uvMin = {0.0f, 0.0f};
+
+    // push first row of verts + texture coords for all columns
+    for (int32_t col = 0; col < steps.x; ++col)
+    {
+        verts.emplace_back(vectorMin.x + col*vectorStep.x, vectorMin.y, zValue);
+        coords.emplace_back(uvMin.x + col*uvStep.x, uvMin.y);
+    }
+
+    // then work through the next rows, which can safely assume there's a row above them
+    for (int32_t row = 1; row < steps.y; ++row)
+    {
+        // push point + coord of the first column's left-edge
+        verts.emplace_back(vectorMin.x, vectorMin.y + row*vectorStep.y, zValue);
+        coords.emplace_back(uvMin.x, uvMin.y + row*uvStep.y);
+
+        // then, for all remaining columns, push the right-edge data and the triangles
+        for (int32_t col = 1; col < steps.x; ++col)
+        {
+            verts.emplace_back(vectorMin.x + col*vectorStep.x, vectorMin.y + row*vectorStep.y, zValue);
+            coords.emplace_back(uvMin.x + col*uvStep.x, uvMin.y + row*uvStep.y);
+
+            // triangles (anti-clockwise wound)
+            int32_t const currentIdx = row*steps.x + col;
+            int32_t const bottomRightIdx = currentIdx;
+            int32_t const bottomLeftIdx = currentIdx - 1;
+            int32_t const topLeftIdx =  bottomLeftIdx - steps.x;
+            int32_t const topRightIdx = bottomRightIdx - steps.x;
+
+            // top-left triangle
+            indices.push_back(topRightIdx);
+            indices.push_back(topLeftIdx);
+            indices.push_back(bottomLeftIdx);
+
+            // bottom-right triangle
+            indices.push_back(topRightIdx);
+            indices.push_back(bottomLeftIdx);
+            indices.push_back(bottomRightIdx);
+        }
+    }
+
+    OSC_ASSERT(verts.size() == coords.size());
+    OSC_ASSERT(indices.size() == (steps.x-1)*(steps.y-1)*6);
+
+    osc::Mesh rv;
+    rv.setTopography(osc::MeshTopography::Triangles);
+    rv.setVerts(verts);
+    rv.setTexCoords(coords);
+    rv.setIndices(indices);
+    return rv;
+}
