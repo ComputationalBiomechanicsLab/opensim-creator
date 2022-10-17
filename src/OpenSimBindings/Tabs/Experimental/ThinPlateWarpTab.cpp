@@ -34,6 +34,99 @@
 #include <variant>
 #include <vector>
 
+namespace
+{
+    // returns a triangle mesh where each triangle is part of a quad, and each quad is
+    // part of steps.x (N) by steps.y (M) grid
+    //
+    // - the grid spans from (-1.0f, -1.0f) to (+1.0f, +1.0f) (i.e. NDC) with Z = 0.0f
+    // - texture coordinates are assigned to each vertex, and span from (0.0f, 0.0f) to (1.0f, 1.0f)
+    // - the utility of this is that the grid can be warped to (effectively) warp the texture in 2D space
+    osc::Mesh GenNxMTriangleQuad2DGrid(glm::ivec2 steps)
+    {
+        // all Z values in the returned mesh shall be 0
+        constexpr float zValue = 0.0f;
+
+        if (steps.x <= 0 || steps.y <= 0)
+        {
+            // edge case: no steps specified: return empty mesh
+            return {};
+        }
+
+        // ensure the indices can fit the requested grid
+        {
+            OSC_ASSERT(steps.x*steps.y <= std::numeric_limits<int32_t>::max() && "requested a grid size that is too large for the mesh class");
+        }
+
+        // create a vector of triangle verts
+        std::vector<glm::vec3> verts;
+        verts.reserve(static_cast<size_t>(steps.x * steps.y));
+
+        // create a vector of texture coordinates (1:1 with verts)
+        std::vector<glm::vec2> coords;
+        coords.reserve(static_cast<size_t>(steps.x * steps.y));
+
+        // create a vector of triangle primitive indices (2 triangles, or 6 indices, per grid cell)
+        std::vector<uint32_t> indices;
+        indices.reserve(static_cast<size_t>(6 * (steps.x-1) * (steps.y-1)));
+
+        // precompute step/min in each direction
+        glm::vec2 const vectorStep = glm::vec2{2.0f, 2.0f} / glm::vec2{steps - 1};
+        glm::vec2 const uvStep = glm::vec2{1.0f, 1.0f} / glm::vec2{steps - 1};
+        glm::vec2 const vectorMin = {-1.0f, -1.0f};
+        glm::vec2 const uvMin = {0.0f, 0.0f};
+
+        // push first row of verts + texture coords for all columns
+        for (int32_t col = 0; col < steps.x; ++col)
+        {
+            verts.emplace_back(vectorMin.x + col*vectorStep.x, vectorMin.y, zValue);
+            coords.emplace_back(uvMin.x + col*uvStep.x, uvMin.y);
+        }
+
+        // then work through the next rows, which can safely assume there's a row above them
+        for (int32_t row = 1; row < steps.y; ++row)
+        {
+            // push point + coord of the first column's left-edge
+            verts.emplace_back(vectorMin.x, vectorMin.y + row*vectorStep.y, zValue);
+            coords.emplace_back(uvMin.x, uvMin.y + row*uvStep.y);
+
+            // then, for all remaining columns, push the right-edge data and the triangles
+            for (int32_t col = 1; col < steps.x; ++col)
+            {
+                verts.emplace_back(vectorMin.x + col*vectorStep.x, vectorMin.y + row*vectorStep.y, zValue);
+                coords.emplace_back(uvMin.x + col*uvStep.x, uvMin.y + row*uvStep.y);
+
+                // triangles (anti-clockwise wound)
+                int32_t const currentIdx = row*steps.x + col;
+                int32_t const bottomRightIdx = currentIdx;
+                int32_t const bottomLeftIdx = currentIdx - 1;
+                int32_t const topLeftIdx =  bottomLeftIdx - steps.x;
+                int32_t const topRightIdx = bottomRightIdx - steps.x;
+
+                // top-left triangle
+                indices.push_back(topRightIdx);
+                indices.push_back(topLeftIdx);
+                indices.push_back(bottomLeftIdx);
+
+                // bottom-right triangle
+                indices.push_back(topRightIdx);
+                indices.push_back(bottomLeftIdx);
+                indices.push_back(bottomRightIdx);
+            }
+        }
+
+        OSC_ASSERT(verts.size() == coords.size());
+        OSC_ASSERT(indices.size() == (steps.x-1)*(steps.y-1)*6);
+
+        osc::Mesh rv;
+        rv.setTopography(osc::MeshTopography::Triangles);
+        rv.setVerts(verts);
+        rv.setTexCoords(coords);
+        rv.setIndices(indices);
+        return rv;
+    }
+}
+
 // 2D TPS algorithm stuff
 //
 // most of the background behind this is discussed in issue #467. For redundancy's sake, here
@@ -352,7 +445,11 @@ public:
 
     Impl(TabHost* parent) : m_Parent{std::move(parent)}
     {
-        m_Material.setVec4("uColor", {0.0f, 0.0f, 0.0f, 1.0f});
+        m_Material.setTexture("uTextureSampler", m_BoxTexture);
+        m_WireframeMaterial.setVec4("uColor", {0.0f, 0.0f, 0.0f, 0.15f});
+        m_WireframeMaterial.setTransparent(true);
+        m_WireframeMaterial.setWireframeMode(true);
+        m_WireframeMaterial.setDepthTested(false);
         m_Camera.setViewMatrix(glm::mat4{1.0f});
         m_Camera.setProjectionMatrix(glm::mat4{1.0f});
         m_Camera.setBackgroundColor({1.0f, 1.0f, 1.0f, 1.0f});
@@ -453,6 +550,7 @@ private:
         desc.setAntialiasingLevel(App::get().getMSXAASamplesRecommended());
         out.emplace(desc);
         osc::Graphics::DrawMesh(mesh, osc::Transform{}, m_Material, m_Camera);
+        osc::Graphics::DrawMesh(mesh, osc::Transform{}, m_WireframeMaterial, m_Camera);
         m_Camera.swapTexture(out);
         m_Camera.render();
         m_Camera.swapTexture(out);
@@ -472,7 +570,7 @@ private:
             glm::vec2 const p2 = ht.rect.p1 + (Dimensions(ht.rect) * NDCPointToTopLeftRelPos(p.dest));
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
-            drawlist->AddCircleFilled(p1, 10.0f, m_SrcCircleColor);
+            drawlist->AddRectFilled(p1 - 12.0f, p1 + 12.0f, m_SrcSquareColor);
             drawlist->AddCircleFilled(p2, 10.0f, m_DestCircleColor);
         }
 
@@ -485,7 +583,7 @@ private:
             glm::vec2 const p2 = ImGui::GetMousePos();
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
-            drawlist->AddCircleFilled(p1, 10.0f, m_SrcCircleColor);
+            drawlist->AddRectFilled(p1 - 12.0f, p1 + 12.0f, m_SrcSquareColor);
             drawlist->AddCircleFilled(p2, 10.0f, m_DestCircleColor);
         }
     }
@@ -543,15 +641,17 @@ private:
     std::vector<LandmarkPair2D> m_LandmarkPairs;
 
     // GUI state (rendering, colors, etc.)
-    Mesh m_InputGrid = GenNxMPoint2DGridWithConnectingLines({-1.0f, -1.0f}, {1.0f, 1.0f}, {50, 50});
+    Texture2D m_BoxTexture = osc::LoadTexture2DFromImageResource("textures/container.jpg");
+    Mesh m_InputGrid = GenNxMTriangleQuad2DGrid({50, 50});
     Mesh m_OutputGrid = m_InputGrid;
-    Material m_Material = Material{App::shaders().get("shaders/SolidColor.vert", "shaders/SolidColor.frag")};
+    Material m_Material = Material{App::shaders().get("shaders/Textured.vert", "shaders/Textured.frag")};
+    Material m_WireframeMaterial = Material{App::shaders().get("shaders/SolidColor.vert", "shaders/SolidColor.frag")};
     Camera m_Camera;
     std::optional<RenderTexture> m_InputRender;
     std::optional<RenderTexture> m_OutputRender;
-    ImU32 m_SrcCircleColor = ImGui::ColorConvertFloat4ToU32({1.0f, 0.0f, 0.0f, 1.0f});
+    ImU32 m_SrcSquareColor = ImGui::ColorConvertFloat4ToU32({1.0f, 0.0f, 0.0f, 1.0f});
     ImU32 m_DestCircleColor = ImGui::ColorConvertFloat4ToU32({0.0f, 1.0f, 0.0f, 1.0f});
-    ImU32 m_ConnectionLineColor = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 0.6f});
+    ImU32 m_ConnectionLineColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
 
     // log panel (handy for debugging)
     LogViewerPanel m_LogViewerPanel{"Log"};
