@@ -1,4 +1,4 @@
-#include "ThinPlateWarpTab.hpp"
+#include "TPS2DTab.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Bindings/GlmHelpers.hpp"
@@ -347,7 +347,7 @@ namespace
     using GUIMouseState = std::variant<GUIInitialMouseState, GUIFirstClickMouseState>;
 }
 
-class osc::ThinPlateWarpTab::Impl final {
+class osc::TPS2DTab::Impl final {
 public:
 
     Impl(TabHost* parent) : m_Parent{std::move(parent)}
@@ -540,7 +540,7 @@ private:
 
     // tab data
     UID m_ID;
-    std::string m_Name = ICON_FA_BEZIER_CURVE " ThinPlateWarpTab";
+    std::string m_Name = ICON_FA_BEZIER_CURVE " TPS2DTab";
     TabHost* m_Parent;
 
     // TPS algorithm state
@@ -567,68 +567,68 @@ private:
 
 // public API (PIMPL)
 
-osc::ThinPlateWarpTab::ThinPlateWarpTab(TabHost* parent) :
+osc::TPS2DTab::TPS2DTab(TabHost* parent) :
     m_Impl{new Impl{std::move(parent)}}
 {
 }
 
-osc::ThinPlateWarpTab::ThinPlateWarpTab(ThinPlateWarpTab&& tmp) noexcept :
+osc::TPS2DTab::TPS2DTab(TPS2DTab&& tmp) noexcept :
     m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
 }
 
-osc::ThinPlateWarpTab& osc::ThinPlateWarpTab::operator=(ThinPlateWarpTab&& tmp) noexcept
+osc::TPS2DTab& osc::TPS2DTab::operator=(TPS2DTab&& tmp) noexcept
 {
     std::swap(m_Impl, tmp.m_Impl);
     return *this;
 }
 
-osc::ThinPlateWarpTab::~ThinPlateWarpTab() noexcept
+osc::TPS2DTab::~TPS2DTab() noexcept
 {
     delete m_Impl;
 }
 
-osc::UID osc::ThinPlateWarpTab::implGetID() const
+osc::UID osc::TPS2DTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::ThinPlateWarpTab::implGetName() const
+osc::CStringView osc::TPS2DTab::implGetName() const
 {
     return m_Impl->getName();
 }
 
-osc::TabHost* osc::ThinPlateWarpTab::implParent() const
+osc::TabHost* osc::TPS2DTab::implParent() const
 {
     return m_Impl->parent();
 }
 
-void osc::ThinPlateWarpTab::implOnMount()
+void osc::TPS2DTab::implOnMount()
 {
     m_Impl->onMount();
 }
 
-void osc::ThinPlateWarpTab::implOnUnmount()
+void osc::TPS2DTab::implOnUnmount()
 {
     m_Impl->onUnmount();
 }
 
-bool osc::ThinPlateWarpTab::implOnEvent(SDL_Event const& e)
+bool osc::TPS2DTab::implOnEvent(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
 }
 
-void osc::ThinPlateWarpTab::implOnTick()
+void osc::TPS2DTab::implOnTick()
 {
     m_Impl->onTick();
 }
 
-void osc::ThinPlateWarpTab::implOnDrawMainMenu()
+void osc::TPS2DTab::implOnDrawMainMenu()
 {
     m_Impl->onDrawMainMenu();
 }
 
-void osc::ThinPlateWarpTab::implOnDraw()
+void osc::TPS2DTab::implOnDraw()
 {
     m_Impl->onDraw();
 }

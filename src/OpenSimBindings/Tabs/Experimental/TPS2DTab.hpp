@@ -10,14 +10,14 @@ namespace osc { class TabHost; }
 
 namespace osc
 {
-    class ThinPlateWarpTab final : public Tab {
+    class TPS2DTab final : public Tab {
     public:
-        ThinPlateWarpTab(TabHost*);
-        ThinPlateWarpTab(ThinPlateWarpTab const&) = delete;
-        ThinPlateWarpTab(ThinPlateWarpTab&&) noexcept;
-        ThinPlateWarpTab& operator=(ThinPlateWarpTab const&) = delete;
-        ThinPlateWarpTab& operator=(ThinPlateWarpTab&&) noexcept;
-        ~ThinPlateWarpTab() noexcept override;
+        TPS2DTab(TabHost*);
+        TPS2DTab(TPS2DTab const&) = delete;
+        TPS2DTab(TPS2DTab&&) noexcept;
+        TPS2DTab& operator=(TPS2DTab const&) = delete;
+        TPS2DTab& operator=(TPS2DTab&&) noexcept;
+        ~TPS2DTab() noexcept override;
 
     private:
         UID implGetID() const override;
