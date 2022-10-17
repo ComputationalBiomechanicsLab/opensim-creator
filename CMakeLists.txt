@@ -357,12 +357,14 @@ add_library(osccore STATIC
     src/OpenSimBindings/MiddlewareAPIs/SimulatorUIAPI.hpp
     src/OpenSimBindings/Screens/MainUIScreen.cpp
     src/OpenSimBindings/Screens/MainUIScreen.hpp
-    src/OpenSimBindings/Tabs/Experimental/RendererGeometryShaderTab.cpp
-    src/OpenSimBindings/Tabs/Experimental/RendererGeometryShaderTab.hpp
     src/OpenSimBindings/Tabs/Experimental/MeshHittestTab.cpp
     src/OpenSimBindings/Tabs/Experimental/MeshHittestTab.hpp
     src/OpenSimBindings/Tabs/Experimental/PreviewExperimentalDataTab.cpp
     src/OpenSimBindings/Tabs/Experimental/PreviewExperimentalDataTab.hpp
+    src/OpenSimBindings/Tabs/Experimental/RendererGeometryShaderTab.cpp
+    src/OpenSimBindings/Tabs/Experimental/RendererGeometryShaderTab.hpp
+    src/OpenSimBindings/Tabs/Experimental/ThinPlateWarpTab.cpp
+    src/OpenSimBindings/Tabs/Experimental/ThinPlateWarpTab.hpp
     src/OpenSimBindings/Tabs/LoadingTab.cpp
     src/OpenSimBindings/Tabs/LoadingTab.hpp
     src/OpenSimBindings/Tabs/MeshImporterTab.cpp
@@ -525,8 +527,6 @@ add_library(osccore STATIC
     src/Tabs/Experiments/RendererSDFTab.hpp
     src/Tabs/Experiments/RendererTexturingTab.cpp
     src/Tabs/Experiments/RendererTexturingTab.hpp
-    src/Tabs/Experiments/ThinPlateWarpTab.cpp
-    src/Tabs/Experiments/ThinPlateWarpTab.hpp
     src/Tabs/CookiecutterTab.cpp
     src/Tabs/CookiecutterTab.hpp
     src/Tabs/ErrorTab.cpp
