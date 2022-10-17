@@ -117,6 +117,15 @@ namespace osc
     // - output NDC point has range: (-1, 1) is top-left, (1, -1) is bottom-right
     glm::vec2 TopleftRelPosToNDCPoint(glm::vec2 relpos);
 
+
+    // returns an XY top-left relative point converted from the given NDC point
+    //
+    // - input NDC point has origin in the middle, Y goes up
+    // - input NDC point has range: (-1, -1) for top-left, (1, -1) is bottom-right
+    // - output point has origin in the top-left, Y goes down
+    // - output point has range: (0, 0) for top-left, (1, 1) for bottom-right
+    glm::vec2 NDCPointToTopLeftRelPos(glm::vec2 ndcPos);
+
     // returns an NDC affine point vector (i.e. {x, y, z, 1.0}) converted from a screen point
     //
     // - input screen point has origin in top-left, Y goes down

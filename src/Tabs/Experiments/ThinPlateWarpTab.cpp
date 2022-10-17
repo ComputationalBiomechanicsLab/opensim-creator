@@ -6,6 +6,7 @@
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/Mesh.hpp"
+#include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/ShaderCache.hpp"
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Platform/App.hpp"
@@ -13,118 +14,45 @@
 #include "src/Utils/Algorithms.hpp"
 #include "src/Widgets/LogViewerPanel.hpp"
 
+#include <glm/mat3x4.hpp>
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
+#include <nonstd/span.hpp>
 #include <SDL_events.h>
 #include <Simbody.h>
 
+#include <cmath>
 #include <cstdint>
 #include <string>
 #include <sstream>
+#include <iostream>
 #include <limits>
+#include <optional>
 #include <utility>
 #include <variant>
 #include <vector>
 
+// 2D TPS algorithm stuff
+//
+// most of the background behind this is discussed in issue #467. For redundancy's sake, here
+// are some of the references used to write this implementation:
+//
+// - primary literature source: https://ieeexplore.ieee.org/document/24792
+// - blog explanation: https://profs.etsmtl.ca/hlombaert/thinplates/
+// - blog explanation #2: https://khanhha.github.io/posts/Thin-Plate-Splines-Warping/
 namespace
 {
-    // returns a 2D grid mesh, with one vertex for each grid point and indices with a
-    // `Line` topology, connecting the gridpoints together
-    osc::Mesh GenerateNxNPointGridLines(glm::vec2 min, glm::vec2 max, glm::ivec2 steps)
-    {
-        // all Z values in the returned mesh shall be 0
-        constexpr float zValue = 0.0f;
-
-        if (steps.x <= 0 || steps.y <= 0)
-        {
-            // edge case: no steps specified: return empty mesh
-            return {};
-        }
-
-        // ensure the indices can fit the requested grid
-        {
-            OSC_ASSERT(steps.x*steps.y <= std::numeric_limits<int32_t>::max() && "requested a grid size that is too large for the mesh class");
-        }
-
-        // create vector of grid points
-        std::vector<glm::vec3> verts;
-        verts.reserve(static_cast<size_t>(steps.x * steps.y));
-
-        // create vector of line indices (indices to the two points that make a grid line)
-        std::vector<uint32_t> indices;
-        indices.reserve(static_cast<size_t>(4 * steps.x * steps.y));
-
-        // precompute spatial step between points
-        glm::vec2 const stepSize = (max - min) / glm::vec2{steps - 1};
-
-        // push first row (no verticals)
-        {
-            // emit top-leftmost point (no links)
-            {
-                verts.push_back({min, zValue});
-            }
-
-            // emit rest of the first row (only has horizontal links)
-            for (int32_t x = 1; x < steps.x; ++x)
-            {
-                glm::vec3 const pos = {min.x + x*stepSize.x, min.y, zValue};
-                verts.push_back(pos);
-                uint32_t const index = static_cast<int32_t>(verts.size() - 1);
-                indices.push_back(index - 1);  // link to previous point
-                indices.push_back(index);      // and then the new point
-            }
-
-            OSC_ASSERT(verts.size() == steps.x && "all points in the first row have not been emitted");
-            OSC_ASSERT(indices.size() == 2 * (steps.x - 1) && "all lines in the first row have not been emitted");
-        }
-
-        // push remaining rows (all points have verticals, first point of each row has no horizontal)
-        for (int32_t y = 1; y < steps.y; ++y)
-        {
-            // emit leftmost point (only has a vertical link)
-            {
-                verts.push_back({min.x, min.y + y*stepSize.y, zValue});
-                uint32_t const index = static_cast<int32_t>(verts.size() - 1);
-                indices.push_back(index - steps.x);  // link the point one row above
-                indices.push_back(index);            // to the point (vertically)
-            }
-
-            // emit rest of the row (has vertical and horizontal links)
-            for (int32_t x = 1; x < steps.x; ++x)
-            {
-                glm::vec3 const pos = {min.x + x*stepSize.x, min.y + y*stepSize.y, zValue};
-                verts.push_back(pos);
-                uint32_t const index = static_cast<int32_t>(verts.size() - 1);
-                indices.push_back(index - 1);        // link the previous point
-                indices.push_back(index);            // to the current point (horizontally)
-                indices.push_back(index - steps.x);  // link the point one row above
-                indices.push_back(index);            // to the current point (vertically)
-            }
-        }
-
-        OSC_ASSERT(verts.size() == steps.x*steps.y && "incorrect number of vertices emitted");
-        OSC_ASSERT(indices.size() <= 4 * steps.y * steps.y && "too many indices were emitted?");
-
-        // emit data as a renderable mesh
-        osc::Mesh rv;
-        rv.setTopography(osc::MeshTopography::Lines);
-        rv.setVerts(std::move(verts));
-        rv.setIndices(indices);
-        return rv;
-    }
-
-    // used to hold the user's mouse click state (they need to click twice)
-    struct GUIInitialMouseState final {};
-    struct GUIFirstClickMouseState final { glm::vec2 srcNDCPos; };
-    using GUIMouseState = std::variant<GUIInitialMouseState, GUIFirstClickMouseState>;
-
     // a single source-to-destination landmark pair in 2D space
+    //
+    // this is typically what the user/caller defines
     struct LandmarkPair2D final {
         glm::vec2 src;
         glm::vec2 dest;
     };
 
+    // pretty-prints `LandmarkPair2D`
     std::ostream& operator<<(std::ostream& o, LandmarkPair2D const& p)
     {
         using osc::operator<<;
@@ -132,17 +60,18 @@ namespace
         return o;
     }
 
-    // this is effectviely the "U" term in the TPS algorithm literature (assumes r^2 * log(r^2) func)
+    // this is effectviely the "U" term in the TPS algorithm literature (which is usually U(r) = r^2 * log(r^2))
     //
-    // i.e. U(||controlPoint - p||) is equivalent to `DifferenceRadialBasisFunction2D(controlPoint, p)`
-    float DifferenceRadialBasisFunction2D(glm::vec2 controlPoint, glm::vec2 p)
+    // i.e. U(||pi - p||) in the literature is equivalent to `RadialBasisFunction2D(pi, p)` here
+    float RadialBasisFunction2D(glm::vec2 controlPoint, glm::vec2 p)
     {
         glm::vec2 const diff = controlPoint - p;
         float const r2 = glm::dot(diff, diff);
 
         if (r2 == 0.0f)
         {
-            // this ensures that the result is always non-zero and non-NaN (might be necessary for linear solvers?)
+            // this ensures that the result is always non-zero and non-NaN (this might be
+            // necessary for some types of linear solvers?)
             return std::numeric_limits<float>::min();
         }
         else
@@ -151,32 +80,39 @@ namespace
         }
     }
 
-    // a single weight term of the summation part of the linear combination
+    // a single non-affine term of the 2D TPS equation
     //
-    // i.e. in wi * U(||controlPoint - p||), this stores `wi` and `controlPoint`
-    struct TPSWeightTerm2D final {
+    // i.e. in `f(p) = a1 + a2*p.x + a3*p.y + SUM{ wi * U(||controlPoint - p||) }` this encodes
+    //      the `wi` and `controlPoint` parts of that equation
+    struct TPSNonAffineTerm2D final {
         glm::vec2 weight;
         glm::vec2 controlPoint;
 
-        TPSWeightTerm2D(glm::vec2 weight_, glm::vec2 controlPoint_) : weight{weight_}, controlPoint{controlPoint_} {}
+        TPSNonAffineTerm2D(glm::vec2 weight_, glm::vec2 controlPoint_) :
+            weight{weight_},
+            controlPoint{controlPoint_}
+        {
+        }
     };
 
-    std::ostream& operator<<(std::ostream& o, TPSWeightTerm2D const& wt)
+    // pretty-prints `TPSNonAffineTerm2D`
+    std::ostream& operator<<(std::ostream& o, TPSNonAffineTerm2D const& wt)
     {
         using osc::operator<<;
-        return o << "TPSWeightTerm2D{weight = " << wt.weight << ", controlPoint = " << wt.controlPoint << '}';
+        return o << "TPSNonAffineTerm2D{weight = " << wt.weight << ", controlPoint = " << wt.controlPoint << '}';
     }
 
-    // all linear coefficients in the TPS equation
+    // all coefficients in the 2D TPS equation
     //
-    // i.e. these are the a1, aXY, and w (+ control point) terms of the equation
+    // i.e. these are the a1, a2, a3, and w's (+ control points) terms of the equation
     struct TPSCoefficients2D final {
         glm::vec2 a1 = {0.0f, 0.0f};
         glm::vec2 a2 = {1.0f, 0.0f};
         glm::vec2 a3 = {0.0f, 1.0f};
-        std::vector<TPSWeightTerm2D> weights;
+        std::vector<TPSNonAffineTerm2D> weights;
     };
 
+    // pretty-prints TPSCoefficients2D
     std::ostream& operator<<(std::ostream& o, TPSCoefficients2D const& coefs)
     {
         using osc::operator<<;
@@ -189,43 +125,36 @@ namespace
         return o;
     }
 
-    // use the provided coefficients to evaluate (transform) the provided point
+    // evaluates the TPS equation with the given coefficients and input point
     glm::vec2 Evaluate(TPSCoefficients2D const& coefs, glm::vec2 p)
     {
-        // calculate the displacement vector
-        glm::vec2 d = coefs.a1 + (coefs.a2 * glm::vec2{p.x, p.x}) + (coefs.a3 * glm::vec2{p.y, p.y});
-        for (TPSWeightTerm2D const& wt : coefs.weights)
+        // this implementation effectively evaluates both `fx(x, y)` and `fy(x, y)` at
+        // the same time, because `TPSCoefficients2D` stores the X and Y variants of the
+        // coefficients together in memory (as `vec2`s)
+
+        // compute affine terms (a1 + a2*x + a3*y)
+        glm::vec2 rv = coefs.a1 + coefs.a2*p.x + coefs.a3*p.y;
+
+        // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
+        for (TPSNonAffineTerm2D const& wt : coefs.weights)
         {
-            d += wt.weight * DifferenceRadialBasisFunction2D(wt.controlPoint, p);
+            rv += wt.weight * RadialBasisFunction2D(wt.controlPoint, p);
         }
-        return d;
+
+        return rv;
     }
 
-    std::string FormatAsOutputVector(nonstd::span<LandmarkPair2D const> landmarkPairs)
-    {
-        using osc::operator<<;
-        std::stringstream ss;
-        ss << '[';
-        char const* delim = "";
-        for (LandmarkPair2D const& p : landmarkPairs)
-        {
-            ss << delim << p.dest;
-            delim = " ";
-        }
-        ss << ']';
-        return std::move(ss).str();
-    }
-
+    // computes all coefficients of the TPS equation (a1, a2, a3, and all the w's)
     TPSCoefficients2D CalcCoefficients(nonstd::span<LandmarkPair2D const> landmarkPairs)
     {
         // this is based on the Bookstein Thin Plate Sline (TPS) warping algorithm
         //
         // 1. A TPS warp is (simplifying here) a linear combination:
         //
-        //     f(p) = a1 + a2*p + SUM{ wi * U(||controlPoint_i - p||) }
+        //     f(p) = a1 + a2*p.x + a3*p.y + SUM{ wi * U(||controlPoint_i - p||) }
         //
-        //    which can be represented as a matrix multiplication between the terms (1, p,
-        //    U(||cpi - p||)) and the linear coefficients (a1, a2, wi..)
+        //    which can be represented as a matrix multiplication between the terms (1, p.x, p.y,
+        //    U(||cpi - p||)) and the coefficients (a1, a2, a3, wi..)
         //
         // 2. The caller provides "landmark pairs": these are (effectively) the input
         //    arguments and the expected output
@@ -261,20 +190,15 @@ namespace
         //     - PT is the transpose of P
         //     - 0 is the zero matrix (padding)
         //
-        // 6. Invert it to yield L^-1
-        // 7. Multiply L^-1 * [v o] (desired output values) to yield [w a] (the coefficients)
-        // 8. Return the coefficients
-        //
-        // TODO: this isn't a very efficient implementation. A better one would take advantage
-        //       of the fact that U(p01) == U(p10), which makes the entire matrix symmetric, and
-        //       the coefficients much easier to compute (via LU decomposition, rather than a
-        //       full-fat matrix inversion)
+        // 6. Use a linear solver to solve L * [w a] = [v o] to yield [w a]
+        // 8. Return the coefficients, [w a]
 
         int const numPairs = static_cast<int>(landmarkPairs.size());
 
         if (numPairs == 0)
         {
-            return {};  // edge-case: there are no pairs, so return an identity-like transform
+            // edge-case: there are no pairs, so return an identity-like transform
+            return TPSCoefficients2D{};
         }
 
         // construct matrix L
@@ -288,7 +212,7 @@ namespace
                 glm::vec2 const& pi = landmarkPairs[row].src;
                 glm::vec2 const& pj = landmarkPairs[col].src;
 
-                L(row, col) = DifferenceRadialBasisFunction2D(pi, pj);
+                L(row, col) = RadialBasisFunction2D(pi, pj);
             }
         }
 
@@ -330,7 +254,7 @@ namespace
             }
         }
 
-        // construct "result" vectors Vx and Vy (these hold the "desintation" locations)
+        // construct "result" vectors Vx and Vy (these hold the landmark destinations)
         SimTK::Vector Vx(numPairs + 3, 0.0);
         SimTK::Vector Vy(numPairs + 3, 0.0);
         for (int row = 0; row < numPairs; ++row)
@@ -339,12 +263,11 @@ namespace
             Vy[row] = landmarkPairs[row].dest.y;
         }
 
-        // construct coefficient vectors that will receive the result of solving the linear
-        // system
+        // construct coefficient vectors that will receive the solver's result
         SimTK::Vector Cx(numPairs + 3, 0.0);
         SimTK::Vector Cy(numPairs + 3, 0.0);
 
-        // solve the linear system
+        // solve `L*Cx = Vx` and `L*Cy = Vy` for `Cx` and `Cy` (the coefficients)
         SimTK::FactorQTZ F(L);
         F.solve(Vx, Cx);
         F.solve(Vy, Cy);
@@ -352,7 +275,15 @@ namespace
         // the coefficient vectors now contain (e.g. for X): [w1, w2, ... wx, a0, a1x, a1y]
         //
         // extract them into the return value
+
         TPSCoefficients2D rv;
+
+        // populate affine a1, a2, a3 terms
+        rv.a1 = {Cx[numPairs],   Cy[numPairs]  };
+        rv.a2 = {Cx[numPairs+1], Cy[numPairs+1]};
+        rv.a3 = {Cx[numPairs+2], Cy[numPairs+2]};
+
+        // populate `wi` coefficients (+ control points, needed at evaluation-time)
         rv.weights.reserve(numPairs);
         for (int i = 0; i < numPairs; ++i)
         {
@@ -360,19 +291,12 @@ namespace
             glm::vec2 controlPoint = landmarkPairs[i].src;
             rv.weights.emplace_back(weight, controlPoint);
         }
-        rv.a1 = {Cx[numPairs],   Cy[numPairs]  };
-        rv.a2 = {Cx[numPairs+1], Cy[numPairs+1]};
-        rv.a3 = {Cx[numPairs+2], Cy[numPairs+2]};
-
-        for (LandmarkPair2D const& lp : landmarkPairs)
-        {
-            glm::vec2 solved = Evaluate(rv, lp.src);
-            osc::log::info("src = %s, dest = %s, solved = %s", osc::StreamToString(lp.src).c_str(), osc::StreamToString(lp.dest).c_str(), osc::StreamToString(solved).c_str());
-        }
 
         return rv;
     }
 
+    // a class that wraps the 2D TPS algorithm with a basic interface for transforming
+    // points
     class ThinPlateWarper2D final {
     public:
         ThinPlateWarper2D(nonstd::span<LandmarkPair2D const> landmarkPairs) :
@@ -389,11 +313,12 @@ namespace
         TPSCoefficients2D m_Coefficients;
     };
 
-    // apply a thin-plate warp to each of the points in the source mesh
-    osc::Mesh ApplyThinPlateWarpToMesh(ThinPlateWarper2D const& t, osc::Mesh const& inputGrid)
+    // returns a mesh that is the equivalent of applying the 2D TPS warp to all
+    // vertices of the input mesh
+    osc::Mesh ApplyThinPlateWarpToMesh(ThinPlateWarper2D const& t, osc::Mesh const& mesh)
     {
         // load source points
-        nonstd::span<glm::vec3 const> srcPoints = inputGrid.getVerts();
+        nonstd::span<glm::vec3 const> srcPoints = mesh.getVerts();
 
         // map each source point via the warper
         std::vector<glm::vec3> destPoints;
@@ -404,10 +329,22 @@ namespace
         }
 
         // upload the new points into the returned mesh
-        osc::Mesh rv = inputGrid;
+        osc::Mesh rv = mesh;
         rv.setVerts(destPoints);
         return rv;
     }
+}
+
+// GUI stuff
+namespace
+{
+    // holds the user's current mouse click state:
+    //
+    // - initial (the user did nothing with their mouse yet)
+    // - first click (the user clicked the source of a landmark pair and the UI is waiting for the destination)
+    struct GUIInitialMouseState final {};
+    struct GUIFirstClickMouseState final { glm::vec2 srcNDCPos; };
+    using GUIMouseState = std::variant<GUIInitialMouseState, GUIFirstClickMouseState>;
 }
 
 class osc::ThinPlateWarpTab::Impl final {
@@ -471,8 +408,7 @@ public:
             float const minDim = glm::min(windowDims.x, windowDims.y);
             glm::ivec2 const texDims = glm::ivec2{minDim, minDim};
 
-            renderGridMeshToRenderTexture(m_InputGrid, texDims, m_InputRender);
-            OSC_ASSERT(m_InputRender.has_value());
+            renderMesh(m_InputGrid, texDims, m_InputRender);
 
             // draw rendered texture via ImGui
             ImGuiImageHittestResult const ht = osc::DrawTextureAsImGuiImageAndHittest(*m_InputRender, texDims);
@@ -496,8 +432,7 @@ public:
             ThinPlateWarper2D warper{m_LandmarkPairs};
             m_OutputGrid = ApplyThinPlateWarpToMesh(warper, m_InputGrid);
 
-            renderGridMeshToRenderTexture(m_OutputGrid, texDims, m_OutputRender);
-            OSC_ASSERT(m_OutputRender.has_value());
+            renderMesh(m_OutputGrid, texDims, m_OutputRender);
 
             // draw rendered texture via ImGui
             osc::DrawTextureAsImGuiImage(*m_OutputRender, texDims);
@@ -510,7 +445,9 @@ public:
 
 
 private:
-    void renderGridMeshToRenderTexture(Mesh const& mesh, glm::ivec2 dims, std::optional<RenderTexture>& out)
+
+    // render the given mesh as-is to the given output render texture
+    void renderMesh(Mesh const& mesh, glm::ivec2 dims, std::optional<RenderTexture>& out)
     {
         RenderTextureDescriptor desc{dims};
         desc.setAntialiasingLevel(App::get().getMSXAASamplesRecommended());
@@ -519,17 +456,20 @@ private:
         m_Camera.swapTexture(out);
         m_Camera.render();
         m_Camera.swapTexture(out);
+
+        OSC_ASSERT(out.has_value() && "the camera should've given the render texture back to the caller");
     }
 
+    // render any 2D overlays
     void renderOverlayElements(ImGuiImageHittestResult const& ht)
     {
-        ImDrawList* drawlist = ImGui::GetWindowDrawList();
+        ImDrawList* const drawlist = ImGui::GetWindowDrawList();
 
         // render all fully-established landmark pairs
         for (LandmarkPair2D const& p : m_LandmarkPairs)
         {
-            glm::vec2 const p1 = ht.rect.p1 + Dimensions(ht.rect)*(0.5f*((p.src * glm::vec2{1.0f, -1.0f}) + 1.0f));
-            glm::vec2 const p2 = ht.rect.p1 + Dimensions(ht.rect)*(0.5f*((p.dest * glm::vec2{1.0f, -1.0f}) + 1.0f));
+            glm::vec2 const p1 = ht.rect.p1 + (Dimensions(ht.rect) * NDCPointToTopLeftRelPos(p.src));
+            glm::vec2 const p2 = ht.rect.p1 + (Dimensions(ht.rect) * NDCPointToTopLeftRelPos(p.dest));
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist->AddCircleFilled(p1, 10.0f, m_SrcCircleColor);
@@ -541,7 +481,7 @@ private:
         {
             GUIFirstClickMouseState const& st = std::get<GUIFirstClickMouseState>(m_MouseState);
 
-            glm::vec2 const p1 = ht.rect.p1 + Dimensions(ht.rect)*(0.5f*((st.srcNDCPos * glm::vec2{1.0f, -1.0f}) + 1.0f));
+            glm::vec2 const p1 = ht.rect.p1 + (Dimensions(ht.rect) * NDCPointToTopLeftRelPos(st.srcNDCPos));
             glm::vec2 const p2 = ImGui::GetMousePos();
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
@@ -550,6 +490,7 @@ private:
         }
     }
 
+    // render any mouse-related overlays
     void renderMouseUIElements(ImGuiImageHittestResult const& ht)
     {
         std::visit(osc::Overload
@@ -559,54 +500,61 @@ private:
         }, m_MouseState);
     }
 
+    // render any mouse-related overlays for when the user hasn't clicked yet
     void renderMouseUIElements(ImGuiImageHittestResult const& ht, GUIInitialMouseState st)
     {
-        glm::vec2 const mp = ImGui::GetMousePos();
-        glm::vec2 const imgPos = mp - ht.rect.p1;
-        glm::vec2 const ndcPos = ((2.0f * imgPos/Dimensions(ht.rect)) - 1.0f) * glm::vec2{1.0f, -1.0f};
+        glm::vec2 const mouseScreenPos = ImGui::GetMousePos();
+        glm::vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
+        glm::vec2 const mouseImageRelPos = mouseImagePos / Dimensions(ht.rect);
+        glm::vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
 
-        osc::DrawTooltipBodyOnly(StreamToString(ndcPos).c_str());
+        osc::DrawTooltipBodyOnly(StreamToString(mouseImageNDCPos).c_str());
 
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
         {
-            m_MouseState = GUIFirstClickMouseState{ndcPos};
+            m_MouseState = GUIFirstClickMouseState{mouseImageNDCPos};
         }
     }
 
+    // render any mouse-related overlays for when the user has clicked once
     void renderMouseUIElements(ImGuiImageHittestResult const& ht, GUIFirstClickMouseState st)
     {
-        glm::vec2 const mp = ImGui::GetMousePos();
-        glm::vec2 const imgPos = mp - ht.rect.p1;
-        glm::vec2 const ndcPos = ((2.0f * imgPos/Dimensions(ht.rect)) - 1.0f) * glm::vec2{1.0f, -1.0f};
+        glm::vec2 const mouseScreenPos = ImGui::GetMousePos();
+        glm::vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
+        glm::vec2 const mouseImageRelPos = mouseImagePos / Dimensions(ht.rect);
+        glm::vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
 
-        osc::DrawTooltipBodyOnly((StreamToString(ndcPos) + "*").c_str());
+        osc::DrawTooltipBodyOnly((StreamToString(mouseImageNDCPos) + "*").c_str());
 
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
         {
-            m_LandmarkPairs.push_back({st.srcNDCPos, ndcPos});
+            m_LandmarkPairs.push_back({st.srcNDCPos, mouseImageNDCPos});
             m_MouseState = GUIInitialMouseState{};
         }
     }
 
+    // tab data
     UID m_ID;
     std::string m_Name = ICON_FA_BEZIER_CURVE " ThinPlateWarpTab";
     TabHost* m_Parent;
 
-    LogViewerPanel m_LogViewerPanel{"Log"};
+    // TPS algorithm state
+    GUIMouseState m_MouseState = GUIInitialMouseState{};
+    std::vector<LandmarkPair2D> m_LandmarkPairs;
 
-    Mesh m_InputGrid = GenerateNxNPointGridLines({-1.0f, -1.0f}, {1.0f, 1.0f}, {20, 20});
+    // GUI state (rendering, colors, etc.)
+    Mesh m_InputGrid = GenNxMPoint2DGridWithConnectingLines({-1.0f, -1.0f}, {1.0f, 1.0f}, {50, 50});
     Mesh m_OutputGrid = m_InputGrid;
     Material m_Material = Material{App::shaders().get("shaders/SolidColor.vert", "shaders/SolidColor.frag")};
     Camera m_Camera;
     std::optional<RenderTexture> m_InputRender;
     std::optional<RenderTexture> m_OutputRender;
-
     ImU32 m_SrcCircleColor = ImGui::ColorConvertFloat4ToU32({1.0f, 0.0f, 0.0f, 1.0f});
     ImU32 m_DestCircleColor = ImGui::ColorConvertFloat4ToU32({0.0f, 1.0f, 0.0f, 1.0f});
     ImU32 m_ConnectionLineColor = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 0.6f});
 
-    GUIMouseState m_MouseState = GUIInitialMouseState{};
-    std::vector<LandmarkPair2D> m_LandmarkPairs;
+    // log panel (handy for debugging)
+    LogViewerPanel m_LogViewerPanel{"Log"};
 };
 
 

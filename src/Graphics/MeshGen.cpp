@@ -631,3 +631,86 @@ osc::Mesh osc::GenLearnOpenGLCube()
 
     return cube;
 }
+
+osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max, glm::ivec2 steps)
+{
+    // all Z values in the returned mesh shall be 0
+    constexpr float zValue = 0.0f;
+
+    if (steps.x <= 0 || steps.y <= 0)
+    {
+        // edge case: no steps specified: return empty mesh
+        return {};
+    }
+
+    // ensure the indices can fit the requested grid
+    {
+        OSC_ASSERT(steps.x*steps.y <= std::numeric_limits<int32_t>::max() && "requested a grid size that is too large for the mesh class");
+    }
+
+    // create vector of grid points
+    std::vector<glm::vec3> verts;
+    verts.reserve(static_cast<size_t>(steps.x * steps.y));
+
+    // create vector of line indices (indices to the two points that make a grid line)
+    std::vector<uint32_t> indices;
+    indices.reserve(static_cast<size_t>(4 * steps.x * steps.y));
+
+    // precompute spatial step between points
+    glm::vec2 const stepSize = (max - min) / glm::vec2{steps - 1};
+
+    // push first row (no verticals)
+    {
+        // emit top-leftmost point (no links)
+        {
+            verts.push_back({min, zValue});
+        }
+
+        // emit rest of the first row (only has horizontal links)
+        for (int32_t x = 1; x < steps.x; ++x)
+        {
+            glm::vec3 const pos = {min.x + x*stepSize.x, min.y, zValue};
+            verts.push_back(pos);
+            uint32_t const index = static_cast<int32_t>(verts.size() - 1);
+            indices.push_back(index - 1);  // link to previous point
+            indices.push_back(index);      // and then the new point
+        }
+
+        OSC_ASSERT(verts.size() == steps.x && "all points in the first row have not been emitted");
+        OSC_ASSERT(indices.size() == 2 * (steps.x - 1) && "all lines in the first row have not been emitted");
+    }
+
+    // push remaining rows (all points have verticals, first point of each row has no horizontal)
+    for (int32_t y = 1; y < steps.y; ++y)
+    {
+        // emit leftmost point (only has a vertical link)
+        {
+            verts.push_back({min.x, min.y + y*stepSize.y, zValue});
+            uint32_t const index = static_cast<int32_t>(verts.size() - 1);
+            indices.push_back(index - steps.x);  // link the point one row above
+            indices.push_back(index);            // to the point (vertically)
+        }
+
+        // emit rest of the row (has vertical and horizontal links)
+        for (int32_t x = 1; x < steps.x; ++x)
+        {
+            glm::vec3 const pos = {min.x + x*stepSize.x, min.y + y*stepSize.y, zValue};
+            verts.push_back(pos);
+            uint32_t const index = static_cast<int32_t>(verts.size() - 1);
+            indices.push_back(index - 1);        // link the previous point
+            indices.push_back(index);            // to the current point (horizontally)
+            indices.push_back(index - steps.x);  // link the point one row above
+            indices.push_back(index);            // to the current point (vertically)
+        }
+    }
+
+    OSC_ASSERT(verts.size() == steps.x*steps.y && "incorrect number of vertices emitted");
+    OSC_ASSERT(indices.size() <= 4 * steps.y * steps.y && "too many indices were emitted?");
+
+    // emit data as a renderable mesh
+    osc::Mesh rv;
+    rv.setTopography(osc::MeshTopography::Lines);
+    rv.setVerts(std::move(verts));
+    rv.setIndices(indices);
+    return rv;
+}

@@ -1286,10 +1286,17 @@ glm::vec3 osc::ExtractEulerAngleXYZ(glm::mat4 const& m) noexcept
     return v;
 }
 
-glm::vec2 osc::TopleftRelPosToNDCPoint(glm::vec2 relpos)
+glm::vec2 osc::TopleftRelPosToNDCPoint(glm::vec2 p)
 {
-    relpos.y = 1.0f - relpos.y;
-    return 2.0f*relpos - 1.0f;
+    p.y = 1.0f - p.y;
+    return 2.0f*p - 1.0f;
+}
+
+glm::vec2 osc::NDCPointToTopLeftRelPos(glm::vec2 p)
+{
+    p = (p + 1.0f) * 0.5f;
+    p.y = 1.0f - p.y;
+    return p;
 }
 
 glm::vec4 osc::TopleftRelPosToNDCCube(glm::vec2 relpos)
