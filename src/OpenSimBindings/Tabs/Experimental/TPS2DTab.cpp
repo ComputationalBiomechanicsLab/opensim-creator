@@ -427,14 +427,26 @@ public:
         
         ImGui::End();
 
+        glm::vec2 outputWindowPos;
+        glm::vec2 outputWindowDims;
         ImGui::Begin("Output");
         {
-            glm::vec2 const windowDims = ImGui::GetContentRegionAvail();
-            float const minDim = glm::min(windowDims.x, windowDims.y);
+            outputWindowPos = ImGui::GetCursorScreenPos();
+            outputWindowDims = ImGui::GetContentRegionAvail();
+            float const minDim = glm::min(outputWindowDims.x, outputWindowDims.y);
             glm::ivec2 const texDims = glm::ivec2{minDim, minDim};
 
-            ThinPlateWarper2D warper{m_LandmarkPairs};
-            m_OutputGrid = ApplyThinPlateWarpToMesh(warper, m_InputGrid);
+            {
+                // apply blending factor, compute warp, apply to grid
+
+                std::vector<LandmarkPair2D> pairs = m_LandmarkPairs;
+                for (LandmarkPair2D& p : pairs)
+                {
+                    p.dest = p.src + m_BlendingFactor*(p.dest - p.src);
+                }
+                ThinPlateWarper2D warper{pairs};
+                m_OutputGrid = ApplyThinPlateWarpToMesh(warper, m_InputGrid);
+            }
 
             renderMesh(m_OutputGrid, texDims, m_OutputRender);
 
@@ -442,6 +454,19 @@ public:
             osc::DrawTextureAsImGuiImage(*m_OutputRender, texDims);
         }
         ImGui::End();
+
+        // draw scubber overlay
+        {
+            float leftPadding = 10.0f;
+            float bottomPadding = 10.0f;
+            float panelHeight = 50.0f;
+            ImGui::SetNextWindowPos({ outputWindowPos.x + leftPadding, outputWindowPos.y + outputWindowDims.y - panelHeight - bottomPadding });
+            ImGui::SetNextWindowSize({ outputWindowDims.x - leftPadding, panelHeight });
+            ImGui::Begin("##scrubber", nullptr, osc::GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs);
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+            ImGui::SliderFloat("##blend", &m_BlendingFactor, 0.0f, 1.0f);
+            ImGui::End();
+        }
 
         // draw log panel (debugging)
         m_LogViewerPanel.draw();
@@ -546,6 +571,7 @@ private:
     // TPS algorithm state
     GUIMouseState m_MouseState = GUIInitialMouseState{};
     std::vector<LandmarkPair2D> m_LandmarkPairs;
+    float m_BlendingFactor = 1.0f;
 
     // GUI state (rendering, colors, etc.)
     Texture2D m_BoxTexture = osc::LoadTexture2DFromImageResource("textures/container.jpg");
