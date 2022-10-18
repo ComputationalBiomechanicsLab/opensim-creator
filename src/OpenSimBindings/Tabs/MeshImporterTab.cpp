@@ -1065,7 +1065,7 @@ namespace
 
         void SetXform(Transform const& t) override
         {
-            Xform = std::move(t);
+            Xform = t;
         }
 
         AABB CalcBounds() const override
@@ -4709,27 +4709,27 @@ namespace
 
         Hover Hovertest(std::vector<DrawableThing> const& drawables) const
         {
-            Rect sceneRect = Get3DSceneRect();
-            glm::vec2 mousePos = ImGui::GetMousePos();
+            Rect const sceneRect = Get3DSceneRect();
+            glm::vec2 const mousePos = ImGui::GetMousePos();
 
             if (!IsPointInRect(sceneRect, mousePos))
             {
+                // mouse isn't over the scene render
                 return Hover{};
             }
 
-            glm::vec2 sceneDims = Dimensions(sceneRect);
-            glm::vec2 relMousePos = mousePos - sceneRect.p1;
+            glm::vec2 const sceneDims = Dimensions(sceneRect);
+            glm::vec2 const relMousePos = mousePos - sceneRect.p1;
 
-            Line ray = GetCamera().unprojectTopLeftPosToWorldRay(relMousePos, sceneDims);
-            bool hittestMeshes = IsMeshesInteractable();
-            bool hittestBodies = IsBodiesInteractable();
-            bool hittestJointCenters = IsJointCentersInteractable();
-            bool hittestGround = IsGroundInteractable();
-            bool hittestStations = IsStationsInteractable();
+            Line const ray = GetCamera().unprojectTopLeftPosToWorldRay(relMousePos, sceneDims);
+            bool const hittestMeshes = IsMeshesInteractable();
+            bool const hittestBodies = IsBodiesInteractable();
+            bool const hittestJointCenters = IsJointCentersInteractable();
+            bool const hittestGround = IsGroundInteractable();
+            bool const hittestStations = IsStationsInteractable();
 
             UID closestID = g_EmptyID;
             float closestDist = std::numeric_limits<float>::max();
-
             for (DrawableThing const& drawable : drawables)
             {
                 if (drawable.id == g_EmptyID)
@@ -4771,7 +4771,7 @@ namespace
                 }
             }
 
-            glm::vec3 hitPos = closestID != g_EmptyID ? ray.origin + closestDist*ray.dir : glm::vec3{};
+            glm::vec3 const hitPos = closestID != g_EmptyID ? ray.origin + closestDist*ray.dir : glm::vec3{};
 
             return Hover{closestID, hitPos};
         }
@@ -7798,7 +7798,8 @@ private:
             sceneRect.p1.x,
             sceneRect.p1.y,
             Dimensions(sceneRect).x,
-            Dimensions(sceneRect).y);
+            Dimensions(sceneRect).y
+        );
         ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
         ImGuizmo::AllowAxisFlip(false);  // user's didn't like this feature in UX sessions
 
@@ -7812,7 +7813,8 @@ private:
             glm::value_ptr(delta),
             nullptr,
             nullptr,
-            nullptr);
+            nullptr
+        );
 
         bool isUsingThisFrame = ImGuizmo::IsUsing();
         bool wasUsingLastFrame = m_ImGuizmoState.wasUsingLastFrame;
@@ -7836,7 +7838,12 @@ private:
         glm::vec3 translation;
         glm::vec3 rotation;
         glm::vec3 scale;
-        ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(delta), glm::value_ptr(translation), glm::value_ptr(rotation), glm::value_ptr(scale));
+        ImGuizmo::DecomposeMatrixToComponents(
+            glm::value_ptr(delta),
+            glm::value_ptr(translation),
+            glm::value_ptr(rotation),
+            glm::value_ptr(scale)
+        );
         rotation = glm::radians(rotation);
 
         for (UID id : m_Shared->GetCurrentSelection())
@@ -7882,10 +7889,10 @@ private:
             return;  // nothing hovered
         }
 
-        bool lcClicked = osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
-        bool shiftDown = osc::IsShiftDown();
-        bool altDown = osc::IsAltDown();
-        bool isUsingGizmo = ImGuizmo::IsUsing();
+        bool const lcClicked = osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
+        bool const shiftDown = osc::IsShiftDown();
+        bool const altDown = osc::IsAltDown();
+        bool const isUsingGizmo = ImGuizmo::IsUsing();
 
         if (!m_MaybeHover && lcClicked && !isUsingGizmo && !shiftDown)
         {
@@ -8059,7 +8066,7 @@ private:
         if (m_Maybe3DViewerModal)
         {
             // ensure it stays alive - even if it pops itself during the drawcall
-            std::shared_ptr<Layer> ptr = m_Maybe3DViewerModal;
+            std::shared_ptr<Layer> const ptr = m_Maybe3DViewerModal;
 
             // open it "over" the whole UI as a "modal" - so that the user can't click things
             // outside of the panel
@@ -8068,7 +8075,7 @@ private:
             ImGui::SetNextWindowPos(m_Shared->Get3DSceneRect().p1);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
 
-            ImGuiWindowFlags modalFlags =
+            ImGuiWindowFlags const modalFlags =
                 ImGuiWindowFlags_AlwaysAutoResize |
                 ImGuiWindowFlags_NoTitleBar |
                 ImGuiWindowFlags_NoMove |

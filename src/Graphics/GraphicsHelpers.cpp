@@ -194,7 +194,7 @@ osc::RayCollision osc::GetClosestWorldspaceRayCollision(Mesh const& mesh, Transf
     {
         // map the ray back into worldspace
 
-        glm::vec3 const locationModelspace = modelspaceRay.origin + collision.distance * modelspaceRay.dir;
+        glm::vec3 const locationModelspace = modelspaceRay.origin + collision.distance*modelspaceRay.dir;
         glm::vec3 const locationWorldspace = transform * locationModelspace;
 
         rv.hit = true;
