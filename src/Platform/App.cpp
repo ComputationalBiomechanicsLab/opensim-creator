@@ -482,10 +482,10 @@ public:
 
     osc::MouseState getMouseState() const
     {
-        MouseState rv;
-
-        glm::ivec2 mouseLocal;
+        glm::ivec2 mouseLocal{};
         Uint32 ms = SDL_GetMouseState(&mouseLocal.x, &mouseLocal.y);
+
+        MouseState rv{};
         rv.LeftDown = ms & SDL_BUTTON(SDL_BUTTON_LEFT);
         rv.RightDown = ms & SDL_BUTTON(SDL_BUTTON_RIGHT);
         rv.MiddleDown = ms & SDL_BUTTON(SDL_BUTTON_MIDDLE);
@@ -1264,7 +1264,7 @@ void osc::ImGuiInit()
     ImFontConfig baseConfig;
     baseConfig.SizePixels = 16.0f;
     baseConfig.PixelSnapH = true;
-    baseConfig.OversampleH = 3;
+    baseConfig.OversampleH = 2;
     baseConfig.OversampleV = 2;
     std::string baseFontFile = App::resource("fonts/Ruda-Bold.ttf").string();
     io.Fonts->AddFontFromFileTTF(baseFontFile.c_str(), baseConfig.SizePixels, &baseConfig);
