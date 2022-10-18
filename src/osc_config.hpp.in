@@ -15,6 +15,11 @@
 
 // char[]
 //
+// full application name string (e.g. "OpenSim Creator")
+#define OSC_APPNAME_STRING "@OSC_APPNAME@"
+
+// char[]
+//
 // full version string of OSC (e.g. 1.0.3)
 #define OSC_VERSION_STRING "@osc_VERSION_MAJOR@.@osc_VERSION_MINOR@.@osc_VERSION_PATCH@"
 

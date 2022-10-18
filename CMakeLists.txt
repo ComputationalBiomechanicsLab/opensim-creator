@@ -53,6 +53,12 @@ set(
     "whether to build the documentation or not (requires sphinx-build is available on the PATH)"
 )
 
+set(
+    OSC_APPNAME "OpenSim Creator"
+    CACHE STRING
+    "user-facing name of the application"
+)
+
 
 # -------------- top-level build configuration (vars etc.) ---------------- #
 

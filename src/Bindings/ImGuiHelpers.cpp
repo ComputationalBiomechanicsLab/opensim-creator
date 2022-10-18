@@ -108,15 +108,15 @@ void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::Polar
     camera.radius *= 1.0f - 0.1f*ImGui::GetIO().MouseWheel;
     camera.rescaleZNearAndZFarBasedOnRadius();
 
-    // these camera controls try to be the union of OpenSim and Blender
+    // these camera controls try to be the union of OpenSim GUI and Blender
     //
-    // left drag: drags/orbits camera (OpenSim behavior)
+    // left drag: drags/orbits camera (OpenSim GUI behavior)
     // left drag + L/R SHIFT: pans camera (CUSTOM behavior: can be handy on laptops where right-click + drag sucks)
     // left drag + L/R CTRL: zoom camera (CUSTOM behavior: can be handy on laptops where right-click + drag sucks)
     // middle drag: drags/orbits camera (Blender behavior)
     // middle drag + L/R SHIFT: pans camera (Blender behavior)
     // middle drag + L/R CTRL: zooms camera (Blender behavior)
-    // right drag: pans camera (OpenSim behavior)
+    // right drag: pans camera (OpenSim GUI behavior)
     //
     // the reason it's like this is to please legacy OpenSim users *and*
     // users who use modelling software like Blender (which is more popular

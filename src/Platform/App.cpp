@@ -75,8 +75,6 @@ static std::filesystem::path GetResource(osc::Config const& c, std::string_view 
         }                                                                                                              \
     }
 
-static char const* g_BaseWindowTitle = "OpenSim Creator v" OSC_VERSION_STRING;
-
 // initialize the main application window
 static sdl::Window CreateMainAppWindow()
 {
@@ -97,7 +95,7 @@ static sdl::Window CreateMainAppWindow()
     constexpr Uint32 flags =
         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
 
-    return sdl::CreateWindoww(g_BaseWindowTitle, x, y, width, height, flags);
+    return sdl::CreateWindoww(OSC_APPNAME_STRING, x, y, width, height, flags);
 }
 
 // returns refresh rate of highest refresh rate display on the computer
@@ -549,7 +547,7 @@ public:
 
         g_CurSubtitle = sv;
 
-        std::string newTitle = sv.empty() ? g_BaseWindowTitle : (std::string{sv} + " - " + g_BaseWindowTitle);
+        std::string newTitle = sv.empty() ? OSC_APPNAME_STRING : (std::string{sv} + " - " + OSC_APPNAME_STRING);
         SDL_SetWindowTitle(m_MainWindow, newTitle.c_str());
     }
 

@@ -201,25 +201,26 @@ namespace
         o << '\n';
     }
 
-    void WriteTopLevelAssetBlock(std::ostream& o)
+    void WriteTopLevelAssetBlock(std::ostream& o, osc::DAEMetadata const& metadata)
     {
         auto t = std::chrono::system_clock::now();
 
         o << fmt::format(
 R"(  <asset>
     <contributor>
-      <author>OpenSim Creator</author>
-      <authoring_tool>OpenSim Creator v{} (build {})</authoring_tool>
+      <author>{}</author>
+      <authoring_tool>{} v{} (build {})</authoring_tool>
     </contributor>
     <created>{}</created>
     <modified>{}</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Y_UP</up_axis>
   </asset>)",
-            OSC_VERSION_STRING,
-            OSC_BUILD_ID,
+            metadata.author,
+            metadata.authoringTool,
             fmt::localtime(t),
-            fmt::localtime(t));
+            fmt::localtime(t)
+        );
         o << '\n';
     }
 
@@ -504,13 +505,22 @@ R"(        <vertices id="{}-vertices">
     }
 }
 
-void osc::WriteDecorationsAsDAE(nonstd::span<SceneDecoration const> els, std::ostream& o)
+
+// public API
+
+osc::DAEMetadata::DAEMetadata() :
+    author{OSC_APPNAME_STRING},
+    authoringTool{OSC_APPNAME_STRING " v" OSC_VERSION_STRING " (build " OSC_BUILD_ID ")"}
+{
+}
+
+void osc::WriteDecorationsAsDAE(nonstd::span<SceneDecoration const> els, std::ostream& o, DAEMetadata const& metadata)
 {
     DAESceneGraph const graph = ToDAESceneGraph(els);
 
     WriteXMLHeader(o);
     WriteCOLLADARootNodeBEGIN(o);
-    WriteTopLevelAssetBlock(o);
+    WriteTopLevelAssetBlock(o, metadata);
     WriteLibraryEffects(o, graph.Materials);
     WriteLibraryMaterials(o, graph.Materials);
     WriteLibraryGeometries(o, graph.Geometries);
