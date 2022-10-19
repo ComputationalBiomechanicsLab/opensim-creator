@@ -89,13 +89,6 @@ echo ""
 set -x
 
 
-echo "----- printing system (pre-dependency install) info -----"
-cc --version
-c++ --version
-cmake --version
-make --version
-
-
 echo "----- ensuring all submodules are up-to-date -----"
 git submodule update --init --recursive
 
