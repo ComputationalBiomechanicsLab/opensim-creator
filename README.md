@@ -46,7 +46,7 @@ Science" grant (Chan Zuckerberg Initiative DAF, 2020-218896 (5022)).
 </table>
 
 
-# 🚀 Installation
+# 🚀 Installing
 
 You can download a release from the [📥 releases](../../releases) page. The latest
 release is [📥 here](../../releases/latest). Also, OpenSim Creator is regularly built
@@ -81,25 +81,54 @@ requires being logged into GitHub; otherwise, you won't see download links).
 
 # 🏗️  Building
 
-OpenSim Creator is a C++ codebase. It is primarily dependent on a C++ compiler (usually, MSVC on Windows,
-clang on Mac, and g++ on Linux) and CMake. It also depends on OpenSim. Other dependencies are included
-in-tree (see `third_party/`), either as copied-in libraries or git submodules.
+> **Note**: The build instructions here are for general users who just want to build OSC.
+>
+> Because everyone's C++ build environment is *slightly* different, there are no catch-all build
+> instructions that will work for everyone. Instead, we recommend reading + running the automated
+> build scripts, or reading some of the basic tips-and-tricks for Visual Studio or QtCreator (below).
 
-Because everyone's C++ build environment is *slightly* different, there are no catch-all build instructions
-available. Instead, we recommend reading + running the automated build scripts, or reading some of the basic
-tips-and-tricks for Visual Studio or QtCreator (below).
+### Windows
 
-The following build scripts below should work on a standard C++ developer's machine (as long as you have 
-a C/C++ compiler, CMake, etc. installed):
+1. Get `git`: download+install from https://git-scm.com/downloads, make sure to add it to the `PATH`
+2. Get `Visual Studio 17 2022`: download+install from https://visualstudio.microsoft.com/downloads/, make sure to select C/C++ development in the installer wizard
+3. Get `cmake`: download+install from https://cmake.org/download/, make sure to add it to the `PATH`
+4. Get `python` and `pip` (*optional*: for documentation): download from https://www.python.org/downloads/, make sure `python` and `pip` are added to the `PATH`
+5. Build OpenSim Creator in a PowerShell terminal:
+    1. Clone `opensim-creator`: `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`
+    2. `cd` into the source dir: `cd opensim-creator`
+    3. Run the build script: `scripts\build_windows.bat` (**warning**: can take a long time)
+6. The `osc-build` directory should contain the built installer
 
-| OS | ⚙️ Build Script | Usage Example |
-| :-: | :-: | :-: |
-| Windows | [.bat](scripts/build_windows.bat) | `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator && cd opensim-creator && scripts\build_windows.bat` |
-| Mac | [.sh](scripts/build_mac-catalina.sh) | `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator && cd opensim-creator && scripts/build_mac-catalina.sh` |
-| Ubuntu/Debian | [.sh](scripts/build_debian-buster.sh) | `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator && cd opensim-creator && scripts/build_debian-buster.sh` |
+### Mac
 
+1. Get `brew`: go to https://brew.sh/ and follow installation instructions
+2. Get `git`: can be installed via `brew`: `brew install git`
+3. Get `clang`: install XCode via the app store, or use `brew` to install `clang` (e.g. `brew install clang`)
+4. Get `cmake`: can be installed via `brew`: `brew install cmake`
+5. Get `python` and `pip` (*optional*: for documentation): `brew install python`
+6. Build OpenSim Creator in a terminal:
+    1. Clone `opensim-creator`: `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`
+    2. `cd` into the source dir: `cd opensim-creator`
+    3. Run the build script: `scripts/build_mac-catalina.sh` (**warning**: can take a long time)
+6. The `osc-build` directory should contain the built installer
 
-### Visual Studio 2020 Dev Environment Setup
+### Linux (Ubuntu)
+
+1. Get `git`: install `git` via your package manager (e.g. `apt-get install git`)
+2. Get `c++`: install `g++`/`clang++` via your package manager (e.g. `apt-get install g++`)
+3. Get `cmake`: install `cmake` via your package manager (e.g. `apt-get install cmake`)
+4. Get `python` and `pip` (*optional*: for documentation): install `python3` and `pip3` via your package manager (e.g. `apt-get install python3 pip3`)
+5. Build OpenSim Creator in a terminal:
+    1. Clone `opensim-creator`: `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`
+    2. `cd` into the source dir: `cd opensim-creator`
+    3. Run the build script: `scripts/build_debian-buster.sh`
+6. The `osc-build` directory should contain the built installer
+
+# 💻 Dev-Environment Setup
+
+These are some generic tips that might be handy when setting up your own development environment.
+
+### Visual Studio 2022
 
 - Run the `bat` [builscript](scripts/build_windows.bat) (described above) to get a complete build.
 - In Visual Studio 2020, open `opensim-creator` as a folder project
@@ -111,7 +140,7 @@ a C/C++ compiler, CMake, etc. installed):
 - You should now be able to build+run `osc` from `Visual Studio`
 - To run tests, open the `Test Explorer` tab, which should list all of the `googletest` tests in the project
 
-### QtCreator Dev Environment Setup
+### QtCreator
 
 - Run the appropriate (OS-dependent) buildscript (described above)
 - Open QtCreator and then open the `opensim-creator` source directory as a folder
