@@ -133,7 +133,7 @@ static constexpr std::array<TexturedVert, 6> g_ShadedTexturedQuadVerts = {{
     {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
 }};
 
-// a cube wire mesh, suitable for GL_LINES drawing
+// a cube wire mesh, suitable for `osc::MeshTopography::Lines` drawing
 //
 // a pair of verts per edge of the cube. The cube has 12 edges, so 24 lines
 static constexpr std::array<UntexturedVert, 24> g_CubeEdgeLines = {{

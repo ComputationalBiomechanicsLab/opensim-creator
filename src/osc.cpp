@@ -58,7 +58,7 @@ int main(int argc, char** argv)
         --argc;
     }
 
-    // init top-level application state (window, OpenGL, etc.)
+    // init top-level application state
     osc::OpenSimApp app;
 
     // init top-level screen (tab host)

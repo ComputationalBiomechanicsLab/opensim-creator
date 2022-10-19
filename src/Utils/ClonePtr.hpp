@@ -5,10 +5,10 @@
 #include <utility>
 #include <iosfwd>
 
-namespace osc {
-
-    // this is similar to SimTK's, but uses a `unique_ptr` to automate most of the methods
-    // and enables unique_ptr inputs
+namespace osc
+{
+    // a "smart pointer" that behaves exactly like a unique_ptr but
+    // supports copy construction/assignment by calling `T::clone()`
     template<typename T, typename Deleter = std::default_delete<T>>
     class ClonePtr {
     public:

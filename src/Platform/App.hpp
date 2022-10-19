@@ -156,7 +156,7 @@ namespace osc
         // other parts of the application can use this to decide whether to render
         // extra debug elements, etc.
         bool isInDebugMode() const;
-        void enableDebugMode();  // (incl. OpenGL debugging)
+        void enableDebugMode();
         void disableDebugMode();
 
         // returns true if VSYNC has been enabled in the graphics layer

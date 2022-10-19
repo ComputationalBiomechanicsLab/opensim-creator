@@ -78,7 +78,7 @@ static std::filesystem::path GetResource(osc::Config const& c, std::string_view 
 // initialize the main application window
 static sdl::Window CreateMainAppWindow()
 {
-    osc::log::info("initializing main application (OpenGL 3.3) window");
+    osc::log::info("initializing main application window");
 
     OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MAJOR_VERSION, 3);

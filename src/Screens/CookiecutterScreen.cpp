@@ -52,9 +52,10 @@ public:
 
     void onDraw()
     {
-        // called once per frame. Code in here should use drawing primitives, OpenGL, ImGui,
-        // etc. to draw things into the screen. The application does not clear the screen
-        // buffer between frames (it's assumed that your code does this when it needs to)
+        // called once per frame. Code in here should use drawing primitives, osc::Graphics,
+        // ImGui, etc. to draw things into the screen. The application does not clear the
+        // screen buffer between frames (it's assumed that your code does this when it needs
+        // to)
 
         osc::ImGuiNewFrame();  // tell ImGui you're about to start drawing a new frame
 
