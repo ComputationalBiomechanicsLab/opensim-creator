@@ -89,15 +89,28 @@ requires being logged into GitHub; otherwise, you won't see download links).
 
 ### Windows
 
-1. Get `git`: download+install from https://git-scm.com/downloads, make sure to add it to the `PATH`
-2. Get `Visual Studio 17 2022`: download+install from https://visualstudio.microsoft.com/downloads/, make sure to select C/C++ development in the installer wizard
-3. Get `cmake`: download+install from https://cmake.org/download/, make sure to add it to the `PATH`
-4. Get `NSIS`: download+install from https://nsis.sourceforge.io/Download, make sure to add it to the `PATH`
-5. Get `python` and `pip` (*optional*: for documentation): download from https://www.python.org/downloads/, make sure `python` and `pip` are added to the `PATH`
+1. Get `git`:
+    1. Download+install it from https://git-scm.com/downloads
+    2. Make sure to add it to the `PATH`. Usually, the installer asks if you want this. If it doesn't ask, then you may need to add it manually (google: "Modify windows PATH", add your `git` install: `C:\Program Files\Git\bin`)
+    3. Verify it's installed by opening a terminal (`Shift+Right-Click` -> `Open Powershell window here`) and run `git`
+2. Get `Visual Studio 17 2022`:
+    1. Download+install it from https://visualstudio.microsoft.com/downloads/
+    2. Make sure to select C/C++ development in the installer wizard when it asks you what parts you would like to install
+3. Get `cmake`:
+    1. Download+install it from https://cmake.org/download/
+    2. Make sure to add it to the `PATH`. Usually, the installer asks if you want this. If it doesn't ask, then you may need to add it manually (google: "Modify windows PATH", add your `cmake` install: `C:\Program Files\CMake\bin`)
+    3. Verify it's installed by opening a terminal (`Shift+Right-Click` -> `Open Powershell window here`) and run `cmake`
+4. Get `NSIS`:
+    1. Download+install it from https://nsis.sourceforge.io/Download
+5. Get `python` and `pip` (*optional*: for documentation):
+    1. Download from https://www.python.org/downloads/
+    2. Make sure `python` and `pip` are added to the `PATH` (the installer usually prompts this)
+    3. Verify they are installed by opening a terminal (`Shift+Right-Click` -> `Open Powershell window here`) and run `python --help` and `pip --help`
 6. Build OpenSim Creator in a PowerShell terminal:
-    1. Clone `opensim-creator`: `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`
-    2. `cd` into the source dir: `cd opensim-creator`
-    3. Run the build script: `scripts\build_windows.bat` (**warning**: can take a long time)
+    1. Open a PowerShell terminal (`Shift+Right-Click` -> `Open Powershell window here`)
+    2. Clone `opensim-creator`: `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`
+    3. `cd` into the source dir: `cd opensim-creator`
+    4. Run the build script: `scripts\build_windows.bat` (**warning**: can take a long time)
 7. The `osc-build` directory should contain the built installer
 
 ### Mac
