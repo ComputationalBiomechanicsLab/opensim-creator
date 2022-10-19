@@ -102,7 +102,7 @@ requires being logged into GitHub; otherwise, you won't see download links).
     3. Verify it's installed by opening a terminal (`Shift+Right-Click` -> `Open Powershell window here`) and run `cmake`
 4. Get `NSIS`:
     1. Download+install it from https://nsis.sourceforge.io/Download
-5. Get `python` and `pip` (*optional*: for documentation):
+5. Get `python` and `pip` (*optional*: you only need this if you want to build documentation):
     1. Download from https://www.python.org/downloads/
     2. Make sure `python` and `pip` are added to the `PATH` (the installer usually prompts this)
     3. Verify they are installed by opening a terminal (`Shift+Right-Click` -> `Open Powershell window here`) and run `python --help` and `pip --help`
@@ -119,7 +119,7 @@ requires being logged into GitHub; otherwise, you won't see download links).
 2. Get `git`: can be installed via `brew`: `brew install git`
 3. Get `clang`: install XCode via the app store, or use `brew` to install `clang` (e.g. `brew install clang`)
 4. Get `cmake`: can be installed via `brew`: `brew install cmake`
-5. Get `python` and `pip` (*optional*: for documentation): `brew install python`
+5. Get `python` and `pip` (*optional*: you only need this if you want to build documentation): `brew install python`
 6. Build OpenSim Creator in a terminal:
     1. Clone `opensim-creator`: `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`
     2. `cd` into the source dir: `cd opensim-creator`
@@ -131,7 +131,7 @@ requires being logged into GitHub; otherwise, you won't see download links).
 1. Get `git`: install `git` via your package manager (e.g. `apt-get install git`)
 2. Get `c++`: install `g++`/`clang++` via your package manager (e.g. `apt-get install g++`)
 3. Get `cmake`: install `cmake` via your package manager (e.g. `apt-get install cmake`)
-4. Get `python` and `pip` (*optional*: for documentation): install `python3` and `pip3` via your package manager (e.g. `apt-get install python3 pip3`)
+4. Get `python` and `pip` (*optional*: you only need this if you want to build documentation): install `python3` and `pip3` via your package manager (e.g. `apt-get install python3 pip3`)
 5. Build OpenSim Creator in a terminal:
     1. Clone `opensim-creator`: `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`
     2. `cd` into the source dir: `cd opensim-creator`
