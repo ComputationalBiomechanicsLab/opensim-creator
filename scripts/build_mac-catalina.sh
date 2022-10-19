@@ -88,6 +88,18 @@ echo "    OSC_CXX_FLAGS = ${OSC_CXX_FLAGS}"
 echo ""
 set -x
 
+
+echo "----- printing system (pre-dependency install) info -----"
+cc --version
+c++ --version
+cmake --version
+make --version
+
+
+echo "----- ensuring all submodules are up-to-date -----"
+git submodule update --init --recursive
+
+
 if [[ -z ${OSC_SKIP_BREW:+x} ]]; then
     echo "----- getting system-level dependencies -----"
 

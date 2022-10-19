@@ -68,6 +68,9 @@ IF %OSC_SHOULD_PIP_INSTALL% == "YES" (
     pip install -r docs/requirements.txt
 )
 
+REM ----- ensure all submodules are up-to-date -----
+git submodule update --init --recursive
+
 REM ----- checkout OpenSim sources from GitHub -----
 
 echo "----- checking if OpenSim needs to be cloned from %OSC_OPENSIM_REPO% -----"

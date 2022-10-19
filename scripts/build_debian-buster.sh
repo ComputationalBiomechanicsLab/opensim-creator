@@ -88,6 +88,10 @@ ls -la .  # print build dir contents
 uname -a  # print distro details
 
 
+echo "----- ensuring all submodules are up-to-date -----"
+git submodule update --init --recursive
+
+
 if [[ -z ${OSC_SKIP_APT:+x} ]]; then
     echo "----- getting system-level dependencies -----"
 
