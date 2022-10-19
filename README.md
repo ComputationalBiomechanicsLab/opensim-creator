@@ -111,32 +111,44 @@ requires being logged into GitHub; otherwise, you won't see download links).
     2. Clone `opensim-creator`: `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`
     3. `cd` into the source dir: `cd opensim-creator`
     4. Run the build script: `scripts\build_windows.bat` (**warning**: can take a long time)
-7. The `osc-build` directory should contain the built installer
+7. Done:
+    1. The `osc-build` directory should contain the built installer
 
 ### Mac
 
-1. Get `brew`: go to https://brew.sh/ and follow installation instructions
-2. Get `git`: can be installed via `brew`: `brew install git`
-3. Get `clang`: install XCode via the app store, or use `brew` to install `clang` (e.g. `brew install clang`)
-4. Get `cmake`: can be installed via `brew`: `brew install cmake`
-5. Get `python` and `pip` (*optional*: you only need this if you want to build documentation): `brew install python`
+1. Get `brew`:
+    1. Go to https://brew.sh/ and follow installation instructions
+2. Get `git`: 
+    1. Can be installed via `brew`: `brew install git`
+3. Get `clang`:
+    1. Install XCode via the app store, or use `brew` to install `clang` (e.g. `brew install clang`)
+4. Get `cmake`:
+    1. Can be installed via `brew`: `brew install cmake`
+5. Get `python` and `pip` (*optional*: you only need this if you want to build documentation):
+    1. Can be installed via `brew`: `brew install python`
 6. Build OpenSim Creator in a terminal:
     1. Clone `opensim-creator`: `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`
     2. `cd` into the source dir: `cd opensim-creator`
     3. Run the build script: `scripts/build_mac-catalina.sh` (**warning**: can take a long time)
-6. The `osc-build` directory should contain the built installer
+6. Done:
+    1. The `osc-build` directory should contain the built installer
 
 ### Linux (Ubuntu)
 
-1. Get `git`: install `git` via your package manager (e.g. `apt-get install git`)
-2. Get `c++`: install `g++`/`clang++` via your package manager (e.g. `apt-get install g++`)
-3. Get `cmake`: install `cmake` via your package manager (e.g. `apt-get install cmake`)
-4. Get `python` and `pip` (*optional*: you only need this if you want to build documentation): install `python3` and `pip3` via your package manager (e.g. `apt-get install python3 pip3`)
+1. Get `git`:
+    1. Install `git` via your package manager (e.g. `apt-get install git`)
+2. Get `c++`:
+    1. Install `g++`/`clang++` via your package manager (e.g. `apt-get install g++`)
+3. Get `cmake`:
+    1. Install `cmake` via your package manager (e.g. `apt-get install cmake`)
+4. Get `python` and `pip` (*optional*: you only need this if you want to build documentation):
+    1. Install `python3` and `pip3` via your package manager (e.g. `apt-get install python3 pip3`)
 5. Build OpenSim Creator in a terminal:
     1. Clone `opensim-creator`: `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`
     2. `cd` into the source dir: `cd opensim-creator`
     3. Run the build script: `scripts/build_debian-buster.sh`
-6. The `osc-build` directory should contain the built installer
+6. Done:
+    1. The `osc-build` directory should contain the built installer
 
 # 💻 Dev-Environment Setup
 
