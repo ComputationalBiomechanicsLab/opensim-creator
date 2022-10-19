@@ -92,12 +92,13 @@ requires being logged into GitHub; otherwise, you won't see download links).
 1. Get `git`: download+install from https://git-scm.com/downloads, make sure to add it to the `PATH`
 2. Get `Visual Studio 17 2022`: download+install from https://visualstudio.microsoft.com/downloads/, make sure to select C/C++ development in the installer wizard
 3. Get `cmake`: download+install from https://cmake.org/download/, make sure to add it to the `PATH`
-4. Get `python` and `pip` (*optional*: for documentation): download from https://www.python.org/downloads/, make sure `python` and `pip` are added to the `PATH`
-5. Build OpenSim Creator in a PowerShell terminal:
+4. Get `NSIS`: download+install from https://nsis.sourceforge.io/Download, make sure to add it to the `PATH`
+5. Get `python` and `pip` (*optional*: for documentation): download from https://www.python.org/downloads/, make sure `python` and `pip` are added to the `PATH`
+6. Build OpenSim Creator in a PowerShell terminal:
     1. Clone `opensim-creator`: `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`
     2. `cd` into the source dir: `cd opensim-creator`
     3. Run the build script: `scripts\build_windows.bat` (**warning**: can take a long time)
-6. The `osc-build` directory should contain the built installer
+7. The `osc-build` directory should contain the built installer
 
 ### Mac
 
