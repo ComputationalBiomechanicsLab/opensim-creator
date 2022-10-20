@@ -5,7 +5,7 @@
 
 #include <cstdint>
 
-osc::Rgba32 osc::Rgba32FromVec4(glm::vec4 const& v) noexcept
+osc::Rgba32 osc::ToRgba32(glm::vec4 const& v) noexcept
 {
     return Rgba32
     {
@@ -16,7 +16,7 @@ osc::Rgba32 osc::Rgba32FromVec4(glm::vec4 const& v) noexcept
     };
 }
 
-osc::Rgba32 osc::Rgba32FromF4(float r, float g, float b, float a) noexcept
+osc::Rgba32 osc::ToRgba32(float r, float g, float b, float a) noexcept
 {
     return Rgba32
     {
@@ -27,7 +27,7 @@ osc::Rgba32 osc::Rgba32FromF4(float r, float g, float b, float a) noexcept
     };
 }
 
-osc::Rgba32 osc::Rgba32FromU32(std::uint32_t v) noexcept
+osc::Rgba32 osc::ToRgba32(std::uint32_t v) noexcept
 {
     return Rgba32
     {

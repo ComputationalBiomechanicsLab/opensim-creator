@@ -9,7 +9,7 @@
 namespace osc
 {
     // float-/double-based inputs assume linear color range (i.e. 0 to 1)
-    Rgba32 Rgba32FromVec4(glm::vec4 const&) noexcept;
-    Rgba32 Rgba32FromF4(float, float, float, float) noexcept;
-    Rgba32 Rgba32FromU32(uint32_t) noexcept;  // R at MSB
+    Rgba32 ToRgba32(glm::vec4 const&) noexcept;
+    Rgba32 ToRgba32(float, float, float, float) noexcept;
+    Rgba32 ToRgba32(uint32_t) noexcept;  // R at MSB
 }

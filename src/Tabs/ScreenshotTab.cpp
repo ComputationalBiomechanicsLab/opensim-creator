@@ -273,7 +273,7 @@ private:
                     {
                         ImU32 colorImgui = drawlist.VtxBuffer[i].col;
                         glm::vec4 linearColor = ImGui::ColorConvertU32ToFloat4(colorImgui);
-                        colors.push_back(Rgba32FromVec4(linearColor));
+                        colors.push_back(ToRgba32(linearColor));
                     }
                     mesh.setColors(colors);
                 }
