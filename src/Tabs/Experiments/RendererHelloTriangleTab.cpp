@@ -35,8 +35,8 @@ static osc::Mesh GenerateTriangleMesh()
 
     osc::Mesh m;
     m.setVerts(points);
-    m.setIndices(indices);
     m.setColors(colors);
+    m.setIndices(indices);
     return m;
 }
 

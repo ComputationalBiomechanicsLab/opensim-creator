@@ -631,7 +631,7 @@ namespace gl
         }
 
         [[nodiscard]] constexpr size_t size() const noexcept {
-            return size;
+            return m_BufferSz;
         }
 
         [[nodiscard]] constexpr GLsizei sizei() const noexcept {
@@ -937,7 +937,7 @@ namespace gl
         {
             glGenRenderbuffers(1, &m_RenderBuffer);
 
-            if (m_RenderBuffer == senteniel)
+            if (m_RenderBuffer == m_EmptyRenderBufferSenteniel)
             {
                 throw OpenGlException{GL_SOURCELOC "glGenRenderBuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
@@ -946,7 +946,7 @@ namespace gl
         RenderBuffer(RenderBuffer const&) = delete;
 
         RenderBuffer(RenderBuffer&& tmp) noexcept :
-            m_RenderBuffer{std::exchange(tmp.m_RenderBuffer, senteniel)}
+            m_RenderBuffer{std::exchange(tmp.m_RenderBuffer, m_EmptyRenderBufferSenteniel)}
         {
         }
 
@@ -960,7 +960,7 @@ namespace gl
 
         ~RenderBuffer() noexcept
         {
-            if (m_RenderBuffer != senteniel)
+            if (m_RenderBuffer != m_EmptyRenderBufferSenteniel)
             {
                 glDeleteRenderbuffers(1, &m_RenderBuffer);
             }
@@ -971,7 +971,8 @@ namespace gl
             return m_RenderBuffer;
         }
     private:
-        static constexpr GLuint senteniel = 0;
+        // khronos: glDeleteRenderBuffers: "The name zero is reserved by the GL and is silently ignored"
+        static constexpr GLuint m_EmptyRenderBufferSenteniel = 0;
         GLuint m_RenderBuffer;
     };
 

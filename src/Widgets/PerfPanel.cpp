@@ -18,6 +18,11 @@ static bool HighestTotalDuration(osc::PerfMeasurement const& a, osc::PerfMeasure
     return a.getTotalDuration() > b.getTotalDuration();
 }
 
+static bool LexographicallyHighestLabel(osc::PerfMeasurement const& a, osc::PerfMeasurement const& b)
+{
+    return a.getLabel() > b.getLabel();
+}
+
 class osc::PerfPanel::Impl final {
 public:
 
@@ -80,10 +85,14 @@ public:
         {
             m_MeasurementBuffer.clear();
             GetAllMeasurements(m_MeasurementBuffer);
-            Sort(m_MeasurementBuffer, HighestTotalDuration);
+            Sort(m_MeasurementBuffer, LexographicallyHighestLabel);
         }
 
-        if (ImGui::BeginTable("measurements", 6))
+        ImGuiTableFlags flags =
+            ImGuiTableFlags_NoSavedSettings |
+            ImGuiTableFlags_Resizable |
+            ImGuiTableFlags_BordersInner;
+        if (ImGui::BeginTable("measurements", 6, flags))
         {
             ImGui::TableSetupColumn("Label");
             ImGui::TableSetupColumn("Source File");

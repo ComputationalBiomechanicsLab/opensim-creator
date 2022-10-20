@@ -603,7 +603,6 @@ osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
     rv.setVerts(std::move(verts));
     rv.setNormals(std::move(normals));
     rv.setIndices(std::move(indices));
-
     return rv;
 }
 
