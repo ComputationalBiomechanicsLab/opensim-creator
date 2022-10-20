@@ -54,6 +54,8 @@ public:
     {
         m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_ChequerTexture);
         m_SceneTexturedElementsMaterial.setVec2("uTextureScale", {200.0f, 200.0f});
+        m_RimsSelectedColor.setVec4("uDiffuseColor", {0.9f, 0.0f, 0.0f, 1.0f});
+        m_RimsHoveredColor.setVec4("uDiffuseColor", {0.4, 0.0f, 0.0f, 1.0f});
     }
 
     glm::ivec2 getDimensions() const
@@ -68,14 +70,8 @@ public:
 
     void draw(nonstd::span<SceneDecoration const> decorations, SceneRendererParams const& params)
     {
-        constexpr glm::vec2 rimThickness{1.0f};
-
         // configure output texture to match requested dimensions/samples
-        RenderTextureDescriptor desc{glm::ivec2
-        {
-            static_cast<int>(params.dimensions.x),
-            static_cast<int>(params.dimensions.y),
-        }};
+        RenderTextureDescriptor desc{params.dimensions};
         desc.setAntialiasingLevel(params.samples);
         EmplaceOrReformat(m_MaybeRenderTexture, desc);
 
@@ -124,14 +120,14 @@ public:
             {
                 Rect& rimRectNDC = *maybeRimRectNDC;
 
-                glm::vec2 const rimThicknessNDC = 2.0f*glm::vec2{rimThickness} / glm::vec2{params.dimensions};
+                // compute rim thickness in each direction (aspect ratio might not be 1:1)
+                glm::vec2 const rimThicknessNDC = 2.0f*m_RimThickness / glm::vec2{params.dimensions};
 
                 // expand by the rim thickness, so that the output has space for the rims
                 rimRectNDC = osc::Expand(rimRectNDC, rimThicknessNDC);
 
-                // constrain the result of the above maths to within clip space
-                rimRectNDC.p1 = glm::max(rimRectNDC.p1, glm::vec2{-1.0f, -1.0f});
-                rimRectNDC.p2 = glm::min(rimRectNDC.p2, glm::vec2{1.0f, 1.0f});
+                // constrain the result of the above to within clip space
+                rimRectNDC = osc::Clamp(rimRectNDC, {-1.0f, -1.0f}, {1.0f, 1.0f});
 
                 // calculate rim rect in screenspace (pixels)
                 Rect const rimRectScreen = NdcRectToScreenspaceViewportRect(rimRectNDC, Rect{{}, params.dimensions});
@@ -142,7 +138,7 @@ public:
 
                 // resize the output texture (pixel) dimensions to match the (expanded) bounding rect
                 RenderTextureDescriptor selectedDesc{desc};
-                selectedDesc.setDimensions(glm::ivec2{rimDimsScreen});
+                selectedDesc.setDimensions(rimDimsScreen);
                 selectedDesc.setColorFormat(RenderTextureFormat::RED);
                 EmplaceOrReformat(m_MaybeSelectedTexture, selectedDesc);
 
@@ -155,7 +151,7 @@ public:
 
                 // move output location to the edge of clipspace
                 glm::vec2 const bottomLeftNDC = {-1.0f, -1.0f};
-                glm::vec2 const position = bottomLeftNDC - (scale * glm::vec2{ glm::min(rimRectNDC.p1.x, rimRectNDC.p2.x), glm::min(rimRectNDC.p1.y, rimRectNDC.p2.y) });
+                glm::vec2 const position = bottomLeftNDC - (scale * osc::MinValuePerDimension(rimRectNDC));
 
                 // compute transforms of the above
                 Transform rimsToNDCtransform;
@@ -166,23 +162,18 @@ public:
                 // matrix that maps this clipspace-sized quad back into its original dimensions
                 glm::mat4 const rimsToNDCmat = ToMat4(rimsToNDCtransform);
                 ndcToRimsMat = ToInverseMat4(rimsToNDCtransform);
-                rimOffsets = rimThickness / rimDimsScreen;
-
-                MaterialPropertyBlock selectedColor;
-                selectedColor.setVec4("uDiffuseColor", {0.9f, 0.0f, 0.0f, 1.0f});
-                MaterialPropertyBlock hoveredColor;
-                hoveredColor.setVec4("uDiffuseColor", {0.4, 0.0f, 0.0f, 1.0f});
+                rimOffsets = m_RimThickness / rimDimsScreen;
 
                 // draw the solid geometry that was stretched over clipspace
                 for (SceneDecoration const& dec : decorations)
                 {
                     if (dec.flags & (SceneDecorationFlags_IsSelected | SceneDecorationFlags_IsChildOfSelected))
                     {
-                        Graphics::DrawMesh(*dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, selectedColor);
+                        Graphics::DrawMesh(*dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsSelectedColor);
                     }
                     else if (dec.flags & (SceneDecorationFlags_IsHovered | SceneDecorationFlags_IsChildOfHovered))
                     {
-                        Graphics::DrawMesh(*dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, hoveredColor);
+                        Graphics::DrawMesh(*dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsHoveredColor);
                     }
                 }
 
@@ -259,7 +250,7 @@ public:
                 m_SceneTexturedElementsMaterial.setFloat("uFar", m_Camera.getFarClippingPlane());
                 m_SceneTexturedElementsMaterial.setTransparent(true);  // fog
 
-                Transform t = GetFloorTransform(params.floorLocation, params.fixupScaleFactor);
+                Transform const t = GetFloorTransform(params.floorLocation, params.fixupScaleFactor);
 
                 Graphics::DrawMesh(*m_QuadMesh, t, m_SceneTexturedElementsMaterial, m_Camera);
             }
@@ -296,6 +287,8 @@ private:
         ShaderCache::get("shaders/SceneShader.vert", "shaders/SceneShader.frag")
     };
 
+    Material m_SceneTransparentColoredElementsMaterial = m_SceneColoredElementsMaterial;
+
     Material m_SceneTexturedElementsMaterial
     {
         ShaderCache::get("shaders/SceneTexturedShader.vert", "shaders/SceneTexturedShader.frag")
@@ -320,17 +313,24 @@ private:
     Texture2D m_ChequerTexture = GenChequeredFloorTexture();
     Camera m_Camera;
 
+    glm::vec2 m_RimThickness = {1.0f, 1.0f};
+    MaterialPropertyBlock m_RimsSelectedColor;
+    MaterialPropertyBlock m_RimsHoveredColor;
+
     // outputs
     std::optional<RenderTexture> m_MaybeSelectedTexture;
     std::optional<RenderTexture> m_MaybeRenderTexture{RenderTextureDescriptor{glm::ivec2{1, 1}}};
 };
+
+
+// public API (PIMPL)
 
 osc::SceneRenderer::SceneRenderer() :
     m_Impl{new Impl{}}
 {
 }
 
-osc::SceneRenderer::SceneRenderer(SceneRenderer && tmp) noexcept :
+osc::SceneRenderer::SceneRenderer(SceneRenderer&& tmp) noexcept :
     m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
 }

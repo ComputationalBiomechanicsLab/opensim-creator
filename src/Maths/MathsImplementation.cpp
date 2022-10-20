@@ -1304,6 +1304,11 @@ glm::vec4 osc::TopleftRelPosToNDCCube(glm::vec2 relpos)
     return {TopleftRelPosToNDCPoint(relpos), -1.0f, 1.0f};
 }
 
+glm::vec2 osc::MinValuePerDimension(Rect const& r) noexcept
+{
+    return Min(r.p1, r.p2);
+}
+
 float osc::Area(Rect const& r) noexcept
 {
     auto d = Dimensions(r);
@@ -1352,6 +1357,15 @@ osc::Rect osc::Expand(Rect const& rect, glm::vec2 amt) noexcept
     rv.p1.y -= amt.y;
     rv.p2.y += amt.y;
     return rv;
+}
+
+osc::Rect osc::Clamp(Rect const& r, glm::vec2 const& min, glm::vec2 const& max) noexcept
+{
+    return
+    {
+        glm::clamp(r.p1, min, max),
+        glm::clamp(r.p2, min, max),
+    };
 }
 
 osc::Rect osc::NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const& viewport) noexcept

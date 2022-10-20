@@ -117,7 +117,6 @@ namespace osc
     // - output NDC point has range: (-1, 1) is top-left, (1, -1) is bottom-right
     glm::vec2 TopleftRelPosToNDCPoint(glm::vec2 relpos);
 
-
     // returns an XY top-left relative point converted from the given NDC point
     //
     // - input NDC point has origin in the middle, Y goes up
@@ -139,6 +138,9 @@ namespace osc
 
     // ----- osc::Rect helpers -----
 
+    // returns `Min(rect.p1, rect.p2)`: i.e. the smallest X and the smallest Y of the rectangle's points
+    glm::vec2 MinValuePerDimension(Rect const&) noexcept;
+
     // returns the area of the rectangle
     float Area(Rect const&) noexcept;
 
@@ -156,6 +158,9 @@ namespace osc
     // (e.g. expand 1.0f adds 1.0f to both the left edge and the right edge)
     Rect Expand(Rect const&, float) noexcept;
     Rect Expand(Rect const&, glm::vec2) noexcept;
+
+    // returns a rectangle where both p1 and p2 are clamped between min and max (inclusive)
+    Rect Clamp(Rect const&, glm::vec2 const& min, glm::vec2 const& max) noexcept;
 
     // returns a rect, created by mapping an Normalized Device Coordinates (NDC) rect
     // (i.e. -1.0 to 1.0) within a screenspace viewport (pixel units, topleft == (0, 0))
