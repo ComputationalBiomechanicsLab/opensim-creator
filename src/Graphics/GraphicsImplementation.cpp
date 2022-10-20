@@ -295,7 +295,7 @@ namespace
     };
 
     template<typename Key>
-    ShaderElement const* TryGetValue(robin_hood::unordered_map<std::string, ShaderElement> const& m, Key const& k)
+    ShaderElement const* TryGetValue(robin_hood::unordered_flat_map<std::string, ShaderElement> const& m, Key const& k)
     {
         auto const it = m.find(k);
         return it != m.end() ? &it->second : nullptr;
@@ -1350,12 +1350,12 @@ public:
         return m_Program;
     }
 
-    robin_hood::unordered_map<std::string, ShaderElement> const& getUniforms() const
+    robin_hood::unordered_flat_map<std::string, ShaderElement> const& getUniforms() const
     {
         return m_Uniforms;
     }
 
-    robin_hood::unordered_map<std::string, ShaderElement> const& getAttributes() const
+    robin_hood::unordered_flat_map<std::string, ShaderElement> const& getAttributes() const
     {
         return m_Attributes;
     }
@@ -1442,8 +1442,8 @@ private:
 
     UID m_UID;
     gl::Program m_Program;
-    robin_hood::unordered_map<std::string, ShaderElement> m_Uniforms;
-    robin_hood::unordered_map<std::string, ShaderElement> m_Attributes;
+    robin_hood::unordered_flat_map<std::string, ShaderElement> m_Uniforms;
+    robin_hood::unordered_flat_map<std::string, ShaderElement> m_Attributes;
     std::optional<ShaderElement> m_MaybeModelMatUniform;
     std::optional<ShaderElement> m_MaybeNormalMatUniform;
     std::optional<ShaderElement> m_MaybeViewMatUniform;
@@ -1751,7 +1751,7 @@ private:
 
     UID m_UID;
     Shader m_Shader;
-    robin_hood::unordered_map<std::string, MaterialValue> m_Values;
+    robin_hood::unordered_flat_map<std::string, MaterialValue> m_Values;
     bool m_IsTransparent = false;
     bool m_IsDepthTested = true;
     bool m_IsWireframeMode = false;
@@ -2101,7 +2101,7 @@ private:
 
     friend class GraphicsBackend;
 
-    robin_hood::unordered_map<std::string, MaterialValue> m_Values;
+    robin_hood::unordered_flat_map<std::string, MaterialValue> m_Values;
 };
 
 osc::MaterialPropertyBlock::MaterialPropertyBlock() :
@@ -4285,7 +4285,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
 {
     Material::Impl& matImpl = const_cast<Material::Impl&>(*els.front().material.m_Impl);
     Shader::Impl& shaderImpl = const_cast<Shader::Impl&>(*matImpl.m_Shader.m_Impl);
-    robin_hood::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
+    robin_hood::unordered_flat_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
     // bind property block variables (if applicable)
     if (els.front().maybePropBlock)
@@ -4430,7 +4430,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
 {
     Material::Impl& matImpl = const_cast<Material::Impl&>(*els.front().material.m_Impl);
     Shader::Impl& shaderImpl = const_cast<Shader::Impl&>(*matImpl.m_Shader.m_Impl);
-    robin_hood::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
+    robin_hood::unordered_flat_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
     // preemptively upload instance data
     std::optional<InstancingState> maybeInstances = UploadInstanceData(els, shaderImpl);
