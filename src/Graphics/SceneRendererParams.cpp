@@ -32,7 +32,6 @@ osc::SceneRendererParams::~SceneRendererParams() noexcept = default;
 
 bool osc::operator==(SceneRendererParams const& a, SceneRendererParams const& b)
 {
-    return false;
     return
         a.dimensions == b.dimensions &&
         a.samples == b.samples &&
