@@ -153,6 +153,9 @@ namespace osc
     // returns the aspect ratio (width/height) of the rectangle
     float AspectRatio(Rect const&) noexcept;
 
+    // returns the middle point of the rectangle
+    glm::vec2 Midpoint(Rect const&) noexcept;
+
     // returns a rectangle that has been expanded along each edge by the given amount
     //
     // (e.g. expand 1.0f adds 1.0f to both the left edge and the right edge)

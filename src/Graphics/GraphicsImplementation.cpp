@@ -3966,13 +3966,22 @@ public:
     }
 
 private:
+
+    // active OpenGL context for the application
     sdl::GLContext m_GLContext;
+
+    // maximum number of samples supported by this hardware's OpenGL MSXAA API
     int m_MaxMSXAASamples = GetOpenGLMaxMSXAASamples(m_GLContext);
+
+    // true if OpenGL's debug mode is enabled
     bool m_DebugModeEnabled = false;
+
+    // a "queue" of active screenshot requests
     std::vector<std::promise<Image>> m_ActiveScreenshotRequests;
 
 public:
 
+    // a generic quad rendering material: used for some blitting operations
     Material m_QuadMaterial
     {
         Shader
@@ -3982,6 +3991,7 @@ public:
         }
     };
 
+    // a generic quad mesh: two triangles covering NDC @ Z=0
     Mesh m_QuadMesh = GenTexturedQuad();
 };
 
@@ -4618,6 +4628,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     //   - mesh
 
     std::vector<RenderObject>& queue = camera.m_RenderQueue;
+
     if (queue.empty())
     {
         return;
@@ -4782,6 +4793,11 @@ void osc::GraphicsBackend::RenderScene(Camera::Impl& camera)
 
         // rebind to the screen (the start of RenderScene bound to the output texture)
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+    }
+
+    if (camera.m_MaybeScissorRect)
+    {
+        gl::Disable(GL_SCISSOR_TEST);
     }
 
     // cleanup

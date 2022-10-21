@@ -30,6 +30,9 @@
 #include <utility>
 #include <vector>
 
+#include "src/Platform/Log.hpp"
+#include "src/Utils/Algorithms.hpp"
+
 namespace
 {
     osc::Transform GetFloorTransform(glm::vec3 floorLocation, float fixupScaleFactor)
@@ -45,6 +48,23 @@ namespace
     {
         return osc::TransformAABB(d.mesh->getBounds(), d.transform);
     }
+
+    struct RimHighlights final {
+        RimHighlights(
+            std::shared_ptr<osc::Mesh const> const& mesh_,
+            glm::mat4 const& transform_,
+            osc::Material const& material_) :
+
+            mesh{mesh_},
+            transform{transform_},
+            material{material_}
+        {
+        }
+
+        std::shared_ptr<osc::Mesh const> mesh;
+        glm::mat4 transform;
+        osc::Material material;
+    };
 }
 
 
@@ -56,6 +76,8 @@ public:
         m_SceneTexturedElementsMaterial.setVec2("uTextureScale", {200.0f, 200.0f});
         m_RimsSelectedColor.setVec4("uDiffuseColor", {0.9f, 0.0f, 0.0f, 1.0f});
         m_RimsHoveredColor.setVec4("uDiffuseColor", {0.4, 0.0f, 0.0f, 1.0f});
+        m_EdgeDetectorMaterial.setTransparent(true);
+        m_EdgeDetectorMaterial.setDepthTested(false);
     }
 
     glm::ivec2 getDimensions() const
@@ -70,126 +92,24 @@ public:
 
     void draw(nonstd::span<SceneDecoration const> decorations, SceneRendererParams const& params)
     {
-        // configure output texture to match requested dimensions/samples
-        RenderTextureDescriptor desc{params.dimensions};
-        desc.setAntialiasingLevel(params.samples);
-        EmplaceOrReformat(m_MaybeRenderTexture, desc);
+        // configure output texture and rims texture to match parameters
+        {
+            RenderTextureDescriptor desc{params.dimensions};
+            desc.setAntialiasingLevel(params.samples);
+            EmplaceOrReformat(m_MaybeRenderTexture, desc);
+        }
 
-        // update rendererd-to camera from params
+        // update the camera from the input params
         m_Camera.setPosition(params.viewPos);
         m_Camera.setNearClippingPlane(params.nearClippingPlane);
         m_Camera.setFarClippingPlane(params.farClippingPlane);
         m_Camera.setViewMatrix(params.viewMatrix);
         m_Camera.setProjectionMatrix(params.projectionMatrix);
 
-        // handle rim highlights
-        bool hasRims = false;
-        glm::mat4 ndcToRimsMat{1.0f};
-        glm::vec2 rimOffsets = {0.0f, 0.0f};  // in "rim space"
+        std::optional<RimHighlights> maybeRimHighlights = generateRimHighlights(decorations, params);
 
-        if (params.drawRims)
+        // draw the the scene
         {
-            // compute the worldspace bounds of the rim-highlighted geometry
-            AABB rimAABBWorldspace = InvertedAABB();
-            for (SceneDecoration const& dec : decorations)
-            {
-                if (dec.flags & (SceneDecorationFlags_IsSelected | SceneDecorationFlags_IsChildOfSelected | SceneDecorationFlags_IsHovered | SceneDecorationFlags_IsChildOfHovered))
-                {
-                    rimAABBWorldspace = Union(rimAABBWorldspace, WorldpaceAABB(dec));
-                    hasRims = true;
-                }
-            }
-
-            // figure out if the rims actually appear on the screen and (roughly) where
-            std::optional<Rect> maybeRimRectNDC = hasRims ?
-                AABBToScreenNDCRect(
-                    rimAABBWorldspace,
-                    m_Camera.getViewMatrix(),
-                    m_Camera.getProjectionMatrix(),
-                    m_Camera.getNearClippingPlane(),
-                    m_Camera.getFarClippingPlane()) :
-                std::nullopt;
-
-            hasRims = maybeRimRectNDC.has_value();
-
-            // if the scene has rims, and they can be projected onto the screen, then
-            // render the rim geometry as a solid color and precompute the relevant
-            // texture coordinates, quad transform, etc. for the (later) edge-detection
-            // step
-            if (hasRims)
-            {
-                Rect& rimRectNDC = *maybeRimRectNDC;
-
-                // compute rim thickness in each direction (aspect ratio might not be 1:1)
-                glm::vec2 const rimThicknessNDC = 2.0f*m_RimThickness / glm::vec2{params.dimensions};
-
-                // expand by the rim thickness, so that the output has space for the rims
-                rimRectNDC = osc::Expand(rimRectNDC, rimThicknessNDC);
-
-                // constrain the result of the above to within clip space
-                rimRectNDC = osc::Clamp(rimRectNDC, {-1.0f, -1.0f}, {1.0f, 1.0f});
-
-                // calculate rim rect in screenspace (pixels)
-                Rect const rimRectScreen = NdcRectToScreenspaceViewportRect(rimRectNDC, Rect{{}, params.dimensions});
-
-                // calculate the dimensions of the rims in both NDC- and screen-space
-                glm::vec2 const rimDimsNDC = osc::Dimensions(rimRectNDC);
-                glm::vec2 const rimDimsScreen = osc::Dimensions(rimRectScreen);
-
-                // resize the output texture (pixel) dimensions to match the (expanded) bounding rect
-                RenderTextureDescriptor selectedDesc{desc};
-                selectedDesc.setDimensions(rimDimsScreen);
-                selectedDesc.setColorFormat(RenderTextureFormat::RED);
-                EmplaceOrReformat(m_MaybeSelectedTexture, selectedDesc);
-
-                // calculate a transform matrix that maps the bounding rect to the edges of clipspace
-                //
-                // this is so that the solid geometry render fills the output texture perfectly
-
-                // scale output width (dims) to clipspace width (2.0f)
-                glm::vec2 const scale = 2.0f / rimDimsNDC;
-
-                // move output location to the edge of clipspace
-                glm::vec2 const bottomLeftNDC = {-1.0f, -1.0f};
-                glm::vec2 const position = bottomLeftNDC - (scale * osc::MinValuePerDimension(rimRectNDC));
-
-                // compute transforms of the above
-                Transform rimsToNDCtransform;
-                rimsToNDCtransform.scale = {scale, 1.0f};
-                rimsToNDCtransform.position = {position, 0.0f};
-
-                // create matrices that render the rims to the edges of the output texture, and an inverse
-                // matrix that maps this clipspace-sized quad back into its original dimensions
-                glm::mat4 const rimsToNDCmat = ToMat4(rimsToNDCtransform);
-                ndcToRimsMat = ToInverseMat4(rimsToNDCtransform);
-                rimOffsets = m_RimThickness / rimDimsScreen;
-
-                // draw the solid geometry that was stretched over clipspace
-                for (SceneDecoration const& dec : decorations)
-                {
-                    if (dec.flags & (SceneDecorationFlags_IsSelected | SceneDecorationFlags_IsChildOfSelected))
-                    {
-                        Graphics::DrawMesh(*dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsSelectedColor);
-                    }
-                    else if (dec.flags & (SceneDecorationFlags_IsHovered | SceneDecorationFlags_IsChildOfHovered))
-                    {
-                        Graphics::DrawMesh(*dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsHoveredColor);
-                    }
-                }
-
-                glm::mat4 const originalProjMat = m_Camera.getProjectionMatrix();
-                m_Camera.setProjectionMatrix(rimsToNDCmat * originalProjMat);
-                m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
-                m_Camera.swapTexture(m_MaybeSelectedTexture);
-                m_Camera.render();
-                m_Camera.swapTexture(m_MaybeSelectedTexture);
-                m_Camera.setProjectionMatrix(originalProjMat);
-            }
-        }
-
-        // render scene to the screen
-        {
-            // draw scene elements
             m_SceneColoredElementsMaterial.setVec3("uViewPos", m_Camera.getPosition());
             m_SceneColoredElementsMaterial.setVec3("uLightDir", params.lightDirection);
             m_SceneColoredElementsMaterial.setVec3("uLightColor", params.lightColor);
@@ -239,13 +159,6 @@ public:
                 m_SceneTexturedElementsMaterial.setVec3("uViewPos", m_Camera.getPosition());
                 m_SceneTexturedElementsMaterial.setVec3("uLightDir", params.lightDirection);
                 m_SceneTexturedElementsMaterial.setVec3("uLightColor", params.lightColor);
-                // don't set shading parameters for the floor: it's a special case because the caller just
-                // wants the standard floor
-                //
-                // m_SceneTexturedElementsMaterial.setFloat("uAmbientStrength", params.ambientStrength);
-                // m_SceneTexturedElementsMaterial.setFloat("uDiffuseStrength", params.diffuseStrength);
-                // m_SceneTexturedElementsMaterial.setFloat("uSpecularStrength", params.specularStrength);
-                // m_SceneTexturedElementsMaterial.setFloat("uShininess", params.shininess);
                 m_SceneTexturedElementsMaterial.setFloat("uNear", m_Camera.getNearClippingPlane());
                 m_SceneTexturedElementsMaterial.setFloat("uFar", m_Camera.getFarClippingPlane());
                 m_SceneTexturedElementsMaterial.setTransparent(true);  // fog
@@ -254,26 +167,20 @@ public:
 
                 Graphics::DrawMesh(*m_QuadMesh, t, m_SceneTexturedElementsMaterial, m_Camera);
             }
-
-            // if rims are requested, draw them
-            if (hasRims)
-            {
-                m_EdgeDetectorMaterial.setRenderTexture("uScreenTexture", *m_MaybeSelectedTexture);
-                m_EdgeDetectorMaterial.setVec4("uRimRgba", params.rimColor);
-                m_EdgeDetectorMaterial.setVec2("uRimThickness", rimOffsets);
-                m_EdgeDetectorMaterial.setTransparent(true);
-                m_EdgeDetectorMaterial.setDepthTested(false);
-
-                Graphics::DrawMesh(*m_QuadMesh, m_Camera.getInverseViewProjectionMatrix() * ndcToRimsMat, m_EdgeDetectorMaterial, m_Camera);
-
-                m_EdgeDetectorMaterial.clearRenderTexture("uScreenTexture");  // prevents copies on next frame
-            }
-
-            m_Camera.setBackgroundColor(params.backgroundColor);
-            m_Camera.swapTexture(m_MaybeRenderTexture);
-            m_Camera.render();
-            m_Camera.swapTexture(m_MaybeRenderTexture);
         }
+
+        // add the rim highlights over the top of the scene texture
+        if (maybeRimHighlights)
+        {
+            Graphics::DrawMesh(*maybeRimHighlights->mesh, maybeRimHighlights->transform, maybeRimHighlights->material, m_Camera);
+        }
+
+        // write the scene render to the ouptut texture
+        m_Camera.setBackgroundColor(params.backgroundColor);
+        m_Camera.swapTexture(m_MaybeRenderTexture);
+        m_Camera.render();
+        m_Camera.swapTexture(m_MaybeRenderTexture);
+        m_EdgeDetectorMaterial.clearRenderTexture("uScreenTexture");  // prevents copies on next frame
     }
 
     RenderTexture& updRenderTexture()
@@ -282,12 +189,108 @@ public:
     }
 
 private:
+    std::optional<RimHighlights> generateRimHighlights(nonstd::span<SceneDecoration const> decorations, SceneRendererParams const& params)
+    {
+        // compute the worldspace bounds union of all rim-highlighted geometry
+        std::optional<AABB> maybeRimWorldspaceAABB;
+        for (SceneDecoration const& dec : decorations)
+        {
+            if (dec.flags & (SceneDecorationFlags_IsSelected | SceneDecorationFlags_IsChildOfSelected | SceneDecorationFlags_IsHovered | SceneDecorationFlags_IsChildOfHovered))
+            {
+                AABB const decAABB = WorldpaceAABB(dec);
+                maybeRimWorldspaceAABB = maybeRimWorldspaceAABB ? Union(*maybeRimWorldspaceAABB, decAABB) : decAABB;
+            }
+        }
+
+        if (!maybeRimWorldspaceAABB)
+        {
+            // the scene does not contain any rim-highlighted geometry
+            return std::nullopt;
+        }
+
+        // figure out if the rims actually appear on the screen and (roughly) where
+        std::optional<Rect> maybeRimRectNDC = AABBToScreenNDCRect(
+            *maybeRimWorldspaceAABB,
+            m_Camera.getViewMatrix(),
+            m_Camera.getProjectionMatrix(),
+            m_Camera.getNearClippingPlane(),
+            m_Camera.getFarClippingPlane()
+        );
+
+        if (!maybeRimRectNDC)
+        {
+            // the scene contains rim-highlighted geometry, but it isn't on-screen
+            return std::nullopt;
+        }
+        // else: the scene contains rim-highlighted geometry that may appear on screen
+
+        // configure the solid-colored rim highlights texture
+        RenderTextureDescriptor desc{params.dimensions};
+        desc.setAntialiasingLevel(params.samples);
+        desc.setColorFormat(RenderTextureFormat::RED);
+        EmplaceOrReformat(m_MaybeRimsTexture, desc);
+
+        // the rims appear on the screen and are loosely bounded (in NDC) by the returned rect
+        Rect& rimRectNDC = *maybeRimRectNDC;
+
+        // compute rim thickness in each direction (aspect ratio might not be 1:1)
+        glm::vec2 const rimThicknessNDC = 2.0f*m_RimThickness / glm::vec2{params.dimensions};
+
+        // expand by the rim thickness, so that the output has space for the rims
+        rimRectNDC = osc::Expand(rimRectNDC, rimThicknessNDC);
+
+        // constrain the result of the above to within clip space
+        rimRectNDC = osc::Clamp(rimRectNDC, {-1.0f, -1.0f}, {1.0f, 1.0f});
+
+        // compute rim rectangle in texture coordinates
+        Rect const rimRectUV = NdcRectToScreenspaceViewportRect(rimRectNDC, Rect{{}, {1.0f, 1.0f}});
+
+        // draw all selected geometry in a solid color
+        for (SceneDecoration const& dec : decorations)
+        {
+            if (dec.flags & (SceneDecorationFlags_IsSelected | SceneDecorationFlags_IsChildOfSelected))
+            {
+                Graphics::DrawMesh(*dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsSelectedColor);
+            }
+            else if (dec.flags & (SceneDecorationFlags_IsHovered | SceneDecorationFlags_IsChildOfHovered))
+            {
+                Graphics::DrawMesh(*dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsHoveredColor);
+            }
+        }
+
+        // render solid-color to a seperate texture
+        glm::vec4 const originalBgColor = m_Camera.getBackgroundColor();
+        m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
+        m_Camera.swapTexture(m_MaybeRimsTexture);
+        m_Camera.render();
+        m_Camera.swapTexture(m_MaybeRimsTexture);
+        m_Camera.setBackgroundColor(originalBgColor);
+
+        // compute where the quad needs to be drawn in the scene
+        Transform quadMeshToRimsQuad;
+        quadMeshToRimsQuad.position = {osc::Midpoint(rimRectNDC), 0.0f};
+        quadMeshToRimsQuad.scale = {0.5f * osc::Dimensions(rimRectNDC), 1.0f};
+
+        // then add a quad to the scene render queue that samples from the seperate texture
+        // via an edge-detection kernel
+        m_EdgeDetectorMaterial.setRenderTexture("uScreenTexture", *m_MaybeRimsTexture);
+        m_EdgeDetectorMaterial.setVec4("uRimRgba", params.rimColor);
+        m_EdgeDetectorMaterial.setVec2("uRimThickness", 0.5f*rimThicknessNDC);
+        m_EdgeDetectorMaterial.setVec2("uTextureOffset", rimRectUV.p1);
+        m_EdgeDetectorMaterial.setVec2("uTextureScale", osc::Dimensions(rimRectUV));
+
+        return RimHighlights
+        {
+            m_QuadMesh,
+            m_Camera.getInverseViewProjectionMatrix() * ToMat4(quadMeshToRimsQuad),
+            m_EdgeDetectorMaterial
+        };
+    }
+
     Material m_SceneColoredElementsMaterial
     {
         ShaderCache::get("shaders/SceneShader.vert", "shaders/SceneShader.frag")
     };
-
-    Material m_SceneTransparentColoredElementsMaterial = m_SceneColoredElementsMaterial;
 
     Material m_SceneTexturedElementsMaterial
     {
@@ -316,9 +319,9 @@ private:
     glm::vec2 m_RimThickness = {1.0f, 1.0f};
     MaterialPropertyBlock m_RimsSelectedColor;
     MaterialPropertyBlock m_RimsHoveredColor;
+    std::optional<RenderTexture> m_MaybeRimsTexture;
 
     // outputs
-    std::optional<RenderTexture> m_MaybeSelectedTexture;
     std::optional<RenderTexture> m_MaybeRenderTexture{RenderTextureDescriptor{glm::ivec2{1, 1}}};
 };
 

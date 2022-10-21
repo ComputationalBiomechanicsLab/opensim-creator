@@ -1331,6 +1331,11 @@ float osc::AspectRatio(Rect const& r) noexcept
     return dims.x/dims.y;
 }
 
+glm::vec2 osc::Midpoint(Rect const& r) noexcept
+{
+    return 0.5f * (r.p1 + r.p2);
+}
+
 osc::Rect osc::Expand(Rect const& rect, float amt) noexcept
 {
     Rect rv
@@ -1525,7 +1530,7 @@ osc::AABB osc::Union(AABB const& a, AABB const& b) noexcept
     return AABB
     {
         Min(a.min, b.min),
-        Max(a.max, b.max)
+        Max(a.max, b.max),
     };
 }
 
