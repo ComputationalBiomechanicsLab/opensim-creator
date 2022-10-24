@@ -32,7 +32,7 @@ struct FontTexture final {
 
 static FontTexture CreateFontTexture()
 {
-    std::vector<uint8_t> const ttfData = osc::App::slurpBinary("c:/windows/fonts/times.ttf");
+    std::vector<uint8_t> const ttfData = osc::App::get().slurpBinaryResource("fonts/Ruda-Bold.ttf");
 
     // get number of fonts in the TTF file
     int numFonts = stbtt_GetNumberOfFonts(ttfData.data());
