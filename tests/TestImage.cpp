@@ -12,7 +12,7 @@
 TEST(Image, CanLoadImageResource)
 {
     auto config = osc::Config::load();
-    auto path = config->getResourceDir() / "awesomeface.png";
+    auto path = config->getResourceDir() / "textures" / "awesomeface.png";
     
     osc::Image::Load(path);  // shouldn't throw
 }
@@ -20,7 +20,7 @@ TEST(Image, CanLoadImageResource)
 TEST(Image, LoadedImageHasExpectedDimensionsEtc)
 {
     std::unique_ptr<osc::Config> config = osc::Config::load();
-    std::filesystem::path path = config->getResourceDir() / "awesomeface.png";
+    std::filesystem::path path = config->getResourceDir() / "textures" / "awesomeface.png";
 
     osc::Image image = osc::Image::Load(path);
 
@@ -35,7 +35,7 @@ TEST(Image, LoadedImageHasExpectedDimensionsEtc)
 TEST(Image, CanMoveConstruct)
 {
     std::unique_ptr<osc::Config> config = osc::Config::load();
-    std::filesystem::path path = config->getResourceDir() / "awesomeface.png";
+    std::filesystem::path path = config->getResourceDir() / "textures" / "awesomeface.png";
     osc::Image src = osc::Image::Load(path);
     osc::Image image{std::move(src)};
 
