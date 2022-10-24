@@ -78,6 +78,7 @@ public:
         m_RimsHoveredColor.setVec4("uDiffuseColor", {0.4, 0.0f, 0.0f, 1.0f});
         m_EdgeDetectorMaterial.setTransparent(true);
         m_EdgeDetectorMaterial.setDepthTested(false);
+        m_SceneTexturedElementsMaterial.setTransparent(true);
     }
 
     glm::ivec2 getDimensions() const
@@ -161,7 +162,6 @@ public:
                 m_SceneTexturedElementsMaterial.setVec3("uLightColor", params.lightColor);
                 m_SceneTexturedElementsMaterial.setFloat("uNear", m_Camera.getNearClippingPlane());
                 m_SceneTexturedElementsMaterial.setFloat("uFar", m_Camera.getFarClippingPlane());
-                m_SceneTexturedElementsMaterial.setTransparent(true);  // fog
 
                 Transform const t = GetFloorTransform(params.floorLocation, params.fixupScaleFactor);
 
