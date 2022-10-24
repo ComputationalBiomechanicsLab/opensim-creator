@@ -599,7 +599,7 @@ namespace gl
     template<typename T, GLenum TBuffer, GLenum Usage>
     class Buffer : public TypedBufferHandle<TBuffer> {
         using size_type = uint32_t;
-        size_type m_BufferSz;
+        size_type m_BufferSz = 0;
 
     public:
         static_assert(std::is_trivially_copyable<T>::value);
@@ -656,6 +656,24 @@ namespace gl
         template<size_t N>
         void assign(T const (&arr)[N]) {
             assign(arr, N);
+        }
+
+        void resize(size_t n)
+        {
+            if (n > std::numeric_limits<size_type>::max()) {
+                throw OpenGlException{"tried to resize a buffer that is bigger than the max supported size: if you need buffer this big, contact the developer"};
+            }
+
+            if (n > m_BufferSz)
+            {
+                BindBuffer(*this);
+                BufferData(BufferType, n * sizeof(T), nullptr, Usage);
+                m_BufferSz = static_cast<size_type>(n);
+            }
+            else
+            {
+                // already big enough
+            }
         }
     };
 
