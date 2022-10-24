@@ -241,7 +241,7 @@ namespace
     // motions that were parsed from the file
     struct LoadedMotion final {
         std::vector<ColumnDescription> ColumnDescriptions;
-        size_t RowStride = 0;
+        size_t RowStride = 1;
         std::vector<double> Data;
     };
 
