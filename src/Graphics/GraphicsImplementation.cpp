@@ -587,6 +587,11 @@ namespace osc
             InstancingState& ins
         );
 
+        static void UnbindFromInstancedAttributes(
+            Shader::Impl const& shaderImpl,
+            InstancingState& ins
+        );
+
         static void HandleBatchWithSameMesh(
             nonstd::span<RenderObject const>,
             std::optional<InstancingState>& ins
@@ -4265,6 +4270,34 @@ void osc::GraphicsBackend::BindToInstancedAttributes(
     }
 }
 
+// helper: unbinds from instanced attributes (per-drawcall)
+void osc::GraphicsBackend::UnbindFromInstancedAttributes(
+    Shader::Impl const& shaderImpl,
+    InstancingState& ins)
+{
+    if (shaderImpl.m_MaybeInstancedModelMatAttr)
+    {
+        if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == ShaderType::Mat4)
+        {
+            gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->Location};
+            gl::DisableVertexAttribArray(mmtxAttr);
+        }
+    }
+    if (shaderImpl.m_MaybeInstancedNormalMatAttr)
+    {
+        if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat4)
+        {
+            gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
+            gl::DisableVertexAttribArray(mmtxAttr);
+        }
+        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat3)
+        {
+            gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
+            gl::DisableVertexAttribArray(mmtxAttr);
+        }
+    }
+}
+
 // helper: draw a batch of render objects that have the same material, material block, and mesh
 void osc::GraphicsBackend::HandleBatchWithSameMesh(
     nonstd::span<RenderObject const> els,
@@ -4274,8 +4307,6 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
 
     auto& meshImpl = const_cast<Mesh::Impl&>(*els.front().mesh.m_Impl);
     Shader::Impl& shaderImpl = *els.front().material.m_Impl->m_Shader.m_Impl;
-
-    gl::BindVertexArray(meshImpl.updVertexArray());
 
     // if the shader requires per-instance uniforms, then we *have* to render one
     // instance at a time
@@ -4309,6 +4340,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
             }
 
             OSC_PERF("GraphicsBackend::HandleBatchWithSameMesh/single");
+            gl::BindVertexArray(meshImpl.updVertexArray());
             if (ins)
             {
                 BindToInstancedAttributes(shaderImpl, *ins);
@@ -4316,13 +4348,16 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
             meshImpl.drawInstanced(1);
             if (ins)
             {
+                UnbindFromInstancedAttributes(shaderImpl, *ins);
                 ins->BaseOffset += 1 * ins->Stride;
             }
+            gl::BindVertexArray();
         }
     }
     else
     {
         OSC_PERF("GraphicsBackend::HandleBatchWithSameMesh/instanced");
+        gl::BindVertexArray(meshImpl.updVertexArray());
         if (ins)
         {
             BindToInstancedAttributes(shaderImpl, *ins);
@@ -4330,10 +4365,11 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
         meshImpl.drawInstanced(els.size());
         if (ins)
         {
+            UnbindFromInstancedAttributes(shaderImpl, *ins);
             ins->BaseOffset += els.size() * ins->Stride;
         }
+        gl::BindVertexArray();
     }
-    gl::BindVertexArray();
 }
 
 // helper: draw a batch of render objects that have the same material and material block
