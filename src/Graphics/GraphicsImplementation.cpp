@@ -363,11 +363,11 @@ namespace
             osc::Material const& material_,
             std::optional<osc::MaterialPropertyBlock> maybePropBlock_) :
 
-            mesh{mesh_},
-            transform{transform_},
-            worldMidpoint{osc::TransformPoint(transform_, mesh.getMidpoint())},
             material{material_},
-            maybePropBlock{std::move(maybePropBlock_)}
+            mesh{mesh_},
+            propBlock{maybePropBlock_ ? std::move(maybePropBlock_).value() : osc::MaterialPropertyBlock{}},
+            transform{transform_},
+            worldMidpoint{material.getTransparent() ? osc::TransformPoint(transform_, mesh.getMidpoint()) : glm::vec3{}}
         {
         }
 
@@ -377,19 +377,19 @@ namespace
             osc::Material const& material_,
             std::optional<osc::MaterialPropertyBlock> maybePropBlock_) :
 
-            mesh{mesh_},
-            transform{transform_},
-            worldMidpoint{transform_ * glm::vec4{mesh.getMidpoint(), 1.0f}},
             material{material_},
-            maybePropBlock{std::move(maybePropBlock_)}
+            mesh{mesh_},
+            propBlock{maybePropBlock_ ? std::move(maybePropBlock_).value() : osc::MaterialPropertyBlock{}},
+            transform{transform_},
+            worldMidpoint{material.getTransparent() ? transform_ * glm::vec4{mesh.getMidpoint(), 1.0f} : glm::vec3{}}
         {
         }
 
+        osc::Material material;
         osc::Mesh mesh;
+        osc::MaterialPropertyBlock propBlock;  // note: can be the "empty" property block
         Mat4OrTransform transform;
         glm::vec3 worldMidpoint;
-        osc::Material material;
-        std::optional<osc::MaterialPropertyBlock> maybePropBlock;
     };
 
     // returns true if the render object is opaque
@@ -455,15 +455,15 @@ namespace
     };
 
     struct RenderObjectHasMaterialPropertyBlock final {
-        RenderObjectHasMaterialPropertyBlock(std::optional<osc::MaterialPropertyBlock> const& mpb) : m_Mpb{&mpb} {}
+        RenderObjectHasMaterialPropertyBlock(osc::MaterialPropertyBlock const& mpb) : m_Mpb{&mpb} {}
 
         bool operator()(RenderObject const& ro) const
         {
-            return ro.maybePropBlock == *m_Mpb;
+            return ro.propBlock == *m_Mpb;
         }
 
     private:
-        std::optional<osc::MaterialPropertyBlock> const* m_Mpb;
+        osc::MaterialPropertyBlock const* m_Mpb;
     };
 
     struct RenderObjectHasMesh final {
@@ -495,7 +495,7 @@ namespace
                 auto propBatchStart = materialBatchStart;
                 while (propBatchStart != materialBatchEnd)
                 {
-                    auto const propBatchEnd = std::partition(propBatchStart, materialBatchEnd, RenderObjectHasMaterialPropertyBlock{propBatchStart->maybePropBlock});
+                    auto const propBatchEnd = std::partition(propBatchStart, materialBatchEnd, RenderObjectHasMaterialPropertyBlock{propBatchStart->propBlock});
 
                     // then sub-sub-sub-partition by mesh
                     auto meshBatchStart = propBatchStart;
@@ -2296,9 +2296,10 @@ private:
     robin_hood::unordered_map<std::string, MaterialValue> m_Values;
 };
 
-osc::MaterialPropertyBlock::MaterialPropertyBlock() :
-    m_Impl{std::make_shared<Impl>()}
+osc::MaterialPropertyBlock::MaterialPropertyBlock()
 {
+    static std::shared_ptr<Impl> g_EmptyPropertyBlockImpl = std::make_shared<Impl>();
+    m_Impl = g_EmptyPropertyBlockImpl;
 }
 
 osc::MaterialPropertyBlock::MaterialPropertyBlock(MaterialPropertyBlock const&) = default;
@@ -4394,15 +4395,12 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
     robin_hood::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
     // bind property block variables (if applicable)
-    if (els.front().maybePropBlock)
+    for (auto const& [name, value] : els.front().propBlock.m_Impl->m_Values)
     {
-        for (auto const& [name, value] : els.front().maybePropBlock->m_Impl->m_Values)
+        auto const it = uniforms.find(name);
+        if (it != uniforms.end())
         {
-            auto const it = uniforms.find(name);
-            if (it != uniforms.end())
-            {
-                TryBindMaterialValueToShaderElement(it->second, value, &textureSlot);
-            }
+            TryBindMaterialValueToShaderElement(it->second, value, &textureSlot);
         }
     }
 
@@ -4598,7 +4596,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
     auto batchIt = els.begin();
     while (batchIt != els.end())
     {
-        auto batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasMaterialPropertyBlock{batchIt->maybePropBlock});
+        auto batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasMaterialPropertyBlock{batchIt->propBlock});
         HandleBatchWithSameMaterialPropertyBlock({batchIt, batchEnd}, textureSlot, maybeInstances);
         batchIt = batchEnd;
     }
