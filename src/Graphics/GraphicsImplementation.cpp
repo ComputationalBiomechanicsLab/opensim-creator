@@ -551,50 +551,22 @@ namespace
         gl::Texture2D SingleSampledDepthBuffer;
     };
 
-    struct BufferElementDescription final {
-        GLuint AttributeIndex;
-        GLint NumComponents;
-        GLenum ComponentType;
-        GLboolean IsNormalized;
-        GLsizei Stride;
-        size_t Offset;
-    };
-
     // the OpenGL data associated with an osc::Mesh
     struct MeshOpenGLData final {
         osc::UID DataVersion;
         gl::TypedBufferHandle<GL_ARRAY_BUFFER> ArrayBuffer;
         gl::TypedBufferHandle<GL_ELEMENT_ARRAY_BUFFER> IndicesBuffer;
-        std::vector<BufferElementDescription> BufferDescription;
+        gl::VertexArray VAO;
     };
 
-    void BindAndEnable(MeshOpenGLData const& data)
-    {
-        gl::BindBuffer(GL_ARRAY_BUFFER, data.ArrayBuffer);
-        gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.IndicesBuffer);
-
-        for (BufferElementDescription const& desc : data.BufferDescription)
-        {
-            glVertexAttribPointer(desc.AttributeIndex, desc.NumComponents, desc.ComponentType, desc.IsNormalized, desc.Stride, reinterpret_cast<void*>(static_cast<uintptr_t>(desc.Offset)));
-            glEnableVertexAttribArray(desc.AttributeIndex);
-        }
-    }
-
-    void UnbindAndDisable(MeshOpenGLData const& data)
-    {
-        for (BufferElementDescription const& desc : data.BufferDescription)
-        {
-            glDisableVertexAttribArray(desc.AttributeIndex);
-        }
-    }
-
     struct InstancingState final {
-        InstancingState(size_t stride) :
-            Stride{std::move(stride)}
+        InstancingState(gl::ArrayBuffer<float, GL_STREAM_DRAW>& buf_, size_t stride_) :
+            Buf{buf_},
+            Stride{std::move(stride_)}
         {
         }
 
-        gl::ArrayBuffer<float> Buf;
+        gl::ArrayBuffer<float, GL_STREAM_DRAW>& Buf;
         size_t Stride = 0;
         size_t BaseOffset = 0;
     };
@@ -2644,13 +2616,13 @@ public:
 
     // non-PIMPL methods
 
-    MeshOpenGLData const& getOpenGLData()
+    gl::VertexArray& updVertexArray()
     {
         if (!*m_MaybeGPUBuffers || (*m_MaybeGPUBuffers)->DataVersion != *m_Version)
         {
             uploadToGPU();
         }
-        return **m_MaybeGPUBuffers;
+        return (*m_MaybeGPUBuffers)->VAO;
     }
 
     void draw()
@@ -2798,59 +2770,33 @@ private:
         gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.IndicesBuffer);
         gl::BufferData(GL_ELEMENT_ARRAY_BUFFER, eboNumBytes, m_IndicesData.data(), GL_STATIC_DRAW);
 
-        // then define the buffer's GPU-side format (for later shader binding)
-        buffers.BufferDescription.clear();
-        size_t offset = 0;
-        {
-            // vertex description
-            auto& desc = buffers.BufferDescription.emplace_back();
-            desc.AttributeIndex = SHADER_LOC_VERTEX_POSITION;
-            desc.NumComponents = 3;
-            desc.ComponentType = GL_FLOAT;
-            desc.IsNormalized = GL_FALSE;
-            desc.Stride = byteStride;
-            desc.Offset = offset;
-            offset += 3 * sizeof(float);
-        }
-
+        // configure mesh-level VAO
+        gl::BindVertexArray(buffers.VAO);
+        gl::BindBuffer(GL_ARRAY_BUFFER, buffers.ArrayBuffer);
+        gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.IndicesBuffer);
+        int64_t offset = 0;
+        glVertexAttribPointer(SHADER_LOC_VERTEX_POSITION, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
+        glEnableVertexAttribArray(SHADER_LOC_VERTEX_POSITION);
+        offset += 3 * sizeof(float);
         if (hasNormals)
         {
-            // add normals description
-            auto& desc = buffers.BufferDescription.emplace_back();
-            desc.AttributeIndex = SHADER_LOC_VERTEX_NORMAL;
-            desc.NumComponents = 3;
-            desc.ComponentType = GL_FLOAT;
-            desc.IsNormalized = GL_FALSE;
-            desc.Stride = byteStride;
-            desc.Offset = offset;
+            glVertexAttribPointer(SHADER_LOC_VERTEX_NORMAL, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
+            glEnableVertexAttribArray(SHADER_LOC_VERTEX_NORMAL);
             offset += 3 * sizeof(float);
         }
-
         if (hasTexCoords)
         {
-            // add texcoords description
-            auto& desc = buffers.BufferDescription.emplace_back();
-            desc.AttributeIndex = SHADER_LOC_VERTEX_TEXCOORD01;
-            desc.NumComponents = 2;
-            desc.ComponentType = GL_FLOAT;
-            desc.IsNormalized = GL_FALSE;
-            desc.Stride = byteStride;
-            desc.Offset = offset;
+            glVertexAttribPointer(SHADER_LOC_VERTEX_TEXCOORD01, 2, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
+            glEnableVertexAttribArray(SHADER_LOC_VERTEX_TEXCOORD01);
             offset += 2 * sizeof(float);
         }
-
         if (hasColors)
         {
-            // add colors description
-            auto& desc = buffers.BufferDescription.emplace_back();
-            desc.AttributeIndex = SHADER_LOC_COLOR;
-            desc.NumComponents = 4;
-            desc.ComponentType = GL_UNSIGNED_BYTE;
-            desc.IsNormalized = GL_TRUE;
-            desc.Stride = byteStride;
-            desc.Offset = offset;
-            offset += 4 * sizeof(uint8_t);
+            glVertexAttribPointer(SHADER_LOC_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
+            glEnableVertexAttribArray(SHADER_LOC_COLOR);
+            offset += 4 * sizeof(unsigned char);
         }
+        gl::BindVertexArray();
 
         buffers.DataVersion = *m_Version;
     }
@@ -4059,6 +4005,10 @@ public:
 
     // a generic quad mesh: two triangles covering NDC @ Z=0
     Mesh m_QuadMesh = GenTexturedQuad();
+
+    // storage for instance data
+    std::vector<float> m_InstanceCPUBuffer;
+    gl::ArrayBuffer<float, GL_STREAM_DRAW> m_InstanceGPUBuffer;
 };
 
 static std::unique_ptr<osc::GraphicsContext::Impl> g_GraphicsContextImpl = nullptr;
@@ -4250,7 +4200,10 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
         }
 
         // write the instance data into a CPU-side buffer
-        std::unique_ptr<float[]> const buf{new float[els.size() * (byteStride/sizeof(float))]};
+
+        OSC_PERF("GraphicsBackend::UploadInstanceData");
+        std::vector<float>& buf = g_GraphicsContextImpl->m_InstanceCPUBuffer;
+        buf.resize(els.size() * (byteStride/sizeof(float)));
 
         size_t floatOffset = 0;
         for (RenderObject const& el : els)
@@ -4282,10 +4235,8 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
         }
         OSC_ASSERT(sizeof(float)*floatOffset == els.size() * byteStride);
 
-        OSC_PERF("GraphicsBackend::UploadInstanceData");
-        gl::ArrayBuffer<float>& vbo = maybeInstancingState.emplace(byteStride).Buf;
-        gl::BindBuffer(vbo);
-        gl::BufferData(vbo.BufferType, sizeof(float) * floatOffset, buf.get(), GL_STREAM_DRAW);
+        auto& vbo = maybeInstancingState.emplace(g_GraphicsContextImpl->m_InstanceGPUBuffer, byteStride).Buf;
+        vbo.assign(buf.data(), floatOffset);
     }
     return maybeInstancingState;
 }
@@ -4368,14 +4319,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
     auto& meshImpl = const_cast<Mesh::Impl&>(*els.front().mesh.m_Impl);
     Shader::Impl& shaderImpl = *els.front().material.m_Impl->m_Shader.m_Impl;
 
-    // in OpenGL 3.3, you *need* a VAO in order to render
-    //
-    // the rendering pipeline does this as late as possible to ensure that the
-    // VAO isn't polluted with b.s. from other drawcalls (it can cause all kinds
-    // of nasty bugs)
-    gl::VertexArray vao;
-    gl::BindVertexArray(vao);
-    BindAndEnable(meshImpl.getOpenGLData());
+    gl::BindVertexArray(meshImpl.updVertexArray());
 
     // if the shader requires per-instance uniforms, then we *have* to render one
     // instance at a time
@@ -4434,7 +4378,6 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
         }
     }
 
-    UnbindAndDisable(meshImpl.getOpenGLData());
     gl::BindVertexArray();
 }
 
