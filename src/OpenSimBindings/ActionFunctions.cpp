@@ -1047,6 +1047,18 @@ bool osc::ActionReassignComponentSocket(
         return false;
     }
 
+    // HOTFIX for #382
+    //
+    // OpenSim can segfault if certain types of circular joint connections to `/ground` are made.
+    // This early-out error just ensures that OpenSim Creator isn't nuked by that OpenSim bug
+    //
+    // issue #3299 in opensim-core
+    if (socketName == "child_frame" && &connectee == &uim.getModel().getGround())
+    {
+        error = "Error: you cannot assign a joint's child frame to ground: this is a known bug in OpenSim (see issue #382 in ComputationalBiomechanicsLab/opensim-creator and issue #3299 in opensim-org/opensim-core)";
+        return false;
+    }
+
     UID const oldVersion = uim.getModelVersion();
 
     OpenSim::Model& mutModel = uim.updModel();

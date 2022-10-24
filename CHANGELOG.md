@@ -12,6 +12,8 @@ All notable changes to this project will be documented here. The format is based
 - Added runtime bounds-checking to mesh indices (#460)
 - Socket reassignment failure now fully rolls back the model to a pre-assignment state (previously:
   would erroneously hold some changes, #382)
+- Hotfixed assigning a joint's `child_frame` socket to `/ground` to now cause an error message,
+  rather than entirely crashing the application (#389 and opensim-org/opensim-core #3299)
 
 
 ## [0.3.0] - 2022/09/14
