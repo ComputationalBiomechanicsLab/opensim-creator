@@ -551,13 +551,42 @@ namespace
         gl::Texture2D SingleSampledDepthBuffer;
     };
 
+    struct BufferElementDescription final {
+        GLuint AttributeIndex;
+        GLint NumComponents;
+        GLenum ComponentType;
+        GLboolean IsNormalized;
+        GLsizei Stride;
+        size_t Offset;
+    };
+
     // the OpenGL data associated with an osc::Mesh
     struct MeshOpenGLData final {
         osc::UID DataVersion;
         gl::TypedBufferHandle<GL_ARRAY_BUFFER> ArrayBuffer;
         gl::TypedBufferHandle<GL_ELEMENT_ARRAY_BUFFER> IndicesBuffer;
-        gl::VertexArray VAO;
+        std::vector<BufferElementDescription> BufferDescription;
     };
+
+    void BindAndEnable(MeshOpenGLData const& data)
+    {
+        gl::BindBuffer(GL_ARRAY_BUFFER, data.ArrayBuffer);
+        gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.IndicesBuffer);
+
+        for (BufferElementDescription const& desc : data.BufferDescription)
+        {
+            glVertexAttribPointer(desc.AttributeIndex, desc.NumComponents, desc.ComponentType, desc.IsNormalized, desc.Stride, reinterpret_cast<void*>(static_cast<uintptr_t>(desc.Offset)));
+            glEnableVertexAttribArray(desc.AttributeIndex);
+        }
+    }
+
+    void UnbindAndDisable(MeshOpenGLData const& data)
+    {
+        for (BufferElementDescription const& desc : data.BufferDescription)
+        {
+            glDisableVertexAttribArray(desc.AttributeIndex);
+        }
+    }
 
     struct InstancingState final {
         InstancingState(size_t stride) :
@@ -879,6 +908,7 @@ private:
             m_Pixels.data()
         );
         glGenerateMipmap((*m_MaybeGPUTexture)->Texture.type);
+        gl::BindTexture();
     }
 
     void setTextureParams(Texture2DOpenGLData& bufs)
@@ -889,6 +919,7 @@ private:
         gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, ToGLTextureTextureWrapParam(m_WrapModeW));
         gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, ToGLTextureFilterParam(m_FilterMode));
         gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, ToGLTextureFilterParam(m_FilterMode));
+        gl::BindTexture();
         bufs.TextureParamsVersion = m_TextureParamsVersion;
     }
 
@@ -1291,6 +1322,7 @@ private:
             dimensions.x,
             dimensions.y
         );
+        gl::BindRenderBuffer();
 
         // setup MSXAAed depth buffer
         gl::BindRenderBuffer(bufs.MultisampledDepthBuffer);
@@ -1301,6 +1333,7 @@ private:
             dimensions.x,
             dimensions.y
         );
+        gl::BindRenderBuffer();
 
         // setup MSXAAed framebuffer (color+depth)
         gl::BindFramebuffer(GL_FRAMEBUFFER, bufs.MultisampledFBO);
@@ -1325,6 +1358,7 @@ private:
         gl::TexParameteri(bufs.SingleSampledColorBuffer.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         gl::TexParameteri(bufs.SingleSampledColorBuffer.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         gl::TexParameteri(bufs.SingleSampledColorBuffer.type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        gl::BindTexture();
 
         // setup single-sampled depth buffer (texture, so it can be sampled as part of compositing a UI)
         //
@@ -1346,6 +1380,7 @@ private:
         gl::TexParameteri(bufs.SingleSampledDepthBuffer.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         gl::TexParameteri(bufs.SingleSampledDepthBuffer.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         gl::TexParameteri(bufs.SingleSampledDepthBuffer.type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        gl::BindTexture();
 
         // setup single-sampled framebuffer (color+depth)
         gl::BindFramebuffer(GL_FRAMEBUFFER, bufs.SingleSampledFBO);
@@ -2609,13 +2644,13 @@ public:
 
     // non-PIMPL methods
 
-    gl::VertexArray& updVertexArray()
+    MeshOpenGLData const& getOpenGLData()
     {
         if (!*m_MaybeGPUBuffers || (*m_MaybeGPUBuffers)->DataVersion != *m_Version)
         {
             uploadToGPU();
         }
-        return (*m_MaybeGPUBuffers)->VAO;
+        return **m_MaybeGPUBuffers;
     }
 
     void draw()
@@ -2758,38 +2793,64 @@ private:
                 }
             }
         }
+
         size_t const eboNumBytes = m_NumIndices * (m_IndicesAre32Bit ? sizeof(uint32_t) : sizeof(uint16_t));
         gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.IndicesBuffer);
         gl::BufferData(GL_ELEMENT_ARRAY_BUFFER, eboNumBytes, m_IndicesData.data(), GL_STATIC_DRAW);
 
-        // create VAO, specifying layout etc.
-        gl::BindVertexArray(buffers.VAO);
-        gl::BindBuffer(GL_ARRAY_BUFFER, buffers.ArrayBuffer);
-        gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.IndicesBuffer);
-
-        int64_t offset = 0;
-        glVertexAttribPointer(SHADER_LOC_VERTEX_POSITION, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
-        glEnableVertexAttribArray(SHADER_LOC_VERTEX_POSITION);
-        offset += 3 * sizeof(float);
-        if (hasNormals)
+        // then define the buffer's GPU-side format (for later shader binding)
+        buffers.BufferDescription.clear();
+        size_t offset = 0;
         {
-            glVertexAttribPointer(SHADER_LOC_VERTEX_NORMAL, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
-            glEnableVertexAttribArray(SHADER_LOC_VERTEX_NORMAL);
+            // vertex description
+            auto& desc = buffers.BufferDescription.emplace_back();
+            desc.AttributeIndex = SHADER_LOC_VERTEX_POSITION;
+            desc.NumComponents = 3;
+            desc.ComponentType = GL_FLOAT;
+            desc.IsNormalized = GL_FALSE;
+            desc.Stride = byteStride;
+            desc.Offset = offset;
             offset += 3 * sizeof(float);
         }
+
+        if (hasNormals)
+        {
+            // add normals description
+            auto& desc = buffers.BufferDescription.emplace_back();
+            desc.AttributeIndex = SHADER_LOC_VERTEX_NORMAL;
+            desc.NumComponents = 3;
+            desc.ComponentType = GL_FLOAT;
+            desc.IsNormalized = GL_FALSE;
+            desc.Stride = byteStride;
+            desc.Offset = offset;
+            offset += 3 * sizeof(float);
+        }
+
         if (hasTexCoords)
         {
-            glVertexAttribPointer(SHADER_LOC_VERTEX_TEXCOORD01, 2, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
-            glEnableVertexAttribArray(SHADER_LOC_VERTEX_TEXCOORD01);
+            // add texcoords description
+            auto& desc = buffers.BufferDescription.emplace_back();
+            desc.AttributeIndex = SHADER_LOC_VERTEX_TEXCOORD01;
+            desc.NumComponents = 2;
+            desc.ComponentType = GL_FLOAT;
+            desc.IsNormalized = GL_FALSE;
+            desc.Stride = byteStride;
+            desc.Offset = offset;
             offset += 2 * sizeof(float);
         }
+
         if (hasColors)
         {
-            glVertexAttribPointer(SHADER_LOC_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
-            glEnableVertexAttribArray(SHADER_LOC_COLOR);
-            offset += 4 * sizeof(unsigned char);
+            // add colors description
+            auto& desc = buffers.BufferDescription.emplace_back();
+            desc.AttributeIndex = SHADER_LOC_COLOR;
+            desc.NumComponents = 4;
+            desc.ComponentType = GL_UNSIGNED_BYTE;
+            desc.IsNormalized = GL_TRUE;
+            desc.Stride = byteStride;
+            desc.Offset = offset;
+            offset += 4 * sizeof(uint8_t);
         }
-        gl::BindVertexArray();
 
         buffers.DataVersion = *m_Version;
     }
@@ -4223,9 +4284,8 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
 
         OSC_PERF("GraphicsBackend::UploadInstanceData");
         gl::ArrayBuffer<float>& vbo = maybeInstancingState.emplace(byteStride).Buf;
-        vbo.assign(buf.get(), floatOffset);
-        //gl::BindBuffer(vbo);
-        //gl::BufferData(vbo.BufferType, sizeof(float) * floatOffset, buf.get(), GL_STREAM_DRAW);
+        gl::BindBuffer(vbo);
+        gl::BufferData(vbo.BufferType, sizeof(float) * floatOffset, buf.get(), GL_STREAM_DRAW);
     }
     return maybeInstancingState;
 }
@@ -4308,6 +4368,15 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
     auto& meshImpl = const_cast<Mesh::Impl&>(*els.front().mesh.m_Impl);
     Shader::Impl& shaderImpl = *els.front().material.m_Impl->m_Shader.m_Impl;
 
+    // in OpenGL 3.3, you *need* a VAO in order to render
+    //
+    // the rendering pipeline does this as late as possible to ensure that the
+    // VAO isn't polluted with b.s. from other drawcalls (it can cause all kinds
+    // of nasty bugs)
+    gl::VertexArray vao;
+    gl::BindVertexArray(vao);
+    BindAndEnable(meshImpl.getOpenGLData());
+
     // if the shader requires per-instance uniforms, then we *have* to render one
     // instance at a time
     if (shaderImpl.m_MaybeModelMatUniform || shaderImpl.m_MaybeNormalMatUniform)
@@ -4339,8 +4408,6 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
                 }
             }
 
-            OSC_PERF("GraphicsBackend::HandleBatchWithSameMesh/single");
-            gl::BindVertexArray(meshImpl.updVertexArray());
             if (ins)
             {
                 BindToInstancedAttributes(shaderImpl, *ins);
@@ -4351,13 +4418,10 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
                 UnbindFromInstancedAttributes(shaderImpl, *ins);
                 ins->BaseOffset += 1 * ins->Stride;
             }
-            gl::BindVertexArray();
         }
     }
     else
     {
-        OSC_PERF("GraphicsBackend::HandleBatchWithSameMesh/instanced");
-        gl::BindVertexArray(meshImpl.updVertexArray());
         if (ins)
         {
             BindToInstancedAttributes(shaderImpl, *ins);
@@ -4368,8 +4432,10 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
             UnbindFromInstancedAttributes(shaderImpl, *ins);
             ins->BaseOffset += els.size() * ins->Stride;
         }
-        gl::BindVertexArray();
     }
+
+    UnbindAndDisable(meshImpl.getOpenGLData());
+    gl::BindVertexArray();
 }
 
 // helper: draw a batch of render objects that have the same material and material block
