@@ -92,6 +92,9 @@ namespace osc
     // returns a normal vector of the supplied triangle points (i.e. (b-a) x (c-a))
     glm::vec3 TriangleNormal(glm::vec3 const&, glm::vec3 const&, glm::vec3 const&) noexcept;
 
+    // returns the adjugate matrix of the given 3x3 input
+    glm::mat3 ToAdjugateMatrix(glm::mat3 const&) noexcept;
+
     // returns a normal matrix created from the supplied xform matrix
     glm::mat3 ToNormalMatrix(glm::mat4 const&) noexcept;
 

@@ -1220,24 +1220,70 @@ glm::vec3 osc::TriangleNormal(glm::vec3 const& a, glm::vec3 const& b, glm::vec3 
     return glm::normalize(perpendiular);
 }
 
+glm::mat3 osc::ToAdjugateMatrix(glm::mat3 const& m) noexcept
+{
+    // google: "Adjugate Matrix": it's related to the cofactor matrix and is
+    // related to the inverse of a matrix through:
+    //
+    //     inverse(M) = Adjugate(M) / determinant(M);
+
+    glm::mat3 rv;
+    rv[0][0] = + (m[1][1] * m[2][2] - m[2][1] * m[1][2]);
+    rv[1][0] = - (m[1][0] * m[2][2] - m[2][0] * m[1][2]);
+    rv[2][0] = + (m[1][0] * m[2][1] - m[2][0] * m[1][1]);
+    rv[0][1] = - (m[0][1] * m[2][2] - m[2][1] * m[0][2]);
+    rv[1][1] = + (m[0][0] * m[2][2] - m[2][0] * m[0][2]);
+    rv[2][1] = - (m[0][0] * m[2][1] - m[2][0] * m[0][1]);
+    rv[0][2] = + (m[0][1] * m[1][2] - m[1][1] * m[0][2]);
+    rv[1][2] = - (m[0][0] * m[1][2] - m[1][0] * m[0][2]);
+    rv[2][2] = + (m[0][0] * m[1][1] - m[1][0] * m[0][1]);
+    return rv;
+}
+
 glm::mat3 osc::ToNormalMatrix(glm::mat4 const& m) noexcept
 {
+    // "On the Transformation of Surface Normals" by Andrew Glassner (1987)
+    //
+    // "One option is to replace the inverse with the adjoint of M. The
+    //  adjoint is attractive because it always exists, even when M is
+    //  singular. The inverse and the adjoint are related by:
+    //
+    //      inverse(M) = adjoint(M) / determinant(M);
+    //
+    //  so, when the inverse exists, they only differ by a constant factor.
+    //  Therefore, using adjoint(M) instead of inverse(M) only affects the
+    //  magnitude of the resulting normal vector. Normal vectors have to
+    //  be normalized after mutiplication with a normal matrix anyway, so
+    //  nothing is lost"
+
     glm::mat3 const topLeft{m};
-    return glm::inverse(glm::transpose(topLeft));
+    return ToAdjugateMatrix(glm::transpose(topLeft));
 }
 
 glm::mat3 osc::ToNormalMatrix(glm::mat4x3 const& m) noexcept
 {
+    // "On the Transformation of Surface Normals" by Andrew Glassner (1987)
+    //
+    // "One option is to replace the inverse with the adjoint of M. The
+    //  adjoint is attractive because it always exists, even when M is
+    //  singular. The inverse and the adjoint are related by:
+    //
+    //      inverse(M) = adjoint(M) / determinant(M);
+    //
+    //  so, when the inverse exists, they only differ by a constant factor.
+    //  Therefore, using adjoint(M) instead of inverse(M) only affects the
+    //  magnitude of the resulting normal vector. Normal vectors have to
+    //  be normalized after mutiplication with a normal matrix anyway, so
+    //  nothing is lost"
+
     glm::mat3 const topLeft{m};
-    return glm::inverse(glm::transpose(topLeft));
+    return ToAdjugateMatrix(glm::transpose(topLeft));
 }
 
 glm::mat4 osc::ToNormalMatrix4(glm::mat4 const& m) noexcept
 {
     return ToNormalMatrix(m);
 }
-
-#include <glm/gtx/vector_angle.hpp>
 
 glm::mat4 osc::Dir1ToDir2Xform(glm::vec3 const& a, glm::vec3 const& b) noexcept
 {
