@@ -34,7 +34,7 @@
 #include <variant>
 #include <vector>
 
-// 2D TPS algorithm stuff
+// 3D TPS algorithm stuff
 //
 // most of the background behind this is discussed in issue #467. For redundancy's sake, here
 // are some of the references used to write this implementation:
@@ -44,28 +44,28 @@
 // - blog explanation #2: https://khanhha.github.io/posts/Thin-Plate-Splines-Warping/
 namespace
 {
-    // a single source-to-destination landmark pair in 2D space
+    // a single source-to-destination landmark pair in 3D space
     //
     // this is typically what the user/caller defines
-    struct LandmarkPair2D final {
-        glm::vec2 src;
-        glm::vec2 dest;
+    struct LandmarkPair3D final {
+        glm::vec3 src;
+        glm::vec3 dest;
     };
 
-    // pretty-prints `LandmarkPair2D`
-    std::ostream& operator<<(std::ostream& o, LandmarkPair2D const& p)
+    // pretty-prints `LandmarkPair3D`
+    std::ostream& operator<<(std::ostream& o, LandmarkPair3D const& p)
     {
         using osc::operator<<;
-        o << "LandmarkPair2D{src = " << p.src << ", dest = " << p.dest << '}';
+        o << "LandmarkPair3D{src = " << p.src << ", dest = " << p.dest << '}';
         return o;
     }
 
     // this is effectviely the "U" term in the TPS algorithm literature (which is usually U(r) = r^2 * log(r^2))
     //
-    // i.e. U(||pi - p||) in the literature is equivalent to `RadialBasisFunction2D(pi, p)` here
-    float RadialBasisFunction2D(glm::vec2 controlPoint, glm::vec2 p)
+    // i.e. U(||pi - p||) in the literature is equivalent to `RadialBasisFunction3D(pi, p)` here
+    float RadialBasisFunction3D(glm::vec3 controlPoint, glm::vec3 p)
     {
-        glm::vec2 const diff = controlPoint - p;
+        glm::vec3 const diff = controlPoint - p;
         float const r2 = glm::dot(diff, diff);
 
         if (r2 == 0.0f)
@@ -80,43 +80,44 @@ namespace
         }
     }
 
-    // a single non-affine term of the 2D TPS equation
+    // a single non-affine term of the 3D TPS equation
     //
-    // i.e. in `f(p) = a1 + a2*p.x + a3*p.y + SUM{ wi * U(||controlPoint - p||) }` this encodes
+    // i.e. in `f(p) = a1 + a2*p.x + a3*p.y + a4*p.z + SUM{ wi * U(||controlPoint - p||) }` this encodes
     //      the `wi` and `controlPoint` parts of that equation
-    struct TPSNonAffineTerm2D final {
-        glm::vec2 weight;
-        glm::vec2 controlPoint;
+    struct TPSNonAffineTerm3D final {
+        glm::vec3 weight;
+        glm::vec3 controlPoint;
 
-        TPSNonAffineTerm2D(glm::vec2 weight_, glm::vec2 controlPoint_) :
+        TPSNonAffineTerm3D(glm::vec3 const& weight_, glm::vec3 const& controlPoint_) :
             weight{weight_},
             controlPoint{controlPoint_}
         {
         }
     };
 
-    // pretty-prints `TPSNonAffineTerm2D`
-    std::ostream& operator<<(std::ostream& o, TPSNonAffineTerm2D const& wt)
+    // pretty-prints `TPSNonAffineTerm3D`
+    std::ostream& operator<<(std::ostream& o, TPSNonAffineTerm3D const& wt)
     {
         using osc::operator<<;
-        return o << "TPSNonAffineTerm2D{weight = " << wt.weight << ", controlPoint = " << wt.controlPoint << '}';
+        return o << "TPSNonAffineTerm3D{weight = " << wt.weight << ", controlPoint = " << wt.controlPoint << '}';
     }
 
-    // all coefficients in the 2D TPS equation
+    // all coefficients in the 3D TPS equation
     //
-    // i.e. these are the a1, a2, a3, and w's (+ control points) terms of the equation
-    struct TPSCoefficients2D final {
-        glm::vec2 a1 = {0.0f, 0.0f};
-        glm::vec2 a2 = {1.0f, 0.0f};
-        glm::vec2 a3 = {0.0f, 1.0f};
-        std::vector<TPSNonAffineTerm2D> weights;
+    // i.e. these are the a1, a2, a3, a4, and w's (+ control points) terms of the equation
+    struct TPSCoefficients3D final {
+        glm::vec3 a1 = {0.0f, 0.0f, 0.0f};
+        glm::vec3 a2 = {1.0f, 0.0f, 0.0f};
+        glm::vec3 a3 = {0.0f, 1.0f, 0.0f};
+        glm::vec3 a4 = {0.0f, 0.0f, 1.0f};
+        std::vector<TPSNonAffineTerm3D> weights;
     };
 
-    // pretty-prints TPSCoefficients2D
-    std::ostream& operator<<(std::ostream& o, TPSCoefficients2D const& coefs)
+    // pretty-prints TPSCoefficients3D
+    std::ostream& operator<<(std::ostream& o, TPSCoefficients3D const& coefs)
     {
         using osc::operator<<;
-        o << "TPSCoefficients2D{a1 = " << coefs.a1 << ", a2 = " << coefs.a2 << ", a3 = " << coefs.a3;
+        o << "TPSCoefficients3D{a1 = " << coefs.a1 << ", a2 = " << coefs.a2 << ", a3 = " << coefs.a3 << ", a4 = " << coefs.a4;
         for (size_t i = 0; i < coefs.weights.size(); ++i)
         {
             o << ", w" << i << " = " << coefs.weights[i];
@@ -126,35 +127,35 @@ namespace
     }
 
     // evaluates the TPS equation with the given coefficients and input point
-    glm::vec2 Evaluate(TPSCoefficients2D const& coefs, glm::vec2 p)
+    glm::vec3 Evaluate(TPSCoefficients3D const& coefs, glm::vec3 const& p)
     {
-        // this implementation effectively evaluates both `fx(x, y)` and `fy(x, y)` at
-        // the same time, because `TPSCoefficients2D` stores the X and Y variants of the
-        // coefficients together in memory (as `vec2`s)
+        // this implementation effectively evaluates `fx(x, y, z)`, `fy(x, y, z)`, and
+        // `fz(x, y, z)` the same time, because `TPSCoefficients3D` stores the X, Y, and Z
+        // variants of the coefficients together in memory (as `vec3`s)
 
-        // compute affine terms (a1 + a2*x + a3*y)
-        glm::vec2 rv = coefs.a1 + coefs.a2*p.x + coefs.a3*p.y;
+        // compute affine terms (a1 + a2*x + a3*y + a4*z)
+        glm::vec3 rv = coefs.a1 + coefs.a2*p.x + coefs.a3*p.y + coefs.a4*p.z;
 
         // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
-        for (TPSNonAffineTerm2D const& wt : coefs.weights)
+        for (TPSNonAffineTerm3D const& wt : coefs.weights)
         {
-            rv += wt.weight * RadialBasisFunction2D(wt.controlPoint, p);
+            rv += wt.weight * RadialBasisFunction3D(wt.controlPoint, p);
         }
 
         return rv;
     }
 
-    // computes all coefficients of the TPS equation (a1, a2, a3, and all the w's)
-    TPSCoefficients2D CalcCoefficients(nonstd::span<LandmarkPair2D const> landmarkPairs)
+    // computes all coefficients of the 3D TPS equation (a1, a2, a3, a4, and all the w's)
+    TPSCoefficients3D CalcCoefficients(nonstd::span<LandmarkPair3D const> landmarkPairs)
     {
         // this is based on the Bookstein Thin Plate Sline (TPS) warping algorithm
         //
         // 1. A TPS warp is (simplifying here) a linear combination:
         //
-        //     f(p) = a1 + a2*p.x + a3*p.y + SUM{ wi * U(||controlPoint_i - p||) }
+        //     f(p) = a1 + a2*p.x + a3*p.y + a4*p.z + SUM{ wi * U(||controlPoint_i - p||) }
         //
         //    which can be represented as a matrix multiplication between the terms (1, p.x, p.y,
-        //    U(||cpi - p||)) and the coefficients (a1, a2, a3, wi..)
+        //    p.z, U(||cpi - p||)) and the coefficients (a1, a2, a3, a4, wi..)
         //
         // 2. The caller provides "landmark pairs": these are (effectively) the input
         //    arguments and the expected output
@@ -181,14 +182,14 @@ namespace
         //        |U(p10) U(p11) U(p12)  ...  |
         //        | ...    ...    ...   U(pnn)|
         //
-        //     - P is a n-row 3-column matrix containing the number 1 (the constant term),
-        //       x, and y (effectively, the p term):
+        //     - P is a n-row 4-column matrix containing the number 1 (the constant term),
+        //       x, y, and z (effectively, the p term):
         //
-        //       |1 x1 y1|
-        //       |1 x2 y2|
+        //       |1 x1 y1 z1|
+        //       |1 x2 y2 z2|
         //
         //     - PT is the transpose of P
-        //     - 0 is the zero matrix (padding)
+        //     - 0 is a 4x4 zero matrix (padding)
         //
         // 6. Use a linear solver to solve L * [w a] = [v o] to yield [w a]
         // 8. Return the coefficients, [w a]
@@ -198,21 +199,21 @@ namespace
         if (numPairs == 0)
         {
             // edge-case: there are no pairs, so return an identity-like transform
-            return TPSCoefficients2D{};
+            return TPSCoefficients3D{};
         }
 
         // construct matrix L
-        SimTK::Matrix L(numPairs + 3, numPairs + 3);
+        SimTK::Matrix L(numPairs + 4, numPairs + 4);
 
         // populate the K part of matrix L (upper-left)
         for (int row = 0; row < numPairs; ++row)
         {
             for (int col = 0; col < numPairs; ++col)
             {
-                glm::vec2 const& pi = landmarkPairs[row].src;
-                glm::vec2 const& pj = landmarkPairs[col].src;
+                glm::vec3 const& pi = landmarkPairs[row].src;
+                glm::vec3 const& pj = landmarkPairs[col].src;
 
-                L(row, col) = RadialBasisFunction2D(pi, pj);
+                L(row, col) = RadialBasisFunction3D(pi, pj);
             }
         }
 
@@ -225,6 +226,7 @@ namespace
                 L(row, pStartColumn)     = 1.0;
                 L(row, pStartColumn + 1) = landmarkPairs[row].src.x;
                 L(row, pStartColumn + 2) = landmarkPairs[row].src.y;
+                L(row, pStartColumn + 3) = landmarkPairs[row].src.z;
             }
         }
 
@@ -237,6 +239,7 @@ namespace
                 L(ptStartRow, col)     = 1.0;
                 L(ptStartRow + 1, col) = landmarkPairs[col].src.x;
                 L(ptStartRow + 2, col) = landmarkPairs[col].src.y;
+                L(ptStartRow + 3, col) = landmarkPairs[col].src.z;
             }
         }
 
@@ -245,9 +248,9 @@ namespace
             int const zeroStartRow = numPairs;
             int const zeroStartCol = numPairs;
 
-            for (int row = 0; row < 3; ++row)
+            for (int row = 0; row < 4; ++row)
             {
-                for (int col = 0; col < 3; ++col)
+                for (int col = 0; col < 4; ++col)
                 {
                     L(zeroStartRow + row, zeroStartCol + col) = 0.0;
                 }
@@ -255,67 +258,72 @@ namespace
         }
 
         // construct "result" vectors Vx and Vy (these hold the landmark destinations)
-        SimTK::Vector Vx(numPairs + 3, 0.0);
-        SimTK::Vector Vy(numPairs + 3, 0.0);
+        SimTK::Vector Vx(numPairs + 4, 0.0);
+        SimTK::Vector Vy(numPairs + 4, 0.0);
+        SimTK::Vector Vz(numPairs + 4, 0.0);
         for (int row = 0; row < numPairs; ++row)
         {
             Vx[row] = landmarkPairs[row].dest.x;
             Vy[row] = landmarkPairs[row].dest.y;
+            Vz[row] = landmarkPairs[row].dest.z;
         }
 
         // construct coefficient vectors that will receive the solver's result
-        SimTK::Vector Cx(numPairs + 3, 0.0);
-        SimTK::Vector Cy(numPairs + 3, 0.0);
+        SimTK::Vector Cx(numPairs + 4, 0.0);
+        SimTK::Vector Cy(numPairs + 4, 0.0);
+        SimTK::Vector Cz(numPairs + 4, 0.0);
 
         // solve `L*Cx = Vx` and `L*Cy = Vy` for `Cx` and `Cy` (the coefficients)
         SimTK::FactorQTZ F(L);
         F.solve(Vx, Cx);
         F.solve(Vy, Cy);
+        F.solve(Vz, Cz);
 
-        // the coefficient vectors now contain (e.g. for X): [w1, w2, ... wx, a0, a1x, a1y]
+        // the coefficient vectors now contain (e.g. for X): [w1, w2, ... wx, a0, a1x, a1y a1z]
         //
         // extract them into the return value
 
-        TPSCoefficients2D rv;
+        TPSCoefficients3D rv;
 
-        // populate affine a1, a2, a3 terms
-        rv.a1 = {Cx[numPairs],   Cy[numPairs]  };
-        rv.a2 = {Cx[numPairs+1], Cy[numPairs+1]};
-        rv.a3 = {Cx[numPairs+2], Cy[numPairs+2]};
+        // populate affine a1, a2, a3, and a4 terms
+        rv.a1 = {Cx[numPairs],   Cy[numPairs]  , Cz[numPairs]  };
+        rv.a2 = {Cx[numPairs+1], Cy[numPairs+1], Cz[numPairs+1]};
+        rv.a3 = {Cx[numPairs+2], Cy[numPairs+2], Cz[numPairs+2]};
+        rv.a4 = {Cx[numPairs+3], Cy[numPairs+3], Cz[numPairs+3]};
 
         // populate `wi` coefficients (+ control points, needed at evaluation-time)
         rv.weights.reserve(numPairs);
         for (int i = 0; i < numPairs; ++i)
         {
-            glm::vec2 weight = {Cx[i], Cy[i]};
-            glm::vec2 controlPoint = landmarkPairs[i].src;
+            glm::vec3 const weight = {Cx[i], Cy[i], Cz[i]};
+            glm::vec3 const controlPoint = landmarkPairs[i].src;
             rv.weights.emplace_back(weight, controlPoint);
         }
 
         return rv;
     }
 
-    // a class that wraps the 2D TPS algorithm with a basic interface for transforming
+    // a class that wraps the 3D TPS algorithm with a basic interface for transforming
     // points
-    class ThinPlateWarper2D final {
+    class ThinPlateWarper3D final {
     public:
-        ThinPlateWarper2D(nonstd::span<LandmarkPair2D const> landmarkPairs) :
+        ThinPlateWarper3D(nonstd::span<LandmarkPair3D const> landmarkPairs) :
             m_Coefficients{CalcCoefficients(landmarkPairs)}
         {
         }
 
-        glm::vec2 transform(glm::vec2 p) const
+        glm::vec3 transform(glm::vec3 const& p) const
         {
             return Evaluate(m_Coefficients, p);
         }
 
     private:
-        TPSCoefficients2D m_Coefficients;
+        TPSCoefficients3D m_Coefficients;
     };
 
-    // returns a mesh that is the equivalent of applying the 2D TPS warp to all
+    // returns a mesh that is the equivalent of applying the 3D TPS warp to all
     // vertices of the input mesh
-    osc::Mesh ApplyThinPlateWarpToMesh(ThinPlateWarper2D const& t, osc::Mesh const& mesh)
+    osc::Mesh ApplyThinPlateWarpToMesh(ThinPlateWarper3D const& t, osc::Mesh const& mesh)
     {
         // load source points
         nonstd::span<glm::vec3 const> srcPoints = mesh.getVerts();
@@ -325,7 +333,7 @@ namespace
         destPoints.reserve(srcPoints.size());
         for (glm::vec3 const& srcPoint : srcPoints)
         {
-            destPoints.emplace_back(t.transform(srcPoint), srcPoint.z);
+            destPoints.emplace_back(t.transform(srcPoint));
         }
 
         // upload the new points into the returned mesh
@@ -335,31 +343,11 @@ namespace
     }
 }
 
-// GUI stuff
-namespace
-{
-    // holds the user's current mouse click state:
-    //
-    // - initial (the user did nothing with their mouse yet)
-    // - first click (the user clicked the source of a landmark pair and the UI is waiting for the destination)
-    struct GUIInitialMouseState final {};
-    struct GUIFirstClickMouseState final { glm::vec2 srcNDCPos; };
-    using GUIMouseState = std::variant<GUIInitialMouseState, GUIFirstClickMouseState>;
-}
-
 class osc::TPS3DTab::Impl final {
 public:
 
     Impl(TabHost* parent) : m_Parent{std::move(parent)}
     {
-        m_Material.setTexture("uTextureSampler", m_BoxTexture);
-        m_WireframeMaterial.setVec4("uColor", {0.0f, 0.0f, 0.0f, 0.15f});
-        m_WireframeMaterial.setTransparent(true);
-        m_WireframeMaterial.setWireframeMode(true);
-        m_WireframeMaterial.setDepthTested(false);
-        m_Camera.setViewMatrix(glm::mat4{1.0f});
-        m_Camera.setProjectionMatrix(glm::mat4{1.0f});
-        m_Camera.setBackgroundColor({1.0f, 1.0f, 1.0f, 1.0f});
     }
 
     UID getID() const
@@ -406,68 +394,6 @@ public:
     {
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-        ImGui::Begin("Input");
-        {
-            glm::vec2 const windowDims = ImGui::GetContentRegionAvail();
-            float const minDim = glm::min(windowDims.x, windowDims.y);
-            glm::ivec2 const texDims = glm::ivec2{minDim, minDim};
-
-            renderMesh(m_InputGrid, texDims, m_InputRender);
-
-            // draw rendered texture via ImGui
-            ImGuiImageHittestResult const ht = osc::DrawTextureAsImGuiImageAndHittest(*m_InputRender, texDims);
-
-            // draw any 2D overlays etc.
-            renderOverlayElements(ht);
-            if (ht.isHovered)
-            {
-                renderMouseUIElements(ht);
-            }
-        }
-
-        ImGui::End();
-
-        glm::vec2 outputWindowPos;
-        glm::vec2 outputWindowDims;
-        ImGui::Begin("Output");
-        {
-            outputWindowPos = ImGui::GetCursorScreenPos();
-            outputWindowDims = ImGui::GetContentRegionAvail();
-            float const minDim = glm::min(outputWindowDims.x, outputWindowDims.y);
-            glm::ivec2 const texDims = glm::ivec2{minDim, minDim};
-
-            {
-                // apply blending factor, compute warp, apply to grid
-
-                std::vector<LandmarkPair2D> pairs = m_LandmarkPairs;
-                for (LandmarkPair2D& p : pairs)
-                {
-                    p.dest = p.src + m_BlendingFactor*(p.dest - p.src);
-                }
-                ThinPlateWarper2D warper{pairs};
-                m_OutputGrid = ApplyThinPlateWarpToMesh(warper, m_InputGrid);
-            }
-
-            renderMesh(m_OutputGrid, texDims, m_OutputRender);
-
-            // draw rendered texture via ImGui
-            osc::DrawTextureAsImGuiImage(*m_OutputRender, texDims);
-        }
-        ImGui::End();
-
-        // draw scubber overlay
-        {
-            float leftPadding = 10.0f;
-            float bottomPadding = 10.0f;
-            float panelHeight = 50.0f;
-            ImGui::SetNextWindowPos({ outputWindowPos.x + leftPadding, outputWindowPos.y + outputWindowDims.y - panelHeight - bottomPadding });
-            ImGui::SetNextWindowSize({ outputWindowDims.x - leftPadding, panelHeight });
-            ImGui::Begin("##scrubber", nullptr, osc::GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs);
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-            ImGui::SliderFloat("##blend", &m_BlendingFactor, 0.0f, 1.0f);
-            ImGui::End();
-        }
-
         // draw log panel (debugging)
         m_LogViewerPanel.draw();
     }
@@ -475,116 +401,10 @@ public:
 
 private:
 
-    // render the given mesh as-is to the given output render texture
-    void renderMesh(Mesh const& mesh, glm::ivec2 dims, std::optional<RenderTexture>& out)
-    {
-        RenderTextureDescriptor desc{dims};
-        desc.setAntialiasingLevel(App::get().getMSXAASamplesRecommended());
-        out.emplace(desc);
-        osc::Graphics::DrawMesh(mesh, osc::Transform{}, m_Material, m_Camera);
-        osc::Graphics::DrawMesh(mesh, osc::Transform{}, m_WireframeMaterial, m_Camera);
-        m_Camera.swapTexture(out);
-        m_Camera.render();
-        m_Camera.swapTexture(out);
-
-        OSC_ASSERT(out.has_value() && "the camera should've given the render texture back to the caller");
-    }
-
-    // render any 2D overlays
-    void renderOverlayElements(ImGuiImageHittestResult const& ht)
-    {
-        ImDrawList* const drawlist = ImGui::GetWindowDrawList();
-
-        // render all fully-established landmark pairs
-        for (LandmarkPair2D const& p : m_LandmarkPairs)
-        {
-            glm::vec2 const p1 = ht.rect.p1 + (Dimensions(ht.rect) * NDCPointToTopLeftRelPos(p.src));
-            glm::vec2 const p2 = ht.rect.p1 + (Dimensions(ht.rect) * NDCPointToTopLeftRelPos(p.dest));
-
-            drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
-            drawlist->AddRectFilled(p1 - 12.0f, p1 + 12.0f, m_SrcSquareColor);
-            drawlist->AddCircleFilled(p2, 10.0f, m_DestCircleColor);
-        }
-
-        // render any currenty-placing landmark pairs in a more-faded color
-        if (ht.isHovered && std::holds_alternative<GUIFirstClickMouseState>(m_MouseState))
-        {
-            GUIFirstClickMouseState const& st = std::get<GUIFirstClickMouseState>(m_MouseState);
-
-            glm::vec2 const p1 = ht.rect.p1 + (Dimensions(ht.rect) * NDCPointToTopLeftRelPos(st.srcNDCPos));
-            glm::vec2 const p2 = ImGui::GetMousePos();
-
-            drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
-            drawlist->AddRectFilled(p1 - 12.0f, p1 + 12.0f, m_SrcSquareColor);
-            drawlist->AddCircleFilled(p2, 10.0f, m_DestCircleColor);
-        }
-    }
-
-    // render any mouse-related overlays
-    void renderMouseUIElements(ImGuiImageHittestResult const& ht)
-    {
-        std::visit(osc::Overload
-            {
-                [this, &ht](GUIInitialMouseState const& st) { renderMouseUIElements(ht, st); },
-                [this, &ht](GUIFirstClickMouseState const& st) { renderMouseUIElements(ht, st); },
-            }, m_MouseState);
-    }
-
-    // render any mouse-related overlays for when the user hasn't clicked yet
-    void renderMouseUIElements(ImGuiImageHittestResult const& ht, GUIInitialMouseState st)
-    {
-        glm::vec2 const mouseScreenPos = ImGui::GetMousePos();
-        glm::vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
-        glm::vec2 const mouseImageRelPos = mouseImagePos / Dimensions(ht.rect);
-        glm::vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
-
-        osc::DrawTooltipBodyOnly(StreamToString(mouseImageNDCPos).c_str());
-
-        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-        {
-            m_MouseState = GUIFirstClickMouseState{mouseImageNDCPos};
-        }
-    }
-
-    // render any mouse-related overlays for when the user has clicked once
-    void renderMouseUIElements(ImGuiImageHittestResult const& ht, GUIFirstClickMouseState st)
-    {
-        glm::vec2 const mouseScreenPos = ImGui::GetMousePos();
-        glm::vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
-        glm::vec2 const mouseImageRelPos = mouseImagePos / Dimensions(ht.rect);
-        glm::vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
-
-        osc::DrawTooltipBodyOnly((StreamToString(mouseImageNDCPos) + "*").c_str());
-
-        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-        {
-            m_LandmarkPairs.push_back({st.srcNDCPos, mouseImageNDCPos});
-            m_MouseState = GUIInitialMouseState{};
-        }
-    }
-
     // tab data
     UID m_ID;
     std::string m_Name = ICON_FA_BEZIER_CURVE " TPS3DTab";
     TabHost* m_Parent;
-
-    // TPS algorithm state
-    GUIMouseState m_MouseState = GUIInitialMouseState{};
-    std::vector<LandmarkPair2D> m_LandmarkPairs;
-    float m_BlendingFactor = 1.0f;
-
-    // GUI state (rendering, colors, etc.)
-    Texture2D m_BoxTexture = osc::LoadTexture2DFromImageResource("textures/container.jpg");
-    Mesh m_InputGrid = GenNxMTriangleQuad2DGrid({50, 50});
-    Mesh m_OutputGrid = m_InputGrid;
-    Material m_Material = Material{App::shaders().get("shaders/Textured.vert", "shaders/Textured.frag")};
-    Material m_WireframeMaterial = Material{App::shaders().get("shaders/SolidColor.vert", "shaders/SolidColor.frag")};
-    Camera m_Camera;
-    std::optional<RenderTexture> m_InputRender;
-    std::optional<RenderTexture> m_OutputRender;
-    ImU32 m_SrcSquareColor = ImGui::ColorConvertFloat4ToU32({1.0f, 0.0f, 0.0f, 1.0f});
-    ImU32 m_DestCircleColor = ImGui::ColorConvertFloat4ToU32({0.0f, 1.0f, 0.0f, 1.0f});
-    ImU32 m_ConnectionLineColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
 
     // log panel (handy for debugging)
     LogViewerPanel m_LogViewerPanel{"Log"};
