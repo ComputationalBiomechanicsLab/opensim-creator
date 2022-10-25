@@ -114,8 +114,8 @@ namespace osc
         }
 
     private:
-        template<typename T, typename U>
-        friend bool operator==(Cow<T> const&, Cow<U> const&) noexcept;
+        template<typename U, typename V>
+        friend bool operator==(Cow<U> const&, Cow<V> const&) noexcept;
 
         CowData<T>* m_Data = nullptr;
     };
@@ -126,8 +126,8 @@ namespace osc
         return Cow<T>(std::forward<Args>(args)...);
     }
 
-    template<typename T, typename U>
-    inline bool operator==(Cow<T> const& a, Cow<U> const& b) noexcept
+    template<typename U, typename V>
+    inline bool operator==(Cow<U> const& a, Cow<V> const& b) noexcept
     {
         return a.m_Data == b.m_Data;
     }
