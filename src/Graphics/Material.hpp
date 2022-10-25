@@ -3,6 +3,7 @@
 #include "src/Graphics/RenderTexture.hpp"
 #include "src/Graphics/Shader.hpp"
 #include "src/Graphics/Texture2D.hpp"
+#include "src/Utils/Cow.hpp"
 
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x4.hpp>
@@ -12,7 +13,6 @@
 #include <nonstd/span.hpp>
 
 #include <iosfwd>
-#include <memory>
 #include <optional>
 #include <string_view>
 
@@ -77,19 +77,36 @@ namespace osc
         bool getWireframeMode() const;
         void setWireframeMode(bool);
 
+        friend void swap(Material& a, Material& b)
+        {
+            swap(a.m_Impl, b.m_Impl);
+        }
+
     private:
         friend class GraphicsBackend;
-        friend bool operator==(Material const&, Material const&);
-        friend bool operator!=(Material const&, Material const&);
-        friend bool operator<(Material const&, Material const&);
+        friend bool operator==(Material const&, Material const&) noexcept;
+        friend bool operator!=(Material const&, Material const&) noexcept;
+        friend bool operator<(Material const&, Material const&) noexcept;
         friend std::ostream& operator<<(std::ostream&, Material const&);
 
         class Impl;
-        std::shared_ptr<Impl> m_Impl;
+        Cow<Impl> m_Impl;
     };
 
-    bool operator==(Material const&, Material const&);
-    bool operator!=(Material const&, Material const&);
-    bool operator<(Material const&, Material const&);
+    inline bool operator==(Material const& a, Material const& b) noexcept
+    {
+        return a.m_Impl == b.m_Impl;
+    }
+
+    inline bool operator!=(Material const& a, Material const& b) noexcept
+    {
+        return a.m_Impl != b.m_Impl;
+    }
+
+    inline bool operator<(Material const& a, Material const& b) noexcept
+    {
+        return a.m_Impl < b.m_Impl;
+    }
+
     std::ostream& operator<<(std::ostream&, Material const&);
 }

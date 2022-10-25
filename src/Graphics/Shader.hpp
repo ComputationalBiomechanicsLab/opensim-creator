@@ -1,10 +1,10 @@
 #pragma once
 
 #include "src/Graphics/ShaderType.hpp"
+#include "src/Utils/Cow.hpp"
 #include "src/Utils/CStringView.hpp"
 
 #include <iosfwd>
-#include <memory>
 #include <optional>
 #include <string>
 
@@ -28,19 +28,36 @@ namespace osc
         std::string const& getPropertyName(int propertyIndex) const;
         ShaderType getPropertyType(int propertyIndex) const;
 
+        friend void swap(Shader& a, Shader& b) noexcept
+        {
+            swap(a.m_Impl, b.m_Impl);
+        }
+
     private:
         friend class GraphicsBackend;
-        friend bool operator==(Shader const&, Shader const&);
-        friend bool operator!=(Shader const&, Shader const&);
-        friend bool operator<(Shader const&, Shader const&);
+        friend bool operator==(Shader const&, Shader const&) noexcept;
+        friend bool operator!=(Shader const&, Shader const&) noexcept;
+        friend bool operator<(Shader const&, Shader const&) noexcept;
         friend std::ostream& operator<<(std::ostream&, Shader const&);
 
         class Impl;
-        std::shared_ptr<Impl> m_Impl;
+        Cow<Impl> m_Impl;
     };
 
-    bool operator==(Shader const&, Shader const&);
-    bool operator!=(Shader const&, Shader const&);
-    bool operator<(Shader const&, Shader const&);
+    inline bool operator==(Shader const& a, Shader const& b) noexcept
+    {
+        return a.m_Impl == b.m_Impl;
+    }
+
+    inline bool operator!=(Shader const& a, Shader const& b) noexcept
+    {
+        return a.m_Impl != b.m_Impl;
+    }
+
+    inline bool operator<(Shader const& a, Shader const& b) noexcept
+    {
+        return a.m_Impl < b.m_Impl;
+    }
+
     std::ostream& operator<<(std::ostream&, Shader const&);
 }

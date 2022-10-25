@@ -5,6 +5,7 @@
 #include "src/Graphics/RenderTexture.hpp"
 #include "src/Graphics/RenderTextureDescriptor.hpp"
 #include "src/Maths/Rect.hpp"
+#include "src/Utils/Cow.hpp"
 
 #include <glm/gtx/quaternion.hpp>
 #include <glm/mat4x4.hpp>
@@ -13,7 +14,6 @@
 
 #include <cstdint>
 #include <iosfwd>
-#include <memory>
 #include <optional>
 
 // note: implementation is in `GraphicsImplementation.cpp`
@@ -127,19 +127,36 @@ namespace osc
         // the rendered geometry
         void render();
 
+        friend void swap(Camera& a, Camera& b) noexcept
+        {
+            swap(a.m_Impl, b.m_Impl);
+        }
+
     private:
         friend class GraphicsBackend;
-        friend bool operator==(Camera const&, Camera const&);
-        friend bool operator!=(Camera const&, Camera const&);
-        friend bool operator<(Camera const&, Camera const&);
+        friend bool operator==(Camera const&, Camera const&) noexcept;
+        friend bool operator!=(Camera const&, Camera const&) noexcept;
+        friend bool operator<(Camera const&, Camera const&) noexcept;
         friend std::ostream& operator<<(std::ostream&, Camera const&);
 
         class Impl;
-        std::shared_ptr<Impl> m_Impl;
+        Cow<Impl> m_Impl;
     };
 
-    bool operator==(Camera const&, Camera const&);
-    bool operator!=(Camera const&, Camera const&);
-    bool operator<(Camera const&, Camera const&);
+    inline bool operator==(Camera const& a, Camera const& b) noexcept
+    {
+        return a.m_Impl == b.m_Impl;
+    }
+
+    inline bool operator!=(Camera const& a, Camera const& b) noexcept
+    {
+        return a.m_Impl != b.m_Impl;
+    }
+
+    inline bool operator<(Camera const& a, Camera const& b) noexcept
+    {
+        return a.m_Impl < b.m_Impl;
+    }
+
     std::ostream& operator<<(std::ostream&, Camera const&);
 }

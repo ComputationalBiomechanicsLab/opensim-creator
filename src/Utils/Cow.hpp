@@ -4,12 +4,14 @@
 #include <cstdint>
 #include <utility>
 
+#include "src/Platform/Log.hpp"
+
 namespace osc
 {
     template<typename T>
     struct CowData final {
         template<typename... Args>
-        CowData(Args... args) : data{std::forward<Args>(args)...} {}
+        CowData(Args&&... args) : data{std::forward<Args>(args)...} {}
 
         T data;
         std::atomic<int64_t> owners = 1;
@@ -19,7 +21,7 @@ namespace osc
     class Cow final {
     public:
         template<typename... Args>
-        Cow(Args...) :
+        Cow(Args&&... args) :
             m_Data{new CowData<T>{std::forward<Args>(args)...}}
         {
         }
@@ -40,8 +42,6 @@ namespace osc
 
         Cow& operator=(Cow const& tmp) noexcept
         {
-            using std::swap;
-
             Cow cpy{tmp};
             swap(cpy, *this);
             return *this;
@@ -80,7 +80,8 @@ namespace osc
             }
             else
             {
-                m_Data = new CowData<T>{m_Data->data};
+                Cow copy{m_Data->data};
+                swap(copy, *this);
                 return &m_Data->data;
             }
         }
@@ -90,6 +91,11 @@ namespace osc
             return *get();
         }
 
+        T const* operator->() const noexcept
+        {
+            return get();
+        }
+
         int64_t use_count() const noexcept
         {
             return m_Data ? m_Data->owners : 0;
@@ -97,12 +103,19 @@ namespace osc
 
         operator bool() const noexcept
         {
-            return get() != nullptr;
+            return m_Data != nullptr;
+        }
+
+        friend void swap(Cow& a, Cow& b) noexcept
+        {
+            auto* tmp = a.m_Data;
+            a.m_Data = b.m_Data;
+            b.m_Data = tmp;
         }
 
     private:
         template<typename T, typename U>
-        friend bool operator==(Cow<T> const&, Cow<U> const&);
+        friend bool operator==(Cow<T> const&, Cow<U> const&) noexcept;
 
         CowData<T>* m_Data = nullptr;
     };
@@ -114,7 +127,7 @@ namespace osc
     }
 
     template<typename T, typename U>
-    inline bool operator==(Cow<T> const& a, Cow<U> const& b)
+    inline bool operator==(Cow<T> const& a, Cow<U> const& b) noexcept
     {
         return a.m_Data == b.m_Data;
     }

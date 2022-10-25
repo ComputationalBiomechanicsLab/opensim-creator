@@ -2,6 +2,7 @@
 
 #include "src/Graphics/MeshIndicesView.hpp"
 #include "src/Graphics/MeshTopography.hpp"
+#include "src/Utils/Cow.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -9,7 +10,6 @@
 
 #include <cstdint>
 #include <iosfwd>
-#include <memory>
 #include <vector>
 
 namespace osc { struct AABB; }
@@ -44,7 +44,7 @@ namespace osc
         nonstd::span<glm::vec2 const> getTexCoords() const;
         void setTexCoords(nonstd::span<glm::vec2 const>);
 
-        nonstd::span<Rgba32 const> getColors();
+        nonstd::span<Rgba32 const> getColors() const;
         void setColors(nonstd::span<Rgba32 const>);
 
         MeshIndicesView getIndices() const;
@@ -62,19 +62,36 @@ namespace osc
 
         void clear();
 
+        friend void swap(Mesh& a, Mesh& b) noexcept
+        {
+            swap(a.m_Impl, b.m_Impl);
+        }
+
     private:
         friend class GraphicsBackend;
-        friend bool operator==(Mesh const&, Mesh const&);
-        friend bool operator!=(Mesh const&, Mesh const&);
-        friend bool operator<(Mesh const&, Mesh const&);
+        friend bool operator==(Mesh const&, Mesh const&) noexcept;
+        friend bool operator!=(Mesh const&, Mesh const&) noexcept;
+        friend bool operator<(Mesh const&, Mesh const&) noexcept;
         friend std::ostream& operator<<(std::ostream&, Mesh const&);
 
         class Impl;
-        std::shared_ptr<Impl> m_Impl;
+        Cow<Impl> m_Impl;
     };
 
-    bool operator==(Mesh const&, Mesh const&);
-    bool operator!=(Mesh const&, Mesh const&);
-    bool operator<(Mesh const&, Mesh const&);
+    inline bool operator==(Mesh const& a, Mesh const& b) noexcept
+    {
+        return a.m_Impl == b.m_Impl;
+    }
+
+    inline bool operator!=(Mesh const& a, Mesh const& b) noexcept
+    {
+        return a.m_Impl != b.m_Impl;
+    }
+
+    inline bool operator<(Mesh const& a, Mesh const& b) noexcept
+    {
+        return a.m_Impl < b.m_Impl;
+    }
+
     std::ostream& operator<<(std::ostream&, Mesh const&);
 }

@@ -2,11 +2,11 @@
 
 #include "src/Graphics/RenderTextureDescriptor.hpp"
 #include "src/Graphics/RenderTextureFormat.hpp"
+#include "src/Utils/Cow.hpp"
 
 #include <glm/vec2.hpp>
 
 #include <iosfwd>
-#include <memory>
 #include <optional>
 
 namespace osc { class RenderTexture; }
@@ -41,23 +41,40 @@ namespace osc
 
         void reformat(RenderTextureDescriptor const& d);
 
+        friend void swap(RenderTexture& a, RenderTexture& b) noexcept
+        {
+            swap(a.m_Impl, b.m_Impl);
+        }
+
     private:
         friend void osc::DrawTextureAsImGuiImage(RenderTexture&, glm::vec2);
         void* updTextureHandleHACK();  // used by ImGui... for now
 
         friend class GraphicsBackend;
-        friend bool operator==(RenderTexture const&, RenderTexture const&);
-        friend bool operator!=(RenderTexture const&, RenderTexture const&);
-        friend bool operator<(RenderTexture const&, RenderTexture const&);
+        friend bool operator==(RenderTexture const&, RenderTexture const&) noexcept;
+        friend bool operator!=(RenderTexture const&, RenderTexture const&) noexcept;
+        friend bool operator<(RenderTexture const&, RenderTexture const&) noexcept;
         friend std::ostream& operator<<(std::ostream&, RenderTexture const&);
 
         class Impl;
-        std::shared_ptr<Impl> m_Impl;
+        Cow<Impl> m_Impl;
     };
 
-    bool operator==(RenderTexture const&, RenderTexture const&);
-    bool operator!=(RenderTexture const&, RenderTexture const&);
-    bool operator<(RenderTexture const&, RenderTexture const&);
+    inline bool operator==(RenderTexture const& a, RenderTexture const& b) noexcept
+    {
+        return a.m_Impl == b.m_Impl;
+    }
+
+    inline bool operator!=(RenderTexture const& a, RenderTexture const& b) noexcept
+    {
+        return a.m_Impl != b.m_Impl;
+    }
+
+    inline bool operator<(RenderTexture const& a, RenderTexture const& b) noexcept
+    {
+        return a.m_Impl < b.m_Impl;
+    }
+
     std::ostream& operator<<(std::ostream&, RenderTexture const&);
 
     void EmplaceOrReformat(std::optional<RenderTexture>& t, RenderTextureDescriptor const& desc);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/Graphics/Texture2D.hpp"
+#include "src/Utils/Cow.hpp"
 
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x4.hpp>
@@ -8,7 +9,6 @@
 #include <glm/vec4.hpp>
 
 #include <iosfwd>
-#include <memory>
 #include <optional>
 #include <string_view>
 
@@ -55,19 +55,26 @@ namespace osc
         std::optional<Texture2D> getTexture(std::string_view propertyName) const;
         void setTexture(std::string_view, Texture2D);
 
+        friend void swap(MaterialPropertyBlock& a, MaterialPropertyBlock& b) noexcept
+        {
+            swap(a.m_Impl, b.m_Impl);
+        }
+
     private:
         friend class GraphicsBackend;
-        friend bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
-        friend bool operator!=(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
-        friend bool operator<(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
+        friend bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
+        friend bool operator!=(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
+        friend bool operator<(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
         friend std::ostream& operator<<(std::ostream&, MaterialPropertyBlock const&);
 
         class Impl;
-        std::shared_ptr<Impl> m_Impl;
+        Cow<Impl> m_Impl;
     };
 
-    bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
-    bool operator!=(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
-    bool operator<(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
+    // value equality
+    bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
+    bool operator!=(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
+    bool operator<(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
+
     std::ostream& operator<<(std::ostream&, MaterialPropertyBlock const&);
 }

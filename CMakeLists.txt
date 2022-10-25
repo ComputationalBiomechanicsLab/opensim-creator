@@ -553,6 +553,7 @@ add_library(osccore STATIC
     src/Utils/CheckedIndex.hpp
     src/Utils/CircularBuffer.hpp
     src/Utils/ClonePtr.hpp
+    src/Utils/Cow.hpp
     src/Utils/Cpp20Shims.hpp
     src/Utils/CStringView.hpp
     src/Utils/DedupedString.cpp

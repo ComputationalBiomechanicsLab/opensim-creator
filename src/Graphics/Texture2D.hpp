@@ -3,13 +3,13 @@
 #include "src/Graphics/ImageFlags.hpp"
 #include "src/Graphics/TextureFilterMode.hpp"
 #include "src/Graphics/TextureWrapMode.hpp"
+#include "src/Utils/Cow.hpp"
 
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
 
 #include <cstdint>
 #include <iosfwd>
-#include <memory>
 #include <string_view>
 
 namespace osc { struct Rgba32; }
@@ -46,23 +46,40 @@ namespace osc
         TextureFilterMode getFilterMode() const;
         void setFilterMode(TextureFilterMode);
 
+        friend void swap(Texture2D& a, Texture2D& b) noexcept
+        {
+            swap(a.m_Impl, b.m_Impl);
+        }
+
     private:
         friend void osc::DrawTextureAsImGuiImage(Texture2D&, glm::vec2);
         void* updTextureHandleHACK();  // used by ImGui... for now
 
         friend class GraphicsBackend;
-        friend bool operator==(Texture2D const&, Texture2D const&);
-        friend bool operator!=(Texture2D const&, Texture2D const&);
-        friend bool operator<(Texture2D const&, Texture2D const&);
+        friend bool operator==(Texture2D const&, Texture2D const&) noexcept;
+        friend bool operator!=(Texture2D const&, Texture2D const&) noexcept;
+        friend bool operator<(Texture2D const&, Texture2D const&) noexcept;
         friend std::ostream& operator<<(std::ostream&, Texture2D const&);
 
         class Impl;
-        std::shared_ptr<Impl> m_Impl;
+        Cow<Impl> m_Impl;
     };
 
-    bool operator==(Texture2D const&, Texture2D const&);
-    bool operator!=(Texture2D const&, Texture2D const&);
-    bool operator<(Texture2D const&, Texture2D const&);
+    inline bool operator==(Texture2D const& a, Texture2D const& b) noexcept
+    {
+        return a.m_Impl == b.m_Impl;
+    }
+
+    inline bool operator!=(Texture2D const& a, Texture2D const& b) noexcept
+    {
+        return a.m_Impl != b.m_Impl;
+    }
+
+    inline bool operator<(Texture2D const& a, Texture2D const& b) noexcept
+    {
+        return a.m_Impl < b.m_Impl;
+    }
+
     std::ostream& operator<<(std::ostream&, Texture2D const&);
 
     Texture2D LoadTexture2DFromImageResource(std::string_view, ImageFlags = ImageFlags_None);
