@@ -9,6 +9,7 @@
 #include "src/OpenSimBindings/Tabs/Experimental/PreviewExperimentalDataTab.hpp"
 #include "src/OpenSimBindings/Tabs/Experimental/RendererGeometryShaderTab.hpp"
 #include "src/OpenSimBindings/Tabs/Experimental/TPS2DTab.hpp"
+#include "src/OpenSimBindings/Tabs/Experimental/TPS3DTab.hpp"
 
 #include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/LogSink.h>
@@ -133,6 +134,7 @@ static bool InitializeOpenSim(osc::Config const& config)
     osc::RegisterTab("OpenSim/PreviewExperimentalData", [](osc::TabHost* h) -> std::unique_ptr<osc::Tab> { return std::make_unique<osc::PreviewExperimentalDataTab>(h); });
     osc::RegisterTab("Renderer/GeometryShader", [](osc::TabHost* h) -> std::unique_ptr<osc::Tab> { return std::make_unique<osc::RendererGeometryShaderTab>(h); });
     osc::RegisterTab("Warping/TPS2D",  [](osc::TabHost* h) -> std::unique_ptr<osc::Tab> { return std::make_unique<osc::TPS2DTab>(h); });
+    osc::RegisterTab("Warping/TPS3D",  [](osc::TabHost* h) -> std::unique_ptr<osc::Tab> { return std::make_unique<osc::TPS3DTab>(h); });
 
     return true;
 }

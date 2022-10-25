@@ -371,6 +371,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/Tabs/Experimental/RendererGeometryShaderTab.hpp
     src/OpenSimBindings/Tabs/Experimental/TPS2DTab.cpp
     src/OpenSimBindings/Tabs/Experimental/TPS2DTab.hpp
+    src/OpenSimBindings/Tabs/Experimental/TPS3DTab.cpp
+    src/OpenSimBindings/Tabs/Experimental/TPS3DTab.hpp
     src/OpenSimBindings/Tabs/LoadingTab.cpp
     src/OpenSimBindings/Tabs/LoadingTab.hpp
     src/OpenSimBindings/Tabs/MeshImporterTab.cpp
