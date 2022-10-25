@@ -713,7 +713,7 @@ namespace
         "Mipmap"
     );
 
-    GLint ToGLTextureFilterParam(osc::TextureFilterMode m)
+    GLint ToGLTextureMinFilterParam(osc::TextureFilterMode m)
     {
         switch (m)
         {
@@ -723,6 +723,20 @@ namespace
             return GL_LINEAR;
         case osc::TextureFilterMode::Mipmap:
             return GL_LINEAR_MIPMAP_LINEAR;
+        default:
+            return GL_LINEAR;
+        }
+    }
+
+        GLint ToGLTextureMagFilterParam(osc::TextureFilterMode m)
+    {
+        switch (m)
+        {
+        case osc::TextureFilterMode::Nearest:
+            return GL_NEAREST;
+        case osc::TextureFilterMode::Linear:
+        case osc::TextureFilterMode::Mipmap:
+            return GL_LINEAR;
         default:
             return GL_LINEAR;
         }
@@ -900,8 +914,8 @@ private:
         gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, ToGLTextureTextureWrapParam(m_WrapModeU));
         gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, ToGLTextureTextureWrapParam(m_WrapModeV));
         gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, ToGLTextureTextureWrapParam(m_WrapModeW));
-        gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, ToGLTextureFilterParam(m_FilterMode));
-        gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, ToGLTextureFilterParam(m_FilterMode));
+        gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, ToGLTextureMinFilterParam(m_FilterMode));
+        gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, ToGLTextureMagFilterParam(m_FilterMode));
         gl::BindTexture();
         bufs.TextureParamsVersion = m_TextureParamsVersion;
     }
