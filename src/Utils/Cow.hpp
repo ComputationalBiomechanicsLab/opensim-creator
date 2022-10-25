@@ -4,8 +4,6 @@
 #include <cstdint>
 #include <utility>
 
-#include "src/Platform/Log.hpp"
-
 namespace osc
 {
     template<typename T>
@@ -13,8 +11,8 @@ namespace osc
         template<typename... Args>
         CowData(Args&&... args) : data{std::forward<Args>(args)...} {}
 
-        T data;
         std::atomic<int64_t> owners = 1;
+        T data;
     };
 
     template<typename T>
@@ -29,10 +27,7 @@ namespace osc
         Cow(Cow const& other) noexcept :
             m_Data{other.m_Data}
         {
-            if (m_Data)
-            {
-                m_Data->owners++;
-            }
+            m_Data->owners.fetch_add(1, std::memory_order_relaxed);
         }
 
         Cow(Cow&& tmp) noexcept :
@@ -57,7 +52,7 @@ namespace osc
 
         ~Cow() noexcept
         {
-            if (m_Data && --m_Data->owners == 0)
+            if (m_Data && m_Data->owners.fetch_sub(1, std::memory_order_acq_rel) == 1)
             {
                 delete m_Data;
             }
@@ -70,11 +65,7 @@ namespace osc
 
         T* upd()
         {
-            if (!m_Data)
-            {
-                return nullptr;
-            }
-            else if (m_Data->owners == 1)
+            if (m_Data->owners == 1)
             {
                 return &m_Data->data;
             }
@@ -98,17 +89,17 @@ namespace osc
 
         int64_t use_count() const noexcept
         {
-            return m_Data ? m_Data->owners : 0;
+            return m_Data->owners;
         }
 
         operator bool() const noexcept
         {
-            return m_Data != nullptr;
+            return true;
         }
 
         friend void swap(Cow& a, Cow& b) noexcept
         {
-            auto* tmp = a.m_Data;
+            CowData<T>* tmp = a.m_Data;
             a.m_Data = b.m_Data;
             b.m_Data = tmp;
         }
