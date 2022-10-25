@@ -248,7 +248,7 @@ static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
 
 void osc::InstallBacktraceHandler()
 {
-    struct sigaction sigact;
+    struct sigaction sigact{};
 
     sigact.sa_sigaction = OnCriticalSignalRecv;
     sigact.sa_flags = SA_RESTART | SA_SIGINFO;
