@@ -2,19 +2,18 @@
 
 All notable changes to this project will be documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-
 ## [Unreleased]
+
+## [0.3.1] - 2022/09/27
 
 - The mouseover hittest was re-optimized to match 0.2's performance (#349)
 - Scene rendering performance has been improved by around ~10-30 % on typical machines
 - The performance panel can now be opened in the mesh importer screen (#465)
 - Vec3 property editors are now color-coded (#459)
 - Added runtime bounds-checking to mesh indices (#460)
-- Socket reassignment failure now fully rolls back the model to a pre-assignment state (previously:
-  would erroneously hold some changes, #382)
+- Socket reassignment failure now fully rolls back the model to a pre-assignment state (previously: would erroneously hold some changes, #382)
 - Hotfixed assigning a joint's `child_frame` socket to `/ground` to now cause an error message,
   rather than entirely crashing the application (#389 and opensim-org/opensim-core #3299)
-
 
 ## [0.3.0] - 2022/09/14
 
