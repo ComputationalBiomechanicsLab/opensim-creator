@@ -20,7 +20,7 @@ namespace osc
     void DrawBVH(BVH const&, std::vector<SceneDecoration>&);
     void DrawAABB(AABB const&, std::vector<SceneDecoration>&);
     void DrawAABBs(nonstd::span<AABB const>, std::vector<SceneDecoration>&);
-    void DrawXZFloorLines(std::vector<SceneDecoration>&);
+    void DrawXZFloorLines(std::vector<SceneDecoration>&, float scale = 1.0f);
     void DrawXZGrid(std::vector<SceneDecoration>&);
     void DrawXYGrid(std::vector<SceneDecoration>&);
     void DrawYZGrid(std::vector<SceneDecoration>&);

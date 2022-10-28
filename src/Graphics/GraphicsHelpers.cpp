@@ -94,7 +94,7 @@ void osc::DrawAABBs(nonstd::span<AABB const> aabbs, std::vector<SceneDecoration>
     }
 }
 
-void osc::DrawXZFloorLines(std::vector<SceneDecoration>& out)
+void osc::DrawXZFloorLines(std::vector<SceneDecoration>& out, float scale)
 {
     std::shared_ptr<Mesh const> const yLine = App::meshes().getYLineMesh();
 
@@ -103,6 +103,7 @@ void osc::DrawXZFloorLines(std::vector<SceneDecoration>& out)
         glm::vec4 const color = {1.0f, 0.0f, 0.0f, 1.0f};
 
         Transform t;
+        t.scale *= scale;
         t.rotation = glm::angleAxis(fpi2, glm::vec3{0.0f, 0.0f, 1.0f});
 
         out.emplace_back(yLine, t, color);
@@ -113,6 +114,7 @@ void osc::DrawXZFloorLines(std::vector<SceneDecoration>& out)
         glm::vec4 const color = {0.0f, 1.0f, 0.0f, 1.0f};
 
         Transform t;
+        t.scale *= scale;
         t.rotation = glm::angleAxis(fpi2, glm::vec3{1.0f, 0.0f, 0.0f});
 
         out.emplace_back(yLine, t, color);

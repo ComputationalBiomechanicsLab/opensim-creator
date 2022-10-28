@@ -26,6 +26,13 @@ namespace osc
         std::optional<Material> maybeMaterial = std::nullopt;
         std::optional<MaterialPropertyBlock> maybeMaterialProps = std::nullopt;
 
+        explicit SceneDecoration(Mesh const& mesh_) :
+            mesh{std::make_shared<Mesh>(mesh_)},
+            transform{},
+            color{1.0f, 1.0f, 1.0f, 1.0f}
+        {
+        }
+
         SceneDecoration(std::shared_ptr<Mesh const> mesh_,
                         Transform const& transform_,
                         glm::vec4 const& color_) :

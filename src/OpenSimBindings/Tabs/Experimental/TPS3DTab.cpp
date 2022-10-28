@@ -4,11 +4,18 @@
 #include "src/Bindings/GlmHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
 #include "src/Graphics/Graphics.hpp"
+#include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/Mesh.hpp"
+#include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/MeshGen.hpp"
+#include "src/Graphics/SceneDecoration.hpp"
+#include "src/Graphics/SceneRenderer.hpp"
+#include "src/Graphics/SceneRendererParams.hpp"
 #include "src/Graphics/ShaderCache.hpp"
+#include "src/Maths/Constants.hpp"
 #include "src/Maths/MathHelpers.hpp"
+#include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
@@ -341,6 +348,134 @@ namespace
         rv.setVerts(destPoints);
         return rv;
     }
+
+    using PanelFlags = int;
+    enum PanelFlags_ {
+        PanelFlags_HandleLandmarks = 1<<0,
+        PanelFlags_WireframeMode = 1<<1,
+        PanelFlags_Default = PanelFlags_WireframeMode | PanelFlags_HandleLandmarks,
+    };
+
+    // data associated with one 3D viewer panel
+    struct PanelData {
+        explicit PanelData(osc::Mesh mesh_) :
+            m_Mesh{std::move(mesh_)}
+        {
+            m_Camera.radius = 4.0f * osc::LongestDim(osc::Dimensions(m_Mesh.getBounds()));
+            m_Camera.theta = 0.25f * osc::fpi;
+            m_Camera.phi = 0.25f * osc::fpi;
+            m_RenderParams.drawFloor = false;
+            m_RenderParams.backgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
+        }
+
+        osc::SceneRendererParams m_RenderParams;
+        osc::PolarPerspectiveCamera m_Camera;
+        osc::Mesh m_Mesh;
+        osc::SceneRenderer m_Renderer;
+        std::unordered_map<std::string, glm::vec3> m_Landmarks;
+        PanelFlags m_Flags = PanelFlags_Default;
+    };
+
+    // draw a 3D viewer panel via ImGui
+    void DrawPanelDataInContentRegionAvail(PanelData& d)
+    {
+        // figure out where to draw it
+        glm::vec2 const availableSpace = ImGui::GetContentRegionAvail();
+
+        // setup rendering parameters
+        d.m_RenderParams.dimensions = availableSpace;
+        d.m_RenderParams.viewMatrix = d.m_Camera.getViewMtx();
+        d.m_RenderParams.projectionMatrix = d.m_Camera.getProjMtx(osc::AspectRatio(availableSpace));
+        d.m_RenderParams.samples = osc::App::get().getMSXAASamplesRecommended();
+        d.m_RenderParams.lightDirection = osc::RecommendedLightDirection(d.m_Camera);
+
+        osc::Material wireframeOverlay{osc::ShaderCache::get("shaders/SceneSolidColor.vert", "shaders/SceneSolidColor.frag")};
+        wireframeOverlay.setVec4("uDiffuseColor", {0.0f, 0.0f, 0.0f, 1.0f});
+        wireframeOverlay.setWireframeMode(true);
+
+
+        // generate in-scene 3D decorations
+        std::vector<osc::SceneDecoration> decorations;
+        decorations.reserve(5 + (d.m_Flags & PanelFlags_HandleLandmarks ? d.m_Landmarks.size() : 0));
+
+        // decorations: draw the mesh
+        decorations.emplace_back(d.m_Mesh);
+
+        if (d.m_Flags & PanelFlags_WireframeMode)
+        {
+            decorations.emplace_back(d.m_Mesh).maybeMaterial = wireframeOverlay;
+        }
+
+        // decorations: draw each landmark as a sphere
+        if (d.m_Flags & PanelFlags_HandleLandmarks)
+        {
+            for (auto const& [landmarkName, landmarkPos] : d.m_Landmarks)
+            {
+                std::shared_ptr<osc::Mesh const> const sphere = osc::App::meshes().getSphereMesh();
+                osc::Transform transform{};
+                transform.scale *= 0.05f;
+                transform.position = landmarkPos;
+                glm::vec4 const color = {1.0f, 0.0f, 0.0f, 1.0f};
+
+                decorations.emplace_back(sphere, transform, color);
+            }
+        }
+
+        // add grid
+        DrawXZGrid(decorations);
+        DrawXZFloorLines(decorations, 100.0f);
+
+        // render
+        d.m_Renderer.draw(decorations, d.m_RenderParams);
+
+        // test whether the user is interacting with this particular panel
+        osc::ImGuiImageHittestResult const res = osc::DrawTextureAsImGuiImageAndHittest(
+            d.m_Renderer.updRenderTexture(),
+            d.m_Renderer.getDimensions()
+        );
+
+        // if the user's interacting with this particular panel, update the camera
+        if (res.isHovered)
+        {
+            osc::UpdatePolarCameraFromImGuiUserInput(availableSpace, d.m_Camera);
+        }
+
+        // if the user left-clicks on a location in the 3D scene, interpret it as "add a landmark here"
+        if ((d.m_Flags & PanelFlags_HandleLandmarks) && res.isLeftClickReleasedWithoutDragging)
+        {
+            // perform raycasted collision test to figure out where the user clicked in 3D space
+            osc::Rect const renderRect = res.rect;
+            glm::vec2 const mousePos = ImGui::GetMousePos();
+            osc::Line const ray = d.m_Camera.unprojectTopLeftPosToWorldRay(mousePos - renderRect.p1, osc::Dimensions(renderRect));
+            osc::RayCollision const maybeCollision = osc::GetClosestWorldspaceRayCollision(d.m_Mesh, osc::Transform{}, ray);
+
+            // if the ray intersects the mesh, then that's where the landmark should be placed
+            if (maybeCollision)
+            {
+                d.m_Landmarks[std::to_string(d.m_Landmarks.size())] = ray.origin + ray.dir*maybeCollision.distance;
+            }
+        }
+    }
+
+    osc::Mesh CreateTransformedMesh(PanelData const& src, PanelData const& dest)
+    {
+        // match up landmarks in the source and destination by name
+        std::vector<LandmarkPair3D> landmarks;
+        for (auto const& [srcLandmarkName, srcLandmarkPos] : src.m_Landmarks)
+        {
+            auto it = dest.m_Landmarks.find(srcLandmarkName);
+            if (it != dest.m_Landmarks.end())
+            {
+                landmarks.push_back(LandmarkPair3D{srcLandmarkPos, it->second});
+            }
+        }
+
+        // create a warper for those pairs (i.e. solve the TPS linear equation)
+        ThinPlateWarper3D warper{landmarks};
+
+        // warp the source mesh with the warper to create the output mesh
+        return ApplyThinPlateWarpToMesh(warper, src.m_Mesh);
+    }
 }
 
 class osc::TPS3DTab::Impl final {
@@ -348,6 +483,7 @@ public:
 
     Impl(TabHost* parent) : m_Parent{std::move(parent)}
     {
+        m_TransformedData.m_Flags &= ~PanelFlags_HandleLandmarks;
     }
 
     UID getID() const
@@ -394,10 +530,35 @@ public:
     {
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+        ImGui::Begin("Source Mesh");
+        ImGui::PopStyleVar();
+        {
+            DrawPanelDataInContentRegionAvail(m_SourceData);
+        }
+        ImGui::End();
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+        ImGui::Begin("Destination Mesh");
+        ImGui::PopStyleVar();
+        {
+            DrawPanelDataInContentRegionAvail(m_DestData);
+        }
+        ImGui::End();
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+        ImGui::Begin("Result");
+        ImGui::PopStyleVar();
+        {
+            m_TransformedData.m_Mesh = CreateTransformedMesh(m_SourceData, m_DestData);
+            DrawPanelDataInContentRegionAvail(m_TransformedData);
+        }
+        ImGui::End();
+
         // draw log panel (debugging)
         m_LogViewerPanel.draw();
     }
-
 
 private:
 
@@ -405,6 +566,11 @@ private:
     UID m_ID;
     std::string m_Name = ICON_FA_BEZIER_CURVE " TPS3DTab";
     TabHost* m_Parent;
+
+    // scene data
+    PanelData m_SourceData{osc::GenUntexturedUVSphere(16, 16)};
+    PanelData m_DestData{osc::GenUntexturedSimbodyCylinder(16)};
+    PanelData m_TransformedData{CreateTransformedMesh(m_SourceData, m_DestData)};
 
     // log panel (handy for debugging)
     LogViewerPanel m_LogViewerPanel{"Log"};

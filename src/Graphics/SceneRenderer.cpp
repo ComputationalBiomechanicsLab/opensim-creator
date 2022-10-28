@@ -339,6 +339,11 @@ osc::SceneRenderer::SceneRenderer() :
 {
 }
 
+osc::SceneRenderer::SceneRenderer(SceneRenderer const& other) :
+    m_Impl{new Impl{*other.m_Impl}}
+{
+}
+
 osc::SceneRenderer::SceneRenderer(SceneRenderer&& tmp) noexcept :
     m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {

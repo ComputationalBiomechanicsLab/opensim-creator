@@ -12,7 +12,7 @@ namespace osc
     class SceneRenderer final {
     public:
         SceneRenderer();
-        SceneRenderer(SceneRenderer const&) = delete;
+        SceneRenderer(SceneRenderer const&);
         SceneRenderer(SceneRenderer&&) noexcept;
         SceneRenderer& operator=(SceneRenderer const&) = delete;
         SceneRenderer& operator=(SceneRenderer&&) noexcept;
