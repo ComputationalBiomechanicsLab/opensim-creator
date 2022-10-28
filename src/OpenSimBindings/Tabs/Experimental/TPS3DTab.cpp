@@ -404,6 +404,7 @@ namespace
 
     // the data associated with the entire scene
     struct SceneParams final {
+        float BlendingFactor = 1.0f;
         float LandmarkRadius = 0.05f;
         bool LinkCameras = true;
         osc::Material WireframeMaterial = GetWireframeOverlayMaterial();
@@ -531,16 +532,18 @@ namespace
 
     // returns a mesh that is the result of mapping `src` landmarks to `dest` landmarks
     // via the 3D TPS algorithm
-    osc::Mesh CreateTransformedMesh(PanelData const& src, PanelData const& dest)
+    osc::Mesh CreateTransformedMesh(PanelData const& src, PanelData const& dest, float blendingFactor)
     {
         // match up landmarks in the source and destination by name
         std::vector<LandmarkPair3D> landmarks;
         for (auto const& [srcLandmarkName, srcLandmarkPos] : src.m_Landmarks)
         {
-            auto it = dest.m_Landmarks.find(srcLandmarkName);
+            auto const it = dest.m_Landmarks.find(srcLandmarkName);
             if (it != dest.m_Landmarks.end())
             {
-                landmarks.push_back(LandmarkPair3D{srcLandmarkPos, it->second});
+                glm::vec3 const destLandmarkPos = it->second;
+                glm::vec3 const blendedLandmarkPos = glm::mix(srcLandmarkPos, destLandmarkPos, blendingFactor);
+                landmarks.push_back(LandmarkPair3D{srcLandmarkPos, blendedLandmarkPos});
             }
         }
 
@@ -648,8 +651,21 @@ public:
         ImGui::Begin("Result", nullptr, ImGuiWindowFlags_NoScrollbar);
         ImGui::PopStyleVar();
         {
-            m_TransformedData.m_Mesh = CreateTransformedMesh(m_SourceData, m_DestData);
-            DrawPanelDataInContentRegionAvail(m_TransformedData, m_SceneParams);
+            m_TransformedData.m_Mesh = CreateTransformedMesh(m_SourceData, m_DestData, m_SceneParams.BlendingFactor);
+            ImGuiImageHittestResult const res = DrawPanelDataInContentRegionAvail(m_TransformedData, m_SceneParams);
+
+            // draw blend factor slider
+            {
+                float leftPadding = 10.0f;
+                float bottomPadding = 10.0f;
+                float panelHeight = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y;
+
+                glm::vec2 const oldCursorPos = ImGui::GetCursorScreenPos();
+                ImGui::SetCursorScreenPos({res.rect.p1.x + leftPadding, res.rect.p2.y - (panelHeight + bottomPadding)});
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - leftPadding);
+                ImGui::SliderFloat("##blend", &m_SceneParams.BlendingFactor, 0.0f, 1.0f);
+                ImGui::SetCursorScreenPos(oldCursorPos);
+            }
         }
         ImGui::End();
 
@@ -667,7 +683,7 @@ private:
     // scene data
     PanelData m_SourceData{osc::GenUntexturedUVSphere(16, 16)};
     PanelData m_DestData{osc::GenUntexturedSimbodyCylinder(16)};
-    PanelData m_TransformedData{CreateTransformedMesh(m_SourceData, m_DestData)};
+    PanelData m_TransformedData{CreateTransformedMesh(m_SourceData, m_DestData, 1.0f)};
     SceneParams m_SceneParams;
     PolarPerspectiveCamera m_BaseCamera = m_SourceData.m_Camera;
 

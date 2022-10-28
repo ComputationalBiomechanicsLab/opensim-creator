@@ -442,7 +442,7 @@ public:
                 std::vector<LandmarkPair2D> pairs = m_LandmarkPairs;
                 for (LandmarkPair2D& p : pairs)
                 {
-                    p.dest = p.src + m_BlendingFactor*(p.dest - p.src);
+                    p.dest = glm::mix(p.src, p.dest, m_BlendingFactor);
                 }
                 ThinPlateWarper2D warper{pairs};
                 m_OutputGrid = ApplyThinPlateWarpToMesh(warper, m_InputGrid);
