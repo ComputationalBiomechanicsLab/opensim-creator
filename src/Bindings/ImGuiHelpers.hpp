@@ -45,6 +45,7 @@ namespace osc
         ImGuiImageHittestResult();
     };
     ImGuiImageHittestResult DrawTextureAsImGuiImageAndHittest(Texture2D&, glm::vec2 dims, float dragThreshold = defaultImguiDragThreshold);
+    ImGuiImageHittestResult DrawTextureAsImGuiImageAndHittest(RenderTexture&, float dragThreshold = defaultImguiDragThreshold);
     ImGuiImageHittestResult DrawTextureAsImGuiImageAndHittest(RenderTexture&, glm::vec2 dims, float dragThreshold = defaultImguiDragThreshold);
 
     // returns `true` if any scancode in the provided range is currently pressed down

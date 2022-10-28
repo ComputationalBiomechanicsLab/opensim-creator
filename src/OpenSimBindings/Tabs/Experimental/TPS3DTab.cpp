@@ -355,6 +355,7 @@ namespace
 // UI stuff
 namespace
 {
+    // flags that affect panel behavior/rendering
     using PanelFlags = int;
     enum PanelFlags_ {
         PanelFlags_HandleLandmarks = 1<<0,
@@ -363,8 +364,26 @@ namespace
         PanelFlags_Default = PanelFlags_WireframeMode | PanelFlags_HandleLandmarks | PanelFlags_CanChangeMesh,
     };
 
-    // data associated with one 3D viewer panel
-    struct PanelData {
+    // auto-focuses the given polar camera on the mesh, such that it fits in frame
+    void AutofocusCameraOnMesh(osc::Mesh const& mesh, osc::PolarPerspectiveCamera& camera)
+    {
+        osc::AABB const bounds = mesh.getBounds();
+        camera.radius = 2.0f * osc::LongestDim(osc::Dimensions(bounds));
+        camera.focusPoint = -osc::Midpoint(bounds);
+    }
+
+    // returns a material that can draw a mesh's triangles in wireframe-style
+    osc::Material GetWireframeOverlayMaterial()
+    {
+        osc::Material material{osc::ShaderCache::get("shaders/SceneSolidColor.vert", "shaders/SceneSolidColor.frag")};
+        material.setVec4("uDiffuseColor", {0.0f, 0.0f, 0.0f, 0.6f});
+        material.setWireframeMode(true);
+        material.setTransparent(true);
+        return material;
+    }
+
+    // the data associated with one 3D viewer panel
+    struct PanelData final {
         explicit PanelData(osc::Mesh mesh_) :
             m_Mesh{std::move(mesh_)}
         {
@@ -383,46 +402,46 @@ namespace
         PanelFlags m_Flags = PanelFlags_Default;
     };
 
+    // the data associated with the entire scene
     struct SceneParams final {
         float LandmarkRadius = 0.05f;
         bool LinkCameras = true;
+        osc::Material WireframeMaterial = GetWireframeOverlayMaterial();
     };
 
-    // draw a 3D viewer panel via ImGui
-    void DrawPanelDataInContentRegionAvail(PanelData& d, SceneParams const& params)
+    // updates a 3D viewer panel's render parameters from its other members
+    void UpdateRenderParams(PanelData& d, glm::vec2 renderDimensions)
     {
-        // figure out where to draw it
-        glm::vec2 const availableSpace = ImGui::GetContentRegionAvail();
-
         // setup rendering parameters
-        d.m_RenderParams.dimensions = availableSpace;
+        d.m_RenderParams.dimensions = renderDimensions;
         d.m_RenderParams.viewMatrix = d.m_Camera.getViewMtx();
-        d.m_RenderParams.projectionMatrix = d.m_Camera.getProjMtx(osc::AspectRatio(availableSpace));
+        d.m_RenderParams.projectionMatrix = d.m_Camera.getProjMtx(osc::AspectRatio(renderDimensions));
         d.m_RenderParams.samples = osc::App::get().getMSXAASamplesRecommended();
         d.m_RenderParams.lightDirection = osc::RecommendedLightDirection(d.m_Camera);
+    }
 
-        osc::Material wireframeOverlay{osc::ShaderCache::get("shaders/SceneSolidColor.vert", "shaders/SceneSolidColor.frag")};
-        wireframeOverlay.setVec4("uDiffuseColor", {0.0f, 0.0f, 0.0f, 1.0f});
-        wireframeOverlay.setWireframeMode(true);
-
+    // returns 3D decorations for the given 3D panel
+    std::vector<osc::SceneDecoration> GenerateDecorations(PanelData const& data, SceneParams const& params)
+    {
         // generate in-scene 3D decorations
         std::vector<osc::SceneDecoration> decorations;
-        decorations.reserve(5 + (d.m_Flags & PanelFlags_HandleLandmarks ? d.m_Landmarks.size() : 0));
+        decorations.reserve(5 + (data.m_Flags & PanelFlags_HandleLandmarks ? data.m_Landmarks.size() : 0));
 
         // decorations: draw the mesh
-        decorations.emplace_back(d.m_Mesh);
+        decorations.emplace_back(data.m_Mesh);
 
-        if (d.m_Flags & PanelFlags_WireframeMode)
+        if (data.m_Flags & PanelFlags_WireframeMode)
         {
-            decorations.emplace_back(d.m_Mesh).maybeMaterial = wireframeOverlay;
+            decorations.emplace_back(data.m_Mesh).maybeMaterial = params.WireframeMaterial;
         }
 
         // decorations: draw each landmark as a sphere
-        if (d.m_Flags & PanelFlags_HandleLandmarks)
+        if (data.m_Flags & PanelFlags_HandleLandmarks)
         {
-            for (auto const& [landmarkName, landmarkPos] : d.m_Landmarks)
+            std::shared_ptr<osc::Mesh const> const sphere = osc::App::meshes().getSphereMesh();
+
+            for (auto const& [landmarkName, landmarkPos] : data.m_Landmarks)
             {
-                std::shared_ptr<osc::Mesh const> const sphere = osc::App::meshes().getSphereMesh();
                 osc::Transform transform{};
                 transform.scale *= params.LandmarkRadius;
                 transform.position = landmarkPos;
@@ -432,27 +451,46 @@ namespace
             }
         }
 
-        // add grid
+        // add grid decorations
         DrawXZGrid(decorations);
         DrawXZFloorLines(decorations, 100.0f);
+
+        return decorations;
+    }
+
+    // returns the 3D position of the intersection between, if any, the user's mouse and the mesh
+    std::optional<glm::vec3> RaycastPanelMesh(PanelData const& d, osc::Rect const& renderRect)
+    {
+        glm::vec2 const mousePos = ImGui::GetMousePos();
+        osc::Line const ray = d.m_Camera.unprojectTopLeftPosToWorldRay(mousePos - renderRect.p1, osc::Dimensions(renderRect));
+        osc::RayCollision const maybeCollision = osc::GetClosestWorldspaceRayCollision(d.m_Mesh, osc::Transform{}, ray);
+        return maybeCollision ? std::optional<glm::vec3>{ray.origin + ray.dir*maybeCollision.distance} : std::nullopt;
+    }
+
+    // draw a 3D viewer panel via ImGui
+    osc::ImGuiImageHittestResult DrawPanelDataInContentRegionAvail(PanelData& d, SceneParams const& params)
+    {
+        glm::vec2 const renderDimensions = ImGui::GetContentRegionAvail();
+
+        UpdateRenderParams(d, renderDimensions);
+
+        // generate in-scene 3D decorations
+        std::vector<osc::SceneDecoration> const decorations = GenerateDecorations(d, params);
 
         // render
         d.m_Renderer.draw(decorations, d.m_RenderParams);
 
         // ImGui: draw as texture via ImGui and then test for user interaction
-        osc::ImGuiImageHittestResult const res = osc::DrawTextureAsImGuiImageAndHittest(
-            d.m_Renderer.updRenderTexture(),
-            d.m_Renderer.getDimensions()
-        );
+        osc::ImGuiImageHittestResult const res = osc::DrawTextureAsImGuiImageAndHittest(d.m_Renderer.updRenderTexture());
 
         // ImGui: draw overlay buttons (browse, resize, etc.)
         {
             glm::vec2 const originalCursorPos = ImGui::GetCursorScreenPos();
+            ImGui::SetCursorScreenPos(res.rect.p1 + glm::vec2{10.0f, 10.0f});
 
             if (d.m_Flags & PanelFlags_CanChangeMesh)
             {
                 // ImGui: draw "browse for new mesh" button
-                ImGui::SetCursorScreenPos(res.rect.p1 + glm::vec2{10.0f, 10.0f});
                 if (ImGui::Button("browse"))
                 {
                     std::filesystem::path const p = osc::PromptUserForFile("vtp,obj");
@@ -461,15 +499,12 @@ namespace
                         d.m_Mesh = osc::LoadMeshViaSimTK(p);
                     }
                 }
+                ImGui::SameLine();
             }
 
-            ImGui::SameLine();
             if (ImGui::Button(ICON_FA_EXPAND))
             {
-                osc::AABB const bounds = d.m_Mesh.getBounds();
-                d.m_Camera.radius = 2.0f * osc::LongestDim(osc::Dimensions(bounds));
-                d.m_Camera.focusPoint = -osc::Midpoint(bounds);
-
+                AutofocusCameraOnMesh(d.m_Mesh, d.m_Camera);
             }
 
             ImGui::SetCursorScreenPos(originalCursorPos);
@@ -478,26 +513,24 @@ namespace
         // if the user's interacting with this particular panel, update the camera
         if (res.isHovered)
         {
-            osc::UpdatePolarCameraFromImGuiUserInput(availableSpace, d.m_Camera);
+            osc::UpdatePolarCameraFromImGuiUserInput(renderDimensions, d.m_Camera);
         }
 
-        // if the user left-clicks on a location in the 3D scene, interpret it as "add a landmark here"
+        // if the user left-clicks on a location in the 3D scene, interpret it as "try to add a landmark here"
         if ((d.m_Flags & PanelFlags_HandleLandmarks) && res.isLeftClickReleasedWithoutDragging)
         {
-            // perform raycasted collision test to figure out where the user clicked in 3D space
-            osc::Rect const renderRect = res.rect;
-            glm::vec2 const mousePos = ImGui::GetMousePos();
-            osc::Line const ray = d.m_Camera.unprojectTopLeftPosToWorldRay(mousePos - renderRect.p1, osc::Dimensions(renderRect));
-            osc::RayCollision const maybeCollision = osc::GetClosestWorldspaceRayCollision(d.m_Mesh, osc::Transform{}, ray);
-
-            // if the ray intersects the mesh, then that's where the landmark should be placed
-            if (maybeCollision)
+            // if the user's mouse ray intersects the mesh, then that's where the landmark should be placed
+            if (std::optional<glm::vec3> maybeCollision = RaycastPanelMesh(d, res.rect))
             {
-                d.m_Landmarks[std::to_string(d.m_Landmarks.size())] = ray.origin + ray.dir*maybeCollision.distance;
+                d.m_Landmarks[std::to_string(d.m_Landmarks.size())] = *maybeCollision;
             }
         }
+
+        return res;
     }
 
+    // returns a mesh that is the result of mapping `src` landmarks to `dest` landmarks
+    // via the 3D TPS algorithm
     osc::Mesh CreateTransformedMesh(PanelData const& src, PanelData const& dest)
     {
         // match up landmarks in the source and destination by name
@@ -571,7 +604,7 @@ public:
             }
             else if (m_TransformedData.m_Camera != m_BaseCamera)
             {
-                m_BaseCamera = m_DestData.m_Camera;
+                m_BaseCamera = m_TransformedData.m_Camera;
             }
 
             m_SourceData.m_Camera = m_BaseCamera;

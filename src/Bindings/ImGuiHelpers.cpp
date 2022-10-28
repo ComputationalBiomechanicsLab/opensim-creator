@@ -106,7 +106,6 @@ void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::Polar
 {
     // handle mousewheel scrolling
     camera.radius *= 1.0f - 0.1f*ImGui::GetIO().MouseWheel;
-    camera.rescaleZNearAndZFarBasedOnRadius();
 
     // these camera controls try to be the union of OpenSim GUI and Blender
     //
@@ -156,6 +155,7 @@ void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::Polar
             camera.pan(aspectRatio, delta/viewportDims);
         }
     }
+    camera.rescaleZNearAndZFarBasedOnRadius();
 }
 
 void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, glm::vec3& eulers)
@@ -249,6 +249,11 @@ osc::ImGuiImageHittestResult osc::DrawTextureAsImGuiImageAndHittest(Texture2D& t
     rv.isLeftClickReleasedWithoutDragging = rv.isHovered && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left, dragThreshold);
     rv.isRightClickReleasedWithoutDragging = rv.isHovered && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right, dragThreshold);
     return rv;
+}
+
+osc::ImGuiImageHittestResult osc::DrawTextureAsImGuiImageAndHittest(RenderTexture& tex, float dragThreshold)
+{
+    return osc::DrawTextureAsImGuiImageAndHittest(tex, tex.getDimensions(), std::move(dragThreshold));
 }
 
 osc::ImGuiImageHittestResult osc::DrawTextureAsImGuiImageAndHittest(RenderTexture& tex, glm::vec2 dims, float dragThreshold)
