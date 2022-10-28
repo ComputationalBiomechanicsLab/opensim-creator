@@ -60,6 +60,9 @@ namespace osc
         Line unprojectTopLeftPosToWorldRay(glm::vec2 pos, glm::vec2 dims) const noexcept;
     };
 
+    bool operator==(PolarPerspectiveCamera const&, PolarPerspectiveCamera const&) noexcept;
+    bool operator!=(PolarPerspectiveCamera const&, PolarPerspectiveCamera const&) noexcept;
+
     PolarPerspectiveCamera CreateCameraWithRadius(float);
     glm::vec3 RecommendedLightDirection(PolarPerspectiveCamera const&);
     void FocusAlongX(PolarPerspectiveCamera&);

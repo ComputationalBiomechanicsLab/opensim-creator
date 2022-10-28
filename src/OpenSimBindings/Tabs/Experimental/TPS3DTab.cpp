@@ -16,8 +16,10 @@
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
+#include "src/OpenSimBindings/SimTKHelpers.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
+#include "src/Platform/os.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Widgets/LogViewerPanel.hpp"
 
@@ -348,12 +350,17 @@ namespace
         rv.setVerts(destPoints);
         return rv;
     }
+}
 
+// UI stuff
+namespace
+{
     using PanelFlags = int;
     enum PanelFlags_ {
         PanelFlags_HandleLandmarks = 1<<0,
         PanelFlags_WireframeMode = 1<<1,
-        PanelFlags_Default = PanelFlags_WireframeMode | PanelFlags_HandleLandmarks,
+        PanelFlags_CanChangeMesh = 1<<2,
+        PanelFlags_Default = PanelFlags_WireframeMode | PanelFlags_HandleLandmarks | PanelFlags_CanChangeMesh,
     };
 
     // data associated with one 3D viewer panel
@@ -361,7 +368,7 @@ namespace
         explicit PanelData(osc::Mesh mesh_) :
             m_Mesh{std::move(mesh_)}
         {
-            m_Camera.radius = 4.0f * osc::LongestDim(osc::Dimensions(m_Mesh.getBounds()));
+            m_Camera.radius = 3.0f * osc::LongestDim(osc::Dimensions(m_Mesh.getBounds()));
             m_Camera.theta = 0.25f * osc::fpi;
             m_Camera.phi = 0.25f * osc::fpi;
             m_RenderParams.drawFloor = false;
@@ -376,8 +383,13 @@ namespace
         PanelFlags m_Flags = PanelFlags_Default;
     };
 
+    struct SceneParams final {
+        float LandmarkRadius = 0.05f;
+        bool LinkCameras = true;
+    };
+
     // draw a 3D viewer panel via ImGui
-    void DrawPanelDataInContentRegionAvail(PanelData& d)
+    void DrawPanelDataInContentRegionAvail(PanelData& d, SceneParams const& params)
     {
         // figure out where to draw it
         glm::vec2 const availableSpace = ImGui::GetContentRegionAvail();
@@ -392,7 +404,6 @@ namespace
         osc::Material wireframeOverlay{osc::ShaderCache::get("shaders/SceneSolidColor.vert", "shaders/SceneSolidColor.frag")};
         wireframeOverlay.setVec4("uDiffuseColor", {0.0f, 0.0f, 0.0f, 1.0f});
         wireframeOverlay.setWireframeMode(true);
-
 
         // generate in-scene 3D decorations
         std::vector<osc::SceneDecoration> decorations;
@@ -413,7 +424,7 @@ namespace
             {
                 std::shared_ptr<osc::Mesh const> const sphere = osc::App::meshes().getSphereMesh();
                 osc::Transform transform{};
-                transform.scale *= 0.05f;
+                transform.scale *= params.LandmarkRadius;
                 transform.position = landmarkPos;
                 glm::vec4 const color = {1.0f, 0.0f, 0.0f, 1.0f};
 
@@ -428,11 +439,41 @@ namespace
         // render
         d.m_Renderer.draw(decorations, d.m_RenderParams);
 
-        // test whether the user is interacting with this particular panel
+        // ImGui: draw as texture via ImGui and then test for user interaction
         osc::ImGuiImageHittestResult const res = osc::DrawTextureAsImGuiImageAndHittest(
             d.m_Renderer.updRenderTexture(),
             d.m_Renderer.getDimensions()
         );
+
+        // ImGui: draw overlay buttons (browse, resize, etc.)
+        {
+            glm::vec2 const originalCursorPos = ImGui::GetCursorScreenPos();
+
+            if (d.m_Flags & PanelFlags_CanChangeMesh)
+            {
+                // ImGui: draw "browse for new mesh" button
+                ImGui::SetCursorScreenPos(res.rect.p1 + glm::vec2{10.0f, 10.0f});
+                if (ImGui::Button("browse"))
+                {
+                    std::filesystem::path const p = osc::PromptUserForFile("vtp,obj");
+                    if (!p.empty())
+                    {
+                        d.m_Mesh = osc::LoadMeshViaSimTK(p);
+                    }
+                }
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button(ICON_FA_EXPAND))
+            {
+                osc::AABB const bounds = d.m_Mesh.getBounds();
+                d.m_Camera.radius = 2.0f * osc::LongestDim(osc::Dimensions(bounds));
+                d.m_Camera.focusPoint = -osc::Midpoint(bounds);
+
+            }
+
+            ImGui::SetCursorScreenPos(originalCursorPos);
+        }
 
         // if the user's interacting with this particular panel, update the camera
         if (res.isHovered)
@@ -483,7 +524,7 @@ public:
 
     Impl(TabHost* parent) : m_Parent{std::move(parent)}
     {
-        m_TransformedData.m_Flags &= ~PanelFlags_HandleLandmarks;
+        m_TransformedData.m_Flags &= ~(PanelFlags_HandleLandmarks | PanelFlags_CanChangeMesh);
     }
 
     UID getID() const
@@ -518,41 +559,64 @@ public:
 
     void onTick()
     {
+        if (m_SceneParams.LinkCameras)
+        {
+            if (m_SourceData.m_Camera != m_BaseCamera)
+            {
+                m_BaseCamera = m_SourceData.m_Camera;
+            }
+            else if (m_DestData.m_Camera != m_BaseCamera)
+            {
+                m_BaseCamera = m_DestData.m_Camera;
+            }
+            else if (m_TransformedData.m_Camera != m_BaseCamera)
+            {
+                m_BaseCamera = m_DestData.m_Camera;
+            }
 
+            m_SourceData.m_Camera = m_BaseCamera;
+            m_DestData.m_Camera = m_BaseCamera;
+            m_TransformedData.m_Camera = m_BaseCamera;
+        }
     }
 
     void onDrawMainMenu()
     {
+        if (ImGui::BeginMenu("Edit"))
+        {
+            ImGui::SetNextItemWidth(ImGui::CalcTextSize("1.0000000").x);
+            ImGui::InputFloat("marker radius", &m_SceneParams.LandmarkRadius);
 
+            ImGui::EndMenu();
+        }
     }
 
     void onDraw()
     {
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-        ImGui::Begin("Source Mesh");
+        ImGui::Begin("Source Mesh", nullptr, ImGuiWindowFlags_NoScrollbar);
         ImGui::PopStyleVar();
         {
-            DrawPanelDataInContentRegionAvail(m_SourceData);
+            DrawPanelDataInContentRegionAvail(m_SourceData, m_SceneParams);
         }
         ImGui::End();
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-        ImGui::Begin("Destination Mesh");
+        ImGui::Begin("Destination Mesh", nullptr, ImGuiWindowFlags_NoScrollbar);
         ImGui::PopStyleVar();
         {
-            DrawPanelDataInContentRegionAvail(m_DestData);
+            DrawPanelDataInContentRegionAvail(m_DestData, m_SceneParams);
         }
         ImGui::End();
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-        ImGui::Begin("Result");
+        ImGui::Begin("Result", nullptr, ImGuiWindowFlags_NoScrollbar);
         ImGui::PopStyleVar();
         {
             m_TransformedData.m_Mesh = CreateTransformedMesh(m_SourceData, m_DestData);
-            DrawPanelDataInContentRegionAvail(m_TransformedData);
+            DrawPanelDataInContentRegionAvail(m_TransformedData, m_SceneParams);
         }
         ImGui::End();
 
@@ -571,6 +635,8 @@ private:
     PanelData m_SourceData{osc::GenUntexturedUVSphere(16, 16)};
     PanelData m_DestData{osc::GenUntexturedSimbodyCylinder(16)};
     PanelData m_TransformedData{CreateTransformedMesh(m_SourceData, m_DestData)};
+    SceneParams m_SceneParams;
+    PolarPerspectiveCamera m_BaseCamera = m_SourceData.m_Camera;
 
     // log panel (handy for debugging)
     LogViewerPanel m_LogViewerPanel{"Log"};

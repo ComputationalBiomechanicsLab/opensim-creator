@@ -685,6 +685,23 @@ osc::Line osc::PolarPerspectiveCamera::unprojectTopLeftPosToWorldRay(glm::vec2 p
     return rv;
 }
 
+bool osc::operator==(PolarPerspectiveCamera const& a, PolarPerspectiveCamera const& b) noexcept
+{
+    return
+        a.radius == b.radius &&
+        a.theta == b.theta &&
+        a.phi == b.phi &&
+        a.focusPoint == b.focusPoint &&
+        a.fov == b.fov &&
+        a.znear == b.znear &&
+        a.zfar == b.zfar;
+}
+
+bool osc::operator!=(PolarPerspectiveCamera const& a, PolarPerspectiveCamera const& b) noexcept
+{
+    return !(a == b);
+}
+
 osc::PolarPerspectiveCamera osc::CreateCameraWithRadius(float r)
 {
     PolarPerspectiveCamera rv;
