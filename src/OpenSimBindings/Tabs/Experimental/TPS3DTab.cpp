@@ -355,6 +355,16 @@ namespace
 // UI stuff
 namespace
 {
+    // returns a material that can draw a mesh's triangles in wireframe-style
+    osc::Material CreateWireframeOverlayMaterial()
+    {
+        osc::Material material{osc::ShaderCache::get("shaders/SceneSolidColor.vert", "shaders/SceneSolidColor.frag")};
+        material.setVec4("uDiffuseColor", {0.0f, 0.0f, 0.0f, 0.6f});
+        material.setWireframeMode(true);
+        material.setTransparent(true);
+        return material;
+    }
+
     // flags that affect panel behavior/rendering
     using PanelFlags = int;
     enum PanelFlags_ {
@@ -364,26 +374,9 @@ namespace
         PanelFlags_Default = PanelFlags_WireframeMode | PanelFlags_HandleLandmarks | PanelFlags_CanChangeMesh,
     };
 
-    // auto-focuses the given polar camera on the mesh, such that it fits in frame
-    void AutofocusCameraOnMesh(osc::Mesh const& mesh, osc::PolarPerspectiveCamera& camera)
-    {
-        osc::AABB const bounds = mesh.getBounds();
-        camera.radius = 2.0f * osc::LongestDim(osc::Dimensions(bounds));
-        camera.focusPoint = -osc::Midpoint(bounds);
-    }
-
-    // returns a material that can draw a mesh's triangles in wireframe-style
-    osc::Material GetWireframeOverlayMaterial()
-    {
-        osc::Material material{osc::ShaderCache::get("shaders/SceneSolidColor.vert", "shaders/SceneSolidColor.frag")};
-        material.setVec4("uDiffuseColor", {0.0f, 0.0f, 0.0f, 0.6f});
-        material.setWireframeMode(true);
-        material.setTransparent(true);
-        return material;
-    }
-
     // the data associated with one 3D viewer panel
     struct PanelData final {
+
         explicit PanelData(osc::Mesh mesh_) :
             m_Mesh{std::move(mesh_)}
         {
@@ -407,8 +400,37 @@ namespace
         float BlendingFactor = 1.0f;
         float LandmarkRadius = 0.05f;
         bool LinkCameras = true;
-        osc::Material WireframeMaterial = GetWireframeOverlayMaterial();
+        osc::Material WireframeMaterial = CreateWireframeOverlayMaterial();
     };
+
+    // auto-focuses the given polar camera on the mesh, such that it fits in frame
+    void AutofocusCameraOnMesh(osc::Mesh const& mesh, osc::PolarPerspectiveCamera& camera)
+    {
+        osc::AABB const bounds = mesh.getBounds();
+        camera.radius = 2.0f * osc::LongestDim(osc::Dimensions(bounds));
+        camera.focusPoint = -osc::Midpoint(bounds);
+    }
+
+    // returns all pair-able landmarks between the `src` and `dest`
+    std::vector<LandmarkPair3D> GetLandmarkPairs(
+        std::unordered_map<std::string, glm::vec3> const& src,
+        std::unordered_map<std::string, glm::vec3> const& dest,
+        float blendingFactor)
+    {
+        std::vector<LandmarkPair3D> rv;
+        rv.reserve(src.size());  // probably a good guess
+        for (auto const& [srcLandmarkName, srcLandmarkPos] : src)
+        {
+            auto const it = dest.find(srcLandmarkName);
+            if (it != dest.end())
+            {
+                glm::vec3 const destLandmarkPos = it->second;
+                glm::vec3 const blendedLandmarkPos = glm::mix(srcLandmarkPos, destLandmarkPos, blendingFactor);
+                rv.push_back(LandmarkPair3D{srcLandmarkPos, blendedLandmarkPos});
+            }
+        }
+        return rv;
+    }
 
     // updates a 3D viewer panel's render parameters from its other members
     void UpdateRenderParams(PanelData& d, glm::vec2 renderDimensions)
@@ -428,15 +450,16 @@ namespace
         std::vector<osc::SceneDecoration> decorations;
         decorations.reserve(5 + (data.m_Flags & PanelFlags_HandleLandmarks ? data.m_Landmarks.size() : 0));
 
-        // decorations: draw the mesh
+        // draw the mesh
         decorations.emplace_back(data.m_Mesh);
 
+        // if requested, also draw wireframe overlays for the mesh
         if (data.m_Flags & PanelFlags_WireframeMode)
         {
             decorations.emplace_back(data.m_Mesh).maybeMaterial = params.WireframeMaterial;
         }
 
-        // decorations: draw each landmark as a sphere
+        // if requested, draw each landmark as a sphere
         if (data.m_Flags & PanelFlags_HandleLandmarks)
         {
             std::shared_ptr<osc::Mesh const> const sphere = osc::App::meshes().getSphereMesh();
@@ -535,20 +558,10 @@ namespace
     osc::Mesh CreateTransformedMesh(PanelData const& src, PanelData const& dest, float blendingFactor)
     {
         // match up landmarks in the source and destination by name
-        std::vector<LandmarkPair3D> landmarks;
-        for (auto const& [srcLandmarkName, srcLandmarkPos] : src.m_Landmarks)
-        {
-            auto const it = dest.m_Landmarks.find(srcLandmarkName);
-            if (it != dest.m_Landmarks.end())
-            {
-                glm::vec3 const destLandmarkPos = it->second;
-                glm::vec3 const blendedLandmarkPos = glm::mix(srcLandmarkPos, destLandmarkPos, blendingFactor);
-                landmarks.push_back(LandmarkPair3D{srcLandmarkPos, blendedLandmarkPos});
-            }
-        }
+        std::vector<LandmarkPair3D> landmarks = GetLandmarkPairs(src.m_Landmarks, dest.m_Landmarks, blendingFactor);
 
         // create a warper for those pairs (i.e. solve the TPS linear equation)
-        ThinPlateWarper3D warper{landmarks};
+        ThinPlateWarper3D const warper{landmarks};
 
         // warp the source mesh with the warper to create the output mesh
         return ApplyThinPlateWarpToMesh(warper, src.m_Mesh);
@@ -656,14 +669,14 @@ public:
 
             // draw blend factor slider
             {
-                float leftPadding = 10.0f;
-                float bottomPadding = 10.0f;
-                float panelHeight = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y;
+                float constexpr leftPadding = 10.0f;
+                float constexpr bottomPadding = 10.0f;
+                float const panelHeight = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y;
 
                 glm::vec2 const oldCursorPos = ImGui::GetCursorScreenPos();
                 ImGui::SetCursorScreenPos({res.rect.p1.x + leftPadding, res.rect.p2.y - (panelHeight + bottomPadding)});
-                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - leftPadding);
-                ImGui::SliderFloat("##blend", &m_SceneParams.BlendingFactor, 0.0f, 1.0f);
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - leftPadding - ImGui::CalcTextSize("blending factor").x - ImGui::GetStyle().ItemSpacing.x);
+                ImGui::SliderFloat("blending factor", &m_SceneParams.BlendingFactor, 0.0f, 1.0f);
                 ImGui::SetCursorScreenPos(oldCursorPos);
             }
         }
