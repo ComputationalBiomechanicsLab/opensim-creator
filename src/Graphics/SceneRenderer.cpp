@@ -242,6 +242,12 @@ private:
         // constrain the result of the above to within clip space
         rimRectNDC = osc::Clamp(rimRectNDC, {-1.0f, -1.0f}, {1.0f, 1.0f});
 
+        if (osc::Area(rimRectNDC) <= 0.0f)
+        {
+            // the scene contains rim-highlighted geometry, but it isn't on-screen
+            return std::nullopt;
+        }
+
         // compute rim rectangle in texture coordinates
         Rect const rimRectUV = NdcRectToScreenspaceViewportRect(rimRectNDC, Rect{{}, {1.0f, 1.0f}});
 
