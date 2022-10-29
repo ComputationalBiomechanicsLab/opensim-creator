@@ -622,12 +622,13 @@ osc::Mesh osc::GenLearnOpenGLCube()
 {
     osc::Mesh cube = osc::GenCube();
 
-    std::vector<glm::vec3> verts{cube.getVerts().begin(), cube.getVerts().end()};
-    for (glm::vec3& vert : verts)
+    cube.transformVerts([](nonstd::span<glm::vec3> vs)
     {
-        vert *= 0.5f;  // makes the verts match LearnOpenGL
-    }
-    cube.setVerts(verts);
+        for (glm::vec3& v : vs)
+        {
+            v *= 0.5f;
+        }
+    });
 
     return cube;
 }

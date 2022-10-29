@@ -283,7 +283,7 @@ namespace
         SimTK::Vector Cz(numPairs + 4, 0.0);
 
         // solve `L*Cx = Vx` and `L*Cy = Vy` for `Cx` and `Cy` (the coefficients)
-        SimTK::FactorQTZ F(L);
+        SimTK::FactorQTZ const F{L};
         F.solve(Vx, Cx);
         F.solve(Vy, Cy);
         F.solve(Vz, Cz);
@@ -334,20 +334,16 @@ namespace
     // vertices of the input mesh
     osc::Mesh ApplyThinPlateWarpToMesh(ThinPlateWarper3D const& t, osc::Mesh const& mesh)
     {
-        // load source points
-        nonstd::span<glm::vec3 const> srcPoints = mesh.getVerts();
-
-        // map each source point via the warper
-        std::vector<glm::vec3> destPoints;
-        destPoints.reserve(srcPoints.size());
-        for (glm::vec3 const& srcPoint : srcPoints)
-        {
-            destPoints.emplace_back(t.transform(srcPoint));
-        }
-
-        // upload the new points into the returned mesh
         osc::Mesh rv = mesh;
-        rv.setVerts(destPoints);
+
+        rv.transformVerts([&t](nonstd::span<glm::vec3> vs)
+        {
+            for (glm::vec3& v : vs)
+            {
+                v = t.transform(v);
+            }
+        });
+
         return rv;
     }
 }

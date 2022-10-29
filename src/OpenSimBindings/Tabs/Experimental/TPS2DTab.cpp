@@ -317,20 +317,16 @@ namespace
     // vertices of the input mesh
     osc::Mesh ApplyThinPlateWarpToMesh(ThinPlateWarper2D const& t, osc::Mesh const& mesh)
     {
-        // load source points
-        nonstd::span<glm::vec3 const> srcPoints = mesh.getVerts();
-
-        // map each source point via the warper
-        std::vector<glm::vec3> destPoints;
-        destPoints.reserve(srcPoints.size());
-        for (glm::vec3 const& srcPoint : srcPoints)
-        {
-            destPoints.emplace_back(t.transform(srcPoint), srcPoint.z);
-        }
-
-        // upload the new points into the returned mesh
         osc::Mesh rv = mesh;
-        rv.setVerts(destPoints);
+
+        rv.transformVerts([&t](nonstd::span<glm::vec3> vs)
+        {
+            for (glm::vec3& v : vs)
+            {
+                v = glm::vec3{t.transform(v), v.z};
+            }
+        });
+
         return rv;
     }
 }

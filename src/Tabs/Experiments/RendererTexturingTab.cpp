@@ -27,12 +27,13 @@ static osc::Mesh GenerateMesh()
 {
     osc::Mesh quad = osc::GenTexturedQuad();
 
-    std::vector<glm::vec3> verts{quad.getVerts().begin(), quad.getVerts().end()};
-    for (glm::vec3& vert : verts)
+    quad.transformVerts([](nonstd::span<glm::vec3> vs)
     {
-        vert *= 0.5f;  // to match LearnOpenGL
-    }
-    quad.setVerts(verts);
+        for (glm::vec3& v : vs)
+        {
+            v *= 0.5f;  // to match LearnOpenGL
+        }
+    });
 
     std::vector<glm::vec2> coords{quad.getTexCoords().begin(), quad.getTexCoords().end()};
     for (glm::vec2& coord : coords)

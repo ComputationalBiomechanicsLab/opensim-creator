@@ -19,19 +19,19 @@
 
 static osc::Mesh GenerateTriangleMesh()
 {
-    glm::vec3 points[] =
+    glm::vec3 const points[] =
     {
         {-1.0f, -1.0f, 0.0f},  // bottom-left
         { 1.0f, -1.0f, 0.0f},  // bottom-right
         { 0.0f,  1.0f, 0.0f},  // top-middle
     };
-    osc::Rgba32 colors[] =
+    osc::Rgba32 const colors[] =
     {
         {0xff, 0x00, 0x00, 0xff},
         {0x00, 0xff, 0x00, 0xff},
         {0x00, 0x00, 0xff, 0xff},
     };
-    uint16_t indices[] = {0, 1, 2};
+    uint16_t const indices[] = {0, 1, 2};
 
     osc::Mesh m;
     m.setVerts(points);
