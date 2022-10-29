@@ -40,7 +40,7 @@ namespace osc
             return m_Value;
         }
 
-        constexpr operator bool() const noexcept
+        explicit constexpr operator bool() const noexcept
         {
             return m_Value > 0;
         }
@@ -68,7 +68,7 @@ namespace osc
 
         // upcasting is automatic
         template<typename U, typename = std::enable_if_t<std::is_base_of_v<U, T>>>
-        constexpr operator UIDT<U> () const noexcept
+        explicit constexpr operator UIDT<U> () const noexcept
         {
             return UIDT<U>{*this};
         }

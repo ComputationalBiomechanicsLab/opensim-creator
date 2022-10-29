@@ -112,7 +112,7 @@ namespace osc
         {
             return m_Value.get_deleter();
         }
-        operator bool() const noexcept
+        explicit operator bool() const noexcept
         {
             return m_Value;
         }

@@ -3659,7 +3659,7 @@ namespace
         Hover(UID id_, glm::vec3 pos_) : ID{id_}, Pos{pos_}
         {
         }
-        operator bool () const noexcept
+        explicit operator bool () const noexcept
         {
             return ID != g_EmptyID;
         }
