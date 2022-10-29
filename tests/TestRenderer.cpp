@@ -1680,6 +1680,56 @@ TEST_F(Renderer, MeshSetVertsCausesCopiedMeshToNotBeEqualToInitialMesh)
     ASSERT_NE(m, copy);
 }
 
+TEST_F(Renderer, MeshTransformVertsMakesGetCallReturnVerts)
+{
+    osc::Mesh m;
+
+    // generate "original" verts
+    std::vector<glm::vec3> originalVerts = GenerateTriangleVerts();
+
+    // create "transformed" version of the verts
+    std::vector<glm::vec3> newVerts;
+    newVerts.reserve(originalVerts.size());
+    for (glm::vec3 const& v : originalVerts)
+    {
+        newVerts.push_back(v + 1.0f);
+    }
+
+    // sanity check that `setVerts` works as expected
+    ASSERT_TRUE(m.getVerts().empty());
+    m.setVerts(originalVerts);
+    ASSERT_TRUE(SpansEqual(m.getVerts(), nonstd::span<glm::vec3 const>(originalVerts)));
+
+    // the verts passed to `transformVerts` should match those returned by getVerts
+    m.transformVerts([&originalVerts](nonstd::span<glm::vec3 const> verts)
+    {
+        ASSERT_TRUE(SpansEqual(nonstd::span<glm::vec3 const>(originalVerts), verts));
+    });
+
+    // applying the transformation should return the transformed verts
+    m.transformVerts([&newVerts](nonstd::span<glm::vec3> verts)
+    {
+        ASSERT_EQ(newVerts.size(), verts.size());
+        for (size_t i = 0; i < verts.size(); ++i)
+        {
+            verts[i] = newVerts[i];
+        }
+    });
+    ASSERT_TRUE(SpansEqual(m.getVerts(), nonstd::span<glm::vec3 const>(newVerts)));
+}
+
+TEST_F(Renderer, MeshTransformVertsCausesTransformedMeshToNotBeEqualToInitialMesh)
+{
+    osc::Mesh m;
+    osc::Mesh copy{m};
+
+    ASSERT_EQ(m, copy);
+
+    copy.transformVerts([](nonstd::span<glm::vec3>) {});  // noop transform also triggers this (meshes aren't value-comparable)
+
+    ASSERT_NE(m, copy);
+}
+
 TEST_F(Renderer, MeshGetNormalsReturnsEmptyOnDefaultConstruction)
 {
     osc::Mesh m;

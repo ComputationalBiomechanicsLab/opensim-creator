@@ -2418,6 +2418,14 @@ public:
         m_Version->reset();
     }
 
+    void transformVerts(std::function<void(nonstd::span<glm::vec3>)> const& f)
+    {
+        f(m_Vertices);
+
+        recalculateBounds();
+        m_Version->reset();
+    }
+
     nonstd::span<glm::vec3 const> getNormals() const
     {
         return m_Normals;
@@ -2782,6 +2790,11 @@ nonstd::span<glm::vec3 const> osc::Mesh::getVerts() const
 void osc::Mesh::setVerts(nonstd::span<glm::vec3 const> verts)
 {
     m_Impl.upd()->setVerts(std::move(verts));
+}
+
+void osc::Mesh::transformVerts(std::function<void(nonstd::span<glm::vec3>)> const& f)
+{
+    m_Impl.upd()->transformVerts(f);
 }
 
 nonstd::span<glm::vec3 const> osc::Mesh::getNormals() const

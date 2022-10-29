@@ -9,6 +9,7 @@
 #include <nonstd/span.hpp>
 
 #include <cstdint>
+#include <functional>
 #include <iosfwd>
 #include <vector>
 
@@ -37,6 +38,7 @@ namespace osc
 
         nonstd::span<glm::vec3 const> getVerts() const;
         void setVerts(nonstd::span<glm::vec3 const>);
+        void transformVerts(std::function<void(nonstd::span<glm::vec3>)> const&);
 
         nonstd::span<glm::vec3 const> getNormals() const;
         void setNormals(nonstd::span<glm::vec3 const>);
