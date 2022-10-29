@@ -108,6 +108,21 @@ namespace osc
         template<typename U, typename V>
         friend bool operator==(Cow<U> const&, Cow<V> const&) noexcept;
 
+        template<typename U, typename V>
+        friend bool operator!=(Cow<U> const&, Cow<V> const&) noexcept;
+
+        template<typename U, typename V>
+        friend bool operator<(Cow<U> const&, Cow<V> const&) noexcept;
+
+        template<typename U, typename V>
+        friend bool operator>(Cow<U> const&, Cow<V> const&) noexcept;
+
+        template<typename U, typename V>
+        friend bool operator<=(Cow<U> const&, Cow<V> const&) noexcept;
+
+        template<typename U, typename V>
+        friend bool operator>=(Cow<U> const&, Cow<V> const&) noexcept;
+
         CowData<T>* m_Data = nullptr;
     };
 
@@ -121,5 +136,35 @@ namespace osc
     inline bool operator==(Cow<U> const& a, Cow<V> const& b) noexcept
     {
         return a.m_Data == b.m_Data;
+    }
+
+    template<typename U, typename V>
+    inline bool operator!=(Cow<U> const& a, Cow<V> const& b) noexcept
+    {
+        return a.m_Data != b.m_Data;
+    }
+
+    template<typename U, typename V>
+    inline bool operator<(Cow<U> const& a, Cow<V> const& b) noexcept
+    {
+        return a.m_Data < b.m_Data;
+    }
+
+    template<typename U, typename V>
+    inline bool operator>(Cow<U> const& a, Cow<V> const& b) noexcept
+    {
+        return a.m_Data > b.m_Data;
+    }
+
+    template<typename U, typename V>
+    inline bool operator<=(Cow<U> const& a, Cow<V> const& b) noexcept
+    {
+        return a.m_Data <= b.m_Data;
+    }
+
+    template<typename U, typename V>
+    inline bool operator>=(Cow<U> const& a, Cow<V> const& b) noexcept
+    {
+        return a.m_Data >= b.m_Data;
     }
 }
