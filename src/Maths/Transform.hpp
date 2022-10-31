@@ -73,6 +73,9 @@ namespace osc
     // pretty-prints a `Transform` for readability
     std::ostream& operator<<(std::ostream& o, Transform const&);
 
+    // returns true if the Transforms compare value-equal
+    bool operator==(Transform const&, Transform const&) noexcept;
+
     // applies the transform to a point vector (equivalent to `TransformPoint`)
     glm::vec3 operator*(Transform const&, glm::vec3 const&) noexcept;
 

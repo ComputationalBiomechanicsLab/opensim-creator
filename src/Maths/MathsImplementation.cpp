@@ -871,6 +871,14 @@ std::ostream& osc::operator<<(std::ostream& o, Transform const& t)
     return o << "Transform(position = " << t.position << ", rotation = " << t.rotation << ", scale = " << t.scale << ')';
 }
 
+bool osc::operator==(osc::Transform const& a, osc::Transform const& b) noexcept
+{
+    return
+        a.scale == b.scale &&
+        a.rotation == b.rotation &&
+        a.position == b.position;
+}
+
 glm::vec3 osc::operator*(Transform const& t, glm::vec3 const& p) noexcept
 {
     return TransformPoint(t, p);
