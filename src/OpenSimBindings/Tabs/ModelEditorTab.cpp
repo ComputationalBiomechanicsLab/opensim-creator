@@ -191,6 +191,7 @@ public:
                 }
                 catch (std::exception const& ex2)
                 {
+                    log::error("model rollback also thrown an exception: %s", ex2.what());
                     UID tabID = m_Parent->addTab<ErrorTab>(m_Parent, ex2);
                     m_Parent->selectTab(tabID);
                     m_Parent->closeTab(m_ID);

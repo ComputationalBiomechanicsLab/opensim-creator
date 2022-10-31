@@ -1091,6 +1091,7 @@ bool osc::ActionReassignComponentSocket(
     }
     catch (std::exception const& ex)
     {
+        log::error("error detected while trying to reassign a socket: %s", ex.what());
         error = ex.what();
         uim.rollback();
         return false;

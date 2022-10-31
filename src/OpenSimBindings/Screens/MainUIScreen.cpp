@@ -91,7 +91,7 @@ public:
                 // - soak up the exception to prevent the whole application from terminating
                 // - and emit the error to the log, because we have to assume that this
                 //   screen is about to die (it's being unmounted)
-                log::info("MainUIScreen::onUnmount: unmounting active tab threw an exception: %s", ex.what());
+                log::error("MainUIScreen::onUnmount: unmounting active tab threw an exception: %s", ex.what());
             }
 
             m_ActiveTab = UID::empty();
@@ -130,6 +130,8 @@ public:
                 }
                 catch (std::exception const& ex)
                 {
+                    log::error("MainUIScreen::onEvent: exception thrown by tab: %s", ex.what());
+
                     // - the tab is faulty in some way
                     // - soak up the exception to prevent the whole application from terminating
                     // - then create a new tab containing the error message, so the user can see the error
@@ -174,6 +176,8 @@ public:
             }
             catch (std::exception const& ex)
             {
+                log::error("MainUIScreen::onEvent: exception thrown by tab: %s", ex.what());
+
                 // - the tab is faulty in some way
                 // - soak up the exception to prevent the whole application from terminating
                 // - then create a new tab containing the error message, so the user can see the error
@@ -205,6 +209,9 @@ public:
             }
             catch (std::exception const& ex)
             {
+
+                log::error("MainUIScreen::onTick: tab thrown an exception: %s", ex.what());
+
                 // - the tab is faulty in some way
                 // - soak up the exception to prevent the whole application from terminating
                 // - then create a new tab containing the error message, so the user can see the error
@@ -330,6 +337,8 @@ private:
                     }
                     catch (std::exception const& ex)
                     {
+                        log::error("MainUIScreen::drawTabSpecificMenu: tab thrown an exception: %s", ex.what());
+
                         // - the tab is faulty in some way
                         // - soak up the exception to prevent the whole application from terminating
                         // - then create a new tab containing the error message, so the user can see the error
@@ -469,6 +478,8 @@ private:
             }
             catch (std::exception const& ex)
             {
+                log::error("MainUIScreen::drawUIConent: tab thrown an exception: %s", ex.what());
+
                 // - the tab is faulty in some way
                 // - soak up the exception to prevent the whole application from terminating
                 // - then create a new tab containing the error message, so the user can see the error

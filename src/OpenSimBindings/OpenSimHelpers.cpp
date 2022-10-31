@@ -1148,7 +1148,7 @@ OpenSim::AbstractOutput const* osc::FindOutput(OpenSim::Component const& c, std:
     {
         rv = &c.getOutput(outputName);
     }
-    catch (...)
+    catch (OpenSim::Exception const&)
     {
         // OpenSim, innit
     }

@@ -8,6 +8,7 @@
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Platform/Log.hpp"
 #include "src/Tabs/TabHost.hpp"
 
 #include <glm/vec2.hpp>
@@ -87,12 +88,8 @@ public:
         }
         catch (std::exception const& ex)
         {
+            log::info("LoadingScreen::onTick: exception thrown while loading model: %s", ex.what());
             m_LoadingErrorMsg = ex.what();
-            return;
-        }
-        catch (...)
-        {
-            m_LoadingErrorMsg = "an unknown exception (does not inherit from std::exception) occurred when loading the file";
             return;
         }
 
