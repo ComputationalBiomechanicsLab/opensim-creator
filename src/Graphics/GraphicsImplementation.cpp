@@ -773,7 +773,7 @@ public:
     {
         OSC_ASSERT_ALWAYS(m_Dimensions.x >= 0 && m_Dimensions.y >= 0);
         OSC_ASSERT_ALWAYS(m_Dimensions.x * m_Dimensions.y == m_Pixels.size()/m_NumChannels);
-        OSC_ASSERT_ALWAYS(m_NumChannels == 1 || m_NumChannels == 3 || m_NumChannels == 4);
+        OSC_ASSERT(m_NumChannels == 1 || m_NumChannels == 3 || m_NumChannels == 4);
     }
 
     glm::ivec2 getDimensions() const
@@ -2593,7 +2593,7 @@ private:
             nonstd::span<uint32_t const> const indices(&m_IndicesData.front().u32, m_NumIndices);
 
             // bounds-check the indices, to ensure nothing bizzare happens at runtime (#460)
-            OSC_ASSERT(std::all_of(indices.begin(), indices.end(), [nVerts = m_Vertices.size()](uint32_t i) { return i < nVerts; }));
+            OSC_ASSERT_ALWAYS(std::all_of(indices.begin(), indices.end(), [nVerts = m_Vertices.size()](uint32_t i) { return i < nVerts; }));
 
             m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
             if (m_Topography == MeshTopography::Triangles)
@@ -2610,7 +2610,7 @@ private:
             nonstd::span<uint16_t const> const indices(&m_IndicesData.front().u16.a, m_NumIndices);
 
             // bounds-check the indices, to ensure nothing bizzare happens at runtime (#460)
-            OSC_ASSERT(std::all_of(indices.begin(), indices.end(), [nVerts = m_Vertices.size()](uint16_t i) { return i < nVerts; }));
+            OSC_ASSERT_ALWAYS(std::all_of(indices.begin(), indices.end(), [nVerts = m_Vertices.size()](uint16_t i) { return i < nVerts; }));
 
             m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
             if (m_Topography == MeshTopography::Triangles)
@@ -3521,7 +3521,7 @@ namespace
             }();
             (void)g_ShowWarningOnce;
         }
-        OSC_ASSERT(v < 1<<16 && "number of samples is greater than the maximum supported by the application");
+        OSC_ASSERT_ALWAYS(v < 1<<16 && "number of samples is greater than the maximum supported by the application");
 
         return v;
     }

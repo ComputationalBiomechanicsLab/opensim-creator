@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/Bindings/Gl.hpp"
+#include "src/Utils/Assertions.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat3x3.hpp>
@@ -40,7 +41,7 @@ namespace gl
     inline std::enable_if_t<std::is_same_v<glm::vec3, typename Container::value_type>, void>
         Uniform(UniformArray<glsl::vec3, N>& u, Container& container) noexcept
     {
-        assert(container.size() == N);
+        OSC_ASSERT(container.size() == N);
         glUniform3fv(u.geti(), static_cast<GLsizei>(container.size()), glm::value_ptr(*container.data()));
     }
 

@@ -2,7 +2,6 @@
 
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/Utils/Algorithms.hpp"
-#include "src/Utils/Assertions.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/Macros.hpp"
 

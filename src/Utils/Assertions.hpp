@@ -8,7 +8,7 @@ namespace osc
     [[noreturn]] void OnAssertionFailure(char const* failingCode,
                                          char const* func,
                                          char const* file,
-                                         unsigned int line);
+                                         unsigned int line) noexcept;
 }
 
 // always execute this assertion - even if in release mode /w debug flags disabled

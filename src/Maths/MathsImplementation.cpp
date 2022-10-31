@@ -65,6 +65,29 @@ bool osc::operator!=(AABB const& a, AABB const& b) noexcept
 // BVH helpers
 namespace
 {
+    osc::AABB Union(void const* data, size_t n, size_t stride, size_t offset)
+    {
+        if (n == 0)
+        {
+            return osc::AABB{};
+        }
+
+        OSC_ASSERT(reinterpret_cast<uintptr_t>(data) % alignof(osc::AABB) == 0 && "possible unaligned load detected: this will cause bugs on systems that only support aligned loads (e.g. ARM)");
+        OSC_ASSERT(static_cast<uintptr_t>(offset) % alignof(osc::AABB) == 0 && "possible unaligned load detected: this will cause bugs on systems that only support aligned loads (e.g. ARM)");
+
+        unsigned char const* firstPtr = reinterpret_cast<unsigned char const*>(data);
+
+        osc::AABB rv = *reinterpret_cast<osc::AABB const*>(firstPtr + offset);
+        for (size_t i = 1; i < n; ++i)
+        {
+            unsigned char const* elPtr = firstPtr + (i*stride) + offset;
+            osc::AABB const& aabb = *reinterpret_cast<osc::AABB const*>(elPtr);
+            rv = Union(rv, aabb);
+        }
+
+        return rv;
+    }
+
     // recursively build the BVH
     void BVH_RecursiveBuild(osc::BVH& bvh, int begin, int n)
     {
@@ -1595,29 +1618,6 @@ osc::AABB osc::Union(AABB const& a, AABB const& b) noexcept
         Min(a.min, b.min),
         Max(a.max, b.max),
     };
-}
-
-osc::AABB osc::Union(void const* data, size_t n, size_t stride, size_t offset)
-{
-    if (n == 0)
-    {
-        return AABB{};
-    }
-
-    OSC_ASSERT(reinterpret_cast<uintptr_t>(data) % alignof(AABB) == 0 && "possible unaligned load detected: this will cause bugs on systems that only support aligned loads (e.g. ARM)");
-    OSC_ASSERT(static_cast<uintptr_t>(offset) % alignof(AABB) == 0 && "possible unaligned load detected: this will cause bugs on systems that only support aligned loads (e.g. ARM)");
-
-    unsigned char const* firstPtr = reinterpret_cast<unsigned char const*>(data);
-
-    AABB rv = *reinterpret_cast<AABB const*>(firstPtr + offset);
-    for (size_t i = 1; i < n; ++i)
-    {
-        unsigned char const* elPtr = firstPtr + (i*stride) + offset;
-        AABB const& aabb = *reinterpret_cast<AABB const*>(elPtr);
-        rv = Union(rv, aabb);
-    }
-
-    return rv;
 }
 
 bool osc::IsEffectivelyEmpty(AABB const& a) noexcept

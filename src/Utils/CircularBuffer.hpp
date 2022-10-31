@@ -1,7 +1,8 @@
 #pragma once
 
+#include "src/Utils/Assertions.hpp"
+
 #include <array>
-#include <cassert>
 #include <iterator>
 #include <optional>
 #include <stdexcept>
@@ -421,7 +422,7 @@ namespace osc
 
         constexpr iterator erase(iterator first, iterator last)
         {
-            assert(last == end() && "can currently only erase elements from end of circular buffer");
+            OSC_ASSERT(last == end() && "can currently only erase elements from end of circular buffer");
 
             for (auto it = first; it < last; ++it)
             {
