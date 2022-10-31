@@ -3452,7 +3452,7 @@ namespace
         sdl::GLContext ctx = sdl::GL_CreateContext(window);
 
         // enable the context
-        if (SDL_GL_MakeCurrent(window, ctx) != 0)
+        if (SDL_GL_MakeCurrent(window, ctx.get()) != 0)
         {
             throw std::runtime_error{std::string{"SDL_GL_MakeCurrent failed: "} + SDL_GetError()};
         }
@@ -3793,7 +3793,7 @@ public:
 
     void* updRawGLContextHandle()
     {
-        return m_GLContext;
+        return m_GLContext.get();
     }
 
     std::future<Image> requestScreenshot()

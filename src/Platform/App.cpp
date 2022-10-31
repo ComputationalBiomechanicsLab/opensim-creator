@@ -254,14 +254,12 @@ public:
 
     glm::ivec2 idims() const
     {
-        auto [w, h] = sdl::GetWindowSize(m_MainWindow);
-        return glm::ivec2{w, h};
+        return sdl::GetWindowSize(m_MainWindow.get());
     }
 
     glm::vec2 dims() const
     {
-        auto [w, h] = sdl::GetWindowSize(m_MainWindow);
-        return glm::vec2{static_cast<float>(w), static_cast<float>(h)};
+        return glm::vec2{sdl::GetWindowSize(m_MainWindow.get())};
     }
 
     float aspectRatio() const
@@ -273,27 +271,27 @@ public:
     void setShowCursor(bool v)
     {
         SDL_ShowCursor(v ? SDL_ENABLE : SDL_DISABLE);
-        SDL_SetWindowGrab(m_MainWindow, v ? SDL_FALSE : SDL_TRUE);
+        SDL_SetWindowGrab(m_MainWindow.get(), v ? SDL_FALSE : SDL_TRUE);
     }
 
     bool isWindowFocused() const
     {
-        return SDL_GetWindowFlags(m_MainWindow) & SDL_WINDOW_INPUT_FOCUS;
+        return SDL_GetWindowFlags(m_MainWindow.get()) & SDL_WINDOW_INPUT_FOCUS;
     }
 
     void makeFullscreen()
     {
-        SDL_SetWindowFullscreen(m_MainWindow, SDL_WINDOW_FULLSCREEN);
+        SDL_SetWindowFullscreen(m_MainWindow.get(), SDL_WINDOW_FULLSCREEN);
     }
 
     void makeWindowedFullscreen()
     {
-        SDL_SetWindowFullscreen(m_MainWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
+        SDL_SetWindowFullscreen(m_MainWindow.get(), SDL_WINDOW_FULLSCREEN_DESKTOP);
     }
 
     void makeWindowed()
     {
-        SDL_SetWindowFullscreen(m_MainWindow, 0);
+        SDL_SetWindowFullscreen(m_MainWindow.get(), 0);
     }
 
     int getMSXAASamplesRecommended() const
@@ -499,7 +497,7 @@ public:
                 glm::ivec2 mouseGlobal;
                 SDL_GetGlobalMouseState(&mouseGlobal.x, &mouseGlobal.y);
                 glm::ivec2 mouseWindow;
-                SDL_GetWindowPosition(m_MainWindow, &mouseWindow.x, &mouseWindow.y);
+                SDL_GetWindowPosition(m_MainWindow.get(), &mouseWindow.x, &mouseWindow.y);
 
                 rv.pos = mouseGlobal - mouseWindow;
             }
@@ -514,7 +512,7 @@ public:
 
     void warpMouseInWindow(glm::vec2 v) const
     {
-        SDL_WarpMouseInWindow(m_MainWindow, static_cast<int>(v.x), static_cast<int>(v.y));
+        SDL_WarpMouseInWindow(m_MainWindow.get(), static_cast<int>(v.x), static_cast<int>(v.y));
     }
 
     bool isShiftPressed() const
@@ -548,7 +546,7 @@ public:
         g_CurSubtitle = sv;
 
         std::string newTitle = sv.empty() ? OSC_APPNAME_STRING : (std::string{sv} + " - " + OSC_APPNAME_STRING);
-        SDL_SetWindowTitle(m_MainWindow, newTitle.c_str());
+        SDL_SetWindowTitle(m_MainWindow.get(), newTitle.c_str());
     }
 
     void unsetMainWindowSubTitle()
@@ -776,7 +774,7 @@ private:
             m_CurrentScreen->onDraw();
 
             // "present" the rendered screen to the user (can block on VSYNC)
-            m_GraphicsContext.doSwapBuffers(m_MainWindow);
+            m_GraphicsContext.doSwapBuffers(m_MainWindow.get());
 
             // handle annotated screenshot requests (if any)
             {
@@ -839,7 +837,7 @@ private:
     sdl::Window m_MainWindow = CreateMainAppWindow();
 
     // init graphics context
-    GraphicsContext m_GraphicsContext{m_MainWindow};
+    GraphicsContext m_GraphicsContext{m_MainWindow.get()};
 
     // get performance counter frequency (for the delta clocks)
     Uint64 m_AppCounterFq = SDL_GetPerformanceFrequency();
@@ -1280,7 +1278,7 @@ void osc::ImGuiInit()
 
     // init ImGui for SDL2 /w OpenGL
     App::Impl& impl = *App::upd().m_Impl;
-    ImGui_ImplSDL2_InitForOpenGL(impl.updWindow(), impl.updRawGLContextHandle());
+    ImGui_ImplSDL2_InitForOpenGL(impl.updWindow().get(), impl.updRawGLContextHandle());
 
     // init ImGui for OpenGL
     ImGui_ImplOpenGL3_Init(OSC_GLSL_VERSION);
@@ -1319,7 +1317,7 @@ bool osc::ImGuiOnEvent(SDL_Event const& e)
 void osc::ImGuiNewFrame()
 {
     ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame(App::upd().m_Impl->updWindow());
+    ImGui_ImplSDL2_NewFrame(App::upd().m_Impl->updWindow().get());
     ImGui::NewFrame();
 }
 

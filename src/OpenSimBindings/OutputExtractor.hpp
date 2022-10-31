@@ -22,43 +22,60 @@ namespace osc
     //
     // This is a value-type that can be compared, hashed, etc. for easier usage
     // by other parts of osc (e.g. aggregators, plotters)
-    class OutputExtractor {
+    class OutputExtractor final : public VirtualOutputExtractor {
     public:
         template<class SpecificOutput>
         explicit OutputExtractor(SpecificOutput&& output) :
             m_Output{std::make_shared<SpecificOutput>(std::forward<SpecificOutput>(output))}
         {
         }
-        std::string const& getName() const
+
+        std::string const& getName() const override
         {
             return m_Output->getName();
         }
-        std::string const& getDescription() const
+
+        std::string const& getDescription() const override
         {
             return m_Output->getDescription();
         }
-        OutputType getOutputType() const
+
+        OutputType getOutputType() const override
         {
             return m_Output->getOutputType();
         }
-        float getValueFloat(OpenSim::Component const& c, SimulationReport const& r) const
+
+        float getValueFloat(OpenSim::Component const& c, SimulationReport const& r) const override
         {
             return m_Output->getValueFloat(c, r);
         }
+
         void getValuesFloat(OpenSim::Component const& c,
                             nonstd::span<SimulationReport const> reports,
-                            nonstd::span<float> overwriteOut)
+                            nonstd::span<float> overwriteOut) const override
         {
             m_Output->getValuesFloat(c, reports, overwriteOut);
         }
-        std::string getValueString(OpenSim::Component const& c, SimulationReport const& r) const
+
+        std::string getValueString(OpenSim::Component const& c, SimulationReport const& r) const override
         {
             return m_Output->getValueString(c, r);
         }
 
-        VirtualOutputExtractor const& getInner() const { return *m_Output; }
-        operator VirtualOutputExtractor const& () const { return *m_Output; }
-        operator VirtualOutputExtractor& () { return *m_Output; }
+        std::size_t getHash() const override
+        {
+            return m_Output->getHash();
+        }
+
+        bool equals(VirtualOutputExtractor const& other) const override
+        {
+            return m_Output->equals(other);
+        }
+
+        VirtualOutputExtractor const& getInner() const
+        {
+            return *m_Output;
+        }
 
     private:
         friend bool operator==(OutputExtractor const&, OutputExtractor const&);
@@ -69,8 +86,16 @@ namespace osc
         std::shared_ptr<VirtualOutputExtractor> m_Output;
     };
 
-    inline bool operator==(OutputExtractor const& a, OutputExtractor const& b) { return *a.m_Output == *b.m_Output; }
-    inline bool operator!=(OutputExtractor const& a, OutputExtractor const& b) { return *a.m_Output != *b.m_Output; }
+    inline bool operator==(OutputExtractor const& a, OutputExtractor const& b)
+    {
+        return *a.m_Output == *b.m_Output;
+    }
+
+    inline bool operator!=(OutputExtractor const& a, OutputExtractor const& b)
+    {
+        return *a.m_Output != *b.m_Output;
+    }
+
     std::ostream& operator<<(std::ostream&, OutputExtractor const&);
     std::string to_string(OutputExtractor const&);
 }

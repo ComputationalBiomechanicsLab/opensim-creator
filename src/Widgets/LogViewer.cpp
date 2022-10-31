@@ -16,20 +16,18 @@
 namespace
 {
     [[nodiscard]] ImVec4 color(osc::log::level::LevelEnum lvl) {
-        using namespace osc::log::level;
-
         switch (lvl) {
-        case trace:
+        case osc::log::level::trace:
             return ImVec4{0.5f, 0.5f, 0.5f, 1.0f};
-        case debug:
+        case osc::log::level::debug:
             return ImVec4{0.8f, 0.8f, 0.8f, 1.0f};
-        case info:
+        case osc::log::level::info:
             return ImVec4{0.5f, 0.5f, 1.0f, 1.0f};
-        case warn:
+        case osc::log::level::warn:
             return ImVec4{1.0f, 1.0f, 0.0f, 1.0f};
-        case err:
+        case osc::log::level::err:
             return ImVec4{1.0f, 0.0f, 0.0f, 1.0f};
-        case critical:
+        case osc::log::level::critical:
             return ImVec4{1.0f, 0.0f, 0.0f, 1.0f};
         default:
             return ImVec4{1.0f, 1.0f, 1.0f, 1.0f};

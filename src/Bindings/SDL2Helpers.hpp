@@ -68,7 +68,8 @@ namespace sdl {
                 SDL_DestroyWindow(m_WindowHandle);
             }
         }
-        operator SDL_Window*() const noexcept
+
+        SDL_Window* get() const noexcept
         {
             return m_WindowHandle;
         }
@@ -113,7 +114,7 @@ namespace sdl {
             SDL_DestroyRenderer(m_RendererHandle);
         }
 
-        operator SDL_Renderer*() noexcept
+        SDL_Renderer* get() noexcept
         {
             return m_RendererHandle;
         }
@@ -160,10 +161,11 @@ namespace sdl {
             }
         }
 
-        operator SDL_GLContext() noexcept
+        SDL_GLContext get() noexcept
         {
             return m_ContextHandle;
         }
+
     private:
         friend GLContext GL_CreateContext(SDL_Window* w);
         GLContext(SDL_GLContext _ctx) : m_ContextHandle{_ctx}
@@ -200,12 +202,12 @@ namespace sdl {
             SDL_FreeSurface(m_SurfaceHandle);
         }
 
-        operator SDL_Surface*() noexcept
+        SDL_Surface* get() noexcept
         {
             return m_SurfaceHandle;
         }
 
-        SDL_Surface* operator->() const noexcept
+        SDL_Surface* operator->() noexcept
         {
             return m_SurfaceHandle;
         }
@@ -279,7 +281,7 @@ namespace sdl {
             SDL_DestroyTexture(m_TextureHandle);
         }
 
-        operator SDL_Texture*()
+        SDL_Texture* get() noexcept
         {
             return m_TextureHandle;
         }
@@ -323,37 +325,16 @@ namespace sdl {
         SDL_RenderPresent(r);
     }
 
-    struct WindowDimensions {
-        int w;
-        int h;
-
-        operator glm::vec2() const noexcept
-        {
-            return {w, h};
-        }
-    };
-
-    inline bool operator==(WindowDimensions const& a, WindowDimensions const& b) noexcept
-    {
-        return a.w == b.w && a.h == b.h;
-    }
-
-    inline bool operator!=(WindowDimensions const& a, WindowDimensions const& b) noexcept
-    {
-        return !(a == b);
-    }
-
     // https://wiki.libsdl.org/SDL_GetWindowSize
-    inline WindowDimensions GetWindowSize(SDL_Window* window)
+    inline glm::ivec2 GetWindowSize(SDL_Window* window)
     {
-        WindowDimensions d;
-        SDL_GetWindowSize(window, &d.w, &d.h);
+        glm::ivec2 d;
+        SDL_GetWindowSize(window, &d.x, &d.y);
         return d;
     }
 
     struct MouseState final {
-        int x;
-        int y;
+        glm::ivec2 pos;
         Uint32 st;
     };
 
@@ -363,7 +344,7 @@ namespace sdl {
     inline MouseState GetMouseState()
     {
         MouseState rv;
-        Uint32 st = SDL_GetMouseState(&rv.x, &rv.y);
+        Uint32 st = SDL_GetMouseState(&rv.pos.x, &rv.pos.y);
         rv.st = st;
         return rv;
     }

@@ -20,8 +20,6 @@
 #include <string>
 #include <utility>
 
-using namespace std::literals::string_literals;
-
 static std::filesystem::path convertSDLPathToStdpath(char const* methodname, char* p)
 {
     if (p == nullptr)
