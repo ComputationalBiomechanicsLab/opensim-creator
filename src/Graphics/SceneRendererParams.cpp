@@ -18,7 +18,7 @@ osc::SceneRendererParams::SceneRendererParams() :
     specularStrength{0.4f},
     shininess{8.0f},
     backgroundColor{0.89f, 0.89f, 0.89f, 1.0f},
-    rimColor{1.0f, 0.4f, 0.0f, 0.85f},
+    rimColor{1.0f, 0.4f, 0.0f, 1.0f},
     floorLocation{0.0f, -0.001f, 0.0f},
     fixupScaleFactor{1.0f}
 {

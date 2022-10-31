@@ -74,8 +74,8 @@ public:
     {
         m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_ChequerTexture);
         m_SceneTexturedElementsMaterial.setVec2("uTextureScale", {200.0f, 200.0f});
-        m_RimsSelectedColor.setVec4("uDiffuseColor", {0.9f, 0.0f, 0.0f, 1.0f});
-        m_RimsHoveredColor.setVec4("uDiffuseColor", {0.4, 0.0f, 0.0f, 1.0f});
+        m_RimsSelectedColor.setVec4("uDiffuseColor", {1.0f, 0.0f, 0.0f, 1.0f});
+        m_RimsHoveredColor.setVec4("uDiffuseColor", {0.5, 0.0f, 0.0f, 1.0f});
         m_EdgeDetectorMaterial.setTransparent(true);
         m_EdgeDetectorMaterial.setDepthTested(false);
         m_SceneTexturedElementsMaterial.setTransparent(true);

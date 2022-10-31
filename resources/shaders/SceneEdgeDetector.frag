@@ -9,50 +9,51 @@ out vec4 FragColor;
 
 // sampling offsets to use when retrieving samples to feed
 // into the kernel
-const vec2 offsets[9] = vec2[](
-    vec2(-1.0f,  1.0f), // top-left
-    vec2( 0.0f,  1.0f), // top-center
-    vec2( 1.0f,  1.0f), // top-right
-    vec2(-1.0f,  0.0f), // center-left
-    vec2( 0.0f,  0.0f), // center-center
-    vec2( 1.0f,  0.0f), // center-right
-    vec2(-1.0f, -1.0f), // bottom-left
-    vec2( 0.0f, -1.0f), // bottom-center
-    vec2( 1.0f, -1.0f)  // bottom-right
+const vec2 g_TextureOffsets[9] = vec2[](
+    vec2(-1.0,  1.0), // top-left
+    vec2( 0.0,  1.0), // top-center
+    vec2( 1.0,  1.0), // top-right
+    vec2(-1.0,  0.0), // center-left
+    vec2( 0.0,  0.0), // center-center
+    vec2( 1.0,  0.0), // center-right
+    vec2(-1.0, -1.0), // bottom-left
+    vec2( 0.0, -1.0), // bottom-center
+    vec2( 1.0, -1.0)  // bottom-right
 );
 
 // https://computergraphics.stackexchange.com/questions/2450/opengl-detection-of-edges
-const float xkern[9] = float[](
-    +1.0, 0.0, -1.0,
-    +2.0, 0.0, -2.0,
-    +1.0, 0.0, -1.0
-);
+//
+// this is known as a "Sobel Kernel"
+const vec2 g_KernelCoefficients[9] = vec2[](
+    vec2( 1.0,  1.0),  // top-left
+    vec2( 0.0,  2.0),  // top-center
+    vec2(-1.0,  1.0),  // top-right
 
-const float ykern[9] = float[](
-    +1.0, +2.0, +1.0,
-        0.0,  0.0,  0.0,
-    -1.0, -2.0, -1.0
+    vec2( 2.0,  0.0),  // center-left
+    vec2( 0.0,  0.0),  // center
+    vec2(-2.0,  0.0),  // center-right
+
+    vec2( 1.0, -1.0),  // bottom-left
+    vec2( 0.0, -2.0),  // bottom-center
+    vec2(-1.0, -1.0)   // bottom-right
 );
 
 void main(void)
 {
-    float rimX = 0.0;
-    float rimY = 0.0;
-    for (int i = 0; i < xkern.length(); ++i) {
-        vec2 offset = uRimThickness * offsets[i];
+    vec2 rimXY = vec2(0.0, 0.0);
+    for (int i = 0; i < g_KernelCoefficients.length(); ++i)
+    {
+        vec2 offset = uRimThickness * g_TextureOffsets[i];
         vec2 coord = TexCoords + offset;
 
         float v = texture(uScreenTexture, coord).r;
-        float x = xkern[i] * v;
-        float y = ykern[i] * v;
-
-        rimX += x;
-        rimY += y;
+        rimXY += v * g_KernelCoefficients[i];
     }
 
-    float rimStrength = sqrt(rimX*rimX + rimY*rimY) / 3.0f;
+    // the maximum value from the Sobel Kernel is sqrt(3^2 + 3^2) == sqrt(18)
+    //
+    // but lowering the scaling factor a bit is handy for making the rims more solid
+    float rimStrength = length(rimXY) / 4.242640;
 
-    // rimStrength = abs(rimStrength);  // for inner edges
-
-    FragColor = vec4(uRimRgba.rgb, rimStrength * uRimRgba.a);
+    FragColor = vec4(uRimRgba.rgb, clamp(rimStrength * uRimRgba.a, 0.0, 1.0));
 }
