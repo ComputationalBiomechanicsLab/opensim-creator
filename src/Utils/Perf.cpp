@@ -34,7 +34,7 @@ int64_t osc::AllocateMeasurementID(char const* label, char const* filename, unsi
     return id;
 }
 
-void osc::SubmitMeasurement(int64_t id, PerfClock::time_point start, PerfClock::time_point end)
+void osc::SubmitMeasurement(int64_t id, PerfClock::time_point start, PerfClock::time_point end) noexcept
 {
     auto guard = GetMeasurementStorage().lock();
     auto it = guard->find(id);

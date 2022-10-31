@@ -90,13 +90,13 @@ namespace osc
     };
 
     int64_t AllocateMeasurementID(char const* label, char const* filename, unsigned int line);
-    void SubmitMeasurement(int64_t id, PerfClock::time_point start, PerfClock::time_point end);
+    void SubmitMeasurement(int64_t id, PerfClock::time_point start, PerfClock::time_point end) noexcept;
     void ClearPerfMeasurements();
     int GetAllMeasurements(std::vector<PerfMeasurement>& appendOut);
 
     class PerfTimer {
     public:
-        explicit PerfTimer(int64_t id) : m_ID{id} {}
+        explicit PerfTimer(int64_t id) noexcept : m_ID{id} {}
         PerfTimer(PerfTimer const&) = delete;
         PerfTimer(PerfTimer&&) noexcept = delete;
         PerfTimer& operator=(PerfTimer const&) = delete;
