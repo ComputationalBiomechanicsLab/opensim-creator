@@ -309,7 +309,6 @@ private:
             }
             c.setClearFlags(CameraClearFlags::Nothing);
 
-            c.swapTexture(rt);
             for (int cmdIdx = 0; cmdIdx < drawlist.CmdBuffer.Size; ++cmdIdx)
             {
                 ImDrawCmd const& cmd = drawlist.CmdBuffer[cmdIdx];
@@ -325,6 +324,8 @@ private:
                 }
                 Graphics::DrawMesh(mesh, Transform{}, material, c);
             }
+
+            c.swapTexture(rt);
             c.render();
             c.swapTexture(rt);
         }

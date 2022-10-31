@@ -4834,9 +4834,10 @@ void osc::GraphicsBackend::Blit(Texture2D const& source, RenderTexture& dest)
 
     g_GraphicsContextImpl->m_QuadMaterial.setTexture("uTexture", source);
 
+    Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, g_GraphicsContextImpl->m_QuadMaterial, c);
+
     std::optional<RenderTexture> swapTex{std::move(dest)};
     c.swapTexture(swapTex);
-    Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, g_GraphicsContextImpl->m_QuadMaterial, c);
     c.render();
     c.swapTexture(swapTex);
 
