@@ -1311,6 +1311,7 @@ private:
         gl::BindFramebuffer(GL_FRAMEBUFFER, bufs.MultisampledFBO);
         gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, bufs.MultisampledColorBuffer);
         gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, bufs.MultisampledDepthBuffer);
+        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
 
         // setup single-sampled color buffer (texture, so it can be sampled as part of compositing a UI)
         gl::BindTexture(bufs.SingleSampledColorBuffer);
@@ -2626,14 +2627,15 @@ private:
 
     void uploadToGPU()
     {
-        bool const hasNormals = !m_Normals.empty();
-        bool const hasTexCoords = !m_TexCoords.empty();
-        bool const hasColors = !m_Colors.empty();
-
+        // the decltype higher-level sizeofs are used in this function: check them
         static_assert(sizeof(decltype(m_Vertices)::value_type) == 3*sizeof(float));
         static_assert(sizeof(decltype(m_Normals)::value_type) == 3*sizeof(float));
         static_assert(sizeof(decltype(m_TexCoords)::value_type) == 2*sizeof(float));
-        static_assert(sizeof(decltype(m_Colors)::value_type) == 4*sizeof(char));
+        static_assert(sizeof(decltype(m_Colors)::value_type) == 4*sizeof(uint8_t));
+
+        bool const hasNormals = !m_Normals.empty();
+        bool const hasTexCoords = !m_TexCoords.empty();
+        bool const hasColors = !m_Colors.empty();
 
         // compute the byte stride between each entry in the VBO
         GLsizei byteStride = sizeof(decltype(m_Vertices)::value_type);
@@ -2712,27 +2714,32 @@ private:
         gl::BindVertexArray(buffers.VAO);
         gl::BindBuffer(GL_ARRAY_BUFFER, buffers.ArrayBuffer);
         gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.IndicesBuffer);
-        int64_t offset = 0;
-        glVertexAttribPointer(SHADER_LOC_VERTEX_POSITION, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
+
+        // activate relevant attributes based on buffer layout
+        int64_t byteOffset = 0;
+
+        // define vertex locations in buffer
+        glVertexAttribPointer(SHADER_LOC_VERTEX_POSITION, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
         glEnableVertexAttribArray(SHADER_LOC_VERTEX_POSITION);
-        offset += 3 * sizeof(float);
+        byteOffset += sizeof(decltype(m_Vertices)::value_type);
+
         if (hasNormals)
         {
-            glVertexAttribPointer(SHADER_LOC_VERTEX_NORMAL, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
+            glVertexAttribPointer(SHADER_LOC_VERTEX_NORMAL, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
             glEnableVertexAttribArray(SHADER_LOC_VERTEX_NORMAL);
-            offset += 3 * sizeof(float);
+            byteOffset += sizeof(decltype(m_Normals)::value_type);
         }
         if (hasTexCoords)
         {
-            glVertexAttribPointer(SHADER_LOC_VERTEX_TEXCOORD01, 2, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
+            glVertexAttribPointer(SHADER_LOC_VERTEX_TEXCOORD01, 2, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
             glEnableVertexAttribArray(SHADER_LOC_VERTEX_TEXCOORD01);
-            offset += 2 * sizeof(float);
+            byteOffset += sizeof(decltype(m_TexCoords)::value_type);;
         }
         if (hasColors)
         {
-            glVertexAttribPointer(SHADER_LOC_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(offset)));
+            glVertexAttribPointer(SHADER_LOC_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
             glEnableVertexAttribArray(SHADER_LOC_COLOR);
-            offset += 4 * sizeof(unsigned char);
+            byteOffset += sizeof(decltype(m_Colors)::value_type);
         }
         gl::BindVertexArray();
 
@@ -3802,11 +3809,13 @@ public:
 
     void doSwapBuffers(SDL_Window* window)
     {
+        // ensure window FBO is bound (see: SDL_GL_SwapWindow's note about MacOS requiring 0 is bound)
+        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+
         // flush outstanding screenshot requests
         if (!m_ActiveScreenshotRequests.empty())
         {
             // copy GPU-side window framebuffer into CPU-side `osc::Image` object
-            gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
             glm::ivec2 const dims = osc::App::get().idims();
 
             std::vector<uint8_t> pixels(4*dims.x*dims.y);
@@ -4113,7 +4122,7 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
                 }
             }
         }
-        OSC_ASSERT(sizeof(float)*floatOffset == els.size() * byteStride);
+        OSC_ASSERT_ALWAYS(sizeof(float)*floatOffset == els.size() * byteStride);
 
         auto& vbo = maybeInstancingState.emplace(g_GraphicsContextImpl->m_InstanceGPUBuffer, byteStride).Buf;
         vbo.assign(buf.data(), floatOffset);
@@ -4475,7 +4484,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
     auto batchIt = els.begin();
     while (batchIt != els.end())
     {
-        auto batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasMaterialPropertyBlock{batchIt->propBlock});
+        auto const batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasMaterialPropertyBlock{batchIt->propBlock});
         HandleBatchWithSameMaterialPropertyBlock({batchIt, batchEnd}, textureSlot, maybeInstances);
         batchIt = batchEnd;
     }
@@ -4512,27 +4521,26 @@ void osc::GraphicsBackend::DrawBatchedByOpaqueness(
     auto batchIt = els.begin();
     while (batchIt != els.end())
     {
-        auto batchEnd = std::find_if_not(batchIt, els.end(), IsOpaque);
+        auto const opaqueEnd = std::find_if_not(batchIt, els.end(), IsOpaque);
 
-        if (batchEnd != batchIt)
+        if (opaqueEnd != batchIt)
         {
-            // opaque elements
+            // [batchIt..opaqueEnd] contains opaque elements
             gl::Disable(GL_BLEND);
-            DrawBatchedByMaterial(scene, {batchIt, batchEnd});
+            DrawBatchedByMaterial(scene, {batchIt, opaqueEnd});
+
+            batchIt = opaqueEnd;
         }
 
-        if (batchEnd != els.end())
+        if (opaqueEnd != els.end())
         {
-            auto transparentEnd = std::find_if(batchEnd, els.end(), IsOpaque);
-
-            // transparent elements (assumed already sorted)
+            // [opaqueEnd..els.end()] contains transparent elements
+            auto const transparentEnd = std::find_if(opaqueEnd, els.end(), IsOpaque);
             gl::Enable(GL_BLEND);
-            DrawBatchedByMaterial(scene, {batchEnd, transparentEnd});
+            DrawBatchedByMaterial(scene, {opaqueEnd, transparentEnd});
 
-            batchEnd = transparentEnd;
+            batchIt = transparentEnd;
         }
-
-        batchIt = batchEnd;
     }
 }
 
@@ -4570,23 +4578,31 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     auto batchIt = queue.begin();
     while (batchIt != queue.end())
     {
-        auto end = std::find_if_not(batchIt, queue.end(), IsDepthTested);
+        auto const depthTestedEnd = std::find_if_not(batchIt, queue.end(), IsDepthTested);
 
-        // these elements are depth-tested and, therefore, elegible for reordering
-        SortRenderQueue(batchIt, end, scene.CameraPos);
-        DrawBatchedByOpaqueness(scene, {batchIt, end});
-
-        if (end != queue.end())
+        if (depthTestedEnd != batchIt)
         {
-            auto const ignoreDepthTestEnd = std::find_if(end, queue.end(), IsDepthTested);
+            // there are >0 depth-tested elements that are elegible for reordering
+
+            SortRenderQueue(batchIt, depthTestedEnd, scene.CameraPos);
+            DrawBatchedByOpaqueness(scene, {batchIt, depthTestedEnd});
+
+            batchIt = depthTestedEnd;
+        }
+
+        if (depthTestedEnd != queue.end())
+        {
+            // there are >0 not-depth-tested elements that cannot be reordered
+
+            auto const ignoreDepthTestEnd = std::find_if(depthTestedEnd, queue.end(), IsDepthTested);
 
             // these elements aren't depth-tested and should just be drawn as-is
             gl::Disable(GL_DEPTH_TEST);
-            DrawBatchedByOpaqueness(scene, {end, ignoreDepthTestEnd});
+            DrawBatchedByOpaqueness(scene, {depthTestedEnd, ignoreDepthTestEnd});
             gl::Enable(GL_DEPTH_TEST);
-            end = ignoreDepthTestEnd;
+
+            batchIt = ignoreDepthTestEnd;
         }
-        batchIt = end;
     }
 
     // queue flushed: clear it
