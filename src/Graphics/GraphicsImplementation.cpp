@@ -123,7 +123,6 @@ namespace
 
     void PushAsBytes(float v, std::vector<std::byte>& out)
     {
-        out.reserve(out.size() + sizeof(float));
         for (size_t i = 0; i < sizeof(float); ++i)
         {
             out.push_back(reinterpret_cast<std::byte*>(&v)[i]);
@@ -132,7 +131,6 @@ namespace
 
     void PushAsBytes(glm::vec3 const& v, std::vector<std::byte>& out)
     {
-        out.reserve(out.size() + sizeof(glm::vec3));
         PushAsBytes(v.x, out);
         PushAsBytes(v.y, out);
         PushAsBytes(v.z, out);
@@ -140,14 +138,12 @@ namespace
 
     void PushAsBytes(glm::vec2 const& v, std::vector<std::byte>& out)
     {
-        out.reserve(out.size() + sizeof(glm::vec2));
         PushAsBytes(v.x, out);
         PushAsBytes(v.y, out);
     }
 
     void PushAsBytes(osc::Rgba32 const& c, std::vector<std::byte>& out)
     {
-        out.reserve(out.size() + sizeof(osc::Rgba32));
         out.push_back(static_cast<std::byte>(c.r));
         out.push_back(static_cast<std::byte>(c.g));
         out.push_back(static_cast<std::byte>(c.b));
@@ -2402,6 +2398,7 @@ public:
     void setTopography(MeshTopography t)
     {
         m_Topography = std::move(t);
+
         m_Version->reset();
     }
 
@@ -2632,6 +2629,11 @@ private:
         bool const hasNormals = !m_Normals.empty();
         bool const hasTexCoords = !m_TexCoords.empty();
         bool const hasColors = !m_Colors.empty();
+
+        static_assert(sizeof(decltype(m_Vertices)::value_type) == 3*sizeof(float));
+        static_assert(sizeof(decltype(m_Normals)::value_type) == 3*sizeof(float));
+        static_assert(sizeof(decltype(m_TexCoords)::value_type) == 2*sizeof(float));
+        static_assert(sizeof(decltype(m_Colors)::value_type) == 4*sizeof(char));
 
         // compute the byte stride between each entry in the VBO
         GLsizei byteStride = sizeof(decltype(m_Vertices)::value_type);
@@ -3725,30 +3727,28 @@ public:
 
     bool isVsyncEnabled() const
     {
-        // adaptive vsync (-1) and vsync (1) are treated as "vsync is enabled"
-        return SDL_GL_GetSwapInterval() != 0;
+        return m_VSyncEnabled;
     }
 
     void enableVsync()
     {
-        // try using adaptive vsync
         if (SDL_GL_SetSwapInterval(-1) == 0)
         {
-            return;
+            // adaptive vsync enabled
         }
-
-        // if adaptive vsync doesn't work, then try normal vsync
-        if (SDL_GL_SetSwapInterval(1) == 0)
+        else if (SDL_GL_SetSwapInterval(1) == 0)
         {
-            return;
+            // normal vsync enabled
         }
 
-        // otherwise, setting vsync isn't supported by the system
+        // always read the vsync state back from SDL
+        m_VSyncEnabled = SDL_GL_GetSwapInterval() != 0;
     }
 
     void disableVsync()
     {
         SDL_GL_SetSwapInterval(0);
+        m_VSyncEnabled = SDL_GL_GetSwapInterval() != 0;
     }
 
     bool isInDebugMode() const
@@ -3765,11 +3765,10 @@ public:
 
         log::info("enabling debug mode");
         EnableOpenGLDebugMessages();
-        m_DebugModeEnabled = true;
+        m_DebugModeEnabled = IsOpenGLInDebugMode();
     }
     void disableDebugMode()
     {
-
         if (!IsOpenGLInDebugMode())
         {
             return;  // already not in debug mode
@@ -3777,7 +3776,7 @@ public:
 
         log::info("disabling debug mode");
         DisableOpenGLDebugMessages();
-        m_DebugModeEnabled = false;
+        m_DebugModeEnabled = IsOpenGLInDebugMode();
     }
 
     void clearProgram()
@@ -3863,6 +3862,8 @@ private:
 
     // maximum number of samples supported by this hardware's OpenGL MSXAA API
     int m_MaxMSXAASamples = GetOpenGLMaxMSXAASamples(m_GLContext);
+
+    bool m_VSyncEnabled = SDL_GL_GetSwapInterval() != 0;
 
     // true if OpenGL's debug mode is enabled
     bool m_DebugModeEnabled = false;
