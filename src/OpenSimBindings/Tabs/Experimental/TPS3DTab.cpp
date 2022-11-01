@@ -21,7 +21,10 @@
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/ScopeGuard.hpp"
+#include "src/Utils/UID.hpp"
 #include "src/Widgets/LogViewerPanel.hpp"
+#include "src/Widgets/PerfPanel.hpp"
 
 #include <glm/mat3x4.hpp>
 #include <glm/vec2.hpp>
@@ -34,6 +37,7 @@
 
 #include <cmath>
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -57,15 +61,142 @@ namespace
     //
     // this is typically what the user/caller defines
     struct LandmarkPair3D final {
-        glm::vec3 src;
-        glm::vec3 dest;
+        glm::vec3 Src;
+        glm::vec3 Dest;
+
+        LandmarkPair3D() = default;
+        LandmarkPair3D(glm::vec3 const& src_, glm::vec3 const& dest_) :
+            Src{src_},
+            Dest{dest_}
+        {
+        }
     };
+
+    bool operator==(LandmarkPair3D const& a, LandmarkPair3D const& b) noexcept
+    {
+        return a.Src == b.Src && a.Dest == b.Dest;
+    }
+
+    bool operator!=(LandmarkPair3D const& a, LandmarkPair3D const& b) noexcept
+    {
+        return !(a == b);
+    }
 
     // pretty-prints `LandmarkPair3D`
     std::ostream& operator<<(std::ostream& o, LandmarkPair3D const& p)
     {
         using osc::operator<<;
-        o << "LandmarkPair3D{src = " << p.src << ", dest = " << p.dest << '}';
+        o << "LandmarkPair3D{Src = " << p.Src << ", dest = " << p.Dest << '}';
+        return o;
+    }
+
+    // required inputs to the 3D TPS algorithm
+    //
+    // these are supplied by the user and used to solve for the coefficients
+    struct TPSInputs3D final {
+        TPSInputs3D() = default;
+
+        TPSInputs3D(std::vector<LandmarkPair3D> landmarks_, float blendingFactor_) :
+            Landmarks{std::move(landmarks_)},
+            BlendingFactor{std::move(blendingFactor_)}
+        {
+        }
+
+        std::vector<LandmarkPair3D> Landmarks;
+        float BlendingFactor = 1.0f;
+    };
+
+    bool operator==(TPSInputs3D const& a, TPSInputs3D const& b) noexcept
+    {
+        return a.Landmarks == b.Landmarks && a.BlendingFactor == b.BlendingFactor;
+    }
+
+    bool operator!=(TPSInputs3D const& a, TPSInputs3D const& b) noexcept
+    {
+        return !(a == b);
+    }
+
+    std::ostream& operator<<(std::ostream& o, TPSInputs3D const& inputs)
+    {
+        o << "TPSInputs3D{landmarks = [";
+        char const* delim = "";
+        for (LandmarkPair3D const& landmark : inputs.Landmarks)
+        {
+            o << delim << landmark;
+            delim = ", ";
+        }
+        o << "], BlendingFactor = " << inputs.BlendingFactor << '}';
+        return o;
+    }
+
+    // a single non-affine term of the 3D TPS equation
+    //
+    // i.e. in `f(p) = a1 + a2*p.x + a3*p.y + a4*p.z + SUM{ wi * U(||controlPoint - p||) }` this encodes
+    //      the `wi` and `controlPoint` parts of that equation
+    struct TPSNonAffineTerm3D final {
+        glm::vec3 Weight;
+        glm::vec3 ControlPoint;
+
+        TPSNonAffineTerm3D(glm::vec3 const& weight_, glm::vec3 const& controlPoint_) :
+            Weight{weight_},
+            ControlPoint{controlPoint_}
+        {
+        }
+    };
+
+    bool operator==(TPSNonAffineTerm3D const& a, TPSNonAffineTerm3D const& b) noexcept
+    {
+        return a.Weight == b.Weight && a.ControlPoint == b.ControlPoint;
+    }
+
+    bool operator!=(TPSNonAffineTerm3D const& a, TPSNonAffineTerm3D const& b) noexcept
+    {
+        return !(a == b);
+    }
+
+    // pretty-prints `TPSNonAffineTerm3D`
+    std::ostream& operator<<(std::ostream& o, TPSNonAffineTerm3D const& wt)
+    {
+        using osc::operator<<;
+        return o << "TPSNonAffineTerm3D{Weight = " << wt.Weight << ", ControlPoint = " << wt.ControlPoint << '}';
+    }
+
+    // all coefficients in the 3D TPS equation
+    //
+    // i.e. these are the a1, a2, a3, a4, and w's (+ control points) terms of the equation
+    struct TPSCoefficients3D final {
+        glm::vec3 a1 = {0.0f, 0.0f, 0.0f};
+        glm::vec3 a2 = {1.0f, 0.0f, 0.0f};
+        glm::vec3 a3 = {0.0f, 1.0f, 0.0f};
+        glm::vec3 a4 = {0.0f, 0.0f, 1.0f};
+        std::vector<TPSNonAffineTerm3D> NonAffineTerms;
+    };
+
+    bool operator==(TPSCoefficients3D const& a, TPSCoefficients3D const& b) noexcept
+    {
+        return
+            a.a1 == b.a1 &&
+            a.a2 == b.a2 &&
+            a.a3 == b.a3 &&
+            a.a4 == b.a4 &&
+            a.NonAffineTerms == b.NonAffineTerms;
+    }
+
+    bool operator!=(TPSCoefficients3D const& a, TPSCoefficients3D const& b) noexcept
+    {
+        return !(a == b);
+    }
+
+    // pretty-prints TPSCoefficients3D
+    std::ostream& operator<<(std::ostream& o, TPSCoefficients3D const& coefs)
+    {
+        using osc::operator<<;
+        o << "TPSCoefficients3D{a1 = " << coefs.a1 << ", a2 = " << coefs.a2 << ", a3 = " << coefs.a3 << ", a4 = " << coefs.a4;
+        for (size_t i = 0; i < coefs.NonAffineTerms.size(); ++i)
+        {
+            o << ", w" << i << " = " << coefs.NonAffineTerms[i];
+        }
+        o << '}';
         return o;
     }
 
@@ -89,73 +220,8 @@ namespace
         }
     }
 
-    // a single non-affine term of the 3D TPS equation
-    //
-    // i.e. in `f(p) = a1 + a2*p.x + a3*p.y + a4*p.z + SUM{ wi * U(||controlPoint - p||) }` this encodes
-    //      the `wi` and `controlPoint` parts of that equation
-    struct TPSNonAffineTerm3D final {
-        glm::vec3 weight;
-        glm::vec3 controlPoint;
-
-        TPSNonAffineTerm3D(glm::vec3 const& weight_, glm::vec3 const& controlPoint_) :
-            weight{weight_},
-            controlPoint{controlPoint_}
-        {
-        }
-    };
-
-    // pretty-prints `TPSNonAffineTerm3D`
-    std::ostream& operator<<(std::ostream& o, TPSNonAffineTerm3D const& wt)
-    {
-        using osc::operator<<;
-        return o << "TPSNonAffineTerm3D{weight = " << wt.weight << ", controlPoint = " << wt.controlPoint << '}';
-    }
-
-    // all coefficients in the 3D TPS equation
-    //
-    // i.e. these are the a1, a2, a3, a4, and w's (+ control points) terms of the equation
-    struct TPSCoefficients3D final {
-        glm::vec3 a1 = {0.0f, 0.0f, 0.0f};
-        glm::vec3 a2 = {1.0f, 0.0f, 0.0f};
-        glm::vec3 a3 = {0.0f, 1.0f, 0.0f};
-        glm::vec3 a4 = {0.0f, 0.0f, 1.0f};
-        std::vector<TPSNonAffineTerm3D> weights;
-    };
-
-    // pretty-prints TPSCoefficients3D
-    std::ostream& operator<<(std::ostream& o, TPSCoefficients3D const& coefs)
-    {
-        using osc::operator<<;
-        o << "TPSCoefficients3D{a1 = " << coefs.a1 << ", a2 = " << coefs.a2 << ", a3 = " << coefs.a3 << ", a4 = " << coefs.a4;
-        for (size_t i = 0; i < coefs.weights.size(); ++i)
-        {
-            o << ", w" << i << " = " << coefs.weights[i];
-        }
-        o << '}';
-        return o;
-    }
-
-    // evaluates the TPS equation with the given coefficients and input point
-    glm::vec3 Evaluate(TPSCoefficients3D const& coefs, glm::vec3 const& p)
-    {
-        // this implementation effectively evaluates `fx(x, y, z)`, `fy(x, y, z)`, and
-        // `fz(x, y, z)` the same time, because `TPSCoefficients3D` stores the X, Y, and Z
-        // variants of the coefficients together in memory (as `vec3`s)
-
-        // compute affine terms (a1 + a2*x + a3*y + a4*z)
-        glm::vec3 rv = coefs.a1 + coefs.a2*p.x + coefs.a3*p.y + coefs.a4*p.z;
-
-        // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
-        for (TPSNonAffineTerm3D const& wt : coefs.weights)
-        {
-            rv += wt.weight * RadialBasisFunction3D(wt.controlPoint, p);
-        }
-
-        return rv;
-    }
-
     // computes all coefficients of the 3D TPS equation (a1, a2, a3, a4, and all the w's)
-    TPSCoefficients3D CalcCoefficients(nonstd::span<LandmarkPair3D const> landmarkPairs)
+    TPSCoefficients3D CalcCoefficients(nonstd::span<LandmarkPair3D const> landmarkPairs, float blendingFactor)
     {
         // this is based on the Bookstein Thin Plate Sline (TPS) warping algorithm
         //
@@ -219,8 +285,8 @@ namespace
         {
             for (int col = 0; col < numPairs; ++col)
             {
-                glm::vec3 const& pi = landmarkPairs[row].src;
-                glm::vec3 const& pj = landmarkPairs[col].src;
+                glm::vec3 const& pi = landmarkPairs[row].Src;
+                glm::vec3 const& pj = landmarkPairs[col].Src;
 
                 L(row, col) = RadialBasisFunction3D(pi, pj);
             }
@@ -233,9 +299,9 @@ namespace
             for (int row = 0; row < numPairs; ++row)
             {
                 L(row, pStartColumn)     = 1.0;
-                L(row, pStartColumn + 1) = landmarkPairs[row].src.x;
-                L(row, pStartColumn + 2) = landmarkPairs[row].src.y;
-                L(row, pStartColumn + 3) = landmarkPairs[row].src.z;
+                L(row, pStartColumn + 1) = landmarkPairs[row].Src.x;
+                L(row, pStartColumn + 2) = landmarkPairs[row].Src.y;
+                L(row, pStartColumn + 3) = landmarkPairs[row].Src.z;
             }
         }
 
@@ -246,9 +312,9 @@ namespace
             for (int col = 0; col < numPairs; ++col)
             {
                 L(ptStartRow, col)     = 1.0;
-                L(ptStartRow + 1, col) = landmarkPairs[col].src.x;
-                L(ptStartRow + 2, col) = landmarkPairs[col].src.y;
-                L(ptStartRow + 3, col) = landmarkPairs[col].src.z;
+                L(ptStartRow + 1, col) = landmarkPairs[col].Src.x;
+                L(ptStartRow + 2, col) = landmarkPairs[col].Src.y;
+                L(ptStartRow + 3, col) = landmarkPairs[col].Src.z;
             }
         }
 
@@ -272,9 +338,10 @@ namespace
         SimTK::Vector Vz(numPairs + 4, 0.0);
         for (int row = 0; row < numPairs; ++row)
         {
-            Vx[row] = landmarkPairs[row].dest.x;
-            Vy[row] = landmarkPairs[row].dest.y;
-            Vz[row] = landmarkPairs[row].dest.z;
+            glm::vec3 const blended = glm::mix(landmarkPairs[row].Src, landmarkPairs[row].Dest, blendingFactor);
+            Vx[row] = blended.x;
+            Vy[row] = blended.y;
+            Vz[row] = blended.z;
         }
 
         // construct coefficient vectors that will receive the solver's result
@@ -301,46 +368,54 @@ namespace
         rv.a4 = {Cx[numPairs+3], Cy[numPairs+3], Cz[numPairs+3]};
 
         // populate `wi` coefficients (+ control points, needed at evaluation-time)
-        rv.weights.reserve(numPairs);
+        rv.NonAffineTerms.reserve(numPairs);
         for (int i = 0; i < numPairs; ++i)
         {
             glm::vec3 const weight = {Cx[i], Cy[i], Cz[i]};
-            glm::vec3 const controlPoint = landmarkPairs[i].src;
-            rv.weights.emplace_back(weight, controlPoint);
+            glm::vec3 const& controlPoint = landmarkPairs[i].Src;
+            rv.NonAffineTerms.emplace_back(weight, controlPoint);
         }
 
         return rv;
     }
 
-    // a class that wraps the 3D TPS algorithm with a basic interface for transforming
-    // points
-    class ThinPlateWarper3D final {
-    public:
-        ThinPlateWarper3D(nonstd::span<LandmarkPair3D const> landmarkPairs) :
-            m_Coefficients{CalcCoefficients(landmarkPairs)}
+    // computes all coefficients of the 3D TPS equation (a1, a2, a3, a4, and all the w's)
+    TPSCoefficients3D CalcCoefficients(TPSInputs3D const& inputs)
+    {
+        // this is just a convenience form of the function that takes each input seperately
+        return CalcCoefficients(inputs.Landmarks, inputs.BlendingFactor);
+    }
+
+    // evaluates the TPS equation with the given coefficients and input point
+    glm::vec3 EvaluateTPSEquation(TPSCoefficients3D const& coefs, glm::vec3 const& p)
+    {
+        // this implementation effectively evaluates `fx(x, y, z)`, `fy(x, y, z)`, and
+        // `fz(x, y, z)` the same time, because `TPSCoefficients3D` stores the X, Y, and Z
+        // variants of the coefficients together in memory (as `vec3`s)
+
+        // compute affine terms (a1 + a2*x + a3*y + a4*z)
+        glm::vec3 rv = coefs.a1 + coefs.a2*p.x + coefs.a3*p.y + coefs.a4*p.z;
+
+        // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
+        for (TPSNonAffineTerm3D const& term : coefs.NonAffineTerms)
         {
+            rv += term.Weight * RadialBasisFunction3D(term.ControlPoint, p);
         }
 
-        glm::vec3 transform(glm::vec3 const& p) const
-        {
-            return Evaluate(m_Coefficients, p);
-        }
-
-    private:
-        TPSCoefficients3D m_Coefficients;
-    };
+        return rv;
+    }
 
     // returns a mesh that is the equivalent of applying the 3D TPS warp to all
     // vertices of the input mesh
-    osc::Mesh ApplyThinPlateWarpToMesh(ThinPlateWarper3D const& t, osc::Mesh const& mesh)
+    osc::Mesh ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, osc::Mesh const& mesh)
     {
         osc::Mesh rv = mesh;
 
-        rv.transformVerts([&t](nonstd::span<glm::vec3> vs)
+        rv.transformVerts([&coefs](nonstd::span<glm::vec3> vs)
         {
             for (glm::vec3& v : vs)
             {
-                v = t.transform(v);
+                v = EvaluateTPSEquation(coefs, v);
             }
         });
 
@@ -348,7 +423,7 @@ namespace
     }
 }
 
-// UI stuff
+// generic UI stuff
 namespace
 {
     // returns a material that can draw a mesh's triangles in wireframe-style
@@ -361,44 +436,6 @@ namespace
         return material;
     }
 
-    // flags that affect panel behavior/rendering
-    using PanelFlags = int;
-    enum PanelFlags_ {
-        PanelFlags_HandleLandmarks = 1<<0,
-        PanelFlags_WireframeMode = 1<<1,
-        PanelFlags_CanChangeMesh = 1<<2,
-        PanelFlags_Default = PanelFlags_WireframeMode | PanelFlags_HandleLandmarks | PanelFlags_CanChangeMesh,
-    };
-
-    // the data associated with one 3D viewer panel
-    struct PanelData final {
-
-        explicit PanelData(osc::Mesh mesh_) :
-            m_Mesh{std::move(mesh_)}
-        {
-            m_Camera.radius = 3.0f * osc::LongestDim(osc::Dimensions(m_Mesh.getBounds()));
-            m_Camera.theta = 0.25f * osc::fpi;
-            m_Camera.phi = 0.25f * osc::fpi;
-            m_RenderParams.drawFloor = false;
-            m_RenderParams.backgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
-        }
-
-        osc::SceneRendererParams m_RenderParams;
-        osc::PolarPerspectiveCamera m_Camera;
-        osc::Mesh m_Mesh;
-        osc::SceneRenderer m_Renderer;
-        std::unordered_map<std::string, glm::vec3> m_Landmarks;
-        PanelFlags m_Flags = PanelFlags_Default;
-    };
-
-    // the data associated with the entire scene
-    struct SceneParams final {
-        float BlendingFactor = 1.0f;
-        float LandmarkRadius = 0.05f;
-        bool LinkCameras = true;
-        osc::Material WireframeMaterial = CreateWireframeOverlayMaterial();
-    };
-
     // auto-focuses the given polar camera on the mesh, such that it fits in frame
     void AutofocusCameraOnMesh(osc::Mesh const& mesh, osc::PolarPerspectiveCamera& camera)
     {
@@ -407,160 +444,305 @@ namespace
         camera.focusPoint = -osc::Midpoint(bounds);
     }
 
+    // returns the 3D position of the intersection between, if any, the user's mouse and the mesh
+    std::optional<glm::vec3> RaycastMesh(osc::PolarPerspectiveCamera const& camera, osc::Mesh const& mesh, osc::Rect const& renderRect, glm::vec2 mousePos)
+    {
+        osc::Line const ray = camera.unprojectTopLeftPosToWorldRay(mousePos - renderRect.p1, osc::Dimensions(renderRect));
+        osc::RayCollision const maybeCollision = osc::GetClosestWorldspaceRayCollision(mesh, osc::Transform{}, ray);
+        return maybeCollision ? std::optional<glm::vec3>{ray.origin + ray.dir*maybeCollision.distance} : std::nullopt;
+    }
+
+    // returns a camera that is focused on the given box
+    osc::PolarPerspectiveCamera CreateCameraFocusedOn(osc::Mesh const& mesh)
+    {
+        osc::PolarPerspectiveCamera rv;
+        rv.radius = 3.0f * osc::LongestDim(osc::Dimensions(mesh.getBounds()));
+        rv.theta = 0.25f * osc::fpi;
+        rv.phi = 0.25f * osc::fpi;
+        return rv;
+    }
+}
+
+// TPS-tab-specific UI stuff
+namespace
+{
     // returns all pair-able landmarks between the `src` and `dest`
     std::vector<LandmarkPair3D> GetLandmarkPairs(
-        std::unordered_map<std::string, glm::vec3> const& src,
-        std::unordered_map<std::string, glm::vec3> const& dest,
-        float blendingFactor)
+        std::unordered_map<size_t, glm::vec3> const& src,
+        std::unordered_map<size_t, glm::vec3> const& dest)
     {
         std::vector<LandmarkPair3D> rv;
         rv.reserve(src.size());  // probably a good guess
-        for (auto const& [srcLandmarkName, srcLandmarkPos] : src)
+        for (auto const& [k, srcPos] : src)
         {
-            auto const it = dest.find(srcLandmarkName);
+            auto const it = dest.find(k);
             if (it != dest.end())
             {
-                glm::vec3 const destLandmarkPos = it->second;
-                glm::vec3 const blendedLandmarkPos = glm::mix(srcLandmarkPos, destLandmarkPos, blendingFactor);
-                rv.push_back(LandmarkPair3D{srcLandmarkPos, blendedLandmarkPos});
+                rv.emplace_back(srcPos, it->second);
             }
         }
         return rv;
     }
 
-    // updates a 3D viewer panel's render parameters from its other members
-    void UpdateRenderParams(PanelData& d, glm::vec2 renderDimensions)
+    // a "panel" in the UI
+    //
+    // effectively, this is data that's common to both panel types (input/result)
+    struct TPSUIPanel {
+        TPSUIPanel(osc::Mesh const& mesh_) : Mesh{mesh_} {}
+
+        osc::Mesh Mesh;
+        bool WireframeMode = true;
+        osc::PolarPerspectiveCamera Camera = CreateCameraFocusedOn(Mesh);
+        osc::SceneRendererParams LastParams;
+        std::vector<osc::SceneDecoration> LastDecorations;
+        osc::SceneRenderer Renderer;
+    };
+
+    // a "user input" panel: i.e. one of the two panels the user is setting landmarks on etc.
+    struct TPSUIInputPanel final : public TPSUIPanel {
+        using TPSUIPanel::TPSUIPanel;
+
+        float LandmarkRadius = 0.05f;
+        std::unordered_map<size_t, glm::vec3> Landmarks;
+    };
+
+    // a "result" panel: i.e. the rightmost panel containing the computed result
+    struct TPSUIResultPanel final : public TPSUIPanel {
+        using TPSUIPanel::TPSUIPanel;
+
+        float BlendingFactor = 1.0f;
+        bool ShowDestinationMesh = false;
+        TPSInputs3D LastTPSInputs;
+        TPSCoefficients3D LastCoefficients;
+        osc::Mesh LastInputMesh;
+    };
+
+    // returns `true` if `results.LastTPSInputs` differs from the latest set of TPS inputs derived from the arguments
+    bool UpdateTPSInputsIfNecessary(TPSUIInputPanel const& src, TPSUIInputPanel const& dest, TPSUIResultPanel& results)
     {
-        // setup rendering parameters
-        d.m_RenderParams.dimensions = renderDimensions;
-        d.m_RenderParams.viewMatrix = d.m_Camera.getViewMtx();
-        d.m_RenderParams.projectionMatrix = d.m_Camera.getProjMtx(osc::AspectRatio(renderDimensions));
-        d.m_RenderParams.samples = osc::App::get().getMSXAASamplesRecommended();
-        d.m_RenderParams.lightDirection = osc::RecommendedLightDirection(d.m_Camera);
+        TPSInputs3D newInputs
+        {
+            GetLandmarkPairs(src.Landmarks, dest.Landmarks),
+            results.BlendingFactor,
+        };
+
+        if (newInputs != results.LastTPSInputs)
+        {
+            results.LastTPSInputs = std::move(newInputs);
+            return true;
+        }
+        else
+        {
+            return false;  // no change in the inputs
+        }
     }
 
-    // returns 3D decorations for the given 3D panel
-    std::vector<osc::SceneDecoration> GenerateDecorations(PanelData const& data, SceneParams const& params)
+    // returns `true` if `results.LastCoefficients` differs from the latest set of coefficients derived from the arguments
+    bool UpdateTPSCoefficientsIfNecessary(TPSUIInputPanel const& src, TPSUIInputPanel const& dest, TPSUIResultPanel& results)
     {
-        // generate in-scene 3D decorations
-        std::vector<osc::SceneDecoration> decorations;
-        decorations.reserve(5 + (data.m_Flags & PanelFlags_HandleLandmarks ? data.m_Landmarks.size() : 0));
-
-        // draw the mesh
-        decorations.emplace_back(data.m_Mesh);
-
-        // if requested, also draw wireframe overlays for the mesh
-        if (data.m_Flags & PanelFlags_WireframeMode)
+        if (!UpdateTPSInputsIfNecessary(src, dest, results))
         {
-            decorations.emplace_back(data.m_Mesh).maybeMaterial = params.WireframeMaterial;
+            // cache: the inputs have not been updated, so the coefficients will not change
+            return false;
         }
 
-        // if requested, draw each landmark as a sphere
-        if (data.m_Flags & PanelFlags_HandleLandmarks)
+        TPSCoefficients3D newCoefficients = CalcCoefficients(results.LastTPSInputs);
+
+        if (newCoefficients != results.LastCoefficients)
         {
-            std::shared_ptr<osc::Mesh const> const sphere = osc::App::meshes().getSphereMesh();
+            results.LastCoefficients = std::move(newCoefficients);
+            return true;
+        }
+        else
+        {
+            return false;  // no change in the coefficients
+        }
+    }
 
-            for (auto const& [landmarkName, landmarkPos] : data.m_Landmarks)
-            {
-                osc::Transform transform{};
-                transform.scale *= params.LandmarkRadius;
-                transform.position = landmarkPos;
-                glm::vec4 const color = {1.0f, 0.0f, 0.0f, 1.0f};
+    bool UpdateWarpedMeshIfNecessary(TPSUIInputPanel const& src, TPSUIInputPanel const& dest, TPSUIResultPanel& results)
+    {
+        bool const coefficientsChanged = UpdateTPSCoefficientsIfNecessary(src, dest, results);
+        bool const meshChanged = src.Mesh != results.LastInputMesh;
 
-                decorations.emplace_back(sphere, transform, color);
-            }
+        if (coefficientsChanged || meshChanged)
+        {
+            results.Mesh = ApplyThinPlateWarpToMesh(results.LastCoefficients, src.Mesh);
+            results.LastInputMesh = src.Mesh;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    // the entire user-editable TPS "scene" (ignoring the ImGui bits)
+    struct TPSUIScene final {
+        TPSUIScene()
+        {
+            UpdateWarpedMeshIfNecessary(SrcPanel, DestPanel, ResultPanel);
+        }
+
+        TPSUIInputPanel SrcPanel{osc::GenUntexturedUVSphere(16, 16)};
+        TPSUIInputPanel DestPanel{osc::GenUntexturedSimbodyCylinder(16)};
+        TPSUIResultPanel ResultPanel{SrcPanel.Mesh};
+        std::optional<osc::PolarPerspectiveCamera> MaybeLockedCameraBase = SrcPanel.Camera;
+        osc::Material WireframeMaterial = CreateWireframeOverlayMaterial();
+        std::shared_ptr<osc::Mesh const> LandmarkSphere = osc::App::meshes().getSphereMesh();
+        glm::vec4 LandmarkColor = {1.0f, 0.0f, 0.0f, 1.0f};
+    };
+
+    void AppendCommonDecorations(TPSUIScene const& scene, TPSUIPanel const& panel, std::vector<osc::SceneDecoration>& out)
+    {
+        out.reserve(out.size() + 5);  // likely guess
+
+        // draw the mesh
+        out.emplace_back(panel.Mesh);
+
+        // if requested, also draw wireframe overlays for the mesh
+        if (panel.WireframeMode)
+        {
+            osc::SceneDecoration& dec = out.emplace_back(panel.Mesh);
+            dec.maybeMaterial = scene.WireframeMaterial;
         }
 
         // add grid decorations
-        DrawXZGrid(decorations);
-        DrawXZFloorLines(decorations, 100.0f);
+        DrawXZGrid(out);
+        DrawXZFloorLines(out, 100.0f);
+    }
+
+    // returns 3D decorations for the given input panel
+    std::vector<osc::SceneDecoration> GenerateDecorations(TPSUIScene const& scene, TPSUIInputPanel const& inputPanel)
+    {
+        // generate in-scene 3D decorations
+        std::vector<osc::SceneDecoration> decorations;
+        decorations.reserve(5 + inputPanel.Landmarks.size());  // likely guess
+
+        AppendCommonDecorations(scene, inputPanel, decorations);
+
+        // append each landmark as a sphere
+        for (auto const& [id, pos] : inputPanel.Landmarks)
+        {
+            osc::Transform transform{};
+            transform.scale *= inputPanel.LandmarkRadius;
+            transform.position = pos;
+
+            decorations.emplace_back(scene.LandmarkSphere, transform, scene.LandmarkColor);
+        }
 
         return decorations;
     }
 
-    // returns the 3D position of the intersection between, if any, the user's mouse and the mesh
-    std::optional<glm::vec3> RaycastPanelMesh(PanelData const& d, osc::Rect const& renderRect)
+    // returns 3D decorations for the given result panel
+    std::vector<osc::SceneDecoration> GenerateDecorations(TPSUIScene const& scene, TPSUIResultPanel const& resultPanel)
     {
-        glm::vec2 const mousePos = ImGui::GetMousePos();
-        osc::Line const ray = d.m_Camera.unprojectTopLeftPosToWorldRay(mousePos - renderRect.p1, osc::Dimensions(renderRect));
-        osc::RayCollision const maybeCollision = osc::GetClosestWorldspaceRayCollision(d.m_Mesh, osc::Transform{}, ray);
-        return maybeCollision ? std::optional<glm::vec3>{ray.origin + ray.dir*maybeCollision.distance} : std::nullopt;
-    }
-
-    // draw a 3D viewer panel via ImGui
-    osc::ImGuiImageHittestResult DrawPanelDataInContentRegionAvail(PanelData& d, SceneParams const& params)
-    {
-        glm::vec2 const renderDimensions = ImGui::GetContentRegionAvail();
-
-        UpdateRenderParams(d, renderDimensions);
-
         // generate in-scene 3D decorations
-        std::vector<osc::SceneDecoration> const decorations = GenerateDecorations(d, params);
+        std::vector<osc::SceneDecoration> decorations;
+        decorations.reserve(5);  // likely guess
 
-        // render
-        d.m_Renderer.draw(decorations, d.m_RenderParams);
+        AppendCommonDecorations(scene, resultPanel, decorations);
 
-        // ImGui: draw as texture via ImGui and then test for user interaction
-        osc::ImGuiImageHittestResult const res = osc::DrawTextureAsImGuiImageAndHittest(d.m_Renderer.updRenderTexture());
-
-        // ImGui: draw overlay buttons (browse, resize, etc.)
+        if (resultPanel.ShowDestinationMesh)
         {
-            glm::vec2 const originalCursorPos = ImGui::GetCursorScreenPos();
-            ImGui::SetCursorScreenPos(res.rect.p1 + glm::vec2{10.0f, 10.0f});
-
-            if (d.m_Flags & PanelFlags_CanChangeMesh)
-            {
-                // ImGui: draw "browse for new mesh" button
-                if (ImGui::Button("browse"))
-                {
-                    std::filesystem::path const p = osc::PromptUserForFile("vtp,obj");
-                    if (!p.empty())
-                    {
-                        d.m_Mesh = osc::LoadMeshViaSimTK(p);
-                    }
-                }
-                ImGui::SameLine();
-            }
-
-            if (ImGui::Button(ICON_FA_EXPAND))
-            {
-                AutofocusCameraOnMesh(d.m_Mesh, d.m_Camera);
-            }
-
-            ImGui::SetCursorScreenPos(originalCursorPos);
+            osc::SceneDecoration& dec = decorations.emplace_back(scene.DestPanel.Mesh);
+            dec.color = {1.0f, 0.0f, 0.0f, 0.5f};
         }
 
-        // if the user's interacting with this particular panel, update the camera
-        if (res.isHovered)
-        {
-            osc::UpdatePolarCameraFromImGuiUserInput(renderDimensions, d.m_Camera);
-        }
-
-        // if the user left-clicks on a location in the 3D scene, interpret it as "try to add a landmark here"
-        if ((d.m_Flags & PanelFlags_HandleLandmarks) && res.isLeftClickReleasedWithoutDragging)
-        {
-            // if the user's mouse ray intersects the mesh, then that's where the landmark should be placed
-            if (std::optional<glm::vec3> maybeCollision = RaycastPanelMesh(d, res.rect))
-            {
-                d.m_Landmarks[std::to_string(d.m_Landmarks.size())] = *maybeCollision;
-            }
-        }
-
-        return res;
+        return decorations;
     }
 
-    // returns a mesh that is the result of mapping `src` landmarks to `dest` landmarks
-    // via the 3D TPS algorithm
-    osc::Mesh CreateTransformedMesh(PanelData const& src, PanelData const& dest, float blendingFactor)
+    // returns scene rendering parameters for an generic panel
+    osc::SceneRendererParams CalcRenderParams(TPSUIScene const& scene, TPSUIPanel const& panel, glm::vec2 dims)
     {
-        // match up landmarks in the source and destination by name
-        std::vector<LandmarkPair3D> landmarks = GetLandmarkPairs(src.m_Landmarks, dest.m_Landmarks, blendingFactor);
+        osc::SceneRendererParams rv;
+        rv.drawFloor = false;
+        rv.backgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
+        rv.dimensions = dims;
+        rv.viewMatrix = panel.Camera.getViewMtx();
+        rv.projectionMatrix = panel.Camera.getProjMtx(osc::AspectRatio(dims));
+        rv.samples = osc::App::get().getMSXAASamplesRecommended();
+        rv.lightDirection = osc::RecommendedLightDirection(panel.Camera);
+        return rv;
+    }
 
-        // create a warper for those pairs (i.e. solve the TPS linear equation)
-        ThinPlateWarper3D const warper{landmarks};
+    // renders a panel to a texture via its renderer and returns a reference to the rendered texture
+    template<typename TPanel>
+    osc::RenderTexture& RenderPanelTexture(TPSUIScene const& scene, TPanel& panel, glm::vec2 dims)
+    {
+        osc::SceneRendererParams const params = CalcRenderParams(scene, panel, dims);
+        std::vector<osc::SceneDecoration> const decorations = GenerateDecorations(scene, panel);
 
-        // warp the source mesh with the warper to create the output mesh
-        return ApplyThinPlateWarpToMesh(warper, src.m_Mesh);
+        if (params == panel.LastParams && decorations == panel.LastDecorations)
+        {
+            return panel.Renderer.updRenderTexture();  // caching: no need to redraw if the inputs haven't changed
+        }
+
+        // else: update cache and redraw
+        panel.Renderer.draw(decorations, params);
+        panel.LastParams = std::move(params);
+        panel.LastDecorations = std::move(decorations);
+
+        return panel.Renderer.updRenderTexture();
+    }
+
+    // "tick" the scene forward (i.e. perform any updates)
+    void Tick(TPSUIScene& scene)
+    {
+        if (scene.MaybeLockedCameraBase)
+        {
+            osc::PolarPerspectiveCamera& baseCamera = *scene.MaybeLockedCameraBase;
+
+            if (scene.SrcPanel.Camera != baseCamera)
+            {
+                baseCamera = scene.SrcPanel.Camera;
+                scene.DestPanel.Camera = baseCamera;
+                scene.ResultPanel.Camera = baseCamera;
+            }
+            else if (scene.DestPanel.Camera != baseCamera)
+            {
+                baseCamera = scene.DestPanel.Camera;
+                scene.SrcPanel.Camera = baseCamera;
+                scene.ResultPanel.Camera = baseCamera;
+            }
+            else if (scene.ResultPanel.Camera != baseCamera)
+            {
+                baseCamera = scene.ResultPanel.Camera;
+                scene.SrcPanel.Camera = baseCamera;
+                scene.DestPanel.Camera = baseCamera;
+            }
+        }
+    }
+
+    void ActionAddLandmark(TPSUIScene& scene, TPSUIInputPanel& panel, glm::vec3 const& pos)
+    {
+        panel.Landmarks[panel.Landmarks.size()] = pos;
+        UpdateWarpedMeshIfNecessary(scene.SrcPanel, scene.DestPanel, scene.ResultPanel);
+    }
+
+    void ActionBrowseForMesh(TPSUIScene& scene, TPSUIInputPanel& panel)
+    {
+        std::filesystem::path const p = osc::PromptUserForFile("vtp,obj");
+        if (!p.empty())
+        {
+            panel.Mesh = osc::LoadMeshViaSimTK(p);
+            UpdateWarpedMeshIfNecessary(scene.SrcPanel, scene.DestPanel, scene.ResultPanel);
+        }
+    }
+
+    void ActionSetLandmarkRadius(TPSUIInputPanel& panel, float radius)
+    {
+        panel.LandmarkRadius = radius;
+    }
+
+    void ActionSetBlendFactor(TPSUIScene const& scene, TPSUIResultPanel& panel, float factor)
+    {
+        panel.BlendingFactor = factor;
+        UpdateWarpedMeshIfNecessary(scene.SrcPanel, scene.DestPanel, panel);
+    }
+
+    void ActionSetShowDestinationMesh(TPSUIResultPanel& panel, bool showDestinationMesh)
+    {
+        panel.ShowDestinationMesh = showDestinationMesh;
     }
 }
 
@@ -569,7 +751,6 @@ public:
 
     Impl(TabHost* parent) : m_Parent{std::move(parent)}
     {
-        m_TransformedData.m_Flags &= ~(PanelFlags_HandleLandmarks | PanelFlags_CanChangeMesh);
     }
 
     UID getID() const
@@ -589,12 +770,12 @@ public:
 
     void onMount()
     {
-
+        App::upd().makeMainEventLoopWaiting();
     }
 
     void onUnmount()
     {
-
+        App::upd().makeMainEventLoopPolling();
     }
 
     bool onEvent(SDL_Event const&)
@@ -604,100 +785,172 @@ public:
 
     void onTick()
     {
-        if (m_SceneParams.LinkCameras)
-        {
-            if (m_SourceData.m_Camera != m_BaseCamera)
-            {
-                m_BaseCamera = m_SourceData.m_Camera;
-            }
-            else if (m_DestData.m_Camera != m_BaseCamera)
-            {
-                m_BaseCamera = m_DestData.m_Camera;
-            }
-            else if (m_TransformedData.m_Camera != m_BaseCamera)
-            {
-                m_BaseCamera = m_TransformedData.m_Camera;
-            }
-
-            m_SourceData.m_Camera = m_BaseCamera;
-            m_DestData.m_Camera = m_BaseCamera;
-            m_TransformedData.m_Camera = m_BaseCamera;
-        }
+        Tick(m_Scene);
     }
 
     void onDrawMainMenu()
     {
-        if (ImGui::BeginMenu("Edit"))
-        {
-            ImGui::SetNextItemWidth(ImGui::CalcTextSize("1.0000000").x);
-            ImGui::InputFloat("marker radius", &m_SceneParams.LandmarkRadius);
-
-            ImGui::EndMenu();
-        }
     }
 
     void onDraw()
     {
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-        ImGui::Begin("Source Mesh", nullptr, ImGuiWindowFlags_NoScrollbar);
-        ImGui::PopStyleVar();
-        {
-            DrawPanelDataInContentRegionAvail(m_SourceData, m_SceneParams);
-        }
-        ImGui::End();
-
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-        ImGui::Begin("Destination Mesh", nullptr, ImGuiWindowFlags_NoScrollbar);
-        ImGui::PopStyleVar();
-        {
-            DrawPanelDataInContentRegionAvail(m_DestData, m_SceneParams);
-        }
-        ImGui::End();
-
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-        ImGui::Begin("Result", nullptr, ImGuiWindowFlags_NoScrollbar);
-        ImGui::PopStyleVar();
-        {
-            m_TransformedData.m_Mesh = CreateTransformedMesh(m_SourceData, m_DestData, m_SceneParams.BlendingFactor);
-            ImGuiImageHittestResult const res = DrawPanelDataInContentRegionAvail(m_TransformedData, m_SceneParams);
-
-            // draw blend factor slider
-            {
-                float constexpr leftPadding = 10.0f;
-                float constexpr bottomPadding = 10.0f;
-                float const panelHeight = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y;
-
-                glm::vec2 const oldCursorPos = ImGui::GetCursorScreenPos();
-                ImGui::SetCursorScreenPos({res.rect.p1.x + leftPadding, res.rect.p2.y - (panelHeight + bottomPadding)});
-                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - leftPadding - ImGui::CalcTextSize("blending factor").x - ImGui::GetStyle().ItemSpacing.x);
-                ImGui::SliderFloat("blending factor", &m_SceneParams.BlendingFactor, 0.0f, 1.0f);
-                ImGui::SetCursorScreenPos(oldCursorPos);
-            }
-        }
-        ImGui::End();
-
-        // draw log panel (debugging)
+        drawPanel("Source Mesh", [this]() { drawInputPanelContent(m_Scene.SrcPanel); });
+        drawPanel("Destination Mesh", [this]() { drawInputPanelContent(m_Scene.DestPanel); });
+        drawPanel("Result", [this]() { drawResultPanelContent(m_Scene.ResultPanel); });
         m_LogViewerPanel.draw();
+        m_PerfPanel.draw();
     }
 
 private:
+    // draw some panel (input/result) using standard window settings
+    void drawPanel(char const* panelName, std::function<void()> const& contentDrawFn)
+    {
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+        ImGui::Begin(panelName, nullptr, ImGuiWindowFlags_NoScrollbar);
+        ImGui::PopStyleVar();
+        contentDrawFn();
+        ImGui::End();
+    }
+
+    // draw the content of an input panel
+    void drawInputPanelContent(TPSUIInputPanel& panel)
+    {
+        // fill the entire available region with the render
+        glm::vec2 const dims = ImGui::GetContentRegionAvail();
+
+        // render it via ImGui and hittest it
+        osc::RenderTexture& renderTexture = RenderPanelTexture(m_Scene, panel, dims);
+        osc::ImGuiImageHittestResult const htResult = osc::DrawTextureAsImGuiImageAndHittest(renderTexture);
+
+        // update camera if user drags it around etc.
+        if (htResult.isHovered)
+        {
+            osc::UpdatePolarCameraFromImGuiUserInput(dims, panel.Camera);
+        }
+
+        // if user left-clicks, add a landmark there
+        if (htResult.isLeftClickReleasedWithoutDragging)
+        {
+            glm::vec2 const mousePos = ImGui::GetMousePos();
+
+            // if the user's mouse ray intersects the mesh, then that's where the landmark should be placed
+            if (std::optional<glm::vec3> maybeCollision = RaycastMesh(panel.Camera, panel.Mesh, htResult.rect, mousePos))
+            {
+                ActionAddLandmark(m_Scene, panel, *maybeCollision);
+            }
+        }
+
+        // draw any overlays
+        drawInputPanelImGuiOverlays(panel, htResult.rect);
+    }
+
+    // draw the content of the result panel
+    void drawResultPanelContent(TPSUIResultPanel& panel)
+    {
+        // fill the entire available region with the render
+        glm::vec2 const dims = ImGui::GetContentRegionAvail();
+
+        // render it via ImGui and hittest it
+        osc::RenderTexture& renderTexture = RenderPanelTexture(m_Scene, m_Scene.ResultPanel, dims);
+        osc::ImGuiImageHittestResult const htResult = osc::DrawTextureAsImGuiImageAndHittest(renderTexture);
+
+        // update camera if user drags it around etc.
+        if (htResult.isHovered)
+        {
+            osc::UpdatePolarCameraFromImGuiUserInput(dims, panel.Camera);
+        }
+
+        drawResultPanelImGuiOverlays(panel, htResult.rect);
+    }
+
+    // draw ImGui overlays over an input panel
+    void drawInputPanelImGuiOverlays(TPSUIInputPanel& panel, Rect const& renderRect)
+    {
+        // ImGui: set cursor to draw over the top-right of the render texture (with padding)
+        glm::vec2 const padding = {10.0f, 10.0f};
+        glm::vec2 const originalCursorPos = ImGui::GetCursorScreenPos();
+        ImGui::SetCursorScreenPos(renderRect.p1 + padding);
+        OSC_SCOPE_GUARD({ ImGui::SetCursorScreenPos(originalCursorPos); });
+
+        // ImGui: draw "browse for new mesh" button
+        if (ImGui::Button("browse"))
+        {
+            ActionBrowseForMesh(m_Scene, panel);
+        }
+
+        ImGui::SameLine();
+
+        // ImGui: draw "autofit camera" button
+        if (ImGui::Button(ICON_FA_EXPAND))
+        {
+            AutofocusCameraOnMesh(panel.Mesh, panel.Camera);
+        }
+
+        ImGui::SameLine();
+
+        // ImGui: draw landmark radius editor
+        {
+            char const* label = "landmark radius";
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - 10.0f);
+
+            float radius = panel.LandmarkRadius;
+            if (ImGui::SliderFloat(label, &radius, 0.0001f, 1.0f, "%.4f", 2.0f))
+            {
+                ActionSetLandmarkRadius(panel, radius);
+            }
+        }
+    }
+
+    // draw ImGui overlays over a result panel
+    void drawResultPanelImGuiOverlays(TPSUIResultPanel& panel, Rect const& renderRect)
+    {
+        // ImGui: draw buttons etc. at the top of the panel
+        {
+            // ImGui: set cursor to draw over the top-right of the render texture (with padding)
+            glm::vec2 const padding = {10.0f, 10.0f};
+            glm::vec2 const originalCursorPos = ImGui::GetCursorScreenPos();
+            ImGui::SetCursorScreenPos(renderRect.p1 + padding);
+            OSC_SCOPE_GUARD({ ImGui::SetCursorScreenPos(originalCursorPos); });
+
+            // ImGui: draw checkbox for toggling whether to show the destination mesh in the scene
+            {
+                bool showDestinationMesh = panel.ShowDestinationMesh;
+                if (ImGui::Checkbox("show destination", &showDestinationMesh))
+                {
+                    ActionSetShowDestinationMesh(panel, showDestinationMesh);
+                }
+            }
+        }
+
+        // ImGui: draw slider overlay that controls TPS blend factor at the bottom of the panel
+        {
+            float constexpr leftPadding = 10.0f;
+            float constexpr bottomPadding = 10.0f;
+            float const panelHeight = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y;
+
+            glm::vec2 const oldCursorPos = ImGui::GetCursorScreenPos();
+            ImGui::SetCursorScreenPos({renderRect.p1.x + leftPadding, renderRect.p2.y - (panelHeight + bottomPadding)});
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - leftPadding - ImGui::CalcTextSize("blending factor").x - ImGui::GetStyle().ItemSpacing.x);
+            float factor = panel.BlendingFactor;
+            if (ImGui::SliderFloat("blending factor", &factor, 0.0f, 1.0f))
+            {
+                ActionSetBlendFactor(m_Scene, panel, factor);
+            }
+            ImGui::SetCursorScreenPos(oldCursorPos);
+        }
+    }
 
     // tab data
     UID m_ID;
     std::string m_Name = ICON_FA_BEZIER_CURVE " TPS3DTab";
     TabHost* m_Parent;
 
-    // scene data
-    PanelData m_SourceData{osc::GenUntexturedUVSphere(16, 16)};
-    PanelData m_DestData{osc::GenUntexturedSimbodyCylinder(16)};
-    PanelData m_TransformedData{CreateTransformedMesh(m_SourceData, m_DestData, 1.0f)};
-    SceneParams m_SceneParams;
-    PolarPerspectiveCamera m_BaseCamera = m_SourceData.m_Camera;
-
-    // log panel (handy for debugging)
+    // panel state
+    TPSUIScene m_Scene;
     LogViewerPanel m_LogViewerPanel{"Log"};
+    PerfPanel m_PerfPanel{"Performance"};
 };
 
 

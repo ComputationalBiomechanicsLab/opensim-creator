@@ -14,7 +14,7 @@ osc::AABB osc::GetWorldspaceAABB(SceneDecoration const& cd)
 bool osc::operator==(SceneDecoration const& a, SceneDecoration const& b) noexcept
 {
     return
-        a.mesh == b.mesh &&
+        *a.mesh == *b.mesh &&
         a.transform == b.transform &&
         a.color == b.color &&
         a.id == b.id &&
