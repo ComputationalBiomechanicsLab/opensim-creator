@@ -42,7 +42,6 @@
 #include <functional>
 #include <string>
 #include <sstream>
-#include <stack>
 #include <iostream>
 #include <limits>
 #include <optional>
@@ -582,6 +581,11 @@ namespace
     // an undoable version of the TPS document
     class TPSUndoableDocument final {
     public:
+        TPSUndoableDocument()
+        {
+            commit("created document");
+        }
+
         TPSDocument const& getDocument() const
         {
             return m_Scratch;
@@ -594,8 +598,8 @@ namespace
 
         void commit(std::string_view commitMsg)
         {
-            m_Undo.emplace(m_Scratch, std::move(commitMsg));
-            m_Redo = {};  // clear redo
+            m_Undo.emplace_back(m_Scratch, std::move(commitMsg));
+            m_Redo.clear();
         }
 
         bool canUndo() const
@@ -609,9 +613,14 @@ namespace
             {
                 return;
             }
-            m_Redo.push(m_Undo.top());
-            m_Undo.pop();
-            m_Scratch = m_Undo.top().getDocument();
+            m_Redo.push_back(m_Undo.back());
+            m_Undo.pop_back();
+            m_Scratch = m_Undo.back().getDocument();
+        }
+
+        std::vector<TPSDocumentCommit> const& getUndoStack() const
+        {
+            return m_Undo;
         }
 
         bool canRedo() const
@@ -626,15 +635,20 @@ namespace
                 return;
             }
 
-            m_Undo.push(m_Redo.top());
-            m_Scratch = m_Redo.top().getDocument();
-            m_Redo.pop();
+            m_Undo.push_back(m_Redo.back());
+            m_Scratch = m_Redo.back().getDocument();
+            m_Redo.pop_back();
+        }
+
+        std::vector<TPSDocumentCommit> const& getRedoStack() const
+        {
+            return m_Redo;
         }
 
     private:
         TPSDocument m_Scratch;
-        std::stack<TPSDocumentCommit> m_Undo;  // always contains one element (the "head")
-        std::stack<TPSDocumentCommit> m_Redo;
+        std::vector<TPSDocumentCommit> m_Undo;  // always contains one element (the "head")
+        std::vector<TPSDocumentCommit> m_Redo;
     };
 
     // action: add a landmark to the source mesh
@@ -1076,6 +1090,48 @@ namespace
         bool m_WireframeMode = true;
         bool m_ShowDestinationMesh = false;
     };
+
+    class UndoRedoPanel final : public osc::NamedPanel {
+    public:
+        UndoRedoPanel(std::string_view panelName_, std::shared_ptr<TPSUITabSate> state_) :
+            NamedPanel{std::move(panelName_)},
+            m_State{std::move(state_)}
+        {
+        }
+    private:
+        void implDraw() override
+        {
+            if (ImGui::Button("undo"))
+            {
+                m_State->EditedDocument.doUndo();
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("redo"))
+            {
+                m_State->EditedDocument.doRedo();
+            }
+
+            TPSUndoableDocument const& doc = m_State->EditedDocument;
+            auto const& redo = doc.getRedoStack();
+            auto const& undo = doc.getUndoStack();
+
+            OSC_ASSERT(!undo.empty());
+
+            for (TPSDocumentCommit const& commit : redo)
+            {
+                ImGui::Text("REDO: %s", commit.getCommitMessage().c_str());
+            }
+            ImGui::Text("CURRENT: %s", undo.back().getCommitMessage().c_str());
+            for (auto it = undo.rbegin()+1; it != undo.rend(); ++it)
+            {
+                ImGui::Text("UNDO: %s", it->getCommitMessage().c_str());
+            }
+        }
+
+        std::shared_ptr<TPSUITabSate> m_State;
+    };
 }
 
 // tab implementation
@@ -1159,6 +1215,7 @@ public:
         m_ResultPanel.draw();
         m_LogViewerPanel.draw();
         m_PerfPanel.draw();
+        m_UndoRedoPanel.draw();
     }
 
 private:
@@ -1175,6 +1232,7 @@ private:
     InputPanel m_SourcePanel{"Source Mesh", m_TabState, true};
     InputPanel m_DestPanel{"Destination Mesh", m_TabState, false};
     ResultPanel m_ResultPanel{"Result", m_TabState};
+    UndoRedoPanel m_UndoRedoPanel{"History", m_TabState};
     LogViewerPanel m_LogViewerPanel{"Log"};
     PerfPanel m_PerfPanel{"Performance"};
 };
