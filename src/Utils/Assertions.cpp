@@ -19,4 +19,5 @@ void osc::OnAssertionFailure(char const* failing_code,
 {
     std::snprintf(g_MessageBuffer.data(), g_MessageBuffer.size(), "%s:%s:%u: assert(%s): failed", file, func, line, failing_code);
     log::error("%s", g_MessageBuffer.data());
+    std::terminate();
 }
