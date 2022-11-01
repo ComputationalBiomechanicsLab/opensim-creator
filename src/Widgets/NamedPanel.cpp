@@ -39,9 +39,15 @@ void osc::NamedPanel::draw()
     if (isOpen())
     {
         bool v = true;
+        implPushWindowStyles();
         if (ImGui::Begin(m_PanelName.c_str(), &v, m_PanelFlags))
         {
+            implPopWindowStyles();
             implDraw();
+        }
+        else
+        {
+            implPopWindowStyles();
         }
         ImGui::End();
 

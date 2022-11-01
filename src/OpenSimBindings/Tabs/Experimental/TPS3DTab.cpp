@@ -24,6 +24,7 @@
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/Utils/UID.hpp"
 #include "src/Widgets/LogViewerPanel.hpp"
+#include "src/Widgets/NamedPanel.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 
 #include <glm/mat3x4.hpp>
@@ -55,6 +56,9 @@
 // - primary literature source: https://ieeexplore.ieee.org/document/24792
 // - blog explanation: https://profs.etsmtl.ca/hlombaert/thinplates/
 // - blog explanation #2: https://khanhha.github.io/posts/Thin-Plate-Splines-Warping/
+//
+// the code here doesn't explore things like how to actually render the scene, user interaction,
+// undo/redo, etc - that's handled in the "TPS document" section
 namespace
 {
     // a single source-to-destination landmark pair in 3D space
@@ -576,7 +580,7 @@ namespace
         }
     }
 
-    // the entire user-editable TPS "scene" (ignoring the ImGui bits)
+    // the entire user-editable TPS "scene"
     struct TPSUIScene final {
         TPSUIScene()
         {
@@ -746,6 +750,180 @@ namespace
     }
 }
 
+// ImGui-level datastructures (panels, etc.)
+namespace
+{
+    // generic base class for the panels shown in the TPS3D tab
+    class TPS3DTabPanel : public osc::NamedPanel {
+    public:
+        using osc::NamedPanel::NamedPanel;
+    private:
+        void implPushWindowStyles() override final
+        {
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+        }
+        void implPopWindowStyles() override final
+        {
+            ImGui::PopStyleVar();
+        }
+    };
+
+    // an "input" panel (i.e. source or destination mesh, before warping)
+    class InputPanel final : public TPS3DTabPanel {
+    public:
+        InputPanel(std::string_view panelName_, std::shared_ptr<TPSUIScene> scene_, bool useSrc_) :
+            TPS3DTabPanel{std::move(panelName_), ImGuiDockNodeFlags_PassthruCentralNode},
+            m_Scene{std::move(scene_)},
+            m_PanelData{useSrc_ ? &m_Scene->SrcPanel : &m_Scene->DestPanel}
+        {
+            OSC_ASSERT(m_Scene != nullptr && "the input panel requires a valid scene");
+        }
+    private:
+        void implDraw() override
+        {
+            // fill the entire available region with the render
+            glm::vec2 const dims = ImGui::GetContentRegionAvail();
+
+            // render it via ImGui and hittest it
+            osc::RenderTexture& renderTexture = RenderPanelTexture(*m_Scene, *m_PanelData, dims);
+            osc::ImGuiImageHittestResult const htResult = osc::DrawTextureAsImGuiImageAndHittest(renderTexture);
+
+            // update camera if user drags it around etc.
+            if (htResult.isHovered)
+            {
+                osc::UpdatePolarCameraFromImGuiUserInput(dims, m_PanelData->Camera);
+            }
+
+            // if user left-clicks, add a landmark there
+            if (htResult.isLeftClickReleasedWithoutDragging)
+            {
+                glm::vec2 const mousePos = ImGui::GetMousePos();
+
+                // if the user's mouse ray intersects the mesh, then that's where the landmark should be placed
+                if (std::optional<glm::vec3> maybeCollision = RaycastMesh(m_PanelData->Camera, m_PanelData->Mesh, htResult.rect, mousePos))
+                {
+                    ActionAddLandmark(*m_Scene, *m_PanelData, *maybeCollision);
+                }
+            }
+
+            // draw any overlays
+            drawOverlays(htResult.rect);
+        }
+
+        void drawOverlays(osc::Rect const& renderRect)
+        {
+            // ImGui: set cursor to draw over the top-right of the render texture (with padding)
+            glm::vec2 const padding = {10.0f, 10.0f};
+            glm::vec2 const originalCursorPos = ImGui::GetCursorScreenPos();
+            ImGui::SetCursorScreenPos(renderRect.p1 + padding);
+            OSC_SCOPE_GUARD({ ImGui::SetCursorScreenPos(originalCursorPos); });
+
+            // ImGui: draw "browse for new mesh" button
+            if (ImGui::Button("browse"))
+            {
+                ActionBrowseForMesh(*m_Scene, *m_PanelData);
+            }
+
+            ImGui::SameLine();
+
+            // ImGui: draw "autofit camera" button
+            if (ImGui::Button(ICON_FA_EXPAND))
+            {
+                AutofocusCameraOnMesh(m_PanelData->Mesh, m_PanelData->Camera);
+            }
+
+            ImGui::SameLine();
+
+            // ImGui: draw landmark radius editor
+            {
+                char const* label = "landmark radius";
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - 10.0f);
+
+                float radius = m_PanelData->LandmarkRadius;
+                if (ImGui::SliderFloat(label, &radius, 0.0001f, 1.0f, "%.4f", 2.0f))
+                {
+                    ActionSetLandmarkRadius(*m_PanelData, radius);
+                }
+            }
+        }
+
+        std::shared_ptr<TPSUIScene> m_Scene;
+        TPSUIInputPanel* m_PanelData = nullptr;
+    };
+
+    // a "result" panel (i.e. after applying a warp to the source)
+    class ResultPanel final : public TPS3DTabPanel {
+    public:
+        ResultPanel(std::string_view panelName_, std::shared_ptr<TPSUIScene> scene_) :
+            TPS3DTabPanel{std::move(panelName_)},
+            m_Scene{std::move(scene_)}
+        {
+            OSC_ASSERT(m_Scene != nullptr && "the results panel must be given a scene");
+        }
+
+    private:
+        void implDraw() override
+        {
+            // fill the entire available region with the render
+            glm::vec2 const dims = ImGui::GetContentRegionAvail();
+
+            // render it via ImGui and hittest it
+            osc::RenderTexture& renderTexture = RenderPanelTexture(*m_Scene, m_Scene->ResultPanel, dims);
+            osc::ImGuiImageHittestResult const htResult = osc::DrawTextureAsImGuiImageAndHittest(renderTexture);
+
+            // update camera if user drags it around etc.
+            if (htResult.isHovered)
+            {
+                osc::UpdatePolarCameraFromImGuiUserInput(dims, m_Scene->ResultPanel.Camera);
+            }
+
+            drawOverlays(htResult.rect);
+        }
+
+        // draw ImGui overlays over a result panel
+        void drawOverlays(osc::Rect const& renderRect)
+        {
+            // ImGui: draw buttons etc. at the top of the panel
+            {
+                // ImGui: set cursor to draw over the top-right of the render texture (with padding)
+                glm::vec2 const padding = {10.0f, 10.0f};
+                glm::vec2 const originalCursorPos = ImGui::GetCursorScreenPos();
+                ImGui::SetCursorScreenPos(renderRect.p1 + padding);
+                OSC_SCOPE_GUARD({ ImGui::SetCursorScreenPos(originalCursorPos); });
+
+                // ImGui: draw checkbox for toggling whether to show the destination mesh in the scene
+                {
+                    bool showDestinationMesh = m_Scene->ResultPanel.ShowDestinationMesh;
+                    if (ImGui::Checkbox("show destination", &showDestinationMesh))
+                    {
+                        ActionSetShowDestinationMesh(m_Scene->ResultPanel, showDestinationMesh);
+                    }
+                }
+            }
+
+            // ImGui: draw slider overlay that controls TPS blend factor at the bottom of the panel
+            {
+                float constexpr leftPadding = 10.0f;
+                float constexpr bottomPadding = 10.0f;
+                float const panelHeight = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y;
+
+                glm::vec2 const oldCursorPos = ImGui::GetCursorScreenPos();
+                ImGui::SetCursorScreenPos({renderRect.p1.x + leftPadding, renderRect.p2.y - (panelHeight + bottomPadding)});
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - leftPadding - ImGui::CalcTextSize("blending factor").x - ImGui::GetStyle().ItemSpacing.x);
+                float factor = m_Scene->ResultPanel.BlendingFactor;
+                if (ImGui::SliderFloat("blending factor", &factor, 0.0f, 1.0f))
+                {
+                    ActionSetBlendFactor(*m_Scene, m_Scene->ResultPanel, factor);
+                }
+                ImGui::SetCursorScreenPos(oldCursorPos);
+            }
+        }
+
+        std::shared_ptr<TPSUIScene> m_Scene;
+    };
+}
+
+// tab implementation
 class osc::TPS3DTab::Impl final {
 public:
 
@@ -785,7 +963,7 @@ public:
 
     void onTick()
     {
-        Tick(m_Scene);
+        Tick(*m_Scene);
     }
 
     void onDrawMainMenu()
@@ -796,159 +974,27 @@ public:
     {
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-        drawPanel("Source Mesh", [this]() { drawInputPanelContent(m_Scene.SrcPanel); });
-        drawPanel("Destination Mesh", [this]() { drawInputPanelContent(m_Scene.DestPanel); });
-        drawPanel("Result", [this]() { drawResultPanelContent(m_Scene.ResultPanel); });
+        m_SourcePanel.draw();
+        m_DestPanel.draw();
+        m_ResultPanel.draw();
         m_LogViewerPanel.draw();
         m_PerfPanel.draw();
     }
 
 private:
-    // draw some panel (input/result) using standard window settings
-    void drawPanel(char const* panelName, std::function<void()> const& contentDrawFn)
-    {
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-        ImGui::Begin(panelName, nullptr, ImGuiWindowFlags_NoScrollbar);
-        ImGui::PopStyleVar();
-        contentDrawFn();
-        ImGui::End();
-    }
-
-    // draw the content of an input panel
-    void drawInputPanelContent(TPSUIInputPanel& panel)
-    {
-        // fill the entire available region with the render
-        glm::vec2 const dims = ImGui::GetContentRegionAvail();
-
-        // render it via ImGui and hittest it
-        osc::RenderTexture& renderTexture = RenderPanelTexture(m_Scene, panel, dims);
-        osc::ImGuiImageHittestResult const htResult = osc::DrawTextureAsImGuiImageAndHittest(renderTexture);
-
-        // update camera if user drags it around etc.
-        if (htResult.isHovered)
-        {
-            osc::UpdatePolarCameraFromImGuiUserInput(dims, panel.Camera);
-        }
-
-        // if user left-clicks, add a landmark there
-        if (htResult.isLeftClickReleasedWithoutDragging)
-        {
-            glm::vec2 const mousePos = ImGui::GetMousePos();
-
-            // if the user's mouse ray intersects the mesh, then that's where the landmark should be placed
-            if (std::optional<glm::vec3> maybeCollision = RaycastMesh(panel.Camera, panel.Mesh, htResult.rect, mousePos))
-            {
-                ActionAddLandmark(m_Scene, panel, *maybeCollision);
-            }
-        }
-
-        // draw any overlays
-        drawInputPanelImGuiOverlays(panel, htResult.rect);
-    }
-
-    // draw the content of the result panel
-    void drawResultPanelContent(TPSUIResultPanel& panel)
-    {
-        // fill the entire available region with the render
-        glm::vec2 const dims = ImGui::GetContentRegionAvail();
-
-        // render it via ImGui and hittest it
-        osc::RenderTexture& renderTexture = RenderPanelTexture(m_Scene, m_Scene.ResultPanel, dims);
-        osc::ImGuiImageHittestResult const htResult = osc::DrawTextureAsImGuiImageAndHittest(renderTexture);
-
-        // update camera if user drags it around etc.
-        if (htResult.isHovered)
-        {
-            osc::UpdatePolarCameraFromImGuiUserInput(dims, panel.Camera);
-        }
-
-        drawResultPanelImGuiOverlays(panel, htResult.rect);
-    }
-
-    // draw ImGui overlays over an input panel
-    void drawInputPanelImGuiOverlays(TPSUIInputPanel& panel, Rect const& renderRect)
-    {
-        // ImGui: set cursor to draw over the top-right of the render texture (with padding)
-        glm::vec2 const padding = {10.0f, 10.0f};
-        glm::vec2 const originalCursorPos = ImGui::GetCursorScreenPos();
-        ImGui::SetCursorScreenPos(renderRect.p1 + padding);
-        OSC_SCOPE_GUARD({ ImGui::SetCursorScreenPos(originalCursorPos); });
-
-        // ImGui: draw "browse for new mesh" button
-        if (ImGui::Button("browse"))
-        {
-            ActionBrowseForMesh(m_Scene, panel);
-        }
-
-        ImGui::SameLine();
-
-        // ImGui: draw "autofit camera" button
-        if (ImGui::Button(ICON_FA_EXPAND))
-        {
-            AutofocusCameraOnMesh(panel.Mesh, panel.Camera);
-        }
-
-        ImGui::SameLine();
-
-        // ImGui: draw landmark radius editor
-        {
-            char const* label = "landmark radius";
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - 10.0f);
-
-            float radius = panel.LandmarkRadius;
-            if (ImGui::SliderFloat(label, &radius, 0.0001f, 1.0f, "%.4f", 2.0f))
-            {
-                ActionSetLandmarkRadius(panel, radius);
-            }
-        }
-    }
-
-    // draw ImGui overlays over a result panel
-    void drawResultPanelImGuiOverlays(TPSUIResultPanel& panel, Rect const& renderRect)
-    {
-        // ImGui: draw buttons etc. at the top of the panel
-        {
-            // ImGui: set cursor to draw over the top-right of the render texture (with padding)
-            glm::vec2 const padding = {10.0f, 10.0f};
-            glm::vec2 const originalCursorPos = ImGui::GetCursorScreenPos();
-            ImGui::SetCursorScreenPos(renderRect.p1 + padding);
-            OSC_SCOPE_GUARD({ ImGui::SetCursorScreenPos(originalCursorPos); });
-
-            // ImGui: draw checkbox for toggling whether to show the destination mesh in the scene
-            {
-                bool showDestinationMesh = panel.ShowDestinationMesh;
-                if (ImGui::Checkbox("show destination", &showDestinationMesh))
-                {
-                    ActionSetShowDestinationMesh(panel, showDestinationMesh);
-                }
-            }
-        }
-
-        // ImGui: draw slider overlay that controls TPS blend factor at the bottom of the panel
-        {
-            float constexpr leftPadding = 10.0f;
-            float constexpr bottomPadding = 10.0f;
-            float const panelHeight = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y;
-
-            glm::vec2 const oldCursorPos = ImGui::GetCursorScreenPos();
-            ImGui::SetCursorScreenPos({renderRect.p1.x + leftPadding, renderRect.p2.y - (panelHeight + bottomPadding)});
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - leftPadding - ImGui::CalcTextSize("blending factor").x - ImGui::GetStyle().ItemSpacing.x);
-            float factor = panel.BlendingFactor;
-            if (ImGui::SliderFloat("blending factor", &factor, 0.0f, 1.0f))
-            {
-                ActionSetBlendFactor(m_Scene, panel, factor);
-            }
-            ImGui::SetCursorScreenPos(oldCursorPos);
-        }
-    }
 
     // tab data
     UID m_ID;
     std::string m_Name = ICON_FA_BEZIER_CURVE " TPS3DTab";
     TabHost* m_Parent;
 
-    // panel state
-    TPSUIScene m_Scene;
+    // the scene (document) the user is editing
+    std::shared_ptr<TPSUIScene> m_Scene = std::make_shared<TPSUIScene>();
+
+    // user-visible panels
+    InputPanel m_SourcePanel{"Source Mesh", m_Scene, true};
+    InputPanel m_DestPanel{"Destination Mesh", m_Scene, false};
+    ResultPanel m_ResultPanel{"Result", m_Scene};
     LogViewerPanel m_LogViewerPanel{"Log"};
     PerfPanel m_PerfPanel{"Performance"};
 };
