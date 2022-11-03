@@ -22,6 +22,7 @@
 #include "src/Platform/os.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/ScopeGuard.hpp"
+#include "src/Utils/Perf.hpp"
 #include "src/Utils/UID.hpp"
 #include "src/Widgets/LogViewerPanel.hpp"
 #include "src/Widgets/NamedPanel.hpp"
@@ -38,6 +39,7 @@
 
 #include <cmath>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <string>
@@ -408,11 +410,246 @@ namespace
     }
 }
 
+// undo/redo algorithm support
+namespace
+{
+    // the data held within a "commit" to undo/redo storage
+    template<typename T>
+    struct CommitData final {
+        CommitData(T const& data_, std::string_view message_) :
+            Time{std::chrono::system_clock::now()},
+            Message{std::move(message_)},
+            Data{data_}
+        {
+        }
+
+        std::chrono::system_clock::time_point Time;
+        std::string Message;
+        T Data;
+    };
+
+    // a single "commit" to undo/redo storage
+    //
+    // designed to be const and easy to copy etc.
+    template<typename T>
+    struct Commit final {
+    public:
+        Commit(T const& data_, std::string_view message_) :
+            m_Data{std::make_shared<CommitData<T>>(data_, std::move(message_))}
+        {
+        }
+
+        std::chrono::system_clock::time_point getTime() const
+        {
+            return m_Data->Time;
+        }
+
+        osc::CStringView getMessage() const
+        {
+            return m_Data->Message;
+        }
+
+        T const& getData() const
+        {
+            return m_Data->Data;
+        }
+    private:
+        std::shared_ptr<CommitData<T> const> m_Data;
+    };
+
+    // undo/redo storage of commits
+    //
+    // - there is a "scratch" space that other code can edit
+    // - other code can "commit" the scratch space to storage via `commit(message)`
+    // - there is always at least one commit (the "head") in storage, for rollback support
+    template<typename T>
+    class UndoRedoStorage final {
+    public:
+        template<typename... Args>
+        UndoRedoStorage(Args&&... args) :
+            m_Scratch{std::forward<Args>(args)...},
+            m_Head{m_Scratch, "created document"}
+        {
+        }
+
+        T const& getScratch() const
+        {
+            return m_Scratch;
+        }
+
+        T& updScratch()
+        {
+            return m_Scratch;
+        }
+
+        void commitScratch(std::string_view commitMsg)
+        {
+            m_Undo.push_back(std::move(m_Head));
+            m_Head = Commit<T>{m_Scratch, std::move(commitMsg)};
+            m_Redo.clear();
+        }
+
+        Commit<T> const& getHead() const
+        {
+            return m_Head;
+        }
+
+        size_t getNumUndoEntries() const
+        {
+            return m_Undo.size();
+        }
+
+        ptrdiff_t getNumUndoEntriesi() const
+        {
+            return static_cast<ptrdiff_t>(getNumUndoEntries());
+        }
+
+        Commit<T> const& getUndoEntry(size_t i) const
+        {
+            OSC_ASSERT(i < m_Undo.size());
+            return m_Undo.rbegin()[i];
+        }
+
+        void undoTo(size_t nthEntry)
+        {
+            if (nthEntry >= m_Undo.size())
+            {
+                return;  // out of bounds: ignore request
+            }
+
+            Commit<T> const oldHead = m_Head;
+            Commit<T> const newHead = m_Undo.rbegin()[nthEntry];
+
+            // push old head onto the redo stack
+            m_Redo.push_back(oldHead);
+
+            // copy any commits between the top of the undo stack, but shallower than
+            // the requested entry, onto the redo stack
+            std::copy(m_Undo.rbegin(), m_Undo.rbegin() + nthEntry, std::back_inserter(m_Redo));
+            m_Undo.erase((m_Undo.rbegin() + nthEntry + 1).base(), m_Undo.end());
+
+            m_Head = newHead;
+            m_Scratch = newHead.getData();
+        }
+
+        bool canUndo() const
+        {
+            return !m_Undo.empty();
+        }
+
+        void undo()
+        {
+            undoTo(0);
+        }
+
+        size_t getNumRedoEntries() const
+        {
+            return m_Redo.size();
+        }
+
+        ptrdiff_t getNumRedoEntriesi() const
+        {
+            return static_cast<ptrdiff_t>(getNumRedoEntries());
+        }
+
+        Commit<T> const& getRedoEntry(size_t i) const
+        {
+            OSC_ASSERT(i < m_Redo.size());
+            return m_Redo.rbegin()[i];
+        }
+
+        bool canRedo() const
+        {
+            return !m_Redo.empty();
+        }
+
+        void redoTo(size_t nthEntry)
+        {
+            if (nthEntry >= m_Redo.size())
+            {
+                return;  // out of bounds: ignore request
+            }
+
+            Commit<T> const oldHead = m_Head;
+            Commit<T> const newHead = m_Redo.rbegin()[nthEntry];
+
+            // push old head onto the undo stack
+            m_Undo.push_back(oldHead);
+
+            // copy any commits between the top of the redo stack but *before* the
+            // requested entry onto the redo stack
+            std::copy(m_Redo.rbegin(), m_Redo.rbegin() + nthEntry, std::back_inserter(m_Undo));
+            m_Redo.erase((m_Redo.rbegin() + nthEntry + 1).base(), m_Redo.end());
+
+            m_Head = newHead;
+            m_Scratch = newHead.getData();
+        }
+
+        void redo()
+        {
+            redoTo(0);
+        }
+
+    private:
+        T m_Scratch;
+        Commit<T> m_Head;
+        std::vector<Commit<T>> m_Undo;
+        std::vector<Commit<T>> m_Redo;
+    };
+}
+
 // TPS document datastructure
 //
 // this covers the datastructures that the user is editing
 namespace
 {
+    // the "input" part of the document (i.e. source or destination mesh)
+    struct TPSDocumentInput final {
+        TPSDocumentInput(osc::Mesh const& mesh_) : Mesh{mesh_} {}
+
+        osc::Mesh Mesh;
+        std::unordered_map<size_t, glm::vec3> Landmarks;
+    };
+
+    // the whole TPS document that the user is editing at any given moment
+    struct TPSDocument final {
+        TPSDocumentInput Source{osc::GenUntexturedUVSphere(16, 16)};
+        TPSDocumentInput Destination{osc::GenUntexturedSimbodyCylinder(16)};
+        float BlendingFactor = 1.0f;
+    };
+
+    using TPSUndoableDocument = UndoRedoStorage<TPSDocument>;
+
+    // action: add a landmark to the source mesh
+    void ActionAddLandmarkTo(TPSUndoableDocument& doc, TPSDocumentInput& input, glm::vec3 const& pos)
+    {
+        input.Landmarks[input.Landmarks.size()] = pos;
+        doc.commitScratch("added landmark");
+    }
+
+    // action: prompt the user to browse for a different source mesh
+    void ActionBrowseForNewMesh(TPSUndoableDocument& doc, TPSDocumentInput& input)
+    {
+        std::filesystem::path const p = osc::PromptUserForFile("vtp,obj");
+        if (!p.empty())
+        {
+            input.Mesh = osc::LoadMeshViaSimTK(p);
+            doc.commitScratch("changed mesh");
+        }
+    }
+
+    // action: set the TPS blending factor for the result
+    void ActionSetBlendFactor(TPSUndoableDocument& doc, float factor)
+    {
+        doc.updScratch().BlendingFactor = factor;
+    }
+
+    void ActionSetBlendFactorAndSave(TPSUndoableDocument& doc, float factor)
+    {
+        ActionSetBlendFactor(doc, factor);
+        doc.commitScratch("changed blend factor");
+    }
+
     // returns a mesh that is the equivalent of applying the 3D TPS warp to each vertex of the mesh
     osc::Mesh ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, osc::Mesh const& mesh)
     {
@@ -447,246 +684,91 @@ namespace
         return rv;
     }
 
-    // "input" part of the document (i.e. source or destination mesh)
-    struct TPSDocumentInput final {
-        TPSDocumentInput(osc::Mesh const& mesh_) : Mesh{mesh_} {}
-
-        osc::Mesh Mesh;
-        std::unordered_map<size_t, glm::vec3> Landmarks;
-    };
-
-    struct TPSDocumentResult;
-    bool UpdateWarpedMeshIfNecessary(TPSDocumentInput const&, TPSDocumentInput const&, TPSDocumentResult&);
-
-    // "result" part of the document (i.e. the transformed mesh)
-    struct TPSDocumentResult final {
-        TPSDocumentResult(TPSDocumentInput const& src, TPSDocumentInput const& dest)
-        {
-            UpdateWarpedMeshIfNecessary(src, dest, *this);
-        }
-
-        float BlendingFactor = 1.0f;
-        TPSInputs3D CachedInputs;
-        TPSCoefficients3D CachedCoefficients;
-        osc::Mesh CachedMesh;
-        osc::Mesh TransformedMesh;
-    };
-
-    // returns `true` if `results.LastTPSInputs` differs from the latest set of TPS inputs derived from the arguments
-    bool UpdateTPSInputsIfNecessary(TPSDocumentInput const& src, TPSDocumentInput const& dest, TPSDocumentResult& results)
-    {
-        TPSInputs3D newInputs
-        {
-            GetLandmarkPairs(src.Landmarks, dest.Landmarks),
-            results.BlendingFactor,
-        };
-
-        if (newInputs != results.CachedInputs)
-        {
-            results.CachedInputs = std::move(newInputs);
-            return true;
-        }
-        else
-        {
-            return false;  // no change in the inputs
-        }
-    }
-
-    // returns `true` if `results.LastCoefficients` differs from the latest set of coefficients derived from the arguments
-    bool UpdateTPSCoefficientsIfNecessary(TPSDocumentInput const& src, TPSDocumentInput const& dest, TPSDocumentResult& results)
-    {
-        if (!UpdateTPSInputsIfNecessary(src, dest, results))
-        {
-            // cache: the inputs have not been updated, so the coefficients will not change
-            return false;
-        }
-
-        TPSCoefficients3D newCoefficients = CalcCoefficients(results.CachedInputs);
-
-        if (newCoefficients != results.CachedCoefficients)
-        {
-            results.CachedCoefficients = std::move(newCoefficients);
-            return true;
-        }
-        else
-        {
-            return false;  // no change in the coefficients
-        }
-    }
-
-    // returns `true` if `results.TransformedMesh` was updated due to changes in the src/dest
-    bool UpdateWarpedMeshIfNecessary(TPSDocumentInput const& src, TPSDocumentInput const& dest, TPSDocumentResult& results)
-    {
-        bool const coefficientsChanged = UpdateTPSCoefficientsIfNecessary(src, dest, results);
-        bool const meshChanged = src.Mesh != results.CachedMesh;
-
-        if (coefficientsChanged || meshChanged)
-        {
-            results.TransformedMesh = ApplyThinPlateWarpToMesh(results.CachedCoefficients, src.Mesh);
-            results.CachedMesh = src.Mesh;
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    // the whole TPS document that the user is editing at any given moment
-    struct TPSDocument final {
-        TPSDocumentInput Source{osc::GenUntexturedUVSphere(16, 16)};
-        TPSDocumentInput Destination{osc::GenUntexturedSimbodyCylinder(16)};
-        TPSDocumentResult Result{Source, Destination};
-    };
-
-    // the internal data that backs a TPS document commit
-    struct TPSDocumentCommitData final {
-        TPSDocumentCommitData(TPSDocument const& document_, std::string_view message_) :
-            CommitMessage{message_},
-            Document{document_}
-        {
-        }
-
-        std::chrono::system_clock::time_point CommitTime = std::chrono::system_clock::now();
-        std::string CommitMessage;
-        TPSDocument Document;
-    };
-
-    // a "comitted" (i.e. copied) version of the TPS document for undo/redo/tag storage
-    class TPSDocumentCommit final {
+    // cached that computes the transformed mesh only if relevant variables
+    // in the provided document change
+    class TPSResultCache final {
     public:
-        TPSDocumentCommit(TPSDocument const& document_, std::string_view message_) :
-            m_Data{std::make_shared<TPSDocumentCommitData>(document_, std::move(message_))}
+        osc::Mesh const& lookup(TPSDocument const& doc)
         {
-        }
-
-        std::chrono::system_clock::time_point getCommitTime() const
-        {
-            return m_Data->CommitTime;
-        }
-
-        osc::CStringView getCommitMessage() const
-        {
-            return m_Data->CommitMessage;
-        }
-
-        TPSDocument const& getDocument() const
-        {
-            return m_Data->Document;
-        }
-    private:
-        std::shared_ptr<TPSDocumentCommitData> m_Data;
-    };
-
-    // an undoable version of the TPS document
-    class TPSUndoableDocument final {
-    public:
-        TPSUndoableDocument()
-        {
-            commit("created document");
-        }
-
-        TPSDocument const& getDocument() const
-        {
-            return m_Scratch;
-        }
-
-        TPSDocument& updDocument()
-        {
-            return m_Scratch;
-        }
-
-        void commit(std::string_view commitMsg)
-        {
-            m_Undo.emplace_back(m_Scratch, std::move(commitMsg));
-            m_Redo.clear();
-        }
-
-        bool canUndo() const
-        {
-            return m_Undo.size() > 1;
-        }
-
-        void doUndo()
-        {
-            if (!canUndo())
-            {
-                return;
-            }
-            m_Redo.push_back(m_Undo.back());
-            m_Undo.pop_back();
-            m_Scratch = m_Undo.back().getDocument();
-        }
-
-        std::vector<TPSDocumentCommit> const& getUndoStack() const
-        {
-            return m_Undo;
-        }
-
-        bool canRedo() const
-        {
-            return !m_Redo.empty();
-        }
-
-        void doRedo()
-        {
-            if (!canRedo())
-            {
-                return;
-            }
-
-            m_Undo.push_back(m_Redo.back());
-            m_Scratch = m_Redo.back().getDocument();
-            m_Redo.pop_back();
-        }
-
-        std::vector<TPSDocumentCommit> const& getRedoStack() const
-        {
-            return m_Redo;
+            updateResultMesh(doc);
+            return m_CachedResultMesh;
         }
 
     private:
-        TPSDocument m_Scratch;
-        std::vector<TPSDocumentCommit> m_Undo;  // always contains one element (the "head")
-        std::vector<TPSDocumentCommit> m_Redo;
-    };
-
-    // action: add a landmark to the source mesh
-    void ActionAddLandmarkTo(TPSUndoableDocument& doc, TPSDocumentInput& input, glm::vec3 const& pos)
-    {
-        input.Landmarks[input.Landmarks.size()] = pos;
-        TPSDocument& d = doc.updDocument();
-        UpdateWarpedMeshIfNecessary(d.Source, d.Destination, d.Result);
-        doc.commit("added landmark");
-    }
-
-    // action: prompt the user to browse for a different source mesh
-    void ActionBrowseForNewMesh(TPSUndoableDocument& doc, TPSDocumentInput& input)
-    {
-        std::filesystem::path const p = osc::PromptUserForFile("vtp,obj");
-        if (!p.empty())
+        // returns `true` if cached inputs were updated
+        bool updateInputs(TPSDocument const& doc)
         {
-            input.Mesh = osc::LoadMeshViaSimTK(p);
-            TPSDocument& d = doc.updDocument();
-            UpdateWarpedMeshIfNecessary(d.Source, d.Destination, d.Result);
-            doc.commit("changed mesh");
+            TPSInputs3D newInputs
+            {
+                GetLandmarkPairs(doc.Source.Landmarks, doc.Destination.Landmarks),
+                doc.BlendingFactor,
+            };
+
+            if (newInputs != m_CachedInputs)
+            {
+                m_CachedInputs = std::move(newInputs);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
-    }
 
-    // action: set the TPS blending factor for the result
-    void ActionSetBlendFactor(TPSUndoableDocument& doc, float factor)
-    {
-        TPSDocument& d = doc.updDocument();
+        // returns `true` if cached coefficients were updated
+        bool updateCoefficients(TPSDocument const& doc)
+        {
+            if (!updateInputs(doc))
+            {
+                // cache: the inputs have not been updated, so the coefficients will not change
+                return false;
+            }
 
-        d.Result.BlendingFactor = factor;
-        UpdateWarpedMeshIfNecessary(d.Source, d.Destination, d.Result);
-    }
+            TPSCoefficients3D newCoefficients = CalcCoefficients(m_CachedInputs);
 
-    void ActionSetBlendFactorAndSave(TPSUndoableDocument& doc, float factor)
-    {
-        ActionSetBlendFactor(doc, factor);
-        doc.commit("changed blend factor");
-    }
+            if (newCoefficients != m_CachedCoefficients)
+            {
+                m_CachedCoefficients = std::move(newCoefficients);
+                return true;
+            }
+            else
+            {
+                return false;  // no change in the coefficients
+            }
+        }
+
+        // returns `true` if `m_CachedSourceMesh` is updated
+        bool updateInputMesh(TPSDocument const& doc)
+        {
+            if (m_CachedSourceMesh != doc.Source.Mesh)
+            {
+                m_CachedSourceMesh = doc.Source.Mesh;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        bool updateResultMesh(TPSDocument const& doc)
+        {
+            if (updateCoefficients(doc) || updateInputMesh(doc))
+            {
+                m_CachedResultMesh = ApplyThinPlateWarpToMesh(m_CachedCoefficients, m_CachedSourceMesh);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        TPSInputs3D m_CachedInputs;
+        TPSCoefficients3D m_CachedCoefficients;
+        osc::Mesh m_CachedSourceMesh;
+        osc::Mesh m_CachedResultMesh;
+    };
 }
 
 // generic UI algorithms
@@ -737,14 +819,19 @@ namespace
     // (shared by all panels)
     struct TPSUITabSate final {
         TPSUndoableDocument EditedDocument;
-        std::optional<osc::PolarPerspectiveCamera> MaybeLockedCameraBase = CreateCameraFocusedOn(EditedDocument.getDocument().Source.Mesh);
+        TPSResultCache ResultCache;
+        std::optional<osc::PolarPerspectiveCamera> MaybeLockedCameraBase = CreateCameraFocusedOn(EditedDocument.getScratch().Source.Mesh);
         osc::Material WireframeMaterial = CreateWireframeOverlayMaterial();
         std::shared_ptr<osc::Mesh const> LandmarkSphere = osc::App::meshes().getSphereMesh();
         glm::vec4 LandmarkColor = {1.0f, 0.0f, 0.0f, 1.0f};
     };
 
     // append decorations that are common to all panels to the given output vector
-    void AppendCommonDecorations(TPSUITabSate const& shared, osc::Mesh const& mesh, bool wireframeMode, std::vector<osc::SceneDecoration>& out)
+    void AppendCommonDecorations(
+        TPSUITabSate const& shared,
+        osc::Mesh const& mesh,
+        bool wireframeMode,
+        std::vector<osc::SceneDecoration>& out)
     {
         out.reserve(out.size() + 5);  // likely guess
 
@@ -764,7 +851,9 @@ namespace
     }
 
     // returns scene rendering parameters for an generic panel
-    osc::SceneRendererParams CalcRenderParams(osc::PolarPerspectiveCamera const& camera, glm::vec2 renderDims)
+    osc::SceneRendererParams CalcRenderParams(
+        osc::PolarPerspectiveCamera const& camera,
+        glm::vec2 renderDims)
     {
         osc::SceneRendererParams rv;
         rv.drawFloor = false;
@@ -781,6 +870,64 @@ namespace
 // ImGui-level datastructures (panels, etc.)
 namespace
 {
+    // a generic panel that shows undo/redo history
+    class UndoRedoPanel final : public osc::NamedPanel {
+    public:
+        UndoRedoPanel(std::string_view panelName_, std::shared_ptr<TPSUITabSate> state_) :
+            NamedPanel{std::move(panelName_)},
+            m_State{std::move(state_)}
+        {
+        }
+    private:
+        void implDraw() override
+        {
+            if (ImGui::Button("undo"))
+            {
+                m_State->EditedDocument.undo();
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("redo"))
+            {
+                m_State->EditedDocument.redo();
+            }
+
+            TPSUndoableDocument const& doc = m_State->EditedDocument;
+            int imguiID = 0;
+
+            // draw undo entries oldest (highest index) to newest (lowest index)
+            for (ptrdiff_t i = doc.getNumUndoEntriesi()-1; 0 <= i && i < doc.getNumUndoEntriesi(); --i)
+            {
+                ImGui::PushID(imguiID++);
+                if (ImGui::Selectable(doc.getUndoEntry(i).getMessage().c_str()))
+                {
+                    TPSUndoableDocument& mutDoc = m_State->EditedDocument;
+                    mutDoc.undoTo(i);
+                }
+                ImGui::PopID();
+            }
+
+            ImGui::PushID(imguiID++);
+            ImGui::Text("  %s", doc.getHead().getMessage().c_str());
+            ImGui::PopID();
+
+            // draw redo entries oldest (lowest index) to newest (highest index)
+            for (size_t i = 0; i < doc.getNumRedoEntries(); ++i)
+            {
+                ImGui::PushID(imguiID++);
+                if (ImGui::Selectable(doc.getRedoEntry(i).getMessage().c_str()))
+                {
+                    TPSUndoableDocument& mutDoc = m_State->EditedDocument;
+                    mutDoc.redoTo(i);
+                }
+                ImGui::PopID();
+            }
+        }
+
+        std::shared_ptr<TPSUITabSate> m_State;
+    };
+
     // generic base class for the panels shown in the TPS3D tab
     class TPS3DTabPanel : public osc::NamedPanel {
     public:
@@ -926,13 +1073,13 @@ namespace
 
         TPSDocumentInput& updDocumentInput()
         {
-            TPSDocument& doc = m_State->EditedDocument.updDocument();
+            TPSDocument& doc = m_State->EditedDocument.updScratch();
             return m_UseSource ? doc.Source : doc.Destination;
         }
 
         TPSDocumentInput const& getDocumentInput() const
         {
-            TPSDocument const& doc = m_State->EditedDocument.getDocument();
+            TPSDocument const& doc = m_State->EditedDocument.updScratch();
             return m_UseSource ? doc.Source : doc.Destination;
         }
 
@@ -1017,7 +1164,7 @@ namespace
                 glm::vec2 const oldCursorPos = ImGui::GetCursorScreenPos();
                 ImGui::SetCursorScreenPos({renderRect.p1.x + leftPadding, renderRect.p2.y - (panelHeight + bottomPadding)});
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - leftPadding - ImGui::CalcTextSize("blending factor").x - ImGui::GetStyle().ItemSpacing.x);
-                float factor = getDocumentResult().BlendingFactor;
+                float factor = m_State->EditedDocument.getScratch().BlendingFactor;
                 if (ImGui::SliderFloat("blending factor", &factor, 0.0f, 1.0f))
                 {
                     ActionSetBlendFactor(m_State->EditedDocument, factor);
@@ -1041,7 +1188,7 @@ namespace
 
             if (m_ShowDestinationMesh)
             {
-                osc::SceneDecoration& dec = decorations.emplace_back(m_State->EditedDocument.getDocument().Destination.Mesh);
+                osc::SceneDecoration& dec = decorations.emplace_back(m_State->EditedDocument.getScratch().Destination.Mesh);
                 dec.color = {1.0f, 0.0f, 0.0f, 0.5f};
             }
 
@@ -1067,19 +1214,9 @@ namespace
             return m_SceneRenderer.updRenderTexture();
         }
 
-        TPSDocumentResult& updDocumentResult()
-        {
-            return m_State->EditedDocument.updDocument().Result;
-        }
-
-        TPSDocumentResult const& getDocumentResult() const
-        {
-            return m_State->EditedDocument.getDocument().Result;
-        }
-
         osc::Mesh const& getTransformedMesh() const
         {
-            return getDocumentResult().TransformedMesh;
+            return m_State->ResultCache.lookup(m_State->EditedDocument.getScratch());
         }
 
         std::shared_ptr<TPSUITabSate> m_State;
@@ -1089,48 +1226,6 @@ namespace
         osc::SceneRenderer m_SceneRenderer;
         bool m_WireframeMode = true;
         bool m_ShowDestinationMesh = false;
-    };
-
-    class UndoRedoPanel final : public osc::NamedPanel {
-    public:
-        UndoRedoPanel(std::string_view panelName_, std::shared_ptr<TPSUITabSate> state_) :
-            NamedPanel{std::move(panelName_)},
-            m_State{std::move(state_)}
-        {
-        }
-    private:
-        void implDraw() override
-        {
-            if (ImGui::Button("undo"))
-            {
-                m_State->EditedDocument.doUndo();
-            }
-
-            ImGui::SameLine();
-
-            if (ImGui::Button("redo"))
-            {
-                m_State->EditedDocument.doRedo();
-            }
-
-            TPSUndoableDocument const& doc = m_State->EditedDocument;
-            auto const& redo = doc.getRedoStack();
-            auto const& undo = doc.getUndoStack();
-
-            OSC_ASSERT(!undo.empty());
-
-            for (TPSDocumentCommit const& commit : redo)
-            {
-                ImGui::Text("REDO: %s", commit.getCommitMessage().c_str());
-            }
-            ImGui::Text("CURRENT: %s", undo.back().getCommitMessage().c_str());
-            for (auto it = undo.rbegin()+1; it != undo.rend(); ++it)
-            {
-                ImGui::Text("UNDO: %s", it->getCommitMessage().c_str());
-            }
-        }
-
-        std::shared_ptr<TPSUITabSate> m_State;
     };
 }
 
