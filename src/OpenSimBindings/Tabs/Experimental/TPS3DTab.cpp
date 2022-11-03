@@ -273,6 +273,8 @@ namespace
         // 6. Use a linear solver to solve L * [w a] = [v o] to yield [w a]
         // 8. Return the coefficients, [w a]
 
+        OSC_PERF("CalcCoefficients");
+
         int const numPairs = static_cast<int>(landmarkPairs.size());
 
         if (numPairs == 0)
@@ -653,6 +655,8 @@ namespace
     // returns a mesh that is the equivalent of applying the 3D TPS warp to each vertex of the mesh
     osc::Mesh ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, osc::Mesh const& mesh)
     {
+        OSC_PERF("ApplyThinPlateWarpToMesh");
+
         osc::Mesh rv = mesh;
 
         rv.transformVerts([&coefs](nonstd::span<glm::vec3> vs)
