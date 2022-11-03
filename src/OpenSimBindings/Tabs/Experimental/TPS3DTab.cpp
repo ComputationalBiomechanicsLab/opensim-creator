@@ -41,6 +41,7 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <execution>
 #include <functional>
 #include <string>
 #include <sstream>
@@ -207,20 +208,20 @@ namespace
     // this is effectviely the "U" term in the TPS algorithm literature (which is usually U(r) = r^2 * log(r^2))
     //
     // i.e. U(||pi - p||) in the literature is equivalent to `RadialBasisFunction3D(pi, p)` here
-    float RadialBasisFunction3D(glm::vec3 controlPoint, glm::vec3 p)
+    float RadialBasisFunction3D(glm::vec3 controlPoint, glm::vec3 const& p)
     {
         glm::vec3 const diff = controlPoint - p;
         float const r2 = glm::dot(diff, diff);
 
-        if (r2 == 0.0f)
+        if (r2 != 0.0f)
+        {
+            return r2 * std::log(r2);
+        }
+        else
         {
             // this ensures that the result is always non-zero and non-NaN (this might be
             // necessary for some types of linear solvers?)
             return std::numeric_limits<float>::min();
-        }
-        else
-        {
-            return r2 * std::log(r2);
         }
     }
 
@@ -393,7 +394,7 @@ namespace
     }
 
     // evaluates the TPS equation with the given coefficients and input point
-    glm::vec3 EvaluateTPSEquation(TPSCoefficients3D const& coefs, glm::vec3 const& p)
+    glm::vec3 EvaluateTPSEquation(TPSCoefficients3D const& coefs, glm::vec3 p)
     {
         // this implementation effectively evaluates `fx(x, y, z)`, `fy(x, y, z)`, and
         // `fz(x, y, z)` the same time, because `TPSCoefficients3D` stores the X, Y, and Z
@@ -660,12 +661,13 @@ namespace
         osc::Mesh rv = mesh;
 
         rv.transformVerts([&coefs](nonstd::span<glm::vec3> vs)
+        {
+            // multithread warping, because it is slow when applied to large meshes
+            std::for_each(std::execution::par_unseq, vs.begin(), vs.end(), [&coefs](glm::vec3& v)
             {
-                for (glm::vec3& v : vs)
-                {
-                    v = EvaluateTPSEquation(coefs, v);
-                }
+                v = EvaluateTPSEquation(coefs, v);
             });
+        });
 
         return rv;
     }
