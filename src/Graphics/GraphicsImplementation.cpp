@@ -2592,34 +2592,30 @@ private:
         {
             nonstd::span<uint32_t const> const indices(&m_IndicesData.front().u32, m_NumIndices);
 
-            // bounds-check the indices, to ensure nothing bizzare happens at runtime (#460)
-            OSC_ASSERT_ALWAYS(std::all_of(indices.begin(), indices.end(), [nVerts = m_Vertices.size()](uint32_t i) { return i < nVerts; }));
-
-            m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
             if (m_Topography == MeshTopography::Triangles)
             {
                 BVH_BuildFromIndexedTriangles(m_TriangleBVH, m_Vertices, indices);
+                m_AABB = m_TriangleBVH.nodes.front().bounds;
             }
             else
             {
                 m_TriangleBVH.clear();
+                m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
             }
         }
         else
         {
             nonstd::span<uint16_t const> const indices(&m_IndicesData.front().u16.a, m_NumIndices);
 
-            // bounds-check the indices, to ensure nothing bizzare happens at runtime (#460)
-            OSC_ASSERT_ALWAYS(std::all_of(indices.begin(), indices.end(), [nVerts = m_Vertices.size()](uint16_t i) { return i < nVerts; }));
-
-            m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
             if (m_Topography == MeshTopography::Triangles)
             {
                 BVH_BuildFromIndexedTriangles(m_TriangleBVH, m_Vertices, indices);
+                m_AABB = m_TriangleBVH.nodes.front().bounds;
             }
             else
             {
                 m_TriangleBVH.clear();
+                m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
             }
         }
         m_Midpoint = Midpoint(m_AABB);

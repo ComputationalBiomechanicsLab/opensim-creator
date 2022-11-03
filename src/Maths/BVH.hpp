@@ -8,6 +8,7 @@
 #include <vector>
 #include <cstddef>
 #include <cstdint>
+#include <utility>
 
 namespace osc { struct Line; }
 
@@ -21,6 +22,9 @@ namespace osc
     };
 
     struct BVHPrim final {
+        BVHPrim() = default;
+        BVHPrim(int id_, AABB bounds_) : id{std::move(id_)}, bounds{std::move(bounds_)} {}
+
         int id;  // ID into source collection (e.g. a mesh instance, a triangle)
         AABB bounds;  // AABB of the prim in the source collection
     };

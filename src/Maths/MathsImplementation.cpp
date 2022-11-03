@@ -17,6 +17,7 @@
 #include "src/Maths/Sphere.hpp"
 #include "src/Maths/Tetrahedron.hpp"
 #include "src/Maths/Transform.hpp"
+#include "src/Maths/Triangle.hpp"
 #include "src/Utils/Assertions.hpp"
 
 #include <glm/glm.hpp>
@@ -65,38 +66,25 @@ bool osc::operator!=(AABB const& a, AABB const& b) noexcept
 // BVH helpers
 namespace
 {
-    osc::AABB Union(void const* data, size_t n, size_t stride, size_t offset)
+    osc::AABB Union(nonstd::span<osc::BVHPrim const> prims)
     {
-        if (n == 0)
+        OSC_ASSERT(!prims.empty());
+
+        osc::AABB rv = prims.front().bounds;
+        for (auto it = prims.begin() + 1; it != prims.end(); ++it)
         {
-            return osc::AABB{};
+            rv = Union(rv, it->bounds);
         }
-
-        OSC_ASSERT(reinterpret_cast<uintptr_t>(data) % alignof(osc::AABB) == 0 && "possible unaligned load detected: this will cause bugs on systems that only support aligned loads (e.g. ARM)");
-        OSC_ASSERT(static_cast<uintptr_t>(offset) % alignof(osc::AABB) == 0 && "possible unaligned load detected: this will cause bugs on systems that only support aligned loads (e.g. ARM)");
-
-        unsigned char const* firstPtr = reinterpret_cast<unsigned char const*>(data);
-
-        osc::AABB rv = *reinterpret_cast<osc::AABB const*>(firstPtr + offset);
-        for (size_t i = 1; i < n; ++i)
-        {
-            unsigned char const* elPtr = firstPtr + (i*stride) + offset;
-            osc::AABB const& aabb = *reinterpret_cast<osc::AABB const*>(elPtr);
-            rv = Union(rv, aabb);
-        }
-
         return rv;
     }
 
     // recursively build the BVH
     void BVH_RecursiveBuild(osc::BVH& bvh, int begin, int n)
     {
-        if (n == 0)
+        if (n <= 0)
         {
             return;
         }
-
-        int end = begin + n;
 
         // if recursion bottoms out, create leaf node
         if (n == 1)
@@ -109,46 +97,32 @@ namespace
             return;
         }
 
+        // else: n >= 2
         // else: compute internal node
-        OSC_ASSERT(n > 1 && "trying to treat a lone node as if it were an internal node - this shouldn't be possible (the implementation should have already handled the leaf case)");
 
-        // compute bounding box of remaining prims
-        osc::AABB aabb = Union(
-            bvh.prims.data() + begin,
-            end-begin,
-            sizeof(osc::BVHPrim),
-            offsetof(osc::BVHPrim, bounds)
-        );
-
-        // edge-case: if it's empty, return a leaf node
-        if (IsEffectivelyEmpty(aabb))
-        {
-            osc::BVHNode& leaf = bvh.nodes.emplace_back();
-            leaf.bounds = aabb;
-            leaf.nlhs = -1;
-            leaf.firstPrimOffset = begin;
-            leaf.nPrims = n;
-            return;
-        }
+        // compute bounding box of remaining (children) prims
+        osc::AABB const aabb = Union({bvh.prims.data(), static_cast<size_t>(n)});
+        OSC_ASSERT(!IsAPoint(aabb) && "this should not be possible, because the input triangles/aabbs are volume-tested");
 
         // compute slicing position along the longest dimension
-        auto longestDimIdx = LongestDimIndex(aabb);
-        float midpointX2 = aabb.min[longestDimIdx] + aabb.max[longestDimIdx];
+        auto const longestDimIdx = LongestDimIndex(aabb);
+        float const midpointX2 = aabb.min[longestDimIdx] + aabb.max[longestDimIdx];
 
         // returns true if a given primitive is below the midpoint along the dim
-        auto isBelowMidpoint = [longestDimIdx, midpointX2](osc::BVHPrim const& p)
+        auto const isBelowMidpoint = [longestDimIdx, midpointX2](osc::BVHPrim const& p)
         {
-            float primMidpointX2 = p.bounds.min[longestDimIdx] + p.bounds.max[longestDimIdx];
+            float const primMidpointX2 = p.bounds.min[longestDimIdx] + p.bounds.max[longestDimIdx];
             return primMidpointX2 <= midpointX2;
         };
 
         // partition prims into above/below the midpoint
-        auto it = std::partition(bvh.prims.begin() + begin, bvh.prims.begin() + end, isBelowMidpoint);
-        int mid = static_cast<int>(std::distance(bvh.prims.begin(), it));
+        int const end = begin + n;
+        auto const it = std::partition(bvh.prims.begin() + begin, bvh.prims.begin() + end, isBelowMidpoint);
 
-        // edge-case: failed to spacially partition: just naievely partition
+        int mid = static_cast<int>(std::distance(bvh.prims.begin(), it));
         if (!(begin < mid && mid < end))
         {
+            // edge-case: failed to spacially partition: just naievely partition
             mid = begin + n/2;
         }
 
@@ -349,6 +323,24 @@ namespace
         return lhs || rhs;
     }
 
+    template<typename T>
+    static T const& at(nonstd::span<T const> vs, size_t i)
+    {
+        if (i <= vs.size())
+        {
+            return vs[i];
+        }
+        else
+        {
+            throw std::out_of_range{"invalid span subscript"};
+        }
+    }
+
+    static bool HasAVolume(osc::Triangle const& t)
+    {
+        return !(t.p0 == t.p1 && t.p1 == t.p2);
+    }
+
     template<typename TIndex>
     void BuildFromIndexedTriangles(
         osc::BVH& bvh,
@@ -359,18 +351,20 @@ namespace
         bvh.clear();
 
         // build up the prim list for each triangle
-        OSC_ASSERT_ALWAYS(indices.size() % 3 == 0);
-        for (size_t i = 0; i < indices.size(); i += 3)
+        bvh.prims.reserve(indices.size()/3);
+        for (size_t i = 0; (i+2) < indices.size(); i += 3)
         {
-            glm::vec3 triangleVerts[3] =
+            osc::Triangle const t
             {
-                verts[indices[i]],
-                verts[indices[i+1]],
-                verts[indices[i+2]],
+                at(verts, indices[i]),
+                at(verts, indices[i+1]),
+                at(verts, indices[i+2]),
             };
-            osc::BVHPrim& prim = bvh.prims.emplace_back();
-            prim.bounds = osc::AABBFromVerts({triangleVerts, 3});
-            prim.id = static_cast<int>(i);
+
+            if (HasAVolume(t))
+            {
+                bvh.prims.emplace_back(static_cast<int>(i), osc::AABBFromTriangle(t));
+            }
         }
 
         // recursively build the tree
@@ -433,9 +427,10 @@ void osc::BVH_BuildFromAABBs(BVH& bvh, AABB const* aabbs, size_t n)
     // build up prim list for each AABB (just copy the AABB)
     for (size_t i = 0; i < n; ++i)
     {
-        BVHPrim& prim = bvh.prims.emplace_back();
-        prim.bounds = aabbs[i];
-        prim.id = static_cast<int>(i);
+        if (!IsAPoint(aabbs[i]))
+        {
+            bvh.prims.emplace_back(static_cast<int>(i), aabbs[i]);
+        }
     }
 
     // recursively build the tree
@@ -1628,8 +1623,14 @@ osc::AABB osc::Union(AABB const& a, AABB const& b) noexcept
     };
 }
 
-bool osc::IsEffectivelyEmpty(AABB const& a) noexcept
+bool osc::IsAPoint(AABB const& a) noexcept
 {
+    return a.min == a.max;
+}
+
+bool osc::IsZeroVolume(AABB const& a) noexcept
+{
+
     for (int i = 0; i < 3; ++i)
     {
         if (a.min[i] == a.max[i])
@@ -1716,6 +1717,16 @@ osc::AABB osc::TransformAABB(AABB const& aabb, Transform const& t) noexcept
             }
         }
     }
+    return rv;
+}
+
+osc::AABB osc::AABBFromTriangle(Triangle const& t) noexcept
+{
+    AABB rv{t.p0, t.p0};
+    rv.min = Min(rv.min, t.p1);
+    rv.max = Max(rv.max, t.p1);
+    rv.min = Min(rv.min, t.p2);
+    rv.max = Max(rv.max, t.p2);
     return rv;
 }
 

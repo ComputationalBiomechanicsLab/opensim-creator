@@ -357,6 +357,7 @@ add_library(osccore STATIC
     src/Maths/Sphere.hpp
     src/Maths/Tetrahedron.hpp
     src/Maths/Transform.hpp
+    src/Maths/Triangle.hpp
 
     src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp
     src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp

@@ -22,6 +22,7 @@ namespace osc { struct Disc; }
 namespace osc { struct Plane; }
 namespace osc { struct Rect; }
 namespace osc { struct Segment; }
+namespace osc { struct Triangle; }
 
 // math helpers: generally handy math functions that aren't attached to a particular
 //               osc struct
@@ -224,8 +225,11 @@ namespace osc
     // returns the smallest AABB that spans both of the provided AABBs
     AABB Union(AABB const&, AABB const&) noexcept;
 
-    // returns true if the AABB has an effective volume of 0
-    bool IsEffectivelyEmpty(AABB const&) noexcept;
+    // returns true if the AABB has no extents in any dimension
+    bool IsAPoint(AABB const&) noexcept;
+
+    // returns true if the AABB is an extent in any dimension is zero
+    bool IsZeroVolume(AABB const&) noexcept;
 
     // returns the *index* of the longest dimension of an AABB
     glm::vec3::length_type LongestDimIndex(AABB const&) noexcept;
@@ -241,6 +245,9 @@ namespace osc
 
     // returns an AABB that has been transformed by the given transform
     AABB TransformAABB(AABB const&, Transform const&) noexcept;
+
+    // returns an AAB that tightly bounds the provided triangle
+    AABB AABBFromTriangle(Triangle const& t) noexcept;
 
     // returns an AABB that tightly bounds the provided points
     AABB AABBFromVerts(nonstd::span<glm::vec3 const>) noexcept;
