@@ -809,6 +809,28 @@ namespace
         rv.phi = 0.25f * osc::fpi;
         return rv;
     }
+
+    // a scene renderer that only renders if the render parameters + decorations change
+    class CachedSceneRenderer final {
+    public:
+        osc::RenderTexture& draw(std::vector<osc::SceneDecoration> const& decorations, osc::SceneRendererParams const& params)
+        {
+            if (params != m_LastRenderingParams || decorations != m_LastDecorationList)
+            {
+                // inputs have changed: cache the new ones and re-render
+                m_LastRenderingParams = params;
+                m_LastDecorationList = decorations;
+                m_SceneRenderer.draw(m_LastDecorationList, m_LastRenderingParams);
+            }
+
+            return m_SceneRenderer.updRenderTexture();
+        }
+
+    private:
+        osc::SceneRendererParams m_LastRenderingParams;
+        std::vector<osc::SceneDecoration> m_LastDecorationList;
+        osc::SceneRenderer m_SceneRenderer;
+    };
 }
 
 // TPS-tab-specific UI stuff
@@ -824,6 +846,11 @@ namespace
         osc::Material WireframeMaterial = CreateWireframeOverlayMaterial();
         std::shared_ptr<osc::Mesh const> LandmarkSphere = osc::App::meshes().getSphereMesh();
         glm::vec4 LandmarkColor = {1.0f, 0.0f, 0.0f, 1.0f};
+
+        osc::Mesh const& getTransformedMesh()
+        {
+            return ResultCache.lookup(EditedDocument.getScratch());
+        }
     };
 
     // append decorations that are common to all panels to the given output vector
@@ -1032,21 +1059,9 @@ namespace
         // renders this panel's 3D scene to a texture
         osc::RenderTexture& renderScene(glm::vec2 dims)
         {
-            osc::SceneRendererParams params = CalcRenderParams(m_Camera, dims);
-            std::vector<osc::SceneDecoration> decorations = generateDecorations();
-
-            if (params == m_LastRenderingParams && decorations == m_LastDecorationList)
-            {
-                // caching: no need to redraw if the inputs haven't changed
-                return m_SceneRenderer.updRenderTexture();
-            }
-
-            // else: update cache and redraw
-            m_SceneRenderer.draw(decorations, params);
-            m_LastRenderingParams = std::move(params);
-            m_LastDecorationList = std::move(decorations);
-
-            return m_SceneRenderer.updRenderTexture();
+            osc::SceneRendererParams const params = CalcRenderParams(m_Camera, dims);
+            std::vector<osc::SceneDecoration> const decorations = generateDecorations();
+            return m_CachedRenderer.draw(decorations, params);
         }
 
         // returns a fresh list of decorations for this panels
@@ -1091,9 +1106,7 @@ namespace
         std::shared_ptr<TPSUITabSate> m_State;
         bool m_UseSource = true;
         osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(getMesh());
-        osc::SceneRendererParams m_LastRenderingParams;
-        std::vector<osc::SceneDecoration> m_LastDecorationList;
-        osc::SceneRenderer m_SceneRenderer;
+        CachedSceneRenderer m_CachedRenderer;
         bool m_WireframeMode = true;
         float m_LandmarkRadius = 0.05f;
     };
@@ -1180,11 +1193,10 @@ namespace
         // returns 3D decorations for the given result panel
         std::vector<osc::SceneDecoration> generateDecorations() const
         {
-            // generate in-scene 3D decorations
             std::vector<osc::SceneDecoration> decorations;
             decorations.reserve(5);  // likely guess
 
-            AppendCommonDecorations(*m_State, getTransformedMesh(), m_WireframeMode, decorations);
+            AppendCommonDecorations(*m_State, m_State->getTransformedMesh(), m_WireframeMode, decorations);
 
             if (m_ShowDestinationMesh)
             {
@@ -1198,32 +1210,14 @@ namespace
         // renders a panel to a texture via its renderer and returns a reference to the rendered texture
         osc::RenderTexture& renderScene(glm::vec2 dims)
         {
-            osc::SceneRendererParams params = CalcRenderParams(m_Camera, dims);
-            std::vector<osc::SceneDecoration> decorations = generateDecorations();
-
-            if (params == m_LastRenderingParams && decorations == m_LastDecorationList)
-            {
-                return m_SceneRenderer.updRenderTexture();  // caching: no need to redraw if the inputs haven't changed
-            }
-
-            // else: update cache and redraw
-            m_SceneRenderer.draw(decorations, params);
-            m_LastRenderingParams = std::move(params);
-            m_LastDecorationList = std::move(decorations);
-
-            return m_SceneRenderer.updRenderTexture();
-        }
-
-        osc::Mesh const& getTransformedMesh() const
-        {
-            return m_State->ResultCache.lookup(m_State->EditedDocument.getScratch());
+            std::vector<osc::SceneDecoration> const decorations = generateDecorations();
+            osc::SceneRendererParams const params = CalcRenderParams(m_Camera, dims);
+            return m_CachedRenderer.draw(std::move(decorations), std::move(params));
         }
 
         std::shared_ptr<TPSUITabSate> m_State;
-        osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(getTransformedMesh());
-        osc::SceneRendererParams m_LastRenderingParams;
-        std::vector<osc::SceneDecoration> m_LastDecorationList;
-        osc::SceneRenderer m_SceneRenderer;
+        osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getTransformedMesh());
+        CachedSceneRenderer m_CachedRenderer;
         bool m_WireframeMode = true;
         bool m_ShowDestinationMesh = false;
     };
