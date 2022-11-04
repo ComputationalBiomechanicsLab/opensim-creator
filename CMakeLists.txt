@@ -595,6 +595,8 @@ add_library(osccore STATIC
     src/Widgets/SceneViewer.hpp
     src/Widgets/StandardPopup.cpp
     src/Widgets/StandardPopup.hpp
+    src/Widgets/UndoRedoPanel.cpp
+    src/Widgets/UndoRedoPanel.hpp
 )
 
 # osccore: target properties

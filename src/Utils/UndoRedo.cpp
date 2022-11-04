@@ -1,7 +1,12 @@
 #include "UndoRedo.hpp"
 
+#include "src/Utils/Assertions.hpp"
+
+#include <algorithm>
 #include <chrono>
+#include <cstddef>
 #include <utility>
+#include <vector>
 
 osc::UndoRedoEntryMetadata::UndoRedoEntryMetadata(std::string_view message_) :
     m_Time{std::chrono::system_clock::now()},

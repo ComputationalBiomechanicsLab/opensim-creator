@@ -28,6 +28,7 @@
 #include "src/Widgets/LogViewerPanel.hpp"
 #include "src/Widgets/NamedPanel.hpp"
 #include "src/Widgets/PerfPanel.hpp"
+#include "src/Widgets/UndoRedoPanel.hpp"
 
 #include <glm/mat3x4.hpp>
 #include <glm/vec2.hpp>
@@ -429,68 +430,6 @@ namespace
     }
 }
 
-namespace
-{
-    // a generic panel that shows undo/redo history
-    class UndoRedoPanel final : public osc::NamedPanel {
-    public:
-        UndoRedoPanel(
-            std::string_view panelName_,
-            std::shared_ptr<osc::UndoRedo> storage_) :
-
-            NamedPanel{std::move(panelName_)},
-            m_Storage{std::move(storage_)}
-        {
-        }
-
-    private:
-        void implDraw() override
-        {
-            if (ImGui::Button("undo"))
-            {
-                m_Storage->undo();
-            }
-
-            ImGui::SameLine();
-
-            if (ImGui::Button("redo"))
-            {
-                m_Storage->redo();
-            }
-
-            int imguiID = 0;
-
-            // draw undo entries oldest (highest index) to newest (lowest index)
-            for (ptrdiff_t i = m_Storage->getNumUndoEntriesi()-1; 0 <= i && i < m_Storage->getNumUndoEntriesi(); --i)
-            {
-                ImGui::PushID(imguiID++);
-                if (ImGui::Selectable(m_Storage->getUndoEntry(i).getMessage().c_str()))
-                {
-                    m_Storage->undoTo(i);
-                }
-                ImGui::PopID();
-            }
-
-            ImGui::PushID(imguiID++);
-            ImGui::Text("  %s", m_Storage->getHead().getMessage().c_str());
-            ImGui::PopID();
-
-            // draw redo entries oldest (lowest index) to newest (highest index)
-            for (size_t i = 0; i < m_Storage->getNumRedoEntries(); ++i)
-            {
-                ImGui::PushID(imguiID++);
-                if (ImGui::Selectable(m_Storage->getRedoEntry(i).getMessage().c_str()))
-                {
-                    m_Storage->redoTo(i);
-                }
-                ImGui::PopID();
-            }
-        }
-
-        std::shared_ptr<osc::UndoRedo> m_Storage;
-    };
-}
-
 // TPS document datastructure
 //
 // this covers the datastructures that the user is dynamically editing
@@ -650,7 +589,9 @@ namespace
     };
 }
 
-// generic UI algorithms
+// generic graphics algorithms
+//
+// (these have nothing to do with TPS, but are used to render the UI)
 namespace
 {
     // returns a material that can draw a mesh's triangles in wireframe-style
@@ -689,6 +630,22 @@ namespace
         return rv;
     }
 
+    // returns scene rendering parameters for an generic panel
+    osc::SceneRendererParams CalcRenderParams(
+        osc::PolarPerspectiveCamera const& camera,
+        glm::vec2 renderDims)
+    {
+        osc::SceneRendererParams rv;
+        rv.drawFloor = false;
+        rv.backgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
+        rv.dimensions = renderDims;
+        rv.viewMatrix = camera.getViewMtx();
+        rv.projectionMatrix = camera.getProjMtx(osc::AspectRatio(renderDims));
+        rv.samples = osc::App::get().getMSXAASamplesRecommended();
+        rv.lightDirection = osc::RecommendedLightDirection(camera);
+        return rv;
+    }
+
     // a scene renderer that only renders if the render parameters + decorations change
     class CachedSceneRenderer final {
     public:
@@ -712,7 +669,9 @@ namespace
     };
 }
 
-// TPS-tab-specific UI stuff
+// TPS UI code
+//
+// UI code that is specific to the TPS3D UI
 namespace
 {
     // top-level tab state
@@ -754,22 +713,6 @@ namespace
         // add grid decorations
         DrawXZGrid(out);
         DrawXZFloorLines(out, 100.0f);
-    }
-
-    // returns scene rendering parameters for an generic panel
-    osc::SceneRendererParams CalcRenderParams(
-        osc::PolarPerspectiveCamera const& camera,
-        glm::vec2 renderDims)
-    {
-        osc::SceneRendererParams rv;
-        rv.drawFloor = false;
-        rv.backgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
-        rv.dimensions = renderDims;
-        rv.viewMatrix = camera.getViewMtx();
-        rv.projectionMatrix = camera.getProjMtx(osc::AspectRatio(renderDims));
-        rv.samples = osc::App::get().getMSXAASamplesRecommended();
-        rv.lightDirection = osc::RecommendedLightDirection(camera);
-        return rv;
     }
 }
 
@@ -1033,7 +976,7 @@ namespace
         {
             std::vector<osc::SceneDecoration> const decorations = generateDecorations();
             osc::SceneRendererParams const params = CalcRenderParams(m_Camera, dims);
-            return m_CachedRenderer.draw(std::move(decorations), std::move(params));
+            return m_CachedRenderer.draw(decorations, params);
         }
 
         std::shared_ptr<TPSUITabSate> m_State;
