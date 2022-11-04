@@ -575,6 +575,8 @@ add_library(osccore STATIC
     src/Utils/SynchronizedValue.hpp
     src/Utils/UID.cpp
     src/Utils/UID.hpp
+    src/Utils/UndoRedo.cpp
+    src/Utils/UndoRedo.hpp
 
     src/Widgets/GuiRuler.cpp
     src/Widgets/GuiRuler.hpp
