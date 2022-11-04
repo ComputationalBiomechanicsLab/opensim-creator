@@ -64,6 +64,7 @@ namespace osc
     bool operator!=(PolarPerspectiveCamera const&, PolarPerspectiveCamera const&) noexcept;
 
     PolarPerspectiveCamera CreateCameraWithRadius(float);
+    PolarPerspectiveCamera CreateCameraFocusedOn(AABB const&);
     glm::vec3 RecommendedLightDirection(PolarPerspectiveCamera const&);
     void FocusAlongX(PolarPerspectiveCamera&);
     void FocusAlongMinusX(PolarPerspectiveCamera&);

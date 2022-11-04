@@ -591,43 +591,19 @@ namespace
 
 // generic graphics algorithms
 //
-// (these have nothing to do with TPS, but are used to render the UI)
+// (these have nothing to do with TPS, but are used to help render the UI)
 namespace
 {
-    // returns a material that can draw a mesh's triangles in wireframe-style
-    osc::Material CreateWireframeOverlayMaterial()
-    {
-        osc::Material material{osc::ShaderCache::get("shaders/SceneSolidColor.vert", "shaders/SceneSolidColor.frag")};
-        material.setVec4("uDiffuseColor", {0.0f, 0.0f, 0.0f, 0.6f});
-        material.setWireframeMode(true);
-        material.setTransparent(true);
-        return material;
-    }
-
-    // auto-focuses the given polar camera on the mesh, such that it fits in-frame
-    void AutofocusCameraOnMesh(osc::Mesh const& mesh, osc::PolarPerspectiveCamera& camera)
-    {
-        osc::AABB const bounds = mesh.getBounds();
-        camera.radius = 2.0f * osc::LongestDim(osc::Dimensions(bounds));
-        camera.focusPoint = -osc::Midpoint(bounds);
-    }
-
     // returns the 3D position of the intersection between the user's mouse and the mesh, if any
-    std::optional<glm::vec3> RaycastMesh(osc::PolarPerspectiveCamera const& camera, osc::Mesh const& mesh, osc::Rect const& renderRect, glm::vec2 mousePos)
+    std::optional<glm::vec3> RaycastMesh(
+        osc::PolarPerspectiveCamera const& camera,
+        osc::Mesh const& mesh,
+        osc::Rect const& renderRect,
+        glm::vec2 mousePos)
     {
         osc::Line const ray = camera.unprojectTopLeftPosToWorldRay(mousePos - renderRect.p1, osc::Dimensions(renderRect));
         osc::RayCollision const maybeCollision = osc::GetClosestWorldspaceRayCollision(mesh, osc::Transform{}, ray);
         return maybeCollision ? std::optional<glm::vec3>{ray.origin + ray.dir*maybeCollision.distance} : std::nullopt;
-    }
-
-    // returns a camera that is focused on the given box
-    osc::PolarPerspectiveCamera CreateCameraFocusedOn(osc::Mesh const& mesh)
-    {
-        osc::PolarPerspectiveCamera rv;
-        rv.radius = 3.0f * osc::LongestDim(osc::Dimensions(mesh.getBounds()));
-        rv.theta = 0.25f * osc::fpi;
-        rv.phi = 0.25f * osc::fpi;
-        return rv;
     }
 
     // returns scene rendering parameters for an generic panel
@@ -658,8 +634,8 @@ namespace
     struct TPSUITabSate final {
         std::shared_ptr<osc::UndoRedoT<TPSDocument>> EditedDocument = std::make_shared<osc::UndoRedoT<TPSDocument>>();
         TPSResultCache ResultCache;
-        std::optional<osc::PolarPerspectiveCamera> MaybeLockedCameraBase = CreateCameraFocusedOn(EditedDocument->getScratch().Source.Mesh);
-        osc::Material WireframeMaterial = CreateWireframeOverlayMaterial();
+        std::optional<osc::PolarPerspectiveCamera> MaybeLockedCameraBase = CreateCameraFocusedOn(EditedDocument->getScratch().Source.Mesh.getBounds());
+        osc::Material WireframeMaterial = osc::CreateWireframeOverlayMaterial();
         std::shared_ptr<osc::Mesh const> LandmarkSphere = osc::App::meshes().getSphereMesh();
         glm::vec4 LandmarkColor = {1.0f, 0.0f, 0.0f, 1.0f};
 
@@ -785,7 +761,7 @@ namespace
             // ImGui: draw "autofit camera" button
             if (ImGui::Button(ICON_FA_EXPAND))
             {
-                AutofocusCameraOnMesh(getMesh(), m_Camera);
+                osc::AutoFocus(m_Camera, getMesh().getBounds());
             }
 
             ImGui::SameLine();
@@ -847,7 +823,7 @@ namespace
 
         std::shared_ptr<TPSUITabSate> m_State;
         bool m_UseSource = true;
-        osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(getMesh());
+        osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(getMesh().getBounds());
         osc::CachedSceneRenderer m_CachedRenderer;
         bool m_WireframeMode = true;
         float m_LandmarkRadius = 0.05f;
@@ -958,7 +934,7 @@ namespace
         }
 
         std::shared_ptr<TPSUITabSate> m_State;
-        osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getTransformedMesh());
+        osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getTransformedMesh().getBounds());
         osc::CachedSceneRenderer m_CachedRenderer;
         bool m_WireframeMode = true;
         bool m_ShowDestinationMesh = false;

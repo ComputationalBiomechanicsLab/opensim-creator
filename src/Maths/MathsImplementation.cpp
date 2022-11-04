@@ -711,6 +711,13 @@ osc::PolarPerspectiveCamera osc::CreateCameraWithRadius(float r)
     return rv;
 }
 
+osc::PolarPerspectiveCamera osc::CreateCameraFocusedOn(AABB const& aabb)
+{
+    osc::PolarPerspectiveCamera rv;
+    osc::AutoFocus(rv, aabb);
+    return rv;
+}
+
 glm::vec3 osc::RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
 {
     float theta = c.theta - 0.75f*fpi4;  // anti-clockwise a little bit
@@ -776,7 +783,7 @@ void osc::Reset(osc::PolarPerspectiveCamera& camera)
 void osc::AutoFocus(PolarPerspectiveCamera& camera, AABB const& elementAABB)
 {
     camera.focusPoint = -Midpoint(elementAABB);
-    camera.radius = 2.0f * LongestDim(elementAABB);
+    camera.radius = 3.0f * LongestDim(elementAABB);
     camera.theta = osc::fpi4;
     camera.phi = osc::fpi4;
 }

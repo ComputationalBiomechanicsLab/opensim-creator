@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/Graphics/Material.hpp"
 #include "src/Graphics/SceneCollision.hpp"
 #include "src/Maths/RayCollision.hpp"
 
@@ -53,4 +54,7 @@ namespace osc
 
     // returns the average centerpoint of all vertices in a mesh
     glm::vec3 AverageCenterpoint(Mesh const&);
+
+    // returns a material that can draw a mesh's triangles in wireframe-style
+    osc::Material CreateWireframeOverlayMaterial();
 }

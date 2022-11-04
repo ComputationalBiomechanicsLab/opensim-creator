@@ -2,6 +2,7 @@
 
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
+#include "src/Graphics/ShaderCache.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/BVH.hpp"
@@ -263,4 +264,13 @@ glm::vec3 osc::AverageCenterpoint(Mesh const& m)
     acc /= static_cast<float>(verts.size());
 
     return acc;
+}
+
+osc::Material osc::CreateWireframeOverlayMaterial()
+{
+    osc::Material material{osc::ShaderCache::get("shaders/SceneSolidColor.vert", "shaders/SceneSolidColor.frag")};
+    material.setVec4("uDiffuseColor", {0.0f, 0.0f, 0.0f, 0.6f});
+    material.setWireframeMode(true);
+    material.setTransparent(true);
+    return material;
 }
