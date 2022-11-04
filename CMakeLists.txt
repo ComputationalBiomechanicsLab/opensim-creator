@@ -289,6 +289,8 @@ add_library(osccore STATIC
     src/Formats/DAE.cpp
 
     src/Graphics/AnnotatedImage.hpp
+    src/Graphics/CachedSceneRenderer.cpp
+    src/Graphics/CachedSceneRenderer.hpp
     src/Graphics/BlitFlags.hpp
     src/Graphics/Camera.hpp
     src/Graphics/CameraClearFlags.hpp

@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Bindings/GlmHelpers.hpp"
+#include "src/Graphics/CachedSceneRenderer.hpp"
 #include "src/Graphics/Camera.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
@@ -10,7 +11,6 @@
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
-#include "src/Graphics/SceneRenderer.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
 #include "src/Graphics/ShaderCache.hpp"
 #include "src/Maths/Constants.hpp"
@@ -645,28 +645,6 @@ namespace
         rv.lightDirection = osc::RecommendedLightDirection(camera);
         return rv;
     }
-
-    // a scene renderer that only renders if the render parameters + decorations change
-    class CachedSceneRenderer final {
-    public:
-        osc::RenderTexture& draw(std::vector<osc::SceneDecoration> const& decorations, osc::SceneRendererParams const& params)
-        {
-            if (params != m_LastRenderingParams || decorations != m_LastDecorationList)
-            {
-                // inputs have changed: cache the new ones and re-render
-                m_LastRenderingParams = params;
-                m_LastDecorationList = decorations;
-                m_SceneRenderer.draw(m_LastDecorationList, m_LastRenderingParams);
-            }
-
-            return m_SceneRenderer.updRenderTexture();
-        }
-
-    private:
-        osc::SceneRendererParams m_LastRenderingParams;
-        std::vector<osc::SceneDecoration> m_LastDecorationList;
-        osc::SceneRenderer m_SceneRenderer;
-    };
 }
 
 // TPS UI code
@@ -870,7 +848,7 @@ namespace
         std::shared_ptr<TPSUITabSate> m_State;
         bool m_UseSource = true;
         osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(getMesh());
-        CachedSceneRenderer m_CachedRenderer;
+        osc::CachedSceneRenderer m_CachedRenderer;
         bool m_WireframeMode = true;
         float m_LandmarkRadius = 0.05f;
     };
@@ -981,7 +959,7 @@ namespace
 
         std::shared_ptr<TPSUITabSate> m_State;
         osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getTransformedMesh());
-        CachedSceneRenderer m_CachedRenderer;
+        osc::CachedSceneRenderer m_CachedRenderer;
         bool m_WireframeMode = true;
         bool m_ShowDestinationMesh = false;
     };
