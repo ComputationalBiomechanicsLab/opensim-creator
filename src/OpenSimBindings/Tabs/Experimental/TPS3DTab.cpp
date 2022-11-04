@@ -365,10 +365,8 @@ namespace
         // solve for each dimension
         SimTK::Vector Cx(numPairs + 4, 0.0);
         F.solve(Vx, Cx);
-
         SimTK::Vector Cy(numPairs + 4, 0.0);
         F.solve(Vy, Cy);
-
         SimTK::Vector Cz(numPairs + 4, 0.0);
         F.solve(Vz, Cz);
 
@@ -574,7 +572,10 @@ namespace
         // returns `true` if the cached result mesh was updated
         bool updateResultMesh(TPSDocument const& doc)
         {
-            if (updateCoefficients(doc) || updateInputMesh(doc))
+            bool const updatedCoefficients = updateCoefficients(doc);
+            bool const updatedMesh = updateInputMesh(doc);
+
+            if (updatedCoefficients || updatedMesh)
             {
                 m_CachedResultMesh = ApplyThinPlateWarpToMesh(m_CachedCoefficients, m_CachedSourceMesh);
                 return true;
@@ -698,6 +699,7 @@ namespace
         osc::Material WireframeMaterial = osc::CreateWireframeOverlayMaterial();
         std::shared_ptr<osc::Mesh const> LandmarkSphere = osc::App::meshes().getSphereMesh();
         glm::vec4 LandmarkColor = {1.0f, 0.0f, 0.0f, 1.0f};
+        std::optional<glm::vec3> PerFrameHover;
 
         osc::Mesh const& getTransformedMesh()
         {
@@ -781,21 +783,24 @@ namespace
             osc::ImGuiImageHittestResult const htResult = osc::DrawTextureAsImGuiImageAndHittest(renderTexture);
 
             // update camera if user drags it around etc.
+            std::optional<glm::vec3> maybeCollision;
             if (htResult.isHovered)
             {
                 osc::UpdatePolarCameraFromImGuiUserInput(dims, m_Camera);
+                glm::vec2 const mousePos = ImGui::GetMousePos();
+                maybeCollision = RaycastMesh(m_Camera, getMesh(), htResult.rect, mousePos);
+            }
+
+            // if the user is currently hitting something in 3D, update global mouse cursor tracker
+            if (maybeCollision)
+            {
+                m_State->PerFrameHover = *maybeCollision;
             }
 
             // if user left-clicks, add a landmark there
-            if (htResult.isLeftClickReleasedWithoutDragging)
+            if (maybeCollision && htResult.isLeftClickReleasedWithoutDragging)
             {
-                glm::vec2 const mousePos = ImGui::GetMousePos();
-
-                // if the user's mouse ray intersects the mesh, then that's where the landmark should be placed
-                if (std::optional<glm::vec3> maybeCollision = RaycastMesh(m_Camera, getMesh(), htResult.rect, mousePos))
-                {
-                    ActionAddLandmarkTo(*m_State->EditedDocument, updDocumentInput(), *maybeCollision);
-                }
+                ActionAddLandmarkTo(*m_State->EditedDocument, updDocumentInput(), *maybeCollision);
             }
 
             // draw any 2D ImGui overlays
@@ -1114,6 +1119,57 @@ namespace
         osc::UndoButton m_UndoButton{m_TabState->EditedDocument};
         osc::RedoButton m_RedoButton{m_TabState->EditedDocument};
     };
+
+    class BottomToolBar final {
+    public:
+        BottomToolBar(
+            std::string_view label,
+            std::shared_ptr<TPSUITabSate> tabState_) :
+
+            m_Label{std::move(label)},
+            m_TabState{std::move(tabState_)}
+        {
+        }
+
+        void draw()
+        {
+            if (osc::BeginMainViewportBottomBar(m_Label.c_str()))
+            {
+                drawContent();
+            }
+            ImGui::End();
+        }
+
+    private:
+        void drawContent()
+        {
+            if (m_TabState->PerFrameHover)
+            {
+                glm::vec3 const pos = *m_TabState->PerFrameHover;
+                ImGui::TextUnformatted("(");
+                ImGui::SameLine();
+                for (int i = 0; i < 3; ++i)
+                {
+                    glm::vec4 color = {0.5f, 0.5f, 0.5f, 1.0f};
+                    color[i] = 1.0f;
+                    ImGui::PushStyleColor(ImGuiCol_Text, color);
+                    ImGui::Text("%f", pos[i]);
+                    ImGui::SameLine();
+                    ImGui::PopStyleColor();
+                }
+                ImGui::TextUnformatted(")");
+                ImGui::SameLine();
+                ImGui::TextDisabled("(left-click to add a landmark)");
+            }
+            else
+            {
+                ImGui::TextDisabled("(nothing hovered)");
+            }
+        }
+
+        std::string m_Label;
+        std::shared_ptr<TPSUITabSate> m_TabState;
+    };
 }
 
 // tab implementation
@@ -1158,6 +1214,9 @@ public:
 
     void onTick()
     {
+        // re-perform hover test each frame
+        m_TabState->PerFrameHover.reset();
+
         // if requested, lock cameras together
         if (m_TabState->LinkCameras)
         {
@@ -1199,6 +1258,7 @@ public:
         m_LogViewerPanel.draw();
         m_PerfPanel.draw();
         m_UndoRedoPanel.draw();
+        m_BottomToolbar.draw();
     }
 
 private:
@@ -1219,6 +1279,7 @@ private:
     UndoRedoPanel m_UndoRedoPanel{"History", m_TabState->EditedDocument};
     LogViewerPanel m_LogViewerPanel{"Log"};
     PerfPanel m_PerfPanel{"Performance"};
+    BottomToolBar m_BottomToolbar{"##BottomToolBar", m_TabState};
 };
 
 
