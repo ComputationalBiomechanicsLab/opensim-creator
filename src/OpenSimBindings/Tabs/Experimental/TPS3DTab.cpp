@@ -434,20 +434,20 @@ namespace
 // to know what, or how, the data is actually stored in memory
 namespace
 {
-    // a base class for something that stores commit data, including the metadata
-    class BaseCommitData {
+    // an abstract base class for storing undo/redo metadata
+    class UndoRedoEntryMetadata {
     protected:
-        BaseCommitData(std::string_view message_) :
+        UndoRedoEntryMetadata(std::string_view message_) :
             m_Time{std::chrono::system_clock::now()},
             m_Message{std::move(message_)}
         {
         }
-        BaseCommitData(BaseCommitData const&) = default;
-        BaseCommitData(BaseCommitData&&) noexcept = default;
-        BaseCommitData& operator=(BaseCommitData const&) = default;
-        BaseCommitData& operator=(BaseCommitData&&) noexcept = default;
+        UndoRedoEntryMetadata(UndoRedoEntryMetadata const&) = default;
+        UndoRedoEntryMetadata(UndoRedoEntryMetadata&&) noexcept = default;
+        UndoRedoEntryMetadata& operator=(UndoRedoEntryMetadata const&) = default;
+        UndoRedoEntryMetadata& operator=(UndoRedoEntryMetadata&&) noexcept = default;
     public:
-        virtual ~BaseCommitData() noexcept = default;
+        virtual ~UndoRedoEntryMetadata() noexcept = default;
 
         std::chrono::system_clock::time_point getTime() const
         {
@@ -463,12 +463,13 @@ namespace
         std::string m_Message;
     };
 
+    // concrete implementation of storage for a complete undo/redo entry (metadata + data)
     template<typename T>
-    class CommitData final : public BaseCommitData {
+    class UndoRedoEntryData final : public UndoRedoEntryMetadata {
     public:
         template<typename... TCtorArgs>
-        CommitData(std::string_view message_, TCtorArgs&&... args) :
-            BaseCommitData{std::move(message_)},
+        UndoRedoEntryData(std::string_view message_, TCtorArgs&&... args) :
+            UndoRedoEntryMetadata{std::move(message_)},
             m_Data{std::forward<TCtorArgs>(args)...}
         {
         }
@@ -482,10 +483,13 @@ namespace
         T m_Data;
     };
 
-    // a type-erased, const, reference-counted, commit
-    class BaseCommit {
+    // type-erased, const, and reference-counted storage for undo/redo entry data
+    //
+    // can be safely copied, sliced, etc. from the derived class, enabling type-erased
+    // implementation code
+    class UndoRedoEntry {
     protected:
-        BaseCommit(std::shared_ptr<BaseCommitData const> data_) :
+        UndoRedoEntry(std::shared_ptr<UndoRedoEntryMetadata const> data_) :
             m_Data{std::move(data_)}
         {
         }
@@ -502,44 +506,42 @@ namespace
         }
 
     protected:
-        template<typename T>
-        T const& getDowncastedData() const
-        {
-            return static_cast<CommitData<T> const&>(*m_Data).getData();
-        }
-
-    private:
-        std::shared_ptr<BaseCommitData const> m_Data;
+        std::shared_ptr<UndoRedoEntryMetadata const> m_Data;
     };
 
+    // concrete, known-to-hold-type-T version of `UndoRedoEntry`
     template<typename T>
-    class Commit final : public BaseCommit {
+    class UndoRedoEntryT final : public UndoRedoEntry {
     public:
         template<typename... TCtorArgs>
-        Commit(std::string_view message_, TCtorArgs&&... args) :
-            BaseCommit{std::make_shared<CommitData<T>>(std::move(message_), std::forward<TCtorArgs>(args)...)}
+        UndoRedoEntryT(std::string_view message_, TCtorArgs&&... args) :
+            UndoRedoEntry{std::make_shared<UndoRedoEntryData<T>>(std::move(message_), std::forward<TCtorArgs>(args)...)}
         {
         }
 
         T const& getData() const
         {
-            return getDowncastedData<T>();
+            return static_cast<UndoRedoEntryData<T> const&>(*m_Data).getData();
         }
     };
 
-    class BaseUndoRedoStorage {
+    // type-erased base class for undo/redo storage
+    //
+    // this base class stores undo/redo entries as type-erased pointers, so that the
+    // code here, and in other generic downstream classes, doesn't need to know what's
+    // actually being stored
+    class UndoRedo {
     protected:
-        BaseUndoRedoStorage(BaseCommit const& initialCommit_) :
-            m_Head{initialCommit_}
+        UndoRedo(UndoRedoEntry const& initialCommit_) : m_Head{initialCommit_}
         {
         }
-        BaseUndoRedoStorage(BaseUndoRedoStorage const&) = default;
-        BaseUndoRedoStorage(BaseUndoRedoStorage&&) noexcept = default;
-        BaseUndoRedoStorage& operator=(BaseUndoRedoStorage const&) = default;
-        BaseUndoRedoStorage& operator=(BaseUndoRedoStorage&&) = default;
+        UndoRedo(UndoRedo const&) = default;
+        UndoRedo(UndoRedo&&) noexcept = default;
+        UndoRedo& operator=(UndoRedo const&) = default;
+        UndoRedo& operator=(UndoRedo&&) = default;
 
     public:
-        virtual ~BaseUndoRedoStorage() noexcept = default;
+        virtual ~UndoRedo() noexcept = default;
 
         void commitScratch(std::string_view commitMsg)
         {
@@ -548,7 +550,7 @@ namespace
             m_Redo.clear();
         }
 
-        BaseCommit getHead() const
+        UndoRedoEntry getHead() const
         {
             return m_Head;
         }
@@ -563,7 +565,7 @@ namespace
             return static_cast<ptrdiff_t>(getNumUndoEntries());
         }
 
-        BaseCommit const& getUndoEntry(size_t i) const
+        UndoRedoEntry const& getUndoEntry(size_t i) const
         {
             OSC_ASSERT(i < m_Undo.size());
             return m_Undo.rbegin()[i];
@@ -576,8 +578,8 @@ namespace
                 return;  // out of bounds: ignore request
             }
 
-            BaseCommit const oldHead = m_Head;
-            BaseCommit const newHead = m_Undo.rbegin()[nthEntry];
+            UndoRedoEntry const oldHead = m_Head;
+            UndoRedoEntry const newHead = m_Undo.rbegin()[nthEntry];
 
             // push old head onto the redo stack
             m_Redo.push_back(oldHead);
@@ -611,7 +613,7 @@ namespace
             return static_cast<ptrdiff_t>(getNumRedoEntries());
         }
 
-        BaseCommit getRedoEntry(size_t i) const
+        UndoRedoEntry getRedoEntry(size_t i) const
         {
             OSC_ASSERT(i < m_Redo.size());
             return m_Redo.rbegin()[i];
@@ -629,8 +631,8 @@ namespace
                 return;  // out of bounds: ignore request
             }
 
-            BaseCommit const oldHead = m_Head;
-            BaseCommit const newHead = m_Redo.rbegin()[nthEntry];
+            UndoRedoEntry const oldHead = m_Head;
+            UndoRedoEntry const newHead = m_Redo.rbegin()[nthEntry];
 
             // push old head onto the undo stack
             m_Undo.push_back(oldHead);
@@ -650,26 +652,26 @@ namespace
         }
 
     private:
-        virtual BaseCommit implCreateCommitFromScratch(std::string_view commitMsg) = 0;
-        virtual void implAssignScratchFromCommit(BaseCommit const&) = 0;
+        virtual UndoRedoEntry implCreateCommitFromScratch(std::string_view commitMsg) = 0;
+        virtual void implAssignScratchFromCommit(UndoRedoEntry const&) = 0;
 
-        std::vector<BaseCommit> m_Undo;
-        std::vector<BaseCommit> m_Redo;
-        BaseCommit m_Head;
+        std::vector<UndoRedoEntry> m_Undo;
+        std::vector<UndoRedoEntry> m_Redo;
+        UndoRedoEntry m_Head;
     };
 
-    // undo/redo storage for a concrete type
+    // concrete class for undo/redo storage
     //
     // - there is a "scratch" space that other code can edit
     // - other code can "commit" the scratch space to storage via `commit(message)`
     // - there is always at least one commit (the "head") in storage, for rollback support
     template<typename T>
-    class UndoRedoStorage final : public BaseUndoRedoStorage {
+    class UndoRedoT final : public UndoRedo {
     public:
         template<typename... TCtorArgs>
-        UndoRedoStorage(TCtorArgs&&... args) :
-            BaseUndoRedoStorage(Commit<T>{"created document", std::forward<TCtorArgs>(args)...}),
-            m_Scratch{static_cast<Commit<T> const&>(getHead()).getData()}
+        UndoRedoT(TCtorArgs&&... args) :
+            UndoRedo(UndoRedoEntryT<T>{"created document", std::forward<TCtorArgs>(args)...}),
+            m_Scratch{static_cast<UndoRedoEntryT<T> const&>(getHead()).getData()}
         {
         }
 
@@ -683,25 +685,25 @@ namespace
             return m_Scratch;
         }
 
-        Commit<T> const& getUndoEntry(size_t i) const
+        UndoRedoEntryT<T> const& getUndoEntry(size_t i) const
         {
-            return static_cast<Commit<T> const&>(static_cast<BaseUndoRedoStorage const&>(*this).getUndoEntry(i));
+            return static_cast<UndoRedoEntryT<T> const&>(static_cast<UndoRedo const&>(*this).getUndoEntry(i));
         }
 
-        Commit<T> getRedoEntry(size_t i) const
+        UndoRedoEntryT<T> getRedoEntry(size_t i) const
         {
-            return static_cast<Commit<T> const&>(static_cast<BaseUndoRedoStorage const&>(*this).getRedoEntry(i));
+            return static_cast<UndoRedoEntryT<T> const&>(static_cast<UndoRedo const&>(*this).getRedoEntry(i));
         }
 
     private:
-        virtual BaseCommit implCreateCommitFromScratch(std::string_view commitMsg)
+        virtual UndoRedoEntry implCreateCommitFromScratch(std::string_view commitMsg)
         {
-            return Commit<T>{std::move(commitMsg), m_Scratch};
+            return UndoRedoEntryT<T>{std::move(commitMsg), m_Scratch};
         }
 
-        virtual void implAssignScratchFromCommit(BaseCommit const& commit)
+        virtual void implAssignScratchFromCommit(UndoRedoEntry const& commit)
         {
-            m_Scratch = static_cast<Commit<T> const&>(commit).getData();
+            m_Scratch = static_cast<UndoRedoEntryT<T> const&>(commit).getData();
         }
 
         T m_Scratch;
@@ -715,7 +717,7 @@ namespace
     public:
         UndoRedoPanel(
             std::string_view panelName_,
-            std::shared_ptr<BaseUndoRedoStorage> storage_) :
+            std::shared_ptr<UndoRedo> storage_) :
 
             NamedPanel{std::move(panelName_)},
             m_Storage{std::move(storage_)}
@@ -766,7 +768,7 @@ namespace
             }
         }
 
-        std::shared_ptr<BaseUndoRedoStorage> m_Storage;
+        std::shared_ptr<UndoRedo> m_Storage;
     };
 }
 
@@ -791,14 +793,14 @@ namespace
     };
 
     // action: add a landmark to the source mesh
-    void ActionAddLandmarkTo(UndoRedoStorage<TPSDocument>& doc, TPSDocumentInput& input, glm::vec3 const& pos)
+    void ActionAddLandmarkTo(UndoRedoT<TPSDocument>& doc, TPSDocumentInput& input, glm::vec3 const& pos)
     {
         input.Landmarks[input.Landmarks.size()] = pos;
         doc.commitScratch("added landmark");
     }
 
     // action: prompt the user to browse for a different source mesh
-    void ActionBrowseForNewMesh(UndoRedoStorage<TPSDocument>& doc, TPSDocumentInput& input)
+    void ActionBrowseForNewMesh(UndoRedoT<TPSDocument>& doc, TPSDocumentInput& input)
     {
         std::filesystem::path const p = osc::PromptUserForFile("vtp,obj");
         if (!p.empty())
@@ -809,13 +811,13 @@ namespace
     }
 
     // action: set the TPS blending factor for the result, but don't save it to undo/redo storage
-    void ActionSetBlendFactor(UndoRedoStorage<TPSDocument>& doc, float factor)
+    void ActionSetBlendFactor(UndoRedoT<TPSDocument>& doc, float factor)
     {
         doc.updScratch().BlendingFactor = factor;
     }
 
     // action: set the TPS blending factor and save a commit of the change
-    void ActionSetBlendFactorAndSave(UndoRedoStorage<TPSDocument>& doc, float factor)
+    void ActionSetBlendFactorAndSave(UndoRedoT<TPSDocument>& doc, float factor)
     {
         ActionSetBlendFactor(doc, factor);
         doc.commitScratch("changed blend factor");
@@ -998,7 +1000,7 @@ namespace
     //
     // (shared by all panels)
     struct TPSUITabSate final {
-        std::shared_ptr<UndoRedoStorage<TPSDocument>> EditedDocument = std::make_shared<UndoRedoStorage<TPSDocument>>();
+        std::shared_ptr<UndoRedoT<TPSDocument>> EditedDocument = std::make_shared<UndoRedoT<TPSDocument>>();
         TPSResultCache ResultCache;
         std::optional<osc::PolarPerspectiveCamera> MaybeLockedCameraBase = CreateCameraFocusedOn(EditedDocument->getScratch().Source.Mesh);
         osc::Material WireframeMaterial = CreateWireframeOverlayMaterial();
