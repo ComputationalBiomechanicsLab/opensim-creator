@@ -68,8 +68,6 @@ namespace
 {
     osc::AABB Union(nonstd::span<osc::BVHPrim const> prims)
     {
-        OSC_ASSERT(!prims.empty());
-
         osc::AABB rv = prims.front().bounds;
         for (auto it = prims.begin() + 1; it != prims.end(); ++it)
         {
@@ -79,63 +77,58 @@ namespace
     }
 
     // recursively build the BVH
-    void BVH_RecursiveBuild(osc::BVH& bvh, int begin, int n)
+    void BVH_RecursiveBuild(osc::BVH& bvh, int const begin, int const n)
     {
-        if (n <= 0)
-        {
-            return;
-        }
-
-        // if recursion bottoms out, create leaf node
         if (n == 1)
         {
+            // recursion bottomed out: create a leaf node
             osc::BVHNode& leaf = bvh.nodes.emplace_back();
-            leaf.bounds = bvh.prims[begin].bounds;
+            leaf.bounds = bvh.prims.at(begin).bounds;
             leaf.nlhs = -1;
             leaf.firstPrimOffset = begin;
-            leaf.nPrims = 1;
             return;
         }
 
-        // else: n >= 2
-        // else: compute internal node
+        // else: n >= 2, so partition the data appropriately and allocate an internal node
 
-        // compute bounding box of remaining (children) prims
-        osc::AABB const aabb = Union({bvh.prims.data(), static_cast<size_t>(n)});
-        OSC_ASSERT(!IsAPoint(aabb) && "this should not be possible, because the input triangles/aabbs are volume-tested");
-
-        // compute slicing position along the longest dimension
-        auto const longestDimIdx = LongestDimIndex(aabb);
-        float const midpointX2 = aabb.min[longestDimIdx] + aabb.max[longestDimIdx];
-
-        // returns true if a given primitive is below the midpoint along the dim
-        auto const isBelowMidpoint = [longestDimIdx, midpointX2](osc::BVHPrim const& p)
+        int midpoint = -1;
+        int internalNodeLoc = -1;
         {
-            float const primMidpointX2 = p.bounds.min[longestDimIdx] + p.bounds.max[longestDimIdx];
-            return primMidpointX2 <= midpointX2;
-        };
+            // allocate an appropriate internal node
 
-        // partition prims into above/below the midpoint
-        int const end = begin + n;
-        auto const it = std::partition(bvh.prims.begin() + begin, bvh.prims.begin() + end, isBelowMidpoint);
+            // compute bounding box of remaining (children) prims
+            osc::AABB const aabb = Union({bvh.prims.data() + begin, static_cast<size_t>(n)});
 
-        int mid = static_cast<int>(std::distance(bvh.prims.begin(), it));
-        if (!(begin < mid && mid < end))
-        {
-            // edge-case: failed to spacially partition: just naievely partition
-            mid = begin + n/2;
+            // compute slicing position along the longest dimension
+            auto const longestDimIdx = LongestDimIndex(aabb);
+            float const midpointX2 = aabb.min[longestDimIdx] + aabb.max[longestDimIdx];
+
+            // returns true if a given primitive is below the midpoint along the dim
+            auto const isBelowMidpoint = [longestDimIdx, midpointX2](osc::BVHPrim const& p)
+            {
+                float const primMidpointX2 = p.bounds.min[longestDimIdx] + p.bounds.max[longestDimIdx];
+                return primMidpointX2 <= midpointX2;
+            };
+
+            // partition prims into above/below the midpoint
+            int const end = begin + n;
+            auto const it = std::partition(bvh.prims.begin() + begin, bvh.prims.begin() + end, isBelowMidpoint);
+
+            midpoint = static_cast<int>(std::distance(bvh.prims.begin(), it));
+            if (midpoint == begin || midpoint == end)
+            {
+                // edge-case: failed to spacially partition: just naievely partition
+                midpoint = begin + n/2;
+            }
+
+            internalNodeLoc = static_cast<int>(bvh.nodes.size());  // careful: reallocations
+            osc::BVHNode& internalNode = bvh.nodes.emplace_back();
+            internalNode.firstPrimOffset = -1;
+            internalNode.bounds = aabb;
         }
 
-        OSC_ASSERT(begin < mid && mid < end && "BVH partitioning failed to create two partitions - this shouldn't be possible");
-
-        // allocate internal node
-        int internalNodeLoc = static_cast<int>(bvh.nodes.size());  // careful: reallocations
-        bvh.nodes.emplace_back();
-        bvh.nodes[internalNodeLoc].firstPrimOffset = -1;
-        bvh.nodes[internalNodeLoc].nPrims = 0;
-
         // build left-hand subtree
-        BVH_RecursiveBuild(bvh, begin, mid-begin);
+        BVH_RecursiveBuild(bvh, begin, midpoint-begin);
 
         // the left-hand build allocated nodes for the left hand side contiguously in memory
         int numLhsNodes = static_cast<int>(bvh.nodes.size() - 1) - internalNodeLoc;
@@ -143,13 +136,8 @@ namespace
         bvh.nodes[internalNodeLoc].nlhs = numLhsNodes;
 
         // build right node
-        BVH_RecursiveBuild(bvh, mid, end - mid);
+        BVH_RecursiveBuild(bvh, midpoint, (begin + n) - midpoint);
         OSC_ASSERT(internalNodeLoc+numLhsNodes < static_cast<int>(bvh.nodes.size()));
-
-        // compute internal node's bounds from the left+right side
-        osc::AABB const& lhsAABB = bvh.nodes[internalNodeLoc+1].bounds;
-        osc::AABB const& rhsAABB = bvh.nodes[internalNodeLoc+1+numLhsNodes].bounds;
-        bvh.nodes[internalNodeLoc].bounds = Union(lhsAABB, rhsAABB);
     }
 
     // returns true if something hit (the return value is only used in recursion)
@@ -177,19 +165,14 @@ namespace
         {
             // leaf node: check ray-triangle intersection
 
-            bool hit = false;
-            for (int i = node.firstPrimOffset, end = node.firstPrimOffset + node.nPrims; i < end; ++i)
-            {
-                osc::BVHPrim const& p = bvh.prims[i];
+            osc::BVHPrim const& p = bvh.prims[node.firstPrimOffset];
 
-                osc::RayCollision rayrtri = osc::GetRayCollisionTriangle(ray, vs + p.id);
-                if (rayrtri.hit)
-                {
-                    out.push_back(osc::BVHCollision{p.id, rayrtri.distance});
-                    hit = true;
-                }
+            osc::RayCollision rayrtri = osc::GetRayCollisionTriangle(ray, vs + p.id);
+            if (rayrtri.hit)
+            {
+                out.push_back(osc::BVHCollision{p.id, rayrtri.distance});
             }
-            return hit;
+            return rayrtri.hit;
         }
         else
         {
@@ -292,26 +275,23 @@ namespace
             // leaf node: check ray-triangle intersection
 
             bool hit = false;
-            for (int i = node.firstPrimOffset, end = node.firstPrimOffset + node.nPrims; i < end; ++i)
+            osc::BVHPrim const& p = bvh.prims[node.firstPrimOffset];
+
+            glm::vec3 triangleVerts[] =
             {
-                osc::BVHPrim const& p = bvh.prims[i];
+                verts[indices[p.id]],
+                verts[indices[p.id + 1]],
+                verts[indices[p.id + 2]],
+            };
 
-                glm::vec3 triangleVerts[] =
-                {
-                    verts[indices[p.id]],
-                    verts[indices[p.id + 1]],
-                    verts[indices[p.id + 2]],
-                };
+            osc::RayCollision rayrtri = osc::GetRayCollisionTriangle(ray, triangleVerts);
 
-                osc::RayCollision rayrtri = osc::GetRayCollisionTriangle(ray, triangleVerts);
-
-                if (rayrtri.hit && rayrtri.distance < closest)
-                {
-                    closest = rayrtri.distance;
-                    out->primId = p.id;
-                    out->distance = rayrtri.distance;
-                    hit = true;
-                }
+            if (rayrtri.hit && rayrtri.distance < closest)
+            {
+                closest = rayrtri.distance;
+                out->primId = p.id;
+                out->distance = rayrtri.distance;
+                hit = true;
             }
 
             return hit;
@@ -351,7 +331,7 @@ namespace
         bvh.clear();
 
         // build up the prim list for each triangle
-        bvh.prims.reserve(indices.size()/3);
+        bvh.prims.reserve(indices.size()/3);  // good guess
         for (size_t i = 0; (i+2) < indices.size(); i += 3)
         {
             osc::Triangle const t
@@ -367,8 +347,10 @@ namespace
             }
         }
 
-        // recursively build the tree
-        BVH_RecursiveBuild(bvh, 0, static_cast<int>(bvh.prims.size()));
+        if (!bvh.prims.empty())
+        {
+            BVH_RecursiveBuild(bvh, 0, static_cast<int>(bvh.prims.size()));
+        }
     }
 
     template<typename TIndex>
@@ -421,10 +403,10 @@ bool osc::BVH_GetClosestRayIndexedTriangleCollision(BVH const& bvh, nonstd::span
 void osc::BVH_BuildFromAABBs(BVH& bvh, AABB const* aabbs, size_t n)
 {
     // clear out any old data
-    bvh.nodes.clear();
-    bvh.prims.clear();
+    bvh.clear();
 
     // build up prim list for each AABB (just copy the AABB)
+    bvh.prims.reserve(n);  // good guess
     for (size_t i = 0; i < n; ++i)
     {
         if (!IsAPoint(aabbs[i]))
@@ -433,8 +415,10 @@ void osc::BVH_BuildFromAABBs(BVH& bvh, AABB const* aabbs, size_t n)
         }
     }
 
-    // recursively build the tree
-    BVH_RecursiveBuild(bvh, 0, static_cast<int>(bvh.prims.size()));
+    if (!bvh.prims.empty())
+    {
+        BVH_RecursiveBuild(bvh, 0, static_cast<int>(bvh.prims.size()));
+    }
 }
 
 bool osc::BVH_GetRayAABBCollisions(

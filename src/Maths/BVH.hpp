@@ -18,7 +18,6 @@ namespace osc
         AABB bounds;  // union of all AABBs below/including this one
         int nlhs;  // number of nodes in left-hand side, -1 if this node is a leaf
         int firstPrimOffset;  // offset into prim array, -1 if this node is internal
-        int nPrims;  // number of prims this node represents
     };
 
     struct BVHPrim final {
