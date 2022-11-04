@@ -14,6 +14,7 @@
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
 #include "src/Graphics/ShaderCache.hpp"
+#include "src/Maths/CollisionTests.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
@@ -776,19 +777,26 @@ namespace
         void implDraw() override
         {
             // fill the entire available region with the render
+            glm::vec2 const topLeft = ImGui::GetCursorScreenPos();
             glm::vec2 const dims = ImGui::GetContentRegionAvail();
+            osc::Rect const regionRect = {topLeft, topLeft+dims};
+
+            // perform hittest *before* rendering because collision tests affect what is drawn
+            std::optional<glm::vec3> maybeCollision;
+            if (osc::IsPointInRect(regionRect, ImGui::GetMousePos()))
+            {
+                glm::vec2 const mousePos = ImGui::GetMousePos();
+                maybeCollision = RaycastMesh(m_Camera, getMesh(), regionRect, mousePos);
+            }
 
             // render it via ImGui and hittest it
-            osc::RenderTexture& renderTexture = renderScene(dims);
+            osc::RenderTexture& renderTexture = renderScene(dims, maybeCollision);
             osc::ImGuiImageHittestResult const htResult = osc::DrawTextureAsImGuiImageAndHittest(renderTexture);
 
             // update camera if user drags it around etc.
-            std::optional<glm::vec3> maybeCollision;
             if (htResult.isHovered)
             {
                 osc::UpdatePolarCameraFromImGuiUserInput(dims, m_Camera);
-                glm::vec2 const mousePos = ImGui::GetMousePos();
-                maybeCollision = RaycastMesh(m_Camera, getMesh(), htResult.rect, mousePos);
             }
 
             // if the user is currently hitting something in 3D, update global mouse cursor tracker
@@ -840,19 +848,19 @@ namespace
         }
 
         // renders this panel's 3D scene to a texture
-        osc::RenderTexture& renderScene(glm::vec2 dims)
+        osc::RenderTexture& renderScene(glm::vec2 dims, std::optional<glm::vec3> const& maybeCollision)
         {
             osc::SceneRendererParams const params = CalcRenderParams(m_Camera, dims);
-            std::vector<osc::SceneDecoration> const decorations = generateDecorations();
+            std::vector<osc::SceneDecoration> const decorations = generateDecorations(maybeCollision);
             return m_CachedRenderer.draw(decorations, params);
         }
 
         // returns a fresh list of decorations for this panels
-        std::vector<osc::SceneDecoration> generateDecorations() const
+        std::vector<osc::SceneDecoration> generateDecorations(std::optional<glm::vec3> const& maybeCollision) const
         {
             // generate in-scene 3D decorations
             std::vector<osc::SceneDecoration> decorations;
-            decorations.reserve(5 + getDocumentInput().Landmarks.size());  // likely guess
+            decorations.reserve(6 + getDocumentInput().Landmarks.size());  // likely guess
 
             AppendCommonDecorations(*m_State, getMesh(), m_WireframeMode, decorations);
 
@@ -864,6 +872,19 @@ namespace
                 transform.position = pos;
 
                 decorations.emplace_back(m_State->LandmarkSphere, transform, m_State->LandmarkColor);
+            }
+
+            // if applicable, show mesh collision as faded landmark as a placement hint for user
+            if (maybeCollision)
+            {
+                osc::Transform transform{};
+                transform.scale *= m_LandmarkRadius;
+                transform.position = *maybeCollision;
+
+                glm::vec4 color = m_State->LandmarkColor;
+                color.a *= 0.25f;
+
+                decorations.emplace_back(m_State->LandmarkSphere, transform, color);
             }
 
             return decorations;
