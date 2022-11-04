@@ -551,15 +551,13 @@ bool osc::IsMouseInMainViewportWorkspaceScreenRect()
     return osc::IsPointInRect(hitRect, mousepos);
 }
 
-bool osc::BeginMainViewportTopBar(char const* label)
+bool osc::BeginMainViewportTopBar(char const* label, float height, ImGuiWindowFlags flags)
 {
     // https://github.com/ocornut/imgui/issues/3518
     ImGuiViewportP* const viewport = (ImGuiViewportP*)(void*)ImGui::GetMainViewport();
-    ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar;
-    float const height = ImGui::GetFrameHeight();
-
     return ImGui::BeginViewportSideBar(label, viewport, ImGuiDir_Up, height, flags);
 }
+
 
 bool osc::BeginMainViewportBottomBar(char const* label)
 {

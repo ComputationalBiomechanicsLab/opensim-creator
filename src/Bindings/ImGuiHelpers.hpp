@@ -130,7 +130,11 @@ namespace osc
     bool IsMouseInMainViewportWorkspaceScreenRect();
 
     // begin a menu that's attached to the top of a viewport, end it with ImGui::End();
-    bool BeginMainViewportTopBar(char const* label);
+    bool BeginMainViewportTopBar(
+        char const* label,
+        float height = ImGui::GetFrameHeight(),
+        ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar
+    );
 
     // begin a menu that's attached to the bottom of a viewport, end it with ImGui::End();
     bool BeginMainViewportBottomBar(char const* label);

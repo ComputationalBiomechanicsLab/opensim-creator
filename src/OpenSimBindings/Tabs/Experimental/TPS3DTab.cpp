@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Bindings/GlmHelpers.hpp"
+#include "src/Formats/CSV.hpp"
 #include "src/Graphics/CachedSceneRenderer.hpp"
 #include "src/Graphics/Camera.hpp"
 #include "src/Graphics/Graphics.hpp"
@@ -28,6 +29,8 @@
 #include "src/Widgets/LogViewerPanel.hpp"
 #include "src/Widgets/NamedPanel.hpp"
 #include "src/Widgets/PerfPanel.hpp"
+#include "src/Widgets/RedoButton.hpp"
+#include "src/Widgets/UndoButton.hpp"
 #include "src/Widgets/UndoRedoPanel.hpp"
 
 #include <glm/mat3x4.hpp>
@@ -35,6 +38,7 @@
 #include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <nonstd/span.hpp>
 #include <SDL_events.h>
 #include <Simbody.h>
@@ -44,6 +48,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <execution>
+#include <fstream>
 #include <functional>
 #include <string>
 #include <sstream>
@@ -428,6 +433,24 @@ namespace
 
         return rv;
     }
+
+    // returns all pair-able landmarks between the `src` and `dest`
+    std::vector<LandmarkPair3D> GetLandmarkPairs(
+        std::unordered_map<size_t, glm::vec3> const& src,
+        std::unordered_map<size_t, glm::vec3> const& dest)
+    {
+        std::vector<LandmarkPair3D> rv;
+        rv.reserve(src.size());  // probably a good guess
+        for (auto const& [k, srcPos] : src)
+        {
+            auto const it = dest.find(k);
+            if (it != dest.end())
+            {
+                rv.emplace_back(srcPos, it->second);
+            }
+        }
+        return rv;
+    }
 }
 
 // TPS document datastructure
@@ -449,6 +472,12 @@ namespace
         TPSDocumentInput Destination{osc::GenUntexturedSimbodyCylinder(16)};
         float BlendingFactor = 1.0f;
     };
+
+    // returns all pair-able landmarks in the document
+    std::vector<LandmarkPair3D> GetLandmarkPairs(TPSDocument const& doc)
+    {
+        return GetLandmarkPairs(doc.Source.Landmarks, doc.Destination.Landmarks);
+    }
 
     // action: add a landmark to the source mesh
     void ActionAddLandmarkTo(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentInput& input, glm::vec3 const& pos)
@@ -481,22 +510,52 @@ namespace
         doc.commitScratch("changed blend factor");
     }
 
-    // returns all pair-able landmarks between the `src` and `dest`
-    std::vector<LandmarkPair3D> GetLandmarkPairs(
-        std::unordered_map<size_t, glm::vec3> const& src,
-        std::unordered_map<size_t, glm::vec3> const& dest)
+    void ActionCreateNewDocument(osc::UndoRedoT<TPSDocument>& doc)
     {
-        std::vector<LandmarkPair3D> rv;
-        rv.reserve(src.size());  // probably a good guess
-        for (auto const& [k, srcPos] : src)
+        doc.updScratch() = TPSDocument{};
+        doc.commitScratch("created new document");
+    }
+
+    void ActionClearAllLandmarks(osc::UndoRedoT<TPSDocument>& doc)
+    {
+        doc.updScratch().Source.Landmarks.clear();
+        doc.updScratch().Destination.Landmarks.clear();
+        doc.commitScratch("cleared all landmarks");
+    }
+
+    void ActionSaveLandmarksToCSV(TPSDocument const& doc)
+    {
+        std::vector<LandmarkPair3D> const pairs = GetLandmarkPairs(doc);
+        std::filesystem::path const p = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+
+        if (p.empty())
         {
-            auto const it = dest.find(k);
-            if (it != dest.end())
-            {
-                rv.emplace_back(srcPos, it->second);
-            }
+            return;  // user didn't select a save location
         }
-        return rv;
+
+        std::ofstream outfile{p};
+
+        if (!outfile)
+        {
+            return;  // couldn't open file for writing
+        }
+
+        osc::CSVWriter writer{outfile};
+
+        std::vector<std::string> cols = {"source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"};
+
+        writer.writerow(cols);  // header
+        for (LandmarkPair3D const& p : pairs)
+        {
+            cols.at(0) = std::to_string(p.Src.x);
+            cols.at(1) = std::to_string(p.Src.y);
+            cols.at(2) = std::to_string(p.Src.z);
+
+            cols.at(0) = std::to_string(p.Dest.x);
+            cols.at(1) = std::to_string(p.Dest.y);
+            cols.at(2) = std::to_string(p.Dest.z);
+            writer.writerow(cols);
+        }
     }
 
     // a cache that only recomputes the transformed mesh if the document
@@ -567,7 +626,7 @@ namespace
         {
             TPSCoefficientSolverInputs3D newInputs
             {
-                GetLandmarkPairs(doc.Source.Landmarks, doc.Destination.Landmarks),
+                GetLandmarkPairs(doc),
                 doc.BlendingFactor,
             };
 
@@ -634,7 +693,8 @@ namespace
     struct TPSUITabSate final {
         std::shared_ptr<osc::UndoRedoT<TPSDocument>> EditedDocument = std::make_shared<osc::UndoRedoT<TPSDocument>>();
         TPSResultCache ResultCache;
-        std::optional<osc::PolarPerspectiveCamera> MaybeLockedCameraBase = CreateCameraFocusedOn(EditedDocument->getScratch().Source.Mesh.getBounds());
+        bool LinkCameras = true;
+        osc::PolarPerspectiveCamera LinkedCameraBase = CreateCameraFocusedOn(EditedDocument->getScratch().Source.Mesh.getBounds());
         osc::Material WireframeMaterial = osc::CreateWireframeOverlayMaterial();
         std::shared_ptr<osc::Mesh const> LandmarkSphere = osc::App::meshes().getSphereMesh();
         glm::vec4 LandmarkColor = {1.0f, 0.0f, 0.0f, 1.0f};
@@ -748,7 +808,7 @@ namespace
             glm::vec2 const padding = {10.0f, 10.0f};
             glm::vec2 const originalCursorPos = ImGui::GetCursorScreenPos();
             ImGui::SetCursorScreenPos(renderRect.p1 + padding);
-            OSC_SCOPE_GUARD({ ImGui::SetCursorScreenPos(originalCursorPos); });
+            // TODO: breaks scrolling? OSC_SCOPE_GUARD({ ImGui::SetCursorScreenPos(originalCursorPos); });
 
             // ImGui: draw "browse for new mesh" button
             if (ImGui::Button("browse"))
@@ -939,6 +999,121 @@ namespace
         bool m_WireframeMode = true;
         bool m_ShowDestinationMesh = false;
     };
+
+    class TopToolbar final {
+    public:
+        TopToolbar(
+            std::string_view label,
+            std::shared_ptr<TPSUITabSate> tabState_) :
+
+            m_Label{std::move(label)},
+            m_TabState{std::move(tabState_)}
+        {
+        }
+
+        void draw()
+        {
+            float const height = ImGui::GetFrameHeight() + 2.0f*ImGui::GetStyle().WindowPadding.y;
+            ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
+            if (osc::BeginMainViewportTopBar(m_Label.c_str(), height, flags))
+            {
+                drawContent();
+            }
+            ImGui::End();
+        }
+    private:
+        void drawContent()
+        {
+            // document-related stuff
+            drawNewDocumentButton();
+            ImGui::SameLine();
+            drawOpenDocumentButton();
+            ImGui::SameLine();
+            drawSaveLandmarksButton();
+            ImGui::SameLine();
+
+            ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+            ImGui::SameLine();
+
+            // undo/redo-related stuff
+            m_UndoButton.draw();
+            ImGui::SameLine();
+            m_RedoButton.draw();
+            ImGui::SameLine();
+
+            ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+            ImGui::SameLine();
+
+            // camera stuff
+            drawCameraLockCheckbox();
+            ImGui::SameLine();
+
+            ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+            ImGui::SameLine();
+
+            // landmark stuff
+            drawResetLandmarksButton();
+        }
+
+        void drawNewDocumentButton()
+        {
+            if (ImGui::Button(ICON_FA_FILE))
+            {
+                ActionCreateNewDocument(*m_TabState->EditedDocument);
+            }
+            osc::DrawTooltipIfItemHovered("Create New Document", "Creates the default scene (undoable)");
+        }
+
+        void drawOpenDocumentButton()
+        {
+            ImGui::Button(ICON_FA_FOLDER_OPEN);
+
+            if (ImGui::BeginPopupContextItem("##OpenFolder", ImGuiPopupFlags_MouseButtonLeft))
+            {
+                if (ImGui::MenuItem("Load Source Mesh"))
+                {
+                    ActionBrowseForNewMesh(*m_TabState->EditedDocument, m_TabState->EditedDocument->updScratch().Source);
+                }
+                if (ImGui::MenuItem("Load Destination Mesh"))
+                {
+                    ActionBrowseForNewMesh(*m_TabState->EditedDocument, m_TabState->EditedDocument->updScratch().Destination);
+                }
+                ImGui::EndPopup();
+            }
+            osc::DrawTooltipIfItemHovered("Open File", "Open Source/Destination data");
+        }
+
+        void drawSaveLandmarksButton()
+        {
+            if (ImGui::Button(ICON_FA_SAVE))
+            {
+                ActionSaveLandmarksToCSV(m_TabState->EditedDocument->getScratch());
+            }
+            osc::DrawTooltipIfItemHovered("Save Landmarks to CSV", "Saves all pair-able landmarks to a CSV file, for external processing");
+        }
+
+        void drawCameraLockCheckbox()
+        {
+            bool v = m_TabState->LinkCameras;
+            if (ImGui::Checkbox("link cameras", &v))
+            {
+                m_TabState->LinkCameras = v;
+            }
+        }
+
+        void drawResetLandmarksButton()
+        {
+            if (ImGui::Button(ICON_FA_ERASER " clear landmarks"))
+            {
+                ActionClearAllLandmarks(*m_TabState->EditedDocument);
+            }
+        }
+
+        std::string m_Label;
+        std::shared_ptr<TPSUITabSate> m_TabState;
+        osc::UndoButton m_UndoButton{m_TabState->EditedDocument};
+        osc::RedoButton m_RedoButton{m_TabState->EditedDocument};
+    };
 }
 
 // tab implementation
@@ -984,9 +1159,9 @@ public:
     void onTick()
     {
         // if requested, lock cameras together
-        if (m_TabState->MaybeLockedCameraBase)
+        if (m_TabState->LinkCameras)
         {
-            osc::PolarPerspectiveCamera& baseCamera = *m_TabState->MaybeLockedCameraBase;
+            osc::PolarPerspectiveCamera& baseCamera = m_TabState->LinkedCameraBase;
 
             if (m_SourcePanel.getCamera() != baseCamera)
             {
@@ -1017,6 +1192,7 @@ public:
     {
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
+        m_TopToolbar.draw();
         m_SourcePanel.draw();
         m_DestPanel.draw();
         m_ResultPanel.draw();
@@ -1035,7 +1211,8 @@ private:
     // top-level state that all panels can potentially access
     std::shared_ptr<TPSUITabSate> m_TabState = std::make_shared<TPSUITabSate>();
 
-    // user-visible panels
+    // user-visible panels/bars
+    TopToolbar m_TopToolbar{"##TopToolBar", m_TabState};
     InputPanel m_SourcePanel{"Source Mesh", m_TabState, true};
     InputPanel m_DestPanel{"Destination Mesh", m_TabState, false};
     ResultPanel m_ResultPanel{"Result", m_TabState};

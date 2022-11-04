@@ -99,7 +99,7 @@ ptrdiff_t osc::UndoRedo::getNumRedoEntriesi() const
     return static_cast<ptrdiff_t>(getNumRedoEntries());
 }
 
-osc::UndoRedoEntry osc::UndoRedo::getRedoEntry(size_t i) const
+osc::UndoRedoEntry const& osc::UndoRedo::getRedoEntry(size_t i) const
 {
     OSC_ASSERT(i < m_Redo.size());
     return m_Redo.rbegin()[i];

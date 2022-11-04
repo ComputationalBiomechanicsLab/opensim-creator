@@ -132,7 +132,7 @@ namespace osc
 
         size_t getNumRedoEntries() const;
         ptrdiff_t getNumRedoEntriesi() const;
-        UndoRedoEntry getRedoEntry(size_t i) const;
+        UndoRedoEntry const& getRedoEntry(size_t i) const;
         bool canRedo() const;
         void redoTo(size_t nthEntry);
         void redo();
