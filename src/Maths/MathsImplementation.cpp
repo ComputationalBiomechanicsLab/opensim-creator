@@ -157,9 +157,7 @@ namespace
         osc::BVHNode const& node = bvh.nodes[nodeidx];
 
         // check ray-AABB intersection with the BVH node
-        osc::RayCollision res = osc::GetRayCollisionAABB(ray, node.getBounds());
-
-        if (!res.hit)
+        if (!osc::GetRayCollisionAABB(ray, node.getBounds()))
         {
             return false;  // no intersection with this node at all
         }
@@ -170,12 +168,12 @@ namespace
 
             osc::BVHPrim const& p = bvh.prims[node.getFirstPrimOffset()];
 
-            osc::RayCollision rayrtri = osc::GetRayCollisionTriangle(ray, vs + p.getID());
-            if (rayrtri.hit)
+            std::optional<osc::RayCollision> maybeRayTriangleHit = osc::GetRayCollisionTriangle(ray, vs + p.getID());
+            if (maybeRayTriangleHit)
             {
-                out.push_back(osc::BVHCollision{p.getID(), rayrtri.distance});
+                out.push_back(osc::BVHCollision{p.getID(), maybeRayTriangleHit->distance});
             }
-            return rayrtri.hit;
+            return maybeRayTriangleHit.has_value();
         }
         else
         {
@@ -228,9 +226,9 @@ namespace
         osc::BVHNode const& node = bvh.nodes[nodeidx];
 
         // check ray-AABB intersection with the BVH node
-        osc::RayCollision res = osc::GetRayCollisionAABB(ray, node.getBounds());
+        std::optional<osc::RayCollision> res = osc::GetRayCollisionAABB(ray, node.getBounds());
 
-        if (!res.hit)
+        if (!res)
         {
             return false;  // no intersection with this node at all
         }
@@ -239,14 +237,13 @@ namespace
         {
             // it's a leaf node, so we've sucessfully found the AABB that intersected
 
-            out.push_back(osc::BVHCollision{bvh.prims[node.getFirstPrimOffset()].getID(), res.distance});
+            out.push_back(osc::BVHCollision{bvh.prims[node.getFirstPrimOffset()].getID(), res->distance});
             return true;
         }
 
         // else: we've "hit" an internal node and need to recurse to find the leaf
-
-        bool lhs = BVH_GetRayAABBCollisionsRecursive(bvh, ray, nodeidx+1, out);
-        bool rhs = BVH_GetRayAABBCollisionsRecursive(bvh, ray, nodeidx+node.getNumLhsNodes()+1, out);
+        bool const lhs = BVH_GetRayAABBCollisionsRecursive(bvh, ray, nodeidx+1, out);
+        bool const rhs = BVH_GetRayAABBCollisionsRecursive(bvh, ray, nodeidx+node.getNumLhsNodes()+1, out);
         return lhs || rhs;
     }
 
@@ -261,14 +258,14 @@ namespace
         osc::BVHCollision* out)
     {
         osc::BVHNode const& node = bvh.nodes[nodeidx];
-        osc::RayCollision res = osc::GetRayCollisionAABB(ray, node.getBounds());
+        std::optional<osc::RayCollision> const res = osc::GetRayCollisionAABB(ray, node.getBounds());
 
-        if (!res.hit)
+        if (!res)
         {
             return false;  // didn't hit this node at all
         }
 
-        if (res.distance > closest)
+        if (res->distance > closest)
         {
             return false;  // this AABB can't contain something closer
         }
@@ -287,13 +284,13 @@ namespace
                 verts[indices[p.getID() + 2]],
             };
 
-            osc::RayCollision rayrtri = osc::GetRayCollisionTriangle(ray, triangleVerts);
+            std::optional<osc::RayCollision> const rayTriangleColl = osc::GetRayCollisionTriangle(ray, triangleVerts);
 
-            if (rayrtri.hit && rayrtri.distance < closest)
+            if (rayTriangleColl && rayTriangleColl->distance < closest)
             {
-                closest = rayrtri.distance;
+                closest = rayTriangleColl->distance;
                 out->primId = p.getID();
-                out->distance = rayrtri.distance;
+                out->distance = rayTriangleColl->distance;
                 hit = true;
             }
 
@@ -969,11 +966,9 @@ static QuadraticFormulaResult solveQuadratic(float a, float b, float c)
 }
 
 
-static osc::RayCollision GetRayCollisionSphere(osc::Sphere const& s, osc::Line const& l) noexcept
+static std::optional<osc::RayCollision> GetRayCollisionSphere(osc::Sphere const& s, osc::Line const& l) noexcept
 {
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
-
-    osc::RayCollision rv;
 
     glm::vec3 L = s.origin - l.origin;  // line origin to sphere origin
     float tca = glm::dot(L, l.dir);  // projected line from middle of hitline to sphere origin
@@ -981,8 +976,7 @@ static osc::RayCollision GetRayCollisionSphere(osc::Sphere const& s, osc::Line c
     if (tca < 0.0f)
     {
         // line is pointing away from the sphere
-        rv.hit = false;
-        return rv;
+        return std::nullopt;
     }
 
     float d2 = glm::dot(L, L) - tca*tca;
@@ -991,26 +985,21 @@ static osc::RayCollision GetRayCollisionSphere(osc::Sphere const& s, osc::Line c
     if (d2 > r2)
     {
         // line is not within the sphere's radius
-        rv.hit = false;
-        return rv;
+        return std::nullopt;
     }
 
     // the collision points are on the sphere's surface (R), and D
     // is how far the hitline midpoint is from the radius. Can use
     // Pythag to figure out the midpoint length (thc)
     float thc = glm::sqrt(r2 - d2);
+    float distance = tca - thc;
 
-    rv.hit = true;
-    rv.distance = tca - thc;  // other hit: tca + thc
-
-    return rv;
+    return osc::RayCollision{distance, l.origin + distance*l.dir};
 }
 
-static osc::RayCollision GetRayCollisionSphereAnalytic(osc::Sphere const& s, osc::Line const& l) noexcept
+static std::optional<osc::RayCollision> GetRayCollisionSphereAnalytic(osc::Sphere const& s, osc::Line const& l) noexcept
 {
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
-
-    osc::RayCollision rv;
 
     glm::vec3 L = l.origin - s.origin;
 
@@ -1040,8 +1029,7 @@ static osc::RayCollision GetRayCollisionSphereAnalytic(osc::Sphere const& s, osc
 
     if (!ok)
     {
-        rv.hit = false;
-        return rv;
+        return std::nullopt;
     }
 
     // ensure X0 < X1
@@ -1056,14 +1044,11 @@ static osc::RayCollision GetRayCollisionSphereAnalytic(osc::Sphere const& s, osc
         t0 = t1;
         if (t0 < 0.0f)
         {
-            rv.hit = false;
-            return rv;
+            return std::nullopt;
         }
     }
 
-    rv.hit = true;
-    rv.distance = t0;  // other = t1
-    return rv;
+    return osc::RayCollision{t0, l.origin + t0*l.dir};
 }
 
 
@@ -2068,15 +2053,13 @@ bool osc::IsPointInRect(Rect const& r, glm::vec2 const& p) noexcept
     return (0.0f <= relPos.x && relPos.x <= dims.x) && (0.0f <= relPos.y && relPos.y <= dims.y);
 }
 
-osc::RayCollision osc::GetRayCollisionSphere(Line const& l, Sphere const& s) noexcept
+std::optional<osc::RayCollision> osc::GetRayCollisionSphere(Line const& l, Sphere const& s) noexcept
 {
     return GetRayCollisionSphereAnalytic(s, l);
 }
 
-osc::RayCollision osc::GetRayCollisionAABB(Line const& l, AABB const& bb) noexcept
+std::optional<osc::RayCollision> osc::GetRayCollisionAABB(Line const& l, AABB const& bb) noexcept
 {
-    RayCollision rv;
-
     float t0 = std::numeric_limits<float>::lowest();
     float t1 = std::numeric_limits<float>::max();
 
@@ -2100,17 +2083,14 @@ osc::RayCollision osc::GetRayCollisionAABB(Line const& l, AABB const& bb) noexce
 
         if (t0 > t1)
         {
-            rv.hit = false;
-            return rv;
+            return std::nullopt;
         }
     }
 
-    rv.hit = true;
-    rv.distance = t0;  // other == t1
-    return rv;
+    return osc::RayCollision{t0, l.origin + t0*l.dir};
 }
 
-osc::RayCollision osc::GetRayCollisionPlane(Line const& l, Plane const& p) noexcept
+std::optional<osc::RayCollision> osc::GetRayCollisionPlane(Line const& l, Plane const& p) noexcept
 {
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection
     //
@@ -2135,69 +2115,56 @@ osc::RayCollision osc::GetRayCollisionPlane(Line const& l, Plane const& p) noexc
     //
     // equation: t = dot(P0 - O, n) / dot(D, n)
 
-    RayCollision rv;
-
     float denominator = glm::dot(p.normal, l.dir);
 
     if (std::abs(denominator) > 1e-6)
     {
         float numerator = glm::dot(p.origin - l.origin, p.normal);
-        rv.hit = true;
-        rv.distance = numerator / denominator;
-        return rv;
+        float distance = numerator / denominator;
+        return osc::RayCollision{distance ,l.origin + distance*l.dir};
     }
     else
     {
         // the line is *very* parallel to the plane, which could cause
         // some divide-by-zero havok: pretend it didn't intersect
-        rv.hit = false;
-        return rv;
+        return std::nullopt;
     }
 }
 
-osc::RayCollision osc::GetRayCollisionDisc(Line const& l, Disc const& d) noexcept
+std::optional<osc::RayCollision> osc::GetRayCollisionDisc(Line const& l, Disc const& d) noexcept
 {
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection
 
     // think of this as a ray-plane intersection test with the additional
     // constraint that the ray has to be within the radius of the disc
 
-    RayCollision rv;
-
     Plane p;
     p.origin = d.origin;
     p.normal = d.normal;
 
-    auto [hitsPlane, t] = GetRayCollisionPlane(l, p);
+    std::optional<RayCollision> maybePlaneCollision = GetRayCollisionPlane(l, p);
 
-    if (!hitsPlane)
+    if (!maybePlaneCollision)
     {
-        rv.hit = false;
-        return rv;
+        return std::nullopt;
     }
 
     // figure out whether the plane hit is within the disc's radius
-    glm::vec3 pos = l.origin + t*l.dir;
-    glm::vec3 v = pos - d.origin;
+    glm::vec3 v = maybePlaneCollision->position - d.origin;
     float d2 = glm::dot(v, v);
     float r2 = glm::dot(d.radius, d.radius);
 
     if (d2 > r2)
     {
-        rv.hit = false;
-        return rv;
+        return std::nullopt;
     }
 
-    rv.hit = true;
-    rv.distance = t;
-    return rv;
+    return maybePlaneCollision;
 }
 
-osc::RayCollision osc::GetRayCollisionTriangle(Line const& l, glm::vec3 const* v) noexcept
+std::optional<osc::RayCollision> osc::GetRayCollisionTriangle(Line const& l, glm::vec3 const* v) noexcept
 {
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
-
-    RayCollision rv;
 
     // compute triangle normal
     glm::vec3 N = glm::normalize(glm::cross(v[1] - v[0], v[2] - v[0]));
@@ -2209,8 +2176,7 @@ osc::RayCollision osc::GetRayCollisionTriangle(Line const& l, glm::vec3 const* v
     // the triangle (or, perpendicular to the normal) and doesn't intersect
     if (std::abs(NdotR) < std::numeric_limits<float>::epsilon())
     {
-        rv.hit = false;
-        return rv;
+        return std::nullopt;
     }
 
     // - v[0] is a known point on the plane
@@ -2237,8 +2203,7 @@ osc::RayCollision osc::GetRayCollisionTriangle(Line const& l, glm::vec3 const* v
     // if triangle plane is behind line then return early
     if (t < 0.0f)
     {
-        rv.hit = false;
-        return rv;
+        return std::nullopt;
     }
 
     // intersection point on triangle plane, computed from line equation
@@ -2269,12 +2234,9 @@ osc::RayCollision osc::GetRayCollisionTriangle(Line const& l, glm::vec3 const* v
         // the point was "outside"
         if (glm::dot(ax, N) < 0.0f)
         {
-            rv.hit = false;
-            return rv;
+            return std::nullopt;
         }
     }
 
-    rv.hit = true;
-    rv.distance = t;
-    return rv;
+    return osc::RayCollision{t, l.origin + t*l.dir};
 }

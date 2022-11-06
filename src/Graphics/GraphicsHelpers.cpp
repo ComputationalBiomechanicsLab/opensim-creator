@@ -165,23 +165,21 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(BVH const& bvh, nons
     for (BVHCollision const& c : sceneCollisions)
     {
         SceneDecoration const& decoration = decorations[c.primId];
-        RayCollision const maybeCollision = GetClosestWorldspaceRayCollision(*decoration.mesh, decoration.transform, ray);
+        std::optional<RayCollision> const maybeCollision = GetClosestWorldspaceRayCollision(*decoration.mesh, decoration.transform, ray);
 
         if (maybeCollision)
         {
-            rv.emplace_back(ray.origin + maybeCollision.distance * ray.dir, static_cast<size_t>(c.primId), maybeCollision.distance);
+            rv.emplace_back(maybeCollision->position, static_cast<size_t>(c.primId), maybeCollision->distance);
         }
     }
     return rv;
 }
 
-osc::RayCollision osc::GetClosestWorldspaceRayCollision(Mesh const& mesh, Transform const& transform, Line const& worldspaceRay)
+std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(Mesh const& mesh, Transform const& transform, Line const& worldspaceRay)
 {
-    RayCollision rv{false, 0.0f};
-
     if (mesh.getTopography() != MeshTopography::Triangles)
     {
-        return rv;
+        return std::nullopt;
     }
 
     // map the ray into the mesh's modelspace, so that we compute a ray-mesh collision
@@ -199,12 +197,13 @@ osc::RayCollision osc::GetClosestWorldspaceRayCollision(Mesh const& mesh, Transf
 
         glm::vec3 const locationModelspace = modelspaceRay.origin + collision.distance*modelspaceRay.dir;
         glm::vec3 const locationWorldspace = transform * locationModelspace;
-
-        rv.hit = true;
-        rv.distance = glm::length(locationWorldspace - worldspaceRay.origin);
+        float const distance = glm::length(locationWorldspace - worldspaceRay.origin);
+        return osc::RayCollision{distance, locationWorldspace};
     }
-
-    return rv;
+    else
+    {
+        return std::nullopt;
+    }
 }
 
 glm::vec3 osc::MassCenter(Mesh const& m)

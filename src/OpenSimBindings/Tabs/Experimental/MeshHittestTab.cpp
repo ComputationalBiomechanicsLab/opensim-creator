@@ -99,10 +99,10 @@ public:
                 nonstd::span<glm::vec3 const> tris = m_Mesh.getVerts();
                 for (size_t i = 0; i < tris.size(); i += 3)
                 {
-                    RayCollision res = GetRayCollisionTriangle(m_Ray, tris.data() + i);
-                    if (res.hit)
+                    std::optional<RayCollision> res = GetRayCollisionTriangle(m_Ray, tris.data() + i);
+                    if (res)
                     {
-                        m_HitPos = m_Ray.origin + res.distance * m_Ray.dir;
+                        m_HitPos = res->position;
                         m_IsMousedOver = true;
 
                         m_Tris[0] = tris[i];

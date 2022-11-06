@@ -4762,12 +4762,16 @@ namespace
                     continue;
                 }
 
-                osc::RayCollision const rc = osc::GetClosestWorldspaceRayCollision(*drawable.mesh, drawable.transform, ray);
+                std::optional<osc::RayCollision> const rc = osc::GetClosestWorldspaceRayCollision(
+                    *drawable.mesh,
+                    drawable.transform,
+                    ray
+                );
 
-                if (rc.hit && rc.distance < closestDist)
+                if (rc && rc->distance < closestDist)
                 {
                     closestID = drawable.id;
-                    closestDist = rc.distance;
+                    closestDist = rc->distance;
                 }
             }
 

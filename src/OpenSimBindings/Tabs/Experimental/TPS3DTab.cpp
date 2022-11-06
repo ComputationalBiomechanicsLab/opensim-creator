@@ -663,8 +663,12 @@ namespace
         glm::vec2 mousePos)
     {
         osc::Line const ray = camera.unprojectTopLeftPosToWorldRay(mousePos - renderRect.p1, osc::Dimensions(renderRect));
-        osc::RayCollision const maybeCollision = osc::GetClosestWorldspaceRayCollision(mesh, osc::Transform{}, ray);
-        return maybeCollision ? std::optional<glm::vec3>{ray.origin + ray.dir*maybeCollision.distance} : std::nullopt;
+        std::optional<osc::RayCollision> const maybeCollision = osc::GetClosestWorldspaceRayCollision(
+            mesh,
+            osc::Transform{},
+            ray
+        );
+        return maybeCollision ? std::optional<glm::vec3>{maybeCollision->position} : std::nullopt;
     }
 
     // returns scene rendering parameters for an generic panel

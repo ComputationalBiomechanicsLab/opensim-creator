@@ -37,7 +37,7 @@ namespace osc
     );
 
     // returns closest ray-triangle collision in worldspace
-    RayCollision GetClosestWorldspaceRayCollision(
+    std::optional<RayCollision> GetClosestWorldspaceRayCollision(
         Mesh const&,
         Transform const&,
         Line const& worldspaceRay

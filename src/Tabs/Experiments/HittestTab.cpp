@@ -177,10 +177,10 @@ public:
                 m_SceneSphereBoundingSphere.radius
             };
 
-            RayCollision res = GetRayCollisionSphere(ray, s);
-            if (res.hit && res.distance >= 0.0f && res.distance < closestEl)
+            std::optional<RayCollision> res = GetRayCollisionSphere(ray, s);
+            if (res && res->distance >= 0.0f && res->distance < closestEl)
             {
-                closestEl = res.distance;
+                closestEl = res->distance;
                 closestSceneSphere = &ss;
             }
         }
@@ -253,7 +253,7 @@ public:
             sceneDisc.normal = {0.0f, 1.0f, 0.0f};
             sceneDisc.radius = {10.0f};
 
-            RayCollision collision = GetRayCollisionDisc(ray, sceneDisc);
+            std::optional<RayCollision> maybeCollision = GetRayCollisionDisc(ray, sceneDisc);
 
             Disc meshDisc;
             meshDisc.origin = {0.0f, 0.0f, 0.0f};
@@ -265,21 +265,21 @@ public:
                 DiscToDiscMat4(meshDisc, sceneDisc),
                 m_Material,
                 m_Camera,
-                collision ? m_BlueColorMaterialProps : m_RedColorMaterialProps
+                maybeCollision ? m_BlueColorMaterialProps : m_RedColorMaterialProps
             );
         }
 
         // hittest + draw triangle
         {
             Line ray = GetCameraRay(m_Camera);
-            RayCollision collision = GetRayCollisionTriangle(ray, g_TriangleVerts.data());
+            std::optional<RayCollision> maybeCollision = GetRayCollisionTriangle(ray, g_TriangleVerts.data());
 
             Graphics::DrawMesh(
                 m_TriangleMesh,
                 Transform{},
                 m_Material,
                 m_Camera,
-                collision ? m_BlueColorMaterialProps : m_RedColorMaterialProps
+                maybeCollision ? m_BlueColorMaterialProps : m_RedColorMaterialProps
             );
         }
 

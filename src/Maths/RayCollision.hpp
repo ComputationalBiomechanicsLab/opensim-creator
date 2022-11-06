@@ -1,14 +1,18 @@
 #pragma once
 
+#include <glm/vec3.hpp>
+
 namespace osc
 {
     struct RayCollision final {
-        bool hit;
         float distance;
+        glm::vec3 position;
 
-        explicit operator bool () const
+        RayCollision() = default;
+        RayCollision(float distance_, glm::vec3 position_) :
+            distance{distance_},
+            position{position_}
         {
-            return hit;
         }
     };
 }
