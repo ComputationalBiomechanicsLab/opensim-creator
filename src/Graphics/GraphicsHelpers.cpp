@@ -28,18 +28,18 @@ namespace
         osc::BVHNode const& n = bvh.nodes[pos];
 
         osc::Transform t;
-        t.scale *= 0.5f * Dimensions(n.bounds);
-        t.position = Midpoint(n.bounds);
+        t.scale *= 0.5f * Dimensions(n.getBounds());
+        t.position = Midpoint(n.getBounds());
 
         glm::vec4 const color = {0.0f, 0.0f, 0.0f, 1.0f};
 
         out.emplace_back(mesh, t, color);
 
-        if (n.nlhs >= 0)
+        if (n.isNode())
         {
             // it's an internal node
             DrawBVHRecursive(mesh, bvh, pos+1, out);
-            DrawBVHRecursive(mesh, bvh, pos+n.nlhs+1, out);
+            DrawBVHRecursive(mesh, bvh, pos+n.getNumLhsNodes()+1, out);
         }
     }
 

@@ -14,18 +14,86 @@ namespace osc { struct Line; }
 
 namespace osc
 {
-    struct BVHNode final {
-        AABB bounds;  // union of all AABBs below/including this one
-        int nlhs;  // number of nodes in left-hand side, -1 if this node is a leaf
-        int firstPrimOffset;  // offset into prim array, -1 if this node is internal
+    class BVHNode final {
+    public:
+        static BVHNode leaf(AABB const& bounds, uint32_t primOffset)
+        {
+            return BVHNode{bounds, primOffset | g_LeafMask};
+        }
+
+        static BVHNode node(AABB const& bounds, uint32_t numLhs)
+        {
+            return BVHNode{bounds, numLhs & ~g_LeafMask};
+        }
+    private:
+        BVHNode(AABB const& bounds_, uint32_t data_) :
+            m_Bounds{bounds_},
+            m_Data{std::move(data_)}
+        {
+        }
+    public:
+        AABB const& getBounds() const
+        {
+            return m_Bounds;
+        }
+
+        bool isLeaf() const
+        {
+            return (m_Data & g_LeafMask) > 0;
+        }
+
+        bool isNode() const
+        {
+            return !isLeaf();
+        }
+
+        uint32_t getNumLhsNodes() const
+        {
+            return m_Data & ~g_LeafMask;
+        }
+
+        void setNumLhsNodes(uint32_t n)
+        {
+            m_Data = n & ~g_LeafMask;
+        }
+
+        uint32_t getFirstPrimOffset() const
+        {
+            return m_Data & ~g_LeafMask;
+        }
+
+    private:
+        static constexpr uint32_t g_LeafMask = 0x80000000;
+        AABB m_Bounds;  // union of all AABBs below/including this one
+        uint32_t m_Data;
     };
 
-    struct BVHPrim final {
-        BVHPrim() = default;
-        BVHPrim(int id_, AABB bounds_) : id{std::move(id_)}, bounds{std::move(bounds_)} {}
+    class BVHPrim final {
+    public:
+        BVHPrim(int32_t id_, AABB const& bounds_) :
+            m_ID{std::move(id_)},
+            m_Bounds{bounds_}
+        {
+        }
 
-        int id;  // ID into source collection (e.g. a mesh instance, a triangle)
-        AABB bounds;  // AABB of the prim in the source collection
+        int32_t getID() const
+        {
+            return m_ID;
+        }
+
+        AABB const& getBounds() const
+        {
+            return m_Bounds;
+        }
+
+    private:
+        int32_t m_ID;
+        AABB m_Bounds;
+    };
+
+    struct BVHCollision final {
+        int primId;
+        float distance;
     };
 
     struct BVH final {
@@ -33,11 +101,6 @@ namespace osc
         std::vector<BVHPrim> prims;
 
         void clear();
-    };
-
-    struct BVHCollision final {
-        int primId;
-        float distance;
     };
 
     // triangle BVHes

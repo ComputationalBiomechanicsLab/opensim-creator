@@ -68,10 +68,10 @@ namespace
 {
     osc::AABB Union(nonstd::span<osc::BVHPrim const> prims)
     {
-        osc::AABB rv = prims.front().bounds;
+        osc::AABB rv = prims.front().getBounds();
         for (auto it = prims.begin() + 1; it != prims.end(); ++it)
         {
-            rv = Union(rv, it->bounds);
+            rv = Union(rv, it->getBounds());
         }
         return rv;
     }
@@ -82,10 +82,10 @@ namespace
         if (n == 1)
         {
             // recursion bottomed out: create a leaf node
-            osc::BVHNode& leaf = bvh.nodes.emplace_back();
-            leaf.bounds = bvh.prims.at(begin).bounds;
-            leaf.nlhs = -1;
-            leaf.firstPrimOffset = begin;
+            bvh.nodes.push_back(osc::BVHNode::leaf(
+                bvh.prims.at(begin).getBounds(),
+                begin
+            ));
             return;
         }
 
@@ -106,7 +106,7 @@ namespace
             // returns true if a given primitive is below the midpoint along the dim
             auto const isBelowMidpoint = [longestDimIdx, midpointX2](osc::BVHPrim const& p)
             {
-                float const primMidpointX2 = p.bounds.min[longestDimIdx] + p.bounds.max[longestDimIdx];
+                float const primMidpointX2 = p.getBounds().min[longestDimIdx] + p.getBounds().max[longestDimIdx];
                 return primMidpointX2 <= midpointX2;
             };
 
@@ -121,10 +121,13 @@ namespace
                 midpoint = begin + n/2;
             }
 
-            internalNodeLoc = static_cast<int>(bvh.nodes.size());  // careful: reallocations
-            osc::BVHNode& internalNode = bvh.nodes.emplace_back();
-            internalNode.firstPrimOffset = -1;
-            internalNode.bounds = aabb;
+            internalNodeLoc = static_cast<int>(bvh.nodes.size());
+
+            // push the internal node
+            bvh.nodes.push_back(osc::BVHNode::node(
+                aabb,
+                0  // the number of left-hand nodes is set later
+            ));
         }
 
         // build left-hand subtree
@@ -133,7 +136,7 @@ namespace
         // the left-hand build allocated nodes for the left hand side contiguously in memory
         int numLhsNodes = static_cast<int>(bvh.nodes.size() - 1) - internalNodeLoc;
         OSC_ASSERT(numLhsNodes > 0);
-        bvh.nodes[internalNodeLoc].nlhs = numLhsNodes;
+        bvh.nodes[internalNodeLoc].setNumLhsNodes(numLhsNodes);
 
         // build right node
         BVH_RecursiveBuild(bvh, midpoint, (begin + n) - midpoint);
@@ -154,23 +157,23 @@ namespace
         osc::BVHNode const& node = bvh.nodes[nodeidx];
 
         // check ray-AABB intersection with the BVH node
-        osc::RayCollision res = osc::GetRayCollisionAABB(ray, node.bounds);
+        osc::RayCollision res = osc::GetRayCollisionAABB(ray, node.getBounds());
 
         if (!res.hit)
         {
             return false;  // no intersection with this node at all
         }
 
-        if (node.nlhs == -1)
+        if (node.isLeaf())
         {
             // leaf node: check ray-triangle intersection
 
-            osc::BVHPrim const& p = bvh.prims[node.firstPrimOffset];
+            osc::BVHPrim const& p = bvh.prims[node.getFirstPrimOffset()];
 
-            osc::RayCollision rayrtri = osc::GetRayCollisionTriangle(ray, vs + p.id);
+            osc::RayCollision rayrtri = osc::GetRayCollisionTriangle(ray, vs + p.getID());
             if (rayrtri.hit)
             {
-                out.push_back(osc::BVHCollision{p.id, rayrtri.distance});
+                out.push_back(osc::BVHCollision{p.getID(), rayrtri.distance});
             }
             return rayrtri.hit;
         }
@@ -179,7 +182,7 @@ namespace
             // else: internal node: check intersection with direct children
 
             bool lhs = BVH_GetRayTriangleCollisionsRecursive(bvh, vs, n, ray, nodeidx+1, out);
-            bool rhs = BVH_GetRayTriangleCollisionsRecursive(bvh, vs, n, ray, nodeidx+node.nlhs+1, out);
+            bool rhs = BVH_GetRayTriangleCollisionsRecursive(bvh, vs, n, ray, nodeidx+node.getNumLhsNodes()+1, out);
             return lhs || rhs;
         }
     }
@@ -225,25 +228,25 @@ namespace
         osc::BVHNode const& node = bvh.nodes[nodeidx];
 
         // check ray-AABB intersection with the BVH node
-        osc::RayCollision res = osc::GetRayCollisionAABB(ray, node.bounds);
+        osc::RayCollision res = osc::GetRayCollisionAABB(ray, node.getBounds());
 
         if (!res.hit)
         {
             return false;  // no intersection with this node at all
         }
 
-        if (node.nlhs == -1)
+        if (node.isLeaf())
         {
             // it's a leaf node, so we've sucessfully found the AABB that intersected
 
-            out.push_back(osc::BVHCollision{bvh.prims[node.firstPrimOffset].id, res.distance});
+            out.push_back(osc::BVHCollision{bvh.prims[node.getFirstPrimOffset()].getID(), res.distance});
             return true;
         }
 
         // else: we've "hit" an internal node and need to recurse to find the leaf
 
         bool lhs = BVH_GetRayAABBCollisionsRecursive(bvh, ray, nodeidx+1, out);
-        bool rhs = BVH_GetRayAABBCollisionsRecursive(bvh, ray, nodeidx+node.nlhs+1, out);
+        bool rhs = BVH_GetRayAABBCollisionsRecursive(bvh, ray, nodeidx+node.getNumLhsNodes()+1, out);
         return lhs || rhs;
     }
 
@@ -258,7 +261,7 @@ namespace
         osc::BVHCollision* out)
     {
         osc::BVHNode const& node = bvh.nodes[nodeidx];
-        osc::RayCollision res = osc::GetRayCollisionAABB(ray, node.bounds);
+        osc::RayCollision res = osc::GetRayCollisionAABB(ray, node.getBounds());
 
         if (!res.hit)
         {
@@ -270,18 +273,18 @@ namespace
             return false;  // this AABB can't contain something closer
         }
 
-        if (node.nlhs == -1)
+        if (node.isLeaf())
         {
             // leaf node: check ray-triangle intersection
 
             bool hit = false;
-            osc::BVHPrim const& p = bvh.prims[node.firstPrimOffset];
+            osc::BVHPrim const& p = bvh.prims[node.getFirstPrimOffset()];
 
             glm::vec3 triangleVerts[] =
             {
-                verts[indices[p.id]],
-                verts[indices[p.id + 1]],
-                verts[indices[p.id + 2]],
+                verts[indices[p.getID()]],
+                verts[indices[p.getID() + 1]],
+                verts[indices[p.getID() + 2]],
             };
 
             osc::RayCollision rayrtri = osc::GetRayCollisionTriangle(ray, triangleVerts);
@@ -289,7 +292,7 @@ namespace
             if (rayrtri.hit && rayrtri.distance < closest)
             {
                 closest = rayrtri.distance;
-                out->primId = p.id;
+                out->primId = p.getID();
                 out->distance = rayrtri.distance;
                 hit = true;
             }
@@ -299,7 +302,7 @@ namespace
 
         // else: internal node: recurse
         bool lhs = BVH_GetClosestRayIndexedTriangleCollisionRecursive(bvh, verts, indices, ray, closest, nodeidx+1, out);
-        bool rhs = BVH_GetClosestRayIndexedTriangleCollisionRecursive(bvh, verts, indices, ray, closest, nodeidx+node.nlhs+1, out);
+        bool rhs = BVH_GetClosestRayIndexedTriangleCollisionRecursive(bvh, verts, indices, ray, closest, nodeidx+node.getNumLhsNodes()+1, out);
         return lhs || rhs;
     }
 
@@ -450,7 +453,7 @@ int32_t osc::BVH_GetMaxDepth(BVH const& bvh)
 
     while (0 <= cur && cur < bvh.nodes.size())
     {
-        if (bvh.nodes[cur].nlhs < 0)
+        if (bvh.nodes[cur].isLeaf())
         {
             // leaf node: compute its depth and continue traversal (if applicable)
 
@@ -465,7 +468,7 @@ int32_t osc::BVH_GetMaxDepth(BVH const& bvh)
                 // traverse up to a parent node and try the right-hand side
                 int32_t const next = stack.top();
                 stack.pop();
-                cur = next + bvh.nodes[next].nlhs + 1;
+                cur = next + bvh.nodes[next].getNumLhsNodes() + 1;
             }
         }
         else

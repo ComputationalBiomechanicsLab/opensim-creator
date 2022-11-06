@@ -2595,7 +2595,7 @@ private:
             if (m_Topography == MeshTopography::Triangles)
             {
                 BVH_BuildFromIndexedTriangles(m_TriangleBVH, m_Vertices, indices);
-                m_AABB = m_TriangleBVH.nodes.front().bounds;
+                m_AABB = m_TriangleBVH.nodes.front().getBounds();
             }
             else
             {
@@ -2610,7 +2610,7 @@ private:
             if (m_Topography == MeshTopography::Triangles)
             {
                 BVH_BuildFromIndexedTriangles(m_TriangleBVH, m_Vertices, indices);
-                m_AABB = m_TriangleBVH.nodes.front().bounds;
+                m_AABB = m_TriangleBVH.nodes.front().getBounds();
             }
             else
             {

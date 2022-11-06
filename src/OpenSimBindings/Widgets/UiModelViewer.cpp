@@ -242,7 +242,7 @@ public:
         // care: indirectly depends on the scene drawlist being up-to-date
         if (m_AutoFocusCameraNextFrame && !m_Scene.getBVH().nodes.empty())
         {
-            AutoFocus(m_Camera, m_Scene.getBVH().nodes[0].bounds);
+            AutoFocus(m_Camera, m_Scene.getBVH().nodes[0].getBounds());
             m_AutoFocusCameraNextFrame = false;
         }
 
