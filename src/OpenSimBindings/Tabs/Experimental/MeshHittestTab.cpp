@@ -80,14 +80,13 @@ public:
             m_IsMousedOver = false;
             if (m_UseBVH)
             {
-                BVHCollision collision;
                 MeshIndicesView const indices = m_Mesh.getIndices();
-                bool collided = indices.isU16() ?
-                    BVH_GetClosestRayIndexedTriangleCollision(m_Mesh.getBVH(), m_Mesh.getVerts(), indices.toU16Span(), m_Ray, &collision) :
-                    BVH_GetClosestRayIndexedTriangleCollision(m_Mesh.getBVH(), m_Mesh.getVerts(), indices.toU32Span(), m_Ray, &collision);
-                if (collided)
+                std::optional<BVHCollision> const maybeCollision = indices.isU16() ?
+                    BVH_GetClosestRayIndexedTriangleCollision(m_Mesh.getBVH(), m_Mesh.getVerts(), indices.toU16Span(), m_Ray) :
+                    BVH_GetClosestRayIndexedTriangleCollision(m_Mesh.getBVH(), m_Mesh.getVerts(), indices.toU32Span(), m_Ray);
+                if (maybeCollision)
                 {
-                    uint32_t index = m_Mesh.getIndices()[collision.primId];
+                    uint32_t index = m_Mesh.getIndices()[maybeCollision->id];
                     m_IsMousedOver = true;
                     m_Tris[0] = m_Mesh.getVerts()[index];
                     m_Tris[1] = m_Mesh.getVerts()[index+1];

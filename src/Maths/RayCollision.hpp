@@ -4,15 +4,17 @@
 
 namespace osc
 {
-    struct RayCollision final {
-        float distance;
-        glm::vec3 position;
+    struct RayCollision {
 
         RayCollision() = default;
+
         RayCollision(float distance_, glm::vec3 position_) :
             distance{distance_},
             position{position_}
         {
         }
+
+        float distance;
+        glm::vec3 position;
     };
 }
