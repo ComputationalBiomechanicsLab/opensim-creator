@@ -119,6 +119,9 @@ if [[ -z ${OSC_SKIP_BREW:+x} ]]; then
     [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && brew install python3
     [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && pip3 install -r docs/requirements.txt
 
+    # ensure sphinx-build is available on this terminal's PATH
+    [[ ! -z ${OSC_BUILD_DOCS:+z} ]] export PATH=${PATH}:"$(python3 -m site --user-base)/bin"
+
     echo "----- finished getting system-level dependencies -----"
 else
     echo "----- skipping getting system-level dependencies (OSC_SKIP_BREW) is
@@ -131,6 +134,7 @@ cc --version
 c++ --version
 cmake --version
 make --version
+[[ ! -z ${OSC_BUILD_DOCS:+z} ]] sphinx-build --version  # required when building docs
 
 
 if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
