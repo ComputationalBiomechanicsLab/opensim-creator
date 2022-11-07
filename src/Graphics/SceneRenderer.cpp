@@ -107,7 +107,12 @@ public:
         m_Camera.setViewMatrix(params.viewMatrix);
         m_Camera.setProjectionMatrix(params.projectionMatrix);
 
-        std::optional<RimHighlights> maybeRimHighlights = generateRimHighlights(decorations, params);
+        std::optional<RimHighlights> maybeRimHighlights;
+
+        if (params.drawRims)
+        {
+            maybeRimHighlights = generateRimHighlights(decorations, params);
+        }
 
         // draw the the scene
         {
