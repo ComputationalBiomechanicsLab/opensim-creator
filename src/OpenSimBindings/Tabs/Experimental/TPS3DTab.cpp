@@ -73,7 +73,9 @@ namespace
     //
     // this is typically what the user/caller defines
     struct LandmarkPair3D final {
+
         LandmarkPair3D() = default;
+
         LandmarkPair3D(glm::vec3 const& src_, glm::vec3 const& dest_) :
             Src{src_},
             Dest{dest_}
@@ -106,8 +108,13 @@ namespace
     //
     // these are supplied by the user and used to solve for the coefficients
     struct TPSCoefficientSolverInputs3D final {
+
         TPSCoefficientSolverInputs3D() = default;
-        TPSCoefficientSolverInputs3D(std::vector<LandmarkPair3D> landmarks_, float blendingFactor_) :
+
+        TPSCoefficientSolverInputs3D(
+            std::vector<LandmarkPair3D> landmarks_,
+            float blendingFactor_) :
+
             Landmarks{std::move(landmarks_)},
             BlendingFactor{std::move(blendingFactor_)}
         {
@@ -127,6 +134,7 @@ namespace
         return !(a == b);
     }
 
+    // pretty-prints `TPSCoefficientSolverInputs3D`
     std::ostream& operator<<(std::ostream& o, TPSCoefficientSolverInputs3D const& inputs)
     {
         o << "TPSCoefficientSolverInputs3D{landmarks = [";
@@ -145,7 +153,10 @@ namespace
     // i.e. in `f(p) = a1 + a2*p.x + a3*p.y + a4*p.z + SUM{ wi * U(||controlPoint - p||) }` this encodes
     //      the `wi` and `controlPoint` parts of that equation
     struct TPSNonAffineTerm3D final {
-        TPSNonAffineTerm3D(glm::vec3 const& weight_, glm::vec3 const& controlPoint_) :
+        TPSNonAffineTerm3D(
+            glm::vec3 const& weight_,
+            glm::vec3 const& controlPoint_) :
+
             Weight{weight_},
             ControlPoint{controlPoint_}
         {
@@ -200,7 +211,7 @@ namespace
         return !(a == b);
     }
 
-    // pretty-prints TPSCoefficients3D
+    // pretty-prints `TPSCoefficients3D`
     std::ostream& operator<<(std::ostream& o, TPSCoefficients3D const& coefs)
     {
         using osc::operator<<;
@@ -458,7 +469,11 @@ namespace
 {
     // the "input" part of the document (i.e. source or destination mesh)
     struct TPSDocumentInput final {
-        TPSDocumentInput(osc::Mesh const& mesh_) : Mesh{mesh_} {}
+
+        explicit TPSDocumentInput(osc::Mesh const& mesh_) :
+            Mesh{mesh_}
+        {
+        }
 
         osc::Mesh Mesh;
         std::unordered_map<size_t, glm::vec3> Landmarks;
@@ -471,22 +486,56 @@ namespace
         float BlendingFactor = 1.0f;
     };
 
-    // returns all pair-able landmarks in the document
+    // enum used to label a part of the TPS document
+    enum class TPSDocumentIdentifier {
+        Source,
+        Destination,
+    };
+
+    TPSDocumentInput& UpdScratchInputOrThrow(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentIdentifier which)
+    {
+        switch (which)
+        {
+        case TPSDocumentIdentifier::Source:
+            return doc.updScratch().Source;
+        case TPSDocumentIdentifier::Destination:
+            return doc.updScratch().Destination;
+        default:
+            throw std::runtime_error{"invalid document identifier provided to a getter"};
+        }
+    }
+
+    TPSDocumentInput const& GetScratchInputOrThrow(osc::UndoRedoT<TPSDocument> const& doc, TPSDocumentIdentifier which)
+    {
+        switch (which)
+        {
+        case TPSDocumentIdentifier::Source:
+            return doc.getScratch().Source;
+        case TPSDocumentIdentifier::Destination:
+            return doc.getScratch().Destination;
+        default:
+            throw std::runtime_error{"invalid document identifier provided to a getter"};
+        }
+    }
+
+    // returns all pairable landmarks in the document
     std::vector<LandmarkPair3D> GetLandmarkPairs(TPSDocument const& doc)
     {
         return GetLandmarkPairs(doc.Source.Landmarks, doc.Destination.Landmarks);
     }
 
     // action: add a landmark to the source mesh
-    void ActionAddLandmarkTo(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentInput& input, glm::vec3 const& pos)
+    void ActionAddLandmarkTo(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentIdentifier which, glm::vec3 const& pos)
     {
+        TPSDocumentInput& input = UpdScratchInputOrThrow(doc, which);
         input.Landmarks[input.Landmarks.size()] = pos;
         doc.commitScratch("added landmark");
     }
 
     // action: prompt the user to browse for a different source mesh
-    void ActionBrowseForNewMesh(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentInput& input)
+    void ActionBrowseForNewMesh(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentIdentifier which)
     {
+        TPSDocumentInput& input = UpdScratchInputOrThrow(doc, which);
         std::filesystem::path const p = osc::PromptUserForFile("vtp,obj");
         if (!p.empty())
         {
@@ -508,12 +557,14 @@ namespace
         doc.commitScratch("changed blend factor");
     }
 
+    // action: create a "fresh" TPS document
     void ActionCreateNewDocument(osc::UndoRedoT<TPSDocument>& doc)
     {
         doc.updScratch() = TPSDocument{};
         doc.commitScratch("created new document");
     }
 
+    // action: clear all user-assigned landmarks in the TPS document
     void ActionClearAllLandmarks(osc::UndoRedoT<TPSDocument>& doc)
     {
         doc.updScratch().Source.Landmarks.clear();
@@ -521,6 +572,7 @@ namespace
         doc.commitScratch("cleared all landmarks");
     }
 
+    // action: save all pairable landmarks in the TPS document to a user-specified CSV file
     void ActionSaveLandmarksToCSV(TPSDocument const& doc)
     {
         std::vector<LandmarkPair3D> const pairs = GetLandmarkPairs(doc);
@@ -542,7 +594,7 @@ namespace
 
         std::vector<std::string> cols = {"source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"};
 
-        writer.writerow(cols);  // header
+        writer.writerow(cols);  // write header
         for (LandmarkPair3D const& p : pairs)
         {
             cols.at(0) = std::to_string(p.Src.x);
@@ -655,19 +707,18 @@ namespace
 namespace
 {
     // returns the 3D position of the intersection between the user's mouse and the mesh, if any
-    std::optional<glm::vec3> RaycastMesh(
+    std::optional<osc::RayCollision> RaycastMesh(
         osc::PolarPerspectiveCamera const& camera,
         osc::Mesh const& mesh,
         osc::Rect const& renderRect,
         glm::vec2 mousePos)
     {
         osc::Line const ray = camera.unprojectTopLeftPosToWorldRay(mousePos - renderRect.p1, osc::Dimensions(renderRect));
-        std::optional<osc::RayCollision> const maybeCollision = osc::GetClosestWorldspaceRayCollision(
+        return osc::GetClosestWorldspaceRayCollision(
             mesh,
             osc::Transform{},
             ray
         );
-        return maybeCollision ? std::optional<glm::vec3>{maybeCollision->position} : std::nullopt;
     }
 
     // returns scene rendering parameters for an generic panel
@@ -695,25 +746,56 @@ namespace
     // top-level tab state
     //
     // (shared by all panels)
-    struct TPSUITabSate final {
-        std::shared_ptr<osc::UndoRedoT<TPSDocument>> EditedDocument = std::make_shared<osc::UndoRedoT<TPSDocument>>();
-        TPSResultCache ResultCache;
-        bool LinkCameras = true;
-        osc::PolarPerspectiveCamera LinkedCameraBase = CreateCameraFocusedOn(EditedDocument->getScratch().Source.Mesh.getBounds());
-        osc::Material WireframeMaterial = osc::CreateWireframeOverlayMaterial();
-        std::shared_ptr<osc::Mesh const> LandmarkSphere = osc::App::meshes().getSphereMesh();
-        glm::vec4 LandmarkColor = {1.0f, 0.0f, 0.0f, 1.0f};
-        std::optional<glm::vec3> PerFrameHover;
+    struct TPSTabSharedState final {
 
         osc::Mesh const& getTransformedMesh()
         {
             return ResultCache.lookup(EditedDocument->getScratch());
         }
+
+        TPSDocumentInput& updInputDocument(TPSDocumentIdentifier identifier)
+        {
+            return UpdScratchInputOrThrow(*EditedDocument, identifier);
+        }
+
+        TPSDocumentInput const& getInputDocument(TPSDocumentIdentifier identifier) const
+        {
+            return GetScratchInputOrThrow(*EditedDocument, identifier);
+        }
+
+        osc::Mesh const& getInputMesh(TPSDocumentIdentifier identifier) const
+        {
+            return getInputDocument(identifier).Mesh;
+        }
+
+        // the document the user is editing
+        std::shared_ptr<osc::UndoRedoT<TPSDocument>> EditedDocument = std::make_shared<osc::UndoRedoT<TPSDocument>>();
+
+        // cached TPS3D algorithm result (don't recompute it each frame)
+        TPSResultCache ResultCache;
+
+        // `true` if the user wants the cameras to be linked
+        bool LinkCameras = true;
+
+        // shared linked camera
+        osc::PolarPerspectiveCamera LinkedCameraBase = CreateCameraFocusedOn(EditedDocument->getScratch().Source.Mesh.getBounds());
+
+        // wireframe material, used to draw scene elements in a wireframe style
+        osc::Material WireframeMaterial = osc::CreateWireframeOverlayMaterial();
+
+        // shared sphere mesh (used by rendering code)
+        std::shared_ptr<osc::Mesh const> LandmarkSphere = osc::App::meshes().getSphereMesh();
+
+        // color of any in-scene landmark spheres
+        glm::vec4 LandmarkColor = {1.0f, 0.0f, 0.0f, 1.0f};
+
+        // updated once-per-frame with what the user's hovering
+        std::optional<glm::vec3> PerFrameHover;
     };
 
     // append decorations that are common to all panels to the given output vector
     void AppendCommonDecorations(
-        TPSUITabSate const& shared,
+        TPSTabSharedState const& sharedState,
         osc::Mesh const& mesh,
         bool wireframeMode,
         std::vector<osc::SceneDecoration>& out)
@@ -727,7 +809,7 @@ namespace
         if (wireframeMode)
         {
             osc::SceneDecoration& dec = out.emplace_back(mesh);
-            dec.maybeMaterial = shared.WireframeMaterial;
+            dec.maybeMaterial = sharedState.WireframeMaterial;
         }
 
         // add grid decorations
@@ -745,11 +827,11 @@ namespace
         using osc::NamedPanel::NamedPanel;
 
     private:
-        void implPushWindowStyles() override final
+        void implBeforeImGuiBegin() override final
         {
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
         }
-        void implPopWindowStyles() override final
+        void implAfterImGuiBegin() override final
         {
             ImGui::PopStyleVar();
         }
@@ -758,12 +840,16 @@ namespace
     // an "input" panel (i.e. source or destination mesh, before warping)
     class InputPanel final : public TPS3DTabPanel {
     public:
-        InputPanel(std::string_view panelName_, std::shared_ptr<TPSUITabSate> state_, bool useSrc_) :
+        InputPanel(
+            std::string_view panelName_,
+            std::shared_ptr<TPSTabSharedState> state_,
+            TPSDocumentIdentifier documentIdentifier_) :
+
             TPS3DTabPanel{std::move(panelName_), ImGuiDockNodeFlags_PassthruCentralNode},
             m_State{std::move(state_)},
-            m_UseSource{useSrc_}
+            m_DocumentIdentifier{std::move(documentIdentifier_)}
         {
-            OSC_ASSERT(m_State != nullptr && "the input panel requires a valid shared state");
+            OSC_ASSERT(m_State != nullptr && "the input panel requires a valid sharedState state");
         }
 
         osc::PolarPerspectiveCamera const& getCamera() const
@@ -779,39 +865,40 @@ namespace
     private:
         void implDraw() override
         {
-            // fill the entire available region with the render
-            glm::vec2 const topLeft = ImGui::GetCursorScreenPos();
-            glm::vec2 const dims = ImGui::GetContentRegionAvail();
-            osc::Rect const regionRect = {topLeft, topLeft+dims};
+            // compute UI stuff (render rect, mouse pos, etc.)
+            osc::Rect const contentRect = osc::ContentRegionAvailScreenRect();
+            glm::vec2 const contentRectDims = osc::Dimensions(contentRect);
+            glm::vec2 const mousePos = ImGui::GetMousePos();
 
-            // perform hittest *before* rendering because collision tests affect what is drawn
-            std::optional<glm::vec3> maybeCollision;
-            if (osc::IsPointInRect(regionRect, ImGui::GetMousePos()))
-            {
-                glm::vec2 const mousePos = ImGui::GetMousePos();
-                maybeCollision = RaycastMesh(m_Camera, getMesh(), regionRect, mousePos);
-            }
+            // perform hittest: do it before rendering, because it affects what's rendered
+            std::optional<osc::RayCollision> const maybeCollision = osc::IsPointInRect(contentRect, mousePos) ?
+                RaycastMesh(m_Camera, m_State->getInputMesh(m_DocumentIdentifier), contentRect, mousePos) :
+                std::nullopt;
 
-            // render it via ImGui and hittest it
-            osc::RenderTexture& renderTexture = renderScene(dims, maybeCollision);
+            // render: draw the scene into the content rect and hittest it
+            osc::RenderTexture& renderTexture = renderScene(contentRectDims, maybeCollision);
             osc::ImGuiImageHittestResult const htResult = osc::DrawTextureAsImGuiImageAndHittest(renderTexture);
 
             // update camera if user drags it around etc.
             if (htResult.isHovered)
             {
-                osc::UpdatePolarCameraFromImGuiUserInput(dims, m_Camera);
+                osc::UpdatePolarCameraFromImGuiUserInput(contentRectDims, m_Camera);
             }
 
-            // if the user is currently hitting something in 3D, update global mouse cursor tracker
+            // event: if something's hovered, propagate the information to the shared state
             if (maybeCollision)
             {
-                m_State->PerFrameHover = *maybeCollision;
+                m_State->PerFrameHover = maybeCollision->position;
             }
 
-            // if user left-clicks, add a landmark there
+            // event: if the user left-clicks on the mesh, add a landmark there
             if (maybeCollision && htResult.isLeftClickReleasedWithoutDragging)
             {
-                ActionAddLandmarkTo(*m_State->EditedDocument, updDocumentInput(), *maybeCollision);
+                ActionAddLandmarkTo(
+                    *m_State->EditedDocument,
+                    m_DocumentIdentifier,
+                    maybeCollision->position
+                );
             }
 
             // draw any 2D ImGui overlays
@@ -822,14 +909,12 @@ namespace
         {
             // ImGui: set cursor to draw over the top-right of the render texture (with padding)
             glm::vec2 const padding = {10.0f, 10.0f};
-            glm::vec2 const originalCursorPos = ImGui::GetCursorScreenPos();
             ImGui::SetCursorScreenPos(renderRect.p1 + padding);
-            // TODO: breaks scrolling? OSC_SCOPE_GUARD({ ImGui::SetCursorScreenPos(originalCursorPos); });
 
             // ImGui: draw "browse for new mesh" button
             if (ImGui::Button("browse"))
             {
-                ActionBrowseForNewMesh(*m_State->EditedDocument, updDocumentInput());
+                ActionBrowseForNewMesh(*m_State->EditedDocument, m_DocumentIdentifier);
             }
 
             ImGui::SameLine();
@@ -837,7 +922,7 @@ namespace
             // ImGui: draw "autofit camera" button
             if (ImGui::Button(ICON_FA_EXPAND))
             {
-                osc::AutoFocus(m_Camera, getMesh().getBounds());
+                osc::AutoFocus(m_Camera, m_State->getInputMesh(m_DocumentIdentifier).getBounds());
             }
 
             ImGui::SameLine();
@@ -845,13 +930,13 @@ namespace
             // ImGui: draw landmark radius editor
             {
                 char const* label = "landmark radius";
-                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - 10.0f);
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - padding.x);
                 ImGui::SliderFloat(label, &m_LandmarkRadius, 0.0001f, 1.0f, "%.4f", 2.0f);
             }
         }
 
         // renders this panel's 3D scene to a texture
-        osc::RenderTexture& renderScene(glm::vec2 dims, std::optional<glm::vec3> const& maybeCollision)
+        osc::RenderTexture& renderScene(glm::vec2 dims, std::optional<osc::RayCollision> const& maybeCollision)
         {
             osc::SceneRendererParams const params = CalcRenderParams(m_Camera, dims);
             std::vector<osc::SceneDecoration> const decorations = generateDecorations(maybeCollision);
@@ -859,16 +944,16 @@ namespace
         }
 
         // returns a fresh list of decorations for this panels
-        std::vector<osc::SceneDecoration> generateDecorations(std::optional<glm::vec3> const& maybeCollision) const
+        std::vector<osc::SceneDecoration> generateDecorations(std::optional<osc::RayCollision> const& maybeCollision) const
         {
             // generate in-scene 3D decorations
             std::vector<osc::SceneDecoration> decorations;
-            decorations.reserve(6 + getDocumentInput().Landmarks.size());  // likely guess
+            decorations.reserve(6 + m_State->getInputDocument(m_DocumentIdentifier).Landmarks.size());  // likely guess
 
-            AppendCommonDecorations(*m_State, getMesh(), m_WireframeMode, decorations);
+            AppendCommonDecorations(*m_State, m_State->getInputMesh(m_DocumentIdentifier), m_WireframeMode, decorations);
 
             // append each landmark as a sphere
-            for (auto const& [id, pos] : getDocumentInput().Landmarks)
+            for (auto const& [id, pos] : m_State->getInputDocument(m_DocumentIdentifier).Landmarks)
             {
                 osc::Transform transform{};
                 transform.scale *= m_LandmarkRadius;
@@ -882,7 +967,7 @@ namespace
             {
                 osc::Transform transform{};
                 transform.scale *= m_LandmarkRadius;
-                transform.position = *maybeCollision;
+                transform.position = maybeCollision->position;
 
                 glm::vec4 color = m_State->LandmarkColor;
                 color.a *= 0.25f;
@@ -893,26 +978,9 @@ namespace
             return decorations;
         }
 
-        TPSDocumentInput& updDocumentInput()
-        {
-            TPSDocument& doc = m_State->EditedDocument->updScratch();
-            return m_UseSource ? doc.Source : doc.Destination;
-        }
-
-        TPSDocumentInput const& getDocumentInput() const
-        {
-            TPSDocument const& doc = m_State->EditedDocument->updScratch();
-            return m_UseSource ? doc.Source : doc.Destination;
-        }
-
-        osc::Mesh const& getMesh() const
-        {
-            return getDocumentInput().Mesh;
-        }
-
-        std::shared_ptr<TPSUITabSate> m_State;
-        bool m_UseSource = true;
-        osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(getMesh().getBounds());
+        std::shared_ptr<TPSTabSharedState> m_State;
+        TPSDocumentIdentifier m_DocumentIdentifier;
+        osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getInputMesh(m_DocumentIdentifier).getBounds());
         osc::CachedSceneRenderer m_CachedRenderer;
         bool m_WireframeMode = true;
         float m_LandmarkRadius = 0.05f;
@@ -922,11 +990,11 @@ namespace
     class ResultPanel final : public TPS3DTabPanel {
     public:
 
-        ResultPanel(std::string_view panelName_, std::shared_ptr<TPSUITabSate> state_) :
+        ResultPanel(std::string_view panelName_, std::shared_ptr<TPSTabSharedState> state_) :
             TPS3DTabPanel{std::move(panelName_)},
             m_State{std::move(state_)}
         {
-            OSC_ASSERT(m_State != nullptr && "the input panel requires a valid shared state");
+            OSC_ASSERT(m_State != nullptr && "the input panel requires a valid sharedState state");
         }
 
         osc::PolarPerspectiveCamera const& getCamera() const
@@ -961,13 +1029,12 @@ namespace
         // draw ImGui overlays over a result panel
         void drawOverlays(osc::Rect const& renderRect)
         {
+            glm::vec2 const padding = {10.0f, 10.0f};
+
             // ImGui: draw buttons etc. at the top of the panel
             {
                 // ImGui: set cursor to draw over the top-right of the render texture (with padding)
-                glm::vec2 const padding = {10.0f, 10.0f};
-                glm::vec2 const originalCursorPos = ImGui::GetCursorScreenPos();
                 ImGui::SetCursorScreenPos(renderRect.p1 + padding);
-                OSC_SCOPE_GUARD({ ImGui::SetCursorScreenPos(originalCursorPos); });
 
                 // ImGui: draw checkbox for toggling whether to show the destination mesh in the scene
                 {
@@ -977,13 +1044,10 @@ namespace
 
             // ImGui: draw slider overlay that controls TPS blend factor at the bottom of the panel
             {
-                float constexpr leftPadding = 10.0f;
-                float constexpr bottomPadding = 10.0f;
                 float const panelHeight = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y;
 
-                glm::vec2 const oldCursorPos = ImGui::GetCursorScreenPos();
-                ImGui::SetCursorScreenPos({renderRect.p1.x + leftPadding, renderRect.p2.y - (panelHeight + bottomPadding)});
-                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - leftPadding - ImGui::CalcTextSize("blending factor").x - ImGui::GetStyle().ItemSpacing.x);
+                ImGui::SetCursorScreenPos({renderRect.p1.x + padding.x, renderRect.p2.y - (panelHeight + padding.y)});
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - padding.x - ImGui::CalcTextSize("blending factor").x - ImGui::GetStyle().ItemSpacing.x);
                 float factor = m_State->EditedDocument->getScratch().BlendingFactor;
                 if (ImGui::SliderFloat("blending factor", &factor, 0.0f, 1.0f))
                 {
@@ -993,7 +1057,6 @@ namespace
                 {
                     ActionSetBlendFactorAndSave(*m_State->EditedDocument, factor);
                 }
-                ImGui::SetCursorScreenPos(oldCursorPos);
             }
         }
 
@@ -1022,7 +1085,7 @@ namespace
             return m_CachedRenderer.draw(decorations, params);
         }
 
-        std::shared_ptr<TPSUITabSate> m_State;
+        std::shared_ptr<TPSTabSharedState> m_State;
         osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getTransformedMesh().getBounds());
         osc::CachedSceneRenderer m_CachedRenderer;
         bool m_WireframeMode = true;
@@ -1033,7 +1096,7 @@ namespace
     public:
         TopToolbar(
             std::string_view label,
-            std::shared_ptr<TPSUITabSate> tabState_) :
+            std::shared_ptr<TPSTabSharedState> tabState_) :
 
             m_Label{std::move(label)},
             m_TabState{std::move(tabState_)}
@@ -1101,11 +1164,11 @@ namespace
             {
                 if (ImGui::MenuItem("Load Source Mesh"))
                 {
-                    ActionBrowseForNewMesh(*m_TabState->EditedDocument, m_TabState->EditedDocument->updScratch().Source);
+                    ActionBrowseForNewMesh(*m_TabState->EditedDocument, TPSDocumentIdentifier::Source);
                 }
                 if (ImGui::MenuItem("Load Destination Mesh"))
                 {
-                    ActionBrowseForNewMesh(*m_TabState->EditedDocument, m_TabState->EditedDocument->updScratch().Destination);
+                    ActionBrowseForNewMesh(*m_TabState->EditedDocument, TPSDocumentIdentifier::Destination);
                 }
                 ImGui::EndPopup();
             }
@@ -1139,7 +1202,7 @@ namespace
         }
 
         std::string m_Label;
-        std::shared_ptr<TPSUITabSate> m_TabState;
+        std::shared_ptr<TPSTabSharedState> m_TabState;
         osc::UndoButton m_UndoButton{m_TabState->EditedDocument};
         osc::RedoButton m_RedoButton{m_TabState->EditedDocument};
     };
@@ -1148,7 +1211,7 @@ namespace
     public:
         BottomToolBar(
             std::string_view label,
-            std::shared_ptr<TPSUITabSate> tabState_) :
+            std::shared_ptr<TPSTabSharedState> tabState_) :
 
             m_Label{std::move(label)},
             m_TabState{std::move(tabState_)}
@@ -1192,7 +1255,7 @@ namespace
         }
 
         std::string m_Label;
-        std::shared_ptr<TPSUITabSate> m_TabState;
+        std::shared_ptr<TPSTabSharedState> m_TabState;
     };
 }
 
@@ -1293,12 +1356,12 @@ private:
     TabHost* m_Parent;
 
     // top-level state that all panels can potentially access
-    std::shared_ptr<TPSUITabSate> m_TabState = std::make_shared<TPSUITabSate>();
+    std::shared_ptr<TPSTabSharedState> m_TabState = std::make_shared<TPSTabSharedState>();
 
     // user-visible panels/bars
     TopToolbar m_TopToolbar{"##TopToolBar", m_TabState};
-    InputPanel m_SourcePanel{"Source Mesh", m_TabState, true};
-    InputPanel m_DestPanel{"Destination Mesh", m_TabState, false};
+    InputPanel m_SourcePanel{"Source Mesh", m_TabState, TPSDocumentIdentifier::Source};
+    InputPanel m_DestPanel{"Destination Mesh", m_TabState, TPSDocumentIdentifier::Destination};
     ResultPanel m_ResultPanel{"Result", m_TabState};
     UndoRedoPanel m_UndoRedoPanel{"History", m_TabState->EditedDocument};
     LogViewerPanel m_LogViewerPanel{"Log"};

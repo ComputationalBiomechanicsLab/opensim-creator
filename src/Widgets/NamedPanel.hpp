@@ -22,8 +22,8 @@ namespace osc
         void requestClose();
 
     private:
-        virtual void implPushWindowStyles() {}
-        virtual void implPopWindowStyles() {}
+        virtual void implBeforeImGuiBegin() {}
+        virtual void implAfterImGuiBegin() {}
         virtual void implDraw() = 0;
 
         std::string m_PanelName;
