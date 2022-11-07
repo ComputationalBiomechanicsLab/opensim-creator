@@ -121,7 +121,7 @@ namespace osc
         virtual ~UndoRedo() noexcept;
 
         void commitScratch(std::string_view commitMsg);
-        UndoRedoEntry getHead() const;
+        UndoRedoEntry const& getHead() const;
 
         size_t getNumUndoEntries() const;
         ptrdiff_t getNumUndoEntriesi() const;

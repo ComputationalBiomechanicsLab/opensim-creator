@@ -524,14 +524,14 @@ namespace
     void ActionSaveLandmarksToCSV(TPSDocument const& doc)
     {
         std::vector<LandmarkPair3D> const pairs = GetLandmarkPairs(doc);
-        std::filesystem::path const p = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+        std::filesystem::path const filePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
-        if (p.empty())
+        if (filePath.empty())
         {
             return;  // user didn't select a save location
         }
 
-        std::ofstream outfile{p};
+        std::ofstream outfile{filePath};
 
         if (!outfile)
         {

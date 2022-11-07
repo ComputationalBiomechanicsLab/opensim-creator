@@ -36,7 +36,7 @@ void osc::UndoRedo::commitScratch(std::string_view commitMsg)
     m_Redo.clear();
 }
 
-osc::UndoRedoEntry osc::UndoRedo::getHead() const
+osc::UndoRedoEntry const& osc::UndoRedo::getHead() const
 {
     return m_Head;
 }
