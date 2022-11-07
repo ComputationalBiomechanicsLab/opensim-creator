@@ -6,7 +6,6 @@
 #include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 
-#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <utility>
@@ -109,34 +108,30 @@ namespace osc
         std::vector<BVHPrim> prims;
 
         void clear();
+
+        // triangle BVHes
+        //
+        // prim.getID() will refer to the index of the first vertex in the triangle
+        void buildFromIndexedTriangles(nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices);
+        void buildFromIndexedTriangles(nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices);
+
+        // returns the location of the closest ray-triangle collision along the ray, if any
+        std::optional<BVHCollision> getClosestRayIndexedTriangleCollision(nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices, Line const&) const;
+        std::optional<BVHCollision> getClosestRayIndexedTriangleCollision(nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices, Line const&) const;
+
+        // AABB BVHes
+        //
+        // prim.id will refer to the index of the AABB
+        void buildFromAABBs(nonstd::span<AABB const> aabbs);
+
+        // returns prim.id of the AABB (leaf) that the line intersects, or -1 if no intersection
+        //
+        // no assumptions about prim.id required here - it's using the BVH's AABBs
+        //
+        // returns true if at least one collision was found and appended to the output
+        std::vector<BVHCollision> getRayAABBCollisions(Line const&) const;
+
+        // returns the maximum depth of the given BVH tree
+        int32_t getMaxDepth() const;
     };
-
-    // triangle BVHes
-    //
-    // these are BVHes where prim.id refers to the first index of a triangle
-
-    // prim.getID() will refer to the index of the first vertex in the triangle
-    void BVH_BuildFromIndexedTriangles(BVH&, nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices);
-    void BVH_BuildFromIndexedTriangles(BVH&, nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices);
-
-    // returns the location of the closest ray-triangle collision along the ray, if any
-    std::optional<BVHCollision> BVH_GetClosestRayIndexedTriangleCollision(BVH const&, nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices, Line const&);
-    std::optional<BVHCollision> BVH_GetClosestRayIndexedTriangleCollision(BVH const&, nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices, Line const&);
-
-    // AABB BVHes
-    //
-    // these are BVHes where prim.id refers to the index of the AABB the node was built from
-
-    // prim.id will refer to the index of the AABB
-    void BVH_BuildFromAABBs(BVH&, nonstd::span<AABB const> aabbs);
-
-    // returns prim.id of the AABB (leaf) that the line intersects, or -1 if no intersection
-    //
-    // no assumptions about prim.id required here - it's using the BVH's AABBs
-    //
-    // returns true if at least one collision was found and appended to the output
-    std::vector<BVHCollision> BVH_GetRayAABBCollisions(BVH const&, Line const&);
-
-    // returns the maximum depth of the given BVH tree
-    int32_t BVH_GetMaxDepth(BVH const&);
 }

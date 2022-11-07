@@ -376,75 +376,75 @@ void osc::BVH::clear()
     prims.clear();
 }
 
-void osc::BVH_BuildFromIndexedTriangles(BVH& bvh, nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices)
+void osc::BVH::buildFromIndexedTriangles(nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices)
 {
-    BuildFromIndexedTriangles<uint16_t>(bvh, verts, indices);
+    BuildFromIndexedTriangles<uint16_t>(*this, verts, indices);
 }
 
-void osc::BVH_BuildFromIndexedTriangles(BVH& bvh, nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices)
+void osc::BVH::buildFromIndexedTriangles(nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices)
 {
-    BuildFromIndexedTriangles<uint32_t>(bvh, verts, indices);
+    BuildFromIndexedTriangles<uint32_t>(*this, verts, indices);
 }
 
-std::optional<osc::BVHCollision> osc::BVH_GetClosestRayIndexedTriangleCollision(BVH const& bvh, nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices, Line const& line)
+std::optional<osc::BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision(nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices, Line const& line) const
 {
-    return GetClosestRayIndexedTriangleCollision<uint16_t>(bvh, verts, indices, line);
+    return GetClosestRayIndexedTriangleCollision<uint16_t>(*this, verts, indices, line);
 }
 
-std::optional<osc::BVHCollision> osc::BVH_GetClosestRayIndexedTriangleCollision(BVH const& bvh, nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices, Line const& line)
+std::optional<osc::BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision(nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices, Line const& line) const
 {
-    return GetClosestRayIndexedTriangleCollision<uint32_t>(bvh, verts, indices, line);
+    return GetClosestRayIndexedTriangleCollision<uint32_t>(*this, verts, indices, line);
 }
 
-void osc::BVH_BuildFromAABBs(BVH& bvh, nonstd::span<AABB const> aabbs)
+void osc::BVH::buildFromAABBs(nonstd::span<AABB const> aabbs)
 {
     // clear out any old data
-    bvh.clear();
+    clear();
 
     // build up prim list for each AABB (just copy the AABB)
-    bvh.prims.reserve(aabbs.size());  // good guess
+    prims.reserve(aabbs.size());  // good guess
     for (size_t i = 0; i < aabbs.size(); ++i)
     {
         if (!IsAPoint(aabbs[i]))
         {
-            bvh.prims.emplace_back(static_cast<int>(i), aabbs[i]);
+            prims.emplace_back(static_cast<int>(i), aabbs[i]);
         }
     }
 
-    if (!bvh.prims.empty())
+    if (!prims.empty())
     {
-        BVH_RecursiveBuild(bvh, 0, static_cast<int>(bvh.prims.size()));
+        BVH_RecursiveBuild(*this, 0, static_cast<int>(prims.size()));
     }
 }
 
-std::vector<osc::BVHCollision> osc::BVH_GetRayAABBCollisions(BVH const& bvh, Line const& ray)
+std::vector<osc::BVHCollision> osc::BVH::getRayAABBCollisions(Line const& ray) const
 {
     std::vector<osc::BVHCollision> rv;
 
-    if (bvh.nodes.empty())
+    if (nodes.empty())
     {
         return rv;
     }
 
-    if (bvh.prims.empty())
+    if (prims.empty())
     {
         return rv;
     }
 
-    BVH_GetRayAABBCollisionsRecursive(bvh, ray, 0, rv);
+    BVH_GetRayAABBCollisionsRecursive(*this, ray, 0, rv);
 
     return rv;
 }
 
-int32_t osc::BVH_GetMaxDepth(BVH const& bvh)
+int32_t osc::BVH::getMaxDepth() const
 {
     int32_t cur = 0;
     int32_t maxdepth = 0;
     std::stack<int32_t, std::vector<int32_t>> stack;
 
-    while (0 <= cur && cur < bvh.nodes.size())
+    while (0 <= cur && cur < nodes.size())
     {
-        if (bvh.nodes[cur].isLeaf())
+        if (nodes[cur].isLeaf())
         {
             // leaf node: compute its depth and continue traversal (if applicable)
 
@@ -459,7 +459,7 @@ int32_t osc::BVH_GetMaxDepth(BVH const& bvh)
                 // traverse up to a parent node and try the right-hand side
                 int32_t const next = stack.top();
                 stack.pop();
-                cur = next + bvh.nodes[next].getNumLhsNodes() + 1;
+                cur = next + nodes[next].getNumLhsNodes() + 1;
             }
         }
         else

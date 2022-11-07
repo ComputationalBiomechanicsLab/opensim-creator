@@ -6,8 +6,6 @@ namespace osc
 {
     struct RayCollision {
 
-        RayCollision() = default;
-
         RayCollision(float distance_, glm::vec3 position_) :
             distance{distance_},
             position{position_}

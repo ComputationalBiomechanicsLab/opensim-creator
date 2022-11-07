@@ -150,14 +150,14 @@ void osc::UpdateSceneBVH(nonstd::span<SceneDecoration const> sceneEls, BVH& bvh)
         aabbs.push_back(GetWorldspaceAABB(el));
     }
 
-    BVH_BuildFromAABBs(bvh, aabbs);
+    bvh.buildFromAABBs(aabbs);
 }
 
 // returns all collisions along a ray
 std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(BVH const& bvh, nonstd::span<SceneDecoration const> decorations, Line const& ray)
 {
     // use scene BVH to intersect the ray with the scene
-    std::vector<BVHCollision> const sceneCollisions = BVH_GetRayAABBCollisions(bvh, ray);
+    std::vector<BVHCollision> const sceneCollisions = bvh.getRayAABBCollisions(ray);
 
     // perform ray-triangle intersections tests on the scene hits
     std::vector<SceneCollision> rv;
@@ -185,9 +185,9 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(Mesh cons
     Line const modelspaceRay = InverseTransformLine(worldspaceRay, transform);
 
     MeshIndicesView const indices = mesh.getIndices();
-    std::optional<BVHCollision> maybeCollision = indices.isU16() ?
-        BVH_GetClosestRayIndexedTriangleCollision(mesh.getBVH(), mesh.getVerts(), indices.toU16Span(), modelspaceRay) :
-        BVH_GetClosestRayIndexedTriangleCollision(mesh.getBVH(), mesh.getVerts(), indices.toU32Span(), modelspaceRay);
+    std::optional<BVHCollision> const maybeCollision = indices.isU16() ?
+        mesh.getBVH().getClosestRayIndexedTriangleCollision(mesh.getVerts(), indices.toU16Span(), modelspaceRay) :
+        mesh.getBVH().getClosestRayIndexedTriangleCollision(mesh.getVerts(), indices.toU32Span(), modelspaceRay);
 
     if (maybeCollision)
     {

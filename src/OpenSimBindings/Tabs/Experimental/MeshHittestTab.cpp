@@ -82,8 +82,8 @@ public:
             {
                 MeshIndicesView const indices = m_Mesh.getIndices();
                 std::optional<BVHCollision> const maybeCollision = indices.isU16() ?
-                    BVH_GetClosestRayIndexedTriangleCollision(m_Mesh.getBVH(), m_Mesh.getVerts(), indices.toU16Span(), m_Ray) :
-                    BVH_GetClosestRayIndexedTriangleCollision(m_Mesh.getBVH(), m_Mesh.getVerts(), indices.toU32Span(), m_Ray);
+                    m_Mesh.getBVH().getClosestRayIndexedTriangleCollision(m_Mesh.getVerts(), indices.toU16Span(), m_Ray) :
+                    m_Mesh.getBVH().getClosestRayIndexedTriangleCollision(m_Mesh.getVerts(), indices.toU32Span(), m_Ray);
                 if (maybeCollision)
                 {
                     uint32_t index = m_Mesh.getIndices()[maybeCollision->id];
