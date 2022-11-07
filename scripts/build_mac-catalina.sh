@@ -134,7 +134,7 @@ cc --version
 c++ --version
 cmake --version
 make --version
-[[ ! -z ${OSC_BUILD_DOCS:+z} ]] sphinx-build --version  # required when building docs
+[[ ! -z ${OSC_BUILD_DOCS:+z} ]] && sphinx-build --version  # required when building docs
 
 
 if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
