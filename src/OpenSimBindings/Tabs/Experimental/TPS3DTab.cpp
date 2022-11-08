@@ -525,6 +525,18 @@ namespace
         return GetLandmarkPairs(doc.Source.Landmarks, doc.Destination.Landmarks);
     }
 
+    // action: try to undo the last change
+    void ActionUndo(osc::UndoRedoT<TPSDocument>& doc)
+    {
+        doc.undo();
+    }
+
+    // action: try to redo the last undone change
+    void ActionRedo(osc::UndoRedoT<TPSDocument>& doc)
+    {
+        doc.redo();
+    }
+
     // action: add a landmark to the source mesh
     void ActionAddLandmarkTo(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentIdentifier which, glm::vec3 const& pos)
     {
@@ -1298,6 +1310,39 @@ namespace
         std::shared_ptr<TPSTabSharedState> m_TabState;
     };
 
+    class TPS3DEditMenu final {
+    public:
+        TPS3DEditMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
+            m_TabState{std::move(tabState_)}
+        {
+        }
+
+        void draw()
+        {
+            if (ImGui::BeginMenu("Edit"))
+            {
+                drawContent();
+                ImGui::EndMenu();
+            }
+        }
+
+    private:
+
+        void drawContent()
+        {
+            if (ImGui::MenuItem("Undo", nullptr, nullptr, m_TabState->EditedDocument->canUndo()))
+            {
+                ActionUndo(*m_TabState->EditedDocument);
+            }
+            if (ImGui::MenuItem("Redo", nullptr, nullptr, m_TabState->EditedDocument->canRedo()))
+            {
+                ActionRedo(*m_TabState->EditedDocument);
+            }
+        }
+
+        std::shared_ptr<TPSTabSharedState> m_TabState;
+    };
+
     class TPS3DMainMenu final {
     public:
         explicit TPS3DMainMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
@@ -1308,11 +1353,13 @@ namespace
         void draw()
         {
             m_FileMenu.draw();
+            m_EditMenu.draw();
             m_AboutTab.draw();
         }
     private:
         std::shared_ptr<TPSTabSharedState> m_TabState;
         TPS3DFileMenu m_FileMenu{m_TabState};
+        TPS3DEditMenu m_EditMenu{m_TabState};
         osc::MainMenuAboutTab m_AboutTab;
     };
 }
