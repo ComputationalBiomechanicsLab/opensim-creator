@@ -229,12 +229,6 @@ private:
         }
         // else: the scene contains rim-highlighted geometry that may appear on screen
 
-        // configure the solid-colored rim highlights texture
-        RenderTextureDescriptor desc{params.dimensions};
-        desc.setAntialiasingLevel(params.samples);
-        desc.setColorFormat(RenderTextureFormat::RED);
-        EmplaceOrReformat(m_MaybeRimsTexture, desc);
-
         // the rims appear on the screen and are loosely bounded (in NDC) by the returned rect
         Rect& rimRectNDC = *maybeRimRectNDC;
 
@@ -256,6 +250,13 @@ private:
         // compute rim rectangle in texture coordinates
         Rect const rimRectUV = NdcRectToScreenspaceViewportRect(rimRectNDC, Rect{{}, {1.0f, 1.0f}});
 
+        // compute where the quad needs to eventually be drawn in the scene
+        Transform quadMeshToRimsQuad;
+        quadMeshToRimsQuad.position = {osc::Midpoint(rimRectNDC), 0.0f};
+        quadMeshToRimsQuad.scale = {0.5f * osc::Dimensions(rimRectNDC), 1.0f};
+
+        // rendering:
+
         // draw all selected geometry in a solid color
         for (SceneDecoration const& dec : decorations)
         {
@@ -269,7 +270,13 @@ private:
             }
         }
 
-        // render solid-color to a seperate texture
+        // configure the off-screen solid-colored texture
+        RenderTextureDescriptor desc{params.dimensions};
+        desc.setAntialiasingLevel(params.samples);
+        desc.setColorFormat(RenderTextureFormat::ARGB32);  // care: don't use RED: causes an explosion on some Intel machines (#418)
+        EmplaceOrReformat(m_MaybeRimsTexture, desc);
+
+        // render to the off-screen solid-colored texture
         glm::vec4 const originalBgColor = m_Camera.getBackgroundColor();
         m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
         m_Camera.swapTexture(m_MaybeRimsTexture);
@@ -277,19 +284,17 @@ private:
         m_Camera.swapTexture(m_MaybeRimsTexture);
         m_Camera.setBackgroundColor(originalBgColor);
 
-        // compute where the quad needs to be drawn in the scene
-        Transform quadMeshToRimsQuad;
-        quadMeshToRimsQuad.position = {osc::Midpoint(rimRectNDC), 0.0f};
-        quadMeshToRimsQuad.scale = {0.5f * osc::Dimensions(rimRectNDC), 1.0f};
-
-        // then add a quad to the scene render queue that samples from the seperate texture
-        // via an edge-detection kernel
+        // configure a material that draws the off-screen colored texture on-screen
+        //
+        // the off-screen texture is rendered as a quad via an edge-detection kernel
+        // that transforms the solid shapes into "rims"
         m_EdgeDetectorMaterial.setRenderTexture("uScreenTexture", *m_MaybeRimsTexture);
         m_EdgeDetectorMaterial.setVec4("uRimRgba", params.rimColor);
         m_EdgeDetectorMaterial.setVec2("uRimThickness", 0.5f*rimThicknessNDC);
         m_EdgeDetectorMaterial.setVec2("uTextureOffset", rimRectUV.p1);
         m_EdgeDetectorMaterial.setVec2("uTextureScale", osc::Dimensions(rimRectUV));
 
+        // return necessary information for rendering the rims
         return RimHighlights
         {
             m_QuadMesh,
