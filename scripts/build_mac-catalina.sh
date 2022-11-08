@@ -128,6 +128,9 @@ else
     set -----"
 fi
 
+echo "----- PATH -----"
+echo "${PATH}"
+echo "----- /PATH -----"
 
 echo "----- printing system (post-dependency install) info -----"
 cc --version
