@@ -19,6 +19,7 @@
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/OpenSimBindings/SimTKHelpers.hpp"
+#include "src/OpenSimBindings/Widgets/MainMenu.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
@@ -1257,6 +1258,22 @@ namespace
         std::string m_Label;
         std::shared_ptr<TPSTabSharedState> m_TabState;
     };
+
+    class TPS3DMainMenu final {
+    public:
+        explicit TPS3DMainMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
+            m_TabState{std::move(tabState_)}
+        {
+        }
+
+        void draw()
+        {
+            m_AboutTab.draw();
+        }
+    private:
+        std::shared_ptr<TPSTabSharedState> m_TabState;
+        osc::MainMenuAboutTab m_AboutTab;
+    };
 }
 
 // tab implementation
@@ -1332,6 +1349,7 @@ public:
 
     void onDrawMainMenu()
     {
+        m_MainMenu.draw();
     }
 
     void onDraw()
@@ -1359,6 +1377,7 @@ private:
     std::shared_ptr<TPSTabSharedState> m_TabState = std::make_shared<TPSTabSharedState>();
 
     // user-visible panels/bars
+    TPS3DMainMenu m_MainMenu{m_TabState};
     TopToolbar m_TopToolbar{"##TopToolBar", m_TabState};
     InputPanel m_SourcePanel{"Source Mesh", m_TabState, TPSDocumentIdentifier::Source};
     InputPanel m_DestPanel{"Destination Mesh", m_TabState, TPSDocumentIdentifier::Destination};
