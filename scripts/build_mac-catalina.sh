@@ -117,6 +117,7 @@ if [[ -z ${OSC_SKIP_BREW:+x} ]]; then
 
     # osc: docs dependencies
     [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && brew install python3
+    [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && pip3 install wheel
     [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && pip3 install -r docs/requirements.txt
 
     # ensure sphinx-build is available on this terminal's PATH
