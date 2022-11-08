@@ -1259,6 +1259,45 @@ namespace
         std::shared_ptr<TPSTabSharedState> m_TabState;
     };
 
+    class TPS3DFileMenu final {
+    public:
+        explicit TPS3DFileMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
+            m_TabState{std::move(tabState_)}
+        {
+        }
+
+        void draw()
+        {
+            if (ImGui::BeginMenu("File"))
+            {
+                drawContent();
+                ImGui::EndMenu();
+            }
+        }
+    private:
+        void drawContent()
+        {
+            if (ImGui::MenuItem("New Document"))
+            {
+                ActionCreateNewDocument(*m_TabState->EditedDocument);
+            }
+            if (ImGui::MenuItem("Load Source Mesh"))
+            {
+                ActionBrowseForNewMesh(*m_TabState->EditedDocument, TPSDocumentIdentifier::Source);
+            }
+            if (ImGui::MenuItem("Load Destination Mesh"))
+            {
+                ActionBrowseForNewMesh(*m_TabState->EditedDocument, TPSDocumentIdentifier::Destination);
+            }
+            if (ImGui::MenuItem("Save Landmarks to CSV"))
+            {
+                ActionSaveLandmarksToCSV(m_TabState->EditedDocument->getScratch());
+            }
+        }
+
+        std::shared_ptr<TPSTabSharedState> m_TabState;
+    };
+
     class TPS3DMainMenu final {
     public:
         explicit TPS3DMainMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
@@ -1268,10 +1307,12 @@ namespace
 
         void draw()
         {
+            m_FileMenu.draw();
             m_AboutTab.draw();
         }
     private:
         std::shared_ptr<TPSTabSharedState> m_TabState;
+        TPS3DFileMenu m_FileMenu{m_TabState};
         osc::MainMenuAboutTab m_AboutTab;
     };
 }
