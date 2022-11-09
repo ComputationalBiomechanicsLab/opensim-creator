@@ -539,12 +539,16 @@ namespace
         doc.redo();
     }
 
-    // action: add a landmark to the source mesh
-    void ActionAddLandmarkTo(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentIdentifier which, glm::vec3 const& pos)
+    // action: add a landmark to the source mesh and return its ID
+    std::string ActionAddLandmarkTo(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentIdentifier which, glm::vec3 const& pos)
     {
         TPSDocumentInput& input = UpdScratchInputOrThrow(doc, which);
-        input.Landmarks[std::to_string(input.Landmarks.size())] = pos;
+        std::string const id = std::to_string(input.Landmarks.size());
+
+        input.Landmarks[id] = pos;
         doc.commitScratch("added landmark");
+
+        return id;
     }
 
     // action: prompt the user to browse for a different source mesh
@@ -1026,11 +1030,13 @@ namespace
                 }
                 else if (meshCollision)
                 {
-                    ActionAddLandmarkTo(
+                    std::string const id = ActionAddLandmarkTo(
                         *m_State->EditedDocument,
                         m_DocumentIdentifier,
                         meshCollision->position
                     );
+                    m_State->UserSelection.clear();
+                    m_State->UserSelection.select(id);
                 }
             }
 
@@ -1425,7 +1431,7 @@ namespace
                 ImGui::SameLine();
                 if (m_TabState->PerFrameHover->MaybeSceneElementID)
                 {
-                    ImGui::TextDisabled("(left-click to select landmark %s)", m_TabState->PerFrameHover->MaybeSceneElementID->c_str());
+                    ImGui::TextDisabled("(left-click to select %s)", m_TabState->PerFrameHover->MaybeSceneElementID->c_str());
                 }
                 else
                 {
