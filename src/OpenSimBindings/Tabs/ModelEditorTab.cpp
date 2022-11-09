@@ -650,7 +650,8 @@ private:
             OSC_PERF("draw performance panel");
 
             m_PerfPanel.open();
-            bool state = m_PerfPanel.draw();
+            m_PerfPanel.draw();
+            bool const state = m_PerfPanel.isOpen();
 
             if (state != perfOldState)
             {

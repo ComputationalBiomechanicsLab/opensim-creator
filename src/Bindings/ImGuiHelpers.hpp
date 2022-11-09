@@ -26,7 +26,7 @@ namespace osc
     void ImGuiApplyDarkTheme();
 
     // updates a polar comera's rotation, position, etc. based on ImGui input
-    void UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, PolarPerspectiveCamera&);
+    bool UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, PolarPerspectiveCamera&);
     void UpdateEulerCameraFromImGuiUserInput(Camera&, glm::vec3& eulers);
 
     // returns the ImGui content region available in screenspace as a `Rect`

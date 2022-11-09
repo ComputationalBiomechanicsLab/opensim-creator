@@ -175,7 +175,7 @@ public:
         return m_Response;
     }
 
-    void implDraw() override
+    void implDrawContent() override
     {
         ImGui::Dummy({0.0f, 3.0f});
 

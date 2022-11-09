@@ -102,10 +102,16 @@ void osc::ImGuiApplyDarkTheme()
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 }
 
-void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::PolarPerspectiveCamera& camera)
+bool osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::PolarPerspectiveCamera& camera)
 {
+    bool modified = false;
+
     // handle mousewheel scrolling
-    camera.radius *= 1.0f - 0.1f*ImGui::GetIO().MouseWheel;
+    if (ImGui::GetIO().MouseWheel != 0.0f)
+    {
+        camera.radius *= 1.0f - 0.1f*ImGui::GetIO().MouseWheel;
+        modified = true;
+    }
 
     // these camera controls try to be the union of OpenSim GUI and Blender
     //
@@ -125,22 +131,24 @@ void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::Polar
 
     bool const leftDragging = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
     bool const middleDragging = ImGui::IsMouseDragging(ImGuiMouseButton_Middle);
-
     glm::vec2 const delta = ImGui::GetIO().MouseDelta;
 
-    if (leftDragging || middleDragging)
+    if (delta != glm::vec2{0.0f, 0.0f} && (leftDragging || middleDragging))
     {
         if (IsCtrlDown())
         {
             camera.pan(aspectRatio, delta/viewportDims);
+            modified = true;
         }
         else if (IsCtrlOrSuperDown())
         {
             camera.radius *= 1.0f + 4.0f*delta.y/viewportDims.y;
+            modified = true;
         }
         else
         {
             camera.drag(delta/viewportDims);
+            modified = true;
         }
 
     }
@@ -149,13 +157,21 @@ void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::Polar
         if (IsAltDown())
         {
             camera.radius *= 1.0f + 4.0f*delta.y/viewportDims.y;
+            modified = true;
         }
         else
         {
             camera.pan(aspectRatio, delta/viewportDims);
+            modified = true;
         }
     }
-    camera.rescaleZNearAndZFarBasedOnRadius();
+
+    if (modified)
+    {
+        camera.rescaleZNearAndZFarBasedOnRadius();
+    }
+
+    return modified;
 }
 
 void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, glm::vec3& eulers)

@@ -19,22 +19,22 @@ osc::NamedPanel::NamedPanel(std::string_view name, int imGuiWindowFlags) :
 {
 }
 
-bool osc::NamedPanel::isOpen() const
+bool osc::NamedPanel::implIsOpen() const
 {
     return osc::App::get().getConfig().getIsPanelEnabled(m_PanelName);
 }
 
-void osc::NamedPanel::open()
+void osc::NamedPanel::implOpen()
 {
     osc::App::upd().updConfig().setIsPanelEnabled(m_PanelName, true);
 }
 
-void osc::NamedPanel::close()
+void osc::NamedPanel::implClose()
 {
     osc::App::upd().updConfig().setIsPanelEnabled(m_PanelName, false);
 }
 
-void osc::NamedPanel::draw()
+void osc::NamedPanel::implDraw()
 {
     if (isOpen())
     {
@@ -43,7 +43,7 @@ void osc::NamedPanel::draw()
         if (ImGui::Begin(m_PanelName.c_str(), &v, m_PanelFlags))
         {
             implAfterImGuiBegin();
-            implDraw();
+            implDrawContent();
         }
         else
         {

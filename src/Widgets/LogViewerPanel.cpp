@@ -36,7 +36,7 @@ public:
     }
 
 private:
-    void implDraw() override
+    void implDrawContent() override
     {
         m_Viewer.draw();
     }
@@ -65,22 +65,22 @@ osc::LogViewerPanel::~LogViewerPanel() noexcept
     delete m_Impl;
 }
 
-bool osc::LogViewerPanel::isOpen() const
+bool osc::LogViewerPanel::implIsOpen() const
 {
     return m_Impl->isOpen();
 }
 
-void osc::LogViewerPanel::open()
+void osc::LogViewerPanel::implOpen()
 {
     m_Impl->open();
 }
 
-void osc::LogViewerPanel::close()
+void osc::LogViewerPanel::implClose()
 {
     m_Impl->close();
 }
 
-void osc::LogViewerPanel::draw()
+void osc::LogViewerPanel::implDraw()
 {
     m_Impl->draw();
 }

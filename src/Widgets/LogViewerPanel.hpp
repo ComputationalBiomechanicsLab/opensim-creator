@@ -1,10 +1,12 @@
 #pragma once
 
+#include "src/Widgets/VirtualPanel.hpp"
+
 #include <string_view>
 
 namespace osc
 {
-    class LogViewerPanel final {
+    class LogViewerPanel final : public VirtualPanel {
     public:
         LogViewerPanel(std::string_view panelName);
         LogViewerPanel(LogViewerPanel const&) = delete;
@@ -13,12 +15,12 @@ namespace osc
         LogViewerPanel& operator=(LogViewerPanel&&) noexcept;
         ~LogViewerPanel() noexcept;
 
-        bool isOpen() const;
-        void open();
-        void close();
-        void draw();
-
     private:
+        bool implIsOpen() const final;
+        void implOpen() final;
+        void implClose() final;
+        void implDraw() final;
+
         class Impl;
         Impl* m_Impl;
     };

@@ -3,6 +3,7 @@
 #include "src/Platform/App.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Perf.hpp"
+#include "src/Widgets/NamedPanel.hpp"
 
 #include <imgui.h>
 
@@ -23,37 +24,17 @@ static bool LexographicallyHighestLabel(osc::PerfMeasurement const& a, osc::Perf
     return a.getLabel() > b.getLabel();
 }
 
-class osc::PerfPanel::Impl final {
+class osc::PerfPanel::Impl final : public osc::NamedPanel {
 public:
 
     Impl(std::string_view panelName) :
-        m_PanelName{std::move(panelName)}
+        NamedPanel{std::move(panelName)}
     {
     }
 
-    void open()
+private:
+    void implDrawContent() final
     {
-        m_IsOpen = true;
-    }
-
-    void close()
-    {
-        m_IsOpen = false;
-    }
-
-    bool draw()
-    {
-        if (!m_IsOpen)
-        {
-            return false;
-        }
-
-        if (!ImGui::Begin(m_PanelName.c_str(), &m_IsOpen))
-        {
-            ImGui::End();
-            return false;
-        }
-
         ImGui::Columns(2);
         ImGui::TextUnformatted("FPS");
         ImGui::NextColumn();
@@ -127,16 +108,9 @@ public:
 
             ImGui::EndTable();
         }
-
-        ImGui::End();
-
-        return m_IsOpen;
     }
 
-private:
-    bool m_IsOpen = true;
     bool m_IsPaused = false;
-    std::string m_PanelName;
     std::vector<osc::PerfMeasurement> m_MeasurementBuffer;
 };
 
@@ -152,17 +126,22 @@ osc::PerfPanel::PerfPanel(PerfPanel&&) noexcept = default;
 osc::PerfPanel& osc::PerfPanel::operator=(PerfPanel&&) noexcept = default;
 osc::PerfPanel::~PerfPanel() = default;
 
-void osc::PerfPanel::open()
+bool osc::PerfPanel::implIsOpen() const
 {
-    m_Impl->open();
+    return m_Impl->isOpen();
 }
 
-void osc::PerfPanel::close()
+void osc::PerfPanel::implOpen()
+{
+    return m_Impl->open();
+}
+
+void osc::PerfPanel::implClose()
 {
     m_Impl->close();
 }
 
-bool osc::PerfPanel::draw()
+void osc::PerfPanel::implDraw()
 {
-    return m_Impl->draw();
+    m_Impl->draw();
 }

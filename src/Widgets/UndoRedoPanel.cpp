@@ -22,7 +22,7 @@ public:
     }
 
 private:
-    void implDraw() override
+    void implDrawContent() override
     {
         if (ImGui::Button("undo"))
         {
@@ -91,7 +91,22 @@ osc::UndoRedoPanel::~UndoRedoPanel() noexcept
     delete m_Impl;
 }
 
-void osc::UndoRedoPanel::draw()
+bool osc::UndoRedoPanel::implIsOpen() const
 {
-    m_Impl->draw();
+    return m_Impl->isOpen();
+}
+
+void osc::UndoRedoPanel::implOpen()
+{
+    return m_Impl->open();
+}
+
+void osc::UndoRedoPanel::implClose()
+{
+    return m_Impl->close();
+}
+
+void osc::UndoRedoPanel::implDraw()
+{
+    return m_Impl->draw();
 }

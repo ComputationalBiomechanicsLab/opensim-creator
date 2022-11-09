@@ -34,6 +34,7 @@
 #include "src/Widgets/RedoButton.hpp"
 #include "src/Widgets/UndoButton.hpp"
 #include "src/Widgets/UndoRedoPanel.hpp"
+#include "src/Widgets/VirtualPanel.hpp"
 
 #include <glm/mat3x4.hpp>
 #include <glm/vec2.hpp>
@@ -756,6 +757,34 @@ namespace
 // UI code that is specific to the TPS3D UI
 namespace
 {
+    struct TPSTabSharedState;
+
+    // type-erased constructor function for an in-UI ImGui panel
+    using PanelConstructor = std::function<std::shared_ptr<osc::VirtualPanel>(std::shared_ptr<TPSTabSharedState>)>;
+
+    // holds information for a user-toggleable panel
+    struct TPSUIPanel final {
+        TPSUIPanel(
+            std::string_view name_,
+            PanelConstructor constructor_,
+            bool isEnabledByDefault_) :
+
+            Name{std::move(name_)},
+            Constructor{std::move(constructor_)},
+            IsEnabledByDefault{std::move(isEnabledByDefault_)},
+            Instance{std::nullopt}
+        {
+        }
+
+        std::string Name;
+        PanelConstructor Constructor;
+        bool IsEnabledByDefault;
+        std::optional<std::shared_ptr<osc::VirtualPanel>> Instance;
+    };
+
+    // forward-declaration for a function that will list all available panels
+    std::vector<TPSUIPanel> GetAvailablePanels();
+
     // top-level tab state
     //
     // (shared by all panels)
@@ -804,6 +833,9 @@ namespace
 
         // updated once-per-frame with what the user's hovering
         std::optional<glm::vec3> PerFrameHover;
+
+        // available/active panels that the user can toggle via the `window` menu
+        std::vector<TPSUIPanel> Panels = GetAvailablePanels();
     };
 
     // append decorations that are common to all panels to the given output vector
@@ -829,11 +861,7 @@ namespace
         DrawXZGrid(out);
         DrawXZFloorLines(out, 100.0f);
     }
-}
 
-// ImGui-level datastructures (panels, etc.)
-namespace
-{
     // generic base class for the panels shown in the TPS3D tab
     class TPS3DTabPanel : public osc::NamedPanel {
     public:
@@ -851,9 +879,9 @@ namespace
     };
 
     // an "input" panel (i.e. source or destination mesh, before warping)
-    class InputPanel final : public TPS3DTabPanel {
+    class TPS3DInputPanel final : public TPS3DTabPanel {
     public:
-        InputPanel(
+        TPS3DInputPanel(
             std::string_view panelName_,
             std::shared_ptr<TPSTabSharedState> state_,
             TPSDocumentIdentifier documentIdentifier_) :
@@ -865,19 +893,15 @@ namespace
             OSC_ASSERT(m_State != nullptr && "the input panel requires a valid sharedState state");
         }
 
-        osc::PolarPerspectiveCamera const& getCamera() const
-        {
-            return m_Camera;
-        }
-
-        osc::PolarPerspectiveCamera& updCamera()
-        {
-            return m_Camera;
-        }
-
     private:
-        void implDraw() override
+        void implDrawContent() override
         {
+            // if cameras are linked together, ensure all cameras match the "base" camera
+            if (m_State->LinkCameras && m_Camera != m_State->LinkedCameraBase)
+            {
+                m_Camera = m_State->LinkedCameraBase;
+            }
+
             // compute UI stuff (render rect, mouse pos, etc.)
             osc::Rect const contentRect = osc::ContentRegionAvailScreenRect();
             glm::vec2 const contentRectDims = osc::Dimensions(contentRect);
@@ -895,7 +919,10 @@ namespace
             // update camera if user drags it around etc.
             if (htResult.isHovered)
             {
-                osc::UpdatePolarCameraFromImGuiUserInput(contentRectDims, m_Camera);
+                if (osc::UpdatePolarCameraFromImGuiUserInput(contentRectDims, m_Camera))
+                {
+                    m_State->LinkedCameraBase = m_Camera;  // reflects latest modification
+                }
             }
 
             // event: if something's hovered, propagate the information to the shared state
@@ -1000,29 +1027,25 @@ namespace
     };
 
     // a "result" panel (i.e. after applying a warp to the source)
-    class ResultPanel final : public TPS3DTabPanel {
+    class TPS3DResultPanel final : public TPS3DTabPanel {
     public:
 
-        ResultPanel(std::string_view panelName_, std::shared_ptr<TPSTabSharedState> state_) :
+        TPS3DResultPanel(std::string_view panelName_, std::shared_ptr<TPSTabSharedState> state_) :
             TPS3DTabPanel{std::move(panelName_)},
             m_State{std::move(state_)}
         {
             OSC_ASSERT(m_State != nullptr && "the input panel requires a valid sharedState state");
         }
 
-        osc::PolarPerspectiveCamera const& getCamera() const
-        {
-            return m_Camera;
-        }
-
-        osc::PolarPerspectiveCamera& updCamera()
-        {
-            return m_Camera;
-        }
-
     private:
-        void implDraw() override
+        void implDrawContent() override
         {
+            // if cameras are linked together, ensure all cameras match the "base" camera
+            if (m_State->LinkCameras && m_Camera != m_State->LinkedCameraBase)
+            {
+                m_Camera = m_State->LinkedCameraBase;
+            }
+
             // fill the entire available region with the render
             glm::vec2 const dims = ImGui::GetContentRegionAvail();
 
@@ -1033,7 +1056,10 @@ namespace
             // update camera if user drags it around etc.
             if (htResult.isHovered)
             {
-                osc::UpdatePolarCameraFromImGuiUserInput(dims, m_Camera);
+                if (osc::UpdatePolarCameraFromImGuiUserInput(dims, m_Camera))
+                {
+                    m_State->LinkedCameraBase = m_Camera;  // reflects latest modification
+                }
             }
 
             drawOverlays(htResult.rect);
@@ -1105,9 +1131,10 @@ namespace
         bool m_ShowDestinationMesh = false;
     };
 
-    class TopToolbar final {
+    // draws the top toolbar (bar containing icons for new, save, open, undo, redo, etc.)
+    class TPS3DToolbar final {
     public:
-        TopToolbar(
+        TPS3DToolbar(
             std::string_view label,
             std::shared_ptr<TPSTabSharedState> tabState_) :
 
@@ -1220,9 +1247,10 @@ namespace
         osc::RedoButton m_RedoButton{m_TabState->EditedDocument};
     };
 
-    class BottomToolBar final {
+    // draws the bottom status bar
+    class TPS3DStatusBar final {
     public:
-        BottomToolBar(
+        TPS3DStatusBar(
             std::string_view label,
             std::shared_ptr<TPSTabSharedState> tabState_) :
 
@@ -1271,6 +1299,7 @@ namespace
         std::shared_ptr<TPSTabSharedState> m_TabState;
     };
 
+    // draws the 'file' menu (a sub menu of the main menu)
     class TPS3DFileMenu final {
     public:
         explicit TPS3DFileMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
@@ -1310,6 +1339,7 @@ namespace
         std::shared_ptr<TPSTabSharedState> m_TabState;
     };
 
+    // draws the 'edit' menu (a sub menu of the main menu)
     class TPS3DEditMenu final {
     public:
         TPS3DEditMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
@@ -1343,6 +1373,47 @@ namespace
         std::shared_ptr<TPSTabSharedState> m_TabState;
     };
 
+    // draws the 'window' menu (a sub menu of the main menu)
+    class TPS3DWindowMenu final {
+    public:
+        TPS3DWindowMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
+            m_TabState{std::move(tabState_)}
+        {
+        }
+
+        void draw()
+        {
+            if (ImGui::BeginMenu("Window"))
+            {
+                drawContent();
+                ImGui::EndMenu();
+            }
+        }
+    private:
+        void drawContent()
+        {
+            for (TPSUIPanel& panel : m_TabState->Panels)
+            {
+                bool selected = panel.Instance.has_value();
+                if (ImGui::MenuItem(panel.Name.c_str(), nullptr, &selected))
+                {
+                    if (panel.Instance.has_value() && (*panel.Instance)->isOpen())
+                    {
+                        panel.Instance.reset();
+                    }
+                    else
+                    {
+                        panel.Instance = panel.Constructor(m_TabState);
+                        (*panel.Instance)->open();
+                    }
+                }
+            }
+        }
+
+        std::shared_ptr<TPSTabSharedState> m_TabState;
+    };
+
+    // draws the main menu content (contains multiple submenus: 'file', 'edit', 'about', etc.)
     class TPS3DMainMenu final {
     public:
         explicit TPS3DMainMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
@@ -1354,14 +1425,71 @@ namespace
         {
             m_FileMenu.draw();
             m_EditMenu.draw();
+            m_WindowMenu.draw();
             m_AboutTab.draw();
         }
     private:
         std::shared_ptr<TPSTabSharedState> m_TabState;
         TPS3DFileMenu m_FileMenu{m_TabState};
         TPS3DEditMenu m_EditMenu{m_TabState};
+        TPS3DWindowMenu m_WindowMenu{m_TabState};
         osc::MainMenuAboutTab m_AboutTab;
     };
+
+    std::vector<TPSUIPanel> GetAvailablePanels()
+    {
+        return
+        {
+            {
+                "Source Mesh",
+                [](std::shared_ptr<TPSTabSharedState> st)
+                {
+                    return std::make_shared<TPS3DInputPanel>("Source Mesh", std::move(st), TPSDocumentIdentifier::Source);
+                },
+                true,
+            },
+            {
+                "Destination Mesh",
+                [](std::shared_ptr<TPSTabSharedState> st)
+                {
+                    return std::make_shared<TPS3DInputPanel>("Destination Mesh", std::move(st), TPSDocumentIdentifier::Destination);
+                },
+                true,
+            },
+            {
+                "Result",
+                [](std::shared_ptr<TPSTabSharedState> st)
+                {
+                    return std::make_shared<TPS3DResultPanel>("Result", std::move(st));
+                },
+                true
+            },
+            {
+                "History",
+                [](std::shared_ptr<TPSTabSharedState> st)
+                {
+                    return std::make_shared<osc::UndoRedoPanel>("History", st->EditedDocument);
+                },
+                false,
+            },
+            {
+                "Log",
+                [](std::shared_ptr<TPSTabSharedState> st)
+                {
+                    return std::make_shared<osc::LogViewerPanel>("Log");
+                },
+                false,
+            },
+            {
+                "Performance",
+                [](std::shared_ptr<TPSTabSharedState> st)
+                {
+                    return std::make_shared<osc::PerfPanel>("Performance");
+                },
+                false,
+            },
+        };
+    }
 }
 
 // tab implementation
@@ -1372,6 +1500,16 @@ public:
     {
         OSC_ASSERT(m_Parent != nullptr);
         OSC_ASSERT(m_TabState != nullptr && "the tab state should be initialized by this point");
+
+        // initialize default-open tabs
+        for (TPSUIPanel& panel : m_TabState->Panels)
+        {
+            if (panel.IsEnabledByDefault)
+            {
+                panel.Instance = panel.Constructor(m_TabState);
+                (*panel.Instance)->open();
+            }
+        }
     }
 
     UID getID() const
@@ -1409,28 +1547,12 @@ public:
         // re-perform hover test each frame
         m_TabState->PerFrameHover.reset();
 
-        // if requested, lock cameras together
-        if (m_TabState->LinkCameras)
+        // garbage collect closed-panel instance data
+        for (TPSUIPanel& panel : m_TabState->Panels)
         {
-            osc::PolarPerspectiveCamera& baseCamera = m_TabState->LinkedCameraBase;
-
-            if (m_SourcePanel.getCamera() != baseCamera)
+            if (panel.Instance && !(*panel.Instance)->isOpen())
             {
-                baseCamera = m_SourcePanel.getCamera();
-                m_DestPanel.updCamera() = baseCamera;
-                m_ResultPanel.updCamera() = baseCamera;
-            }
-            else if (m_DestPanel.getCamera() != baseCamera)
-            {
-                baseCamera = m_DestPanel.getCamera();
-                m_SourcePanel.updCamera() = baseCamera;
-                m_ResultPanel.updCamera() = baseCamera;
-            }
-            else if (m_ResultPanel.getCamera() != baseCamera)
-            {
-                baseCamera = m_ResultPanel.getCamera();
-                m_SourcePanel.updCamera() = baseCamera;
-                m_DestPanel.updCamera() = baseCamera;
+                panel.Instance.reset();
             }
         }
     }
@@ -1445,13 +1567,14 @@ public:
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         m_TopToolbar.draw();
-        m_SourcePanel.draw();
-        m_DestPanel.draw();
-        m_ResultPanel.draw();
-        m_LogViewerPanel.draw();
-        m_PerfPanel.draw();
-        m_UndoRedoPanel.draw();
-        m_BottomToolbar.draw();
+        for (TPSUIPanel& panel : m_TabState->Panels)
+        {
+            if (panel.Instance)
+            {
+                (*panel.Instance)->draw();
+            }
+        }
+        m_StatusBar.draw();
     }
 
 private:
@@ -1464,16 +1587,10 @@ private:
     // top-level state that all panels can potentially access
     std::shared_ptr<TPSTabSharedState> m_TabState = std::make_shared<TPSTabSharedState>();
 
-    // user-visible panels/bars
+    // not-user-toggleable widgets
     TPS3DMainMenu m_MainMenu{m_TabState};
-    TopToolbar m_TopToolbar{"##TopToolBar", m_TabState};
-    InputPanel m_SourcePanel{"Source Mesh", m_TabState, TPSDocumentIdentifier::Source};
-    InputPanel m_DestPanel{"Destination Mesh", m_TabState, TPSDocumentIdentifier::Destination};
-    ResultPanel m_ResultPanel{"Result", m_TabState};
-    UndoRedoPanel m_UndoRedoPanel{"History", m_TabState->EditedDocument};
-    LogViewerPanel m_LogViewerPanel{"Log"};
-    PerfPanel m_PerfPanel{"Performance"};
-    BottomToolBar m_BottomToolbar{"##BottomToolBar", m_TabState};
+    TPS3DToolbar m_TopToolbar{"##TPS3DToolbar", m_TabState};
+    TPS3DStatusBar m_StatusBar{"##TPS3DStatusBar", m_TabState};
 };
 
 

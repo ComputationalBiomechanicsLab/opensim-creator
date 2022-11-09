@@ -1,11 +1,13 @@
 #pragma once
 
+#include "src/Widgets/VirtualPanel.hpp"
+
 #include <memory>
 #include <string_view>
 
 namespace osc
 {
-    class PerfPanel final {
+    class PerfPanel final : public VirtualPanel {
     public:
         PerfPanel(std::string_view panelName);
         PerfPanel(PerfPanel const&) = delete;
@@ -14,11 +16,12 @@ namespace osc
         PerfPanel& operator=(PerfPanel&&) noexcept;
         ~PerfPanel();
 
-        void open();
-        void close();
-        bool draw();
-
     private:
+        bool implIsOpen() const final;
+        void implOpen() final;
+        void implClose() final;
+        void implDraw() final;
+
         class Impl;
         std::unique_ptr<Impl> m_Impl;
     };
