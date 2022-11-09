@@ -57,6 +57,7 @@
 #include <iostream>
 #include <limits>
 #include <optional>
+#include <unordered_set>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -447,8 +448,8 @@ namespace
 
     // returns all pair-able landmarks between the `src` and `dest`
     std::vector<LandmarkPair3D> GetLandmarkPairs(
-        std::unordered_map<size_t, glm::vec3> const& src,
-        std::unordered_map<size_t, glm::vec3> const& dest)
+        std::unordered_map<std::string, glm::vec3> const& src,
+        std::unordered_map<std::string, glm::vec3> const& dest)
     {
         std::vector<LandmarkPair3D> rv;
         rv.reserve(src.size());  // probably a good guess
@@ -478,7 +479,7 @@ namespace
         }
 
         osc::Mesh Mesh;
-        std::unordered_map<size_t, glm::vec3> Landmarks;
+        std::unordered_map<std::string, glm::vec3> Landmarks;
     };
 
     // the whole TPS document that the user is editing at any given moment
@@ -542,7 +543,7 @@ namespace
     void ActionAddLandmarkTo(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentIdentifier which, glm::vec3 const& pos)
     {
         TPSDocumentInput& input = UpdScratchInputOrThrow(doc, which);
-        input.Landmarks[input.Landmarks.size()] = pos;
+        input.Landmarks[std::to_string(input.Landmarks.size())] = pos;
         doc.commitScratch("added landmark");
     }
 
@@ -584,6 +585,24 @@ namespace
         doc.updScratch().Source.Landmarks.clear();
         doc.updScratch().Destination.Landmarks.clear();
         doc.commitScratch("cleared all landmarks");
+    }
+
+    void ActionDeleteLandmarksByID(
+        osc::UndoRedoT<TPSDocument>& doc,
+        TPSDocumentIdentifier which,
+        std::unordered_set<std::string> const& landmarkIDs)
+    {
+        if (landmarkIDs.empty())
+        {
+            return;
+        }
+
+        TPSDocumentInput& input = UpdScratchInputOrThrow(doc, which);
+        for (std::string const& s : landmarkIDs)
+        {
+            input.Landmarks.erase(s);
+        }
+        doc.commitScratch("deleted landmarks");
     }
 
     // action: save all pairable landmarks in the TPS document to a user-specified CSV file
@@ -782,8 +801,56 @@ namespace
         std::optional<std::shared_ptr<osc::VirtualPanel>> Instance;
     };
 
-    // forward-declaration for a function that will list all available panels
+    // forward-declaration for a function that will return all available panels
     std::vector<TPSUIPanel> GetAvailablePanels();
+
+    // holds information about the user's current mouse hover
+    struct TPSTabHover final {
+        explicit TPSTabHover(glm::vec3 const& worldspaceLocation_) :
+            MaybeSceneElementID{std::nullopt},
+            WorldspaceLocation{worldspaceLocation_}
+        {
+        }
+
+        TPSTabHover(
+            std::string sceneElementID_,
+            glm::vec3 const& worldspaceLocation_) :
+
+            MaybeSceneElementID{std::move(sceneElementID_)},
+            WorldspaceLocation{worldspaceLocation_}
+        {
+        }
+
+        std::optional<std::string> MaybeSceneElementID;
+        glm::vec3 WorldspaceLocation;
+    };
+
+    // holds information about the user's current selection
+    struct TPSTabSelection final {
+
+        void clear()
+        {
+            m_SelectedSceneElements.clear();
+        }
+
+        void select(std::string const& id)
+        {
+            m_SelectedSceneElements.insert(id);
+        }
+
+        bool contains(std::string const& id) const
+        {
+            return m_SelectedSceneElements.find(id) != m_SelectedSceneElements.end();
+        }
+
+        std::unordered_set<std::string> const& getUnderlyingSet() const
+        {
+            return m_SelectedSceneElements;
+        }
+
+    private:
+        std::unordered_set<std::string> m_SelectedSceneElements;
+    };
 
     // top-level tab state
     //
@@ -831,8 +898,11 @@ namespace
         // color of any in-scene landmark spheres
         glm::vec4 LandmarkColor = {1.0f, 0.0f, 0.0f, 1.0f};
 
-        // updated once-per-frame with what the user's hovering
-        std::optional<glm::vec3> PerFrameHover;
+        // current user selection
+        TPSTabSelection UserSelection;
+
+        // current user hover: reset per-frame
+        std::optional<TPSTabHover> PerFrameHover;
 
         // available/active panels that the user can toggle via the `window` menu
         std::vector<TPSUIPanel> Panels = GetAvailablePanels();
@@ -896,28 +966,42 @@ namespace
     private:
         void implDrawContent() override
         {
+            // compute UI stuff (render rect, mouse pos, etc.)
+            osc::Rect const contentRect = osc::ContentRegionAvailScreenRect();
+            glm::vec2 const contentRectDims = osc::Dimensions(contentRect);
+            glm::vec2 const mousePos = ImGui::GetMousePos();
+            osc::Line const cameraRay = m_Camera.unprojectTopLeftPosToWorldRay(mousePos - contentRect.p1, osc::Dimensions(contentRect));
+            bool const renderHovered = osc::IsPointInRect(contentRect, mousePos);
+
+            // mesh hittest: compute whether the user is hovering over the mesh (affects rendering)
+            std::optional<osc::RayCollision> const meshCollision = renderHovered ?
+                osc::GetClosestWorldspaceRayCollision(m_State->getInputMesh(m_DocumentIdentifier), osc::Transform{}, cameraRay) :
+                std::nullopt;
+
+            // landmark hittest: compute whether the user is hovering over a landmark
+            std::optional<TPSTabHover> landmarkCollision = renderHovered ?
+                getMouseLandmarkCollisions(cameraRay) :
+                std::nullopt;
+
+            // hover state:  update central hover state
+            if (landmarkCollision)
+            {
+                // update central state to tell it that there's a new hover
+                m_State->PerFrameHover = landmarkCollision;
+            }
+            else if (meshCollision)
+            {
+                m_State->PerFrameHover.emplace(meshCollision->position);
+            }
+
             // if cameras are linked together, ensure all cameras match the "base" camera
             if (m_State->LinkCameras && m_Camera != m_State->LinkedCameraBase)
             {
                 m_Camera = m_State->LinkedCameraBase;
             }
 
-            // compute UI stuff (render rect, mouse pos, etc.)
-            osc::Rect const contentRect = osc::ContentRegionAvailScreenRect();
-            glm::vec2 const contentRectDims = osc::Dimensions(contentRect);
-            glm::vec2 const mousePos = ImGui::GetMousePos();
-
-            // perform hittest: do it before rendering, because it affects what's rendered
-            std::optional<osc::RayCollision> const maybeCollision = osc::IsPointInRect(contentRect, mousePos) ?
-                RaycastMesh(m_Camera, m_State->getInputMesh(m_DocumentIdentifier), contentRect, mousePos) :
-                std::nullopt;
-
-            // render: draw the scene into the content rect and hittest it
-            osc::RenderTexture& renderTexture = renderScene(contentRectDims, maybeCollision);
-            osc::ImGuiImageHittestResult const htResult = osc::DrawTextureAsImGuiImageAndHittest(renderTexture);
-
             // update camera if user drags it around etc.
-            if (htResult.isHovered)
+            if (renderHovered)
             {
                 if (osc::UpdatePolarCameraFromImGuiUserInput(contentRectDims, m_Camera))
                 {
@@ -925,24 +1009,60 @@ namespace
                 }
             }
 
-            // event: if something's hovered, propagate the information to the shared state
-            if (maybeCollision)
+            // render: draw the scene into the content rect and hittest it
+            osc::RenderTexture& renderTexture = renderScene(contentRectDims, meshCollision, landmarkCollision);
+            osc::ImGuiImageHittestResult const htResult = osc::DrawTextureAsImGuiImageAndHittest(renderTexture);
+
+            // event: if the user clicks and something is hovered, select it; otherwise, add a landmark
+            if (htResult.isLeftClickReleasedWithoutDragging)
             {
-                m_State->PerFrameHover = maybeCollision->position;
+                if (landmarkCollision && landmarkCollision->MaybeSceneElementID)
+                {
+                    if (!osc::IsShiftDown())
+                    {
+                        m_State->UserSelection.clear();
+                    }
+                    m_State->UserSelection.select(*landmarkCollision->MaybeSceneElementID);
+                }
+                else if (meshCollision)
+                {
+                    ActionAddLandmarkTo(
+                        *m_State->EditedDocument,
+                        m_DocumentIdentifier,
+                        meshCollision->position
+                    );
+                }
             }
 
-            // event: if the user left-clicks on the mesh, add a landmark there
-            if (maybeCollision && htResult.isLeftClickReleasedWithoutDragging)
+            if (htResult.isHovered && osc::IsAnyKeyPressed({SDL_SCANCODE_DELETE, SDL_SCANCODE_BACKSPACE}))
             {
-                ActionAddLandmarkTo(
+                ActionDeleteLandmarksByID(
                     *m_State->EditedDocument,
                     m_DocumentIdentifier,
-                    maybeCollision->position
+                    m_State->UserSelection.getUnderlyingSet()
                 );
+                m_State->UserSelection.clear();
             }
 
             // draw any 2D ImGui overlays
             drawOverlays(htResult.rect);
+        }
+
+        std::optional<TPSTabHover> getMouseLandmarkCollisions(osc::Line const& cameraRay) const
+        {
+            std::optional<TPSTabHover> rv;
+            for (auto const& [id, pos] : m_State->getInputDocument(m_DocumentIdentifier).Landmarks)
+            {
+                std::optional<osc::RayCollision> const coll = osc::GetRayCollisionSphere(cameraRay, osc::Sphere{pos, m_LandmarkRadius});
+                if (coll)
+                {
+                    if (!rv || glm::length(rv->WorldspaceLocation - cameraRay.origin) > coll->distance)
+                    {
+                        rv.emplace(id, pos);
+                    }
+                }
+            }
+            return rv;
         }
 
         void drawOverlays(osc::Rect const& renderRect)
@@ -976,15 +1096,18 @@ namespace
         }
 
         // renders this panel's 3D scene to a texture
-        osc::RenderTexture& renderScene(glm::vec2 dims, std::optional<osc::RayCollision> const& maybeCollision)
+        osc::RenderTexture& renderScene(
+            glm::vec2 dims,
+            std::optional<osc::RayCollision> const& maybeMeshCollision,
+            std::optional<TPSTabHover> const& maybeLandmarkCollision)
         {
             osc::SceneRendererParams const params = CalcRenderParams(m_Camera, dims);
-            std::vector<osc::SceneDecoration> const decorations = generateDecorations(maybeCollision);
+            std::vector<osc::SceneDecoration> const decorations = generateDecorations(maybeMeshCollision, maybeLandmarkCollision);
             return m_CachedRenderer.draw(decorations, params);
         }
 
         // returns a fresh list of decorations for this panels
-        std::vector<osc::SceneDecoration> generateDecorations(std::optional<osc::RayCollision> const& maybeCollision) const
+        std::vector<osc::SceneDecoration> generateDecorations(std::optional<osc::RayCollision> const& maybeMeshCollision, std::optional<TPSTabHover> const& maybeLandmarkCollision) const
         {
             // generate in-scene 3D decorations
             std::vector<osc::SceneDecoration> decorations;
@@ -999,15 +1122,28 @@ namespace
                 transform.scale *= m_LandmarkRadius;
                 transform.position = pos;
 
-                decorations.emplace_back(m_State->LandmarkSphere, transform, m_State->LandmarkColor);
+                osc::SceneDecoration& decoration = decorations.emplace_back(m_State->LandmarkSphere, transform, m_State->LandmarkColor);
+
+                if (m_State->UserSelection.contains(id))
+                {
+                    decoration.color += glm::vec4{0.25f, 0.25f, 0.25f, 0.0f};
+                    decoration.color = glm::clamp(decoration.color, glm::vec4{0.0f}, glm::vec4{1.0f});
+                    decoration.flags = osc::SceneDecorationFlags_IsSelected;
+                }
+                else if (m_State->PerFrameHover && m_State->PerFrameHover->MaybeSceneElementID == id)
+                {
+                    decoration.color += glm::vec4{0.15f, 0.15f, 0.15f, 0.0f};
+                    decoration.color = glm::clamp(decoration.color, glm::vec4{0.0f}, glm::vec4{1.0f});
+                    decoration.flags = osc::SceneDecorationFlags_IsHovered;
+                }
             }
 
             // if applicable, show mesh collision as faded landmark as a placement hint for user
-            if (maybeCollision)
+            if (maybeMeshCollision && !maybeLandmarkCollision)
             {
                 osc::Transform transform{};
                 transform.scale *= m_LandmarkRadius;
-                transform.position = maybeCollision->position;
+                transform.position = maybeMeshCollision->position;
 
                 glm::vec4 color = m_State->LandmarkColor;
                 color.a *= 0.25f;
@@ -1273,7 +1409,7 @@ namespace
         {
             if (m_TabState->PerFrameHover)
             {
-                glm::vec3 const pos = *m_TabState->PerFrameHover;
+                glm::vec3 const pos = m_TabState->PerFrameHover->WorldspaceLocation;
                 ImGui::TextUnformatted("(");
                 ImGui::SameLine();
                 for (int i = 0; i < 3; ++i)
@@ -1287,7 +1423,14 @@ namespace
                 }
                 ImGui::TextUnformatted(")");
                 ImGui::SameLine();
-                ImGui::TextDisabled("(left-click to add a landmark)");
+                if (m_TabState->PerFrameHover->MaybeSceneElementID)
+                {
+                    ImGui::TextDisabled("(left-click to select landmark %s)", m_TabState->PerFrameHover->MaybeSceneElementID->c_str());
+                }
+                else
+                {
+                    ImGui::TextDisabled("(left-click to add a landmark)");
+                }
             }
             else
             {
