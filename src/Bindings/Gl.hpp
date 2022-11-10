@@ -21,14 +21,15 @@ namespace gl
     // an exception that specifically means something has gone wrong in
     // the OpenGL API
     class OpenGlException final : public std::exception {
-        std::string m_Msg;
-
     public:
         OpenGlException(std::string s) : m_Msg{std::move(s)}
         {
         }
 
         char const* what() const noexcept override;
+
+    private:
+        std::string m_Msg;
     };
 
     // a moveable handle to an OpenGL shader
@@ -212,7 +213,7 @@ namespace gl
     //     *throws on error
     [[nodiscard]] inline GLint GetUniformLocation(Program const& p, GLchar const* name)
     {
-        GLint handle = glGetUniformLocation(p.get(), name);
+        GLint const handle = glGetUniformLocation(p.get(), name);
         if (handle == -1)
         {
             throw OpenGlException{std::string{"glGetUniformLocation() failed: cannot get "} + name};
@@ -222,7 +223,7 @@ namespace gl
 
     [[nodiscard]] inline GLint GetAttribLocation(Program const& p, GLchar const* name)
     {
-        GLint handle = glGetAttribLocation(p.get(), name);
+        GLint const handle = glGetAttribLocation(p.get(), name);
         if (handle == -1)
         {
             throw OpenGlException{std::string{"glGetAttribLocation() failed: cannot get "} + name};
@@ -278,22 +279,29 @@ namespace gl
     // particular location in a linked OpenGL program
     template<typename TGlsl>
     class Uniform_ {
-        GLint m_UniformLocation;
-
     public:
-        constexpr Uniform_(GLint _location) noexcept : m_UniformLocation{_location} {
+        constexpr Uniform_(GLint _location) noexcept :
+            m_UniformLocation{_location}
+        {
         }
 
-        Uniform_(Program const& p, GLchar const* name) : m_UniformLocation{GetUniformLocation(p, name)} {
+        Uniform_(Program const& p, GLchar const* name) :
+            m_UniformLocation{GetUniformLocation(p, name)}
+        {
         }
 
-        [[nodiscard]] constexpr GLuint get() const noexcept {
+        [[nodiscard]] constexpr GLuint get() const noexcept
+        {
             return static_cast<GLuint>(m_UniformLocation);
         }
 
-        [[nodiscard]] constexpr GLint geti() const noexcept {
+        [[nodiscard]] constexpr GLint geti() const noexcept
+        {
             return static_cast<GLint>(m_UniformLocation);
         }
+
+    private:
+        GLint m_UniformLocation;
     };
 
     class UniformFloat : public Uniform_<glsl::float_> {
@@ -331,42 +339,50 @@ namespace gl
     };
 
     // set the value of a `float` uniform in the currently bound program
-    inline void Uniform(UniformFloat& u, GLfloat value) noexcept {
+    inline void Uniform(UniformFloat& u, GLfloat value) noexcept
+    {
         glUniform1f(u.geti(), value);
     }
 
     // set the value of an `int` uniform in the currently bound program
-    inline void Uniform(UniformInt& u, GLint value) noexcept {
+    inline void Uniform(UniformInt& u, GLint value) noexcept
+    {
         glUniform1i(u.geti(), value);
     }
 
     // set the value of an array-like uniform `int`
-    inline void Uniform(UniformInt const& u, GLsizei n, GLint const* data) noexcept {
+    inline void Uniform(UniformInt const& u, GLsizei n, GLint const* data) noexcept
+    {
         glUniform1iv(u.geti(), n, data);
     }
 
     // set the value of a `vec3` uniform
-    inline void Uniform(UniformVec3& u, float x, float y, float z) noexcept {
+    inline void Uniform(UniformVec3& u, float x, float y, float z) noexcept
+    {
         glUniform3f(u.geti(), x, y, z);
     }
 
     // set the value of a `vec3` uniform
-    inline void Uniform(UniformVec3& u, float const vs[3]) noexcept {
+    inline void Uniform(UniformVec3& u, float const vs[3]) noexcept
+    {
         glUniform3fv(u.geti(), 1, vs);
     }
 
     // set the value of a `sampler2D` uniform
-    inline void Uniform(UniformSampler2D& u, GLint v) noexcept {
+    inline void Uniform(UniformSampler2D& u, GLint v) noexcept
+    {
         glUniform1i(u.geti(), v);
     }
 
     // set the value of an `sampler2DMS` uniform
-    inline void Uniform(UniformSampler2DMS& u, GLint v) noexcept {
+    inline void Uniform(UniformSampler2DMS& u, GLint v) noexcept
+    {
         glUniform1i(u.geti(), v);
     }
 
     // set the value of a `bool` uniform
-    inline void Uniform(UniformBool& u, bool v) noexcept {
+    inline void Uniform(UniformBool& u, bool v) noexcept
+    {
         glUniform1i(u.geti(), v);
     }
 
@@ -384,17 +400,23 @@ namespace gl
         static_assert(N >= 0);
 
     public:
-        constexpr UniformArray(GLint location) noexcept : Uniform_<TGlsl>{location} {
+        constexpr UniformArray(GLint location) noexcept :
+            Uniform_<TGlsl>{location}
+        {
         }
 
-        UniformArray(Program const& p, GLchar const* name) : Uniform_<TGlsl>{p, name} {
+        UniformArray(Program const& p, GLchar const* name) :
+            Uniform_<TGlsl>{p, name}
+        {
         }
 
-        [[nodiscard]] constexpr size_t size() const noexcept {
+        [[nodiscard]] constexpr size_t size() const noexcept
+        {
             return N;
         }
 
-        [[nodiscard]] constexpr int sizei() const noexcept {
+        [[nodiscard]] constexpr int sizei() const noexcept
+        {
             return static_cast<int>(N);
         }
     };
@@ -403,24 +425,31 @@ namespace gl
     // location in a linked OpenGL program
     template<typename TGlsl>
     class Attribute {
-        GLint m_AttributeLocation;
-
     public:
         using glsl_type = TGlsl;
 
-        constexpr Attribute(GLint location) noexcept : m_AttributeLocation{location} {
+        constexpr Attribute(GLint location) noexcept :
+            m_AttributeLocation{location}
+        {
         }
 
-        Attribute(Program const& p, GLchar const* name) : m_AttributeLocation{GetAttribLocation(p, name)} {
+        Attribute(Program const& p, GLchar const* name) :
+            m_AttributeLocation{GetAttribLocation(p, name)}
+        {
         }
 
-        [[nodiscard]] constexpr GLuint get() const noexcept {
+        [[nodiscard]] constexpr GLuint get() const noexcept
+        {
             return static_cast<GLuint>(m_AttributeLocation);
         }
 
-        [[nodiscard]] constexpr GLint geti() const noexcept {
+        [[nodiscard]] constexpr GLint geti() const noexcept
+        {
             return static_cast<GLint>(m_AttributeLocation);
         }
+
+    private:
+        GLint m_AttributeLocation;
     };
 
     // utility defs for attributes typically used in downstream code
@@ -442,20 +471,38 @@ namespace gl
     inline void VertexAttribPointer(Attribute<TGlsl> const& attr,
                                     bool normalized,
                                     size_t stride,
-                                    size_t offset) noexcept {
-
+                                    size_t offset) noexcept
+    {
         static_assert(TGlsl::size <= 4 || TGlsl::type == GL_FLOAT);
 
-        GLboolean normgl = normalized ? GL_TRUE : GL_FALSE;
-        GLsizei stridegl = static_cast<GLsizei>(stride);
-        void* offsetgl = reinterpret_cast<void*>(offset);
+        GLboolean const normgl = normalized ? GL_TRUE : GL_FALSE;
+        GLsizei const stridegl = static_cast<GLsizei>(stride);
+        void const* const offsetgl = reinterpret_cast<void*>(offset);
 
-        if constexpr (TGlsl::size <= 4) {
-            glVertexAttribPointer(attr.get(), TGlsl::size, SourceType, normgl, stridegl, offsetgl);
-        } else if constexpr (SourceType == GL_FLOAT) {
-            for (unsigned i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i) {
-                auto off = reinterpret_cast<void*>(offset + (i * TGlsl::elementsPerLocation * sizeof(float)));
-                glVertexAttribPointer(attr.get() + i, TGlsl::elementsPerLocation, SourceType, normgl, stridegl, off);
+        if constexpr (TGlsl::size <= 4)
+        {
+            glVertexAttribPointer(
+                attr.get(),
+                TGlsl::size,
+                SourceType,
+                normgl,
+                stridegl,
+                offsetgl
+            );
+        }
+        else if constexpr (SourceType == GL_FLOAT)
+        {
+            for (unsigned i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i)
+            {
+                void* off = reinterpret_cast<void*>(offset + (i * TGlsl::elementsPerLocation * sizeof(float)));
+                glVertexAttribPointer(
+                    attr.get() + i,
+                    TGlsl::elementsPerLocation,
+                    SourceType,
+                    normgl,
+                    stridegl,
+                    off
+                );
             }
         }
 
@@ -468,13 +515,18 @@ namespace gl
     // this is a higher-level version of `glEnableVertexAttribArray`, because it
     // also "magically" handles attributes that span multiple locations (e.g. mat4)
     template<typename TGlsl>
-    inline void EnableVertexAttribArray(Attribute<TGlsl> const& loc) noexcept {
+    inline void EnableVertexAttribArray(Attribute<TGlsl> const& loc) noexcept
+    {
         static_assert(TGlsl::size <= 4 || TGlsl::type == GL_FLOAT);
 
-        if constexpr (TGlsl::size <= 4) {
+        if constexpr (TGlsl::size <= 4)
+        {
             glEnableVertexAttribArray(loc.get());
-        } else if constexpr (TGlsl::type == GL_FLOAT) {
-            for (unsigned i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i) {
+        }
+        else if constexpr (TGlsl::type == GL_FLOAT)
+        {
+            for (unsigned i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i)
+            {
                 glEnableVertexAttribArray(loc.get() + i);
             }
         }
@@ -483,13 +535,18 @@ namespace gl
     }
 
     template<typename TGlsl>
-    inline void DisableVertexAttribArray(Attribute<TGlsl> const& loc) noexcept {
+    inline void DisableVertexAttribArray(Attribute<TGlsl> const& loc) noexcept
+    {
         static_assert(TGlsl::size <= 4 || TGlsl::type == GL_FLOAT);
 
-        if constexpr (TGlsl::size <= 4) {
+        if constexpr (TGlsl::size <= 4)
+        {
             glDisableVertexAttribArray(loc.get());
-        } else if constexpr (TGlsl::type == GL_FLOAT) {
-            for (unsigned i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i) {
+        }
+        else if constexpr (TGlsl::type == GL_FLOAT)
+        {
+            for (unsigned i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i)
+            {
                 glDisableVertexAttribArray(loc.get() + i);
             }
         }
@@ -503,13 +560,18 @@ namespace gl
     // this is a higher-level version of `glVertexAttribDivisor`, because it
     // also "magically" handles attributes that span multiple locations (e.g. mat4)
     template<typename TGlsl>
-    inline void VertexAttribDivisor(Attribute<TGlsl> const& loc, GLuint divisor) noexcept {
+    inline void VertexAttribDivisor(Attribute<TGlsl> const& loc, GLuint divisor) noexcept
+    {
         static_assert(TGlsl::size <= 4 || TGlsl::type == GL_FLOAT);
 
-        if constexpr (TGlsl::size <= 4) {
+        if constexpr (TGlsl::size <= 4)
+        {
             glVertexAttribDivisor(loc.get(), divisor);
-        } else if constexpr (TGlsl::type == GL_FLOAT) {
-            for (unsigned i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i) {
+        }
+        else if constexpr (TGlsl::type == GL_FLOAT)
+        {
+            for (unsigned i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i)
+            {
                 glVertexAttribDivisor(loc.get() + i, divisor);
             }
         }
@@ -537,7 +599,8 @@ namespace gl
 
         BufferHandle& operator=(BufferHandle const&) = delete;
 
-        BufferHandle& operator=(BufferHandle&& tmp) noexcept {
+        BufferHandle& operator=(BufferHandle&& tmp) noexcept
+        {
             std::swap(m_BufferHandle, tmp.m_BufferHandle);
             return *this;
         }
@@ -570,21 +633,25 @@ namespace gl
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindBuffer.xhtml
-    inline void BindBuffer(GLenum target, BufferHandle const& handle) noexcept {
+    inline void BindBuffer(GLenum target, BufferHandle const& handle) noexcept
+    {
         glBindBuffer(target, handle.get());
     }
 
     template<GLenum TBuffer>
-    inline void BindBuffer(TypedBufferHandle<TBuffer> const& handle) noexcept {
+    inline void BindBuffer(TypedBufferHandle<TBuffer> const& handle) noexcept
+    {
         glBindBuffer(TBuffer, handle.get());
     }
 
     template<GLenum TBuffer>
-    inline void UnbindBuffer(TypedBufferHandle<TBuffer> const&) noexcept {
+    inline void UnbindBuffer(TypedBufferHandle<TBuffer> const&) noexcept
+    {
         glBindBuffer(TBuffer, 0);
     }
 
-    inline void BufferData(GLenum target, GLsizeiptr size, const void* data, GLenum usage) noexcept {
+    inline void BufferData(GLenum target, GLsizeiptr size, const void* data, GLenum usage) noexcept
+    {
         glBufferData(target, size, data, usage);
     }
 
@@ -598,9 +665,6 @@ namespace gl
     // data transfers onto the GPU
     template<typename T, GLenum TBuffer, GLenum Usage>
     class Buffer : public TypedBufferHandle<TBuffer> {
-        using size_type = uint32_t;
-        size_type m_BufferSz = 0;
-
     public:
         static_assert(std::is_trivially_copyable<T>::value);
         static_assert(std::is_standard_layout<T>::value);
@@ -610,8 +674,12 @@ namespace gl
 
         Buffer() = default;
 
-        Buffer(T const* begin, size_t n) : TypedBufferHandle<TBuffer>{}, m_BufferSz{static_cast<size_type>(n)} {
-            if (n > std::numeric_limits<size_type>::max()) {
+        Buffer(T const* begin, size_t n) :
+            TypedBufferHandle<TBuffer>{},
+            m_BufferSz{static_cast<size_type>(n)}
+        {
+            if (n > std::numeric_limits<size_type>::max())
+            {
                 throw OpenGlException{"tried to allocate a bufer that is bigger than the max supported size: if you need buffer this big, contact the developer"};
             }
 
@@ -620,26 +688,36 @@ namespace gl
         }
 
         template<typename Collection>
-        Buffer(Collection const& c) : Buffer{c.data(), c.size()} {
+        Buffer(Collection const& c) :
+            Buffer{c.data(), c.size()}
+        {
         }
 
-        Buffer(std::initializer_list<T> lst) : Buffer{lst.begin(), lst.size()} {
+        Buffer(std::initializer_list<T> lst) :
+            Buffer{lst.begin(), lst.size()}
+        {
         }
 
         template<size_t N>
-        Buffer(T const (&arr)[N]) : Buffer{arr, N} {
+        Buffer(T const (&arr)[N]) :
+            Buffer{arr, N}
+        {
         }
 
-        [[nodiscard]] constexpr size_t size() const noexcept {
+        [[nodiscard]] constexpr size_t size() const noexcept
+        {
             return m_BufferSz;
         }
 
-        [[nodiscard]] constexpr GLsizei sizei() const noexcept {
+        [[nodiscard]] constexpr GLsizei sizei() const noexcept
+        {
             return static_cast<GLsizei>(m_BufferSz);
         }
 
-        void assign(T const* begin, size_t n) {
-            if (n > std::numeric_limits<size_type>::max()) {
+        void assign(T const* begin, size_t n)
+        {
+            if (n > std::numeric_limits<size_type>::max())
+            {
                 throw OpenGlException{"tried to assign a buffer that is bigger than the max supported size: if you need buffer this big, contact the developer"};
             }
 
@@ -649,18 +727,21 @@ namespace gl
         }
 
         template<typename Container>
-        void assign(Container const& c) {
+        void assign(Container const& c)
+        {
             assign(c.data(), c.size());
         }
 
         template<size_t N>
-        void assign(T const (&arr)[N]) {
+        void assign(T const (&arr)[N])
+        {
             assign(arr, N);
         }
 
         void resize(size_t n)
         {
-            if (n > std::numeric_limits<size_type>::max()) {
+            if (n > std::numeric_limits<size_type>::max())
+            {
                 throw OpenGlException{"tried to resize a buffer that is bigger than the max supported size: if you need buffer this big, contact the developer"};
             }
 
@@ -675,6 +756,10 @@ namespace gl
                 // already big enough
             }
         }
+
+    private:
+        using size_type = uint32_t;
+        size_type m_BufferSz = 0;
     };
 
     template<typename T, GLenum Usage = GL_STATIC_DRAW>
@@ -696,7 +781,8 @@ namespace gl
     };
 
     template<typename Buffer>
-    inline void BindBuffer(Buffer const& buf) noexcept {
+    inline void BindBuffer(Buffer const& buf) noexcept
+    {
         glBindBuffer(Buffer::BufferType, buf.get());
     }
 
@@ -704,12 +790,14 @@ namespace gl
     // argument, so that the index type to an element-based drawcall can
     // be computed at compile-time
     template<typename T>
-    inline constexpr GLenum indexType() noexcept {
+    inline constexpr GLenum indexType() noexcept
+    {
         static_assert(std::is_integral_v<T>, "element indices are integers");
         static_assert(std::is_unsigned_v<T>, "element indices are unsigned data types (in the GL spec)");
         static_assert(sizeof(T) <= 4);
 
-        switch (sizeof(T)) {
+        switch (sizeof(T)) 
+        {
         case 1:
             return GL_UNSIGNED_BYTE;
         case 2:
@@ -724,7 +812,8 @@ namespace gl
     // utility overload of index_type specifically for EBOs (the most common
     // use-case in downstream code)
     template<typename T>
-    inline constexpr GLenum indexType(gl::ElementArrayBuffer<T> const&) noexcept {
+    inline constexpr GLenum indexType(gl::ElementArrayBuffer<T> const&) noexcept
+    {
         return indexType<T>();
     }
 
@@ -832,43 +921,51 @@ namespace gl
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glActiveTexture.xhtml
-    inline void ActiveTexture(GLenum texture) noexcept {
+    inline void ActiveTexture(GLenum texture) noexcept
+    {
         glActiveTexture(texture);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
-    inline void BindTexture(GLenum target, TextureHandle const& texture) noexcept {
+    inline void BindTexture(GLenum target, TextureHandle const& texture) noexcept
+    {
         glBindTexture(target, texture.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
-    inline void BindTexture() noexcept {
+    inline void BindTexture() noexcept
+    {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     // moveable RAII handle to an OpenGL texture with compile-time known type
     template<GLenum TextureType>
     class Texture {
-        TextureHandle m_TextureHandle;
-
     public:
         static constexpr GLenum type = TextureType;
 
-        [[nodiscard]] constexpr decltype(m_TextureHandle.get()) get() const noexcept {
+        [[nodiscard]] constexpr GLuint get() const noexcept
+        {
             return m_TextureHandle.get();
         }
 
-        constexpr TextureHandle const& handle() const noexcept {
+        constexpr TextureHandle const& handle() const noexcept
+        {
             return m_TextureHandle;
         }
 
-        constexpr TextureHandle& handle() noexcept {
+        constexpr TextureHandle& handle() noexcept
+        {
             return m_TextureHandle;
         }
 
-        void* getVoidHandle() const noexcept {
+        void* getVoidHandle() const noexcept
+        {
             return reinterpret_cast<void*>(static_cast<uintptr_t>(m_TextureHandle.get()));
         }
+
+    private:
+        TextureHandle m_TextureHandle;
     };
 
     class Texture2D : public Texture<GL_TEXTURE_2D> {};
@@ -876,7 +973,8 @@ namespace gl
     class Texture2DMultisample : public Texture<GL_TEXTURE_2D_MULTISAMPLE> {};
 
     template<typename Texture>
-    inline void BindTexture(Texture const& t) noexcept {
+    inline void BindTexture(Texture const& t) noexcept
+    {
         glBindTexture(t.type, t.get());
     }
 
@@ -995,60 +1093,72 @@ namespace gl
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glBindRenderbuffer.xml
-    inline void BindRenderBuffer(RenderBuffer& rb) noexcept {
+    inline void BindRenderBuffer(RenderBuffer& rb) noexcept
+    {
         glBindRenderbuffer(GL_RENDERBUFFER, rb.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glBindRenderbuffer.xml
-    inline void BindRenderBuffer() noexcept {
+    inline void BindRenderBuffer() noexcept
+    {
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
     }
 
-    inline void FramebufferRenderbuffer(GLenum target, GLenum attachment, RenderBuffer const& rb) noexcept {
+    inline void FramebufferRenderbuffer(GLenum target, GLenum attachment, RenderBuffer const& rb) noexcept
+    {
         glFramebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, rb.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glRenderbufferStorage.xhtml
-    inline void RenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) noexcept {
+    inline void RenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) noexcept
+    {
         glRenderbufferStorage(target, internalformat, width, height);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glClear.xhtml
-    inline void Clear(GLbitfield mask) noexcept {
+    inline void Clear(GLbitfield mask) noexcept
+    {
         glClear(mask);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawArrays.xhtml
-    inline void DrawArrays(GLenum mode, GLint first, GLsizei count) noexcept {
+    inline void DrawArrays(GLenum mode, GLint first, GLsizei count) noexcept
+    {
         glDrawArrays(mode, first, count);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawArraysInstanced.xhtml
-    inline void DrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei instancecount) noexcept {
+    inline void DrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei instancecount) noexcept
+    {
         glDrawArraysInstanced(mode, first, count, instancecount);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glVertexAttribDivisor.xhtml
     template<typename Attribute>
-    inline void VertexAttribDivisor(Attribute loc, GLuint divisor) noexcept {
+    inline void VertexAttribDivisor(Attribute loc, GLuint divisor) noexcept
+    {
         glVertexAttribDivisor(loc.get(), divisor);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawElements.xhtml
-    inline void DrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices) noexcept {
+    inline void DrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices) noexcept
+    {
         glDrawElements(mode, count, type, indices);
     }
 
-    inline void ClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) noexcept {
+    inline void ClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) noexcept
+    {
         glClearColor(red, green, blue, alpha);
     }
 
-    inline void Viewport(GLint x, GLint y, GLsizei w, GLsizei h) noexcept {
+    inline void Viewport(GLint x, GLint y, GLsizei w, GLsizei h) noexcept
+    {
         glViewport(x, y, w, h);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexParameter.xhtml
-    inline void TexParameteri(GLenum target, GLenum pname, GLint param) noexcept {
+    inline void TexParameteri(GLenum target, GLenum pname, GLint param) noexcept
+    {
         glTexParameteri(target, pname, param);
     }
 
@@ -1061,30 +1171,44 @@ namespace gl
         GLint border,
         GLenum format,
         GLenum type,
-        const void* pixels) noexcept {
-
-        glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
+        const void* pixels) noexcept
+    {
+        glTexImage2D(
+            target,
+            level,
+            internalformat,
+            width,
+            height,
+            border,
+            format,
+            type,
+            pixels
+        );
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexParameter.xhtml
     template<typename Texture>
-    inline void TextureParameteri(Texture const& texture, GLenum pname, GLint param) noexcept {
+    inline void TextureParameteri(Texture const& texture, GLenum pname, GLint param) noexcept
+    {
         glTextureParameteri(texture.raw_handle(), pname, param);
     }
 
     template<GLenum E>
-    inline constexpr unsigned textureIndex() noexcept {
+    inline constexpr unsigned textureIndex() noexcept
+    {
         static_assert(GL_TEXTURE0 <= E && E <= GL_TEXTURE30);
         return E - GL_TEXTURE0;
     }
 
     template<typename... T>
-    inline void DrawBuffers(T... vs) noexcept {
+    inline void DrawBuffers(T... vs) noexcept
+    {
         GLenum attachments[sizeof...(vs)] = {static_cast<GLenum>(vs)...};
         glDrawBuffers(sizeof...(vs), attachments);
     }
 
-    inline bool IsCurrentFboComplete() noexcept {
+    inline bool IsCurrentFboComplete() noexcept
+    {
         return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
     }
 
@@ -1099,29 +1223,46 @@ namespace gl
         GLint dstX1,
         GLint dstY1,
         GLbitfield mask,
-        GLenum filter) noexcept {
-        glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+        GLenum filter) noexcept
+    {
+        glBlitFramebuffer(
+            srcX0,
+            srcY0,
+            srcX1,
+            srcY1,
+            dstX0,
+            dstY0,
+            dstX1,
+            dstY1,
+            mask,
+            filter
+        );
     }
 
-    inline void DrawBuffer(GLenum mode) noexcept {
+    inline void DrawBuffer(GLenum mode) noexcept
+    {
         glDrawBuffer(mode);
     }
 
-    inline GLint GetInteger(GLenum pname) noexcept {
+    inline GLint GetInteger(GLenum pname) noexcept
+    {
         GLint out;
         glGetIntegerv(pname, &out);
         return out;
     }
 
-    inline GLenum GetEnum(GLenum pname) noexcept {
+    inline GLenum GetEnum(GLenum pname) noexcept
+    {
         return static_cast<GLenum>(GetInteger(pname));
     }
 
-    inline void Enable(GLenum cap) noexcept {
+    inline void Enable(GLenum cap) noexcept
+    {
         glEnable(cap);
     }
 
-    inline void Disable(GLenum cap) noexcept {
+    inline void Disable(GLenum cap) noexcept
+    {
         glDisable(cap);
     }
 }
