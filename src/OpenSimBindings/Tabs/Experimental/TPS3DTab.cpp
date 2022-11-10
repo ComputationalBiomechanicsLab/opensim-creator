@@ -50,6 +50,7 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <execution>
 #include <fstream>
 #include <functional>
 #include <string>
@@ -436,11 +437,10 @@ namespace
 
         rv.transformVerts([&coefs](nonstd::span<glm::vec3> verts)
         {
-            // TODO: multithread this, but <execution> isn't available on Linux
-            for (glm::vec3& vert : verts)
+            std::for_each(std::execution::par_unseq, verts.begin(), verts.end(), [&coefs](glm::vec3& vert)
             {
                 vert = EvaluateTPSEquation(coefs, vert);
-            }
+            });
         });
 
         return rv;
