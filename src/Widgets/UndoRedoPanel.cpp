@@ -71,25 +71,13 @@ private:
 // public API (PIMPL)
 
 osc::UndoRedoPanel::UndoRedoPanel(std::string_view panelName_, std::shared_ptr<osc::UndoRedo> storage_) :
-    m_Impl{new Impl{std::move(panelName_), std::move(storage_)}}
+    m_Impl{std::make_unique<Impl>(std::move(panelName_), std::move(storage_))}
 {
 }
 
-osc::UndoRedoPanel::UndoRedoPanel(UndoRedoPanel&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::UndoRedoPanel& osc::UndoRedoPanel::operator=(UndoRedoPanel&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::UndoRedoPanel::~UndoRedoPanel() noexcept
-{
-    delete m_Impl;
-}
+osc::UndoRedoPanel::UndoRedoPanel(UndoRedoPanel&&) noexcept = default;
+osc::UndoRedoPanel& osc::UndoRedoPanel::operator=(UndoRedoPanel&&) noexcept = default;
+osc::UndoRedoPanel::~UndoRedoPanel() noexcept = default;
 
 bool osc::UndoRedoPanel::implIsOpen() const
 {

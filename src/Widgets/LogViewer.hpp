@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 namespace osc
 {
     class LogViewer final {
@@ -17,6 +19,6 @@ namespace osc
 
     private:
         class Impl;
-        Impl* m_Impl;
+        std::unique_ptr<Impl> m_Impl;
     };
 }

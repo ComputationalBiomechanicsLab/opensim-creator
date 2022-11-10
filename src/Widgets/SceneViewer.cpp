@@ -56,21 +56,9 @@ osc::SceneViewer::SceneViewer() :
 {
 }
 
-osc::SceneViewer::SceneViewer(SceneViewer&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::SceneViewer& osc::SceneViewer::operator=(SceneViewer&& tmp) noexcept
-{
-    std::swap(tmp.m_Impl, m_Impl);
-    return *this;
-}
-
-osc::SceneViewer::~SceneViewer() noexcept
-{
-    delete m_Impl;
-}
+osc::SceneViewer::SceneViewer(SceneViewer&&) noexcept = default;
+osc::SceneViewer& osc::SceneViewer::operator=(SceneViewer&&) noexcept = default;
+osc::SceneViewer::~SceneViewer() noexcept = default;
 
 void osc::SceneViewer::draw(nonstd::span<SceneDecoration const> els, SceneRendererParams const& params)
 {

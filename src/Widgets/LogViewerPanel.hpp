@@ -2,6 +2,7 @@
 
 #include "src/Widgets/VirtualPanel.hpp"
 
+#include <memory>
 #include <string_view>
 
 namespace osc
@@ -22,6 +23,6 @@ namespace osc
         void implDraw() final;
 
         class Impl;
-        Impl* m_Impl;
+        std::unique_ptr<Impl> m_Impl;
     };
 }

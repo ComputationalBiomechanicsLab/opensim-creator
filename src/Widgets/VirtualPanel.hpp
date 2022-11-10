@@ -2,7 +2,7 @@
 
 namespace osc
 {
-    // base class for a user-visible panel
+    // a class that exposes a virtual interface to a user-visible panel
     class VirtualPanel {
     protected:
         VirtualPanel() = default;
@@ -13,10 +13,25 @@ namespace osc
     public:
         virtual ~VirtualPanel() noexcept = default;
 
-        bool isOpen() const { return implIsOpen(); }
-        void open() { implOpen(); }
-        void close() { implClose(); }
-        void draw() { implDraw(); }
+        bool isOpen() const
+        {
+            return implIsOpen();
+        }
+
+        void open()
+        {
+            implOpen();
+        }
+
+        void close()
+        {
+            implClose();
+        }
+
+        void draw()
+        {
+            implDraw();
+        }
 
     private:
         virtual bool implIsOpen() const = 0;

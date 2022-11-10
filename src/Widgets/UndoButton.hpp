@@ -6,6 +6,7 @@ namespace osc { class UndoRedo; }
 
 namespace osc
 {
+    // a user-visible button, with a history dropdown menu, that performs an undo operation
     class UndoButton final {
     public:
         UndoButton(std::shared_ptr<UndoRedo>);

@@ -9,7 +9,7 @@ namespace osc { class UndoRedo; }
 
 namespace osc
 {
-    // a generic panel that shows undo/redo history
+    // a user-visible panel that lists undo/redo history
     class UndoRedoPanel final : public VirtualPanel {
     public:
         UndoRedoPanel(std::string_view panelName_, std::shared_ptr<UndoRedo>);
@@ -26,6 +26,6 @@ namespace osc
         void implDraw() final;
 
         class Impl;
-        Impl* m_Impl;
+        std::unique_ptr<Impl> m_Impl;
     };
 }

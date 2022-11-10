@@ -45,25 +45,13 @@ private:
 };
 
 osc::LogViewerPanel::LogViewerPanel(std::string_view panelName) :
-    m_Impl{new Impl{std::move(panelName)}}
+    m_Impl{std::make_unique<Impl>(std::move(panelName))}
 {
 }
 
-osc::LogViewerPanel::LogViewerPanel(LogViewerPanel&& tmp) noexcept :
-    m_Impl{std::exchange(m_Impl, nullptr)}
-{
-}
-
-osc::LogViewerPanel& osc::LogViewerPanel::operator=(LogViewerPanel&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::LogViewerPanel::~LogViewerPanel() noexcept
-{
-    delete m_Impl;
-}
+osc::LogViewerPanel::LogViewerPanel(LogViewerPanel&&) noexcept = default;
+osc::LogViewerPanel& osc::LogViewerPanel::operator=(LogViewerPanel&&) noexcept = default;
+osc::LogViewerPanel::~LogViewerPanel() noexcept = default;
 
 bool osc::LogViewerPanel::implIsOpen() const
 {

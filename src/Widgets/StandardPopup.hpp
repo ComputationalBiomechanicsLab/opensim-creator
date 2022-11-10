@@ -19,6 +19,7 @@ namespace osc
             float height,
             int popupFlags  // ImGuiWindowFlags
         );
+
         virtual ~StandardPopup() noexcept = default;
 
         bool isOpen() const;

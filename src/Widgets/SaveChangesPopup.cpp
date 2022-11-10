@@ -55,25 +55,13 @@ private:
 // public API (PIMPL)
 
 osc::SaveChangesPopup::SaveChangesPopup(SaveChangesPopupConfig config) :
-    m_Impl{new Impl{std::move(config)}}
+    m_Impl{std::make_unique<Impl>(std::move(config))}
 {
 }
 
-osc::SaveChangesPopup::SaveChangesPopup(SaveChangesPopup&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::SaveChangesPopup& osc::SaveChangesPopup::operator=(SaveChangesPopup&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::SaveChangesPopup::~SaveChangesPopup() noexcept
-{
-    delete m_Impl;
-}
+osc::SaveChangesPopup::SaveChangesPopup(SaveChangesPopup&&) noexcept = default;
+osc::SaveChangesPopup& osc::SaveChangesPopup::operator=(SaveChangesPopup&&) noexcept = default;
+osc::SaveChangesPopup::~SaveChangesPopup() noexcept = default;
 
 bool osc::SaveChangesPopup::isOpen() const
 {
