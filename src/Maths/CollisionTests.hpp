@@ -3,16 +3,16 @@
 #include "src/Maths/RayCollision.hpp"
 
 #include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 
 #include <optional>
 
+namespace osc { struct AABB; }
+namespace osc { struct Disc; }
 namespace osc { struct Line; }
+namespace osc { struct Plane; }
 namespace osc { struct Rect; }
 namespace osc { struct Sphere; }
-namespace osc { struct AABB; }
-namespace osc { struct Plane; }
-namespace osc { struct Disc; }
+namespace osc { struct Triangle; }
 
 namespace osc
 {
@@ -21,5 +21,5 @@ namespace osc
     std::optional<RayCollision> GetRayCollisionAABB(Line const&, AABB const&) noexcept;
     std::optional<RayCollision> GetRayCollisionPlane(Line const&, Plane const&) noexcept;
     std::optional<RayCollision> GetRayCollisionDisc(Line const&, Disc const&) noexcept;
-    std::optional<RayCollision> GetRayCollisionTriangle(Line const&, glm::vec3 const*) noexcept;
+    std::optional<RayCollision> GetRayCollisionTriangle(Line const&, Triangle const&) noexcept;
 }

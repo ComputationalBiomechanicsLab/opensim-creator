@@ -143,77 +143,6 @@ namespace
         OSC_ASSERT(internalNodeLoc+numLhsNodes < static_cast<int>(bvh.nodes.size()));
     }
 
-    // returns true if something hit (the return value is only used in recursion)
-    //
-    // populates outparam with all triangle hits in depth-first order
-    bool BVH_GetRayTriangleCollisionsRecursive(
-        osc::BVH const& bvh,
-        glm::vec3 const* vs,
-        size_t n,
-        osc::Line const& ray,
-        int nodeidx,
-        std::vector<osc::BVHCollision>& out)
-    {
-        osc::BVHNode const& node = bvh.nodes[nodeidx];
-
-        // check ray-AABB intersection with the BVH node
-        if (!osc::GetRayCollisionAABB(ray, node.getBounds()))
-        {
-            return false;  // no intersection with this node at all
-        }
-
-        if (node.isLeaf())
-        {
-            // leaf node: check ray-triangle intersection
-
-            osc::BVHPrim const& p = bvh.prims[node.getFirstPrimOffset()];
-
-            std::optional<osc::RayCollision> maybeRayTriangleHit = osc::GetRayCollisionTriangle(ray, vs + p.getID());
-            if (maybeRayTriangleHit)
-            {
-                out.push_back(osc::BVHCollision{maybeRayTriangleHit->distance, maybeRayTriangleHit->position, p.getID()});
-            }
-            return maybeRayTriangleHit.has_value();
-        }
-        else
-        {
-            // else: internal node: check intersection with direct children
-
-            bool lhs = BVH_GetRayTriangleCollisionsRecursive(bvh, vs, n, ray, nodeidx+1, out);
-            bool rhs = BVH_GetRayTriangleCollisionsRecursive(bvh, vs, n, ray, nodeidx+node.getNumLhsNodes()+1, out);
-            return lhs || rhs;
-        }
-    }
-
-    // make this public if we ever need multi-collisions
-    bool BVH_GetRayTriangleCollisions(
-        osc::BVH const& bvh,
-        glm::vec3 const* vs,
-        size_t n,
-        osc::Line const& ray,
-        std::vector<osc::BVHCollision>* appendTo)
-    {
-        OSC_ASSERT(appendTo != nullptr);
-        OSC_ASSERT(n/3 == bvh.prims.size() && "not enough primitives in this BVH - did you build it against the supplied verts?");
-
-        if (bvh.nodes.empty())
-        {
-            return false;
-        }
-
-        if (bvh.prims.empty())
-        {
-            return false;
-        }
-
-        if (n == 0)
-        {
-            return false;
-        }
-
-        return BVH_GetRayTriangleCollisionsRecursive(bvh, vs, n, ray, 0, *appendTo);
-    }
-
     // returns true if something hit (recursively)
     //
     // populates outparam with all AABB hits in depth-first order
@@ -275,14 +204,14 @@ namespace
 
             osc::BVHPrim const& p = bvh.prims[node.getFirstPrimOffset()];
 
-            glm::vec3 triangleVerts[] =
+            osc::Triangle const triangle =
             {
                 verts[indices[p.getID()]],
                 verts[indices[p.getID() + 1]],
                 verts[indices[p.getID() + 2]],
             };
 
-            std::optional<osc::RayCollision> const rayTriangleColl = osc::GetRayCollisionTriangle(ray, triangleVerts);
+            std::optional<osc::RayCollision> const rayTriangleColl = osc::GetRayCollisionTriangle(ray, triangle);
 
             if (rayTriangleColl && rayTriangleColl->distance < closest)
             {
@@ -1220,18 +1149,10 @@ glm::vec3 osc::NumericallyStableAverage(nonstd::span<glm::vec3 const> vs) noexce
     return sum / static_cast<float>(vs.size());
 }
 
-glm::vec3 osc::TriangleNormal(glm::vec3 const* v) noexcept
+glm::vec3 osc::TriangleNormal(Triangle const& tri) noexcept
 {
-    glm::vec3 const ab = v[1] - v[0];
-    glm::vec3 const ac = v[2] - v[0];
-    glm::vec3 const perpendiular = glm::cross(ab, ac);
-    return glm::normalize(perpendiular);
-}
-
-glm::vec3 osc::TriangleNormal(glm::vec3 const& a, glm::vec3 const& b, glm::vec3 const& c) noexcept
-{
-    glm::vec3 const ab = b - a;
-    glm::vec3 const ac = c - a;
+    glm::vec3 const ab = tri.p1 - tri.p0;
+    glm::vec3 const ac = tri.p2 - tri.p0;
     glm::vec3 const perpendiular = glm::cross(ab, ac);
     return glm::normalize(perpendiular);
 }
@@ -2156,12 +2077,12 @@ std::optional<osc::RayCollision> osc::GetRayCollisionDisc(Line const& l, Disc co
     return maybePlaneCollision;
 }
 
-std::optional<osc::RayCollision> osc::GetRayCollisionTriangle(Line const& l, glm::vec3 const* v) noexcept
+std::optional<osc::RayCollision> osc::GetRayCollisionTriangle(Line const& l, Triangle const& tri) noexcept
 {
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
 
     // compute triangle normal
-    glm::vec3 N = glm::normalize(glm::cross(v[1] - v[0], v[2] - v[0]));
+    glm::vec3 N = TriangleNormal(tri);
 
     // compute dot product between normal and ray
     float NdotR = glm::dot(N, l.dir);
@@ -2177,7 +2098,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionTriangle(Line const& l, glm
     // - N is a normal to the plane
     // - N.v[0] is the projection of v[0] onto N and indicates how long along N to go to hit some
     //   other point on the plane
-    float D = glm::dot(N, v[0]);
+    float D = glm::dot(N, tri.p0);
 
     // ok, that's one side of the equation
     //
@@ -2209,8 +2130,8 @@ std::optional<osc::RayCollision> osc::GetRayCollisionTriangle(Line const& l, glm
     // test each triangle edge: {0, 1}, {1, 2}, {2, 0}
     for (int i = 0; i < 3; ++i)
     {
-        glm::vec3 const& start = v[i];
-        glm::vec3 const& end = v[(i+1)%3];
+        glm::vec3 const& start = tri[i];
+        glm::vec3 const& end = tri[(i+1)%3];
 
         // corner[n] to corner[n+1]
         glm::vec3 e = end - start;

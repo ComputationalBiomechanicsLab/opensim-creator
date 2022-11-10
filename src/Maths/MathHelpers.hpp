@@ -88,10 +88,7 @@ namespace osc
     glm::vec3 NumericallyStableAverage(nonstd::span<glm::vec3 const>) noexcept;
 
     // returns a normal vector of the supplied (pointed to) triangle (i.e. (v[1]-v[0]) x (v[2]-v[0]))
-    glm::vec3 TriangleNormal(glm::vec3 const*) noexcept;
-
-    // returns a normal vector of the supplied triangle points (i.e. (b-a) x (c-a))
-    glm::vec3 TriangleNormal(glm::vec3 const&, glm::vec3 const&, glm::vec3 const&) noexcept;
+    glm::vec3 TriangleNormal(Triangle const&) noexcept;
 
     // returns the adjugate matrix of the given 3x3 input
     glm::mat3 ToAdjugateMatrix(glm::mat3 const&) noexcept;

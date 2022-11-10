@@ -5,6 +5,7 @@
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Segment.hpp"
 #include "src/Maths/Transform.hpp"
+#include "src/Maths/Triangle.hpp"
 #include "src/Platform/Log.hpp"
 
 #include <glm/glm.hpp>
@@ -496,11 +497,16 @@ osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
     indices.reserve(static_cast<size_t>(mesh.getNumVertices()));
 
     uint32_t index = 0;
-    auto push = [&verts, &normals, &indices, &index](glm::vec3 const& pos, glm::vec3 const& normal)
+    auto const pushTriangle = [&verts, &normals, &indices, &index](Triangle const& tri)
     {
-        verts.push_back(pos);
-        normals.push_back(normal);
-        indices.push_back(index++);
+        glm::vec3 const normal = osc::TriangleNormal(tri);
+
+        for (size_t i = 0; i < 3; ++i)
+        {
+            verts.push_back(tri[i]);
+            normals.push_back(normal);
+            indices.push_back(index++);
+        }
     };
 
     for (int face = 0, nfaces = mesh.getNumFaces(); face < nfaces; ++face)
@@ -515,23 +521,19 @@ osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
         {
             // triangle
 
-            glm::vec3 vs[] =
+            osc::Triangle const triangle =
             {
                 GetFaceVertex(mesh, face, 0),
                 GetFaceVertex(mesh, face, 1),
                 GetFaceVertex(mesh, face, 2),
             };
-            glm::vec3 normal = TriangleNormal(vs);
-
-            push(vs[0], normal);
-            push(vs[1], normal);
-            push(vs[2], normal);
+            pushTriangle(triangle);
         }
         else if (nVerts == 4)
         {
             // quad (render as two triangles)
 
-            glm::vec3 const vs[] =
+            glm::vec3 const verts[4] =
             {
                 GetFaceVertex(mesh, face, 0),
                 GetFaceVertex(mesh, face, 1),
@@ -539,19 +541,8 @@ osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
                 GetFaceVertex(mesh, face, 3),
             };
 
-            glm::vec3 const norms[] =
-            {
-                TriangleNormal(vs[0], vs[1], vs[2]),
-                TriangleNormal(vs[2], vs[3], vs[0]),
-            };
-
-            push(vs[0], norms[0]);
-            push(vs[1], norms[0]);
-            push(vs[2], norms[0]);
-            push(vs[2], norms[1]);
-            push(vs[3], norms[1]);
-            push(vs[0], norms[1]);
-
+            pushTriangle({verts[0], verts[1], verts[2]});
+            pushTriangle({verts[2], verts[3], verts[0]});
         }
         else
         {
@@ -569,32 +560,23 @@ osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
 
             for (int vert = 0; vert < nVerts - 1; ++vert)
             {
-
-                glm::vec3 const vs[] =
+                Triangle const tri =
                 {
                     GetFaceVertex(mesh, face, vert),
                     GetFaceVertex(mesh, face, vert + 1),
                     center,
                 };
-                glm::vec3 const normal = TriangleNormal(vs);
-
-                push(vs[0], normal);
-                push(vs[1], normal);
-                push(vs[2], normal);
+                pushTriangle(tri);
             }
 
             // complete the polygon loop
-            glm::vec3 const vs[] =
+            Triangle const tri =
             {
                 GetFaceVertex(mesh, face, nVerts - 1),
                 GetFaceVertex(mesh, face, 0),
                 center,
             };
-            glm::vec3 const normal = TriangleNormal(vs);
-
-            push(vs[0], normal);
-            push(vs[1], normal);
-            push(vs[2], normal);
+            pushTriangle(tri);
         }
     }
 

@@ -6,11 +6,12 @@
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/MaterialPropertyBlock.hpp"
 #include "src/Graphics/MeshGen.hpp"
+#include "src/Maths/CollisionTests.hpp"
 #include "src/Maths/Disc.hpp"
 #include "src/Maths/Line.hpp"
-#include "src/Maths/CollisionTests.hpp"
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Sphere.hpp"
+#include "src/Maths/Triangle.hpp"
 #include "src/Platform/App.hpp"
 
 #include <glm/vec3.hpp>
@@ -272,7 +273,10 @@ public:
         // hittest + draw triangle
         {
             Line ray = GetCameraRay(m_Camera);
-            std::optional<RayCollision> maybeCollision = GetRayCollisionTriangle(ray, g_TriangleVerts.data());
+            std::optional<RayCollision> maybeCollision = GetRayCollisionTriangle(
+                ray,
+                osc::Triangle::CastFromPointerToFirstVertex(g_TriangleVerts.data())
+            );
 
             Graphics::DrawMesh(
                 m_TriangleMesh,

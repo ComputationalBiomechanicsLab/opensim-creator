@@ -3,6 +3,7 @@
 #include "src/Graphics/Mesh.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/MathHelpers.hpp"
+#include "src/Maths/Triangle.hpp"
 #include "src/Utils/Assertions.hpp"
 
 #include <glm/vec2.hpp>
@@ -468,18 +469,18 @@ osc::Mesh osc::GenUntexturedSimbodyCone(size_t nsides)
             float const thetaStart = i * stepAngle;
             float const thetaEnd = (i + 1) * stepAngle;
 
-            glm::vec3 const points[3] =
+            Triangle const triangle =
             {
                 {0.0f, topY, 0.0f},
                 {std::cos(thetaEnd), bottomY, std::sin(thetaEnd)},
                 {std::cos(thetaStart), bottomY, std::sin(thetaStart)},
             };
 
-            glm::vec3 const normal = osc::TriangleNormal(points);
+            glm::vec3 const normal = osc::TriangleNormal(triangle);
 
-            push(points[0], normal);
-            push(points[1], normal);
-            push(points[2], normal);
+            push(triangle.p0, normal);
+            push(triangle.p1, normal);
+            push(triangle.p2, normal);
         }
     }
 
