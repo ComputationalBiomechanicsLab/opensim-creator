@@ -29,9 +29,9 @@
 #include "src/Utils/UID.hpp"
 #include "src/Utils/UndoRedo.hpp"
 #include "src/Widgets/LogViewerPanel.hpp"
-#include "src/Widgets/NamedPanel.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 #include "src/Widgets/RedoButton.hpp"
+#include "src/Widgets/StandardPanel.hpp"
 #include "src/Widgets/UndoButton.hpp"
 #include "src/Widgets/UndoRedoPanel.hpp"
 #include "src/Widgets/VirtualPanel.hpp"
@@ -937,9 +937,9 @@ namespace
     }
 
     // generic base class for the panels shown in the TPS3D tab
-    class TPS3DTabPanel : public osc::NamedPanel {
+    class TPS3DTabPanel : public osc::StandardPanel {
     public:
-        using osc::NamedPanel::NamedPanel;
+        using osc::StandardPanel::StandardPanel;
 
     private:
         void implBeforeImGuiBegin() override final

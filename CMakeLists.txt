@@ -586,8 +586,6 @@ add_library(osccore STATIC
     src/Widgets/LogViewer.hpp
     src/Widgets/LogViewerPanel.cpp
     src/Widgets/LogViewerPanel.hpp
-    src/Widgets/NamedPanel.cpp
-    src/Widgets/NamedPanel.hpp
     src/Widgets/PerfPanel.cpp
     src/Widgets/PerfPanel.hpp
     src/Widgets/Popup.hpp
@@ -597,6 +595,8 @@ add_library(osccore STATIC
     src/Widgets/SaveChangesPopup.hpp
     src/Widgets/SceneViewer.cpp
     src/Widgets/SceneViewer.hpp
+    src/Widgets/StandardPanel.cpp
+    src/Widgets/StandardPanel.hpp
     src/Widgets/StandardPopup.cpp
     src/Widgets/StandardPopup.hpp
     src/Widgets/UndoButton.cpp

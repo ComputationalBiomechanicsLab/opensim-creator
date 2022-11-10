@@ -3,7 +3,7 @@
 #include "src/Platform/App.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Perf.hpp"
-#include "src/Widgets/NamedPanel.hpp"
+#include "src/Widgets/StandardPanel.hpp"
 
 #include <imgui.h>
 
@@ -24,11 +24,11 @@ static bool LexographicallyHighestLabel(osc::PerfMeasurement const& a, osc::Perf
     return a.getLabel() > b.getLabel();
 }
 
-class osc::PerfPanel::Impl final : public osc::NamedPanel {
+class osc::PerfPanel::Impl final : public osc::StandardPanel {
 public:
 
     Impl(std::string_view panelName) :
-        NamedPanel{std::move(panelName)}
+        StandardPanel{std::move(panelName)}
     {
     }
 

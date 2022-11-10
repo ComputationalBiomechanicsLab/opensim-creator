@@ -5,7 +5,7 @@
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Utils/UID.hpp"
-#include "src/Widgets/NamedPanel.hpp"
+#include "src/Widgets/StandardPanel.hpp"
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -44,14 +44,14 @@ namespace
     }
 }
 
-class osc::OutputWatchesPanel::Impl final : public osc::NamedPanel {
+class osc::OutputWatchesPanel::Impl final : public osc::StandardPanel {
 public:
 
     Impl(std::string_view panelName_,
         std::shared_ptr<UndoableModelStatePair> model_,
         MainUIStateAPI* api_) :
 
-        NamedPanel{std::move(panelName_)},
+        StandardPanel{std::move(panelName_)},
         m_API{std::move(api_)},
         m_Model{std::move(model_)}
     {

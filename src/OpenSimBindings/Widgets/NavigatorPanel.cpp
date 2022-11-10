@@ -7,7 +7,7 @@
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
-#include "src/Widgets/NamedPanel.hpp"
+#include "src/Widgets/StandardPanel.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -143,34 +143,34 @@ static bool isSearchHit(std::string const& searchStr, ComponentPath const& cp)
     return false;
 }
 
-class osc::NavigatorPanel::Impl final : public NamedPanel {
+class osc::NavigatorPanel::Impl final : public StandardPanel {
 public:
     Impl(std::string_view panelName, std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
-        NamedPanel{std::move(panelName)},
+        StandardPanel{std::move(panelName)},
         m_OnRightClick{std::move(onRightClick)}
     {
     }
 
     bool isOpen() const
     {
-        return static_cast<NamedPanel const&>(*this).isOpen();
+        return static_cast<StandardPanel const&>(*this).isOpen();
     }
 
     void open()
     {
-        return static_cast<NamedPanel&>(*this).open();
+        return static_cast<StandardPanel&>(*this).open();
     }
 
     void close()
     {
-        return static_cast<NamedPanel&>(*this).close();
+        return static_cast<StandardPanel&>(*this).close();
     }
 
     osc::NavigatorPanel::Response draw(VirtualConstModelStatePair const& modelState)
     {
         m_Response = Response{};
         m_ModelState = &modelState;
-        static_cast<NamedPanel&>(*this).draw();
+        static_cast<StandardPanel&>(*this).draw();
         m_ModelState = nullptr;
         return m_Response;
     }

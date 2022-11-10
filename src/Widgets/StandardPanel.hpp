@@ -7,17 +7,17 @@
 
 namespace osc
 {
-    // base class for implementing a panel that has a name
-    class NamedPanel : public VirtualPanel {
+    // a "standard" implementation for a VirtualPanel
+    class StandardPanel : public VirtualPanel {
     protected:
-        explicit NamedPanel(std::string_view name);
-        NamedPanel(std::string_view name, int imGuiWindowFlags);
-        NamedPanel(NamedPanel const&) = default;
-        NamedPanel(NamedPanel&&) noexcept = default;
-        NamedPanel& operator=(NamedPanel const&) = default;
-        NamedPanel& operator=(NamedPanel&&) noexcept = default;
+        explicit StandardPanel(std::string_view name);
+        StandardPanel(std::string_view name, int imGuiWindowFlags);
+        StandardPanel(StandardPanel const&) = default;
+        StandardPanel(StandardPanel&&) noexcept = default;
+        StandardPanel& operator=(StandardPanel const&) = default;
+        StandardPanel& operator=(StandardPanel&&) noexcept = default;
     public:
-        virtual ~NamedPanel() noexcept = default;
+        virtual ~StandardPanel() noexcept = default;
 
     protected:
         void requestClose();

@@ -1,4 +1,4 @@
-#include "NamedPanel.hpp"
+#include "StandardPanel.hpp"
 
 #include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
@@ -8,33 +8,33 @@
 #include <string_view>
 #include <utility>
 
-osc::NamedPanel::NamedPanel(std::string_view name) :
-    NamedPanel{std::move(name), ImGuiWindowFlags_None}
+osc::StandardPanel::StandardPanel(std::string_view name) :
+    StandardPanel{std::move(name), ImGuiWindowFlags_None}
 {
 }
 
-osc::NamedPanel::NamedPanel(std::string_view name, int imGuiWindowFlags) :
+osc::StandardPanel::StandardPanel(std::string_view name, int imGuiWindowFlags) :
     m_PanelName{std::move(name)},
     m_PanelFlags{std::move(imGuiWindowFlags)}
 {
 }
 
-bool osc::NamedPanel::implIsOpen() const
+bool osc::StandardPanel::implIsOpen() const
 {
     return osc::App::get().getConfig().getIsPanelEnabled(m_PanelName);
 }
 
-void osc::NamedPanel::implOpen()
+void osc::StandardPanel::implOpen()
 {
     osc::App::upd().updConfig().setIsPanelEnabled(m_PanelName, true);
 }
 
-void osc::NamedPanel::implClose()
+void osc::StandardPanel::implClose()
 {
     osc::App::upd().updConfig().setIsPanelEnabled(m_PanelName, false);
 }
 
-void osc::NamedPanel::implDraw()
+void osc::StandardPanel::implDraw()
 {
     if (isOpen())
     {
@@ -58,7 +58,7 @@ void osc::NamedPanel::implDraw()
     }
 }
 
-void osc::NamedPanel::requestClose()
+void osc::StandardPanel::requestClose()
 {
     close();
 }
