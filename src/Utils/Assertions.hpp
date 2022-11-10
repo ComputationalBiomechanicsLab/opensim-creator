@@ -9,7 +9,16 @@ namespace osc
                                          char const* func,
                                          char const* file,
                                          unsigned int line) noexcept;
+
+    // calls into (hidden) throwing-assertion implementation
+    [[noreturn]] void OnThrowingAssertionFailure(char const* failingCode,
+        char const* func,
+        char const* file,
+        unsigned int line);
 }
+
+#define OSC_THROWING_ASSERT(expr) \
+    (static_cast<bool>(expr) ? (void)0 : osc::OnThrowingAssertionFailure(#expr, __func__, OSC_FILENAME, __LINE__))
 
 // always execute this assertion - even if in release mode /w debug flags disabled
 #define OSC_ASSERT_ALWAYS(expr)                                                                                       \

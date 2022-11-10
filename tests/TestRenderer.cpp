@@ -1905,7 +1905,7 @@ TEST_F(Renderer, MeshGetBVHReturnsExpectedRootNode)
     osc::BVH const& bvh = m.getBVH();
 
     ASSERT_FALSE(bvh.nodes.empty());
-    ASSERT_EQ(expectedRoot, bvh.nodes.front().bounds);
+    ASSERT_EQ(expectedRoot, bvh.nodes.front().getBounds());
 }
 
 TEST_F(Renderer, MeshCanBeComparedForEquality)

@@ -8,7 +8,6 @@
 #include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/SimulationStatus.hpp"
-#include "src/Platform/App.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 
 #include <nonstd/span.hpp>
@@ -35,7 +34,6 @@ static osc::ForwardDynamicSimulator MakeSimulation(
     {
         auto reportsGuard = reportQueue.lock();
         reportsGuard->push_back(std::move(r));
-        osc::App::upd().requestRedraw();
     };
     return osc::ForwardDynamicSimulator{std::move(p), params, std::move(callback)};
 }

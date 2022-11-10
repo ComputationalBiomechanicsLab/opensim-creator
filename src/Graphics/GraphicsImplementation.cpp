@@ -771,9 +771,9 @@ public:
         m_Pixels(channels.data(), channels.data() + channels.size()),
         m_NumChannels{numChannels}
     {
-        OSC_ASSERT_ALWAYS(m_Dimensions.x >= 0 && m_Dimensions.y >= 0);
-        OSC_ASSERT_ALWAYS(m_Dimensions.x * m_Dimensions.y == m_Pixels.size()/m_NumChannels);
-        OSC_ASSERT(m_NumChannels == 1 || m_NumChannels == 3 || m_NumChannels == 4);
+        OSC_THROWING_ASSERT(m_Dimensions.x >= 0 && m_Dimensions.y >= 0);
+        OSC_THROWING_ASSERT(m_Dimensions.x * m_Dimensions.y == m_Pixels.size()/m_NumChannels);
+        OSC_THROWING_ASSERT(m_NumChannels == 1 || m_NumChannels == 3 || m_NumChannels == 4);
     }
 
     glm::ivec2 getDimensions() const
@@ -1119,7 +1119,7 @@ glm::ivec2 osc::RenderTextureDescriptor::getDimensions() const
 
 void osc::RenderTextureDescriptor::setDimensions(glm::ivec2 d)
 {
-    OSC_ASSERT_ALWAYS(d.x >= 0 && d.y >= 0);
+    OSC_THROWING_ASSERT(d.x >= 0 && d.y >= 0);
     m_Dimensions = d;
 }
 
@@ -1130,7 +1130,7 @@ int osc::RenderTextureDescriptor::getAntialiasingLevel() const
 
 void osc::RenderTextureDescriptor::setAntialiasingLevel(int level)
 {
-    OSC_ASSERT_ALWAYS(level <= 64 && osc::NumBitsSetIn(level) == 1);
+    OSC_THROWING_ASSERT(level <= 64 && osc::NumBitsSetIn(level) == 1);
     m_AnialiasingLevel = level;
 }
 

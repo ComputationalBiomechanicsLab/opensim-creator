@@ -21,3 +21,14 @@ void osc::OnAssertionFailure(char const* failing_code,
     log::error("%s", g_MessageBuffer.data());
     std::terminate();
 }
+
+void osc::OnThrowingAssertionFailure(
+    char const* failingCode,
+    char const* func,
+    char const* file,
+    unsigned int line)
+{
+    std::snprintf(g_MessageBuffer.data(), g_MessageBuffer.size(), "%s:%s:%u: throw_if_not(%s): failed", file, func, line, failingCode);
+    log::error("%s", g_MessageBuffer.data());
+    throw std::runtime_error{g_MessageBuffer.data()};
+}
