@@ -16,5 +16,9 @@ namespace osc
         DAEMetadata();
     };
 
-    void WriteDecorationsAsDAE(nonstd::span<SceneDecoration const>, std::ostream&, DAEMetadata const& = {});
+    void WriteDecorationsAsDAE(
+        nonstd::span<SceneDecoration const>,
+        std::ostream&,
+        DAEMetadata const& = {}
+    );
 }

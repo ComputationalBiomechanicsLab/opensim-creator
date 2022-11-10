@@ -40,6 +40,8 @@ namespace
         }
         return static_cast<float>(older[0]);
     }
+
+    static inline constexpr float g_DefaultDragThreshold = 5.0f;
 }
 
 void osc::ImGuiApplyDarkTheme()
@@ -246,37 +248,19 @@ void osc::DrawTextureAsImGuiImage(RenderTexture& t, glm::vec2 dims)
     ImGui::Image(t.updTextureHandleHACK(), dims, uv0, uv1);
 }
 
-osc::ImGuiImageHittestResult::ImGuiImageHittestResult() :
-    rect{},
-    isHovered{false},
-    isLeftClickReleasedWithoutDragging{false},
-    isRightClickReleasedWithoutDragging{false}
+void osc::DrawTextureAsImGuiImage(RenderTexture& tex)
 {
+    return DrawTextureAsImGuiImage(tex, tex.getDimensions());
 }
 
-osc::ImGuiImageHittestResult osc::DrawTextureAsImGuiImageAndHittest(Texture2D& tex, glm::vec2 dims, float dragThreshold)
+osc::ImGuiItemHittestResult osc::HittestLastImguiItem()
 {
-    osc::DrawTextureAsImGuiImage(tex, dims);
-
-    ImGuiImageHittestResult rv;
-    rv.rect.p1 = ImGui::GetItemRectMin();
-    rv.rect.p2 = ImGui::GetItemRectMax();
-    rv.isHovered = ImGui::IsItemHovered();
-    rv.isLeftClickReleasedWithoutDragging = rv.isHovered && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left, dragThreshold);
-    rv.isRightClickReleasedWithoutDragging = rv.isHovered && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right, dragThreshold);
-    return rv;
+    return osc::HittestLastImguiItem(g_DefaultDragThreshold);
 }
 
-osc::ImGuiImageHittestResult osc::DrawTextureAsImGuiImageAndHittest(RenderTexture& tex, float dragThreshold)
+osc::ImGuiItemHittestResult osc::HittestLastImguiItem(float dragThreshold)
 {
-    return osc::DrawTextureAsImGuiImageAndHittest(tex, tex.getDimensions(), std::move(dragThreshold));
-}
-
-osc::ImGuiImageHittestResult osc::DrawTextureAsImGuiImageAndHittest(RenderTexture& tex, glm::vec2 dims, float dragThreshold)
-{
-    osc::DrawTextureAsImGuiImage(tex, dims);
-
-    ImGuiImageHittestResult rv;
+    ImGuiItemHittestResult rv;
     rv.rect.p1 = ImGui::GetItemRectMin();
     rv.rect.p2 = ImGui::GetItemRectMax();
     rv.isHovered = ImGui::IsItemHovered();
@@ -287,7 +271,7 @@ osc::ImGuiImageHittestResult osc::DrawTextureAsImGuiImageAndHittest(RenderTextur
 
 bool osc::IsAnyKeyDown(nonstd::span<int const> keys)
 {
-    for (auto key : keys)
+    for (int const key : keys)
     {
         if (ImGui::IsKeyDown(key))
         {
@@ -304,7 +288,7 @@ bool osc::IsAnyKeyDown(std::initializer_list<int const> keys)
 
 bool osc::IsAnyKeyPressed(nonstd::span<int const> keys)
 {
-    for (int key : keys)
+    for (int const key : keys)
     {
         if (ImGui::IsKeyPressed(key))
         {
@@ -336,6 +320,11 @@ bool osc::IsShiftDown()
 bool osc::IsAltDown()
 {
     return ImGui::GetIO().KeyAlt;
+}
+
+bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn)
+{
+    return osc::IsMouseReleasedWithoutDragging(btn, g_DefaultDragThreshold);
 }
 
 bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float threshold)

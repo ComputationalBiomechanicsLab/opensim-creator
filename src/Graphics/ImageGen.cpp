@@ -17,14 +17,19 @@ osc::Image osc::GenerateChequeredFloorImage()
     std::array<Rgb24, textureWidth * textureHeight> pixels;
     for (size_t row = 0; row < textureHeight; ++row)
     {
-        size_t rowStart = row * textureWidth;
+        size_t const rowStart = row * textureWidth;
         bool yOn = (row / chequerHeight) % 2 == 0;
         for (size_t col = 0; col < textureWidth; ++col)
         {
-            bool xOn = (col / chequerWidth) % 2 == 0;
+            bool const xOn = (col / chequerWidth) % 2 == 0;
             pixels[rowStart + col] = yOn ^ xOn ? onColor : offColor;
         }
     }
 
-    return Image{{textureWidth, textureHeight}, {&pixels.front().r, sizeof(pixels)}, sizeof(Rgb24)};
+    return Image
+    {
+        {textureWidth, textureHeight},
+        {&pixels.front().r, sizeof(pixels)},
+        sizeof(Rgb24)
+    };
 }

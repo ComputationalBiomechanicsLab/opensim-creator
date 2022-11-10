@@ -1015,7 +1015,8 @@ namespace
 
             // render: draw the scene into the content rect and hittest it
             osc::RenderTexture& renderTexture = renderScene(contentRectDims, meshCollision, landmarkCollision);
-            osc::ImGuiImageHittestResult const htResult = osc::DrawTextureAsImGuiImageAndHittest(renderTexture);
+            osc::DrawTextureAsImGuiImage(renderTexture);
+            osc::ImGuiItemHittestResult const htResult = osc::HittestLastImguiItem();
 
             // event: if the user clicks and something is hovered, select it; otherwise, add a landmark
             if (htResult.isLeftClickReleasedWithoutDragging)
@@ -1193,7 +1194,8 @@ namespace
 
             // render it via ImGui and hittest it
             osc::RenderTexture& renderTexture = renderScene(dims);
-            osc::ImGuiImageHittestResult const htResult = osc::DrawTextureAsImGuiImageAndHittest(renderTexture);
+            osc::DrawTextureAsImGuiImage(renderTexture);
+            osc::ImGuiItemHittestResult const htResult = osc::HittestLastImguiItem();
 
             // update camera if user drags it around etc.
             if (htResult.isHovered)

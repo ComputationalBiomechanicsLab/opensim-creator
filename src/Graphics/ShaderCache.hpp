@@ -8,8 +8,16 @@ namespace osc
 {
     class ShaderCache {
     public:
-        static Shader const& get(std::string_view vertexShaderResource, std::string_view fragmentShaderResource);
-        static Shader const& get(std::string_view vertexShaderResource, std::string_view geometryShaderResource, std::string_view fragmentShaderResource);
+        static Shader const& get(
+            std::string_view vertexShaderResource,
+            std::string_view fragmentShaderResource
+        );
+
+        static Shader const& get(
+            std::string_view vertexShaderResource,
+            std::string_view geometryShaderResource,
+            std::string_view fragmentShaderResource
+        );
 
         ShaderCache();
         ShaderCache(ShaderCache const&) = delete;

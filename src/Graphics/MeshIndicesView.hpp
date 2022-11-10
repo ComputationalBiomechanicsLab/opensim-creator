@@ -48,20 +48,82 @@ namespace osc
             bool m_IsU32;
         };
 
-        MeshIndicesView() : m_Ptr{}, m_Size{0}, m_IsU32{false} {}
-        MeshIndicesView(uint16_t const* ptr, size_t size) : m_Ptr{ptr}, m_Size{size}, m_IsU32{false} {}
-        MeshIndicesView(nonstd::span<uint16_t const> span) : m_Ptr{span.data()}, m_Size{span.size()}, m_IsU32{false} {}
-        MeshIndicesView(uint32_t const* ptr, size_t size) : m_Ptr{ptr}, m_Size{size}, m_IsU32{true} {}
-        MeshIndicesView(nonstd::span<uint32_t const> span) : m_Ptr{span.data()}, m_Size{span.size()}, m_IsU32{true} {}
+        MeshIndicesView() :
+            m_Ptr{},
+            m_Size{0},
+            m_IsU32{false}
+        {
+        }
 
-        bool isU16() const { return !m_IsU32; }
-        bool isU32() const { return m_IsU32; }
-        size_t size() const { return m_Size; }
-        nonstd::span<uint16_t const> toU16Span() const { OSC_ASSERT(!m_IsU32); return {m_Ptr.u16, m_Size}; }
-        nonstd::span<uint32_t const> toU32Span() const { OSC_ASSERT(m_IsU32); return {m_Ptr.u32, m_Size}; }
-        uint32_t operator[](size_t i) const { return !m_IsU32 ? static_cast<uint32_t>(m_Ptr.u16[i]) : m_Ptr.u32[i]; }
-        Iterator begin() const noexcept { return Iterator{m_Ptr, m_IsU32}; }
-        Iterator end() const noexcept { return Iterator{m_IsU32 ? U32PtrOrU16Ptr{m_Ptr.u32 + m_Size} : U32PtrOrU16Ptr{m_Ptr.u16 + m_Size}, m_IsU32}; }
+        MeshIndicesView(uint16_t const* ptr, size_t size) :
+            m_Ptr{ptr},
+            m_Size{size},
+            m_IsU32{false}
+        {
+        }
+
+        MeshIndicesView(nonstd::span<uint16_t const> span) :
+            m_Ptr{span.data()},
+            m_Size{span.size()},
+            m_IsU32{false}
+        {
+        }
+
+        MeshIndicesView(uint32_t const* ptr, size_t size) :
+            m_Ptr{ptr},
+            m_Size{size},
+            m_IsU32{true}
+        {
+        }
+
+        MeshIndicesView(nonstd::span<uint32_t const> span) :
+            m_Ptr{span.data()},
+            m_Size{span.size()},
+            m_IsU32{true}
+        {
+        }
+
+        bool isU16() const
+        {
+            return !m_IsU32;
+        }
+
+        bool isU32() const
+        {
+            return m_IsU32;
+        }
+
+        size_t size() const
+        {
+            return m_Size;
+        }
+
+        nonstd::span<uint16_t const> toU16Span() const
+        {
+            OSC_ASSERT(!m_IsU32);
+            return {m_Ptr.u16, m_Size};
+        }
+
+        nonstd::span<uint32_t const> toU32Span() const
+        {
+            OSC_ASSERT(m_IsU32);
+            return {m_Ptr.u32, m_Size};
+        }
+
+        uint32_t operator[](size_t i) const
+        {
+            return !m_IsU32 ? static_cast<uint32_t>(m_Ptr.u16[i]) : m_Ptr.u32[i];
+        }
+
+        Iterator begin() const noexcept
+        {
+            return Iterator{m_Ptr, m_IsU32};
+        }
+
+        Iterator end() const noexcept
+        {
+            return Iterator{m_IsU32 ? U32PtrOrU16Ptr{m_Ptr.u32 + m_Size} : U32PtrOrU16Ptr{m_Ptr.u16 + m_Size}, m_IsU32};
+        }
 
     private:
         U32PtrOrU16Ptr m_Ptr;

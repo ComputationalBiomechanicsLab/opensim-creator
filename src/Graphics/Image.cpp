@@ -73,7 +73,11 @@ osc::Image::Image(Image const& other) :
     m_NumChannels{other.m_NumChannels},
     m_Pixels{new uint8_t[m_Dimensions.x * m_Dimensions.y * m_NumChannels]}
 {
-    std::copy(other.m_Pixels.get(), other.m_Pixels.get() + (m_Dimensions.x*m_Dimensions.y*m_NumChannels), m_Pixels.get());
+    std::copy(
+        other.m_Pixels.get(),
+        other.m_Pixels.get() + (m_Dimensions.x*m_Dimensions.y*m_NumChannels),
+        m_Pixels.get()
+    );
 }
 
 osc::Image& osc::Image::operator=(Image const& other)
@@ -82,6 +86,7 @@ osc::Image& osc::Image::operator=(Image const& other)
     std::swap(*this, copy);
     return *this;
 }
+
 osc::Image::Image(Image&&) noexcept = default;
 osc::Image& osc::Image::operator=(Image&& tmp) noexcept = default;
 osc::Image::~Image() noexcept = default;

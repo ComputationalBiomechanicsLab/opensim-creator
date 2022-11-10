@@ -20,8 +20,6 @@ namespace osc { class UID; }
 
 namespace osc
 {
-    inline constexpr float defaultImguiDragThreshold = 5.0f;
-
     // applies "dark" theme to current ImGui context
     void ImGuiApplyDarkTheme();
 
@@ -35,18 +33,17 @@ namespace osc
     // draws a texutre as an ImGui::Image, assumes UV coords of (0.0, 1.0); (1.0, 0.0)
     void DrawTextureAsImGuiImage(Texture2D&, glm::vec2 dims);
     void DrawTextureAsImGuiImage(RenderTexture&, glm::vec2 dims);
+    void DrawTextureAsImGuiImage(RenderTexture&);
 
-    struct ImGuiImageHittestResult final {
-        Rect rect;
-        bool isHovered;
-        bool isLeftClickReleasedWithoutDragging;
-        bool isRightClickReleasedWithoutDragging;
-
-        ImGuiImageHittestResult();
+    // hittest the last-drawn ImGui item
+    struct ImGuiItemHittestResult final {
+        Rect rect = {};
+        bool isHovered = false;
+        bool isLeftClickReleasedWithoutDragging = false;
+        bool isRightClickReleasedWithoutDragging = false;
     };
-    ImGuiImageHittestResult DrawTextureAsImGuiImageAndHittest(Texture2D&, glm::vec2 dims, float dragThreshold = defaultImguiDragThreshold);
-    ImGuiImageHittestResult DrawTextureAsImGuiImageAndHittest(RenderTexture&, float dragThreshold = defaultImguiDragThreshold);
-    ImGuiImageHittestResult DrawTextureAsImGuiImageAndHittest(RenderTexture&, glm::vec2 dims, float dragThreshold = defaultImguiDragThreshold);
+    ImGuiItemHittestResult HittestLastImguiItem();
+    ImGuiItemHittestResult HittestLastImguiItem(float dragThreshold);
 
     // returns `true` if any scancode in the provided range is currently pressed down
     bool IsAnyKeyDown(nonstd::span<int const>);
@@ -74,7 +71,8 @@ namespace osc
     bool IsAltDown();
 
     // returns `true` if the specified moouse button was released without the user dragging
-    bool IsMouseReleasedWithoutDragging(ImGuiMouseButton, float threshold = defaultImguiDragThreshold);
+    bool IsMouseReleasedWithoutDragging(ImGuiMouseButton);
+    bool IsMouseReleasedWithoutDragging(ImGuiMouseButton, float dragThreshold);
 
     // draws an overlay tooltip (content only)
     void DrawTooltipBodyOnly(char const*);

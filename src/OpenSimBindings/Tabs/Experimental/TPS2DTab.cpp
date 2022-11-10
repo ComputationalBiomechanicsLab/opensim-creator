@@ -411,7 +411,8 @@ public:
             renderMesh(m_InputGrid, texDims, m_InputRender);
 
             // draw rendered texture via ImGui
-            ImGuiImageHittestResult const ht = osc::DrawTextureAsImGuiImageAndHittest(*m_InputRender, texDims);
+            osc::DrawTextureAsImGuiImage(*m_InputRender, texDims);
+            ImGuiItemHittestResult const ht = osc::HittestLastImguiItem();
 
             // draw any 2D overlays etc.
             renderOverlayElements(ht);
@@ -487,7 +488,7 @@ private:
     }
 
     // render any 2D overlays
-    void renderOverlayElements(ImGuiImageHittestResult const& ht)
+    void renderOverlayElements(ImGuiItemHittestResult const& ht)
     {
         ImDrawList* const drawlist = ImGui::GetWindowDrawList();
 
@@ -517,7 +518,7 @@ private:
     }
 
     // render any mouse-related overlays
-    void renderMouseUIElements(ImGuiImageHittestResult const& ht)
+    void renderMouseUIElements(ImGuiItemHittestResult const& ht)
     {
         std::visit(osc::Overload
         {
@@ -527,7 +528,7 @@ private:
     }
 
     // render any mouse-related overlays for when the user hasn't clicked yet
-    void renderMouseUIElements(ImGuiImageHittestResult const& ht, GUIInitialMouseState st)
+    void renderMouseUIElements(ImGuiItemHittestResult const& ht, GUIInitialMouseState st)
     {
         glm::vec2 const mouseScreenPos = ImGui::GetMousePos();
         glm::vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
@@ -543,7 +544,7 @@ private:
     }
 
     // render any mouse-related overlays for when the user has clicked once
-    void renderMouseUIElements(ImGuiImageHittestResult const& ht, GUIFirstClickMouseState st)
+    void renderMouseUIElements(ImGuiItemHittestResult const& ht, GUIFirstClickMouseState st)
     {
         glm::vec2 const mouseScreenPos = ImGui::GetMousePos();
         glm::vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;

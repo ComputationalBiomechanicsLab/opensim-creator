@@ -250,7 +250,8 @@ public:
         drawSceneTexture(rs);
 
         // blit texture as an ImGui::Image
-        m_RenderImage = DrawTextureAsImGuiImageAndHittest(m_Rendererer.updRenderTexture(), ImGui::GetContentRegionAvail());
+        osc::DrawTextureAsImGuiImage(m_Rendererer.updRenderTexture(), ImGui::GetContentRegionAvail());
+        m_RenderImage = osc::HittestLastImguiItem();
 
         // draw any ImGui-based overlays over the image
         drawImGuiOverlays();
@@ -647,7 +648,7 @@ private:
     SceneRenderer m_Rendererer;
 
     // ImGui compositing/hittesting state
-    ImGuiImageHittestResult m_RenderImage;
+    osc::ImGuiItemHittestResult m_RenderImage;
 
     // other stuff
     bool m_AutoFocusCameraNextFrame = false;

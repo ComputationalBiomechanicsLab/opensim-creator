@@ -228,7 +228,7 @@ glm::vec3 osc::MassCenter(Mesh const& m)
     size_t const len = (indices.size() / 3) * 3;  // paranioa
 
     double totalVolume = 0.0f;
-    glm::vec<3, double> weightedCenterOfMass = {0.0, 0.0, 0.0};
+    glm::dvec3 weightedCenterOfMass = {0.0, 0.0, 0.0};
     for (size_t i = 0; i < len; i += 3)
     {
         Tetrahedron tetrahedron;
@@ -238,7 +238,7 @@ glm::vec3 osc::MassCenter(Mesh const& m)
         tetrahedron[3] = verts[indices[i+2]];
 
         double const volume = Volume(tetrahedron);
-        glm::vec<3, double> const centerOfMass = Center(tetrahedron);
+        glm::dvec3 const centerOfMass = Center(tetrahedron);
 
         totalVolume += volume;
         weightedCenterOfMass += volume * centerOfMass;

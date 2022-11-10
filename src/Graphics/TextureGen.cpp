@@ -8,7 +8,7 @@
 
 osc::Texture2D osc::GenChequeredFloorTexture()
 {
-    Image img = GenerateChequeredFloorImage();
+    Image const img = GenerateChequeredFloorImage();
 
     Texture2D rv
     {

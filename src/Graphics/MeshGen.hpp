@@ -2,6 +2,8 @@
 
 #include "src/Graphics/Mesh.hpp"
 
+#include <glm/vec2.hpp>
+
 #include <cstddef>
 
 namespace osc

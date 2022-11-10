@@ -90,7 +90,7 @@ namespace sdl {
     // preprocessor
     inline Window CreateWindoww(const char* title, int x, int y, int w, int h, Uint32 flags)
     {
-        SDL_Window* win = SDL_CreateWindow(title, x, y, w, h, flags);
+        SDL_Window* const win = SDL_CreateWindow(title, x, y, w, h, flags);
 
         if (win == nullptr)
         {
@@ -178,7 +178,7 @@ namespace sdl {
     // https://wiki.libsdl.org/SDL_GL_CreateContext
     inline GLContext GL_CreateContext(SDL_Window* w)
     {
-        SDL_GLContext ctx = SDL_GL_CreateContext(w);
+        SDL_GLContext const ctx = SDL_GL_CreateContext(w);
 
         if (ctx == nullptr)
         {
@@ -225,7 +225,7 @@ namespace sdl {
     //     https://wiki.libsdl.org/SDL_CreateRGBSurface
     inline Surface CreateRGBSurface(Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
     {
-        SDL_Surface* handle = SDL_CreateRGBSurface(flags, width, height, depth, Rmask, Gmask, Bmask, Amask);
+        SDL_Surface* const handle = SDL_CreateRGBSurface(flags, width, height, depth, Rmask, Gmask, Bmask, Amask);
 
         if (handle == nullptr)
         {
@@ -299,18 +299,21 @@ namespace sdl {
     //     https://wiki.libsdl.org/SDL_CreateTextureFromSurface
     inline Texture CreateTextureFromSurface(SDL_Renderer* r, SDL_Surface* s)
     {
-        SDL_Texture* t = SDL_CreateTextureFromSurface(r, s);
+        SDL_Texture* const t = SDL_CreateTextureFromSurface(r, s);
+
         if (t == nullptr)
         {
             throw std::runtime_error{std::string{"SDL_CreateTextureFromSurface failed: "} + SDL_GetError()};
         }
+
         return Texture{t};
     }
 
     // https://wiki.libsdl.org/SDL_RenderCopy
     inline void RenderCopy(SDL_Renderer* r, SDL_Texture* t, SDL_Rect* src, SDL_Rect* dest)
     {
-        int rv = SDL_RenderCopy(r, t, src, dest);
+        int const rv = SDL_RenderCopy(r, t, src, dest);
+
         if (rv != 0)
         {
             throw std::runtime_error{std::string{"SDL_RenderCopy failed: "} + SDL_GetError()};
@@ -374,7 +377,8 @@ namespace sdl {
 
     inline Timer AddTimer(Uint32 interval, SDL_TimerCallback callback, void* param)
     {
-        SDL_TimerID handle = SDL_AddTimer(interval, callback, param);
+        SDL_TimerID const handle = SDL_AddTimer(interval, callback, param);
+
         if (handle == 0)
         {
             throw std::runtime_error{std::string{"SDL_AddTimer failed: "} + SDL_GetError()};

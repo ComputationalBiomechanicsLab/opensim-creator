@@ -118,7 +118,7 @@ private:
     std::unordered_map<ShaderInputs, std::unique_ptr<Shader>> m_Cache;
 };
 
-// public API
+// public API (PIMPL)
 
 osc::Shader const& osc::ShaderCache::get(std::string_view vertexShaderResource, std::string_view fragmentShaderResource)
 {

@@ -11,7 +11,8 @@ class osc::CachedSceneRenderer::Impl final {
 public:
     osc::RenderTexture& draw(nonstd::span<SceneDecoration const> decorations, SceneRendererParams const& params)
     {
-        if (params != m_LastRenderingParams || !std::equal(decorations.cbegin(), decorations.cend(), m_LastDecorationList.cbegin(), m_LastDecorationList.cend()))
+        if (params != m_LastRenderingParams ||
+            !std::equal(decorations.cbegin(), decorations.cend(), m_LastDecorationList.cbegin(), m_LastDecorationList.cend()))
         {
             // inputs have changed: cache the new ones and re-render
             m_LastRenderingParams = params;
@@ -27,6 +28,9 @@ private:
     std::vector<osc::SceneDecoration> m_LastDecorationList;
     osc::SceneRenderer m_SceneRenderer;
 };
+
+
+// public API (PIMPL)
 
 osc::CachedSceneRenderer::CachedSceneRenderer() :
     m_Impl{new Impl{}}

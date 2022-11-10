@@ -18,18 +18,7 @@ public:
     std::shared_ptr<Mesh const> cylinder = std::make_shared<Mesh>(GenUntexturedSimbodyCylinder(16));
     std::shared_ptr<Mesh const> cube = std::make_shared<Mesh>(GenCube());
     std::shared_ptr<Mesh const> cone = std::make_shared<Mesh>(GenUntexturedSimbodyCone(12));
-    std::shared_ptr<Mesh const> floor = []()
-    {
-        std::shared_ptr<Mesh> rv = std::make_shared<Mesh>(GenTexturedQuad());
-        nonstd::span<glm::vec2 const> oldCoords = rv->getTexCoords();
-        std::vector<glm::vec2> newCoords;
-        newCoords.reserve(oldCoords.size());
-        for (glm::vec2 const& oldCoord : oldCoords)
-        {
-            newCoords.push_back(200.0f * oldCoord);
-        }
-        return rv;
-    }();
+    std::shared_ptr<Mesh const> floor = std::make_shared<Mesh>(GenTexturedQuad());
     std::shared_ptr<Mesh const> grid100x100 = std::make_shared<Mesh>(GenNbyNGrid(1000));
     std::shared_ptr<Mesh const> cubeWire = std::make_shared<Mesh>(GenCubeLines());
     std::shared_ptr<Mesh const> yLine = std::make_shared<Mesh>(GenYLine());
