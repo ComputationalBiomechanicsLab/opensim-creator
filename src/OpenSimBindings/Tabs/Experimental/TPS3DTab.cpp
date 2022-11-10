@@ -1173,7 +1173,7 @@ namespace
             {
                 char const* label = "landmark radius";
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - padding.x);
-                ImGui::SliderFloat(label, &m_LandmarkRadius, 0.0001f, 1.0f, "%.4f", 2.0f);
+                ImGui::SliderFloat(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", 2.0f);
             }
         }
 
