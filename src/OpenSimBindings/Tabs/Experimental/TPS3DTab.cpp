@@ -1139,6 +1139,19 @@ namespace
             glm::vec2 const padding = {10.0f, 10.0f};
             ImGui::SetCursorScreenPos(renderRect.p1 + padding);
 
+            ImGui::TextDisabled(ICON_FA_INFO);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("num verts = %zu", m_State->getInputMesh(m_DocumentIdentifier).getVerts().size());
+                ImGui::Text("num tris = %zu", m_State->getInputMesh(m_DocumentIdentifier).getIndices().size()/3);
+                ImGui::PopTextWrapPos();
+                ImGui::EndTooltip();
+            }
+
+            ImGui::SameLine();
+
             // ImGui: draw "browse for new mesh" button
             if (ImGui::Button("browse"))
             {
@@ -1288,6 +1301,15 @@ namespace
             {
                 // ImGui: set cursor to draw over the top-right of the render texture (with padding)
                 ImGui::SetCursorScreenPos(renderRect.p1 + padding);
+
+                // ImGui: draw "autofit camera" button
+                if (ImGui::Button(ICON_FA_EXPAND))
+                {
+                    osc::AutoFocus(m_Camera, m_State->getTransformedMesh().getBounds());
+                    m_State->LinkedCameraBase = m_Camera;
+                }
+
+                ImGui::SameLine();
 
                 // ImGui: draw checkbox for toggling whether to show the destination mesh in the scene
                 {
