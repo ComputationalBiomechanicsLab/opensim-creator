@@ -709,6 +709,7 @@ void osc::AutoFocus(PolarPerspectiveCamera& camera, AABB const& elementAABB)
     camera.radius = 3.0f * LongestDim(elementAABB);
     camera.theta = osc::fpi4;
     camera.phi = osc::fpi4;
+    camera.rescaleZNearAndZFarBasedOnRadius();
 }
 
 

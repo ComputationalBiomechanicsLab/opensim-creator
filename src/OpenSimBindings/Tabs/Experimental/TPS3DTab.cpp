@@ -890,6 +890,9 @@ namespace
         // `true` if the user wants the cameras to be linked
         bool LinkCameras = true;
 
+        // `true` if `LinkCameras` should only link the rotational parts of the cameras
+        bool OnlyLinkRotation = false;
+
         // shared linked camera
         osc::PolarPerspectiveCamera LinkedCameraBase = CreateCameraFocusedOn(EditedDocument->getScratch().Source.Mesh.getBounds());
 
@@ -1006,7 +1009,15 @@ namespace
             // if cameras are linked together, ensure all cameras match the "base" camera
             if (m_State->LinkCameras && m_Camera != m_State->LinkedCameraBase)
             {
-                m_Camera = m_State->LinkedCameraBase;
+                if (m_State->OnlyLinkRotation)
+                {
+                    m_Camera.phi = m_State->LinkedCameraBase.phi;
+                    m_Camera.theta = m_State->LinkedCameraBase.theta;
+                }
+                else
+                {
+                    m_Camera = m_State->LinkedCameraBase;
+                }
             }
 
             // update camera if user drags it around etc.
@@ -1185,7 +1196,15 @@ namespace
             // if cameras are linked together, ensure all cameras match the "base" camera
             if (m_State->LinkCameras && m_Camera != m_State->LinkedCameraBase)
             {
-                m_Camera = m_State->LinkedCameraBase;
+                if (m_State->OnlyLinkRotation)
+                {
+                    m_Camera.phi = m_State->LinkedCameraBase.phi;
+                    m_Camera.theta = m_State->LinkedCameraBase.theta;
+                }
+                else
+                {
+                    m_Camera = m_State->LinkedCameraBase;
+                }
             }
 
             // fill the entire available region with the render
@@ -1369,10 +1388,22 @@ namespace
 
         void drawCameraLockCheckbox()
         {
-            bool v = m_TabState->LinkCameras;
-            if (ImGui::Checkbox("link cameras", &v))
             {
-                m_TabState->LinkCameras = v;
+                bool linkCameras = m_TabState->LinkCameras;
+                if (ImGui::Checkbox("link cameras", &linkCameras))
+                {
+                    m_TabState->LinkCameras = linkCameras;
+                }
+            }
+
+            ImGui::SameLine();
+
+            {
+                bool onlyLinkRotation = m_TabState->OnlyLinkRotation;
+                if (ImGui::Checkbox("only link rotation", &onlyLinkRotation))
+                {
+                    m_TabState->OnlyLinkRotation = onlyLinkRotation;
+                }
             }
         }
 
