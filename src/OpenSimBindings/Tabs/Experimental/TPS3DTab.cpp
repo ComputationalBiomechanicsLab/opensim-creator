@@ -495,6 +495,19 @@ namespace
         Destination,
     };
 
+    TPSDocumentInput const& GetInputOrThrow(TPSDocument const& doc, TPSDocumentIdentifier which)
+    {
+        switch (which)
+        {
+        case TPSDocumentIdentifier::Source:
+            return doc.Source;
+        case TPSDocumentIdentifier::Destination:
+            return doc.Destination;
+        default:
+            throw std::runtime_error{"invalid document identifier provided to a getter"};
+        }
+    }
+
     TPSDocumentInput& UpdScratchInputOrThrow(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentIdentifier which)
     {
         switch (which)
@@ -661,8 +674,38 @@ namespace
         doc.commitScratch("deleted landmarks");
     }
 
+    // action save all source/destination landmarks to a simple headerless CSV file (matches loading)
+    void ActionSaveLandmarksToCSV(TPSDocument const& doc, TPSDocumentIdentifier which)
+    {
+        std::filesystem::path const filePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+
+        if (filePath.empty())
+        {
+            return;  // user didn't select a save location
+        }
+
+        std::ofstream outfile{filePath};
+
+        if (!outfile)
+        {
+            return;  // couldn't open file for writing
+        }
+
+        osc::CSVWriter writer{outfile};
+        std::vector<std::string> cols(3);
+
+        TPSDocumentInput const& input = GetInputOrThrow(doc, which);
+        for (auto const& [k, pos] : input.Landmarks)
+        {
+            cols.at(0) = std::to_string(pos.x);
+            cols.at(1) = std::to_string(pos.y);
+            cols.at(2) = std::to_string(pos.z);
+            writer.writerow(cols);
+        }
+    }
+
     // action: save all pairable landmarks in the TPS document to a user-specified CSV file
-    void ActionSaveLandmarksToCSV(TPSDocument const& doc)
+    void ActionSaveLandmarksToPairedCSV(TPSDocument const& doc)
     {
         std::vector<LandmarkPair3D> const pairs = GetLandmarkPairs(doc);
         std::filesystem::path const filePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
@@ -1455,7 +1498,7 @@ namespace
         {
             if (ImGui::Button(ICON_FA_SAVE))
             {
-                ActionSaveLandmarksToCSV(m_TabState->EditedDocument->getScratch());
+                ActionSaveLandmarksToPairedCSV(m_TabState->EditedDocument->getScratch());
             }
             osc::DrawTooltipIfItemHovered("Save Landmarks to CSV", "Saves all pair-able landmarks to a CSV file, for external processing");
         }
@@ -1593,9 +1636,17 @@ namespace
             {
                 ActionLoadLandmarksCSV(*m_TabState->EditedDocument, TPSDocumentIdentifier::Destination);
             }
-            if (ImGui::MenuItem("Save Landmarks to CSV"))
+            if (ImGui::MenuItem("Save Source Landmarks to CSV"))
             {
-                ActionSaveLandmarksToCSV(m_TabState->EditedDocument->getScratch());
+                ActionSaveLandmarksToCSV(m_TabState->EditedDocument->getScratch(), TPSDocumentIdentifier::Source);
+            }
+            if (ImGui::MenuItem("Save Destination Landmarks to CSV"))
+            {
+                ActionSaveLandmarksToCSV(m_TabState->EditedDocument->getScratch(), TPSDocumentIdentifier::Destination);
+            }
+            if (ImGui::MenuItem("Save Landmark Pairs to CSV"))
+            {
+                ActionSaveLandmarksToPairedCSV(m_TabState->EditedDocument->getScratch());
             }
         }
 
