@@ -554,13 +554,65 @@ namespace
     // action: prompt the user to browse for a different source mesh
     void ActionBrowseForNewMesh(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentIdentifier which)
     {
-        TPSDocumentInput& input = UpdScratchInputOrThrow(doc, which);
         std::filesystem::path const p = osc::PromptUserForFile("vtp,obj");
-        if (!p.empty())
+        if (p.empty())
         {
-            input.Mesh = osc::LoadMeshViaSimTK(p);
-            doc.commitScratch("changed mesh");
+            return;  // user didn't select anything
         }
+
+        TPSDocumentInput& input = UpdScratchInputOrThrow(doc, which);
+        input.Mesh = osc::LoadMeshViaSimTK(p);
+        doc.commitScratch("changed mesh");
+    }
+
+    // action load landmarks from a headerless CSV file into source/destination
+    void ActionLoadLandmarksCSV(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentIdentifier which)
+    {
+        std::filesystem::path const p = osc::PromptUserForFile("csv");
+        if (p.empty())
+        {
+            return;  // user didn't select anything
+        }
+
+        std::ifstream file{p};
+
+        if (!file)
+        {
+            return;  // some kind of error opening the file
+        }
+
+        osc::CSVReader reader{file};
+        std::vector<glm::vec3> landmarks;
+
+        while (auto maybeCols = reader.next())
+        {
+            std::vector<std::string> cols = *maybeCols;
+            if (cols.size() < 3)
+            {
+                continue;  // too few columns: ignore
+            }
+            std::optional<float> x = osc::FromCharsStripWhitespace(cols[0]);
+            std::optional<float> y = osc::FromCharsStripWhitespace(cols[1]);
+            std::optional<float> z = osc::FromCharsStripWhitespace(cols[2]);
+            if (!(x && y && z))
+            {
+                continue;  // a column was non-numeric: ignore entire line
+            }
+            landmarks.emplace_back(*x, *y, *z);
+        }
+
+        if (landmarks.empty())
+        {
+            return;  // file was empty, or had invalid data
+        }
+
+        TPSDocumentInput& input = UpdScratchInputOrThrow(doc, which);
+        for (glm::vec3 const& landmark : landmarks)
+        {
+            std::string const key = std::to_string(input.Landmarks.size());
+            input.Landmarks[key] = landmark;
+        }
+        doc.commitScratch("loaded landmarks");
     }
 
     // action: set the TPS blending factor for the result, but don't save it to undo/redo storage
@@ -1510,6 +1562,14 @@ namespace
             if (ImGui::MenuItem("Load Destination Mesh"))
             {
                 ActionBrowseForNewMesh(*m_TabState->EditedDocument, TPSDocumentIdentifier::Destination);
+            }
+            if (ImGui::MenuItem("Load Source Landmarks from CSV"))
+            {
+                ActionLoadLandmarksCSV(*m_TabState->EditedDocument, TPSDocumentIdentifier::Source);
+            }
+            if (ImGui::MenuItem("Load Destination Landmarks from CSV"))
+            {
+                ActionLoadLandmarksCSV(*m_TabState->EditedDocument, TPSDocumentIdentifier::Destination);
             }
             if (ImGui::MenuItem("Save Landmarks to CSV"))
             {

@@ -2586,6 +2586,8 @@ private:
 
     void recalculateBounds()
     {
+        OSC_PERF("bounds/BVH computation");
+
         if (m_NumIndices == 0)
         {
             m_AABB = {};
