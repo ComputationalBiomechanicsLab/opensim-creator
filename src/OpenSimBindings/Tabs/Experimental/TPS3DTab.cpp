@@ -998,6 +998,11 @@ namespace
                 m_State->PerFrameHover.emplace(meshCollision->position);
             }
 
+            // render: draw the scene into the content rect and hittest it
+            osc::RenderTexture& renderTexture = renderScene(contentRectDims, meshCollision, landmarkCollision);
+            osc::DrawTextureAsImGuiImage(renderTexture);
+            osc::ImGuiItemHittestResult const htResult = osc::HittestLastImguiItem();
+
             // if cameras are linked together, ensure all cameras match the "base" camera
             if (m_State->LinkCameras && m_Camera != m_State->LinkedCameraBase)
             {
@@ -1005,18 +1010,13 @@ namespace
             }
 
             // update camera if user drags it around etc.
-            if (renderHovered)
+            if (htResult.isHovered)
             {
                 if (osc::UpdatePolarCameraFromImGuiUserInput(contentRectDims, m_Camera))
                 {
                     m_State->LinkedCameraBase = m_Camera;  // reflects latest modification
                 }
             }
-
-            // render: draw the scene into the content rect and hittest it
-            osc::RenderTexture& renderTexture = renderScene(contentRectDims, meshCollision, landmarkCollision);
-            osc::DrawTextureAsImGuiImage(renderTexture);
-            osc::ImGuiItemHittestResult const htResult = osc::HittestLastImguiItem();
 
             // event: if the user clicks and something is hovered, select it; otherwise, add a landmark
             if (htResult.isLeftClickReleasedWithoutDragging)
@@ -1031,13 +1031,11 @@ namespace
                 }
                 else if (meshCollision)
                 {
-                    std::string const id = ActionAddLandmarkTo(
+                    ActionAddLandmarkTo(
                         *m_State->EditedDocument,
                         m_DocumentIdentifier,
                         meshCollision->position
                     );
-                    m_State->UserSelection.clear();
-                    m_State->UserSelection.select(id);
                 }
             }
 
@@ -1090,6 +1088,7 @@ namespace
             if (ImGui::Button(ICON_FA_EXPAND))
             {
                 osc::AutoFocus(m_Camera, m_State->getInputMesh(m_DocumentIdentifier).getBounds());
+                m_State->LinkedCameraBase = m_Camera;
             }
 
             ImGui::SameLine();
