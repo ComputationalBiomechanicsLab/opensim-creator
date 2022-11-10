@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Widgets/Popup.hpp"
+#include "src/Widgets/VirtualPopup.hpp"
 
 #include <functional>
 #include <memory>
@@ -10,7 +10,7 @@ namespace OpenSim { class Geometry; }
 
 namespace osc
 {
-    class SelectGeometryPopup final : public Popup {
+    class SelectGeometryPopup final : public VirtualPopup {
     public:
         explicit SelectGeometryPopup(
             std::string_view popupName,

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Widgets/Popup.hpp"
+#include "src/Widgets/VirtualPopup.hpp"
 
 #include <functional>
 #include <memory>
@@ -13,7 +13,7 @@ namespace osc { class UndoableModelStatePair; }
 namespace osc
 {
     // popup for selecting a component of a specified type
-    class SelectComponentPopup final : public Popup {
+    class SelectComponentPopup final : public VirtualPopup {
     public:
         SelectComponentPopup(
             std::string_view popupName,

@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "src/Widgets/Popup.hpp"
+#include "src/Widgets/VirtualPopup.hpp"
 
 #include <memory>
 #include <string_view>
@@ -9,7 +9,7 @@ namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class ReassignSocketPopup final : public Popup {
+    class ReassignSocketPopup final : public VirtualPopup {
     public:
         explicit ReassignSocketPopup(
             std::string_view popupName,

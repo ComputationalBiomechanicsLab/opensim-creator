@@ -31,7 +31,7 @@
 #include "src/Utils/UID.hpp"
 #include "src/Widgets/LogViewer.hpp"
 #include "src/Widgets/PerfPanel.hpp"
-#include "src/Widgets/Popup.hpp"
+#include "src/Widgets/VirtualPanel.hpp"
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -713,7 +713,7 @@ private:
         pushPopup(std::move(popup));
     }
 
-    void pushPopup(std::unique_ptr<Popup> popup) override
+    void pushPopup(std::unique_ptr<VirtualPopup> popup) override
     {
         popup->open();
         m_Popups.push_back(std::move(popup));
@@ -741,7 +741,7 @@ private:
     std::vector<ModelMusclePlotPanel> m_ModelMusclePlots;
     EditorTabStatusBar m_StatusBar{m_Parent, this, m_Model};
     std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
-    std::vector<std::unique_ptr<Popup>> m_Popups;
+    std::vector<std::unique_ptr<VirtualPopup>> m_Popups;
 
     // flag that's set+reset each frame to prevent continual
     // throwing
