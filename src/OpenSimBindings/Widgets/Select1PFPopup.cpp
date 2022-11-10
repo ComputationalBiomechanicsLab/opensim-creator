@@ -60,52 +60,40 @@ osc::Select1PFPopup::Select1PFPopup(
     std::shared_ptr<UndoableModelStatePair> model,
     std::function<void(OpenSim::ComponentPath const&)> onSelection) :
 
-    m_Impl{new Impl{std::move(popupName), std::move(model), std::move(onSelection)}}
+    m_Impl{std::make_unique<Impl>(std::move(popupName), std::move(model), std::move(onSelection))}
 {
 }
 
-osc::Select1PFPopup::Select1PFPopup(Select1PFPopup&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
+osc::Select1PFPopup::Select1PFPopup(Select1PFPopup&&) noexcept = default;
+osc::Select1PFPopup& osc::Select1PFPopup::operator=(Select1PFPopup&&) noexcept = default;
+osc::Select1PFPopup::~Select1PFPopup() noexcept = default;
 
-osc::Select1PFPopup& osc::Select1PFPopup::operator=(Select1PFPopup&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::Select1PFPopup::~Select1PFPopup() noexcept
-{
-    delete m_Impl;
-}
-
-bool osc::Select1PFPopup::isOpen() const
+bool osc::Select1PFPopup::implIsOpen() const
 {
     return m_Impl->isOpen();
 }
 
-void osc::Select1PFPopup::open()
+void osc::Select1PFPopup::implOpen()
 {
     m_Impl->open();
 }
 
-void osc::Select1PFPopup::close()
+void osc::Select1PFPopup::implClose()
 {
     m_Impl->close();
 }
 
-bool osc::Select1PFPopup::beginPopup()
+bool osc::Select1PFPopup::implBeginPopup()
 {
     return m_Impl->beginPopup();
 }
 
-void osc::Select1PFPopup::drawPopupContent()
+void osc::Select1PFPopup::implDrawPopupContent()
 {
     m_Impl->drawPopupContent();
 }
 
-void osc::Select1PFPopup::endPopup()
+void osc::Select1PFPopup::implEndPopup()
 {
     m_Impl->endPopup();
 }

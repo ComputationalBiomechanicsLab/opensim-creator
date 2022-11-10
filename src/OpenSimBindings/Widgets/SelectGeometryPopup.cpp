@@ -244,52 +244,40 @@ private:
 // public API (PIMPL)
 
 osc::SelectGeometryPopup::SelectGeometryPopup(std::string_view popupName, std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection) :
-    m_Impl{new Impl{std::move(popupName), std::move(onSelection)}}
+    m_Impl{std::make_unique<Impl>(std::move(popupName), std::move(onSelection))}
 {
 }
 
-osc::SelectGeometryPopup::SelectGeometryPopup(SelectGeometryPopup&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
+osc::SelectGeometryPopup::SelectGeometryPopup(SelectGeometryPopup&&) noexcept = default;
+osc::SelectGeometryPopup& osc::SelectGeometryPopup::operator=(SelectGeometryPopup&&) noexcept = default;
+osc::SelectGeometryPopup::~SelectGeometryPopup() noexcept = default;
 
-osc::SelectGeometryPopup& osc::SelectGeometryPopup::operator=(SelectGeometryPopup&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::SelectGeometryPopup::~SelectGeometryPopup() noexcept
-{
-    delete m_Impl;
-}
-
-bool osc::SelectGeometryPopup::isOpen() const
+bool osc::SelectGeometryPopup::implIsOpen() const
 {
     return m_Impl->isOpen();
 }
 
-void osc::SelectGeometryPopup::open()
+void osc::SelectGeometryPopup::implOpen()
 {
     m_Impl->open();
 }
 
-void osc::SelectGeometryPopup::close()
+void osc::SelectGeometryPopup::implClose()
 {
     m_Impl->close();
 }
 
-bool osc::SelectGeometryPopup::beginPopup()
+bool osc::SelectGeometryPopup::implBeginPopup()
 {
     return m_Impl->beginPopup();
 }
 
-void osc::SelectGeometryPopup::drawPopupContent()
+void osc::SelectGeometryPopup::implDrawPopupContent()
 {
     m_Impl->drawPopupContent();
 }
 
-void osc::SelectGeometryPopup::endPopup()
+void osc::SelectGeometryPopup::implEndPopup()
 {
     m_Impl->endPopup();
 }

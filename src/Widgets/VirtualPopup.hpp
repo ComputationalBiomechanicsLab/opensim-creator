@@ -13,11 +13,42 @@ namespace osc
     public:
         virtual ~VirtualPopup() noexcept = default;
 
-        virtual bool isOpen() const = 0;
-        virtual void open() = 0;
-        virtual void close() = 0;
-        virtual bool beginPopup() = 0;
-        virtual void drawPopupContent() = 0;
-        virtual void endPopup() = 0;
+        bool isOpen()
+        {
+            return implIsOpen();
+        }
+
+        void open()
+        {
+            implOpen();
+        }
+
+        void close()
+        {
+            implClose();
+        }
+
+        bool beginPopup()
+        {
+            return implBeginPopup();
+        }
+
+        void drawPopupContent()
+        {
+            implDrawPopupContent();
+        }
+
+        void endPopup()
+        {
+            implEndPopup();
+        }
+
+    private:
+        virtual bool implIsOpen() const = 0;
+        virtual void implOpen() = 0;
+        virtual void implClose() = 0;
+        virtual bool implBeginPopup() = 0;
+        virtual void implDrawPopupContent() = 0;
+        virtual void implEndPopup() = 0;
     };
 }

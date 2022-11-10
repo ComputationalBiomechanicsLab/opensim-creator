@@ -66,52 +66,40 @@ osc::SelectComponentPopup::SelectComponentPopup(
     std::function<void(OpenSim::ComponentPath const&)> onSelection,
     std::function<bool(OpenSim::Component const&)> filter) :
 
-    m_Impl{new Impl{std::move(popupName), std::move(model), std::move(onSelection), std::move(filter)}}
+    m_Impl{std::make_unique<Impl>(std::move(popupName), std::move(model), std::move(onSelection), std::move(filter))}
 {
 }
 
-osc::SelectComponentPopup::SelectComponentPopup(SelectComponentPopup&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
+osc::SelectComponentPopup::SelectComponentPopup(SelectComponentPopup&&) noexcept = default;
+osc::SelectComponentPopup& osc::SelectComponentPopup::operator=(SelectComponentPopup&&) noexcept = default;
+osc::SelectComponentPopup::~SelectComponentPopup() noexcept = default;
 
-osc::SelectComponentPopup& osc::SelectComponentPopup::operator=(SelectComponentPopup&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::SelectComponentPopup::~SelectComponentPopup() noexcept
-{
-    delete m_Impl;
-}
-
-bool osc::SelectComponentPopup::isOpen() const
+bool osc::SelectComponentPopup::implIsOpen() const
 {
     return m_Impl->isOpen();
 }
 
-void osc::SelectComponentPopup::open()
+void osc::SelectComponentPopup::implOpen()
 {
     m_Impl->open();
 }
 
-void osc::SelectComponentPopup::close()
+void osc::SelectComponentPopup::implClose()
 {
     m_Impl->close();
 }
 
-bool osc::SelectComponentPopup::beginPopup()
+bool osc::SelectComponentPopup::implBeginPopup()
 {
     return m_Impl->beginPopup();
 }
 
-void osc::SelectComponentPopup::drawPopupContent()
+void osc::SelectComponentPopup::implDrawPopupContent()
 {
     m_Impl->drawPopupContent();
 }
 
-void osc::SelectComponentPopup::endPopup()
+void osc::SelectComponentPopup::implEndPopup()
 {
     m_Impl->endPopup();
 }

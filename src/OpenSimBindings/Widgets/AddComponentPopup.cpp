@@ -493,52 +493,40 @@ osc::AddComponentPopup::AddComponentPopup(
     std::unique_ptr<OpenSim::Component> prototype,
     std::string_view popupName) :
 
-    m_Impl{new Impl{std::move(api), std::move(uum), std::move(prototype), std::move(popupName)}}
+    m_Impl{std::make_unique<Impl>(std::move(api), std::move(uum), std::move(prototype), std::move(popupName))}
 {
 }
 
-osc::AddComponentPopup::AddComponentPopup(AddComponentPopup&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
+osc::AddComponentPopup::AddComponentPopup(AddComponentPopup&&) noexcept = default;
+osc::AddComponentPopup& osc::AddComponentPopup::operator=(AddComponentPopup&&) noexcept = default;
+osc::AddComponentPopup::~AddComponentPopup() noexcept = default;
 
-osc::AddComponentPopup& osc::AddComponentPopup::operator=(AddComponentPopup&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::AddComponentPopup::~AddComponentPopup() noexcept
-{
-    delete m_Impl;
-}
-
-bool osc::AddComponentPopup::isOpen() const
+bool osc::AddComponentPopup::implIsOpen() const
 {
     return m_Impl->isOpen();
 }
 
-void osc::AddComponentPopup::open()
+void osc::AddComponentPopup::implOpen()
 {
     m_Impl->open();
 }
 
-void osc::AddComponentPopup::close()
+void osc::AddComponentPopup::implClose()
 {
     m_Impl->close();
 }
 
-bool osc::AddComponentPopup::beginPopup()
+bool osc::AddComponentPopup::implBeginPopup()
 {
     return m_Impl->beginPopup();
 }
 
-void osc::AddComponentPopup::drawPopupContent()
+void osc::AddComponentPopup::implDrawPopupContent()
 {
     m_Impl->drawPopupContent();
 }
 
-void osc::AddComponentPopup::endPopup()
+void osc::AddComponentPopup::implEndPopup()
 {
     m_Impl->endPopup();
 }

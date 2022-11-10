@@ -23,15 +23,15 @@ namespace osc
         Select1PFPopup& operator=(Select1PFPopup&&) noexcept;
         ~Select1PFPopup() noexcept;
 
-        bool isOpen() const override;
-        void open() override;
-        void close() override;
-        bool beginPopup() override;
-        void drawPopupContent() override;
-        void endPopup() override;
-
     private:
+        bool implIsOpen() const final;
+        void implOpen() final;
+        void implClose() final;
+        bool implBeginPopup() final;
+        void implDrawPopupContent() final;
+        void implEndPopup() final;
+
         class Impl;
-        Impl* m_Impl;
+        std::unique_ptr<Impl> m_Impl;
     };
 }

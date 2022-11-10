@@ -222,52 +222,40 @@ osc::ReassignSocketPopup::ReassignSocketPopup(
     std::string_view componentAbsPath,
     std::string_view socketName) :
 
-    m_Impl{new Impl{std::move(popupName), std::move(model), std::move(componentAbsPath), std::move(socketName)}}
+    m_Impl{std::make_unique<Impl>(std::move(popupName), std::move(model), std::move(componentAbsPath), std::move(socketName))}
 {
 }
 
-osc::ReassignSocketPopup::ReassignSocketPopup(ReassignSocketPopup&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
+osc::ReassignSocketPopup::ReassignSocketPopup(ReassignSocketPopup&&) noexcept = default;
+osc::ReassignSocketPopup& osc::ReassignSocketPopup::operator=(ReassignSocketPopup&&) noexcept = default;
+osc::ReassignSocketPopup::~ReassignSocketPopup() noexcept = default;
 
-osc::ReassignSocketPopup& osc::ReassignSocketPopup::operator=(ReassignSocketPopup&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::ReassignSocketPopup::~ReassignSocketPopup() noexcept
-{
-    delete m_Impl;
-}
-
-bool osc::ReassignSocketPopup::isOpen() const
+bool osc::ReassignSocketPopup::implIsOpen() const
 {
     return m_Impl->isOpen();
 }
 
-void osc::ReassignSocketPopup::open()
+void osc::ReassignSocketPopup::implOpen()
 {
     m_Impl->open();
 }
 
-void osc::ReassignSocketPopup::close()
+void osc::ReassignSocketPopup::implClose()
 {
     m_Impl->close();
 }
 
-bool osc::ReassignSocketPopup::beginPopup()
+bool osc::ReassignSocketPopup::implBeginPopup()
 {
     return m_Impl->beginPopup();
 }
 
-void osc::ReassignSocketPopup::drawPopupContent()
+void osc::ReassignSocketPopup::implDrawPopupContent()
 {
     m_Impl->drawPopupContent();
 }
 
-void osc::ReassignSocketPopup::endPopup()
+void osc::ReassignSocketPopup::implEndPopup()
 {
     m_Impl->endPopup();
 }

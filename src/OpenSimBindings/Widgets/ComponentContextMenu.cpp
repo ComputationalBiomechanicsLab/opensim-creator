@@ -413,52 +413,40 @@ osc::ComponentContextMenu::ComponentContextMenu(
     std::shared_ptr<UndoableModelStatePair> model,
     OpenSim::ComponentPath const& path) :
 
-    m_Impl{new Impl{std::move(popupName), std::move(mainUIStateAPI), std::move(editorAPI), std::move(model), path}}
+    m_Impl{std::make_unique<Impl>(std::move(popupName), std::move(mainUIStateAPI), std::move(editorAPI), std::move(model), path)}
 {
 }
 
-osc::ComponentContextMenu::ComponentContextMenu(ComponentContextMenu&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
+osc::ComponentContextMenu::ComponentContextMenu(ComponentContextMenu&&) noexcept = default;
+osc::ComponentContextMenu& osc::ComponentContextMenu::operator=(ComponentContextMenu&&) noexcept = default;
+osc::ComponentContextMenu::~ComponentContextMenu() noexcept = default;
 
-osc::ComponentContextMenu& osc::ComponentContextMenu::operator=(ComponentContextMenu&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::ComponentContextMenu::~ComponentContextMenu() noexcept
-{
-    delete m_Impl;
-}
-
-bool osc::ComponentContextMenu::isOpen() const
+bool osc::ComponentContextMenu::implIsOpen() const
 {
     return m_Impl->isOpen();
 }
 
-void osc::ComponentContextMenu::open()
+void osc::ComponentContextMenu::implOpen()
 {
     m_Impl->open();
 }
 
-void osc::ComponentContextMenu::close()
+void osc::ComponentContextMenu::implClose()
 {
     m_Impl->close();
 }
 
-bool osc::ComponentContextMenu::beginPopup()
+bool osc::ComponentContextMenu::implBeginPopup()
 {
     return m_Impl->beginPopup();
 }
 
-void osc::ComponentContextMenu::drawPopupContent()
+void osc::ComponentContextMenu::implDrawPopupContent()
 {
     m_Impl->drawPopupContent();
 }
 
-void osc::ComponentContextMenu::endPopup()
+void osc::ComponentContextMenu::implEndPopup()
 {
     m_Impl->endPopup();
 }

@@ -127,52 +127,40 @@ private:
 };
 
 osc::ParamBlockEditorPopup::ParamBlockEditorPopup(std::string_view popupName, ParamBlock* paramBlock) :
-    m_Impl{new Impl{std::move(popupName), std::move(paramBlock)}}
+    m_Impl{std::make_unique<Impl>(std::move(popupName), std::move(paramBlock))}
 {
 }
 
-osc::ParamBlockEditorPopup::ParamBlockEditorPopup(ParamBlockEditorPopup&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
+osc::ParamBlockEditorPopup::ParamBlockEditorPopup(ParamBlockEditorPopup&&) noexcept = default;
+osc::ParamBlockEditorPopup& osc::ParamBlockEditorPopup::operator=(ParamBlockEditorPopup&&) noexcept = default;
+osc::ParamBlockEditorPopup::~ParamBlockEditorPopup() noexcept = default;
 
-osc::ParamBlockEditorPopup& osc::ParamBlockEditorPopup::operator=(ParamBlockEditorPopup&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::ParamBlockEditorPopup::~ParamBlockEditorPopup() noexcept
-{
-    delete m_Impl;
-}
-
-bool osc::ParamBlockEditorPopup::isOpen() const
+bool osc::ParamBlockEditorPopup::implIsOpen() const
 {
     return m_Impl->isOpen();
 }
 
-void osc::ParamBlockEditorPopup::open()
+void osc::ParamBlockEditorPopup::implOpen()
 {
     m_Impl->open();
 }
 
-void osc::ParamBlockEditorPopup::close()
+void osc::ParamBlockEditorPopup::implClose()
 {
     m_Impl->close();
 }
 
-bool osc::ParamBlockEditorPopup::beginPopup()
+bool osc::ParamBlockEditorPopup::implBeginPopup()
 {
     return m_Impl->beginPopup();
 }
 
-void osc::ParamBlockEditorPopup::drawPopupContent()
+void osc::ParamBlockEditorPopup::implDrawPopupContent()
 {
     m_Impl->drawPopupContent();
 }
 
-void osc::ParamBlockEditorPopup::endPopup()
+void osc::ParamBlockEditorPopup::implEndPopup()
 {
     m_Impl->endPopup();
 }

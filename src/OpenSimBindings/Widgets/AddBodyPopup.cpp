@@ -240,51 +240,39 @@ osc::AddBodyPopup::AddBodyPopup(
     std::shared_ptr<UndoableModelStatePair> uum,
     std::string_view popupName) :
 
-    m_Impl{new Impl{std::move(api), std::move(uum), std::move(popupName)}}
+    m_Impl{std::make_unique<Impl>(std::move(api), std::move(uum), std::move(popupName))}
 {
 }
-osc::AddBodyPopup::AddBodyPopup(AddBodyPopup&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
+osc::AddBodyPopup::AddBodyPopup(AddBodyPopup&&) noexcept = default;
+osc::AddBodyPopup& osc::AddBodyPopup::operator=(AddBodyPopup&&) noexcept = default;
+osc::AddBodyPopup::~AddBodyPopup() noexcept = default;
 
-osc::AddBodyPopup& osc::AddBodyPopup::operator=(AddBodyPopup&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::AddBodyPopup::~AddBodyPopup() noexcept
-{
-    delete m_Impl;
-}
-
-bool osc::AddBodyPopup::isOpen() const
+bool osc::AddBodyPopup::implIsOpen() const
 {
     return m_Impl->isOpen();
 }
 
-void osc::AddBodyPopup::open()
+void osc::AddBodyPopup::implOpen()
 {
     m_Impl->open();
 }
 
-void osc::AddBodyPopup::close()
+void osc::AddBodyPopup::implClose()
 {
     m_Impl->close();
 }
 
-bool osc::AddBodyPopup::beginPopup()
+bool osc::AddBodyPopup::implBeginPopup()
 {
     return m_Impl->beginPopup();
 }
 
-void osc::AddBodyPopup::drawPopupContent()
+void osc::AddBodyPopup::implDrawPopupContent()
 {
     m_Impl->drawPopupContent();
 }
 
-void osc::AddBodyPopup::endPopup()
+void osc::AddBodyPopup::implEndPopup()
 {
     m_Impl->endPopup();
 }
