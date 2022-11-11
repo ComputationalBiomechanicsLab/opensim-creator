@@ -4,6 +4,9 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Fixed a crash that can happen when viewing high-vertex-count meshes on Dell systems with an
+  Intel Iris Xe GPU (#418)
+
 ## [0.3.1] - 2022/09/27
 
 - The mouseover hittest was re-optimized to match 0.2's performance (#349)
