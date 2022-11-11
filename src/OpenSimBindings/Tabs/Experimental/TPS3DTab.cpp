@@ -50,9 +50,9 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
-#include <execution>
 #include <fstream>
 #include <functional>
+#include <future>
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -437,7 +437,7 @@ namespace
 
         rv.transformVerts([&coefs](nonstd::span<glm::vec3> verts)
         {
-            std::for_each(std::execution::par_unseq, verts.begin(), verts.end(), [&coefs](glm::vec3& vert)
+            osc::ForEachParUnseq(8192, verts, [&coefs](glm::vec3& vert)
             {
                 vert = EvaluateTPSEquation(coefs, vert);
             });

@@ -1,15 +1,19 @@
 #pragma once
 
+#include <nonstd/span.hpp>
+
 #include <algorithm>
 #include <cstddef>
 #include <cmath>
 #include <filesystem>
+#include <future>
 #include <iterator>
 #include <limits>
 #include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <thread>
 #include <typeinfo>
 #include <unordered_map>
 #include <unordered_set>
@@ -19,6 +23,64 @@
 
 namespace osc
 {
+    // perform a parallelized and "Chunked" ForEach, where each thread receives an
+    // independent chunk of data to process
+    //
+    // this is a poor-man's `std::execution::par_unseq`, because C++17's <execution>
+    // isn't fully integrated into MacOS/Linux
+    template<class T, class UnaryFunction>
+    void ForEachParUnseq(size_t minChunkSize, nonstd::span<T> vals, UnaryFunction f)
+    {
+        size_t const chunkSize = std::max(minChunkSize, vals.size()/std::thread::hardware_concurrency());
+        size_t const remainder = vals.size() % chunkSize;
+        size_t const nTasks = vals.size()/chunkSize;
+
+        if (nTasks > 1)
+        {
+            std::vector<std::future<void>> tasks;
+            tasks.reserve(nTasks);
+
+            for (size_t i = 0; i < nTasks-1; ++i)
+            {
+                size_t const chunkBegin = i * chunkSize;
+                size_t const chunkEnd = (i+1) * chunkSize;
+                tasks.push_back(std::async(std::launch::async, [vals, f, chunkBegin, chunkEnd]()
+                {
+                    for (size_t i = chunkBegin; i < chunkEnd; ++i)
+                    {
+                        f(vals[i]);
+                    }
+                }));
+            }
+
+            // last worker must also handle the remainder
+            {
+                size_t const chunkBegin = (nTasks-1) * chunkSize;
+                size_t const chunkEnd = vals.size();
+                tasks.push_back(std::async(std::launch::async, [vals, f, chunkBegin, chunkEnd]()
+                {
+                    for (size_t i = chunkBegin; i < chunkEnd; ++i)
+                    {
+                        f(vals[i]);
+                    }
+                }));
+            }
+
+            for (std::future<void>& task : tasks)
+            {
+                task.get();
+            }
+        }
+        else
+        {
+            // chunks would be too small if parallelized: just do it sequentially
+            for (T& val : vals)
+            {
+                f(val);
+            }
+        }
+    }
+
     template<typename T, std::size_t N, typename... Initializers>
     constexpr auto MakeArray(Initializers&&... args) -> std::array<T, sizeof...(args)>
     {
