@@ -10,12 +10,13 @@ namespace osc { class TabHost; }
 namespace osc
 {
     class Tab {
-    public:
+    protected:
         Tab() = default;
-        Tab(Tab const&) = delete;
-        Tab(Tab&&) noexcept = delete;
-        Tab& operator=(Tab const&) = delete;
-        Tab& operator=(Tab&&) noexcept = delete;
+        Tab(Tab const&) = default;
+        Tab(Tab&&) noexcept = default;
+        Tab& operator=(Tab const&) = default;
+        Tab& operator=(Tab&&) noexcept = default;
+    public:
         virtual ~Tab() noexcept = default;
 
         UID getID() const;
@@ -34,13 +35,30 @@ namespace osc
         virtual UID implGetID() const = 0;
         virtual CStringView implGetName() const = 0;
         virtual TabHost* implParent() const = 0;
-        virtual bool implIsUnsaved() const { return false; }
-        virtual bool implTrySave() { return true; }
-        virtual void implOnMount() {}
-        virtual void implOnUnmount() {}
-        virtual bool implOnEvent(SDL_Event const&) { return false; }
-        virtual void implOnTick() {}
-        virtual void implOnDrawMainMenu() {}
+        virtual bool implIsUnsaved() const
+        {
+            return false;
+        }
+        virtual bool implTrySave()
+        {
+            return true;
+        }
+        virtual void implOnMount()
+        {
+        }
+        virtual void implOnUnmount()
+        {
+        }
+        virtual bool implOnEvent(SDL_Event const&)
+        {
+            return false;
+        }
+        virtual void implOnTick()
+        {
+        }
+        virtual void implOnDrawMainMenu()
+        {
+        }
         virtual void implOnDraw() = 0;
     };
 }

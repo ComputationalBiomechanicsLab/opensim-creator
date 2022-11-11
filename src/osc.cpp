@@ -78,7 +78,7 @@ int main(int argc, char** argv)
         {
             osc::log::warn("%s: cannot find a tab with this name in the tab registry: ignoring", maybeRequestedTab->c_str());
             osc::log::warn("available tabs are:");
-            for (int i = 0, len = osc::GetNumRegisteredTabs(); i < len; ++i)
+            for (ptrdiff_t i = 0, len = osc::GetNumRegisteredTabs(); i < len; ++i)
             {
                 osc::log::warn("    %s", osc::GetRegisteredTab(i).getName().c_str());
             }

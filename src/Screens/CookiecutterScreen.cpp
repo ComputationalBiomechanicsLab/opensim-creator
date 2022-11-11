@@ -77,47 +77,35 @@ private:
 // public API (PIMPL)
 
 osc::CookiecutterScreen::CookiecutterScreen() :
-    m_Impl{new Impl{}}
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
-osc::CookiecutterScreen::CookiecutterScreen(CookiecutterScreen&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
+osc::CookiecutterScreen::CookiecutterScreen(CookiecutterScreen&&) noexcept = default;
+osc::CookiecutterScreen& osc::CookiecutterScreen::operator=(CookiecutterScreen&&) noexcept = default;
+osc::CookiecutterScreen::~CookiecutterScreen() noexcept = default;
 
-osc::CookiecutterScreen& osc::CookiecutterScreen::operator=(CookiecutterScreen&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::CookiecutterScreen::~CookiecutterScreen() noexcept
-{
-    delete m_Impl;
-}
-
-void osc::CookiecutterScreen::onMount()
+void osc::CookiecutterScreen::implOnMount()
 {
     m_Impl->onMount();
 }
 
-void osc::CookiecutterScreen::onUnmount()
+void osc::CookiecutterScreen::implOnUnmount()
 {
     m_Impl->onUnmount();
 }
 
-void osc::CookiecutterScreen::onEvent(SDL_Event const& e)
+void osc::CookiecutterScreen::implOnEvent(SDL_Event const& e)
 {
     m_Impl->onEvent(e);
 }
 
-void osc::CookiecutterScreen::onTick()
+void osc::CookiecutterScreen::implOnTick()
 {
     m_Impl->onTick();
 }
 
-void osc::CookiecutterScreen::onDraw()
+void osc::CookiecutterScreen::implOnDraw()
 {
     m_Impl->onDraw();
 }

@@ -12,7 +12,7 @@
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/RecentFile.hpp"
-#include "src/Platform/Screen.hpp"
+#include "src/Screens/Screen.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
 #include "src/Utils/ScopeGuard.hpp"

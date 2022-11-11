@@ -1,8 +1,10 @@
 #pragma once
 
-#include "src/Platform/Screen.hpp"
+#include "src/Screens/Screen.hpp"
 
 #include <SDL_events.h>
+
+#include <memory>
 
 namespace osc
 {
@@ -17,14 +19,15 @@ namespace osc
         CookiecutterScreen& operator=(CookiecutterScreen&&) noexcept;
         ~CookiecutterScreen() noexcept override;
 
-        void onMount() override;
-        void onUnmount() override;
-        void onEvent(SDL_Event const&) override;
-        void onTick() override;
-        void onDraw() override;
+    private:
+        void implOnMount() final;
+        void implOnUnmount() final;
+        void implOnEvent(SDL_Event const&) final;
+        void implOnTick() final;
+        void implOnDraw() final;
 
     private:
         class Impl;
-        Impl* m_Impl;
+        std::unique_ptr<Impl> m_Impl;
     };
 }

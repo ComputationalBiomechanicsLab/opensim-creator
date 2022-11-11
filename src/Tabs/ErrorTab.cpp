@@ -112,25 +112,13 @@ private:
 // public API
 
 osc::ErrorTab::ErrorTab(TabHost* parent, std::exception const& ex) :
-    m_Impl{new Impl{std::move(parent), ex}}
+    m_Impl{std::make_unique<Impl>(std::move(parent), ex)}
 {
 }
 
-osc::ErrorTab::ErrorTab(ErrorTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::ErrorTab& osc::ErrorTab::operator=(ErrorTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::ErrorTab::~ErrorTab() noexcept
-{
-    delete m_Impl;
-}
+osc::ErrorTab::ErrorTab(ErrorTab&&) noexcept = default;
+osc::ErrorTab& osc::ErrorTab::operator=(ErrorTab&&) noexcept = default;
+osc::ErrorTab::~ErrorTab() noexcept = default;
 
 osc::UID osc::ErrorTab::implGetID() const
 {

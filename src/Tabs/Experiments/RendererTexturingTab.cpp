@@ -118,25 +118,13 @@ private:
 // public API (PIMPL)
 
 osc::RendererTexturingTab::RendererTexturingTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::RendererTexturingTab::RendererTexturingTab(RendererTexturingTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::RendererTexturingTab& osc::RendererTexturingTab::operator=(RendererTexturingTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::RendererTexturingTab::~RendererTexturingTab() noexcept
-{
-    delete m_Impl;
-}
+osc::RendererTexturingTab::RendererTexturingTab(RendererTexturingTab&&) noexcept = default;
+osc::RendererTexturingTab& osc::RendererTexturingTab::operator=(RendererTexturingTab&&) noexcept = default;
+osc::RendererTexturingTab::~RendererTexturingTab() noexcept = default;
 
 osc::UID osc::RendererTexturingTab::implGetID() const
 {

@@ -210,25 +210,13 @@ private:
 // public API (PIMPL)
 
 osc::RendererFramebuffersTab::RendererFramebuffersTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::RendererFramebuffersTab::RendererFramebuffersTab(RendererFramebuffersTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::RendererFramebuffersTab& osc::RendererFramebuffersTab::operator=(RendererFramebuffersTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::RendererFramebuffersTab::~RendererFramebuffersTab() noexcept
-{
-    delete m_Impl;
-}
+osc::RendererFramebuffersTab::RendererFramebuffersTab(RendererFramebuffersTab&&) noexcept = default;
+osc::RendererFramebuffersTab& osc::RendererFramebuffersTab::operator=(RendererFramebuffersTab&&) noexcept = default;
+osc::RendererFramebuffersTab::~RendererFramebuffersTab() noexcept = default;
 
 osc::UID osc::RendererFramebuffersTab::implGetID() const
 {

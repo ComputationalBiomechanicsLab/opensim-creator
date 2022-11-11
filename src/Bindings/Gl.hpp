@@ -415,9 +415,9 @@ namespace gl
             return N;
         }
 
-        [[nodiscard]] constexpr int sizei() const noexcept
+        [[nodiscard]] constexpr int64_t sizei() const noexcept
         {
-            return static_cast<int>(N);
+            return static_cast<int64_t>(N);
         }
     };
 

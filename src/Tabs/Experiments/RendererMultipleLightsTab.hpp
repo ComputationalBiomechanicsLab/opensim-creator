@@ -6,6 +6,8 @@
 
 #include <SDL_events.h>
 
+#include <memory>
+
 namespace osc { class TabHost; }
 
 namespace osc
@@ -17,20 +19,20 @@ namespace osc
         RendererMultipleLightsTab(RendererMultipleLightsTab&&) noexcept;
         RendererMultipleLightsTab& operator=(RendererMultipleLightsTab const&) = delete;
         RendererMultipleLightsTab& operator=(RendererMultipleLightsTab&&) noexcept;
-        ~RendererMultipleLightsTab() noexcept override;
+        ~RendererMultipleLightsTab() noexcept final;
 
     private:
-        UID implGetID() const override;
-        CStringView implGetName() const override;
-        TabHost* implParent() const override;
-        void implOnMount() override;
-        void implOnUnmount() override;
-        bool implOnEvent(SDL_Event const&) override;
-        void implOnTick() override;
-        void implOnDrawMainMenu() override;
-        void implOnDraw() override;
+        UID implGetID() const final;
+        CStringView implGetName() const final;
+        TabHost* implParent() const final;
+        void implOnMount() final;
+        void implOnUnmount() final;
+        bool implOnEvent(SDL_Event const&) final;
+        void implOnTick() final;
+        void implOnDrawMainMenu() final;
+        void implOnDraw() final;
 
         class Impl;
-        Impl* m_Impl;
+        std::unique_ptr<Impl> m_Impl;
     };
 }

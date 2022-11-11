@@ -162,25 +162,13 @@ private:
 // public API
 
 osc::MeshGenTestTab::MeshGenTestTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::MeshGenTestTab::MeshGenTestTab(MeshGenTestTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::MeshGenTestTab& osc::MeshGenTestTab::operator=(MeshGenTestTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::MeshGenTestTab::~MeshGenTestTab() noexcept
-{
-    delete m_Impl;
-}
+osc::MeshGenTestTab::MeshGenTestTab(MeshGenTestTab&&) noexcept = default;
+osc::MeshGenTestTab& osc::MeshGenTestTab::operator=(MeshGenTestTab&&) noexcept = default;
+osc::MeshGenTestTab::~MeshGenTestTab() noexcept = default;
 
 osc::UID osc::MeshGenTestTab::implGetID() const
 {

@@ -349,25 +349,13 @@ private:
 // public API
 
 osc::ScreenshotTab::ScreenshotTab(TabHost* parent, AnnotatedImage&& image) :
-    m_Impl{new Impl{std::move(parent), std::move(image)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent), std::move(image))}
 {
 }
 
-osc::ScreenshotTab::ScreenshotTab(ScreenshotTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::ScreenshotTab& osc::ScreenshotTab::operator=(ScreenshotTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::ScreenshotTab::~ScreenshotTab() noexcept
-{
-    delete m_Impl;
-}
+osc::ScreenshotTab::ScreenshotTab(ScreenshotTab&&) noexcept = default;
+osc::ScreenshotTab& osc::ScreenshotTab::operator=(ScreenshotTab&&) noexcept = default;
+osc::ScreenshotTab::~ScreenshotTab() noexcept = default;
 
 osc::UID osc::ScreenshotTab::implGetID() const
 {

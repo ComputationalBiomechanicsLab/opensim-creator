@@ -265,25 +265,13 @@ private:
 // public API (PIMPL)
 
 osc::RendererMultipleLightsTab::RendererMultipleLightsTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::RendererMultipleLightsTab::RendererMultipleLightsTab(RendererMultipleLightsTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::RendererMultipleLightsTab& osc::RendererMultipleLightsTab::operator=(RendererMultipleLightsTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::RendererMultipleLightsTab::~RendererMultipleLightsTab() noexcept
-{
-    delete m_Impl;
-}
+osc::RendererMultipleLightsTab::RendererMultipleLightsTab(RendererMultipleLightsTab&&) noexcept = default;
+osc::RendererMultipleLightsTab& osc::RendererMultipleLightsTab::operator=(RendererMultipleLightsTab&&) noexcept = default;
+osc::RendererMultipleLightsTab::~RendererMultipleLightsTab() noexcept = default;
 
 osc::UID osc::RendererMultipleLightsTab::implGetID() const
 {

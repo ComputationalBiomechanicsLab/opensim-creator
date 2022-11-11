@@ -2,6 +2,7 @@
 
 #include "src/Utils/CStringView.hpp"
 
+#include <cstdint>
 #include <memory>
 #include <optional>
 #include <string_view>
@@ -30,8 +31,8 @@ namespace osc
 
     bool operator<(TabRegistryEntry const&, TabRegistryEntry const&);
 
-    int GetNumRegisteredTabs();
-    TabRegistryEntry GetRegisteredTab(int);
+    ptrdiff_t GetNumRegisteredTabs();
+    TabRegistryEntry GetRegisteredTab(ptrdiff_t);
     std::optional<TabRegistryEntry> GetRegisteredTabByName(std::string_view);
-    bool RegisterTab(CStringView name, std::unique_ptr<Tab>(*ctor_)(TabHost*));
+    bool RegisterTab(CStringView name, std::unique_ptr<Tab>(*)(TabHost*));
 }

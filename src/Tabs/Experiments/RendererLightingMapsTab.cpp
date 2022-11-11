@@ -167,25 +167,13 @@ private:
 // public API (PIMPL)
 
 osc::RendererLightingMapsTab::RendererLightingMapsTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::RendererLightingMapsTab::RendererLightingMapsTab(RendererLightingMapsTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::RendererLightingMapsTab& osc::RendererLightingMapsTab::operator=(RendererLightingMapsTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::RendererLightingMapsTab::~RendererLightingMapsTab() noexcept
-{
-    delete m_Impl;
-}
+osc::RendererLightingMapsTab::RendererLightingMapsTab(RendererLightingMapsTab&&) noexcept = default;
+osc::RendererLightingMapsTab& osc::RendererLightingMapsTab::operator=(RendererLightingMapsTab&&) noexcept = default;
+osc::RendererLightingMapsTab::~RendererLightingMapsTab() noexcept = default;
 
 osc::UID osc::RendererLightingMapsTab::implGetID() const
 {

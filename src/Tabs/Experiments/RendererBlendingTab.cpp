@@ -244,25 +244,13 @@ private:
 // public API (PIMPL)
 
 osc::RendererBlendingTab::RendererBlendingTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::RendererBlendingTab::RendererBlendingTab(RendererBlendingTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::RendererBlendingTab& osc::RendererBlendingTab::operator=(RendererBlendingTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::RendererBlendingTab::~RendererBlendingTab() noexcept
-{
-    delete m_Impl;
-}
+osc::RendererBlendingTab::RendererBlendingTab(RendererBlendingTab&&) noexcept = default;
+osc::RendererBlendingTab& osc::RendererBlendingTab::operator=(RendererBlendingTab&&) noexcept = default;
+osc::RendererBlendingTab::~RendererBlendingTab() noexcept = default;
 
 osc::UID osc::RendererBlendingTab::implGetID() const
 {

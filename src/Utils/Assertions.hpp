@@ -5,13 +5,15 @@
 namespace osc
 {
     // calls into (hidden) assertion-handling implementation
-    [[noreturn]] void OnAssertionFailure(char const* failingCode,
-                                         char const* func,
-                                         char const* file,
-                                         unsigned int line) noexcept;
+    [[noreturn]] void OnAssertionFailure(
+        char const* failingCode,
+        char const* func,
+        char const* file,
+        unsigned int line) noexcept;
 
     // calls into (hidden) throwing-assertion implementation
-    [[noreturn]] void OnThrowingAssertionFailure(char const* failingCode,
+    [[noreturn]] void OnThrowingAssertionFailure(
+        char const* failingCode,
         char const* func,
         char const* file,
         unsigned int line);

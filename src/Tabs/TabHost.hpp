@@ -10,6 +10,12 @@ namespace osc { class Tab; }
 namespace osc
 {
     class TabHost {
+    protected:
+        TabHost() = default;
+        TabHost(TabHost const&) = default;
+        TabHost(TabHost&&) noexcept = default;
+        TabHost& operator=(TabHost const&) = default;
+        TabHost& operator=(TabHost&&) noexcept = default;
     public:
         virtual ~TabHost() noexcept = default;
 
@@ -28,6 +34,8 @@ namespace osc
         virtual UID implAddTab(std::unique_ptr<Tab>) = 0;
         virtual void implSelectTab(UID) = 0;
         virtual void implCloseTab(UID) = 0;
-        virtual void implResetImgui() {}
+        virtual void implResetImgui()
+        {
+        }
     };
 }

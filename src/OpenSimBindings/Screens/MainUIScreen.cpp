@@ -517,7 +517,7 @@ private:
             selectTab(addTab(std::make_unique<MeshImporterTab>(this)));
         }
 
-        int numRegisteredTabs = osc::GetNumRegisteredTabs();
+        ptrdiff_t numRegisteredTabs = osc::GetNumRegisteredTabs();
 
         if (numRegisteredTabs > 0)
         {
@@ -780,55 +780,18 @@ private:
 // public API (PIMPL)
 
 osc::MainUIScreen::MainUIScreen() :
-    m_Impl{new Impl{}}
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
 osc::MainUIScreen::MainUIScreen(std::vector<std::filesystem::path> paths) :
-    m_Impl{new Impl{std::move(paths)}}
+    m_Impl{std::make_unique<Impl>(std::move(paths))}
 {
 }
 
-osc::MainUIScreen::MainUIScreen(MainUIScreen&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::MainUIScreen& osc::MainUIScreen::operator=(MainUIScreen&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::MainUIScreen::~MainUIScreen() noexcept
-{
-    delete m_Impl;
-}
-
-void osc::MainUIScreen::onMount()
-{
-    m_Impl->onMount();
-}
-
-void osc::MainUIScreen::onUnmount()
-{
-    m_Impl->onUnmount();
-}
-
-void osc::MainUIScreen::onEvent(SDL_Event const& e)
-{
-    m_Impl->onEvent(e);
-}
-
-void osc::MainUIScreen::onTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::MainUIScreen::onDraw()
-{
-    m_Impl->onDraw();
-}
+osc::MainUIScreen::MainUIScreen(MainUIScreen&&) noexcept = default;
+osc::MainUIScreen& osc::MainUIScreen::operator=(MainUIScreen&&) noexcept = default;
+osc::MainUIScreen::~MainUIScreen() noexcept = default;
 
 osc::UID osc::MainUIScreen::addTab(std::unique_ptr<Tab> tab)
 {
@@ -838,4 +801,29 @@ osc::UID osc::MainUIScreen::addTab(std::unique_ptr<Tab> tab)
 osc::TabHost* osc::MainUIScreen::getTabHostAPI()
 {
     return m_Impl->getTabHostAPI();
+}
+
+void osc::MainUIScreen::implOnMount()
+{
+    m_Impl->onMount();
+}
+
+void osc::MainUIScreen::implOnUnmount()
+{
+    m_Impl->onUnmount();
+}
+
+void osc::MainUIScreen::implOnEvent(SDL_Event const& e)
+{
+    m_Impl->onEvent(e);
+}
+
+void osc::MainUIScreen::implOnTick()
+{
+    m_Impl->onTick();
+}
+
+void osc::MainUIScreen::implOnDraw()
+{
+    m_Impl->onDraw();
 }

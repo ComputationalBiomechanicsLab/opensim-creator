@@ -502,11 +502,11 @@ add_library(osccore STATIC
     src/Platform/os.cpp
     src/Platform/os.hpp
     src/Platform/RecentFile.hpp
-    src/Platform/Screen.hpp
     src/Platform/Styling.hpp
 
     src/Screens/CookiecutterScreen.cpp
     src/Screens/CookiecutterScreen.hpp
+    src/Screens/Screen.hpp
 
     src/Tabs/Experiments/CustomWidgetsTab.cpp
     src/Tabs/Experiments/CustomWidgetsTab.hpp

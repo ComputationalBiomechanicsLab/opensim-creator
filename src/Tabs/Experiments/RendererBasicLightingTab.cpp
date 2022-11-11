@@ -164,25 +164,13 @@ private:
 // public API (PIMPL)
 
 osc::RendererBasicLightingTab::RendererBasicLightingTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::RendererBasicLightingTab::RendererBasicLightingTab(RendererBasicLightingTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::RendererBasicLightingTab& osc::RendererBasicLightingTab::operator=(RendererBasicLightingTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::RendererBasicLightingTab::~RendererBasicLightingTab() noexcept
-{
-    delete m_Impl;
-}
+osc::RendererBasicLightingTab::RendererBasicLightingTab(RendererBasicLightingTab&&) noexcept = default;
+osc::RendererBasicLightingTab& osc::RendererBasicLightingTab::operator=(RendererBasicLightingTab&&) noexcept = default;
+osc::RendererBasicLightingTab::~RendererBasicLightingTab() noexcept = default;
 
 osc::UID osc::RendererBasicLightingTab::implGetID() const
 {

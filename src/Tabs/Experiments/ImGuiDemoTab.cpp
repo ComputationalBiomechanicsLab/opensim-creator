@@ -70,25 +70,13 @@ private:
 // public API
 
 osc::ImGuiDemoTab::ImGuiDemoTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::ImGuiDemoTab::ImGuiDemoTab(ImGuiDemoTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::ImGuiDemoTab& osc::ImGuiDemoTab::operator=(ImGuiDemoTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::ImGuiDemoTab::~ImGuiDemoTab() noexcept
-{
-    delete m_Impl;
-}
+osc::ImGuiDemoTab::ImGuiDemoTab(ImGuiDemoTab&&) noexcept = default;
+osc::ImGuiDemoTab& osc::ImGuiDemoTab::operator=(ImGuiDemoTab&&) noexcept = default;
+osc::ImGuiDemoTab::~ImGuiDemoTab() noexcept = default;
 
 osc::UID osc::ImGuiDemoTab::implGetID() const
 {

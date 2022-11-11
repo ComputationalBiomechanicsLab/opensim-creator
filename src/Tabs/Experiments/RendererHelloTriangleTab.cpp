@@ -109,25 +109,13 @@ private:
 // public API (PIMPL)
 
 osc::RendererHelloTriangleTab::RendererHelloTriangleTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::RendererHelloTriangleTab::RendererHelloTriangleTab(RendererHelloTriangleTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::RendererHelloTriangleTab& osc::RendererHelloTriangleTab::operator=(RendererHelloTriangleTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::RendererHelloTriangleTab::~RendererHelloTriangleTab() noexcept
-{
-    delete m_Impl;
-}
+osc::RendererHelloTriangleTab::RendererHelloTriangleTab(RendererHelloTriangleTab&&) noexcept = default;
+osc::RendererHelloTriangleTab& osc::RendererHelloTriangleTab::operator=(RendererHelloTriangleTab&&) noexcept = default;
+osc::RendererHelloTriangleTab::~RendererHelloTriangleTab() noexcept = default;
 
 osc::UID osc::RendererHelloTriangleTab::implGetID() const
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Platform/Screen.hpp"
+#include "src/Screens/Screen.hpp"
 #include "src/Utils/UID.hpp"
 
 #include <SDL_events.h>
@@ -24,17 +24,17 @@ namespace osc
         MainUIScreen& operator=(MainUIScreen&&) noexcept;
         ~MainUIScreen() noexcept override;
 
-        void onMount() override;
-        void onUnmount() override;
-        void onEvent(SDL_Event const&) override;
-        void onTick() override;
-        void onDraw() override;
-
         UID addTab(std::unique_ptr<Tab>);
         TabHost* getTabHostAPI();
 
     private:
+        void implOnMount() final;
+        void implOnUnmount() final;
+        void implOnEvent(SDL_Event const&) final;
+        void implOnTick() final;
+        void implOnDraw() final;
+
         class Impl;
-        Impl* m_Impl;
+        std::unique_ptr<Impl> m_Impl;
     };
 }

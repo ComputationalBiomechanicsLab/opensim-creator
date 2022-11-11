@@ -69,25 +69,13 @@ private:
 // public API
 
 osc::CookiecutterTab::CookiecutterTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::CookiecutterTab::CookiecutterTab(CookiecutterTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::CookiecutterTab& osc::CookiecutterTab::operator=(CookiecutterTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::CookiecutterTab::~CookiecutterTab() noexcept
-{
-    delete m_Impl;
-}
+osc::CookiecutterTab::CookiecutterTab(CookiecutterTab&&) noexcept = default;
+osc::CookiecutterTab& osc::CookiecutterTab::operator=(CookiecutterTab&&) noexcept = default;
+osc::CookiecutterTab::~CookiecutterTab() noexcept = default;
 
 osc::UID osc::CookiecutterTab::implGetID() const
 {

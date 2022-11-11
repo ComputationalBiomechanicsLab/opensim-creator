@@ -339,25 +339,13 @@ private:
 // public API
 
 osc::HittestTab::HittestTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::HittestTab::HittestTab(HittestTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::HittestTab& osc::HittestTab::operator=(HittestTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::HittestTab::~HittestTab() noexcept
-{
-    delete m_Impl;
-}
+osc::HittestTab::HittestTab(HittestTab&&) noexcept = default;
+osc::HittestTab& osc::HittestTab::operator=(HittestTab&&) noexcept = default;
+osc::HittestTab::~HittestTab() noexcept = default;
 
 osc::UID osc::HittestTab::implGetID() const
 {

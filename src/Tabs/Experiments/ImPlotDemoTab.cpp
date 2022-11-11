@@ -71,25 +71,13 @@ private:
 // public API
 
 osc::ImPlotDemoTab::ImPlotDemoTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::ImPlotDemoTab::ImPlotDemoTab(ImPlotDemoTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::ImPlotDemoTab& osc::ImPlotDemoTab::operator=(ImPlotDemoTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::ImPlotDemoTab::~ImPlotDemoTab() noexcept
-{
-    delete m_Impl;
-}
+osc::ImPlotDemoTab::ImPlotDemoTab(ImPlotDemoTab&&) noexcept = default;
+osc::ImPlotDemoTab& osc::ImPlotDemoTab::operator=(ImPlotDemoTab&&) noexcept = default;
+osc::ImPlotDemoTab::~ImPlotDemoTab() noexcept = default;
 
 osc::UID osc::ImPlotDemoTab::implGetID() const
 {

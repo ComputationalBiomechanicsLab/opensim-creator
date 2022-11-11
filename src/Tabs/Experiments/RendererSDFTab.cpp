@@ -193,25 +193,13 @@ private:
 // public API
 
 osc::RendererSDFTab::RendererSDFTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::RendererSDFTab::RendererSDFTab(RendererSDFTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::RendererSDFTab& osc::RendererSDFTab::operator=(RendererSDFTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::RendererSDFTab::~RendererSDFTab() noexcept
-{
-    delete m_Impl;
-}
+osc::RendererSDFTab::RendererSDFTab(RendererSDFTab&&) noexcept = default;
+osc::RendererSDFTab& osc::RendererSDFTab::operator=(RendererSDFTab&&) noexcept = default;
+osc::RendererSDFTab::~RendererSDFTab() noexcept = default;
 
 osc::UID osc::RendererSDFTab::implGetID() const
 {

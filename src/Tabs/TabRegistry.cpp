@@ -120,13 +120,13 @@ bool osc::operator<(TabRegistryEntry const& a, TabRegistryEntry const& b)
     return a.getName() < b.getName();
 }
 
-int osc::GetNumRegisteredTabs()
+ptrdiff_t osc::GetNumRegisteredTabs()
 {
     auto lock = GetRegisteredTabsTable();
-    return static_cast<int>(lock->size());
+    return static_cast<ptrdiff_t>(lock->size());
 }
 
-osc::TabRegistryEntry osc::GetRegisteredTab(int i)
+osc::TabRegistryEntry osc::GetRegisteredTab(ptrdiff_t i)
 {
     return GetRegisteredTabsTable()->at(static_cast<size_t>(i));
 }

@@ -303,25 +303,13 @@ private:
 // public API
 
 osc::CustomWidgetsTab::CustomWidgetsTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::CustomWidgetsTab::CustomWidgetsTab(CustomWidgetsTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::CustomWidgetsTab& osc::CustomWidgetsTab::operator=(CustomWidgetsTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::CustomWidgetsTab::~CustomWidgetsTab() noexcept
-{
-    delete m_Impl;
-}
+osc::CustomWidgetsTab::CustomWidgetsTab(CustomWidgetsTab&&) noexcept = default;
+osc::CustomWidgetsTab& osc::CustomWidgetsTab::operator=(CustomWidgetsTab&&) noexcept = default;
+osc::CustomWidgetsTab::~CustomWidgetsTab() noexcept = default;
 
 osc::UID osc::CustomWidgetsTab::implGetID() const
 {

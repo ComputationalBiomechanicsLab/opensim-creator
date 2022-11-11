@@ -192,25 +192,13 @@ private:
 // public API (PIMPL)
 
 osc::RendererCoordinateSystemsTab::RendererCoordinateSystemsTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::RendererCoordinateSystemsTab::RendererCoordinateSystemsTab(RendererCoordinateSystemsTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::RendererCoordinateSystemsTab& osc::RendererCoordinateSystemsTab::operator=(RendererCoordinateSystemsTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::RendererCoordinateSystemsTab::~RendererCoordinateSystemsTab() noexcept
-{
-    delete m_Impl;
-}
+osc::RendererCoordinateSystemsTab::RendererCoordinateSystemsTab(RendererCoordinateSystemsTab&&) noexcept = default;
+osc::RendererCoordinateSystemsTab& osc::RendererCoordinateSystemsTab::operator=(RendererCoordinateSystemsTab&&) noexcept = default;
+osc::RendererCoordinateSystemsTab::~RendererCoordinateSystemsTab() noexcept = default;
 
 osc::UID osc::RendererCoordinateSystemsTab::implGetID() const
 {
