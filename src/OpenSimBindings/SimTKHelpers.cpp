@@ -533,7 +533,7 @@ osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
         {
             // quad (render as two triangles)
 
-            glm::vec3 const verts[4] =
+            glm::vec3 const quadVerts[4] =
             {
                 GetFaceVertex(mesh, face, 0),
                 GetFaceVertex(mesh, face, 1),
@@ -541,8 +541,8 @@ osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
                 GetFaceVertex(mesh, face, 3),
             };
 
-            pushTriangle({verts[0], verts[1], verts[2]});
-            pushTriangle({verts[2], verts[3], verts[0]});
+            pushTriangle({quadVerts[0], quadVerts[1], quadVerts[2]});
+            pushTriangle({quadVerts[2], quadVerts[3], quadVerts[0]});
         }
         else
         {
