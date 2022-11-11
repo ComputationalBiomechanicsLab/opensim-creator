@@ -121,6 +121,7 @@ if [[ -z ${OSC_SKIP_BREW:+x} ]]; then
     [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && pip3 install -r docs/requirements.txt
 
     # ensure sphinx-build is available on this terminal's PATH
+    [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && ls "$(python3 -m site --user-base)/bin"
     [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && export PATH=${PATH}:"$(python3 -m site --user-base)/bin"
 
     echo "----- finished getting system-level dependencies -----"
