@@ -46,9 +46,9 @@ namespace osc
                 size_t const chunkEnd = (i+1) * chunkSize;
                 tasks.push_back(std::async(std::launch::async, [vals, f, chunkBegin, chunkEnd]()
                 {
-                    for (size_t i = chunkBegin; i < chunkEnd; ++i)
+                    for (size_t j = chunkBegin; j < chunkEnd; ++j)
                     {
-                        f(vals[i]);
+                        f(vals[j]);
                     }
                 }));
             }
