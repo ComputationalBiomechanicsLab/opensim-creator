@@ -76,6 +76,24 @@ namespace
         return rv;
     }
 
+    template<typename T>
+    static T const& at(nonstd::span<T const> vs, size_t i)
+    {
+        if (i <= vs.size())
+        {
+            return vs[i];
+        }
+        else
+        {
+            throw std::out_of_range{"invalid span subscript"};
+        }
+    }
+
+    static bool HasAVolume(osc::Triangle const& t)
+    {
+        return !(t.p0 == t.p1 || t.p0 == t.p2 || t.p1 == t.p2);
+    }
+
     // recursively build the BVH
     void BVH_RecursiveBuild(osc::BVH& bvh, int const begin, int const n)
     {
@@ -202,13 +220,13 @@ namespace
         {
             // leaf node: check ray-triangle intersection
 
-            osc::BVHPrim const& p = bvh.prims[node.getFirstPrimOffset()];
+            osc::BVHPrim const& p = bvh.prims.at(node.getFirstPrimOffset());
 
             osc::Triangle const triangle =
             {
-                verts[indices[p.getID()]],
-                verts[indices[p.getID() + 1]],
-                verts[indices[p.getID() + 2]],
+                at(verts, at(indices, p.getID())),
+                at(verts, at(indices, p.getID()+1)),
+                at(verts, at(indices, p.getID()+2)),
             };
 
             std::optional<osc::RayCollision> const rayTriangleColl = osc::GetRayCollisionTriangle(ray, triangle);
@@ -228,24 +246,6 @@ namespace
         std::optional<osc::BVHCollision> const lhs = BVH_GetClosestRayIndexedTriangleCollisionRecursive(bvh, verts, indices, ray, closest, nodeidx+1);
         std::optional<osc::BVHCollision> const rhs = BVH_GetClosestRayIndexedTriangleCollisionRecursive(bvh, verts, indices, ray, closest, nodeidx+node.getNumLhsNodes()+1);
         return rhs ? rhs : lhs;
-    }
-
-    template<typename T>
-    static T const& at(nonstd::span<T const> vs, size_t i)
-    {
-        if (i <= vs.size())
-        {
-            return vs[i];
-        }
-        else
-        {
-            throw std::out_of_range{"invalid span subscript"};
-        }
-    }
-
-    static bool HasAVolume(osc::Triangle const& t)
-    {
-        return !(t.p0 == t.p1 && t.p1 == t.p2);
     }
 
     template<typename TIndex>
@@ -287,8 +287,6 @@ namespace
         nonstd::span<TIndex const> indices,
         osc::Line const& ray)
     {
-        OSC_ASSERT(indices.size()/3 == bvh.prims.size() && "not enough primitives in this BVH - did you build it against the supplied verts?");
-
         if (bvh.nodes.empty() || bvh.prims.empty() || indices.empty())
         {
             return std::nullopt;
