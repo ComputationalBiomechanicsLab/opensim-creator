@@ -437,6 +437,8 @@ namespace
 
         rv.transformVerts([&coefs](nonstd::span<glm::vec3> verts)
         {
+            // parallelize function evaluation, because the mesh may contain *a lot* of
+            // verts and the TPS equation may contain *a lot* of coefficients
             osc::ForEachParUnseq(8192, verts, [&coefs](glm::vec3& vert)
             {
                 vert = EvaluateTPSEquation(coefs, vert);
