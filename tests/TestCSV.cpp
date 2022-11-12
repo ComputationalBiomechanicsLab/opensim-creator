@@ -324,7 +324,7 @@ TEST(CSVWriter, WriteRowWritesExpectedContentForBasicExample)
     std::vector<std::string> input = {"a", "b", "c"};
     std::string expectedOutput = "a,b,c\n";
 
-    writer.writerow(input);
+    writer.writeRow(input);
 
     ASSERT_EQ(stream.str(), expectedOutput);
 }
@@ -343,7 +343,7 @@ TEST(CSVWriter, WriteRowWritesExpectedContentForMultilineExample)
 
     for (std::vector<std::string> const& input : inputs)
     {
-        writer.writerow(input);
+        writer.writeRow(input);
     }
 
     ASSERT_EQ(stream.str(), expectedOutput);
@@ -363,7 +363,7 @@ TEST(CSVWriter, EdgeCase1)
 
     for (std::vector<std::string> const& input : inputs)
     {
-        writer.writerow(input);
+        writer.writeRow(input);
     }
 
     ASSERT_EQ(stream.str(), expectedOutput);

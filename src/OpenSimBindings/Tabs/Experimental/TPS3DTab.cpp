@@ -702,7 +702,7 @@ namespace
             cols.at(0) = std::to_string(pos.x);
             cols.at(1) = std::to_string(pos.y);
             cols.at(2) = std::to_string(pos.z);
-            writer.writerow(cols);
+            writer.writeRow(cols);
         }
     }
 
@@ -728,7 +728,7 @@ namespace
 
         std::vector<std::string> cols = {"source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"};
 
-        writer.writerow(cols);  // write header
+        writer.writeRow(cols);  // write header
         for (LandmarkPair3D const& p : pairs)
         {
             cols.at(0) = std::to_string(p.Src.x);
@@ -738,7 +738,7 @@ namespace
             cols.at(0) = std::to_string(p.Dest.x);
             cols.at(1) = std::to_string(p.Dest.y);
             cols.at(2) = std::to_string(p.Dest.z);
-            writer.writerow(cols);
+            writer.writeRow(cols);
         }
     }
 

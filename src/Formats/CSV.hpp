@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iosfwd>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -24,7 +25,7 @@ namespace osc
 
     private:
         class Impl;
-        Impl* m_Impl;
+        std::unique_ptr<Impl> m_Impl;
     };
 
     // a basic CSV writer
@@ -37,10 +38,10 @@ namespace osc
         CSVWriter& operator=(CSVWriter&&) noexcept;
         ~CSVWriter() noexcept;
 
-        void writerow(std::vector<std::string> const&);
+        void writeRow(std::vector<std::string> const&);
 
     private:
         class Impl;
-        Impl* m_Impl;
+        std::unique_ptr<Impl> m_Impl;
     };
 }

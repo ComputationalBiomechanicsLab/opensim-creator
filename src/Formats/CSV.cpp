@@ -125,7 +125,7 @@ public:
         OSC_ASSERT(m_Output != nullptr);
     }
 
-    void writerow(std::vector<std::string> const& cols)
+    void writeRow(std::vector<std::string> const& cols)
     {
         std::ostream& out = *m_Output;
 
@@ -170,25 +170,13 @@ private:
 // public API (PIMPL)
 
 osc::CSVReader::CSVReader(std::istream& input) :
-    m_Impl{new Impl{input}}
+    m_Impl{std::make_unique<Impl>(input)}
 {
 }
 
-osc::CSVReader::CSVReader(CSVReader&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::CSVReader& osc::CSVReader::operator=(CSVReader&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::CSVReader::~CSVReader() noexcept
-{
-    delete m_Impl;
-}
+osc::CSVReader::CSVReader(CSVReader&&) noexcept = default;
+osc::CSVReader& osc::CSVReader::operator=(CSVReader&&) noexcept = default;
+osc::CSVReader::~CSVReader() noexcept = default;
 
 std::optional<std::vector<std::string>> osc::CSVReader::next()
 {
@@ -197,27 +185,15 @@ std::optional<std::vector<std::string>> osc::CSVReader::next()
 
 
 osc::CSVWriter::CSVWriter(std::ostream& output) :
-    m_Impl{new Impl{output}}
+    m_Impl{std::make_unique<Impl>(output)}
 {
 }
 
-osc::CSVWriter::CSVWriter(CSVWriter&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
+osc::CSVWriter::CSVWriter(CSVWriter&&) noexcept = default;
+osc::CSVWriter& osc::CSVWriter::operator=(CSVWriter&&) noexcept = default;
+osc::CSVWriter::~CSVWriter() noexcept = default;
 
-osc::CSVWriter& osc::CSVWriter::operator=(CSVWriter&& tmp) noexcept
+void osc::CSVWriter::writeRow(std::vector<std::string> const& cols)
 {
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::CSVWriter::~CSVWriter() noexcept
-{
-    delete m_Impl;
-}
-
-void osc::CSVWriter::writerow(std::vector<std::string> const& cols)
-{
-    m_Impl->writerow(cols);
+    m_Impl->writeRow(cols);
 }

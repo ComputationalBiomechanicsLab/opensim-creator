@@ -216,8 +216,8 @@ R"(  <asset>
     <unit name="meter" meter="1"/>
     <up_axis>Y_UP</up_axis>
   </asset>)",
-            metadata.author,
-            metadata.authoringTool,
+            metadata.Author,
+            metadata.AuthoringTool,
             fmt::localtime(t),
             fmt::localtime(t)
         );
@@ -509,8 +509,8 @@ R"(        <vertices id="{}-vertices">
 // public API
 
 osc::DAEMetadata::DAEMetadata() :
-    author{OSC_APPNAME_STRING},
-    authoringTool{OSC_APPNAME_STRING " v" OSC_VERSION_STRING " (build " OSC_BUILD_ID ")"}
+    Author{OSC_APPNAME_STRING},
+    AuthoringTool{OSC_APPNAME_STRING " v" OSC_VERSION_STRING " (build " OSC_BUILD_ID ")"}
 {
 }
 

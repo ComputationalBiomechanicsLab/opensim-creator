@@ -932,13 +932,13 @@ namespace
         osc::CSVWriter writer{f};
 
         // write header
-        writer.writerow({ ComputePlotXAxisTitle(params, coord), ComputePlotYAxisTitle(params) });
+        writer.writeRow({ ComputePlotXAxisTitle(params, coord), ComputePlotYAxisTitle(params) });
 
         // write data rows
         auto lock = plot.lockDataPoints();
         for (PlotDataPoint p : *lock)
         {
-            writer.writerow({ std::to_string(p.x), std::to_string(p.y) });
+            writer.writeRow({ std::to_string(p.x), std::to_string(p.y) });
         }
     }
 
@@ -1325,7 +1325,7 @@ namespace
         osc::CSVWriter writer{f};
 
         // write header
-        writer.writerow(GetAllCSVHeaders(coord, params, lines));
+        writer.writeRow(GetAllCSVHeaders(coord, params, lines));
 
         // get incrementable cursors to all curves in the plot
         std::vector<LineCursor> cursors = GetCursorsToAllPlotLines(lines);
@@ -1367,7 +1367,7 @@ namespace
                 }
             }
 
-            writer.writerow(cols);
+            writer.writeRow(cols);
             maybeX = maybeNextX;
             maybeNextX = std::nullopt;
         }
