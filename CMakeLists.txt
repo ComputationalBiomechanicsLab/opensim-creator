@@ -555,7 +555,6 @@ add_library(osccore STATIC
     src/Utils/Algorithms.hpp
     src/Utils/Assertions.cpp
     src/Utils/Assertions.hpp
-    src/Utils/CheckedIndex.hpp
     src/Utils/CircularBuffer.hpp
     src/Utils/ClonePtr.hpp
     src/Utils/Cow.hpp
