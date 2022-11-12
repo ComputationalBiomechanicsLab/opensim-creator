@@ -3,6 +3,8 @@
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
 
+#include <memory>
+
 namespace osc { class SceneDecoration; }
 namespace osc { class SceneRendererParams; }
 namespace osc { class RenderTexture; }
@@ -25,6 +27,6 @@ namespace osc
 
     private:
         class Impl;
-        Impl* m_Impl;
+        std::unique_ptr<Impl> m_Impl;
     };
 }

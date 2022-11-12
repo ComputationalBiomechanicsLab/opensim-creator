@@ -14,13 +14,6 @@ namespace osc
     // a camera that focuses on and swivels around a focal point (e.g. for 3D model viewers)
     class PolarPerspectiveCamera final {
     public:
-        float radius;
-        float theta;
-        float phi;
-        glm::vec3 focusPoint;
-        float fov;
-        float znear;
-        float zfar;
 
         PolarPerspectiveCamera();
 
@@ -58,6 +51,14 @@ namespace osc
 
         // converts a `pos` (top-left) in the output `dims` into a line in worldspace by unprojection
         Line unprojectTopLeftPosToWorldRay(glm::vec2 pos, glm::vec2 dims) const noexcept;
+
+        float radius;
+        float theta;
+        float phi;
+        glm::vec3 focusPoint;
+        float fov;
+        float znear;
+        float zfar;
     };
 
     bool operator==(PolarPerspectiveCamera const&, PolarPerspectiveCamera const&) noexcept;

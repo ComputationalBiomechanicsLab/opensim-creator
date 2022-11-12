@@ -62,6 +62,7 @@ namespace osc
             SceneDecorationFlags flags_,
             std::optional<Material> maybeMaterial_,
             std::optional<MaterialPropertyBlock> maybeProps_ = std::nullopt) :
+
             mesh{std::move(mesh_)},
             transform{transform_},
             color{color_},

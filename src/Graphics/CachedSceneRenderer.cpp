@@ -33,25 +33,13 @@ private:
 // public API (PIMPL)
 
 osc::CachedSceneRenderer::CachedSceneRenderer() :
-    m_Impl{new Impl{}}
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
-osc::CachedSceneRenderer::CachedSceneRenderer(CachedSceneRenderer&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::CachedSceneRenderer& osc::CachedSceneRenderer::operator=(CachedSceneRenderer&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::CachedSceneRenderer::~CachedSceneRenderer() noexcept
-{
-    delete m_Impl;
-}
+osc::CachedSceneRenderer::CachedSceneRenderer(CachedSceneRenderer&&) noexcept = default;
+osc::CachedSceneRenderer& osc::CachedSceneRenderer::operator=(CachedSceneRenderer&&) noexcept = default;
+osc::CachedSceneRenderer::~CachedSceneRenderer() noexcept = default;
 
 osc::RenderTexture& osc::CachedSceneRenderer::draw(nonstd::span<SceneDecoration const> decorations, SceneRendererParams const& params)
 {

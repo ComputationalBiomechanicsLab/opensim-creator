@@ -28,25 +28,13 @@ public:
 };
 
 osc::MeshCache::MeshCache() :
-    m_Impl{new Impl{}}
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
-osc::MeshCache::MeshCache(MeshCache&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::MeshCache& osc::MeshCache::operator=(MeshCache&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::MeshCache::~MeshCache() noexcept
-{
-    delete m_Impl;
-}
+osc::MeshCache::MeshCache(MeshCache&&) noexcept = default;
+osc::MeshCache& osc::MeshCache::operator=(MeshCache&&) noexcept = default;
+osc::MeshCache::~MeshCache() noexcept = default;
 
 std::shared_ptr<osc::Mesh const> osc::MeshCache::get(std::string const& key, std::function<std::shared_ptr<osc::Mesh const>()> const& getter)
 {

@@ -104,8 +104,6 @@ namespace osc
     };
 
     struct BVH final {
-        std::vector<BVHNode> nodes;
-        std::vector<BVHPrim> prims;
 
         void clear();
 
@@ -133,5 +131,8 @@ namespace osc
 
         // returns the maximum depth of the given BVH tree
         int32_t getMaxDepth() const;
+
+        std::vector<BVHNode> nodes;
+        std::vector<BVHPrim> prims;
     };
 }

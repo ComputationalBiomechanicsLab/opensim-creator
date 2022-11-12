@@ -17,6 +17,7 @@ namespace osc
             glm::vec3 const& worldspaceLocation_,
             size_t decorationIndex_,
             float distanceFromRayOrigin_) :
+
             worldspaceLocation{worldspaceLocation_},
             decorationIndex{decorationIndex_},
             distanceFromRayOrigin{distanceFromRayOrigin_}

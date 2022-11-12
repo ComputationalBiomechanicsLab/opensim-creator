@@ -27,6 +27,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -345,30 +346,18 @@ private:
 // public API (PIMPL)
 
 osc::SceneRenderer::SceneRenderer() :
-    m_Impl{new Impl{}}
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
 osc::SceneRenderer::SceneRenderer(SceneRenderer const& other) :
-    m_Impl{new Impl{*other.m_Impl}}
+    m_Impl{std::make_unique<Impl>(*other.m_Impl)}
 {
 }
 
-osc::SceneRenderer::SceneRenderer(SceneRenderer&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::SceneRenderer& osc::SceneRenderer::operator=(SceneRenderer&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::SceneRenderer::~SceneRenderer() noexcept
-{
-    delete m_Impl;
-}
+osc::SceneRenderer::SceneRenderer(SceneRenderer&&) noexcept = default;
+osc::SceneRenderer& osc::SceneRenderer::operator=(SceneRenderer&&) noexcept = default;
+osc::SceneRenderer::~SceneRenderer() noexcept = default;
 
 glm::ivec2 osc::SceneRenderer::getDimensions() const
 {

@@ -96,7 +96,10 @@ namespace osc
 
     class PerfTimer {
     public:
-        explicit PerfTimer(int64_t id) noexcept : m_ID{id} {}
+        explicit PerfTimer(int64_t id) noexcept :
+            m_ID{id}
+        {
+        }
         PerfTimer(PerfTimer const&) = delete;
         PerfTimer(PerfTimer&&) noexcept = delete;
         PerfTimer& operator=(PerfTimer const&) = delete;

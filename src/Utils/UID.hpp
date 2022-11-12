@@ -78,10 +78,6 @@ namespace osc
         template<typename U>
         friend constexpr UIDT<U> DowncastID(UID const&) noexcept;
 
-        // compile-time (in terms of types) checked downcast
-        template<typename U, typename V>
-        friend constexpr UIDT<V> DowncastID(UIDT<U> const&) noexcept;
-
         constexpr UIDT(UID id) noexcept : UID{std::move(id)}
         {
         }

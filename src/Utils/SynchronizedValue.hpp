@@ -36,6 +36,7 @@ namespace osc
         // in-place constructor for T
         template<typename... Args>
         explicit SynchronizedValue(Args... args) :
+            m_Mutex{},
             m_Value{std::forward<Args...>(args)...}
         {
         }

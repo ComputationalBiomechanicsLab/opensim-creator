@@ -24,12 +24,6 @@ osc::SceneRendererParams::SceneRendererParams() :
 {
 }
 
-osc::SceneRendererParams::SceneRendererParams(SceneRendererParams const&) = default;
-osc::SceneRendererParams::SceneRendererParams(SceneRendererParams&&) noexcept = default;
-osc::SceneRendererParams& osc::SceneRendererParams::operator=(SceneRendererParams const&) = default;
-osc::SceneRendererParams& osc::SceneRendererParams::operator=(SceneRendererParams&&) noexcept = default;
-osc::SceneRendererParams::~SceneRendererParams() noexcept = default;
-
 bool osc::operator==(SceneRendererParams const& a, SceneRendererParams const& b)
 {
     return

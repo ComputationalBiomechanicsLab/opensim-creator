@@ -130,21 +130,11 @@ osc::Shader const& osc::ShaderCache::get(std::string_view vertexShaderResource, 
     return App::shaders().m_Impl->get(std::move(vertexShaderResource), std::move(geometryShaderResource), std::move(fragmentShaderResource));
 }
 
-osc::ShaderCache::ShaderCache() : m_Impl{new Impl{}}
+osc::ShaderCache::ShaderCache() :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
-osc::ShaderCache::ShaderCache(ShaderCache&& tmp) noexcept : m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::ShaderCache& osc::ShaderCache::operator=(ShaderCache&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::ShaderCache::~ShaderCache() noexcept
-{
-    delete m_Impl;
-}
+osc::ShaderCache::ShaderCache(ShaderCache&&) noexcept = default;
+osc::ShaderCache& osc::ShaderCache::operator=(ShaderCache&&) noexcept = default;
+osc::ShaderCache::~ShaderCache() noexcept = default;

@@ -9,6 +9,8 @@ namespace osc
 {
     class SceneRendererParams final {
     public:
+        SceneRendererParams();
+
         glm::ivec2 dimensions;
         int samples;
         bool drawMeshNormals;
@@ -29,13 +31,6 @@ namespace osc
         glm::vec4 rimColor;
         glm::vec3 floorLocation;
         float fixupScaleFactor;
-
-        SceneRendererParams();
-        SceneRendererParams(SceneRendererParams const&);
-        SceneRendererParams(SceneRendererParams&&) noexcept;
-        SceneRendererParams& operator=(SceneRendererParams const&);
-        SceneRendererParams& operator=(SceneRendererParams&&) noexcept;
-        ~SceneRendererParams() noexcept;
     };
 
     bool operator==(SceneRendererParams const&, SceneRendererParams const&);

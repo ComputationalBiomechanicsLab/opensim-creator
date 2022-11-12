@@ -10,10 +10,6 @@ namespace osc
     // packaged-up "transform" (orthogonal scale -> rotate -> translate)
     struct Transform final {
 
-        glm::vec3 scale = {1.0f, 1.0f, 1.0f};
-        glm::quat rotation = {1.0f, 0.0f, 0.0f, 0.0f};
-        glm::vec3 position = {0.0f, 0.0f, 0.0f};
-
         // default-construct as an identity transform
         constexpr Transform() = default;
 
@@ -68,6 +64,10 @@ namespace osc
         {
             return Transform{position, rotation, {scale_, scale_, scale_}};
         }
+
+        glm::vec3 scale = {1.0f, 1.0f, 1.0f};
+        glm::quat rotation = {1.0f, 0.0f, 0.0f, 0.0f};
+        glm::vec3 position = {0.0f, 0.0f, 0.0f};
     };
 
     // pretty-prints a `Transform` for readability

@@ -6,8 +6,6 @@ namespace osc
 {
     struct Tetrahedron final {
 
-        glm::vec3 Verts[4];
-
         glm::vec3 const& operator[](size_t i) const
         {
             return Verts[i];
@@ -22,6 +20,8 @@ namespace osc
         {
             return 4;
         }
+
+        glm::vec3 Verts[4];
     };
 
     float Volume(Tetrahedron const&);
