@@ -400,10 +400,10 @@ void osc::DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect
     std::array<char const* const, 3> labels = {"X", "Y", "Z"};
 
     ImDrawList& dd = *ImGui::GetWindowDrawList();
-    for (int i = 0; i < static_cast<int>(labels.size()); ++i)
+    for (size_t i = 0; i < labels.size(); ++i)
     {
         glm::vec4 world = {0.0f, 0.0f, 0.0f, 0.0f};
-        world[i] = 1.0f;
+        world[static_cast<glm::vec4::length_type>(i)] = 1.0f;
 
         glm::vec2 view = glm::vec2{viewMtx * world};
         view.y = -view.y;  // y goes down in screen-space
@@ -412,7 +412,7 @@ void osc::DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect
         glm::vec2 const p2 = origin + linelen*view;
 
         glm::vec4 color = {0.2f, 0.2f, 0.2f, 1.0f};
-        color[i] = 0.7f;
+        color[static_cast<glm::vec4::length_type>(i)] = 0.7f;
         ImU32 const colorU32 = ImGui::ColorConvertFloat4ToU32(color);
 
         glm::vec2 const ts = ImGui::CalcTextSize(labels[i]);

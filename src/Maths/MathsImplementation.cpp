@@ -95,7 +95,7 @@ namespace
     }
 
     // recursively build the BVH
-    void BVH_RecursiveBuild(osc::BVH& bvh, int const begin, int const n)
+    void BVH_RecursiveBuild(osc::BVH& bvh, ptrdiff_t const begin, ptrdiff_t const n)
     {
         if (n == 1)
         {
@@ -109,8 +109,8 @@ namespace
 
         // else: n >= 2, so partition the data appropriately and allocate an internal node
 
-        int midpoint = -1;
-        int internalNodeLoc = -1;
+        ptrdiff_t midpoint = -1;
+        ptrdiff_t internalNodeLoc = -1;
         {
             // allocate an appropriate internal node
 
@@ -129,17 +129,17 @@ namespace
             };
 
             // partition prims into above/below the midpoint
-            int const end = begin + n;
+            ptrdiff_t const end = begin + n;
             auto const it = std::partition(bvh.prims.begin() + begin, bvh.prims.begin() + end, isBelowMidpoint);
 
-            midpoint = static_cast<int>(std::distance(bvh.prims.begin(), it));
+            midpoint = std::distance(bvh.prims.begin(), it);
             if (midpoint == begin || midpoint == end)
             {
                 // edge-case: failed to spacially partition: just naievely partition
                 midpoint = begin + n/2;
             }
 
-            internalNodeLoc = static_cast<int>(bvh.nodes.size());
+            internalNodeLoc = static_cast<ptrdiff_t>(bvh.nodes.size());
 
             // push the internal node
             bvh.nodes.push_back(osc::BVHNode::node(
@@ -152,13 +152,13 @@ namespace
         BVH_RecursiveBuild(bvh, begin, midpoint-begin);
 
         // the left-hand build allocated nodes for the left hand side contiguously in memory
-        int numLhsNodes = static_cast<int>(bvh.nodes.size() - 1) - internalNodeLoc;
+        ptrdiff_t numLhsNodes = (static_cast<ptrdiff_t>(bvh.nodes.size()) - 1) - internalNodeLoc;
         OSC_ASSERT(numLhsNodes > 0);
         bvh.nodes[internalNodeLoc].setNumLhsNodes(numLhsNodes);
 
         // build right node
         BVH_RecursiveBuild(bvh, midpoint, (begin + n) - midpoint);
-        OSC_ASSERT(internalNodeLoc+numLhsNodes < static_cast<int>(bvh.nodes.size()));
+        OSC_ASSERT(internalNodeLoc+numLhsNodes < static_cast<ptrdiff_t>(bvh.nodes.size()));
     }
 
     // returns true if something hit (recursively)
@@ -167,7 +167,7 @@ namespace
     bool BVH_GetRayAABBCollisionsRecursive(
         osc::BVH const& bvh,
         osc::Line const& ray,
-        int nodeidx,
+        ptrdiff_t nodeidx,
         std::vector<osc::BVHCollision>& out)
     {
         osc::BVHNode const& node = bvh.nodes[nodeidx];
@@ -201,7 +201,7 @@ namespace
         nonstd::span<TIndex const> indices,
         osc::Line const& ray,
         float& closest,
-        int nodeidx)
+        ptrdiff_t nodeidx)
     {
         osc::BVHNode const& node = bvh.nodes[nodeidx];
         std::optional<osc::RayCollision> const res = osc::GetRayCollisionAABB(ray, node.getBounds());
@@ -270,13 +270,13 @@ namespace
 
             if (HasAVolume(t))
             {
-                bvh.prims.emplace_back(static_cast<int>(i), osc::AABBFromTriangle(t));
+                bvh.prims.emplace_back(static_cast<ptrdiff_t>(i), osc::AABBFromTriangle(t));
             }
         }
 
         if (!bvh.prims.empty())
         {
-            BVH_RecursiveBuild(bvh, 0, static_cast<int>(bvh.prims.size()));
+            BVH_RecursiveBuild(bvh, 0, static_cast<ptrdiff_t>(bvh.prims.size()));
         }
     }
 
@@ -334,13 +334,13 @@ void osc::BVH::buildFromAABBs(nonstd::span<AABB const> aabbs)
     {
         if (!IsAPoint(aabbs[i]))
         {
-            prims.emplace_back(static_cast<int>(i), aabbs[i]);
+            prims.emplace_back(static_cast<ptrdiff_t>(i), aabbs[i]);
         }
     }
 
     if (!prims.empty())
     {
-        BVH_RecursiveBuild(*this, 0, static_cast<int>(prims.size()));
+        BVH_RecursiveBuild(*this, 0, static_cast<ptrdiff_t>(prims.size()));
     }
 }
 
@@ -363,11 +363,11 @@ std::vector<osc::BVHCollision> osc::BVH::getRayAABBCollisions(Line const& ray) c
     return rv;
 }
 
-int32_t osc::BVH::getMaxDepth() const
+size_t osc::BVH::getMaxDepth() const
 {
-    int32_t cur = 0;
-    int32_t maxdepth = 0;
-    std::stack<int32_t, std::vector<int32_t>> stack;
+    size_t cur = 0;
+    size_t maxdepth = 0;
+    std::stack<size_t, std::vector<size_t>> stack;
 
     while (0 <= cur && cur < nodes.size())
     {
@@ -375,7 +375,7 @@ int32_t osc::BVH::getMaxDepth() const
         {
             // leaf node: compute its depth and continue traversal (if applicable)
 
-            maxdepth = std::max(maxdepth, static_cast<int32_t>(stack.size()) + 1);
+            maxdepth = std::max(maxdepth, stack.size() + 1);
 
             if (stack.empty())
             {
@@ -384,7 +384,7 @@ int32_t osc::BVH::getMaxDepth() const
             else
             {
                 // traverse up to a parent node and try the right-hand side
-                int32_t const next = stack.top();
+                size_t const next = stack.top();
                 stack.pop();
                 cur = next + nodes[next].getNumLhsNodes() + 1;
             }
@@ -1092,7 +1092,7 @@ float osc::LongestDim(glm::vec2 v) noexcept
     return v[LongestDimIndex(v)];
 }
 
-int osc::LongestDim(glm::ivec2 v) noexcept
+glm::ivec2::value_type osc::LongestDim(glm::ivec2 v) noexcept
 {
     return v[LongestDimIndex(v)];
 }
@@ -1524,7 +1524,7 @@ bool osc::IsAPoint(AABB const& a) noexcept
 bool osc::IsZeroVolume(AABB const& a) noexcept
 {
 
-    for (int i = 0; i < 3; ++i)
+    for (glm::vec3::length_type i = 0; i < 3; ++i)
     {
         if (a.min[i] == a.max[i])
         {
@@ -1555,8 +1555,8 @@ std::array<glm::vec3, 8> osc::ToCubeVerts(AABB const& aabb) noexcept
     std::array<glm::vec3, 8> rv;
     rv[0] = aabb.min;
     rv[1] = aabb.max;
-    int pos = 2;
-    for (int i = 0; i < 3; ++i)
+    size_t pos = 2;
+    for (glm::vec3::length_type i = 0; i < 3; ++i)
     {
         glm::vec3 min = aabb.min;
         min[i] += d[i];
@@ -1590,10 +1590,10 @@ osc::AABB osc::TransformAABB(AABB const& aabb, Transform const& t) noexcept
     glm::mat3 const m = ToMat3(t);
 
     AABB rv{t.position, t.position};  // add in the translation
-    for (int i = 0; i < 3; ++i)
+    for (glm::vec3::length_type i = 0; i < 3; ++i)
     {
         // form extent by summing smaller and larger terms repsectively
-        for (int j = 0; j < 3; ++j)
+        for (glm::vec3::length_type j = 0; j < 3; ++j)
         {
             float const e = m[j][i] * aabb.min[j];
             float const f = m[j][i] * aabb.max[j];
@@ -1983,7 +1983,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionAABB(Line const& l, AABB co
     //      in (e.g.) X, then Y, then Z, and intersect those interactions such
     //      that if the intersection is ever empty (or, negative here) then there
     //      is no intersection
-    for (int i = 0; i < 3; ++i)
+    for (glm::vec3::length_type i = 0; i < 3; ++i)
     {
         float invDir = 1.0f / l.dir[i];
         float tNear = (bb.min[i] - l.origin[i]) * invDir;
@@ -2127,7 +2127,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionTriangle(Line const& l, Tri
     // "inside-outside" test
 
     // test each triangle edge: {0, 1}, {1, 2}, {2, 0}
-    for (int i = 0; i < 3; ++i)
+    for (size_t i = 0; i < 3; ++i)
     {
         glm::vec3 const& start = tri[i];
         glm::vec3 const& end = tri[(i+1)%3];

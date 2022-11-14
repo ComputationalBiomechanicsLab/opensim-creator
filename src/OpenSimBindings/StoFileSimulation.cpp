@@ -30,6 +30,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <string_view>
 #include <sstream>
 #include <unordered_map>
 #include <unordered_set>
@@ -134,7 +135,7 @@ static std::unordered_map<int, int> CreateStorageIndexToModelSvIndexLUT(OpenSim:
     {
         std::stringstream ss;
         ss << "the provided STO file is missing the following columns:\n";
-        char const* delim = "";
+        std::string_view delim = "";
         for (std::string const& el : missing)
         {
             ss << delim << el;

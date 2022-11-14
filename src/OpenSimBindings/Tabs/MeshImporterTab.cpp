@@ -6614,9 +6614,8 @@ private:
         // label/name editor
         if (CanChangeLabel(e))
         {
-            char buf[256];
-            std::strcpy(buf, e.GetLabel().c_str());
-            if (ImGui::InputText("Name", buf, sizeof(buf)))
+            std::string buf{static_cast<std::string_view>(e.GetLabel())};
+            if (osc::InputString("Name", buf, sizeof(buf)))
             {
                 mg.UpdElByID(e.GetID()).SetLabel(buf);
             }
@@ -7554,13 +7553,13 @@ private:
 
         // local/global dropdown
         {
-            char const* modeLabels[] = {"local", "global"};
+            std::array<char const* const, 2> modeLabels = {"local", "global"};
             ImGuizmo::MODE modes[] = {ImGuizmo::LOCAL, ImGuizmo::WORLD};
             int currentMode = static_cast<int>(std::distance(std::begin(modes), std::find(std::begin(modes), std::end(modes), m_ImGuizmoState.mode)));
 
             ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
             ImGui::SetNextItemWidth(ImGui::CalcTextSize(modeLabels[0]).x + 40.0f);
-            if (ImGui::Combo("##modeselect", &currentMode, modeLabels, IM_ARRAYSIZE(modeLabels)))
+            if (ImGui::Combo("##modeselect", &currentMode, modeLabels.data(), static_cast<int>(modeLabels.size())))
             {
                 m_ImGuizmoState.mode = modes[static_cast<size_t>(currentMode)];
             }

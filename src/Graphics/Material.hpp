@@ -12,6 +12,7 @@
 #include <glm/vec4.hpp>
 #include <nonstd/span.hpp>
 
+#include <cstdint>
 #include <iosfwd>
 #include <optional>
 #include <string_view>
@@ -54,8 +55,8 @@ namespace osc
         std::optional<glm::mat4> getMat4(std::string_view propertyName) const;
         void setMat4(std::string_view propertyName, glm::mat4 const&);
 
-        std::optional<int> getInt(std::string_view propertyName) const;
-        void setInt(std::string_view propertyName, int);
+        std::optional<int32_t> getInt(std::string_view propertyName) const;
+        void setInt(std::string_view propertyName, int32_t);
 
         std::optional<bool> getBool(std::string_view propertyName) const;
         void setBool(std::string_view propertyName, bool);

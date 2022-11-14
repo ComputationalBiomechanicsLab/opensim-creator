@@ -89,13 +89,13 @@ bool osc::ContainsSubstring(std::string const& str, std::string_view substr)
 std::string osc::ToLower(std::string const& s)
 {
     std::string cpy = s;
-    std::transform(cpy.begin(), cpy.end(), cpy.begin(), [](unsigned char c) { return std::tolower(c); });
+    std::transform(cpy.begin(), cpy.end(), cpy.begin(), [](uint8_t c) { return std::tolower(c); });
     return cpy;
 }
 
 bool osc::IsEqualCaseInsensitive(std::string const& s1, std::string const& s2)
 {
-    auto compareChars = [](unsigned char c1, unsigned char c2)
+    auto compareChars = [](uint8_t c1, uint8_t c2)
     {
         return std::tolower(c1) == std::tolower(c2);
     };

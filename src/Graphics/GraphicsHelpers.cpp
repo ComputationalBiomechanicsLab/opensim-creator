@@ -22,7 +22,7 @@ namespace
     void DrawBVHRecursive(
         std::shared_ptr<osc::Mesh const> const& mesh,
         osc::BVH const& bvh,
-        int pos,
+        ptrdiff_t pos,
         std::vector<osc::SceneDecoration>& out)
     {
         osc::BVHNode const& n = bvh.nodes[pos];

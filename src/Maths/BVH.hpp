@@ -17,17 +17,17 @@ namespace osc
 {
     class BVHNode final {
     public:
-        static BVHNode leaf(AABB const& bounds, uint32_t primOffset)
+        static BVHNode leaf(AABB const& bounds, size_t primOffset)
         {
             return BVHNode{bounds, primOffset | g_LeafMask};
         }
 
-        static BVHNode node(AABB const& bounds, uint32_t numLhs)
+        static BVHNode node(AABB const& bounds, size_t numLhs)
         {
             return BVHNode{bounds, numLhs & ~g_LeafMask};
         }
     private:
-        BVHNode(AABB const& bounds_, uint32_t data_) :
+        BVHNode(AABB const& bounds_, size_t data_) :
             m_Bounds{bounds_},
             m_Data{std::move(data_)}
         {
@@ -48,36 +48,36 @@ namespace osc
             return !isLeaf();
         }
 
-        uint32_t getNumLhsNodes() const
+        size_t getNumLhsNodes() const
         {
             return m_Data & ~g_LeafMask;
         }
 
-        void setNumLhsNodes(uint32_t n)
+        void setNumLhsNodes(size_t n)
         {
             m_Data = n & ~g_LeafMask;
         }
 
-        uint32_t getFirstPrimOffset() const
+        size_t getFirstPrimOffset() const
         {
             return m_Data & ~g_LeafMask;
         }
 
     private:
-        static constexpr uint32_t g_LeafMask = 0x80000000;
+        static constexpr size_t g_LeafMask = static_cast<size_t>(1) << (8*sizeof(size_t) - 1);
         AABB m_Bounds;  // union of all AABBs below/including this one
-        uint32_t m_Data;
+        size_t m_Data;
     };
 
     class BVHPrim final {
     public:
-        BVHPrim(int32_t id_, AABB const& bounds_) :
+        BVHPrim(ptrdiff_t id_, AABB const& bounds_) :
             m_ID{std::move(id_)},
             m_Bounds{bounds_}
         {
         }
 
-        int32_t getID() const
+        ptrdiff_t getID() const
         {
             return m_ID;
         }
@@ -88,19 +88,19 @@ namespace osc
         }
 
     private:
-        int32_t m_ID;
+        ptrdiff_t m_ID;
         AABB m_Bounds;
     };
 
     struct BVHCollision final : public RayCollision {
 
-        BVHCollision(float distance_, glm::vec3 position_, int32_t id_) :
+        BVHCollision(float distance_, glm::vec3 position_, ptrdiff_t id_) :
             RayCollision{distance_, position_},
             id{id_}
         {
         }
 
-        int32_t id;
+        ptrdiff_t id;
     };
 
     struct BVH final {
@@ -130,7 +130,7 @@ namespace osc
         std::vector<BVHCollision> getRayAABBCollisions(Line const&) const;
 
         // returns the maximum depth of the given BVH tree
-        int32_t getMaxDepth() const;
+        size_t getMaxDepth() const;
 
         std::vector<BVHNode> nodes;
         std::vector<BVHPrim> prims;

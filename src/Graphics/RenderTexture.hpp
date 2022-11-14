@@ -33,8 +33,8 @@ namespace osc
         RenderTextureFormat getColorFormat() const;
         void setColorFormat(RenderTextureFormat);
 
-        int getAntialiasingLevel() const;
-        void setAntialiasingLevel(int);
+        int32_t getAntialiasingLevel() const;
+        void setAntialiasingLevel(int32_t);
 
         DepthStencilFormat getDepthStencilFormat() const;
         void setDepthStencilFormat(DepthStencilFormat);

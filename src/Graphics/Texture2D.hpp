@@ -24,7 +24,7 @@ namespace osc
     public:
         Texture2D(glm::ivec2 dimensions, nonstd::span<Rgba32 const> rgbaPixelsRowByRow);
         Texture2D(glm::ivec2 dimensions, nonstd::span<uint8_t const> singleChannelPixelsRowByRow);
-        Texture2D(glm::ivec2 dimensions, nonstd::span<uint8_t const> channelsRowByRow, int numChannels);
+        Texture2D(glm::ivec2 dimensions, nonstd::span<uint8_t const> channelsRowByRow, int32_t numChannels);
         Texture2D(Texture2D const&);
         Texture2D(Texture2D&&) noexcept;
         Texture2D& operator=(Texture2D const&);

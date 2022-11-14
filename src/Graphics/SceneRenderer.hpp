@@ -21,7 +21,7 @@ namespace osc
         ~SceneRenderer() noexcept;
 
         glm::ivec2 getDimensions() const;
-        int getSamples() const;
+        int32_t getSamples() const;
         void draw(nonstd::span<SceneDecoration const>, SceneRendererParams const&);
         RenderTexture& updRenderTexture();
 

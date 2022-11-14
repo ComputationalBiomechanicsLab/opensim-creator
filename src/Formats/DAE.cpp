@@ -14,6 +14,7 @@
 #include <nonstd/span.hpp>
 
 #include <chrono>
+#include <cstdint>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -95,11 +96,11 @@ namespace
     {
         DAESceneGraph rv;
 
-        int latestMesh = 0;
-        int latestMaterial = 0;
+        int64_t latestMesh = 0;
+        int64_t latestMaterial = 0;
         std::unordered_map<std::shared_ptr<osc::Mesh const>, std::string> mesh2id;
         std::unordered_map<glm::vec4, std::string> color2materialid;
-        int latestInstance = 0;
+        int64_t latestInstance = 0;
 
         for (osc::SceneDecoration const& el : els)
         {
@@ -276,8 +277,8 @@ R"(  <asset>
     void WriteMeshPositionsSource(std::ostream& o, DAEGeometry const& geom)
     {
         nonstd::span<glm::vec3 const> const vals = geom.Mesh->getVerts();
-        int const floatCount = 3*static_cast<int>(vals.size());
-        int const vertCount = static_cast<int>(vals.size());
+        size_t const floatCount = 3 * vals.size();
+        size_t const vertCount = vals.size();
 
         o << fmt::format(
 R"(        <source id="{}-positions">
@@ -302,8 +303,8 @@ R"(        <source id="{}-positions">
     void WriteMeshNormalsSource(std::ostream& o, DAEGeometry const& geom)
     {
         nonstd::span<glm::vec3 const> const vals = geom.Mesh->getNormals();
-        int const floatCount = 3*static_cast<int>(vals.size());
-        int const normalCount = static_cast<int>(vals.size());
+        size_t const floatCount = 3 * vals.size();
+        size_t const normalCount = vals.size();
 
         o << fmt::format(
 R"(        <source id="{}-normals">
@@ -328,8 +329,8 @@ R"(        <source id="{}-normals">
     void WriteMeshTextureCoordsSource(std::ostream& o, DAEGeometry const& geom)
     {
         nonstd::span<glm::vec2 const> const vals = geom.Mesh->getTexCoords();
-        int const floatCount = 2*static_cast<int>(vals.size());
-        int const coordCount = static_cast<int>(vals.size());
+        size_t const floatCount = 2 * vals.size();
+        size_t const coordCount = vals.size();
 
 o << fmt::format(
 R"(        <source id="{}-map-0">
@@ -364,7 +365,7 @@ R"(        <vertices id="{}-vertices">
     void WriteMeshTriangles(std::ostream& o, DAEGeometry const& geom)
     {
         osc::MeshIndicesView const indices = geom.Mesh->getIndices();
-        int const numTriangles = static_cast<int>(indices.size()) / 3;
+        size_t const numTriangles = indices.size() / 3;
 
         o << fmt::format(R"(        <triangles count="{}">)", numTriangles);
         o << '\n';
@@ -439,7 +440,7 @@ R"(        <vertices id="{}-vertices">
         // row-major
         o << R"(        <matrix sid="transform">)";
         std::string_view delim = "";
-        for (int row = 0; row < 4; ++row)
+        for (glm::mat4::length_type row = 0; row < 4; ++row)
         {
             o << delim << m[0][row];
             delim = " ";

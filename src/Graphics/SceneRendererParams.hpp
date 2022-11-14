@@ -12,7 +12,7 @@ namespace osc
         SceneRendererParams();
 
         glm::ivec2 dimensions;
-        int samples;
+        int32_t samples;
         bool drawMeshNormals;
         bool drawRims;
         bool drawFloor;

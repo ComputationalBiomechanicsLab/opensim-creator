@@ -4,6 +4,7 @@
 
 #include <glm/vec4.hpp>
 
+#include <cstdint>
 #include <future>
 #include <string>
 
@@ -24,7 +25,7 @@ namespace osc
         GraphicsContext& operator=(GraphicsContext&&) noexcept = delete;
         ~GraphicsContext() noexcept;
 
-        int getMaxMSXAASamples() const;
+        int32_t getMaxMSXAASamples() const;
 
         bool isVsyncEnabled() const;
         void enableVsync();

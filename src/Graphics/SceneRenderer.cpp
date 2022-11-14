@@ -87,7 +87,7 @@ public:
         return m_MaybeRenderTexture->getDimensions();
     }
 
-    int getSamples() const
+    int32_t getSamples() const
     {
         return m_MaybeRenderTexture->getAntialiasingLevel();
     }
@@ -364,7 +364,7 @@ glm::ivec2 osc::SceneRenderer::getDimensions() const
     return m_Impl->getDimensions();
 }
 
-int osc::SceneRenderer::getSamples() const
+int32_t osc::SceneRenderer::getSamples() const
 {
     return m_Impl->getSamples();
 }

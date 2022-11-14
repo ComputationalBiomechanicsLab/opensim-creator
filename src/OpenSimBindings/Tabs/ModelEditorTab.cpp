@@ -436,11 +436,10 @@ private:
             // active 3D viewers (can be disabled)
             for (int i = 0; i < static_cast<int>(m_ModelViewers.size()); ++i)
             {
-                char buf[64];
-                std::snprintf(buf, sizeof(buf), "viewer%i", i);
+                std::string const name = "viewer" + std::to_string(i);
 
                 bool enabled = true;
-                if (ImGui::MenuItem(buf, nullptr, &enabled))
+                if (ImGui::MenuItem(name.c_str(), nullptr, &enabled))
                 {
                     m_ModelViewers.erase(m_ModelViewers.begin() + i);
                     --i;
@@ -536,10 +535,9 @@ private:
         {
             osc::UiModelViewer& viewer = m_ModelViewers[i];
 
-            char buf[64];
-            std::snprintf(buf, sizeof(buf), "viewer%i", i);
+            std::string const name = "viewer" + std::to_string(i);
 
-            bool isOpen = draw3DViewer(viewer, buf);
+            bool isOpen = draw3DViewer(viewer, name.c_str());
 
             if (!isOpen)
             {

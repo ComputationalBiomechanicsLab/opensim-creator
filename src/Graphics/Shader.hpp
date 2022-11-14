@@ -4,6 +4,7 @@
 #include "src/Utils/Cow.hpp"
 #include "src/Utils/CStringView.hpp"
 
+#include <cstddef>
 #include <iosfwd>
 #include <optional>
 #include <string>
@@ -22,11 +23,11 @@ namespace osc
         Shader& operator=(Shader&&) noexcept;
         ~Shader() noexcept;
 
-        std::optional<int> findPropertyIndex(std::string const& propertyName) const;
+        std::optional<size_t> findPropertyIndex(std::string const& propertyName) const;
 
-        int getPropertyCount() const;
-        std::string const& getPropertyName(int propertyIndex) const;
-        ShaderType getPropertyType(int propertyIndex) const;
+        size_t getPropertyCount() const;
+        std::string const& getPropertyName(size_t propertyIndex) const;
+        ShaderType getPropertyType(size_t propertyIndex) const;
 
         friend void swap(Shader& a, Shader& b) noexcept
         {

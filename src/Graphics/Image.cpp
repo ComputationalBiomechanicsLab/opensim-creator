@@ -111,9 +111,9 @@ nonstd::span<uint8_t const> osc::Image::getPixelData() const
 void osc::WriteToPNG(Image const& image, std::filesystem::path const& outpath)
 {
     std::string const pathStr = outpath.string();
-    int const w = image.getDimensions().x;
-    int const h = image.getDimensions().y;
-    int const strideBetweenRows = w * image.getNumChannels();
+    int32_t const w = image.getDimensions().x;
+    int32_t const h = image.getDimensions().y;
+    int32_t const strideBetweenRows = w * image.getNumChannels();
 
 
     stbi_flip_vertically_on_write(true);

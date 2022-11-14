@@ -21,8 +21,8 @@ namespace osc
         glm::ivec2 getDimensions() const;
         void setDimensions(glm::ivec2);
 
-        int getAntialiasingLevel() const;
-        void setAntialiasingLevel(int);
+        int32_t getAntialiasingLevel() const;
+        void setAntialiasingLevel(int32_t);
 
         RenderTextureFormat getColorFormat() const;
         void setColorFormat(RenderTextureFormat);
@@ -38,7 +38,7 @@ namespace osc
         friend std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
 
         glm::ivec2 m_Dimensions;
-        int m_AnialiasingLevel;
+        int32_t m_AnialiasingLevel;
         RenderTextureFormat m_ColorFormat;
         DepthStencilFormat m_DepthStencilFormat;
     };

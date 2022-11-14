@@ -54,6 +54,7 @@
 #include <functional>
 #include <future>
 #include <string>
+#include <string_view>
 #include <sstream>
 #include <iostream>
 #include <limits>
@@ -142,7 +143,7 @@ namespace
     std::ostream& operator<<(std::ostream& o, TPSCoefficientSolverInputs3D const& inputs)
     {
         o << "TPSCoefficientSolverInputs3D{landmarks = [";
-        char const* delim = "";
+        std::string_view delim = "";
         for (LandmarkPair3D const& landmark : inputs.Landmarks)
         {
             o << delim << landmark;

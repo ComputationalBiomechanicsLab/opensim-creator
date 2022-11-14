@@ -9,6 +9,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include <iostream>
+#include <string_view>
 
 std::ostream& osc::operator<<(std::ostream& o, glm::vec2 const& v)
 {
@@ -28,10 +29,10 @@ std::ostream& osc::operator<<(std::ostream& o, glm::vec4 const& v)
 std::ostream& osc::operator<<(std::ostream& o, glm::mat3 const& m)
 {
     // prints in row-major, because that's how most people debug matrices
-    for (int row = 0; row < 3; ++row)
+    for (glm::mat3::length_type row = 0; row < 3; ++row)
     {
-        char const* delim = "";
-        for (int col = 0; col < 3; ++col)
+        std::string_view delim = "";
+        for (glm::mat3::length_type col = 0; col < 3; ++col)
         {
             o << delim << m[col][row];
             delim = " ";
@@ -44,10 +45,10 @@ std::ostream& osc::operator<<(std::ostream& o, glm::mat3 const& m)
 std::ostream& osc::operator<<(std::ostream& o, glm::mat4x3 const& m)
 {
     // prints in row-major, because that's how most people debug matrices
-    for (int row = 0; row < 3; ++row)
+    for (glm::mat4x3::length_type row = 0; row < 3; ++row)
     {
-        char const* delim = "";
-        for (int col = 0; col < 4; ++col)
+        std::string_view delim = "";
+        for (glm::mat4x3::length_type col = 0; col < 4; ++col)
         {
             o << delim << m[col][row];
             delim = " ";
@@ -60,9 +61,9 @@ std::ostream& osc::operator<<(std::ostream& o, glm::mat4x3 const& m)
 std::ostream& osc::operator<<(std::ostream& o, glm::mat4 const& m)
 {
     // prints in row-major, because that's how most people debug matrices
-    for (int row = 0; row < 4; ++row) {
-        char const* delim = "";
-        for (int col = 0; col < 4; ++col)
+    for (glm::mat4::length_type row = 0; row < 4; ++row) {
+        std::string_view delim = "";
+        for (glm::mat4::length_type col = 0; col < 4; ++col)
         {
             o << delim << m[col][row];
             delim = " ";

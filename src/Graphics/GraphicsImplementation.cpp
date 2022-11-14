@@ -156,7 +156,7 @@ namespace
         glm::vec4,
         glm::mat3,
         glm::mat4,
-        int,
+        int32_t,
         bool,
         osc::Texture2D,
         osc::RenderTexture
@@ -182,7 +182,7 @@ namespace
             return osc::ShaderType::Mat3;
         case VariantIndex<MaterialValue, glm::mat4>():
             return osc::ShaderType::Mat4;
-        case VariantIndex<MaterialValue, int>():
+        case VariantIndex<MaterialValue, int32_t>():
             return osc::ShaderType::Int;
         case VariantIndex<MaterialValue, bool>():
             return osc::ShaderType::Bool;
@@ -276,16 +276,16 @@ namespace
 
     // parsed-out description of a shader "element" (uniform/attribute)
     struct ShaderElement final {
-        ShaderElement(int location_, osc::ShaderType type_, int size_) :
+        ShaderElement(int32_t location_, osc::ShaderType type_, int32_t size_) :
             Location{std::move(location_)},
             Type{std::move(type_)},
             Size{std::move(size_)}
         {
         }
 
-        int Location;
+        int32_t Location;
         osc::ShaderType Type;
-        int Size;
+        int32_t Size;
     };
 
     void PrintShaderElement(std::ostream& o, std::string_view name, ShaderElement const& se)
@@ -606,7 +606,7 @@ namespace osc
 
         static void HandleBatchWithSameMaterialPropertyBlock(
             nonstd::span<RenderObject const>,
-            int& textureSlot,
+            int32_t& textureSlot,
             std::optional<InstancingState>& ins
         );
 
@@ -618,7 +618,7 @@ namespace osc
         static void TryBindMaterialValueToShaderElement(
             ShaderElement const& se,
             MaterialValue const& v,
-            int& textureSlot
+            int32_t& textureSlot
         );
 
         static void HandleBatchWithSameMaterial(
@@ -765,7 +765,7 @@ public:
     {
     }
 
-    Impl(glm::ivec2 dimensions, nonstd::span<uint8_t const> channels, int numChannels) :
+    Impl(glm::ivec2 dimensions, nonstd::span<uint8_t const> channels, int32_t numChannels) :
         m_Dimensions{std::move(dimensions)},
         m_Pixels(channels.data(), channels.data() + channels.size()),
         m_NumChannels{numChannels}
@@ -921,7 +921,7 @@ private:
 
     glm::ivec2 m_Dimensions;
     std::vector<uint8_t> m_Pixels;
-    int m_NumChannels;
+    int32_t m_NumChannels;
     TextureWrapMode m_WrapModeU = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeV = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeW = TextureWrapMode::Repeat;
@@ -952,7 +952,7 @@ osc::Texture2D::Texture2D(glm::ivec2 dimensions, nonstd::span<uint8_t const> pix
 {
 }
 
-osc::Texture2D::Texture2D(glm::ivec2 dimensions, nonstd::span<uint8_t const> channels, int numChannels) :
+osc::Texture2D::Texture2D(glm::ivec2 dimensions, nonstd::span<uint8_t const> channels, int32_t numChannels) :
     m_Impl{make_cow<Impl>(std::move(dimensions), std::move(channels), std::move(numChannels))}
 {
 }
@@ -1072,7 +1072,7 @@ namespace
         }
     }
 
-    int GetNumChannels(osc::RenderTextureFormat f)
+    int32_t GetNumChannels(osc::RenderTextureFormat f)
     {
         switch (f)
         {
@@ -1122,12 +1122,12 @@ void osc::RenderTextureDescriptor::setDimensions(glm::ivec2 d)
     m_Dimensions = d;
 }
 
-int osc::RenderTextureDescriptor::getAntialiasingLevel() const
+int32_t osc::RenderTextureDescriptor::getAntialiasingLevel() const
 {
     return m_AnialiasingLevel;
 }
 
-void osc::RenderTextureDescriptor::setAntialiasingLevel(int level)
+void osc::RenderTextureDescriptor::setAntialiasingLevel(int32_t level)
 {
     OSC_THROWING_ASSERT(level <= 64 && osc::NumBitsSetIn(level) == 1);
     m_AnialiasingLevel = level;
@@ -1211,12 +1211,12 @@ public:
         }
     }
 
-    int getAntialiasingLevel() const
+    int32_t getAntialiasingLevel() const
     {
         return m_Descriptor.getAntialiasingLevel();
     }
 
-    void setAntialiasingLevel(int level)
+    void setAntialiasingLevel(int32_t level)
     {
         if (level != m_Descriptor.getAntialiasingLevel())
         {
@@ -1400,12 +1400,12 @@ void osc::RenderTexture::setColorFormat(RenderTextureFormat format)
     m_Impl.upd()->setColorFormat(format);
 }
 
-int osc::RenderTexture::getAntialiasingLevel() const
+int32_t osc::RenderTexture::getAntialiasingLevel() const
 {
     return m_Impl->getAntialiasingLevel();
 }
 
-void osc::RenderTexture::setAntialiasingLevel(int level)
+void osc::RenderTexture::setAntialiasingLevel(int32_t level)
 {
     m_Impl.upd()->setAntialiasingLevel(level);
 }
@@ -1468,13 +1468,13 @@ public:
         parseUniformsAndAttributesFromProgram();
     }
 
-    std::optional<int> findPropertyIndex(std::string const& propertyName) const
+    std::optional<size_t> findPropertyIndex(std::string const& propertyName) const
     {
         auto const it = m_Uniforms.find(propertyName);
 
         if (it != m_Uniforms.end())
         {
-            return static_cast<int>(std::distance(m_Uniforms.begin(), it));
+            return static_cast<size_t>(std::distance(m_Uniforms.begin(), it));
         }
         else
         {
@@ -1482,19 +1482,19 @@ public:
         }
     }
 
-    int getPropertyCount() const
+    size_t getPropertyCount() const
     {
-        return static_cast<int>(m_Uniforms.size());
+        return m_Uniforms.size();
     }
 
-    std::string const& getPropertyName(int i) const
+    std::string const& getPropertyName(size_t i) const
     {
         auto it = m_Uniforms.begin();
         std::advance(it, i);
         return it->first;
     }
 
-    ShaderType getPropertyType(int i) const
+    ShaderType getPropertyType(size_t i) const
     {
         auto it = m_Uniforms.begin();
         std::advance(it, i);
@@ -1546,11 +1546,12 @@ private:
                 name
             );
 
+            static_assert(sizeof(GLint) <= sizeof(int32_t));
             m_Attributes.try_emplace(
                 NormalizeShaderElementName(name),
-                static_cast<int>(glGetAttribLocation(m_Program.get(), name)),
+                static_cast<int32_t>(glGetAttribLocation(m_Program.get(), name)),
                 GLShaderTypeToShaderTypeInternal(type),
-                static_cast<int>(size)
+                static_cast<int32_t>(size)
             );
         }
 
@@ -1571,11 +1572,12 @@ private:
                 name
             );
 
+            static_assert(sizeof(GLint) <= sizeof(int32_t));
             m_Uniforms.try_emplace(
                 NormalizeShaderElementName(name),
-                static_cast<int>(glGetUniformLocation(m_Program.get(), name)),
+                static_cast<int32_t>(glGetUniformLocation(m_Program.get(), name)),
                 GLShaderTypeToShaderTypeInternal(type),
-                size
+                static_cast<int32_t>(size)
             );
         }
 
@@ -1649,22 +1651,22 @@ osc::Shader& osc::Shader::operator=(Shader const&) = default;
 osc::Shader& osc::Shader::operator=(Shader&&) noexcept = default;
 osc::Shader::~Shader() noexcept = default;
 
-std::optional<int> osc::Shader::findPropertyIndex(std::string const& propertyName) const
+std::optional<size_t> osc::Shader::findPropertyIndex(std::string const& propertyName) const
 {
     return m_Impl->findPropertyIndex(propertyName);
 }
 
-int osc::Shader::getPropertyCount() const
+size_t osc::Shader::getPropertyCount() const
 {
     return m_Impl->getPropertyCount();
 }
 
-std::string const& osc::Shader::getPropertyName(int propertyIndex) const
+std::string const& osc::Shader::getPropertyName(size_t propertyIndex) const
 {
     return m_Impl->getPropertyName(std::move(propertyIndex));
 }
 
-osc::ShaderType osc::Shader::getPropertyType(int propertyIndex) const
+osc::ShaderType osc::Shader::getPropertyType(size_t propertyIndex) const
 {
     return m_Impl->getPropertyType(std::move(propertyIndex));
 }
@@ -1801,12 +1803,12 @@ public:
         setValue(std::move(propertyName), value);
     }
 
-    std::optional<int> getInt(std::string_view propertyName) const
+    std::optional<int32_t> getInt(std::string_view propertyName) const
     {
-        return getValue<int>(std::move(propertyName));
+        return getValue<int32_t>(std::move(propertyName));
     }
 
-    void setInt(std::string_view propertyName, int value)
+    void setInt(std::string_view propertyName, int32_t value)
     {
         setValue(std::move(propertyName), value);
     }
@@ -2011,12 +2013,12 @@ void osc::Material::setMat4(std::string_view propertyName, glm::mat4 const& mat)
     m_Impl.upd()->setMat4(std::move(propertyName), mat);
 }
 
-std::optional<int> osc::Material::getInt(std::string_view propertyName) const
+std::optional<int32_t> osc::Material::getInt(std::string_view propertyName) const
 {
     return m_Impl->getInt(std::move(propertyName));
 }
 
-void osc::Material::setInt(std::string_view propertyName, int value)
+void osc::Material::setInt(std::string_view propertyName, int32_t value)
 {
     m_Impl.upd()->setInt(std::move(propertyName), std::move(value));
 }
@@ -2165,12 +2167,12 @@ public:
         setValue(std::move(propertyName), value);
     }
 
-    std::optional<int> getInt(std::string_view propertyName) const
+    std::optional<int32_t> getInt(std::string_view propertyName) const
     {
-        return getValue<int>(std::move(propertyName));
+        return getValue<int32_t>(std::move(propertyName));
     }
 
-    void setInt(std::string_view propertyName, int value)
+    void setInt(std::string_view propertyName, int32_t value)
     {
         setValue(std::move(propertyName), value);
     }
@@ -2302,12 +2304,12 @@ void osc::MaterialPropertyBlock::setMat4(std::string_view propertyName, glm::mat
     m_Impl.upd()->setMat4(std::move(propertyName), value);
 }
 
-std::optional<int> osc::MaterialPropertyBlock::getInt(std::string_view propertyName) const
+std::optional<int32_t> osc::MaterialPropertyBlock::getInt(std::string_view propertyName) const
 {
     return m_Impl->getInt(std::move(propertyName));
 }
 
-void osc::MaterialPropertyBlock::setInt(std::string_view propertyName, int value)
+void osc::MaterialPropertyBlock::setInt(std::string_view propertyName, int32_t value)
 {
     m_Impl.upd()->setInt(std::move(propertyName), std::move(value));
 }
@@ -3504,7 +3506,7 @@ namespace
     }
 
     // returns the maximum numbers of MSXAA samples the active OpenGL context supports
-    GLint GetOpenGLMaxMSXAASamples(sdl::GLContext const&)
+    int32_t GetOpenGLMaxMSXAASamples(sdl::GLContext const&)
     {
         GLint v = 1;
         glGetIntegerv(GL_MAX_SAMPLES, &v);
@@ -3522,7 +3524,7 @@ namespace
         }
         OSC_ASSERT_ALWAYS(v < 1<<16 && "number of samples is greater than the maximum supported by the application");
 
-        return v;
+        return static_cast<int32_t>(v);
     }
 
     // maps an OpenGL debug message severity level to a log level
@@ -3650,10 +3652,10 @@ namespace
     void OpenGLDebugMessageHandler(
         GLenum source,
         GLenum type,
-        unsigned int id,
+        GLuint id,
         GLenum severity,
         GLsizei,
-        const char* message,
+        const GLchar* message,
         void const*)
     {
         osc::log::level::LevelEnum lvl = OpenGLDebugSevToLogLvl(severity);
@@ -3680,7 +3682,7 @@ severity = %s
             return;
         }
 
-        int flags;
+        GLint flags;
         glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
         if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
         {
@@ -3705,7 +3707,7 @@ severity = %s
             return;
         }
 
-        int flags;
+        GLint flags;
         glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
         if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
         {
@@ -3726,7 +3728,7 @@ public:
         m_QuadMaterial.setDepthTested(false);  // it's for fullscreen rendering
     }
 
-    int getMaxMSXAASamples() const
+    int32_t getMaxMSXAASamples() const
     {
         return m_MaxMSXAASamples;
     }
@@ -3824,7 +3826,7 @@ public:
             Image screenshot{dims, pixels, 4};
 
             // copy image to requests [0..n-2]
-            for (int i = 0, len = static_cast<int>(m_ActiveScreenshotRequests.size())-1; i < len; ++i)
+            for (ptrdiff_t i = 0, len = static_cast<ptrdiff_t>(m_ActiveScreenshotRequests.size())-1; i < len; ++i)
             {
                 m_ActiveScreenshotRequests[i].set_value(screenshot);
             }
@@ -3870,7 +3872,7 @@ private:
     sdl::GLContext m_GLContext;
 
     // maximum number of samples supported by this hardware's OpenGL MSXAA API
-    int m_MaxMSXAASamples = GetOpenGLMaxMSXAASamples(m_GLContext);
+    int32_t m_MaxMSXAASamples = GetOpenGLMaxMSXAASamples(m_GLContext);
 
     bool m_VSyncEnabled = SDL_GL_GetSwapInterval() != 0;
 
@@ -3917,7 +3919,7 @@ osc::GraphicsContext::~GraphicsContext() noexcept
     g_GraphicsContextImpl.reset();
 }
 
-int osc::GraphicsContext::getMaxMSXAASamples() const
+int32_t osc::GraphicsContext::getMaxMSXAASamples() const
 {
     return g_GraphicsContextImpl->getMaxMSXAASamples();
 }
@@ -4273,7 +4275,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
 // helper: draw a batch of render objects that have the same material and material block
 void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
     nonstd::span<RenderObject const> els,
-    int& textureSlot,
+    int32_t& textureSlot,
     std::optional<InstancingState>& ins)
 {
     OSC_PERF("GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock");
@@ -4303,7 +4305,10 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
 }
 
 
-void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement const& se, MaterialValue const& v, int& textureSlot)
+void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
+    ShaderElement const& se,
+    MaterialValue const& v,
+    int32_t& textureSlot)
 {
     if (GetShaderType(v) != se.Type)
     {
@@ -4321,8 +4326,8 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement con
     case VariantIndex<MaterialValue, std::vector<float>>():
     {
         auto const& vals = std::get<std::vector<float>>(v);
-        int const numToAssign = std::min(se.Size, static_cast<int>(vals.size()));
-        for (int i = 0; i < numToAssign; ++i)
+        int32_t const numToAssign = std::min(se.Size, static_cast<int32_t>(vals.size()));
+        for (int32_t i = 0; i < numToAssign; ++i)
         {
             gl::UniformFloat u{se.Location + i};
             gl::Uniform(u, vals[i]);
@@ -4344,8 +4349,8 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement con
     case VariantIndex<MaterialValue, std::vector<glm::vec3>>():
     {
         auto const& vals = std::get<std::vector<glm::vec3>>(v);
-        int const numToAssign = std::min(se.Size, static_cast<int>(vals.size()));
-        for (int i = 0; i < numToAssign; ++i)
+        int32_t const numToAssign = std::min(se.Size, static_cast<int32_t>(vals.size()));
+        for (int32_t i = 0; i < numToAssign; ++i)
         {
             gl::UniformVec3 u{se.Location + i};
             gl::Uniform(u, vals[i]);
@@ -4370,10 +4375,10 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement con
         gl::Uniform(u, std::get<glm::mat4>(v));
         break;
     }
-    case VariantIndex<MaterialValue, int>():
+    case VariantIndex<MaterialValue, int32_t>():
     {
         gl::UniformInt u{se.Location};
-        gl::Uniform(u, std::get<int>(v));
+        gl::Uniform(u, std::get<int32_t>(v));
         break;
     }
     case VariantIndex<MaterialValue, bool>():
@@ -4430,7 +4435,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
     std::optional<InstancingState> maybeInstances = UploadInstanceData(els, shaderImpl);
 
     // updated by various batches (which may bind to textures etc.)
-    int textureSlot = 0;
+    int32_t textureSlot = 0;
 
     gl::UseProgram(shaderImpl.updProgram());
 
@@ -4789,10 +4794,10 @@ void osc::GraphicsBackend::BlitToScreen(
     {
         // rect is currently top-left, must be converted to bottom-left
 
-        int const windowHeight = App::get().idims().y;
-        int const rectHeight = static_cast<int>(rect.p2.y - rect.p1.y);
-        int const p1y = static_cast<int>((windowHeight - rect.p1.y) - rectHeight);
-        int const p2y = static_cast<int>(windowHeight - rect.p1.y);
+        int32_t const windowHeight = App::get().idims().y;
+        int32_t const rectHeight = static_cast<int32_t>(rect.p2.y - rect.p1.y);
+        int32_t const p1y = static_cast<int>((windowHeight - rect.p1.y) - rectHeight);
+        int32_t const p2y = static_cast<int>(windowHeight - rect.p1.y);
         glm::ivec2 texDimensions = t.getDimensions();
 
         // blit multisampled scene render to not-multisampled texture
@@ -4866,7 +4871,7 @@ void osc::GraphicsBackend::Blit(Texture2D const& source, RenderTexture& dest)
 void osc::GraphicsBackend::ReadPixels(RenderTexture const& source, Image& dest)
 {
     glm::ivec2 const dims = source.getDimensions();
-    int const channels = GetNumChannels(source.getColorFormat());
+    int32_t const channels = GetNumChannels(source.getColorFormat());
 
     std::vector<uint8_t> pixels(channels*dims.x*dims.y);
 
