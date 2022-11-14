@@ -14,14 +14,6 @@ set -xeuo pipefail
 
 # ----- handle external build parameters ----- #
 
-# where to clone the OpenSim source from
-#
-# handy to override if you are developing against a fork, locally, etc.
-OSC_OPENSIM_REPO=${OSC_OPENSIM_REPO:-https://github.com/ComputationalBiomechanicsLab/opensim-core}
-
-# can be any branch identifier from opensim-core
-OSC_OPENSIM_REPO_BRANCH=${OSC_OPENSIM_REPO_BRANCH:-opensim-creator}
-
 # base build type: used if one of the below isn't overridden
 OSC_BASE_BUILD_TYPE=${OSC_BASE_BUILD_TYPE:-Release}
 
@@ -70,8 +62,6 @@ echo "----- starting build -----"
 echo ""
 echo "----- printing build parameters -----"
 echo ""
-echo "    OSC_OPENSIM_REPO = ${OSC_OPENSIM_REPO}"
-echo "    OSC_OPENSIM_REPO_BRANCH = ${OSC_OPENSIM_REPO_BRANCH}"
 echo "    OSC_BASE_BUILD_TYPE = ${OSC_BASE_BUILD_TYPE}"
 echo "    OSC_OPENSIM_DEPS_BUILD_TYPE = ${OSC_OPENSIM_DEPS_BUILD_TYPE}"
 echo "    OSC_OPENSIM_BUILD_TYPE = ${OSC_OPENSIM_BUILD_TYPE}"
@@ -131,19 +121,10 @@ make --version
 if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
     echo "----- downloading, building, and installing (locally) OpenSim -----"
 
-    # clone sources
-    if [[ ! -d opensim-core/ ]]; then
-        git clone \
-            --single-branch \
-            --branch "${OSC_OPENSIM_REPO_BRANCH}" \
-            --depth=1 \
-            "${OSC_OPENSIM_REPO}"
-    fi
-
     echo "--- building OpenSim's dependencies ---"
     mkdir -p opensim-dependencies-build/
     cd opensim-dependencies-build/
-    cmake ../opensim-core/dependencies \
+    cmake ../third_party/opensim-core/dependencies \
         -DCMAKE_BUILD_TYPE=${OSC_OPENSIM_DEPS_BUILD_TYPE} \
         -DCMAKE_INSTALL_PREFIX=../opensim-dependencies-install \
         -DOPENSIM_WITH_CASADI=OFF \
@@ -156,7 +137,7 @@ if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
     echo "--- building OpenSim ---"
     mkdir -p opensim-build/
     cd opensim-build/
-    cmake ../opensim-core/ \
+    cmake ../third_party/opensim-core/ \
         -DOPENSIM_DEPENDENCIES_DIR=../opensim-dependencies-install/ \
         -DCMAKE_INSTALL_PREFIX=../opensim-install/ \
         -DBUILD_JAVA_WRAPPING=OFF \

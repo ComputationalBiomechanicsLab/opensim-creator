@@ -3,19 +3,6 @@ REM
 REM     - this script should be able to build osc on a clean Windows 2019
 REM       Server PC /w basic toolchain installs (Visual Studio, MSVC, CMake)
 
-REM typical usage in cmd.exe: `set OSC_OPENSIM_REPO=https://github.com/custom/repo && set OSC_OPENSIM_REPO_BRANCH=custom && call .\scripts\build_windows.bat`
-
-REM where to clone the OpenSim source from
-REM
-REM handy to override if you are developing against a fork, locally, etc.
-IF NOT DEFINED OSC_OPENSIM_REPO (set OSC_OPENSIM_REPO=https://github.com/ComputationalBiomechanicsLab/opensim-core)
-
-REM can be any branch identifier from opensim-core
-IF NOT DEFINED OSC_OPENSIM_REPO_BRANCH (set OSC_OPENSIM_REPO_BRANCH=opensim-creator)
-
-REM where the sources are checked out to
-IF NOT DEFINED OSC_OPENSIM_SRC_DIR (set OSC_OPENSIM_SRC_DIR=opensim-core)
-
 REM build types:
 REM
 REM DRAGONS: it seems that this *must* be a `Release` build in OpenSim >4.2
@@ -44,9 +31,6 @@ echo "----- starting build -----"
 echo ""
 echo "----- printing build parameters -----"
 echo ""
-echo "    OSC_OPENSIM_REPO = %OSC_OPENSIM_REPO%"
-echo "    OSC_OPENSIM_REPO_BRANCH = %OSC_OPENSIM_REPO_BRANCH%"
-echo "    OSC_OPENSIM_SRC_DIR = %OSC_OPENSIM_SRC_DIR%"
 echo "    OSC_OPENSIM_DEPS_BUILD_TYPE = %OSC_OPENSIM_DEPS_BUILD_TYPE%"
 echo "    OSC_OPENSIM_BUILD_TYPE = %OSC_OPENSIM_BUILD_TYPE%"
 echo "    OSC_BUILD_TYPE = %OSC_BUILD_TYPE%"
@@ -71,21 +55,10 @@ IF %OSC_SHOULD_PIP_INSTALL% == "YES" (
 REM ----- ensure all submodules are up-to-date -----
 git submodule update --init --recursive
 
-REM ----- checkout OpenSim sources from GitHub -----
-
-echo "----- checking if OpenSim needs to be cloned from %OSC_OPENSIM_REPO% -----"
-if not exist "%OSC_OPENSIM_SRC_DIR%" (
-    echo "----- %OSC_OPENSIM_SRC_DIR% does not exist, cloning into it -----"
-    git clone --single-branch --branch %OSC_OPENSIM_REPO_BRANCH% --depth=1 %OSC_OPENSIM_REPO% %OSC_OPENSIM_SRC_DIR% || exit /b
-)
-
-echo "----- printing source dir -----"
-dir %OSC_OPENSIM_SRC_DIR%
-
 echo "----- building OpenSim's dependencies (e.g. Simbody) -----"
 mkdir opensim-dependencies-build
 cd opensim-dependencies-build
-cmake ../%OSC_OPENSIM_SRC_DIR%/dependencies %OSC_CMAKE_GENFLAGS% -DOPENSIM_WITH_CASADI=OFF -DOPENSIM_WITH_TROPTER=OFF -DCMAKE_INSTALL_PREFIX=../dependencies-install || exit /b
+cmake ../third_party/opensim-core/dependencies %OSC_CMAKE_GENFLAGS% -DOPENSIM_WITH_CASADI=OFF -DOPENSIM_WITH_TROPTER=OFF -DCMAKE_INSTALL_PREFIX=../dependencies-install || exit /b
 cmake --build . --config %OSC_OPENSIM_DEPS_BUILD_TYPE% -j%OSC_BUILD_CONCURRENCY% || exit /b
 
 echo "----- dependencies built, printing build dir -----"
@@ -101,7 +74,7 @@ cd ..
 echo "----- building OpenSim -----"
 mkdir opensim-build
 cd opensim-build
-cmake ../%OSC_OPENSIM_SRC_DIR% %OSC_CMAKE_GENFLAGS% -DOPENSIM_WITH_CASADI=OFF -DOPENSIM_WITH_TROPTER=OFF -DBUILD_API_ONLY=ON -DOPENSIM_DISABLE_LOG_FILE=ON -DOPENSIM_BUILD_INDIVIDUAL_APPS=OFF -DOPENSIM_DEPENDENCIES_DIR=../dependencies-install -DBUILD_JAVA_WRAPPING=OFF -DCMAKE_INSTALL_PREFIX=../opensim-install || exit /b
+cmake ../third_party/opensim-core %OSC_CMAKE_GENFLAGS% -DOPENSIM_WITH_CASADI=OFF -DOPENSIM_WITH_TROPTER=OFF -DBUILD_API_ONLY=ON -DOPENSIM_DISABLE_LOG_FILE=ON -DOPENSIM_BUILD_INDIVIDUAL_APPS=OFF -DOPENSIM_DEPENDENCIES_DIR=../dependencies-install -DBUILD_JAVA_WRAPPING=OFF -DCMAKE_INSTALL_PREFIX=../opensim-install || exit /b
 cmake --build . --config %OSC_OPENSIM_BUILD_TYPE% --target install -j%OSC_BUILD_CONCURRENCY% || exit /b
 
 echo "----- OpenSim built, printing build dir -----"
