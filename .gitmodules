@@ -16,3 +16,6 @@
 [submodule "third_party/imgui"]
 	path = third_party/imgui
 	url = https://github.com/ComputationalBiomechanicsLab/imgui
+[submodule "third_party/nativefiledialog"]
+	path = third_party/nativefiledialog
+	url = https://github.com/ComputationalBiomechanicsLab/nativefiledialog
