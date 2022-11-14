@@ -174,7 +174,7 @@ namespace
     std::string ToDaeList(nonstd::span<T const> vs)
     {
         std::stringstream ss;
-        char const* delim = "";
+        std::string_view delim = "";
         for (float v : vs)
         {
             ss << delim << v;
@@ -382,7 +382,7 @@ R"(        <vertices id="{}-vertices">
         }
 
         o << "          <p>";
-        char const* delim = "";
+        std::string_view delim = "";
         for (uint32_t v : indices)
         {
             o << delim << v;
@@ -438,7 +438,7 @@ R"(        <vertices id="{}-vertices">
 
         // row-major
         o << R"(        <matrix sid="transform">)";
-        char const* delim = "";
+        std::string_view delim = "";
         for (int row = 0; row < 4; ++row)
         {
             o << delim << m[0][row];

@@ -25,16 +25,16 @@ namespace osc
     void ActionSaveCurrentModelAs(UndoableModelStatePair&);
 
     // create a new model and show it in a new tab
-    void ActionNewModel(MainUIStateAPI*);
+    void ActionNewModel(MainUIStateAPI&);
 
     // prompt a user to open a model file and open it in a new tab
-    void ActionOpenModel(MainUIStateAPI*);
+    void ActionOpenModel(MainUIStateAPI&);
 
     // open the specified model in a loading tab
-    void ActionOpenModel(MainUIStateAPI*, std::filesystem::path const&);
+    void ActionOpenModel(MainUIStateAPI&, std::filesystem::path const&);
 
     // try to save the given model file to disk
-    bool ActionSaveModel(MainUIStateAPI*, UndoableModelStatePair&);
+    bool ActionSaveModel(MainUIStateAPI&, UndoableModelStatePair&);
 
     // try to delete an undoable-model's current selection
     //
@@ -57,10 +57,10 @@ namespace osc
     void ActionClearSelectionFromEditedModel(UndoableModelStatePair&);
 
     // loads an STO file against the current model and opens it in a new tab
-    bool ActionLoadSTOFileAgainstModel(MainUIStateAPI*, UndoableModelStatePair const&, std::filesystem::path stoPath);
+    bool ActionLoadSTOFileAgainstModel(MainUIStateAPI&, UndoableModelStatePair const&, std::filesystem::path stoPath);
 
     // start simulating the given model in a forward-dynamic simulator tab
-    bool ActionStartSimulatingModel(MainUIStateAPI*, UndoableModelStatePair const&);
+    bool ActionStartSimulatingModel(MainUIStateAPI&, UndoableModelStatePair const&);
 
     // reload the given model from its backing file (if applicable)
     bool ActionUpdateModelFromBackingFile(UndoableModelStatePair&);
@@ -84,7 +84,7 @@ namespace osc
     bool ActionReloadOsimFromDisk(UndoableModelStatePair&);
 
     // start performing a series of simulations against the model by opening a tab that tries all possible integrators
-    bool ActionSimulateAgainstAllIntegrators(MainUIStateAPI*, UndoableModelStatePair const&);
+    bool ActionSimulateAgainstAllIntegrators(MainUIStateAPI&, UndoableModelStatePair const&);
 
     // add an offset frame to the current selection (if applicable)
     bool ActionAddOffsetFrameToPhysicalFrame(UndoableModelStatePair&, OpenSim::ComponentPath const& physFramePath);

@@ -117,7 +117,7 @@ bool osc::MultiBodySystemOutputExtractor::equals(VirtualOutputExtractor const& o
         return true;
     }
 
-    auto otherT = dynamic_cast<MultiBodySystemOutputExtractor const*>(&other);
+    auto* otherT = dynamic_cast<MultiBodySystemOutputExtractor const*>(&other);
 
     if (!otherT)
     {

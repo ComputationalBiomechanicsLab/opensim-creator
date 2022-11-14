@@ -59,13 +59,13 @@
 // helper functions
 namespace
 {
-    void OpenOsimInLoadingTab(osc::MainUIStateAPI* api, std::filesystem::path p)
+    void OpenOsimInLoadingTab(osc::MainUIStateAPI& api, std::filesystem::path p)
     {
-        osc::UID const tabID = api->addTab<osc::LoadingTab>(api, p);
-        api->selectTab(tabID);
+        osc::UID const tabID = api.addTab<osc::LoadingTab>(&api, p);
+        api.selectTab(tabID);
     }
 
-    void DoOpenFileViaDialog(osc::MainUIStateAPI* api)
+    void DoOpenFileViaDialog(osc::MainUIStateAPI& api)
     {
         std::filesystem::path const p = osc::PromptUserForFile("osim");
 
@@ -190,24 +190,24 @@ void osc::ActionSaveCurrentModelAs(UndoableModelStatePair& uim)
     }
 }
 
-void osc::ActionNewModel(MainUIStateAPI* api)
+void osc::ActionNewModel(MainUIStateAPI& api)
 {
     auto p = std::make_unique<UndoableModelStatePair>();
-    UID const tabID = api->addTab<ModelEditorTab>(api, std::move(p));
-    api->selectTab(tabID);
+    UID const tabID = api.addTab<ModelEditorTab>(&api, std::move(p));
+    api.selectTab(tabID);
 }
 
-void osc::ActionOpenModel(MainUIStateAPI* api)
+void osc::ActionOpenModel(MainUIStateAPI& api)
 {
     DoOpenFileViaDialog(api);
 }
 
-void osc::ActionOpenModel(MainUIStateAPI* api, std::filesystem::path const& path)
+void osc::ActionOpenModel(MainUIStateAPI& api, std::filesystem::path const& path)
 {
     OpenOsimInLoadingTab(api, path);
 }
 
-bool osc::ActionSaveModel(MainUIStateAPI*, UndoableModelStatePair& model)
+bool osc::ActionSaveModel(MainUIStateAPI&, UndoableModelStatePair& model)
 {
     std::optional<std::string> const maybeUserSaveLoc = TryGetModelSaveLocation(model.getModel());
 
@@ -333,7 +333,7 @@ void osc::ActionClearSelectionFromEditedModel(UndoableModelStatePair& model)
     model.setSelected(nullptr);
 }
 
-bool osc::ActionLoadSTOFileAgainstModel(MainUIStateAPI* parent, UndoableModelStatePair const& uim, std::filesystem::path stoPath)
+bool osc::ActionLoadSTOFileAgainstModel(MainUIStateAPI& parent, UndoableModelStatePair const& uim, std::filesystem::path stoPath)
 {
     try
     {
@@ -343,7 +343,7 @@ bool osc::ActionLoadSTOFileAgainstModel(MainUIStateAPI* parent, UndoableModelSta
 
         auto simulation = std::make_shared<Simulation>(StoFileSimulation{std::move(modelCopy), stoPath, uim.getFixupScaleFactor()});
 
-        parent->selectTab(parent->addTab<SimulatorTab>(parent, simulation));
+        parent.selectTab(parent.addTab<SimulatorTab>(&parent, simulation));
 
         return true;
     }
@@ -354,15 +354,15 @@ bool osc::ActionLoadSTOFileAgainstModel(MainUIStateAPI* parent, UndoableModelSta
     }
 }
 
-bool osc::ActionStartSimulatingModel(MainUIStateAPI* parent, UndoableModelStatePair const& uim)
+bool osc::ActionStartSimulatingModel(MainUIStateAPI& parent, UndoableModelStatePair const& uim)
 {
     BasicModelStatePair modelState{uim};
-    ForwardDynamicSimulatorParams params = osc::FromParamBlock(parent->getSimulationParams());
+    ForwardDynamicSimulatorParams params = osc::FromParamBlock(parent.getSimulationParams());
 
     auto simulation = std::make_shared<Simulation>(ForwardDynamicSimulation{std::move(modelState), std::move(params)});
-    auto simulationTab = std::make_unique<SimulatorTab>(parent, std::move(simulation));
+    auto simulationTab = std::make_unique<SimulatorTab>(&parent, std::move(simulation));
 
-    parent->selectTab(parent->addTab(std::move(simulationTab)));
+    parent.selectTab(parent.addTab(std::move(simulationTab)));
 
     return true;
 }
@@ -505,10 +505,10 @@ bool osc::ActionReloadOsimFromDisk(UndoableModelStatePair& uim)
     }
 }
 
-bool osc::ActionSimulateAgainstAllIntegrators(MainUIStateAPI* parent, UndoableModelStatePair const& uim)
+bool osc::ActionSimulateAgainstAllIntegrators(MainUIStateAPI& parent, UndoableModelStatePair const& uim)
 {
-    UID const tabID = parent->addTab<PerformanceAnalyzerTab>(parent, BasicModelStatePair{uim}, parent->getSimulationParams());
-    parent->selectTab(tabID);
+    UID const tabID = parent.addTab<PerformanceAnalyzerTab>(&parent, BasicModelStatePair{uim}, parent.getSimulationParams());
+    parent.selectTab(tabID);
     return true;
 }
 

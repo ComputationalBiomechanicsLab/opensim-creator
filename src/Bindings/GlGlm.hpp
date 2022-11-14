@@ -9,6 +9,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <nonstd/span.hpp>
 
 #include <type_traits>
 
@@ -30,10 +31,10 @@ namespace gl
         glUniform3fv(u.geti(), 1, glm::value_ptr(v));
     }
 
-    inline void Uniform(UniformVec3& u, GLsizei n, glm::vec3 const* vs) noexcept
+    inline void Uniform(UniformVec3& u, nonstd::span<glm::vec3 const> vs) noexcept
     {
         static_assert(sizeof(glm::vec3) == 3 * sizeof(GLfloat));
-        glUniform3fv(u.geti(), n, glm::value_ptr(*vs));
+        glUniform3fv(u.geti(), static_cast<GLsizei>(vs.size()), glm::value_ptr(vs.front()));
     }
 
     // set a uniform array of vec3s from a userspace container type (e.g. vector<glm::vec3>)
@@ -50,10 +51,10 @@ namespace gl
         glUniformMatrix4fv(u.geti(), 1, false, glm::value_ptr(mat));
     }
 
-    inline void Uniform(UniformMat4& u, GLsizei n, glm::mat4 const* first) noexcept
+    inline void Uniform(UniformMat4& u, nonstd::span<glm::mat4 const> ms) noexcept
     {
         static_assert(sizeof(glm::mat4) == 16 * sizeof(GLfloat));
-        glUniformMatrix4fv(u.geti(), n, false, glm::value_ptr(*first));
+        glUniformMatrix4fv(u.geti(), static_cast<GLsizei>(ms.size()), false, glm::value_ptr(ms.front()));
     }
 
     inline void Uniform(UniformMat4& u, UniformIdentityValueTag) noexcept
@@ -66,10 +67,10 @@ namespace gl
         glUniform2fv(u.geti(), 1, glm::value_ptr(v));
     }
 
-    inline void Uniform(UniformVec2& u, GLsizei n, glm::vec2 const* vs) noexcept
+    inline void Uniform(UniformVec2& u, nonstd::span<glm::vec2 const> vs) noexcept
     {
         static_assert(sizeof(glm::vec2) == 2 * sizeof(GLfloat));
-        glUniform2fv(u.geti(), n, glm::value_ptr(*vs));
+        glUniform2fv(u.geti(), static_cast<GLsizei>(vs.size()), glm::value_ptr(vs.front()));
     }
 
     template<typename Container, size_t N>

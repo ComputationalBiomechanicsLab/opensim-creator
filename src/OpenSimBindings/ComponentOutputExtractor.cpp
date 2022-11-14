@@ -323,7 +323,7 @@ int osc::GetSupportedSubfields(OpenSim::AbstractOutput const& ao)
 
 osc::ComponentOutputExtractor::ComponentOutputExtractor(OpenSim::AbstractOutput const& ao,
                                                         OutputSubfield subfield) :
-    m_Impl{new Impl{ao, std::move(subfield)}}
+    m_Impl{std::make_unique<Impl>(ao, std::move(subfield))}
 {
 }
 osc::ComponentOutputExtractor::ComponentOutputExtractor(ComponentOutputExtractor const&) = default;

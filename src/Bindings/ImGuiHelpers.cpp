@@ -22,6 +22,7 @@
 #include <SDL_events.h>
 
 #include <algorithm>
+#include <array>
 #include <cstdint>
 #include <cstddef>
 #include <string>
@@ -111,7 +112,7 @@ bool osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::Polar
     // handle mousewheel scrolling
     if (ImGui::GetIO().MouseWheel != 0.0f)
     {
-        camera.radius *= 1.0f - 0.1f*ImGui::GetIO().MouseWheel;
+        camera.radius *= 1.0f - 0.1f * ImGui::GetIO().MouseWheel;
         modified = true;
     }
 
@@ -396,10 +397,10 @@ void osc::DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect
         renderRect.p2.y - (linelen + padding),
     };
 
-    char const* const labels[] = {"X", "Y", "Z"};
+    std::array<char const* const, 3> labels = {"X", "Y", "Z"};
 
-    ImDrawList* dd = ImGui::GetWindowDrawList();
-    for (int i = 0; i < 3; ++i)
+    ImDrawList& dd = *ImGui::GetWindowDrawList();
+    for (int i = 0; i < static_cast<int>(labels.size()); ++i)
     {
         glm::vec4 world = {0.0f, 0.0f, 0.0f, 0.0f};
         world[i] = 1.0f;
@@ -416,9 +417,9 @@ void osc::DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect
 
         glm::vec2 const ts = ImGui::CalcTextSize(labels[i]);
 
-        dd->AddLine(p1, p2, colorU32, 3.0f);
-        dd->AddCircleFilled(p2, circleRadius, colorU32);
-        dd->AddText(p2 - ts/2.0f, whiteColorU32, labels[i]);
+        dd.AddLine(p1, p2, colorU32, 3.0f);
+        dd.AddCircleFilled(p2, circleRadius, colorU32);
+        dd.AddText(p2 - ts/2.0f, whiteColorU32, labels[i]);
     }
 }
 
@@ -539,12 +540,12 @@ ImGuiWindowFlags osc::GetMinimalWindowFlags()
 
 osc::Rect osc::GetMainViewportWorkspaceScreenRect()
 {
-    ImGuiViewport const* const viewport = ImGui::GetMainViewport();
+    ImGuiViewport const& viewport = *ImGui::GetMainViewport();
 
     return Rect
     {
-        viewport->WorkPos,
-        glm::vec2{viewport->WorkPos} + glm::vec2{viewport->WorkSize}
+        viewport.WorkPos,
+        glm::vec2{viewport.WorkPos} + glm::vec2{viewport.WorkSize}
     };
 }
 
@@ -559,7 +560,7 @@ bool osc::IsMouseInMainViewportWorkspaceScreenRect()
 bool osc::BeginMainViewportTopBar(char const* label, float height, ImGuiWindowFlags flags)
 {
     // https://github.com/ocornut/imgui/issues/3518
-    ImGuiViewportP* const viewport = (ImGuiViewportP*)(void*)ImGui::GetMainViewport();
+    ImGuiViewportP* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));
     return ImGui::BeginViewportSideBar(label, viewport, ImGuiDir_Up, height, flags);
 }
 
@@ -567,7 +568,7 @@ bool osc::BeginMainViewportTopBar(char const* label, float height, ImGuiWindowFl
 bool osc::BeginMainViewportBottomBar(char const* label)
 {
     // https://github.com/ocornut/imgui/issues/3518
-    ImGuiViewportP* const viewport = (ImGuiViewportP*)(void*)ImGui::GetMainViewport();
+    ImGuiViewportP* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));
     ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
     float const height = ImGui::GetFrameHeight() + ImGui::GetStyle().WindowPadding.y;
 
@@ -579,7 +580,7 @@ void osc::TextCentered(std::string const& s)
     float const windowWidth = ImGui::GetWindowSize().x;
     float const textWidth   = ImGui::CalcTextSize(s.c_str()).x;
 
-    ImGui::SetCursorPosX(0.5f*(windowWidth - textWidth));
+    ImGui::SetCursorPosX(0.5f * (windowWidth - textWidth));
     ImGui::TextUnformatted(s.c_str());
 }
 

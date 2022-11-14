@@ -4,6 +4,7 @@
 #include "src/Maths/Line.hpp"
 #include "src/Maths/Sphere.hpp"
 #include "src/Maths/Transform.hpp"
+#include "src/Maths/Triangle.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -22,7 +23,6 @@ namespace osc { struct Disc; }
 namespace osc { struct Plane; }
 namespace osc { struct Rect; }
 namespace osc { struct Segment; }
-namespace osc { struct Triangle; }
 
 // math helpers: generally handy math functions that aren't attached to a particular
 //               osc struct
@@ -86,6 +86,16 @@ namespace osc
 
     // returns the average of `n` vectors using whichever numerically stable average happens to work
     glm::vec3 NumericallyStableAverage(nonstd::span<glm::vec3 const>) noexcept;
+
+    // returns a triangle that was casted from a tightly-packed pointer to the first vertex
+    //
+    // assumes the next two vertices are adjacent in memory and does not check bounds (therefore, unsafe)
+    inline Triangle const& UnsafeCastTriangleFromPointerToFirstVertex(glm::vec3 const* ptr) noexcept
+    {
+        static_assert(alignof(Triangle) == alignof(glm::vec3));
+        static_assert(sizeof(Triangle) == 3*sizeof(glm::vec3));
+        return reinterpret_cast<Triangle const&>(*ptr);
+    }
 
     // returns a normal vector of the supplied (pointed to) triangle (i.e. (v[1]-v[0]) x (v[2]-v[0]))
     glm::vec3 TriangleNormal(Triangle const&) noexcept;

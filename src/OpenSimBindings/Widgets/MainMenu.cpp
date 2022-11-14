@@ -57,11 +57,11 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
 
         if (mod && ImGui::IsKeyPressed(ImGuiKey_N))
         {
-            ActionNewModel(api);
+            ActionNewModel(*api);
         }
         else if (mod && ImGui::IsKeyPressed(ImGuiKey_O))
         {
-            ActionOpenModel(api);
+            ActionOpenModel(*api);
         }
         else if (maybeModel && mod && io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_S))
         {
@@ -69,7 +69,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
         }
         else if (maybeModel && mod && ImGui::IsKeyPressed(ImGuiKey_S))
         {
-            ActionSaveModel(api, *maybeModel);
+            ActionSaveModel(*api, *maybeModel);
         }
     }
 
@@ -86,12 +86,12 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
 
     if (ImGui::MenuItem(ICON_FA_FILE " New", "Ctrl+N"))
     {
-        ActionNewModel(api);
+        ActionNewModel(*api);
     }
 
     if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Open", "Ctrl+O"))
     {
-        ActionOpenModel(api);
+        ActionOpenModel(*api);
     }
 
     int imgui_id = 0;
@@ -105,7 +105,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
             ImGui::PushID(++imgui_id);
             if (ImGui::MenuItem(rf.path.filename().string().c_str()))
             {
-                ActionOpenModel(api, rf.path);
+                ActionOpenModel(*api, rf.path);
             }
             ImGui::PopID();
         }
@@ -120,7 +120,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
             ImGui::PushID(++imgui_id);
             if (ImGui::MenuItem(ex.filename().string().c_str()))
             {
-                ActionOpenModel(api, ex);
+                ActionOpenModel(*api, ex);
             }
             ImGui::PopID();
         }
@@ -151,7 +151,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
 
     if (ImGui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S", false, maybeModel != nullptr))
     {
-        ActionSaveModel(api, *maybeModel);
+        ActionSaveModel(*api, *maybeModel);
     }
 
     if (ImGui::MenuItem(ICON_FA_SAVE " Save As", "Shift+Ctrl+S", false, maybeModel != nullptr))

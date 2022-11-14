@@ -275,7 +275,7 @@ public:
             Line ray = GetCameraRay(m_Camera);
             std::optional<RayCollision> maybeCollision = GetRayCollisionTriangle(
                 ray,
-                osc::Triangle::CastFromPointerToFirstVertex(g_TriangleVerts.data())
+                osc::UnsafeCastTriangleFromPointerToFirstVertex(g_TriangleVerts.data())
             );
 
             Graphics::DrawMesh(

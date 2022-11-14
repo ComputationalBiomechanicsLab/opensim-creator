@@ -93,7 +93,7 @@ public:
 
     bool trySave()
     {
-        return ActionSaveModel(m_Parent, *m_Model);
+        return ActionSaveModel(*m_Parent, *m_Model);
     }
 
     void onMount()
@@ -149,7 +149,7 @@ public:
         ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
         if (ImGui::Button(ICON_FA_PLAY " Simulate (Ctrl+R)"))
         {
-            osc::ActionStartSimulatingModel(m_Parent, *m_Model);
+            osc::ActionStartSimulatingModel(*m_Parent, *m_Model);
         }
         osc::AddFrameAnnotationToLastItem("Simulate Button");
         ImGui::PopStyleColor();
@@ -216,7 +216,7 @@ private:
     {
         if (e.file != nullptr && CStrEndsWith(e.file, ".sto"))
         {
-            return osc::ActionLoadSTOFileAgainstModel(m_Parent, *m_Model, e.file);
+            return osc::ActionLoadSTOFileAgainstModel(*m_Parent, *m_Model, e.file);
         }
 
         return false;
@@ -243,7 +243,7 @@ private:
             case SDLK_r:
             {
                 // Ctrl+R: start a new simulation from focused model
-                return osc::ActionStartSimulatingModel(m_Parent, *m_Model);
+                return osc::ActionStartSimulatingModel(*m_Parent, *m_Model);
             }
             case SDLK_a:  // Ctrl+A: clear selection
                 osc::ActionClearSelectionFromEditedModel(*m_Model);
@@ -388,7 +388,7 @@ private:
         {
             if (ImGui::MenuItem(ICON_FA_PLAY " Simulate", "Ctrl+R"))
             {
-                osc::ActionStartSimulatingModel(m_Parent, *m_Model);
+                osc::ActionStartSimulatingModel(*m_Parent, *m_Model);
             }
 
             if (ImGui::MenuItem(ICON_FA_EDIT " Edit simulation settings"))
@@ -408,7 +408,7 @@ private:
 
             if (ImGui::MenuItem("Simulate Against All Integrators (advanced)"))
             {
-                osc::ActionSimulateAgainstAllIntegrators(m_Parent, *m_Model);
+                osc::ActionSimulateAgainstAllIntegrators(*m_Parent, *m_Model);
             }
             osc::DrawTooltipIfItemHovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
 

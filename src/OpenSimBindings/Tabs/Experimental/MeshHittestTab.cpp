@@ -99,7 +99,7 @@ public:
                 nonstd::span<glm::vec3 const> tris = m_Mesh.getVerts();
                 for (size_t i = 0; i < tris.size(); i += 3)
                 {
-                    std::optional<RayCollision> res = GetRayCollisionTriangle(m_Ray, osc::Triangle::CastFromPointerToFirstVertex(tris.data() + i));
+                    std::optional<RayCollision> res = GetRayCollisionTriangle(m_Ray, UnsafeCastTriangleFromPointerToFirstVertex(tris.data() + i));
                     if (res)
                     {
                         m_HitPos = res->position;

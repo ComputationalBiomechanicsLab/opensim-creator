@@ -211,11 +211,11 @@ private:
 
                 if (ImGui::MenuItem(ICON_FA_FILE_ALT " New Model"))
                 {
-                    ActionNewModel(m_Parent);
+                    ActionNewModel(*m_Parent);
                 }
                 if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Open Model"))
                 {
-                    ActionOpenModel(m_Parent);
+                    ActionOpenModel(*m_Parent);
                 }
                 if (ImGui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
                 {

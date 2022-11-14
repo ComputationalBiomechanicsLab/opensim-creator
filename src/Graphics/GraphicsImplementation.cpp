@@ -57,6 +57,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <iostream>
 #include <iterator>
 #include <stdexcept>
@@ -110,17 +111,6 @@ static char const g_QuadFragmentShaderSrc[] = R"(
 // generic utility functions
 namespace
 {
-    template<typename T>
-    void DoCopyOnWrite(std::shared_ptr<T>& p)
-    {
-        if (p.use_count() == 1)
-        {
-            return;  // sole owner: no need to copy
-        }
-
-        p = std::make_shared<T>(*p);
-    }
-
     void PushAsBytes(float v, std::vector<std::byte>& out)
     {
         for (size_t i = 0; i < sizeof(float); ++i)
@@ -451,37 +441,46 @@ namespace
     };
 
     struct RenderObjectHasMaterial final {
-        RenderObjectHasMaterial(osc::Material const& material) : m_Material{&material} {}
+        RenderObjectHasMaterial(osc::Material const& material) :
+            m_Material{material}
+        {
+        }
 
         bool operator()(RenderObject const& ro) const
         {
-            return ro.material == *m_Material;
+            return ro.material == m_Material;
         }
     private:
-        osc::Material const* m_Material;
+        std::reference_wrapper<osc::Material const> m_Material;
     };
 
     struct RenderObjectHasMaterialPropertyBlock final {
-        RenderObjectHasMaterialPropertyBlock(osc::MaterialPropertyBlock const& mpb) : m_Mpb{&mpb} {}
+        RenderObjectHasMaterialPropertyBlock(osc::MaterialPropertyBlock const& mpb) :
+            m_Mpb{mpb}
+        {
+        }
 
         bool operator()(RenderObject const& ro) const
         {
-            return ro.propBlock == *m_Mpb;
+            return ro.propBlock == m_Mpb;
         }
 
     private:
-        osc::MaterialPropertyBlock const* m_Mpb;
+        std::reference_wrapper<osc::MaterialPropertyBlock const> m_Mpb;
     };
 
     struct RenderObjectHasMesh final {
-        RenderObjectHasMesh(osc::Mesh const& mesh) : m_Mesh{mesh} {}
+        RenderObjectHasMesh(osc::Mesh const& mesh) :
+            m_Mesh{mesh}
+        {
+        }
 
         bool operator()(RenderObject const& ro) const
         {
             return ro.mesh == m_Mesh;
         }
     private:
-        osc::Mesh const& m_Mesh;
+        std::reference_wrapper<osc::Mesh const> m_Mesh;
     };
 
     // sort a sequence of `RenderObject`s for optimal drawing
@@ -619,7 +618,7 @@ namespace osc
         static void TryBindMaterialValueToShaderElement(
             ShaderElement const& se,
             MaterialValue const& v,
-            int* textureSlot
+            int& textureSlot
         );
 
         static void HandleBatchWithSameMaterial(
@@ -1676,7 +1675,7 @@ std::ostream& osc::operator<<(std::ostream& o, Shader const& shader)
     {
         o << "    uniforms = [";
 
-        char const* delim = "\n        ";
+        std::string_view const delim = "\n        ";
         for (auto const& [name, data] : shader.m_Impl->getUniforms())
         {
             o << delim;
@@ -1689,7 +1688,7 @@ std::ostream& osc::operator<<(std::ostream& o, Shader const& shader)
     {
         o << "    attributes = [";
 
-        char const* delim = "\n        ";
+        std::string_view const delim = "\n        ";
         for (auto const& [name, data] : shader.m_Impl->getAttributes())
         {
             o << delim;
@@ -4289,7 +4288,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
         auto const it = uniforms.find(name);
         if (it != uniforms.end())
         {
-            TryBindMaterialValueToShaderElement(it->second, value, &textureSlot);
+            TryBindMaterialValueToShaderElement(it->second, value, textureSlot);
         }
     }
 
@@ -4304,7 +4303,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
 }
 
 
-void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement const& se, MaterialValue const& v, int* textureSlot)
+void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement const& se, MaterialValue const& v, int& textureSlot)
 {
     if (GetShaderType(v) != se.Type)
     {
@@ -4388,12 +4387,12 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement con
         Texture2D::Impl & impl = const_cast<Texture2D::Impl&>(*std::get<Texture2D>(v).m_Impl);
         gl::Texture2D& texture = impl.updTexture();
 
-        gl::ActiveTexture(GL_TEXTURE0 + *textureSlot);
+        gl::ActiveTexture(GL_TEXTURE0 + textureSlot);
         gl::BindTexture(texture);
         gl::UniformSampler2D u{se.Location};
-        gl::Uniform(u, *textureSlot);
+        gl::Uniform(u, textureSlot);
 
-        ++(*textureSlot);
+        ++textureSlot;
         break;
     }
     case VariantIndex<MaterialValue, RenderTexture>():
@@ -4401,12 +4400,12 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(ShaderElement con
         RenderTexture::Impl& impl = const_cast<RenderTexture::Impl&>(*std::get<RenderTexture>(v).m_Impl);
         gl::Texture2D& texture = impl.getOutputTexture();
 
-        gl::ActiveTexture(GL_TEXTURE0 + *textureSlot);
+        gl::ActiveTexture(GL_TEXTURE0 + textureSlot);
         gl::BindTexture(texture);
         gl::UniformSampler2D u{se.Location};
-        gl::Uniform(u, *textureSlot);
+        gl::Uniform(u, textureSlot);
 
-        ++(*textureSlot);
+        ++textureSlot;
         break;
     }
     default:
@@ -4476,7 +4475,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
         {
             if (ShaderElement const* e = TryGetValue(uniforms, name))
             {
-                TryBindMaterialValueToShaderElement(*e, value, &textureSlot);
+                TryBindMaterialValueToShaderElement(*e, value, textureSlot);
             }
         }
     }

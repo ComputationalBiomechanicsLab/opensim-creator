@@ -1,7 +1,6 @@
 #include "Image.hpp"
 
 #include "src/Utils/Assertions.hpp"
-#include "src/Utils/ScopeGuard.hpp"
 
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
@@ -29,8 +28,11 @@ osc::Image osc::Image::Load(std::filesystem::path const& p, ImageFlags flags)
 
     glm::ivec2 dims = {0, 0};
     int32_t channels = 0;
-    stbi_uc* pixels = stbi_load(p.string().c_str(), &dims.x, &dims.y, &channels, 0);
-    OSC_SCOPE_GUARD_IF(pixels, { stbi_image_free(pixels); });
+    std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> pixels = 
+    {
+        stbi_load(p.string().c_str(), &dims.x, &dims.y, &channels, 0),
+        stbi_image_free,
+    };
 
     if (flags & ImageFlags_FlipVertically)
     {
@@ -44,7 +46,7 @@ osc::Image osc::Image::Load(std::filesystem::path const& p, ImageFlags flags)
         throw std::runtime_error{std::move(ss).str()};
     }
 
-    nonstd::span<uint8_t> dataSpan{pixels, static_cast<size_t>(dims.x * dims.y * channels)};
+    nonstd::span<uint8_t> dataSpan{pixels.get(), static_cast<size_t>(dims.x * dims.y * channels)};
 
     return Image{dims, dataSpan, channels};
 }

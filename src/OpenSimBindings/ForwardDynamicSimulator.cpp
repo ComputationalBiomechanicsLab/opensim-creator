@@ -138,7 +138,7 @@ namespace
                 return true;
             }
 
-            auto otherT = dynamic_cast<AuxiliaryVariableOutputExtractor const*>(&other);
+            auto* otherT = dynamic_cast<AuxiliaryVariableOutputExtractor const*>(&other);
 
             if (!otherT)
             {

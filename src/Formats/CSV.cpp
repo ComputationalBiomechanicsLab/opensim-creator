@@ -3,6 +3,7 @@
 #include "src/Utils/Assertions.hpp"
 
 #include <algorithm>
+#include <functional>
 #include <iostream>
 #include <string>
 #include <string_view>
@@ -25,14 +26,13 @@ namespace
 // CSV reader implementation
 class osc::CSVReader::Impl final {
 public:
-    Impl(std::istream& input) : m_Input{&input}
+    Impl(std::istream& input) : m_Input{input}
     {
-        OSC_ASSERT(m_Input != nullptr);
     }
 
     std::optional<std::vector<std::string>> next()
     {
-        std::istream& in = *m_Input;
+        std::istream& in = m_Input.get();
 
         if (in.eof())
         {
@@ -114,20 +114,19 @@ public:
     }
 
 private:
-    std::istream* m_Input;
+    std::reference_wrapper<std::istream> m_Input;
 };
 
 // CSV writer implementation
 class osc::CSVWriter::Impl final {
 public:
-    Impl(std::ostream& output) : m_Output{&output}
+    Impl(std::ostream& output) : m_Output{output}
     {
-        OSC_ASSERT(m_Output != nullptr);
     }
 
     void writeRow(std::vector<std::string> const& cols)
     {
-        std::ostream& out = *m_Output;
+        std::ostream& out = m_Output.get();
 
         char const* delim = "";
         for (std::string const& col : cols)
@@ -163,7 +162,7 @@ public:
     }
 
 private:
-    std::ostream* m_Output;
+    std::reference_wrapper<std::ostream> m_Output;
 };
 
 
