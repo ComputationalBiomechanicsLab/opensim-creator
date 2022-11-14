@@ -156,7 +156,7 @@ public:
             for (ImageAnnotation const& annotation : m_AnnotatedImage.annotations)
             {
                 ImGui::PushID(id++);
-                ImGui::Text(annotation.label.c_str());
+                ImGui::TextUnformatted(annotation.label.c_str());
                 ImGui::PopID();
             }
             ImGui::End();
