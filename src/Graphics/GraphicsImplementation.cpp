@@ -51,7 +51,7 @@
 #include <glm/vec4.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <nonstd/span.hpp>
-#include <robin-hood-hashing/robin_hood.h>
+#include <robin_hood.h>
 
 #include <algorithm>
 #include <array>

@@ -34,3 +34,6 @@
 [submodule "third_party/IconFontCppHeaders"]
 	path = third_party/IconFontCppHeaders
 	url = https://github.com/ComputationalBiomechanicsLab/IconFontCppHeaders
+[submodule "third_party/robin-hood-hashing"]
+	path = third_party/robin-hood-hashing
+	url = https://github.com/ComputationalBiomechanicsLab/robin-hood-hashing

@@ -318,7 +318,7 @@ endif()
 #     header-only library, used for high-perf associative lookups
 if(TRUE)
     add_library(robin-hood-hashing INTERFACE)
-    target_include_directories(stb INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/robin-hood-hashing)
+    target_include_directories(stb INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/robin-hood-hashing/src/include)
 endif()
 
 # DEPENDENCY: tomlplusplus
