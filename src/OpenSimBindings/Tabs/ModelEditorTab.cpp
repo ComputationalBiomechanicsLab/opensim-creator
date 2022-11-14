@@ -752,25 +752,13 @@ private:
 // public API
 
 osc::ModelEditorTab::ModelEditorTab(MainUIStateAPI* parent,  std::unique_ptr<UndoableModelStatePair> model) :
-    m_Impl{new Impl{std::move(parent), std::move(model)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent), std::move(model))}
 {
 }
 
-osc::ModelEditorTab::ModelEditorTab(ModelEditorTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::ModelEditorTab& osc::ModelEditorTab::operator=(ModelEditorTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::ModelEditorTab::~ModelEditorTab() noexcept
-{
-    delete m_Impl;
-}
+osc::ModelEditorTab::ModelEditorTab(ModelEditorTab&&) noexcept = default;
+osc::ModelEditorTab& osc::ModelEditorTab::operator=(ModelEditorTab&&) noexcept = default;
+osc::ModelEditorTab::~ModelEditorTab() noexcept = default;
 
 osc::UID osc::ModelEditorTab::implGetID() const
 {

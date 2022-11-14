@@ -746,28 +746,16 @@ private:
 };
 
 
-// public API
+// public API (PIMPL)
 
 osc::SimulatorTab::SimulatorTab(MainUIStateAPI* api, std::shared_ptr<Simulation> simulation) :
-    m_Impl{new Impl{std::move(api), std::move(simulation)}}
+    m_Impl{std::make_unique<Impl>(std::move(api), std::move(simulation))}
 {
 }
 
-osc::SimulatorTab::SimulatorTab(SimulatorTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::SimulatorTab& osc::SimulatorTab::operator=(SimulatorTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::SimulatorTab::~SimulatorTab() noexcept
-{
-    delete m_Impl;
-}
+osc::SimulatorTab::SimulatorTab(SimulatorTab&&) noexcept = default;
+osc::SimulatorTab& osc::SimulatorTab::operator=(SimulatorTab&&) noexcept = default;
+osc::SimulatorTab::~SimulatorTab() noexcept = default;
 
 osc::UID osc::SimulatorTab::implGetID() const
 {

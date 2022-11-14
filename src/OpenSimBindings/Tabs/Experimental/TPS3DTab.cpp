@@ -1913,25 +1913,13 @@ private:
 // public API (PIMPL)
 
 osc::TPS3DTab::TPS3DTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::TPS3DTab::TPS3DTab(TPS3DTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::TPS3DTab& osc::TPS3DTab::operator=(TPS3DTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::TPS3DTab::~TPS3DTab() noexcept
-{
-    delete m_Impl;
-}
+osc::TPS3DTab::TPS3DTab(TPS3DTab&&) noexcept = default;
+osc::TPS3DTab& osc::TPS3DTab::operator=(TPS3DTab&&) noexcept = default;
+osc::TPS3DTab::~TPS3DTab() noexcept = default;
 
 osc::UID osc::TPS3DTab::implGetID() const
 {

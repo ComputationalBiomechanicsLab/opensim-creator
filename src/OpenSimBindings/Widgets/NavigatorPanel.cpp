@@ -384,25 +384,13 @@ private:
 // public API (PIMPL)
 
 osc::NavigatorPanel::NavigatorPanel(std::string_view panelName, std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
-    m_Impl{new Impl{std::move(panelName), std::move(onRightClick)}}
+    m_Impl{std::make_unique<Impl>(std::move(panelName), std::move(onRightClick))}
 {
 }
 
-osc::NavigatorPanel::NavigatorPanel(NavigatorPanel&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::NavigatorPanel& osc::NavigatorPanel::operator=(NavigatorPanel&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::NavigatorPanel::~NavigatorPanel() noexcept
-{
-    delete m_Impl;
-}
+osc::NavigatorPanel::NavigatorPanel(NavigatorPanel&&) noexcept = default;
+osc::NavigatorPanel& osc::NavigatorPanel::operator=(NavigatorPanel&&) noexcept = default;
+osc::NavigatorPanel::~NavigatorPanel() noexcept = default;
 
 bool osc::NavigatorPanel::isOpen() const
 {

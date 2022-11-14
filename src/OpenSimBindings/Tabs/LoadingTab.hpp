@@ -7,6 +7,7 @@
 #include <SDL_events.h>
 
 #include <filesystem>
+#include <memory>
 
 namespace osc { class MainUIStateAPI; }
 namespace osc { class TabHost; }
@@ -34,6 +35,6 @@ namespace osc
         void implOnDraw() override;
 
         class Impl;
-        Impl* m_Impl;
+        std::unique_ptr<Impl> m_Impl;
     };
 }

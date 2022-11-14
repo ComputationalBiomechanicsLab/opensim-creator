@@ -7,6 +7,7 @@
 #include <SDL_events.h>
 
 #include <filesystem>
+#include <memory>
 #include <vector>
 
 namespace osc { class MainUIStateAPI; }
@@ -38,6 +39,6 @@ namespace osc
         void implOnDraw() override;
 
         class Impl;
-        Impl* m_Impl;
+        std::unique_ptr<Impl> m_Impl;
     };
 }

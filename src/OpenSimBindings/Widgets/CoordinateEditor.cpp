@@ -231,25 +231,13 @@ private:
 // public API
 
 osc::CoordinateEditor::CoordinateEditor(MainUIStateAPI* mainUIStateAPI, EditorAPI* editorAPI, std::shared_ptr<UndoableModelStatePair> uum) :
-    m_Impl{new Impl{std::move(mainUIStateAPI), std::move(editorAPI), std::move(uum)}}
+    m_Impl{std::make_unique<Impl>(std::move(mainUIStateAPI), std::move(editorAPI), std::move(uum))}
 {
 }
 
-osc::CoordinateEditor::CoordinateEditor(CoordinateEditor&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::CoordinateEditor& osc::CoordinateEditor::operator=(CoordinateEditor&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::CoordinateEditor::~CoordinateEditor() noexcept
-{
-    delete m_Impl;
-}
+osc::CoordinateEditor::CoordinateEditor(CoordinateEditor&&) noexcept = default;
+osc::CoordinateEditor& osc::CoordinateEditor::operator=(CoordinateEditor&&) noexcept = default;
+osc::CoordinateEditor::~CoordinateEditor() noexcept = default;
 
 void osc::CoordinateEditor::draw()
 {

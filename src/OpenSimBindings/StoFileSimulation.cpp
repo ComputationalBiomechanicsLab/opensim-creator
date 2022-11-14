@@ -303,25 +303,13 @@ private:
 };
 
 osc::StoFileSimulation::StoFileSimulation(std::unique_ptr<OpenSim::Model> model, std::filesystem::path stoFilePath, float fixupScaleFactor) :
-    m_Impl{new Impl{std::move(model), std::move(stoFilePath), std::move(fixupScaleFactor)}}
+    m_Impl{std::make_unique<Impl>(std::move(model), std::move(stoFilePath), std::move(fixupScaleFactor))}
 {
 }
 
-osc::StoFileSimulation::StoFileSimulation(StoFileSimulation&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::StoFileSimulation& osc::StoFileSimulation::operator=(StoFileSimulation&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::StoFileSimulation::~StoFileSimulation() noexcept
-{
-    delete m_Impl;
-}
+osc::StoFileSimulation::StoFileSimulation(StoFileSimulation&&) noexcept = default;
+osc::StoFileSimulation& osc::StoFileSimulation::operator=(StoFileSimulation&&) noexcept = default;
+osc::StoFileSimulation::~StoFileSimulation() noexcept = default;
 
 osc::SynchronizedValueGuard<OpenSim::Model const> osc::StoFileSimulation::getModel() const
 {

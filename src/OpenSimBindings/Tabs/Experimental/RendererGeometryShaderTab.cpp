@@ -135,25 +135,13 @@ private:
 // public API (PIMPL)
 
 osc::RendererGeometryShaderTab::RendererGeometryShaderTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::RendererGeometryShaderTab::RendererGeometryShaderTab(RendererGeometryShaderTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::RendererGeometryShaderTab& osc::RendererGeometryShaderTab::operator=(RendererGeometryShaderTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::RendererGeometryShaderTab::~RendererGeometryShaderTab() noexcept
-{
-    delete m_Impl;
-}
+osc::RendererGeometryShaderTab::RendererGeometryShaderTab(RendererGeometryShaderTab&&) noexcept = default;
+osc::RendererGeometryShaderTab& osc::RendererGeometryShaderTab::operator=(RendererGeometryShaderTab&&) noexcept = default;
+osc::RendererGeometryShaderTab::~RendererGeometryShaderTab() noexcept = default;
 
 osc::UID osc::RendererGeometryShaderTab::implGetID() const
 {

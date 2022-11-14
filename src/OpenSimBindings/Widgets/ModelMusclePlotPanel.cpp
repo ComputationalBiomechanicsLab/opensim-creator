@@ -2200,7 +2200,7 @@ osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
     std::shared_ptr<UndoableModelStatePair> uim,
     std::string_view panelName) :
 
-    m_Impl{new Impl{std::move(editorAPI), std::move(uim), std::move(panelName)}}
+    m_Impl{std::make_unique<Impl>(std::move(editorAPI), std::move(uim), std::move(panelName))}
 {
 }
 
@@ -2211,25 +2211,13 @@ osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
     OpenSim::ComponentPath const& coordPath,
     OpenSim::ComponentPath const& musclePath) :
 
-    m_Impl{new Impl{std::move(editorAPI), std::move(uim), std::move(panelName), coordPath, musclePath}}
+    m_Impl{std::make_unique<Impl>(std::move(editorAPI), std::move(uim), std::move(panelName), coordPath, musclePath)}
 {
 }
 
-osc::ModelMusclePlotPanel::ModelMusclePlotPanel(ModelMusclePlotPanel&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::ModelMusclePlotPanel& osc::ModelMusclePlotPanel::operator=(ModelMusclePlotPanel&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::ModelMusclePlotPanel::~ModelMusclePlotPanel() noexcept
-{
-    delete m_Impl;
-}
+osc::ModelMusclePlotPanel::ModelMusclePlotPanel(ModelMusclePlotPanel&&) noexcept = default;
+osc::ModelMusclePlotPanel& osc::ModelMusclePlotPanel::operator=(ModelMusclePlotPanel&&) noexcept = default;
+osc::ModelMusclePlotPanel::~ModelMusclePlotPanel() noexcept = default;
 
 std::string const& osc::ModelMusclePlotPanel::getName() const
 {

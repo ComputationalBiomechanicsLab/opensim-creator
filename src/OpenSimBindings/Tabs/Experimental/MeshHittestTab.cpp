@@ -233,25 +233,13 @@ private:
 // public API
 
 osc::MeshHittestTab::MeshHittestTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::MeshHittestTab::MeshHittestTab(MeshHittestTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::MeshHittestTab& osc::MeshHittestTab::operator=(MeshHittestTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::MeshHittestTab::~MeshHittestTab() noexcept
-{
-    delete m_Impl;
-}
+osc::MeshHittestTab::MeshHittestTab(MeshHittestTab&&) noexcept = default;
+osc::MeshHittestTab& osc::MeshHittestTab::operator=(MeshHittestTab&&) noexcept = default;
+osc::MeshHittestTab::~MeshHittestTab() noexcept = default;
 
 osc::UID osc::MeshHittestTab::implGetID() const
 {

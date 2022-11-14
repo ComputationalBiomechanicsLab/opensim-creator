@@ -91,28 +91,16 @@ private:
     std::shared_ptr<UndoableModelStatePair> m_Model;
 };
 
-// public API
+// public API (PIMPL)
 
 osc::EditorTabStatusBar::EditorTabStatusBar(MainUIStateAPI* mainUIStateAPI, EditorAPI* editorAPI, std::shared_ptr<UndoableModelStatePair> model) :
-    m_Impl{new Impl{std::move(mainUIStateAPI), std::move(editorAPI), std::move(model)}}
+    m_Impl{std::make_unique<Impl>(std::move(mainUIStateAPI), std::move(editorAPI), std::move(model))}
 {
 }
 
-osc::EditorTabStatusBar::EditorTabStatusBar(EditorTabStatusBar&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::EditorTabStatusBar& osc::EditorTabStatusBar::operator=(EditorTabStatusBar&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::EditorTabStatusBar::~EditorTabStatusBar() noexcept
-{
-    delete m_Impl;
-}
+osc::EditorTabStatusBar::EditorTabStatusBar(EditorTabStatusBar&&) noexcept = default;
+osc::EditorTabStatusBar& osc::EditorTabStatusBar::operator=(EditorTabStatusBar&&) noexcept = default;
+osc::EditorTabStatusBar::~EditorTabStatusBar() noexcept = default;
 
 void osc::EditorTabStatusBar::draw()
 {

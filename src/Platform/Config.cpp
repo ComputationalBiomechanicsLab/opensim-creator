@@ -162,29 +162,17 @@ std::unique_ptr<osc::Config> osc::Config::load()
 
     TryUpdateConfigFromConfigFile(*rv);
 
-    return std::make_unique<Config>(rv.release());
+    return std::make_unique<Config>(std::move(rv));
 }
 
-osc::Config::Config(Impl* impl) :
+osc::Config::Config(std::unique_ptr<Impl> impl) :
     m_Impl{std::move(impl)}
 {
 }
 
-osc::Config::Config(Config&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::Config& osc::Config::operator=(Config&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::Config::~Config() noexcept
-{
-    delete m_Impl;
-}
+osc::Config::Config(Config&&) noexcept = default;
+osc::Config& osc::Config::operator=(Config&&) noexcept = default;
+osc::Config::~Config() noexcept = default;
 
 std::filesystem::path const& osc::Config::getResourceDir() const
 {

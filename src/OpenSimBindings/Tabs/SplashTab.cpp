@@ -362,28 +362,16 @@ private:
 };
 
 
-// public API
+// public API (PIMPL)
 
 osc::SplashTab::SplashTab(MainUIStateAPI* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::SplashTab::SplashTab(SplashTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::SplashTab& osc::SplashTab::operator=(SplashTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::SplashTab::~SplashTab() noexcept
-{
-    delete m_Impl;
-}
+osc::SplashTab::SplashTab(SplashTab&&) noexcept = default;
+osc::SplashTab& osc::SplashTab::operator=(SplashTab&&) noexcept = default;
+osc::SplashTab::~SplashTab() noexcept = default;
 
 osc::UID osc::SplashTab::implGetID() const
 {

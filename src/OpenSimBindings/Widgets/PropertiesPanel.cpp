@@ -150,25 +150,13 @@ private:
 // public API (PIMPL)
 
 osc::PropertiesPanel::PropertiesPanel(EditorAPI* editorAPI, std::shared_ptr<UndoableModelStatePair> model) :
-    m_Impl{new Impl{std::move(editorAPI), std::move(model)}}
+    m_Impl{std::make_unique<Impl>(std::move(editorAPI), std::move(model))}
 {
 }
 
-osc::PropertiesPanel::PropertiesPanel(PropertiesPanel&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::PropertiesPanel& osc::PropertiesPanel::operator=(PropertiesPanel&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::PropertiesPanel::~PropertiesPanel() noexcept
-{
-    delete m_Impl;
-}
+osc::PropertiesPanel::PropertiesPanel(PropertiesPanel&&) noexcept = default;
+osc::PropertiesPanel& osc::PropertiesPanel::operator=(PropertiesPanel&&) noexcept = default;
+osc::PropertiesPanel::~PropertiesPanel() noexcept = default;
 
 void osc::PropertiesPanel::draw()
 {

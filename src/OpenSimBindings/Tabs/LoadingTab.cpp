@@ -188,25 +188,13 @@ private:
 // public API
 
 osc::LoadingTab::LoadingTab(MainUIStateAPI* parent, std::filesystem::path path) :
-    m_Impl{new Impl{std::move(parent), std::move(path)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent), std::move(path))}
 {
 }
 
-osc::LoadingTab::LoadingTab(LoadingTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::LoadingTab& osc::LoadingTab::operator=(LoadingTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::LoadingTab::~LoadingTab() noexcept
-{
-    delete m_Impl;
-}
+osc::LoadingTab::LoadingTab(LoadingTab&&) noexcept = default;
+osc::LoadingTab& osc::LoadingTab::operator=(LoadingTab&&) noexcept = default;
+osc::LoadingTab::~LoadingTab() noexcept = default;
 
 osc::UID osc::LoadingTab::implGetID() const
 {

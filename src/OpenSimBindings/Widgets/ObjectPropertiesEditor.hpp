@@ -3,6 +3,7 @@
 #include <nonstd/span.hpp>
 
 #include <functional>
+#include <memory>
 #include <optional>
 #include <string>
 
@@ -43,6 +44,6 @@ namespace osc
 
     private:
         class Impl;
-        Impl* m_Impl;
+        std::unique_ptr<Impl> m_Impl;
     };
 }

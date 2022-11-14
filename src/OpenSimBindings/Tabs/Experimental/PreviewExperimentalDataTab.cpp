@@ -684,25 +684,13 @@ private:
 // public API (PIMPL)
 
 osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(PreviewExperimentalDataTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::PreviewExperimentalDataTab& osc::PreviewExperimentalDataTab::operator=(PreviewExperimentalDataTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::PreviewExperimentalDataTab::~PreviewExperimentalDataTab() noexcept
-{
-    delete m_Impl;
-}
+osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(PreviewExperimentalDataTab&&) noexcept = default;
+osc::PreviewExperimentalDataTab& osc::PreviewExperimentalDataTab::operator=(PreviewExperimentalDataTab&&) noexcept = default;
+osc::PreviewExperimentalDataTab::~PreviewExperimentalDataTab() noexcept = default;
 
 osc::UID osc::PreviewExperimentalDataTab::implGetID() const
 {

@@ -591,25 +591,13 @@ private:
 // public API (PIMPL)
 
 osc::TPS2DTab::TPS2DTab(TabHost* parent) :
-    m_Impl{new Impl{std::move(parent)}}
+    m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
 }
 
-osc::TPS2DTab::TPS2DTab(TPS2DTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::TPS2DTab& osc::TPS2DTab::operator=(TPS2DTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::TPS2DTab::~TPS2DTab() noexcept
-{
-    delete m_Impl;
-}
+osc::TPS2DTab::TPS2DTab(TPS2DTab&&) noexcept = default;
+osc::TPS2DTab& osc::TPS2DTab::operator=(TPS2DTab&&) noexcept = default;
+osc::TPS2DTab::~TPS2DTab() noexcept = default;
 
 osc::UID osc::TPS2DTab::implGetID() const
 {

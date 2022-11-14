@@ -5,6 +5,7 @@
 #include <nonstd/span.hpp>
 
 #include <filesystem>
+#include <memory>
 
 namespace osc { class SimulatorUIAPI; }
 
@@ -23,7 +24,7 @@ namespace osc
 
     private:
         class Impl;
-        Impl* m_Impl;
+        std::unique_ptr<Impl> m_Impl;
     };
 
     // returns empty path if not saved

@@ -112,25 +112,13 @@ osc::OutputWatchesPanel::OutputWatchesPanel(
     std::shared_ptr<UndoableModelStatePair> model,
     MainUIStateAPI* api) :
 
-    m_Impl{new Impl{std::move(panelName), std::move(model), std::move(api)}}
+    m_Impl{std::make_unique<Impl>(std::move(panelName), std::move(model), std::move(api))}
 {
 }
 
-osc::OutputWatchesPanel::OutputWatchesPanel(OutputWatchesPanel&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::OutputWatchesPanel& osc::OutputWatchesPanel::operator=(OutputWatchesPanel&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::OutputWatchesPanel::~OutputWatchesPanel() noexcept
-{
-    delete m_Impl;
-}
+osc::OutputWatchesPanel::OutputWatchesPanel(OutputWatchesPanel&&) noexcept = default;
+osc::OutputWatchesPanel& osc::OutputWatchesPanel::operator=(OutputWatchesPanel&&) noexcept = default;
+osc::OutputWatchesPanel::~OutputWatchesPanel() noexcept = default;
 
 bool osc::OutputWatchesPanel::isOpen() const
 {

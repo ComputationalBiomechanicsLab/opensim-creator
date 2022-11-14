@@ -14,7 +14,7 @@ namespace osc
 
         class Impl;
     public:
-        explicit Config(Impl*);  // you should use Config::load
+        explicit Config(std::unique_ptr<Impl>);  // you should use Config::load
         Config(Config const&) = delete;
         Config(Config&&) noexcept;
         Config& operator=(Config const&) = delete;
@@ -40,6 +40,6 @@ namespace osc
         std::optional<std::string> getInitialTabOverride() const;
 
     private:
-        Impl* m_Impl;
+        std::unique_ptr<Impl> m_Impl;
     };
 }

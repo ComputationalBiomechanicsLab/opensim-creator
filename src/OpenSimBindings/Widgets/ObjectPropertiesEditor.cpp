@@ -907,25 +907,13 @@ void osc::ObjectPropertyEdit::apply(OpenSim::AbstractProperty& prop)
 }
 
 osc::ObjectPropertiesEditor::ObjectPropertiesEditor() :
-    m_Impl{new Impl{}}
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
-osc::ObjectPropertiesEditor::ObjectPropertiesEditor(ObjectPropertiesEditor&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::ObjectPropertiesEditor& osc::ObjectPropertiesEditor::operator=(ObjectPropertiesEditor&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::ObjectPropertiesEditor::~ObjectPropertiesEditor() noexcept
-{
-    delete m_Impl;
-}
+osc::ObjectPropertiesEditor::ObjectPropertiesEditor(ObjectPropertiesEditor&&) noexcept = default;
+osc::ObjectPropertiesEditor& osc::ObjectPropertiesEditor::operator=(ObjectPropertiesEditor&&) noexcept = default;
+osc::ObjectPropertiesEditor::~ObjectPropertiesEditor() noexcept = default;
 
 std::optional<osc::ObjectPropertyEdit> osc::ObjectPropertiesEditor::draw(OpenSim::Object const& obj)
 {

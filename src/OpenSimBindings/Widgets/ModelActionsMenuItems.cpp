@@ -113,28 +113,16 @@ private:
 };
 
 
-// public API
+// public API (PIMPL)
 
 osc::ModelActionsMenuItems::ModelActionsMenuItems(EditorAPI* api, std::shared_ptr<UndoableModelStatePair> m) :
-    m_Impl{new Impl{std::move(api), std::move(m)}}
+    m_Impl{std::make_unique<Impl>(std::move(api), std::move(m))}
 {
 }
 
-osc::ModelActionsMenuItems::ModelActionsMenuItems(ModelActionsMenuItems&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::ModelActionsMenuItems& osc::ModelActionsMenuItems::operator=(ModelActionsMenuItems&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::ModelActionsMenuItems::~ModelActionsMenuItems() noexcept
-{
-    delete m_Impl;
-}
+osc::ModelActionsMenuItems::ModelActionsMenuItems(ModelActionsMenuItems&&) noexcept = default;
+osc::ModelActionsMenuItems& osc::ModelActionsMenuItems::operator=(ModelActionsMenuItems&&) noexcept = default;
+osc::ModelActionsMenuItems::~ModelActionsMenuItems() noexcept = default;
 
 void osc::ModelActionsMenuItems::draw()
 {

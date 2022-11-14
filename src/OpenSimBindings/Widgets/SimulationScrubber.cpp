@@ -176,26 +176,17 @@ private:
     std::chrono::system_clock::time_point m_PlaybackStartWallTime = std::chrono::system_clock::now();
 };
 
+
+// public API (PIMPL)
+
 osc::SimulationScrubber::SimulationScrubber(std::shared_ptr<Simulation> sim) :
-    m_Impl{new Impl{std::move(sim)}}
+    m_Impl{std::make_unique<Impl>(std::move(sim))}
 {
 }
 
-osc::SimulationScrubber::SimulationScrubber(SimulationScrubber&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::SimulationScrubber& osc::SimulationScrubber::operator=(SimulationScrubber&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::SimulationScrubber::~SimulationScrubber() noexcept
-{
-    delete m_Impl;
-}
+osc::SimulationScrubber::SimulationScrubber(SimulationScrubber&&) noexcept = default;
+osc::SimulationScrubber& osc::SimulationScrubber::operator=(SimulationScrubber&&) noexcept = default;
+osc::SimulationScrubber::~SimulationScrubber() noexcept = default;
 
 bool osc::SimulationScrubber::isPlayingBack() const
 {

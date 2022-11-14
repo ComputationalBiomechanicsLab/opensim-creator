@@ -394,25 +394,13 @@ private:
 // public API
 
 osc::SimulationOutputPlot::SimulationOutputPlot(SimulatorUIAPI* api, OutputExtractor outputExtractor, float height) :
-    m_Impl{new Impl{std::move(api), std::move(outputExtractor), std::move(height)}}
+    m_Impl{std::make_unique<Impl>(std::move(api), std::move(outputExtractor), std::move(height))}
 {
 }
 
-osc::SimulationOutputPlot::SimulationOutputPlot(SimulationOutputPlot&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::SimulationOutputPlot& osc::SimulationOutputPlot::operator=(SimulationOutputPlot && tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::SimulationOutputPlot::~SimulationOutputPlot() noexcept
-{
-    delete m_Impl;
-}
+osc::SimulationOutputPlot::SimulationOutputPlot(SimulationOutputPlot&&) noexcept = default;
+osc::SimulationOutputPlot& osc::SimulationOutputPlot::operator=(SimulationOutputPlot&&) noexcept = default;
+osc::SimulationOutputPlot::~SimulationOutputPlot() noexcept = default;
 
 void osc::SimulationOutputPlot::draw()
 {

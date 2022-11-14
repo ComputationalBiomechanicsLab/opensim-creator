@@ -658,25 +658,13 @@ private:
 // public API
 
 osc::UiModelViewer::UiModelViewer(UiModelViewerFlags flags) :
-    m_Impl{new Impl{flags}}
+    m_Impl{std::make_unique<Impl>(flags)}
 {
 }
 
-osc::UiModelViewer::UiModelViewer(UiModelViewer&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::UiModelViewer& osc::UiModelViewer::operator=(UiModelViewer&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::UiModelViewer::~UiModelViewer() noexcept
-{
-    delete m_Impl;
-}
+osc::UiModelViewer::UiModelViewer(UiModelViewer&&) noexcept = default;
+osc::UiModelViewer& osc::UiModelViewer::operator=(UiModelViewer&&) noexcept = default;
+osc::UiModelViewer::~UiModelViewer() noexcept = default;
 
 bool osc::UiModelViewer::isLeftClicked() const
 {

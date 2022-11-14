@@ -5,6 +5,7 @@
 #include "src/OpenSimBindings/SimulationStatus.hpp"
 
 #include <functional>
+#include <memory>
 
 namespace osc { struct ForwardDynamicSimulatorParams; }
 namespace osc { class SimulationReport; }
@@ -23,9 +24,10 @@ namespace osc
         //
         // care: the callback is called *on the bg thread* - you should know how
         //       to handle it (e.g. mutexes) appropriately
-        ForwardDynamicSimulator(BasicModelStatePair,
-                     ForwardDynamicSimulatorParams const& params,
-                     std::function<void(SimulationReport)> onReportFromBgThread);
+        ForwardDynamicSimulator(
+            BasicModelStatePair,
+            ForwardDynamicSimulatorParams const& params,
+            std::function<void(SimulationReport)> onReportFromBgThread);
 
         ForwardDynamicSimulator(ForwardDynamicSimulator const&) = delete;
         ForwardDynamicSimulator(ForwardDynamicSimulator&&) noexcept;
@@ -40,6 +42,6 @@ namespace osc
 
     private:
         class Impl;
-        Impl* m_Impl;
+        std::unique_ptr<Impl> m_Impl;
     };
 }

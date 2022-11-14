@@ -696,46 +696,35 @@ private:
 // public API (PIMPL)
 
 osc::UndoableModelStatePair::UndoableModelStatePair() :
-    m_Impl{new Impl{}}
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
 osc::UndoableModelStatePair::UndoableModelStatePair(std::unique_ptr<OpenSim::Model> model) :
-    m_Impl{new Impl{std::move(model)}}
+    m_Impl{std::make_unique<Impl>(std::move(model))}
 {
 }
 
 osc::UndoableModelStatePair::UndoableModelStatePair(UndoableModelStatePair const& src) :
-    m_Impl{new Impl{*src.m_Impl}}
+    m_Impl{std::make_unique<Impl>(*src.m_Impl)}
 {
 }
 
-osc::UndoableModelStatePair::UndoableModelStatePair(UndoableModelStatePair&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
+osc::UndoableModelStatePair::UndoableModelStatePair(UndoableModelStatePair&&) noexcept = default;
 
 osc::UndoableModelStatePair& osc::UndoableModelStatePair::operator=(UndoableModelStatePair const& src)
 {
     if (&src != this)
     {
         std::unique_ptr<Impl> cpy = std::make_unique<Impl>(*src.m_Impl);
-        cpy.reset(std::exchange(m_Impl, cpy.release()));
+        std::swap(m_Impl, cpy);
     }
 
     return *this;
 }
 
-osc::UndoableModelStatePair& osc::UndoableModelStatePair::operator=(UndoableModelStatePair&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::UndoableModelStatePair::~UndoableModelStatePair() noexcept
-{
-    delete m_Impl;
-}
+osc::UndoableModelStatePair& osc::UndoableModelStatePair::operator=(UndoableModelStatePair&&) noexcept = default;
+osc::UndoableModelStatePair::~UndoableModelStatePair() noexcept = default;
 
 bool osc::UndoableModelStatePair::hasFilesystemLocation() const
 {

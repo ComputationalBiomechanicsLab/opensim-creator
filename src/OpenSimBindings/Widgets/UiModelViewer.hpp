@@ -2,6 +2,8 @@
 
 #include <glm/vec3.hpp>
 
+#include <memory>
+
 namespace OpenSim { class Component; }
 namespace osc { class VirtualConstModelStatePair; }
 
@@ -75,6 +77,6 @@ namespace osc
 
     private:
         class Impl;
-        Impl* m_Impl;
+        std::unique_ptr<Impl> m_Impl;
     };
 }

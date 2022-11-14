@@ -249,28 +249,16 @@ private:
 };
 
 
-// public API
+// public API (PIMPL)
 
 osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(TabHost* parent, BasicModelStatePair modelState, ParamBlock const& params) :
-    m_Impl{new Impl{std::move(parent), std::move(modelState), params}}
+    m_Impl{std::make_unique<Impl>(std::move(parent), std::move(modelState), params)}
 {
 }
 
-osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(PerformanceAnalyzerTab&& tmp) noexcept :
-    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
-{
-}
-
-osc::PerformanceAnalyzerTab& osc::PerformanceAnalyzerTab::operator=(PerformanceAnalyzerTab&& tmp) noexcept
-{
-    std::swap(m_Impl, tmp.m_Impl);
-    return *this;
-}
-
-osc::PerformanceAnalyzerTab::~PerformanceAnalyzerTab() noexcept
-{
-    delete m_Impl;
-}
+osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(PerformanceAnalyzerTab&&) noexcept = default;
+osc::PerformanceAnalyzerTab& osc::PerformanceAnalyzerTab::operator=(PerformanceAnalyzerTab&&) noexcept = default;
+osc::PerformanceAnalyzerTab::~PerformanceAnalyzerTab() noexcept = default;
 
 osc::UID osc::PerformanceAnalyzerTab::implGetID() const
 {
