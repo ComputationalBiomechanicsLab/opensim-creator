@@ -5,6 +5,7 @@
 namespace osc
 {
     struct Triangle final {
+
         glm::vec3 const& operator[](size_t i) const noexcept
         {
             static_assert(alignof(Triangle) == alignof(glm::vec3));

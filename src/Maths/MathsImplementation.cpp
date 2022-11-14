@@ -369,7 +369,7 @@ size_t osc::BVH::getMaxDepth() const
     size_t maxdepth = 0;
     std::stack<size_t, std::vector<size_t>> stack;
 
-    while (0 <= cur && cur < nodes.size())
+    while (cur < nodes.size())
     {
         if (nodes[cur].isLeaf())
         {
