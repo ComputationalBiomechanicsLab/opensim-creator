@@ -325,7 +325,7 @@ endif()
 #     header-only library, shims std::span (C++20) into C++17
 if(TRUE)
     add_library(span-lite INTERFACE)
-    target_include_directories(span-lite INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/span-lite)
+    target_include_directories(span-lite INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/span-lite/include)
 endif()
 
 # DEPENDENCY: nativefiledialog

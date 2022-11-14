@@ -1,6 +1,6 @@
 #pragma once
 
-#include <span-lite/nonstd/span.hpp>
+#include <nonstd/span.hpp>
 
 #include <functional>
 #include <optional>
