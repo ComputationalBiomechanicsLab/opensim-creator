@@ -31,3 +31,6 @@
 [submodule "third_party/tomlplusplus"]
 	path = third_party/tomlplusplus
 	url = https://github.com/ComputationalBiomechanicsLab/tomlplusplus
+[submodule "third_party/IconFontCppHeaders"]
+	path = third_party/IconFontCppHeaders
+	url = https://github.com/ComputationalBiomechanicsLab/IconFontCppHeaders

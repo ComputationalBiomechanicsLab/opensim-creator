@@ -270,6 +270,13 @@ if(TRUE)
     target_include_directories(imgui PUBLIC third_party/ third_party/imgui/)
 endif()
 
+# DEPENDENCY: IconFontCppHeaders
+#     header-only library that exposes FontAwesome codepoints via macros (e.g. ICON_FA_TRASH)
+if(TRUE)
+    add_library(icon-font-cpp-headers INTERFACE)
+    target_include_directories(icon-font-cpp-headers INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/IconFontCppHeaders)
+endif()
+
 # DEPENDENCY: ImGuizmo
 #     small library for rendering manipulation gizmos (move, rotate) on a 3D scene
 #
@@ -491,6 +498,9 @@ target_link_libraries(osc-all-deps INTERFACE
 
     # GUI component rendering (text boxes, sliders, etc.)
     imgui
+
+    # macros for placing icons in the UI (e.g. ICON_FA_TRASH)
+    icon-font-cpp-headers
 
     # GUI support for gizmos
     imguizmo
