@@ -25,3 +25,6 @@
 [submodule "third_party/span-lite"]
 	path = third_party/span-lite
 	url = https://github.com/ComputationalBiomechanicsLab/span-lite
+[submodule "third_party/stb"]
+	path = third_party/stb
+	url = https://github.com/ComputationalBiomechanicsLab/stb
