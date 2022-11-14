@@ -192,7 +192,7 @@ else()
 
     # on non-Linux, build SDL from source and package it with the install
     ExternalProject_Add(sdl2-project
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/sdl2
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/SDL
         CMAKE_CACHE_ARGS ${OSC_DEPENDENCY_CMAKE_ARGS}
         INSTALL_COMMAND ""
         EXCLUDE_FROM_ALL TRUE
