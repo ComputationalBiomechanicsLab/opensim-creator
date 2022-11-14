@@ -1985,8 +1985,8 @@ namespace
 
         void drawLegendContextMenuContent()
         {
-            ImGui::CheckboxFlags("Hide", (unsigned int*)&m_PlotFlags, ImPlotFlags_NoLegend);
-            ImGui::CheckboxFlags("Outside", (unsigned int*)&m_LegendFlags, ImPlotLegendFlags_Outside);
+            ImGui::CheckboxFlags("Hide", reinterpret_cast<unsigned int*>(&m_PlotFlags), ImPlotFlags_NoLegend);
+            ImGui::CheckboxFlags("Outside", reinterpret_cast<unsigned int*>(&m_LegendFlags), ImPlotLegendFlags_Outside);
 
             const float s = ImGui::GetFrameHeight();
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 2));

@@ -314,7 +314,7 @@ private:
                 ImDrawCmd const& cmd = drawlist.CmdBuffer[cmdIdx];
                 {
                     // upload indices
-                    std::vector<uint16_t> indices;
+                    std::vector<ImDrawIdx> indices;
                     indices.reserve(cmd.ElemCount);
                     for (unsigned int i = cmd.IdxOffset; i < cmd.IdxOffset + cmd.ElemCount; ++i)
                     {

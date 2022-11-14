@@ -296,7 +296,7 @@ namespace
     // an OpenSim::Component
     bool IsValidOpenSimComponentNameCharacter(char c)
     {
-        if (std::isalpha(static_cast<unsigned char>(c)))
+        if (std::isalpha(static_cast<uint8_t>(c)))
         {
             return true;
         }
