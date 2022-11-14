@@ -46,12 +46,12 @@ namespace osc
     ImGuiItemHittestResult HittestLastImguiItem(float dragThreshold);
 
     // returns `true` if any scancode in the provided range is currently pressed down
-    bool IsAnyKeyDown(nonstd::span<int const>);
-    bool IsAnyKeyDown(std::initializer_list<int const>);
+    bool IsAnyKeyDown(nonstd::span<ImGuiKey const>);
+    bool IsAnyKeyDown(std::initializer_list<ImGuiKey const>);
 
     // returns `true` if any scancode in the provided range was pressed down this frame
-    bool IsAnyKeyPressed(nonstd::span<int const>);
-    bool IsAnyKeyPressed(std::initializer_list<int const>);
+    bool IsAnyKeyPressed(nonstd::span<ImGuiKey const>);
+    bool IsAnyKeyPressed(std::initializer_list<ImGuiKey const>);
 
     // returns true if the user is pressing either left- or right-Ctrl
     bool IsCtrlDown();

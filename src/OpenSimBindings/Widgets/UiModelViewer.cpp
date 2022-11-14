@@ -42,7 +42,6 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <SDL_scancode.h>
 #include <IconsFontAwesome5.h>
 
 #include <algorithm>
@@ -293,7 +292,7 @@ private:
         {
             bool ctrlDown = osc::IsCtrlOrSuperDown();
 
-            if (ImGui::IsKeyReleased(SDL_SCANCODE_X))
+            if (ImGui::IsKeyReleased(ImGuiKey_X))
             {
                 if (ctrlDown)
                 {
@@ -303,14 +302,14 @@ private:
                     FocusAlongX(m_Camera);
                 }
             }
-            if (ImGui::IsKeyPressed(SDL_SCANCODE_Y))
+            if (ImGui::IsKeyPressed(ImGuiKey_Y))
             {
                 if (!ctrlDown)
                 {
                     FocusAlongY(m_Camera);
                 }
             }
-            if (ImGui::IsKeyPressed(SDL_SCANCODE_F))
+            if (ImGui::IsKeyPressed(ImGuiKey_F))
             {
                 if (ctrlDown)
                 {
@@ -321,7 +320,7 @@ private:
                     Reset(m_Camera);
                 }
             }
-            if (ctrlDown && (ImGui::IsKeyPressed(SDL_SCANCODE_8)))
+            if (ctrlDown && (ImGui::IsKeyPressed(ImGuiKey_8)))
             {
                 // solidworks keybind
                 m_AutoFocusCameraNextFrame = true;

@@ -189,23 +189,23 @@ void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, glm::vec3& eulers)
 
     // keyboard: changes camera position
     glm::vec3 pos = camera.getPosition();
-    if (ImGui::IsKeyDown(SDL_SCANCODE_W))
+    if (ImGui::IsKeyDown(ImGuiKey_W))
     {
         pos += displacement * front;
     }
-    if (ImGui::IsKeyDown(SDL_SCANCODE_S))
+    if (ImGui::IsKeyDown(ImGuiKey_S))
     {
         pos -= displacement * front;
     }
-    if (ImGui::IsKeyDown(SDL_SCANCODE_A))
+    if (ImGui::IsKeyDown(ImGuiKey_A))
     {
         pos -= displacement * right;
     }
-    if (ImGui::IsKeyDown(SDL_SCANCODE_D))
+    if (ImGui::IsKeyDown(ImGuiKey_D))
     {
         pos += displacement * right;
     }
-    if (ImGui::IsKeyDown(SDL_SCANCODE_SPACE))
+    if (ImGui::IsKeyDown(ImGuiKey_Space))
     {
         pos += displacement * up;
     }
@@ -269,9 +269,9 @@ osc::ImGuiItemHittestResult osc::HittestLastImguiItem(float dragThreshold)
     return rv;
 }
 
-bool osc::IsAnyKeyDown(nonstd::span<int const> keys)
+bool osc::IsAnyKeyDown(nonstd::span<ImGuiKey const> keys)
 {
-    for (int const key : keys)
+    for (ImGuiKey const key : keys)
     {
         if (ImGui::IsKeyDown(key))
         {
@@ -281,14 +281,14 @@ bool osc::IsAnyKeyDown(nonstd::span<int const> keys)
     return false;
 }
 
-bool osc::IsAnyKeyDown(std::initializer_list<int const> keys)
+bool osc::IsAnyKeyDown(std::initializer_list<ImGuiKey const> keys)
 {
-    return IsAnyKeyDown(nonstd::span<int const>{keys.begin(), keys.end()});
+    return IsAnyKeyDown(nonstd::span<ImGuiKey const>{keys.begin(), keys.end()});
 }
 
-bool osc::IsAnyKeyPressed(nonstd::span<int const> keys)
+bool osc::IsAnyKeyPressed(nonstd::span<ImGuiKey const> keys)
 {
-    for (int const key : keys)
+    for (ImGuiKey const key : keys)
     {
         if (ImGui::IsKeyPressed(key))
         {
@@ -297,9 +297,9 @@ bool osc::IsAnyKeyPressed(nonstd::span<int const> keys)
     }
     return false;
 }
-bool osc::IsAnyKeyPressed(std::initializer_list<int const> keys)
+bool osc::IsAnyKeyPressed(std::initializer_list<ImGuiKey const> keys)
 {
-    return IsAnyKeyPressed(nonstd::span<int const>{keys.begin(), keys.end()});
+    return IsAnyKeyPressed(nonstd::span<ImGuiKey const>{keys.begin(), keys.end()});
 }
 
 bool osc::IsCtrlDown()

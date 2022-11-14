@@ -48,7 +48,7 @@ private:
         {
             char const* const msg = "(there are no coordinates in the model)";
             float const w = ImGui::CalcTextSize(msg).x;
-            ImGui::SetCursorPosX(0.5f * (ImGui::GetContentRegionAvailWidth() - w));  // center align
+            ImGui::SetCursorPosX(0.5f * (ImGui::GetContentRegionAvail().x - w));  // center align
             ImGui::TextDisabled(msg);
             return;
         }
@@ -178,7 +178,7 @@ private:
 
         ImGui::SameLine(0.0f, 1.0f);
 
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
         float minValue = ConvertCoordValueToDisplayValue(c, c.getRangeMin());
         float maxValue = ConvertCoordValueToDisplayValue(c, c.getRangeMax());
@@ -208,7 +208,7 @@ private:
     {
         float displayedSpeed = ConvertCoordValueToDisplayValue(c, c.getSpeedValue(m_Uum->getState()));
 
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
         if (InputMetersFloat("##coordinatespeededitor", &displayedSpeed))
         {
             double storedSpeed = ConvertCoordDisplayValueToStorageValue(c, displayedSpeed);

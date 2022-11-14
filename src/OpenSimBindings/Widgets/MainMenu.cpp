@@ -25,7 +25,6 @@
 #include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <SDL_scancode.h>
 
 #include <algorithm>
 #include <array>
@@ -56,19 +55,19 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
 
         bool mod = osc::IsCtrlOrSuperDown();
 
-        if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_N))
+        if (mod && ImGui::IsKeyPressed(ImGuiKey_N))
         {
             ActionNewModel(api);
         }
-        else if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_O))
+        else if (mod && ImGui::IsKeyPressed(ImGuiKey_O))
         {
             ActionOpenModel(api);
         }
-        else if (maybeModel && mod && io.KeyShift && ImGui::IsKeyPressed(SDL_SCANCODE_S))
+        else if (maybeModel && mod && io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_S))
         {
             ActionSaveCurrentModelAs(*maybeModel);
         }
-        else if (maybeModel && mod && ImGui::IsKeyPressed(SDL_SCANCODE_S))
+        else if (maybeModel && mod && ImGui::IsKeyPressed(ImGuiKey_S))
         {
             ActionSaveModel(api, *maybeModel);
         }

@@ -178,7 +178,7 @@ private:
 
         if (!m_Error.empty())
         {
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             ImGui::TextWrapped("%s", m_Error.c_str());
         }
 

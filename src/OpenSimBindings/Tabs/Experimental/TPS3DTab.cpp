@@ -1147,7 +1147,7 @@ namespace
                 }
             }
 
-            if (htResult.isHovered && osc::IsAnyKeyPressed({SDL_SCANCODE_DELETE, SDL_SCANCODE_BACKSPACE}))
+            if (htResult.isHovered && osc::IsAnyKeyPressed({ImGuiKey_Delete, ImGuiKey_Backspace}))
             {
                 ActionDeleteLandmarksByID(
                     *m_State->EditedDocument,
@@ -1218,7 +1218,7 @@ namespace
             {
                 char const* label = "landmark radius";
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - padding.x);
-                ImGui::SliderFloat(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", 2.0f);
+                ImGui::SliderFloat(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", ImGuiSliderFlags_Logarithmic);
             }
         }
 
@@ -1367,7 +1367,7 @@ namespace
                 float const panelHeight = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y;
 
                 ImGui::SetCursorScreenPos({renderRect.p1.x + padding.x, renderRect.p2.y - (panelHeight + padding.y)});
-                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - padding.x - ImGui::CalcTextSize("blending factor").x - ImGui::GetStyle().ItemSpacing.x);
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - padding.x - ImGui::CalcTextSize("blending factor").x - ImGui::GetStyle().ItemSpacing.x);
                 float factor = m_State->EditedDocument->getScratch().BlendingFactor;
                 if (ImGui::SliderFloat("blending factor", &factor, 0.0f, 1.0f))
                 {

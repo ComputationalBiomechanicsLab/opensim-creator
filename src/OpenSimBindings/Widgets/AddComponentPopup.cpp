@@ -231,7 +231,7 @@ private:
 
             // rhs: connectee choices
             ImGui::PushID(static_cast<int>(i));
-            ImGui::BeginChild("##pfselector", {ImGui::GetContentRegionAvailWidth(), 128.0f});
+            ImGui::BeginChild("##pfselector", {ImGui::GetContentRegionAvail().x, 128.0f});
 
             // iterate through PFs in model and print them out
             for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>())
@@ -260,7 +260,7 @@ private:
         OpenSim::Model const& model = m_Uum->getModel();
 
         // show list of choices
-        ImGui::BeginChild("##pf_ppchoices", {ImGui::GetContentRegionAvailWidth(), 128.0f});
+        ImGui::BeginChild("##pf_ppchoices", {ImGui::GetContentRegionAvail().x, 128.0f});
 
         // choices
         for (OpenSim::Component const& c : model.getComponentList())
@@ -335,7 +335,7 @@ private:
     {
         OpenSim::Model const& model = m_Uum->getModel();
 
-        ImGui::BeginChild("##pf_pathpoints", {ImGui::GetContentRegionAvailWidth(), 128.0f});
+        ImGui::BeginChild("##pf_pathpoints", {ImGui::GetContentRegionAvail().x, 128.0f});
 
         // selections
         for (size_t i = 0; i < m_PathPoints.size(); ++i)

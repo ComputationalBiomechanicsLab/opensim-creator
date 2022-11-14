@@ -1578,7 +1578,7 @@ namespace
                 ImGui::CalcTextSize(ICON_FA_BARS " Options").x +
                 ImGui::GetStyle().FramePadding.x;
 
-            float cursorStart = 0.5f*(ImGui::GetContentRegionAvailWidth() - totalWidth);
+            float cursorStart = 0.5f*(ImGui::GetContentRegionAvail().x - totalWidth);
             ImGui::SetCursorPosX(cursorStart);
 
             ImGui::SetNextItemWidth(muscleNameWidth);

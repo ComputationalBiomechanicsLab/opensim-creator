@@ -27,7 +27,7 @@ void osc::GuiRuler::draw(PolarPerspectiveCamera const& sceneCamera, Rect const& 
     }
 
     // users can exit measuring through these actions
-    if (ImGui::IsKeyDown(SDL_SCANCODE_ESCAPE) || ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+    if (ImGui::IsKeyDown(ImGuiKey_Escape) || ImGui::IsMouseClicked(ImGuiMouseButton_Right))
     {
         stopMeasuring();
         return;

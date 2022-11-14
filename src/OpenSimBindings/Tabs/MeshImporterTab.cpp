@@ -82,7 +82,6 @@
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <SDL_events.h>
-#include <SDL_scancode.h>
 #include <SimTKcommon.h>
 #include <SimTKcommon/Mechanics.h>
 #include <SimTKcommon/SmallMatrix.h>
@@ -5297,7 +5296,7 @@ namespace
         {
             m_Shared->tick(dt);
 
-            if (ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE))
+            if (ImGui::IsKeyPressed(ImGuiKey_Escape))
             {
                 // ESC: user cancelled out
                 requestPop();
@@ -5695,7 +5694,7 @@ namespace
         {
             m_Shared->tick(dt);
 
-            if (ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE))
+            if (ImGui::IsKeyPressed(ImGuiKey_Escape))
             {
                 // ESC: user cancelled out
                 requestPop();
@@ -6384,91 +6383,91 @@ private:
         bool shiftDown = osc::IsShiftDown();
         bool ctrlOrSuperDown = osc::IsCtrlOrSuperDown();
 
-        if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_N))
+        if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_N))
         {
             // Ctrl+N: new scene
             m_Shared->RequestNewMeshImporterTab();
             return true;
         }
-        else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_O))
+        else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_O))
         {
             // Ctrl+O: open osim
             m_Shared->OpenOsimFileAsModelGraph();
             return true;
         }
-        else if (ctrlOrSuperDown && shiftDown && ImGui::IsKeyPressed(SDL_SCANCODE_S))
+        else if (ctrlOrSuperDown && shiftDown && ImGui::IsKeyPressed(ImGuiKey_S))
         {
             // Ctrl+Shift+S: export as: export scene as osim to user-specified location
             m_Shared->ExportAsModelGraphAsOsimFile();
             return true;
         }
-        else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_S))
+        else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_S))
         {
             // Ctrl+S: export: export scene as osim according to typical export heuristic
             m_Shared->ExportModelGraphAsOsimFile();
             return true;
         }
-        else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_W))
+        else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_W))
         {
             // Ctrl+W: close
             m_Shared->CloseEditor();
             return true;
         }
-        else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_Q))
+        else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_Q))
         {
             // Ctrl+Q: quit application
             osc::App::upd().requestQuit();
             return true;
         }
-        else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_A))
+        else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_A))
         {
             // Ctrl+A: select all
             m_Shared->SelectAll();
             return true;
         }
-        else if (ctrlOrSuperDown && shiftDown && ImGui::IsKeyPressed(SDL_SCANCODE_Z))
+        else if (ctrlOrSuperDown && shiftDown && ImGui::IsKeyPressed(ImGuiKey_Z))
         {
             // Ctrl+Shift+Z: redo
             m_Shared->RedoCurrentModelGraph();
             return true;
         }
-        else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_Z))
+        else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_Z))
         {
             // Ctrl+Z: undo
             m_Shared->UndoCurrentModelGraph();
             return true;
         }
-        else if (osc::IsAnyKeyDown({SDL_SCANCODE_DELETE, SDL_SCANCODE_BACKSPACE}))
+        else if (osc::IsAnyKeyDown({ImGuiKey_Delete, ImGuiKey_Backspace}))
         {
             // Delete/Backspace: delete any selected elements
             DeleteSelected();
             return true;
         }
-        else if (ImGui::IsKeyPressed(SDL_SCANCODE_B))
+        else if (ImGui::IsKeyPressed(ImGuiKey_B))
         {
             // B: add body to hovered element
             TryAddBodyToHoveredElement();
             return true;
         }
-        else if (ImGui::IsKeyPressed(SDL_SCANCODE_A))
+        else if (ImGui::IsKeyPressed(ImGuiKey_A))
         {
             // A: assign a parent for the hovered element
             TryTransitionToAssigningHoverAndSelectionNextFrame();
             return true;
         }
-        else if (ImGui::IsKeyPressed(SDL_SCANCODE_J))
+        else if (ImGui::IsKeyPressed(ImGuiKey_J))
         {
             // J: try to create a joint
             TryCreatingJointFromHoveredElement();
             return true;
         }
-        else if (ImGui::IsKeyPressed(SDL_SCANCODE_T))
+        else if (ImGui::IsKeyPressed(ImGuiKey_T))
         {
             // T: try to add a station to the current hover
             TryAddingStationAtMousePosToHoveredElement();
             return true;
         }
-        else if (ImGui::IsKeyPressed(SDL_SCANCODE_R))
+        else if (ImGui::IsKeyPressed(ImGuiKey_R))
         {
             // R: set manipulation mode to "rotate"
             if (m_ImGuizmoState.op == ImGuizmo::ROTATE)
@@ -6478,7 +6477,7 @@ private:
             m_ImGuizmoState.op = ImGuizmo::ROTATE;
             return true;
         }
-        else if (ImGui::IsKeyPressed(SDL_SCANCODE_G))
+        else if (ImGui::IsKeyPressed(ImGuiKey_G))
         {
             // G: set manipulation mode to "grab" (translate)
             if (m_ImGuizmoState.op == ImGuizmo::TRANSLATE)
@@ -6488,7 +6487,7 @@ private:
             m_ImGuizmoState.op = ImGuizmo::TRANSLATE;
             return true;
         }
-        else if (ImGui::IsKeyPressed(SDL_SCANCODE_S))
+        else if (ImGui::IsKeyPressed(ImGuiKey_S))
         {
             // S: set manipulation mode to "scale"
             if (m_ImGuizmoState.op == ImGuizmo::SCALE)
@@ -6498,7 +6497,7 @@ private:
             m_ImGuizmoState.op = ImGuizmo::SCALE;
             return true;
         }
-        else if (ImGui::IsKeyDown(SDL_SCANCODE_UP))
+        else if (ImGui::IsKeyDown(ImGuiKey_UpArrow))
         {
             if (ctrlOrSuperDown)
             {
@@ -6517,7 +6516,7 @@ private:
             }
             return true;
         }
-        else if (ImGui::IsKeyDown(SDL_SCANCODE_DOWN))
+        else if (ImGui::IsKeyDown(ImGuiKey_DownArrow))
         {
             if (ctrlOrSuperDown)
             {
@@ -6536,7 +6535,7 @@ private:
             }
             return true;
         }
-        else if (ImGui::IsKeyDown(SDL_SCANCODE_LEFT))
+        else if (ImGui::IsKeyDown(ImGuiKey_LeftArrow))
         {
             if (ctrlOrSuperDown)
             {
@@ -6555,7 +6554,7 @@ private:
             }
             return true;
         }
-        else if (ImGui::IsKeyDown(SDL_SCANCODE_RIGHT))
+        else if (ImGui::IsKeyDown(ImGuiKey_RightArrow))
         {
             if (ctrlOrSuperDown)
             {
@@ -6574,12 +6573,12 @@ private:
             }
             return true;
         }
-        else if (ImGui::IsKeyDown(SDL_SCANCODE_MINUS))
+        else if (ImGui::IsKeyDown(ImGuiKey_Minus))
         {
             m_Shared->UpdCamera().radius *= 1.1f;
             return true;
         }
-        else if (ImGui::IsKeyDown(SDL_SCANCODE_EQUALS))
+        else if (ImGui::IsKeyDown(ImGuiKey_Equal))
         {
             m_Shared->UpdCamera().radius *= 0.9f;
             return true;
@@ -7258,7 +7257,7 @@ private:
 
 
         // context menu should be closed under these conditions
-        if (osc::IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_ESCAPE}))
+        if (osc::IsAnyKeyPressed({ImGuiKey_Enter, ImGuiKey_Escape}))
         {
             m_MaybeOpenedContextMenu.reset();
             ImGui::CloseCurrentPopup();

@@ -460,7 +460,7 @@ public:
             ImGui::SetNextWindowPos({ outputWindowPos.x + leftPadding, outputWindowPos.y + outputWindowDims.y - panelHeight - bottomPadding });
             ImGui::SetNextWindowSize({ outputWindowDims.x - leftPadding, panelHeight });
             ImGui::Begin("##scrubber", nullptr, osc::GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs);
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             ImGui::SliderFloat("##blend", &m_BlendingFactor, 0.0f, 1.0f);
             ImGui::End();
         }

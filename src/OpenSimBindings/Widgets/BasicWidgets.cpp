@@ -232,6 +232,6 @@ void osc::DrawSearchBar(std::string& out, int maxLen)
     // draw search bar
 
     ImGui::SameLine();
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
     osc::InputString("##hirarchtsearchbar", out, maxLen);
 }

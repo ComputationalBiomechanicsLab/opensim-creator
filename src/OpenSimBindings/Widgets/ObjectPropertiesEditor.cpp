@@ -17,7 +17,6 @@
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Simulation/Model/Appearance.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
-#include <SDL_scancode.h>
 #include <SimTKcommon/Constants.h>
 #include <SimTKcommon/SmallMatrix.h>
 
@@ -104,7 +103,7 @@ static std::function<void(OpenSim::AbstractProperty&)> MakePropValueSetter(T val
 static bool ItemValueShouldBeSaved()
 {
     return ImGui::IsItemDeactivatedAfterEdit() ||
-            (ImGui::IsItemEdited() && osc::IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_TAB}));
+            (ImGui::IsItemEdited() && osc::IsAnyKeyPressed({ImGuiKey_Enter, ImGuiKey_Tab}));
 }
 
 using UpdateFn = std::function<void(OpenSim::AbstractProperty&)>;
@@ -128,7 +127,7 @@ static void DrawIthStringEditor(
     std::string curValue = prop.size() <= idx ? "" : prop.getValue(idx);
 
     bool edited = false;
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
     if (osc::InputString("##stringeditor", curValue, 128))
     {
         edited = true;
@@ -154,7 +153,7 @@ static void Draw1DoubleValueEditor(
 
     float fv = static_cast<float>(prop.getValue());
 
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
     if (ImGui::InputFloat("##doubleditor", &fv, 0.0f, 0.0f, OSC_DEFAULT_FLOAT_INPUT_FORMAT) && ItemValueShouldBeSaved())
     {
@@ -180,7 +179,7 @@ static void Draw2DoubleValueEditor(
         static_cast<float>(prop.getValue(1))
     };
 
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
     if (ImGui::InputFloat2("##vec2editor", vs.data(), OSC_DEFAULT_FLOAT_INPUT_FORMAT) && ItemValueShouldBeSaved())
     {
         rv = [vs](OpenSim::AbstractProperty& p)
@@ -410,7 +409,7 @@ namespace
             for (int i = 0; i < static_cast<int>(fv.size()); ++i)
             {
                 ImGui::PushID(i);
-                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
                 // dimension hint
                 {
@@ -608,7 +607,7 @@ namespace
 
             for (int i = 0; i < 2; ++i)
             {
-                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                 ImGui::PushID(i);
                 if (ImGui::InputFloat3("##vec6editor_a", fv.data() + 3*i, OSC_DEFAULT_FLOAT_INPUT_FORMAT))
                 {
@@ -654,7 +653,7 @@ namespace
                 static_cast<float>(app.get_opacity())
             };
 
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
             ImGui::PushID(1);
             if (ImGui::ColorEdit4("##coloreditor", rgb))

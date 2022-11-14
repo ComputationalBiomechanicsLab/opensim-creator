@@ -137,7 +137,7 @@ public:
         }
 
         ImGui::SameLine();
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
         float v = static_cast<float>(tCur.time_since_epoch().count());
         bool userScrubbed = ImGui::SliderFloat("##scrubber",

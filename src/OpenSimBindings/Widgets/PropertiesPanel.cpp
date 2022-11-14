@@ -85,7 +85,7 @@ static void DrawTopLevelMembersEditor(osc::UndoableModelStatePair& uim)
 
     ImGui::NextColumn();
 
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
     std::string nameBuf = selection->getName();  // allowed, because EnterReturnsTrue needs to internally buffer stuff anyway
     if (osc::InputString("##nameeditor", nameBuf, 128, ImGuiInputTextFlags_EnterReturnsTrue))
     {

@@ -243,7 +243,7 @@ public:
         }
         else if (outputType == osc::OutputType::Float)
         {
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             drawFloatOutputPlot(sim);
         }
         else if (outputType == osc::OutputType::String)
@@ -289,7 +289,7 @@ private:
         }
 
         // draw plot
-        float const plotWidth = ImGui::GetContentRegionAvailWidth();
+        float const plotWidth = ImGui::GetContentRegionAvail().x;
         glm::vec2 plotTopLeft{};
         glm::vec2 plotBottomRight{};
 
