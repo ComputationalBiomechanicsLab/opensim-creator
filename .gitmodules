@@ -3,10 +3,10 @@
 	url = https://github.com/ComputationalBiomechanicsLab/ImGuizmo
 [submodule "third_party/implot"]
 	path = third_party/implot
-	url = https://github.com/epezent/implot.git
+	url = https://github.com/ComputationalBiomechanicsLab/implot
 [submodule "third_party/googletest"]
 	path = third_party/googletest
-	url = https://github.com/google/googletest
+	url = https://github.com/ComputationalBiomechanicsLab/googletest
 [submodule "third_party/fmt"]
 	path = third_party/fmt
 	url = https://github.com/ComputationalBiomechanicsLab/fmt
