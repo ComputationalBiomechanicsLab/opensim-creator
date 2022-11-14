@@ -98,7 +98,7 @@ static void TryUpdateConfigFromConfigFile(osc::Config::Impl& cfg)
 
     // else: can find the config file: try to parse it
 
-    toml::v2::table config;
+    toml::table config;
     try
     {
         config = toml::parse_file(maybeConfigPath->c_str());

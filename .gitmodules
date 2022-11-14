@@ -28,3 +28,6 @@
 [submodule "third_party/stb"]
 	path = third_party/stb
 	url = https://github.com/ComputationalBiomechanicsLab/stb
+[submodule "third_party/tomlplusplus"]
+	path = third_party/tomlplusplus
+	url = https://github.com/ComputationalBiomechanicsLab/tomlplusplus
