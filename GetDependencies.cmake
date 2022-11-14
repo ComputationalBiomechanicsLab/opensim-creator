@@ -268,6 +268,15 @@ if(TRUE)
     )
     target_link_libraries(imgui PUBLIC sdl2 glew glm)
     target_include_directories(imgui PUBLIC third_party/ third_party/imgui/)
+    target_compile_features(imgui PUBLIC cxx_std_17)
+    set_target_properties(imgui PROPERTIES
+
+        # disable compiler-specific language extensions
+        CXX_EXTENSIONS OFF
+
+        # strictly require the requested C++ standard (e.g. C++17)
+        CXX_STANDARD_REQUIRED YES
+    )
 endif()
 
 # DEPENDENCY: IconFontCppHeaders
