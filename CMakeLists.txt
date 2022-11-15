@@ -287,6 +287,8 @@ add_library(osccore STATIC
     src/Formats/CSV.cpp
     src/Formats/DAE.hpp
     src/Formats/DAE.cpp
+    src/Formats/OBJ.cpp
+    src/Formats/OBJ.hpp
 
     src/Graphics/AnnotatedImage.hpp
     src/Graphics/CachedSceneRenderer.cpp

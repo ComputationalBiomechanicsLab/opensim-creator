@@ -3,6 +3,7 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Bindings/GlmHelpers.hpp"
 #include "src/Formats/CSV.hpp"
+#include "src/Formats/OBJ.hpp"
 #include "src/Graphics/CachedSceneRenderer.hpp"
 #include "src/Graphics/Camera.hpp"
 #include "src/Graphics/Graphics.hpp"
@@ -740,6 +741,27 @@ namespace
         }
     }
 
+    void ActionTrySaveResultToOBJ(osc::Mesh const& mesh)
+    {
+        std::filesystem::path const filePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
+
+        if (filePath.empty())
+        {
+            return;  // user didn't select a save location
+        }
+
+        std::ofstream outfile{filePath};
+
+        if (!outfile)
+        {
+            return;  // couldn't open for writing
+        }
+
+        osc::ObjWriter writer{outfile};
+
+        writer.write(mesh);
+    }
+
     // a cache that only recomputes the transformed mesh if the document
     // has changed (e.g. a user added a landmark or changed blending factor)
     class TPSResultCache final {
@@ -1350,6 +1372,13 @@ namespace
                 {
                     osc::AutoFocus(m_Camera, m_State->getTransformedMesh().getBounds());
                     m_State->LinkedCameraBase = m_Camera;
+                }
+
+                ImGui::SameLine();
+
+                if (ImGui::Button(ICON_FA_SAVE))
+                {
+                    ActionTrySaveResultToOBJ(m_State->getTransformedMesh());
                 }
 
                 ImGui::SameLine();
