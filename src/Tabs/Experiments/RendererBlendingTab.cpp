@@ -3,6 +3,7 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
 #include "src/Graphics/Graphics.hpp"
+#include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Texture2D.hpp"
@@ -231,9 +232,9 @@ private:
     Mesh m_PlaneMesh = GeneratePlane();
     Mesh m_TransparentMesh = GenerateTransparent();
     Camera m_Camera;
-    Texture2D m_MarbleTexture = LoadTexture2DFromImageResource("textures/marble.jpg");
-    Texture2D m_MetalTexture = LoadTexture2DFromImageResource("textures/metal.png");
-    Texture2D m_WindowTexture = LoadTexture2DFromImageResource("textures/window.png");
+    Texture2D m_MarbleTexture = LoadTexture2DFromImage(App::resource("textures/marble.jpg"));
+    Texture2D m_MetalTexture = LoadTexture2DFromImage(App::resource("textures/metal.png"));
+    Texture2D m_WindowTexture = LoadTexture2DFromImage(App::resource("textures/window.png"));
     bool m_IsMouseCaptured = false;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
     LogViewerPanel m_LogViewer{"log"};

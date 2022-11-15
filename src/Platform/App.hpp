@@ -71,6 +71,11 @@ namespace osc
             return *g_Current;
         }
 
+        static Config const& config()
+        {
+            return get().getConfig();
+        }
+
         // returns a full filesystem path to a (runtime- and configuration-dependent) application resource
         static std::filesystem::path resource(std::string_view);
 

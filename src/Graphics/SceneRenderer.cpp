@@ -15,6 +15,7 @@
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/Transform.hpp"
+#include "src/Platform/Config.hpp"
 #include "src/Utils/Perf.hpp"
 
 #include <glm/mat4x4.hpp>
@@ -70,12 +71,12 @@ namespace
 
 class osc::SceneRenderer::Impl final {
 public:
-    Impl(MeshCache& meshCache, ShaderCache& shaderCache) :
-        m_SceneColoredElementsMaterial{shaderCache.get("shaders/SceneShader.vert", "shaders/SceneShader.frag")},
-        m_SceneTexturedElementsMaterial{shaderCache.get("shaders/SceneTexturedShader.vert", "shaders/SceneTexturedShader.frag")},
-        m_SolidColorMaterial{shaderCache.get("shaders/SceneSolidColor.vert", "shaders/SceneSolidColor.frag")},
-        m_EdgeDetectorMaterial{shaderCache.get("shaders/SceneEdgeDetector.vert", "shaders/SceneEdgeDetector.frag")},
-        m_NormalsMaterial{shaderCache.get("shaders/SceneNormalsShader.vert", "shaders/SceneNormalsShader.geom", "shaders/SceneNormalsShader.frag")},
+    Impl(Config const& config, MeshCache& meshCache, ShaderCache& shaderCache) :
+        m_SceneColoredElementsMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneShader.vert", config.getResourceDir() / "shaders/SceneShader.frag")},
+        m_SceneTexturedElementsMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneTexturedShader.vert", config.getResourceDir() / "shaders/SceneTexturedShader.frag")},
+        m_SolidColorMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneSolidColor.vert", config.getResourceDir() / "shaders/SceneSolidColor.frag")},
+        m_EdgeDetectorMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneEdgeDetector.vert", config.getResourceDir() / "shaders/SceneEdgeDetector.frag")},
+        m_NormalsMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneNormalsShader.vert", config.getResourceDir() / "shaders/SceneNormalsShader.geom", config.getResourceDir() / "shaders/SceneNormalsShader.frag")},
         m_QuadMesh{meshCache.getTexturedQuadMesh()},
         m_ChequerTexture{GenChequeredFloorTexture()},
         m_Camera{},
@@ -335,8 +336,8 @@ private:
 
 // public API (PIMPL)
 
-osc::SceneRenderer::SceneRenderer(MeshCache& meshCache, ShaderCache& shaderCache) :
-    m_Impl{std::make_unique<Impl>(meshCache, shaderCache)}
+osc::SceneRenderer::SceneRenderer(Config const& config, MeshCache& meshCache, ShaderCache& shaderCache) :
+    m_Impl{std::make_unique<Impl>(config, meshCache, shaderCache)}
 {
 }
 

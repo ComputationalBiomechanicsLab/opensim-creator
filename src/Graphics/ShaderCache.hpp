@@ -1,7 +1,7 @@
 #pragma once
 
+#include <filesystem>
 #include <memory>
-#include <string_view>
 
 namespace osc { class Shader; }
 
@@ -16,15 +16,15 @@ namespace osc
         ShaderCache& operator=(ShaderCache&&) noexcept;
         ~ShaderCache() noexcept;
 
-        Shader const& get(
-            std::string_view vertexShaderResource,
-            std::string_view fragmentShaderResource
+        Shader const& load(
+            std::filesystem::path const& vertexShader,
+            std::filesystem::path const& fragmentShader
         );
 
-        Shader const& get(
-            std::string_view vertexShaderResource,
-            std::string_view geometryShaderResource,
-            std::string_view fragmentShaderResource
+        Shader const& load(
+            std::filesystem::path const& vertexShader,
+            std::filesystem::path const& geometryShader,
+            std::filesystem::path const& fragmentShader
         );
 
     private:

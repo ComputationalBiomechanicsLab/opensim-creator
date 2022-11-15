@@ -674,7 +674,7 @@ private:
     BVH m_SceneBVH;
     PolarPerspectiveCamera m_Camera;
     SceneRendererParams m_LastRendererParams;
-    SceneRenderer m_Renderer{App::singleton<MeshCache>(), App::singleton<ShaderCache>()};
+    SceneRenderer m_Renderer{App::config(), App::singleton<MeshCache>(), App::singleton<ShaderCache>()};
     bool m_RenderIsMousedOver = false;
 
     // 2D UI state

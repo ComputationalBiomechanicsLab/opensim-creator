@@ -644,7 +644,12 @@ private:
     SceneRendererParams m_RendererParams;
     SceneRendererParams m_RendererPrevParams;
     UID m_RendererPrevDrawlistVersion;
-    SceneRenderer m_Rendererer{osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()};
+    SceneRenderer m_Rendererer
+    {
+        osc::App::config(),
+        osc::App::singleton<osc::MeshCache>(),
+        osc::App::singleton<osc::ShaderCache>()
+    };
 
     // ImGui compositing/hittesting state
     osc::ImGuiItemHittestResult m_RenderImage;

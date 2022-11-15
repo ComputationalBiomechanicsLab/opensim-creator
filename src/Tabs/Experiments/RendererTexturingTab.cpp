@@ -3,6 +3,7 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
 #include "src/Graphics/Graphics.hpp"
+#include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Shader.hpp"
@@ -52,10 +53,10 @@ public:
     {
         m_Camera.setViewMatrix(glm::mat4{1.0f});
         m_Camera.setProjectionMatrix(glm::mat4{1.0f});
-        Texture2D container = osc::LoadTexture2DFromImageResource("textures/container.jpg", ImageFlags_FlipVertically);
+        Texture2D container = LoadTexture2DFromImage(App::resource("textures/container.jpg"), ImageFlags_FlipVertically);
         container.setWrapMode(osc::TextureWrapMode::Clamp);
         m_Material.setTexture("uTexture1", std::move(container));
-        m_Material.setTexture("uTexture2", osc::LoadTexture2DFromImageResource("textures/awesomeface.png", ImageFlags_FlipVertically));
+        m_Material.setTexture("uTexture2", LoadTexture2DFromImage(App::resource("textures/awesomeface.png"), ImageFlags_FlipVertically));
     }
 
     UID getID() const

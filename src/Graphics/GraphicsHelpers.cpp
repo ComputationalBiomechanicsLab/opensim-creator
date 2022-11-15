@@ -1,5 +1,6 @@
 #include "GraphicsHelpers.hpp"
 
+#include "src/Graphics/Image.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/ShaderCache.hpp"
@@ -9,6 +10,7 @@
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Tetrahedron.hpp"
+#include "src/Platform/Config.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
@@ -260,11 +262,19 @@ glm::vec3 osc::AverageCenterpoint(Mesh const& m)
     return acc;
 }
 
-osc::Material osc::CreateWireframeOverlayMaterial(ShaderCache& cache)
+osc::Material osc::CreateWireframeOverlayMaterial(Config const& config, ShaderCache& cache)
 {
-    osc::Material material{cache.get("shaders/SceneSolidColor.vert", "shaders/SceneSolidColor.frag")};
+    std::filesystem::path const vertShader = config.getResourceDir() / "shaders/SceneSolidColor.vert";
+    std::filesystem::path const fragShader = config.getResourceDir() / "shaders/SceneSolidColor.frag";
+    osc::Material material{cache.load(vertShader, fragShader)};
     material.setVec4("uDiffuseColor", {0.0f, 0.0f, 0.0f, 0.6f});
     material.setWireframeMode(true);
     material.setTransparent(true);
     return material;
+}
+
+osc::Texture2D osc::LoadTexture2DFromImage(std::filesystem::path const& path, ImageFlags flags)
+{
+    Image const img = Image::Load(path, flags);
+    return Texture2D{img.getDimensions(), img.getPixelData(), img.getNumChannels()};
 }

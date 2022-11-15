@@ -45,7 +45,7 @@ public:
     }
 
 private:
-    SceneRenderer m_Renderer{osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()};
+    SceneRenderer m_Renderer{osc::App::config(), osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()};
     bool m_IsHovered = false;
     bool m_IsLeftClicked = false;
     bool m_IsRightClicked = false;

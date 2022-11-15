@@ -1033,12 +1033,6 @@ std::ostream& osc::operator<<(std::ostream& o, Texture2D const&)
     return o << "Texture2D()";
 }
 
-osc::Texture2D osc::LoadTexture2DFromImageResource(std::string_view resource, ImageFlags flags)
-{
-    Image const img = Image::Load(App::get().resource(resource), flags);
-    return Texture2D{img.getDimensions(), img.getPixelData(), img.getNumChannels()};
-}
-
 
 //////////////////////////////////
 //

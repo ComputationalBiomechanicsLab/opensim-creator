@@ -4481,7 +4481,7 @@ namespace
             Transform t = GetFloorTransform();
             t.scale *= 0.5f;
 
-            osc::Material material{osc::App::singleton<osc::ShaderCache>().get("shaders/SolidColor.vert", "shaders/SolidColor.frag")};
+            osc::Material material{osc::App::singleton<osc::ShaderCache>().load(osc::App::resource("shaders/SolidColor.vert"), osc::App::resource("shaders/SolidColor.frag"))};
             material.setVec4("uColor", m_Colors.GridLines);
 
             DrawableThing dt;
@@ -4983,7 +4983,7 @@ namespace
         osc::Rect m_3DSceneRect = {};
 
         // renderer that draws the scene
-        osc::SceneRenderer m_SceneRenderer{osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()};
+        osc::SceneRenderer m_SceneRenderer{osc::App::config(), osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()};
 
         // COLORS
         //

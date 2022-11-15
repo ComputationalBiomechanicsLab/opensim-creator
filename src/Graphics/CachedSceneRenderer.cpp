@@ -3,16 +3,17 @@
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/SceneRenderer.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
+#include "src/Platform/Config.hpp"
 
 #include <utility>
 #include <vector>
 
 class osc::CachedSceneRenderer::Impl final {
 public:
-    Impl(MeshCache& meshCache, ShaderCache& shaderCache) :
+    Impl(Config const& config, MeshCache& meshCache, ShaderCache& shaderCache) :
         m_LastRenderingParams{},
         m_LastDecorationList{},
-        m_SceneRenderer{meshCache, shaderCache}
+        m_SceneRenderer{config, meshCache, shaderCache}
     {
     }
 
@@ -39,8 +40,8 @@ private:
 
 // public API (PIMPL)
 
-osc::CachedSceneRenderer::CachedSceneRenderer(MeshCache& meshCache, ShaderCache& shaderCache) :
-    m_Impl{std::make_unique<Impl>(meshCache, shaderCache)}
+osc::CachedSceneRenderer::CachedSceneRenderer(Config const& config, MeshCache& meshCache, ShaderCache& shaderCache) :
+    m_Impl{std::make_unique<Impl>(config, meshCache, shaderCache)}
 {
 }
 

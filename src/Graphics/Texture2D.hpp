@@ -1,6 +1,5 @@
 #pragma once
 
-#include "src/Graphics/ImageFlags.hpp"
 #include "src/Graphics/TextureFilterMode.hpp"
 #include "src/Graphics/TextureWrapMode.hpp"
 #include "src/Utils/Cow.hpp"
@@ -81,6 +80,4 @@ namespace osc
     }
 
     std::ostream& operator<<(std::ostream&, Texture2D const&);
-
-    Texture2D LoadTexture2DFromImageResource(std::string_view, ImageFlags = ImageFlags_None);
 }

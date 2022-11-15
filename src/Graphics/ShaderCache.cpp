@@ -1,7 +1,6 @@
 #include "ShaderCache.hpp"
 
 #include "src/Graphics/Shader.hpp"
-#include "src/Platform/App.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
 
@@ -64,11 +63,13 @@ namespace std
 
 class osc::ShaderCache::Impl final {
 public:
-    Shader const& get(std::string_view vertexShaderResource, std::string_view fragmentShaderResource)
+    Shader const& load(
+        std::filesystem::path const& vertexShader,
+        std::filesystem::path const& fragmentShader)
     {
         auto lock = std::lock_guard{m_CacheMutex};
 
-        ShaderInputs key{App::resource(vertexShaderResource), App::resource(fragmentShaderResource)};
+        ShaderInputs key{vertexShader, fragmentShader};
         auto [it, inserted] = m_Cache.try_emplace(key, std::unique_ptr<Shader>{});
 
         if (inserted)
@@ -88,11 +89,14 @@ public:
 
         return *it->second;
     }
-    Shader const& get(std::string_view vertexShaderResource, std::string_view geometryShaderResource, std::string_view fragmentShaderResource)
+    Shader const& load(
+        std::filesystem::path const& vertexShader,
+        std::filesystem::path const& geometryShader,
+        std::filesystem::path const& fragmentShader)
     {
         auto lock = std::lock_guard{m_CacheMutex};
 
-        ShaderInputs key{App::resource(vertexShaderResource), App::resource(geometryShaderResource), App::resource(fragmentShaderResource)};
+        ShaderInputs key{vertexShader, geometryShader, fragmentShader};
         auto [it, inserted] = m_Cache.try_emplace(key, std::unique_ptr<Shader>{});
 
         if (inserted)
@@ -130,17 +134,17 @@ osc::ShaderCache::ShaderCache(ShaderCache&&) noexcept = default;
 osc::ShaderCache& osc::ShaderCache::operator=(ShaderCache&&) noexcept = default;
 osc::ShaderCache::~ShaderCache() noexcept = default;
 
-osc::Shader const& osc::ShaderCache::get(
-    std::string_view vertexShaderResource,
-    std::string_view fragmentShaderResource)
+osc::Shader const& osc::ShaderCache::load(
+    std::filesystem::path const& vertexShader,
+    std::filesystem::path const& fragmentShader)
 {
-    return m_Impl->get(std::move(vertexShaderResource), std::move(fragmentShaderResource));
+    return m_Impl->load(vertexShader, fragmentShader);
 }
 
-osc::Shader const& osc::ShaderCache::get(
-    std::string_view vertexShaderResource,
-    std::string_view geometryShaderResource,
-    std::string_view fragmentShaderResource)
+osc::Shader const& osc::ShaderCache::load(
+    std::filesystem::path const& vertexShader,
+    std::filesystem::path const& geometryShader,
+    std::filesystem::path const& fragmentShader)
 {
-    return m_Impl->get(std::move(vertexShaderResource), std::move(geometryShaderResource), std::move(fragmentShaderResource));
+    return m_Impl->load(vertexShader, geometryShader, fragmentShader);
 }

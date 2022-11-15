@@ -3,6 +3,7 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
 #include "src/Graphics/Graphics.hpp"
+#include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Texture2D.hpp"
@@ -248,8 +249,8 @@ private:
     }
     };
     Mesh m_Mesh = GenLearnOpenGLCube();
-    Texture2D m_DiffuseMap = LoadTexture2DFromImageResource("textures/container2.png", ImageFlags_FlipVertically);
-    Texture2D m_SpecularMap = LoadTexture2DFromImageResource("textures/container2_specular.png", ImageFlags_FlipVertically);
+    Texture2D m_DiffuseMap = LoadTexture2DFromImage(App::resource("textures/container2.png"), ImageFlags_FlipVertically);
+    Texture2D m_SpecularMap = LoadTexture2DFromImage(App::resource("textures/container2_specular.png"), ImageFlags_FlipVertically);
 
     Camera m_Camera;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};

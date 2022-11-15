@@ -3,6 +3,7 @@
 #include "osc_config.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/Texture2D.hpp"
 #include "src/Graphics/TextureFilterMode.hpp"
@@ -339,17 +340,17 @@ private:
 
     // for rendering the 3D scene
     osc::PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();
-    SceneRenderer m_SceneRenderer{osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()};
+    SceneRenderer m_SceneRenderer{osc::App::config(), osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()};
     SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);
 
     glm::vec2 m_MenuMaxDims = {640.0f, 512.0f};
 
     // main app logo, blitted to top of the screen
-    Texture2D m_OscLogo = LoadTexture2DFromImageResource("textures/logo.png", ImageFlags_FlipVertically);
+    Texture2D m_OscLogo = LoadTexture2DFromImage(App::resource("textures/logo.png"), ImageFlags_FlipVertically);
 
     // attributation logos, blitted to bottom of screen
-    Texture2D m_CziLogo = LoadTexture2DFromImageResource("textures/chanzuckerberg_logo.png", ImageFlags_FlipVertically);
-    Texture2D m_TudLogo = LoadTexture2DFromImageResource("textures/tud_logo.png", ImageFlags_FlipVertically);
+    Texture2D m_CziLogo = LoadTexture2DFromImage(App::resource("textures/chanzuckerberg_logo.png"), ImageFlags_FlipVertically);
+    Texture2D m_TudLogo = LoadTexture2DFromImage(App::resource("textures/tud_logo.png"), ImageFlags_FlipVertically);
 
     // dimensions of stuff
     glm::vec2 m_TopLogoDims = [d = m_OscLogo.getDimensions()]() { return glm::vec2{d.x / (d.y/128.0f), 128.0f}; }();
