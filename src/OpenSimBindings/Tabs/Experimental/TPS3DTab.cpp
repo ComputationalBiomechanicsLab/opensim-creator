@@ -229,24 +229,21 @@ namespace
         return o;
     }
 
-    // this is effectviely the "U" term in the TPS algorithm literature (which is usually U(r) = r^2 * log(r^2))
+    // this is effectviely the "U" term in the TPS algorithm literature
     //
     // i.e. U(||pi - p||) in the literature is equivalent to `RadialBasisFunction3D(pi, p)` here
-    float RadialBasisFunction3D(glm::vec3 controlPoint, glm::vec3 const& p)
+    float RadialBasisFunction3D(glm::vec3 const& controlPoint, glm::vec3 const& p)
     {
-        glm::vec3 const diff = controlPoint - p;
-        float const r2 = glm::dot(diff, diff);
+        // this implementation uses the U definition from the following (later) source:
+        //
+        // Chapter 3, "Semilandmarks in Three Dimensions" by Phillip Gunz, Phillip Mitteroecker,
+        // and Fred L. Bookstein
+        //
+        // the original Bookstein paper uses U(v) = |v|^2 * log(|v|^2), but subsequent literature
+        // (e.g. the above book) uses U(v) = |v|. The primary author (Gunz) claims that the original
+        // basis function is not as good as just using the magnitude?
 
-        if (r2 != 0.0f)
-        {
-            return r2 * std::log(r2);
-        }
-        else
-        {
-            // this ensures that the result is always non-zero and non-NaN (this might be
-            // necessary for some types of linear solvers?)
-            return std::numeric_limits<float>::min();
-        }
+        return glm::length(controlPoint - p);
     }
 
     // computes all coefficients of the 3D TPS equation (a1, a2, a3, a4, and all the w's)
@@ -418,7 +415,7 @@ namespace
         // variants of the coefficients together in memory (as `vec3`s)
 
         // compute affine terms (a1 + a2*x + a3*y + a4*z)
-        glm::vec3 rv = coefs.a1 + coefs.a2*p.x + coefs.a3*p.y + coefs.a4*p.z;
+        glm::dvec3 rv = glm::dvec3{coefs.a1} + glm::dvec3{coefs.a2*p.x} + glm::dvec3{coefs.a3*p.y} + glm::dvec3{coefs.a4*p.z};
 
         // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
         for (TPSNonAffineTerm3D const& term : coefs.NonAffineTerms)
