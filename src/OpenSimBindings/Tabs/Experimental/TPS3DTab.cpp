@@ -4,6 +4,7 @@
 #include "src/Bindings/GlmHelpers.hpp"
 #include "src/Formats/CSV.hpp"
 #include "src/Formats/OBJ.hpp"
+#include "src/Formats/STL.hpp"
 #include "src/Graphics/CachedSceneRenderer.hpp"
 #include "src/Graphics/Camera.hpp"
 #include "src/Graphics/Graphics.hpp"
@@ -444,6 +445,8 @@ namespace
             });
         });
 
+        // TODO: come up with a more robust way to transform the normals
+
         return rv;
     }
 
@@ -758,6 +761,28 @@ namespace
         }
 
         osc::ObjWriter writer{outfile};
+
+        // ignore normals, because warping might have screwed them
+        writer.write(mesh, osc::ObjWriterFlags_IgnoreNormals);
+    }
+
+    void ActionTrySaveResultToSTL(osc::Mesh const& mesh)
+    {
+        std::filesystem::path const filePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
+
+        if (filePath.empty())
+        {
+            return;  // user didn't select a save location
+        }
+
+        std::ofstream outfile{filePath, std::ios_base::binary};
+
+        if (!outfile)
+        {
+            return;  // couldn't open for writing
+        }
+
+        osc::StlWriter writer{outfile};
 
         writer.write(mesh);
     }
@@ -1380,6 +1405,15 @@ namespace
                 {
                     ActionTrySaveResultToOBJ(m_State->getTransformedMesh());
                 }
+                osc::DrawTooltipIfItemHovered("export to OBJ");
+
+                ImGui::SameLine();
+
+                if (ImGui::Button(ICON_FA_SAVE " "))
+                {
+                    ActionTrySaveResultToSTL(m_State->getTransformedMesh());
+                }
+                osc::DrawTooltipIfItemHovered("export to STL");
 
                 ImGui::SameLine();
 

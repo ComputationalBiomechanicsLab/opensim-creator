@@ -37,7 +37,7 @@ namespace
         }
     }
 
-    void WriteFaces(std::ostream& o, osc::Mesh const& mesh)
+    void WriteFaces(std::ostream& o, osc::Mesh const& mesh, osc::ObjWriterFlags flags)
     {
         if (mesh.getTopography() != osc::MeshTopography::Triangles)
         {
@@ -57,15 +57,27 @@ namespace
             uint32_t const i0 = view[i]+1;
             uint32_t const i1 = view[i+1]+1;
             uint32_t const i2 = view[i+2]+1;
-            o << "f " << i0 << ' ' << i1  << ' ' << i2 << '\n';
+
+            if (!(flags & osc::ObjWriterFlags_IgnoreNormals))
+            {
+                o << "f " << i0 << "//" << i0 << ' ' << i1  << "//" << i1 << ' ' << i2 << "//" << i2 << '\n';
+            }
+            else
+            {
+                // ignore the normals and only declare faces dependent on verts
+                o << "f " << i0 << ' ' << i1  << ' ' << i2 << '\n';
+            }
         }
     }
 }
 
-void osc::ObjWriter::write(Mesh const& mesh)
+void osc::ObjWriter::write(Mesh const& mesh, ObjWriterFlags flags)
 {
     WriteHeader(m_OutputStream);
     WriteVertices(m_OutputStream, mesh);
-    WriteNormals(m_OutputStream, mesh);
-    WriteFaces(m_OutputStream, mesh);
+    if (!(flags & ObjWriterFlags_IgnoreNormals))
+    {
+        WriteNormals(m_OutputStream, mesh);
+    }
+    WriteFaces(m_OutputStream, mesh, flags);
 }

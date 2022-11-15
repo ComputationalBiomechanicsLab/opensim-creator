@@ -2423,6 +2423,12 @@ public:
         m_Version->reset();
     }
 
+    void transformNormals(std::function<void(nonstd::span<glm::vec3>)> const& f)
+    {
+        f(m_Normals);
+        m_Version->reset();
+    }
+
     nonstd::span<glm::vec2 const> getTexCoords() const
     {
         return m_TexCoords;
@@ -2799,6 +2805,11 @@ nonstd::span<glm::vec3 const> osc::Mesh::getNormals() const
 void osc::Mesh::setNormals(nonstd::span<glm::vec3 const> verts)
 {
     m_Impl.upd()->setNormals(std::move(verts));
+}
+
+void osc::Mesh::transformNormals(std::function<void(nonstd::span<glm::vec3>)> const& f)
+{
+    m_Impl.upd()->transformNormals(f);
 }
 
 nonstd::span<glm::vec2 const> osc::Mesh::getTexCoords() const

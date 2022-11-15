@@ -42,6 +42,7 @@ namespace osc
 
         nonstd::span<glm::vec3 const> getNormals() const;
         void setNormals(nonstd::span<glm::vec3 const>);
+        void transformNormals(std::function<void(nonstd::span<glm::vec3>)> const&);
 
         nonstd::span<glm::vec2 const> getTexCoords() const;
         void setTexCoords(nonstd::span<glm::vec2 const>);
