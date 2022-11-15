@@ -9,14 +9,16 @@ namespace osc
         char const* failingCode,
         char const* func,
         char const* file,
-        unsigned int line) noexcept;
+        unsigned int line
+    ) noexcept;
 
     // calls into (hidden) throwing-assertion implementation
     [[noreturn]] void OnThrowingAssertionFailure(
         char const* failingCode,
         char const* func,
         char const* file,
-        unsigned int line);
+        unsigned int line
+    );
 }
 
 #define OSC_THROWING_ASSERT(expr) \

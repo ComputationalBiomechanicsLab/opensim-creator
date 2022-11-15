@@ -10,7 +10,7 @@
 //
 // - using the memory allocator during an assertion failure might trigger other problems
 // - stack-allocating a large buffer can cause other issues (you don't know how much stack space you have)
-std::array<char, 2048> g_MessageBuffer{};
+static std::array<char, 2048> g_MessageBuffer{};
 
 void osc::OnAssertionFailure(char const* failing_code,
                              char const* func,
