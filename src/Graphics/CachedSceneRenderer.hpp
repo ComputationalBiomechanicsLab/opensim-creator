@@ -4,16 +4,18 @@
 
 #include <memory>
 
+namespace osc { class MeshCache; }
 namespace osc { class RenderTexture; }
 namespace osc { class SceneDecoration; }
 namespace osc { class SceneRendererParams; }
+namespace osc { class ShaderCache; }
 
 namespace osc
 {
     // a scene renderer that only renders if the render parameters + decorations change
     class CachedSceneRenderer final {
     public:
-        CachedSceneRenderer();
+        CachedSceneRenderer(MeshCache&, ShaderCache&);
         CachedSceneRenderer(CachedSceneRenderer const&) = delete;
         CachedSceneRenderer(CachedSceneRenderer&&) noexcept;
         CachedSceneRenderer& operator=(CachedSceneRenderer const&) = delete;

@@ -7,6 +7,7 @@
 #include "src/Graphics/SceneDecorationFlags.hpp"
 #include "src/Graphics/SceneRenderer.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
+#include "src/Graphics/ShaderCache.hpp"
 #include "src/Maths/BVH.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/MathHelpers.hpp"
@@ -673,7 +674,7 @@ private:
     BVH m_SceneBVH;
     PolarPerspectiveCamera m_Camera;
     SceneRendererParams m_LastRendererParams;
-    SceneRenderer m_Renderer;
+    SceneRenderer m_Renderer{App::singleton<MeshCache>(), App::singleton<ShaderCache>()};
     bool m_RenderIsMousedOver = false;
 
     // 2D UI state

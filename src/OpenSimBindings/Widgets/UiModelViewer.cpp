@@ -7,7 +7,7 @@
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/SceneRenderer.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
-#include "src/Graphics/ShaderLocationIndex.hpp"
+#include "src/Graphics/ShaderCache.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/BVH.hpp"
 #include "src/Maths/Constants.hpp"
@@ -138,33 +138,33 @@ namespace
                 {
                     for (size_t i = 0, len = m_Decorations.size(); i < len; ++i)
                     {
-                        DrawAABB(GetWorldspaceAABB(m_Decorations[i]), m_Decorations);
+                        DrawAABB(osc::App::singleton<osc::MeshCache>(), GetWorldspaceAABB(m_Decorations[i]), m_Decorations);
                     }
                 }
 
                 if (panelFlags & osc::UiModelViewerFlags_DrawBVH)
                 {
-                    DrawBVH(m_BVH, m_Decorations);
+                    DrawBVH(osc::App::singleton<osc::MeshCache>(), m_BVH, m_Decorations);
                 }
 
                 if (panelFlags & osc::UiModelViewerFlags_DrawXZGrid)
                 {
-                    DrawXZGrid(m_Decorations);
+                    DrawXZGrid(osc::App::singleton<osc::MeshCache>(), m_Decorations);
                 }
 
                 if (panelFlags & osc::UiModelViewerFlags_DrawXYGrid)
                 {
-                    DrawXYGrid(m_Decorations);
+                    DrawXYGrid(osc::App::singleton<osc::MeshCache>(), m_Decorations);
                 }
 
                 if (panelFlags & osc::UiModelViewerFlags_DrawYZGrid)
                 {
-                    DrawYZGrid(m_Decorations);
+                    DrawYZGrid(osc::App::singleton<osc::MeshCache>(), m_Decorations);
                 }
 
                 if (panelFlags & osc::UiModelViewerFlags_DrawAxisLines)
                 {
-                    DrawXZFloorLines(m_Decorations);
+                    DrawXZFloorLines(osc::App::singleton<osc::MeshCache>(), m_Decorations);
                 }
             }
         }
@@ -644,7 +644,7 @@ private:
     SceneRendererParams m_RendererParams;
     SceneRendererParams m_RendererPrevParams;
     UID m_RendererPrevDrawlistVersion;
-    SceneRenderer m_Rendererer;
+    SceneRenderer m_Rendererer{osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()};
 
     // ImGui compositing/hittesting state
     osc::ImGuiItemHittestResult m_RenderImage;

@@ -995,7 +995,7 @@ namespace
         osc::PolarPerspectiveCamera LinkedCameraBase = CreateCameraFocusedOn(EditedDocument->getScratch().Source.Mesh.getBounds());
 
         // wireframe material, used to draw scene elements in a wireframe style
-        osc::Material WireframeMaterial = osc::CreateWireframeOverlayMaterial();
+        osc::Material WireframeMaterial = osc::CreateWireframeOverlayMaterial(osc::App::singleton<osc::ShaderCache>());
 
         // shared sphere mesh (used by rendering code)
         std::shared_ptr<osc::Mesh const> LandmarkSphere = osc::App::singleton<osc::MeshCache>().getSphereMesh();
@@ -1033,8 +1033,8 @@ namespace
         }
 
         // add grid decorations
-        DrawXZGrid(out);
-        DrawXZFloorLines(out, 100.0f);
+        DrawXZGrid(osc::App::singleton<osc::MeshCache>(), out);
+        DrawXZFloorLines(osc::App::singleton<osc::MeshCache>(), out, 100.0f);
     }
 
     // generic base class for the panels shown in the TPS3D tab
@@ -1285,7 +1285,7 @@ namespace
         std::shared_ptr<TPSTabSharedState> m_State;
         TPSDocumentIdentifier m_DocumentIdentifier;
         osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getInputMesh(m_DocumentIdentifier).getBounds());
-        osc::CachedSceneRenderer m_CachedRenderer;
+        osc::CachedSceneRenderer m_CachedRenderer{osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()};
         bool m_WireframeMode = true;
         float m_LandmarkRadius = 0.05f;
     };
@@ -1408,7 +1408,7 @@ namespace
 
         std::shared_ptr<TPSTabSharedState> m_State;
         osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getTransformedMesh().getBounds());
-        osc::CachedSceneRenderer m_CachedRenderer;
+        osc::CachedSceneRenderer m_CachedRenderer{osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()};
         bool m_WireframeMode = true;
         bool m_ShowDestinationMesh = false;
     };

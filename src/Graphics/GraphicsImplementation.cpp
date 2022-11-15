@@ -3457,7 +3457,7 @@ namespace
     // create an OpenGL context for an application window
     sdl::GLContext CreateOpenGLContext(SDL_Window* window)
     {
-        osc::log::info("initializing application OpenGL context");
+        osc::log::info("initializing OpenGL context");
 
         sdl::GLContext ctx = sdl::GL_CreateContext(window);
 
@@ -3678,7 +3678,7 @@ severity = %s
     {
         if (IsOpenGLInDebugMode())
         {
-            osc::log::info("application appears to already be in OpenGL debug mode: skipping enabling it");
+            osc::log::info("OpenGL debug mode appears to already be enabled: skipping enabling it");
             return;
         }
 
@@ -3703,7 +3703,7 @@ severity = %s
     {
         if (!IsOpenGLInDebugMode())
         {
-            osc::log::info("application does not need to disable OpenGL debug mode: already in it: skipping");
+            osc::log::info("OpenGL debug mode appears to already be disabled: skipping disabling it");
             return;
         }
 

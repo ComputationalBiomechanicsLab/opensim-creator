@@ -9,7 +9,6 @@
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Tetrahedron.hpp"
-#include "src/Platform/App.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
@@ -43,9 +42,9 @@ namespace
         }
     }
 
-    void DrawGrid(glm::quat const& rotation, std::vector<osc::SceneDecoration>& out)
+    void DrawGrid(osc::MeshCache& cache, glm::quat const& rotation, std::vector<osc::SceneDecoration>& out)
     {
-        std::shared_ptr<osc::Mesh const> const grid = osc::App::singleton<osc::MeshCache>().get100x100GridMesh();
+        std::shared_ptr<osc::Mesh const> const grid = cache.get100x100GridMesh();
 
         osc::Transform t;
         t.scale *= glm::vec3{50.0f, 50.0f, 1.0f};
@@ -57,20 +56,20 @@ namespace
     }
 }
 
-void osc::DrawBVH(BVH const& sceneBVH, std::vector<SceneDecoration>& out)
+void osc::DrawBVH(MeshCache& cache, BVH const& sceneBVH, std::vector<SceneDecoration>& out)
 {
     if (sceneBVH.nodes.empty())
     {
         return;
     }
 
-    std::shared_ptr<Mesh const> const cube = App::singleton<MeshCache>().getCubeWireMesh();
+    std::shared_ptr<Mesh const> const cube = cache.getCubeWireMesh();
     DrawBVHRecursive(cube, sceneBVH, 0, out);
 }
 
-void osc::DrawAABB(AABB const& aabb, std::vector<SceneDecoration>& out)
+void osc::DrawAABB(MeshCache& cache, AABB const& aabb, std::vector<SceneDecoration>& out)
 {
-    std::shared_ptr<Mesh const> const cube = App::singleton<MeshCache>().getCubeWireMesh();
+    std::shared_ptr<Mesh const> const cube = cache.getCubeWireMesh();
     glm::vec4 const color = {0.0f, 0.0f, 0.0f, 1.0f};
 
     Transform t;
@@ -80,9 +79,9 @@ void osc::DrawAABB(AABB const& aabb, std::vector<SceneDecoration>& out)
     out.emplace_back(cube, t, color);
 }
 
-void osc::DrawAABBs(nonstd::span<AABB const> aabbs, std::vector<SceneDecoration>& out)
+void osc::DrawAABBs(MeshCache& cache, nonstd::span<AABB const> aabbs, std::vector<SceneDecoration>& out)
 {
-    std::shared_ptr<Mesh const> const cube = App::singleton<MeshCache>().getCubeWireMesh();
+    std::shared_ptr<Mesh const> const cube = cache.getCubeWireMesh();
     glm::vec4 const color = {0.0f, 0.0f, 0.0f, 1.0f};
 
     for (AABB const& aabb : aabbs)
@@ -95,9 +94,9 @@ void osc::DrawAABBs(nonstd::span<AABB const> aabbs, std::vector<SceneDecoration>
     }
 }
 
-void osc::DrawXZFloorLines(std::vector<SceneDecoration>& out, float scale)
+void osc::DrawXZFloorLines(MeshCache& cache, std::vector<SceneDecoration>& out, float scale)
 {
-    std::shared_ptr<Mesh const> const yLine = App::singleton<MeshCache>().getYLineMesh();
+    std::shared_ptr<Mesh const> const yLine = cache.getYLineMesh();
 
     // X line
     {
@@ -122,22 +121,22 @@ void osc::DrawXZFloorLines(std::vector<SceneDecoration>& out, float scale)
     }
 }
 
-void osc::DrawXZGrid(std::vector<SceneDecoration>& out)
+void osc::DrawXZGrid(MeshCache& cache, std::vector<SceneDecoration>& out)
 {
     glm::quat const rotation = glm::angleAxis(fpi2, glm::vec3{1.0f, 0.0f, 0.0f});
-    DrawGrid(rotation, out);
+    DrawGrid(cache, rotation, out);
 }
 
-void osc::DrawXYGrid(std::vector<SceneDecoration>& out)
+void osc::DrawXYGrid(MeshCache& cache, std::vector<SceneDecoration>& out)
 {
     glm::quat const rotation = glm::identity<glm::quat>();
-    DrawGrid(rotation, out);
+    DrawGrid(cache, rotation, out);
 }
 
-void osc::DrawYZGrid(std::vector<SceneDecoration>& out)
+void osc::DrawYZGrid(MeshCache& cache, std::vector<SceneDecoration>& out)
 {
     glm::quat rotation = glm::angleAxis(fpi2, glm::vec3{0.0f, 1.0f, 0.0f});
-    DrawGrid(rotation, out);
+    DrawGrid(cache, rotation, out);
 }
 
 void osc::UpdateSceneBVH(nonstd::span<SceneDecoration const> sceneEls, BVH& bvh)
@@ -261,9 +260,9 @@ glm::vec3 osc::AverageCenterpoint(Mesh const& m)
     return acc;
 }
 
-osc::Material osc::CreateWireframeOverlayMaterial()
+osc::Material osc::CreateWireframeOverlayMaterial(ShaderCache& cache)
 {
-    osc::Material material{App::singleton<ShaderCache>().get("shaders/SceneSolidColor.vert", "shaders/SceneSolidColor.frag")};
+    osc::Material material{cache.get("shaders/SceneSolidColor.vert", "shaders/SceneSolidColor.frag")};
     material.setVec4("uDiffuseColor", {0.0f, 0.0f, 0.0f, 0.6f});
     material.setWireframeMode(true);
     material.setTransparent(true);

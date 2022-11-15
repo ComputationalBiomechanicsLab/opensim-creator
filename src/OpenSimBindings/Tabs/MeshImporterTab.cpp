@@ -4983,7 +4983,7 @@ namespace
         osc::Rect m_3DSceneRect = {};
 
         // renderer that draws the scene
-        osc::SceneRenderer m_SceneRenderer;
+        osc::SceneRenderer m_SceneRenderer{osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()};
 
         // COLORS
         //

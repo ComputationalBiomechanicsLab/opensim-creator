@@ -3,10 +3,12 @@
 #include "osc_config.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/Texture2D.hpp"
 #include "src/Graphics/TextureFilterMode.hpp"
 #include "src/Graphics/SceneRenderer.hpp"
 #include "src/Graphics/SceneRendererParams.hpp"
+#include "src/Graphics/ShaderCache.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Rect.hpp"
@@ -337,7 +339,7 @@ private:
 
     // for rendering the 3D scene
     osc::PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();
-    SceneRenderer m_SceneRenderer;
+    SceneRenderer m_SceneRenderer{osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()};
     SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);
 
     glm::vec2 m_MenuMaxDims = {640.0f, 512.0f};

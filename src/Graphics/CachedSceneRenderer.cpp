@@ -9,6 +9,13 @@
 
 class osc::CachedSceneRenderer::Impl final {
 public:
+    Impl(MeshCache& meshCache, ShaderCache& shaderCache) :
+        m_LastRenderingParams{},
+        m_LastDecorationList{},
+        m_SceneRenderer{meshCache, shaderCache}
+    {
+    }
+
     osc::RenderTexture& draw(nonstd::span<SceneDecoration const> decorations, SceneRendererParams const& params)
     {
         if (params != m_LastRenderingParams ||
@@ -32,8 +39,8 @@ private:
 
 // public API (PIMPL)
 
-osc::CachedSceneRenderer::CachedSceneRenderer() :
-    m_Impl{std::make_unique<Impl>()}
+osc::CachedSceneRenderer::CachedSceneRenderer(MeshCache& meshCache, ShaderCache& shaderCache) :
+    m_Impl{std::make_unique<Impl>(meshCache, shaderCache)}
 {
 }
 

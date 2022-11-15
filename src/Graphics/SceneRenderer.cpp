@@ -15,7 +15,6 @@
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/Transform.hpp"
-#include "src/Platform/App.hpp"
 #include "src/Utils/Perf.hpp"
 
 #include <glm/mat4x4.hpp>
@@ -71,7 +70,17 @@ namespace
 
 class osc::SceneRenderer::Impl final {
 public:
-    Impl()
+    Impl(MeshCache& meshCache, ShaderCache& shaderCache) :
+        m_SceneColoredElementsMaterial{shaderCache.get("shaders/SceneShader.vert", "shaders/SceneShader.frag")},
+        m_SceneTexturedElementsMaterial{shaderCache.get("shaders/SceneTexturedShader.vert", "shaders/SceneTexturedShader.frag")},
+        m_SolidColorMaterial{shaderCache.get("shaders/SceneSolidColor.vert", "shaders/SceneSolidColor.frag")},
+        m_EdgeDetectorMaterial{shaderCache.get("shaders/SceneEdgeDetector.vert", "shaders/SceneEdgeDetector.frag")},
+        m_NormalsMaterial{shaderCache.get("shaders/SceneNormalsShader.vert", "shaders/SceneNormalsShader.geom", "shaders/SceneNormalsShader.frag")},
+        m_QuadMesh{meshCache.getTexturedQuadMesh()},
+        m_ChequerTexture{GenChequeredFloorTexture()},
+        m_Camera{},
+        m_RimThickness{1.0f, 1.0f},
+        m_MaybeRenderTexture{RenderTextureDescriptor{glm::ivec2{1, 1}}}
     {
         m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_ChequerTexture);
         m_SceneTexturedElementsMaterial.setVec2("uTextureScale", {200.0f, 200.0f});
@@ -304,49 +313,30 @@ private:
         };
     }
 
-    Material m_SceneColoredElementsMaterial
-    {
-        App::singleton<ShaderCache>().get("shaders/SceneShader.vert", "shaders/SceneShader.frag")
-    };
+    Material m_SceneColoredElementsMaterial;
+    Material m_SceneTexturedElementsMaterial;
+    Material m_SolidColorMaterial;
+    Material m_EdgeDetectorMaterial;
+    Material m_NormalsMaterial;
 
-    Material m_SceneTexturedElementsMaterial
-    {
-        App::singleton<ShaderCache>().get("shaders/SceneTexturedShader.vert", "shaders/SceneTexturedShader.frag")
-    };
-
-    Material m_SolidColorMaterial
-    {
-        App::singleton<ShaderCache>().get("shaders/SceneSolidColor.vert", "shaders/SceneSolidColor.frag")
-    };
-
-    Material m_EdgeDetectorMaterial
-    {
-        App::singleton<ShaderCache>().get("shaders/SceneEdgeDetector.vert", "shaders/SceneEdgeDetector.frag")
-    };
-
-    Material m_NormalsMaterial
-    {
-        App::singleton<ShaderCache>().get("shaders/SceneNormalsShader.vert", "shaders/SceneNormalsShader.geom", "shaders/SceneNormalsShader.frag")
-    };
-
-    std::shared_ptr<Mesh const> m_QuadMesh = App::singleton<MeshCache>().getTexturedQuadMesh();
-    Texture2D m_ChequerTexture = GenChequeredFloorTexture();
+    std::shared_ptr<Mesh const> m_QuadMesh;
+    Texture2D m_ChequerTexture;
     Camera m_Camera;
 
-    glm::vec2 m_RimThickness = {1.0f, 1.0f};
+    glm::vec2 m_RimThickness;
     MaterialPropertyBlock m_RimsSelectedColor;
     MaterialPropertyBlock m_RimsHoveredColor;
     std::optional<RenderTexture> m_MaybeRimsTexture;
 
     // outputs
-    std::optional<RenderTexture> m_MaybeRenderTexture{RenderTextureDescriptor{glm::ivec2{1, 1}}};
+    std::optional<RenderTexture> m_MaybeRenderTexture;
 };
 
 
 // public API (PIMPL)
 
-osc::SceneRenderer::SceneRenderer() :
-    m_Impl{std::make_unique<Impl>()}
+osc::SceneRenderer::SceneRenderer(MeshCache& meshCache, ShaderCache& shaderCache) :
+    m_Impl{std::make_unique<Impl>(meshCache, shaderCache)}
 {
 }
 
