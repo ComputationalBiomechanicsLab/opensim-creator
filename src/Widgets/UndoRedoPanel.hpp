@@ -14,9 +14,9 @@ namespace osc
     public:
         UndoRedoPanel(std::string_view panelName_, std::shared_ptr<UndoRedo>);
         UndoRedoPanel(UndoRedoPanel const&) = delete;
-        UndoRedoPanel(UndoRedoPanel&&) noexcept;
+        UndoRedoPanel(UndoRedoPanel&&) noexcept = default;
         UndoRedoPanel& operator=(UndoRedoPanel const&) = delete;
-        UndoRedoPanel& operator=(UndoRedoPanel&&) noexcept;
+        UndoRedoPanel& operator=(UndoRedoPanel&&) noexcept = default;
         ~UndoRedoPanel() noexcept;
 
     private:

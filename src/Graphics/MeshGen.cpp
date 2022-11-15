@@ -67,7 +67,7 @@ namespace
 
 // standard textured cube with dimensions [-1, +1] in xyz and uv coords of
 // (0, 0) bottom-left, (1, 1) top-right for each (quad) face
-static constexpr std::array<TexturedVert, 36> g_ShadedTexturedCubeVerts =
+static constexpr std::array<TexturedVert const, 36> c_ShadedTexturedCubeVerts =
 {{
     // back face
     {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}},  // bottom-left
@@ -122,7 +122,7 @@ static constexpr std::array<TexturedVert, 36> g_ShadedTexturedCubeVerts =
 // - dimensions [-1, +1] in xy and [0, 0] in z
 // - uv coords are (0, 0) bottom-left, (1, 1) top-right
 // - normal is +1 in Z, meaning that it faces toward the camera
-static constexpr std::array<TexturedVert, 6> g_ShadedTexturedQuadVerts =
+static constexpr std::array<TexturedVert const, 6> c_ShadedTexturedQuadVerts =
 {{
     // CCW winding (culling)
     {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
@@ -137,7 +137,7 @@ static constexpr std::array<TexturedVert, 6> g_ShadedTexturedQuadVerts =
 // a cube wire mesh, suitable for `osc::MeshTopography::Lines` drawing
 //
 // a pair of verts per edge of the cube. The cube has 12 edges, so 24 lines
-static constexpr std::array<UntexturedVert, 24> g_CubeEdgeLines =
+static constexpr std::array<UntexturedVert const, 24> c_CubeEdgeLines =
 {{
     // back
 
@@ -197,10 +197,10 @@ static constexpr std::array<UntexturedVert, 24> g_CubeEdgeLines =
 osc::Mesh osc::GenTexturedQuad()
 {
     NewMeshData data;
-    data.reserve(g_ShadedTexturedQuadVerts.size());
+    data.reserve(c_ShadedTexturedQuadVerts.size());
 
     uint16_t index = 0;
-    for (TexturedVert const& v : g_ShadedTexturedQuadVerts)
+    for (TexturedVert const& v : c_ShadedTexturedQuadVerts)
     {
         data.verts.push_back(v.pos);
         data.normals.push_back(v.norm);
@@ -492,9 +492,9 @@ osc::Mesh osc::GenUntexturedSimbodyCone(size_t nsides)
 
 osc::Mesh osc::GenNbyNGrid(size_t n)
 {
-    static constexpr float z = 0.0f;
-    static constexpr float min = -1.0f;
-    static constexpr float max = 1.0f;
+    constexpr float z = 0.0f;
+    constexpr float min = -1.0f;
+    constexpr float max = 1.0f;
 
     float const stepSize = (max - min) / static_cast<float>(n);
 
@@ -555,10 +555,10 @@ osc::Mesh osc::GenYLine()
 osc::Mesh osc::GenCube()
 {
     NewMeshData data;
-    data.reserve(g_ShadedTexturedCubeVerts.size());
+    data.reserve(c_ShadedTexturedCubeVerts.size());
 
     uint16_t index = 0;
-    for (auto const& v : g_ShadedTexturedCubeVerts)
+    for (auto const& v : c_ShadedTexturedCubeVerts)
     {
         data.verts.push_back(v.pos);
         data.normals.push_back(v.norm);
@@ -575,12 +575,12 @@ osc::Mesh osc::GenCube()
 osc::Mesh osc::GenCubeLines()
 {
     NewMeshData data;
-    data.verts.reserve(g_CubeEdgeLines.size());
-    data.indices.reserve(g_CubeEdgeLines.size());
+    data.verts.reserve(c_CubeEdgeLines.size());
+    data.indices.reserve(c_CubeEdgeLines.size());
     data.topography = MeshTopography::Lines;
 
     uint16_t index = 0;
-    for (auto const& v : g_CubeEdgeLines)
+    for (auto const& v : c_CubeEdgeLines)
     {
         data.verts.push_back(v.pos);
         data.indices.push_back(index++);

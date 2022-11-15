@@ -38,7 +38,7 @@ namespace gl
         explicit ShaderHandle(GLenum type) :
             m_ShaderHandle{glCreateShader(type)}
         {
-            if (m_ShaderHandle == g_EmptyShaderSenteniel)
+            if (m_ShaderHandle == c_EmptyShaderSenteniel)
             {
                 throw OpenGlException{GL_SOURCELOC ": glCreateShader() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
@@ -47,7 +47,7 @@ namespace gl
         ShaderHandle(ShaderHandle const&) = delete;
 
         ShaderHandle(ShaderHandle&& tmp) noexcept :
-            m_ShaderHandle{std::exchange(tmp.m_ShaderHandle, g_EmptyShaderSenteniel)}
+            m_ShaderHandle{std::exchange(tmp.m_ShaderHandle, c_EmptyShaderSenteniel)}
         {
         }
 
@@ -61,7 +61,7 @@ namespace gl
 
         ~ShaderHandle() noexcept
         {
-            if (m_ShaderHandle != g_EmptyShaderSenteniel)
+            if (m_ShaderHandle != c_EmptyShaderSenteniel)
             {
                 glDeleteShader(m_ShaderHandle);
             }
@@ -73,7 +73,7 @@ namespace gl
         }
 
     private:
-        static constexpr GLuint g_EmptyShaderSenteniel = 0;
+        static constexpr GLuint c_EmptyShaderSenteniel = 0;
         GLuint m_ShaderHandle;
     };
 
@@ -125,7 +125,7 @@ namespace gl
     public:
         Program() : m_ProgramHandle{glCreateProgram()}
         {
-            if (m_ProgramHandle == g_EmptyProgramSenteniel)
+            if (m_ProgramHandle == c_EmptyProgramSenteniel)
             {
                 throw OpenGlException{GL_SOURCELOC "glCreateProgram() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
@@ -134,7 +134,7 @@ namespace gl
         Program(Program const&) = delete;
 
         Program(Program&& tmp) noexcept :
-            m_ProgramHandle{std::exchange(tmp.m_ProgramHandle, g_EmptyProgramSenteniel)}
+            m_ProgramHandle{std::exchange(tmp.m_ProgramHandle, c_EmptyProgramSenteniel)}
         {
         }
 
@@ -148,7 +148,7 @@ namespace gl
 
         ~Program() noexcept
         {
-            if (m_ProgramHandle != g_EmptyProgramSenteniel)
+            if (m_ProgramHandle != c_EmptyProgramSenteniel)
             {
                 glDeleteProgram(m_ProgramHandle);
             }
@@ -160,7 +160,7 @@ namespace gl
         }
 
     private:
-        static constexpr GLuint g_EmptyProgramSenteniel = 0;
+        static constexpr GLuint c_EmptyProgramSenteniel = 0;
         GLuint m_ProgramHandle;
     };
 
@@ -584,7 +584,7 @@ namespace gl
         {
             glGenBuffers(1, &m_BufferHandle);
 
-            if (m_BufferHandle == g_EmptyBufferHandleSenteniel)
+            if (m_BufferHandle == c_EmptyBufferHandleSenteniel)
             {
                 throw OpenGlException{GL_SOURCELOC "glGenBuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
@@ -593,7 +593,7 @@ namespace gl
         BufferHandle(BufferHandle const&) = delete;
 
         BufferHandle(BufferHandle&& tmp) noexcept :
-            m_BufferHandle{std::exchange(tmp.m_BufferHandle, g_EmptyBufferHandleSenteniel)}
+            m_BufferHandle{std::exchange(tmp.m_BufferHandle, c_EmptyBufferHandleSenteniel)}
         {
         }
 
@@ -607,7 +607,7 @@ namespace gl
 
         ~BufferHandle() noexcept
         {
-            if (m_BufferHandle != g_EmptyBufferHandleSenteniel)
+            if (m_BufferHandle != c_EmptyBufferHandleSenteniel)
             {
                 glDeleteBuffers(1, &m_BufferHandle);
             }
@@ -619,7 +619,7 @@ namespace gl
         }
 
     private:
-        static constexpr GLuint g_EmptyBufferHandleSenteniel = static_cast<GLuint>(-1);
+        static constexpr GLuint c_EmptyBufferHandleSenteniel = static_cast<GLuint>(-1);
         GLuint m_BufferHandle;
     };
 
@@ -824,7 +824,7 @@ namespace gl
         {
             glGenVertexArrays(1, &m_VaoHandle);
 
-            if (m_VaoHandle == g_EmptyVAOHandleSenteniel)
+            if (m_VaoHandle == c_EmptyVAOHandleSenteniel)
             {
                 throw OpenGlException{GL_SOURCELOC "glGenVertexArrays() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
@@ -833,7 +833,7 @@ namespace gl
         VertexArray(VertexArray const&) = delete;
 
         VertexArray(VertexArray&& tmp) noexcept :
-            m_VaoHandle{std::exchange(tmp.m_VaoHandle, g_EmptyVAOHandleSenteniel)}
+            m_VaoHandle{std::exchange(tmp.m_VaoHandle, c_EmptyVAOHandleSenteniel)}
         {
         }
 
@@ -847,7 +847,7 @@ namespace gl
 
         ~VertexArray() noexcept
         {
-            if (m_VaoHandle != g_EmptyVAOHandleSenteniel)
+            if (m_VaoHandle != c_EmptyVAOHandleSenteniel)
             {
                 glDeleteVertexArrays(1, &m_VaoHandle);
             }
@@ -859,7 +859,7 @@ namespace gl
         }
 
     private:
-        static constexpr GLuint g_EmptyVAOHandleSenteniel = std::numeric_limits<GLuint>::max();
+        static constexpr GLuint c_EmptyVAOHandleSenteniel = std::numeric_limits<GLuint>::max();
         GLuint m_VaoHandle;
     };
 
@@ -882,7 +882,7 @@ namespace gl
         {
             glGenTextures(1, &m_TextureHandle);
 
-            if (m_TextureHandle == g_EmptyTextureHandleSenteniel)
+            if (m_TextureHandle == c_EmptyTextureHandleSenteniel)
             {
                 throw OpenGlException{GL_SOURCELOC "glGenTextures() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
@@ -891,7 +891,7 @@ namespace gl
         TextureHandle(TextureHandle const&) = delete;
 
         TextureHandle(TextureHandle&& tmp) noexcept :
-            m_TextureHandle{std::exchange(tmp.m_TextureHandle, g_EmptyTextureHandleSenteniel)}
+            m_TextureHandle{std::exchange(tmp.m_TextureHandle, c_EmptyTextureHandleSenteniel)}
         {
         }
 
@@ -905,7 +905,7 @@ namespace gl
 
         ~TextureHandle() noexcept
         {
-            if (m_TextureHandle != g_EmptyTextureHandleSenteniel)
+            if (m_TextureHandle != c_EmptyTextureHandleSenteniel)
             {
                 glDeleteTextures(1, &m_TextureHandle);
             }
@@ -916,7 +916,7 @@ namespace gl
             return m_TextureHandle;
         }
     private:
-        static constexpr GLuint g_EmptyTextureHandleSenteniel = static_cast<GLuint>(-1);
+        static constexpr GLuint c_EmptyTextureHandleSenteniel = static_cast<GLuint>(-1);
         GLuint m_TextureHandle;
     };
 
@@ -985,7 +985,7 @@ namespace gl
         {
             glGenFramebuffers(1, &m_FboHandle);
 
-            if (m_FboHandle == g_EmptyFBOSenteniel)
+            if (m_FboHandle == c_EmptyFBOSenteniel)
             {
                 throw OpenGlException{GL_SOURCELOC "glGenFramebuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
@@ -994,7 +994,7 @@ namespace gl
         FrameBuffer(FrameBuffer const&) = delete;
 
         FrameBuffer(FrameBuffer&& tmp) noexcept :
-            m_FboHandle{std::exchange(tmp.m_FboHandle, g_EmptyFBOSenteniel)}
+            m_FboHandle{std::exchange(tmp.m_FboHandle, c_EmptyFBOSenteniel)}
         {
         }
 
@@ -1008,7 +1008,7 @@ namespace gl
 
         ~FrameBuffer() noexcept
         {
-            if (m_FboHandle != g_EmptyFBOSenteniel)
+            if (m_FboHandle != c_EmptyFBOSenteniel)
             {
                 glDeleteFramebuffers(1, &m_FboHandle);
             }
@@ -1020,7 +1020,7 @@ namespace gl
         }
 
     private:
-        static constexpr GLuint g_EmptyFBOSenteniel = static_cast<GLuint>(-1);
+        static constexpr GLuint c_EmptyFBOSenteniel = static_cast<GLuint>(-1);
         GLuint m_FboHandle;
     };
 
@@ -1053,7 +1053,7 @@ namespace gl
         {
             glGenRenderbuffers(1, &m_RenderBuffer);
 
-            if (m_RenderBuffer == m_EmptyRenderBufferSenteniel)
+            if (m_RenderBuffer == c_EmptyRenderBufferSenteniel)
             {
                 throw OpenGlException{GL_SOURCELOC "glGenRenderBuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
@@ -1062,7 +1062,7 @@ namespace gl
         RenderBuffer(RenderBuffer const&) = delete;
 
         RenderBuffer(RenderBuffer&& tmp) noexcept :
-            m_RenderBuffer{std::exchange(tmp.m_RenderBuffer, m_EmptyRenderBufferSenteniel)}
+            m_RenderBuffer{std::exchange(tmp.m_RenderBuffer, c_EmptyRenderBufferSenteniel)}
         {
         }
 
@@ -1076,7 +1076,7 @@ namespace gl
 
         ~RenderBuffer() noexcept
         {
-            if (m_RenderBuffer != m_EmptyRenderBufferSenteniel)
+            if (m_RenderBuffer != c_EmptyRenderBufferSenteniel)
             {
                 glDeleteRenderbuffers(1, &m_RenderBuffer);
             }
@@ -1088,7 +1088,7 @@ namespace gl
         }
     private:
         // khronos: glDeleteRenderBuffers: "The name zero is reserved by the GL and is silently ignored"
-        static constexpr GLuint m_EmptyRenderBufferSenteniel = 0;
+        static constexpr GLuint c_EmptyRenderBufferSenteniel = 0;
         GLuint m_RenderBuffer;
     };
 

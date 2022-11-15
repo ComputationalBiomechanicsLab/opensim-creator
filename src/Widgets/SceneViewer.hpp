@@ -14,9 +14,9 @@ namespace osc
     public:
         SceneViewer();
         SceneViewer(SceneViewer const&) = delete;
-        SceneViewer(SceneViewer&&) noexcept;
+        SceneViewer(SceneViewer&&) noexcept = default;
         SceneViewer& operator=(SceneViewer const&) = delete;
-        SceneViewer& operator=(SceneViewer&&) noexcept;
+        SceneViewer& operator=(SceneViewer&&) noexcept = default;
         ~SceneViewer() noexcept;
 
         void draw(nonstd::span<SceneDecoration const>, SceneRendererParams const&);

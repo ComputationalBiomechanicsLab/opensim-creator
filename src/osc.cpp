@@ -9,27 +9,30 @@
 #include <cstdlib>
 #include <iostream>
 
-static const char g_Usage[] = R"(usage: osc [--help] [fd] MODEL.osim
+static constexpr char c_Usage[] = R"(usage: osc [--help] [fd] MODEL.osim
 )";
 
-static const char g_Help[] = R"(OPTIONS
+static constexpr char c_Help[] = R"(OPTIONS
     --help
         Show this help
 )";
 
-static bool SkipPrefix(char const* prefix, char const* s, char const** out)
+namespace
 {
-    do
+    bool SkipPrefix(char const* prefix, char const* s, char const** out)
     {
-        if (*prefix == '\0' && (*s == '\0' || *s == '='))
+        do
         {
-            *out = s;
-            return true;
+            if (*prefix == '\0' && (*s == '\0' || *s == '='))
+            {
+                *out = s;
+                return true;
+            }
         }
-    }
-    while (*prefix++ == *s++);
+        while (*prefix++ == *s++);
 
-    return false;
+        return false;
+    }
 }
 
 int main(int argc, char** argv)
@@ -50,7 +53,7 @@ int main(int argc, char** argv)
 
         if (SkipPrefix("--help", arg, &arg))
         {
-            std::cout << g_Usage << '\n' << g_Help << '\n';
+            std::cout << c_Usage << '\n' << c_Help << '\n';
             return EXIT_SUCCESS;
         }
 

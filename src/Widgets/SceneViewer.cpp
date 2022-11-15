@@ -59,8 +59,6 @@ osc::SceneViewer::SceneViewer() :
 {
 }
 
-osc::SceneViewer::SceneViewer(SceneViewer&&) noexcept = default;
-osc::SceneViewer& osc::SceneViewer::operator=(SceneViewer&&) noexcept = default;
 osc::SceneViewer::~SceneViewer() noexcept = default;
 
 void osc::SceneViewer::draw(nonstd::span<SceneDecoration const> els, SceneRendererParams const& params)

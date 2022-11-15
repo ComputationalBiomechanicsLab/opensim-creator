@@ -85,7 +85,7 @@ public:
     }
 
 private:
-    void implDraw() override
+    void implDrawContent() override
     {
         if (m_ParamBlock == nullptr)
         {

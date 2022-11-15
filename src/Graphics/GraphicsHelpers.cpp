@@ -278,3 +278,20 @@ osc::Texture2D osc::LoadTexture2DFromImage(std::filesystem::path const& path, Im
     Image const img = Image::Load(path, flags);
     return Texture2D{img.getDimensions(), img.getPixelData(), img.getNumChannels()};
 }
+
+void osc::EmplaceOrReformat(std::optional<RenderTexture>& t, RenderTextureDescriptor const& desc)
+{
+    if (t)
+    {
+        t->reformat(desc);
+    }
+    else
+    {
+        t.emplace(desc);
+    }
+}
+
+osc::AABB osc::GetWorldspaceAABB(SceneDecoration const& cd)
+{
+    return TransformAABB(cd.mesh->getBounds(), cd.transform);
+}

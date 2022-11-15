@@ -23,12 +23,19 @@ namespace osc
         void requestClose();
 
     private:
+        // this standard implementation supplies these
         bool implIsOpen() const final;
         void implOpen() final;
         void implClose() final;
         void implDraw() final;
-        virtual void implBeforeImGuiBegin() {}
-        virtual void implAfterImGuiBegin() {}
+
+        // inheritors can/must provide these
+        virtual void implBeforeImGuiBegin()
+        {
+        }
+        virtual void implAfterImGuiBegin()
+        {
+        }
         virtual void implDrawContent() = 0;
 
         std::string m_PanelName;

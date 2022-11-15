@@ -11,9 +11,9 @@ namespace osc
     public:
         LogViewerPanel(std::string_view panelName);
         LogViewerPanel(LogViewerPanel const&) = delete;
-        LogViewerPanel(LogViewerPanel&&) noexcept;
+        LogViewerPanel(LogViewerPanel&&) noexcept = default;
         LogViewerPanel& operator=(LogViewerPanel const&) = delete;
-        LogViewerPanel& operator=(LogViewerPanel&&) noexcept;
+        LogViewerPanel& operator=(LogViewerPanel&&) noexcept = default;
         ~LogViewerPanel() noexcept;
 
     private:

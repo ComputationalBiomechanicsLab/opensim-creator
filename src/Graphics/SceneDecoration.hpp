@@ -74,7 +74,5 @@ namespace osc
         }
     };
 
-    AABB GetWorldspaceAABB(SceneDecoration const&);
-
     bool operator==(SceneDecoration const&, SceneDecoration const&) noexcept;
 }

@@ -1,5 +1,6 @@
 #include "OpenSimHelpers.hpp"
 
+#include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Maths/AABB.hpp"

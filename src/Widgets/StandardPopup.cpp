@@ -27,24 +27,24 @@ osc::StandardPopup::StandardPopup(
 {
 }
 
-bool osc::StandardPopup::isOpen() const
+bool osc::StandardPopup::implIsOpen() const
 {
     return m_ShouldOpen || m_IsOpen;
 }
 
-void osc::StandardPopup::open()
+void osc::StandardPopup::implOpen()
 {
     m_ShouldOpen = true;
     m_ShouldClose = false;
 }
 
-void osc::StandardPopup::close()
+void osc::StandardPopup::implClose()
 {
     m_ShouldClose = true;
     m_ShouldOpen = false;
 }
 
-bool osc::StandardPopup::beginPopup()
+bool osc::StandardPopup::implBeginPopup()
 {
     if (m_ShouldOpen)
     {
@@ -86,7 +86,7 @@ bool osc::StandardPopup::beginPopup()
     return true;
 }
 
-void osc::StandardPopup::drawPopupContent()
+void osc::StandardPopup::implDrawPopupContent()
 {
     if (m_ShouldClose)
     {
@@ -99,10 +99,10 @@ void osc::StandardPopup::drawPopupContent()
         return;
     }
 
-    implDraw();
+    implDrawContent();
 }
 
-void osc::StandardPopup::endPopup()
+void osc::StandardPopup::implEndPopup()
 {
     ImGui::EndPopup();
     m_JustOpened = false;

@@ -215,7 +215,7 @@ public:
     }
 
 private:
-    void implDraw() override
+    void implDrawContent() override
     {
         OpenSim::Component const* c = osc::FindComponent(m_Model->getModel(), m_Path);
         if (!c)

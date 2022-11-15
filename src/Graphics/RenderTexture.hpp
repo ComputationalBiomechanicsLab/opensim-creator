@@ -76,6 +76,4 @@ namespace osc
     }
 
     std::ostream& operator<<(std::ostream&, RenderTexture const&);
-
-    void EmplaceOrReformat(std::optional<RenderTexture>& t, RenderTextureDescriptor const& desc);
 }

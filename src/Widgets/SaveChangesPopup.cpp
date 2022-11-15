@@ -1,5 +1,6 @@
 #include "SaveChangesPopup.hpp"
 
+#include "src/Widgets/SaveChangesPopupConfig.hpp"
 #include "src/Widgets/StandardPopup.hpp"
 
 #include <imgui.h>
@@ -15,7 +16,7 @@ public:
     {
     }
 
-    void implDraw() override
+    void implDrawContent() override
     {
         ImGui::TextUnformatted(m_Config.content.c_str());
 
@@ -54,28 +55,41 @@ private:
 
 // public API (PIMPL)
 
-osc::SaveChangesPopup::SaveChangesPopup(SaveChangesPopupConfig config) :
-    m_Impl{std::make_unique<Impl>(std::move(config))}
+osc::SaveChangesPopup::SaveChangesPopup(SaveChangesPopupConfig const& config) :
+    m_Impl{std::make_unique<Impl>(config)}
 {
 }
 
-osc::SaveChangesPopup::SaveChangesPopup(SaveChangesPopup&&) noexcept = default;
-osc::SaveChangesPopup& osc::SaveChangesPopup::operator=(SaveChangesPopup&&) noexcept = default;
 osc::SaveChangesPopup::~SaveChangesPopup() noexcept = default;
 
-bool osc::SaveChangesPopup::isOpen() const
+bool osc::SaveChangesPopup::implIsOpen() const
 {
     return m_Impl->isOpen();
 }
 
-void osc::SaveChangesPopup::open()
+void osc::SaveChangesPopup::implOpen()
 {
     m_Impl->open();
 }
 
-void osc::SaveChangesPopup::close()
+void osc::SaveChangesPopup::implClose()
 {
     m_Impl->close();
+}
+
+bool osc::SaveChangesPopup::implBeginPopup()
+{
+    return m_Impl->beginPopup();
+}
+
+void osc::SaveChangesPopup::implDrawPopupContent()
+{
+    m_Impl->drawPopupContent();
+}
+
+void osc::SaveChangesPopup::implEndPopup()
+{
+    m_Impl->endPopup();
 }
 
 void osc::SaveChangesPopup::draw()

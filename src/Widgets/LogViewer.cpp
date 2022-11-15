@@ -130,8 +130,6 @@ osc::LogViewer::LogViewer() :
 {
 }
 
-osc::LogViewer::LogViewer(LogViewer&&) noexcept = default;
-osc::LogViewer& osc::LogViewer::operator=(LogViewer&&) noexcept = default;
 osc::LogViewer::~LogViewer() noexcept = default;
 
 void osc::LogViewer::draw()

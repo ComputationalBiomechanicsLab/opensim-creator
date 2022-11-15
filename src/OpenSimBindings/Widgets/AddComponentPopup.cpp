@@ -438,7 +438,7 @@ private:
         }
     }
 
-    void implDraw()
+    void implDrawContent() override
     {
         drawNameEditor();
 

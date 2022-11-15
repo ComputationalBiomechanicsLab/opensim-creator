@@ -11,9 +11,9 @@ namespace osc
     public:
         PerfPanel(std::string_view panelName);
         PerfPanel(PerfPanel const&) = delete;
-        PerfPanel(PerfPanel&&) noexcept;
+        PerfPanel(PerfPanel&&) noexcept = default;
         PerfPanel& operator=(PerfPanel const&) = delete;
-        PerfPanel& operator=(PerfPanel&&) noexcept;
+        PerfPanel& operator=(PerfPanel&&) noexcept = default;
         ~PerfPanel();
 
     private:

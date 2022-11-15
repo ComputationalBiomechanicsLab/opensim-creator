@@ -14,14 +14,17 @@
 #include <utility>
 #include <vector>
 
-static bool HighestTotalDuration(osc::PerfMeasurement const& a, osc::PerfMeasurement const& b)
+namespace
 {
-    return a.getTotalDuration() > b.getTotalDuration();
-}
+    bool HighestTotalDuration(osc::PerfMeasurement const& a, osc::PerfMeasurement const& b)
+    {
+        return a.getTotalDuration() > b.getTotalDuration();
+    }
 
-static bool LexographicallyHighestLabel(osc::PerfMeasurement const& a, osc::PerfMeasurement const& b)
-{
-    return a.getLabel() > b.getLabel();
+    bool LexographicallyHighestLabel(osc::PerfMeasurement const& a, osc::PerfMeasurement const& b)
+    {
+        return a.getLabel() > b.getLabel();
+    }
 }
 
 class osc::PerfPanel::Impl final : public osc::StandardPanel {
@@ -122,8 +125,6 @@ osc::PerfPanel::PerfPanel(std::string_view panelName) :
 {
 }
 
-osc::PerfPanel::PerfPanel(PerfPanel&&) noexcept = default;
-osc::PerfPanel& osc::PerfPanel::operator=(PerfPanel&&) noexcept = default;
 osc::PerfPanel::~PerfPanel() = default;
 
 bool osc::PerfPanel::implIsOpen() const

@@ -74,7 +74,7 @@
 // it's here, rather than in an external resource file, because it is eagerly
 // loaded while the graphics backend is initialized (i.e. potentially before
 // the application is fully loaded)
-static char const g_QuadVertexShaderSrc[] = R"(
+static char constexpr c_QuadVertexShaderSrc[] = R"(
     #version 330 core
 
     layout (location = 0) in vec3 aPos;
@@ -94,7 +94,7 @@ static char const g_QuadVertexShaderSrc[] = R"(
 // it's here, rather than in an external resource file, because it is eagerly
 // loaded while the graphics backend is initialized (i.e. potentially before
 // the application is fully loaded)
-static char const g_QuadFragmentShaderSrc[] = R"(
+static char constexpr c_QuadFragmentShaderSrc[] = R"(
     #version 330 core
 
     uniform sampler2D uTexture;
@@ -199,7 +199,7 @@ namespace
 namespace
 {
     // LUT for human-readable form of the above
-    static constexpr auto const g_ShaderTypeInternalStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::ShaderType::TOTAL)>(
+    static constexpr auto const c_ShaderTypeInternalStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::ShaderType::TOTAL)>(
         "Float",
         "Vec2",
         "Vec3",
@@ -694,14 +694,14 @@ namespace osc
 
 namespace
 {
-    static constexpr auto const g_TextureWrapModeStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::TextureWrapMode::TOTAL)>
+    static constexpr auto const c_TextureWrapModeStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::TextureWrapMode::TOTAL)>
     (
         "Repeat",
         "Clamp",
         "Mirror"
     );
 
-    static constexpr auto const g_TextureFilterModeStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::TextureFilterMode::TOTAL)>
+    static constexpr auto const c_TextureFilterModeStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::TextureFilterMode::TOTAL)>
     (
         "Nearest",
         "Linear",
@@ -933,12 +933,12 @@ private:
 
 std::ostream& osc::operator<<(std::ostream& o, TextureWrapMode twm)
 {
-    return o << g_TextureWrapModeStrings.at(static_cast<size_t>(twm));
+    return o << c_TextureWrapModeStrings.at(static_cast<size_t>(twm));
 }
 
 std::ostream& osc::operator<<(std::ostream& o, TextureFilterMode twm)
 {
-    return o << g_TextureFilterModeStrings.at(static_cast<size_t>(twm));
+    return o << c_TextureFilterModeStrings.at(static_cast<size_t>(twm));
 }
 
 
@@ -1042,13 +1042,13 @@ std::ostream& osc::operator<<(std::ostream& o, Texture2D const&)
 
 namespace
 {
-    static constexpr auto const  g_RenderTextureFormatStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::RenderTextureFormat::TOTAL)>
+    static constexpr auto const  c_RenderTextureFormatStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::RenderTextureFormat::TOTAL)>
     (
         "ARGB32",
         "RED"
     );
 
-    static constexpr auto const g_DepthStencilFormatStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::DepthStencilFormat::TOTAL)>
+    static constexpr auto const c_DepthStencilFormatStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::DepthStencilFormat::TOTAL)>
     (
         "D24_UNorm_S8_UInt"
     );
@@ -1083,12 +1083,12 @@ namespace
 
 std::ostream& osc::operator<<(std::ostream& o, RenderTextureFormat f)
 {
-    return o << g_RenderTextureFormatStrings.at(static_cast<size_t>(f));
+    return o << c_RenderTextureFormatStrings.at(static_cast<size_t>(f));
 }
 
 std::ostream& osc::operator<<(std::ostream& o, DepthStencilFormat f)
 {
-    return o << g_DepthStencilFormatStrings.at(static_cast<size_t>(f));
+    return o << c_DepthStencilFormatStrings.at(static_cast<size_t>(f));
 }
 
 osc::RenderTextureDescriptor::RenderTextureDescriptor(glm::ivec2 dimensions) :
@@ -1429,17 +1429,7 @@ std::ostream& osc::operator<<(std::ostream& o, RenderTexture const&)
     return o << "RenderTexture()";
 }
 
-void osc::EmplaceOrReformat(std::optional<RenderTexture>& t, RenderTextureDescriptor const& desc)
-{
-    if (t)
-    {
-        t->reformat(desc);
-    }
-    else
-    {
-        t.emplace(desc);
-    }
-}
+
 
 
 //////////////////////////////////
@@ -1626,7 +1616,7 @@ private:
 
 std::ostream& osc::operator<<(std::ostream& o, ShaderType shaderType)
 {
-    return o << g_ShaderTypeInternalStrings.at(static_cast<size_t>(shaderType));
+    return o << c_ShaderTypeInternalStrings.at(static_cast<size_t>(shaderType));
 }
 
 osc::Shader::Shader(CStringView vertexShader, CStringView fragmentShader) :
@@ -2228,8 +2218,8 @@ private:
 
 osc::MaterialPropertyBlock::MaterialPropertyBlock()
 {
-    static Cow<Impl> g_EmptyPropertyBlockImpl = make_cow<Impl>();
-    m_Impl = g_EmptyPropertyBlockImpl;
+    static Cow<Impl> const s_EmptyPropertyBlockImpl = make_cow<Impl>();
+    m_Impl = s_EmptyPropertyBlockImpl;
 }
 
 osc::MaterialPropertyBlock::MaterialPropertyBlock(MaterialPropertyBlock const&) = default;
@@ -2357,7 +2347,7 @@ std::ostream& osc::operator<<(std::ostream& o, MaterialPropertyBlock const&)
 
 namespace
 {
-    static constexpr auto g_MeshTopographyStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::MeshTopography::TOTAL)>
+    static constexpr auto c_MeshTopographyStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::MeshTopography::TOTAL)>
     (
         "Triangles",
         "Lines"
@@ -2762,7 +2752,7 @@ private:
 
 std::ostream& osc::operator<<(std::ostream& o, MeshTopography mt)
 {
-    return o << g_MeshTopographyStrings.at(static_cast<size_t>(mt));
+    return o << c_MeshTopographyStrings.at(static_cast<size_t>(mt));
 }
 
 osc::Mesh::Mesh() :
@@ -2886,7 +2876,7 @@ std::ostream& osc::operator<<(std::ostream& o, Mesh const&)
 namespace
 {
     // LUT for human-readable form of the above
-    static constexpr auto const g_CameraProjectionStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::CameraProjection::TOTAL)>
+    static constexpr auto const c_CameraProjectionStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::CameraProjection::TOTAL)>
     (
         "Perspective",
         "Orthographic"
@@ -3205,7 +3195,7 @@ private:
 
 std::ostream& osc::operator<<(std::ostream& o, CameraProjection cp)
 {
-    return o << g_CameraProjectionStrings.at(static_cast<size_t>(cp));
+    return o << c_CameraProjectionStrings.at(static_cast<size_t>(cp));
 }
 
 osc::Camera::Camera() :
@@ -3509,12 +3499,12 @@ namespace
         // see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glGet.xhtml
         if (v < 4)
         {
-            static bool g_ShowWarningOnce = [&]()
+            static bool const s_ShowWarningOnce = [&]()
             {
                 osc::log::warn("the current OpenGl backend only supports %i samples. Technically, this is invalid (4 *should* be the minimum)", v);
                 return true;
             }();
-            (void)g_ShowWarningOnce;
+            (void)s_ShowWarningOnce;
         }
         OSC_ASSERT_ALWAYS(v < 1<<16 && "number of samples is greater than the maximum supported by the application");
 
@@ -3883,8 +3873,8 @@ public:
     {
         Shader
         {
-            g_QuadVertexShaderSrc,
-            g_QuadFragmentShaderSrc,
+            c_QuadVertexShaderSrc,
+            c_QuadFragmentShaderSrc,
         }
     };
 

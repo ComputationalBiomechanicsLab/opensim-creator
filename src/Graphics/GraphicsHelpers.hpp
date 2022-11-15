@@ -2,6 +2,7 @@
 
 #include "src/Graphics/ImageFlags.hpp"
 #include "src/Graphics/Material.hpp"
+#include "src/Graphics/RenderTexture.hpp"
 #include "src/Graphics/SceneCollision.hpp"
 #include "src/Graphics/Texture2D.hpp"
 #include "src/Maths/RayCollision.hpp"
@@ -10,6 +11,7 @@
 #include <nonstd/span.hpp>
 
 #include <filesystem>
+#include <optional>
 #include <vector>
 
 namespace osc { struct AABB; }
@@ -62,8 +64,12 @@ namespace osc
     glm::vec3 AverageCenterpoint(Mesh const&);
 
     // returns a material that can draw a mesh's triangles in wireframe-style
-    osc::Material CreateWireframeOverlayMaterial(Config const&, ShaderCache&);
+    Material CreateWireframeOverlayMaterial(Config const&, ShaderCache&);
 
     // returns a texture loaded from disk via osc::Image
     Texture2D LoadTexture2DFromImage(std::filesystem::path const& path, ImageFlags = ImageFlags_None);
+
+    void EmplaceOrReformat(std::optional<RenderTexture>& t, RenderTextureDescriptor const& desc);
+
+    AABB GetWorldspaceAABB(SceneDecoration const&);
 }

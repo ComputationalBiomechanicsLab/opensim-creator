@@ -13,14 +13,19 @@
 #include <cstddef>
 #include <filesystem>
 #include <memory>
+#include <mutex>
 #include <sstream>
 #include <string>
 #include <stdexcept>
 #include <utility>
 
+// this mutex is required because stbi has global methods (e.g. stbi_set_flip_vertically_on_load)
+static std::mutex g_StbiMutex;
 
 osc::Image osc::Image::Load(std::filesystem::path const& p, ImageFlags flags)
 {
+    std::lock_guard stbiGuard{g_StbiMutex};
+
     if (flags & ImageFlags_FlipVertically)
     {
         stbi_set_flip_vertically_on_load(true);
@@ -115,7 +120,7 @@ void osc::WriteToPNG(Image const& image, std::filesystem::path const& outpath)
     int32_t const h = image.getDimensions().y;
     int32_t const strideBetweenRows = w * image.getNumChannels();
 
-
+    std::lock_guard stbiGuard{g_StbiMutex};
     stbi_flip_vertically_on_write(true);
     int const rv = stbi_write_png(pathStr.c_str(), w, h, image.getNumChannels(), image.getPixelData().data(), strideBetweenRows);
     stbi_flip_vertically_on_write(false);

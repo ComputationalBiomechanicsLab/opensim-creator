@@ -123,7 +123,7 @@ public:
     }
 
 private:
-    void implDraw() override
+    void implDrawContent() override
     {
         // caching: regenerate cached socket list, if necessary
         //

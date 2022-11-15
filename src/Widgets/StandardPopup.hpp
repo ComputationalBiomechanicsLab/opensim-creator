@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/Widgets/VirtualPopup.hpp"
+
 #include <glm/vec2.hpp>
 
 #include <string>
@@ -9,9 +11,18 @@ namespace osc
 {
     // base class for implementing a standard UI popup (that blocks the whole screen
     // apart from the popup content)
-    class StandardPopup {
+    class StandardPopup : public VirtualPopup {
+    protected:
+        StandardPopup(StandardPopup const&) = default;
+        StandardPopup(StandardPopup&&) noexcept = default;
+        StandardPopup& operator=(StandardPopup const&) = default;
+        StandardPopup& operator=(StandardPopup&&) noexcept = default;
     public:
-        explicit StandardPopup(std::string_view popupName);
+        virtual ~StandardPopup() noexcept = default;
+
+        explicit StandardPopup(
+            std::string_view popupName
+        );
 
         StandardPopup(
             std::string_view popupName,
@@ -20,15 +31,6 @@ namespace osc
             int popupFlags  // ImGuiWindowFlags
         );
 
-        virtual ~StandardPopup() noexcept = default;
-
-        bool isOpen() const;
-        void open();
-        void close();
-        bool beginPopup();
-        void drawPopupContent();
-        void endPopup();
-
     protected:
         bool isPopupOpenedThisFrame() const;
         void requestClose();
@@ -36,8 +38,19 @@ namespace osc
         void setModal(bool);
 
     private:
-        virtual void implDraw() = 0;
-        virtual void implOnClose() {}
+        // this standard implementation supplies these
+        bool implIsOpen() const final;
+        void implOpen() final;
+        void implClose() final;
+        bool implBeginPopup() final;
+        void implDrawPopupContent() final;
+        void implEndPopup() final;
+
+        // derivers can/must provide these
+        virtual void implDrawContent() = 0;
+        virtual void implOnClose()
+        {
+        }
 
         std::string m_PopupName;
         glm::ivec2 m_Dimensions;

@@ -26,6 +26,8 @@
 #include <cstddef>
 #include <string>
 
+static inline constexpr float c_DefaultDragThreshold = 5.0f;
+
 namespace
 {
     template<typename Coll1, typename Coll2>
@@ -40,8 +42,6 @@ namespace
         }
         return static_cast<float>(older[0]);
     }
-
-    static inline constexpr float g_DefaultDragThreshold = 5.0f;
 }
 
 void osc::ImGuiApplyDarkTheme()
@@ -260,7 +260,7 @@ osc::Rect osc::GetItemRect()
 
 osc::ImGuiItemHittestResult osc::HittestLastImguiItem()
 {
-    return osc::HittestLastImguiItem(g_DefaultDragThreshold);
+    return osc::HittestLastImguiItem(c_DefaultDragThreshold);
 }
 
 osc::ImGuiItemHittestResult osc::HittestLastImguiItem(float dragThreshold)
@@ -329,7 +329,7 @@ bool osc::IsAltDown()
 
 bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn)
 {
-    return osc::IsMouseReleasedWithoutDragging(btn, g_DefaultDragThreshold);
+    return osc::IsMouseReleasedWithoutDragging(btn, c_DefaultDragThreshold);
 }
 
 bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float threshold)
@@ -443,9 +443,9 @@ void osc::DrawHelpMarker(char const* desc)
 
 bool osc::InputString(const char* label, std::string& s, std::size_t maxLen, ImGuiInputTextFlags flags)
 {
-    static SynchronizedValue<std::string> g_Buf;
+    static SynchronizedValue<std::string> s_Buf;
 
-    auto bufGuard = g_Buf.lock();
+    auto bufGuard = s_Buf.lock();
 
     *bufGuard = s;
     bufGuard->resize(std::max(maxLen, s.size()));

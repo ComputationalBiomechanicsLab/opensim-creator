@@ -6,11 +6,6 @@
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Transform.hpp"
 
-osc::AABB osc::GetWorldspaceAABB(SceneDecoration const& cd)
-{
-    return TransformAABB(cd.mesh->getBounds(), cd.transform);
-}
-
 bool osc::operator==(SceneDecoration const& a, SceneDecoration const& b) noexcept
 {
     return

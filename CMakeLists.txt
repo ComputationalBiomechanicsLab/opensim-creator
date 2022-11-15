@@ -590,6 +590,7 @@ add_library(osccore STATIC
     src/Widgets/PerfPanel.hpp
     src/Widgets/RedoButton.cpp
     src/Widgets/RedoButton.hpp
+    src/Widgets/SaveChangesPopupConfig.hpp
     src/Widgets/SaveChangesPopup.cpp
     src/Widgets/SaveChangesPopup.hpp
     src/Widgets/SceneViewer.cpp

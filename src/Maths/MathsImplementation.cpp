@@ -77,7 +77,7 @@ namespace
     }
 
     template<typename T>
-    static T const& at(nonstd::span<T const> vs, size_t i)
+    T const& at(nonstd::span<T const> vs, size_t i)
     {
         if (i <= vs.size())
         {
@@ -89,7 +89,7 @@ namespace
         }
     }
 
-    static bool HasAVolume(osc::Triangle const& t)
+    bool HasAVolume(osc::Triangle const& t)
     {
         return !(t.p0 == t.p1 || t.p0 == t.p2 || t.p1 == t.p2);
     }
@@ -819,158 +819,157 @@ namespace
         float x0;
         float x1;
     };
-}
 
-// solve a quadratic formula
-//
-// only real-valued results supported - no complex-plane results
-static QuadraticFormulaResult solveQuadratic(float a, float b, float c)
-{
-    QuadraticFormulaResult res;
-
-    // b2 - 4ac
-    float const discriminant = b*b - 4.0f*a*c;
-
-    if (discriminant < 0.0f)
+    // solve a quadratic formula
+    //
+    // only real-valued results supported - no complex-plane results
+    QuadraticFormulaResult solveQuadratic(float a, float b, float c)
     {
-        res.computeable = false;
+        QuadraticFormulaResult res;
+
+        // b2 - 4ac
+        float const discriminant = b*b - 4.0f*a*c;
+
+        if (discriminant < 0.0f)
+        {
+            res.computeable = false;
+            return res;
+        }
+
+        // q = -1/2 * (b +- sqrt(b2 - 4ac))
+        float const q = -0.5f * (b + std::copysign(std::sqrt(discriminant), b));
+
+        // you might be wondering why this doesn't just compute a textbook
+        // version of the quadratic equation (-b +- sqrt(disc))/2a
+        //
+        // the reason is because `-b +- sqrt(b2 - 4ac)` can result in catastrophic
+        // cancellation if `-b` is close to `sqrt(disc)`
+        //
+        // so, instead, we use two similar, complementing, quadratics:
+        //
+        // the textbook one:
+        //
+        //     x = (-b +- sqrt(disc)) / 2a
+        //
+        // and the "Muller's method" one:
+        //
+        //     x = 2c / (-b -+ sqrt(disc))
+        //
+        // the great thing about these two is that the "+-" part of their
+        // equations are complements, so you can have:
+        //
+        // q = -0.5 * (b + sign(b)*sqrt(disc))
+        //
+        // which, handily, will only *accumulate* the sum inside those
+        // parentheses. If `b` is positive, you end up with a positive
+        // number. If `b` is negative, you end up with a negative number. No
+        // catastropic cancellation. By multiplying it by "-0.5" you end up
+        // with:
+        //
+        //     -b - sqrt(disc)
+        //
+        // or, if B was negative:
+        //
+        //     -b + sqrt(disc)
+        //
+        // both of which are valid terms of both the quadratic equations above
+        //
+        // see:
+        //
+        //     https://math.stackexchange.com/questions/1340267/alternative-quadratic-formula
+        //     https://en.wikipedia.org/wiki/Quadratic_equation
+
+
+        res.computeable = true;
+        res.x0 = q/a;  // textbook "complete the square" equation
+        res.x1 = c/q;  // Muller's method equation
         return res;
     }
 
-    // q = -1/2 * (b +- sqrt(b2 - 4ac))
-    float const q = -0.5f * (b + std::copysign(std::sqrt(discriminant), b));
-
-    // you might be wondering why this doesn't just compute a textbook
-    // version of the quadratic equation (-b +- sqrt(disc))/2a
-    //
-    // the reason is because `-b +- sqrt(b2 - 4ac)` can result in catastrophic
-    // cancellation if `-b` is close to `sqrt(disc)`
-    //
-    // so, instead, we use two similar, complementing, quadratics:
-    //
-    // the textbook one:
-    //
-    //     x = (-b +- sqrt(disc)) / 2a
-    //
-    // and the "Muller's method" one:
-    //
-    //     x = 2c / (-b -+ sqrt(disc))
-    //
-    // the great thing about these two is that the "+-" part of their
-    // equations are complements, so you can have:
-    //
-    // q = -0.5 * (b + sign(b)*sqrt(disc))
-    //
-    // which, handily, will only *accumulate* the sum inside those
-    // parentheses. If `b` is positive, you end up with a positive
-    // number. If `b` is negative, you end up with a negative number. No
-    // catastropic cancellation. By multiplying it by "-0.5" you end up
-    // with:
-    //
-    //     -b - sqrt(disc)
-    //
-    // or, if B was negative:
-    //
-    //     -b + sqrt(disc)
-    //
-    // both of which are valid terms of both the quadratic equations above
-    //
-    // see:
-    //
-    //     https://math.stackexchange.com/questions/1340267/alternative-quadratic-formula
-    //     https://en.wikipedia.org/wiki/Quadratic_equation
-
-
-    res.computeable = true;
-    res.x0 = q/a;  // textbook "complete the square" equation
-    res.x1 = c/q;  // Muller's method equation
-    return res;
-}
-
-
-static std::optional<osc::RayCollision> GetRayCollisionSphere(osc::Sphere const& s, osc::Line const& l) noexcept
-{
-    // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
-
-    glm::vec3 L = s.origin - l.origin;  // line origin to sphere origin
-    float tca = glm::dot(L, l.dir);  // projected line from middle of hitline to sphere origin
-
-    if (tca < 0.0f)
+    std::optional<osc::RayCollision> GetRayCollisionSphere(osc::Sphere const& s, osc::Line const& l) noexcept
     {
-        // line is pointing away from the sphere
-        return std::nullopt;
+        // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
+
+        glm::vec3 L = s.origin - l.origin;  // line origin to sphere origin
+        float tca = glm::dot(L, l.dir);  // projected line from middle of hitline to sphere origin
+
+        if (tca < 0.0f)
+        {
+            // line is pointing away from the sphere
+            return std::nullopt;
+        }
+
+        float d2 = glm::dot(L, L) - tca*tca;
+        float r2 = s.radius * s.radius;
+
+        if (d2 > r2)
+        {
+            // line is not within the sphere's radius
+            return std::nullopt;
+        }
+
+        // the collision points are on the sphere's surface (R), and D
+        // is how far the hitline midpoint is from the radius. Can use
+        // Pythag to figure out the midpoint length (thc)
+        float thc = glm::sqrt(r2 - d2);
+        float distance = tca - thc;
+
+        return osc::RayCollision{distance, l.origin + distance*l.dir};
     }
 
-    float d2 = glm::dot(L, L) - tca*tca;
-    float r2 = s.radius * s.radius;
-
-    if (d2 > r2)
+    std::optional<osc::RayCollision> GetRayCollisionSphereAnalytic(osc::Sphere const& s, osc::Line const& l) noexcept
     {
-        // line is not within the sphere's radius
-        return std::nullopt;
-    }
+        // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
 
-    // the collision points are on the sphere's surface (R), and D
-    // is how far the hitline midpoint is from the radius. Can use
-    // Pythag to figure out the midpoint length (thc)
-    float thc = glm::sqrt(r2 - d2);
-    float distance = tca - thc;
+        glm::vec3 L = l.origin - s.origin;
 
-    return osc::RayCollision{distance, l.origin + distance*l.dir};
-}
+        // coefficients of the quadratic implicit:
+        //
+        //     P2 - R2 = 0
+        //     (O + tD)2 - R2 = 0
+        //     (O + tD - C)2 - R2 = 0
+        //
+        // where:
+        //
+        //     P    a point on the surface of the sphere
+        //     R    the radius of the sphere
+        //     O    origin of line
+        //     t    scaling factor for line direction (we want this)
+        //     D    direction of line
+        //     C    center of sphere
+        //
+        // if the quadratic has solutions, then there must exist one or two
+        // `t`s that are points on the sphere's surface.
 
-static std::optional<osc::RayCollision> GetRayCollisionSphereAnalytic(osc::Sphere const& s, osc::Line const& l) noexcept
-{
-    // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
+        float a = glm::dot(l.dir, l.dir);  // always == 1.0f if d is normalized
+        float b = 2.0f * glm::dot(l.dir, L);
+        float c = glm::dot(L, L) - glm::dot(s.radius, s.radius);
 
-    glm::vec3 L = l.origin - s.origin;
+        auto [ok, t0, t1] = solveQuadratic(a, b, c);
 
-    // coefficients of the quadratic implicit:
-    //
-    //     P2 - R2 = 0
-    //     (O + tD)2 - R2 = 0
-    //     (O + tD - C)2 - R2 = 0
-    //
-    // where:
-    //
-    //     P    a point on the surface of the sphere
-    //     R    the radius of the sphere
-    //     O    origin of line
-    //     t    scaling factor for line direction (we want this)
-    //     D    direction of line
-    //     C    center of sphere
-    //
-    // if the quadratic has solutions, then there must exist one or two
-    // `t`s that are points on the sphere's surface.
-
-    float a = glm::dot(l.dir, l.dir);  // always == 1.0f if d is normalized
-    float b = 2.0f * glm::dot(l.dir, L);
-    float c = glm::dot(L, L) - glm::dot(s.radius, s.radius);
-
-    auto [ok, t0, t1] = solveQuadratic(a, b, c);
-
-    if (!ok)
-    {
-        return std::nullopt;
-    }
-
-    // ensure X0 < X1
-    if (t0 > t1)
-    {
-        std::swap(t0, t1);
-    }
-
-    // ensure it's in front
-    if (t0 < 0.0f)
-    {
-        t0 = t1;
-        if (t0 < 0.0f)
+        if (!ok)
         {
             return std::nullopt;
         }
-    }
 
-    return osc::RayCollision{t0, l.origin + t0*l.dir};
+        // ensure X0 < X1
+        if (t0 > t1)
+        {
+            std::swap(t0, t1);
+        }
+
+        // ensure it's in front
+        if (t0 < 0.0f)
+        {
+            t0 = t1;
+            if (t0 < 0.0f)
+            {
+                return std::nullopt;
+            }
+        }
+
+        return osc::RayCollision{t0, l.origin + t0*l.dir};
+    }
 }
 
 

@@ -16,26 +16,6 @@ public:
     {
     }
 
-    bool isOpen() const
-    {
-        return static_cast<StandardPanel const&>(*this).isOpen();
-    }
-
-    void open()
-    {
-        return static_cast<StandardPanel&>(*this).open();
-    }
-
-    void close()
-    {
-        return static_cast<StandardPanel&>(*this).close();
-    }
-
-    void draw()
-    {
-        static_cast<StandardPanel&>(*this).draw();
-    }
-
 private:
     void implDrawContent() override
     {
@@ -50,8 +30,6 @@ osc::LogViewerPanel::LogViewerPanel(std::string_view panelName) :
 {
 }
 
-osc::LogViewerPanel::LogViewerPanel(LogViewerPanel&&) noexcept = default;
-osc::LogViewerPanel& osc::LogViewerPanel::operator=(LogViewerPanel&&) noexcept = default;
 osc::LogViewerPanel::~LogViewerPanel() noexcept = default;
 
 bool osc::LogViewerPanel::implIsOpen() const

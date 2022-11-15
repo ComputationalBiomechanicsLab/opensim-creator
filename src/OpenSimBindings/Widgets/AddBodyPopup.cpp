@@ -43,7 +43,7 @@ public:
     }
 
 private:
-    void implDraw() override
+    void implDrawContent() override
     {
         OpenSim::Model const& model = m_Uum->getModel();
 

@@ -25,6 +25,7 @@
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
 #include "src/Widgets/SaveChangesPopup.hpp"
+#include "src/Widgets/SaveChangesPopupConfig.hpp"
 
 #include <glm/vec4.hpp>
 #include <IconsFontAwesome5.h>
