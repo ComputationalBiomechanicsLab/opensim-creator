@@ -5,8 +5,6 @@
 #include "src/Bindings/SDL2Helpers.hpp"
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/GraphicsContext.hpp"
-#include "src/Graphics/ShaderCache.hpp"
-#include "src/Graphics/MeshCache.hpp"
 #include "src/Platform/AppClock.hpp"
 #include "src/Platform/Config.hpp"
 #include "src/Platform/Log.hpp"
@@ -626,14 +624,15 @@ public:
         fd << GetCurrentTimeAsUnixTimestamp().count() << ' ' << std::filesystem::absolute(p) << std::endl;
     }
 
-    osc::ShaderCache& getShaderCache()
+    TypeErasedValueHolder* tryUpdSingleton(size_t typeID)
     {
-        return m_ShaderCache;
+        auto const it = m_Singletons.find(typeID);
+        return it != m_Singletons.end() ? it->second.get() : nullptr;
     }
 
-    osc::MeshCache& getMeshCache()
+    void setSingleton(size_t id, std::unique_ptr<TypeErasedValueHolder> singleton)
     {
-        return m_MeshCache;
+        m_Singletons.insert_or_assign(id, std::move(singleton));
     }
 
     // used by ImGui backends
@@ -857,11 +856,8 @@ private:
     // time since the frame before the current frame (set each frame)
     AppClock::duration m_TimeSinceLastFrame = {};
 
-    // init global shader cache
-    ShaderCache m_ShaderCache{};
-
-    // init global mesh cache
-    MeshCache m_MeshCache{};
+    // global cache of application-wide singletons (usually, for caching)
+    std::unordered_map<size_t, std::unique_ptr<TypeErasedValueHolder>> m_Singletons;
 
     // how many samples the implementation should actually use
     int m_CurrentMSXAASamples = std::min(m_GraphicsContext.getMaxMSXAASamples(), m_ApplicationConfig->getNumMSXAASamples());
@@ -893,16 +889,6 @@ private:
 // public API
 
 osc::App* osc::App::g_Current = nullptr;
-
-osc::ShaderCache& osc::App::shaders()
-{
-    return upd().getShaderCache();
-}
-
-osc::MeshCache& osc::App::meshes()
-{
-    return upd().getMeshCache();
-}
 
 std::filesystem::path osc::App::resource(std::string_view s)
 {
@@ -1218,14 +1204,14 @@ void osc::App::addRecentFile(std::filesystem::path const& p)
     m_Impl->addRecentFile(p);
 }
 
-osc::ShaderCache& osc::App::getShaderCache()
+osc::TypeErasedValueHolder* osc::App::tryUpdSingleton(size_t typeID)
 {
-    return m_Impl->getShaderCache();
+    return m_Impl->tryUpdSingleton(std::move(typeID));
 }
 
-osc::MeshCache& osc::App::getMeshCache()
+void osc::App::setSingleton(size_t typeID, std::unique_ptr<TypeErasedValueHolder> ptr)
 {
-    return m_Impl->getMeshCache();
+    m_Impl->setSingleton(std::move(typeID), std::move(ptr));
 }
 
 void osc::ImGuiInit()

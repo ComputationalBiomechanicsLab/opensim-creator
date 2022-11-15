@@ -4481,13 +4481,13 @@ namespace
             Transform t = GetFloorTransform();
             t.scale *= 0.5f;
 
-            osc::Material material{osc::ShaderCache::get("shaders/SolidColor.vert", "shaders/SolidColor.frag")};
+            osc::Material material{osc::App::singleton<osc::ShaderCache>().get("shaders/SolidColor.vert", "shaders/SolidColor.frag")};
             material.setVec4("uColor", m_Colors.GridLines);
 
             DrawableThing dt;
             dt.id = g_EmptyID;
             dt.groupId = g_EmptyID;
-            dt.mesh = osc::App::meshes().get100x100GridMesh();
+            dt.mesh = osc::App::singleton<osc::MeshCache>().get100x100GridMesh();
             dt.transform = t;
             dt.color = m_Colors.GridLines;
             dt.flags = osc::SceneDecorationFlags_None;
@@ -4587,7 +4587,7 @@ namespace
                 DrawableThing& originCube = appendOut.emplace_back();
                 originCube.id = logicalID;
                 originCube.groupId = groupID;
-                originCube.mesh = osc::App::upd().meshes().getBrickMesh();
+                originCube.mesh = osc::App::singleton<osc::MeshCache>().getBrickMesh();
                 originCube.transform = scaled;
                 originCube.color = glm::vec4{1.0f, 1.0f, 1.0f, 1.0f};
                 originCube.flags = osc::SceneDecorationFlags_None;
@@ -4616,7 +4616,7 @@ namespace
                 DrawableThing& legCube = appendOut.emplace_back();
                 legCube.id = logicalID;
                 legCube.groupId = groupID;
-                legCube.mesh = osc::App::upd().meshes().getConeMesh();
+                legCube.mesh = osc::App::singleton<osc::MeshCache>().getConeMesh();
                 legCube.transform = t;
                 legCube.color = color;
                 legCube.flags = osc::SceneDecorationFlags_None;

@@ -164,7 +164,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
         UID tabID = api->addTab<MeshImporterTab>(api);
         api->selectTab(tabID);
     }
-    osc::AddFrameAnnotationToLastItem("MainMenu/ImportMeshesMenuItem");
+    osc::App::upd().addFrameAnnotation("MainMenu/ImportMeshesMenuItem", osc::GetItemRect());
 
     if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
     {

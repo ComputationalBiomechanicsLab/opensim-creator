@@ -35,6 +35,9 @@ namespace osc
     void DrawTextureAsImGuiImage(RenderTexture&, glm::vec2 dims);
     void DrawTextureAsImGuiImage(RenderTexture&);
 
+    // returns the screenspace bounding rectangle of the last-drawn item
+    Rect GetItemRect();
+
     // hittest the last-drawn ImGui item
     struct ImGuiItemHittestResult final {
         Rect rect = {};
@@ -139,7 +142,4 @@ namespace osc
 
     // draw text, but centered on the current window/line
     void TextCentered(std::string const&);
-
-    // add an application-level frame annotation to the last-drawn ImGui item
-    void AddFrameAnnotationToLastItem(std::string_view);
 }

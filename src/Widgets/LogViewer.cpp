@@ -1,6 +1,7 @@
 #include "LogViewer.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Utils/CircularBuffer.hpp"
@@ -81,7 +82,7 @@ public:
             {
                 log::getTracebackLog().lock()->clear();
             }
-            osc::AddFrameAnnotationToLastItem("LogClearButton");
+            osc::App::upd().addFrameAnnotation("LogClearButton", osc::GetItemRect());
 
             ImGui::SameLine();
             if (ImGui::Button("turn off"))

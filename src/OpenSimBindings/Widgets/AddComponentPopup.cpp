@@ -5,6 +5,7 @@
 #include "src/OpenSimBindings/ActionFunctions.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/Platform/App.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Widgets/StandardPopup.hpp"
 
@@ -173,7 +174,7 @@ private:
         ImGui::NextColumn();
 
         osc::InputString("##componentname", m_Name, 128);
-        osc::AddFrameAnnotationToLastItem("AddComponentPopup::ComponentNameInput");
+        osc::App::upd().addFrameAnnotation("AddComponentPopup::ComponentNameInput", osc::GetItemRect());
 
         ImGui::NextColumn();
 
@@ -245,7 +246,7 @@ private:
 
                 if (selected)
                 {
-                    osc::AddFrameAnnotationToLastItem(pf.getName());
+                    osc::App::upd().addFrameAnnotation(pf.getName(), osc::GetItemRect());
                 }
             }
 

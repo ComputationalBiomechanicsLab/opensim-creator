@@ -118,17 +118,8 @@ private:
     std::unordered_map<ShaderInputs, std::unique_ptr<Shader>> m_Cache;
 };
 
+
 // public API (PIMPL)
-
-osc::Shader const& osc::ShaderCache::get(std::string_view vertexShaderResource, std::string_view fragmentShaderResource)
-{
-    return App::shaders().m_Impl->get(std::move(vertexShaderResource), std::move(fragmentShaderResource));
-}
-
-osc::Shader const& osc::ShaderCache::get(std::string_view vertexShaderResource, std::string_view geometryShaderResource, std::string_view fragmentShaderResource)
-{
-    return App::shaders().m_Impl->get(std::move(vertexShaderResource), std::move(geometryShaderResource), std::move(fragmentShaderResource));
-}
 
 osc::ShaderCache::ShaderCache() :
     m_Impl{std::make_unique<Impl>()}
@@ -138,3 +129,18 @@ osc::ShaderCache::ShaderCache() :
 osc::ShaderCache::ShaderCache(ShaderCache&&) noexcept = default;
 osc::ShaderCache& osc::ShaderCache::operator=(ShaderCache&&) noexcept = default;
 osc::ShaderCache::~ShaderCache() noexcept = default;
+
+osc::Shader const& osc::ShaderCache::get(
+    std::string_view vertexShaderResource,
+    std::string_view fragmentShaderResource)
+{
+    return m_Impl->get(std::move(vertexShaderResource), std::move(fragmentShaderResource));
+}
+
+osc::Shader const& osc::ShaderCache::get(
+    std::string_view vertexShaderResource,
+    std::string_view geometryShaderResource,
+    std::string_view fragmentShaderResource)
+{
+    return m_Impl->get(std::move(vertexShaderResource), std::move(geometryShaderResource), std::move(fragmentShaderResource));
+}

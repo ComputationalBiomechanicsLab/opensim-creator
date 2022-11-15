@@ -29,17 +29,18 @@
 
 static std::map<std::string, std::shared_ptr<osc::Mesh const>> GenerateMeshLookup()
 {
+    osc::MeshCache& cache = osc::App::singleton<osc::MeshCache>();
     return
     {
-        {"sphere", osc::App::meshes().getSphereMesh()},
-        {"cylinder", osc::App::meshes().getCylinderMesh()},
-        {"brick", osc::App::meshes().getBrickMesh()},
-        {"cone", osc::App::meshes().getConeMesh()},
-        {"floor", osc::App::meshes().getFloorMesh()},
-        {"100x100 grid", osc::App::meshes().get100x100GridMesh()},
-        {"cube (wire)", osc::App::meshes().getCubeWireMesh()},
-        {"yline", osc::App::meshes().getYLineMesh()},
-        {"quad", osc::App::meshes().getTexturedQuadMesh()},
+        {"sphere", cache.getSphereMesh()},
+        {"cylinder", cache.getCylinderMesh()},
+        {"brick", cache.getBrickMesh()},
+        {"cone", cache.getConeMesh()},
+        {"floor", cache.getFloorMesh()},
+        {"100x100 grid", cache.get100x100GridMesh()},
+        {"cube (wire)", cache.getCubeWireMesh()},
+        {"yline", cache.getYLineMesh()},
+        {"quad", cache.getTexturedQuadMesh()},
     };
 }
 

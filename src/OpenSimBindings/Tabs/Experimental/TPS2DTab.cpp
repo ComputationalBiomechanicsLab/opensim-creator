@@ -574,8 +574,8 @@ private:
     Texture2D m_BoxTexture = osc::LoadTexture2DFromImageResource("textures/container.jpg");
     Mesh m_InputGrid = GenNxMTriangleQuad2DGrid({50, 50});
     Mesh m_OutputGrid = m_InputGrid;
-    Material m_Material = Material{App::shaders().get("shaders/Textured.vert", "shaders/Textured.frag")};
-    Material m_WireframeMaterial = Material{App::shaders().get("shaders/SolidColor.vert", "shaders/SolidColor.frag")};
+    Material m_Material = Material{App::singleton<ShaderCache>().get("shaders/Textured.vert", "shaders/Textured.frag")};
+    Material m_WireframeMaterial = Material{App::singleton<ShaderCache>().get("shaders/SolidColor.vert", "shaders/SolidColor.frag")};
     Camera m_Camera;
     std::optional<RenderTexture> m_InputRender;
     std::optional<RenderTexture> m_OutputRender;

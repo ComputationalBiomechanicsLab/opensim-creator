@@ -45,7 +45,7 @@ namespace
 
     void DrawGrid(glm::quat const& rotation, std::vector<osc::SceneDecoration>& out)
     {
-        std::shared_ptr<osc::Mesh const> const grid = osc::App::meshes().get100x100GridMesh();
+        std::shared_ptr<osc::Mesh const> const grid = osc::App::singleton<osc::MeshCache>().get100x100GridMesh();
 
         osc::Transform t;
         t.scale *= glm::vec3{50.0f, 50.0f, 1.0f};
@@ -64,13 +64,13 @@ void osc::DrawBVH(BVH const& sceneBVH, std::vector<SceneDecoration>& out)
         return;
     }
 
-    std::shared_ptr<Mesh const> const cube = App::meshes().getCubeWireMesh();
+    std::shared_ptr<Mesh const> const cube = App::singleton<MeshCache>().getCubeWireMesh();
     DrawBVHRecursive(cube, sceneBVH, 0, out);
 }
 
 void osc::DrawAABB(AABB const& aabb, std::vector<SceneDecoration>& out)
 {
-    std::shared_ptr<Mesh const> const cube = App::meshes().getCubeWireMesh();
+    std::shared_ptr<Mesh const> const cube = App::singleton<MeshCache>().getCubeWireMesh();
     glm::vec4 const color = {0.0f, 0.0f, 0.0f, 1.0f};
 
     Transform t;
@@ -82,7 +82,7 @@ void osc::DrawAABB(AABB const& aabb, std::vector<SceneDecoration>& out)
 
 void osc::DrawAABBs(nonstd::span<AABB const> aabbs, std::vector<SceneDecoration>& out)
 {
-    std::shared_ptr<Mesh const> const cube = App::meshes().getCubeWireMesh();
+    std::shared_ptr<Mesh const> const cube = App::singleton<MeshCache>().getCubeWireMesh();
     glm::vec4 const color = {0.0f, 0.0f, 0.0f, 1.0f};
 
     for (AABB const& aabb : aabbs)
@@ -97,7 +97,7 @@ void osc::DrawAABBs(nonstd::span<AABB const> aabbs, std::vector<SceneDecoration>
 
 void osc::DrawXZFloorLines(std::vector<SceneDecoration>& out, float scale)
 {
-    std::shared_ptr<Mesh const> const yLine = App::meshes().getYLineMesh();
+    std::shared_ptr<Mesh const> const yLine = App::singleton<MeshCache>().getYLineMesh();
 
     // X line
     {
@@ -263,7 +263,7 @@ glm::vec3 osc::AverageCenterpoint(Mesh const& m)
 
 osc::Material osc::CreateWireframeOverlayMaterial()
 {
-    osc::Material material{osc::ShaderCache::get("shaders/SceneSolidColor.vert", "shaders/SceneSolidColor.frag")};
+    osc::Material material{App::singleton<ShaderCache>().get("shaders/SceneSolidColor.vert", "shaders/SceneSolidColor.frag")};
     material.setVec4("uDiffuseColor", {0.0f, 0.0f, 0.0f, 0.6f});
     material.setWireframeMode(true);
     material.setTransparent(true);

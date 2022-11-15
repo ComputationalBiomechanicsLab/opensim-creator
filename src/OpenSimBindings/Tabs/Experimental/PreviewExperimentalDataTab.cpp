@@ -348,7 +348,7 @@ namespace
 
         return osc::SceneDecoration
         {
-            osc::App::meshes().get100x100GridMesh(),
+            osc::App::singleton<osc::MeshCache>().get100x100GridMesh(),
             t,
             color,
             std::string{},
@@ -402,7 +402,7 @@ namespace
 
             out(osc::SceneDecoration
             {
-                osc::App::meshes().getCylinderMesh(),
+                osc::App::singleton<osc::MeshCache>().getCylinderMesh(),
                 t,
                 arrow.color,
                 arrow.label,
@@ -419,7 +419,7 @@ namespace
 
             out(osc::SceneDecoration
             {
-                osc::App::meshes().getConeMesh(),
+                osc::App::singleton<osc::MeshCache>().getConeMesh(),
                 t,
                 arrow.color,
                 arrow.label,

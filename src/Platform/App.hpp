@@ -5,6 +5,7 @@
 #include "src/Platform/AppClock.hpp"
 #include "src/Platform/MouseState.hpp"
 #include "src/Platform/RecentFile.hpp"
+#include "src/Platform/ValueHolder.hpp"
 #include "src/Utils/Assertions.hpp"
 
 #include <SDL_events.h>
@@ -16,16 +17,16 @@
 #include <filesystem>
 #include <future>
 #include <memory>
+#include <mutex>
 #include <ratio>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
 namespace osc { class Config; }
 namespace osc { class Screen; }
-namespace osc { class ShaderCache; }
-namespace osc { class MeshCache; }
 
 namespace osc
 {
@@ -35,6 +36,27 @@ namespace osc
     // systems (windowing, event pumping, timers, graphics, logging, etc.)
     class App {
     public:
+        template<class T>
+        static T& singleton()
+        {
+            static std::mutex g_SingletonMutexForType;
+
+            App& app = upd();
+            size_t const id = typeid(T).hash_code();
+
+            std::lock_guard lock{g_SingletonMutexForType};
+            if (TypeErasedValueHolder* holder = app.tryUpdSingleton(id))
+            {
+                return dynamic_cast<ValueHolder<T>*>(holder)->upd();
+            }
+            else
+            {
+                auto ptr = std::make_unique<ValueHolder<T>>();
+                T& rv = ptr->upd();
+                app.setSingleton(id, std::move(ptr));
+                return rv;
+            }
+        }
 
         // returns the currently-active application global
         static App& upd()
@@ -48,12 +70,6 @@ namespace osc
             OSC_ASSERT(g_Current && "App is not initialized: have you constructed a (singleton) instance of App?");
             return *g_Current;
         }
-
-        // returns the global shader cache
-        static ShaderCache& shaders();
-
-        // returns the global meshes cache
-        static MeshCache& meshes();
 
         // returns a full filesystem path to a (runtime- and configuration-dependent) application resource
         static std::filesystem::path resource(std::string_view);
@@ -284,13 +300,13 @@ namespace osc
         // this addition is persisted between app boots
         void addRecentFile(std::filesystem::path const&);
 
-        // returns the application-wide (global) shader cache
-        ShaderCache& getShaderCache();
-
-        // returns the application-wide (global) mesh cache
-        MeshCache& getMeshCache();
-
     private:
+        // try and retrieve a virtual singleton that has the same lifetime as the app
+        TypeErasedValueHolder* tryUpdSingleton(size_t typeID);
+
+        // set the singleton instance for a given typeID
+        void setSingleton(size_t typeID, std::unique_ptr<TypeErasedValueHolder>);
+
         friend void ImGuiInit();
         friend void ImGuiNewFrame();
         friend void ImGuiRender();

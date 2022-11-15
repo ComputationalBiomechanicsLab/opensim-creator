@@ -4,6 +4,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Maths/Constants.hpp"
+#include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/Algorithms.hpp"
@@ -132,7 +133,7 @@ static void DrawIthStringEditor(
     {
         edited = true;
     }
-    osc::AddFrameAnnotationToLastItem("ObjectPropertiesEditor::StringEditor/" + prop.getName());
+    osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::StringEditor/" + prop.getName(), osc::GetItemRect());
 
     bool shouldUpdate = edited && !rv && ItemValueShouldBeSaved();
     if (shouldUpdate)
@@ -160,7 +161,7 @@ static void Draw1DoubleValueEditor(
         double dv = static_cast<double>(fv);
         rv = MakePropValueSetter<double>(dv);
     }
-    osc::AddFrameAnnotationToLastItem("ObjectPropertiesEditor::DoubleEditor/" + prop.getName());
+    osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::DoubleEditor/" + prop.getName(), osc::GetItemRect());
 }
 
 // draw a property editor for 2 double values in a list
@@ -194,7 +195,7 @@ static void Draw2DoubleValueEditor(
             pd->setValue(1, static_cast<double>(vs[1]));
         };
     }
-    osc::AddFrameAnnotationToLastItem("ObjectPropertiesEditor::2DoubleEditor/" + prop.getName());
+    osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::2DoubleEditor/" + prop.getName(), osc::GetItemRect());
 }
 
 
@@ -382,7 +383,7 @@ namespace
                     {
                         m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                     }
-                    osc::AddFrameAnnotationToLastItem("ObjectPropertiesEditor::OrientationToggle/" + prop.getName());
+                    osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::OrientationToggle/" + prop.getName(), osc::GetItemRect());
                     osc::DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in radians (click to switch to degrees)");
                 }
                 else
@@ -391,7 +392,7 @@ namespace
                     {
                         m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                     }
-                    osc::AddFrameAnnotationToLastItem("ObjectPropertiesEditor::OrientationToggle/" + prop.getName());
+                    osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::OrientationToggle/" + prop.getName(), osc::GetItemRect());
                     osc::DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in degrees (click to switch to radians)");
                 }
 
@@ -438,7 +439,7 @@ namespace
                     annotation << i;
                     annotation << '/';
                     annotation << prop.getName();
-                    osc::AddFrameAnnotationToLastItem(std::move(annotation).str());
+                    osc::App::upd().addFrameAnnotation(std::move(annotation).str(), osc::GetItemRect());
                 }
 
                 if (ItemValueShouldBeSaved())
@@ -615,7 +616,7 @@ namespace
                     m_RetainedValue[3*i + 1] = static_cast<double>(fv[3*i + 1]);
                     m_RetainedValue[3*i + 2] = static_cast<double>(fv[3*i + 2]);
                 }
-                osc::AddFrameAnnotationToLastItem("ObjectPropertiesEditor::Vec6Editor/" + prop.getName());
+                osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::Vec6Editor/" + prop.getName(), osc::GetItemRect());
                 shouldSave = shouldSave || ItemValueShouldBeSaved();
                 ImGui::PopID();
             }

@@ -151,7 +151,7 @@ public:
         {
             osc::ActionStartSimulatingModel(*m_Parent, *m_Model);
         }
-        osc::AddFrameAnnotationToLastItem("Simulate Button");
+        osc::App::upd().addFrameAnnotation("Simulate Button", osc::GetItemRect());
         ImGui::PopStyleColor();
 
         if (ImGui::Button(ICON_FA_EDIT " Edit simulation settings"))

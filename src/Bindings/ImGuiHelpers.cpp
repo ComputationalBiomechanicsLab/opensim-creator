@@ -7,7 +7,6 @@
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
-#include "src/Platform/App.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 #include "src/Utils/UID.hpp"
 #include "osc_config.hpp"
@@ -252,6 +251,11 @@ void osc::DrawTextureAsImGuiImage(RenderTexture& t, glm::vec2 dims)
 void osc::DrawTextureAsImGuiImage(RenderTexture& tex)
 {
     return DrawTextureAsImGuiImage(tex, tex.getDimensions());
+}
+
+osc::Rect osc::GetItemRect()
+{
+    return {ImGui::GetItemRectMin(), ImGui::GetItemRectMax()};
 }
 
 osc::ImGuiItemHittestResult osc::HittestLastImguiItem()
@@ -582,9 +586,4 @@ void osc::TextCentered(std::string const& s)
 
     ImGui::SetCursorPosX(0.5f * (windowWidth - textWidth));
     ImGui::TextUnformatted(s.c_str());
-}
-
-void osc::AddFrameAnnotationToLastItem(std::string_view v)
-{
-    App::upd().addFrameAnnotation(v, {ImGui::GetItemRectMin(), ImGui::GetItemRectMax()});
 }

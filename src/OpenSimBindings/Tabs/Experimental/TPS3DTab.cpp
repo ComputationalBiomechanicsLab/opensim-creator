@@ -998,7 +998,7 @@ namespace
         osc::Material WireframeMaterial = osc::CreateWireframeOverlayMaterial();
 
         // shared sphere mesh (used by rendering code)
-        std::shared_ptr<osc::Mesh const> LandmarkSphere = osc::App::meshes().getSphereMesh();
+        std::shared_ptr<osc::Mesh const> LandmarkSphere = osc::App::singleton<osc::MeshCache>().getSphereMesh();
 
         // color of any in-scene landmark spheres
         glm::vec4 LandmarkColor = {1.0f, 0.0f, 0.0f, 1.0f};
