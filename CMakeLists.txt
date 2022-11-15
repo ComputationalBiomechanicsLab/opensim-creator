@@ -561,8 +561,6 @@ add_library(osccore STATIC
     src/Utils/Cow.hpp
     src/Utils/Cpp20Shims.hpp
     src/Utils/CStringView.hpp
-    src/Utils/DedupedString.cpp
-    src/Utils/DedupedString.hpp
     src/Utils/DefaultConstructOnCopy.hpp
     src/Utils/FileChangePoller.cpp
     src/Utils/FileChangePoller.hpp
