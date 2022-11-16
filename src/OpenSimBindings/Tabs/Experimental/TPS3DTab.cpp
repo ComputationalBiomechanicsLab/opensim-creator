@@ -745,7 +745,7 @@ namespace
     }
 
     // action: prompt the user to save the result (transformed) mesh to an obj file
-    void ActionTrySaveResultToOBJ(osc::Mesh const& mesh)
+    void ActionTrySaveMeshToObj(osc::Mesh const& mesh)
     {
         std::filesystem::path const filePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
 
@@ -772,7 +772,7 @@ namespace
     }
 
     // action: prompt the user to save the result (transformed) mesh to an stl file
-    void ActionTrySaveResultToSTL(osc::Mesh const& mesh)
+    void ActionTrySaveMeshToStl(osc::Mesh const& mesh)
     {
         std::filesystem::path const filePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
 
@@ -1124,6 +1124,7 @@ namespace
         }
 
     private:
+        // draws all of the panel's content
         void implDrawContent() override
         {
             // compute UI stuff (render rect, mouse pos, etc.)
@@ -1217,6 +1218,7 @@ namespace
             drawOverlays(htResult.rect);
         }
 
+        // returns the closest collision, if any, between the provided camera ray and a landmark
         std::optional<TPSTabHover> getMouseLandmarkCollisions(osc::Line const& cameraRay) const
         {
             std::optional<TPSTabHover> rv;
@@ -1234,48 +1236,145 @@ namespace
             return rv;
         }
 
+        // draws 2D ImGui overlays over the scene render
         void drawOverlays(osc::Rect const& renderRect)
         {
-            // ImGui: set cursor to draw over the top-right of the render texture (with padding)
-            glm::vec2 const padding = {10.0f, 10.0f};
-            ImGui::SetCursorScreenPos(renderRect.p1 + padding);
+            ImGui::SetCursorScreenPos(renderRect.p1 + m_OverlayPadding);
 
-            ImGui::TextDisabled(ICON_FA_INFO);
+            drawInformationIcon();
+
+            ImGui::SameLine();
+
+            drawImportButton();
+
+            ImGui::SameLine();
+
+            drawExportButton();
+
+            ImGui::SameLine();
+
+            drawAutoFitCameraButton();
+
+            ImGui::SameLine();
+
+            drawLandmarkRadiusSlider();
+        }
+
+        // draws a information icon that shows basic mesh info when hovered
+        void drawInformationIcon()
+        {
+            // use text-like button to ensure the information icon aligns with other row items
+            ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.0f, 0.0f, 0.0f});
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {0.0f, 0.0f, 0.0f, 0.0f});
+            ImGui::Button(ICON_FA_INFO_CIRCLE);
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor();
+
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
                 ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                ImGui::Text("num verts = %zu", m_State->getInputMesh(m_DocumentIdentifier).getVerts().size());
-                ImGui::Text("num tris = %zu", m_State->getInputMesh(m_DocumentIdentifier).getIndices().size()/3);
+
+                ImGui::TextDisabled("Input Information:");
+
+                drawInformationTable();
+
                 ImGui::PopTextWrapPos();
                 ImGui::EndTooltip();
             }
+        }
 
-            ImGui::SameLine();
-
-            // ImGui: draw "browse for new mesh" button
-            if (ImGui::Button("browse"))
+        // draws a table containing useful input information (handy for debugging)
+        void drawInformationTable()
+        {
+            if (ImGui::BeginTable("##inputinfo", 2))
             {
-                ActionBrowseForNewMesh(*m_State->EditedDocument, m_DocumentIdentifier);
+                ImGui::TableSetupColumn("Name");
+                ImGui::TableSetupColumn("Value");
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("# landmarks");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%zu", m_State->getInputDocument(m_DocumentIdentifier).Landmarks.size());
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("# verts");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%zu", m_State->getInputMesh(m_DocumentIdentifier).getVerts().size());
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("# triangles");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%zu", m_State->getInputMesh(m_DocumentIdentifier).getIndices().size()/3);
+
+                ImGui::EndTable();
             }
+        }
 
-            ImGui::SameLine();
+        // draws an import button that enables the user to import things for this input
+        void drawImportButton()
+        {
+            ImGui::Button(ICON_FA_FILE_IMPORT " import" ICON_FA_CARET_DOWN);
+            if (ImGui::BeginPopupContextItem("##importcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
+            {
+                if (ImGui::MenuItem("Mesh"))
+                {
+                    ActionBrowseForNewMesh(*m_State->EditedDocument, m_DocumentIdentifier);
+                }
+                if (ImGui::MenuItem("Landmarks from CSV"))
+                {
+                    ActionLoadLandmarksCSV(*m_State->EditedDocument, m_DocumentIdentifier);
+                }
+                ImGui::EndPopup();
+            }
+        }
 
-            // ImGui: draw "autofit camera" button
-            if (ImGui::Button(ICON_FA_EXPAND))
+        // draws an export button that enables the user to export things from this input
+        void drawExportButton()
+        {
+            ImGui::Button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
+            if (ImGui::BeginPopupContextItem("##exportcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
+            {
+                if (ImGui::MenuItem("Mesh to OBJ"))
+                {
+                    ActionTrySaveMeshToObj(m_State->getInputMesh(m_DocumentIdentifier));
+                }
+                if (ImGui::MenuItem("Mesh to STL"))
+                {
+                    ActionTrySaveMeshToStl(m_State->getInputMesh(m_DocumentIdentifier));
+                }
+                if (ImGui::MenuItem("Landmarks to CSV"))
+                {
+                    ActionSaveLandmarksToCSV(m_State->EditedDocument->getScratch(), m_DocumentIdentifier);
+                }
+                ImGui::EndPopup();
+            }
+        }
+
+        // draws a button that auto-fits the camera to the 3D scene
+        void drawAutoFitCameraButton()
+        {
+            if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
             {
                 osc::AutoFocus(m_Camera, m_State->getInputMesh(m_DocumentIdentifier).getBounds());
                 m_State->LinkedCameraBase = m_Camera;
             }
+            osc::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
+        }
 
-            ImGui::SameLine();
+        // draws a slider that lets the user edit how large the landmarks are
+        void drawLandmarkRadiusSlider()
+        {
+            // note: log scale is important: some users have meshes that
+            // are in different scales (e.g. millimeters)
+            ImGuiSliderFlags const flags = ImGuiSliderFlags_Logarithmic;
 
-            // ImGui: draw landmark radius editor
-            {
-                char const* label = "landmark radius";
-                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - padding.x);
-                ImGui::SliderFloat(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", ImGuiSliderFlags_Logarithmic);
-            }
+            char const* const label = "landmark radius";
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - m_OverlayPadding.x);
+            ImGui::SliderFloat(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
 
         // renders this panel's 3D scene to a texture
@@ -1289,8 +1388,10 @@ namespace
             return m_CachedRenderer.draw(decorations, params);
         }
 
-        // returns a fresh list of decorations for this panels
-        std::vector<osc::SceneDecoration> generateDecorations(std::optional<osc::RayCollision> const& maybeMeshCollision, std::optional<TPSTabHover> const& maybeLandmarkCollision) const
+        // returns a fresh list of 3D decorations for this panel's 3D render
+        std::vector<osc::SceneDecoration> generateDecorations(
+            std::optional<osc::RayCollision> const& maybeMeshCollision,
+            std::optional<TPSTabHover> const& maybeLandmarkCollision) const
         {
             // generate in-scene 3D decorations
             std::vector<osc::SceneDecoration> decorations;
@@ -1343,6 +1444,7 @@ namespace
         osc::CachedSceneRenderer m_CachedRenderer{osc::App::config(), osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()};
         bool m_WireframeMode = true;
         float m_LandmarkRadius = 0.05f;
+        glm::vec2 m_OverlayPadding = {10.0f, 10.0f};
     };
 
     // a "result" panel (i.e. after applying a warp to the source)
@@ -1414,7 +1516,7 @@ namespace
 
                 if (ImGui::Button(ICON_FA_SAVE))
                 {
-                    ActionTrySaveResultToOBJ(m_State->getTransformedMesh());
+                    ActionTrySaveMeshToObj(m_State->getTransformedMesh());
                 }
                 osc::DrawTooltipIfItemHovered("export to OBJ");
 
@@ -1422,7 +1524,7 @@ namespace
 
                 if (ImGui::Button(ICON_FA_SAVE " "))
                 {
-                    ActionTrySaveResultToSTL(m_State->getTransformedMesh());
+                    ActionTrySaveMeshToStl(m_State->getTransformedMesh());
                 }
                 osc::DrawTooltipIfItemHovered("export to STL");
 
