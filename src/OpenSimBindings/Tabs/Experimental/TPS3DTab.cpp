@@ -1528,6 +1528,10 @@ namespace
             // ImGui: set cursor to draw over the top-right of the render texture (with padding)
             ImGui::SetCursorScreenPos(renderRect.p1 + m_OverlayPadding);
 
+            drawInformationIcon();
+
+            ImGui::SameLine();
+
             drawExportButton();
 
             ImGui::SameLine();
@@ -1543,6 +1547,54 @@ namespace
             ImGui::SameLine();
 
             drawBlendingFactorSlider();
+        }
+
+        // draws a information icon that shows basic mesh info when hovered
+        void drawInformationIcon()
+        {
+            // use text-like button to ensure the information icon aligns with other row items
+            ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.0f, 0.0f, 0.0f});
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {0.0f, 0.0f, 0.0f, 0.0f});
+            ImGui::Button(ICON_FA_INFO_CIRCLE);
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor();
+
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+
+                ImGui::TextDisabled("Result Information:");
+
+                drawInformationTable();
+
+                ImGui::PopTextWrapPos();
+                ImGui::EndTooltip();
+            }
+        }
+
+        // draws a table containing useful input information (handy for debugging)
+        void drawInformationTable()
+        {
+            if (ImGui::BeginTable("##inputinfo", 2))
+            {
+                ImGui::TableSetupColumn("Name");
+                ImGui::TableSetupColumn("Value");
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("# verts");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%zu", m_State->getTransformedMesh().getVerts().size());
+
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("# triangles");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%zu", m_State->getTransformedMesh().getIndices().size()/3);
+
+                ImGui::EndTable();
+            }
         }
 
         // draws an export button that enables the user to export things from this input
