@@ -744,6 +744,7 @@ namespace
         }
     }
 
+    // action: prompt the user to save the result (transformed) mesh to an obj file
     void ActionTrySaveResultToOBJ(osc::Mesh const& mesh)
     {
         std::filesystem::path const filePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
@@ -753,7 +754,11 @@ namespace
             return;  // user didn't select a save location
         }
 
-        std::ofstream outfile{filePath};
+        std::ios_base::openmode const flags =
+            std::ios_base::out |
+            std::ios_base::trunc;
+
+        std::ofstream outfile{filePath, flags};
 
         if (!outfile)
         {
@@ -766,6 +771,7 @@ namespace
         writer.write(mesh, osc::ObjWriterFlags_IgnoreNormals);
     }
 
+    // action: prompt the user to save the result (transformed) mesh to an stl file
     void ActionTrySaveResultToSTL(osc::Mesh const& mesh)
     {
         std::filesystem::path const filePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
@@ -775,7 +781,12 @@ namespace
             return;  // user didn't select a save location
         }
 
-        std::ofstream outfile{filePath, std::ios_base::binary};
+        std::ios_base::openmode const flags =
+            std::ios_base::binary |
+            std::ios_base::out |
+            std::ios_base::trunc;
+
+        std::ofstream outfile{filePath, flags};
 
         if (!outfile)
         {
