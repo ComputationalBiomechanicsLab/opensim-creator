@@ -25,6 +25,7 @@
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
+#include "src/Tabs/TabHost.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/Utils/Perf.hpp"
@@ -1014,6 +1015,12 @@ namespace
     // (shared by all panels)
     struct TPSTabSharedState final {
 
+        explicit TPSTabSharedState(osc::UID tabID_, osc::TabHost* parent_) :
+            m_TabID{std::move(tabID_)},
+            m_Parent{std::move(parent_)}
+        {
+        }
+
         osc::Mesh const& getTransformedMesh()
         {
             return ResultCache.lookup(EditedDocument->getScratch());
@@ -1032,6 +1039,11 @@ namespace
         osc::Mesh const& getInputMesh(TPSDocumentIdentifier identifier) const
         {
             return getInputDocument(identifier).Mesh;
+        }
+
+        void requestCloseTab()
+        {
+            m_Parent->closeTab(m_TabID);
         }
 
         // the document the user is editing
@@ -1066,6 +1078,10 @@ namespace
 
         // available/active panels that the user can toggle via the `window` menu
         std::vector<TPSUIPanel> Panels = GetAvailablePanels();
+
+    private:
+        osc::UID m_TabID;
+        osc::TabHost* m_Parent;
     };
 
     // append decorations that are common to all panels to the given output vector
@@ -1509,59 +1525,67 @@ namespace
         // draw ImGui overlays over a result panel
         void drawOverlays(osc::Rect const& renderRect)
         {
-            glm::vec2 const padding = {10.0f, 10.0f};
+            // ImGui: set cursor to draw over the top-right of the render texture (with padding)
+            ImGui::SetCursorScreenPos(renderRect.p1 + m_OverlayPadding);
 
-            // ImGui: draw buttons etc. at the top of the panel
+            drawExportButton();
+
+            ImGui::SameLine();
+
+            drawAutoFitCameraButton();
+
+            ImGui::SameLine();
+
             {
-                // ImGui: set cursor to draw over the top-right of the render texture (with padding)
-                ImGui::SetCursorScreenPos(renderRect.p1 + padding);
+                ImGui::Checkbox("show destination", &m_ShowDestinationMesh);
+            }
 
-                // ImGui: draw "autofit camera" button
-                if (ImGui::Button(ICON_FA_EXPAND))
-                {
-                    osc::AutoFocus(m_Camera, m_State->getTransformedMesh().getBounds());
-                    m_State->LinkedCameraBase = m_Camera;
-                }
+            ImGui::SameLine();
 
-                ImGui::SameLine();
+            drawBlendingFactorSlider();
+        }
 
-                if (ImGui::Button(ICON_FA_SAVE))
+        // draws an export button that enables the user to export things from this input
+        void drawExportButton()
+        {
+            ImGui::Button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
+            if (ImGui::BeginPopupContextItem("##exportcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
+            {
+                if (ImGui::MenuItem("Mesh to OBJ"))
                 {
                     ActionTrySaveMeshToObj(m_State->getTransformedMesh());
                 }
-                osc::DrawTooltipIfItemHovered("export to OBJ");
-
-                ImGui::SameLine();
-
-                if (ImGui::Button(ICON_FA_SAVE " "))
+                if (ImGui::MenuItem("Mesh to STL"))
                 {
                     ActionTrySaveMeshToStl(m_State->getTransformedMesh());
                 }
-                osc::DrawTooltipIfItemHovered("export to STL");
-
-                ImGui::SameLine();
-
-                // ImGui: draw checkbox for toggling whether to show the destination mesh in the scene
-                {
-                    ImGui::Checkbox("show destination", &m_ShowDestinationMesh);
-                }
+                ImGui::EndPopup();
             }
+        }
 
-            // ImGui: draw slider overlay that controls TPS blend factor at the bottom of the panel
+        // draws a button that auto-fits the camera to the 3D scene
+        void drawAutoFitCameraButton()
+        {
+            if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
             {
-                float const panelHeight = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y;
+                osc::AutoFocus(m_Camera, m_State->getTransformedMesh().getBounds());
+                m_State->LinkedCameraBase = m_Camera;
+            }
+            osc::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
+        }
 
-                ImGui::SetCursorScreenPos({renderRect.p1.x + padding.x, renderRect.p2.y - (panelHeight + padding.y)});
-                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - padding.x - ImGui::CalcTextSize("blending factor").x - ImGui::GetStyle().ItemSpacing.x);
-                float factor = m_State->EditedDocument->getScratch().BlendingFactor;
-                if (ImGui::SliderFloat("blending factor", &factor, 0.0f, 1.0f))
-                {
-                    ActionSetBlendFactor(*m_State->EditedDocument, factor);
-                }
-                if (ImGui::IsItemDeactivatedAfterEdit())
-                {
-                    ActionSetBlendFactorAndSave(*m_State->EditedDocument, factor);
-                }
+        void drawBlendingFactorSlider()
+        {
+            char const* const label = "blending factor";
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - m_OverlayPadding.x);
+            float factor = m_State->EditedDocument->getScratch().BlendingFactor;
+            if (ImGui::SliderFloat(label, &factor, 0.0f, 1.0f))
+            {
+                ActionSetBlendFactor(*m_State->EditedDocument, factor);
+            }
+            if (ImGui::IsItemDeactivatedAfterEdit())
+            {
+                ActionSetBlendFactorAndSave(*m_State->EditedDocument, factor);
             }
         }
 
@@ -1600,6 +1624,7 @@ namespace
         };
         bool m_WireframeMode = true;
         bool m_ShowDestinationMesh = false;
+        glm::vec2 m_OverlayPadding = {10.0f, 10.0f};
     };
 
     // draws the top toolbar (bar containing icons for new, save, open, undo, redo, etc.)
@@ -1808,35 +1833,65 @@ namespace
     private:
         void drawContent()
         {
-            if (ImGui::MenuItem("New Document"))
+            if (ImGui::MenuItem(ICON_FA_FILE " New"))
             {
                 ActionCreateNewDocument(*m_TabState->EditedDocument);
             }
-            if (ImGui::MenuItem("Load Source Mesh"))
+
+            if (ImGui::BeginMenu(ICON_FA_FILE_IMPORT " Import"))
+            {
+                drawImportMenuContent();
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu(ICON_FA_FILE_EXPORT " Export"))
+            {
+                drawExportMenuContent();
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::MenuItem(ICON_FA_TIMES " Close"))
+            {
+                m_TabState->requestCloseTab();
+            }
+
+            if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit"))
+            {
+                osc::App::upd().requestQuit();
+            }
+        }
+
+        void drawImportMenuContent()
+        {
+            if (ImGui::MenuItem("Source Mesh"))
             {
                 ActionBrowseForNewMesh(*m_TabState->EditedDocument, TPSDocumentIdentifier::Source);
             }
-            if (ImGui::MenuItem("Load Destination Mesh"))
+            if (ImGui::MenuItem("Destination Mesh"))
             {
                 ActionBrowseForNewMesh(*m_TabState->EditedDocument, TPSDocumentIdentifier::Destination);
             }
-            if (ImGui::MenuItem("Load Source Landmarks from CSV"))
+            if (ImGui::MenuItem("Source Landmarks from CSV"))
             {
                 ActionLoadLandmarksCSV(*m_TabState->EditedDocument, TPSDocumentIdentifier::Source);
             }
-            if (ImGui::MenuItem("Load Destination Landmarks from CSV"))
+            if (ImGui::MenuItem("Destination Landmarks from CSV"))
             {
                 ActionLoadLandmarksCSV(*m_TabState->EditedDocument, TPSDocumentIdentifier::Destination);
             }
-            if (ImGui::MenuItem("Save Source Landmarks to CSV"))
+        }
+
+        void drawExportMenuContent()
+        {
+            if (ImGui::MenuItem("Source Landmarks to CSV"))
             {
                 ActionSaveLandmarksToCSV(m_TabState->EditedDocument->getScratch(), TPSDocumentIdentifier::Source);
             }
-            if (ImGui::MenuItem("Save Destination Landmarks to CSV"))
+            if (ImGui::MenuItem("Destination Landmarks to CSV"))
             {
                 ActionSaveLandmarksToCSV(m_TabState->EditedDocument->getScratch(), TPSDocumentIdentifier::Destination);
             }
-            if (ImGui::MenuItem("Save Landmark Pairs to CSV"))
+            if (ImGui::MenuItem("Landmark Pairs to CSV"))
             {
                 ActionSaveLandmarksToPairedCSV(m_TabState->EditedDocument->getScratch());
             }
@@ -2043,7 +2098,7 @@ public:
         App::upd().makeMainEventLoopPolling();
     }
 
-    bool onEvent(SDL_Event const&)
+    bool onEvent(SDL_Event const& e)
     {
         return false;
     }
@@ -2091,7 +2146,7 @@ private:
     TabHost* m_Parent;
 
     // top-level state that all panels can potentially access
-    std::shared_ptr<TPSTabSharedState> m_TabState = std::make_shared<TPSTabSharedState>();
+    std::shared_ptr<TPSTabSharedState> m_TabState = std::make_shared<TPSTabSharedState>(m_ID, m_Parent);
 
     // not-user-toggleable widgets
     TPS3DMainMenu m_MainMenu{m_TabState};
