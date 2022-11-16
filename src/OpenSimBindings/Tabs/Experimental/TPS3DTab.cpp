@@ -1127,24 +1127,23 @@ namespace
         // draws all of the panel's content
         void implDrawContent() override
         {
-            // compute UI stuff (render rect, mouse pos, etc.)
+            // compute top-level UI variables (render rect, mouse pos, etc.)
             osc::Rect const contentRect = osc::ContentRegionAvailScreenRect();
             glm::vec2 const contentRectDims = osc::Dimensions(contentRect);
             glm::vec2 const mousePos = ImGui::GetMousePos();
             osc::Line const cameraRay = m_Camera.unprojectTopLeftPosToWorldRay(mousePos - contentRect.p1, osc::Dimensions(contentRect));
-            bool const renderHovered = osc::IsPointInRect(contentRect, mousePos);
 
             // mesh hittest: compute whether the user is hovering over the mesh (affects rendering)
-            std::optional<osc::RayCollision> const meshCollision = renderHovered ?
+            std::optional<osc::RayCollision> const meshCollision = m_LastTextureHittestResult.isHovered ?
                 osc::GetClosestWorldspaceRayCollision(m_State->getInputMesh(m_DocumentIdentifier), osc::Transform{}, cameraRay) :
                 std::nullopt;
 
             // landmark hittest: compute whether the user is hovering over a landmark
-            std::optional<TPSTabHover> landmarkCollision = renderHovered ?
+            std::optional<TPSTabHover> landmarkCollision = m_LastTextureHittestResult.isHovered ?
                 getMouseLandmarkCollisions(cameraRay) :
                 std::nullopt;
 
-            // hover state:  update central hover state
+            // hover state: update central hover state
             if (landmarkCollision)
             {
                 // update central state to tell it that there's a new hover
@@ -1158,9 +1157,39 @@ namespace
             // render: draw the scene into the content rect and hittest it
             osc::RenderTexture& renderTexture = renderScene(contentRectDims, meshCollision, landmarkCollision);
             osc::DrawTextureAsImGuiImage(renderTexture);
-            osc::ImGuiItemHittestResult const htResult = osc::HittestLastImguiItem();
+            m_LastTextureHittestResult = osc::HittestLastImguiItem();
 
-            // if cameras are linked together, ensure all cameras match the "base" camera
+            // handle any events due to hovering over, clicking, etc.
+            handleInputAndHoverEvents(m_LastTextureHittestResult, meshCollision, landmarkCollision);
+
+            // draw any 2D ImGui overlays
+            drawOverlays(m_LastTextureHittestResult.rect);
+        }
+
+        // returns the closest collision, if any, between the provided camera ray and a landmark
+        std::optional<TPSTabHover> getMouseLandmarkCollisions(osc::Line const& cameraRay) const
+        {
+            std::optional<TPSTabHover> rv;
+            for (auto const& [id, pos] : m_State->getInputDocument(m_DocumentIdentifier).Landmarks)
+            {
+                std::optional<osc::RayCollision> const coll = osc::GetRayCollisionSphere(cameraRay, osc::Sphere{pos, m_LandmarkRadius});
+                if (coll)
+                {
+                    if (!rv || glm::length(rv->WorldspaceLocation - cameraRay.origin) > coll->distance)
+                    {
+                        rv.emplace(id, pos);
+                    }
+                }
+            }
+            return rv;
+        }
+
+        void handleInputAndHoverEvents(
+            osc::ImGuiItemHittestResult const& htResult,
+            std::optional<osc::RayCollision> const& meshCollision,
+            std::optional<TPSTabHover> const& landmarkCollision)
+        {
+            // event: if the cameras are linked together, ensure this camera is updated from the linked camera
             if (m_State->LinkCameras && m_Camera != m_State->LinkedCameraBase)
             {
                 if (m_State->OnlyLinkRotation)
@@ -1174,10 +1203,10 @@ namespace
                 }
             }
 
-            // update camera if user drags it around etc.
+            // event: if the user interacts with the render, update the camera as necessary
             if (htResult.isHovered)
             {
-                if (osc::UpdatePolarCameraFromImGuiUserInput(contentRectDims, m_Camera))
+                if (osc::UpdatePolarCameraFromImGuiUserInput(osc::Dimensions(htResult.rect), m_Camera))
                 {
                     m_State->LinkedCameraBase = m_Camera;  // reflects latest modification
                 }
@@ -1204,6 +1233,8 @@ namespace
                 }
             }
 
+            // event: if the user is hovering the render while something is selected and the user
+            // presses delete then the landmarks should be deleted
             if (htResult.isHovered && osc::IsAnyKeyPressed({ImGuiKey_Delete, ImGuiKey_Backspace}))
             {
                 ActionDeleteLandmarksByID(
@@ -1213,27 +1244,6 @@ namespace
                 );
                 m_State->UserSelection.clear();
             }
-
-            // draw any 2D ImGui overlays
-            drawOverlays(htResult.rect);
-        }
-
-        // returns the closest collision, if any, between the provided camera ray and a landmark
-        std::optional<TPSTabHover> getMouseLandmarkCollisions(osc::Line const& cameraRay) const
-        {
-            std::optional<TPSTabHover> rv;
-            for (auto const& [id, pos] : m_State->getInputDocument(m_DocumentIdentifier).Landmarks)
-            {
-                std::optional<osc::RayCollision> const coll = osc::GetRayCollisionSphere(cameraRay, osc::Sphere{pos, m_LandmarkRadius});
-                if (coll)
-                {
-                    if (!rv || glm::length(rv->WorldspaceLocation - cameraRay.origin) > coll->distance)
-                    {
-                        rv.emplace(id, pos);
-                    }
-                }
-            }
-            return rv;
         }
 
         // draws 2D ImGui overlays over the scene render
@@ -1442,6 +1452,7 @@ namespace
         TPSDocumentIdentifier m_DocumentIdentifier;
         osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getInputMesh(m_DocumentIdentifier).getBounds());
         osc::CachedSceneRenderer m_CachedRenderer{osc::App::config(), osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()};
+        osc::ImGuiItemHittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;
         float m_LandmarkRadius = 0.05f;
         glm::vec2 m_OverlayPadding = {10.0f, 10.0f};
