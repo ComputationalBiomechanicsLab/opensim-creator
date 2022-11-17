@@ -11,8 +11,7 @@ osc::UndoButton::UndoButton(std::shared_ptr<UndoRedo> undoRedo_) :
     m_UndoRedo{std::move(undoRedo_)}
 {
 }
-osc::UndoButton::UndoButton(UndoButton&& tmp) noexcept = default;
-osc::UndoButton& osc::UndoButton::operator=(UndoButton&&) noexcept = default;
+
 osc::UndoButton::~UndoButton() noexcept = default;
 
 void osc::UndoButton::draw()

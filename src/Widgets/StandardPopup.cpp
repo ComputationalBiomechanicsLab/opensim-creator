@@ -14,7 +14,7 @@ osc::StandardPopup::StandardPopup(
     std::string_view popupName,
     float width,
     float height,
-    int popupFlags) :
+    ImGuiWindowFlags popupFlags) :
 
     m_PopupName{std::move(popupName)},
     m_Dimensions{static_cast<int>(width), static_cast<int>(height)},

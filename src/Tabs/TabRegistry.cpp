@@ -92,17 +92,13 @@ namespace
     }
 }
 
-// public API
+// public API (PIMPL)
 
 osc::TabRegistryEntry::TabRegistryEntry(CStringView name_, std::unique_ptr<Tab>(*ctor_)(TabHost*)) :
     m_Impl{std::make_shared<Impl>(std::move(name_), std::move(ctor_))}
 {
 }
 
-osc::TabRegistryEntry::TabRegistryEntry(TabRegistryEntry const&) = default;
-osc::TabRegistryEntry::TabRegistryEntry(TabRegistryEntry&&) noexcept = default;
-osc::TabRegistryEntry& osc::TabRegistryEntry::operator=(TabRegistryEntry const&) = default;
-osc::TabRegistryEntry& osc::TabRegistryEntry::operator=(TabRegistryEntry&&) = default;
 osc::TabRegistryEntry::~TabRegistryEntry() noexcept = default;
 
 osc::CStringView osc::TabRegistryEntry::getName() const

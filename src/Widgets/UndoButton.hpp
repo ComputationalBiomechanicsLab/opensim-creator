@@ -11,9 +11,9 @@ namespace osc
     public:
         UndoButton(std::shared_ptr<UndoRedo>);
         UndoButton(UndoButton const&) = delete;
-        UndoButton(UndoButton&&) noexcept;
+        UndoButton(UndoButton&&) noexcept = default;
         UndoButton& operator=(UndoButton const&) = delete;
-        UndoButton& operator=(UndoButton&&) noexcept;
+        UndoButton& operator=(UndoButton&&) noexcept = default;
         ~UndoButton() noexcept;
 
         void draw();

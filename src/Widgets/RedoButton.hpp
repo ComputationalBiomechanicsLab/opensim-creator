@@ -10,9 +10,9 @@ namespace osc
     public:
         RedoButton(std::shared_ptr<UndoRedo>);
         RedoButton(RedoButton const&) = delete;
-        RedoButton(RedoButton&&) noexcept;
+        RedoButton(RedoButton&&) noexcept = default;
         RedoButton& operator=(RedoButton const&) = delete;
-        RedoButton& operator=(RedoButton&&) noexcept;
+        RedoButton& operator=(RedoButton&&) noexcept = default;
         ~RedoButton() noexcept;
 
         void draw();

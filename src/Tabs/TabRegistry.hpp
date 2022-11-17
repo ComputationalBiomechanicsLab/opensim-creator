@@ -15,10 +15,10 @@ namespace osc
     class TabRegistryEntry final {
     public:
         TabRegistryEntry(CStringView name_, std::unique_ptr<Tab>(*ctor_)(TabHost*));
-        TabRegistryEntry(TabRegistryEntry const&);
-        TabRegistryEntry(TabRegistryEntry&&) noexcept;
-        TabRegistryEntry& operator=(TabRegistryEntry const&);
-        TabRegistryEntry& operator=(TabRegistryEntry&&);
+        TabRegistryEntry(TabRegistryEntry const&) = default;
+        TabRegistryEntry(TabRegistryEntry&&) noexcept = default;
+        TabRegistryEntry& operator=(TabRegistryEntry const&) = default;
+        TabRegistryEntry& operator=(TabRegistryEntry&&) = default;
         ~TabRegistryEntry() noexcept;
 
         CStringView getName() const;

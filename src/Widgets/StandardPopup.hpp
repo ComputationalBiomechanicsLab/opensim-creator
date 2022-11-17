@@ -3,6 +3,7 @@
 #include "src/Widgets/VirtualPopup.hpp"
 
 #include <glm/vec2.hpp>
+#include <imgui.h>
 
 #include <string>
 #include <string_view>
@@ -28,7 +29,7 @@ namespace osc
             std::string_view popupName,
             float width,
             float height,
-            int popupFlags  // ImGuiWindowFlags
+            ImGuiWindowFlags
         );
 
     protected:

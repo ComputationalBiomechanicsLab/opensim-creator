@@ -68,6 +68,7 @@ private:
     std::shared_ptr<osc::UndoRedo> m_Storage;
 };
 
+
 // public API (PIMPL)
 
 osc::UndoRedoPanel::UndoRedoPanel(std::string_view panelName_, std::shared_ptr<osc::UndoRedo> storage_) :

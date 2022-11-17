@@ -2,6 +2,8 @@
 
 #include "src/Widgets/VirtualPanel.hpp"
 
+#include <imgui.h>
+
 #include <string>
 #include <string_view>
 
