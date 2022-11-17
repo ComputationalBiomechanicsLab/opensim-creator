@@ -372,6 +372,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/Screens/MainUIScreen.hpp
     src/OpenSimBindings/Tabs/Experimental/MeshHittestTab.cpp
     src/OpenSimBindings/Tabs/Experimental/MeshHittestTab.hpp
+    src/OpenSimBindings/Tabs/Experimental/ModelWarpingTab.cpp
+    src/OpenSimBindings/Tabs/Experimental/ModelWarpingTab.hpp
     src/OpenSimBindings/Tabs/Experimental/PreviewExperimentalDataTab.cpp
     src/OpenSimBindings/Tabs/Experimental/PreviewExperimentalDataTab.hpp
     src/OpenSimBindings/Tabs/Experimental/RendererGeometryShaderTab.cpp

@@ -13,7 +13,7 @@ namespace osc
     class StandardPanel : public VirtualPanel {
     protected:
         explicit StandardPanel(std::string_view name);
-        StandardPanel(std::string_view name, int imGuiWindowFlags);
+        StandardPanel(std::string_view name, ImGuiWindowFlags);
         StandardPanel(StandardPanel const&) = default;
         StandardPanel(StandardPanel&&) noexcept = default;
         StandardPanel& operator=(StandardPanel const&) = default;
