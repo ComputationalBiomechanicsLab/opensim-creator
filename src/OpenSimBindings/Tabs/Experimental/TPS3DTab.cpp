@@ -1170,6 +1170,9 @@ namespace
                 m_State->PerFrameHover.emplace(meshCollision->position);
             }
 
+            // ensure the camera is updated *before* rendering; otherwise, it'll be one frame late
+            updateCamera();
+
             // render: draw the scene into the content rect and hittest it
             osc::RenderTexture& renderTexture = renderScene(contentRectDims, meshCollision, landmarkCollision);
             osc::DrawTextureAsImGuiImage(renderTexture);
@@ -1180,6 +1183,32 @@ namespace
 
             // draw any 2D ImGui overlays
             drawOverlays(m_LastTextureHittestResult.rect);
+        }
+
+        void updateCamera()
+        {
+            // if the cameras are linked together, ensure this camera is updated from the linked camera
+            if (m_State->LinkCameras && m_Camera != m_State->LinkedCameraBase)
+            {
+                if (m_State->OnlyLinkRotation)
+                {
+                    m_Camera.phi = m_State->LinkedCameraBase.phi;
+                    m_Camera.theta = m_State->LinkedCameraBase.theta;
+                }
+                else
+                {
+                    m_Camera = m_State->LinkedCameraBase;
+                }
+            }
+
+            // if the user interacts with the render, update the camera as necessary
+            if (m_LastTextureHittestResult.isHovered)
+            {
+                if (osc::UpdatePolarCameraFromImGuiUserInput(osc::Dimensions(m_LastTextureHittestResult.rect), m_Camera))
+                {
+                    m_State->LinkedCameraBase = m_Camera;  // reflects latest modification
+                }
+            }
         }
 
         // returns the closest collision, if any, between the provided camera ray and a landmark
@@ -1205,29 +1234,6 @@ namespace
             std::optional<osc::RayCollision> const& meshCollision,
             std::optional<TPSTabHover> const& landmarkCollision)
         {
-            // event: if the cameras are linked together, ensure this camera is updated from the linked camera
-            if (m_State->LinkCameras && m_Camera != m_State->LinkedCameraBase)
-            {
-                if (m_State->OnlyLinkRotation)
-                {
-                    m_Camera.phi = m_State->LinkedCameraBase.phi;
-                    m_Camera.theta = m_State->LinkedCameraBase.theta;
-                }
-                else
-                {
-                    m_Camera = m_State->LinkedCameraBase;
-                }
-            }
-
-            // event: if the user interacts with the render, update the camera as necessary
-            if (htResult.isHovered)
-            {
-                if (osc::UpdatePolarCameraFromImGuiUserInput(osc::Dimensions(htResult.rect), m_Camera))
-                {
-                    m_State->LinkedCameraBase = m_Camera;  // reflects latest modification
-                }
-            }
-
             // event: if the user clicks and something is hovered, select it; otherwise, add a landmark
             if (htResult.isLeftClickReleasedWithoutDragging)
             {
@@ -1488,6 +1494,21 @@ namespace
     private:
         void implDrawContent() override
         {
+            // fill the entire available region with the render
+            glm::vec2 const dims = ImGui::GetContentRegionAvail();
+
+            updateCamera();
+
+            // render it via ImGui and hittest it
+            osc::RenderTexture& renderTexture = renderScene(dims);
+            osc::DrawTextureAsImGuiImage(renderTexture);
+            m_LastTextureHittestResult = osc::HittestLastImguiItem();
+
+            drawOverlays(m_LastTextureHittestResult.rect);
+        }
+
+        void updateCamera()
+        {
             // if cameras are linked together, ensure all cameras match the "base" camera
             if (m_State->LinkCameras && m_Camera != m_State->LinkedCameraBase)
             {
@@ -1502,24 +1523,14 @@ namespace
                 }
             }
 
-            // fill the entire available region with the render
-            glm::vec2 const dims = ImGui::GetContentRegionAvail();
-
-            // render it via ImGui and hittest it
-            osc::RenderTexture& renderTexture = renderScene(dims);
-            osc::DrawTextureAsImGuiImage(renderTexture);
-            osc::ImGuiItemHittestResult const htResult = osc::HittestLastImguiItem();
-
             // update camera if user drags it around etc.
-            if (htResult.isHovered)
+            if (m_LastTextureHittestResult.isHovered)
             {
-                if (osc::UpdatePolarCameraFromImGuiUserInput(dims, m_Camera))
+                if (osc::UpdatePolarCameraFromImGuiUserInput(osc::Dimensions(m_LastTextureHittestResult.rect), m_Camera))
                 {
                     m_State->LinkedCameraBase = m_Camera;  // reflects latest modification
                 }
             }
-
-            drawOverlays(htResult.rect);
         }
 
         // draw ImGui overlays over a result panel
@@ -1674,6 +1685,7 @@ namespace
             osc::App::singleton<osc::MeshCache>(),
             osc::App::singleton<osc::ShaderCache>()
         };
+        osc::ImGuiItemHittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;
         bool m_ShowDestinationMesh = false;
         glm::vec2 m_OverlayPadding = {10.0f, 10.0f};
