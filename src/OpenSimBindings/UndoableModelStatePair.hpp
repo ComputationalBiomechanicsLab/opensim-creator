@@ -19,11 +19,14 @@ namespace osc
     class UndoableModelStatePair final : public VirtualModelStatePair {
     public:
 
-        // construct a new, blank, UndoableUiModel
+        // constructs a blank model
         UndoableModelStatePair();
 
-        // construct a new UndoableUiModel from an existing in-memory OpenSim model
+        // constructs a model from an existing in-memory OpenSim model
         explicit UndoableModelStatePair(std::unique_ptr<OpenSim::Model> model);
+
+        // construct a model by loading an existing on-disk osim file
+        explicit UndoableModelStatePair(std::filesystem::path const& osimPath);
 
         // copy-construct a new UndoableUiModel
         UndoableModelStatePair(UndoableModelStatePair const&);

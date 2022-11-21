@@ -217,6 +217,12 @@ public:
         doCommit(std::move(ss).str());  // make initial commit
     }
 
+    explicit Impl(std::filesystem::path const& osimPath) :
+        Impl{std::make_unique<OpenSim::Model>(osimPath.string())}
+    {
+        setUpToDateWithFilesystem(std::filesystem::last_write_time(osimPath));
+    }
+
     bool hasFilesystemLocation() const
     {
         return !getFilesystemLocation().empty();
@@ -702,6 +708,11 @@ osc::UndoableModelStatePair::UndoableModelStatePair() :
 
 osc::UndoableModelStatePair::UndoableModelStatePair(std::unique_ptr<OpenSim::Model> model) :
     m_Impl{std::make_unique<Impl>(std::move(model))}
+{
+}
+
+osc::UndoableModelStatePair::UndoableModelStatePair(std::filesystem::path const& osimPath) :
+    m_Impl{std::make_unique<Impl>(osimPath)}
 {
 }
 
