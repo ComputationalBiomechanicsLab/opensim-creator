@@ -3,14 +3,139 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Rect.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 
 #include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
+#include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <SDL_events.h>
 
+#include <filesystem>
+#include <map>
+#include <memory>
+#include <optional>
 #include <string>
 #include <utility>
+#include <vector>
+
+namespace
+{
+    // one set of source/destination landmarks for a particular mesh in the model
+    struct MeshTPS3DLandmarks final {
+        OpenSim::ComponentPath meshComponentAbsPath;
+        std::filesystem::path meshPath;
+        std::filesystem::path landmarksPath;
+        std::vector<glm::vec3> landmarkPositions;
+    };
+
+    std::filesystem::path GetMeshAbsFilePath(OpenSim::Mesh const& mesh)
+    {
+        return {};  // TODO
+    }
+
+    std::filesystem::path GetPathToAssociatedLandmarksFile(std::filesystem::path const& meshFilePath)
+    {
+        std::filesystem::path rv = meshFilePath;
+        rv.replace_extension(".landmarks");
+        return rv;
+    }
+
+    std::vector<glm::vec3> LoadLandmarkPositions(std::filesystem::path const& landmarksFilePath)
+    {
+        return {};  // TODO
+    }
+
+    // returns filename(no extension) => source mesh+landmark associations for a given model
+    //
+    // assumes that for each landmark-ed mesh in the model, there exists a file called
+    // `mesh.landmarks` "ajacent" to it in the filesystem
+    std::map<std::string, MeshTPS3DLandmarks> FindSourceLandmarkData(OpenSim::Model const& model)
+    {
+        for (OpenSim::Mesh const& mesh : model.getComponentList<OpenSim::Mesh>())
+        {
+            OpenSim::ComponentPath const componentAbsPath = mesh.getAbsolutePath();
+            std::filesystem::path const meshPath = GetMeshAbsFilePath(mesh);
+            std::filesystem::path const landmarksPath = GetPathToAssociatedLandmarksFile(meshPath);
+            if (!std::filesystem::exists(landmarksPath))
+            {
+                continue;  // skip this: it doesn't have an associated landmarks file
+            }
+
+            std::vector<glm::vec3> const landmarksData = LoadLandmarkPositions(landmarksPath);
+        }
+        return {};
+    }
+
+    // returns filename(no extension) => destination mesh+landmark associations for a given model
+    //
+    // assumes that for each landmark-ed mesh in the model, there exists files called
+    // `mesh.meshextension` and `mesh.landmarks` in a folder called `destination/` in the
+    // filesystem
+    std::map<std::string, MeshTPS3DLandmarks> FindDestinationLandmarkData(OpenSim::Model const&)
+    {
+        return {};
+    }
+
+    // model warping input to the TPS algorithm
+    class ModelWarpingInput final {
+    public:
+        ModelWarpingInput() :
+            m_Model{},
+            m_SourceLandmarkData{},
+            m_DestinationLandmarkData{}
+        {
+        }
+
+        explicit ModelWarpingInput(std::filesystem::path const& osimPath) :
+            m_Model{osimPath},
+            m_SourceLandmarkData{FindSourceLandmarkData(m_Model.getModel())},
+            m_DestinationLandmarkData{FindDestinationLandmarkData(m_Model.getModel())}
+        {
+        }
+
+        OpenSim::Model const& getModel() const
+        {
+            return m_Model.getModel();
+        }
+
+        size_t getNumSourceLandmarks() const
+        {
+            return m_SourceLandmarkData.size();
+        }
+
+        MeshTPS3DLandmarks const& getSourceLandmark(size_t i) const
+        {
+            auto it = m_SourceLandmarkData.cbegin();
+            std::advance(it, i);
+            return it->second;
+        }
+
+        size_t getNumDestinationLandmarks() const
+        {
+            return m_DestinationLandmarkData.size();
+        }
+
+        MeshTPS3DLandmarks const& getDestinationLandmark(size_t i) const
+        {
+            auto it = m_DestinationLandmarkData.cbegin();
+            std::advance(it, i);
+            return it->second;
+        }
+
+    private:
+        osc::UndoableModelStatePair m_Model;
+        std::map<std::string, MeshTPS3DLandmarks> m_SourceLandmarkData;
+        std::map<std::string, MeshTPS3DLandmarks> m_DestinationLandmarkData;
+    };
+
+    // top-level state for the whole tab UI
+    struct ModelWarpingTabState final {
+        ModelWarpingInput warpingInput;
+    };
+}
 
 class osc::ModelWarpingTab::Impl final {
 public:
@@ -93,9 +218,13 @@ public:
     }
 
 private:
+
+    // tab stuff
     UID m_ID;
     std::string m_Name = ICON_FA_BEZIER_CURVE " ModelWarping";
     TabHost* m_Parent;
+
+    std::shared_ptr<ModelWarpingTabState> m_State = std::make_shared<ModelWarpingTabState>();
 };
 
 
