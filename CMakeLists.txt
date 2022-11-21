@@ -486,6 +486,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/SimulationStatus.hpp
     src/OpenSimBindings/StoFileSimulation.hpp
     src/OpenSimBindings/StoFileSimulation.cpp
+    src/OpenSimBindings/TPS3D.cpp
+    src/OpenSimBindings/TPS3D.hpp
     src/OpenSimBindings/TypeRegistry.cpp
     src/OpenSimBindings/TypeRegistry.hpp
     src/OpenSimBindings/UndoableModelStatePair.cpp

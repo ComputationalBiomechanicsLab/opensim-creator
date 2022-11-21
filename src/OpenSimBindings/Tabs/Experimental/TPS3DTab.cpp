@@ -21,6 +21,7 @@
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/OpenSimBindings/SimTKHelpers.hpp"
+#include "src/OpenSimBindings/TPS3D.hpp"
 #include "src/OpenSimBindings/Widgets/MainMenu.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
@@ -66,409 +67,6 @@
 #include <utility>
 #include <variant>
 #include <vector>
-
-// core 3D TPS algorithm code
-//
-// most of the background behind this is discussed in issue #467. For redundancy's sake, here
-// are some of the references used to write this implementation:
-//
-// - primary literature source: https://ieeexplore.ieee.org/document/24792
-// - blog explanation: https://profs.etsmtl.ca/hlombaert/thinplates/
-// - blog explanation #2: https://khanhha.github.io/posts/Thin-Plate-Splines-Warping/
-namespace
-{
-    // a single source-to-destination landmark pair in 3D space
-    //
-    // this is typically what the user/caller defines
-    struct LandmarkPair3D final {
-
-        LandmarkPair3D() = default;
-
-        LandmarkPair3D(glm::vec3 const& src_, glm::vec3 const& dest_) :
-            Src{src_},
-            Dest{dest_}
-        {
-        }
-
-        glm::vec3 Src;
-        glm::vec3 Dest;
-    };
-
-    bool operator==(LandmarkPair3D const& a, LandmarkPair3D const& b) noexcept
-    {
-        return a.Src == b.Src && a.Dest == b.Dest;
-    }
-
-    bool operator!=(LandmarkPair3D const& a, LandmarkPair3D const& b) noexcept
-    {
-        return !(a == b);
-    }
-
-    // pretty-prints `LandmarkPair3D`
-    std::ostream& operator<<(std::ostream& o, LandmarkPair3D const& p)
-    {
-        using osc::operator<<;
-        o << "LandmarkPair3D{Src = " << p.Src << ", dest = " << p.Dest << '}';
-        return o;
-    }
-
-    // required inputs to the 3D TPS algorithm
-    //
-    // these are supplied by the user and used to solve for the coefficients
-    struct TPSCoefficientSolverInputs3D final {
-
-        TPSCoefficientSolverInputs3D() = default;
-
-        TPSCoefficientSolverInputs3D(
-            std::vector<LandmarkPair3D> landmarks_,
-            float blendingFactor_) :
-
-            Landmarks{std::move(landmarks_)},
-            BlendingFactor{std::move(blendingFactor_)}
-        {
-        }
-
-        std::vector<LandmarkPair3D> Landmarks;
-        float BlendingFactor = 1.0f;
-    };
-
-    bool operator==(TPSCoefficientSolverInputs3D const& a, TPSCoefficientSolverInputs3D const& b) noexcept
-    {
-        return a.Landmarks == b.Landmarks && a.BlendingFactor == b.BlendingFactor;
-    }
-
-    bool operator!=(TPSCoefficientSolverInputs3D const& a, TPSCoefficientSolverInputs3D const& b) noexcept
-    {
-        return !(a == b);
-    }
-
-    // pretty-prints `TPSCoefficientSolverInputs3D`
-    std::ostream& operator<<(std::ostream& o, TPSCoefficientSolverInputs3D const& inputs)
-    {
-        o << "TPSCoefficientSolverInputs3D{landmarks = [";
-        std::string_view delim = "";
-        for (LandmarkPair3D const& landmark : inputs.Landmarks)
-        {
-            o << delim << landmark;
-            delim = ", ";
-        }
-        o << "], BlendingFactor = " << inputs.BlendingFactor << '}';
-        return o;
-    }
-
-    // a single non-affine term of the 3D TPS equation
-    //
-    // i.e. in `f(p) = a1 + a2*p.x + a3*p.y + a4*p.z + SUM{ wi * U(||controlPoint - p||) }` this encodes
-    //      the `wi` and `controlPoint` parts of that equation
-    struct TPSNonAffineTerm3D final {
-        TPSNonAffineTerm3D(
-            glm::vec3 const& weight_,
-            glm::vec3 const& controlPoint_) :
-
-            Weight{weight_},
-            ControlPoint{controlPoint_}
-        {
-        }
-
-        glm::vec3 Weight;
-        glm::vec3 ControlPoint;
-    };
-
-    bool operator==(TPSNonAffineTerm3D const& a, TPSNonAffineTerm3D const& b) noexcept
-    {
-        return a.Weight == b.Weight && a.ControlPoint == b.ControlPoint;
-    }
-
-    bool operator!=(TPSNonAffineTerm3D const& a, TPSNonAffineTerm3D const& b) noexcept
-    {
-        return !(a == b);
-    }
-
-    // pretty-prints `TPSNonAffineTerm3D`
-    std::ostream& operator<<(std::ostream& o, TPSNonAffineTerm3D const& wt)
-    {
-        using osc::operator<<;
-        return o << "TPSNonAffineTerm3D{Weight = " << wt.Weight << ", ControlPoint = " << wt.ControlPoint << '}';
-    }
-
-    // all coefficients in the 3D TPS equation
-    //
-    // i.e. these are the a1, a2, a3, a4, and w's (+ control points) terms of the equation
-    struct TPSCoefficients3D final {
-
-        // default the coefficients to an "identity" warp
-        glm::vec3 a1 = {0.0f, 0.0f, 0.0f};
-        glm::vec3 a2 = {1.0f, 0.0f, 0.0f};
-        glm::vec3 a3 = {0.0f, 1.0f, 0.0f};
-        glm::vec3 a4 = {0.0f, 0.0f, 1.0f};
-        std::vector<TPSNonAffineTerm3D> NonAffineTerms;
-    };
-
-    bool operator==(TPSCoefficients3D const& a, TPSCoefficients3D const& b) noexcept
-    {
-        return
-            a.a1 == b.a1 &&
-            a.a2 == b.a2 &&
-            a.a3 == b.a3 &&
-            a.a4 == b.a4 &&
-            a.NonAffineTerms == b.NonAffineTerms;
-    }
-
-    bool operator!=(TPSCoefficients3D const& a, TPSCoefficients3D const& b) noexcept
-    {
-        return !(a == b);
-    }
-
-    // pretty-prints `TPSCoefficients3D`
-    std::ostream& operator<<(std::ostream& o, TPSCoefficients3D const& coefs)
-    {
-        using osc::operator<<;
-        o << "TPSCoefficients3D{a1 = " << coefs.a1 << ", a2 = " << coefs.a2 << ", a3 = " << coefs.a3 << ", a4 = " << coefs.a4;
-        for (size_t i = 0; i < coefs.NonAffineTerms.size(); ++i)
-        {
-            o << ", w" << i << " = " << coefs.NonAffineTerms[i];
-        }
-        o << '}';
-        return o;
-    }
-
-    // this is effectviely the "U" term in the TPS algorithm literature
-    //
-    // i.e. U(||pi - p||) in the literature is equivalent to `RadialBasisFunction3D(pi, p)` here
-    float RadialBasisFunction3D(glm::vec3 const& controlPoint, glm::vec3 const& p)
-    {
-        // this implementation uses the U definition from the following (later) source:
-        //
-        // Chapter 3, "Semilandmarks in Three Dimensions" by Phillip Gunz, Phillip Mitteroecker,
-        // and Fred L. Bookstein
-        //
-        // the original Bookstein paper uses U(v) = |v|^2 * log(|v|^2), but subsequent literature
-        // (e.g. the above book) uses U(v) = |v|. The primary author (Gunz) claims that the original
-        // basis function is not as good as just using the magnitude?
-
-        return glm::length(controlPoint - p);
-    }
-
-    // computes all coefficients of the 3D TPS equation (a1, a2, a3, a4, and all the w's)
-    TPSCoefficients3D CalcCoefficients(TPSCoefficientSolverInputs3D const& inputs)
-    {
-        // this is based on the Bookstein Thin Plate Sline (TPS) warping algorithm
-        //
-        // 1. A TPS warp is (simplifying here) a linear combination:
-        //
-        //     f(p) = a1 + a2*p.x + a3*p.y + a4*p.z + SUM{ wi * U(||controlPoint_i - p||) }
-        //
-        //    which can be represented as a matrix multiplication between the terms (1, p.x, p.y,
-        //    p.z, U(||cpi - p||)) and the coefficients (a1, a2, a3, a4, wi..)
-        //
-        // 2. The caller provides "landmark pairs": these are (effectively) the input
-        //    arguments and the expected output
-        //
-        // 3. This algorithm uses the input + output to solve for the linear coefficients.
-        //    Once those coefficients are known, we then have a linear equation that we
-        //    we can pump new inputs into (e.g. mesh points, muscle points)
-        //
-        // 4. So, given the equation L * [w a] = [v o], where L is a matrix of linear terms,
-        //    [w a] is a vector of the linear coefficients (we're solving for these), and [v o]
-        //    is the expected output (v), with some (padding) zero elements (o)
-        //
-        // 5. Create matrix L:
-        //
-        //   |K  P|
-        //   |PT 0|
-        //
-        //     where:
-        //
-        //     - K is a symmetric matrix of each *input* landmark pair evaluated via the
-        //       basis function:
-        //
-        //        |U(p00) U(p01) U(p02)  ...  |
-        //        |U(p10) U(p11) U(p12)  ...  |
-        //        | ...    ...    ...   U(pnn)|
-        //
-        //     - P is a n-row 4-column matrix containing the number 1 (the constant term),
-        //       x, y, and z (effectively, the p term):
-        //
-        //       |1 x1 y1 z1|
-        //       |1 x2 y2 z2|
-        //
-        //     - PT is the transpose of P
-        //     - 0 is a 4x4 zero matrix (padding)
-        //
-        // 6. Use a linear solver to solve L * [w a] = [v o] to yield [w a]
-        // 8. Return the coefficients, [w a]
-
-        OSC_PERF("CalcCoefficients");
-
-        int const numPairs = static_cast<int>(inputs.Landmarks.size());
-
-        if (numPairs == 0)
-        {
-            // edge-case: there are no pairs, so return an identity-like transform
-            return TPSCoefficients3D{};
-        }
-
-        // construct matrix L
-        SimTK::Matrix L(numPairs + 4, numPairs + 4);
-
-        // populate the K part of matrix L (upper-left)
-        for (int row = 0; row < numPairs; ++row)
-        {
-            for (int col = 0; col < numPairs; ++col)
-            {
-                glm::vec3 const& pi = inputs.Landmarks[row].Src;
-                glm::vec3 const& pj = inputs.Landmarks[col].Src;
-
-                L(row, col) = RadialBasisFunction3D(pi, pj);
-            }
-        }
-
-        // populate the P part of matrix L (upper-right)
-        {
-            int const pStartColumn = numPairs;
-
-            for (int row = 0; row < numPairs; ++row)
-            {
-                L(row, pStartColumn)     = 1.0;
-                L(row, pStartColumn + 1) = inputs.Landmarks[row].Src.x;
-                L(row, pStartColumn + 2) = inputs.Landmarks[row].Src.y;
-                L(row, pStartColumn + 3) = inputs.Landmarks[row].Src.z;
-            }
-        }
-
-        // populate the PT part of matrix L (bottom-left)
-        {
-            int const ptStartRow = numPairs;
-
-            for (int col = 0; col < numPairs; ++col)
-            {
-                L(ptStartRow, col)     = 1.0;
-                L(ptStartRow + 1, col) = inputs.Landmarks[col].Src.x;
-                L(ptStartRow + 2, col) = inputs.Landmarks[col].Src.y;
-                L(ptStartRow + 3, col) = inputs.Landmarks[col].Src.z;
-            }
-        }
-
-        // populate the 0 part of matrix L (bottom-right)
-        {
-            int const zeroStartRow = numPairs;
-            int const zeroStartCol = numPairs;
-
-            for (int row = 0; row < 4; ++row)
-            {
-                for (int col = 0; col < 4; ++col)
-                {
-                    L(zeroStartRow + row, zeroStartCol + col) = 0.0;
-                }
-            }
-        }
-
-        // construct "result" vectors Vx and Vy (these hold the landmark destinations)
-        SimTK::Vector Vx(numPairs + 4, 0.0);
-        SimTK::Vector Vy(numPairs + 4, 0.0);
-        SimTK::Vector Vz(numPairs + 4, 0.0);
-        for (int row = 0; row < numPairs; ++row)
-        {
-            glm::vec3 const blended = glm::mix(inputs.Landmarks[row].Src, inputs.Landmarks[row].Dest, inputs.BlendingFactor);
-            Vx[row] = blended.x;
-            Vy[row] = blended.y;
-            Vz[row] = blended.z;
-        }
-
-        // create a linear solver that can be used to solve `L*Cn = Vn` for `Cn` (where `n` is a dimension)
-        SimTK::FactorQTZ const F{L};
-
-        // solve for each dimension
-        SimTK::Vector Cx(numPairs + 4, 0.0);
-        F.solve(Vx, Cx);
-        SimTK::Vector Cy(numPairs + 4, 0.0);
-        F.solve(Vy, Cy);
-        SimTK::Vector Cz(numPairs + 4, 0.0);
-        F.solve(Vz, Cz);
-
-        // `Cx/Cy/Cz` now contain the solved coefficients (e.g. for X): [w1, w2, ... wx, a0, a1x, a1y a1z]
-        //
-        // extract the coefficients into the return value
-
-        TPSCoefficients3D rv;
-
-        // populate affine a1, a2, a3, and a4 terms
-        rv.a1 = {Cx[numPairs],   Cy[numPairs]  , Cz[numPairs]  };
-        rv.a2 = {Cx[numPairs+1], Cy[numPairs+1], Cz[numPairs+1]};
-        rv.a3 = {Cx[numPairs+2], Cy[numPairs+2], Cz[numPairs+2]};
-        rv.a4 = {Cx[numPairs+3], Cy[numPairs+3], Cz[numPairs+3]};
-
-        // populate `wi` coefficients (+ control points, needed at evaluation-time)
-        rv.NonAffineTerms.reserve(numPairs);
-        for (int i = 0; i < numPairs; ++i)
-        {
-            glm::vec3 const weight = {Cx[i], Cy[i], Cz[i]};
-            glm::vec3 const& controlPoint = inputs.Landmarks[i].Src;
-            rv.NonAffineTerms.emplace_back(weight, controlPoint);
-        }
-
-        return rv;
-    }
-
-    // evaluates the TPS equation with the given coefficients and input point
-    glm::vec3 EvaluateTPSEquation(TPSCoefficients3D const& coefs, glm::vec3 p)
-    {
-        // this implementation effectively evaluates `fx(x, y, z)`, `fy(x, y, z)`, and
-        // `fz(x, y, z)` the same time, because `TPSCoefficients3D` stores the X, Y, and Z
-        // variants of the coefficients together in memory (as `vec3`s)
-
-        // compute affine terms (a1 + a2*x + a3*y + a4*z)
-        glm::dvec3 rv = glm::dvec3{coefs.a1} + glm::dvec3{coefs.a2*p.x} + glm::dvec3{coefs.a3*p.y} + glm::dvec3{coefs.a4*p.z};
-
-        // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
-        for (TPSNonAffineTerm3D const& term : coefs.NonAffineTerms)
-        {
-            rv += term.Weight * RadialBasisFunction3D(term.ControlPoint, p);
-        }
-
-        return rv;
-    }
-
-    // returns a mesh that is the equivalent of applying the 3D TPS warp to each vertex of the mesh
-    osc::Mesh ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, osc::Mesh const& mesh)
-    {
-        OSC_PERF("ApplyThinPlateWarpToMesh");
-
-        osc::Mesh rv = mesh;  // make a local copy of the input mesh
-
-        rv.transformVerts([&coefs](nonstd::span<glm::vec3> verts)
-        {
-            // parallelize function evaluation, because the mesh may contain *a lot* of
-            // verts and the TPS equation may contain *a lot* of coefficients
-            osc::ForEachParUnseq(8192, verts, [&coefs](glm::vec3& vert)
-            {
-                vert = EvaluateTPSEquation(coefs, vert);
-            });
-        });
-
-        // TODO: come up with a more robust way to transform the normals
-
-        return rv;
-    }
-
-    // returns all pair-able landmarks between the `src` and `dest`
-    std::vector<LandmarkPair3D> GetLandmarkPairs(
-        std::unordered_map<std::string, glm::vec3> const& src,
-        std::unordered_map<std::string, glm::vec3> const& dest)
-    {
-        std::vector<LandmarkPair3D> rv;
-        rv.reserve(src.size());  // probably a good guess
-        for (auto const& [k, srcPos] : src)
-        {
-            auto const it = dest.find(k);
-            if (it != dest.end())
-            {
-                rv.emplace_back(srcPos, it->second);
-            }
-        }
-        return rv;
-    }
-}
 
 // TPS document datastructure
 //
@@ -539,8 +137,26 @@ namespace
         }
     }
 
+    // returns all pair-able landmarks between the `src` and `dest`
+    std::vector<osc::LandmarkPair3D> GetLandmarkPairs(
+        std::unordered_map<std::string, glm::vec3> const& src,
+        std::unordered_map<std::string, glm::vec3> const& dest)
+    {
+        std::vector<osc::LandmarkPair3D> rv;
+        rv.reserve(src.size());  // probably a good guess
+        for (auto const& [k, srcPos] : src)
+        {
+            auto const it = dest.find(k);
+            if (it != dest.end())
+            {
+                rv.emplace_back(srcPos, it->second);
+            }
+        }
+        return rv;
+    }
+
     // returns all pairable landmarks in the document
-    std::vector<LandmarkPair3D> GetLandmarkPairs(TPSDocument const& doc)
+    std::vector<osc::LandmarkPair3D> GetLandmarkPairs(TPSDocument const& doc)
     {
         return GetLandmarkPairs(doc.Source.Landmarks, doc.Destination.Landmarks);
     }
@@ -592,32 +208,7 @@ namespace
             return;  // user didn't select anything
         }
 
-        std::ifstream file{p};
-
-        if (!file)
-        {
-            return;  // some kind of error opening the file
-        }
-
-        osc::CSVReader reader{file};
-        std::vector<glm::vec3> landmarks;
-
-        while (auto maybeCols = reader.next())
-        {
-            std::vector<std::string> cols = *maybeCols;
-            if (cols.size() < 3)
-            {
-                continue;  // too few columns: ignore
-            }
-            std::optional<float> x = osc::FromCharsStripWhitespace(cols[0]);
-            std::optional<float> y = osc::FromCharsStripWhitespace(cols[1]);
-            std::optional<float> z = osc::FromCharsStripWhitespace(cols[2]);
-            if (!(x && y && z))
-            {
-                continue;  // a column was non-numeric: ignore entire line
-            }
-            landmarks.emplace_back(*x, *y, *z);
-        }
+        std::vector<glm::vec3> const landmarks = osc::LoadLandmarksFromCSVFile(p);
 
         if (landmarks.empty())
         {
@@ -712,7 +303,7 @@ namespace
     // action: save all pairable landmarks in the TPS document to a user-specified CSV file
     void ActionSaveLandmarksToPairedCSV(TPSDocument const& doc)
     {
-        std::vector<LandmarkPair3D> const pairs = GetLandmarkPairs(doc);
+        std::vector<osc::LandmarkPair3D> const pairs = GetLandmarkPairs(doc);
         std::filesystem::path const filePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
         if (filePath.empty())
@@ -732,7 +323,7 @@ namespace
         std::vector<std::string> cols = {"source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"};
 
         writer.writeRow(cols);  // write header
-        for (LandmarkPair3D const& p : pairs)
+        for (osc::LandmarkPair3D const& p : pairs)
         {
             cols.at(0) = std::to_string(p.Src.x);
             cols.at(1) = std::to_string(p.Src.y);
@@ -838,7 +429,7 @@ namespace
                 return false;
             }
 
-            TPSCoefficients3D newCoefficients = CalcCoefficients(m_CachedInputs);
+            osc::TPSCoefficients3D newCoefficients = osc::CalcCoefficients(m_CachedInputs);
 
             if (newCoefficients != m_CachedCoefficients)
             {
@@ -868,7 +459,7 @@ namespace
         // returns `true` if cached inputs were updated; otherwise, returns the cached inputs
         bool updateInputs(TPSDocument const& doc)
         {
-            TPSCoefficientSolverInputs3D newInputs
+            osc::TPSCoefficientSolverInputs3D newInputs
             {
                 GetLandmarkPairs(doc),
                 doc.BlendingFactor,
@@ -885,8 +476,8 @@ namespace
             }
         }
 
-        TPSCoefficientSolverInputs3D m_CachedInputs;
-        TPSCoefficients3D m_CachedCoefficients;
+        osc::TPSCoefficientSolverInputs3D m_CachedInputs;
+        osc::TPSCoefficients3D m_CachedCoefficients;
         osc::Mesh m_CachedSourceMesh;
         osc::Mesh m_CachedResultMesh;
     };
