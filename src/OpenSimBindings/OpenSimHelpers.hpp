@@ -19,6 +19,7 @@ namespace OpenSim { class ComponentPath; }
 namespace OpenSim { class Coordinate; }
 namespace OpenSim { class Geometry; }
 namespace OpenSim { class Joint; }
+namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
 namespace osc { class SceneDecoration; }
 namespace osc { class CustomDecorationOptions; }
@@ -184,6 +185,9 @@ namespace osc
     //
     // otherwise, returns an empty path
     std::filesystem::path TryFindInputFile(OpenSim::Model const&);
+
+    // returns the absolute path to the given mesh component, if found (otherwise, std::nullptr)
+    std::optional<std::filesystem::path> FindGeometryFileAbsPath(OpenSim::Model const&, OpenSim::Mesh const&);
 
     // returns `true` if the component should be shown in the UI
     //

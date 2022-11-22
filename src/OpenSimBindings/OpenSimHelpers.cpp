@@ -1187,6 +1187,32 @@ std::filesystem::path osc::TryFindInputFile(OpenSim::Model const& m)
     return p;
 }
 
+std::optional<std::filesystem::path> osc::FindGeometryFileAbsPath(
+    OpenSim::Model const& model,
+    OpenSim::Mesh const& mesh)
+{
+    // this implementation is designed to roughly mimic how OpenSim::Mesh::extendFinalizeFromProperties works
+
+    std::string const& fileProp = mesh.get_mesh_file();
+    std::filesystem::path const filePropPath{fileProp};
+
+    bool isAbsolute = filePropPath.is_absolute();
+    SimTK::Array_<std::string> attempts;
+    bool const found = OpenSim::ModelVisualizer::findGeometryFile(
+        model,
+        fileProp,
+        isAbsolute,
+        attempts
+    );
+
+    if (!found || attempts.empty())
+    {
+        return std::nullopt;
+    }
+
+    return std::optional<std::filesystem::path>{std::filesystem::absolute({attempts.back()})};
+}
+
 bool osc::ShouldShowInUI(OpenSim::Component const& c)
 {
     if (Is<OpenSim::PathWrapPoint>(c))

@@ -3517,19 +3517,14 @@ namespace
         // then try to import all the meshes
         for (OpenSim::Mesh const& mesh : m.getComponentList<OpenSim::Mesh>())
         {
-            std::string file = mesh.getGeometryFilename();
-            std::filesystem::path filePath = std::filesystem::path{file};
+            std::optional<std::filesystem::path> maybeMeshPath = osc::FindGeometryFileAbsPath(m, mesh);
 
-            bool isAbsolute = filePath.is_absolute();
-            SimTK::Array_<std::string> attempts;
-            bool found = OpenSim::ModelVisualizer::findGeometryFile(m, file, isAbsolute, attempts);
-
-            if (!found)
+            if (!maybeMeshPath)
             {
                 continue;
             }
 
-            std::filesystem::path realLocation{attempts.back()};
+            std::filesystem::path const& realLocation = *maybeMeshPath;
 
             std::shared_ptr<Mesh> meshData;
             try
