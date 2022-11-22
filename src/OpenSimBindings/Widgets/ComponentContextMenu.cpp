@@ -97,7 +97,7 @@ static void DrawPhysicalFrameContextualActions(
     if (ImGui::MenuItem("Add Geometry"))
     {
         std::function<void(std::unique_ptr<OpenSim::Geometry>)> callback = [uim, pfPath](auto geom) { osc::ActionAttachGeometryToPhysicalFrame(*uim, pfPath, std::move(geom)); };
-        std::unique_ptr<osc::VirtualPopup> p = std::make_unique<osc::SelectGeometryPopup>("select geometry to attach", callback);
+        std::unique_ptr<osc::Popup> p = std::make_unique<osc::SelectGeometryPopup>("select geometry to attach", callback);
         p->open();
         editorAPI->pushPopup(std::move(p));
     }

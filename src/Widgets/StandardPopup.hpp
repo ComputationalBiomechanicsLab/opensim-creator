@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Widgets/VirtualPopup.hpp"
+#include "src/Widgets/Popup.hpp"
 
 #include <glm/vec2.hpp>
 #include <imgui.h>
@@ -12,7 +12,7 @@ namespace osc
 {
     // base class for implementing a standard UI popup (that blocks the whole screen
     // apart from the popup content)
-    class StandardPopup : public VirtualPopup {
+    class StandardPopup : public Popup {
     protected:
         StandardPopup(StandardPopup const&) = default;
         StandardPopup(StandardPopup&&) noexcept = default;

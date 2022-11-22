@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Widgets/VirtualPopup.hpp"
+#include "src/Widgets/Popup.hpp"
 
 #include <memory>
 #include <string_view>
@@ -10,7 +10,7 @@ namespace osc { class ParamBlock; }
 namespace osc
 {
     // popup that edits a parameter block in-place
-    class ParamBlockEditorPopup final : public VirtualPopup {
+    class ParamBlockEditorPopup final : public Popup {
     public:
         explicit ParamBlockEditorPopup(std::string_view popupName, ParamBlock*);
         ParamBlockEditorPopup(ParamBlockEditorPopup const&) = delete;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Widgets/VirtualPopup.hpp"
+#include "src/Widgets/Popup.hpp"
 
 #include <memory>
 
@@ -8,7 +8,7 @@ namespace osc { class SaveChangesPopupConfig; }
 
 namespace osc
 {
-    class SaveChangesPopup final : public VirtualPopup {
+    class SaveChangesPopup final : public Popup {
     public:
         SaveChangesPopup(SaveChangesPopupConfig const&);
         SaveChangesPopup(SaveChangesPopup const&) = delete;

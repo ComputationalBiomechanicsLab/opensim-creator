@@ -3,7 +3,7 @@
 namespace OpenSim { class ComponentPath; }
 namespace OpenSim { class Coordinate; }
 namespace OpenSim { class Muscle; }
-namespace osc { class VirtualPopup; }
+namespace osc { class Popup; }
 
 namespace osc
 {
@@ -18,7 +18,7 @@ namespace osc
         virtual ~EditorAPI() noexcept = default;
 
         virtual void pushComponentContextMenuPopup(OpenSim::ComponentPath const&) = 0;
-        virtual void pushPopup(std::unique_ptr<VirtualPopup>) = 0;
+        virtual void pushPopup(std::unique_ptr<Popup>) = 0;
         virtual void addMusclePlot(OpenSim::Coordinate const&, OpenSim::Muscle const&) = 0;
     };
 }

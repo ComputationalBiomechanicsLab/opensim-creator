@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Widgets/VirtualPopup.hpp"
+#include "src/Widgets/Popup.hpp"
 
 #include <memory>
 #include <string_view>
@@ -11,7 +11,7 @@ namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class AddBodyPopup final : public VirtualPopup {
+    class AddBodyPopup final : public Popup {
     public:
         AddBodyPopup(
             EditorAPI*,

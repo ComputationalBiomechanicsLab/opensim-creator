@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Widgets/VirtualPopup.hpp"
+#include "src/Widgets/Popup.hpp"
 
 #include <functional>
 #include <memory>
@@ -11,7 +11,7 @@ namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class Select1PFPopup final : public VirtualPopup {
+    class Select1PFPopup final : public Popup {
     public:
         Select1PFPopup(
             std::string_view popupName,

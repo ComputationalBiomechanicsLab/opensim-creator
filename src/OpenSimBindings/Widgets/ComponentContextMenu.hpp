@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Widgets/VirtualPopup.hpp"
+#include "src/Widgets/Popup.hpp"
 
 #include <memory>
 #include <string_view>
@@ -13,7 +13,7 @@ namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class ComponentContextMenu final : public VirtualPopup {
+    class ComponentContextMenu final : public Popup {
     public:
         ComponentContextMenu(
             std::string_view popupName,
