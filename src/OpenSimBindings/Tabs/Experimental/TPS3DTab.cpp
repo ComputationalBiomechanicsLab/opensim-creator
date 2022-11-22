@@ -1638,7 +1638,10 @@ namespace
     class TPS3DMainMenu final {
     public:
         explicit TPS3DMainMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
-            m_TabState{std::move(tabState_)}
+            m_FileMenu{tabState_},
+            m_EditMenu{tabState_},
+            m_WindowMenu{tabState_},
+            m_AboutTab{}
         {
         }
 
@@ -1650,10 +1653,9 @@ namespace
             m_AboutTab.draw();
         }
     private:
-        std::shared_ptr<TPSTabSharedState> m_TabState;
-        TPS3DFileMenu m_FileMenu{m_TabState};
-        TPS3DEditMenu m_EditMenu{m_TabState};
-        TPS3DWindowMenu m_WindowMenu{m_TabState};
+        TPS3DFileMenu m_FileMenu;
+        TPS3DEditMenu m_EditMenu;
+        TPS3DWindowMenu m_WindowMenu;
         osc::MainMenuAboutTab m_AboutTab;
     };
 

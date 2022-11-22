@@ -3,6 +3,7 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Rect.hpp"
+#include "src/OpenSimBindings/Widgets/MainMenu.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/TPS3D.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
@@ -26,7 +27,7 @@
 #include <utility>
 #include <vector>
 
-// add less-than to OpenSim::ComponentPath
+// OpenSim extension methods
 namespace OpenSim
 {
     // this lets OpenSim::ComponentPath work in a std::map
@@ -36,6 +37,9 @@ namespace OpenSim
     }
 }
 
+// document-level code
+//
+// i.e. code that the user is loading/editing in the UI
 namespace
 {
     char const* const c_LandmarksFileExtension = ".landmarks";
@@ -200,6 +204,60 @@ namespace
     }
 }
 
+// ui code
+//
+// i.e. code that's relevant for rendering panels, inputs, etc.
+namespace
+{
+    // draws the main-menu's `file` menu
+    class ModelWarpingTabFileMenu final {
+    public:
+        explicit ModelWarpingTabFileMenu(std::shared_ptr<ModelWarpingTabState> state_) :
+            m_State{std::move(state_)}
+        {
+            OSC_ASSERT(m_State != nullptr);
+        }
+
+        void draw()
+        {
+            if (ImGui::BeginMenu("File"))
+            {
+                drawContent();
+                ImGui::EndMenu();
+            }
+        }
+    private:
+        void drawContent()
+        {
+            if (ImGui::MenuItem(ICON_FA_FILE_IMPORT " Import .osim"))
+            {
+                ActionOpenOsim(*m_State);
+            }
+        }
+
+        std::shared_ptr<ModelWarpingTabState> m_State;
+    };
+
+    // draws all items in the main menu
+    class ModelWarpingTabMainMenu final {
+    public:
+        explicit ModelWarpingTabMainMenu(std::shared_ptr<ModelWarpingTabState> state_) :
+            m_FileMenu{state_}
+        {
+        }
+
+        void draw()
+        {
+            m_FileMenu.draw();
+            m_AboutMenu.draw();
+        }
+
+    private:
+        ModelWarpingTabFileMenu m_FileMenu;
+        osc::MainMenuAboutTab m_AboutMenu;
+    };
+}
+
 class osc::ModelWarpingTab::Impl final {
 public:
 
@@ -244,6 +302,7 @@ public:
 
     void onDrawMainMenu()
     {
+        m_MainMenu.draw();
     }
 
     void onDraw()
@@ -289,6 +348,9 @@ private:
 
     // top-level state that all panels can potentially access
     std::shared_ptr<ModelWarpingTabState> m_State = std::make_shared<ModelWarpingTabState>();
+
+    // UI widgets etc.
+    ModelWarpingTabMainMenu m_MainMenu{m_State};
 };
 
 
