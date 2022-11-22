@@ -76,6 +76,8 @@ osc::UndoRedoPanel::UndoRedoPanel(std::string_view panelName_, std::shared_ptr<o
 {
 }
 
+osc::UndoRedoPanel::UndoRedoPanel(UndoRedoPanel&&) noexcept = default;
+osc::UndoRedoPanel& osc::UndoRedoPanel::operator=(UndoRedoPanel&&) noexcept = default;
 osc::UndoRedoPanel::~UndoRedoPanel() noexcept = default;
 
 bool osc::UndoRedoPanel::implIsOpen() const

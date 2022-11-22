@@ -125,6 +125,8 @@ osc::PerfPanel::PerfPanel(std::string_view panelName) :
 {
 }
 
+osc::PerfPanel::PerfPanel(PerfPanel&&) noexcept = default;
+osc::PerfPanel& osc::PerfPanel::operator=(PerfPanel&&) noexcept = default;
 osc::PerfPanel::~PerfPanel() = default;
 
 bool osc::PerfPanel::implIsOpen() const

@@ -12,8 +12,8 @@ namespace osc
     public:
         SaveChangesPopup(SaveChangesPopupConfig const&);
         SaveChangesPopup(SaveChangesPopup const&) = delete;
-        SaveChangesPopup(SaveChangesPopup&&) noexcept = default;
-        SaveChangesPopup& operator=(SaveChangesPopup const&) = default;
+        SaveChangesPopup(SaveChangesPopup&&) noexcept;
+        SaveChangesPopup& operator=(SaveChangesPopup const&) = delete;
         SaveChangesPopup& operator=(SaveChangesPopup&&) noexcept;
         ~SaveChangesPopup() noexcept;
 

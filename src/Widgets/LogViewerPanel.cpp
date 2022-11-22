@@ -29,7 +29,8 @@ osc::LogViewerPanel::LogViewerPanel(std::string_view panelName) :
     m_Impl{std::make_unique<Impl>(std::move(panelName))}
 {
 }
-
+osc::LogViewerPanel::LogViewerPanel(LogViewerPanel&&) noexcept = default;
+osc::LogViewerPanel& osc::LogViewerPanel::operator=(LogViewerPanel&&) noexcept = default;
 osc::LogViewerPanel::~LogViewerPanel() noexcept = default;
 
 bool osc::LogViewerPanel::implIsOpen() const

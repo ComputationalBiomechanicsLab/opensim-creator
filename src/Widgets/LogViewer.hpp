@@ -8,9 +8,9 @@ namespace osc
     public:
         LogViewer();
         LogViewer(LogViewer const&) = delete;
-        LogViewer(LogViewer&&) noexcept = default;
+        LogViewer(LogViewer&&) noexcept;
         LogViewer& operator=(LogViewer const&) = delete;
-        LogViewer& operator=(LogViewer&&) noexcept = default;
+        LogViewer& operator=(LogViewer&&) noexcept;
         ~LogViewer() noexcept;
 
 

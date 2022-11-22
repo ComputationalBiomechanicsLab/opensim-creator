@@ -60,6 +60,8 @@ osc::SaveChangesPopup::SaveChangesPopup(SaveChangesPopupConfig const& config) :
 {
 }
 
+osc::SaveChangesPopup::SaveChangesPopup(SaveChangesPopup&&) noexcept = default;
+osc::SaveChangesPopup& osc::SaveChangesPopup::operator=(SaveChangesPopup&&) noexcept = default;
 osc::SaveChangesPopup::~SaveChangesPopup() noexcept = default;
 
 bool osc::SaveChangesPopup::implIsOpen() const
