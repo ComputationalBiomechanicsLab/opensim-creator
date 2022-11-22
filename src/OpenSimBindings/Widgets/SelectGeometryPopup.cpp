@@ -77,8 +77,7 @@ namespace
 
     std::optional<std::filesystem::path> PromptUserForGeometryFile()
     {
-        std::filesystem::path p = osc::PromptUserForFile("vtp,stl");
-        return !p.empty() ? std::optional{p.string()} : std::nullopt;
+        return osc::PromptUserForFile("vtp,stl");
     }
 
     std::unique_ptr<OpenSim::Mesh> LoadGeometryFile(std::filesystem::path const& p)

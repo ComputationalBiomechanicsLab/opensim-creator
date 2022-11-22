@@ -219,12 +219,12 @@ private:
 
     void actionSaveOutputImage()
     {
-        std::filesystem::path maybePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("png");
-        if (!maybePath.empty())
+        std::optional<std::filesystem::path> const maybeImagePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("png");
+        if (maybeImagePath)
         {
             Image outputImage = renderOutputImage();
-            osc::WriteToPNG(outputImage, maybePath);
-            osc::OpenPathInOSDefaultApplication(maybePath);
+            osc::WriteToPNG(outputImage, *maybeImagePath);
+            osc::OpenPathInOSDefaultApplication(*maybeImagePath);
         }
     }
 

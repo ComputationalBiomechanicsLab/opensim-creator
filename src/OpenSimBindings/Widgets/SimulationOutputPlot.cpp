@@ -54,20 +54,21 @@ static std::string ExportTimeseriesToCSV(
     char const* header)  // name of values (header)
 {
     // try prompt user for save location
-    std::filesystem::path p =
+    std::optional<std::filesystem::path> const maybeCSVPath =
         osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
-    if (p.empty())
+    if (!maybeCSVPath)
     {
-        // user probably cancelled out
-        return "";
+        return "";  // user probably cancelled out
     }
 
-    std::ofstream fout{p};
+    std::filesystem::path const& csvPath = *maybeCSVPath;
+
+    std::ofstream fout{csvPath};
 
     if (!fout)
     {
-        osc::log::error("%s: error opening file for writing", p.string().c_str());
+        osc::log::error("%s: error opening file for writing", csvPath.string().c_str());
         return "";  // error opening output file for writing
     }
 
@@ -79,13 +80,13 @@ static std::string ExportTimeseriesToCSV(
 
     if (!fout)
     {
-        osc::log::error("%s: error encountered while writing CSV data to file", p.string().c_str());
+        osc::log::error("%s: error encountered while writing CSV data to file", csvPath.string().c_str());
         return "";  // error writing
     }
 
-    osc::log::info("%: successfully wrote CSV data to output file", p.string().c_str());
+    osc::log::info("%: successfully wrote CSV data to output file", csvPath.string().c_str());
 
-    return p.string();
+    return csvPath.string();
 }
 
 static std::vector<float> PopulateFirstNNumericOutputValues(
@@ -169,20 +170,21 @@ static std::filesystem::path TryExportOutputsToCSV(osc::VirtualSimulation& sim, 
     std::vector<float> times = PopulateFirstNTimeValues(reports);
 
     // try prompt user for save location
-    std::filesystem::path p =
+    std::optional<std::filesystem::path> const maybeCSVPath =
         osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
-    if (p.empty())
+    if (!maybeCSVPath)
     {
         // user probably cancelled out
         return "";
     }
+    std::filesystem::path const& csvPath = *maybeCSVPath;
 
-    std::ofstream fout{p};
+    std::ofstream fout{csvPath};
 
     if (!fout)
     {
-        osc::log::error("%s: error opening file for writing", p.string().c_str());
+        osc::log::error("%s: error opening file for writing", csvPath.string().c_str());
         return "";  // error opening output file for writing
     }
 
@@ -212,10 +214,10 @@ static std::filesystem::path TryExportOutputsToCSV(osc::VirtualSimulation& sim, 
 
     if (!fout)
     {
-        osc::log::warn("%s: encountered error while writing output data: some of the data may have been written, but maybe not all of it", p.string().c_str());
+        osc::log::warn("%s: encountered error while writing output data: some of the data may have been written, but maybe not all of it", csvPath.string().c_str());
     }
 
-    return p;
+    return csvPath;
 }
 
 class osc::SimulationOutputPlot::Impl final {

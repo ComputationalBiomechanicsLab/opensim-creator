@@ -944,9 +944,12 @@ namespace
 
     void ActionPromptUserToSavePlotToCSV(OpenSim::Coordinate const& coord, PlotParameters const& params, Plot const& plot)
     {
-        if (std::filesystem::path const p = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv"); !p.empty())
+        std::optional<std::filesystem::path> const maybeCSVPath =
+            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+
+        if (maybeCSVPath)
         {
-            TrySavePlotToCSV(coord, params, plot, p);
+            TrySavePlotToCSV(coord, params, plot, *maybeCSVPath);
         }
     }
 
@@ -1379,9 +1382,12 @@ namespace
     {
         // TODO: error propagation?
 
-        if (std::filesystem::path const csvPath = osc::PromptUserForFile("csv"); !csvPath.empty())
+        std::optional<std::filesystem::path> const maybeCSVPath =
+            osc::PromptUserForFile("csv");
+
+        if (maybeCSVPath)
         {
-            if (std::optional<Plot> plot = TryLoadCSVFileAsPlot(csvPath))
+            if (std::optional<Plot> plot = TryLoadCSVFileAsPlot(*maybeCSVPath))
             {
                 plot->setIsLocked(true);
                 lines.pushPlotAsPrevious(std::move(plot).value());
@@ -1394,9 +1400,12 @@ namespace
     // that location
     void ActionPromptUserToSavePlotLinesToCSV(OpenSim::Coordinate const& coord, PlotParameters const& params, PlotLines const& lines)
     {
-        if (std::filesystem::path const p = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv"); !p.empty())
+        std::optional<std::filesystem::path> const maybeCSVPath =
+            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+
+        if (maybeCSVPath)
         {
-            TrySavePlotLinesToCSV(coord, params, lines, p);
+            TrySavePlotLinesToCSV(coord, params, lines, *maybeCSVPath);
         }
     }
 }

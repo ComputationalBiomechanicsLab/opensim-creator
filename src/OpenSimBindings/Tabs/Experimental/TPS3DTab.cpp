@@ -188,27 +188,27 @@ namespace
     // action: prompt the user to browse for a different source mesh
     void ActionBrowseForNewMesh(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentIdentifier which)
     {
-        std::filesystem::path const p = osc::PromptUserForFile("vtp,obj");
-        if (p.empty())
+        std::optional<std::filesystem::path> const maybeMeshPath = osc::PromptUserForFile("vtp,obj");
+        if (!maybeMeshPath)
         {
             return;  // user didn't select anything
         }
 
         TPSDocumentInput& input = UpdScratchInputOrThrow(doc, which);
-        input.Mesh = osc::LoadMeshViaSimTK(p);
+        input.Mesh = osc::LoadMeshViaSimTK(*maybeMeshPath);
         doc.commitScratch("changed mesh");
     }
 
     // action load landmarks from a headerless CSV file into source/destination
     void ActionLoadLandmarksCSV(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentIdentifier which)
     {
-        std::filesystem::path const p = osc::PromptUserForFile("csv");
-        if (p.empty())
+        std::optional<std::filesystem::path> const maybeCSVPath = osc::PromptUserForFile("csv");
+        if (!maybeCSVPath)
         {
             return;  // user didn't select anything
         }
 
-        std::vector<glm::vec3> const landmarks = osc::LoadLandmarksFromCSVFile(p);
+        std::vector<glm::vec3> const landmarks = osc::LoadLandmarksFromCSVFile(*maybeCSVPath);
 
         if (landmarks.empty())
         {
@@ -273,14 +273,15 @@ namespace
     // action save all source/destination landmarks to a simple headerless CSV file (matches loading)
     void ActionSaveLandmarksToCSV(TPSDocument const& doc, TPSDocumentIdentifier which)
     {
-        std::filesystem::path const filePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+        std::optional<std::filesystem::path> const maybeCSVPath =
+            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
-        if (filePath.empty())
+        if (!maybeCSVPath)
         {
             return;  // user didn't select a save location
         }
 
-        std::ofstream outfile{filePath};
+        std::ofstream outfile{*maybeCSVPath};
 
         if (!outfile)
         {
@@ -304,14 +305,16 @@ namespace
     void ActionSaveLandmarksToPairedCSV(TPSDocument const& doc)
     {
         std::vector<osc::LandmarkPair3D> const pairs = GetLandmarkPairs(doc);
-        std::filesystem::path const filePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
-        if (filePath.empty())
+        std::optional<std::filesystem::path> const maybeCSVPath =
+            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+
+        if (!maybeCSVPath)
         {
             return;  // user didn't select a save location
         }
 
-        std::ofstream outfile{filePath};
+        std::ofstream outfile{*maybeCSVPath};
 
         if (!outfile)
         {
@@ -339,9 +342,10 @@ namespace
     // action: prompt the user to save the result (transformed) mesh to an obj file
     void ActionTrySaveMeshToObj(osc::Mesh const& mesh)
     {
-        std::filesystem::path const filePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
+        std::optional<std::filesystem::path> const maybeOBJFile =
+            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
 
-        if (filePath.empty())
+        if (!maybeOBJFile)
         {
             return;  // user didn't select a save location
         }
@@ -350,7 +354,7 @@ namespace
             std::ios_base::out |
             std::ios_base::trunc;
 
-        std::ofstream outfile{filePath, flags};
+        std::ofstream outfile{*maybeOBJFile, flags};
 
         if (!outfile)
         {
@@ -366,9 +370,10 @@ namespace
     // action: prompt the user to save the result (transformed) mesh to an stl file
     void ActionTrySaveMeshToStl(osc::Mesh const& mesh)
     {
-        std::filesystem::path const filePath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
+        std::optional<std::filesystem::path> const maybeSTLPath =
+            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
 
-        if (filePath.empty())
+        if (!maybeSTLPath)
         {
             return;  // user didn't select a save location
         }
@@ -378,7 +383,7 @@ namespace
             std::ios_base::out |
             std::ios_base::trunc;
 
-        std::ofstream outfile{filePath, flags};
+        std::ofstream outfile{*maybeSTLPath, flags};
 
         if (!outfile)
         {

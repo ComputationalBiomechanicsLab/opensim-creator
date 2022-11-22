@@ -90,13 +90,20 @@ void osc::SetEnv(char const* name, char const* value, bool overwrite)
     SDL_setenv(name, value, overwrite ? 1 : 0);
 }
 
-std::filesystem::path osc::PromptUserForFile(char const* extensions, char const* defaultPath)
+std::optional<std::filesystem::path> osc::PromptUserForFile(char const* extensions, char const* defaultPath)
 {
     nfdchar_t* path = nullptr;
-    nfdresult_t result = NFD_OpenDialog(extensions, defaultPath, &path);
+    nfdresult_t const result = NFD_OpenDialog(extensions, defaultPath, &path);
     OSC_SCOPE_GUARD_IF(path, { free(path); });
 
-    return (path && result == NFD_OKAY) ? std::filesystem::path{path} : std::filesystem::path{};
+    if (path && result == NFD_OKAY)
+    {
+        return std::filesystem::path{path};
+    }
+    else
+    {
+        return std::nullopt;
+    }
 }
 
 std::vector<std::filesystem::path> osc::PromptUserForFiles(char const* extensions, char const* defaultPath)
@@ -128,7 +135,7 @@ std::vector<std::filesystem::path> osc::PromptUserForFiles(char const* extension
     return rv;
 }
 
-std::filesystem::path osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary(char const* extension, char const* defaultPath)
+std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary(char const* extension, char const* defaultPath)
 {
     if (extension)
     {
@@ -136,12 +143,12 @@ std::filesystem::path osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessa
     }
 
     nfdchar_t* path = nullptr;
-    nfdresult_t result = NFD_SaveDialog(extension, defaultPath, &path);
+    nfdresult_t const result = NFD_SaveDialog(extension, defaultPath, &path);
     OSC_SCOPE_GUARD_IF(path, { free(path); });
 
     if (result != NFD_OKAY)
     {
-        return std::filesystem::path{};
+        return std::nullopt;
     }
 
     std::filesystem::path p{path};

@@ -130,8 +130,8 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
 
     if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Load Motion", nullptr, false, maybeModel != nullptr))
     {
-        std::filesystem::path p = osc::PromptUserForFile("sto,mot");
-        if (!p.empty())
+        std::optional<std::filesystem::path> maybePath = osc::PromptUserForFile("sto,mot");
+        if (maybePath)
         {
             try
             {
@@ -139,7 +139,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
                 osc::InitializeModel(*cpy);
                 osc::InitializeState(*cpy);
 
-                UID tabID = api->addTab<SimulatorTab>(api, std::make_shared<Simulation>(osc::StoFileSimulation{std::move(cpy), p, maybeModel->getFixupScaleFactor()}));
+                UID tabID = api->addTab<SimulatorTab>(api, std::make_shared<Simulation>(osc::StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
                 api->selectTab(tabID);
             }
             catch (std::exception const& ex)

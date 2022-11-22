@@ -189,14 +189,14 @@ namespace
     // action: prompt the user for an osim file to open
     void ActionOpenOsim(ModelWarpingTabState& state)
     {
-        std::filesystem::path const maybeOsimPath = osc::PromptUserForFile("osim");
+        std::optional<std::filesystem::path> const maybeOsimPath = osc::PromptUserForFile("osim");
 
-        if (maybeOsimPath.empty())
+        if (!maybeOsimPath)
         {
             return;  // user probably cancelled out of the prompt
         }
 
-        state.document = ModelWarpingDocument{maybeOsimPath};
+        state.document = ModelWarpingDocument{*maybeOsimPath};
     }
 }
 

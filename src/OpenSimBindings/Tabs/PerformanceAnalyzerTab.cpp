@@ -164,15 +164,15 @@ private:
     void tryExportOutputs()
     {
         // try prompt user for save location
-        std::filesystem::path p =
+        std::optional<std::filesystem::path> const maybeCSVPath =
             osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
-        if (p.empty())
+        if (!maybeCSVPath)
         {
             return;  // user probably cancelled out
         }
 
-        std::ofstream fout{ p };
+        std::ofstream fout{*maybeCSVPath};
 
         if (!fout)
         {

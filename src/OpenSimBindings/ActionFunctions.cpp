@@ -67,19 +67,17 @@ namespace
 
     void DoOpenFileViaDialog(osc::MainUIStateAPI& api)
     {
-        std::filesystem::path const p = osc::PromptUserForFile("osim");
+        std::optional<std::filesystem::path> const maybePath = osc::PromptUserForFile("osim");
 
-        if (!p.empty())
+        if (maybePath)
         {
-            OpenOsimInLoadingTab(api, p);
+            OpenOsimInLoadingTab(api, *maybePath);
         }
     }
 
     std::optional<std::filesystem::path> PromptSaveOneFile()
     {
-        std::filesystem::path const p = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
-
-        return !p.empty() ? std::optional{p} : std::nullopt;
+        return osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
     }
 
     bool IsAnExampleFile(std::filesystem::path const& path)

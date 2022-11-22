@@ -499,10 +499,10 @@ namespace
         }
         else
         {
-            std::filesystem::path p = osc::PromptUserForFile("sto,mot");
-            if (!p.empty())
+            std::optional<std::filesystem::path> const maybePath = osc::PromptUserForFile("sto,mot");
+            if (maybePath)
             {
-                return LoadData(p);
+                return LoadData(*maybePath);
             }
             else
             {

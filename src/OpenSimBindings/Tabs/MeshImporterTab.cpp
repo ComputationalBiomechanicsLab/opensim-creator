@@ -3709,12 +3709,12 @@ namespace
 
         bool OpenOsimFileAsModelGraph()
         {
-            std::filesystem::path osimPath = osc::PromptUserForFile("osim");
+            std::optional<std::filesystem::path> const maybeOsimPath = osc::PromptUserForFile("osim");
 
-            if (!osimPath.empty())
+            if (maybeOsimPath)
             {
-                m_ModelGraphSnapshots = CommittableModelGraph{CreateModelFromOsimFile(osimPath)};
-                m_MaybeModelGraphExportLocation = osimPath;
+                m_ModelGraphSnapshots = CommittableModelGraph{CreateModelFromOsimFile(*maybeOsimPath)};
+                m_MaybeModelGraphExportLocation = *maybeOsimPath;
                 m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.GetCheckoutID();
                 return true;
             }
@@ -3757,15 +3757,15 @@ namespace
 
         bool ExportAsModelGraphAsOsimFile()
         {
-            std::filesystem::path exportPath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
+            std::optional<std::filesystem::path> const maybeExportPath =
+                osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
 
-            if (exportPath.empty())
+            if (!maybeExportPath)
             {
-                // user probably cancelled out
-                return false;
+                return false;  // user probably cancelled out
             }
 
-            return ExportModelGraphTo(exportPath);
+            return ExportModelGraphTo(*maybeExportPath);
         }
 
         bool ExportModelGraphAsOsimFile()

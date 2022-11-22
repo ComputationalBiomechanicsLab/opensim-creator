@@ -60,19 +60,25 @@ namespace
     // prompts the user for a save location and then exports a DAE file containing the 3D scene
     void TryExportSceneToDAE(nonstd::span<osc::SceneDecoration const> scene)
     {
-        std::filesystem::path p =
+        std::optional<std::filesystem::path> maybeDAEPath =
             osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("dae");
 
-        std::ofstream outfile{p};
+        if (!maybeDAEPath)
+        {
+            return;  // user cancelled out
+        }
+        std::filesystem::path const& daePath = *maybeDAEPath;
+
+        std::ofstream outfile{daePath};
 
         if (!outfile)
         {
-            osc::log::error("cannot save to %s: IO error", p.string().c_str());
+            osc::log::error("cannot save to %s: IO error", daePath.string().c_str());
             return;
         }
 
         osc::WriteDecorationsAsDAE(scene, outfile);
-        osc::log::info("wrote scene as a DAE file to %s", p.string().c_str());
+        osc::log::info("wrote scene as a DAE file to %s", daePath.string().c_str());
     }
 }
 

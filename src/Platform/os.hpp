@@ -3,6 +3,7 @@
 #include "src/Platform/Log.hpp"
 
 #include <filesystem>
+#include <optional>
 #include <string_view>
 #include <vector>
 
@@ -51,8 +52,8 @@ namespace osc
     // - `extensions` can be a comma-delimited list of multiple extensions (e.g. "vtp,obj")
     // - `defaultPath` indicates which dir to initially open, can be nullptr, which will open a system-defined default
     //
-    // returns empty path if user does not select a file
-    std::filesystem::path PromptUserForFile(char const* extensions, char const* defaultPath = nullptr);
+    // returns std::nullopt if the user doesn't select a file
+    std::optional<std::filesystem::path> PromptUserForFile(char const* extensions, char const* defaultPath = nullptr);
 
     // synchronously prompt a user to select files ending with the supplied extensions (e.g. "obj,vtp,stl")
     //
@@ -72,7 +73,7 @@ namespace osc
     //   (if not nullptr) to the end of the user's string. It detects a lack of extension by searching the end of the user
     //   -supplied string for the given extension (if supplied)
     //
-    // returns an empty path if the user cancels out, or the user-selected save location--including the extension--if the user
-    // selects a location
-    std::filesystem::path PromptUserForFileSaveLocationAndAddExtensionIfNecessary(char const* extension, char const* defaultPath = nullptr);
+    // returns std::nullopt if the user doesn't select a file; otherwise, returns the user-selected save location--including the extension--if
+    // the user selects a location
+    std::optional<std::filesystem::path> PromptUserForFileSaveLocationAndAddExtensionIfNecessary(char const* extension, char const* defaultPath = nullptr);
 }
