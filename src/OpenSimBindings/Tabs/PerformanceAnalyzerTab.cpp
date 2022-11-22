@@ -233,6 +233,7 @@ private:
         }
     }
 
+    // tab data
     UID m_ID;
     std::string m_Name = ICON_FA_FAST_FORWARD " PerformanceAnalyzerTab";
     TabHost* m_Parent;

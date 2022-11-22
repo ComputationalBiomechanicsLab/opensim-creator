@@ -294,12 +294,12 @@ private:
         return m_ModelMusclePlots.at(idx);
     }
 
-    void addMusclePlot()
+    void addEmptyMusclePlot()
     {
         m_ModelMusclePlots.emplace_back(this, m_Model, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++));
     }
 
-    void addMusclePlot(OpenSim::Coordinate const& coord, OpenSim::Muscle const& muscle) override
+    void implAddMusclePlot(OpenSim::Coordinate const& coord, OpenSim::Muscle const& muscle) final
     {
         m_ModelMusclePlots.emplace_back(this, m_Model, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++), coord.getAbsolutePath(), muscle.getAbsolutePath());
     }
@@ -468,7 +468,7 @@ private:
 
             if (ImGui::MenuItem("add muscle plot"))
             {
-                addMusclePlot();
+                addEmptyMusclePlot();
             }
 
             ImGui::EndMenu();
@@ -699,7 +699,7 @@ private:
         }
     }
 
-    void pushComponentContextMenuPopup(OpenSim::ComponentPath const& path) override
+    void implPushComponentContextMenuPopup(OpenSim::ComponentPath const& path) final
     {
         auto popup = std::make_unique<ComponentContextMenu>(
             "##componentcontextmenu",
@@ -711,15 +711,18 @@ private:
         pushPopup(std::move(popup));
     }
 
-    void pushPopup(std::unique_ptr<Popup> popup) override
+    void implPushPopup(std::unique_ptr<Popup> popup) final
     {
         popup->open();
         m_Popups.push_back(std::move(popup));
     }
 
+    // tab data
     UID m_ID;
     std::string m_Name = "ModelEditorTab";
     MainUIStateAPI* m_Parent;
+
+    // the model being edited
     std::shared_ptr<UndoableModelStatePair> m_Model;
 
     // polls changes to a file
@@ -741,15 +744,17 @@ private:
     std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
     std::vector<std::unique_ptr<Popup>> m_Popups;
 
-    // flag that's set+reset each frame to prevent continual
-    // throwing
+    // flag that's set+reset each frame to prevent continual throwing
     bool m_ExceptionThrownLastFrame = false;
 };
 
 
 // public API
 
-osc::ModelEditorTab::ModelEditorTab(MainUIStateAPI* parent,  std::unique_ptr<UndoableModelStatePair> model) :
+osc::ModelEditorTab::ModelEditorTab(
+    MainUIStateAPI* parent,
+    std::unique_ptr<UndoableModelStatePair> model) :
+
     m_Impl{std::make_unique<Impl>(std::move(parent), std::move(model))}
 {
 }

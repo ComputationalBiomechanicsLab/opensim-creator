@@ -722,9 +722,12 @@ private:
         return maybeReport;
     }
 
+    // tab data
     UID m_ID;
     std::string m_Name = ICON_FA_PLAY " Simulation_" + std::to_string(g_SimulationNumber++);
     MainUIStateAPI* m_API;
+
+    // underlying simulation being shown
     std::shared_ptr<Simulation> m_Simulation;
 
     // the modelstate that's being shown in the UI, based on scrubbing etc.

@@ -8107,6 +8107,7 @@ private:
         }
     }
 
+    // tab data
     UID m_ID;
     MainUIStateAPI* m_Parent;
     std::string m_Name = "MeshImporterTab";

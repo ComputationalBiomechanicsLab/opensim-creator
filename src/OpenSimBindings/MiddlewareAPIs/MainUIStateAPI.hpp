@@ -11,12 +11,13 @@ namespace osc
     //
     // this is how individual UI tabs inter-communicate (e.g. by sharing data, closing other tabs, etc.)
     class MainUIStateAPI : public TabHost {
-    public:
+    protected:
         MainUIStateAPI() = default;
-        MainUIStateAPI(MainUIStateAPI const&) = delete;
-        MainUIStateAPI(MainUIStateAPI&&) noexcept = delete;
-        MainUIStateAPI& operator=(MainUIStateAPI const&) = delete;
-        MainUIStateAPI& operator=(MainUIStateAPI&&) noexcept = delete;
+        MainUIStateAPI(MainUIStateAPI const&) = default;
+        MainUIStateAPI(MainUIStateAPI&&) noexcept = default;
+        MainUIStateAPI& operator=(MainUIStateAPI const&) = default;
+        MainUIStateAPI& operator=(MainUIStateAPI&&) noexcept = default;
+    public:
         virtual ~MainUIStateAPI() noexcept = default;
 
         virtual ParamBlock const& getSimulationParams() const = 0;

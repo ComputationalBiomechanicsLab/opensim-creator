@@ -329,13 +329,9 @@ private:
         dl->AddText(pos, color, content);
     }
 
-    // tab unique ID
+    // tab data
     UID m_ID;
-
-    // tab name
     std::string m_Name = ICON_FA_HOME;
-
-    // tab parent
     MainUIStateAPI* m_Parent;
 
     // for rendering the 3D scene

@@ -157,13 +157,9 @@ public:
 
 
 private:
-    // ID of the tab
+    // tab data
     UID m_ID;
-
-    // display name of the tab
     std::string m_Name = "LoadingTab";
-
-    // main UI shared state API
     MainUIStateAPI* m_Parent;
 
     // filesystem path to the osim being loaded
