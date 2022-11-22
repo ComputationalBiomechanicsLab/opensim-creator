@@ -1,13 +1,13 @@
 #pragma once
 
-#include "src/Widgets/VirtualPanel.hpp"
+#include "src/Widgets/Panel.hpp"
 
 #include <memory>
 #include <string_view>
 
 namespace osc
 {
-    class PerfPanel final : public VirtualPanel {
+    class PerfPanel final : public Panel {
     public:
         PerfPanel(std::string_view panelName);
         PerfPanel(PerfPanel const&) = delete;

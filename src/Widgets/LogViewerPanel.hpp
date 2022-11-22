@@ -1,13 +1,13 @@
 #pragma once
 
-#include "src/Widgets/VirtualPanel.hpp"
+#include "src/Widgets/Panel.hpp"
 
 #include <memory>
 #include <string_view>
 
 namespace osc
 {
-    class LogViewerPanel final : public VirtualPanel {
+    class LogViewerPanel final : public Panel {
     public:
         LogViewerPanel(std::string_view panelName);
         LogViewerPanel(LogViewerPanel const&) = delete;

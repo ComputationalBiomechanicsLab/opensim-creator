@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Widgets/VirtualPanel.hpp"
+#include "src/Widgets/Panel.hpp"
 
 #include <imgui.h>
 
@@ -9,8 +9,8 @@
 
 namespace osc
 {
-    // a "standard" implementation for a VirtualPanel
-    class StandardPanel : public VirtualPanel {
+    // a "standard" implementation for a Panel
+    class StandardPanel : public Panel {
     protected:
         explicit StandardPanel(std::string_view name);
         StandardPanel(std::string_view name, ImGuiWindowFlags);

@@ -3,15 +3,15 @@
 namespace osc
 {
     // a class that exposes a virtual interface to a user-visible panel
-    class VirtualPanel {
+    class Panel {
     protected:
-        VirtualPanel() = default;
-        VirtualPanel(VirtualPanel const&) = default;
-        VirtualPanel(VirtualPanel&&) noexcept = default;
-        VirtualPanel& operator=(VirtualPanel const&) = default;
-        VirtualPanel& operator=(VirtualPanel&&) noexcept = default;
+        Panel() = default;
+        Panel(Panel const&) = default;
+        Panel(Panel&&) noexcept = default;
+        Panel& operator=(Panel const&) = default;
+        Panel& operator=(Panel&&) noexcept = default;
     public:
-        virtual ~VirtualPanel() noexcept = default;
+        virtual ~Panel() noexcept = default;
 
         bool isOpen() const
         {

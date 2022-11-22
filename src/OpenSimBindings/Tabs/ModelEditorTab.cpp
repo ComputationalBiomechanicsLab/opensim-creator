@@ -31,7 +31,7 @@
 #include "src/Utils/UID.hpp"
 #include "src/Widgets/LogViewer.hpp"
 #include "src/Widgets/PerfPanel.hpp"
-#include "src/Widgets/VirtualPanel.hpp"
+#include "src/Widgets/Panel.hpp"
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Widgets/VirtualPanel.hpp"
+#include "src/Widgets/Panel.hpp"
 
 #include <memory>
 #include <string_view>
@@ -10,7 +10,7 @@ namespace osc { class UndoRedo; }
 namespace osc
 {
     // a user-visible panel that lists undo/redo history
-    class UndoRedoPanel final : public VirtualPanel {
+    class UndoRedoPanel final : public Panel {
     public:
         UndoRedoPanel(std::string_view panelName_, std::shared_ptr<UndoRedo>);
         UndoRedoPanel(UndoRedoPanel const&) = delete;

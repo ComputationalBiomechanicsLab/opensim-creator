@@ -38,7 +38,7 @@
 #include "src/Widgets/StandardPanel.hpp"
 #include "src/Widgets/UndoButton.hpp"
 #include "src/Widgets/UndoRedoPanel.hpp"
-#include "src/Widgets/VirtualPanel.hpp"
+#include "src/Widgets/Panel.hpp"
 
 #include <glm/mat3x4.hpp>
 #include <glm/vec2.hpp>
@@ -533,7 +533,7 @@ namespace
     struct TPSTabSharedState;
 
     // type-erased constructor function for an in-UI ImGui panel
-    using PanelConstructor = std::function<std::shared_ptr<osc::VirtualPanel>(std::shared_ptr<TPSTabSharedState>)>;
+    using PanelConstructor = std::function<std::shared_ptr<osc::Panel>(std::shared_ptr<TPSTabSharedState>)>;
 
     // holds information for a user-toggleable panel
     struct TPSUIPanel final {
@@ -552,7 +552,7 @@ namespace
         std::string Name;
         PanelConstructor Constructor;
         bool IsEnabledByDefault;
-        std::optional<std::shared_ptr<osc::VirtualPanel>> Instance;
+        std::optional<std::shared_ptr<osc::Panel>> Instance;
     };
 
     // forward-declaration for a function that will return all available panels

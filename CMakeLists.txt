@@ -592,6 +592,7 @@ add_library(osccore STATIC
     src/Widgets/LogViewer.hpp
     src/Widgets/LogViewerPanel.cpp
     src/Widgets/LogViewerPanel.hpp
+    src/Widgets/Panel.hpp
     src/Widgets/PerfPanel.cpp
     src/Widgets/PerfPanel.hpp
     src/Widgets/Popup.hpp
@@ -610,7 +611,6 @@ add_library(osccore STATIC
     src/Widgets/UndoButton.hpp
     src/Widgets/UndoRedoPanel.cpp
     src/Widgets/UndoRedoPanel.hpp
-    src/Widgets/VirtualPanel.hpp
 )
 
 # osccore: target properties
