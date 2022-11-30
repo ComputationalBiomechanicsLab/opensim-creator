@@ -209,7 +209,7 @@ public:
             }
         }
 
-        m_Camera.render();
+        m_Camera.renderToScreen();
 
         // auxiliary UI
         m_LogViewer.draw();

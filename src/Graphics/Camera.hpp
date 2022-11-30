@@ -2,8 +2,6 @@
 
 #include "src/Graphics/CameraClearFlags.hpp"
 #include "src/Graphics/CameraProjection.hpp"
-#include "src/Graphics/RenderTexture.hpp"
-#include "src/Graphics/RenderTextureDescriptor.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Utils/Cow.hpp"
 
@@ -16,6 +14,8 @@
 #include <iosfwd>
 #include <optional>
 
+namespace osc { class RenderTexture; }
+
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
@@ -25,8 +25,7 @@ namespace osc
     // a 2D rendered image of the drawn elements
     class Camera final {
     public:
-        Camera();  // draws to screen
-        explicit Camera(RenderTexture);  // draws to texture
+        Camera();
         Camera(Camera const&);
         Camera(Camera&&) noexcept;
         Camera& operator=(Camera const&);
@@ -56,20 +55,14 @@ namespace osc
         CameraClearFlags getClearFlags() const;
         void setClearFlags(CameraClearFlags);
 
-        std::optional<RenderTexture> getTexture() const; // empty if drawing directly to screen
-        void setTexture(RenderTexture&&);
-        void setTexture(RenderTextureDescriptor);
-        void setTexture();  // resets to drawing to screen
-        void swapTexture(std::optional<RenderTexture>&);  // handy if the caller wants to handle the textures
-
-        // where on the screen the camera is rendered (in screen-space - top-left, X rightwards, Y down
+        // where on the screen/texture that the camera should render the viewport to
         //
-        // returns rect with topleft coord 0,0  and a width/height of texture if drawing
-        // to a texture
-        Rect getPixelRect() const;
-        void setPixelRect(Rect const&);
-        void setPixelRect();
-        float getAspectRatio() const;
+        // the rect uses a top-left coordinate system (in screen-space - top-left, X rightwards, Y down)
+        //
+        // if this is not specified, the camera will render to the full extents of the given
+        // render output (entire screen, or entire render texture)
+        std::optional<Rect> getPixelRect() const;
+        void setPixelRect(std::optional<Rect>);
 
         // scissor testing
         //
@@ -78,8 +71,7 @@ namespace osc
         // image processing kernels) where you know that only a certain subspace is actually
         // interesting (e.g. rim-highlighting only selected elements)
         std::optional<Rect> getScissorRect() const;  // std::nullopt if not scissor testing
-        void setScissorRect(Rect const&);  // rect is in pixel space?
-        void setScissorRect();  // resets to having no scissor
+        void setScissorRect(std::optional<Rect>);
 
         glm::vec3 getPosition() const;
         void setPosition(glm::vec3 const&);
@@ -97,35 +89,34 @@ namespace osc
 
         glm::vec3 getUpwardsDirection() const;
 
-        // view matrix (overrides)
+        // get view matrix
         //
         // the caller can manually override the view matrix, which can be handy in certain
-        // rendering scenarios. Use `resetViewMatrix` to return to using position, direction,
-        // and upwards direction
+        // rendering scenarios
         glm::mat4 getViewMatrix() const;
-        void setViewMatrix(glm::mat4 const&);
-        void resetViewMatrix();
+        std::optional<glm::mat4> getViewMatrixOverride() const;
+        void setViewMatrixOverride(std::optional<glm::mat4>);
 
-        // projection matrix (overrides)
+        // projection matrix
         //
         // the caller can manually override the projection matrix, which can be handy in certain
-        // rendering scenarios. Use `resetProjectionMatrix` to return to using position, direction,
-        // and upwards direction
-        glm::mat4 getProjectionMatrix() const;
-        void setProjectionMatrix(glm::mat4 const&);
-        void resetProjectionMatrix();
+        // rendering scenarios.
+        glm::mat4 getProjectionMatrix(float aspectRatio) const;
+        std::optional<glm::mat4> getProjectionMatrixOverride() const;
+        void setProjectionMatrixOverride(std::optional<glm::mat4>);
 
-        // returns the equivalent of getProjectionMatrix() * getViewMatrix()
-        glm::mat4 getViewProjectionMatrix() const;
+        // returns the equivalent of getProjectionMatrix(aspectRatio) * getViewMatrix()
+        glm::mat4 getViewProjectionMatrix(float aspectRatio) const;
 
-        // returns the equivalent of inverse(getViewProjectionMatrix())
-        glm::mat4 getInverseViewProjectionMatrix() const;
+        // returns the equivalent of inverse(getViewProjectionMatrix(aspectRatio))
+        glm::mat4 getInverseViewProjectionMatrix(float aspectRatio) const;
 
         // flushes any rendering commands that were queued against this camera
         //
         // after this call completes, the output texture, or screen, should contain
         // the rendered geometry
-        void render();
+        void renderToScreen();
+        void renderTo(RenderTexture&);
 
         friend void swap(Camera& a, Camera& b) noexcept
         {

@@ -6,6 +6,7 @@ All notable changes to this project will be documented here. The format is based
 
 - Fixed a crash that can happen when viewing high-vertex-count meshes on Dell systems with an
   Intel Iris Xe GPU (#418)
+- (internal) Refactored the `osc::Camera` API (#478)
 
 ## [0.3.1] - 2022/09/27
 

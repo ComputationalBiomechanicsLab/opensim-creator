@@ -148,7 +148,8 @@ public:
                 Graphics::DrawMesh(m_Mesh, t, m_Material, m_Camera);
             }
         }
-        m_Camera.render();
+
+        m_Camera.renderToScreen();
 
         // draw UI extras
         {

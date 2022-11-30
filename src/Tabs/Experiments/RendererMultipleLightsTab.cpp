@@ -185,7 +185,6 @@ public:
         }
 
         // clear screen and ensure camera has correct pixel rect
-        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
 
         // setup per-frame material vals
         m_MultipleLightsMaterial.setVec3("uViewPos", m_Camera.getPosition());
@@ -217,7 +216,8 @@ public:
         }
 
         // render to output (window)
-        m_Camera.render();
+        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
+        m_Camera.renderToScreen();
 
         // render auxiliary UI
         ImGui::Begin("controls");

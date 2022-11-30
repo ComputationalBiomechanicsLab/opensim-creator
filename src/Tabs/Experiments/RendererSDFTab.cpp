@@ -136,7 +136,6 @@ private:
         osc::Camera camera;
         camera.setCameraProjection(osc::CameraProjection::Orthographic);
         camera.setOrthographicSize(osc::App::get().dims().y);
-        camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
         camera.setPosition({ 0.0f, 0.0f, 1.0f });
         camera.setNearClippingPlane(0.1f);
         camera.setFarClippingPlane(2.0f);
@@ -167,7 +166,9 @@ private:
             }
             ++text;
         }
-        camera.render();
+
+        camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
+        camera.renderToScreen();
     }
 
     UID m_ID;

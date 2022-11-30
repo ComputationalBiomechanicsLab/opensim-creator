@@ -16,6 +16,7 @@
 #include "src/Platform/App.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/Assertions.hpp"
 
 #include <IconsFontAwesome5.h>
 #include <SDL_events.h>
@@ -290,7 +291,7 @@ private:
             };
 
             Camera c;
-            c.setViewMatrix(glm::mat4{1.0f});
+            c.setViewMatrixOverride(glm::mat4{1.0f});
 
             {
                 // project screenspace overlays into NDC
@@ -305,7 +306,7 @@ private:
                     { 0.0f,         0.0f,        -1.0f,   0.0f },
                     { (R+L)/(L-R),  (T+B)/(B-T),  0.0f,   1.0f },
                 };
-                c.setProjectionMatrix(proj);
+                c.setProjectionMatrixOverride(proj);
             }
             c.setClearFlags(CameraClearFlags::Nothing);
 
@@ -325,9 +326,8 @@ private:
                 Graphics::DrawMesh(mesh, Transform{}, material, c);
             }
 
-            c.swapTexture(rt);
-            c.render();
-            c.swapTexture(rt);
+            OSC_ASSERT(rt.has_value());
+            c.renderTo(*rt);
         }
 
         Image rv;

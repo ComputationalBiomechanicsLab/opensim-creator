@@ -98,7 +98,7 @@ public:
         m_SceneMaterial.setVec4("uDiffuseColor", m_MeshColor);
         Graphics::DrawMesh(m_Mesh, osc::Transform{}, m_SceneMaterial, m_SceneCamera);
         Graphics::DrawMesh(m_Mesh, osc::Transform{}, m_NormalsMaterial, m_SceneCamera);
-        m_SceneCamera.render();
+        m_SceneCamera.renderToScreen();
     }
 
 private:

@@ -116,7 +116,7 @@ public:
         Graphics::DrawMesh(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
 
         // render to output (window)
-        m_Camera.render();
+        m_Camera.renderToScreen();
 
         // render auxiliary UI
         ImGui::Begin("controls");

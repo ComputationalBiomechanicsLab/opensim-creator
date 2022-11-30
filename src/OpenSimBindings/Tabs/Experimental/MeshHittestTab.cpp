@@ -136,8 +136,8 @@ public:
             m_Camera.setPosition(m_PolarCamera.getPos());
             m_Camera.setNearClippingPlane(m_PolarCamera.znear);
             m_Camera.setFarClippingPlane(m_PolarCamera.zfar);
-            m_Camera.setViewMatrix(m_PolarCamera.getViewMtx());
-            m_Camera.setProjectionMatrix(m_PolarCamera.getProjMtx(AspectRatio(viewportRectDims)));
+            m_Camera.setViewMatrixOverride(m_PolarCamera.getViewMtx());
+            m_Camera.setProjectionMatrixOverride(m_PolarCamera.getProjMtx(AspectRatio(viewportRectDims)));
         }
 
         // draw mesh
@@ -172,7 +172,7 @@ public:
         }
 
         // draw scene onto viewport
-        m_Camera.render();
+        m_Camera.renderToScreen();
 
         // auxiliary 2D UI
         // printout stats

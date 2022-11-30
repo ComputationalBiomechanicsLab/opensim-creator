@@ -17,6 +17,7 @@
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/Config.hpp"
+#include "src/Utils/Assertions.hpp"
 #include "src/Utils/Perf.hpp"
 
 #include <glm/mat4x4.hpp>
@@ -116,8 +117,8 @@ public:
         m_Camera.setPosition(params.viewPos);
         m_Camera.setNearClippingPlane(params.nearClippingPlane);
         m_Camera.setFarClippingPlane(params.farClippingPlane);
-        m_Camera.setViewMatrix(params.viewMatrix);
-        m_Camera.setProjectionMatrix(params.projectionMatrix);
+        m_Camera.setViewMatrixOverride(params.viewMatrix);
+        m_Camera.setProjectionMatrixOverride(params.projectionMatrix);
 
         std::optional<RimHighlights> maybeRimHighlights;
 
@@ -193,10 +194,9 @@ public:
         }
 
         // write the scene render to the ouptut texture
+        OSC_ASSERT(m_MaybeRenderTexture.has_value());
         m_Camera.setBackgroundColor(params.backgroundColor);
-        m_Camera.swapTexture(m_MaybeRenderTexture);
-        m_Camera.render();
-        m_Camera.swapTexture(m_MaybeRenderTexture);
+        m_Camera.renderTo(*m_MaybeRenderTexture);
         m_EdgeDetectorMaterial.clearRenderTexture("uScreenTexture");  // prevents copies on next frame
     }
 
@@ -228,8 +228,8 @@ private:
         // figure out if the rims actually appear on the screen and (roughly) where
         std::optional<Rect> maybeRimRectNDC = AABBToScreenNDCRect(
             *maybeRimWorldspaceAABB,
-            m_Camera.getViewMatrix(),
-            m_Camera.getProjectionMatrix(),
+            params.viewMatrix,
+            params.projectionMatrix,
             m_Camera.getNearClippingPlane(),
             m_Camera.getFarClippingPlane()
         );
@@ -287,13 +287,12 @@ private:
         desc.setAntialiasingLevel(params.samples);
         desc.setColorFormat(RenderTextureFormat::ARGB32);  // care: don't use RED: causes an explosion on some Intel machines (#418)
         EmplaceOrReformat(m_MaybeRimsTexture, desc);
+        OSC_ASSERT(m_MaybeRimsTexture.has_value());
 
         // render to the off-screen solid-colored texture
         glm::vec4 const originalBgColor = m_Camera.getBackgroundColor();
         m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
-        m_Camera.swapTexture(m_MaybeRimsTexture);
-        m_Camera.render();
-        m_Camera.swapTexture(m_MaybeRimsTexture);
+        m_Camera.renderTo(*m_MaybeRimsTexture);
         m_Camera.setBackgroundColor(originalBgColor);
 
         // configure a material that draws the off-screen colored texture on-screen
@@ -310,7 +309,7 @@ private:
         return RimHighlights
         {
             m_QuadMesh,
-            m_Camera.getInverseViewProjectionMatrix() * ToMat4(quadMeshToRimsQuad),
+            glm::inverse(params.projectionMatrix) * ToMat4(quadMeshToRimsQuad),
             m_EdgeDetectorMaterial
         };
     }

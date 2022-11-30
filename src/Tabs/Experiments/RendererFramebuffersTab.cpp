@@ -10,6 +10,7 @@
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Utils/Assertions.hpp"
 #include "src/Widgets/LogViewerPanel.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 
@@ -62,9 +63,8 @@ public:
         m_SceneCamera.setCameraFOV(glm::radians(45.0f));
         m_SceneCamera.setNearClippingPlane(0.1f);
         m_SceneCamera.setFarClippingPlane(100.0f);
-
-        m_ScreenCamera.setViewMatrix(glm::mat4{1.0f});
-        m_ScreenCamera.setProjectionMatrix(glm::mat4{1.0f});
+        m_ScreenCamera.setViewMatrixOverride(glm::mat4{1.0f});
+        m_ScreenCamera.setProjectionMatrixOverride(glm::mat4{1.0f});
     }
 
     UID getID() const
@@ -143,7 +143,8 @@ public:
         }};
         desc.setAntialiasingLevel(osc::App::get().getMSXAASamplesRecommended());
 
-        m_SceneCamera.setTexture(desc);
+        osc::EmplaceOrReformat(m_RenderTexture, desc);
+        OSC_ASSERT(m_RenderTexture.has_value());
 
         // render scene
         {
@@ -159,10 +160,10 @@ public:
             m_SceneRenderMaterial.setTexture("uTexture1", m_MetalTexture);
             osc::Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_SceneRenderMaterial, m_SceneCamera);
         }
-        m_SceneCamera.render();
+        m_SceneCamera.renderTo(*m_RenderTexture);
 
         // render via a effect sampler
-        Graphics::BlitToScreen(*m_SceneCamera.getTexture(), viewportRect, m_ScreenMaterial);
+        Graphics::BlitToScreen(*m_RenderTexture, viewportRect, m_ScreenMaterial);
 
         // auxiliary UI
         m_LogViewer.draw();
@@ -193,6 +194,7 @@ private:
     Mesh m_PlaneMesh = GeneratePlane();
     Mesh m_QuadMesh = GenTexturedQuad();
 
+    std::optional<RenderTexture> m_RenderTexture;
     Camera m_ScreenCamera;
     Material m_ScreenMaterial
     {

@@ -13,6 +13,7 @@
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/Assertions.hpp"
 #include "src/Widgets/LogViewerPanel.hpp"
 
 #include <glm/mat3x4.hpp>
@@ -354,8 +355,8 @@ public:
         m_WireframeMaterial.setTransparent(true);
         m_WireframeMaterial.setWireframeMode(true);
         m_WireframeMaterial.setDepthTested(false);
-        m_Camera.setViewMatrix(glm::mat4{1.0f});
-        m_Camera.setProjectionMatrix(glm::mat4{1.0f});
+        m_Camera.setViewMatrixOverride(glm::mat4{1.0f});
+        m_Camera.setProjectionMatrixOverride(glm::mat4{1.0f});
         m_Camera.setBackgroundColor({1.0f, 1.0f, 1.0f, 1.0f});
     }
 
@@ -481,9 +482,9 @@ private:
         out.emplace(desc);
         osc::Graphics::DrawMesh(mesh, osc::Transform{}, m_Material, m_Camera);
         osc::Graphics::DrawMesh(mesh, osc::Transform{}, m_WireframeMaterial, m_Camera);
-        m_Camera.swapTexture(out);
-        m_Camera.render();
-        m_Camera.swapTexture(out);
+
+        OSC_ASSERT(out.has_value());
+        m_Camera.renderTo(*out);
 
         OSC_ASSERT(out.has_value() && "the camera should've given the render texture back to the caller");
     }

@@ -637,11 +637,13 @@ namespace osc
         );
 
         static void FlushRenderQueue(
-            Camera::Impl& camera
+            Camera::Impl& camera,
+            float aspectRatio
         );
 
         static void RenderScene(
-            Camera::Impl& camera
+            Camera::Impl& camera,
+            RenderTexture* renderTexture
         );
 
         static void DrawMesh(
@@ -2605,7 +2607,7 @@ private:
             if (m_Topography == MeshTopography::Triangles)
             {
                 m_TriangleBVH.buildFromIndexedTriangles(m_Vertices, indices);
-                m_AABB = m_TriangleBVH.nodes.front().getBounds();
+                m_AABB = m_TriangleBVH.nodes.empty() ? AABB{} : m_TriangleBVH.nodes.front().getBounds();
             }
             else
             {
@@ -2898,10 +2900,6 @@ class osc::Camera::Impl final {
 public:
     Impl() = default;
 
-    explicit Impl(RenderTexture t) : m_MaybeTexture{std::move(t)}
-    {
-    }
-
     glm::vec4 getBackgroundColor() const
     {
         return m_BackgroundColor;
@@ -2972,67 +2970,14 @@ public:
         m_ClearFlags = std::move(flags);
     }
 
-    std::optional<RenderTexture> getTexture() const
+    std::optional<Rect> getPixelRect() const
     {
-        return m_MaybeTexture;
+        return m_MaybeScreenPixelRect;
     }
 
-    void setTexture(RenderTexture&& t)
+    void setPixelRect(std::optional<Rect> maybePixelRect)
     {
-        m_MaybeTexture.emplace(std::move(t));
-    }
-
-    void setTexture(RenderTextureDescriptor t)
-    {
-        if (m_MaybeTexture)
-        {
-            m_MaybeTexture->reformat(std::move(t));
-        }
-        else
-        {
-            m_MaybeTexture.emplace(std::move(t));
-        }
-    }
-
-    void setTexture()
-    {
-        m_MaybeTexture = std::nullopt;
-    }
-
-    void swapTexture(std::optional<RenderTexture>& other)
-    {
-        std::swap(m_MaybeTexture, other);
-    }
-
-    Rect getPixelRect() const
-    {
-        if (m_MaybeScreenPixelRect)
-        {
-            return *m_MaybeScreenPixelRect;
-        }
-        else if (m_MaybeTexture)
-        {
-            return Rect{{}, glm::vec2{m_MaybeTexture->getDimensions()}};
-        }
-        else
-        {
-            return Rect{{}, App::get().dims()};
-        }
-    }
-
-    void setPixelRect(Rect const& rect)
-    {
-        m_MaybeScreenPixelRect = rect;
-    }
-
-    void setPixelRect()
-    {
-        m_MaybeScreenPixelRect.reset();
-    }
-
-    float getAspectRatio() const
-    {
-        return AspectRatio(getiDims());
+        m_MaybeScreenPixelRect = std::move(maybePixelRect);
     }
 
     std::optional<Rect> getScissorRect() const
@@ -3040,14 +2985,9 @@ public:
         return m_MaybeScissorRect;
     }
 
-    void setScissorRect(Rect const& rect)
+    void setScissorRect(std::optional<Rect> maybeScissorRect)
     {
-        m_MaybeScissorRect = rect;
-    }
-
-    void setScissorRect()
-    {
-        m_MaybeScissorRect = std::nullopt;
+        m_MaybeScissorRect = std::move(maybeScissorRect);
     }
 
     glm::vec3 getPosition() const
@@ -3097,17 +3037,17 @@ public:
         }
     }
 
-    void setViewMatrix(glm::mat4 const& m)
+    std::optional<glm::mat4> getViewMatrixOverride() const
     {
-        m_MaybeViewMatrixOverride = m;
+        return m_MaybeViewMatrixOverride;
     }
 
-    void resetViewMatrix()
+    void setViewMatrixOverride(std::optional<glm::mat4> maybeViewMatrixOverride)
     {
-        m_MaybeViewMatrixOverride.reset();
+        m_MaybeViewMatrixOverride = std::move(maybeViewMatrixOverride);
     }
 
-    glm::mat4 getProjectionMatrix() const
+    glm::mat4 getProjectionMatrix(float aspectRatio) const
     {
         if (m_MaybeProjectionMatrixOverride)
         {
@@ -3115,12 +3055,12 @@ public:
         }
         else if (m_CameraProjection == CameraProjection::Perspective)
         {
-            return glm::perspective(m_PerspectiveFov, getAspectRatio(), m_NearClippingPlane, m_FarClippingPlane);
+            return glm::perspective(m_PerspectiveFov, aspectRatio, m_NearClippingPlane, m_FarClippingPlane);
         }
         else
         {
             float const height = m_OrthographicSize;
-            float const width = height * getAspectRatio();
+            float const width = height * aspectRatio;
 
             float const right = 0.5f * width;
             float const left = -right;
@@ -3131,63 +3071,40 @@ public:
         }
     }
 
-    void setProjectionMatrix(glm::mat4 const& m)
+    std::optional<glm::mat4> getProjectionMatrixOverride() const
     {
-        m_MaybeProjectionMatrixOverride = m;
+        return m_MaybeProjectionMatrixOverride;
     }
 
-    void resetProjectionMatrix()
+    void setProjectionMatrixOverride(std::optional<glm::mat4> maybeProjectionMatrixOverride)
     {
-        m_MaybeProjectionMatrixOverride.reset();
+        m_MaybeProjectionMatrixOverride = std::move(maybeProjectionMatrixOverride);
     }
 
-    glm::mat4 getViewProjectionMatrix() const
+    glm::mat4 getViewProjectionMatrix(float aspectRatio) const
     {
-        return getProjectionMatrix() * getViewMatrix();
+        return getProjectionMatrix(aspectRatio) * getViewMatrix();
     }
 
-    glm::mat4 getInverseViewProjectionMatrix() const
+    glm::mat4 getInverseViewProjectionMatrix(float aspectRatio) const
     {
-        return glm::inverse(getViewProjectionMatrix());
+        return glm::inverse(getViewProjectionMatrix(aspectRatio));
     }
 
-    void render()
+    void renderToScreen()
     {
-        GraphicsBackend::RenderScene(*this);
+        GraphicsBackend::RenderScene(*this, nullptr);
+    }
+
+    void renderTo(RenderTexture& renderTexture)
+    {
+        GraphicsBackend::RenderScene(*this, &renderTexture);
     }
 
 private:
-    glm::ivec2 getiDims() const
-    {
-        if (m_MaybeTexture)
-        {
-            return m_MaybeTexture->getDimensions();
-        }
-        else if (m_MaybeScreenPixelRect)
-        {
-            return glm::ivec2(Dimensions(*m_MaybeScreenPixelRect));
-        }
-        else
-        {
-            return App::get().idims();
-        }
-    }
-
-    glm::vec2 viewportDimensions() const
-    {
-        if (m_MaybeTexture)
-        {
-            return {m_MaybeTexture->getDimensions()};
-        }
-        else
-        {
-            return App::get().dims();
-        }
-    }
 
     friend class GraphicsBackend;
 
-    std::optional<RenderTexture> m_MaybeTexture = std::nullopt;
     glm::vec4 m_BackgroundColor = {0.0f, 0.0f, 0.0f, 0.0f};
     CameraProjection m_CameraProjection = CameraProjection::Perspective;
     float m_OrthographicSize = 2.0f;
@@ -3211,11 +3128,6 @@ std::ostream& osc::operator<<(std::ostream& o, CameraProjection cp)
 
 osc::Camera::Camera() :
     m_Impl{make_cow<Impl>()}
-{
-}
-
-osc::Camera::Camera(RenderTexture t) :
-    m_Impl{make_cow<Impl>(std::move(t))}
 {
 }
 
@@ -3295,49 +3207,14 @@ void osc::Camera::setClearFlags(CameraClearFlags flags)
     m_Impl.upd()->setClearFlags(std::move(flags));
 }
 
-std::optional<osc::RenderTexture> osc::Camera::getTexture() const
+std::optional<osc::Rect> osc::Camera::getPixelRect() const
 {
-    return m_Impl->getTexture();
+    return m_Impl.get()->getPixelRect();
 }
 
-void osc::Camera::setTexture(RenderTexture&& t)
+void osc::Camera::setPixelRect(std::optional<Rect> maybePixelRect)
 {
-    m_Impl.upd()->setTexture(std::move(t));
-}
-
-void osc::Camera::setTexture(RenderTextureDescriptor desc)
-{
-    m_Impl.upd()->setTexture(std::move(desc));
-}
-
-void osc::Camera::setTexture()
-{
-    m_Impl.upd()->setTexture();
-}
-
-void osc::Camera::swapTexture(std::optional<RenderTexture>& other)
-{
-    m_Impl.upd()->swapTexture(other);
-}
-
-osc::Rect osc::Camera::getPixelRect() const
-{
-    return m_Impl->getPixelRect();
-}
-
-void osc::Camera::setPixelRect(Rect const& rect)
-{
-    m_Impl.upd()->setPixelRect(rect);
-}
-
-void osc::Camera::setPixelRect()
-{
-    m_Impl.upd()->setPixelRect();
-}
-
-float osc::Camera::getAspectRatio() const
-{
-    return m_Impl->getAspectRatio();
+    m_Impl.upd()->setPixelRect(std::move(maybePixelRect));
 }
 
 std::optional<osc::Rect> osc::Camera::getScissorRect() const
@@ -3345,14 +3222,9 @@ std::optional<osc::Rect> osc::Camera::getScissorRect() const
     return m_Impl->getScissorRect();
 }
 
-void osc::Camera::setScissorRect(Rect const& rect)
+void osc::Camera::setScissorRect(std::optional<Rect> maybeScissorRect)
 {
-    m_Impl.upd()->setScissorRect(rect);
-}
-
-void osc::Camera::setScissorRect()
-{
-    m_Impl.upd()->setScissorRect();
+    m_Impl.upd()->setScissorRect(std::move(maybeScissorRect));
 }
 
 glm::vec3 osc::Camera::getPosition() const
@@ -3395,44 +3267,49 @@ glm::mat4 osc::Camera::getViewMatrix() const
     return m_Impl->getViewMatrix();
 }
 
-void osc::Camera::setViewMatrix(glm::mat4 const& m)
+std::optional<glm::mat4> osc::Camera::getViewMatrixOverride() const
 {
-    m_Impl.upd()->setViewMatrix(m);
+    return m_Impl->getViewMatrixOverride();
 }
 
-void osc::Camera::resetViewMatrix()
+void osc::Camera::setViewMatrixOverride(std::optional<glm::mat4> maybeViewMatrixOverride)
 {
-    m_Impl.upd()->resetViewMatrix();
+    m_Impl.upd()->setViewMatrixOverride(std::move(maybeViewMatrixOverride));
 }
 
-glm::mat4 osc::Camera::getProjectionMatrix() const
+glm::mat4 osc::Camera::getProjectionMatrix(float aspectRatio) const
 {
-    return m_Impl->getProjectionMatrix();
+    return m_Impl->getProjectionMatrix(std::move(aspectRatio));
 }
 
-void osc::Camera::setProjectionMatrix(glm::mat4 const& m)
+std::optional<glm::mat4> osc::Camera::getProjectionMatrixOverride() const
 {
-    m_Impl.upd()->setProjectionMatrix(m);
+    return m_Impl->getProjectionMatrixOverride();
 }
 
-void osc::Camera::resetProjectionMatrix()
+void osc::Camera::setProjectionMatrixOverride(std::optional<glm::mat4> maybeProjectionMatrixOverride)
 {
-    m_Impl.upd()->resetProjectionMatrix();
+    m_Impl.upd()->setProjectionMatrixOverride(std::move(maybeProjectionMatrixOverride));
 }
 
-glm::mat4 osc::Camera::getViewProjectionMatrix() const
+glm::mat4 osc::Camera::getViewProjectionMatrix(float aspectRatio) const
 {
-    return m_Impl->getViewProjectionMatrix();
+    return m_Impl->getViewProjectionMatrix(std::move(aspectRatio));
 }
 
-glm::mat4 osc::Camera::getInverseViewProjectionMatrix() const
+glm::mat4 osc::Camera::getInverseViewProjectionMatrix(float aspectRatio) const
 {
-    return m_Impl->getInverseViewProjectionMatrix();
+    return m_Impl->getInverseViewProjectionMatrix(std::move(aspectRatio));
 }
 
-void osc::Camera::render()
+void osc::Camera::renderToScreen()
 {
-    m_Impl.upd()->render();
+    m_Impl.upd()->renderToScreen();
+}
+
+void osc::Camera::renderTo(RenderTexture& renderTexture)
+{
+    m_Impl.upd()->renderTo(renderTexture);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, Camera const& camera)
@@ -4544,7 +4421,7 @@ void osc::GraphicsBackend::DrawBatchedByOpaqueness(
     }
 }
 
-void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
+void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera, float aspectRatio)
 {
     OSC_PERF("GraphicsBackend::FlushRenderQueue");
 
@@ -4569,7 +4446,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     {
         camera.getPosition(),
         camera.getViewMatrix(),
-        camera.getProjectionMatrix(),
+        camera.getProjectionMatrix(aspectRatio),
     };
 
     gl::Enable(GL_DEPTH_TEST);
@@ -4609,7 +4486,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
     queue.clear();
 }
 
-void osc::GraphicsBackend::RenderScene(Camera::Impl& camera)
+void osc::GraphicsBackend::RenderScene(Camera::Impl& camera, RenderTexture* maybeRenderTexture)
 {
     OSC_PERF("GraphicsBackend::RenderScene");
 
@@ -4619,11 +4496,15 @@ void osc::GraphicsBackend::RenderScene(Camera::Impl& camera)
     }
 
     // setup output viewport
+    float aspectRatio = 1.0f;
     {
-        Rect const cameraRect = camera.getPixelRect();  // in "usual" screen space - topleft
+        Rect const targetRect = maybeRenderTexture ? Rect{{}, maybeRenderTexture->getDimensions()} : Rect{{}, osc::App::get().dims()};
+        std::optional<Rect> const maybePixelRect = camera.getPixelRect();
+        Rect const cameraRect = maybePixelRect ? *maybePixelRect : targetRect;
         glm::vec2 const cameraRectBottomLeft = BottomLeft(cameraRect);
-        glm::vec2 const viewportDims = camera.viewportDimensions();
+        glm::vec2 const viewportDims = osc::Dimensions(targetRect);
         glm::ivec2 const outputDimensions = Dimensions(cameraRect);
+        aspectRatio = osc::AspectRatio(outputDimensions);
 
         gl::Viewport(
             static_cast<GLsizei>(cameraRectBottomLeft.x),
@@ -4667,9 +4548,9 @@ void osc::GraphicsBackend::RenderScene(Camera::Impl& camera)
             camera.m_BackgroundColor.a
         );
 
-        if (camera.m_MaybeTexture)
+        if (maybeRenderTexture)
         {
-            RenderTexture::Impl& cameraRenderTex = *camera.m_MaybeTexture->m_Impl.upd();
+            RenderTexture::Impl& cameraRenderTex = *maybeRenderTexture->m_Impl.upd();
 
             // clear the MSXAA-resolved output texture
             // TODO: unnecessary, because it is blitted to later
@@ -4690,9 +4571,9 @@ void osc::GraphicsBackend::RenderScene(Camera::Impl& camera)
     {
         // just bind to the output, but don't clear it
 
-        if (camera.m_MaybeTexture)
+        if (maybeRenderTexture)
         {
-            gl::BindFramebuffer(GL_FRAMEBUFFER, camera.m_MaybeTexture->m_Impl.upd()->getFrameBuffer());
+            gl::BindFramebuffer(GL_FRAMEBUFFER, maybeRenderTexture->m_Impl.upd()->getFrameBuffer());
         }
         else
         {
@@ -4702,20 +4583,20 @@ void osc::GraphicsBackend::RenderScene(Camera::Impl& camera)
 
     // DRAW: flush the render queue
     {
-        FlushRenderQueue(camera);
+        FlushRenderQueue(camera, aspectRatio);
     }
 
     // blit output to resolve MSXAA samples (if appliicable)
-    if (camera.m_MaybeTexture)
+    if (maybeRenderTexture)
     {
         OSC_PERF("GraphicsBackend::RenderScene/blit output (resolve MSXAA)");
 
-        glm::ivec2 const dimensions = camera.m_MaybeTexture->m_Impl->m_Descriptor.getDimensions();
+        glm::ivec2 const dimensions = maybeRenderTexture->m_Impl->m_Descriptor.getDimensions();
 
         // blit multisampled scene render to not-multisampled texture
-        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, (*camera.m_MaybeTexture->m_Impl->m_MaybeGPUBuffers)->MultisampledFBO);
+        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, (*maybeRenderTexture->m_Impl->m_MaybeGPUBuffers)->MultisampledFBO);
         glReadBuffer(GL_COLOR_ATTACHMENT0);
-        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, (*camera.m_MaybeTexture->m_Impl->m_MaybeGPUBuffers)->SingleSampledFBO);
+        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, (*maybeRenderTexture->m_Impl->m_MaybeGPUBuffers)->SingleSampledFBO);
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
         gl::BlitFramebuffer(
             0,
@@ -4776,13 +4657,13 @@ void osc::GraphicsBackend::BlitToScreen(
         Camera c;
         c.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
         c.setPixelRect(rect);
-        c.setProjectionMatrix(glm::mat4{1.0f});
-        c.setViewMatrix(glm::mat4{1.0f});
+        c.setProjectionMatrixOverride(glm::mat4{1.0f});
+        c.setViewMatrixOverride(glm::mat4{1.0f});
         c.setClearFlags(CameraClearFlags::Nothing);
 
         g_GraphicsContextImpl->m_QuadMaterial.setRenderTexture("uTexture", t);
         Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, g_GraphicsContextImpl->m_QuadMaterial, c);
-        c.render();
+        c.renderToScreen();
         g_GraphicsContextImpl->m_QuadMaterial.clearRenderTexture("uTexture");
     }
     else
@@ -4830,15 +4711,15 @@ void osc::GraphicsBackend::BlitToScreen(
     Camera c;
     c.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
     c.setPixelRect(rect);
-    c.setProjectionMatrix(glm::mat4{1.0f});
-    c.setViewMatrix(glm::mat4{1.0f});
+    c.setProjectionMatrixOverride(glm::mat4{1.0f});
+    c.setViewMatrixOverride(glm::mat4{1.0f});
     c.setClearFlags(CameraClearFlags::Nothing);
 
     Material copy{material};
 
     copy.setRenderTexture("uTexture", t);
     Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, copy, c);
-    c.render();
+    c.renderToScreen();
     copy.clearRenderTexture("uTexture");
 }
 
@@ -4846,21 +4727,16 @@ void osc::GraphicsBackend::Blit(Texture2D const& source, RenderTexture& dest)
 {
     Camera c;
     c.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
-    c.setProjectionMatrix(glm::mat4{1.0f});
-    c.setViewMatrix(glm::mat4{1.0f});
+    c.setProjectionMatrixOverride(glm::mat4{1.0f});
+    c.setViewMatrixOverride(glm::mat4{1.0f});
 
     g_GraphicsContextImpl->m_QuadMaterial.setTexture("uTexture", source);
 
     Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, g_GraphicsContextImpl->m_QuadMaterial, c);
 
-    std::optional<RenderTexture> swapTex{std::move(dest)};
-    c.swapTexture(swapTex);
-    c.render();
-    c.swapTexture(swapTex);
+    c.renderTo(dest);
 
     g_GraphicsContextImpl->m_QuadMaterial.clearTexture("uTexture");
-
-    dest = std::move(swapTex).value();
 }
 
 void osc::GraphicsBackend::ReadPixels(RenderTexture const& source, Image& dest)

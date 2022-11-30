@@ -290,14 +290,14 @@ public:
         // draw crosshair overlay
         Graphics::DrawMesh(
             m_CrosshairMesh,
-            m_Camera.getInverseViewProjectionMatrix(),
+            m_Camera.getInverseViewProjectionMatrix(App::get().aspectRatio()),
             m_Material,
             m_Camera,
             m_BlackColorMaterialProps
         );
 
         // draw scene to screen
-        m_Camera.render();
+        m_Camera.renderToScreen();
     }
 
 

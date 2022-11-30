@@ -51,8 +51,8 @@ public:
 
     Impl(TabHost* parent) : m_Parent{parent}
     {
-        m_Camera.setViewMatrix(glm::mat4{1.0f});
-        m_Camera.setProjectionMatrix(glm::mat4{1.0f});
+        m_Camera.setViewMatrixOverride(glm::mat4{1.0f});
+        m_Camera.setProjectionMatrixOverride(glm::mat4{1.0f});
         Texture2D container = LoadTexture2DFromImage(App::resource("textures/container.jpg"), ImageFlags_FlipVertically);
         container.setWrapMode(osc::TextureWrapMode::Clamp);
         m_Material.setTexture("uTexture1", std::move(container));
@@ -97,9 +97,10 @@ public:
 
     void onDraw()
     {
-        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
         Graphics::DrawMesh(m_Mesh, Transform{}, m_Material, m_Camera);
-        m_Camera.render();
+
+        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
+        m_Camera.renderToScreen();
     }
 
 private:

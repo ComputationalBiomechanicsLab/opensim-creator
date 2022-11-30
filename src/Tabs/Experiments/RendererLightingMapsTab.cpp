@@ -100,7 +100,6 @@ public:
 
         // clear screen and ensure camera has correct pixel rect
         App::upd().clearScreen({0.1f, 0.1f, 0.1f, 1.0f});
-        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
 
         // draw cube
         m_LightingMapsMaterial.setVec3("uViewPos", m_Camera.getPosition());
@@ -115,10 +114,11 @@ public:
         m_LightCubeMaterial.setVec3("uLightColor", {1.0f, 1.0f, 1.0f});
         osc::Graphics::DrawMesh(m_Mesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
 
-        // render to output (window)
-        m_Camera.render();
+        // render 3D scene
+        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
+        m_Camera.renderToScreen();
 
-        // render auxiliary UI
+        // render 2D UI
         ImGui::Begin("controls");
         ImGui::InputFloat3("uLightPos", glm::value_ptr(m_LightTransform.position));
         ImGui::InputFloat3("uLightAmbient", glm::value_ptr(m_LightAmbient));
