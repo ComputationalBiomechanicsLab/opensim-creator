@@ -5,6 +5,7 @@
 #include "src/Graphics/DepthStencilFormat.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsContext.hpp"
+#include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/MaterialPropertyBlock.hpp"
 #include "src/Graphics/Mesh.hpp"
@@ -274,7 +275,7 @@ static osc::Material GenerateMaterial()
 static std::vector<glm::vec3> GenerateTriangleVerts()
 {
     std::vector<glm::vec3> rv;
-    for (int i = 0; i < 30; ++i)
+    for (size_t i = 0; i < 30; ++i)
     {
         rv.push_back(GenerateVec3());
     }
@@ -295,7 +296,7 @@ static bool SpansEqual(nonstd::span<T const> a, nonstd::span<T const> b)
         return false;
     }
 
-    for (int i = 0; i < a.size(); ++i)
+    for (size_t i = 0; i < a.size(); ++i)
     {
         if (a[i] != b[i])
         {
@@ -435,7 +436,7 @@ TEST_F(Renderer, ShaderIteratingOverPropertyIndicesForNameReturnsValidPropertyNa
     }
     std::unordered_set<std::string> returnedPropNames;
 
-    for (int i = 0, len = s.getPropertyCount(); i < len; ++i)
+    for (size_t i = 0, len = s.getPropertyCount(); i < len; ++i)
     {
         returnedPropNames.insert(s.getPropertyName(i));
     }
@@ -449,7 +450,7 @@ TEST_F(Renderer, ShaderGetPropertyNameReturnsGivenPropertyName)
 
     for (auto const& propName : g_ExpectedPropertyNames)
     {
-        std::optional<int> idx = s.findPropertyIndex(std::string{propName});
+        std::optional<size_t> idx = s.findPropertyIndex(std::string{propName});
         ASSERT_TRUE(idx);
         ASSERT_EQ(s.getPropertyName(*idx), propName);
     }
@@ -466,13 +467,13 @@ TEST_F(Renderer, ShaderGetPropertyTypeReturnsExpectedType)
 {
     osc::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
 
-    for (int i = 0; i < g_ExpectedPropertyNames.size(); ++i)
+    for (size_t i = 0; i < g_ExpectedPropertyNames.size(); ++i)
     {
         static_assert(g_ExpectedPropertyNames.size() == g_ExpectedPropertyTypes.size());
         auto const& propName = g_ExpectedPropertyNames[i];
         osc::ShaderType expectedType = g_ExpectedPropertyTypes[i];
 
-        std::optional<int> idx = s.findPropertyIndex(std::string{propName});
+        std::optional<size_t> idx = s.findPropertyIndex(std::string{propName});
         ASSERT_TRUE(idx);
         ASSERT_EQ(s.getPropertyType(*idx), expectedType);
     }
@@ -1572,13 +1573,13 @@ TEST_F(Renderer, MeshTopographyAllCanBeWrittenToStream)
 
 TEST_F(Renderer, LoadTexture2DFromImageResourceCanLoadImageFile)
 {
-    osc::Texture2D t = osc::LoadTexture2DFromImageResource("textures/awesomeface.png");
+    osc::Texture2D const t = osc::LoadTexture2DFromImage(osc::App::resource("textures/awesomeface.png"));
     ASSERT_EQ(t.getDimensions(), glm::ivec2(512, 512));
 }
 
 TEST_F(Renderer, LoadTexture2DFromImageResourceThrowsIfResourceNotFound)
 {
-    ASSERT_ANY_THROW({ osc::LoadTexture2DFromImageResource("textures/doesnt_exist.png"); });
+    ASSERT_ANY_THROW({ osc::LoadTexture2DFromImage(osc::App::resource("textures/doesnt_exist.png")); });
 }
 
 TEST_F(Renderer, MeshCanBeDefaultConstructed)
@@ -2066,7 +2067,7 @@ TEST_F(Renderer, RenderTextureDescriptorGetAntialiasingLevelInitiallyReturns1)
 
 TEST_F(Renderer, RenderTextureDescriptorSetAntialiasingLevelMakesGetAntialiasingLevelReturnValue)
 {
-    int newAntialiasingLevel = 4;
+    int32_t newAntialiasingLevel = 4;
 
     osc::RenderTextureDescriptor d1{{1, 1}};
     d1.setAntialiasingLevel(newAntialiasingLevel);
@@ -2190,7 +2191,7 @@ TEST_F(Renderer, RenderTextureFromDescriptorHasExpectedValues)
 {
     int width = 5;
     int height = 8;
-    int aaLevel = 4;
+    int32_t aaLevel = 4;
     osc::RenderTextureFormat format = osc::RenderTextureFormat::RED;
 
     osc::RenderTextureDescriptor desc{{width, height}};

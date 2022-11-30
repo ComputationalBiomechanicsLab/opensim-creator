@@ -681,7 +681,6 @@ add_executable(testosc EXCLUDE_FROM_ALL
     tests/TestAlgorithms.cpp
     tests/TestBVH.cpp
     tests/TestCSV.cpp
-    tests/TestDedupedString.cpp
     tests/TestForwardDynamicSimulation.cpp
     tests/TestImage.cpp
     tests/TestOpenSim.cpp
