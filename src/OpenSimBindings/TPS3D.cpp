@@ -335,9 +335,9 @@ std::vector<glm::vec3> osc::LoadLandmarksFromCSVFile(std::filesystem::path const
         {
             continue;  // too few columns: ignore
         }
-        std::optional<float> x = osc::FromCharsStripWhitespace(cols[0]);
-        std::optional<float> y = osc::FromCharsStripWhitespace(cols[1]);
-        std::optional<float> z = osc::FromCharsStripWhitespace(cols[2]);
+        std::optional<float> const x = osc::FromCharsStripWhitespace(cols[0]);
+        std::optional<float> const y = osc::FromCharsStripWhitespace(cols[1]);
+        std::optional<float> const z = osc::FromCharsStripWhitespace(cols[2]);
         if (!(x && y && z))
         {
             continue;  // a column was non-numeric: ignore entire line
