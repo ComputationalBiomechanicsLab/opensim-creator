@@ -9,6 +9,7 @@
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Utils/Assertions.hpp"
+#include "src/Widgets/StandardPanel.hpp"
 
 #include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>
@@ -24,6 +25,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -132,6 +134,36 @@ namespace
         return rv;
     }
 
+    // a single "warp target" in the model
+    //
+    // this is something in the model that needs to be warped by the TPS algorithm, along with
+    // its (assumed) mesh assignment
+    struct ModelWarpTarget final {
+
+        ModelWarpTarget(
+            OpenSim::ComponentPath componentAbsPath_,
+            std::optional<OpenSim::ComponentPath> maybeConnectedMeshWarpPath_ = std::nullopt) :
+            componentAbsPath{std::move(componentAbsPath_)},
+            maybeConnectedMeshWarpPath{std::move(maybeConnectedMeshWarpPath_)}
+        {
+        }
+
+        OpenSim::ComponentPath componentAbsPath;
+        std::optional<OpenSim::ComponentPath> maybeConnectedMeshWarpPath;
+    };
+
+    // returns all warp targets (+assumed assignments) in the model
+    std::map<OpenSim::ComponentPath, ModelWarpTarget> FindAllWarpTargetsIn(OpenSim::Model const& model)
+    {
+        std::map<OpenSim::ComponentPath, ModelWarpTarget> rv;
+        for (OpenSim::PhysicalFrame const& frame : model.getComponentList<OpenSim::PhysicalFrame>())
+        {
+            OpenSim::ComponentPath const absPath = frame.getAbsolutePath();
+            rv.insert_or_assign(absPath, ModelWarpTarget{absPath, std::nullopt});
+        }
+        return rv;
+    }
+
     // wrapper class over a fully-initialized, immutable, OpenSim model
     //
     // (this editor doesn't allow model edits)
@@ -163,15 +195,9 @@ namespace
     // top-level document class that represents the model being warped
     class ModelWarpingDocument final {
     public:
-        ModelWarpingDocument() :
-            m_Model{},
-            m_WarpingData{FindLandmarkDataForAllMeshesIn(m_Model.getModel())}
-        {
-        }
+        ModelWarpingDocument() = default;
 
-        ModelWarpingDocument(std::filesystem::path const& osimPath) :
-            m_Model{osimPath},
-            m_WarpingData{FindLandmarkDataForAllMeshesIn(m_Model.getModel())}
+        ModelWarpingDocument(std::filesystem::path const& osimPath) : m_Model{osimPath}
         {
         }
 
@@ -180,9 +206,20 @@ namespace
             return m_Model.getModel();
         }
 
+        std::map<OpenSim::ComponentPath, MeshTPSData> const& getWarpingData() const
+        {
+            return m_WarpingData;
+        }
+
+        std::map<OpenSim::ComponentPath, ModelWarpTarget> const& getWarpTargetData() const
+        {
+            return m_WarpTargets;
+        }
+
     private:
         ImmutableInitializedModel m_Model;
-        std::map<OpenSim::ComponentPath, MeshTPSData> m_WarpingData;
+        std::map<OpenSim::ComponentPath, MeshTPSData> m_WarpingData = FindLandmarkDataForAllMeshesIn(m_Model.getModel());
+        std::map<OpenSim::ComponentPath, ModelWarpTarget> m_WarpTargets = FindAllWarpTargetsIn(m_Model.getModel());
     };
 
     // top-level state for the whole tab UI
@@ -256,6 +293,240 @@ namespace
         ModelWarpingTabFileMenu m_FileMenu;
         osc::MainMenuAboutTab m_AboutMenu;
     };
+
+    class ModelWarpingDocumentDebuggerPanel final : public osc::StandardPanel {
+    public:
+        ModelWarpingDocumentDebuggerPanel(
+            std::string_view panelName_,
+            std::shared_ptr<ModelWarpingTabState> state_) :
+
+            StandardPanel{std::move(panelName_)},
+            m_State{std::move(state_)}
+        {
+            OSC_ASSERT(m_State != nullptr);
+        }
+
+    private:
+        void implDrawContent() final
+        {
+            drawButtons();
+            drawModelInfoSection();
+            drawWarpingInfoSection();
+            drawWarpTargetSection();
+        }
+
+        void drawButtons()
+        {
+            if (ImGui::Button(ICON_FA_FILE_IMPORT " Import .osim"))
+            {
+                ActionOpenOsim(*m_State);
+            }
+        }
+
+        void drawModelInfoSection() const
+        {
+            ModelWarpingDocument const& doc = m_State->document;
+
+            ImGui::NewLine();
+            ImGui::Text("Model Info");
+            ImGui::SameLine();
+            osc::DrawHelpMarker("Top-level information extracted from the osim itself");
+            ImGui::Separator();
+
+            if (osc::HasInputFileName(doc.getModel()))
+            {
+                ImGui::Text("    file = %s", osc::TryFindInputFile(doc.getModel()).filename().string().c_str());
+            }
+            else
+            {
+                ImGui::Text("    file = (no backing file)");
+            }
+        }
+
+        void drawWarpingInfoSection() const
+        {
+            ImGui::NewLine();
+            ImGui::Text("Mesh Warps Info");
+            ImGui::SameLine();
+            osc::DrawHelpMarker("Warping information associated to each mesh in the model");
+            ImGui::Separator();
+
+            if (!m_State->document.getWarpingData().empty())
+            {
+                drawWarpingInfoTable();
+            }
+            else
+            {
+                ImGui::TextDisabled("    (no mesh warping information available)");
+            }
+        }
+
+        void drawWarpingInfoTable() const
+        {
+            if (ImGui::BeginTable("##WarpingInfo", 5))
+            {
+                ImGui::TableSetupColumn("Component Name");
+                ImGui::TableSetupColumn("Source Mesh File");
+                ImGui::TableSetupColumn("Source Mesh Landmarks");
+                ImGui::TableSetupColumn("Destination Mesh File");
+                ImGui::TableSetupColumn("Destination Mesh Landmarks");
+                ImGui::TableHeadersRow();
+
+                for (std::pair<OpenSim::ComponentPath, MeshTPSData> const& p : m_State->document.getWarpingData())
+                {
+                    ImGui::TableNextRow();
+                    drawWarpingInfoTableRowContent(p);
+                }
+
+                ImGui::EndTable();
+            }
+        }
+
+        void drawWarpingInfoTableRowContent(std::pair<OpenSim::ComponentPath, MeshTPSData> const& p) const
+        {
+            ImGui::TableSetColumnIndex(0);
+            drawComponentNameCell(p);
+            ImGui::TableSetColumnIndex(1);
+            drawSourceMeshCell(p);
+            ImGui::TableSetColumnIndex(2);
+            drawSourceLandmarksCell(p);
+            ImGui::TableSetColumnIndex(3);
+            drawDestinationMeshCell(p);
+            ImGui::TableSetColumnIndex(4);
+            drawDestinationLandmarksCell(p);
+        }
+
+        void drawComponentNameCell(std::pair<OpenSim::ComponentPath, MeshTPSData> const& p) const
+        {
+            std::string const name = p.first.getComponentName();
+            ImGui::Text("%s", name.c_str());
+            osc::DrawTooltipIfItemHovered(name.c_str(), p.first.toString().c_str());  // show abspath on hover
+        }
+
+        void drawSourceMeshCell(std::pair<OpenSim::ComponentPath, MeshTPSData> const& p) const
+        {
+            std::optional<std::filesystem::path> const& maybeMeshLocation = p.second.maybeSourceMeshFilesystemLocation;
+            if (!maybeMeshLocation)
+            {
+                drawMissingMessage();
+                return;
+            }
+            std::filesystem::path const& meshLocation = *maybeMeshLocation;
+
+            std::string const filename = meshLocation.filename().string();
+            ImGui::Text("%s", filename.c_str());
+            osc::DrawTooltipIfItemHovered(filename.c_str(), meshLocation.string().c_str());
+        }
+
+        void drawSourceLandmarksCell(std::pair<OpenSim::ComponentPath, MeshTPSData> const& p) const
+        {
+            std::optional<MeshLandmarksFile> const& maybeLocation = p.second.maybeSourceMeshLandmarksFile;
+            if (!maybeLocation)
+            {
+                drawMissingMessage();
+                return;
+            }
+            MeshLandmarksFile const& location = *maybeLocation;
+
+            ImGui::TextUnformatted("source landmarks exist");
+        }
+
+        void drawDestinationMeshCell(std::pair<OpenSim::ComponentPath, MeshTPSData> const& p) const
+        {
+            std::optional<std::filesystem::path> const& maybeLocation = p.second.maybeDestinationMeshFilesystemLocation;
+            if (!maybeLocation)
+            {
+                drawMissingMessage();
+                return;
+            }
+            std::filesystem::path const& location = *maybeLocation;
+
+            ImGui::TextUnformatted("destination mesh exists");
+        }
+
+        void drawDestinationLandmarksCell(std::pair<OpenSim::ComponentPath, MeshTPSData> const& p) const
+        {
+            std::optional<MeshLandmarksFile> const& maybeLocation = p.second.maybeDestinationMeshLandmarksFile;
+            if (!maybeLocation)
+            {
+                drawMissingMessage();
+                return;
+            }
+            MeshLandmarksFile const& location = *maybeLocation;
+
+            ImGui::TextUnformatted("destination landmarks exist");
+        }
+
+        void drawMissingMessage() const
+        {
+            ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 0.0f, 0.0f, 1.0f});
+            ImGui::TextUnformatted("(missing)");
+            ImGui::PopStyleColor();
+        }
+
+        void drawWarpTargetSection() const
+        {
+            ImGui::NewLine();
+            ImGui::TextUnformatted("Warp Target Info");
+            ImGui::SameLine();
+            osc::DrawHelpMarker("How each mesh warp is applied (or not) to applicable components in the model");
+            ImGui::Separator();
+
+            if (!m_State->document.getWarpTargetData().empty())
+            {
+                drawWarpTargetTable();
+            }
+            else
+            {
+                ImGui::TextDisabled("    (no warp target information available)");
+            }
+        }
+
+        void drawWarpTargetTable() const
+        {
+            if (ImGui::BeginTable("##WarpTargetInfo", 2))
+            {
+                ImGui::TableSetupColumn("Component Name");
+                ImGui::TableSetupColumn("Connected Mesh Warp");
+                ImGui::TableHeadersRow();
+
+                for (std::pair<OpenSim::ComponentPath, ModelWarpTarget> const& p : m_State->document.getWarpTargetData())
+                {
+                    ImGui::TableNextRow();
+                    drawWarpTargetTableRowContent(p);
+                }
+
+                ImGui::EndTable();
+            }
+        }
+
+        void drawWarpTargetTableRowContent(std::pair<OpenSim::ComponentPath, ModelWarpTarget> const& p) const
+        {
+            ImGui::TableSetColumnIndex(0);
+            drawWarpTargetComponentNameCell(p);
+            ImGui::TableSetColumnIndex(1);
+            drawWarpTargetConnectedMesh(p);
+        }
+
+        void drawWarpTargetComponentNameCell(std::pair<OpenSim::ComponentPath, ModelWarpTarget> const& p) const
+        {
+            std::string const name = p.first.getComponentName();
+            ImGui::Text("%s", name.c_str());
+            osc::DrawTooltipIfItemHovered(name.c_str(), p.first.toString().c_str());  // show abspath on hover
+        }
+
+        void drawWarpTargetConnectedMesh(std::pair<OpenSim::ComponentPath, ModelWarpTarget> const& p) const
+        {
+            if (!p.second.maybeConnectedMeshWarpPath)
+            {
+                drawMissingMessage();
+                return;
+            }
+            OpenSim::ComponentPath const& path = *p.second.maybeConnectedMeshWarpPath;
+        }
+
+        std::shared_ptr<ModelWarpingTabState> m_State;
+    };
 }
 
 class osc::ModelWarpingTab::Impl final {
@@ -321,6 +592,8 @@ public:
             drawMenuContent();
         }
         ImGui::End();
+
+        m_DebuggerPanel.draw();
     }
 
     void drawMenuContent()
@@ -351,6 +624,7 @@ private:
 
     // UI widgets etc.
     ModelWarpingTabMainMenu m_MainMenu{m_State};
+    ModelWarpingDocumentDebuggerPanel m_DebuggerPanel{"Debugger", m_State};
 };
 
 
