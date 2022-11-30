@@ -2254,31 +2254,6 @@ TEST_F(Renderer, CameraCanDefaultConstruct)
     osc::Camera camera;  // should compile + run
 }
 
-TEST_F(Renderer, CameraDefaultConstructedHasNoTexture)
-{
-    osc::Camera camera;
-    ASSERT_FALSE(camera.getTexture().has_value());
-}
-
-TEST_F(Renderer, CameraCanBeConstructedWithTexture)
-{
-    osc::Camera camera{GenerateRenderTexture()};  // should compile + run
-}
-
-TEST_F(Renderer, CameraConstructedWithTextureMakesGetTextureReturnNonemptyOptional)
-{
-    osc::Camera camera{GenerateRenderTexture()};
-    ASSERT_TRUE(camera.getTexture().has_value());
-}
-
-TEST_F(Renderer, CameraConstructedWithTextureMakesGetTextureReturnTextureWithSameWidthAndHeight)
-{
-    osc::RenderTexture t = GenerateRenderTexture();
-    osc::Camera camera{t};
-
-    ASSERT_EQ(t.getDimensions(), camera.getTexture()->getDimensions());
-}
-
 TEST_F(Renderer, CameraCanBeCopyConstructed)
 {
     osc::Camera c;
@@ -2452,7 +2427,7 @@ TEST_F(Renderer, CameraGetViewMatrixReturnsViewMatrixBasedOnPositonDirectionAndU
     ASSERT_EQ(viewMatrix, expectedMatrix);
 }
 
-TEST_F(Renderer, CameraSetViewMatrixSetsANewViewMatrixThatCanBeRetrievedWithGetViewMatrix)
+TEST_F(Renderer, CameraSetViewMatrixOverrideSetsANewViewMatrixThatCanBeRetrievedWithGetViewMatrix)
 {
     osc::Camera camera;
 
@@ -2463,12 +2438,12 @@ TEST_F(Renderer, CameraSetViewMatrixSetsANewViewMatrixThatCanBeRetrievedWithGetV
     glm::mat4 viewMatrix{1.0f};
     viewMatrix[0][1] = 9.0f;  // change some part of it
 
-    camera.setViewMatrix(viewMatrix);
+    camera.setViewMatrixOverride(viewMatrix);
 
     ASSERT_EQ(camera.getViewMatrix(), viewMatrix);
 }
 
-TEST_F(Renderer, CameraResetViewMatrixResetsTheViewMatrixToUsingStandardCameraPositionEtc)
+TEST_F(Renderer, CameraSetViewMatrixOverrideNulloptResetsTheViewMatrixToUsingStandardCameraPositionEtc)
 {
     osc::Camera camera;
     glm::mat4 initialViewMatrix = camera.getViewMatrix();
@@ -2476,11 +2451,11 @@ TEST_F(Renderer, CameraResetViewMatrixResetsTheViewMatrixToUsingStandardCameraPo
     glm::mat4 viewMatrix{1.0f};
     viewMatrix[0][1] = 9.0f;  // change some part of it
 
-    camera.setViewMatrix(viewMatrix);
+    camera.setViewMatrixOverride(viewMatrix);
     ASSERT_NE(camera.getViewMatrix(), initialViewMatrix);
     ASSERT_EQ(camera.getViewMatrix(), viewMatrix);
 
-    camera.resetViewMatrix();
+    camera.setViewMatrixOverride(std::nullopt);
 
     ASSERT_EQ(camera.getViewMatrix(), initialViewMatrix);
 }
@@ -2491,7 +2466,7 @@ TEST_F(Renderer, CameraGetProjectionMatrixReturnsProjectionMatrixBasedOnPositonD
     camera.setCameraProjection(osc::CameraProjection::Orthographic);
     camera.setPosition({0.0f, 0.0f, 0.0f});
 
-    glm::mat4 mtx = camera.getProjectionMatrix();
+    glm::mat4 mtx = camera.getProjectionMatrix(1.0f);
     glm::mat4 expected{1.0f};
 
     // only compare the Y, Z, and W columns: the X column depends on the aspect ratio of the output
@@ -2501,7 +2476,7 @@ TEST_F(Renderer, CameraGetProjectionMatrixReturnsProjectionMatrixBasedOnPositonD
     ASSERT_EQ(mtx[3], expected[3]);
 }
 
-TEST_F(Renderer, CameraSetProjectionMatrixSetsANewProjectionMatrixThatCanBeRetrievedWithGetProjectionMatrix)
+TEST_F(Renderer, CameraSetProjectionMatrixOverrideSetsANewProjectionMatrixThatCanBeRetrievedWithGetProjectionMatrix)
 {
     osc::Camera camera;
 
@@ -2512,26 +2487,26 @@ TEST_F(Renderer, CameraSetProjectionMatrixSetsANewProjectionMatrixThatCanBeRetri
     glm::mat4 ProjectionMatrix{1.0f};
     ProjectionMatrix[0][1] = 9.0f;  // change some part of it
 
-    camera.setProjectionMatrix(ProjectionMatrix);
+    camera.setProjectionMatrixOverride(ProjectionMatrix);
 
-    ASSERT_EQ(camera.getProjectionMatrix(), ProjectionMatrix);
+    ASSERT_EQ(camera.getProjectionMatrix(1.0f), ProjectionMatrix);
 }
 
-TEST_F(Renderer, CameraResetProjectionMatrixResetsTheProjectionMatrixToUsingStandardCameraPositionEtc)
+TEST_F(Renderer, CameraSetProjectionMatrixNulloptResetsTheProjectionMatrixToUsingStandardCameraPositionEtc)
 {
     osc::Camera camera;
-    glm::mat4 initialProjectionMatrix = camera.getProjectionMatrix();
+    glm::mat4 initialProjectionMatrix = camera.getProjectionMatrix(1.0f);
 
     glm::mat4 ProjectionMatrix{1.0f};
     ProjectionMatrix[0][1] = 9.0f;  // change some part of it
 
-    camera.setProjectionMatrix(ProjectionMatrix);
-    ASSERT_NE(camera.getProjectionMatrix(), initialProjectionMatrix);
-    ASSERT_EQ(camera.getProjectionMatrix(), ProjectionMatrix);
+    camera.setProjectionMatrixOverride(ProjectionMatrix);
+    ASSERT_NE(camera.getProjectionMatrix(1.0f), initialProjectionMatrix);
+    ASSERT_EQ(camera.getProjectionMatrix(1.0f), ProjectionMatrix);
 
-    camera.resetProjectionMatrix();
+    camera.setProjectionMatrixOverride(std::nullopt);
 
-    ASSERT_EQ(camera.getProjectionMatrix(), initialProjectionMatrix);
+    ASSERT_EQ(camera.getProjectionMatrix(1.0f), initialProjectionMatrix);
 }
 
 TEST_F(Renderer, CameraGetViewProjectionMatrixReturnsViewMatrixMultipliedByProjectionMatrix)
@@ -2546,10 +2521,10 @@ TEST_F(Renderer, CameraGetViewProjectionMatrixReturnsViewMatrixMultipliedByProje
 
     glm::mat4 expected = projectionMatrix * viewMatrix;
 
-    camera.setViewMatrix(viewMatrix);
-    camera.setProjectionMatrix(projectionMatrix);
+    camera.setViewMatrixOverride(viewMatrix);
+    camera.setProjectionMatrixOverride(projectionMatrix);
 
-    ASSERT_EQ(camera.getViewProjectionMatrix(), expected);
+    ASSERT_EQ(camera.getViewProjectionMatrix(1.0f), expected);
 }
 
 TEST_F(Renderer, CameraGetInverseViewProjectionMatrixReturnsExpectedAnswerWhenUsingOverriddenMatrices)
@@ -2564,10 +2539,10 @@ TEST_F(Renderer, CameraGetInverseViewProjectionMatrixReturnsExpectedAnswerWhenUs
 
     glm::mat4 expected = glm::inverse(projectionMatrix * viewMatrix);
 
-    camera.setViewMatrix(viewMatrix);
-    camera.setProjectionMatrix(projectionMatrix);
+    camera.setViewMatrixOverride(viewMatrix);
+    camera.setProjectionMatrixOverride(projectionMatrix);
 
-    ASSERT_EQ(camera.getInverseViewProjectionMatrix(), expected);
+    ASSERT_EQ(camera.getInverseViewProjectionMatrix(1.0f), expected);
 }
 
 TEST_F(Renderer, CameraGetClearFlagsReturnsSolidColorOnDefaultConstruction)
