@@ -211,9 +211,6 @@ public:
             App::upd().setShowCursor(true);
         }
 
-        // set render dimensions
-        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
-
         // render spheres
         for (SceneSphere const& sphere : m_SceneSpheres)
         {
@@ -297,6 +294,7 @@ public:
         );
 
         // draw scene to screen
+        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
         m_Camera.renderToScreen();
     }
 

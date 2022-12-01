@@ -2372,6 +2372,12 @@ TEST_F(Renderer, CameraSetCameraProjectionMakesCameraCompareNotEqual)
     ASSERT_NE(camera, copy);
 }
 
+TEST_F(Renderer, CameraGetPositionReturnsOriginOnDefaultConstruction)
+{
+    osc::Camera camera;
+    ASSERT_EQ(camera.getPosition(), glm::vec3(0.0f, 0.0f, 0.0f));
+}
+
 TEST_F(Renderer, CameraSetDirectionToStandardDirectionCausesGetDirectionToReturnTheDirection)
 {
     // this test kind of sucks, because it's assuming that the direction isn't touched if it's

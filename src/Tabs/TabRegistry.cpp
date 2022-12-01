@@ -19,6 +19,7 @@
 #include "src/Tabs/Experiments/RendererLightingMapsTab.hpp"
 #include "src/Tabs/Experiments/RendererMultipleLightsTab.hpp"
 #include "src/Tabs/Experiments/RendererSDFTab.hpp"
+#include "src/Tabs/Experiments/RendererShadowMappingTab.hpp"
 #include "src/Tabs/Experiments/RendererTexturingTab.hpp"
 
 #include <algorithm>
@@ -75,6 +76,7 @@ namespace
         lock->emplace_back("Renderer/MultipleLights", TabConstructor<osc::RendererMultipleLightsTab>);
         lock->emplace_back("Renderer/Texturing", TabConstructor<osc::RendererTexturingTab>);
         lock->emplace_back("Renderer/SDFTab", TabConstructor<osc::RendererSDFTab>);
+        lock->emplace_back("Renderer/ShadowMapping", TabConstructor<osc::RendererShadowMappingTab>);
         lock->emplace_back("Demos/ImGui", TabConstructor<osc::ImGuiDemoTab>);
         lock->emplace_back("Demos/ImPlot", TabConstructor<osc::ImPlotDemoTab>);
         lock->emplace_back("Demos/ImGuizmo", TabConstructor<osc::ImGuizmoDemoTab>);

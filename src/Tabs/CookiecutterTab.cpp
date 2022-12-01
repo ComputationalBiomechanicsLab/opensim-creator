@@ -60,13 +60,14 @@ public:
 
 
 private:
+    // tab state
     UID m_ID;
     std::string m_Name = ICON_FA_COOKIE " CookiecutterTab";
     TabHost* m_Parent;
 };
 
 
-// public API
+// public API (PIMPL)
 
 osc::CookiecutterTab::CookiecutterTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}
