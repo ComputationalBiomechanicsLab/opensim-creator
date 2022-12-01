@@ -11,7 +11,10 @@ All notable changes to this project will be documented here. The format is based
 - The add component dialogs (e.g. `Add ClutchedPathSpring`) now print any addition errors inside
   the dialog (previously, would print the errors to the log, #476)
 
-## [0.3.1] - 2022/09/27
+## [0.3.1] - UNRELEASED
+
+**Note**: `0.3.1` was tagged in the git repository but never released, because it contained a bug that
+caused it to crash on certain systems when viewing high-vertex-count meshes (e.g. CT scans).
 
 - The mouseover hittest was re-optimized to match 0.2's performance (#349)
 - Scene rendering performance has been improved by around ~10-30 % on typical machines
