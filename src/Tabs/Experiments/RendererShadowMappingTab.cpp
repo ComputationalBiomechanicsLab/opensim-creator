@@ -168,7 +168,9 @@ private:
         m_SceneMaterial.setVec3("uLightColor", glm::vec3{0.3f});
         m_SceneMaterial.setVec3("uLightWorldPos", m_LightPos);
         m_SceneMaterial.setVec3("uViewWorldPos", m_Camera.getPosition());
+        m_SceneMaterial.setMat4("uLightSpaceMat", m_LatestLightSpaceMatrix);
         m_SceneMaterial.setTexture("uDiffuseTexture", m_WoodTexture);
+        m_SceneMaterial.setRenderTexture("uShadowMapTexture", m_DepthTexture);
 
         drawMeshesWithMaterial(m_SceneMaterial);
         m_Camera.setPixelRect(viewportRect);
@@ -210,9 +212,9 @@ private:
         float const zFar = 7.5f;
         glm::mat4 const lightViewMatrix = glm::lookAt(m_LightPos, glm::vec3{0.0f}, {0.0f, 1.0f, 0.0f});
         glm::mat4 const lightProjMatrix = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, zNear, zFar);
-        glm::mat4 const lightSpaceMatrix = lightProjMatrix * lightViewMatrix;
+        m_LatestLightSpaceMatrix = lightProjMatrix * lightViewMatrix;
 
-        m_DepthMaterial.setMat4("uLightSpaceMatrix", lightSpaceMatrix);
+        m_DepthMaterial.setMat4("uLightSpaceMatrix", m_LatestLightSpaceMatrix);
 
         drawMeshesWithMaterial(m_DepthMaterial);
         m_Camera.renderTo(m_DepthTexture);
@@ -246,6 +248,7 @@ private:
         }
     };
     RenderTexture m_DepthTexture{RenderTextureDescriptor{glm::ivec2{1024, 1024}}};
+    glm::mat4 m_LatestLightSpaceMatrix{1.0f};
     glm::vec3 m_LightPos = {-2.0f, 4.0f, -1.0f};
 };
 
