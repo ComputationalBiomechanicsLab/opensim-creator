@@ -144,7 +144,7 @@ namespace osc
     bool ActionAddBodyToModel(UndoableModelStatePair&, BodyDetails const&);
 
     // add the given component into the model graph
-    bool ActionAddComponentToModel(UndoableModelStatePair&, std::unique_ptr<OpenSim::Component>);
+    bool ActionAddComponentToModel(UndoableModelStatePair&, std::unique_ptr<OpenSim::Component>, std::string& errorOut);
 
     // set the speed of a coordinate
     bool ActionSetCoordinateSpeed(UndoableModelStatePair&, OpenSim::Coordinate const&, double);

@@ -430,11 +430,23 @@ private:
             std::unique_ptr<OpenSim::Component> rv = tryCreateComponentFromState();
             if (rv)
             {
-                if (ActionAddComponentToModel(*m_Uum, std::move(rv)))
+                if (ActionAddComponentToModel(*m_Uum, std::move(rv), m_CurrentErrors))
                 {
                     requestClose();
                 }
             }
+        }
+    }
+
+    void drawAnyErrorMessages()
+    {
+        if (!m_CurrentErrors.empty())
+        {
+            ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 0.0f, 0.0f, 1.0f});
+            ImGui::Dummy({0.0f, 2.0f});
+            ImGui::TextWrapped("Error adding component to model: %s", m_CurrentErrors.c_str());
+            ImGui::Dummy({0.0f, 2.0f});
+            ImGui::PopStyleColor();
         }
     }
 
@@ -451,6 +463,8 @@ private:
         ImGui::Dummy({0.0f, 1.0f});
 
         drawPathPointEditor();
+
+        drawAnyErrorMessages();
 
         ImGui::Dummy({0.0f, 1.0f});
 
@@ -483,6 +497,9 @@ private:
 
     // search string that user edits to search through possible path point locations
     std::string m_PathSearchString;
+
+    // storage for any addition errors
+    std::string m_CurrentErrors;
 };
 
 

@@ -8,6 +8,8 @@ All notable changes to this project will be documented here. The format is based
   Intel Iris Xe GPU (#418)
 - Refactored the `osc::Camera` API (#478)
 - Fixed the navigator panel having a slight background tint (#474)
+- The add component dialogs (e.g. `Add ClutchedPathSpring`) now print any addition errors inside
+  the dialog (previously, would print the errors to the log, #476)
 
 ## [0.3.1] - 2022/09/27
 

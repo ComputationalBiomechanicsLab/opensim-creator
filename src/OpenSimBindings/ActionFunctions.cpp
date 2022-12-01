@@ -1167,7 +1167,7 @@ bool osc::ActionAddBodyToModel(UndoableModelStatePair& uim, BodyDetails const& d
     }
 }
 
-bool osc::ActionAddComponentToModel(UndoableModelStatePair& model, std::unique_ptr<OpenSim::Component> c)
+bool osc::ActionAddComponentToModel(UndoableModelStatePair& model, std::unique_ptr<OpenSim::Component> c, std::string& errorOut)
 {
     try
     {
@@ -1186,6 +1186,7 @@ bool osc::ActionAddComponentToModel(UndoableModelStatePair& model, std::unique_p
     }
     catch (std::exception const& ex)
     {
+        errorOut = ex.what();
         log::error("error detected while trying to add a component to the model: %s", ex.what());
         model.rollback();
         return false;
