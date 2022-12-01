@@ -309,8 +309,8 @@ private:
         return RimHighlights
         {
             m_QuadMesh,
-            glm::inverse(params.projectionMatrix) * ToMat4(quadMeshToRimsQuad),
-            m_EdgeDetectorMaterial
+            glm::inverse(params.projectionMatrix * params.viewMatrix) * ToMat4(quadMeshToRimsQuad),
+            m_EdgeDetectorMaterial,
         };
     }
 
