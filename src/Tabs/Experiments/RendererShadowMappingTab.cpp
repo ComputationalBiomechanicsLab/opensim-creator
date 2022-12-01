@@ -7,11 +7,16 @@
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshGen.hpp"
+#include "src/Graphics/RenderTexture.hpp"
+#include "src/Graphics/RenderTextureDescriptor.hpp"
 #include "src/Graphics/Shader.hpp"
 #include "src/Graphics/Texture2D.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
 
+#include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>
 #include <SDL_events.h>
 
@@ -133,7 +138,7 @@ public:
     void onDraw()
     {
         handleMouseCapture();
-        drawScene();
+        draw3DScene();
     }
 
 private:
@@ -152,41 +157,65 @@ private:
         }
     }
 
-    void drawScene()
+    void draw3DScene()
     {
+        Rect const viewportRect = osc::GetMainViewportWorkspaceScreenRect();
+
+        renderShadowsToDepthTexture();
+
         m_Camera.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
 
         m_SceneMaterial.setVec3("uLightColor", glm::vec3{0.3f});
-        m_SceneMaterial.setVec3("uLightWorldPos", {-2.0f, 4.0f, -1.0f});
+        m_SceneMaterial.setVec3("uLightWorldPos", m_LightPos);
         m_SceneMaterial.setVec3("uViewWorldPos", m_Camera.getPosition());
         m_SceneMaterial.setTexture("uDiffuseTexture", m_WoodTexture);
 
+        drawMeshesWithMaterial(m_SceneMaterial);
+        m_Camera.setPixelRect(viewportRect);
+        m_Camera.renderToScreen();
+        m_Camera.setPixelRect(std::nullopt);
+        Graphics::BlitToScreen(m_DepthTexture, Rect{viewportRect.p1, viewportRect.p1 + 200.0f});
+    }
+
+    void drawMeshesWithMaterial(Material const& material)
+    {
         // floor
-        Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_SceneMaterial, m_Camera);
+        Graphics::DrawMesh(m_PlaneMesh, Transform{}, material, m_Camera);
 
         // cubes
         {
             Transform t;
             t.position = {0.0f, 1.0f, 0.0f};
             t.scale = glm::vec3{0.5f};
-            Graphics::DrawMesh(m_CubeMesh, t, m_SceneMaterial, m_Camera);
+            Graphics::DrawMesh(m_CubeMesh, t, material, m_Camera);
         }
         {
             Transform t;
             t.position = {2.0f, 0.0f, 1.0f};
             t.scale = glm::vec3{0.5f};
-            Graphics::DrawMesh(m_CubeMesh, t, m_SceneMaterial, m_Camera);
+            Graphics::DrawMesh(m_CubeMesh, t, material, m_Camera);
         }
         {
             Transform t;
             t.position = {-1.0f, 0.0f, 2.0f};
             t.rotation = glm::angleAxis(glm::radians(60.0f), glm::normalize(glm::vec3{1.0f, 0.0f, 1.0f}));
             t.scale = glm::vec3{0.25f};
-            Graphics::DrawMesh(m_CubeMesh, t, m_SceneMaterial, m_Camera);
+            Graphics::DrawMesh(m_CubeMesh, t, material, m_Camera);
         }
+    }
 
-        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
-        m_Camera.renderToScreen();
+    void renderShadowsToDepthTexture()
+    {
+        float const zNear = 1.0f;
+        float const zFar = 7.5f;
+        glm::mat4 const lightViewMatrix = glm::lookAt(m_LightPos, glm::vec3{0.0f}, {0.0f, 1.0f, 0.0f});
+        glm::mat4 const lightProjMatrix = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, zNear, zFar);
+        glm::mat4 const lightSpaceMatrix = lightProjMatrix * lightViewMatrix;
+
+        m_DepthMaterial.setMat4("uLightSpaceMatrix", lightSpaceMatrix);
+
+        drawMeshesWithMaterial(m_DepthMaterial);
+        m_Camera.renderTo(m_DepthTexture);
     }
 
     // tab state
@@ -208,6 +237,15 @@ private:
             App::slurp("shaders/ExperimentShadowMapping.frag"),
         }
     };
+    Material m_DepthMaterial
+    {
+        Shader
+        {
+            App::slurp("shaders/ExperimentShadowMappingDepth.vert"),
+            App::slurp("shaders/ExperimentShadowMappingDepth.frag"),
+        }
+    };
+    RenderTexture m_DepthTexture{RenderTextureDescriptor{glm::ivec2{1024, 1024}}};
     glm::vec3 m_LightPos = {-2.0f, 4.0f, -1.0f};
 };
 
