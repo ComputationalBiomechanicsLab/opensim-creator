@@ -32,6 +32,8 @@
 #include "src/Widgets/LogViewer.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 #include "src/Widgets/Panel.hpp"
+#include "src/Widgets/Popup.hpp"
+#include "src/Widgets/Popups.hpp"
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -671,32 +673,7 @@ private:
         m_StatusBar.draw();
 
         // draw any generic popups pushed to this layer
-        {
-            // begin and (if applicable) draw bottom-to-top in a nested fashion
-            int nOpened = 0;
-            int nPopups = static_cast<int>(m_Popups.size());  // only draw the popups that existed at the start of this frame, not the ones added during this frame
-            for (int i = 0; i < nPopups; ++i)
-            {
-                if (m_Popups[i]->beginPopup())
-                {
-                    m_Popups[i]->drawPopupContent();
-                    ++nOpened;
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            // end the opened popups top-to-bottom
-            for (int i = nOpened-1; i >= 0; --i)
-            {
-                m_Popups[i]->endPopup();
-            }
-
-            // garbage-collect any closed popups
-            osc::RemoveErase(m_Popups, [](auto const& ptr) { return !ptr->isOpen(); });
-        }
+        m_Popups.draw();
     }
 
     void implPushComponentContextMenuPopup(OpenSim::ComponentPath const& path) final
@@ -742,7 +719,7 @@ private:
     std::vector<ModelMusclePlotPanel> m_ModelMusclePlots;
     EditorTabStatusBar m_StatusBar{m_Parent, this, m_Model};
     std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
-    std::vector<std::unique_ptr<Popup>> m_Popups;
+    Popups m_Popups;
 
     // flag that's set+reset each frame to prevent continual throwing
     bool m_ExceptionThrownLastFrame = false;
