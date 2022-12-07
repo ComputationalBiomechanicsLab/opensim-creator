@@ -5,6 +5,7 @@
 #include <glm/vec2.hpp>
 #include <imgui.h>
 
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -27,8 +28,7 @@ namespace osc
 
         StandardPopup(
             std::string_view popupName,
-            float width,
-            float height,
+            glm::vec2 dimensions,
             ImGuiWindowFlags
         );
 
@@ -37,6 +37,8 @@ namespace osc
         void requestClose();
         bool isModal() const;
         void setModal(bool);
+        void setDimensions(glm::vec2);
+        void setPosition(std::optional<glm::vec2>);
 
     private:
         // this standard implementation supplies these
@@ -48,6 +50,12 @@ namespace osc
         void implEndPopup() final;
 
         // derivers can/must provide these
+        virtual void implBeforeImguiBeginPopup()
+        {
+        }
+        virtual void implAfterImguiBeginPopup()
+        {
+        }
         virtual void implDrawContent() = 0;
         virtual void implOnClose()
         {
@@ -55,6 +63,7 @@ namespace osc
 
         std::string m_PopupName;
         glm::ivec2 m_Dimensions;
+        std::optional<glm::ivec2> m_MaybePosition;
         int m_PopupFlags;
         bool m_ShouldOpen;
         bool m_ShouldClose;

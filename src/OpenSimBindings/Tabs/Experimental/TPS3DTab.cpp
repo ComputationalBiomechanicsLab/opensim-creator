@@ -39,6 +39,9 @@
 #include "src/Widgets/UndoButton.hpp"
 #include "src/Widgets/UndoRedoPanel.hpp"
 #include "src/Widgets/Panel.hpp"
+#include "src/Widgets/Popup.hpp"
+#include "src/Widgets/Popups.hpp"
+#include "src/Widgets/StandardPopup.hpp"
 
 #include <glm/mat3x4.hpp>
 #include <glm/vec2.hpp>
@@ -73,6 +76,8 @@
 // (these have nothing to do with TPS, but are used to help render the UI)
 namespace
 {
+    static constexpr glm::vec2 c_OverlayPadding = {10.0f, 10.0f};
+
     // returns the 3D position of the intersection between the user's mouse and the mesh, if any
     std::optional<osc::RayCollision> RaycastMesh(
         osc::PolarPerspectiveCamera const& camera,
@@ -775,6 +780,18 @@ namespace
             m_Parent->closeTab(m_TabID);
         }
 
+        void pushPopup(std::shared_ptr<osc::Popup> popup)
+        {
+            OSC_ASSERT(popup != nullptr);
+            popup->open();
+            m_Popups.push_back(std::move(popup));
+        }
+
+        void drawPopups()
+        {
+            m_Popups.draw();
+        }
+
         // the document the user is editing
         std::shared_ptr<osc::UndoRedoT<TPSDocument>> EditedDocument = std::make_shared<osc::UndoRedoT<TPSDocument>>();
 
@@ -814,6 +831,9 @@ namespace
 
         // cached TPS3D algorithm result (to prevent recomputing it each frame)
         TPSResultCache ResultCache;
+
+        // currently active tab-wide popups
+        osc::Popups m_Popups;
     };
 
     // append decorations that are common to all panels to the given output vector
@@ -821,12 +841,16 @@ namespace
         TPSTabSharedState const& sharedState,
         osc::Mesh const& tpsSourceOrDestinationMesh,
         bool wireframeMode,
-        std::vector<osc::SceneDecoration>& out)
+        std::vector<osc::SceneDecoration>& out,
+        glm::vec4 meshColor = {1.0f, 1.0f, 1.0f, 1.0f})
     {
         out.reserve(out.size() + 5);  // likely guess
 
         // draw the mesh
-        out.emplace_back(tpsSourceOrDestinationMesh);
+        {
+            auto& decoration = out.emplace_back(tpsSourceOrDestinationMesh);
+            decoration.color = meshColor;
+        }
 
         // if requested, also draw wireframe overlays for the mesh
         if (wireframeMode)
@@ -839,6 +863,312 @@ namespace
         DrawXZGrid(osc::App::singleton<osc::MeshCache>(), out);
         DrawXZFloorLines(osc::App::singleton<osc::MeshCache>(), out, 100.0f);
     }
+
+    // a popup that prompts a user to select landmarks etc. for adding a new frame
+    class TPS3DDefineFrameStateMachine : public osc::StandardPopup {
+    public:
+        TPS3DDefineFrameStateMachine(
+            std::shared_ptr<TPSTabSharedState> state_,
+            osc::PolarPerspectiveCamera const& camera_,
+            bool wireframeMode_,
+            float landmarkRadius_,
+            std::string const& originLandmarkID_) :
+
+            StandardPopup{"##FrameEditorOverlay", {}, osc::GetMinimalWindowFlags() & ~(ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs)},
+            m_State{std::move(state_)},
+            m_Camera{camera_},
+            m_OriginLandmarkID{originLandmarkID_},
+            m_FirstLandmarkID{std::nullopt},
+            m_SecondLandmarkID{std::nullopt},
+            m_CachedRenderer{osc::App::config(), osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()},
+            m_WireframeMode{std::move(wireframeMode_)},
+            m_LandmarkRadius{std::move(landmarkRadius_)}
+        {
+            setModal(true);
+        }
+
+        void setRect(osc::Rect const& rect)
+        {
+            setPosition(rect.p1);
+            setDimensions(osc::Dimensions(rect));
+        }
+
+    private:
+        void implBeforeImguiBeginPopup() final
+        {
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+        }
+
+        void implAfterImguiBeginPopup() final
+        {
+            ImGui::PopStyleVar();
+        }
+
+        void implDrawContent() final
+        {
+            if (ImGui::IsKeyReleased(ImGuiKey_Escape))
+            {
+                requestClose();
+            }
+
+            // compute: top-level UI variables (render rect, mouse pos, etc.)
+            osc::Rect const contentRect = osc::ContentRegionAvailScreenRect();
+            glm::vec2 const contentRectDims = osc::Dimensions(contentRect);
+            glm::vec2 const mousePos = ImGui::GetMousePos();
+            osc::Line const cameraRay = m_Camera.unprojectTopLeftPosToWorldRay(mousePos - contentRect.p1, osc::Dimensions(contentRect));
+
+            // hittest: calculate which landmark is under the mouse (if any)
+            std::optional<std::string> const maybeHoveredLandmark = osc::IsPointInRect(contentRect, mousePos) ?
+                getMouseLandmarkCollisions(cameraRay) :
+                std::nullopt;
+
+            // camera: update from input state
+            if (osc::IsPointInRect(contentRect, mousePos))
+            {
+                osc::UpdatePolarCameraFromImGuiUserInput(osc::Dimensions(contentRect), m_Camera);
+            }
+
+            // render: render 3D scene to a texture based on current state+hovering
+            osc::RenderTexture& sceneRender = renderScene(contentRectDims, maybeHoveredLandmark);
+            osc::DrawTextureAsImGuiImage(sceneRender);
+            osc::ImGuiItemHittestResult const htResult = osc::HittestLastImguiItem();
+
+            // events: handle any changes due to hovering over, clicking, etc.
+            handleInputAndHoverEvents(htResult, maybeHoveredLandmark);
+
+            // 2D UI: draw 2D elements (buttons, text, etc.) as an overlay
+            drawOverlays(contentRect);
+        }
+
+        // returns the closest collision, if any, between the provided camera ray and a landmark
+        std::optional<std::string> getMouseLandmarkCollisions(osc::Line const& cameraRay) const
+        {
+            std::optional<std::string> rv;
+            glm::vec3 worldspaceLoc = {};
+            for (TPSDocumentLandmarkPair const& p : m_State->EditedDocument->getScratch().landmarkPairs)
+            {
+                if (!p.maybeSourceLocation)
+                {
+                    // doesn't have a source/destination landmark
+                    continue;
+                }
+                // else: hittest the landmark as a sphere
+
+                std::optional<osc::RayCollision> const coll = osc::GetRayCollisionSphere(cameraRay, osc::Sphere{*p.maybeSourceLocation, m_LandmarkRadius});
+                if (coll)
+                {
+                    if (!rv || glm::length(worldspaceLoc - cameraRay.origin) > coll->distance)
+                    {
+                        rv.emplace(p.id);
+                        worldspaceLoc = coll->position;
+                    }
+                }
+            }
+            return rv;
+        }
+
+        // renders this panel's 3D scene to a texture
+        osc::RenderTexture& renderScene(
+            glm::vec2 renderDimensions,
+            std::optional<std::string> const& maybeHoveredLandmarkID)
+        {
+            osc::SceneRendererParams const params = CalcRenderParams(m_Camera, renderDimensions);
+            std::vector<osc::SceneDecoration> const decorations = generateDecorations(maybeHoveredLandmarkID);
+            return m_CachedRenderer.draw(decorations, params);
+        }
+
+        // returns a fresh list of 3D decorations for this panel's 3D render
+        std::vector<osc::SceneDecoration> generateDecorations(
+            std::optional<std::string> const& maybeHoveredLandmarkID) const
+        {
+            std::vector<osc::SceneDecoration> decorations;
+
+            // (guess)
+            decorations.reserve(6 + CalcNumLandmarks(m_State->EditedDocument->getScratch(), TPSDocumentInputIdentifier::Source));
+
+            AppendCommonDecorations(
+                *m_State,
+                GetMesh(m_State->EditedDocument->getScratch(), TPSDocumentInputIdentifier::Source),
+                m_WireframeMode,
+                decorations,
+                glm::vec4{1.0f, 1.0f, 1.0f, 0.25f}
+            );
+
+            // draw source landmarks
+            for (TPSDocumentLandmarkPair const& p : m_State->EditedDocument->getScratch().landmarkPairs)
+            {
+                if (!p.maybeSourceLocation)
+                {
+                    // no source location data: don't draw it
+                    continue;
+                }
+
+                // emit one sphere per landmark
+                osc::SceneDecoration& decoration = decorations.emplace_back(*m_State->LandmarkSphere);
+
+                osc::Transform transform{};
+                transform.scale *= m_LandmarkRadius;
+                transform.position = *p.maybeSourceLocation;
+
+                decoration.transform = transform;
+
+                if (p.id == m_OriginLandmarkID)
+                {
+                    // its the origin
+                    decoration.color = {1.0f, 1.0f, 1.0f, 1.0f};
+                }
+                else if (p.id == m_FirstLandmarkID)
+                {
+                    decoration.color = {1.0f, 1.0f, 1.0f, 1.0f};
+                    if (p.id == maybeHoveredLandmarkID)
+                    {
+                        // hovering over first landmark (can be deselected)
+                        decoration.flags |= osc::SceneDecorationFlags_IsHovered;
+                    }
+
+                    osc::ArrowProperties props;
+                    props.worldspaceStart = getOriginPos();
+                    props.worldspaceEnd = *p.maybeSourceLocation;
+                    props.tipLength = m_LandmarkRadius;
+                    props.neckThickness = 0.25f*m_LandmarkRadius;
+                    props.headThickness = 0.5f*m_LandmarkRadius;
+                    props.color = {1.0f, 1.0f, 1.0f, 0.75f};
+                    osc::DrawArrow(osc::App::singleton<osc::MeshCache>(), props, decorations);
+                }
+                else if (p.id == m_SecondLandmarkID)
+                {
+                    decoration.color = {1.0f, 1.0f, 1.0f, 1.0f};
+                    if (p.id == maybeHoveredLandmarkID)
+                    {
+                        // hovering over the second landmark (can be deselected)
+                        decoration.flags |= osc::SceneDecorationFlags_IsHovered;
+                    }
+
+                    osc::ArrowProperties props;
+                    props.worldspaceStart = getOriginPos();
+                    props.worldspaceEnd = *p.maybeSourceLocation;
+                    props.tipLength = m_LandmarkRadius;
+                    props.neckThickness = 0.25f*m_LandmarkRadius;
+                    props.headThickness = 0.5f*m_LandmarkRadius;
+                    props.color = {1.0f, 1.0f, 1.0f, 0.75f};
+                    osc::DrawArrow(osc::App::singleton<osc::MeshCache>(), props, decorations);
+                }
+                else if (p.id == maybeHoveredLandmarkID && !(m_FirstLandmarkID && m_SecondLandmarkID))
+                {
+                    // hovering over some other landmark in the scene and it's select-able
+                    decoration.color = {1.0f, 1.0f, 1.0f, 0.9f};
+                    decoration.flags |= osc::SceneDecorationFlags_IsHovered;
+
+                    osc::ArrowProperties props;
+                    props.worldspaceStart = getOriginPos();
+                    props.worldspaceEnd = *p.maybeSourceLocation;
+                    props.tipLength = m_LandmarkRadius;
+                    props.neckThickness = 0.25f*m_LandmarkRadius;
+                    props.headThickness = 0.5f*m_LandmarkRadius;
+                    props.color = glm::vec4{1.0f, 1.0f, 1.0f, 0.25f};
+                    osc::DrawArrow(osc::App::singleton<osc::MeshCache>(), props, decorations);
+                }
+                else
+                {
+                    // some other landmark in the scene (not hovered)
+                    decoration.color = {1.0f, 1.0f, 1.0f, 0.80f};
+                }
+            }
+
+            // if possible, draw completed frame
+            if (m_FirstLandmarkID && m_SecondLandmarkID)
+            {
+                // - the frame
+                // - the plane the frame was created from
+            }
+
+            return decorations;
+        }
+
+        void handleInputAndHoverEvents(
+            osc::ImGuiItemHittestResult const& htResult,
+            std::optional<std::string> const& maybeHoveredLandmarkID)
+        {
+            // event: if the user left-clicks while hovering a landmark...
+            if (htResult.isLeftClickReleasedWithoutDragging && maybeHoveredLandmarkID)
+            {
+                std::string const& hoveredLandmarkID = *maybeHoveredLandmarkID;
+
+                if (hoveredLandmarkID == m_OriginLandmarkID)
+                {
+                    // ...and the landmark was the origin, do nothing (they can't (de)select the origin).
+                    ;
+                }
+                else
+                {
+                    // ...else, if the landmark wasn't the origin...
+                    if (hoveredLandmarkID == m_FirstLandmarkID)
+                    {
+                        // ...and it was the first landmark, deselect it.
+                        m_FirstLandmarkID.reset();
+                    }
+                    else if (hoveredLandmarkID == m_SecondLandmarkID)
+                    {
+                        // ...and it was the second landmark, deselect it.
+                        m_SecondLandmarkID.reset();
+                    }
+                    else if (!m_FirstLandmarkID)
+                    {
+                        // ...and the first landmark is assignable, then assign it.
+                        m_FirstLandmarkID = hoveredLandmarkID;
+                    }
+                    else if (!m_SecondLandmarkID)
+                    {
+                        // ...and the second landmark is assignable, then assign it.
+                        m_SecondLandmarkID = hoveredLandmarkID;
+                    }
+                    else
+                    {
+                        // ...and both landmarks are assigned, do nothing.
+                        ;
+                    }
+                }
+            }
+        }
+
+        // draws 2D ImGui overlays over the scene render
+        void drawOverlays(osc::Rect const& renderRect)
+        {
+            ImGui::SetCursorScreenPos(renderRect.p1 + c_OverlayPadding);
+
+            // draw explanation text
+
+            ImGui::Text("select reference points (click again to de-select)");
+
+            // draw cancel X
+            // draw cancel button
+            // draw commit button
+            // draw flip checkbox?
+        }
+
+        glm::vec3 getOriginPos() const
+        {
+            glm::vec3 rv{};
+            for (TPSDocumentLandmarkPair const& p : m_State->EditedDocument->getScratch().landmarkPairs)
+            {
+                if (p.maybeSourceLocation && p.id == m_OriginLandmarkID)
+                {
+                    rv = *p.maybeSourceLocation;
+                    break;
+                }
+            }
+            return rv;
+        }
+
+        std::shared_ptr<TPSTabSharedState> m_State;
+        osc::PolarPerspectiveCamera m_Camera;
+        std::string m_OriginLandmarkID;
+        std::optional<std::string> m_FirstLandmarkID;
+        std::optional<std::string> m_SecondLandmarkID;
+        osc::CachedSceneRenderer m_CachedRenderer;
+        bool m_WireframeMode;
+        float m_LandmarkRadius;
+    };
 
     // generic base class for the panels shown in the TPS3D tab
     class TPS3DTabPanel : public osc::StandardPanel {
@@ -916,6 +1246,12 @@ namespace
 
             // draw any 2D ImGui overlays
             drawOverlays(m_LastTextureHittestResult.rect);
+
+            // ensure any popup overlays have latest render rect
+            if (auto overlay = m_MaybeActiveModalOverlay.lock())
+            {
+                overlay->setRect(contentRect);
+            }
         }
 
         void updateCamera()
@@ -977,7 +1313,7 @@ namespace
             std::optional<osc::RayCollision> const& meshCollision,
             std::optional<TPSTabHover> const& landmarkCollision)
         {
-            // event: if the user clicks and something is hovered, select it; otherwise, add a landmark
+            // event: if the user left-clicks and something is hovered, select it; otherwise, add a landmark
             if (htResult.isLeftClickReleasedWithoutDragging)
             {
                 if (landmarkCollision && landmarkCollision->MaybeSceneElementID)
@@ -998,6 +1334,25 @@ namespace
                 }
             }
 
+            // event: if the user right-clicks a landmark in the source document, bring up the source frame overlay
+            if (htResult.isRightClickReleasedWithoutDragging &&
+                m_DocumentIdentifier == TPSDocumentInputIdentifier::Source &&
+                landmarkCollision &&
+                landmarkCollision->MaybeSceneElementID &&
+                landmarkCollision->MaybeSceneElementID->elementType == TPSDocumentInputElementType::Landmark)
+            {
+                auto overlay = std::make_shared<TPS3DDefineFrameStateMachine>(
+                    m_State,
+                    m_Camera,
+                    m_WireframeMode,
+                    m_LandmarkRadius,
+                    landmarkCollision->MaybeSceneElementID->elementID
+                );
+                overlay->setRect(htResult.rect);
+                m_MaybeActiveModalOverlay = overlay;
+                m_State->pushPopup(overlay);
+            }
+
             // event: if the user is hovering the render while something is selected and the user
             // presses delete then the landmarks should be deleted
             if (htResult.isHovered && osc::IsAnyKeyPressed({ImGuiKey_Delete, ImGuiKey_Backspace}))
@@ -1013,7 +1368,7 @@ namespace
         // draws 2D ImGui overlays over the scene render
         void drawOverlays(osc::Rect const& renderRect)
         {
-            ImGui::SetCursorScreenPos(renderRect.p1 + m_OverlayPadding);
+            ImGui::SetCursorScreenPos(renderRect.p1 + c_OverlayPadding);
 
             drawInformationIcon();
 
@@ -1147,7 +1502,7 @@ namespace
             ImGuiSliderFlags const flags = ImGuiSliderFlags_Logarithmic;
 
             char const* const label = "landmark radius";
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - m_OverlayPadding.x);
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - c_OverlayPadding.x);
             ImGui::SliderFloat(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
 
@@ -1230,7 +1585,7 @@ namespace
         osc::ImGuiItemHittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;
         float m_LandmarkRadius = 0.05f;
-        glm::vec2 m_OverlayPadding = {10.0f, 10.0f};
+        std::weak_ptr<TPS3DDefineFrameStateMachine> m_MaybeActiveModalOverlay;
     };
 
     // a "result" panel (i.e. after applying a warp to the source)
@@ -1955,6 +2310,9 @@ public:
             }
         }
         m_StatusBar.draw();
+
+        // draw active popups over the UI
+        m_TabState->drawPopups();
     }
 
 private:

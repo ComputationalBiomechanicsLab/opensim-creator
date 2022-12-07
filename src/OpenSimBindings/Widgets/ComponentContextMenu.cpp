@@ -204,7 +204,7 @@ public:
          std::shared_ptr<UndoableModelStatePair> model,
          OpenSim::ComponentPath const& path) :
 
-        StandardPopup{popupName, 10.0f, 10.0f, ImGuiWindowFlags_NoMove},
+        StandardPopup{popupName, {10.0f, 10.0f}, ImGuiWindowFlags_NoMove},
         m_MainUIStateAPI{std::move(mainUIStateAPI)},
         m_EditorAPI{std::move(editorAPI)},
         m_Model{std::move(model)},

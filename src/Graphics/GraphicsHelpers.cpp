@@ -9,6 +9,7 @@
 #include "src/Maths/BVH.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/MathHelpers.hpp"
+#include "src/Maths/Segment.hpp"
 #include "src/Maths/Tetrahedron.hpp"
 #include "src/Platform/Config.hpp"
 
@@ -139,6 +140,35 @@ void osc::DrawYZGrid(MeshCache& cache, std::vector<SceneDecoration>& out)
 {
     glm::quat rotation = glm::angleAxis(fpi2, glm::vec3{0.0f, 1.0f, 0.0f});
     DrawGrid(cache, rotation, out);
+}
+
+osc::ArrowProperties::ArrowProperties() :
+    worldspaceStart{},
+    worldspaceEnd{},
+    tipLength{},
+    neckThickness{},
+    headThickness{},
+    color{}
+{
+}
+
+void osc::DrawArrow(MeshCache& cache, ArrowProperties const& props, std::vector<SceneDecoration>& out)
+{
+    glm::vec3 startToEnd = props.worldspaceEnd - props.worldspaceStart;
+    float const len = glm::length(startToEnd);
+
+    glm::vec3 const neckStart = props.worldspaceStart;
+    glm::vec3 const neckEnd = props.worldspaceStart + (len - props.tipLength)*startToEnd;
+    glm::vec3 const headStart = neckEnd;
+    glm::vec3 const headEnd = props.worldspaceEnd;
+
+    // emit neck cylinder
+    Transform const neckXform = SimbodyCylinderToSegmentTransform({neckStart, neckEnd}, props.neckThickness);
+    out.emplace_back(cache.getCylinderMesh(), neckXform, props.color);
+
+    // emit head cone
+    Transform const headXform = SimbodyCylinderToSegmentTransform({headStart, headEnd}, props.headThickness);
+    out.emplace_back(cache.getConeMesh(), headXform, props.color);
 }
 
 void osc::UpdateSceneBVH(nonstd::span<SceneDecoration const> sceneEls, BVH& bvh)

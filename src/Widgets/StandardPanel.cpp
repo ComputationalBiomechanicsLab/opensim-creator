@@ -40,14 +40,11 @@ void osc::StandardPanel::implDraw()
     {
         bool v = true;
         implBeforeImGuiBegin();
-        if (ImGui::Begin(m_PanelName.c_str(), &v, m_PanelFlags))
+        bool began = ImGui::Begin(m_PanelName.c_str(), &v, m_PanelFlags);
+        implAfterImGuiBegin();
+        if (began)
         {
-            implAfterImGuiBegin();
             implDrawContent();
-        }
-        else
-        {
-            implAfterImGuiBegin();
         }
         ImGui::End();
 

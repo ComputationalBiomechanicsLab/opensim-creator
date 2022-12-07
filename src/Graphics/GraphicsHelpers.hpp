@@ -17,6 +17,7 @@
 namespace osc { struct AABB; }
 namespace osc { struct BVH; }
 namespace osc { struct Line; }
+namespace osc { struct Segment; }
 namespace osc { struct Transform; }
 namespace osc { class Config; }
 namespace osc { class Mesh; }
@@ -33,6 +34,18 @@ namespace osc
     void DrawXZGrid(MeshCache&, std::vector<SceneDecoration>&);
     void DrawXYGrid(MeshCache&, std::vector<SceneDecoration>&);
     void DrawYZGrid(MeshCache&, std::vector<SceneDecoration>&);
+
+    struct ArrowProperties final {
+        ArrowProperties();
+
+        glm::vec3 worldspaceStart;
+        glm::vec3 worldspaceEnd;
+        float tipLength;
+        float neckThickness;
+        float headThickness;
+        glm::vec4 color;
+    };
+    void DrawArrow(MeshCache&, ArrowProperties const&, std::vector<SceneDecoration>&);
 
     // updates the given BVH with the given component decorations
     void UpdateSceneBVH(nonstd::span<SceneDecoration const>, BVH& bvh);

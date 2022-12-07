@@ -6,18 +6,18 @@
 #include <utility>
 
 osc::StandardPopup::StandardPopup(std::string_view popupName) :
-    StandardPopup{std::move(popupName), 512.0f, 0.0f, ImGuiWindowFlags_AlwaysAutoResize}
+    StandardPopup{std::move(popupName), {512.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize}
 {
 }
 
 osc::StandardPopup::StandardPopup(
     std::string_view popupName,
-    float width,
-    float height,
+    glm::vec2 dimensions,
     ImGuiWindowFlags popupFlags) :
 
     m_PopupName{std::move(popupName)},
-    m_Dimensions{static_cast<int>(width), static_cast<int>(height)},
+    m_Dimensions{dimensions},
+    m_MaybePosition{std::nullopt},
     m_PopupFlags{std::move(popupFlags)},
     m_ShouldOpen{false},
     m_ShouldClose{false},
@@ -56,15 +56,28 @@ bool osc::StandardPopup::implBeginPopup()
 
     if (m_IsModal)
     {
-        // center the modal
+        // center the modal if no position is specified (otherwise: use the position)
         {
-            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2{0.5f, 0.5f});
+            if (m_MaybePosition)
+            {
+                ImGui::SetNextWindowPos(static_cast<glm::vec2>(*m_MaybePosition));
+            }
+            else
+            {
+                ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+                ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2{0.5f, 0.5f});
+            }
+
+            // set size (modals only?)
             ImGui::SetNextWindowSize(glm::vec2{m_Dimensions});
         }
 
         // try to show modal
-        if (!ImGui::BeginPopupModal(m_PopupName.c_str(), nullptr, m_PopupFlags))
+        implBeforeImguiBeginPopup();
+        bool const opened = ImGui::BeginPopupModal(m_PopupName.c_str(), nullptr, m_PopupFlags);
+        implAfterImguiBeginPopup();
+
+        if (!opened)
         {
             // modal not showing
             m_IsOpen = false;
@@ -73,8 +86,17 @@ bool osc::StandardPopup::implBeginPopup()
     }
     else
     {
+        if (m_MaybePosition)
+        {
+            ImGui::SetNextWindowPos(static_cast<glm::vec2>(*m_MaybePosition));
+        }
+
+        implBeforeImguiBeginPopup();
+        bool const opened = ImGui::BeginPopup(m_PopupName.c_str(), m_PopupFlags);
+        implAfterImguiBeginPopup();
+
         // try to show popup
-        if (!ImGui::BeginPopup(m_PopupName.c_str(), m_PopupFlags))
+        if (!opened)
         {
             // popup not showing
             m_IsOpen = false;
@@ -127,5 +149,15 @@ bool osc::StandardPopup::isModal() const
 void osc::StandardPopup::setModal(bool v)
 {
     m_IsModal = std::move(v);
+}
+
+void osc::StandardPopup::setDimensions(glm::vec2 d)
+{
+    m_Dimensions = d;
+}
+
+void osc::StandardPopup::setPosition(std::optional<glm::vec2> p)
+{
+    m_MaybePosition = p;
 }
 

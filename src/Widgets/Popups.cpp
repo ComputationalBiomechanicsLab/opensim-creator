@@ -8,7 +8,7 @@ osc::Popups::Popups(Popups&&) noexcept = default;
 osc::Popups& osc::Popups::operator=(Popups&&) noexcept = default;
 osc::Popups::~Popups() noexcept = default;
 
-void osc::Popups::push_back(std::unique_ptr<Popup> popup)
+void osc::Popups::push_back(std::shared_ptr<Popup> popup)
 {
     m_Popups.push_back(std::move(popup));
 }
