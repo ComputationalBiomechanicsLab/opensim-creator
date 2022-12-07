@@ -114,25 +114,6 @@ namespace
 // this covers the datastructures that the user is dynamically editing
 namespace
 {
-    // the "input" part of the document (i.e. source or destination mesh)
-    struct TPSDocumentInput final {
-
-        explicit TPSDocumentInput(osc::Mesh const& mesh_) :
-            Mesh{mesh_}
-        {
-        }
-
-        osc::Mesh Mesh;
-        std::unordered_map<std::string, glm::vec3> Landmarks;
-    };
-
-    // the whole TPS document that the user edits
-    struct TPSDocument final {
-        TPSDocumentInput Source{osc::GenUntexturedUVSphere(16, 16)};
-        TPSDocumentInput Destination{osc::GenUntexturedSimbodyCylinder(16)};
-        float BlendingFactor = 1.0f;
-    };
-
     // an enum used to identify one of the two inputs (source/destination) of the TPS
     // document at runtime
     enum class TPSDocumentInputIdentifier {
@@ -144,6 +125,30 @@ namespace
     enum class TPSDocumentInputElementType {
         Landmark,
         Mesh,
+    };
+
+    // a single landmark pair in the TPS document
+    //
+    // (can be midway through definition by the user)
+    struct TPSDocumentLandmarkPair final {
+
+        explicit TPSDocumentLandmarkPair(std::string id_) :
+            id{std::move(id_)}
+        {
+        }
+
+        std::string id;
+        std::optional<glm::vec3> maybeSourceLocation;
+        std::optional<glm::vec3> maybeDestinationLocation;
+    };
+
+    // the whole TPS document that the user edits in-place
+    struct TPSDocument final {
+        osc::Mesh sourceMesh = osc::GenUntexturedUVSphere(16, 16);
+        osc::Mesh destinationMesh = osc::GenUntexturedSimbodyCylinder(16);
+        std::vector<TPSDocumentLandmarkPair> landmarkPairs;
+        float blendingFactor = 1.0f;
+        size_t nextLandmarkID = 0;
     };
 
     // an associative identifier to specific element in a TPS document
@@ -190,48 +195,112 @@ namespace std
 
 namespace
 {
-    // returns the specified input
-    TPSDocumentInput const& GetInput(TPSDocument const& doc, TPSDocumentInputIdentifier which)
+    // helper: returns the (mutable) source/destination of the given landmark pair, if available
+    std::optional<glm::vec3>& UpdLocation(TPSDocumentLandmarkPair& landmarkPair, TPSDocumentInputIdentifier which)
     {
         switch (which)
         {
         case TPSDocumentInputIdentifier::Source:
-            return doc.Source;
+            return landmarkPair.maybeSourceLocation;
         case TPSDocumentInputIdentifier::Destination:
-            return doc.Destination;
+            return landmarkPair.maybeDestinationLocation;
         default:
-            throw std::runtime_error{"invalid document identifier provided to a getter"};
+            OSC_ASSERT(false && "this should never happen - unless you add more elements to the enum");
         }
     }
 
-    // returns the specified input (mutable)
-    TPSDocumentInput& UpdInput(TPSDocument& doc, TPSDocumentInputIdentifier which)
+    // helper: returns the source/destination of the given landmark pair, if available
+    std::optional<glm::vec3> const& GetLocation(TPSDocumentLandmarkPair const& landmarkPair, TPSDocumentInputIdentifier which)
+    {
+        return UpdLocation(const_cast<TPSDocumentLandmarkPair&>(landmarkPair), which);
+    }
+
+    // helper: returns the source/destination mesh in the given document (mutable)
+    osc::Mesh& UpdMesh(TPSDocument& doc, TPSDocumentInputIdentifier which)
     {
         switch (which)
         {
         case TPSDocumentInputIdentifier::Source:
-            return doc.Source;
+            return doc.sourceMesh;
         case TPSDocumentInputIdentifier::Destination:
-            return doc.Destination;
+            return doc.destinationMesh;
         default:
-            throw std::runtime_error{"invalid document identifier provided to a getter"};
+            OSC_ASSERT(false && "this should never happen - unless you add more elements to the enum");
         }
     }
 
-    // returns all paired landmarks in the document argument
+    // helper: returns the source/destination mesh in the given document
+    osc::Mesh const& GetMesh(TPSDocument const& doc, TPSDocumentInputIdentifier which)
+    {
+        return UpdMesh(const_cast<TPSDocument&>(doc), which);
+    }
+
+    // helpers: returns all paired landmarks in the document argument
     std::vector<osc::LandmarkPair3D> GetLandmarkPairs(TPSDocument const& doc)
     {
         std::vector<osc::LandmarkPair3D> rv;
-        rv.reserve(doc.Source.Landmarks.size());  // probably a good guess
-        for (auto const& [k, srcPos] : doc.Source.Landmarks)
+        rv.reserve(doc.landmarkPairs.size());  // probably a good guess (assuming most are paired)
+
+        for (TPSDocumentLandmarkPair const& p : doc.landmarkPairs)
         {
-            auto const it = doc.Destination.Landmarks.find(k);
-            if (it != doc.Destination.Landmarks.end())
+            if (p.maybeSourceLocation && p.maybeDestinationLocation)
             {
-                rv.emplace_back(srcPos, it->second);
+                rv.emplace_back(*p.maybeSourceLocation, *p.maybeDestinationLocation);
             }
         }
         return rv;
+    }
+
+    bool HasSourceOrDestinationLocation(TPSDocumentLandmarkPair const& p)
+    {
+        return p.maybeSourceLocation || p.maybeDestinationLocation;
+    }
+
+    size_t CalcNumLandmarks(TPSDocument const& doc, TPSDocumentInputIdentifier which)
+    {
+        size_t rv = 0;
+        for (TPSDocumentLandmarkPair const& p : doc.landmarkPairs)
+        {
+            if (GetLocation(p, which))
+            {
+                ++rv;
+            }
+        }
+        return rv;
+    }
+
+    // helper: add a source/destination landmark at the given location
+    void AddLandmark(
+        TPSDocument& doc,
+        TPSDocumentInputIdentifier which,
+        glm::vec3 const& pos)
+    {
+        // first, try assigning it to an empty slot in the existing data
+        //
+        // (e.g. imagine the caller added a few source points and is now
+        //       trying to add destination points - they should probably
+        //       be paired in-sequence with the unpaired source points)
+        bool wasAssignedToExistingEmptySlot = false;
+        for (TPSDocumentLandmarkPair& p : doc.landmarkPairs)
+        {
+            std::optional<glm::vec3>& maybeLoc = UpdLocation(p, which);
+            if (!maybeLoc)
+            {
+                maybeLoc = pos;
+                wasAssignedToExistingEmptySlot = true;
+                break;
+            }
+        }
+
+        // if there wasn't an empty slot, then create a new landmark pair and
+        // assign the location to the relevant part of the pair
+        if (!wasAssignedToExistingEmptySlot)
+        {
+            std::stringstream ss;
+            ss << "landmark_" << doc.nextLandmarkID++;
+            TPSDocumentLandmarkPair& p = doc.landmarkPairs.emplace_back(std::move(ss).str());
+            UpdLocation(p, which) = pos;
+        }
     }
 
     // action: try to undo the last change
@@ -247,18 +316,13 @@ namespace
     }
 
     // action: add a landmark to the source mesh and return its ID
-    std::string ActionAddLandmarkTo(
+    void ActionAddLandmarkTo(
         osc::UndoRedoT<TPSDocument>& doc,
         TPSDocumentInputIdentifier which,
         glm::vec3 const& pos)
     {
-        TPSDocumentInput& input = UpdInput(doc.updScratch(), which);
-        std::string const id = std::to_string(input.Landmarks.size());
-
-        input.Landmarks[id] = pos;
+        AddLandmark(doc.updScratch(), which, pos);
         doc.commitScratch("added landmark");
-
-        return id;
     }
 
     // action: prompt the user to browse for a different source mesh
@@ -270,8 +334,9 @@ namespace
             return;  // user didn't select anything
         }
 
-        TPSDocumentInput& input = UpdInput(doc.updScratch(), which);
-        input.Mesh = osc::LoadMeshViaSimTK(*maybeMeshPath);
+        osc::Mesh& mesh = UpdMesh(doc.updScratch(), which);
+        mesh = osc::LoadMeshViaSimTK(*maybeMeshPath);
+
         doc.commitScratch("changed mesh");
     }
 
@@ -291,19 +356,18 @@ namespace
             return;  // file was empty, or had invalid data
         }
 
-        TPSDocumentInput& input = UpdInput(doc.updScratch(), which);
         for (glm::vec3 const& landmark : landmarks)
         {
-            std::string const key = std::to_string(input.Landmarks.size());
-            input.Landmarks[key] = landmark;
+            AddLandmark(doc.updScratch(), which, landmark);
         }
+
         doc.commitScratch("loaded landmarks");
     }
 
     // action: set the TPS blending factor for the result, but don't save it to undo/redo storage
     void ActionSetBlendFactor(osc::UndoRedoT<TPSDocument>& doc, float factor)
     {
-        doc.updScratch().BlendingFactor = factor;
+        doc.updScratch().blendingFactor = factor;
     }
 
     // action: set the TPS blending factor and save a commit of the change
@@ -323,8 +387,7 @@ namespace
     // action: clear all user-assigned landmarks in the TPS document
     void ActionClearAllLandmarks(osc::UndoRedoT<TPSDocument>& doc)
     {
-        doc.updScratch().Source.Landmarks.clear();
-        doc.updScratch().Destination.Landmarks.clear();
+        doc.updScratch().landmarkPairs.clear();
         doc.commitScratch("cleared all landmarks");
     }
 
@@ -341,10 +404,23 @@ namespace
         TPSDocument& scratch = doc.updScratch();
         for (TPSDocumentElementID const& id : elementIDs)
         {
-            TPSDocumentInput& input = UpdInput(scratch, id.whichInput);
             if (id.elementType == TPSDocumentInputElementType::Landmark)
             {
-                input.Landmarks.erase(id.elementID);
+                auto it = std::find_if(
+                    scratch.landmarkPairs.begin(),
+                    scratch.landmarkPairs.end(),
+                    [&id](TPSDocumentLandmarkPair const& p) { return p.id == id.elementID; }
+                );
+                if (it != scratch.landmarkPairs.end())
+                {
+                    UpdLocation(*it, id.whichInput).reset();
+
+                    if (!HasSourceOrDestinationLocation(*it))
+                    {
+                        // the landmark now has no data associated with it: garbage collect it
+                        scratch.landmarkPairs.erase(it);
+                    }
+                }
             }
         }
 
@@ -372,13 +448,15 @@ namespace
         osc::CSVWriter writer{outfile};
         std::vector<std::string> cols(3);
 
-        TPSDocumentInput const& input = GetInput(doc, which);
-        for (auto const& [k, pos] : input.Landmarks)
+        for (TPSDocumentLandmarkPair const& p : doc.landmarkPairs)
         {
-            cols.at(0) = std::to_string(pos.x);
-            cols.at(1) = std::to_string(pos.y);
-            cols.at(2) = std::to_string(pos.z);
-            writer.writeRow(cols);
+            if (std::optional<glm::vec3> const loc = GetLocation(p, which))
+            {
+                cols.at(0) = std::to_string(loc->x);
+                cols.at(1) = std::to_string(loc->y);
+                cols.at(2) = std::to_string(loc->z);
+                writer.writeRow(cols);
+            }
         }
     }
 
@@ -545,9 +623,9 @@ namespace
         // returns `true` if `m_CachedSourceMesh` is updated
         bool updateInputMesh(TPSDocument const& doc)
         {
-            if (m_CachedSourceMesh != doc.Source.Mesh)
+            if (m_CachedSourceMesh != doc.sourceMesh)
             {
-                m_CachedSourceMesh = doc.Source.Mesh;
+                m_CachedSourceMesh = doc.sourceMesh;
                 return true;
             }
             else
@@ -562,7 +640,7 @@ namespace
             osc::TPSCoefficientSolverInputs3D newInputs
             {
                 GetLandmarkPairs(doc),
-                doc.BlendingFactor,
+                doc.blendingFactor,
             };
 
             if (newInputs != m_CachedInputs)
@@ -687,21 +765,6 @@ namespace
             return ResultCache.lookup(EditedDocument->getScratch());
         }
 
-        TPSDocumentInput& updInputDocument(TPSDocumentInputIdentifier identifier)
-        {
-            return UpdInput(EditedDocument->updScratch(), identifier);
-        }
-
-        TPSDocumentInput const& getInputDocument(TPSDocumentInputIdentifier identifier) const
-        {
-            return GetInput(EditedDocument->getScratch(), identifier);
-        }
-
-        osc::Mesh const& getInputMesh(TPSDocumentInputIdentifier identifier) const
-        {
-            return getInputDocument(identifier).Mesh;
-        }
-
         void requestCloseTab()
         {
             m_Parent->closeTab(m_TabID);
@@ -710,9 +773,6 @@ namespace
         // the document the user is editing
         std::shared_ptr<osc::UndoRedoT<TPSDocument>> EditedDocument = std::make_shared<osc::UndoRedoT<TPSDocument>>();
 
-        // cached TPS3D algorithm result (to prevent recomputing it each frame)
-        TPSResultCache ResultCache;
-
         // `true` if the user wants the cameras to be linked
         bool LinkCameras = true;
 
@@ -720,7 +780,7 @@ namespace
         bool OnlyLinkRotation = false;
 
         // shared linked camera
-        osc::PolarPerspectiveCamera LinkedCameraBase = CreateCameraFocusedOn(EditedDocument->getScratch().Source.Mesh.getBounds());
+        osc::PolarPerspectiveCamera LinkedCameraBase = CreateCameraFocusedOn(EditedDocument->getScratch().sourceMesh.getBounds());
 
         // wireframe material, used to draw scene elements in a wireframe style
         osc::Material WireframeMaterial = osc::CreateWireframeOverlayMaterial(osc::App::config(), osc::App::singleton<osc::ShaderCache>());
@@ -743,6 +803,9 @@ namespace
     private:
         osc::UID m_TabID;
         osc::TabHost* m_Parent;
+
+        // cached TPS3D algorithm result (to prevent recomputing it each frame)
+        TPSResultCache ResultCache;
     };
 
     // append decorations that are common to all panels to the given output vector
@@ -811,8 +874,9 @@ namespace
             osc::Line const cameraRay = m_Camera.unprojectTopLeftPosToWorldRay(mousePos - contentRect.p1, osc::Dimensions(contentRect));
 
             // mesh hittest: compute whether the user is hovering over the mesh (affects rendering)
+            osc::Mesh const& inputMesh = GetMesh(m_State->EditedDocument->getScratch(), m_DocumentIdentifier);
             std::optional<osc::RayCollision> const meshCollision = m_LastTextureHittestResult.isHovered ?
-                osc::GetClosestWorldspaceRayCollision(m_State->getInputMesh(m_DocumentIdentifier), osc::Transform{}, cameraRay) :
+                osc::GetClosestWorldspaceRayCollision(inputMesh, osc::Transform{}, cameraRay) :
                 std::nullopt;
 
             // landmark hittest: compute whether the user is hovering over a landmark
@@ -876,15 +940,24 @@ namespace
         std::optional<TPSTabHover> getMouseLandmarkCollisions(osc::Line const& cameraRay) const
         {
             std::optional<TPSTabHover> rv;
-            for (auto const& [id, pos] : m_State->getInputDocument(m_DocumentIdentifier).Landmarks)
+            for (TPSDocumentLandmarkPair const& p : m_State->EditedDocument->getScratch().landmarkPairs)
             {
-                std::optional<osc::RayCollision> const coll = osc::GetRayCollisionSphere(cameraRay, osc::Sphere{pos, m_LandmarkRadius});
+                std::optional<glm::vec3> const maybePos = GetLocation(p, m_DocumentIdentifier);
+
+                if (!maybePos)
+                {
+                    // doesn't have a source/destination landmark
+                    continue;
+                }
+                // else: hittest the landmark as a sphere
+
+                std::optional<osc::RayCollision> const coll = osc::GetRayCollisionSphere(cameraRay, osc::Sphere{*maybePos, m_LandmarkRadius});
                 if (coll)
                 {
                     if (!rv || glm::length(rv->WorldspaceLocation - cameraRay.origin) > coll->distance)
                     {
-                        TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentInputElementType::Landmark, id};
-                        rv.emplace(std::move(fullID), pos);
+                        TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentInputElementType::Landmark, p.id};
+                        rv.emplace(std::move(fullID), *maybePos);
                     }
                 }
             }
@@ -989,19 +1062,19 @@ namespace
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("# landmarks");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", m_State->getInputDocument(m_DocumentIdentifier).Landmarks.size());
+                ImGui::Text("%zu", CalcNumLandmarks(m_State->EditedDocument->getScratch(), m_DocumentIdentifier));
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("# verts");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", m_State->getInputMesh(m_DocumentIdentifier).getVerts().size());
+                ImGui::Text("%zu", GetMesh(m_State->EditedDocument->getScratch(), m_DocumentIdentifier).getVerts().size());
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("# triangles");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", m_State->getInputMesh(m_DocumentIdentifier).getIndices().size()/3);
+                ImGui::Text("%zu", GetMesh(m_State->EditedDocument->getScratch(), m_DocumentIdentifier).getIndices().size()/3);
 
                 ImGui::EndTable();
             }
@@ -1033,11 +1106,11 @@ namespace
             {
                 if (ImGui::MenuItem("Mesh to OBJ"))
                 {
-                    ActionTrySaveMeshToObj(m_State->getInputMesh(m_DocumentIdentifier));
+                    ActionTrySaveMeshToObj(GetMesh(m_State->EditedDocument->getScratch(), m_DocumentIdentifier));
                 }
                 if (ImGui::MenuItem("Mesh to STL"))
                 {
-                    ActionTrySaveMeshToStl(m_State->getInputMesh(m_DocumentIdentifier));
+                    ActionTrySaveMeshToStl(GetMesh(m_State->EditedDocument->getScratch(), m_DocumentIdentifier));
                 }
                 if (ImGui::MenuItem("Landmarks to CSV"))
                 {
@@ -1052,7 +1125,7 @@ namespace
         {
             if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
             {
-                osc::AutoFocus(m_Camera, m_State->getInputMesh(m_DocumentIdentifier).getBounds());
+                osc::AutoFocus(m_Camera, GetMesh(m_State->EditedDocument->getScratch(), m_DocumentIdentifier).getBounds());
                 m_State->LinkedCameraBase = m_Camera;
             }
             osc::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
@@ -1088,18 +1161,25 @@ namespace
         {
             // generate in-scene 3D decorations
             std::vector<osc::SceneDecoration> decorations;
-            decorations.reserve(6 + m_State->getInputDocument(m_DocumentIdentifier).Landmarks.size());  // likely guess
+            decorations.reserve(6 + CalcNumLandmarks(m_State->EditedDocument->getScratch(), m_DocumentIdentifier));  // likely guess
 
-            AppendCommonDecorations(*m_State, m_State->getInputMesh(m_DocumentIdentifier), m_WireframeMode, decorations);
+            AppendCommonDecorations(*m_State, GetMesh(m_State->EditedDocument->getScratch(), m_DocumentIdentifier), m_WireframeMode, decorations);
 
             // append each landmark as a sphere
-            for (auto const& [id, pos] : m_State->getInputDocument(m_DocumentIdentifier).Landmarks)
+            for (TPSDocumentLandmarkPair const& p : m_State->EditedDocument->getScratch().landmarkPairs)
             {
-                TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentInputElementType::Landmark, id};
+                std::optional<glm::vec3> const maybeLocation = GetLocation(p, m_DocumentIdentifier);
+
+                if (!maybeLocation)
+                {
+                    continue;  // no source/destination location for the landmark
+                }
+
+                TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentInputElementType::Landmark, p.id};
 
                 osc::Transform transform{};
                 transform.scale *= m_LandmarkRadius;
-                transform.position = pos;
+                transform.position = *maybeLocation;
 
                 osc::SceneDecoration& decoration = decorations.emplace_back(m_State->LandmarkSphere, transform, m_State->LandmarkColor);
 
@@ -1135,7 +1215,7 @@ namespace
 
         std::shared_ptr<TPSTabSharedState> m_State;
         TPSDocumentInputIdentifier m_DocumentIdentifier;
-        osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getInputMesh(m_DocumentIdentifier).getBounds());
+        osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(GetMesh(m_State->EditedDocument->getScratch(), m_DocumentIdentifier).getBounds());
         osc::CachedSceneRenderer m_CachedRenderer{osc::App::config(), osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()};
         osc::ImGuiItemHittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;
@@ -1304,7 +1384,7 @@ namespace
         {
             char const* const label = "blending factor";
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - m_OverlayPadding.x);
-            float factor = m_State->EditedDocument->getScratch().BlendingFactor;
+            float factor = m_State->EditedDocument->getScratch().blendingFactor;
             if (ImGui::SliderFloat(label, &factor, 0.0f, 1.0f))
             {
                 ActionSetBlendFactor(*m_State->EditedDocument, factor);
@@ -1325,7 +1405,7 @@ namespace
 
             if (m_ShowDestinationMesh)
             {
-                osc::SceneDecoration& dec = decorations.emplace_back(m_State->EditedDocument->getScratch().Destination.Mesh);
+                osc::SceneDecoration& dec = decorations.emplace_back(m_State->EditedDocument->getScratch().destinationMesh);
                 dec.color = {1.0f, 0.0f, 0.0f, 0.5f};
             }
 
