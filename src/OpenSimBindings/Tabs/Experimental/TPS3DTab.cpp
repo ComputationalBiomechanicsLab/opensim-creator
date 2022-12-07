@@ -256,6 +256,11 @@ namespace
         return p.maybeSourceLocation || p.maybeDestinationLocation;
     }
 
+    bool IsFullyPaired(TPSDocumentLandmarkPair const& p)
+    {
+        return p.maybeSourceLocation && p.maybeDestinationLocation;
+    }
+
     size_t CalcNumLandmarks(TPSDocument const& doc, TPSDocumentInputIdentifier which)
     {
         size_t rv = 0;
@@ -788,8 +793,11 @@ namespace
         // shared sphere mesh (used by rendering code)
         std::shared_ptr<osc::Mesh const> LandmarkSphere = osc::App::singleton<osc::MeshCache>().getSphereMesh();
 
-        // color of any in-scene landmark spheres
-        glm::vec4 LandmarkColor = {1.0f, 0.0f, 0.0f, 1.0f};
+        // color of any paired landmark spheres
+        glm::vec4 PairedLandmarkColor = {0.0f, 1.0f, 0.0f, 1.0f};
+
+        // color of any unpaired landmark spheres
+        glm::vec4 UnpairedLandmarkColor = {1.0f, 0.0f, 0.0f, 1.0f};
 
         // current user selection
         TPSTabSelection UserSelection;
@@ -1181,7 +1189,9 @@ namespace
                 transform.scale *= m_LandmarkRadius;
                 transform.position = *maybeLocation;
 
-                osc::SceneDecoration& decoration = decorations.emplace_back(m_State->LandmarkSphere, transform, m_State->LandmarkColor);
+                glm::vec4 const& color = IsFullyPaired(p) ? m_State->PairedLandmarkColor : m_State->UnpairedLandmarkColor;
+
+                osc::SceneDecoration& decoration = decorations.emplace_back(m_State->LandmarkSphere, transform, color);
 
                 if (m_State->UserSelection.contains(fullID))
                 {
@@ -1204,7 +1214,7 @@ namespace
                 transform.scale *= m_LandmarkRadius;
                 transform.position = maybeMeshCollision->position;
 
-                glm::vec4 color = m_State->LandmarkColor;
+                glm::vec4 color = m_State->UnpairedLandmarkColor;
                 color.a *= 0.25f;
 
                 decorations.emplace_back(m_State->LandmarkSphere, transform, color);
