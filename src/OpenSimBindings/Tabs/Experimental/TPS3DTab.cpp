@@ -150,11 +150,46 @@ namespace
     //
     // (handy for selection logic etc.)
     struct TPSDocumentElementID final {
+        TPSDocumentElementID(
+            TPSDocumentInputIdentifier whichInput_,
+            TPSDocumentInputElementType elementType_,
+            std::string elementID_) :
+
+            whichInput{std::move(whichInput_)},
+            elementType{std::move(elementType_)},
+            elementID{std::move(elementID_)}
+        {
+        }
+
         TPSDocumentInputIdentifier whichInput;
         TPSDocumentInputElementType elementType;
         std::string elementID;
     };
 
+    // (necessary for storage in associative datastructures)
+    bool operator==(TPSDocumentElementID const& a, TPSDocumentElementID const& b)
+    {
+        return
+            a.whichInput == b.whichInput &&
+            a.elementType == b.elementType &&
+            a.elementID == b.elementID;
+    }
+}
+
+namespace std
+{
+    // (necessary for storage in associative datastructures)
+    template<>
+    struct hash<TPSDocumentElementID> {
+        size_t operator()(TPSDocumentElementID const& el) const
+        {
+            return osc::HashOf(el.whichInput, el.elementType, el.elementID);
+        }
+    };
+}
+
+namespace
+{
     // returns the specified input
     TPSDocumentInput const& GetInput(TPSDocument const& doc, TPSDocumentInputIdentifier which)
     {
@@ -212,7 +247,10 @@ namespace
     }
 
     // action: add a landmark to the source mesh and return its ID
-    std::string ActionAddLandmarkTo(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentInputIdentifier which, glm::vec3 const& pos)
+    std::string ActionAddLandmarkTo(
+        osc::UndoRedoT<TPSDocument>& doc,
+        TPSDocumentInputIdentifier which,
+        glm::vec3 const& pos)
     {
         TPSDocumentInput& input = UpdInput(doc.updScratch(), which);
         std::string const id = std::to_string(input.Landmarks.size());
@@ -291,22 +329,26 @@ namespace
     }
 
     // action: delete the specified landmarks
-    void ActionDeleteLandmarksByID(
+    void ActionDeleteSceneElementsByID(
         osc::UndoRedoT<TPSDocument>& doc,
-        TPSDocumentInputIdentifier which,
-        std::unordered_set<std::string> const& landmarkIDs)
+        std::unordered_set<TPSDocumentElementID> const& elementIDs)
     {
-        if (landmarkIDs.empty())
+        if (elementIDs.empty())
         {
             return;
         }
 
-        TPSDocumentInput& input = UpdInput(doc.updScratch(), which);
-        for (std::string const& s : landmarkIDs)
+        TPSDocument& scratch = doc.updScratch();
+        for (TPSDocumentElementID const& id : elementIDs)
         {
-            input.Landmarks.erase(s);
+            TPSDocumentInput& input = UpdInput(scratch, id.whichInput);
+            if (id.elementType == TPSDocumentInputElementType::Landmark)
+            {
+                input.Landmarks.erase(id.elementID);
+            }
         }
-        doc.commitScratch("deleted landmarks");
+
+        doc.commitScratch("deleted elements");
     }
 
     // action: save all source/destination landmarks to a simple headerless CSV file (matches loading)
@@ -362,7 +404,15 @@ namespace
 
         osc::CSVWriter writer{outfile};
 
-        std::vector<std::string> cols = {"source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"};
+        std::vector<std::string> cols =
+        {
+            "source.x",
+            "source.y",
+            "source.z",
+            "dest.x",
+            "dest.y",
+            "dest.z",
+        };
 
         writer.writeRow(cols);  // write header
         for (osc::LandmarkPair3D const& p : pairs)
@@ -582,7 +632,7 @@ namespace
         }
 
         TPSTabHover(
-            std::string sceneElementID_,
+            TPSDocumentElementID sceneElementID_,
             glm::vec3 const& worldspaceLocation_) :
 
             MaybeSceneElementID{std::move(sceneElementID_)},
@@ -590,7 +640,7 @@ namespace
         {
         }
 
-        std::optional<std::string> MaybeSceneElementID;
+        std::optional<TPSDocumentElementID> MaybeSceneElementID;
         glm::vec3 WorldspaceLocation;
     };
 
@@ -602,23 +652,23 @@ namespace
             m_SelectedSceneElements.clear();
         }
 
-        void select(std::string const& id)
+        void select(TPSDocumentElementID el)
         {
-            m_SelectedSceneElements.insert(id);
+            m_SelectedSceneElements.insert(std::move(el));
         }
 
-        bool contains(std::string const& id) const
+        bool contains(TPSDocumentElementID const& el) const
         {
-            return m_SelectedSceneElements.find(id) != m_SelectedSceneElements.end();
+            return m_SelectedSceneElements.find(el) != m_SelectedSceneElements.end();
         }
 
-        std::unordered_set<std::string> const& getUnderlyingSet() const
+        std::unordered_set<TPSDocumentElementID> const& getUnderlyingSet() const
         {
             return m_SelectedSceneElements;
         }
 
     private:
-        std::unordered_set<std::string> m_SelectedSceneElements;
+        std::unordered_set<TPSDocumentElementID> m_SelectedSceneElements;
     };
 
     // top-level tab state
@@ -685,7 +735,7 @@ namespace
         TPSTabSelection UserSelection;
 
         // current user hover: reset per-frame
-        std::optional<TPSTabHover> PerFrameHover;
+        std::optional<TPSTabHover> CurrentHover;
 
         // available/active panels that the user can toggle via the `window` menu
         std::vector<TPSUIPanelInfo> Panels = GetAvailablePanels();
@@ -698,19 +748,19 @@ namespace
     // append decorations that are common to all panels to the given output vector
     void AppendCommonDecorations(
         TPSTabSharedState const& sharedState,
-        osc::Mesh const& mesh,
+        osc::Mesh const& tpsSourceOrDestinationMesh,
         bool wireframeMode,
         std::vector<osc::SceneDecoration>& out)
     {
         out.reserve(out.size() + 5);  // likely guess
 
         // draw the mesh
-        out.emplace_back(mesh);
+        out.emplace_back(tpsSourceOrDestinationMesh);
 
         // if requested, also draw wireframe overlays for the mesh
         if (wireframeMode)
         {
-            osc::SceneDecoration& dec = out.emplace_back(mesh);
+            osc::SceneDecoration& dec = out.emplace_back(tpsSourceOrDestinationMesh);
             dec.maybeMaterial = sharedState.WireframeMaterial;
         }
 
@@ -774,11 +824,11 @@ namespace
             if (landmarkCollision)
             {
                 // update central state to tell it that there's a new hover
-                m_State->PerFrameHover = landmarkCollision;
+                m_State->CurrentHover = landmarkCollision;
             }
             else if (meshCollision)
             {
-                m_State->PerFrameHover.emplace(meshCollision->position);
+                m_State->CurrentHover.emplace(meshCollision->position);
             }
 
             // ensure the camera is updated *before* rendering; otherwise, it'll be one frame late
@@ -833,7 +883,8 @@ namespace
                 {
                     if (!rv || glm::length(rv->WorldspaceLocation - cameraRay.origin) > coll->distance)
                     {
-                        rv.emplace(id, pos);
+                        TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentInputElementType::Landmark, id};
+                        rv.emplace(std::move(fullID), pos);
                     }
                 }
             }
@@ -870,9 +921,8 @@ namespace
             // presses delete then the landmarks should be deleted
             if (htResult.isHovered && osc::IsAnyKeyPressed({ImGuiKey_Delete, ImGuiKey_Backspace}))
             {
-                ActionDeleteLandmarksByID(
+                ActionDeleteSceneElementsByID(
                     *m_State->EditedDocument,
-                    m_DocumentIdentifier,
                     m_State->UserSelection.getUnderlyingSet()
                 );
                 m_State->UserSelection.clear();
@@ -1045,19 +1095,21 @@ namespace
             // append each landmark as a sphere
             for (auto const& [id, pos] : m_State->getInputDocument(m_DocumentIdentifier).Landmarks)
             {
+                TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentInputElementType::Landmark, id};
+
                 osc::Transform transform{};
                 transform.scale *= m_LandmarkRadius;
                 transform.position = pos;
 
                 osc::SceneDecoration& decoration = decorations.emplace_back(m_State->LandmarkSphere, transform, m_State->LandmarkColor);
 
-                if (m_State->UserSelection.contains(id))
+                if (m_State->UserSelection.contains(fullID))
                 {
                     decoration.color += glm::vec4{0.25f, 0.25f, 0.25f, 0.0f};
                     decoration.color = glm::clamp(decoration.color, glm::vec4{0.0f}, glm::vec4{1.0f});
                     decoration.flags = osc::SceneDecorationFlags_IsSelected;
                 }
-                else if (m_State->PerFrameHover && m_State->PerFrameHover->MaybeSceneElementID == id)
+                else if (m_State->CurrentHover && m_State->CurrentHover->MaybeSceneElementID == fullID)
                 {
                     decoration.color += glm::vec4{0.15f, 0.15f, 0.15f, 0.0f};
                     decoration.color = glm::clamp(decoration.color, glm::vec4{0.0f}, glm::vec4{1.0f});
@@ -1454,9 +1506,9 @@ namespace
     private:
         void drawContent()
         {
-            if (m_TabState->PerFrameHover)
+            if (m_TabState->CurrentHover)
             {
-                glm::vec3 const pos = m_TabState->PerFrameHover->WorldspaceLocation;
+                glm::vec3 const pos = m_TabState->CurrentHover->WorldspaceLocation;
                 ImGui::TextUnformatted("(");
                 ImGui::SameLine();
                 for (int i = 0; i < 3; ++i)
@@ -1470,9 +1522,9 @@ namespace
                 }
                 ImGui::TextUnformatted(")");
                 ImGui::SameLine();
-                if (m_TabState->PerFrameHover->MaybeSceneElementID)
+                if (m_TabState->CurrentHover->MaybeSceneElementID)
                 {
-                    ImGui::TextDisabled("(left-click to select %s)", m_TabState->PerFrameHover->MaybeSceneElementID->c_str());
+                    ImGui::TextDisabled("(left-click to select %s)", m_TabState->CurrentHover->MaybeSceneElementID->elementID.c_str());
                 }
                 else
                 {
@@ -1783,7 +1835,7 @@ public:
     void onTick()
     {
         // re-perform hover test each frame
-        m_TabState->PerFrameHover.reset();
+        m_TabState->CurrentHover.reset();
 
         // garbage collect closed-panel instance data
         for (TPSUIPanelInfo& panel : m_TabState->Panels)
