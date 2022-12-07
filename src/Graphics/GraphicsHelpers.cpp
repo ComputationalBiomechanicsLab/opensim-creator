@@ -156,9 +156,10 @@ void osc::DrawArrow(MeshCache& cache, ArrowProperties const& props, std::vector<
 {
     glm::vec3 startToEnd = props.worldspaceEnd - props.worldspaceStart;
     float const len = glm::length(startToEnd);
+    glm::vec3 const dir = startToEnd/len;
 
     glm::vec3 const neckStart = props.worldspaceStart;
-    glm::vec3 const neckEnd = props.worldspaceStart + (len - props.tipLength)*startToEnd;
+    glm::vec3 const neckEnd = props.worldspaceStart + (len - props.tipLength)*dir;
     glm::vec3 const headStart = neckEnd;
     glm::vec3 const headEnd = props.worldspaceEnd;
 

@@ -1029,7 +1029,7 @@ namespace
                     osc::ArrowProperties props;
                     props.worldspaceStart = getOriginPos();
                     props.worldspaceEnd = *p.maybeSourceLocation;
-                    props.tipLength = m_LandmarkRadius;
+                    props.tipLength = 2.0f*m_LandmarkRadius;
                     props.neckThickness = 0.25f*m_LandmarkRadius;
                     props.headThickness = 0.5f*m_LandmarkRadius;
                     props.color = {1.0f, 1.0f, 1.0f, 0.75f};
@@ -1047,7 +1047,7 @@ namespace
                     osc::ArrowProperties props;
                     props.worldspaceStart = getOriginPos();
                     props.worldspaceEnd = *p.maybeSourceLocation;
-                    props.tipLength = m_LandmarkRadius;
+                    props.tipLength = 2.0f*m_LandmarkRadius;
                     props.neckThickness = 0.25f*m_LandmarkRadius;
                     props.headThickness = 0.5f*m_LandmarkRadius;
                     props.color = {1.0f, 1.0f, 1.0f, 0.75f};
@@ -1062,7 +1062,7 @@ namespace
                     osc::ArrowProperties props;
                     props.worldspaceStart = getOriginPos();
                     props.worldspaceEnd = *p.maybeSourceLocation;
-                    props.tipLength = m_LandmarkRadius;
+                    props.tipLength = 2.0f*m_LandmarkRadius;
                     props.neckThickness = 0.25f*m_LandmarkRadius;
                     props.headThickness = 0.5f*m_LandmarkRadius;
                     props.color = glm::vec4{1.0f, 1.0f, 1.0f, 0.25f};
