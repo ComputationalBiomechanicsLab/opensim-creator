@@ -387,6 +387,7 @@ private:
         drawMuscleColoringStyleComboBox();
         ImGui::Checkbox("show normals", &m_RendererParams.drawMeshNormals);
         ImGui::Checkbox("draw rims", &m_RendererParams.drawRims);
+        ImGui::Checkbox("draw shadows", &m_RendererParams.drawShadows);
         bool isDrawingScapulothoracicJoints = m_DecorationOptions.getShouldShowScapulo();
         if (ImGui::Checkbox("draw scapulothoracic joints", &isDrawingScapulothoracicJoints))
         {

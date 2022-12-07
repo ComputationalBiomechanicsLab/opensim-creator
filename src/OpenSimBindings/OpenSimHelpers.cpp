@@ -99,7 +99,7 @@ namespace
         OpenSim::Component const* selected,
         OpenSim::Component const* hovered)
     {
-        osc::SceneDecorationFlags rv = osc::SceneDecorationFlags_None;
+        osc::SceneDecorationFlags rv = osc::SceneDecorationFlags_CastsShadows;
 
         if (&c == selected)
         {

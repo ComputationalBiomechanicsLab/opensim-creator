@@ -7,5 +7,5 @@ out vec4 FragColor;
 
 void main()
 {
-    FragColor = texture(uTextureSampler, TexCoord);
+    FragColor = vec4(texture(uTextureSampler, TexCoord).r, 0.0, 0.0, 1.0);
 }

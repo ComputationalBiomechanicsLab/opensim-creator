@@ -15,6 +15,7 @@ namespace osc
         int32_t samples;
         bool drawMeshNormals;
         bool drawRims;
+        bool drawShadows;
         bool drawFloor;
         float nearClippingPlane;
         float farClippingPlane;

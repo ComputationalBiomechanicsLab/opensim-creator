@@ -5,6 +5,7 @@ osc::SceneRendererParams::SceneRendererParams() :
     samples{1},
     drawMeshNormals{false},
     drawRims{true},
+    drawShadows{true},
     drawFloor{true},
     nearClippingPlane{0.1f},
     farClippingPlane{100.0f},
@@ -31,6 +32,7 @@ bool osc::operator==(SceneRendererParams const& a, SceneRendererParams const& b)
         a.samples == b.samples &&
         a.drawMeshNormals == b.drawMeshNormals &&
         a.drawRims == b.drawRims &&
+        a.drawShadows == b.drawShadows &&
         a.drawFloor == b.drawFloor &&
         a.nearClippingPlane == b.nearClippingPlane &&
         a.farClippingPlane == b.farClippingPlane &&

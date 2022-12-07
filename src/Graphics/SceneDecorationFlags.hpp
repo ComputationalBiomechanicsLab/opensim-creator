@@ -11,5 +11,6 @@ namespace osc
         SceneDecorationFlags_IsChildOfHovered = 1<<3,
         SceneDecorationFlags_IsShowingOnly = 1<<4,
         SceneDecorationFlags_IsChildOfShowingOnly = 1<<5,
+        SceneDecorationFlags_CastsShadows = 1<<6,
     };
 }

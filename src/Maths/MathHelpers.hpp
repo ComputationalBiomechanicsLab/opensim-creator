@@ -186,6 +186,9 @@ namespace osc
     // returns a sphere that bounds the given vertices
     Sphere BoundingSphereOf(nonstd::span<glm::vec3 const>) noexcept;
 
+    // returns a sphere that loosely bounds the given AABB
+    Sphere ToSphere(AABB const&) noexcept;
+
     // returns an xform that maps an origin centered r=1 sphere into an in-scene sphere
     glm::mat4 FromUnitSphereMat4(Sphere const&) noexcept;
 

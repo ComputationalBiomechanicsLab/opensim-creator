@@ -1,5 +1,6 @@
 #include "SceneRenderer.hpp"
 
+#include "src/Bindings/GlmHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
@@ -14,6 +15,7 @@
 #include "src/Graphics/TextureGen.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/MathHelpers.hpp"
+#include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/Config.hpp"
@@ -32,9 +34,6 @@
 #include <memory>
 #include <utility>
 #include <vector>
-
-#include "src/Platform/Log.hpp"
-#include "src/Utils/Algorithms.hpp"
 
 namespace
 {
@@ -68,6 +67,74 @@ namespace
         glm::mat4 transform;
         osc::Material material;
     };
+
+    struct Shadows final {
+        osc::RenderTexture shadowMap;
+        glm::mat4 lightSpaceMat;
+    };
+
+    struct PolarAngles final {
+        float theta;
+        float phi;
+    };
+
+    std::ostream& operator<<(std::ostream& o, PolarAngles const& angles)
+    {
+        return o << "PolarAngles(theta = " << angles.theta << ", phi = " << angles.phi << ')';
+    }
+
+    PolarAngles CalcPolarAngles(glm::vec3 const& directionFromOrigin)
+    {
+        // X is left-to-right
+        // Y is bottom-to-top
+        // Z is near-to-far
+        //
+        // combinations:
+        //
+        // | theta |   phi  | X  | Y  | Z  |
+        // | ----- | ------ | -- | -- | -- |
+        // |     0 |      0 |  0 |  0 | 1  |
+        // |  pi/2 |      0 |  1 |  0 |  0 |
+        // |     0 |   pi/2 |  0 |  1 |  0 |
+
+        float const theta = std::atan2(directionFromOrigin.x, directionFromOrigin.z);
+        float const phi = std::asin(directionFromOrigin.y);
+        return PolarAngles{theta, phi};
+    }
+
+    glm::vec3 PolarToCartesian(glm::vec3 focus, float radius, float theta, float phi)
+    {
+        float x = radius * std::sin(theta) * std::cos(phi);
+        float y = radius * std::sin(phi);
+        float z = radius * std::cos(theta) * std::cos(phi);
+
+        return -focus + glm::vec3{x, y, z};
+    }
+
+    struct ShadowCameraMatrices final {
+        glm::mat4 viewMatrix;
+        glm::mat4 projMatrix;
+    };
+
+    ShadowCameraMatrices CalcShadowCameraMatrices(osc::AABB const& casterAABBs, glm::vec3 const& lightDirection)
+    {
+        osc::Sphere const casterSphere = osc::ToSphere(casterAABBs);
+        PolarAngles const cameraPolarAngles = CalcPolarAngles(-lightDirection);
+
+        // HACK: recycle the polar camera maths
+        osc::PolarPerspectiveCamera hack;
+        hack.focusPoint = -casterSphere.origin;
+        hack.phi = cameraPolarAngles.phi;
+        hack.theta = cameraPolarAngles.theta;
+        hack.radius = casterSphere.radius;
+        hack.znear = 0.0f;
+        hack.zfar = 2.0f * casterSphere.radius;
+
+        glm::mat4 const viewMat = hack.getViewMtx();
+        glm::mat4 const projMat = glm::ortho(-casterSphere.radius, casterSphere.radius, -casterSphere.radius, casterSphere.radius, 0.0f, 2.0f*casterSphere.radius);
+
+        return ShadowCameraMatrices{viewMat, projMat};
+    }
 }
 
 
@@ -79,6 +146,7 @@ public:
         m_SolidColorMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneSolidColor.vert", config.getResourceDir() / "shaders/SceneSolidColor.frag")},
         m_EdgeDetectorMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneEdgeDetector.vert", config.getResourceDir() / "shaders/SceneEdgeDetector.frag")},
         m_NormalsMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneNormalsShader.vert", config.getResourceDir() / "shaders/SceneNormalsShader.geom", config.getResourceDir() / "shaders/SceneNormalsShader.frag")},
+        m_DepthWritingMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneDepthMap.vert", config.getResourceDir() / "shaders/SceneDepthMap.frag")},
         m_QuadMesh{meshCache.getTexturedQuadMesh()},
         m_ChequerTexture{GenChequeredFloorTexture()},
         m_Camera{},
@@ -87,11 +155,14 @@ public:
     {
         m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_ChequerTexture);
         m_SceneTexturedElementsMaterial.setVec2("uTextureScale", {200.0f, 200.0f});
+        m_SceneTexturedElementsMaterial.setTransparent(true);
+
         m_RimsSelectedColor.setVec4("uDiffuseColor", {1.0f, 0.0f, 0.0f, 1.0f});
+
         m_RimsHoveredColor.setVec4("uDiffuseColor", {0.5, 0.0f, 0.0f, 1.0f});
+
         m_EdgeDetectorMaterial.setTransparent(true);
         m_EdgeDetectorMaterial.setDepthTested(false);
-        m_SceneTexturedElementsMaterial.setTransparent(true);
     }
 
     glm::ivec2 getDimensions() const
@@ -120,12 +191,8 @@ public:
         m_Camera.setViewMatrixOverride(params.viewMatrix);
         m_Camera.setProjectionMatrixOverride(params.projectionMatrix);
 
-        std::optional<RimHighlights> maybeRimHighlights;
-
-        if (params.drawRims)
-        {
-            maybeRimHighlights = generateRimHighlights(decorations, params);
-        }
+        std::optional<RimHighlights> const maybeRimHighlights = tryGenerateRimHighlights(decorations, params);
+        std::optional<Shadows> const maybeShadowMap = tryGenerateShadowMap(decorations, params);
 
         // draw the the scene
         {
@@ -138,6 +205,18 @@ public:
             m_SceneColoredElementsMaterial.setFloat("uShininess", params.shininess);
             m_SceneColoredElementsMaterial.setFloat("uNear", m_Camera.getNearClippingPlane());
             m_SceneColoredElementsMaterial.setFloat("uFar", m_Camera.getFarClippingPlane());
+
+            // supply shadowmap, if applicable
+            if (maybeShadowMap)
+            {
+                m_SceneColoredElementsMaterial.setBool("uHasShadowMap", true);
+                m_SceneColoredElementsMaterial.setMat4("uLightSpaceMat", maybeShadowMap->lightSpaceMat);
+                m_SceneColoredElementsMaterial.setRenderTexture("uShadowMapTexture", maybeShadowMap->shadowMap);
+            }
+            else
+            {
+                m_SceneColoredElementsMaterial.setBool("uHasShadowMap", false);
+            }
 
             Material transparentMaterial = m_SceneColoredElementsMaterial;
             transparentMaterial.setTransparent(true);
@@ -178,8 +257,24 @@ public:
                 m_SceneTexturedElementsMaterial.setVec3("uViewPos", m_Camera.getPosition());
                 m_SceneTexturedElementsMaterial.setVec3("uLightDir", params.lightDirection);
                 m_SceneTexturedElementsMaterial.setVec3("uLightColor", params.lightColor);
+                m_SceneTexturedElementsMaterial.setFloat("uAmbientStrength", 0.7f);
+                m_SceneTexturedElementsMaterial.setFloat("uDiffuseStrength", 0.4f);
+                m_SceneTexturedElementsMaterial.setFloat("uSpecularStrength", 0.4f);
+                m_SceneTexturedElementsMaterial.setFloat("uShininess", 8.0f);
                 m_SceneTexturedElementsMaterial.setFloat("uNear", m_Camera.getNearClippingPlane());
                 m_SceneTexturedElementsMaterial.setFloat("uFar", m_Camera.getFarClippingPlane());
+
+                // supply shadowmap, if applicable
+                if (maybeShadowMap)
+                {
+                    m_SceneTexturedElementsMaterial.setBool("uHasShadowMap", true);
+                    m_SceneTexturedElementsMaterial.setMat4("uLightSpaceMat", maybeShadowMap->lightSpaceMat);
+                    m_SceneTexturedElementsMaterial.setRenderTexture("uShadowMapTexture", maybeShadowMap->shadowMap);
+                }
+                else
+                {
+                    m_SceneTexturedElementsMaterial.setBool("uHasShadowMap", false);
+                }
 
                 Transform const t = GetFloorTransform(params.floorLocation, params.fixupScaleFactor);
 
@@ -197,7 +292,11 @@ public:
         OSC_ASSERT(m_MaybeRenderTexture.has_value());
         m_Camera.setBackgroundColor(params.backgroundColor);
         m_Camera.renderTo(*m_MaybeRenderTexture);
-        m_EdgeDetectorMaterial.clearRenderTexture("uScreenTexture");  // prevents copies on next frame
+
+        // prevents copies on next frame
+        m_EdgeDetectorMaterial.clearRenderTexture("uScreenTexture");
+        m_SceneTexturedElementsMaterial.clearRenderTexture("uShadowMapTexture");
+        m_SceneColoredElementsMaterial.clearRenderTexture("uShadowMapTexture");
     }
 
     RenderTexture& updRenderTexture()
@@ -206,8 +305,15 @@ public:
     }
 
 private:
-    std::optional<RimHighlights> generateRimHighlights(nonstd::span<SceneDecoration const> decorations, SceneRendererParams const& params)
+    std::optional<RimHighlights> tryGenerateRimHighlights(
+        nonstd::span<SceneDecoration const> decorations,
+        SceneRendererParams const& params)
     {
+        if (!params.drawRims)
+        {
+            return std::nullopt;
+        }
+
         // compute the worldspace bounds union of all rim-highlighted geometry
         std::optional<AABB> maybeRimWorldspaceAABB;
         for (SceneDecoration const& dec : decorations)
@@ -314,11 +420,56 @@ private:
         };
     }
 
+    std::optional<Shadows> tryGenerateShadowMap(
+        nonstd::span<SceneDecoration const> decorations,
+        SceneRendererParams const& params)
+    {
+        if (!params.drawShadows)
+        {
+            return std::nullopt;  // the caller doesn't actually want shadows
+        }
+
+        // use a seperate camera that is set up to come from the direction of the light
+        Camera shadowCamera;
+
+        // compute the bounds of everything that casts a shadow
+        //
+        // (also, while doing that, draw each mesh - to prevent multipass)
+        std::optional<AABB> casterAABBs;
+        for (SceneDecoration const& dec : decorations)
+        {
+            if (dec.flags & SceneDecorationFlags_CastsShadows)
+            {
+                AABB const decorationAABB = WorldpaceAABB(dec);
+                casterAABBs = casterAABBs ? Union(*casterAABBs, decorationAABB) : decorationAABB;
+                Graphics::DrawMesh(*dec.mesh, dec.transform, m_DepthWritingMaterial, shadowCamera);
+            }
+        }
+
+        if (!casterAABBs)
+        {
+            // there are no shadow casters, so there will be no shadows
+            return std::nullopt;
+        }
+
+        // compute camera matrices for the orthogonal (direction) camera used for lighting
+        ShadowCameraMatrices const matrices = CalcShadowCameraMatrices(*casterAABBs, params.lightDirection);
+
+        shadowCamera.setBackgroundColor({1.0f, 0.0f, 0.0f, 0.0f});
+        shadowCamera.setViewMatrixOverride(matrices.viewMatrix);
+        shadowCamera.setProjectionMatrixOverride(matrices.projMatrix);
+        EmplaceOrReformat(m_MaybeShadowMap, osc::RenderTextureDescriptor{glm::ivec2{1024,1024}});
+        shadowCamera.renderTo(*m_MaybeShadowMap);
+
+        return Shadows{*m_MaybeShadowMap, matrices.projMatrix * matrices.viewMatrix};
+    }
+
     Material m_SceneColoredElementsMaterial;
     Material m_SceneTexturedElementsMaterial;
     Material m_SolidColorMaterial;
     Material m_EdgeDetectorMaterial;
     Material m_NormalsMaterial;
+    Material m_DepthWritingMaterial;
 
     std::shared_ptr<Mesh const> m_QuadMesh;
     Texture2D m_ChequerTexture;
@@ -328,6 +479,7 @@ private:
     MaterialPropertyBlock m_RimsSelectedColor;
     MaterialPropertyBlock m_RimsHoveredColor;
     std::optional<RenderTexture> m_MaybeRimsTexture;
+    std::optional<RenderTexture> m_MaybeShadowMap;
 
     // outputs
     std::optional<RenderTexture> m_MaybeRenderTexture;

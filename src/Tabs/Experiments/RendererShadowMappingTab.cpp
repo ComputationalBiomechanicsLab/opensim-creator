@@ -214,10 +214,13 @@ private:
         glm::mat4 const lightProjMatrix = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, zNear, zFar);
         m_LatestLightSpaceMatrix = lightProjMatrix * lightViewMatrix;
 
-        m_DepthMaterial.setMat4("uLightSpaceMatrix", m_LatestLightSpaceMatrix);
-
         drawMeshesWithMaterial(m_DepthMaterial);
+
+        m_Camera.setViewMatrixOverride(lightViewMatrix);
+        m_Camera.setProjectionMatrixOverride(lightProjMatrix);
         m_Camera.renderTo(m_DepthTexture);
+        m_Camera.setViewMatrixOverride(std::nullopt);
+        m_Camera.setProjectionMatrixOverride(std::nullopt);
     }
 
     // tab state

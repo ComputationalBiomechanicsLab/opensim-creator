@@ -642,7 +642,7 @@ osc::PolarPerspectiveCamera osc::CreateCameraFocusedOn(AABB const& aabb)
 glm::vec3 osc::RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
 {
     float theta = c.theta - 0.75f*fpi4;  // anti-clockwise a little bit
-    float phi = c.phi + 0.25f*fpi4;  // upwards a little bit
+    float phi = c.phi + 0.35f*fpi4;  // upwards a little bit
     glm::vec3 p = PolarToCartesian(c.focusPoint, c.radius, theta, phi);
 
     return glm::normalize(-c.focusPoint - p);
@@ -1397,6 +1397,11 @@ osc::Sphere osc::BoundingSphereOf(nonstd::span<glm::vec3 const> points) noexcept
     rv.radius = glm::sqrt(biggestR2);
 
     return rv;
+}
+
+osc::Sphere osc::ToSphere(AABB const& aabb) noexcept
+{
+    return BoundingSphereOf(ToCubeVerts(aabb));
 }
 
 glm::mat4 osc::FromUnitSphereMat4(Sphere const& s) noexcept
