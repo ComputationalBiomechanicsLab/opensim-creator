@@ -78,6 +78,8 @@
 namespace
 {
     static constexpr glm::vec2 c_OverlayPadding = {10.0f, 10.0f};
+    static constexpr glm::vec4 c_PairedLandmarkColor = {0.0f, 1.0f, 0.0f, 1.0f};
+    static constexpr glm::vec4 c_UnpairedLandmarkColor = {1.0f, 0.0f, 0.0f, 1.0f};
 
     // returns the 3D position of the intersection between the user's mouse and the mesh, if any
     std::optional<osc::RayCollision> RaycastMesh(
@@ -123,14 +125,16 @@ namespace
     // an enum used to identify one of the two inputs (source/destination) of the TPS
     // document at runtime
     enum class TPSDocumentInputIdentifier {
-        Source,
+        Source = 0,
         Destination,
+        TOTAL,
     };
 
     // an enum used to identify what type of part of the input is described
     enum class TPSDocumentInputElementType {
-        Landmark,
+        Landmark = 0,
         Mesh,
+        TOTAL,
     };
 
     // a single landmark pair in the TPS document
@@ -161,6 +165,7 @@ namespace
     //
     // (handy for selection logic etc.)
     struct TPSDocumentElementID final {
+
         TPSDocumentElementID(
             TPSDocumentInputIdentifier whichInput_,
             TPSDocumentInputElementType elementType_,
@@ -204,70 +209,74 @@ namespace
     // helper: returns the (mutable) source/destination of the given landmark pair, if available
     std::optional<glm::vec3>& UpdLocation(TPSDocumentLandmarkPair& landmarkPair, TPSDocumentInputIdentifier which)
     {
-        switch (which)
-        {
-        case TPSDocumentInputIdentifier::Source:
-            return landmarkPair.maybeSourceLocation;
-        case TPSDocumentInputIdentifier::Destination:
-            return landmarkPair.maybeDestinationLocation;
-        default:
-            OSC_ASSERT(false && "this should never happen - unless you add more elements to the enum");
-        }
+        static_assert(static_cast<int>(TPSDocumentInputIdentifier::TOTAL) == 2);
+        return which == TPSDocumentInputIdentifier::Source ? landmarkPair.maybeSourceLocation : landmarkPair.maybeDestinationLocation;
     }
 
     // helper: returns the source/destination of the given landmark pair, if available
     std::optional<glm::vec3> const& GetLocation(TPSDocumentLandmarkPair const& landmarkPair, TPSDocumentInputIdentifier which)
     {
-        return UpdLocation(const_cast<TPSDocumentLandmarkPair&>(landmarkPair), which);
+        static_assert(static_cast<int>(TPSDocumentInputIdentifier::TOTAL) == 2);
+        return which == TPSDocumentInputIdentifier::Source ? landmarkPair.maybeSourceLocation : landmarkPair.maybeDestinationLocation;
     }
 
     // helper: returns the source/destination mesh in the given document (mutable)
     osc::Mesh& UpdMesh(TPSDocument& doc, TPSDocumentInputIdentifier which)
     {
-        switch (which)
-        {
-        case TPSDocumentInputIdentifier::Source:
-            return doc.sourceMesh;
-        case TPSDocumentInputIdentifier::Destination:
-            return doc.destinationMesh;
-        default:
-            OSC_ASSERT(false && "this should never happen - unless you add more elements to the enum");
-        }
+        static_assert(static_cast<int>(TPSDocumentInputIdentifier::TOTAL) == 2);
+        return which == TPSDocumentInputIdentifier::Source ? doc.sourceMesh : doc.destinationMesh;
     }
 
     // helper: returns the source/destination mesh in the given document
     osc::Mesh const& GetMesh(TPSDocument const& doc, TPSDocumentInputIdentifier which)
     {
-        return UpdMesh(const_cast<TPSDocument&>(doc), which);
+        static_assert(static_cast<int>(TPSDocumentInputIdentifier::TOTAL) == 2);
+        return which == TPSDocumentInputIdentifier::Source ? doc.sourceMesh : doc.destinationMesh;
     }
 
-    // helpers: returns all paired landmarks in the document argument
-    std::vector<osc::LandmarkPair3D> GetLandmarkPairs(TPSDocument const& doc)
-    {
-        std::vector<osc::LandmarkPair3D> rv;
-        rv.reserve(doc.landmarkPairs.size());  // probably a good guess (assuming most are paired)
-
-        for (TPSDocumentLandmarkPair const& p : doc.landmarkPairs)
-        {
-            if (p.maybeSourceLocation && p.maybeDestinationLocation)
-            {
-                rv.emplace_back(*p.maybeSourceLocation, *p.maybeDestinationLocation);
-            }
-        }
-        return rv;
-    }
-
-    bool HasSourceOrDestinationLocation(TPSDocumentLandmarkPair const& p)
-    {
-        return p.maybeSourceLocation || p.maybeDestinationLocation;
-    }
-
+    // helper: returns `true` if both the source and destination are defined for the given UI landmark
     bool IsFullyPaired(TPSDocumentLandmarkPair const& p)
     {
         return p.maybeSourceLocation && p.maybeDestinationLocation;
     }
 
-    size_t CalcNumLandmarks(TPSDocument const& doc, TPSDocumentInputIdentifier which)
+    // helper: returns `true` if the given UI landmark has either a source or a destination defined
+    bool HasSourceOrDestinationLocation(TPSDocumentLandmarkPair const& p)
+    {
+        return p.maybeSourceLocation || p.maybeDestinationLocation;
+    }
+
+    // helper: returns source + destination landmark pair, if the provided UI landmark has both defined
+    std::optional<osc::LandmarkPair3D> TryExtractLandmarkPair(TPSDocumentLandmarkPair const& p)
+    {
+        if (p.maybeSourceLocation && p.maybeDestinationLocation)
+        {
+            return osc::LandmarkPair3D{*p.maybeSourceLocation, *p.maybeDestinationLocation};
+        }
+        else
+        {
+            return std::nullopt;
+        }
+    }
+
+    // helper: returns all paired landmarks in the document argument
+    std::vector<osc::LandmarkPair3D> GetLandmarkPairs(TPSDocument const& doc)
+    {
+        std::vector<osc::LandmarkPair3D> rv;
+        rv.reserve(std::count_if(doc.landmarkPairs.begin(), doc.landmarkPairs.end(), IsFullyPaired));
+
+        for (TPSDocumentLandmarkPair const& p : doc.landmarkPairs)
+        {
+            if (std::optional<osc::LandmarkPair3D> maybePair = TryExtractLandmarkPair(p))
+            {
+                rv.emplace_back(*maybePair);
+            }
+        }
+        return rv;
+    }
+
+    // helper: returns the count of landmarks in the document for which `which` is defined
+    size_t CountNumLandmarksForInput(TPSDocument const& doc, TPSDocumentInputIdentifier which)
     {
         size_t rv = 0;
         for (TPSDocumentLandmarkPair const& p : doc.landmarkPairs)
@@ -281,7 +290,7 @@ namespace
     }
 
     // helper: add a source/destination landmark at the given location
-    void AddLandmark(
+    void AddLandmarkToInput(
         TPSDocument& doc,
         TPSDocumentInputIdentifier which,
         glm::vec3 const& pos)
@@ -332,7 +341,7 @@ namespace
         TPSDocumentInputIdentifier which,
         glm::vec3 const& pos)
     {
-        AddLandmark(doc.updScratch(), which, pos);
+        AddLandmarkToInput(doc.updScratch(), which, pos);
         doc.commitScratch("added landmark");
     }
 
@@ -345,13 +354,12 @@ namespace
             return;  // user didn't select anything
         }
 
-        osc::Mesh& mesh = UpdMesh(doc.updScratch(), which);
-        mesh = osc::LoadMeshViaSimTK(*maybeMeshPath);
+        UpdMesh(doc.updScratch(), which) = osc::LoadMeshViaSimTK(*maybeMeshPath);
 
         doc.commitScratch("changed mesh");
     }
 
-    // action load landmarks from a headerless CSV file into source/destination
+    // action: load landmarks from a headerless CSV file into source/destination
     void ActionLoadLandmarksCSV(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentInputIdentifier which)
     {
         std::optional<std::filesystem::path> const maybeCSVPath = osc::PromptUserForFile("csv");
@@ -361,22 +369,21 @@ namespace
         }
 
         std::vector<glm::vec3> const landmarks = osc::LoadLandmarksFromCSVFile(*maybeCSVPath);
-
         if (landmarks.empty())
         {
-            return;  // file was empty, or had invalid data
+            return;  // the landmarks file was empty, or had invalid data
         }
 
         for (glm::vec3 const& landmark : landmarks)
         {
-            AddLandmark(doc.updScratch(), which, landmark);
+            AddLandmarkToInput(doc.updScratch(), which, landmark);
         }
 
         doc.commitScratch("loaded landmarks");
     }
 
     // action: set the TPS blending factor for the result, but don't save it to undo/redo storage
-    void ActionSetBlendFactor(osc::UndoRedoT<TPSDocument>& doc, float factor)
+    void ActionSetBlendFactorWithoutSaving(osc::UndoRedoT<TPSDocument>& doc, float factor)
     {
         doc.updScratch().blendingFactor = factor;
     }
@@ -384,7 +391,7 @@ namespace
     // action: set the TPS blending factor and save a commit of the change
     void ActionSetBlendFactorAndSave(osc::UndoRedoT<TPSDocument>& doc, float factor)
     {
-        ActionSetBlendFactor(doc, factor);
+        ActionSetBlendFactorWithoutSaving(doc, factor);
         doc.commitScratch("changed blend factor");
     }
 
@@ -443,14 +450,12 @@ namespace
     {
         std::optional<std::filesystem::path> const maybeCSVPath =
             osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
-
         if (!maybeCSVPath)
         {
             return;  // user didn't select a save location
         }
 
         std::ofstream outfile{*maybeCSVPath};
-
         if (!outfile)
         {
             return;  // couldn't open file for writing
@@ -458,7 +463,6 @@ namespace
 
         osc::CSVWriter writer{outfile};
         std::vector<std::string> cols(3);
-
         for (TPSDocumentLandmarkPair const& p : doc.landmarkPairs)
         {
             if (std::optional<glm::vec3> const loc = GetLocation(p, which))
@@ -474,23 +478,20 @@ namespace
     // action: save all pairable landmarks in the TPS document to a user-specified CSV file
     void ActionSaveLandmarksToPairedCSV(TPSDocument const& doc)
     {
-        std::vector<osc::LandmarkPair3D> const pairs = GetLandmarkPairs(doc);
-
         std::optional<std::filesystem::path> const maybeCSVPath =
             osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
-
         if (!maybeCSVPath)
         {
             return;  // user didn't select a save location
         }
 
         std::ofstream outfile{*maybeCSVPath};
-
         if (!outfile)
         {
             return;  // couldn't open file for writing
         }
 
+        std::vector<osc::LandmarkPair3D> const pairs = GetLandmarkPairs(doc);
         osc::CSVWriter writer{outfile};
 
         std::vector<std::string> cols =
@@ -503,7 +504,12 @@ namespace
             "dest.z",
         };
 
-        writer.writeRow(cols);  // write header
+        // write header
+        {
+            writer.writeRow(cols);
+        }
+
+        // write data rows
         for (osc::LandmarkPair3D const& p : pairs)
         {
             cols.at(0) = std::to_string(p.Src.x);
@@ -522,18 +528,16 @@ namespace
     {
         std::optional<std::filesystem::path> const maybeOBJFile =
             osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
-
         if (!maybeOBJFile)
         {
             return;  // user didn't select a save location
         }
 
-        std::ios_base::openmode const flags =
-            std::ios_base::out |
-            std::ios_base::trunc;
-
-        std::ofstream outfile{*maybeOBJFile, flags};
-
+        std::ofstream outfile
+        {
+            *maybeOBJFile,
+            std::ios_base::out | std::ios_base::trunc,
+        };
         if (!outfile)
         {
             return;  // couldn't open for writing
@@ -550,29 +554,26 @@ namespace
     {
         std::optional<std::filesystem::path> const maybeSTLPath =
             osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
-
         if (!maybeSTLPath)
         {
             return;  // user didn't select a save location
         }
 
-        std::ios_base::openmode const flags =
-            std::ios_base::binary |
-            std::ios_base::out |
-            std::ios_base::trunc;
-
-        std::ofstream outfile{*maybeSTLPath, flags};
-
+        std::ofstream outfile
+        {
+            *maybeSTLPath,
+            std::ios_base::binary | std::ios_base::out | std::ios_base::trunc,
+        };
         if (!outfile)
         {
             return;  // couldn't open for writing
         }
 
         osc::StlWriter writer{outfile};
-
         writer.write(mesh);
     }
 }
+
 
 // generic result cache helper class
 namespace
@@ -672,9 +673,10 @@ namespace
     };
 }
 
-// TPS UI code
+
+// TPSUI panel abstraction
 //
-// UI code that is specific to the TPS3D UI
+// declare a datastructure that tells the UI which panels the user can toggle
 namespace
 {
     // (forward decl. for a struct that is injected into all panels in the UI)
@@ -710,17 +712,23 @@ namespace
 
     // returns all available user-toggleable panels (forward decl.)
     std::vector<TPSUIPanelInfo> GetAvailablePanels();
+}
 
+// TPSUI top-level state
+//
+// these are datastructures that are shared between panels etc.
+namespace
+{
     // holds information about the user's current mouse hover
-    struct TPSTabHover final {
+    struct TPSUIViewportHover final {
 
-        explicit TPSTabHover(glm::vec3 const& worldspaceLocation_) :
+        explicit TPSUIViewportHover(glm::vec3 const& worldspaceLocation_) :
             MaybeSceneElementID{std::nullopt},
             WorldspaceLocation{worldspaceLocation_}
         {
         }
 
-        TPSTabHover(
+        TPSUIViewportHover(
             TPSDocumentElementID sceneElementID_,
             glm::vec3 const& worldspaceLocation_) :
 
@@ -760,38 +768,26 @@ namespace
         std::unordered_set<TPSDocumentElementID> m_SelectedSceneElements;
     };
 
-    // top-level tab state
+    // shared, top-level TPS3D tab state
     //
     // (shared by all panels)
     struct TPSTabSharedState final {
 
-        explicit TPSTabSharedState(osc::UID tabID_, osc::TabHost* parent_) :
-            m_TabID{std::move(tabID_)},
-            m_Parent{std::move(parent_)}
+        TPSTabSharedState(osc::UID tabID_, osc::TabHost* parent_) :
+            TabID{std::move(tabID_)},
+            TabHost{std::move(parent_)}
         {
+            OSC_ASSERT(TabHost != nullptr && "top-level tab host required for this UI");
         }
 
-        osc::Mesh const& getTransformedMesh()
-        {
-            return ResultCache.lookup(EditedDocument->getScratch());
-        }
+        // ID of the top-level TPS3D tab
+        osc::UID TabID;
 
-        void requestCloseTab()
-        {
-            m_Parent->closeTab(m_TabID);
-        }
+        // handle to the screen that owns the TPS3D tab
+        osc::TabHost* TabHost;
 
-        void pushPopup(std::shared_ptr<osc::Popup> popup)
-        {
-            OSC_ASSERT(popup != nullptr);
-            popup->open();
-            m_Popups.push_back(std::move(popup));
-        }
-
-        void drawPopups()
-        {
-            m_Popups.draw();
-        }
+        // cached TPS3D algorithm result (to prevent recomputing it each frame)
+        TPSResultCache MeshResultCache;
 
         // the document the user is editing
         std::shared_ptr<osc::UndoRedoT<TPSDocument>> EditedDocument = std::make_shared<osc::UndoRedoT<TPSDocument>>();
@@ -811,31 +807,39 @@ namespace
         // shared sphere mesh (used by rendering code)
         std::shared_ptr<osc::Mesh const> LandmarkSphere = osc::App::singleton<osc::MeshCache>().getSphereMesh();
 
-        // color of any paired landmark spheres
-        glm::vec4 PairedLandmarkColor = {0.0f, 1.0f, 0.0f, 1.0f};
-
-        // color of any unpaired landmark spheres
-        glm::vec4 UnpairedLandmarkColor = {1.0f, 0.0f, 0.0f, 1.0f};
-
         // current user selection
         TPSTabSelection UserSelection;
 
         // current user hover: reset per-frame
-        std::optional<TPSTabHover> CurrentHover;
+        std::optional<TPSUIViewportHover> CurrentHover;
 
         // available/active panels that the user can toggle via the `window` menu
         std::vector<TPSUIPanelInfo> Panels = GetAvailablePanels();
 
-    private:
-        osc::UID m_TabID;
-        osc::TabHost* m_Parent;
-
-        // cached TPS3D algorithm result (to prevent recomputing it each frame)
-        TPSResultCache ResultCache;
-
         // currently active tab-wide popups
-        osc::Popups m_Popups;
+        osc::Popups ActivePopups;
     };
+
+    TPSDocument const& GetScratch(TPSTabSharedState const& state)
+    {
+        return state.EditedDocument->getScratch();
+    }
+
+    TPSDocument& UpdScratch(TPSTabSharedState& state)
+    {
+        return state.EditedDocument->updScratch();
+    }
+
+    osc::Mesh const& GetScratchMesh(TPSTabSharedState& state, TPSDocumentInputIdentifier which)
+    {
+        return GetMesh(GetScratch(state), std::move(which));
+    }
+
+    // returns a (potentially cached) post-TPS-warp mesh
+    osc::Mesh const& GetResultMesh(TPSTabSharedState& state)
+    {
+        return state.MeshResultCache.lookup(state.EditedDocument->getScratch());
+    }
 
     // append decorations that are common to all panels to the given output vector
     void AppendCommonDecorations(
@@ -866,10 +870,393 @@ namespace
     }
 }
 
-// actual tab implementations
+
+// TPS3D UI widgets
+//
+// these appear within panels in the UI
 namespace
 {
+    // widget: the top toolbar (contains icons for new, save, open, undo, redo, etc.)
+    class TPS3DToolbar final {
+    public:
+        TPS3DToolbar(
+            std::string_view label,
+            std::shared_ptr<TPSTabSharedState> tabState_) :
+
+            m_Label{std::move(label)},
+            m_State{std::move(tabState_)}
+        {
+        }
+
+        void draw()
+        {
+            float const height = ImGui::GetFrameHeight() + 2.0f*ImGui::GetStyle().WindowPadding.y;
+            ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
+            if (osc::BeginMainViewportTopBar(m_Label.c_str(), height, flags))
+            {
+                drawContent();
+            }
+            ImGui::End();
+        }
+    private:
+        void drawContent()
+        {
+            // document-related stuff
+            drawNewDocumentButton();
+            ImGui::SameLine();
+            drawOpenDocumentButton();
+            ImGui::SameLine();
+            drawSaveLandmarksButton();
+            ImGui::SameLine();
+
+            ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+            ImGui::SameLine();
+
+            // undo/redo-related stuff
+            m_UndoButton.draw();
+            ImGui::SameLine();
+            m_RedoButton.draw();
+            ImGui::SameLine();
+
+            ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+            ImGui::SameLine();
+
+            // camera stuff
+            drawCameraLockCheckbox();
+            ImGui::SameLine();
+
+            ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+            ImGui::SameLine();
+
+            // landmark stuff
+            drawResetLandmarksButton();
+        }
+
+        void drawNewDocumentButton()
+        {
+            if (ImGui::Button(ICON_FA_FILE))
+            {
+                ActionCreateNewDocument(*m_State->EditedDocument);
+            }
+            osc::DrawTooltipIfItemHovered("Create New Document", "Creates the default scene (undoable)");
+        }
+
+        void drawOpenDocumentButton()
+        {
+            ImGui::Button(ICON_FA_FOLDER_OPEN);
+
+            if (ImGui::BeginPopupContextItem("##OpenFolder", ImGuiPopupFlags_MouseButtonLeft))
+            {
+                if (ImGui::MenuItem("Load Source Mesh"))
+                {
+                    ActionBrowseForNewMesh(*m_State->EditedDocument, TPSDocumentInputIdentifier::Source);
+                }
+                if (ImGui::MenuItem("Load Destination Mesh"))
+                {
+                    ActionBrowseForNewMesh(*m_State->EditedDocument, TPSDocumentInputIdentifier::Destination);
+                }
+                ImGui::EndPopup();
+            }
+            osc::DrawTooltipIfItemHovered("Open File", "Open Source/Destination data");
+        }
+
+        void drawSaveLandmarksButton()
+        {
+            if (ImGui::Button(ICON_FA_SAVE))
+            {
+                ActionSaveLandmarksToPairedCSV(GetScratch(*m_State));
+            }
+            osc::DrawTooltipIfItemHovered("Save Landmarks to CSV", "Saves all pair-able landmarks to a CSV file, for external processing");
+        }
+
+        void drawCameraLockCheckbox()
+        {
+            {
+                bool linkCameras = m_State->LinkCameras;
+                if (ImGui::Checkbox("link cameras", &linkCameras))
+                {
+                    m_State->LinkCameras = linkCameras;
+                }
+            }
+
+            ImGui::SameLine();
+
+            {
+                bool onlyLinkRotation = m_State->OnlyLinkRotation;
+                if (ImGui::Checkbox("only link rotation", &onlyLinkRotation))
+                {
+                    m_State->OnlyLinkRotation = onlyLinkRotation;
+                }
+            }
+        }
+
+        void drawResetLandmarksButton()
+        {
+            if (ImGui::Button(ICON_FA_ERASER " clear landmarks"))
+            {
+                ActionClearAllLandmarks(*m_State->EditedDocument);
+            }
+        }
+
+        std::string m_Label;
+        std::shared_ptr<TPSTabSharedState> m_State;
+        osc::UndoButton m_UndoButton{m_State->EditedDocument};
+        osc::RedoButton m_RedoButton{m_State->EditedDocument};
+    };
+
+    // widget: bottom status bar (shows status messages, hover information, etc.)
+    class TPS3DStatusBar final {
+    public:
+        TPS3DStatusBar(
+            std::string_view label,
+            std::shared_ptr<TPSTabSharedState> tabState_) :
+
+            m_Label{std::move(label)},
+            m_State{std::move(tabState_)}
+        {
+        }
+
+        void draw()
+        {
+            if (osc::BeginMainViewportBottomBar(m_Label.c_str()))
+            {
+                drawContent();
+            }
+            ImGui::End();
+        }
+
+    private:
+        void drawContent()
+        {
+            if (m_State->CurrentHover)
+            {
+                glm::vec3 const pos = m_State->CurrentHover->WorldspaceLocation;
+                ImGui::TextUnformatted("(");
+                ImGui::SameLine();
+                for (int i = 0; i < 3; ++i)
+                {
+                    glm::vec4 color = {0.5f, 0.5f, 0.5f, 1.0f};
+                    color[i] = 1.0f;
+                    ImGui::PushStyleColor(ImGuiCol_Text, color);
+                    ImGui::Text("%f", pos[i]);
+                    ImGui::SameLine();
+                    ImGui::PopStyleColor();
+                }
+                ImGui::TextUnformatted(")");
+                ImGui::SameLine();
+                if (m_State->CurrentHover->MaybeSceneElementID)
+                {
+                    ImGui::TextDisabled("(left-click to select %s)", m_State->CurrentHover->MaybeSceneElementID->elementID.c_str());
+                }
+                else
+                {
+                    ImGui::TextDisabled("(left-click to add a landmark)");
+                }
+            }
+            else
+            {
+                ImGui::TextDisabled("(nothing hovered)");
+            }
+        }
+
+        std::string m_Label;
+        std::shared_ptr<TPSTabSharedState> m_State;
+    };
+
+    // widget: the 'file' menu (a sub menu of the main menu)
+    class TPS3DFileMenu final {
+    public:
+        explicit TPS3DFileMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
+            m_State{std::move(tabState_)}
+        {
+        }
+
+        void draw()
+        {
+            if (ImGui::BeginMenu("File"))
+            {
+                drawContent();
+                ImGui::EndMenu();
+            }
+        }
+    private:
+        void drawContent()
+        {
+            if (ImGui::MenuItem(ICON_FA_FILE " New"))
+            {
+                ActionCreateNewDocument(*m_State->EditedDocument);
+            }
+
+            if (ImGui::BeginMenu(ICON_FA_FILE_IMPORT " Import"))
+            {
+                drawImportMenuContent();
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu(ICON_FA_FILE_EXPORT " Export"))
+            {
+                drawExportMenuContent();
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::MenuItem(ICON_FA_TIMES " Close"))
+            {
+                m_State->TabHost->closeTab(m_State->TabID);
+            }
+
+            if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit"))
+            {
+                osc::App::upd().requestQuit();
+            }
+        }
+
+        void drawImportMenuContent()
+        {
+            if (ImGui::MenuItem("Source Mesh"))
+            {
+                ActionBrowseForNewMesh(*m_State->EditedDocument, TPSDocumentInputIdentifier::Source);
+            }
+            if (ImGui::MenuItem("Destination Mesh"))
+            {
+                ActionBrowseForNewMesh(*m_State->EditedDocument, TPSDocumentInputIdentifier::Destination);
+            }
+            if (ImGui::MenuItem("Source Landmarks from CSV"))
+            {
+                ActionLoadLandmarksCSV(*m_State->EditedDocument, TPSDocumentInputIdentifier::Source);
+            }
+            if (ImGui::MenuItem("Destination Landmarks from CSV"))
+            {
+                ActionLoadLandmarksCSV(*m_State->EditedDocument, TPSDocumentInputIdentifier::Destination);
+            }
+        }
+
+        void drawExportMenuContent()
+        {
+            if (ImGui::MenuItem("Source Landmarks to CSV"))
+            {
+                ActionSaveLandmarksToCSV(GetScratch(*m_State), TPSDocumentInputIdentifier::Source);
+            }
+            if (ImGui::MenuItem("Destination Landmarks to CSV"))
+            {
+                ActionSaveLandmarksToCSV(GetScratch(*m_State), TPSDocumentInputIdentifier::Destination);
+            }
+            if (ImGui::MenuItem("Landmark Pairs to CSV"))
+            {
+                ActionSaveLandmarksToPairedCSV(GetScratch(*m_State));
+            }
+        }
+
+        std::shared_ptr<TPSTabSharedState> m_State;
+    };
+
+    // widget: the 'edit' menu (a sub menu of the main menu)
+    class TPS3DEditMenu final {
+    public:
+        TPS3DEditMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
+            m_State{std::move(tabState_)}
+        {
+        }
+
+        void draw()
+        {
+            if (ImGui::BeginMenu("Edit"))
+            {
+                drawContent();
+                ImGui::EndMenu();
+            }
+        }
+
+    private:
+
+        void drawContent()
+        {
+            if (ImGui::MenuItem("Undo", nullptr, nullptr, m_State->EditedDocument->canUndo()))
+            {
+                ActionUndo(*m_State->EditedDocument);
+            }
+            if (ImGui::MenuItem("Redo", nullptr, nullptr, m_State->EditedDocument->canRedo()))
+            {
+                ActionRedo(*m_State->EditedDocument);
+            }
+        }
+
+        std::shared_ptr<TPSTabSharedState> m_State;
+    };
+
+    // widget: the 'window' menu (a sub menu of the main menu)
+    class TPS3DWindowMenu final {
+    public:
+        TPS3DWindowMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
+            m_State{std::move(tabState_)}
+        {
+        }
+
+        void draw()
+        {
+            if (ImGui::BeginMenu("Window"))
+            {
+                drawContent();
+                ImGui::EndMenu();
+            }
+        }
+    private:
+        void drawContent()
+        {
+            for (TPSUIPanelInfo& panel : m_State->Panels)
+            {
+                bool selected = panel.Instance.has_value();
+                if (ImGui::MenuItem(panel.Name.c_str(), nullptr, &selected))
+                {
+                    if (panel.Instance.has_value() && (*panel.Instance)->isOpen())
+                    {
+                        panel.Instance.reset();
+                    }
+                    else
+                    {
+                        panel.Instance = panel.ConstructorFunc(m_State);
+                        (*panel.Instance)->open();
+                    }
+                }
+            }
+        }
+
+        std::shared_ptr<TPSTabSharedState> m_State;
+    };
+
+    // widget: the main menu (contains multiple submenus: 'file', 'edit', 'about', etc.)
+    class TPS3DMainMenu final {
+    public:
+        explicit TPS3DMainMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
+            m_FileMenu{tabState_},
+            m_EditMenu{tabState_},
+            m_WindowMenu{tabState_},
+            m_AboutTab{}
+        {
+        }
+
+        void draw()
+        {
+            m_FileMenu.draw();
+            m_EditMenu.draw();
+            m_WindowMenu.draw();
+            m_AboutTab.draw();
+        }
+    private:
+        TPS3DFileMenu m_FileMenu;
+        TPS3DEditMenu m_EditMenu;
+        TPS3DWindowMenu m_WindowMenu;
+        osc::MainMenuAboutTab m_AboutTab;
+    };
+}
+
+// TPSUI UI popups
+//
+// popups that can be opened by panels/buttons in the rest of the UI
+namespace
+{
+    // a pairing of an ID with a location in space
     struct IDedLocation final {
+
         IDedLocation(std::string id_, glm::vec3 const& location_) :
             id{std::move(id_)},
             location{location_}
@@ -881,9 +1268,9 @@ namespace
     };
 
     // a popup that prompts a user to select landmarks etc. for adding a new frame
-    class TPS3DDefineFrameStateMachine : public osc::StandardPopup {
+    class TPS3DDefineFramePopup final : public osc::StandardPopup {
     public:
-        TPS3DDefineFrameStateMachine(
+        TPS3DDefineFramePopup(
             std::shared_ptr<TPSTabSharedState> state_,
             osc::PolarPerspectiveCamera const& camera_,
             bool wireframeMode_,
@@ -898,6 +1285,7 @@ namespace
             m_SecondLandmark{std::nullopt},
             m_FlipFirstEdge{false},
             m_FlipSecondEdge{false},
+            m_EdgeIndexToAxisIndex{{0, 1, 2}},
             m_CachedRenderer{osc::App::config(), osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()},
             m_WireframeMode{std::move(wireframeMode_)},
             m_LandmarkRadius{std::move(landmarkRadius_)}
@@ -905,11 +1293,7 @@ namespace
             setModal(true);
         }
 
-        void setRect(osc::Rect const& rect)
-        {
-            setPosition(rect.p1);
-            setDimensions(osc::Dimensions(rect));
-        }
+        using osc::StandardPopup::setRect;
 
     private:
         void implBeforeImguiBeginPopup() final
@@ -963,7 +1347,7 @@ namespace
         {
             std::optional<IDedLocation> rv;
             glm::vec3 worldspaceLoc = {};
-            for (TPSDocumentLandmarkPair const& p : m_State->EditedDocument->getScratch().landmarkPairs)
+            for (TPSDocumentLandmarkPair const& p : GetScratch(*m_State).landmarkPairs)
             {
                 if (!p.maybeSourceLocation)
                 {
@@ -1004,14 +1388,14 @@ namespace
             // append common decorations (the mesh, grid, etc.)
             AppendCommonDecorations(
                 *m_State,
-                GetMesh(m_State->EditedDocument->getScratch(), TPSDocumentInputIdentifier::Source),
+                GetScratchMesh(*m_State, TPSDocumentInputIdentifier::Source),
                 m_WireframeMode,
                 rv,
                 glm::vec4{1.0f, 1.0f, 1.0f, 0.25f}
             );
 
             // append not-special landmarks (i.e. landmarks that aren't part of the selection)
-            for (TPSDocumentLandmarkPair const& p : m_State->EditedDocument->getScratch().landmarkPairs)
+            for (TPSDocumentLandmarkPair const& p : GetScratch(*m_State).landmarkPairs)
             {
                 if (p.id == m_OriginLandmark.id ||
                     (m_FirstLandmark && p.id == m_FirstLandmark->id) ||
@@ -1198,6 +1582,7 @@ namespace
             return rv;
         }
 
+        // handles and state changes that occur as a result of user interaction
         void handleInputAndHoverEvents(
             osc::ImGuiItemHittestResult const& htResult,
             std::optional<IDedLocation> const& maybeHoveredLandmark)
@@ -1226,7 +1611,6 @@ namespace
                     else if (!m_FirstLandmark)
                     {
                         // ...and the first landmark is assignable, then assign it.
-
                         m_FirstLandmark = maybeHoveredLandmark;
                     }
                     else if (!m_SecondLandmark)
@@ -1236,7 +1620,7 @@ namespace
                     }
                     else
                     {
-                        // ...and both landmarks are assigned, do nothing.
+                        // ...and both landmarks are assigned, do nothing (enough landmarks have already been assigned).
                         ;
                     }
                 }
@@ -1248,10 +1632,7 @@ namespace
         {
             ImGui::SetCursorScreenPos(renderRect.p1 + c_OverlayPadding);
 
-            // draw explanation text
-
             ImGui::Text("select reference points (click again to de-select)");
-
             ImGui::Checkbox("Flip First Edge", &m_FlipFirstEdge);
             ImGui::Checkbox("Flip Plane Normal", &m_FlipSecondEdge);
 
@@ -1269,6 +1650,17 @@ namespace
                 }
             }
 
+            drawEdgeMappingTable();
+
+            if (ImGui::Button("Cancel"))
+            {
+                requestClose();
+            }
+        }
+
+        // draws a table that lets the user change how each computed edge maps to the resultant axes
+        void drawEdgeMappingTable()
+        {
             if (ImGui::BeginTable("##axismappings", 4, ImGuiTableFlags_SizingStretchSame, {0.15f*ImGui::GetContentRegionAvail().x, 0.0f}))
             {
                 ImGui::TableSetupColumn("",ImGuiTableColumnFlags_NoSort);
@@ -1317,11 +1709,6 @@ namespace
 
                 ImGui::EndTable();
             }
-
-            if (ImGui::Button("Cancel"))
-            {
-                requestClose();
-            }
         }
 
         std::shared_ptr<TPSTabSharedState> m_State;
@@ -1331,23 +1718,30 @@ namespace
         std::optional<IDedLocation> m_SecondLandmark;
         bool m_FlipFirstEdge;
         bool m_FlipSecondEdge;
-        std::array<int, 3> m_EdgeIndexToAxisIndex = {0, 1, 2};
+        std::array<int, 3> m_EdgeIndexToAxisIndex;
         osc::CachedSceneRenderer m_CachedRenderer;
         bool m_WireframeMode;
         float m_LandmarkRadius;
     };
+}
 
+
+// TPS3D UI panel implementations
+//
+// implementation code for each panel shown in the UI
+namespace
+{
     // generic base class for the panels shown in the TPS3D tab
     class TPS3DTabPanel : public osc::StandardPanel {
     public:
         using osc::StandardPanel::StandardPanel;
 
     private:
-        void implBeforeImGuiBegin() override final
+        void implBeforeImGuiBegin() final
         {
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
         }
-        void implAfterImGuiBegin() override final
+        void implAfterImGuiBegin() final
         {
             ImGui::PopStyleVar();
         }
@@ -1370,7 +1764,7 @@ namespace
 
     private:
         // draws all of the panel's content
-        void implDrawContent() override
+        void implDrawContent() final
         {
             // compute top-level UI variables (render rect, mouse pos, etc.)
             osc::Rect const contentRect = osc::ContentRegionAvailScreenRect();
@@ -1379,13 +1773,13 @@ namespace
             osc::Line const cameraRay = m_Camera.unprojectTopLeftPosToWorldRay(mousePos - contentRect.p1, osc::Dimensions(contentRect));
 
             // mesh hittest: compute whether the user is hovering over the mesh (affects rendering)
-            osc::Mesh const& inputMesh = GetMesh(m_State->EditedDocument->getScratch(), m_DocumentIdentifier);
+            osc::Mesh const& inputMesh = GetScratchMesh(*m_State, m_DocumentIdentifier);
             std::optional<osc::RayCollision> const meshCollision = m_LastTextureHittestResult.isHovered ?
                 osc::GetClosestWorldspaceRayCollision(inputMesh, osc::Transform{}, cameraRay) :
                 std::nullopt;
 
             // landmark hittest: compute whether the user is hovering over a landmark
-            std::optional<TPSTabHover> landmarkCollision = m_LastTextureHittestResult.isHovered ?
+            std::optional<TPSUIViewportHover> landmarkCollision = m_LastTextureHittestResult.isHovered ?
                 getMouseLandmarkCollisions(cameraRay) :
                 std::nullopt;
 
@@ -1448,10 +1842,10 @@ namespace
         }
 
         // returns the closest collision, if any, between the provided camera ray and a landmark
-        std::optional<TPSTabHover> getMouseLandmarkCollisions(osc::Line const& cameraRay) const
+        std::optional<TPSUIViewportHover> getMouseLandmarkCollisions(osc::Line const& cameraRay) const
         {
-            std::optional<TPSTabHover> rv;
-            for (TPSDocumentLandmarkPair const& p : m_State->EditedDocument->getScratch().landmarkPairs)
+            std::optional<TPSUIViewportHover> rv;
+            for (TPSDocumentLandmarkPair const& p : GetScratch(*m_State).landmarkPairs)
             {
                 std::optional<glm::vec3> const maybePos = GetLocation(p, m_DocumentIdentifier);
 
@@ -1478,7 +1872,7 @@ namespace
         void handleInputAndHoverEvents(
             osc::ImGuiItemHittestResult const& htResult,
             std::optional<osc::RayCollision> const& meshCollision,
-            std::optional<TPSTabHover> const& landmarkCollision)
+            std::optional<TPSUIViewportHover> const& landmarkCollision)
         {
             // event: if the user left-clicks and something is hovered, select it; otherwise, add a landmark
             if (htResult.isLeftClickReleasedWithoutDragging)
@@ -1508,7 +1902,7 @@ namespace
                 landmarkCollision->MaybeSceneElementID &&
                 landmarkCollision->MaybeSceneElementID->elementType == TPSDocumentInputElementType::Landmark)
             {
-                auto overlay = std::make_shared<TPS3DDefineFrameStateMachine>(
+                auto overlay = std::make_shared<TPS3DDefineFramePopup>(
                     m_State,
                     m_Camera,
                     m_WireframeMode,
@@ -1516,8 +1910,9 @@ namespace
                     IDedLocation{landmarkCollision->MaybeSceneElementID->elementID, landmarkCollision->WorldspaceLocation}
                 );
                 overlay->setRect(htResult.rect);
+                overlay->open();
+                m_State->ActivePopups.push_back(overlay);
                 m_MaybeActiveModalOverlay = overlay;
-                m_State->pushPopup(overlay);
             }
 
             // event: if the user is hovering the render while something is selected and the user
@@ -1592,19 +1987,19 @@ namespace
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("# landmarks");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", CalcNumLandmarks(m_State->EditedDocument->getScratch(), m_DocumentIdentifier));
+                ImGui::Text("%zu", CountNumLandmarksForInput(GetScratch(*m_State), m_DocumentIdentifier));
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("# verts");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", GetMesh(m_State->EditedDocument->getScratch(), m_DocumentIdentifier).getVerts().size());
+                ImGui::Text("%zu", GetScratchMesh(*m_State, m_DocumentIdentifier).getVerts().size());
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("# triangles");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", GetMesh(m_State->EditedDocument->getScratch(), m_DocumentIdentifier).getIndices().size()/3);
+                ImGui::Text("%zu", GetScratchMesh(*m_State, m_DocumentIdentifier).getIndices().size()/3);
 
                 ImGui::EndTable();
             }
@@ -1636,15 +2031,15 @@ namespace
             {
                 if (ImGui::MenuItem("Mesh to OBJ"))
                 {
-                    ActionTrySaveMeshToObj(GetMesh(m_State->EditedDocument->getScratch(), m_DocumentIdentifier));
+                    ActionTrySaveMeshToObj(GetScratchMesh(*m_State, m_DocumentIdentifier));
                 }
                 if (ImGui::MenuItem("Mesh to STL"))
                 {
-                    ActionTrySaveMeshToStl(GetMesh(m_State->EditedDocument->getScratch(), m_DocumentIdentifier));
+                    ActionTrySaveMeshToStl(GetScratchMesh(*m_State, m_DocumentIdentifier));
                 }
                 if (ImGui::MenuItem("Landmarks to CSV"))
                 {
-                    ActionSaveLandmarksToCSV(m_State->EditedDocument->getScratch(), m_DocumentIdentifier);
+                    ActionSaveLandmarksToCSV(GetScratch(*m_State), m_DocumentIdentifier);
                 }
                 ImGui::EndPopup();
             }
@@ -1655,7 +2050,7 @@ namespace
         {
             if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
             {
-                osc::AutoFocus(m_Camera, GetMesh(m_State->EditedDocument->getScratch(), m_DocumentIdentifier).getBounds());
+                osc::AutoFocus(m_Camera, GetScratchMesh(*m_State, m_DocumentIdentifier).getBounds());
                 m_State->LinkedCameraBase = m_Camera;
             }
             osc::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
@@ -1677,7 +2072,7 @@ namespace
         osc::RenderTexture& renderScene(
             glm::vec2 dims,
             std::optional<osc::RayCollision> const& maybeMeshCollision,
-            std::optional<TPSTabHover> const& maybeLandmarkCollision)
+            std::optional<TPSUIViewportHover> const& maybeLandmarkCollision)
         {
             osc::SceneRendererParams const params = CalcRenderParams(m_Camera, dims);
             std::vector<osc::SceneDecoration> const decorations = generateDecorations(maybeMeshCollision, maybeLandmarkCollision);
@@ -1687,16 +2082,16 @@ namespace
         // returns a fresh list of 3D decorations for this panel's 3D render
         std::vector<osc::SceneDecoration> generateDecorations(
             std::optional<osc::RayCollision> const& maybeMeshCollision,
-            std::optional<TPSTabHover> const& maybeLandmarkCollision) const
+            std::optional<TPSUIViewportHover> const& maybeLandmarkCollision) const
         {
             // generate in-scene 3D decorations
             std::vector<osc::SceneDecoration> decorations;
-            decorations.reserve(6 + CalcNumLandmarks(m_State->EditedDocument->getScratch(), m_DocumentIdentifier));  // likely guess
+            decorations.reserve(6 + CountNumLandmarksForInput(GetScratch(*m_State), m_DocumentIdentifier));  // likely guess
 
-            AppendCommonDecorations(*m_State, GetMesh(m_State->EditedDocument->getScratch(), m_DocumentIdentifier), m_WireframeMode, decorations);
+            AppendCommonDecorations(*m_State, GetScratchMesh(*m_State, m_DocumentIdentifier), m_WireframeMode, decorations);
 
             // append each landmark as a sphere
-            for (TPSDocumentLandmarkPair const& p : m_State->EditedDocument->getScratch().landmarkPairs)
+            for (TPSDocumentLandmarkPair const& p : GetScratch(*m_State).landmarkPairs)
             {
                 std::optional<glm::vec3> const maybeLocation = GetLocation(p, m_DocumentIdentifier);
 
@@ -1711,7 +2106,7 @@ namespace
                 transform.scale *= m_LandmarkRadius;
                 transform.position = *maybeLocation;
 
-                glm::vec4 const& color = IsFullyPaired(p) ? m_State->PairedLandmarkColor : m_State->UnpairedLandmarkColor;
+                glm::vec4 const& color = IsFullyPaired(p) ? c_PairedLandmarkColor : c_UnpairedLandmarkColor;
 
                 osc::SceneDecoration& decoration = decorations.emplace_back(m_State->LandmarkSphere, transform, color);
 
@@ -1736,7 +2131,7 @@ namespace
                 transform.scale *= m_LandmarkRadius;
                 transform.position = maybeMeshCollision->position;
 
-                glm::vec4 color = m_State->UnpairedLandmarkColor;
+                glm::vec4 color = c_UnpairedLandmarkColor;
                 color.a *= 0.25f;
 
                 decorations.emplace_back(m_State->LandmarkSphere, transform, color);
@@ -1747,12 +2142,12 @@ namespace
 
         std::shared_ptr<TPSTabSharedState> m_State;
         TPSDocumentInputIdentifier m_DocumentIdentifier;
-        osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(GetMesh(m_State->EditedDocument->getScratch(), m_DocumentIdentifier).getBounds());
+        osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(GetScratchMesh(*m_State, m_DocumentIdentifier).getBounds());
         osc::CachedSceneRenderer m_CachedRenderer{osc::App::config(), osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()};
         osc::ImGuiItemHittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;
         float m_LandmarkRadius = 0.05f;
-        std::weak_ptr<TPS3DDefineFrameStateMachine> m_MaybeActiveModalOverlay;
+        std::weak_ptr<TPS3DDefineFramePopup> m_MaybeActiveModalOverlay;
     };
 
     // a "result" panel (i.e. after applying a warp to the source)
@@ -1767,7 +2162,7 @@ namespace
         }
 
     private:
-        void implDrawContent() override
+        void implDrawContent() final
         {
             // fill the entire available region with the render
             glm::vec2 const dims = ImGui::GetContentRegionAvail();
@@ -1871,13 +2266,13 @@ namespace
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("# verts");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", m_State->getTransformedMesh().getVerts().size());
+                ImGui::Text("%zu", GetResultMesh(*m_State).getVerts().size());
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("# triangles");
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%zu", m_State->getTransformedMesh().getIndices().size()/3);
+                ImGui::Text("%zu", GetResultMesh(*m_State).getIndices().size()/3);
 
                 ImGui::EndTable();
             }
@@ -1891,11 +2286,11 @@ namespace
             {
                 if (ImGui::MenuItem("Mesh to OBJ"))
                 {
-                    ActionTrySaveMeshToObj(m_State->getTransformedMesh());
+                    ActionTrySaveMeshToObj(GetResultMesh(*m_State));
                 }
                 if (ImGui::MenuItem("Mesh to STL"))
                 {
-                    ActionTrySaveMeshToStl(m_State->getTransformedMesh());
+                    ActionTrySaveMeshToStl(GetResultMesh(*m_State));
                 }
                 ImGui::EndPopup();
             }
@@ -1906,7 +2301,7 @@ namespace
         {
             if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
             {
-                osc::AutoFocus(m_Camera, m_State->getTransformedMesh().getBounds());
+                osc::AutoFocus(m_Camera, GetResultMesh(*m_State).getBounds());
                 m_State->LinkedCameraBase = m_Camera;
             }
             osc::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
@@ -1916,10 +2311,10 @@ namespace
         {
             char const* const label = "blending factor";
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - m_OverlayPadding.x);
-            float factor = m_State->EditedDocument->getScratch().blendingFactor;
+            float factor = GetScratch(*m_State).blendingFactor;
             if (ImGui::SliderFloat(label, &factor, 0.0f, 1.0f))
             {
-                ActionSetBlendFactor(*m_State->EditedDocument, factor);
+                ActionSetBlendFactorWithoutSaving(*m_State->EditedDocument, factor);
             }
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
@@ -1933,11 +2328,11 @@ namespace
             std::vector<osc::SceneDecoration> decorations;
             decorations.reserve(5);  // likely guess
 
-            AppendCommonDecorations(*m_State, m_State->getTransformedMesh(), m_WireframeMode, decorations);
+            AppendCommonDecorations(*m_State, GetResultMesh(*m_State), m_WireframeMode, decorations);
 
             if (m_ShowDestinationMesh)
             {
-                osc::SceneDecoration& dec = decorations.emplace_back(m_State->EditedDocument->getScratch().destinationMesh);
+                osc::SceneDecoration& dec = decorations.emplace_back(GetScratch(*m_State).destinationMesh);
                 dec.color = {1.0f, 0.0f, 0.0f, 0.5f};
             }
 
@@ -1953,7 +2348,7 @@ namespace
         }
 
         std::shared_ptr<TPSTabSharedState> m_State;
-        osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getTransformedMesh().getBounds());
+        osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(GetResultMesh(*m_State).getBounds());
         osc::CachedSceneRenderer m_CachedRenderer
         {
             osc::App::config(),
@@ -1964,378 +2359,6 @@ namespace
         bool m_WireframeMode = true;
         bool m_ShowDestinationMesh = false;
         glm::vec2 m_OverlayPadding = {10.0f, 10.0f};
-    };
-
-    // draws the top toolbar (bar containing icons for new, save, open, undo, redo, etc.)
-    class TPS3DToolbar final {
-    public:
-        TPS3DToolbar(
-            std::string_view label,
-            std::shared_ptr<TPSTabSharedState> tabState_) :
-
-            m_Label{std::move(label)},
-            m_TabState{std::move(tabState_)}
-        {
-        }
-
-        void draw()
-        {
-            float const height = ImGui::GetFrameHeight() + 2.0f*ImGui::GetStyle().WindowPadding.y;
-            ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
-            if (osc::BeginMainViewportTopBar(m_Label.c_str(), height, flags))
-            {
-                drawContent();
-            }
-            ImGui::End();
-        }
-    private:
-        void drawContent()
-        {
-            // document-related stuff
-            drawNewDocumentButton();
-            ImGui::SameLine();
-            drawOpenDocumentButton();
-            ImGui::SameLine();
-            drawSaveLandmarksButton();
-            ImGui::SameLine();
-
-            ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-            ImGui::SameLine();
-
-            // undo/redo-related stuff
-            m_UndoButton.draw();
-            ImGui::SameLine();
-            m_RedoButton.draw();
-            ImGui::SameLine();
-
-            ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-            ImGui::SameLine();
-
-            // camera stuff
-            drawCameraLockCheckbox();
-            ImGui::SameLine();
-
-            ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-            ImGui::SameLine();
-
-            // landmark stuff
-            drawResetLandmarksButton();
-        }
-
-        void drawNewDocumentButton()
-        {
-            if (ImGui::Button(ICON_FA_FILE))
-            {
-                ActionCreateNewDocument(*m_TabState->EditedDocument);
-            }
-            osc::DrawTooltipIfItemHovered("Create New Document", "Creates the default scene (undoable)");
-        }
-
-        void drawOpenDocumentButton()
-        {
-            ImGui::Button(ICON_FA_FOLDER_OPEN);
-
-            if (ImGui::BeginPopupContextItem("##OpenFolder", ImGuiPopupFlags_MouseButtonLeft))
-            {
-                if (ImGui::MenuItem("Load Source Mesh"))
-                {
-                    ActionBrowseForNewMesh(*m_TabState->EditedDocument, TPSDocumentInputIdentifier::Source);
-                }
-                if (ImGui::MenuItem("Load Destination Mesh"))
-                {
-                    ActionBrowseForNewMesh(*m_TabState->EditedDocument, TPSDocumentInputIdentifier::Destination);
-                }
-                ImGui::EndPopup();
-            }
-            osc::DrawTooltipIfItemHovered("Open File", "Open Source/Destination data");
-        }
-
-        void drawSaveLandmarksButton()
-        {
-            if (ImGui::Button(ICON_FA_SAVE))
-            {
-                ActionSaveLandmarksToPairedCSV(m_TabState->EditedDocument->getScratch());
-            }
-            osc::DrawTooltipIfItemHovered("Save Landmarks to CSV", "Saves all pair-able landmarks to a CSV file, for external processing");
-        }
-
-        void drawCameraLockCheckbox()
-        {
-            {
-                bool linkCameras = m_TabState->LinkCameras;
-                if (ImGui::Checkbox("link cameras", &linkCameras))
-                {
-                    m_TabState->LinkCameras = linkCameras;
-                }
-            }
-
-            ImGui::SameLine();
-
-            {
-                bool onlyLinkRotation = m_TabState->OnlyLinkRotation;
-                if (ImGui::Checkbox("only link rotation", &onlyLinkRotation))
-                {
-                    m_TabState->OnlyLinkRotation = onlyLinkRotation;
-                }
-            }
-        }
-
-        void drawResetLandmarksButton()
-        {
-            if (ImGui::Button(ICON_FA_ERASER " clear landmarks"))
-            {
-                ActionClearAllLandmarks(*m_TabState->EditedDocument);
-            }
-        }
-
-        std::string m_Label;
-        std::shared_ptr<TPSTabSharedState> m_TabState;
-        osc::UndoButton m_UndoButton{m_TabState->EditedDocument};
-        osc::RedoButton m_RedoButton{m_TabState->EditedDocument};
-    };
-
-    // draws the bottom status bar
-    class TPS3DStatusBar final {
-    public:
-        TPS3DStatusBar(
-            std::string_view label,
-            std::shared_ptr<TPSTabSharedState> tabState_) :
-
-            m_Label{std::move(label)},
-            m_TabState{std::move(tabState_)}
-        {
-        }
-
-        void draw()
-        {
-            if (osc::BeginMainViewportBottomBar(m_Label.c_str()))
-            {
-                drawContent();
-            }
-            ImGui::End();
-        }
-
-    private:
-        void drawContent()
-        {
-            if (m_TabState->CurrentHover)
-            {
-                glm::vec3 const pos = m_TabState->CurrentHover->WorldspaceLocation;
-                ImGui::TextUnformatted("(");
-                ImGui::SameLine();
-                for (int i = 0; i < 3; ++i)
-                {
-                    glm::vec4 color = {0.5f, 0.5f, 0.5f, 1.0f};
-                    color[i] = 1.0f;
-                    ImGui::PushStyleColor(ImGuiCol_Text, color);
-                    ImGui::Text("%f", pos[i]);
-                    ImGui::SameLine();
-                    ImGui::PopStyleColor();
-                }
-                ImGui::TextUnformatted(")");
-                ImGui::SameLine();
-                if (m_TabState->CurrentHover->MaybeSceneElementID)
-                {
-                    ImGui::TextDisabled("(left-click to select %s)", m_TabState->CurrentHover->MaybeSceneElementID->elementID.c_str());
-                }
-                else
-                {
-                    ImGui::TextDisabled("(left-click to add a landmark)");
-                }
-            }
-            else
-            {
-                ImGui::TextDisabled("(nothing hovered)");
-            }
-        }
-
-        std::string m_Label;
-        std::shared_ptr<TPSTabSharedState> m_TabState;
-    };
-
-    // draws the 'file' menu (a sub menu of the main menu)
-    class TPS3DFileMenu final {
-    public:
-        explicit TPS3DFileMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
-            m_TabState{std::move(tabState_)}
-        {
-        }
-
-        void draw()
-        {
-            if (ImGui::BeginMenu("File"))
-            {
-                drawContent();
-                ImGui::EndMenu();
-            }
-        }
-    private:
-        void drawContent()
-        {
-            if (ImGui::MenuItem(ICON_FA_FILE " New"))
-            {
-                ActionCreateNewDocument(*m_TabState->EditedDocument);
-            }
-
-            if (ImGui::BeginMenu(ICON_FA_FILE_IMPORT " Import"))
-            {
-                drawImportMenuContent();
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::BeginMenu(ICON_FA_FILE_EXPORT " Export"))
-            {
-                drawExportMenuContent();
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::MenuItem(ICON_FA_TIMES " Close"))
-            {
-                m_TabState->requestCloseTab();
-            }
-
-            if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit"))
-            {
-                osc::App::upd().requestQuit();
-            }
-        }
-
-        void drawImportMenuContent()
-        {
-            if (ImGui::MenuItem("Source Mesh"))
-            {
-                ActionBrowseForNewMesh(*m_TabState->EditedDocument, TPSDocumentInputIdentifier::Source);
-            }
-            if (ImGui::MenuItem("Destination Mesh"))
-            {
-                ActionBrowseForNewMesh(*m_TabState->EditedDocument, TPSDocumentInputIdentifier::Destination);
-            }
-            if (ImGui::MenuItem("Source Landmarks from CSV"))
-            {
-                ActionLoadLandmarksCSV(*m_TabState->EditedDocument, TPSDocumentInputIdentifier::Source);
-            }
-            if (ImGui::MenuItem("Destination Landmarks from CSV"))
-            {
-                ActionLoadLandmarksCSV(*m_TabState->EditedDocument, TPSDocumentInputIdentifier::Destination);
-            }
-        }
-
-        void drawExportMenuContent()
-        {
-            if (ImGui::MenuItem("Source Landmarks to CSV"))
-            {
-                ActionSaveLandmarksToCSV(m_TabState->EditedDocument->getScratch(), TPSDocumentInputIdentifier::Source);
-            }
-            if (ImGui::MenuItem("Destination Landmarks to CSV"))
-            {
-                ActionSaveLandmarksToCSV(m_TabState->EditedDocument->getScratch(), TPSDocumentInputIdentifier::Destination);
-            }
-            if (ImGui::MenuItem("Landmark Pairs to CSV"))
-            {
-                ActionSaveLandmarksToPairedCSV(m_TabState->EditedDocument->getScratch());
-            }
-        }
-
-        std::shared_ptr<TPSTabSharedState> m_TabState;
-    };
-
-    // draws the 'edit' menu (a sub menu of the main menu)
-    class TPS3DEditMenu final {
-    public:
-        TPS3DEditMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
-            m_TabState{std::move(tabState_)}
-        {
-        }
-
-        void draw()
-        {
-            if (ImGui::BeginMenu("Edit"))
-            {
-                drawContent();
-                ImGui::EndMenu();
-            }
-        }
-
-    private:
-
-        void drawContent()
-        {
-            if (ImGui::MenuItem("Undo", nullptr, nullptr, m_TabState->EditedDocument->canUndo()))
-            {
-                ActionUndo(*m_TabState->EditedDocument);
-            }
-            if (ImGui::MenuItem("Redo", nullptr, nullptr, m_TabState->EditedDocument->canRedo()))
-            {
-                ActionRedo(*m_TabState->EditedDocument);
-            }
-        }
-
-        std::shared_ptr<TPSTabSharedState> m_TabState;
-    };
-
-    // draws the 'window' menu (a sub menu of the main menu)
-    class TPS3DWindowMenu final {
-    public:
-        TPS3DWindowMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
-            m_TabState{std::move(tabState_)}
-        {
-        }
-
-        void draw()
-        {
-            if (ImGui::BeginMenu("Window"))
-            {
-                drawContent();
-                ImGui::EndMenu();
-            }
-        }
-    private:
-        void drawContent()
-        {
-            for (TPSUIPanelInfo& panel : m_TabState->Panels)
-            {
-                bool selected = panel.Instance.has_value();
-                if (ImGui::MenuItem(panel.Name.c_str(), nullptr, &selected))
-                {
-                    if (panel.Instance.has_value() && (*panel.Instance)->isOpen())
-                    {
-                        panel.Instance.reset();
-                    }
-                    else
-                    {
-                        panel.Instance = panel.ConstructorFunc(m_TabState);
-                        (*panel.Instance)->open();
-                    }
-                }
-            }
-        }
-
-        std::shared_ptr<TPSTabSharedState> m_TabState;
-    };
-
-    // draws the main menu content (contains multiple submenus: 'file', 'edit', 'about', etc.)
-    class TPS3DMainMenu final {
-    public:
-        explicit TPS3DMainMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
-            m_FileMenu{tabState_},
-            m_EditMenu{tabState_},
-            m_WindowMenu{tabState_},
-            m_AboutTab{}
-        {
-        }
-
-        void draw()
-        {
-            m_FileMenu.draw();
-            m_EditMenu.draw();
-            m_WindowMenu.draw();
-            m_AboutTab.draw();
-        }
-    private:
-        TPS3DFileMenu m_FileMenu;
-        TPS3DEditMenu m_EditMenu;
-        TPS3DWindowMenu m_WindowMenu;
-        osc::MainMenuAboutTab m_AboutTab;
     };
 
     std::vector<TPSUIPanelInfo> GetAvailablePanels()
@@ -2394,21 +2417,21 @@ namespace
     }
 }
 
-// tab implementation
+// top-level tab implementation
 class osc::TPS3DTab::Impl final {
 public:
 
     Impl(TabHost* parent) : m_Parent{std::move(parent)}
     {
         OSC_ASSERT(m_Parent != nullptr);
-        OSC_ASSERT(m_TabState != nullptr && "the tab state should be initialized by this point");
+        OSC_ASSERT(m_State != nullptr && "the tab state should be initialized by this point");
 
         // initialize default-open tabs
-        for (TPSUIPanelInfo& panel : m_TabState->Panels)
+        for (TPSUIPanelInfo& panel : m_State->Panels)
         {
             if (panel.IsEnabledByDefault)
             {
-                panel.Instance = panel.ConstructorFunc(m_TabState);
+                panel.Instance = panel.ConstructorFunc(m_State);
                 (*panel.Instance)->open();
             }
         }
@@ -2447,10 +2470,10 @@ public:
     void onTick()
     {
         // re-perform hover test each frame
-        m_TabState->CurrentHover.reset();
+        m_State->CurrentHover.reset();
 
         // garbage collect closed-panel instance data
-        for (TPSUIPanelInfo& panel : m_TabState->Panels)
+        for (TPSUIPanelInfo& panel : m_State->Panels)
         {
             if (panel.Instance && !(*panel.Instance)->isOpen())
             {
@@ -2469,7 +2492,7 @@ public:
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         m_TopToolbar.draw();
-        for (TPSUIPanelInfo& panel : m_TabState->Panels)
+        for (TPSUIPanelInfo& panel : m_State->Panels)
         {
             if (panel.Instance)
             {
@@ -2479,7 +2502,7 @@ public:
         m_StatusBar.draw();
 
         // draw active popups over the UI
-        m_TabState->drawPopups();
+        m_State->ActivePopups.draw();
     }
 
 private:
@@ -2490,12 +2513,12 @@ private:
     TabHost* m_Parent;
 
     // top-level state that all panels can potentially access
-    std::shared_ptr<TPSTabSharedState> m_TabState = std::make_shared<TPSTabSharedState>(m_ID, m_Parent);
+    std::shared_ptr<TPSTabSharedState> m_State = std::make_shared<TPSTabSharedState>(m_ID, m_Parent);
 
     // not-user-toggleable widgets
-    TPS3DMainMenu m_MainMenu{m_TabState};
-    TPS3DToolbar m_TopToolbar{"##TPS3DToolbar", m_TabState};
-    TPS3DStatusBar m_StatusBar{"##TPS3DStatusBar", m_TabState};
+    TPS3DMainMenu m_MainMenu{m_State};
+    TPS3DToolbar m_TopToolbar{"##TPS3DToolbar", m_State};
+    TPS3DStatusBar m_StatusBar{"##TPS3DStatusBar", m_State};
 };
 
 

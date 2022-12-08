@@ -1,5 +1,8 @@
 #include "StandardPopup.hpp"
 
+#include "src/Maths/MathHelpers.hpp"
+#include "src/Maths/Rect.hpp"
+
 #include <imgui.h>
 
 #include <string_view>
@@ -149,6 +152,12 @@ bool osc::StandardPopup::isModal() const
 void osc::StandardPopup::setModal(bool v)
 {
     m_IsModal = std::move(v);
+}
+
+void osc::StandardPopup::setRect(osc::Rect const& rect)
+{
+    m_MaybePosition = rect.p1;
+    m_Dimensions = osc::Dimensions(rect);
 }
 
 void osc::StandardPopup::setDimensions(glm::vec2 d)
