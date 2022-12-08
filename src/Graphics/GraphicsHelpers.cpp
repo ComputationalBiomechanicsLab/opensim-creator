@@ -172,6 +172,12 @@ void osc::DrawArrow(MeshCache& cache, ArrowProperties const& props, std::vector<
     out.emplace_back(cache.getConeMesh(), headXform, props.color);
 }
 
+void osc::DrawLineSegment(MeshCache& cache, Segment const& segment, glm::vec4 const& color, float radius, std::vector<SceneDecoration>& out)
+{
+    Transform const cylinderXform = SimbodyCylinderToSegmentTransform(segment, radius);
+    out.emplace_back(cache.getCylinderMesh(), cylinderXform, color);
+}
+
 void osc::UpdateSceneBVH(nonstd::span<SceneDecoration const> sceneEls, BVH& bvh)
 {
     std::vector<AABB> aabbs;

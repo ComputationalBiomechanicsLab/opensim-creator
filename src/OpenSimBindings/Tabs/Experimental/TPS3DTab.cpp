@@ -19,6 +19,7 @@
 #include "src/Maths/CollisionTests.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/MathHelpers.hpp"
+#include "src/Maths/Segment.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/OpenSimBindings/SimTKHelpers.hpp"
 #include "src/OpenSimBindings/TPS3D.hpp"
@@ -863,6 +864,21 @@ namespace
         DrawXZGrid(osc::App::singleton<osc::MeshCache>(), out);
         DrawXZFloorLines(osc::App::singleton<osc::MeshCache>(), out, 100.0f);
     }
+}
+
+// actual tab implementations
+namespace
+{
+    struct IDedLocation final {
+        IDedLocation(std::string id_, glm::vec3 const& location_) :
+            id{std::move(id_)},
+            location{location_}
+        {
+        }
+
+        std::string id;
+        glm::vec3 location;
+    };
 
     // a popup that prompts a user to select landmarks etc. for adding a new frame
     class TPS3DDefineFrameStateMachine : public osc::StandardPopup {
@@ -872,14 +888,16 @@ namespace
             osc::PolarPerspectiveCamera const& camera_,
             bool wireframeMode_,
             float landmarkRadius_,
-            std::string const& originLandmarkID_) :
+            IDedLocation originLandmark_) :
 
             StandardPopup{"##FrameEditorOverlay", {}, osc::GetMinimalWindowFlags() & ~(ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs)},
             m_State{std::move(state_)},
             m_Camera{camera_},
-            m_OriginLandmarkID{originLandmarkID_},
-            m_FirstLandmarkID{std::nullopt},
-            m_SecondLandmarkID{std::nullopt},
+            m_OriginLandmark{std::move(originLandmark_)},
+            m_FirstLandmark{std::nullopt},
+            m_SecondLandmark{std::nullopt},
+            m_FlipFirstEdge{false},
+            m_FlipSecondEdge{false},
             m_CachedRenderer{osc::App::config(), osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()},
             m_WireframeMode{std::move(wireframeMode_)},
             m_LandmarkRadius{std::move(landmarkRadius_)}
@@ -918,7 +936,7 @@ namespace
             osc::Line const cameraRay = m_Camera.unprojectTopLeftPosToWorldRay(mousePos - contentRect.p1, osc::Dimensions(contentRect));
 
             // hittest: calculate which landmark is under the mouse (if any)
-            std::optional<std::string> const maybeHoveredLandmark = osc::IsPointInRect(contentRect, mousePos) ?
+            std::optional<IDedLocation> const maybeHoveredLandmark = osc::IsPointInRect(contentRect, mousePos) ?
                 getMouseLandmarkCollisions(cameraRay) :
                 std::nullopt;
 
@@ -941,9 +959,9 @@ namespace
         }
 
         // returns the closest collision, if any, between the provided camera ray and a landmark
-        std::optional<std::string> getMouseLandmarkCollisions(osc::Line const& cameraRay) const
+        std::optional<IDedLocation> getMouseLandmarkCollisions(osc::Line const& cameraRay) const
         {
-            std::optional<std::string> rv;
+            std::optional<IDedLocation> rv;
             glm::vec3 worldspaceLoc = {};
             for (TPSDocumentLandmarkPair const& p : m_State->EditedDocument->getScratch().landmarkPairs)
             {
@@ -959,7 +977,7 @@ namespace
                 {
                     if (!rv || glm::length(worldspaceLoc - cameraRay.origin) > coll->distance)
                     {
-                        rv.emplace(p.id);
+                        rv.emplace(p.id, *p.maybeSourceLocation);
                         worldspaceLoc = coll->position;
                     }
                 }
@@ -970,131 +988,224 @@ namespace
         // renders this panel's 3D scene to a texture
         osc::RenderTexture& renderScene(
             glm::vec2 renderDimensions,
-            std::optional<std::string> const& maybeHoveredLandmarkID)
+            std::optional<IDedLocation> const& maybeHoveredLandmark)
         {
             osc::SceneRendererParams const params = CalcRenderParams(m_Camera, renderDimensions);
-            std::vector<osc::SceneDecoration> const decorations = generateDecorations(maybeHoveredLandmarkID);
+            std::vector<osc::SceneDecoration> const decorations = generateDecorations(maybeHoveredLandmark);
             return m_CachedRenderer.draw(decorations, params);
         }
 
         // returns a fresh list of 3D decorations for this panel's 3D render
         std::vector<osc::SceneDecoration> generateDecorations(
-            std::optional<std::string> const& maybeHoveredLandmarkID) const
+            std::optional<IDedLocation> const& maybeHoveredLandmark) const
         {
-            std::vector<osc::SceneDecoration> decorations;
+            std::vector<osc::SceneDecoration> rv;
 
-            // (guess)
-            decorations.reserve(6 + CalcNumLandmarks(m_State->EditedDocument->getScratch(), TPSDocumentInputIdentifier::Source));
-
+            // append common decorations (the mesh, grid, etc.)
             AppendCommonDecorations(
                 *m_State,
                 GetMesh(m_State->EditedDocument->getScratch(), TPSDocumentInputIdentifier::Source),
                 m_WireframeMode,
-                decorations,
+                rv,
                 glm::vec4{1.0f, 1.0f, 1.0f, 0.25f}
             );
 
-            // draw source landmarks
+            // append not-special landmarks (i.e. landmarks that aren't part of the selection)
             for (TPSDocumentLandmarkPair const& p : m_State->EditedDocument->getScratch().landmarkPairs)
             {
+                if (p.id == m_OriginLandmark.id ||
+                    (m_FirstLandmark && p.id == m_FirstLandmark->id) ||
+                    (m_SecondLandmark && p.id == m_SecondLandmark->id))
+                {
+                    // it's a special landmark: don't draw it
+                    continue;
+                }
+
                 if (!p.maybeSourceLocation)
                 {
                     // no source location data: don't draw it
                     continue;
                 }
 
-                // emit one sphere per landmark
-                osc::SceneDecoration& decoration = decorations.emplace_back(*m_State->LandmarkSphere);
-
                 osc::Transform transform{};
                 transform.scale *= m_LandmarkRadius;
                 transform.position = *p.maybeSourceLocation;
 
+                osc::SceneDecoration& decoration = rv.emplace_back(*m_State->LandmarkSphere);
                 decoration.transform = transform;
-
-                if (p.id == m_OriginLandmarkID)
+                if (maybeHoveredLandmark && maybeHoveredLandmark->id == p.id && !(m_FirstLandmark && m_SecondLandmark))
                 {
-                    // its the origin
-                    decoration.color = {1.0f, 1.0f, 1.0f, 1.0f};
-                }
-                else if (p.id == m_FirstLandmarkID)
-                {
-                    decoration.color = {1.0f, 1.0f, 1.0f, 1.0f};
-                    if (p.id == maybeHoveredLandmarkID)
+                    glm::vec3 const start = m_OriginLandmark.location;
+                    glm::vec3 startToEnd = *p.maybeSourceLocation - start;
+                    if (!m_FirstLandmark && m_FlipFirstEdge)
                     {
-                        // hovering over first landmark (can be deselected)
-                        decoration.flags |= osc::SceneDecorationFlags_IsHovered;
+                        startToEnd = -startToEnd;
                     }
 
-                    osc::ArrowProperties props;
-                    props.worldspaceStart = getOriginPos();
-                    props.worldspaceEnd = *p.maybeSourceLocation;
-                    props.tipLength = 2.0f*m_LandmarkRadius;
-                    props.neckThickness = 0.25f*m_LandmarkRadius;
-                    props.headThickness = 0.5f*m_LandmarkRadius;
-                    props.color = {1.0f, 1.0f, 1.0f, 0.75f};
-                    osc::DrawArrow(osc::App::singleton<osc::MeshCache>(), props, decorations);
-                }
-                else if (p.id == m_SecondLandmarkID)
-                {
-                    decoration.color = {1.0f, 1.0f, 1.0f, 1.0f};
-                    if (p.id == maybeHoveredLandmarkID)
-                    {
-                        // hovering over the second landmark (can be deselected)
-                        decoration.flags |= osc::SceneDecorationFlags_IsHovered;
-                    }
-
-                    osc::ArrowProperties props;
-                    props.worldspaceStart = getOriginPos();
-                    props.worldspaceEnd = *p.maybeSourceLocation;
-                    props.tipLength = 2.0f*m_LandmarkRadius;
-                    props.neckThickness = 0.25f*m_LandmarkRadius;
-                    props.headThickness = 0.5f*m_LandmarkRadius;
-                    props.color = {1.0f, 1.0f, 1.0f, 0.75f};
-                    osc::DrawArrow(osc::App::singleton<osc::MeshCache>(), props, decorations);
-                }
-                else if (p.id == maybeHoveredLandmarkID && !(m_FirstLandmarkID && m_SecondLandmarkID))
-                {
-                    // hovering over some other landmark in the scene and it's select-able
+                    // hovering this non-special landmark and can make it the first/second
                     decoration.color = {1.0f, 1.0f, 1.0f, 0.9f};
                     decoration.flags |= osc::SceneDecorationFlags_IsHovered;
 
                     osc::ArrowProperties props;
-                    props.worldspaceStart = getOriginPos();
-                    props.worldspaceEnd = *p.maybeSourceLocation;
+                    props.worldspaceStart = start;
+                    props.worldspaceEnd = start + startToEnd;
                     props.tipLength = 2.0f*m_LandmarkRadius;
                     props.neckThickness = 0.25f*m_LandmarkRadius;
                     props.headThickness = 0.5f*m_LandmarkRadius;
-                    props.color = glm::vec4{1.0f, 1.0f, 1.0f, 0.25f};
-                    osc::DrawArrow(osc::App::singleton<osc::MeshCache>(), props, decorations);
+                    if (!m_FirstLandmark)
+                    {
+                        props.color = {0.0f, 0.0f, 0.0f, 0.25f};
+                        props.color[m_EdgeIndexToAxisIndex[0]] = 1.0f;
+                    }
+                    else
+                    {
+                        props.color = {1.0f, 1.0f, 1.0f, 0.25f};
+                    }
+                    osc::DrawArrow(osc::App::singleton<osc::MeshCache>(), props, rv);
                 }
                 else
                 {
-                    // some other landmark in the scene (not hovered)
                     decoration.color = {1.0f, 1.0f, 1.0f, 0.80f};
                 }
             }
 
-            // if possible, draw completed frame
-            if (m_FirstLandmarkID && m_SecondLandmarkID)
+            // draw origin
             {
-                // - the frame
-                // - the plane the frame was created from
+                osc::Transform transform{};
+                transform.scale *= m_LandmarkRadius;
+                transform.position = m_OriginLandmark.location;
+
+                osc::SceneDecoration& decoration = rv.emplace_back(*m_State->LandmarkSphere);
+                decoration.transform = transform;
+                decoration.color = {1.0f, 1.0f, 1.0f, 1.0f};
             }
 
-            return decorations;
+            // draw first landmark
+            if (m_FirstLandmark)
+            {
+                osc::Transform transform{};
+                transform.scale *= m_LandmarkRadius;
+                transform.position = m_FirstLandmark->location;
+
+                osc::SceneDecoration& decoration = rv.emplace_back(*m_State->LandmarkSphere);
+                decoration.transform = transform;
+                decoration.color = {1.0f, 1.0f, 1.0f, 1.0f};
+                if (maybeHoveredLandmark && maybeHoveredLandmark->id == m_FirstLandmark->id)
+                {
+                    // hovering over first landmark (can be deselected)
+                    decoration.flags |= osc::SceneDecorationFlags_IsHovered;
+                }
+                else
+                {
+                    decoration.flags |= osc::SceneDecorationFlags_IsSelected;
+                }
+
+                glm::vec3 const start = m_OriginLandmark.location;
+                glm::vec3 startToEnd = m_FirstLandmark->location - start;
+                if (m_FlipFirstEdge)
+                {
+                    startToEnd = -startToEnd;
+                }
+
+                osc::ArrowProperties props;
+                props.worldspaceStart = start;
+                props.worldspaceEnd = start + startToEnd;
+                props.tipLength = 2.0f*m_LandmarkRadius;
+                props.neckThickness = 0.25f*m_LandmarkRadius;
+                props.headThickness = 0.5f*m_LandmarkRadius;
+                props.color = {0.0f, 0.0f, 0.0f, 1.0f};
+                props.color[m_EdgeIndexToAxisIndex[0]] = 1.0f;
+
+                osc::DrawArrow(osc::App::singleton<osc::MeshCache>(), props, rv);
+            }
+
+            // draw second landmark
+            if (m_SecondLandmark)
+            {
+                osc::Transform transform{};
+                transform.scale *= m_LandmarkRadius;
+                transform.position = m_SecondLandmark->location;
+
+                osc::SceneDecoration& decoration = rv.emplace_back(*m_State->LandmarkSphere);
+                decoration.transform = transform;
+                decoration.color = {1.0f, 1.0f, 1.0f, 1.0f};
+                if (maybeHoveredLandmark && maybeHoveredLandmark->id == m_SecondLandmark->id)
+                {
+                    // hovering over second landmark (can be deselected)
+                    decoration.flags |= osc::SceneDecorationFlags_IsHovered;
+                }
+                else
+                {
+                    decoration.flags |= osc::SceneDecorationFlags_IsSelected;
+                }
+
+                osc::ArrowProperties props;
+                props.worldspaceStart = m_OriginLandmark.location;
+                props.worldspaceEnd = m_SecondLandmark->location;
+                props.tipLength = 2.0f*m_LandmarkRadius;
+                props.neckThickness = 0.25f*m_LandmarkRadius;
+                props.headThickness = 0.5f*m_LandmarkRadius;
+                props.color = {1.0f, 1.0f, 1.0f, 0.75f};
+                osc::DrawArrow(osc::App::singleton<osc::MeshCache>(), props, rv);
+            }
+
+            // if applicable, draw completed frame
+            //
+            // (assume X is already drawn)
+            if (m_FirstLandmark && m_SecondLandmark)
+            {
+                float const legLen = 2.0f * m_LandmarkRadius;
+                float const legThickness = 0.33f * m_LandmarkRadius;
+
+                glm::vec3 const origin = m_OriginLandmark.location;
+                glm::vec3 firstEdgeDir = glm::normalize(m_FirstLandmark->location - origin);
+                if (m_FlipFirstEdge)
+                {
+                    firstEdgeDir = -firstEdgeDir;
+                }
+                glm::vec3 secondEdgeDir = glm::normalize(m_SecondLandmark->location - origin);
+                if (m_FlipSecondEdge)
+                {
+                    secondEdgeDir = -secondEdgeDir;
+                }
+
+                std::array<glm::vec3, 3> edges{};
+                edges[0] = firstEdgeDir;
+                edges[1] = glm::cross(firstEdgeDir, secondEdgeDir);
+                edges[2] = glm::cross(edges[0], edges[1]);
+
+                // map axes via mapping lut
+                std::array<glm::vec3, 3> axes{};
+                axes[m_EdgeIndexToAxisIndex[0]] = edges[0];
+                axes[m_EdgeIndexToAxisIndex[1]] = edges[1];
+                axes[m_EdgeIndexToAxisIndex[2]] = edges[2];
+
+                for (size_t i = 0; i < axes.size(); ++i)
+                {
+                    glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
+                    color[static_cast<int>(i)] = 1.0f;
+
+                    osc::DrawLineSegment(
+                        osc::App::singleton<osc::MeshCache>(),
+                        {origin, origin + legLen*axes[i]},
+                        color,
+                        legThickness,
+                        rv
+                    );
+                }
+            }
+
+            return rv;
         }
 
         void handleInputAndHoverEvents(
             osc::ImGuiItemHittestResult const& htResult,
-            std::optional<std::string> const& maybeHoveredLandmarkID)
+            std::optional<IDedLocation> const& maybeHoveredLandmark)
         {
             // event: if the user left-clicks while hovering a landmark...
-            if (htResult.isLeftClickReleasedWithoutDragging && maybeHoveredLandmarkID)
+            if (htResult.isLeftClickReleasedWithoutDragging && maybeHoveredLandmark)
             {
-                std::string const& hoveredLandmarkID = *maybeHoveredLandmarkID;
-
-                if (hoveredLandmarkID == m_OriginLandmarkID)
+                if (maybeHoveredLandmark->id == m_OriginLandmark.id)
                 {
                     // ...and the landmark was the origin, do nothing (they can't (de)select the origin).
                     ;
@@ -1102,25 +1213,26 @@ namespace
                 else
                 {
                     // ...else, if the landmark wasn't the origin...
-                    if (hoveredLandmarkID == m_FirstLandmarkID)
+                    if (m_FirstLandmark && m_FirstLandmark->id == maybeHoveredLandmark->id)
                     {
                         // ...and it was the first landmark, deselect it.
-                        m_FirstLandmarkID.reset();
+                        m_FirstLandmark.reset();
                     }
-                    else if (hoveredLandmarkID == m_SecondLandmarkID)
+                    else if (m_SecondLandmark && m_SecondLandmark->id == maybeHoveredLandmark->id)
                     {
                         // ...and it was the second landmark, deselect it.
-                        m_SecondLandmarkID.reset();
+                        m_SecondLandmark.reset();
                     }
-                    else if (!m_FirstLandmarkID)
+                    else if (!m_FirstLandmark)
                     {
                         // ...and the first landmark is assignable, then assign it.
-                        m_FirstLandmarkID = hoveredLandmarkID;
+
+                        m_FirstLandmark = maybeHoveredLandmark;
                     }
-                    else if (!m_SecondLandmarkID)
+                    else if (!m_SecondLandmark)
                     {
                         // ...and the second landmark is assignable, then assign it.
-                        m_SecondLandmarkID = hoveredLandmarkID;
+                        m_SecondLandmark = maybeHoveredLandmark;
                     }
                     else
                     {
@@ -1140,31 +1252,86 @@ namespace
 
             ImGui::Text("select reference points (click again to de-select)");
 
-            // draw cancel X
-            // draw cancel button
-            // draw commit button
-            // draw flip checkbox?
-        }
+            ImGui::Checkbox("Flip First Edge", &m_FlipFirstEdge);
+            ImGui::Checkbox("Flip Plane Normal", &m_FlipSecondEdge);
 
-        glm::vec3 getOriginPos() const
-        {
-            glm::vec3 rv{};
-            for (TPSDocumentLandmarkPair const& p : m_State->EditedDocument->getScratch().landmarkPairs)
+            if (m_FirstLandmark && m_SecondLandmark)
             {
-                if (p.maybeSourceLocation && p.id == m_OriginLandmarkID)
+
+                if (ImGui::Button("Swap Edges"))
                 {
-                    rv = *p.maybeSourceLocation;
-                    break;
+                    std::swap(m_FirstLandmark, m_SecondLandmark);
+                }
+
+                if (ImGui::Button("Finish"))
+                {
+                    osc::log::info("TODO: implement adding the frame to the scene");
                 }
             }
-            return rv;
+
+            if (ImGui::BeginTable("##axismappings", 4, ImGuiTableFlags_SizingStretchSame, {0.15f*ImGui::GetContentRegionAvail().x, 0.0f}))
+            {
+                ImGui::TableSetupColumn("",ImGuiTableColumnFlags_NoSort);
+                ImGui::TableSetupColumn("X");
+                ImGui::TableSetupColumn("Y");
+                ImGui::TableSetupColumn("Z");
+
+                ImGui::TableHeadersRow();
+
+                // each row is an edge
+                for  (int edge = 0; edge < 3; ++edge)
+                {
+                    ImGui::PushID(edge);
+                    int const activeAxis = m_EdgeIndexToAxisIndex[edge];
+
+                    ImGui::TableNextRow();
+
+                    // first column labels which edge the row refers to
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("E%i", edge);
+
+                    // remaining columns are for each axis
+                    for (int axis = 0; axis < 3; ++axis)
+                    {
+                        ImGui::PushID(axis);
+
+                        ImGui::TableSetColumnIndex(axis + 1);
+
+                        bool isActive = axis == activeAxis;
+                        if (ImGui::RadioButton("##AxisSelector", isActive))
+                        {
+                            if (!isActive)
+                            {
+                                auto it = std::find(m_EdgeIndexToAxisIndex.begin(), m_EdgeIndexToAxisIndex.end(), axis);
+                                if (it != m_EdgeIndexToAxisIndex.end())
+                                {
+                                    std::swap(m_EdgeIndexToAxisIndex[edge], *it);
+                                }
+                            }
+                        }
+
+                        ImGui::PopID();
+                    }
+                    ImGui::PopID();
+                }
+
+                ImGui::EndTable();
+            }
+
+            if (ImGui::Button("Cancel"))
+            {
+                requestClose();
+            }
         }
 
         std::shared_ptr<TPSTabSharedState> m_State;
         osc::PolarPerspectiveCamera m_Camera;
-        std::string m_OriginLandmarkID;
-        std::optional<std::string> m_FirstLandmarkID;
-        std::optional<std::string> m_SecondLandmarkID;
+        IDedLocation m_OriginLandmark;
+        std::optional<IDedLocation> m_FirstLandmark;
+        std::optional<IDedLocation> m_SecondLandmark;
+        bool m_FlipFirstEdge;
+        bool m_FlipSecondEdge;
+        std::array<int, 3> m_EdgeIndexToAxisIndex = {0, 1, 2};
         osc::CachedSceneRenderer m_CachedRenderer;
         bool m_WireframeMode;
         float m_LandmarkRadius;
@@ -1346,7 +1513,7 @@ namespace
                     m_Camera,
                     m_WireframeMode,
                     m_LandmarkRadius,
-                    landmarkCollision->MaybeSceneElementID->elementID
+                    IDedLocation{landmarkCollision->MaybeSceneElementID->elementID, landmarkCollision->WorldspaceLocation}
                 );
                 overlay->setRect(htResult.rect);
                 m_MaybeActiveModalOverlay = overlay;

@@ -46,6 +46,7 @@ namespace osc
         glm::vec4 color;
     };
     void DrawArrow(MeshCache&, ArrowProperties const&, std::vector<SceneDecoration>&);
+    void DrawLineSegment(MeshCache&, Segment const&, glm::vec4 const& color, float radius, std::vector<SceneDecoration>&);
 
     // updates the given BVH with the given component decorations
     void UpdateSceneBVH(nonstd::span<SceneDecoration const>, BVH& bvh);
