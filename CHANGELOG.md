@@ -10,7 +10,8 @@ All notable changes to this project will be documented here. The format is based
 - Fixed the navigator panel having a slight background tint (#474)
 - The add component dialogs (e.g. `Add ClutchedPathSpring`) now print any addition errors inside
   the dialog (previously, would print the errors to the log, #476)
-- The 3D scene now has basic support for rendering shadows (#10)
+- The 3D scene now has basic support for rendering shadows (#10), but it must be enabled via a
+  checkbox in a viewport's `Options` menu (it will be default-enabled in 0.4.0)
 
 ## [0.3.1] - UNRELEASED
 
