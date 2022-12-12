@@ -29,6 +29,7 @@
 #include "src/Platform/os.hpp"
 #include "src/Tabs/TabHost.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/CStringView.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/Utils/Perf.hpp"
 #include "src/Utils/UID.hpp"
@@ -673,45 +674,147 @@ namespace
     };
 }
 
-
-// TPSUI panel abstraction
-//
-// declare a datastructure that tells the UI which panels the user can toggle
+// toggleable panels collection
 namespace
 {
-    // (forward decl. for a struct that is injected into all panels in the UI)
-    struct TPSTabSharedState;
+    // flags for the panel (affects things like when it is initialized, whether the user
+    // will be presented with the option to toggle it, etc.)
+    using ToggleablePanelFlags = int;
+    enum ToggleablePanelFlags_ {
+        ToggleablePanelFlags_None = 0,
+        ToggleablePanelFlags_IsEnabledByDefault = 1<<0,
+        ToggleablePanelFlags_Default = ToggleablePanelFlags_IsEnabledByDefault,
+    };
 
-    // a typedef for a function that can construct a UI panel
-    //
-    // (i.e. this is what's called when a user turns a panel on)
-    using TPSUIPanelConstructor = std::function<std::shared_ptr<osc::Panel>(std::shared_ptr<TPSTabSharedState>)>;
-
-    // a panel that a user can toggle at runtime
-    //
-    // (can be initially toggled off. In which case, `Instance == nullopt`)
-    struct TPSUIPanelInfo final {
-
-        TPSUIPanelInfo(
+    // a panel that the user may be able to toggle at runtime
+    class ToggleablePanel final {
+    public:
+        ToggleablePanel(
             std::string_view name_,
-            TPSUIPanelConstructor constructor_,
-            bool isEnabledByDefault_) :
+            std::function<std::shared_ptr<osc::Panel>()> constructorFunc_,
+            ToggleablePanelFlags flags_ = ToggleablePanelFlags_Default) :
 
-            Name{std::move(name_)},
-            ConstructorFunc{std::move(constructor_)},
-            IsEnabledByDefault{std::move(isEnabledByDefault_)},
-            Instance{std::nullopt}
+            m_Name{std::move(name_)},
+            m_ConstructorFunc{std::move(constructorFunc_)},
+            m_Flags{std::move(flags_)},
+            m_Instance{std::nullopt}
         {
         }
 
-        std::string Name;
-        TPSUIPanelConstructor ConstructorFunc;
-        bool IsEnabledByDefault;
-        std::optional<std::shared_ptr<osc::Panel>> Instance;
+        osc::CStringView getName() const
+        {
+            return m_Name;
+        }
+
+        bool isEnabledByDefault() const
+        {
+            return m_Flags & ToggleablePanelFlags_IsEnabledByDefault;
+        }
+
+        bool isActivated() const
+        {
+            return m_Instance.has_value();
+        }
+
+        void activate()
+        {
+            if (!m_Instance)
+            {
+                m_Instance = m_ConstructorFunc();
+            }
+        }
+
+        void deactivate()
+        {
+            m_Instance.reset();
+        }
+
+        void toggleActivation()
+        {
+            if (m_Instance && (*m_Instance)->isOpen())
+            {
+                m_Instance.reset();
+            }
+            else
+            {
+                m_Instance = m_ConstructorFunc();
+                (*m_Instance)->open();
+            }
+        }
+
+        void draw()
+        {
+            if (m_Instance)
+            {
+                (*m_Instance)->draw();
+            }
+        }
+
+        // clear any instance data if the panel has been closed
+        void garbageCollect()
+        {
+            if (m_Instance && !(*m_Instance)->isOpen())
+            {
+                m_Instance.reset();
+            }
+        }
+
+    private:
+        std::string m_Name;
+        std::function<std::shared_ptr<osc::Panel>()> m_ConstructorFunc;
+        ToggleablePanelFlags m_Flags;
+        std::optional<std::shared_ptr<osc::Panel>> m_Instance;
     };
 
-    // returns all available user-toggleable panels (forward decl.)
-    std::vector<TPSUIPanelInfo> GetAvailablePanels();
+    // a collection of panels that the user may toggle at runtime
+    class ToggleablePanels final {
+    public:
+
+        nonstd::span<ToggleablePanel> upd()
+        {
+            return m_Panels;
+        }
+
+        void push_back(ToggleablePanel&& panel)
+        {
+            m_Panels.push_back(std::move(panel));
+        }
+
+        void activateAllDefaultOpenPanels()
+        {
+            // initialize default-open tabs
+            for (ToggleablePanel& panel : m_Panels)
+            {
+                if (panel.isEnabledByDefault())
+                {
+                    panel.activate();
+                }
+            }
+        }
+
+        void garbageCollectDeactivatedPanels()
+        {
+            // garbage collect closed-panel instance data
+            for (ToggleablePanel& panel : m_Panels)
+            {
+                panel.garbageCollect();
+            }
+        }
+
+        void drawAllActivatedPanels()
+        {
+            for (ToggleablePanel& panel : m_Panels)
+            {
+                if (panel.isActivated())
+                {
+                    panel.draw();
+                }
+            }
+        }
+
+    private:
+        std::vector<ToggleablePanel> m_Panels;
+    };
 }
 
 // TPSUI top-level state
@@ -814,7 +917,7 @@ namespace
         std::optional<TPSUIViewportHover> CurrentHover;
 
         // available/active panels that the user can toggle via the `window` menu
-        std::vector<TPSUIPanelInfo> Panels = GetAvailablePanels();
+        ToggleablePanels Panels;
 
         // currently active tab-wide popups
         osc::Popups ActivePopups;
@@ -1202,20 +1305,12 @@ namespace
     private:
         void drawContent()
         {
-            for (TPSUIPanelInfo& panel : m_State->Panels)
+            for (ToggleablePanel& panel : m_State->Panels.upd())
             {
-                bool selected = panel.Instance.has_value();
-                if (ImGui::MenuItem(panel.Name.c_str(), nullptr, &selected))
+                bool activated = panel.isActivated();
+                if (ImGui::MenuItem(panel.getName().c_str(), nullptr, &activated))
                 {
-                    if (panel.Instance.has_value() && (*panel.Instance)->isOpen())
-                    {
-                        panel.Instance.reset();
-                    }
-                    else
-                    {
-                        panel.Instance = panel.ConstructorFunc(m_State);
-                        (*panel.Instance)->open();
-                    }
+                    panel.toggleActivation();
                 }
             }
         }
@@ -2361,59 +2456,47 @@ namespace
         glm::vec2 m_OverlayPadding = {10.0f, 10.0f};
     };
 
-    std::vector<TPSUIPanelInfo> GetAvailablePanels()
+    // pushes all available panels the TPS3D tab can render into the out param
+    void PushBackAvailablePanels(std::shared_ptr<TPSTabSharedState> state, ToggleablePanels& out)
     {
-        return
+        out.push_back(ToggleablePanel
         {
-            {
-                "Source Mesh",
-                [](std::shared_ptr<TPSTabSharedState> st)
-                {
-                    return std::make_shared<TPS3DInputPanel>("Source Mesh", std::move(st), TPSDocumentInputIdentifier::Source);
-                },
-                true,
-            },
-            {
-                "Destination Mesh",
-                [](std::shared_ptr<TPSTabSharedState> st)
-                {
-                    return std::make_shared<TPS3DInputPanel>("Destination Mesh", std::move(st), TPSDocumentInputIdentifier::Destination);
-                },
-                true,
-            },
-            {
-                "Result",
-                [](std::shared_ptr<TPSTabSharedState> st)
-                {
-                    return std::make_shared<TPS3DResultPanel>("Result", std::move(st));
-                },
-                true
-            },
-            {
-                "History",
-                [](std::shared_ptr<TPSTabSharedState> st)
-                {
-                    return std::make_shared<osc::UndoRedoPanel>("History", st->EditedDocument);
-                },
-                false,
-            },
-            {
-                "Log",
-                [](std::shared_ptr<TPSTabSharedState> st)
-                {
-                    return std::make_shared<osc::LogViewerPanel>("Log");
-                },
-                false,
-            },
-            {
-                "Performance",
-                [](std::shared_ptr<TPSTabSharedState> st)
-                {
-                    return std::make_shared<osc::PerfPanel>("Performance");
-                },
-                false,
-            },
-        };
+            "Source Mesh",
+            [state]() { return std::make_shared<TPS3DInputPanel>("Source Mesh", state, TPSDocumentInputIdentifier::Source); },
+        });
+
+        out.push_back(ToggleablePanel
+        {
+            "Destination Mesh",
+            [state]() { return std::make_shared<TPS3DInputPanel>("Destination Mesh", state, TPSDocumentInputIdentifier::Destination); },
+        });
+
+        out.push_back(ToggleablePanel
+        {
+            "Result",
+            [state]() { return std::make_shared<TPS3DResultPanel>("Result", state); },
+        });
+
+        out.push_back(ToggleablePanel
+        {
+            "History",
+            [state]() { return std::make_shared<osc::UndoRedoPanel>("History", state->EditedDocument); },
+            ToggleablePanelFlags_Default & ~ToggleablePanelFlags_IsEnabledByDefault,
+        });
+
+        out.push_back(ToggleablePanel
+        {
+            "Log",
+            []() { return std::make_shared<osc::LogViewerPanel>("Log"); },
+            ToggleablePanelFlags_Default & ~ToggleablePanelFlags_IsEnabledByDefault,
+        });
+
+        out.push_back(ToggleablePanel
+        {
+            "Performance",
+            []() { return std::make_shared<osc::PerfPanel>("Performance"); },
+            ToggleablePanelFlags_Default & ~ToggleablePanelFlags_IsEnabledByDefault,
+        });
     }
 }
 
@@ -2426,15 +2509,9 @@ public:
         OSC_ASSERT(m_Parent != nullptr);
         OSC_ASSERT(m_State != nullptr && "the tab state should be initialized by this point");
 
-        // initialize default-open tabs
-        for (TPSUIPanelInfo& panel : m_State->Panels)
-        {
-            if (panel.IsEnabledByDefault)
-            {
-                panel.Instance = panel.ConstructorFunc(m_State);
-                (*panel.Instance)->open();
-            }
-        }
+        // initialize panels
+        PushBackAvailablePanels(m_State, m_State->Panels);
+        m_State->Panels.activateAllDefaultOpenPanels();
     }
 
     UID getID() const
@@ -2472,14 +2549,8 @@ public:
         // re-perform hover test each frame
         m_State->CurrentHover.reset();
 
-        // garbage collect closed-panel instance data
-        for (TPSUIPanelInfo& panel : m_State->Panels)
-        {
-            if (panel.Instance && !(*panel.Instance)->isOpen())
-            {
-                panel.Instance.reset();
-            }
-        }
+        // garbage collect panel data
+        m_State->Panels.garbageCollectDeactivatedPanels();
     }
 
     void onDrawMainMenu()
@@ -2492,13 +2563,7 @@ public:
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         m_TopToolbar.draw();
-        for (TPSUIPanelInfo& panel : m_State->Panels)
-        {
-            if (panel.Instance)
-            {
-                (*panel.Instance)->draw();
-            }
-        }
+        m_State->Panels.drawAllActivatedPanels();
         m_StatusBar.draw();
 
         // draw active popups over the UI
