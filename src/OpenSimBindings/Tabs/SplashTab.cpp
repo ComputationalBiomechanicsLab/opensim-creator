@@ -101,7 +101,7 @@ public:
         if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".osim"))
         {
             // if the user drops an osim file on this tab then it should be loaded
-            UID tabID = m_Parent->addTab<LoadingTab>(m_Parent, e.drop.file);
+            UID const tabID = m_Parent->addTab<LoadingTab>(m_Parent, e.drop.file);
             m_Parent->selectTab(tabID);
             return true;
         }
@@ -120,14 +120,18 @@ public:
 
     void onDraw()
     {
-        if (Area(osc::GetMainViewportWorkspaceScreenRect()) > 0.0f)
+        if (Area(osc::GetMainViewportWorkspaceScreenRect()) <= 0.0f)
         {
-            drawBackground();
-            drawLogo();
-            drawAttributationLogos();
-            drawVersionInfo();
-            drawMenu();
+            // edge-case: splash screen is the first rendered frame and ImGui
+            //            is being unusual about it
+            return;
         }
+
+        drawBackground();
+        drawLogo();
+        drawAttributationLogos();
+        drawVersionInfo();
+        drawMenu();
     }
 
 private:
@@ -158,7 +162,7 @@ private:
 
     void drawBackground()
     {
-        Rect screenRect = osc::GetMainViewportWorkspaceScreenRect();
+        Rect const screenRect = osc::GetMainViewportWorkspaceScreenRect();
 
         ImGui::SetNextWindowPos(screenRect.p1);
         ImGui::SetNextWindowSize(Dimensions(screenRect));
@@ -178,7 +182,7 @@ private:
             m_LastSceneRendererParams = params;
         }
 
-        osc::DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture(), m_SceneRenderer.getDimensions());
+        osc::DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture());
 
         ImGui::End();
     }
@@ -196,10 +200,10 @@ private:
     void drawMenu()
     {
         {
-            Rect mmr = calcMainMenuRect();
-            glm::vec2 mmrDims = Dimensions(mmr);
+            Rect const mmr = calcMainMenuRect();
+            glm::vec2 const mmrDims = Dimensions(mmr);
             ImGui::SetNextWindowPos(mmr.p1);
-            ImGui::SetNextWindowSize(ImVec2(Dimensions(mmr).x, -1));
+            ImGui::SetNextWindowSize({Dimensions(mmr).x, -1.0f});
             ImGui::SetNextWindowSizeConstraints(Dimensions(mmr), Dimensions(mmr));
         }
 
@@ -222,7 +226,7 @@ private:
                 }
                 if (ImGui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
                 {
-                    UID tabID = m_Parent->addTab<MeshImporterTab>(m_Parent);
+                    UID const tabID = m_Parent->addTab<MeshImporterTab>(m_Parent);
                     m_Parent->selectTab(tabID);
                 }
                 osc::App::upd().addFrameAnnotation("SplashTab/ImportMeshesMenuItem", osc::GetItemRect());
@@ -238,7 +242,7 @@ private:
 
             // de-dupe imgui IDs because these lists may contain duplicate
             // names
-            int id = 0;
+            int imguiID = 0;
 
             if (!m_MainMenuFileTab.recentlyOpenedFiles.empty())
             {
@@ -247,12 +251,12 @@ private:
                 {
                     RecentFile const& rf = *it;
 
-                    std::string label = std::string{ICON_FA_FILE} + " " + rf.path.filename().string();
+                    std::string const label = std::string{ICON_FA_FILE} + " " + rf.path.filename().string();
 
-                    ImGui::PushID(++id);
+                    ImGui::PushID(++imguiID);
                     if (ImGui::MenuItem(label.c_str()))
                     {
-                        UID tabID = m_Parent->addTab<LoadingTab>(m_Parent, rf.path);
+                        UID const tabID = m_Parent->addTab<LoadingTab>(m_Parent, rf.path);
                         m_Parent->selectTab(tabID);
                     }
                     ImGui::PopID();
@@ -277,13 +281,12 @@ private:
 
                 for (std::filesystem::path const& ex : m_MainMenuFileTab.exampleOsimFiles)
                 {
-                    std::string label = std::string{ICON_FA_FILE} + " " + ex.filename().string();
+                    std::string const label = std::string{ICON_FA_FILE} + " " + ex.filename().string();
 
-                    ImGui::PushID(++id);
+                    ImGui::PushID(++imguiID);
                     if (ImGui::MenuItem(label.c_str()))
                     {
-                        UID tabID = m_Parent->addTab<LoadingTab>(m_Parent, ex);
-                        m_Parent->selectTab(tabID);
+                        m_Parent->selectTab(m_Parent->addTab<LoadingTab>(m_Parent, ex));
                     }
                     ImGui::PopID();
                 }
@@ -297,7 +300,7 @@ private:
 
     void drawAttributationLogos()
     {
-        Rect viewportRect = osc::GetMainViewportWorkspaceScreenRect();
+        Rect const viewportRect = osc::GetMainViewportWorkspaceScreenRect();
         glm::vec2 loc = viewportRect.p2 - m_AttributationLogoDims - m_AttributationLogoPadding;
 
         ImGui::SetNextWindowPos(loc);
@@ -315,17 +318,19 @@ private:
 
     void drawVersionInfo()
     {
-        Rect tabRect = osc::GetMainViewportWorkspaceScreenRect();
-        float h = ImGui::GetTextLineHeightWithSpacing();
-        constexpr float padding = 5.0f;
+        Rect const tabRect = osc::GetMainViewportWorkspaceScreenRect();
+        float const h = ImGui::GetTextLineHeightWithSpacing();
+        float constexpr padding = 5.0f;
 
-        glm::vec2 pos{};
-        pos.x = tabRect.p1.x + padding;
-        pos.y = tabRect.p2.y - h - padding;
+        glm::vec2 const pos
+        {
+            tabRect.p1.x + padding,
+            tabRect.p2.y - h - padding,
+        };
 
-        ImDrawList* dl = ImGui::GetForegroundDrawList();
-        ImU32 color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
-        char const* content = "OpenSim Creator v" OSC_VERSION_STRING " (build " OSC_BUILD_ID ")";
+        ImDrawList* const dl = ImGui::GetForegroundDrawList();
+        ImU32 const color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
+        char const* const content = "OpenSim Creator v" OSC_VERSION_STRING " (build " OSC_BUILD_ID ")";
         dl->AddText(pos, color, content);
     }
 

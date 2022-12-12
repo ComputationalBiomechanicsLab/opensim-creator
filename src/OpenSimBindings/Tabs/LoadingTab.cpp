@@ -63,7 +63,7 @@ public:
 
     void onTick()
     {
-        float dt = osc::App::get().getDeltaSinceLastFrame().count();
+        float const dt = osc::App::get().getDeltaSinceLastFrame().count();
 
         // tick the progress bar up a little bit
         m_LoadingProgress += (dt * (1.0f - m_LoadingProgress))/2.0f;
@@ -102,8 +102,7 @@ public:
             // there is an existing editor state
             //
             // recycle it so that users can keep their running sims, local edits, etc.
-            UID tabID = m_Parent->addTab<ModelEditorTab>(m_Parent, std::move(result));
-            m_Parent->selectTab(tabID);
+            m_Parent->selectTab(m_Parent->addTab<ModelEditorTab>(m_Parent, std::move(result)));
             m_Parent->closeTab(m_ID);
         }
     }
@@ -114,16 +113,16 @@ public:
 
     void onDraw()
     {
-        constexpr glm::vec2 menu_dims = {512.0f, 512.0f};
+        glm::vec2 constexpr menuDims = {512.0f, 512.0f};
 
-        Rect tabRect = osc::GetMainViewportWorkspaceScreenRect();
-        glm::vec2 window_dims = osc::Dimensions(tabRect);
+        Rect const tabRect = osc::GetMainViewportWorkspaceScreenRect();
+        glm::vec2 const windowDims = osc::Dimensions(tabRect);
 
         // center the menu
         {
-            glm::vec2 menu_pos = (window_dims - menu_dims) / 2.0f;
-            ImGui::SetNextWindowPos(menu_pos);
-            ImGui::SetNextWindowSize(ImVec2(menu_dims.x, -1));
+            glm::vec2 const menuTopLeft = (windowDims - menuDims) / 2.0f;
+            ImGui::SetNextWindowPos(menuTopLeft);
+            ImGui::SetNextWindowSize({menuDims.x, -1.0f});
         }
 
         if (m_LoadingErrorMsg.empty())
@@ -146,8 +145,7 @@ public:
 
                 if (ImGui::Button("try again"))
                 {
-                    UID tabID = m_Parent->addTab<LoadingTab>(m_Parent, m_OsimPath);
-                    m_Parent->selectTab(tabID);
+                    m_Parent->selectTab(m_Parent->addTab<LoadingTab>(m_Parent, m_OsimPath));
                     m_Parent->closeTab(m_ID);
                 }
             }
@@ -181,7 +179,7 @@ private:
 };
 
 
-// public API
+// public API (PIMPL)
 
 osc::LoadingTab::LoadingTab(MainUIStateAPI* parent, std::filesystem::path path) :
     m_Impl{std::make_unique<Impl>(std::move(parent), std::move(path))}

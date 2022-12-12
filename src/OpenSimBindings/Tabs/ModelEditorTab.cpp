@@ -726,7 +726,7 @@ private:
 };
 
 
-// public API
+// public API (PIMPL)
 
 osc::ModelEditorTab::ModelEditorTab(
     MainUIStateAPI* parent,
