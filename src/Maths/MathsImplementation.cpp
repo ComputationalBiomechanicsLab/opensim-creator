@@ -596,7 +596,7 @@ osc::Line osc::PolarPerspectiveCamera::unprojectTopLeftPosToWorldRay(glm::vec2 p
     glm::vec4 lineOriginView = glm::inverse(projMtx) * lineOriginNDC;
     lineOriginView /= lineOriginView.w;  // perspective divide
 
-                                         // location of mouse in worldspace
+    // location of mouse in worldspace
     glm::vec3 lineOriginWorld = glm::vec3{glm::inverse(viewMtx) * lineOriginView};
 
     // direction vector from camera to mouse location (i.e. the projection)

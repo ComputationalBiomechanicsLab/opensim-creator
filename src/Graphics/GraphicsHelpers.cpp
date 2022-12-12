@@ -9,8 +9,11 @@
 #include "src/Maths/BVH.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/MathHelpers.hpp"
+#include "src/Maths/PolarPerspectiveCamera.hpp"
+#include "src/Maths/Rect.hpp"
 #include "src/Maths/Segment.hpp"
 #include "src/Maths/Tetrahedron.hpp"
+#include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
 
 #include <glm/mat4x4.hpp>
@@ -240,6 +243,24 @@ std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(Mesh cons
     }
 }
 
+std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(
+    PolarPerspectiveCamera const& camera,
+    Mesh const& mesh,
+    Rect const& renderScreenRect,
+    glm::vec2 mouseScreenPos)
+{
+    osc::Line const ray = camera.unprojectTopLeftPosToWorldRay(
+        mouseScreenPos - renderScreenRect.p1,
+        osc::Dimensions(renderScreenRect)
+    );
+
+    return osc::GetClosestWorldspaceRayCollision(
+        mesh,
+        osc::Transform{},
+        ray
+    );
+}
+
 glm::vec3 osc::MassCenter(Mesh const& m)
 {
     // hastily implemented from: http://forums.cgsociety.org/t/how-to-calculate-center-of-mass-for-triangular-mesh/1309966
@@ -331,4 +352,19 @@ void osc::EmplaceOrReformat(std::optional<RenderTexture>& t, RenderTextureDescri
 osc::AABB osc::GetWorldspaceAABB(SceneDecoration const& cd)
 {
     return TransformAABB(cd.mesh->getBounds(), cd.transform);
+}
+
+osc::SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
+    PolarPerspectiveCamera const& camera,
+    glm::vec2 renderDims)
+{
+    osc::SceneRendererParams rv;
+    rv.drawFloor = false;
+    rv.backgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
+    rv.dimensions = renderDims;
+    rv.viewMatrix = camera.getViewMtx();
+    rv.projectionMatrix = camera.getProjMtx(osc::AspectRatio(renderDims));
+    rv.samples = osc::App::get().getMSXAASamplesRecommended();
+    rv.lightDirection = osc::RecommendedLightDirection(camera);
+    return rv;
 }

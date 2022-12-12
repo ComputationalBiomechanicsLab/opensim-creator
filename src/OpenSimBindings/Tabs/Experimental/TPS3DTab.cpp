@@ -76,7 +76,7 @@
 #include <variant>
 #include <vector>
 
-// generic graphics algorithms
+// generic graphics algorithms/constants
 //
 // (these have nothing to do with TPS, but are used to help render the UI)
 namespace
@@ -84,41 +84,6 @@ namespace
     static constexpr glm::vec2 c_OverlayPadding = {10.0f, 10.0f};
     static constexpr glm::vec4 c_PairedLandmarkColor = {0.0f, 1.0f, 0.0f, 1.0f};
     static constexpr glm::vec4 c_UnpairedLandmarkColor = {1.0f, 0.0f, 0.0f, 1.0f};
-
-    // returns the 3D position of the intersection between the user's mouse and the mesh, if any
-    std::optional<osc::RayCollision> RaycastMesh(
-        osc::PolarPerspectiveCamera const& camera,
-        osc::Mesh const& mesh,
-        osc::Rect const& renderRect,
-        glm::vec2 mousePos)
-    {
-        osc::Line const ray = camera.unprojectTopLeftPosToWorldRay(
-            mousePos - renderRect.p1,
-            osc::Dimensions(renderRect)
-        );
-
-        return osc::GetClosestWorldspaceRayCollision(
-            mesh,
-            osc::Transform{},
-            ray
-        );
-    }
-
-    // returns scene rendering parameters for an generic panel
-    osc::SceneRendererParams CalcRenderParams(
-        osc::PolarPerspectiveCamera const& camera,
-        glm::vec2 renderDims)
-    {
-        osc::SceneRendererParams rv;
-        rv.drawFloor = false;
-        rv.backgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
-        rv.dimensions = renderDims;
-        rv.viewMatrix = camera.getViewMtx();
-        rv.projectionMatrix = camera.getProjMtx(osc::AspectRatio(renderDims));
-        rv.samples = osc::App::get().getMSXAASamplesRecommended();
-        rv.lightDirection = osc::RecommendedLightDirection(camera);
-        return rv;
-    }
 }
 
 // TPS document datastructure
@@ -1329,7 +1294,7 @@ namespace
             glm::vec2 renderDimensions,
             std::optional<IDedLocation> const& maybeHoveredLandmark)
         {
-            osc::SceneRendererParams const params = CalcRenderParams(m_Camera, renderDimensions);
+            osc::SceneRendererParams const params = CalcStandardDarkSceneRenderParams(m_Camera, renderDimensions);
             std::vector<osc::SceneDecoration> const decorations = generateDecorations(maybeHoveredLandmark);
             return m_CachedRenderer.draw(decorations, params);
         }
@@ -2029,7 +1994,7 @@ namespace
             std::optional<osc::RayCollision> const& maybeMeshCollision,
             std::optional<TPSUIViewportHover> const& maybeLandmarkCollision)
         {
-            osc::SceneRendererParams const params = CalcRenderParams(m_Camera, dims);
+            osc::SceneRendererParams const params = CalcStandardDarkSceneRenderParams(m_Camera, dims);
             std::vector<osc::SceneDecoration> const decorations = generateDecorations(maybeMeshCollision, maybeLandmarkCollision);
             return m_CachedRenderer.draw(decorations, params);
         }
@@ -2267,6 +2232,7 @@ namespace
             char const* const label = "blending factor";
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - m_OverlayPadding.x);
             float factor = GetScratch(*m_State).blendingFactor;
+
             if (ImGui::SliderFloat(label, &factor, 0.0f, 1.0f))
             {
                 ActionSetBlendFactorWithoutSaving(*m_State->EditedDocument, factor);
@@ -2298,7 +2264,7 @@ namespace
         osc::RenderTexture& renderScene(glm::vec2 dims)
         {
             std::vector<osc::SceneDecoration> const decorations = generateDecorations();
-            osc::SceneRendererParams const params = CalcRenderParams(m_Camera, dims);
+            osc::SceneRendererParams const params = CalcStandardDarkSceneRenderParams(m_Camera, dims);
             return m_CachedRenderer.draw(decorations, params);
         }
 

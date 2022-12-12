@@ -4,9 +4,11 @@
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/RenderTexture.hpp"
 #include "src/Graphics/SceneCollision.hpp"
+#include "src/Graphics/SceneRendererParams.hpp"
 #include "src/Graphics/Texture2D.hpp"
 #include "src/Maths/RayCollision.hpp"
 
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 
@@ -17,11 +19,13 @@
 namespace osc { struct AABB; }
 namespace osc { struct BVH; }
 namespace osc { struct Line; }
+namespace osc { struct Rect; }
 namespace osc { struct Segment; }
 namespace osc { struct Transform; }
 namespace osc { class Config; }
 namespace osc { class Mesh; }
 namespace osc { class MeshCache; }
+namespace osc { class PolarPerspectiveCamera; }
 namespace osc { class SceneDecoration; }
 namespace osc { class ShaderCache; }
 
@@ -65,6 +69,15 @@ namespace osc
         Line const& worldspaceRay
     );
 
+    // returns closest ray-triangle collision in worldspace for a given mouse position
+    // within the given render rectangle
+    std::optional<RayCollision> GetClosestWorldspaceRayCollision(
+        PolarPerspectiveCamera const&,
+        Mesh const&,
+        Rect const& renderScreenRect,
+        glm::vec2 mouseScreenPos
+    );
+
     // returns the "mass center" of a mesh
     //
     // assumes:
@@ -86,4 +99,10 @@ namespace osc
     void EmplaceOrReformat(std::optional<RenderTexture>& t, RenderTextureDescriptor const& desc);
 
     AABB GetWorldspaceAABB(SceneDecoration const&);
+
+    // returns scene rendering parameters for an generic panel
+    SceneRendererParams CalcStandardDarkSceneRenderParams(
+        PolarPerspectiveCamera const&,
+        glm::vec2 renderDims
+    );
 }
