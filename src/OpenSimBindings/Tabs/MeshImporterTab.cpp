@@ -5917,7 +5917,12 @@ public:
         // draw performance panel (if enabled)
         if (m_Shared->m_PanelStates[SharedData::PanelIndex_Performance])
         {
+            m_Shared->m_PerfPanel.open();
             m_Shared->m_PerfPanel.draw();
+            if (!m_Shared->m_PerfPanel.isOpen())
+            {
+                m_Shared->m_PanelStates[SharedData::PanelIndex_Performance] = false;
+            }
         }
 
         // draw contextual 3D modal (if there is one), else: draw standard 3D viewer
