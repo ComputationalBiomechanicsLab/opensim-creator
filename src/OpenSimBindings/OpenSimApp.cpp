@@ -5,6 +5,7 @@
 #include "src/Platform/os.hpp"
 #include "src/Tabs/TabRegistry.hpp"
 
+#include "src/OpenSimBindings/Tabs/Experimental/FrameDefinitionTab.hpp"
 #include "src/OpenSimBindings/Tabs/Experimental/MeshHittestTab.hpp"
 #include "src/OpenSimBindings/Tabs/Experimental/ModelWarpingTab.hpp"
 #include "src/OpenSimBindings/Tabs/Experimental/PreviewExperimentalDataTab.hpp"
@@ -136,6 +137,7 @@ static bool InitializeOpenSim(osc::Config const& config)
     osc::RegisterTab("Renderer/GeometryShader", [](osc::TabHost* h) -> std::unique_ptr<osc::Tab> { return std::make_unique<osc::RendererGeometryShaderTab>(h); });
     osc::RegisterTab("Warping/TPS2D",  [](osc::TabHost* h) -> std::unique_ptr<osc::Tab> { return std::make_unique<osc::TPS2DTab>(h); });
     osc::RegisterTab("Warping/TPS3D",  [](osc::TabHost* h) -> std::unique_ptr<osc::Tab> { return std::make_unique<osc::TPS3DTab>(h); });
+    osc::RegisterTab("Warping/FrameDefinition", [](osc::TabHost* h) -> std::unique_ptr<osc::Tab> { return std::make_unique<osc::FrameDefinitionTab>(h); });
     osc::RegisterTab("Warping/OpenSim", [](osc::TabHost* h) -> std::unique_ptr<osc::Tab> { return std::make_unique<osc::ModelWarpingTab>(h); });
 
     return true;
