@@ -18,17 +18,9 @@ namespace osc
     // represents a renderable decoration for a component in a model
     class SceneDecoration final {
     public:
-        Mesh mesh;
-        Transform transform;
-        glm::vec4 color;
-        std::string id;
-        SceneDecorationFlags flags = SceneDecorationFlags_None;
-        std::optional<Material> maybeMaterial = std::nullopt;
-        std::optional<MaterialPropertyBlock> maybeMaterialProps = std::nullopt;
-
         explicit SceneDecoration(
-            Mesh const& mesh_
-        ) :
+            Mesh const& mesh_) :
+
             mesh{mesh_},
             transform{},
             color{1.0f, 1.0f, 1.0f, 1.0f}
@@ -38,8 +30,8 @@ namespace osc
         SceneDecoration(
             Mesh const& mesh_,
             Transform const& transform_,
-            glm::vec4 const& color_
-        ) :
+            glm::vec4 const& color_) :
+
             mesh{mesh_},
             transform{transform_},
             color{color_}
@@ -51,8 +43,8 @@ namespace osc
             Transform const& transform_,
             glm::vec4 const& color_,
             std::string id_,
-            SceneDecorationFlags flags_
-        ) :
+            SceneDecorationFlags flags_) :
+
             mesh{mesh_},
             transform{transform_},
             color{color_},
@@ -79,6 +71,14 @@ namespace osc
             maybeMaterialProps{std::move(maybeProps_)}
         {
         }
+
+        Mesh mesh;
+        Transform transform;
+        glm::vec4 color;
+        std::string id;
+        SceneDecorationFlags flags = SceneDecorationFlags_None;
+        std::optional<Material> maybeMaterial = std::nullopt;
+        std::optional<MaterialPropertyBlock> maybeMaterialProps = std::nullopt;
     };
 
     bool operator==(SceneDecoration const&, SceneDecoration const&) noexcept;
