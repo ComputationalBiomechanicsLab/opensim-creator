@@ -58,7 +58,7 @@ namespace osc
         DecorationConsumer& operator=(DecorationConsumer&&) noexcept = delete;
         virtual ~DecorationConsumer() noexcept = default;
 
-        virtual void operator()(std::shared_ptr<Mesh const> const&, Transform const&, glm::vec4 const& color) = 0;
+        virtual void operator()(Mesh const&, Transform const&, glm::vec4 const& color) = 0;
     };
 
     // consumes SimTK::DecorativeGeometry and emits appropriate decorations back to

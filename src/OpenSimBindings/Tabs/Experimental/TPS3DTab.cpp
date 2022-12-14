@@ -733,7 +733,7 @@ namespace
         osc::Material WireframeMaterial = osc::CreateWireframeOverlayMaterial(osc::App::config(), osc::App::singleton<osc::ShaderCache>());
 
         // shared sphere mesh (used by rendering code)
-        std::shared_ptr<osc::Mesh const> LandmarkSphere = osc::App::singleton<osc::MeshCache>().getSphereMesh();
+        osc::Mesh LandmarkSphere = osc::App::singleton<osc::MeshCache>().getSphereMesh();
 
         // current user selection
         TPSTabSelection UserSelection;
@@ -1335,7 +1335,7 @@ namespace
                 transform.scale *= m_LandmarkRadius;
                 transform.position = *p.maybeSourceLocation;
 
-                osc::SceneDecoration& decoration = rv.emplace_back(*m_State->LandmarkSphere);
+                osc::SceneDecoration& decoration = rv.emplace_back(m_State->LandmarkSphere);
                 decoration.transform = transform;
                 if (maybeHoveredLandmark && maybeHoveredLandmark->id == p.id && !(m_FirstLandmark && m_SecondLandmark))
                 {
@@ -1379,7 +1379,7 @@ namespace
                 transform.scale *= m_LandmarkRadius;
                 transform.position = m_OriginLandmark.location;
 
-                osc::SceneDecoration& decoration = rv.emplace_back(*m_State->LandmarkSphere);
+                osc::SceneDecoration& decoration = rv.emplace_back(m_State->LandmarkSphere);
                 decoration.transform = transform;
                 decoration.color = {1.0f, 1.0f, 1.0f, 1.0f};
             }
@@ -1391,7 +1391,7 @@ namespace
                 transform.scale *= m_LandmarkRadius;
                 transform.position = m_FirstLandmark->location;
 
-                osc::SceneDecoration& decoration = rv.emplace_back(*m_State->LandmarkSphere);
+                osc::SceneDecoration& decoration = rv.emplace_back(m_State->LandmarkSphere);
                 decoration.transform = transform;
                 decoration.color = {1.0f, 1.0f, 1.0f, 1.0f};
                 if (maybeHoveredLandmark && maybeHoveredLandmark->id == m_FirstLandmark->id)
@@ -1430,7 +1430,7 @@ namespace
                 transform.scale *= m_LandmarkRadius;
                 transform.position = m_SecondLandmark->location;
 
-                osc::SceneDecoration& decoration = rv.emplace_back(*m_State->LandmarkSphere);
+                osc::SceneDecoration& decoration = rv.emplace_back(m_State->LandmarkSphere);
                 decoration.transform = transform;
                 decoration.color = {1.0f, 1.0f, 1.0f, 1.0f};
                 if (maybeHoveredLandmark && maybeHoveredLandmark->id == m_SecondLandmark->id)

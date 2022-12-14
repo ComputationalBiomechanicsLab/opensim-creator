@@ -41,14 +41,14 @@ namespace
 {
     struct DAEGeometry final {
 
-        DAEGeometry(std::string geometryID_, std::shared_ptr<osc::Mesh const> mesh_) :
+        DAEGeometry(std::string geometryID_, osc::Mesh const& mesh_) :
             GeometryID{std::move(geometryID_)},
             Mesh{std::move(mesh_)}
         {
         }
 
         std::string GeometryID;
-        std::shared_ptr<osc::Mesh const> Mesh;
+        osc::Mesh Mesh;
     };
 
     struct DAEMaterial final {
@@ -98,13 +98,13 @@ namespace
 
         int64_t latestMesh = 0;
         int64_t latestMaterial = 0;
-        std::unordered_map<std::shared_ptr<osc::Mesh const>, std::string> mesh2id;
+        std::unordered_map<osc::Mesh, std::string> mesh2id;
         std::unordered_map<glm::vec4, std::string> color2materialid;
         int64_t latestInstance = 0;
 
         for (osc::SceneDecoration const& el : els)
         {
-            if (el.mesh->getTopography() != osc::MeshTopography::Triangles)
+            if (el.mesh.getTopography() != osc::MeshTopography::Triangles)
             {
                 continue;  // unsupported
             }
@@ -276,7 +276,7 @@ R"(  <asset>
 
     void WriteMeshPositionsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        nonstd::span<glm::vec3 const> const vals = geom.Mesh->getVerts();
+        nonstd::span<glm::vec3 const> const vals = geom.Mesh.getVerts();
         size_t const floatCount = 3 * vals.size();
         size_t const vertCount = vals.size();
 
@@ -302,7 +302,7 @@ R"(        <source id="{}-positions">
 
     void WriteMeshNormalsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        nonstd::span<glm::vec3 const> const vals = geom.Mesh->getNormals();
+        nonstd::span<glm::vec3 const> const vals = geom.Mesh.getNormals();
         size_t const floatCount = 3 * vals.size();
         size_t const normalCount = vals.size();
 
@@ -328,7 +328,7 @@ R"(        <source id="{}-normals">
 
     void WriteMeshTextureCoordsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        nonstd::span<glm::vec2 const> const vals = geom.Mesh->getTexCoords();
+        nonstd::span<glm::vec2 const> const vals = geom.Mesh.getTexCoords();
         size_t const floatCount = 2 * vals.size();
         size_t const coordCount = vals.size();
 
@@ -364,19 +364,19 @@ R"(        <vertices id="{}-vertices">
 
     void WriteMeshTriangles(std::ostream& o, DAEGeometry const& geom)
     {
-        osc::MeshIndicesView const indices = geom.Mesh->getIndices();
+        osc::MeshIndicesView const indices = geom.Mesh.getIndices();
         size_t const numTriangles = indices.size() / 3;
 
         o << fmt::format(R"(        <triangles count="{}">)", numTriangles);
         o << '\n';
         o << fmt::format(R"(          <input semantic="VERTEX" source="#{}-vertices" offset="0" />)", geom.GeometryID);
         o << '\n';
-        if (!geom.Mesh->getNormals().empty())
+        if (!geom.Mesh.getNormals().empty())
         {
             o << fmt::format(R"(          <input semantic="NORMAL" source="#{}-normals" offset="0" />)", geom.GeometryID);
             o << '\n';
         }
-        if (!geom.Mesh->getTexCoords().empty())
+        if (!geom.Mesh.getTexCoords().empty())
         {
             o << fmt::format(R"(          <input semantic="TEXCOORD" source="#{}-map-0" offset="0" set="0"/>)", geom.GeometryID);
             o << '\n';
@@ -399,11 +399,11 @@ R"(        <vertices id="{}-vertices">
         o << '\n';
 
         WriteMeshPositionsSource(o, geom);
-        if (!geom.Mesh->getNormals().empty())
+        if (!geom.Mesh.getNormals().empty())
         {
             WriteMeshNormalsSource(o, geom);
         }        
-        if (!geom.Mesh->getTexCoords().empty())
+        if (!geom.Mesh.getTexCoords().empty())
         {
             WriteMeshTextureCoordsSource(o, geom);
         }        

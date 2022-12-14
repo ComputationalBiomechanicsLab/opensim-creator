@@ -1,10 +1,10 @@
 #pragma once
 
+#include "src/Graphics/Mesh.hpp"
+
 #include <functional>
 #include <memory>
 #include <string>
-
-namespace osc { class Mesh; }
 
 namespace osc
 {
@@ -17,18 +17,18 @@ namespace osc
         MeshCache& operator=(MeshCache&&) noexcept;
         ~MeshCache() noexcept;
 
-        // always returns non-nullptr (it will use a dummy cube and print a log error if something fails)
-        std::shared_ptr<Mesh const> get(std::string const& key, std::function<std::shared_ptr<Mesh const>()> const& getter);
+        // always returns (it will use a dummy cube and print a log error if something fails)
+        Mesh get(std::string const& key, std::function<Mesh()> const& getter);
 
-        std::shared_ptr<Mesh const> getSphereMesh();
-        std::shared_ptr<Mesh const> getCylinderMesh();
-        std::shared_ptr<Mesh const> getBrickMesh();
-        std::shared_ptr<Mesh const> getConeMesh();
-        std::shared_ptr<Mesh const> getFloorMesh();
-        std::shared_ptr<Mesh const> get100x100GridMesh();
-        std::shared_ptr<Mesh const> getCubeWireMesh();
-        std::shared_ptr<Mesh const> getYLineMesh();
-        std::shared_ptr<Mesh const> getTexturedQuadMesh();
+        Mesh getSphereMesh();
+        Mesh getCylinderMesh();
+        Mesh getBrickMesh();
+        Mesh getConeMesh();
+        Mesh getFloorMesh();
+        Mesh get100x100GridMesh();
+        Mesh getCubeWireMesh();
+        Mesh getYLineMesh();
+        Mesh getTexturedQuadMesh();
 
     private:
         class Impl;

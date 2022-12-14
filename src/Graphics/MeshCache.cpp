@@ -14,17 +14,17 @@
 
 class osc::MeshCache::Impl final {
 public:
-    std::shared_ptr<Mesh const> sphere = std::make_shared<Mesh>(GenUntexturedUVSphere(12, 12));
-    std::shared_ptr<Mesh const> cylinder = std::make_shared<Mesh>(GenUntexturedSimbodyCylinder(16));
-    std::shared_ptr<Mesh const> cube = std::make_shared<Mesh>(GenCube());
-    std::shared_ptr<Mesh const> cone = std::make_shared<Mesh>(GenUntexturedSimbodyCone(12));
-    std::shared_ptr<Mesh const> floor = std::make_shared<Mesh>(GenTexturedQuad());
-    std::shared_ptr<Mesh const> grid100x100 = std::make_shared<Mesh>(GenNbyNGrid(1000));
-    std::shared_ptr<Mesh const> cubeWire = std::make_shared<Mesh>(GenCubeLines());
-    std::shared_ptr<Mesh const> yLine = std::make_shared<Mesh>(GenYLine());
-    std::shared_ptr<Mesh const> texturedQuad = std::make_shared<Mesh>(GenTexturedQuad());
+    Mesh sphere = GenUntexturedUVSphere(12, 12);
+    Mesh cylinder = GenUntexturedSimbodyCylinder(16);
+    Mesh cube = GenCube();
+    Mesh cone = GenUntexturedSimbodyCone(12);
+    Mesh floor = GenTexturedQuad();
+    Mesh grid100x100 = GenNbyNGrid(1000);
+    Mesh cubeWire = GenCubeLines();
+    Mesh yLine = GenYLine();
+    Mesh texturedQuad = GenTexturedQuad();
 
-    SynchronizedValue<std::unordered_map<std::string, std::shared_ptr<Mesh const>>> fileCache;
+    SynchronizedValue<std::unordered_map<std::string, Mesh>> fileCache;
 };
 
 osc::MeshCache::MeshCache() :
@@ -36,74 +36,68 @@ osc::MeshCache::MeshCache(MeshCache&&) noexcept = default;
 osc::MeshCache& osc::MeshCache::operator=(MeshCache&&) noexcept = default;
 osc::MeshCache::~MeshCache() noexcept = default;
 
-std::shared_ptr<osc::Mesh const> osc::MeshCache::get(std::string const& key, std::function<std::shared_ptr<osc::Mesh const>()> const& getter)
+osc::Mesh osc::MeshCache::get(std::string const& key, std::function<Mesh()> const& getter)
 {
     auto guard = m_Impl->fileCache.lock();
 
-    auto [it, inserted] = guard->try_emplace(key, nullptr);
+    auto [it, inserted] = guard->try_emplace(key, m_Impl->cube);
 
     if (inserted)
     {
         try
         {
             it->second = getter();
-            if (!it->second)
-            {
-                log::error("%s: a mesh getter returned null: it will be replaced with a dummy cube", key.c_str());
-                it->second = m_Impl->cube;  // dummy entry
-            }
         }
         catch (std::exception const& ex)
         {
             log::error("%s: error getting a mesh via a getter: it will be replaced with a dummy cube: %s", key.c_str(), ex.what());
-            it->second = m_Impl->cube;  // dummy entry
         }
     }
 
     return it->second;
 }
 
-std::shared_ptr<osc::Mesh const> osc::MeshCache::getSphereMesh()
+osc::Mesh osc::MeshCache::getSphereMesh()
 {
     return m_Impl->sphere;
 }
 
-std::shared_ptr<osc::Mesh const> osc::MeshCache::getCylinderMesh()
+osc::Mesh osc::MeshCache::getCylinderMesh()
 {
     return m_Impl->cylinder;
 }
 
-std::shared_ptr<osc::Mesh const> osc::MeshCache::getBrickMesh()
+osc::Mesh osc::MeshCache::getBrickMesh()
 {
     return m_Impl->cube;
 }
 
-std::shared_ptr<osc::Mesh const> osc::MeshCache::getConeMesh()
+osc::Mesh osc::MeshCache::getConeMesh()
 {
     return m_Impl->cone;
 }
 
-std::shared_ptr<osc::Mesh const> osc::MeshCache::getFloorMesh()
+osc::Mesh osc::MeshCache::getFloorMesh()
 {
     return m_Impl->floor;
 }
 
-std::shared_ptr<osc::Mesh const> osc::MeshCache::get100x100GridMesh()
+osc::Mesh osc::MeshCache::get100x100GridMesh()
 {
     return m_Impl->grid100x100;
 }
 
-std::shared_ptr<osc::Mesh const> osc::MeshCache::getCubeWireMesh()
+osc::Mesh osc::MeshCache::getCubeWireMesh()
 {
     return m_Impl->cubeWire;
 }
 
-std::shared_ptr<osc::Mesh const> osc::MeshCache::getYLineMesh()
+osc::Mesh osc::MeshCache::getYLineMesh()
 {
     return m_Impl->yLine;
 }
 
-std::shared_ptr<osc::Mesh const> osc::MeshCache::getTexturedQuadMesh()
+osc::Mesh osc::MeshCache::getTexturedQuadMesh()
 {
     return m_Impl->texturedQuad;
 }

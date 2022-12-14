@@ -18,7 +18,7 @@ namespace osc
     // represents a renderable decoration for a component in a model
     class SceneDecoration final {
     public:
-        std::shared_ptr<Mesh const> mesh;
+        Mesh mesh;
         Transform transform;
         glm::vec4 color;
         std::string id;
@@ -26,28 +26,34 @@ namespace osc
         std::optional<Material> maybeMaterial = std::nullopt;
         std::optional<MaterialPropertyBlock> maybeMaterialProps = std::nullopt;
 
-        explicit SceneDecoration(Mesh const& mesh_) :
-            mesh{std::make_shared<Mesh>(mesh_)},
+        explicit SceneDecoration(
+            Mesh const& mesh_
+        ) :
+            mesh{mesh_},
             transform{},
             color{1.0f, 1.0f, 1.0f, 1.0f}
         {
         }
 
-        SceneDecoration(std::shared_ptr<Mesh const> mesh_,
-                        Transform const& transform_,
-                        glm::vec4 const& color_) :
-            mesh{std::move(mesh_)},
+        SceneDecoration(
+            Mesh const& mesh_,
+            Transform const& transform_,
+            glm::vec4 const& color_
+        ) :
+            mesh{mesh_},
             transform{transform_},
             color{color_}
         {
         }
 
-        SceneDecoration(std::shared_ptr<Mesh const> mesh_,
-                        Transform const& transform_,
-                        glm::vec4 const& color_,
-                        std::string id_,
-                        SceneDecorationFlags flags_) :
-            mesh{std::move(mesh_)},
+        SceneDecoration(
+            Mesh const& mesh_,
+            Transform const& transform_,
+            glm::vec4 const& color_,
+            std::string id_,
+            SceneDecorationFlags flags_
+        ) :
+            mesh{mesh_},
             transform{transform_},
             color{color_},
             id{std::move(id_)},
@@ -55,7 +61,8 @@ namespace osc
         {
         }
 
-        SceneDecoration(std::shared_ptr<Mesh const> mesh_,
+        SceneDecoration(
+            Mesh const& mesh_,
             Transform const& transform_,
             glm::vec4 const& color_,
             std::string id_,
@@ -63,7 +70,7 @@ namespace osc
             std::optional<Material> maybeMaterial_,
             std::optional<MaterialPropertyBlock> maybeProps_ = std::nullopt) :
 
-            mesh{std::move(mesh_)},
+            mesh{mesh_},
             transform{transform_},
             color{color_},
             id{std::move(id_)},

@@ -25,7 +25,7 @@ namespace
 {
     // assumes `pos` is in-bounds
     void DrawBVHRecursive(
-        std::shared_ptr<osc::Mesh const> const& mesh,
+        osc::Mesh const& mesh,
         osc::BVH const& bvh,
         ptrdiff_t pos,
         std::vector<osc::SceneDecoration>& out)
@@ -48,9 +48,12 @@ namespace
         }
     }
 
-    void DrawGrid(osc::MeshCache& cache, glm::quat const& rotation, std::vector<osc::SceneDecoration>& out)
+    void DrawGrid(
+        osc::MeshCache& cache,
+        glm::quat const& rotation,
+        std::vector<osc::SceneDecoration>& out)
     {
-        std::shared_ptr<osc::Mesh const> const grid = cache.get100x100GridMesh();
+        osc::Mesh const grid = cache.get100x100GridMesh();
 
         osc::Transform t;
         t.scale *= glm::vec3{50.0f, 50.0f, 1.0f};
@@ -62,20 +65,23 @@ namespace
     }
 }
 
-void osc::DrawBVH(MeshCache& cache, BVH const& sceneBVH, std::vector<SceneDecoration>& out)
+void osc::DrawBVH(
+    MeshCache& cache,
+    BVH const& sceneBVH,
+    std::vector<SceneDecoration>& out)
 {
     if (sceneBVH.nodes.empty())
     {
         return;
     }
 
-    std::shared_ptr<Mesh const> const cube = cache.getCubeWireMesh();
+    Mesh const cube = cache.getCubeWireMesh();
     DrawBVHRecursive(cube, sceneBVH, 0, out);
 }
 
 void osc::DrawAABB(MeshCache& cache, AABB const& aabb, std::vector<SceneDecoration>& out)
 {
-    std::shared_ptr<Mesh const> const cube = cache.getCubeWireMesh();
+    Mesh const cube = cache.getCubeWireMesh();
     glm::vec4 const color = {0.0f, 0.0f, 0.0f, 1.0f};
 
     Transform t;
@@ -87,7 +93,7 @@ void osc::DrawAABB(MeshCache& cache, AABB const& aabb, std::vector<SceneDecorati
 
 void osc::DrawAABBs(MeshCache& cache, nonstd::span<AABB const> aabbs, std::vector<SceneDecoration>& out)
 {
-    std::shared_ptr<Mesh const> const cube = cache.getCubeWireMesh();
+    Mesh const cube = cache.getCubeWireMesh();
     glm::vec4 const color = {0.0f, 0.0f, 0.0f, 1.0f};
 
     for (AABB const& aabb : aabbs)
@@ -102,7 +108,7 @@ void osc::DrawAABBs(MeshCache& cache, nonstd::span<AABB const> aabbs, std::vecto
 
 void osc::DrawXZFloorLines(MeshCache& cache, std::vector<SceneDecoration>& out, float scale)
 {
-    std::shared_ptr<Mesh const> const yLine = cache.getYLineMesh();
+    Mesh const yLine = cache.getYLineMesh();
 
     // X line
     {
@@ -205,7 +211,7 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(BVH const& bvh, nons
     for (BVHCollision const& c : sceneCollisions)
     {
         SceneDecoration const& decoration = decorations[c.id];
-        std::optional<RayCollision> const maybeCollision = GetClosestWorldspaceRayCollision(*decoration.mesh, decoration.transform, ray);
+        std::optional<RayCollision> const maybeCollision = GetClosestWorldspaceRayCollision(decoration.mesh, decoration.transform, ray);
 
         if (maybeCollision)
         {
@@ -351,7 +357,7 @@ void osc::EmplaceOrReformat(std::optional<RenderTexture>& t, RenderTextureDescri
 
 osc::AABB osc::GetWorldspaceAABB(SceneDecoration const& cd)
 {
-    return TransformAABB(cd.mesh->getBounds(), cd.transform);
+    return TransformAABB(cd.mesh.getBounds(), cd.transform);
 }
 
 osc::SceneRendererParams osc::CalcStandardDarkSceneRenderParams(

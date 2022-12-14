@@ -388,7 +388,7 @@ namespace
     struct DrawableThing final {
         UID id = g_EmptyID;
         UID groupId = g_EmptyID;
-        std::shared_ptr<Mesh const> mesh;
+        Mesh mesh;
         Transform transform;
         glm::vec4 color;
         osc::SceneDecorationFlags flags;
@@ -398,7 +398,7 @@ namespace
 
     AABB CalcBounds(DrawableThing const& dt)
     {
-        return osc::TransformAABB(dt.mesh->getBounds(), dt.transform);
+        return osc::TransformAABB(dt.mesh.getBounds(), dt.transform);
     }
 }
 
@@ -424,7 +424,7 @@ namespace
     // a successfully-loaded mesh
     struct LoadedMesh final {
         std::filesystem::path Path;
-        std::shared_ptr<Mesh> MeshData;
+        Mesh MeshData;
     };
 
     // an OK response to a mesh loading request
@@ -453,8 +453,7 @@ namespace
         {
             try
             {
-                std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(osc::LoadMeshViaSimTK(path));
-                loadedMeshes.push_back(LoadedMesh{path, std::move(mesh)});
+                loadedMeshes.push_back(LoadedMesh{path, osc::LoadMeshViaSimTK(path)});
             }
             catch (std::exception const& ex)
             {
@@ -934,32 +933,31 @@ namespace
         MeshEl() :
             ID{},
             Attachment{},
-            MeshData{nullptr},
+            MeshData{osc::App::singleton<osc::MeshCache>().getBrickMesh()},
             Path{"invalid"}
         {
             // default ctor for prototype storage
         }
 
-        MeshEl(UIDT<MeshEl> id,
+        MeshEl(
+            UIDT<MeshEl> id,
             UID attachment,  // can be g_GroundID
-            std::shared_ptr<Mesh> meshData,
+            Mesh const& meshData,
             std::filesystem::path const& path) :
 
             ID{std::move(id)},
             Attachment{std::move(attachment)},
-            MeshData{std::move(meshData)},
+            MeshData{meshData},
             Path{path}
         {
         }
 
-        MeshEl(UID attachment,  // can be g_GroundID
-            std::shared_ptr<Mesh> meshData,
+        MeshEl(
+            UID attachment,  // can be g_GroundID
+            Mesh const& meshData,
             std::filesystem::path const& path) :
 
-            MeshEl{UIDT<MeshEl>{},
-            std::move(attachment),
-            std::move(meshData),
-            path}
+            MeshEl{UIDT<MeshEl>{}, std::move(attachment), meshData, path}
         {
         }
 
@@ -1041,7 +1039,7 @@ namespace
                 << "ID = " << ID
                 << ", Attachment = " << Attachment
                 << ", Xform = " << Xform
-                << ", MeshData = " << MeshData.get()
+                << ", MeshData = " << &MeshData
                 << ", Path = " << Path
                 << ", Name = " << Name
                 << ')';
@@ -1069,13 +1067,13 @@ namespace
 
         AABB CalcBounds() const override
         {
-            return osc::TransformAABB(MeshData->getBounds(), Xform);
+            return osc::TransformAABB(MeshData.getBounds(), Xform);
         }
 
         UIDT<MeshEl> ID;
         UID Attachment;  // can be g_GroundID
         Transform Xform;
-        std::shared_ptr<Mesh> MeshData;
+        Mesh MeshData;
         std::filesystem::path Path;
         std::string Name{SanitizeToOpenSimComponentName(osc::FileNameWithoutExtension(Path))};
     };
@@ -1644,13 +1642,13 @@ namespace
 
     glm::vec3 AverageCenter(MeshEl const& el)
     {
-        glm::vec3 const centerpointInModelSpace = AverageCenterpoint(*el.MeshData);
+        glm::vec3 const centerpointInModelSpace = AverageCenterpoint(el.MeshData);
         return el.GetXform() * centerpointInModelSpace;
     }
 
     glm::vec3 MassCenter(MeshEl const& el)
     {
-        glm::vec3 const massCenterInModelSpace = MassCenter(*el.MeshData);
+        glm::vec3 const massCenterInModelSpace = MassCenter(el.MeshData);
         return el.GetXform() * massCenterInModelSpace;
     }
 }
@@ -2740,8 +2738,6 @@ namespace
             return false;
         }
 
-        Mesh const& meshData = *mesh->MeshData;
-
         glm::vec3 const boundsMidpoint = Midpoint(mesh->CalcBounds());
 
         el->SetPos(boundsMidpoint);
@@ -3526,19 +3522,14 @@ namespace
 
             std::filesystem::path const& realLocation = *maybeMeshPath;
 
-            std::shared_ptr<Mesh> meshData;
+            Mesh meshData;
             try
             {
-                meshData = std::make_shared<Mesh>(osc::LoadMeshViaSimTK(realLocation.string()));
+                meshData = osc::LoadMeshViaSimTK(realLocation.string());
             }
             catch (std::exception const& ex)
             {
                 osc::log::error("error loading mesh: %s", ex.what());
-                continue;
-            }
-
-            if (!meshData)
-            {
                 continue;
             }
 
@@ -4757,7 +4748,7 @@ namespace
                 }
 
                 std::optional<osc::RayCollision> const rc = osc::GetClosestWorldspaceRayCollision(
-                    *drawable.mesh,
+                    drawable.mesh,
                     drawable.transform,
                     ray
                 );
@@ -4966,10 +4957,10 @@ namespace
         MeshLoader m_MeshLoader;
 
         // sphere mesh used by various scene elements
-        std::shared_ptr<Mesh const> m_SphereMesh = std::make_shared<Mesh>(osc::GenUntexturedUVSphere(12, 12));
+        Mesh m_SphereMesh = osc::GenUntexturedUVSphere(12, 12);
 
         // cylinder mesh used by various scene elements
-        std::shared_ptr<Mesh const> m_CylinderMesh = std::make_shared<Mesh>(osc::GenUntexturedSimbodyCylinder(16));
+        Mesh m_CylinderMesh = osc::GenUntexturedSimbodyCylinder(16);
 
         // main 3D scene camera
         PolarPerspectiveCamera m_3DSceneCamera = CreateDefaultCamera();

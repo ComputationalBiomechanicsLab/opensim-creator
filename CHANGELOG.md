@@ -12,6 +12,7 @@ All notable changes to this project will be documented here. The format is based
   the dialog (previously, would print the errors to the log, #476)
 - The 3D scene now has basic support for rendering shadows (#10), but it must be enabled via a
   checkbox in a viewport's `Options` menu (it will be default-enabled in 0.4.0)
+- Refactored mesh class codebase-wide to leverage its copy-on-write behavior (#483)
 
 ## [0.3.1] - UNRELEASED
 

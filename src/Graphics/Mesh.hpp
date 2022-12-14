@@ -72,6 +72,7 @@ namespace osc
 
     private:
         friend class GraphicsBackend;
+        friend struct std::hash<osc::Mesh>;
         friend bool operator==(Mesh const&, Mesh const&) noexcept;
         friend bool operator!=(Mesh const&, Mesh const&) noexcept;
         friend bool operator<(Mesh const&, Mesh const&) noexcept;
@@ -97,4 +98,16 @@ namespace osc
     }
 
     std::ostream& operator<<(std::ostream&, Mesh const&);
+}
+
+namespace std
+{
+    template<>
+    struct hash<osc::Mesh> final {
+        size_t operator()(osc::Mesh const& mesh) const
+        {
+            using std::hash;
+            return hash<osc::Cow<osc::Mesh::Impl>>{}(mesh.m_Impl);
+        }
+    };
 }

@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <functional>
 #include <utility>
 
 namespace osc
@@ -123,6 +124,8 @@ namespace osc
         template<typename U, typename V>
         friend bool operator>=(Cow<U> const&, Cow<V> const&) noexcept;
 
+        friend struct std::hash<Cow<T>>;
+
         CowData<T>* m_Data = nullptr;
     };
 
@@ -167,4 +170,16 @@ namespace osc
     {
         return a.m_Data >= b.m_Data;
     }
+}
+
+namespace std
+{
+    template<typename T>
+    struct hash<osc::Cow<T>> final
+    {
+        size_t operator()(osc::Cow<T> const& cow) const
+        {
+            return std::hash<void const*>{}(cow.m_Data);
+        }
+    };
 }

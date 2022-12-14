@@ -243,8 +243,8 @@ private:
     void implementMeshFileGeometry(SimTK::DecorativeMeshFile const& d) override
     {
         std::string const& path = d.getMeshFile();
-        auto meshLoader = [&path](){ return std::make_shared<Mesh>(LoadMeshViaSimTK(path)); };
-        std::shared_ptr<Mesh const> const mesh = m_MeshCache.get(d.getMeshFile(), meshLoader);
+        auto meshLoader = [&path](){ return LoadMeshViaSimTK(path); };
+        Mesh const mesh = m_MeshCache.get(d.getMeshFile(), meshLoader);
 
         m_Consumer(mesh, ToOscTransform(d), GetColor(d));
     }

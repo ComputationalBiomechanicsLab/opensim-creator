@@ -48,12 +48,12 @@ namespace
 
     osc::AABB WorldpaceAABB(osc::SceneDecoration const& d)
     {
-        return osc::TransformAABB(d.mesh->getBounds(), d.transform);
+        return osc::TransformAABB(d.mesh.getBounds(), d.transform);
     }
 
     struct RimHighlights final {
         RimHighlights(
-            std::shared_ptr<osc::Mesh const> const& mesh_,
+            osc::Mesh const& mesh_,
             glm::mat4 const& transform_,
             osc::Material const& material_) :
 
@@ -63,7 +63,7 @@ namespace
         {
         }
 
-        std::shared_ptr<osc::Mesh const> mesh;
+        osc::Mesh mesh;
         glm::mat4 transform;
         osc::Material material;
     };
@@ -233,21 +233,21 @@ public:
 
                 if (dec.maybeMaterial)
                 {
-                    Graphics::DrawMesh(*dec.mesh, dec.transform, *dec.maybeMaterial, m_Camera, dec.maybeMaterialProps);
+                    Graphics::DrawMesh(dec.mesh, dec.transform, *dec.maybeMaterial, m_Camera, dec.maybeMaterialProps);
                 }
                 else if (dec.color.a > 0.99f)
                 {
-                    Graphics::DrawMesh(*dec.mesh, dec.transform, m_SceneColoredElementsMaterial, m_Camera, propBlock);
+                    Graphics::DrawMesh(dec.mesh, dec.transform, m_SceneColoredElementsMaterial, m_Camera, propBlock);
                 }
                 else
                 {
-                    Graphics::DrawMesh(*dec.mesh, dec.transform, transparentMaterial, m_Camera, propBlock);
+                    Graphics::DrawMesh(dec.mesh, dec.transform, transparentMaterial, m_Camera, propBlock);
                 }
 
                 // if normals are requested, render the scene element via a normals geometry shader
                 if (params.drawMeshNormals)
                 {
-                    Graphics::DrawMesh(*dec.mesh, dec.transform, m_NormalsMaterial, m_Camera);
+                    Graphics::DrawMesh(dec.mesh, dec.transform, m_NormalsMaterial, m_Camera);
                 }
             }
 
@@ -278,14 +278,14 @@ public:
 
                 Transform const t = GetFloorTransform(params.floorLocation, params.fixupScaleFactor);
 
-                Graphics::DrawMesh(*m_QuadMesh, t, m_SceneTexturedElementsMaterial, m_Camera);
+                Graphics::DrawMesh(m_QuadMesh, t, m_SceneTexturedElementsMaterial, m_Camera);
             }
         }
 
         // add the rim highlights over the top of the scene texture
         if (maybeRimHighlights)
         {
-            Graphics::DrawMesh(*maybeRimHighlights->mesh, maybeRimHighlights->transform, maybeRimHighlights->material, m_Camera);
+            Graphics::DrawMesh(maybeRimHighlights->mesh, maybeRimHighlights->transform, maybeRimHighlights->material, m_Camera);
         }
 
         // write the scene render to the ouptut texture
@@ -380,11 +380,11 @@ private:
         {
             if (dec.flags & (SceneDecorationFlags_IsSelected | SceneDecorationFlags_IsChildOfSelected))
             {
-                Graphics::DrawMesh(*dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsSelectedColor);
+                Graphics::DrawMesh(dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsSelectedColor);
             }
             else if (dec.flags & (SceneDecorationFlags_IsHovered | SceneDecorationFlags_IsChildOfHovered))
             {
-                Graphics::DrawMesh(*dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsHoveredColor);
+                Graphics::DrawMesh(dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsHoveredColor);
             }
         }
 
@@ -442,7 +442,7 @@ private:
             {
                 AABB const decorationAABB = WorldpaceAABB(dec);
                 casterAABBs = casterAABBs ? Union(*casterAABBs, decorationAABB) : decorationAABB;
-                Graphics::DrawMesh(*dec.mesh, dec.transform, m_DepthWritingMaterial, shadowCamera);
+                Graphics::DrawMesh(dec.mesh, dec.transform, m_DepthWritingMaterial, shadowCamera);
             }
         }
 
@@ -471,7 +471,7 @@ private:
     Material m_NormalsMaterial;
     Material m_DepthWritingMaterial;
 
-    std::shared_ptr<Mesh const> m_QuadMesh;
+    Mesh m_QuadMesh;
     Texture2D m_ChequerTexture;
     Camera m_Camera;
 
