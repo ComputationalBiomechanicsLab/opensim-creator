@@ -3395,11 +3395,6 @@ bool osc::operator!=(Camera const& a, Camera const& b) noexcept
     return !(a == b);
 }
 
-bool osc::operator<(Camera const& a, Camera const& b) noexcept
-{
-    return a.m_Impl < b.m_Impl;
-}
-
 
 /////////////////////////////
 //
