@@ -147,10 +147,7 @@ public:
         m_EdgeDetectorMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneEdgeDetector.vert", config.getResourceDir() / "shaders/SceneEdgeDetector.frag")},
         m_NormalsMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneNormalsShader.vert", config.getResourceDir() / "shaders/SceneNormalsShader.geom", config.getResourceDir() / "shaders/SceneNormalsShader.frag")},
         m_DepthWritingMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneDepthMap.vert", config.getResourceDir() / "shaders/SceneDepthMap.frag")},
-        m_QuadMesh{meshCache.getTexturedQuadMesh()},
-        m_ChequerTexture{GenChequeredFloorTexture()},
-        m_Camera{},
-        m_MaybeRenderTexture{RenderTextureDescriptor{glm::ivec2{1, 1}}}
+        m_QuadMesh{meshCache.getTexturedQuadMesh()}
     {
         m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_ChequerTexture);
         m_SceneTexturedElementsMaterial.setVec2("uTextureScale", {200.0f, 200.0f});
@@ -165,23 +162,16 @@ public:
 
     glm::ivec2 getDimensions() const
     {
-        return m_MaybeRenderTexture->getDimensions();
+        return m_OutputTexture.getDimensions();
     }
 
     int32_t getSamples() const
     {
-        return m_MaybeRenderTexture->getAntialiasingLevel();
+        return m_OutputTexture.getAntialiasingLevel();
     }
 
     void draw(nonstd::span<SceneDecoration const> decorations, SceneRendererParams const& params)
     {
-        // configure output texture and rims texture to match parameters
-        {
-            RenderTextureDescriptor desc{params.dimensions};
-            desc.setAntialiasingLevel(params.samples);
-            EmplaceOrReformat(m_MaybeRenderTexture, desc);
-        }
-
         // render any other perspectives on the scene (shadows, rim highlights, etc.)
         std::optional<RimHighlights> const maybeRimHighlights = tryGenerateRimHighlights(decorations, params);
         std::optional<Shadows> const maybeShadowMap = tryGenerateShadowMap(decorations, params);
@@ -289,9 +279,9 @@ public:
             Graphics::DrawMesh(maybeRimHighlights->mesh, maybeRimHighlights->transform, maybeRimHighlights->material, m_Camera);
         }
 
-        // write the scene render to the ouptut texture
-        OSC_ASSERT(m_MaybeRenderTexture.has_value());
-        m_Camera.renderTo(*m_MaybeRenderTexture);
+        m_OutputTexture.setDimensions(params.dimensions);
+        m_OutputTexture.setAntialiasingLevel(params.samples);
+        m_Camera.renderTo(m_OutputTexture);
 
         // prevents copies on next frame
         m_EdgeDetectorMaterial.clearRenderTexture("uScreenTexture");
@@ -301,7 +291,7 @@ public:
 
     RenderTexture& updRenderTexture()
     {
-        return m_MaybeRenderTexture.value();
+        return m_OutputTexture;
     }
 
 private:
@@ -401,17 +391,16 @@ private:
         RenderTextureDescriptor desc{params.dimensions};
         desc.setAntialiasingLevel(params.samples);
         desc.setColorFormat(RenderTextureFormat::ARGB32);  // care: don't use RED: causes an explosion on some Intel machines (#418)
-        EmplaceOrReformat(m_MaybeRimsTexture, desc);
-        OSC_ASSERT(m_MaybeRimsTexture.has_value());
+        m_RimsTexture.reformat(desc);
 
         // render to the off-screen solid-colored texture
-        m_Camera.renderTo(*m_MaybeRimsTexture);
+        m_Camera.renderTo(m_RimsTexture);
 
         // configure a material that draws the off-screen colored texture on-screen
         //
         // the off-screen texture is rendered as a quad via an edge-detection kernel
         // that transforms the solid shapes into "rims"
-        m_EdgeDetectorMaterial.setRenderTexture("uScreenTexture", *m_MaybeRimsTexture);
+        m_EdgeDetectorMaterial.setRenderTexture("uScreenTexture", m_RimsTexture);
         m_EdgeDetectorMaterial.setVec4("uRimRgba", params.rimColor);
         m_EdgeDetectorMaterial.setVec2("uRimThickness", 0.5f*rimThicknessNDC);
         m_EdgeDetectorMaterial.setVec2("uTextureOffset", rimRectUV.p1);
@@ -465,10 +454,10 @@ private:
         m_Camera.setBackgroundColor({1.0f, 0.0f, 0.0f, 0.0f});
         m_Camera.setViewMatrixOverride(matrices.viewMatrix);
         m_Camera.setProjectionMatrixOverride(matrices.projMatrix);
-        EmplaceOrReformat(m_MaybeShadowMap, osc::RenderTextureDescriptor{glm::ivec2{1024,1024}});
-        m_Camera.renderTo(*m_MaybeShadowMap);
+        m_ShadowMapTexture.setDimensions({1024, 1024});
+        m_Camera.renderTo(m_ShadowMapTexture);
 
-        return Shadows{*m_MaybeShadowMap, matrices.projMatrix * matrices.viewMatrix};
+        return Shadows{m_ShadowMapTexture, matrices.projMatrix * matrices.viewMatrix};
     }
 
     Material m_SceneColoredElementsMaterial;
@@ -477,18 +466,14 @@ private:
     Material m_EdgeDetectorMaterial;
     Material m_NormalsMaterial;
     Material m_DepthWritingMaterial;
-
-    Mesh m_QuadMesh;
-    Texture2D m_ChequerTexture;
-    Camera m_Camera;
-
     MaterialPropertyBlock m_RimsSelectedColor;
     MaterialPropertyBlock m_RimsHoveredColor;
-    std::optional<RenderTexture> m_MaybeRimsTexture;
-    std::optional<RenderTexture> m_MaybeShadowMap;
-
-    // outputs
-    std::optional<RenderTexture> m_MaybeRenderTexture;
+    Mesh m_QuadMesh;
+    Texture2D m_ChequerTexture = GenChequeredFloorTexture();
+    Camera m_Camera;
+    RenderTexture m_RimsTexture;
+    RenderTexture m_ShadowMapTexture;
+    RenderTexture m_OutputTexture;
 };
 
 

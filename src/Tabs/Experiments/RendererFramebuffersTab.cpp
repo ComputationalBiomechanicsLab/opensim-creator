@@ -136,15 +136,8 @@ public:
         // setup render texture
         osc::Rect viewportRect = osc::GetMainViewportWorkspaceScreenRect();
         glm::vec2 viewportRectDims = osc::Dimensions(viewportRect);
-        osc::RenderTextureDescriptor desc = osc::RenderTextureDescriptor{glm::ivec2
-        {
-            static_cast<int>(viewportRectDims.x),
-            static_cast<int>(viewportRectDims.y),
-        }};
-        desc.setAntialiasingLevel(osc::App::get().getMSXAASamplesRecommended());
-
-        osc::EmplaceOrReformat(m_RenderTexture, desc);
-        OSC_ASSERT(m_RenderTexture.has_value());
+        m_RenderTexture.setDimensions(viewportRectDims);
+        m_RenderTexture.setAntialiasingLevel(osc::App::get().getMSXAASamplesRecommended());
 
         // render scene
         {
@@ -160,10 +153,10 @@ public:
             m_SceneRenderMaterial.setTexture("uTexture1", m_MetalTexture);
             osc::Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_SceneRenderMaterial, m_SceneCamera);
         }
-        m_SceneCamera.renderTo(*m_RenderTexture);
+        m_SceneCamera.renderTo(m_RenderTexture);
 
         // render via a effect sampler
-        Graphics::BlitToScreen(*m_RenderTexture, viewportRect, m_ScreenMaterial);
+        Graphics::BlitToScreen(m_RenderTexture, viewportRect, m_ScreenMaterial);
 
         // auxiliary UI
         m_LogViewer.draw();
@@ -194,7 +187,7 @@ private:
     Mesh m_PlaneMesh = GeneratePlane();
     Mesh m_QuadMesh = GenTexturedQuad();
 
-    std::optional<RenderTexture> m_RenderTexture;
+    RenderTexture m_RenderTexture;
     Camera m_ScreenCamera;
     Material m_ScreenMaterial
     {

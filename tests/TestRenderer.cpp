@@ -2181,6 +2181,22 @@ TEST_F(Renderer, RenderTextureDescriptorCanBeStreamedToAString)
     ASSERT_TRUE(osc::ContainsSubstringCaseInsensitive(str, "RenderTextureDescriptor"));
 }
 
+TEST_F(Renderer, RenderTextureDefaultConstructorCreates1x1RgbaRenderTexture)
+{
+    osc::RenderTexture const tex;
+    ASSERT_EQ(tex.getDimensions(), glm::ivec2(1, 1));
+    ASSERT_EQ(tex.getDepthStencilFormat(), osc::DepthStencilFormat::D24_UNorm_S8_UInt);
+    ASSERT_EQ(tex.getColorFormat(), osc::RenderTextureFormat::ARGB32);
+    ASSERT_EQ(tex.getAntialiasingLevel(), 1);
+}
+
+TEST_F(Renderer, RenderTextureCanBeConstructedFromDimensions)
+{
+    glm::ivec2 const dims = {12, 12};
+    osc::RenderTexture tex{dims};
+    ASSERT_EQ(tex.getDimensions(), dims);
+}
+
 TEST_F(Renderer, RenderTextureCanBeConstructedFromADescriptor)
 {
     osc::RenderTextureDescriptor d1{{1, 1}};
@@ -2215,27 +2231,6 @@ TEST_F(Renderer, RenderTextureSetColorFormatCausesGetColorFormatToReturnValue)
     d.setColorFormat(osc::RenderTextureFormat::RED);
 
     ASSERT_EQ(d.getColorFormat(), osc::RenderTextureFormat::RED);
-}
-
-TEST_F(Renderer, EmplaceOrReformatWorksAsExpected)
-{
-    std::optional<osc::RenderTexture> opt;
-
-    osc::RenderTextureDescriptor desc1{{5, 6}};
-
-    ASSERT_FALSE(opt.has_value());
-
-    osc::EmplaceOrReformat(opt, desc1);
-
-    ASSERT_TRUE(opt.has_value());
-    ASSERT_EQ(opt->getDimensions(), desc1.getDimensions());
-
-    osc::RenderTextureDescriptor desc2{{7, 8}};
-
-    osc::EmplaceOrReformat(opt, desc2);
-
-    ASSERT_TRUE(opt.has_value());
-    ASSERT_EQ(opt->getDimensions(), desc2.getDimensions());
 }
 
 TEST_F(Renderer, CameraProjectionCanBeStreamed)

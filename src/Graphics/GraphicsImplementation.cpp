@@ -1190,7 +1190,18 @@ std::ostream& osc::operator<<(std::ostream& o, RenderTextureDescriptor const& rt
 
 class osc::RenderTexture::Impl final {
 public:
-    Impl(RenderTextureDescriptor const& desc) : m_Descriptor{desc}
+    Impl() :
+        m_Descriptor{glm::ivec2{1, 1}}
+    {
+    }
+
+    Impl(glm::ivec2 dimensions) :
+        m_Descriptor{dimensions}
+    {
+    }
+
+    Impl(RenderTextureDescriptor const& desc) :
+        m_Descriptor{desc}
     {
     }
 
@@ -1379,6 +1390,16 @@ private:
     RenderTextureDescriptor m_Descriptor;
     DefaultConstructOnCopy<std::optional<RenderTextureOpenGLData>> m_MaybeGPUBuffers;
 };
+
+osc::RenderTexture::RenderTexture() :
+    m_Impl{make_cow<Impl>()}
+{
+}
+
+osc::RenderTexture::RenderTexture(glm::ivec2 dimensions) :
+    m_Impl{make_cow<Impl>(dimensions)}
+{
+}
 
 osc::RenderTexture::RenderTexture(RenderTextureDescriptor const& desc) :
     m_Impl{make_cow<Impl>(desc)}

@@ -96,8 +96,6 @@ namespace osc
     // returns a texture loaded from disk via osc::Image
     Texture2D LoadTexture2DFromImage(std::filesystem::path const& path, ImageFlags = ImageFlags_None);
 
-    void EmplaceOrReformat(std::optional<RenderTexture>& t, RenderTextureDescriptor const& desc);
-
     AABB GetWorldspaceAABB(SceneDecoration const&);
 
     // returns scene rendering parameters for an generic panel

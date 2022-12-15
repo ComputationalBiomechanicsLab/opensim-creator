@@ -20,6 +20,8 @@ namespace osc
     // a texture that can be rendered to
     class RenderTexture final {
     public:
+        RenderTexture();
+        explicit RenderTexture(glm::ivec2 dimensions);
         explicit RenderTexture(RenderTextureDescriptor const&);
         RenderTexture(RenderTexture const&);
         RenderTexture(RenderTexture&&) noexcept;
