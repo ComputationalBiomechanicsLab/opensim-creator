@@ -32,6 +32,9 @@ namespace osc
         Camera& operator=(Camera&&) noexcept;
         ~Camera() noexcept;
 
+        // reset to default parameters
+        void reset();
+
         glm::vec4 getBackgroundColor() const;
         void setBackgroundColor(glm::vec4 const&);
 
@@ -134,20 +137,9 @@ namespace osc
         Cow<Impl> m_Impl;
     };
 
-    inline bool operator==(Camera const& a, Camera const& b) noexcept
-    {
-        return a.m_Impl == b.m_Impl;
-    }
-
-    inline bool operator!=(Camera const& a, Camera const& b) noexcept
-    {
-        return a.m_Impl != b.m_Impl;
-    }
-
-    inline bool operator<(Camera const& a, Camera const& b) noexcept
-    {
-        return a.m_Impl < b.m_Impl;
-    }
+    // value comparison
+    bool operator==(Camera const&, Camera const&) noexcept;
+    bool operator!=(Camera const& a, Camera const& b) noexcept;
 
     std::ostream& operator<<(std::ostream&, Camera const&);
 }

@@ -389,6 +389,21 @@ namespace
         glm::vec3 worldMidpoint;
     };
 
+    bool operator==(RenderObject const& a, RenderObject const& b) noexcept
+    {
+        return
+            a.material == b.material &&
+            a.mesh == b.mesh &&
+            a.propBlock == b.propBlock &&
+            a.transform == b.transform &&
+            a.worldMidpoint == b.worldMidpoint;
+    }
+
+    bool operator!=(RenderObject const& a, RenderObject const& b) noexcept
+    {
+        return !(a == b);
+    }
+
     // returns true if the render object is opaque
     bool IsOpaque(RenderObject const& ro)
     {
@@ -2898,7 +2913,13 @@ namespace
 
 class osc::Camera::Impl final {
 public:
-    Impl() = default;
+
+    void reset()
+    {
+        Impl newImpl;
+        std::swap(*this, newImpl);
+        this->m_RenderQueue = std::move(newImpl.m_RenderQueue);
+    }
 
     glm::vec4 getBackgroundColor() const
     {
@@ -3101,6 +3122,25 @@ public:
         GraphicsBackend::RenderScene(*this, &renderTexture);
     }
 
+    bool operator==(Impl const& other) const
+    {
+        return
+            m_BackgroundColor == other.m_BackgroundColor &&
+            m_CameraProjection == other.m_CameraProjection &&
+            m_OrthographicSize == other.m_OrthographicSize &&
+            m_PerspectiveFov == other.m_PerspectiveFov &&
+            m_NearClippingPlane == other.m_NearClippingPlane &&
+            m_FarClippingPlane == other.m_FarClippingPlane &&
+            m_ClearFlags == other.m_ClearFlags &&
+            m_MaybeScreenPixelRect == other.m_MaybeScreenPixelRect &&
+            m_MaybeScissorRect == other.m_MaybeScissorRect &&
+            m_Position == other.m_Position &&
+            m_Rotation == other.m_Rotation &&
+            m_MaybeViewMatrixOverride == other.m_MaybeViewMatrixOverride &&
+            m_MaybeProjectionMatrixOverride == other.m_MaybeProjectionMatrixOverride &&
+            m_RenderQueue == other.m_RenderQueue;
+    }
+
 private:
 
     friend class GraphicsBackend;
@@ -3121,6 +3161,8 @@ private:
     std::vector<RenderObject> m_RenderQueue;
 };
 
+
+
 std::ostream& osc::operator<<(std::ostream& o, CameraProjection cp)
 {
     return o << c_CameraProjectionStrings.at(static_cast<size_t>(cp));
@@ -3136,6 +3178,11 @@ osc::Camera::Camera(Camera&&) noexcept = default;
 osc::Camera& osc::Camera::operator=(Camera const&) = default;
 osc::Camera& osc::Camera::operator=(Camera&&) noexcept = default;
 osc::Camera::~Camera() noexcept = default;
+
+void osc::Camera::reset()
+{
+    m_Impl.upd()->reset();
+}
 
 glm::vec4 osc::Camera::getBackgroundColor() const
 {
@@ -3315,6 +3362,21 @@ void osc::Camera::renderTo(RenderTexture& renderTexture)
 std::ostream& osc::operator<<(std::ostream& o, Camera const& camera)
 {
     return o << "Camera(position = " << camera.getPosition() << ", direction = " << camera.getDirection() << ", projection = " << camera.getCameraProjection() << ')';
+}
+
+bool osc::operator==(Camera const& a, Camera const& b) noexcept
+{
+    return a.m_Impl == b.m_Impl || *a.m_Impl == *b.m_Impl;
+}
+
+bool osc::operator!=(Camera const& a, Camera const& b) noexcept
+{
+    return !(a == b);
+}
+
+bool osc::operator<(Camera const& a, Camera const& b) noexcept
+{
+    return a.m_Impl < b.m_Impl;
 }
 
 

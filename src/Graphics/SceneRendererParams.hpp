@@ -30,6 +30,7 @@ namespace osc
         float shininess;
         glm::vec4 backgroundColor;
         glm::vec4 rimColor;
+        glm::vec2 rimThicknessInPixels;
         glm::vec3 floorLocation;
         float fixupScaleFactor;
     };

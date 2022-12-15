@@ -2300,6 +2300,32 @@ TEST_F(Renderer, CameraCanBeMoveAssigned)
     c2 = std::move(c1);
 }
 
+TEST_F(Renderer, CameraUsesValueComparison)
+{
+    osc::Camera c1;
+    osc::Camera c2;
+
+    ASSERT_EQ(c1, c2);
+
+    c1.setCameraFOV(1337.0f);
+
+    ASSERT_NE(c1, c2);
+
+    c2.setCameraFOV(1337.0f);
+
+    ASSERT_EQ(c1, c2);
+}
+
+TEST_F(Renderer, CameraResetResetsToDefaultValues)
+{
+    osc::Camera const defaultCamera;
+    osc::Camera camera = defaultCamera;
+    camera.setDirection({1.0f, 0.0f, 0.0f});
+    ASSERT_NE(camera, defaultCamera);
+    camera.reset();
+    ASSERT_EQ(camera, defaultCamera);
+}
+
 TEST_F(Renderer, CameraCanGetBackgroundColor)
 {
     osc::Camera camera;

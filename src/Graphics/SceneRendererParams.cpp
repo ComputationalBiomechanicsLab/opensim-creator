@@ -20,6 +20,7 @@ osc::SceneRendererParams::SceneRendererParams() :
     shininess{8.0f},
     backgroundColor{0.89f, 0.89f, 0.89f, 1.0f},
     rimColor{1.0f, 0.4f, 0.0f, 1.0f},
+    rimThicknessInPixels{1.0f, 1.0f},
     floorLocation{0.0f, -0.001f, 0.0f},
     fixupScaleFactor{1.0f}
 {
@@ -47,6 +48,7 @@ bool osc::operator==(SceneRendererParams const& a, SceneRendererParams const& b)
         a.shininess == b.shininess &&
         a.backgroundColor == b.backgroundColor &&
         a.rimColor == b.rimColor &&
+        a.rimThicknessInPixels == b.rimThicknessInPixels &&
         a.floorLocation == b.floorLocation &&
         a.fixupScaleFactor == b.fixupScaleFactor;
 }

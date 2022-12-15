@@ -718,6 +718,16 @@ std::ostream& osc::operator<<(std::ostream& o, Rect const& r)
     return o << "Rect(p1 = " << r.p1 << ", p2 = " << r.p2 << ")";
 }
 
+bool osc::operator==(Rect const& a, Rect const& b) noexcept
+{
+    return a.p1 == b.p1 && a.p2 == b.p2;
+}
+
+bool osc::operator!=(Rect const& a, Rect const& b) noexcept
+{
+    return !(a == b);
+}
+
 
 // osc::Segment implementation
 

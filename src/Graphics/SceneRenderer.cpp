@@ -150,7 +150,6 @@ public:
         m_QuadMesh{meshCache.getTexturedQuadMesh()},
         m_ChequerTexture{GenChequeredFloorTexture()},
         m_Camera{},
-        m_RimThickness{1.0f, 1.0f},
         m_MaybeRenderTexture{RenderTextureDescriptor{glm::ivec2{1, 1}}}
     {
         m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_ChequerTexture);
@@ -158,7 +157,6 @@ public:
         m_SceneTexturedElementsMaterial.setTransparent(true);
 
         m_RimsSelectedColor.setVec4("uDiffuseColor", {1.0f, 0.0f, 0.0f, 1.0f});
-
         m_RimsHoveredColor.setVec4("uDiffuseColor", {0.5, 0.0f, 0.0f, 1.0f});
 
         m_EdgeDetectorMaterial.setTransparent(true);
@@ -184,15 +182,18 @@ public:
             EmplaceOrReformat(m_MaybeRenderTexture, desc);
         }
 
-        // update the camera from the input params
+        // render any other perspectives on the scene (shadows, rim highlights, etc.)
+        std::optional<RimHighlights> const maybeRimHighlights = tryGenerateRimHighlights(decorations, params);
+        std::optional<Shadows> const maybeShadowMap = tryGenerateShadowMap(decorations, params);
+
+        // setup camera for this render
+        m_Camera.reset();
         m_Camera.setPosition(params.viewPos);
         m_Camera.setNearClippingPlane(params.nearClippingPlane);
         m_Camera.setFarClippingPlane(params.farClippingPlane);
         m_Camera.setViewMatrixOverride(params.viewMatrix);
         m_Camera.setProjectionMatrixOverride(params.projectionMatrix);
-
-        std::optional<RimHighlights> const maybeRimHighlights = tryGenerateRimHighlights(decorations, params);
-        std::optional<Shadows> const maybeShadowMap = tryGenerateShadowMap(decorations, params);
+        m_Camera.setBackgroundColor(params.backgroundColor);
 
         // draw the the scene
         {
@@ -290,7 +291,6 @@ public:
 
         // write the scene render to the ouptut texture
         OSC_ASSERT(m_MaybeRenderTexture.has_value());
-        m_Camera.setBackgroundColor(params.backgroundColor);
         m_Camera.renderTo(*m_MaybeRenderTexture);
 
         // prevents copies on next frame
@@ -336,8 +336,8 @@ private:
             *maybeRimWorldspaceAABB,
             params.viewMatrix,
             params.projectionMatrix,
-            m_Camera.getNearClippingPlane(),
-            m_Camera.getFarClippingPlane()
+            params.nearClippingPlane,
+            params.farClippingPlane
         );
 
         if (!maybeRimRectNDC)
@@ -351,7 +351,7 @@ private:
         Rect& rimRectNDC = *maybeRimRectNDC;
 
         // compute rim thickness in each direction (aspect ratio might not be 1:1)
-        glm::vec2 const rimThicknessNDC = 2.0f*m_RimThickness / glm::vec2{params.dimensions};
+        glm::vec2 const rimThicknessNDC = 2.0f*params.rimThicknessInPixels / glm::vec2{params.dimensions};
 
         // expand by the rim thickness, so that the output has space for the rims
         rimRectNDC = osc::Expand(rimRectNDC, rimThicknessNDC);
@@ -375,6 +375,15 @@ private:
 
         // rendering:
 
+        // setup scene camera
+        m_Camera.reset();
+        m_Camera.setPosition(params.viewPos);
+        m_Camera.setNearClippingPlane(params.nearClippingPlane);
+        m_Camera.setFarClippingPlane(params.farClippingPlane);
+        m_Camera.setViewMatrixOverride(params.viewMatrix);
+        m_Camera.setProjectionMatrixOverride(params.projectionMatrix);
+        m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
+
         // draw all selected geometry in a solid color
         for (SceneDecoration const& dec : decorations)
         {
@@ -396,10 +405,7 @@ private:
         OSC_ASSERT(m_MaybeRimsTexture.has_value());
 
         // render to the off-screen solid-colored texture
-        glm::vec4 const originalBgColor = m_Camera.getBackgroundColor();
-        m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
         m_Camera.renderTo(*m_MaybeRimsTexture);
-        m_Camera.setBackgroundColor(originalBgColor);
 
         // configure a material that draws the off-screen colored texture on-screen
         //
@@ -429,8 +435,8 @@ private:
             return std::nullopt;  // the caller doesn't actually want shadows
         }
 
-        // use a seperate camera that is set up to come from the direction of the light
-        Camera shadowCamera;
+        // setup scene camera
+        m_Camera.reset();
 
         // compute the bounds of everything that casts a shadow
         //
@@ -442,24 +448,25 @@ private:
             {
                 AABB const decorationAABB = WorldpaceAABB(dec);
                 casterAABBs = casterAABBs ? Union(*casterAABBs, decorationAABB) : decorationAABB;
-                Graphics::DrawMesh(dec.mesh, dec.transform, m_DepthWritingMaterial, shadowCamera);
+                Graphics::DrawMesh(dec.mesh, dec.transform, m_DepthWritingMaterial, m_Camera);
             }
         }
 
         if (!casterAABBs)
         {
             // there are no shadow casters, so there will be no shadows
+            m_Camera.reset();
             return std::nullopt;
         }
 
         // compute camera matrices for the orthogonal (direction) camera used for lighting
         ShadowCameraMatrices const matrices = CalcShadowCameraMatrices(*casterAABBs, params.lightDirection);
 
-        shadowCamera.setBackgroundColor({1.0f, 0.0f, 0.0f, 0.0f});
-        shadowCamera.setViewMatrixOverride(matrices.viewMatrix);
-        shadowCamera.setProjectionMatrixOverride(matrices.projMatrix);
+        m_Camera.setBackgroundColor({1.0f, 0.0f, 0.0f, 0.0f});
+        m_Camera.setViewMatrixOverride(matrices.viewMatrix);
+        m_Camera.setProjectionMatrixOverride(matrices.projMatrix);
         EmplaceOrReformat(m_MaybeShadowMap, osc::RenderTextureDescriptor{glm::ivec2{1024,1024}});
-        shadowCamera.renderTo(*m_MaybeShadowMap);
+        m_Camera.renderTo(*m_MaybeShadowMap);
 
         return Shadows{*m_MaybeShadowMap, matrices.projMatrix * matrices.viewMatrix};
     }
@@ -475,7 +482,6 @@ private:
     Texture2D m_ChequerTexture;
     Camera m_Camera;
 
-    glm::vec2 m_RimThickness;
     MaterialPropertyBlock m_RimsSelectedColor;
     MaterialPropertyBlock m_RimsHoveredColor;
     std::optional<RenderTexture> m_MaybeRimsTexture;
