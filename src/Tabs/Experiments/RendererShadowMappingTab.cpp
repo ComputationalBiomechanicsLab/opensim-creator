@@ -225,7 +225,7 @@ private:
 
     // tab state
     UID m_ID;
-    std::string m_Name = ICON_FA_BOOK " ShadowMapping";
+    std::string m_Name = ICON_FA_BOOK " ShadowMapping (LearnOpenGL)";
     TabHost* m_Parent;
     bool m_IsMouseCaptured = false;
 
