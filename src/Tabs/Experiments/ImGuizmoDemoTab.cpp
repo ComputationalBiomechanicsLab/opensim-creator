@@ -114,7 +114,12 @@ private:
 };
 
 
-// public API
+// public API (PIMPL)
+
+osc::CStringView osc::ImGuizmoDemoTab::id() noexcept
+{
+    return "Demos/ImGuizmo";
+}
 
 osc::ImGuizmoDemoTab::ImGuizmoDemoTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}

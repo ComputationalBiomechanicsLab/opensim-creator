@@ -14,6 +14,8 @@ namespace osc
 {
     class RendererFramebuffersTab final : public Tab {
     public:
+        static CStringView id() noexcept;
+
         RendererFramebuffersTab(TabHost*);
         RendererFramebuffersTab(RendererFramebuffersTab const&) = delete;
         RendererFramebuffersTab(RendererFramebuffersTab&&) noexcept;

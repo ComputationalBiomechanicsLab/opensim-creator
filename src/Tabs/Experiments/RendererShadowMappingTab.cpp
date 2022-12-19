@@ -258,6 +258,11 @@ private:
 
 // public API (PIMPL)
 
+osc::CStringView osc::RendererShadowMappingTab::id() noexcept
+{
+    return "Renderer/ShadowMapping";
+}
+
 osc::RendererShadowMappingTab::RendererShadowMappingTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}
 {

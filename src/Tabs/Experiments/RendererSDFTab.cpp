@@ -191,7 +191,12 @@ private:
 };
 
 
-// public API
+// public API (PIMPL)
+
+osc::CStringView osc::RendererSDFTab::id() noexcept
+{
+    return "Renderer/SDFTab";
+}
 
 osc::RendererSDFTab::RendererSDFTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}

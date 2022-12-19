@@ -630,6 +630,11 @@ private:
 
 // public API (PIMPL)
 
+osc::CStringView osc::ModelWarpingTab::id() noexcept
+{
+    return "Warping/OpenSim";
+}
+
 osc::ModelWarpingTab::ModelWarpingTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}
 {

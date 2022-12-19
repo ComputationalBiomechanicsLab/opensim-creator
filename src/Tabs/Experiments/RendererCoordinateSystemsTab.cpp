@@ -193,6 +193,11 @@ private:
 
 // public API (PIMPL)
 
+osc::CStringView osc::RendererCoordinateSystemsTab::id() noexcept
+{
+    return "Renderer/CoordinateSystems";
+}
+
 osc::RendererCoordinateSystemsTab::RendererCoordinateSystemsTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}
 {

@@ -14,6 +14,8 @@ namespace osc
 {
     class RendererHelloTriangleTab final : public Tab {
     public:
+        static CStringView id() noexcept;
+
         RendererHelloTriangleTab(TabHost*);
         RendererHelloTriangleTab(RendererHelloTriangleTab const&) = delete;
         RendererHelloTriangleTab(RendererHelloTriangleTab&&) noexcept;

@@ -14,6 +14,8 @@ namespace osc
 {
     class RendererBlendingTab final : public Tab {
     public:
+        static CStringView id() noexcept;
+
         RendererBlendingTab(TabHost*);
         RendererBlendingTab(RendererBlendingTab const&) = delete;
         RendererBlendingTab(RendererBlendingTab&&) noexcept;

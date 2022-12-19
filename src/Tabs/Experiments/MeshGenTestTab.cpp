@@ -160,7 +160,12 @@ private:
 };
 
 
-// public API
+// public API (PIMPL)
+
+osc::CStringView osc::MeshGenTestTab::id() noexcept
+{
+    return "MeshGen/Test";
+}
 
 osc::MeshGenTestTab::MeshGenTestTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}

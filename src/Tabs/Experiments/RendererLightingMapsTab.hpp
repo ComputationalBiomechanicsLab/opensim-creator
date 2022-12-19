@@ -14,6 +14,8 @@ namespace osc
 {
     class RendererLightingMapsTab final : public Tab {
     public:
+        static CStringView id() noexcept;
+
         RendererLightingMapsTab(TabHost*);
         RendererLightingMapsTab(RendererLightingMapsTab const&) = delete;
         RendererLightingMapsTab(RendererLightingMapsTab&&) noexcept;

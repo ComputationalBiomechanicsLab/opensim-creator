@@ -14,6 +14,8 @@ namespace osc
 {
     class RendererSDFTab final : public Tab {
     public:
+        static CStringView id() noexcept;
+
         RendererSDFTab(TabHost*);
         RendererSDFTab(RendererSDFTab const&) = delete;
         RendererSDFTab(RendererSDFTab&&) noexcept;

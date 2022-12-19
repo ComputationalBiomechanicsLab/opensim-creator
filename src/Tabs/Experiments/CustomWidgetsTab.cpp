@@ -300,7 +300,12 @@ private:
 };
 
 
-// public API
+// public API (PIMPL)
+
+osc::CStringView osc::CustomWidgetsTab::id() noexcept
+{
+    return "UI/CustomWidgets";
+}
 
 osc::CustomWidgetsTab::CustomWidgetsTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}

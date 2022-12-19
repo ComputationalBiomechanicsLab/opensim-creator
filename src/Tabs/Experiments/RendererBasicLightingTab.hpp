@@ -14,6 +14,8 @@ namespace osc
 {
     class RendererBasicLightingTab final : public Tab {
     public:
+        static CStringView id() noexcept;
+
         RendererBasicLightingTab(TabHost*);
         RendererBasicLightingTab(RendererBasicLightingTab const&) = delete;
         RendererBasicLightingTab(RendererBasicLightingTab&&) noexcept;

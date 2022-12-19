@@ -231,7 +231,12 @@ private:
 };
 
 
-// public API
+// public API (PIMPL)
+
+osc::CStringView osc::MeshHittestTab::id() noexcept
+{
+    return "Hittest/Meshes";
+}
 
 osc::MeshHittestTab::MeshHittestTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}

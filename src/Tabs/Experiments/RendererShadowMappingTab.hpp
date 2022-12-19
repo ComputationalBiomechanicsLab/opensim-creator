@@ -14,6 +14,8 @@ namespace osc
 {
     class RendererShadowMappingTab final : public Tab {
     public:
+        static CStringView id() noexcept;
+
         RendererShadowMappingTab(TabHost*);
         RendererShadowMappingTab(RendererShadowMappingTab const&) = delete;
         RendererShadowMappingTab(RendererShadowMappingTab&&) noexcept;

@@ -265,6 +265,11 @@ private:
 
 // public API (PIMPL)
 
+osc::CStringView osc::RendererMultipleLightsTab::id() noexcept
+{
+    return "Renderer/MultipleLights";
+}
+
 osc::RendererMultipleLightsTab::RendererMultipleLightsTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}
 {

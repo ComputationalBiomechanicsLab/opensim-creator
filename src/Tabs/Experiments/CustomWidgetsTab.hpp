@@ -14,6 +14,8 @@ namespace osc
 {
     class CustomWidgetsTab final : public Tab {
     public:
+        static CStringView id() noexcept;
+
         CustomWidgetsTab(TabHost*);
         CustomWidgetsTab(CustomWidgetsTab const&) = delete;
         CustomWidgetsTab(CustomWidgetsTab&&) noexcept;

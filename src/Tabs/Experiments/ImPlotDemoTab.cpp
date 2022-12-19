@@ -68,7 +68,12 @@ private:
 };
 
 
-// public API
+// public API (PIMPL)
+
+osc::CStringView osc::ImPlotDemoTab::id() noexcept
+{
+    return "Demos/ImPlot";
+}
 
 osc::ImPlotDemoTab::ImPlotDemoTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}

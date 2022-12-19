@@ -14,6 +14,8 @@ namespace osc
 {
     class PreviewExperimentalDataTab final : public Tab {
     public:
+        static CStringView id() noexcept;
+
         PreviewExperimentalDataTab(TabHost*);
         PreviewExperimentalDataTab(PreviewExperimentalDataTab const&) = delete;
         PreviewExperimentalDataTab(PreviewExperimentalDataTab&&) noexcept;

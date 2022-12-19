@@ -14,6 +14,8 @@ namespace osc
 {
     class RendererTexturingTab final : public Tab {
     public:
+        static CStringView id() noexcept;
+
         RendererTexturingTab(TabHost*);
         RendererTexturingTab(RendererTexturingTab const&) = delete;
         RendererTexturingTab(RendererTexturingTab&&) noexcept;

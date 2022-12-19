@@ -134,6 +134,11 @@ private:
 
 // public API (PIMPL)
 
+osc::CStringView osc::RendererGeometryShaderTab::id() noexcept
+{
+    return "Renderer/GeometryShader";
+}
+
 osc::RendererGeometryShaderTab::RendererGeometryShaderTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}
 {

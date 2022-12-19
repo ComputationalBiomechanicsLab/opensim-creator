@@ -205,6 +205,11 @@ private:
 
 // public API (PIMPL)
 
+osc::CStringView osc::RendererFramebuffersTab::id() noexcept
+{
+    return "Renderer/Framebuffers";
+}
+
 osc::RendererFramebuffersTab::RendererFramebuffersTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}
 {

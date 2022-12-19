@@ -167,6 +167,11 @@ private:
 
 // public API (PIMPL)
 
+osc::CStringView osc::RendererLightingMapsTab::id() noexcept
+{
+    return "Renderer/LightingMaps";
+}
+
 osc::RendererLightingMapsTab::RendererLightingMapsTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}
 {

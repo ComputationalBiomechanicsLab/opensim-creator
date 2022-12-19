@@ -14,6 +14,8 @@ namespace osc
 {
     class ModelWarpingTab final : public Tab {
     public:
+        static CStringView id() noexcept;
+
         ModelWarpingTab(TabHost*);
         ModelWarpingTab(ModelWarpingTab const&) = delete;
         ModelWarpingTab(ModelWarpingTab&&) noexcept = default;

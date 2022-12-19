@@ -14,6 +14,8 @@ namespace osc
 {
     class ImGuizmoDemoTab final : public Tab {
     public:
+        static CStringView id() noexcept;
+
         ImGuizmoDemoTab(TabHost*);
         ImGuizmoDemoTab(ImGuizmoDemoTab const&) = delete;
         ImGuizmoDemoTab(ImGuizmoDemoTab&&) noexcept;

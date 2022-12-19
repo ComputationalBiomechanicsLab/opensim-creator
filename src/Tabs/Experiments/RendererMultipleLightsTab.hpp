@@ -14,6 +14,8 @@ namespace osc
 {
     class RendererMultipleLightsTab final : public Tab {
     public:
+        static CStringView id() noexcept;
+
         RendererMultipleLightsTab(TabHost*);
         RendererMultipleLightsTab(RendererMultipleLightsTab const&) = delete;
         RendererMultipleLightsTab(RendererMultipleLightsTab&&) noexcept;

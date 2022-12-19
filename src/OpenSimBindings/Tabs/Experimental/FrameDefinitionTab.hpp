@@ -14,6 +14,8 @@ namespace osc
 {
     class FrameDefinitionTab final : public Tab {
     public:
+        static CStringView id() noexcept;
+
         FrameDefinitionTab(TabHost*);
         FrameDefinitionTab(FrameDefinitionTab const&) = delete;
         FrameDefinitionTab(FrameDefinitionTab&&) noexcept;

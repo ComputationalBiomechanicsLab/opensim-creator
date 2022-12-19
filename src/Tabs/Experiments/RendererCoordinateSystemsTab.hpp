@@ -14,6 +14,8 @@ namespace osc
 {
     class RendererCoordinateSystemsTab final : public Tab {
     public:
+        static CStringView id() noexcept;
+
         RendererCoordinateSystemsTab(TabHost*);
         RendererCoordinateSystemsTab(RendererCoordinateSystemsTab const&) = delete;
         RendererCoordinateSystemsTab(RendererCoordinateSystemsTab&&) noexcept;

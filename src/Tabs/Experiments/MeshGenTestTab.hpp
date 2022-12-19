@@ -14,6 +14,8 @@ namespace osc
 {
     class MeshGenTestTab final : public Tab {
     public:
+        static CStringView id() noexcept;
+
         MeshGenTestTab(TabHost*);
         MeshGenTestTab(MeshGenTestTab const&) = delete;
         MeshGenTestTab(MeshGenTestTab&&) noexcept;

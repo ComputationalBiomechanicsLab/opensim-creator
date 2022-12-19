@@ -684,6 +684,11 @@ private:
 
 // public API (PIMPL)
 
+osc::CStringView osc::PreviewExperimentalDataTab::id() noexcept
+{
+    return "OpenSim/PreviewExperimentalData";
+}
+
 osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}
 {

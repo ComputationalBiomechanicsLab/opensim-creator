@@ -244,6 +244,11 @@ private:
 
 // public API (PIMPL)
 
+osc::CStringView osc::RendererBlendingTab::id() noexcept
+{
+    return "Renderer/Blending";
+}
+
 osc::RendererBlendingTab::RendererBlendingTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}
 {

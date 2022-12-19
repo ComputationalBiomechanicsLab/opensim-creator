@@ -109,6 +109,11 @@ private:
 
 // public API (PIMPL)
 
+osc::CStringView osc::RendererHelloTriangleTab::id() noexcept
+{
+    return "Renderer/HelloTriangle";
+}
+
 osc::RendererHelloTriangleTab::RendererHelloTriangleTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}
 {

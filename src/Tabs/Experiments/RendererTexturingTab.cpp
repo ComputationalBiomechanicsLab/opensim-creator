@@ -119,6 +119,11 @@ private:
 
 // public API (PIMPL)
 
+osc::CStringView osc::RendererTexturingTab::id() noexcept
+{
+    return "Renderer/Texturing";
+}
+
 osc::RendererTexturingTab::RendererTexturingTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}
 {

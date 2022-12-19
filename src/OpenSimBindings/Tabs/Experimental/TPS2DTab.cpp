@@ -598,6 +598,11 @@ private:
 
 // public API (PIMPL)
 
+osc::CStringView osc::TPS2DTab::id() noexcept
+{
+    return "Warping/TPS2D";
+}
+
 osc::TPS2DTab::TPS2DTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}
 {

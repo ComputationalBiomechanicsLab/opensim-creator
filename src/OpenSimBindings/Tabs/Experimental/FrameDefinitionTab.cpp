@@ -273,6 +273,11 @@ private:
 
 // public API (PIMPL)
 
+osc::CStringView osc::FrameDefinitionTab::id() noexcept
+{
+    return "Warping/FrameDefinition";
+}
+
 osc::FrameDefinitionTab::FrameDefinitionTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
