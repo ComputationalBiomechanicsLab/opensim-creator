@@ -69,6 +69,11 @@ private:
 
 // public API (PIMPL)
 
+osc::CStringView osc::CookiecutterTab::id() noexcept
+{
+    return "CookiecutterTab";
+}
+
 osc::CookiecutterTab::CookiecutterTab(TabHost* parent) :
     m_Impl{std::make_unique<Impl>(std::move(parent))}
 {
