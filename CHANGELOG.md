@@ -14,6 +14,7 @@ All notable changes to this project will be documented here. The format is based
   checkbox in a viewport's `Options` menu (it will be default-enabled in 0.4.0)
 - Refactored mesh class codebase-wide to leverage its copy-on-write behavior (#483)
 - Refactored tab classes to have an `id()` function (#480)
+- Refactored `unique_ptr` usage out of `osc::ShaderCache` (#496)
 
 ## [0.3.1] - UNRELEASED
 

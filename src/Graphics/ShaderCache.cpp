@@ -3,6 +3,7 @@
 #include "src/Graphics/Shader.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
+#include "src/Utils/SynchronizedValue.hpp"
 
 #include <cstddef>
 #include <filesystem>
@@ -13,6 +14,7 @@
 
 namespace
 {
+    // parameters for a shader, to be used as a key into the shader cache
     struct ShaderInputs {
         std::filesystem::path vertexShaderPath;
         std::filesystem::path geometryShaderPath;
@@ -67,59 +69,44 @@ public:
         std::filesystem::path const& vertexShader,
         std::filesystem::path const& fragmentShader)
     {
-        auto lock = std::lock_guard{m_CacheMutex};
+        ShaderInputs const key{vertexShader, fragmentShader};
 
-        ShaderInputs key{vertexShader, fragmentShader};
-        auto [it, inserted] = m_Cache.try_emplace(key, std::unique_ptr<Shader>{});
-
-        if (inserted)
+        auto guard = m_Cache.lock();
+        auto const it = guard->find(key);
+        if (it != guard->end())
         {
-            try
-            {
-                std::string vertexShaderSrc = SlurpFileIntoString(key.vertexShaderPath);
-                std::string fragmentShaderSrc = SlurpFileIntoString(key.fragmentShaderPath);
-                it->second = std::make_unique<Shader>(vertexShaderSrc, fragmentShaderSrc);
-            }
-            catch (...)
-            {
-                m_Cache.erase(it);
-                throw;
-            }
+            return it->second;
         }
-
-        return *it->second;
+        else
+        {
+            std::string const vertexShaderSrc = SlurpFileIntoString(key.vertexShaderPath);
+            std::string const fragmentShaderSrc = SlurpFileIntoString(key.fragmentShaderPath);
+            return guard->emplace_hint(it, key, Shader{vertexShaderSrc, fragmentShaderSrc})->second;
+        }
     }
     Shader const& load(
         std::filesystem::path const& vertexShader,
         std::filesystem::path const& geometryShader,
         std::filesystem::path const& fragmentShader)
     {
-        auto lock = std::lock_guard{m_CacheMutex};
+        ShaderInputs const key{vertexShader, geometryShader, fragmentShader};
 
-        ShaderInputs key{vertexShader, geometryShader, fragmentShader};
-        auto [it, inserted] = m_Cache.try_emplace(key, std::unique_ptr<Shader>{});
-
-        if (inserted)
+        auto guard = m_Cache.lock();
+        auto const it = guard->find(key);
+        if (it != guard->end())
         {
-            try
-            {
-                std::string vertexShaderSrc = SlurpFileIntoString(key.vertexShaderPath);
-                std::string geometryShaderSrc = SlurpFileIntoString(key.geometryShaderPath);
-                std::string fragmentShaderSrc = SlurpFileIntoString(key.fragmentShaderPath);
-                it->second = std::make_unique<Shader>(vertexShaderSrc, geometryShaderSrc, fragmentShaderSrc);
-            }
-            catch (...)
-            {
-                m_Cache.erase(it);
-                throw;
-            }
+            return it->second;
         }
-
-        return *it->second;
+        else
+        {
+            std::string const vertexShaderSrc = SlurpFileIntoString(key.vertexShaderPath);
+            std::string const geometryShaderSrc = SlurpFileIntoString(key.geometryShaderPath);
+            std::string const fragmentShaderSrc = SlurpFileIntoString(key.fragmentShaderPath);
+            return guard->emplace_hint(it, key, Shader{vertexShaderSrc, geometryShaderSrc, fragmentShaderSrc})->second;
+        }
     }
 private:
-    std::mutex m_CacheMutex;
-    std::unordered_map<ShaderInputs, std::unique_ptr<Shader>> m_Cache;
+    SynchronizedValue<std::unordered_map<ShaderInputs, Shader>> m_Cache;
 };
 
 
