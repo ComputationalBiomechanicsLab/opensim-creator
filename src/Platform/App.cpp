@@ -207,6 +207,38 @@ namespace
         {
         }
     };
+
+    // wrapper class for storing std::type_info as a hashable type
+    class TypeInfoReference {
+    public:
+        TypeInfoReference(std::type_info const& typeInfo) noexcept :
+            m_TypeInfo{&typeInfo}
+        {
+        }
+
+        std::type_info const& get() const
+        {
+            return *m_TypeInfo;
+        }
+    private:
+        std::type_info const* m_TypeInfo;
+    };
+
+    bool operator==(TypeInfoReference const& a, TypeInfoReference const& b) noexcept
+    {
+        return a.get() == b.get();
+    }
+}
+
+namespace std
+{
+    template<>
+    struct hash<TypeInfoReference> final {
+        size_t operator()(TypeInfoReference const& ref) const noexcept
+        {
+            return ref.get().hash_code();
+        }
+    };
 }
 
 // main application state
@@ -626,7 +658,7 @@ public:
 
     std::shared_ptr<void> updSingleton(std::type_info const& typeinfo, std::function<std::shared_ptr<void>()> ctor)
     {
-        auto const [it, inserted] = m_Singletons.try_emplace(typeinfo.hash_code(), nullptr);
+        auto const [it, inserted] = m_Singletons.try_emplace(typeinfo, nullptr);
         if (inserted)
         {
             it->second = ctor();
@@ -856,7 +888,7 @@ private:
     AppClock::duration m_TimeSinceLastFrame = {};
 
     // global cache of application-wide singletons (usually, for caching)
-    std::unordered_map<size_t, std::shared_ptr<void>> m_Singletons;
+    std::unordered_map<TypeInfoReference, std::shared_ptr<void>> m_Singletons;
 
     // how many samples the implementation should actually use
     int m_CurrentMSXAASamples = std::min(m_GraphicsContext.getMaxMSXAASamples(), m_ApplicationConfig->getNumMSXAASamples());
