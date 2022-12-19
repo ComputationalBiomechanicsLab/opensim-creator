@@ -544,6 +544,8 @@ add_library(osccore STATIC
     src/Tabs/Experiments/RendererLightingMapsTab.hpp
     src/Tabs/Experiments/RendererMultipleLightsTab.cpp
     src/Tabs/Experiments/RendererMultipleLightsTab.hpp
+    src/Tabs/Experiments/RendererNormalMappingTab.cpp
+    src/Tabs/Experiments/RendererNormalMappingTab.hpp
     src/Tabs/Experiments/RendererSDFTab.cpp
     src/Tabs/Experiments/RendererSDFTab.hpp
     src/Tabs/Experiments/RendererShadowMappingTab.cpp
