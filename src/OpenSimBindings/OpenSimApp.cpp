@@ -60,9 +60,9 @@ namespace
     };
 
     template<class TabClass>
-    void RegisterTab(osc::CStringView id, osc::TabRegistry& registry)
+    void RegisterTab(osc::TabRegistry& registry)
     {
-        osc::TabRegistryEntry entry{id, [](osc::TabHost* h) { return std::make_unique<TabClass>(h); }};
+        osc::TabRegistryEntry entry{TabClass::id(), [](osc::TabHost* h) { return std::make_unique<TabClass>(h); }};
         registry.registerTab(entry);
     }
 }
@@ -159,29 +159,29 @@ static bool InitializeOpenSim(osc::Config const& config)
 
     // register any user-accessible tabs
     std::shared_ptr<osc::TabRegistry> const registry = osc::App::singleton<osc::TabRegistry>();
-    RegisterTab<osc::CustomWidgetsTab>(osc::CustomWidgetsTab::id(), *registry);
-    RegisterTab<osc::HittestTab>(osc::HittestTab::id(), *registry);
-    RegisterTab<osc::RendererBasicLightingTab>(osc::RendererBasicLightingTab::id(), *registry);
-    RegisterTab<osc::RendererBlendingTab>(osc::RendererBlendingTab::id(), *registry);
-    RegisterTab<osc::RendererCoordinateSystemsTab>(osc::RendererCoordinateSystemsTab::id(), *registry);
-    RegisterTab<osc::RendererFramebuffersTab>(osc::RendererFramebuffersTab::id(), *registry);
-    RegisterTab<osc::RendererHelloTriangleTab>(osc::RendererHelloTriangleTab::id(), *registry);
-    RegisterTab<osc::RendererLightingMapsTab>(osc::RendererLightingMapsTab::id(), *registry);
-    RegisterTab<osc::RendererMultipleLightsTab>(osc::RendererMultipleLightsTab::id(), *registry);
-    RegisterTab<osc::RendererTexturingTab>(osc::RendererTexturingTab::id(), *registry);
-    RegisterTab<osc::RendererSDFTab>(osc::RendererSDFTab::id(), *registry);
-    RegisterTab<osc::RendererShadowMappingTab>(osc::RendererShadowMappingTab::id(), *registry);
-    RegisterTab<osc::ImGuiDemoTab>(osc::ImGuiDemoTab::id(), *registry);
-    RegisterTab<osc::ImPlotDemoTab>(osc::ImPlotDemoTab::id(), *registry);
-    RegisterTab<osc::ImGuizmoDemoTab>(osc::ImGuizmoDemoTab::id(), *registry);
-    RegisterTab<osc::MeshGenTestTab>(osc::MeshGenTestTab::id(), *registry);
-    RegisterTab<osc::MeshHittestTab>(osc::MeshHittestTab::id(), *registry);
-    RegisterTab<osc::PreviewExperimentalDataTab>(osc::PreviewExperimentalDataTab::id(), *registry);
-    RegisterTab<osc::RendererGeometryShaderTab>(osc::RendererGeometryShaderTab::id(), *registry);
-    RegisterTab<osc::TPS2DTab>(osc::TPS2DTab::id(), *registry);
-    RegisterTab<osc::TPS3DTab>(osc::TPS3DTab::id(), *registry);
-    RegisterTab<osc::FrameDefinitionTab>(osc::FrameDefinitionTab::id(), *registry);
-    RegisterTab<osc::ModelWarpingTab>(osc::ModelWarpingTab::id(), *registry);
+    RegisterTab<osc::CustomWidgetsTab>(*registry);
+    RegisterTab<osc::HittestTab>(*registry);
+    RegisterTab<osc::RendererBasicLightingTab>(*registry);
+    RegisterTab<osc::RendererBlendingTab>(*registry);
+    RegisterTab<osc::RendererCoordinateSystemsTab>(*registry);
+    RegisterTab<osc::RendererFramebuffersTab>(*registry);
+    RegisterTab<osc::RendererHelloTriangleTab>(*registry);
+    RegisterTab<osc::RendererLightingMapsTab>(*registry);
+    RegisterTab<osc::RendererMultipleLightsTab>(*registry);
+    RegisterTab<osc::RendererTexturingTab>(*registry);
+    RegisterTab<osc::RendererSDFTab>(*registry);
+    RegisterTab<osc::RendererShadowMappingTab>(*registry);
+    RegisterTab<osc::ImGuiDemoTab>(*registry);
+    RegisterTab<osc::ImPlotDemoTab>(*registry);
+    RegisterTab<osc::ImGuizmoDemoTab>(*registry);
+    RegisterTab<osc::MeshGenTestTab>(*registry);
+    RegisterTab<osc::MeshHittestTab>(*registry);
+    RegisterTab<osc::PreviewExperimentalDataTab>(*registry);
+    RegisterTab<osc::RendererGeometryShaderTab>(*registry);
+    RegisterTab<osc::TPS2DTab>(*registry);
+    RegisterTab<osc::TPS3DTab>(*registry);
+    RegisterTab<osc::FrameDefinitionTab>(*registry);
+    RegisterTab<osc::ModelWarpingTab>(*registry);
 
     return true;
 }
