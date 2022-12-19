@@ -144,33 +144,33 @@ namespace
                 {
                     for (size_t i = 0, len = m_Decorations.size(); i < len; ++i)
                     {
-                        DrawAABB(osc::App::singleton<osc::MeshCache>(), GetWorldspaceAABB(m_Decorations[i]), m_Decorations);
+                        DrawAABB(*osc::App::singleton<osc::MeshCache>(), GetWorldspaceAABB(m_Decorations[i]), m_Decorations);
                     }
                 }
 
                 if (panelFlags & osc::UiModelViewerFlags_DrawBVH)
                 {
-                    DrawBVH(osc::App::singleton<osc::MeshCache>(), m_BVH, m_Decorations);
+                    DrawBVH(*osc::App::singleton<osc::MeshCache>(), m_BVH, m_Decorations);
                 }
 
                 if (panelFlags & osc::UiModelViewerFlags_DrawXZGrid)
                 {
-                    DrawXZGrid(osc::App::singleton<osc::MeshCache>(), m_Decorations);
+                    DrawXZGrid(*osc::App::singleton<osc::MeshCache>(), m_Decorations);
                 }
 
                 if (panelFlags & osc::UiModelViewerFlags_DrawXYGrid)
                 {
-                    DrawXYGrid(osc::App::singleton<osc::MeshCache>(), m_Decorations);
+                    DrawXYGrid(*osc::App::singleton<osc::MeshCache>(), m_Decorations);
                 }
 
                 if (panelFlags & osc::UiModelViewerFlags_DrawYZGrid)
                 {
-                    DrawYZGrid(osc::App::singleton<osc::MeshCache>(), m_Decorations);
+                    DrawYZGrid(*osc::App::singleton<osc::MeshCache>(), m_Decorations);
                 }
 
                 if (panelFlags & osc::UiModelViewerFlags_DrawAxisLines)
                 {
-                    DrawXZFloorLines(osc::App::singleton<osc::MeshCache>(), m_Decorations);
+                    DrawXZFloorLines(*osc::App::singleton<osc::MeshCache>(), m_Decorations);
                 }
             }
         }
@@ -654,8 +654,8 @@ private:
     SceneRenderer m_Rendererer
     {
         osc::App::config(),
-        osc::App::singleton<osc::MeshCache>(),
-        osc::App::singleton<osc::ShaderCache>()
+        *osc::App::singleton<osc::MeshCache>(),
+        *osc::App::singleton<osc::ShaderCache>()
     };
 
     // ImGui compositing/hittesting state

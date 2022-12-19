@@ -730,10 +730,10 @@ namespace
         osc::PolarPerspectiveCamera LinkedCameraBase = CreateCameraFocusedOn(EditedDocument->getScratch().sourceMesh.getBounds());
 
         // wireframe material, used to draw scene elements in a wireframe style
-        osc::Material WireframeMaterial = osc::CreateWireframeOverlayMaterial(osc::App::config(), osc::App::singleton<osc::ShaderCache>());
+        osc::Material WireframeMaterial = osc::CreateWireframeOverlayMaterial(osc::App::config(), *osc::App::singleton<osc::ShaderCache>());
 
         // shared sphere mesh (used by rendering code)
-        osc::Mesh LandmarkSphere = osc::App::singleton<osc::MeshCache>().getSphereMesh();
+        osc::Mesh LandmarkSphere = osc::App::singleton<osc::MeshCache>()->getSphereMesh();
 
         // current user selection
         TPSTabSelection UserSelection;
@@ -793,8 +793,8 @@ namespace
         }
 
         // add grid decorations
-        DrawXZGrid(osc::App::singleton<osc::MeshCache>(), out);
-        DrawXZFloorLines(osc::App::singleton<osc::MeshCache>(), out, 100.0f);
+        DrawXZGrid(*osc::App::singleton<osc::MeshCache>(), out);
+        DrawXZFloorLines(*osc::App::singleton<osc::MeshCache>(), out, 100.0f);
     }
 }
 
@@ -1206,7 +1206,7 @@ namespace
             m_FlipFirstEdge{false},
             m_FlipSecondEdge{false},
             m_EdgeIndexToAxisIndex{{0, 1, 2}},
-            m_CachedRenderer{osc::App::config(), osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()},
+            m_CachedRenderer{osc::App::config(), *osc::App::singleton<osc::MeshCache>(), *osc::App::singleton<osc::ShaderCache>()},
             m_WireframeMode{std::move(wireframeMode_)},
             m_LandmarkRadius{std::move(landmarkRadius_)}
         {
@@ -1365,7 +1365,7 @@ namespace
                     {
                         props.color = {1.0f, 1.0f, 1.0f, 0.25f};
                     }
-                    osc::DrawArrow(osc::App::singleton<osc::MeshCache>(), props, rv);
+                    osc::DrawArrow(*osc::App::singleton<osc::MeshCache>(), props, rv);
                 }
                 else
                 {
@@ -1420,7 +1420,7 @@ namespace
                 props.color = {0.0f, 0.0f, 0.0f, 1.0f};
                 props.color[m_EdgeIndexToAxisIndex[0]] = 1.0f;
 
-                osc::DrawArrow(osc::App::singleton<osc::MeshCache>(), props, rv);
+                osc::DrawArrow(*osc::App::singleton<osc::MeshCache>(), props, rv);
             }
 
             // draw second landmark
@@ -1450,7 +1450,7 @@ namespace
                 props.neckThickness = 0.25f*m_LandmarkRadius;
                 props.headThickness = 0.5f*m_LandmarkRadius;
                 props.color = {1.0f, 1.0f, 1.0f, 0.75f};
-                osc::DrawArrow(osc::App::singleton<osc::MeshCache>(), props, rv);
+                osc::DrawArrow(*osc::App::singleton<osc::MeshCache>(), props, rv);
             }
 
             // if applicable, draw completed frame
@@ -1490,7 +1490,7 @@ namespace
                     color[static_cast<int>(i)] = 1.0f;
 
                     osc::DrawLineSegment(
-                        osc::App::singleton<osc::MeshCache>(),
+                        *osc::App::singleton<osc::MeshCache>(),
                         {origin, origin + legLen*axes[i]},
                         color,
                         legThickness,
@@ -2063,7 +2063,7 @@ namespace
         std::shared_ptr<TPSTabSharedState> m_State;
         TPSDocumentInputIdentifier m_DocumentIdentifier;
         osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(GetScratchMesh(*m_State, m_DocumentIdentifier).getBounds());
-        osc::CachedSceneRenderer m_CachedRenderer{osc::App::config(), osc::App::singleton<osc::MeshCache>(), osc::App::singleton<osc::ShaderCache>()};
+        osc::CachedSceneRenderer m_CachedRenderer{osc::App::config(), *osc::App::singleton<osc::MeshCache>(), *osc::App::singleton<osc::ShaderCache>()};
         osc::ImGuiItemHittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;
         float m_LandmarkRadius = 0.05f;
@@ -2273,8 +2273,8 @@ namespace
         osc::CachedSceneRenderer m_CachedRenderer
         {
             osc::App::config(),
-            osc::App::singleton<osc::MeshCache>(),
-            osc::App::singleton<osc::ShaderCache>()
+            *osc::App::singleton<osc::MeshCache>(),
+            *osc::App::singleton<osc::ShaderCache>()
         };
         osc::ImGuiItemHittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;

@@ -29,7 +29,7 @@
 
 static std::map<std::string, osc::Mesh> GenerateMeshLookup()
 {
-    osc::MeshCache& cache = osc::App::singleton<osc::MeshCache>();
+    osc::MeshCache& cache = *osc::App::singleton<osc::MeshCache>();
     return
     {
         {"sphere", cache.getSphereMesh()},

@@ -302,7 +302,7 @@ namespace
         osc::Transform cylinderXform = osc::SimbodyCylinderToSegmentTransform({p1, p2}, radius);
 
         out.emplace_back(
-            osc::App::singleton<osc::MeshCache>().getCylinderMesh(),
+            osc::App::singleton<osc::MeshCache>()->getCylinderMesh(),
             cylinderXform,
             glm::vec4{0.7f, 0.7f, 0.7f, 1.0f},
             p2p.getAbsolutePathString(),
@@ -325,7 +325,7 @@ namespace
         xform.scale = {radius, radius, radius};
 
         out.emplace_back(
-            osc::App::singleton<osc::MeshCache>().getSphereMesh(),
+            osc::App::singleton<osc::MeshCache>()->getSphereMesh(),
             xform,
             glm::vec4{1.0f, 0.0f, 0.0f, 1.0f},
             s.getAbsolutePathString(),
@@ -344,7 +344,7 @@ namespace
         t.scale = osc::ToVec3(j.get_thoracic_ellipsoid_radii_x_y_z());
 
         out.emplace_back(
-            osc::App::singleton<osc::MeshCache>().getSphereMesh(),
+            osc::App::singleton<osc::MeshCache>()->getSphereMesh(),
             t,
             glm::vec4{1.0f, 1.0f, 0.0f, 0.2f},
             j.getAbsolutePathString(),
@@ -373,7 +373,7 @@ namespace
             t.scale = {radius, radius, radius};
 
             out.emplace_back(
-                osc::App::singleton<osc::MeshCache>().getSphereMesh(),
+                osc::App::singleton<osc::MeshCache>()->getSphereMesh(),
                 t,
                 glm::vec4{0.0f, 0.0f, 0.0f, 1.0f},
                 b.getAbsolutePathString(),
@@ -413,7 +413,7 @@ namespace
 
         osc::SceneDecoration fiberSpherePrototype =
         {
-            osc::App::singleton<osc::MeshCache>().getSphereMesh(),
+            osc::App::singleton<osc::MeshCache>()->getSphereMesh(),
             osc::Transform{},
             fiberColor,
             muscleAbsPath,
@@ -434,7 +434,7 @@ namespace
             osc::Transform cylinderXform = osc::SimbodyCylinderToSegmentTransform({p1, p2}, tendonUiRadius);
 
             out.emplace_back(
-                osc::App::singleton<osc::MeshCache>().getCylinderMesh(),
+                osc::App::singleton<osc::MeshCache>()->getCylinderMesh(),
                 cylinderXform,
                 tendonColor,
                 muscleAbsPath,
@@ -450,7 +450,7 @@ namespace
             osc::Transform cylinderXform = osc::SimbodyCylinderToSegmentTransform({p1, p2}, fiberUiRadius);
 
             out.emplace_back(
-                osc::App::singleton<osc::MeshCache>().getCylinderMesh(),
+                osc::App::singleton<osc::MeshCache>()->getCylinderMesh(),
                 cylinderXform,
                 fiberColor,
                 muscleAbsPath,
@@ -620,7 +620,7 @@ namespace
             t.position = pp.location;
 
             out.emplace_back(
-                osc::App::singleton<osc::MeshCache>().getSphereMesh(),
+                osc::App::singleton<osc::MeshCache>()->getSphereMesh(),
                 t,
                 fiberColor,
                 pp.maybePathPoint ? pp.maybePathPoint->getAbsolutePathString() : absPath,
@@ -633,7 +633,7 @@ namespace
             osc::Transform cylinderXform = osc::SimbodyCylinderToSegmentTransform({p1, p2}, fiberUiRadius);
 
             out.emplace_back(
-                osc::App::singleton<osc::MeshCache>().getCylinderMesh(),
+                osc::App::singleton<osc::MeshCache>()->getCylinderMesh(),
                 cylinderXform,
                 fiberColor,
                 absPath,
@@ -746,7 +746,7 @@ namespace
         out.clear();
 
         // assumed to be valid during the decoration generation
-        osc::MeshCache& meshCache = osc::App::singleton<osc::MeshCache>();
+        std::shared_ptr<osc::MeshCache> const meshCache = osc::App::singleton<osc::MeshCache>();
         OpenSim::Model const& model = msp.getModel();
         SimTK::State const& state = msp.getState();
         OpenSim::Component const* selected = msp.getSelected();
@@ -761,7 +761,7 @@ namespace
         // generates mesh/object instances for each SimTK::DecorativeGeometry it's given
         osc::DecorativeGeometryHandler producer
         {
-            meshCache,
+            *meshCache,
             model.getSystem().getMatterSubsystem(),
             state,
             fixupScaleFactor,

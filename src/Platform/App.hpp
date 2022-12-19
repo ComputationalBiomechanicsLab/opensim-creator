@@ -3,9 +3,9 @@
 #include "src/Graphics/AnnotatedImage.hpp"
 #include "src/Graphics/Image.hpp"
 #include "src/Platform/AppClock.hpp"
+#include "src/Platform/Log.hpp"
 #include "src/Platform/MouseState.hpp"
 #include "src/Platform/RecentFile.hpp"
-#include "src/Platform/ValueHolder.hpp"
 #include "src/Utils/Assertions.hpp"
 
 #include <SDL_events.h>
@@ -16,12 +16,14 @@
 #include <cstdint>
 #include <filesystem>
 #include <future>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <ratio>
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <typeinfo>
 #include <utility>
 #include <vector>
 
@@ -37,25 +39,15 @@ namespace osc
     class App {
     public:
         template<class T>
-        static T& singleton()
+        static std::shared_ptr<T> singleton()
         {
-            static std::mutex g_SingletonMutexForType;
-
-            App& app = upd();
-            size_t const id = typeid(T).hash_code();
-
-            std::lock_guard lock{g_SingletonMutexForType};
-            if (TypeErasedValueHolder* holder = app.tryUpdSingleton(id))
+            auto const ctor = []()
             {
-                return dynamic_cast<ValueHolder<T>*>(holder)->upd();
-            }
-            else
-            {
-                auto ptr = std::make_unique<ValueHolder<T>>();
-                T& rv = ptr->upd();
-                app.setSingleton(id, std::move(ptr));
-                return rv;
-            }
+                auto customDeleter = [](T* t) { delete t; };
+                return std::shared_ptr<void>{new T{}, customDeleter};
+            };
+
+            return std::static_pointer_cast<T>(App::upd().updSingleton(typeid(T), ctor));
         }
 
         // returns the currently-active application global
@@ -307,10 +299,7 @@ namespace osc
 
     private:
         // try and retrieve a virtual singleton that has the same lifetime as the app
-        TypeErasedValueHolder* tryUpdSingleton(size_t typeID);
-
-        // set the singleton instance for a given typeID
-        void setSingleton(size_t typeID, std::unique_ptr<TypeErasedValueHolder>);
+        std::shared_ptr<void> updSingleton(std::type_info const&, std::function<std::shared_ptr<void>()>);
 
         friend void ImGuiInit();
         friend void ImGuiNewFrame();

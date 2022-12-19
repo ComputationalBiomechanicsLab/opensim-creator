@@ -349,7 +349,7 @@ namespace
 
         return osc::SceneDecoration
         {
-            osc::App::singleton<osc::MeshCache>().get100x100GridMesh(),
+            osc::App::singleton<osc::MeshCache>()->get100x100GridMesh(),
             t,
             color,
             std::string{},
@@ -403,7 +403,7 @@ namespace
 
             out(osc::SceneDecoration
             {
-                osc::App::singleton<osc::MeshCache>().getCylinderMesh(),
+                osc::App::singleton<osc::MeshCache>()->getCylinderMesh(),
                 t,
                 arrow.color,
                 arrow.label,
@@ -420,7 +420,7 @@ namespace
 
             out(osc::SceneDecoration
             {
-                osc::App::singleton<osc::MeshCache>().getConeMesh(),
+                osc::App::singleton<osc::MeshCache>()->getConeMesh(),
                 t,
                 arrow.color,
                 arrow.label,
@@ -674,7 +674,7 @@ private:
     BVH m_SceneBVH;
     PolarPerspectiveCamera m_Camera;
     SceneRendererParams m_LastRendererParams;
-    SceneRenderer m_Renderer{App::config(), App::singleton<MeshCache>(), App::singleton<ShaderCache>()};
+    SceneRenderer m_Renderer{App::config(), *App::singleton<MeshCache>(), *App::singleton<ShaderCache>()};
     bool m_RenderIsMousedOver = false;
 
     // 2D UI state

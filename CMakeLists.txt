@@ -513,7 +513,6 @@ add_library(osccore STATIC
     src/Platform/os.hpp
     src/Platform/RecentFile.hpp
     src/Platform/Styling.hpp
-    src/Platform/ValueHolder.hpp
 
     src/Screens/CookiecutterScreen.cpp
     src/Screens/CookiecutterScreen.hpp

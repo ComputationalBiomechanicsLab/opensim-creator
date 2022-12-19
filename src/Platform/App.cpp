@@ -624,15 +624,14 @@ public:
         fd << GetCurrentTimeAsUnixTimestamp().count() << ' ' << std::filesystem::absolute(p) << std::endl;
     }
 
-    TypeErasedValueHolder* tryUpdSingleton(size_t typeID)
+    std::shared_ptr<void> updSingleton(std::type_info const& typeinfo, std::function<std::shared_ptr<void>()> ctor)
     {
-        auto const it = m_Singletons.find(typeID);
-        return it != m_Singletons.end() ? it->second.get() : nullptr;
-    }
-
-    void setSingleton(size_t id, std::unique_ptr<TypeErasedValueHolder> singleton)
-    {
-        m_Singletons.insert_or_assign(id, std::move(singleton));
+        auto const [it, inserted] = m_Singletons.try_emplace(typeinfo.hash_code(), nullptr);
+        if (inserted)
+        {
+            it->second = ctor();
+        }
+        return it->second;
     }
 
     // used by ImGui backends
@@ -857,7 +856,7 @@ private:
     AppClock::duration m_TimeSinceLastFrame = {};
 
     // global cache of application-wide singletons (usually, for caching)
-    std::unordered_map<size_t, std::unique_ptr<TypeErasedValueHolder>> m_Singletons;
+    std::unordered_map<size_t, std::shared_ptr<void>> m_Singletons;
 
     // how many samples the implementation should actually use
     int m_CurrentMSXAASamples = std::min(m_GraphicsContext.getMaxMSXAASamples(), m_ApplicationConfig->getNumMSXAASamples());
@@ -1204,14 +1203,9 @@ void osc::App::addRecentFile(std::filesystem::path const& p)
     m_Impl->addRecentFile(p);
 }
 
-osc::TypeErasedValueHolder* osc::App::tryUpdSingleton(size_t typeID)
+std::shared_ptr<void> osc::App::updSingleton(std::type_info const& typeInfo, std::function<std::shared_ptr<void>()> ctor)
 {
-    return m_Impl->tryUpdSingleton(std::move(typeID));
-}
-
-void osc::App::setSingleton(size_t typeID, std::unique_ptr<TypeErasedValueHolder> ptr)
-{
-    m_Impl->setSingleton(std::move(typeID), std::move(ptr));
+    return m_Impl->updSingleton(typeInfo, std::move(ctor));
 }
 
 void osc::ImGuiInit()
