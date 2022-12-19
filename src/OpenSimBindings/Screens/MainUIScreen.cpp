@@ -518,15 +518,14 @@ private:
             selectTab(addTab(std::make_unique<MeshImporterTab>(this)));
         }
 
-        ptrdiff_t numRegisteredTabs = osc::GetNumRegisteredTabs();
-
-        if (numRegisteredTabs > 0)
+        std::shared_ptr<TabRegistry const> const tabs = osc::App::singleton<TabRegistry>();
+        if (tabs->size() > 0)
         {
             if (ImGui::BeginMenu("Experimental Tabs"))
             {
-                for (int i = 0; i < numRegisteredTabs; ++i)
+                for (size_t i = 0; i < tabs->size(); ++i)
                 {
-                    TabRegistryEntry e = GetRegisteredTab(i);
+                    TabRegistryEntry e = (*tabs)[i];
                     if (ImGui::MenuItem(e.getName().c_str()))
                     {
                         selectTab(addTab(e.createTab(this)));

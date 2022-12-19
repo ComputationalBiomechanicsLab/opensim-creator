@@ -69,21 +69,23 @@ int main(int argc, char** argv)
 
     // if the config requested that an initial tab should be opened, try looking it up
     // and loading it
-    if (auto maybeRequestedTab = app.getConfig().getInitialTabOverride())
+    if (std::optional<std::string> maybeRequestedTab = app.getConfig().getInitialTabOverride())
     {
-        if (auto registeredTab = osc::GetRegisteredTabByName(*maybeRequestedTab))
+        std::shared_ptr<osc::TabRegistry> tabs = osc::App::singleton<osc::TabRegistry>();
+
+        if (std::optional<osc::TabRegistryEntry> maybeEntry = tabs->getByName(*maybeRequestedTab))
         {
             osc::TabHost* api = screen->getTabHostAPI();
-            std::unique_ptr<osc::Tab> initialTab = registeredTab->createTab(api);
+            std::unique_ptr<osc::Tab> initialTab = maybeEntry->createTab(api);
             api->selectTab(api->addTab(std::move(initialTab)));
         }
         else
         {
             osc::log::warn("%s: cannot find a tab with this name in the tab registry: ignoring", maybeRequestedTab->c_str());
             osc::log::warn("available tabs are:");
-            for (ptrdiff_t i = 0, len = osc::GetNumRegisteredTabs(); i < len; ++i)
+            for (size_t i = 0; i < tabs->size(); ++i)
             {
-                osc::log::warn("    %s", osc::GetRegisteredTab(i).getName().c_str());
+                osc::log::warn("    %s", (*tabs)[i].getName().c_str());
             }
         }
     }

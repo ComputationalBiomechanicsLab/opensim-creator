@@ -562,6 +562,8 @@ add_library(osccore STATIC
     src/Tabs/TabHost.hpp
     src/Tabs/TabRegistry.cpp
     src/Tabs/TabRegistry.hpp
+    src/Tabs/TabRegistryEntry.cpp
+    src/Tabs/TabRegistryEntry.hpp
 
     src/Utils/Algorithms.cpp
     src/Utils/Algorithms.hpp

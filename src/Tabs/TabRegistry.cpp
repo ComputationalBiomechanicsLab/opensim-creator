@@ -1,148 +1,69 @@
 #include "TabRegistry.hpp"
 
-#include "src/Tabs/Tab.hpp"
-#include "src/Utils/CStringView.hpp"
-#include "src/Utils/SynchronizedValue.hpp"
-
-// registered tabs
-#include "src/Tabs/Experiments/CustomWidgetsTab.hpp"
-#include "src/Tabs/Experiments/HittestTab.hpp"
-#include "src/Tabs/Experiments/ImGuiDemoTab.hpp"
-#include "src/Tabs/Experiments/ImGuizmoDemoTab.hpp"
-#include "src/Tabs/Experiments/ImPlotDemoTab.hpp"
-#include "src/Tabs/Experiments/MeshGenTestTab.hpp"
-#include "src/Tabs/Experiments/RendererBasicLightingTab.hpp"
-#include "src/Tabs/Experiments/RendererBlendingTab.hpp"
-#include "src/Tabs/Experiments/RendererCoordinateSystemsTab.hpp"
-#include "src/Tabs/Experiments/RendererFramebuffersTab.hpp"
-#include "src/Tabs/Experiments/RendererHelloTriangleTab.hpp"
-#include "src/Tabs/Experiments/RendererLightingMapsTab.hpp"
-#include "src/Tabs/Experiments/RendererMultipleLightsTab.hpp"
-#include "src/Tabs/Experiments/RendererSDFTab.hpp"
-#include "src/Tabs/Experiments/RendererShadowMappingTab.hpp"
-#include "src/Tabs/Experiments/RendererTexturingTab.hpp"
-
 #include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
 
-class osc::TabRegistryEntry::Impl final {
+class osc::TabRegistry::Impl final {
 public:
-
-    Impl(CStringView name_, std::unique_ptr<Tab>(*ctor_)(TabHost*)) :
-        m_Name{std::move(name_)},
-        m_Constructor{std::move(ctor_)}
+    void registerTab(TabRegistryEntry const& newEntry)
     {
+        m_Entries.push_back(newEntry);
+        std::sort(m_Entries.begin(), m_Entries.end());
     }
 
-    CStringView getName() const
+    size_t size() const
     {
-        return m_Name;
+        return m_Entries.size();
     }
 
-    std::unique_ptr<Tab> createTab(TabHost* host) const
+    TabRegistryEntry operator[](size_t i) const
     {
-        return m_Constructor(std::move(host));
+        return m_Entries[i];
+    }
+
+    std::optional<TabRegistryEntry> getByName(std::string_view name) const
+    {
+        auto const it = std::find_if(m_Entries.begin(), m_Entries.end(), [name](osc::TabRegistryEntry const& e)
+        {
+            return e.getName() == name;
+        });
+
+        return it != m_Entries.end() ? *it : std::optional<osc::TabRegistryEntry>{};
     }
 
 private:
-    std::string m_Name;
-    std::unique_ptr<Tab>(*m_Constructor)(TabHost*);
+    std::vector<TabRegistryEntry> m_Entries;
 };
 
-// init + storage for the global tab table
-namespace
-{
-    template<typename T>
-    std::unique_ptr<osc::Tab> TabConstructor(osc::TabHost* h)
-    {
-        return std::make_unique<T>(std::move(h));
-    }
-
-    osc::SynchronizedValue<std::vector<osc::TabRegistryEntry>> InitDefaultTabs()
-    {
-        osc::SynchronizedValue<std::vector<osc::TabRegistryEntry>> rv;
-
-        auto lock = rv.lock();
-        lock->emplace_back("UI/CustomWidgets", TabConstructor<osc::CustomWidgetsTab>);
-        lock->emplace_back("Hittest/AnalyticGeometry", TabConstructor<osc::HittestTab>);
-        lock->emplace_back("Renderer/BasicLighting", TabConstructor<osc::RendererBasicLightingTab>);
-        lock->emplace_back("Renderer/Blending", TabConstructor<osc::RendererBlendingTab>);
-        lock->emplace_back("Renderer/CoordinateSystems", TabConstructor<osc::RendererCoordinateSystemsTab>);
-        lock->emplace_back("Renderer/Framebuffers", TabConstructor<osc::RendererFramebuffersTab>);
-        lock->emplace_back("Renderer/HelloTriangle", TabConstructor<osc::RendererHelloTriangleTab>);
-        lock->emplace_back("Renderer/LightingMaps", TabConstructor<osc::RendererLightingMapsTab>);
-        lock->emplace_back("Renderer/MultipleLights", TabConstructor<osc::RendererMultipleLightsTab>);
-        lock->emplace_back("Renderer/Texturing", TabConstructor<osc::RendererTexturingTab>);
-        lock->emplace_back("Renderer/SDFTab", TabConstructor<osc::RendererSDFTab>);
-        lock->emplace_back("Renderer/ShadowMapping", TabConstructor<osc::RendererShadowMappingTab>);
-        lock->emplace_back("Demos/ImGui", TabConstructor<osc::ImGuiDemoTab>);
-        lock->emplace_back("Demos/ImPlot", TabConstructor<osc::ImPlotDemoTab>);
-        lock->emplace_back("Demos/ImGuizmo", TabConstructor<osc::ImGuizmoDemoTab>);
-        lock->emplace_back("MeshGen/Test", TabConstructor<osc::MeshGenTestTab>);
-
-        std::sort(lock->begin(), lock->end());
-
-        return rv;
-    }
-
-    osc::SynchronizedValueGuard<std::vector<osc::TabRegistryEntry>> GetRegisteredTabsTable()
-    {
-        static osc::SynchronizedValue<std::vector<osc::TabRegistryEntry>> g_Entries{InitDefaultTabs()};
-        return g_Entries.lock();
-    }
-}
 
 // public API (PIMPL)
 
-osc::TabRegistryEntry::TabRegistryEntry(CStringView name_, std::unique_ptr<Tab>(*ctor_)(TabHost*)) :
-    m_Impl{std::make_shared<Impl>(std::move(name_), std::move(ctor_))}
+osc::TabRegistry::TabRegistry() :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
+osc::TabRegistry::TabRegistry(TabRegistry&&) noexcept = default;
+osc::TabRegistry& osc::TabRegistry::operator=(TabRegistry&&) noexcept = default;
+osc::TabRegistry::~TabRegistry() noexcept = default;
 
-osc::TabRegistryEntry::~TabRegistryEntry() noexcept = default;
-
-osc::CStringView osc::TabRegistryEntry::getName() const
+void osc::TabRegistry::registerTab(TabRegistryEntry const& newEntry)
 {
-    return m_Impl->getName();
+    m_Impl->registerTab(newEntry);
 }
 
-std::unique_ptr<osc::Tab> osc::TabRegistryEntry::createTab(TabHost* host) const
+size_t osc::TabRegistry::size() const
 {
-    return m_Impl->createTab(std::move(host));
+    return m_Impl->size();
 }
 
-bool osc::operator<(TabRegistryEntry const& a, TabRegistryEntry const& b)
+osc::TabRegistryEntry osc::TabRegistry::operator[](size_t i) const
 {
-    return a.getName() < b.getName();
+    return (*m_Impl)[i];
 }
 
-ptrdiff_t osc::GetNumRegisteredTabs()
+std::optional<osc::TabRegistryEntry> osc::TabRegistry::getByName(std::string_view name) const
 {
-    auto lock = GetRegisteredTabsTable();
-    return static_cast<ptrdiff_t>(lock->size());
-}
-
-osc::TabRegistryEntry osc::GetRegisteredTab(ptrdiff_t i)
-{
-    return GetRegisteredTabsTable()->at(static_cast<size_t>(i));
-}
-
-std::optional<osc::TabRegistryEntry> osc::GetRegisteredTabByName(std::string_view s)
-{
-    auto lock = GetRegisteredTabsTable();
-    auto it = std::find_if(lock->begin(), lock->end(), [&s](osc::TabRegistryEntry const& e)
-    {
-        return e.getName() == s;
-    });
-    return it != lock->end() ? *it : std::optional<osc::TabRegistryEntry>{};
-}
-
-bool osc::RegisterTab(CStringView name, std::unique_ptr<Tab>(*ctor_)(TabHost*))
-{
-    auto lock = GetRegisteredTabsTable();
-    lock->emplace_back(std::move(name), std::move(ctor_));
-    std::sort(lock->begin(), lock->end());
-    return true;
+    return m_Impl->getByName(std::move(name));
 }

@@ -14,6 +14,7 @@
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
 #include "src/Utils/ScopeGuard.hpp"
+#include "src/Utils/SynchronizedValue.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
@@ -658,7 +659,8 @@ public:
 
     std::shared_ptr<void> updSingleton(std::type_info const& typeinfo, std::function<std::shared_ptr<void>()> ctor)
     {
-        auto const [it, inserted] = m_Singletons.try_emplace(typeinfo, nullptr);
+        auto lock = m_Singletons.lock();
+        auto const [it, inserted] = lock->try_emplace(typeinfo, nullptr);
         if (inserted)
         {
             it->second = ctor();
@@ -888,7 +890,7 @@ private:
     AppClock::duration m_TimeSinceLastFrame = {};
 
     // global cache of application-wide singletons (usually, for caching)
-    std::unordered_map<TypeInfoReference, std::shared_ptr<void>> m_Singletons;
+    SynchronizedValue<std::unordered_map<TypeInfoReference, std::shared_ptr<void>>> m_Singletons;
 
     // how many samples the implementation should actually use
     int m_CurrentMSXAASamples = std::min(m_GraphicsContext.getMaxMSXAASamples(), m_ApplicationConfig->getNumMSXAASamples());

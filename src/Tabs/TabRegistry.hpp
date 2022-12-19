@@ -1,38 +1,31 @@
 #pragma once
 
-#include "src/Utils/CStringView.hpp"
+#include "src/Tabs/TabRegistryEntry.hpp"
 
-#include <cstdint>
+#include <cstddef>
 #include <memory>
 #include <optional>
 #include <string_view>
 
-namespace osc { class Tab; }
-namespace osc { class TabHost; }
-
 namespace osc
 {
-    class TabRegistryEntry final {
+    // container for alphabetically-sorted tab entries
+    class TabRegistry final {
     public:
-        TabRegistryEntry(CStringView name_, std::unique_ptr<Tab>(*ctor_)(TabHost*));
-        TabRegistryEntry(TabRegistryEntry const&) = default;
-        TabRegistryEntry(TabRegistryEntry&&) noexcept = default;
-        TabRegistryEntry& operator=(TabRegistryEntry const&) = default;
-        TabRegistryEntry& operator=(TabRegistryEntry&&) = default;
-        ~TabRegistryEntry() noexcept;
+        TabRegistry();
+        TabRegistry(TabRegistry const&) = delete;
+        TabRegistry(TabRegistry&&) noexcept;
+        TabRegistry& operator=(TabRegistry const&) = delete;
+        TabRegistry& operator=(TabRegistry&&) noexcept;
+        ~TabRegistry() noexcept;
 
-        CStringView getName() const;
-        std::unique_ptr<Tab> createTab(TabHost* host) const;
+        void registerTab(TabRegistryEntry const&);
+        size_t size() const;
+        TabRegistryEntry operator[](size_t i) const;
+        std::optional<TabRegistryEntry> getByName(std::string_view) const;
 
     private:
         class Impl;
-        std::shared_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> m_Impl;
     };
-
-    bool operator<(TabRegistryEntry const&, TabRegistryEntry const&);
-
-    ptrdiff_t GetNumRegisteredTabs();
-    TabRegistryEntry GetRegisteredTab(ptrdiff_t);
-    std::optional<TabRegistryEntry> GetRegisteredTabByName(std::string_view);
-    bool RegisterTab(CStringView name, std::unique_ptr<Tab>(*)(TabHost*));
 }
