@@ -1887,30 +1887,12 @@ glm::mat4 osc::ToInverseMat4(Transform const& t) noexcept
 
 glm::mat3x3 osc::ToNormalMatrix(Transform const& t) noexcept
 {
-    // ignoring translation, the `Transform` class applies a non-uniform, orthogonal scale, followed
-    // by a rotation. Skews aren't possible, so we can skip the usual "inverse of transpose" matrix
-    // stuff that other sources use (see: "On the Transformation of Surface Normals, Andrew Glassner")
-    //
-    // given an input point P, input normal N, scale s, rotation r, and normal matrix T:
-    //
-    // P' = rsP                         // the `Transform` class scales and then rotates the input point
-    // N' = TN                          // we want T, a matrix that transforms the input normal into the output normal
-    // dot(P, N) == 0                   // the input point is orthogonal to the input normal
-    // dot(P', N') == 0                 // the output point should be orthogonal to the output normal
-    //
-    // dot(sP, sN) = s * dot(P, N) = 0  // orthogonally scaling the inputs doesn't affect the outputs' orthogonality
-    // dot(r(sP), r(sN)) = 0            // rotating the inputs doesn't affect the outputs' orthogonality (geometry)
-    // dot(rsP, rsN) = 0                // therefore, applying both a scale and a rotation doesn't affect the outputs' orthogonality
-    // dot(rsP, ToMat3(rs) * N) = 0     // the scale -> rotation transform can be re-expressed as a 3x3 matrix
-    //
-    // T = ToMat3(t)                    // therefore, the normal matrix is the mat3 representation of the transform
-
-    return ToMat3(t);
+    return ToAdjugateMatrix(glm::transpose(ToMat3(t)));
 }
 
 glm::mat4 osc::ToNormalMatrix4(Transform const& t) noexcept
 {
-    return ToMat3(t);
+    return ToAdjugateMatrix(glm::transpose(ToMat3(t)));
 }
 
 osc::Transform osc::ToTransform(glm::mat4 const& mtx)
