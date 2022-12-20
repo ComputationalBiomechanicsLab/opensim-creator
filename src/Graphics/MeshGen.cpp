@@ -636,6 +636,11 @@ osc::Mesh osc::GenLearnOpenGLCube()
     return cube;
 }
 
+osc::Mesh osc::GenTorus(size_t slices, size_t stacks, float torusCenterToTubeCenterRadius, float tubeRadius)
+{
+    return GenCube();  // TODO (#184)
+}
+
 osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max, glm::ivec2 steps)
 {
     // all Z values in the returned mesh shall be 0

@@ -3,6 +3,7 @@
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Platform/Log.hpp"
+#include "src/Utils/Algorithms.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 
 #include <functional>
@@ -11,6 +12,40 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+namespace
+{
+    struct TorusParameters final {
+
+        TorusParameters(
+            float torusCenterToTubeCenterRadius_,
+            float tubeRadius_) :
+
+            torusCenterToTubeCenterRadius{torusCenterToTubeCenterRadius_},
+            tubeRadius{tubeRadius_}
+        {
+        }
+
+        float torusCenterToTubeCenterRadius;
+        float tubeRadius;
+    };
+
+    bool operator==(TorusParameters const& a, TorusParameters const& b) noexcept
+    {
+        return a.torusCenterToTubeCenterRadius == b.torusCenterToTubeCenterRadius && a.tubeRadius == b.tubeRadius;
+    }
+}
+
+namespace std
+{
+    template<>
+    struct hash<TorusParameters> final {
+        size_t operator()(TorusParameters const& p) const noexcept
+        {
+            return osc::HashOf(p.torusCenterToTubeCenterRadius, p.tubeRadius);
+        }
+    };
+}
 
 class osc::MeshCache::Impl final {
 public:
@@ -25,6 +60,7 @@ public:
     Mesh yLine = GenYLine();
     Mesh texturedQuad = GenTexturedQuad();
 
+    SynchronizedValue<std::unordered_map<TorusParameters, Mesh>> torusCache;
     SynchronizedValue<std::unordered_map<std::string, Mesh>> fileCache;
 };
 
@@ -106,4 +142,19 @@ osc::Mesh osc::MeshCache::getYLineMesh()
 osc::Mesh osc::MeshCache::getTexturedQuadMesh()
 {
     return m_Impl->texturedQuad;
+}
+
+osc::Mesh osc::MeshCache::getTorusMesh(float torusCenterToTubeCenterRadius, float tubeRadius)
+{
+    TorusParameters const key{torusCenterToTubeCenterRadius, tubeRadius};
+
+    auto guard = m_Impl->torusCache.lock();
+    auto [it, inserted] = guard->try_emplace(key, m_Impl->cube);
+
+    if (inserted)
+    {
+        it->second = GenTorus(12, 12, key.torusCenterToTubeCenterRadius, key.tubeRadius);
+    }
+
+    return it->second;
 }

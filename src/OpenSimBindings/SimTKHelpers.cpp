@@ -390,14 +390,12 @@ private:
         m_Consumer(m_MeshCache.getConeMesh(), headXform, color);
     }
 
-    void implementTorusGeometry(SimTK::DecorativeTorus const&) override
+    void implementTorusGeometry(SimTK::DecorativeTorus const& d) override
     {
-        static bool const g_ShownWarningOnce = []()
-        {
-            log::warn("this model uses implementTorusGeometry, which is not yet implemented in OSC");
-            return true;
-        }();
-        (void)g_ShownWarningOnce;
+        float const torusCenterToTubeCenterRadius = static_cast<float>(d.getTorusRadius());
+        float const tubeRadius = static_cast<float>(d.getTubeRadius());
+
+        m_Consumer(m_MeshCache.getTorusMesh(torusCenterToTubeCenterRadius, tubeRadius), ToOscTransform(d), GetColor(d));
     }
 
     void implementConeGeometry(SimTK::DecorativeCone const& d) override

@@ -41,6 +41,7 @@ static std::map<std::string, osc::Mesh> GenerateMeshLookup()
         {"cube (wire)", cache.getCubeWireMesh()},
         {"yline", cache.getYLineMesh()},
         {"quad", cache.getTexturedQuadMesh()},
+        {"torus", cache.getTorusMesh(0.75f, 0.25f)},
     };
 }
 

@@ -30,6 +30,7 @@ namespace osc
         Mesh getCubeWireMesh();
         Mesh getYLineMesh();
         Mesh getTexturedQuadMesh();
+        Mesh getTorusMesh(float torusCenterToTubeCenterRadius, float tubeRadius);
 
     private:
         class Impl;
