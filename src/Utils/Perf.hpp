@@ -3,6 +3,7 @@
 #include "src/Utils/Macros.hpp"
 
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -92,7 +93,7 @@ namespace osc
     int64_t AllocateMeasurementID(char const* label, char const* filename, unsigned int line);
     void SubmitMeasurement(int64_t id, PerfClock::time_point start, PerfClock::time_point end) noexcept;
     void ClearPerfMeasurements();
-    int GetAllMeasurements(std::vector<PerfMeasurement>& appendOut);
+    size_t GetAllMeasurements(std::vector<PerfMeasurement>& appendOut);
 
     class PerfTimer {
     public:

@@ -3,6 +3,8 @@
 #include "src/Utils/Algorithms.hpp"
 #include "src/Widgets/Popup.hpp"
 
+#include <cstddef>
+
 osc::Popups::Popups() = default;
 osc::Popups::Popups(Popups&&) noexcept = default;
 osc::Popups& osc::Popups::operator=(Popups&&) noexcept = default;
@@ -16,9 +18,9 @@ void osc::Popups::push_back(std::shared_ptr<Popup> popup)
 void osc::Popups::draw()
 {
     // begin and (if applicable) draw bottom-to-top in a nested fashion
-    int nOpened = 0;
-    int nPopups = static_cast<int>(m_Popups.size());  // only draw the popups that existed at the start of this frame, not the ones added during this frame
-    for (int i = 0; i < nPopups; ++i)
+    ptrdiff_t nOpened = 0;
+    size_t nPopups = m_Popups.size();  // only draw the popups that existed at the start of this frame, not the ones added during this frame
+    for (size_t i = 0; i < nPopups; ++i)
     {
         if (m_Popups[i]->beginPopup())
         {
@@ -32,7 +34,7 @@ void osc::Popups::draw()
     }
 
     // end the opened popups top-to-bottom
-    for (int i = nOpened-1; i >= 0; --i)
+    for (ptrdiff_t i = nOpened-1; i >= 0; --i)
     {
         m_Popups[i]->endPopup();
     }

@@ -20,6 +20,7 @@
 #include <SDL_events.h>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <cstdint>
 #include <utility>
 
 // positions of cubes within the scene
@@ -193,7 +194,7 @@ public:
         m_MultipleLightsMaterial.setVec3("uSpotLightDirection", m_Camera.getDirection());
 
         // render containers
-        int i = 0;
+        int32_t i = 0;
         glm::vec3 const axis = glm::normalize(glm::vec3{1.0f, 0.3f, 0.5f});
         for (glm::vec3 const& pos : g_CubePositions)
         {

@@ -135,7 +135,7 @@ public:
         }
         else
         {
-            int i = 0;
+            int32_t i = 0;
             glm::vec3 const axis = glm::normalize(glm::vec3{1.0f, 0.3f, 0.5f});
             for (glm::vec3 const& pos : g_CubePositions)
             {

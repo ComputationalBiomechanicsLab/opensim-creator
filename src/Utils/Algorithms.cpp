@@ -8,28 +8,28 @@
 #include <string>
 #include <string_view>
 
-int osc::NumBitsSetIn(int v)
+int32_t osc::NumBitsSetIn(int32_t v)
 {
-    unsigned uv = static_cast<unsigned>(v);
-    unsigned i = 0;
+    uint32_t uv = static_cast<uint32_t>(v);
+    uint32_t i = 0;
     while (uv)
     {
         uv &= (uv - 1);
         ++i;
     }
-    return static_cast<int>(i);
+    return static_cast<int32_t>(i);
 }
 
-int osc::LeastSignificantBitIndex(int v)
+int32_t osc::LeastSignificantBitIndex(int32_t v)
 {
-    unsigned uv = static_cast<unsigned>(v);
-    unsigned i = 0;
+    uint32_t uv = static_cast<uint32_t>(v);
+    uint32_t i = 0;
     while (!(uv & 0x1))
     {
         uv >>= 1;
         ++i;
     }
-    return static_cast<int>(i);
+    return static_cast<int32_t>(i);
 }
 
 bool osc::IsStringCaseInsensitiveGreaterThan(std::string const& a, std::string const& b)
@@ -184,7 +184,7 @@ std::optional<float> osc::FromCharsStripWhitespace(std::string_view v)
     return i == v.size() ? std::optional<float>{fpv} : std::optional<float>{};
 }
 
-std::string osc::Ellipsis(std::string_view v, int maxLen)
+std::string osc::Ellipsis(std::string_view v, int32_t maxLen)
 {
     if (v.length() <= maxLen)
     {

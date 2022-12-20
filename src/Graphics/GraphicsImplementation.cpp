@@ -4750,8 +4750,8 @@ void osc::GraphicsBackend::BlitToScreen(
 
         int32_t const windowHeight = App::get().idims().y;
         int32_t const rectHeight = static_cast<int32_t>(rect.p2.y - rect.p1.y);
-        int32_t const p1y = static_cast<int>((windowHeight - rect.p1.y) - rectHeight);
-        int32_t const p2y = static_cast<int>(windowHeight - rect.p1.y);
+        int32_t const p1y = static_cast<int32_t>((windowHeight - rect.p1.y) - rectHeight);
+        int32_t const p2y = static_cast<int32_t>(windowHeight - rect.p1.y);
         glm::ivec2 texDimensions = t.getDimensions();
 
         // blit multisampled scene render to not-multisampled texture

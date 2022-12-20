@@ -184,7 +184,7 @@ namespace
         ImU32 bg = hovered ? ImGui::GetColorU32(enabled ? ImGuiCol_FrameBgActive : ImGuiCol_FrameBgHovered)
             : ImGui::GetColorU32(enabled ? ImGuiCol_CheckMark : ImGuiCol_FrameBg);
 
-        glm::vec2 pmid(pos.x + radius + (int)enabled * (size.x - radius * 2), pos.y + size.y / 2.0f);
+        glm::vec2 pmid(pos.x + radius + (enabled ? 1 : 0) * (size.x - radius * 2), pos.y + size.y / 2.0f);
         ImVec2 smin(pos.x, pmid.y - slot_half_height);
         ImVec2 smax(pos.x + size.x, pmid.y + slot_half_height);
         draw_list->AddRectFilled(smin, smax, bg, rounding);

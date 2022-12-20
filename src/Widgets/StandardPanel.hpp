@@ -41,6 +41,6 @@ namespace osc
         virtual void implDrawContent() = 0;
 
         std::string m_PanelName;
-        int m_PanelFlags;
+        ImGuiWindowFlags m_PanelFlags;
     };
 }

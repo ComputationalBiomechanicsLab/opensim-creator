@@ -67,7 +67,7 @@ namespace osc
         std::string m_PopupName;
         glm::ivec2 m_Dimensions;
         std::optional<glm::ivec2> m_MaybePosition;
-        int m_PopupFlags;
+        ImGuiWindowFlags m_PopupFlags;
         bool m_ShouldOpen;
         bool m_ShouldClose;
         bool m_JustOpened;

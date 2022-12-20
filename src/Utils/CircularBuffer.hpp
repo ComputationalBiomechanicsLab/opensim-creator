@@ -3,6 +3,7 @@
 #include "src/Utils/Assertions.hpp"
 
 #include <array>
+#include <cstddef>
 #include <iterator>
 #include <optional>
 #include <stdexcept>
@@ -42,19 +43,19 @@ namespace osc
         std::array<storage_bytes, N> raw_storage;
 
         // index (T-based, not raw byte based) of the first element
-        int _begin = 0;
+        ptrdiff_t _begin = 0;
 
         // first index (T-based, not raw byte based) *after* the last element
-        int _end = 0;
+        ptrdiff_t _end = 0;
 
         // iterator implementation
         template<bool IsConst>
         class Iterator final {
             T* data = nullptr;
-            int pos = 0;
+            ptrdiff_t pos = 0;
 
         public:
-            using difference_type = int;
+            using difference_type = ptrdiff_t;
             using value_type = T;
             using pointer = typename std::conditional<IsConst, T const*, T*>::type;
             using reference = typename std::conditional<IsConst, T const&, T&>::type;
@@ -63,7 +64,7 @@ namespace osc
 
             constexpr Iterator() = default;
 
-            constexpr Iterator(T* _data, int _pos) noexcept :
+            constexpr Iterator(T* _data, ptrdiff_t _pos) noexcept :
                 data{_data},
                 pos{_pos}
             {
@@ -386,7 +387,7 @@ namespace osc
         template<typename... Args>
         constexpr T& emplace_back(Args&&... args)
         {
-            int new_end = (_end + 1) % N;
+            ptrdiff_t new_end = (_end + 1) % N;
 
             if (new_end == _begin)
             {
@@ -444,7 +445,7 @@ namespace osc
             }
 
             rv.emplace(std::move(back()));
-            _end = _end == 0 ? static_cast<int>(N) - 1 : _end - 1;
+            _end = _end == 0 ? static_cast<ptrdiff_t>(N) - 1 : _end - 1;
 
             return rv;
         }
@@ -457,7 +458,7 @@ namespace osc
             }
 
             T rv{std::move(back())};
-            _end = _end == 0 ? static_cast<int>(N) - 1 : _end - 1;
+            _end = _end == 0 ? static_cast<ptrdiff_t>(N) - 1 : _end - 1;
             return rv;
         }
     };

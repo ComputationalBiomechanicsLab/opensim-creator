@@ -57,16 +57,16 @@ namespace
 
     std::vector<SceneSphere> GenerateSceneSpheres()
     {
-        constexpr int min = -30;
-        constexpr int max = 30;
-        constexpr int step = 6;
+        constexpr int32_t min = -30;
+        constexpr int32_t max = 30;
+        constexpr int32_t step = 6;
 
         std::vector<SceneSphere> rv;
-        for (int x = min; x <= max; x += step)
+        for (int32_t x = min; x <= max; x += step)
         {
-            for (int y = min; y <= max; y += step)
+            for (int32_t y = min; y <= max; y += step)
             {
-                for (int z = min; z <= max; z += step)
+                for (int32_t z = min; z <= max; z += step)
                 {
                     rv.emplace_back(glm::vec3{x, 50.0f + 2.0f*y, z});
                 }

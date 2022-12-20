@@ -31,7 +31,7 @@ namespace osc
         bool isMultiViewportEnabled() const;
 
         // get number of MSXAA samples 3D viewports should use
-        int getNumMSXAASamples() const;
+        int32_t getNumMSXAASamples() const;
 
         // get if a given UI panel is enabled or not
         bool getIsPanelEnabled(std::string const& panelName) const;

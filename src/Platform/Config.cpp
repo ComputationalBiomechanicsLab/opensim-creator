@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
 #include <exception>
 #include <filesystem>
 #include <fstream>
@@ -80,7 +81,7 @@ public:
     std::filesystem::path resourceDir;
     std::filesystem::path htmlDocsDir;
     bool useMultiViewport;
-    static constexpr int numMSXAASamples = 4;
+    static constexpr int32_t numMSXAASamples = 4;
     std::unordered_map<std::string, bool> m_PanelsEnabledState = MakeDefaultPanelStates();
     std::optional<std::string> m_MaybeInitialTab;
 };
@@ -189,7 +190,7 @@ bool osc::Config::isMultiViewportEnabled() const
     return m_Impl->useMultiViewport;
 }
 
-int osc::Config::getNumMSXAASamples() const
+int32_t osc::Config::getNumMSXAASamples() const
 {
     return m_Impl->numMSXAASamples;
 }

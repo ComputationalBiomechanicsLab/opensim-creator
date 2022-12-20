@@ -154,15 +154,15 @@ namespace osc
         void makeWindowed();
 
         // returns the recommended number of MSXAA samples that rendererers should use (based on config etc.)
-        int getMSXAASamplesRecommended() const;
+        int32_t getMSXAASamplesRecommended() const;
 
         // sets the number of MSXAA samples multisampled renderered should use
         //
         // throws if arg > max_samples()
-        void setMSXAASamplesRecommended(int);
+        void setMSXAASamplesRecommended(int32_t);
 
         // returns the maximum number of MSXAA samples the backend supports
-        int getMSXAASamplesMax() const;
+        int32_t getMSXAASamplesMax() const;
 
         // returns true if the application is rendering in debug mode
         //

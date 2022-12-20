@@ -344,13 +344,13 @@ namespace gl
         glUniform1f(u.geti(), value);
     }
 
-    // set the value of an `int` uniform in the currently bound program
+    // set the value of an `GLint` uniform in the currently bound program
     inline void Uniform(UniformInt& u, GLint value) noexcept
     {
         glUniform1i(u.geti(), value);
     }
 
-    // set the value of an array-like uniform `int`
+    // set the value of an array-like uniform `GLint`
     inline void Uniform(UniformInt const& u, GLsizei n, GLint const* data) noexcept
     {
         glUniform1iv(u.geti(), n, data);

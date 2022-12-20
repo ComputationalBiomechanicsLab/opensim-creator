@@ -2,13 +2,14 @@
 
 #include "src/Utils/Cpp20Shims.hpp"
 
-#include <mutex>
-#include <condition_variable>
-#include <list>
 #include <atomic>
+#include <condition_variable>
+#include <cstdint>
+#include <list>
 #include <memory>
-#include <utility>
+#include <mutex>
 #include <optional>
+#include <utility>
 
 // extremely basic support for a single-producer single-consumer (sp-sc) queue
 namespace osc::spsc {
@@ -33,10 +34,10 @@ namespace osc::spsc {
         std::list<T> m_MessageQueue;
 
         // how many `Sender` classes use this Impl (should be 1/0)
-        std::atomic<int> m_NumSenders = 0;
+        std::atomic<int32_t> m_NumSenders = 0;
 
         // how many `Receiver` classes use this impl (should be 1/0)
-        std::atomic<int> m_NumReceivers = 0;
+        std::atomic<int32_t> m_NumReceivers = 0;
 
         template<typename U>
         friend std::pair<Sender<U>, Receiver<U>> channel();

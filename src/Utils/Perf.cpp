@@ -4,6 +4,7 @@
 #include "src/Utils/SynchronizedValue.hpp"
 
 #include <algorithm>
+#include <cstddef>
 #include <unordered_map>
 #include <string>
 #include <tuple>
@@ -55,10 +56,10 @@ void osc::ClearPerfMeasurements()
     }
 }
 
-int osc::GetAllMeasurements(std::vector<PerfMeasurement>& appendOut)
+size_t osc::GetAllMeasurements(std::vector<PerfMeasurement>& appendOut)
 {
     auto guard = GetMeasurementStorage().lock();
-    int i = 0;
+    size_t i = 0;
     for (auto const& [id, measurement] : *guard)
     {
         appendOut.push_back(measurement);

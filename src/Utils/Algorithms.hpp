@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <cmath>
 #include <filesystem>
 #include <future>
@@ -257,12 +258,12 @@ namespace osc
     // returns the number of bits set in the input integer
     //
     // e.g. 0x1 --> 1, 0x2 --> 1, 0x3 --> 2, 0xf --> 4
-    int NumBitsSetIn(int v);
+    int32_t NumBitsSetIn(int32_t v);
 
     // returns the bit-index of the least significant bit that it set
     //
     // e.g. 0x1 --> 0, 0x2 --> 1, 0x3 --> 0, 0x4 --> 2
-    int LeastSignificantBitIndex(int v);
+    int32_t LeastSignificantBitIndex(int32_t v);
 
     // returns true if `b` is lexographically greater than `a`, ignoring case
     //
@@ -348,7 +349,7 @@ namespace osc
 
     // returns a string that *may* be truncated with ellipsis (...) if the length
     // of the input character sequence exceeds the given maximum length
-    std::string Ellipsis(std::string_view, int maxLen);
+    std::string Ellipsis(std::string_view, int32_t maxLen);
 
     // returns the index of the given variant type (impl)
     template<typename Variant, typename T, size_t I = 0>

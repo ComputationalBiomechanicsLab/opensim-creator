@@ -12,6 +12,7 @@
 #include <SDL_stdinc.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <cstring>
 #include <fstream>
 #include <memory>
@@ -193,7 +194,7 @@ void osc::WriteTracebackToLog(log::level::LevelEnum lvl)
 
     OSC_SCOPE_GUARD({ free(messages); });
 
-    for (int i = 0; i < size; ++i)
+    for (size_t i = 0; i < size; ++i)
     {
         osc::log::log(lvl, "%s", messages[i]);
     }

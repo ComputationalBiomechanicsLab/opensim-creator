@@ -32,6 +32,8 @@
 
 #include <algorithm>
 #include <cstring>
+#include <cstddef>
+#include <cstdint>
 #include <cmath>
 #include <ctime>
 #include <exception>
@@ -325,12 +327,12 @@ public:
         SDL_SetWindowFullscreen(m_MainWindow.get(), 0);
     }
 
-    int getMSXAASamplesRecommended() const
+    int32_t getMSXAASamplesRecommended() const
     {
         return m_CurrentMSXAASamples;
     }
 
-    void setMSXAASamplesRecommended(int s)
+    void setMSXAASamplesRecommended(int32_t s)
     {
         if (s <= 0)
         {
@@ -350,7 +352,7 @@ public:
         m_CurrentMSXAASamples = s;
     }
 
-    int getMSXAASamplesMax() const
+    int32_t getMSXAASamplesMax() const
     {
         return m_GraphicsContext.getMaxMSXAASamples();
     }
@@ -893,7 +895,7 @@ private:
     SynchronizedValue<std::unordered_map<TypeInfoReference, std::shared_ptr<void>>> m_Singletons;
 
     // how many samples the implementation should actually use
-    int m_CurrentMSXAASamples = std::min(m_GraphicsContext.getMaxMSXAASamples(), m_ApplicationConfig->getNumMSXAASamples());
+    int32_t m_CurrentMSXAASamples = std::min(m_GraphicsContext.getMaxMSXAASamples(), m_ApplicationConfig->getNumMSXAASamples());
 
     // set to true if the application should quit
     bool m_QuitRequested = false;
@@ -904,7 +906,7 @@ private:
     bool m_InWaitMode = false;
 
     // set >0 to force that `n` frames are polling-driven: even in waiting mode
-    int m_NumFramesToPoll = 0;
+    int32_t m_NumFramesToPoll = 0;
 
     // current screen being shown (if any)
     std::unique_ptr<Screen> m_CurrentScreen = nullptr;
@@ -1012,17 +1014,17 @@ void osc::App::makeWindowed()
     m_Impl->makeWindowed();
 }
 
-int osc::App::getMSXAASamplesRecommended() const
+int32_t osc::App::getMSXAASamplesRecommended() const
 {
     return m_Impl->getMSXAASamplesRecommended();
 }
 
-void osc::App::setMSXAASamplesRecommended(int s)
+void osc::App::setMSXAASamplesRecommended(int32_t s)
 {
     m_Impl->setMSXAASamplesRecommended(std::move(s));
 }
 
-int osc::App::getMSXAASamplesMax() const
+int32_t osc::App::getMSXAASamplesMax() const
 {
     return m_Impl->getMSXAASamplesMax();
 }
