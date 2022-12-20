@@ -15,6 +15,7 @@
 class osc::MeshCache::Impl final {
 public:
     Mesh sphere = GenUntexturedUVSphere(12, 12);
+    Mesh circle = GenCircle(16);
     Mesh cylinder = GenUntexturedSimbodyCylinder(16);
     Mesh cube = GenCube();
     Mesh cone = GenUntexturedSimbodyCone(12);
@@ -60,6 +61,11 @@ osc::Mesh osc::MeshCache::get(std::string const& key, std::function<Mesh()> cons
 osc::Mesh osc::MeshCache::getSphereMesh()
 {
     return m_Impl->sphere;
+}
+
+osc::Mesh osc::MeshCache::getCircleMesh()
+{
+    return m_Impl->circle;
 }
 
 osc::Mesh osc::MeshCache::getCylinderMesh()

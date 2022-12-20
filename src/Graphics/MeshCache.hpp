@@ -21,6 +21,7 @@ namespace osc
         Mesh get(std::string const& key, std::function<Mesh()> const& getter);
 
         Mesh getSphereMesh();
+        Mesh getCircleMesh();
         Mesh getCylinderMesh();
         Mesh getBrickMesh();
         Mesh getConeMesh();

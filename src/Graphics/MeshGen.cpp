@@ -604,6 +604,7 @@ osc::Mesh osc::GenCircle(size_t nsides)
     {
         data.verts.push_back({x, y, z});
         data.indices.push_back(index++);
+        data.normals.push_back({0.0f, 0.0f, 1.0f});
     };
 
     float const step = 2.0f*fpi / static_cast<float>(nsides);

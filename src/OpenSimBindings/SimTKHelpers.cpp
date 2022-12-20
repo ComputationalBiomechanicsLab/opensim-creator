@@ -158,14 +158,15 @@ private:
         m_Consumer(m_MeshCache.getCylinderMesh(), t, GetColor(d));
     }
 
-    void implementCircleGeometry(SimTK::DecorativeCircle const&) override
+    void implementCircleGeometry(SimTK::DecorativeCircle const& d) override
     {
-        static bool const g_ShownWarningOnce = []()
-        {
-            log::warn("this model uses implementCircleGeometry, which is not yet implemented in OSC");
-            return true;
-        }();
-        (void)g_ShownWarningOnce;
+        float const radius = static_cast<float>(d.getRadius());
+
+        Transform t = ToOscTransform(d);
+        t.scale.x *= radius;
+        t.scale.y *= radius;
+
+        m_Consumer(m_MeshCache.getCircleMesh(), t, GetColor(d));
     }
 
     void implementSphereGeometry(SimTK::DecorativeSphere const& d) override
