@@ -680,7 +680,7 @@ osc::Mesh osc::GenTorus(size_t slices, size_t stacks, float torusCenterToTubeCen
     {
         auto const safePush = [&data](size_t index)
         {
-            OSC_ASSERT(0 <= index && index < data.verts.size());
+            OSC_ASSERT(index < data.verts.size());
             data.indices.push_back(static_cast<uint32_t>(index));
         };
 
