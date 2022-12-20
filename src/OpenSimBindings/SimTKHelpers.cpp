@@ -87,6 +87,112 @@ namespace
 
         return osc::ToVec3(pos);
     }
+
+    // returns an `osc::Mesh` converted from the SimTK equivalent
+    osc::Mesh ToOscMesh(SimTK::PolygonalMesh const& mesh)
+    {
+        // see: simbody VisualizerProtocol.cpp:drawPolygonalMesh(...) for what this is
+        // roughly based on
+
+        std::vector<glm::vec3> verts;
+        std::vector<glm::vec3> normals;
+        std::vector<uint32_t> indices;
+
+        verts.reserve(static_cast<size_t>(mesh.getNumVertices()));
+        normals.reserve(static_cast<size_t>(mesh.getNumVertices()));
+        indices.reserve(static_cast<size_t>(mesh.getNumVertices()));
+
+        uint32_t index = 0;
+        auto const pushTriangle = [&verts, &normals, &indices, &index](osc::Triangle const& tri)
+        {
+            glm::vec3 const normal = osc::TriangleNormal(tri);
+
+            for (size_t i = 0; i < 3; ++i)
+            {
+                verts.push_back(tri[i]);
+                normals.push_back(normal);
+                indices.push_back(index++);
+            }
+        };
+
+        for (int face = 0, nfaces = mesh.getNumFaces(); face < nfaces; ++face)
+        {
+            int const nVerts = mesh.getNumVerticesForFace(face);
+
+            if (nVerts < 3)
+            {
+                // line/point (ignore it)
+            }
+            else if (nVerts == 3)
+            {
+                // triangle
+
+                osc::Triangle const triangle =
+                {
+                    GetFaceVertex(mesh, face, 0),
+                    GetFaceVertex(mesh, face, 1),
+                    GetFaceVertex(mesh, face, 2),
+                };
+                pushTriangle(triangle);
+            }
+            else if (nVerts == 4)
+            {
+                // quad (render as two triangles)
+
+                glm::vec3 const quadVerts[4] =
+                {
+                    GetFaceVertex(mesh, face, 0),
+                    GetFaceVertex(mesh, face, 1),
+                    GetFaceVertex(mesh, face, 2),
+                    GetFaceVertex(mesh, face, 3),
+                };
+
+                pushTriangle({quadVerts[0], quadVerts[1], quadVerts[2]});
+                pushTriangle({quadVerts[2], quadVerts[3], quadVerts[0]});
+            }
+            else
+            {
+                // polygon (>3 edges):
+                //
+                // create a vertex at the average center point and attach
+                // every two verices to the center as triangles.
+
+                glm::vec3 center = {0.0f, 0.0f, 0.0f};
+                for (int vert = 0; vert < nVerts; ++vert)
+                {
+                    center += GetFaceVertex(mesh, face, vert);
+                }
+                center /= nVerts;
+
+                for (int vert = 0; vert < nVerts - 1; ++vert)
+                {
+                    osc::Triangle const tri =
+                    {
+                        GetFaceVertex(mesh, face, vert),
+                        GetFaceVertex(mesh, face, vert + 1),
+                        center,
+                    };
+                    pushTriangle(tri);
+                }
+
+                // complete the polygon loop
+                osc::Triangle const tri =
+                {
+                    GetFaceVertex(mesh, face, nVerts - 1),
+                    GetFaceVertex(mesh, face, 0),
+                    center,
+                };
+                pushTriangle(tri);
+            }
+        }
+
+        osc::Mesh rv;
+        rv.setTopography(osc::MeshTopography::Triangles);
+        rv.setVerts(std::move(verts));
+        rv.setNormals(std::move(normals));
+        rv.setIndices(std::move(indices));
+        return rv;
+    }
 }
 
 // an implementation of SimTK::DecorativeGeometryImplementation that emits generic
@@ -231,14 +337,17 @@ private:
         (void)g_ShownWarningOnce;
     }
 
-    void implementMeshGeometry(SimTK::DecorativeMesh const&) override
+    void implementMeshGeometry(SimTK::DecorativeMesh const& d) override
     {
-        static bool const g_ShownWarningOnce = []()
-        {
-            log::warn("this model uses implementMeshGeometry, which is not yet implemented in OSC");
-            return true;
-        }();
-        (void)g_ShownWarningOnce;
+        // roughly based on simbody's VisualizerProtocol.cpp:drawPolygonalMesh
+        //
+        // (it uses impl pointers to figure out mesh caching - unsure if that's a
+        //  good idea, but it is reproduced here for consistency)
+
+        std::string const id = std::to_string(reinterpret_cast<uintptr_t>(static_cast<void const*>(&d.getMesh().getImpl())));
+        auto const meshLoaderFunc = [&d]() { return ToOscMesh(d.getMesh()); };
+
+        m_Consumer(m_MeshCache.get(id, meshLoaderFunc), ToOscTransform(d), GetColor(d));
     }
 
     void implementMeshFileGeometry(SimTK::DecorativeMeshFile const& d) override
@@ -488,105 +597,7 @@ osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
 {
     SimTK::DecorativeMeshFile const dmf{p.string()};
     SimTK::PolygonalMesh const& mesh = dmf.getMesh();
-
-    std::vector<glm::vec3> verts;
-    std::vector<glm::vec3> normals;
-    std::vector<uint32_t> indices;
-
-    verts.reserve(static_cast<size_t>(mesh.getNumVertices()));
-    normals.reserve(static_cast<size_t>(mesh.getNumVertices()));
-    indices.reserve(static_cast<size_t>(mesh.getNumVertices()));
-
-    uint32_t index = 0;
-    auto const pushTriangle = [&verts, &normals, &indices, &index](Triangle const& tri)
-    {
-        glm::vec3 const normal = osc::TriangleNormal(tri);
-
-        for (size_t i = 0; i < 3; ++i)
-        {
-            verts.push_back(tri[i]);
-            normals.push_back(normal);
-            indices.push_back(index++);
-        }
-    };
-
-    for (int face = 0, nfaces = mesh.getNumFaces(); face < nfaces; ++face)
-    {
-        int const nVerts = mesh.getNumVerticesForFace(face);
-
-        if (nVerts < 3)
-        {
-            // line/point (ignore it)
-        }
-        else if (nVerts == 3)
-        {
-            // triangle
-
-            osc::Triangle const triangle =
-            {
-                GetFaceVertex(mesh, face, 0),
-                GetFaceVertex(mesh, face, 1),
-                GetFaceVertex(mesh, face, 2),
-            };
-            pushTriangle(triangle);
-        }
-        else if (nVerts == 4)
-        {
-            // quad (render as two triangles)
-
-            glm::vec3 const quadVerts[4] =
-            {
-                GetFaceVertex(mesh, face, 0),
-                GetFaceVertex(mesh, face, 1),
-                GetFaceVertex(mesh, face, 2),
-                GetFaceVertex(mesh, face, 3),
-            };
-
-            pushTriangle({quadVerts[0], quadVerts[1], quadVerts[2]});
-            pushTriangle({quadVerts[2], quadVerts[3], quadVerts[0]});
-        }
-        else
-        {
-            // polygon (>3 edges):
-            //
-            // create a vertex at the average center point and attach
-            // every two verices to the center as triangles.
-
-            glm::vec3 center = {0.0f, 0.0f, 0.0f};
-            for (int vert = 0; vert < nVerts; ++vert)
-            {
-                center += GetFaceVertex(mesh, face, vert);
-            }
-            center /= nVerts;
-
-            for (int vert = 0; vert < nVerts - 1; ++vert)
-            {
-                Triangle const tri =
-                {
-                    GetFaceVertex(mesh, face, vert),
-                    GetFaceVertex(mesh, face, vert + 1),
-                    center,
-                };
-                pushTriangle(tri);
-            }
-
-            // complete the polygon loop
-            Triangle const tri =
-            {
-                GetFaceVertex(mesh, face, nVerts - 1),
-                GetFaceVertex(mesh, face, 0),
-                center,
-            };
-            pushTriangle(tri);
-        }
-    }
-
-    Mesh rv;
-    rv.setTopography(MeshTopography::Triangles);
-    rv.setVerts(std::move(verts));
-    rv.setNormals(std::move(normals));
-    rv.setIndices(std::move(indices));
-    return rv;
+    return ToOscMesh(mesh);
 }
 
 
