@@ -17,6 +17,7 @@ All notable changes to this project will be documented here. The format is based
 - Refactored `unique_ptr` usage out of `osc::ShaderCache` (#496)
 - Added `SimTK::`DecorativeCircle rendering support to the backend (#181)
 - Added `SimTK::DecorativeMesh` rendering support to the backend (#183)
+- Added `SimTK::DecorativeTorus` rendering support to the backend (#184)
 
 ## [0.3.1] - UNRELEASED
 
