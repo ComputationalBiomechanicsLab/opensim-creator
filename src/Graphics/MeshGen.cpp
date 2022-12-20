@@ -638,7 +638,102 @@ osc::Mesh osc::GenLearnOpenGLCube()
 
 osc::Mesh osc::GenTorus(size_t slices, size_t stacks, float torusCenterToTubeCenterRadius, float tubeRadius)
 {
-    return GenCube();  // TODO (#184)
+    // adapted from GitHub:prideout/par (used by raylib internally)
+
+    if (slices < 3 || stacks < 3)
+    {
+        return osc::Mesh{};
+    }
+
+    auto const torusFn = [torusCenterToTubeCenterRadius, tubeRadius](glm::vec2 const uv)
+    {
+        float const theta = 2.0f * fpi * uv.x;
+        float const phi = 2.0f * fpi * uv.y;
+        float const beta = torusCenterToTubeCenterRadius + tubeRadius*std::cos(phi);
+
+        return glm::vec3
+        {
+            std::cos(theta) * beta,
+            std::sin(theta) * beta,
+            std::sin(phi) * tubeRadius,
+        };
+    };
+
+    NewMeshData data;
+    data.verts.reserve((slices+1) * (stacks+1));
+    data.texcoords.reserve(data.verts.size());
+    data.normals.reserve(data.verts.size());
+    data.indices.reserve(2 * slices * stacks);
+
+    // generate verts+texcoords
+    for (size_t stack = 0; stack < stacks+1; ++stack)
+    {
+        for (size_t slice = 0; slice < slices+1; ++slice)
+        {
+            glm::vec2 const uv = {static_cast<float>(stack)/static_cast<float>(stacks), static_cast<float>(slice)/static_cast<float>(slices)};
+            data.texcoords.push_back(uv);
+            data.verts.push_back(torusFn(uv));
+        }
+    }
+
+    // generate faces
+    {
+        auto const safePush = [&data](size_t index)
+        {
+            OSC_ASSERT(0 <= index && index < data.verts.size());
+            data.indices.push_back(static_cast<uint32_t>(index));
+        };
+
+        size_t v = 0;
+        for (size_t stack = 0; stack < stacks; ++stack)
+        {
+            for (size_t slice = 0; slice < slices; ++slice)
+            {
+                size_t const next = slice + 1;
+                safePush(v + slice + slices + 1);
+                safePush(v + next);
+                safePush(v + slice);
+                safePush(v + slice + slices + 1);
+                safePush(v + next + slices + 1);
+                safePush(v + next);
+            }
+            v += slices + 1;
+        }
+    }
+
+    // generate normals from faces
+    {
+        OSC_ASSERT(data.indices.size() % 3 == 0);
+        data.normals.resize(data.verts.size());
+        for (size_t i = 0; i+2 < data.indices.size(); i += 3)
+        {
+            osc::Triangle const t =
+            {
+                data.verts.at(data.indices[i]),
+                data.verts.at(data.indices[i+1]),
+                data.verts.at(data.indices[i+2]),
+            };
+            osc::Triangle const t1 =
+            {
+                data.verts.at(data.indices[i+1]),
+                data.verts.at(data.indices[i+2]),
+                data.verts.at(data.indices[i]),
+            };
+            osc::Triangle const t2 =
+            {
+                data.verts.at(data.indices[i+2]),
+                data.verts.at(data.indices[i]),
+                data.verts.at(data.indices[i+1]),
+            };
+
+            data.normals.at(data.indices[i]) = osc::TriangleNormal(t);
+            data.normals.at(data.indices[i+1]) = osc::TriangleNormal(t1);
+            data.normals.at(data.indices[i+2]) = osc::TriangleNormal(t2);
+        }
+        OSC_ASSERT(data.normals.size() == data.verts.size());
+    }
+
+    return CreateMeshFromData(std::move(data));
 }
 
 osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max, glm::ivec2 steps)

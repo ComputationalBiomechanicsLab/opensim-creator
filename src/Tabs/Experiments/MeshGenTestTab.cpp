@@ -41,7 +41,7 @@ static std::map<std::string, osc::Mesh> GenerateMeshLookup()
         {"cube (wire)", cache.getCubeWireMesh()},
         {"yline", cache.getYLineMesh()},
         {"quad", cache.getTexturedQuadMesh()},
-        {"torus", cache.getTorusMesh(0.75f, 0.25f)},
+        {"torus", cache.getTorusMesh(0.9f, 0.1f)},
     };
 }
 
@@ -120,17 +120,14 @@ public:
             m_RenderParams.samples = osc::App::get().getMSXAASamplesRecommended();
 
             {
-                glm::vec3 p = glm::normalize(-m_Camera.focusPoint - m_Camera.getPos());
-                glm::vec3 up = {0.0f, 1.0f, 0.0f};
-                glm::vec3 mp = glm::rotate(glm::mat4{1.0f}, 1.25f * fpi4, up) * glm::vec4{p, 0.0f};
-
-                m_RenderParams.lightDirection = glm::normalize(mp + -up);
+                m_RenderParams.lightDirection = osc::RecommendedLightDirection(m_Camera);
                 m_RenderParams.projectionMatrix = m_Camera.getProjMtx(AspectRatio(m_RenderParams.dimensions));
                 m_RenderParams.viewMatrix = m_Camera.getViewMtx();
                 m_RenderParams.viewPos = m_Camera.getPos();
                 m_RenderParams.nearClippingPlane = m_Camera.znear;
                 m_RenderParams.farClippingPlane = m_Camera.zfar;
                 m_RenderParams.drawFloor = false;
+                m_RenderParams.drawMeshNormals = true;
 
                 SceneDecoration d
                 {
