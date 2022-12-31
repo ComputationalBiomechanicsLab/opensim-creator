@@ -820,7 +820,7 @@ namespace
         {
             float const height = ImGui::GetFrameHeight() + 2.0f*ImGui::GetStyle().WindowPadding.y;
             ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
-            if (osc::BeginMainViewportTopBar(m_Label.c_str(), height, flags))
+            if (osc::BeginMainViewportTopBar(m_Label, height, flags))
             {
                 drawContent();
             }
@@ -946,7 +946,7 @@ namespace
 
         void draw()
         {
-            if (osc::BeginMainViewportBottomBar(m_Label.c_str()))
+            if (osc::BeginMainViewportBottomBar(m_Label))
             {
                 drawContent();
             }

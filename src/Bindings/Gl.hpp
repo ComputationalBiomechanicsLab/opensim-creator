@@ -3,7 +3,6 @@
 #include <GL/glew.h>
 
 #include <cstddef>
-#include <cstdint>
 #include <exception>
 #include <initializer_list>
 #include <limits>
@@ -297,7 +296,7 @@ namespace gl
 
         [[nodiscard]] constexpr GLint geti() const noexcept
         {
-            return static_cast<GLint>(m_UniformLocation);
+            return m_UniformLocation;
         }
 
     private:
@@ -414,11 +413,6 @@ namespace gl
         {
             return N;
         }
-
-        [[nodiscard]] constexpr int64_t sizei() const noexcept
-        {
-            return static_cast<int64_t>(N);
-        }
     };
 
     // an attribute shader symbol (e.g. `attribute vec3 aPos`) at at particular
@@ -445,7 +439,7 @@ namespace gl
 
         [[nodiscard]] constexpr GLint geti() const noexcept
         {
-            return static_cast<GLint>(m_AttributeLocation);
+            return m_AttributeLocation;
         }
 
     private:
@@ -676,13 +670,8 @@ namespace gl
 
         Buffer(T const* begin, size_t n) :
             TypedBufferHandle<TBuffer>{},
-            m_BufferSz{static_cast<size_type>(n)}
+            m_BufferSize{n}
         {
-            if (n > std::numeric_limits<size_type>::max())
-            {
-                throw OpenGlException{"tried to allocate a bufer that is bigger than the max supported size: if you need buffer this big, contact the developer"};
-            }
-
             BindBuffer(*this);
             BufferData(BufferType, sizeof(T) * n, begin, Usage);
         }
@@ -706,24 +695,14 @@ namespace gl
 
         [[nodiscard]] constexpr size_t size() const noexcept
         {
-            return m_BufferSz;
-        }
-
-        [[nodiscard]] constexpr GLsizei sizei() const noexcept
-        {
-            return static_cast<GLsizei>(m_BufferSz);
+            return m_BufferSize;
         }
 
         void assign(T const* begin, size_t n)
         {
-            if (n > std::numeric_limits<size_type>::max())
-            {
-                throw OpenGlException{"tried to assign a buffer that is bigger than the max supported size: if you need buffer this big, contact the developer"};
-            }
-
             BindBuffer(*this);
             BufferData(BufferType, sizeof(T) * n, begin, Usage);
-            m_BufferSz = static_cast<size_type>(n);
+            m_BufferSize = n;
         }
 
         template<typename Container>
@@ -740,16 +719,11 @@ namespace gl
 
         void resize(size_t n)
         {
-            if (n > std::numeric_limits<size_type>::max())
-            {
-                throw OpenGlException{"tried to resize a buffer that is bigger than the max supported size: if you need buffer this big, contact the developer"};
-            }
-
             if (n > m_BufferSz)
             {
                 BindBuffer(*this);
                 BufferData(BufferType, n * sizeof(T), nullptr, Usage);
-                m_BufferSz = static_cast<size_type>(n);
+                m_BufferSize = n;
             }
             else
             {
@@ -758,8 +732,7 @@ namespace gl
         }
 
     private:
-        using size_type = uint32_t;
-        size_type m_BufferSz = 0;
+        size_t m_BufferSize = 0;
     };
 
     template<typename T, GLenum Usage = GL_STATIC_DRAW>

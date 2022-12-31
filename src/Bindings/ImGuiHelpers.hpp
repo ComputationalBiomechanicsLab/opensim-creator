@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/Maths/Rect.hpp"
+#include "src/Utils/CStringView.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/mat4x4.hpp>
@@ -10,7 +11,6 @@
 #include <cstddef>
 #include <initializer_list>
 #include <string>
-#include <string_view>
 
 namespace osc { class Camera; }
 namespace osc { class PolarPerspectiveCamera; }
@@ -78,43 +78,75 @@ namespace osc
     bool IsMouseReleasedWithoutDragging(ImGuiMouseButton, float dragThreshold);
 
     // draws an overlay tooltip (content only)
-    void DrawTooltipBodyOnly(char const*);
+    void DrawTooltipBodyOnly(CStringView);
 
     // draws an overlay tooltip (content only) if the last item is hovered
-    void DrawTooltipBodyOnlyIfItemHovered(char const*);
+    void DrawTooltipBodyOnlyIfItemHovered(CStringView);
 
     // draws an overlay tooltip with a header and description
-    void DrawTooltip(char const* header, char const* description = nullptr);
+    void DrawTooltip(CStringView header, CStringView description = {});
 
     // equivalent to `if (ImGui::IsItemHovered()) DrawTooltip(header, description);`
-    void DrawTooltipIfItemHovered(char const* header, char const* description = nullptr);
+    void DrawTooltipIfItemHovered(CStringView header, CStringView description = {});
 
     // draw overlay axes in bottom-right of screenspace rect
     void DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect const& renderRect);
 
     // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
-    void DrawHelpMarker(char const* header, char const* desc);
+    void DrawHelpMarker(CStringView header, CStringView desc);
 
     // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
-    void DrawHelpMarker(char const*);
+    void DrawHelpMarker(CStringView);
 
     // draw an ImGui::InputText that manipulates a std::string
-    bool InputString(const char* label, std::string& s, std::size_t maxLen, ImGuiInputTextFlags flags = 0);
+    bool InputString(
+        CStringView label,
+        std::string& editedString,
+        size_t maxLen,
+        ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
+    );
 
     // draw a vec3/f3 editor with a lock icon
-    bool DrawF3Editor(char const* lock_id, char const* editor_id, float* v, bool* is_locked);
+    bool DrawF3Editor(
+        CStringView lock_id,
+        CStringView editor_id,
+        float* v,
+        bool* is_locked
+    );
 
     // draw an ImGui::InputFloat that manipulates in the scene scale (note: some users work with very very small sizes)
-    bool InputMetersFloat(const char* label, float* v, float step = 0.0f, float step_fast = 0.0f, ImGuiInputTextFlags flags = 0);
+    bool InputMetersFloat(
+        CStringView label,
+        float* v,
+        float step = 0.0f,
+        float step_fast = 0.0f,
+        ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
+    );
 
     // draw an ImGui::InputFloat3 that manipulates in the scene scale (note: some users work with very very small sizes)
-    bool InputMetersFloat3(const char* label, float v[3], ImGuiInputTextFlags flags = 0);
+    bool InputMetersFloat3(
+        CStringView label,
+        float v[3],
+        ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
+    );
 
     // draw an ImGui::SliderFloat that manipulates in the scene scale (note: some users work with very very small sizes)
-    bool SliderMetersFloat(const char* label, float* v, float v_min, float v_max, ImGuiSliderFlags flags = 0);
+    bool SliderMetersFloat(
+        CStringView label,
+        float* v,
+        float v_min,
+        float v_max,
+        ImGuiSliderFlags flags = ImGuiInputTextFlags_None
+    );
 
     // draw an ImGui::InputFloat for masses (note: some users work with very very small masses)
-    bool InputKilogramFloat(const char* label, float* v, float step = 0.0f, float step_fast = 0.0f, ImGuiInputTextFlags flags = 0);
+    bool InputKilogramFloat(
+        CStringView label,
+        float* v,
+        float step = 0.0f,
+        float step_fast = 0.0f,
+        ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
+    );
 
     // push an osc::UID as if it were an ImGui ID (via ImGui::PushID)
     void PushID(UID const&);
@@ -132,14 +164,14 @@ namespace osc
 
     // begin a menu that's attached to the top of a viewport, end it with ImGui::End();
     bool BeginMainViewportTopBar(
-        char const* label,
+        CStringView label,
         float height = ImGui::GetFrameHeight(),
         ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar
     );
 
     // begin a menu that's attached to the bottom of a viewport, end it with ImGui::End();
-    bool BeginMainViewportBottomBar(char const* label);
+    bool BeginMainViewportBottomBar(CStringView);
 
     // draw text, but centered on the current window/line
-    void TextCentered(std::string const&);
+    void TextCentered(CStringView);
 }

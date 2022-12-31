@@ -142,7 +142,7 @@ private:
             ss << "    motion type = " << osc::GetMotionTypeDisplayName(c) << '\n';
             ss << "    owner = " << (c.hasOwner() ? c.getOwner().getName().c_str() : "(no owner)");
 
-            osc::DrawTooltip(c.getName().c_str(), ss.str().c_str());
+            osc::DrawTooltip(c.getName(), ss.str());
         }
 
         if (ImGui::IsItemClicked(ImGuiMouseButton_Left))

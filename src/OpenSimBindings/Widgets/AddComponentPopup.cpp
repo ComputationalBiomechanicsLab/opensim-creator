@@ -326,7 +326,7 @@ private:
                     locationInFrame
                 );
             }
-            DrawTooltipIfItemHovered(c.getName().c_str(), (c.getAbsolutePathString() + " " + c.getConcreteClassName()).c_str());
+            DrawTooltipIfItemHovered(c.getName(), (c.getAbsolutePathString() + " " + c.getConcreteClassName()));
         }
 
         ImGui::EndChild();
@@ -369,7 +369,7 @@ private:
             if (ImGui::IsItemHovered())
             {
                 OpenSim::Component const* c = FindComponent(model, m_PathPoints[i].userChoice);
-                DrawTooltip(c->getName().c_str(), c->getAbsolutePathString().c_str());
+                DrawTooltip(c->getName(), c->getAbsolutePathString());
             }
         }
 

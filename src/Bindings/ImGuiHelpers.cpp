@@ -31,9 +31,9 @@ static inline constexpr float c_DefaultDragThreshold = 5.0f;
 namespace
 {
     template<typename Coll1, typename Coll2>
-    float diff(Coll1 const& older, Coll2 const& newer, std::size_t n)
+    float diff(Coll1 const& older, Coll2 const& newer, size_t n)
     {
-        for (int i = 0; i < static_cast<int>(n); ++i)
+        for (size_t i = 0; i < n; ++i)
         {
             if (static_cast<float>(older[i]) != static_cast<float>(newer[i]))
             {
@@ -344,34 +344,34 @@ bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float threshold)
     return glm::length(dragDelta) < threshold;
 }
 
-void osc::DrawTooltipBodyOnly(char const* text)
+void osc::DrawTooltipBodyOnly(CStringView label)
 {
     ImGui::BeginTooltip();
     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-    ImGui::TextUnformatted(text);
+    ImGui::TextUnformatted(label.c_str());
     ImGui::PopTextWrapPos();
     ImGui::EndTooltip();
 }
 
-void osc::DrawTooltipBodyOnlyIfItemHovered(char const* text)
+void osc::DrawTooltipBodyOnlyIfItemHovered(CStringView label)
 {
     if (ImGui::IsItemHovered())
     {
-        DrawTooltipBodyOnly(text);
+        DrawTooltipBodyOnly(label);
     }
 }
 
-void osc::DrawTooltip(char const* header, char const* description)
+void osc::DrawTooltip(CStringView header, CStringView description)
 {
     ImGui::BeginTooltip();
     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-    ImGui::TextUnformatted(header);
+    ImGui::TextUnformatted(header.c_str());
 
-    if (description)
+    if (!description.empty())
     {
         ImGui::Dummy({0.0f, 1.0f});
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.7f, 0.7f, 0.7f, 1.0f});
-        ImGui::TextUnformatted(description);
+        ImGui::PushStyleColor(ImGuiCol_Text, {0.7f, 0.7f, 0.7f, 1.0f});
+        ImGui::TextUnformatted(description.c_str());
         ImGui::PopStyleColor();
     }
 
@@ -379,7 +379,7 @@ void osc::DrawTooltip(char const* header, char const* description)
     ImGui::EndTooltip();
 }
 
-void osc::DrawTooltipIfItemHovered(char const* header, char const* description)
+void osc::DrawTooltipIfItemHovered(CStringView header, CStringView description)
 {
     if (ImGui::IsItemHovered())
     {
@@ -404,7 +404,7 @@ void osc::DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect
     std::array<char const* const, 3> labels = {"X", "Y", "Z"};
 
     ImDrawList& dd = *ImGui::GetWindowDrawList();
-    for (size_t i = 0; i < labels.size(); ++i)
+    for (size_t i = 0; i < std::size(labels); ++i)
     {
         glm::vec4 world = {0.0f, 0.0f, 0.0f, 0.0f};
         world[static_cast<glm::vec4::length_type>(i)] = 1.0f;
@@ -428,30 +428,30 @@ void osc::DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect
 }
 
 // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
-void osc::DrawHelpMarker(char const* header, char const* desc)
+void osc::DrawHelpMarker(CStringView header, CStringView desc)
 {
     ImGui::TextDisabled("(?)");
     DrawTooltipIfItemHovered(header, desc);
 }
 
 // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
-void osc::DrawHelpMarker(char const* desc)
+void osc::DrawHelpMarker(CStringView desc)
 {
     ImGui::TextDisabled("(?)");
     DrawTooltipIfItemHovered(desc);
 }
 
-bool osc::InputString(const char* label, std::string& s, std::size_t maxLen, ImGuiInputTextFlags flags)
+bool osc::InputString(CStringView label, std::string& s, size_t maxLen, ImGuiInputTextFlags flags)
 {
     static SynchronizedValue<std::string> s_Buf;
 
     auto bufGuard = s_Buf.lock();
 
     *bufGuard = s;
-    bufGuard->resize(std::max(maxLen, s.size()));
-    (*bufGuard)[s.size()] = '\0';
+    bufGuard->resize(std::max(maxLen, std::size(s)));
+    (*bufGuard)[std::size(s)] = '\0';
 
-    if (ImGui::InputText(label, bufGuard->data(), maxLen, flags))
+    if (ImGui::InputText(label.c_str(), bufGuard->data(), maxLen, flags))
     {
         s = bufGuard->data();
         return true;
@@ -462,11 +462,11 @@ bool osc::InputString(const char* label, std::string& s, std::size_t maxLen, ImG
     }
 }
 
-bool osc::DrawF3Editor(char const* lockID, char const* editorID, float* v, bool* isLocked)
+bool osc::DrawF3Editor(CStringView lockID, CStringView editorID, float* v, bool* isLocked)
 {
     bool changed = false;
 
-    ImGui::PushID(*lockID);
+    ImGui::PushID(lockID.c_str());
     if (ImGui::Button(*isLocked ? ICON_FA_LOCK : ICON_FA_UNLOCK))
     {
         *isLocked = !*isLocked;
@@ -480,7 +480,7 @@ bool osc::DrawF3Editor(char const* lockID, char const* editorID, float* v, bool*
 
     float copy[3] = {v[0], v[1], v[2]};
 
-    if (ImGui::InputFloat3(editorID, copy, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue))
+    if (ImGui::InputFloat3(editorID.c_str(), copy, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue))
     {
         if (*isLocked)
         {
@@ -501,22 +501,22 @@ bool osc::DrawF3Editor(char const* lockID, char const* editorID, float* v, bool*
     return changed;
 }
 
-bool osc::InputMetersFloat(const char* label, float* v, float step, float step_fast, ImGuiInputTextFlags flags)
+bool osc::InputMetersFloat(CStringView label, float* v, float step, float step_fast, ImGuiInputTextFlags flags)
 {
-    return ImGui::InputFloat(label, v, step, step_fast, OSC_DEFAULT_FLOAT_INPUT_FORMAT, flags);
+    return ImGui::InputFloat(label.c_str(), v, step, step_fast, OSC_DEFAULT_FLOAT_INPUT_FORMAT, flags);
 }
 
-bool osc::InputMetersFloat3(const char* label, float v[3], ImGuiInputTextFlags flags)
+bool osc::InputMetersFloat3(CStringView label, float v[3], ImGuiInputTextFlags flags)
 {
-    return ImGui::InputFloat3(label, v, OSC_DEFAULT_FLOAT_INPUT_FORMAT, flags);
+    return ImGui::InputFloat3(label.c_str(), v, OSC_DEFAULT_FLOAT_INPUT_FORMAT, flags);
 }
 
-bool osc::SliderMetersFloat(const char* label, float* v, float v_min, float v_max, ImGuiSliderFlags flags)
+bool osc::SliderMetersFloat(CStringView label, float* v, float v_min, float v_max, ImGuiSliderFlags flags)
 {
-    return ImGui::SliderFloat(label, v, v_min, v_max, OSC_DEFAULT_FLOAT_INPUT_FORMAT, flags);
+    return ImGui::SliderFloat(label.c_str(), v, v_min, v_max, OSC_DEFAULT_FLOAT_INPUT_FORMAT, flags);
 }
 
-bool osc::InputKilogramFloat(const char* label, float* v, float step, float step_fast, ImGuiInputTextFlags flags)
+bool osc::InputKilogramFloat(CStringView label, float* v, float step, float step_fast, ImGuiInputTextFlags flags)
 {
     return InputMetersFloat(label, v, step, step_fast, flags);
 }
@@ -561,25 +561,25 @@ bool osc::IsMouseInMainViewportWorkspaceScreenRect()
     return osc::IsPointInRect(hitRect, mousepos);
 }
 
-bool osc::BeginMainViewportTopBar(char const* label, float height, ImGuiWindowFlags flags)
+bool osc::BeginMainViewportTopBar(CStringView label, float height, ImGuiWindowFlags flags)
 {
     // https://github.com/ocornut/imgui/issues/3518
     ImGuiViewportP* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));
-    return ImGui::BeginViewportSideBar(label, viewport, ImGuiDir_Up, height, flags);
+    return ImGui::BeginViewportSideBar(label.c_str(), viewport, ImGuiDir_Up, height, flags);
 }
 
 
-bool osc::BeginMainViewportBottomBar(char const* label)
+bool osc::BeginMainViewportBottomBar(CStringView label)
 {
     // https://github.com/ocornut/imgui/issues/3518
     ImGuiViewportP* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));
     ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
     float const height = ImGui::GetFrameHeight() + ImGui::GetStyle().WindowPadding.y;
 
-    return ImGui::BeginViewportSideBar(label, viewport, ImGuiDir_Down, height, flags);
+    return ImGui::BeginViewportSideBar(label.c_str(), viewport, ImGuiDir_Down, height, flags);
 }
 
-void osc::TextCentered(std::string const& s)
+void osc::TextCentered(CStringView s)
 {
     float const windowWidth = ImGui::GetWindowSize().x;
     float const textWidth   = ImGui::CalcTextSize(s.c_str()).x;

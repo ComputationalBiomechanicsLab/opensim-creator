@@ -400,7 +400,7 @@ namespace
         {
             std::string const name = p.first.getComponentName();
             ImGui::Text("%s", name.c_str());
-            osc::DrawTooltipIfItemHovered(name.c_str(), p.first.toString().c_str());  // show abspath on hover
+            osc::DrawTooltipIfItemHovered(name, p.first.toString());  // show abspath on hover
         }
 
         void drawSourceMeshCell(std::pair<OpenSim::ComponentPath, MeshTPSData> const& p) const
@@ -415,7 +415,7 @@ namespace
 
             std::string const filename = meshLocation.filename().string();
             ImGui::Text("%s", filename.c_str());
-            osc::DrawTooltipIfItemHovered(filename.c_str(), meshLocation.string().c_str());
+            osc::DrawTooltipIfItemHovered(filename, meshLocation.string());
         }
 
         void drawSourceLandmarksCell(std::pair<OpenSim::ComponentPath, MeshTPSData> const& p) const
@@ -512,7 +512,7 @@ namespace
         {
             std::string const name = p.first.getComponentName();
             ImGui::Text("%s", name.c_str());
-            osc::DrawTooltipIfItemHovered(name.c_str(), p.first.toString().c_str());  // show abspath on hover
+            osc::DrawTooltipIfItemHovered(name, p.first.toString());  // show abspath on hover
         }
 
         void drawWarpTargetConnectedMesh(std::pair<OpenSim::ComponentPath, ModelWarpTarget> const& p) const

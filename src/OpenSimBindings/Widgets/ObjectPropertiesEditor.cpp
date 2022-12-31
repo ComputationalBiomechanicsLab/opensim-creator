@@ -206,7 +206,7 @@ static void DrawPropertyName(OpenSim::AbstractProperty const& prop)
     if (!comment.empty())
     {
         ImGui::SameLine();
-        osc::DrawHelpMarker(prop.getComment().c_str());
+        osc::DrawHelpMarker(prop.getComment());
     }
 }
 

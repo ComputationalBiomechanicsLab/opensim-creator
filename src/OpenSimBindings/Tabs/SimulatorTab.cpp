@@ -89,7 +89,7 @@ static void DrawOutputNameColumn(osc::VirtualOutputExtractor const& output, bool
     if (!output.getDescription().empty())
     {
         ImGui::SameLine();
-        osc::DrawHelpMarker(output.getName().c_str(), output.getDescription().c_str());
+        osc::DrawHelpMarker(output.getName(), output.getDescription());
     }
 }
 

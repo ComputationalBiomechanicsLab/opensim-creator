@@ -200,7 +200,7 @@ void osc::DrawSimulationParams(osc::ParamBlock const& params)
 
         ImGui::TextUnformatted(name.c_str());
         ImGui::SameLine();
-        osc::DrawHelpMarker(name.c_str(), description.c_str());
+        osc::DrawHelpMarker(name, description);
         ImGui::NextColumn();
 
         DrawSimulationParamValue(value);

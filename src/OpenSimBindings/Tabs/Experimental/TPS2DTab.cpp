@@ -537,7 +537,7 @@ private:
         glm::vec2 const mouseImageRelPos = mouseImagePos / Dimensions(ht.rect);
         glm::vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
 
-        osc::DrawTooltipBodyOnly(StreamToString(mouseImageNDCPos).c_str());
+        osc::DrawTooltipBodyOnly(StreamToString(mouseImageNDCPos));
 
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
         {
@@ -553,7 +553,7 @@ private:
         glm::vec2 const mouseImageRelPos = mouseImagePos / Dimensions(ht.rect);
         glm::vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
 
-        osc::DrawTooltipBodyOnly((StreamToString(mouseImageNDCPos) + "*").c_str());
+        osc::DrawTooltipBodyOnly((StreamToString(mouseImageNDCPos) + "*"));
 
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
         {

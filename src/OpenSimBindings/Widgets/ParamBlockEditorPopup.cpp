@@ -101,7 +101,7 @@ private:
 
             ImGui::TextUnformatted(m_ParamBlock->getName(i).c_str());
             ImGui::SameLine();
-            DrawHelpMarker(m_ParamBlock->getName(i).c_str(), m_ParamBlock->getDescription(i).c_str());
+            DrawHelpMarker(m_ParamBlock->getName(i), m_ParamBlock->getDescription(i));
             ImGui::NextColumn();
 
             if (DrawEditor(*m_ParamBlock, i))
