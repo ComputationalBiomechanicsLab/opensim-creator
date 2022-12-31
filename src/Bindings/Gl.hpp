@@ -486,11 +486,11 @@ namespace gl
         }
         else if constexpr (SourceType == GL_FLOAT)
         {
-            for (unsigned i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i)
+            for (size_t i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i)
             {
                 void* off = reinterpret_cast<void*>(offset + (i * TGlsl::elementsPerLocation * sizeof(float)));
                 glVertexAttribPointer(
-                    attr.get() + i,
+                    attr.get() + static_cast<GLuint>(i),
                     TGlsl::elementsPerLocation,
                     SourceType,
                     normgl,
@@ -519,9 +519,9 @@ namespace gl
         }
         else if constexpr (TGlsl::type == GL_FLOAT)
         {
-            for (unsigned i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i)
+            for (size_t i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i)
             {
-                glEnableVertexAttribArray(loc.get() + i);
+                glEnableVertexAttribArray(loc.get() + static_cast<GLuint>(i));
             }
         }
 
@@ -539,9 +539,9 @@ namespace gl
         }
         else if constexpr (TGlsl::type == GL_FLOAT)
         {
-            for (unsigned i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i)
+            for (size_t i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i)
             {
-                glDisableVertexAttribArray(loc.get() + i);
+                glDisableVertexAttribArray(loc.get() + static_cast<GLuint>(i));
             }
         }
 
@@ -564,9 +564,9 @@ namespace gl
         }
         else if constexpr (TGlsl::type == GL_FLOAT)
         {
-            for (unsigned i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i)
+            for (size_t i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i)
             {
-                glVertexAttribDivisor(loc.get() + i, divisor);
+                glVertexAttribDivisor(loc.get() + static_cast<GLuint>(i), divisor);
             }
         }
     }
@@ -1164,13 +1164,6 @@ namespace gl
     inline void TextureParameteri(Texture const& texture, GLenum pname, GLint param) noexcept
     {
         glTextureParameteri(texture.raw_handle(), pname, param);
-    }
-
-    template<GLenum E>
-    inline constexpr unsigned textureIndex() noexcept
-    {
-        static_assert(GL_TEXTURE0 <= E && E <= GL_TEXTURE30);
-        return E - GL_TEXTURE0;
     }
 
     template<typename... T>
