@@ -1,9 +1,11 @@
 #pragma once
 
+#include <cstdint>
+
 namespace osc
 {
     // flags for loading images
-    using ImageFlags = int;
+    using ImageFlags = int32_t;
     enum ImageFlags_ {
         ImageFlags_None = 0,
 

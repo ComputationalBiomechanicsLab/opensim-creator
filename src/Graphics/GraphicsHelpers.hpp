@@ -31,13 +31,44 @@ namespace osc { class ShaderCache; }
 
 namespace osc
 {
-    void DrawBVH(MeshCache&, BVH const&, std::vector<SceneDecoration>&);
-    void DrawAABB(MeshCache&, AABB const&, std::vector<SceneDecoration>&);
-    void DrawAABBs(MeshCache&, nonstd::span<AABB const>, std::vector<SceneDecoration>&);
-    void DrawXZFloorLines(MeshCache&, std::vector<SceneDecoration>&, float scale = 1.0f);
-    void DrawXZGrid(MeshCache&, std::vector<SceneDecoration>&);
-    void DrawXYGrid(MeshCache&, std::vector<SceneDecoration>&);
-    void DrawYZGrid(MeshCache&, std::vector<SceneDecoration>&);
+    void DrawBVH(
+        MeshCache&,
+        BVH const&,
+        std::vector<SceneDecoration>&
+    );
+
+    void DrawAABB(
+        MeshCache&,
+        AABB const&,
+        std::vector<SceneDecoration>&
+    );
+
+    void DrawAABBs(
+        MeshCache&,
+        nonstd::span<AABB const>,
+        std::vector<SceneDecoration>&
+    );
+
+    void DrawXZFloorLines(
+        MeshCache&,
+        std::vector<SceneDecoration>&,
+        float scale = 1.0f
+    );
+
+    void DrawXZGrid(
+        MeshCache&,
+        std::vector<SceneDecoration>&
+    );
+
+    void DrawXYGrid(
+        MeshCache&,
+        std::vector<SceneDecoration>&
+    );
+
+    void DrawYZGrid(
+        MeshCache&,
+        std::vector<SceneDecoration>&
+    );
 
     struct ArrowProperties final {
         ArrowProperties();
@@ -49,11 +80,25 @@ namespace osc
         float headThickness;
         glm::vec4 color;
     };
-    void DrawArrow(MeshCache&, ArrowProperties const&, std::vector<SceneDecoration>&);
-    void DrawLineSegment(MeshCache&, Segment const&, glm::vec4 const& color, float radius, std::vector<SceneDecoration>&);
+    void DrawArrow(
+        MeshCache&,
+        ArrowProperties const&,
+        std::vector<SceneDecoration>&
+    );
+
+    void DrawLineSegment(
+        MeshCache&,
+        Segment const&,
+        glm::vec4 const& color,
+        float radius,
+        std::vector<SceneDecoration>&
+    );
 
     // updates the given BVH with the given component decorations
-    void UpdateSceneBVH(nonstd::span<SceneDecoration const>, BVH& bvh);
+    void UpdateSceneBVH(
+        nonstd::span<SceneDecoration const>,
+        BVH& bvh
+    );
 
     // returns all collisions along a ray
     std::vector<SceneCollision> GetAllSceneCollisions(
@@ -91,10 +136,16 @@ namespace osc
     glm::vec3 AverageCenterpoint(Mesh const&);
 
     // returns a material that can draw a mesh's triangles in wireframe-style
-    Material CreateWireframeOverlayMaterial(Config const&, ShaderCache&);
+    Material CreateWireframeOverlayMaterial(
+        Config const&,
+        ShaderCache&
+    );
 
     // returns a texture loaded from disk via osc::Image
-    Texture2D LoadTexture2DFromImage(std::filesystem::path const& path, ImageFlags = ImageFlags_None);
+    Texture2D LoadTexture2DFromImage(
+        std::filesystem::path const&,
+        ImageFlags = ImageFlags_None
+    );
 
     AABB GetWorldspaceAABB(SceneDecoration const&);
 

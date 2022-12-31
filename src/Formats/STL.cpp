@@ -38,7 +38,7 @@ namespace
         static_assert(c_Header.size() < 80);
 
         o << c_Header;
-        for (ptrdiff_t i = 0; i < 80-c_Header.size(); ++i)
+        for (ptrdiff_t i = 0; i < 80-osc::ssize(c_Header); ++i)
         {
             o << static_cast<uint8_t>(0x00);
         }

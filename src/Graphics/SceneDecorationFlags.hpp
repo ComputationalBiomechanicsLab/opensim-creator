@@ -1,8 +1,10 @@
 #pragma once
 
+#include <cstdint>
+
 namespace osc
 {
-    using SceneDecorationFlags = int;
+    using SceneDecorationFlags = int32_t;
     enum SceneDecorationFlags_ {
         SceneDecorationFlags_None = 0,
         SceneDecorationFlags_IsSelected = 1<<0,

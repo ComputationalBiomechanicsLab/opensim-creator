@@ -122,7 +122,7 @@ void osc::WriteToPNG(Image const& image, std::filesystem::path const& outpath)
 
     std::lock_guard stbiGuard{g_StbiMutex};
     stbi_flip_vertically_on_write(true);
-    int const rv = stbi_write_png(pathStr.c_str(), w, h, image.getNumChannels(), image.getPixelData().data(), strideBetweenRows);
+    auto const rv = stbi_write_png(pathStr.c_str(), w, h, image.getNumChannels(), image.getPixelData().data(), strideBetweenRows);
     stbi_flip_vertically_on_write(false);
 
     OSC_ASSERT(rv != 0);

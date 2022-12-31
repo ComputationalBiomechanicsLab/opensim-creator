@@ -18,7 +18,7 @@ namespace osc
     // should be initialized exactly once by the application
     class GraphicsContext final {
     public:
-        GraphicsContext(SDL_Window*);
+        explicit GraphicsContext(SDL_Window*);
         GraphicsContext(GraphicsContext const&) = delete;
         GraphicsContext(GraphicsContext&&) noexcept = delete;
         GraphicsContext& operator=(GraphicsContext const&) = delete;

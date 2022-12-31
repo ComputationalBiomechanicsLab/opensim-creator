@@ -1078,7 +1078,7 @@ namespace
             return GL_RGBA;
         case osc::RenderTextureFormat::RED:
         default:
-            static_assert(static_cast<int>(osc::RenderTextureFormat::RED) + 1 == static_cast<int>(osc::RenderTextureFormat::TOTAL));
+            static_assert(static_cast<size_t>(osc::RenderTextureFormat::RED) + 1 == static_cast<size_t>(osc::RenderTextureFormat::TOTAL));
             return GL_RED;
         }
     }
@@ -1092,7 +1092,7 @@ namespace
         case osc::RenderTextureFormat::RED:
             return 1;
         default:
-            static_assert(static_cast<int>(osc::RenderTextureFormat::TOTAL) == 2);
+            static_assert(static_cast<size_t>(osc::RenderTextureFormat::TOTAL) == 2);
             return 1;
         }
     }
