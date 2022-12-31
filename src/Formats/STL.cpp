@@ -4,10 +4,12 @@
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Triangle.hpp"
 #include "src/Utils/Assertions.hpp"
+#include "src/Utils/Cpp20Shims.hpp"
 
 #include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <iostream>
 #include <limits>
@@ -19,9 +21,9 @@ static constexpr std::string_view const c_Header = "Exported from OpenSim Creato
 namespace
 {
     template<typename T>
-    T const& ElementAt(nonstd::span<T const> vs, size_t i)
+    T const& ElementAt(nonstd::span<T const> vs, ptrdiff_t i)
     {
-        if (i <= vs.size())
+        if (i <= ssize(vs))
         {
             return vs[i];
         }
@@ -36,7 +38,7 @@ namespace
         static_assert(c_Header.size() < 80);
 
         o << c_Header;
-        for (size_t i = 0; i < 80-c_Header.size(); ++i)
+        for (ptrdiff_t i = 0; i < 80-c_Header.size(); ++i)
         {
             o << static_cast<uint8_t>(0x00);
         }
@@ -93,14 +95,9 @@ namespace
     void WriteTriangles(std::ostream& o, osc::Mesh const& mesh)
     {
         osc::MeshIndicesView const indices = mesh.getIndices();
-        if (indices.size() < 2)
-        {
-            return;
-        }
-
         nonstd::span<glm::vec3 const> const verts = mesh.getVerts();
 
-        for (size_t i = 0; i < indices.size()-2; i += 3)
+        for (ptrdiff_t i = 0; i < ssize(indices) - 2; i += 3)
         {
             osc::Triangle const t
             {

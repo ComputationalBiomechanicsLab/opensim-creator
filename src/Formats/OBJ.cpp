@@ -1,7 +1,9 @@
 #include "OBJ.hpp"
 
 #include "src/Graphics/Mesh.hpp"
+#include "src/Utils/Cpp20Shims.hpp"
 
+#include <cstddef>
 #include <iostream>
 
 namespace
@@ -45,13 +47,7 @@ namespace
         }
 
         auto view = mesh.getIndices();
-
-        if (view.size() < 2)
-        {
-            return;
-        }
-
-        for (size_t i = 0; i < view.size() - 2; i += 3)
+        for (ptrdiff_t i = 0; i < ssize(view) - 2; i += 3)
         {
             // vertex indices start at 1 in OBJ
             uint32_t const i0 = view[i]+1;

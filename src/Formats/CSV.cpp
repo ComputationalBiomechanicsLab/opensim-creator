@@ -45,7 +45,7 @@ public:
 
         while (!in.bad())
         {
-            int const c = in.get();
+            auto const c = in.get();
 
             if (c == std::istream::traits_type::eof())
             {
