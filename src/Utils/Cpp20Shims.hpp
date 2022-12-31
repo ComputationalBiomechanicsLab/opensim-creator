@@ -1,8 +1,10 @@
 #pragma once
 
 #include <atomic>
+#include <cstddef>
 #include <memory>
 #include <thread>
+#include <type_traits>
 
 // shims: *roughly* compatible shims to features available in newer C++es
 namespace osc {
@@ -139,5 +141,21 @@ namespace osc {
     namespace numbers {
         template<typename T> inline constexpr T pi_v = static_cast<T>(3.14159265358979323846);
         inline constexpr double pi = pi_v<double>;
+    }
+
+    // C++20: ssize
+    template<class Container>
+    constexpr auto ssize(Container const& c) ->
+        std::common_type<std::ptrdiff_t, std::make_signed_t<decltype(c.size())>>
+    {
+        using R = std::common_type<std::ptrdiff_t, std::make_signed_t<decltype(c.size())>>;
+        return static_cast<R>(c.size());
+    }
+
+    // C++20: ssize
+    template<class T, std::ptrdiff_t N>
+    constexpr std::ptrdiff_t ssize(const T (&array)[N]) noexcept
+    {
+        return N;
     }
 }
