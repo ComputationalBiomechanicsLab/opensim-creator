@@ -719,7 +719,7 @@ namespace gl
 
         void resize(size_t n)
         {
-            if (n > m_BufferSz)
+            if (n > m_BufferSize)
             {
                 BindBuffer(*this);
                 BufferData(BufferType, n * sizeof(T), nullptr, Usage);
