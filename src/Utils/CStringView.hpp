@@ -12,6 +12,11 @@ namespace osc
     // evaluate the length of a string at compile-time
     constexpr std::size_t StrLen(char const* s) noexcept
     {
+        if (s == nullptr)
+        {
+            return 0;
+        }
+
         std::size_t len = 0;
         while (*s++ != char{0})
         {
