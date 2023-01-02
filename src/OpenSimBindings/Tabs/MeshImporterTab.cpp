@@ -6606,7 +6606,7 @@ private:
         if (CanChangeLabel(e))
         {
             std::string buf{static_cast<std::string_view>(e.GetLabel())};
-            if (osc::InputString("Name", buf, sizeof(buf)))
+            if (osc::InputString("Name", buf, 64))
             {
                 mg.UpdElByID(e.GetID()).SetLabel(buf);
             }
