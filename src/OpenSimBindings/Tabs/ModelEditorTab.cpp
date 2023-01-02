@@ -25,6 +25,7 @@
 #include "src/Tabs/ErrorTab.hpp"
 #include "src/Tabs/TabHost.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/Cpp20Shims.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/FileChangePoller.hpp"
 #include "src/Utils/Perf.hpp"
@@ -55,15 +56,15 @@
 #include <utility>
 #include <vector>
 
-static std::array<std::string, 7> const g_EditorScreenPanels =
-{
+static auto const g_EditorScreenPanels = osc::MakeArray<char const* const, 6>
+(
     "Navigator",
     "Properties",
     "Log",
     "Coordinates",
     "Performance",
-    "Output Watches",
-};
+    "Output Watches"
+);
 
 class osc::ModelEditorTab::Impl final : public EditorAPI {
 public:
@@ -436,7 +437,7 @@ private:
             ImGui::Separator();
 
             // active 3D viewers (can be disabled)
-            for (int i = 0; i < static_cast<int>(m_ModelViewers.size()); ++i)
+            for (ptrdiff_t i = 0; i < ssize(m_ModelViewers); ++i)
             {
                 std::string const name = "viewer" + std::to_string(i);
 
