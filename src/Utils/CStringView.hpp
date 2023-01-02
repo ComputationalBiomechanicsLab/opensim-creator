@@ -30,10 +30,10 @@ namespace osc
     public:
         constexpr CStringView() noexcept : m_Data{nullptr}, m_Size{0} {}
         constexpr CStringView(CStringView const&) noexcept = default;
-        constexpr CStringView& operator=(CStringView const&) noexcept = default;
         constexpr CStringView(char const* s) : m_Data{s}, m_Size{StrLen(s)} {}
+        constexpr CStringView(std::nullptr_t) : CStringView{} {}
         CStringView(std::string const& s) : m_Data{s.c_str()}, m_Size{s.size()} {}
-        constexpr CStringView(std::nullptr_t) = delete;
+        constexpr CStringView& operator=(CStringView const&) noexcept = default;
 
         constexpr std::size_t size() const noexcept { return m_Size; }
         constexpr std::size_t length() const noexcept { return m_Size; }
