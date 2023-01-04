@@ -38,6 +38,7 @@ All notable changes to this project will be documented here. The format is based
 - Clicking frame geometry in the 3D scene select's the geometry's parent (e.g. body, offset frame), rather
   than the decorative frame geometry itself (#506)
 - Fixed the scene scale factor being ignored when using PCSA-derived muscle sizing (#511)
+- Deleted duplicate `double_pendulum.osim` example file (#512)
 
 ## [0.3.1] - UNRELEASED
 
