@@ -242,7 +242,7 @@ namespace
     {
         switch (s) {
         case osc::MuscleSizingStyle::SconePCSA:
-            return GetSconeStyleAutomaticMuscleRadiusCalc(musc);
+            return GetSconeStyleAutomaticMuscleRadiusCalc(musc) * fixupScaleFactor;
         case osc::MuscleSizingStyle::SconeNonPCSA:
             return 0.01f * fixupScaleFactor;
         case osc::MuscleSizingStyle::OpenSim:

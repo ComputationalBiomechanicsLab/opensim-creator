@@ -37,6 +37,7 @@ All notable changes to this project will be documented here. The format is based
 - Error messages that appear in the "Add Component" popup should now span both columns (#514)
 - Clicking frame geometry in the 3D scene select's the geometry's parent (e.g. body, offset frame), rather
   than the decorative frame geometry itself (#506)
+- Fixed the scene scale factor being ignored when using PCSA-derived muscle sizing (#511)
 
 ## [0.3.1] - UNRELEASED
 
