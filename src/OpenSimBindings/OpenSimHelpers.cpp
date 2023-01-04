@@ -677,7 +677,7 @@ namespace
 
         if (gp.hasOwner())
         {
-            // the `GeometryPath` has a owner, which might be a muscle
+            // the `GeometryPath` has a owner, which might be a muscle or path actuator
 
             if (auto const* musc = dynamic_cast<OpenSim::Muscle const*>(&gp.getOwner()); musc)
             {
@@ -696,6 +696,15 @@ namespace
                     HandleMuscleOpenSimStyle(opts, *musc, st, selected, hovered, fixupScaleFactor, currentComponent, mdh, geomList, producer, out);
                     return;
                 }
+            }
+            else if (auto const* pa = dynamic_cast<OpenSim::PathActuator const*>(&gp.getOwner()); pa)
+            {
+                // owner is a path actuator, coerce selection "hit" to the path actuator (#519)
+                *currentComponent = pa;
+
+                // but render it as-normal
+                HandleComponent(gp, st, mdh, geomList, producer);
+                return;
             }
             else
             {
