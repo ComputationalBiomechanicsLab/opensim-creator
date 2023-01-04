@@ -22,6 +22,7 @@ All notable changes to this project will be documented here. The format is based
   menu (previously: only left-click, #537)
 - The navigator panel now only shows an expansion arrow for a top-level components (e.g. `ground`) if
   that top-level component contains children (#536)
+- The "Edit Simulation Settings" popup now has a "Cancel" button (#535)
 
 ## [0.3.1] - UNRELEASED
 

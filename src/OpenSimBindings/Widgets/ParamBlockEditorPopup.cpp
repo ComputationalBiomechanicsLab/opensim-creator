@@ -80,31 +80,27 @@ public:
 
     Impl(std::string_view popupName, ParamBlock* paramBlock) :
         StandardPopup{std::move(popupName), {512.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize},
-        m_ParamBlock{std::move(paramBlock)}
+        m_OutputTarget{std::move(paramBlock)},
+        m_LocalCopy{*m_OutputTarget}
     {
     }
 
 private:
     void implDrawContent() override
     {
-        if (m_ParamBlock == nullptr)
-        {
-            return;
-        }
-
         m_WasEdited = false;
 
         ImGui::Columns(2);
-        for (int i = 0, len = m_ParamBlock->size(); i < len; ++i)
+        for (int i = 0, len = m_LocalCopy.size(); i < len; ++i)
         {
             ImGui::PushID(i);
 
-            ImGui::TextUnformatted(m_ParamBlock->getName(i).c_str());
+            ImGui::TextUnformatted(m_LocalCopy.getName(i).c_str());
             ImGui::SameLine();
-            DrawHelpMarker(m_ParamBlock->getName(i), m_ParamBlock->getDescription(i));
+            DrawHelpMarker(m_LocalCopy.getName(i), m_LocalCopy.getDescription(i));
             ImGui::NextColumn();
 
-            if (DrawEditor(*m_ParamBlock, i))
+            if (DrawEditor(m_LocalCopy, i))
             {
                 m_WasEdited = true;
             }
@@ -118,12 +114,19 @@ private:
 
         if (ImGui::Button("save"))
         {
+            *m_OutputTarget = m_LocalCopy;
+            requestClose();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("close"))
+        {
             requestClose();
         }
     }
 
     bool m_WasEdited = false;
-    ParamBlock* m_ParamBlock = nullptr;
+    ParamBlock* m_OutputTarget = nullptr;
+    ParamBlock m_LocalCopy;
 };
 
 osc::ParamBlockEditorPopup::ParamBlockEditorPopup(std::string_view popupName, ParamBlock* paramBlock) :
