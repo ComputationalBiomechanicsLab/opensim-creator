@@ -32,6 +32,8 @@ All notable changes to this project will be documented here. The format is based
   no longer appear in the `Add` menu (#512)
 - Clicking a path actuator's (e.g. `ClutchedPathSpring`'s) geometry path in the 3D viewer will now select
   the actuator (previously: would select the geometry path, #519)
+- Fixed dragging an `osim` file into the editor tab should open the osim in a new editor tab (previously: did
+  nothing, #501)
 
 ## [0.3.1] - UNRELEASED
 

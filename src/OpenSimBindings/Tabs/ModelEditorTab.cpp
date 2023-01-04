@@ -3,6 +3,7 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "src/OpenSimBindings/Tabs/LoadingTab.hpp"
 #include "src/OpenSimBindings/Widgets/BasicWidgets.hpp"
 #include "src/OpenSimBindings/Widgets/ComponentContextMenu.hpp"
 #include "src/OpenSimBindings/Widgets/CoordinateEditor.hpp"
@@ -220,6 +221,13 @@ private:
         if (e.file != nullptr && CStrEndsWith(e.file, ".sto"))
         {
             return osc::ActionLoadSTOFileAgainstModel(*m_Parent, *m_Model, e.file);
+        }
+        else if (e.type == SDL_DROPFILE && e.file != nullptr && CStrEndsWith(e.file, ".osim"))
+        {
+            // if the user drops an osim file on this tab then it should be loaded
+            UID const tabID = m_Parent->addTab<LoadingTab>(m_Parent, e.file);
+            m_Parent->selectTab(tabID);
+            return true;
         }
 
         return false;
