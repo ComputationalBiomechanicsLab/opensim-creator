@@ -1360,6 +1360,11 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
         }
     }
 
+    if (!rv)
+    {
+        osc::log::error("cannot delete %s: OpenSim Creator doesn't know how to delete a %s from its parent (maybe it can't?)", c.getName().c_str(), c.getConcreteClassName().c_str());
+    }
+
     return rv;
 }
 

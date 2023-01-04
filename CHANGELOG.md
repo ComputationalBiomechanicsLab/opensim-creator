@@ -23,6 +23,8 @@ All notable changes to this project will be documented here. The format is based
 - The navigator panel now only shows an expansion arrow for a top-level components (e.g. `ground`) if
   that top-level component contains children (#536)
 - The "Edit Simulation Settings" popup now has a "Cancel" button (#535)
+- An error message will now appear in the log if the GUI fails to delete a component from a model
+  in the case where OpenSim Creator doesn't have a specialized deletion function (#531)
 
 ## [0.3.1] - UNRELEASED
 
