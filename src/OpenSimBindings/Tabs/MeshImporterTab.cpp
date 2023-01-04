@@ -3774,14 +3774,19 @@ namespace
             return m_MaybeModelGraphExportedUID == m_ModelGraphSnapshots.GetCheckoutID();
         }
 
-        bool IsCloseRequested()
+        bool IsCloseRequested() const
         {
-            return m_CloseRequested == true;
+            return m_CloseRequested;
         }
 
-        void CloseEditor()
+        void RequestClose()
         {
             m_CloseRequested = true;
+        }
+
+        void ResetRequestClose()
+        {
+            m_CloseRequested = false;
         }
 
         bool IsNewMeshImpoterTabRequested()
@@ -5840,6 +5845,7 @@ public:
         if (m_Shared->IsCloseRequested())
         {
             m_Parent->closeTab(m_ID);
+            m_Shared->ResetRequestClose();
         }
 
         if (m_Shared->IsNewMeshImpoterTabRequested())
@@ -6401,7 +6407,7 @@ private:
         else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_W))
         {
             // Ctrl+W: close
-            m_Shared->CloseEditor();
+            m_Shared->RequestClose();
             return true;
         }
         else if (ctrlOrSuperDown && ImGui::IsKeyPressed(ImGuiKey_Q))
@@ -8004,7 +8010,7 @@ private:
 
             if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W"))
             {
-                m_Shared->CloseEditor();
+                m_Shared->RequestClose();
             }
 
             if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
