@@ -281,6 +281,10 @@ static std::unordered_set<std::string> CreateBlacklist()
         // doesn't seem to add into the model at all - just hangs?
         "PositionMotion",
 
+        // it has a constructor that depends on a `TaskSet` that OpenSim creator can't automatically
+        // deduce (#526)
+        "CMC",
+
         // wrap geometry crash the UI if the user adds it because they implicitly depend on `setFrame`
         // being called during `generateDecorations` they do not have an API-visible socket
         "WrapCylinder",
