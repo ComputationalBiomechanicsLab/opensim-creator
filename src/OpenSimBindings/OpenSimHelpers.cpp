@@ -721,6 +721,29 @@ namespace
         }
     }
 
+    void HandleFrameGeometry(
+        osc::CustomDecorationOptions const& opts,
+        OpenSim::FrameGeometry const& frameGeometry,
+        SimTK::State const& st,
+        OpenSim::Component const* selected,
+        OpenSim::Component const* hovered,
+        float fixupScaleFactor,
+        OpenSim::Component const** currentComponent,
+        OpenSim::ModelDisplayHints const& mdh,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
+        osc::DecorativeGeometryHandler& producer,
+        std::vector<osc::SceneDecoration>& out)
+    {
+        if (frameGeometry.hasOwner())
+        {
+            // promote current component to the parent of the frame geometry, because
+            // a user is probably more interested in the thing the frame geometry
+            // represents (e.g. an offset frame) than the geometry itself (#506)
+            *currentComponent = &frameGeometry.getOwner();
+        }
+        HandleComponent(frameGeometry, st, mdh, geomList, producer);
+    }
+
     // a class that is called whenever the SimTK backend emits `DecorativeGeometry`
     class OpenSimDecorationConsumer final : public osc::DecorationConsumer {
     public:
@@ -808,6 +831,10 @@ namespace
             else if (auto const* gp = dynamic_cast<OpenSim::GeometryPath const*>(&c))
             {
                 HandleGeometryPath(opts, *gp, state, selected, hovered, fixupScaleFactor, &currentComponent, mdh, geomList, producer, out);
+            }
+            else if (auto const* fg = dynamic_cast<OpenSim::FrameGeometry const*>(&c))
+            {
+                HandleFrameGeometry(opts, *fg, state, selected, hovered, fixupScaleFactor, &currentComponent, mdh, geomList, producer, out);
             }
             else
             {
