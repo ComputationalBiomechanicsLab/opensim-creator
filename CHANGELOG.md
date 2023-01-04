@@ -18,7 +18,10 @@ All notable changes to this project will be documented here. The format is based
 - Added `SimTK::`DecorativeCircle rendering support to the backend (#181)
 - Added `SimTK::DecorativeMesh` rendering support to the backend (#183)
 - Added `SimTK::DecorativeTorus` rendering support to the backend (#184)
-- Right-clicking the lightning bolt icon in the properties menu now also opens the context menu (previously: only left-click, #537)
+- Right-clicking the lightning bolt icon in the properties menu now also opens the context
+  menu (previously: only left-click, #537)
+- The navigator panel now only shows an expansion arrow for a top-level components (e.g. `ground`) if
+  that top-level component contains children (#536)
 
 ## [0.3.1] - UNRELEASED
 

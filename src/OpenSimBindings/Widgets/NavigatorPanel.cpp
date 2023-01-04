@@ -297,7 +297,7 @@ public:
             OSC_ASSERT(imguiTreeDepth <= currentPath.sizei() - 1);
 
             // handle display mode (node vs leaf)
-            bool isInternalNode = currentPath.size() < 3 || lookaheadPath.size() > currentPath.size();
+            bool isInternalNode = currentPath.size() < 2 || lookaheadPath.size() > currentPath.size();
             ImGuiTreeNodeFlags nodeFlags = isInternalNode ? ImGuiTreeNodeFlags_OpenOnArrow : (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet);
 
             // handle coloring
