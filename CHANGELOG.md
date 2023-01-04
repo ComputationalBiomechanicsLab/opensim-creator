@@ -26,6 +26,7 @@ All notable changes to this project will be documented here. The format is based
 - An error message will now appear in the log if the GUI fails to delete a component from a model
   in the case where OpenSim Creator doesn't have a specialized deletion function (#531)
 - The cancel button in the "Save Changes?" dialog now works in the mesh importer (#530)
+- Opening a new mesh importer from the mesh importer tab (e.g. with `Ctrl+N`) auto-focuses the new tab (#529)
 
 ## [0.3.1] - UNRELEASED
 

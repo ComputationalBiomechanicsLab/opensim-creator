@@ -5850,7 +5850,7 @@ public:
 
         if (m_Shared->IsNewMeshImpoterTabRequested())
         {
-            m_Parent->addTab<MeshImporterTab>(m_Parent);
+            m_Parent->selectTab(m_Parent->addTab<MeshImporterTab>(m_Parent));
             m_Shared->ResetRequestNewMeshImporter();
         }
     }
