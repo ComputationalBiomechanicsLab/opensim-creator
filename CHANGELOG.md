@@ -39,6 +39,7 @@ All notable changes to this project will be documented here. The format is based
   than the decorative frame geometry itself (#506)
 - Fixed the scene scale factor being ignored when using PCSA-derived muscle sizing (#511)
 - Deleted duplicate `double_pendulum.osim` example file (#512)
+- Added prefixes to various 'subject01' example files (#513)
 
 ## [0.3.1] - UNRELEASED
 
