@@ -34,6 +34,7 @@ All notable changes to this project will be documented here. The format is based
   the actuator (previously: would select the geometry path, #519)
 - Fixed dragging an `osim` file into the editor tab should open the osim in a new editor tab (previously: did
   nothing, #501)
+- Error messages that appear in the "Add Component" popup should now span both columns (#514)
 
 ## [0.3.1] - UNRELEASED
 
