@@ -77,7 +77,7 @@ Create the body of the bottom pendulum
 Join the two pendulums with a PinJoint
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Right-click the bottom pendulum, click ``Join to``, followed by clicking the top pendulum to create a new joint between them.
+* Right-click the bottom pendulum (``pendulum_head_2``), click ``Join to``, followed by clicking the top pendulum to create a new joint between them.
 * Name it ``pendulum_head_2_to_pendulum_head``.
 * Translate it to the location of the top pendulum (i.e. the pivot point, either type in ``pendulum_head``'s translation, or use ``Translate > to parent``, to move it).
 * Change its joint type to ``PinJoint`` through the right-click menu.
@@ -85,7 +85,7 @@ Join the two pendulums with a PinJoint
 Join the top pendulum to ground with a PinJoint
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Right-click the top pendulum, click ``Join to``, followed by clicking ground to create a new joint between the top pendulum and ground.
+* Right-click the top pendulum (``pendulum_head``), click ``Join to``, followed by clicking ground to create a new joint between the top pendulum and ground.
 * Name it ``pendulum_head_to_ground``
 * Translate it to the location of the "ceiling" in this model, recommended: ``(0.0, 0.75, 0.0)``)
 * Change its joint type to ``PinJoint`` through the right-click menu.
