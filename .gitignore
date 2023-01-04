@@ -4,6 +4,9 @@
 # opensim logs
 **/opensim.log
 
+# build artifacts from docs build
+docs/build
+
 # C++ objects and libs
 *.slo
 *.lo
