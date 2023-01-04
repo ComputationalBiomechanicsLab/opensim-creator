@@ -28,6 +28,8 @@ All notable changes to this project will be documented here. The format is based
 - The cancel button in the "Save Changes?" dialog now works in the mesh importer (#530)
 - Opening a new mesh importer from the mesh importer tab (e.g. with `Ctrl+N`) auto-focuses the new tab (#529)
 - CMC is no longer exposed as an add-able controller because adding one causes a segfault (#526)
+- Deprecated (e.g. `Delp1990Muscle_Deprecated`), base (e.g. `PathActuator`), or illogical (e.g. `Ground`) components
+  no longer appear in the `Add` menu (#512)
 
 ## [0.3.1] - UNRELEASED
 

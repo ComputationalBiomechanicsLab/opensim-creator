@@ -296,6 +296,21 @@ static std::unordered_set<std::string> CreateBlacklist()
         "WrapSphere",
         "WrapSphereObst",
         "WrapTorus",
+
+        // it's deprecated (#521)
+        "Delp1990Muscle_Deprecated",
+
+        // it's a base class: users should use concrete derived classes (#521)
+        "PathActuator",
+
+        // it's deprecated (#521)
+        "Schutte1993Muscle_Deprecated",
+
+        // it's deprecated (#521)
+        "Thelen2003Muscle_Deprecated",
+
+        // probably shouldn't allow two grounds in a model (#521)
+        "Ground",
     };
 }
 
