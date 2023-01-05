@@ -1478,8 +1478,15 @@ void osc::AddComponentToModel(OpenSim::Model& m, std::unique_ptr<OpenSim::Compon
     {
         m.addBody(static_cast<OpenSim::Body*>(c.release()));
     }
-    else if (dynamic_cast<OpenSim::Joint*>(c.get()))
+    else if (OpenSim::Joint* j = dynamic_cast<OpenSim::Joint*>(c.get()))
     {
+        // HOTFIX: `OpenSim::Ground` should never be listed as a joint's parent, because it
+        //         causes a segfault in OpenSim 4.4 (#543)
+        if (dynamic_cast<OpenSim::Ground const*>(&j->getChildFrame()))
+        {
+            throw std::runtime_error{"cannot create a new joint with 'ground' as the child: did you mix up parent/child?"};
+        }
+
         m.addJoint(static_cast<OpenSim::Joint*>(c.release()));
     }
     else if (dynamic_cast<OpenSim::Constraint*>(c.get()))

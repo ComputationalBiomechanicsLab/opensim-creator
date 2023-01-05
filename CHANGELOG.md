@@ -50,6 +50,7 @@ All notable changes to this project will be documented here. The format is based
 - Trying to add an `OpenSim::ActivationCoordinateActuator` into a model without a `coordinate` no longer causes a crash (#517)
 - Trying to add an `OpenSim::ExpressionBasedPointToPointForce` into a model without a `body1/2` no longer causes a crash (#520)
 - Trying to add an `OpenSim::PointToPointActuator` into a model without a `bodya/b` no longer causes a crash (#523)
+- Fixed adding a new joint with 'ground' as a child now shows an error message (previously: crashed, #543)
 
 ## [0.3.1] - UNRELEASED
 
