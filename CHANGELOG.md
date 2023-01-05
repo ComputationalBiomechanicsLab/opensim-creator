@@ -45,7 +45,9 @@ All notable changes to this project will be documented here. The format is based
 - Clicking out of a property editor box to an earlier property no longer clears any edits the user made (#516)
 - Clicking, or tabbing out, of the name editor box in the properties editor now saves the name (#541)
 - Trying to add an `OpenSim::SpringGeneralizedForce` into a model without a `coordinate` no longer causes a crash (#524)
-- Trying to add an `OpenSim::CoordinateCouplerConstraint` into a model without a `coupled_coordinates_function` no longer causes a crash (#515)
+- Trying to add an `OpenSim::CoordinateCouplerConstraint` into a model without a `coupled_coordinates_function`
+  no longer causes a crash (#515)
+- Trying to add an `OpenSim::ActivationCoordinateActuator` into a model without a `coordinate` no longer causes a crash (#517)
 
 ## [0.3.1] - UNRELEASED
 
