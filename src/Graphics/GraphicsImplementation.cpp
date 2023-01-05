@@ -1178,11 +1178,6 @@ bool osc::operator!=(RenderTextureDescriptor const& a, RenderTextureDescriptor c
     return !(a == b);
 }
 
-bool osc::operator<(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
-{
-    return std::tie(a.m_Dimensions.x, a.m_Dimensions.y, a.m_AnialiasingLevel, a.m_ColorFormat, a.m_DepthStencilFormat) < std::tie(b.m_Dimensions.x, a.m_Dimensions.y, b.m_AnialiasingLevel, b.m_ColorFormat, b.m_DepthStencilFormat);
-}
-
 std::ostream& osc::operator<<(std::ostream& o, RenderTextureDescriptor const& rtd)
 {
     return o << "RenderTextureDescriptor(width = " << rtd.m_Dimensions.x << ", height = " << rtd.m_Dimensions.y << ", aa = " << rtd.m_AnialiasingLevel << ", colorFormat = " << rtd.m_ColorFormat << ", depthFormat = " << rtd.m_DepthStencilFormat << ")";
@@ -1490,13 +1485,18 @@ public:
         parseUniformsAndAttributesFromProgram();
     }
 
-    std::optional<size_t> findPropertyIndex(std::string const& propertyName) const
+    size_t getPropertyCount() const
+    {
+        return m_Uniforms.size();
+    }
+
+    std::optional<ptrdiff_t> findPropertyIndex(std::string const& propertyName) const
     {
         auto const it = m_Uniforms.find(propertyName);
 
         if (it != m_Uniforms.end())
         {
-            return static_cast<size_t>(std::distance(m_Uniforms.begin(), it));
+            return static_cast<ptrdiff_t>(std::distance(m_Uniforms.begin(), it));
         }
         else
         {
@@ -1504,19 +1504,14 @@ public:
         }
     }
 
-    size_t getPropertyCount() const
-    {
-        return m_Uniforms.size();
-    }
-
-    std::string const& getPropertyName(size_t i) const
+    std::string const& getPropertyName(ptrdiff_t i) const
     {
         auto it = m_Uniforms.begin();
         std::advance(it, i);
         return it->first;
     }
 
-    ShaderType getPropertyType(size_t i) const
+    ShaderType getPropertyType(ptrdiff_t i) const
     {
         auto it = m_Uniforms.begin();
         std::advance(it, i);
@@ -1673,22 +1668,22 @@ osc::Shader& osc::Shader::operator=(Shader const&) = default;
 osc::Shader& osc::Shader::operator=(Shader&&) noexcept = default;
 osc::Shader::~Shader() noexcept = default;
 
-std::optional<size_t> osc::Shader::findPropertyIndex(std::string const& propertyName) const
-{
-    return m_Impl->findPropertyIndex(propertyName);
-}
-
 size_t osc::Shader::getPropertyCount() const
 {
     return m_Impl->getPropertyCount();
 }
 
-std::string const& osc::Shader::getPropertyName(size_t propertyIndex) const
+std::optional<ptrdiff_t> osc::Shader::findPropertyIndex(std::string const& propertyName) const
+{
+    return m_Impl->findPropertyIndex(propertyName);
+}
+
+std::string const& osc::Shader::getPropertyName(ptrdiff_t propertyIndex) const
 {
     return m_Impl->getPropertyName(std::move(propertyIndex));
 }
 
-osc::ShaderType osc::Shader::getPropertyType(size_t propertyIndex) const
+osc::ShaderType osc::Shader::getPropertyType(ptrdiff_t propertyIndex) const
 {
     return m_Impl->getPropertyType(std::move(propertyIndex));
 }
@@ -2364,11 +2359,6 @@ bool osc::operator==(MaterialPropertyBlock const& a, MaterialPropertyBlock const
 bool osc::operator!=(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b) noexcept
 {
     return a.m_Impl != b.m_Impl;
-}
-
-bool osc::operator<(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b) noexcept
-{
-    return a.m_Impl < b.m_Impl;
 }
 
 std::ostream& osc::operator<<(std::ostream& o, MaterialPropertyBlock const&)
@@ -3405,14 +3395,14 @@ bool osc::operator!=(Camera const& a, Camera const& b) noexcept
 namespace
 {
     // create an OpenGL context for an application window
-    sdl::GLContext CreateOpenGLContext(SDL_Window* window)
+    sdl::GLContext CreateOpenGLContext(SDL_Window& window)
     {
         osc::log::info("initializing OpenGL context");
 
-        sdl::GLContext ctx = sdl::GL_CreateContext(window);
+        sdl::GLContext ctx = sdl::GL_CreateContext(&window);
 
         // enable the context
-        if (SDL_GL_MakeCurrent(window, ctx.get()) != 0)
+        if (SDL_GL_MakeCurrent(&window, ctx.get()) != 0)
         {
             throw std::runtime_error{std::string{"SDL_GL_MakeCurrent failed: "} + SDL_GetError()};
         }
@@ -3673,7 +3663,7 @@ severity = %s
 
 class osc::GraphicsContext::Impl final {
 public:
-    Impl(SDL_Window* window) : m_GLContext{CreateOpenGLContext(window)}
+    Impl(SDL_Window& window) : m_GLContext{CreateOpenGLContext(window)}
     {
         m_QuadMaterial.setDepthTested(false);  // it's for fullscreen rendering
     }
@@ -3758,7 +3748,7 @@ public:
         return m_ActiveScreenshotRequests.emplace_back().get_future();
     }
 
-    void doSwapBuffers(SDL_Window* window)
+    void doSwapBuffers(SDL_Window& window)
     {
         // ensure window FBO is bound (see: SDL_GL_SwapWindow's note about MacOS requiring 0 is bound)
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
@@ -3785,7 +3775,7 @@ public:
             m_ActiveScreenshotRequests.clear();
         }
 
-        SDL_GL_SwapWindow(window);
+        SDL_GL_SwapWindow(&window);
     }
 
     std::string getBackendVendorString() const
@@ -3854,7 +3844,7 @@ public:
 
 static std::unique_ptr<osc::GraphicsContext::Impl> g_GraphicsContextImpl = nullptr;
 
-osc::GraphicsContext::GraphicsContext(SDL_Window* window)
+osc::GraphicsContext::GraphicsContext(SDL_Window& window)
 {
     if (g_GraphicsContextImpl)
     {
@@ -3919,7 +3909,7 @@ void* osc::GraphicsContext::updRawGLContextHandle()
     return g_GraphicsContextImpl->updRawGLContextHandle();
 }
 
-void osc::GraphicsContext::doSwapBuffers(SDL_Window* window)
+void osc::GraphicsContext::doSwapBuffers(SDL_Window& window)
 {
     g_GraphicsContextImpl->doSwapBuffers(window);
 }

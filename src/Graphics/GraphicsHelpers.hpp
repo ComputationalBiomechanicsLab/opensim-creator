@@ -97,7 +97,7 @@ namespace osc
     // updates the given BVH with the given component decorations
     void UpdateSceneBVH(
         nonstd::span<SceneDecoration const>,
-        BVH& bvh
+        BVH&
     );
 
     // returns all collisions along a ray

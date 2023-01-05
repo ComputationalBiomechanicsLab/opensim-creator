@@ -9,9 +9,6 @@ namespace osc
 {
     // describes a collision between a ray and a decoration in the scene
     struct SceneCollision final {
-        glm::vec3 worldspaceLocation;
-        size_t decorationIndex;
-        float distanceFromRayOrigin;
 
         SceneCollision(
             glm::vec3 const& worldspaceLocation_,
@@ -23,5 +20,9 @@ namespace osc
             distanceFromRayOrigin{distanceFromRayOrigin_}
         {
         }
+
+        glm::vec3 worldspaceLocation;
+        size_t decorationIndex;
+        float distanceFromRayOrigin;
     };
 }

@@ -26,6 +26,7 @@ namespace osc
         {
             return BVHNode{bounds, numLhs & ~g_LeafMask};
         }
+
     private:
         BVHNode(AABB const& bounds_, size_t data_) :
             m_Bounds{bounds_},
@@ -110,12 +111,26 @@ namespace osc
         // triangle BVHes
         //
         // prim.getID() will refer to the index of the first vertex in the triangle
-        void buildFromIndexedTriangles(nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices);
-        void buildFromIndexedTriangles(nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices);
+        void buildFromIndexedTriangles(
+            nonstd::span<glm::vec3 const> verts,
+            nonstd::span<uint16_t const> indices
+        );
+        void buildFromIndexedTriangles(
+            nonstd::span<glm::vec3 const> verts,
+            nonstd::span<uint32_t const> indices
+        );
 
         // returns the location of the closest ray-triangle collision along the ray, if any
-        std::optional<BVHCollision> getClosestRayIndexedTriangleCollision(nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices, Line const&) const;
-        std::optional<BVHCollision> getClosestRayIndexedTriangleCollision(nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices, Line const&) const;
+        std::optional<BVHCollision> getClosestRayIndexedTriangleCollision(
+            nonstd::span<glm::vec3 const> verts,
+            nonstd::span<uint16_t const> indices,
+            Line const&
+        ) const;
+        std::optional<BVHCollision> getClosestRayIndexedTriangleCollision(
+            nonstd::span<glm::vec3 const> verts,
+            nonstd::span<uint32_t const> indices,
+            Line const&
+        ) const;
 
         // AABB BVHes
         //

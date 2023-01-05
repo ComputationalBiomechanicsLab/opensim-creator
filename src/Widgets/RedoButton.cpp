@@ -44,7 +44,7 @@ void osc::RedoButton::draw()
 
     if (ImGui::BeginPopupContextItem("##OpenRedoMenu", ImGuiPopupFlags_MouseButtonLeft))
     {
-        for (size_t i = 0; i < m_UndoRedo->getNumRedoEntries(); ++i)
+        for (ptrdiff_t i = 0; i < m_UndoRedo->getNumRedoEntriesi(); ++i)
         {
             ImGui::PushID(imguiID++);
             if (ImGui::Selectable(m_UndoRedo->getRedoEntry(i).getMessage().c_str()))

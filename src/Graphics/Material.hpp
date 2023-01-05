@@ -87,7 +87,6 @@ namespace osc
         friend class GraphicsBackend;
         friend bool operator==(Material const&, Material const&) noexcept;
         friend bool operator!=(Material const&, Material const&) noexcept;
-        friend bool operator<(Material const&, Material const&) noexcept;
         friend std::ostream& operator<<(std::ostream&, Material const&);
 
         class Impl;
@@ -103,11 +102,5 @@ namespace osc
     {
         return a.m_Impl != b.m_Impl;
     }
-
-    inline bool operator<(Material const& a, Material const& b) noexcept
-    {
-        return a.m_Impl < b.m_Impl;
-    }
-
     std::ostream& operator<<(std::ostream&, Material const&);
 }

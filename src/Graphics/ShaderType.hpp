@@ -1,12 +1,13 @@
 #pragma once
 
+#include <cstdint>
 #include <iosfwd>
 
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
     // data type of a material-assignable property parsed from the shader code
-    enum class ShaderType {
+    enum class ShaderType : int32_t {
         Float = 0,
         Vec2,
         Vec3,

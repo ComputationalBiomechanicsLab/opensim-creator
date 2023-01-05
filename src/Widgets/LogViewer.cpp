@@ -66,7 +66,7 @@ public:
 
             // draw level selector
             {
-                int lvl = static_cast<int>(log::getTracebackLevel());
+                int32_t lvl = static_cast<int32_t>(log::getTracebackLevel());
                 ImGui::SetNextItemWidth(200.0f);
                 if (ImGui::Combo("level", &lvl, log::level::g_LogLevelCStrings, log::level::NUM_LEVELS))
                 {

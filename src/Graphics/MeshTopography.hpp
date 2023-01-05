@@ -1,12 +1,13 @@
 #pragma once
 
+#include <cstdint>
 #include <iosfwd>
 
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
     // which primitive geometry the mesh data represents
-    enum class MeshTopography {
+    enum class MeshTopography : int32_t {
         Triangles = 0,
         Lines,
         TOTAL,

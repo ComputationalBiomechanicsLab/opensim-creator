@@ -808,7 +808,7 @@ private:
             m_CurrentScreen->onDraw();
 
             // "present" the rendered screen to the user (can block on VSYNC)
-            m_GraphicsContext.doSwapBuffers(m_MainWindow.get());
+            m_GraphicsContext.doSwapBuffers(*m_MainWindow);
 
             // handle annotated screenshot requests (if any)
             {
@@ -871,7 +871,7 @@ private:
     sdl::Window m_MainWindow = CreateMainAppWindow();
 
     // init graphics context
-    GraphicsContext m_GraphicsContext{m_MainWindow.get()};
+    GraphicsContext m_GraphicsContext{*m_MainWindow};
 
     // get performance counter frequency (for the delta clocks)
     Uint64 m_AppCounterFq = SDL_GetPerformanceFrequency();

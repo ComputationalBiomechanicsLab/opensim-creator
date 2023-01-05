@@ -74,6 +74,11 @@ namespace sdl
             return m_WindowHandle;
         }
 
+        SDL_Window& operator*() const noexcept
+        {
+            return *m_WindowHandle;
+        }
+
     private:
         friend Window CreateWindoww(const char* title, int x, int y, int w, int h, Uint32 flags);
         Window(SDL_Window * _ptr) : m_WindowHandle{_ptr}

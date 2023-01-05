@@ -75,7 +75,6 @@ namespace osc
         friend struct std::hash<osc::Mesh>;
         friend bool operator==(Mesh const&, Mesh const&) noexcept;
         friend bool operator!=(Mesh const&, Mesh const&) noexcept;
-        friend bool operator<(Mesh const&, Mesh const&) noexcept;
         friend std::ostream& operator<<(std::ostream&, Mesh const&);
 
         class Impl;
@@ -90,11 +89,6 @@ namespace osc
     inline bool operator!=(Mesh const& a, Mesh const& b) noexcept
     {
         return a.m_Impl != b.m_Impl;
-    }
-
-    inline bool operator<(Mesh const& a, Mesh const& b) noexcept
-    {
-        return a.m_Impl < b.m_Impl;
     }
 
     std::ostream& operator<<(std::ostream&, Mesh const&);

@@ -54,7 +54,7 @@ private:
         ImGui::PopID();
 
         // draw redo entries oldest (lowest index) to newest (highest index)
-        for (size_t i = 0; i < m_Storage->getNumRedoEntries(); ++i)
+        for (ptrdiff_t i = 0; i < m_Storage->getNumRedoEntriesi(); ++i)
         {
             ImGui::PushID(imguiID++);
             if (ImGui::Selectable(m_Storage->getRedoEntry(i).getMessage().c_str()))

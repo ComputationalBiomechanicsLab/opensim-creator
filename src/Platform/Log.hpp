@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdarg>
+#include <cstdint>
 #include <cstdio>
 #include <memory>
 #include <string>
@@ -22,7 +23,7 @@ namespace osc::log
 
     namespace level
     {
-        enum LevelEnum {
+        enum LevelEnum : int32_t {
             trace = 0,
             debug,
             info,

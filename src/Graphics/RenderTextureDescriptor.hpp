@@ -34,7 +34,6 @@ namespace osc
         friend class GraphicsBackend;
         friend bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
         friend bool operator!=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
-        friend bool operator<(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
         friend std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
 
         glm::ivec2 m_Dimensions;
@@ -45,6 +44,5 @@ namespace osc
 
     bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
     bool operator!=(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
-    bool operator<(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
     std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
 }

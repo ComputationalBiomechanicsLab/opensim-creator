@@ -1,6 +1,7 @@
 #include "Popups.hpp"
 
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/Cpp20Shims.hpp"
 #include "src/Widgets/Popup.hpp"
 
 #include <cstddef>
@@ -19,8 +20,8 @@ void osc::Popups::draw()
 {
     // begin and (if applicable) draw bottom-to-top in a nested fashion
     ptrdiff_t nOpened = 0;
-    size_t nPopups = m_Popups.size();  // only draw the popups that existed at the start of this frame, not the ones added during this frame
-    for (size_t i = 0; i < nPopups; ++i)
+    ptrdiff_t nPopups = ssize(m_Popups);  // only draw the popups that existed at the start of this frame, not the ones added during this frame
+    for (ptrdiff_t i = 0; i < nPopups; ++i)
     {
         if (m_Popups[i]->beginPopup())
         {

@@ -57,7 +57,6 @@ namespace osc
         friend class GraphicsBackend;
         friend bool operator==(Texture2D const&, Texture2D const&) noexcept;
         friend bool operator!=(Texture2D const&, Texture2D const&) noexcept;
-        friend bool operator<(Texture2D const&, Texture2D const&) noexcept;
         friend std::ostream& operator<<(std::ostream&, Texture2D const&);
 
         class Impl;
@@ -72,11 +71,6 @@ namespace osc
     inline bool operator!=(Texture2D const& a, Texture2D const& b) noexcept
     {
         return a.m_Impl != b.m_Impl;
-    }
-
-    inline bool operator<(Texture2D const& a, Texture2D const& b) noexcept
-    {
-        return a.m_Impl < b.m_Impl;
     }
 
     std::ostream& operator<<(std::ostream&, Texture2D const&);

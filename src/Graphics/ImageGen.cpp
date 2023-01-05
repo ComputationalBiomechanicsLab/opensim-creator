@@ -28,8 +28,8 @@ osc::Image osc::GenerateChequeredFloorImage()
 
     return Image
     {
-        {textureWidth, textureHeight},
-        {&pixels.front().r, sizeof(pixels)},
-        sizeof(Rgb24)
+        glm::vec2{textureWidth, textureHeight},
+        nonstd::span<uint8_t const>{&pixels.front().r, sizeof(pixels)},
+        sizeof(Rgb24)  // num channels
     };
 }

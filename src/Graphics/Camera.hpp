@@ -130,16 +130,13 @@ namespace osc
         friend class GraphicsBackend;
         friend bool operator==(Camera const&, Camera const&) noexcept;
         friend bool operator!=(Camera const&, Camera const&) noexcept;
-        friend bool operator<(Camera const&, Camera const&) noexcept;
         friend std::ostream& operator<<(std::ostream&, Camera const&);
 
         class Impl;
         Cow<Impl> m_Impl;
     };
 
-    // value comparison
     bool operator==(Camera const&, Camera const&) noexcept;
-    bool operator!=(Camera const& a, Camera const& b) noexcept;
-
+    bool operator!=(Camera const&, Camera const&) noexcept;
     std::ostream& operator<<(std::ostream&, Camera const&);
 }

@@ -336,7 +336,11 @@ namespace osc
     glm::vec3 InverseTransformPoint(Transform const&, glm::vec3 const&) noexcept;
 
     // applies a world-space rotation to the transform
-    void ApplyWorldspaceRotation(Transform& applicationTarget, glm::vec3 const& eulerAngles, glm::vec3 const& rotationCenter) noexcept;
+    void ApplyWorldspaceRotation(
+        Transform& applicationTarget,
+        glm::vec3 const& eulerAngles,
+        glm::vec3 const& rotationCenter
+    ) noexcept;
 
     // returns XYZ (pitch, yaw, roll) Euler angles for a one-by-one application of an
     // intrinsic rotations.

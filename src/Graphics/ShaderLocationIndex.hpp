@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 // stolen from raylib: https://github.com/raysan5/raylib/blob/master/src/raylib.h
 //
 // the benefit of all shaders using the same locations is that the same VAO can be
@@ -7,7 +9,7 @@
 
 namespace osc
 {
-    enum ShaderLocationIndex {
+    enum ShaderLocationIndex : int32_t {
         // vertex locations
         SHADER_LOC_VERTEX_POSITION = 0,
         SHADER_LOC_VERTEX_TEXCOORD01 = 1,

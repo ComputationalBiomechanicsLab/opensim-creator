@@ -18,7 +18,7 @@ namespace osc
     // should be initialized exactly once by the application
     class GraphicsContext final {
     public:
-        explicit GraphicsContext(SDL_Window*);
+        explicit GraphicsContext(SDL_Window&);
         GraphicsContext(GraphicsContext const&) = delete;
         GraphicsContext(GraphicsContext&&) noexcept = delete;
         GraphicsContext& operator=(GraphicsContext const&) = delete;
@@ -45,7 +45,7 @@ namespace osc
         std::future<Image> requestScreenshot();
 
         // execure the "swap chain" operation, which makes the current backbuffer the frontbuffer,
-        void doSwapBuffers(SDL_Window*);
+        void doSwapBuffers(SDL_Window&);
 
         // human-readable identifier strings: useful for printouts/debugging
         std::string getBackendVendorString() const;

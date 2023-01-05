@@ -65,17 +65,13 @@ namespace osc
         friend class GraphicsBackend;
         friend bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
         friend bool operator!=(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
-        friend bool operator<(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
         friend std::ostream& operator<<(std::ostream&, MaterialPropertyBlock const&);
 
         class Impl;
         Cow<Impl> m_Impl;
     };
 
-    // value equality
     bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
     bool operator!=(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
-    bool operator<(MaterialPropertyBlock const&, MaterialPropertyBlock const&) noexcept;
-
     std::ostream& operator<<(std::ostream&, MaterialPropertyBlock const&);
 }

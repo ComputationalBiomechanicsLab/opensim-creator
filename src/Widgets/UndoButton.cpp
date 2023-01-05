@@ -44,7 +44,7 @@ void osc::UndoButton::draw()
 
     if (ImGui::BeginPopupContextItem("##OpenUndoMenu", ImGuiPopupFlags_MouseButtonLeft))
     {
-        for (size_t i = 0; i < m_UndoRedo->getNumUndoEntries(); ++i)
+        for (ptrdiff_t i = 0; i < m_UndoRedo->getNumUndoEntriesi(); ++i)
         {
             ImGui::PushID(imguiID++);
             if (ImGui::Selectable(m_UndoRedo->getUndoEntry(i).getMessage().c_str()))
