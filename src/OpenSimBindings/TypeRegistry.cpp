@@ -8,6 +8,7 @@
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
@@ -24,6 +25,7 @@
 #include <OpenSim/Simulation/Model/PathSpring.h>
 #include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
+#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
@@ -479,6 +481,17 @@ static std::unordered_map<osc::CStringView, std::shared_ptr<OpenSim::Component c
             {
                 auto c = std::make_shared<OpenSim::SpringGeneralizedForce>();
                 c->set_coordinate("");
+                return c;
+            }()
+        },
+
+        // HOTFIX: set `CoordinateCouplerConstraint`s `coupled_coordinates_function` property to prevent an OpenSim 4.4 segfault (#515)
+        {
+            "CoordinateCouplerConstraint",
+            []()
+            {
+                auto c = std::make_shared<OpenSim::CoordinateCouplerConstraint>();
+                c->setFunction(OpenSim::LinearFunction{1.0, 0.0});  // identity function
                 return c;
             }()
         },
