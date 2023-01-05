@@ -105,8 +105,8 @@ static std::vector<osc::OutputExtractor> ConstructIntegratorOutputExtractors()
 
 static std::vector<osc::OutputExtractor> const& GetAllIntegratorOutputExtractors()
 {
-    static std::vector<osc::OutputExtractor> const g_IntegratorOutputs = ConstructIntegratorOutputExtractors();
-    return g_IntegratorOutputs;
+    static std::vector<osc::OutputExtractor> const s_IntegratorOutputs = ConstructIntegratorOutputExtractors();
+    return s_IntegratorOutputs;
 }
 
 // public API

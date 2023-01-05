@@ -12,6 +12,7 @@
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Sphere.hpp"
 #include "src/Maths/Triangle.hpp"
+#include "src/Utils/Algorithms.hpp"
 #include "src/Platform/App.hpp"
 
 #include <glm/vec3.hpp>
@@ -26,27 +27,27 @@
 
 namespace
 {
-    std::array<glm::vec3, 4> const g_CrosshairVerts =
-    {{
+    auto constexpr c_CrosshairVerts = osc::MakeArray<glm::vec3>
+    (
         // -X to +X
-        {-0.05f, 0.0f, 0.0f},
-        {+0.05f, 0.0f, 0.0f},
+        glm::vec3{-0.05f, 0.0f, 0.0f},
+        glm::vec3{+0.05f, 0.0f, 0.0f},
 
         // -Y to +Y
-        {0.0f, -0.05f, 0.0f},
-        {0.0f, +0.05f, 0.0f},
-    }};
+        glm::vec3{0.0f, -0.05f, 0.0f},
+        glm::vec3{0.0f, +0.05f, 0.0f}
+    );
 
-    std::array<uint16_t, 4> const g_CrosshairIndices = {0, 1, 2, 3};
+    auto constexpr c_CrosshairIndices = osc::MakeArray<uint16_t>(0, 1, 2, 3);
 
-    std::array<glm::vec3, 3> const g_TriangleVerts =
-    {{
-        {-10.0f, -10.0f, 0.0f},
-        {+0.0f, +10.0f, 0.0f},
-        {+10.0f, -10.0f, 0.0f},
-    }};
+    auto constexpr c_TriangleVerts = osc::MakeArray<glm::vec3>
+    (
+        glm::vec3{-10.0f, -10.0f, 0.0f},
+        glm::vec3{+0.0f, +10.0f, 0.0f},
+        glm::vec3{+10.0f, -10.0f, 0.0f}
+    );
 
-    std::array<uint16_t, 3> const g_TriangleIndices = {0, 1, 2};
+    auto constexpr c_TriangleIndices = osc::MakeArray<uint16_t>(0, 1, 2);
 
     struct SceneSphere final {
         glm::vec3 pos;
@@ -79,16 +80,16 @@ namespace
     {
         osc::Mesh rv;
         rv.setTopography(osc::MeshTopography::Lines);
-        rv.setVerts(g_CrosshairVerts);
-        rv.setIndices(g_CrosshairIndices);
+        rv.setVerts(c_CrosshairVerts);
+        rv.setIndices(c_CrosshairIndices);
         return rv;
     }
 
     osc::Mesh GenerateTriangleMesh()
     {
         osc::Mesh rv;
-        rv.setVerts(g_TriangleVerts);
-        rv.setIndices(g_TriangleIndices);
+        rv.setVerts(c_TriangleVerts);
+        rv.setIndices(c_TriangleIndices);
         return rv;
     }
 
@@ -272,7 +273,7 @@ public:
             Line ray = GetCameraRay(m_Camera);
             std::optional<RayCollision> maybeCollision = GetRayCollisionTriangle(
                 ray,
-                osc::UnsafeCastTriangleFromPointerToFirstVertex(g_TriangleVerts.data())
+                osc::UnsafeCastTriangleFromPointerToFirstVertex(c_TriangleVerts.data())
             );
 
             Graphics::DrawMesh(

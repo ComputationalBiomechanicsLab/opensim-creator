@@ -16,7 +16,7 @@ namespace
     };
 
     struct CircularLogSink final : public osc::log::Sink {
-        osc::SynchronizedValue<osc::CircularBuffer<osc::log::OwnedLogMessage, osc::log::g_MaxLogTracebackMessages>> storage;
+        osc::SynchronizedValue<osc::CircularBuffer<osc::log::OwnedLogMessage, osc::log::c_MaxLogTracebackMessages>> storage;
 
         void log(osc::log::LogMessage const& msg) override
         {
@@ -67,7 +67,7 @@ void osc::log::setTracebackLevel(level::LevelEnum lvl)
     g_TracebackSink->set_level(lvl);
 }
 
-osc::SynchronizedValue<osc::CircularBuffer<osc::log::OwnedLogMessage, osc::log::g_MaxLogTracebackMessages>>& osc::log::getTracebackLog()
+osc::SynchronizedValue<osc::CircularBuffer<osc::log::OwnedLogMessage, osc::log::c_MaxLogTracebackMessages>>& osc::log::getTracebackLog()
 {
     return g_TracebackSink->storage;
 }

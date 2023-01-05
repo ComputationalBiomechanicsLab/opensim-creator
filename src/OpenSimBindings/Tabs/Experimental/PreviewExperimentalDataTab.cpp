@@ -49,7 +49,7 @@ namespace
     };
 
     // human-readable name of a data type
-    static auto const g_ColumnDataTypeStrings = osc::MakeArray<osc::CStringView, static_cast<int>(ColumnDataType::TOTAL)>
+    auto const c_ColumnDataTypeStrings = osc::MakeSizedArray<osc::CStringView, static_cast<int>(ColumnDataType::TOTAL)>
     (
         "Point",
         "PointForce",
@@ -59,7 +59,7 @@ namespace
     );
 
     // the number of floating-point values the column is backed by
-    static auto const g_ColumnDataSizes = osc::MakeArray<int, static_cast<int>(ColumnDataType::TOTAL)>
+    static auto const c_ColumnDataSizes = osc::MakeSizedArray<int, static_cast<int>(ColumnDataType::TOTAL)>
     (
         3,
         6,
@@ -71,13 +71,13 @@ namespace
     // prints a human-readable representation of a column data type
     std::ostream& operator<<(std::ostream& o, ColumnDataType dt)
     {
-        return o << g_ColumnDataTypeStrings.at(static_cast<size_t>(dt));
+        return o << c_ColumnDataTypeStrings.at(static_cast<size_t>(dt));
     }
 
     // returns the number of floating-point values the column is backed by
     constexpr int NumElementsIn(ColumnDataType dt)
     {
-        return g_ColumnDataSizes.at(static_cast<size_t>(dt));
+        return c_ColumnDataSizes.at(static_cast<size_t>(dt));
     }
 
     // a struct that describes how a sequence of N column labels matches up to a column data type (with size N)

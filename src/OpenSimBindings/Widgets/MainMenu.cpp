@@ -37,6 +37,8 @@
 #include <typeinfo>
 #include <utility>
 
+static constexpr auto c_AntialiasingLevels = osc::MakeArray<char const*>("x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128");
+
 
 // public API
 
@@ -203,12 +205,11 @@ void osc::MainMenuAboutTab::draw()
         DrawHelpMarker("the level of MultiSample Anti-Aliasing to use. This only affects 3D renders *within* the UI, not the whole UI (panels etc. will not be affected)");
         ImGui::NextColumn();
         {
-            static constexpr std::array<char const*, 8> antialiasingLevels = {"x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128"};
             int samplesIdx = LeastSignificantBitIndex(App::get().getMSXAASamplesRecommended());
             int maxSamplesIdx = LeastSignificantBitIndex(App::get().getMSXAASamplesMax());
-            OSC_ASSERT(static_cast<size_t>(maxSamplesIdx) < antialiasingLevels.size());
+            OSC_ASSERT(static_cast<size_t>(maxSamplesIdx) < c_AntialiasingLevels.size());
 
-            if (ImGui::Combo("##msxaa", &samplesIdx, antialiasingLevels.data(), maxSamplesIdx + 1))
+            if (ImGui::Combo("##msxaa", &samplesIdx, c_AntialiasingLevels.data(), maxSamplesIdx + 1))
             {
                 App::upd().setMSXAASamplesRecommended(1 << samplesIdx);
             }

@@ -566,17 +566,17 @@ public:
     void setMainWindowSubTitle(std::string_view sv)
     {
         // use global + mutex to prevent hopping into the OS too much
-        static std::string g_CurSubtitle = "";
-        static std::mutex g_SubtitleMutex;
+        static std::string s_CurSubtitle = "";
+        static std::mutex s_SubtitleMutex;
 
-        std::lock_guard lock{g_SubtitleMutex};
+        std::lock_guard lock{s_SubtitleMutex};
 
-        if (sv == g_CurSubtitle)
+        if (sv == s_CurSubtitle)
         {
             return;
         }
 
-        g_CurSubtitle = sv;
+        s_CurSubtitle = sv;
 
         std::string newTitle = sv.empty() ? OSC_APPNAME_STRING : (std::string{sv} + " - " + OSC_APPNAME_STRING);
         SDL_SetWindowTitle(m_MainWindow.get(), newTitle.c_str());

@@ -57,7 +57,7 @@
 #include <utility>
 #include <vector>
 
-static auto const g_EditorScreenPanels = osc::MakeArray<char const* const, 6>
+static auto const g_EditorScreenPanels = osc::MakeArray<char const* const>
 (
     "Navigator",
     "Properties",

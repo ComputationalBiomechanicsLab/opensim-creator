@@ -32,9 +32,9 @@
 #include <utility>
 #include <vector>
 
-static inline constexpr float g_LineThickness = 0.005f;
-static inline constexpr float g_FrameAxisLengthRescale = 0.25f;
-static inline constexpr float g_FrameAxisThickness = 0.0025f;
+static inline constexpr float c_LineThickness = 0.005f;
+static inline constexpr float c_FrameAxisLengthRescale = 0.25f;
+static inline constexpr float c_FrameAxisThickness = 0.0025f;
 
 // helper functions
 namespace
@@ -221,12 +221,12 @@ private:
 
     void implementPointGeometry(SimTK::DecorativePoint const&) override
     {
-        static bool const g_ShownWarningOnce = []()
+        static bool const s_ShownWarningOnce = []()
         {
             log::warn("this model uses implementPointGeometry, which is not yet implemented in OSC");
             return true;
         }();
-        (void)g_ShownWarningOnce;
+        (void)s_ShownWarningOnce;
     }
 
     void implementLineGeometry(SimTK::DecorativeLine const& d) override
@@ -236,7 +236,7 @@ private:
         glm::vec3 const p1 = TransformPoint(t, ToVec4(d.getPoint1()));
         glm::vec3 const p2 = TransformPoint(t, ToVec4(d.getPoint2()));
 
-        float const thickness = g_LineThickness * m_FixupScaleFactor;
+        float const thickness = c_LineThickness * m_FixupScaleFactor;
 
         Transform cylinderXform = SimbodyCylinderToSegmentTransform({p1, p2}, thickness);
         cylinderXform.scale *= t.scale;
@@ -297,7 +297,7 @@ private:
 
         // emit origin sphere
         {
-            float const radius = 0.05f * g_FrameAxisLengthRescale * m_FixupScaleFactor;
+            float const radius = 0.05f * c_FrameAxisLengthRescale * m_FixupScaleFactor;
             Transform const sphereXform = t.withScale(radius);
             glm::vec4 const white = {1.0f, 1.0f, 1.0f, 1.0f};
 
@@ -306,8 +306,8 @@ private:
 
         // emit leg cylinders
         glm::vec3 const axisLengths = t.scale * static_cast<float>(d.getAxisLength());
-        float const legLen = g_FrameAxisLengthRescale * m_FixupScaleFactor;
-        float const legThickness = g_FrameAxisThickness * m_FixupScaleFactor;
+        float const legLen = c_FrameAxisLengthRescale * m_FixupScaleFactor;
+        float const legThickness = c_FrameAxisThickness * m_FixupScaleFactor;
         for (int axis = 0; axis < 3; ++axis)
         {
             glm::vec3 dir = {0.0f, 0.0f, 0.0f};
@@ -329,12 +329,12 @@ private:
 
     void implementTextGeometry(SimTK::DecorativeText const&) override
     {
-        static bool const g_ShownWarningOnce = []()
+        static bool const s_ShownWarningOnce = []()
         {
             log::warn("this model uses implementTextGeometry, which is not yet implemented in OSC");
             return true;
         }();
-        (void)g_ShownWarningOnce;
+        (void)s_ShownWarningOnce;
     }
 
     void implementMeshGeometry(SimTK::DecorativeMesh const& d) override

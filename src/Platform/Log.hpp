@@ -277,9 +277,9 @@ namespace osc::log
         defaultLoggerRaw()->critical(fmt, args...);
     }
 
-    static constexpr size_t g_MaxLogTracebackMessages = 256;
+    static constexpr size_t c_MaxLogTracebackMessages = 256;
 
     [[nodiscard]] level::LevelEnum getTracebackLevel();
     void setTracebackLevel(level::LevelEnum);
-    [[nodiscard]] SynchronizedValue<CircularBuffer<OwnedLogMessage, g_MaxLogTracebackMessages>>& getTracebackLog();
+    [[nodiscard]] SynchronizedValue<CircularBuffer<OwnedLogMessage, c_MaxLogTracebackMessages>>& getTracebackLog();
 }

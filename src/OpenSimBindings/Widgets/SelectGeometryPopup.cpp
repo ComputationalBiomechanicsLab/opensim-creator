@@ -3,6 +3,7 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/os.hpp"
+#include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
 #include "src/Widgets/StandardPopup.hpp"
 
@@ -25,7 +26,8 @@
 namespace
 {
     using Geom_ctor_fn = std::unique_ptr<OpenSim::Geometry>(*)(void);
-    constexpr std::array<Geom_ctor_fn const, 7> g_GeomCtors = {
+    constexpr auto c_GeomCtors = osc::MakeArray<Geom_ctor_fn>
+    (
         []()
         {
             auto ptr = std::make_unique<OpenSim::Brick>();
@@ -60,20 +62,21 @@ namespace
         []()
         {
             return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Cone{}};
-        },
-    };
+        }
+    );
 
-    constexpr std::array<char const* const, 7> g_GeomNames =
-    {
+    constexpr auto c_GeomNames = osc::MakeArray<char const*>
+    (
         "Brick",
         "Sphere",
         "Cylinder",
         "LineGeometry",
         "Ellipsoid",
         "Arrow (CARE: may not work in OpenSim's main UI)",
-        "Cone",
-    };
-    static_assert(g_GeomCtors.size() == g_GeomNames.size());
+        "Cone"
+    );
+
+    static_assert(c_GeomCtors.size() == c_GeomNames.size());
 
     std::optional<std::filesystem::path> PromptUserForGeometryFile()
     {
@@ -112,9 +115,9 @@ private:
             ImGui::Dummy({0.0f, 2.0f});
 
             int item = -1;
-            if (ImGui::Combo("##premade", &item, g_GeomNames.data(), static_cast<int>(g_GeomNames.size())))
+            if (ImGui::Combo("##premade", &item, c_GeomNames.data(), static_cast<int>(c_GeomNames.size())))
             {
-                auto const& ctor = g_GeomCtors.at(static_cast<size_t>(item));
+                auto const& ctor = c_GeomCtors.at(static_cast<size_t>(item));
                 m_Result = ctor();
             }
         }

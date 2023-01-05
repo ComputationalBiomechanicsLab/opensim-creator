@@ -86,8 +86,8 @@ using ExtractorFunc = double(*)(OpenSim::AbstractOutput const&, SimTK::State con
 
 static std::string const& GetNoDescriptionString()
 {
-    static std::string const g_NoDescriptionStr = "";
-    return g_NoDescriptionStr;
+    static std::string const s_NoDescriptionStr = "";
+    return s_NoDescriptionStr;
 }
 
 static std::string GenerateLabel(OpenSim::ComponentPath const& cp,
@@ -301,8 +301,8 @@ char const* osc::GetOutputSubfieldLabel(OutputSubfield subfield)
 
 nonstd::span<osc::OutputSubfield const> osc::GetAllSupportedOutputSubfields()
 {
-    static auto const g_AllSubfields = CreateOutputSubfieldsLut();
-    return g_AllSubfields;
+    static auto const s_AllSubfields = CreateOutputSubfieldsLut();
+    return s_AllSubfields;
 }
 
 int osc::GetSupportedSubfields(OpenSim::AbstractOutput const& ao)

@@ -26,9 +26,8 @@
 #include <typeinfo>
 #include <utility>
 
-namespace {
-    size_t const g_FrameGeometryHash = typeid(OpenSim::FrameGeometry).hash_code();
-
+namespace
+{
     // poor-man's abstraction for a constant-sized array
     template<typename T, size_t N>
     struct SizedArray final {
@@ -257,7 +256,7 @@ public:
                 bool shouldRender = true;
 
                 auto hc = typeid(c).hash_code();
-                if (!m_ShowFrames && hc == g_FrameGeometryHash)
+                if (!m_ShowFrames && hc == typeid(OpenSim::FrameGeometry).hash_code())
                 {
                     shouldRender = false;
                 }

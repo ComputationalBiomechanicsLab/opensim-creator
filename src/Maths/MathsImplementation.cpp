@@ -1566,7 +1566,7 @@ std::array<glm::vec3, 8> osc::ToCubeVerts(AABB const& aabb) noexcept
 {
     glm::vec3 d = Dimensions(aabb);
 
-    std::array<glm::vec3, 8> rv;
+    std::array<glm::vec3, 8> rv{};
     rv[0] = aabb.min;
     rv[1] = aabb.max;
     size_t pos = 2;

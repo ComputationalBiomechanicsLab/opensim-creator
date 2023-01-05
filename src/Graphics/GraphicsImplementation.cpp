@@ -199,7 +199,7 @@ namespace
 namespace
 {
     // LUT for human-readable form of the above
-    static constexpr auto const c_ShaderTypeInternalStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::ShaderType::TOTAL)>(
+    static constexpr auto const c_ShaderTypeInternalStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::ShaderType::TOTAL)>(
         "Float",
         "Vec2",
         "Vec3",
@@ -711,14 +711,14 @@ namespace osc
 
 namespace
 {
-    static constexpr auto const c_TextureWrapModeStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::TextureWrapMode::TOTAL)>
+    static constexpr auto const c_TextureWrapModeStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::TextureWrapMode::TOTAL)>
     (
         "Repeat",
         "Clamp",
         "Mirror"
     );
 
-    static constexpr auto const c_TextureFilterModeStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::TextureFilterMode::TOTAL)>
+    static constexpr auto const c_TextureFilterModeStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::TextureFilterMode::TOTAL)>
     (
         "Nearest",
         "Linear",
@@ -1059,13 +1059,13 @@ std::ostream& osc::operator<<(std::ostream& o, Texture2D const&)
 
 namespace
 {
-    static constexpr auto const  c_RenderTextureFormatStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::RenderTextureFormat::TOTAL)>
+    static constexpr auto const  c_RenderTextureFormatStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::RenderTextureFormat::TOTAL)>
     (
         "ARGB32",
         "RED"
     );
 
-    static constexpr auto const c_DepthStencilFormatStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::DepthStencilFormat::TOTAL)>
+    static constexpr auto const c_DepthStencilFormatStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::DepthStencilFormat::TOTAL)>
     (
         "D24_UNorm_S8_UInt"
     );
@@ -2375,7 +2375,7 @@ std::ostream& osc::operator<<(std::ostream& o, MaterialPropertyBlock const&)
 
 namespace
 {
-    static constexpr auto c_MeshTopographyStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::MeshTopography::TOTAL)>
+    static constexpr auto c_MeshTopographyStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::MeshTopography::TOTAL)>
     (
         "Triangles",
         "Lines"
@@ -2915,7 +2915,7 @@ std::ostream& osc::operator<<(std::ostream& o, Mesh const&)
 namespace
 {
     // LUT for human-readable form of the above
-    static constexpr auto const c_CameraProjectionStrings = osc::MakeArray<osc::CStringView, static_cast<size_t>(osc::CameraProjection::TOTAL)>
+    static constexpr auto const c_CameraProjectionStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::CameraProjection::TOTAL)>
     (
         "Perspective",
         "Orthographic"

@@ -21,7 +21,7 @@
 #include <cstdint>
 #include <utility>
 
-static glm::vec3 const g_PlaneVertices[] =
+static constexpr glm::vec3 c_PlaneVertices[] =
 {
     { 5.0f, -0.5f,  5.0f},
     {-5.0f, -0.5f,  5.0f},
@@ -32,7 +32,7 @@ static glm::vec3 const g_PlaneVertices[] =
     { 5.0f, -0.5f, -5.0f},
 };
 
-static glm::vec2 const g_PlaneTexCoords[] =
+static constexpr glm::vec2 c_PlaneTexCoords[] =
 {
     {2.0f, 0.0f},
     {0.0f, 0.0f},
@@ -43,14 +43,14 @@ static glm::vec2 const g_PlaneTexCoords[] =
     {2.0f, 2.0f},
 };
 
-static uint16_t const g_PlaneIndices[] = {0, 2, 1, 3, 5, 4};
+static constexpr uint16_t c_PlaneIndices[] = {0, 2, 1, 3, 5, 4};
 
 static osc::Mesh GeneratePlane()
 {
     osc::Mesh rv;
-    rv.setVerts(g_PlaneVertices);
-    rv.setTexCoords(g_PlaneTexCoords);
-    rv.setIndices(g_PlaneIndices);
+    rv.setVerts(c_PlaneVertices);
+    rv.setTexCoords(c_PlaneTexCoords);
+    rv.setIndices(c_PlaneIndices);
     return rv;
 }
 

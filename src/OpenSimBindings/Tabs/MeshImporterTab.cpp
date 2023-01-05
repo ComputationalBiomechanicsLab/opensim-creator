@@ -5050,7 +5050,8 @@ namespace
         //
         // these are runtime-editable flags that dictate which panels are open
         std::array<bool, 4> m_PanelStates{false, true, false, false};
-        static constexpr std::array<char const*, 4> g_OpenedPanelNames = {
+        static constexpr std::array<char const*, 4> g_OpenedPanelNames =
+        {
             "History",
             "Navigator",
             "Log",

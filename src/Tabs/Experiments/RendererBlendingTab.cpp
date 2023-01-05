@@ -19,7 +19,7 @@
 #include <cstdint>
 #include <utility>
 
-static glm::vec3 const g_PlaneVertices[] =
+static constexpr glm::vec3 c_PlaneVertices[] =
 {
     { 5.0f, -0.5f,  5.0f},
     {-5.0f, -0.5f,  5.0f},
@@ -30,7 +30,7 @@ static glm::vec3 const g_PlaneVertices[] =
     { 5.0f, -0.5f, -5.0f},
 };
 
-static glm::vec2 const g_PlaneTexCoords[] =
+static constexpr glm::vec2 const c_PlaneTexCoords[] =
 {
     {2.0f, 0.0f},
     {0.0f, 0.0f},
@@ -41,9 +41,9 @@ static glm::vec2 const g_PlaneTexCoords[] =
     {2.0f, 2.0f},
 };
 
-static uint16_t const g_PlaneIndices[] = {0, 2, 1, 3, 5, 4};
+static constexpr uint16_t c_PlaneIndices[] = {0, 2, 1, 3, 5, 4};
 
-static glm::vec3 const g_TransparentVerts[] =
+static constexpr glm::vec3 c_TransparentVerts[] =
 {
     {0.0f,  0.5f, 0.0f},
     {0.0f, -0.5f, 0.0f},
@@ -54,7 +54,7 @@ static glm::vec3 const g_TransparentVerts[] =
     {1.0f,  0.5f, 0.0f},
 };
 
-static glm::vec2 const g_TransparentTexCoords[] =
+static constexpr glm::vec2 c_TransparentTexCoords[] =
 {
     {0.0f, 0.0f},
     {0.0f, 1.0f},
@@ -65,9 +65,9 @@ static glm::vec2 const g_TransparentTexCoords[] =
     {1.0f, 0.0f},
 };
 
-static uint16_t const g_TransparentIndices[] = {0, 1, 2, 3, 4, 5};
+static constexpr uint16_t c_TransparentIndices[] = {0, 1, 2, 3, 4, 5};
 
-static glm::vec3 const g_WindowLocations[] =
+static constexpr glm::vec3 c_WindowLocations[] =
 {
     {-1.5f, 0.0f, -0.48f},
     { 1.5f, 0.0f,  0.51f},
@@ -79,18 +79,18 @@ static glm::vec3 const g_WindowLocations[] =
 static osc::Mesh GeneratePlane()
 {
     osc::Mesh rv;
-    rv.setVerts(g_PlaneVertices);
-    rv.setTexCoords(g_PlaneTexCoords);
-    rv.setIndices(g_PlaneIndices);
+    rv.setVerts(c_PlaneVertices);
+    rv.setTexCoords(c_PlaneTexCoords);
+    rv.setIndices(c_PlaneIndices);
     return rv;
 }
 
 static osc::Mesh GenerateTransparent()
 {
     osc::Mesh rv;
-    rv.setVerts(g_TransparentVerts);
-    rv.setTexCoords(g_TransparentTexCoords);
-    rv.setIndices(g_TransparentIndices);
+    rv.setVerts(c_TransparentVerts);
+    rv.setTexCoords(c_TransparentTexCoords);
+    rv.setIndices(c_TransparentIndices);
     return rv;
 }
 
@@ -201,7 +201,7 @@ public:
         // windows
         {
             m_BlendingMaterial.setTexture("uTexture", m_WindowTexture);
-            for (glm::vec3 const& loc : g_WindowLocations)
+            for (glm::vec3 const& loc : c_WindowLocations)
             {
                 Transform t;
                 t.position = loc;

@@ -19,12 +19,12 @@ namespace osc
     public:
         static BVHNode leaf(AABB const& bounds, size_t primOffset)
         {
-            return BVHNode{bounds, primOffset | g_LeafMask};
+            return BVHNode{bounds, primOffset | c_LeafMask};
         }
 
         static BVHNode node(AABB const& bounds, size_t numLhs)
         {
-            return BVHNode{bounds, numLhs & ~g_LeafMask};
+            return BVHNode{bounds, numLhs & ~c_LeafMask};
         }
 
     private:
@@ -41,7 +41,7 @@ namespace osc
 
         bool isLeaf() const
         {
-            return (m_Data & g_LeafMask) > 0;
+            return (m_Data & c_LeafMask) > 0;
         }
 
         bool isNode() const
@@ -51,21 +51,21 @@ namespace osc
 
         size_t getNumLhsNodes() const
         {
-            return m_Data & ~g_LeafMask;
+            return m_Data & ~c_LeafMask;
         }
 
         void setNumLhsNodes(size_t n)
         {
-            m_Data = n & ~g_LeafMask;
+            m_Data = n & ~c_LeafMask;
         }
 
         size_t getFirstPrimOffset() const
         {
-            return m_Data & ~g_LeafMask;
+            return m_Data & ~c_LeafMask;
         }
 
     private:
-        static constexpr size_t g_LeafMask = static_cast<size_t>(1) << (8*sizeof(size_t) - 1);
+        static inline constexpr size_t c_LeafMask = static_cast<size_t>(1) << (8*sizeof(size_t) - 1);
         AABB m_Bounds;  // union of all AABBs below/including this one
         size_t m_Data;
     };

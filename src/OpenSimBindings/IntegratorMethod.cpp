@@ -1,5 +1,7 @@
 #include "IntegratorMethod.hpp"
 
+#include "src/Utils/Algorithms.hpp"
+
 #include <nonstd/span.hpp>
 #include <simmath/ExplicitEulerIntegrator.h>
 #include <simmath/RungeKutta2Integrator.h>
@@ -13,46 +15,38 @@
 #include <cstddef>
 #include <memory>
 
-static std::array<osc::IntegratorMethod, static_cast<size_t>(osc::IntegratorMethod::TOTAL)> CreateIntegratorMethodsLut()
-{
-    return
-    {
-        osc::IntegratorMethod::OpenSimManagerDefault,
-        osc::IntegratorMethod::ExplicitEuler,
-        osc::IntegratorMethod::RungeKutta2,
-        osc::IntegratorMethod::RungeKutta3,
-        osc::IntegratorMethod::RungeKuttaFeldberg,
-        osc::IntegratorMethod::RungeKuttaMerson,
-        osc::IntegratorMethod::SemiExplicitEuler2,
-        osc::IntegratorMethod::Verlet,
-    };
-}
+static constexpr auto c_IntegratorMethods = osc::MakeSizedArray<osc::IntegratorMethod, static_cast<size_t>(osc::IntegratorMethod::TOTAL)>
+(
+    osc::IntegratorMethod::OpenSimManagerDefault,
+    osc::IntegratorMethod::ExplicitEuler,
+    osc::IntegratorMethod::RungeKutta2,
+    osc::IntegratorMethod::RungeKutta3,
+    osc::IntegratorMethod::RungeKuttaFeldberg,
+    osc::IntegratorMethod::RungeKuttaMerson,
+    osc::IntegratorMethod::SemiExplicitEuler2,
+    osc::IntegratorMethod::Verlet
+);
 
-static std::array<char const*, static_cast<size_t>(osc::IntegratorMethod::TOTAL)> CreateIntegratorMethodStringsLut()
-{
-    return
-    {
-        "OpenSim::Manager Default",
-        "Explicit Euler",
-        "Runge Kutta 2",
-        "Runge Kutta 3",
-        "Runge Kutta Feldberg",
-        "Runge Kutta Merson",
-        "Semi Explicit Euler 2",
-        "Verlet",
-    };
-}
+static constexpr auto c_IntegratorMethodStrings = osc::MakeSizedArray<char const*, static_cast<size_t>(osc::IntegratorMethod::TOTAL)>
+(
+    "OpenSim::Manager Default",
+    "Explicit Euler",
+    "Runge Kutta 2",
+    "Runge Kutta 3",
+    "Runge Kutta Feldberg",
+    "Runge Kutta Merson",
+    "Semi Explicit Euler 2",
+    "Verlet"
+);
 
 nonstd::span<osc::IntegratorMethod const> osc::GetAllIntegratorMethods()
 {
-    static auto const g_IntegratorMethods = CreateIntegratorMethodsLut();
-    return g_IntegratorMethods;
+    return c_IntegratorMethods;
 }
 
 nonstd::span<char const* const> osc::GetAllIntegratorMethodStrings()
 {
-    static auto const g_IntegratorMethodStrings = CreateIntegratorMethodStringsLut();
-    return g_IntegratorMethodStrings;
+    return c_IntegratorMethodStrings;
 }
 
 char const* osc::GetIntegratorMethodString(IntegratorMethod im)

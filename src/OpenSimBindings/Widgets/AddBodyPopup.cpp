@@ -27,8 +27,8 @@
 #include <string>
 #include <utility>
 
-static inline constexpr int g_MaxBodyNameLength = 128;
-static inline constexpr int g_MaxJointNameLength = 128;
+static inline constexpr int c_MaxBodyNameLength = 128;
+static inline constexpr int c_MaxJointNameLength = 128;
 
 class osc::AddBodyPopup::Impl : public osc::StandardPopup {
 public:
@@ -71,7 +71,7 @@ private:
             DrawHelpMarker("The name used to identify the OpenSim::Body in the model. OpenSim typically uses the name to identify connections between components in a model, so the name should be unique.");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            osc::InputString("##bodyname", m_BodyDetails.BodyName, g_MaxBodyNameLength);
+            osc::InputString("##bodyname", m_BodyDetails.BodyName, c_MaxBodyNameLength);
             osc::App::upd().addFrameAnnotation("AddBodyPopup::BodyNameInput", osc::GetItemRect());
             ImGui::NextColumn();
         }
@@ -156,7 +156,7 @@ private:
             DrawHelpMarker("The name of the OpenSim::Joint that will join the new body to the existing frame specified above");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            osc::InputString("##jointnameinput", m_BodyDetails.JointName, g_MaxJointNameLength);
+            osc::InputString("##jointnameinput", m_BodyDetails.JointName, c_MaxJointNameLength);
             osc::App::upd().addFrameAnnotation("AddBodyPopup::JointNameInput", osc::GetItemRect());
             ImGui::NextColumn();
         }

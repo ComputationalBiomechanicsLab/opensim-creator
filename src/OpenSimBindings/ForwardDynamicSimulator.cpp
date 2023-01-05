@@ -159,8 +159,8 @@ namespace
         osc::UID m_UID;
     };
 
-    osc::UID const g_WalltimeUID;
-    osc::UID const g_StepDurationUID;
+    osc::UID const c_WalltimeUID;
+    osc::UID const c_StepDurationUID;
 }
 
 static std::vector<osc::OutputExtractor> CreateSimulatorOutputExtractors()
@@ -169,10 +169,10 @@ static std::vector<osc::OutputExtractor> CreateSimulatorOutputExtractors()
     rv.reserve(1 + osc::GetNumIntegratorOutputExtractors() + osc::GetNumMultiBodySystemOutputExtractors());
 
     {
-        osc::OutputExtractor out{AuxiliaryVariableOutputExtractor{"Wall time", "Total cumulative time spent computing the simulation", g_WalltimeUID}};
+        osc::OutputExtractor out{AuxiliaryVariableOutputExtractor{"Wall time", "Total cumulative time spent computing the simulation", c_WalltimeUID}};
         rv.push_back(out);
 
-        osc::OutputExtractor out2{AuxiliaryVariableOutputExtractor{"Step Wall Time", "How long it took, in wall time, to compute the last integration step", g_StepDurationUID}};
+        osc::OutputExtractor out2{AuxiliaryVariableOutputExtractor{"Step Wall Time", "How long it took, in wall time, to compute the last integration step", c_StepDurationUID}};
         rv.push_back(out2);
     }
 
@@ -191,8 +191,8 @@ static std::vector<osc::OutputExtractor> CreateSimulatorOutputExtractors()
 
 static std::vector<osc::OutputExtractor> const& GetSimulatorOutputExtractors()
 {
-    static std::vector<osc::OutputExtractor> const g_Outputs = CreateSimulatorOutputExtractors();
-    return g_Outputs;
+    static std::vector<osc::OutputExtractor> const s_Outputs = CreateSimulatorOutputExtractors();
+    return s_Outputs;
 }
 
 static std::unique_ptr<SimTK::Integrator> CreateInitializedIntegrator(SimulatorThreadInput const& input)
@@ -230,8 +230,8 @@ static osc::SimulationReport CreateSimulationReport(
 
     // populate forward dynamic simulator outputs
     {
-        auxValues.emplace(g_WalltimeUID, wallTime.count());
-        auxValues.emplace(g_StepDurationUID, stepDuration.count());
+        auxValues.emplace(c_WalltimeUID, wallTime.count());
+        auxValues.emplace(c_StepDurationUID, stepDuration.count());
     }
 
     // populate integrator outputs

@@ -247,7 +247,7 @@ namespace
 // these are the datastructures that the widget mostly plays around with
 namespace
 {
-    constexpr int g_DefaultNumPlotPoints = 65;
+    inline constexpr int c_DefaultNumPlotPoints = 65;
 
     // parameters for generating a plot line
     //
@@ -1436,7 +1436,7 @@ namespace
 
             m_EditorAPI{std::move(editorAPI)},
             Uim{std::move(uim)},
-            PlotParams{Uim->getLatestCommit(), coordPath, musclePath, GetDefaultMuscleOutput(), g_DefaultNumPlotPoints}
+            PlotParams{Uim->getLatestCommit(), coordPath, musclePath, GetDefaultMuscleOutput(), c_DefaultNumPlotPoints}
         {
             OSC_ASSERT(Uim != nullptr);
         }

@@ -1,11 +1,11 @@
 #include "FileChangePoller.hpp"
 
 
-static constexpr char const* g_ModelNoBackingFileSenteniel = "Unassigned";
+static constexpr char const* const c_ModelNoBackingFileSenteniel = "Unassigned";
 
 std::filesystem::file_time_type GetLastModificationTime(std::string const& path)
 {
-    if (path.empty() || path == g_ModelNoBackingFileSenteniel)
+    if (path.empty() || path == c_ModelNoBackingFileSenteniel)
     {
         return std::filesystem::file_time_type{};
     }
@@ -33,7 +33,7 @@ bool osc::FileChangePoller::changeWasDetected(std::string const& path)
         return false;
     }
 
-    if (path.empty() || path == g_ModelNoBackingFileSenteniel)
+    if (path.empty() || path == c_ModelNoBackingFileSenteniel)
     {
         return false;
     }

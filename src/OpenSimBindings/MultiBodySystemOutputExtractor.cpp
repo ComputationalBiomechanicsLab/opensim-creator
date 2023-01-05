@@ -44,8 +44,8 @@ static std::vector<osc::OutputExtractor> ConstructMultiBodySystemOutputExtractor
 
 static std::vector<osc::OutputExtractor> const& GetAllMultiBodySystemOutputExtractors()
 {
-    static std::vector<osc::OutputExtractor> const g_Outputs = ConstructMultiBodySystemOutputExtractors();
-    return g_Outputs;
+    static std::vector<osc::OutputExtractor> const s_Outputs = ConstructMultiBodySystemOutputExtractors();
+    return s_Outputs;
 }
 
 osc::MultiBodySystemOutputExtractor::MultiBodySystemOutputExtractor(std::string_view name,

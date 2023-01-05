@@ -25,7 +25,7 @@
 #include <utility>
 
 // worldspace positions of each cube (step 2)
-static glm::vec3 const g_CubePositions[] =
+static constexpr glm::vec3 c_CubePositions[] =
 {
     { 0.0f,  0.0f,  0.0f },
     { 2.0f,  5.0f, -15.0f},
@@ -137,7 +137,7 @@ public:
         {
             int32_t i = 0;
             glm::vec3 const axis = glm::normalize(glm::vec3{1.0f, 0.3f, 0.5f});
-            for (glm::vec3 const& pos : g_CubePositions)
+            for (glm::vec3 const& pos : c_CubePositions)
             {
                 float const angle = glm::radians(i++ * 20.0f);
 

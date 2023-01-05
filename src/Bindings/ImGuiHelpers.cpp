@@ -7,6 +7,7 @@
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
+#include "src/Utils/Algorithms.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 #include "src/Utils/UID.hpp"
 #include "osc_config.hpp"
@@ -401,7 +402,7 @@ void osc::DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect
         renderRect.p2.y - (linelen + padding),
     };
 
-    std::array<char const* const, 3> labels = {"X", "Y", "Z"};
+    auto const labels = osc::MakeSizedArray<char const*, 3>("X", "Y", "Z");
 
     ImDrawList& dd = *ImGui::GetWindowDrawList();
     for (size_t i = 0; i < std::size(labels); ++i)

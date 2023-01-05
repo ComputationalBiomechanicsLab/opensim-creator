@@ -19,8 +19,6 @@
 #include <utility>
 #include <vector>
 
-static constexpr inline int g_FilterMaxLen = 64;
-
 class osc::CoordinateEditor::Impl final {
 public:
 

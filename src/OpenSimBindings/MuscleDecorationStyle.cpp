@@ -1,40 +1,34 @@
 #include "MuscleDecorationStyle.hpp"
 
+#include "src/Utils/Algorithms.hpp"
+
 #include <nonstd/span.hpp>
 
 #include <array>
 #include <cstddef>
 
-static std::array<osc::MuscleDecorationStyle, static_cast<size_t>(osc::MuscleDecorationStyle::TOTAL)> CreateDecorationStyleLut()
-{
-    return
-    {
-        osc::MuscleDecorationStyle::OpenSim,
-        osc::MuscleDecorationStyle::Scone,
-        osc::MuscleDecorationStyle::Hidden,
-    };
-}
+static constexpr auto c_Styles = osc::MakeSizedArray<osc::MuscleDecorationStyle, static_cast<size_t>(osc::MuscleDecorationStyle::TOTAL)>
+(
+    osc::MuscleDecorationStyle::OpenSim,
+    osc::MuscleDecorationStyle::Scone,
+    osc::MuscleDecorationStyle::Hidden
+);
 
-static std::array<char const*, static_cast<size_t>(osc::MuscleDecorationStyle::TOTAL)> CreateDecorationStringsLut()
-{
-    return
-    {
-        "OpenSim (lines)",
-        "SCONE (tendons + fibers)",
-        "Hidden",
-    };
-}
+static constexpr auto c_StyleStrings = osc::MakeSizedArray<char const*, static_cast<size_t>(osc::MuscleDecorationStyle::TOTAL)>
+(
+    "OpenSim (lines)",
+    "SCONE (tendons + fibers)",
+    "Hidden"
+);
 
 nonstd::span<osc::MuscleDecorationStyle const> osc::GetAllMuscleDecorationStyles()
 {
-    static auto const g_Styles = CreateDecorationStyleLut();
-    return g_Styles;
+    return c_Styles;
 }
 
 nonstd::span<char const* const> osc::GetAllMuscleDecorationStyleStrings()
 {
-    static auto const g_StyleStrings = CreateDecorationStringsLut();
-    return g_StyleStrings;
+    return c_StyleStrings;
 }
 
 int osc::GetIndexOf(MuscleDecorationStyle s)
