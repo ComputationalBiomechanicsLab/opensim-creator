@@ -21,6 +21,7 @@
 #include <OpenSim/Actuators/ActivationCoordinateActuator.h>
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
 #include <OpenSim/Simulation/Model/ContactSphere.h>
+#include <OpenSim/Simulation/Model/ExpressionBasedPointToPointForce.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Simulation/Model/PathSpring.h>
@@ -504,6 +505,18 @@ static std::unordered_map<osc::CStringView, std::shared_ptr<OpenSim::Component c
             {
                 auto c = std::make_shared<OpenSim::ActivationCoordinateActuator>();
                 c->set_coordinate("");
+                return c;
+            }()
+        },
+
+        // HOTFIX: set `ExpressionBasedPointToPointForce` body properties to prevent an OpenSim 4.4 segfault (#520)
+        {
+            "ExpressionBasedPointToPointForce",
+            []()
+            {
+                auto c = std::make_shared<OpenSim::ExpressionBasedPointToPointForce>();
+                c->set_body1("");
+                c->set_body2("");
                 return c;
             }()
         }

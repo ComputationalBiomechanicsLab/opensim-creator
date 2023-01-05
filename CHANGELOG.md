@@ -48,6 +48,7 @@ All notable changes to this project will be documented here. The format is based
 - Trying to add an `OpenSim::CoordinateCouplerConstraint` into a model without a `coupled_coordinates_function`
   no longer causes a crash (#515)
 - Trying to add an `OpenSim::ActivationCoordinateActuator` into a model without a `coordinate` no longer causes a crash (#517)
+- Trying to add an `OpenSim::ExpressionBasedPointToPointForce` into a model without a `body1/2` no longer causes a crash (#520)
 
 ## [0.3.1] - UNRELEASED
 
