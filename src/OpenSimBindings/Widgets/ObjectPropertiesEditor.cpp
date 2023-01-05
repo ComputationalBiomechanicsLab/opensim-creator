@@ -106,29 +106,6 @@ namespace
         };
     }
 
-    // returns `true` if a given item (usually, input) should be saved
-    bool ItemValueShouldBeSaved()
-    {
-        if (ImGui::IsItemDeactivatedAfterEdit())
-        {
-            return true;  // ImGui detected that the item was deactivated after an edit
-        }
-
-        if (ImGui::IsItemEdited())
-        {
-            if (osc::IsAnyKeyPressed({ImGuiKey_Enter, ImGuiKey_Tab}))
-            {
-                return true;  // user pressed enter/tab after editing
-            }
-            else if (!ImGui::IsItemFocused() && ImGui::IsAnyItemFocused())
-            {
-                return true;  // user focused some other item (e.g. via mouse click) after editing but ImGui didn't notice it via IsItemDeactivatedAfterEdit
-            }
-        }
-
-        return false;
-    }
-
     // draws the property name and (optionally) comment tooltip
     void DrawPropertyName(OpenSim::AbstractProperty const& prop)
     {
@@ -310,7 +287,7 @@ namespace
             // globally annotate the editor rect, for downstream screenshot automation
             osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::StringEditor/" + m_EditedProperty.getName(), osc::GetItemRect());
 
-            if (ItemValueShouldBeSaved())
+            if (osc::ItemValueShouldBeSaved())
             {
                 rv = MakePropValueSetter<std::string>(idx, m_EditedProperty.getValue(idx));
             }
@@ -387,7 +364,7 @@ namespace
             // globally annotate the editor rect, for downstream screenshot automation
             osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::DoubleEditor/" + m_EditedProperty.getName(), osc::GetItemRect());
 
-            if (ItemValueShouldBeSaved())
+            if (osc::ItemValueShouldBeSaved())
             {
                 rv = MakePropValueSetter<double>(idx, m_EditedProperty.getValue(idx));
             }
@@ -466,7 +443,7 @@ namespace
             // globally annotate the editor rect, for downstream screenshot automation
             osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::BoolEditor/" + m_EditedProperty.getName(), osc::GetItemRect());
 
-            if (edited || ItemValueShouldBeSaved())
+            if (edited || osc::ItemValueShouldBeSaved())
             {
                 rv = MakePropValueSetter<bool>(idx, m_EditedProperty.getValue(idx));
             }
@@ -566,7 +543,7 @@ namespace
                     m_EditedProperty.setValue(idx, osc::ToSimTKVec3(savedValue));
                 }
                 ImGui::PopStyleVar();
-                shouldSave = shouldSave || ItemValueShouldBeSaved();
+                shouldSave = shouldSave || osc::ItemValueShouldBeSaved();
 
                 // globally annotate the editor rect, for downstream screenshot automation
                 {
@@ -810,7 +787,7 @@ namespace
                     m_EditedProperty.updValue(idx)[3*i + 1] = static_cast<double>(rawValue[3*i + 1]);
                     m_EditedProperty.updValue(idx)[3*i + 2] = static_cast<double>(rawValue[3*i + 2]);
                 }
-                shouldSave = shouldSave || ItemValueShouldBeSaved();
+                shouldSave = shouldSave || osc::ItemValueShouldBeSaved();
                 osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::Vec6Editor/" + m_EditedProperty.getName(), osc::GetItemRect());
 
                 ImGui::PopID();

@@ -43,6 +43,7 @@ All notable changes to this project will be documented here. The format is based
 - Blacklisted adding `Blankevoort1991Ligament` (it requires a GeometryPath editor to work, #518 #522)
 - All tutorial example files now have frame geometry toggled on by default (#505)
 - Clicking out of a property editor box to an earlier property no longer clears any edits the user made (#516)
+- Clicking, or tabbing out, of the name editor box in the properties editor now saves the name (#541)
 
 ## [0.3.1] - UNRELEASED
 

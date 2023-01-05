@@ -174,4 +174,11 @@ namespace osc
 
     // draw text, but centered on the current window/line
     void TextCentered(CStringView);
+
+    // returns `true` if a given item (usually, input) should be saved based on heuristics
+    //
+    // - if the item was deactivated (e.g. due to focusing something else), it should be saved
+    // - if there's an active edit and the user presses enter, it should be saved
+    // - if there's an active edit and the user presses tab, it should be saved
+    bool ItemValueShouldBeSaved();
 }

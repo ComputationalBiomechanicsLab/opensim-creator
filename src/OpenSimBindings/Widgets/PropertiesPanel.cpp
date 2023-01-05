@@ -40,62 +40,81 @@
 #include <utility>
 #include <vector>
 
-
-static void DrawActionsMenu(osc::EditorAPI* editorAPI, std::shared_ptr<osc::UndoableModelStatePair> const& model)
+namespace
 {
-    OpenSim::Component const* selection = model->getSelected();
-    if (!selection)
+    void DrawActionsMenu(osc::EditorAPI* editorAPI, std::shared_ptr<osc::UndoableModelStatePair> const& model)
     {
-        return;
+        OpenSim::Component const* selection = model->getSelected();
+        if (!selection)
+        {
+            return;
+        }
+
+        ImGui::Columns(2);
+        ImGui::TextUnformatted("actions");
+        ImGui::SameLine();
+        osc::DrawHelpMarker("Shows a menu containing extra actions that can be performed on this component.\n\nYou can also access the same menu by right-clicking the component in the 3D viewer, bottom status bar, or navigator panel.");
+        ImGui::NextColumn();
+        ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 1.0f, 0.0f, 1.0f});
+        if (ImGui::Button(ICON_FA_BOLT) || ImGui::IsItemClicked(ImGuiMouseButton_Right))
+        {
+            editorAPI->pushComponentContextMenuPopup(selection->getAbsolutePath());
+        }
+        ImGui::PopStyleColor();
+        ImGui::NextColumn();
+        ImGui::Columns();
     }
 
-    ImGui::Columns(2);
-    ImGui::TextUnformatted("actions");
-    ImGui::SameLine();
-    osc::DrawHelpMarker("Shows a menu containing extra actions that can be performed on this component.\n\nYou can also access the same menu by right-clicking the component in the 3D viewer, bottom status bar, or navigator panel.");
-    ImGui::NextColumn();
-    ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 1.0f, 0.0f, 1.0f});
-    if (ImGui::Button(ICON_FA_BOLT) || ImGui::IsItemClicked(ImGuiMouseButton_Right))
-    {
-        editorAPI->pushComponentContextMenuPopup(selection->getAbsolutePath());
-    }
-    ImGui::PopStyleColor();
-    ImGui::NextColumn();
-    ImGui::Columns();
-}
+    class ObjectNameEditor final {
+    public:
+        ObjectNameEditor(std::shared_ptr<osc::UndoableModelStatePair> model_) :
+            m_Model{std::move(model_)}
+        {
+        }
 
-// draw an editor for top-level selected Component members (e.g. name)
-static void DrawTopLevelMembersEditor(osc::UndoableModelStatePair& uim)
-{
-    OpenSim::Component const* selection = uim.getSelected();
+        void draw()
+        {
+            OpenSim::Component const* const selected = m_Model->getSelected();
 
-    if (!selection)
-    {
-        ImGui::Text("cannot draw top level editor: nothing selected?");
-        return;
-    }
+            if (!selected)
+            {
+                return;  // don't do anything if nothing is selected
+            }
 
-    ImGui::PushID(selection);
-    ImGui::Columns(2);
+            // update cached edits if model/selection changes
+            if (m_Model->getModelVersion() != m_LastModelVersion || selected != m_LastSelected)
+            {
+                m_EditedName = selected->getName();
+                m_LastModelVersion = m_Model->getModelVersion();
+                m_LastSelected = selected;
+            }
 
-    ImGui::Separator();
-    ImGui::TextUnformatted("name");
-    ImGui::SameLine();
-    osc::DrawHelpMarker("The name of the component", "The component's name can be important. It can be used when components want to refer to eachover. E.g. a joint will name the two frames it attaches to.");
+            ImGui::Columns(2);
 
-    ImGui::NextColumn();
+            ImGui::Separator();
+            ImGui::TextUnformatted("name");
+            ImGui::SameLine();
+            osc::DrawHelpMarker("The name of the component", "The component's name can be important. It can be used when components want to refer to eachover. E.g. a joint will name the two frames it attaches to.");
 
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-    std::string nameBuf = selection->getName();  // allowed, because EnterReturnsTrue needs to internally buffer stuff anyway
-    if (osc::InputString("##nameeditor", nameBuf, 128, ImGuiInputTextFlags_EnterReturnsTrue))
-    {
-        osc::ActionSetComponentName(uim, selection->getAbsolutePath(), nameBuf);
-    }
+            ImGui::NextColumn();
 
-    ImGui::NextColumn();
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            osc::InputString("##nameeditor", m_EditedName, 128);
+            if (osc::ItemValueShouldBeSaved())
+            {
+                osc::ActionSetComponentName(*m_Model, selected->getAbsolutePath(), m_EditedName);
+            }
 
-    ImGui::Columns();
-    ImGui::PopID();
+            ImGui::NextColumn();
+
+            ImGui::Columns();
+        }
+    private:
+        std::shared_ptr<osc::UndoableModelStatePair> m_Model;
+        osc::UID m_LastModelVersion;
+        OpenSim::Component const* m_LastSelected = nullptr;
+        std::string m_EditedName;
+    };
 }
 
 class osc::PropertiesPanel::Impl final {
@@ -122,8 +141,7 @@ public:
         // it's helpful to reveal to users that actions are available (#426)
         DrawActionsMenu(m_EditorAPI, m_Model);
 
-        // draw top-level (not property) editors (e.g. name editor)
-        DrawTopLevelMembersEditor(*m_Model);
+        m_NameEditor.draw();
 
         if (!m_Model->getSelected())
         {
@@ -143,6 +161,7 @@ public:
 private:
     EditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Model;
+    ObjectNameEditor m_NameEditor{m_Model};
     ObjectPropertiesEditor m_ObjectPropsEditor;
 };
 

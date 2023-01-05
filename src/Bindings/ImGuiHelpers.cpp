@@ -586,3 +586,18 @@ void osc::TextCentered(CStringView s)
     ImGui::SetCursorPosX(0.5f * (windowWidth - textWidth));
     ImGui::TextUnformatted(s.c_str());
 }
+
+bool osc::ItemValueShouldBeSaved()
+{
+    if (ImGui::IsItemDeactivatedAfterEdit())
+    {
+        return true;  // ImGui detected that the item was deactivated after an edit
+    }
+
+    if (ImGui::IsItemEdited() && osc::IsAnyKeyPressed({ImGuiKey_Enter, ImGuiKey_Tab}))
+    {
+        return true;  // user pressed enter/tab after editing
+    }
+
+    return false;
+}
