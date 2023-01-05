@@ -19,6 +19,7 @@
 
 // these have manual prototypes
 #include <OpenSim/Actuators/ActivationCoordinateActuator.h>
+#include <OpenSim/Actuators/PointToPointActuator.h>
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
 #include <OpenSim/Simulation/Model/ContactSphere.h>
 #include <OpenSim/Simulation/Model/ExpressionBasedPointToPointForce.h>
@@ -519,7 +520,19 @@ static std::unordered_map<osc::CStringView, std::shared_ptr<OpenSim::Component c
                 c->set_body2("");
                 return c;
             }()
-        }
+        },
+
+        // HOTFIX: set `PointToPointActuator`s body properties to prevent an OpenSim 4.4 segfault (#523)
+        {
+            "PointToPointActuator",
+            []()
+            {
+                auto c = std::make_shared<OpenSim::PointToPointActuator>();
+                c->set_bodyA("");
+                c->set_bodyB("");
+                return c;
+            }()
+        },
     };
 }
 
