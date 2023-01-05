@@ -209,7 +209,7 @@ private:
         float displayedSpeed = ConvertCoordValueToDisplayValue(c, c.getSpeedValue(m_Uum->getState()));
 
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-        if (InputMetersFloat("##coordinatespeededitor", &displayedSpeed))
+        if (InputMetersFloat("##coordinatespeededitor", displayedSpeed))
         {
             double storedSpeed = ConvertCoordDisplayValueToStorageValue(c, displayedSpeed);
             osc::ActionSetCoordinateSpeed(*m_Uum, c, storedSpeed);

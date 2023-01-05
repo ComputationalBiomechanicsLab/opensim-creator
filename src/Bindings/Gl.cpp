@@ -6,12 +6,7 @@
 #include <stdexcept>
 #include <vector>
 
-char const* gl::OpenGlException::what() const noexcept
-{
-    return m_Msg.c_str();
-}
-
-void gl::CompileFromSource(ShaderHandle const& s, const char* src)
+void gl::CompileFromSource(ShaderHandle const& s, GLchar const* src)
 {
     glShaderSource(s.get(), 1, &src, nullptr);
     glCompileShader(s.get());

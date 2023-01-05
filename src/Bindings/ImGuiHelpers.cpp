@@ -11,6 +11,7 @@
 #include "src/Utils/UID.hpp"
 #include "osc_config.hpp"
 
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
@@ -461,61 +462,22 @@ bool osc::InputString(CStringView label, std::string& s, size_t maxLen, ImGuiInp
     }
 }
 
-bool osc::DrawF3Editor(CStringView lockID, CStringView editorID, float* v, bool* isLocked)
+bool osc::InputMetersFloat(CStringView label, float& v, float step, float step_fast, ImGuiInputTextFlags flags)
 {
-    bool changed = false;
-
-    ImGui::PushID(lockID.c_str());
-    if (ImGui::Button(*isLocked ? ICON_FA_LOCK : ICON_FA_UNLOCK))
-    {
-        *isLocked = !*isLocked;
-        changed = true;
-    }
-    ImGui::PopID();
-
-    ImGui::SameLine();
-
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-
-    float copy[3] = {v[0], v[1], v[2]};
-
-    if (ImGui::InputFloat3(editorID.c_str(), copy, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue))
-    {
-        if (*isLocked)
-        {
-            float val = diff(v, copy, 3);
-            v[0] = val;
-            v[1] = val;
-            v[2] = val;
-        }
-        else
-        {
-            v[0] = copy[0];
-            v[1] = copy[1];
-            v[2] = copy[2];
-        }
-        changed = true;
-    }
-
-    return changed;
+    return ImGui::InputFloat(label.c_str(), &v, step, step_fast, OSC_DEFAULT_FLOAT_INPUT_FORMAT, flags);
 }
 
-bool osc::InputMetersFloat(CStringView label, float* v, float step, float step_fast, ImGuiInputTextFlags flags)
+bool osc::InputMetersFloat3(CStringView label, glm::vec3& vec, ImGuiInputTextFlags flags)
 {
-    return ImGui::InputFloat(label.c_str(), v, step, step_fast, OSC_DEFAULT_FLOAT_INPUT_FORMAT, flags);
+    return ImGui::InputFloat3(label.c_str(), glm::value_ptr(vec), OSC_DEFAULT_FLOAT_INPUT_FORMAT, flags);
 }
 
-bool osc::InputMetersFloat3(CStringView label, float v[3], ImGuiInputTextFlags flags)
+bool osc::SliderMetersFloat(CStringView label, float& v, float v_min, float v_max, ImGuiSliderFlags flags)
 {
-    return ImGui::InputFloat3(label.c_str(), v, OSC_DEFAULT_FLOAT_INPUT_FORMAT, flags);
+    return ImGui::SliderFloat(label.c_str(), &v, v_min, v_max, OSC_DEFAULT_FLOAT_INPUT_FORMAT, flags);
 }
 
-bool osc::SliderMetersFloat(CStringView label, float* v, float v_min, float v_max, ImGuiSliderFlags flags)
-{
-    return ImGui::SliderFloat(label.c_str(), v, v_min, v_max, OSC_DEFAULT_FLOAT_INPUT_FORMAT, flags);
-}
-
-bool osc::InputKilogramFloat(CStringView label, float* v, float step, float step_fast, ImGuiInputTextFlags flags)
+bool osc::InputKilogramFloat(CStringView label, float& v, float step, float step_fast, ImGuiInputTextFlags flags)
 {
     return InputMetersFloat(label, v, step, step_fast, flags);
 }

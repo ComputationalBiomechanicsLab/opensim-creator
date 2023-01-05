@@ -83,7 +83,7 @@ private:
             DrawHelpMarker("The mass of the body in kilograms");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            InputKilogramFloat("##mass", &m_BodyDetails.Mass);
+            InputKilogramFloat("##mass", m_BodyDetails.Mass);
             ImGui::NextColumn();
         }
 
@@ -94,7 +94,7 @@ private:
             DrawHelpMarker("The location of the mass center in the body frame.");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            osc::InputMetersFloat3("##comeditor", glm::value_ptr(m_BodyDetails.CenterOfMass));
+            osc::InputMetersFloat3("##comeditor", m_BodyDetails.CenterOfMass);
             ImGui::NextColumn();
         }
 
@@ -105,7 +105,7 @@ private:
             DrawHelpMarker("The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz]. These are measured about the center of mass, *not* the center of the body frame.");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            osc::InputMetersFloat3("##inertiaeditor", glm::value_ptr(m_BodyDetails.Inertia));
+            osc::InputMetersFloat3("##inertiaeditor", m_BodyDetails.Inertia);
             ImGui::NextColumn();
         }
 

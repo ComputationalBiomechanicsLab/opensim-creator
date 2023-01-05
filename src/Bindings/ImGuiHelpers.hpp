@@ -4,6 +4,7 @@
 #include "src/Utils/CStringView.hpp"
 
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
 #include <nonstd/span.hpp>
 #include <imgui.h>
@@ -106,18 +107,10 @@ namespace osc
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
     );
 
-    // draw a vec3/f3 editor with a lock icon
-    bool DrawF3Editor(
-        CStringView lock_id,
-        CStringView editor_id,
-        float* v,
-        bool* is_locked
-    );
-
     // draw an ImGui::InputFloat that manipulates in the scene scale (note: some users work with very very small sizes)
     bool InputMetersFloat(
         CStringView label,
-        float* v,
+        float& v,
         float step = 0.0f,
         float step_fast = 0.0f,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
@@ -126,14 +119,14 @@ namespace osc
     // draw an ImGui::InputFloat3 that manipulates in the scene scale (note: some users work with very very small sizes)
     bool InputMetersFloat3(
         CStringView label,
-        float v[3],
+        glm::vec3&,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
     );
 
     // draw an ImGui::SliderFloat that manipulates in the scene scale (note: some users work with very very small sizes)
     bool SliderMetersFloat(
         CStringView label,
-        float* v,
+        float& v,
         float v_min,
         float v_max,
         ImGuiSliderFlags flags = ImGuiInputTextFlags_None
@@ -142,7 +135,7 @@ namespace osc
     // draw an ImGui::InputFloat for masses (note: some users work with very very small masses)
     bool InputKilogramFloat(
         CStringView label,
-        float* v,
+        float& v,
         float step = 0.0f,
         float step_fast = 0.0f,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_None

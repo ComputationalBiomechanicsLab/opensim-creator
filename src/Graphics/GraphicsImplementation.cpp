@@ -4077,7 +4077,7 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
         OSC_ASSERT_ALWAYS(sizeof(float)*floatOffset == els.size() * byteStride);
 
         auto& vbo = maybeInstancingState.emplace(g_GraphicsContextImpl->m_InstanceGPUBuffer, byteStride).Buf;
-        vbo.assign(buf.data(), floatOffset);
+        vbo.assign(nonstd::span<float const>{buf.data(), floatOffset});
     }
     return maybeInstancingState;
 }

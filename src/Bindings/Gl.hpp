@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GL/glew.h>
+#include <nonstd/span.hpp>
 
 #include <cstddef>
 #include <exception>
@@ -25,7 +26,10 @@ namespace gl
         {
         }
 
-        char const* what() const noexcept override;
+        char const* what() const noexcept override
+        {
+            return m_Msg.c_str();
+        }
 
     private:
         std::string m_Msg;
@@ -77,7 +81,7 @@ namespace gl
     };
 
     // compile a shader from source
-    void CompileFromSource(ShaderHandle const&, const char* src);
+    void CompileFromSource(ShaderHandle const&, GLchar const* src);
 
     // a shader of a particular type (e.g. GL_FRAGMENT_SHADER) that owns a
     // shader handle
@@ -112,7 +116,7 @@ namespace gl
     class GeometryShader : public Shader<GL_GEOMETRY_SHADER> {};
 
     template<typename TShader>
-    inline TShader CompileFromSource(const char* src)
+    inline TShader CompileFromSource(GLchar const* src)
     {
         TShader rv;
         CompileFromSource(rv.handle(), src);
@@ -668,14 +672,6 @@ namespace gl
 
         Buffer() = default;
 
-        Buffer(T const* begin, size_t n) :
-            TypedBufferHandle<TBuffer>{},
-            m_BufferSize{n}
-        {
-            BindBuffer(*this);
-            BufferData(BufferType, sizeof(T) * n, begin, Usage);
-        }
-
         template<typename Collection>
         Buffer(Collection const& c) :
             Buffer{c.data(), c.size()}
@@ -698,23 +694,23 @@ namespace gl
             return m_BufferSize;
         }
 
-        void assign(T const* begin, size_t n)
+        void assign(nonstd::span<T const> span)
         {
             BindBuffer(*this);
-            BufferData(BufferType, sizeof(T) * n, begin, Usage);
-            m_BufferSize = n;
+            BufferData(BufferType, sizeof(T) * span.size(), span.data(), Usage);
+            m_BufferSize = span.size();
         }
 
         template<typename Container>
         void assign(Container const& c)
         {
-            assign(c.data(), c.size());
+            assign(nonstd::span<T const>{c.data(), c.size()});
         }
 
         template<size_t N>
         void assign(T const (&arr)[N])
         {
-            assign(arr, N);
+            assign(nonstd::span<T const>{arr, N});
         }
 
         void resize(size_t n)

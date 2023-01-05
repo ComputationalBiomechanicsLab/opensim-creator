@@ -518,23 +518,23 @@ private:
         ImGui::Dummy({0.0f, 10.0f});
         ImGui::Text("advanced camera properties:");
         ImGui::Separator();
-        osc::SliderMetersFloat("radius", &m_Camera.radius, 0.0f, 10.0f);
+        osc::SliderMetersFloat("radius", m_Camera.radius, 0.0f, 10.0f);
         ImGui::SliderFloat("theta", &m_Camera.theta, 0.0f, 2.0f * osc::fpi);
         ImGui::SliderFloat("phi", &m_Camera.phi, 0.0f, 2.0f * osc::fpi);
         ImGui::InputFloat("fov", &m_Camera.fov);
-        osc::InputMetersFloat("znear", &m_Camera.znear);
-        osc::InputMetersFloat("zfar", &m_Camera.zfar);
+        osc::InputMetersFloat("znear", m_Camera.znear);
+        osc::InputMetersFloat("zfar", m_Camera.zfar);
         ImGui::NewLine();
-        osc::SliderMetersFloat("pan_x", &m_Camera.focusPoint.x, -100.0f, 100.0f);
-        osc::SliderMetersFloat("pan_y", &m_Camera.focusPoint.y, -100.0f, 100.0f);
-        osc::SliderMetersFloat("pan_z", &m_Camera.focusPoint.z, -100.0f, 100.0f);
+        osc::SliderMetersFloat("pan_x", m_Camera.focusPoint.x, -100.0f, 100.0f);
+        osc::SliderMetersFloat("pan_y", m_Camera.focusPoint.y, -100.0f, 100.0f);
+        osc::SliderMetersFloat("pan_z", m_Camera.focusPoint.z, -100.0f, 100.0f);
 
         ImGui::Dummy({0.0f, 10.0f});
         ImGui::Text("advanced scene properties:");
         ImGui::Separator();
         ImGui::ColorEdit3("light_color", glm::value_ptr(m_RendererParams.lightColor));
         ImGui::ColorEdit3("background color", glm::value_ptr(m_RendererParams.backgroundColor));
-        osc::InputMetersFloat3("floor location", glm::value_ptr(m_RendererParams.floorLocation));
+        osc::InputMetersFloat3("floor location", m_RendererParams.floorLocation);
         DrawTooltipBodyOnlyIfItemHovered("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
     }
 
