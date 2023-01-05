@@ -42,6 +42,7 @@ All notable changes to this project will be documented here. The format is based
 - Added prefixes to various 'subject01' example files (#513)
 - Blacklisted adding `Blankevoort1991Ligament` (it requires a GeometryPath editor to work, #518 #522)
 - All tutorial example files now have frame geometry toggled on by default (#505)
+- Clicking out of a property editor box to an earlier property no longer clears any edits the user made (#516)
 
 ## [0.3.1] - UNRELEASED
 
