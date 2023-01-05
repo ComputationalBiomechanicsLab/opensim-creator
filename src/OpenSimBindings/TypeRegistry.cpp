@@ -17,6 +17,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 
 // these have manual prototypes
+#include <OpenSim/Actuators/SpringGeneralizedForce.h>
 #include <OpenSim/Simulation/Model/ContactSphere.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/PathActuator.h>
@@ -469,7 +470,18 @@ static std::unordered_map<osc::CStringView, std::shared_ptr<OpenSim::Component c
                 cdc->setConstantDistance(1.0);
                 return cdc;
             }()
-        }
+        },
+
+        // HOTFIX: set SpringGeneralizedForce's `coordinate` property to prevent an OpenSim 4.4 segfault (#524)
+        {
+            "SpringGeneralizedForce",
+            []()
+            {
+                auto c = std::make_shared<OpenSim::SpringGeneralizedForce>();
+                c->set_coordinate("");
+                return c;
+            }()
+        },
     };
 }
 
