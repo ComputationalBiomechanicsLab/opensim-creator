@@ -344,12 +344,12 @@ namespace
         return !(a == b);
     }
 
-    double GetFirstXValue(PlotParameters const& p, OpenSim::Coordinate const& c)
+    double GetFirstXValue(PlotParameters const&, OpenSim::Coordinate const& c)
     {
         return c.getRangeMin();
     }
 
-    double GetLastXValue(PlotParameters const& p, OpenSim::Coordinate const& c)
+    double GetLastXValue(PlotParameters const&, OpenSim::Coordinate const& c)
     {
         return c.getRangeMax();
     }
@@ -962,7 +962,7 @@ namespace
         {
         }
 
-        void onBeforeDrawing(osc::UndoableModelStatePair const& model, PlotParameters const& desiredParams)
+        void onBeforeDrawing(osc::UndoableModelStatePair const&, PlotParameters const& desiredParams)
         {
             // perform any datastructure invariant checks etc.
 

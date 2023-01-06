@@ -56,6 +56,7 @@ namespace osc
             if (m_Data && m_Data->owners.fetch_sub(1, std::memory_order_acq_rel) == 1)
             {
                 delete m_Data;
+                m_Data = nullptr;
             }
         }
 

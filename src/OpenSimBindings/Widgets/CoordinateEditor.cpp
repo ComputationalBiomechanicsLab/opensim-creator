@@ -134,8 +134,6 @@ private:
         {
             m_Uum->setHovered(&c);
 
-            char const* motionType = osc::GetMotionTypeDisplayName(c);
-
             std::stringstream ss;
             ss << "    motion type = " << osc::GetMotionTypeDisplayName(c) << '\n';
             ss << "    owner = " << (c.hasOwner() ? c.getOwner().getName().c_str() : "(no owner)");

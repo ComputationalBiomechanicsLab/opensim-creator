@@ -72,7 +72,7 @@ public:
     {
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool onEvent(SDL_Event const&)
     {
         return false;
     }

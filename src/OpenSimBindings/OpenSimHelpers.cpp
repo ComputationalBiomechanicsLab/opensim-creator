@@ -337,7 +337,7 @@ namespace
                                     SimTK::State const& st,
                                     OpenSim::Component const* selected,
                                     OpenSim::Component const* hovered,
-                                    float fixupScaleFactor,
+                                    float,
                                     std::vector<osc::SceneDecoration>& out)
     {
         osc::Transform t = osc::ToTransform(j.getParentFrame().getTransformInGround(st));
@@ -722,17 +722,17 @@ namespace
     }
 
     void HandleFrameGeometry(
-        osc::CustomDecorationOptions const& opts,
+        osc::CustomDecorationOptions const&,
         OpenSim::FrameGeometry const& frameGeometry,
         SimTK::State const& st,
-        OpenSim::Component const* selected,
-        OpenSim::Component const* hovered,
-        float fixupScaleFactor,
+        OpenSim::Component const*,
+        OpenSim::Component const*,
+        float,
         OpenSim::Component const** currentComponent,
         OpenSim::ModelDisplayHints const& mdh,
         SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
         osc::DecorativeGeometryHandler& producer,
-        std::vector<osc::SceneDecoration>& out)
+        std::vector<osc::SceneDecoration>&)
     {
         if (frameGeometry.hasOwner())
         {
@@ -758,7 +758,7 @@ namespace
 
         void operator()(osc::Mesh const& mesh, osc::Transform const& t, glm::vec4 const& color) override
         {
-            std::string absPath = (*m_CurrentComponent) ? (*m_CurrentComponent)->getAbsolutePathString() : std::string{};
+            std::string absPath = (*m_CurrentComponent)->getAbsolutePathString();
             m_Out->emplace_back(mesh, t, color, std::move(absPath), ComputeFlags(**m_CurrentComponent, m_Selected, m_Hovered));
         }
 

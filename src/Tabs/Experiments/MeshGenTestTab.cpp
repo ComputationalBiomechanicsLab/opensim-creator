@@ -104,7 +104,6 @@ public:
 
         if (ImGui::Begin("viewer"))
         {
-            glm::vec2 pos = ImGui::GetCursorPos();
             for (auto const& [name, _] : m_AllMeshes)
             {
                 if (ImGui::Button(name.c_str()))

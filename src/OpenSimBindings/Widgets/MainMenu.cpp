@@ -133,7 +133,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
     if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Load Motion", nullptr, false, maybeModel != nullptr))
     {
         std::optional<std::filesystem::path> maybePath = osc::PromptUserForFile("sto,mot");
-        if (maybePath)
+        if (maybePath && maybeModel)
         {
             try
             {
@@ -153,12 +153,18 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
 
     if (ImGui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S", false, maybeModel != nullptr))
     {
-        ActionSaveModel(*api, *maybeModel);
+        if (maybeModel)
+        {
+            ActionSaveModel(*api, *maybeModel);
+        }
     }
 
     if (ImGui::MenuItem(ICON_FA_SAVE " Save As", "Shift+Ctrl+S", false, maybeModel != nullptr))
     {
-        ActionSaveCurrentModelAs(*maybeModel);
+        if (maybeModel)
+        {
+            ActionSaveCurrentModelAs(*maybeModel);
+        }
     }
 
     if (ImGui::MenuItem(ICON_FA_MAGIC " Import Meshes"))

@@ -530,7 +530,7 @@ private:
     }
 
     // render any mouse-related overlays for when the user hasn't clicked yet
-    void renderMouseUIElements(ImGuiItemHittestResult const& ht, GUIInitialMouseState st)
+    void renderMouseUIElements(ImGuiItemHittestResult const& ht, GUIInitialMouseState)
     {
         glm::vec2 const mouseScreenPos = ImGui::GetMousePos();
         glm::vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;

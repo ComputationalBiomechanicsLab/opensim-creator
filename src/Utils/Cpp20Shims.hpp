@@ -154,7 +154,7 @@ namespace osc {
 
     // C++20: ssize
     template<class T, std::ptrdiff_t N>
-    constexpr std::ptrdiff_t ssize(const T (&array)[N]) noexcept
+    constexpr std::ptrdiff_t ssize(const T (&)[N]) noexcept
     {
         return N;
     }

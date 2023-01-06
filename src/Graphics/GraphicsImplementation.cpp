@@ -2758,7 +2758,7 @@ private:
         {
             glVertexAttribPointer(SHADER_LOC_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
             glEnableVertexAttribArray(SHADER_LOC_COLOR);
-            byteOffset += sizeof(decltype(m_Colors)::value_type);
+            // unused: byteOffset += sizeof(decltype(m_Colors)::value_type);
         }
         gl::BindVertexArray();
 
@@ -4099,7 +4099,7 @@ void osc::GraphicsBackend::BindToInstancedAttributes(
             gl::VertexAttribPointer(mmtxAttr, false, ins.Stride, ins.BaseOffset + byteOffset);
             gl::VertexAttribDivisor(mmtxAttr, 1);
             gl::EnableVertexAttribArray(mmtxAttr);
-            byteOffset += sizeof(float) * 16;
+            // unused: byteOffset += sizeof(float) * 16;
         }
         else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat3)
         {
@@ -4107,7 +4107,7 @@ void osc::GraphicsBackend::BindToInstancedAttributes(
             gl::VertexAttribPointer(mmtxAttr, false, ins.Stride, ins.BaseOffset + byteOffset);
             gl::VertexAttribDivisor(mmtxAttr, 1);
             gl::EnableVertexAttribArray(mmtxAttr);
-            byteOffset += sizeof(float) * 9;
+            // unused: byteOffset += sizeof(float) * 9;
         }
     }
 }
@@ -4115,7 +4115,7 @@ void osc::GraphicsBackend::BindToInstancedAttributes(
 // helper: unbinds from instanced attributes (per-drawcall)
 void osc::GraphicsBackend::UnbindFromInstancedAttributes(
     Shader::Impl const& shaderImpl,
-    InstancingState& ins)
+    InstancingState&)
 {
     if (shaderImpl.m_MaybeInstancedModelMatAttr)
     {

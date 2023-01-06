@@ -55,7 +55,6 @@ static void DrawSelectionJointTypeSwitcher(
     {
         return;
     }
-    int idx = *maybeIdx;
 
     int selectedIdx = -1;
     if (ImGui::BeginMenu("Change Joint Type"))

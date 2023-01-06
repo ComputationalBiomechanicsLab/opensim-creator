@@ -201,7 +201,6 @@ private:
     {
         {
             Rect const mmr = calcMainMenuRect();
-            glm::vec2 const mmrDims = Dimensions(mmr);
             ImGui::SetNextWindowPos(mmr.p1);
             ImGui::SetNextWindowSize({Dimensions(mmr).x, -1.0f});
             ImGui::SetNextWindowSizeConstraints(Dimensions(mmr), Dimensions(mmr));

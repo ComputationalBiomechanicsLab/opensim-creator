@@ -10,8 +10,7 @@
 
 namespace
 {
-    float GetWidgetTitleDescriptionHeight(const char *title,
-        const char *description)
+    float GetWidgetTitleDescriptionHeight(const char *, const char *description)
     {
         //ImGui::PushFont(g_font_mgr.m_menu_font_medium);
         float h = ImGui::GetFrameHeight();
