@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="128"
+   height="128"
+   viewBox="0 0 128 128"
+   version="1.1"
+   id="svg2400"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   sodipodi:docname="spline.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview2402"
+     pagecolor="#ffffff"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     showgrid="false"
+     showborder="false"
+     inkscape:zoom="3.3638608"
+     inkscape:cx="-23.782197"
+     inkscape:cy="69.711565"
+     inkscape:window-width="1920"
+     inkscape:window-height="1058"
+     inkscape:window-x="1193"
+     inkscape:window-y="-6"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2400" />
+  <defs
+     id="defs2397" />
+  <g
+     id="icon-spline"
+     transform="matrix(4.0803684,0,0,4.0803684,-0.9426403,-1.2740142)">
+    <path
+       style="fill:#808080;fill-opacity:1;stroke:#cccccc;stroke-width:0.998329px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 2.7379911,31.12778 c 0,0 -7.7311514,-16.573801 7.7311509,-8.2869 9.019701,4.14345 9.019665,-4.14345 7.731152,-8.286901 -1.288513,-4.14345 1.288513,-9.6680757 7.731151,-8.2868996 6.442639,1.381137 5.154089,-5.52462614 5.154089,-5.52462614"
+       id="path27981"
+       sodipodi:nodetypes="ccssc" />
+    <path
+       style="fill:none;stroke:#4d4d4d;stroke-width:0.984391px;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:0.984391, 1.96878;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 2.643723,31.266985 30.991266,0.8816593"
+       id="path25781" />
+  </g>
+</svg>

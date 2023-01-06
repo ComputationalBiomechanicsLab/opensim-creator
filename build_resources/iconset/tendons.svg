@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="128"
+   height="128"
+   viewBox="0 0 128 128"
+   version="1.1"
+   id="svg2400"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   sodipodi:docname="tendons.svg"
+   inkscape:export-filename="constraint.svg"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview2402"
+     pagecolor="#ffffff"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     showgrid="false"
+     showborder="false"
+     inkscape:zoom="3.3638608"
+     inkscape:cx="-32.403243"
+     inkscape:cy="69.711565"
+     inkscape:window-width="1920"
+     inkscape:window-height="1058"
+     inkscape:window-x="1193"
+     inkscape:window-y="-6"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2400" />
+  <defs
+     id="defs2397" />
+  <g
+     id="icon-tendons"
+     transform="matrix(4.0836261,0,0,4.0836261,-176.36603,-156.94255)">
+    <path
+       id="path6124"
+       style="color:#000000;fill:#cccccc;stroke-width:3.77951"
+       d="m 56.758831,52.000036 a 2.9749481,4.2134676 45.012658 0 0 -1.540978,3.446279 l -2.321813,2.32147 a 7.0322677,7.3853211 85.599671 0 1 2.421009,2.178756 l 2.199858,-2.199532 a 2.9749481,4.2134676 45.012658 0 0 3.448959,-1.540729 2.9749481,4.2134676 45.012658 0 0 1.540977,-3.44847 l 2.318547,-2.318204 a 7.0322677,7.3853211 85.599671 0 1 -2.422063,-2.177703 l -2.196591,2.196267 a 2.9749481,4.2134676 45.012658 0 0 -3.447884,1.541845 z" />
+    <ellipse
+       style="fill:none;stroke:#808080;stroke-width:1.51181;stroke-dasharray:none;paint-order:normal"
+       id="ellipse6126"
+       cx="44.093987"
+       cy="-67.446335"
+       transform="matrix(0.99703537,-0.07694456,-0.07696718,-0.99703363,0,0)"
+       rx="5.2111692"
+       ry="4.9583335" />
+    <ellipse
+       style="fill:none;stroke:#808080;stroke-width:1.51181;stroke-dasharray:none;paint-order:normal"
+       id="ellipse6128"
+       cx="64.950127"
+       cy="-49.499924"
+       transform="matrix(0.99703537,-0.07694456,-0.07696718,-0.99703363,0,0)"
+       rx="5.2111692"
+       ry="4.9583335" />
+  </g>
+</svg>
