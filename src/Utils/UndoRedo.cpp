@@ -113,7 +113,7 @@ bool osc::UndoRedo::canRedo() const
 
 void osc::UndoRedo::redoTo(ptrdiff_t nthEntry)
 {
-    if (nthEntry >= m_Redo.size())
+    if (nthEntry >= ssize(m_Redo))
     {
         return;  // out of bounds: ignore request
     }
