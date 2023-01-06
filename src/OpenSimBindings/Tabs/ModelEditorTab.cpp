@@ -433,10 +433,10 @@ private:
         if (ImGui::BeginMenu("Window"))
         {
             Config const& cfg = App::get().getConfig();
-            for (std::string const& panel : g_EditorScreenPanels)
+            for (auto const& panel : g_EditorScreenPanels)
             {
                 bool currentVal = cfg.getIsPanelEnabled(panel);
-                if (ImGui::MenuItem(panel.c_str(), nullptr, &currentVal))
+                if (ImGui::MenuItem(panel, nullptr, &currentVal))
                 {
                     App::upd().updConfig().setIsPanelEnabled(panel, currentVal);
                 }

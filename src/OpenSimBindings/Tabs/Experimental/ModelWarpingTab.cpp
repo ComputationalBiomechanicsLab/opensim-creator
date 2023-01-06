@@ -372,7 +372,7 @@ namespace
                 ImGui::TableSetupColumn("Destination Mesh Landmarks");
                 ImGui::TableHeadersRow();
 
-                for (std::pair<OpenSim::ComponentPath, MeshTPSData> const& p : m_State->document.getWarpingData())
+                for (std::pair<OpenSim::ComponentPath const, MeshTPSData> const& p : m_State->document.getWarpingData())
                 {
                     ImGui::TableNextRow();
                     drawWarpingInfoTableRowContent(p);
@@ -490,7 +490,7 @@ namespace
                 ImGui::TableSetupColumn("Connected Mesh Warp");
                 ImGui::TableHeadersRow();
 
-                for (std::pair<OpenSim::ComponentPath, ModelWarpTarget> const& p : m_State->document.getWarpTargetData())
+                for (std::pair<OpenSim::ComponentPath const, ModelWarpTarget> const& p : m_State->document.getWarpTargetData())
                 {
                     ImGui::TableNextRow();
                     drawWarpTargetTableRowContent(p);
