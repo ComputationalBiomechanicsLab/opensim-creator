@@ -319,7 +319,7 @@ private:
                     indices.reserve(cmd.ElemCount);
                     for (unsigned int i = cmd.IdxOffset; i < cmd.IdxOffset + cmd.ElemCount; ++i)
                     {
-                        indices.push_back(drawlist.IdxBuffer[i]);
+                        indices.push_back(drawlist.IdxBuffer[static_cast<int>(i)]);
                     }
                     mesh.setIndices(indices);
                 }

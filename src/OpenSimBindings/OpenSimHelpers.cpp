@@ -1552,7 +1552,7 @@ float osc::GetRecommendedScaleFactor(VirtualConstModelStatePair const& p)
     return rv;
 }
 
-std::unique_ptr<osc::UndoableModelStatePair> osc::LoadOsimIntoUndoableModel(std::filesystem::path p)
+std::unique_ptr<osc::UndoableModelStatePair> osc::LoadOsimIntoUndoableModel(std::filesystem::path const& p)
 {
     return std::make_unique<osc::UndoableModelStatePair>(p);
 }

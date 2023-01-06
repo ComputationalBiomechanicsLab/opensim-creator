@@ -1146,7 +1146,7 @@ namespace
     // widget: the main menu (contains multiple submenus: 'file', 'edit', 'about', etc.)
     class TPS3DMainMenu final {
     public:
-        explicit TPS3DMainMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
+        explicit TPS3DMainMenu(std::shared_ptr<TPSTabSharedState> const& tabState_) :
             m_FileMenu{tabState_},
             m_EditMenu{tabState_},
             m_WindowMenu{tabState_},
@@ -2283,7 +2283,7 @@ namespace
     };
 
     // pushes all available panels the TPS3D tab can render into the out param
-    void PushBackAvailablePanels(std::shared_ptr<TPSTabSharedState> state, osc::ToggleablePanels& out)
+    void PushBackAvailablePanels(std::shared_ptr<TPSTabSharedState> const& state, osc::ToggleablePanels& out)
     {
         out.push_back(osc::ToggleablePanel
         {

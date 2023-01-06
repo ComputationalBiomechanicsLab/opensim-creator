@@ -115,7 +115,7 @@ namespace osc
         UndoRedo(UndoRedo const&);
         UndoRedo(UndoRedo&&) noexcept;
         UndoRedo& operator=(UndoRedo const&);
-        UndoRedo& operator=(UndoRedo&&);
+        UndoRedo& operator=(UndoRedo&&) noexcept;
 
     public:
         virtual ~UndoRedo() noexcept;
@@ -125,16 +125,16 @@ namespace osc
 
         size_t getNumUndoEntries() const;
         ptrdiff_t getNumUndoEntriesi() const;
-        UndoRedoEntry const& getUndoEntry(size_t i) const;
-        void undoTo(size_t nthEntry);
+        UndoRedoEntry const& getUndoEntry(ptrdiff_t i) const;
+        void undoTo(ptrdiff_t nthEntry);
         bool canUndo() const;
         void undo();
 
         size_t getNumRedoEntries() const;
         ptrdiff_t getNumRedoEntriesi() const;
-        UndoRedoEntry const& getRedoEntry(size_t i) const;
+        UndoRedoEntry const& getRedoEntry(ptrdiff_t i) const;
         bool canRedo() const;
-        void redoTo(size_t nthEntry);
+        void redoTo(ptrdiff_t nthEntry);
         void redo();
 
     private:
@@ -171,12 +171,12 @@ namespace osc
             return m_Scratch;
         }
 
-        UndoRedoEntryT<T> const& getUndoEntry(size_t i) const
+        UndoRedoEntryT<T> const& getUndoEntry(ptrdiff_t i) const
         {
             return static_cast<UndoRedoEntryT<T> const&>(static_cast<UndoRedo const&>(*this).getUndoEntry(i));
         }
 
-        UndoRedoEntryT<T> const& getRedoEntry(size_t i) const
+        UndoRedoEntryT<T> const& getRedoEntry(ptrdiff_t i) const
         {
             return static_cast<UndoRedoEntryT<T> const&>(static_cast<UndoRedo const&>(*this).getRedoEntry(i));
         }

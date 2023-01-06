@@ -40,7 +40,7 @@ osc::TabRegistryEntry::TabRegistryEntry(CStringView name_, std::function<std::un
 osc::TabRegistryEntry::TabRegistryEntry(TabRegistryEntry const&) = default;
 osc::TabRegistryEntry::TabRegistryEntry(TabRegistryEntry&&) noexcept = default;
 osc::TabRegistryEntry& osc::TabRegistryEntry::operator=(TabRegistryEntry const&) = default;
-osc::TabRegistryEntry& osc::TabRegistryEntry::operator=(TabRegistryEntry&&) = default;
+osc::TabRegistryEntry& osc::TabRegistryEntry::operator=(TabRegistryEntry&&) noexcept = default;
 osc::TabRegistryEntry::~TabRegistryEntry() noexcept = default;
 
 osc::CStringView osc::TabRegistryEntry::getName() const

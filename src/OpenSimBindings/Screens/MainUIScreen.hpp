@@ -17,7 +17,7 @@ namespace osc
     class MainUIScreen final : public Screen {
     public:
         MainUIScreen();
-        MainUIScreen(std::vector<std::filesystem::path>);
+        MainUIScreen(std::vector<std::filesystem::path> const&);
         MainUIScreen(MainUIScreen const&) = delete;
         MainUIScreen(MainUIScreen&&) noexcept;
         MainUIScreen& operator=(MainUIScreen const&) = delete;

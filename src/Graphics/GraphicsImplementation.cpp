@@ -748,7 +748,6 @@ namespace
             return GL_NEAREST;
         case osc::TextureFilterMode::Linear:
         case osc::TextureFilterMode::Mipmap:
-            return GL_LINEAR;
         default:
             return GL_LINEAR;
         }
@@ -788,7 +787,7 @@ public:
         m_NumChannels{numChannels}
     {
         OSC_THROWING_ASSERT(m_Dimensions.x >= 0 && m_Dimensions.y >= 0);
-        OSC_THROWING_ASSERT(m_Dimensions.x * m_Dimensions.y == m_Pixels.size()/m_NumChannels);
+        OSC_THROWING_ASSERT(static_cast<ptrdiff_t>(m_Dimensions.x * m_Dimensions.y) == m_Pixels.size()/m_NumChannels);
         OSC_THROWING_ASSERT(m_NumChannels == 1 || m_NumChannels == 3 || m_NumChannels == 4);
     }
 
@@ -1115,12 +1114,6 @@ osc::RenderTextureDescriptor::RenderTextureDescriptor(glm::ivec2 dimensions) :
     m_DepthStencilFormat{DepthStencilFormat::D24_UNorm_S8_UInt}
 {
 }
-
-osc::RenderTextureDescriptor::RenderTextureDescriptor(RenderTextureDescriptor const&) = default;
-osc::RenderTextureDescriptor::RenderTextureDescriptor(RenderTextureDescriptor&&) noexcept = default;
-osc::RenderTextureDescriptor& osc::RenderTextureDescriptor::operator=(RenderTextureDescriptor const&) = default;
-osc::RenderTextureDescriptor& osc::RenderTextureDescriptor::operator=(RenderTextureDescriptor&&) noexcept = default;
-osc::RenderTextureDescriptor::~RenderTextureDescriptor() noexcept = default;
 
 glm::ivec2 osc::RenderTextureDescriptor::getDimensions() const
 {
@@ -2704,7 +2697,7 @@ private:
 
         // upload VBO data into GPU-side buffer
         gl::BindBuffer(GL_ARRAY_BUFFER, buffers.ArrayBuffer);
-        gl::BufferData(GL_ARRAY_BUFFER, data.size(), data.data(), GL_STATIC_DRAW);
+        gl::BufferData(GL_ARRAY_BUFFER, static_cast<GLsizei>(data.size()), data.data(), GL_STATIC_DRAW);
 
         // upload indices into EBO
         {
@@ -2727,7 +2720,7 @@ private:
 
         size_t const eboNumBytes = m_NumIndices * (m_IndicesAre32Bit ? sizeof(uint32_t) : sizeof(uint16_t));
         gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.IndicesBuffer);
-        gl::BufferData(GL_ELEMENT_ARRAY_BUFFER, eboNumBytes, m_IndicesData.data(), GL_STATIC_DRAW);
+        gl::BufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizei>(eboNumBytes), m_IndicesData.data(), GL_STATIC_DRAW);
 
         // configure mesh-level VAO
         gl::BindVertexArray(buffers.VAO);
@@ -3133,7 +3126,7 @@ public:
         GraphicsBackend::RenderScene(*this, &renderTexture);
     }
 
-    bool operator==(Impl const& other) const
+    bool operator==(Impl const& other) const noexcept
     {
         return
             m_BackgroundColor == other.m_BackgroundColor &&
@@ -3759,7 +3752,7 @@ public:
             // copy GPU-side window framebuffer into CPU-side `osc::Image` object
             glm::ivec2 const dims = osc::App::get().idims();
 
-            std::vector<uint8_t> pixels(4*dims.x*dims.y);
+            std::vector<uint8_t> pixels(static_cast<size_t>(4*dims.x*dims.y));
             OSC_ASSERT(reinterpret_cast<uintptr_t>(pixels.data()) % 4 == 0 && "glReadPixels must be called with a buffer that is aligned to 4 bytes (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
             glReadPixels(0, 0, dims.x, dims.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
 
@@ -4740,8 +4733,8 @@ void osc::GraphicsBackend::BlitToScreen(
 
         int32_t const windowHeight = App::get().idims().y;
         int32_t const rectHeight = static_cast<int32_t>(rect.p2.y - rect.p1.y);
-        int32_t const p1y = static_cast<int32_t>((windowHeight - rect.p1.y) - rectHeight);
-        int32_t const p2y = static_cast<int32_t>(windowHeight - rect.p1.y);
+        int32_t const p1y = static_cast<int32_t>((windowHeight - static_cast<int32_t>(rect.p1.y)) - rectHeight);
+        int32_t const p2y = static_cast<int32_t>(windowHeight - static_cast<int32_t>(rect.p1.y));
         glm::ivec2 texDimensions = t.getDimensions();
 
         // blit multisampled scene render to not-multisampled texture
@@ -4812,7 +4805,7 @@ void osc::GraphicsBackend::ReadPixels(RenderTexture const& source, Image& dest)
     glm::ivec2 const dims = source.getDimensions();
     int32_t const channels = GetNumChannels(source.getColorFormat());
 
-    std::vector<uint8_t> pixels(channels*dims.x*dims.y);
+    std::vector<uint8_t> pixels(static_cast<size_t>(channels*dims.x*dims.y));
 
     gl::BindFramebuffer(GL_FRAMEBUFFER, const_cast<RenderTexture::Impl&>(*source.m_Impl).getOutputFrameBuffer());
     glViewport(0, 0, dims.x, dims.y);

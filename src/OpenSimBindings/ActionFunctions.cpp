@@ -61,7 +61,7 @@ namespace
 {
     void OpenOsimInLoadingTab(osc::MainUIStateAPI& api, std::filesystem::path p)
     {
-        osc::UID const tabID = api.addTab<osc::LoadingTab>(&api, p);
+        osc::UID const tabID = api.addTab<osc::LoadingTab>(&api, std::move(p));
         api.selectTab(tabID);
     }
 
@@ -339,7 +339,7 @@ bool osc::ActionLoadSTOFileAgainstModel(MainUIStateAPI& parent, UndoableModelSta
         osc::InitializeModel(*modelCopy);
         osc::InitializeState(*modelCopy);
 
-        auto simulation = std::make_shared<Simulation>(StoFileSimulation{std::move(modelCopy), stoPath, uim.getFixupScaleFactor()});
+        auto simulation = std::make_shared<Simulation>(StoFileSimulation{std::move(modelCopy), std::move(stoPath), uim.getFixupScaleFactor()});
 
         parent.selectTab(parent.addTab<SimulatorTab>(&parent, simulation));
 

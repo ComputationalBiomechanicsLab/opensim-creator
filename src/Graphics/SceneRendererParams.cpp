@@ -1,7 +1,5 @@
 #include "SceneRendererParams.hpp"
 
-#include <cstring>
-
 osc::SceneRendererParams::SceneRendererParams() :
     dimensions{1, 1},
     samples{1},
@@ -30,7 +28,29 @@ osc::SceneRendererParams::SceneRendererParams() :
 
 bool osc::operator==(SceneRendererParams const& a, SceneRendererParams const& b)
 {
-    return std::memcmp(&a, &b, sizeof(SceneRendererParams)) == 0;
+    return
+        a.dimensions == b.dimensions &&
+        a.samples == b.samples &&
+        a.drawMeshNormals == b.drawMeshNormals &&
+        a.drawRims == b.drawRims &&
+        a.drawShadows == b.drawShadows &&
+        a.drawFloor == b.drawFloor &&
+        a.nearClippingPlane == b.nearClippingPlane &&
+        a.farClippingPlane == b.farClippingPlane &&
+        a.viewMatrix == b.viewMatrix &&
+        a.projectionMatrix == b.projectionMatrix &&
+        a.viewPos == b.viewPos &&
+        a.lightDirection == b.lightDirection &&
+        a.lightColor == b.lightColor &&
+        a.ambientStrength == b.ambientStrength &&
+        a.diffuseStrength == b.diffuseStrength &&
+        a.specularStrength == b.specularStrength &&
+        a.shininess == b.shininess &&
+        a.backgroundColor == b.backgroundColor &&
+        a.rimColor == b.rimColor &&
+        a.rimThicknessInPixels == b.rimThicknessInPixels &&
+        a.floorLocation == b.floorLocation &&
+        a.fixupScaleFactor == b.fixupScaleFactor;
 }
 
 bool osc::operator!=(SceneRendererParams const& a, SceneRendererParams const& b)

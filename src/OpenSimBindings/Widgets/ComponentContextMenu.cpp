@@ -41,7 +41,7 @@
 // draw UI element that lets user change a model joint's type
 static void DrawSelectionJointTypeSwitcher(
     osc::UndoableModelStatePair& uim,
-    OpenSim::ComponentPath jointPath)
+    OpenSim::ComponentPath const& jointPath)
 {
     OpenSim::Joint const* joint = osc::FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
     if (!joint)
@@ -90,8 +90,8 @@ static void DrawSelectionJointTypeSwitcher(
 // draw contextual actions (buttons, sliders) for a selected physical frame
 static void DrawPhysicalFrameContextualActions(
     osc::EditorAPI* editorAPI,
-    std::shared_ptr<osc::UndoableModelStatePair> uim,
-    OpenSim::ComponentPath pfPath)
+    std::shared_ptr<osc::UndoableModelStatePair> const& uim,
+    OpenSim::ComponentPath const& pfPath)
 {
     if (ImGui::MenuItem("Add Geometry"))
     {
@@ -113,7 +113,7 @@ static void DrawPhysicalFrameContextualActions(
 // draw contextual actions (buttons, sliders) for a selected joint
 static void DrawJointContextualActions(
     osc::UndoableModelStatePair& uim,
-    OpenSim::ComponentPath jointPath)
+    OpenSim::ComponentPath const& jointPath)
 {
     DrawSelectionJointTypeSwitcher(uim, jointPath);
 
@@ -140,8 +140,8 @@ static void DrawJointContextualActions(
 // draw contextual actions (buttons, sliders) for a selected joint
 static void DrawHCFContextualActions(
     osc::EditorAPI* api,
-    std::shared_ptr<osc::UndoableModelStatePair> uim,
-    OpenSim::ComponentPath hcfPath)
+    std::shared_ptr<osc::UndoableModelStatePair> const& uim,
+    OpenSim::ComponentPath const& hcfPath)
 {
     OpenSim::HuntCrossleyForce const* hcf = osc::FindComponent<OpenSim::HuntCrossleyForce>(uim->getModel(), hcfPath);
     if (!hcf)
@@ -174,8 +174,8 @@ static void DrawHCFContextualActions(
 // draw contextual actions (buttons, sliders) for a selected path actuator
 static void DrawPathActuatorContextualParams(
     osc::EditorAPI* api,
-    std::shared_ptr<osc::UndoableModelStatePair> uim,
-    OpenSim::ComponentPath paPath)
+    std::shared_ptr<osc::UndoableModelStatePair> const& uim,
+    OpenSim::ComponentPath const& paPath)
 {
     if (ImGui::MenuItem("Add Path Point"))
     {

@@ -22,7 +22,7 @@ namespace osc
     // opposed to being an actual simulation ran within `osc`)
     class StoFileSimulation final : public VirtualSimulation {
     public:
-        StoFileSimulation(std::unique_ptr<OpenSim::Model>, std::filesystem::path stoFilePath, float fixupScaleFactor);
+        StoFileSimulation(std::unique_ptr<OpenSim::Model>, std::filesystem::path const& stoFilePath, float fixupScaleFactor);
         StoFileSimulation(StoFileSimulation const&) = delete;
         StoFileSimulation(StoFileSimulation&&) noexcept;
         StoFileSimulation& operator=(StoFileSimulation const&) = delete;

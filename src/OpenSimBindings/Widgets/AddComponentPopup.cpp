@@ -7,6 +7,7 @@
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/Cpp20Shims.hpp"
 #include "src/Widgets/StandardPopup.hpp"
 
 #include <imgui.h>
@@ -54,10 +55,10 @@ namespace
 
         PathPoint(OpenSim::ComponentPath userChoice_,
             OpenSim::ComponentPath actualFrame_,
-            SimTK::Vec3 locationInFrame_) :
+            SimTK::Vec3 const& locationInFrame_) :
             userChoice{std::move(userChoice_)},
             actualFrame{std::move(actualFrame_)},
-            locationInFrame{std::move(locationInFrame_)}
+            locationInFrame{locationInFrame_}
         {
         }
     };
@@ -341,9 +342,8 @@ private:
         ImGui::BeginChild("##pf_pathpoints", {ImGui::GetContentRegionAvail().x, 128.0f});
 
         // selections
-        for (size_t i = 0; i < m_PathPoints.size(); ++i)
+        for (ptrdiff_t i = 0; i < ssize(m_PathPoints); ++i)
         {
-
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
             if (ImGui::Button(ICON_FA_TRASH))
             {
@@ -360,7 +360,7 @@ private:
             }
             ImGui::SameLine();
             ImGui::PopStyleVar();
-            if (ImGui::Button(ICON_FA_ARROW_DOWN) && i+1 < m_PathPoints.size())
+            if (ImGui::Button(ICON_FA_ARROW_DOWN) && i+1 < ssize(m_PathPoints))
             {
                 std::swap(m_PathPoints[i], m_PathPoints[i+1]);
                 break;

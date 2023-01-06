@@ -12,11 +12,11 @@ namespace osc
     class RenderTextureDescriptor final {
     public:
         RenderTextureDescriptor(glm::ivec2 dimensions);
-        RenderTextureDescriptor(RenderTextureDescriptor const&);
-        RenderTextureDescriptor(RenderTextureDescriptor&&) noexcept;
-        RenderTextureDescriptor& operator=(RenderTextureDescriptor const&);
-        RenderTextureDescriptor& operator=(RenderTextureDescriptor&&) noexcept;
-        ~RenderTextureDescriptor() noexcept;
+        RenderTextureDescriptor(RenderTextureDescriptor const&) = default;
+        RenderTextureDescriptor(RenderTextureDescriptor&&) noexcept = default;
+        RenderTextureDescriptor& operator=(RenderTextureDescriptor const&) = default;
+        RenderTextureDescriptor& operator=(RenderTextureDescriptor&&) noexcept = default;
+        ~RenderTextureDescriptor() noexcept = default;
 
         glm::ivec2 getDimensions() const;
         void setDimensions(glm::ivec2);

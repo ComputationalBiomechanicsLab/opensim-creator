@@ -1,6 +1,7 @@
 #include "UndoRedo.hpp"
 
 #include "src/Utils/Assertions.hpp"
+#include "src/Utils/Cpp20Shims.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -26,7 +27,7 @@ osc::UndoRedo::UndoRedo(UndoRedoEntry const& initialCommit_) : m_Head{initialCom
 osc::UndoRedo::UndoRedo(UndoRedo const&) = default;
 osc::UndoRedo::UndoRedo(UndoRedo&&) noexcept = default;
 osc::UndoRedo& osc::UndoRedo::operator=(UndoRedo const&) = default;
-osc::UndoRedo& osc::UndoRedo::operator=(UndoRedo&&) = default;
+osc::UndoRedo& osc::UndoRedo::operator=(UndoRedo&&) noexcept = default;
 osc::UndoRedo::~UndoRedo() noexcept = default;
 
 void osc::UndoRedo::commitScratch(std::string_view commitMsg)
@@ -51,15 +52,15 @@ ptrdiff_t osc::UndoRedo::getNumUndoEntriesi() const
     return static_cast<ptrdiff_t>(getNumUndoEntries());
 }
 
-osc::UndoRedoEntry const& osc::UndoRedo::getUndoEntry(size_t i) const
+osc::UndoRedoEntry const& osc::UndoRedo::getUndoEntry(ptrdiff_t i) const
 {
-    OSC_ASSERT(i < m_Undo.size());
+    OSC_ASSERT(i < ssize(m_Undo));
     return m_Undo.rbegin()[i];
 }
 
-void osc::UndoRedo::undoTo(size_t nthEntry)
+void osc::UndoRedo::undoTo(ptrdiff_t nthEntry)
 {
-    if (nthEntry >= m_Undo.size())
+    if (nthEntry >= ssize(m_Undo))
     {
         return;  // out of bounds: ignore request
     }
@@ -99,9 +100,9 @@ ptrdiff_t osc::UndoRedo::getNumRedoEntriesi() const
     return static_cast<ptrdiff_t>(getNumRedoEntries());
 }
 
-osc::UndoRedoEntry const& osc::UndoRedo::getRedoEntry(size_t i) const
+osc::UndoRedoEntry const& osc::UndoRedo::getRedoEntry(ptrdiff_t i) const
 {
-    OSC_ASSERT(i < m_Redo.size());
+    OSC_ASSERT(i < ssize(m_Redo));
     return m_Redo.rbegin()[i];
 }
 
@@ -110,7 +111,7 @@ bool osc::UndoRedo::canRedo() const
     return !m_Redo.empty();
 }
 
-void osc::UndoRedo::redoTo(size_t nthEntry)
+void osc::UndoRedo::redoTo(ptrdiff_t nthEntry)
 {
     if (nthEntry >= m_Redo.size())
     {

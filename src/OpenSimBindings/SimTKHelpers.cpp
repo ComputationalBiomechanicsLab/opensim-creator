@@ -188,9 +188,9 @@ namespace
 
         osc::Mesh rv;
         rv.setTopography(osc::MeshTopography::Triangles);
-        rv.setVerts(std::move(verts));
-        rv.setNormals(std::move(normals));
-        rv.setIndices(std::move(indices));
+        rv.setVerts(verts);
+        rv.setNormals(normals);
+        rv.setIndices(indices);
         return rv;
     }
 }

@@ -659,7 +659,7 @@ public:
         fd << GetCurrentTimeAsUnixTimestamp().count() << ' ' << std::filesystem::absolute(p) << std::endl;
     }
 
-    std::shared_ptr<void> updSingleton(std::type_info const& typeinfo, std::function<std::shared_ptr<void>()> ctor)
+    std::shared_ptr<void> updSingleton(std::type_info const& typeinfo, std::function<std::shared_ptr<void>()> const& ctor)
     {
         auto lock = m_Singletons.lock();
         auto const [it, inserted] = lock->try_emplace(typeinfo, nullptr);
@@ -1239,7 +1239,7 @@ void osc::App::addRecentFile(std::filesystem::path const& p)
     m_Impl->addRecentFile(p);
 }
 
-std::shared_ptr<void> osc::App::updSingleton(std::type_info const& typeInfo, std::function<std::shared_ptr<void>()> ctor)
+std::shared_ptr<void> osc::App::updSingleton(std::type_info const& typeInfo, std::function<std::shared_ptr<void>()> const& ctor)
 {
     return m_Impl->updSingleton(typeInfo, std::move(ctor));
 }

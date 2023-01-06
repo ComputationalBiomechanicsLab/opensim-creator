@@ -43,7 +43,7 @@ namespace
 
         DAEGeometry(std::string geometryID_, osc::Mesh const& mesh_) :
             GeometryID{std::move(geometryID_)},
-            Mesh{std::move(mesh_)}
+            Mesh{mesh_}
         {
         }
 

@@ -57,7 +57,7 @@ public:
         m_RequestedTab = m_Tabs.back()->getID();
     }
 
-    Impl(std::vector<std::filesystem::path> paths)
+    Impl(std::vector<std::filesystem::path> const& paths)
     {
         // always ensure the splash tab is open
         m_Tabs.push_back(std::make_unique<SplashTab>(this));
@@ -784,8 +784,8 @@ osc::MainUIScreen::MainUIScreen() :
 {
 }
 
-osc::MainUIScreen::MainUIScreen(std::vector<std::filesystem::path> paths) :
-    m_Impl{std::make_unique<Impl>(std::move(paths))}
+osc::MainUIScreen::MainUIScreen(std::vector<std::filesystem::path> const& paths) :
+    m_Impl{std::make_unique<Impl>(paths)}
 {
 }
 

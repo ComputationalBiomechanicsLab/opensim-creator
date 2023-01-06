@@ -299,7 +299,7 @@ namespace osc
 
     private:
         // try and retrieve a virtual singleton that has the same lifetime as the app
-        std::shared_ptr<void> updSingleton(std::type_info const&, std::function<std::shared_ptr<void>()>);
+        std::shared_ptr<void> updSingleton(std::type_info const&, std::function<std::shared_ptr<void>()> const&);
 
         friend void ImGuiInit();
         friend void ImGuiNewFrame();

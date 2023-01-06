@@ -35,7 +35,7 @@ namespace
         static_assert(N <= std::numeric_limits<int>::max());
 
         std::array<T, N> els;
-        int n = 0;
+        size_t n = 0;
 
         SizedArray& operator=(SizedArray const& rhs) {
             std::copy(rhs.els.begin(), rhs.els.begin() + rhs.size(), els.begin());
@@ -44,7 +44,7 @@ namespace
         }
 
         void push_back(T v) {
-            if (static_cast<size_t>(n) >= N) {
+            if (n >= N) {
                 throw std::runtime_error{"cannot render a navigator: the Model/Component tree is too deep"};
             }
             els[n++] = v;
@@ -59,19 +59,19 @@ namespace
         }
 
         T const* end() const noexcept {
-            return els.data() + static_cast<size_t>(n);
+            return els.data() + n;
         }
 
         T* end() noexcept {
-            return els.data() + static_cast<size_t>(n);
+            return els.data() + n;
         }
 
         size_t size() const noexcept {
-            return static_cast<size_t>(n);
+            return n;
         }
 
-        int sizei() const noexcept {
-            return n;
+        ptrdiff_t sizei() const noexcept {
+            return static_cast<ptrdiff_t>(n);
         }
 
         bool empty() const noexcept {

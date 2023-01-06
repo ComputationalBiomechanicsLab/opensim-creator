@@ -170,26 +170,26 @@ namespace
     class ImmutableInitializedModel final {
     public:
         ImmutableInitializedModel() :
-            m_Model{}
+            m_Model{std::make_unique<OpenSim::Model>()}
         {
-            osc::InitializeModel(m_Model);
-            osc::InitializeState(m_Model);
+            osc::InitializeModel(*m_Model);
+            osc::InitializeState(*m_Model);
         }
 
         ImmutableInitializedModel(std::filesystem::path const& osimPath) :
-            m_Model{osimPath.string()}
+            m_Model{std::make_unique<OpenSim::Model>(osimPath.string())}
         {
-            osc::InitializeModel(m_Model);
-            osc::InitializeState(m_Model);
+            osc::InitializeModel(*m_Model);
+            osc::InitializeState(*m_Model);
         }
 
         OpenSim::Model const& getModel() const
         {
-            return m_Model;
+            return *m_Model;
         }
 
     private:
-        OpenSim::Model m_Model;
+        std::unique_ptr<OpenSim::Model> m_Model;
     };
 
     // top-level document class that represents the model being warped
@@ -279,7 +279,7 @@ namespace
     class ModelWarpingTabMainMenu final {
     public:
         explicit ModelWarpingTabMainMenu(std::shared_ptr<ModelWarpingTabState> state_) :
-            m_FileMenu{state_}
+            m_FileMenu{std::move(state_)}
         {
         }
 

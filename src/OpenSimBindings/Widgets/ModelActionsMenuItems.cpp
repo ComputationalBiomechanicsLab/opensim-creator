@@ -29,7 +29,7 @@ public:
 
     Impl(EditorAPI* api, std::shared_ptr<UndoableModelStatePair> uum_) :
         m_EditorAPI{std::move(api)},
-        m_Uum{uum_}
+        m_Uum{std::move(uum_)}
     {
     }
 

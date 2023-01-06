@@ -226,7 +226,7 @@ namespace osc
     float GetRecommendedScaleFactor(VirtualConstModelStatePair const&);
 
     // load an .osim file into an OpenSim model
-    std::unique_ptr<UndoableModelStatePair> LoadOsimIntoUndoableModel(std::filesystem::path);
+    std::unique_ptr<UndoableModelStatePair> LoadOsimIntoUndoableModel(std::filesystem::path const&);
 
     // fully initialize an OpenSim model (clear connections, finalize properties, remake SimTK::System)
     void InitializeModel(OpenSim::Model&);

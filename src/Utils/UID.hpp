@@ -78,7 +78,7 @@ namespace osc
         template<typename U>
         friend constexpr UIDT<U> DowncastID(UID const&) noexcept;
 
-        constexpr UIDT(UID id) noexcept : UID{std::move(id)}
+        explicit constexpr UIDT(UID id) noexcept : UID{std::move(id)}
         {
         }
     };

@@ -153,7 +153,7 @@ static std::unordered_map<int, int> CreateStorageIndexToModelSvIndexLUT(OpenSim:
 
 static std::vector<osc::SimulationReport> ExtractReports(
     OpenSim::Model& model,
-    std::filesystem::path stoFilePath)
+    std::filesystem::path const& stoFilePath)
 {
     OpenSim::Storage storage{stoFilePath.string()};
 
@@ -211,7 +211,7 @@ static std::vector<osc::SimulationReport> ExtractReports(
 
 class osc::StoFileSimulation::Impl final {
 public:
-    Impl(std::unique_ptr<OpenSim::Model> model, std::filesystem::path stoFilePath, float fixupScaleFactor) :
+    Impl(std::unique_ptr<OpenSim::Model> model, std::filesystem::path const& stoFilePath, float fixupScaleFactor) :
         m_Model{std::move(model)},
         m_SimulationReports{ExtractReports(*m_Model, stoFilePath)},
         m_FixupScaleFactor{std::move(fixupScaleFactor)}
@@ -303,8 +303,8 @@ private:
     float m_FixupScaleFactor = 1.0f;
 };
 
-osc::StoFileSimulation::StoFileSimulation(std::unique_ptr<OpenSim::Model> model, std::filesystem::path stoFilePath, float fixupScaleFactor) :
-    m_Impl{std::make_unique<Impl>(std::move(model), std::move(stoFilePath), std::move(fixupScaleFactor))}
+osc::StoFileSimulation::StoFileSimulation(std::unique_ptr<OpenSim::Model> model, std::filesystem::path const& stoFilePath, float fixupScaleFactor) :
+    m_Impl{std::make_unique<Impl>(std::move(model), stoFilePath, std::move(fixupScaleFactor))}
 {
 }
 

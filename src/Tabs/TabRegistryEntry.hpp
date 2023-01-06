@@ -17,7 +17,7 @@ namespace osc
         TabRegistryEntry(TabRegistryEntry const&);
         TabRegistryEntry(TabRegistryEntry&&) noexcept;
         TabRegistryEntry& operator=(TabRegistryEntry const&);
-        TabRegistryEntry& operator=(TabRegistryEntry&&);
+        TabRegistryEntry& operator=(TabRegistryEntry&&) noexcept;
         ~TabRegistryEntry() noexcept;
 
         CStringView getName() const;

@@ -296,15 +296,9 @@ namespace
     // an OpenSim::Component
     bool IsValidOpenSimComponentNameCharacter(char c)
     {
-        if (std::isalpha(static_cast<uint8_t>(c)))
-        {
-            return true;
-        }
-        else if ('0' <= c && c <= '9')
-        {
-            return true;
-        }
-        else if (c == '-' || c == '_')
+        if (std::isalpha(static_cast<uint8_t>(c)) ||
+            ('0' <= c && c <= '9') ||
+            (c == '-' || c == '_'))
         {
             return true;
         }
@@ -567,7 +561,7 @@ namespace
             return m_Description.c_str();
         }
 
-        int FetchAddUniqueCounter() const
+        int32_t FetchAddUniqueCounter() const
         {
             return m_UniqueCounter++;
         }
@@ -585,7 +579,7 @@ namespace
         std::string m_Icon;
         std::string m_Description;
         std::unique_ptr<SceneEl> m_DefaultObject;
-        mutable std::atomic<uint32_t> m_UniqueCounter;
+        mutable std::atomic<int32_t> m_UniqueCounter;
     };
 
     // logical comparison
@@ -1236,7 +1230,7 @@ namespace
 
         JointEl(UIDT<JointEl> id,
             size_t jointTypeIdx,
-            std::string userAssignedName,  // can be empty
+            std::string const& userAssignedName,  // can be empty
             UID parent,
             UIDT<BodyEl> child,
             Transform const& xform) :
@@ -1251,14 +1245,14 @@ namespace
         }
 
         JointEl(size_t jointTypeIdx,
-            std::string userAssignedName,  // can be empty
+            std::string const& userAssignedName,  // can be empty
             UID parent,
             UIDT<BodyEl> child,
             Transform const& xform) :
             JointEl{
             UIDT<JointEl>{},
             std::move(jointTypeIdx),
-            std::move(userAssignedName),
+            userAssignedName,
             std::move(parent),
             std::move(child),
             xform}
@@ -1443,7 +1437,7 @@ namespace
         StationEl(UIDT<StationEl> id,
             UIDT<BodyEl> attachment,  // can be g_GroundID
             glm::vec3 const& position,
-            std::string name) :
+            std::string const& name) :
             ID{std::move(id)},
             Attachment{std::move(attachment)},
             Position{position},
@@ -1453,7 +1447,7 @@ namespace
 
         StationEl(UIDT<BodyEl> attachment,  // can be g_GroundID
             glm::vec3 const& position,
-            std::string name) :
+            std::string const& name) :
             ID{},
             Attachment{std::move(attachment)},
             Position{std::move(position)},
@@ -1689,8 +1683,8 @@ namespace
 
             // implict conversion from non-const- to const-iterator
 
-            template<bool _IsConst = IsConst>
-            operator typename std::enable_if_t<!_IsConst, Iterator<true, T>>() const noexcept
+            template<bool IsConst_ = IsConst>
+            operator typename std::enable_if_t<!IsConst_, Iterator<true, T>>() const noexcept
             {
                 return Iterator<true, T>{m_Pos, m_End};
             }
@@ -1707,14 +1701,14 @@ namespace
                 return *this;
             }
 
-            template<bool _IsConst = IsConst>
-            typename std::enable_if_t<_IsConst, T const&> operator*() const noexcept
+            template<bool IsConst_ = IsConst>
+            typename std::enable_if_t<IsConst_, T const&> operator*() const noexcept
             {
                 return dynamic_cast<T const&>(*m_Pos->second);
             }
 
-            template<bool _IsConst = IsConst>
-            typename std::enable_if_t<!_IsConst, T&> operator*() const noexcept
+            template<bool IsConst_ = IsConst>
+            typename std::enable_if_t<!IsConst_, T&> operator*() const noexcept
             {
                 return dynamic_cast<T&>(*m_Pos->second);
             }
@@ -1735,15 +1729,15 @@ namespace
 
             // LegacyInputIterator
 
-            template<bool _IsConst = IsConst>
-            typename std::enable_if_t<_IsConst, T const*> operator->() const noexcept
+            template<bool IsConst_ = IsConst>
+            typename std::enable_if_t<IsConst_, T const*> operator->() const noexcept
             {
 
                 return &dynamic_cast<T const&>(*m_Pos->second);
             }
 
-            template<bool _IsConst = IsConst>
-            typename std::enable_if_t<!_IsConst, T*> operator->() const noexcept
+            template<bool IsConst_ = IsConst>
+            typename std::enable_if_t<!IsConst_, T*> operator->() const noexcept
             {
                 return &dynamic_cast<T&>(*m_Pos->second);
             }
@@ -2554,7 +2548,7 @@ namespace
         return true;
     }
 
-    bool TryAssignMeshAttachments(CommittableModelGraph& cmg, std::unordered_set<UID> meshIDs, UID newAttachment)
+    bool TryAssignMeshAttachments(CommittableModelGraph& cmg, std::unordered_set<UID> const& meshIDs, UID newAttachment)
     {
         ModelGraph& mg = cmg.UpdScratch();
 
@@ -3195,9 +3189,8 @@ namespace
         jointUniqPtr->addFrame(parentPOF.get());
         jointUniqPtr->addFrame(childPOF.get());
         jointUniqPtr->connectSocket_parent_frame(*parentPOF);
-        jointUniqPtr->connectSocket_child_frame(*childPOF);
+        jointUniqPtr->connectSocket_child_frame(*childPOF.release());
         OpenSim::PhysicalOffsetFrame* parentPtr = parentPOF.release();
-        childPOF.release();
 
         // if a child body was created during this step (e.g. because it's not a cyclic connection)
         // then add it to the model
@@ -3566,12 +3559,10 @@ namespace
                 continue;
             }
 
-            std::string name = mesh.getName();
-
             MeshEl& el = rv.AddEl<MeshEl>(attachment, meshData, realLocation);
             el.Xform = ToOsimTransform(frame.getTransformInGround(st));
             el.Xform.scale = osc::ToVec3(mesh.get_scale_factors());
-            el.Name = name;
+            el.Name = mesh.getName();
         }
 
         // then try to import all the stations
@@ -3663,7 +3654,7 @@ namespace
 
         SharedData(std::vector<std::filesystem::path> meshFiles)
         {
-            PushMeshLoadRequests(meshFiles);
+            PushMeshLoadRequests(std::move(meshFiles));
         }
 
 
@@ -3715,7 +3706,7 @@ namespace
             }
         }
 
-        bool ExportModelGraphTo(std::filesystem::path exportPath)
+        bool ExportModelGraphTo(std::filesystem::path const& exportPath)
         {
             std::vector<std::string> issues;
             std::unique_ptr<OpenSim::Model> m;
@@ -5753,7 +5744,7 @@ public:
 
     Impl(MainUIStateAPI* parent, std::vector<std::filesystem::path> meshPaths) :
         m_Parent{std::move(parent)},
-        m_Shared{std::make_shared<SharedData>(meshPaths)}
+        m_Shared{std::make_shared<SharedData>(std::move(meshPaths))}
     {
     }
 
