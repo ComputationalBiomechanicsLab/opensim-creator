@@ -2,55 +2,57 @@
 
 All notable changes to this project will be documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [0.3.2] - 2023/01/09
 
-- Fixed a crash that can happen when viewing high-vertex-count meshes on Dell systems with an
-  Intel Iris Xe GPU (#418)
-- Refactored the `osc::Camera` API (#478)
-- Fixed the navigator panel having a slight background tint (#474)
+0.3.2 is mostly a patch release with some minor quality-of-life improvements. It also includes all changes
+from 0.3.1 (unreleased, because it contained a bug that was spotted last-minute). See `CHANGELOG.md` for a
+full list of changes in both 0.3.2 and 0.3.1.
+
 - The add component dialogs (e.g. `Add ClutchedPathSpring`) now print any addition errors inside
   the dialog (previously, would print the errors to the log, #476)
 - The 3D scene now has basic support for rendering shadows (#10), but it must be enabled via a
   checkbox in a viewport's `Options` menu (it will be default-enabled in 0.4.0)
-- Refactored mesh class codebase-wide to leverage its copy-on-write behavior (#483)
-- Refactored tab classes to have an `id()` function (#480)
-- Refactored `unique_ptr` usage out of `osc::ShaderCache` (#496)
-- Added `SimTK::`DecorativeCircle rendering support to the backend (#181)
-- Added `SimTK::DecorativeMesh` rendering support to the backend (#183)
-- Added `SimTK::DecorativeTorus` rendering support to the backend (#184)
-- Right-clicking the lightning bolt icon in the properties menu now also opens the context
-  menu (previously: only left-click, #537)
-- The navigator panel now only shows an expansion arrow for a top-level components (e.g. `ground`) if
-  that top-level component contains children (#536)
+- The lightning bolt icon in the properties panel now also opens the context menu  when right
+  clicked (previously: only left-click, #537)
+- The navigator panel now only shows an expansion arrow icon for a top-level components (e.g. `ground`)
+  if that top-level component contains children (#536)
 - The "Edit Simulation Settings" popup now has a "Cancel" button (#535)
+- Clicking a path actuator's (e.g. `ClutchedPathSpring`'s) geometry path in the 3D viewer will now select
+  the actuator (previously: would select the geometry path, #519)
 - An error message will now appear in the log if the GUI fails to delete a component from a model
   in the case where OpenSim Creator doesn't have a specialized deletion function (#531)
 - The cancel button in the "Save Changes?" dialog now works in the mesh importer (#530)
 - Opening a new mesh importer from the mesh importer tab (e.g. with `Ctrl+N`) auto-focuses the new tab (#529)
-- CMC is no longer exposed as an add-able controller because adding one causes a segfault (#526)
-- Deprecated (e.g. `Delp1990Muscle_Deprecated`), base (e.g. `PathActuator`), or illogical (e.g. `Ground`) components
-  no longer appear in the `Add` menu (#512)
-- Clicking a path actuator's (e.g. `ClutchedPathSpring`'s) geometry path in the 3D viewer will now select
-  the actuator (previously: would select the geometry path, #519)
+- Clicking frame geometry in the 3D scene will now select the frame geometry's parent (e.g. body, offset frame), rather
+  than the geometry (#506)
+- Error messages that appear in the "Add Component" popup should now span both columns (#514)
+- The various 'subject01' example files are now prefixed with a relevant prefix (#513)
+- All tutorial example files now have frame geometry toggled on by default (#505)
+- Clicking, or tabbing out, of the name editor box in the properties editor panel now saves the name changes (#541)
+- Fixed clicking out of a property editor box to an earlier property no longer clears any user edits (#516)
+- Fixed a crash when viewing high-vertex-count meshes on Dell systems with an Intel Iris Xe GPU (#418)
+- Fixed a segfault when adding a CMC component by hiding the CMC component from the add component menu (#526)
+- Fixed a segfault from adding a `OpenSim::SpringGeneralizedForce` without a `coordinate` (#524)
+- Fixed a segfault from adding a `OpenSim::CoordinateCouplerConstraint` without a `coupled_coordinates_function` (#515)
+- Fixed a segfault from adding a `OpenSim::ActivationCoordinateActuator` without a `coordinate` (#517)
+- Fixed a segfault from adding a `OpenSim::ExpressionBasedPointToPointForce` without a `body1/2` (#520)
+- Fixed a segfault from adding a `OpenSim::PointToPointActuator` without a `bodya/b` (#523)
+- Fixed a segfault from adding a new joint with 'ground' as a child (#543)
+- Fixed the navigator panel having a slight background tint (#474)
 - Fixed dragging an `osim` file into the editor tab should open the osim in a new editor tab (previously: did
   nothing, #501)
-- Error messages that appear in the "Add Component" popup should now span both columns (#514)
-- Clicking frame geometry in the 3D scene select's the geometry's parent (e.g. body, offset frame), rather
-  than the decorative frame geometry itself (#506)
 - Fixed the scene scale factor being ignored when using PCSA-derived muscle sizing (#511)
+- Added `SimTK::`DecorativeCircle rendering support to the backend (#181)
+- Added `SimTK::DecorativeMesh` rendering support to the backend (#183)
+- Added `SimTK::DecorativeTorus` rendering support to the backend (#184)
+- Refactored the `osc::Camera` API (#478)
+- Refactored mesh class codebase-wide to leverage its copy-on-write behavior (#483)
+- Refactored tab classes to have an `id()` function (#480)
+- Refactored `unique_ptr` usage out of `osc::ShaderCache` (#496)
 - Deleted duplicate `double_pendulum.osim` example file (#512)
-- Added prefixes to various 'subject01' example files (#513)
-- Blacklisted adding `Blankevoort1991Ligament` (it requires a GeometryPath editor to work, #518 #522)
-- All tutorial example files now have frame geometry toggled on by default (#505)
-- Clicking out of a property editor box to an earlier property no longer clears any edits the user made (#516)
-- Clicking, or tabbing out, of the name editor box in the properties editor now saves the name (#541)
-- Trying to add an `OpenSim::SpringGeneralizedForce` into a model without a `coordinate` no longer causes a crash (#524)
-- Trying to add an `OpenSim::CoordinateCouplerConstraint` into a model without a `coupled_coordinates_function`
-  no longer causes a crash (#515)
-- Trying to add an `OpenSim::ActivationCoordinateActuator` into a model without a `coordinate` no longer causes a crash (#517)
-- Trying to add an `OpenSim::ExpressionBasedPointToPointForce` into a model without a `body1/2` no longer causes a crash (#520)
-- Trying to add an `OpenSim::PointToPointActuator` into a model without a `bodya/b` no longer causes a crash (#523)
-- Fixed adding a new joint with 'ground' as a child now shows an error message (previously: crashed, #543)
+- Deleted `Blankevoort1991Ligament` from the addition menu (it requires a GeometryPath editor to work, #518 #522)
+- Deprecated (e.g. `Delp1990Muscle_Deprecated`), base (e.g. `PathActuator`), or illogical (e.g. `Ground`) components
+  no longer appear in the `Add` menu (#512)
 
 ## [0.3.1] - UNRELEASED
 
