@@ -379,6 +379,8 @@ add_library(osccore STATIC
     src/Formats/OBJ.hpp
     src/Formats/STL.cpp
     src/Formats/STL.hpp
+    src/Formats/SVG.hpp
+    src/Formats/SVG.cpp
 
     src/Graphics/AnnotatedImage.hpp
     src/Graphics/CachedSceneRenderer.cpp
@@ -541,6 +543,9 @@ add_library(osccore STATIC
     src/OpenSimBindings/ForwardDynamicSimulator.hpp
     src/OpenSimBindings/ForwardDynamicSimulatorParams.cpp
     src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp
+    src/OpenSimBindings/Icon.hpp
+    src/OpenSimBindings/IconCache.cpp
+    src/OpenSimBindings/IconCache.hpp
     src/OpenSimBindings/IntegratorMethod.cpp
     src/OpenSimBindings/IntegratorMethod.hpp
     src/OpenSimBindings/IntegratorOutputExtractor.cpp

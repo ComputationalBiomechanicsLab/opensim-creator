@@ -233,25 +233,46 @@ osc::Rect osc::ContentRegionAvailScreenRect()
     return Rect{topLeft, bottomRight};
 }
 
-void osc::DrawTextureAsImGuiImage(Texture2D& t, glm::vec2 dims)
+void osc::DrawTextureAsImGuiImage(Texture2D const& t)
+{
+    DrawTextureAsImGuiImage(t, t.getDimensions());
+}
+
+void osc::DrawTextureAsImGuiImage(Texture2D const& t, glm::vec2 dims)
+{
+    glm::vec2 const topLeftCoord = {0.0f, 1.0f};
+    glm::vec2 const bottomRightCoord = {1.0f, 0.0f};
+    DrawTextureAsImGuiImage(t, dims, topLeftCoord, bottomRightCoord);
+}
+
+void osc::DrawTextureAsImGuiImage(
+    Texture2D const& t,
+    glm::vec2 dims,
+    glm::vec2 topLeftCoord,
+    glm::vec2 bottomRightCoord)
+{
+    ImGui::Image(t.getTextureHandleHACK(), dims, topLeftCoord, bottomRightCoord);
+}
+
+void osc::DrawTextureAsImGuiImage(RenderTexture const& t, glm::vec2 dims)
 {
     glm::vec2 const uv0 = {0.0f, 1.0f};
     glm::vec2 const uv1 = {1.0f, 0.0f};
 
-    ImGui::Image(t.updTextureHandleHACK(), dims, uv0, uv1);
+    ImGui::Image(t.getTextureHandleHACK(), dims, uv0, uv1);
 }
 
-void osc::DrawTextureAsImGuiImage(RenderTexture& t, glm::vec2 dims)
-{
-    glm::vec2 const uv0 = {0.0f, 1.0f};
-    glm::vec2 const uv1 = {1.0f, 0.0f};
-
-    ImGui::Image(t.updTextureHandleHACK(), dims, uv0, uv1);
-}
-
-void osc::DrawTextureAsImGuiImage(RenderTexture& tex)
+void osc::DrawTextureAsImGuiImage(RenderTexture const& tex)
 {
     return DrawTextureAsImGuiImage(tex, tex.getDimensions());
+}
+
+void osc::ImageButton(CStringView label, Texture2D const& t, glm::vec2 dims)
+{
+    glm::vec2 const uv0 = {0.0f, 1.0f};
+    glm::vec2 const uv1 = {1.0f, 0.0f};
+
+    ImGui::ImageButton(label.c_str(), t.getTextureHandleHACK(), dims, uv0, uv1);
 }
 
 osc::Rect osc::GetItemRect()

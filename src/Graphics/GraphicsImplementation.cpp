@@ -858,9 +858,11 @@ public:
         m_TextureParamsVersion.reset();
     }
 
-    void* updTextureHandleHACK()
+    void* getTextureHandleHACK() const
     {
-        return reinterpret_cast<void*>(static_cast<uintptr_t>(updTexture().get()));
+        // yes, this is a shitshow of casting, const-casting, etc. - it's purely here until and osc-specific
+        // ImGui backend is written
+        return reinterpret_cast<void*>(static_cast<uintptr_t>(const_cast<Impl&>(*this).updTexture().get()));
     }
 
     // non PIMPL method
@@ -1039,9 +1041,9 @@ void osc::Texture2D::setFilterMode(TextureFilterMode twm)
     m_Impl.upd()->setFilterMode(std::move(twm));
 }
 
-void* osc::Texture2D::updTextureHandleHACK()
+void* osc::Texture2D::getTextureHandleHACK() const
 {
-    return m_Impl.upd()->updTextureHandleHACK();
+    return m_Impl->getTextureHandleHACK();
 }
 
 std::ostream& osc::operator<<(std::ostream& o, Texture2D const&)
@@ -1258,9 +1260,11 @@ public:
         }
     }
 
-    void* updTextureHandleHACK()
+    void* getTextureHandleHACK() const
     {
-        return reinterpret_cast<void*>(static_cast<uintptr_t>(getOutputTexture().get()));
+        // yes, this is a shitshow of casting, const-casting, etc. - it's purely here until and osc-specific
+        // ImGui backend is written
+        return reinterpret_cast<void*>(static_cast<uintptr_t>(const_cast<Impl&>(*this).getOutputTexture().get()));
     }
 
 private:
@@ -1445,9 +1449,9 @@ void osc::RenderTexture::reformat(RenderTextureDescriptor const& d)
     m_Impl.upd()->reformat(d);
 }
 
-void* osc::RenderTexture::updTextureHandleHACK()
+void* osc::RenderTexture::getTextureHandleHACK() const
 {
-    return m_Impl.upd()->updTextureHandleHACK();
+    return m_Impl->getTextureHandleHACK();
 }
 
 std::ostream& osc::operator<<(std::ostream& o, RenderTexture const&)

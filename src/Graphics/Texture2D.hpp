@@ -3,6 +3,7 @@
 #include "src/Graphics/TextureFilterMode.hpp"
 #include "src/Graphics/TextureWrapMode.hpp"
 #include "src/Utils/Cow.hpp"
+#include "src/Utils/CStringView.hpp"
 
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
@@ -13,7 +14,8 @@
 
 namespace osc { struct Rgba32; }
 namespace osc { class Texture2D; }
-namespace osc { void DrawTextureAsImGuiImage(Texture2D&, glm::vec2); }
+namespace osc { void DrawTextureAsImGuiImage(Texture2D const&, glm::vec2, glm::vec2, glm::vec2); }
+namespace osc { void ImageButton(CStringView label, Texture2D const& t, glm::vec2 dims); }
 
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
@@ -51,8 +53,9 @@ namespace osc
         }
 
     private:
-        friend void osc::DrawTextureAsImGuiImage(Texture2D&, glm::vec2);
-        void* updTextureHandleHACK();  // used by ImGui... for now
+        friend void osc::DrawTextureAsImGuiImage(Texture2D const&, glm::vec2, glm::vec2, glm::vec2);
+        friend void osc::ImageButton(CStringView label, Texture2D const& t, glm::vec2 dims);
+        void* getTextureHandleHACK() const;  // used by ImGui... for now
 
         friend class GraphicsBackend;
         friend bool operator==(Texture2D const&, Texture2D const&) noexcept;

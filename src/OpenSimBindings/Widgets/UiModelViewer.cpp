@@ -17,6 +17,8 @@
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/OpenSimBindings/CustomDecorationOptions.hpp"
+#include "src/OpenSimBindings/Icon.hpp"
+#include "src/OpenSimBindings/IconCache.hpp"
 #include "src/OpenSimBindings/MuscleColoringStyle.hpp"
 #include "src/OpenSimBindings/MuscleDecorationStyle.hpp"
 #include "src/OpenSimBindings/MuscleSizingStyle.hpp"
@@ -633,6 +635,22 @@ private:
 
     void drawImGuiOverlays()
     {
+        ImGui::SetCursorScreenPos(m_RenderImage.rect.p1 + glm::vec2{10.0f, 10.f});
+        auto cache = App::singleton<IconCache>();
+
+        for (auto id : {"muscle_styling", "muscle_coloring", "muscle_sizing", "viz_aids"})
+        {
+            Icon icon = cache->getIcon(id);
+            ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.0f, 0.0f, 0.0f});
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 16.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, glm::vec2{0.0f ,0.0f});
+            osc::ImageButton(id, icon.getTexture(), icon.getDimensions()/4);
+            ImGui::PopStyleVar();
+            ImGui::PopStyleVar();
+            ImGui::PopStyleColor();
+            ImGui::SameLine();
+        }
+
         if (m_Flags & osc::UiModelViewerFlags_DrawAlignmentAxes)
         {
             DrawAlignmentAxesOverlayInBottomRightOf(m_Camera.getViewMtx(), m_RenderImage.rect);

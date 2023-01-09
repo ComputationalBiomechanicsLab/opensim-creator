@@ -10,7 +10,7 @@
 #include <optional>
 
 namespace osc { class RenderTexture; }
-namespace osc { void DrawTextureAsImGuiImage(RenderTexture&, glm::vec2); }
+namespace osc { void DrawTextureAsImGuiImage(RenderTexture const&, glm::vec2); }
 
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
@@ -49,8 +49,8 @@ namespace osc
         }
 
     private:
-        friend void osc::DrawTextureAsImGuiImage(RenderTexture&, glm::vec2);
-        void* updTextureHandleHACK();  // used by ImGui... for now
+        friend void osc::DrawTextureAsImGuiImage(RenderTexture const&, glm::vec2);
+        void* getTextureHandleHACK() const;  // used by ImGui... for now
 
         friend class GraphicsBackend;
         friend bool operator==(RenderTexture const&, RenderTexture const&) noexcept;

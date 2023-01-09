@@ -31,10 +31,15 @@ namespace osc
     // returns the ImGui content region available in screenspace as a `Rect`
     Rect ContentRegionAvailScreenRect();
 
-    // draws a texutre as an ImGui::Image, assumes UV coords of (0.0, 1.0); (1.0, 0.0)
-    void DrawTextureAsImGuiImage(Texture2D&, glm::vec2 dims);
-    void DrawTextureAsImGuiImage(RenderTexture&, glm::vec2 dims);
-    void DrawTextureAsImGuiImage(RenderTexture&);
+    // draws a texutre as an ImGui::Image
+    void DrawTextureAsImGuiImage(Texture2D const&);
+    void DrawTextureAsImGuiImage(Texture2D const&, glm::vec2 dims);  // assumes coords == [(0.0, 1.0), (1.0, 0.0)]
+    void DrawTextureAsImGuiImage(Texture2D const&, glm::vec2 dims, glm::vec2 topLeftCoord, glm::vec2 bottomRightCoord);
+    void DrawTextureAsImGuiImage(RenderTexture const&, glm::vec2 dims);
+    void DrawTextureAsImGuiImage(RenderTexture const&);
+
+    // draws a texture using ImGui::ImageButton
+    void ImageButton(CStringView, Texture2D const&, glm::vec2 dims);
 
     // returns the screenspace bounding rectangle of the last-drawn item
     Rect GetItemRect();

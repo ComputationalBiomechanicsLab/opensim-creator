@@ -486,6 +486,13 @@ if(TRUE)
     add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest")
 endif()
 
+# DEPENDENCY: lunasvg
+#
+# used for loading SVG icon files at runtime
+if(TRUE)
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/third_party/lunasvg")
+endif()
+
 # `osc::all-deps`: all libraries osc should link to
 add_library(osc-all-deps INTERFACE)
 target_link_libraries(osc-all-deps INTERFACE
@@ -528,6 +535,9 @@ target_link_libraries(osc-all-deps INTERFACE
 
     # shim for C++20's std::format
     fmt
+
+    # svg support
+    lunasvg
 
     # OpenSim API
     ${OSC_OPENSIM_LIBS}

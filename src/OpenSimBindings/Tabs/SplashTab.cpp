@@ -3,6 +3,7 @@
 #include "osc_config.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Formats/SVG.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/Texture2D.hpp"
@@ -346,15 +347,15 @@ private:
     glm::vec2 m_MenuMaxDims = {640.0f, 512.0f};
 
     // main app logo, blitted to top of the screen
-    Texture2D m_OscLogo = LoadTexture2DFromImage(App::resource("textures/logo.png"), ImageFlags_FlipVertically);
+    Texture2D m_OscLogo = LoadTextureFromSVGResource("banner.svg");
 
     // attributation logos, blitted to bottom of screen
     Texture2D m_CziLogo = LoadTexture2DFromImage(App::resource("textures/chanzuckerberg_logo.png"), ImageFlags_FlipVertically);
     Texture2D m_TudLogo = LoadTexture2DFromImage(App::resource("textures/tud_logo.png"), ImageFlags_FlipVertically);
 
     // dimensions of stuff
-    glm::vec2 m_TopLogoDims = [d = m_OscLogo.getDimensions()]() { return glm::vec2{d.x / (d.y/128.0f), 128.0f}; }();
-    glm::vec2 m_TopLogoPadding = {25.0f, 25.0f};
+    glm::vec2 m_TopLogoDims =  m_OscLogo.getDimensions();//[d =]() { return glm::vec2{d.x / (d.y/128.0f), 128.0f}; }();
+    glm::vec2 m_TopLogoPadding = {25.0f, 35.0f};
     glm::vec2 m_AttributationLogoDims = {64.0f, 64.0f};
     glm::vec2 m_AttributationLogoPadding = {16.0f, 16.0f};
 
