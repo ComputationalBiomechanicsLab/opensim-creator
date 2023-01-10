@@ -271,12 +271,6 @@ target_compile_options(osc_configuration INTERFACE
         # warn if using trampoline functions (requires executable stack)
         # -Wtrampolines
 
-        # warn if a declaration appears after a statement in a block
-        -Wdeclaration-after-statement
-
-        # warn if a function call is cast to a non-matching type (e.g. a function returning an int casts to a pointer)
-        -Wbad-function-cast
-
         # disabled: broken in STB
         # warn if a pointer is cast in a C-style cast in such a way that it removes qualifiers (e.g. char const* -> char*)
         # -Wcast-qual
@@ -292,9 +286,6 @@ target_compile_options(osc_configuration INTERFACE
         # disabled: requires newer gcc
         # warn if a float constant does not have the 'f' suffix
         # -Wunsuffixed-float-constants
-
-        # warn if old-style function definitions are used
-        -Wold-style-definition
 
         # todo: warn if using now-deprecated C/C++ constructs
         # -Wtraditional
