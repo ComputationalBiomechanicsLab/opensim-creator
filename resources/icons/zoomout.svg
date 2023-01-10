@@ -29,14 +29,14 @@
      showgrid="false"
      showborder="false"
      inkscape:zoom="3.3638608"
-     inkscape:cx="-32.403243"
-     inkscape:cy="69.711565"
+     inkscape:cx="-89.183238"
+     inkscape:cy="70.008842"
      inkscape:window-width="1920"
      inkscape:window-height="1058"
      inkscape:window-x="1193"
      inkscape:window-y="-6"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg2400" />
+     inkscape:current-layer="icon-zoomout" />
   <defs
      id="defs2397">
     <inkscape:path-effect
@@ -64,16 +64,13 @@
        style="color:#000000;fill:#939393;fill-opacity:1;stroke-width:3.77953;stroke-linecap:round;stroke-dashoffset:0.982677;-inkscape-stroke:none"
        d="m 27.749768,49.69125 c -7.283415,0 -13.228347,5.944932 -13.228347,13.228347 0,7.283452 5.944932,13.228346 13.228347,13.228346 7.283452,0 13.228346,-5.944894 13.228346,-13.228346 0,-7.283415 -5.944894,-13.228347 -13.228346,-13.228347 z m 0,3.779528 c 5.240844,0 9.448819,4.208012 9.448819,9.448819 0,5.240844 -4.207975,9.448819 -9.448819,9.448819 -5.240807,0 -9.448819,-4.207975 -9.448819,-9.448819 0,-5.240807 4.208012,-9.448819 9.448819,-9.448819 z"
        id="path17532" />
-    <text
-       xml:space="preserve"
-       style="font-size:29.3306px;line-height:1.25;font-family:Bebas;-inkscape-font-specification:Bebas;fill:#cccccc;fill-opacity:1;stroke-width:0.999995"
-       x="23.350166"
-       y="73.185425"
-       id="text17536"><tspan
-         sodipodi:role="line"
-         id="tspan17534"
-         style="fill:#cccccc;fill-opacity:1;stroke-width:0.999995"
-         x="23.350166"
-         y="73.185425">-</tspan></text>
+    <g
+       aria-label="-"
+       id="text17536"
+       style="font-size:29.3306px;line-height:1.25;font-family:Bebas;-inkscape-font-specification:Bebas;fill:#cccccc;stroke-width:0.999995">
+      <path
+         d="m 24.230084,61.394523 h 7.039345 v 3.050383 h -7.039345 z"
+         id="path439" />
+    </g>
   </g>
 </svg>

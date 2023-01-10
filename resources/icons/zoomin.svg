@@ -29,14 +29,14 @@
      showgrid="false"
      showborder="false"
      inkscape:zoom="3.3638608"
-     inkscape:cx="-32.403243"
-     inkscape:cy="69.711565"
+     inkscape:cx="28.835914"
+     inkscape:cy="70.008842"
      inkscape:window-width="1920"
      inkscape:window-height="1058"
      inkscape:window-x="1193"
      inkscape:window-y="-6"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg2400" />
+     inkscape:current-layer="icon-zoomin" />
   <defs
      id="defs2397">
     <inkscape:path-effect
@@ -64,16 +64,9 @@
        style="color:#000000;fill:#939393;fill-opacity:1;stroke-width:3.77953;stroke-linecap:round;stroke-dashoffset:0.982677;-inkscape-stroke:none"
        d="m 69.963168,32.746398 c -7.283415,0 -13.228347,5.944932 -13.228347,13.228346 0,7.283452 5.944932,13.228347 13.228347,13.228347 7.283452,0 13.228346,-5.944895 13.228346,-13.228347 0,-7.283414 -5.944894,-13.228346 -13.228346,-13.228346 z m 0,3.779527 c 5.240844,0 9.448819,4.208013 9.448819,9.448819 0,5.240844 -4.207975,9.448819 -9.448819,9.448819 -5.240807,0 -9.448819,-4.207975 -9.448819,-9.448819 0,-5.240806 4.208012,-9.448819 9.448819,-9.448819 z"
        id="circle16591" />
-    <text
-       xml:space="preserve"
-       style="font-size:29.3306px;line-height:1.25;font-family:Bebas;-inkscape-font-specification:Bebas;fill:#cccccc;fill-opacity:1;stroke-width:0.999995"
-       x="63.598427"
-       y="56.00597"
-       id="text17457"><tspan
-         sodipodi:role="line"
-         id="tspan17455"
-         style="fill:#cccccc;fill-opacity:1;stroke-width:0.999995"
-         x="63.598427"
-         y="56.00597">+</tspan></text>
+    <path
+       d="m 75.242675,47.118798 h -4.135614 v 4.135615 h -2.287787 v -4.135615 h -4.135615 v -2.287787 h 4.135615 v -4.135615 h 2.287787 v 4.135615 h 4.135614 z"
+       id="path292"
+       style="font-size:29.3306px;line-height:1.25;font-family:Bebas;-inkscape-font-specification:Bebas;fill:#cccccc;stroke-width:0.999995" />
   </g>
 </svg>
