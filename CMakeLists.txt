@@ -251,9 +251,6 @@ target_compile_options(osc_configuration INTERFACE
         # warn if a structure is given the 'packed' attribute (disallowed: alignment)
         -Wpacked
 
-        # warn if an insecure format (e.g. printf) statement is detected
-        -Wformat-security
-
         # warn if a case in a switch statement implicitly falls through after a statement
         -Wimplicit-fallthrough
 
@@ -300,6 +297,9 @@ target_compile_options(osc_configuration INTERFACE
 
         # disable: broken by STB headers
         -Wno-missing-field-initializers
+
+        # disable: broken by nativefiledialog
+        # -Wformat-security
 
         # disabled: doesn't work in some contexts where forward declarations are necessary
         # -Wredundant-decls
