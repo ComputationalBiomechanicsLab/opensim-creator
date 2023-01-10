@@ -191,21 +191,30 @@ namespace
         osc::BVH m_BVH;
     };
 
-    class IconWithMenu {
+
+    class IconWithoutMenu final {
     public:
-        IconWithMenu(
+        IconWithoutMenu(
             osc::CStringView iconID,
             osc::CStringView title,
-            osc::CStringView description,
-            std::function<void()> const& contentRenderer) :
+            osc::CStringView description) :
             m_IconID{iconID},
             m_Title{title},
-            m_Description{description},
-            m_ContentRenderer{contentRenderer}
+            m_Description{description}
         {
         }
 
-        void draw()
+        std::string const& getIconID() const
+        {
+            return m_IconID;
+        }
+
+        std::string const& getTitle() const
+        {
+            return m_Title;
+        }
+
+        bool draw()
         {
             auto const cache = osc::App::singleton<osc::IconCache>();
             float const iconPadding = 2.0f;
@@ -214,31 +223,53 @@ namespace
             ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, iconPadding);
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, glm::vec2{iconPadding});
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, glm::vec2{3.0f, 0.0f});
-            if (osc::ImageButton(m_ButtonID, icon.getTexture(), icon.getDimensions()))
+            bool rv = osc::ImageButton(m_ButtonID, icon.getTexture(), icon.getDimensions());
+            ImGui::PopStyleVar();
+            ImGui::PopStyleVar();
+            ImGui::PopStyleVar();
+
+            osc::DrawTooltipIfItemHovered(m_Title, m_Description);
+
+            return rv;
+        }
+
+    private:
+        std::string m_IconID;
+        std::string m_ButtonID = "##" + m_IconID;
+        std::string m_Title;
+        std::string m_Description;
+    };
+
+    class IconWithMenu final {
+    public:
+        IconWithMenu(
+            osc::CStringView iconID,
+            osc::CStringView title,
+            osc::CStringView description,
+            std::function<void()> const& contentRenderer) :
+            m_IconWithoutMenu{iconID, title, description},
+            m_ContentRenderer{contentRenderer}
+        {
+        }
+
+        void draw()
+        {
+            if (m_IconWithoutMenu.draw())
             {
                 ImGui::OpenPopup(m_ContextMenuID.c_str());
             }
-            ImGui::PopStyleVar();
-            ImGui::PopStyleVar();
-            ImGui::PopStyleColor();
 
-            osc::DrawTooltipIfItemHovered(m_Title, m_Description);
             if (ImGui::BeginPopup(m_ContextMenuID.c_str(),ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings))
             {
-                ImGui::TextDisabled(m_Title.c_str());
+                ImGui::TextDisabled(m_IconWithoutMenu.getTitle().c_str());
                 ImGui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
                 m_ContentRenderer();
                 ImGui::EndPopup();
             }
-            ImGui::Separator();
-            ImGui::SameLine();
         }
     private:
-        std::string m_IconID;
-        std::string m_ButtonID = "##" + m_IconID;
-        std::string m_ContextMenuID = "##" + m_IconID;
-        std::string m_Title;
-        std::string m_Description;
+        IconWithoutMenu m_IconWithoutMenu;
+        std::string m_ContextMenuID = "##" + m_IconWithoutMenu.getIconID();
         std::function<void()> m_ContentRenderer;
     };
 }
@@ -410,6 +441,7 @@ private:
             [this]() { drawMuscleStylingContextMenuContent(); },
         };
         muscleStylingButton.draw();
+        ImGui::SameLine();
 
         IconWithMenu muscleSizingButton
         {
@@ -419,6 +451,7 @@ private:
             [this]() { drawMuscleSizingContextMenuContent(); },
         };
         muscleSizingButton.draw();
+        ImGui::SameLine();
 
         IconWithMenu muscleColoringButton
         {
@@ -428,6 +461,7 @@ private:
             [this]() { drawMuscleColoringContextMenuContent(); },
         };
         muscleColoringButton.draw();
+        ImGui::SameLine();
 
         IconWithMenu vizAidsButton
         {
@@ -437,6 +471,7 @@ private:
             [this]() { drawVisualAidsContextMenuContent(); },
         };
         vizAidsButton.draw();
+        ImGui::SameLine();
 
         if (ImGui::BeginMenu("Scene"))
         {
@@ -735,10 +770,133 @@ private:
 
     void drawImGuiOverlays()
     {
+        // draw alignment axes widget
         if (m_Flags & osc::UiModelViewerFlags_DrawAlignmentAxes)
         {
             DrawAlignmentAxesOverlayInBottomRightOf(m_Camera.getViewMtx(), m_RenderImage.rect);
         }
+
+        // draw camera control buttons
+        {
+            float leftPadding = 100.0f;
+            float bottomPadding = 20.0f;
+            float panelHeight = 63.0f;
+
+            glm::vec2 firstLineTopLeft = { m_RenderImage.rect.p1.x + leftPadding, m_RenderImage.rect.p2.y - panelHeight - bottomPadding };
+            ImGui::SetCursorScreenPos(firstLineTopLeft);
+
+            //ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.0f, 0.0f, 0.0f});
+
+            IconWithoutMenu plusXbutton
+            {
+                "plusx",
+                "Focus Camera Along +X",
+                "Rotates the camera to focus along the +X direction",
+            };
+            if (plusXbutton.draw())
+            {
+                FocusAlongX(m_Camera);
+            }
+
+            ImGui::SameLine();
+
+            IconWithoutMenu plusYbutton
+            {
+                "plusy",
+                "Focus Camera Along +Y",
+                "Rotates the camera to focus along the +Y direction",
+            };
+            if (plusYbutton.draw())
+            {
+                FocusAlongY(m_Camera);
+            }
+
+            ImGui::SameLine();
+
+            IconWithoutMenu plusZbutton
+            {
+                "plusz",
+                "Focus Camera Along +Z",
+                "Rotates the camera to focus along the +Z direction",
+            };
+            if (plusZbutton.draw())
+            {
+                FocusAlongZ(m_Camera);
+            }
+
+            ImGui::SameLine();
+            ImGui::Dummy({ImGui::GetTextLineHeight()*0.25f, 0.0f});
+            ImGui::SameLine();
+
+            IconWithoutMenu zoomInButton
+            {
+                "zoomin",
+                "Zoom in Camera",
+                "Moves the camera one step towards its focus point",
+            };
+            if (zoomInButton.draw())
+            {
+                ZoomIn(m_Camera);
+            }
+
+            glm::vec2 const secondLineTopLeft = {firstLineTopLeft.x, ImGui::GetCursorScreenPos().y};
+            ImGui::SetCursorScreenPos(secondLineTopLeft);
+
+            IconWithoutMenu minusXbutton
+            {
+                "minusx",
+                "Focus Camera Along -X",
+                "Rotates the camera to focus along the -X direction",
+            };
+            if (minusXbutton.draw())
+            {
+                FocusAlongMinusX(m_Camera);
+            }
+
+            ImGui::SameLine();
+
+            IconWithoutMenu minusYbutton
+            {
+                "minusy",
+                "Focus Camera Along -Y",
+                "Rotates the camera to focus along the -Y direction",
+            };
+            if (minusYbutton.draw())
+            {
+                FocusAlongMinusY(m_Camera);
+            }
+
+            ImGui::SameLine();
+
+            IconWithoutMenu minusZbutton
+            {
+                "minusz",
+                "Focus Camera Along -Z",
+                "Rotates the camera to focus along the -Z direction",
+            };
+            if (minusZbutton.draw())
+            {
+                FocusAlongMinusZ(m_Camera);
+            }
+
+            ImGui::SameLine();
+            ImGui::Dummy({ImGui::GetTextLineHeight()*0.25f, 0.0f});
+            ImGui::SameLine();
+
+            IconWithoutMenu zoomOutButton
+            {
+                "zoomout",
+                "Zoom Out Camera",
+                "Moves the camera one step away from its focus point",
+            };
+            if (zoomOutButton.draw())
+            {
+                ZoomOut(m_Camera);
+            }
+
+            //ImGui::PopStyleColor();
+        }
+
     }
 
     // widget state
@@ -757,7 +915,7 @@ private:
     {
         osc::App::config(),
         *osc::App::singleton<osc::MeshCache>(),
-        *osc::App::singleton<osc::ShaderCache>()
+        *osc::App::singleton<osc::ShaderCache>(),
     };
 
     // ImGui compositing/hittesting state
@@ -771,7 +929,7 @@ private:
 };
 
 
-// public API
+// public API (PIMPL)
 
 osc::UiModelViewer::UiModelViewer(UiModelViewerFlags flags) :
     m_Impl{std::make_unique<Impl>(flags)}
