@@ -181,31 +181,116 @@ target_compile_options(osc_configuration INTERFACE
         # treat all warnings as errors
         /WX
 
-        # keep frame pointers around
+        # keep frame pointers around, so that runtime stack traces can be dumped to error logs
         /Oy-
 
-        # newer MSVCs may also come with LIBASAN (experimental)
+        # disable MSVC's permissive mode to ensure better ISO C++ conformance
+        /permissive-
+
+        # ensure `volatile` variables follow (less-strict) ISO standards
+        /volatile:iso
+
+        # ensure preprocessor is standards conformant
+        /Zc:preprocessor
+
+        # assume `new` throws when memory cannot be allocated (ISO conformance)
+        /Zc:throwingNew
+
+        # only handle standard, synchronous, C++ exceptions (ISO) and treat asynchronous
+        # Windows/system structured exceptions as fatal, non-catchable, errors
+        /EHsc
+
+        # if requested, enable MSVC's libASAN
         $<$<BOOL:${OSC_USE_ASAN}>:/fsanitize=address>
     >
 
     # gcc AND clang flags
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
-        -Wall
-        -Wextra
-        -pedantic
+
+        # treat all warnings as errors
         -Werror
+
+        # enable all basic warnings
+        -Wall
+
+        # enable extra warnings
+        -Wextra
+
+        # enable pedantically extra warnings
+        -pedantic
+
+        # warn if using an uninitialized variable
         -Wuninitialized
+
+        # warn if an uninitialized variable is initialized by itself
         -Winit-self
+
+        # warn if a variable's name shadows an earlier (higher scope) variable with the same name
         -Wshadow
+
+        # warn if data is casted to a higher alignment (e.g. char -> int64_t)
+        #
+        # todo: set to =strict
         -Wcast-align
+
+        # warn if casting C string constants from `char const*` to `char*`
         -Wwrite-strings
+
+        # warn if a dangling else is detected
         -Wdangling-else
+
+        # warn if a date-time macro expansion is not reproducible
         -Wdate-time
-        -Wno-multichar
+
+        # warn if a variable-length array (VLA) is detected (disallowed)
         -Wvla
+
+        # warn if the compiler detected that the code is way too complex to optimize
         -Wdisabled-optimization
+
+        # warn if a structure is given the 'packed' attribute (disallowed: alignment)
         -Wpacked
+
+        # warn if an insecure format (e.g. printf) statement is detected
         -Wformat-security
+
+        # warn if a case in a switch statement implicitly falls through after a statement
+        -Wimplicit-fallthrough
+
+        # warn if calls to `strcmp` and `strncmp` are determined to be invalid at compile-time
+        -Wstring-compare
+
+        # warn if trying to allocate 0 bytes of memory using an allocation function (could be undef behavior)
+        -Walloc-zero
+
+        # warn if using trampoline functions (requires executable stack)
+        -Wtrampolines
+
+        # warn if a declaration appears after a statement in a block
+        -Wdeclaration-after-statement
+
+        # warn if a function call is cast to a non-matching type (e.g. a function returning an int casts to a pointer)
+        -Wbad-function-cast
+
+        # warn if a pointer is cast in a C-style cast in such a way that it removes qualifiers (e.g. char const* -> char*)
+        -Wcast-qual
+
+        # warn if an implicit conversion may alter a value
+        -Wconversion
+
+        # warn if a suspicous use of a logical operator is detected (e.g. i < 0 && i < 0)
+        -Wlogical-op
+
+        # warn if a float constant does not have the 'f' suffix
+        -Wunsuffixed-float-constants
+
+        # warn if old-style function definitions are used
+        -Wold-style-definition
+
+        -Wno-multichar
+
+        # todo: warn if using now-deprecated C/C++ constructs
+        # -Wtraditional
 
         # disable: broken by STB headers
         -Wno-unused
@@ -215,6 +300,9 @@ target_compile_options(osc_configuration INTERFACE
 
         # disable: broken by STB headers
         -Wno-missing-field-initializers
+
+        # disabled: doesn't work in some contexts where forward declarations are necessary
+        # -Wredundant-decls
 
         # regardless of debug/release, pin the frame pointer register
         # so that stack traces are sane when debugging (even in Release).
@@ -226,9 +314,6 @@ target_compile_options(osc_configuration INTERFACE
 
         # if address sanitizer is specified, use it
         $<$<BOOL:${OSC_USE_ASAN}>:-fsanitize=address>
-
-        # disabled: doesn't work in some contexts where forward declarations are necessary
-        # -Wredundant-decls
     >
 
     # clang flags
