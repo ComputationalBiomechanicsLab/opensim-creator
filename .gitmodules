@@ -42,4 +42,4 @@
 	url = https://github.com/ComputationalBiomechanicsLab/opensim-core
 [submodule "third_party/lunasvg"]
 	path = third_party/lunasvg
-	url = https://github.com/sammycage/lunasvg
+	url = https://github.com/ComputationalBiomechanicsLab/lunasvg
