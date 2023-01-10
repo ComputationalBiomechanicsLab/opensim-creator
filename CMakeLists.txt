@@ -233,9 +233,9 @@ target_compile_options(osc_configuration INTERFACE
         # todo: set to =strict
         -Wcast-align
 
-	# disabled: broken in stb
+        # disabled: broken in stb
         # warn if casting C string constants from `char const*` to `char*`
-	# -Wwrite-strings
+        # -Wwrite-strings
 
         # warn if a dangling else is detected
         -Wdangling-else
@@ -252,23 +252,24 @@ target_compile_options(osc_configuration INTERFACE
         # warn if a structure is given the 'packed' attribute (disallowed: alignment)
         -Wpacked
 
-	# disabled: broken in stb
+        # disabled: broken in stb
         # warn if a case in a switch statement implicitly falls through after a statement
-	# -Wimplicit-fallthrough
+        # -Wimplicit-fallthrough
 
+        # disabled: requires newer gcc
         # warn if calls to `strcmp` and `strncmp` are determined to be invalid at compile-time
-        -Wstring-compare
+        # -Wstring-compare
 
         # warn if insecure string formatting (e.g. for printf) is detected
         -Wformat-security
 
         # disabled: requires newer gcc
-	# warn if trying to allocate 0 bytes of memory using an allocation function (could be undef behavior)
-	# -Walloc-zero
+        # warn if trying to allocate 0 bytes of memory using an allocation function (could be undef behavior)
+        # -Walloc-zero
 
-	# disabled: requires newer gcc
+        # disabled: requires newer gcc
         # warn if using trampoline functions (requires executable stack)
-	# -Wtrampolines
+        # -Wtrampolines
 
         # warn if a declaration appears after a statement in a block
         -Wdeclaration-after-statement
@@ -276,21 +277,21 @@ target_compile_options(osc_configuration INTERFACE
         # warn if a function call is cast to a non-matching type (e.g. a function returning an int casts to a pointer)
         -Wbad-function-cast
 
-	# disabled: broken in STB
+        # disabled: broken in STB
         # warn if a pointer is cast in a C-style cast in such a way that it removes qualifiers (e.g. char const* -> char*)
-	# -Wcast-qual
+        # -Wcast-qual
 
-	# disabled: broken in osc
+        # disabled: broken in osc
         # warn if an implicit conversion may alter a value
-	# -Wconversion
+        # -Wconversion
 
-	# disabled: requires newer gcc
-	# warn if a suspicous use of a logical operator is detected (e.g. i < 0 && i < 0)
-	# -Wlogical-op
+        # disabled: requires newer gcc
+        # warn if a suspicous use of a logical operator is detected (e.g. i < 0 && i < 0)
+        # -Wlogical-op
 
-	# disabled: requires newer gcc
+        # disabled: requires newer gcc
         # warn if a float constant does not have the 'f' suffix
-	# -Wunsuffixed-float-constants
+        # -Wunsuffixed-float-constants
 
         # warn if old-style function definitions are used
         -Wold-style-definition
@@ -310,7 +311,7 @@ target_compile_options(osc_configuration INTERFACE
         -Wno-missing-field-initializers
 
         # disabled: requires newer gcc and broken by nativefiledialog
-	# -Wno-format-truncation
+        # -Wno-format-truncation
 
         # disabled: doesn't work in some contexts where forward declarations are necessary
         # -Wredundant-decls
