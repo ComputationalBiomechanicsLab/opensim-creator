@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+- The scene light's slope/height no longer tracks along with the camera, which makes shadow rendering
+  look a little bit better (thanks @tgeijten, #549)
+
 ## [0.3.2] - 2023/01/09
 
 0.3.2 is mostly a patch release with some minor quality-of-life improvements. It also includes all changes

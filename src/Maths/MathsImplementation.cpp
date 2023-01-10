@@ -641,9 +641,15 @@ osc::PolarPerspectiveCamera osc::CreateCameraFocusedOn(AABB const& aabb)
 
 glm::vec3 osc::RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
 {
-    float theta = c.theta - 0.75f*fpi4;  // anti-clockwise a little bit
-    float phi = c.phi + 0.35f*fpi4;  // upwards a little bit
-    glm::vec3 p = PolarToCartesian(c.focusPoint, c.radius, theta, phi);
+    // theta should track with the camera, so that the scene is always
+    // illuminated from the viewer's perspective (#275)
+    float const theta = c.theta - 0.75f*fpi4;
+
+    // #549: phi shouldn't track with the camera, because changing the "height"/"slope"
+    // of the camera with shadow rendering (#10) looks bizzare
+    float const phi = fpi4;
+
+    glm::vec3 const p = PolarToCartesian(c.focusPoint, c.radius, theta, phi);
 
     return glm::normalize(-c.focusPoint - p);
 }
