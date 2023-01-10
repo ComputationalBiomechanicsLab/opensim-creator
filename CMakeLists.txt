@@ -257,6 +257,9 @@ target_compile_options(osc_configuration INTERFACE
         # warn if calls to `strcmp` and `strncmp` are determined to be invalid at compile-time
         -Wstring-compare
 
+        # warn if insecure string formatting (e.g. for printf) is detected
+        -Wformat-security
+
         # warn if trying to allocate 0 bytes of memory using an allocation function (could be undef behavior)
         -Walloc-zero
 
@@ -284,10 +287,10 @@ target_compile_options(osc_configuration INTERFACE
         # warn if old-style function definitions are used
         -Wold-style-definition
 
-        -Wno-multichar
-
         # todo: warn if using now-deprecated C/C++ constructs
         # -Wtraditional
+
+        -Wno-multichar
 
         # disable: broken by STB headers
         -Wno-unused
@@ -299,7 +302,7 @@ target_compile_options(osc_configuration INTERFACE
         -Wno-missing-field-initializers
 
         # disable: broken by nativefiledialog
-        # -Wformat-security
+        -Wno-format-truncation
 
         # disabled: doesn't work in some contexts where forward declarations are necessary
         # -Wredundant-decls
