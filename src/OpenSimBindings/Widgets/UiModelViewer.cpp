@@ -661,8 +661,10 @@ private:
     // ImGui compositing/hittesting state
     osc::ImGuiItemHittestResult m_RenderImage;
 
-    // other stuff
-    bool m_AutoFocusCameraNextFrame = false;
+    // a flag that will auto-focus the main scene camera the next time it's used
+    //
+    // initialized `true`, so that the initially-loaded model is autofocused (#520)
+    bool m_AutoFocusCameraNextFrame = true;
     GuiRuler m_Ruler;
 };
 
