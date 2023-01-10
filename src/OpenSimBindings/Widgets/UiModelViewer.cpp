@@ -209,26 +209,29 @@ namespace
         {
             auto const cache = osc::App::singleton<osc::IconCache>();
             float const iconPadding = 2.0f;
+            osc::Icon const& icon = cache->getIcon(m_IconID);
+
             ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, iconPadding);
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, glm::vec2{iconPadding});
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, glm::vec2{3.0f, 0.0f});
-            osc::Icon const& icon = cache->getIcon(m_IconID);
-
             if (osc::ImageButton(m_ButtonID, icon.getTexture(), icon.getDimensions()))
             {
                 ImGui::OpenPopup(m_ContextMenuID.c_str());
             }
+            ImGui::PopStyleVar();
+            ImGui::PopStyleVar();
+            ImGui::PopStyleColor();
+
             osc::DrawTooltipIfItemHovered(m_Title, m_Description);
             if (ImGui::BeginPopup(m_ContextMenuID.c_str(),ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings))
             {
+                ImGui::TextDisabled(m_Title.c_str());
+                ImGui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
                 m_ContentRenderer();
                 ImGui::EndPopup();
             }
             ImGui::Separator();
             ImGui::SameLine();
-            ImGui::PopStyleVar();
-            ImGui::PopStyleVar();
-            ImGui::PopStyleColor();
         }
     private:
         std::string m_IconID;
@@ -404,7 +407,7 @@ private:
             "muscle_styling",
             "Muscle Styling",
             "Affects the displayed geometry of any muscles",
-            []() { ImGui::Text("hello, world!"); },
+            [this]() { drawMuscleStylingContextMenuContent(); },
         };
         muscleStylingButton.draw();
 
@@ -413,7 +416,7 @@ private:
             "muscle_sizing",
             "Muscle Sizing",
             "Affects the displayed radius of any muscles",
-            []() { ImGui::Text("radius menu!"); },
+            [this]() { drawMuscleSizingContextMenuContent(); },
         };
         muscleSizingButton.draw();
 
@@ -422,7 +425,7 @@ private:
             "muscle_coloring",
             "Muscle Coloring",
             "Affects the displayed color of any muscles",
-            []() { ImGui::Text("coloring menu!"); },
+            [this]() { drawMuscleColoringContextMenuContent(); },
         };
         muscleColoringButton.draw();
 
@@ -431,15 +434,9 @@ private:
             "viz_aids",
             "Visual Aids",
             "Affects what's shown in the 3D scene",
-            []() { ImGui::Text("viz aids menu!"); },
+            [this]() { drawVisualAidsContextMenuContent(); },
         };
         vizAidsButton.draw();
-
-        if (ImGui::BeginMenu("Options"))
-        {
-            drawOptionsMenuContent();
-            ImGui::EndMenu();
-        }
 
         if (ImGui::BeginMenu("Scene"))
         {
@@ -448,6 +445,84 @@ private:
         }
 
         drawRulerMeasurementToggleButton();
+    }
+
+    void drawMuscleStylingContextMenuContent()
+    {
+        MuscleDecorationStyle const currentStyle = m_DecorationOptions.getMuscleDecorationStyle();
+        nonstd::span<MuscleDecorationStyle const> const allStyles = osc::GetAllMuscleDecorationStyles();
+        nonstd::span<char const* const>  const allStylesStrings = osc::GetAllMuscleDecorationStyleStrings();
+        int const currentStyleIndex = osc::GetIndexOf(currentStyle);
+
+        for (int i = 0; i < static_cast<int>(allStyles.size()); ++i)
+        {
+            if (ImGui::Selectable(allStylesStrings[i], i == currentStyleIndex, ImGuiSelectableFlags_DontClosePopups))
+            {
+                m_DecorationOptions.setMuscleDecorationStyle(allStyles[i]);
+            }
+        }
+    }
+
+    void drawMuscleSizingContextMenuContent()
+    {
+        MuscleSizingStyle const currentStyle = m_DecorationOptions.getMuscleSizingStyle();
+        nonstd::span<MuscleSizingStyle const> const allStyles = osc::GetAllMuscleSizingStyles();
+        nonstd::span<char const* const>  const allStylesStrings = osc::GetAllMuscleSizingStyleStrings();
+        int const currentStyleIndex = osc::GetIndexOf(currentStyle);
+
+        for (int i = 0; i < static_cast<int>(allStyles.size()); ++i)
+        {
+            if (ImGui::Selectable(allStylesStrings[i], i == currentStyleIndex, ImGuiSelectableFlags_DontClosePopups))
+            {
+                m_DecorationOptions.setMuscleSizingStyle(allStyles[i]);
+            }
+        }
+    }
+
+    void drawMuscleColoringContextMenuContent()
+    {
+        MuscleColoringStyle const currentStyle = m_DecorationOptions.getMuscleColoringStyle();
+        nonstd::span<MuscleColoringStyle const> const allStyles = osc::GetAllMuscleColoringStyles();
+        nonstd::span<char const* const>  const allStylesStrings = osc::GetAllMuscleColoringStyleStrings();
+        int const currentStyleIndex = osc::GetIndexOf(currentStyle);
+
+        for (int i = 0; i < static_cast<int>(allStyles.size()); ++i)
+        {
+            if (ImGui::Selectable(allStylesStrings[i], i == currentStyleIndex, ImGuiSelectableFlags_DontClosePopups))
+            {
+                m_DecorationOptions.setMuscleColoringStyle(allStyles[i]);
+            }
+        }
+    }
+
+    void drawVisualAidsContextMenuContent()
+    {
+        ImGui::TextDisabled("Rendering");
+        ImGui::CheckboxFlags("floor", &m_Flags, osc::UiModelViewerFlags_DrawFloor);
+        ImGui::Checkbox("mesh normals", &m_RendererParams.drawMeshNormals);
+        ImGui::Checkbox("selection rims", &m_RendererParams.drawRims);
+        ImGui::Checkbox("shadows", &m_RendererParams.drawShadows);
+
+        ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+        ImGui::TextDisabled("Alignment");
+        ImGui::CheckboxFlags("XZ grid", &m_Flags, osc::UiModelViewerFlags_DrawXZGrid);
+        ImGui::CheckboxFlags("XY grid", &m_Flags, osc::UiModelViewerFlags_DrawXYGrid);
+        ImGui::CheckboxFlags("YZ grid", &m_Flags, osc::UiModelViewerFlags_DrawYZGrid);
+        ImGui::CheckboxFlags("alignment axes", &m_Flags, osc::UiModelViewerFlags_DrawAlignmentAxes);
+        ImGui::CheckboxFlags("origin lines", &m_Flags, osc::UiModelViewerFlags_DrawAxisLines);
+
+        ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+        ImGui::TextDisabled("OpenSim");
+        bool isDrawingScapulothoracicJoints = m_DecorationOptions.getShouldShowScapulo();
+        if (ImGui::Checkbox("scapulothoracic joints", &isDrawingScapulothoracicJoints))
+        {
+            m_DecorationOptions.setShouldShowScapulo(isDrawingScapulothoracicJoints);
+        }
+
+        ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+        ImGui::TextDisabled("Development");
+        ImGui::CheckboxFlags("AABBs", &m_Flags, osc::UiModelViewerFlags_DrawAABBs);
+        ImGui::CheckboxFlags("BVH", &m_Flags, osc::UiModelViewerFlags_DrawBVH);
     }
 
     void drawRulerMeasurementToggleButton()
@@ -466,68 +541,6 @@ private:
                 m_Ruler.startMeasuring();
             }
             osc::DrawTooltipIfItemHovered("Measure distance", "EXPERIMENTAL: take a *rough* measurement of something in the scene - the UI for this needs to be improved, a lot ;)");
-        }
-    }
-
-    void drawOptionsMenuContent()
-    {
-        drawMuscleDecorationsStyleComboBox();
-        drawMuscleSizingStyleComboBox();
-        drawMuscleColoringStyleComboBox();
-        ImGui::Checkbox("show normals", &m_RendererParams.drawMeshNormals);
-        ImGui::Checkbox("draw rims", &m_RendererParams.drawRims);
-        ImGui::Checkbox("draw shadows", &m_RendererParams.drawShadows);
-        bool isDrawingScapulothoracicJoints = m_DecorationOptions.getShouldShowScapulo();
-        if (ImGui::Checkbox("draw scapulothoracic joints", &isDrawingScapulothoracicJoints))
-        {
-            m_DecorationOptions.setShouldShowScapulo(isDrawingScapulothoracicJoints);
-        }
-        ImGui::CheckboxFlags("show XZ grid", &m_Flags, osc::UiModelViewerFlags_DrawXZGrid);
-        ImGui::CheckboxFlags("show XY grid", &m_Flags, osc::UiModelViewerFlags_DrawXYGrid);
-        ImGui::CheckboxFlags("show YZ grid", &m_Flags, osc::UiModelViewerFlags_DrawYZGrid);
-        ImGui::CheckboxFlags("show alignment axes", &m_Flags, osc::UiModelViewerFlags_DrawAlignmentAxes);
-        ImGui::CheckboxFlags("show grid lines", &m_Flags, osc::UiModelViewerFlags_DrawAxisLines);
-        ImGui::CheckboxFlags("show AABBs", &m_Flags, osc::UiModelViewerFlags_DrawAABBs);
-        ImGui::CheckboxFlags("show BVH", &m_Flags, osc::UiModelViewerFlags_DrawBVH);
-        ImGui::CheckboxFlags("show floor", &m_Flags, osc::UiModelViewerFlags_DrawFloor);
-    }
-
-    void drawMuscleDecorationsStyleComboBox()
-    {
-        osc::MuscleDecorationStyle s = m_DecorationOptions.getMuscleDecorationStyle();
-        nonstd::span<osc::MuscleDecorationStyle const> allStyles = osc::GetAllMuscleDecorationStyles();
-        nonstd::span<char const* const>  allNames = osc::GetAllMuscleDecorationStyleStrings();
-        int i = osc::GetIndexOf(s);
-
-        if (ImGui::Combo("muscle decoration style", &i, allNames.data(), static_cast<int>(allStyles.size())))
-        {
-            m_DecorationOptions.setMuscleDecorationStyle(allStyles[i]);
-        }
-    }
-
-    void drawMuscleSizingStyleComboBox()
-    {
-        osc::MuscleSizingStyle s = m_DecorationOptions.getMuscleSizingStyle();
-        nonstd::span<osc::MuscleSizingStyle const> allStyles = osc::GetAllMuscleSizingStyles();
-        nonstd::span<char const* const>  allNames = osc::GetAllMuscleSizingStyleStrings();
-        int i = osc::GetIndexOf(s);
-
-        if (ImGui::Combo("muscle sizing style", &i, allNames.data(), static_cast<int>(allStyles.size())))
-        {
-            m_DecorationOptions.setMuscleSizingStyle(allStyles[i]);
-        }
-    }
-
-    void drawMuscleColoringStyleComboBox()
-    {
-        osc::MuscleColoringStyle s = m_DecorationOptions.getMuscleColoringStyle();
-        nonstd::span<osc::MuscleColoringStyle const> allStyles = osc::GetAllMuscleColoringStyles();
-        nonstd::span<char const* const>  allNames = osc::GetAllMuscleColoringStyleStrings();
-        int i = osc::GetIndexOf(s);
-
-        if (ImGui::Combo("muscle coloring", &i, allNames.data(), static_cast<int>(allStyles.size())))
-        {
-            m_DecorationOptions.setMuscleColoringStyle(allStyles[i]);
         }
     }
 
