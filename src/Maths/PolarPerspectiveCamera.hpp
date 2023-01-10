@@ -76,5 +76,5 @@ namespace osc
     void ZoomIn(PolarPerspectiveCamera&);
     void ZoomOut(PolarPerspectiveCamera&);
     void Reset(PolarPerspectiveCamera&);
-    void AutoFocus(PolarPerspectiveCamera&, AABB const& elementAABB);
+    void AutoFocus(PolarPerspectiveCamera&, AABB const& elementAABB, float aspectRatio = 1.0f);
 }

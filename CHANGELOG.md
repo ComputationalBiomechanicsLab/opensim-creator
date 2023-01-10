@@ -6,8 +6,9 @@ All notable changes to this project will be documented here. The format is based
 
 - The scene light's slope/height no longer tracks along with the camera, which makes shadow rendering
   look a little bit better (thanks @tgeijten, #549)
-- The camera now auto-focuses on the centerpoint of the model's AABB when first loaded (previously: would
-  focus on ground, #550)
+- The camera now auto-focuses on the centerpoint of the model's bounding sphere when first loaded (previously:
+  would focus on ground, #550)
+- The camera now auto-zooms the scene when first loaded (previously: would try, but was a looser fit, #551)
 
 ## [0.3.2] - 2023/01/09
 

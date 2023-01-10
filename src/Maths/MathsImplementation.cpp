@@ -707,10 +707,12 @@ void osc::Reset(osc::PolarPerspectiveCamera& camera)
     camera.phi = osc::fpi4;
 }
 
-void osc::AutoFocus(PolarPerspectiveCamera& camera, AABB const& elementAABB)
+void osc::AutoFocus(PolarPerspectiveCamera& camera, AABB const& elementAABB, float aspectRatio)
 {
-    camera.focusPoint = -Midpoint(elementAABB);
-    camera.radius = 3.0f * LongestDim(elementAABB);
+    Sphere const s = ToSphere(elementAABB);
+
+    camera.focusPoint = -s.origin;
+    camera.radius = s.radius / std::tan(0.5f * camera.fov);
     camera.theta = osc::fpi4;
     camera.phi = osc::fpi4;
     camera.rescaleZNearAndZFarBasedOnRadius();

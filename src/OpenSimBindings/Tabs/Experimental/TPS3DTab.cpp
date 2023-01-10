@@ -1970,7 +1970,7 @@ namespace
         {
             if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
             {
-                osc::AutoFocus(m_Camera, GetScratchMesh(*m_State, m_DocumentIdentifier).getBounds());
+                osc::AutoFocus(m_Camera, GetScratchMesh(*m_State, m_DocumentIdentifier).getBounds(), osc::AspectRatio(m_LastTextureHittestResult.rect));
                 m_State->LinkedCameraBase = m_Camera;
             }
             osc::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
@@ -2221,7 +2221,7 @@ namespace
         {
             if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
             {
-                osc::AutoFocus(m_Camera, GetResultMesh(*m_State).getBounds());
+                osc::AutoFocus(m_Camera, GetResultMesh(*m_State).getBounds(), AspectRatio(m_LastTextureHittestResult.rect));
                 m_State->LinkedCameraBase = m_Camera;
             }
             osc::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
