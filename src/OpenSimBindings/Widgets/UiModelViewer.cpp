@@ -190,6 +190,54 @@ namespace
         std::vector<osc::SceneDecoration> m_Decorations;
         osc::BVH m_BVH;
     };
+
+    class IconWithMenu {
+    public:
+        IconWithMenu(
+            osc::CStringView iconID,
+            osc::CStringView title,
+            osc::CStringView description,
+            std::function<void()> const& contentRenderer) :
+            m_IconID{iconID},
+            m_Title{title},
+            m_Description{description},
+            m_ContentRenderer{contentRenderer}
+        {
+        }
+
+        void draw()
+        {
+            auto const cache = osc::App::singleton<osc::IconCache>();
+            float const iconPadding = 2.0f;
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, iconPadding);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, glm::vec2{iconPadding});
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, glm::vec2{3.0f, 0.0f});
+            osc::Icon const& icon = cache->getIcon(m_IconID);
+
+            if (osc::ImageButton(m_ButtonID, icon.getTexture(), icon.getDimensions()))
+            {
+                ImGui::OpenPopup(m_ContextMenuID.c_str());
+            }
+            osc::DrawTooltipIfItemHovered(m_Title, m_Description);
+            if (ImGui::BeginPopup(m_ContextMenuID.c_str(),ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings))
+            {
+                m_ContentRenderer();
+                ImGui::EndPopup();
+            }
+            ImGui::Separator();
+            ImGui::SameLine();
+            ImGui::PopStyleVar();
+            ImGui::PopStyleVar();
+            ImGui::PopStyleColor();
+        }
+    private:
+        std::string m_IconID;
+        std::string m_ButtonID = "##" + m_IconID;
+        std::string m_ContextMenuID = "##" + m_IconID;
+        std::string m_Title;
+        std::string m_Description;
+        std::function<void()> m_ContentRenderer;
+    };
 }
 
 
@@ -348,6 +396,45 @@ private:
 
     void drawMainMenuContent()
     {
+        auto const cache = App::singleton<IconCache>();
+        float const iconPadding = 2.0f;
+
+        IconWithMenu muscleStylingButton
+        {
+            "muscle_styling",
+            "Muscle Styling",
+            "Affects the displayed geometry of any muscles",
+            []() { ImGui::Text("hello, world!"); },
+        };
+        muscleStylingButton.draw();
+
+        IconWithMenu muscleSizingButton
+        {
+            "muscle_sizing",
+            "Muscle Sizing",
+            "Affects the displayed radius of any muscles",
+            []() { ImGui::Text("radius menu!"); },
+        };
+        muscleSizingButton.draw();
+
+        IconWithMenu muscleColoringButton
+        {
+            "muscle_coloring",
+            "Muscle Coloring",
+            "Affects the displayed color of any muscles",
+            []() { ImGui::Text("coloring menu!"); },
+        };
+        muscleColoringButton.draw();
+
+        IconWithMenu vizAidsButton
+        {
+            "viz_aids",
+            "Visual Aids",
+            "Affects what's shown in the 3D scene",
+            []() { ImGui::Text("viz aids menu!"); },
+        };
+        vizAidsButton.draw();
+
         if (ImGui::BeginMenu("Options"))
         {
             drawOptionsMenuContent();
@@ -635,22 +722,6 @@ private:
 
     void drawImGuiOverlays()
     {
-        ImGui::SetCursorScreenPos(m_RenderImage.rect.p1 + glm::vec2{10.0f, 10.f});
-        auto cache = App::singleton<IconCache>();
-
-        for (auto id : {"muscle_styling", "muscle_coloring", "muscle_sizing", "viz_aids"})
-        {
-            Icon icon = cache->getIcon(id);
-            ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.0f, 0.0f, 0.0f});
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 16.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, glm::vec2{0.0f ,0.0f});
-            osc::ImageButton(id, icon.getTexture(), icon.getDimensions()/4);
-            ImGui::PopStyleVar();
-            ImGui::PopStyleVar();
-            ImGui::PopStyleColor();
-            ImGui::SameLine();
-        }
-
         if (m_Flags & osc::UiModelViewerFlags_DrawAlignmentAxes)
         {
             DrawAlignmentAxesOverlayInBottomRightOf(m_Camera.getViewMtx(), m_RenderImage.rect);

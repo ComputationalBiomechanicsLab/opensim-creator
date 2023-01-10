@@ -39,7 +39,7 @@ namespace osc
     void DrawTextureAsImGuiImage(RenderTexture const&);
 
     // draws a texture using ImGui::ImageButton
-    void ImageButton(CStringView, Texture2D const&, glm::vec2 dims);
+    bool ImageButton(CStringView, Texture2D const&, glm::vec2 dims);
 
     // returns the screenspace bounding rectangle of the last-drawn item
     Rect GetItemRect();

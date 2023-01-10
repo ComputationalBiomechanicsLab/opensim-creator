@@ -11,23 +11,30 @@
 #include <filesystem>
 #include <memory>
 
-osc::Texture2D osc::LoadTextureFromSVGFile(std::filesystem::path const& p)
+osc::Texture2D osc::LoadTextureFromSVGFile(std::filesystem::path const& p, float scale)
 {
+    // load the SVG document
     std::unique_ptr<lunasvg::Document> doc = lunasvg::Document::loadFromFile(p.string());
     OSC_ASSERT(doc != nullptr && "error loading SVG document");
-    lunasvg::Matrix m{1.0, 0.0, 0.0, -1.0, 0.0, doc->height()};  // column major: flip Y
+
+    // when rendering the document's contents, flip Y so that it's compatible with the
+    // renderer's coordinate system
+    lunasvg::Matrix m{1.0, 0.0, 0.0, -1.0, 0.0, doc->height()};
     doc->setMatrix(m);
-    lunasvg::Bitmap bitmap = doc->renderToBitmap(static_cast<uint32_t>(doc->width()), static_cast<uint32_t>(doc->height()), 0x00000000);
+
+    // render to a rescaled bitmap
+    glm::vec<2, uint32_t> const bitmapDimensions(static_cast<uint32_t>(scale*doc->width()), static_cast<uint32_t>(scale*doc->height()));
+    lunasvg::Bitmap bitmap = doc->renderToBitmap(bitmapDimensions.x, bitmapDimensions.y, 0x00000000);
     bitmap.convertToRGBA();
 
-    osc::Texture2D t(glm::ivec2(doc->width(), doc->height()), {bitmap.data(), bitmap.width()*bitmap.height()*4}, 4);
+    osc::Texture2D t({bitmap.width(), bitmap.height()}, {bitmap.data(), bitmap.width()*bitmap.height()*4}, 4);
     t.setWrapMode(osc::TextureWrapMode::Clamp);
     t.setFilterMode(osc::TextureFilterMode::Nearest);
 
     return t;
 }
 
-osc::Texture2D osc::LoadTextureFromSVGResource(std::string_view resourceName)
+osc::Texture2D osc::LoadTextureFromSVGResource(std::string_view resourceName, float scale)
 {
     return LoadTextureFromSVGFile(osc::App::resource(resourceName));
 }
