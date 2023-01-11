@@ -11,6 +11,7 @@
 #include "src/OpenSimBindings/Widgets/NavigatorPanel.hpp"
 #include "src/OpenSimBindings/Widgets/ModelEditorMainMenu.hpp"
 #include "src/OpenSimBindings/Widgets/ModelMusclePlotPanel.hpp"
+#include "src/OpenSimBindings/Widgets/ModelEditorToolbar.hpp"
 #include "src/OpenSimBindings/Widgets/OutputWatchesPanel.hpp"
 #include "src/OpenSimBindings/Widgets/ParamBlockEditorPopup.hpp"
 #include "src/OpenSimBindings/Widgets/PropertiesPanel.hpp"
@@ -55,45 +56,6 @@
 #include <sstream>
 #include <utility>
 #include <vector>
-
-namespace
-{
-    class ModelEditorToolbar final {
-    public:
-        ModelEditorToolbar(
-            std::string_view label,
-            osc::MainUIStateAPI* api,
-            std::shared_ptr<osc::UndoableModelStatePair> model) :
-
-            m_Label{std::move(label)},
-            m_Parent{api},
-            m_Model{std::move(model)}
-        {
-        }
-
-        void draw()
-        {
-            float const height = ImGui::GetFrameHeight() + 2.0f*ImGui::GetStyle().WindowPadding.y;
-            ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
-            if (osc::BeginMainViewportTopBar(m_Label, height, flags))
-            {
-                drawContent();
-            }
-            ImGui::End();
-        }
-    private:
-        void drawContent()
-        {
-            if (ImGui::Button(ICON_FA_FILE))
-            {
-            }
-        }
-
-        std::string m_Label;
-        osc::MainUIStateAPI* m_Parent;
-        std::shared_ptr<osc::UndoableModelStatePair> m_Model;
-    };
-}
 
 class osc::ModelEditorTab::Impl final : public EditorAPI {
 public:
