@@ -490,7 +490,7 @@ endif()
 #
 # used for loading SVG icon files at runtime
 if(TRUE)
-    set(LUNASVG_INSTALL OFF)
+    set(LUNASVG_INSTALL OFF CACHE BOOL "install lunasvg" FORCE)
     add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/third_party/lunasvg")
 endif()
 
