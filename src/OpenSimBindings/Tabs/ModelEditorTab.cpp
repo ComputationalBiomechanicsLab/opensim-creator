@@ -97,7 +97,9 @@ namespace
 
 class osc::ModelEditorTab::Impl final : public EditorAPI {
 public:
-    Impl(MainUIStateAPI* parent, std::unique_ptr<UndoableModelStatePair> model) :
+    Impl(MainUIStateAPI* parent,
+        std::unique_ptr<UndoableModelStatePair> model) :
+
         m_Parent{std::move(parent)},
         m_Model{std::move(model)}
     {
@@ -145,7 +147,7 @@ public:
     {
         if (e.type == SDL_KEYDOWN)
         {
-            return onKeydown(e.key);
+            return onKeydownEvent(e.key);
         }
         else if (e.type == SDL_DROPFILE)
         {
@@ -241,7 +243,7 @@ private:
         return false;
     }
 
-    bool onKeydown(SDL_KeyboardEvent const& e)
+    bool onKeydownEvent(SDL_KeyboardEvent const& e)
     {
         if (osc::IsCtrlOrSuperDown())
         {
@@ -280,72 +282,6 @@ private:
         }
 
         return false;
-    }
-
-    int getNumMusclePlots() const
-    {
-        return static_cast<int>(m_ModelMusclePlots.size());
-    }
-
-    ModelMusclePlotPanel const& getMusclePlot(int idx) const
-    {
-        return m_ModelMusclePlots.at(idx);
-    }
-
-    ModelMusclePlotPanel& updMusclePlot(int idx)
-    {
-        return m_ModelMusclePlots.at(idx);
-    }
-
-    size_t implGetNumMusclePlots() final
-    {
-        return m_ModelMusclePlots.size();
-    }
-
-    ModelMusclePlotPanel const& implGetMusclePlot(ptrdiff_t i) final
-    {
-        return m_ModelMusclePlots.at(i);
-    }
-
-    void implAddEmptyMusclePlot() final
-    {
-        m_ModelMusclePlots.emplace_back(this, m_Model, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++));
-    }
-
-    void implAddMusclePlot(OpenSim::Coordinate const& coord, OpenSim::Muscle const& muscle) final
-    {
-        m_ModelMusclePlots.emplace_back(this, m_Model, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++), coord.getAbsolutePath(), muscle.getAbsolutePath());
-    }
-
-    void implDeleteMusclePlot(ptrdiff_t i) final
-    {
-        m_ModelMusclePlots.erase(m_ModelMusclePlots.begin() + i);
-    }
-
-    void implAddVisualizer() final
-    {
-        m_ModelViewers.emplace_back();
-    }
-
-    size_t implGetNumModelVisualizers() final
-    {
-        return m_ModelViewers.size();
-    }
-
-    std::string implGetModelVisualizerName(ptrdiff_t i) final
-    {
-        return "viewer" + std::to_string(i);
-    }
-
-    void implDeleteVisualizer(ptrdiff_t i) final
-    {
-        m_ModelViewers.erase(m_ModelViewers.begin() + i);
-    }
-
-    void removeMusclePlot(int idx)
-    {
-        OSC_ASSERT(0 <= idx && idx < static_cast<int>(m_ModelMusclePlots.size()));
-        m_ModelMusclePlots.erase(m_ModelMusclePlots.begin() + idx);
     }
 
     // draw a single 3D model viewer
@@ -536,9 +472,9 @@ private:
             OSC_PERF("draw muscle plots");
 
             // draw model muscle plots (if applicable)
-            for (int i = 0; i < getNumMusclePlots(); ++i)
+            for (size_t i = 0; i < m_ModelMusclePlots.size(); ++i)
             {
-                updMusclePlot(i).draw();
+                m_ModelMusclePlots.at(static_cast<size_t>(i)).draw();
             }
         }
 
@@ -549,6 +485,8 @@ private:
         m_Popups.draw();
     }
 
+    // EditorAPI IMPL
+
     void implPushComponentContextMenuPopup(OpenSim::ComponentPath const& path) final
     {
         auto popup = std::make_unique<ComponentContextMenu>(
@@ -557,7 +495,7 @@ private:
             this,
             m_Model,
             path
-        );
+            );
         pushPopup(std::move(popup));
     }
 
@@ -565,6 +503,51 @@ private:
     {
         popup->open();
         m_Popups.push_back(std::move(popup));
+    }
+
+    size_t implGetNumMusclePlots() final
+    {
+        return m_ModelMusclePlots.size();
+    }
+
+    ModelMusclePlotPanel const& implGetMusclePlot(ptrdiff_t i) final
+    {
+        return m_ModelMusclePlots.at(i);
+    }
+
+    void implAddEmptyMusclePlot() final
+    {
+        m_ModelMusclePlots.emplace_back(this, m_Model, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++));
+    }
+
+    void implAddMusclePlot(OpenSim::Coordinate const& coord, OpenSim::Muscle const& muscle) final
+    {
+        m_ModelMusclePlots.emplace_back(this, m_Model, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++), coord.getAbsolutePath(), muscle.getAbsolutePath());
+    }
+
+    void implDeleteMusclePlot(ptrdiff_t i) final
+    {
+        m_ModelMusclePlots.erase(m_ModelMusclePlots.begin() + i);
+    }
+
+    void implAddVisualizer() final
+    {
+        m_ModelViewers.emplace_back();
+    }
+
+    size_t implGetNumModelVisualizers() final
+    {
+        return m_ModelViewers.size();
+    }
+
+    std::string implGetModelVisualizerName(ptrdiff_t i) final
+    {
+        return "viewer" + std::to_string(i);
+    }
+
+    void implDeleteVisualizer(ptrdiff_t i) final
+    {
+        m_ModelViewers.erase(m_ModelViewers.begin() + i);
     }
 
     // tab data
