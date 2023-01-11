@@ -504,6 +504,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/Widgets/MainMenu.hpp
     src/OpenSimBindings/Widgets/ModelActionsMenuItems.cpp
     src/OpenSimBindings/Widgets/ModelActionsMenuItems.hpp
+    src/OpenSimBindings/Widgets/ModelEditorMainMenu.cpp
+    src/OpenSimBindings/Widgets/ModelEditorMainMenu.hpp
     src/OpenSimBindings/Widgets/ModelMusclePlotPanel.cpp
     src/OpenSimBindings/Widgets/ModelMusclePlotPanel.hpp
     src/OpenSimBindings/Widgets/NavigatorPanel.cpp
