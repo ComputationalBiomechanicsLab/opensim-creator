@@ -52,21 +52,6 @@ public:
         drawMainMenuToolsTab();
         drawMainMenuWindowTab();
         m_MainMenuAboutTab.draw();
-
-        ImGui::Separator();
-
-        ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
-        if (ImGui::Button(ICON_FA_PLAY " Simulate (Ctrl+R)"))
-        {
-            osc::ActionStartSimulatingModel(*m_MainUIStateAPI, *m_Model);
-        }
-        osc::App::upd().addFrameAnnotation("Simulate Button", osc::GetItemRect());
-        ImGui::PopStyleColor();
-
-        if (ImGui::Button(ICON_FA_EDIT " Edit simulation settings"))
-        {
-            m_EditorAPI->pushPopup(std::make_unique<osc::ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
-        }
     }
 
 private:

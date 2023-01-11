@@ -1,8 +1,13 @@
 #include "ModelEditorToolbar.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "src/OpenSimBindings/Widgets/ParamBlockEditorPopup.hpp"
+#include "src/OpenSimBindings/ActionFunctions.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/Platform/App.hpp"
+#include "src/Platform/Styling.hpp"
 
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
@@ -16,11 +21,13 @@ class osc::ModelEditorToolbar::Impl final {
 public:
     Impl(
         std::string_view label,
-        osc::MainUIStateAPI* api,
+        MainUIStateAPI* mainUIStateAPI,
+        EditorAPI* editorAPI,
         std::shared_ptr<osc::UndoableModelStatePair> model) :
 
         m_Label{std::move(label)},
-        m_Parent{api},
+        m_MainUIStateAPI{mainUIStateAPI},
+        m_EditorAPI{editorAPI},
         m_Model{std::move(model)}
     {
     }
@@ -38,22 +45,35 @@ public:
 private:
     void drawContent()
     {
-        if (ImGui::Button(ICON_FA_FILE))
+        ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
+        if (ImGui::Button(ICON_FA_PLAY " Simulate (Ctrl+R)"))
         {
+            osc::ActionStartSimulatingModel(*m_MainUIStateAPI, *m_Model);
+        }
+        App::upd().addFrameAnnotation("Simulate Button", osc::GetItemRect());
+        ImGui::PopStyleColor();
+
+        ImGui::SameLine();
+
+        if (ImGui::Button(ICON_FA_EDIT " Edit simulation settings"))
+        {
+            m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
         }
     }
 
     std::string m_Label;
-    osc::MainUIStateAPI* m_Parent;
+    MainUIStateAPI* m_MainUIStateAPI;
+    EditorAPI* m_EditorAPI;
     std::shared_ptr<osc::UndoableModelStatePair> m_Model;
 };
 
 osc::ModelEditorToolbar::ModelEditorToolbar(
     std::string_view label,
-    MainUIStateAPI* api,
+    MainUIStateAPI* mainUIStateAPI,
+    EditorAPI* editorAPI,
     std::shared_ptr<UndoableModelStatePair> model) :
 
-    m_Impl{std::make_unique<Impl>(std::move(label), api, std::move(model))}
+    m_Impl{std::make_unique<Impl>(std::move(label), mainUIStateAPI, editorAPI, std::move(model))}
 {
 }
 osc::ModelEditorToolbar::ModelEditorToolbar(ModelEditorToolbar&&) noexcept = default;

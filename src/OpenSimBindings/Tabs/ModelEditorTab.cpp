@@ -525,7 +525,7 @@ private:
 
     // UI widgets/popups
     ModelEditorMainMenu m_MainMenu{m_Parent, this, m_Model};
-    ModelEditorToolbar m_Toolbar{"##ModelEditorToolbar", m_Parent, m_Model};
+    ModelEditorToolbar m_Toolbar{"##ModelEditorToolbar", m_Parent, this, m_Model};
     LogViewer m_LogViewer;
     NavigatorPanel m_NavigatorPanel{"Navigator", [this](OpenSim::ComponentPath const& p)  { this->pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_Parent, this, m_Model, p)); }};
     CoordinateEditor m_CoordEditor{m_Parent, this, m_Model};
