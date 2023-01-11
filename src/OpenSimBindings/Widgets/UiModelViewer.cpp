@@ -825,7 +825,6 @@ private:
             }
 
             ImGui::SameLine();
-            ImGui::Dummy({ImGui::GetTextLineHeight()*0.25f, 0.0f});
             ImGui::SameLine();
 
             IconWithoutMenu zoomInButton
@@ -880,7 +879,6 @@ private:
             }
 
             ImGui::SameLine();
-            ImGui::Dummy({ImGui::GetTextLineHeight()*0.25f, 0.0f});
             ImGui::SameLine();
 
             IconWithoutMenu zoomOutButton
@@ -894,9 +892,42 @@ private:
                 ZoomOut(m_Camera);
             }
 
+            ImGui::SameLine();
+
+            float const iconHeight = secondLineTopLeft.y - firstLineTopLeft.y;
+            glm::vec2 const midlineTopLeft = {ImGui::GetCursorScreenPos().x, secondLineTopLeft.y - 0.5f*iconHeight};
+
+            ImGui::SetCursorScreenPos(midlineTopLeft);
+            IconWithoutMenu autoFocusButton
+            {
+                "zoomauto",
+                "Auto-Focus Camera",
+                "Try to automatically adjust the camera's zoom etc. to suit the model's dimensions. Hotkey: Ctrl+F",
+            };
+            if (autoFocusButton.draw())
+            {
+                m_AutoFocusCameraNextFrame = true;
+            }
+
+            ImGui::SameLine();
+            ImGui::SameLine();
+
+            ImGui::SetCursorScreenPos({ImGui::GetCursorScreenPos().x, secondLineTopLeft.y - 0.5f*iconHeight});
+
+
+            IconWithoutMenu screenshotButton
+            {
+                "screenshot",
+                "Export to .dae",
+                "Try to export the 3D scene to a portable DAE file, so that it can be viewed in 3rd-party modelling software, such as Blender",
+            };
+            if (screenshotButton.draw())
+            {
+                TryExportSceneToDAE(m_Scene.getDrawlist());
+            }
+
             //ImGui::PopStyleColor();
         }
-
     }
 
     // widget state
