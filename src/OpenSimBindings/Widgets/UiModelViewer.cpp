@@ -261,7 +261,7 @@ namespace
 
             if (ImGui::BeginPopup(m_ContextMenuID.c_str(),ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings))
             {
-                ImGui::TextDisabled(m_IconWithoutMenu.getTitle().c_str());
+                ImGui::TextDisabled("%s", m_IconWithoutMenu.getTitle().c_str());
                 ImGui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
                 m_ContentRenderer();
                 ImGui::EndPopup();
