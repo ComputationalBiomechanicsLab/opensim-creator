@@ -10,6 +10,7 @@
 #include "src/Platform/Styling.hpp"
 
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <IconsFontAwesome5.h>
 
 #include <memory>
@@ -45,8 +46,85 @@ public:
 private:
     void drawContent()
     {
+        if (ImGui::Button(ICON_FA_FILE))
+        {
+            ActionNewModel(*m_MainUIStateAPI);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button(ICON_FA_FOLDER_OPEN))
+        {
+            ActionOpenModel(*m_MainUIStateAPI);
+        }
+        // TODO: recent files arrow
+        ImGui::SameLine();
+        if (ImGui::Button(ICON_FA_SAVE))
+        {
+            ActionSaveModel(*m_MainUIStateAPI, *m_Model);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button(ICON_FA_REDO))
+        {
+            ActionReloadOsimFromDisk(*m_Model);
+        }
+
+        ImGui::SameLine();
+        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+        ImGui::SameLine();
+
+        // undo button
+        {
+            if (ImGui::Button(ICON_FA_UNDO))
+            {
+                // TODO
+            }
+        }
+        ImGui::SameLine();
+        // redo button
+        {
+            if (ImGui::Button(ICON_FA_REDO))
+            {
+                // TODO
+            }
+        }
+
+        ImGui::SameLine();
+        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+        ImGui::SameLine();
+
+        // TODO: tooltip on hover
+        ImGui::TextUnformatted(ICON_FA_EXPAND_ALT);
+
+        ImGui::SameLine();
+
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 5.0f});
+
+        {
+            float scaleFactor = m_Model->getFixupScaleFactor();
+            ImGui::SetNextItemWidth(ImGui::CalcTextSize("0.00000").x);
+            if (ImGui::InputFloat("##scaleinput", &scaleFactor))
+            {
+                osc::ActionSetModelSceneScaleFactorTo(*m_Model, scaleFactor);
+            }
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
+        {
+            osc::ActionAutoscaleSceneScaleFactor(*m_Model);
+        }
+        osc::DrawTooltipIfItemHovered("Autoscale Scale Factor", "Try to autoscale the model's scale factor based on the current dimensions of the model");
+
+        ImGui::PopStyleVar();
+
+        ImGui::SameLine();
+        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+        ImGui::SameLine();
+
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
+
         ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
-        if (ImGui::Button(ICON_FA_PLAY " Simulate (Ctrl+R)"))
+        if (ImGui::Button(ICON_FA_PLAY))
         {
             osc::ActionStartSimulatingModel(*m_MainUIStateAPI, *m_Model);
         }
@@ -55,10 +133,14 @@ private:
 
         ImGui::SameLine();
 
-        if (ImGui::Button(ICON_FA_EDIT " Edit simulation settings"))
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.0f, ImGui::GetStyle().FramePadding.y});
+        if (ImGui::Button(ICON_FA_EDIT))
         {
             m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
         }
+        ImGui::PopStyleVar();
+
+        ImGui::PopStyleVar();
     }
 
     std::string m_Label;
