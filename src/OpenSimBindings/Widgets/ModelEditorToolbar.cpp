@@ -107,29 +107,64 @@ private:
 
     void drawReloadButton()
     {
-        // TODO: disable if no backing file
+        if (!HasInputFileName(m_Model->getModel()))
+        {
+            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
+        }
+
         if (ImGui::Button(ICON_FA_RECYCLE))
         {
             ActionReloadOsimFromDisk(*m_Model);
         }
+
+        if (!HasInputFileName(m_Model->getModel()))
+        {
+            ImGui::PopItemFlag();
+            ImGui::PopStyleVar();
+        }
+
         osc::DrawTooltipIfItemHovered("Reload Model", "Reloads the model from its source osim file");
     }
 
     void drawUndoButton()
     {
-        // TODO: disable if cannot undo
+        if (!m_Model->canUndo())
+        {
+            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
+        }
+
         if (ImGui::Button(ICON_FA_UNDO))
         {
             ActionUndoCurrentlyEditedModel(*m_Model);
+        }
+
+        if (!m_Model->canUndo())
+        {
+            ImGui::PopItemFlag();
+            ImGui::PopStyleVar();
         }
         osc::DrawTooltipIfItemHovered("Undo", "Undo the model to an earlier version");
     }
 
     void drawRedoButton()
     {
+        if (!m_Model->canRedo())
+        {
+            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
+        }
+
         if (ImGui::Button(ICON_FA_REDO))
         {
             ActionRedoCurrentlyEditedModel(*m_Model);
+        }
+
+        if (!m_Model->canRedo())
+        {
+            ImGui::PopItemFlag();
+            ImGui::PopStyleVar();
         }
         osc::DrawTooltipIfItemHovered("Redo", "Redo the model to an undone version");
     }
