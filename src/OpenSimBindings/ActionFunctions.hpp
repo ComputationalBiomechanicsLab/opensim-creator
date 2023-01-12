@@ -74,6 +74,12 @@ namespace osc
     // toggle model frame visibility
     bool ActionToggleFrames(UndoableModelStatePair&);
 
+    // toggle model marker visibility
+    bool ActionToggleMarkers(UndoableModelStatePair&);
+
+    // toggle model wrap geometry visibility
+    bool ActionToggleWrapGeometry(UndoableModelStatePair&);
+
     // open the parent directory of the model's backing file (if applicable) in an OS file explorer window
     bool ActionOpenOsimParentDirectory(UndoableModelStatePair&);
 

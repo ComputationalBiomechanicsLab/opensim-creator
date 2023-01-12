@@ -253,4 +253,22 @@ namespace osc
     bool TrySetAppearancePropertyIsVisibleTo(OpenSim::Component&, bool);
 
     glm::vec4 GetSuggestedBoneColor() noexcept;  // best guess, based on shaders etc.
+
+    // returns `true` if the given model's display properties asks to show frames
+    bool IsShowingFrames(OpenSim::Model const&);
+
+    // toggles the model's "show frames" display property and returns the new value
+    bool ToggleShowingFrames(OpenSim::Model&);
+
+    // returns `true` if the given model's display properties ask to show markers
+    bool IsShowingMarkers(OpenSim::Model const&);
+
+    // toggles the model's "show markers" display property and returns the new value
+    bool ToggleShowingMarkers(OpenSim::Model&);
+
+    // returns `true` if the given model's display properties asks to show wrap geometry
+    bool IsShowingWrapGeometry(OpenSim::Model const&);
+
+    // toggles the model's "show wrap geometry" display property and returns the new value
+    bool ToggleShowingWrapGeometry(OpenSim::Model&);
 }

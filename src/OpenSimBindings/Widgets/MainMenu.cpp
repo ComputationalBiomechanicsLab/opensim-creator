@@ -47,6 +47,9 @@ osc::MainMenuFileTab::MainMenuFileTab() :
     recentlyOpenedFiles{App::get().getRecentFiles()}
 {
     std::sort(exampleOsimFiles.begin(), exampleOsimFiles.end(), IsFilenameLexographicallyGreaterThan);
+
+    // they're stored oldest -> newest but should be presented newest -> oldest
+    std::reverse(recentlyOpenedFiles.begin(), recentlyOpenedFiles.end());
 }
 
 void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* maybeModel)
@@ -101,9 +104,8 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
     if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN " Open Recent", !recentlyOpenedFiles.empty()))
     {
         // iterate in reverse: recent files are stored oldest --> newest
-        for (auto it = recentlyOpenedFiles.rbegin(); it != recentlyOpenedFiles.rend(); ++it)
+        for (RecentFile const& rf : recentlyOpenedFiles)
         {
-            RecentFile const& rf = *it;
             ImGui::PushID(++imgui_id);
             if (ImGui::MenuItem(rf.path.filename().string().c_str()))
             {

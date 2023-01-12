@@ -50,7 +50,7 @@ void osc::ImGuiApplyDarkTheme()
     // see: https://github.com/ocornut/imgui/issues/707
     // this one: https://github.com/ocornut/imgui/issues/707#issuecomment-512669512
 
-    ImGui::GetStyle().FrameRounding = 2.0f;
+    ImGui::GetStyle().FrameRounding = 0.0f;
     ImGui::GetStyle().GrabRounding = 20.0f;
     ImGui::GetStyle().GrabMinSize = 10.0f;
 

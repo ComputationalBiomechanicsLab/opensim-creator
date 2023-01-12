@@ -1660,3 +1660,39 @@ glm::vec4 osc::GetSuggestedBoneColor() noexcept
     float brightenAmount = 0.1f;
     return glm::mix(usualDefault, white, brightenAmount);
 }
+
+bool osc::IsShowingFrames(OpenSim::Model const& model)
+{
+    return model.getDisplayHints().get_show_frames();
+}
+
+bool osc::ToggleShowingFrames(OpenSim::Model& model)
+{
+    bool const newValue = !IsShowingFrames(model);
+    model.updDisplayHints().set_show_frames(newValue);
+    return newValue;
+}
+
+bool osc::IsShowingMarkers(OpenSim::Model const& model)
+{
+    return model.getDisplayHints().get_show_markers();
+}
+
+bool osc::ToggleShowingMarkers(OpenSim::Model& model)
+{
+    bool const newValue = !IsShowingMarkers(model);
+    model.updDisplayHints().set_show_markers(newValue);
+    return newValue;
+}
+
+bool osc::IsShowingWrapGeometry(OpenSim::Model const& model)
+{
+    return model.getDisplayHints().get_show_wrap_geometry();
+}
+
+bool osc::ToggleShowingWrapGeometry(OpenSim::Model& model)
+{
+    bool const newValue = !IsShowingWrapGeometry(model);
+    model.updDisplayHints().set_show_wrap_geometry(newValue);
+    return newValue;
+}

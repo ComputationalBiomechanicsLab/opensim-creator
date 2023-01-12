@@ -5,6 +5,8 @@
 #include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
 
+#include <imgui.h>
+
 #include <filesystem>
 #include <memory>
 #include <stdexcept>
@@ -27,7 +29,7 @@ public:
         {
             if (p.extension() == ".svg")
             {
-                Texture2D texture = LoadTextureFromSVGFile(p, 0.2f);
+                Texture2D texture = LoadTextureFromSVGFile(p, ImGui::GetTextLineHeight()/128.0f);
                 texture.setFilterMode(TextureFilterMode::Mipmap);
                 m_Icons.try_emplace(p.stem().string(), std::move(texture), glm::vec2{0.0f, 1.0f}, glm::vec2{1.0f, 0.0f});
             }

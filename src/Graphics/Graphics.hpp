@@ -1,5 +1,6 @@
-#include "src/Graphics/MaterialPropertyBlock.hpp"
+#pragma once
 
+#include "src/Graphics/MaterialPropertyBlock.hpp"
 #include "src/Graphics/BlitFlags.hpp"
 
 #include <glm/mat4x4.hpp>

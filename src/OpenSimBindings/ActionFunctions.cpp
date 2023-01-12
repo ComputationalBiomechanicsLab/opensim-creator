@@ -434,19 +434,56 @@ bool osc::ActionToggleFrames(UndoableModelStatePair& uim)
     try
     {
         OpenSim::Model& mutModel = uim.updModel();
-
-        bool const showingFrames = mutModel.get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
-
-        mutModel.upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
+        bool const newState = osc::ToggleShowingFrames(mutModel);
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
-        uim.commit(showingFrames ? "hidden frames" : "shown frames");
+        uim.commit(newState ? "shown frames" : "hidden frames");
 
         return true;
     }
     catch (std::exception const& ex)
     {
         log::error("error detected while trying to toggle frames: %s", ex.what());
+        uim.rollback();
+        return false;
+    }
+}
+
+bool osc::ActionToggleMarkers(UndoableModelStatePair& uim)
+{
+    try
+    {
+        OpenSim::Model& mutModel = uim.updModel();
+        bool const newState = osc::ToggleShowingMarkers(mutModel);
+        osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
+        uim.commit(newState ? "shown markers" : "hidden markers");
+
+        return true;
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error detected while trying to toggle markers: %s", ex.what());
+        uim.rollback();
+        return false;
+    }
+}
+
+bool osc::ActionToggleWrapGeometry(UndoableModelStatePair& uim)
+{
+    try
+    {
+        OpenSim::Model& mutModel = uim.updModel();
+        bool const newState = osc::ToggleShowingWrapGeometry(mutModel);
+        osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
+        uim.commit(newState ? "shown wrap geometry" : "hidden wrap geometry");
+
+        return true;
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error detected while trying to toggle wrap geometry: %s", ex.what());
         uim.rollback();
         return false;
     }

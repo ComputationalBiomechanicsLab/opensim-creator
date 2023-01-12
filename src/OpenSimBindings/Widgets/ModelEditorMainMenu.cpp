@@ -91,7 +91,7 @@ private:
 
             bool modelHasBackingFile = osc::HasInputFileName(m_Model->getModel());
 
-            if (ImGui::MenuItem(ICON_FA_REDO " Reload osim", nullptr, false, modelHasBackingFile))
+            if (ImGui::MenuItem(ICON_FA_RECYCLE " Reload osim", nullptr, false, modelHasBackingFile))
             {
                 osc::ActionReloadOsimFromDisk(*m_Model);
             }
