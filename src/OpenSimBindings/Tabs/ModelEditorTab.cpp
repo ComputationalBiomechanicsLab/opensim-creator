@@ -252,7 +252,7 @@ private:
         bool isOpen = true;
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-        bool shown = ImGui::Begin(name, &isOpen, ImGuiWindowFlags_MenuBar);
+        bool shown = ImGui::Begin(name, &isOpen);
         ImGui::PopStyleVar();
 
         if (!isOpen)

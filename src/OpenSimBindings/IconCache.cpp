@@ -29,17 +29,40 @@ public:
         {
             if (p.extension() == ".svg")
             {
-                Texture2D texture = LoadTextureFromSVGFile(p, ImGui::GetTextLineHeight()/128.0f);
-                texture.setFilterMode(TextureFilterMode::Mipmap);
-                m_Icons.try_emplace(p.stem().string(), std::move(texture), glm::vec2{0.0f, 1.0f}, glm::vec2{1.0f, 0.0f});
+                // normal size
+                {
+                    Texture2D texture = LoadTextureFromSVGFile(p, ImGui::GetTextLineHeight()/128.0f);
+                    texture.setFilterMode(TextureFilterMode::Mipmap);
+                    m_Icons.try_emplace(p.stem().string(), std::move(texture), glm::vec2{0.0f, 1.0f}, glm::vec2{1.0f, 0.0f});
+                }
+
+                // larger
+                {
+                    Texture2D texture = LoadTextureFromSVGFile(p, 1.5f*ImGui::GetTextLineHeight()/128.0f);
+                    texture.setFilterMode(TextureFilterMode::Mipmap);
+                    m_LargerIcons.try_emplace(p.stem().string(), std::move(texture), glm::vec2{0.0f, 1.0f}, glm::vec2{1.0f, 0.0f});
+                }
             }
         }
     }
 
     Icon const& getIcon(std::string_view iconName) const
     {
-        auto const it = m_Icons.find(std::string{iconName});
-        if (it != m_Icons.end())
+        return getIcon(m_Icons, std::move(iconName));
+    }
+
+    Icon const& getIconLarger(std::string_view iconName) const
+    {
+        return getIcon(m_LargerIcons, std::move(iconName));
+    }
+
+private:
+
+
+    Icon const& getIcon(std::unordered_map<std::string, Icon> const& storage, std::string_view iconName) const
+    {
+        auto const it = storage.find(std::string{iconName});
+        if (it != storage.end())
         {
             return it->second;
         }
@@ -51,8 +74,8 @@ public:
         }
     }
 
-private:
     std::unordered_map<std::string, Icon> m_Icons;
+    std::unordered_map<std::string, Icon> m_LargerIcons;
 };
 
 
@@ -69,4 +92,9 @@ osc::IconCache::~IconCache() noexcept = default;
 osc::Icon const& osc::IconCache::getIcon(std::string_view iconName) const
 {
     return m_Impl->getIcon(std::move(iconName));
+}
+
+osc::Icon const& osc::IconCache::getIconLarger(std::string_view iconName) const
+{
+    return m_Impl->getIconLarger(std::move(iconName));
 }
