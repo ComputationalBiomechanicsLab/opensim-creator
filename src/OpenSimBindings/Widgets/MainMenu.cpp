@@ -132,6 +132,8 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
         ImGui::EndMenu();
     }
 
+    ImGui::Separator();
+
     if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Load Motion", nullptr, false, maybeModel != nullptr))
     {
         std::optional<std::filesystem::path> maybePath = osc::PromptUserForFile("sto,mot");
@@ -153,6 +155,8 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
         }
     }
 
+    ImGui::Separator();
+
     if (ImGui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S", false, maybeModel != nullptr))
     {
         if (maybeModel)
@@ -169,12 +173,50 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
         }
     }
 
+    ImGui::Separator();
+
+    {
+        bool modelHasBackingFile = maybeModel && osc::HasInputFileName(maybeModel->getModel());
+
+        if (ImGui::MenuItem(ICON_FA_RECYCLE " Reload", nullptr, false, modelHasBackingFile))
+        {
+            osc::ActionReloadOsimFromDisk(*maybeModel);
+        }
+        osc::DrawTooltipIfItemHovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
+
+        if (ImGui::MenuItem(ICON_FA_CLIPBOARD " Copy .osim path to clipboard", nullptr, false, modelHasBackingFile))
+        {
+            osc::ActionCopyModelPathToClipboard(*maybeModel);
+        }
+        osc::DrawTooltipIfItemHovered("Copy .osim path to clipboard", "Copies the absolute path to the model's .osim file into your clipboard.\n\nThis is handy if you want to (e.g.) load the osim via a script, open it from the command line in another app, etc.");
+
+        if (ImGui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", nullptr, false, modelHasBackingFile))
+        {
+            osc::ActionOpenOsimParentDirectory(*maybeModel);
+        }
+
+        if (ImGui::MenuItem(ICON_FA_LINK " Open .osim in external editor", nullptr, false, modelHasBackingFile))
+        {
+            osc::ActionOpenOsimInExternalEditor(*maybeModel);
+        }
+        osc::DrawTooltipIfItemHovered("Open .osim in external editor", "Open the .osim file currently being edited in an external text editor. The editor that's used depends on your operating system's default for opening .osim files.");
+    }
+
+    // reload
+    // copy path to clipboard
+    // parent dir
+    // external editor
+
+    ImGui::Separator();
+
     if (ImGui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
     {
         UID tabID = api->addTab<MeshImporterTab>(api);
         api->selectTab(tabID);
     }
     osc::App::upd().addFrameAnnotation("MainMenu/ImportMeshesMenuItem", osc::GetItemRect());
+
+
 
     if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
     {

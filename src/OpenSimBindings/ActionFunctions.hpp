@@ -77,6 +77,9 @@ namespace osc
     // toggle model marker visibility
     bool ActionToggleMarkers(UndoableModelStatePair&);
 
+    // toggle contact geometry visibility
+    bool ActionToggleContactGeometry(UndoableModelStatePair&);
+
     // toggle model wrap geometry visibility
     bool ActionToggleWrapGeometry(UndoableModelStatePair&);
 

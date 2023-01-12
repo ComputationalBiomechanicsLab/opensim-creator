@@ -469,6 +469,26 @@ bool osc::ActionToggleMarkers(UndoableModelStatePair& uim)
     }
 }
 
+bool osc::ActionToggleContactGeometry(UndoableModelStatePair& uim)
+{
+    try
+    {
+        OpenSim::Model& mutModel = uim.updModel();
+        bool const newState = osc::ToggleShowingContactGeometry(mutModel);
+        osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
+        uim.commit(newState ? "shown contact geometry" : "hidden contact geometry");
+
+        return true;
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error detected while trying to toggle contact geometry: %s", ex.what());
+        uim.rollback();
+        return false;
+    }
+}
+
 bool osc::ActionToggleWrapGeometry(UndoableModelStatePair& uim)
 {
     try

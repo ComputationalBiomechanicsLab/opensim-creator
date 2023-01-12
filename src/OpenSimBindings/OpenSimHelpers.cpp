@@ -1696,3 +1696,15 @@ bool osc::ToggleShowingWrapGeometry(OpenSim::Model& model)
     model.updDisplayHints().set_show_wrap_geometry(newValue);
     return newValue;
 }
+
+bool osc::IsShowingContactGeometry(OpenSim::Model const& model)
+{
+    return model.getDisplayHints().get_show_contact_geometry();
+}
+
+bool osc::ToggleShowingContactGeometry(OpenSim::Model& model)
+{
+    bool const newValue = !IsShowingContactGeometry(model);
+    model.updDisplayHints().set_show_contact_geometry(newValue);
+    return newValue;
+}

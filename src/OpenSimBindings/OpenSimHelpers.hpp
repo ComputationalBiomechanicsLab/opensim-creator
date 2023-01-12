@@ -271,4 +271,10 @@ namespace osc
 
     // toggles the model's "show wrap geometry" display property and returns the new value
     bool ToggleShowingWrapGeometry(OpenSim::Model&);
+
+    // returns `true` if the given model's display properties asks to show contact geometry
+    bool IsShowingContactGeometry(OpenSim::Model const&);
+
+    // toggles the model's "show contact geometry" display property and returns the new value
+    bool ToggleShowingContactGeometry(OpenSim::Model&);
 }

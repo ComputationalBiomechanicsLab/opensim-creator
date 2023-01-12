@@ -41,6 +41,7 @@ public:
 
     void draw()
     {
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {5.0f, 5.0f});
         float const height = ImGui::GetFrameHeight() + 2.0f*ImGui::GetStyle().WindowPadding.y;
         ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
         if (osc::BeginMainViewportTopBar(m_Label, height, flags))
@@ -48,6 +49,7 @@ public:
             drawContent();
         }
         ImGui::End();
+        ImGui::PopStyleVar();
     }
 private:
     void drawNewModelButton()
@@ -61,7 +63,7 @@ private:
 
     void drawOpenButton()
     {
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
         if (ImGui::Button(ICON_FA_FOLDER_OPEN))
         {
             ActionOpenModel(*m_MainUIStateAPI);
@@ -165,6 +167,17 @@ private:
         osc::DrawTooltipIfItemHovered("Toggle Rendering Wrap Geometry", "Toggles whether wrap geometry should be rendered in the 3D scene.\n\nNOTE: This is a model-level property. Individual wrap geometries *within* the model may have their visibility set to 'false', which will cause them to be hidden from the visualizer, even if this is enabled.");
     }
 
+    void drawToggleContactGeometryButton()
+    {
+        auto cache = App::singleton<IconCache>();
+        Icon const icon = cache->getIcon(IsShowingContactGeometry(m_Model->getModel()) ? "contact_colored" : "contact");
+        if (osc::ImageButton("##togglecontactgeom", icon.getTexture(), icon.getDimensions()))
+        {
+            ActionToggleContactGeometry(*m_Model);
+        }
+        osc::DrawTooltipIfItemHovered("Toggle Rendering Contact Geometry", "Toggles whether contact geometry should be rendered in the 3D scene");
+    }
+
     void drawFileRelatedActionsGroup()
     {
         drawNewModelButton();
@@ -217,7 +230,7 @@ private:
 
     void drawSimulationGroup()
     {
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
 
         ImGui::PushStyleColor(ImGuiCol_Text, OSC_POSITIVE_RGBA);
         if (ImGui::Button(ICON_FA_PLAY))
@@ -248,6 +261,9 @@ private:
         ImGui::SameLine();
 
         drawToggleWrapGeometryButton();
+        ImGui::SameLine();
+
+        drawToggleContactGeometryButton();
     }
 
     void drawContent()

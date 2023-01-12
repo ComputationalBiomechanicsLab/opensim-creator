@@ -50,6 +50,7 @@ public:
         drawMainMenuEditTab();
         drawMainMenuAddTab();
         drawMainMenuToolsTab();
+        drawMainMenuActionsTab();
         drawMainMenuWindowTab();
         m_MainMenuAboutTab.draw();
     }
@@ -69,50 +70,12 @@ private:
                 osc::ActionRedoCurrentlyEditedModel(*m_Model);
             }
 
-            {
-                float scaleFactor = m_Model->getFixupScaleFactor();
-                if (ImGui::InputFloat("set scale factor", &scaleFactor))
-                {
-                    osc::ActionSetModelSceneScaleFactorTo(*m_Model, scaleFactor);
-                }
-            }
+            ImGui::Separator();
 
-            if (ImGui::MenuItem(ICON_FA_EXPAND_ARROWS_ALT " autoscale scale factor"))
+            if (ImGui::MenuItem("         Deselect", nullptr, false, m_Model->getSelected()))
             {
-                osc::ActionAutoscaleSceneScaleFactor(*m_Model);
+                m_Model->setSelected(nullptr);
             }
-            osc::DrawTooltipIfItemHovered("Autoscale Scale Factor", "Try to autoscale the model's scale factor based on the current dimensions of the model");
-
-            if (ImGui::MenuItem(ICON_FA_ARROWS_ALT " toggle frames"))
-            {
-                osc::ActionToggleFrames(*m_Model);
-            }
-            osc::DrawTooltipIfItemHovered("Toggle Frames", "Set the model's display properties to display physical frames");
-
-            bool modelHasBackingFile = osc::HasInputFileName(m_Model->getModel());
-
-            if (ImGui::MenuItem(ICON_FA_RECYCLE " Reload osim", nullptr, false, modelHasBackingFile))
-            {
-                osc::ActionReloadOsimFromDisk(*m_Model);
-            }
-            osc::DrawTooltipIfItemHovered("Reload osim file", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
-
-            if (ImGui::MenuItem(ICON_FA_CLIPBOARD " Copy .osim path to clipboard", nullptr, false, modelHasBackingFile))
-            {
-                osc::ActionCopyModelPathToClipboard(*m_Model);
-            }
-            osc::DrawTooltipIfItemHovered("Copy .osim path to clipboard", "Copies the absolute path to the model's .osim file into your clipboard.\n\nThis is handy if you want to (e.g.) load the osim via a script, open it from the command line in an other app, etc.");
-
-            if (ImGui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", nullptr, false, modelHasBackingFile))
-            {
-                osc::ActionOpenOsimParentDirectory(*m_Model);
-            }
-
-            if (ImGui::MenuItem(ICON_FA_LINK " Open .osim in external editor", nullptr, false, modelHasBackingFile))
-            {
-                osc::ActionOpenOsimInExternalEditor(*m_Model);
-            }
-            osc::DrawTooltipIfItemHovered("Open .osim in external editor", "Open the .osim file currently being edited in an external text editor. The editor that's used depends on your operating system's default for opening .osim files.");
 
             ImGui::EndMenu();
         }
@@ -141,6 +104,20 @@ private:
                 m_EditorAPI->pushPopup(std::make_unique<osc::ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
             }
 
+            if (ImGui::MenuItem("Simulate Against All Integrators (advanced)"))
+            {
+                osc::ActionSimulateAgainstAllIntegrators(*m_MainUIStateAPI, *m_Model);
+            }
+            osc::DrawTooltipIfItemHovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
+
+            ImGui::EndMenu();
+        }
+    }
+
+    void drawMainMenuActionsTab()
+    {
+        if (ImGui::BeginMenu("Actions"))
+        {
             if (ImGui::MenuItem("Disable all wrapping surfaces"))
             {
                 osc::ActionDisableAllWrappingSurfaces(*m_Model);
@@ -150,12 +127,6 @@ private:
             {
                 osc::ActionEnableAllWrappingSurfaces(*m_Model);
             }
-
-            if (ImGui::MenuItem("Simulate Against All Integrators (advanced)"))
-            {
-                osc::ActionSimulateAgainstAllIntegrators(*m_MainUIStateAPI, *m_Model);
-            }
-            osc::DrawTooltipIfItemHovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
 
             ImGui::EndMenu();
         }
