@@ -7580,7 +7580,17 @@ private:
         ImGui::PushID("##3DViewerOverlay");
 
         // bottom-left axes overlay
-        DrawAlignmentAxesOverlayInBottomRightOf(m_Shared->GetCamera().getViewMtx(), m_Shared->Get3DSceneRect());
+        {
+            ImGuiStyle const& style = ImGui::GetStyle();
+            Rect const& r = m_Shared->Get3DSceneRect();
+            glm::vec2 const topLeft =
+            {
+                r.p1.x + style.WindowPadding.x,
+                r.p2.y - style.WindowPadding.y - CalcAlignmentAxesDimensions().y,
+            };
+            ImGui::SetCursorScreenPos(topLeft);
+            DrawAlignmentAxes(m_Shared->GetCamera().getViewMtx());
+        }
 
         Rect sceneRect = m_Shared->Get3DSceneRect();
         glm::vec2 trPos = {sceneRect.p1.x + 100.0f, sceneRect.p2.y - 55.0f};

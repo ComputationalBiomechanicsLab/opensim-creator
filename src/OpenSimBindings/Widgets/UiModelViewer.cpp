@@ -217,17 +217,8 @@ namespace
         bool draw()
         {
             auto const cache = osc::App::singleton<osc::IconCache>();
-            float const iconPadding = 2.0f;
-            osc::Icon const& icon = cache->getIconLarger(m_IconID);
-
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, iconPadding);
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, glm::vec2{iconPadding});
-            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, glm::vec2{3.0f, 0.0f});
+            osc::Icon const& icon = cache->getIcon(m_IconID);
             bool rv = osc::ImageButton(m_ButtonID, icon.getTexture(), icon.getDimensions());
-            ImGui::PopStyleVar();
-            ImGui::PopStyleVar();
-            ImGui::PopStyleVar();
-
             osc::DrawTooltipIfItemHovered(m_Title, m_Description);
 
             return rv;
@@ -455,7 +446,16 @@ private:
         settingsButton.draw();
         ImGui::SameLine();
 
-        drawRulerMeasurementToggleButton();
+        IconWithoutMenu rulerButton
+        {
+            "mesh",
+            "Ruler",
+            "Roughly measure something in the scene",
+        };
+        if (rulerButton.draw())
+        {
+            m_Ruler.toggleMeasuring();
+        }
     }
 
     void drawMuscleStylingContextMenuContent()
@@ -546,26 +546,6 @@ private:
         ImGui::CheckboxFlags("AABBs", &m_Flags, osc::UiModelViewerFlags_DrawAABBs);
         ImGui::CheckboxFlags("BVH", &m_Flags, osc::UiModelViewerFlags_DrawBVH);
         ImGui::Checkbox("selection rims", &m_RendererParams.drawRims);
-    }
-
-    void drawRulerMeasurementToggleButton()
-    {
-        // TODO: disable appropriately
-        if (m_Ruler.isMeasuring())
-        {
-            if (ImGui::Button(ICON_FA_RULER))
-            {
-                m_Ruler.stopMeasuring();
-            }
-        }
-        else
-        {
-            if (ImGui::Button(ICON_FA_RULER))
-            {
-                m_Ruler.startMeasuring();
-            }
-            osc::DrawTooltipIfItemHovered("Measure distance", "EXPERIMENTAL: take a *rough* measurement of something in the scene - the UI for this needs to be improved, a lot ;)");
-        }
     }
 
     void drawSceneMenuContent()
@@ -757,27 +737,41 @@ private:
         }
     }
 
-    void drawImGuiOverlays()
+    void drawAlignmentAxes()
     {
-        drawMainMenu();
-
-        // draw alignment axes widget
-        if (m_Flags & osc::UiModelViewerFlags_DrawAlignmentAxes)
+        if (!(m_Flags & osc::UiModelViewerFlags_DrawAlignmentAxes))
         {
-            DrawAlignmentAxesOverlayInBottomRightOf(m_Camera.getViewMtx(), m_RenderImage.rect);
+            return;  // don't draw anything (they're disabled)
         }
 
-        // draw camera control buttons
+        ImGuiStyle const& style = ImGui::GetStyle();
+        glm::vec2 const alignmentAxesDims = osc::CalcAlignmentAxesDimensions();
+        glm::vec2 const axesTopLeft =
         {
-            float leftPadding = 110.0f;
-            float bottomPadding = 20.0f;
-            float rowPadding = 5.0f;
-            float panelHeight = 60.0f;
+            m_RenderImage.rect.p1.x + style.WindowPadding.x,
+            m_RenderImage.rect.p2.y - style.WindowPadding.y - alignmentAxesDims.y
+        };
+        ImGui::SetCursorScreenPos(axesTopLeft);
+        DrawAlignmentAxes(m_Camera.getViewMtx());
+    }
 
-            glm::vec2 firstLineTopLeft = { m_RenderImage.rect.p1.x + leftPadding, m_RenderImage.rect.p2.y - panelHeight - bottomPadding };
-            ImGui::SetCursorScreenPos(firstLineTopLeft);
+    void drawCameraControlButtons()
+    {
+        ImGuiStyle const& style = ImGui::GetStyle();
+        float const buttonHeight = 2.0f*style.FramePadding.y + ImGui::GetTextLineHeight();
+        float const rowSpacing = ImGui::GetStyle().FramePadding.y;
+        float const twoRowHeight = 2.0f*buttonHeight + rowSpacing;
+        float const xFirstRow= m_Flags & osc::UiModelViewerFlags_DrawAlignmentAxes ?
+            m_RenderImage.rect.p1.x + style.WindowPadding.x + CalcAlignmentAxesDimensions().x + style.ItemSpacing.x :
+            m_RenderImage.rect.p1.x + style.WindowPadding.x;
+        float const yFirstRow = (m_RenderImage.rect.p2.y - style.WindowPadding.y - 0.5f*CalcAlignmentAxesDimensions().y) - 0.5f*twoRowHeight;
 
-            //ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.0f, 0.0f, 0.0f});
+        glm::vec2 const firstRowTopLeft = {xFirstRow, yFirstRow};
+        float const midRowY = yFirstRow + 0.5f*(buttonHeight + rowSpacing);
+
+        // draw top row
+        {
+            ImGui::SetCursorScreenPos(firstRowTopLeft);
 
             IconWithoutMenu plusXbutton
             {
@@ -829,9 +823,11 @@ private:
             {
                 ZoomIn(m_Camera);
             }
+        }
 
-            glm::vec2 const secondLineTopLeft = {firstLineTopLeft.x, ImGui::GetCursorScreenPos().y + rowPadding};
-            ImGui::SetCursorScreenPos(secondLineTopLeft);
+        // draw bottom row
+        {
+            ImGui::SetCursorScreenPos({ firstRowTopLeft.x, ImGui::GetCursorScreenPos().y });
 
             IconWithoutMenu minusXbutton
             {
@@ -885,11 +881,13 @@ private:
             }
 
             ImGui::SameLine();
+            ImGui::SameLine();
+        }
 
-            float const iconHeight = secondLineTopLeft.y - firstLineTopLeft.y;
-            glm::vec2 const midlineTopLeft = {ImGui::GetCursorScreenPos().x, secondLineTopLeft.y - 0.5f*iconHeight};
+        // draw single row
+        {
+            ImGui::SetCursorScreenPos({ImGui::GetCursorScreenPos().x, midRowY});
 
-            ImGui::SetCursorScreenPos(midlineTopLeft);
             IconWithoutMenu autoFocusButton
             {
                 "zoomauto",
@@ -900,26 +898,14 @@ private:
             {
                 m_AutoFocusCameraNextFrame = true;
             }
-
-            ImGui::SameLine();
-            ImGui::SameLine();
-
-            ImGui::SetCursorScreenPos({ImGui::GetCursorScreenPos().x, secondLineTopLeft.y - 0.5f*iconHeight});
-
-
-            IconWithoutMenu screenshotButton
-            {
-                "screenshot",
-                "Export to .dae",
-                "Try to export the 3D scene to a portable DAE file, so that it can be viewed in 3rd-party modelling software, such as Blender",
-            };
-            if (screenshotButton.draw())
-            {
-                TryExportSceneToDAE(m_Scene.getDrawlist());
-            }
-
-            //ImGui::PopStyleColor();
         }
+    }
+
+    void drawImGuiOverlays()
+    {
+        drawMainMenu();
+        drawAlignmentAxes();
+        drawCameraControlButtons();
     }
 
     // widget state

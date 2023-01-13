@@ -23,6 +23,7 @@ namespace osc
         void draw(PolarPerspectiveCamera const&, Rect const& renderRect, std::optional<GuiRulerMouseHit>);
         void startMeasuring();
         void stopMeasuring();
+        void toggleMeasuring();
         bool isMeasuring() const;
 
     private:

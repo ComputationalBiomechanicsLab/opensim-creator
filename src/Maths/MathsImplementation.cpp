@@ -1124,6 +1124,11 @@ float osc::AspectRatio(glm::vec2 v) noexcept
     return v.x/v.y;
 }
 
+glm::vec2 osc::Midpoint(glm::vec2 a, glm::vec2 b) noexcept
+{
+    return 0.5f*(a+b);
+}
+
 glm::vec3 osc::Midpoint(glm::vec3 const& a, glm::vec3 const& b) noexcept
 {
     return 0.5f*(a+b);

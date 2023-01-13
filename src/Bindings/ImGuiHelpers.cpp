@@ -5,6 +5,7 @@
 #include "src/Graphics/Texture2D.hpp"
 #include "src/Maths/CollisionTests.hpp"
 #include "src/Maths/Constants.hpp"
+#include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Utils/Algorithms.hpp"
@@ -409,23 +410,30 @@ void osc::DrawTooltipIfItemHovered(CStringView header, CStringView description)
     }
 }
 
-void osc::DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect const& renderRect)
+glm::vec2 osc::CalcAlignmentAxesDimensions()
 {
-    float constexpr linelen = 35.0f;
     float const fontSize = ImGui::GetFontSize();
-    float const circleRadius = fontSize/1.5f;
-    float const padding = circleRadius + 3.0f;
+    float const linelen = 2.0f * fontSize;
+    float const circleRadius = 0.6f * fontSize;
+    float const edgeLen = 2.0f * (linelen + circleRadius);
+    return {edgeLen, edgeLen};
+}
+
+osc::Rect osc::DrawAlignmentAxes(glm::mat4 const& viewMtx)
+{
+    float const fontSize = ImGui::GetFontSize();
+    float const linelen = 2.0f * fontSize;
+    float const circleRadius = 0.6f * fontSize;
     ImU32 const whiteColorU32 = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
 
-    glm::vec2 const origin =
-    {
-        renderRect.p1.x + (linelen + padding),
-        renderRect.p2.y - (linelen + padding),
-    };
+    glm::vec2 const topLeft = ImGui::GetCursorScreenPos();
+    glm::vec2 const bottomRight = topLeft + 2.0f*(linelen + circleRadius);
+    Rect const bounds = {topLeft, bottomRight};
+    glm::vec2 const origin = Midpoint(bounds);
 
     auto const labels = osc::MakeSizedArray<char const*, 3>("X", "Y", "Z");
 
-    ImDrawList& dd = *ImGui::GetWindowDrawList();
+    ImDrawList& drawlist = *ImGui::GetWindowDrawList();
     for (size_t i = 0; i < std::size(labels); ++i)
     {
         glm::vec4 world = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -443,10 +451,12 @@ void osc::DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect
 
         glm::vec2 const ts = ImGui::CalcTextSize(labels[i]);
 
-        dd.AddLine(p1, p2, colorU32, 3.0f);
-        dd.AddCircleFilled(p2, circleRadius, colorU32);
-        dd.AddText(p2 - ts/2.0f, whiteColorU32, labels[i]);
+        drawlist.AddLine(p1, p2, colorU32, 3.0f);
+        drawlist.AddCircleFilled(p2, circleRadius, colorU32);
+        drawlist.AddText(p2 - ts/2.0f, whiteColorU32, labels[i]);
     }
+
+    return bounds;
 }
 
 // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it

@@ -95,8 +95,9 @@ namespace osc
     // equivalent to `if (ImGui::IsItemHovered()) DrawTooltip(header, description);`
     void DrawTooltipIfItemHovered(CStringView header, CStringView description = {});
 
-    // draw overlay axes in bottom-right of screenspace rect
-    void DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect const& renderRect);
+    // draw overlay axes at the cursor position and return the bounding box of those axes
+    glm::vec2 CalcAlignmentAxesDimensions();
+    Rect DrawAlignmentAxes(glm::mat4 const& viewMtx);
 
     // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
     void DrawHelpMarker(CStringView header, CStringView desc);

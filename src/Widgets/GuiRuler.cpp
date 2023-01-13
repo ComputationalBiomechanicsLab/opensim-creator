@@ -133,6 +133,18 @@ void osc::GuiRuler::stopMeasuring()
     m_State = State::Inactive;
 }
 
+void osc::GuiRuler::toggleMeasuring()
+{
+    if (m_State == State::Inactive)
+    {
+        m_State = State::WaitingForFirstPoint;
+    }
+    else
+    {
+        m_State = State::Inactive;
+    }
+}
+
 bool osc::GuiRuler::isMeasuring() const
 {
     return m_State != State::Inactive;

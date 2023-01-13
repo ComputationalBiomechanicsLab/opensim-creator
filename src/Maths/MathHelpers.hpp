@@ -75,7 +75,10 @@ namespace osc
     // returns the aspect ratio of the vec (effectively: x/y)
     float AspectRatio(glm::vec2) noexcept;
 
-    // returns the midpoint between two vectors (effectively: 0.5 * (x+y))
+    // returns the midpoint between two vectors (effectively: 0.5 * (a+b))
+    glm::vec2 Midpoint(glm::vec2, glm::vec2) noexcept;
+
+    // returns the midpoint between two vectors (effectively: 0.5 * (a+b))
     glm::vec3 Midpoint(glm::vec3 const&, glm::vec3 const&) noexcept;
 
     // returns the unweighted midpoint of all of the provided vectors, or {0.0f, 0.0f, 0.0f} if provided no inputs
