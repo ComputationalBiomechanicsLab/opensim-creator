@@ -5,7 +5,7 @@ osc::SceneRendererParams::SceneRendererParams() :
     samples{1},
     drawMeshNormals{false},
     drawRims{true},
-    drawShadows{false},
+    drawShadows{true},
     drawFloor{true},
     nearClippingPlane{0.1f},
     farClippingPlane{100.0f},

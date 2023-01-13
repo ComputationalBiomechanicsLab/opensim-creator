@@ -11,6 +11,7 @@ All notable changes to this project will be documented here. The format is based
 - The camera now auto-zooms the scene when first loaded (previously: would try, but was a looser fit, #551)
 - The colored alignment axes in the bottom-left of the viewport now also show the opposite direction
   of each axis in a slightly-faded color, to make them more symmetrical (#554)
+- Shadow rendering is now default-enabled (#489)
 
 ## [0.3.2] - 2023/01/09
 
