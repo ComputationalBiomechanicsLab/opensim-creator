@@ -139,7 +139,8 @@ private:
     Rect calcMainMenuRect() const
     {
         Rect tabRect = osc::GetMainViewportWorkspaceScreenRect();
-        tabRect.p2.y -= m_AttributationLogoDims.y + m_AttributationLogoPadding.y;  // pretend the attributation bar isn't there (avoid it)
+        // pretend the attributation bar isn't there (avoid it)
+        tabRect.p2.y -= std::max(m_TudLogo.getDimensions().y, m_CziLogo.getDimensions().y) - 2.0f*ImGui::GetStyle().WindowPadding.y;
 
         glm::vec2 const menuAndTopLogoDims = osc::Min(osc::Dimensions(tabRect), glm::vec2{m_MenuMaxDims.x, m_MenuMaxDims.y + m_TopLogoDims.y + m_TopLogoPadding.y});
         glm::vec2 const menuAndTopLogoTopLeft = tabRect.p1 + 0.5f*(Dimensions(tabRect) - menuAndTopLogoDims);
@@ -301,18 +302,19 @@ private:
     void drawAttributationLogos()
     {
         Rect const viewportRect = osc::GetMainViewportWorkspaceScreenRect();
-        glm::vec2 loc = viewportRect.p2 - m_AttributationLogoDims - m_AttributationLogoPadding;
-
-        ImGui::SetNextWindowPos(loc);
-        ImGui::Begin("##tudlogo", nullptr, GetMinimalWindowFlags());
-        osc::DrawTextureAsImGuiImage(m_TudLogo, m_AttributationLogoDims);
-        ImGui::End();
-
-        loc.x -= m_AttributationLogoDims.x + m_AttributationLogoPadding.x;
+        glm::vec2 loc = viewportRect.p2;
+        loc.x = loc.x - 2.0f*ImGui::GetStyle().WindowPadding.x - m_CziLogo.getDimensions().x - ImGui::GetStyle().ItemSpacing.x - m_TudLogo.getDimensions().x;
+        loc.y = loc.y - 2.0f*ImGui::GetStyle().WindowPadding.y - std::max(m_CziLogo.getDimensions().y, m_TudLogo.getDimensions().y);
 
         ImGui::SetNextWindowPos(loc);
         ImGui::Begin("##czlogo", nullptr, GetMinimalWindowFlags());
-        osc::DrawTextureAsImGuiImage(m_CziLogo, m_AttributationLogoDims);
+        osc::DrawTextureAsImGuiImage(m_CziLogo);
+        ImGui::End();
+
+        loc.x += m_CziLogo.getDimensions().x + ImGui::GetStyle().ItemSpacing.x;
+        ImGui::SetNextWindowPos(loc);
+        ImGui::Begin("##tudlogo", nullptr, GetMinimalWindowFlags());
+        osc::DrawTextureAsImGuiImage(m_TudLogo);
         ImGui::End();
     }
 
@@ -347,17 +349,15 @@ private:
     glm::vec2 m_MenuMaxDims = {640.0f, 512.0f};
 
     // main app logo, blitted to top of the screen
-    Texture2D m_OscLogo = LoadTextureFromSVGResource("banner.svg");
+    Texture2D m_OscLogo = LoadTextureFromSVGResource("textures/banner.svg");
 
     // attributation logos, blitted to bottom of screen
-    Texture2D m_CziLogo = LoadTexture2DFromImage(App::resource("textures/chanzuckerberg_logo.png"), ImageFlags_FlipVertically);
-    Texture2D m_TudLogo = LoadTexture2DFromImage(App::resource("textures/tud_logo.png"), ImageFlags_FlipVertically);
+    Texture2D m_CziLogo = LoadTextureFromSVGResource("textures/chanzuckerberg_logo.svg", 0.5f);
+    Texture2D m_TudLogo = LoadTextureFromSVGResource("textures/tudelft_logo.svg", 0.5f);
 
     // dimensions of stuff
     glm::vec2 m_TopLogoDims =  m_OscLogo.getDimensions();//[d =]() { return glm::vec2{d.x / (d.y/128.0f), 128.0f}; }();
     glm::vec2 m_TopLogoPadding = {25.0f, 35.0f};
-    glm::vec2 m_AttributationLogoDims = {64.0f, 64.0f};
-    glm::vec2 m_AttributationLogoPadding = {16.0f, 16.0f};
 
     // UI state
     MainMenuFileTab m_MainMenuFileTab;

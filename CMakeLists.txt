@@ -1041,7 +1041,9 @@ if (WIN32)
     # packaging: use NSIS to package everything into a self-extracting installer
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenSimCreator")
     set(CPACK_GENERATOR NSIS)
-    set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/logo.ico")
+    set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/textures/logo.ico")
+    set(CPACK_NSIS_INSTALLED_ICON_NAME "resources/textures/logo.ico")
+    set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
 
     # BROKE: set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
     #
@@ -1169,7 +1171,7 @@ if (APPLE)
 
     # install-time: copy the Mac-specific desktop icon (.icns)
     install(
-        FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/osc.icns"
+        FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/textures/logo.icns"
         DESTINATION osc.app/Contents/Resources/
     )
 

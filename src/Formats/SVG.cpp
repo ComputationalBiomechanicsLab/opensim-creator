@@ -36,5 +36,5 @@ osc::Texture2D osc::LoadTextureFromSVGFile(std::filesystem::path const& p, float
 
 osc::Texture2D osc::LoadTextureFromSVGResource(std::string_view resourceName, float scale)
 {
-    return LoadTextureFromSVGFile(osc::App::resource(resourceName));
+    return LoadTextureFromSVGFile(osc::App::resource(resourceName), scale);
 }

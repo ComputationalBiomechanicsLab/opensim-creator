@@ -1,6 +1,6 @@
 ![workflow](https://github.com/ComputationalBiomechanicsLab/opensim-creator/actions/workflows/continuous-integration-workflow.yml/badge.svg)
 
-# OpenSim Creator <img src="resources/textures/logo.png" align="right" alt="OpenSim Creator Logo" width="128" height="128" />
+# OpenSim Creator <img src="resources/textures/logo.svg" align="right" alt="OpenSim Creator Logo" width="128" height="128" />
 
 > A UI for building OpenSim models
 
@@ -30,14 +30,14 @@ Science" grant (Chan Zuckerberg Initiative DAF, 2020-218896 (5022)).
   <tr>
     <td align="center">
       <a href="https://www.tudelft.nl/3me/over/afdelingen/biomechanical-engineering">
-        <img src="resources/textures/tud_logo.png" alt="TUD logo" width="128" height="128" />
+        <img src="resources/textures/tudelft_logo.svg" alt="TUD logo" height="128" />
         <br />
         Biomechanical Engineering at TU Delft
       </a>
     </td>
     <td align="center">
       <a href="https://chanzuckerberg.com/">
-        <img src="resources/textures/chanzuckerberg_logo.png" alt="CZI logo" width="128" height="128" />
+        <img src="resources/textures/chanzuckerberg_logo.svg" alt="CZI logo" width="128" height="128" />
         <br />
         Chan Zuckerberg Initiative
       </a>
