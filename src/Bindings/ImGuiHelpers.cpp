@@ -445,7 +445,7 @@ osc::Rect osc::DrawAlignmentAxes(glm::mat4 const& viewMtx)
         glm::vec2 const p1 = origin;
         glm::vec2 const p2 = origin + linelen*view;
 
-        glm::vec4 color = {0.2f, 0.2f, 0.2f, 1.0f};
+        glm::vec4 color = {0.15f, 0.15f, 0.15f, 1.0f};
         color[static_cast<glm::vec4::length_type>(i)] = 0.7f;
         ImU32 const colorU32 = ImGui::ColorConvertFloat4ToU32(color);
 
@@ -453,7 +453,16 @@ osc::Rect osc::DrawAlignmentAxes(glm::mat4 const& viewMtx)
 
         drawlist.AddLine(p1, p2, colorU32, 3.0f);
         drawlist.AddCircleFilled(p2, circleRadius, colorU32);
-        drawlist.AddText(p2 - ts/2.0f, whiteColorU32, labels[i]);
+        drawlist.AddText(p2 - 0.5f*ts, whiteColorU32, labels[i]);
+
+        // also, add a faded line for symmetry
+        {
+            color.a *= 0.15f;
+            ImU32 const colorFadedU32 = ImGui::ColorConvertFloat4ToU32(color);
+            glm::vec2 const p2rev = origin - linelen*view;
+            drawlist.AddLine(p1, p2rev, colorFadedU32, 3.0f);
+
+        }
     }
 
     return bounds;
