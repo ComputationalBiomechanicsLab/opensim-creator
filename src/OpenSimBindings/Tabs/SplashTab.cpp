@@ -303,7 +303,7 @@ private:
     {
         Rect const viewportRect = osc::GetMainViewportWorkspaceScreenRect();
         glm::vec2 loc = viewportRect.p2;
-        loc.x = loc.x - 2.0f*ImGui::GetStyle().WindowPadding.x - m_CziLogo.getDimensions().x - ImGui::GetStyle().ItemSpacing.x - m_TudLogo.getDimensions().x;
+        loc.x = loc.x - 2.0f*ImGui::GetStyle().WindowPadding.x - m_CziLogo.getDimensions().x - 2.0f*ImGui::GetStyle().ItemSpacing.x - m_TudLogo.getDimensions().x;
         loc.y = loc.y - 2.0f*ImGui::GetStyle().WindowPadding.y - std::max(m_CziLogo.getDimensions().y, m_TudLogo.getDimensions().y);
 
         ImGui::SetNextWindowPos(loc);
@@ -311,7 +311,7 @@ private:
         osc::DrawTextureAsImGuiImage(m_CziLogo);
         ImGui::End();
 
-        loc.x += m_CziLogo.getDimensions().x + ImGui::GetStyle().ItemSpacing.x;
+        loc.x += m_CziLogo.getDimensions().x + 2.0f*ImGui::GetStyle().ItemSpacing.x;
         ImGui::SetNextWindowPos(loc);
         ImGui::Begin("##tudlogo", nullptr, GetMinimalWindowFlags());
         osc::DrawTextureAsImGuiImage(m_TudLogo);
