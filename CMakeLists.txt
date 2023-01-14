@@ -1171,7 +1171,7 @@ if (APPLE)
 
     # install-time: copy the Mac-specific desktop icon (.icns)
     install(
-        FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/textures/logo.icns"
+        FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/textures/osc.icns"
         DESTINATION osc.app/Contents/Resources/
     )
 
