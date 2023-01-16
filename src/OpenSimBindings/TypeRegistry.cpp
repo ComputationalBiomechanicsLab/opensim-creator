@@ -250,6 +250,10 @@ static std::unordered_map<osc::CStringView, osc::CStringView> CreateDescriptionL
             "ToyReflexController",
             "ToyReflexController is a concrete controller that excites muscles in response to muscle lengthening to simulate a simple stretch reflex. This controller is meant to serve as an example how to implement a controller in OpenSim. It is intended for demonstration purposes only.",
         },
+        {
+            "ConstantDistanceConstraint",
+            "A constraint that maintains a constant distance between two points on separate physical frames (underlying constraint: SimTK::Constraint::Rod)",
+        },
     };
 }
 

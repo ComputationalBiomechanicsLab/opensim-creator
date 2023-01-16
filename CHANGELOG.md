@@ -27,6 +27,7 @@ All notable changes to this project will be documented here. The format is based
   nothing, #527)
 - Added a "Show/Hide all of TYPE" option to the "Display" menu of a component in the editor (#528)
 - The status of the underlying simulator is now presented in the simulator UI's toolbar (#538)
+- Added basic documentation for the `ConstantDistanceConstraint` component (#534)
 
 ## [0.3.2] - 2023/01/09
 
