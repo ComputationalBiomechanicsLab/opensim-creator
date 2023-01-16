@@ -4,6 +4,7 @@
 #include "src/OpenSimBindings/Widgets/SimulationScrubber.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
+#include "src/Platform/Styling.hpp"
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -13,6 +14,23 @@
 #include <string>
 #include <string_view>
 #include <utility>
+
+static glm::vec4 CalcStatusColor(osc::SimulationStatus status)
+{
+    switch (status)
+    {
+    case osc::SimulationStatus::Initializing:
+    case osc::SimulationStatus::Running:
+        return OSC_NEUTRAL_RGBA;
+    case osc::SimulationStatus::Completed:
+        return OSC_POSITIVE_RGBA;
+    case osc::SimulationStatus::Cancelled:
+    case osc::SimulationStatus::Error:
+        return OSC_NEGATIVE_RGBA;
+    default:
+        return ImGui::GetStyle().Colors[ImGuiCol_Text];
+    }
+}
 
 class osc::SimulationToolbar::Impl final {
 public:
@@ -50,6 +68,12 @@ private:
         ImGui::SameLine();
 
         m_Scrubber.draw();
+
+        ImGui::SameLine();
+        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+        ImGui::SameLine();
+
+        drawSimulationStatusGroup();
     }
 
     void drawScaleFactorGroup()
@@ -70,6 +94,16 @@ private:
         ImGui::PopStyleVar();
 
         // TODO: can't autoscale without a state
+    }
+
+    void drawSimulationStatusGroup()
+    {
+        SimulationStatus const status = m_Simulation->getStatus();
+        ImGui::TextDisabled("simulator status:");
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Text, CalcStatusColor(status));
+        ImGui::TextUnformatted(GetAllSimulationStatusStrings()[static_cast<size_t>(status)]);
+        ImGui::PopStyleColor();
     }
 
     std::string m_Label;
