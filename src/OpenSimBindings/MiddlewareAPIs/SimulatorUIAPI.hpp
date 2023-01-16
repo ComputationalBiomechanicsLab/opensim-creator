@@ -23,16 +23,71 @@ namespace osc
     public:
         virtual ~SimulatorUIAPI() noexcept = default;
 
-        virtual VirtualSimulation& updSimulation() = 0;
-        virtual SimulationClock::time_point getSimulationScrubTime() = 0;
-        virtual void setSimulationScrubTime(SimulationClock::time_point) = 0;
-        virtual std::optional<SimulationReport> trySelectReportBasedOnScrubbing() = 0;
+        VirtualSimulation& updSimulation()
+        {
+            return implUpdSimulation();
+        }
 
-        virtual int getNumUserOutputExtractors() const = 0;
-        virtual OutputExtractor const& getUserOutputExtractor(int) const = 0;
-        virtual void addUserOutputExtractor(OutputExtractor const&) = 0;
-        virtual void removeUserOutputExtractor(int) = 0;
-        virtual bool hasUserOutputExtractor(OutputExtractor const&) const = 0;
-        virtual bool removeUserOutputExtractor(OutputExtractor const&) = 0;
+        bool getSimulationPlaybackState()
+        {
+            return implGetSimulationPlaybackState();
+        }
+        void setSimulationPlaybackState(bool v)
+        {
+            implSetSimulationPlaybackState(v);
+        }
+        SimulationClock::time_point getSimulationScrubTime()
+        {
+            return implGetSimulationScrubTime();
+        }
+        void setSimulationScrubTime(SimulationClock::time_point v)
+        {
+            implSetSimulationScrubTime(v);
+        }
+        std::optional<SimulationReport> trySelectReportBasedOnScrubbing()
+        {
+            return implTrySelectReportBasedOnScrubbing();
+        }
+
+        int getNumUserOutputExtractors() const
+        {
+            return implGetNumUserOutputExtractors();
+        }
+        OutputExtractor const& getUserOutputExtractor(int i) const
+        {
+            return implGetUserOutputExtractor(i);
+        }
+        void addUserOutputExtractor(OutputExtractor const& o)
+        {
+            implAddUserOutputExtractor(o);
+        }
+        void removeUserOutputExtractor(int i)
+        {
+            implRemoveUserOutputExtractor(i);
+        }
+        bool hasUserOutputExtractor(OutputExtractor const& o)
+        {
+            return implHasUserOutputExtractor(o);
+        }
+        bool removeUserOutputExtractor(OutputExtractor const& o)
+        {
+            return implRemoveUserOutputExtractor(o);
+        }
+
+    private:
+        virtual VirtualSimulation& implUpdSimulation() = 0;
+
+        virtual bool implGetSimulationPlaybackState() = 0;
+        virtual void implSetSimulationPlaybackState(bool) = 0;
+        virtual SimulationClock::time_point implGetSimulationScrubTime() = 0;
+        virtual void implSetSimulationScrubTime(SimulationClock::time_point) = 0;
+        virtual std::optional<SimulationReport> implTrySelectReportBasedOnScrubbing() = 0;
+
+        virtual int implGetNumUserOutputExtractors() const = 0;
+        virtual OutputExtractor const& implGetUserOutputExtractor(int) const = 0;
+        virtual void implAddUserOutputExtractor(OutputExtractor const&) = 0;
+        virtual void implRemoveUserOutputExtractor(int) = 0;
+        virtual bool implHasUserOutputExtractor(OutputExtractor const&) const = 0;
+        virtual bool implRemoveUserOutputExtractor(OutputExtractor const&) = 0;
     };
 }

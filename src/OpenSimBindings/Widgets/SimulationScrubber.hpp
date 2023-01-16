@@ -7,27 +7,23 @@
 
 #include <memory>
 #include <optional>
+#include <string_view>
 
 namespace osc { class Simulation; }
+namespace osc { class SimulatorUIAPI; }
 
 namespace osc
 {
     class SimulationScrubber final {
     public:
-        SimulationScrubber(std::shared_ptr<Simulation>);
+        SimulationScrubber(std::string_view, SimulatorUIAPI*, std::shared_ptr<Simulation>);
         SimulationScrubber(SimulationScrubber const&) = delete;
         SimulationScrubber(SimulationScrubber&&) noexcept;
         SimulationScrubber& operator=(SimulationScrubber const&) = delete;
         SimulationScrubber& operator=(SimulationScrubber&&) noexcept;
         ~SimulationScrubber() noexcept;
 
-        bool isPlayingBack() const;
-        SimulationClock::time_point getScrubPositionInSimTime() const;
-        std::optional<SimulationReport> tryLookupReportBasedOnScrubbing();
-        void scrubTo(SimulationClock::time_point);
-        void onTick();
-        void onDraw();
-        bool onEvent(SDL_Event const&);
+        void draw();
 
     private:
         class Impl;

@@ -9,6 +9,7 @@
 #include "src/OpenSimBindings/Widgets/ComponentDetails.hpp"
 #include "src/OpenSimBindings/Widgets/SimulationOutputPlot.hpp"
 #include "src/OpenSimBindings/Widgets/SimulationScrubber.hpp"
+#include "src/OpenSimBindings/Widgets/SimulationToolbar.hpp"
 #include "src/OpenSimBindings/Widgets/UiModelViewer.hpp"
 #include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
@@ -108,13 +109,14 @@ static bool IsAnyOutputExportableToCSV(osc::MainUIStateAPI& api)
 class osc::SimulatorTab::Impl final : public SimulatorUIAPI {
 public:
 
-    Impl(MainUIStateAPI* api, std::shared_ptr<Simulation> simulation) :
+    Impl(
+        MainUIStateAPI* api,
+        std::shared_ptr<Simulation> simulation) :
+
         m_API{std::move(api)},
         m_Simulation{std::move(simulation)}
     {
     }
-
-    // tab API
 
     UID getID() const
     {
@@ -145,19 +147,25 @@ public:
 
     bool onEvent(SDL_Event const& e)
     {
-        if (m_SimulationScrubber.onEvent(e))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return false;
     }
 
     void onTick()
     {
-        m_SimulationScrubber.onTick();
+        if (m_IsPlayingBack)
+        {
+            SimulationClock::time_point playbackPos = implGetSimulationScrubTime();
+            if (playbackPos < m_Simulation->getEndTime())
+            {
+                osc::App::upd().requestRedraw();
+            }
+            else
+            {
+                m_PlaybackStartSimtime = playbackPos;
+                m_IsPlayingBack = false;
+                return;
+            }
+        }
     }
 
     void onDrawMainMenu()
@@ -173,61 +181,122 @@ public:
         drawContent();
     }
 
-    // simulator UI API
-
-    VirtualSimulation& updSimulation() override
+private:
+    VirtualSimulation& implUpdSimulation() final
     {
         return *m_Simulation;
     }
 
-    SimulationClock::time_point getSimulationScrubTime() override
+    bool implGetSimulationPlaybackState() final
     {
-        return m_SimulationScrubber.getScrubPositionInSimTime();
+        return m_IsPlayingBack;
     }
 
-    void setSimulationScrubTime(SimulationClock::time_point t) override
+    void implSetSimulationPlaybackState(bool v) final
     {
-        m_SimulationScrubber.scrubTo(t);
+        if (v)
+        {
+            m_PlaybackStartWallTime = std::chrono::system_clock::now();
+            m_IsPlayingBack = true;
+        }
+        else
+        {
+            m_PlaybackStartSimtime = getSimulationScrubTime();
+            m_IsPlayingBack = false;
+        }
     }
 
-    std::optional<SimulationReport> trySelectReportBasedOnScrubbing() override
+    SimulationClock::time_point implGetSimulationScrubTime() final
     {
-        return TrySelectReportBasedOnScrubbing(*m_Simulation);
+        if (!m_IsPlayingBack)
+        {
+            return m_PlaybackStartSimtime;
+        }
+        else
+        {
+            // map wall time onto sim time
+
+            int nReports = m_Simulation->getNumReports();
+            if (nReports <= 0)
+            {
+                return m_Simulation->getStartTime();
+            }
+            else
+            {
+                std::chrono::system_clock::time_point wallNow = std::chrono::system_clock::now();
+                auto wallDur = wallNow - m_PlaybackStartWallTime;
+
+                osc::SimulationClock::time_point simNow = m_PlaybackStartSimtime + osc::SimulationClock::duration{wallDur};
+                osc::SimulationClock::time_point simLatest = m_Simulation->getSimulationReport(nReports-1).getTime();
+
+                return simNow <= simLatest ? simNow : simLatest;
+            }
+        }
     }
 
-    int getNumUserOutputExtractors() const override
+    void implSetSimulationScrubTime(SimulationClock::time_point t) final
+    {
+        m_PlaybackStartSimtime = t;
+        m_PlaybackStartWallTime = std::chrono::system_clock::now();
+    }
+
+    std::optional<SimulationReport> implTrySelectReportBasedOnScrubbing() final
+    {
+        int nReports = m_Simulation->getNumReports();
+
+        if (nReports <= 0)
+        {
+            return std::nullopt;
+        }
+
+        osc::SimulationClock::time_point t = getSimulationScrubTime();
+
+        for (int i = 0; i < nReports; ++i)
+        {
+            osc::SimulationReport r = m_Simulation->getSimulationReport(i);
+            if (r.getTime() >= t)
+            {
+                return r;
+            }
+        }
+
+        return m_Simulation->getSimulationReport(nReports-1);
+    }
+
+    int implGetNumUserOutputExtractors() const final
     {
         return m_API->getNumUserOutputExtractors();
     }
 
-    OutputExtractor const& getUserOutputExtractor(int i) const override
+    OutputExtractor const& implGetUserOutputExtractor(int i) const final
     {
         return m_API->getUserOutputExtractor(i);
     }
 
-    void addUserOutputExtractor(OutputExtractor const& outputExtractor) override
+    void implAddUserOutputExtractor(OutputExtractor const& outputExtractor) final
     {
         m_API->addUserOutputExtractor(outputExtractor);
     }
 
-    void removeUserOutputExtractor(int i) override
+    void implRemoveUserOutputExtractor(int i) final
     {
         m_API->removeUserOutputExtractor(i);
     }
 
-    bool hasUserOutputExtractor(OutputExtractor const& oe) const override
+    bool implHasUserOutputExtractor(OutputExtractor const& oe) const final
     {
         return m_API->hasUserOutputExtractor(oe);
     }
 
-    bool removeUserOutputExtractor(OutputExtractor const& oe) override
+    bool implRemoveUserOutputExtractor(OutputExtractor const& oe) final
     {
         return m_API->removeUserOutputExtractor(oe);
     }
 
-private:
     void drawContent()
     {
+        m_Toolbar.draw();
+
         OSC_PERF("draw simulation screen");
 
         {
@@ -587,7 +656,7 @@ private:
         bool isOpen = true;
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-        bool shown = ImGui::Begin(name, &isOpen, ImGuiWindowFlags_MenuBar);
+        bool shown = ImGui::Begin(name, &isOpen);
         ImGui::PopStyleVar();
 
         if (!isOpen)
@@ -606,19 +675,6 @@ private:
         glm::vec2 dims = ImGui::GetContentRegionAvail();
         auto resp = viewer.draw(ms);
         ImGui::End();
-
-        // draw scubber overlay
-        {
-            float leftPadding = 100.0f;
-            float bottomPadding = 20.0f;
-            float panelHeight = 50.0f;
-            ImGui::SetNextWindowPos({ pos.x + leftPadding, pos.y + dims.y - panelHeight - bottomPadding });
-            ImGui::SetNextWindowSize({ dims.x - 1.1f*leftPadding, panelHeight });
-            std::string scrubberName = "##scrubber_" + std::to_string(i);
-            ImGui::Begin(scrubberName.c_str(), nullptr, osc::GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs);
-            m_SimulationScrubber.onDraw();
-            ImGui::End();
-        }
 
         // upate hover
         if (resp.isMousedOver && resp.hovertestResult != ms.getHovered())
@@ -705,7 +761,7 @@ private:
 
     std::optional<osc::SimulationReport> TrySelectReportBasedOnScrubbing(osc::VirtualSimulation& sim)
     {
-        std::optional<osc::SimulationReport> maybeReport = m_SimulationScrubber.tryLookupReportBasedOnScrubbing();
+        std::optional<osc::SimulationReport> maybeReport = trySelectReportBasedOnScrubbing();
 
         if (!maybeReport)
         {
@@ -735,14 +791,20 @@ private:
     // if possible (i.e. there's a simulation report available), will be set each frame
     std::unique_ptr<SimulationModelStatePair> m_ShownModelState;
 
+    // scrubbing state
+    bool m_IsPlayingBack = true;
+    SimulationClock::time_point m_PlaybackStartSimtime = m_Simulation->getStartTime();
+    std::chrono::system_clock::time_point m_PlaybackStartWallTime = std::chrono::system_clock::now();
+
+
     // UI widgets
+    SimulationToolbar m_Toolbar{"##SimulationToolbar", this, m_Simulation};
     LogViewer m_LogViewerWidget;
     MainMenuFileTab m_MainMenuFileTab;
     MainMenuAboutTab m_MainMenuAboutTab;
     ComponentDetails m_ComponentDetailsWidget;
     PerfPanel m_PerfPanel{"Performance"};
     NavigatorPanel m_NavigatorPanel{"Navigator"};
-    SimulationScrubber m_SimulationScrubber{m_Simulation};
     std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
 };
 
