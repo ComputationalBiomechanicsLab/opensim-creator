@@ -15,7 +15,7 @@ All notable changes to this project will be documented here. The format is based
 - All mesh geometry that is used by example models is now centralized in the `geometry/` folder in
   OSC's resource directory (previously: some models had their own `Geometry/` dir, #560)
 - The simulation tab' time scrubber is now in the top toolbar, and includes controls for stepping
-  between states and changing playback speed (#563)
+  between states and changing playback speed (#563, #556)
 
 ## [0.3.2] - 2023/01/09
 
