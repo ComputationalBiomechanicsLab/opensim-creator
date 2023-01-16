@@ -73,9 +73,6 @@ void osc::GuiRuler::draw(PolarPerspectiveCamera const& sceneCamera, Rect const& 
         {
             // mousing over something
             dl->AddCircleFilled(mouseLoc, circleRadius, circleColor);
-            char buf[1024];
-            std::snprintf(buf, sizeof(buf), "%s @ (%.2f, %.2f, %.2f)", maybeMouseover->Name.c_str(), maybeMouseover->WorldPos.x, maybeMouseover->WorldPos.y, maybeMouseover->WorldPos.z);
-            drawTooltipWithBg(mouseLoc + labelOffsetWhenNoLine, buf);
 
             if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
             {
@@ -107,13 +104,6 @@ void osc::GuiRuler::draw(PolarPerspectiveCamera const& sceneCamera, Rect const& 
                 char buf[1024];
                 std::snprintf(buf, sizeof(buf), "%.5f", lineWorldLen);
                 drawTooltipWithBg(lineMidpoint + offsetVec, buf);
-            }
-
-            // label the endpoint's component + coord
-            {
-                char buf[1024];
-                std::snprintf(buf, sizeof(buf), "%s @ (%.2f, %.2f, %.2f)", maybeMouseover->Name.c_str(), maybeMouseover->WorldPos.x, maybeMouseover->WorldPos.y, maybeMouseover->WorldPos.z);
-                drawTooltipWithBg(mouseLoc + offsetVec, buf);
             }
         }
         else

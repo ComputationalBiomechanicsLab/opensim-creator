@@ -29,6 +29,8 @@ All notable changes to this project will be documented here. The format is based
 - The status of the underlying simulator is now presented in the simulator UI's toolbar (#538)
 - Added basic documentation for the `ConstantDistanceConstraint` component (#534)
 - Renamed `osc::MeshTopography` to `osc::MeshTopology` (#544)
+- Simplified the ruler tool so that it only shows the distance between two points (previously: would
+  show a tooltip describing the second point, but that tooltip could overlap with the measurement, #31)
 
 ## [0.3.2] - 2023/01/09
 
