@@ -994,11 +994,18 @@ public:
             ImGui::PushID(i);
 
             OpenSim::AbstractProperty const& prop = obj.getPropertyByIndex(i);
-            std::optional<ObjectPropertyEdit> resp = drawPropertyEditor(obj, prop);
 
-            if (!rv)
+            // #542: ignore properties that begin with `socket_`, because they are
+            // proxy properties to the object's sockets (which should be manipulated
+            // via socket, rather than text, editors)
+            if (!osc::StartsWith(prop.getName(), "socket_"))
             {
-                rv = std::move(resp);
+                std::optional<ObjectPropertyEdit> resp = drawPropertyEditor(obj, prop);
+
+                if (!rv)
+                {
+                    rv = std::move(resp);
+                }
             }
 
             ImGui::PopID();

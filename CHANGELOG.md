@@ -20,6 +20,9 @@ All notable changes to this project will be documented here. The format is based
   OpenSim/SCONE specific terms (#557)
 - The simulation parameters editor popup now has enough precision to modify the simulation step
   size, which is in standard units (seconds), but typically has very small values (nanoseconds, #553)
+- Properties that have a name that begins with "socket_" now no longer appear in property editors
+  when adding/editing a component in the model. Users should use the socket UI (right-click menu) to
+  edit component sockets instead (#542)
 
 ## [0.3.2] - 2023/01/09
 
