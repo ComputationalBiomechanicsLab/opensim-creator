@@ -23,6 +23,8 @@ All notable changes to this project will be documented here. The format is based
 - Properties that have a name that begins with "socket_" now no longer appear in property editors
   when adding/editing a component in the model. Users should use the socket UI (right-click menu) to
   edit component sockets instead (#542)
+- Added "Show All" to the "Display" menu of a component (previously: would be available if the right-clicks
+  nothing, #527)
 
 ## [0.3.2] - 2023/01/09
 
