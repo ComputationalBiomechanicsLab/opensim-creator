@@ -448,7 +448,7 @@ private:
 
         IconWithoutMenu rulerButton
         {
-            "mesh",
+            "ruler",
             "Ruler",
             "Roughly measure something in the scene",
         };
