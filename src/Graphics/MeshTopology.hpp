@@ -7,11 +7,11 @@
 namespace osc
 {
     // which primitive geometry the mesh data represents
-    enum class MeshTopography : int32_t {
+    enum class MeshTopology : int32_t {
         Triangles = 0,
         Lines,
         TOTAL,
     };
 
-    std::ostream& operator<<(std::ostream&, MeshTopography);
+    std::ostream& operator<<(std::ostream&, MeshTopology);
 }

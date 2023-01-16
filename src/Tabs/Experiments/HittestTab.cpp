@@ -79,7 +79,7 @@ namespace
     osc::Mesh GenerateCrosshairMesh()
     {
         osc::Mesh rv;
-        rv.setTopography(osc::MeshTopography::Lines);
+        rv.setTopology(osc::MeshTopology::Lines);
         rv.setVerts(c_CrosshairVerts);
         rv.setIndices(c_CrosshairIndices);
         return rv;

@@ -49,7 +49,7 @@ namespace osc
     Mesh GenTorus(size_t slices, size_t stacks, float torusCenterToTubeCenterRadius, float tubeRadius);
 
     // generates a steps.x * steps.y (NxM) 2D grid of independent points connected
-    // to their nearest neighbour by lines (osc::MeshTopography::Lines), where the
+    // to their nearest neighbour by lines (osc::MeshTopology::Lines), where the
     // lowest X/Y values are min.x/min.y and the highest X/Y values are max.x/max.y
     //
     // i.e. the "lowest" grid point is `min`, the next one is `min + (max-min)/steps`

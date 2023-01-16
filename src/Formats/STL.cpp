@@ -112,7 +112,7 @@ namespace
 
 void osc::StlWriter::write(Mesh const& mesh)
 {
-    if (mesh.getTopography() != MeshTopography::Triangles)
+    if (mesh.getTopology() != MeshTopology::Triangles)
     {
         return;
     }

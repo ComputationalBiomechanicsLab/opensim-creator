@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/Graphics/MeshIndicesView.hpp"
-#include "src/Graphics/MeshTopography.hpp"
+#include "src/Graphics/MeshTopology.hpp"
 #include "src/Utils/Cow.hpp"
 
 #include <glm/vec2.hpp>
@@ -33,8 +33,8 @@ namespace osc
         Mesh& operator=(Mesh&&) noexcept;
         ~Mesh() noexcept;
 
-        MeshTopography getTopography() const;
-        void setTopography(MeshTopography);
+        MeshTopology getTopology() const;
+        void setTopology(MeshTopology);
 
         nonstd::span<glm::vec3 const> getVerts() const;
         void setVerts(nonstd::span<glm::vec3 const>);

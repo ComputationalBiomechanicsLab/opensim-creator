@@ -187,7 +187,7 @@ namespace
         }
 
         osc::Mesh rv;
-        rv.setTopography(osc::MeshTopography::Triangles);
+        rv.setTopology(osc::MeshTopology::Triangles);
         rv.setVerts(verts);
         rv.setNormals(normals);
         rv.setIndices(indices);

@@ -223,7 +223,7 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(BVH const& bvh, nons
 
 std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(Mesh const& mesh, Transform const& transform, Line const& worldspaceRay)
 {
-    if (mesh.getTopography() != MeshTopography::Triangles)
+    if (mesh.getTopology() != MeshTopology::Triangles)
     {
         return std::nullopt;
     }
@@ -283,7 +283,7 @@ glm::vec3 osc::MassCenter(Mesh const& m)
     // submits an invalid mesh, this calculation could potentially produce a
     // volume that's *way* off
 
-    if (m.getTopography() != osc::MeshTopography::Triangles)
+    if (m.getTopology() != osc::MeshTopology::Triangles)
     {
         return {0.0f, 0.0f, 0.0f};
     }

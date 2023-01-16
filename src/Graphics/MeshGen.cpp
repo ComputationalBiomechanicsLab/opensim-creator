@@ -33,7 +33,7 @@ namespace
         std::vector<glm::vec3> normals;
         std::vector<glm::vec2> texcoords;
         std::vector<uint32_t> indices;
-        osc::MeshTopography topography = osc::MeshTopography::Triangles;
+        osc::MeshTopology topology = osc::MeshTopology::Triangles;
 
         void clear()
         {
@@ -41,7 +41,7 @@ namespace
             normals.clear();
             texcoords.clear();
             indices.clear();
-            topography = osc::MeshTopography::Triangles;
+            topology = osc::MeshTopology::Triangles;
         }
 
         void reserve(size_t s)
@@ -56,7 +56,7 @@ namespace
     osc::Mesh CreateMeshFromData(NewMeshData&& data)
     {
         osc::Mesh rv;
-        rv.setTopography(data.topography);
+        rv.setTopology(data.topology);
         rv.setVerts(data.verts);
         rv.setNormals(data.normals);
         rv.setTexCoords(data.texcoords);
@@ -134,7 +134,7 @@ static constexpr std::array<TexturedVert const, 6> c_ShadedTexturedQuadVerts =
     {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
 }};
 
-// a cube wire mesh, suitable for `osc::MeshTopography::Lines` drawing
+// a cube wire mesh, suitable for `osc::MeshTopology::Lines` drawing
 //
 // a pair of verts per edge of the cube. The cube has 12 edges, so 24 lines
 static constexpr std::array<UntexturedVert const, 24> c_CubeEdgeLines =
@@ -502,7 +502,7 @@ osc::Mesh osc::GenNbyNGrid(size_t n)
 
     NewMeshData data;
     data.reserve(4 * nlines);
-    data.topography = MeshTopography::Lines;
+    data.topology = MeshTopology::Lines;
 
     uint16_t index = 0;
     auto push = [&index, &data](glm::vec3 const& pos)
@@ -543,7 +543,7 @@ osc::Mesh osc::GenYLine()
     data.verts = {{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
     data.normals = {{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}};  // just give them *something* in-case they are rendered through a shader that requires normals
     data.indices = {0, 1};
-    data.topography = MeshTopography::Lines;
+    data.topology = MeshTopology::Lines;
 
     OSC_ASSERT(data.verts.size() % 2 == 0);
     OSC_ASSERT(data.normals.size() % 2 == 0);
@@ -577,7 +577,7 @@ osc::Mesh osc::GenCubeLines()
     NewMeshData data;
     data.verts.reserve(c_CubeEdgeLines.size());
     data.indices.reserve(c_CubeEdgeLines.size());
-    data.topography = MeshTopography::Lines;
+    data.topology = MeshTopology::Lines;
 
     uint16_t index = 0;
     for (auto const& v : c_CubeEdgeLines)
@@ -597,7 +597,7 @@ osc::Mesh osc::GenCircle(size_t nsides)
 {
     NewMeshData data;
     data.verts.reserve(3*nsides);
-    data.topography = MeshTopography::Triangles;
+    data.topology = MeshTopology::Triangles;
 
     uint16_t index = 0;
     auto push = [&data, &index](float x, float y, float z)
@@ -813,7 +813,7 @@ osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max
 
     // emit data as a renderable mesh
     osc::Mesh rv;
-    rv.setTopography(osc::MeshTopography::Lines);
+    rv.setTopology(osc::MeshTopology::Lines);
     rv.setVerts(std::move(verts));
     rv.setIndices(indices);
     return rv;
@@ -896,7 +896,7 @@ osc::Mesh osc::GenNxMTriangleQuad2DGrid(glm::ivec2 steps)
     OSC_ASSERT(indices.size() == (steps.x-1)*(steps.y-1)*6);
 
     osc::Mesh rv;
-    rv.setTopography(osc::MeshTopography::Triangles);
+    rv.setTopology(osc::MeshTopology::Triangles);
     rv.setVerts(verts);
     rv.setTexCoords(coords);
     rv.setIndices(indices);

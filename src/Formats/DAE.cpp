@@ -104,7 +104,7 @@ namespace
 
         for (osc::SceneDecoration const& el : els)
         {
-            if (el.mesh.getTopography() != osc::MeshTopography::Triangles)
+            if (el.mesh.getTopology() != osc::MeshTopology::Triangles)
             {
                 continue;  // unsupported
             }

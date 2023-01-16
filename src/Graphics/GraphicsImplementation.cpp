@@ -9,7 +9,7 @@
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/MaterialPropertyBlock.hpp"
 #include "src/Graphics/Mesh.hpp"
-#include "src/Graphics/MeshTopography.hpp"
+#include "src/Graphics/MeshTopology.hpp"
 #include "src/Graphics/RenderTexture.hpp"
 #include "src/Graphics/RenderTextureDescriptor.hpp"
 #include "src/Graphics/RenderTextureFormat.hpp"
@@ -2372,7 +2372,7 @@ std::ostream& osc::operator<<(std::ostream& o, MaterialPropertyBlock const&)
 
 namespace
 {
-    static constexpr auto c_MeshTopographyStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::MeshTopography::TOTAL)>
+    static constexpr auto c_MeshTopologyStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::MeshTopology::TOTAL)>
     (
         "Triangles",
         "Lines"
@@ -2386,13 +2386,13 @@ namespace
     static_assert(sizeof(PackedIndex) == sizeof(uint32_t));
     static_assert(alignof(PackedIndex) == alignof(uint32_t));
 
-    GLenum ToOpenGLTopography(osc::MeshTopography t)
+    GLenum ToOpenGLTopology(osc::MeshTopology t)
     {
         switch (t)
         {
-        case osc::MeshTopography::Triangles:
+        case osc::MeshTopology::Triangles:
             return GL_TRIANGLES;
-        case osc::MeshTopography::Lines:
+        case osc::MeshTopology::Lines:
             return GL_LINES;
         default:
             return GL_TRIANGLES;
@@ -2403,15 +2403,14 @@ namespace
 class osc::Mesh::Impl final {
 public:
 
-    MeshTopography getTopography() const
+    MeshTopology getTopology() const
     {
-        return m_Topography;
+        return m_Topology;
     }
 
-    void setTopography(MeshTopography t)
+    void setTopology(MeshTopology newTopology)
     {
-        m_Topography = std::move(t);
-
+        m_Topology = newTopology;
         m_Version->reset();
     }
 
@@ -2554,7 +2553,7 @@ public:
     void clear()
     {
         m_Version->reset();
-        m_Topography = MeshTopography::Triangles;
+        m_Topology = MeshTopology::Triangles;
         m_Vertices.clear();
         m_Normals.clear();
         m_TexCoords.clear();
@@ -2580,7 +2579,7 @@ public:
     void draw()
     {
         gl::DrawElements(
-            ToOpenGLTopography(m_Topography),
+            ToOpenGLTopology(m_Topology),
             static_cast<GLsizei>(m_NumIndices),
             m_IndicesAre32Bit ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT,
             nullptr
@@ -2590,7 +2589,7 @@ public:
     void drawInstanced(size_t n)
     {
         glDrawElementsInstanced(
-            ToOpenGLTopography(m_Topography),
+            ToOpenGLTopology(m_Topology),
             static_cast<GLsizei>(m_NumIndices),
             m_IndicesAre32Bit ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT,
             nullptr,
@@ -2612,7 +2611,7 @@ private:
         {
             nonstd::span<uint32_t const> const indices(&m_IndicesData.front().u32, m_NumIndices);
 
-            if (m_Topography == MeshTopography::Triangles)
+            if (m_Topology == MeshTopology::Triangles)
             {
                 m_TriangleBVH.buildFromIndexedTriangles(m_Vertices, indices);
                 m_AABB = m_TriangleBVH.nodes.front().getBounds();
@@ -2627,7 +2626,7 @@ private:
         {
             nonstd::span<uint16_t const> const indices(&m_IndicesData.front().u16.a, m_NumIndices);
 
-            if (m_Topography == MeshTopography::Triangles)
+            if (m_Topology == MeshTopology::Triangles)
             {
                 m_TriangleBVH.buildFromIndexedTriangles(m_Vertices, indices);
                 m_AABB = m_TriangleBVH.nodes.empty() ? AABB{} : m_TriangleBVH.nodes.front().getBounds();
@@ -2764,7 +2763,7 @@ private:
 
     DefaultConstructOnCopy<UID> m_UID;
     DefaultConstructOnCopy<UID> m_Version;
-    MeshTopography m_Topography = MeshTopography::Triangles;
+    MeshTopology m_Topology = MeshTopology::Triangles;
     std::vector<glm::vec3> m_Vertices;
     std::vector<glm::vec3> m_Normals;
     std::vector<glm::vec2> m_TexCoords;
@@ -2781,9 +2780,9 @@ private:
     DefaultConstructOnCopy<std::optional<MeshOpenGLData>> m_MaybeGPUBuffers;
 };
 
-std::ostream& osc::operator<<(std::ostream& o, MeshTopography mt)
+std::ostream& osc::operator<<(std::ostream& o, MeshTopology mt)
 {
-    return o << c_MeshTopographyStrings.at(static_cast<size_t>(mt));
+    return o << c_MeshTopologyStrings.at(static_cast<size_t>(mt));
 }
 
 osc::Mesh::Mesh() :
@@ -2797,14 +2796,14 @@ osc::Mesh& osc::Mesh::operator=(Mesh const&) = default;
 osc::Mesh& osc::Mesh::operator=(Mesh&&) noexcept = default;
 osc::Mesh::~Mesh() noexcept = default;
 
-osc::MeshTopography osc::Mesh::getTopography() const
+osc::MeshTopology osc::Mesh::getTopology() const
 {
-    return m_Impl->getTopography();
+    return m_Impl->getTopology();
 }
 
-void osc::Mesh::setTopography(MeshTopography topography)
+void osc::Mesh::setTopology(MeshTopology topology)
 {
-    m_Impl.upd()->setTopography(std::move(topography));
+    m_Impl.upd()->setTopology(topology);
 }
 
 nonstd::span<glm::vec3 const> osc::Mesh::getVerts() const

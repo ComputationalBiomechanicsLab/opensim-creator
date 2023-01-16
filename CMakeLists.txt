@@ -411,7 +411,7 @@ add_library(osccore STATIC
     src/Graphics/MeshGen.hpp
     src/Graphics/MeshIndicesView.hpp
     src/Graphics/Mesh.hpp
-    src/Graphics/MeshTopography.hpp
+    src/Graphics/MeshTopology.hpp
     src/Graphics/RenderTexture.hpp
     src/Graphics/RenderTextureDescriptor.hpp
     src/Graphics/RenderTextureFormat.hpp
