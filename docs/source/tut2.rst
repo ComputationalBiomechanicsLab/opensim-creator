@@ -44,13 +44,13 @@ The first thing we need to add to our model is the ``foot`` body. As explained i
 
 Using similar steps to what was taught in :ref:`tut1`:
 
-* Add a body called ``foot`` into the model. It should have a mass of ``1 kg`` (the default) and be joined to ``ground`` with a ``FreeJoint`` called ``foot_to_ground``. Attach a ``Sphere`` geometry to it.
+* Add a body called ``foot`` into the model. It should have a mass of ``1 kg`` (the default) and be joined to ``ground`` with a ``FreeJoint`` called ``ground_to_foot``. Attach a ``Sphere`` geometry to it.
 * Click the sphere in the 3D viewport and use the properties panel to change its ``Appearance`` property to a red color.
 
-You can then raise ``foot`` above the ground slightly by altering the ``foot_to_ground`` joint's ``ty`` coordinate:
+You can then raise ``foot`` above the ground slightly by altering the ``ground_to_foot`` joint's ``ty`` coordinate:
 
-* Use the navigator panel to select the ``foot_to_ground`` joint within the model's ``jointset``
-* Expand ``foot_to_ground`` in the navigator panel and select the ``ty`` coordinate
+* Use the navigator panel to select the ``ground_to_foot`` joint within the model's ``jointset``
+* Expand ``ground_to_foot`` in the navigator panel and select the ``ty`` coordinate
 * Use the properties panel to change ``ty``'s ``default_value`` property from ``0.0`` to ``0.5``
 
 This should produce a model with a red sphere (``foot``) that is raised above the ground:
@@ -58,7 +58,7 @@ This should produce a model with a red sphere (``foot``) that is raised above th
 .. figure:: _static/tut2_added-foot.png
     :width: 60%
 
-    The model after adding the ``foot`` body and changing ``foot_to_ground``'s ``ty`` to ``0.5`` (:download:`📥 download model <_static/tut2_added-foot.osim>`)
+    The model after adding the ``foot`` body and changing ``ground_to_foot``'s ``ty`` to ``0.5`` (:download:`📥 download model <_static/tut2_added-foot.osim>`)
 
 .. note::
 

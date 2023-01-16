@@ -31,6 +31,8 @@ All notable changes to this project will be documented here. The format is based
 - Renamed `osc::MeshTopography` to `osc::MeshTopology` (#544)
 - Simplified the ruler tool so that it only shows the distance between two points (previously: would
   show a tooltip describing the second point, but that tooltip could overlap with the measurement, #31)
+- Fixed inconsistent joint naming in tutorial 2, such that all joints are named `parent_to_child` (previously:
+  `foot_to_ground` was in error, #546)
 
 ## [0.3.2] - 2023/01/09
 
