@@ -10,15 +10,13 @@
 static constexpr auto c_Styles = osc::MakeSizedArray<osc::MuscleSizingStyle, static_cast<size_t>(osc::MuscleSizingStyle::TOTAL)>
 (
     osc::MuscleSizingStyle::OpenSim,
-    osc::MuscleSizingStyle::SconePCSA,
-    osc::MuscleSizingStyle::SconeNonPCSA
+    osc::MuscleSizingStyle::PcsaDerived
 );
 
 static constexpr auto c_StyleStrings = osc::MakeSizedArray<char const*, static_cast<size_t>(osc::MuscleSizingStyle::TOTAL)>
 (
-    "OpenSim (fixed volume)",
-    "SCONE (PCSA derived)",
-    "SCONE (alt, fixed volume)"
+    "OpenSim",
+    "PCSA-derived"
 );
 
 nonstd::span<osc::MuscleSizingStyle const> osc::GetAllMuscleSizingStyles()

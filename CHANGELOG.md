@@ -16,6 +16,8 @@ All notable changes to this project will be documented here. The format is based
   OSC's resource directory (previously: some models had their own `Geometry/` dir, #560)
 - The simulation tab' time scrubber is now in the top toolbar, and includes controls for stepping
   between states and changing playback speed (#563, #556)
+- Muscle coloring/rendering options now use generic terms like "Fibers & Tendons", rather than
+  OpenSim/SCONE specific terms (#557)
 
 ## [0.3.2] - 2023/01/09
 

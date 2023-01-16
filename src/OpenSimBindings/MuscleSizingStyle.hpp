@@ -6,8 +6,7 @@ namespace osc
 {
     enum class MuscleSizingStyle {
         OpenSim = 0,
-        SconePCSA,
-        SconeNonPCSA,
+        PcsaDerived,
         TOTAL,
         Default = OpenSim,
     };

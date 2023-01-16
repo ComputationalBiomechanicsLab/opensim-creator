@@ -241,10 +241,8 @@ namespace
     float GetMuscleSize(OpenSim::Muscle const& musc, float fixupScaleFactor, osc::MuscleSizingStyle s)
     {
         switch (s) {
-        case osc::MuscleSizingStyle::SconePCSA:
+        case osc::MuscleSizingStyle::PcsaDerived:
             return GetSconeStyleAutomaticMuscleRadiusCalc(musc) * fixupScaleFactor;
-        case osc::MuscleSizingStyle::SconeNonPCSA:
-            return 0.01f * fixupScaleFactor;
         case osc::MuscleSizingStyle::OpenSim:
         default:
             return 0.005f * fixupScaleFactor;
@@ -385,7 +383,7 @@ namespace
     }
 
     // OSC-specific decoration handler for `OpenSim::Muscle` ("SCONE"-style: i.e. tendons + muscle)
-    void HandleMuscleSconeStyle(osc::CustomDecorationOptions const& opts,
+    void HandleMuscleFibersAndTendons(osc::CustomDecorationOptions const& opts,
                                 OpenSim::Muscle const& muscle,
                                 SimTK::State const& st,
                                 OpenSim::Component const* selected,
@@ -686,8 +684,8 @@ namespace
 
                 switch (opts.getMuscleDecorationStyle())
                 {
-                case osc::MuscleDecorationStyle::Scone:
-                    HandleMuscleSconeStyle(opts, *musc, st, selected, hovered, fixupScaleFactor, mdh, out);
+                case osc::MuscleDecorationStyle::FibersAndTendons:
+                    HandleMuscleFibersAndTendons(opts, *musc, st, selected, hovered, fixupScaleFactor, mdh, out);
                     return;
                 case osc::MuscleDecorationStyle::Hidden:
                     return;  // just don't generate them
