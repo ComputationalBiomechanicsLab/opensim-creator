@@ -35,6 +35,8 @@
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 
+#include <sstream>
+#include <string>
 #include <memory>
 #include <utility>
 
@@ -258,6 +260,25 @@ private:
 
         if (ImGui::BeginMenu("Display"))
         {
+            if (ImGui::MenuItem("Show"))
+            {
+                osc::ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, c->getAbsolutePath(), true);
+            }
+
+            if (ImGui::MenuItem("Show Only This"))
+            {
+                osc::ActionShowOnlyComponentAndAllChildren(*m_Model, c->getAbsolutePath());
+            }
+
+            if (ImGui::MenuItem("Hide"))
+            {
+                osc::ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, c->getAbsolutePath(), false);
+            }
+
+            // add a seperator between probably commonly-used, simple, diplay toggles and the more
+            // advanced ones
+            ImGui::Separator();
+
             // redundantly put a "Show All" option here, also, so that the user doesn't have
             // to "know" that they need to right-click in the middle of nowhere or on the
             // model
@@ -265,19 +286,35 @@ private:
             {
                 osc::ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, osc::GetRootComponentPath(), true);
             }
-            osc::DrawTooltipIfItemHovered("Show All", "Sets the visiblity of all components within the model to 'visible', handy for undoing selective hiding etc.");
 
-            if (ImGui::MenuItem("Show"))
             {
-                osc::ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, c->getAbsolutePath(), true);
+                std::stringstream ss;
+                ss << "Show All '" << c->getConcreteClassName() << "' Components";
+                std::string const label = std::move(ss).str();
+                if (ImGui::MenuItem(label.c_str()))
+                {
+                    ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
+                        *m_Model,
+                        m_Model->getModel().getAbsolutePath(),
+                        c->getConcreteClassName(),
+                        true
+                    );
+                }
             }
-            if (ImGui::MenuItem("Show Only This"))
+
             {
-                osc::ActionShowOnlyComponentAndAllChildren(*m_Model, c->getAbsolutePath());
-            }
-            if (ImGui::MenuItem("Hide"))
-            {
-                osc::ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, c->getAbsolutePath(), false);
+                std::stringstream ss;
+                ss << "Hide All '" << c->getConcreteClassName() << "' Components";
+                std::string const label = std::move(ss).str();
+                if (ImGui::MenuItem(label.c_str()))
+                {
+                    ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
+                        *m_Model,
+                        m_Model->getModel().getAbsolutePath(),
+                        c->getConcreteClassName(),
+                        false
+                    );
+                }
             }
             ImGui::EndMenu();
         }

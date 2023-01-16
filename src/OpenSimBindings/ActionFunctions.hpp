@@ -176,4 +176,13 @@ namespace osc
     // sets the `Appearance` property of all components in the model to `visible = false`, followed by setting the
     // `Appearance` property of the pointed-to component, and all its children, to `visible = true`
     bool ActionShowOnlyComponentAndAllChildren(UndoableModelStatePair&, OpenSim::ComponentPath const&);
+
+    // sets the `Appearance` property of all components in the model to `visible = visible` if that component has
+    // the given concrete class name
+    bool ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
+        UndoableModelStatePair&,
+        OpenSim::ComponentPath const&,
+        std::string concreteClassName,
+        bool newVisibility
+    );
 }

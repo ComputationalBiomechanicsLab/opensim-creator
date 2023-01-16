@@ -1502,3 +1502,63 @@ bool osc::ActionShowOnlyComponentAndAllChildren(UndoableModelStatePair& model, O
         return false;
     }
 }
+
+bool osc::ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
+    UndoableModelStatePair& model,
+    OpenSim::ComponentPath const& root,
+    std::string concreteClassName,
+    bool newVisibility)
+{
+    UID const oldVersion = model.getModelVersion();
+    try
+    {
+        OpenSim::Model& mutModel = model.updModel();
+
+        OpenSim::Component* const mutComponent = osc::FindComponentMut(mutModel, root);
+        if (!mutComponent)
+        {
+            model.setModelVersion(oldVersion);  // can't find the coordinate within the provided model
+            return false;
+        }
+
+        // first, hide everything in the model
+        for (OpenSim::Component& c : mutModel.updComponentList())
+        {
+            if (c.getConcreteClassName() == concreteClassName)
+            {
+                TrySetAppearancePropertyIsVisibleTo(c, newVisibility);
+                for (OpenSim::Component& child : c.updComponentList())
+                {
+                    TrySetAppearancePropertyIsVisibleTo(child, newVisibility);
+                }
+            }
+        }
+
+        // reinitialize etc.
+        osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
+
+        // commit it
+        {
+            std::stringstream ss;
+            if (newVisibility)
+            {
+                ss << "showing ";
+            }
+            else
+            {
+                ss << "hiding ";
+            }
+            ss << concreteClassName;
+            model.commit(std::move(ss).str());
+        }
+
+        return true;
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error detected while trying to show/hide components of a given type: %s", ex.what());
+        model.rollback();
+        return false;
+    }
+}

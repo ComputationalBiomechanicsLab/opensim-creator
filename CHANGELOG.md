@@ -25,6 +25,7 @@ All notable changes to this project will be documented here. The format is based
   edit component sockets instead (#542)
 - Added "Show All" to the "Display" menu of a component (previously: would be available if the right-clicks
   nothing, #527)
+- Added a "Show/Hide all of TYPE" option to the "Display" menu of a component in the editor (#528)
 
 ## [0.3.2] - 2023/01/09
 
