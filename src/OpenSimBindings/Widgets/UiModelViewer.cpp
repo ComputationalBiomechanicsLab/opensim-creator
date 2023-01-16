@@ -438,7 +438,7 @@ private:
 
         IconWithMenu settingsButton
         {
-            "controller",
+            "gear",
             "Scene Settings",
             "Change advanced scene settings",
             [this]() { drawSceneMenuContent(); },
