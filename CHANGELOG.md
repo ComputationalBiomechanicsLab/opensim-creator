@@ -18,6 +18,8 @@ All notable changes to this project will be documented here. The format is based
   between states and changing playback speed (#563, #556)
 - Muscle coloring/rendering options now use generic terms like "Fibers & Tendons", rather than
   OpenSim/SCONE specific terms (#557)
+- The simulation parameters editor popup now has enough precision to modify the simulation step
+  size, which is in standard units (seconds), but typically has very small values (nanoseconds, #553)
 
 ## [0.3.2] - 2023/01/09
 

@@ -21,8 +21,15 @@ template<class... Ts> Overloaded(Ts...) -> Overloaded<Ts...>;
 
 static bool DrawEditor(osc::ParamBlock& b, int idx, double v)
 {
+    // note: the input prevision has to be quite high here, because the
+    //       ParamBlockEditorPopup has to edit simulation parameters, and
+    //       one of those parameters is "Simulation Step Size (seconds)",
+    //       which OpenSim defaults to a very very small number (10 ns)
+    //
+    //       see: #553
+
     float fv = static_cast<float>(v);
-    if (ImGui::InputFloat("##", &fv, 0.0f, 0.0f, OSC_DEFAULT_FLOAT_INPUT_FORMAT))
+    if (ImGui::InputFloat("##", &fv, 0.0f, 0.0f, "%.9f"))
     {
         b.setValue(idx, static_cast<double>(fv));
         return true;
