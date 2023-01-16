@@ -2,9 +2,12 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/Widgets/SimulationScrubber.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 
+#include <IconsFontAwesome5.h>
 #include <imgui.h>
+#include <imgui_internal.h>
 
 #include <memory>
 #include <string>
@@ -40,7 +43,33 @@ public:
 private:
     void drawContent()
     {
+        drawScaleFactorGroup();
+
+        ImGui::SameLine();
+        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+        ImGui::SameLine();
+
         m_Scrubber.draw();
+    }
+
+    void drawScaleFactorGroup()
+    {
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
+        ImGui::TextUnformatted(ICON_FA_EXPAND_ALT);
+        osc::DrawTooltipIfItemHovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
+        ImGui::SameLine();
+
+        {
+            float scaleFactor = m_Simulation->getFixupScaleFactor();
+            ImGui::SetNextItemWidth(ImGui::CalcTextSize("0.00000").x);
+            if (ImGui::InputFloat("##scaleinput", &scaleFactor))
+            {
+                m_Simulation->setFixupScaleFactor(scaleFactor);
+            }
+        }
+        ImGui::PopStyleVar();
+
+        // TODO: can't autoscale without a state
     }
 
     std::string m_Label;

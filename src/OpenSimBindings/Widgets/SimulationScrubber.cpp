@@ -1,5 +1,6 @@
 #include "SimulationScrubber.hpp"
 
+#include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/SimulatorUIAPI.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/SimulationClock.hpp"
@@ -28,11 +29,59 @@ public:
 
     void draw()
     {
+        drawBackwardsButtons();
+        ImGui::SameLine();
+
+        drawPlayOrPauseOrReplayButton();
+        ImGui::SameLine();
+
+        drawForwardsButtons();
+        ImGui::SameLine();
+
+        drawPlaybackSpeedSelector();
+        ImGui::SameLine();
+
+        drawStartTimeText();
+        ImGui::SameLine();
+
+        drawScrubber();
+        ImGui::SameLine();
+
+        drawEndTimeText();
+
+        // don't end with SameLine, because this might be composed into
+        // a multiline UI
+    }
+
+    bool onEvent(SDL_Event const&)
+    {
+        return false;
+    }
+
+private:
+    void drawBackwardsButtons()
+    {
+        if (ImGui::Button(ICON_FA_FAST_BACKWARD))
+        {
+            m_SimulatorAPI->setSimulationScrubTime(m_Simulation->getStartTime());
+        }
+        DrawTooltipIfItemHovered("Go to First State");
+        ImGui::SameLine();
+
+        if (ImGui::Button(ICON_FA_STEP_BACKWARD))
+        {
+            m_SimulatorAPI->stepBack();
+        }
+        DrawTooltipIfItemHovered("Previous State");
+    }
+
+    void drawPlayOrPauseOrReplayButton()
+    {
         SimulationClock::time_point const tStart = m_Simulation->getStartTime();
         SimulationClock::time_point const tEnd = m_Simulation->getEndTime();
         SimulationClock::time_point const tCur = m_SimulatorAPI->getSimulationScrubTime();
 
-        // play/pause buttons
+        // play/pause
         if (tCur >= tEnd)
         {
             if (ImGui::Button(ICON_FA_REDO))
@@ -40,6 +89,7 @@ public:
                 m_SimulatorAPI->setSimulationScrubTime(tStart);
                 m_SimulatorAPI->setSimulationPlaybackState(true);
             }
+            DrawTooltipIfItemHovered("Replay");
         }
         else if (!m_SimulatorAPI->getSimulationPlaybackState())
         {
@@ -47,6 +97,7 @@ public:
             {
                 m_SimulatorAPI->setSimulationPlaybackState(true);
             }
+            DrawTooltipIfItemHovered("Play");
         }
         else
         {
@@ -54,12 +105,50 @@ public:
             {
                 m_SimulatorAPI->setSimulationPlaybackState(false);
             }
+            DrawTooltipIfItemHovered("Pause");
         }
+    }
 
-        // scubber slider
+    void drawForwardsButtons()
+    {
+        if (ImGui::Button(ICON_FA_STEP_FORWARD))
+        {
+            m_SimulatorAPI->stepForward();
+        }
+        DrawTooltipIfItemHovered("Next State");
+
         ImGui::SameLine();
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
+        if (ImGui::Button(ICON_FA_FAST_FORWARD))
+        {
+            m_SimulatorAPI->setSimulationScrubTime(m_Simulation->getEndTime());
+        }
+        DrawTooltipIfItemHovered("Go to Last State");
+    }
+
+    void drawStartTimeText()
+    {
+        SimulationClock::time_point const tStart = m_Simulation->getStartTime();
+        ImGui::TextDisabled("%.2f", static_cast<float>(tStart.time_since_epoch().count()));
+    }
+
+    void drawPlaybackSpeedSelector()
+    {
+        ImGui::SetNextItemWidth(ImGui::CalcTextSize("nnx").x + 2.0f*ImGui::GetStyle().FramePadding.x);
+        float speed = m_SimulatorAPI->getSimulationPlaybackSpeed();
+        if (ImGui::InputFloat("speed", &speed, 0.0f, 0.0f, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            m_SimulatorAPI->setSimulationPlaybackSpeed(speed);
+        }
+    }
+
+    void drawScrubber()
+    {
+        SimulationClock::time_point const tStart = m_Simulation->getStartTime();
+        SimulationClock::time_point const tEnd = m_Simulation->getEndTime();
+        SimulationClock::time_point const tCur = m_SimulatorAPI->getSimulationScrubTime();
+
+        ImGui::SetNextItemWidth(ImGui::GetFontSize() * 20.0f);
         float v = static_cast<float>(tCur.time_since_epoch().count());
         bool const userScrubbed = ImGui::SliderFloat("##scrubber",
             &v,
@@ -68,6 +157,7 @@ public:
             "%.2f",
             ImGuiSliderFlags_AlwaysClamp
         );
+        ImGui::SameLine();
 
         if (userScrubbed)
         {
@@ -85,12 +175,12 @@ public:
         }
     }
 
-    bool onEvent(SDL_Event const&)
+    void drawEndTimeText()
     {
-        return false;
+        SimulationClock::time_point const tEnd = m_Simulation->getEndTime();
+        ImGui::TextDisabled("%.2f", static_cast<float>(tEnd.time_since_epoch().count()));
     }
 
-private:
     std::string m_Label;
     SimulatorUIAPI* m_SimulatorAPI;
     std::shared_ptr<Simulation> m_Simulation;

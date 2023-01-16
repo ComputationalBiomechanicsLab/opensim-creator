@@ -32,18 +32,42 @@ namespace osc
         {
             return implGetSimulationPlaybackState();
         }
+
         void setSimulationPlaybackState(bool v)
         {
             implSetSimulationPlaybackState(v);
         }
+
+        float getSimulationPlaybackSpeed()
+        {
+            return implGetSimulationPlaybackSpeed();
+        }
+
+        void setSimulationPlaybackSpeed(float v)
+        {
+            implSetSimulationPlaybackSpeed(v);
+        }
+
         SimulationClock::time_point getSimulationScrubTime()
         {
             return implGetSimulationScrubTime();
         }
+
+        void stepBack()
+        {
+            implStepBack();
+        }
+
+        void stepForward()
+        {
+            implStepForward();
+        }
+
         void setSimulationScrubTime(SimulationClock::time_point v)
         {
             implSetSimulationScrubTime(v);
         }
+
         std::optional<SimulationReport> trySelectReportBasedOnScrubbing()
         {
             return implTrySelectReportBasedOnScrubbing();
@@ -53,22 +77,27 @@ namespace osc
         {
             return implGetNumUserOutputExtractors();
         }
+
         OutputExtractor const& getUserOutputExtractor(int i) const
         {
             return implGetUserOutputExtractor(i);
         }
+
         void addUserOutputExtractor(OutputExtractor const& o)
         {
             implAddUserOutputExtractor(o);
         }
+
         void removeUserOutputExtractor(int i)
         {
             implRemoveUserOutputExtractor(i);
         }
+
         bool hasUserOutputExtractor(OutputExtractor const& o)
         {
             return implHasUserOutputExtractor(o);
         }
+
         bool removeUserOutputExtractor(OutputExtractor const& o)
         {
             return implRemoveUserOutputExtractor(o);
@@ -79,8 +108,12 @@ namespace osc
 
         virtual bool implGetSimulationPlaybackState() = 0;
         virtual void implSetSimulationPlaybackState(bool) = 0;
+        virtual float implGetSimulationPlaybackSpeed() = 0;
+        virtual void implSetSimulationPlaybackSpeed(float) = 0;
         virtual SimulationClock::time_point implGetSimulationScrubTime() = 0;
         virtual void implSetSimulationScrubTime(SimulationClock::time_point) = 0;
+        virtual void implStepBack() = 0;
+        virtual void implStepForward() = 0;
         virtual std::optional<SimulationReport> implTrySelectReportBasedOnScrubbing() = 0;
 
         virtual int implGetNumUserOutputExtractors() const = 0;

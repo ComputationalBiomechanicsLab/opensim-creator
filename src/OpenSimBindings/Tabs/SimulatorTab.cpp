@@ -182,6 +182,37 @@ public:
     }
 
 private:
+    std::optional<SimulationReport> tryFindNthReportAfter(SimulationClock::time_point t, int offset = 0)
+    {
+        int const numSimulationReports = m_Simulation->getNumReports();
+
+        if (numSimulationReports <= 0)
+        {
+            return std::nullopt;
+        }
+
+        int zeroethReportIndex = numSimulationReports-1;
+        for (int i = 0; i < numSimulationReports; ++i)
+        {
+            SimulationReport r = m_Simulation->getSimulationReport(i);
+            if (r.getTime() >= t)
+            {
+                zeroethReportIndex = i;
+                break;
+            }
+        }
+
+        int const reportIndex = zeroethReportIndex + offset;
+        if (0 <= reportIndex && reportIndex < numSimulationReports)
+        {
+            return m_Simulation->getSimulationReport(reportIndex);
+        }
+        else
+        {
+            return std::nullopt;
+        }
+    }
+
     VirtualSimulation& implUpdSimulation() final
     {
         return *m_Simulation;
@@ -206,6 +237,16 @@ private:
         }
     }
 
+    float implGetSimulationPlaybackSpeed() final
+    {
+        return m_PlaybackSpeed;
+    }
+
+    void implSetSimulationPlaybackSpeed(float v)
+    {
+        m_PlaybackSpeed = v;
+    }
+
     SimulationClock::time_point implGetSimulationScrubTime() final
     {
         if (!m_IsPlayingBack)
@@ -224,9 +265,10 @@ private:
             else
             {
                 std::chrono::system_clock::time_point wallNow = std::chrono::system_clock::now();
-                auto wallDur = wallNow - m_PlaybackStartWallTime;
+                std::chrono::system_clock::duration wallDur = wallNow - m_PlaybackStartWallTime;
 
-                osc::SimulationClock::time_point simNow = m_PlaybackStartSimtime + osc::SimulationClock::duration{wallDur};
+                SimulationClock::duration simDur = m_PlaybackSpeed * osc::SimulationClock::duration{wallDur};
+                osc::SimulationClock::time_point simNow = m_PlaybackStartSimtime + simDur;
                 osc::SimulationClock::time_point simLatest = m_Simulation->getSimulationReport(nReports-1).getTime();
 
                 return simNow <= simLatest ? simNow : simLatest;
@@ -240,27 +282,27 @@ private:
         m_PlaybackStartWallTime = std::chrono::system_clock::now();
     }
 
+    void implStepBack() final
+    {
+        std::optional<SimulationReport> const maybePrev = tryFindNthReportAfter(getSimulationScrubTime(), -1);
+        if (maybePrev)
+        {
+            setSimulationScrubTime(maybePrev->getTime());
+        }
+    }
+
+    void implStepForward() final
+    {
+        std::optional<SimulationReport> const maybeNext = tryFindNthReportAfter(getSimulationScrubTime(), 1);
+        if (maybeNext)
+        {
+            setSimulationScrubTime(maybeNext->getTime());
+        }
+    }
+
     std::optional<SimulationReport> implTrySelectReportBasedOnScrubbing() final
     {
-        int nReports = m_Simulation->getNumReports();
-
-        if (nReports <= 0)
-        {
-            return std::nullopt;
-        }
-
-        osc::SimulationClock::time_point t = getSimulationScrubTime();
-
-        for (int i = 0; i < nReports; ++i)
-        {
-            osc::SimulationReport r = m_Simulation->getSimulationReport(i);
-            if (r.getTime() >= t)
-            {
-                return r;
-            }
-        }
-
-        return m_Simulation->getSimulationReport(nReports-1);
+        return tryFindNthReportAfter(getSimulationScrubTime());
     }
 
     int implGetNumUserOutputExtractors() const final
@@ -793,6 +835,7 @@ private:
 
     // scrubbing state
     bool m_IsPlayingBack = true;
+    float m_PlaybackSpeed = 1.0f;
     SimulationClock::time_point m_PlaybackStartSimtime = m_Simulation->getStartTime();
     std::chrono::system_clock::time_point m_PlaybackStartWallTime = std::chrono::system_clock::now();
 
