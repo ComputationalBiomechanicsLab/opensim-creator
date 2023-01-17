@@ -43,7 +43,6 @@
 #include "src/Widgets/RedoButton.hpp"
 #include "src/Widgets/StandardPanel.hpp"
 #include "src/Widgets/StandardPopup.hpp"
-#include "src/Widgets/ToggleablePanel.hpp"
 #include "src/Widgets/ToggleablePanelFlags.hpp"
 #include "src/Widgets/UndoButton.hpp"
 #include "src/Widgets/UndoRedoPanel.hpp"
