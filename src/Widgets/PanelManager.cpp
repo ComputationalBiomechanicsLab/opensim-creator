@@ -287,7 +287,7 @@ public:
 
     void deactivateDynamicPanel(size_t i)
     {
-        if (0 <= i && i < m_DynamicPanels.size())
+        if (i < m_DynamicPanels.size())
         {
             m_DynamicPanels.erase(m_DynamicPanels.begin() + i);
         }
