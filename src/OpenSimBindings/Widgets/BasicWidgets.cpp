@@ -4,9 +4,11 @@
 #include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
 #include "src/OpenSimBindings/IntegratorMethod.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/OpenSimBindings/ParamValue.hpp"
+#include "src/OpenSimBindings/SimulationModelStatePair.hpp"
 #include "src/OpenSimBindings/VirtualModelStatePair.hpp"
 
 #include <imgui.h>
@@ -14,6 +16,7 @@
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <SimTKcommon/basics.h>
 
 #include <cstdio>
@@ -234,4 +237,44 @@ void osc::DrawSearchBar(std::string& out, int maxLen)
     ImGui::SameLine();
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
     osc::InputString("##hirarchtsearchbar", out, maxLen);
+}
+
+void osc::DrawOutputNameColumn(
+    VirtualOutputExtractor const& output,
+    bool centered,
+    SimulationModelStatePair* maybeActiveSate)
+{
+    if (centered)
+    {
+        osc::TextCentered(output.getName());
+    }
+    else
+    {
+        ImGui::TextUnformatted(output.getName().c_str());
+    }
+
+    // if it's specifically a component ouptut, then hover/clicking the text should
+    // propagate to the rest of the UI
+    //
+    // (e.g. if the user mouses over the name of a component output it should make
+    // the associated component the current hover to provide immediate feedback to
+    // the user)
+    if (auto const* co = dynamic_cast<osc::ComponentOutputExtractor const*>(&output); co && maybeActiveSate)
+    {
+        if (ImGui::IsItemHovered())
+        {
+            maybeActiveSate->setHovered(osc::FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
+        }
+
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+        {
+            maybeActiveSate->setSelected(osc::FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
+        }
+    }
+
+    if (!output.getDescription().empty())
+    {
+        ImGui::SameLine();
+        osc::DrawHelpMarker(output.getName(), output.getDescription());
+    }
 }

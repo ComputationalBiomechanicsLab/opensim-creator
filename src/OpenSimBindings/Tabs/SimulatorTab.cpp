@@ -7,6 +7,7 @@
 #include "src/OpenSimBindings/Widgets/MainMenu.hpp"
 #include "src/OpenSimBindings/Widgets/NavigatorPanel.hpp"
 #include "src/OpenSimBindings/Widgets/ComponentDetails.hpp"
+#include "src/OpenSimBindings/Widgets/SimulationDetailsPanel.hpp"
 #include "src/OpenSimBindings/Widgets/SimulationOutputPlot.hpp"
 #include "src/OpenSimBindings/Widgets/SimulationScrubber.hpp"
 #include "src/OpenSimBindings/Widgets/SimulationToolbar.hpp"
@@ -26,7 +27,7 @@
 #include "src/Tabs/TabHost.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 #include "src/Utils/Perf.hpp"
-#include "src/Widgets/LogViewer.hpp"
+#include "src/Widgets/LogViewerPanel.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 
 #include <glm/vec2.hpp>
@@ -57,53 +58,19 @@
 
 static std::atomic<int> g_SimulationNumber = 1;
 
-static void DrawOutputNameColumn(osc::VirtualOutputExtractor const& output, bool centered = true, osc::SimulationModelStatePair* maybeActiveSate = nullptr)
+namespace
 {
-    if (centered)
+    bool IsAnyOutputExportableToCSV(osc::MainUIStateAPI& api)
     {
-        osc::TextCentered(output.getName());
-    }
-    else
-    {
-        ImGui::TextUnformatted(output.getName().c_str());
-    }
-
-    // if it's specifically a component ouptut, then hover/clicking the text should
-    // propagate to the rest of the UI
-    //
-    // (e.g. if the user mouses over the name of a component output it should make
-    // the associated component the current hover to provide immediate feedback to
-    // the user)
-    if (auto const* co = dynamic_cast<osc::ComponentOutputExtractor const*>(&output); co && maybeActiveSate)
-    {
-        if (ImGui::IsItemHovered())
+        for (int i = 0; i < api.getNumUserOutputExtractors(); ++i)
         {
-            maybeActiveSate->setHovered(osc::FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
+            if (api.getUserOutputExtractor(i).getOutputType() == osc::OutputType::Float)
+            {
+                return true;
+            }
         }
-
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
-        {
-            maybeActiveSate->setSelected(osc::FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
-        }
+        return false;
     }
-
-    if (!output.getDescription().empty())
-    {
-        ImGui::SameLine();
-        osc::DrawHelpMarker(output.getName(), output.getDescription());
-    }
-}
-
-static bool IsAnyOutputExportableToCSV(osc::MainUIStateAPI& api)
-{
-    for (int i = 0; i < api.getNumUserOutputExtractors(); ++i)
-    {
-        if (api.getUserOutputExtractor(i).getOutputType() == osc::OutputType::Float)
-        {
-            return true;
-        }
-    }
-    return false;
 }
 
 class osc::SimulatorTab::Impl final : public SimulatorUIAPI {
@@ -177,7 +144,10 @@ public:
 
     void onDraw()
     {
-        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        ImGui::DockSpaceOverViewport(
+            ImGui::GetMainViewport(),
+            ImGuiDockNodeFlags_PassthruCentralNode
+        );
         drawContent();
     }
 
@@ -420,51 +390,9 @@ private:
             }
         }
 
-        // simulation details
-        if (bool simulationStatsOldState = config.getIsPanelEnabled("Simulation Details"))
-        {
-            bool simulationStatsState = simulationStatsOldState;
-            if (ImGui::Begin("Simulation Details", &simulationStatsState))
-            {
-                OSC_PERF("draw simulation details panel");
-                drawSimulationStats();
-            }
-            ImGui::End();
-
-            if (simulationStatsState != simulationStatsOldState)
-            {
-                App::upd().updConfig().setIsPanelEnabled("Simulation Details", simulationStatsState);
-            }
-        }
-
-        if (bool logOldState = config.getIsPanelEnabled("Log"))
-        {
-            bool logState = logOldState;
-            if (ImGui::Begin("Log", &logState, ImGuiWindowFlags_MenuBar))
-            {
-                OSC_PERF("draw log panel");
-                m_LogViewerWidget.draw();
-            }
-            ImGui::End();
-
-            if (logState != logOldState)
-            {
-                App::upd().updConfig().setIsPanelEnabled("Log", logState);
-            }
-        }
-
-        if (bool perfPanelOldState = config.getIsPanelEnabled("Performance"))
-        {
-            OSC_PERF("draw perf panel");
-            m_PerfPanel.open();
-            m_PerfPanel.draw();
-            bool const state = m_PerfPanel.isOpen();
-
-            if (state != perfPanelOldState)
-            {
-                App::upd().updConfig().setIsPanelEnabled("Performance", state);
-            }
-        }
+        m_SimulationDetailsPanel.draw();
+        m_LogViewerPanel.draw();
+        m_PerfPanel.draw();
     }
 
     void drawOutputWatchesTab()
@@ -551,96 +479,6 @@ private:
             }
             ImGui::Columns();
         }
-    }
-
-    void drawSimulationStats()
-    {
-        {
-            ImGui::Dummy({0.0f, 1.0f});
-            ImGui::TextUnformatted("info:");
-            ImGui::SameLine();
-            osc::DrawHelpMarker("Top-level info about the simulation");
-            ImGui::Separator();
-            ImGui::Dummy({0.0f, 2.0f});
-
-            ImGui::Columns(2);
-            ImGui::Text("num reports");
-            ImGui::NextColumn();
-            ImGui::Text("%i", m_Simulation->getNumReports());
-            ImGui::NextColumn();
-            ImGui::Columns();
-        }
-
-        {
-            OSC_PERF("draw simulation params");
-            DrawSimulationParams(m_Simulation->getParams());
-        }
-
-        ImGui::Dummy({0.0f, 10.0f});
-
-        {
-            OSC_PERF("draw simulation stats");
-            drawSimulationStatPlots(*m_Simulation);
-        }
-    }
-
-    void drawSimulationStatPlots(osc::Simulation& sim)
-    {
-        auto outputs = sim.getOutputs();
-
-        if (outputs.empty())
-        {
-            ImGui::TextDisabled("(no simulator output plots available for this simulation)");
-            return;
-        }
-
-        ImGui::Dummy({0.0f, 1.0f});
-        ImGui::Columns(2);
-        ImGui::TextUnformatted("plots:");
-        ImGui::SameLine();
-        osc::DrawHelpMarker("Various statistics collected when the simulation was ran");
-        ImGui::NextColumn();
-        if (std::any_of(outputs.begin(), outputs.end(), [](osc::OutputExtractor const& o) { return o.getOutputType() == osc::OutputType::Float; }))
-        {
-            ImGui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
-            if (ImGui::BeginPopupContextItem("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
-            {
-                if (ImGui::MenuItem("as CSV"))
-                {
-                    osc::TryPromptAndSaveOutputsAsCSV(*this, outputs);
-                }
-
-                if (ImGui::MenuItem("as CSV (and open)"))
-                {
-                    std::filesystem::path p = osc::TryPromptAndSaveOutputsAsCSV(*this, outputs);
-                    if (!p.empty())
-                    {
-                        osc::OpenPathInOSDefaultApplication(p);
-                    }
-                }
-
-                ImGui::EndPopup();
-            }
-        }
-
-        ImGui::NextColumn();
-        ImGui::Columns();
-        ImGui::Separator();
-        ImGui::Dummy({0.0f, 2.0f});
-
-        int imguiID = 0;
-        ImGui::Columns(2);
-        for (osc::OutputExtractor const& output : sim.getOutputs())
-        {
-            ImGui::PushID(imguiID++);
-            DrawOutputNameColumn(output, false);
-            ImGui::NextColumn();
-            SimulationOutputPlot plot{this, output, 32.0f};
-            plot.draw();
-            ImGui::NextColumn();
-            ImGui::PopID();
-        }
-        ImGui::Columns();
     }
 
     void drawMainMenuWindowTab()
@@ -842,13 +680,14 @@ private:
 
     // UI widgets
     SimulationToolbar m_Toolbar{"##SimulationToolbar", this, m_Simulation};
-    LogViewer m_LogViewerWidget;
     MainMenuFileTab m_MainMenuFileTab;
     MainMenuAboutTab m_MainMenuAboutTab;
     ComponentDetails m_ComponentDetailsWidget;
     PerfPanel m_PerfPanel{"Performance"};
     NavigatorPanel m_NavigatorPanel{"Navigator"};
     std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
+    SimulationDetailsPanel m_SimulationDetailsPanel{"Simulation Details", this, m_Simulation};
+    LogViewerPanel m_LogViewerPanel{"Log"};
 };
 
 
