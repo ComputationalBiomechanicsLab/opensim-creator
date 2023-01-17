@@ -80,6 +80,11 @@ osc::UndoRedoPanel::UndoRedoPanel(UndoRedoPanel&&) noexcept = default;
 osc::UndoRedoPanel& osc::UndoRedoPanel::operator=(UndoRedoPanel&&) noexcept = default;
 osc::UndoRedoPanel::~UndoRedoPanel() noexcept = default;
 
+osc::CStringView osc::UndoRedoPanel::implGetName() const
+{
+    return m_Impl->getName();
+}
+
 bool osc::UndoRedoPanel::implIsOpen() const
 {
     return m_Impl->isOpen();

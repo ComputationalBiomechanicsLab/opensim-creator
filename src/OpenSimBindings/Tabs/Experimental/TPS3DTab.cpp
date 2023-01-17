@@ -1129,13 +1129,50 @@ namespace
     private:
         void drawContent()
         {
-            for (size_t i = 0; i < m_State->PanelManager.getNumToggleablePanels(); ++i)
+            osc::PanelManager& manager = m_State->PanelManager;
+
+            // toggleable panels
+            for (size_t i = 0; i < manager.getNumToggleablePanels(); ++i)
             {
-                bool activated = m_State->PanelManager.isToggleablePanelActivated(i);
-                osc::CStringView const name = m_State->PanelManager.getToggleablePanelName(i);
+                bool activated = manager.isToggleablePanelActivated(i);
+                osc::CStringView const name = manager.getToggleablePanelName(i);
                 if (ImGui::MenuItem(name.c_str(), nullptr, &activated))
                 {
                     m_State->PanelManager.setToggleablePanelActivated(i, activated);
+                }
+            }
+
+            // dynamic panels
+            if (manager.getNumDynamicPanels() > 0)
+            {
+                ImGui::Separator();
+                for (size_t i = 0; i < manager.getNumDynamicPanels(); ++i)
+                {
+                    bool activated = true;
+                    osc::CStringView const name = manager.getDynamicPanelName(i);
+                    if (ImGui::MenuItem(name.c_str(), nullptr, &activated))
+                    {
+                        manager.deactivateDynamicPanel(i);
+                    }
+                }
+            }
+
+            // spawnable submenu
+            if (manager.getNumSpawnablePanels() > 0)
+            {
+                ImGui::Separator();
+
+                if (ImGui::BeginMenu("Add"))
+                {
+                    for (size_t i = 0; i < manager.getNumSpawnablePanels(); ++i)
+                    {
+                        osc::CStringView const name = manager.getSpawnablePanelBaseName(i);
+                        if (ImGui::MenuItem(name.c_str()))
+                        {
+                            manager.createDynamicPanel(i);
+                        }
+                    }
+                    ImGui::EndMenu();
                 }
             }
         }
@@ -2285,34 +2322,34 @@ namespace
     // pushes all available panels the TPS3D tab can render into the out param
     void PushBackAvailablePanels(std::shared_ptr<TPSTabSharedState> const& state, osc::PanelManager& out)
     {
-        out.registerPanel(
+        out.registerToggleablePanel(
             "Source Mesh",
             [state](std::string_view panelName) { return std::make_shared<TPS3DInputPanel>(panelName, state, TPSDocumentInputIdentifier::Source); }
         );
 
-        out.registerPanel(
+        out.registerToggleablePanel(
             "Destination Mesh",
             [state](std::string_view panelName) { return std::make_shared<TPS3DInputPanel>(panelName, state, TPSDocumentInputIdentifier::Destination); }
         );
 
-        out.registerPanel(
+        out.registerToggleablePanel(
             "Result",
             [state](std::string_view panelName) { return std::make_shared<TPS3DResultPanel>(panelName, state); }
         );
 
-        out.registerPanel(
+        out.registerToggleablePanel(
             "History",
             [state](std::string_view panelName) { return std::make_shared<osc::UndoRedoPanel>(panelName, state->EditedDocument); },
             osc::ToggleablePanelFlags_Default & ~osc::ToggleablePanelFlags_IsEnabledByDefault
         );
 
-        out.registerPanel(
+        out.registerToggleablePanel(
             "Log",
             [](std::string_view panelName) { return std::make_shared<osc::LogViewerPanel>(panelName); },
             osc::ToggleablePanelFlags_Default & ~osc::ToggleablePanelFlags_IsEnabledByDefault
         );
 
-        out.registerPanel(
+        out.registerToggleablePanel(
             "Performance",
             [](std::string_view panelName) { return std::make_shared<osc::PerfPanel>(panelName); },
             osc::ToggleablePanelFlags_Default & ~osc::ToggleablePanelFlags_IsEnabledByDefault

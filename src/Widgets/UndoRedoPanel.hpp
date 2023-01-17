@@ -20,6 +20,7 @@ namespace osc
         ~UndoRedoPanel() noexcept;
 
     private:
+        CStringView implGetName() const final;
         bool implIsOpen() const final;
         void implOpen() final;
         void implClose() final;

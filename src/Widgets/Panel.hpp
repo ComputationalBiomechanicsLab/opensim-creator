@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/Utils/CStringView.hpp"
+
 namespace osc
 {
     // a class that exposes a virtual interface to a user-visible panel
@@ -12,6 +14,11 @@ namespace osc
         Panel& operator=(Panel&&) noexcept = default;
     public:
         virtual ~Panel() noexcept = default;
+
+        CStringView getName() const
+        {
+            return implGetName();
+        }
 
         bool isOpen() const
         {
@@ -34,6 +41,7 @@ namespace osc
         }
 
     private:
+        virtual CStringView implGetName() const = 0;
         virtual bool implIsOpen() const = 0;
         virtual void implOpen() = 0;
         virtual void implClose() = 0;

@@ -129,6 +129,11 @@ osc::PerfPanel::PerfPanel(PerfPanel&&) noexcept = default;
 osc::PerfPanel& osc::PerfPanel::operator=(PerfPanel&&) noexcept = default;
 osc::PerfPanel::~PerfPanel() = default;
 
+osc::CStringView osc::PerfPanel::implGetName() const
+{
+    return m_Impl->getName();
+}
+
 bool osc::PerfPanel::implIsOpen() const
 {
     return m_Impl->isOpen();

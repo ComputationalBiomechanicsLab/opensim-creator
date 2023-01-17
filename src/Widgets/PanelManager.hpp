@@ -24,16 +24,32 @@ namespace osc
         PanelManager& operator=(PanelManager&&) noexcept;
         ~PanelManager() noexcept;
 
-        void registerPanel(
+        void registerToggleablePanel(
             std::string_view baseName,
             std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_,
             ToggleablePanelFlags flags_ = ToggleablePanelFlags_Default
         );
 
+        void registerSpawnablePanel(
+            std::string_view baseName,
+            std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_
+        );
+
+        // methods for panels that are either enabled or disabled (toggleable)
         size_t getNumToggleablePanels() const;
         CStringView getToggleablePanelName(size_t) const;
         bool isToggleablePanelActivated(size_t) const;
         void setToggleablePanelActivated(size_t, bool);
+
+        // methods for dynamic panels that have been added at runtime (spawnable)
+        size_t getNumDynamicPanels() const;
+        CStringView getDynamicPanelName(size_t) const;
+        void deactivateDynamicPanel(size_t);
+
+        // methods for spawnable panels (i.e. things that can create new dynamic panels)
+        size_t getNumSpawnablePanels() const;
+        CStringView getSpawnablePanelBaseName(size_t) const;
+        void createDynamicPanel(size_t);
 
         void activateAllDefaultOpenPanels();
         void garbageCollectDeactivatedPanels();

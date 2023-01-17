@@ -10,6 +10,7 @@ namespace osc
     enum ToggleablePanelFlags_ {
         ToggleablePanelFlags_None = 0,
         ToggleablePanelFlags_IsEnabledByDefault = 1<<0,
+        ToggleablePanelFlags_IsSpawnable = 1<<1,  // ignores IsEnabledByDefault
         ToggleablePanelFlags_Default = ToggleablePanelFlags_IsEnabledByDefault,
     };
 }

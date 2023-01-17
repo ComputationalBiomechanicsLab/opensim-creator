@@ -19,6 +19,11 @@ osc::StandardPanel::StandardPanel(std::string_view name, ImGuiWindowFlags imGuiW
 {
 }
 
+osc::CStringView osc::StandardPanel::implGetName() const
+{
+    return m_PanelName;
+}
+
 bool osc::StandardPanel::implIsOpen() const
 {
     return osc::App::get().getConfig().getIsPanelEnabled(m_PanelName);

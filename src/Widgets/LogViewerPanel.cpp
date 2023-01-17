@@ -33,6 +33,11 @@ osc::LogViewerPanel::LogViewerPanel(LogViewerPanel&&) noexcept = default;
 osc::LogViewerPanel& osc::LogViewerPanel::operator=(LogViewerPanel&&) noexcept = default;
 osc::LogViewerPanel::~LogViewerPanel() noexcept = default;
 
+osc::CStringView osc::LogViewerPanel::implGetName() const
+{
+    return m_Impl->getName();
+}
+
 bool osc::LogViewerPanel::implIsOpen() const
 {
     return m_Impl->isOpen();

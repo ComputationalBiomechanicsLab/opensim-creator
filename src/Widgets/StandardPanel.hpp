@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/Widgets/Panel.hpp"
+#include "src/Utils/CStringView.hpp"
 
 #include <imgui.h>
 
@@ -26,6 +27,7 @@ namespace osc
 
     private:
         // this standard implementation supplies these
+        CStringView implGetName() const final;
         bool implIsOpen() const final;
         void implOpen() final;
         void implClose() final;

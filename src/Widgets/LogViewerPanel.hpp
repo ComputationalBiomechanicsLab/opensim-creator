@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/Widgets/Panel.hpp"
+#include "src/Utils/CStringView.hpp"
 
 #include <memory>
 #include <string_view>
@@ -17,6 +18,7 @@ namespace osc
         ~LogViewerPanel() noexcept;
 
     private:
+        CStringView implGetName() const final;
         bool implIsOpen() const final;
         void implOpen() final;
         void implClose() final;
