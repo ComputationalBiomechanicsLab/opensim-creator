@@ -4,10 +4,10 @@
 #include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/SimulatorUIAPI.hpp"
 #include "src/OpenSimBindings/Widgets/BasicWidgets.hpp"
-#include "src/OpenSimBindings/Widgets/ComponentDetails.hpp"
 #include "src/OpenSimBindings/Widgets/MainMenu.hpp"
 #include "src/OpenSimBindings/Widgets/NavigatorPanel.hpp"
 #include "src/OpenSimBindings/Widgets/OutputPlotsPanel.hpp"
+#include "src/OpenSimBindings/Widgets/SelectionDetailsPanel.hpp"
 #include "src/OpenSimBindings/Widgets/SimulationDetailsPanel.hpp"
 #include "src/OpenSimBindings/Widgets/SimulationOutputPlot.hpp"
 #include "src/OpenSimBindings/Widgets/SimulationScrubber.hpp"
@@ -348,67 +348,11 @@ private:
             }
         }
 
-        // draw selection details panel
-        if (bool selectionDetailsOldState = config.getIsPanelEnabled("Selection Details"))
-        {
-            bool selectionDetailsState = selectionDetailsOldState;
-            if (ImGui::Begin("Selection Details", &selectionDetailsState))
-            {
-                OSC_PERF("draw selection panel");
-                drawSelectionTab();
-            }
-            ImGui::End();
-
-            if (selectionDetailsState != selectionDetailsOldState)
-            {
-                App::upd().updConfig().setIsPanelEnabled("Selection Details", selectionDetailsState);
-            }
-        }
-
+        m_SelectionDetailsPanel.draw();
         m_OutputPlotsPanel.draw();
         m_SimulationDetailsPanel.draw();
         m_LogViewerPanel.draw();
         m_PerfPanel.draw();
-    }
-
-    void drawSelectionTab()
-    {
-        if (!m_ShownModelState)
-        {
-            ImGui::TextDisabled("(no simulation selected)");
-            return;
-        }
-
-        osc::SimulationModelStatePair& ms = *m_ShownModelState;
-
-        OpenSim::Component const* selected = ms.getSelected();
-
-        if (!selected)
-        {
-            ImGui::TextDisabled("(nothing selected)");
-            return;
-        }
-
-        m_ComponentDetailsWidget.draw(ms.getState(), selected);
-
-        if (ImGui::CollapsingHeader("outputs"))
-        {
-            int imguiID = 0;
-            ImGui::Columns(2);
-            for (auto const& [outputName, aoPtr] : selected->getOutputs())
-            {
-                ImGui::PushID(imguiID++);
-
-                ImGui::Text("%s", outputName.c_str());
-                ImGui::NextColumn();
-                SimulationOutputPlot plot{this, osc::OutputExtractor{osc::ComponentOutputExtractor{*aoPtr}}, ImGui::GetTextLineHeight()};
-                plot.draw();
-                ImGui::NextColumn();
-
-                ImGui::PopID();
-            }
-            ImGui::Columns();
-        }
     }
 
     void drawMainMenuWindowTab()
@@ -481,8 +425,6 @@ private:
             return true;  // it's open, but not shown
         }
 
-        glm::vec2 pos = ImGui::GetCursorScreenPos();
-        glm::vec2 dims = ImGui::GetContentRegionAvail();
         auto resp = viewer.draw(ms);
         ImGui::End();
 
@@ -607,15 +549,16 @@ private:
     SimulationClock::time_point m_PlaybackStartSimtime = m_Simulation->getStartTime();
     std::chrono::system_clock::time_point m_PlaybackStartWallTime = std::chrono::system_clock::now();
 
-
-    // UI widgets
+    // static widgets
     SimulationToolbar m_Toolbar{"##SimulationToolbar", this, m_Simulation};
     MainMenuFileTab m_MainMenuFileTab;
     MainMenuAboutTab m_MainMenuAboutTab;
-    ComponentDetails m_ComponentDetailsWidget;
+
+    // toggle-able widgets
     PerfPanel m_PerfPanel{"Performance"};
     NavigatorPanel m_NavigatorPanel{"Navigator"};
     std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
+    SelectionDetailsPanel m_SelectionDetailsPanel{"Selection Details", this};
     OutputPlotsPanel m_OutputPlotsPanel{"Output Plots", m_API, this};
     SimulationDetailsPanel m_SimulationDetailsPanel{"Simulation Details", this, m_Simulation};
     LogViewerPanel m_LogViewerPanel{"Log"};

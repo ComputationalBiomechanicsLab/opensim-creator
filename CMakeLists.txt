@@ -530,6 +530,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/Widgets/SelectComponentPopup.hpp
     src/OpenSimBindings/Widgets/SelectGeometryPopup.cpp
     src/OpenSimBindings/Widgets/SelectGeometryPopup.hpp
+    src/OpenSimBindings/Widgets/SelectionDetailsPanel.cpp
+    src/OpenSimBindings/Widgets/SelectionDetailsPanel.hpp
     src/OpenSimBindings/Widgets/SimulationDetailsPanel.cpp
     src/OpenSimBindings/Widgets/SimulationDetailsPanel.hpp
     src/OpenSimBindings/Widgets/SimulationOutputPlot.cpp

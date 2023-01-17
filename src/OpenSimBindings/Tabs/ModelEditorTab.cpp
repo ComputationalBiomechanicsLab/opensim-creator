@@ -47,7 +47,6 @@
 #include <SDL_events.h>
 #include <SDL_keyboard.h>
 
-#include <array>
 #include <chrono>
 #include <cstdio>
 #include <memory>
