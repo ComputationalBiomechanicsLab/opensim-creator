@@ -62,24 +62,24 @@ public:
     Impl(MainUIStateAPI* parent,
         std::unique_ptr<UndoableModelStatePair> model) :
 
-        m_Parent{std::move(parent)},
+        m_ParentAPI{std::move(parent)},
         m_Model{std::move(model)}
     {
     }
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
-        return m_Name;
+        return m_TabName;
     }
 
     TabHost* parent()
     {
-        return m_Parent;
+        return m_ParentAPI;
     }
 
     bool isUnsaved() const
@@ -89,13 +89,13 @@ public:
 
     bool trySave()
     {
-        return ActionSaveModel(*m_Parent, *m_Model);
+        return ActionSaveModel(*m_ParentAPI, *m_Model);
     }
 
     void onMount()
     {
         App::upd().makeMainEventLoopWaiting();
-        m_Name = computeTabName();
+        m_TabName = computeTabName();
         ImPlot::CreateContext();
     }
 
@@ -128,7 +128,7 @@ public:
             osc::ActionUpdateModelFromBackingFile(*m_Model);
         }
 
-        m_Name = computeTabName();
+        m_TabName = computeTabName();
     }
 
     void onDrawMainMenu()
@@ -138,7 +138,10 @@ public:
 
     void onDraw()
     {
-        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        ImGui::DockSpaceOverViewport(
+            ImGui::GetMainViewport(),
+            ImGuiDockNodeFlags_PassthruCentralNode
+        );
 
         try
         {
@@ -153,9 +156,9 @@ public:
 
             if (m_ExceptionThrownLastFrame)
             {
-                UID tabID = m_Parent->addTab<ErrorTab>(m_Parent, ex);
-                m_Parent->selectTab(tabID);
-                m_Parent->closeTab(m_ID);
+                UID tabID = m_ParentAPI->addTab<ErrorTab>(m_ParentAPI, ex);
+                m_ParentAPI->selectTab(tabID);
+                m_ParentAPI->closeTab(m_TabID);
             }
             else
             {
@@ -168,13 +171,13 @@ public:
                 catch (std::exception const& ex2)
                 {
                     log::error("model rollback also thrown an exception: %s", ex2.what());
-                    UID tabID = m_Parent->addTab<ErrorTab>(m_Parent, ex2);
-                    m_Parent->selectTab(tabID);
-                    m_Parent->closeTab(m_ID);
+                    UID tabID = m_ParentAPI->addTab<ErrorTab>(m_ParentAPI, ex2);
+                    m_ParentAPI->selectTab(tabID);
+                    m_ParentAPI->closeTab(m_TabID);
                 }
             }
 
-            m_Parent->resetImgui();
+            m_ParentAPI->resetImgui();
         }
     }
 
@@ -192,13 +195,13 @@ private:
     {
         if (e.file != nullptr && CStrEndsWith(e.file, ".sto"))
         {
-            return osc::ActionLoadSTOFileAgainstModel(*m_Parent, *m_Model, e.file);
+            return osc::ActionLoadSTOFileAgainstModel(*m_ParentAPI, *m_Model, e.file);
         }
         else if (e.type == SDL_DROPFILE && e.file != nullptr && CStrEndsWith(e.file, ".osim"))
         {
             // if the user drops an osim file on this tab then it should be loaded
-            UID const tabID = m_Parent->addTab<LoadingTab>(m_Parent, e.file);
-            m_Parent->selectTab(tabID);
+            UID const tabID = m_ParentAPI->addTab<LoadingTab>(m_ParentAPI, e.file);
+            m_ParentAPI->selectTab(tabID);
             return true;
         }
 
@@ -226,7 +229,7 @@ private:
             case SDLK_r:
             {
                 // Ctrl+R: start a new simulation from focused model
-                return osc::ActionStartSimulatingModel(*m_Parent, *m_Model);
+                return osc::ActionStartSimulatingModel(*m_ParentAPI, *m_Model);
             }
             case SDLK_a:  // Ctrl+A: clear selection
                 osc::ActionClearSelectionFromEditedModel(*m_Model);
@@ -293,7 +296,7 @@ private:
         {
             std::string menuName = std::string{name} + "_contextmenu";
             OpenSim::ComponentPath path = resp.hovertestResult ? resp.hovertestResult->getAbsolutePath() : OpenSim::ComponentPath{};
-            pushPopup(std::make_unique<ComponentContextMenu>(menuName, m_Parent, this, m_Model, path));
+            pushPopup(std::make_unique<ComponentContextMenu>(menuName, m_ParentAPI, this, m_Model, path));
         }
 
         return true;
@@ -353,7 +356,7 @@ private:
         m_LogViewerPanel.draw();
         m_CoordinatesPanel.draw();
         m_OutputWatchesPanel.draw();
-        m_PerfPanel.draw();
+        m_PerformancePanel.draw();
 
         {
             OSC_PERF("draw muscle plots");
@@ -377,7 +380,7 @@ private:
     {
         auto popup = std::make_unique<ComponentContextMenu>(
             "##componentcontextmenu",
-            m_Parent,
+            m_ParentAPI,
             this,
             m_Model,
             path
@@ -436,29 +439,35 @@ private:
         m_ModelViewers.erase(m_ModelViewers.begin() + i);
     }
 
-    // tab data
-    UID m_ID;
-    std::string m_Name = "ModelEditorTab";
-    MainUIStateAPI* m_Parent;
+    // tab top-level data
+    UID m_TabID;
+    std::string m_TabName = "ModelEditorTab";
+    MainUIStateAPI* m_ParentAPI;
 
     // the model being edited
     std::shared_ptr<UndoableModelStatePair> m_Model;
 
     // polls changes to a file
-    FileChangePoller m_FileChangePoller{std::chrono::milliseconds{1000}, m_Model->getModel().getInputFileName()};
+    FileChangePoller m_FileChangePoller
+    {
+        std::chrono::milliseconds{1000},  // polling rate
+        m_Model->getModel().getInputFileName(),
+    };
 
-    // UI widgets/popups
-    ModelEditorMainMenu m_MainMenu{m_Parent, this, m_Model};
-    ModelEditorToolbar m_Toolbar{"##ModelEditorToolbar", m_Parent, this, m_Model};
+    // static UI widgets/popups
+    ModelEditorMainMenu m_MainMenu{m_ParentAPI, this, m_Model};
+    ModelEditorToolbar m_Toolbar{"##ModelEditorToolbar", m_ParentAPI, this, m_Model};
     LogViewerPanel m_LogViewerPanel{"Log"};
-    NavigatorPanel m_NavigatorPanel{"Navigator", [this](OpenSim::ComponentPath const& p)  { this->pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_Parent, this, m_Model, p)); }};
-    CoordinateEditorPanel m_CoordinatesPanel{"Coordinates", m_Parent, this, m_Model};
-    PerfPanel m_PerfPanel{"Performance"};
-    OutputWatchesPanel m_OutputWatchesPanel{"Output Watches", m_Model, m_Parent};
+    NavigatorPanel m_NavigatorPanel{"Navigator", [this](OpenSim::ComponentPath const& p)  { this->pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_ParentAPI, this, m_Model, p)); }};
+    CoordinateEditorPanel m_CoordinatesPanel{"Coordinates", m_ParentAPI, this, m_Model};
+    PerfPanel m_PerformancePanel{"Performance"};
+    OutputWatchesPanel m_OutputWatchesPanel{"Output Watches", m_Model, m_ParentAPI};
     PropertiesPanel m_PropertiesPanel{"Properties", this, m_Model};
+    EditorTabStatusBar m_StatusBar{m_ParentAPI, this, m_Model};
+
+    // dynamic UI widgets/popups
     int m_LatestMusclePlot = 1;
     std::vector<ModelMusclePlotPanel> m_ModelMusclePlots;
-    EditorTabStatusBar m_StatusBar{m_Parent, this, m_Model};
     std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
     Popups m_Popups;
 
