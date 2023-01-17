@@ -4,9 +4,10 @@
 #include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/SimulatorUIAPI.hpp"
 #include "src/OpenSimBindings/Widgets/BasicWidgets.hpp"
+#include "src/OpenSimBindings/Widgets/ComponentDetails.hpp"
 #include "src/OpenSimBindings/Widgets/MainMenu.hpp"
 #include "src/OpenSimBindings/Widgets/NavigatorPanel.hpp"
-#include "src/OpenSimBindings/Widgets/ComponentDetails.hpp"
+#include "src/OpenSimBindings/Widgets/OutputPlotsPanel.hpp"
 #include "src/OpenSimBindings/Widgets/SimulationDetailsPanel.hpp"
 #include "src/OpenSimBindings/Widgets/SimulationOutputPlot.hpp"
 #include "src/OpenSimBindings/Widgets/SimulationScrubber.hpp"
@@ -57,21 +58,6 @@
 #include <vector>
 
 static std::atomic<int> g_SimulationNumber = 1;
-
-namespace
-{
-    bool IsAnyOutputExportableToCSV(osc::MainUIStateAPI& api)
-    {
-        for (int i = 0; i < api.getNumUserOutputExtractors(); ++i)
-        {
-            if (api.getUserOutputExtractor(i).getOutputType() == osc::OutputType::Float)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-}
 
 class osc::SimulatorTab::Impl final : public SimulatorUIAPI {
 public:
@@ -305,6 +291,11 @@ private:
         return m_API->removeUserOutputExtractor(oe);
     }
 
+    SimulationModelStatePair* implTryGetCurrentSimulationState() final
+    {
+        return m_ShownModelState.get();
+    }
+
     void drawContent()
     {
         m_Toolbar.draw();
@@ -374,71 +365,10 @@ private:
             }
         }
 
-        if (bool outputsPanelOldState = config.getIsPanelEnabled("Output Plots"))
-        {
-            bool outputsPanelState = outputsPanelOldState;
-            if (ImGui::Begin("Output Plots", &outputsPanelState))
-            {
-                OSC_PERF("draw output plots panel");
-                drawOutputWatchesTab();
-            }
-            ImGui::End();
-
-            if (outputsPanelState != outputsPanelOldState)
-            {
-                App::upd().updConfig().setIsPanelEnabled("Output Plots", outputsPanelState);
-            }
-        }
-
+        m_OutputPlotsPanel.draw();
         m_SimulationDetailsPanel.draw();
         m_LogViewerPanel.draw();
         m_PerfPanel.draw();
-    }
-
-    void drawOutputWatchesTab()
-    {
-        if (m_API->getNumUserOutputExtractors() <= 0)
-        {
-            ImGui::TextDisabled("(no outputs requested)");
-            return;
-        }
-
-        if (IsAnyOutputExportableToCSV(*m_API))
-        {
-            ImGui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
-            if (ImGui::BeginPopupContextItem("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
-            {
-                if (ImGui::MenuItem("as CSV"))
-                {
-                    osc::TryPromptAndSaveAllUserDesiredOutputsAsCSV(*this);
-                }
-
-                if (ImGui::MenuItem("as CSV (and open)"))
-                {
-                    auto p = osc::TryPromptAndSaveAllUserDesiredOutputsAsCSV(*this);
-                    if (!p.empty())
-                    {
-                        osc::OpenPathInOSDefaultApplication(p);
-                    }
-                }
-
-                ImGui::EndPopup();
-            }
-        }
-
-        ImGui::Separator();
-        ImGui::Dummy({0.0f, 5.0f});
-
-        for (int i = 0; i < m_API->getNumUserOutputExtractors(); ++i)
-        {
-            osc::OutputExtractor output = m_API->getUserOutputExtractor(i);
-
-            ImGui::PushID(i);
-            SimulationOutputPlot plot{this, output, 64.0f};
-            plot.draw();
-            DrawOutputNameColumn(output, true, m_ShownModelState.get());
-            ImGui::PopID();
-        }
     }
 
     void drawSelectionTab()
@@ -686,6 +616,7 @@ private:
     PerfPanel m_PerfPanel{"Performance"};
     NavigatorPanel m_NavigatorPanel{"Navigator"};
     std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
+    OutputPlotsPanel m_OutputPlotsPanel{"Output Plots", m_API, this};
     SimulationDetailsPanel m_SimulationDetailsPanel{"Simulation Details", this, m_Simulation};
     LogViewerPanel m_LogViewerPanel{"Log"};
 };

@@ -514,6 +514,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/Widgets/NavigatorPanel.hpp
     src/OpenSimBindings/Widgets/ObjectPropertiesEditor.cpp
     src/OpenSimBindings/Widgets/ObjectPropertiesEditor.hpp
+    src/OpenSimBindings/Widgets/OutputPlotsPanel.cpp
+    src/OpenSimBindings/Widgets/OutputPlotsPanel.hpp
     src/OpenSimBindings/Widgets/OutputWatchesPanel.cpp
     src/OpenSimBindings/Widgets/OutputWatchesPanel.hpp
     src/OpenSimBindings/Widgets/ParamBlockEditorPopup.cpp

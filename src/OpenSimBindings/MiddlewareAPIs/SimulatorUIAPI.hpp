@@ -5,8 +5,9 @@
 
 #include <optional>
 
-namespace osc { class VirtualSimulation; }
 namespace osc { class OutputExtractor; }
+namespace osc { class SimulationModelStatePair; }
+namespace osc { class VirtualSimulation; }
 
 namespace osc
 {
@@ -103,6 +104,11 @@ namespace osc
             return implRemoveUserOutputExtractor(o);
         }
 
+        SimulationModelStatePair* tryGetCurrentSimulationState()
+        {
+            return implTryGetCurrentSimulationState();
+        }
+
     private:
         virtual VirtualSimulation& implUpdSimulation() = 0;
 
@@ -122,5 +128,7 @@ namespace osc
         virtual void implRemoveUserOutputExtractor(int) = 0;
         virtual bool implHasUserOutputExtractor(OutputExtractor const&) const = 0;
         virtual bool implRemoveUserOutputExtractor(OutputExtractor const&) = 0;
+
+        virtual SimulationModelStatePair* implTryGetCurrentSimulationState() = 0;
     };
 }
