@@ -725,8 +725,6 @@ add_library(osccore STATIC
     src/Widgets/StandardPanel.hpp
     src/Widgets/StandardPopup.cpp
     src/Widgets/StandardPopup.hpp
-    src/Widgets/ToggleablePanel.cpp
-    src/Widgets/ToggleablePanel.hpp
     src/Widgets/ToggleablePanelFlags.hpp
     src/Widgets/UndoButton.cpp
     src/Widgets/UndoButton.hpp

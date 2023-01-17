@@ -1130,12 +1130,13 @@ namespace
     private:
         void drawContent()
         {
-            for (osc::ToggleablePanel& panel : m_State->PanelManager.updToggleablePanels())
+            for (size_t i = 0; i < m_State->PanelManager.getNumToggleablePanels(); ++i)
             {
-                bool activated = panel.isActivated();
-                if (ImGui::MenuItem(panel.getName().c_str(), nullptr, &activated))
+                bool activated = m_State->PanelManager.isToggleablePanelActivated(i);
+                osc::CStringView const name = m_State->PanelManager.getToggleablePanelName(i);
+                if (ImGui::MenuItem(name.c_str(), nullptr, &activated))
                 {
-                    panel.toggleActivation();
+                    m_State->PanelManager.setToggleablePanelActivated(i, activated);
                 }
             }
         }
@@ -2285,44 +2286,38 @@ namespace
     // pushes all available panels the TPS3D tab can render into the out param
     void PushBackAvailablePanels(std::shared_ptr<TPSTabSharedState> const& state, osc::PanelManager& out)
     {
-        out.push_back(osc::ToggleablePanel
-        {
+        out.registerPanel(
             "Source Mesh",
-            [state](std::string_view panelName) { return std::make_shared<TPS3DInputPanel>(panelName, state, TPSDocumentInputIdentifier::Source); },
-        });
+            [state](std::string_view panelName) { return std::make_shared<TPS3DInputPanel>(panelName, state, TPSDocumentInputIdentifier::Source); }
+        );
 
-        out.push_back(osc::ToggleablePanel
-        {
+        out.registerPanel(
             "Destination Mesh",
-            [state](std::string_view panelName) { return std::make_shared<TPS3DInputPanel>(panelName, state, TPSDocumentInputIdentifier::Destination); },
-        });
+            [state](std::string_view panelName) { return std::make_shared<TPS3DInputPanel>(panelName, state, TPSDocumentInputIdentifier::Destination); }
+        );
 
-        out.push_back(osc::ToggleablePanel
-        {
+        out.registerPanel(
             "Result",
-            [state](std::string_view panelName) { return std::make_shared<TPS3DResultPanel>(panelName, state); },
-        });
+            [state](std::string_view panelName) { return std::make_shared<TPS3DResultPanel>(panelName, state); }
+        );
 
-        out.push_back(osc::ToggleablePanel
-        {
+        out.registerPanel(
             "History",
             [state](std::string_view panelName) { return std::make_shared<osc::UndoRedoPanel>(panelName, state->EditedDocument); },
-            osc::ToggleablePanelFlags_Default & ~osc::ToggleablePanelFlags_IsEnabledByDefault,
-        });
+            osc::ToggleablePanelFlags_Default & ~osc::ToggleablePanelFlags_IsEnabledByDefault
+        );
 
-        out.push_back(osc::ToggleablePanel
-        {
+        out.registerPanel(
             "Log",
             [](std::string_view panelName) { return std::make_shared<osc::LogViewerPanel>(panelName); },
-            osc::ToggleablePanelFlags_Default & ~osc::ToggleablePanelFlags_IsEnabledByDefault,
-        });
+            osc::ToggleablePanelFlags_Default & ~osc::ToggleablePanelFlags_IsEnabledByDefault
+        );
 
-        out.push_back(osc::ToggleablePanel
-        {
+        out.registerPanel(
             "Performance",
             [](std::string_view panelName) { return std::make_shared<osc::PerfPanel>(panelName); },
-            osc::ToggleablePanelFlags_Default & ~osc::ToggleablePanelFlags_IsEnabledByDefault,
-        });
+            osc::ToggleablePanelFlags_Default & ~osc::ToggleablePanelFlags_IsEnabledByDefault
+        );
     }
 }
 
