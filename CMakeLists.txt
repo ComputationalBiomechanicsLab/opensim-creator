@@ -496,8 +496,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/Widgets/ComponentContextMenu.hpp
     src/OpenSimBindings/Widgets/ComponentDetails.cpp
     src/OpenSimBindings/Widgets/ComponentDetails.hpp
-    src/OpenSimBindings/Widgets/CoordinateEditor.cpp
-    src/OpenSimBindings/Widgets/CoordinateEditor.hpp
+    src/OpenSimBindings/Widgets/CoordinateEditorPanel.cpp
+    src/OpenSimBindings/Widgets/CoordinateEditorPanel.hpp
     src/OpenSimBindings/Widgets/EditorTabStatusBar.cpp
     src/OpenSimBindings/Widgets/EditorTabStatusBar.hpp
     src/OpenSimBindings/Widgets/MainMenu.cpp

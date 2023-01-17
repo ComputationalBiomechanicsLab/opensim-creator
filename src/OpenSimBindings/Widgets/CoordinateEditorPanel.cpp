@@ -1,4 +1,4 @@
-#include "CoordinateEditor.hpp"
+#include "CoordinateEditorPanel.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp"
@@ -6,6 +6,7 @@
 #include "src/OpenSimBindings/ActionFunctions.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/Widgets/StandardPanel.hpp"
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/Algorithms.hpp"
 
@@ -15,28 +16,30 @@
 #include <IconsFontAwesome5.h>
 
 #include <string>
+#include <string_view>
 #include <sstream>
 #include <utility>
 #include <vector>
 
-class osc::CoordinateEditor::Impl final {
+class osc::CoordinateEditorPanel::Impl final : public osc::StandardPanel {
 public:
 
-    Impl(MainUIStateAPI* mainUIStateAPI, EditorAPI* editorAPI, std::shared_ptr<UndoableModelStatePair> uum) :
+    Impl(
+        std::string_view panelName,
+        MainUIStateAPI* mainUIStateAPI,
+        EditorAPI* editorAPI,
+        std::shared_ptr<UndoableModelStatePair> uum) :
+
+        StandardPanel{std::move(panelName)},
         m_MainUIStateAPI{std::move(mainUIStateAPI)},
         m_EditorAPI{std::move(editorAPI)},
         m_Uum{std::move(uum)}
     {
     }
 
-    void draw()
-    {
-        drawCoordinatesTable();
-    }
-
 private:
 
-    void drawCoordinatesTable()
+    void implDrawContent() final
     {
         // load coords
         std::vector<OpenSim::Coordinate const*> coordPtrs = GetCoordinatesInModel(m_Uum->getModel());
@@ -226,16 +229,21 @@ private:
 
 // public API
 
-osc::CoordinateEditor::CoordinateEditor(MainUIStateAPI* mainUIStateAPI, EditorAPI* editorAPI, std::shared_ptr<UndoableModelStatePair> uum) :
-    m_Impl{std::make_unique<Impl>(std::move(mainUIStateAPI), std::move(editorAPI), std::move(uum))}
+osc::CoordinateEditorPanel::CoordinateEditorPanel(
+    std::string_view panelName,
+    MainUIStateAPI* mainUIStateAPI,
+    EditorAPI* editorAPI,
+    std::shared_ptr<UndoableModelStatePair> uum) :
+
+    m_Impl{std::make_unique<Impl>(std::move(panelName), std::move(mainUIStateAPI), std::move(editorAPI), std::move(uum))}
 {
 }
 
-osc::CoordinateEditor::CoordinateEditor(CoordinateEditor&&) noexcept = default;
-osc::CoordinateEditor& osc::CoordinateEditor::operator=(CoordinateEditor&&) noexcept = default;
-osc::CoordinateEditor::~CoordinateEditor() noexcept = default;
+osc::CoordinateEditorPanel::CoordinateEditorPanel(CoordinateEditorPanel&&) noexcept = default;
+osc::CoordinateEditorPanel& osc::CoordinateEditorPanel::operator=(CoordinateEditorPanel&&) noexcept = default;
+osc::CoordinateEditorPanel::~CoordinateEditorPanel() noexcept = default;
 
-void osc::CoordinateEditor::draw()
+void osc::CoordinateEditorPanel::draw()
 {
     m_Impl->draw();
 }

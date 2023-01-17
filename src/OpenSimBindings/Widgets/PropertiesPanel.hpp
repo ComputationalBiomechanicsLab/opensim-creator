@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string_view>
 #include <memory>
 
 namespace osc { class EditorAPI; }
@@ -9,7 +10,11 @@ namespace osc
 {
     class PropertiesPanel final {
     public:
-        explicit PropertiesPanel(EditorAPI*, std::shared_ptr<UndoableModelStatePair>);
+        PropertiesPanel(
+            std::string_view panelName,
+            EditorAPI*,
+            std::shared_ptr<UndoableModelStatePair>
+        );
         PropertiesPanel(PropertiesPanel const&) = delete;
         PropertiesPanel(PropertiesPanel&&) noexcept;
         PropertiesPanel& operator=(PropertiesPanel const&) = delete;

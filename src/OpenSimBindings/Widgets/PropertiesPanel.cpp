@@ -7,6 +7,7 @@
 #include "src/OpenSimBindings/Widgets/ReassignSocketPopup.hpp"
 #include "src/OpenSimBindings/Widgets/SelectComponentPopup.hpp"
 #include "src/OpenSimBindings/Widgets/SelectGeometryPopup.hpp"
+#include "src/Widgets/StandardPanel.hpp"
 #include "src/OpenSimBindings/ActionFunctions.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
@@ -117,15 +118,21 @@ namespace
     };
 }
 
-class osc::PropertiesPanel::Impl final {
+class osc::PropertiesPanel::Impl final : public osc::StandardPanel {
 public:
-    Impl(EditorAPI* editorAPI, std::shared_ptr<UndoableModelStatePair> model) :
+    Impl(
+        std::string_view panelName,
+        EditorAPI* editorAPI,
+        std::shared_ptr<UndoableModelStatePair> model) :
+
+        StandardPanel{std::move(panelName)},
         m_EditorAPI{std::move(editorAPI)},
         m_Model{std::move(model)}
     {
     }
 
-    void draw()
+private:
+    void implDrawContent() final
     {
         if (!m_Model->getSelected())
         {
@@ -158,7 +165,6 @@ public:
         }
     }
 
-private:
     EditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Model;
     ObjectNameEditor m_NameEditor{m_Model};
@@ -168,8 +174,11 @@ private:
 
 // public API (PIMPL)
 
-osc::PropertiesPanel::PropertiesPanel(EditorAPI* editorAPI, std::shared_ptr<UndoableModelStatePair> model) :
-    m_Impl{std::make_unique<Impl>(std::move(editorAPI), std::move(model))}
+osc::PropertiesPanel::PropertiesPanel(
+    std::string_view panelName,
+    EditorAPI* editorAPI,
+    std::shared_ptr<UndoableModelStatePair> model) :
+    m_Impl{std::make_unique<Impl>(std::move(panelName), std::move(editorAPI), std::move(model))}
 {
 }
 

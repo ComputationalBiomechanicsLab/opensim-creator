@@ -6,7 +6,7 @@
 #include "src/OpenSimBindings/Tabs/LoadingTab.hpp"
 #include "src/OpenSimBindings/Widgets/BasicWidgets.hpp"
 #include "src/OpenSimBindings/Widgets/ComponentContextMenu.hpp"
-#include "src/OpenSimBindings/Widgets/CoordinateEditor.hpp"
+#include "src/OpenSimBindings/Widgets/CoordinateEditorPanel.hpp"
 #include "src/OpenSimBindings/Widgets/EditorTabStatusBar.hpp"
 #include "src/OpenSimBindings/Widgets/NavigatorPanel.hpp"
 #include "src/OpenSimBindings/Widgets/ModelEditorMainMenu.hpp"
@@ -31,7 +31,7 @@
 #include "src/Utils/FileChangePoller.hpp"
 #include "src/Utils/Perf.hpp"
 #include "src/Utils/UID.hpp"
-#include "src/Widgets/LogViewer.hpp"
+#include "src/Widgets/LogViewerPanel.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 #include "src/Widgets/Panel.hpp"
 #include "src/Widgets/Popup.hpp"
@@ -349,86 +349,11 @@ private:
             }
         }
 
-        // draw property editor
-        if (bool propertyEditorOldState = config.getIsPanelEnabled("Properties"))
-        {
-            OSC_PERF("draw properties panel");
-
-            bool propertyEditorState = propertyEditorOldState;
-            if (ImGui::Begin("Properties", &propertyEditorState))
-            {
-                m_PropertiesPanel.draw();
-            }
-            ImGui::End();
-
-            if (propertyEditorState != propertyEditorOldState)
-            {
-                osc::App::upd().updConfig().setIsPanelEnabled("Properties", propertyEditorState);
-            }
-        }
-
-        // draw application log
-        if (bool logOldState = config.getIsPanelEnabled("Log"))
-        {
-            OSC_PERF("draw log panel");
-
-            bool logState = logOldState;
-            if (ImGui::Begin("Log", &logState, ImGuiWindowFlags_MenuBar))
-            {
-                m_LogViewer.draw();
-            }
-            ImGui::End();
-
-            if (logState != logOldState)
-            {
-                osc::App::upd().updConfig().setIsPanelEnabled("Log", logState);
-            }
-        }
-
-        // draw coordinate editor
-        if (bool coordEdOldState = config.getIsPanelEnabled("Coordinates"))
-        {
-            OSC_PERF("draw coordinates panel");
-
-            bool coordEdState = coordEdOldState;
-            if (ImGui::Begin("Coordinates", &coordEdState))
-            {
-                m_CoordEditor.draw();
-            }
-            ImGui::End();
-
-            if (coordEdState != coordEdOldState)
-            {
-                osc::App::upd().updConfig().setIsPanelEnabled("Coordinates", coordEdState);
-            }
-        }
-
-        if (bool oldState = config.getIsPanelEnabled("Output Watches"))
-        {
-            OSC_PERF("draw output watches panel");
-
-            m_OutputWatchesPanel.open();
-            bool newState = m_OutputWatchesPanel.draw();
-            if (newState != oldState)
-            {
-                osc::App::upd().updConfig().setIsPanelEnabled("Output Watches", newState);
-            }
-        }
-
-        // draw performance viewer
-        if (bool perfOldState = config.getIsPanelEnabled("Performance"))
-        {
-            OSC_PERF("draw performance panel");
-
-            m_PerfPanel.open();
-            m_PerfPanel.draw();
-            bool const state = m_PerfPanel.isOpen();
-
-            if (state != perfOldState)
-            {
-                osc::App::upd().updConfig().setIsPanelEnabled("Performance", state);
-            }
-        }
+        m_PropertiesPanel.draw();
+        m_LogViewerPanel.draw();
+        m_CoordinatesPanel.draw();
+        m_OutputWatchesPanel.draw();
+        m_PerfPanel.draw();
 
         {
             OSC_PERF("draw muscle plots");
@@ -440,7 +365,6 @@ private:
             }
         }
 
-        // draw bottom status bar
         m_StatusBar.draw();
 
         // draw any generic popups pushed to this layer
@@ -526,12 +450,12 @@ private:
     // UI widgets/popups
     ModelEditorMainMenu m_MainMenu{m_Parent, this, m_Model};
     ModelEditorToolbar m_Toolbar{"##ModelEditorToolbar", m_Parent, this, m_Model};
-    LogViewer m_LogViewer;
+    LogViewerPanel m_LogViewerPanel{"Log"};
     NavigatorPanel m_NavigatorPanel{"Navigator", [this](OpenSim::ComponentPath const& p)  { this->pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_Parent, this, m_Model, p)); }};
-    CoordinateEditor m_CoordEditor{m_Parent, this, m_Model};
+    CoordinateEditorPanel m_CoordinatesPanel{"Coordinates", m_Parent, this, m_Model};
     PerfPanel m_PerfPanel{"Performance"};
     OutputWatchesPanel m_OutputWatchesPanel{"Output Watches", m_Model, m_Parent};
-    PropertiesPanel m_PropertiesPanel{this, m_Model};
+    PropertiesPanel m_PropertiesPanel{"Properties", this, m_Model};
     int m_LatestMusclePlot = 1;
     std::vector<ModelMusclePlotPanel> m_ModelMusclePlots;
     EditorTabStatusBar m_StatusBar{m_Parent, this, m_Model};
