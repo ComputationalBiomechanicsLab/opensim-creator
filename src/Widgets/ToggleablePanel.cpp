@@ -12,7 +12,7 @@
 
 osc::ToggleablePanel::ToggleablePanel(
     std::string_view name_,
-    std::function<std::shared_ptr<osc::Panel>()> constructorFunc_,
+    std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_,
     ToggleablePanelFlags flags_) :
 
     m_Name{std::move(name_)},
@@ -45,7 +45,7 @@ void osc::ToggleablePanel::activate()
 {
     if (!m_Instance)
     {
-        m_Instance = m_ConstructorFunc();
+        m_Instance = m_ConstructorFunc(m_Name);
     }
 }
 
@@ -62,7 +62,7 @@ void osc::ToggleablePanel::toggleActivation()
     }
     else
     {
-        m_Instance = m_ConstructorFunc();
+        m_Instance = m_ConstructorFunc(m_Name);
         (*m_Instance)->open();
     }
 }

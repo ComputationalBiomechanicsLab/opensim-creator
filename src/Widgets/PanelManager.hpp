@@ -9,17 +9,13 @@
 namespace osc
 {
     // a collection of panels that the user may toggle at runtime
-    class ToggleablePanels final {
+    class PanelManager final {
     public:
 
-        nonstd::span<ToggleablePanel> upd();
-
+        nonstd::span<ToggleablePanel> updToggleablePanels();
         void push_back(ToggleablePanel&&);
-
         void activateAllDefaultOpenPanels();
-
         void garbageCollectDeactivatedPanels();
-
         void drawAllActivatedPanels();
 
     private:

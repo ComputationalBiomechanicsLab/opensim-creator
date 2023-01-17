@@ -36,6 +36,7 @@
 #include "src/Utils/UndoRedo.hpp"
 #include "src/Widgets/LogViewerPanel.hpp"
 #include "src/Widgets/Panel.hpp"
+#include "src/Widgets/PanelManager.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 #include "src/Widgets/Popup.hpp"
 #include "src/Widgets/Popups.hpp"
@@ -44,7 +45,6 @@
 #include "src/Widgets/StandardPopup.hpp"
 #include "src/Widgets/ToggleablePanel.hpp"
 #include "src/Widgets/ToggleablePanelFlags.hpp"
-#include "src/Widgets/ToggleablePanels.hpp"
 #include "src/Widgets/UndoButton.hpp"
 #include "src/Widgets/UndoRedoPanel.hpp"
 
@@ -742,7 +742,7 @@ namespace
         std::optional<TPSUIViewportHover> CurrentHover;
 
         // available/active panels that the user can toggle via the `window` menu
-        osc::ToggleablePanels Panels;
+        osc::PanelManager PanelManager;
 
         // currently active tab-wide popups
         osc::Popups ActivePopups;
@@ -1130,7 +1130,7 @@ namespace
     private:
         void drawContent()
         {
-            for (osc::ToggleablePanel& panel : m_State->Panels.upd())
+            for (osc::ToggleablePanel& panel : m_State->PanelManager.updToggleablePanels())
             {
                 bool activated = panel.isActivated();
                 if (ImGui::MenuItem(panel.getName().c_str(), nullptr, &activated))
@@ -2283,44 +2283,44 @@ namespace
     };
 
     // pushes all available panels the TPS3D tab can render into the out param
-    void PushBackAvailablePanels(std::shared_ptr<TPSTabSharedState> const& state, osc::ToggleablePanels& out)
+    void PushBackAvailablePanels(std::shared_ptr<TPSTabSharedState> const& state, osc::PanelManager& out)
     {
         out.push_back(osc::ToggleablePanel
         {
             "Source Mesh",
-            [state]() { return std::make_shared<TPS3DInputPanel>("Source Mesh", state, TPSDocumentInputIdentifier::Source); },
+            [state](std::string_view panelName) { return std::make_shared<TPS3DInputPanel>(panelName, state, TPSDocumentInputIdentifier::Source); },
         });
 
         out.push_back(osc::ToggleablePanel
         {
             "Destination Mesh",
-            [state]() { return std::make_shared<TPS3DInputPanel>("Destination Mesh", state, TPSDocumentInputIdentifier::Destination); },
+            [state](std::string_view panelName) { return std::make_shared<TPS3DInputPanel>(panelName, state, TPSDocumentInputIdentifier::Destination); },
         });
 
         out.push_back(osc::ToggleablePanel
         {
             "Result",
-            [state]() { return std::make_shared<TPS3DResultPanel>("Result", state); },
+            [state](std::string_view panelName) { return std::make_shared<TPS3DResultPanel>(panelName, state); },
         });
 
         out.push_back(osc::ToggleablePanel
         {
             "History",
-            [state]() { return std::make_shared<osc::UndoRedoPanel>("History", state->EditedDocument); },
+            [state](std::string_view panelName) { return std::make_shared<osc::UndoRedoPanel>(panelName, state->EditedDocument); },
             osc::ToggleablePanelFlags_Default & ~osc::ToggleablePanelFlags_IsEnabledByDefault,
         });
 
         out.push_back(osc::ToggleablePanel
         {
             "Log",
-            []() { return std::make_shared<osc::LogViewerPanel>("Log"); },
+            [](std::string_view panelName) { return std::make_shared<osc::LogViewerPanel>(panelName); },
             osc::ToggleablePanelFlags_Default & ~osc::ToggleablePanelFlags_IsEnabledByDefault,
         });
 
         out.push_back(osc::ToggleablePanel
         {
             "Performance",
-            []() { return std::make_shared<osc::PerfPanel>("Performance"); },
+            [](std::string_view panelName) { return std::make_shared<osc::PerfPanel>(panelName); },
             osc::ToggleablePanelFlags_Default & ~osc::ToggleablePanelFlags_IsEnabledByDefault,
         });
     }
@@ -2336,8 +2336,8 @@ public:
         OSC_ASSERT(m_State != nullptr && "the tab state should be initialized by this point");
 
         // initialize panels
-        PushBackAvailablePanels(m_State, m_State->Panels);
-        m_State->Panels.activateAllDefaultOpenPanels();
+        PushBackAvailablePanels(m_State, m_State->PanelManager);
+        m_State->PanelManager.activateAllDefaultOpenPanels();
     }
 
     UID getID() const
@@ -2376,7 +2376,7 @@ public:
         m_State->CurrentHover.reset();
 
         // garbage collect panel data
-        m_State->Panels.garbageCollectDeactivatedPanels();
+        m_State->PanelManager.garbageCollectDeactivatedPanels();
     }
 
     void onDrawMainMenu()
@@ -2389,7 +2389,7 @@ public:
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         m_TopToolbar.draw();
-        m_State->Panels.drawAllActivatedPanels();
+        m_State->PanelManager.drawAllActivatedPanels();
         m_StatusBar.draw();
 
         // draw active popups over the UI

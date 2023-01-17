@@ -1,4 +1,4 @@
-#include "ToggleablePanels.hpp"
+#include "PanelManager.hpp"
 
 #include "src/Widgets/ToggleablePanel.hpp"
 
@@ -6,17 +6,17 @@
 
 #include <vector>
 
-nonstd::span<osc::ToggleablePanel> osc::ToggleablePanels::upd()
+nonstd::span<osc::ToggleablePanel> osc::PanelManager::updToggleablePanels()
 {
     return m_Panels;
 }
 
-void osc::ToggleablePanels::push_back(ToggleablePanel&& panel)
+void osc::PanelManager::push_back(ToggleablePanel&& panel)
 {
     m_Panels.push_back(std::move(panel));
 }
 
-void osc::ToggleablePanels::activateAllDefaultOpenPanels()
+void osc::PanelManager::activateAllDefaultOpenPanels()
 {
     // initialize default-open tabs
     for (ToggleablePanel& panel : m_Panels)
@@ -28,7 +28,7 @@ void osc::ToggleablePanels::activateAllDefaultOpenPanels()
     }
 }
 
-void osc::ToggleablePanels::garbageCollectDeactivatedPanels()
+void osc::PanelManager::garbageCollectDeactivatedPanels()
 {
     // garbage collect closed-panel instance data
     for (ToggleablePanel& panel : m_Panels)
@@ -37,7 +37,7 @@ void osc::ToggleablePanels::garbageCollectDeactivatedPanels()
     }
 }
 
-void osc::ToggleablePanels::drawAllActivatedPanels()
+void osc::PanelManager::drawAllActivatedPanels()
 {
     for (ToggleablePanel& panel : m_Panels)
     {

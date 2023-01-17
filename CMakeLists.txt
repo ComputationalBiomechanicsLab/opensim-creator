@@ -707,6 +707,8 @@ add_library(osccore STATIC
     src/Widgets/LogViewerPanel.cpp
     src/Widgets/LogViewerPanel.hpp
     src/Widgets/Panel.hpp
+    src/Widgets/PanelManager.cpp
+    src/Widgets/PanelManager.hpp
     src/Widgets/PerfPanel.cpp
     src/Widgets/PerfPanel.hpp
     src/Widgets/Popup.hpp
@@ -726,8 +728,6 @@ add_library(osccore STATIC
     src/Widgets/ToggleablePanel.cpp
     src/Widgets/ToggleablePanel.hpp
     src/Widgets/ToggleablePanelFlags.hpp
-    src/Widgets/ToggleablePanels.cpp
-    src/Widgets/ToggleablePanels.hpp
     src/Widgets/UndoButton.cpp
     src/Widgets/UndoButton.hpp
     src/Widgets/UndoRedoPanel.cpp

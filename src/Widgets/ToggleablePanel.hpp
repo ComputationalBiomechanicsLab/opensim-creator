@@ -18,7 +18,7 @@ namespace osc
     public:
         ToggleablePanel(
             std::string_view name_,
-            std::function<std::shared_ptr<osc::Panel>()> constructorFunc_,
+            std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_,
             ToggleablePanelFlags flags_ = ToggleablePanelFlags_Default);
         ToggleablePanel(ToggleablePanel const&) = delete;
         ToggleablePanel(ToggleablePanel&&) noexcept;
@@ -41,7 +41,7 @@ namespace osc
 
     private:
         std::string m_Name;
-        std::function<std::shared_ptr<osc::Panel>()> m_ConstructorFunc;
+        std::function<std::shared_ptr<osc::Panel>(std::string_view)> m_ConstructorFunc;
         ToggleablePanelFlags m_Flags;
         std::optional<std::shared_ptr<osc::Panel>> m_Instance;
     };
