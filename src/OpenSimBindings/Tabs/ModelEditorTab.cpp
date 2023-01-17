@@ -58,6 +58,7 @@
 
 class osc::ModelEditorTab::Impl final : public EditorAPI {
 public:
+
     Impl(MainUIStateAPI* parent,
         std::unique_ptr<UndoableModelStatePair> model) :
 
@@ -329,11 +330,6 @@ private:
             OSC_PERF("draw 3D viewer(s)");
             draw3DViewers();
         }
-
-        // draw editor actions panel
-        //
-        // contains top-level actions (e.g. "add body")
-        osc::Config const& config = osc::App::get().getConfig();
 
         // draw navigator
         {
