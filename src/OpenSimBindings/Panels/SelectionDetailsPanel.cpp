@@ -5,7 +5,7 @@
 #include "src/OpenSimBindings/Widgets/SimulationOutputPlot.hpp"
 #include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
 #include "src/OpenSimBindings/SimulationModelStatePair.hpp"
-#include "src/Widgets/StandardPanel.hpp"
+#include "src/Panels/StandardPanel.hpp"
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>

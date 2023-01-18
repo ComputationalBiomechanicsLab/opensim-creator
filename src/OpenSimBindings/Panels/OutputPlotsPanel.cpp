@@ -5,8 +5,8 @@
 #include "src/OpenSimBindings/Widgets/BasicWidgets.hpp"
 #include "src/OpenSimBindings/Widgets/SimulationOutputPlot.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
+#include "src/Panels/StandardPanel.hpp"
 #include "src/Platform/os.hpp"
-#include "src/Widgets/StandardPanel.hpp"
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>

@@ -4,8 +4,8 @@
 #include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/Panels/StandardPanel.hpp"
 #include "src/Utils/UID.hpp"
-#include "src/Widgets/StandardPanel.hpp"
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>

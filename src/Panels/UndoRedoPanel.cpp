@@ -1,7 +1,7 @@
 #include "UndoRedoPanel.hpp"
 
+#include "src/Panels/StandardPanel.hpp"
 #include "src/Utils/UndoRedo.hpp"
-#include "src/Widgets/StandardPanel.hpp"
 
 #include <imgui.h>
 

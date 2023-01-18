@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Widgets/ToggleablePanelFlags.hpp"
+#include "src/Panels/ToggleablePanelFlags.hpp"
 #include "src/Utils/CStringView.hpp"
 
 #include <nonstd/span.hpp>

@@ -7,7 +7,7 @@
 #include "src/OpenSimBindings/Widgets/ReassignSocketPopup.hpp"
 #include "src/OpenSimBindings/Widgets/SelectComponentPopup.hpp"
 #include "src/OpenSimBindings/Widgets/SelectGeometryPopup.hpp"
-#include "src/Widgets/StandardPanel.hpp"
+#include "src/Panels/StandardPanel.hpp"
 #include "src/OpenSimBindings/ActionFunctions.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"

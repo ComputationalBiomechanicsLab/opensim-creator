@@ -1,7 +1,7 @@
 #include "LogViewerPanel.hpp"
 
+#include "src/Panels/StandardPanel.hpp"
 #include "src/Widgets/LogViewer.hpp"
-#include "src/Widgets/StandardPanel.hpp"
 
 #include <imgui.h>
 

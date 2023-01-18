@@ -10,10 +10,10 @@
 #include "src/Graphics/Texture2D.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/Transform.hpp"
+#include "src/Panels/PerfPanel.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
-#include "src/Widgets/PerfPanel.hpp"
 
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>

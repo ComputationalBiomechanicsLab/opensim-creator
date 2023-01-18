@@ -3,8 +3,8 @@
 #include "src/OpenSimBindings/Widgets/BasicWidgets.hpp"
 #include "src/OpenSimBindings/Widgets/UiModelViewer.hpp"
 #include "src/OpenSimBindings/VirtualModelStatePair.hpp"
+#include "src/Panels/StandardPanel.hpp"
 #include "src/Platform/App.hpp"
-#include "src/Widgets/StandardPanel.hpp"
 
 #include <OpenSim/Common/Component.h>
 

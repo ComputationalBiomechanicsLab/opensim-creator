@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Widgets/Panel.hpp"
+#include "src/Panels/Panel.hpp"
 #include "src/Utils/CStringView.hpp"
 
 #include <functional>

@@ -1,7 +1,7 @@
 #pragma once
 
+#include "src/Panels/Panel.hpp"
 #include "src/Utils/CStringView.hpp"
-#include "src/Widgets/Panel.hpp"
 
 #include <memory>
 #include <string_view>

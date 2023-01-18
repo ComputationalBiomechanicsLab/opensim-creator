@@ -30,6 +30,7 @@
 #include "src/OpenSimBindings/SimTKHelpers.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/Panels/PerfPanel.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
@@ -44,7 +45,6 @@
 #include "src/Utils/Spsc.hpp"
 #include "src/Utils/UID.hpp"
 #include "src/Widgets/LogViewer.hpp"
-#include "src/Widgets/PerfPanel.hpp"
 #include "src/Widgets/SaveChangesPopup.hpp"
 
 #include <glm/mat3x3.hpp>

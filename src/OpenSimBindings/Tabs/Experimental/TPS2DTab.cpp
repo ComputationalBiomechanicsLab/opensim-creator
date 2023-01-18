@@ -10,11 +10,11 @@
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/ShaderCache.hpp"
 #include "src/Maths/MathHelpers.hpp"
+#include "src/Panels/LogViewerPanel.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
-#include "src/Widgets/LogViewerPanel.hpp"
 
 #include <glm/mat3x4.hpp>
 #include <glm/vec2.hpp>

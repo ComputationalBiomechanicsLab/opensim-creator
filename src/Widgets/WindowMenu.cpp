@@ -1,6 +1,6 @@
 #include "WindowMenu.hpp"
 
-#include "src/Widgets/PanelManager.hpp"
+#include "src/Panels/PanelManager.hpp"
 
 #include <imgui.h>
 

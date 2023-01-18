@@ -14,13 +14,13 @@
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/Transform.hpp"
+#include "src/Panels/LogViewerPanel.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/CStringView.hpp"
-#include "src/Widgets/LogViewerPanel.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>

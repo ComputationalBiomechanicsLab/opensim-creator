@@ -36,6 +36,7 @@ All notable changes to this project will be documented here. The format is based
 - Fixed a memory leak in that would occur as the undo/redo buffer fills (i.e. over a longer editing session,
   #566)
 - Internal: the editor and simulation tabs are now widget-ized, so that new panels can be added more easily (#565)
+- Internal: reorganized panel widgets from `Widgets/` to `Panels/` to (#564)
 
 ## [0.3.2] - 2023/01/09
 

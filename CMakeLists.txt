@@ -458,6 +458,26 @@ add_library(osccore STATIC
     src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp
     src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp
     src/OpenSimBindings/MiddlewareAPIs/SimulatorUIAPI.hpp
+    src/OpenSimBindings/Panels/CoordinateEditorPanel.cpp
+    src/OpenSimBindings/Panels/CoordinateEditorPanel.hpp
+    src/OpenSimBindings/Panels/ModelEditorViewerPanel.cpp
+    src/OpenSimBindings/Panels/ModelEditorViewerPanel.hpp
+    src/OpenSimBindings/Panels/ModelMusclePlotPanel.cpp
+    src/OpenSimBindings/Panels/ModelMusclePlotPanel.hpp
+    src/OpenSimBindings/Panels/NavigatorPanel.cpp
+    src/OpenSimBindings/Panels/NavigatorPanel.hpp
+    src/OpenSimBindings/Panels/OutputPlotsPanel.cpp
+    src/OpenSimBindings/Panels/OutputPlotsPanel.hpp
+    src/OpenSimBindings/Panels/OutputWatchesPanel.cpp
+    src/OpenSimBindings/Panels/OutputWatchesPanel.hpp
+    src/OpenSimBindings/Panels/PropertiesPanel.cpp
+    src/OpenSimBindings/Panels/PropertiesPanel.hpp
+    src/OpenSimBindings/Panels/SelectionDetailsPanel.cpp
+    src/OpenSimBindings/Panels/SelectionDetailsPanel.hpp
+    src/OpenSimBindings/Panels/SimulationDetailsPanel.cpp
+    src/OpenSimBindings/Panels/SimulationDetailsPanel.hpp
+    src/OpenSimBindings/Panels/SimulationViewerPanel.cpp
+    src/OpenSimBindings/Panels/SimulationViewerPanel.hpp
     src/OpenSimBindings/Screens/MainUIScreen.cpp
     src/OpenSimBindings/Screens/MainUIScreen.hpp
     src/OpenSimBindings/Tabs/Experimental/FrameDefinitionTab.cpp
@@ -496,8 +516,6 @@ add_library(osccore STATIC
     src/OpenSimBindings/Widgets/ComponentContextMenu.hpp
     src/OpenSimBindings/Widgets/ComponentDetails.cpp
     src/OpenSimBindings/Widgets/ComponentDetails.hpp
-    src/OpenSimBindings/Widgets/CoordinateEditorPanel.cpp
-    src/OpenSimBindings/Widgets/CoordinateEditorPanel.hpp
     src/OpenSimBindings/Widgets/EditorTabStatusBar.cpp
     src/OpenSimBindings/Widgets/EditorTabStatusBar.hpp
     src/OpenSimBindings/Widgets/MainMenu.cpp
@@ -508,22 +526,10 @@ add_library(osccore STATIC
     src/OpenSimBindings/Widgets/ModelEditorMainMenu.hpp
     src/OpenSimBindings/Widgets/ModelEditorToolbar.cpp
     src/OpenSimBindings/Widgets/ModelEditorToolbar.hpp
-    src/OpenSimBindings/Widgets/ModelEditorViewerPanel.cpp
-    src/OpenSimBindings/Widgets/ModelEditorViewerPanel.hpp
-    src/OpenSimBindings/Widgets/ModelMusclePlotPanel.cpp
-    src/OpenSimBindings/Widgets/ModelMusclePlotPanel.hpp
-    src/OpenSimBindings/Widgets/NavigatorPanel.cpp
-    src/OpenSimBindings/Widgets/NavigatorPanel.hpp
     src/OpenSimBindings/Widgets/ObjectPropertiesEditor.cpp
     src/OpenSimBindings/Widgets/ObjectPropertiesEditor.hpp
-    src/OpenSimBindings/Widgets/OutputPlotsPanel.cpp
-    src/OpenSimBindings/Widgets/OutputPlotsPanel.hpp
-    src/OpenSimBindings/Widgets/OutputWatchesPanel.cpp
-    src/OpenSimBindings/Widgets/OutputWatchesPanel.hpp
     src/OpenSimBindings/Widgets/ParamBlockEditorPopup.cpp
     src/OpenSimBindings/Widgets/ParamBlockEditorPopup.hpp
-    src/OpenSimBindings/Widgets/PropertiesPanel.cpp
-    src/OpenSimBindings/Widgets/PropertiesPanel.hpp
     src/OpenSimBindings/Widgets/ReassignSocketPopup.cpp
     src/OpenSimBindings/Widgets/ReassignSocketPopup.hpp
     src/OpenSimBindings/Widgets/Select1PFPopup.cpp
@@ -532,18 +538,12 @@ add_library(osccore STATIC
     src/OpenSimBindings/Widgets/SelectComponentPopup.hpp
     src/OpenSimBindings/Widgets/SelectGeometryPopup.cpp
     src/OpenSimBindings/Widgets/SelectGeometryPopup.hpp
-    src/OpenSimBindings/Widgets/SelectionDetailsPanel.cpp
-    src/OpenSimBindings/Widgets/SelectionDetailsPanel.hpp
-    src/OpenSimBindings/Widgets/SimulationDetailsPanel.cpp
-    src/OpenSimBindings/Widgets/SimulationDetailsPanel.hpp
     src/OpenSimBindings/Widgets/SimulationOutputPlot.cpp
     src/OpenSimBindings/Widgets/SimulationOutputPlot.hpp
     src/OpenSimBindings/Widgets/SimulationScrubber.cpp
     src/OpenSimBindings/Widgets/SimulationScrubber.hpp
     src/OpenSimBindings/Widgets/SimulationToolbar.cpp
     src/OpenSimBindings/Widgets/SimulationToolbar.hpp
-    src/OpenSimBindings/Widgets/SimulationViewerPanel.cpp
-    src/OpenSimBindings/Widgets/SimulationViewerPanel.hpp
     src/OpenSimBindings/Widgets/UiModelViewer.cpp
     src/OpenSimBindings/Widgets/UiModelViewer.hpp
     src/OpenSimBindings/Widgets/UiModelViewerFlags.hpp
@@ -611,6 +611,19 @@ add_library(osccore STATIC
     src/OpenSimBindings/VirtualModelStatePair.hpp
     src/OpenSimBindings/VirtualOutputExtractor.hpp
     src/OpenSimBindings/VirtualSimulation.hpp
+
+    src/Panels/LogViewerPanel.cpp
+    src/Panels/LogViewerPanel.hpp
+    src/Panels/Panel.hpp
+    src/Panels/PanelManager.cpp
+    src/Panels/PanelManager.hpp
+    src/Panels/PerfPanel.cpp
+    src/Panels/PerfPanel.hpp
+    src/Panels/StandardPanel.cpp
+    src/Panels/StandardPanel.hpp
+    src/Panels/ToggleablePanelFlags.hpp
+    src/Panels/UndoRedoPanel.cpp
+    src/Panels/UndoRedoPanel.hpp
 
     src/Platform/App.cpp
     src/Platform/App.hpp
@@ -710,13 +723,6 @@ add_library(osccore STATIC
     src/Widgets/GuiRuler.hpp
     src/Widgets/LogViewer.cpp
     src/Widgets/LogViewer.hpp
-    src/Widgets/LogViewerPanel.cpp
-    src/Widgets/LogViewerPanel.hpp
-    src/Widgets/Panel.hpp
-    src/Widgets/PanelManager.cpp
-    src/Widgets/PanelManager.hpp
-    src/Widgets/PerfPanel.cpp
-    src/Widgets/PerfPanel.hpp
     src/Widgets/Popup.hpp
     src/Widgets/Popups.cpp
     src/Widgets/Popups.hpp
@@ -727,15 +733,10 @@ add_library(osccore STATIC
     src/Widgets/SaveChangesPopup.hpp
     src/Widgets/SceneViewer.cpp
     src/Widgets/SceneViewer.hpp
-    src/Widgets/StandardPanel.cpp
-    src/Widgets/StandardPanel.hpp
     src/Widgets/StandardPopup.cpp
     src/Widgets/StandardPopup.hpp
-    src/Widgets/ToggleablePanelFlags.hpp
     src/Widgets/UndoButton.cpp
     src/Widgets/UndoButton.hpp
-    src/Widgets/UndoRedoPanel.cpp
-    src/Widgets/UndoRedoPanel.hpp
     src/Widgets/WindowMenu.cpp
     src/Widgets/WindowMenu.hpp
 )

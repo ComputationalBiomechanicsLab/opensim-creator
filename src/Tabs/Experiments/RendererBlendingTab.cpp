@@ -8,9 +8,9 @@
 #include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Texture2D.hpp"
 #include "src/Maths/Transform.hpp"
+#include "src/Panels/LogViewerPanel.hpp"
+#include "src/Panels/PerfPanel.hpp"
 #include "src/Platform/App.hpp"
-#include "src/Widgets/LogViewerPanel.hpp"
-#include "src/Widgets/PerfPanel.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>

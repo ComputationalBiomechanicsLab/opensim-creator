@@ -5,7 +5,7 @@
 #include "src/OpenSimBindings/Widgets/ComponentContextMenu.hpp"
 #include "src/OpenSimBindings/Widgets/UiModelViewer.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
-#include "src/Widgets/StandardPanel.hpp"
+#include "src/Panels/StandardPanel.hpp"
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>

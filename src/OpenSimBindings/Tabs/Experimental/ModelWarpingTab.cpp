@@ -7,9 +7,9 @@
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/TPS3D.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/Panels/StandardPanel.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Utils/Assertions.hpp"
-#include "src/Widgets/StandardPanel.hpp"
 
 #include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>

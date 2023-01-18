@@ -1,9 +1,9 @@
 #include "PerfPanel.hpp"
 
+#include "src/Panels/StandardPanel.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Perf.hpp"
-#include "src/Widgets/StandardPanel.hpp"
 
 #include <imgui.h>
 

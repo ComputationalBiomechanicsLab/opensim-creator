@@ -1,7 +1,7 @@
 #include "PanelManager.hpp"
 
-#include "src/Widgets/Panel.hpp"
-#include "src/Widgets/ToggleablePanelFlags.hpp"
+#include "src/Panels/Panel.hpp"
+#include "src/Panels/ToggleablePanelFlags.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
 

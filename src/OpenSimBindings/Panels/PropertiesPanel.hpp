@@ -1,30 +1,28 @@
 #pragma once
 
+#include "src/Panels/Panel.hpp"
 #include "src/Utils/CStringView.hpp"
-#include "src/Widgets/Panel.hpp"
 
-#include <memory>
 #include <string_view>
+#include <memory>
 
 namespace osc { class EditorAPI; }
-namespace osc { class MainUIStateAPI; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class ModelEditorViewerPanel final : public Panel {
+    class PropertiesPanel final : public Panel {
     public:
-        ModelEditorViewerPanel(
+        PropertiesPanel(
             std::string_view panelName,
-            MainUIStateAPI*,
             EditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );
-        ModelEditorViewerPanel(ModelEditorViewerPanel const&) = delete;
-        ModelEditorViewerPanel(ModelEditorViewerPanel&&) noexcept;
-        ModelEditorViewerPanel& operator=(ModelEditorViewerPanel const&) = delete;
-        ModelEditorViewerPanel& operator=(ModelEditorViewerPanel&&) noexcept;
-        ~ModelEditorViewerPanel() noexcept;
+        PropertiesPanel(PropertiesPanel const&) = delete;
+        PropertiesPanel(PropertiesPanel&&) noexcept;
+        PropertiesPanel& operator=(PropertiesPanel const&) = delete;
+        PropertiesPanel& operator=(PropertiesPanel&&) noexcept;
+        ~PropertiesPanel() noexcept;
 
     private:
         CStringView implGetName() const final;

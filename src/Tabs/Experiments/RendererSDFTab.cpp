@@ -9,7 +9,7 @@
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
-#include "src/Widgets/LogViewerPanel.hpp"
+#include "src/Panels/LogViewerPanel.hpp"
 
 #include <nonstd/span.hpp>
 #include <SDL_events.h>

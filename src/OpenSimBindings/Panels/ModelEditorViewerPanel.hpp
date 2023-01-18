@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Widgets/Panel.hpp"
+#include "src/Panels/Panel.hpp"
 #include "src/Utils/CStringView.hpp"
 
 #include <memory>
@@ -12,19 +12,19 @@ namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class CoordinateEditorPanel final : public Panel {
+    class ModelEditorViewerPanel final : public Panel {
     public:
-        CoordinateEditorPanel(
+        ModelEditorViewerPanel(
             std::string_view panelName,
             MainUIStateAPI*,
             EditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );
-        CoordinateEditorPanel(CoordinateEditorPanel const&) = delete;
-        CoordinateEditorPanel(CoordinateEditorPanel&&) noexcept;
-        CoordinateEditorPanel& operator=(CoordinateEditorPanel const&) = delete;
-        CoordinateEditorPanel& operator=(CoordinateEditorPanel&&) noexcept;
-        ~CoordinateEditorPanel() noexcept;
+        ModelEditorViewerPanel(ModelEditorViewerPanel const&) = delete;
+        ModelEditorViewerPanel(ModelEditorViewerPanel&&) noexcept;
+        ModelEditorViewerPanel& operator=(ModelEditorViewerPanel const&) = delete;
+        ModelEditorViewerPanel& operator=(ModelEditorViewerPanel&&) noexcept;
+        ~ModelEditorViewerPanel() noexcept;
 
     private:
         CStringView implGetName() const final;
