@@ -334,17 +334,7 @@ private:
         // draw navigator
         {
             OSC_PERF("draw navigator panel");
-
-            auto resp = m_NavigatorPanel.draw(*m_Model);
-
-            if (resp.type == osc::NavigatorPanel::ResponseType::SelectionChanged)
-            {
-                m_Model->setSelected(resp.ptr);
-            }
-            else if (resp.type == osc::NavigatorPanel::ResponseType::HoverChanged)
-            {
-                m_Model->setHovered(resp.ptr);
-            }
+            m_NavigatorPanel.draw();
         }
 
         m_PropertiesPanel.draw();
@@ -453,7 +443,7 @@ private:
     ModelEditorMainMenu m_MainMenu{m_ParentAPI, this, m_Model};
     ModelEditorToolbar m_Toolbar{"##ModelEditorToolbar", m_ParentAPI, this, m_Model};
     LogViewerPanel m_LogViewerPanel{"Log"};
-    NavigatorPanel m_NavigatorPanel{"Navigator", [this](OpenSim::ComponentPath const& p)  { this->pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_ParentAPI, this, m_Model, p)); }};
+    NavigatorPanel m_NavigatorPanel{"Navigator", m_Model, [this](OpenSim::ComponentPath const& p)  { this->pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_ParentAPI, this, m_Model, p)); }};
     CoordinateEditorPanel m_CoordinatesPanel{"Coordinates", m_ParentAPI, this, m_Model};
     PerfPanel m_PerformancePanel{"Performance"};
     OutputWatchesPanel m_OutputWatchesPanel{"Output Watches", m_Model, m_ParentAPI};

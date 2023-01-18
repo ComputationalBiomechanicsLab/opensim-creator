@@ -3,6 +3,7 @@
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
+#include "src/OpenSimBindings/SingleStateSimulation.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 #include "src/Utils/UID.hpp"
 
@@ -15,6 +16,13 @@
 
 class osc::SimulationModelStatePair::Impl final {
 public:
+    Impl() :
+        m_Simulation{std::make_shared<Simulation>(SingleStateSimulation{BasicModelStatePair{}})},
+        m_SimulationReport{}
+    {
+        // TODO: state extraction
+    }
+
     Impl(std::shared_ptr<Simulation> simulation, SimulationReport simulationReport) :
         m_Simulation{std::move(simulation)},
         m_SimulationReport{std::move(simulationReport)}
@@ -124,6 +132,11 @@ private:
 
 
 // public API (PIMPL)
+
+osc::SimulationModelStatePair::SimulationModelStatePair() :
+    m_Impl{std::make_unique<Impl>()}
+{
+}
 
 osc::SimulationModelStatePair::SimulationModelStatePair(std::shared_ptr<Simulation> simulation, SimulationReport report) :
     m_Impl{std::make_unique<Impl>(std::move(simulation), std::move(report))}

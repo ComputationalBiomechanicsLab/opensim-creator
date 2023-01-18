@@ -595,6 +595,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/SimulationReport.hpp
     src/OpenSimBindings/SimulationStatus.cpp
     src/OpenSimBindings/SimulationStatus.hpp
+    src/OpenSimBindings/SingleStateSimulation.cpp
+    src/OpenSimBindings/SingleStateSimulation.hpp
     src/OpenSimBindings/StoFileSimulation.hpp
     src/OpenSimBindings/StoFileSimulation.cpp
     src/OpenSimBindings/TPS3D.cpp

@@ -298,56 +298,27 @@ private:
 
     void drawContent()
     {
-        m_Toolbar.draw();
+        // ensure m_ShownModelState is populated, if possible
+        {
+            OSC_PERF("process simulation report");
+
+            std::optional<osc::SimulationReport> maybeReport = TrySelectReportBasedOnScrubbing(*m_Simulation);
+            if (maybeReport)
+            {
+                m_ShownModelState->setSimulation(m_Simulation);
+                m_ShownModelState->setSimulationReport(*maybeReport);
+            }
+        }
 
         OSC_PERF("draw simulation screen");
 
+        m_Toolbar.draw();
         {
             OSC_PERF("draw simulator panels");
             drawAll3DViewers();
         }
 
-        // ensure m_ShownModelState is populated, if possible
-        {
-            std::optional<osc::SimulationReport> maybeReport = TrySelectReportBasedOnScrubbing(*m_Simulation);
-            if (maybeReport)
-            {
-                if (m_ShownModelState)
-                {
-                    m_ShownModelState->setSimulation(m_Simulation);
-                    m_ShownModelState->setSimulationReport(*maybeReport);
-                }
-                else
-                {
-                    m_ShownModelState = std::make_unique<osc::SimulationModelStatePair>(m_Simulation, *maybeReport);
-                }
-            }
-        }
-
-        osc::Config const& config = osc::App::get().getConfig();
-
-        // draw navigator panel
-        {
-            if (!m_ShownModelState)
-            {
-                ImGui::TextDisabled("(no simulation selected)");
-                return;
-            }
-
-            osc::SimulationModelStatePair& ms = *m_ShownModelState;
-
-            auto resp = m_NavigatorPanel.draw(ms);
-
-            if (resp.type == osc::NavigatorPanel::ResponseType::SelectionChanged)
-            {
-                ms.setSelected(resp.ptr);
-            }
-            else if (resp.type == osc::NavigatorPanel::ResponseType::HoverChanged)
-            {
-                ms.setHovered(resp.ptr);
-            }
-        }
-
+        m_NavigatorPanel.draw();
         m_SelectionDetailsPanel.draw();
         m_OutputPlotsPanel.draw();
         m_SimulationDetailsPanel.draw();
@@ -483,16 +454,6 @@ private:
     // the user can (de)activate 3D viewers in the "Window" tab
     void drawAll3DViewers()
     {
-        if (!m_ShownModelState)
-        {
-            if (ImGui::Begin("render"))
-            {
-                ImGui::TextDisabled("(no simulation data available)");
-            }
-            ImGui::End();
-            return;
-        }
-
         osc::SimulationModelStatePair& ms = *m_ShownModelState;
 
         for (int i = 0; i < static_cast<int>(m_ModelViewers.size()); ++i)
@@ -541,7 +502,7 @@ private:
     // the modelstate that's being shown in the UI, based on scrubbing etc.
     //
     // if possible (i.e. there's a simulation report available), will be set each frame
-    std::unique_ptr<SimulationModelStatePair> m_ShownModelState;
+    std::shared_ptr<SimulationModelStatePair> m_ShownModelState = std::make_shared<osc::SimulationModelStatePair>();
 
     // scrubbing state
     bool m_IsPlayingBack = true;
@@ -556,7 +517,7 @@ private:
 
     // toggle-able widgets
     PerfPanel m_PerfPanel{"Performance"};
-    NavigatorPanel m_NavigatorPanel{"Navigator"};
+    NavigatorPanel m_NavigatorPanel{"Navigator", m_ShownModelState};
     std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
     SelectionDetailsPanel m_SelectionDetailsPanel{"Selection Details", this};
     OutputPlotsPanel m_OutputPlotsPanel{"Output Plots", m_API, this};

@@ -3,7 +3,7 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/Widgets/BasicWidgets.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
-#include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
+#include "src/OpenSimBindings/VirtualModelStatePair.hpp"
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
@@ -21,6 +21,7 @@
 #include <array>
 #include <cstddef>
 #include <limits>
+#include <memory>
 #include <string>
 #include <stdexcept>
 #include <typeinfo>
@@ -128,6 +129,17 @@ namespace
         auto end = p.begin() == p.end() ? p.end() : p.end()-1;
         return std::find(p.begin(), end, c) != end;
     }
+
+    enum class ResponseType {
+        NothingHappened,
+        SelectionChanged,
+        HoverChanged,
+    };
+
+    struct Response final {
+        OpenSim::Component const* ptr = nullptr;
+        ResponseType type = ResponseType::NothingHappened;
+    };
 }
 
 static bool isSearchHit(std::string const& searchStr, ComponentPath const& cp)
@@ -144,8 +156,13 @@ static bool isSearchHit(std::string const& searchStr, ComponentPath const& cp)
 
 class osc::NavigatorPanel::Impl final : public StandardPanel {
 public:
-    Impl(std::string_view panelName, std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
+    Impl(
+        std::string_view panelName,
+        std::shared_ptr<VirtualModelStatePair> model,
+        std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
+
         StandardPanel{std::move(panelName)},
+        m_Model{std::move(model)},
         m_OnRightClick{std::move(onRightClick)}
     {
     }
@@ -165,17 +182,31 @@ public:
         return static_cast<StandardPanel&>(*this).close();
     }
 
-    osc::NavigatorPanel::Response draw(VirtualConstModelStatePair const& modelState)
+private:
+
+    void implDrawContent() final
     {
-        m_Response = Response{};
-        m_ModelState = &modelState;
-        static_cast<StandardPanel&>(*this).draw();
-        m_ModelState = nullptr;
-        return m_Response;
+        if (!m_Model)
+        {
+            ImGui::TextDisabled("(no model)");
+            return;
+        }
+
+        Response r = drawWithResponse();
+        if (r.type == ResponseType::SelectionChanged)
+        {
+            m_Model->setSelected(r.ptr);
+        }
+        else if (r.type == ResponseType::HoverChanged)
+        {
+            m_Model->setHovered(r.ptr);
+        }
     }
 
-    void implDrawContent() override
+    Response drawWithResponse()
     {
+        Response rv;
+
         ImGui::Dummy({0.0f, 3.0f});
 
         // draw filter stuff
@@ -196,9 +227,9 @@ public:
         // draw content
         ImGui::BeginChild("##componentnavigatorvieweritems", {0.0, 0.0}, false, ImGuiWindowFlags_NoBackground);
 
-        OpenSim::Component const* root = &m_ModelState->getModel();
-        OpenSim::Component const* selection = m_ModelState->getSelected();
-        OpenSim::Component const* hover = m_ModelState->getHovered();
+        OpenSim::Component const* root = &m_Model->getModel();
+        OpenSim::Component const* selection = m_Model->getSelected();
+        OpenSim::Component const* hover = m_Model->getHovered();
 
         ComponentPath selectionPath;
         if (selection)
@@ -338,8 +369,8 @@ public:
 
             if (ImGui::IsItemHovered())
             {
-                m_Response.type = NavigatorPanel::ResponseType::HoverChanged;
-                m_Response.ptr = cur;
+                rv.type = ResponseType::HoverChanged;
+                rv.ptr = cur;
 
                 ImGui::BeginTooltip();
                 ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
@@ -350,8 +381,8 @@ public:
 
             if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
             {
-                m_Response.type = NavigatorPanel::ResponseType::SelectionChanged;
-                m_Response.ptr = cur;
+                rv.type = ResponseType::SelectionChanged;
+                rv.ptr = cur;
             }
 
             if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
@@ -368,21 +399,26 @@ public:
         }
 
         ImGui::EndChild();
+
+        return rv;
     }
 
 private:
+    std::shared_ptr<VirtualModelStatePair> m_Model;
     std::function<void(OpenSim::ComponentPath const&)> m_OnRightClick;
     std::string m_CurrentSearch;
     bool m_ShowFrames = false;
-    VirtualConstModelStatePair const* m_ModelState = nullptr;
-    NavigatorPanel::Response m_Response;
 };
 
 
 // public API (PIMPL)
 
-osc::NavigatorPanel::NavigatorPanel(std::string_view panelName, std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
-    m_Impl{std::make_unique<Impl>(std::move(panelName), std::move(onRightClick))}
+osc::NavigatorPanel::NavigatorPanel(
+    std::string_view panelName,
+    std::shared_ptr<VirtualModelStatePair> model,
+    std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
+
+    m_Impl{std::make_unique<Impl>(std::move(panelName), std::move(model), std::move(onRightClick))}
 {
 }
 
@@ -405,7 +441,7 @@ void osc::NavigatorPanel::close()
     m_Impl->close();
 }
 
-osc::NavigatorPanel::Response osc::NavigatorPanel::draw(VirtualConstModelStatePair const& modelState)
+void osc::NavigatorPanel::draw()
 {
-    return m_Impl->draw(modelState);
+    return m_Impl->draw();
 }
