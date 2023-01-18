@@ -120,23 +120,27 @@ osc::OutputWatchesPanel::OutputWatchesPanel(OutputWatchesPanel&&) noexcept = def
 osc::OutputWatchesPanel& osc::OutputWatchesPanel::operator=(OutputWatchesPanel&&) noexcept = default;
 osc::OutputWatchesPanel::~OutputWatchesPanel() noexcept = default;
 
-bool osc::OutputWatchesPanel::isOpen() const
+osc::CStringView osc::OutputWatchesPanel::implGetName() const
+{
+    return m_Impl->getName();
+}
+
+bool osc::OutputWatchesPanel::implIsOpen() const
 {
     return m_Impl->isOpen();
 }
 
-void osc::OutputWatchesPanel::open()
+void osc::OutputWatchesPanel::implOpen()
 {
     m_Impl->open();
 }
 
-void osc::OutputWatchesPanel::close()
+void osc::OutputWatchesPanel::implClose()
 {
     m_Impl->close();
 }
 
-bool osc::OutputWatchesPanel::draw()
+void osc::OutputWatchesPanel::implDraw()
 {
     m_Impl->draw();
-    return m_Impl->isOpen();
 }

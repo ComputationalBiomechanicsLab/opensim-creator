@@ -1,5 +1,8 @@
 #pragma once
 
+#include "src/Utils/CStringView.hpp"
+#include "src/Widgets/Panel.hpp"
+
 #include <memory>
 #include <string_view>
 
@@ -8,7 +11,7 @@ namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class OutputWatchesPanel final {
+    class OutputWatchesPanel final : public Panel {
     public:
         OutputWatchesPanel(std::string_view panelName, std::shared_ptr<UndoableModelStatePair>, MainUIStateAPI*);
         OutputWatchesPanel(OutputWatchesPanel const&) = delete;
@@ -17,12 +20,13 @@ namespace osc
         OutputWatchesPanel& operator=(OutputWatchesPanel&&) noexcept;
         ~OutputWatchesPanel() noexcept;
 
-        bool isOpen() const;
-        void open();
-        void close();
-        bool draw();
-
     private:
+        CStringView implGetName() const final;
+        bool implIsOpen() const final;
+        void implOpen() final;
+        void implClose() final;
+        void implDraw() final;
+
         class Impl;
         std::unique_ptr<Impl> m_Impl;
     };

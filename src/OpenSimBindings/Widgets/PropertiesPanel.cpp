@@ -186,7 +186,27 @@ osc::PropertiesPanel::PropertiesPanel(PropertiesPanel&&) noexcept = default;
 osc::PropertiesPanel& osc::PropertiesPanel::operator=(PropertiesPanel&&) noexcept = default;
 osc::PropertiesPanel::~PropertiesPanel() noexcept = default;
 
-void osc::PropertiesPanel::draw()
+osc::CStringView osc::PropertiesPanel::implGetName() const
+{
+    return m_Impl->getName();
+}
+
+bool osc::PropertiesPanel::implIsOpen() const
+{
+    return m_Impl->isOpen();
+}
+
+void osc::PropertiesPanel::implOpen()
+{
+    m_Impl->open();
+}
+
+void osc::PropertiesPanel::implClose()
+{
+    m_Impl->close();
+}
+
+void osc::PropertiesPanel::implDraw()
 {
     m_Impl->draw();
 }

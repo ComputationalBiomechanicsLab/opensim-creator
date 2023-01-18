@@ -50,6 +50,8 @@ namespace osc
         size_t getNumSpawnablePanels() const;
         CStringView getSpawnablePanelBaseName(size_t) const;
         void createDynamicPanel(size_t);
+        std::string computeSuggestedDynamicPanelName(std::string_view baseName);
+        void pushDynamicPanel(std::string_view baseName, std::shared_ptr<Panel>);
 
         void activateAllDefaultOpenPanels();
         void garbageCollectDeactivatedPanels();

@@ -10,6 +10,7 @@
 #include "src/OpenSimBindings/Widgets/EditorTabStatusBar.hpp"
 #include "src/OpenSimBindings/Widgets/NavigatorPanel.hpp"
 #include "src/OpenSimBindings/Widgets/ModelEditorMainMenu.hpp"
+#include "src/OpenSimBindings/Widgets/ModelEditorViewerPanel.hpp"
 #include "src/OpenSimBindings/Widgets/ModelMusclePlotPanel.hpp"
 #include "src/OpenSimBindings/Widgets/ModelEditorToolbar.hpp"
 #include "src/OpenSimBindings/Widgets/OutputWatchesPanel.hpp"
@@ -34,6 +35,7 @@
 #include "src/Widgets/LogViewerPanel.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 #include "src/Widgets/Panel.hpp"
+#include "src/Widgets/PanelManager.hpp"
 #include "src/Widgets/Popup.hpp"
 #include "src/Widgets/Popups.hpp"
 
@@ -65,6 +67,71 @@ public:
         m_ParentAPI{std::move(parent)},
         m_Model{std::move(model)}
     {
+        // register all panels that the editor tab supports
+
+        m_PanelManager->registerToggleablePanel(
+            "Navigator",
+            [this](std::string_view panelName)
+            {
+                return std::make_shared<NavigatorPanel>(
+                    panelName,
+                    m_Model,
+                    [this](OpenSim::ComponentPath const& p)  { this->pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_ParentAPI, this, m_Model, p)); });
+            }
+        );
+        m_PanelManager->registerToggleablePanel(
+            "Properties",
+            [this](std::string_view panelName)
+            {
+                return std::make_shared<PropertiesPanel>(panelName, this, m_Model);
+            }
+        );
+        m_PanelManager->registerToggleablePanel(
+            "Log",
+            [this](std::string_view panelName)
+            {
+                return std::make_shared<LogViewerPanel>(panelName);
+            }
+        );
+        m_PanelManager->registerToggleablePanel(
+            "Coordinates",
+            [this](std::string_view panelName)
+            {
+                return std::make_shared<CoordinateEditorPanel>(panelName, m_ParentAPI, this, m_Model);
+            }
+        );
+        m_PanelManager->registerToggleablePanel(
+            "Performance",
+            [](std::string_view panelName)
+            {
+                return std::make_shared<PerfPanel>(panelName);
+            }
+        );
+        m_PanelManager->registerToggleablePanel(
+            "Output Watches",
+            [this](std::string_view panelName)
+            {
+                return std::make_shared<OutputWatchesPanel>(panelName, m_Model, m_ParentAPI);
+            }
+        );
+        m_PanelManager->registerSpawnablePanel(
+            "viewer",
+            [this](std::string_view panelName)
+            {
+                return std::make_shared<ModelEditorViewerPanel>(panelName, m_ParentAPI, this, m_Model);
+            }
+        );
+        m_PanelManager->registerSpawnablePanel(
+            "muscleplot",
+            [this](std::string_view panelName)
+            {
+                return std::make_shared<ModelMusclePlotPanel>(this, m_Model, panelName);
+            }
+        );
+
+        // push one viewer open at the start
+        m_PanelManager->pushDynamicPanel("viewer", std::make_shared<ModelEditorViewerPanel>("viewer0", m_ParentAPI, this, m_Model));
+        m_PanelManager->activateAllDefaultOpenPanels();
     }
 
     UID getID() const
@@ -129,6 +196,7 @@ public:
         }
 
         m_TabName = computeTabName();
+        m_PanelManager->garbageCollectDeactivatedPanels();
     }
 
     void onDrawMainMenu()
@@ -145,7 +213,11 @@ public:
 
         try
         {
-            drawUNGUARDED();
+            m_Toolbar.draw();
+            m_PanelManager->drawAllActivatedPanels();
+            m_StatusBar.draw();
+            m_Popups.draw();
+
             m_ExceptionThrownLastFrame = false;
         }
         catch (std::exception const& ex)
@@ -249,113 +321,6 @@ private:
         return false;
     }
 
-    // draw a single 3D model viewer
-    bool draw3DViewer(osc::UiModelViewer& viewer, char const* name)
-    {
-        bool isOpen = true;
-
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-        bool shown = ImGui::Begin(name, &isOpen);
-        ImGui::PopStyleVar();
-
-        if (!isOpen)
-        {
-            ImGui::End();
-            return false;  // closed by the user
-        }
-
-        if (!shown)
-        {
-            ImGui::End();
-            return true;  // it's open, but not shown
-        }
-
-        auto resp = viewer.draw(*m_Model);
-        ImGui::End();
-
-        // update hover
-        if (resp.isMousedOver && resp.hovertestResult != m_Model->getHovered())
-        {
-            m_Model->setHovered(resp.hovertestResult);
-        }
-
-        // if left-clicked, update selection
-        if (viewer.isLeftClicked() && resp.isMousedOver)
-        {
-            m_Model->setSelected(resp.hovertestResult);
-        }
-
-        // if hovered, draw hover tooltip
-        if (resp.isMousedOver && resp.hovertestResult)
-        {
-            DrawComponentHoverTooltip(*resp.hovertestResult);
-        }
-
-        // if right-clicked, draw context menu
-        if (viewer.isRightClicked() && resp.isMousedOver)
-        {
-            std::string menuName = std::string{name} + "_contextmenu";
-            OpenSim::ComponentPath path = resp.hovertestResult ? resp.hovertestResult->getAbsolutePath() : OpenSim::ComponentPath{};
-            pushPopup(std::make_unique<ComponentContextMenu>(menuName, m_ParentAPI, this, m_Model, path));
-        }
-
-        return true;
-    }
-
-    // draw all user-enabled 3D model viewers
-    void draw3DViewers()
-    {
-        for (int i = 0; i < static_cast<int>(m_ModelViewers.size()); ++i)
-        {
-            osc::UiModelViewer& viewer = m_ModelViewers[i];
-
-            std::string const name = getModelVisualizerName(i);
-
-            bool isOpen = draw3DViewer(viewer, name.c_str());
-
-            if (!isOpen)
-            {
-                m_ModelViewers.erase(m_ModelViewers.begin() + i);
-                --i;
-            }
-        }
-    }
-
-    void drawUNGUARDED()
-    {
-        m_Toolbar.draw();
-
-        // draw 3D viewers (if any)
-        {
-            OSC_PERF("draw 3D viewer(s)");
-            draw3DViewers();
-        }
-
-        m_NavigatorPanel.draw();
-        m_PropertiesPanel.draw();
-        m_LogViewerPanel.draw();
-        m_CoordinatesPanel.draw();
-        m_OutputWatchesPanel.draw();
-        m_PerformancePanel.draw();
-
-        {
-            OSC_PERF("draw muscle plots");
-
-            // draw model muscle plots (if applicable)
-            for (size_t i = 0; i < m_ModelMusclePlots.size(); ++i)
-            {
-                m_ModelMusclePlots.at(static_cast<size_t>(i)).draw();
-            }
-        }
-
-        m_StatusBar.draw();
-
-        // draw any generic popups pushed to this layer
-        m_Popups.draw();
-    }
-
-    // EditorAPI IMPL
-
     void implPushComponentContextMenuPopup(OpenSim::ComponentPath const& path) final
     {
         auto popup = std::make_unique<ComponentContextMenu>(
@@ -374,49 +339,18 @@ private:
         m_Popups.push_back(std::move(popup));
     }
 
-    size_t implGetNumMusclePlots() final
-    {
-        return m_ModelMusclePlots.size();
-    }
-
-    ModelMusclePlotPanel const& implGetMusclePlot(ptrdiff_t i) final
-    {
-        return m_ModelMusclePlots.at(i);
-    }
-
-    void implAddEmptyMusclePlot() final
-    {
-        m_ModelMusclePlots.emplace_back(this, m_Model, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++));
-    }
-
     void implAddMusclePlot(OpenSim::Coordinate const& coord, OpenSim::Muscle const& muscle) final
     {
-        m_ModelMusclePlots.emplace_back(this, m_Model, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++), coord.getAbsolutePath(), muscle.getAbsolutePath());
+        std::string const name = m_PanelManager->computeSuggestedDynamicPanelName("muscleplot");
+        m_PanelManager->pushDynamicPanel(
+            "muscleplot",
+            std::make_shared<ModelMusclePlotPanel>(this, m_Model, name, coord.getAbsolutePath(), muscle.getAbsolutePath())
+        );
     }
 
-    void implDeleteMusclePlot(ptrdiff_t i) final
+    std::shared_ptr<PanelManager> implGetPanelManager() final
     {
-        m_ModelMusclePlots.erase(m_ModelMusclePlots.begin() + i);
-    }
-
-    void implAddVisualizer() final
-    {
-        m_ModelViewers.emplace_back();
-    }
-
-    size_t implGetNumModelVisualizers() final
-    {
-        return m_ModelViewers.size();
-    }
-
-    std::string implGetModelVisualizerName(ptrdiff_t i) final
-    {
-        return "viewer" + std::to_string(i);
-    }
-
-    void implDeleteVisualizer(ptrdiff_t i) final
-    {
-        m_ModelViewers.erase(m_ModelViewers.begin() + i);
+        return m_PanelManager;
     }
 
     // tab top-level data
@@ -434,21 +368,15 @@ private:
         m_Model->getModel().getInputFileName(),
     };
 
-    // static UI widgets/popups
+    // manager for toggleable and spawnable UI panels
+    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
+
+    // static (non-toggleable) UI panels/menus/toolbars
     ModelEditorMainMenu m_MainMenu{m_ParentAPI, this, m_Model};
     ModelEditorToolbar m_Toolbar{"##ModelEditorToolbar", m_ParentAPI, this, m_Model};
-    LogViewerPanel m_LogViewerPanel{"Log"};
-    NavigatorPanel m_NavigatorPanel{"Navigator", m_Model, [this](OpenSim::ComponentPath const& p)  { this->pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_ParentAPI, this, m_Model, p)); }};
-    CoordinateEditorPanel m_CoordinatesPanel{"Coordinates", m_ParentAPI, this, m_Model};
-    PerfPanel m_PerformancePanel{"Performance"};
-    OutputWatchesPanel m_OutputWatchesPanel{"Output Watches", m_Model, m_ParentAPI};
-    PropertiesPanel m_PropertiesPanel{"Properties", this, m_Model};
     EditorTabStatusBar m_StatusBar{m_ParentAPI, this, m_Model};
 
-    // dynamic UI widgets/popups
-    int m_LatestMusclePlot = 1;
-    std::vector<ModelMusclePlotPanel> m_ModelMusclePlots;
-    std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
+    // manager for popups that are open in this tab
     Popups m_Popups;
 
     // flag that's set+reset each frame to prevent continual throwing

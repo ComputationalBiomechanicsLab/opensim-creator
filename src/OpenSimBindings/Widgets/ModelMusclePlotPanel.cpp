@@ -2228,27 +2228,27 @@ osc::ModelMusclePlotPanel::ModelMusclePlotPanel(ModelMusclePlotPanel&&) noexcept
 osc::ModelMusclePlotPanel& osc::ModelMusclePlotPanel::operator=(ModelMusclePlotPanel&&) noexcept = default;
 osc::ModelMusclePlotPanel::~ModelMusclePlotPanel() noexcept = default;
 
-std::string const& osc::ModelMusclePlotPanel::getName() const
+osc::CStringView osc::ModelMusclePlotPanel::implGetName() const
 {
     return m_Impl->getName();
 }
 
-bool osc::ModelMusclePlotPanel::isOpen() const
+bool osc::ModelMusclePlotPanel::implIsOpen() const
 {
     return m_Impl->isOpen();
 }
 
-void osc::ModelMusclePlotPanel::open()
+void osc::ModelMusclePlotPanel::implOpen()
 {
     m_Impl->open();
 }
 
-void osc::ModelMusclePlotPanel::close()
+void osc::ModelMusclePlotPanel::implClose()
 {
     m_Impl->close();
 }
 
-void osc::ModelMusclePlotPanel::draw()
+void osc::ModelMusclePlotPanel::implDraw()
 {
     m_Impl->draw();
 }

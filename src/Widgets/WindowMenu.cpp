@@ -28,6 +28,8 @@ void osc::WindowMenu::drawContent()
 {
     osc::PanelManager& manager = *m_PanelManager;
 
+    size_t numMenuItemsPrinted = 0;
+
     // toggleable panels
     for (size_t i = 0; i < manager.getNumToggleablePanels(); ++i)
     {
@@ -37,6 +39,7 @@ void osc::WindowMenu::drawContent()
         {
             manager.setToggleablePanelActivated(i, activated);
         }
+        ++numMenuItemsPrinted;
     }
 
     // dynamic panels
@@ -51,6 +54,7 @@ void osc::WindowMenu::drawContent()
             {
                 manager.deactivateDynamicPanel(i);
             }
+            ++numMenuItemsPrinted;
         }
     }
 
@@ -70,6 +74,12 @@ void osc::WindowMenu::drawContent()
                 }
             }
             ImGui::EndMenu();
+            ++numMenuItemsPrinted;
         }
+    }
+
+    if (numMenuItemsPrinted <= 0)
+    {
+        ImGui::TextDisabled("(no windows available to be toggled)");
     }
 }

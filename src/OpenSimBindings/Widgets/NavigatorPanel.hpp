@@ -1,5 +1,8 @@
 #pragma once
 
+#include "src/Widgets/Panel.hpp"
+#include "src/Utils/CStringView.hpp"
+
 #include <functional>
 #include <memory>
 #include <string_view>
@@ -10,7 +13,7 @@ namespace osc { class VirtualModelStatePair; }
 
 namespace osc
 {
-    class NavigatorPanel final {
+    class NavigatorPanel final : public Panel {
     public:
         NavigatorPanel(
             std::string_view panelName,
@@ -23,12 +26,13 @@ namespace osc
         NavigatorPanel& operator=(NavigatorPanel&&) noexcept;
         ~NavigatorPanel() noexcept;
 
-        bool isOpen() const;
-        void open();
-        void close();
-        void draw();
-
     private:
+        CStringView implGetName() const final;
+        bool implIsOpen() const final;
+        void implOpen() final;
+        void implClose() final;
+        void implDraw() final;
+
         class Impl;
         std::unique_ptr<Impl> m_Impl;
     };

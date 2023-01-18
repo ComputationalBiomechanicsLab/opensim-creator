@@ -1,5 +1,8 @@
 #pragma once
 
+#include "src/Utils/CStringView.hpp"
+#include "src/Widgets/Panel.hpp"
+
 #include <memory>
 #include <string>
 #include <string_view>
@@ -10,7 +13,7 @@ namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class ModelMusclePlotPanel final {
+    class ModelMusclePlotPanel final : public Panel {
     public:
         ModelMusclePlotPanel(
             EditorAPI*,
@@ -28,13 +31,13 @@ namespace osc
         ModelMusclePlotPanel& operator=(ModelMusclePlotPanel&&) noexcept;
         ~ModelMusclePlotPanel() noexcept;
 
-        std::string const& getName() const;
-        bool isOpen() const;
-        void open();
-        void close();
-        void draw();
-
     private:
+        CStringView implGetName() const;
+        bool implIsOpen() const;
+        void implOpen();
+        void implClose();
+        void implDraw();
+
         class Impl;
         std::unique_ptr<Impl> m_Impl;
     };

@@ -243,7 +243,27 @@ osc::CoordinateEditorPanel::CoordinateEditorPanel(CoordinateEditorPanel&&) noexc
 osc::CoordinateEditorPanel& osc::CoordinateEditorPanel::operator=(CoordinateEditorPanel&&) noexcept = default;
 osc::CoordinateEditorPanel::~CoordinateEditorPanel() noexcept = default;
 
-void osc::CoordinateEditorPanel::draw()
+osc::CStringView osc::CoordinateEditorPanel::implGetName() const
+{
+    return m_Impl->getName();
+}
+
+bool osc::CoordinateEditorPanel::implIsOpen() const
+{
+    return m_Impl->isOpen();
+}
+
+void osc::CoordinateEditorPanel::implOpen()
+{
+    m_Impl->open();
+}
+
+void osc::CoordinateEditorPanel::implClose()
+{
+    m_Impl->close();
+}
+
+void osc::CoordinateEditorPanel::implDraw()
 {
     m_Impl->draw();
 }

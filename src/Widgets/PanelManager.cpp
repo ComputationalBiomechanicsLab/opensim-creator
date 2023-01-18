@@ -102,18 +102,18 @@ namespace
     class DynamicPanel final {
     public:
         DynamicPanel(
-            osc::UID spawnerID,
+            std::string_view baseName,
             size_t instanceNumber,
             std::shared_ptr<osc::Panel> instance) :
 
-            m_SpawnerID{spawnerID},
+            m_SpawnerID{std::hash<std::string_view>{}(baseName)},
             m_InstanceNumber{instanceNumber},
             m_Instance{std::move(instance)}
         {
             m_Instance->open();
         }
 
-        osc::UID getSpawnablePanelID() const
+        size_t getSpawnablePanelID() const
         {
             return m_SpawnerID;
         }
@@ -139,7 +139,7 @@ namespace
         }
 
     private:
-        osc::UID m_SpawnerID;
+        size_t m_SpawnerID;
         size_t m_InstanceNumber;
         std::shared_ptr<osc::Panel> m_Instance;
     };
@@ -156,9 +156,9 @@ namespace
         {
         }
 
-        osc::UID getID() const
+        size_t getID() const
         {
-            return m_ID;
+            return std::hash<std::string_view>{}(m_BaseName);
         }
 
         osc::CStringView getBaseName() const
@@ -166,22 +166,17 @@ namespace
             return m_BaseName;
         }
 
-        DynamicPanel spawnDynamicPanel(size_t ithInstance)
+        DynamicPanel spawnDynamicPanel(size_t ithInstance, std::string_view panelName)
         {
-            std::stringstream ss;
-            ss << m_BaseName << '_' << ithInstance;
-            std::string const panelName = std::move(ss).str();
-
             return DynamicPanel
             {
-                m_ID,         // so outside code knows which spawnable panel made it
-                ithInstance,  // so outside code can reassign `i` later based on open/close logic
+                m_BaseName,         // so outside code knows which spawnable panel made it
+                ithInstance,        // so outside code can reassign `i` later based on open/close logic
                 m_ConstructorFunc(panelName),
             };
         }
 
     private:
-        osc::UID m_ID;
         std::string m_BaseName;
         std::function<std::shared_ptr<osc::Panel>(std::string_view)> m_ConstructorFunc;
     };
@@ -305,23 +300,54 @@ public:
 
     void createDynamicPanel(size_t i)
     {
-        SpawnablePanel& spawnablePanel = m_SpawnablePanels.at(i);
+        SpawnablePanel& spawnable = m_SpawnablePanels.at(i);
+        size_t const ithInstance = calcDynamicPanelInstanceNumber(spawnable.getID());
+        std::string const panelName = calcPanelName(spawnable.getBaseName(), ithInstance);
+        DynamicPanel p = spawnable.spawnDynamicPanel(ithInstance, panelName);
+        pushDynamicPanel(std::move(p));
+    }
 
+    std::string computeSuggestedDynamicPanelName(std::string_view baseName)
+    {
+        size_t const ithInstance = calcDynamicPanelInstanceNumber(std::hash<std::string_view>{}(baseName));
+        return calcPanelName(baseName, ithInstance);
+    }
+
+    void pushDynamicPanel(std::string_view baseName, std::shared_ptr<Panel> panel)
+    {
+        size_t const ithInstance = calcDynamicPanelInstanceNumber(std::hash<std::string_view>{}(baseName));
+        pushDynamicPanel(DynamicPanel{baseName, ithInstance, panel});
+    }
+
+private:
+    size_t calcDynamicPanelInstanceNumber(size_t spawnableID)
+    {
         // compute instance index such that it's the lowest non-colliding
         // number with the same spawnable panel
+
         std::vector<bool> used(m_DynamicPanels.size());
         for (DynamicPanel& panel : m_DynamicPanels)
         {
-            if (panel.getSpawnablePanelID() == spawnablePanel.getID())
+            if (panel.getSpawnablePanelID() == spawnableID)
             {
                 size_t instanceNumber = panel.getInstanceNumber();
                 used.resize(std::max(instanceNumber, used.size()));
                 used[instanceNumber] = true;
             }
         }
-        size_t ithInstance = std::distance(used.begin(), std::find(used.begin(), used.end(), false));
+        return std::distance(used.begin(), std::find(used.begin(), used.end(), false));
+    }
 
-        m_DynamicPanels.push_back(spawnablePanel.spawnDynamicPanel(ithInstance));
+    std::string calcPanelName(std::string_view baseName, size_t ithInstance)
+    {
+        std::stringstream ss;
+        ss << baseName << '_' << ithInstance;
+        return std::move(ss).str();
+    }
+
+    void pushDynamicPanel(DynamicPanel p)
+    {
+        m_DynamicPanels.push_back(std::move(p));
 
         // re-sort so that panels are clustered correctly
         std::sort(
@@ -340,7 +366,6 @@ public:
             });
     }
 
-private:
     std::vector<ToggleablePanel> m_ToggleablePanels;
     std::vector<DynamicPanel> m_DynamicPanels;
     std::vector<SpawnablePanel> m_SpawnablePanels;
@@ -436,4 +461,14 @@ osc::CStringView osc::PanelManager::getSpawnablePanelBaseName(size_t i) const
 void osc::PanelManager::createDynamicPanel(size_t i)
 {
     m_Impl->createDynamicPanel(i);
+}
+
+std::string osc::PanelManager::computeSuggestedDynamicPanelName(std::string_view baseName)
+{
+    return m_Impl->computeSuggestedDynamicPanelName(std::move(baseName));
+}
+
+void osc::PanelManager::pushDynamicPanel(std::string_view baseName, std::shared_ptr<Panel> panel)
+{
+    m_Impl->pushDynamicPanel(std::move(baseName), std::move(panel));
 }

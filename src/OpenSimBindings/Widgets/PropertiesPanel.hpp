@@ -1,5 +1,8 @@
 #pragma once
 
+#include "src/Widgets/Panel.hpp"
+#include "src/Utils/CStringView.hpp"
+
 #include <string_view>
 #include <memory>
 
@@ -8,7 +11,7 @@ namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class PropertiesPanel final {
+    class PropertiesPanel final : public Panel {
     public:
         PropertiesPanel(
             std::string_view panelName,
@@ -21,9 +24,13 @@ namespace osc
         PropertiesPanel& operator=(PropertiesPanel&&) noexcept;
         ~PropertiesPanel() noexcept;
 
-        void draw();
-
     private:
+        CStringView implGetName() const final;
+        bool implIsOpen() const final;
+        void implOpen() final;
+        void implClose() final;
+        void implDraw() final;
+
         class Impl;
         std::unique_ptr<Impl> m_Impl;
     };

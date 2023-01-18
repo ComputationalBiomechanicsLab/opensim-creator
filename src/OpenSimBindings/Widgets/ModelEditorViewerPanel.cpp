@@ -95,7 +95,27 @@ osc::ModelEditorViewerPanel::ModelEditorViewerPanel(ModelEditorViewerPanel&&) no
 osc::ModelEditorViewerPanel& osc::ModelEditorViewerPanel::operator=(ModelEditorViewerPanel&&) noexcept = default;
 osc::ModelEditorViewerPanel::~ModelEditorViewerPanel() noexcept = default;
 
-void osc::ModelEditorViewerPanel::draw()
+osc::CStringView osc::ModelEditorViewerPanel::implGetName() const
+{
+    return m_Impl->getName();
+}
+
+bool osc::ModelEditorViewerPanel::implIsOpen() const
+{
+    return m_Impl->isOpen();
+}
+
+void osc::ModelEditorViewerPanel::implOpen()
+{
+    m_Impl->open();
+}
+
+void osc::ModelEditorViewerPanel::implClose()
+{
+    m_Impl->close();
+}
+
+void osc::ModelEditorViewerPanel::implDraw()
 {
     m_Impl->draw();
 }

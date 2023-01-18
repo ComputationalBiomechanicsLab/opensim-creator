@@ -10,6 +10,7 @@
 #include "src/OpenSimBindings/ActionFunctions.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/Widgets/WindowMenu.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
 #include "src/Platform/Styling.hpp"
@@ -51,7 +52,7 @@ public:
         drawMainMenuAddTab();
         drawMainMenuToolsTab();
         drawMainMenuActionsTab();
-        drawMainMenuWindowTab();
+        m_WindowMenu.draw();
         m_MainMenuAboutTab.draw();
     }
 
@@ -132,70 +133,12 @@ private:
         }
     }
 
-    void drawMainMenuWindowTab()
-    {
-        // draw "window" tab
-        if (ImGui::BeginMenu("Window"))
-        {
-            osc::Config const& cfg = osc::App::get().getConfig();
-            for (auto const& panel : c_EditorScreenPanels)
-            {
-                bool currentVal = cfg.getIsPanelEnabled(panel);
-                if (ImGui::MenuItem(panel, nullptr, &currentVal))
-                {
-                    osc::App::upd().updConfig().setIsPanelEnabled(panel, currentVal);
-                }
-            }
-
-            ImGui::Separator();
-
-            // active 3D viewers (can be disabled)
-            for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(m_EditorAPI->getNumModelVisualizers()); ++i)
-            {
-                std::string const name = m_EditorAPI->getModelVisualizerName(i);
-
-                bool enabled = true;
-                if (ImGui::MenuItem(name.c_str(), nullptr, &enabled))
-                {
-                    m_EditorAPI->deleteVisualizer(i);
-                    --i;
-                }
-            }
-
-            if (ImGui::MenuItem("add viewer"))
-            {
-                m_EditorAPI->addVisualizer();
-            }
-
-            ImGui::Separator();
-
-            // active muscle plots
-            for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(m_EditorAPI->getNumMusclePlots()); ++i)
-            {
-                osc::ModelMusclePlotPanel const& plot = m_EditorAPI->getMusclePlot(i);
-
-                bool enabled = true;
-                if (!plot.isOpen() || ImGui::MenuItem(plot.getName().c_str(), nullptr, &enabled))
-                {
-                    m_EditorAPI->deleteMusclePlot(i);
-                    --i;
-                }
-            }
-
-            if (ImGui::MenuItem("add muscle plot"))
-            {
-                m_EditorAPI->addEmptyMusclePlot();
-            }
-
-            ImGui::EndMenu();
-        }
-    }
-
     MainUIStateAPI* m_MainUIStateAPI;
     EditorAPI* m_EditorAPI;
     std::shared_ptr<osc::UndoableModelStatePair> m_Model;
     MainMenuFileTab m_MainMenuFileTab;
     ModelActionsMenuItems m_MainMenuAddTabMenuItems{m_EditorAPI, m_Model};
+    WindowMenu m_WindowMenu{m_EditorAPI->getPanelManager()};
     MainMenuAboutTab m_MainMenuAboutTab;
 };
 
