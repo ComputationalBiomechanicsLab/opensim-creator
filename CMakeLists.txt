@@ -542,6 +542,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/Widgets/SimulationScrubber.hpp
     src/OpenSimBindings/Widgets/SimulationToolbar.cpp
     src/OpenSimBindings/Widgets/SimulationToolbar.hpp
+    src/OpenSimBindings/Widgets/SimulationViewerPanel.cpp
+    src/OpenSimBindings/Widgets/SimulationViewerPanel.hpp
     src/OpenSimBindings/Widgets/UiModelViewer.cpp
     src/OpenSimBindings/Widgets/UiModelViewer.hpp
     src/OpenSimBindings/Widgets/UiModelViewerFlags.hpp
