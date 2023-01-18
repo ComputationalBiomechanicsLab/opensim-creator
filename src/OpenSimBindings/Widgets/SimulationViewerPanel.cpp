@@ -21,8 +21,8 @@ public:
         MainUIStateAPI* mainUIStateAPI) :
 
         StandardPanel{std::move(panelName)},
-        m_API{mainUIStateAPI},
-        m_Model{std::move(modelState)}
+        m_Model{std::move(modelState)},
+        m_API{mainUIStateAPI}
     {
     }
 
