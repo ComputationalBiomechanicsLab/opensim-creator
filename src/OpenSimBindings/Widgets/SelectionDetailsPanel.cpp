@@ -87,7 +87,27 @@ osc::SelectionDetailsPanel::SelectionDetailsPanel(SelectionDetailsPanel&&) noexc
 osc::SelectionDetailsPanel& osc::SelectionDetailsPanel::operator=(SelectionDetailsPanel&&) noexcept = default;
 osc::SelectionDetailsPanel::~SelectionDetailsPanel() noexcept = default;
 
-void osc::SelectionDetailsPanel::draw()
+osc::CStringView osc::SelectionDetailsPanel::implGetName() const
+{
+    return m_Impl->getName();
+}
+
+bool osc::SelectionDetailsPanel::implIsOpen() const
+{
+    return m_Impl->isOpen();
+}
+
+void osc::SelectionDetailsPanel::implOpen()
+{
+    m_Impl->open();
+}
+
+void osc::SelectionDetailsPanel::implClose()
+{
+    m_Impl->close();
+}
+
+void osc::SelectionDetailsPanel::implDraw()
 {
     m_Impl->draw();
 }

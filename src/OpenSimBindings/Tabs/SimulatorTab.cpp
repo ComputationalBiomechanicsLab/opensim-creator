@@ -12,7 +12,7 @@
 #include "src/OpenSimBindings/Widgets/SimulationOutputPlot.hpp"
 #include "src/OpenSimBindings/Widgets/SimulationScrubber.hpp"
 #include "src/OpenSimBindings/Widgets/SimulationToolbar.hpp"
-#include "src/OpenSimBindings/Widgets/UiModelViewer.hpp"
+#include "src/OpenSimBindings/Widgets/SimulationViewerPanel.hpp"
 #include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
@@ -29,7 +29,9 @@
 #include "src/Utils/SynchronizedValue.hpp"
 #include "src/Utils/Perf.hpp"
 #include "src/Widgets/LogViewerPanel.hpp"
+#include "src/Widgets/PanelManager.hpp"
 #include "src/Widgets/PerfPanel.hpp"
+#include "src/Widgets/WindowMenu.hpp"
 
 #include <glm/vec2.hpp>
 #include <imgui.h>
@@ -69,6 +71,69 @@ public:
         m_API{std::move(api)},
         m_Simulation{std::move(simulation)}
     {
+        // register panels
+
+        m_PanelManager->registerToggleablePanel(
+            "Performance",
+            [](std::string_view panelName)
+            {
+                return std::make_shared<PerfPanel>(panelName);
+            }
+        );
+        m_PanelManager->registerToggleablePanel(
+            "Navigator",
+            [this](std::string_view panelName)
+            {
+                return std::make_shared<NavigatorPanel>(panelName, m_ShownModelState);
+            }
+        );
+        m_PanelManager->registerToggleablePanel(
+            "Selection Details",
+            [this](std::string_view panelName)
+            {
+                return std::make_shared<SelectionDetailsPanel>(panelName, this);
+            }
+        );
+        m_PanelManager->registerToggleablePanel(
+            "Output Plots",
+            [this](std::string_view panelName)
+            {
+                return std::make_shared<OutputPlotsPanel>(panelName, m_API, this);
+            }
+        );
+        m_PanelManager->registerToggleablePanel(
+            "Simulation Details",
+            [this](std::string_view panelName)
+            {
+                return std::make_shared<SimulationDetailsPanel>(panelName, this, m_Simulation);
+            }
+        );
+        m_PanelManager->registerToggleablePanel(
+            "Log",
+            [](std::string_view panelName)
+            {
+                return std::make_shared<LogViewerPanel>(panelName);
+            }
+        );
+        m_PanelManager->registerSpawnablePanel(
+            "viewer",
+            [this](std::string_view panelName)
+            {
+                return std::make_shared<SimulationViewerPanel>(panelName, m_ShownModelState, m_API);
+            }
+        );
+
+        // by default, open one viewer
+        m_PanelManager->pushDynamicPanel(
+            "viewer",
+            std::make_shared<SimulationViewerPanel>(
+                m_PanelManager->computeSuggestedDynamicPanelName("viewer"),
+                m_ShownModelState,
+                m_API
+            )
+        );
+
+        m_PanelManager->activateAllDefaultOpenPanels();
     }
 
     UID getID() const
@@ -124,7 +189,7 @@ public:
     void onDrawMainMenu()
     {
         m_MainMenuFileTab.draw(m_API);
-        drawMainMenuWindowTab();
+        m_MainMenuWindowTab.draw();
         m_MainMenuAboutTab.draw();
     }
 
@@ -313,163 +378,7 @@ private:
         OSC_PERF("draw simulation screen");
 
         m_Toolbar.draw();
-        {
-            OSC_PERF("draw simulator panels");
-            drawAll3DViewers();
-        }
-
-        m_NavigatorPanel.draw();
-        m_SelectionDetailsPanel.draw();
-        m_OutputPlotsPanel.draw();
-        m_SimulationDetailsPanel.draw();
-        m_LogViewerPanel.draw();
-        m_PerfPanel.draw();
-    }
-
-    void drawMainMenuWindowTab()
-    {
-        static std::vector<std::string> const g_EditorScreenPanels =
-        {
-            "Navigator",
-            "Log",
-            "Output Plots",
-            "Selection Details",
-            "Simulation Details",
-            "Performance",
-        };
-
-        // draw "window" tab
-        if (ImGui::BeginMenu("Window"))
-        {
-            Config const& cfg = App::get().getConfig();
-            for (std::string const& panel : g_EditorScreenPanels)
-            {
-                bool currentVal = cfg.getIsPanelEnabled(panel);
-                if (ImGui::MenuItem(panel.c_str(), nullptr, &currentVal))
-                {
-                    App::upd().updConfig().setIsPanelEnabled(panel, currentVal);
-                }
-            }
-
-            ImGui::Separator();
-
-            // active viewers (can be disabled)
-            for (int i = 0; i < static_cast<int>(m_ModelViewers.size()); ++i)
-            {
-                std::string const name = "viewer" + std::to_string(i);
-
-                bool enabled = true;
-                if (ImGui::MenuItem(name.c_str(), nullptr, &enabled))
-                {
-                    m_ModelViewers.erase(m_ModelViewers.begin() + i);
-                    --i;
-                }
-            }
-
-            if (ImGui::MenuItem("add viewer"))
-            {
-                m_ModelViewers.emplace_back();
-            }
-
-            ImGui::EndMenu();
-        }
-    }
-
-    // draw a single 3D model viewer
-    bool draw3DViewer(osc::SimulationModelStatePair& ms, osc::UiModelViewer& viewer, char const* name, int i)
-    {
-        bool isOpen = true;
-
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-        bool shown = ImGui::Begin(name, &isOpen);
-        ImGui::PopStyleVar();
-
-        if (!isOpen)
-        {
-            ImGui::End();
-            return false;  // closed by the user
-        }
-
-        if (!shown)
-        {
-            ImGui::End();
-            return true;  // it's open, but not shown
-        }
-
-        auto resp = viewer.draw(ms);
-        ImGui::End();
-
-        // upate hover
-        if (resp.isMousedOver && resp.hovertestResult != ms.getHovered())
-        {
-            ms.setHovered(resp.hovertestResult);
-            osc::App::upd().requestRedraw();
-        }
-
-        // if left-clicked, update selection (can be empty)
-        if (viewer.isLeftClicked() && resp.isMousedOver)
-        {
-            ms.setSelected(resp.hovertestResult);
-            osc::App::upd().requestRedraw();
-        }
-
-        // if hovered, draw hover tooltip
-        if (resp.isMousedOver && resp.hovertestResult)
-        {
-            osc::DrawComponentHoverTooltip(*resp.hovertestResult);
-        }
-
-        // if right-clicked, draw a context menu
-        {
-            std::string menuName = std::string{name} + "_contextmenu";
-
-            if (viewer.isRightClicked() && resp.isMousedOver)
-            {
-                ms.setSelected(resp.hovertestResult);  // can be empty
-                ImGui::OpenPopup(menuName.c_str());
-            }
-
-            OpenSim::Component const* selected = ms.getSelected();
-
-            if (selected && ImGui::BeginPopup(menuName.c_str()))
-            {
-                // draw context menu for whatever's selected
-                ImGui::TextUnformatted(selected->getName().c_str());
-                ImGui::SameLine();
-                ImGui::TextDisabled("%s", selected->getConcreteClassName().c_str());
-                ImGui::Separator();
-                ImGui::Dummy({0.0f, 3.0f});
-
-                DrawSelectOwnerMenu(ms, *selected);
-                DrawWatchOutputMenu(*m_API, *selected);
-                ImGui::EndPopup();
-            }
-        }
-
-        return true;
-    }
-
-    // draw all active 3D viewers
-    //
-    // the user can (de)activate 3D viewers in the "Window" tab
-    void drawAll3DViewers()
-    {
-        osc::SimulationModelStatePair& ms = *m_ShownModelState;
-
-        for (int i = 0; i < static_cast<int>(m_ModelViewers.size()); ++i)
-        {
-            osc::UiModelViewer& viewer = m_ModelViewers[i];
-
-            std::string const name = "viewer" + std::to_string(i);
-
-            bool isOpen = draw3DViewer(ms, viewer, name.c_str(), i);
-
-            if (!isOpen)
-            {
-                m_ModelViewers.erase(m_ModelViewers.begin() + i);
-                --i;
-            }
-        }
+        m_PanelManager->drawAllActivatedPanels();
     }
 
     std::optional<osc::SimulationReport> TrySelectReportBasedOnScrubbing(osc::VirtualSimulation& sim)
@@ -510,19 +419,14 @@ private:
     SimulationClock::time_point m_PlaybackStartSimtime = m_Simulation->getStartTime();
     std::chrono::system_clock::time_point m_PlaybackStartWallTime = std::chrono::system_clock::now();
 
-    // static widgets
-    SimulationToolbar m_Toolbar{"##SimulationToolbar", this, m_Simulation};
+    // manager for toggleable and spawnable UI panels
+    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
+
+    // static (non-toggleable) UI panels/menus/toolbars
     MainMenuFileTab m_MainMenuFileTab;
     MainMenuAboutTab m_MainMenuAboutTab;
-
-    // toggle-able widgets
-    PerfPanel m_PerfPanel{"Performance"};
-    NavigatorPanel m_NavigatorPanel{"Navigator", m_ShownModelState};
-    std::vector<UiModelViewer> m_ModelViewers = std::vector<UiModelViewer>(1);
-    SelectionDetailsPanel m_SelectionDetailsPanel{"Selection Details", this};
-    OutputPlotsPanel m_OutputPlotsPanel{"Output Plots", m_API, this};
-    SimulationDetailsPanel m_SimulationDetailsPanel{"Simulation Details", this, m_Simulation};
-    LogViewerPanel m_LogViewerPanel{"Log"};
+    WindowMenu m_MainMenuWindowTab{m_PanelManager};
+    SimulationToolbar m_Toolbar{"##SimulationToolbar", this, m_Simulation};
 };
 
 

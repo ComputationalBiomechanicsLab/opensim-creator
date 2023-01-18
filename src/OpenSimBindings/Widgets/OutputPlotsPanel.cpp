@@ -106,7 +106,27 @@ osc::OutputPlotsPanel::OutputPlotsPanel(OutputPlotsPanel&&) noexcept = default;
 osc::OutputPlotsPanel& osc::OutputPlotsPanel::operator=(OutputPlotsPanel&&) noexcept = default;
 osc::OutputPlotsPanel::~OutputPlotsPanel() noexcept = default;
 
-void osc::OutputPlotsPanel::draw()
+osc::CStringView osc::OutputPlotsPanel::implGetName() const
+{
+    return m_Impl->getName();
+}
+
+bool osc::OutputPlotsPanel::implIsOpen() const
+{
+    return m_Impl->isOpen();
+}
+
+void osc::OutputPlotsPanel::implOpen()
+{
+    m_Impl->open();
+}
+
+void osc::OutputPlotsPanel::implClose()
+{
+    m_Impl->close();
+}
+
+void osc::OutputPlotsPanel::implDraw()
 {
     m_Impl->draw();
 }

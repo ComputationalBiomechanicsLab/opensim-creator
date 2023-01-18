@@ -130,7 +130,7 @@ public:
         );
 
         // push one viewer open at the start
-        m_PanelManager->pushDynamicPanel("viewer", std::make_shared<ModelEditorViewerPanel>("viewer0", m_ParentAPI, this, m_Model));
+        m_PanelManager->pushDynamicPanel("viewer", std::make_shared<ModelEditorViewerPanel>(m_PanelManager->computeSuggestedDynamicPanelName("viewer"), m_ParentAPI, this, m_Model));
         m_PanelManager->activateAllDefaultOpenPanels();
     }
 

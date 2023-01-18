@@ -140,7 +140,27 @@ osc::SimulationDetailsPanel::SimulationDetailsPanel(SimulationDetailsPanel&&) no
 osc::SimulationDetailsPanel& osc::SimulationDetailsPanel::operator=(SimulationDetailsPanel&&) noexcept = default;
 osc::SimulationDetailsPanel::~SimulationDetailsPanel() noexcept = default;
 
-void osc::SimulationDetailsPanel::draw()
+osc::CStringView osc::SimulationDetailsPanel::implGetName() const
+{
+    return m_Impl->getName();
+}
+
+bool osc::SimulationDetailsPanel::implIsOpen() const
+{
+    return m_Impl->isOpen();
+}
+
+void osc::SimulationDetailsPanel::implOpen()
+{
+    m_Impl->open();
+}
+
+void osc::SimulationDetailsPanel::implClose()
+{
+    m_Impl->close();
+}
+
+void osc::SimulationDetailsPanel::implDraw()
 {
     m_Impl->draw();
 }
