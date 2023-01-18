@@ -33,6 +33,8 @@ All notable changes to this project will be documented here. The format is based
   show a tooltip describing the second point, but that tooltip could overlap with the measurement, #31)
 - Fixed inconsistent joint naming in tutorial 2, such that all joints are named `parent_to_child` (previously:
   `foot_to_ground` was in error, #546)
+- Fixed a memory leak in that would occur as the undo/redo buffer fills (i.e. over a longer editing session,
+  #566)
 
 ## [0.3.2] - 2023/01/09
 
