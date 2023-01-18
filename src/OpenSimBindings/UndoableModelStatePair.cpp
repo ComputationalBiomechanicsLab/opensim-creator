@@ -400,6 +400,8 @@ private:
         m_CurrentHead = commitID;
         m_BranchHead = commitID;
 
+        garbageCollect();
+
         return commitID;
     }
 

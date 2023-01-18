@@ -314,9 +314,9 @@ public:
         {
             if (panel.getSpawnablePanelID() == spawnablePanel.getID())
             {
-                size_t i = panel.getInstanceNumber();
-                used.resize(std::max(i, used.size()));
-                used[i] = true;
+                size_t instanceNumber = panel.getInstanceNumber();
+                used.resize(std::max(instanceNumber, used.size()));
+                used[instanceNumber] = true;
             }
         }
         size_t ithInstance = std::distance(used.begin(), std::find(used.begin(), used.end(), false));
