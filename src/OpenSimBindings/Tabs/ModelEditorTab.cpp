@@ -331,12 +331,7 @@ private:
             draw3DViewers();
         }
 
-        // draw navigator
-        {
-            OSC_PERF("draw navigator panel");
-            m_NavigatorPanel.draw();
-        }
-
+        m_NavigatorPanel.draw();
         m_PropertiesPanel.draw();
         m_LogViewerPanel.draw();
         m_CoordinatesPanel.draw();

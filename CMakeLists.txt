@@ -734,6 +734,8 @@ add_library(osccore STATIC
     src/Widgets/UndoButton.hpp
     src/Widgets/UndoRedoPanel.cpp
     src/Widgets/UndoRedoPanel.hpp
+    src/Widgets/WindowMenu.cpp
+    src/Widgets/WindowMenu.hpp
 )
 
 # osccore: target properties

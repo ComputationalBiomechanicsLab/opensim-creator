@@ -46,6 +46,7 @@
 #include "src/Widgets/ToggleablePanelFlags.hpp"
 #include "src/Widgets/UndoButton.hpp"
 #include "src/Widgets/UndoRedoPanel.hpp"
+#include "src/Widgets/WindowMenu.hpp"
 
 #include <glm/mat3x4.hpp>
 #include <glm/vec2.hpp>
@@ -741,7 +742,7 @@ namespace
         std::optional<TPSUIViewportHover> CurrentHover;
 
         // available/active panels that the user can toggle via the `window` menu
-        osc::PanelManager PanelManager;
+        std::shared_ptr<osc::PanelManager> PanelManager = std::make_shared<osc::PanelManager>();
 
         // currently active tab-wide popups
         osc::Popups ActivePopups;
@@ -1110,83 +1111,13 @@ namespace
         std::shared_ptr<TPSTabSharedState> m_State;
     };
 
-    // widget: the 'window' menu (a sub menu of the main menu)
-    class TPS3DWindowMenu final {
-    public:
-        TPS3DWindowMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
-            m_State{std::move(tabState_)}
-        {
-        }
-
-        void draw()
-        {
-            if (ImGui::BeginMenu("Window"))
-            {
-                drawContent();
-                ImGui::EndMenu();
-            }
-        }
-    private:
-        void drawContent()
-        {
-            osc::PanelManager& manager = m_State->PanelManager;
-
-            // toggleable panels
-            for (size_t i = 0; i < manager.getNumToggleablePanels(); ++i)
-            {
-                bool activated = manager.isToggleablePanelActivated(i);
-                osc::CStringView const name = manager.getToggleablePanelName(i);
-                if (ImGui::MenuItem(name.c_str(), nullptr, &activated))
-                {
-                    m_State->PanelManager.setToggleablePanelActivated(i, activated);
-                }
-            }
-
-            // dynamic panels
-            if (manager.getNumDynamicPanels() > 0)
-            {
-                ImGui::Separator();
-                for (size_t i = 0; i < manager.getNumDynamicPanels(); ++i)
-                {
-                    bool activated = true;
-                    osc::CStringView const name = manager.getDynamicPanelName(i);
-                    if (ImGui::MenuItem(name.c_str(), nullptr, &activated))
-                    {
-                        manager.deactivateDynamicPanel(i);
-                    }
-                }
-            }
-
-            // spawnable submenu
-            if (manager.getNumSpawnablePanels() > 0)
-            {
-                ImGui::Separator();
-
-                if (ImGui::BeginMenu("Add"))
-                {
-                    for (size_t i = 0; i < manager.getNumSpawnablePanels(); ++i)
-                    {
-                        osc::CStringView const name = manager.getSpawnablePanelBaseName(i);
-                        if (ImGui::MenuItem(name.c_str()))
-                        {
-                            manager.createDynamicPanel(i);
-                        }
-                    }
-                    ImGui::EndMenu();
-                }
-            }
-        }
-
-        std::shared_ptr<TPSTabSharedState> m_State;
-    };
-
     // widget: the main menu (contains multiple submenus: 'file', 'edit', 'about', etc.)
     class TPS3DMainMenu final {
     public:
         explicit TPS3DMainMenu(std::shared_ptr<TPSTabSharedState> const& tabState_) :
             m_FileMenu{tabState_},
             m_EditMenu{tabState_},
-            m_WindowMenu{tabState_},
+            m_WindowMenu{tabState_->PanelManager},
             m_AboutTab{}
         {
         }
@@ -1201,7 +1132,7 @@ namespace
     private:
         TPS3DFileMenu m_FileMenu;
         TPS3DEditMenu m_EditMenu;
-        TPS3DWindowMenu m_WindowMenu;
+        osc::WindowMenu m_WindowMenu;
         osc::MainMenuAboutTab m_AboutTab;
     };
 }
@@ -2367,8 +2298,8 @@ public:
         OSC_ASSERT(m_State != nullptr && "the tab state should be initialized by this point");
 
         // initialize panels
-        PushBackAvailablePanels(m_State, m_State->PanelManager);
-        m_State->PanelManager.activateAllDefaultOpenPanels();
+        PushBackAvailablePanels(m_State, *m_State->PanelManager);
+        m_State->PanelManager->activateAllDefaultOpenPanels();
     }
 
     UID getID() const
@@ -2407,7 +2338,7 @@ public:
         m_State->CurrentHover.reset();
 
         // garbage collect panel data
-        m_State->PanelManager.garbageCollectDeactivatedPanels();
+        m_State->PanelManager->garbageCollectDeactivatedPanels();
     }
 
     void onDrawMainMenu()
@@ -2420,7 +2351,7 @@ public:
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         m_TopToolbar.draw();
-        m_State->PanelManager.drawAllActivatedPanels();
+        m_State->PanelManager->drawAllActivatedPanels();
         m_StatusBar.draw();
 
         // draw active popups over the UI
