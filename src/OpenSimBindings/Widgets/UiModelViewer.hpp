@@ -1,6 +1,5 @@
 #pragma once
 
-#include "src/OpenSimBindings/Widgets/UiModelViewerFlags.hpp"
 #include "src/OpenSimBindings/Widgets/UiModelViewerResponse.hpp"
 
 #include <memory>
@@ -16,7 +15,7 @@ namespace osc
     // callers only have to handle `OpenSim::Model`s, `OpenSim::Component`s, etc.
     class UiModelViewer final {
     public:
-        UiModelViewer(UiModelViewerFlags = UiModelViewerFlags_Default);
+        UiModelViewer();
         UiModelViewer(UiModelViewer const&) = delete;
         UiModelViewer(UiModelViewer&&) noexcept;
         UiModelViewer& operator=(UiModelViewer const&) = delete;
@@ -26,7 +25,6 @@ namespace osc
         bool isMousedOver() const;
         bool isLeftClicked() const;
         bool isRightClicked() const;
-        void requestAutoFocus();
         UiModelViewerResponse draw(VirtualConstModelStatePair const&);
 
     private:

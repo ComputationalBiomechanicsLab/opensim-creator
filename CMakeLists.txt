@@ -546,7 +546,6 @@ add_library(osccore STATIC
     src/OpenSimBindings/Widgets/SimulationToolbar.hpp
     src/OpenSimBindings/Widgets/UiModelViewer.cpp
     src/OpenSimBindings/Widgets/UiModelViewer.hpp
-    src/OpenSimBindings/Widgets/UiModelViewerFlags.hpp
     src/OpenSimBindings/Widgets/UiModelViewerResponse.hpp
     src/OpenSimBindings/ActionFunctions.cpp
     src/OpenSimBindings/ActionFunctions.hpp
@@ -555,6 +554,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/ComponentOutputExtractor.cpp
     src/OpenSimBindings/ComponentOutputExtractor.hpp
     src/OpenSimBindings/CustomDecorationOptions.hpp
+    src/OpenSimBindings/CustomRenderingOptions.cpp
+    src/OpenSimBindings/CustomRenderingOptions.hpp
     src/OpenSimBindings/ForwardDynamicSimulation.cpp
     src/OpenSimBindings/ForwardDynamicSimulation.hpp
     src/OpenSimBindings/ForwardDynamicSimulator.cpp

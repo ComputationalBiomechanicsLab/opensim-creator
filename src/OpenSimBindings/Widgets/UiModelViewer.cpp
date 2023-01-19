@@ -17,6 +17,7 @@
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/OpenSimBindings/CustomDecorationOptions.hpp"
+#include "src/OpenSimBindings/CustomRenderingOptions.hpp"
 #include "src/OpenSimBindings/Icon.hpp"
 #include "src/OpenSimBindings/IconCache.hpp"
 #include "src/OpenSimBindings/MuscleColoringStyle.hpp"
@@ -108,7 +109,7 @@ namespace
         void populate(
             osc::VirtualConstModelStatePair const& msp,
             osc::CustomDecorationOptions const& decorationOptions,
-            osc::UiModelViewerFlags const& panelFlags)
+            osc::CustomRenderingOptions const& renderingOptions)
         {
             OpenSim::Component const* const selected = msp.getSelected();
             OpenSim::Component const* const hovered = msp.getHovered();
@@ -119,7 +120,7 @@ namespace
                 hovered != osc::FindComponent(msp.getModel(), m_LastHover) ||
                 msp.getFixupScaleFactor() != m_LastFixupFactor ||
                 decorationOptions != m_LastDecorationOptions ||
-                panelFlags != m_LastPanelFlags)
+                renderingOptions != m_LastRenderingOptions)
             {
                 // update cache checks
                 m_LastModelVersion = msp.getModelVersion();
@@ -128,7 +129,7 @@ namespace
                 m_LastHover = hovered ? hovered->getAbsolutePath() : OpenSim::ComponentPath{};
                 m_LastFixupFactor = msp.getFixupScaleFactor();
                 m_LastDecorationOptions = decorationOptions;
-                m_LastPanelFlags = panelFlags;
+                m_LastRenderingOptions = renderingOptions;
                 m_Version = osc::UID{};
 
                 // generate decorations from OpenSim/SimTK backend
@@ -142,7 +143,7 @@ namespace
                 osc::UpdateSceneBVH(m_Decorations, m_BVH);
 
                 // generate screen-specific overlays
-                if (panelFlags & osc::UiModelViewerFlags_DrawAABBs)
+                if (renderingOptions.getDrawAABBs())
                 {
                     for (size_t i = 0, len = m_Decorations.size(); i < len; ++i)
                     {
@@ -150,27 +151,27 @@ namespace
                     }
                 }
 
-                if (panelFlags & osc::UiModelViewerFlags_DrawBVH)
+                if (renderingOptions.getDrawBVH())
                 {
                     DrawBVH(*osc::App::singleton<osc::MeshCache>(), m_BVH, m_Decorations);
                 }
 
-                if (panelFlags & osc::UiModelViewerFlags_DrawXZGrid)
+                if (renderingOptions.getDrawXZGrid())
                 {
                     DrawXZGrid(*osc::App::singleton<osc::MeshCache>(), m_Decorations);
                 }
 
-                if (panelFlags & osc::UiModelViewerFlags_DrawXYGrid)
+                if (renderingOptions.getDrawXYGrid())
                 {
                     DrawXYGrid(*osc::App::singleton<osc::MeshCache>(), m_Decorations);
                 }
 
-                if (panelFlags & osc::UiModelViewerFlags_DrawYZGrid)
+                if (renderingOptions.getDrawYZGrid())
                 {
                     DrawYZGrid(*osc::App::singleton<osc::MeshCache>(), m_Decorations);
                 }
 
-                if (panelFlags & osc::UiModelViewerFlags_DrawAxisLines)
+                if (renderingOptions.getDrawAxisLines())
                 {
                     DrawXZFloorLines(*osc::App::singleton<osc::MeshCache>(), m_Decorations);
                 }
@@ -184,13 +185,12 @@ namespace
         OpenSim::ComponentPath m_LastHover;
         float m_LastFixupFactor = 1.0f;
         osc::CustomDecorationOptions m_LastDecorationOptions;
-        osc::UiModelViewerFlags m_LastPanelFlags = osc::UiModelViewerFlags_None;
+        osc::CustomRenderingOptions m_LastRenderingOptions;
 
         osc::UID m_Version;
         std::vector<osc::SceneDecoration> m_Decorations;
         osc::BVH m_BVH;
     };
-
 
     class IconWithoutMenu final {
     public:
@@ -265,16 +265,8 @@ namespace
     };
 }
 
-
-// private IMPL
 class osc::UiModelViewer::Impl final {
 public:
-    explicit Impl(UiModelViewerFlags flags) :
-        m_Flags{std::move(flags)}
-    {
-        m_Camera.theta = fpi4;
-        m_Camera.phi = fpi4;
-    }
 
     bool isLeftClicked() const
     {
@@ -291,11 +283,6 @@ public:
         return m_RenderImage.isHovered;
     }
 
-    void requestAutoFocus()
-    {
-        m_AutoFocusCameraNextFrame = true;
-    }
-
     osc::UiModelViewerResponse draw(VirtualConstModelStatePair const& rs)
     {
         UiModelViewerResponse rv;
@@ -309,10 +296,8 @@ public:
             return rv;
         }
 
-        m_RendererParams.lightDirection = RecommendedLightDirection(m_Camera);
-
         // populate render buffers
-        m_Scene.populate(rs, m_DecorationOptions, m_Flags);
+        m_Scene.populate(rs, m_DecorationOptions, m_RenderingOptions);
 
         std::pair<OpenSim::Component const*, glm::vec3> htResult = hittestRenderWindow(rs);
 
@@ -409,7 +394,7 @@ private:
         }
     }
 
-    void drawMainMenu()
+    void drawTopButtonRowOverlay()
     {
         ImGui::SetCursorScreenPos(m_RenderImage.rect.p1 + glm::vec2{ImGui::GetStyle().WindowPadding});
 
@@ -515,24 +500,33 @@ private:
                 }
             }
         }
-
     }
 
     void drawVisualAidsContextMenuContent()
     {
-        ImGui::TextDisabled("Rendering");
-        ImGui::CheckboxFlags("floor", &m_Flags, osc::UiModelViewerFlags_DrawFloor);
-        ImGui::Checkbox("mesh normals", &m_RendererParams.drawMeshNormals);
-        ImGui::Checkbox("shadows", &m_RendererParams.drawShadows);
+        std::optional<ptrdiff_t> lastGroup;
+        for (size_t i = 0; i < m_RenderingOptions.getNumOptions(); ++i)
+        {
+            // print header, if necessary
+            ptrdiff_t const group = m_RenderingOptions.getOptionGroupIndex(i);
+            if (group != lastGroup)
+            {
+                if (lastGroup)
+                {
+                    ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+                }
+                ImGui::TextDisabled(m_RenderingOptions.getGroupLabel(group).c_str());
+                lastGroup = group;
+            }
 
-        ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
-        ImGui::TextDisabled("Alignment");
-        ImGui::CheckboxFlags("XZ grid", &m_Flags, osc::UiModelViewerFlags_DrawXZGrid);
-        ImGui::CheckboxFlags("XY grid", &m_Flags, osc::UiModelViewerFlags_DrawXYGrid);
-        ImGui::CheckboxFlags("YZ grid", &m_Flags, osc::UiModelViewerFlags_DrawYZGrid);
-        ImGui::CheckboxFlags("alignment axes", &m_Flags, osc::UiModelViewerFlags_DrawAlignmentAxes);
-        ImGui::CheckboxFlags("origin lines", &m_Flags, osc::UiModelViewerFlags_DrawAxisLines);
+            bool value = m_RenderingOptions.getOptionValue(i);
+            if (ImGui::Checkbox(m_RenderingOptions.getOptionLabel(i).c_str(), &value))
+            {
+                m_RenderingOptions.setOptionValue(i, value);
+            }
+        }
 
+        // OpenSim extras
         ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
         ImGui::TextDisabled("OpenSim");
         bool isDrawingScapulothoracicJoints = m_DecorationOptions.getShouldShowScapulo();
@@ -540,12 +534,6 @@ private:
         {
             m_DecorationOptions.setShouldShowScapulo(isDrawingScapulothoracicJoints);
         }
-
-        ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
-        ImGui::TextDisabled("Development");
-        ImGui::CheckboxFlags("AABBs", &m_Flags, osc::UiModelViewerFlags_DrawAABBs);
-        ImGui::CheckboxFlags("BVH", &m_Flags, osc::UiModelViewerFlags_DrawBVH);
-        ImGui::Checkbox("selection rims", &m_RendererParams.drawRims);
     }
 
     void drawSceneMenuContent()
@@ -617,7 +605,6 @@ private:
         if (ImGui::Button("Export to .dae"))
         {
             TryExportSceneToDAE(m_Scene.getDrawlist());
-
         }
         DrawTooltipBodyOnlyIfItemHovered("Try to export the 3D scene to a portable DAE file, so that it can be viewed in 3rd-party modelling software, such as Blender");
 
@@ -638,9 +625,9 @@ private:
         ImGui::Dummy({0.0f, 10.0f});
         ImGui::Text("advanced scene properties:");
         ImGui::Separator();
-        ImGui::ColorEdit3("light_color", glm::value_ptr(m_RendererParams.lightColor));
-        ImGui::ColorEdit3("background color", glm::value_ptr(m_RendererParams.backgroundColor));
-        osc::InputMetersFloat3("floor location", m_RendererParams.floorLocation);
+        ImGui::ColorEdit3("light_color", glm::value_ptr(m_LightColor));
+        ImGui::ColorEdit3("background color", glm::value_ptr(m_BackgroundColor));
+        osc::InputMetersFloat3("floor location", m_FloorLocation);
         DrawTooltipBodyOnlyIfItemHovered("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
     }
 
@@ -712,38 +699,48 @@ private:
     void drawSceneTexture(osc::VirtualConstModelStatePair const& rs)
     {
         // setup render params
-        ImVec2 contentRegion = ImGui::GetContentRegionAvail();
+        SceneRendererParams params;
+
+        glm::vec2 contentRegion = ImGui::GetContentRegionAvail();
         if (contentRegion.x >= 1.0f && contentRegion.y >= 1.0f)
         {
-            glm::ivec2 dims{static_cast<int>(contentRegion.x), static_cast<int>(contentRegion.y)};
-            m_RendererParams.dimensions = dims;
-            m_RendererParams.samples = osc::App::get().getMSXAASamplesRecommended();
+            params.dimensions = contentRegion;
+            params.samples = osc::App::get().getMSXAASamplesRecommended();
         }
 
-        m_RendererParams.drawFloor = m_Flags & UiModelViewerFlags_DrawFloor;
-        m_RendererParams.viewMatrix = m_Camera.getViewMtx();
-        m_RendererParams.projectionMatrix = m_Camera.getProjMtx(AspectRatio(m_Rendererer.getDimensions()));
-        m_RendererParams.nearClippingPlane = m_Camera.znear;
-        m_RendererParams.farClippingPlane = m_Camera.zfar;
-        m_RendererParams.viewPos = m_Camera.getPos();
-        m_RendererParams.fixupScaleFactor = rs.getFixupScaleFactor();
+        params.lightDirection = RecommendedLightDirection(m_Camera);
+        params.drawFloor = m_RenderingOptions.getDrawFloor();
+        params.viewMatrix = m_Camera.getViewMtx();
+        params.projectionMatrix = m_Camera.getProjMtx(AspectRatio(m_Rendererer.getDimensions()));
+        params.nearClippingPlane = m_Camera.znear;
+        params.farClippingPlane = m_Camera.zfar;
+        params.viewPos = m_Camera.getPos();
+        params.fixupScaleFactor = rs.getFixupScaleFactor();
+        params.drawRims = m_RenderingOptions.getDrawSelectionRims();
+        params.drawMeshNormals = m_RenderingOptions.getDrawMeshNormals();
+        params.drawShadows = m_RenderingOptions.getDrawShadows();
+        params.lightColor = m_LightColor;
+        params.backgroundColor = m_BackgroundColor;
+        params.floorLocation = m_FloorLocation;
 
         if (m_Scene.getVersion() != m_RendererPrevDrawlistVersion ||
-            m_RendererParams != m_RendererPrevParams)
+            params != m_RendererPrevParams)
         {
             m_RendererPrevDrawlistVersion = m_Scene.getVersion();
-            m_RendererPrevParams = m_RendererParams;
-            m_Rendererer.draw(m_Scene.getDrawlist(), m_RendererParams);
+            m_RendererPrevParams = params;
+            m_Rendererer.draw(m_Scene.getDrawlist(), params);
         }
+    }
+
+    void drawImGuiOverlays()
+    {
+        drawTopButtonRowOverlay();
+        drawAlignmentAxes();
+        drawCameraControlButtons();
     }
 
     void drawAlignmentAxes()
     {
-        if (!(m_Flags & osc::UiModelViewerFlags_DrawAlignmentAxes))
-        {
-            return;  // don't draw anything (they're disabled)
-        }
-
         ImGuiStyle const& style = ImGui::GetStyle();
         glm::vec2 const alignmentAxesDims = osc::CalcAlignmentAxesDimensions();
         glm::vec2 const axesTopLeft =
@@ -761,9 +758,7 @@ private:
         float const buttonHeight = 2.0f*style.FramePadding.y + ImGui::GetTextLineHeight();
         float const rowSpacing = ImGui::GetStyle().FramePadding.y;
         float const twoRowHeight = 2.0f*buttonHeight + rowSpacing;
-        float const xFirstRow= m_Flags & osc::UiModelViewerFlags_DrawAlignmentAxes ?
-            m_RenderImage.rect.p1.x + style.WindowPadding.x + CalcAlignmentAxesDimensions().x + style.ItemSpacing.x :
-            m_RenderImage.rect.p1.x + style.WindowPadding.x;
+        float const xFirstRow = m_RenderImage.rect.p1.x + style.WindowPadding.x + CalcAlignmentAxesDimensions().x + style.ItemSpacing.x;
         float const yFirstRow = (m_RenderImage.rect.p2.y - style.WindowPadding.y - 0.5f*CalcAlignmentAxesDimensions().y) - 0.5f*twoRowHeight;
 
         glm::vec2 const firstRowTopLeft = {xFirstRow, yFirstRow};
@@ -901,23 +896,16 @@ private:
         }
     }
 
-    void drawImGuiOverlays()
-    {
-        drawMainMenu();
-        drawAlignmentAxes();
-        drawCameraControlButtons();
-    }
-
-    // widget state
-    UiModelViewerFlags m_Flags = UiModelViewerFlags_Default;
-    CustomDecorationOptions m_DecorationOptions;
-
     // scene state
+    CustomDecorationOptions m_DecorationOptions;
+    CustomRenderingOptions m_RenderingOptions;
+    glm::vec3 m_LightColor = SceneRendererParams{}.lightColor;
+    glm::vec4 m_BackgroundColor = SceneRendererParams{}.backgroundColor;
+    glm::vec3 m_FloorLocation = SceneRendererParams{}.floorLocation;
     CachedScene m_Scene;
     PolarPerspectiveCamera m_Camera = CreateCameraWithRadius(5.0f);
 
     // rendering input state
-    SceneRendererParams m_RendererParams;
     SceneRendererParams m_RendererPrevParams;
     UID m_RendererPrevDrawlistVersion;
     SceneRenderer m_Rendererer
@@ -940,11 +928,10 @@ private:
 
 // public API (PIMPL)
 
-osc::UiModelViewer::UiModelViewer(UiModelViewerFlags flags) :
-    m_Impl{std::make_unique<Impl>(flags)}
+osc::UiModelViewer::UiModelViewer() :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
-
 osc::UiModelViewer::UiModelViewer(UiModelViewer&&) noexcept = default;
 osc::UiModelViewer& osc::UiModelViewer::operator=(UiModelViewer&&) noexcept = default;
 osc::UiModelViewer::~UiModelViewer() noexcept = default;
@@ -962,11 +949,6 @@ bool osc::UiModelViewer::isRightClicked() const
 bool osc::UiModelViewer::isMousedOver() const
 {
     return m_Impl->isMousedOver();
-}
-
-void osc::UiModelViewer::requestAutoFocus()
-{
-    m_Impl->requestAutoFocus();
 }
 
 osc::UiModelViewerResponse osc::UiModelViewer::draw(VirtualConstModelStatePair const& rs)
