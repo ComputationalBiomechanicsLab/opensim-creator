@@ -247,11 +247,8 @@ private:
 
             if (!m_MainMenuFileTab.recentlyOpenedFiles.empty())
             {
-                // iterate in reverse: recent files are stored oldest --> newest
-                for (auto it = m_MainMenuFileTab.recentlyOpenedFiles.rbegin(); it != m_MainMenuFileTab.recentlyOpenedFiles.rend(); ++it)
+                for (RecentFile const& rf : m_MainMenuFileTab.recentlyOpenedFiles)
                 {
-                    RecentFile const& rf = *it;
-
                     std::string const label = std::string{ICON_FA_FILE} + " " + rf.path.filename().string();
 
                     ImGui::PushID(++imguiID);
