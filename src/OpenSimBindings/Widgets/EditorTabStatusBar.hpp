@@ -10,7 +10,10 @@ namespace osc
 {
     class EditorTabStatusBar final {
     public:
-        explicit EditorTabStatusBar(MainUIStateAPI*, EditorAPI*, std::shared_ptr<UndoableModelStatePair>);
+        EditorTabStatusBar(
+            MainUIStateAPI*,
+            EditorAPI*,
+            std::shared_ptr<UndoableModelStatePair>);
         EditorTabStatusBar(EditorTabStatusBar const&) = delete;
         EditorTabStatusBar(EditorTabStatusBar&&) noexcept;
         EditorTabStatusBar& operator=(EditorTabStatusBar const&) = delete;
