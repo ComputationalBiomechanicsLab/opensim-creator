@@ -515,7 +515,7 @@ private:
                 {
                     ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
                 }
-                ImGui::TextDisabled(m_RenderingOptions.getGroupLabel(group).c_str());
+                ImGui::TextDisabled("%s", m_RenderingOptions.getGroupLabel(group).c_str());
                 lastGroup = group;
             }
 
