@@ -182,7 +182,7 @@ namespace
         LinesOfActionConfig const& config)
     {
         std::vector<std::unique_ptr<OpenSim::PointForceDirection>> const pfds = GetPointForceDirections(muscle.getGeometryPath(), st);
-        if (pfds.size() <= 2)
+        if (pfds.size() < 2)
         {
             return std::nullopt;  // not enough PFDs to compute a line of action
         }
