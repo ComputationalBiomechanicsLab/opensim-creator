@@ -734,9 +734,21 @@ private:
         ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
         ImGui::TextDisabled("OpenSim");
         bool isDrawingScapulothoracicJoints = m_Params.decorationOptions.getShouldShowScapulo();
-        if (ImGui::Checkbox("scapulothoracic joints", &isDrawingScapulothoracicJoints))
+        if (ImGui::Checkbox("Scapulothoracic Joints", &isDrawingScapulothoracicJoints))
         {
             m_Params.decorationOptions.setShouldShowScapulo(isDrawingScapulothoracicJoints);
+        }
+
+        bool isShowingEffectiveLinesOfAction = m_Params.decorationOptions.getShouldShowEffectiveMuscleLinesOfAction();
+        if (ImGui::Checkbox("Lines of Action (effective)", &isShowingEffectiveLinesOfAction))
+        {
+            m_Params.decorationOptions.setShouldShowEffectiveMuscleLinesOfAction(isShowingEffectiveLinesOfAction);
+        }
+
+        bool isShowingAnatomicalLinesOfAction = m_Params.decorationOptions.getShouldShowAnatomicalMuscleLinesOfAction();
+        if (ImGui::Checkbox("Lines of Action (anatomical)", &isShowingAnatomicalLinesOfAction))
+        {
+            m_Params.decorationOptions.setShouldShowAnatomicalMuscleLinesOfAction(isShowingAnatomicalLinesOfAction);
         }
     }
 

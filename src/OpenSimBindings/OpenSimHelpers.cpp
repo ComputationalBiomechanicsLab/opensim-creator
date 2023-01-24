@@ -123,7 +123,7 @@ namespace
         auto const it = std::find_if(
             pfds.begin() + 1,
             pfds.end(),
-            [&first = pfds.front()](auto const& pfd) { return pfd != first; }
+            [&first = pfds.front()](auto const& pfd) { return &pfd->frame() != &first->frame(); }
         );
         return std::distance(pfds.begin(), it) - 1;
     }
@@ -138,7 +138,7 @@ namespace
         auto const rit = std::find_if(
             pfds.rbegin() + 1,
             pfds.rend(),
-            [&last = pfds.back()](auto const& pfd) { return pfd != last; }
+            [&last = pfds.back()](auto const& pfd) { return &pfd->frame() != &last->frame(); }
         );
         return std::distance(pfds.begin(), rit.base());
     }
@@ -807,7 +807,9 @@ namespace
                 if (opts.getShouldShowEffectiveMuscleLinesOfAction())
                 {
                     // render lines of action (todo: should be behind a UI toggle for on vs. effective vs. anatomical etc.)
-                    if (std::optional<LinesOfAction> loas = TryGetLinesOfAction(*musc, st, LinesOfActionConfig{}))
+                    LinesOfActionConfig config{};
+                    config.useEffectiveInsertion = true;
+                    if (std::optional<LinesOfAction> loas = TryGetLinesOfAction(*musc, st, config))
                     {
                         // origin arrow
                         {
@@ -817,7 +819,7 @@ namespace
                             p.tipLength = (fixupScaleFactor*0.015f);
                             p.headThickness = (fixupScaleFactor*0.01f);
                             p.neckThickness = (fixupScaleFactor*0.006f);
-                            p.color = {1.0f, 0.0f, 0.0f, 1.0f};
+                            p.color = {0.0f, 1.0f, 0.0f, 1.0f};
 
                             osc::DrawArrow(
                                 *osc::App::singleton<osc::MeshCache>(),
@@ -834,7 +836,7 @@ namespace
                             p.tipLength = (fixupScaleFactor*0.015f);
                             p.headThickness = (fixupScaleFactor*0.01f);
                             p.neckThickness = (fixupScaleFactor*0.006f);
-                            p.color = {1.0f, 0.0f, 0.0f, 1.0f};
+                            p.color = {0.0f, 1.0f, 0.0f, 1.0f};
                             osc::DrawArrow(
                                 *osc::App::singleton<osc::MeshCache>(),
                                 p,
@@ -848,7 +850,9 @@ namespace
                 if (opts.getShouldShowAnatomicalMuscleLinesOfAction())
                 {
                     // render lines of action (todo: should be behind a UI toggle for on vs. effective vs. anatomical etc.)
-                    if (std::optional<LinesOfAction> loas = TryGetLinesOfAction(*musc, st, LinesOfActionConfig{}))
+                    LinesOfActionConfig config{};
+                    config.useEffectiveInsertion = false;
+                    if (std::optional<LinesOfAction> loas = TryGetLinesOfAction(*musc, st, config))
                     {
                         // origin arrow
                         {
