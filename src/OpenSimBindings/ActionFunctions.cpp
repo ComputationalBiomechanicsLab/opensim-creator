@@ -1,5 +1,6 @@
 #include "ActionFunctions.hpp"
 
+#include "src/Graphics/MeshCache.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/Rendering/OpenSimRenderer.hpp"
 #include "src/OpenSimBindings/Tabs/ModelEditorTab.hpp"
@@ -425,7 +426,10 @@ bool osc::ActionCopyModelPathToClipboard(UndoableModelStatePair const& uim)
 
 bool osc::ActionAutoscaleSceneScaleFactor(UndoableModelStatePair& uim)
 {
-    float const sf = osc::GetRecommendedScaleFactor(uim);
+    float const sf = osc::GetRecommendedScaleFactor(
+        *osc::App::singleton<osc::MeshCache>(),
+        uim
+    );
     uim.setFixupScaleFactor(sf);
     return true;
 }

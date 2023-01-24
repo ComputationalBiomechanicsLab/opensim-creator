@@ -4,7 +4,6 @@
 #include "src/OpenSimBindings/Widgets/UiModelViewer.hpp"
 #include "src/OpenSimBindings/VirtualModelStatePair.hpp"
 #include "src/Panels/StandardPanel.hpp"
-#include "src/Platform/App.hpp"
 
 #include <OpenSim/Common/Component.h>
 
@@ -45,14 +44,12 @@ private:
         if (resp.isMousedOver && resp.hovertestResult != m_Model->getHovered())
         {
             m_Model->setHovered(resp.hovertestResult);
-            osc::App::upd().requestRedraw();
         }
 
         // if left-clicked, update selection (can be empty)
         if (m_Viewer.isLeftClicked() && resp.isMousedOver)
         {
             m_Model->setSelected(resp.hovertestResult);
-            osc::App::upd().requestRedraw();
         }
 
         // if hovered, draw hover tooltip

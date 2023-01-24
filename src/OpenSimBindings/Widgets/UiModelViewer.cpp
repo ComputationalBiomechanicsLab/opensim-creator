@@ -228,7 +228,12 @@ namespace
                 {
                     OSC_PERF("generate decorations");
                     m_Decorations.clear();
-                    osc::GenerateModelDecorations(msp, m_Decorations, decorationOptions);
+                    osc::GenerateModelDecorations(
+                        *osc::App::singleton<osc::MeshCache>(),
+                        msp,
+                        m_Decorations,
+                        decorationOptions
+                    );
                 }
 
                 // create a BVH from the not-overlay parts of the scene
