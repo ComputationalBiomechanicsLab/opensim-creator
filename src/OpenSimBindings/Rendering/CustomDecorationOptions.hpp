@@ -1,8 +1,8 @@
 #pragma once
 
-#include "src/OpenSimBindings/MuscleColoringStyle.hpp"
-#include "src/OpenSimBindings/MuscleDecorationStyle.hpp"
-#include "src/OpenSimBindings/MuscleSizingStyle.hpp"
+#include "src/OpenSimBindings/Rendering/MuscleColoringStyle.hpp"
+#include "src/OpenSimBindings/Rendering/MuscleDecorationStyle.hpp"
+#include "src/OpenSimBindings/Rendering/MuscleSizingStyle.hpp"
 
 namespace osc
 {

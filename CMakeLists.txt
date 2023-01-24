@@ -458,6 +458,7 @@ add_library(osccore STATIC
     src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp
     src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp
     src/OpenSimBindings/MiddlewareAPIs/SimulatorUIAPI.hpp
+
     src/OpenSimBindings/Panels/CoordinateEditorPanel.cpp
     src/OpenSimBindings/Panels/CoordinateEditorPanel.hpp
     src/OpenSimBindings/Panels/ModelEditorViewerPanel.cpp
@@ -478,8 +479,23 @@ add_library(osccore STATIC
     src/OpenSimBindings/Panels/SimulationDetailsPanel.hpp
     src/OpenSimBindings/Panels/SimulationViewerPanel.cpp
     src/OpenSimBindings/Panels/SimulationViewerPanel.hpp
+
+    src/OpenSimBindings/Rendering/CustomDecorationOptions.hpp
+    src/OpenSimBindings/Rendering/CustomRenderingOptions.cpp
+    src/OpenSimBindings/Rendering/CustomRenderingOptions.hpp
+    src/OpenSimBindings/Rendering/Icon.hpp
+    src/OpenSimBindings/Rendering/IconCache.cpp
+    src/OpenSimBindings/Rendering/IconCache.hpp
+    src/OpenSimBindings/Rendering/MuscleColoringStyle.cpp
+    src/OpenSimBindings/Rendering/MuscleColoringStyle.hpp
+    src/OpenSimBindings/Rendering/MuscleDecorationStyle.cpp
+    src/OpenSimBindings/Rendering/MuscleDecorationStyle.hpp
+    src/OpenSimBindings/Rendering/MuscleSizingStyle.cpp
+    src/OpenSimBindings/Rendering/MuscleSizingStyle.hpp
+
     src/OpenSimBindings/Screens/MainUIScreen.cpp
     src/OpenSimBindings/Screens/MainUIScreen.hpp
+
     src/OpenSimBindings/Tabs/Experimental/FrameDefinitionTab.cpp
     src/OpenSimBindings/Tabs/Experimental/FrameDefinitionTab.hpp
     src/OpenSimBindings/Tabs/Experimental/MeshHittestTab.cpp
@@ -506,6 +522,7 @@ add_library(osccore STATIC
     src/OpenSimBindings/Tabs/SimulatorTab.hpp
     src/OpenSimBindings/Tabs/SplashTab.cpp
     src/OpenSimBindings/Tabs/SplashTab.hpp
+
     src/OpenSimBindings/Widgets/AddBodyPopup.cpp
     src/OpenSimBindings/Widgets/AddBodyPopup.hpp
     src/OpenSimBindings/Widgets/AddComponentPopup.cpp
@@ -547,24 +564,19 @@ add_library(osccore STATIC
     src/OpenSimBindings/Widgets/UiModelViewer.cpp
     src/OpenSimBindings/Widgets/UiModelViewer.hpp
     src/OpenSimBindings/Widgets/UiModelViewerResponse.hpp
+
     src/OpenSimBindings/ActionFunctions.cpp
     src/OpenSimBindings/ActionFunctions.hpp
     src/OpenSimBindings/BasicModelStatePair.cpp
     src/OpenSimBindings/BasicModelStatePair.hpp
     src/OpenSimBindings/ComponentOutputExtractor.cpp
     src/OpenSimBindings/ComponentOutputExtractor.hpp
-    src/OpenSimBindings/CustomDecorationOptions.hpp
-    src/OpenSimBindings/CustomRenderingOptions.cpp
-    src/OpenSimBindings/CustomRenderingOptions.hpp
     src/OpenSimBindings/ForwardDynamicSimulation.cpp
     src/OpenSimBindings/ForwardDynamicSimulation.hpp
     src/OpenSimBindings/ForwardDynamicSimulator.cpp
     src/OpenSimBindings/ForwardDynamicSimulator.hpp
     src/OpenSimBindings/ForwardDynamicSimulatorParams.cpp
     src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp
-    src/OpenSimBindings/Icon.hpp
-    src/OpenSimBindings/IconCache.cpp
-    src/OpenSimBindings/IconCache.hpp
     src/OpenSimBindings/IntegratorMethod.cpp
     src/OpenSimBindings/IntegratorMethod.hpp
     src/OpenSimBindings/IntegratorOutputExtractor.cpp
@@ -573,12 +585,6 @@ add_library(osccore STATIC
     src/OpenSimBindings/ModelStateCommit.hpp
     src/OpenSimBindings/MultiBodySystemOutputExtractor.cpp
     src/OpenSimBindings/MultiBodySystemOutputExtractor.hpp
-    src/OpenSimBindings/MuscleColoringStyle.cpp
-    src/OpenSimBindings/MuscleColoringStyle.hpp
-    src/OpenSimBindings/MuscleDecorationStyle.cpp
-    src/OpenSimBindings/MuscleDecorationStyle.hpp
-    src/OpenSimBindings/MuscleSizingStyle.cpp
-    src/OpenSimBindings/MuscleSizingStyle.hpp
     src/OpenSimBindings/OpenSimApp.cpp
     src/OpenSimBindings/OpenSimApp.hpp
     src/OpenSimBindings/OpenSimHelpers.cpp

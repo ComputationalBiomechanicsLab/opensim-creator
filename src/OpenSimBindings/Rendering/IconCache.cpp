@@ -1,7 +1,7 @@
 #include "IconCache.hpp"
 
 #include "src/Formats/SVG.hpp"
-#include "src/OpenSimBindings/Icon.hpp"
+#include "src/OpenSimBindings/Rendering/Icon.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
 
