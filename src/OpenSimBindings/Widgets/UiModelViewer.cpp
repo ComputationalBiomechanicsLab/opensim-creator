@@ -20,7 +20,7 @@
 #include "src/OpenSimBindings/Rendering/CustomRenderingOptions.hpp"
 #include "src/OpenSimBindings/Rendering/Icon.hpp"
 #include "src/OpenSimBindings/Rendering/IconCache.hpp"
-#include "src/OpenSimBindings/Rendering/ModelRenderer.hpp"
+#include "src/OpenSimBindings/Rendering/OpenSimRenderer.hpp"
 #include "src/OpenSimBindings/Rendering/MuscleColoringStyle.hpp"
 #include "src/OpenSimBindings/Rendering/MuscleDecorationStyle.hpp"
 #include "src/OpenSimBindings/Rendering/MuscleSizingStyle.hpp"

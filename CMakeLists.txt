@@ -486,14 +486,18 @@ add_library(osccore STATIC
     src/OpenSimBindings/Rendering/Icon.hpp
     src/OpenSimBindings/Rendering/IconCache.cpp
     src/OpenSimBindings/Rendering/IconCache.hpp
-    src/OpenSimBindings/Rendering/ModelRenderer.cpp
-    src/OpenSimBindings/Rendering/ModelRenderer.hpp
     src/OpenSimBindings/Rendering/MuscleColoringStyle.cpp
     src/OpenSimBindings/Rendering/MuscleColoringStyle.hpp
     src/OpenSimBindings/Rendering/MuscleDecorationStyle.cpp
     src/OpenSimBindings/Rendering/MuscleDecorationStyle.hpp
     src/OpenSimBindings/Rendering/MuscleSizingStyle.cpp
     src/OpenSimBindings/Rendering/MuscleSizingStyle.hpp
+    src/OpenSimBindings/Rendering/OpenSimRenderer.cpp
+    src/OpenSimBindings/Rendering/OpenSimRenderer.hpp
+    src/OpenSimBindings/Rendering/SimTKMeshLoader.cpp
+    src/OpenSimBindings/Rendering/SimTKMeshLoader.hpp
+    src/OpenSimBindings/Rendering/SimTKRenderer.cpp
+    src/OpenSimBindings/Rendering/SimTKRenderer.hpp
 
     src/OpenSimBindings/Screens/MainUIScreen.cpp
     src/OpenSimBindings/Screens/MainUIScreen.hpp

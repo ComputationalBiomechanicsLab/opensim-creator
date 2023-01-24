@@ -1,6 +1,5 @@
 #pragma once
 
-#include "src/Graphics/Mesh.hpp"
 #include "src/Maths/Transform.hpp"
 
 #include <glm/gtx/quaternion.hpp>
@@ -13,14 +12,6 @@
 #include <SimTKcommon/internal/MassProperties.h>
 #include <SimTKcommon/internal/Transform.h>
 #include <SimTKcommon/internal/Rotation.h>
-
-#include <filesystem>
-#include <memory>
-
-namespace osc { class MeshCache; }
-namespace SimTK { class DecorativeGeometry; }
-namespace SimTK { class SimbodyMatterSubsystem; }
-namespace SimTK { class State; }
 
 namespace osc
 {
@@ -41,45 +32,4 @@ namespace osc
     glm::mat4x4 ToMat4x4(SimTK::Transform const&);
     glm::quat ToQuat(SimTK::Rotation const&);
     Transform ToTransform(SimTK::Transform const&);
-
-    // mesh loading
-    Mesh LoadMeshViaSimTK(std::filesystem::path const&);
-
-    // rendering
-
-    // called with an appropriate (output) decoration whenever the
-    // DecorativeGeometryHandler wants to emit geometry
-    class DecorationConsumer {
-    public:
-        DecorationConsumer() = default;
-        DecorationConsumer(DecorationConsumer const&) = delete;
-        DecorationConsumer(DecorationConsumer&&) noexcept = delete;
-        DecorationConsumer& operator=(DecorationConsumer const&) = delete;
-        DecorationConsumer& operator=(DecorationConsumer&&) noexcept = delete;
-        virtual ~DecorationConsumer() noexcept = default;
-
-        virtual void operator()(Mesh const&, Transform const&, glm::vec4 const& color) = 0;
-    };
-
-    // consumes SimTK::DecorativeGeometry and emits appropriate decorations back to
-    // the `DecorationConsumer`
-    class DecorativeGeometryHandler final {
-    public:
-        DecorativeGeometryHandler(MeshCache& meshCache,
-                                  SimTK::SimbodyMatterSubsystem const& matter,
-                                  SimTK::State const& state,
-                                  float fixupScaleFactor,
-                                  DecorationConsumer&);
-        DecorativeGeometryHandler(DecorativeGeometryHandler const&) = delete;
-        DecorativeGeometryHandler(DecorativeGeometryHandler&&) noexcept;
-        DecorativeGeometryHandler& operator=(DecorativeGeometryHandler const&) = delete;
-        DecorativeGeometryHandler& operator=(DecorativeGeometryHandler&&) noexcept;
-        ~DecorativeGeometryHandler() noexcept;
-
-        void operator()(SimTK::DecorativeGeometry const&);
-
-    private:
-        class Impl;
-        std::unique_ptr<Impl> m_Impl;
-    };
 }

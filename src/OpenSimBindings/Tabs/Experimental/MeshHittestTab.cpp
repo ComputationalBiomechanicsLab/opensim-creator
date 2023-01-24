@@ -17,7 +17,7 @@
 #include "src/Maths/Line.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Maths/Triangle.hpp"
-#include "src/OpenSimBindings/SimTKHelpers.hpp"
+#include "src/OpenSimBindings/Rendering/SimTKMeshLoader.hpp"
 #include "src/Panels/PerfPanel.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Utils/UID.hpp"

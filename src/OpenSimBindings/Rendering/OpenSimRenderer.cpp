@@ -1,4 +1,4 @@
-#include "ModelRenderer.hpp"
+#include "OpenSimRenderer.hpp"
 
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Mesh.hpp"
@@ -10,6 +10,7 @@
 #include "src/Maths/Segment.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/OpenSimBindings/Rendering/CustomDecorationOptions.hpp"
+#include "src/OpenSimBindings/Rendering/SimTKRenderer.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/SimTKHelpers.hpp"
 #include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
@@ -344,7 +345,7 @@ namespace
         SimTK::State const& st,
         OpenSim::ModelDisplayHints const& mdh,
         SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-        osc::DecorativeGeometryHandler& handler)
+        osc::SimTKRenderer& handler)
     {
         {
             OSC_PERF("OpenSim::Component::generateDecorations(true, ...)");
@@ -451,7 +452,7 @@ namespace
         std::vector<osc::SceneDecoration>& out,
         OpenSim::ModelDisplayHints const& mdh,
         SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-        osc::DecorativeGeometryHandler& producer)
+        osc::SimTKRenderer& producer)
     {
         // bodies are drawn normally but *also* draw a center-of-mass sphere if they are
         // currently hovered
@@ -684,7 +685,7 @@ namespace
         OpenSim::Component const**,
         OpenSim::ModelDisplayHints const& mdh,
         SimTK::Array_<SimTK::DecorativeGeometry>&,
-        osc::DecorativeGeometryHandler&,
+        osc::SimTKRenderer&,
         std::vector<osc::SceneDecoration>& out)
     {
         osc::SceneDecorationFlags const flags = ComputeFlags(musc, selected, hovered);
@@ -758,7 +759,7 @@ namespace
         OpenSim::Component const** currentComponent,
         OpenSim::ModelDisplayHints const& mdh,
         SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-        osc::DecorativeGeometryHandler& producer,
+        osc::SimTKRenderer& producer,
         std::vector<osc::SceneDecoration>& out)
     {
         // even custom muscle decoration implementations *must* obey the visibility flag on `GeometryPath` (#414)
@@ -909,7 +910,7 @@ namespace
         OpenSim::Component const** currentComponent,
         OpenSim::ModelDisplayHints const& mdh,
         SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-        osc::DecorativeGeometryHandler& producer,
+        osc::SimTKRenderer& producer,
         std::vector<osc::SceneDecoration>&)
     {
         if (frameGeometry.hasOwner())
@@ -969,7 +970,7 @@ namespace
         OpenSimDecorationConsumer consumer{&msp, &out, &currentComponent};
 
         // generates mesh/object instances for each SimTK::DecorativeGeometry it's given
-        osc::DecorativeGeometryHandler producer
+        osc::SimTKRenderer producer
         {
             *meshCache,
             model.getSystem().getMatterSubsystem(),
