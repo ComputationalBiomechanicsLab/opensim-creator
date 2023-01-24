@@ -1274,7 +1274,7 @@ void osc::ImGuiInit()
     }
 
     ImFontConfig baseConfig;
-    baseConfig.SizePixels = 16.0f;
+    baseConfig.SizePixels = 15.0f;
     baseConfig.PixelSnapH = true;
     baseConfig.OversampleH = 2;
     baseConfig.OversampleV = 2;
