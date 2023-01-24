@@ -1,16 +1,16 @@
 #pragma once
 
+#include <filesystem>
 #include <memory>
 #include <string_view>
 
-namespace osc { class Config; }
 namespace osc { class Icon; }
 
 namespace osc
 {
     class IconCache final {
     public:
-        IconCache();
+        explicit IconCache(std::filesystem::path const& iconsDir);
         IconCache(IconCache const&) = delete;
         IconCache(IconCache&&) noexcept;
         IconCache& operator=(IconCache const&) = delete;

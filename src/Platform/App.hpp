@@ -38,13 +38,16 @@ namespace osc
     // systems (windowing, event pumping, timers, graphics, logging, etc.)
     class App {
     public:
-        template<class T>
-        static std::shared_ptr<T> singleton()
+        template<class T, class...Args>
+        static std::shared_ptr<T> singleton(Args&&... args)
         {
-            auto const ctor = []()
+            auto const ctor = [args = std::make_tuple(std::forward<Args>(args)...)]() mutable
             {
-                auto customDeleter = [](T* t) { delete t; };
-                return std::shared_ptr<void>{new T{}, customDeleter};
+                return std::apply([](auto&&... args) -> std::shared_ptr<void>
+                {
+                     auto customDeleter = [](T* t) { delete t; };
+                     return std::shared_ptr<void>{new T{std::forward<Args>(args)...}, customDeleter};
+                }, std::move(args));
             };
 
             return std::static_pointer_cast<T>(App::upd().updSingleton(typeid(T), ctor));

@@ -2,8 +2,6 @@
 
 #include "src/Formats/SVG.hpp"
 #include "src/OpenSimBindings/Rendering/Icon.hpp"
-#include "src/Platform/App.hpp"
-#include "src/Platform/Config.hpp"
 
 #include <imgui.h>
 
@@ -18,12 +16,9 @@
 
 class osc::IconCache::Impl final {
 public:
-    Impl()
+    Impl(std::filesystem::path const& iconsDir)
     {
-        // iterate through the `icons/` resource dir and load each SVG icon
-        Config const& config = osc::App::config();
-
-        std::filesystem::path const iconsDir = config.getResourceDir() / "icons";
+        // iterate through the icons dir and load each SVG file as an icon
         std::filesystem::directory_iterator directoryIterator{iconsDir};
         for (std::filesystem::path const& p : directoryIterator)
         {
@@ -58,8 +53,8 @@ private:
 
 // public API (PIMPL)
 
-osc::IconCache::IconCache() :
-    m_Impl{std::make_unique<Impl>()}
+osc::IconCache::IconCache(std::filesystem::path const& iconsDir) :
+    m_Impl{std::make_unique<Impl>(iconsDir)}
 {
 }
 osc::IconCache::IconCache(IconCache&&) noexcept = default;

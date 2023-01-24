@@ -171,8 +171,7 @@ private:
 
     void drawToggleFramesButton()
     {
-        auto cache = App::singleton<IconCache>();
-        Icon const icon = cache->getIcon(IsShowingFrames(m_Model->getModel()) ? "frame_colored" : "frame_bw");
+        Icon const icon = m_IconCache->getIcon(IsShowingFrames(m_Model->getModel()) ? "frame_colored" : "frame_bw");
         if (osc::ImageButton("##toggleframes", icon.getTexture(), icon.getDimensions()))
         {
             ActionToggleFrames(*m_Model);
@@ -182,8 +181,7 @@ private:
 
     void drawToggleMarkersButton()
     {
-        auto cache = App::singleton<IconCache>();
-        Icon const icon = cache->getIcon(IsShowingMarkers(m_Model->getModel()) ? "marker_colored" : "marker");
+        Icon const icon = m_IconCache->getIcon(IsShowingMarkers(m_Model->getModel()) ? "marker_colored" : "marker");
         if (osc::ImageButton("##togglemarkers", icon.getTexture(), icon.getDimensions()))
         {
             ActionToggleMarkers(*m_Model);
@@ -193,8 +191,7 @@ private:
 
     void drawToggleWrapGeometryButton()
     {
-        auto cache = App::singleton<IconCache>();
-        Icon const icon = cache->getIcon(IsShowingWrapGeometry(m_Model->getModel()) ? "wrap_colored" : "wrap");
+        Icon const icon = m_IconCache->getIcon(IsShowingWrapGeometry(m_Model->getModel()) ? "wrap_colored" : "wrap");
         if (osc::ImageButton("##togglewrapgeom", icon.getTexture(), icon.getDimensions()))
         {
             ActionToggleWrapGeometry(*m_Model);
@@ -204,8 +201,7 @@ private:
 
     void drawToggleContactGeometryButton()
     {
-        auto cache = App::singleton<IconCache>();
-        Icon const icon = cache->getIcon(IsShowingContactGeometry(m_Model->getModel()) ? "contact_colored" : "contact");
+        Icon const icon = m_IconCache->getIcon(IsShowingContactGeometry(m_Model->getModel()) ? "contact_colored" : "contact");
         if (osc::ImageButton("##togglecontactgeom", icon.getTexture(), icon.getDimensions()))
         {
             ActionToggleContactGeometry(*m_Model);
@@ -334,6 +330,8 @@ private:
     MainUIStateAPI* m_MainUIStateAPI;
     EditorAPI* m_EditorAPI;
     std::shared_ptr<osc::UndoableModelStatePair> m_Model;
+
+    std::shared_ptr<IconCache> m_IconCache = osc::App::singleton<osc::IconCache>(osc::App::resource("icons/"));
 };
 
 osc::ModelEditorToolbar::ModelEditorToolbar(

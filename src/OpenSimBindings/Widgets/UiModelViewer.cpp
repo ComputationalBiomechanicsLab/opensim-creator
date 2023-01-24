@@ -287,10 +287,10 @@ namespace
     class IconWithoutMenu final {
     public:
         IconWithoutMenu(
-            osc::CStringView iconID,
+            osc::Icon icon,
             osc::CStringView title,
             osc::CStringView description) :
-            m_IconID{iconID},
+            m_Icon{std::move(icon)},
             m_Title{title},
             m_Description{description}
         {
@@ -298,7 +298,7 @@ namespace
 
         std::string const& getIconID() const
         {
-            return m_IconID;
+            return m_ButtonID;
         }
 
         std::string const& getTitle() const
@@ -308,29 +308,27 @@ namespace
 
         bool draw()
         {
-            auto const cache = osc::App::singleton<osc::IconCache>();
-            osc::Icon const& icon = cache->getIcon(m_IconID);
-            bool rv = osc::ImageButton(m_ButtonID, icon.getTexture(), icon.getDimensions());
+            bool rv = osc::ImageButton(m_ButtonID, m_Icon.getTexture(), m_Icon.getDimensions());
             osc::DrawTooltipIfItemHovered(m_Title, m_Description);
 
             return rv;
         }
 
     private:
-        std::string m_IconID;
-        std::string m_ButtonID = "##" + m_IconID;
+        osc::Icon m_Icon;
         std::string m_Title;
+        std::string m_ButtonID = "##" + m_Title;
         std::string m_Description;
     };
 
     class IconWithMenu final {
     public:
         IconWithMenu(
-            osc::CStringView iconID,
+            osc::Icon icon,
             osc::CStringView title,
             osc::CStringView description,
             std::function<void()> const& contentRenderer) :
-            m_IconWithoutMenu{iconID, title, description},
+            m_IconWithoutMenu{icon, title, description},
             m_ContentRenderer{contentRenderer}
         {
         }
@@ -681,12 +679,11 @@ private:
 
     void drawTopButtonRowOverlay()
     {
-        auto const cache = App::singleton<IconCache>();
         float const iconPadding = 2.0f;
 
         IconWithMenu muscleStylingButton
         {
-            "muscle_coloring",
+            m_IconCache->getIcon("muscle_coloring"),
             "Muscle Styling",
             "Affects how muscles appear in this visualizer panel",
             [this]() { DrawMuscleDecorationOptionsEditor(m_Params.decorationOptions); },
@@ -696,7 +693,7 @@ private:
 
         IconWithMenu vizAidsButton
         {
-            "viz_aids",
+            m_IconCache->getIcon("viz_aids"),
             "Visual Aids",
             "Affects what's shown in the 3D scene",
             [this]() { drawVisualAidsContextMenuContent(); },
@@ -706,7 +703,7 @@ private:
 
         IconWithMenu settingsButton
         {
-            "gear",
+            m_IconCache->getIcon("gear"),
             "Scene Settings",
             "Change advanced scene settings",
             [this]() { DrawAdvancedParamsEditor(m_Params, m_CachedModelRenderer.getDrawlist()); },
@@ -716,7 +713,7 @@ private:
 
         IconWithoutMenu rulerButton
         {
-            "ruler",
+            m_IconCache->getIcon("ruler"),
             "Ruler",
             "Roughly measure something in the scene",
         };
@@ -860,7 +857,7 @@ private:
 
             IconWithoutMenu plusXbutton
             {
-                "plusx",
+                m_IconCache->getIcon("plusx"),
                 "Focus Camera Along +X",
                 "Rotates the camera to focus along the +X direction",
             };
@@ -873,7 +870,7 @@ private:
 
             IconWithoutMenu plusYbutton
             {
-                "plusy",
+                m_IconCache->getIcon("plusy"),
                 "Focus Camera Along +Y",
                 "Rotates the camera to focus along the +Y direction",
             };
@@ -886,7 +883,7 @@ private:
 
             IconWithoutMenu plusZbutton
             {
-                "plusz",
+                m_IconCache->getIcon("plusz"),
                 "Focus Camera Along +Z",
                 "Rotates the camera to focus along the +Z direction",
             };
@@ -900,7 +897,7 @@ private:
 
             IconWithoutMenu zoomInButton
             {
-                "zoomin",
+                m_IconCache->getIcon("zoomin"),
                 "Zoom in Camera",
                 "Moves the camera one step towards its focus point",
             };
@@ -916,7 +913,7 @@ private:
 
             IconWithoutMenu minusXbutton
             {
-                "minusx",
+                m_IconCache->getIcon("minusx"),
                 "Focus Camera Along -X",
                 "Rotates the camera to focus along the -X direction",
             };
@@ -929,7 +926,7 @@ private:
 
             IconWithoutMenu minusYbutton
             {
-                "minusy",
+                m_IconCache->getIcon("minusy"),
                 "Focus Camera Along -Y",
                 "Rotates the camera to focus along the -Y direction",
             };
@@ -942,7 +939,7 @@ private:
 
             IconWithoutMenu minusZbutton
             {
-                "minusz",
+                m_IconCache->getIcon("minusz"),
                 "Focus Camera Along -Z",
                 "Rotates the camera to focus along the -Z direction",
             };
@@ -956,7 +953,7 @@ private:
 
             IconWithoutMenu zoomOutButton
             {
-                "zoomout",
+                m_IconCache->getIcon("zoomout"),
                 "Zoom Out Camera",
                 "Moves the camera one step away from its focus point",
             };
@@ -975,7 +972,7 @@ private:
 
             IconWithoutMenu autoFocusButton
             {
-                "zoomauto",
+                m_IconCache->getIcon("zoomauto"),
                 "Auto-Focus Camera",
                 "Try to automatically adjust the camera's zoom etc. to suit the model's dimensions. Hotkey: Ctrl+F",
             };
@@ -991,6 +988,7 @@ private:
     CachedModelRenderer m_CachedModelRenderer;
 
     // ImGui compositing/hittesting state
+    std::shared_ptr<IconCache> m_IconCache = osc::App::singleton<osc::IconCache>(osc::App::resource("icons/"));
     osc::ImGuiItemHittestResult m_RenderedImageHittest;
 
     // a flag that will auto-focus the main scene camera the next time it's used
