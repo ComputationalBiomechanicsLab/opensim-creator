@@ -38,6 +38,8 @@ All notable changes to this project will be documented here. The format is based
 - Internal: the editor and simulation tabs are now widget-ized, so that new panels can be added more easily (#565)
 - Internal: reorganized panel widgets from `Widgets/` to `Panels/` to (#564)
 - The UI's font size was reduced from 16 px (height) to 15 px (#570)
+- Added 'Lines of Action (effective)' and 'Lines of Action (anatomical)' rendering options to the model viewer
+  (#562) - thanks to @modenaxe for open-sourcing https://github.com/modenaxe/MuscleForceDirection (check it out!)
 
 ## [0.3.2] - 2023/01/09
 
