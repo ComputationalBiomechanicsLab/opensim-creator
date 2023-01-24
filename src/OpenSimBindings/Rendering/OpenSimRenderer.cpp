@@ -10,6 +10,7 @@
 #include "src/Maths/Segment.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/OpenSimBindings/Rendering/CustomDecorationOptions.hpp"
+#include "src/OpenSimBindings/Rendering/SimTKDecorationConsumer.hpp"
 #include "src/OpenSimBindings/Rendering/SimTKRenderer.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/SimTKHelpers.hpp"
@@ -943,9 +944,10 @@ namespace
     }
 
     // a class that is called whenever the SimTK backend emits `DecorativeGeometry`
-    class OpenSimDecorationConsumer final : public osc::DecorationConsumer {
+    class OpenSimDecorationConsumer final : public osc::SimTKDecorationConsumer {
     public:
-        OpenSimDecorationConsumer(osc::VirtualConstModelStatePair const* msp,
+        OpenSimDecorationConsumer(
+            osc::VirtualConstModelStatePair const* msp,
             std::vector<osc::SceneDecoration>* out,
             OpenSim::Component const** currentComponent) :
             m_Msp{std::move(msp)},

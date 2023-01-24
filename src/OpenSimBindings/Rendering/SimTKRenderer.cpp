@@ -5,6 +5,7 @@
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Segment.hpp"
 #include "src/Maths/Triangle.hpp"
+#include "src/OpenSimBindings/Rendering/SimTKDecorationConsumer.hpp"
 #include "src/OpenSimBindings/Rendering/SimTKMeshLoader.hpp"
 #include "src/OpenSimBindings/SimTKHelpers.hpp"
 #include "src/Platform/Log.hpp"
@@ -79,7 +80,7 @@ public:
         SimTK::SimbodyMatterSubsystem const& matter,
         SimTK::State const& st,
         float fixupScaleFactor,
-        DecorationConsumer& decorationConsumer) :
+        SimTKDecorationConsumer& decorationConsumer) :
 
         m_MeshCache{meshCache},
         m_Matter{matter},
@@ -297,7 +298,7 @@ private:
     SimTK::SimbodyMatterSubsystem const& m_Matter;
     SimTK::State const& m_St;
     float m_FixupScaleFactor;
-    DecorationConsumer& m_Consumer;
+    SimTKDecorationConsumer& m_Consumer;
 };
 
 // osc::DecorativeGeometryHandler
@@ -307,7 +308,7 @@ osc::SimTKRenderer::SimTKRenderer(
     SimTK::SimbodyMatterSubsystem const& matter,
     SimTK::State const& state,
     float fixupScaleFactor,
-    DecorationConsumer& decorationConsumer) :
+    SimTKDecorationConsumer& decorationConsumer) :
 
     m_Impl{std::make_unique<Impl>(
         meshCache,
