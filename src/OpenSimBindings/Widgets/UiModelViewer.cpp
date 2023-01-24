@@ -228,49 +228,55 @@ namespace
                 {
                     OSC_PERF("generate decorations");
                     m_Decorations.clear();
+
                     osc::GenerateModelDecorations(
                         *osc::App::singleton<osc::MeshCache>(),
                         msp,
-                        m_Decorations,
-                        decorationOptions
+                        decorationOptions,
+                        [this](OpenSim::Component const&, osc::SceneDecoration&& dec) { m_Decorations.push_back(std::move(dec)); }
                     );
                 }
 
                 // create a BVH from the not-overlay parts of the scene
                 osc::UpdateSceneBVH(m_Decorations, m_BVH);
 
+                auto pushToDecorationsList = [this](osc::SceneDecoration&& dec)
+                {
+                    m_Decorations.push_back(std::move(dec));
+                };
+
                 // generate screen-specific overlays
                 if (renderingOptions.getDrawAABBs())
                 {
                     for (size_t i = 0, len = m_Decorations.size(); i < len; ++i)
                     {
-                        DrawAABB(*osc::App::singleton<osc::MeshCache>(), GetWorldspaceAABB(m_Decorations[i]), m_Decorations);
+                        DrawAABB(*osc::App::singleton<osc::MeshCache>(), GetWorldspaceAABB(m_Decorations[i]), pushToDecorationsList);
                     }
                 }
 
                 if (renderingOptions.getDrawBVH())
                 {
-                    DrawBVH(*osc::App::singleton<osc::MeshCache>(), m_BVH, m_Decorations);
+                    DrawBVH(*osc::App::singleton<osc::MeshCache>(), m_BVH, pushToDecorationsList);
                 }
 
                 if (renderingOptions.getDrawXZGrid())
                 {
-                    DrawXZGrid(*osc::App::singleton<osc::MeshCache>(), m_Decorations);
+                    DrawXZGrid(*osc::App::singleton<osc::MeshCache>(), pushToDecorationsList);
                 }
 
                 if (renderingOptions.getDrawXYGrid())
                 {
-                    DrawXYGrid(*osc::App::singleton<osc::MeshCache>(), m_Decorations);
+                    DrawXYGrid(*osc::App::singleton<osc::MeshCache>(), pushToDecorationsList);
                 }
 
                 if (renderingOptions.getDrawYZGrid())
                 {
-                    DrawYZGrid(*osc::App::singleton<osc::MeshCache>(), m_Decorations);
+                    DrawYZGrid(*osc::App::singleton<osc::MeshCache>(), pushToDecorationsList);
                 }
 
                 if (renderingOptions.getDrawAxisLines())
                 {
-                    DrawXZFloorLines(*osc::App::singleton<osc::MeshCache>(), m_Decorations);
+                    DrawXZFloorLines(*osc::App::singleton<osc::MeshCache>(), pushToDecorationsList);
                 }
             }
         }
@@ -574,6 +580,8 @@ public:
 
     osc::UiModelViewerResponse draw(VirtualConstModelStatePair const& rs)
     {
+        OSC_PERF("UiModelViewer/draw");
+
         UiModelViewerResponse rv;
 
         handleUserInput();
@@ -599,23 +607,30 @@ public:
         }
 
         // render into texture
-        m_CachedModelRenderer.draw(rs, m_Params, ImGui::GetContentRegionAvail());
+        {
+            OSC_PERF("UiModelViewer/draw/render");
+            m_CachedModelRenderer.draw(rs, m_Params, ImGui::GetContentRegionAvail());
+        }
 
         // blit texture as an ImGui::Image
         osc::DrawTextureAsImGuiImage(m_CachedModelRenderer.updRenderTexture(), ImGui::GetContentRegionAvail());
         m_RenderedImageHittest = osc::HittestLastImguiItem();
 
         // draw any ImGui-based overlays over the image
-        drawImGuiOverlays();
-
-        if (m_Ruler.isMeasuring())
         {
-            std::optional<GuiRulerMouseHit> maybeHit;
-            if (htResult.first)
+            OSC_PERF("UiModelViewer/draw/overlays");
+
+            drawImGuiOverlays();
+
+            if (m_Ruler.isMeasuring())
             {
-                maybeHit.emplace(htResult.first->getName(), htResult.second);
+                std::optional<GuiRulerMouseHit> maybeHit;
+                if (htResult.first)
+                {
+                    maybeHit.emplace(htResult.first->getName(), htResult.second);
+                }
+                m_Ruler.draw(m_Params.camera, m_RenderedImageHittest.rect, maybeHit);
             }
-            m_Ruler.draw(m_Params.camera, m_RenderedImageHittest.rect, maybeHit);
         }
 
         ImGui::EndChild();

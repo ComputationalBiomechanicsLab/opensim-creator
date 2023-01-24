@@ -23,6 +23,7 @@
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/CStringView.hpp"
+#include "src/Utils/Perf.hpp"
 #include "src/Utils/UID.hpp"
 #include "src/Widgets/SaveChangesPopup.hpp"
 #include "src/Widgets/SaveChangesPopupConfig.hpp"
@@ -231,11 +232,19 @@ public:
 
     void onDraw()
     {
-        App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
+        OSC_PERF("MainUIScreen/draw");
+
+        {
+            OSC_PERF("MainUIScreen/clearScreen");
+            App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
+        }
 
         osc::ImGuiNewFrame();
 
-        drawUIContent();
+        {
+            OSC_PERF("MainUIScreen/drawUIContent");
+            drawUIContent();
+        }
 
         if (m_ImguiWasAggressivelyReset)
         {
@@ -253,7 +262,10 @@ public:
             return;
         }
 
-        osc::ImGuiRender();
+        {
+            OSC_PERF("MainUIScreen/ImGuiRender");
+            osc::ImGuiRender();
+        }
 
         if (m_ShouldRequestRedraw)
         {
@@ -326,6 +338,8 @@ public:
 private:
     void drawTabSpecificMenu()
     {
+        OSC_PERF("MainUIScreen/drawTabSpecificMenu");
+
         if (osc::BeginMainViewportTopBar("##TabSpecificMenuBar"))
         {
             if (ImGui::BeginMenuBar())
@@ -362,6 +376,8 @@ private:
 
     void drawTabBar()
     {
+        OSC_PERF("MainUIScreen/drawTabBar");
+
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ ImGui::GetStyle().FramePadding.x + 2.0f, ImGui::GetStyle().FramePadding.y + 2.0f });
         ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2{ 5.0f, 0.0f });
         ImGui::PushStyleVar(ImGuiStyleVar_TabRounding, 10.0f);
@@ -475,6 +491,7 @@ private:
         {
             try
             {
+                OSC_PERF("MainUIScreen/drawActiveTab");
                 active->onDraw();
             }
             catch (std::exception const& ex)

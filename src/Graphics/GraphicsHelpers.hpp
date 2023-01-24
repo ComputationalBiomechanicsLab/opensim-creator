@@ -13,6 +13,7 @@
 #include <nonstd/span.hpp>
 
 #include <filesystem>
+#include <functional>
 #include <optional>
 #include <vector>
 
@@ -34,40 +35,40 @@ namespace osc
     void DrawBVH(
         MeshCache&,
         BVH const&,
-        std::vector<SceneDecoration>&
+        std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawAABB(
         MeshCache&,
         AABB const&,
-        std::vector<SceneDecoration>&
+        std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawAABBs(
         MeshCache&,
         nonstd::span<AABB const>,
-        std::vector<SceneDecoration>&
+        std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawXZFloorLines(
         MeshCache&,
-        std::vector<SceneDecoration>&,
+        std::function<void(SceneDecoration&&)> const&,
         float scale = 1.0f
     );
 
     void DrawXZGrid(
         MeshCache&,
-        std::vector<SceneDecoration>&
+        std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawXYGrid(
         MeshCache&,
-        std::vector<SceneDecoration>&
+        std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawYZGrid(
         MeshCache&,
-        std::vector<SceneDecoration>&
+        std::function<void(SceneDecoration&&)> const&
     );
 
     struct ArrowProperties final {
@@ -83,7 +84,7 @@ namespace osc
     void DrawArrow(
         MeshCache&,
         ArrowProperties const&,
-        std::vector<SceneDecoration>&
+        std::function<void(SceneDecoration&&)> const&
     );
 
     void DrawLineSegment(
@@ -91,7 +92,7 @@ namespace osc
         Segment const&,
         glm::vec4 const& color,
         float radius,
-        std::vector<SceneDecoration>&
+        std::function<void(SceneDecoration&&)> const&
     );
 
     // updates the given BVH with the given component decorations

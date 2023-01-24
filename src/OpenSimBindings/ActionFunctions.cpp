@@ -2,6 +2,7 @@
 
 #include "src/Graphics/MeshCache.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "src/OpenSimBindings/Rendering/CustomDecorationOptions.hpp"
 #include "src/OpenSimBindings/Rendering/OpenSimRenderer.hpp"
 #include "src/OpenSimBindings/Tabs/ModelEditorTab.hpp"
 #include "src/OpenSimBindings/Tabs/LoadingTab.hpp"
@@ -428,7 +429,8 @@ bool osc::ActionAutoscaleSceneScaleFactor(UndoableModelStatePair& uim)
 {
     float const sf = osc::GetRecommendedScaleFactor(
         *osc::App::singleton<osc::MeshCache>(),
-        uim
+        uim,
+        CustomDecorationOptions{}
     );
     uim.setFixupScaleFactor(sf);
     return true;

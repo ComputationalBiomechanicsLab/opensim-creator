@@ -163,12 +163,14 @@ public:
             // draw BVH AABBs
             m_Material.setVec4("uColor", {0.0f, 0.0f, 0.0f, 1.0f});
             m_Material.setDepthTested(true);
-            std::vector<osc::SceneDecoration> decs;
-            osc::DrawBVH(*App::singleton<MeshCache>(), m_Mesh.getBVH(), decs);
-            for (osc::SceneDecoration const& dec : decs)
-            {
-                osc::Graphics::DrawMesh(m_CubeLinesMesh, dec.transform, m_Material, m_Camera);
-            }
+            osc::DrawBVH(
+                *App::singleton<MeshCache>(),
+                m_Mesh.getBVH(),
+                [this](osc::SceneDecoration&& dec)
+                {
+                    osc::Graphics::DrawMesh(m_CubeLinesMesh, dec.transform, m_Material, m_Camera);
+                }
+            );
         }
 
         // draw scene onto viewport

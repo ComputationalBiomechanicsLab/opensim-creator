@@ -28,7 +28,7 @@ namespace
         osc::Mesh const& mesh,
         osc::BVH const& bvh,
         ptrdiff_t pos,
-        std::vector<osc::SceneDecoration>& out)
+        std::function<void(osc::SceneDecoration&&)> const& out)
     {
         osc::BVHNode const& n = bvh.nodes[pos];
 
@@ -38,7 +38,7 @@ namespace
 
         glm::vec4 const color = {0.0f, 0.0f, 0.0f, 1.0f};
 
-        out.emplace_back(mesh, t, color);
+        out(osc::SceneDecoration{mesh, t, color});
 
         if (n.isNode())
         {
@@ -51,7 +51,7 @@ namespace
     void DrawGrid(
         osc::MeshCache& cache,
         glm::quat const& rotation,
-        std::vector<osc::SceneDecoration>& out)
+        std::function<void(osc::SceneDecoration&&)> const& out)
     {
         osc::Mesh const grid = cache.get100x100GridMesh();
 
@@ -61,14 +61,14 @@ namespace
 
         glm::vec4 const color = {0.7f, 0.7f, 0.7f, 0.15f};
 
-        out.emplace_back(grid, t, color);
+        out(osc::SceneDecoration{grid, t, color});
     }
 }
 
 void osc::DrawBVH(
     MeshCache& cache,
     BVH const& sceneBVH,
-    std::vector<SceneDecoration>& out)
+    std::function<void(osc::SceneDecoration&&)> const& out)
 {
     if (sceneBVH.nodes.empty())
     {
@@ -79,7 +79,10 @@ void osc::DrawBVH(
     DrawBVHRecursive(cube, sceneBVH, 0, out);
 }
 
-void osc::DrawAABB(MeshCache& cache, AABB const& aabb, std::vector<SceneDecoration>& out)
+void osc::DrawAABB(
+    MeshCache& cache,
+    AABB const& aabb,
+    std::function<void(osc::SceneDecoration&&)> const& out)
 {
     Mesh const cube = cache.getCubeWireMesh();
     glm::vec4 const color = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -88,10 +91,13 @@ void osc::DrawAABB(MeshCache& cache, AABB const& aabb, std::vector<SceneDecorati
     t.scale = 0.5f * Dimensions(aabb);
     t.position = Midpoint(aabb);
 
-    out.emplace_back(cube, t, color);
+    out(osc::SceneDecoration{cube, t, color});
 }
 
-void osc::DrawAABBs(MeshCache& cache, nonstd::span<AABB const> aabbs, std::vector<SceneDecoration>& out)
+void osc::DrawAABBs(
+    MeshCache& cache,
+    nonstd::span<AABB const> aabbs,
+    std::function<void(osc::SceneDecoration&&)> const& out)
 {
     Mesh const cube = cache.getCubeWireMesh();
     glm::vec4 const color = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -102,11 +108,14 @@ void osc::DrawAABBs(MeshCache& cache, nonstd::span<AABB const> aabbs, std::vecto
         t.scale = 0.5f * Dimensions(aabb);
         t.position = Midpoint(aabb);
 
-        out.emplace_back(cube, t, color);
+        out(osc::SceneDecoration{cube, t, color});
     }
 }
 
-void osc::DrawXZFloorLines(MeshCache& cache, std::vector<SceneDecoration>& out, float scale)
+void osc::DrawXZFloorLines(
+    MeshCache& cache,
+    std::function<void(osc::SceneDecoration&&)> const& out,
+    float scale)
 {
     Mesh const yLine = cache.getYLineMesh();
 
@@ -118,7 +127,7 @@ void osc::DrawXZFloorLines(MeshCache& cache, std::vector<SceneDecoration>& out, 
         t.scale *= scale;
         t.rotation = glm::angleAxis(fpi2, glm::vec3{0.0f, 0.0f, 1.0f});
 
-        out.emplace_back(yLine, t, color);
+        out(osc::SceneDecoration{yLine, t, color});
     }
 
     // Z line
@@ -129,23 +138,29 @@ void osc::DrawXZFloorLines(MeshCache& cache, std::vector<SceneDecoration>& out, 
         t.scale *= scale;
         t.rotation = glm::angleAxis(fpi2, glm::vec3{1.0f, 0.0f, 0.0f});
 
-        out.emplace_back(yLine, t, color);
+        out(osc::SceneDecoration{yLine, t, color});
     }
 }
 
-void osc::DrawXZGrid(MeshCache& cache, std::vector<SceneDecoration>& out)
+void osc::DrawXZGrid(
+    MeshCache& cache,
+    std::function<void(osc::SceneDecoration&&)> const& out)
 {
     glm::quat const rotation = glm::angleAxis(fpi2, glm::vec3{1.0f, 0.0f, 0.0f});
     DrawGrid(cache, rotation, out);
 }
 
-void osc::DrawXYGrid(MeshCache& cache, std::vector<SceneDecoration>& out)
+void osc::DrawXYGrid(
+    MeshCache& cache,
+    std::function<void(osc::SceneDecoration&&)> const& out)
 {
     glm::quat const rotation = glm::identity<glm::quat>();
     DrawGrid(cache, rotation, out);
 }
 
-void osc::DrawYZGrid(MeshCache& cache, std::vector<SceneDecoration>& out)
+void osc::DrawYZGrid(
+    MeshCache& cache,
+    std::function<void(osc::SceneDecoration&&)> const& out)
 {
     glm::quat rotation = glm::angleAxis(fpi2, glm::vec3{0.0f, 1.0f, 0.0f});
     DrawGrid(cache, rotation, out);
@@ -161,7 +176,10 @@ osc::ArrowProperties::ArrowProperties() :
 {
 }
 
-void osc::DrawArrow(MeshCache& cache, ArrowProperties const& props, std::vector<SceneDecoration>& out)
+void osc::DrawArrow(
+    MeshCache& cache,
+    ArrowProperties const& props,
+    std::function<void(osc::SceneDecoration&&)> const& out)
 {
     glm::vec3 startToEnd = props.worldspaceEnd - props.worldspaceStart;
     float const len = glm::length(startToEnd);
@@ -174,17 +192,22 @@ void osc::DrawArrow(MeshCache& cache, ArrowProperties const& props, std::vector<
 
     // emit neck cylinder
     Transform const neckXform = SimbodyCylinderToSegmentTransform({neckStart, neckEnd}, props.neckThickness);
-    out.emplace_back(cache.getCylinderMesh(), neckXform, props.color);
+    out(osc::SceneDecoration{cache.getCylinderMesh(), neckXform, props.color});
 
     // emit head cone
     Transform const headXform = SimbodyCylinderToSegmentTransform({headStart, headEnd}, props.headThickness);
-    out.emplace_back(cache.getConeMesh(), headXform, props.color);
+    out(osc::SceneDecoration{cache.getConeMesh(), headXform, props.color});
 }
 
-void osc::DrawLineSegment(MeshCache& cache, Segment const& segment, glm::vec4 const& color, float radius, std::vector<SceneDecoration>& out)
+void osc::DrawLineSegment(
+    MeshCache& cache,
+    Segment const& segment,
+    glm::vec4 const& color,
+    float radius,
+    std::function<void(osc::SceneDecoration&&)> const& out)
 {
     Transform const cylinderXform = SimbodyCylinderToSegmentTransform(segment, radius);
-    out.emplace_back(cache.getCylinderMesh(), cylinderXform, color);
+    out(osc::SceneDecoration{cache.getCylinderMesh(), cylinderXform, color});
 }
 
 void osc::UpdateSceneBVH(nonstd::span<SceneDecoration const> sceneEls, BVH& bvh)

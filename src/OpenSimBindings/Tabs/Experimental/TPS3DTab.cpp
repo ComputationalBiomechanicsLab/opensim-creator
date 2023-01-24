@@ -774,22 +774,22 @@ namespace
         TPSTabSharedState const& sharedState,
         osc::Mesh const& tpsSourceOrDestinationMesh,
         bool wireframeMode,
-        std::vector<osc::SceneDecoration>& out,
+        std::function<void(osc::SceneDecoration&&)> const& out,
         glm::vec4 meshColor = {1.0f, 1.0f, 1.0f, 1.0f})
     {
-        out.reserve(out.size() + 5);  // likely guess
-
         // draw the mesh
         {
-            auto& decoration = out.emplace_back(tpsSourceOrDestinationMesh);
-            decoration.color = meshColor;
+            osc::SceneDecoration dec{tpsSourceOrDestinationMesh};
+            dec.color = meshColor;
+            out(std::move(dec));
         }
 
         // if requested, also draw wireframe overlays for the mesh
         if (wireframeMode)
         {
-            osc::SceneDecoration& dec = out.emplace_back(tpsSourceOrDestinationMesh);
+            osc::SceneDecoration dec{tpsSourceOrDestinationMesh};
             dec.maybeMaterial = sharedState.WireframeMaterial;
+            out(std::move(dec));
         }
 
         // add grid decorations
@@ -1272,13 +1272,14 @@ namespace
             std::optional<IDedLocation> const& maybeHoveredLandmark) const
         {
             std::vector<osc::SceneDecoration> rv;
+            auto appendToRv = [&rv](osc::SceneDecoration&& dec) { rv.push_back(std::move(dec)); };
 
             // append common decorations (the mesh, grid, etc.)
             AppendCommonDecorations(
                 *m_State,
                 GetScratchMesh(*m_State, TPSDocumentInputIdentifier::Source),
                 m_WireframeMode,
-                rv,
+                appendToRv,
                 glm::vec4{1.0f, 1.0f, 1.0f, 0.25f}
             );
 
@@ -1333,7 +1334,7 @@ namespace
                     {
                         props.color = {1.0f, 1.0f, 1.0f, 0.25f};
                     }
-                    osc::DrawArrow(*osc::App::singleton<osc::MeshCache>(), props, rv);
+                    osc::DrawArrow(*osc::App::singleton<osc::MeshCache>(), props, appendToRv);
                 }
                 else
                 {
@@ -1388,7 +1389,7 @@ namespace
                 props.color = {0.0f, 0.0f, 0.0f, 1.0f};
                 props.color[m_EdgeIndexToAxisIndex[0]] = 1.0f;
 
-                osc::DrawArrow(*osc::App::singleton<osc::MeshCache>(), props, rv);
+                osc::DrawArrow(*osc::App::singleton<osc::MeshCache>(), props, appendToRv);
             }
 
             // draw second landmark
@@ -1418,7 +1419,7 @@ namespace
                 props.neckThickness = 0.25f*m_LandmarkRadius;
                 props.headThickness = 0.5f*m_LandmarkRadius;
                 props.color = {1.0f, 1.0f, 1.0f, 0.75f};
-                osc::DrawArrow(*osc::App::singleton<osc::MeshCache>(), props, rv);
+                osc::DrawArrow(*osc::App::singleton<osc::MeshCache>(), props, appendToRv);
             }
 
             // if applicable, draw completed frame
@@ -1462,7 +1463,7 @@ namespace
                         {origin, origin + legLen*axes[i]},
                         color,
                         legThickness,
-                        rv
+                        appendToRv
                     );
                 }
             }
@@ -1976,7 +1977,12 @@ namespace
             std::vector<osc::SceneDecoration> decorations;
             decorations.reserve(6 + CountNumLandmarksForInput(GetScratch(*m_State), m_DocumentIdentifier));  // likely guess
 
-            AppendCommonDecorations(*m_State, GetScratchMesh(*m_State, m_DocumentIdentifier), m_WireframeMode, decorations);
+            AppendCommonDecorations(
+                *m_State,
+                GetScratchMesh(*m_State, m_DocumentIdentifier),
+                m_WireframeMode,
+                [&decorations](osc::SceneDecoration&& dec) { decorations.push_back(std::move(dec)); }
+            );
 
             // append each landmark as a sphere
             for (TPSDocumentLandmarkPair const& p : GetScratch(*m_State).landmarkPairs)
@@ -2215,9 +2221,13 @@ namespace
         std::vector<osc::SceneDecoration> generateDecorations() const
         {
             std::vector<osc::SceneDecoration> decorations;
-            decorations.reserve(5);  // likely guess
 
-            AppendCommonDecorations(*m_State, GetResultMesh(*m_State), m_WireframeMode, decorations);
+            AppendCommonDecorations(
+                *m_State,
+                GetResultMesh(*m_State),
+                m_WireframeMode,
+                [&decorations](osc::SceneDecoration&& dec) { decorations.push_back(std::move(dec)); }
+            );
 
             if (m_ShowDestinationMesh)
             {

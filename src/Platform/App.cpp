@@ -13,6 +13,7 @@
 #include "src/Screens/Screen.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
+#include "src/Utils/Perf.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 
@@ -741,39 +742,43 @@ private:
         while (true)  // gameloop
         {
             // pump events
-            bool shouldWait = m_InWaitMode && m_NumFramesToPoll <= 0;
-            m_NumFramesToPoll = std::max(0, m_NumFramesToPoll - 1);
-
-            for (SDL_Event e; shouldWait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);)
             {
-                shouldWait = false;
+                OSC_PERF("App/pumpEvents");
 
-                if (e.type == SDL_WINDOWEVENT)
+                bool shouldWait = m_InWaitMode && m_NumFramesToPoll <= 0;
+                m_NumFramesToPoll = std::max(0, m_NumFramesToPoll - 1);
+
+                for (SDL_Event e; shouldWait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);)
                 {
-                    // window was resized and should be drawn a couple of times quickly
-                    // to ensure any datastructures in the screens (namely: imgui) are
-                    // updated
-                    m_NumFramesToPoll = 2;
-                }
+                    shouldWait = false;
 
-                // let screen handle the event
-                m_CurrentScreen->onEvent(e);
+                    if (e.type == SDL_WINDOWEVENT)
+                    {
+                        // window was resized and should be drawn a couple of times quickly
+                        // to ensure any datastructures in the screens (namely: imgui) are
+                        // updated
+                        m_NumFramesToPoll = 2;
+                    }
 
-                if (m_QuitRequested)
-                {
-                    // screen requested application quit, so exit this function
-                    return;
-                }
+                    // let screen handle the event
+                    m_CurrentScreen->onEvent(e);
 
-                if (m_NextScreen)
-                {
-                    // screen requested a new screen, so perform the transition
-                    transitionToNextScreen();
-                }
+                    if (m_QuitRequested)
+                    {
+                        // screen requested application quit, so exit this function
+                        return;
+                    }
 
-                if (e.type == SDL_DROPTEXT || e.type == SDL_DROPFILE)
-                {
-                    SDL_free(e.drop.file);  // SDL documentation mandates that the caller frees this
+                    if (m_NextScreen)
+                    {
+                        // screen requested a new screen, so perform the transition
+                        transitionToNextScreen();
+                    }
+
+                    if (e.type == SDL_DROPTEXT || e.type == SDL_DROPFILE)
+                    {
+                        SDL_free(e.drop.file);  // SDL documentation mandates that the caller frees this
+                    }
                 }
             }
 
@@ -789,7 +794,10 @@ private:
             }
 
             // "tick" the screen
-            m_CurrentScreen->onTick();
+            {
+                OSC_PERF("App/onTick");
+                m_CurrentScreen->onTick();
+            }
 
             if (m_QuitRequested)
             {
@@ -805,10 +813,16 @@ private:
             }
 
             // "draw" the screen into the window framebuffer
-            m_CurrentScreen->onDraw();
+            {
+                OSC_PERF("App/onDraw");
+                m_CurrentScreen->onDraw();
+            }
 
             // "present" the rendered screen to the user (can block on VSYNC)
-            m_GraphicsContext.doSwapBuffers(*m_MainWindow);
+            {
+                OSC_PERF("App/doSwapBuffers");
+                m_GraphicsContext.doSwapBuffers(*m_MainWindow);
+            }
 
             // handle annotated screenshot requests (if any)
             {
@@ -1342,8 +1356,15 @@ void osc::ImGuiRender()
     // bound program can sometimes cause issues
     App::upd().m_Impl->updGraphicsContext().clearProgram();
 
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    {
+        OSC_PERF("ImGuiRender/Render");
+        ImGui::Render();
+    }
+
+    {
+        OSC_PERF("ImGuiRender/ImGui_ImplOpenGL3_RenderDrawData");
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
 
     // ImGui: handle multi-viewports if the user has requested them
     if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
