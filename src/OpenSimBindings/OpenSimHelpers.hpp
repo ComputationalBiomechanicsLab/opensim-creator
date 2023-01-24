@@ -21,9 +21,6 @@ namespace OpenSim { class Geometry; }
 namespace OpenSim { class Joint; }
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
-namespace osc { class SceneDecoration; }
-namespace osc { class CustomDecorationOptions; }
-namespace osc { class VirtualConstModelStatePair; }
 namespace osc { class UndoableModelStatePair; }
 namespace SimTK { class State; }
 
@@ -31,28 +28,40 @@ namespace SimTK { class State; }
 namespace osc
 {
     // returns true if the first argument has a lexographically lower class name
-    bool IsConcreteClassNameLexographicallyLowerThan(OpenSim::Component const&, OpenSim::Component const&);
+    bool IsConcreteClassNameLexographicallyLowerThan(
+        OpenSim::Component const&,
+        OpenSim::Component const&
+    );
 
     // returns true if the first argument points to a component that has a lexographically lower class
     // name than the component pointed to by second argument
     //
     // (it's a helper method that's handy for use with pointers, unique_ptr, shared_ptr, etc.)
     template<typename ComponentPtrLike>
-    bool IsConcreteClassNameLexographicallyLowerThan(ComponentPtrLike const& a, ComponentPtrLike const& b)
+    bool IsConcreteClassNameLexographicallyLowerThan(
+        ComponentPtrLike const& a,
+        ComponentPtrLike const& b)
     {
         return IsConcreteClassNameLexographicallyLowerThan(*a, *b);
     }
 
-    bool IsNameLexographicallyLowerThan(OpenSim::Component const&, OpenSim::Component const&);
+    bool IsNameLexographicallyLowerThan(
+        OpenSim::Component const&,
+        OpenSim::Component const&
+    );
 
     template<typename ComponentPtrLike>
-    bool IsNameLexographicallyLowerThan(ComponentPtrLike const& a, ComponentPtrLike const& b)
+    bool IsNameLexographicallyLowerThan(
+        ComponentPtrLike const& a,
+        ComponentPtrLike const& b)
     {
         return IsNameLexographicallyLowerThan(*a, *b);
     }
 
     template<typename ComponentPtrLike>
-    bool IsNameLexographicallyGreaterThan(ComponentPtrLike const& a, ComponentPtrLike const& b)
+    bool IsNameLexographicallyGreaterThan(
+        ComponentPtrLike const& a,
+        ComponentPtrLike const& b)
     {
         return !IsNameLexographicallyLowerThan<ComponentPtrLike>(a, b);
     }
@@ -88,12 +97,18 @@ namespace osc
     std::vector<OpenSim::Component const*> GetPathElements(OpenSim::Component const&);
 
     // returns `true` if `c == parent` or `c` is a descendent of `parent`
-    bool IsInclusiveChildOf(OpenSim::Component const* parent, OpenSim::Component const* c);
+    bool IsInclusiveChildOf(
+        OpenSim::Component const* parent,
+        OpenSim::Component const* c
+    );
 
     // returns the first parent in `parents` that appears to be an inclusive parent of `c`
     //
     // returns `nullptr` if no element in `parents` is an inclusive parent of `c`
-    OpenSim::Component const* IsInclusiveChildOf(nonstd::span<OpenSim::Component const*> parents, OpenSim::Component const* c);
+    OpenSim::Component const* IsInclusiveChildOf(
+        nonstd::span<OpenSim::Component const*> parents,
+        OpenSim::Component const* c
+    );
 
     // returns the first ancestor of `c` for which the given predicate returns `true`
     OpenSim::Component const* FindFirstAncestorInclusive(OpenSim::Component const*, bool(*pred)(OpenSim::Component const*));
@@ -120,7 +135,10 @@ namespace osc
     std::vector<OpenSim::Coordinate const*> GetCoordinatesInModel(OpenSim::Model const&);
 
     // fills the given vector with all user-editable coordinates in the model
-    void GetCoordinatesInModel(OpenSim::Model const&, std::vector<OpenSim::Coordinate const*>&);
+    void GetCoordinatesInModel(
+        OpenSim::Model const&,
+        std::vector<OpenSim::Coordinate const*>&
+    );
 
     // returns the user-facing display value (i.e. degrees) for a coordinate
     float ConvertCoordValueToDisplayValue(OpenSim::Coordinate const&, double v);
@@ -138,7 +156,10 @@ namespace osc
     std::vector<OpenSim::AbstractSocket const*> GetAllSockets(OpenSim::Component const&);
 
     // returns a pointer if the given path resolves a component relative to root
-    OpenSim::Component const* FindComponent(OpenSim::Component const& root, OpenSim::ComponentPath const&);
+    OpenSim::Component const* FindComponent(
+        OpenSim::Component const& root,
+        OpenSim::ComponentPath const&
+    );
 
     // return non-nullptr if the given path resolves a component of type T relative to root
     template<typename T>
@@ -148,35 +169,62 @@ namespace osc
     }
 
     // returns a mutable pointer if the given path resolves a component relative to root
-    OpenSim::Component* FindComponentMut(OpenSim::Component& root, OpenSim::ComponentPath const&);
+    OpenSim::Component* FindComponentMut(
+        OpenSim::Component& root,
+        OpenSim::ComponentPath const&
+    );
 
     // returns non-nullptr if the given path resolves a component of type T relative to root
     template<typename T>
-    T* FindComponentMut(OpenSim::Component& root, OpenSim::ComponentPath const& cp)
+    T* FindComponentMut(
+        OpenSim::Component& root,
+        OpenSim::ComponentPath const& cp)
     {
         return dynamic_cast<T*>(FindComponentMut(root, cp));
     }
 
     // returns true if the path resolves to a component within root
-    bool ContainsComponent(OpenSim::Component const& root, OpenSim::ComponentPath const&);
+    bool ContainsComponent(
+        OpenSim::Component const& root,
+        OpenSim::ComponentPath const&
+    );
 
     // returns non-nullptr if a socket with the given name is found within the given component
-    OpenSim::AbstractSocket const* FindSocket(OpenSim::Component const&, std::string const& socketName);
+    OpenSim::AbstractSocket const* FindSocket(
+        OpenSim::Component const&,
+        std::string const& socketName
+    );
 
     // returns non-nullptr if a socket with the given name is found within the given component
-    OpenSim::AbstractSocket* FindSocketMut(OpenSim::Component&, std::string const& socketName);
+    OpenSim::AbstractSocket* FindSocketMut(
+        OpenSim::Component&,
+        std::string const& socketName
+    );
 
     // returns true if the socket is able to connect to the component
-    bool IsAbleToConnectTo(OpenSim::AbstractSocket const&, OpenSim::Component const&);
+    bool IsAbleToConnectTo(
+        OpenSim::AbstractSocket const&,
+        OpenSim::Component const&
+    );
 
     // returns a pointer to the property if the component has a property with the given name
-    OpenSim::AbstractProperty* FindPropertyMut(OpenSim::Component&, std::string const&);
+    OpenSim::AbstractProperty* FindPropertyMut(
+        OpenSim::Component&,
+        std::string const&
+    );
 
     // returns non-nullptr if an `AbstractOutput` with the given name is attached to the given component
-    OpenSim::AbstractOutput const* FindOutput(OpenSim::Component const&, std::string const& outputName);
+    OpenSim::AbstractOutput const* FindOutput(
+        OpenSim::Component const&,
+        std::string const& outputName
+    );
 
     // returns non-nullptr if an `AbstractOutput` with the given name is attached to a component located at the given path relative to the root
-    OpenSim::AbstractOutput const* FindOutput(OpenSim::Component const& root, OpenSim::ComponentPath const&, std::string const& outputName);
+    OpenSim::AbstractOutput const* FindOutput(
+        OpenSim::Component const& root,
+        OpenSim::ComponentPath const&,
+        std::string const& outputName
+    );
 
     // returns true if the given model has an input file name (not empty, or "Unassigned")
     bool HasInputFileName(OpenSim::Model const&);
@@ -187,7 +235,10 @@ namespace osc
     std::filesystem::path TryFindInputFile(OpenSim::Model const&);
 
     // returns the absolute path to the given mesh component, if found (otherwise, std::nullptr)
-    std::optional<std::filesystem::path> FindGeometryFileAbsPath(OpenSim::Model const&, OpenSim::Mesh const&);
+    std::optional<std::filesystem::path> FindGeometryFileAbsPath(
+        OpenSim::Model const&,
+        OpenSim::Mesh const&
+    );
 
     // returns `true` if the component should be shown in the UI
     //
@@ -199,10 +250,6 @@ namespace osc
     //
     // returns `true` if the implementation was able to delete the component; otherwise, `false`
     bool TryDeleteComponentFromModel(OpenSim::Model&, OpenSim::Component&);
-
-    // generates decorations for a model + state
-    void GenerateModelDecorations(VirtualConstModelStatePair const&, std::vector<SceneDecoration>&, CustomDecorationOptions const&);
-    void GenerateModelDecorations(VirtualConstModelStatePair const&, std::vector<SceneDecoration>&);  // default decoration options
 
     // copy common joint properties from a `src` to `dest`
     //
@@ -221,9 +268,6 @@ namespace osc
 
     // adds a component to an appropriate (if possible - e.g. jointset) location in the model
     void AddComponentToModel(OpenSim::Model&, std::unique_ptr<OpenSim::Component>);
-
-    // returns the recommended scale factor for the given model+state pair
-    float GetRecommendedScaleFactor(VirtualConstModelStatePair const&);
 
     // load an .osim file into an OpenSim model
     std::unique_ptr<UndoableModelStatePair> LoadOsimIntoUndoableModel(std::filesystem::path const&);

@@ -486,6 +486,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/Rendering/Icon.hpp
     src/OpenSimBindings/Rendering/IconCache.cpp
     src/OpenSimBindings/Rendering/IconCache.hpp
+    src/OpenSimBindings/Rendering/ModelRenderer.cpp
+    src/OpenSimBindings/Rendering/ModelRenderer.hpp
     src/OpenSimBindings/Rendering/MuscleColoringStyle.cpp
     src/OpenSimBindings/Rendering/MuscleColoringStyle.hpp
     src/OpenSimBindings/Rendering/MuscleDecorationStyle.cpp
