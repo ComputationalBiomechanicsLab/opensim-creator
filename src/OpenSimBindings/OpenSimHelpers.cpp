@@ -803,40 +803,85 @@ namespace
                 // owner is a muscle, coerce selection "hit" to the muscle
                 *currentComponent = musc;
 
-                // render lines of action (todo: should be behind a UI toggle for on vs. effective vs. anatomical etc.)
-                if (std::optional<LinesOfAction> loas = TryGetLinesOfAction(*musc, st, LinesOfActionConfig{}))
+                // if options request, render effective muscle lines of action
+                if (opts.getShouldShowEffectiveMuscleLinesOfAction())
                 {
-                    // origin arrow
+                    // render lines of action (todo: should be behind a UI toggle for on vs. effective vs. anatomical etc.)
+                    if (std::optional<LinesOfAction> loas = TryGetLinesOfAction(*musc, st, LinesOfActionConfig{}))
                     {
-                        osc::ArrowProperties p;
-                        p.worldspaceStart = loas->originPos;
-                        p.worldspaceEnd = loas->originPos + (fixupScaleFactor*0.1f)*loas->originDirection;
-                        p.tipLength = (fixupScaleFactor*0.015f);
-                        p.headThickness = (fixupScaleFactor*0.01f);
-                        p.neckThickness = (fixupScaleFactor*0.006f);
-                        p.color = {1.0f, 0.0f, 0.0f, 1.0f};
+                        // origin arrow
+                        {
+                            osc::ArrowProperties p;
+                            p.worldspaceStart = loas->originPos;
+                            p.worldspaceEnd = loas->originPos + (fixupScaleFactor*0.1f)*loas->originDirection;
+                            p.tipLength = (fixupScaleFactor*0.015f);
+                            p.headThickness = (fixupScaleFactor*0.01f);
+                            p.neckThickness = (fixupScaleFactor*0.006f);
+                            p.color = {1.0f, 0.0f, 0.0f, 1.0f};
 
-                        osc::DrawArrow(
-                            *osc::App::singleton<osc::MeshCache>(),
-                            p,
-                            out
-                        );
+                            osc::DrawArrow(
+                                *osc::App::singleton<osc::MeshCache>(),
+                                p,
+                                out
+                            );
+                        }
+
+                        // insertion arrow
+                        {
+                            osc::ArrowProperties p;
+                            p.worldspaceStart = loas->insertionPos;
+                            p.worldspaceEnd = loas->insertionPos + (fixupScaleFactor*0.1f)*loas->insertionDirection;
+                            p.tipLength = (fixupScaleFactor*0.015f);
+                            p.headThickness = (fixupScaleFactor*0.01f);
+                            p.neckThickness = (fixupScaleFactor*0.006f);
+                            p.color = {1.0f, 0.0f, 0.0f, 1.0f};
+                            osc::DrawArrow(
+                                *osc::App::singleton<osc::MeshCache>(),
+                                p,
+                                out
+                            );
+                        }
                     }
+                }
 
-                    // insertion arrow
+                // if options request, render anatomical muscle lines of action
+                if (opts.getShouldShowAnatomicalMuscleLinesOfAction())
+                {
+                    // render lines of action (todo: should be behind a UI toggle for on vs. effective vs. anatomical etc.)
+                    if (std::optional<LinesOfAction> loas = TryGetLinesOfAction(*musc, st, LinesOfActionConfig{}))
                     {
-                        osc::ArrowProperties p;
-                        p.worldspaceStart = loas->insertionPos;
-                        p.worldspaceEnd = loas->insertionPos + (fixupScaleFactor*0.1f)*loas->insertionDirection;
-                        p.tipLength = (fixupScaleFactor*0.015f);
-                        p.headThickness = (fixupScaleFactor*0.01f);
-                        p.neckThickness = (fixupScaleFactor*0.006f);
-                        p.color = {1.0f, 0.0f, 0.0f, 1.0f};
-                        osc::DrawArrow(
-                            *osc::App::singleton<osc::MeshCache>(),
-                            p,
-                            out
-                        );
+                        // origin arrow
+                        {
+                            osc::ArrowProperties p;
+                            p.worldspaceStart = loas->originPos;
+                            p.worldspaceEnd = loas->originPos + (fixupScaleFactor*0.1f)*loas->originDirection;
+                            p.tipLength = (fixupScaleFactor*0.015f);
+                            p.headThickness = (fixupScaleFactor*0.01f);
+                            p.neckThickness = (fixupScaleFactor*0.006f);
+                            p.color = {1.0f, 0.0f, 0.0f, 1.0f};
+
+                            osc::DrawArrow(
+                                *osc::App::singleton<osc::MeshCache>(),
+                                p,
+                                out
+                            );
+                        }
+
+                        // insertion arrow
+                        {
+                            osc::ArrowProperties p;
+                            p.worldspaceStart = loas->insertionPos;
+                            p.worldspaceEnd = loas->insertionPos + (fixupScaleFactor*0.1f)*loas->insertionDirection;
+                            p.tipLength = (fixupScaleFactor*0.015f);
+                            p.headThickness = (fixupScaleFactor*0.01f);
+                            p.neckThickness = (fixupScaleFactor*0.006f);
+                            p.color = {1.0f, 0.0f, 0.0f, 1.0f};
+                            osc::DrawArrow(
+                                *osc::App::singleton<osc::MeshCache>(),
+                                p,
+                                out
+                            );
+                        }
                     }
                 }
 
