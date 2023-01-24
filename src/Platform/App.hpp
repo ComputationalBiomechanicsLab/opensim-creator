@@ -41,13 +41,13 @@ namespace osc
         template<class T, class...Args>
         static std::shared_ptr<T> singleton(Args&&... args)
         {
-            auto const ctor = [args = std::make_tuple(std::forward<Args>(args)...)]() mutable
+            auto const ctor = [argTuple = std::make_tuple(std::forward<Args>(args)...)]() mutable
             {
-                return std::apply([](auto&&... args) -> std::shared_ptr<void>
+                return std::apply([](auto&&... innerArgs) -> std::shared_ptr<void>
                 {
                      auto customDeleter = [](T* t) { delete t; };
-                     return std::shared_ptr<void>{new T{std::forward<Args>(args)...}, customDeleter};
-                }, std::move(args));
+                     return std::shared_ptr<void>{new T{std::forward<Args>(innerArgs)...}, customDeleter};
+                }, std::move(argTuple));
             };
 
             return std::static_pointer_cast<T>(App::upd().updSingleton(typeid(T), ctor));
