@@ -264,9 +264,6 @@ namespace
                     OSC_PERF("generate decorations");
                     m_Decorations.clear();
 
-                    OpenSim::Component const* selected = msp.getSelected();
-                    OpenSim::Component const* hovered = msp.getHovered();
-
                     OpenSim::Component const* lastComponent = nullptr;
                     osc::SceneDecorationFlags lastFlags = osc::SceneDecorationFlags_None;
                     std::string lastID;
