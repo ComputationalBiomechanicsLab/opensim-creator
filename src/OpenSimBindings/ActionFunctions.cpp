@@ -429,8 +429,10 @@ bool osc::ActionAutoscaleSceneScaleFactor(UndoableModelStatePair& uim)
 {
     float const sf = osc::GetRecommendedScaleFactor(
         *osc::App::singleton<osc::MeshCache>(),
-        uim,
-        CustomDecorationOptions{}
+        uim.getModel(),
+        uim.getState(),
+        CustomDecorationOptions{},
+        uim.getFixupScaleFactor()
     );
     uim.setFixupScaleFactor(sf);
     return true;

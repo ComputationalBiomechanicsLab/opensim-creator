@@ -180,6 +180,41 @@ namespace
         }
     }
 
+    // helper: compute the decoration flags for a given component
+    osc::SceneDecorationFlags ComputeFlags(
+        OpenSim::Component const& c,
+        OpenSim::Component const* selected,
+        OpenSim::Component const* hovered)
+    {
+        osc::SceneDecorationFlags rv = osc::SceneDecorationFlags_CastsShadows;
+
+        if (&c == selected)
+        {
+            rv |= osc::SceneDecorationFlags_IsSelected;
+        }
+
+        if (&c == hovered)
+        {
+            rv |= osc::SceneDecorationFlags_IsHovered;
+        }
+
+        OpenSim::Component const* ptr = osc::GetOwner(c);
+        while (ptr)
+        {
+            if (ptr == selected)
+            {
+                rv |= osc::SceneDecorationFlags_IsChildOfSelected;
+            }
+            if (ptr == hovered)
+            {
+                rv |= osc::SceneDecorationFlags_IsChildOfHovered;
+            }
+            ptr = osc::GetOwner(*ptr);
+        }
+
+        return rv;
+    }
+
     // caches + versions scene state
     class CachedScene final {
     public:
@@ -229,11 +264,36 @@ namespace
                     OSC_PERF("generate decorations");
                     m_Decorations.clear();
 
+                    OpenSim::Component const* selected = msp.getSelected();
+                    OpenSim::Component const* hovered = msp.getHovered();
+
+                    OpenSim::Component const* lastComponent = nullptr;
+                    osc::SceneDecorationFlags lastFlags = osc::SceneDecorationFlags_None;
+                    std::string lastID;
+
                     osc::GenerateModelDecorations(
                         *osc::App::singleton<osc::MeshCache>(),
-                        msp,
+                        msp.getModel(),
+                        msp.getState(),
                         decorationOptions,
-                        [this](OpenSim::Component const&, osc::SceneDecoration&& dec) { m_Decorations.push_back(std::move(dec)); }
+                        msp.getFixupScaleFactor(),
+                        [this, selected, hovered, lastComponent, lastID, lastFlags](OpenSim::Component const& c, osc::SceneDecoration&& dec) mutable
+                        {
+                            if (&c == lastComponent)
+                            {
+                                dec.id = lastID;
+                                dec.flags = lastFlags;
+                            }
+                            else
+                            {
+                                dec.id = c.getAbsolutePathString();
+                                dec.flags = ComputeFlags(c, selected, hovered);
+                                lastFlags = dec.flags;
+                                lastID = dec.id;
+                                lastComponent = &c;
+                            }
+                            m_Decorations.push_back(std::move(dec));
+                        }
                     );
                 }
 
