@@ -772,6 +772,12 @@ private:
         }
         ImGui::SameLine();
         osc::DrawHelpMarker("Draws direction vectors that show the mechanical effect of the muscle action on the bodies attached to the origin/insertion points.\n\n'Anatomical' here means 'the first/last points of the muscle path' see the documentation for 'effective' lines of action for contrast.\n\nOpenSim Creator's implementation of this algorithm is based on Luca Modenese (@modenaxe)'s implementation here:\n\n    - https://github.com/modenaxe/MuscleForceDirection\n\nThanks to @modenaxe for open-sourcing the original algorithm!");
+
+        bool isShowingCentersOfMass = m_Params.decorationOptions.getShouldShowCentersOfMass();
+        if (ImGui::Checkbox("Centers of Mass", &isShowingCentersOfMass))
+        {
+            m_Params.decorationOptions.setShouldShowCentersOfMass(isShowingCentersOfMass);
+        }
     }
 
     std::pair<OpenSim::Component const*, glm::vec3> hittestRenderWindow(osc::VirtualConstModelStatePair const& msp)

@@ -62,6 +62,15 @@ namespace osc
             m_ShouldShowAnatomicalMuscleLinesOfAction = v;
         }
 
+        bool getShouldShowCentersOfMass() const
+        {
+            return m_ShouldShowCentersOfMass;
+        }
+        void setShouldShowCentersOfMass(bool v)
+        {
+            m_ShouldShowCentersOfMass = v;
+        }
+
     private:
         friend bool operator==(CustomDecorationOptions const&, CustomDecorationOptions const&);
         friend bool operator!=(CustomDecorationOptions const&, CustomDecorationOptions const&);
@@ -72,6 +81,7 @@ namespace osc
         bool m_ShouldShowScapulo = false;
         bool m_ShouldShowEffectiveMuscleLinesOfAction = false;
         bool m_ShouldShowAnatomicalMuscleLinesOfAction = false;
+        bool m_ShouldShowCentersOfMass = false;
     };
 
     inline bool operator==(CustomDecorationOptions const& a, CustomDecorationOptions const& b)
@@ -82,7 +92,8 @@ namespace osc
             a.m_MuscleSizingStyle == b.m_MuscleSizingStyle &&
             a.m_ShouldShowScapulo == b.m_ShouldShowScapulo &&
             a.m_ShouldShowEffectiveMuscleLinesOfAction == b.m_ShouldShowEffectiveMuscleLinesOfAction &&
-            a.m_ShouldShowAnatomicalMuscleLinesOfAction == b.m_ShouldShowAnatomicalMuscleLinesOfAction;
+            a.m_ShouldShowAnatomicalMuscleLinesOfAction == b.m_ShouldShowAnatomicalMuscleLinesOfAction &&
+            a.m_ShouldShowCentersOfMass == b.m_ShouldShowCentersOfMass;
     }
 
     inline bool operator!=(CustomDecorationOptions const& a, CustomDecorationOptions const& b)

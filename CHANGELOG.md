@@ -41,6 +41,8 @@ All notable changes to this project will be documented here. The format is based
 - Added 'Lines of Action (effective)' and 'Lines of Action (anatomical)' rendering options to the model viewer
   (#562) - thanks to @modenaxe for open-sourcing https://github.com/modenaxe/MuscleForceDirection (check it out!)
 - Internal: OpenSim-related rendering code is now centralized in `src/OpenSimBindings/Rendering` (#572)
+- Body center of masses are now an opt-in visualization option with a checkbox (previously: would show on hover,
+  #573)
 
 ## [0.3.2] - 2023/01/09
 

@@ -341,7 +341,8 @@ namespace
 namespace
 {
     // generic decoration handler for any `OpenSim::Component`
-    void HandleComponent(OpenSim::Component const& c,
+    void HandleComponent(
+        OpenSim::Component const& c,
         SimTK::State const& st,
         OpenSim::ModelDisplayHints const& mdh,
         SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
@@ -454,6 +455,7 @@ namespace
     // OSC-specific decoration handler for `OpenSim::Body`
     void HandleBody(
         osc::MeshCache& meshCache,
+        osc::CustomDecorationOptions const& opts,
         OpenSim::Body const& b,
         SimTK::State const& st,
         float fixupScaleFactor,
@@ -466,7 +468,7 @@ namespace
     {
         // bodies are drawn normally but *also* draw a center-of-mass sphere if they are
         // currently hovered
-        if (&b == hovered && b.getMassCenter() != SimTK::Vec3{0.0, 0.0, 0.0})
+        if (opts.getShouldShowCentersOfMass() && b.getMassCenter() != SimTK::Vec3{0.0, 0.0, 0.0})
         {
             float radius = fixupScaleFactor * 0.005f;
             osc::Transform t = TransformInGround(b, st);
@@ -1074,6 +1076,7 @@ namespace
             {
                 HandleBody(
                     meshCache,
+                    opts,
                     *body,
                     state,
                     fixupScaleFactor,
