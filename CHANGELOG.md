@@ -43,6 +43,7 @@ All notable changes to this project will be documented here. The format is based
 - Internal: OpenSim-related rendering code is now centralized in `src/OpenSimBindings/Rendering` (#572)
 - Body center of masses are now an opt-in visualization option with a checkbox (previously: would show on hover,
   #573)
+- Rendering `OpenSim::PointToPointSpring`s is how a user-facing toggle (previously: was always on, #576)
 
 ## [0.3.2] - 2023/01/09
 

@@ -380,6 +380,7 @@ namespace
     // OSC-specific decoration handler for `OpenSim::PointToPointSpring`
     void HandlePointToPointSpring(
         osc::MeshCache& meshCache,
+        osc::CustomDecorationOptions const& opts,
         OpenSim::PointToPointSpring const& p2p,
         SimTK::State const& st,
         OpenSim::Component const* selected,
@@ -387,6 +388,11 @@ namespace
         float fixupScaleFactor,
         std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> const& out)
     {
+        if (!opts.getShouldShowPointToPointSprings())
+        {
+            return;
+        }
+
         glm::vec3 p1 = TransformInGround(p2p.getBody1(), st) * osc::ToVec3(p2p.getPoint1());
         glm::vec3 p2 = TransformInGround(p2p.getBody2(), st) * osc::ToVec3(p2p.getPoint2());
 
@@ -1040,6 +1046,7 @@ namespace
             {
                 HandlePointToPointSpring(
                     meshCache,
+                    opts,
                     *p2p,
                     state,
                     selected,

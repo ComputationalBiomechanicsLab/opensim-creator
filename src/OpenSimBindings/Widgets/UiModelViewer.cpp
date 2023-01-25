@@ -778,6 +778,12 @@ private:
         {
             m_Params.decorationOptions.setShouldShowCentersOfMass(isShowingCentersOfMass);
         }
+
+        bool isShowingPointToPointSprings = m_Params.decorationOptions.getShouldShowPointToPointSprings();
+        if (ImGui::Checkbox("Point-to-Point Springs", &isShowingPointToPointSprings))
+        {
+            m_Params.decorationOptions.setShouldShowPointToPointSprings(isShowingPointToPointSprings);
+        }
     }
 
     std::pair<OpenSim::Component const*, glm::vec3> hittestRenderWindow(osc::VirtualConstModelStatePair const& msp)
