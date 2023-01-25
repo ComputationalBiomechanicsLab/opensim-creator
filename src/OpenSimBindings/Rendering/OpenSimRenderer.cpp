@@ -776,6 +776,109 @@ namespace
         }
     }
 
+    void HandleLinesOfAction(
+        osc::MeshCache& meshCache,
+        osc::CustomDecorationOptions const& opts,
+        OpenSim::Muscle const& musc,
+        SimTK::State const& st,
+        OpenSim::Component const* selected,
+        OpenSim::Component const* hovered,
+        float fixupScaleFactor,
+        std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> const& out)
+    {
+        // if options request, render effective muscle lines of action
+        if (opts.getShouldShowEffectiveMuscleLinesOfAction())
+        {
+            // render lines of action (todo: should be behind a UI toggle for on vs. effective vs. anatomical etc.)
+            LinesOfActionConfig config{};
+            config.useEffectiveInsertion = true;
+            if (std::optional<LinesOfAction> loas = TryGetLinesOfAction(musc, st, config))
+            {
+                // origin arrow
+                {
+                    osc::ArrowProperties p;
+                    p.worldspaceStart = loas->originPos;
+                    p.worldspaceEnd = loas->originPos + (fixupScaleFactor*0.1f)*loas->originDirection;
+                    p.tipLength = (fixupScaleFactor*0.015f);
+                    p.headThickness = (fixupScaleFactor*0.01f);
+                    p.neckThickness = (fixupScaleFactor*0.006f);
+                    p.color = {0.0f, 1.0f, 0.0f, 1.0f};
+
+                    osc::DrawArrow(meshCache, p, [&musc, &out, selected, hovered](osc::SceneDecoration&& d)
+                    {
+                        d.id = musc.getAbsolutePathString();
+                        d.flags = ComputeFlags(musc, selected, hovered);
+                        out(musc, std::move(d));
+                    });
+                }
+
+                // insertion arrow
+                {
+                    osc::ArrowProperties p;
+                    p.worldspaceStart = loas->insertionPos;
+                    p.worldspaceEnd = loas->insertionPos + (fixupScaleFactor*0.1f)*loas->insertionDirection;
+                    p.tipLength = (fixupScaleFactor*0.015f);
+                    p.headThickness = (fixupScaleFactor*0.01f);
+                    p.neckThickness = (fixupScaleFactor*0.006f);
+                    p.color = {0.0f, 1.0f, 0.0f, 1.0f};
+
+                    osc::DrawArrow(meshCache, p, [&musc, &out, selected, hovered](osc::SceneDecoration&& d)
+                    {
+                        d.id = musc.getAbsolutePathString();
+                        d.flags = ComputeFlags(musc, selected, hovered);
+                        out(musc, std::move(d));
+                    });
+                }
+            }
+        }
+
+        // if options request, render anatomical muscle lines of action
+        if (opts.getShouldShowAnatomicalMuscleLinesOfAction())
+        {
+            // render lines of action (todo: should be behind a UI toggle for on vs. effective vs. anatomical etc.)
+            LinesOfActionConfig config{};
+            config.useEffectiveInsertion = false;
+            if (std::optional<LinesOfAction> loas = TryGetLinesOfAction(musc, st, config))
+            {
+                // origin arrow
+                {
+                    osc::ArrowProperties p;
+                    p.worldspaceStart = loas->originPos;
+                    p.worldspaceEnd = loas->originPos + (fixupScaleFactor*0.1f)*loas->originDirection;
+                    p.tipLength = (fixupScaleFactor*0.015f);
+                    p.headThickness = (fixupScaleFactor*0.01f);
+                    p.neckThickness = (fixupScaleFactor*0.006f);
+                    p.color = {1.0f, 0.0f, 0.0f, 1.0f};
+
+                    osc::DrawArrow(meshCache, p, [&musc, &out, selected, hovered](osc::SceneDecoration&& d)
+                    {
+                        d.id = musc.getAbsolutePathString();
+                        d.flags = ComputeFlags(musc, selected, hovered);
+                        out(musc, std::move(d));
+                    });
+                }
+
+                // insertion arrow
+                {
+                    osc::ArrowProperties p;
+                    p.worldspaceStart = loas->insertionPos;
+                    p.worldspaceEnd = loas->insertionPos + (fixupScaleFactor*0.1f)*loas->insertionDirection;
+                    p.tipLength = (fixupScaleFactor*0.015f);
+                    p.headThickness = (fixupScaleFactor*0.01f);
+                    p.neckThickness = (fixupScaleFactor*0.006f);
+                    p.color = {1.0f, 0.0f, 0.0f, 1.0f};
+
+                    osc::DrawArrow(meshCache, p, [&musc, &out, selected, hovered](osc::SceneDecoration&& d)
+                    {
+                        d.id = musc.getAbsolutePathString();
+                        d.flags = ComputeFlags(musc, selected, hovered);
+                        out(musc, std::move(d));
+                    });
+                }
+            }
+        }
+    }
+
     // OSC-specific decoration handler for `OpenSim::GeometryPath`
     void HandleGeometryPath(
         osc::MeshCache& meshCache,
@@ -806,89 +909,16 @@ namespace
                 // owner is a muscle, coerce selection "hit" to the muscle
                 *currentComponent = musc;
 
-                // if options request, render effective muscle lines of action
-                if (opts.getShouldShowEffectiveMuscleLinesOfAction())
-                {
-                    // render lines of action (todo: should be behind a UI toggle for on vs. effective vs. anatomical etc.)
-                    LinesOfActionConfig config{};
-                    config.useEffectiveInsertion = true;
-                    if (std::optional<LinesOfAction> loas = TryGetLinesOfAction(*musc, st, config))
-                    {
-                        // origin arrow
-                        {
-                            osc::ArrowProperties p;
-                            p.worldspaceStart = loas->originPos;
-                            p.worldspaceEnd = loas->originPos + (fixupScaleFactor*0.1f)*loas->originDirection;
-                            p.tipLength = (fixupScaleFactor*0.015f);
-                            p.headThickness = (fixupScaleFactor*0.01f);
-                            p.neckThickness = (fixupScaleFactor*0.006f);
-                            p.color = {0.0f, 1.0f, 0.0f, 1.0f};
-
-                            osc::DrawArrow(meshCache, p, [&musc, &out](osc::SceneDecoration&& d)
-                            {
-                                out(*musc, std::move(d));
-                            });
-                        }
-
-                        // insertion arrow
-                        {
-                            osc::ArrowProperties p;
-                            p.worldspaceStart = loas->insertionPos;
-                            p.worldspaceEnd = loas->insertionPos + (fixupScaleFactor*0.1f)*loas->insertionDirection;
-                            p.tipLength = (fixupScaleFactor*0.015f);
-                            p.headThickness = (fixupScaleFactor*0.01f);
-                            p.neckThickness = (fixupScaleFactor*0.006f);
-                            p.color = {0.0f, 1.0f, 0.0f, 1.0f};
-
-                            osc::DrawArrow(meshCache, p, [&musc, &out](osc::SceneDecoration&& d)
-                            {
-                                out(*musc, std::move(d));
-                            });
-                        }
-                    }
-                }
-
-                // if options request, render anatomical muscle lines of action
-                if (opts.getShouldShowAnatomicalMuscleLinesOfAction())
-                {
-                    // render lines of action (todo: should be behind a UI toggle for on vs. effective vs. anatomical etc.)
-                    LinesOfActionConfig config{};
-                    config.useEffectiveInsertion = false;
-                    if (std::optional<LinesOfAction> loas = TryGetLinesOfAction(*musc, st, config))
-                    {
-                        // origin arrow
-                        {
-                            osc::ArrowProperties p;
-                            p.worldspaceStart = loas->originPos;
-                            p.worldspaceEnd = loas->originPos + (fixupScaleFactor*0.1f)*loas->originDirection;
-                            p.tipLength = (fixupScaleFactor*0.015f);
-                            p.headThickness = (fixupScaleFactor*0.01f);
-                            p.neckThickness = (fixupScaleFactor*0.006f);
-                            p.color = {1.0f, 0.0f, 0.0f, 1.0f};
-
-                            osc::DrawArrow(meshCache, p, [&musc, &out](osc::SceneDecoration&& d)
-                            {
-                                out(*musc, std::move(d));
-                            });
-                        }
-
-                        // insertion arrow
-                        {
-                            osc::ArrowProperties p;
-                            p.worldspaceStart = loas->insertionPos;
-                            p.worldspaceEnd = loas->insertionPos + (fixupScaleFactor*0.1f)*loas->insertionDirection;
-                            p.tipLength = (fixupScaleFactor*0.015f);
-                            p.headThickness = (fixupScaleFactor*0.01f);
-                            p.neckThickness = (fixupScaleFactor*0.006f);
-                            p.color = {1.0f, 0.0f, 0.0f, 1.0f};
-
-                            osc::DrawArrow(meshCache, p, [&musc, &out](osc::SceneDecoration&& d)
-                            {
-                                out(*musc, std::move(d));
-                            });
-                        }
-                    }
-                }
+                HandleLinesOfAction(
+                    meshCache,
+                    opts,
+                    *musc,
+                    st,
+                    selected,
+                    hovered,
+                    fixupScaleFactor,
+                    out
+                );
 
                 switch (opts.getMuscleDecorationStyle())
                 {
