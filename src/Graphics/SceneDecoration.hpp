@@ -4,14 +4,14 @@
 #include "src/Graphics/MaterialPropertyBlock.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/SceneDecorationFlags.hpp"
-#include "src/Maths/AABB.hpp"
+#include "src/Graphics/SimpleSceneDecoration.hpp"
 #include "src/Maths/Transform.hpp"
 
 #include <glm/vec4.hpp>
 
-#include <memory>
 #include <optional>
 #include <string>
+#include <utility>
 
 namespace osc
 {
@@ -23,6 +23,13 @@ namespace osc
             mesh{mesh_},
             transform{},
             color{1.0f, 1.0f, 1.0f, 1.0f}
+        {
+        }
+
+        explicit SceneDecoration(SimpleSceneDecoration const& dec) :
+            mesh{dec.mesh},
+            transform{dec.transform},
+            color{dec.color}
         {
         }
 

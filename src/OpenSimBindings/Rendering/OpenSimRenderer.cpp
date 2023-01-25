@@ -10,7 +10,6 @@
 #include "src/Maths/Segment.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/OpenSimBindings/Rendering/CustomDecorationOptions.hpp"
-#include "src/OpenSimBindings/Rendering/SimTKDecorationConsumer.hpp"
 #include "src/OpenSimBindings/Rendering/SimTKRenderer.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/SimTKHelpers.hpp"
@@ -307,47 +306,70 @@ namespace
 {
     // generic decoration handler for any `OpenSim::Component`
     void HandleComponent(
-        OpenSim::Component const& c,
-        SimTK::State const& st,
-        OpenSim::ModelDisplayHints const& mdh,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-        osc::SimTKRenderer& handler)
+        osc::MeshCache& meshCache,
+        OpenSim::Model const& model,
+        SimTK::State const& state,
+        OpenSim::Component const& componentToRender,
+        OpenSim::Component const& componentToLinkTo,
+        float fixupScaleFactor,
+        std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> const& out)
     {
+        SimTK::SimbodyMatterSubsystem const& matter = model.getSystem().getMatterSubsystem();
+        OpenSim::ModelDisplayHints const& mdh = model.getDisplayHints();
+        SimTK::Array_<SimTK::DecorativeGeometry> geomList;
+        std::function<void(osc::SimpleSceneDecoration&&)> onDecoration = [&componentToLinkTo, &out](osc::SimpleSceneDecoration&& dec)
+        {
+            out(componentToLinkTo, osc::SceneDecoration{dec});
+        };
+
         {
             OSC_PERF("OpenSim::Component::generateDecorations(true, ...)");
-            c.generateDecorations(true, mdh, st, geomList);
+            componentToRender.generateDecorations(true, mdh, state, geomList);
         }
 
         {
             OSC_PERF("(pump fixed decorations into OSC)");
-            for (SimTK::DecorativeGeometry const& dg : geomList)
+            for (SimTK::DecorativeGeometry const& geom : geomList)
             {
-                handler(dg);
+                osc::GenerateDecorations(
+                    meshCache,
+                    matter,
+                    state,
+                    geom,
+                    fixupScaleFactor,
+                    onDecoration
+                );
             }
         }
         geomList.clear();
 
         {
             OSC_PERF("OpenSim::Component::generateDecorations(false, ...)");
-            c.generateDecorations(false, mdh, st, geomList);
+            componentToRender.generateDecorations(false, mdh, state, geomList);
         }
 
         {
             OSC_PERF("(pump dynamic decorations into OSC)");
-            for (SimTK::DecorativeGeometry const& dg : geomList)
+            for (SimTK::DecorativeGeometry const& geom : geomList)
             {
-                handler(dg);
+                osc::GenerateDecorations(
+                    meshCache,
+                    matter,
+                    state,
+                    geom,
+                    fixupScaleFactor,
+                    onDecoration
+                );
             }
         }
-        geomList.clear();
     }
 
     // OSC-specific decoration handler for `OpenSim::PointToPointSpring`
     void HandlePointToPointSpring(
         osc::MeshCache& meshCache,
-        osc::CustomDecorationOptions const& opts,
-        OpenSim::PointToPointSpring const& p2p,
         SimTK::State const& st,
+        OpenSim::PointToPointSpring const& p2p,
+        osc::CustomDecorationOptions const& opts,
         float fixupScaleFactor,
         std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> const& out)
     {
@@ -373,8 +395,8 @@ namespace
     // OSC-specific decoration handler for `OpenSim::Station`
     void HandleStation(
         osc::MeshCache& meshCache,
-        OpenSim::Station const& s,
         SimTK::State const& st,
+        OpenSim::Station const& s,
         float fixupScaleFactor,
         std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> const& out)
     {
@@ -395,8 +417,8 @@ namespace
     // OSC-specific decoration handler for `OpenSim::ScapulothoracicJoint`
     void HandleScapulothoracicJoint(
         osc::MeshCache& meshCache,
-        OpenSim::ScapulothoracicJoint const& scapuloJoint,
         SimTK::State const& st,
+        OpenSim::ScapulothoracicJoint const& scapuloJoint,
         float,
         std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> const& out)
     {
@@ -414,14 +436,12 @@ namespace
     // OSC-specific decoration handler for `OpenSim::Body`
     void HandleBody(
         osc::MeshCache& meshCache,
-        osc::CustomDecorationOptions const& opts,
-        OpenSim::Body const& b,
+        OpenSim::Model const& model,
         SimTK::State const& st,
+        OpenSim::Body const& b,
+        osc::CustomDecorationOptions const& opts,
         float fixupScaleFactor,
-        std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> const& out,
-        OpenSim::ModelDisplayHints const& mdh,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-        osc::SimTKRenderer& producer)
+        std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> const& out)
     {
         // bodies are drawn normally but *also* draw a center-of-mass sphere if they are
         // currently hovered
@@ -440,17 +460,25 @@ namespace
             });
         }
 
-        HandleComponent(b, st, mdh, geomList, producer);
+        HandleComponent(
+            meshCache,
+            model,
+            st,
+            b,
+            b,
+            fixupScaleFactor,
+            out
+        );
     }
 
     // OSC-specific decoration handler for `OpenSim::Muscle` ("SCONE"-style: i.e. tendons + muscle)
     void HandleMuscleFibersAndTendons(
         osc::MeshCache& meshCache,
-        osc::CustomDecorationOptions const& opts,
-        OpenSim::Muscle const& muscle,
+        OpenSim::Model const& model,
         SimTK::State const& st,
+        OpenSim::Muscle const& muscle,
+        osc::CustomDecorationOptions const& opts,
         float fixupScaleFactor,
-        OpenSim::ModelDisplayHints const&,
         std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> const& out)
     {
         std::vector<GeometryPathPoint> const pps = GetAllPathPoints(muscle.getGeometryPath(), st);
@@ -639,11 +667,11 @@ namespace
     // OSC-specific decoration handler for `OpenSim::Muscle`
     void HandleMuscleOpenSimStyle(
         osc::MeshCache& meshCache,
-        osc::CustomDecorationOptions const& opts,
-        OpenSim::Muscle const& musc,
+        OpenSim::Model const& model,
         SimTK::State const& st,
+        OpenSim::Muscle const& musc,
+        osc::CustomDecorationOptions const& opts,
         float fixupScaleFactor,
-        OpenSim::ModelDisplayHints const& mdh,
         std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> const& out)
     {
         std::vector<GeometryPathPoint> const pps = GetAllPathPoints(musc.getGeometryPath(), st);
@@ -687,7 +715,8 @@ namespace
             });
         };
 
-        if (mdh.get_show_path_points())
+        bool const showPathPoints = model.getDisplayHints().get_show_path_points();
+        if (showPathPoints)
         {
             emitSphere(pps.front());
         }
@@ -695,7 +724,7 @@ namespace
         {
             emitCylinder(pps[i - 1].location, pps[i].location);
 
-            if (mdh.get_show_path_points())
+            if (showPathPoints)
             {
                 emitSphere(pps[i]);
             }
@@ -798,14 +827,11 @@ namespace
     // OSC-specific decoration handler for `OpenSim::GeometryPath`
     void HandleGeometryPath(
         osc::MeshCache& meshCache,
-        osc::CustomDecorationOptions const& opts,
-        OpenSim::GeometryPath const& gp,
+        OpenSim::Model const& model,
         SimTK::State const& st,
+        OpenSim::GeometryPath const& gp,
+        osc::CustomDecorationOptions const& opts,
         float fixupScaleFactor,
-        OpenSim::Component const** currentComponent,
-        OpenSim::ModelDisplayHints const& mdh,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-        osc::SimTKRenderer& producer,
         std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> const& out)
     {
         // even custom muscle decoration implementations *must* obey the visibility flag on `GeometryPath` (#414)
@@ -821,7 +847,6 @@ namespace
             if (auto const* musc = dynamic_cast<OpenSim::Muscle const*>(&gp.getOwner()); musc)
             {
                 // owner is a muscle, coerce selection "hit" to the muscle
-                *currentComponent = musc;
 
                 HandleLinesOfAction(
                     meshCache,
@@ -837,11 +862,11 @@ namespace
                 case osc::MuscleDecorationStyle::FibersAndTendons:
                     HandleMuscleFibersAndTendons(
                         meshCache,
-                        opts,
-                        *musc,
+                        model,
                         st,
+                        *musc,
+                        opts,
                         fixupScaleFactor,
-                        mdh,
                         out
                     );
                     return;
@@ -851,11 +876,11 @@ namespace
                 default:
                     HandleMuscleOpenSimStyle(
                         meshCache,
-                        opts,
-                        *musc,
+                        model,
                         st,
+                        *musc,
+                        opts,
                         fixupScaleFactor,
-                        mdh,
                         out
                     );
                     return;
@@ -864,68 +889,73 @@ namespace
             else if (auto const* pa = dynamic_cast<OpenSim::PathActuator const*>(&gp.getOwner()); pa)
             {
                 // owner is a path actuator, coerce selection "hit" to the path actuator (#519)
-                *currentComponent = pa;
-
-                // but render it as-normal
-                HandleComponent(gp, st, mdh, geomList, producer);
+                HandleComponent(
+                    meshCache,
+                    model,
+                    st,
+                    gp,
+                    *pa,
+                    fixupScaleFactor,
+                    out
+                );
                 return;
             }
             else
             {
                 // it's a path in some non-muscular context
-                HandleComponent(gp, st, mdh, geomList, producer);
+                HandleComponent(
+                    meshCache,
+                    model,
+                    st,
+                    gp,
+                    gp,
+                    fixupScaleFactor,
+                    out
+                );
                 return;
             }
         }
         else
         {
             // it's a standalone path that's not part of a muscle
-            HandleComponent(gp, st, mdh, geomList, producer);
+            HandleComponent(
+                meshCache,
+                model,
+                st,
+                gp,
+                gp,
+                fixupScaleFactor,
+                out
+            );
             return;
         }
     }
 
     void HandleFrameGeometry(
-        osc::CustomDecorationOptions const&,
+        osc::MeshCache& meshCache,
+        OpenSim::Model const& model,
+        SimTK::State const& state,
         OpenSim::FrameGeometry const& frameGeometry,
-        SimTK::State const& st,
-        float,
-        OpenSim::Component const** currentComponent,
-        OpenSim::ModelDisplayHints const& mdh,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-        osc::SimTKRenderer& producer,
+        float fixupScaleFactor,
         std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> const& out)
     {
-        if (frameGeometry.hasOwner())
-        {
-            // promote current component to the parent of the frame geometry, because
-            // a user is probably more interested in the thing the frame geometry
-            // represents (e.g. an offset frame) than the geometry itself (#506)
-            *currentComponent = &frameGeometry.getOwner();
-        }
-        HandleComponent(frameGeometry, st, mdh, geomList, producer);
+        // promote current component to the parent of the frame geometry, because
+        // a user is probably more interested in the thing the frame geometry
+        // represents (e.g. an offset frame) than the geometry itself (#506)
+        OpenSim::Component const& componentToLinkTo = frameGeometry.hasOwner() ?
+            frameGeometry.getOwner() :
+            frameGeometry;
+
+        HandleComponent(
+            meshCache,
+            model,
+            state,
+            frameGeometry,
+            componentToLinkTo,
+            fixupScaleFactor,
+            out
+        );
     }
-
-    // a class that is called whenever the SimTK backend emits `DecorativeGeometry`
-    class OpenSimDecorationConsumer2 final : public osc::SimTKDecorationConsumer {
-    public:
-        OpenSimDecorationConsumer2(
-            std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> const* out,
-            OpenSim::Component const** currentComponent) :
-            m_Out{out},
-            m_CurrentComponent{std::move(currentComponent)}
-        {
-        }
-
-        void operator()(osc::Mesh const& mesh, osc::Transform const& t, glm::vec4 const& color) override
-        {
-            (*m_Out)(**m_CurrentComponent, osc::SceneDecoration{mesh, t, color});
-        }
-
-    private:
-        std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> const* m_Out;
-        OpenSim::Component const** m_CurrentComponent;
-    };
 }
 
 void osc::GenerateModelDecorations(
@@ -938,24 +968,6 @@ void osc::GenerateModelDecorations(
 {
     OSC_PERF("scene generation");
 
-    // assumed to be valid during the decoration generation
-    OpenSim::ModelDisplayHints const& mdh = model.getDisplayHints();
-
-    // gets called whenever OpenSim is emitting stuff via `generateDecorations`
-    OpenSim::Component const* currentComponent = nullptr;
-    OpenSimDecorationConsumer2 consumer{&out, &currentComponent};
-
-    // generates mesh/object instances for each SimTK::DecorativeGeometry it's given
-    osc::SimTKRenderer producer
-    {
-        meshCache,
-        model.getSystem().getMatterSubsystem(),
-        state,
-        fixupScaleFactor,
-        consumer
-    };
-
-    SimTK::Array_<SimTK::DecorativeGeometry> geomList;
     for (OpenSim::Component const& c : model.getComponentList())
     {
         if (!osc::ShouldShowInUI(c))
@@ -963,17 +975,15 @@ void osc::GenerateModelDecorations(
             continue;
         }
 
-        currentComponent = &c;
-
         // handle OSC-specific decoration specializations, or fallback to generic
         // component decoration handling
         if (auto const* p2p = dynamic_cast<OpenSim::PointToPointSpring const*>(&c))
         {
             HandlePointToPointSpring(
                 meshCache,
-                opts,
-                *p2p,
                 state,
+                *p2p,
+                opts,
                 fixupScaleFactor,
                 out
             );
@@ -982,8 +992,8 @@ void osc::GenerateModelDecorations(
         {
             HandleStation(
                 meshCache,
-                static_cast<OpenSim::Station const&>(c),
                 state,
+                static_cast<OpenSim::Station const&>(c),
                 fixupScaleFactor,
                 out
             );
@@ -992,8 +1002,8 @@ void osc::GenerateModelDecorations(
         {
             HandleScapulothoracicJoint(
                 meshCache,
-                *scapulo,
                 state,
+                *scapulo,
                 fixupScaleFactor,
                 out
             );
@@ -1002,42 +1012,34 @@ void osc::GenerateModelDecorations(
         {
             HandleBody(
                 meshCache,
-                opts,
-                *body,
+                model,
                 state,
+                *body,
+                opts,
                 fixupScaleFactor,
-                out,
-                mdh,
-                geomList,
-                producer
+                out
             );
         }
         else if (auto const* gp = dynamic_cast<OpenSim::GeometryPath const*>(&c))
         {
             HandleGeometryPath(
                 meshCache,
-                opts,
-                *gp,
+                model,
                 state,
+                *gp,
+                opts,
                 fixupScaleFactor,
-                &currentComponent,
-                mdh,
-                geomList,
-                producer,
                 out
             );
         }
         else if (auto const* fg = dynamic_cast<OpenSim::FrameGeometry const*>(&c))
         {
             HandleFrameGeometry(
-                opts,
-                *fg,
+                meshCache,
+                model,
                 state,
+                *fg,
                 fixupScaleFactor,
-                &currentComponent,
-                mdh,
-                geomList,
-                producer,
                 out
             );
         }
@@ -1045,11 +1047,13 @@ void osc::GenerateModelDecorations(
         {
             // generic handler
             HandleComponent(
-                c,
+                meshCache,
+                model,
                 state,
-                mdh,
-                geomList,
-                producer
+                c,
+                c,
+                fixupScaleFactor,
+                out
             );
         }
     }

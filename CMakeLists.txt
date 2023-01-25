@@ -430,6 +430,7 @@ add_library(osccore STATIC
     src/Graphics/ShaderCache.hpp
     src/Graphics/ShaderLocationIndex.hpp
     src/Graphics/ShaderType.hpp
+    src/Graphics/SimpleSceneDecoration.hpp
     src/Graphics/Texture2D.hpp
     src/Graphics/TextureFilterMode.hpp
     src/Graphics/TextureGen.cpp
@@ -494,7 +495,6 @@ add_library(osccore STATIC
     src/OpenSimBindings/Rendering/MuscleSizingStyle.hpp
     src/OpenSimBindings/Rendering/OpenSimRenderer.cpp
     src/OpenSimBindings/Rendering/OpenSimRenderer.hpp
-    src/OpenSimBindings/Rendering/SimTKDecorationConsumer.hpp
     src/OpenSimBindings/Rendering/SimTKMeshLoader.cpp
     src/OpenSimBindings/Rendering/SimTKMeshLoader.hpp
     src/OpenSimBindings/Rendering/SimTKRenderer.cpp
