@@ -119,11 +119,11 @@ namespace
             cylinderXform.scale *= t.scale;
 
             m_Consumer(osc::SimpleSceneDecoration
-                {
-                    m_MeshCache.getCylinderMesh(),
-                    cylinderXform,
-                    GetColor(d),
-                });
+            {
+                m_MeshCache.getCylinderMesh(),
+                cylinderXform,
+                GetColor(d),
+            });
         }
 
         void implementBrickGeometry(SimTK::DecorativeBrick const& d) override
@@ -132,11 +132,11 @@ namespace
             t.scale *= osc::ToVec3(d.getHalfLengths());
 
             m_Consumer(osc::SimpleSceneDecoration
-                {
-                    m_MeshCache.getBrickMesh(),
-                    t,
-                    GetColor(d)
-                });
+            {
+                m_MeshCache.getBrickMesh(),
+                t,
+                GetColor(d)
+            });
         }
 
         void implementCylinderGeometry(SimTK::DecorativeCylinder const& d) override
@@ -149,11 +149,11 @@ namespace
             t.scale.z *= radius;
 
             m_Consumer(osc::SimpleSceneDecoration
-                {
-                    m_MeshCache.getCylinderMesh(),
-                    t,
-                    GetColor(d),
-                });
+            {
+                m_MeshCache.getCylinderMesh(),
+                t,
+                GetColor(d),
+            });
         }
 
         void implementCircleGeometry(SimTK::DecorativeCircle const& d) override
@@ -165,11 +165,11 @@ namespace
             t.scale.y *= radius;
 
             m_Consumer(osc::SimpleSceneDecoration
-                {
-                    m_MeshCache.getCircleMesh(),
-                    t,
-                    GetColor(d),
-                });
+            {
+                m_MeshCache.getCircleMesh(),
+                t,
+                GetColor(d),
+            });
         }
 
         void implementSphereGeometry(SimTK::DecorativeSphere const& d) override
@@ -178,11 +178,11 @@ namespace
             t.scale *= m_FixupScaleFactor * static_cast<float>(d.getRadius());
 
             m_Consumer(osc::SimpleSceneDecoration
-                {
-                    m_MeshCache.getSphereMesh(),
-                    t,
-                    GetColor(d),
-                });
+            {
+                m_MeshCache.getSphereMesh(),
+                t,
+                GetColor(d),
+            });
         }
 
         void implementEllipsoidGeometry(SimTK::DecorativeEllipsoid const& d) override
@@ -191,11 +191,11 @@ namespace
             t.scale *= osc::ToVec3(d.getRadii());
 
             m_Consumer(osc::SimpleSceneDecoration
-                {
-                    m_MeshCache.getSphereMesh(),
-                    t,
-                    GetColor(d),
-                });
+            {
+                m_MeshCache.getSphereMesh(),
+                t,
+                GetColor(d),
+            });
         }
 
         void implementFrameGeometry(SimTK::DecorativeFrame const& d) override
@@ -265,25 +265,24 @@ namespace
             auto const meshLoaderFunc = [&d]() { return osc::ToOscMesh(d.getMesh()); };
 
             m_Consumer(osc::SimpleSceneDecoration
-                {
-                    m_MeshCache.get(id, meshLoaderFunc),
-                    ToOscTransform(d),
-                    GetColor(d),
-                });
+            {
+                m_MeshCache.get(id, meshLoaderFunc),
+                ToOscTransform(d),
+                GetColor(d),
+            });
         }
 
         void implementMeshFileGeometry(SimTK::DecorativeMeshFile const& d) override
         {
             std::string const& path = d.getMeshFile();
             auto meshLoader = [&path](){ return osc::LoadMeshViaSimTK(path); };
-            osc::Mesh const mesh = m_MeshCache.get(d.getMeshFile(), meshLoader);
 
             m_Consumer(osc::SimpleSceneDecoration
-                {
-                    mesh,
-                    ToOscTransform(d),
-                    GetColor(d)
-                });
+            {
+                m_MeshCache.get(path, meshLoader),
+                ToOscTransform(d),
+                GetColor(d)
+            });
         }
 
         void implementArrowGeometry(SimTK::DecorativeArrow const& d) override
@@ -311,20 +310,20 @@ namespace
             // emit neck cylinder
             osc::Transform const neckXform = osc::SimbodyCylinderToSegmentTransform({neckStart, neckEnd}, neckThickness);
             m_Consumer(osc::SimpleSceneDecoration
-                {
-                    m_MeshCache.getCylinderMesh(),
-                    neckXform,
-                    color
-                });
+            {
+                m_MeshCache.getCylinderMesh(),
+                neckXform,
+                color
+            });
 
             // emit head cone
             osc::Transform const headXform = osc::SimbodyCylinderToSegmentTransform({headStart, headEnd}, headThickness);
             m_Consumer(osc::SimpleSceneDecoration
-                {
-                    m_MeshCache.getConeMesh(),
-                    headXform,
-                    color
-                });
+            {
+                m_MeshCache.getConeMesh(),
+                headXform,
+                color
+            });
         }
 
         void implementTorusGeometry(SimTK::DecorativeTorus const& d) override
@@ -333,11 +332,11 @@ namespace
             float const tubeRadius = static_cast<float>(d.getTubeRadius());
 
             m_Consumer(osc::SimpleSceneDecoration
-                {
-                    m_MeshCache.getTorusMesh(torusCenterToTubeCenterRadius, tubeRadius),
-                    ToOscTransform(d),
-                    GetColor(d)
-                });
+            {
+                m_MeshCache.getTorusMesh(torusCenterToTubeCenterRadius, tubeRadius),
+                ToOscTransform(d),
+                GetColor(d)
+            });
         }
 
         void implementConeGeometry(SimTK::DecorativeCone const& d) override
@@ -357,11 +356,11 @@ namespace
             coneXform.scale *= t.scale;
 
             m_Consumer(osc::SimpleSceneDecoration
-                {
-                    m_MeshCache.getConeMesh(),
-                    coneXform,
-                    GetColor(d)
-                });
+            {
+                m_MeshCache.getConeMesh(),
+                coneXform,
+                GetColor(d)
+            });
         }
 
         osc::MeshCache& m_MeshCache;

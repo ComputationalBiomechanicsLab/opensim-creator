@@ -204,7 +204,7 @@ namespace
         {
             if (OpenSim::PathWrapPoint const* pwp = dynamic_cast<OpenSim::PathWrapPoint const*>(pps[i]))
             {
-                osc::Transform body2ground = osc::ToTransform(pwp->getParentFrame().getTransformInGround(st));
+                osc::Transform body2ground = TransformInGround(pwp->getParentFrame(), st);
                 OpenSim::Array<SimTK::Vec3> const& wrapPath = pwp->getWrapPath(st);
 
                 for (int j = 0; j < wrapPath.getSize(); ++j)
@@ -329,14 +329,29 @@ namespace
             return m_MeshCache;
         }
 
+        osc::Mesh const& getSphereMesh() const
+        {
+            return m_SphereMesh;
+        }
+
+        osc::Mesh const& getCylinderMesh() const
+        {
+            return m_CylinderMesh;
+        }
+
         OpenSim::ModelDisplayHints const& getModelDisplayHints() const
         {
-            return m_Model.getDisplayHints();
+            return m_ModelDisplayHints;
+        }
+
+        bool getShowPathPoints() const
+        {
+            return m_ShowPathPoints;
         }
 
         SimTK::SimbodyMatterSubsystem const& getMatterSubsystem() const
         {
-            return m_Model.getSystem().getMatterSubsystem();
+            return m_MatterSubsystem;
         }
 
         SimTK::State const& getState() const
@@ -369,72 +384,57 @@ namespace
             };
 
             m_GeomList.clear();
-
+            componentToRender.generateDecorations(
+                true,
+                getModelDisplayHints(),
+                getState(),
+                m_GeomList
+            );
+            for (SimTK::DecorativeGeometry const& geom : m_GeomList)
             {
-                OSC_PERF("OpenSim::Component::generateDecorations(true, ...)");
-                componentToRender.generateDecorations(
-                    true,
-                    getModelDisplayHints(),
+                osc::GenerateDecorations(
+                    updMeshCache(),
+                    getMatterSubsystem(),
                     getState(),
-                    m_GeomList
+                    geom,
+                    getFixupScaleFactor(),
+                    callback
                 );
             }
 
-            {
-                OSC_PERF("(pump fixed decorations into OSC)");
-                for (SimTK::DecorativeGeometry const& geom : m_GeomList)
-                {
-                    osc::GenerateDecorations(
-                        m_MeshCache,
-                        getMatterSubsystem(),
-                        getState(),
-                        geom,
-                        m_FixupScaleFactor,
-                        callback
-                    );
-                }
-            }
             m_GeomList.clear();
-
+            componentToRender.generateDecorations(
+                false,
+                getModelDisplayHints(),
+                getState(),
+                m_GeomList
+            );
+            for (SimTK::DecorativeGeometry const& geom : m_GeomList)
             {
-                OSC_PERF("OpenSim::Component::generateDecorations(false, ...)");
-                componentToRender.generateDecorations(
-                    false,
-                    getModelDisplayHints(),
+                osc::GenerateDecorations(
+                    updMeshCache(),
+                    getMatterSubsystem(),
                     getState(),
-                    m_GeomList
+                    geom,
+                    getFixupScaleFactor(),
+                    callback
                 );
-            }
-
-            {
-                OSC_PERF("(pump dynamic decorations into OSC)");
-                for (SimTK::DecorativeGeometry const& geom : m_GeomList)
-                {
-                    osc::GenerateDecorations(
-                        m_MeshCache,
-                        getMatterSubsystem(),
-                        getState(),
-                        geom,
-                        m_FixupScaleFactor,
-                        callback
-                    );
-                }
             }
         }
 
     private:
         osc::MeshCache& m_MeshCache;
+        osc::Mesh m_SphereMesh = m_MeshCache.getSphereMesh();
+        osc::Mesh m_CylinderMesh = m_MeshCache.getCylinderMesh();
         OpenSim::Model const& m_Model;
+        OpenSim::ModelDisplayHints const& m_ModelDisplayHints = m_Model.getDisplayHints();
+        bool m_ShowPathPoints = m_ModelDisplayHints.get_show_path_points();
+        SimTK::SimbodyMatterSubsystem const& m_MatterSubsystem = m_Model.getSystem().getMatterSubsystem();
         SimTK::State const& m_State;
         osc::CustomDecorationOptions const& m_Opts;
         float m_FixupScaleFactor;
         std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> const& m_Out;
         SimTK::Array_<SimTK::DecorativeGeometry> m_GeomList;
-    };
-
-    enum class HandlerResponse {
-        Handled,
-        Ignored,
     };
 
     // OSC-specific decoration handler for `OpenSim::PointToPointSpring`
@@ -455,7 +455,7 @@ namespace
 
         rs.consume(p2p, osc::SceneDecoration
         {
-            rs.updMeshCache().getCylinderMesh(),
+            rs.getCylinderMesh(),
             cylinderXform,
             glm::vec4{0.7f, 0.7f, 0.7f, 1.0f},
         });
@@ -474,7 +474,7 @@ namespace
 
         rs.consume(s, osc::SceneDecoration
         {
-            rs.updMeshCache().getSphereMesh(),
+            rs.getSphereMesh(),
             xform,
             glm::vec4{1.0f, 0.0f, 0.0f, 1.0f},
         });
@@ -485,12 +485,12 @@ namespace
         RendererState& rs,
         OpenSim::ScapulothoracicJoint const& scapuloJoint)
     {
-        osc::Transform t = osc::ToTransform(scapuloJoint.getParentFrame().getTransformInGround(rs.getState()));
+        osc::Transform t = TransformInGround(scapuloJoint.getParentFrame(), rs.getState());
         t.scale = osc::ToVec3(scapuloJoint.get_thoracic_ellipsoid_radii_x_y_z());
 
         rs.consume(scapuloJoint, osc::SceneDecoration
         {
-            rs.updMeshCache().getSphereMesh(),
+            rs.getSphereMesh(),
             t,
             glm::vec4{1.0f, 1.0f, 0.0f, 0.2f},
         });
@@ -512,7 +512,7 @@ namespace
 
             rs.consume(b, osc::SceneDecoration
             {
-                rs.updMeshCache().getSphereMesh(),
+                rs.getSphereMesh(),
                 t,
                 glm::vec4{0.0f, 0.0f, 0.0f, 1.0f},
             });
@@ -551,7 +551,7 @@ namespace
 
         osc::SceneDecoration fiberSpherePrototype =
         {
-            rs.updMeshCache().getSphereMesh(),
+            rs.getSphereMesh(),
             osc::Transform{},
             fiberColor,
         };
@@ -573,7 +573,7 @@ namespace
 
             rs.consume(muscle, osc::SceneDecoration
             {
-                rs.updMeshCache().getCylinderMesh(),
+                rs.getCylinderMesh(),
                 cylinderXform,
                 tendonColor,
             });
@@ -590,7 +590,7 @@ namespace
 
             rs.consume(muscle, osc::SceneDecoration
             {
-                rs.updMeshCache().getCylinderMesh(),
+                rs.getCylinderMesh(),
                 cylinderXform,
                 fiberColor,
             });
@@ -746,7 +746,9 @@ namespace
             // ensure that user-defined path points are independently selectable (#425)
             //
             // TODO: SCONE-style etc. should also support this
-            OpenSim::Component const& c = pp.maybePathPoint ? *pp.maybePathPoint : static_cast<OpenSim::Component const&>(musc);
+            OpenSim::Component const& c = pp.maybePathPoint ?
+                *pp.maybePathPoint :
+                static_cast<OpenSim::Component const&>(musc);
 
             osc::Transform t;
             t.scale *= fiberUiRadius;
@@ -754,7 +756,7 @@ namespace
 
             rs.consume(c, osc::SceneDecoration
             {
-                rs.updMeshCache().getSphereMesh(),
+                rs.getSphereMesh(),
                 t,
                 fiberColor,
             });
@@ -766,13 +768,13 @@ namespace
 
             rs.consume(musc, osc::SceneDecoration
             {
-                rs.updMeshCache().getCylinderMesh(),
+                rs.getCylinderMesh(),
                 cylinderXform,
                 fiberColor,
             });
         };
 
-        bool const showPathPoints = rs.getModelDisplayHints().get_show_path_points();
+        bool const showPathPoints = rs.getShowPathPoints();
         if (showPathPoints)
         {
             emitSphere(pps.front());
@@ -957,7 +959,7 @@ void osc::GenerateModelDecorations(
     float fixupScaleFactor,
     std::function<void(OpenSim::Component const&, SceneDecoration&&)> const& out)
 {
-    OSC_PERF("scene generation");
+    OSC_PERF("OpenSimRenderer/GenerateModelDecorations");
 
     RendererState rendererState
     {
