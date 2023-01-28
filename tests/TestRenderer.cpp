@@ -10,7 +10,7 @@
 #include "src/Graphics/MaterialPropertyBlock.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshGen.hpp"
-#include "src/Graphics/MeshTopography.hpp"
+#include "src/Graphics/MeshTopology.hpp"
 #include "src/Graphics/RenderTexture.hpp"
 #include "src/Graphics/RenderTextureDescriptor.hpp"
 #include "src/Graphics/RenderTextureFormat.hpp"
@@ -892,14 +892,6 @@ TEST_F(Renderer, MaterialCanCompareNotEquals)
     ASSERT_NE(m1, m2);
 }
 
-TEST_F(Renderer, MaterialCanCompareLessThan)
-{
-    osc::Material m1 = GenerateMaterial();
-    osc::Material m2 = GenerateMaterial();
-
-    m1 < m2;  // should compile and not throw, but no guarantees about ordering
-}
-
 TEST_F(Renderer, MaterialCanPrintToStringStream)
 {
     osc::Material m1 = GenerateMaterial();
@@ -1174,14 +1166,6 @@ TEST_F(Renderer, MaterialPropertyBlockDifferentMaterialBlocksCompareNotEqual)
     m1.setFloat("someKey", GenerateFloat());
 
     ASSERT_NE(m1, m2);
-}
-
-TEST_F(Renderer, MaterialPropertyBlockCanCompareLessThan)
-{
-    osc::MaterialPropertyBlock m1;
-    osc::MaterialPropertyBlock m2;
-
-    m1 < m2;  // just ensure this compiles and runs
 }
 
 TEST_F(Renderer, MaterialPropertyBlockCanPrintToOutputStream)
@@ -1539,14 +1523,6 @@ TEST_F(Renderer, TextureChangingFilterModeMakesCopyUnequal)
     ASSERT_NE(t1, t2);
 }
 
-TEST_F(Renderer, TextureCanBeComparedLessThan)
-{
-    osc::Texture2D t1 = GenerateTexture();
-    osc::Texture2D t2 = GenerateTexture();
-
-    t1 < t2;  // just ensure it compiles + runs
-}
-
 TEST_F(Renderer, TextureCanBeWrittenToOutputStream)
 {
     osc::Texture2D t = GenerateTexture();
@@ -1557,11 +1533,11 @@ TEST_F(Renderer, TextureCanBeWrittenToOutputStream)
     ASSERT_FALSE(ss.str().empty());
 }
 
-TEST_F(Renderer, MeshTopographyAllCanBeWrittenToStream)
+TEST_F(Renderer, MeshTopologyAllCanBeWrittenToStream)
 {
-    for (int i = 0; i < static_cast<int>(osc::MeshTopography::TOTAL); ++i)
+    for (int i = 0; i < static_cast<int>(osc::MeshTopology::TOTAL); ++i)
     {
-        osc::MeshTopography mt = static_cast<osc::MeshTopography>(i);
+        osc::MeshTopology mt = static_cast<osc::MeshTopology>(i);
 
         std::stringstream ss;
 
@@ -1615,42 +1591,42 @@ TEST_F(Renderer, MeshCanMeMoveAssigned)
     m1 = std::move(m2);
 }
 
-TEST_F(Renderer, MeshCanGetTopography)
+TEST_F(Renderer, MeshCanGetTopology)
 {
     osc::Mesh m;
 
-    m.getTopography();
+    m.getTopology();
 }
 
-TEST_F(Renderer, MeshGetTopographyDefaultsToTriangles)
+TEST_F(Renderer, MeshGetTopologyDefaultsToTriangles)
 {
     osc::Mesh m;
 
-    ASSERT_EQ(m.getTopography(), osc::MeshTopography::Triangles);
+    ASSERT_EQ(m.getTopology(), osc::MeshTopology::Triangles);
 }
 
-TEST_F(Renderer, MeshSetTopographyCausesGetTopographyToUseSetValue)
+TEST_F(Renderer, MeshSetTopologyCausesGetTopologyToUseSetValue)
 {
     osc::Mesh m;
-    osc::MeshTopography topography = osc::MeshTopography::Lines;
+    osc::MeshTopology topography = osc::MeshTopology::Lines;
 
-    ASSERT_NE(m.getTopography(), osc::MeshTopography::Lines);
+    ASSERT_NE(m.getTopology(), osc::MeshTopology::Lines);
 
-    m.setTopography(topography);
+    m.setTopology(topography);
 
-    ASSERT_EQ(m.getTopography(), topography);
+    ASSERT_EQ(m.getTopology(), topography);
 }
 
-TEST_F(Renderer, MeshSetTopographyCausesCopiedMeshTobeNotEqualToInitialMesh)
+TEST_F(Renderer, MeshSetTopologyCausesCopiedMeshTobeNotEqualToInitialMesh)
 {
     osc::Mesh m;
     osc::Mesh copy{m};
-    osc::MeshTopography topography = osc::MeshTopography::Lines;
+    osc::MeshTopology topology = osc::MeshTopology::Lines;
 
     ASSERT_EQ(m, copy);
-    ASSERT_NE(copy.getTopography(), topography);
+    ASSERT_NE(copy.getTopology(), topology);
 
-    copy.setTopography(topography);
+    copy.setTopology(topology);
 
     ASSERT_NE(m, copy);
 }
@@ -1931,14 +1907,6 @@ TEST_F(Renderer, MeshCanBeComparedForNotEquals)
     osc::Mesh m2;
 
     m1 != m2;
-}
-
-TEST_F(Renderer, MeshCanBeComparedLessThan)
-{
-    osc::Mesh m1;
-    osc::Mesh m2;
-
-    m1 < m2;
 }
 
 TEST_F(Renderer, MeshCanBeWrittenToOutputStreamForDebugging)

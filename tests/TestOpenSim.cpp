@@ -19,7 +19,7 @@
 TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 {
 	auto config = osc::Config::load();
-	osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
+	//osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
 
 	// data sources
 	std::filesystem::path modelPath{config->getResourceDir() / "models" / "Arm26" / "arm26.osim"};
@@ -77,7 +77,7 @@ TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 TEST(OpenSimModel, EditingACoordinateLockMutatesModel)
 {
 	auto config = osc::Config::load();
-	osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
+	//osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
 
 	std::filesystem::path modelPath{config->getResourceDir() / "models" / "Arm26" / "arm26.osim"};
     OpenSim::ComponentPath coordinatePath{"/jointset/r_shoulder/r_shoulder_elev"};
@@ -108,7 +108,7 @@ TEST(OpenSimModel, EditingACoordinateLockMutatesModel)
 TEST(OpenSimModel, DISABLED_CreatingCircularJointConnectionToGroundDoesNotSegfault)
 {
 	auto config = osc::Config::load();
-	osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
+	//osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
 
 	OpenSim::Model m;
 	OpenSim::PhysicalFrame const& groundFrame = m.getGround();
