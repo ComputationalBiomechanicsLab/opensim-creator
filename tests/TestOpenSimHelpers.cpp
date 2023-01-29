@@ -82,3 +82,63 @@ TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
 		osc::log::info("%s", msg.c_str());
 	}
 }
+
+TEST(OpenSimHelpers, GetAbsolutePathStringWorksForModel)
+{
+	OpenSim::Model m;
+	std::string const s = osc::GetAbsolutePathString(m);
+	ASSERT_EQ(s, "/");
+}
+
+TEST(OpenSimHelpers, GetAbsolutePathStringWithOutparamWorksForModel)
+{
+	OpenSim::Model m;
+	std::string outparam = "somejunk";
+	osc::GetAbsolutePathString(m, outparam);
+	ASSERT_EQ(outparam, "/");
+}
+
+TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForComplexModel)
+{
+	auto config = osc::Config::load();
+	std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+
+	OpenSim::Model m{modelPath.string()};
+	std::string outparam;
+	for (OpenSim::Component const& c : m.getComponentList())
+	{
+		// test both the "pure" and "assigning" versions at the same time
+		osc::GetAbsolutePathString(c, outparam);
+		ASSERT_EQ(c.getAbsolutePathString(), osc::GetAbsolutePathString(c));
+		ASSERT_EQ(c.getAbsolutePathString(), outparam);
+	}
+}
+
+TEST(OpenSimHelpers, GetAbsolutePathReturnsSameResultAsOpenSimVersionForComplexModel)
+{
+	auto config = osc::Config::load();
+	std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+
+	OpenSim::Model m{modelPath.string()};
+	for (OpenSim::Component const& c : m.getComponentList())
+	{
+		ASSERT_EQ(c.getAbsolutePath(), osc::GetAbsolutePath(c));
+	}
+}
+
+TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsEmptyIfPassedANullptr)
+{
+	ASSERT_EQ(OpenSim::ComponentPath{}, osc::GetAbsolutePathOrEmpty(nullptr));
+}
+
+TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionForComplexModel)
+{
+	auto config = osc::Config::load();
+	std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+
+	OpenSim::Model m{modelPath.string()};
+	for (OpenSim::Component const& c : m.getComponentList())
+	{
+		ASSERT_EQ(c.getAbsolutePath(), osc::GetAbsolutePathOrEmpty(&c));
+	}
+}
