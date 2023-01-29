@@ -238,32 +238,38 @@ namespace
             osc::CustomDecorationOptions const& decorationOptions,
             osc::CustomRenderingOptions const& renderingOptions)
         {
+            OpenSim::Model const& model = msp.getModel();
+            osc::UID const modelVersion = msp.getModelVersion();
+            SimTK::State const& state = msp.getState();
+            osc::UID const stateVersion = msp.getStateVersion();
             OpenSim::Component const* const selected = msp.getSelected();
             OpenSim::Component const* const hovered = msp.getHovered();
+            float fixupFactor = msp.getFixupScaleFactor();
 
-            if (msp.getModelVersion() != m_LastModelVersion ||
-                msp.getStateVersion() != m_LastStateVersion ||
-                selected != osc::FindComponent(msp.getModel(), m_LastSelection) ||
-                hovered != osc::FindComponent(msp.getModel(), m_LastHover) ||
-                msp.getFixupScaleFactor() != m_LastFixupFactor ||
+            if (modelVersion != m_LastModelVersion ||
+                stateVersion != m_LastStateVersion ||
+                selected != osc::FindComponent(model, m_LastSelection) ||
+                hovered != osc::FindComponent(model, m_LastHover) ||
+                fixupFactor != m_LastFixupFactor ||
                 decorationOptions != m_LastDecorationOptions ||
                 renderingOptions != m_LastRenderingOptions)
             {
+                OSC_PERF("CachedScene/recomputeScene");
+
                 // update cache checks
-                m_LastModelVersion = msp.getModelVersion();
-                m_LastStateVersion = msp.getStateVersion();
+                m_LastModelVersion = modelVersion;
+                m_LastStateVersion = stateVersion;
                 m_LastSelection = osc::GetAbsolutePathOrEmpty(selected);
                 m_LastHover = osc::GetAbsolutePathOrEmpty(hovered);
-                m_LastFixupFactor = msp.getFixupScaleFactor();
+                m_LastFixupFactor = fixupFactor;
                 m_LastDecorationOptions = decorationOptions;
                 m_LastRenderingOptions = renderingOptions;
-                m_Version = osc::UID{};
+                m_Version.reset();
 
                 std::shared_ptr<osc::MeshCache> const meshCache = osc::App::singleton<osc::MeshCache>();
 
                 // generate decorations from OpenSim/SimTK backend
                 {
-                    OSC_PERF("generate decorations");
                     m_Decorations.clear();
 
                     OpenSim::Component const* lastComponent = nullptr;
@@ -272,10 +278,10 @@ namespace
 
                     osc::GenerateModelDecorations(
                         *meshCache,
-                        msp.getModel(),
-                        msp.getState(),
+                        model,
+                        state,
                         decorationOptions,
-                        msp.getFixupScaleFactor(),
+                        fixupFactor,
                         [this, selected, hovered, lastComponent, lastID, lastFlags](OpenSim::Component const& c, osc::SceneDecoration&& dec) mutable
                         {
                             if (&c == lastComponent)
@@ -307,9 +313,9 @@ namespace
                 // generate screen-specific overlays
                 if (renderingOptions.getDrawAABBs())
                 {
-                    for (size_t i = 0, len = m_Decorations.size(); i < len; ++i)
+                    for (osc::SceneDecoration const& decoration : m_Decorations)
                     {
-                        DrawAABB(*meshCache, GetWorldspaceAABB(m_Decorations[i]), pushToDecorationsList);
+                        DrawAABB(*meshCache, GetWorldspaceAABB(decoration), pushToDecorationsList);
                     }
                 }
 
