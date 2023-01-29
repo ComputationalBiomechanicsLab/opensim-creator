@@ -84,102 +84,11 @@ namespace
         osc::WriteDecorationsAsDAE(scene, outfile);
         osc::log::info("wrote scene as a DAE file to %s", daePath.string().c_str());
     }
+}
 
-    void DrawMuscleRenderingOptionsRadioButtions(osc::CustomDecorationOptions& opts)
-    {
-        osc::MuscleDecorationStyle const currentStyle = opts.getMuscleDecorationStyle();
-        nonstd::span<osc::MuscleDecorationStyle const> const allStyles = osc::GetAllMuscleDecorationStyles();
-        nonstd::span<char const* const>  const allStylesStrings = osc::GetAllMuscleDecorationStyleStrings();
-        int const currentStyleIndex = osc::GetIndexOf(currentStyle);
-
-        for (int i = 0; i < static_cast<int>(allStyles.size()); ++i)
-        {
-            if (ImGui::RadioButton(allStylesStrings[i], i == currentStyleIndex))
-            {
-                opts.setMuscleDecorationStyle(allStyles[i]);
-            }
-        }
-    }
-
-    void DrawMuscleSizingOptionsRadioButtons(osc::CustomDecorationOptions& opts)
-    {
-        osc::MuscleSizingStyle const currentStyle = opts.getMuscleSizingStyle();
-        nonstd::span<osc::MuscleSizingStyle const> const allStyles = osc::GetAllMuscleSizingStyles();
-        nonstd::span<char const* const>  const allStylesStrings = osc::GetAllMuscleSizingStyleStrings();
-        int const currentStyleIndex = osc::GetIndexOf(currentStyle);
-
-        for (int i = 0; i < static_cast<int>(allStyles.size()); ++i)
-        {
-            if (ImGui::RadioButton(allStylesStrings[i], i == currentStyleIndex))
-            {
-                opts.setMuscleSizingStyle(allStyles[i]);
-            }
-        }
-    }
-
-    void DrawMuscleColoringOptionsRadioButtons(osc::CustomDecorationOptions& opts)
-    {
-        osc::MuscleColoringStyle const currentStyle = opts.getMuscleColoringStyle();
-        nonstd::span<osc::MuscleColoringStyle const> const allStyles = osc::GetAllMuscleColoringStyles();
-        nonstd::span<char const* const>  const allStylesStrings = osc::GetAllMuscleColoringStyleStrings();
-        int const currentStyleIndex = osc::GetIndexOf(currentStyle);
-
-        for (int i = 0; i < static_cast<int>(allStyles.size()); ++i)
-        {
-            if (ImGui::RadioButton(allStylesStrings[i], i == currentStyleIndex))
-            {
-                opts.setMuscleColoringStyle(allStyles[i]);
-            }
-        }
-    }
-
-    void DrawMuscleDecorationOptionsEditor(osc::CustomDecorationOptions& opts)
-    {
-        int id = 0;
-
-        ImGui::PushID(id++);
-        ImGui::TextDisabled("Rendering");
-        DrawMuscleRenderingOptionsRadioButtions(opts);
-        ImGui::PopID();
-
-        ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
-        ImGui::PushID(id++);
-        ImGui::TextDisabled("Sizing");
-        DrawMuscleSizingOptionsRadioButtons(opts);
-        ImGui::PopID();
-
-        ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
-        ImGui::PushID(id++);
-        ImGui::TextDisabled("Coloring");
-        DrawMuscleColoringOptionsRadioButtons(opts);
-        ImGui::PopID();
-    }
-
-    void DrawRenderingOptionsEditor(osc::CustomRenderingOptions& opts)
-    {
-        std::optional<ptrdiff_t> lastGroup;
-        for (size_t i = 0; i < opts.getNumOptions(); ++i)
-        {
-            // print header, if necessary
-            ptrdiff_t const group = opts.getOptionGroupIndex(i);
-            if (group != lastGroup)
-            {
-                if (lastGroup)
-                {
-                    ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
-                }
-                ImGui::TextDisabled("%s", opts.getGroupLabel(group).c_str());
-                lastGroup = group;
-            }
-
-            bool value = opts.getOptionValue(i);
-            if (ImGui::Checkbox(opts.getOptionLabel(i).c_str(), &value))
-            {
-                opts.setOptionValue(i, value);
-            }
-        }
-    }
-
+// rendering utils
+namespace
+{
     // helper: compute the decoration flags for a given component
     osc::SceneDecorationFlags ComputeFlags(
         OpenSim::Component const& c,
@@ -297,7 +206,7 @@ namespace
                                 lastFlags = dec.flags;
                                 lastComponent = &c;
                             }
-                            m_Decorations.push_back(std::move(dec));
+                    m_Decorations.push_back(std::move(dec));
                         }
                     );
                 }
@@ -358,76 +267,6 @@ namespace
         osc::UID m_Version;
         std::vector<osc::SceneDecoration> m_Decorations;
         osc::BVH m_BVH;
-    };
-
-    class IconWithoutMenu final {
-    public:
-        IconWithoutMenu(
-            osc::Icon icon,
-            osc::CStringView title,
-            osc::CStringView description) :
-            m_Icon{std::move(icon)},
-            m_Title{title},
-            m_Description{description}
-        {
-        }
-
-        std::string const& getIconID() const
-        {
-            return m_ButtonID;
-        }
-
-        std::string const& getTitle() const
-        {
-            return m_Title;
-        }
-
-        bool draw()
-        {
-            bool rv = osc::ImageButton(m_ButtonID, m_Icon.getTexture(), m_Icon.getDimensions());
-            osc::DrawTooltipIfItemHovered(m_Title, m_Description);
-
-            return rv;
-        }
-
-    private:
-        osc::Icon m_Icon;
-        std::string m_Title;
-        std::string m_ButtonID = "##" + m_Title;
-        std::string m_Description;
-    };
-
-    class IconWithMenu final {
-    public:
-        IconWithMenu(
-            osc::Icon icon,
-            osc::CStringView title,
-            osc::CStringView description,
-            std::function<void()> const& contentRenderer) :
-            m_IconWithoutMenu{icon, title, description},
-            m_ContentRenderer{contentRenderer}
-        {
-        }
-
-        void draw()
-        {
-            if (m_IconWithoutMenu.draw())
-            {
-                ImGui::OpenPopup(m_ContextMenuID.c_str());
-            }
-
-            if (ImGui::BeginPopup(m_ContextMenuID.c_str(),ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings))
-            {
-                ImGui::TextDisabled("%s", m_IconWithoutMenu.getTitle().c_str());
-                ImGui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
-                m_ContentRenderer();
-                ImGui::EndPopup();
-            }
-        }
-    private:
-        IconWithoutMenu m_IconWithoutMenu;
-        std::string m_ContextMenuID = "##" + m_IconWithoutMenu.getIconID();
-        std::function<void()> m_ContentRenderer;
     };
 
     struct CachedModelRendererParams final {
@@ -534,6 +373,179 @@ namespace
             *osc::App::singleton<osc::ShaderCache>(),
         };
     };
+}
+
+// icon utils
+namespace
+{
+    class IconWithoutMenu final {
+    public:
+        IconWithoutMenu(
+            osc::Icon icon,
+            osc::CStringView title,
+            osc::CStringView description) :
+            m_Icon{std::move(icon)},
+            m_Title{title},
+            m_Description{description}
+        {
+        }
+
+        std::string const& getIconID() const
+        {
+            return m_ButtonID;
+        }
+
+        std::string const& getTitle() const
+        {
+            return m_Title;
+        }
+
+        bool draw()
+        {
+            bool rv = osc::ImageButton(m_ButtonID, m_Icon.getTexture(), m_Icon.getDimensions());
+            osc::DrawTooltipIfItemHovered(m_Title, m_Description);
+
+            return rv;
+        }
+
+    private:
+        osc::Icon m_Icon;
+        std::string m_Title;
+        std::string m_ButtonID = "##" + m_Title;
+        std::string m_Description;
+    };
+
+    class IconWithMenu final {
+    public:
+        IconWithMenu(
+            osc::Icon icon,
+            osc::CStringView title,
+            osc::CStringView description,
+            std::function<void()> const& contentRenderer) :
+            m_IconWithoutMenu{icon, title, description},
+            m_ContentRenderer{contentRenderer}
+        {
+        }
+
+        void draw()
+        {
+            if (m_IconWithoutMenu.draw())
+            {
+                ImGui::OpenPopup(m_ContextMenuID.c_str());
+            }
+
+            if (ImGui::BeginPopup(m_ContextMenuID.c_str(),ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings))
+            {
+                ImGui::TextDisabled("%s", m_IconWithoutMenu.getTitle().c_str());
+                ImGui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
+                m_ContentRenderer();
+                ImGui::EndPopup();
+            }
+        }
+    private:
+        IconWithoutMenu m_IconWithoutMenu;
+        std::string m_ContextMenuID = "##" + m_IconWithoutMenu.getIconID();
+        std::function<void()> m_ContentRenderer;
+    };
+}
+
+// UI widgets (dropdowns etc.)
+namespace
+{
+    void DrawMuscleRenderingOptionsRadioButtions(osc::CustomDecorationOptions& opts)
+    {
+        osc::MuscleDecorationStyle const currentStyle = opts.getMuscleDecorationStyle();
+        nonstd::span<osc::MuscleDecorationStyle const> const allStyles = osc::GetAllMuscleDecorationStyles();
+        nonstd::span<char const* const>  const allStylesStrings = osc::GetAllMuscleDecorationStyleStrings();
+        int const currentStyleIndex = osc::GetIndexOf(currentStyle);
+
+        for (int i = 0; i < static_cast<int>(allStyles.size()); ++i)
+        {
+            if (ImGui::RadioButton(allStylesStrings[i], i == currentStyleIndex))
+            {
+                opts.setMuscleDecorationStyle(allStyles[i]);
+            }
+        }
+    }
+
+    void DrawMuscleSizingOptionsRadioButtons(osc::CustomDecorationOptions& opts)
+    {
+        osc::MuscleSizingStyle const currentStyle = opts.getMuscleSizingStyle();
+        nonstd::span<osc::MuscleSizingStyle const> const allStyles = osc::GetAllMuscleSizingStyles();
+        nonstd::span<char const* const>  const allStylesStrings = osc::GetAllMuscleSizingStyleStrings();
+        int const currentStyleIndex = osc::GetIndexOf(currentStyle);
+
+        for (int i = 0; i < static_cast<int>(allStyles.size()); ++i)
+        {
+            if (ImGui::RadioButton(allStylesStrings[i], i == currentStyleIndex))
+            {
+                opts.setMuscleSizingStyle(allStyles[i]);
+            }
+        }
+    }
+
+    void DrawMuscleColoringOptionsRadioButtons(osc::CustomDecorationOptions& opts)
+    {
+        osc::MuscleColoringStyle const currentStyle = opts.getMuscleColoringStyle();
+        nonstd::span<osc::MuscleColoringStyle const> const allStyles = osc::GetAllMuscleColoringStyles();
+        nonstd::span<char const* const>  const allStylesStrings = osc::GetAllMuscleColoringStyleStrings();
+        int const currentStyleIndex = osc::GetIndexOf(currentStyle);
+
+        for (int i = 0; i < static_cast<int>(allStyles.size()); ++i)
+        {
+            if (ImGui::RadioButton(allStylesStrings[i], i == currentStyleIndex))
+            {
+                opts.setMuscleColoringStyle(allStyles[i]);
+            }
+        }
+    }
+
+    void DrawMuscleDecorationOptionsEditor(osc::CustomDecorationOptions& opts)
+    {
+        int id = 0;
+
+        ImGui::PushID(id++);
+        ImGui::TextDisabled("Rendering");
+        DrawMuscleRenderingOptionsRadioButtions(opts);
+        ImGui::PopID();
+
+        ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+        ImGui::PushID(id++);
+        ImGui::TextDisabled("Sizing");
+        DrawMuscleSizingOptionsRadioButtons(opts);
+        ImGui::PopID();
+
+        ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+        ImGui::PushID(id++);
+        ImGui::TextDisabled("Coloring");
+        DrawMuscleColoringOptionsRadioButtons(opts);
+        ImGui::PopID();
+    }
+
+    void DrawRenderingOptionsEditor(osc::CustomRenderingOptions& opts)
+    {
+        std::optional<ptrdiff_t> lastGroup;
+        for (size_t i = 0; i < opts.getNumOptions(); ++i)
+        {
+            // print header, if necessary
+            ptrdiff_t const group = opts.getOptionGroupIndex(i);
+            if (group != lastGroup)
+            {
+                if (lastGroup)
+                {
+                    ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+                }
+                ImGui::TextDisabled("%s", opts.getGroupLabel(group).c_str());
+                lastGroup = group;
+            }
+
+            bool value = opts.getOptionValue(i);
+            if (ImGui::Checkbox(opts.getOptionLabel(i).c_str(), &value))
+            {
+                opts.setOptionValue(i, value);
+            }
+        }
+    }
 
     void DrawAdvancedParamsEditor(CachedModelRendererParams& params, nonstd::span<osc::SceneDecoration const> drawlist)
     {
