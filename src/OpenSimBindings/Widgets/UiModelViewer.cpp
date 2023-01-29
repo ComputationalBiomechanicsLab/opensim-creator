@@ -18,8 +18,10 @@
 #include "src/Maths/RayCollision.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
+#include "src/OpenSimBindings/Rendering/CachedModelRenderer.hpp"
 #include "src/OpenSimBindings/Rendering/CustomDecorationOptions.hpp"
 #include "src/OpenSimBindings/Rendering/CustomRenderingOptions.hpp"
+#include "src/OpenSimBindings/Rendering/ModelRendererParams.hpp"
 #include "src/OpenSimBindings/Rendering/OpenSimDecorationGenerator.hpp"
 #include "src/OpenSimBindings/Rendering/MuscleColoringStyle.hpp"
 #include "src/OpenSimBindings/Rendering/MuscleDecorationStyle.hpp"
@@ -84,295 +86,6 @@ namespace
         osc::WriteDecorationsAsDAE(scene, outfile);
         osc::log::info("wrote scene as a DAE file to %s", daePath.string().c_str());
     }
-}
-
-// rendering utils
-namespace
-{
-    // helper: compute the decoration flags for a given component
-    osc::SceneDecorationFlags ComputeFlags(
-        OpenSim::Component const& c,
-        OpenSim::Component const* selected,
-        OpenSim::Component const* hovered)
-    {
-        osc::SceneDecorationFlags rv = osc::SceneDecorationFlags_CastsShadows;
-
-        if (&c == selected)
-        {
-            rv |= osc::SceneDecorationFlags_IsSelected;
-        }
-
-        if (&c == hovered)
-        {
-            rv |= osc::SceneDecorationFlags_IsHovered;
-        }
-
-        OpenSim::Component const* ptr = osc::GetOwner(c);
-        while (ptr)
-        {
-            if (ptr == selected)
-            {
-                rv |= osc::SceneDecorationFlags_IsChildOfSelected;
-            }
-            if (ptr == hovered)
-            {
-                rv |= osc::SceneDecorationFlags_IsChildOfHovered;
-            }
-            ptr = osc::GetOwner(*ptr);
-        }
-
-        return rv;
-    }
-
-    // caches + versions scene state
-    class CachedScene final {
-    public:
-        osc::UID getVersion() const
-        {
-            return m_Version;
-        }
-
-        nonstd::span<osc::SceneDecoration const> getDrawlist() const
-        {
-            return m_Decorations;
-        }
-
-        osc::BVH const& getBVH() const
-        {
-            return m_BVH;
-        }
-
-        void populate(
-            osc::VirtualConstModelStatePair const& msp,
-            osc::CustomDecorationOptions const& decorationOptions,
-            osc::CustomRenderingOptions const& renderingOptions)
-        {
-            OpenSim::Model const& model = msp.getModel();
-            osc::UID const modelVersion = msp.getModelVersion();
-            SimTK::State const& state = msp.getState();
-            osc::UID const stateVersion = msp.getStateVersion();
-            OpenSim::Component const* const selected = msp.getSelected();
-            OpenSim::Component const* const hovered = msp.getHovered();
-            float fixupFactor = msp.getFixupScaleFactor();
-
-            if (modelVersion != m_LastModelVersion ||
-                stateVersion != m_LastStateVersion ||
-                selected != osc::FindComponent(model, m_LastSelection) ||
-                hovered != osc::FindComponent(model, m_LastHover) ||
-                fixupFactor != m_LastFixupFactor ||
-                decorationOptions != m_LastDecorationOptions ||
-                renderingOptions != m_LastRenderingOptions)
-            {
-                OSC_PERF("CachedScene/recomputeScene");
-
-                // update cache checks
-                m_LastModelVersion = modelVersion;
-                m_LastStateVersion = stateVersion;
-                m_LastSelection = osc::GetAbsolutePathOrEmpty(selected);
-                m_LastHover = osc::GetAbsolutePathOrEmpty(hovered);
-                m_LastFixupFactor = fixupFactor;
-                m_LastDecorationOptions = decorationOptions;
-                m_LastRenderingOptions = renderingOptions;
-                m_Version.reset();
-
-                std::shared_ptr<osc::MeshCache> const meshCache = osc::App::singleton<osc::MeshCache>();
-
-                // generate decorations from OpenSim/SimTK backend
-                {
-                    m_Decorations.clear();
-
-                    OpenSim::Component const* lastComponent = nullptr;
-                    osc::SceneDecorationFlags lastFlags = osc::SceneDecorationFlags_None;
-                    std::string lastID;
-
-                    osc::GenerateModelDecorations(
-                        *meshCache,
-                        model,
-                        state,
-                        decorationOptions,
-                        fixupFactor,
-                        [this, selected, hovered, lastComponent, lastID, lastFlags](OpenSim::Component const& c, osc::SceneDecoration&& dec) mutable
-                        {
-                            if (&c == lastComponent)
-                            {
-                                dec.id = lastID;
-                                dec.flags = lastFlags;
-                            }
-                            else
-                            {
-                                osc::GetAbsolutePathString(c, lastID);
-                                dec.id = lastID;
-                                dec.flags = ComputeFlags(c, selected, hovered);
-                                lastFlags = dec.flags;
-                                lastComponent = &c;
-                            }
-                    m_Decorations.push_back(std::move(dec));
-                        }
-                    );
-                }
-
-                // create a BVH from the not-overlay parts of the scene
-                osc::UpdateSceneBVH(m_Decorations, m_BVH);
-
-                auto pushToDecorationsList = [this](osc::SceneDecoration&& dec)
-                {
-                    m_Decorations.push_back(std::move(dec));
-                };
-
-                // generate screen-specific overlays
-                if (renderingOptions.getDrawAABBs())
-                {
-                    for (osc::SceneDecoration const& decoration : m_Decorations)
-                    {
-                        DrawAABB(*meshCache, GetWorldspaceAABB(decoration), pushToDecorationsList);
-                    }
-                }
-
-                if (renderingOptions.getDrawBVH())
-                {
-                    DrawBVH(*meshCache, m_BVH, pushToDecorationsList);
-                }
-
-                if (renderingOptions.getDrawXZGrid())
-                {
-                    DrawXZGrid(*meshCache, pushToDecorationsList);
-                }
-
-                if (renderingOptions.getDrawXYGrid())
-                {
-                    DrawXYGrid(*meshCache, pushToDecorationsList);
-                }
-
-                if (renderingOptions.getDrawYZGrid())
-                {
-                    DrawYZGrid(*meshCache, pushToDecorationsList);
-                }
-
-                if (renderingOptions.getDrawAxisLines())
-                {
-                    DrawXZFloorLines(*meshCache, pushToDecorationsList);
-                }
-            }
-        }
-
-    private:
-        osc::UID m_LastModelVersion;
-        osc::UID m_LastStateVersion;
-        OpenSim::ComponentPath m_LastSelection;
-        OpenSim::ComponentPath m_LastHover;
-        float m_LastFixupFactor = 1.0f;
-        osc::CustomDecorationOptions m_LastDecorationOptions;
-        osc::CustomRenderingOptions m_LastRenderingOptions;
-
-        osc::UID m_Version;
-        std::vector<osc::SceneDecoration> m_Decorations;
-        osc::BVH m_BVH;
-    };
-
-    struct CachedModelRendererParams final {
-        osc::CustomDecorationOptions decorationOptions;
-        osc::CustomRenderingOptions renderingOptions;
-        glm::vec3 lightColor = osc::SceneRendererParams{}.lightColor;
-        glm::vec4 backgroundColor = osc::SceneRendererParams{}.backgroundColor;
-        glm::vec3 floorLocation = osc::SceneRendererParams{}.floorLocation;
-        osc::PolarPerspectiveCamera camera = osc::CreateCameraWithRadius(5.0f);
-    };
-
-    class CachedModelRenderer {
-    public:
-        void populate(
-            osc::VirtualConstModelStatePair const& modelState,
-            CachedModelRendererParams const& params)
-        {
-            // todo: cache check
-            m_Scene.populate(modelState, params.decorationOptions, params.renderingOptions);
-        }
-
-        void draw(
-            osc::VirtualConstModelStatePair const& modelState,
-            CachedModelRendererParams const& renderParams,
-            glm::vec2 dims)
-        {
-            // setup render params
-            osc::SceneRendererParams params;
-
-            if (dims.x >= 1.0f && dims.y >= 1.0f)
-            {
-                params.dimensions = dims;
-                params.samples = osc::App::get().getMSXAASamplesRecommended();
-            }
-
-            params.lightDirection = osc::RecommendedLightDirection(renderParams.camera);
-            params.drawFloor = renderParams.renderingOptions.getDrawFloor();
-            params.viewMatrix = renderParams.camera.getViewMtx();
-            params.projectionMatrix = renderParams.camera.getProjMtx(osc::AspectRatio(m_Rendererer.getDimensions()));
-            params.nearClippingPlane = renderParams.camera.znear;
-            params.farClippingPlane = renderParams.camera.zfar;
-            params.viewPos = renderParams.camera.getPos();
-            params.fixupScaleFactor = modelState.getFixupScaleFactor();
-            params.drawRims = renderParams.renderingOptions.getDrawSelectionRims();
-            params.drawMeshNormals = renderParams.renderingOptions.getDrawMeshNormals();
-            params.drawShadows = renderParams.renderingOptions.getDrawShadows();
-            params.lightColor = renderParams.lightColor;
-            params.backgroundColor = renderParams.backgroundColor;
-            params.floorLocation = renderParams.floorLocation;
-
-            // todo: separate population, parameter generation, drawlist yielding, etc. so that
-            // the state machine can play with stuff, etc?
-
-            if (m_Scene.getVersion() != m_RendererPrevDrawlistVersion ||
-                params != m_RendererPrevParams)
-            {
-                m_RendererPrevDrawlistVersion = m_Scene.getVersion();
-                m_RendererPrevParams = params;
-                m_Rendererer.draw(m_Scene.getDrawlist(), params);
-            }
-        }
-
-        osc::RenderTexture& updRenderTexture()
-        {
-            return m_Rendererer.updRenderTexture();
-        }
-
-        nonstd::span<osc::SceneDecoration const> getDrawlist()
-        {
-            return m_Scene.getDrawlist();
-        }
-
-        std::optional<osc::AABB> getRootAABB() const
-        {
-            if (m_Scene.getBVH().nodes.empty())
-            {
-                return std::nullopt;
-            }
-            else
-            {
-                return m_Scene.getBVH().nodes[0].getBounds();
-            }
-        }
-
-        std::vector<osc::SceneCollision> getAllSceneCollisions(osc::Line const& worldspaceRay)
-        {
-            // get decorations list (used for later testing/filtering)
-            nonstd::span<osc::SceneDecoration const> decorations = m_Scene.getDrawlist();
-
-            // find all collisions along the camera ray
-            return osc::GetAllSceneCollisions(m_Scene.getBVH(), decorations, worldspaceRay);
-        }
-
-    private:
-        CachedScene m_Scene;
-
-        // rendering input state
-        osc::SceneRendererParams m_RendererPrevParams;
-        osc::UID m_RendererPrevDrawlistVersion;
-        osc::SceneRenderer m_Rendererer
-        {
-            osc::App::config(),
-            *osc::App::singleton<osc::MeshCache>(),
-            *osc::App::singleton<osc::ShaderCache>(),
-        };
-    };
 }
 
 // icon utils
@@ -547,7 +260,7 @@ namespace
         }
     }
 
-    void DrawAdvancedParamsEditor(CachedModelRendererParams& params, nonstd::span<osc::SceneDecoration const> drawlist)
+    void DrawAdvancedParamsEditor(osc::ModelRendererParams& params, nonstd::span<osc::SceneDecoration const> drawlist)
     {
         ImGui::Text("reposition camera:");
         ImGui::Separator();
@@ -686,7 +399,12 @@ public:
         // render into texture
         {
             OSC_PERF("UiModelViewer/draw/render");
-            m_CachedModelRenderer.draw(rs, m_Params, ImGui::GetContentRegionAvail());
+            m_CachedModelRenderer.draw(
+                rs,
+                m_Params,
+                ImGui::GetContentRegionAvail(),
+                App::get().getMSXAASamplesRecommended()
+            );
         }
 
         // blit texture as an ImGui::Image
@@ -1093,8 +811,13 @@ private:
     }
 
     // rendering parameters
-    CachedModelRendererParams m_Params;
-    CachedModelRenderer m_CachedModelRenderer;
+    ModelRendererParams m_Params;
+    CachedModelRenderer m_CachedModelRenderer
+    {
+        App::get().getConfig(),
+        App::singleton<MeshCache>(),
+        *App::singleton<ShaderCache>()
+    };
 
     // ImGui compositing/hittesting state
     std::shared_ptr<IconCache> m_IconCache = osc::App::singleton<osc::IconCache>(osc::App::resource("icons/"), ImGui::GetTextLineHeight()/128.0f);
