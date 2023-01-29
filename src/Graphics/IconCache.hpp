@@ -10,7 +10,7 @@ namespace osc
 {
     class IconCache final {
     public:
-        explicit IconCache(std::filesystem::path const& iconsDir);
+        IconCache(std::filesystem::path const& iconsDir, float verticalScale);
         IconCache(IconCache const&) = delete;
         IconCache(IconCache&&) noexcept;
         IconCache& operator=(IconCache const&) = delete;

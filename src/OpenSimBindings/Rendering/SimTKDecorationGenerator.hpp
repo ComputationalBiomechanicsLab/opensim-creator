@@ -16,5 +16,6 @@ namespace osc
         SimTK::State const&,
         SimTK::DecorativeGeometry const&,
         float fixupScaleFactor,
-        std::function<void(SimpleSceneDecoration&&)> const& out);
+        std::function<void(SimpleSceneDecoration&&)> const& out
+    );
 }

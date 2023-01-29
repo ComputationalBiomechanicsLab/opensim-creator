@@ -1,4 +1,4 @@
-#include "SimTKRenderer.hpp"
+#include "SimTKDecorationGenerator.hpp"
 
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"

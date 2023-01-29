@@ -1,11 +1,11 @@
 #include "ModelEditorToolbar.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Graphics/Icon.hpp"
+#include "src/Graphics/IconCache.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/Widgets/ParamBlockEditorPopup.hpp"
-#include "src/OpenSimBindings/Rendering/Icon.hpp"
-#include "src/OpenSimBindings/Rendering/IconCache.hpp"
 #include "src/OpenSimBindings/ActionFunctions.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
@@ -331,7 +331,7 @@ private:
     EditorAPI* m_EditorAPI;
     std::shared_ptr<osc::UndoableModelStatePair> m_Model;
 
-    std::shared_ptr<IconCache> m_IconCache = osc::App::singleton<osc::IconCache>(osc::App::resource("icons/"));
+    std::shared_ptr<IconCache> m_IconCache = osc::App::singleton<osc::IconCache>(osc::App::resource("icons/"), ImGui::GetTextLineHeight()/128.0f);
 };
 
 osc::ModelEditorToolbar::ModelEditorToolbar(

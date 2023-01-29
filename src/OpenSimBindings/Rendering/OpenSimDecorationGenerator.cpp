@@ -1,4 +1,4 @@
-#include "OpenSimRenderer.hpp"
+#include "OpenSimDecorationGenerator.hpp"
 
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Mesh.hpp"
@@ -10,7 +10,7 @@
 #include "src/Maths/Segment.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/OpenSimBindings/Rendering/CustomDecorationOptions.hpp"
-#include "src/OpenSimBindings/Rendering/SimTKRenderer.hpp"
+#include "src/OpenSimBindings/Rendering/SimTKDecorationGenerator.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/SimTKHelpers.hpp"
 #include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"

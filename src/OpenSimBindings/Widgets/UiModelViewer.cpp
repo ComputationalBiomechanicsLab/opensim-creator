@@ -3,6 +3,8 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Formats/DAE.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
+#include "src/Graphics/Icon.hpp"
+#include "src/Graphics/IconCache.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Graphics/SceneRenderer.hpp"
@@ -18,9 +20,7 @@
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/OpenSimBindings/Rendering/CustomDecorationOptions.hpp"
 #include "src/OpenSimBindings/Rendering/CustomRenderingOptions.hpp"
-#include "src/OpenSimBindings/Rendering/Icon.hpp"
-#include "src/OpenSimBindings/Rendering/IconCache.hpp"
-#include "src/OpenSimBindings/Rendering/OpenSimRenderer.hpp"
+#include "src/OpenSimBindings/Rendering/OpenSimDecorationGenerator.hpp"
 #include "src/OpenSimBindings/Rendering/MuscleColoringStyle.hpp"
 #include "src/OpenSimBindings/Rendering/MuscleDecorationStyle.hpp"
 #include "src/OpenSimBindings/Rendering/MuscleSizingStyle.hpp"
@@ -1085,7 +1085,7 @@ private:
     CachedModelRenderer m_CachedModelRenderer;
 
     // ImGui compositing/hittesting state
-    std::shared_ptr<IconCache> m_IconCache = osc::App::singleton<osc::IconCache>(osc::App::resource("icons/"));
+    std::shared_ptr<IconCache> m_IconCache = osc::App::singleton<osc::IconCache>(osc::App::resource("icons/"), ImGui::GetTextLineHeight()/128.0f);
     osc::ImGuiItemHittestResult m_RenderedImageHittest;
 
     // a flag that will auto-focus the main scene camera the next time it's used

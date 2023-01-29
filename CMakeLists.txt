@@ -401,6 +401,9 @@ add_library(osccore STATIC
     src/Graphics/GraphicsHelpers.cpp
     src/Graphics/GraphicsHelpers.hpp
     src/Graphics/GraphicsImplementation.cpp
+    src/Graphics/Icon.hpp
+    src/Graphics/IconCache.cpp
+    src/Graphics/IconCache.hpp
     src/Graphics/Image.cpp
     src/Graphics/Image.hpp
     src/Graphics/ImageAnnotation.hpp
@@ -488,22 +491,18 @@ add_library(osccore STATIC
     src/OpenSimBindings/Rendering/CustomDecorationOptions.hpp
     src/OpenSimBindings/Rendering/CustomRenderingOptions.cpp
     src/OpenSimBindings/Rendering/CustomRenderingOptions.hpp
-    src/OpenSimBindings/Rendering/Icon.hpp
-    src/OpenSimBindings/Rendering/IconCache.cpp
-    src/OpenSimBindings/Rendering/IconCache.hpp
     src/OpenSimBindings/Rendering/MuscleColoringStyle.cpp
     src/OpenSimBindings/Rendering/MuscleColoringStyle.hpp
     src/OpenSimBindings/Rendering/MuscleDecorationStyle.cpp
     src/OpenSimBindings/Rendering/MuscleDecorationStyle.hpp
     src/OpenSimBindings/Rendering/MuscleSizingStyle.cpp
     src/OpenSimBindings/Rendering/MuscleSizingStyle.hpp
-    src/OpenSimBindings/Rendering/OpenSimRenderer.cpp
-    src/OpenSimBindings/Rendering/OpenSimRenderer.hpp
+    src/OpenSimBindings/Rendering/OpenSimDecorationGenerator.cpp
+    src/OpenSimBindings/Rendering/OpenSimDecorationGenerator.hpp
+    src/OpenSimBindings/Rendering/SimTKDecorationGenerator.cpp
+    src/OpenSimBindings/Rendering/SimTKDecorationGenerator.hpp
     src/OpenSimBindings/Rendering/SimTKMeshLoader.cpp
     src/OpenSimBindings/Rendering/SimTKMeshLoader.hpp
-    src/OpenSimBindings/Rendering/SimTKRenderer.cpp
-    src/OpenSimBindings/Rendering/SimTKRenderer.hpp
-
     src/OpenSimBindings/Screens/MainUIScreen.cpp
     src/OpenSimBindings/Screens/MainUIScreen.hpp
 

@@ -1,9 +1,7 @@
 #include "IconCache.hpp"
 
+#include "src/Graphics/Icon.hpp"
 #include "src/Formats/SVG.hpp"
-#include "src/OpenSimBindings/Rendering/Icon.hpp"
-
-#include <imgui.h>
 
 #include <filesystem>
 #include <memory>
@@ -16,7 +14,7 @@
 
 class osc::IconCache::Impl final {
 public:
-    Impl(std::filesystem::path const& iconsDir)
+    Impl(std::filesystem::path const& iconsDir, float verticalScale)
     {
         // iterate through the icons dir and load each SVG file as an icon
         std::filesystem::directory_iterator directoryIterator{iconsDir};
@@ -24,7 +22,7 @@ public:
         {
             if (p.extension() == ".svg")
             {
-                Texture2D texture = LoadTextureFromSVGFile(p, ImGui::GetTextLineHeight()/128.0f);
+                Texture2D texture = LoadTextureFromSVGFile(p, verticalScale);
                 texture.setFilterMode(TextureFilterMode::Nearest);
                 m_Icons.try_emplace(p.stem().string(), std::move(texture), glm::vec2{0.0f, 1.0f}, glm::vec2{1.0f, 0.0f});
             }
@@ -53,8 +51,8 @@ private:
 
 // public API (PIMPL)
 
-osc::IconCache::IconCache(std::filesystem::path const& iconsDir) :
-    m_Impl{std::make_unique<Impl>(iconsDir)}
+osc::IconCache::IconCache(std::filesystem::path const& iconsDir, float verticalScale) :
+    m_Impl{std::make_unique<Impl>(iconsDir, verticalScale)}
 {
 }
 osc::IconCache::IconCache(IconCache&&) noexcept = default;
