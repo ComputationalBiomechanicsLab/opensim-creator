@@ -178,7 +178,7 @@ namespace
 
         // set to be != nullptr if the point is associated with a (probably, user defined)
         // path point
-        OpenSim::PathPoint const* maybePathPoint = nullptr;
+        OpenSim::AbstractPathPoint const* maybePathPoint = nullptr;
         glm::vec3 location = {};
 
         explicit GeometryPathPoint(glm::vec3 const& location_) :
@@ -186,7 +186,7 @@ namespace
         {
         }
 
-        GeometryPathPoint(OpenSim::PathPoint const& pathPoint, glm::vec3 const& location_) :
+        GeometryPathPoint(OpenSim::AbstractPathPoint const& pathPoint, glm::vec3 const& location_) :
             maybePathPoint{&pathPoint},
             location{location_}
         {
@@ -196,29 +196,33 @@ namespace
     // helper: returns path points in a GeometryPath as a sequence of 3D vectors
     std::vector<GeometryPathPoint> GetAllPathPoints(OpenSim::GeometryPath const& gp, SimTK::State const& st)
     {
-        std::vector<GeometryPathPoint> rv;
-
         OpenSim::Array<OpenSim::AbstractPathPoint*> const& pps = gp.getCurrentPath(st);
+
+        std::vector<GeometryPathPoint> rv;
+        rv.reserve(pps.getSize());  // best guess: but path wrapping might add more
 
         for (int i = 0; i < pps.getSize(); ++i)
         {
-            if (OpenSim::PathWrapPoint const* pwp = dynamic_cast<OpenSim::PathWrapPoint const*>(pps[i]))
+
+            OpenSim::AbstractPathPoint const& ap = *pps[i];
+
+            if (typeid(ap) == typeid(OpenSim::PathWrapPoint))
             {
-                osc::Transform body2ground = TransformInGround(pwp->getParentFrame(), st);
+                // special case: it's a wrapping point, so add each part of the wrap
+                OpenSim::PathWrapPoint const* pwp = static_cast<OpenSim::PathWrapPoint const*>(&ap);
+
+                osc::Transform const body2ground = TransformInGround(pwp->getParentFrame(), st);
                 OpenSim::Array<SimTK::Vec3> const& wrapPath = pwp->getWrapPath(st);
 
+                rv.reserve(rv.size() + wrapPath.getSize());
                 for (int j = 0; j < wrapPath.getSize(); ++j)
                 {
                     rv.emplace_back(body2ground * osc::ToVec3(wrapPath[j]));
                 }
             }
-            else if (OpenSim::PathPoint const* pp = dynamic_cast<OpenSim::PathPoint const*>(pps[i]))
-            {
-                rv.emplace_back(*pp, osc::ToVec3(pps[i]->getLocationInGround(st)));
-            }
             else
             {
-                rv.emplace_back(osc::ToVec3(pps[i]->getLocationInGround(st)));
+                rv.emplace_back(ap, osc::ToVec3(ap.getLocationInGround(st)));
             }
         }
 
@@ -886,51 +890,49 @@ namespace
         RendererState& rs,
         OpenSim::GeometryPath const& gp)
     {
-        // even custom muscle decoration implementations *must* obey the visibility flag on `GeometryPath` (#414)
         if (!gp.get_Appearance().get_visible())
         {
+            // even custom muscle decoration implementations *must* obey the visibility
+            // flag on `GeometryPath` (#414)
             return;
         }
 
-        if (gp.hasOwner())
+        if (!gp.hasOwner())
         {
-            // the `GeometryPath` has a owner, which might be a muscle or path actuator
+            // it's a standalone path that's not part of a muscle
+            rs.emitGenericDecorations(gp, gp);
+            return;
+        }
 
-            if (auto const* musc = dynamic_cast<OpenSim::Muscle const*>(&gp.getOwner()); musc)
+        // the `GeometryPath` has a owner, which might be a muscle or path actuator
+        if (auto const* musc = dynamic_cast<OpenSim::Muscle const*>(&gp.getOwner()); musc)
+        {
+            // owner is a muscle, coerce selection "hit" to the muscle
+
+            HandleLinesOfAction(rs, *musc);
+
+            switch (rs.getOptions().getMuscleDecorationStyle())
             {
-                // owner is a muscle, coerce selection "hit" to the muscle
-
-                HandleLinesOfAction(rs, *musc);
-
-                switch (rs.getOptions().getMuscleDecorationStyle())
-                {
-                case osc::MuscleDecorationStyle::FibersAndTendons:
-                    HandleMuscleFibersAndTendons(rs, *musc);
-                    return;
-                case osc::MuscleDecorationStyle::Hidden:
-                    return;  // just don't generate them
-                case osc::MuscleDecorationStyle::OpenSim:
-                default:
-                    HandleMuscleOpenSimStyle(rs, *musc);
-                    return;
-                }
-            }
-            else if (auto const* pa = dynamic_cast<OpenSim::PathActuator const*>(&gp.getOwner()); pa)
-            {
-                // owner is a path actuator, coerce selection "hit" to the path actuator (#519)
-                rs.emitGenericDecorations(gp, *pa);
+            case osc::MuscleDecorationStyle::FibersAndTendons:
+                HandleMuscleFibersAndTendons(rs, *musc);
                 return;
-            }
-            else
-            {
-                // it's a path in some non-muscular context
-                rs.emitGenericDecorations(gp, gp);
+            case osc::MuscleDecorationStyle::Hidden:
+                return;  // just don't generate them
+            case osc::MuscleDecorationStyle::OpenSim:
+            default:
+                HandleMuscleOpenSimStyle(rs, *musc);
                 return;
             }
         }
+        else if (auto const* pa = dynamic_cast<OpenSim::PathActuator const*>(&gp.getOwner()); pa)
+        {
+            // owner is a path actuator, coerce selection "hit" to the path actuator (#519)
+            rs.emitGenericDecorations(gp, *pa);
+            return;
+        }
         else
         {
-            // it's a standalone path that's not part of a muscle
+            // it's a path in some non-muscular context
             rs.emitGenericDecorations(gp, gp);
             return;
         }
@@ -968,41 +970,41 @@ void osc::GenerateModelDecorations(
         state,
         opts,
         fixupScaleFactor,
-        out
+        out,
     };
 
     for (OpenSim::Component const& c : model.getComponentList())
     {
+        // handle OSC-specific decoration specializations, or fallback to generic
+        // component decoration handling
         if (!osc::ShouldShowInUI(c))
         {
             continue;
         }
-
-        // handle OSC-specific decoration specializations, or fallback to generic
-        // component decoration handling
-        if (auto const* p2p = dynamic_cast<OpenSim::PointToPointSpring const*>(&c))
+        else if (typeid(c) == typeid(OpenSim::GeometryPath))
         {
-            HandlePointToPointSpring(rendererState, *p2p);
+            HandleGeometryPath(rendererState, static_cast<OpenSim::GeometryPath const&>(c));
         }
-        else if (typeid(c) == typeid(OpenSim::Station))  // CARE: it's a typeid comparison because OpenSim::Marker inherits from OpenSim::Station
+        else if (typeid(c) == typeid(OpenSim::Body))
         {
+            HandleBody(rendererState, static_cast<OpenSim::Body const&>(c));
+        }
+        else if (typeid(c) == typeid(OpenSim::FrameGeometry))
+        {
+            HandleFrameGeometry(rendererState, static_cast<OpenSim::FrameGeometry const&>(c));
+        }
+        else if (opts.getShouldShowPointToPointSprings() && typeid(c) == typeid(OpenSim::PointToPointSpring))
+        {
+            HandlePointToPointSpring(rendererState, static_cast<OpenSim::PointToPointSpring const&>(c));
+        }
+        else if (typeid(c) == typeid(OpenSim::Station))
+        {
+            // CARE: it's a typeid comparison because OpenSim::Marker inherits from OpenSim::Station
             HandleStation(rendererState, static_cast<OpenSim::Station const&>(c));
         }
-        else if (auto const* scapulo = dynamic_cast<OpenSim::ScapulothoracicJoint const*>(&c); scapulo && opts.getShouldShowScapulo())
+        else if (opts.getShouldShowScapulo() && typeid(c) == typeid(OpenSim::ScapulothoracicJoint))
         {
-            HandleScapulothoracicJoint(rendererState, *scapulo);
-        }
-        else if (auto const* body = dynamic_cast<OpenSim::Body const*>(&c))
-        {
-            HandleBody(rendererState, *body);
-        }
-        else if (auto const* gp = dynamic_cast<OpenSim::GeometryPath const*>(&c))
-        {
-            HandleGeometryPath(rendererState, *gp);
-        }
-        else if (auto const* fg = dynamic_cast<OpenSim::FrameGeometry const*>(&c))
-        {
-            HandleFrameGeometry(rendererState, *fg);
+            HandleScapulothoracicJoint(rendererState, static_cast<OpenSim::ScapulothoracicJoint const&>(c));
         }
         else
         {
