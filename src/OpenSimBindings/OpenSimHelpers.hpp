@@ -4,6 +4,7 @@
 
 #include <glm/vec4.hpp>
 #include <nonstd/span.hpp>
+#include <OpenSim/Common/ComponentPath.h>
 
 #include <filesystem>
 #include <memory>
@@ -321,4 +322,20 @@ namespace osc
 
     // toggles the model's "show contact geometry" display property and returns the new value
     bool ToggleShowingContactGeometry(OpenSim::Model&);
+
+    // returns/assigns the absolute path to a component within its hierarchy (e.g. /jointset/joint/somejoint)
+    //
+    // (custom OSC version that may be faster than OpenSim::Component::getAbsolutePathString)
+    void GetAbsolutePathString(OpenSim::Component const&, std::string&);
+    std::string GetAbsolutePathString(OpenSim::Component const&);
+
+    // returns the absolute path to a component within its hierarchy (e.g. /jointset/joint/somejoint)
+    //
+    // (custom OSC version that may be faster than OpenSim::Component::getAbsolutePath)
+    OpenSim::ComponentPath GetAbsolutePath(OpenSim::Component const&);
+
+    // if non-nullptr, returns/assigns the absolute path to the component within its hierarchy (e.g. /jointset/joint/somejoint)
+    //
+    // (custom OSC version that may be faster than OpenSim::Component::getAbsolutePath)
+    OpenSim::ComponentPath GetAbsolutePathOrEmpty(OpenSim::Component const*);
 }

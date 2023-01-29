@@ -52,11 +52,15 @@ set(
     CACHE BOOL
     "whether to build the documentation or not (requires sphinx-build is available on the PATH)"
 )
-
 set(
     OSC_APPNAME "OpenSim Creator"
     CACHE STRING
     "user-facing name of the application"
+)
+set(
+    OSC_BUILD_BENCHMARKS OFF
+    CACHE BOOL
+    "enable/disable building the benchmark suite (handy for development)"
 )
 
 
@@ -866,6 +870,40 @@ target_link_libraries(testosc PUBLIC
 if(NOT APPLE)  # TODO: fix apple: it's trying to run this shit while installing, where the RPATH is set up in install-mode
     include(GoogleTest)
     gtest_discover_tests(testosc)
+endif()
+
+
+# ------------ configure benchmark target ------------------ #
+
+if(${OSC_BUILD_BENCHMARKS})
+    # benchosc: main exe that links to `osccore` and benches parts of the APIs
+    add_executable(benchosc EXCLUDE_FROM_ALL
+
+        benches/BenchOpenSimHelpers.cpp
+    )
+
+    set_target_properties(benchosc PROPERTIES
+        # disable compiler-specific language extensions
+        CXX_EXTENSIONS OFF
+
+        # strictly require the requested C++ standard (e.g. C++17)
+        CXX_STANDARD_REQUIRED YES
+
+        # export compile commands, so clang-tidy works correctly
+        EXPORT_COMPILE_COMMANDS ON
+    )
+
+    target_link_libraries(benchosc PUBLIC
+        # set compile options
+        osc_configuration
+
+        # link to the to-be-tested library
+        osccore
+
+        # link to testing library
+        benchmark::benchmark
+        benchmark::benchmark_main
+    )
 endif()
 
 

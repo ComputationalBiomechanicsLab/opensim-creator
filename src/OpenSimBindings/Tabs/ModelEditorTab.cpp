@@ -344,7 +344,7 @@ private:
         std::string const name = m_PanelManager->computeSuggestedDynamicPanelName("muscleplot");
         m_PanelManager->pushDynamicPanel(
             "muscleplot",
-            std::make_shared<ModelMusclePlotPanel>(this, m_Model, name, coord.getAbsolutePath(), muscle.getAbsolutePath())
+            std::make_shared<ModelMusclePlotPanel>(this, m_Model, name, osc::GetAbsolutePath(coord), osc::GetAbsolutePath(muscle))
         );
     }
 

@@ -4,6 +4,7 @@
 #include "src/OpenSimBindings/Widgets/BasicWidgets.hpp"
 #include "src/OpenSimBindings/Widgets/ComponentContextMenu.hpp"
 #include "src/OpenSimBindings/Widgets/UiModelViewer.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Panels/StandardPanel.hpp"
 
@@ -68,7 +69,7 @@ private:
         if (m_Viewer.isRightClicked() && resp.isMousedOver)
         {
             std::string menuName = std::string{getName()} + "_contextmenu";
-            OpenSim::ComponentPath path = resp.hovertestResult ? resp.hovertestResult->getAbsolutePath() : OpenSim::ComponentPath{};
+            OpenSim::ComponentPath path = osc::GetAbsolutePathOrEmpty(resp.hovertestResult);
             m_EditorAPI->pushPopup(std::make_unique<ComponentContextMenu>(menuName, m_MainUIStateAPI, m_EditorAPI, m_Model, path));
         }
     }

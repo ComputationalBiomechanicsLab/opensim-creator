@@ -4,6 +4,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Maths/Constants.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/SimTKHelpers.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
@@ -122,7 +123,7 @@ namespace
     {
         if (auto c = dynamic_cast<OpenSim::Component const*>(&obj))
         {
-            return c->getAbsolutePathString();
+            return osc::GetAbsolutePathString(*c);
         }
         else
         {

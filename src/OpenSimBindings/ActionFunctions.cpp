@@ -242,7 +242,7 @@ void osc::ActionTryDeleteSelectionFromEditedModel(UndoableModelStatePair& uim)
         return;
     }
 
-    OpenSim::ComponentPath const selectedPath = selected->getAbsolutePath();
+    OpenSim::ComponentPath const selectedPath = osc::GetAbsolutePath(*selected);
 
     UID const oldVersion = uim.getModelVersion();
     OpenSim::Model& mutModel = uim.updModel();
@@ -652,7 +652,7 @@ bool osc::ActionRezeroJoint(UndoableModelStatePair& uim, OpenSim::ComponentPath 
         return false;  // target has no parent frame
     }
 
-    OpenSim::ComponentPath const parentPath = parentPOF->getAbsolutePath();
+    OpenSim::ComponentPath const parentPath = osc::GetAbsolutePath(*parentPOF);
     OpenSim::PhysicalFrame const& childFrame = target->getChildFrame();
     SimTK::Transform const parentXform = parentPOF->getTransformInGround(uim.getState());
     SimTK::Transform const childXform = childFrame.getTransformInGround(uim.getState());
@@ -857,7 +857,7 @@ bool osc::ActionChangeJointTypeTo(UndoableModelStatePair& uim, OpenSim::Componen
         return false;
     }
 
-    OpenSim::ComponentPath const ownerPath = owner->getAbsolutePath();
+    OpenSim::ComponentPath const ownerPath = osc::GetAbsolutePath(*owner);
 
     std::optional<int> const maybeIdx = FindJointInParentJointSet(*target);
     if (!maybeIdx)
@@ -1261,7 +1261,7 @@ bool osc::ActionAddComponentToModel(UndoableModelStatePair& model, std::unique_p
 
 bool osc::ActionSetCoordinateSpeed(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, double v)
 {
-    OpenSim::ComponentPath const coordPath = coord.getAbsolutePath();
+    OpenSim::ComponentPath const coordPath = osc::GetAbsolutePath(coord);
 
     UID const oldVersion = model.getModelVersion();
     try
@@ -1315,7 +1315,7 @@ bool osc::ActionSetCoordinateSpeedAndSave(UndoableModelStatePair& model, OpenSim
 
 bool osc::ActionSetCoordinateLockedAndSave(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, bool v)
 {
-    OpenSim::ComponentPath const coordPath = coord.getAbsolutePath();
+    OpenSim::ComponentPath const coordPath = osc::GetAbsolutePath(coord);
 
     UID const oldVersion = model.getModelVersion();
     try
@@ -1351,7 +1351,7 @@ bool osc::ActionSetCoordinateLockedAndSave(UndoableModelStatePair& model, OpenSi
 // set the value of a coordinate, but don't save it to the model (yet)
 bool osc::ActionSetCoordinateValue(UndoableModelStatePair& model, OpenSim::Coordinate const& coord, double v)
 {
-    OpenSim::ComponentPath const coordPath = coord.getAbsolutePath();
+    OpenSim::ComponentPath const coordPath = osc::GetAbsolutePath(coord);
 
     UID const oldVersion = model.getModelVersion();
     try

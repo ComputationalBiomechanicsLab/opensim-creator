@@ -1,5 +1,6 @@
 #include "Select1PFPopup.hpp"
 
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Widgets/StandardPopup.hpp"
 
@@ -43,7 +44,7 @@ private:
 
         if (selected)
         {
-            m_OnSelection(selected->getAbsolutePath());
+            m_OnSelection(osc::GetAbsolutePath(*selected));
             requestClose();
         }
     }

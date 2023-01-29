@@ -486,6 +486,11 @@ if(TRUE)
     add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest")
 endif()
 
+# DEPENDENCY: google/benchmark
+if(${OSC_BUILD_BENCHMARKS})
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/third_party/benchmark")
+endif()
+
 # DEPENDENCY: lunasvg
 #
 # used for loading SVG icon files at runtime

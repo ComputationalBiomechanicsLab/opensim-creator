@@ -59,7 +59,7 @@ namespace
         ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 1.0f, 0.0f, 1.0f});
         if (ImGui::Button(ICON_FA_BOLT) || ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
-            editorAPI->pushComponentContextMenuPopup(selection->getAbsolutePath());
+            editorAPI->pushComponentContextMenuPopup(osc::GetAbsolutePath(*selection));
         }
         ImGui::PopStyleColor();
         ImGui::NextColumn();
@@ -103,7 +103,7 @@ namespace
             osc::InputString("##nameeditor", m_EditedName, 128);
             if (osc::ItemValueShouldBeSaved())
             {
-                osc::ActionSetComponentName(*m_Model, selected->getAbsolutePath(), m_EditedName);
+                osc::ActionSetComponentName(*m_Model, osc::GetAbsolutePath(*selected), m_EditedName);
             }
 
             ImGui::NextColumn();

@@ -387,7 +387,7 @@ private:
 
             if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
             {
-                m_OnRightClick(cur->getAbsolutePath());
+                m_OnRightClick(osc::GetAbsolutePath(*cur));
             }
         }
 

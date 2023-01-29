@@ -56,14 +56,7 @@ public:
 
     void setSelected(OpenSim::Component const* c)
     {
-        if (c)
-        {
-            m_Selected = c->getAbsolutePath();
-        }
-        else
-        {
-            m_Selected = {};
-        }
+        m_Selected = osc::GetAbsolutePathOrEmpty(c);
     }
 
     OpenSim::Component const* getHovered() const
@@ -73,14 +66,7 @@ public:
 
     void setHovered(OpenSim::Component const* c)
     {
-        if (c)
-        {
-            m_Hovered = c->getAbsolutePath();
-        }
-        else
-        {
-            m_Hovered = {};
-        }
+        m_Hovered = osc::GetAbsolutePathOrEmpty(c);
     }
 
     float getFixupScaleFactor() const

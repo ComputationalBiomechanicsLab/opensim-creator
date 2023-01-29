@@ -50,7 +50,7 @@ osc::ComponentDetails::Response osc::ComponentDetails::draw(SimTK::State const& 
 
         ImGui::Text("getAbsolutePath()");
         ImGui::NextColumn();
-        ImGui::Text("%s", c.getAbsolutePath().toString().c_str());
+        ImGui::Text("%s", osc::GetAbsolutePathString(c).c_str());
         ImGui::NextColumn();
 
         ImGui::Text("getConcreteClassName()");

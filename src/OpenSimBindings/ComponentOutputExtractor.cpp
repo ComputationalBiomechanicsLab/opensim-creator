@@ -148,7 +148,7 @@ public:
     Impl(OpenSim::AbstractOutput const& ao,
          OutputSubfield subfield) :
 
-        m_ComponentAbsPath{ao.getOwner().getAbsolutePath()},
+        m_ComponentAbsPath{osc::GetAbsolutePath(ao.getOwner())},
         m_OutputName{ao.getName()},
         m_Label{GenerateLabel(m_ComponentAbsPath, m_OutputName, subfield)},
         m_OutputType{&typeid(ao)},

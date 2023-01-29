@@ -1635,7 +1635,7 @@ namespace
                     bool selected = &c == current;
                     if (ImGui::Selectable(c.getName().c_str(), &selected))
                     {
-                        shared->PlotParams.setCoordinatePath(c.getAbsolutePath());
+                        shared->PlotParams.setCoordinatePath(osc::GetAbsolutePath(c));
                     }
                 }
                 ImGui::EndCombo();
@@ -2059,7 +2059,7 @@ namespace
             {
                 if (ImGui::Selectable(coord->getName().c_str()))
                 {
-                    shared->PlotParams.setCoordinatePath(coord->getAbsolutePath());
+                    shared->PlotParams.setCoordinatePath(osc::GetAbsolutePath(*coord));
                     rv = std::make_unique<ShowingPlotState>(shared);
                 }
             }
@@ -2102,7 +2102,7 @@ namespace
                 {
                     if (ImGui::Selectable(musc->getName().c_str()))
                     {
-                        shared->PlotParams.setMusclePath(musc->getAbsolutePath());
+                        shared->PlotParams.setMusclePath(osc::GetAbsolutePath(*musc));
                         rv = std::make_unique<PickCoordinateState>(shared);
                     }
                 }

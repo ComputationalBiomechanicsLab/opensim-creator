@@ -252,12 +252,14 @@ namespace
                 // update cache checks
                 m_LastModelVersion = msp.getModelVersion();
                 m_LastStateVersion = msp.getStateVersion();
-                m_LastSelection = selected ? selected->getAbsolutePath() : OpenSim::ComponentPath{};
-                m_LastHover = hovered ? hovered->getAbsolutePath() : OpenSim::ComponentPath{};
+                m_LastSelection = osc::GetAbsolutePathOrEmpty(selected);
+                m_LastHover = osc::GetAbsolutePathOrEmpty(hovered);
                 m_LastFixupFactor = msp.getFixupScaleFactor();
                 m_LastDecorationOptions = decorationOptions;
                 m_LastRenderingOptions = renderingOptions;
                 m_Version = osc::UID{};
+
+                std::shared_ptr<osc::MeshCache> const meshCache = osc::App::singleton<osc::MeshCache>();
 
                 // generate decorations from OpenSim/SimTK backend
                 {
@@ -269,7 +271,7 @@ namespace
                     std::string lastID;
 
                     osc::GenerateModelDecorations(
-                        *osc::App::singleton<osc::MeshCache>(),
+                        *meshCache,
                         msp.getModel(),
                         msp.getState(),
                         decorationOptions,
@@ -283,10 +285,10 @@ namespace
                             }
                             else
                             {
-                                dec.id = c.getAbsolutePathString();
+                                osc::GetAbsolutePathString(c, lastID);
+                                dec.id = lastID;
                                 dec.flags = ComputeFlags(c, selected, hovered);
                                 lastFlags = dec.flags;
-                                lastID = dec.id;
                                 lastComponent = &c;
                             }
                             m_Decorations.push_back(std::move(dec));
@@ -307,33 +309,33 @@ namespace
                 {
                     for (size_t i = 0, len = m_Decorations.size(); i < len; ++i)
                     {
-                        DrawAABB(*osc::App::singleton<osc::MeshCache>(), GetWorldspaceAABB(m_Decorations[i]), pushToDecorationsList);
+                        DrawAABB(*meshCache, GetWorldspaceAABB(m_Decorations[i]), pushToDecorationsList);
                     }
                 }
 
                 if (renderingOptions.getDrawBVH())
                 {
-                    DrawBVH(*osc::App::singleton<osc::MeshCache>(), m_BVH, pushToDecorationsList);
+                    DrawBVH(*meshCache, m_BVH, pushToDecorationsList);
                 }
 
                 if (renderingOptions.getDrawXZGrid())
                 {
-                    DrawXZGrid(*osc::App::singleton<osc::MeshCache>(), pushToDecorationsList);
+                    DrawXZGrid(*meshCache, pushToDecorationsList);
                 }
 
                 if (renderingOptions.getDrawXYGrid())
                 {
-                    DrawXYGrid(*osc::App::singleton<osc::MeshCache>(), pushToDecorationsList);
+                    DrawXYGrid(*meshCache, pushToDecorationsList);
                 }
 
                 if (renderingOptions.getDrawYZGrid())
                 {
-                    DrawYZGrid(*osc::App::singleton<osc::MeshCache>(), pushToDecorationsList);
+                    DrawYZGrid(*meshCache, pushToDecorationsList);
                 }
 
                 if (renderingOptions.getDrawAxisLines())
                 {
-                    DrawXZFloorLines(*osc::App::singleton<osc::MeshCache>(), pushToDecorationsList);
+                    DrawXZFloorLines(*meshCache, pushToDecorationsList);
                 }
             }
         }

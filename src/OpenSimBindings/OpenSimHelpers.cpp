@@ -527,7 +527,7 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
     {
         if (pw.getWrapObject() == &c)
         {
-            log::error("cannot delete %s: it is used in a path wrap (%s)", c.getName().c_str(), pw.getAbsolutePathString().c_str());
+            log::error("cannot delete %s: it is used in a path wrap (%s)", c.getName().c_str(), osc::GetAbsolutePathString(pw).c_str());
             return false;
         }
     }
@@ -882,4 +882,81 @@ bool osc::ToggleShowingContactGeometry(OpenSim::Model& model)
     bool const newValue = !IsShowingContactGeometry(model);
     model.updDisplayHints().set_show_contact_geometry(newValue);
     return newValue;
+}
+
+void osc::GetAbsolutePathString(OpenSim::Component const& c, std::string& out)
+{
+    static constexpr ptrdiff_t c_MaxEls = 16;
+
+    ptrdiff_t nEls = 0;
+    std::array<OpenSim::Component const*, c_MaxEls> els;
+    OpenSim::Component const* cur = &c;
+    OpenSim::Component const* next = osc::GetOwner(*cur);
+
+    if (!next)
+    {
+        // edge-case: caller provided a root
+        out = '/';
+        return;
+    }
+
+    while (cur && next && nEls < c_MaxEls)
+    {
+        els[nEls++] = cur;
+        cur = next;
+        next = osc::GetOwner(*cur);
+    }
+
+    if (nEls >= c_MaxEls)
+    {
+        // edge-case: component is too deep: fallback to OpenSim impl.
+        out = c.getAbsolutePathString();
+        return;
+    }
+
+    // else: construct the path piece-by-piece
+
+    // precompute path length (memory allocation)
+    size_t pathlen = nEls;
+    for (ptrdiff_t i = 0; i < nEls; ++i)
+    {
+        pathlen += els[i]->getName().size();
+    }
+
+    // then preallocate the string
+    out.resize(pathlen);
+
+    // and assign it
+    size_t loc = 0;
+    for (ptrdiff_t i = nEls-1; i >= 0; --i)
+    {
+        out[loc++] = '/';
+        std::string const& name = els[i]->getName();
+        std::copy(name.begin(), name.end(), out.begin() + loc);
+        loc += name.size();
+    }
+}
+
+std::string osc::GetAbsolutePathString(OpenSim::Component const& c)
+{
+    std::string rv;
+    GetAbsolutePathString(c, rv);
+    return rv;
+}
+
+OpenSim::ComponentPath osc::GetAbsolutePath(OpenSim::Component const& c)
+{
+    return OpenSim::ComponentPath{GetAbsolutePathString(c)};
+}
+
+OpenSim::ComponentPath osc::GetAbsolutePathOrEmpty(OpenSim::Component const* c)
+{
+    if (c)
+    {
+        return osc::GetAbsolutePath(*c);
+    }
+    else
+    {
+        return OpenSim::ComponentPath{};
+    }
 }

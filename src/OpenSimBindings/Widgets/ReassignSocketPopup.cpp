@@ -62,7 +62,7 @@ namespace
         std::string name;
 
         explicit ConnecteeOption(OpenSim::Component const& c) :
-            absPath{c.getAbsolutePath()},
+            absPath{osc::GetAbsolutePath(c)},
             name{c.getName()}
         {
         }

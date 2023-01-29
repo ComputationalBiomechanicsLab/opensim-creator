@@ -238,11 +238,11 @@ private:
             // iterate through PFs in model and print them out
             for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>())
             {
-                bool selected = pf.getAbsolutePath() == connectee;
+                bool selected = osc::GetAbsolutePath(pf) == connectee;
 
                 if (ImGui::Selectable(pf.getName().c_str(), selected))
                 {
-                    connectee = pf.getAbsolutePath();
+                    connectee = osc::GetAbsolutePath(pf);
                 }
 
                 if (selected)
@@ -269,7 +269,7 @@ private:
         // choices
         for (OpenSim::Component const& c : model.getComponentList())
         {
-            if (ContainsIf(m_PathPoints, [&c](auto const& p) { return p.userChoice == c.getAbsolutePath(); }))
+            if (ContainsIf(m_PathPoints, [&c](auto const& p) { return p.userChoice == osc::GetAbsolutePath(c); }))
             {
                 continue;  // already selected
             }
@@ -324,12 +324,12 @@ private:
             if (ImGui::Selectable(c.getName().c_str()))
             {
                 m_PathPoints.emplace_back(
-                    userChoice->getAbsolutePath(),
-                    actualFrame->getAbsolutePath(),
+                    osc::GetAbsolutePath(*userChoice),
+                    osc::GetAbsolutePath(*actualFrame),
                     locationInFrame
                 );
             }
-            DrawTooltipIfItemHovered(c.getName(), (c.getAbsolutePathString() + " " + c.getConcreteClassName()));
+            DrawTooltipIfItemHovered(c.getName(), (osc::GetAbsolutePathString(c) + " " + c.getConcreteClassName()));
         }
 
         ImGui::EndChild();
@@ -371,7 +371,7 @@ private:
             if (ImGui::IsItemHovered())
             {
                 OpenSim::Component const* c = FindComponent(model, m_PathPoints[i].userChoice);
-                DrawTooltip(c->getName(), c->getAbsolutePathString());
+                DrawTooltip(c->getName(), osc::GetAbsolutePathString(*c));
             }
         }
 

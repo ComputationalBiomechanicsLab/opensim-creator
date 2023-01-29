@@ -108,7 +108,7 @@ namespace
         OpenSim::Model const& model,
         OpenSim::Mesh const& mesh)
     {
-        MeshTPSData rv{mesh.getAbsolutePath()};
+        MeshTPSData rv{osc::GetAbsolutePath(mesh)};
 
         // try locating "source" mesh information
         rv.maybeSourceMeshFilesystemLocation = osc::FindGeometryFileAbsPath(model, mesh);
@@ -158,7 +158,7 @@ namespace
         std::map<OpenSim::ComponentPath, ModelWarpTarget> rv;
         for (OpenSim::PhysicalFrame const& frame : model.getComponentList<OpenSim::PhysicalFrame>())
         {
-            OpenSim::ComponentPath const absPath = frame.getAbsolutePath();
+            OpenSim::ComponentPath const absPath = osc::GetAbsolutePath(frame);
             rv.insert_or_assign(absPath, ModelWarpTarget{absPath, std::nullopt});
         }
         return rv;

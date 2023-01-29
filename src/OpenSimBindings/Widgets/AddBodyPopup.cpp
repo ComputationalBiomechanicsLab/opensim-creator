@@ -54,7 +54,7 @@ private:
         {
             // if nothing selected (or not found), coerce the initial selection to ground
             selectedPf = &model.getGround();
-            m_BodyDetails.ParentFrameAbsPath = selectedPf->getAbsolutePathString();
+            m_BodyDetails.ParentFrameAbsPath = osc::GetAbsolutePathString(*selectedPf);
         }
 
         ImGui::Columns(2);
@@ -122,7 +122,7 @@ private:
                 if (ImGui::Selectable(pf.getName().c_str(), &pf == selectedPf))
                 {
                     selectedPf = &pf;
-                    m_BodyDetails.ParentFrameAbsPath = selectedPf->getAbsolutePathString();
+                    m_BodyDetails.ParentFrameAbsPath = osc::GetAbsolutePathString(*selectedPf);
                 }
                 if (&pf == selectedPf)
                 {

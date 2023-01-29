@@ -130,14 +130,7 @@ namespace
 
         void setSelected(OpenSim::Component const* c) override
         {
-            if (c)
-            {
-                m_MaybeSelected = c->getAbsolutePath();
-            }
-            else
-            {
-                m_MaybeSelected = {};
-            }
+            m_MaybeSelected = osc::GetAbsolutePathOrEmpty(c);
         }
 
         OpenSim::ComponentPath const& getHoveredPath() const
@@ -157,14 +150,7 @@ namespace
 
         void setHovered(OpenSim::Component const* c) override
         {
-            if (c)
-            {
-                m_MaybeHovered = c->getAbsolutePath();
-            }
-            else
-            {
-                m_MaybeHovered = {};
-            }
+            m_MaybeHovered = osc::GetAbsolutePathOrEmpty(c);
         }
 
     private:

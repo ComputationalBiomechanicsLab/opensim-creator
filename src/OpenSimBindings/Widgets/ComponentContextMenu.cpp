@@ -262,17 +262,17 @@ private:
         {
             if (ImGui::MenuItem("Show"))
             {
-                osc::ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, c->getAbsolutePath(), true);
+                osc::ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, osc::GetAbsolutePath(*c), true);
             }
 
             if (ImGui::MenuItem("Show Only This"))
             {
-                osc::ActionShowOnlyComponentAndAllChildren(*m_Model, c->getAbsolutePath());
+                osc::ActionShowOnlyComponentAndAllChildren(*m_Model, osc::GetAbsolutePath(*c));
             }
 
             if (ImGui::MenuItem("Hide"))
             {
-                osc::ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, c->getAbsolutePath(), false);
+                osc::ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, osc::GetAbsolutePath(*c), false);
             }
 
             // add a seperator between probably commonly-used, simple, diplay toggles and the more
@@ -295,7 +295,7 @@ private:
                 {
                     ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
                         *m_Model,
-                        m_Model->getModel().getAbsolutePath(),
+                        osc::GetAbsolutePath(m_Model->getModel()),
                         c->getConcreteClassName(),
                         true
                     );
@@ -310,7 +310,7 @@ private:
                 {
                     ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
                         *m_Model,
-                        m_Model->getModel().getAbsolutePath(),
+                        osc::GetAbsolutePath(m_Model->getModel()),
                         c->getConcreteClassName(),
                         false
                     );
@@ -321,7 +321,7 @@ private:
 
         if (ImGui::MenuItem("Copy Absolute Path to Clipboard"))
         {
-            std::string path = c->getAbsolutePathString();
+            std::string const path = osc::GetAbsolutePathString(*c);
             osc::SetClipboardText(path.c_str());
         }
         osc::DrawTooltipIfItemHovered("Copy Component Absolute Path", "Copy the absolute path to this component to your clipboard.\n\n(This is handy if you are separately using absolute component paths to (e.g.) manipulate the model in a script or something)");
@@ -399,7 +399,7 @@ private:
                             auto popup = std::make_unique<ReassignSocketPopup>(
                                 "Reassign " + socket.getName(),
                                 m_Model,
-                                c.getAbsolutePathString(),
+                                osc::GetAbsolutePathString(c),
                                 socketName
                             );
                             popup->open();

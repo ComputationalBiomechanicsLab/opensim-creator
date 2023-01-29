@@ -80,7 +80,7 @@ private:
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
-            auto menu = std::make_unique<ComponentContextMenu>("##hovermenu", m_MainUIStateAPI, m_EditorAPI, m_Model, c.getAbsolutePath());
+            auto menu = std::make_unique<ComponentContextMenu>("##hovermenu", m_MainUIStateAPI, m_EditorAPI, m_Model, osc::GetAbsolutePath(c));
             menu->open();
             m_EditorAPI->pushPopup(std::move(menu));
         }
