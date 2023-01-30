@@ -348,6 +348,255 @@ namespace
         osc::InputMetersFloat3("floor location", params.floorLocation);
         osc::DrawTooltipBodyOnlyIfItemHovered("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
     }
+
+    void DrawVisualAidsContextMenuContent(osc::ModelRendererParams& params)
+    {
+        // generic rendering options
+        DrawRenderingOptionsEditor(params.renderingOptions);
+
+        // OpenSim-specific extra rendering options
+        ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+        ImGui::TextDisabled("OpenSim");
+        bool isDrawingScapulothoracicJoints = params.decorationOptions.getShouldShowScapulo();
+        if (ImGui::Checkbox("Scapulothoracic Joints", &isDrawingScapulothoracicJoints))
+        {
+            params.decorationOptions.setShouldShowScapulo(isDrawingScapulothoracicJoints);
+        }
+
+        bool isShowingEffectiveLinesOfAction = params.decorationOptions.getShouldShowEffectiveMuscleLinesOfAction();
+        if (ImGui::Checkbox("Lines of Action (effective)", &isShowingEffectiveLinesOfAction))
+        {
+            params.decorationOptions.setShouldShowEffectiveMuscleLinesOfAction(isShowingEffectiveLinesOfAction);
+        }
+        ImGui::SameLine();
+        osc::DrawHelpMarker("Draws direction vectors that show the effective mechanical effect of the muscle action on the attached body.\n\n'Effective' refers to the fact that this algorithm computes the 'effective' attachment position of the muscle, which can change because of muscle wrapping and via point calculations (see: section 5.4.3 of Yamaguchi's book 'Dynamic Modeling of Musculoskeletal Motion: A Vectorized Approach for Biomechanical Analysis in Three Dimensions', title 'EFFECTIVE ORIGIN AND INSERTION POINTS').\n\nOpenSim Creator's implementation of this algorithm is based on Luca Modenese (@modenaxe)'s implementation here:\n\n    - https://github.com/modenaxe/MuscleForceDirection\n\nThanks to @modenaxe for open-sourcing the original algorithm!");
+
+        bool isShowingAnatomicalLinesOfAction = params.decorationOptions.getShouldShowAnatomicalMuscleLinesOfAction();
+        if (ImGui::Checkbox("Lines of Action (anatomical)", &isShowingAnatomicalLinesOfAction))
+        {
+            params.decorationOptions.setShouldShowAnatomicalMuscleLinesOfAction(isShowingAnatomicalLinesOfAction);
+        }
+        ImGui::SameLine();
+        osc::DrawHelpMarker("Draws direction vectors that show the mechanical effect of the muscle action on the bodies attached to the origin/insertion points.\n\n'Anatomical' here means 'the first/last points of the muscle path' see the documentation for 'effective' lines of action for contrast.\n\nOpenSim Creator's implementation of this algorithm is based on Luca Modenese (@modenaxe)'s implementation here:\n\n    - https://github.com/modenaxe/MuscleForceDirection\n\nThanks to @modenaxe for open-sourcing the original algorithm!");
+
+        bool isShowingCentersOfMass = params.decorationOptions.getShouldShowCentersOfMass();
+        if (ImGui::Checkbox("Centers of Mass", &isShowingCentersOfMass))
+        {
+            params.decorationOptions.setShouldShowCentersOfMass(isShowingCentersOfMass);
+        }
+
+        bool isShowingPointToPointSprings = params.decorationOptions.getShouldShowPointToPointSprings();
+        if (ImGui::Checkbox("Point-to-Point Springs", &isShowingPointToPointSprings))
+        {
+            params.decorationOptions.setShouldShowPointToPointSprings(isShowingPointToPointSprings);
+        }
+    }
+
+    void DrawViewerTopButtonRow(
+        osc::ModelRendererParams& params,
+        osc::CachedModelRenderer& modelRenderer,
+        osc::IconCache& iconCache,
+        osc::GuiRuler& ruler)
+    {
+        float const iconPadding = 2.0f;
+
+        IconWithMenu muscleStylingButton
+        {
+            iconCache.getIcon("muscle_coloring"),
+            "Muscle Styling",
+            "Affects how muscles appear in this visualizer panel",
+            [&params]() { DrawMuscleDecorationOptionsEditor(params.decorationOptions); },
+        };
+        muscleStylingButton.draw();
+        ImGui::SameLine();
+
+        IconWithMenu vizAidsButton
+        {
+            iconCache.getIcon("viz_aids"),
+            "Visual Aids",
+            "Affects what's shown in the 3D scene",
+            [&params]() { DrawVisualAidsContextMenuContent(params); },
+        };
+        vizAidsButton.draw();
+        ImGui::SameLine();
+
+        IconWithMenu settingsButton
+        {
+            iconCache.getIcon("gear"),
+            "Scene Settings",
+            "Change advanced scene settings",
+            [&params, &modelRenderer]() { DrawAdvancedParamsEditor(params, modelRenderer.getDrawlist()); },
+        };
+        settingsButton.draw();
+        ImGui::SameLine();
+
+        IconWithoutMenu rulerButton
+        {
+            iconCache.getIcon("ruler"),
+            "Ruler",
+            "Roughly measure something in the scene",
+        };
+        if (rulerButton.draw())
+        {
+            ruler.toggleMeasuring();
+        }
+    }
+
+    enum class CameraControlsReply {
+        None,
+        ShouldAutoFocusCamera,
+    };
+
+    CameraControlsReply DrawCameraControlButtons(
+        osc::PolarPerspectiveCamera& camera,
+        osc::ImGuiItemHittestResult const& hittest,
+        osc::IconCache& iconCache)
+    {
+        ImGuiStyle const& style = ImGui::GetStyle();
+        float const buttonHeight = 2.0f*style.FramePadding.y + ImGui::GetTextLineHeight();
+        float const rowSpacing = ImGui::GetStyle().FramePadding.y;
+        float const twoRowHeight = 2.0f*buttonHeight + rowSpacing;
+        float const xFirstRow = hittest.rect.p1.x + style.WindowPadding.x + osc::CalcAlignmentAxesDimensions().x + style.ItemSpacing.x;
+        float const yFirstRow = (hittest.rect.p2.y - style.WindowPadding.y - 0.5f*osc::CalcAlignmentAxesDimensions().y) - 0.5f*twoRowHeight;
+
+        glm::vec2 const firstRowTopLeft = {xFirstRow, yFirstRow};
+        float const midRowY = yFirstRow + 0.5f*(buttonHeight + rowSpacing);
+
+        // draw top row
+        {
+            ImGui::SetCursorScreenPos(firstRowTopLeft);
+
+            IconWithoutMenu plusXbutton
+            {
+                iconCache.getIcon("plusx"),
+                "Focus Camera Along +X",
+                "Rotates the camera to focus along the +X direction",
+            };
+            if (plusXbutton.draw())
+            {
+                FocusAlongX(camera);
+            }
+
+            ImGui::SameLine();
+
+            IconWithoutMenu plusYbutton
+            {
+                iconCache.getIcon("plusy"),
+                "Focus Camera Along +Y",
+                "Rotates the camera to focus along the +Y direction",
+            };
+            if (plusYbutton.draw())
+            {
+                FocusAlongY(camera);
+            }
+
+            ImGui::SameLine();
+
+            IconWithoutMenu plusZbutton
+            {
+                iconCache.getIcon("plusz"),
+                "Focus Camera Along +Z",
+                "Rotates the camera to focus along the +Z direction",
+            };
+            if (plusZbutton.draw())
+            {
+                FocusAlongZ(camera);
+            }
+
+            ImGui::SameLine();
+            ImGui::SameLine();
+
+            IconWithoutMenu zoomInButton
+            {
+                iconCache.getIcon("zoomin"),
+                "Zoom in Camera",
+                "Moves the camera one step towards its focus point",
+            };
+            if (zoomInButton.draw())
+            {
+                ZoomIn(camera);
+            }
+        }
+
+        // draw bottom row
+        {
+            ImGui::SetCursorScreenPos({ firstRowTopLeft.x, ImGui::GetCursorScreenPos().y });
+
+            IconWithoutMenu minusXbutton
+            {
+                iconCache.getIcon("minusx"),
+                "Focus Camera Along -X",
+                "Rotates the camera to focus along the -X direction",
+            };
+            if (minusXbutton.draw())
+            {
+                FocusAlongMinusX(camera);
+            }
+
+            ImGui::SameLine();
+
+            IconWithoutMenu minusYbutton
+            {
+                iconCache.getIcon("minusy"),
+                "Focus Camera Along -Y",
+                "Rotates the camera to focus along the -Y direction",
+            };
+            if (minusYbutton.draw())
+            {
+                FocusAlongMinusY(camera);
+            }
+
+            ImGui::SameLine();
+
+            IconWithoutMenu minusZbutton
+            {
+                iconCache.getIcon("minusz"),
+                "Focus Camera Along -Z",
+                "Rotates the camera to focus along the -Z direction",
+            };
+            if (minusZbutton.draw())
+            {
+                FocusAlongMinusZ(camera);
+            }
+
+            ImGui::SameLine();
+            ImGui::SameLine();
+
+            IconWithoutMenu zoomOutButton
+            {
+                iconCache.getIcon("zoomout"),
+                "Zoom Out Camera",
+                "Moves the camera one step away from its focus point",
+            };
+            if (zoomOutButton.draw())
+            {
+                ZoomOut(camera);
+            }
+
+            ImGui::SameLine();
+            ImGui::SameLine();
+        }
+
+        CameraControlsReply rv = CameraControlsReply::None;
+
+        // draw single row
+        {
+            ImGui::SetCursorScreenPos({ImGui::GetCursorScreenPos().x, midRowY});
+
+            IconWithoutMenu autoFocusButton
+            {
+                iconCache.getIcon("zoomauto"),
+                "Auto-Focus Camera",
+                "Try to automatically adjust the camera's zoom etc. to suit the model's dimensions. Hotkey: Ctrl+F",
+            };
+            if (autoFocusButton.draw())
+            {
+                rv = CameraControlsReply::ShouldAutoFocusCamera;
+            }
+        }
+
+        return rv;
+    }
 }
 
 class osc::UiModelViewer::Impl final {
@@ -492,95 +741,6 @@ private:
         }
     }
 
-    void drawTopButtonRowOverlay()
-    {
-        float const iconPadding = 2.0f;
-
-        IconWithMenu muscleStylingButton
-        {
-            m_IconCache->getIcon("muscle_coloring"),
-            "Muscle Styling",
-            "Affects how muscles appear in this visualizer panel",
-            [this]() { DrawMuscleDecorationOptionsEditor(m_Params.decorationOptions); },
-        };
-        muscleStylingButton.draw();
-        ImGui::SameLine();
-
-        IconWithMenu vizAidsButton
-        {
-            m_IconCache->getIcon("viz_aids"),
-            "Visual Aids",
-            "Affects what's shown in the 3D scene",
-            [this]() { drawVisualAidsContextMenuContent(); },
-        };
-        vizAidsButton.draw();
-        ImGui::SameLine();
-
-        IconWithMenu settingsButton
-        {
-            m_IconCache->getIcon("gear"),
-            "Scene Settings",
-            "Change advanced scene settings",
-            [this]() { DrawAdvancedParamsEditor(m_Params, m_CachedModelRenderer.getDrawlist()); },
-        };
-        settingsButton.draw();
-        ImGui::SameLine();
-
-        IconWithoutMenu rulerButton
-        {
-            m_IconCache->getIcon("ruler"),
-            "Ruler",
-            "Roughly measure something in the scene",
-        };
-        if (rulerButton.draw())
-        {
-            m_Ruler.toggleMeasuring();
-        }
-    }
-
-    void drawVisualAidsContextMenuContent()
-    {
-        // generic rendering options
-        DrawRenderingOptionsEditor(m_Params.renderingOptions);
-
-        // OpenSim-specific extra rendering options
-        ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
-        ImGui::TextDisabled("OpenSim");
-        bool isDrawingScapulothoracicJoints = m_Params.decorationOptions.getShouldShowScapulo();
-        if (ImGui::Checkbox("Scapulothoracic Joints", &isDrawingScapulothoracicJoints))
-        {
-            m_Params.decorationOptions.setShouldShowScapulo(isDrawingScapulothoracicJoints);
-        }
-
-        bool isShowingEffectiveLinesOfAction = m_Params.decorationOptions.getShouldShowEffectiveMuscleLinesOfAction();
-        if (ImGui::Checkbox("Lines of Action (effective)", &isShowingEffectiveLinesOfAction))
-        {
-            m_Params.decorationOptions.setShouldShowEffectiveMuscleLinesOfAction(isShowingEffectiveLinesOfAction);
-        }
-        ImGui::SameLine();
-        osc::DrawHelpMarker("Draws direction vectors that show the effective mechanical effect of the muscle action on the attached body.\n\n'Effective' refers to the fact that this algorithm computes the 'effective' attachment position of the muscle, which can change because of muscle wrapping and via point calculations (see: section 5.4.3 of Yamaguchi's book 'Dynamic Modeling of Musculoskeletal Motion: A Vectorized Approach for Biomechanical Analysis in Three Dimensions', title 'EFFECTIVE ORIGIN AND INSERTION POINTS').\n\nOpenSim Creator's implementation of this algorithm is based on Luca Modenese (@modenaxe)'s implementation here:\n\n    - https://github.com/modenaxe/MuscleForceDirection\n\nThanks to @modenaxe for open-sourcing the original algorithm!");
-
-        bool isShowingAnatomicalLinesOfAction = m_Params.decorationOptions.getShouldShowAnatomicalMuscleLinesOfAction();
-        if (ImGui::Checkbox("Lines of Action (anatomical)", &isShowingAnatomicalLinesOfAction))
-        {
-            m_Params.decorationOptions.setShouldShowAnatomicalMuscleLinesOfAction(isShowingAnatomicalLinesOfAction);
-        }
-        ImGui::SameLine();
-        osc::DrawHelpMarker("Draws direction vectors that show the mechanical effect of the muscle action on the bodies attached to the origin/insertion points.\n\n'Anatomical' here means 'the first/last points of the muscle path' see the documentation for 'effective' lines of action for contrast.\n\nOpenSim Creator's implementation of this algorithm is based on Luca Modenese (@modenaxe)'s implementation here:\n\n    - https://github.com/modenaxe/MuscleForceDirection\n\nThanks to @modenaxe for open-sourcing the original algorithm!");
-
-        bool isShowingCentersOfMass = m_Params.decorationOptions.getShouldShowCentersOfMass();
-        if (ImGui::Checkbox("Centers of Mass", &isShowingCentersOfMass))
-        {
-            m_Params.decorationOptions.setShouldShowCentersOfMass(isShowingCentersOfMass);
-        }
-
-        bool isShowingPointToPointSprings = m_Params.decorationOptions.getShouldShowPointToPointSprings();
-        if (ImGui::Checkbox("Point-to-Point Springs", &isShowingPointToPointSprings))
-        {
-            m_Params.decorationOptions.setShouldShowPointToPointSprings(isShowingPointToPointSprings);
-        }
-    }
-
     std::pair<OpenSim::Component const*, glm::vec3> hittestRenderWindow(osc::VirtualConstModelStatePair const& msp)
     {
         std::pair<OpenSim::Component const*, glm::vec3> rv = {nullptr, {0.0f, 0.0f, 0.0f}};
@@ -649,7 +809,8 @@ private:
     void drawImGuiOverlays()
     {
         ImGui::SetCursorScreenPos(m_RenderedImageHittest.rect.p1 + glm::vec2{ImGui::GetStyle().WindowPadding});
-        drawTopButtonRowOverlay();
+
+        DrawViewerTopButtonRow(m_Params, m_CachedModelRenderer, *m_IconCache, m_Ruler);
 
         {
             ImGuiStyle const& style = ImGui::GetStyle();
@@ -663,151 +824,13 @@ private:
         }
         DrawAlignmentAxes(m_Params.camera.getViewMtx());
 
-        drawCameraControlButtons();
-    }
 
-    void drawCameraControlButtons()
-    {
-        ImGuiStyle const& style = ImGui::GetStyle();
-        float const buttonHeight = 2.0f*style.FramePadding.y + ImGui::GetTextLineHeight();
-        float const rowSpacing = ImGui::GetStyle().FramePadding.y;
-        float const twoRowHeight = 2.0f*buttonHeight + rowSpacing;
-        float const xFirstRow = m_RenderedImageHittest.rect.p1.x + style.WindowPadding.x + CalcAlignmentAxesDimensions().x + style.ItemSpacing.x;
-        float const yFirstRow = (m_RenderedImageHittest.rect.p2.y - style.WindowPadding.y - 0.5f*CalcAlignmentAxesDimensions().y) - 0.5f*twoRowHeight;
-
-        glm::vec2 const firstRowTopLeft = {xFirstRow, yFirstRow};
-        float const midRowY = yFirstRow + 0.5f*(buttonHeight + rowSpacing);
-
-        // draw top row
-        {
-            ImGui::SetCursorScreenPos(firstRowTopLeft);
-
-            IconWithoutMenu plusXbutton
-            {
-                m_IconCache->getIcon("plusx"),
-                "Focus Camera Along +X",
-                "Rotates the camera to focus along the +X direction",
-            };
-            if (plusXbutton.draw())
-            {
-                FocusAlongX(m_Params.camera);
-            }
-
-            ImGui::SameLine();
-
-            IconWithoutMenu plusYbutton
-            {
-                m_IconCache->getIcon("plusy"),
-                "Focus Camera Along +Y",
-                "Rotates the camera to focus along the +Y direction",
-            };
-            if (plusYbutton.draw())
-            {
-                FocusAlongY(m_Params.camera);
-            }
-
-            ImGui::SameLine();
-
-            IconWithoutMenu plusZbutton
-            {
-                m_IconCache->getIcon("plusz"),
-                "Focus Camera Along +Z",
-                "Rotates the camera to focus along the +Z direction",
-            };
-            if (plusZbutton.draw())
-            {
-                FocusAlongZ(m_Params.camera);
-            }
-
-            ImGui::SameLine();
-            ImGui::SameLine();
-
-            IconWithoutMenu zoomInButton
-            {
-                m_IconCache->getIcon("zoomin"),
-                "Zoom in Camera",
-                "Moves the camera one step towards its focus point",
-            };
-            if (zoomInButton.draw())
-            {
-                ZoomIn(m_Params.camera);
-            }
-        }
-
-        // draw bottom row
-        {
-            ImGui::SetCursorScreenPos({ firstRowTopLeft.x, ImGui::GetCursorScreenPos().y });
-
-            IconWithoutMenu minusXbutton
-            {
-                m_IconCache->getIcon("minusx"),
-                "Focus Camera Along -X",
-                "Rotates the camera to focus along the -X direction",
-            };
-            if (minusXbutton.draw())
-            {
-                FocusAlongMinusX(m_Params.camera);
-            }
-
-            ImGui::SameLine();
-
-            IconWithoutMenu minusYbutton
-            {
-                m_IconCache->getIcon("minusy"),
-                "Focus Camera Along -Y",
-                "Rotates the camera to focus along the -Y direction",
-            };
-            if (minusYbutton.draw())
-            {
-                FocusAlongMinusY(m_Params.camera);
-            }
-
-            ImGui::SameLine();
-
-            IconWithoutMenu minusZbutton
-            {
-                m_IconCache->getIcon("minusz"),
-                "Focus Camera Along -Z",
-                "Rotates the camera to focus along the -Z direction",
-            };
-            if (minusZbutton.draw())
-            {
-                FocusAlongMinusZ(m_Params.camera);
-            }
-
-            ImGui::SameLine();
-            ImGui::SameLine();
-
-            IconWithoutMenu zoomOutButton
-            {
-                m_IconCache->getIcon("zoomout"),
-                "Zoom Out Camera",
-                "Moves the camera one step away from its focus point",
-            };
-            if (zoomOutButton.draw())
-            {
-                ZoomOut(m_Params.camera);
-            }
-
-            ImGui::SameLine();
-            ImGui::SameLine();
-        }
-
-        // draw single row
-        {
-            ImGui::SetCursorScreenPos({ImGui::GetCursorScreenPos().x, midRowY});
-
-            IconWithoutMenu autoFocusButton
-            {
-                m_IconCache->getIcon("zoomauto"),
-                "Auto-Focus Camera",
-                "Try to automatically adjust the camera's zoom etc. to suit the model's dimensions. Hotkey: Ctrl+F",
-            };
-            if (autoFocusButton.draw())
-            {
-                m_AutoFocusCameraNextFrame = true;
-            }
-        }
+        CameraControlsReply reply = DrawCameraControlButtons(
+            m_Params.camera,
+            m_RenderedImageHittest,
+            *m_IconCache
+        );
+        m_AutoFocusCameraNextFrame = reply == CameraControlsReply::ShouldAutoFocusCamera;
     }
 
     // rendering parameters
@@ -816,11 +839,14 @@ private:
     {
         App::get().getConfig(),
         App::singleton<MeshCache>(),
-        *App::singleton<ShaderCache>()
+        *App::singleton<ShaderCache>(),
     };
 
     // ImGui compositing/hittesting state
-    std::shared_ptr<IconCache> m_IconCache = osc::App::singleton<osc::IconCache>(osc::App::resource("icons/"), ImGui::GetTextLineHeight()/128.0f);
+    std::shared_ptr<IconCache> m_IconCache = osc::App::singleton<osc::IconCache>(
+        App::resource("icons/"),
+        ImGui::GetTextLineHeight()/128.0f
+    );
     osc::ImGuiItemHittestResult m_RenderedImageHittest;
 
     // a flag that will auto-focus the main scene camera the next time it's used
