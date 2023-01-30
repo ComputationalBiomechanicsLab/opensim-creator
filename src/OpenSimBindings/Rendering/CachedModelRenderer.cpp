@@ -165,9 +165,16 @@ namespace
                 // generate screen-specific overlays
                 if (renderingOptions.getDrawAABBs())
                 {
-                    for (osc::SceneDecoration const& decoration : m_Decorations)
+                    // likely guess: each decoration will have one AABB
+                    m_Decorations.reserve(2*m_Decorations.size());
+
+                    // CARE: iterators may be invalidated here, because DrawAABB is also
+                    //       adding to the list that's being iterated over
+                    //
+                    //       so, to prevent a segfault etc., you *must* cache the index
+                    for (size_t i = 0, len = m_Decorations.size(); i < len; ++i)
                     {
-                        DrawAABB(*m_MeshCache, GetWorldspaceAABB(decoration), pushToDecorationsList);
+                        DrawAABB(*m_MeshCache, GetWorldspaceAABB(m_Decorations[i]), pushToDecorationsList);
                     }
                 }
 
