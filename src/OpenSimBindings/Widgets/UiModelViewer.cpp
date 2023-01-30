@@ -1,65 +1,22 @@
 #include "UiModelViewer.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/Formats/DAE.hpp"
-#include "src/Graphics/GraphicsHelpers.hpp"
-#include "src/Graphics/Icon.hpp"
 #include "src/Graphics/IconCache.hpp"
 #include "src/Graphics/MeshCache.hpp"
-#include "src/Graphics/SceneDecoration.hpp"
-#include "src/Graphics/SceneRenderer.hpp"
-#include "src/Graphics/SceneRendererParams.hpp"
 #include "src/Graphics/ShaderCache.hpp"
-#include "src/Maths/AABB.hpp"
-#include "src/Maths/BVH.hpp"
-#include "src/Maths/Constants.hpp"
+#include "src/Graphics/SceneCollision.hpp"
 #include "src/Maths/MathHelpers.hpp"
-#include "src/Maths/Line.hpp"
-#include "src/Maths/RayCollision.hpp"
-#include "src/Maths/Rect.hpp"
-#include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/OpenSimBindings/Rendering/CachedModelRenderer.hpp"
-#include "src/OpenSimBindings/Rendering/CustomDecorationOptions.hpp"
-#include "src/OpenSimBindings/Rendering/CustomRenderingOptions.hpp"
 #include "src/OpenSimBindings/Rendering/ModelRendererParams.hpp"
-#include "src/OpenSimBindings/Rendering/OpenSimDecorationGenerator.hpp"
-#include "src/OpenSimBindings/Rendering/MuscleColoringStyle.hpp"
-#include "src/OpenSimBindings/Rendering/MuscleDecorationStyle.hpp"
-#include "src/OpenSimBindings/Rendering/MuscleSizingStyle.hpp"
 #include "src/OpenSimBindings/Widgets/BasicWidgets.hpp"
-#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
 #include "src/Platform/App.hpp"
-#include "src/Platform/os.hpp"
-#include "src/Utils/Algorithms.hpp"
-#include "src/Utils/Perf.hpp"
-#include "src/Utils/UID.hpp"
 #include "src/Widgets/GuiRuler.hpp"
 
-#include <glm/mat3x3.hpp>
-#include <glm/mat4x3.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/transform.hpp>
 #include <imgui.h>
-#include <nonstd/span.hpp>
-#include <OpenSim/Common/Component.h>
-#include <OpenSim/Common/ComponentPath.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <IconsFontAwesome5.h>
 
-#include <algorithm>
-#include <array>
-#include <cstddef>
-#include <cstdio>
-#include <fstream>
-#include <limits>
-#include <string>
-#include <utility>
-#include <vector>
+#include <memory>
+#include <optional>
 
 class osc::UiModelViewer::Impl final {
 public:
