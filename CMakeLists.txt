@@ -742,6 +742,10 @@ add_library(osccore STATIC
 
     src/Widgets/GuiRuler.cpp
     src/Widgets/GuiRuler.hpp
+    src/Widgets/IconWithMenu.cpp
+    src/Widgets/IconWithMenu.hpp
+    src/Widgets/IconWithoutMenu.cpp
+    src/Widgets/IconWithoutMenu.hpp
     src/Widgets/LogViewer.cpp
     src/Widgets/LogViewer.hpp
     src/Widgets/Popup.hpp
