@@ -97,37 +97,41 @@ namespace
     // a sequence of matchers to test against
     //
     // if the next N columns don't match any matchers, assume the column is `ColumnDataType::Unknown`
-    static std::vector<ColumnDataTypeMatcher> const g_Matchers =
+    std::vector<ColumnDataTypeMatcher> const& GetMatchers()
     {
+        static std::vector<ColumnDataTypeMatcher> const s_Matchers =
         {
-            ColumnDataType::PointForce,
-            {"_vx", "_vy", "_vz", "_px", "_py", "_pz"}
-        },
-        {
-            ColumnDataType::Point,
-            {"_vx", "_vy", "_vz"}
-        },
-        {
-            ColumnDataType::Point,
-            {"_tx", "_ty", "_tz"}
-        },
-        {
-            ColumnDataType::Point,
-            {"_px", "_py", "_pz"}
-        },
-        {
-            ColumnDataType::Orientation,
-            {"_1", "_2", "_3", "_4"}
-        },
-        {
-            ColumnDataType::Point,
-            {"_1", "_2", "_3"}
-        },
-        {
-            ColumnDataType::BodyForce,
-            {"_fx", "_fy", "_fz"}
-        },
-    };
+            {
+                ColumnDataType::PointForce,
+                {"_vx", "_vy", "_vz", "_px", "_py", "_pz"}
+                },
+            {
+                ColumnDataType::Point,
+                {"_vx", "_vy", "_vz"}
+            },
+            {
+                ColumnDataType::Point,
+                {"_tx", "_ty", "_tz"}
+            },
+            {
+                ColumnDataType::Point,
+                {"_px", "_py", "_pz"}
+            },
+            {
+                ColumnDataType::Orientation,
+                {"_1", "_2", "_3", "_4"}
+            },
+            {
+                ColumnDataType::Point,
+                {"_1", "_2", "_3"}
+            },
+            {
+                ColumnDataType::BodyForce,
+                {"_fx", "_fy", "_fz"}
+            },
+        };
+        return s_Matchers;
+    }
 
     // returns the number of columns the data type would require
     constexpr int NumColumnsRequiredBy(ColumnDataTypeMatcher const& matcher)
@@ -194,7 +198,7 @@ namespace
     // returns the matching column data type for the next set of columns - if a match can be found
     std::optional<ColumnDataTypeMatcher> TryMatchColumnsWithType(OpenSim::Array<std::string> const& labels, int offset)
     {
-        for (ColumnDataTypeMatcher const& matcher : g_Matchers)
+        for (ColumnDataTypeMatcher const& matcher : GetMatchers())
         {
             if (IsMatch(labels, offset, matcher))
             {

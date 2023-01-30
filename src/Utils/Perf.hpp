@@ -115,6 +115,6 @@ namespace osc
     };
 
 #define OSC_PERF(label) \
-    static int64_t const OSC_TOKENPASTE2(g_TimerID, __LINE__) = osc::AllocateMeasurementID(label, OSC_FILENAME, __LINE__); \
-    osc::PerfTimer OSC_TOKENPASTE2(timer, __LINE__) (OSC_TOKENPASTE2(g_TimerID, __LINE__));
+    static int64_t const OSC_TOKENPASTE2(s_TimerID, __LINE__) = osc::AllocateMeasurementID(label, OSC_FILENAME, __LINE__); \
+    osc::PerfTimer OSC_TOKENPASTE2(timer, __LINE__) (OSC_TOKENPASTE2(s_TimerID, __LINE__));
 }

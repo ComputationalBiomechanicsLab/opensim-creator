@@ -40,6 +40,7 @@
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/ClonePtr.hpp"
+#include "src/Utils/CStringView.hpp"
 #include "src/Utils/DefaultConstructOnCopy.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
 #include "src/Utils/ScopeGuard.hpp"
@@ -134,56 +135,50 @@ using osc::Line;
 // user-facing string constants
 namespace
 {
-#define OSC_GROUND_DESC "Ground is an inertial reference frame in which the motion of all frames and points may conveniently and efficiently be expressed. It is always defined to be at (0, 0, 0) in 'worldspace' and cannot move. All bodies in the model must eventually attach to ground via joints."
-#define OSC_BODY_DESC "Bodies are active elements in the model. They define a 'frame' (effectively, a location + orientation) with a mass.\n\nOther body properties (e.g. inertia) can be edited in the main OpenSim Creator editor after you have converted the model into an OpenSim model."
-#define OSC_MESH_DESC "Meshes are decorational components in the model. They can be translated, rotated, and scaled. Typically, meshes are 'attached' to other elements in the model, such as bodies. When meshes are 'attached' to something, they will 'follow' the thing they are attached to."
-#define OSC_JOINT_DESC "Joints connect two physical frames (i.e. bodies and ground) together and specifies their relative permissible motion (e.g. PinJoints only allow rotation along one axis).\n\nIn OpenSim, joints are the 'edges' of a directed topology graph where bodies are the 'nodes'. All bodies in the model must ultimately connect to ground via joints."
-#define OSC_STATION_DESC "Stations are points of interest in the model. They can be used to compute a 3D location in the frame of the thing they are attached to.\n\nThe utility of stations is that you can use them to visually mark points of interest. Those points of interest will then be defined with respect to whatever they are attached to. This is useful because OpenSim typically requires relative coordinates for things in the model (e.g. muscle paths)."
+    osc::CStringView constexpr c_GroundLabel = "Ground";
+    osc::CStringView constexpr c_GroundLabelPluralized = "Ground";
+    osc::CStringView constexpr c_GroundLabelOptionallyPluralized = "Ground(s)";
+    osc::CStringView constexpr c_GroundDescription = "Ground is an inertial reference frame in which the motion of all frames and points may conveniently and efficiently be expressed. It is always defined to be at (0, 0, 0) in 'worldspace' and cannot move. All bodies in the model must eventually attach to ground via joints.";
 
-#define OSC_TRANSLATION_DESC  "Translation of the component in ground. OpenSim defines this as 'unitless'; however, OpenSim models typically use meters."
+    osc::CStringView constexpr c_MeshLabel = "Mesh";
+    osc::CStringView constexpr c_MeshLabelPluralized = "Meshes";
+    osc::CStringView constexpr c_MeshLabelOptionallyPluralized = "Mesh(es)";
+    osc::CStringView constexpr c_MeshDescription = "Meshes are decorational components in the model. They can be translated, rotated, and scaled. Typically, meshes are 'attached' to other elements in the model, such as bodies. When meshes are 'attached' to something, they will 'follow' the thing they are attached to.";
+    osc::CStringView constexpr c_MeshAttachmentCrossrefName = "parent";
 
-    std::string const g_GroundLabel = "Ground";
-    std::string const g_GroundLabelPluralized = "Ground";
-    std::string const g_GroundLabelOptionallyPluralized = "Ground(s)";
-    std::string const g_GroundDescription = OSC_GROUND_DESC;
+    osc::CStringView constexpr c_BodyLabel = "Body";
+    osc::CStringView constexpr c_BodyLabelPluralized = "Bodies";
+    osc::CStringView constexpr c_BodyLabelOptionallyPluralized = "Body(s)";
+    osc::CStringView constexpr c_BodyDescription = "Bodies are active elements in the model. They define a 'frame' (effectively, a location + orientation) with a mass.\n\nOther body properties (e.g. inertia) can be edited in the main OpenSim Creator editor after you have converted the model into an OpenSim model.";
 
-    std::string const g_MeshLabel = "Mesh";
-    std::string const g_MeshLabelPluralized = "Meshes";
-    std::string const g_MeshLabelOptionallyPluralized = "Mesh(es)";
-    std::string const g_MeshDescription = OSC_MESH_DESC;
-    std::string const g_MeshAttachmentCrossrefName = "parent";
+    osc::CStringView constexpr c_JointLabel = "Joint";
+    osc::CStringView constexpr c_JointLabelPluralized = "Joints";
+    osc::CStringView constexpr c_JointLabelOptionallyPluralized = "Joint(s)";
+    osc::CStringView constexpr c_JointDescription = "Joints connect two physical frames (i.e. bodies and ground) together and specifies their relative permissible motion (e.g. PinJoints only allow rotation along one axis).\n\nIn OpenSim, joints are the 'edges' of a directed topology graph where bodies are the 'nodes'. All bodies in the model must ultimately connect to ground via joints.";
+    osc::CStringView constexpr c_JointParentCrossrefName = "parent";
+    osc::CStringView constexpr c_JointChildCrossrefName = "child";
 
-    std::string const g_BodyLabel = "Body";
-    std::string const g_BodyLabelPluralized = "Bodies";
-    std::string const g_BodyLabelOptionallyPluralized = "Body(s)";
-    std::string const g_BodyDescription = OSC_BODY_DESC;
+    osc::CStringView constexpr c_StationLabel = "Station";
+    osc::CStringView constexpr c_StationLabelPluralized = "Stations";
+    osc::CStringView constexpr c_StationLabelOptionallyPluralized = "Station(s)";
+    osc::CStringView constexpr c_StationDescription = "Stations are points of interest in the model. They can be used to compute a 3D location in the frame of the thing they are attached to.\n\nThe utility of stations is that you can use them to visually mark points of interest. Those points of interest will then be defined with respect to whatever they are attached to. This is useful because OpenSim typically requires relative coordinates for things in the model (e.g. muscle paths).";
+    osc::CStringView constexpr c_StationParentCrossrefName = "parent";
 
-    std::string const g_JointLabel = "Joint";
-    std::string const g_JointLabelPluralized = "Joints";
-    std::string const g_JointLabelOptionallyPluralized = "Joint(s)";
-    std::string const g_JointDescription = OSC_JOINT_DESC;
-    std::string const g_JointParentCrossrefName = "parent";
-    std::string const g_JointChildCrossrefName = "child";
-
-    std::string const g_StationLabel = "Station";
-    std::string const g_StationLabelPluralized = "Stations";
-    std::string const g_StationLabelOptionallyPluralized = "Station(s)";
-    std::string const g_StationDescription = OSC_STATION_DESC;
-    std::string const g_StationParentCrossrefName = "parent";
+    osc::CStringView constexpr c_TranslationDescription = "Translation of the component in ground. OpenSim defines this as 'unitless'; however, OpenSim models typically use meters.";
 }
 
 // senteniel UID constants
 namespace
 {
     class BodyEl;
-    UIDT<BodyEl> const g_GroundID;
-    UID const g_EmptyID;
-    UID const g_RightClickedNothingID;
-    UID const g_GroundGroupID;
-    UID const g_MeshGroupID;
-    UID const g_BodyGroupID;
-    UID const g_JointGroupID;
-    UID const g_StationGroupID;
+    UIDT<BodyEl> const c_GroundID;
+    UID const c_EmptyID;
+    UID const c_RightClickedNothingID;
+    UID const c_GroundGroupID;
+    UID const c_MeshGroupID;
+    UID const c_BodyGroupID;
+    UID const c_JointGroupID;
+    UID const c_StationGroupID;
 }
 
 // generic helper functions
@@ -381,8 +376,8 @@ namespace
 
     // something that is being drawn in the scene
     struct DrawableThing final {
-        UID id = g_EmptyID;
-        UID groupId = g_EmptyID;
+        UID id = c_EmptyID;
+        UID groupId = c_EmptyID;
         Mesh mesh;
         Transform transform;
         glm::vec4 color;
@@ -510,12 +505,14 @@ namespace
     class SceneEl;
     class SceneElClass final {
     public:
-        SceneElClass(std::string name,
-            std::string namePluralized,
-            std::string nameOptionallyPluralized,
-            std::string icon,
-            std::string description,
+        SceneElClass(
+            osc::CStringView name,
+            osc::CStringView namePluralized,
+            osc::CStringView nameOptionallyPluralized,
+            osc::CStringView icon,
+            osc::CStringView description,
             std::unique_ptr<SceneEl> defaultObject) :
+
             m_ID{},
             m_Name{std::move(name)},
             m_NamePluralized{std::move(namePluralized)},
@@ -824,17 +821,17 @@ namespace
 
         static SceneElClass const& Class()
         {
-            static SceneElClass g_Class =
+            static SceneElClass const s_Class =
             {
-                g_GroundLabel,
-                g_GroundLabelPluralized,
-                g_GroundLabelOptionallyPluralized,
+                c_GroundLabel,
+                c_GroundLabelPluralized,
+                c_GroundLabelOptionallyPluralized,
                 ICON_FA_DOT_CIRCLE,
-                g_GroundDescription,
+                c_GroundDescription,
                 std::unique_ptr<SceneEl>{new GroundEl{}}
             };
 
-            return g_Class;
+            return s_Class;
         }
 
         SceneElClass const& GetClass() const override
@@ -864,17 +861,17 @@ namespace
 
         UID GetID() const override
         {
-            return g_GroundID;
+            return c_GroundID;
         }
 
         std::ostream& operator<<(std::ostream& o) const override
         {
-            return o << g_GroundLabel << "()";
+            return o << c_GroundLabel << "()";
         }
 
         osc::CStringView GetLabel() const override
         {
-            return g_GroundLabel;
+            return c_GroundLabel;
         }
 
         void SetLabel(std::string_view) override
@@ -912,17 +909,17 @@ namespace
     public:
         static SceneElClass const& Class()
         {
-            static SceneElClass g_Class =
+            static SceneElClass const s_Class =
             {
-                g_MeshLabel,
-                g_MeshLabelPluralized,
-                g_MeshLabelOptionallyPluralized,
+                c_MeshLabel,
+                c_MeshLabelPluralized,
+                c_MeshLabelOptionallyPluralized,
                 ICON_FA_CUBE,
-                g_MeshDescription,
+                c_MeshDescription,
                 std::unique_ptr<SceneEl>{new MeshEl{}}
             };
 
-            return g_Class;
+            return s_Class;
         }
 
         MeshEl() :
@@ -936,7 +933,7 @@ namespace
 
         MeshEl(
             UIDT<MeshEl> id,
-            UID attachment,  // can be g_GroundID
+            UID attachment,  // can be c_GroundID
             Mesh const& meshData,
             std::filesystem::path const& path) :
 
@@ -948,7 +945,7 @@ namespace
         }
 
         MeshEl(
-            UID attachment,  // can be g_GroundID
+            UID attachment,  // can be c_GroundID
             Mesh const& meshData,
             std::filesystem::path const& path) :
 
@@ -1006,7 +1003,7 @@ namespace
         {
             switch (i) {
             case 0:
-                return g_MeshAttachmentCrossrefName;
+                return c_MeshAttachmentCrossrefName;
             default:
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
@@ -1066,7 +1063,7 @@ namespace
         }
 
         UIDT<MeshEl> ID;
-        UID Attachment;  // can be g_GroundID
+        UID Attachment;  // can be c_GroundID
         Transform Xform;
         Mesh MeshData;
         std::filesystem::path Path;
@@ -1080,17 +1077,17 @@ namespace
     public:
         static SceneElClass const& Class()
         {
-            static SceneElClass g_Class =
+            static SceneElClass const s_Class =
             {
-                g_BodyLabel,
-                g_BodyLabelPluralized,
-                g_BodyLabelOptionallyPluralized,
+                c_BodyLabel,
+                c_BodyLabelPluralized,
+                c_BodyLabelOptionallyPluralized,
                 ICON_FA_CIRCLE,
-                g_BodyDescription,
+                c_BodyDescription,
                 std::unique_ptr<SceneEl>{new BodyEl{}}
             };
 
-            return g_Class;
+            return s_Class;
         }
 
         BodyEl() :
@@ -1205,17 +1202,17 @@ namespace
     public:
         static SceneElClass const& Class()
         {
-            static SceneElClass g_Class =
+            static SceneElClass const s_Class =
             {
-                g_JointLabel,
-                g_JointLabelPluralized,
-                g_JointLabelOptionallyPluralized,
+                c_JointLabel,
+                c_JointLabelPluralized,
+                c_JointLabelOptionallyPluralized,
                 ICON_FA_LINK,
-                g_JointDescription,
+                c_JointDescription,
                 std::unique_ptr<SceneEl>{new JointEl{}}
             };
 
-            return g_Class;
+            return s_Class;
         }
 
         JointEl() :
@@ -1315,9 +1312,9 @@ namespace
         {
             switch (i) {
             case 0:
-                return g_JointParentCrossrefName;
+                return c_JointParentCrossrefName;
             case 1:
-                return g_JointChildCrossrefName;
+                return c_JointChildCrossrefName;
             default:
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
@@ -1412,17 +1409,17 @@ namespace
     public:
         static SceneElClass const& Class()
         {
-            static SceneElClass g_Class =
+            static SceneElClass const s_Class =
             {
-                g_StationLabel,
-                g_StationLabelPluralized,
-                g_StationLabelOptionallyPluralized,
+                c_StationLabel,
+                c_StationLabelPluralized,
+                c_StationLabelOptionallyPluralized,
                 ICON_FA_MAP_PIN,
-                g_StationDescription,
+                c_StationDescription,
                 std::unique_ptr<SceneEl>{new StationEl{}}
             };
 
-            return g_Class;
+            return s_Class;
         }
 
         StationEl() :
@@ -1436,7 +1433,7 @@ namespace
 
 
         StationEl(UIDT<StationEl> id,
-            UIDT<BodyEl> attachment,  // can be g_GroundID
+            UIDT<BodyEl> attachment,  // can be c_GroundID
             glm::vec3 const& position,
             std::string const& name) :
             ID{std::move(id)},
@@ -1446,7 +1443,7 @@ namespace
         {
         }
 
-        StationEl(UIDT<BodyEl> attachment,  // can be g_GroundID
+        StationEl(UIDT<BodyEl> attachment,  // can be c_GroundID
             glm::vec3 const& position,
             std::string const& name) :
             ID{},
@@ -1508,7 +1505,7 @@ namespace
         {
             switch (i) {
             case 0:
-                return g_StationParentCrossrefName;
+                return c_StationParentCrossrefName;
             default:
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
@@ -1565,7 +1562,7 @@ namespace
         }
 
         UIDT<StationEl> ID;
-        UIDT<BodyEl> Attachment;  // can be g_GroundID
+        UIDT<BodyEl> Attachment;  // can be c_GroundID
         glm::vec3 Position;
         std::string Name;
     };
@@ -1628,11 +1625,10 @@ namespace
         };
     }
 
-    std::vector<SceneElClass const*> GetSceneElClasses()
+    std::vector<SceneElClass const*> const& GetSceneElClasses()
     {
-        static std::vector<SceneElClass const*> g_Classes = GenerateSceneElClassList();
-
-        return g_Classes;
+        static std::vector<SceneElClass const*> const s_Classes = GenerateSceneElClassList();
+        return s_Classes;
     }
 
     glm::vec3 AverageCenter(MeshEl const& el)
@@ -1771,7 +1767,7 @@ namespace
         ModelGraph() :
             // insert a senteniel ground element into the model graph (it should always
             // be there)
-            m_Els{{g_GroundID, ClonePtr<SceneEl>{GroundEl{}}}}
+            m_Els{{c_GroundID, ClonePtr<SceneEl>{GroundEl{}}}}
         {
         }
 
@@ -2069,7 +2065,7 @@ namespace
     // returns `true` if a Joint is complete b.s.
     bool IsGarbageJoint(ModelGraph const& modelGraph, JointEl const& jointEl)
     {
-        if (jointEl.Child == g_GroundID)
+        if (jointEl.Child == c_GroundID)
         {
             return true;  // ground cannot be a child in a joint
         }
@@ -2079,7 +2075,7 @@ namespace
             return true;  // is directly attached to itself
         }
 
-        if (jointEl.Parent != g_GroundID && !modelGraph.ContainsEl<BodyEl>(jointEl.Parent))
+        if (jointEl.Parent != c_GroundID && !modelGraph.ContainsEl<BodyEl>(jointEl.Parent))
         {
             return true;  // has a parent ID that's invalid for this model graph
         }
@@ -2104,7 +2100,7 @@ namespace
     {
         OSC_ASSERT_ALWAYS(!IsGarbageJoint(modelGraph, joint));
 
-        if (joint.Parent == g_GroundID)
+        if (joint.Parent == c_GroundID)
         {
             return true;  // it's directly attached to ground
         }
@@ -2221,7 +2217,7 @@ namespace
     // returns true if the given element (ID) is in the "selection group" of
     bool IsInSelectionGroupOf(ModelGraph const& mg, UID parent, UID id)
     {
-        if (id == g_EmptyID || parent == g_EmptyID)
+        if (id == c_EmptyID || parent == c_EmptyID)
         {
             return false;
         }
@@ -2291,16 +2287,16 @@ namespace
         public:
             explicit Visitor(ModelGraph const& mg) : m_Mg{mg} {}
 
-            void operator()(GroundEl const&) { m_Result = g_GroundID; }
-            void operator()(MeshEl const& el) { m_Mg.ContainsEl<BodyEl>(el.Attachment) ? m_Result = osc::DowncastID<BodyEl>(el.Attachment) : g_GroundID; }
+            void operator()(GroundEl const&) { m_Result = c_GroundID; }
+            void operator()(MeshEl const& el) { m_Mg.ContainsEl<BodyEl>(el.Attachment) ? m_Result = osc::DowncastID<BodyEl>(el.Attachment) : c_GroundID; }
             void operator()(BodyEl const& el) { m_Result = el.ID; }
-            void operator()(JointEl const&) { m_Result = g_GroundID; }  // can't be attached
-            void operator()(StationEl const&) { m_Result = g_GroundID; }  // can't be attached
+            void operator()(JointEl const&) { m_Result = c_GroundID; }  // can't be attached
+            void operator()(StationEl const&) { m_Result = c_GroundID; }  // can't be attached
 
             UIDT<BodyEl> result() const { return m_Result; }
 
         private:
-            UIDT<BodyEl> m_Result = g_GroundID;
+            UIDT<BodyEl> m_Result = c_GroundID;
             ModelGraph const& m_Mg;
         };
 
@@ -2319,9 +2315,9 @@ namespace
     }
 
     // returns recommended rim intensity for an element in the model graph
-    osc::SceneDecorationFlags ComputeFlags(ModelGraph const& mg, UID id, UID hoverID = g_EmptyID)
+    osc::SceneDecorationFlags ComputeFlags(ModelGraph const& mg, UID id, UID hoverID = c_EmptyID)
     {
-        if (id == g_EmptyID)
+        if (id == c_EmptyID)
         {
             return osc::SceneDecorationFlags_None;
         }
@@ -2359,7 +2355,7 @@ namespace
     // created
     class ModelGraphCommit {
     public:
-        ModelGraphCommit(UID parentID,  // can be g_EmptyID
+        ModelGraphCommit(UID parentID,  // can be c_EmptyID
             ClonePtr<ModelGraph> modelGraph,
             std::string_view commitMessage) :
 
@@ -2391,8 +2387,8 @@ namespace
     public:
         CommittableModelGraph(std::unique_ptr<ModelGraph> mg) :
             m_Scratch{std::move(mg)},
-            m_Current{g_EmptyID},
-            m_BranchHead{g_EmptyID},
+            m_Current{c_EmptyID},
+            m_BranchHead{c_EmptyID},
             m_Commits{}
         {
             Commit("created model graph");
@@ -2472,7 +2468,7 @@ namespace
         bool CanUndo() const
         {
             ModelGraphCommit const* c = TryGetCommitByID(m_Current);
-            return c ? c->GetParentID() != g_EmptyID : false;
+            return c ? c->GetParentID() != c_EmptyID : false;
         }
 
         void Undo()
@@ -2553,7 +2549,7 @@ namespace
     {
         ModelGraph& mg = cmg.UpdScratch();
 
-        if (newAttachment != g_GroundID && !mg.ContainsEl<BodyEl>(newAttachment))
+        if (newAttachment != c_GroundID && !mg.ContainsEl<BodyEl>(newAttachment))
         {
             return false;  // bogus ID passed
         }
@@ -2869,7 +2865,7 @@ namespace
         MeshEl* el = mg.TryUpdElByID<MeshEl>(andTryAttach);
         if (el)
         {
-            if (el->Attachment == g_GroundID || el->Attachment == g_EmptyID)
+            if (el->Attachment == c_GroundID || el->Attachment == c_EmptyID)
             {
                 el->Attachment = b.ID;
                 mg.Select(*el);
@@ -2883,7 +2879,7 @@ namespace
 
     UIDT<BodyEl> AddBody(CommittableModelGraph& cmg)
     {
-        return AddBody(cmg, {}, g_EmptyID);
+        return AddBody(cmg, {}, c_EmptyID);
     }
 
     bool AddStationAtLocation(CommittableModelGraph& cmg, SceneEl const& el, glm::vec3 const& loc)
@@ -3301,7 +3297,7 @@ namespace
         // add any meshes that are directly connected to ground (i.e. meshes that are not attached to a body)
         for (MeshEl const& meshEl : mg.iter<MeshEl>())
         {
-            if (meshEl.Attachment == g_GroundID)
+            if (meshEl.Attachment == c_GroundID)
             {
                 AttachMeshElToFrame(meshEl, Transform{}, model->updGround());
             }
@@ -3325,7 +3321,7 @@ namespace
         // note: these bodies may use the non-participating bodies (above) as parents
         for (JointEl const& jointEl : mg.iter<JointEl>())
         {
-            if (jointEl.Parent == g_GroundID || ContainsKey(visitedBodies, jointEl.Parent))
+            if (jointEl.Parent == c_GroundID || ContainsKey(visitedBodies, jointEl.Parent))
             {
                 AttachJointRecursive(mg, *model, jointEl, visitedBodies, visitedJoints);
             }
@@ -3450,11 +3446,11 @@ namespace
             size_t type = maybeType.value();
             std::string name = j.getName();
 
-            UID parent = g_EmptyID;
+            UID parent = c_EmptyID;
 
             if (dynamic_cast<OpenSim::Ground const*>(parentBodyOrGround))
             {
-                parent = g_GroundID;
+                parent = c_GroundID;
             }
             else
             {
@@ -3470,7 +3466,7 @@ namespace
                 }
             }
 
-            UIDT<BodyEl> child = osc::DowncastID<BodyEl>(g_EmptyID);
+            UIDT<BodyEl> child = osc::DowncastID<BodyEl>(c_EmptyID);
 
             if (dynamic_cast<OpenSim::Ground const*>(childBodyOrGround))
             {
@@ -3491,7 +3487,7 @@ namespace
                 }
             }
 
-            if (parent == g_EmptyID || child == g_EmptyID)
+            if (parent == c_EmptyID || child == c_EmptyID)
             {
                 // something horrible happened above
                 continue;
@@ -3536,10 +3532,10 @@ namespace
                 continue;
             }
 
-            UID attachment = g_EmptyID;
+            UID attachment = c_EmptyID;
             if (dynamic_cast<OpenSim::Ground const*>(frameBodyOrGround))
             {
-                attachment = g_GroundID;
+                attachment = c_GroundID;
             }
             else
             {
@@ -3554,7 +3550,7 @@ namespace
                 }
             }
 
-            if (attachment == g_EmptyID)
+            if (attachment == c_EmptyID)
             {
                 // couldn't figure out what to attach to
                 continue;
@@ -3583,10 +3579,10 @@ namespace
             OpenSim::PhysicalFrame const& frame = station.getParentFrame();
             OpenSim::PhysicalFrame const* frameBodyOrGround = TryInclusiveRecurseToBodyOrGround(frame);
 
-            UID attachment = g_EmptyID;
+            UID attachment = c_EmptyID;
             if (dynamic_cast<OpenSim::Ground const*>(frameBodyOrGround))
             {
-                attachment = g_GroundID;
+                attachment = c_GroundID;
             }
             else
             {
@@ -3601,7 +3597,7 @@ namespace
                 }
             }
 
-            if (attachment == g_EmptyID)
+            if (attachment == c_EmptyID)
             {
                 // can't figure out what to attach to
                 continue;
@@ -3630,7 +3626,7 @@ namespace
     // a class that holds hover user mousehover information
     class Hover final {
     public:
-        Hover() : ID{g_EmptyID}, Pos{}
+        Hover() : ID{c_EmptyID}, Pos{}
         {
         }
         Hover(UID id_, glm::vec3 pos_) : ID{id_}, Pos{pos_}
@@ -3638,7 +3634,7 @@ namespace
         }
         explicit operator bool () const noexcept
         {
-            return ID != g_EmptyID;
+            return ID != c_EmptyID;
         }
         void reset()
         {
@@ -3892,7 +3888,7 @@ namespace
 
         void PushMeshLoadRequests(std::vector<std::filesystem::path> paths)
         {
-            PushMeshLoadRequests(g_GroundID, std::move(paths));
+            PushMeshLoadRequests(c_GroundID, std::move(paths));
         }
 
         void PushMeshLoadRequest(UID attachmentPoint, std::filesystem::path const& path)
@@ -3902,7 +3898,7 @@ namespace
 
         void PushMeshLoadRequest(std::filesystem::path const& meshFilePath)
         {
-            PushMeshLoadRequest(g_GroundID, meshFilePath);
+            PushMeshLoadRequest(c_GroundID, meshFilePath);
         }
 
         // called when the mesh loader responds with a fully-loaded mesh
@@ -4067,7 +4063,7 @@ namespace
 
         void DrawConnectionLineToGround(SceneEl const& el, ImU32 color) const
         {
-            if (el.GetID() == g_GroundID)
+            if (el.GetID() == c_GroundID)
             {
                 return;
             }
@@ -4295,7 +4291,7 @@ namespace
 
         nonstd::span<char const* const> GetColorLabels() const
         {
-            return g_ColorNames;
+            return c_ColorNames;
         }
 
         glm::vec4 const& GetColorSceneBackground() const
@@ -4348,7 +4344,7 @@ namespace
 
         nonstd::span<char const* const> GetVisibilityFlagLabels() const
         {
-            return g_VisibilityFlagNames;
+            return c_VisibilityFlagNames;
         }
 
         bool IsShowingMeshes() const
@@ -4468,8 +4464,8 @@ namespace
             material.setVec4("uColor", m_Colors.GridLines);
 
             DrawableThing dt;
-            dt.id = g_EmptyID;
-            dt.groupId = g_EmptyID;
+            dt.id = c_EmptyID;
+            dt.groupId = c_EmptyID;
             dt.mesh = osc::App::singleton<osc::MeshCache>()->get100x100GridMesh();
             dt.transform = t;
             dt.color = m_Colors.GridLines;
@@ -4626,7 +4622,7 @@ namespace
 
         nonstd::span<char const* const> GetInteractivityFlagLabels() const
         {
-            return g_InteractivityFlagNames;
+            return c_InteractivityFlagNames;
         }
 
         bool IsMeshesInteractable() const
@@ -4710,36 +4706,36 @@ namespace
             bool const hittestGround = IsGroundInteractable();
             bool const hittestStations = IsStationsInteractable();
 
-            UID closestID = g_EmptyID;
+            UID closestID = c_EmptyID;
             float closestDist = std::numeric_limits<float>::max();
             for (DrawableThing const& drawable : drawables)
             {
-                if (drawable.id == g_EmptyID)
+                if (drawable.id == c_EmptyID)
                 {
                     continue;  // no hittest data
                 }
 
-                if (drawable.groupId == g_BodyGroupID && !hittestBodies)
+                if (drawable.groupId == c_BodyGroupID && !hittestBodies)
                 {
                     continue;
                 }
 
-                if (drawable.groupId == g_MeshGroupID && !hittestMeshes)
+                if (drawable.groupId == c_MeshGroupID && !hittestMeshes)
                 {
                     continue;
                 }
 
-                if (drawable.groupId == g_JointGroupID && !hittestJointCenters)
+                if (drawable.groupId == c_JointGroupID && !hittestJointCenters)
                 {
                     continue;
                 }
 
-                if (drawable.groupId == g_GroundGroupID && !hittestGround)
+                if (drawable.groupId == c_GroundGroupID && !hittestGround)
                 {
                     continue;
                 }
 
-                if (drawable.groupId == g_StationGroupID && !hittestStations)
+                if (drawable.groupId == c_StationGroupID && !hittestStations)
                 {
                     continue;
                 }
@@ -4757,7 +4753,7 @@ namespace
                 }
             }
 
-            glm::vec3 const hitPos = closestID != g_EmptyID ? ray.origin + closestDist*ray.dir : glm::vec3{};
+            glm::vec3 const hitPos = closestID != c_EmptyID ? ray.origin + closestDist*ray.dir : glm::vec3{};
 
             return Hover{closestID, hitPos};
         }
@@ -4768,7 +4764,7 @@ namespace
 
         void UnassignMesh(MeshEl const& me)
         {
-            UpdModelGraph().UpdElByID<MeshEl>(me.ID).Attachment = g_GroundID;
+            UpdModelGraph().UpdElByID<MeshEl>(me.ID).Attachment = c_GroundID;
 
             std::stringstream ss;
             ss << "unassigned '" << me.Name << "' back to ground";
@@ -4779,10 +4775,10 @@ namespace
         {
             DrawableThing rv;
             rv.id = meshEl.ID;
-            rv.groupId = g_MeshGroupID;
+            rv.groupId = c_MeshGroupID;
             rv.mesh = meshEl.MeshData;
             rv.transform = meshEl.Xform;
-            rv.color = meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID ? RedifyColor(GetColorMesh()) : GetColorMesh();
+            rv.color = meshEl.Attachment == c_GroundID || meshEl.Attachment == c_EmptyID ? RedifyColor(GetColorMesh()) : GetColorMesh();
             rv.flags = osc::SceneDecorationFlags_None;
             return rv;
         }
@@ -4791,7 +4787,7 @@ namespace
         {
             DrawableThing rv;
             rv.id = bodyEl.ID;
-            rv.groupId = g_BodyGroupID;
+            rv.groupId = c_BodyGroupID;
             rv.mesh = m_SphereMesh;
             rv.transform = SphereMeshToSceneSphereTransform(SphereAtTranslation(bodyEl.Xform.position));
             rv.color = color;
@@ -4802,8 +4798,8 @@ namespace
         DrawableThing GenerateGroundSphere(glm::vec4 const& color) const
         {
             DrawableThing rv;
-            rv.id = g_GroundID;
-            rv.groupId = g_GroundGroupID;
+            rv.id = c_GroundID;
+            rv.groupId = c_GroundGroupID;
             rv.mesh = m_SphereMesh;
             rv.transform = SphereMeshToSceneSphereTransform(SphereAtTranslation({0.0f, 0.0f, 0.0f}));
             rv.color = color;
@@ -4815,7 +4811,7 @@ namespace
         {
             DrawableThing rv;
             rv.id = el.GetID();
-            rv.groupId = g_StationGroupID;
+            rv.groupId = c_StationGroupID;
             rv.mesh = m_SphereMesh;
             rv.transform = SphereMeshToSceneSphereTransform(SphereAtTranslation(el.GetPos()));
             rv.color = color;
@@ -4825,12 +4821,12 @@ namespace
 
         void AppendBodyElAsCubeThing(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
         {
-            AppendAsCubeThing(bodyEl.ID, g_BodyGroupID, bodyEl.Xform, appendOut);
+            AppendAsCubeThing(bodyEl.ID, c_BodyGroupID, bodyEl.Xform, appendOut);
         }
 
         void AppendBodyElAsFrame(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
         {
-            AppendAsFrame(bodyEl.ID, g_BodyGroupID, bodyEl.Xform, appendOut);
+            AppendAsFrame(bodyEl.ID, c_BodyGroupID, bodyEl.Xform, appendOut);
         }
 
         void AppendDrawables(SceneEl const& e, std::vector<DrawableThing>& appendOut) const
@@ -4878,7 +4874,7 @@ namespace
                     }
 
                     m_Data.AppendAsFrame(el.ID,
-                        g_JointGroupID,
+                        c_JointGroupID,
                         el.Xform,
                         m_Out,
                         1.0f,
@@ -4979,7 +4975,7 @@ namespace
             glm::vec4 SceneBackground{96.0f/255.0f, 96.0f/255.0f, 96.0f/255.0f, 1.0f};
             glm::vec4 GridLines{112.0f/255.0f, 112.0f/255.0f, 112.0f/255.0f, 1.0f};
         } m_Colors;
-        static constexpr std::array<char const*, 6> g_ColorNames = {
+        static constexpr std::array<char const*, 6> c_ColorNames = {
             "ground",
             "meshes",
             "stations",
@@ -4987,7 +4983,7 @@ namespace
             "scene background",
             "grid lines",
         };
-        static_assert(sizeof(decltype(m_Colors))/sizeof(glm::vec4) == g_ColorNames.size());
+        static_assert(sizeof(decltype(m_Colors))/sizeof(glm::vec4) == c_ColorNames.size());
 
         // VISIBILITY
         //
@@ -5004,7 +5000,7 @@ namespace
             bool StationConnectionLines = true;
             bool Floor = true;
         } m_VisibilityFlags;
-        static constexpr std::array<char const*, 10> g_VisibilityFlagNames = {
+        static constexpr std::array<char const*, 10> c_VisibilityFlagNames = {
             "ground",
             "meshes",
             "bodies",
@@ -5016,7 +5012,7 @@ namespace
             "station connection lines",
             "grid lines",
         };
-        static_assert(sizeof(decltype(m_VisibilityFlags))/sizeof(bool) == g_VisibilityFlagNames.size());
+        static_assert(sizeof(decltype(m_VisibilityFlags))/sizeof(bool) == c_VisibilityFlagNames.size());
 
         // LOCKING
         //
@@ -5028,21 +5024,21 @@ namespace
             bool Joints = true;
             bool Stations = true;
         } m_InteractivityFlags;
-        static constexpr std::array<char const*, 5> g_InteractivityFlagNames = {
+        static constexpr std::array<char const*, 5> c_InteractivityFlagNames = {
             "ground",
             "meshes",
             "bodies",
             "joints",
             "stations",
         };
-        static_assert(sizeof(decltype(m_InteractivityFlags))/sizeof(bool) == g_InteractivityFlagNames.size());
+        static_assert(sizeof(decltype(m_InteractivityFlags))/sizeof(bool) == c_InteractivityFlagNames.size());
 
     public:
         // WINDOWS
         //
         // these are runtime-editable flags that dictate which panels are open
         std::array<bool, 4> m_PanelStates{false, true, false, false};
-        static constexpr std::array<char const*, 4> g_OpenedPanelNames =
+        static constexpr std::array<char const*, 4> c_OpenedPanelNames =
         {
             "History",
             "Navigator",
@@ -5528,8 +5524,8 @@ namespace
                     if (!isSelectable)
                     {
                         d.color.a = fadedAlpha;
-                        d.id = g_EmptyID;
-                        d.groupId = g_EmptyID;
+                        d.id = c_EmptyID;
+                        d.groupId = c_EmptyID;
                     }
                     else
                     {
@@ -5992,7 +5988,7 @@ private:
 
         UIDT<BodyEl> maybeID = GetStationAttachmentParent(mg, *hoveredSceneEl);
 
-        if (maybeID == g_GroundID || maybeID == g_EmptyID)
+        if (maybeID == c_GroundID || maybeID == c_EmptyID)
         {
             return;  // can't attach to it as-if it were a body
         }
@@ -6634,7 +6630,7 @@ private:
                 m_Shared->CommitCurrentModelGraph(std::move(ss).str());
             }
             ImGui::SameLine();
-            osc::DrawHelpMarker("Translation", OSC_TRANSLATION_DESC);
+            osc::DrawHelpMarker("Translation", c_TranslationDescription);
         }
 
         // rotation editor
@@ -6692,7 +6688,7 @@ private:
             {
                 m_Shared->PushMeshLoadRequests(el.GetID(), m_Shared->PromptUserForMeshFiles());
             }
-            osc::DrawTooltipIfItemHovered("Add Meshes", OSC_MESH_DESC);
+            osc::DrawTooltipIfItemHovered("Add Meshes", c_MeshDescription);
         }
         ImGui::PopID();
 
@@ -6705,19 +6701,19 @@ private:
                 {
                     AddBody(m_Shared->UpdCommittableModelGraph(), el.GetPos(), el.GetID());
                 }
-                osc::DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
+                osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
 
                 if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
                 {
                     AddBody(m_Shared->UpdCommittableModelGraph(), clickPos, el.GetID());
                 }
-                osc::DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
+                osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
 
                 if (ImGui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
                 {
                     AddBody(m_Shared->UpdCommittableModelGraph());
                 }
-                osc::DrawTooltipIfItemHovered("Add body", OSC_STATION_DESC);
+                osc::DrawTooltipIfItemHovered("Add body", c_StationDescription);
 
                 if (MeshEl const* meshEl = dynamic_cast<MeshEl const*>(&el))
                 {
@@ -6726,21 +6722,21 @@ private:
                         glm::vec3 const location = Midpoint(meshEl->CalcBounds());
                         AddBody(m_Shared->UpdCommittableModelGraph(), location, meshEl->GetID());
                     }
-                    osc::DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
+                    osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
 
                     if (ImGui::MenuItem(ICON_FA_DIVIDE " at mesh average center"))
                     {
                         glm::vec3 const location = AverageCenter(*meshEl);
                         AddBody(m_Shared->UpdCommittableModelGraph(), location, meshEl->GetID());
                     }
-                    osc::DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
+                    osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
 
                     if (ImGui::MenuItem(ICON_FA_WEIGHT " at mesh mass center"))
                     {
                         glm::vec3 const location = MassCenter(*meshEl);
                         AddBody(m_Shared->UpdCommittableModelGraph(), location, meshEl->GetID());
                     }
-                    osc::DrawTooltipIfItemHovered("Add body", OSC_STATION_DESC);
+                    osc::DrawTooltipIfItemHovered("Add body", c_StationDescription);
                 }
 
                 ImGui::EndMenu();
@@ -6752,7 +6748,7 @@ private:
             {
                 AddBody(m_Shared->UpdCommittableModelGraph(), el.GetPos(), el.GetID());
             }
-            osc::DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
+            osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription.c_str());
         }
         ImGui::PopID();
 
@@ -6778,19 +6774,19 @@ private:
                     {
                         AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, el.GetPos());
                     }
-                    osc::DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
+                    osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
 
                     if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
                     {
                         AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, clickPos);
                     }
-                    osc::DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
+                    osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
 
                     if (ImGui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
                     {
                         AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, glm::vec3{});
                     }
-                    osc::DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
+                    osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
 
                     if (Is<MeshEl>(el))
                     {
@@ -6798,7 +6794,7 @@ private:
                         {
                             AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, Midpoint(el.CalcBounds()));
                         }
-                        osc::DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
+                        osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
                     }
 
                     ImGui::EndMenu();
@@ -6810,7 +6806,7 @@ private:
                 {
                     AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, el.GetPos());
                 }
-                osc::DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
+                osc::DrawTooltipIfItemHovered("Add Station", c_StationDescription);
             }
 
         }
@@ -6822,7 +6818,7 @@ private:
         {
             m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
-        osc::DrawTooltipIfItemHovered("Add Meshes to the model", OSC_MESH_DESC);
+        osc::DrawTooltipIfItemHovered("Add Meshes to the model", c_MeshDescription);
 
         if (ImGui::BeginMenu(ICON_FA_PLUS " Add Other"))
         {
@@ -7229,7 +7225,7 @@ private:
             OSC_SCOPE_GUARD({ ImGui::PopID(); });
             DrawNothingContextMenuContent();
         }
-        else if (m_MaybeOpenedContextMenu.ID == g_RightClickedNothingID)
+        else if (m_MaybeOpenedContextMenu.ID == c_RightClickedNothingID)
         {
             // context menu was opened on "nothing" specifically
             PushID(UID::empty());
@@ -7378,18 +7374,18 @@ private:
         {
             m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
-        osc::DrawTooltipIfItemHovered("Add Meshes", OSC_MESH_DESC);
+        osc::DrawTooltipIfItemHovered("Add Meshes", c_MeshDescription);
 
         if (ImGui::MenuItem(ICON_FA_CIRCLE " Body"))
         {
             AddBody(m_Shared->UpdCommittableModelGraph());
         }
-        osc::DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
+        osc::DrawTooltipIfItemHovered("Add Body", c_BodyDescription);
 
         if (ImGui::MenuItem(ICON_FA_MAP_PIN " Station"))
         {
             ModelGraph& mg = m_Shared->UpdModelGraph();
-            StationEl& e = mg.AddEl<StationEl>(UIDT<StationEl>{}, g_GroundID, glm::vec3{}, GenerateName(StationEl::Class()));
+            StationEl& e = mg.AddEl<StationEl>(UIDT<StationEl>{}, c_GroundID, glm::vec3{}, GenerateName(StationEl::Class()));
             SelectOnly(mg, e);
         }
         osc::DrawTooltipIfItemHovered("Add Station", StationEl::Class().GetDescriptionCStr());
@@ -7405,7 +7401,7 @@ private:
         {
             m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
-        osc::DrawTooltipIfItemHovered("Add Meshes to the model", OSC_MESH_DESC);
+        osc::DrawTooltipIfItemHovered("Add Meshes to the model", c_MeshDescription);
 
         ImGui::SameLine();
 
@@ -7620,7 +7616,7 @@ private:
             AABB aabb;
             while (it != m_DrawablesBuffer.end())
             {
-                if (it->id != g_EmptyID)
+                if (it->id != c_EmptyID)
                 {
                     aabb = CalcBounds(*it);
                     it++;
@@ -7633,7 +7629,7 @@ private:
             {
                 while (it != m_DrawablesBuffer.end())
                 {
-                    if (it->id != g_EmptyID)
+                    if (it->id != c_EmptyID)
                     {
                         aabb = Union(aabb, CalcBounds(*it));
                     }
@@ -8048,7 +8044,7 @@ private:
         {
             for (int i = 0; i < SharedData::PanelIndex_COUNT; ++i)
             {
-                if (ImGui::MenuItem(SharedData::g_OpenedPanelNames[i], nullptr, m_Shared->m_PanelStates[i]))
+                if (ImGui::MenuItem(SharedData::c_OpenedPanelNames[i], nullptr, m_Shared->m_PanelStates[i]))
                 {
                     m_Shared->m_PanelStates[i] = !m_Shared->m_PanelStates[i];
                 }

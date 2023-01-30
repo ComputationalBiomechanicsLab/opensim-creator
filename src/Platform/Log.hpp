@@ -3,6 +3,8 @@
 #include "src/Utils/CircularBuffer.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 
+#include <nonstd/span.hpp>
+
 #include <algorithm>
 #include <chrono>
 #include <cstdarg>
@@ -24,7 +26,8 @@ namespace osc::log
     namespace level
     {
         enum LevelEnum : int32_t {
-            trace = 0,
+            FIRST = 0,
+            trace = FIRST,
             debug,
             info,
             warn,
@@ -33,30 +36,10 @@ namespace osc::log
             off,
             NUM_LEVELS
         };
-
-#define OSC_LOG_LVL_NAMES {     \
-            "trace",            \
-            "debug",            \
-            "info",             \
-            "warning",          \
-            "error",            \
-            "critical",         \
-            "off"               \
-        }
-
-        extern std::string_view const g_LogLevelStringViews[NUM_LEVELS];
-        extern char const* const g_LogLevelCStrings[NUM_LEVELS];
     }
 
-    [[nodiscard]] inline std::string_view const& toStringView(level::LevelEnum lvl) noexcept
-    {
-        return level::g_LogLevelStringViews[lvl];
-    }
-
-    [[nodiscard]] inline char const* toCStr(level::LevelEnum lvl) noexcept
-    {
-        return level::g_LogLevelCStrings[lvl];
-    }
+    std::string_view toStringView(level::LevelEnum);
+    char const* toCStr(level::LevelEnum);
 
     // a log message
     //

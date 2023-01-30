@@ -66,11 +66,20 @@ public:
 
             // draw level selector
             {
-                int32_t lvl = static_cast<int32_t>(log::getTracebackLevel());
+                log::level::LevelEnum const currentLvl = log::getTracebackLevel();
                 ImGui::SetNextItemWidth(200.0f);
-                if (ImGui::Combo("level", &lvl, log::level::g_LogLevelCStrings, log::level::NUM_LEVELS))
+                if (ImGui::BeginCombo("level", osc::log::toCStr(currentLvl)))
                 {
-                    log::setTracebackLevel(static_cast<log::level::LevelEnum>(lvl));
+                    for (int32_t i = static_cast<int32_t>(log::level::LevelEnum::FIRST); i < static_cast<int32_t>(log::level::LevelEnum::NUM_LEVELS); ++i)
+                    {
+                        log::level::LevelEnum lvl = static_cast<log::level::LevelEnum>(i);
+                        bool isCurrent = lvl == currentLvl;
+                        if (ImGui::Selectable(log::toCStr(lvl), &isCurrent))
+                        {
+                            log::setTracebackLevel(lvl);
+                        }
+                    }
+                    ImGui::EndCombo();
                 }
             }
 

@@ -19,8 +19,8 @@ static int64_t GenerateID(char const* label, char const* filename, unsigned int 
 
 static osc::SynchronizedValue<std::unordered_map<int64_t, osc::PerfMeasurement>>& GetMeasurementStorage()
 {
-    static osc::SynchronizedValue<std::unordered_map<int64_t, osc::PerfMeasurement>> g_Measurements;
-    return g_Measurements;
+    static osc::SynchronizedValue<std::unordered_map<int64_t, osc::PerfMeasurement>> s_Measurements;
+    return s_Measurements;
 }
 
 
