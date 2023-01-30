@@ -1,8 +1,9 @@
 #pragma once
 
-#include "src/OpenSimBindings/Widgets/UiModelViewerResponse.hpp"
+#include "src/Graphics/SceneCollision.hpp"
 
 #include <memory>
+#include <optional>
 
 namespace osc { class VirtualConstModelStatePair; }
 
@@ -25,7 +26,7 @@ namespace osc
         bool isMousedOver() const;
         bool isLeftClicked() const;
         bool isRightClicked() const;
-        UiModelViewerResponse draw(VirtualConstModelStatePair const&);
+        std::optional<SceneCollision> draw(VirtualConstModelStatePair const&);
 
     private:
         class Impl;

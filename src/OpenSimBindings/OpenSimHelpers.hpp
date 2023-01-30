@@ -161,6 +161,10 @@ namespace osc
         OpenSim::Component const& root,
         OpenSim::ComponentPath const&
     );
+    OpenSim::Component const* FindComponent(
+        OpenSim::Model const&,
+        std::string const& absPath
+    );
 
     // return non-nullptr if the given path resolves a component of type T relative to root
     template<typename T>

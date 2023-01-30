@@ -224,7 +224,10 @@ void osc::UpdateSceneBVH(nonstd::span<SceneDecoration const> sceneEls, BVH& bvh)
 }
 
 // returns all collisions along a ray
-std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(BVH const& bvh, nonstd::span<SceneDecoration const> decorations, Line const& ray)
+std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(
+    BVH const& bvh,
+    nonstd::span<SceneDecoration const> decorations,
+    Line const& ray)
 {
     // use scene BVH to intersect the ray with the scene
     std::vector<BVHCollision> const sceneCollisions = bvh.getRayAABBCollisions(ray);
@@ -238,7 +241,7 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(BVH const& bvh, nons
 
         if (maybeCollision)
         {
-            rv.emplace_back(maybeCollision->position, static_cast<size_t>(c.id), maybeCollision->distance);
+            rv.emplace_back(decoration.id, static_cast<size_t>(c.id), maybeCollision->position, maybeCollision->distance);
         }
     }
     return rv;

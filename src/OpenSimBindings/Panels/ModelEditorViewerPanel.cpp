@@ -45,31 +45,34 @@ private:
 
     void implDrawContent() final
     {
-        auto resp = m_Viewer.draw(*m_Model);
+        std::optional<SceneCollision> const maybeCollision = m_Viewer.draw(*m_Model);
 
-        // update hover
-        if (resp.isMousedOver && resp.hovertestResult != m_Model->getHovered())
+        OpenSim::Component const* maybeHover = maybeCollision ?
+            osc::FindComponent(m_Model->getModel(), maybeCollision->decorationID) :
+            nullptr;
+
+        if (maybeHover)
         {
-            m_Model->setHovered(resp.hovertestResult);
+            // hovering: update hover and show tooltip
+            m_Model->setHovered(maybeHover);
+            DrawComponentHoverTooltip(*maybeHover);
+        }
+        else
+        {
+            m_Model->setHovered(nullptr);
         }
 
-        // if left-clicked, update selection
-        if (m_Viewer.isLeftClicked() && resp.isMousedOver)
+        if (m_Viewer.isLeftClicked())
         {
-            m_Model->setSelected(resp.hovertestResult);
+            // left-click: (de)select hover
+            m_Model->setSelected(maybeHover);
         }
 
-        // if hovered, draw hover tooltip
-        if (resp.isMousedOver && resp.hovertestResult)
+        if (m_Viewer.isRightClicked())
         {
-            DrawComponentHoverTooltip(*resp.hovertestResult);
-        }
-
-        // if right-clicked, draw context menu
-        if (m_Viewer.isRightClicked() && resp.isMousedOver)
-        {
+            // right-click: draw a context menu
             std::string menuName = std::string{getName()} + "_contextmenu";
-            OpenSim::ComponentPath path = osc::GetAbsolutePathOrEmpty(resp.hovertestResult);
+            OpenSim::ComponentPath path = osc::GetAbsolutePathOrEmpty(maybeHover);
             m_EditorAPI->pushPopup(std::make_unique<ComponentContextMenu>(menuName, m_MainUIStateAPI, m_EditorAPI, m_Model, path));
         }
     }

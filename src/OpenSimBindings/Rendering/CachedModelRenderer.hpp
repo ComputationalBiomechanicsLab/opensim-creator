@@ -7,6 +7,7 @@
 #include <nonstd/span.hpp>
 
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -50,7 +51,10 @@ namespace osc
         RenderTexture& updRenderTexture();
         nonstd::span<SceneDecoration const> getDrawlist() const;
         std::optional<AABB> getRootAABB() const;
-        std::vector<SceneCollision> getAllSceneCollisions(Line const& worldspaceRay) const;
+        std::optional<SceneCollision> getClosestCollision(
+            Line const& worldspaceRay,
+            std::function<bool(SceneDecoration const&)> const& filter
+        ) const;
 
     private:
         class Impl;

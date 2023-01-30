@@ -2,6 +2,7 @@
 
 #include "src/OpenSimBindings/Widgets/BasicWidgets.hpp"
 #include "src/OpenSimBindings/Widgets/UiModelViewer.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/VirtualModelStatePair.hpp"
 #include "src/Panels/StandardPanel.hpp"
 
@@ -38,33 +39,37 @@ private:
 
     void implDrawContent() final
     {
-        auto resp = m_Viewer.draw(*m_Model);
+        std::optional<SceneCollision> const maybeCollision = m_Viewer.draw(*m_Model);
 
-        // upate hover
-        if (resp.isMousedOver && resp.hovertestResult != m_Model->getHovered())
+        OpenSim::Component const* maybeHover = maybeCollision ?
+            osc::FindComponent(m_Model->getModel(), maybeCollision->decorationID) :
+            nullptr;
+
+        if (maybeHover)
         {
-            m_Model->setHovered(resp.hovertestResult);
+            // hovering: update hover and show tooltip
+            m_Model->setHovered(maybeHover);
+            DrawComponentHoverTooltip(*maybeHover);
+        }
+        else
+        {
+            m_Model->setHovered(nullptr);
         }
 
-        // if left-clicked, update selection (can be empty)
-        if (m_Viewer.isLeftClicked() && resp.isMousedOver)
+        if (m_Viewer.isLeftClicked())
         {
-            m_Model->setSelected(resp.hovertestResult);
+            // left-click: (de)select hover
+            m_Model->setSelected(maybeHover);
         }
 
-        // if hovered, draw hover tooltip
-        if (resp.isMousedOver && resp.hovertestResult)
         {
-            osc::DrawComponentHoverTooltip(*resp.hovertestResult);
-        }
+            // right-click: draw context menu
 
-        // if right-clicked, draw a context menu
-        {
             std::string menuName = std::string{getName()} + "_contextmenu";
 
-            if (m_Viewer.isRightClicked() && resp.isMousedOver)
+            if (m_Viewer.isRightClicked() && m_Viewer.isMousedOver())
             {
-                m_Model->setSelected(resp.hovertestResult);  // can be empty
+                m_Model->setSelected(maybeHover);  // can be empty
                 ImGui::OpenPopup(menuName.c_str());
             }
 
@@ -90,6 +95,9 @@ private:
     MainUIStateAPI* m_API;
     UiModelViewer m_Viewer;
 };
+
+
+// public API (PIMPL)
 
 osc::SimulationViewerPanel::SimulationViewerPanel(
     std::string_view panelName,

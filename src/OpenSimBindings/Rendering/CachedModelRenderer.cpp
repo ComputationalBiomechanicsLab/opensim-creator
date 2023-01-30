@@ -304,13 +304,43 @@ public:
         }
     }
 
-    std::vector<SceneCollision> getAllSceneCollisions(Line const& worldspaceRay) const
+    std::optional<SceneCollision> getClosestCollision(
+        Line const& worldspaceRay,
+        std::function<bool(SceneDecoration const&)> const& filter) const
     {
         // get decorations list (used for later testing/filtering)
         nonstd::span<osc::SceneDecoration const> decorations = m_Scene.getDrawlist();
 
         // find all collisions along the camera ray
-        return osc::GetAllSceneCollisions(m_Scene.getBVH(), decorations, worldspaceRay);
+        std::vector<SceneCollision> collisions = GetAllSceneCollisions(m_Scene.getBVH(), decorations, worldspaceRay);
+
+        // filter through the collisions list
+        SceneCollision const* closestCollision = nullptr;
+        for (SceneCollision const& c : collisions)
+        {
+            if (closestCollision && c.distanceFromRayOrigin > closestCollision->distanceFromRayOrigin)
+            {
+                continue;  // it's further away than the current closest collision
+            }
+
+            SceneDecoration const& decoration = decorations[c.decorationIndex];
+
+            if (!filter(decoration))
+            {
+                continue;  // filtered out by external filter
+            }
+
+            closestCollision = &c;
+        }
+
+        if (closestCollision)
+        {
+            return *closestCollision;
+        }
+        else
+        {
+            return std::nullopt;
+        }
     }
 
 private:
@@ -368,7 +398,9 @@ std::optional<osc::AABB> osc::CachedModelRenderer::getRootAABB() const
     return m_Impl->getRootAABB();
 }
 
-std::vector<osc::SceneCollision> osc::CachedModelRenderer::getAllSceneCollisions(Line const& worldspaceRay) const
+std::optional<osc::SceneCollision> osc::CachedModelRenderer::getClosestCollision(
+    Line const& worldspaceRay,
+    std::function<bool(SceneDecoration const&)> const& filter) const
 {
-    return m_Impl->getAllSceneCollisions(worldspaceRay);
+    return m_Impl->getClosestCollision(worldspaceRay, filter);
 }

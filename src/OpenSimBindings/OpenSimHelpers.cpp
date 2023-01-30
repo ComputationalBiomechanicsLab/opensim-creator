@@ -347,6 +347,13 @@ OpenSim::Component const* osc::FindComponent(OpenSim::Component const& c, OpenSi
     }
 }
 
+OpenSim::Component const* osc::FindComponent(
+    OpenSim::Model const& model,
+    std::string const& absPath)
+{
+    return osc::FindComponent(model, OpenSim::ComponentPath{absPath});
+}
+
 OpenSim::Component* osc::FindComponentMut(OpenSim::Component& c, OpenSim::ComponentPath const& cp)
 {
     return const_cast<OpenSim::Component*>(FindComponent(c, cp));
