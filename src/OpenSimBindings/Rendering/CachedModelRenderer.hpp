@@ -14,7 +14,7 @@
 namespace osc { class Config; }
 namespace osc { struct Line; }
 namespace osc { class MeshCache; }
-namespace osc { struct ModelRendererParams; }
+namespace osc { class ModelRendererParams; }
 namespace osc { class RenderTexture; }
 namespace osc { class SceneDecoration; }
 namespace osc { class ShaderCache; }

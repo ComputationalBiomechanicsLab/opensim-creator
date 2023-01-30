@@ -9,12 +9,15 @@
 
 namespace osc
 {
-    struct ModelRendererParams final {
+    class ModelRendererParams final {
+    public:
+        ModelRendererParams();
+
         CustomDecorationOptions decorationOptions;
         CustomRenderingOptions renderingOptions;
-        glm::vec3 lightColor = osc::SceneRendererParams{}.lightColor;
-        glm::vec4 backgroundColor = osc::SceneRendererParams{}.backgroundColor;
-        glm::vec3 floorLocation = osc::SceneRendererParams{}.floorLocation;
-        PolarPerspectiveCamera camera = osc::CreateCameraWithRadius(5.0f);
+        glm::vec3 lightColor;
+        glm::vec4 backgroundColor;
+        glm::vec3 floorLocation;
+        PolarPerspectiveCamera camera;
     };
 }
