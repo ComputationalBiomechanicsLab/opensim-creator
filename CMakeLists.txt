@@ -577,7 +577,6 @@ add_library(osccore STATIC
     src/OpenSimBindings/Widgets/SimulationToolbar.hpp
     src/OpenSimBindings/Widgets/UiModelViewer.cpp
     src/OpenSimBindings/Widgets/UiModelViewer.hpp
-    src/OpenSimBindings/Widgets/UiModelViewerResponse.hpp
 
     src/OpenSimBindings/ActionFunctions.cpp
     src/OpenSimBindings/ActionFunctions.hpp
