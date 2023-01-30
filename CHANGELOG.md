@@ -45,6 +45,7 @@ All notable changes to this project will be documented here. The format is based
   #573)
 - Rendering `OpenSim::PointToPointSpring`s is how a user-facing toggle (previously: was always on, #576)
 - Clicking a line of action now selects the associated muscle (#571)
+- Fixed a bug in the DAE exporter that caused it to throw an 'argument not found' exception (#581)
 
 ## [0.3.2] - 2023/01/09
 

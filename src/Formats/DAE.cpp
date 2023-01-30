@@ -210,7 +210,7 @@ namespace
 R"(  <asset>
     <contributor>
       <author>{}</author>
-      <authoring_tool>{} v{} (build {})</authoring_tool>
+      <authoring_tool>{}</authoring_tool>
     </contributor>
     <created>{}</created>
     <modified>{}</modified>
