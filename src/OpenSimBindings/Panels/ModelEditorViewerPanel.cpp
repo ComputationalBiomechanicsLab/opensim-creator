@@ -51,15 +51,17 @@ private:
             osc::FindComponent(m_Model->getModel(), maybeCollision->decorationID) :
             nullptr;
 
-        if (maybeHover)
+        // care: this code must check whether the hover != current hover (even if
+        // null), because there might be multiple viewports open (#582)
+        if (m_Viewer.isMousedOver() && maybeHover != m_Model->getHovered())
         {
             // hovering: update hover and show tooltip
             m_Model->setHovered(maybeHover);
-            DrawComponentHoverTooltip(*maybeHover);
         }
-        else
+
+        if (maybeHover)
         {
-            m_Model->setHovered(nullptr);
+            DrawComponentHoverTooltip(*maybeHover);
         }
 
         if (m_Viewer.isLeftClicked())
