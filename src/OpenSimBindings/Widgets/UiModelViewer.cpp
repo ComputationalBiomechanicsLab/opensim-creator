@@ -61,149 +61,6 @@
 #include <utility>
 #include <vector>
 
-namespace osc
-{
-    void DrawAllImGuiOverlays(
-        osc::ModelRendererParams& params,
-        nonstd::span<osc::SceneDecoration const> drawlist,
-        std::optional<osc::AABB> maybeSceneAABB,
-        osc::Rect const& renderRect,
-        osc::IconCache& iconCache,
-        osc::GuiRuler& ruler)
-    {
-        // draw the top overlays
-        ImGui::SetCursorScreenPos(renderRect.p1 + glm::vec2{ImGui::GetStyle().WindowPadding});
-        DrawViewerTopButtonRow(params, drawlist, iconCache, ruler);
-
-        // compute bottom overlay positions
-        ImGuiStyle const& style = ImGui::GetStyle();
-        glm::vec2 const alignmentAxesDims = osc::CalcAlignmentAxesDimensions();
-        glm::vec2 const axesTopLeft =
-        {
-            renderRect.p1.x + style.WindowPadding.x,
-            renderRect.p2.y - style.WindowPadding.y - alignmentAxesDims.y
-        };
-
-        // draw the bottom overlays
-        ImGui::SetCursorScreenPos(axesTopLeft);
-        DrawAlignmentAxes(
-            params.camera.getViewMtx()
-        );
-        DrawCameraControlButtons(
-            params.camera,
-            renderRect,
-            maybeSceneAABB,
-            iconCache
-        );
-    }
-
-    osc::Line UnprojectMouseCursor(
-        osc::PolarPerspectiveCamera const& camera,
-        glm::vec2 mousePos,
-        osc::Rect const& renderRect)
-    {
-        glm::vec2 const posInRender = mousePos - renderRect.p1;
-        return camera.unprojectTopLeftPosToWorldRay(posInRender, osc::Dimensions(renderRect));
-    }
-
-    bool IsSceneDecorationIDed(osc::SceneDecoration const& dec)
-    {
-        return !dec.id.empty();
-    }
-
-    bool ShouldAllowInteraction(osc::ImGuiItemHittestResult const& htResult)
-    {
-        if (!htResult.isHovered ||
-            ImGui::IsMouseDragging(ImGuiMouseButton_Left) ||
-            ImGui::IsMouseDragging(ImGuiMouseButton_Middle) ||
-            ImGui::IsMouseDragging(ImGuiMouseButton_Right))
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
-    }
-
-    void HandleUserInputs(
-        osc::PolarPerspectiveCamera& camera,
-        osc::Rect const& viewportRect,
-        std::optional<osc::AABB> maybeSceneAABB)
-    {
-        bool ctrlDown = osc::IsCtrlOrSuperDown();
-
-        if (ImGui::IsKeyReleased(ImGuiKey_X))
-        {
-            if (ctrlDown)
-            {
-                FocusAlongMinusX(camera);
-            } else
-            {
-                FocusAlongX(camera);
-            }
-        }
-        if (ImGui::IsKeyPressed(ImGuiKey_Y))
-        {
-            if (!ctrlDown)
-            {
-                FocusAlongY(camera);
-            }
-        }
-        if (ImGui::IsKeyPressed(ImGuiKey_F))
-        {
-            if (ctrlDown)
-            {
-                if (maybeSceneAABB)
-                {
-                    osc::AutoFocus(
-                        camera,
-                        *maybeSceneAABB,
-                        osc::AspectRatio(viewportRect)
-                    );
-                }
-            }
-            else
-            {
-                Reset(camera);
-            }
-        }
-        if (ctrlDown && (ImGui::IsKeyPressed(ImGuiKey_8)))
-        {
-            if (maybeSceneAABB)
-            {
-                osc::AutoFocus(
-                    camera,
-                    *maybeSceneAABB,
-                    osc::AspectRatio(viewportRect)
-                );
-            }
-        }
-    }
-
-    std::optional<SceneCollision> HittestModelRenderer(
-        osc::PolarPerspectiveCamera const& camera,
-        glm::vec2 mouseScreenPos,
-        osc::Rect const& viewportScreenRect,
-        osc::CachedModelRenderer const& modelRenderer)
-    {
-        OSC_PERF("scene hittest");
-
-        // un-project 2D mouse cursor into 3D scene as a ray
-        Line const cameraRay = UnprojectMouseCursor(
-            camera,
-            mouseScreenPos,
-            viewportScreenRect
-        );
-
-        // perform hittest only on IDed scene elements
-        return modelRenderer.getClosestCollision(
-            cameraRay,
-            IsSceneDecorationIDed
-        );
-    }
-}
-
 class osc::UiModelViewer::Impl final {
 public:
 
@@ -224,52 +81,39 @@ public:
 
     std::optional<SceneCollision> draw(VirtualConstModelStatePair const& rs)
     {
-        OSC_PERF("UiModelViewer/draw");
+        // if this is the first frame being rendered, auto-focus the scene
+        if (m_IsRenderingFirstFrame)
+        {
+            m_CachedModelRenderer.autoFocusCamera(
+                rs,
+                m_Params,
+                AspectRatio(ImGui::GetContentRegionAvail())
+            );
+            m_IsRenderingFirstFrame = false;
+        }
 
-        // inputs: the camera may always be moved around while hovering
+        // inputs: process inputs, if hovering
         if (m_RenderedImageHittest.isHovered)
         {
             UpdatePolarCameraFromImGuiUserInput(
                 Dimensions(m_RenderedImageHittest.rect),
                 m_Params.camera
             );
-        }
 
-        // inputs: other user inputs have extra restrictions
-        bool const allowInteraction = ShouldAllowInteraction(m_RenderedImageHittest);
-        if (allowInteraction)
-        {
-            HandleUserInputs(
+            UpdatePolarCameraFromKeyboardInputs(
                 m_Params.camera,
                 m_RenderedImageHittest.rect,
                 m_CachedModelRenderer.getRootAABB()
             );
         }
 
-        m_CachedModelRenderer.populate(rs, m_Params);
-
-        // if this is the first frame being rendered, auto-focus the scene
-        if (m_IsRenderingFirstFrame && m_CachedModelRenderer.getRootAABB())
-        {
-            AutoFocus(
-                m_Params.camera,
-                *m_CachedModelRenderer.getRootAABB(),
-                AspectRatio(ImGui::GetContentRegionAvail())
-            );
-            m_IsRenderingFirstFrame = false;
-        }
-
-        // render into texture
-        {
-            OSC_PERF("UiModelViewer/draw/render");
-
-            m_CachedModelRenderer.draw(
-                rs,
-                m_Params,
-                ImGui::GetContentRegionAvail(),
-                App::get().getMSXAASamplesRecommended()
-            );
-        }
+        // render scene to texture
+        m_CachedModelRenderer.draw(
+            rs,
+            m_Params,
+            ImGui::GetContentRegionAvail(),
+            App::get().getMSXAASamplesRecommended()
+        );
 
         // blit texture as an ImGui::Image
         DrawTextureAsImGuiImage(
@@ -278,45 +122,38 @@ public:
         );
         m_RenderedImageHittest = osc::HittestLastImguiItem();
 
+        // if allowed, hittest the scene
         std::optional<SceneCollision> hittestResult;
-        if (allowInteraction)
+        if (m_RenderedImageHittest.isHovered && !IsDraggingWithAnyMouseButtonDown())
         {
-            hittestResult = HittestModelRenderer(
-                m_Params.camera,
-                ImGui::GetMousePos(),
-                m_RenderedImageHittest.rect,
-                m_CachedModelRenderer
-            );
-        }
-
-        // draw any ImGui-based overlays over the image
-        {
-            OSC_PERF("UiModelViewer/draw/overlays");
-
-            DrawAllImGuiOverlays(
+            hittestResult = m_CachedModelRenderer.getClosestCollision(
                 m_Params,
-                m_CachedModelRenderer.getDrawlist(),
-                m_CachedModelRenderer.getRootAABB(),
-                m_RenderedImageHittest.rect,
-                *m_IconCache,
-                m_Ruler
+                ImGui::GetMousePos(),
+                m_RenderedImageHittest.rect
             );
-
-            if (m_Ruler.isMeasuring())
-            {
-                std::optional<GuiRulerMouseHit> maybeHit;
-                if (hittestResult)
-                {
-                    maybeHit.emplace(hittestResult->decorationID, hittestResult->worldspaceLocation);
-                }
-                m_Ruler.draw(m_Params.camera, m_RenderedImageHittest.rect, maybeHit);
-            }
         }
 
-        // handle return value
+        // draw 2D ImGui overlays
+        DrawViewerImGuiOverlays(
+            m_Params,
+            m_CachedModelRenderer.getDrawlist(),
+            m_CachedModelRenderer.getRootAABB(),
+            m_RenderedImageHittest.rect,
+            *m_IconCache,
+            m_Ruler
+        );
+
+        // handle ruler and return value
         if (m_Ruler.isMeasuring())
         {
-            // disable hittest while measuring
+            std::optional<GuiRulerMouseHit> maybeHit;
+            if (hittestResult)
+            {
+                maybeHit.emplace(hittestResult->decorationID, hittestResult->worldspaceLocation);
+            }
+            m_Ruler.draw(m_Params.camera, m_RenderedImageHittest.rect, maybeHit);
+
+            // disable hittest while using the ruler
             return std::nullopt;
         }
         else

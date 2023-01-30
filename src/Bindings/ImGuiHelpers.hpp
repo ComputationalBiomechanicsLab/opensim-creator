@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/Maths/AABB.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Utils/CStringView.hpp"
 
@@ -11,6 +12,7 @@
 
 #include <cstddef>
 #include <initializer_list>
+#include <optional>
 #include <string>
 
 namespace osc { class Camera; }
@@ -27,6 +29,11 @@ namespace osc
     // updates a polar comera's rotation, position, etc. based on ImGui input
     bool UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, PolarPerspectiveCamera&);
     void UpdateEulerCameraFromImGuiUserInput(Camera&, glm::vec3& eulers);
+
+    bool UpdatePolarCameraFromKeyboardInputs(
+        PolarPerspectiveCamera&,
+        Rect const&,
+        std::optional<osc::AABB> maybeSceneAABB);
 
     // returns the ImGui content region available in screenspace as a `Rect`
     Rect ContentRegionAvailScreenRect();
@@ -79,9 +86,12 @@ namespace osc
     // returns `true` if the user is pressing either left- or right-alt
     bool IsAltDown();
 
-    // returns `true` if the specified moouse button was released without the user dragging
+    // returns `true` if the specified mouse button was released without the user dragging
     bool IsMouseReleasedWithoutDragging(ImGuiMouseButton);
     bool IsMouseReleasedWithoutDragging(ImGuiMouseButton, float dragThreshold);
+
+    // returns `true` if the user is dragging their mouse with any button pressed
+    bool IsDraggingWithAnyMouseButtonDown();
 
     // draws an overlay tooltip (content only)
     void DrawTooltipBodyOnly(CStringView);

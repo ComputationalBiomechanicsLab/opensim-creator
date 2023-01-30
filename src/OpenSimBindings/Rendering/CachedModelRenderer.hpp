@@ -16,6 +16,7 @@ namespace osc { class Config; }
 namespace osc { struct Line; }
 namespace osc { class MeshCache; }
 namespace osc { class ModelRendererParams; }
+namespace osc { struct Rect; }
 namespace osc { class RenderTexture; }
 namespace osc { class SceneDecoration; }
 namespace osc { class ShaderCache; }
@@ -36,9 +37,10 @@ namespace osc
         CachedModelRenderer& operator=(CachedModelRenderer&&) noexcept;
         ~CachedModelRenderer() noexcept;
 
-        void populate(
+        void autoFocusCamera(
             VirtualConstModelStatePair const&,
-            ModelRendererParams const&
+            ModelRendererParams&,
+            float aspectRatio
         );
 
         void draw(
@@ -52,9 +54,10 @@ namespace osc
         nonstd::span<SceneDecoration const> getDrawlist() const;
         std::optional<AABB> getRootAABB() const;
         std::optional<SceneCollision> getClosestCollision(
-            Line const& worldspaceRay,
-            std::function<bool(SceneDecoration const&)> const& filter
-        ) const;
+            ModelRendererParams const&,
+            glm::vec2 mouseScreenPos,
+            Rect const& viewportScreenRect
+        );
 
     private:
         class Impl;

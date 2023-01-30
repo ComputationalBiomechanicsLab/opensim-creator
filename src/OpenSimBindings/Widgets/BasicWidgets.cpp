@@ -753,3 +753,37 @@ void osc::DrawCameraControlButtons(
         }
     }
 }
+
+void osc::DrawViewerImGuiOverlays(
+    osc::ModelRendererParams& params,
+    nonstd::span<osc::SceneDecoration const> drawlist,
+    std::optional<osc::AABB> maybeSceneAABB,
+    osc::Rect const& renderRect,
+    osc::IconCache& iconCache,
+    osc::GuiRuler& ruler)
+{
+    // draw the top overlays
+    ImGui::SetCursorScreenPos(renderRect.p1 + glm::vec2{ImGui::GetStyle().WindowPadding});
+    DrawViewerTopButtonRow(params, drawlist, iconCache, ruler);
+
+    // compute bottom overlay positions
+    ImGuiStyle const& style = ImGui::GetStyle();
+    glm::vec2 const alignmentAxesDims = osc::CalcAlignmentAxesDimensions();
+    glm::vec2 const axesTopLeft =
+    {
+        renderRect.p1.x + style.WindowPadding.x,
+        renderRect.p2.y - style.WindowPadding.y - alignmentAxesDims.y
+    };
+
+    // draw the bottom overlays
+    ImGui::SetCursorScreenPos(axesTopLeft);
+    DrawAlignmentAxes(
+        params.camera.getViewMtx()
+    );
+    DrawCameraControlButtons(
+        params.camera,
+        renderRect,
+        maybeSceneAABB,
+        iconCache
+    );
+}

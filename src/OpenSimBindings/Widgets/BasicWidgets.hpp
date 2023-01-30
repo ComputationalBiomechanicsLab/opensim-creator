@@ -55,4 +55,12 @@ namespace osc
         std::optional<AABB> const& maybeSceneAABB,
         IconCache&
     );
+    void DrawViewerImGuiOverlays(
+        ModelRendererParams&,
+        nonstd::span<SceneDecoration const>,
+        std::optional<osc::AABB>,
+        osc::Rect const&,
+        osc::IconCache&,
+        osc::GuiRuler&
+    );
 }

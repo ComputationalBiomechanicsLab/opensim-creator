@@ -7,6 +7,8 @@
 #include "src/Graphics/SceneRenderer.hpp"
 #include "src/Maths/BVH.hpp"
 #include "src/Maths/MathHelpers.hpp"
+#include "src/Maths/PolarPerspectiveCamera.hpp"
+#include "src/Maths/Rect.hpp"
 #include "src/OpenSimBindings/Rendering/CustomDecorationOptions.hpp"
 #include "src/OpenSimBindings/Rendering/CustomRenderingOptions.hpp"
 #include "src/OpenSimBindings/Rendering/ModelRendererParams.hpp"
@@ -220,6 +222,11 @@ namespace
         std::vector<osc::SceneDecoration> m_Decorations;
         osc::BVH m_BVH;
     };
+
+    bool IsSceneDecorationIDed(osc::SceneDecoration const& dec)
+    {
+        return !dec.id.empty();
+    }
 }
 
 class osc::CachedModelRenderer::Impl final {
@@ -234,11 +241,17 @@ public:
     {
     }
 
-    void populate(
+    void autoFocusCamera(
         VirtualConstModelStatePair const& modelState,
-        ModelRendererParams const& params)
+        ModelRendererParams& params,
+        float aspectRatio)
     {
-        m_Scene.populate(modelState, params.decorationOptions, params.renderingOptions);
+        populate(modelState, params);
+        std::optional<AABB> maybeRoot = getRootAABB();
+        if (maybeRoot)
+        {
+            AutoFocus(params.camera, *maybeRoot, aspectRatio);
+        }
     }
 
     void draw(
@@ -247,6 +260,14 @@ public:
         glm::vec2 dims,
         int32_t samples)
     {
+        OSC_PERF("CachedModelRenderer/draw");
+
+        // ensure scene is populated
+        {
+            OSC_PERF("CachedModelRenderer/draw/populate");
+            populate(modelState, renderParams);
+        }
+
         // setup render params
         osc::SceneRendererParams params;
 
@@ -276,6 +297,8 @@ public:
         if (m_Scene.getVersion() != m_RendererPrevDrawlistVersion ||
             params != m_RendererPrevParams)
         {
+            OSC_PERF("CachedModelRenderer/draw/render");
+
             m_RendererPrevDrawlistVersion = m_Scene.getVersion();
             m_RendererPrevParams = params;
             m_Renderer.draw(m_Scene.getDrawlist(), params);
@@ -302,6 +325,35 @@ public:
         {
             return m_Scene.getBVH().nodes[0].getBounds();
         }
+    }
+
+    std::optional<SceneCollision> getClosestCollision(
+        ModelRendererParams const& params,
+        glm::vec2 mouseScreenPos,
+        Rect const& viewportScreenRect)
+    {
+        OSC_PERF("CachedModelRenderer/getClosestCollision");
+
+        // un-project 2D mouse cursor into 3D scene as a ray
+        glm::vec2 const posInRender = mouseScreenPos - viewportScreenRect.p1;
+        Line const cameraRay = params.camera.unprojectTopLeftPosToWorldRay(
+            posInRender,
+            osc::Dimensions(viewportScreenRect)
+        );
+
+        // perform hittest only on IDed scene elements
+        return getClosestCollision(
+            cameraRay,
+            IsSceneDecorationIDed
+        );
+    }
+
+private:
+    void populate(
+        VirtualConstModelStatePair const& modelState,
+        ModelRendererParams const& params)
+    {
+        m_Scene.populate(modelState, params.decorationOptions, params.renderingOptions);
     }
 
     std::optional<SceneCollision> getClosestCollision(
@@ -343,7 +395,6 @@ public:
         }
     }
 
-private:
     CachedScene m_Scene;
 
     // rendering input state
@@ -367,13 +418,6 @@ osc::CachedModelRenderer::CachedModelRenderer(CachedModelRenderer&&) noexcept = 
 osc::CachedModelRenderer& osc::CachedModelRenderer::operator=(CachedModelRenderer&&) noexcept = default;
 osc::CachedModelRenderer::~CachedModelRenderer() noexcept = default;
 
-void osc::CachedModelRenderer::populate(
-    VirtualConstModelStatePair const& modelState,
-    ModelRendererParams const& params)
-{
-    m_Impl->populate(modelState, params);
-}
-
 void osc::CachedModelRenderer::draw(
     VirtualConstModelStatePair const& modelState,
     ModelRendererParams const& renderParams,
@@ -381,6 +425,14 @@ void osc::CachedModelRenderer::draw(
     int32_t samples)
 {
     m_Impl->draw(modelState, renderParams, dims, samples);
+}
+
+void osc::CachedModelRenderer::autoFocusCamera(
+    VirtualConstModelStatePair const& modelState,
+    ModelRendererParams& renderParams,
+    float aspectRatio)
+{
+    m_Impl->autoFocusCamera(modelState, renderParams, aspectRatio);
 }
 
 osc::RenderTexture& osc::CachedModelRenderer::updRenderTexture()
@@ -399,8 +451,9 @@ std::optional<osc::AABB> osc::CachedModelRenderer::getRootAABB() const
 }
 
 std::optional<osc::SceneCollision> osc::CachedModelRenderer::getClosestCollision(
-    Line const& worldspaceRay,
-    std::function<bool(SceneDecoration const&)> const& filter) const
+    ModelRendererParams const& params,
+    glm::vec2 mouseScreenPos,
+    Rect const& viewportScreenRect)
 {
-    return m_Impl->getClosestCollision(worldspaceRay, filter);
+    return m_Impl->getClosestCollision(params, mouseScreenPos, viewportScreenRect);
 }

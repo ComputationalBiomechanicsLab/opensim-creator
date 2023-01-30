@@ -225,6 +225,69 @@ void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, glm::vec3& eulers)
     camera.setRotation(glm::normalize(glm::quat{eulers}));
 }
 
+bool osc::UpdatePolarCameraFromKeyboardInputs(
+    PolarPerspectiveCamera& camera,
+    Rect const& viewportRect,
+    std::optional<osc::AABB> maybeSceneAABB)
+{
+    bool ctrlDown = osc::IsCtrlOrSuperDown();
+
+    if (ImGui::IsKeyReleased(ImGuiKey_X))
+    {
+        if (ctrlDown)
+        {
+            FocusAlongMinusX(camera);
+            return true;
+        } else
+        {
+            FocusAlongX(camera);
+            return true;
+        }
+    }
+    else if (ImGui::IsKeyPressed(ImGuiKey_Y))
+    {
+        if (!ctrlDown)
+        {
+            FocusAlongY(camera);
+            return true;
+        }
+    }
+    else if (ImGui::IsKeyPressed(ImGuiKey_F))
+    {
+        if (ctrlDown)
+        {
+            if (maybeSceneAABB)
+            {
+                osc::AutoFocus(
+                    camera,
+                    *maybeSceneAABB,
+                    osc::AspectRatio(viewportRect)
+                );
+                return true;
+            }
+        }
+        else
+        {
+            Reset(camera);
+            return true;
+        }
+    }
+    else if (ctrlDown && (ImGui::IsKeyPressed(ImGuiKey_8)))
+    {
+        if (maybeSceneAABB)
+        {
+            osc::AutoFocus(
+                camera,
+                *maybeSceneAABB,
+                osc::AspectRatio(viewportRect)
+            );
+            return true;
+        }
+    }
+
+    return false;
+}
+
 osc::Rect osc::ContentRegionAvailScreenRect()
 {
     glm::vec2 const topLeft = ImGui::GetCursorScreenPos();
@@ -365,6 +428,14 @@ bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float threshold)
     glm::vec2 const dragDelta = ImGui::GetMouseDragDelta(btn);
 
     return glm::length(dragDelta) < threshold;
+}
+
+bool osc::IsDraggingWithAnyMouseButtonDown()
+{
+    return 
+        ImGui::IsMouseDragging(ImGuiMouseButton_Left) ||
+        ImGui::IsMouseDragging(ImGuiMouseButton_Middle) ||
+        ImGui::IsMouseDragging(ImGuiMouseButton_Right);
 }
 
 void osc::DrawTooltipBodyOnly(CStringView label)
