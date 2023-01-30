@@ -19,8 +19,8 @@ namespace osc
             float distanceFromRayOrigin_) :
 
             decorationID{std::move(decorationID_)},
-            worldspaceLocation{worldspaceLocation_},
             decorationIndex{decorationIndex_},
+            worldspaceLocation{worldspaceLocation_},
             distanceFromRayOrigin{distanceFromRayOrigin_}
         {
         }
