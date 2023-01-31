@@ -33,11 +33,17 @@ namespace osc
         bool getShouldShowScapulo() const;
         void setShouldShowScapulo(bool);
 
-        bool getShouldShowEffectiveMuscleLinesOfAction() const;
-        void setShouldShowEffectiveMuscleLinesOfAction(bool);
+        bool getShouldShowEffectiveMuscleLineOfActionForOrigin() const;
+        void setShouldShowEffectiveMuscleLineOfActionForOrigin(bool);
 
-        bool getShouldShowAnatomicalMuscleLinesOfAction() const;
-        void setShouldShowAnatomicalMuscleLinesOfAction(bool);
+        bool getShouldShowEffectiveMuscleLineOfActionForInsertion() const;
+        void setShouldShowEffectiveMuscleLineOfActionForInsertion(bool);
+
+        bool getShouldShowAnatomicalMuscleLineOfActionForOrigin() const;
+        void setShouldShowAnatomicalMuscleLineOfActionForOrigin(bool);
+
+        bool getShouldShowAnatomicalMuscleLineOfActionForInsertion() const;
+        void setShouldShowAnatomicalMuscleLineOfActionForInsertion(bool);
 
         bool getShouldShowCentersOfMass() const;
         void setShouldShowCentersOfMass(bool);

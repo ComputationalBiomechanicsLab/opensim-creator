@@ -12,20 +12,24 @@ namespace
         CustomDecorationOptionFlags_None = 0,
 
         CustomDecorationOptionFlags_ShouldShowScapulo = 1<<0,
-        CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfAction = 1<<1,
-        CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfAction = 1<<2,
-        CustomDecorationOptionFlags_ShouldShowCentersOfMass = 1<<3,
-        CustomDecorationOptionFlags_ShouldShowPointToPointSprings = 1<<4,
+        CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfActionForOrigin = 1<<1,
+        CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfActionForInsertion = 1<<2,
+        CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfActionForOrigin = 1<<3,
+        CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfActionForInsertion = 1<<4,
+        CustomDecorationOptionFlags_ShouldShowCentersOfMass = 1<<5,
+        CustomDecorationOptionFlags_ShouldShowPointToPointSprings = 1<<6,
 
-        CustomDecorationOptionFlags_COUNT = 5,
+        CustomDecorationOptionFlags_COUNT = 7,
         CustomDecorationOptionFlags_Default =
             CustomDecorationOptionFlags_ShouldShowPointToPointSprings,
     };
 
     auto constexpr c_CustomDecorationOptionLabels = osc::MakeSizedArray<osc::CStringView, CustomDecorationOptionFlags_COUNT>(
         "Scapulothoracic Joints",
-        "Lines of Action (effective)",
-        "Lines of Action (anatomical)",
+        "Origin Lines of Action (effective)",
+        "Insertion Lines of Action (effective)",
+        "Origin Lines of Action (anatomical)",
+        "Insertion Lines of Action (anatomical)",
         "Centers of Mass",
         "Point-to-Point Springs"
     );
@@ -33,6 +37,8 @@ namespace
     auto constexpr c_CustomDecorationDescriptions = osc::MakeSizedArray<std::optional<osc::CStringView>, CustomDecorationOptionFlags_COUNT>(
         std::nullopt,
         "Draws direction vectors that show the effective mechanical effect of the muscle action on the attached body.\n\n'Effective' refers to the fact that this algorithm computes the 'effective' attachment position of the muscle, which can change because of muscle wrapping and via point calculations (see: section 5.4.3 of Yamaguchi's book 'Dynamic Modeling of Musculoskeletal Motion: A Vectorized Approach for Biomechanical Analysis in Three Dimensions', title 'EFFECTIVE ORIGIN AND INSERTION POINTS').\n\nOpenSim Creator's implementation of this algorithm is based on Luca Modenese (@modenaxe)'s implementation here:\n\n    - https://github.com/modenaxe/MuscleForceDirection\n\nThanks to @modenaxe for open-sourcing the original algorithm!",
+        "Draws direction vectors that show the effective mechanical effect of the muscle action on the attached body.\n\n'Effective' refers to the fact that this algorithm computes the 'effective' attachment position of the muscle, which can change because of muscle wrapping and via point calculations (see: section 5.4.3 of Yamaguchi's book 'Dynamic Modeling of Musculoskeletal Motion: A Vectorized Approach for Biomechanical Analysis in Three Dimensions', title 'EFFECTIVE ORIGIN AND INSERTION POINTS').\n\nOpenSim Creator's implementation of this algorithm is based on Luca Modenese (@modenaxe)'s implementation here:\n\n    - https://github.com/modenaxe/MuscleForceDirection\n\nThanks to @modenaxe for open-sourcing the original algorithm!",
+        "Draws direction vectors that show the mechanical effect of the muscle action on the bodies attached to the origin/insertion points.\n\n'Anatomical' here means 'the first/last points of the muscle path' see the documentation for 'effective' lines of action for contrast.\n\nOpenSim Creator's implementation of this algorithm is based on Luca Modenese (@modenaxe)'s implementation here:\n\n    - https://github.com/modenaxe/MuscleForceDirection\n\nThanks to @modenaxe for open-sourcing the original algorithm!",
         "Draws direction vectors that show the mechanical effect of the muscle action on the bodies attached to the origin/insertion points.\n\n'Anatomical' here means 'the first/last points of the muscle path' see the documentation for 'effective' lines of action for contrast.\n\nOpenSim Creator's implementation of this algorithm is based on Luca Modenese (@modenaxe)'s implementation here:\n\n    - https://github.com/modenaxe/MuscleForceDirection\n\nThanks to @modenaxe for open-sourcing the original algorithm!",
         std::nullopt,
         std::nullopt
@@ -125,24 +131,44 @@ void osc::CustomDecorationOptions::setShouldShowScapulo(bool v)
     SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowScapulo, v);
 }
 
-bool osc::CustomDecorationOptions::getShouldShowEffectiveMuscleLinesOfAction() const
+bool osc::CustomDecorationOptions::getShouldShowEffectiveMuscleLineOfActionForOrigin() const
 {
-    return m_Flags & CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfAction;
+    return m_Flags & CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfActionForOrigin;
 }
 
-void osc::CustomDecorationOptions::setShouldShowEffectiveMuscleLinesOfAction(bool v)
+void osc::CustomDecorationOptions::setShouldShowEffectiveMuscleLineOfActionForOrigin(bool v)
 {
-    SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfAction, v);
+    SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfActionForOrigin, v);
 }
 
-bool osc::CustomDecorationOptions::getShouldShowAnatomicalMuscleLinesOfAction() const
+bool osc::CustomDecorationOptions::getShouldShowEffectiveMuscleLineOfActionForInsertion() const
 {
-    return m_Flags & CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfAction;
+    return m_Flags & CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfActionForInsertion;
 }
 
-void osc::CustomDecorationOptions::setShouldShowAnatomicalMuscleLinesOfAction(bool v)
+void osc::CustomDecorationOptions::setShouldShowEffectiveMuscleLineOfActionForInsertion(bool v)
 {
-    SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfAction, v);
+    SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfActionForInsertion, v);
+}
+
+bool osc::CustomDecorationOptions::getShouldShowAnatomicalMuscleLineOfActionForOrigin() const
+{
+    return m_Flags & CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfActionForOrigin;
+}
+
+void osc::CustomDecorationOptions::setShouldShowAnatomicalMuscleLineOfActionForOrigin(bool v)
+{
+    SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfActionForOrigin, v);
+}
+
+bool osc::CustomDecorationOptions::getShouldShowAnatomicalMuscleLineOfActionForInsertion() const
+{
+    return m_Flags & CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfActionForInsertion;
+}
+
+void osc::CustomDecorationOptions::setShouldShowAnatomicalMuscleLineOfActionForInsertion(bool v)
+{
+    SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfActionForInsertion, v);
 }
 
 bool osc::CustomDecorationOptions::getShouldShowCentersOfMass() const
