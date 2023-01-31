@@ -490,6 +490,7 @@ add_library(osccore STATIC
 
     src/OpenSimBindings/Rendering/CachedModelRenderer.cpp
     src/OpenSimBindings/Rendering/CachedModelRenderer.hpp
+    src/OpenSimBindings/Rendering/CustomDecorationOptions.cpp
     src/OpenSimBindings/Rendering/CustomDecorationOptions.hpp
     src/OpenSimBindings/Rendering/CustomRenderingOptions.cpp
     src/OpenSimBindings/Rendering/CustomRenderingOptions.hpp

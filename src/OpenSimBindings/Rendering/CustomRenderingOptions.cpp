@@ -34,7 +34,7 @@ namespace
             CustomRenderingOptionFlags_DrawSelectionRims,
     };
 
-    constexpr auto c_CustomRenderingOptionLabels = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(CustomRenderingOptionFlags_COUNT)>
+    auto constexpr c_CustomRenderingOptionLabels = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(CustomRenderingOptionFlags_COUNT)>
     (
         "Floor",
         "Mesh Normals",
@@ -58,14 +58,14 @@ namespace
         COUNT,
     };
 
-    constexpr auto c_CustomRenderingOptionGroupLabels = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(CustomRenderingOptionGroup::COUNT)>
+    auto constexpr c_CustomRenderingOptionGroupLabels = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(CustomRenderingOptionGroup::COUNT)>
     (
         "Rendering",
         "Alignment",
         "Development"
     );
 
-    constexpr auto c_CustomRenderingOptionGroups = osc::MakeSizedArray<CustomRenderingOptionGroup, static_cast<size_t>(CustomRenderingOptionFlags_COUNT)>
+    auto constexpr c_CustomRenderingOptionGroups = osc::MakeSizedArray<CustomRenderingOptionGroup, static_cast<size_t>(CustomRenderingOptionFlags_COUNT)>
     (
         CustomRenderingOptionGroup::Rendering,
         CustomRenderingOptionGroup::Rendering,

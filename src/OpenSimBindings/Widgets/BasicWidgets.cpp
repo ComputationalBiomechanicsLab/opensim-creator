@@ -422,6 +422,28 @@ void osc::DrawRenderingOptionsEditor(CustomRenderingOptions& opts)
     }
 }
 
+void osc::DrawCustomDecorationOptionCheckboxes(CustomDecorationOptions& opts)
+{
+    int imguiID = 0;
+    for (size_t i = 0; i < opts.getNumOptions(); ++i)
+    {
+        ImGui::PushID(imguiID++);
+
+        bool v = opts.getOptionValue(i);
+        if (ImGui::Checkbox(opts.getOptionLabel(i).c_str(), &v))
+        {
+            opts.setOptionValue(i, v);
+        }
+        if (std::optional<CStringView> description = opts.getOptionDescription(i))
+        {
+            ImGui::SameLine();
+            osc::DrawHelpMarker(*description);
+        }
+
+        ImGui::PopID();
+    }
+}
+
 void osc::DrawAdvancedParamsEditor(
     ModelRendererParams& params,
     nonstd::span<SceneDecoration const> drawlist)
@@ -521,39 +543,7 @@ void osc::DrawVisualAidsContextMenuContent(ModelRendererParams& params)
     // OpenSim-specific extra rendering options
     ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
     ImGui::TextDisabled("OpenSim");
-    bool isDrawingScapulothoracicJoints = params.decorationOptions.getShouldShowScapulo();
-    if (ImGui::Checkbox("Scapulothoracic Joints", &isDrawingScapulothoracicJoints))
-    {
-        params.decorationOptions.setShouldShowScapulo(isDrawingScapulothoracicJoints);
-    }
-
-    bool isShowingEffectiveLinesOfAction = params.decorationOptions.getShouldShowEffectiveMuscleLinesOfAction();
-    if (ImGui::Checkbox("Lines of Action (effective)", &isShowingEffectiveLinesOfAction))
-    {
-        params.decorationOptions.setShouldShowEffectiveMuscleLinesOfAction(isShowingEffectiveLinesOfAction);
-    }
-    ImGui::SameLine();
-    osc::DrawHelpMarker("Draws direction vectors that show the effective mechanical effect of the muscle action on the attached body.\n\n'Effective' refers to the fact that this algorithm computes the 'effective' attachment position of the muscle, which can change because of muscle wrapping and via point calculations (see: section 5.4.3 of Yamaguchi's book 'Dynamic Modeling of Musculoskeletal Motion: A Vectorized Approach for Biomechanical Analysis in Three Dimensions', title 'EFFECTIVE ORIGIN AND INSERTION POINTS').\n\nOpenSim Creator's implementation of this algorithm is based on Luca Modenese (@modenaxe)'s implementation here:\n\n    - https://github.com/modenaxe/MuscleForceDirection\n\nThanks to @modenaxe for open-sourcing the original algorithm!");
-
-    bool isShowingAnatomicalLinesOfAction = params.decorationOptions.getShouldShowAnatomicalMuscleLinesOfAction();
-    if (ImGui::Checkbox("Lines of Action (anatomical)", &isShowingAnatomicalLinesOfAction))
-    {
-        params.decorationOptions.setShouldShowAnatomicalMuscleLinesOfAction(isShowingAnatomicalLinesOfAction);
-    }
-    ImGui::SameLine();
-    osc::DrawHelpMarker("Draws direction vectors that show the mechanical effect of the muscle action on the bodies attached to the origin/insertion points.\n\n'Anatomical' here means 'the first/last points of the muscle path' see the documentation for 'effective' lines of action for contrast.\n\nOpenSim Creator's implementation of this algorithm is based on Luca Modenese (@modenaxe)'s implementation here:\n\n    - https://github.com/modenaxe/MuscleForceDirection\n\nThanks to @modenaxe for open-sourcing the original algorithm!");
-
-    bool isShowingCentersOfMass = params.decorationOptions.getShouldShowCentersOfMass();
-    if (ImGui::Checkbox("Centers of Mass", &isShowingCentersOfMass))
-    {
-        params.decorationOptions.setShouldShowCentersOfMass(isShowingCentersOfMass);
-    }
-
-    bool isShowingPointToPointSprings = params.decorationOptions.getShouldShowPointToPointSprings();
-    if (ImGui::Checkbox("Point-to-Point Springs", &isShowingPointToPointSprings))
-    {
-        params.decorationOptions.setShouldShowPointToPointSprings(isShowingPointToPointSprings);
-    }
+    DrawCustomDecorationOptionCheckboxes(params.decorationOptions);
 }
 
 void osc::DrawViewerTopButtonRow(

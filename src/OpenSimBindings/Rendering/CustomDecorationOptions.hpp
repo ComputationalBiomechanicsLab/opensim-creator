@@ -3,109 +3,58 @@
 #include "src/OpenSimBindings/Rendering/MuscleColoringStyle.hpp"
 #include "src/OpenSimBindings/Rendering/MuscleDecorationStyle.hpp"
 #include "src/OpenSimBindings/Rendering/MuscleSizingStyle.hpp"
+#include "src/Utils/CStringView.hpp"
+
+#include <cstdint>
+#include <optional>
 
 namespace osc
 {
     class CustomDecorationOptions final {
     public:
-        MuscleDecorationStyle getMuscleDecorationStyle() const
-        {
-            return m_MuscleDecorationStyle;
-        }
-        void setMuscleDecorationStyle(MuscleDecorationStyle s)
-        {
-            m_MuscleDecorationStyle = s;
-        }
+        CustomDecorationOptions();
 
-        MuscleColoringStyle getMuscleColoringStyle() const
-        {
-            return m_MuscleColoringStyle;
-        }
-        void setMuscleColoringStyle(MuscleColoringStyle s)
-        {
-            m_MuscleColoringStyle = s;
-        }
+        MuscleDecorationStyle getMuscleDecorationStyle() const;
+        void setMuscleDecorationStyle(MuscleDecorationStyle);
 
-        MuscleSizingStyle getMuscleSizingStyle() const
-        {
-            return m_MuscleSizingStyle;
-        }
-        void setMuscleSizingStyle(MuscleSizingStyle s)
-        {
-            m_MuscleSizingStyle = s;
-        }
+        MuscleColoringStyle getMuscleColoringStyle() const;
+        void setMuscleColoringStyle(MuscleColoringStyle);
 
-        bool getShouldShowScapulo() const
-        {
-            return m_ShouldShowScapulo;
-        }
-        void setShouldShowScapulo(bool v)
-        {
-            m_ShouldShowScapulo = v;
-        }
+        MuscleSizingStyle getMuscleSizingStyle() const;
+        void setMuscleSizingStyle(MuscleSizingStyle);
 
-        bool getShouldShowEffectiveMuscleLinesOfAction() const
-        {
-            return m_ShouldShowEffectiveMuscleLinesOfAction;
-        }
-        void setShouldShowEffectiveMuscleLinesOfAction(bool v)
-        {
-            m_ShouldShowEffectiveMuscleLinesOfAction = v;
-        }
+        // the ones below here are toggle-able options with user-facing strings etc
+        size_t getNumOptions() const;
+        bool getOptionValue(ptrdiff_t) const;
+        void setOptionValue(ptrdiff_t, bool);
+        CStringView getOptionLabel(ptrdiff_t) const;
+        std::optional<CStringView> getOptionDescription(ptrdiff_t) const;
 
-        bool getShouldShowAnatomicalMuscleLinesOfAction() const
-        {
-            return m_ShouldShowAnatomicalMuscleLinesOfAction;
-        }
-        void setShouldShowAnatomicalMuscleLinesOfAction(bool v)
-        {
-            m_ShouldShowAnatomicalMuscleLinesOfAction = v;
-        }
+        bool getShouldShowScapulo() const;
+        void setShouldShowScapulo(bool);
 
-        bool getShouldShowCentersOfMass() const
-        {
-            return m_ShouldShowCentersOfMass;
-        }
-        void setShouldShowCentersOfMass(bool v)
-        {
-            m_ShouldShowCentersOfMass = v;
-        }
+        bool getShouldShowEffectiveMuscleLinesOfAction() const;
+        void setShouldShowEffectiveMuscleLinesOfAction(bool);
 
-        bool getShouldShowPointToPointSprings() const
-        {
-            return m_ShouldShowPointToPointSprings;
-        }
-        void setShouldShowPointToPointSprings(bool v)
-        {
-            m_ShouldShowPointToPointSprings = v;
-        }
+        bool getShouldShowAnatomicalMuscleLinesOfAction() const;
+        void setShouldShowAnatomicalMuscleLinesOfAction(bool);
+
+        bool getShouldShowCentersOfMass() const;
+        void setShouldShowCentersOfMass(bool);
+
+        bool getShouldShowPointToPointSprings() const;
+        void setShouldShowPointToPointSprings(bool);
 
     private:
-        friend bool operator==(CustomDecorationOptions const&, CustomDecorationOptions const&);
-        friend bool operator!=(CustomDecorationOptions const&, CustomDecorationOptions const&);
+        friend bool operator==(CustomDecorationOptions const&, CustomDecorationOptions const&) noexcept;
 
-        MuscleDecorationStyle m_MuscleDecorationStyle = MuscleDecorationStyle::Default;
-        MuscleColoringStyle m_MuscleColoringStyle = MuscleColoringStyle::Default;
-        MuscleSizingStyle m_MuscleSizingStyle = MuscleSizingStyle::Default;
-        bool m_ShouldShowScapulo = false;
-        bool m_ShouldShowEffectiveMuscleLinesOfAction = false;
-        bool m_ShouldShowAnatomicalMuscleLinesOfAction = false;
-        bool m_ShouldShowCentersOfMass = false;
-        bool m_ShouldShowPointToPointSprings = true;
+        MuscleDecorationStyle m_MuscleDecorationStyle;
+        MuscleColoringStyle m_MuscleColoringStyle;
+        MuscleSizingStyle m_MuscleSizingStyle;
+        uint32_t m_Flags;
     };
 
-    inline bool operator==(CustomDecorationOptions const& a, CustomDecorationOptions const& b)
-    {
-        return
-            a.m_MuscleDecorationStyle == b.m_MuscleDecorationStyle &&
-            a.m_MuscleColoringStyle == b.m_MuscleColoringStyle &&
-            a.m_MuscleSizingStyle == b.m_MuscleSizingStyle &&
-            a.m_ShouldShowScapulo == b.m_ShouldShowScapulo &&
-            a.m_ShouldShowEffectiveMuscleLinesOfAction == b.m_ShouldShowEffectiveMuscleLinesOfAction &&
-            a.m_ShouldShowAnatomicalMuscleLinesOfAction == b.m_ShouldShowAnatomicalMuscleLinesOfAction &&
-            a.m_ShouldShowCentersOfMass == b.m_ShouldShowCentersOfMass &&
-            a.m_ShouldShowPointToPointSprings == b.m_ShouldShowPointToPointSprings;
-    }
+    bool operator==(CustomDecorationOptions const&, CustomDecorationOptions const&) noexcept;
 
     inline bool operator!=(CustomDecorationOptions const& a, CustomDecorationOptions const& b)
     {

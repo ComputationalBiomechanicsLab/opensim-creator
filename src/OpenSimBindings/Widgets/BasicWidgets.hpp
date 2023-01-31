@@ -41,6 +41,7 @@ namespace osc
     void DrawMuscleColoringOptionsRadioButtons(CustomDecorationOptions&);
     void DrawMuscleDecorationOptionsEditor(CustomDecorationOptions&);
     void DrawRenderingOptionsEditor(CustomRenderingOptions&);
+    void DrawCustomDecorationOptionCheckboxes(CustomDecorationOptions&);
     void DrawAdvancedParamsEditor(ModelRendererParams&, nonstd::span<SceneDecoration const>);
     void DrawVisualAidsContextMenuContent(ModelRendererParams&);
     void DrawViewerTopButtonRow(

@@ -14,10 +14,10 @@ namespace osc
         CStringView getGroupLabel(ptrdiff_t) const;
 
         size_t getNumOptions() const;
-        bool getOptionValue(ptrdiff_t i) const;
-        void setOptionValue(ptrdiff_t i, bool);
-        CStringView getOptionLabel(ptrdiff_t i) const;
-        ptrdiff_t getOptionGroupIndex(ptrdiff_t i) const;
+        bool getOptionValue(ptrdiff_t) const;
+        void setOptionValue(ptrdiff_t, bool);
+        CStringView getOptionLabel(ptrdiff_t) const;
+        ptrdiff_t getOptionGroupIndex(ptrdiff_t) const;
 
         bool getDrawFloor() const;
         void setDrawFloor(bool);
