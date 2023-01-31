@@ -7,14 +7,14 @@
 #include <array>
 #include <cstddef>
 
-static constexpr auto c_Styles = osc::MakeSizedArray<osc::MuscleDecorationStyle, static_cast<size_t>(osc::MuscleDecorationStyle::TOTAL)>
+static auto constexpr c_Styles = osc::MakeSizedArray<osc::MuscleDecorationStyle, static_cast<size_t>(osc::MuscleDecorationStyle::TOTAL)>
 (
     osc::MuscleDecorationStyle::OpenSim,
     osc::MuscleDecorationStyle::FibersAndTendons,
     osc::MuscleDecorationStyle::Hidden
 );
 
-static constexpr auto c_StyleStrings = osc::MakeSizedArray<char const*, static_cast<size_t>(osc::MuscleDecorationStyle::TOTAL)>
+static auto constexpr c_StyleStrings = osc::MakeSizedArray<char const*, static_cast<size_t>(osc::MuscleDecorationStyle::TOTAL)>
 (
     "OpenSim",
     "Fibers & Tendons",

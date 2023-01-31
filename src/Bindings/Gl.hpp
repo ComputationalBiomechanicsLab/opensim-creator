@@ -76,7 +76,7 @@ namespace gl
         }
 
     private:
-        static constexpr GLuint c_EmptyShaderSenteniel = 0;
+        static GLuint constexpr c_EmptyShaderSenteniel = 0;
         GLuint m_ShaderHandle;
     };
 
@@ -88,7 +88,7 @@ namespace gl
     template<GLuint ShaderType>
     class Shader {
     public:
-        static constexpr GLuint type = ShaderType;
+        static GLuint constexpr type = ShaderType;
 
         Shader() : m_ShaderHandle{type} {}
 
@@ -163,7 +163,7 @@ namespace gl
         }
 
     private:
-        static constexpr GLuint c_EmptyProgramSenteniel = 0;
+        static GLuint constexpr c_EmptyProgramSenteniel = 0;
         GLuint m_ProgramHandle;
     };
 
@@ -238,43 +238,43 @@ namespace gl
     // glVertexAttribPointer
     namespace glsl {
         struct float_ final {
-            static constexpr GLint size = 1;
-            static constexpr GLenum type = GL_FLOAT;
+            static GLint constexpr size = 1;
+            static GLenum constexpr type = GL_FLOAT;
         };
         struct int_ {
-            static constexpr GLint size = 1;
-            static constexpr GLenum type = GL_INT;
+            static GLint constexpr size = 1;
+            static GLenum constexpr type = GL_INT;
         };
         struct sampler2d : public int_ {};
         struct sampler2DMS : public int_ {};
         struct samplerCube : public int_ {};
         struct bool_ : public int_ {};
         struct vec2 final {
-            static constexpr GLint size = 2;
-            static constexpr GLenum type = GL_FLOAT;
+            static GLint constexpr size = 2;
+            static GLenum constexpr type = GL_FLOAT;
         };
         struct vec3 final {
-            static constexpr GLint size = 3;
-            static constexpr GLenum type = GL_FLOAT;
+            static GLint constexpr size = 3;
+            static GLenum constexpr type = GL_FLOAT;
         };
         struct vec4 final {
-            static constexpr GLint size = 4;
-            static constexpr GLenum type = GL_FLOAT;
+            static GLint constexpr size = 4;
+            static GLenum constexpr type = GL_FLOAT;
         };
         struct mat4 final {
-            static constexpr GLint size = 16;
-            static constexpr GLenum type = GL_FLOAT;
+            static GLint constexpr size = 16;
+            static GLenum constexpr type = GL_FLOAT;
             static constexpr size_t elementsPerLocation = 4;
         };
         struct mat3 final {
-            static constexpr GLint size = 9;
-            static constexpr GLenum type = GL_FLOAT;
-            static constexpr size_t elementsPerLocation = 3;
+            static GLint constexpr size = 9;
+            static GLenum constexpr type = GL_FLOAT;
+            static size_t constexpr elementsPerLocation = 3;
         };
         struct mat4x3 final {
-            static constexpr GLint size = 12;
-            static constexpr GLenum type = GL_FLOAT;
-            static constexpr size_t elementsPerLocation = 3;
+            static GLint constexpr size = 12;
+            static GLenum constexpr type = GL_FLOAT;
+            static size_t constexpr elementsPerLocation = 3;
         };
     }
 
@@ -617,7 +617,7 @@ namespace gl
         }
 
     private:
-        static constexpr GLuint c_EmptyBufferHandleSenteniel = static_cast<GLuint>(-1);
+        static GLuint constexpr c_EmptyBufferHandleSenteniel = static_cast<GLuint>(-1);
         GLuint m_BufferHandle;
     };
 
@@ -627,7 +627,7 @@ namespace gl
         using BufferHandle::BufferHandle;
 
     public:
-        static constexpr GLenum BufferType = TBuffer;
+        static GLenum constexpr BufferType = TBuffer;
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindBuffer.xhtml
@@ -668,7 +668,7 @@ namespace gl
         static_assert(std::is_standard_layout<T>::value);
 
         using value_type = T;
-        static constexpr GLenum BufferType = TBuffer;
+        static GLenum constexpr BufferType = TBuffer;
 
         Buffer() = default;
 
@@ -828,7 +828,7 @@ namespace gl
         }
 
     private:
-        static constexpr GLuint c_EmptyVAOHandleSenteniel = std::numeric_limits<GLuint>::max();
+        static GLuint constexpr c_EmptyVAOHandleSenteniel = std::numeric_limits<GLuint>::max();
         GLuint m_VaoHandle;
     };
 
@@ -885,7 +885,7 @@ namespace gl
             return m_TextureHandle;
         }
     private:
-        static constexpr GLuint c_EmptyTextureHandleSenteniel = static_cast<GLuint>(-1);
+        static GLuint constexpr c_EmptyTextureHandleSenteniel = static_cast<GLuint>(-1);
         GLuint m_TextureHandle;
     };
 
@@ -911,7 +911,7 @@ namespace gl
     template<GLenum TextureType>
     class Texture {
     public:
-        static constexpr GLenum type = TextureType;
+        static GLenum constexpr type = TextureType;
 
         [[nodiscard]] constexpr GLuint get() const noexcept
         {
@@ -989,7 +989,7 @@ namespace gl
         }
 
     private:
-        static constexpr GLuint c_EmptyFBOSenteniel = static_cast<GLuint>(-1);
+        static GLuint constexpr c_EmptyFBOSenteniel = static_cast<GLuint>(-1);
         GLuint m_FboHandle;
     };
 
@@ -1001,7 +1001,8 @@ namespace gl
 
     // bind to the main Window FBO for the current OpenGL context
     struct WindowFbo final {};
-    static constexpr WindowFbo windowFbo{};
+    static WindowFbo constexpr windowFbo{};
+
     inline void BindFramebuffer(GLenum target, WindowFbo) noexcept
     {
         glBindFramebuffer(target, 0);
@@ -1057,7 +1058,7 @@ namespace gl
         }
     private:
         // khronos: glDeleteRenderBuffers: "The name zero is reserved by the GL and is silently ignored"
-        static constexpr GLuint c_EmptyRenderBufferSenteniel = 0;
+        static GLuint constexpr c_EmptyRenderBufferSenteniel = 0;
         GLuint m_RenderBuffer;
     };
 

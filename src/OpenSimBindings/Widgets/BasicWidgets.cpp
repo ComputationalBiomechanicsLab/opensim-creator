@@ -71,85 +71,85 @@ namespace
         osc::WriteDecorationsAsDAE(scene, outfile);
         osc::log::info("wrote scene as a DAE file to %s", daePath.string().c_str());
     }
-}
 
-static void DrawOutputTooltip(OpenSim::AbstractOutput const& o)
-{
-    ImGui::BeginTooltip();
-    ImGui::Text("%s", o.getTypeName().c_str());
-    ImGui::EndTooltip();
-}
-
-static void DrawOutputWithSubfieldsMenu(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
-{
-    int supportedSubfields = osc::GetSupportedSubfields(o);
-
-    // can plot suboutputs
-    if (ImGui::BeginMenu(("  " + o.getName()).c_str()))
+    void DrawOutputTooltip(OpenSim::AbstractOutput const& o)
     {
-        for (osc::OutputSubfield f : osc::GetAllSupportedOutputSubfields())
+        ImGui::BeginTooltip();
+        ImGui::Text("%s", o.getTypeName().c_str());
+        ImGui::EndTooltip();
+    }
+
+    void DrawOutputWithSubfieldsMenu(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
+    {
+        int supportedSubfields = osc::GetSupportedSubfields(o);
+
+        // can plot suboutputs
+        if (ImGui::BeginMenu(("  " + o.getName()).c_str()))
         {
-            if (static_cast<int>(f) & supportedSubfields)
+            for (osc::OutputSubfield f : osc::GetAllSupportedOutputSubfields())
             {
-                if (ImGui::MenuItem(GetOutputSubfieldLabel(f)))
+                if (static_cast<int>(f) & supportedSubfields)
                 {
-                    api.addUserOutputExtractor(osc::OutputExtractor{osc::ComponentOutputExtractor{o, f}});
+                    if (ImGui::MenuItem(GetOutputSubfieldLabel(f)))
+                    {
+                        api.addUserOutputExtractor(osc::OutputExtractor{osc::ComponentOutputExtractor{o, f}});
+                    }
                 }
             }
+            ImGui::EndMenu();
         }
-        ImGui::EndMenu();
+
+        if (ImGui::IsItemHovered())
+        {
+            DrawOutputTooltip(o);
+        }
     }
 
-    if (ImGui::IsItemHovered())
+    void DrawOutputWithNoSubfieldsMenuItem(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
     {
-        DrawOutputTooltip(o);
-    }
-}
+        // can only plot top-level of output
 
-static void DrawOutputWithNoSubfieldsMenuItem(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
-{
-    // can only plot top-level of output
+        if (ImGui::MenuItem(("  " + o.getName()).c_str()))
+        {
+            api.addUserOutputExtractor(osc::OutputExtractor{osc::ComponentOutputExtractor{o}});
+        }
 
-    if (ImGui::MenuItem(("  " + o.getName()).c_str()))
-    {
-        api.addUserOutputExtractor(osc::OutputExtractor{osc::ComponentOutputExtractor{o}});
+        if (ImGui::IsItemHovered())
+        {
+            DrawOutputTooltip(o);
+        }
     }
 
-    if (ImGui::IsItemHovered())
+    void DrawRequestOutputMenuOrMenuItem(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
     {
-        DrawOutputTooltip(o);
+        if (osc::GetSupportedSubfields(o) == static_cast<int>(osc::OutputSubfield::None))
+        {
+            DrawOutputWithNoSubfieldsMenuItem(api, o);
+        }
+        else
+        {
+            DrawOutputWithSubfieldsMenu(api, o);
+        }
     }
-}
 
-static void DrawRequestOutputMenuOrMenuItem(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
-{
-    if (osc::GetSupportedSubfields(o) == static_cast<int>(osc::OutputSubfield::None))
+    void DrawSimulationParamValue(osc::ParamValue const& v)
     {
-        DrawOutputWithNoSubfieldsMenuItem(api, o);
-    }
-    else
-    {
-        DrawOutputWithSubfieldsMenu(api, o);
-    }
-}
-
-static void DrawSimulationParamValue(osc::ParamValue const& v)
-{
-    if (std::holds_alternative<double>(v))
-    {
-        ImGui::Text("%f", static_cast<float>(std::get<double>(v)));
-    }
-    else if (std::holds_alternative<osc::IntegratorMethod>(v))
-    {
-        ImGui::Text("%s", osc::GetIntegratorMethodString(std::get<osc::IntegratorMethod>(v)));
-    }
-    else if (std::holds_alternative<int>(v))
-    {
-        ImGui::Text("%i", std::get<int>(v));
-    }
-    else
-    {
-        ImGui::Text("(unknown value type)");
+        if (std::holds_alternative<double>(v))
+        {
+            ImGui::Text("%f", static_cast<float>(std::get<double>(v)));
+        }
+        else if (std::holds_alternative<osc::IntegratorMethod>(v))
+        {
+            ImGui::Text("%s", osc::GetIntegratorMethodString(std::get<osc::IntegratorMethod>(v)));
+        }
+        else if (std::holds_alternative<int>(v))
+        {
+            ImGui::Text("%i", std::get<int>(v));
+        }
+        else
+        {
+            ImGui::Text("(unknown value type)");
+        }
     }
 }
 

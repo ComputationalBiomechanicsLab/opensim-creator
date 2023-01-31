@@ -24,6 +24,8 @@ namespace osc
         std::string const& getName(int idx) const;
         std::string const& getDescription(int idx) const;
         ParamValue const& getValue(int idx) const;
+        std::optional<ParamValue> findValue(char const*) const;
+        std::optional<ParamValue> findValue(std::string_view) const;
         std::optional<ParamValue> findValue(std::string const& name) const;
 
         void pushParam(std::string_view name, std::string_view description, ParamValue);

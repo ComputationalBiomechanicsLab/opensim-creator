@@ -28,17 +28,20 @@
 #include <utility>
 #include <vector>
 
-static osc::OutputExtractor GetSimulatorOutputExtractor(std::string_view name)
+namespace
 {
-    for (int i = 0, len = osc::GetNumFdSimulatorOutputExtractors(); i < len; ++i)
+    osc::OutputExtractor GetSimulatorOutputExtractor(std::string_view name)
     {
-        osc::OutputExtractor o = osc::GetFdSimulatorOutputExtractor(i);
-        if (o.getName() == name)
+        for (int i = 0, len = osc::GetNumFdSimulatorOutputExtractors(); i < len; ++i)
         {
-            return o;
+            osc::OutputExtractor o = osc::GetFdSimulatorOutputExtractor(i);
+            if (o.getName() == name)
+            {
+                return o;
+            }
         }
+        throw std::runtime_error{"cannot find output"};
     }
-    throw std::runtime_error{"cannot find output"};
 }
 
 class osc::PerformanceAnalyzerTab::Impl final {

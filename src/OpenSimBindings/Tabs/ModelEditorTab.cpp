@@ -371,7 +371,7 @@ private:
     // manager for toggleable and spawnable UI panels
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
 
-    // static (non-toggleable) UI panels/menus/toolbars
+    // non-toggleable UI panels/menus/toolbars
     ModelEditorMainMenu m_MainMenu{m_ParentAPI, this, m_Model};
     ModelEditorToolbar m_Toolbar{"##ModelEditorToolbar", m_ParentAPI, this, m_Model};
     EditorTabStatusBar m_StatusBar{m_ParentAPI, this, m_Model};

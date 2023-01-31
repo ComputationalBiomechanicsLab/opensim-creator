@@ -17,27 +17,30 @@
 #include <cstdint>
 #include <utility>
 
-static osc::Mesh GenerateTriangleMesh()
+namespace
 {
-    glm::vec3 const points[] =
+    osc::Mesh GenerateTriangleMesh()
     {
-        {-1.0f, -1.0f, 0.0f},  // bottom-left
-        { 1.0f, -1.0f, 0.0f},  // bottom-right
-        { 0.0f,  1.0f, 0.0f},  // top-middle
-    };
-    osc::Rgba32 const colors[] =
-    {
-        {0xff, 0x00, 0x00, 0xff},
-        {0x00, 0xff, 0x00, 0xff},
-        {0x00, 0x00, 0xff, 0xff},
-    };
-    uint16_t const indices[] = {0, 1, 2};
+        glm::vec3 const points[] =
+        {
+            {-1.0f, -1.0f, 0.0f},  // bottom-left
+            { 1.0f, -1.0f, 0.0f},  // bottom-right
+            { 0.0f,  1.0f, 0.0f},  // top-middle
+        };
+        osc::Rgba32 const colors[] =
+        {
+            {0xff, 0x00, 0x00, 0xff},
+            {0x00, 0xff, 0x00, 0xff},
+            {0x00, 0x00, 0xff, 0xff},
+        };
+        uint16_t const indices[] = {0, 1, 2};
 
-    osc::Mesh m;
-    m.setVerts(points);
-    m.setColors(colors);
-    m.setIndices(indices);
-    return m;
+        osc::Mesh m;
+        m.setVerts(points);
+        m.setColors(colors);
+        m.setIndices(indices);
+        return m;
+    }
 }
 
 class osc::RendererHelloTriangleTab::Impl final {

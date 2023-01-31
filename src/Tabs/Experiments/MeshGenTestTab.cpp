@@ -27,22 +27,25 @@
 #include <string>
 #include <utility>
 
-static std::map<std::string, osc::Mesh> GenerateMeshLookup()
+namespace
 {
-    osc::MeshCache& cache = *osc::App::singleton<osc::MeshCache>();
-    return
+    std::map<std::string, osc::Mesh> GenerateMeshLookup()
     {
-        {"sphere", cache.getSphereMesh()},
-        {"cylinder", cache.getCylinderMesh()},
-        {"brick", cache.getBrickMesh()},
-        {"cone", cache.getConeMesh()},
-        {"floor", cache.getFloorMesh()},
-        {"100x100 grid", cache.get100x100GridMesh()},
-        {"cube (wire)", cache.getCubeWireMesh()},
-        {"yline", cache.getYLineMesh()},
-        {"quad", cache.getTexturedQuadMesh()},
-        {"torus", cache.getTorusMesh(0.9f, 0.1f)},
-    };
+        osc::MeshCache& cache = *osc::App::singleton<osc::MeshCache>();
+        return
+        {
+            {"sphere", cache.getSphereMesh()},
+            {"cylinder", cache.getCylinderMesh()},
+            {"brick", cache.getBrickMesh()},
+            {"cone", cache.getConeMesh()},
+            {"floor", cache.getFloorMesh()},
+            {"100x100 grid", cache.get100x100GridMesh()},
+            {"cube (wire)", cache.getCubeWireMesh()},
+            {"yline", cache.getYLineMesh()},
+            {"quad", cache.getTexturedQuadMesh()},
+            {"torus", cache.getTorusMesh(0.9f, 0.1f)},
+        };
+    }
 }
 
 class osc::MeshGenTestTab::Impl final {

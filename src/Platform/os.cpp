@@ -21,58 +21,59 @@
 #include <string>
 #include <utility>
 
-static std::filesystem::path convertSDLPathToStdpath(char const* methodname, char* p)
+namespace
 {
-    if (p == nullptr)
+    std::filesystem::path convertSDLPathToStdpath(char const* methodname, char* p)
     {
-        std::stringstream ss;
-        ss << methodname << ": returned null: " << SDL_GetError();
-        throw std::runtime_error{std::move(ss).str()};
+        if (p == nullptr)
+        {
+            std::stringstream ss;
+            ss << methodname << ": returned null: " << SDL_GetError();
+            throw std::runtime_error{std::move(ss).str()};
+        }
+
+        size_t len = std::strlen(p);
+
+        if (len == 0)
+        {
+            std::stringstream ss;
+            ss << methodname << ": returned an empty string";
+            throw std::runtime_error{std::move(ss).str()};
+        }
+
+        // remove trailing slash: it interferes with std::filesystem::path
+        p[len - 1] = '\0';
+
+        return std::filesystem::path{p};
     }
 
-    size_t len = std::strlen(p);
-
-    if (len == 0)
+    std::filesystem::path getCurrentExeDir()
     {
-        std::stringstream ss;
-        ss << methodname << ": returned an empty string";
-        throw std::runtime_error{std::move(ss).str()};
+        std::unique_ptr<char, decltype(&SDL_free)> p{SDL_GetBasePath(), SDL_free};
+
+        return convertSDLPathToStdpath("SDL_GetBasePath", p.get());
     }
 
-    // remove trailing slash: it interferes with std::filesystem::path
-    p[len - 1] = '\0';
+    std::filesystem::path getUserDataDir()
+    {
+        std::unique_ptr<char, decltype(&SDL_free)> p{SDL_GetPrefPath("cbl", "osc"), SDL_free};
 
-    return std::filesystem::path{p};
-}
-
-static std::filesystem::path getCurrentExeDir()
-{
-    std::unique_ptr<char, decltype(&SDL_free)> p{SDL_GetBasePath(), SDL_free};
-
-    return convertSDLPathToStdpath("SDL_GetBasePath", p.get());
-}
-
-static std::filesystem::path getUserDataDir()
-{
-    std::unique_ptr<char, decltype(&SDL_free)> p{SDL_GetPrefPath("cbl", "osc"), SDL_free};
-
-    return convertSDLPathToStdpath("SDL_GetPrefPath", p.get());
+        return convertSDLPathToStdpath("SDL_GetPrefPath", p.get());
+    }
 }
 
 std::filesystem::path const& osc::CurrentExeDir()
 {
     // can be expensive to compute: cache after first retrieval
-    static std::filesystem::path const d = getCurrentExeDir();
-
-    return d;
+    static std::filesystem::path const s_CurrentExeDir = getCurrentExeDir();
+    return s_CurrentExeDir;
 }
 
 std::filesystem::path const& osc::GetUserDataDir()
 {
     // can be expensive to compute: cache after first retrieval
-    static std::filesystem::path const d = getUserDataDir();
-
-    return d;
+    static std::filesystem::path const s_UserDataDir = getUserDataDir();
+    return s_UserDataDir;
 }
 
 bool osc::SetClipboardText(char const* s)
@@ -480,49 +481,49 @@ namespace
         filename << "_CrashReport.txt";
         return osc::GetUserDataDir() / std::move(filename).str();
     }
-}
 
-static LONG crash_handler(EXCEPTION_POINTERS* info)
-{
-    osc::log::error("exception propagated to root of OSC: might be a segfault?");
-
-    std::filesystem::path const crashReportPath = GetCrashReportPath();
-    std::ofstream crashReportFile{crashReportPath};
-
-    // dump out the log history (it's handy for context)
-    if (crashReportFile)
+    LONG crash_handler(EXCEPTION_POINTERS* info)
     {
-        crashReportFile << "----- log -----\n";
-        auto guard = osc::log::getTracebackLog().lock();
-        for (osc::log::OwnedLogMessage const& msg : *guard)
+        osc::log::error("exception propagated to root of OSC: might be a segfault?");
+
+        std::filesystem::path const crashReportPath = GetCrashReportPath();
+        std::ofstream crashReportFile{crashReportPath};
+
+        // dump out the log history (it's handy for context)
+        if (crashReportFile)
         {
-            crashReportFile << '[' << msg.loggerName << "] [" << osc::log::toStringView(msg.level) << "] " << msg.payload << '\n';
+            crashReportFile << "----- log -----\n";
+            auto guard = osc::log::getTracebackLog().lock();
+            for (osc::log::OwnedLogMessage const& msg : *guard)
+            {
+                crashReportFile << '[' << msg.loggerName << "] [" << osc::log::toStringView(msg.level) << "] " << msg.payload << '\n';
+            }
+            crashReportFile << "----- /log -----\n";
         }
-        crashReportFile << "----- /log -----\n";
+
+        // then write a traceback to both the log (in case the user is running from a console)
+        // *and* the crash dump (in case the user is running from a GUI and wants to report it)
+        if (crashReportFile)
+        {
+            crashReportFile << "----- traceback -----\n";
+
+            std::shared_ptr<osc::log::Sink> sink = std::make_shared<CrashFileSink>(crashReportFile);
+
+            osc::log::defaultLogger()->sinks().push_back(sink);
+            osc::WriteTracebackToLog(osc::log::level::err);
+            osc::log::defaultLogger()->sinks().erase(osc::log::defaultLogger()->sinks().end() - 1);
+
+            crashReportFile << "----- /traceback -----\n";
+        }
+
+        return EXCEPTION_CONTINUE_SEARCH;
     }
 
-    // then write a traceback to both the log (in case the user is running from a console)
-    // *and* the crash dump (in case the user is running from a GUI and wants to report it)
-    if (crashReportFile)
+    void signal_handler(int signal)
     {
-        crashReportFile << "----- traceback -----\n";
-
-        std::shared_ptr<osc::log::Sink> sink = std::make_shared<CrashFileSink>(crashReportFile);
-
-        osc::log::defaultLogger()->sinks().push_back(sink);
+        osc::log::error("signal caught by OSC: printing backtrace");
         osc::WriteTracebackToLog(osc::log::level::err);
-        osc::log::defaultLogger()->sinks().erase(osc::log::defaultLogger()->sinks().end() - 1);
-
-        crashReportFile << "----- /traceback -----\n";
     }
-
-    return EXCEPTION_CONTINUE_SEARCH;
-}
-
-static void signal_handler(int signal)
-{
-    osc::log::error("signal caught by OSC: printing backtrace");
-    osc::WriteTracebackToLog(osc::log::level::err);
 }
 
 void osc::InstallBacktraceHandler()
@@ -537,6 +538,7 @@ void osc::InstallBacktraceHandler()
 
     signal(SIGABRT, signal_handler);
 }
+
 void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& p)
 {
     ShellExecute(0, 0, p.string().c_str(), 0, 0 , SW_SHOW );

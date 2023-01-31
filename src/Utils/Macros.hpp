@@ -24,7 +24,7 @@ namespace
     // try to guarantee that a value is computed at compile-time into an instance of this struct
     template<typename T, T v>
     struct ConstExprValue final {
-        static constexpr const T value = v;
+        static T constexpr value = v;
     };
 }
 

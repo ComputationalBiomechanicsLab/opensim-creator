@@ -54,6 +54,16 @@ public:
         return get(idx).value;
     }
 
+    std::optional<ParamValue> findValue(char const* name) const
+    {
+        return findValue(std::string{name});
+    }
+
+    std::optional<ParamValue> findValue(std::string_view name) const
+    {
+        return findValue(std::string{name});
+    }
+
     std::optional<ParamValue> findValue(std::string const& name) const
     {
         Param const* p = find(name);
@@ -149,6 +159,16 @@ std::string const& osc::ParamBlock::getDescription(int idx) const
 osc::ParamValue const& osc::ParamBlock::getValue(int idx) const
 {
     return m_Impl->getValue(std::move(idx));
+}
+
+std::optional<osc::ParamValue> osc::ParamBlock::findValue(char const* name) const
+{
+    return m_Impl->findValue(name);
+}
+
+std::optional<osc::ParamValue> osc::ParamBlock::findValue(std::string_view name) const
+{
+    return m_Impl->findValue(name);
 }
 
 std::optional<osc::ParamValue> osc::ParamBlock::findValue(std::string const& name) const

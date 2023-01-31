@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <array>
 
-static constexpr auto c_SimulatorStatuses = osc::MakeSizedArray<osc::SimulationStatus, static_cast<size_t>(osc::SimulationStatus::TOTAL)>
+static auto constexpr c_SimulatorStatuses = osc::MakeSizedArray<osc::SimulationStatus, static_cast<size_t>(osc::SimulationStatus::TOTAL)>
 (
     osc::SimulationStatus::Initializing,
     osc::SimulationStatus::Running,
@@ -16,7 +16,7 @@ static constexpr auto c_SimulatorStatuses = osc::MakeSizedArray<osc::SimulationS
     osc::SimulationStatus::Error
 );
 
-static constexpr auto c_SimulatorStatusStrings = osc::MakeSizedArray<char const*, static_cast<size_t>(osc::SimulationStatus::TOTAL)>
+static auto constexpr c_SimulatorStatusStrings = osc::MakeSizedArray<char const*, static_cast<size_t>(osc::SimulationStatus::TOTAL)>
 (
     "Initializing",
     "Running",

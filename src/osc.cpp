@@ -5,14 +5,15 @@
 #include "src/Tabs/Tab.hpp"
 #include "src/Tabs/TabHost.hpp"
 #include "src/Tabs/TabRegistry.hpp"
+#include "src/Utils/CStringView.hpp"
 
 #include <cstdlib>
 #include <iostream>
 
-static constexpr char c_Usage[] = R"(usage: osc [--help] [fd] MODEL.osim
+static osc::CStringView constexpr c_Usage = R"(usage: osc [--help] [fd] MODEL.osim
 )";
 
-static constexpr char c_Help[] = R"(OPTIONS
+static osc::CStringView constexpr c_Help = R"(OPTIONS
     --help
         Show this help
 )";

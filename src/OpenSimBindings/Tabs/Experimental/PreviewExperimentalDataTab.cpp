@@ -49,7 +49,7 @@ namespace
     };
 
     // human-readable name of a data type
-    auto const c_ColumnDataTypeStrings = osc::MakeSizedArray<osc::CStringView, static_cast<int>(ColumnDataType::TOTAL)>
+    static auto constexpr c_ColumnDataTypeStrings = osc::MakeSizedArray<osc::CStringView, static_cast<int>(ColumnDataType::TOTAL)>
     (
         "Point",
         "PointForce",
@@ -59,7 +59,7 @@ namespace
     );
 
     // the number of floating-point values the column is backed by
-    static auto const c_ColumnDataSizes = osc::MakeSizedArray<int, static_cast<int>(ColumnDataType::TOTAL)>
+    static auto constexpr c_ColumnDataSizes = osc::MakeSizedArray<int, static_cast<int>(ColumnDataType::TOTAL)>
     (
         3,
         6,

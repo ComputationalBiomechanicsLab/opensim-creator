@@ -24,26 +24,29 @@
 #include <string>
 #include <utility>
 
-static osc::Mesh GenerateMesh()
+namespace
 {
-    osc::Mesh quad = osc::GenTexturedQuad();
-
-    quad.transformVerts([](nonstd::span<glm::vec3> vs)
+    osc::Mesh GenerateMesh()
     {
-        for (glm::vec3& v : vs)
+        osc::Mesh quad = osc::GenTexturedQuad();
+
+        quad.transformVerts([](nonstd::span<glm::vec3> vs)
+            {
+                for (glm::vec3& v : vs)
+                {
+                    v *= 0.5f;  // to match LearnOpenGL
+                }
+            });
+
+        std::vector<glm::vec2> coords{quad.getTexCoords().begin(), quad.getTexCoords().end()};
+        for (glm::vec2& coord : coords)
         {
-            v *= 0.5f;  // to match LearnOpenGL
+            coord *= 2.0f;  // to test texture wrap modes
         }
-    });
+        quad.setTexCoords(coords);
 
-    std::vector<glm::vec2> coords{quad.getTexCoords().begin(), quad.getTexCoords().end()};
-    for (glm::vec2& coord : coords)
-    {
-        coord *= 2.0f;  // to test texture wrap modes
+        return quad;
     }
-    quad.setTexCoords(coords);
-
-    return quad;
 }
 
 class osc::RendererTexturingTab::Impl final {

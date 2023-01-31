@@ -66,126 +66,126 @@ namespace
         osc::TabRegistryEntry entry{TabClass::id(), [](osc::TabHost* h) { return std::make_unique<TabClass>(h); }};
         registry.registerTab(entry);
     }
-}
 
-static bool InitializeOpenSim(osc::Config const& config)
-{
-    std::filesystem::path geometryDir = config.getResourceDir() / "geometry";
+    bool InitializeOpenSim(osc::Config const& config)
+    {
+        std::filesystem::path geometryDir = config.getResourceDir() / "geometry";
 
-    // these are because OpenSim is inconsistient about handling locales
-    //
-    // it *writes* OSIM files using the locale, so you can end up with entries like:
-    //
-    //     <PathPoint_X>0,1323</PathPoint_X>
-    //
-    // but it *reads* OSIM files with the assumption that numbers will be in the format 'x.y'
-    osc::log::info("setting locale to US (so that numbers are always in the format '0.x'");
-    char const* locale = "C";
-    osc::SetEnv("LANG", locale, 1);
-    osc::SetEnv("LC_CTYPE", locale, 1);
-    osc::SetEnv("LC_NUMERIC", locale, 1);
-    osc::SetEnv("LC_TIME", locale, 1);
-    osc::SetEnv("LC_COLLATE", locale, 1);
-    osc::SetEnv("LC_MONETARY", locale, 1);
-    osc::SetEnv("LC_MESSAGES", locale, 1);
-    osc::SetEnv("LC_ALL", locale, 1);
+        // these are because OpenSim is inconsistient about handling locales
+        //
+        // it *writes* OSIM files using the locale, so you can end up with entries like:
+        //
+        //     <PathPoint_X>0,1323</PathPoint_X>
+        //
+        // but it *reads* OSIM files with the assumption that numbers will be in the format 'x.y'
+        osc::log::info("setting locale to US (so that numbers are always in the format '0.x'");
+        char const* locale = "C";
+        osc::SetEnv("LANG", locale, 1);
+        osc::SetEnv("LC_CTYPE", locale, 1);
+        osc::SetEnv("LC_NUMERIC", locale, 1);
+        osc::SetEnv("LC_TIME", locale, 1);
+        osc::SetEnv("LC_COLLATE", locale, 1);
+        osc::SetEnv("LC_MONETARY", locale, 1);
+        osc::SetEnv("LC_MESSAGES", locale, 1);
+        osc::SetEnv("LC_ALL", locale, 1);
 #ifdef LC_CTYPE
-    setlocale(LC_CTYPE, locale);
+        setlocale(LC_CTYPE, locale);
 #endif
 #ifdef LC_NUMERIC
-    setlocale(LC_NUMERIC, locale);
+        setlocale(LC_NUMERIC, locale);
 #endif
 #ifdef LC_TIME
-    setlocale(LC_TIME, locale);
+        setlocale(LC_TIME, locale);
 #endif
 #ifdef LC_COLLATE
-    setlocale(LC_COLLATE, locale);
+        setlocale(LC_COLLATE, locale);
 #endif
 #ifdef LC_MONETARY
-    setlocale(LC_MONETARY, locale);
+        setlocale(LC_MONETARY, locale);
 #endif
 #ifdef LC_MESSAGES
-    setlocale(LC_MESSAGES, locale);
+        setlocale(LC_MESSAGES, locale);
 #endif
 #ifdef LC_ALL
-    setlocale(LC_ALL, locale);
+        setlocale(LC_ALL, locale);
 #endif
-    std::locale::global(std::locale{locale});
+        std::locale::global(std::locale{locale});
 
-    // disable OpenSim's `opensim.log` default
-    //
-    // by default, OpenSim creates an `opensim.log` file in the process's working
-    // directory. This should be disabled because it screws with running multiple
-    // instances of the UI on filesystems that use locking (e.g. Windows) and
-    // because it's incredibly obnoxious to have `opensim.log` appear in every
-    // working directory from which osc is ran
-    osc::log::info("removing OpenSim's default log (opensim.log)");
-    OpenSim::Logger::removeFileSink();
+        // disable OpenSim's `opensim.log` default
+        //
+        // by default, OpenSim creates an `opensim.log` file in the process's working
+        // directory. This should be disabled because it screws with running multiple
+        // instances of the UI on filesystems that use locking (e.g. Windows) and
+        // because it's incredibly obnoxious to have `opensim.log` appear in every
+        // working directory from which osc is ran
+        osc::log::info("removing OpenSim's default log (opensim.log)");
+        OpenSim::Logger::removeFileSink();
 
-    // add OSC in-memory logger
-    //
-    // this logger collects the logs into a global mutex-protected in-memory structure
-    // that the UI can can trivially render (w/o reading files etc.)
-    osc::log::info("attaching OpenSim to this log");
-    OpenSim::Logger::addSink(std::make_shared<OpenSimLogSink>());
+        // add OSC in-memory logger
+        //
+        // this logger collects the logs into a global mutex-protected in-memory structure
+        // that the UI can can trivially render (w/o reading files etc.)
+        osc::log::info("attaching OpenSim to this log");
+        OpenSim::Logger::addSink(std::make_shared<OpenSimLogSink>());
 
-    // explicitly load OpenSim libs
-    //
-    // this is necessary because some compilers will refuse to link a library
-    // unless symbols from that library are directly used.
-    //
-    // Unfortunately, OpenSim relies on weak linkage *and* static library-loading
-    // side-effects. This means that (e.g.) the loading of muscles into the runtime
-    // happens in a static initializer *in the library*.
-    //
-    // osc may not link that library, though, because the source code in OSC may
-    // not *directly* use a symbol exported by the library (e.g. the code might use
-    // OpenSim::Muscle references, but not actually concretely refer to a muscle
-    // implementation method (e.g. a ctor)
-    osc::log::info("registering OpenSim types");
-    RegisterTypes_osimCommon();
-    RegisterTypes_osimSimulation();
-    RegisterTypes_osimActuators();
-    RegisterTypes_osimAnalyses();
-    RegisterTypes_osimTools();
-    RegisterTypes_osimExampleComponents();
+        // explicitly load OpenSim libs
+        //
+        // this is necessary because some compilers will refuse to link a library
+        // unless symbols from that library are directly used.
+        //
+        // Unfortunately, OpenSim relies on weak linkage *and* static library-loading
+        // side-effects. This means that (e.g.) the loading of muscles into the runtime
+        // happens in a static initializer *in the library*.
+        //
+        // osc may not link that library, though, because the source code in OSC may
+        // not *directly* use a symbol exported by the library (e.g. the code might use
+        // OpenSim::Muscle references, but not actually concretely refer to a muscle
+        // implementation method (e.g. a ctor)
+        osc::log::info("registering OpenSim types");
+        RegisterTypes_osimCommon();
+        RegisterTypes_osimSimulation();
+        RegisterTypes_osimActuators();
+        RegisterTypes_osimAnalyses();
+        RegisterTypes_osimTools();
+        RegisterTypes_osimExampleComponents();
 
-    // globally set OpenSim's geometry search path
-    //
-    // when an osim file contains relative geometry path (e.g. "sphere.vtp"), the
-    // OpenSim implementation will look in these directories for that file
-    osc::log::info("registering OpenSim geometry search path to use osc resources");
-    OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(geometryDir.string());
-    osc::log::info("added geometry search path entry: %s", geometryDir.string().c_str());
+        // globally set OpenSim's geometry search path
+        //
+        // when an osim file contains relative geometry path (e.g. "sphere.vtp"), the
+        // OpenSim implementation will look in these directories for that file
+        osc::log::info("registering OpenSim geometry search path to use osc resources");
+        OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(geometryDir.string());
+        osc::log::info("added geometry search path entry: %s", geometryDir.string().c_str());
 
-    // register any user-accessible tabs
-    std::shared_ptr<osc::TabRegistry> const registry = osc::App::singleton<osc::TabRegistry>();
-    RegisterTab<osc::CustomWidgetsTab>(*registry);
-    RegisterTab<osc::HittestTab>(*registry);
-    RegisterTab<osc::RendererBasicLightingTab>(*registry);
-    RegisterTab<osc::RendererBlendingTab>(*registry);
-    RegisterTab<osc::RendererCoordinateSystemsTab>(*registry);
-    RegisterTab<osc::RendererFramebuffersTab>(*registry);
-    RegisterTab<osc::RendererHelloTriangleTab>(*registry);
-    RegisterTab<osc::RendererLightingMapsTab>(*registry);
-    RegisterTab<osc::RendererMultipleLightsTab>(*registry);
-    RegisterTab<osc::RendererNormalMappingTab>(*registry);
-    RegisterTab<osc::RendererTexturingTab>(*registry);
-    RegisterTab<osc::RendererSDFTab>(*registry);
-    RegisterTab<osc::RendererShadowMappingTab>(*registry);
-    RegisterTab<osc::ImGuiDemoTab>(*registry);
-    RegisterTab<osc::ImPlotDemoTab>(*registry);
-    RegisterTab<osc::ImGuizmoDemoTab>(*registry);
-    RegisterTab<osc::MeshGenTestTab>(*registry);
-    RegisterTab<osc::MeshHittestTab>(*registry);
-    RegisterTab<osc::PreviewExperimentalDataTab>(*registry);
-    RegisterTab<osc::RendererGeometryShaderTab>(*registry);
-    RegisterTab<osc::TPS2DTab>(*registry);
-    RegisterTab<osc::TPS3DTab>(*registry);
-    RegisterTab<osc::FrameDefinitionTab>(*registry);
-    RegisterTab<osc::ModelWarpingTab>(*registry);
+        // register any user-accessible tabs
+        std::shared_ptr<osc::TabRegistry> const registry = osc::App::singleton<osc::TabRegistry>();
+        RegisterTab<osc::CustomWidgetsTab>(*registry);
+        RegisterTab<osc::HittestTab>(*registry);
+        RegisterTab<osc::RendererBasicLightingTab>(*registry);
+        RegisterTab<osc::RendererBlendingTab>(*registry);
+        RegisterTab<osc::RendererCoordinateSystemsTab>(*registry);
+        RegisterTab<osc::RendererFramebuffersTab>(*registry);
+        RegisterTab<osc::RendererHelloTriangleTab>(*registry);
+        RegisterTab<osc::RendererLightingMapsTab>(*registry);
+        RegisterTab<osc::RendererMultipleLightsTab>(*registry);
+        RegisterTab<osc::RendererNormalMappingTab>(*registry);
+        RegisterTab<osc::RendererTexturingTab>(*registry);
+        RegisterTab<osc::RendererSDFTab>(*registry);
+        RegisterTab<osc::RendererShadowMappingTab>(*registry);
+        RegisterTab<osc::ImGuiDemoTab>(*registry);
+        RegisterTab<osc::ImPlotDemoTab>(*registry);
+        RegisterTab<osc::ImGuizmoDemoTab>(*registry);
+        RegisterTab<osc::MeshGenTestTab>(*registry);
+        RegisterTab<osc::MeshHittestTab>(*registry);
+        RegisterTab<osc::PreviewExperimentalDataTab>(*registry);
+        RegisterTab<osc::RendererGeometryShaderTab>(*registry);
+        RegisterTab<osc::TPS2DTab>(*registry);
+        RegisterTab<osc::TPS3DTab>(*registry);
+        RegisterTab<osc::FrameDefinitionTab>(*registry);
+        RegisterTab<osc::ModelWarpingTab>(*registry);
 
-    return true;
+        return true;
+    }
 }
 
 
@@ -193,8 +193,8 @@ static bool InitializeOpenSim(osc::Config const& config)
 
 bool osc::GlobalInitOpenSim(Config const& config)
 {
-    static bool initializedGlobally = InitializeOpenSim(config);
-    return initializedGlobally;
+    static bool const s_OpenSimInitialized = InitializeOpenSim(config);
+    return s_OpenSimInitialized;
 }
 
 osc::OpenSimApp::OpenSimApp() : App{}

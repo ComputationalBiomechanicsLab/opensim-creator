@@ -67,7 +67,7 @@ namespace
 
 // standard textured cube with dimensions [-1, +1] in xyz and uv coords of
 // (0, 0) bottom-left, (1, 1) top-right for each (quad) face
-static constexpr std::array<TexturedVert const, 36> c_ShadedTexturedCubeVerts =
+static std::array<TexturedVert, 36> constexpr c_ShadedTexturedCubeVerts =
 {{
     // back face
     {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}},  // bottom-left
@@ -122,7 +122,7 @@ static constexpr std::array<TexturedVert const, 36> c_ShadedTexturedCubeVerts =
 // - dimensions [-1, +1] in xy and [0, 0] in z
 // - uv coords are (0, 0) bottom-left, (1, 1) top-right
 // - normal is +1 in Z, meaning that it faces toward the camera
-static constexpr std::array<TexturedVert const, 6> c_ShadedTexturedQuadVerts =
+static std::array<TexturedVert, 6> constexpr c_ShadedTexturedQuadVerts =
 {{
     // CCW winding (culling)
     {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
@@ -137,7 +137,7 @@ static constexpr std::array<TexturedVert const, 6> c_ShadedTexturedQuadVerts =
 // a cube wire mesh, suitable for `osc::MeshTopology::Lines` drawing
 //
 // a pair of verts per edge of the cube. The cube has 12 edges, so 24 lines
-static constexpr std::array<UntexturedVert const, 24> c_CubeEdgeLines =
+static std::array<UntexturedVert, 24> constexpr c_CubeEdgeLines =
 {{
     // back
 

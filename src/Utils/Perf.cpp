@@ -11,16 +11,21 @@
 #include <utility>
 #include <vector>
 
-
-static int64_t GenerateID(char const* label, char const* filename, unsigned int line)
+namespace
 {
-    return static_cast<int64_t>(osc::HashOf(std::string{label}, std::string{filename}, line));
-}
+    int64_t GenerateID(
+        char const* label,
+        char const* filename,
+        unsigned int line)
+    {
+        return static_cast<int64_t>(osc::HashOf(std::string{label}, std::string{filename}, line));
+    }
 
-static osc::SynchronizedValue<std::unordered_map<int64_t, osc::PerfMeasurement>>& GetMeasurementStorage()
-{
-    static osc::SynchronizedValue<std::unordered_map<int64_t, osc::PerfMeasurement>> s_Measurements;
-    return s_Measurements;
+    osc::SynchronizedValue<std::unordered_map<int64_t, osc::PerfMeasurement>>& GetMeasurementStorage()
+    {
+        static osc::SynchronizedValue<std::unordered_map<int64_t, osc::PerfMeasurement>> s_Measurements;
+        return s_Measurements;
+    }
 }
 
 

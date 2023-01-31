@@ -39,27 +39,30 @@
 #include <string>
 #include <utility>
 
-static osc::PolarPerspectiveCamera GetSplashScreenDefaultPolarCamera()
+namespace
 {
-    osc::PolarPerspectiveCamera rv;
-    rv.phi = osc::fpi4/1.5f;
-    rv.radius = 10.0f;
-    rv.theta = osc::fpi4;
-    return rv;
-}
+    osc::PolarPerspectiveCamera GetSplashScreenDefaultPolarCamera()
+    {
+        osc::PolarPerspectiveCamera rv;
+        rv.phi = osc::fpi4/1.5f;
+        rv.radius = 10.0f;
+        rv.theta = osc::fpi4;
+        return rv;
+    }
 
-static osc::SceneRendererParams GetSplashScreenDefaultRenderParams(osc::PolarPerspectiveCamera const& camera)
-{
-    osc::SceneRendererParams rv;
-    rv.drawRims = false;
-    rv.viewMatrix = camera.getViewMtx();
-    rv.nearClippingPlane = camera.znear;
-    rv.farClippingPlane = camera.zfar;
-    rv.viewPos = camera.getPos();
-    rv.lightDirection = {-0.34f, -0.25f, 0.05f};
-    rv.lightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
-    rv.backgroundColor = {0.89f, 0.89f, 0.89f, 1.0f};
-    return rv;
+    osc::SceneRendererParams GetSplashScreenDefaultRenderParams(osc::PolarPerspectiveCamera const& camera)
+    {
+        osc::SceneRendererParams rv;
+        rv.drawRims = false;
+        rv.viewMatrix = camera.getViewMtx();
+        rv.nearClippingPlane = camera.znear;
+        rv.farClippingPlane = camera.zfar;
+        rv.viewPos = camera.getPos();
+        rv.lightDirection = {-0.34f, -0.25f, 0.05f};
+        rv.lightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
+        rv.backgroundColor = {0.89f, 0.89f, 0.89f, 1.0f};
+        return rv;
+    }
 }
 
 class osc::SplashTab::Impl final {

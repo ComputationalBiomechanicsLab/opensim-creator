@@ -16,7 +16,7 @@
 #include <stdexcept>
 #include <string_view>
 
-static constexpr std::string_view const c_Header = "Exported from OpenSim Creator";
+static std::string_view constexpr c_Header = "Exported from OpenSim Creator";
 
 namespace
 {

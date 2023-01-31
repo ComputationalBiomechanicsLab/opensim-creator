@@ -422,7 +422,7 @@ private:
     // manager for toggleable and spawnable UI panels
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
 
-    // static (non-toggleable) UI panels/menus/toolbars
+    // non-toggleable UI panels/menus/toolbars
     MainMenuFileTab m_MainMenuFileTab;
     MainMenuAboutTab m_MainMenuAboutTab;
     WindowMenu m_MainMenuWindowTab{m_PanelManager};

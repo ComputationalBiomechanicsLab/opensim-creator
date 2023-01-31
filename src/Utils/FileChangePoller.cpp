@@ -1,7 +1,9 @@
 #include "FileChangePoller.hpp"
 
+#include "src/Utils/CStringView.hpp"
 
-static constexpr char const* const c_ModelNoBackingFileSenteniel = "Unassigned";
+
+static osc::CStringView constexpr c_ModelNoBackingFileSenteniel = "Unassigned";
 
 std::filesystem::file_time_type GetLastModificationTime(std::string const& path)
 {

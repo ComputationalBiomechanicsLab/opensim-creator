@@ -7,7 +7,7 @@
 #include <array>
 #include <cstddef>
 
-static constexpr auto c_ColorStyles = osc::MakeSizedArray<osc::MuscleColoringStyle, static_cast<size_t>(osc::MuscleColoringStyle::TOTAL)>
+static auto constexpr c_ColorStyles = osc::MakeSizedArray<osc::MuscleColoringStyle, static_cast<size_t>(osc::MuscleColoringStyle::TOTAL)>
 (
     osc::MuscleColoringStyle::OpenSim,
     osc::MuscleColoringStyle::Activation,
@@ -16,7 +16,7 @@ static constexpr auto c_ColorStyles = osc::MakeSizedArray<osc::MuscleColoringSty
     osc::MuscleColoringStyle::FiberLength
 );
 
-static constexpr auto c_ColorStyleStrings = osc::MakeSizedArray<char const*, static_cast<size_t>(osc::MuscleColoringStyle::TOTAL)>
+static auto constexpr c_ColorStyleStrings = osc::MakeSizedArray<char const*, static_cast<size_t>(osc::MuscleColoringStyle::TOTAL)>
 (
     "OpenSim",
     "Activation",

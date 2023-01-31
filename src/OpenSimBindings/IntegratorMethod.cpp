@@ -15,7 +15,7 @@
 #include <cstddef>
 #include <memory>
 
-static constexpr auto c_IntegratorMethods = osc::MakeSizedArray<osc::IntegratorMethod, static_cast<size_t>(osc::IntegratorMethod::TOTAL)>
+static auto constexpr c_IntegratorMethods = osc::MakeSizedArray<osc::IntegratorMethod, static_cast<size_t>(osc::IntegratorMethod::TOTAL)>
 (
     osc::IntegratorMethod::OpenSimManagerDefault,
     osc::IntegratorMethod::ExplicitEuler,
@@ -27,7 +27,7 @@ static constexpr auto c_IntegratorMethods = osc::MakeSizedArray<osc::IntegratorM
     osc::IntegratorMethod::Verlet
 );
 
-static constexpr auto c_IntegratorMethodStrings = osc::MakeSizedArray<char const*, static_cast<size_t>(osc::IntegratorMethod::TOTAL)>
+static auto constexpr c_IntegratorMethodStrings = osc::MakeSizedArray<char const*, static_cast<size_t>(osc::IntegratorMethod::TOTAL)>
 (
     "OpenSim::Manager Default",
     "Explicit Euler",

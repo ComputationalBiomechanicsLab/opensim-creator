@@ -24,7 +24,7 @@
 #include <utility>
 
 // positions of cubes within the scene
-static constexpr glm::vec3 c_CubePositions[] =
+static glm::vec3 constexpr c_CubePositions[] =
 {
     { 0.0f,  0.0f,  0.0f },
     { 2.0f,  5.0f, -15.0f},
@@ -39,7 +39,7 @@ static constexpr glm::vec3 c_CubePositions[] =
 };
 
 // positions of point lights within the scene (the camera also has a spotlight)
-static constexpr glm::vec3 c_PointLightPositions[] =
+static glm::vec3 constexpr c_PointLightPositions[] =
 {
     { 0.7f,  0.2f,  2.0f },
     { 2.3f, -3.3f, -4.0f },
@@ -48,7 +48,7 @@ static constexpr glm::vec3 c_PointLightPositions[] =
 };
 
 // ambient color of the point lights
-static constexpr glm::vec3 c_PointLightAmbients[] =
+static glm::vec3 constexpr c_PointLightAmbients[] =
 {
     {0.05f, 0.05f, 0.05f},
     {0.05f, 0.05f, 0.05f},
@@ -57,7 +57,7 @@ static constexpr glm::vec3 c_PointLightAmbients[] =
 };
 
 // diffuse color of the point lights
-static constexpr glm::vec3 c_PointLightDiffuses[] =
+static glm::vec3 constexpr c_PointLightDiffuses[] =
 {
     {0.8f, 0.8f, 0.8f},
     {0.8f, 0.8f, 0.8f},
@@ -66,7 +66,7 @@ static constexpr glm::vec3 c_PointLightDiffuses[] =
 };
 
 // specular color of the point lights
-static constexpr glm::vec3 c_PointLightSpeculars[] =
+static glm::vec3 constexpr c_PointLightSpeculars[] =
 {
     {1.0f, 1.0f, 1.0f},
     {1.0f, 1.0f, 1.0f},
@@ -74,9 +74,9 @@ static constexpr glm::vec3 c_PointLightSpeculars[] =
     {1.0f, 1.0f, 1.0f},
 };
 
-static constexpr float c_PointLightConstants[] = {1.0f, 1.0f, 1.0f, 1.0f};
-static constexpr float c_PointLightLinears[] = {0.09f, 0.09f, 0.09f, 0.09f};
-static constexpr float c_PointLightQuadratics[] = {0.032f, 0.032f, 0.032f, 0.032f};
+static float constexpr c_PointLightConstants[] = {1.0f, 1.0f, 1.0f, 1.0f};
+static float constexpr c_PointLightLinears[] = {0.09f, 0.09f, 0.09f, 0.09f};
+static float constexpr c_PointLightQuadratics[] = {0.032f, 0.032f, 0.032f, 0.032f};
 
 class osc::RendererMultipleLightsTab::Impl final {
 public:

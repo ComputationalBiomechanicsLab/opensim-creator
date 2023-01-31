@@ -23,15 +23,21 @@
 #include <utility>
 #include <vector>
 
-static std::unique_ptr<OpenSim::Model> makeNewModel()
-{
-    auto rv = std::make_unique<OpenSim::Model>();
-    rv->updDisplayHints().set_show_frames(true);
-    return rv;
-}
+// maximum distance between the current commit and the "root" commit (i.e. a commit with no parent)
+static inline int constexpr c_MaxUndo = 32;
+
+// maximum distance between the branch head and the current commit (i.e. how big the redo buffer can be)
+static inline int constexpr c_MaxRedo = 32;
 
 namespace
 {
+    std::unique_ptr<OpenSim::Model> makeNewModel()
+    {
+        auto rv = std::make_unique<OpenSim::Model>();
+        rv->updDisplayHints().set_show_frames(true);
+        return rv;
+    }
+
     class UiModelStatePair final : public osc::VirtualModelStatePair {
     public:
 
@@ -171,7 +177,7 @@ namespace
         OpenSim::ComponentPath m_MaybeHovered;
     };
 
-    static void CopySelectedAndHovered(UiModelStatePair const& src, UiModelStatePair& dest)
+    void CopySelectedAndHovered(UiModelStatePair const& src, UiModelStatePair& dest)
     {
         dest.setSelectedPath(src.getSelectedPath());
         dest.setHoveredPath(src.getHoveredPath());
@@ -509,19 +515,19 @@ private:
     // garbage collect (erase) commits that fall outside the maximum undo depth
     void garbageCollectMaxUndo()
     {
-        static_assert(m_MaxUndo >= 0);
+        static_assert(c_MaxUndo >= 0);
 
-        UID firstBadCommitIDOrEmpty = nthAncestorID(m_CurrentHead, m_MaxUndo + 1);
+        UID firstBadCommitIDOrEmpty = nthAncestorID(m_CurrentHead, c_MaxUndo + 1);
         eraseCommitRange(firstBadCommitIDOrEmpty, UID::empty());
     }
 
     // garbage collect (erase) commits that fall outside the maximum redo depth
     void garbageCollectMaxRedo()
     {
-        static_assert(m_MaxRedo >= 0);
+        static_assert(c_MaxRedo >= 0);
 
         int numRedos = distance(m_BranchHead, m_CurrentHead);
-        int numDeletions = numRedos - m_MaxRedo;
+        int numDeletions = numRedos - c_MaxRedo;
 
         if (numDeletions <= 0)
         {
@@ -666,12 +672,6 @@ private:
 
     // head of the current branch (i.e. "main") - may be ahead of current branch (undo/redo)
     UID m_BranchHead = UID::empty();
-
-    // maximum distance between the current commit and the "root" commit (i.e. a commit with no parent)
-    static constexpr int m_MaxUndo = 32;
-
-    // maximum distance between the branch head and the current commit (i.e. how big the redo buffer can be)
-    static constexpr int m_MaxRedo = 32;
 
     // underlying storage for immutable commits
     std::unordered_map<UID, ModelStateCommit> m_Commits;

@@ -365,7 +365,7 @@ osc::Material osc::CreateWireframeOverlayMaterial(Config const& config, ShaderCa
 
 osc::Texture2D osc::LoadTexture2DFromImage(std::filesystem::path const& path, ImageFlags flags)
 {
-    Image const img = Image::Load(path, flags);
+    Image const img = LoadImage(path, flags);
     return Texture2D{img.getDimensions(), img.getPixelData(), img.getNumChannels()};
 }
 

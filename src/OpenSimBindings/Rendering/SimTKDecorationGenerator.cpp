@@ -24,9 +24,9 @@
 #include <utility>
 #include <vector>
 
-static inline constexpr float c_LineThickness = 0.005f;
-static inline constexpr float c_FrameAxisLengthRescale = 0.25f;
-static inline constexpr float c_FrameAxisThickness = 0.0025f;
+static inline float constexpr c_LineThickness = 0.005f;
+static inline float constexpr c_FrameAxisLengthRescale = 0.25f;
+static inline float constexpr c_FrameAxisThickness = 0.0025f;
 
 // helper functions
 namespace

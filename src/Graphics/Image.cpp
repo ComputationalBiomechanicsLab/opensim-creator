@@ -22,40 +22,6 @@
 // this mutex is required because stbi has global methods (e.g. stbi_set_flip_vertically_on_load)
 static std::mutex g_StbiMutex;
 
-osc::Image osc::Image::Load(std::filesystem::path const& p, ImageFlags flags)
-{
-    std::lock_guard stbiGuard{g_StbiMutex};
-
-    if (flags & ImageFlags_FlipVertically)
-    {
-        stbi_set_flip_vertically_on_load(true);
-    }
-
-    glm::ivec2 dims = {0, 0};
-    int32_t channels = 0;
-    std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> pixels = 
-    {
-        stbi_load(p.string().c_str(), &dims.x, &dims.y, &channels, 0),
-        stbi_image_free,
-    };
-
-    if (flags & ImageFlags_FlipVertically)
-    {
-        stbi_set_flip_vertically_on_load(false);
-    }
-
-    if (!pixels)
-    {
-        std::stringstream ss;
-        ss << p << ": error loading image path: " << stbi_failure_reason();
-        throw std::runtime_error{std::move(ss).str()};
-    }
-
-    nonstd::span<uint8_t> dataSpan{pixels.get(), static_cast<size_t>(dims.x * dims.y * channels)};
-
-    return Image{dims, dataSpan, channels};
-}
-
 osc::Image::Image() :
     m_Dimensions{glm::ivec2{0, 0}},
     m_NumChannels{4},
@@ -111,6 +77,40 @@ int32_t osc::Image::getNumChannels() const
 nonstd::span<uint8_t const> osc::Image::getPixelData() const
 {
     return {m_Pixels.get(), static_cast<std::size_t>(m_Dimensions.x * m_Dimensions.y * m_NumChannels)};
+}
+
+osc::Image osc::LoadImage(std::filesystem::path const& p, ImageFlags flags)
+{
+    std::lock_guard stbiGuard{g_StbiMutex};
+
+    if (flags & ImageFlags_FlipVertically)
+    {
+        stbi_set_flip_vertically_on_load(true);
+    }
+
+    glm::ivec2 dims = {0, 0};
+    int32_t channels = 0;
+    std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> pixels =
+    {
+        stbi_load(p.string().c_str(), &dims.x, &dims.y, &channels, 0),
+        stbi_image_free,
+    };
+
+    if (flags & ImageFlags_FlipVertically)
+    {
+        stbi_set_flip_vertically_on_load(false);
+    }
+
+    if (!pixels)
+    {
+        std::stringstream ss;
+        ss << p << ": error loading image path: " << stbi_failure_reason();
+        throw std::runtime_error{std::move(ss).str()};
+    }
+
+    nonstd::span<uint8_t> dataSpan{pixels.get(), static_cast<size_t>(dims.x * dims.y * channels)};
+
+    return Image{dims, dataSpan, channels};
 }
 
 void osc::WriteToPNG(Image const& image, std::filesystem::path const& outpath)

@@ -13,8 +13,6 @@ namespace osc
 {
     class Image {
     public:
-        static Image Load(std::filesystem::path const&, ImageFlags = ImageFlags_None);
-
         Image();
         Image(
             glm::ivec2 dimensions,
@@ -37,5 +35,6 @@ namespace osc
         std::unique_ptr<uint8_t[]> m_Pixels;
     };
 
+    Image LoadImage(std::filesystem::path const&, ImageFlags = ImageFlags_None);
     void WriteToPNG(Image const&, std::filesystem::path const&);
 }

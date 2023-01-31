@@ -43,30 +43,6 @@
 #include <sstream>
 #include <stdexcept>
 
-
-// install backtrace dumper
-//
-// useful if the application fails in prod: can provide some basic backtrace
-// info that users can paste into an issue or something, which is *a lot* more
-// information than "yeah, it's broke"
-static bool EnsureBacktraceHandlerEnabled()
-{
-    static bool enabledOnceGlobally = []()
-    {
-        osc::log::info("enabling backtrace handler");
-        osc::InstallBacktraceHandler();
-        return true;
-    }();
-
-    return enabledOnceGlobally;
-}
-
-// returns a resource from the config-provided `resources/` dir
-static std::filesystem::path GetResource(osc::Config const& c, std::string_view p)
-{
-    return c.getResourceDir() / p;
-}
-
 // handy macro for calling SDL_GL_SetAttribute with error checking
 #define OSC_SDL_GL_SetAttribute_CHECK(attr, value)                                                                     \
     {                                                                                                                  \
@@ -77,112 +53,141 @@ static std::filesystem::path GetResource(osc::Config const& c, std::string_view 
         }                                                                                                              \
     }
 
-// initialize the main application window
-static sdl::Window CreateMainAppWindow()
+static auto constexpr c_IconRanges = osc::MakeArray<ImWchar>(ICON_MIN_FA, ICON_MAX_FA, 0);
+
+namespace
 {
-    osc::log::info("initializing main application window");
-
-    OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-
-    // careful about setting resolution, position, etc. - some people have *very* shitty
-    // screens on their laptop (e.g. ultrawide, sub-HD, minus space for the start bar, can
-    // be <700 px high)
-    constexpr int x = SDL_WINDOWPOS_CENTERED;
-    constexpr int y = SDL_WINDOWPOS_CENTERED;
-    constexpr int width = 800;
-    constexpr int height = 600;
-    constexpr Uint32 flags =
-        SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
-
-    return sdl::CreateWindoww(OSC_APPNAME_STRING, x, y, width, height, flags);
-}
-
-// returns refresh rate of highest refresh rate display on the computer
-static int GetHighestRefreshRateDisplay()
-{
-    int numDisplays = SDL_GetNumVideoDisplays();
-
-    if (numDisplays < 1)
+    // install backtrace dumper
+    //
+    // useful if the application fails in prod: can provide some basic backtrace
+    // info that users can paste into an issue or something, which is *a lot* more
+    // information than "yeah, it's broke"
+    bool EnsureBacktraceHandlerEnabled()
     {
-        return 60;  // this should be impossible but, you know, coding.
-    }
-
-    int highestRefreshRate = 30;
-    SDL_DisplayMode modeStruct{};
-    for (int display = 0; display < numDisplays; ++display)
-    {
-        int numModes = SDL_GetNumDisplayModes(display);
-        for (int mode = 0; mode < numModes; ++mode)
+        static bool const s_BacktraceEnabled = []()
         {
-            SDL_GetDisplayMode(display, mode, &modeStruct);
-            highestRefreshRate = std::max(highestRefreshRate, modeStruct.refresh_rate);
+            osc::log::info("enabling backtrace handler");
+            osc::InstallBacktraceHandler();
+            return true;
+        }();
+        (void)s_BacktraceEnabled;
+
+        return s_BacktraceEnabled;
+    }
+
+    // returns a resource from the config-provided `resources/` dir
+    std::filesystem::path GetResource(osc::Config const& c, std::string_view p)
+    {
+        return c.getResourceDir() / p;
+    }
+
+    // initialize the main application window
+    sdl::Window CreateMainAppWindow()
+    {
+        osc::log::info("initializing main application window");
+
+        OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+        OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+
+        // careful about setting resolution, position, etc. - some people have *very* shitty
+        // screens on their laptop (e.g. ultrawide, sub-HD, minus space for the start bar, can
+        // be <700 px high)
+        int constexpr x = SDL_WINDOWPOS_CENTERED;
+        int constexpr y = SDL_WINDOWPOS_CENTERED;
+        int constexpr width = 800;
+        int constexpr height = 600;
+        Uint32 constexpr flags =
+            SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
+
+        return sdl::CreateWindoww(OSC_APPNAME_STRING, x, y, width, height, flags);
+    }
+
+    // returns refresh rate of highest refresh rate display on the computer
+    int GetHighestRefreshRateDisplay()
+    {
+        int numDisplays = SDL_GetNumVideoDisplays();
+
+        if (numDisplays < 1)
+        {
+            return 60;  // this should be impossible but, you know, coding.
         }
+
+        int highestRefreshRate = 30;
+        SDL_DisplayMode modeStruct{};
+        for (int display = 0; display < numDisplays; ++display)
+        {
+            int numModes = SDL_GetNumDisplayModes(display);
+            for (int mode = 0; mode < numModes; ++mode)
+            {
+                SDL_GetDisplayMode(display, mode, &modeStruct);
+                highestRefreshRate = std::max(highestRefreshRate, modeStruct.refresh_rate);
+            }
+        }
+        return highestRefreshRate;
     }
-    return highestRefreshRate;
-}
 
-// load the "recent files" file that osc persists to disk
-static std::vector<osc::RecentFile> LoadRecentFilesFile(std::filesystem::path const& p)
-{
-    std::ifstream fd{p, std::ios::in};
-
-    if (!fd)
+    // load the "recent files" file that osc persists to disk
+    std::vector<osc::RecentFile> LoadRecentFilesFile(std::filesystem::path const& p)
     {
-        // do not throw, because it probably shouldn't crash the application if this
-        // is an issue
-        osc::log::error("%s: could not be opened for reading: cannot load recent files list", p.string().c_str());
-        return {};
+        std::ifstream fd{p, std::ios::in};
+
+        if (!fd)
+        {
+            // do not throw, because it probably shouldn't crash the application if this
+            // is an issue
+            osc::log::error("%s: could not be opened for reading: cannot load recent files list", p.string().c_str());
+            return {};
+        }
+
+        std::vector<osc::RecentFile> rv;
+        std::string line;
+
+        while (std::getline(fd, line))
+        {
+            std::istringstream ss{line};
+
+            // read line content
+            uint64_t timestamp;
+            std::filesystem::path path;
+            ss >> timestamp;
+            ss >> path;
+
+            // calc tertiary data
+            bool exists = std::filesystem::exists(path);
+            std::chrono::seconds timestampSecs{timestamp};
+
+            rv.push_back(osc::RecentFile{exists, std::move(timestampSecs), std::move(path)});
+        }
+
+        return rv;
     }
 
-    std::vector<osc::RecentFile> rv;
-    std::string line;
-
-    while (std::getline(fd, line))
+    // returns the filesystem path to the "recent files" file
+    std::filesystem::path GetRecentFilesFilePath()
     {
-        std::istringstream ss{line};
-
-        // read line content
-        uint64_t timestamp;
-        std::filesystem::path path;
-        ss >> timestamp;
-        ss >> path;
-
-        // calc tertiary data
-        bool exists = std::filesystem::exists(path);
-        std::chrono::seconds timestampSecs{timestamp};
-
-        rv.push_back(osc::RecentFile{exists, std::move(timestampSecs), std::move(path)});
+        return osc::GetUserDataDir() / "recent_files.txt";
     }
 
-    return rv;
-}
+    // returns a unix timestamp in seconds since the epoch
+    std::chrono::seconds GetCurrentTimeAsUnixTimestamp()
+    {
+        return std::chrono::seconds(std::time(nullptr));
+    }
 
-// returns the filesystem path to the "recent files" file
-static std::filesystem::path GetRecentFilesFilePath()
-{
-    return osc::GetUserDataDir() / "recent_files.txt";
-}
+    osc::AppClock::duration ConvertPerfTicksToFClockDuration(Uint64 ticks, Uint64 frequency)
+    {
+        double dticks = static_cast<double>(ticks);
+        double fq = static_cast<double>(frequency);
+        float dur = static_cast<float>(dticks/fq);
+        return osc::AppClock::duration{dur};
+    }
 
-// returns a unix timestamp in seconds since the epoch
-static std::chrono::seconds GetCurrentTimeAsUnixTimestamp()
-{
-    return std::chrono::seconds(std::time(nullptr));
-}
-
-static osc::AppClock::duration ConvertPerfTicksToFClockDuration(Uint64 ticks, Uint64 frequency)
-{
-    double dticks = static_cast<double>(ticks);
-    double fq = static_cast<double>(frequency);
-    float dur = static_cast<float>(dticks/fq);
-    return osc::AppClock::duration{dur};
-}
-
-static osc::AppClock::time_point ConvertPerfCounterToFClock(Uint64 ticks, Uint64 frequency)
-{
-    return osc::AppClock::time_point{ConvertPerfTicksToFClockDuration(ticks, frequency)};
+    osc::AppClock::time_point ConvertPerfCounterToFClock(Uint64 ticks, Uint64 frequency)
+    {
+        return osc::AppClock::time_point{ConvertPerfTicksToFClockDuration(ticks, frequency)};
+    }
 }
 
 namespace
@@ -524,9 +529,9 @@ public:
 
         if (isWindowFocused())
         {
-            static bool canUseGlobalMouseState = strncmp(SDL_GetCurrentVideoDriver(), "wayland", 7) != 0;
+            static bool const s_CanUseGlobalMouseState = strncmp(SDL_GetCurrentVideoDriver(), "wayland", 7) != 0;
 
-            if (canUseGlobalMouseState)
+            if (s_CanUseGlobalMouseState)
             {
                 glm::ivec2 mouseGlobal;
                 SDL_GetGlobalMouseState(&mouseGlobal.x, &mouseGlobal.y);
@@ -567,19 +572,21 @@ public:
     void setMainWindowSubTitle(std::string_view sv)
     {
         // use global + mutex to prevent hopping into the OS too much
-        static std::string s_CurSubtitle = "";
-        static std::mutex s_SubtitleMutex;
+        static SynchronizedValue<std::string> s_CurrentWindowSubTitle;
 
-        std::lock_guard lock{s_SubtitleMutex};
+        auto lock = s_CurrentWindowSubTitle.lock();
 
-        if (sv == s_CurSubtitle)
+        if (sv == *lock)
         {
             return;
         }
 
-        s_CurSubtitle = sv;
+        *lock = sv;
 
-        std::string newTitle = sv.empty() ? OSC_APPNAME_STRING : (std::string{sv} + " - " + OSC_APPNAME_STRING);
+        std::string const newTitle = sv.empty() ? 
+            OSC_APPNAME_STRING :
+            (std::string{sv} + " - " + OSC_APPNAME_STRING);
+
         SDL_SetWindowTitle(m_MainWindow.get(), newTitle.c_str());
     }
 
@@ -1282,9 +1289,13 @@ void osc::ImGuiInit()
     {
         std::string defaultIni = App::resource("imgui_base_config.ini").string();
         ImGui::LoadIniSettingsFromDisk(defaultIni.c_str());
-        static std::string userIni = (osc::GetUserDataDir() / "imgui.ini").string();
-        ImGui::LoadIniSettingsFromDisk(userIni.c_str());
-        io.IniFilename = userIni.c_str();  // care: string has to outlive ImGui context
+
+        // CARE: the reason this filepath is `static` is because ImGui requires that
+        // the string outlives the ImGui context
+        static std::string const s_UserImguiIniFilePath = (osc::GetUserDataDir() / "imgui.ini").string();
+
+        ImGui::LoadIniSettingsFromDisk(s_UserImguiIniFilePath.c_str());
+        io.IniFilename = s_UserImguiIniFilePath.c_str();
     }
 
     ImFontConfig baseConfig;
@@ -1301,9 +1312,14 @@ void osc::ImGuiInit()
         config.MergeMode = true;
         config.GlyphMinAdvanceX = std::floor(1.5f * config.SizePixels);
         config.GlyphMaxAdvanceX = std::floor(1.5f * config.SizePixels);
-        static const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
-        std::string fontFile = App::resource("fonts/fa-solid-900.ttf").string();
-        io.Fonts->AddFontFromFileTTF(fontFile.c_str(), config.SizePixels, &config, icon_ranges);
+
+        std::string const fontFile = App::resource("fonts/fa-solid-900.ttf").string();
+        io.Fonts->AddFontFromFileTTF(
+            fontFile.c_str(),
+            config.SizePixels,
+            &config,
+            c_IconRanges.data()
+        );
     }
 
     // init ImGui for SDL2 /w OpenGL

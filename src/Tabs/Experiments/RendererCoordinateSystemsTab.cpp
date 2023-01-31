@@ -25,7 +25,7 @@
 #include <utility>
 
 // worldspace positions of each cube (step 2)
-static constexpr glm::vec3 c_CubePositions[] =
+static glm::vec3 constexpr c_CubePositions[] =
 {
     { 0.0f,  0.0f,  0.0f },
     { 2.0f,  5.0f, -15.0f},

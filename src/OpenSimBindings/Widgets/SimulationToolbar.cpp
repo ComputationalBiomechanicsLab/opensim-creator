@@ -15,22 +15,26 @@
 #include <string_view>
 #include <utility>
 
-static glm::vec4 CalcStatusColor(osc::SimulationStatus status)
+namespace
 {
-    switch (status)
+    glm::vec4 CalcStatusColor(osc::SimulationStatus status)
     {
-    case osc::SimulationStatus::Initializing:
-    case osc::SimulationStatus::Running:
-        return OSC_NEUTRAL_RGBA;
-    case osc::SimulationStatus::Completed:
-        return OSC_POSITIVE_RGBA;
-    case osc::SimulationStatus::Cancelled:
-    case osc::SimulationStatus::Error:
-        return OSC_NEGATIVE_RGBA;
-    default:
-        return ImGui::GetStyle().Colors[ImGuiCol_Text];
+        switch (status)
+        {
+        case osc::SimulationStatus::Initializing:
+        case osc::SimulationStatus::Running:
+            return OSC_NEUTRAL_RGBA;
+        case osc::SimulationStatus::Completed:
+            return OSC_POSITIVE_RGBA;
+        case osc::SimulationStatus::Cancelled:
+        case osc::SimulationStatus::Error:
+            return OSC_NEGATIVE_RGBA;
+        default:
+            return ImGui::GetStyle().Colors[ImGuiCol_Text];
+        }
     }
 }
+
 
 class osc::SimulationToolbar::Impl final {
 public:

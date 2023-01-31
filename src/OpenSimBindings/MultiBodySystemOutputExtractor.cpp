@@ -14,38 +14,41 @@
 #include <utility>
 #include <vector>
 
-static std::vector<osc::OutputExtractor> ConstructMultiBodySystemOutputExtractors()
+namespace
 {
-    std::vector<osc::OutputExtractor> rv;
+    std::vector<osc::OutputExtractor> ConstructMultiBodySystemOutputExtractors()
+    {
+        std::vector<osc::OutputExtractor> rv;
 
-    // SimTK::System (base class)
-    rv.emplace_back(osc::MultiBodySystemOutputExtractor{
-        "NumPrescribeQcalls",
-        "Get the number of prescribe Q calls made against the system",
-        [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumPrescribeQCalls()); }
-    });
-    rv.emplace_back(osc::MultiBodySystemOutputExtractor{
-        "NumHandleEventCalls",
-        "The total number of calls to handleEvents() regardless of the outcome",
-        [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumHandleEventCalls()); }
-    });
-    rv.emplace_back(osc::MultiBodySystemOutputExtractor{
-        "NumReportEventCalls",
-        "The total number of calls to reportEvents() regardless of the outcome",
-        [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumReportEventCalls()); }
-    });
-    rv.emplace_back(osc::MultiBodySystemOutputExtractor{
-        "NumRealizeCalls",
-        "The total number of calls to realizeTopology(), realizeModel(), or realize(), regardless of whether these routines actually did anything when called",
-        [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumRealizeCalls()); }
-    });
-    return rv;
-}
+        // SimTK::System (base class)
+        rv.emplace_back(osc::MultiBodySystemOutputExtractor{
+            "NumPrescribeQcalls",
+            "Get the number of prescribe Q calls made against the system",
+            [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumPrescribeQCalls()); }
+        });
+        rv.emplace_back(osc::MultiBodySystemOutputExtractor{
+            "NumHandleEventCalls",
+            "The total number of calls to handleEvents() regardless of the outcome",
+            [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumHandleEventCalls()); }
+        });
+        rv.emplace_back(osc::MultiBodySystemOutputExtractor{
+            "NumReportEventCalls",
+            "The total number of calls to reportEvents() regardless of the outcome",
+            [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumReportEventCalls()); }
+        });
+        rv.emplace_back(osc::MultiBodySystemOutputExtractor{
+            "NumRealizeCalls",
+            "The total number of calls to realizeTopology(), realizeModel(), or realize(), regardless of whether these routines actually did anything when called",
+            [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumRealizeCalls()); }
+        });
+        return rv;
+    }
 
-static std::vector<osc::OutputExtractor> const& GetAllMultiBodySystemOutputExtractors()
-{
-    static std::vector<osc::OutputExtractor> const s_Outputs = ConstructMultiBodySystemOutputExtractors();
-    return s_Outputs;
+    std::vector<osc::OutputExtractor> const& GetAllMultiBodySystemOutputExtractors()
+    {
+        static std::vector<osc::OutputExtractor> const s_Outputs = ConstructMultiBodySystemOutputExtractors();
+        return s_Outputs;
+    }
 }
 
 osc::MultiBodySystemOutputExtractor::MultiBodySystemOutputExtractor(std::string_view name,

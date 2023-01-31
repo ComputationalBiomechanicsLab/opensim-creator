@@ -19,7 +19,7 @@
 #include <cstdint>
 #include <utility>
 
-static constexpr glm::vec3 c_PlaneVertices[] =
+static glm::vec3 constexpr c_PlaneVertices[] =
 {
     { 5.0f, -0.5f,  5.0f},
     {-5.0f, -0.5f,  5.0f},
@@ -30,7 +30,7 @@ static constexpr glm::vec3 c_PlaneVertices[] =
     { 5.0f, -0.5f, -5.0f},
 };
 
-static constexpr glm::vec2 const c_PlaneTexCoords[] =
+static glm::vec2 constexpr c_PlaneTexCoords[] =
 {
     {2.0f, 0.0f},
     {0.0f, 0.0f},
@@ -41,9 +41,9 @@ static constexpr glm::vec2 const c_PlaneTexCoords[] =
     {2.0f, 2.0f},
 };
 
-static constexpr uint16_t c_PlaneIndices[] = {0, 2, 1, 3, 5, 4};
+static uint16_t constexpr c_PlaneIndices[] = {0, 2, 1, 3, 5, 4};
 
-static constexpr glm::vec3 c_TransparentVerts[] =
+static glm::vec3 constexpr c_TransparentVerts[] =
 {
     {0.0f,  0.5f, 0.0f},
     {0.0f, -0.5f, 0.0f},
@@ -54,7 +54,7 @@ static constexpr glm::vec3 c_TransparentVerts[] =
     {1.0f,  0.5f, 0.0f},
 };
 
-static constexpr glm::vec2 c_TransparentTexCoords[] =
+static glm::vec2 constexpr c_TransparentTexCoords[] =
 {
     {0.0f, 0.0f},
     {0.0f, 1.0f},
@@ -65,9 +65,9 @@ static constexpr glm::vec2 c_TransparentTexCoords[] =
     {1.0f, 0.0f},
 };
 
-static constexpr uint16_t c_TransparentIndices[] = {0, 1, 2, 3, 4, 5};
+static uint16_t constexpr c_TransparentIndices[] = {0, 1, 2, 3, 4, 5};
 
-static constexpr glm::vec3 c_WindowLocations[] =
+static glm::vec3 constexpr c_WindowLocations[] =
 {
     {-1.5f, 0.0f, -0.48f},
     { 1.5f, 0.0f,  0.51f},
@@ -76,22 +76,25 @@ static constexpr glm::vec3 c_WindowLocations[] =
     { 0.5f, 0.0f, -0.6},
 };
 
-static osc::Mesh GeneratePlane()
+namespace
 {
-    osc::Mesh rv;
-    rv.setVerts(c_PlaneVertices);
-    rv.setTexCoords(c_PlaneTexCoords);
-    rv.setIndices(c_PlaneIndices);
-    return rv;
-}
+    osc::Mesh GeneratePlane()
+    {
+        osc::Mesh rv;
+        rv.setVerts(c_PlaneVertices);
+        rv.setTexCoords(c_PlaneTexCoords);
+        rv.setIndices(c_PlaneIndices);
+        return rv;
+    }
 
-static osc::Mesh GenerateTransparent()
-{
-    osc::Mesh rv;
-    rv.setVerts(c_TransparentVerts);
-    rv.setTexCoords(c_TransparentTexCoords);
-    rv.setIndices(c_TransparentIndices);
-    return rv;
+    osc::Mesh GenerateTransparent()
+    {
+        osc::Mesh rv;
+        rv.setVerts(c_TransparentVerts);
+        rv.setTexCoords(c_TransparentTexCoords);
+        rv.setIndices(c_TransparentIndices);
+        return rv;
+    }
 }
 
 class osc::RendererBlendingTab::Impl final {

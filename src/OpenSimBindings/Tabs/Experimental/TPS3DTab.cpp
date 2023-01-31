@@ -81,9 +81,9 @@
 // (these have nothing to do with TPS, but are used to help render the UI)
 namespace
 {
-    static constexpr glm::vec2 c_OverlayPadding = {10.0f, 10.0f};
-    static constexpr glm::vec4 c_PairedLandmarkColor = {0.0f, 1.0f, 0.0f, 1.0f};
-    static constexpr glm::vec4 c_UnpairedLandmarkColor = {1.0f, 0.0f, 0.0f, 1.0f};
+    static glm::vec2 constexpr c_OverlayPadding = {10.0f, 10.0f};
+    static glm::vec4 constexpr c_PairedLandmarkColor = {0.0f, 1.0f, 0.0f, 1.0f};
+    static glm::vec4 constexpr c_UnpairedLandmarkColor = {1.0f, 0.0f, 0.0f, 1.0f};
 }
 
 // TPS document datastructure

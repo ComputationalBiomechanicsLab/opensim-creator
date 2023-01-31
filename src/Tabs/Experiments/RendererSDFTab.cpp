@@ -21,59 +21,62 @@
 #include <string>
 #include <utility>
 
-struct CharMetadata final {
-    stbtt_bakedchar storage[96];
-};
-
-struct FontTexture final {
-    osc::Texture2D texture;
-    CharMetadata metadata;
-};
-
-static FontTexture CreateFontTexture()
+namespace
 {
-    std::vector<uint8_t> const ttfData = osc::App::get().slurpBinaryResource("fonts/Ruda-Bold.ttf");
+    struct CharMetadata final {
+        stbtt_bakedchar storage[96];
+    };
 
-    // get number of fonts in the TTF file
-    int numFonts = stbtt_GetNumberOfFonts(ttfData.data());
-    osc::log::info("stbtt_GetNumberOfFonts = %i", numFonts);
+    struct FontTexture final {
+        osc::Texture2D texture;
+        CharMetadata metadata;
+    };
 
-    // get dump info for each font in the TTF file
-    for (int i = 0; i < numFonts; ++i)
+    FontTexture CreateFontTexture()
     {
-        int offset = stbtt_GetFontOffsetForIndex(ttfData.data(), i);
-        osc::log::info("stbtt_GetFontOffsetForIndex(data, %i): %i", i, offset);
+        std::vector<uint8_t> const ttfData = osc::App::get().slurpBinaryResource("fonts/Ruda-Bold.ttf");
 
-        stbtt_fontinfo info{};
-        if (stbtt_InitFont(&info, ttfData.data(), i))
+        // get number of fonts in the TTF file
+        int numFonts = stbtt_GetNumberOfFonts(ttfData.data());
+        osc::log::info("stbtt_GetNumberOfFonts = %i", numFonts);
+
+        // get dump info for each font in the TTF file
+        for (int i = 0; i < numFonts; ++i)
         {
-            osc::log::info("    info.fontStart = %i", info.fontstart);
-            osc::log::info("    info.numGlyphs = %i", info.numGlyphs);
+            int offset = stbtt_GetFontOffsetForIndex(ttfData.data(), i);
+            osc::log::info("stbtt_GetFontOffsetForIndex(data, %i): %i", i, offset);
 
-            // table offsets within the TTF file
-            osc::log::info("    info.loca = %i", info.loca);
-            osc::log::info("    info.head = %i", info.head);
-            osc::log::info("    info.glyf = %i", info.glyf);
-            osc::log::info("    info.hhea = %i", info.hhea);
-            osc::log::info("    info.hmtx = %i", info.hmtx);
-            osc::log::info("    info.kern = %i", info.kern);
-            osc::log::info("    info.gpos = %i", info.gpos);
-            osc::log::info("    info.svg = %i", info.svg);
+            stbtt_fontinfo info{};
+            if (stbtt_InitFont(&info, ttfData.data(), i))
+            {
+                osc::log::info("    info.fontStart = %i", info.fontstart);
+                osc::log::info("    info.numGlyphs = %i", info.numGlyphs);
 
-            // cmap mapping for our chosen character encoding
-            osc::log::info("    info.index_map = %i", info.index_map);
-            osc::log::info("    info.indexToLocFormat = %i", info.indexToLocFormat);
+                // table offsets within the TTF file
+                osc::log::info("    info.loca = %i", info.loca);
+                osc::log::info("    info.head = %i", info.head);
+                osc::log::info("    info.glyf = %i", info.glyf);
+                osc::log::info("    info.hhea = %i", info.hhea);
+                osc::log::info("    info.hmtx = %i", info.hmtx);
+                osc::log::info("    info.kern = %i", info.kern);
+                osc::log::info("    info.gpos = %i", info.gpos);
+                osc::log::info("    info.svg = %i", info.svg);
+
+                // cmap mapping for our chosen character encoding
+                osc::log::info("    info.index_map = %i", info.index_map);
+                osc::log::info("    info.indexToLocFormat = %i", info.indexToLocFormat);
+            }
         }
+
+        CharMetadata glyphData;
+        std::vector<uint8_t> pixels(512 * 512);
+
+        stbtt_BakeFontBitmap(ttfData.data(), 0, 64., pixels.data(), 512, 512, 32, 96, glyphData.storage); // no guarantee this fits!
+        auto t = osc::Texture2D{{512, 512}, pixels, 1};
+        t.setFilterMode(osc::TextureFilterMode::Linear);
+
+        return FontTexture{t, glyphData};
     }
-
-    CharMetadata glyphData;
-    std::vector<uint8_t> pixels(512 * 512);
-
-    stbtt_BakeFontBitmap(ttfData.data(), 0, 64., pixels.data(), 512, 512, 32, 96, glyphData.storage); // no guarantee this fits!
-    auto t = osc::Texture2D{{512, 512}, pixels, 1};
-    t.setFilterMode(osc::TextureFilterMode::Linear);
-
-    return FontTexture{t, glyphData};
 }
 
 class osc::RendererSDFTab::Impl final {

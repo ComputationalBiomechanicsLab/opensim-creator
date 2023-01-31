@@ -40,160 +40,164 @@
 #include <memory>
 #include <utility>
 
-// draw UI element that lets user change a model joint's type
-static void DrawSelectionJointTypeSwitcher(
-    osc::UndoableModelStatePair& uim,
-    OpenSim::ComponentPath const& jointPath)
+// helpers
+namespace
 {
-    OpenSim::Joint const* joint = osc::FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
-    if (!joint)
+    // draw UI element that lets user change a model joint's type
+    void DrawSelectionJointTypeSwitcher(
+        osc::UndoableModelStatePair& uim,
+        OpenSim::ComponentPath const& jointPath)
     {
-        return;
-    }
-
-    std::optional<int> maybeIdx = osc::FindJointInParentJointSet(*joint);
-
-    if (!maybeIdx)
-    {
-        return;
-    }
-
-    int selectedIdx = -1;
-    if (ImGui::BeginMenu("Change Joint Type"))
-    {
-        // look the Joint up in the type registry so we know where it should be in the ImGui::Combo
-        std::optional<size_t> maybeTypeIndex = osc::JointRegistry::indexOf(*joint);
-        int typeIndex = maybeTypeIndex ? static_cast<int>(*maybeTypeIndex) : -1;
-        auto jointNames = osc::JointRegistry::nameCStrings();
-
-        for (int i = 0; i < static_cast<int>(jointNames.size()); ++i)
+        OpenSim::Joint const* joint = osc::FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
+        if (!joint)
         {
-            bool selected = i == typeIndex;
-            bool wasSelected = selected;
-            if (ImGui::MenuItem(jointNames[i], nullptr, &selected))
+            return;
+        }
+
+        std::optional<int> maybeIdx = osc::FindJointInParentJointSet(*joint);
+
+        if (!maybeIdx)
+        {
+            return;
+        }
+
+        int selectedIdx = -1;
+        if (ImGui::BeginMenu("Change Joint Type"))
+        {
+            // look the Joint up in the type registry so we know where it should be in the ImGui::Combo
+            std::optional<size_t> maybeTypeIndex = osc::JointRegistry::indexOf(*joint);
+            int typeIndex = maybeTypeIndex ? static_cast<int>(*maybeTypeIndex) : -1;
+            auto jointNames = osc::JointRegistry::nameCStrings();
+
+            for (int i = 0; i < static_cast<int>(jointNames.size()); ++i)
             {
-                if (!wasSelected)
+                bool selected = i == typeIndex;
+                bool wasSelected = selected;
+                if (ImGui::MenuItem(jointNames[i], nullptr, &selected))
                 {
-                    selectedIdx = i;
+                    if (!wasSelected)
+                    {
+                        selectedIdx = i;
+                    }
                 }
             }
+            ImGui::EndMenu();
         }
-        ImGui::EndMenu();
-    }
 
-    if (0 <= selectedIdx && selectedIdx < osc::JointRegistry::prototypes().size())
-    {
-        // copy + fixup  a prototype of the user's selection
-        std::unique_ptr<OpenSim::Joint> newJoint{osc::JointRegistry::prototypes()[static_cast<size_t>(selectedIdx)]->clone()};
-        osc::ActionChangeJointTypeTo(uim, jointPath, std::move(newJoint));
-    }
-}
-
-// draw contextual actions (buttons, sliders) for a selected physical frame
-static void DrawPhysicalFrameContextualActions(
-    osc::EditorAPI* editorAPI,
-    std::shared_ptr<osc::UndoableModelStatePair> const& uim,
-    OpenSim::ComponentPath const& pfPath)
-{
-    if (ImGui::MenuItem("Add Geometry"))
-    {
-        std::function<void(std::unique_ptr<OpenSim::Geometry>)> callback = [uim, pfPath](auto geom) { osc::ActionAttachGeometryToPhysicalFrame(*uim, pfPath, std::move(geom)); };
-        std::unique_ptr<osc::Popup> p = std::make_unique<osc::SelectGeometryPopup>("select geometry to attach", callback);
-        p->open();
-        editorAPI->pushPopup(std::move(p));
-    }
-    osc::DrawTooltipIfItemHovered("Add Geometry", "Add geometry to this component. Geometry can be removed by selecting it in the navigator and pressing DELETE");
-
-    if (ImGui::MenuItem("Add Offset Frame"))
-    {
-        osc::ActionAddOffsetFrameToPhysicalFrame(*uim, pfPath);
-    }
-    osc::DrawTooltipIfItemHovered("Add Offset Frame", "Add an OpenSim::OffsetFrame as a child of this Component. Other components in the model can then connect to this OffsetFrame, rather than the base Component, so that it can connect at some offset that is relative to the parent Component");
-}
-
-
-// draw contextual actions (buttons, sliders) for a selected joint
-static void DrawJointContextualActions(
-    osc::UndoableModelStatePair& uim,
-    OpenSim::ComponentPath const& jointPath)
-{
-    DrawSelectionJointTypeSwitcher(uim, jointPath);
-
-    if (CanRezeroJoint(uim, jointPath))
-    {
-        if (ImGui::MenuItem("Rezero Joint"))
+        if (0 <= selectedIdx && selectedIdx < osc::JointRegistry::prototypes().size())
         {
-            osc::ActionRezeroJoint(uim, jointPath);
+            // copy + fixup  a prototype of the user's selection
+            std::unique_ptr<OpenSim::Joint> newJoint{osc::JointRegistry::prototypes()[static_cast<size_t>(selectedIdx)]->clone()};
+            osc::ActionChangeJointTypeTo(uim, jointPath, std::move(newJoint));
         }
-        osc::DrawTooltipIfItemHovered("Re-zero the joint", "Given the joint's current geometry due to joint defaults, coordinate defaults, and any coordinate edits made in the coordinates panel, this will reorient the joint's parent (if it's an offset frame) to match the child's transformation. Afterwards, it will then resets all of the joints coordinates to zero. This effectively sets the 'zero point' of the joint (i.e. the geometry when all coordinates are zero) to match whatever the current geometry is.");
     }
 
-    if (ImGui::MenuItem("Add Parent Offset Frame"))
+    // draw contextual actions (buttons, sliders) for a selected physical frame
+    void DrawPhysicalFrameContextualActions(
+        osc::EditorAPI* editorAPI,
+        std::shared_ptr<osc::UndoableModelStatePair> const& uim,
+        OpenSim::ComponentPath const& pfPath)
     {
-        osc::ActionAddParentOffsetFrameToJoint(uim, jointPath);
-    }
-
-    if (ImGui::MenuItem("Add Child Offset Frame"))
-    {
-        osc::ActionAddChildOffsetFrameToJoint(uim, jointPath);
-    }
-}
-
-// draw contextual actions (buttons, sliders) for a selected joint
-static void DrawHCFContextualActions(
-    osc::EditorAPI* api,
-    std::shared_ptr<osc::UndoableModelStatePair> const& uim,
-    OpenSim::ComponentPath const& hcfPath)
-{
-    OpenSim::HuntCrossleyForce const* hcf = osc::FindComponent<OpenSim::HuntCrossleyForce>(uim->getModel(), hcfPath);
-    if (!hcf)
-    {
-        return;
-    }
-
-    if (hcf->get_contact_parameters().getSize() > 1)
-    {
-        return;  // cannot edit: has more than one HuntCrossleyForce::Parameter
-    }
-
-    if (ImGui::MenuItem("Add Contact Geometry"))
-    {
-        auto onSelection = [uim, hcfPath](OpenSim::ComponentPath const& geomPath)
+        if (ImGui::MenuItem("Add Geometry"))
         {
-            osc::ActionAssignContactGeometryToHCF(*uim, hcfPath, geomPath);
-        };
-        auto filter = [](OpenSim::Component const& c) -> bool
+            std::function<void(std::unique_ptr<OpenSim::Geometry>)> callback = [uim, pfPath](auto geom) { osc::ActionAttachGeometryToPhysicalFrame(*uim, pfPath, std::move(geom)); };
+            std::unique_ptr<osc::Popup> p = std::make_unique<osc::SelectGeometryPopup>("select geometry to attach", callback);
+            p->open();
+            editorAPI->pushPopup(std::move(p));
+        }
+        osc::DrawTooltipIfItemHovered("Add Geometry", "Add geometry to this component. Geometry can be removed by selecting it in the navigator and pressing DELETE");
+
+        if (ImGui::MenuItem("Add Offset Frame"))
         {
-            return dynamic_cast<OpenSim::ContactGeometry const*>(&c);
-        };
-        auto popup = std::make_unique<osc::SelectComponentPopup>("Select Contact Geometry", uim, onSelection, filter);
-        popup->open();
-        api->pushPopup(std::move(popup));
+            osc::ActionAddOffsetFrameToPhysicalFrame(*uim, pfPath);
+        }
+        osc::DrawTooltipIfItemHovered("Add Offset Frame", "Add an OpenSim::OffsetFrame as a child of this Component. Other components in the model can then connect to this OffsetFrame, rather than the base Component, so that it can connect at some offset that is relative to the parent Component");
     }
-    osc::DrawTooltipIfItemHovered("Add Contact Geometry", "Add OpenSim::ContactGeometry to this OpenSim::HuntCrossleyForce.\n\nCollisions are evaluated for all OpenSim::ContactGeometry attached to the OpenSim::HuntCrossleyForce. E.g. if you want an OpenSim::ContactSphere component to collide with an OpenSim::ContactHalfSpace component during a simulation then you should add both of those components to this force");
-}
 
-// draw contextual actions (buttons, sliders) for a selected path actuator
-static void DrawPathActuatorContextualParams(
-    osc::EditorAPI* api,
-    std::shared_ptr<osc::UndoableModelStatePair> const& uim,
-    OpenSim::ComponentPath const& paPath)
-{
-    if (ImGui::MenuItem("Add Path Point"))
+
+    // draw contextual actions (buttons, sliders) for a selected joint
+    void DrawJointContextualActions(
+        osc::UndoableModelStatePair& uim,
+        OpenSim::ComponentPath const& jointPath)
     {
-        auto onSelection = [uim, paPath](OpenSim::ComponentPath const& pfPath) { osc::ActionAddPathPointToPathActuator(*uim, paPath, pfPath); };
-        auto popup = std::make_unique<osc::Select1PFPopup>("Select Physical Frame", uim, onSelection);
-        popup->open();
-        api->pushPopup(std::move(popup));
+        DrawSelectionJointTypeSwitcher(uim, jointPath);
+
+        if (CanRezeroJoint(uim, jointPath))
+        {
+            if (ImGui::MenuItem("Rezero Joint"))
+            {
+                osc::ActionRezeroJoint(uim, jointPath);
+            }
+            osc::DrawTooltipIfItemHovered("Re-zero the joint", "Given the joint's current geometry due to joint defaults, coordinate defaults, and any coordinate edits made in the coordinates panel, this will reorient the joint's parent (if it's an offset frame) to match the child's transformation. Afterwards, it will then resets all of the joints coordinates to zero. This effectively sets the 'zero point' of the joint (i.e. the geometry when all coordinates are zero) to match whatever the current geometry is.");
+        }
+
+        if (ImGui::MenuItem("Add Parent Offset Frame"))
+        {
+            osc::ActionAddParentOffsetFrameToJoint(uim, jointPath);
+        }
+
+        if (ImGui::MenuItem("Add Child Offset Frame"))
+        {
+            osc::ActionAddChildOffsetFrameToJoint(uim, jointPath);
+        }
     }
-    osc::DrawTooltipIfItemHovered("Add Path Point", "Add a new path point, attached to an OpenSim::PhysicalFrame in the model, to the end of the sequence of path points in this OpenSim::PathActuator");
-}
 
-static void DrawModelContextualActions(osc::UndoableModelStatePair& uim)
-{
-    if (ImGui::MenuItem("Toggle Frames"))
+    // draw contextual actions (buttons, sliders) for a selected joint
+    void DrawHCFContextualActions(
+        osc::EditorAPI* api,
+        std::shared_ptr<osc::UndoableModelStatePair> const& uim,
+        OpenSim::ComponentPath const& hcfPath)
     {
-        osc::ActionToggleFrames(uim);
+        OpenSim::HuntCrossleyForce const* hcf = osc::FindComponent<OpenSim::HuntCrossleyForce>(uim->getModel(), hcfPath);
+        if (!hcf)
+        {
+            return;
+        }
+
+        if (hcf->get_contact_parameters().getSize() > 1)
+        {
+            return;  // cannot edit: has more than one HuntCrossleyForce::Parameter
+        }
+
+        if (ImGui::MenuItem("Add Contact Geometry"))
+        {
+            auto onSelection = [uim, hcfPath](OpenSim::ComponentPath const& geomPath)
+            {
+                osc::ActionAssignContactGeometryToHCF(*uim, hcfPath, geomPath);
+            };
+            auto filter = [](OpenSim::Component const& c) -> bool
+            {
+                return dynamic_cast<OpenSim::ContactGeometry const*>(&c);
+            };
+            auto popup = std::make_unique<osc::SelectComponentPopup>("Select Contact Geometry", uim, onSelection, filter);
+            popup->open();
+            api->pushPopup(std::move(popup));
+        }
+        osc::DrawTooltipIfItemHovered("Add Contact Geometry", "Add OpenSim::ContactGeometry to this OpenSim::HuntCrossleyForce.\n\nCollisions are evaluated for all OpenSim::ContactGeometry attached to the OpenSim::HuntCrossleyForce. E.g. if you want an OpenSim::ContactSphere component to collide with an OpenSim::ContactHalfSpace component during a simulation then you should add both of those components to this force");
+    }
+
+    // draw contextual actions (buttons, sliders) for a selected path actuator
+    void DrawPathActuatorContextualParams(
+        osc::EditorAPI* api,
+        std::shared_ptr<osc::UndoableModelStatePair> const& uim,
+        OpenSim::ComponentPath const& paPath)
+    {
+        if (ImGui::MenuItem("Add Path Point"))
+        {
+            auto onSelection = [uim, paPath](OpenSim::ComponentPath const& pfPath) { osc::ActionAddPathPointToPathActuator(*uim, paPath, pfPath); };
+            auto popup = std::make_unique<osc::Select1PFPopup>("Select Physical Frame", uim, onSelection);
+            popup->open();
+            api->pushPopup(std::move(popup));
+        }
+        osc::DrawTooltipIfItemHovered("Add Path Point", "Add a new path point, attached to an OpenSim::PhysicalFrame in the model, to the end of the sequence of path points in this OpenSim::PathActuator");
+    }
+
+    void DrawModelContextualActions(osc::UndoableModelStatePair& uim)
+    {
+        if (ImGui::MenuItem("Toggle Frames"))
+        {
+            osc::ActionToggleFrames(uim);
+        }
     }
 }
 

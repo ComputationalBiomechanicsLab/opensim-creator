@@ -15,71 +15,74 @@
 #include <utility>
 #include <variant>
 
-template<class... Ts>
-struct Overloaded : Ts... { using Ts::operator()...; };
-template<class... Ts> Overloaded(Ts...) -> Overloaded<Ts...>;
-
-static bool DrawEditor(osc::ParamBlock& b, int idx, double v)
+namespace
 {
-    // note: the input prevision has to be quite high here, because the
-    //       ParamBlockEditorPopup has to edit simulation parameters, and
-    //       one of those parameters is "Simulation Step Size (seconds)",
-    //       which OpenSim defaults to a very very small number (10 ns)
-    //
-    //       see: #553
+    template<class... Ts>
+    struct Overloaded : Ts... { using Ts::operator()...; };
+    template<class... Ts> Overloaded(Ts...) -> Overloaded<Ts...>;
 
-    float fv = static_cast<float>(v);
-    if (ImGui::InputFloat("##", &fv, 0.0f, 0.0f, "%.9f"))
+    bool DrawEditor(osc::ParamBlock& b, int idx, double v)
     {
-        b.setValue(idx, static_cast<double>(fv));
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
+        // note: the input prevision has to be quite high here, because the
+        //       ParamBlockEditorPopup has to edit simulation parameters, and
+        //       one of those parameters is "Simulation Step Size (seconds)",
+        //       which OpenSim defaults to a very very small number (10 ns)
+        //
+        //       see: #553
 
-static bool DrawEditor(osc::ParamBlock& b, int idx, int v)
-{
-    if (ImGui::InputInt("##", &v))
-    {
-        b.setValue(idx, v);
-        return true;
+        float fv = static_cast<float>(v);
+        if (ImGui::InputFloat("##", &fv, 0.0f, 0.0f, "%.9f"))
+        {
+            b.setValue(idx, static_cast<double>(fv));
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
-    else
-    {
-        return false;
-    }
-}
 
-static bool DrawEditor(osc::ParamBlock& b, int idx, osc::IntegratorMethod im)
-{
-    nonstd::span<char const* const> methodStrings = osc::GetAllIntegratorMethodStrings();
-    int method = static_cast<int>(im);
-
-    if (ImGui::Combo("##", &method, methodStrings.data(), static_cast<int>(methodStrings.size())))
+    bool DrawEditor(osc::ParamBlock& b, int idx, int v)
     {
-        b.setValue(idx, static_cast<osc::IntegratorMethod>(method));
-        return true;
+        if (ImGui::InputInt("##", &v))
+        {
+            b.setValue(idx, v);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
-    else
-    {
-        return false;
-    }
-}
 
-static bool DrawEditor(osc::ParamBlock& b, int idx)
-{
-    osc::ParamValue v = b.getValue(idx);
-    bool rv = false;
-    auto handler = Overloaded{
-        [&b, &rv, idx](double dv) { rv = DrawEditor(b, idx, dv); },
-        [&b, &rv, idx](int iv) { rv = DrawEditor(b, idx, iv); },
-        [&b, &rv, idx](osc::IntegratorMethod imv) { rv = DrawEditor(b, idx, imv); },
-    };
-    std::visit(handler, v);
-    return rv;
+    bool DrawEditor(osc::ParamBlock& b, int idx, osc::IntegratorMethod im)
+    {
+        nonstd::span<char const* const> methodStrings = osc::GetAllIntegratorMethodStrings();
+        int method = static_cast<int>(im);
+
+        if (ImGui::Combo("##", &method, methodStrings.data(), static_cast<int>(methodStrings.size())))
+        {
+            b.setValue(idx, static_cast<osc::IntegratorMethod>(method));
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    bool DrawEditor(osc::ParamBlock& b, int idx)
+    {
+        osc::ParamValue v = b.getValue(idx);
+        bool rv = false;
+        auto handler = Overloaded{
+            [&b, &rv, idx](double dv) { rv = DrawEditor(b, idx, dv); },
+            [&b, &rv, idx](int iv) { rv = DrawEditor(b, idx, iv); },
+            [&b, &rv, idx](osc::IntegratorMethod imv) { rv = DrawEditor(b, idx, imv); },
+        };
+        std::visit(handler, v);
+        return rv;
+    }
 }
 
 class osc::ParamBlockEditorPopup::Impl final : public StandardPopup {

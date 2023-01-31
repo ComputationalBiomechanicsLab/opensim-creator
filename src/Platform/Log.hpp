@@ -260,7 +260,7 @@ namespace osc::log
         defaultLoggerRaw()->critical(fmt, args...);
     }
 
-    static constexpr size_t c_MaxLogTracebackMessages = 256;
+    static size_t constexpr c_MaxLogTracebackMessages = 256;
 
     [[nodiscard]] level::LevelEnum getTracebackLevel();
     void setTracebackLevel(level::LevelEnum);

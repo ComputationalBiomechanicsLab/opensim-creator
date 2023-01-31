@@ -37,7 +37,7 @@
 #include <typeinfo>
 #include <utility>
 
-static constexpr auto c_AntialiasingLevels = osc::MakeArray<char const*>("x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128");
+static auto constexpr c_AntialiasingLevels = osc::MakeArray<char const*>("x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128");
 
 
 // public API
@@ -234,7 +234,7 @@ void osc::MainMenuAboutTab::draw()
         return;
     }
 
-    static constexpr float menuWidth = 400;
+    float constexpr menuWidth = 400;
     ImGui::Dummy({menuWidth, 0});
 
     ImGui::TextUnformatted("graphics");

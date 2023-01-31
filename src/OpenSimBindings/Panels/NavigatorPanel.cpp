@@ -140,18 +140,18 @@ namespace
         OpenSim::Component const* ptr = nullptr;
         ResponseType type = ResponseType::NothingHappened;
     };
-}
 
-static bool isSearchHit(std::string const& searchStr, ComponentPath const& cp)
-{
-    for (auto const& c : cp)
+    bool isSearchHit(std::string const& searchStr, ComponentPath const& cp)
     {
-        if (osc::ContainsSubstringCaseInsensitive(c->getName(), searchStr))
+        for (auto const& c : cp)
         {
-            return true;
+            if (osc::ContainsSubstringCaseInsensitive(c->getName(), searchStr))
+            {
+                return true;
+            }
         }
+        return false;
     }
-    return false;
 }
 
 class osc::NavigatorPanel::Impl final : public StandardPanel {

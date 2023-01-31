@@ -16,7 +16,7 @@ namespace SimTK { class MultibodySystem; }
 
 namespace osc
 {
-    // an output extractor that uses a static function to extract a single value from
+    // an output extractor that uses a free-function to extract a single value from
     // a SimTK::MultiBodySystem
     //
     // handy for extracting simulation stats (e.g. num steps taken etc.)

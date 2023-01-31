@@ -74,7 +74,7 @@
 // it's here, rather than in an external resource file, because it is eagerly
 // loaded while the graphics backend is initialized (i.e. potentially before
 // the application is fully loaded)
-static char constexpr c_QuadVertexShaderSrc[] = R"(
+static osc::CStringView constexpr c_QuadVertexShaderSrc = R"(
     #version 330 core
 
     layout (location = 0) in vec3 aPos;
@@ -94,7 +94,7 @@ static char constexpr c_QuadVertexShaderSrc[] = R"(
 // it's here, rather than in an external resource file, because it is eagerly
 // loaded while the graphics backend is initialized (i.e. potentially before
 // the application is fully loaded)
-static char constexpr c_QuadFragmentShaderSrc[] = R"(
+static osc::CStringView constexpr c_QuadFragmentShaderSrc = R"(
     #version 330 core
 
     uniform sampler2D uTexture;
@@ -199,7 +199,7 @@ namespace
 namespace
 {
     // LUT for human-readable form of the above
-    static constexpr auto const c_ShaderTypeInternalStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::ShaderType::TOTAL)>(
+    static auto constexpr c_ShaderTypeInternalStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::ShaderType::TOTAL)>(
         "Float",
         "Vec2",
         "Vec3",
@@ -711,14 +711,14 @@ namespace osc
 
 namespace
 {
-    static constexpr auto const c_TextureWrapModeStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::TextureWrapMode::TOTAL)>
+    static auto constexpr c_TextureWrapModeStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::TextureWrapMode::TOTAL)>
     (
         "Repeat",
         "Clamp",
         "Mirror"
     );
 
-    static constexpr auto const c_TextureFilterModeStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::TextureFilterMode::TOTAL)>
+    static auto constexpr c_TextureFilterModeStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::TextureFilterMode::TOTAL)>
     (
         "Nearest",
         "Linear",
@@ -1060,13 +1060,13 @@ std::ostream& osc::operator<<(std::ostream& o, Texture2D const&)
 
 namespace
 {
-    static constexpr auto const  c_RenderTextureFormatStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::RenderTextureFormat::TOTAL)>
+    static auto constexpr c_RenderTextureFormatStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::RenderTextureFormat::TOTAL)>
     (
         "ARGB32",
         "RED"
     );
 
-    static constexpr auto const c_DepthStencilFormatStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::DepthStencilFormat::TOTAL)>
+    static auto constexpr c_DepthStencilFormatStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::DepthStencilFormat::TOTAL)>
     (
         "D24_UNorm_S8_UInt"
     );
@@ -2372,7 +2372,7 @@ std::ostream& osc::operator<<(std::ostream& o, MaterialPropertyBlock const&)
 
 namespace
 {
-    static constexpr auto c_MeshTopologyStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::MeshTopology::TOTAL)>
+    static auto constexpr c_MeshTopologyStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::MeshTopology::TOTAL)>
     (
         "Triangles",
         "Lines"
@@ -2911,7 +2911,7 @@ std::ostream& osc::operator<<(std::ostream& o, Mesh const&)
 namespace
 {
     // LUT for human-readable form of the above
-    static constexpr auto const c_CameraProjectionStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::CameraProjection::TOTAL)>
+    static auto constexpr c_CameraProjectionStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::CameraProjection::TOTAL)>
     (
         "Perspective",
         "Orthographic"

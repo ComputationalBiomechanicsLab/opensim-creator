@@ -81,66 +81,71 @@ namespace output_magic
     }
 }
 
-
-using ExtractorFunc = double(*)(OpenSim::AbstractOutput const&, SimTK::State const&);
-
-static std::string const& GetNoDescriptionString()
+// other helpers
+namespace
 {
-    static std::string const s_NoDescriptionStr = "";
-    return s_NoDescriptionStr;
-}
+    using ExtractorFunc = double(*)(OpenSim::AbstractOutput const&, SimTK::State const&);
 
-static std::string GenerateLabel(OpenSim::ComponentPath const& cp,
-                                 std::string const& outputName,
-                                 osc::OutputSubfield subfield)
-{
-    std::stringstream ss;
-    ss << cp.toString() << '[' << outputName;
-    if (subfield != osc::OutputSubfield::None)
+    std::string const& GetNoDescriptionString()
     {
-        ss << '.' << osc::GetOutputSubfieldLabel(subfield);
+        static std::string const s_NoDescriptionStr = "";
+        return s_NoDescriptionStr;
     }
-    ss << ']';
-    return std::move(ss).str();
-}
 
-
-static ExtractorFunc GetExtractorFuncOrNull(OpenSim::AbstractOutput const& ao, osc::OutputSubfield subfield)
-{
-    if (osc::Is<OpenSim::Output<double>>(ao))
+    std::string GenerateLabel(
+        OpenSim::ComponentPath const& cp,
+        std::string const& outputName,
+        osc::OutputSubfield subfield)
     {
-        return output_magic::extractTypeErased<OpenSim::Output<double>>;
+        std::stringstream ss;
+        ss << cp.toString() << '[' << outputName;
+        if (subfield != osc::OutputSubfield::None)
+        {
+            ss << '.' << osc::GetOutputSubfieldLabel(subfield);
+        }
+        ss << ']';
+        return std::move(ss).str();
     }
-    else if (osc::Is<OpenSim::Output<SimTK::Vec3>>(ao))
+
+    ExtractorFunc GetExtractorFuncOrNull(
+        OpenSim::AbstractOutput const& ao,
+        osc::OutputSubfield subfield)
     {
-        switch (subfield) {
-        case osc::OutputSubfield::X:
-            return output_magic::extractTypeErased<osc::OutputSubfield::X, OpenSim::Output<SimTK::Vec3>>;
-        case osc::OutputSubfield::Y:
-            return output_magic::extractTypeErased<osc::OutputSubfield::Y, OpenSim::Output<SimTK::Vec3>>;
-        case osc::OutputSubfield::Z:
-            return output_magic::extractTypeErased<osc::OutputSubfield::Z, OpenSim::Output<SimTK::Vec3>>;
-        case osc::OutputSubfield::Magnitude:
-            return output_magic::extractTypeErased<osc::OutputSubfield::Magnitude, OpenSim::Output<SimTK::Vec3>>;
-        default:
+        if (osc::Is<OpenSim::Output<double>>(ao))
+        {
+            return output_magic::extractTypeErased<OpenSim::Output<double>>;
+        }
+        else if (osc::Is<OpenSim::Output<SimTK::Vec3>>(ao))
+        {
+            switch (subfield) {
+            case osc::OutputSubfield::X:
+                return output_magic::extractTypeErased<osc::OutputSubfield::X, OpenSim::Output<SimTK::Vec3>>;
+            case osc::OutputSubfield::Y:
+                return output_magic::extractTypeErased<osc::OutputSubfield::Y, OpenSim::Output<SimTK::Vec3>>;
+            case osc::OutputSubfield::Z:
+                return output_magic::extractTypeErased<osc::OutputSubfield::Z, OpenSim::Output<SimTK::Vec3>>;
+            case osc::OutputSubfield::Magnitude:
+                return output_magic::extractTypeErased<osc::OutputSubfield::Magnitude, OpenSim::Output<SimTK::Vec3>>;
+            default:
+                return nullptr;
+            }
+        }
+        else
+        {
             return nullptr;
         }
     }
-    else
-    {
-        return nullptr;
-    }
-}
 
-static std::vector<osc::OutputSubfield> CreateOutputSubfieldsLut()
-{
-    return std::vector<osc::OutputSubfield>
+    std::vector<osc::OutputSubfield> CreateOutputSubfieldsLut()
     {
-        osc::OutputSubfield::X,
-        osc::OutputSubfield::Y,
-        osc::OutputSubfield::Z,
-        osc::OutputSubfield::Magnitude,
-    };
+        return std::vector<osc::OutputSubfield>
+        {
+            osc::OutputSubfield::X,
+            osc::OutputSubfield::Y,
+            osc::OutputSubfield::Z,
+            osc::OutputSubfield::Magnitude,
+        };
+    }
 }
 
 class osc::ComponentOutputExtractor::Impl final {

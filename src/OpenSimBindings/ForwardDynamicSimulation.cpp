@@ -24,30 +24,34 @@
 #include <utility>
 #include <vector>
 
-// helper function for creating a simulator that's hooked up to the reports vector
-static osc::ForwardDynamicSimulator MakeSimulation(
+// helpers
+namespace
+{
+    // creates a simulator that's hooked up to the reports vector
+    osc::ForwardDynamicSimulator MakeSimulation(
         osc::BasicModelStatePair p,
         osc::ForwardDynamicSimulatorParams const& params,
         osc::SynchronizedValue<std::vector<osc::SimulationReport>>& reportQueue)
-{
-    auto callback = [&](osc::SimulationReport r)
     {
-        auto reportsGuard = reportQueue.lock();
-        reportsGuard->push_back(std::move(r));
-    };
-    return osc::ForwardDynamicSimulator{std::move(p), params, std::move(callback)};
-}
-
-static std::vector<osc::OutputExtractor> GetFdSimulatorOutputExtractorsAsVector()
-{
-    std::vector<osc::OutputExtractor> rv;
-    int nOutputExtractors = osc::GetNumFdSimulatorOutputExtractors();
-    rv.reserve(nOutputExtractors);
-    for (int i = 0; i < nOutputExtractors; ++i)
-    {
-        rv.push_back(osc::GetFdSimulatorOutputExtractor(i));
+        auto callback = [&](osc::SimulationReport r)
+        {
+            auto reportsGuard = reportQueue.lock();
+            reportsGuard->push_back(std::move(r));
+        };
+        return osc::ForwardDynamicSimulator{std::move(p), params, std::move(callback)};
     }
-    return rv;
+
+    std::vector<osc::OutputExtractor> GetFdSimulatorOutputExtractorsAsVector()
+    {
+        std::vector<osc::OutputExtractor> rv;
+        int nOutputExtractors = osc::GetNumFdSimulatorOutputExtractors();
+        rv.reserve(nOutputExtractors);
+        for (int i = 0; i < nOutputExtractors; ++i)
+        {
+            rv.push_back(osc::GetFdSimulatorOutputExtractor(i));
+        }
+        return rv;
+    }
 }
 
 class osc::ForwardDynamicSimulation::Impl final {

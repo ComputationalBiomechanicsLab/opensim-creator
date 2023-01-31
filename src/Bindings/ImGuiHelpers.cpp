@@ -28,7 +28,7 @@
 #include <cstddef>
 #include <string>
 
-static inline constexpr float c_DefaultDragThreshold = 5.0f;
+static inline float constexpr c_DefaultDragThreshold = 5.0f;
 
 namespace
 {

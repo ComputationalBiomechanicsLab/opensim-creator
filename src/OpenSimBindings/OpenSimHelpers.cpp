@@ -84,39 +84,41 @@ namespace
         }
         return false;
     }
-}
 
-static bool IsConnectedViaSocketTo(OpenSim::Component& c, OpenSim::Component const& other)
-{
-    for (std::string const& socketName : c.getSocketNames())
+    bool IsConnectedViaSocketTo(OpenSim::Component& c, OpenSim::Component const& other)
     {
-        OpenSim::AbstractSocket const& sock = c.getSocket(socketName);
-        if (sock.isConnected() && &sock.getConnecteeAsObject() == &other)
+        for (std::string const& socketName : c.getSocketNames())
         {
-            return true;
+            OpenSim::AbstractSocket const& sock = c.getSocket(socketName);
+            if (sock.isConnected() && &sock.getConnecteeAsObject() == &other)
+            {
+                return true;
+            }
         }
-    }
-    return false;
-}
-
-static std::vector<OpenSim::Component*> GetAnyComponentsConnectedViaSocketTo(OpenSim::Component& root, OpenSim::Component const& other)
-{
-    std::vector<OpenSim::Component*> rv;
-
-    if (IsConnectedViaSocketTo(root, other))
-    {
-        rv.push_back(&root);
+        return false;
     }
 
-    for (OpenSim::Component& c : root.updComponentList())
+    std::vector<OpenSim::Component*> GetAnyComponentsConnectedViaSocketTo(
+        OpenSim::Component& root,
+        OpenSim::Component const& other)
     {
-        if (IsConnectedViaSocketTo(c, other))
+        std::vector<OpenSim::Component*> rv;
+
+        if (IsConnectedViaSocketTo(root, other))
         {
-            rv.push_back(&c);
+            rv.push_back(&root);
         }
-    }
 
-    return rv;
+        for (OpenSim::Component& c : root.updComponentList())
+        {
+            if (IsConnectedViaSocketTo(c, other))
+            {
+                rv.push_back(&c);
+            }
+        }
+
+        return rv;
+    }
 }
 
 
@@ -159,14 +161,14 @@ int osc::DistanceFromRoot(OpenSim::Component const& c)
 
 OpenSim::ComponentPath const& osc::GetEmptyComponentPath()
 {
-    static OpenSim::ComponentPath p;
-    return p;
+    static OpenSim::ComponentPath const s_EmptyComponentPath;
+    return s_EmptyComponentPath;
 }
 
 OpenSim::ComponentPath const& osc::GetRootComponentPath()
 {
-    static OpenSim::ComponentPath p{"/"};
-    return p;
+    static OpenSim::ComponentPath const s_RootComponentPath{"/"};
+    return s_RootComponentPath;
 }
 
 bool osc::IsEmpty(OpenSim::ComponentPath const& cp)
@@ -893,7 +895,7 @@ bool osc::ToggleShowingContactGeometry(OpenSim::Model& model)
 
 void osc::GetAbsolutePathString(OpenSim::Component const& c, std::string& out)
 {
-    static constexpr ptrdiff_t c_MaxEls = 16;
+    constexpr ptrdiff_t c_MaxEls = 16;
 
     ptrdiff_t nEls = 0;
     std::array<OpenSim::Component const*, c_MaxEls> els;

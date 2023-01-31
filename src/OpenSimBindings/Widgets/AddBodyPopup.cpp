@@ -27,8 +27,8 @@
 #include <string>
 #include <utility>
 
-static inline constexpr int c_MaxBodyNameLength = 128;
-static inline constexpr int c_MaxJointNameLength = 128;
+static inline int constexpr c_MaxBodyNameLength = 128;
+static inline int constexpr c_MaxJointNameLength = 128;
 
 class osc::AddBodyPopup::Impl : public osc::StandardPopup {
 public:
