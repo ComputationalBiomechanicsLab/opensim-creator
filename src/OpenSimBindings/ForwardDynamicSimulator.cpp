@@ -109,7 +109,7 @@ namespace
         float getValueFloat(OpenSim::Component const& c, osc::SimulationReport const& report) const override
         {
             nonstd::span<osc::SimulationReport const> reports(&report, 1);
-            std::array<float, 1> out;
+            std::array<float, 1> out{};
             getValuesFloat(c, reports, out);
             return out.front();
         }

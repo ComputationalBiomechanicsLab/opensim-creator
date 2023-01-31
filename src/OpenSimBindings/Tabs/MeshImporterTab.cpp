@@ -7540,19 +7540,19 @@ private:
 
         // local/global dropdown
         {
-            std::array<char const* const, 2> modeLabels = {"local", "global"};
-            ImGuizmo::MODE modes[] = {ImGuizmo::LOCAL, ImGuizmo::WORLD};
-            int currentMode = static_cast<int>(std::distance(std::begin(modes), std::find(std::begin(modes), std::end(modes), m_ImGuizmoState.mode)));
+            auto constexpr modeLabels = osc::MakeArray<char const*>("local", "global");
+            auto constexpr modes = osc::MakeSizedArray<ImGuizmo::MODE, modeLabels.size()>(ImGuizmo::LOCAL, ImGuizmo::WORLD);
 
+            int currentMode = static_cast<int>(std::distance(std::begin(modes), std::find(std::begin(modes), std::end(modes), m_ImGuizmoState.mode)));
             ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
             ImGui::SetNextItemWidth(ImGui::CalcTextSize(modeLabels[0]).x + 40.0f);
             if (ImGui::Combo("##modeselect", &currentMode, modeLabels.data(), static_cast<int>(modeLabels.size())))
             {
-                m_ImGuizmoState.mode = modes[static_cast<size_t>(currentMode)];
+                m_ImGuizmoState.mode = modes.at(static_cast<size_t>(currentMode));
             }
             ImGui::PopStyleVar();
-            char const* const tooltipTitle = "Manipulation coordinate system";
-            char const* const tooltipDesc = "This affects whether manipulations (such as the arrow gizmos that you can use to translate things) are performed relative to the global coordinate system or the selection's (local) one. Local manipulations can be handy when translating/rotating something that's already rotated.";
+            osc::CStringView constexpr tooltipTitle = "Manipulation coordinate system";
+            osc::CStringView constexpr tooltipDesc = "This affects whether manipulations (such as the arrow gizmos that you can use to translate things) are performed relative to the global coordinate system or the selection's (local) one. Local manipulations can be handy when translating/rotating something that's already rotated.";
             osc::DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
         }
 
