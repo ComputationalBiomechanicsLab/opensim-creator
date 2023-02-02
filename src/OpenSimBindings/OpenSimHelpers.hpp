@@ -69,10 +69,14 @@ namespace osc
 
     // returns a mutable pointer to the owner (if it exists)
     OpenSim::Component* UpdOwner(OpenSim::Component&);
+    template<typename T>
+    T* UpdOwner(OpenSim::Component& c)
+    {
+        return dynamic_cast<T*>(UpdOwner(c));
+    }
 
     // returns a pointer to the owner (if it exists)
     OpenSim::Component const* GetOwner(OpenSim::Component const&);
-
     template<typename T>
     T const* GetOwner(OpenSim::Component const& c)
     {

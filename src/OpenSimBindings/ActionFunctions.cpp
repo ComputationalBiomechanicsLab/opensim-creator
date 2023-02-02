@@ -1634,3 +1634,61 @@ bool osc::ActionTranslateStationAndSave(
         return false;  // edit wasn't made
     }
 }
+
+bool osc::ActionTranslatePathPoint(
+    UndoableModelStatePair& model,
+    OpenSim::PathPoint const& pathPoint,
+    glm::vec3 const& deltaPosition)
+{
+    OpenSim::ComponentPath const ppPath = osc::GetAbsolutePath(pathPoint);
+    UID const oldVersion = model.getModelVersion();
+    try
+    {
+        OpenSim::Model& mutModel = model.updModel();
+
+        OpenSim::PathPoint* mutPathPoint = FindComponentMut<OpenSim::PathPoint>(mutModel, ppPath);
+        if (!mutPathPoint)
+        {
+            model.setModelVersion(oldVersion);  // the provided path isn't a station
+            return false;
+        }
+
+        SimTK::Vec3 const originalPos = mutPathPoint->get_location();
+        SimTK::Vec3 const newPos = originalPos + ToSimTKVec3(deltaPosition);
+
+        // perform mutation
+        mutPathPoint->setLocation(newPos);
+        osc::InitializeState(mutModel);
+
+        return true;
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error detected while trying to move a station: %s", ex.what());
+        model.rollback();
+        return false;
+    }
+}
+
+bool osc::ActionTranslatePathPointAndSave(
+    UndoableModelStatePair& model,
+    OpenSim::PathPoint const& pathPoint,
+    glm::vec3 const& deltaPosition)
+{
+    if (ActionTranslatePathPoint(model, pathPoint, deltaPosition))
+    {
+        OpenSim::Model& mutModel = model.updModel();
+        osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
+
+        std::stringstream ss;
+        ss << "translated " << pathPoint.getName();
+        model.commit(std::move(ss).str());
+
+        return true;
+    }
+    else
+    {
+        return false;  // edit wasn't made
+    }
+}

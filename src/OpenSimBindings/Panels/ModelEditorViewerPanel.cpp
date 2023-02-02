@@ -25,6 +25,7 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Marker.h>
+#include <OpenSim/Simulation/Model/PathPoint.h>
 
 #include <memory>
 #include <string_view>
@@ -196,13 +197,22 @@ private:
         // try to downcast the selection as a station
         //
         // todo: OpenSim::PathPoint, etc.
-        OpenSim::Station const* const maybeStation = dynamic_cast<OpenSim::Station const*>(&selected);
-        if (!maybeStation)
+        if (OpenSim::Station const* const maybeStation = dynamic_cast<OpenSim::Station const*>(&selected))
         {
-            return;  // selection isn't a point (don't draw gizmos)
+            drawGizmoOverlayForStation(viewportRect, *maybeStation);
         }
-        OpenSim::Station const& station = *maybeStation;
+        else if (OpenSim::PathPoint const* const maybePathPoint = dynamic_cast<OpenSim::PathPoint const*>(&selected))
+        {
+            drawGizmoOverlayForUserPathPoint(viewportRect, *maybePathPoint);
+        }
+        else
+        {
+            // (do nothing: we don't know how to manipulate the selection0
+        }
+    }
 
+    void setupImguizmo(Rect const& viewportRect)
+    {
         ImGuizmo::SetRect(
             viewportRect.p1.x,
             viewportRect.p1.y,
@@ -211,6 +221,15 @@ private:
         );
         ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
         ImGuizmo::AllowAxisFlip(false);
+    }
+
+    // HACK: draw gizmos for station
+    //
+    // (it's a hack because this should be abstracted, rather than copy-pasted for each
+    //  manipulation type)
+    void drawGizmoOverlayForStation(Rect const& viewportRect, OpenSim::Station const& station)
+    {
+        setupImguizmo(viewportRect);
 
         glm::mat4 currentXformInGround{1.0f};
         currentXformInGround[3] = glm::vec4{ToVec3(station.getLocationInGround(m_Model->getState())), 1.0f};
@@ -258,6 +277,60 @@ private:
         // apply transformation to component in-place (but don't save - would be very slow)
         glm::vec3 const translationInParent = ToVec3(station.getParentFrame().getRotationInGround(m_Model->getState()).invert() * ToSimTKVec3(translationInGround));
         ActionTranslateStation(*m_Model, station, translationInParent);
+    }
+
+    void drawGizmoOverlayForUserPathPoint(
+        Rect const& viewportRect,
+        OpenSim::PathPoint const& pathPoint)
+    {
+        setupImguizmo(viewportRect);
+
+        glm::mat4 currentXformInGround{1.0f};
+        currentXformInGround[3] = glm::vec4{ToVec3(pathPoint.getLocationInGround(m_Model->getState())), 1.0f};
+        glm::mat4 deltaInGround;
+
+        bool const gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
+            glm::value_ptr(m_Params.camera.getViewMtx()),
+            glm::value_ptr(m_Params.camera.getProjMtx(AspectRatio(viewportRect))),
+            ImGuizmo::TRANSLATE,
+            ImGuizmo::WORLD,
+            glm::value_ptr(currentXformInGround),
+            glm::value_ptr(deltaInGround),
+            nullptr,
+            nullptr,
+            nullptr
+        );
+        bool const isUsingThisFrame = ImGuizmo::IsUsing();
+        bool const wasUsingLastFrame = m_WasUsingGizmoLastFrame;
+        m_WasUsingGizmoLastFrame = isUsingThisFrame;  // update cached state
+
+        if (wasUsingLastFrame && !isUsingThisFrame)
+        {
+            // user finished interacting, save model
+            ActionTranslatePathPointAndSave(*m_Model, pathPoint, {});
+        }
+
+        if (!gizmoWasManipulatedByUser)
+        {
+            return;  // user is not interacting, so no changes to apply
+        }
+        // else: apply in-place change to model
+
+        // decompose the overall transformation into component parts
+        glm::vec3 translationInGround{};
+        glm::vec3 rotationInGround{};
+        glm::vec3 scaleInGround{};
+        ImGuizmo::DecomposeMatrixToComponents(
+            glm::value_ptr(deltaInGround),
+            glm::value_ptr(translationInGround),
+            glm::value_ptr(rotationInGround),
+            glm::value_ptr(scaleInGround)
+        );
+        rotationInGround = glm::radians(rotationInGround);
+
+        // apply transformation to component in-place (but don't save - would be very slow)
+        glm::vec3 const translationInParent = ToVec3(pathPoint.getParentFrame().getRotationInGround(m_Model->getState()).invert() * ToSimTKVec3(translationInGround));
+        ActionTranslatePathPoint(*m_Model, pathPoint, translationInParent);
     }
 
     // handles any interactions that change the model (e.g. what's selected)

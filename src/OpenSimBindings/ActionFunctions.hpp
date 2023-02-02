@@ -14,6 +14,7 @@ namespace OpenSim { class Coordinate; }
 namespace OpenSim { class Geometry; }
 namespace OpenSim { class Joint; }
 namespace OpenSim { class Object; }
+namespace OpenSim { class PathPoint; }
 namespace OpenSim { class PhysicalFrame; }
 namespace OpenSim { class Station; }
 namespace osc { class MainUIStateAPI; }
@@ -202,6 +203,18 @@ namespace osc
     bool ActionTranslateStationAndSave(
         UndoableModelStatePair&,
         OpenSim::Station const&,
+        glm::vec3 const& deltaPosition
+    );
+
+    bool ActionTranslatePathPoint(
+        UndoableModelStatePair&,
+        OpenSim::PathPoint const&,
+        glm::vec3 const& deltaPosition
+    );
+
+    bool ActionTranslatePathPointAndSave(
+        UndoableModelStatePair&,
+        OpenSim::PathPoint const&,
         glm::vec3 const& deltaPosition
     );
 }
