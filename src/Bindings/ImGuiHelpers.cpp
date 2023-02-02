@@ -106,7 +106,7 @@ void osc::ImGuiApplyDarkTheme()
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 }
 
-bool osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::PolarPerspectiveCamera& camera)
+bool osc::UpdatePolarCameraFromImGuiMouseInputs(glm::vec2 viewportDims, osc::PolarPerspectiveCamera& camera)
 {
     bool modified = false;
 
@@ -178,54 +178,7 @@ bool osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::Polar
     return modified;
 }
 
-void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, glm::vec3& eulers)
-{
-    glm::vec3 const front = camera.getDirection();
-    glm::vec3 const up = camera.getUpwardsDirection();
-    glm::vec3 const right = glm::cross(front, up);
-    glm::vec2 const mouseDelta = ImGui::GetIO().MouseDelta;
-
-    float const speed = 10.0f;
-    float const displacement = speed * ImGui::GetIO().DeltaTime;
-    float const sensitivity = 0.005f;
-
-    // keyboard: changes camera position
-    glm::vec3 pos = camera.getPosition();
-    if (ImGui::IsKeyDown(ImGuiKey_W))
-    {
-        pos += displacement * front;
-    }
-    if (ImGui::IsKeyDown(ImGuiKey_S))
-    {
-        pos -= displacement * front;
-    }
-    if (ImGui::IsKeyDown(ImGuiKey_A))
-    {
-        pos -= displacement * right;
-    }
-    if (ImGui::IsKeyDown(ImGuiKey_D))
-    {
-        pos += displacement * right;
-    }
-    if (ImGui::IsKeyDown(ImGuiKey_Space))
-    {
-        pos += displacement * up;
-    }
-    if (ImGui::GetIO().KeyCtrl)
-    {
-        pos -= displacement * up;
-    }
-    camera.setPosition(pos);
-
-    eulers.x += sensitivity * -mouseDelta.y;
-    eulers.x = glm::clamp(eulers.x, -osc::fpi2 + 0.1f, osc::fpi2 - 0.1f);
-    eulers.y += sensitivity * -mouseDelta.x;
-    eulers.y = std::fmod(eulers.y, 2.0f * osc::fpi);
-
-    camera.setRotation(glm::normalize(glm::quat{eulers}));
-}
-
-bool osc::UpdatePolarCameraFromKeyboardInputs(
+bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
     PolarPerspectiveCamera& camera,
     Rect const& viewportRect,
     std::optional<osc::AABB> maybeSceneAABB)
@@ -286,6 +239,63 @@ bool osc::UpdatePolarCameraFromKeyboardInputs(
     }
 
     return false;
+}
+
+bool osc::UpdatePolarCameraFromImGuiInputs(
+    PolarPerspectiveCamera& camera,
+    Rect const& viewportRect,
+    std::optional<osc::AABB> maybeSceneAABB)
+{
+    bool const rv1 = UpdatePolarCameraFromImGuiMouseInputs(osc::Dimensions(viewportRect), camera);
+    bool const rv2 = UpdatePolarCameraFromImGuiKeyboardInputs(camera, viewportRect, maybeSceneAABB);
+    return rv1 || rv2;
+}
+
+void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, glm::vec3& eulers)
+{
+    glm::vec3 const front = camera.getDirection();
+    glm::vec3 const up = camera.getUpwardsDirection();
+    glm::vec3 const right = glm::cross(front, up);
+    glm::vec2 const mouseDelta = ImGui::GetIO().MouseDelta;
+
+    float const speed = 10.0f;
+    float const displacement = speed * ImGui::GetIO().DeltaTime;
+    float const sensitivity = 0.005f;
+
+    // keyboard: changes camera position
+    glm::vec3 pos = camera.getPosition();
+    if (ImGui::IsKeyDown(ImGuiKey_W))
+    {
+        pos += displacement * front;
+    }
+    if (ImGui::IsKeyDown(ImGuiKey_S))
+    {
+        pos -= displacement * front;
+    }
+    if (ImGui::IsKeyDown(ImGuiKey_A))
+    {
+        pos -= displacement * right;
+    }
+    if (ImGui::IsKeyDown(ImGuiKey_D))
+    {
+        pos += displacement * right;
+    }
+    if (ImGui::IsKeyDown(ImGuiKey_Space))
+    {
+        pos += displacement * up;
+    }
+    if (ImGui::GetIO().KeyCtrl)
+    {
+        pos -= displacement * up;
+    }
+    camera.setPosition(pos);
+
+    eulers.x += sensitivity * -mouseDelta.y;
+    eulers.x = glm::clamp(eulers.x, -osc::fpi2 + 0.1f, osc::fpi2 - 0.1f);
+    eulers.y += sensitivity * -mouseDelta.x;
+    eulers.y = std::fmod(eulers.y, 2.0f * osc::fpi);
+
+    camera.setRotation(glm::normalize(glm::quat{eulers}));
 }
 
 osc::Rect osc::ContentRegionAvailScreenRect()

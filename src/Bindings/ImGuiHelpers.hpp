@@ -26,14 +26,26 @@ namespace osc
     // applies "dark" theme to current ImGui context
     void ImGuiApplyDarkTheme();
 
-    // updates a polar comera's rotation, position, etc. based on ImGui input
-    bool UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, PolarPerspectiveCamera&);
+    // updates a polar comera's rotation, position, etc. based on ImGui mouse input state
+    bool UpdatePolarCameraFromImGuiMouseInputs(
+        glm::vec2 viewportDims,
+        PolarPerspectiveCamera&
+    );
+    // updates a polar comera's rotation, position, etc. based on ImGui keyboard input state
+    bool UpdatePolarCameraFromImGuiKeyboardInputs(
+        PolarPerspectiveCamera&,
+        Rect const& viewportRect,
+        std::optional<osc::AABB> maybeSceneAABB
+    );
+    // updates a polar comera's rotation, position, etc. based on ImGui input (mouse+keyboard) state
+    bool UpdatePolarCameraFromImGuiInputs(
+        PolarPerspectiveCamera&,
+        Rect const& viewportRect,
+        std::optional<osc::AABB> maybeSceneAABB
+    );
+
     void UpdateEulerCameraFromImGuiUserInput(Camera&, glm::vec3& eulers);
 
-    bool UpdatePolarCameraFromKeyboardInputs(
-        PolarPerspectiveCamera&,
-        Rect const&,
-        std::optional<osc::AABB> maybeSceneAABB);
 
     // returns the ImGui content region available in screenspace as a `Rect`
     Rect ContentRegionAvailScreenRect();

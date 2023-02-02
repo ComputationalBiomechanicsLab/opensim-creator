@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/Graphics/SceneCollision.hpp"
+
 #include <glm/vec3.hpp>
 
 #include <optional>
@@ -10,17 +12,13 @@ namespace osc { struct Rect; }
 
 namespace osc
 {
-    class GuiRulerMouseHit final {
-    public:
-        std::string Name;
-        glm::vec3 WorldPos;
-
-        GuiRulerMouseHit(std::string name, glm::vec3 const& worldPos);
-    };
-
     class GuiRuler final {
     public:
-        void draw(PolarPerspectiveCamera const&, Rect const& renderRect, std::optional<GuiRulerMouseHit>);
+        void draw(
+            PolarPerspectiveCamera const&,
+            Rect const& renderRect,
+            std::optional<SceneCollision>
+        );
         void startMeasuring();
         void stopMeasuring();
         void toggleMeasuring();

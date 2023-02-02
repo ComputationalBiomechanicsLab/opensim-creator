@@ -32,6 +32,8 @@
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <ImGuizmo.h>
+#include <implot.h>
 
 #include <algorithm>
 #include <functional>
@@ -76,6 +78,7 @@ public:
     void onMount()
     {
         osc::ImGuiInit();
+        ImPlot::CreateContext();
     }
 
     void onUnmount()
@@ -99,6 +102,7 @@ public:
             m_ActiveTab = UID::empty();
         }
 
+        ImPlot::DestroyContext();
         osc::ImGuiShutdown();
     }
 
@@ -240,6 +244,7 @@ public:
         }
 
         osc::ImGuiNewFrame();
+        ImGuizmo::BeginFrame();
 
         {
             OSC_PERF("MainUIScreen/drawUIContent");

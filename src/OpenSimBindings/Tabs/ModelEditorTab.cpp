@@ -41,7 +41,6 @@
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <implot.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
@@ -163,12 +162,10 @@ public:
     {
         App::upd().makeMainEventLoopWaiting();
         m_TabName = computeTabName();
-        ImPlot::CreateContext();
     }
 
     void onUnmount()
     {
-        ImPlot::DestroyContext();
         App::upd().makeMainEventLoopPolling();
     }
 

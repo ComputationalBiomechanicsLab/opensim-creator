@@ -5287,7 +5287,7 @@ namespace
 
             if (isRenderHovered)
             {
-                UpdatePolarCameraFromImGuiUserInput(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
+                UpdatePolarCameraFromImGuiMouseInputs(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
             }
         }
 
@@ -5685,7 +5685,7 @@ namespace
 
             if (isRenderHovered)
             {
-                UpdatePolarCameraFromImGuiUserInput(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
+                UpdatePolarCameraFromImGuiMouseInputs(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
             }
 
             if (m_AnimationFraction < 1.0f)
@@ -5858,8 +5858,6 @@ public:
         // enable panel docking
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-        ImGuizmo::BeginFrame();
-
         // handle keyboards using ImGui's input poller
         if (!m_Maybe3DViewerModal)
         {
@@ -5868,7 +5866,7 @@ public:
 
         if (!m_Maybe3DViewerModal && m_Shared->IsRenderHovered() && !ImGuizmo::IsUsing())
         {
-            UpdatePolarCameraFromImGuiUserInput(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
+            UpdatePolarCameraFromImGuiMouseInputs(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
         }
 
         // draw history panel (if enabled)

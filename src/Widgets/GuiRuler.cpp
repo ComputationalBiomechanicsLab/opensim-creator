@@ -1,5 +1,6 @@
 #include "GuiRuler.hpp"
 
+#include "src/Graphics/SceneCollision.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Maths/Rect.hpp"
 
@@ -13,13 +14,10 @@
 #include <string>
 #include <utility>
 
-osc::GuiRulerMouseHit::GuiRulerMouseHit(std::string name, glm::vec3 const& worldPos) :
-    Name{std::move(name)},
-    WorldPos{worldPos}
-{
-}
-
-void osc::GuiRuler::draw(PolarPerspectiveCamera const& sceneCamera, Rect const& renderRect, std::optional<GuiRulerMouseHit> maybeMouseover)
+void osc::GuiRuler::draw(
+    PolarPerspectiveCamera const& sceneCamera,
+    Rect const& renderRect,
+    std::optional<SceneCollision> maybeMouseover)
 {
     if (m_State == State::Inactive)
     {
@@ -77,7 +75,7 @@ void osc::GuiRuler::draw(PolarPerspectiveCamera const& sceneCamera, Rect const& 
             if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
             {
                 m_State = State::WaitingForSecondPoint;
-                m_StartWorldPos = maybeMouseover->WorldPos;
+                m_StartWorldPos = maybeMouseover->worldspaceLocation;
             }
             return;
         }
@@ -93,7 +91,7 @@ void osc::GuiRuler::draw(PolarPerspectiveCamera const& sceneCamera, Rect const& 
             glm::vec2 lineScreenDir = glm::normalize(startScreenPos - endScreenPos);
             glm::vec2 offsetVec = 15.0f * glm::vec2{lineScreenDir.y, -lineScreenDir.x};
             glm::vec2 lineMidpoint = (startScreenPos + endScreenPos) / 2.0f;
-            float lineWorldLen = glm::length(maybeMouseover->WorldPos - m_StartWorldPos);
+            float lineWorldLen = glm::length(maybeMouseover->worldspaceLocation - m_StartWorldPos);
 
             dl->AddCircleFilled(startScreenPos, circleRadius, circleColor);
             dl->AddLine(startScreenPos, endScreenPos, lineColor, lineThickness);

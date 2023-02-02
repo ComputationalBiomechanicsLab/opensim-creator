@@ -33,12 +33,12 @@ public:
 
     void onMount()
     {
-        ImPlot::CreateContext();
+        // ImPlot::CreateContext();  this is already done by MainUIScreen
     }
 
     void onUnmount()
     {
-        ImPlot::DestroyContext();
+        // ImPlot::DestroyContext();  this is already done by MainUIScreen
     }
 
     bool onEvent(SDL_Event const&)

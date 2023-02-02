@@ -23,43 +23,37 @@ public:
 
     bool isLeftClicked() const
     {
-        return m_RenderedImageHittest.isLeftClickReleasedWithoutDragging;
+        return m_MaybeLastHittest && m_MaybeLastHittest->isLeftClickReleasedWithoutDragging;
     }
 
     bool isRightClicked() const
     {
-        return m_RenderedImageHittest.isRightClickReleasedWithoutDragging;
+        return m_MaybeLastHittest && m_MaybeLastHittest->isRightClickReleasedWithoutDragging;
     }
 
     bool isMousedOver() const
     {
-        return m_RenderedImageHittest.isHovered;
+        return m_MaybeLastHittest && m_MaybeLastHittest->isHovered;
     }
 
     std::optional<SceneCollision> draw(VirtualConstModelStatePair const& rs)
     {
         // if this is the first frame being rendered, auto-focus the scene
-        if (m_IsRenderingFirstFrame)
+        if (!m_MaybeLastHittest)
         {
             m_CachedModelRenderer.autoFocusCamera(
                 rs,
                 m_Params,
                 AspectRatio(ImGui::GetContentRegionAvail())
             );
-            m_IsRenderingFirstFrame = false;
         }
 
         // inputs: process inputs, if hovering
-        if (m_RenderedImageHittest.isHovered)
+        if (m_MaybeLastHittest && m_MaybeLastHittest->isHovered)
         {
-            UpdatePolarCameraFromImGuiUserInput(
-                Dimensions(m_RenderedImageHittest.rect),
-                m_Params.camera
-            );
-
-            UpdatePolarCameraFromKeyboardInputs(
+            UpdatePolarCameraFromImGuiInputs(
                 m_Params.camera,
-                m_RenderedImageHittest.rect,
+                m_MaybeLastHittest->rect,
                 m_CachedModelRenderer.getRootAABB()
             );
         }
@@ -77,16 +71,19 @@ public:
             m_CachedModelRenderer.updRenderTexture(),
             ImGui::GetContentRegionAvail()
         );
-        m_RenderedImageHittest = osc::HittestLastImguiItem();
+
+        // update current+retained hittest
+        ImGuiItemHittestResult const hittest = osc::HittestLastImguiItem();
+        m_MaybeLastHittest = hittest;
 
         // if allowed, hittest the scene
         std::optional<SceneCollision> hittestResult;
-        if (m_RenderedImageHittest.isHovered && !IsDraggingWithAnyMouseButtonDown())
+        if (hittest.isHovered && !IsDraggingWithAnyMouseButtonDown())
         {
             hittestResult = m_CachedModelRenderer.getClosestCollision(
                 m_Params,
                 ImGui::GetMousePos(),
-                m_RenderedImageHittest.rect
+                hittest.rect
             );
         }
 
@@ -95,7 +92,7 @@ public:
             m_Params,
             m_CachedModelRenderer.getDrawlist(),
             m_CachedModelRenderer.getRootAABB(),
-            m_RenderedImageHittest.rect,
+            hittest.rect,
             *m_IconCache,
             m_Ruler
         );
@@ -103,20 +100,20 @@ public:
         // handle ruler and return value
         if (m_Ruler.isMeasuring())
         {
-            std::optional<GuiRulerMouseHit> maybeHit;
-            if (hittestResult)
-            {
-                maybeHit.emplace(hittestResult->decorationID, hittestResult->worldspaceLocation);
-            }
-            m_Ruler.draw(m_Params.camera, m_RenderedImageHittest.rect, maybeHit);
-
-            // disable hittest while using the ruler
-            return std::nullopt;
+            m_Ruler.draw(m_Params.camera, hittest.rect, hittestResult);
+            return std::nullopt;  // disable hittest while measuring
         }
         else
         {
             return hittestResult;
         }
+    }
+
+    std::optional<osc::Rect> getScreenRect() const
+    {
+        return m_MaybeLastHittest ?
+            std::optional<osc::Rect>{m_MaybeLastHittest->rect} :
+            std::nullopt;
     }
 
 private:
@@ -129,7 +126,9 @@ private:
         App::singleton<MeshCache>(),
         *App::singleton<ShaderCache>(),
     };
-    osc::ImGuiItemHittestResult m_RenderedImageHittest;
+
+    // only available after rendering the first frame
+    std::optional<ImGuiItemHittestResult> m_MaybeLastHittest;
 
     // overlay-related data
     std::shared_ptr<IconCache> m_IconCache = osc::App::singleton<osc::IconCache>(
@@ -137,11 +136,6 @@ private:
         ImGui::GetTextLineHeight()/128.0f
     );
     GuiRuler m_Ruler;
-
-    // a flag that will auto-focus the main scene camera the next time it's used
-    //
-    // initialized `true`, so that the initially-loaded model is autofocused (#520)
-    bool m_IsRenderingFirstFrame = true;
 };
 
 
@@ -173,4 +167,9 @@ bool osc::UiModelViewer::isMousedOver() const
 std::optional<osc::SceneCollision> osc::UiModelViewer::draw(VirtualConstModelStatePair const& rs)
 {
     return m_Impl->draw(rs);
+}
+
+std::optional<osc::Rect> osc::UiModelViewer::getScreenRect() const
+{
+    return m_Impl->getScreenRect();
 }

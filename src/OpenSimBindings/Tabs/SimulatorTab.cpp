@@ -35,7 +35,6 @@
 
 #include <glm/vec2.hpp>
 #include <imgui.h>
-#include <implot/implot.h>
 #include <IconsFontAwesome5.h>
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
@@ -153,14 +152,12 @@ public:
 
     void onMount()
     {
-        ImPlot::CreateContext();
         App::upd().makeMainEventLoopWaiting();
     }
 
     void onUnmount()
     {
         App::upd().makeMainEventLoopPolling();
-        ImPlot::DestroyContext();
     }
 
     bool onEvent(SDL_Event const& e)

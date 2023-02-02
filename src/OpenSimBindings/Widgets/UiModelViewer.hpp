@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/Graphics/SceneCollision.hpp"
+#include "src/Maths/Rect.hpp"
 
 #include <memory>
 #include <optional>
@@ -27,6 +28,7 @@ namespace osc
         bool isLeftClicked() const;
         bool isRightClicked() const;
         std::optional<SceneCollision> draw(VirtualConstModelStatePair const&);
+        std::optional<osc::Rect> getScreenRect() const;
 
     private:
         class Impl;

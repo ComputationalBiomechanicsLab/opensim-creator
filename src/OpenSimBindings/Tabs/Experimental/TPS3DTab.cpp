@@ -1215,7 +1215,7 @@ namespace
             // camera: update from input state
             if (osc::IsPointInRect(contentRect, mousePos))
             {
-                osc::UpdatePolarCameraFromImGuiUserInput(osc::Dimensions(contentRect), m_Camera);
+                osc::UpdatePolarCameraFromImGuiMouseInputs(osc::Dimensions(contentRect), m_Camera);
             }
 
             // render: render 3D scene to a texture based on current state+hovering
@@ -1723,7 +1723,7 @@ namespace
             // if the user interacts with the render, update the camera as necessary
             if (m_LastTextureHittestResult.isHovered)
             {
-                if (osc::UpdatePolarCameraFromImGuiUserInput(osc::Dimensions(m_LastTextureHittestResult.rect), m_Camera))
+                if (osc::UpdatePolarCameraFromImGuiMouseInputs(osc::Dimensions(m_LastTextureHittestResult.rect), m_Camera))
                 {
                     m_State->LinkedCameraBase = m_Camera;  // reflects latest modification
                 }
@@ -2090,7 +2090,7 @@ namespace
             // update camera if user drags it around etc.
             if (m_LastTextureHittestResult.isHovered)
             {
-                if (osc::UpdatePolarCameraFromImGuiUserInput(osc::Dimensions(m_LastTextureHittestResult.rect), m_Camera))
+                if (osc::UpdatePolarCameraFromImGuiMouseInputs(osc::Dimensions(m_LastTextureHittestResult.rect), m_Camera))
                 {
                     m_State->LinkedCameraBase = m_Camera;  // reflects latest modification
                 }

@@ -67,12 +67,13 @@ public:
 
     void onDraw()
     {
+        // ImGuizmo::BeginFrame();  already done by MainUIScreen
+
         glm::mat4 view = m_SceneCamera.getViewMtx();
         Rect viewportRect = GetMainViewportWorkspaceScreenRect();
         glm::vec2 dims = Dimensions(viewportRect);
         glm::mat4 projection = m_SceneCamera.getProjMtx(AspectRatio(dims));
 
-        ImGuizmo::BeginFrame();
         ImGuizmo::SetRect(viewportRect.p1.x, viewportRect.p1.y, dims.x, dims.y);
         glm::mat4 identity{1.0f};
         ImGuizmo::DrawGrid(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(identity), 100.f);
