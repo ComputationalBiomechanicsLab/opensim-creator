@@ -254,7 +254,7 @@ public:
         }
     }
 
-    void draw(
+    RenderTexture& draw(
         VirtualConstModelStatePair const& modelState,
         ModelRendererParams const& renderParams,
         glm::vec2 dims,
@@ -303,6 +303,8 @@ public:
             m_RendererPrevParams = params;
             m_Renderer.draw(m_Scene.getDrawlist(), params);
         }
+
+        return m_Renderer.updRenderTexture();
     }
 
     RenderTexture& updRenderTexture()
@@ -330,7 +332,7 @@ public:
     std::optional<SceneCollision> getClosestCollision(
         ModelRendererParams const& params,
         glm::vec2 mouseScreenPos,
-        Rect const& viewportScreenRect)
+        Rect const& viewportScreenRect) const
     {
         OSC_PERF("CachedModelRenderer/getClosestCollision");
 
@@ -418,13 +420,18 @@ osc::CachedModelRenderer::CachedModelRenderer(CachedModelRenderer&&) noexcept = 
 osc::CachedModelRenderer& osc::CachedModelRenderer::operator=(CachedModelRenderer&&) noexcept = default;
 osc::CachedModelRenderer::~CachedModelRenderer() noexcept = default;
 
-void osc::CachedModelRenderer::draw(
+osc::RenderTexture& osc::CachedModelRenderer::draw(
     VirtualConstModelStatePair const& modelState,
     ModelRendererParams const& renderParams,
     glm::vec2 dims,
     int32_t samples)
 {
-    m_Impl->draw(modelState, renderParams, dims, samples);
+    return m_Impl->draw(
+        modelState,
+        renderParams,
+        dims,
+        samples
+    );
 }
 
 void osc::CachedModelRenderer::autoFocusCamera(
@@ -453,7 +460,7 @@ std::optional<osc::AABB> osc::CachedModelRenderer::getRootAABB() const
 std::optional<osc::SceneCollision> osc::CachedModelRenderer::getClosestCollision(
     ModelRendererParams const& params,
     glm::vec2 mouseScreenPos,
-    Rect const& viewportScreenRect)
+    Rect const& viewportScreenRect) const
 {
     return m_Impl->getClosestCollision(params, mouseScreenPos, viewportScreenRect);
 }

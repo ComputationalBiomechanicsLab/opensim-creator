@@ -43,21 +43,21 @@ namespace osc
             float aspectRatio
         );
 
-        void draw(
+        RenderTexture& draw(
             VirtualConstModelStatePair const&,
             ModelRendererParams const&,
             glm::vec2 dims,
             int32_t samples
         );
-
         RenderTexture& updRenderTexture();
+
         nonstd::span<SceneDecoration const> getDrawlist() const;
         std::optional<AABB> getRootAABB() const;
         std::optional<SceneCollision> getClosestCollision(
             ModelRendererParams const&,
             glm::vec2 mouseScreenPos,
             Rect const& viewportScreenRect
-        );
+        ) const;
 
     private:
         class Impl;
