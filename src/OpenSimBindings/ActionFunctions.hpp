@@ -15,6 +15,7 @@ namespace OpenSim { class Geometry; }
 namespace OpenSim { class Joint; }
 namespace OpenSim { class Object; }
 namespace OpenSim { class PhysicalFrame; }
+namespace OpenSim { class Station; }
 namespace osc { class MainUIStateAPI; }
 namespace osc { class ObjectPropertyEdit; }
 namespace osc { class UndoableModelStatePair; }
@@ -184,5 +185,23 @@ namespace osc
         OpenSim::ComponentPath const&,
         std::string concreteClassName,
         bool newVisibility
+    );
+
+    // sets the location of the given station in its parent frame to its old location plus the provided vector
+    //
+    // (does not save this change to the undo/redo storage)
+    bool ActionTranslateStation(
+        UndoableModelStatePair&,
+        OpenSim::Station const&,
+        glm::vec3 const& deltaPosition
+    );
+
+    // sets the location of the given station in its parent frame to its old location plus the provided vector
+    //
+    // (saves the modified version to undo/redo storage)
+    bool ActionTranslateStationAndSave(
+        UndoableModelStatePair&,
+        OpenSim::Station const&,
+        glm::vec3 const& deltaPosition
     );
 }

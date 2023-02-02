@@ -11,7 +11,9 @@
 #include "src/OpenSimBindings/Rendering/ModelRendererParams.hpp"
 #include "src/OpenSimBindings/Widgets/BasicWidgets.hpp"
 #include "src/OpenSimBindings/Widgets/ComponentContextMenu.hpp"
+#include "src/OpenSimBindings/ActionFunctions.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
+#include "src/OpenSimBindings/SimTKHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Panels/StandardPanel.hpp"
 #include "src/Platform/App.hpp"
@@ -22,6 +24,7 @@
 #include <ImGuizmo.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Simulation/Model/Marker.h>
 
 #include <memory>
 #include <string_view>
@@ -141,11 +144,6 @@ private:
         return m_Ruler.isMeasuring() || ImGuizmo::IsUsing();
     }
 
-    bool isHoveringAnOverlay() const
-    {
-        return ImGuizmo::IsOver();
-    }
-
     // uses ImGui's 2D drawlist to draw interactive widgets/overlays on the panel
     void draw2DImguiOverlays(
         Rect const& viewportRect,
@@ -167,7 +165,7 @@ private:
         m_Ruler.draw(m_Params.camera, viewportRect, maybeSceneHittest);
 
         // draw gizmo manipulators over the top
-        // drawGizmoOverlay(viewportRect);
+        drawGizmoOverlay(viewportRect);
 
         if (maybeHover)
         {
@@ -187,44 +185,79 @@ private:
     // draws 3D manipulation gizmo overlay
     void drawGizmoOverlay(Rect const& viewportRect)
     {
-        // - get current selection
-        // - if selection empty, don't draw gizmos
-        // - if selection not empty, figure out whether gizmos make sense for the selection:
-        //
-        //     - muscle point
-        //     - marker
-        //     - body
-        //     - joint parent/child
-        //
-        // - if the selection makes sense, get the selection's transform matrix
-        // - manipulate the transform matrix via ImGuizmo
-        // - continuously apply manipulations to the model **but don't save them**
-        // - once the user stops manipulating, save the changes
+        // get selection as a component
+        OpenSim::Component const* const maybeSelected = m_Model->getSelected();
+        if (!maybeSelected)
+        {
+            return;  // nothing selected (don't draw gizmos)
+        }
+        OpenSim::Component const& selected = *maybeSelected;
 
-        glm::vec2 const viewportDims = osc::Dimensions(viewportRect);
+        // try to downcast the selection as a station
+        //
+        // todo: OpenSim::PathPoint, etc.
+        OpenSim::Station const* const maybeStation = dynamic_cast<OpenSim::Station const*>(&selected);
+        if (!maybeStation)
+        {
+            return;  // selection isn't a point (don't draw gizmos)
+        }
+        OpenSim::Station const& station = *maybeStation;
 
         ImGuizmo::SetRect(
             viewportRect.p1.x,
             viewportRect.p1.y,
-            viewportDims.x,
-            viewportDims.y
+            Dimensions(viewportRect).x,
+            Dimensions(viewportRect).y
         );
         ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
         ImGuizmo::AllowAxisFlip(false);
 
-        glm::mat4 imguizmoMtx{1.0};
-        glm::mat4 delta;
-        bool manipulated = ImGuizmo::Manipulate(
+        glm::mat4 currentXformInGround{1.0f};
+        currentXformInGround[3] = glm::vec4{ToVec3(station.getLocationInGround(m_Model->getState())), 1.0f};
+        glm::mat4 deltaInGround;
+
+        bool const gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
             glm::value_ptr(m_Params.camera.getViewMtx()),
             glm::value_ptr(m_Params.camera.getProjMtx(AspectRatio(viewportRect))),
             ImGuizmo::TRANSLATE,
             ImGuizmo::WORLD,
-            glm::value_ptr(imguizmoMtx),
-            glm::value_ptr(delta),
+            glm::value_ptr(currentXformInGround),
+            glm::value_ptr(deltaInGround),
             nullptr,
             nullptr,
             nullptr
         );
+        bool const isUsingThisFrame = ImGuizmo::IsUsing();
+        bool const wasUsingLastFrame = m_WasUsingGizmoLastFrame;
+        m_WasUsingGizmoLastFrame = isUsingThisFrame;  // update cached state
+
+        if (wasUsingLastFrame && !isUsingThisFrame)
+        {
+            // user finished interacting, save model
+            ActionTranslateStationAndSave(*m_Model, station, {});
+        }
+
+        if (!gizmoWasManipulatedByUser)
+        {
+            return;  // user is not interacting, so no changes to apply
+        }
+        // else: apply in-place change to model
+
+        // decompose the overall transformation into component parts
+        glm::vec3 translationInGround{};
+        glm::vec3 rotationInGround{};
+        glm::vec3 scaleInGround{};
+        ImGuizmo::DecomposeMatrixToComponents(
+            glm::value_ptr(deltaInGround),
+            glm::value_ptr(translationInGround),
+            glm::value_ptr(rotationInGround),
+            glm::value_ptr(scaleInGround)
+        );
+        rotationInGround = glm::radians(rotationInGround);
+
+        // apply transformation to component in-place (but don't save - would be very slow)
+        glm::vec3 const translationInParent = ToVec3(station.getParentFrame().getRotationInGround(m_Model->getState()).invert() * ToSimTKVec3(translationInGround));
+        ActionTranslateStation(*m_Model, station, translationInParent);
     }
 
     // handles any interactions that change the model (e.g. what's selected)
@@ -233,7 +266,7 @@ private:
         OpenSim::Component const* maybeHover)
     {
         // handle hover mutations
-        if (isHoveringAnOverlay() || isUsingAnOverlay())
+        if (isUsingAnOverlay())
         {
             m_Model->setHovered(nullptr);
         }
@@ -247,7 +280,7 @@ private:
 
         // left-click: set model selection to (potentially empty) hover
         if (imguiHittest.isLeftClickReleasedWithoutDragging &&
-            !(isHoveringAnOverlay() || isUsingAnOverlay()))
+            !isUsingAnOverlay())
         {
             m_Model->setSelected(maybeHover);
         }
@@ -274,6 +307,7 @@ private:
         ImGui::GetTextLineHeight()/128.0f
     );
     GuiRuler m_Ruler;
+    bool m_WasUsingGizmoLastFrame = false;
 };
 
 

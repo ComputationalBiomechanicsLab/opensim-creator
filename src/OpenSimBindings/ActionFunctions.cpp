@@ -1571,3 +1571,66 @@ bool osc::ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
         return false;
     }
 }
+
+bool osc::ActionTranslateStation(
+    UndoableModelStatePair& model,
+    OpenSim::Station const& station,
+    glm::vec3 const& deltaPosition)
+{
+    OpenSim::ComponentPath const stationPath = osc::GetAbsolutePath(station);
+    UID const oldVersion = model.getModelVersion();
+    try
+    {
+        OpenSim::Model& mutModel = model.updModel();
+
+        OpenSim::Station* mutStation = FindComponentMut<OpenSim::Station>(mutModel, stationPath);
+        if (!mutStation)
+        {
+            model.setModelVersion(oldVersion);  // the provided path isn't a station
+            return false;
+        }
+
+        SimTK::Vec3 const originalPos = mutStation->get_location();
+        SimTK::Vec3 const newPos = originalPos + ToSimTKVec3(deltaPosition);
+
+        // perform mutation
+        mutStation->set_location(newPos);
+
+        // HACK: don't perform a full reinitialization because that would be very expensive
+        // and likely isn't necessary for a station
+        //
+        // osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
+
+        return true;
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error detected while trying to move a station: %s", ex.what());
+        model.rollback();
+        return false;
+    }
+}
+
+bool osc::ActionTranslateStationAndSave(
+    UndoableModelStatePair& model,
+    OpenSim::Station const& station,
+    glm::vec3 const& deltaPosition)
+{
+    if (ActionTranslateStation(model, station, deltaPosition))
+    {
+        OpenSim::Model& mutModel = model.updModel();
+        osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
+
+        std::stringstream ss;
+        ss << "translated " << station.getName();
+        model.commit(std::move(ss).str());
+
+        return true;
+    }
+    else
+    {
+        return false;  // edit wasn't made
+    }
+}
