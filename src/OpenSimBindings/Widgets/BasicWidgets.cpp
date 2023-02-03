@@ -550,7 +550,7 @@ void osc::DrawViewerTopButtonRow(
     ModelRendererParams& params,
     nonstd::span<osc::SceneDecoration const> drawlist,
     IconCache& iconCache,
-    GuiRuler& ruler)
+    std::function<void()> const& drawExtraElements)
 {
     float const iconPadding = 2.0f;
 
@@ -584,15 +584,9 @@ void osc::DrawViewerTopButtonRow(
     settingsButton.draw();
     ImGui::SameLine();
 
-    IconWithoutMenu rulerButton
+    // caller-provided extra buttons (usually, context-dependent)
     {
-        iconCache.getIcon("ruler"),
-        "Ruler",
-        "Roughly measure something in the scene",
-    };
-    if (rulerButton.draw())
-    {
-        ruler.toggleMeasuring();
+        drawExtraElements();
     }
 }
 
@@ -745,16 +739,16 @@ void osc::DrawCameraControlButtons(
 }
 
 void osc::DrawViewerImGuiOverlays(
-    osc::ModelRendererParams& params,
-    nonstd::span<osc::SceneDecoration const> drawlist,
-    std::optional<osc::AABB> maybeSceneAABB,
-    osc::Rect const& renderRect,
-    osc::IconCache& iconCache,
-    osc::GuiRuler& ruler)
+    ModelRendererParams& params,
+    nonstd::span<SceneDecoration const> drawlist,
+    std::optional<AABB> maybeSceneAABB,
+    Rect const& renderRect,
+    IconCache& iconCache,
+    std::function<void()> const& drawExtraElementsInTop)
 {
     // draw the top overlays
     ImGui::SetCursorScreenPos(renderRect.p1 + glm::vec2{ImGui::GetStyle().WindowPadding});
-    DrawViewerTopButtonRow(params, drawlist, iconCache, ruler);
+    DrawViewerTopButtonRow(params, drawlist, iconCache, drawExtraElementsInTop);
 
     // compute bottom overlay positions
     ImGuiStyle const& style = ImGui::GetStyle();

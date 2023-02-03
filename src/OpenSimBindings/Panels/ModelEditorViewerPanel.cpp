@@ -1,6 +1,7 @@
 #include "ModelEditorViewerPanel.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Bindings/ImGuizmoHelpers.hpp"
 #include "src/Graphics/IconCache.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/ShaderCache.hpp"
@@ -18,6 +19,7 @@
 #include "src/Panels/StandardPanel.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Widgets/GuiRuler.hpp"
+#include "src/Widgets/IconWithoutMenu.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
@@ -159,7 +161,7 @@ private:
             m_CachedModelRenderer.getRootAABB(),
             viewportRect,
             *m_IconCache,
-            m_Ruler
+            [this]() { drawExtraTopButtons(); }
         );
 
         // if applicable, draw the ruler
@@ -181,6 +183,28 @@ private:
             OpenSim::ComponentPath const path = osc::GetAbsolutePathOrEmpty(maybeHover);
             m_EditorAPI->pushPopup(std::make_unique<ComponentContextMenu>(menuName, m_MainUIStateAPI, m_EditorAPI, m_Model, path));
         }
+    }
+
+    // draws extra top overlay buttons
+    void drawExtraTopButtons()
+    {
+        IconWithoutMenu rulerButton
+        {
+            m_IconCache->getIcon("ruler"),
+            "Ruler",
+            "Roughly measure something in the scene",
+        };
+        if (rulerButton.draw())
+        {
+            m_Ruler.toggleMeasuring();
+        }
+        ImGui::SameLine();
+
+        DrawGizmoOpSelector(m_GizmoOperation, true, false, false);  // translate/rotate selector
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
+        ImGui::SameLine();
+        ImGui::PopStyleVar();
+        DrawGizmoModeSelector(m_GizmoMode); // global/world selector
     }
 
     // draws 3D manipulation gizmo overlay
@@ -213,6 +237,7 @@ private:
 
     void setupImguizmo(Rect const& viewportRect)
     {
+        ImGuizmo::SetID(ImGui::GetID(this));  // important: necessary for multi-viewport gizmos
         ImGuizmo::SetRect(
             viewportRect.p1.x,
             viewportRect.p1.y,
@@ -229,23 +254,30 @@ private:
     //  manipulation type)
     void drawGizmoOverlayForStation(Rect const& viewportRect, OpenSim::Station const& station)
     {
+        if (m_GizmoOperation != ImGuizmo::TRANSLATE)
+        {
+            return;  // can only translate path stations
+        }
+
         setupImguizmo(viewportRect);
 
-        glm::mat4 currentXformInGround{1.0f};
+        // use rotation from the parent, translation from station
+        glm::mat4 currentXformInGround = ToMat4(station.getParentFrame().getRotationInGround(m_Model->getState()));
         currentXformInGround[3] = glm::vec4{ToVec3(station.getLocationInGround(m_Model->getState())), 1.0f};
         glm::mat4 deltaInGround;
 
         bool const gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
             glm::value_ptr(m_Params.camera.getViewMtx()),
             glm::value_ptr(m_Params.camera.getProjMtx(AspectRatio(viewportRect))),
-            ImGuizmo::TRANSLATE,
-            ImGuizmo::WORLD,
+            m_GizmoOperation,
+            m_GizmoMode,
             glm::value_ptr(currentXformInGround),
             glm::value_ptr(deltaInGround),
             nullptr,
             nullptr,
             nullptr
         );
+
         bool const isUsingThisFrame = ImGuizmo::IsUsing();
         bool const wasUsingLastFrame = m_WasUsingGizmoLastFrame;
         m_WasUsingGizmoLastFrame = isUsingThisFrame;  // update cached state
@@ -274,8 +306,12 @@ private:
         );
         rotationInGround = glm::radians(rotationInGround);
 
+        log::info("translation = %f %f %f", translationInGround.x, translationInGround.y, translationInGround.z);
+
         // apply transformation to component in-place (but don't save - would be very slow)
-        glm::vec3 const translationInParent = ToVec3(station.getParentFrame().getRotationInGround(m_Model->getState()).invert() * ToSimTKVec3(translationInGround));
+        SimTK::Rotation const parentToGroundRotation = station.getParentFrame().getRotationInGround(m_Model->getState());
+        SimTK::InverseRotation const& groundToParentRotation = parentToGroundRotation.invert();
+        glm::vec3 const translationInParent = ToVec3(groundToParentRotation * ToSimTKVec3(translationInGround));
         ActionTranslateStation(*m_Model, station, translationInParent);
     }
 
@@ -283,17 +319,23 @@ private:
         Rect const& viewportRect,
         OpenSim::PathPoint const& pathPoint)
     {
+        if (m_GizmoOperation != ImGuizmo::TRANSLATE)
+        {
+            return;  // can only translate path points
+        }
+
         setupImguizmo(viewportRect);
 
-        glm::mat4 currentXformInGround{1.0f};
+        // use rotation from the parent, translation from station
+        glm::mat4 currentXformInGround = ToMat4(pathPoint.getParentFrame().getRotationInGround(m_Model->getState()));
         currentXformInGround[3] = glm::vec4{ToVec3(pathPoint.getLocationInGround(m_Model->getState())), 1.0f};
         glm::mat4 deltaInGround;
 
         bool const gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
             glm::value_ptr(m_Params.camera.getViewMtx()),
             glm::value_ptr(m_Params.camera.getProjMtx(AspectRatio(viewportRect))),
-            ImGuizmo::TRANSLATE,
-            ImGuizmo::WORLD,
+            m_GizmoOperation,
+            m_GizmoMode,
             glm::value_ptr(currentXformInGround),
             glm::value_ptr(deltaInGround),
             nullptr,
@@ -329,7 +371,9 @@ private:
         rotationInGround = glm::radians(rotationInGround);
 
         // apply transformation to component in-place (but don't save - would be very slow)
-        glm::vec3 const translationInParent = ToVec3(pathPoint.getParentFrame().getRotationInGround(m_Model->getState()).invert() * ToSimTKVec3(translationInGround));
+        SimTK::Rotation const parentToGroundRotation = pathPoint.getParentFrame().getRotationInGround(m_Model->getState());
+        SimTK::InverseRotation const& groundToParentRotation = parentToGroundRotation.invert();
+        glm::vec3 const translationInParent = ToVec3(groundToParentRotation * ToSimTKVec3(translationInGround));
         ActionTranslatePathPoint(*m_Model, pathPoint, translationInParent);
     }
 
@@ -381,6 +425,8 @@ private:
     );
     GuiRuler m_Ruler;
     bool m_WasUsingGizmoLastFrame = false;
+    ImGuizmo::OPERATION m_GizmoOperation = ImGuizmo::TRANSLATE;
+    ImGuizmo::MODE m_GizmoMode = ImGuizmo::WORLD;
 };
 
 

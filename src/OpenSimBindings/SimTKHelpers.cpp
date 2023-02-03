@@ -159,6 +159,12 @@ glm::mat4x4 osc::ToMat4x4(SimTK::Transform const& t)
     return glm::mat4{ToMat4x3(t)};
 }
 
+glm::mat4x4 osc::ToMat4(SimTK::Rotation const& r)
+{
+    SimTK::Transform const t{r};
+    return ToMat4x4(t);
+}
+
 glm::quat osc::ToQuat(SimTK::Rotation const& r)
 {
     SimTK::Quaternion const q = r.convertRotationToQuaternion();

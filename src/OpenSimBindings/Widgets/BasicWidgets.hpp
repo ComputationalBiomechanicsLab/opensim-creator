@@ -4,12 +4,12 @@
 
 #include <nonstd/span.hpp>
 
+#include <functional>
 #include <optional>
 #include <string>
 
 namespace osc { class CustomDecorationOptions; }
 namespace osc { class CustomRenderingOptions; }
-namespace osc { class GuiRuler; }
 namespace osc { class IconCache; }
 namespace osc { class MainUIStateAPI; }
 namespace osc { class ModelRendererParams; }
@@ -48,7 +48,7 @@ namespace osc
         ModelRendererParams&,
         nonstd::span<SceneDecoration const>,
         IconCache&,
-        GuiRuler&
+        std::function<void()> const& drawExtraElements = []() {}
     );
     void DrawCameraControlButtons(
         PolarPerspectiveCamera&,
@@ -59,9 +59,9 @@ namespace osc
     void DrawViewerImGuiOverlays(
         ModelRendererParams&,
         nonstd::span<SceneDecoration const>,
-        std::optional<osc::AABB>,
-        osc::Rect const&,
-        osc::IconCache&,
-        osc::GuiRuler&
+        std::optional<AABB>,
+        Rect const&,
+        IconCache&,
+        std::function<void()> const& drawExtraElementsInTop = []() {}
     );
 }

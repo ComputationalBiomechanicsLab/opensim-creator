@@ -30,6 +30,7 @@ namespace osc
     glm::vec4 ToVec4(SimTK::Vec3 const&, float w = 1.0f);
     glm::mat4x3 ToMat4x3(SimTK::Transform const&);
     glm::mat4x4 ToMat4x4(SimTK::Transform const&);
+    glm::mat4x4 ToMat4(SimTK::Rotation const&);
     glm::quat ToQuat(SimTK::Rotation const&);
     Transform ToTransform(SimTK::Transform const&);
 }

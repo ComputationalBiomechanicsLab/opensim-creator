@@ -12,6 +12,7 @@
 #include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Widgets/GuiRuler.hpp"
+#include "src/Widgets/IconWithoutMenu.hpp"
 
 #include <imgui.h>
 
@@ -94,7 +95,7 @@ public:
             m_CachedModelRenderer.getRootAABB(),
             hittest.rect,
             *m_IconCache,
-            m_Ruler
+            [this]() { drawRulerButton(); }
         );
 
         // handle ruler and return value
@@ -117,6 +118,19 @@ public:
     }
 
 private:
+    void drawRulerButton()
+    {
+        IconWithoutMenu rulerButton
+        {
+            m_IconCache->getIcon("ruler"),
+            "Ruler",
+            "Roughly measure something in the scene",
+        };
+        if (rulerButton.draw())
+        {
+            m_Ruler.toggleMeasuring();
+        }
+    }
 
     // rendering-related data
     ModelRendererParams m_Params;

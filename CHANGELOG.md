@@ -49,6 +49,7 @@ All notable changes to this project will be documented here. The format is based
 - Lines of action rendering now has separate checkboxes for muscle insertion/origin (#577)
 - Stations can now be dragged around (translated) in model editor tab's 3D viewport (#85)
 - Muscle path points can now be dragged around (translated) in the model editor tab's 3D viewport (#85)
+- There is now a toggle that affects whether the dragging gizmos operate in world-space (ground) or the parent frame (#584)
 
 ## [0.3.2] - 2023/01/09
 

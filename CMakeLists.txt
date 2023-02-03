@@ -370,6 +370,8 @@ add_library(osccore STATIC
     src/Bindings/GlmHelpers.hpp
     src/Bindings/ImGuiHelpers.cpp
     src/Bindings/ImGuiHelpers.hpp
+    src/Bindings/ImGuizmoHelpers.cpp
+    src/Bindings/ImGuizmoHelpers.hpp
     src/Bindings/SDL2Helpers.hpp
     src/Bindings/Gl.cpp
     src/Bindings/Gl.hpp
