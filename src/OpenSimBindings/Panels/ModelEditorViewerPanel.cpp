@@ -306,8 +306,6 @@ private:
         );
         rotationInGround = glm::radians(rotationInGround);
 
-        log::info("translation = %f %f %f", translationInGround.x, translationInGround.y, translationInGround.z);
-
         // apply transformation to component in-place (but don't save - would be very slow)
         SimTK::Rotation const parentToGroundRotation = station.getParentFrame().getRotationInGround(m_Model->getState());
         SimTK::InverseRotation const& groundToParentRotation = parentToGroundRotation.invert();
