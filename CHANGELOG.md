@@ -50,6 +50,7 @@ All notable changes to this project will be documented here. The format is based
 - Stations can now be dragged around (translated) in model editor tab's 3D viewport (#85)
 - Muscle path points can now be dragged around (translated) in the model editor tab's 3D viewport (#85)
 - There is now a toggle that affects whether the dragging gizmos operate in world-space (ground) or the parent frame (#584)
+- The `import CSV overlay` feature in the muscle plot panel can now import multiple curves from a single file (#587)
 
 ## [0.3.2] - 2023/01/09
 

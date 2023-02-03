@@ -877,20 +877,21 @@ namespace
         return std::move(ss).str();
     }
 
-    std::optional<Plot> TryLoadCSVFileAsPlot(std::filesystem::path const& p)
+    std::vector<Plot> TryLoadSVCFileAsPlots(std::filesystem::path const& p)
     {
+        std::vector<Plot> rv;
         std::ifstream f{p};
 
         if (!f)
         {
-            return std::nullopt;  // error opening path
+            return rv;  // error opening path
         }
         f.exceptions(std::ios_base::badbit);
 
         osc::CSVReader reader{f};
-        reader.next();  // skip header
+        std::optional<std::vector<std::string>> maybeHeaders = reader.next();
 
-        std::vector<PlotDataPoint> datapoints;
+        std::vector<std::vector<PlotDataPoint>> datapointsPerPlot;
         while (std::optional<std::vector<std::string>> row = reader.next())
         {
             if (row->size() < 2)
@@ -899,25 +900,64 @@ namespace
                 continue;
             }
 
-            // parse first column as a number
-            std::optional<float> v1 = osc::FromCharsStripWhitespace((*row)[0]);
-            if (!v1)
+            // parse first column as a number (independent variable)
+            std::optional<float> independentVar = osc::FromCharsStripWhitespace((*row)[0]);
+            if (!independentVar)
             {
-                continue;  // parsing error: skip this row
+                continue;  // cannot parse independent variable: skip entire row
             }
 
-            // parse second column as a number
-            std::optional<float> v2 = osc::FromCharsStripWhitespace((*row)[1]);
-            if (!v2)
+            // parse remaining columns as datapoints for each plot
+            for (size_t i = 1; i < row->size(); ++i)
             {
-                continue;  // parsing error: skip this row
+                // parse column as a number (dependent variable)
+                std::optional<float> dependentVar = osc::FromCharsStripWhitespace((*row)[i]);
+                if (!dependentVar)
+                {
+                    continue;  // parsing error: skip this column
+                }
+                // else: append to the appropriate vector
+                datapointsPerPlot.resize(std::max(datapointsPerPlot.size(), i+1));
+                datapointsPerPlot[i].push_back({*independentVar, *dependentVar});
             }
-
-            // else: row is parsed as at least two numbers, push them
-            datapoints.push_back({*v1, *v2});
         }
 
-        return Plot{p.filename().string(), std::move(datapoints)};
+        if (datapointsPerPlot.empty())
+        {
+            // no data: no plots
+            return rv;
+        }
+        else if (datapointsPerPlot.size() == 1)
+        {
+            // one series: name the series `$filename`
+            rv.emplace_back(p.filename().string(), std::move(datapointsPerPlot.front()));
+            return rv;
+        }
+        else
+        {
+            // >1 series: name each series `$filename ($header)` (or a number)
+
+            rv.reserve(datapointsPerPlot.size());
+            for (size_t i = 0; i < datapointsPerPlot.size(); ++i)
+            {
+                std::stringstream ss;
+                ss << p.filename();
+                ss << " (";
+                if (maybeHeaders && maybeHeaders->size() > i)
+                {
+                    ss << (*maybeHeaders)[i];
+                }
+                else
+                {
+                    ss << i;
+                }
+                ss << ')';
+
+                rv.emplace_back(std::move(ss).str(), std::move(datapointsPerPlot[i]));
+            }
+
+            return rv;
+        }
     }
 
     void TrySavePlotToCSV(OpenSim::Coordinate const& coord, PlotParameters const& params, Plot const& plot, std::filesystem::path const& outPath)
@@ -1387,10 +1427,10 @@ namespace
 
         if (maybeCSVPath)
         {
-            if (std::optional<Plot> plot = TryLoadCSVFileAsPlot(*maybeCSVPath))
+            for (Plot& plot : TryLoadSVCFileAsPlots(*maybeCSVPath))
             {
-                plot->setIsLocked(true);
-                lines.pushPlotAsPrevious(std::move(plot).value());
+                plot.setIsLocked(true);
+                lines.pushPlotAsPrevious(std::move(plot));
             }
         }
     }
@@ -1925,11 +1965,11 @@ namespace
                     }
                 }
 
-                if (ImGui::MenuItem("import CSV overlay"))
+                if (ImGui::MenuItem("import CSV overlay(s)"))
                 {
                     ActionPromptUserForCSVOverlayFile(m_Lines);
                 }
-                osc::DrawTooltipIfItemHovered("import CSV overlay", "Imports the specified CSV file as an overlay over the current plot. This is handy fitting muscle curves against externally-supplied data.\n\nThe provided CSV file must contain a header row and at least two columns of numeric data on each data row (additional columns are ignored, rows containing too few columns are ignored). The values in the columns must match this plot's axes.");
+                osc::DrawTooltipIfItemHovered("import CSV overlay(s)", "Imports the specified CSV file as an overlay over the current plot. This is handy fitting muscle curves against externally-supplied data.\n\nThe provided CSV file must contain a header row and at least two columns of numeric data on each data row. The values in the columns must match this plot's axes.");
 
                 if (ImGui::BeginMenu("export CSV"))
                 {
