@@ -53,6 +53,11 @@ private:
             m_Model->setHovered(maybeHover);
         }
 
+        if (m_Viewer.isMousedOver() && m_Viewer.isLeftClicked())
+        {
+            m_Model->setSelected(maybeHover);
+        }
+
         if (maybeHover)
         {
             DrawComponentHoverTooltip(*maybeHover);
