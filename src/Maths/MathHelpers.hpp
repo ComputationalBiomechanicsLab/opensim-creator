@@ -121,6 +121,9 @@ namespace osc
     glm::mat4 Dir1ToDir2Xform(glm::vec3 const& dir1, glm::vec3 const& dir2) noexcept;
 
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
+    glm::vec3 ExtractEulerAngleXYZ(glm::quat const&) noexcept;
+
+    // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
     glm::vec3 ExtractEulerAngleXYZ(glm::mat4 const&) noexcept;
 
     // returns an XY NDC point converted from a screen point

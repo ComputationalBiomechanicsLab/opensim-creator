@@ -28,9 +28,11 @@
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Marker.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 
 #include <memory>
 #include <string_view>
+#include <sstream>
 #include <utility>
 
 class osc::ModelEditorViewerPanel::Impl final : public osc::StandardPanel {
@@ -200,7 +202,7 @@ private:
         }
         ImGui::SameLine();
 
-        DrawGizmoOpSelector(m_GizmoOperation, true, false, false);  // translate/rotate selector
+        DrawGizmoOpSelector(m_GizmoOperation, true, true, false);  // translate/rotate selector
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
         ImGui::SameLine();
         ImGui::PopStyleVar();
@@ -228,6 +230,10 @@ private:
         else if (OpenSim::PathPoint const* const maybePathPoint = dynamic_cast<OpenSim::PathPoint const*>(&selected))
         {
             drawGizmoOverlayForUserPathPoint(viewportRect, *maybePathPoint);
+        }
+        else if (OpenSim::PhysicalOffsetFrame const* const maybePof = dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&selected))
+        {
+            drawGizmoOverlayForPhysicalOffsetFrame(viewportRect, *maybePof);
         }
         else
         {
@@ -373,6 +379,82 @@ private:
         SimTK::InverseRotation const& groundToParentRotation = parentToGroundRotation.invert();
         glm::vec3 const translationInParent = ToVec3(groundToParentRotation * ToSimTKVec3(translationInGround));
         ActionTranslatePathPoint(*m_Model, pathPoint, translationInParent);
+    }
+
+    void drawGizmoOverlayForPhysicalOffsetFrame(
+        Rect const& viewportRect,
+        OpenSim::PhysicalOffsetFrame const& pof)
+    {
+        if (m_GizmoOperation != ImGuizmo::TRANSLATE &&
+            m_GizmoOperation != ImGuizmo::ROTATE)
+        {
+            return;  // can only translate/rotate offset frames
+        }
+
+        setupImguizmo(viewportRect);
+
+        // use the PoF's own rotation as its local space
+        glm::mat4 currentXformInGround = ToMat4(pof.getRotationInGround(m_Model->getState()));
+        currentXformInGround[3] = glm::vec4{ToVec3(pof.getPositionInGround(m_Model->getState())), 1.0f};
+        glm::mat4 deltaInGround;
+
+        bool const gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
+            glm::value_ptr(m_Params.camera.getViewMtx()),
+            glm::value_ptr(m_Params.camera.getProjMtx(AspectRatio(viewportRect))),
+            m_GizmoOperation,
+            m_GizmoMode,
+            glm::value_ptr(currentXformInGround),
+            glm::value_ptr(deltaInGround),
+            nullptr,
+            nullptr,
+            nullptr
+        );
+        bool const isUsingThisFrame = ImGuizmo::IsUsing();
+        bool const wasUsingLastFrame = m_WasUsingGizmoLastFrame;
+        m_WasUsingGizmoLastFrame = isUsingThisFrame;  // update cached state
+
+        if (wasUsingLastFrame && !isUsingThisFrame)
+        {
+            std::stringstream ss;
+            ss << "transformed " << pof.getName();
+            m_Model->commit(std::move(ss).str());
+        }
+
+        if (!gizmoWasManipulatedByUser)
+        {
+            return;  // user is not interacting, so no changes to apply
+        }
+        // else: apply in-place change to model
+
+        // decompose the overall transformation into component parts
+        glm::vec3 translationInGround{};
+        glm::vec3 rotationInGround{};
+        glm::vec3 scaleInGround{};
+        ImGuizmo::DecomposeMatrixToComponents(
+            glm::value_ptr(deltaInGround),
+            glm::value_ptr(translationInGround),
+            glm::value_ptr(rotationInGround),
+            glm::value_ptr(scaleInGround)
+        );
+        rotationInGround = glm::radians(rotationInGround);
+
+        // apply transformation to component in-place (but don't save - would be very slow)
+        glm::vec3 translationInPofFrame{};
+        glm::vec3 eulersInPofFrame = {};
+        if (m_GizmoOperation == ImGuizmo::TRANSLATE)
+        {
+            SimTK::Rotation const pofToGroundRotation =  pof.getRotationInGround(m_Model->getState());
+            SimTK::InverseRotation const& groundToParentRotation = pofToGroundRotation.invert();
+            translationInPofFrame = ToVec3(groundToParentRotation * ToSimTKVec3(translationInGround));
+        }
+        else if (m_GizmoOperation == ImGuizmo::ROTATE)
+        {
+            osc::Transform t = osc::ToTransform(pof.getTransformInGround(m_Model->getState()));
+            ApplyWorldspaceRotation(t, rotationInGround, currentXformInGround[3]);
+            eulersInPofFrame = ExtractEulerAngleXYZ(t);
+        }
+
+        ActionTransformPof(*m_Model, pof, translationInPofFrame, eulersInPofFrame);
     }
 
     // handles any interactions that change the model (e.g. what's selected)

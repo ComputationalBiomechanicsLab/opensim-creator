@@ -16,6 +16,7 @@ namespace OpenSim { class Joint; }
 namespace OpenSim { class Object; }
 namespace OpenSim { class PathPoint; }
 namespace OpenSim { class PhysicalFrame; }
+namespace OpenSim { class PhysicalOffsetFrame; }
 namespace OpenSim { class Station; }
 namespace osc { class MainUIStateAPI; }
 namespace osc { class ObjectPropertyEdit; }
@@ -188,9 +189,9 @@ namespace osc
         bool newVisibility
     );
 
-    // sets the location of the given station in its parent frame to its old location plus the provided vector
+    // sets the location of the given station in its parent frame to its old location plus the provided delta
     //
-    // (does not save this change to the undo/redo storage)
+    // (does not save the change to undo/redo storage)
     bool ActionTranslateStation(
         UndoableModelStatePair&,
         OpenSim::Station const&,
@@ -199,22 +200,35 @@ namespace osc
 
     // sets the location of the given station in its parent frame to its old location plus the provided vector
     //
-    // (saves the modified version to undo/redo storage)
+    // (saves the change to undo/redo storage)
     bool ActionTranslateStationAndSave(
         UndoableModelStatePair&,
         OpenSim::Station const&,
         glm::vec3 const& deltaPosition
     );
 
+    // sets the location of the given path point in its parent frame to its old location plus the provided delta
+    //
+    // (does not save the change to undo/redo storage)
     bool ActionTranslatePathPoint(
         UndoableModelStatePair&,
         OpenSim::PathPoint const&,
         glm::vec3 const& deltaPosition
     );
 
+    // sets the location of the given path point in its parent frame to its old location plus the provided delta
+    //
+    // (saves the change to undo/redo storage)
     bool ActionTranslatePathPointAndSave(
         UndoableModelStatePair&,
         OpenSim::PathPoint const&,
         glm::vec3 const& deltaPosition
+    );
+
+    bool ActionTransformPof(
+        UndoableModelStatePair&,
+        OpenSim::PhysicalOffsetFrame const&,
+        glm::vec3 const& deltaPosition,
+        glm::vec3 const& newEulers
     );
 }

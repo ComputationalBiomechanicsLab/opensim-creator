@@ -646,7 +646,7 @@ glm::vec3 osc::RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
     //
     // and the offset angle should try to closely match OpenSim GUI, which lights
     // scenes right-to-left (almost +1 in Z, but slightly along -X also) - #590
-    float const theta = c.theta + 1.1f*fpi4;
+    float const theta = c.theta + fpi4;
 
     // #549: phi shouldn't track with the camera, because changing the "height"/"slope"
     // of the camera with shadow rendering (#10) looks bizzare
@@ -1284,6 +1284,13 @@ glm::mat4 osc::Dir1ToDir2Xform(glm::vec3 const& a, glm::vec3 const& b) noexcept
     }
 
     return glm::rotate(glm::mat4{1.0f}, theta, rotationAxis);
+}
+
+glm::vec3 osc::ExtractEulerAngleXYZ(glm::quat const& q) noexcept
+{
+    glm::vec3 rv;
+    glm::extractEulerAngleXYZ(glm::toMat4(q), rv.x, rv.y, rv.z);
+    return rv;
 }
 
 glm::vec3 osc::ExtractEulerAngleXYZ(glm::mat4 const& m) noexcept

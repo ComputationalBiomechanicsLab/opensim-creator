@@ -55,6 +55,7 @@ All notable changes to this project will be documented here. The format is based
   file (previously: would always use OpenSim's state-dependent coloring method, which is based on activation, #586)
 - The direction that the editor's 3D scene light is now right-to-left, to more closely match OpenSim GUI (#590)
 - The simulator panel will now only render the UI once one simulation state has been emitted from the simulator (#589)
+- Physical offset frames can now be translated+rotated in the model editor tab's 3D viewport (#583)
 
 ## [0.3.2] - 2023/01/09
 
