@@ -27,7 +27,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
-#include <OpenSim/Simulation/Model/PointForceDirection.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
 #include <OpenSim/Simulation/Model/Station.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
@@ -43,125 +42,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-// compute lines of action
-namespace
-{
-    // (a memory-safe stdlib version of OpenSim::GeometryPath::getPointForceDirections)
-    std::vector<std::unique_ptr<OpenSim::PointForceDirection>> GetPointForceDirections(
-        OpenSim::GeometryPath const& path,
-        SimTK::State const& st)
-    {
-        OpenSim::Array<OpenSim::PointForceDirection*> pfds;
-        path.getPointForceDirections(st, &pfds);
-
-        std::vector<std::unique_ptr<OpenSim::PointForceDirection>> rv;
-        rv.reserve(pfds.getSize());
-        for (int i = 0; i < pfds.getSize(); ++i)
-        {
-            rv.emplace_back(pfds[i]);
-        }
-        return rv;
-    }
-
-    // returns the "effective" origin point of a muscle PFD sequence
-    ptrdiff_t GetEffectiveOrigin(std::vector<std::unique_ptr<OpenSim::PointForceDirection>> const& pfds)
-    {
-        OSC_ASSERT_ALWAYS(!pfds.empty());
-
-        // move forward through the PFD sequence until a different frame is found
-        //
-        // the PFD before that one is the effective origin
-        auto const it = std::find_if(
-            pfds.begin() + 1,
-            pfds.end(),
-            [&first = pfds.front()](auto const& pfd) { return &pfd->frame() != &first->frame(); }
-        );
-        return std::distance(pfds.begin(), it) - 1;
-    }
-
-    ptrdiff_t GetEffectiveInsertion(std::vector<std::unique_ptr<OpenSim::PointForceDirection>> const& pfds)
-    {
-        OSC_ASSERT_ALWAYS(!pfds.empty());
-
-        // move backward through the PFD sequence until a different frame is found
-        //
-        // the PFD after that one is the effective insertion
-        auto const rit = std::find_if(
-            pfds.rbegin() + 1,
-            pfds.rend(),
-            [&last = pfds.back()](auto const& pfd) { return &pfd->frame() != &last->frame(); }
-        );
-        return std::distance(pfds.begin(), rit.base());
-    }
-
-    // returns an index range into the provided array that contains only
-    // effective attachment points? (see: https://github.com/modenaxe/MuscleForceDirection/blob/master/CPP/MuscleForceDirection/MuscleForceDirection.cpp)
-    std::pair<ptrdiff_t, ptrdiff_t> GetEffectiveAttachmentIndices(std::vector<std::unique_ptr<OpenSim::PointForceDirection>> const& pfds)
-    {
-        return {GetEffectiveOrigin(pfds), GetEffectiveInsertion(pfds)};
-    }
-
-    std::pair<ptrdiff_t, ptrdiff_t> GetAnatomicalAttachmentIndices(std::vector<std::unique_ptr<OpenSim::PointForceDirection>> const& pfds)
-    {
-        OSC_ASSERT(!pfds.empty());
-
-        return {0, pfds.size() - 1};
-    }
-
-    glm::vec3 GetLocationInGround(OpenSim::PointForceDirection& pf, SimTK::State const& st)
-    {
-        SimTK::Vec3 const location = pf.frame().findStationLocationInGround(st, pf.point());
-        return osc::ToVec3(location);
-    }
-
-    struct LinesOfActionConfig final {
-
-        // as opposed to using "anatomical"
-        bool useEffectiveInsertion = true;
-    };
-
-    struct LinesOfAction final {
-        glm::vec3 originPos;
-        glm::vec3 originDirection;
-        glm::vec3 insertionPos;
-        glm::vec3 insertionDirection;
-    };
-
-    std::optional<LinesOfAction> TryGetLinesOfAction(
-        OpenSim::Muscle const& muscle,
-        SimTK::State const& st,
-        LinesOfActionConfig const& config)
-    {
-        std::vector<std::unique_ptr<OpenSim::PointForceDirection>> const pfds = GetPointForceDirections(muscle.getGeometryPath(), st);
-        if (pfds.size() < 2)
-        {
-            return std::nullopt;  // not enough PFDs to compute a line of action
-        }
-
-        std::pair<ptrdiff_t, ptrdiff_t> const attachmentIndexRange = config.useEffectiveInsertion ?
-            GetEffectiveAttachmentIndices(pfds) :
-            GetAnatomicalAttachmentIndices(pfds);
-
-        OSC_ASSERT_ALWAYS(0 <= attachmentIndexRange.first && attachmentIndexRange.first < osc::ssize(pfds));
-        OSC_ASSERT_ALWAYS(0 <= attachmentIndexRange.second && attachmentIndexRange.second < osc::ssize(pfds));
-
-        if (attachmentIndexRange.first >= attachmentIndexRange.second)
-        {
-            return std::nullopt;  // not enough *unique* PFDs to compute a line of action
-        }
-
-        glm::vec3 const originPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first), st);
-        glm::vec3 const pointAfterOriginPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first + 1), st);
-        glm::vec3 const originDir = glm::normalize(pointAfterOriginPos - originPos);
-
-        glm::vec3 const insertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second), st);
-        glm::vec3 const pointAfterInsertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second - 1), st);
-        glm::vec3 const insertionDir = glm::normalize(pointAfterInsertionPos - insertionPos);
-
-        return LinesOfAction{originPos, originDir, insertionPos, insertionDir};
-    }
-}
 
 namespace
 {
@@ -804,13 +684,11 @@ namespace
         if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForOrigin())
         {
             // render lines of action (todo: should be behind a UI toggle for on vs. effective vs. anatomical etc.)
-            LinesOfActionConfig config{};
-            config.useEffectiveInsertion = true;
-            if (std::optional<LinesOfAction> loas = TryGetLinesOfAction(musc, rs.getState(), config))
+            if (std::optional<osc::LinesOfAction> loas = osc::GetEffectiveLinesOfActionInGround(musc, rs.getState()))
             {
                 osc::ArrowProperties p;
-                p.worldspaceStart = loas->originPos;
-                p.worldspaceEnd = loas->originPos + (fixupScaleFactor*0.1f)*loas->originDirection;
+                p.worldspaceStart = loas->origin.point;
+                p.worldspaceEnd = loas->origin.point + (fixupScaleFactor*0.1f)*loas->origin.direction;
                 p.tipLength = (fixupScaleFactor*0.015f);
                 p.headThickness = (fixupScaleFactor*0.01f);
                 p.neckThickness = (fixupScaleFactor*0.006f);
@@ -827,13 +705,11 @@ namespace
         if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForInsertion())
         {
             // render lines of action (todo: should be behind a UI toggle for on vs. effective vs. anatomical etc.)
-            LinesOfActionConfig config{};
-            config.useEffectiveInsertion = true;
-            if (std::optional<LinesOfAction> loas = TryGetLinesOfAction(musc, rs.getState(), config))
+            if (std::optional<osc::LinesOfAction> loas = osc::GetEffectiveLinesOfActionInGround(musc, rs.getState()))
             {
                 osc::ArrowProperties p;
-                p.worldspaceStart = loas->insertionPos;
-                p.worldspaceEnd = loas->insertionPos + (fixupScaleFactor*0.1f)*loas->insertionDirection;
+                p.worldspaceStart = loas->insertion.point;
+                p.worldspaceEnd = loas->insertion.point + (fixupScaleFactor*0.1f)*loas->insertion.direction;
                 p.tipLength = (fixupScaleFactor*0.015f);
                 p.headThickness = (fixupScaleFactor*0.01f);
                 p.neckThickness = (fixupScaleFactor*0.006f);
@@ -850,13 +726,11 @@ namespace
         if (rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForOrigin())
         {
             // render lines of action (todo: should be behind a UI toggle for on vs. effective vs. anatomical etc.)
-            LinesOfActionConfig config{};
-            config.useEffectiveInsertion = false;
-            if (std::optional<LinesOfAction> loas = TryGetLinesOfAction(musc, rs.getState(), config))
+            if (std::optional<osc::LinesOfAction> loas = osc::GetAnatomicalLinesOfActionInGround(musc, rs.getState()))
             {
                 osc::ArrowProperties p;
-                p.worldspaceStart = loas->originPos;
-                p.worldspaceEnd = loas->originPos + (fixupScaleFactor*0.1f)*loas->originDirection;
+                p.worldspaceStart = loas->origin.point;
+                p.worldspaceEnd = loas->origin.point + (fixupScaleFactor*0.1f)*loas->origin.direction;
                 p.tipLength = (fixupScaleFactor*0.015f);
                 p.headThickness = (fixupScaleFactor*0.01f);
                 p.neckThickness = (fixupScaleFactor*0.006f);
@@ -873,13 +747,11 @@ namespace
         if (rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForInsertion())
         {
             // render lines of action (todo: should be behind a UI toggle for on vs. effective vs. anatomical etc.)
-            LinesOfActionConfig config{};
-            config.useEffectiveInsertion = false;
-            if (std::optional<LinesOfAction> loas = TryGetLinesOfAction(musc, rs.getState(), config))
+            if (std::optional<osc::LinesOfAction> loas = osc::GetAnatomicalLinesOfActionInGround(musc, rs.getState()))
             {
                 osc::ArrowProperties p;
-                p.worldspaceStart = loas->insertionPos;
-                p.worldspaceEnd = loas->insertionPos + (fixupScaleFactor*0.1f)*loas->insertionDirection;
+                p.worldspaceStart = loas->insertion.point;
+                p.worldspaceEnd = loas->insertion.point + (fixupScaleFactor*0.1f)*loas->insertion.direction;
                 p.tipLength = (fixupScaleFactor*0.015f);
                 p.headThickness = (fixupScaleFactor*0.01f);
                 p.neckThickness = (fixupScaleFactor*0.006f);

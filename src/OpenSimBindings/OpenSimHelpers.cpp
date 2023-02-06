@@ -5,6 +5,7 @@
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/Assertions.hpp"
 #include "src/Utils/Cpp20Shims.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/Perf.hpp"
@@ -14,6 +15,7 @@
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 #include <nonstd/span.hpp>
+#include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -43,6 +45,7 @@
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include <OpenSim/Simulation/Model/PathPointSet.h>
+#include <OpenSim/Simulation/Model/PointForceDirection.h>
 #include <OpenSim/Simulation/Model/Probe.h>
 #include <OpenSim/Simulation/Model/ProbeSet.h>
 #include <OpenSim/Simulation/Model/Station.h>
@@ -59,7 +62,10 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <cstdlib>
+#include <iterator>
+#include <memory>
 #include <ostream>
 #include <sstream>
 #include <utility>
@@ -118,6 +124,119 @@ namespace
         }
 
         return rv;
+    }
+
+    // (a memory-safe stdlib version of OpenSim::GeometryPath::getPointForceDirections)
+    std::vector<std::unique_ptr<OpenSim::PointForceDirection>> GetPointForceDirections(
+        OpenSim::GeometryPath const& path,
+        SimTK::State const& st)
+    {
+        OpenSim::Array<OpenSim::PointForceDirection*> pfds;
+        path.getPointForceDirections(st, &pfds);
+
+        std::vector<std::unique_ptr<OpenSim::PointForceDirection>> rv;
+        rv.reserve(pfds.getSize());
+        for (int i = 0; i < pfds.getSize(); ++i)
+        {
+            rv.emplace_back(pfds[i]);
+        }
+        return rv;
+    }
+
+    // returns the index of the "effective" origin point of a muscle PFD sequence
+    ptrdiff_t GetEffectiveOrigin(std::vector<std::unique_ptr<OpenSim::PointForceDirection>> const& pfds)
+    {
+        OSC_ASSERT_ALWAYS(!pfds.empty());
+
+        // move forward through the PFD sequence until a different frame is found
+        //
+        // the PFD before that one is the effective origin
+        auto const it = std::find_if(
+            pfds.begin() + 1,
+            pfds.end(),
+            [&first = pfds.front()](auto const& pfd) { return &pfd->frame() != &first->frame(); }
+        );
+        return std::distance(pfds.begin(), it) - 1;
+    }
+
+    // returns the index of the "effective" insertion point of a muscle PFD sequence
+    ptrdiff_t GetEffectiveInsertion(std::vector<std::unique_ptr<OpenSim::PointForceDirection>> const& pfds)
+    {
+        OSC_ASSERT_ALWAYS(!pfds.empty());
+
+        // move backward through the PFD sequence until a different frame is found
+        //
+        // the PFD after that one is the effective insertion
+        auto const rit = std::find_if(
+            pfds.rbegin() + 1,
+            pfds.rend(),
+            [&last = pfds.back()](auto const& pfd) { return &pfd->frame() != &last->frame(); }
+        );
+        return std::distance(pfds.begin(), rit.base());
+    }
+
+    // returns an index range into the provided array that contains only
+    // effective attachment points? (see: https://github.com/modenaxe/MuscleForceDirection/blob/master/CPP/MuscleForceDirection/MuscleForceDirection.cpp)
+    std::pair<ptrdiff_t, ptrdiff_t> GetEffectiveAttachmentIndices(std::vector<std::unique_ptr<OpenSim::PointForceDirection>> const& pfds)
+    {
+        return {GetEffectiveOrigin(pfds), GetEffectiveInsertion(pfds)};
+    }
+
+    std::pair<ptrdiff_t, ptrdiff_t> GetAnatomicalAttachmentIndices(std::vector<std::unique_ptr<OpenSim::PointForceDirection>> const& pfds)
+    {
+        OSC_ASSERT(!pfds.empty());
+
+        return {0, pfds.size() - 1};
+    }
+
+    glm::vec3 GetLocationInGround(OpenSim::PointForceDirection& pf, SimTK::State const& st)
+    {
+        SimTK::Vec3 const location = pf.frame().findStationLocationInGround(st, pf.point());
+        return osc::ToVec3(location);
+    }
+
+    struct LinesOfActionConfig final {
+
+        // as opposed to using "anatomical"
+        bool useEffectiveInsertion = true;
+    };
+
+    std::optional<osc::LinesOfAction> TryGetLinesOfAction(
+        OpenSim::Muscle const& muscle,
+        SimTK::State const& st,
+        LinesOfActionConfig const& config)
+    {
+        std::vector<std::unique_ptr<OpenSim::PointForceDirection>> const pfds = GetPointForceDirections(muscle.getGeometryPath(), st);
+        if (pfds.size() < 2)
+        {
+            return std::nullopt;  // not enough PFDs to compute a line of action
+        }
+
+        std::pair<ptrdiff_t, ptrdiff_t> const attachmentIndexRange = config.useEffectiveInsertion ?
+            GetEffectiveAttachmentIndices(pfds) :
+            GetAnatomicalAttachmentIndices(pfds);
+
+        OSC_ASSERT_ALWAYS(0 <= attachmentIndexRange.first && attachmentIndexRange.first < osc::ssize(pfds));
+        OSC_ASSERT_ALWAYS(0 <= attachmentIndexRange.second && attachmentIndexRange.second < osc::ssize(pfds));
+
+        if (attachmentIndexRange.first >= attachmentIndexRange.second)
+        {
+            return std::nullopt;  // not enough *unique* PFDs to compute a line of action
+        }
+
+        glm::vec3 const originPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first), st);
+        glm::vec3 const pointAfterOriginPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first + 1), st);
+        glm::vec3 const originDir = glm::normalize(pointAfterOriginPos - originPos);
+
+        glm::vec3 const insertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second), st);
+        glm::vec3 const pointAfterInsertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second - 1), st);
+        glm::vec3 const insertionDir = glm::normalize(pointAfterInsertionPos - insertionPos);
+
+        return osc::LinesOfAction
+        {
+            osc::PointDirection{originPos, originDir},
+            osc::PointDirection{insertionPos, insertionDir},
+        };
     }
 }
 
@@ -968,4 +1087,22 @@ OpenSim::ComponentPath osc::GetAbsolutePathOrEmpty(OpenSim::Component const* c)
     {
         return OpenSim::ComponentPath{};
     }
+}
+
+std::optional<osc::LinesOfAction> osc::GetEffectiveLinesOfActionInGround(
+    OpenSim::Muscle const& muscle,
+    SimTK::State const& state)
+{
+    LinesOfActionConfig config;
+    config.useEffectiveInsertion = true;
+    return TryGetLinesOfAction(muscle, state, config);
+}
+
+std::optional<osc::LinesOfAction> osc::GetAnatomicalLinesOfActionInGround(
+    OpenSim::Muscle const& muscle,
+    SimTK::State const& state)
+{
+    LinesOfActionConfig config;
+    config.useEffectiveInsertion = false;
+    return TryGetLinesOfAction(muscle, state, config);
 }

@@ -456,6 +456,7 @@ add_library(osccore STATIC
     src/Maths/MathHelpers.hpp
     src/Maths/MathsImplementation.cpp
     src/Maths/Plane.hpp
+    src/Maths/PointDirection.hpp
     src/Maths/PolarPerspectiveCamera.hpp
     src/Maths/RayCollision.hpp
     src/Maths/Rect.hpp

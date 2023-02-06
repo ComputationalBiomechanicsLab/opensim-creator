@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/Maths/PointDirection.hpp"
 #include "src/Utils/CStringView.hpp"
 
 #include <glm/vec4.hpp>
@@ -22,6 +23,7 @@ namespace OpenSim { class Geometry; }
 namespace OpenSim { class Joint; }
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
+namespace OpenSim { class Muscle; }
 namespace osc { class UndoableModelStatePair; }
 namespace SimTK { class State; }
 
@@ -346,4 +348,18 @@ namespace osc
     //
     // (custom OSC version that may be faster than OpenSim::Component::getAbsolutePath)
     OpenSim::ComponentPath GetAbsolutePathOrEmpty(OpenSim::Component const*);
+
+    // muscle lines of action
+    //
+    // helper functions for computing the "line of action" of a muscle. These algorithms were
+    // adapted from: https://github.com/modenaxe/MuscleForceDirection/
+    //
+    // the reason they return `optional` is to handle edge-cases like the path containing an
+    // insufficient number of points (shouldn't happen, but you never know)
+    struct LinesOfAction final {
+        PointDirection origin;
+        PointDirection insertion;
+    };
+    std::optional<LinesOfAction> GetEffectiveLinesOfActionInGround(OpenSim::Muscle const&, SimTK::State const&);
+    std::optional<LinesOfAction> GetAnatomicalLinesOfActionInGround(OpenSim::Muscle const&, SimTK::State const&);
 }
