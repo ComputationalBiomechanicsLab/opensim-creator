@@ -360,22 +360,23 @@ private:
 
     void drawContent()
     {
-        // ensure m_ShownModelState is populated, if possible
+        // only draw content if a simulation report is available
+        std::optional<osc::SimulationReport> maybeReport = TrySelectReportBasedOnScrubbing(*m_Simulation);
+        if (maybeReport)
         {
-            OSC_PERF("process simulation report");
+            m_ShownModelState->setSimulation(m_Simulation);
+            m_ShownModelState->setSimulationReport(*maybeReport);
 
-            std::optional<osc::SimulationReport> maybeReport = TrySelectReportBasedOnScrubbing(*m_Simulation);
-            if (maybeReport)
-            {
-                m_ShownModelState->setSimulation(m_Simulation);
-                m_ShownModelState->setSimulationReport(*maybeReport);
-            }
+            OSC_PERF("draw simulation screen");
+            m_Toolbar.draw();
+            m_PanelManager->drawAllActivatedPanels();
         }
-
-        OSC_PERF("draw simulation screen");
-
-        m_Toolbar.draw();
-        m_PanelManager->drawAllActivatedPanels();
+        else
+        {
+            ImGui::Begin("Waiting for simulation");
+            ImGui::TextDisabled("(waiting for first simulation state)");
+            ImGui::End();
+        }
     }
 
     std::optional<osc::SimulationReport> TrySelectReportBasedOnScrubbing(osc::VirtualSimulation& sim)
