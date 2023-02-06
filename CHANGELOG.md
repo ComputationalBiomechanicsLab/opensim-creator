@@ -53,6 +53,7 @@ All notable changes to this project will be documented here. The format is based
 - The `import CSV overlay` feature in the muscle plot panel can now import multiple curves from a single file (#587)
 - Added muscle coloring style "OpenSim (Appearance Property)", which uses the muscle colors as-defined in the osim
   file (previously: would always use OpenSim's state-dependent coloring method, which is based on activation, #586)
+- The direction that the editor's 3D scene light is now right-to-left, to more closely match OpenSim GUI (590)
 
 ## [0.3.2] - 2023/01/09
 
