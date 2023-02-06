@@ -20,14 +20,49 @@ namespace osc
     public:
         virtual ~MainUIStateAPI() noexcept = default;
 
-        virtual ParamBlock const& getSimulationParams() const = 0;
-        virtual ParamBlock& updSimulationParams() = 0;
+        ParamBlock const& getSimulationParams() const
+        {
+            return implGetSimulationParams();
+        }
+        ParamBlock& updSimulationParams()
+        {
+            return implUpdSimulationParams();
+        }
 
-        virtual int getNumUserOutputExtractors() const = 0;
-        virtual OutputExtractor const& getUserOutputExtractor(int) const = 0;
-        virtual void addUserOutputExtractor(OutputExtractor const&) = 0;
-        virtual void removeUserOutputExtractor(int) = 0;
-        virtual bool hasUserOutputExtractor(OutputExtractor const&) const = 0;
-        virtual bool removeUserOutputExtractor(OutputExtractor const&) = 0;
+        int getNumUserOutputExtractors() const
+        {
+            return implGetNumUserOutputExtractors();
+        }
+        OutputExtractor const& getUserOutputExtractor(int index) const
+        {
+            return implGetUserOutputExtractor(index);
+        }
+        void addUserOutputExtractor(OutputExtractor const& extractor)
+        {
+            return implAddUserOutputExtractor(extractor);
+        }
+        void removeUserOutputExtractor(int index)
+        {
+            implRemoveUserOutputExtractor(index);
+        }
+        bool hasUserOutputExtractor(OutputExtractor const& extractor) const
+        {
+            return implHasUserOutputExtractor(extractor);
+        }
+        bool removeUserOutputExtractor(OutputExtractor const& extractor)
+        {
+            return implRemoveUserOutputExtractor(extractor);
+        }
+
+    private:
+        virtual ParamBlock const& implGetSimulationParams() const = 0;
+        virtual ParamBlock& implUpdSimulationParams() = 0;
+
+        virtual int implGetNumUserOutputExtractors() const = 0;
+        virtual OutputExtractor const& implGetUserOutputExtractor(int) const = 0;
+        virtual void implAddUserOutputExtractor(OutputExtractor const&) = 0;
+        virtual void implRemoveUserOutputExtractor(int) = 0;
+        virtual bool implHasUserOutputExtractor(OutputExtractor const&) const = 0;
+        virtual bool implRemoveUserOutputExtractor(OutputExtractor const&) = 0;
     };
 }

@@ -279,44 +279,44 @@ public:
         }
     }
 
-    ParamBlock const& getSimulationParams() const override
+    ParamBlock const& implGetSimulationParams() const final
     {
         return m_SimulationParams;
     }
 
-    ParamBlock& updSimulationParams() override
+    ParamBlock& implUpdSimulationParams() final
     {
         return m_SimulationParams;
     }
 
-    int getNumUserOutputExtractors() const override
+    int implGetNumUserOutputExtractors() const final
     {
         return static_cast<int>(m_UserOutputExtractors.size());
     }
 
-    OutputExtractor const& getUserOutputExtractor(int idx) const override
+    OutputExtractor const& implGetUserOutputExtractor(int idx) const final
     {
         return m_UserOutputExtractors.at(idx);
     }
 
-    void addUserOutputExtractor(OutputExtractor const& output) override
+    void implAddUserOutputExtractor(OutputExtractor const& output) final
     {
         m_UserOutputExtractors.push_back(output);
         osc::App::upd().updConfig().setIsPanelEnabled("Output Watches", true);
     }
 
-    void removeUserOutputExtractor(int idx) override
+    void implRemoveUserOutputExtractor(int idx) final
     {
         OSC_ASSERT(0 <= idx && idx < static_cast<int>(m_UserOutputExtractors.size()));
         m_UserOutputExtractors.erase(m_UserOutputExtractors.begin() + idx);
     }
 
-    bool hasUserOutputExtractor(OutputExtractor const& oe) const override
+    bool implHasUserOutputExtractor(OutputExtractor const& oe) const final
     {
         return osc::Contains(m_UserOutputExtractors, oe);
     }
 
-    bool removeUserOutputExtractor(OutputExtractor const& oe) override
+    bool implRemoveUserOutputExtractor(OutputExtractor const& oe) final
     {
         auto it = osc::Find(m_UserOutputExtractors, oe);
         if (it != m_UserOutputExtractors.end())
