@@ -18,6 +18,7 @@ namespace OpenSim { class PathPoint; }
 namespace OpenSim { class PhysicalFrame; }
 namespace OpenSim { class PhysicalOffsetFrame; }
 namespace OpenSim { class Station; }
+namespace OpenSim { class WrapObject; }
 namespace osc { class MainUIStateAPI; }
 namespace osc { class ObjectPropertyEdit; }
 namespace osc { class UndoableModelStatePair; }
@@ -228,6 +229,13 @@ namespace osc
     bool ActionTransformPof(
         UndoableModelStatePair&,
         OpenSim::PhysicalOffsetFrame const&,
+        glm::vec3 const& deltaPosition,
+        glm::vec3 const& newEulers
+    );
+
+    bool ActionTransformWrapObject(
+        UndoableModelStatePair&,
+        OpenSim::WrapObject const&,
         glm::vec3 const& deltaPosition,
         glm::vec3 const& newEulers
     );

@@ -29,6 +29,7 @@
 #include <OpenSim/Simulation/Model/Marker.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/Wrap/WrapObject.h>
 
 #include <memory>
 #include <string_view>
@@ -235,6 +236,10 @@ private:
         {
             drawGizmoOverlayForPhysicalOffsetFrame(viewportRect, *maybePof);
         }
+        else if (OpenSim::WrapObject const* const maybeWrapObject = dynamic_cast<OpenSim::WrapObject const*>(&selected))
+        {
+            drawGizmoOverlayForWrapObject(viewportRect, *maybeWrapObject);
+        }
         else
         {
             // (do nothing: we don't know how to manipulate the selection0
@@ -440,21 +445,104 @@ private:
 
         // apply transformation to component in-place (but don't save - would be very slow)
         glm::vec3 translationInPofFrame{};
-        glm::vec3 eulersInPofFrame = {};
+        glm::vec3 eulersInPofFrame{};
         if (m_GizmoOperation == ImGuizmo::TRANSLATE)
         {
             SimTK::Rotation const pofToGroundRotation =  pof.getRotationInGround(m_Model->getState());
             SimTK::InverseRotation const& groundToParentRotation = pofToGroundRotation.invert();
             translationInPofFrame = ToVec3(groundToParentRotation * ToSimTKVec3(translationInGround));
+            eulersInPofFrame = ToVec3(pof.get_orientation());
         }
         else if (m_GizmoOperation == ImGuizmo::ROTATE)
         {
             osc::Transform t = osc::ToTransform(pof.getTransformInGround(m_Model->getState()));
             ApplyWorldspaceRotation(t, rotationInGround, currentXformInGround[3]);
+            translationInPofFrame = {};
             eulersInPofFrame = ExtractEulerAngleXYZ(t);
         }
 
         ActionTransformPof(*m_Model, pof, translationInPofFrame, eulersInPofFrame);
+    }
+
+    void drawGizmoOverlayForWrapObject(
+        Rect const& viewportRect,
+        OpenSim::WrapObject const& wrapObj)
+    {
+        if (m_GizmoOperation != ImGuizmo::TRANSLATE &&
+            m_GizmoOperation != ImGuizmo::ROTATE)
+        {
+            return;  // can only translate/rotate offset frames
+        }
+
+        setupImguizmo(viewportRect);
+
+        SimTK::Transform const wrapToFrame = wrapObj.getTransform();
+        SimTK::Transform const frameToGround = wrapObj.getFrame().getTransformInGround(m_Model->getState());
+        SimTK::Transform const wrapToGround = frameToGround * wrapToFrame;
+        glm::mat4 currentXformInGround = ToMat4x4(wrapToGround);
+        glm::mat4 deltaInGround;
+
+        bool const gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
+            glm::value_ptr(m_Params.camera.getViewMtx()),
+            glm::value_ptr(m_Params.camera.getProjMtx(AspectRatio(viewportRect))),
+            m_GizmoOperation,
+            m_GizmoMode,
+            glm::value_ptr(currentXformInGround),
+            glm::value_ptr(deltaInGround),
+            nullptr,
+            nullptr,
+            nullptr
+        );
+        bool const isUsingThisFrame = ImGuizmo::IsUsing();
+        bool const wasUsingLastFrame = m_WasUsingGizmoLastFrame;
+        m_WasUsingGizmoLastFrame = isUsingThisFrame;  // update cached state
+
+        if (wasUsingLastFrame && !isUsingThisFrame)
+        {
+            std::stringstream ss;
+            ss << "transformed " << wrapObj.getName();
+            m_Model->commit(std::move(ss).str());
+        }
+
+        if (!gizmoWasManipulatedByUser)
+        {
+            return;  // user is not interacting, so no changes to apply
+        }
+        // else: apply in-place change to model
+
+        // decompose the overall transformation into component parts
+        glm::vec3 translationInGround{};
+        glm::vec3 rotationInGround{};
+        glm::vec3 scaleInGround{};
+        ImGuizmo::DecomposeMatrixToComponents(
+            glm::value_ptr(deltaInGround),
+            glm::value_ptr(translationInGround),
+            glm::value_ptr(rotationInGround),
+            glm::value_ptr(scaleInGround)
+        );
+        rotationInGround = glm::radians(rotationInGround);
+
+        // apply transformation to component in-place (but don't save - would be very slow)
+        glm::vec3 translationInPofFrame{};
+        glm::vec3 eulersInPofFrame{};
+        if (m_GizmoOperation == ImGuizmo::TRANSLATE)
+        {
+            SimTK::Rotation const frameToGroundRotation = frameToGround.R();
+            SimTK::InverseRotation const& groundToFrameRotation = frameToGroundRotation.invert();
+            translationInPofFrame = ToVec3(groundToFrameRotation * ToSimTKVec3(translationInGround));
+            eulersInPofFrame = ToVec3(wrapObj.get_xyz_body_rotation());
+        }
+        else if (m_GizmoOperation == ImGuizmo::ROTATE)
+        {
+            // TODO: fix this gigantic mess
+            osc::Transform wrapToGroundXform = osc::ToTransform(wrapToGround);
+            ApplyWorldspaceRotation(wrapToGroundXform, rotationInGround, currentXformInGround[3]);
+            SimTK::Transform newWrapToFrameXForm = frameToGround.invert() * osc::ToSimTKTransform(wrapToGroundXform);
+            translationInPofFrame = {};
+            eulersInPofFrame = ExtractEulerAngleXYZ(ToTransform(newWrapToFrameXForm));
+        }
+
+        ActionTransformWrapObject(*m_Model, wrapObj, translationInPofFrame, eulersInPofFrame);
     }
 
     // handles any interactions that change the model (e.g. what's selected)
