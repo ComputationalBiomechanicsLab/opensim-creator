@@ -51,6 +51,8 @@ All notable changes to this project will be documented here. The format is based
 - Muscle path points can now be dragged around (translated) in the model editor tab's 3D viewport (#85)
 - There is now a toggle that affects whether the dragging gizmos operate in world-space (ground) or the parent frame (#584)
 - The `import CSV overlay` feature in the muscle plot panel can now import multiple curves from a single file (#587)
+- Added muscle coloring style "OpenSim (Appearance Property)", which uses the muscle colors as-defined in the osim
+  file (previously: would always use OpenSim's state-dependent coloring method, which is based on activation, #586)
 
 ## [0.3.2] - 2023/01/09
 

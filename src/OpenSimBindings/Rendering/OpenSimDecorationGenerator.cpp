@@ -85,7 +85,12 @@ namespace
         SimTK::State const& st,
         osc::MuscleColoringStyle s)
     {
-        if (s == osc::MuscleColoringStyle::OpenSim)
+        if (s == osc::MuscleColoringStyle::OpenSimAppearanceProperty)
+        {
+            SimTK::Vec3 c = musc.getGeometryPath().getDefaultColor();
+            return glm::vec4{osc::ToVec3(c), 1.0f};
+        }
+        else if (s == osc::MuscleColoringStyle::OpenSim)
         {
             // use the same color that OpenSim emits (which is usually just activation-based, but might
             // change in the future)

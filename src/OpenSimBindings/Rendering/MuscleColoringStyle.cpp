@@ -9,6 +9,7 @@
 
 static auto constexpr c_ColorStyles = osc::MakeSizedArray<osc::MuscleColoringStyle, static_cast<size_t>(osc::MuscleColoringStyle::TOTAL)>
 (
+    osc::MuscleColoringStyle::OpenSimAppearanceProperty,
     osc::MuscleColoringStyle::OpenSim,
     osc::MuscleColoringStyle::Activation,
     osc::MuscleColoringStyle::Excitation,
@@ -18,6 +19,7 @@ static auto constexpr c_ColorStyles = osc::MakeSizedArray<osc::MuscleColoringSty
 
 static auto constexpr c_ColorStyleStrings = osc::MakeSizedArray<char const*, static_cast<size_t>(osc::MuscleColoringStyle::TOTAL)>
 (
+    "OpenSim (Appearance Property)",
     "OpenSim",
     "Activation",
     "Excitation",
