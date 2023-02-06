@@ -1,6 +1,7 @@
 #include "OpenSimHelpers.hpp"
 
 #include "src/Maths/MathHelpers.hpp"
+#include "src/Maths/Transform.hpp"
 #include "src/OpenSimBindings/SimTKHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/Log.hpp"
@@ -1105,4 +1106,39 @@ std::optional<osc::LinesOfAction> osc::GetAnatomicalLinesOfActionInGround(
     LinesOfActionConfig config;
     config.useEffectiveInsertion = false;
     return TryGetLinesOfAction(muscle, state, config);
+}
+
+std::vector<osc::GeometryPathPoint> osc::GetAllPathPoints(OpenSim::GeometryPath const& gp, SimTK::State const& st)
+{
+    OpenSim::Array<OpenSim::AbstractPathPoint*> const& pps = gp.getCurrentPath(st);
+
+    std::vector<GeometryPathPoint> rv;
+    rv.reserve(pps.getSize());  // best guess: but path wrapping might add more
+
+    for (int i = 0; i < pps.getSize(); ++i)
+    {
+
+        OpenSim::AbstractPathPoint const& ap = *pps[i];
+
+        if (typeid(ap) == typeid(OpenSim::PathWrapPoint))
+        {
+            // special case: it's a wrapping point, so add each part of the wrap
+            OpenSim::PathWrapPoint const* pwp = static_cast<OpenSim::PathWrapPoint const*>(&ap);
+
+            Transform const body2ground = ToTransform(pwp->getParentFrame().getTransformInGround(st));
+            OpenSim::Array<SimTK::Vec3> const& wrapPath = pwp->getWrapPath(st);
+
+            rv.reserve(rv.size() + wrapPath.getSize());
+            for (int j = 0; j < wrapPath.getSize(); ++j)
+            {
+                rv.emplace_back(body2ground * ToVec3(wrapPath[j]));
+            }
+        }
+        else
+        {
+            rv.emplace_back(ap, ToVec3(ap.getLocationInGround(st)));
+        }
+    }
+
+    return rv;
 }

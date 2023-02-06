@@ -3,6 +3,7 @@
 #include "src/Maths/PointDirection.hpp"
 #include "src/Utils/CStringView.hpp"
 
+#include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/ComponentPath.h>
@@ -14,12 +15,14 @@
 #include <vector>
 
 namespace OpenSim { class AbstractOutput; }
+namespace OpenSim { class AbstractPathPoint; }
 namespace OpenSim { class AbstractProperty; }
 namespace OpenSim { class AbstractSocket; }
 namespace OpenSim { class Component; }
 namespace OpenSim { class ComponentPath; }
 namespace OpenSim { class Coordinate; }
 namespace OpenSim { class Geometry; }
+namespace OpenSim { class GeometryPath; }
 namespace OpenSim { class Joint; }
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
@@ -362,4 +365,26 @@ namespace osc
     };
     std::optional<LinesOfAction> GetEffectiveLinesOfActionInGround(OpenSim::Muscle const&, SimTK::State const&);
     std::optional<LinesOfAction> GetAnatomicalLinesOfActionInGround(OpenSim::Muscle const&, SimTK::State const&);
+
+    // path points
+    //
+    // helper functions for pulling path points out of geometry paths (e.g. for rendering)
+    struct GeometryPathPoint final {
+        explicit GeometryPathPoint(glm::vec3 const& locationInGround_) :
+            locationInGround{locationInGround_}
+        {
+        }
+
+        GeometryPathPoint(
+            OpenSim::AbstractPathPoint const& underlyingUserPathPoint,
+            glm::vec3 const& locationInGround_) :
+            maybeUnderlyingUserPathPoint{&underlyingUserPathPoint},
+            locationInGround{locationInGround_}
+        {
+        }
+
+        OpenSim::AbstractPathPoint const* maybeUnderlyingUserPathPoint = nullptr;
+        glm::vec3 locationInGround{};
+    };
+    std::vector<GeometryPathPoint> GetAllPathPoints(OpenSim::GeometryPath const&, SimTK::State const&);
 }

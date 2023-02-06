@@ -46,67 +46,9 @@
 namespace
 {
     // helper: convert a physical frame's transform to ground into an osc::Transform
-    osc::Transform TransformInGround(
-        OpenSim::PhysicalFrame const& pf,
-        SimTK::State const& st)
+    osc::Transform TransformInGround(OpenSim::Frame const& frame, SimTK::State const& state)
     {
-        return osc::ToTransform(pf.getTransformInGround(st));
-    }
-
-    // helper struct: simplification of a point in a geometry path
-    struct GeometryPathPoint final {
-
-        // set to be != nullptr if the point is associated with a (probably, user defined)
-        // path point
-        OpenSim::AbstractPathPoint const* maybePathPoint = nullptr;
-        glm::vec3 location = {};
-
-        explicit GeometryPathPoint(glm::vec3 const& location_) :
-            location{location_}
-        {
-        }
-
-        GeometryPathPoint(OpenSim::AbstractPathPoint const& pathPoint, glm::vec3 const& location_) :
-            maybePathPoint{&pathPoint},
-            location{location_}
-        {
-        }
-    };
-
-    // helper: returns path points in a GeometryPath as a sequence of 3D vectors
-    std::vector<GeometryPathPoint> GetAllPathPoints(OpenSim::GeometryPath const& gp, SimTK::State const& st)
-    {
-        OpenSim::Array<OpenSim::AbstractPathPoint*> const& pps = gp.getCurrentPath(st);
-
-        std::vector<GeometryPathPoint> rv;
-        rv.reserve(pps.getSize());  // best guess: but path wrapping might add more
-
-        for (int i = 0; i < pps.getSize(); ++i)
-        {
-
-            OpenSim::AbstractPathPoint const& ap = *pps[i];
-
-            if (typeid(ap) == typeid(OpenSim::PathWrapPoint))
-            {
-                // special case: it's a wrapping point, so add each part of the wrap
-                OpenSim::PathWrapPoint const* pwp = static_cast<OpenSim::PathWrapPoint const*>(&ap);
-
-                osc::Transform const body2ground = TransformInGround(pwp->getParentFrame(), st);
-                OpenSim::Array<SimTK::Vec3> const& wrapPath = pwp->getWrapPath(st);
-
-                rv.reserve(rv.size() + wrapPath.getSize());
-                for (int j = 0; j < wrapPath.getSize(); ++j)
-                {
-                    rv.emplace_back(body2ground * osc::ToVec3(wrapPath[j]));
-                }
-            }
-            else
-            {
-                rv.emplace_back(ap, osc::ToVec3(ap.getLocationInGround(st)));
-            }
-        }
-
-        return rv;
+        return osc::ToTransform(frame.getTransformInGround(state));
     }
 
     // returns value between [0.0f, 1.0f]
@@ -173,7 +115,10 @@ namespace
     }
 
     // helper: returns the size (radius) of a muscle based on caller-provided sizing flags
-    float GetMuscleSize(OpenSim::Muscle const& musc, float fixupScaleFactor, osc::MuscleSizingStyle s)
+    float GetMuscleSize(
+        OpenSim::Muscle const& musc,
+        float fixupScaleFactor,
+        osc::MuscleSizingStyle s)
     {
         switch (s) {
         case osc::MuscleSizingStyle::PcsaDerived:
@@ -411,7 +356,7 @@ namespace
         OpenSim::Muscle const& muscle)
     {
         float const fixupScaleFactor = rs.getFixupScaleFactor();
-        std::vector<GeometryPathPoint> const pps = GetAllPathPoints(muscle.getGeometryPath(), rs.getState());
+        std::vector<osc::GeometryPathPoint> const pps = osc::GetAllPathPoints(muscle.getGeometryPath(), rs.getState());
 
         if (pps.empty())
         {
@@ -485,7 +430,7 @@ namespace
             // edge-case: the muscle is a single point in space: just emit a sphere
             //
             // (this really should never happen, but you never know)
-            emitFiberSphere(pps.front().location);
+            emitFiberSphere(pps.front().locationInGround);
             return;
         }
 
@@ -498,21 +443,21 @@ namespace
         float const fiberEnd = tendonLen + fiberLen;
 
         size_t i = 1;
-        GeometryPathPoint prevPoint = pps.front();
+        osc::GeometryPathPoint prevPoint = pps.front();
         float prevTraversalPos = 0.0f;
 
         // draw first tendon
         if (prevTraversalPos < tendonLen)
         {
             // emit first tendon sphere
-            emitTendonSphere(prevPoint.location);
+            emitTendonSphere(prevPoint.locationInGround);
         }
         while (i < pps.size() && prevTraversalPos < tendonLen)
         {
             // emit remaining tendon cylinder + spheres
 
-            GeometryPathPoint const& point = pps[i];
-            glm::vec3 const prevToPos = point.location - prevPoint.location;
+            osc::GeometryPathPoint const& point = pps[i];
+            glm::vec3 const prevToPos = point.locationInGround - prevPoint.locationInGround;
             float prevToPosLen = glm::length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
             float excess = traversalPos - tendonLen;
@@ -520,18 +465,18 @@ namespace
             if (excess > 0.0f)
             {
                 float scaler = (prevToPosLen - excess)/prevToPosLen;
-                glm::vec3 tendonEnd = prevPoint.location + scaler * prevToPos;
+                glm::vec3 tendonEnd = prevPoint.locationInGround + scaler * prevToPos;
 
-                emitTendonCylinder(prevPoint.location, tendonEnd);
+                emitTendonCylinder(prevPoint.locationInGround, tendonEnd);
                 emitTendonSphere(tendonEnd);
 
-                prevPoint.location = tendonEnd;
+                prevPoint.locationInGround = tendonEnd;
                 prevTraversalPos = tendonLen;
             }
             else
             {
-                emitTendonCylinder(prevPoint.location, point.location);
-                emitTendonSphere(point.location);
+                emitTendonCylinder(prevPoint.locationInGround, point.locationInGround);
+                emitTendonSphere(point.locationInGround);
 
                 i++;
                 prevPoint = point;
@@ -543,14 +488,14 @@ namespace
         if (i < pps.size() && prevTraversalPos < fiberEnd)
         {
             // emit first fiber sphere
-            emitFiberSphere(prevPoint.location);
+            emitFiberSphere(prevPoint.locationInGround);
         }
         while (i < pps.size() && prevTraversalPos < fiberEnd)
         {
             // emit remaining fiber cylinder + spheres
 
-            GeometryPathPoint const& point = pps[i];
-            glm::vec3 prevToPos = point.location - prevPoint.location;
+            osc::GeometryPathPoint const& point = pps[i];
+            glm::vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
             float prevToPosLen = glm::length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
             float excess = traversalPos - fiberEnd;
@@ -559,18 +504,18 @@ namespace
             {
                 // emit end point and then exit
                 float scaler = (prevToPosLen - excess)/prevToPosLen;
-                glm::vec3 fiberEndPos = prevPoint.location + scaler * prevToPos;
+                glm::vec3 fiberEndPos = prevPoint.locationInGround + scaler * prevToPos;
 
-                emitFiberCylinder(prevPoint.location, fiberEndPos);
+                emitFiberCylinder(prevPoint.locationInGround, fiberEndPos);
                 emitFiberSphere(fiberEndPos);
 
-                prevPoint.location = fiberEndPos;
+                prevPoint.locationInGround = fiberEndPos;
                 prevTraversalPos = fiberEnd;
             }
             else
             {
-                emitFiberCylinder(prevPoint.location, point.location);
-                emitFiberSphere(point.location);
+                emitFiberCylinder(prevPoint.locationInGround, point.locationInGround);
+                emitFiberSphere(point.locationInGround);
 
                 i++;
                 prevPoint = point;
@@ -582,19 +527,19 @@ namespace
         if (i < pps.size())
         {
             // emit first tendon sphere
-            emitTendonSphere(prevPoint.location);
+            emitTendonSphere(prevPoint.locationInGround);
         }
         while (i < pps.size())
         {
             // emit remaining fiber cylinder + spheres
 
-            GeometryPathPoint const& point = pps[i];
-            glm::vec3 prevToPos = point.location - prevPoint.location;
+            osc::GeometryPathPoint const& point = pps[i];
+            glm::vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
             float prevToPosLen = glm::length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
 
-            emitTendonCylinder(prevPoint.location, point.location);
-            emitTendonSphere(point.location);
+            emitTendonCylinder(prevPoint.locationInGround, point.locationInGround);
+            emitTendonSphere(point.locationInGround);
 
             i++;
             prevPoint = point;
@@ -607,7 +552,7 @@ namespace
         RendererState& rs,
         OpenSim::Muscle const& musc)
     {
-        std::vector<GeometryPathPoint> const pps = GetAllPathPoints(musc.getGeometryPath(), rs.getState());
+        std::vector<osc::GeometryPathPoint> const pps = osc::GetAllPathPoints(musc.getGeometryPath(), rs.getState());
 
         if (pps.empty())
         {
@@ -625,18 +570,18 @@ namespace
             rs.getOptions().getMuscleColoringStyle()
         );
 
-        auto emitSphere = [&](GeometryPathPoint const& pp)
+        auto emitSphere = [&](osc::GeometryPathPoint const& pp)
         {
             // ensure that user-defined path points are independently selectable (#425)
             //
             // TODO: SCONE-style etc. should also support this
-            OpenSim::Component const& c = pp.maybePathPoint ?
-                *pp.maybePathPoint :
+            OpenSim::Component const& c = pp.maybeUnderlyingUserPathPoint ?
+                *pp.maybeUnderlyingUserPathPoint :
                 static_cast<OpenSim::Component const&>(musc);
 
             osc::Transform t;
             t.scale *= fiberUiRadius;
-            t.position = pp.location;
+            t.position = pp.locationInGround;
 
             rs.consume(c, osc::SceneDecoration
             {
@@ -665,7 +610,7 @@ namespace
         }
         for (size_t i = 1; i < pps.size(); ++i)
         {
-            emitCylinder(pps[i - 1].location, pps[i].location);
+            emitCylinder(pps[i - 1].locationInGround, pps[i].locationInGround);
 
             if (showPathPoints)
             {
