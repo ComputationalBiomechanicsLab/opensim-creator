@@ -3,6 +3,7 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Icon.hpp"
 #include "src/Graphics/IconCache.hpp"
+#include "src/Graphics/MeshCache.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/Widgets/ParamBlockEditorPopup.hpp"
@@ -116,6 +117,12 @@ private:
         if (ImGui::Button(ICON_FA_RECYCLE))
         {
             ActionReloadOsimFromDisk(*m_Model);
+
+            // HACK (#594): purge the app-wide mesh cache so that any user edits to the underlying
+            // mesh files are immediately visible after reloading
+            //
+            // this is useful for users that are actively editing the meshes of the model file
+            App::upd().singleton<MeshCache>()->clear();
         }
 
         if (!HasInputFileName(m_Model->getModel()))

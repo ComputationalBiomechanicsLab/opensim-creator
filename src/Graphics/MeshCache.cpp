@@ -73,6 +73,11 @@ osc::MeshCache::MeshCache(MeshCache&&) noexcept = default;
 osc::MeshCache& osc::MeshCache::operator=(MeshCache&&) noexcept = default;
 osc::MeshCache::~MeshCache() noexcept = default;
 
+void osc::MeshCache::clear()
+{
+    m_Impl->fileCache.lock()->clear();
+}
+
 osc::Mesh osc::MeshCache::get(std::string const& key, std::function<Mesh()> const& getter)
 {
     auto guard = m_Impl->fileCache.lock();

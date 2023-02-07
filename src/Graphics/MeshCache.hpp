@@ -17,6 +17,9 @@ namespace osc
         MeshCache& operator=(MeshCache&&) noexcept;
         ~MeshCache() noexcept;
 
+        // clear all cached meshes (can be slow: forces a full reload)
+        void clear();
+
         // always returns (it will use a dummy cube and print a log error if something fails)
         Mesh get(std::string const& key, std::function<Mesh()> const& getter);
 
