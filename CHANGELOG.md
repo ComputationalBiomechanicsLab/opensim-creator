@@ -58,6 +58,7 @@ All notable changes to this project will be documented here. The format is based
 - Physical offset frames can now be translated+rotated in the model editor tab's 3D viewport (#583)
 - Wrap objects can now be translated+rotated in the model editor tab's 3D viewport (#588)
 - The "Reload [Model]" button now forces OSC to also reload any mesh files (#594)
+- Pressing the F5 key now performs the "Reload Model" action (#595)
 
 ## [0.3.2] - 2023/01/09
 

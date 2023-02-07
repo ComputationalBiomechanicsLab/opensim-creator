@@ -20,6 +20,7 @@ namespace OpenSim { class PhysicalOffsetFrame; }
 namespace OpenSim { class Station; }
 namespace OpenSim { class WrapObject; }
 namespace osc { class MainUIStateAPI; }
+namespace osc { class MeshCache; }
 namespace osc { class ObjectPropertyEdit; }
 namespace osc { class UndoableModelStatePair; }
 
@@ -93,8 +94,8 @@ namespace osc
     // open the model's backing file (if applicable) in an OS-determined default for osims
     bool ActionOpenOsimInExternalEditor(UndoableModelStatePair&);
 
-    // force a reload of the model from its backing file (if applicable)
-    bool ActionReloadOsimFromDisk(UndoableModelStatePair&);
+    // force a reload of the model, and its associated assets, from its backing file
+    bool ActionReloadOsimFromDisk(UndoableModelStatePair&, MeshCache&);
 
     // start performing a series of simulations against the model by opening a tab that tries all possible integrators
     bool ActionSimulateAgainstAllIntegrators(MainUIStateAPI&, UndoableModelStatePair const&);

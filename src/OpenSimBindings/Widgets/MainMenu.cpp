@@ -3,6 +3,7 @@
 #include "osc_config.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Graphics/MeshCache.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/Tabs/MeshImporterTab.hpp"
 #include "src/OpenSimBindings/Tabs/SimulatorTab.hpp"
@@ -75,6 +76,10 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
         else if (maybeModel && mod && ImGui::IsKeyPressed(ImGuiKey_S))
         {
             ActionSaveModel(*api, *maybeModel);
+        }
+        else if (maybeModel && ImGui::IsKeyPressed(ImGuiKey_F5))
+        {
+            ActionReloadOsimFromDisk(*maybeModel, *App::upd().singleton<MeshCache>());
         }
     }
 
@@ -178,9 +183,9 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
     {
         bool modelHasBackingFile = maybeModel && osc::HasInputFileName(maybeModel->getModel());
 
-        if (ImGui::MenuItem(ICON_FA_RECYCLE " Reload", nullptr, false, modelHasBackingFile))
+        if (ImGui::MenuItem(ICON_FA_RECYCLE " Reload", "F5", false, modelHasBackingFile))
         {
-            osc::ActionReloadOsimFromDisk(*maybeModel);
+            osc::ActionReloadOsimFromDisk(*maybeModel, *App::upd().singleton<MeshCache>());
         }
         osc::DrawTooltipIfItemHovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
 

@@ -541,7 +541,7 @@ bool osc::ActionOpenOsimInExternalEditor(UndoableModelStatePair& uim)
     return true;
 }
 
-bool osc::ActionReloadOsimFromDisk(UndoableModelStatePair& uim)
+bool osc::ActionReloadOsimFromDisk(UndoableModelStatePair& uim, MeshCache& meshCache)
 {
     if (!osc::HasInputFileName(uim.getModel()))
     {
@@ -558,6 +558,12 @@ bool osc::ActionReloadOsimFromDisk(UndoableModelStatePair& uim)
         uim.setModel(std::move(p));
         uim.commit("reloaded from filesystem");
         uim.setUpToDateWithFilesystem(std::filesystem::last_write_time(uim.getFilesystemPath()));
+
+        // #594: purge the app-wide mesh cache so that any user edits to the underlying
+        // mesh files are immediately visible after reloading
+        //
+        // this is useful for users that are actively editing the meshes of the model file
+        meshCache.clear();
 
         return true;
     }
