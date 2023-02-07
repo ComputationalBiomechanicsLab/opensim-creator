@@ -1776,3 +1776,42 @@ bool osc::ActionTransformWrapObject(
     }
     return false;
 }
+
+bool osc::ActionTransformContactGeometry(
+    UndoableModelStatePair& model,
+    OpenSim::ContactGeometry const& contactGeom,
+    glm::vec3 const& deltaPosition,
+    glm::vec3 const& newEulers)
+{
+    OpenSim::ComponentPath const pofPath = osc::GetAbsolutePath(contactGeom);
+    UID const oldVersion = model.getModelVersion();
+    try
+    {
+        OpenSim::Model& mutModel = model.updModel();
+
+        OpenSim::ContactGeometry* mutGeom = FindComponentMut<OpenSim::ContactGeometry>(mutModel, pofPath);
+        if (!mutGeom)
+        {
+            model.setModelVersion(oldVersion);  // the provided path doesn't exist in the model
+            return false;
+        }
+
+        SimTK::Vec3 const originalPos = mutGeom->get_location();
+        SimTK::Vec3 const newPos = originalPos + ToSimTKVec3(deltaPosition);
+
+        // perform mutation
+        mutGeom->set_location(newPos);
+        mutGeom->set_orientation(ToSimTKVec3(newEulers));
+        osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
+
+        return true;
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error detected while trying to transform a POF: %s", ex.what());
+        model.rollback();
+        return false;
+    }
+    return false;
+}

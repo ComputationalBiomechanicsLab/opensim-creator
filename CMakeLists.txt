@@ -561,6 +561,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/Widgets/ModelEditorMainMenu.hpp
     src/OpenSimBindings/Widgets/ModelEditorToolbar.cpp
     src/OpenSimBindings/Widgets/ModelEditorToolbar.hpp
+    src/OpenSimBindings/Widgets/ModelSelectionGizmo.cpp
+    src/OpenSimBindings/Widgets/ModelSelectionGizmo.hpp
     src/OpenSimBindings/Widgets/ObjectPropertiesEditor.cpp
     src/OpenSimBindings/Widgets/ObjectPropertiesEditor.hpp
     src/OpenSimBindings/Widgets/ParamBlockEditorPopup.cpp

@@ -12,26 +12,22 @@
 #include "src/OpenSimBindings/Rendering/ModelRendererParams.hpp"
 #include "src/OpenSimBindings/Widgets/BasicWidgets.hpp"
 #include "src/OpenSimBindings/Widgets/ComponentContextMenu.hpp"
-#include "src/OpenSimBindings/ActionFunctions.hpp"
+#include "src/OpenSimBindings/Widgets/ModelSelectionGizmo.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
-#include "src/OpenSimBindings/SimTKHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Panels/StandardPanel.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Widgets/GuiRuler.hpp"
 #include "src/Widgets/IconWithoutMenu.hpp"
 
-#include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
 #include <ImGuizmo.h>
-#include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
-#include <OpenSim/Simulation/Model/Marker.h>
-#include <OpenSim/Simulation/Model/PathPoint.h>
-#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Simulation/Wrap/WrapObject.h>
 
+#include <cstdint>
 #include <memory>
+#include <optional>
+#include <string>
 #include <string_view>
 #include <sstream>
 #include <utility>
@@ -147,7 +143,7 @@ private:
 
     bool isUsingAnOverlay() const
     {
-        return m_Ruler.isMeasuring() || ImGuizmo::IsUsing();
+        return m_Ruler.isMeasuring() || m_Gizmo.isUsing();
     }
 
     // uses ImGui's 2D drawlist to draw interactive widgets/overlays on the panel
@@ -171,7 +167,7 @@ private:
         m_Ruler.draw(m_Params.camera, viewportRect, maybeSceneHittest);
 
         // draw gizmo manipulators over the top
-        drawGizmoOverlay(viewportRect);
+        m_Gizmo.draw(viewportRect, m_Params.camera);
 
         if (maybeHover)
         {
@@ -203,346 +199,27 @@ private:
         }
         ImGui::SameLine();
 
-        DrawGizmoOpSelector(m_GizmoOperation, true, true, false);  // translate/rotate selector
+        // draw translate/rotate/scale selector
+        {
+            ImGuizmo::OPERATION op = m_Gizmo.getOperation();
+            if (DrawGizmoOpSelector(op, true, true, false))
+            {
+                m_Gizmo.setOperation(op);
+            }
+        }
+
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
         ImGui::SameLine();
         ImGui::PopStyleVar();
-        DrawGizmoModeSelector(m_GizmoMode); // global/world selector
-    }
 
-    // draws 3D manipulation gizmo overlay
-    void drawGizmoOverlay(Rect const& viewportRect)
-    {
-        // get selection as a component
-        OpenSim::Component const* const maybeSelected = m_Model->getSelected();
-        if (!maybeSelected)
+        // draw global/world selector
         {
-            return;  // nothing selected (don't draw gizmos)
+            ImGuizmo::MODE mode = m_Gizmo.getMode();
+            if (DrawGizmoModeSelector(mode))
+            {
+                m_Gizmo.setMode(mode);
+            }
         }
-        OpenSim::Component const& selected = *maybeSelected;
-
-        // try to downcast the selection as a station
-        //
-        // todo: OpenSim::PathPoint, etc.
-        if (OpenSim::Station const* const maybeStation = dynamic_cast<OpenSim::Station const*>(&selected))
-        {
-            drawGizmoOverlayForStation(viewportRect, *maybeStation);
-        }
-        else if (OpenSim::PathPoint const* const maybePathPoint = dynamic_cast<OpenSim::PathPoint const*>(&selected))
-        {
-            drawGizmoOverlayForUserPathPoint(viewportRect, *maybePathPoint);
-        }
-        else if (OpenSim::PhysicalOffsetFrame const* const maybePof = dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&selected))
-        {
-            drawGizmoOverlayForPhysicalOffsetFrame(viewportRect, *maybePof);
-        }
-        else if (OpenSim::WrapObject const* const maybeWrapObject = dynamic_cast<OpenSim::WrapObject const*>(&selected))
-        {
-            drawGizmoOverlayForWrapObject(viewportRect, *maybeWrapObject);
-        }
-        else
-        {
-            // (do nothing: we don't know how to manipulate the selection0
-        }
-    }
-
-    void setupImguizmo(Rect const& viewportRect)
-    {
-        ImGuizmo::SetID(ImGui::GetID(this));  // important: necessary for multi-viewport gizmos
-        ImGuizmo::SetRect(
-            viewportRect.p1.x,
-            viewportRect.p1.y,
-            Dimensions(viewportRect).x,
-            Dimensions(viewportRect).y
-        );
-        ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
-        ImGuizmo::AllowAxisFlip(false);
-    }
-
-    // HACK: draw gizmos for station
-    //
-    // (it's a hack because this should be abstracted, rather than copy-pasted for each
-    //  manipulation type)
-    void drawGizmoOverlayForStation(Rect const& viewportRect, OpenSim::Station const& station)
-    {
-        if (m_GizmoOperation != ImGuizmo::TRANSLATE)
-        {
-            return;  // can only translate path stations
-        }
-
-        setupImguizmo(viewportRect);
-
-        // use rotation from the parent, translation from station
-        glm::mat4 currentXformInGround = ToMat4(station.getParentFrame().getRotationInGround(m_Model->getState()));
-        currentXformInGround[3] = glm::vec4{ToVec3(station.getLocationInGround(m_Model->getState())), 1.0f};
-        glm::mat4 deltaInGround;
-
-        bool const gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
-            glm::value_ptr(m_Params.camera.getViewMtx()),
-            glm::value_ptr(m_Params.camera.getProjMtx(AspectRatio(viewportRect))),
-            m_GizmoOperation,
-            m_GizmoMode,
-            glm::value_ptr(currentXformInGround),
-            glm::value_ptr(deltaInGround),
-            nullptr,
-            nullptr,
-            nullptr
-        );
-
-        bool const isUsingThisFrame = ImGuizmo::IsUsing();
-        bool const wasUsingLastFrame = m_WasUsingGizmoLastFrame;
-        m_WasUsingGizmoLastFrame = isUsingThisFrame;  // update cached state
-
-        if (wasUsingLastFrame && !isUsingThisFrame)
-        {
-            // user finished interacting, save model
-            ActionTranslateStationAndSave(*m_Model, station, {});
-        }
-
-        if (!gizmoWasManipulatedByUser)
-        {
-            return;  // user is not interacting, so no changes to apply
-        }
-        // else: apply in-place change to model
-
-        // decompose the overall transformation into component parts
-        glm::vec3 translationInGround{};
-        glm::vec3 rotationInGround{};
-        glm::vec3 scaleInGround{};
-        ImGuizmo::DecomposeMatrixToComponents(
-            glm::value_ptr(deltaInGround),
-            glm::value_ptr(translationInGround),
-            glm::value_ptr(rotationInGround),
-            glm::value_ptr(scaleInGround)
-        );
-        rotationInGround = glm::radians(rotationInGround);
-
-        // apply transformation to component in-place (but don't save - would be very slow)
-        SimTK::Rotation const parentToGroundRotation = station.getParentFrame().getRotationInGround(m_Model->getState());
-        SimTK::InverseRotation const& groundToParentRotation = parentToGroundRotation.invert();
-        glm::vec3 const translationInParent = ToVec3(groundToParentRotation * ToSimTKVec3(translationInGround));
-        ActionTranslateStation(*m_Model, station, translationInParent);
-    }
-
-    void drawGizmoOverlayForUserPathPoint(
-        Rect const& viewportRect,
-        OpenSim::PathPoint const& pathPoint)
-    {
-        if (m_GizmoOperation != ImGuizmo::TRANSLATE)
-        {
-            return;  // can only translate path points
-        }
-
-        setupImguizmo(viewportRect);
-
-        // use rotation from the parent, translation from station
-        glm::mat4 currentXformInGround = ToMat4(pathPoint.getParentFrame().getRotationInGround(m_Model->getState()));
-        currentXformInGround[3] = glm::vec4{ToVec3(pathPoint.getLocationInGround(m_Model->getState())), 1.0f};
-        glm::mat4 deltaInGround;
-
-        bool const gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
-            glm::value_ptr(m_Params.camera.getViewMtx()),
-            glm::value_ptr(m_Params.camera.getProjMtx(AspectRatio(viewportRect))),
-            m_GizmoOperation,
-            m_GizmoMode,
-            glm::value_ptr(currentXformInGround),
-            glm::value_ptr(deltaInGround),
-            nullptr,
-            nullptr,
-            nullptr
-        );
-        bool const isUsingThisFrame = ImGuizmo::IsUsing();
-        bool const wasUsingLastFrame = m_WasUsingGizmoLastFrame;
-        m_WasUsingGizmoLastFrame = isUsingThisFrame;  // update cached state
-
-        if (wasUsingLastFrame && !isUsingThisFrame)
-        {
-            // user finished interacting, save model
-            ActionTranslatePathPointAndSave(*m_Model, pathPoint, {});
-        }
-
-        if (!gizmoWasManipulatedByUser)
-        {
-            return;  // user is not interacting, so no changes to apply
-        }
-        // else: apply in-place change to model
-
-        // decompose the overall transformation into component parts
-        glm::vec3 translationInGround{};
-        glm::vec3 rotationInGround{};
-        glm::vec3 scaleInGround{};
-        ImGuizmo::DecomposeMatrixToComponents(
-            glm::value_ptr(deltaInGround),
-            glm::value_ptr(translationInGround),
-            glm::value_ptr(rotationInGround),
-            glm::value_ptr(scaleInGround)
-        );
-        rotationInGround = glm::radians(rotationInGround);
-
-        // apply transformation to component in-place (but don't save - would be very slow)
-        SimTK::Rotation const parentToGroundRotation = pathPoint.getParentFrame().getRotationInGround(m_Model->getState());
-        SimTK::InverseRotation const& groundToParentRotation = parentToGroundRotation.invert();
-        glm::vec3 const translationInParent = ToVec3(groundToParentRotation * ToSimTKVec3(translationInGround));
-        ActionTranslatePathPoint(*m_Model, pathPoint, translationInParent);
-    }
-
-    void drawGizmoOverlayForPhysicalOffsetFrame(
-        Rect const& viewportRect,
-        OpenSim::PhysicalOffsetFrame const& pof)
-    {
-        if (m_GizmoOperation != ImGuizmo::TRANSLATE &&
-            m_GizmoOperation != ImGuizmo::ROTATE)
-        {
-            return;  // can only translate/rotate offset frames
-        }
-
-        setupImguizmo(viewportRect);
-
-        // use the PoF's own rotation as its local space
-        glm::mat4 currentXformInGround = ToMat4(pof.getRotationInGround(m_Model->getState()));
-        currentXformInGround[3] = glm::vec4{ToVec3(pof.getPositionInGround(m_Model->getState())), 1.0f};
-        glm::mat4 deltaInGround;
-
-        bool const gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
-            glm::value_ptr(m_Params.camera.getViewMtx()),
-            glm::value_ptr(m_Params.camera.getProjMtx(AspectRatio(viewportRect))),
-            m_GizmoOperation,
-            m_GizmoMode,
-            glm::value_ptr(currentXformInGround),
-            glm::value_ptr(deltaInGround),
-            nullptr,
-            nullptr,
-            nullptr
-        );
-        bool const isUsingThisFrame = ImGuizmo::IsUsing();
-        bool const wasUsingLastFrame = m_WasUsingGizmoLastFrame;
-        m_WasUsingGizmoLastFrame = isUsingThisFrame;  // update cached state
-
-        if (wasUsingLastFrame && !isUsingThisFrame)
-        {
-            std::stringstream ss;
-            ss << "transformed " << pof.getName();
-            m_Model->commit(std::move(ss).str());
-        }
-
-        if (!gizmoWasManipulatedByUser)
-        {
-            return;  // user is not interacting, so no changes to apply
-        }
-        // else: apply in-place change to model
-
-        // decompose the overall transformation into component parts
-        glm::vec3 translationInGround{};
-        glm::vec3 rotationInGround{};
-        glm::vec3 scaleInGround{};
-        ImGuizmo::DecomposeMatrixToComponents(
-            glm::value_ptr(deltaInGround),
-            glm::value_ptr(translationInGround),
-            glm::value_ptr(rotationInGround),
-            glm::value_ptr(scaleInGround)
-        );
-        rotationInGround = glm::radians(rotationInGround);
-
-        // apply transformation to component in-place (but don't save - would be very slow)
-        glm::vec3 translationInPofFrame{};
-        glm::vec3 eulersInPofFrame{};
-        if (m_GizmoOperation == ImGuizmo::TRANSLATE)
-        {
-            SimTK::Rotation const pofToGroundRotation =  pof.getRotationInGround(m_Model->getState());
-            SimTK::InverseRotation const& groundToParentRotation = pofToGroundRotation.invert();
-            translationInPofFrame = ToVec3(groundToParentRotation * ToSimTKVec3(translationInGround));
-            eulersInPofFrame = ToVec3(pof.get_orientation());
-        }
-        else if (m_GizmoOperation == ImGuizmo::ROTATE)
-        {
-            osc::Transform t = osc::ToTransform(pof.getTransformInGround(m_Model->getState()));
-            ApplyWorldspaceRotation(t, rotationInGround, currentXformInGround[3]);
-            translationInPofFrame = {};
-            eulersInPofFrame = ExtractEulerAngleXYZ(t);
-        }
-
-        ActionTransformPof(*m_Model, pof, translationInPofFrame, eulersInPofFrame);
-    }
-
-    void drawGizmoOverlayForWrapObject(
-        Rect const& viewportRect,
-        OpenSim::WrapObject const& wrapObj)
-    {
-        if (m_GizmoOperation != ImGuizmo::TRANSLATE &&
-            m_GizmoOperation != ImGuizmo::ROTATE)
-        {
-            return;  // can only translate/rotate offset frames
-        }
-
-        setupImguizmo(viewportRect);
-
-        SimTK::Transform const wrapToFrame = wrapObj.getTransform();
-        SimTK::Transform const frameToGround = wrapObj.getFrame().getTransformInGround(m_Model->getState());
-        SimTK::Transform const wrapToGround = frameToGround * wrapToFrame;
-        glm::mat4 currentXformInGround = ToMat4x4(wrapToGround);
-        glm::mat4 deltaInGround;
-
-        bool const gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
-            glm::value_ptr(m_Params.camera.getViewMtx()),
-            glm::value_ptr(m_Params.camera.getProjMtx(AspectRatio(viewportRect))),
-            m_GizmoOperation,
-            m_GizmoMode,
-            glm::value_ptr(currentXformInGround),
-            glm::value_ptr(deltaInGround),
-            nullptr,
-            nullptr,
-            nullptr
-        );
-        bool const isUsingThisFrame = ImGuizmo::IsUsing();
-        bool const wasUsingLastFrame = m_WasUsingGizmoLastFrame;
-        m_WasUsingGizmoLastFrame = isUsingThisFrame;  // update cached state
-
-        if (wasUsingLastFrame && !isUsingThisFrame)
-        {
-            std::stringstream ss;
-            ss << "transformed " << wrapObj.getName();
-            m_Model->commit(std::move(ss).str());
-        }
-
-        if (!gizmoWasManipulatedByUser)
-        {
-            return;  // user is not interacting, so no changes to apply
-        }
-        // else: apply in-place change to model
-
-        // decompose the overall transformation into component parts
-        glm::vec3 translationInGround{};
-        glm::vec3 rotationInGround{};
-        glm::vec3 scaleInGround{};
-        ImGuizmo::DecomposeMatrixToComponents(
-            glm::value_ptr(deltaInGround),
-            glm::value_ptr(translationInGround),
-            glm::value_ptr(rotationInGround),
-            glm::value_ptr(scaleInGround)
-        );
-        rotationInGround = glm::radians(rotationInGround);
-
-        // apply transformation to component in-place (but don't save - would be very slow)
-        glm::vec3 translationInPofFrame{};
-        glm::vec3 eulersInPofFrame{};
-        if (m_GizmoOperation == ImGuizmo::TRANSLATE)
-        {
-            SimTK::Rotation const frameToGroundRotation = frameToGround.R();
-            SimTK::InverseRotation const& groundToFrameRotation = frameToGroundRotation.invert();
-            translationInPofFrame = ToVec3(groundToFrameRotation * ToSimTKVec3(translationInGround));
-            eulersInPofFrame = ToVec3(wrapObj.get_xyz_body_rotation());
-        }
-        else if (m_GizmoOperation == ImGuizmo::ROTATE)
-        {
-            // TODO: fix this gigantic mess
-            osc::Transform wrapToGroundXform = osc::ToTransform(wrapToGround);
-            ApplyWorldspaceRotation(wrapToGroundXform, rotationInGround, currentXformInGround[3]);
-            SimTK::Transform newWrapToFrameXForm = frameToGround.invert() * osc::ToSimTKTransform(wrapToGroundXform);
-            translationInPofFrame = {};
-            eulersInPofFrame = ExtractEulerAngleXYZ(ToTransform(newWrapToFrameXForm));
-        }
-
-        ActionTransformWrapObject(*m_Model, wrapObj, translationInPofFrame, eulersInPofFrame);
     }
 
     // handles any interactions that change the model (e.g. what's selected)
@@ -592,9 +269,7 @@ private:
         ImGui::GetTextLineHeight()/128.0f
     );
     GuiRuler m_Ruler;
-    bool m_WasUsingGizmoLastFrame = false;
-    ImGuizmo::OPERATION m_GizmoOperation = ImGuizmo::TRANSLATE;
-    ImGuizmo::MODE m_GizmoMode = ImGuizmo::WORLD;
+    ModelSelectionGizmo m_Gizmo{m_Model};
 };
 
 

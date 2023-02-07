@@ -240,4 +240,11 @@ namespace osc
         glm::vec3 const& deltaPosition,
         glm::vec3 const& newEulers
     );
+
+    bool ActionTransformContactGeometry(
+        UndoableModelStatePair&,
+        OpenSim::ContactGeometry const&,
+        glm::vec3 const& deltaPosition,
+        glm::vec3 const& newEulers
+    );
 }

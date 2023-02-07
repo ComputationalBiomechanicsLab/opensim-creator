@@ -5,8 +5,10 @@
 
 namespace osc
 {
-    void DrawGizmoModeSelector(ImGuizmo::MODE&);
-    void DrawGizmoOpSelector(
+    bool DrawGizmoModeSelector(
+        ImGuizmo::MODE&
+    );
+    bool DrawGizmoOpSelector(
         ImGuizmo::OPERATION&,
         bool canTranslate = true,
         bool canRotate = true,

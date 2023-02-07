@@ -59,6 +59,7 @@ All notable changes to this project will be documented here. The format is based
 - Wrap objects can now be translated+rotated in the model editor tab's 3D viewport (#588)
 - The "Reload [Model]" button now forces OSC to also reload any mesh files (#594)
 - Pressing the F5 key now performs the "Reload Model" action (#595)
+- Contact geometry can now be translated+rotated in the model editor tab's 3D viewport (#596)
 
 ## [0.3.2] - 2023/01/09
 
