@@ -49,11 +49,11 @@ namespace std
 
 class osc::MeshCache::Impl final {
 public:
-    Mesh sphere = GenUntexturedUVSphere(12, 12);
+    Mesh sphere = GenUntexturedUVSphere(16, 16);
     Mesh circle = GenCircle(16);
     Mesh cylinder = GenUntexturedSimbodyCylinder(16);
     Mesh cube = GenCube();
-    Mesh cone = GenUntexturedSimbodyCone(12);
+    Mesh cone = GenUntexturedSimbodyCone(16);
     Mesh floor = GenTexturedQuad();
     Mesh grid100x100 = GenNbyNGrid(1000);
     Mesh cubeWire = GenCubeLines();

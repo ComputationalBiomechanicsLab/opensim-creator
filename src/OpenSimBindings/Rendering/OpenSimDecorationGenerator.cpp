@@ -138,7 +138,10 @@ namespace
 // geometry handlers
 namespace
 {
-    // struct that's passed to each rendering function
+    // a datastructure that is shared to all decoration-generation functions
+    //
+    // effectively, this is shared state/functions that each low-level decoration
+    // generation routine can use to emit low-level primitives (e.g. spheres)
     class RendererState final {
     public:
         RendererState(
@@ -208,6 +211,7 @@ namespace
             m_Out(component, std::move(dec));
         }
 
+        // use OpenSim to emit generic decorations exactly as OpenSim would emit them
         void emitGenericDecorations(
             OpenSim::Component const& componentToRender,
             OpenSim::Component const& componentToLinkTo)
@@ -330,16 +334,14 @@ namespace
         });
     }
 
-    // OSC-specific decoration handler for `OpenSim::Body`
-    void HandleBody(
+    // OSC-specific decoration handler for body centers of mass
+    void HandleBodyCentersOfMass(
         RendererState& rs,
         OpenSim::Body const& b)
     {
-        // bodies are drawn normally but *also* draw a center-of-mass sphere if they are
-        // currently hovered
         if (rs.getOptions().getShouldShowCentersOfMass() && b.getMassCenter() != SimTK::Vec3{0.0, 0.0, 0.0})
         {
-            float radius = rs.getFixupScaleFactor() * 0.005f;
+            float const radius = rs.getFixupScaleFactor() * 0.005f;
             osc::Transform t = TransformInGround(b, rs.getState());
             t.position = osc::TransformPoint(t, osc::ToVec3(b.getMassCenter()));
             t.scale = {radius, radius, radius};
@@ -351,11 +353,18 @@ namespace
                 glm::vec4{0.0f, 0.0f, 0.0f, 1.0f},
             });
         }
-
-        rs.emitGenericDecorations(b, b);
     }
 
-    // OSC-specific decoration handler for `OpenSim::Muscle` ("SCONE"-style: i.e. tendons + muscle)
+    // OSC-specific decoration handler for `OpenSim::Body`
+    void HandleBody(
+        RendererState& rs,
+        OpenSim::Body const& b)
+    {
+        HandleBodyCentersOfMass(rs, b);  // CoMs are handled by OSC
+        rs.emitGenericDecorations(b, b);  // bodies are emitted by OpenSim
+    }
+
+    // OSC-specific decoration handler for Muscle+Fiber representation of an `OpenSim::Muscle`
     void HandleMuscleFibersAndTendons(
         RendererState& rs,
         OpenSim::Muscle const& muscle)
@@ -397,6 +406,8 @@ namespace
 
         auto emitTendonSphere = [&](glm::vec3 const& pos)
         {
+            // TODO: this should ensure that the points are selectable, like OpenSim muscles
+            // TODO: these should be rotated to line up better (#593)
             osc::SceneDecoration copy{tendonSpherePrototype};
             copy.transform.position = pos;
             rs.consume(muscle, std::move(copy));
@@ -552,7 +563,10 @@ namespace
         }
     }
 
-    // OSC-specific decoration handler for `OpenSim::Muscle`
+    // OSC-specific decoration handler for "OpenSim-style" (line of action) decoration for an `OpenSim::Muscle`
+    //
+    // the reason this is used, rather than OpenSim's implementation, is because this custom implementation
+    // can do things like recolor parts of the muscle, customize the hittest, etc.
     void HandleMuscleOpenSimStyle(
         RendererState& rs,
         OpenSim::Muscle const& musc)
@@ -561,7 +575,7 @@ namespace
 
         if (pps.empty())
         {
-            return;
+            return;  // edge case: there are no points in the path
         }
 
         float const fiberUiRadius = GetMuscleSize(
@@ -569,23 +583,26 @@ namespace
             rs.getFixupScaleFactor(),
             rs.getOptions().getMuscleSizingStyle()
         );
+
         glm::vec4 const fiberColor = GetMuscleColor(
             musc,
             rs.getState(),
             rs.getOptions().getMuscleColoringStyle()
         );
 
-        auto emitSphere = [&](osc::GeometryPathPoint const& pp)
+        // helper function: emits a sphere decoration
+        auto const emitSphere = [&rs, &musc, fiberUiRadius, fiberColor](osc::GeometryPathPoint const& pp, glm::vec3 const& upDirection)
         {
             // ensure that user-defined path points are independently selectable (#425)
-            //
-            // TODO: SCONE-style etc. should also support this
             OpenSim::Component const& c = pp.maybeUnderlyingUserPathPoint ?
                 *pp.maybeUnderlyingUserPathPoint :
                 static_cast<OpenSim::Component const&>(musc);
 
+            // ensure the sphere directionally tries to line up with the cylinders, to make
+            // the "join" between the sphere and cylinders nicer (#593)
             osc::Transform t;
             t.scale *= fiberUiRadius;
+            t.rotation = glm::normalize(glm::rotation(glm::vec3{0.0f, 1.0f, 0.0f}, upDirection));
             t.position = pp.locationInGround;
 
             rs.consume(c, osc::SceneDecoration
@@ -596,9 +613,10 @@ namespace
             });
         };
 
-        auto emitCylinder = [&](glm::vec3 const& p1, glm::vec3 const& p2)
+        // helper function: emits a cylinder decoration
+        auto const emitCylinder = [&rs, &musc, fiberUiRadius, fiberColor](glm::vec3 const& p1, glm::vec3 const& p2)
         {
-            osc::Transform cylinderXform = osc::SimbodyCylinderToSegmentTransform({p1, p2}, fiberUiRadius);
+            osc::Transform const cylinderXform = osc::SimbodyCylinderToSegmentTransform({p1, p2}, fiberUiRadius);
 
             rs.consume(musc, osc::SceneDecoration
             {
@@ -608,18 +626,33 @@ namespace
             });
         };
 
-        bool const showPathPoints = rs.getShowPathPoints();
-        if (showPathPoints)
+        // if required, draw first muscle path point
+        if (rs.getShowPathPoints())
         {
-            emitSphere(pps.front());
+            osc::GeometryPathPoint const& pp = pps.front();
+            glm::vec3 const& ppPos = pp.locationInGround;
+            glm::vec3 const direction =
+                pps.size() == 1 ?
+                glm::vec3{0.0f, 1.0f, 0.0f} :
+                glm::normalize(pps[1].locationInGround - ppPos);
+
+            emitSphere(pp, direction);
         }
+
+        // draw remaining cylinders and (if required) muscle path points
         for (size_t i = 1; i < pps.size(); ++i)
         {
-            emitCylinder(pps[i - 1].locationInGround, pps[i].locationInGround);
+            osc::GeometryPathPoint const& pp = pps[i];
 
-            if (showPathPoints)
+            glm::vec3 const& prevPos = pps[i - 1].locationInGround;
+            glm::vec3 const& curPos = pp.locationInGround;
+
+            emitCylinder(prevPos, curPos);
+
+            if (rs.getShowPathPoints())
             {
-                emitSphere(pps[i]);
+                glm::vec3 const direction = glm::normalize(curPos - prevPos);
+                emitSphere(pp, direction);
             }
         }
     }
