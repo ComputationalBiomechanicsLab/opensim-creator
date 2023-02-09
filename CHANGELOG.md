@@ -60,6 +60,7 @@ All notable changes to this project will be documented here. The format is based
 - The "Reload [Model]" button now forces OSC to also reload any mesh files (#594)
 - Pressing the F5 key now performs the "Reload Model" action (#595)
 - Contact geometry can now be translated+rotated in the model editor tab's 3D viewport (#596)
+- Hotfixed a bug from OpenSim where inertia edits were not applied to the model (#597)
 
 ## [0.3.2] - 2023/01/09
 

@@ -865,6 +865,26 @@ void osc::InitializeModel(OpenSim::Model& model)
 {
     OSC_PERF("osc::InitializeModel");
     model.finalizeFromProperties();  // clears potentially-stale member components (required for `clearConnections`)
+
+    // HACK: reset body inertias to NaN to force OpenSim (at least <= 4.4) to recompute
+    //       inertia correctly (#597)
+    //
+    // this is necessary, because OpenSim contains a bug where body inertias aren't updated
+    // by property changes (see #597 for a better explanation)
+    for (OpenSim::Body& body : model.updComponentList<OpenSim::Body>())
+    {
+        // maintain copy of user-enacted/osim inertia value
+        SimTK::Vec6 const userInertia = body.get_inertia();
+
+        // NaN both the property and the internal `_inertia` member
+        body.setInertia(SimTK::Inertia{});
+
+        // but then reset the property to the user-enacted value
+        body.set_inertia(userInertia);
+
+        // (which should cause OpenSim to behave as-if finalized properly)
+    }
+
     model.clearConnections();        // clears any potentially stale pointers that can be retained by OpenSim::Socket<T> (see #263)
     model.buildSystem();             // creates a new underlying physics system
 }
