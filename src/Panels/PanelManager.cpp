@@ -341,7 +341,7 @@ private:
     std::string calcPanelName(std::string_view baseName, size_t ithInstance)
     {
         std::stringstream ss;
-        ss << baseName << '_' << ithInstance;
+        ss << baseName << ithInstance;
         return std::move(ss).str();
     }
 
