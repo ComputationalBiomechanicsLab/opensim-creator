@@ -1189,15 +1189,15 @@ namespace
             for (int j = 0; j < geomProperty.size(); ++j)
             {
                 std::string const& geomNameOrPath = geomProperty[j];
-                if (auto const* found = osc::FindComponent<OpenSim::ContactHalfSpace>(model, geomNameOrPath))
+                if (auto const* foundViaAbsPath = osc::FindComponent<OpenSim::ContactHalfSpace>(model, geomNameOrPath))
                 {
                     // found it as an abspath within the model
-                    return found;
+                    return foundViaAbsPath;
                 }
-                else if (auto const* found = osc::FindComponent<OpenSim::ContactHalfSpace>(model.getContactGeometrySet(), geomNameOrPath))
+                else if (auto const* foundViaRelativePath = osc::FindComponent<OpenSim::ContactHalfSpace>(model.getContactGeometrySet(), geomNameOrPath))
                 {
                     // found it as a relative path/name within the contactgeometryset
-                    return found;
+                    return foundViaRelativePath;
                 }
             }
         }
