@@ -18,8 +18,9 @@ namespace
         CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfActionForInsertion = 1<<4,
         CustomDecorationOptionFlags_ShouldShowCentersOfMass = 1<<5,
         CustomDecorationOptionFlags_ShouldShowPointToPointSprings = 1<<6,
+        CustomDecorationOptionFlags_ShouldShowContactForces = 1<<7,
 
-        CustomDecorationOptionFlags_COUNT = 7,
+        CustomDecorationOptionFlags_COUNT = 8,
         CustomDecorationOptionFlags_Default =
             CustomDecorationOptionFlags_ShouldShowPointToPointSprings,
     };
@@ -31,7 +32,8 @@ namespace
         "Origin Lines of Action (anatomical)",
         "Insertion Lines of Action (anatomical)",
         "Centers of Mass",
-        "Point-to-Point Springs"
+        "Point-to-Point Springs",
+        "Plane Contact Forces (EXPERIMENTAL)"
     );
 
     auto constexpr c_CustomDecorationDescriptions = osc::MakeSizedArray<std::optional<osc::CStringView>, CustomDecorationOptionFlags_COUNT>(
@@ -41,7 +43,8 @@ namespace
         "Draws direction vectors that show the mechanical effect of the muscle action on the bodies attached to the origin/insertion points.\n\n'Anatomical' here means 'the first/last points of the muscle path' see the documentation for 'effective' lines of action for contrast.\n\nOpenSim Creator's implementation of this algorithm is based on Luca Modenese (@modenaxe)'s implementation here:\n\n    - https://github.com/modenaxe/MuscleForceDirection\n\nThanks to @modenaxe for open-sourcing the original algorithm!",
         "Draws direction vectors that show the mechanical effect of the muscle action on the bodies attached to the origin/insertion points.\n\n'Anatomical' here means 'the first/last points of the muscle path' see the documentation for 'effective' lines of action for contrast.\n\nOpenSim Creator's implementation of this algorithm is based on Luca Modenese (@modenaxe)'s implementation here:\n\n    - https://github.com/modenaxe/MuscleForceDirection\n\nThanks to @modenaxe for open-sourcing the original algorithm!",
         std::nullopt,
-        std::nullopt
+        std::nullopt,
+        "Tries to draw the direction of contact forces on planes in the scene.\n\nEXPERIMENTAL: the implementation of this visualization is work-in-progress and written by someone with a highschool-level understanding of Torque. Report any bugs or implementation opinions on GitHub.\n\nOpenSim Creator's implementation of this algorithm is very roughly based on Thomas Geijtenbeek's (better) implementation in scone-studio, here:\n\n    - https://github.com/tgeijten/scone-studio \n\nThanks to @tgeijten for writing an awesome project (that OSC has probably mis-implemented ;) - again, report any bugs, folks)"
     );
 
     void SetFlag(uint32_t& flags, uint32_t flag, bool v)
@@ -189,6 +192,11 @@ bool osc::CustomDecorationOptions::getShouldShowPointToPointSprings() const
 void osc::CustomDecorationOptions::setShouldShowPointToPointSprings(bool v)
 {
     SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowPointToPointSprings, v);
+}
+
+bool osc::CustomDecorationOptions::getShouldShowContactForces() const
+{
+    return m_Flags & CustomDecorationOptionFlags_ShouldShowContactForces;
 }
 
 bool osc::operator==(CustomDecorationOptions const& a, CustomDecorationOptions const& b) noexcept

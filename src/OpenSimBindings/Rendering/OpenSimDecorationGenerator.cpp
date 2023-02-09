@@ -24,6 +24,7 @@
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
+#include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
@@ -199,6 +200,11 @@ namespace
         osc::CustomDecorationOptions const& getOptions() const
         {
             return m_Opts;
+        }
+
+        OpenSim::Model const& getModel() const
+        {
+            return m_Model;
         }
 
         float getFixupScaleFactor() const
@@ -789,6 +795,57 @@ namespace
 
         rs.emitGenericDecorations(frameGeometry, componentToLinkTo);
     }
+
+    void HandleHuntCrossleyForce(
+        RendererState& rs,
+        OpenSim::HuntCrossleyForce const& hcf)
+    {
+        if (!rs.getOptions().getShouldShowContactForces())
+        {
+            return;  // the user hasn't opted to see contact forces
+        }
+
+        // IGNORE: rs.getModelDisplayHints().get_show_forces()
+        //
+        // because this is a user-enacted UI option and it would be silly
+        // to expect the user to *also* toggle the "show_forces" option inside
+        // the OpenSim model
+
+        if (!hcf.appliesForce(rs.getState()))
+        {
+            return;  // not applying this force
+        }
+
+        // else: try and compute a geometry-to-plane contact force and show it in-UI
+        std::optional<osc::ForceValue> const maybeContact = osc::TryGetContactForceInGround(
+            rs.getModel(),
+            rs.getState(),
+            hcf
+        );
+
+        if (!maybeContact)
+        {
+            return;
+        }
+
+        float const fixupScaleFactor = rs.getFixupScaleFactor();
+        float const lenScale = 0.0025f;
+        float const baseRadius = 0.025f;
+        float const tipLength = 0.1f*glm::length((fixupScaleFactor*lenScale)*maybeContact->force);
+
+        osc::ArrowProperties p;
+        p.worldspaceStart = maybeContact->point;
+        p.worldspaceEnd = maybeContact->point + (fixupScaleFactor*lenScale)*maybeContact->force;
+        p.tipLength = tipLength;
+        p.headThickness = fixupScaleFactor*baseRadius;
+        p.neckThickness = fixupScaleFactor*baseRadius*0.6f;
+        p.color = {1.0f, 1.0f, 0.0f, 1.0f};
+
+        osc::DrawArrow(rs.updMeshCache(), p, [&hcf, &rs](osc::SceneDecoration&& d)
+        {
+            rs.consume(hcf, std::move(d));
+        });
+    }
 }
 
 void osc::GenerateModelDecorations(
@@ -843,6 +900,10 @@ void osc::GenerateModelDecorations(
         else if (opts.getShouldShowScapulo() && typeid(c) == typeid(OpenSim::ScapulothoracicJoint))
         {
             HandleScapulothoracicJoint(rendererState, static_cast<OpenSim::ScapulothoracicJoint const&>(c));
+        }
+        else if (typeid(c) == typeid(OpenSim::HuntCrossleyForce))
+        {
+            HandleHuntCrossleyForce(rendererState, static_cast<OpenSim::HuntCrossleyForce const&>(c));
         }
         else
         {

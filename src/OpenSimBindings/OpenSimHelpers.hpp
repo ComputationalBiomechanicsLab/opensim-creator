@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/Maths/Plane.hpp"
 #include "src/Maths/PointDirection.hpp"
 #include "src/Utils/CStringView.hpp"
 
@@ -23,6 +24,7 @@ namespace OpenSim { class ComponentPath; }
 namespace OpenSim { class Coordinate; }
 namespace OpenSim { class Geometry; }
 namespace OpenSim { class GeometryPath; }
+namespace OpenSim { class HuntCrossleyForce; }
 namespace OpenSim { class Joint; }
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
@@ -387,4 +389,17 @@ namespace osc
         glm::vec3 locationInGround{};
     };
     std::vector<GeometryPathPoint> GetAllPathPoints(OpenSim::GeometryPath const&, SimTK::State const&);
+
+    // contact forces
+    //
+    // helper functions for pulling contact forces out of the model (e.g. for rendering)
+    struct ForceValue final {
+        glm::vec3 force;
+        glm::vec3 point;
+    };
+    std::optional<ForceValue> TryGetContactForceInGround(
+        OpenSim::Model const&,
+        SimTK::State const&,
+        OpenSim::HuntCrossleyForce const&
+    );
 }

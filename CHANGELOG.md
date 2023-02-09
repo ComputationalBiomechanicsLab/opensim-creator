@@ -63,6 +63,7 @@ All notable changes to this project will be documented here. The format is based
 - Hotfixed a bug from OpenSim where inertia edits were not applied to the model (#597, related: opensim-core/#3395,
   thanks to @jesse-gilmer for spotting this :))
 - The spherical end-caps of muscle geometry now align better with the muscle cylinders they are attached to (#593)
+- There is now an (extremely EXPERIMENTAL) option to visualize plane contact forces in the 3D visualizer (#449)
 
 ## [0.3.2] - 2023/01/09
 

@@ -51,6 +51,8 @@ namespace osc
         bool getShouldShowPointToPointSprings() const;
         void setShouldShowPointToPointSprings(bool);
 
+        bool getShouldShowContactForces() const;
+
     private:
         friend bool operator==(CustomDecorationOptions const&, CustomDecorationOptions const&) noexcept;
 
