@@ -17,9 +17,9 @@
 
 namespace
 {
-    template<class... Ts>
+    template<typename... Ts>
     struct Overloaded : Ts... { using Ts::operator()...; };
-    template<class... Ts> Overloaded(Ts...) -> Overloaded<Ts...>;
+    template<typename... Ts> Overloaded(Ts...) -> Overloaded<Ts...>;
 
     bool DrawEditor(osc::ParamBlock& b, int idx, double v)
     {

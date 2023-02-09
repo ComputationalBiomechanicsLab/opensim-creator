@@ -38,7 +38,7 @@ namespace osc
     // systems (windowing, event pumping, timers, graphics, logging, etc.)
     class App {
     public:
-        template<class T, class...Args>
+        template<typename T, typename...Args>
         static std::shared_ptr<T> singleton(Args&&... args)
         {
             auto const ctor = [argTuple = std::make_tuple(std::forward<Args>(args)...)]() mutable

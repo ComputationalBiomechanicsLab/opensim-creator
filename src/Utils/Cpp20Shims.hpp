@@ -80,7 +80,7 @@ namespace osc {
 
         // Creates new thread object and associates it with a thread of execution.
         // The new thread of execution immediately starts executing
-        template<class Function, class... Args>
+        template<typename Function, typename... Args>
         jthread(Function&& f, Args&&... args) :
             m_StopSource{},
             m_Thread{f, m_StopSource.get_token(), std::forward<Args>(args)...}
@@ -144,7 +144,7 @@ namespace osc {
     }
 
     // C++20: ssize
-    template<class Container>
+    template<typename Container>
     constexpr auto ssize(Container const& c) ->
         std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(c.size())>>
     {
@@ -153,7 +153,7 @@ namespace osc {
     }
 
     // C++20: ssize
-    template<class T, std::ptrdiff_t N>
+    template<typename T, std::ptrdiff_t N>
     constexpr std::ptrdiff_t ssize(const T (&)[N]) noexcept
     {
         return N;

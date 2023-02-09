@@ -29,7 +29,7 @@ namespace osc
     //
     // this is a poor-man's `std::execution::par_unseq`, because C++17's <execution>
     // isn't fully integrated into MacOS/Linux
-    template<class T, class UnaryFunction>
+    template<typename T, typename UnaryFunction>
     void ForEachParUnseq(size_t minChunkSize, nonstd::span<T> vals, UnaryFunction f)
     {
         size_t const chunkSize = std::max(minChunkSize, vals.size()/std::thread::hardware_concurrency());
@@ -303,7 +303,7 @@ namespace osc
     bool Contains(char const* str, char e);
 
     // combines hash of `T` into the seed value
-    template <class T>
+    template<typename T>
     inline size_t HashCombine(size_t seed, T const& v)
     {
         std::hash<T> hasher;
@@ -386,5 +386,5 @@ namespace osc
     struct Overload : Ts... {
         using Ts::operator()...;
     };
-    template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
+    template<typename... Ts> Overload(Ts...) -> Overload<Ts...>;
 }

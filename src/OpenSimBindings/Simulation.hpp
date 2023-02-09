@@ -24,9 +24,9 @@ namespace osc
     // by other parts of osc (e.g. aggregators, plotters)
     class Simulation final {
     public:
-        template<class ConcreteSimulation>
-        Simulation(ConcreteSimulation&& simulation) :
-            m_Simulation{std::make_unique<ConcreteSimulation>(std::forward<ConcreteSimulation>(simulation))}
+        template<typename TConcreteSimulation>
+        Simulation(TConcreteSimulation&& simulation) :
+            m_Simulation{std::make_unique<TConcreteSimulation>(std::forward<TConcreteSimulation>(simulation))}
         {
         }
 

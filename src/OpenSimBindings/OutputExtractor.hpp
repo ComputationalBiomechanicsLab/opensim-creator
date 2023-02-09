@@ -24,7 +24,7 @@ namespace osc
     // by other parts of osc (e.g. aggregators, plotters)
     class OutputExtractor final : public VirtualOutputExtractor {
     public:
-        template<class SpecificOutput>
+        template<typename SpecificOutput>
         explicit OutputExtractor(SpecificOutput&& output) :
             m_Output{std::make_shared<SpecificOutput>(std::forward<SpecificOutput>(output))}
         {

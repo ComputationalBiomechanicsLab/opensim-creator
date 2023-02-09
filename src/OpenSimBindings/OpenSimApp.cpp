@@ -60,10 +60,14 @@ namespace
         }
     };
 
-    template<class TabClass>
+    template<typename TabType>
     void RegisterTab(osc::TabRegistry& registry)
     {
-        osc::TabRegistryEntry entry{TabClass::id(), [](osc::TabHost* h) { return std::make_unique<TabClass>(h); }};
+        osc::TabRegistryEntry entry
+        {
+            TabType::id(),
+            [](osc::TabHost* h) { return std::make_unique<TabType>(h); },
+        };
         registry.registerTab(entry);
     }
 

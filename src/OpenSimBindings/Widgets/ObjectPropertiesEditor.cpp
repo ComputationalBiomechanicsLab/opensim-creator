@@ -192,7 +192,7 @@ namespace
     private:
         // force callers to use the `MakePropertyEditor` helper, in case later code changes
         // from using unique_ptr
-        template<class TConcretePropertyEditor, class... CtorArgs>
+        template<typename TConcretePropertyEditor, typename... CtorArgs>
         friend PropertyEditor MakePropertyEditor(CtorArgs&&... args);
 
         explicit PropertyEditor(std::unique_ptr<VirtualPropertyEditor> p) :
@@ -216,7 +216,7 @@ namespace
         std::unique_ptr<VirtualPropertyEditor> m_VirtualEditor;
     };
 
-    template<class TConcretePropertyEditor, class... CtorArgs>
+    template<typename TConcretePropertyEditor, typename... CtorArgs>
     PropertyEditor MakePropertyEditor(CtorArgs&&... args)
     {
         return PropertyEditor{std::make_unique<TConcretePropertyEditor>(std::forward<CtorArgs>(args)...)};

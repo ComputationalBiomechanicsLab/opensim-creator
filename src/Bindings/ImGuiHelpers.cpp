@@ -32,8 +32,8 @@ static inline float constexpr c_DefaultDragThreshold = 5.0f;
 
 namespace
 {
-    template<typename Coll1, typename Coll2>
-    float diff(Coll1 const& older, Coll2 const& newer, size_t n)
+    template<typename TCollection, typename UCollection>
+    float diff(TCollection const& older, UCollection const& newer, size_t n)
     {
         for (size_t i = 0; i < n; ++i)
         {

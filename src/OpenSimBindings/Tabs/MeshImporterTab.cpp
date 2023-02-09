@@ -324,9 +324,6 @@ namespace
         }
         return rv;
     }
-
-    // see: https://stackoverflow.com/questions/56466282/stop-compilation-if-if-constexpr-does-not-match
-    template <auto A, typename...> auto dependent_value = A;
 }
 
 // UI layering support
