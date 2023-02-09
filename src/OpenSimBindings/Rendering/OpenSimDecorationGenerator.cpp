@@ -624,93 +624,68 @@ namespace
         }
     }
 
+    void DrawLineOfActionArrow(
+        RendererState& rs,
+        OpenSim::Muscle const& muscle,
+        osc::PointDirection const& loaPointDirection,
+        glm::vec4 const& color)
+    {
+        float const fixupScaleFactor = rs.getFixupScaleFactor();
+
+        osc::ArrowProperties p;
+        p.worldspaceStart = loaPointDirection.point;
+        p.worldspaceEnd = loaPointDirection.point + (fixupScaleFactor*0.1f)*loaPointDirection.direction;
+        p.tipLength = (fixupScaleFactor*0.015f);
+        p.headThickness = (fixupScaleFactor*0.01f);
+        p.neckThickness = (fixupScaleFactor*0.006f);
+        p.color = color;
+
+        osc::DrawArrow(rs.updMeshCache(), p, [&muscle, &rs](osc::SceneDecoration&& d)
+        {
+            rs.consume(muscle, std::move(d));
+        });
+    }
+
     void HandleLinesOfAction(
         RendererState& rs,
         OpenSim::Muscle const& musc)
     {
-        float const fixupScaleFactor = rs.getFixupScaleFactor();
+        glm::vec4 constexpr c_EffectiveLineOfActionColor = {0.0f, 1.0f, 0.0f, 1.0f};
+        glm::vec4 constexpr c_AnatomicalLineOfActionColor = {1.0f, 0.0f, 0.0f, 1.0f};
 
-        // if options request, render effective muscle lines of action for the origin
-        if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForOrigin())
+        // if options request, render effective muscle lines of action
+        if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForOrigin() ||
+            rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForInsertion())
         {
-            // render lines of action (todo: should be behind a UI toggle for on vs. effective vs. anatomical etc.)
-            if (std::optional<osc::LinesOfAction> loas = osc::GetEffectiveLinesOfActionInGround(musc, rs.getState()))
+            if (std::optional<osc::LinesOfAction> const loas = osc::GetEffectiveLinesOfActionInGround(musc, rs.getState()))
             {
-                osc::ArrowProperties p;
-                p.worldspaceStart = loas->origin.point;
-                p.worldspaceEnd = loas->origin.point + (fixupScaleFactor*0.1f)*loas->origin.direction;
-                p.tipLength = (fixupScaleFactor*0.015f);
-                p.headThickness = (fixupScaleFactor*0.01f);
-                p.neckThickness = (fixupScaleFactor*0.006f);
-                p.color = {0.0f, 1.0f, 0.0f, 1.0f};
-
-                osc::DrawArrow(rs.updMeshCache(), p, [&musc, &rs](osc::SceneDecoration&& d)
+                if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForOrigin())
                 {
-                    rs.consume(musc, std::move(d));
-                });
-            }
-        }
+                    DrawLineOfActionArrow(rs, musc, loas->origin, c_EffectiveLineOfActionColor);
+                }
 
-        // if options request, render effective muscle lines of action for the insertion
-        if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForInsertion())
-        {
-            // render lines of action (todo: should be behind a UI toggle for on vs. effective vs. anatomical etc.)
-            if (std::optional<osc::LinesOfAction> loas = osc::GetEffectiveLinesOfActionInGround(musc, rs.getState()))
-            {
-                osc::ArrowProperties p;
-                p.worldspaceStart = loas->insertion.point;
-                p.worldspaceEnd = loas->insertion.point + (fixupScaleFactor*0.1f)*loas->insertion.direction;
-                p.tipLength = (fixupScaleFactor*0.015f);
-                p.headThickness = (fixupScaleFactor*0.01f);
-                p.neckThickness = (fixupScaleFactor*0.006f);
-                p.color = {0.0f, 1.0f, 0.0f, 1.0f};
-
-                osc::DrawArrow(rs.updMeshCache(), p, [&musc, &rs](osc::SceneDecoration&& d)
+                if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForInsertion())
                 {
-                    rs.consume(musc, std::move(d));
-                });
+                    DrawLineOfActionArrow(rs, musc, loas->insertion, c_EffectiveLineOfActionColor);
+                }
             }
         }
 
         // if options request, render anatomical muscle lines of action
-        if (rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForOrigin())
+        if (rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForOrigin() ||
+            rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForInsertion())
         {
-            // render lines of action (todo: should be behind a UI toggle for on vs. effective vs. anatomical etc.)
-            if (std::optional<osc::LinesOfAction> loas = osc::GetAnatomicalLinesOfActionInGround(musc, rs.getState()))
+            if (std::optional<osc::LinesOfAction> const loas = osc::GetAnatomicalLinesOfActionInGround(musc, rs.getState()))
             {
-                osc::ArrowProperties p;
-                p.worldspaceStart = loas->origin.point;
-                p.worldspaceEnd = loas->origin.point + (fixupScaleFactor*0.1f)*loas->origin.direction;
-                p.tipLength = (fixupScaleFactor*0.015f);
-                p.headThickness = (fixupScaleFactor*0.01f);
-                p.neckThickness = (fixupScaleFactor*0.006f);
-                p.color = {1.0f, 0.0f, 0.0f, 1.0f};
-
-                osc::DrawArrow(rs.updMeshCache(), p, [&musc, &rs](osc::SceneDecoration&& d)
+                if (rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForOrigin())
                 {
-                    rs.consume(musc, std::move(d));
-                });
-            }
-        }
+                    DrawLineOfActionArrow(rs, musc, loas->origin, c_AnatomicalLineOfActionColor);
+                }
 
-        // if options request, render anatomical muscle lines of action
-        if (rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForInsertion())
-        {
-            // render lines of action (todo: should be behind a UI toggle for on vs. effective vs. anatomical etc.)
-            if (std::optional<osc::LinesOfAction> loas = osc::GetAnatomicalLinesOfActionInGround(musc, rs.getState()))
-            {
-                osc::ArrowProperties p;
-                p.worldspaceStart = loas->insertion.point;
-                p.worldspaceEnd = loas->insertion.point + (fixupScaleFactor*0.1f)*loas->insertion.direction;
-                p.tipLength = (fixupScaleFactor*0.015f);
-                p.headThickness = (fixupScaleFactor*0.01f);
-                p.neckThickness = (fixupScaleFactor*0.006f);
-                p.color = {1.0f, 0.0f, 0.0f, 1.0f};
-
-                osc::DrawArrow(rs.updMeshCache(), p, [&musc, &rs](osc::SceneDecoration&& d)
+                if (rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForInsertion())
                 {
-                    rs.consume(musc, std::move(d));
-                });
+                    DrawLineOfActionArrow(rs, musc, loas->insertion, c_AnatomicalLineOfActionColor);
+                }
             }
         }
     }
