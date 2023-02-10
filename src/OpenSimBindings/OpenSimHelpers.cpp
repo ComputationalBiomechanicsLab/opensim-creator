@@ -1254,10 +1254,10 @@ namespace
         //
         // - if there's a plane, then the plane's location+normal are needed in order
         //   to figure out where the force is exherted
-        osc::Transform const body2ground = osc::ToTransform(halfSpace.getBody().getTransformInGround(state));
+        osc::Transform const body2ground = osc::ToTransform(halfSpace.getFrame().getTransformInGround(state));
         osc::Transform const geom2body = osc::ToTransform(halfSpace.getTransform());
 
-        glm::vec3 const originInGround = body2ground * osc::ToVec3(halfSpace.getLocation());
+        glm::vec3 const originInGround = body2ground * osc::ToVec3(halfSpace.get_location());
         glm::vec3 const normalInGround = glm::normalize(body2ground.rotation * geom2body.rotation) * c_ContactHalfSpaceUpwardsNormal;
 
         return osc::Plane{originInGround, normalInGround};
