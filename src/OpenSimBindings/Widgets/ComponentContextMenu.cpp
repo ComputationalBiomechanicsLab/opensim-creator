@@ -140,6 +140,11 @@ namespace
         {
             osc::ActionAddChildOffsetFrameToJoint(uim, jointPath);
         }
+
+        if (ImGui::MenuItem("Toggle Frame Visibility"))
+        {
+            osc::ActionToggleFrames(uim);
+        }
     }
 
     // draw contextual actions (buttons, sliders) for a selected joint

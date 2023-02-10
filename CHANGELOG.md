@@ -64,6 +64,8 @@ All notable changes to this project will be documented here. The format is based
   thanks to @jesse-gilmer for spotting this :))
 - The spherical end-caps of muscle geometry now align better with the muscle cylinders they are attached to (#593)
 - There is now an (extremely EXPERIMENTAL) option to visualize plane contact forces in the 3D visualizer (#449)
+- "Toggle Frame Visibility" (model-wide) now appears as an option when right-clicking joints, so users can more
+  easily know it's an option (#50)
 
 ## [0.3.2] - 2023/01/09
 
