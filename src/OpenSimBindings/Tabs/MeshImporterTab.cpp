@@ -6450,120 +6450,12 @@ private:
             TryAddingStationAtMousePosToHoveredElement();
             return true;
         }
-        else if (ImGui::IsKeyPressed(ImGuiKey_R))
+        else if (UpdateImguizmoStateFromKeyboard(m_ImGuizmoState.op, m_ImGuizmoState.mode))
         {
-            // R: set manipulation mode to "rotate"
-            if (m_ImGuizmoState.op == ImGuizmo::ROTATE)
-            {
-                m_ImGuizmoState.mode = m_ImGuizmoState.mode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
-            }
-            m_ImGuizmoState.op = ImGuizmo::ROTATE;
             return true;
         }
-        else if (ImGui::IsKeyPressed(ImGuiKey_G))
+        else if (UpdatePolarCameraFromImGuiKeyboardInputs(m_Shared->UpdCamera(), m_Shared->Get3DSceneRect(), CalcSceneAABB()))
         {
-            // G: set manipulation mode to "grab" (translate)
-            if (m_ImGuizmoState.op == ImGuizmo::TRANSLATE)
-            {
-                m_ImGuizmoState.mode = m_ImGuizmoState.mode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
-            }
-            m_ImGuizmoState.op = ImGuizmo::TRANSLATE;
-            return true;
-        }
-        else if (ImGui::IsKeyPressed(ImGuiKey_S))
-        {
-            // S: set manipulation mode to "scale"
-            if (m_ImGuizmoState.op == ImGuizmo::SCALE)
-            {
-                m_ImGuizmoState.mode = m_ImGuizmoState.mode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
-            }
-            m_ImGuizmoState.op = ImGuizmo::SCALE;
-            return true;
-        }
-        else if (ImGui::IsKeyDown(ImGuiKey_UpArrow))
-        {
-            if (ctrlOrSuperDown)
-            {
-                // pan
-                m_Shared->UpdCamera().pan(osc::AspectRatio(m_Shared->Get3DSceneDims()), {0.0f, -0.1f});
-            }
-            else if (shiftDown)
-            {
-                // rotate in 90-deg increments
-                m_Shared->UpdCamera().phi -= glm::radians(90.0f);
-            }
-            else
-            {
-                // rotate in 10-deg increments
-                m_Shared->UpdCamera().phi -= glm::radians(10.0f);
-            }
-            return true;
-        }
-        else if (ImGui::IsKeyDown(ImGuiKey_DownArrow))
-        {
-            if (ctrlOrSuperDown)
-            {
-                // pan
-                m_Shared->UpdCamera().pan(osc::AspectRatio(m_Shared->Get3DSceneDims()), {0.0f, +0.1f});
-            }
-            else if (shiftDown)
-            {
-                // rotate in 90-deg increments
-                m_Shared->UpdCamera().phi += glm::radians(90.0f);
-            }
-            else
-            {
-                // rotate in 10-deg increments
-                m_Shared->UpdCamera().phi += glm::radians(10.0f);
-            }
-            return true;
-        }
-        else if (ImGui::IsKeyDown(ImGuiKey_LeftArrow))
-        {
-            if (ctrlOrSuperDown)
-            {
-                // pan
-                m_Shared->UpdCamera().pan(osc::AspectRatio(m_Shared->Get3DSceneDims()), {-0.1f, 0.0f});
-            }
-            else if (shiftDown)
-            {
-                // rotate in 90-deg increments
-                m_Shared->UpdCamera().theta += glm::radians(90.0f);
-            }
-            else
-            {
-                // rotate in 10-deg increments
-                m_Shared->UpdCamera().theta += glm::radians(10.0f);
-            }
-            return true;
-        }
-        else if (ImGui::IsKeyDown(ImGuiKey_RightArrow))
-        {
-            if (ctrlOrSuperDown)
-            {
-                // pan
-                m_Shared->UpdCamera().pan(osc::AspectRatio(m_Shared->Get3DSceneDims()), {+0.1f, 0.0f});
-            }
-            else if (shiftDown)
-            {
-                // rotate in 90-deg increments
-                m_Shared->UpdCamera().theta -= glm::radians(90.0f);
-            }
-            else
-            {
-                // rotate in 10-deg increments
-                m_Shared->UpdCamera().theta -= glm::radians(10.0f);
-            }
-            return true;
-        }
-        else if (ImGui::IsKeyDown(ImGuiKey_Minus))
-        {
-            m_Shared->UpdCamera().radius *= 1.1f;
-            return true;
-        }
-        else if (ImGui::IsKeyDown(ImGuiKey_Equal))
-        {
-            m_Shared->UpdCamera().radius *= 0.9f;
             return true;
         }
         else
@@ -7510,6 +7402,21 @@ private:
         }
     }
 
+    std::optional<AABB> CalcSceneAABB() const
+    {
+        auto const it = m_DrawablesBuffer.begin();
+        std::optional<AABB> rv;
+        for (DrawableThing const& drawable : m_DrawablesBuffer)
+        {
+            if (drawable.id != c_EmptyID)
+            {
+                AABB const bounds = CalcBounds(drawable);
+                rv = rv ? Union(*rv, bounds) : bounds;
+            }
+        }
+        return rv;
+    }
+
     void Draw3DViewerOverlayBottomBar()
     {
         ImGui::PushID("##3DViewerOverlay");
@@ -7549,32 +7456,9 @@ private:
 
         if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
         {
-            auto it = m_DrawablesBuffer.begin();
-            bool containsAtLeastOne = false;
-            AABB aabb;
-            while (it != m_DrawablesBuffer.end())
+            if (std::optional<AABB> const sceneAABB = CalcSceneAABB())
             {
-                if (it->id != c_EmptyID)
-                {
-                    aabb = CalcBounds(*it);
-                    it++;
-                    containsAtLeastOne = true;
-                    break;
-                }
-                it++;
-            }
-            if (containsAtLeastOne)
-            {
-                while (it != m_DrawablesBuffer.end())
-                {
-                    if (it->id != c_EmptyID)
-                    {
-                        aabb = Union(aabb, CalcBounds(*it));
-                    }
-                    ++it;
-                }
-                m_Shared->UpdCamera().focusPoint = -Midpoint(aabb);
-                m_Shared->UpdCamera().radius = 2.0f * LongestDim(aabb);
+                osc::AutoFocus(m_Shared->UpdCamera(), *sceneAABB, osc::AspectRatio(m_Shared->Get3DSceneDims()));
             }
         }
         osc::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");

@@ -14,4 +14,9 @@ namespace osc
         bool canRotate = true,
         bool canScale = true
     );
+
+    bool UpdateImguizmoStateFromKeyboard(
+        ImGuizmo::OPERATION&,
+        ImGuizmo::MODE&
+    );
 }

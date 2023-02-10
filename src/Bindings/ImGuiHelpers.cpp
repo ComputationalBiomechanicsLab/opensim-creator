@@ -183,11 +183,12 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
     Rect const& viewportRect,
     std::optional<osc::AABB> maybeSceneAABB)
 {
-    bool ctrlDown = osc::IsCtrlOrSuperDown();
+    bool const shiftDown = osc::IsShiftDown();
+    bool const ctrlOrSuperDown = osc::IsCtrlOrSuperDown();
 
     if (ImGui::IsKeyReleased(ImGuiKey_X))
     {
-        if (ctrlDown)
+        if (ctrlOrSuperDown)
         {
             FocusAlongMinusX(camera);
             return true;
@@ -199,7 +200,8 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
     }
     else if (ImGui::IsKeyPressed(ImGuiKey_Y))
     {
-        if (!ctrlDown)
+        // Ctrl+Y already does something?
+        if (!ctrlOrSuperDown)
         {
             FocusAlongY(camera);
             return true;
@@ -207,7 +209,7 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
     }
     else if (ImGui::IsKeyPressed(ImGuiKey_F))
     {
-        if (ctrlDown)
+        if (ctrlOrSuperDown)
         {
             if (maybeSceneAABB)
             {
@@ -225,7 +227,7 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
             return true;
         }
     }
-    else if (ctrlDown && (ImGui::IsKeyPressed(ImGuiKey_8)))
+    else if (ctrlOrSuperDown && (ImGui::IsKeyPressed(ImGuiKey_8)))
     {
         if (maybeSceneAABB)
         {
@@ -237,7 +239,92 @@ bool osc::UpdatePolarCameraFromImGuiKeyboardInputs(
             return true;
         }
     }
-
+    else if (ImGui::IsKeyDown(ImGuiKey_UpArrow))
+    {
+        if (ctrlOrSuperDown)
+        {
+            // pan
+            camera.pan(osc::AspectRatio(viewportRect), {0.0f, -0.1f});
+        }
+        else if (shiftDown)
+        {
+            // rotate in 90-deg increments
+            camera.phi -= glm::radians(90.0f);
+        }
+        else
+        {
+            // rotate in 10-deg increments
+            camera.phi -= glm::radians(10.0f);
+        }
+        return true;
+    }
+    else if (ImGui::IsKeyDown(ImGuiKey_DownArrow))
+    {
+        if (ctrlOrSuperDown)
+        {
+            // pan
+            camera.pan(osc::AspectRatio(viewportRect), {0.0f, +0.1f});
+        }
+        else if (shiftDown)
+        {
+            // rotate in 90-deg increments
+            camera.phi += glm::radians(90.0f);
+        }
+        else
+        {
+            // rotate in 10-deg increments
+            camera.phi += glm::radians(10.0f);
+        }
+        return true;
+    }
+    else if (ImGui::IsKeyDown(ImGuiKey_LeftArrow))
+    {
+        if (ctrlOrSuperDown)
+        {
+            // pan
+            camera.pan(osc::AspectRatio(viewportRect), {-0.1f, 0.0f});
+        }
+        else if (shiftDown)
+        {
+            // rotate in 90-deg increments
+            camera.theta += glm::radians(90.0f);
+        }
+        else
+        {
+            // rotate in 10-deg increments
+            camera.theta += glm::radians(10.0f);
+        }
+        return true;
+    }
+    else if (ImGui::IsKeyDown(ImGuiKey_RightArrow))
+    {
+        if (ctrlOrSuperDown)
+        {
+            // pan
+            camera.pan(osc::AspectRatio(viewportRect), {+0.1f, 0.0f});
+        }
+        else if (shiftDown)
+        {
+            // rotate in 90-deg increments
+            camera.theta -= glm::radians(90.0f);
+        }
+        else
+        {
+            // rotate in 10-deg increments
+            camera.theta -= glm::radians(10.0f);
+        }
+        return true;
+    }
+    else if (ImGui::IsKeyDown(ImGuiKey_Minus))
+    {
+        camera.radius *= 1.1f;
+        return true;
+    }
+    else if (ImGui::IsKeyDown(ImGuiKey_Equal))
+    {
+        camera.radius *= 0.9f;
+        return true;
+    }
     return false;
 }
 

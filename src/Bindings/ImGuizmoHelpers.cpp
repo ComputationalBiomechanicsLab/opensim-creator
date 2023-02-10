@@ -108,3 +108,50 @@ bool osc::DrawGizmoOpSelector(
 
     return rv;
 }
+
+bool osc::UpdateImguizmoStateFromKeyboard(
+    ImGuizmo::OPERATION& op,
+    ImGuizmo::MODE& mode)
+{
+    bool shiftDown = osc::IsShiftDown();
+    bool ctrlOrSuperDown = osc::IsCtrlOrSuperDown();
+
+    if (shiftDown || ctrlOrSuperDown)
+    {
+        return false;  // assume the user is doing some other action
+    }
+    else if (ImGui::IsKeyPressed(ImGuiKey_R))
+    {
+        // R: set manipulation mode to "rotate"
+        if (op == ImGuizmo::ROTATE)
+        {
+            mode = mode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
+        }
+        op = ImGuizmo::ROTATE;
+        return true;
+    }
+    else if (ImGui::IsKeyPressed(ImGuiKey_G))
+    {
+        // G: set manipulation mode to "grab" (translate)
+        if (op == ImGuizmo::TRANSLATE)
+        {
+            mode = mode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
+        }
+        op = ImGuizmo::TRANSLATE;
+        return true;
+}
+    else if (ImGui::IsKeyPressed(ImGuiKey_S))
+    {
+        // S: set manipulation mode to "scale"
+        if (op == ImGuizmo::SCALE)
+        {
+            mode = mode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
+        }
+        op = ImGuizmo::SCALE;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
