@@ -22,6 +22,7 @@ namespace osc
 
         bool isUsing() const;
 
+        bool handleKeyboardInputs();
         void draw(Rect const& screenRect, PolarPerspectiveCamera const&);
 
         ImGuizmo::OPERATION getOperation() const

@@ -1,5 +1,6 @@
 #include "ModelSelectionGizmo.hpp"
 
+#include "src/Bindings/ImGuizmoHelpers.hpp"
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Maths/Rect.hpp"
@@ -649,6 +650,11 @@ osc::ModelSelectionGizmo::~ModelSelectionGizmo() noexcept = default;
 bool osc::ModelSelectionGizmo::isUsing() const
 {
     return ImGuizmo::IsUsing();
+}
+
+bool osc::ModelSelectionGizmo::handleKeyboardInputs()
+{
+    return osc::UpdateImguizmoStateFromKeyboard(m_GizmoOperation, m_GizmoMode);
 }
 
 void osc::ModelSelectionGizmo::draw(

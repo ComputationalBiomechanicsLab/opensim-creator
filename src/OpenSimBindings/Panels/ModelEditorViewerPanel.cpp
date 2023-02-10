@@ -79,11 +79,7 @@ private:
             m_MaybeLastHittest->isHovered &&
             !isUsingAnOverlay())
         {
-            UpdatePolarCameraFromImGuiInputs(
-                m_Params.camera,
-                viewportRect,
-                m_CachedModelRenderer.getRootAABB()
-            );
+            handleMouseAndKeyboardInputs(viewportRect);
         }
 
         // render the 3D scene to a texture and blit it via ImGui::Image
@@ -219,6 +215,22 @@ private:
             {
                 m_Gizmo.setMode(mode);
             }
+        }
+    }
+
+    bool handleMouseAndKeyboardInputs(Rect const& viewportRect)
+    {
+        if (m_Gizmo.handleKeyboardInputs())
+        {
+            return true;
+        }
+        else if (UpdatePolarCameraFromImGuiInputs(m_Params.camera, viewportRect, m_CachedModelRenderer.getRootAABB()))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
