@@ -1,0 +1,48 @@
+{
+  "inLanguage": {
+    "alternateName": "eng",
+    "@type": "Language",
+    "name": "English"
+  },
+  "description": "<p>Release binaries (Windows, Mac, and Ubuntu18), and source code (C++, CMake), for OpenSim Creator 0.3.2.</p>\n\n<p>Consult the official website (opensimcreator.com) or GitHub (github.com/ComputationalBiomechanicsLab/opensim-creator) for additional information.</p>\n\n<p>OpenSim Creator is developed under an Apache 2.0 (permissive) license.</p>",
+  "license": "https://creativecommons.org/licenses/by/4.0/legalcode",
+  "creator": [
+    {
+      "affiliation": "Delft University of Technology",
+      "@id": "https://orcid.org/0000-0002-6505-5374",
+      "@type": "Person",
+      "name": "Kewley, Adam"
+    }
+  ],
+  "url": "https://zenodo.org/record/7575937",
+  "datePublished": "2023-01-09",
+  "keywords": [
+    "OpenSim Biomechanics Musculoskeletal Modelling"
+  ],
+  "version": "0.3.2",
+  "contributor": [
+    {
+      "affiliation": "Delft University of Technology",
+      "@id": "https://orcid.org/0000-0002-6505-5374",
+      "@type": "Person",
+      "name": "Kewley, Adam"
+    },
+    {
+      "affiliation": "Delft University of Technology",
+      "@id": "https://orcid.org/0000-0003-4217-1580",
+      "@type": "Person",
+      "name": "Seth, Ajay"
+    },
+    {
+      "affiliation": "Delft University of Technology",
+      "@id": "https://orcid.org/0000-0001-5457-0103",
+      "@type": "Person",
+      "name": "van Beesel, Julia"
+    }
+  ],
+  "@context": "https://schema.org/",
+  "identifier": "https://doi.org/10.5281/zenodo.7575937",
+  "@id": "https://doi.org/10.5281/zenodo.7575937",
+  "@type": "SoftwareSourceCode",
+  "name": "OpenSim Creator"
+}
