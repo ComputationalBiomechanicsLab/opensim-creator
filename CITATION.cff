@@ -1,0 +1,48 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: OpenSim Creator
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Adam
+    family-names: Kewley
+    email: contact@adamkewley.com
+    affiliation: Delft University of Technology
+    orcid: 'https://orcid.org/0000-0002-6505-5374'
+  - given-names: Ajay
+    family-names: Seth
+    email: A.Seth@tudelft.nl
+    affiliation: Delft University of Technology
+    orcid: 'https://orcid.org/0000-0003-4217-1580'
+  - given-names: Julia
+    name-particle: van
+    family-names: Beesel
+    orcid: 'https://orcid.org/0000-0001-5457-0103'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.7575937
+    description: Zenodo entry containing 0.3.2 binaries
+  - type: url
+    value: 'https://www.opensimcreator.com'
+    description: Project URL
+repository-code: >-
+  https://github.com/ComputationalBiomechanicsLab/opensim-creator
+url: 'https://www.opensimcreator.com'
+repository-artifact: >-
+  https://github.com/ComputationalBiomechanicsLab/opensim-creator/releases
+abstract: A desktop GUI for editing+simulating OpenSim models.
+keywords:
+  - OpenSim
+  - Biomechanics
+  - Musculoskeletal Modelling
+  - Simbody
+  - Mechanical Modelling
+  - Simulation Software
+license: Apache-2.0
+commit: fe8e71a971a5f1e0bc1a30910ee2b868b78848dc
+version: 0.3.2
+date-released: '2023-01-06'
