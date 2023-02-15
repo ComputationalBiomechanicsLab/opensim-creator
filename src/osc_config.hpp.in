@@ -58,7 +58,7 @@
 // the internet location of the OSC repo. Used by in-app links, shortcuts, etc.
 // to the repo so that users can just click and go, rather than having to separately
 // browse to the repo
-#define OSC_REPO_URL "https://github.com/ComputationalBiomechanicsLab/opensim-creator"
+#define OSC_REPO_URL "@OSC_REPO_URL@"
 
 // char[]
 //

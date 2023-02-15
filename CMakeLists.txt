@@ -48,6 +48,11 @@ set(
     "default location of runtime resources dir when not specified by user/config"
 )
 set(
+    OSC_REPO_URL "https://github.com/ComputationalBiomechanicsLab/opensim-creator"
+    CACHE STRING
+    "the internet location of the software's repo. Used by in-app links etc."
+)
+set(
     OSC_BUILD_DOCS OFF
     CACHE BOOL
     "whether to build the documentation or not (requires sphinx-build is available on the PATH)"
