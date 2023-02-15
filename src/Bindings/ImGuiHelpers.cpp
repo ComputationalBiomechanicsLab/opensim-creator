@@ -415,17 +415,17 @@ void osc::DrawTextureAsImGuiImage(
     ImGui::Image(t.getTextureHandleHACK(), dims, topLeftCoord, bottomRightCoord);
 }
 
+void osc::DrawTextureAsImGuiImage(RenderTexture const& tex)
+{
+    return DrawTextureAsImGuiImage(tex, tex.getDimensions());
+}
+
 void osc::DrawTextureAsImGuiImage(RenderTexture const& t, glm::vec2 dims)
 {
     glm::vec2 const uv0 = {0.0f, 1.0f};
     glm::vec2 const uv1 = {1.0f, 0.0f};
 
     ImGui::Image(t.getTextureHandleHACK(), dims, uv0, uv1);
-}
-
-void osc::DrawTextureAsImGuiImage(RenderTexture const& tex)
-{
-    return DrawTextureAsImGuiImage(tex, tex.getDimensions());
 }
 
 bool osc::ImageButton(CStringView label, Texture2D const& t, glm::vec2 dims)

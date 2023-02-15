@@ -1,7 +1,6 @@
 #include "SelectGeometryPopup.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/Platform/App.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
@@ -95,10 +94,12 @@ namespace
 class osc::SelectGeometryPopup::Impl final : public osc::StandardPopup {
 public:
     Impl(std::string_view popupName, 
+         std::filesystem::path const& geometryDir,
          std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection) :
 
         StandardPopup{std::move(popupName)},
-        m_OnSelection{std::move(onSelection)}
+        m_OnSelection{std::move(onSelection)},
+        m_GeometryFiles{GetAllFilesInDirRecursively(geometryDir)}
     {
     }
 
@@ -233,7 +234,7 @@ private:
     std::function<void(std::unique_ptr<OpenSim::Geometry>)> m_OnSelection;
 
     // geometry files found in the user's/installation's `Geometry/` dir
-    std::vector<std::filesystem::path> m_GeometryFiles = GetAllFilesInDirRecursively(App::resource("geometry"));
+    std::vector<std::filesystem::path> m_GeometryFiles;
 
     // recent file choices by the user
     std::vector<std::filesystem::path> m_RecentUserChoices;
@@ -245,8 +246,12 @@ private:
 
 // public API (PIMPL)
 
-osc::SelectGeometryPopup::SelectGeometryPopup(std::string_view popupName, std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection) :
-    m_Impl{std::make_unique<Impl>(std::move(popupName), std::move(onSelection))}
+osc::SelectGeometryPopup::SelectGeometryPopup(
+    std::string_view popupName,
+    std::filesystem::path const& geometryDir,
+    std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection) :
+
+    m_Impl{std::make_unique<Impl>(std::move(popupName), geometryDir, std::move(onSelection))}
 {
 }
 

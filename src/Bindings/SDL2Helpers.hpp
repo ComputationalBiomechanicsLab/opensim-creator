@@ -126,7 +126,7 @@ namespace sdl
 
     private:
         friend Renderer CreateRenderer(SDL_Window * w, int index, Uint32 flags);
-        Renderer(SDL_Renderer * _ptr) : m_RendererHandle{_ptr}
+        Renderer(SDL_Renderer* _ptr) : m_RendererHandle{_ptr}
         {
         }
 

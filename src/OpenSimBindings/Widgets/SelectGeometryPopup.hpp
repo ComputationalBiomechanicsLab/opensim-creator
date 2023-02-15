@@ -2,6 +2,7 @@
 
 #include "src/Widgets/Popup.hpp"
 
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <string_view>
@@ -12,8 +13,9 @@ namespace osc
 {
     class SelectGeometryPopup final : public Popup {
     public:
-        explicit SelectGeometryPopup(
+        SelectGeometryPopup(
             std::string_view popupName,
+            std::filesystem::path const& geometryDir,
             std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection);
         SelectGeometryPopup(SelectGeometryPopup const&) = delete;
         SelectGeometryPopup(SelectGeometryPopup&&) noexcept;

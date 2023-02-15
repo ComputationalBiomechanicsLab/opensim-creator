@@ -222,9 +222,9 @@ namespace
             OpenSim::Component const& componentToRender,
             OpenSim::Component const& componentToLinkTo)
         {
-            std::function<void(osc::SimpleSceneDecoration&&)> callback = [this, &componentToLinkTo](osc::SimpleSceneDecoration&& dec)
+            std::function<void(osc::SimpleSceneDecoration&&)> const callback = [this, &componentToLinkTo](osc::SimpleSceneDecoration&& dec)
             {
-                consume(componentToLinkTo, osc::SceneDecoration{dec});
+                consume(componentToLinkTo, osc::SceneDecoration{std::move(dec)});
             };
 
             m_GeomList.clear();

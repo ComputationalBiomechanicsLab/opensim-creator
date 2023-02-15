@@ -1262,7 +1262,7 @@ namespace
             glm::vec2 renderDimensions,
             std::optional<IDedLocation> const& maybeHoveredLandmark)
         {
-            osc::SceneRendererParams const params = CalcStandardDarkSceneRenderParams(m_Camera, renderDimensions);
+            osc::SceneRendererParams const params = CalcStandardDarkSceneRenderParams(m_Camera, osc::App::get().getMSXAASamplesRecommended(), renderDimensions);
             std::vector<osc::SceneDecoration> const decorations = generateDecorations(maybeHoveredLandmark);
             return m_CachedRenderer.draw(decorations, params);
         }
@@ -1963,7 +1963,7 @@ namespace
             std::optional<osc::RayCollision> const& maybeMeshCollision,
             std::optional<TPSUIViewportHover> const& maybeLandmarkCollision)
         {
-            osc::SceneRendererParams const params = CalcStandardDarkSceneRenderParams(m_Camera, dims);
+            osc::SceneRendererParams const params = CalcStandardDarkSceneRenderParams(m_Camera, osc::App::get().getMSXAASamplesRecommended(), dims);
             std::vector<osc::SceneDecoration> const decorations = generateDecorations(maybeMeshCollision, maybeLandmarkCollision);
             return m_CachedRenderer.draw(decorations, params);
         }
@@ -2242,7 +2242,7 @@ namespace
         osc::RenderTexture& renderScene(glm::vec2 dims)
         {
             std::vector<osc::SceneDecoration> const decorations = generateDecorations();
-            osc::SceneRendererParams const params = CalcStandardDarkSceneRenderParams(m_Camera, dims);
+            osc::SceneRendererParams const params = CalcStandardDarkSceneRenderParams(m_Camera, osc::App::get().getMSXAASamplesRecommended(), dims);
             return m_CachedRenderer.draw(decorations, params);
         }
 

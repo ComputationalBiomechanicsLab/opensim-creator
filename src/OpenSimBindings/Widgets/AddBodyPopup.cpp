@@ -184,7 +184,10 @@ private:
                 if (ImGui::Button(label.c_str()))
                 {
                     // open geometry selection popup
-                    auto popup = std::make_unique<SelectGeometryPopup>("addbody_attachgeometry", [this](auto ptr) { onGeometrySelection(std::move(ptr)); });
+                    auto popup = std::make_unique<SelectGeometryPopup>(
+                        "addbody_attachgeometry",
+                        App::resource("geometry"),
+                        [this](auto ptr) { onGeometrySelection(std::move(ptr)); });
                     popup->open();
                     m_EditorAPI->pushPopup(std::move(popup));
                 }

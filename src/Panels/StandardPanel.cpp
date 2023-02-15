@@ -26,17 +26,17 @@ osc::CStringView osc::StandardPanel::implGetName() const
 
 bool osc::StandardPanel::implIsOpen() const
 {
-    return osc::App::get().getConfig().getIsPanelEnabled(m_PanelName);
+    return App::get().getConfig().getIsPanelEnabled(m_PanelName);
 }
 
 void osc::StandardPanel::implOpen()
 {
-    osc::App::upd().updConfig().setIsPanelEnabled(m_PanelName, true);
+    App::upd().updConfig().setIsPanelEnabled(m_PanelName, true);
 }
 
 void osc::StandardPanel::implClose()
 {
-    osc::App::upd().updConfig().setIsPanelEnabled(m_PanelName, false);
+    App::upd().updConfig().setIsPanelEnabled(m_PanelName, false);
 }
 
 void osc::StandardPanel::implDraw()

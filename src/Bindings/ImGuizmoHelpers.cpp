@@ -113,8 +113,8 @@ bool osc::UpdateImguizmoStateFromKeyboard(
     ImGuizmo::OPERATION& op,
     ImGuizmo::MODE& mode)
 {
-    bool shiftDown = osc::IsShiftDown();
-    bool ctrlOrSuperDown = osc::IsCtrlOrSuperDown();
+    bool const shiftDown = osc::IsShiftDown();
+    bool const ctrlOrSuperDown = osc::IsCtrlOrSuperDown();
 
     if (shiftDown || ctrlOrSuperDown)
     {

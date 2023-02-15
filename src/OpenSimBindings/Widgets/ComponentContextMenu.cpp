@@ -12,6 +12,7 @@
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/Platform/App.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/Algorithms.hpp"
@@ -100,8 +101,15 @@ namespace
     {
         if (ImGui::MenuItem("Add Geometry"))
         {
-            std::function<void(std::unique_ptr<OpenSim::Geometry>)> callback = [uim, pfPath](auto geom) { osc::ActionAttachGeometryToPhysicalFrame(*uim, pfPath, std::move(geom)); };
-            std::unique_ptr<osc::Popup> p = std::make_unique<osc::SelectGeometryPopup>("select geometry to attach", callback);
+            std::function<void(std::unique_ptr<OpenSim::Geometry>)> const callback = [uim, pfPath](auto geom)
+            {
+                osc::ActionAttachGeometryToPhysicalFrame(*uim, pfPath, std::move(geom));
+            };
+            std::unique_ptr<osc::Popup> p = std::make_unique<osc::SelectGeometryPopup>(
+                "select geometry to attach",
+                osc::App::resource("geometry"),
+                callback
+            );
             p->open();
             editorAPI->pushPopup(std::move(p));
         }

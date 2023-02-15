@@ -10,8 +10,8 @@ namespace osc { class SceneDecoration; }
 namespace osc
 {
     struct DAEMetadata final {
-        std::string Author;
-        std::string AuthoringTool;
+        std::string author;
+        std::string authoringTool;
 
         DAEMetadata();
     };

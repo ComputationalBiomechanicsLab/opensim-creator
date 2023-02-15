@@ -1,6 +1,5 @@
 #include "SVG.hpp"
 
-#include "src/Platform/App.hpp"
 #include "src/Utils/Assertions.hpp"
 
 #include <glm/vec2.hpp>
@@ -32,9 +31,4 @@ osc::Texture2D osc::LoadTextureFromSVGFile(std::filesystem::path const& p, float
     t.setFilterMode(osc::TextureFilterMode::Nearest);
 
     return t;
-}
-
-osc::Texture2D osc::LoadTextureFromSVGResource(std::string_view resourceName, float scale)
-{
-    return LoadTextureFromSVGFile(osc::App::resource(resourceName), scale);
 }

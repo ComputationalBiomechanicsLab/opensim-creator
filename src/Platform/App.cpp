@@ -1262,7 +1262,7 @@ void osc::App::addRecentFile(std::filesystem::path const& p)
 
 std::shared_ptr<void> osc::App::updSingleton(std::type_info const& typeInfo, std::function<std::shared_ptr<void>()> const& ctor)
 {
-    return m_Impl->updSingleton(typeInfo, std::move(ctor));
+    return m_Impl->updSingleton(typeInfo, ctor);
 }
 
 void osc::ImGuiInit()

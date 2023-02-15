@@ -7,8 +7,8 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
-#include <nonstd/span.hpp>
 #include <imgui.h>
+#include <nonstd/span.hpp>
 
 #include <cstddef>
 #include <initializer_list>
@@ -51,11 +51,28 @@ namespace osc
     Rect ContentRegionAvailScreenRect();
 
     // draws a texutre as an ImGui::Image
-    void DrawTextureAsImGuiImage(Texture2D const&);
-    void DrawTextureAsImGuiImage(Texture2D const&, glm::vec2 dims);  // assumes coords == [(0.0, 1.0), (1.0, 0.0)]
-    void DrawTextureAsImGuiImage(Texture2D const&, glm::vec2 dims, glm::vec2 topLeftCoord, glm::vec2 bottomRightCoord);
-    void DrawTextureAsImGuiImage(RenderTexture const&, glm::vec2 dims);
-    void DrawTextureAsImGuiImage(RenderTexture const&);
+    //
+    // assumes coords == [(0.0, 1.0), (1.0, 0.0)]
+    void DrawTextureAsImGuiImage(
+        Texture2D const&
+    );
+    void DrawTextureAsImGuiImage(
+        Texture2D const&,
+        glm::vec2 dims
+    );
+    void DrawTextureAsImGuiImage(
+        Texture2D const&,
+        glm::vec2 dims,
+        glm::vec2 topLeftCoord,
+        glm::vec2 bottomRightCoord
+    );
+    void DrawTextureAsImGuiImage(
+        RenderTexture const&
+    );
+    void DrawTextureAsImGuiImage(
+        RenderTexture const&,
+        glm::vec2 dims
+    );
 
     // draws a texture using ImGui::ImageButton
     bool ImageButton(CStringView, Texture2D const&, glm::vec2 dims);

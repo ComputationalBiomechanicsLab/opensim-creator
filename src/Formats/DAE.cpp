@@ -42,25 +42,25 @@ namespace
     struct DAEGeometry final {
 
         DAEGeometry(std::string geometryID_, osc::Mesh const& mesh_) :
-            GeometryID{std::move(geometryID_)},
-            Mesh{mesh_}
+            geometryID{std::move(geometryID_)},
+            mesh{mesh_}
         {
         }
 
-        std::string GeometryID;
-        osc::Mesh Mesh;
+        std::string geometryID;
+        osc::Mesh mesh;
     };
 
     struct DAEMaterial final {
 
         explicit DAEMaterial(std::string materialID_, glm::vec4 const& color_) :
-            MaterialID{std::move(materialID_)},
-            Color{color_}
+            materialID{std::move(materialID_)},
+            color{color_}
         {
         }
 
-        std::string MaterialID;
-        glm::vec4 Color;
+        std::string materialID;
+        glm::vec4 color;
     };
 
     struct DAEInstance final {
@@ -71,25 +71,25 @@ namespace
             std::string materialID_,
             osc::Transform const& transform_) :
 
-            InstanceID{std::move(instanceID_)},
-            GeometryID{std::move(geometryID_)},
-            MaterialID{std::move(materialID_)},
-            Transform{transform_}
+            instanceID{std::move(instanceID_)},
+            geometryID{std::move(geometryID_)},
+            materialID{std::move(materialID_)},
+            transform{transform_}
         {
         }
 
-        std::string InstanceID;
-        std::string GeometryID;
-        std::string MaterialID;
-        osc::Transform Transform;
+        std::string instanceID;
+        std::string geometryID;
+        std::string materialID;
+        osc::Transform transform;
     };
 
     // internal representation of a datastructure that more closely resembles
     // how DAE files are structured
     struct DAESceneGraph final {
-        std::vector<DAEGeometry> Geometries;
-        std::vector<DAEMaterial> Materials;
-        std::vector<DAEInstance> Instances;
+        std::vector<DAEGeometry> geometries;
+        std::vector<DAEMaterial> materials;
+        std::vector<DAEInstance> instances;
     };
 
     DAESceneGraph ToDAESceneGraph(nonstd::span<osc::SceneDecoration const> els)
@@ -116,7 +116,7 @@ namespace
                 id << "mesh_" << latestMesh++;
                 meshIt->second = std::move(id).str();
 
-                rv.Geometries.emplace_back(meshIt->second, meshIt->first);
+                rv.geometries.emplace_back(meshIt->second, meshIt->first);
             }
 
             auto [materialIt, materialInserted] = color2materialid.try_emplace(el.color, "");
@@ -126,12 +126,12 @@ namespace
                 id << "material_" << latestMaterial++;
                 materialIt->second = std::move(id).str();
 
-                rv.Materials.emplace_back(materialIt->second, materialIt->first);
+                rv.materials.emplace_back(materialIt->second, materialIt->first);
             }
 
             std::stringstream instanceID;
             instanceID << "instance_" << latestInstance++;
-            rv.Instances.emplace_back(std::move(instanceID).str(), meshIt->second, materialIt->second, el.transform);
+            rv.instances.emplace_back(std::move(instanceID).str(), meshIt->second, materialIt->second, el.transform);
         }
 
         return rv;
@@ -217,8 +217,8 @@ R"(  <asset>
     <unit name="meter" meter="1"/>
     <up_axis>Y_UP</up_axis>
   </asset>)",
-            metadata.Author,
-            metadata.AuthoringTool,
+            metadata.author,
+            metadata.authoringTool,
             fmt::localtime(t),
             fmt::localtime(t)
         );
@@ -243,7 +243,7 @@ R"(  <asset>
           </lambert>
         </technique>
       </profile_COMMON>
-    </effect>)", material.MaterialID, ToDaeList(ToFloatSpan(material.Color)));
+    </effect>)", material.materialID, ToDaeList(ToFloatSpan(material.color)));
         o << '\n';
     }
 
@@ -261,7 +261,7 @@ R"(  <asset>
     {
         o << fmt::format(R"(    <material id="{}-material" name="{}">
       <instance_effect url="#{}-effect"/>
-    </material>)", material.MaterialID, material.MaterialID, material.MaterialID);
+    </material>)", material.materialID, material.materialID, material.materialID);
     }
 
     void WriteLibraryMaterials(std::ostream& o, nonstd::span<DAEMaterial const> materials)
@@ -276,7 +276,7 @@ R"(  <asset>
 
     void WriteMeshPositionsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        nonstd::span<glm::vec3 const> const vals = geom.Mesh.getVerts();
+        nonstd::span<glm::vec3 const> const vals = geom.mesh.getVerts();
         size_t const floatCount = 3 * vals.size();
         size_t const vertCount = vals.size();
 
@@ -291,18 +291,18 @@ R"(        <source id="{}-positions">
             </accessor>
           </technique_common>
         </source>)",
-            geom.GeometryID,
-            geom.GeometryID,
+            geom.geometryID,
+            geom.geometryID,
             floatCount,
             ToDaeList(ToFloatSpan(vals)),
-            geom.GeometryID,
+            geom.geometryID,
             vertCount);
         o << '\n';
     }
 
     void WriteMeshNormalsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        nonstd::span<glm::vec3 const> const vals = geom.Mesh.getNormals();
+        nonstd::span<glm::vec3 const> const vals = geom.mesh.getNormals();
         size_t const floatCount = 3 * vals.size();
         size_t const normalCount = vals.size();
 
@@ -317,18 +317,18 @@ R"(        <source id="{}-normals">
             </accessor>
           </technique_common>
         </source>)",
-            geom.GeometryID,
-            geom.GeometryID,
+            geom.geometryID,
+            geom.geometryID,
             floatCount,
             ToDaeList(ToFloatSpan(vals)),
-            geom.GeometryID,
+            geom.geometryID,
             normalCount);
         o << '\n';
     }
 
     void WriteMeshTextureCoordsSource(std::ostream& o, DAEGeometry const& geom)
     {
-        nonstd::span<glm::vec2 const> const vals = geom.Mesh.getTexCoords();
+        nonstd::span<glm::vec2 const> const vals = geom.mesh.getTexCoords();
         size_t const floatCount = 2 * vals.size();
         size_t const coordCount = vals.size();
 
@@ -342,11 +342,11 @@ R"(        <source id="{}-map-0">
             </accessor>
           </technique_common>
         </source>)",
-            geom.GeometryID,
-            geom.GeometryID,
+            geom.geometryID,
+            geom.geometryID,
             floatCount,
             ToDaeList(ToFloatSpan(vals)),
-            geom.GeometryID,
+            geom.geometryID,
             coordCount);
         o << '\n';
     }
@@ -357,28 +357,28 @@ R"(        <source id="{}-map-0">
 R"(        <vertices id="{}-vertices">
           <input semantic="POSITION" source="#{}-positions"/>
         </vertices>)",
-            geom.GeometryID,
-            geom.GeometryID);
+            geom.geometryID,
+            geom.geometryID);
         o << '\n';
     }
 
     void WriteMeshTriangles(std::ostream& o, DAEGeometry const& geom)
     {
-        osc::MeshIndicesView const indices = geom.Mesh.getIndices();
+        osc::MeshIndicesView const indices = geom.mesh.getIndices();
         size_t const numTriangles = indices.size() / 3;
 
         o << fmt::format(R"(        <triangles count="{}">)", numTriangles);
         o << '\n';
-        o << fmt::format(R"(          <input semantic="VERTEX" source="#{}-vertices" offset="0" />)", geom.GeometryID);
+        o << fmt::format(R"(          <input semantic="VERTEX" source="#{}-vertices" offset="0" />)", geom.geometryID);
         o << '\n';
-        if (!geom.Mesh.getNormals().empty())
+        if (!geom.mesh.getNormals().empty())
         {
-            o << fmt::format(R"(          <input semantic="NORMAL" source="#{}-normals" offset="0" />)", geom.GeometryID);
+            o << fmt::format(R"(          <input semantic="NORMAL" source="#{}-normals" offset="0" />)", geom.geometryID);
             o << '\n';
         }
-        if (!geom.Mesh.getTexCoords().empty())
+        if (!geom.mesh.getTexCoords().empty())
         {
-            o << fmt::format(R"(          <input semantic="TEXCOORD" source="#{}-map-0" offset="0" set="0"/>)", geom.GeometryID);
+            o << fmt::format(R"(          <input semantic="TEXCOORD" source="#{}-map-0" offset="0" set="0"/>)", geom.geometryID);
             o << '\n';
         }
 
@@ -399,11 +399,11 @@ R"(        <vertices id="{}-vertices">
         o << '\n';
 
         WriteMeshPositionsSource(o, geom);
-        if (!geom.Mesh.getNormals().empty())
+        if (!geom.mesh.getNormals().empty())
         {
             WriteMeshNormalsSource(o, geom);
         }        
-        if (!geom.Mesh.getTexCoords().empty())
+        if (!geom.mesh.getTexCoords().empty())
         {
             WriteMeshTextureCoordsSource(o, geom);
         }        
@@ -416,7 +416,7 @@ R"(        <vertices id="{}-vertices">
 
     void WriteGeometry(std::ostream& o, DAEGeometry const& geom)
     {
-        o << fmt::format(R"(    <geometry id="{}" name="{}">)", geom.GeometryID, geom.GeometryID);
+        o << fmt::format(R"(    <geometry id="{}" name="{}">)", geom.geometryID, geom.geometryID);
         o << '\n';
         WriteMesh(o, geom);
         o << R"(    </geometry>)";
@@ -458,12 +458,12 @@ R"(        <vertices id="{}-vertices">
             <technique_common>
               <instance_material symbol="{}-material" target="#{}-material" />
             </technique_common>
-          </bind_material>)", instance.MaterialID, instance.MaterialID);
+          </bind_material>)", instance.materialID, instance.materialID);
     }
 
     void WriteNodeInstanceGeometry(std::ostream& o, DAEInstance const& instance)
     {
-        o << fmt::format(R"(        <instance_geometry url="#{}" name="{}">)", instance.GeometryID, instance.GeometryID);
+        o << fmt::format(R"(        <instance_geometry url="#{}" name="{}">)", instance.geometryID, instance.geometryID);
         o << '\n';
         WriteInstanceGeometryBindMaterial(o, instance);
         o << "        </instance_geometry>";
@@ -472,9 +472,9 @@ R"(        <vertices id="{}-vertices">
 
     void WriteSceneNode(std::ostream& o, DAEInstance const& instance)
     {
-        o << fmt::format(R"(      <node id="{}" name="{}" type="NODE">)", instance.InstanceID, instance.InstanceID);
+        o << fmt::format(R"(      <node id="{}" name="{}" type="NODE">)", instance.instanceID, instance.instanceID);
         o << '\n';
-        WriteTransformMatrix(o, instance.Transform);
+        WriteTransformMatrix(o, instance.transform);
         WriteNodeInstanceGeometry(o, instance);
         o << R"(      </node>)";
         o << '\n';
@@ -486,7 +486,7 @@ R"(        <vertices id="{}-vertices">
     <visual_scene id="Scene" name="Scene">)";
         o << '\n';
 
-        for (DAEInstance const& ins : graph.Instances)
+        for (DAEInstance const& ins : graph.instances)
         {
             WriteSceneNode(o, ins);
         }
@@ -510,8 +510,8 @@ R"(        <vertices id="{}-vertices">
 // public API
 
 osc::DAEMetadata::DAEMetadata() :
-    Author{OSC_APPNAME_STRING},
-    AuthoringTool{OSC_APPNAME_STRING " v" OSC_VERSION_STRING " (build " OSC_BUILD_ID ")"}
+    author{OSC_APPNAME_STRING},
+    authoringTool{OSC_APPNAME_STRING " v" OSC_VERSION_STRING " (build " OSC_BUILD_ID ")"}
 {
 }
 
@@ -522,9 +522,9 @@ void osc::WriteDecorationsAsDAE(nonstd::span<SceneDecoration const> els, std::os
     WriteXMLHeader(o);
     WriteCOLLADARootNodeBEGIN(o);
     WriteTopLevelAssetBlock(o, metadata);
-    WriteLibraryEffects(o, graph.Materials);
-    WriteLibraryMaterials(o, graph.Materials);
-    WriteLibraryGeometries(o, graph.Geometries);
+    WriteLibraryEffects(o, graph.materials);
+    WriteLibraryMaterials(o, graph.materials);
+    WriteLibraryGeometries(o, graph.geometries);
     WriteMainScene(o, graph);
     WriteCOLLADARootNodeEND(o);
 }

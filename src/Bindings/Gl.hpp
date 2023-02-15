@@ -213,7 +213,7 @@ namespace gl
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGetUniformLocation.xhtml
-    //     *throws on error
+    //     - throws on error
     [[nodiscard]] inline GLint GetUniformLocation(Program const& p, GLchar const* name)
     {
         GLint const handle = glGetUniformLocation(p.get(), name);

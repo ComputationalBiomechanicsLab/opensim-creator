@@ -7,7 +7,6 @@
 #include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
 #include "src/OpenSimBindings/VirtualOutputExtractor.hpp"
-#include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Utils/Assertions.hpp"
@@ -242,8 +241,6 @@ public:
 
     void draw()
     {
-        m_FrameCountOnLastDrawcall = osc::App::get().getFrameCount();
-
         VirtualSimulation& sim = m_API->updSimulation();
 
         int nReports = sim.getNumReports();
@@ -399,7 +396,6 @@ private:
     SimulatorUIAPI* m_API;
     OutputExtractor m_OutputExtractor;
     float m_Height;
-    std::uint64_t m_FrameCountOnLastDrawcall = 0;
 };
 
 

@@ -11,7 +11,6 @@
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Widgets/WindowMenu.hpp"
-#include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/Algorithms.hpp"

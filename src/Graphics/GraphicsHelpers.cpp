@@ -13,7 +13,6 @@
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/Segment.hpp"
 #include "src/Maths/Tetrahedron.hpp"
-#include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
 
 #include <glm/mat4x4.hpp>
@@ -376,6 +375,7 @@ osc::AABB osc::GetWorldspaceAABB(SceneDecoration const& cd)
 
 osc::SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
     PolarPerspectiveCamera const& camera,
+    int32_t samples,
     glm::vec2 renderDims)
 {
     osc::SceneRendererParams rv;
@@ -384,7 +384,7 @@ osc::SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
     rv.dimensions = renderDims;
     rv.viewMatrix = camera.getViewMtx();
     rv.projectionMatrix = camera.getProjMtx(osc::AspectRatio(renderDims));
-    rv.samples = osc::App::get().getMSXAASamplesRecommended();
+    rv.samples = samples;
     rv.lightDirection = osc::RecommendedLightDirection(camera);
     return rv;
 }
