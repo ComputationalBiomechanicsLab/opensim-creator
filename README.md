@@ -174,6 +174,15 @@ These are some generic tips that might be handy when setting up your own develop
 - For selecting a "kit", QtCreator *usually* detects that `osc-build` already exists (side-effect of running the buildscript). You *may* need to "import existing kit/build" and then select `osc-build`, though
 - Once QtCreator knows your source dir (`opensim-creator/`) and build/kit (`opensim-creator/osc-build`), it should be good to go
 
+# 📖 Citing/Acknowledging
+
+OpenSim Creator doesn't have a central _written_ software publication that you can cite (yet 😉). However, if you _need_ to directly cite OpenSim Creator (e.g. because you think it's relevant that you built a model with it), the closest thing you can use is our DOI-ed Zenodo releases (metadata available in this repo: `CITATION.cff`/`codemeta.json`):
+
+> Kewley, Adam. (2023). OpenSim Creator (0.3.2). Zenodo. https://doi.org/10.5281/zenodo.7575937
+
+If you need a general citation for the simulation/modelling technique, you can directly cite OpenSim via this paper:
+
+> Seth A, Hicks JL, Uchida TK, Habib A, Dembia CL, et al. (2018) **OpenSim: Simulating musculoskeletal dynamics and neuromuscular control to study human and animal movement.** _PLOS Computational Biology_ 14(7): e1006223. https://doi.org/10.1371/journal.pcbi.1006223
 
 # 🥰 Contributing
 
