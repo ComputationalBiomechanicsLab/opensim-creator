@@ -450,7 +450,7 @@ namespace
             SimTK::InverseRotation const& groundToFrameRotation = frameToGroundRotation.invert();
             translationInPofFrame = osc::ToVec3(groundToFrameRotation * osc::ToSimTKVec3(deltaTranslationInGround));
             eulersInPofFrame = osc::ToVec3(contactGeom.get_orientation());
-            
+
             osc::ActionTransformContactGeometry(
                 getUndoableModel(),
                 contactGeom,
@@ -480,7 +480,7 @@ namespace
             SimTK::Transform newWrapToFrameXForm = frameToGround.invert() * osc::ToSimTKTransform(wrapToGroundXform);
             translationInPofFrame = {};
             eulersInPofFrame = osc::ExtractEulerAngleXYZ(osc::ToTransform(newWrapToFrameXForm));
-            
+
             osc::ActionTransformContactGeometry(
                 getUndoableModel(),
                 contactGeom,

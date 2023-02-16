@@ -93,7 +93,7 @@ namespace
 
 class osc::SelectGeometryPopup::Impl final : public osc::StandardPopup {
 public:
-    Impl(std::string_view popupName, 
+    Impl(std::string_view popupName,
          std::filesystem::path const& geometryDir,
          std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection) :
 

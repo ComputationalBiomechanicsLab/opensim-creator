@@ -765,7 +765,7 @@ namespace gl
         static_assert(std::is_unsigned_v<T>, "element indices are unsigned data types (in the GL spec)");
         static_assert(sizeof(T) <= 4);
 
-        switch (sizeof(T)) 
+        switch (sizeof(T))
         {
         case 1:
             return GL_UNSIGNED_BYTE;

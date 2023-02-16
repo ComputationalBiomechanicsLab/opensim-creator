@@ -17,7 +17,7 @@ namespace osc
 
     class MeshIndicesView final {
     private:
-        union U32PtrOrU16Ptr { 
+        union U32PtrOrU16Ptr {
             uint16_t const* u16;
             uint32_t const* u32;
 

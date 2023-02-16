@@ -404,11 +404,11 @@ R"(        <vertices id="{}-vertices">
         if (!geom.mesh.getNormals().empty())
         {
             WriteMeshNormalsSource(o, geom);
-        }        
+        }
         if (!geom.mesh.getTexCoords().empty())
         {
             WriteMeshTextureCoordsSource(o, geom);
-        }        
+        }
         WriteMeshVertices(o, geom);
         WriteMeshTriangles(o, geom);
 

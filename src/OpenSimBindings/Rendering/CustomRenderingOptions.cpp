@@ -28,7 +28,7 @@ namespace
         CustomRenderingOptionFlags_DrawSelectionRims = 1 << 9,
 
         CustomRenderingOptionFlags_COUNT = 10,
-        CustomRenderingOptionFlags_Default = 
+        CustomRenderingOptionFlags_Default =
             CustomRenderingOptionFlags_DrawFloor |
             CustomRenderingOptionFlags_Shadows |
             CustomRenderingOptionFlags_DrawSelectionRims,

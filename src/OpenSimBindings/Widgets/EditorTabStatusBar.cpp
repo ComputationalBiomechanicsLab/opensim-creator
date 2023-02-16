@@ -36,7 +36,7 @@ private:
     void drawSelectionBreadcrumbs()
     {
         OpenSim::Component const* const c = m_Model->getSelected();
-        
+
         if (c)
         {
             std::vector<OpenSim::Component const*> const els = osc::GetPathElements(*c);

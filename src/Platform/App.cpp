@@ -586,7 +586,7 @@ public:
 
         *lock = sv;
 
-        std::string const newTitle = sv.empty() ? 
+        std::string const newTitle = sv.empty() ?
             OSC_APPNAME_STRING :
             (std::string{sv} + " - " + OSC_APPNAME_STRING);
 

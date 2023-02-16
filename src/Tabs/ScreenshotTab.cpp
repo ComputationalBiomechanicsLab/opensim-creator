@@ -244,7 +244,7 @@ private:
         glm::vec4 outlineColor = m_SelectedColor;
         outlineColor.a = 1.0f;
         drawOverlays(
-            drawlist, 
+            drawlist,
             Rect{{0.0f, 0.0f}, m_ImageTexture.getDimensions()},
             {0.0f, 0.0f, 0.0f, 0.0f},
             outlineColor

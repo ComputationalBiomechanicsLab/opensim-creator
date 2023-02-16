@@ -424,7 +424,7 @@ public:
                 renderMouseUIElements(ht);
             }
         }
-        
+
         ImGui::End();
 
         glm::vec2 outputWindowPos;

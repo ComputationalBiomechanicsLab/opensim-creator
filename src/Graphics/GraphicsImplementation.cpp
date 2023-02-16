@@ -4613,7 +4613,7 @@ void osc::GraphicsBackend::RenderScene(Camera::Impl& camera, RenderTexture* mayb
     {
         // bind to output and clear it
 
-        GLenum const clearFlags = camera.m_ClearFlags == CameraClearFlags::SolidColor ? 
+        GLenum const clearFlags = camera.m_ClearFlags == CameraClearFlags::SolidColor ?
             GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT :
             GL_DEPTH_BUFFER_BIT;
 
