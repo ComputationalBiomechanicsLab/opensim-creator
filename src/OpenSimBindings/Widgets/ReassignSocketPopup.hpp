@@ -11,11 +11,12 @@ namespace osc
 {
     class ReassignSocketPopup final : public Popup {
     public:
-        explicit ReassignSocketPopup(
+        ReassignSocketPopup(
             std::string_view popupName,
             std::shared_ptr<UndoableModelStatePair>,
             std::string_view componentAbsPath,
-            std::string_view socketName);
+            std::string_view socketName
+        );
         ReassignSocketPopup(ReassignSocketPopup const&) = delete;
         ReassignSocketPopup(ReassignSocketPopup&&) noexcept;
         ReassignSocketPopup& operator=(ReassignSocketPopup const&) = delete;

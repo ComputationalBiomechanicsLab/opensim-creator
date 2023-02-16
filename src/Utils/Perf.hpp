@@ -95,7 +95,7 @@ namespace osc
     void ClearPerfMeasurements();
     size_t GetAllMeasurements(std::vector<PerfMeasurement>& appendOut);
 
-    class PerfTimer {
+    class PerfTimer final {
     public:
         explicit PerfTimer(int64_t id) noexcept :
             m_ID{id}

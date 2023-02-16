@@ -94,22 +94,22 @@ osc::BasicModelStatePair& osc::BasicModelStatePair::operator=(BasicModelStatePai
 osc::BasicModelStatePair& osc::BasicModelStatePair::operator=(BasicModelStatePair&&) noexcept = default;
 osc::BasicModelStatePair::~BasicModelStatePair() noexcept = default;
 
-OpenSim::Model const& osc::BasicModelStatePair::getModel() const
+OpenSim::Model const& osc::BasicModelStatePair::implGetModel() const
 {
     return m_Impl->getModel();
 }
 
-SimTK::State const& osc::BasicModelStatePair::getState() const
+SimTK::State const& osc::BasicModelStatePair::implGetState() const
 {
     return m_Impl->getState();
 }
 
-float osc::BasicModelStatePair::getFixupScaleFactor() const
+float osc::BasicModelStatePair::implGetFixupScaleFactor() const
 {
     return m_Impl->getFixupScaleFactor();
 }
 
-void osc::BasicModelStatePair::setFixupScaleFactor(float v)
+void osc::BasicModelStatePair::implSetFixupScaleFactor(float v)
 {
     m_Impl->setFixupScaleFactor(std::move(v));
 }

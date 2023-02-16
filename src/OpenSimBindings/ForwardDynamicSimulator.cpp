@@ -91,22 +91,22 @@ namespace
         {
         }
 
-        std::string const& getName() const override
+        std::string const& getName() const final
         {
             return m_Name;
         }
 
-        std::string const& getDescription() const override
+        std::string const& getDescription() const final
         {
             return m_Description;
         }
 
-        osc::OutputType getOutputType() const override
+        osc::OutputType getOutputType() const final
         {
             return osc::OutputType::Float;
         }
 
-        float getValueFloat(OpenSim::Component const& c, osc::SimulationReport const& report) const override
+        float getValueFloat(OpenSim::Component const& c, osc::SimulationReport const& report) const final
         {
             nonstd::span<osc::SimulationReport const> reports(&report, 1);
             std::array<float, 1> out{};
@@ -116,7 +116,7 @@ namespace
 
         void getValuesFloat(OpenSim::Component const&,
                             nonstd::span<osc::SimulationReport const> reports,
-                            nonstd::span<float> overwriteOut) const override
+                            nonstd::span<float> overwriteOut) const final
         {
             for (size_t i = 0; i < reports.size(); ++i)
             {
@@ -124,17 +124,17 @@ namespace
             }
         }
 
-        std::string getValueString(OpenSim::Component const& c, osc::SimulationReport const& report) const override
+        std::string getValueString(OpenSim::Component const& c, osc::SimulationReport const& report) const final
         {
             return std::to_string(getValueFloat(c, report));
         }
 
-        std::size_t getHash() const override
+        std::size_t getHash() const final
         {
             return osc::HashOf(m_Name, m_Description, m_UID);
         }
 
-        bool equals(VirtualOutputExtractor const& other) const override
+        bool equals(VirtualOutputExtractor const& other) const final
         {
             if (&other == this)
             {
@@ -207,12 +207,12 @@ namespace
         osc::ForwardDynamicSimulatorParams const& params = input.getParams();
 
         // create + init an integrator
-        auto integ = CreateIntegrator(input.getMultiBodySystem(), params.IntegratorMethodUsed);
-        integ->setInternalStepLimit(params.IntegratorStepLimit);
-        integ->setMinimumStepSize(params.IntegratorMinimumStepSize.count());
-        integ->setMaximumStepSize(params.IntegratorMaximumStepSize.count());
-        integ->setAccuracy(params.IntegratorAccuracy);
-        integ->setFinalTime(params.FinalTime.time_since_epoch().count());
+        auto integ = CreateIntegrator(input.getMultiBodySystem(), params.integratorMethodUsed);
+        integ->setInternalStepLimit(params.integratorStepLimit);
+        integ->setMinimumStepSize(params.integratorMinimumStepSize.count());
+        integ->setMaximumStepSize(params.integratorMaximumStepSize.count());
+        integ->setAccuracy(params.integratorAccuracy);
+        integ->setFinalTime(params.finalTime.time_since_epoch().count());
         integ->setReturnEveryInternalStep(true);  // so that cancellations/interrupts work
         integ->initialize(input.getState());
         return integ;
@@ -306,7 +306,7 @@ namespace
             }
 
             // calculate next reporting time
-            osc::SimulationClock::time_point tNext = tStart + step*params.ReportingInterval;
+            osc::SimulationClock::time_point tNext = tStart + step*params.reportingInterval;
 
             // perform an integration step
             std::chrono::high_resolution_clock::time_point tStepStart = std::chrono::high_resolution_clock::now();
@@ -337,7 +337,7 @@ namespace
                 // (1 % of step size), then *also* report the simulation end time. Otherwise,
                 // assume that there's an adjacent-enough report
                 osc::SimulationClock::time_point t = GetSimulationTime(*integ);
-                if ((tLastReport + 0.01*params.ReportingInterval) < t)
+                if ((tLastReport + 0.01*params.reportingInterval) < t)
                 {
                     std::chrono::duration<float> wallDur = tStepEnd - tSimStart;
                     std::chrono::duration<float> stepDur = tStepEnd - tStepStart;
@@ -392,7 +392,7 @@ class osc::ForwardDynamicSimulator::Impl final {
 public:
     Impl(BasicModelStatePair modelState,
         ForwardDynamicSimulatorParams const& params,
-         std::function<void(SimulationReport)> reportCallback) :
+        std::function<void(SimulationReport)> reportCallback) :
 
         m_SimulationParams{params},
         m_Shared{std::make_shared<SharedState>()},

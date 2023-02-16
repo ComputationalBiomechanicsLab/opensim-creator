@@ -10,8 +10,7 @@
 namespace osc
 {
     // describes a collision between a ray and a decoration in the scene
-    class SceneCollision final {
-    public:
+    struct SceneCollision final {
         SceneCollision(
             std::string decorationID_,
             size_t decorationIndex_,

@@ -9,8 +9,7 @@
 
 namespace osc
 {
-    class ModelRendererParams final {
-    public:
+    struct ModelRendererParams final {
         ModelRendererParams();
 
         CustomDecorationOptions decorationOptions;

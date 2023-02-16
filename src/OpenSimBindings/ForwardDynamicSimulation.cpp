@@ -114,7 +114,7 @@ public:
 
     SimulationClock::time_point getEndTime() const
     {
-        return m_Simulation.params().FinalTime;
+        return m_Simulation.params().finalTime;
     }
 
     float getProgress() const
@@ -214,77 +214,77 @@ osc::ForwardDynamicSimulation::ForwardDynamicSimulation(ForwardDynamicSimulation
 osc::ForwardDynamicSimulation& osc::ForwardDynamicSimulation::operator=(ForwardDynamicSimulation&&) noexcept = default;
 osc::ForwardDynamicSimulation::~ForwardDynamicSimulation() noexcept = default;
 
-osc::SynchronizedValueGuard<OpenSim::Model const> osc::ForwardDynamicSimulation::getModel() const
+osc::SynchronizedValueGuard<OpenSim::Model const> osc::ForwardDynamicSimulation::implGetModel() const
 {
     return m_Impl->getModel();
 }
 
-int osc::ForwardDynamicSimulation::getNumReports() const
+int osc::ForwardDynamicSimulation::implGetNumReports() const
 {
     return m_Impl->getNumReports();
 }
 
-osc::SimulationReport osc::ForwardDynamicSimulation::getSimulationReport(int reportIndex) const
+osc::SimulationReport osc::ForwardDynamicSimulation::implGetSimulationReport(int reportIndex) const
 {
     return m_Impl->getSimulationReport(std::move(reportIndex));
 }
 
-std::vector<osc::SimulationReport> osc::ForwardDynamicSimulation::getAllSimulationReports() const
+std::vector<osc::SimulationReport> osc::ForwardDynamicSimulation::implGetAllSimulationReports() const
 {
     return m_Impl->getAllSimulationReports();
 }
 
-osc::SimulationStatus osc::ForwardDynamicSimulation::getStatus() const
+osc::SimulationStatus osc::ForwardDynamicSimulation::implGetStatus() const
 {
     return m_Impl->getStatus();
 }
 
-osc::SimulationClock::time_point osc::ForwardDynamicSimulation::getCurTime() const
+osc::SimulationClock::time_point osc::ForwardDynamicSimulation::implGetCurTime() const
 {
     return m_Impl->getCurTime();
 }
 
-osc::SimulationClock::time_point osc::ForwardDynamicSimulation::getStartTime() const
+osc::SimulationClock::time_point osc::ForwardDynamicSimulation::implGetStartTime() const
 {
     return m_Impl->getStartTime();
 }
 
-osc::SimulationClock::time_point osc::ForwardDynamicSimulation::getEndTime() const
+osc::SimulationClock::time_point osc::ForwardDynamicSimulation::implGetEndTime() const
 {
     return m_Impl->getEndTime();
 }
 
-float osc::ForwardDynamicSimulation::getProgress() const
+float osc::ForwardDynamicSimulation::implGetProgress() const
 {
     return m_Impl->getProgress();
 }
 
-osc::ParamBlock const& osc::ForwardDynamicSimulation::getParams() const
+osc::ParamBlock const& osc::ForwardDynamicSimulation::implGetParams() const
 {
     return m_Impl->getParams();
 }
 
-nonstd::span<osc::OutputExtractor const> osc::ForwardDynamicSimulation::getOutputExtractors() const
+nonstd::span<osc::OutputExtractor const> osc::ForwardDynamicSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }
 
-void osc::ForwardDynamicSimulation::requestStop()
+void osc::ForwardDynamicSimulation::implRequestStop()
 {
     return m_Impl->requestStop();
 }
 
-void osc::ForwardDynamicSimulation::stop()
+void osc::ForwardDynamicSimulation::implStop()
 {
     return m_Impl->stop();
 }
 
-float osc::ForwardDynamicSimulation::getFixupScaleFactor() const
+float osc::ForwardDynamicSimulation::implGetFixupScaleFactor() const
 {
     return m_Impl->getFixupScaleFactor();
 }
 
-void osc::ForwardDynamicSimulation::setFixupScaleFactor(float v)
+void osc::ForwardDynamicSimulation::implSetFixupScaleFactor(float v)
 {
     m_Impl->setFixupScaleFactor(std::move(v));
 }

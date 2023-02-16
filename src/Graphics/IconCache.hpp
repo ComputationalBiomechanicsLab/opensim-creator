@@ -18,6 +18,7 @@ namespace osc
         ~IconCache() noexcept;
 
         Icon const& getIcon(std::string_view iconName) const;
+
     private:
         class Impl;
         std::unique_ptr<Impl> m_Impl;

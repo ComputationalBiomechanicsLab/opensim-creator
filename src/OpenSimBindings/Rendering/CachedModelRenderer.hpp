@@ -15,16 +15,16 @@
 namespace osc { class Config; }
 namespace osc { struct Line; }
 namespace osc { class MeshCache; }
-namespace osc { class ModelRendererParams; }
+namespace osc { struct ModelRendererParams; }
 namespace osc { struct Rect; }
 namespace osc { class RenderTexture; }
-namespace osc { class SceneDecoration; }
+namespace osc { struct SceneDecoration; }
 namespace osc { class ShaderCache; }
 namespace osc { class VirtualConstModelStatePair; }
 
 namespace osc
 {
-    class CachedModelRenderer {
+    class CachedModelRenderer final {
     public:
         CachedModelRenderer(
             Config const&,

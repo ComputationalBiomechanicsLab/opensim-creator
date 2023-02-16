@@ -17,7 +17,8 @@ namespace osc
             EditorAPI*,
             std::shared_ptr<UndoableModelStatePair>,
             std::unique_ptr<OpenSim::Component> prototype,
-            std::string_view popupName);
+            std::string_view popupName
+        );
         AddComponentPopup(AddComponentPopup const&) = delete;
         AddComponentPopup(AddComponentPopup&&) noexcept;
         AddComponentPopup& operator=(AddComponentPopup const&) = delete;

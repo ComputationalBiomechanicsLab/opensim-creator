@@ -30,27 +30,27 @@ namespace osc
         ForwardDynamicSimulation& operator=(ForwardDynamicSimulation&&) noexcept;
         ~ForwardDynamicSimulation() noexcept;
 
-        SynchronizedValueGuard<OpenSim::Model const> getModel() const override;
-
-        int getNumReports() const override;
-        SimulationReport getSimulationReport(int reportIndex) const override;
-        std::vector<SimulationReport> getAllSimulationReports() const override;
-
-        SimulationStatus getStatus() const override;
-        SimulationClock::time_point getCurTime() const override;
-        SimulationClock::time_point getStartTime() const override;
-        SimulationClock::time_point getEndTime() const override;
-        float getProgress() const override;
-        ParamBlock const& getParams() const override;
-        nonstd::span<OutputExtractor const> getOutputExtractors() const override;
-
-        void requestStop() override;
-        void stop() override;
-
-        float getFixupScaleFactor() const override;
-        void setFixupScaleFactor(float) override;
-
     private:
+        SynchronizedValueGuard<OpenSim::Model const> implGetModel() const final;
+
+        int implGetNumReports() const final;
+        SimulationReport implGetSimulationReport(int reportIndex) const final;
+        std::vector<SimulationReport> implGetAllSimulationReports() const final;
+
+        SimulationStatus implGetStatus() const final;
+        SimulationClock::time_point implGetCurTime() const final;
+        SimulationClock::time_point implGetStartTime() const final;
+        SimulationClock::time_point implGetEndTime() const final;
+        float implGetProgress() const final;
+        ParamBlock const& implGetParams() const final;
+        nonstd::span<OutputExtractor const> implGetOutputExtractors() const final;
+
+        void implRequestStop() final;
+        void implStop() final;
+
+        float implGetFixupScaleFactor() const final;
+        void implSetFixupScaleFactor(float) final;
+
         class Impl;
         std::unique_ptr<Impl> m_Impl;
     };

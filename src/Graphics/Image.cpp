@@ -79,7 +79,7 @@ nonstd::span<uint8_t const> osc::Image::getPixelData() const
     return {m_Pixels.get(), static_cast<std::size_t>(m_Dimensions.x * m_Dimensions.y * m_NumChannels)};
 }
 
-osc::Image osc::LoadImage(std::filesystem::path const& p, ImageFlags flags)
+osc::Image osc::LoadImageFromFile(std::filesystem::path const& p, ImageFlags flags)
 {
     std::lock_guard stbiGuard{g_StbiMutex};
 
@@ -113,7 +113,7 @@ osc::Image osc::LoadImage(std::filesystem::path const& p, ImageFlags flags)
     return Image{dims, dataSpan, channels};
 }
 
-void osc::WriteToPNG(Image const& image, std::filesystem::path const& outpath)
+void osc::WriteImageToPNGFile(Image const& image, std::filesystem::path const& outpath)
 {
     std::string const pathStr = outpath.string();
     int32_t const w = image.getDimensions().x;

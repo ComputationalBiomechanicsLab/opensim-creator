@@ -15,7 +15,8 @@ namespace osc
             std::string_view,
             MainUIStateAPI*,
             EditorAPI*,
-            std::shared_ptr<UndoableModelStatePair>);
+            std::shared_ptr<UndoableModelStatePair>
+        );
         ModelEditorToolbar(ModelEditorToolbar const&) = delete;
         ModelEditorToolbar(ModelEditorToolbar&&) noexcept;
         ModelEditorToolbar& operator=(ModelEditorToolbar const&) = delete;

@@ -78,7 +78,7 @@ namespace osc
         void doRedo();
 
         // commit current scratch state to storage
-        void commit(std::string_view);
+        void commit(std::string_view commitMessage);
 
         // try to rollback the model to a recent-as-possible state
         void rollback();
@@ -89,31 +89,26 @@ namespace osc
         // read/manipulate underlying OpenSim::Model
         //
         // note: mutating anything may trigger an automatic undo/redo save if `isDirty` returns `true`
-        OpenSim::Model const& getModel() const override;
         OpenSim::Model& updModel();
         void setModel(std::unique_ptr<OpenSim::Model>);
-        UID getModelVersion() const override;
         void setModelVersion(UID);
 
-        // gets the `SimTK::State` that's valid against the current model
-        SimTK::State const& getState() const override;
-        UID getStateVersion() const override;
-
-        // read/manipulate fixup scale factor
-        //
-        // this is the scale factor used to scale visual things in the UI
-        float getFixupScaleFactor() const override;
-        void setFixupScaleFactor(float) override;
-
-        // read/manipulate current selection (if any)
-        OpenSim::Component const* getSelected() const override;
-        void setSelected(OpenSim::Component const* c) override;
-
-        // read/manipulate current hover (if any)
-        OpenSim::Component const* getHovered() const override;
-        void setHovered(OpenSim::Component const* c) override;
-
     private:
+        OpenSim::Model const& implGetModel() const final;
+        UID implGetModelVersion() const final;
+
+        SimTK::State const& implGetState() const final;
+        UID implGetStateVersion() const final;
+
+        float implGetFixupScaleFactor() const final;
+        void implSetFixupScaleFactor(float) final;
+
+        OpenSim::Component const* implGetSelected() const final;
+        void implSetSelected(OpenSim::Component const* c) final;
+
+        OpenSim::Component const* implGetHovered() const final;
+        void implSetHovered(OpenSim::Component const* c) final;
+
         class Impl;
         std::unique_ptr<Impl> m_Impl;
     };

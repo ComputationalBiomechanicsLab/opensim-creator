@@ -12,8 +12,7 @@ namespace osc { struct Rect; }
 namespace osc
 {
     // a camera that focuses on and swivels around a focal point (e.g. for 3D model viewers)
-    class PolarPerspectiveCamera final {
-    public:
+    struct PolarPerspectiveCamera final {
 
         PolarPerspectiveCamera();
 

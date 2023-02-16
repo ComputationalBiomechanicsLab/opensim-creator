@@ -276,21 +276,25 @@ namespace
 
     // parsed-out description of a shader "element" (uniform/attribute)
     struct ShaderElement final {
-        ShaderElement(int32_t location_, osc::ShaderType type_, int32_t size_) :
-            Location{std::move(location_)},
-            Type{std::move(type_)},
-            Size{std::move(size_)}
+        ShaderElement(
+            int32_t location_,
+            osc::ShaderType shaderType_,
+            int32_t size_) :
+
+            location{std::move(location_)},
+            shaderType{std::move(shaderType_)},
+            size{std::move(size_)}
         {
         }
 
-        int32_t Location;
-        osc::ShaderType Type;
-        int32_t Size;
+        int32_t location;
+        osc::ShaderType shaderType;
+        int32_t size;
     };
 
     void PrintShaderElement(std::ostream& o, std::string_view name, ShaderElement const& se)
     {
-        o << "ShadeElement(name = " << name << ", location = " << se.Location << ", type = " << se.Type << ", size = " << se.Size << ')';
+        o << "ShadeElement(name = " << name << ", location = " << se.location << ", shaderType = " << se.shaderType << ", size = " << se.size << ')';
     }
 
     template<typename Key>
@@ -438,7 +442,8 @@ namespace
     // function object that returns true if the first argument is farther from the second
     //
     // (handy for scene sorting)
-    struct RenderObjectIsFartherFrom final {
+    class RenderObjectIsFartherFrom final {
+    public:
         RenderObjectIsFartherFrom(glm::vec3 const& pos) : m_Pos{pos} {}
 
         bool operator()(RenderObject const& a, RenderObject const& b) const
@@ -455,7 +460,8 @@ namespace
         glm::vec3 m_Pos;
     };
 
-    struct RenderObjectHasMaterial final {
+    class RenderObjectHasMaterial final {
+    public:
         RenderObjectHasMaterial(osc::Material const& material) :
             m_Material{material}
         {
@@ -469,7 +475,8 @@ namespace
         std::reference_wrapper<osc::Material const> m_Material;
     };
 
-    struct RenderObjectHasMaterialPropertyBlock final {
+    class RenderObjectHasMaterialPropertyBlock final {
+    public:
         RenderObjectHasMaterialPropertyBlock(osc::MaterialPropertyBlock const& mpb) :
             m_Mpb{mpb}
         {
@@ -484,7 +491,8 @@ namespace
         std::reference_wrapper<osc::MaterialPropertyBlock const> m_Mpb;
     };
 
-    struct RenderObjectHasMesh final {
+    class RenderObjectHasMesh final {
+    public:
         RenderObjectHasMesh(osc::Mesh const& mesh) :
             m_Mesh{mesh}
         {
@@ -539,57 +547,61 @@ namespace
 
     // top-level state for a "scene" (i.e. a render)
     struct SceneState final {
-        glm::vec3 CameraPos;
-        glm::mat4 ViewMatrix;
-        glm::mat4 ProjectionMatrix;
-        glm::mat4 ViewProjectionMatrix = ProjectionMatrix * ViewMatrix;
 
         SceneState(
             glm::vec3 const& cameraPos_,
             glm::mat4 const& viewMatrix_,
             glm::mat4 const& projectionMatrix_) :
 
-            CameraPos{cameraPos_},
-            ViewMatrix{viewMatrix_},
-            ProjectionMatrix{projectionMatrix_}
+            cameraPos{cameraPos_},
+            viewMatrix{viewMatrix_},
+            projectionMatrix{projectionMatrix_}
         {
         }
+
+        glm::vec3 cameraPos;
+        glm::mat4 viewMatrix;
+        glm::mat4 projectionMatrix;
+        glm::mat4 viewProjectionMatrix = projectionMatrix * viewMatrix;
     };
 
     // the OpenGL data associated with an osc::Texture2D
     struct Texture2DOpenGLData final {
-        gl::Texture2D Texture;
-        osc::UID TextureParamsVersion;
+        gl::Texture2D texture;
+        osc::UID textureParamsVersion;
     };
 
     // the OpenGL data associated with an osc::RenderTexture
     struct RenderTextureOpenGLData final {
-        gl::FrameBuffer MultisampledFBO;
-        gl::RenderBuffer MultisampledColorBuffer;
-        gl::RenderBuffer MultisampledDepthBuffer;
-        gl::FrameBuffer SingleSampledFBO;
-        gl::Texture2D SingleSampledColorBuffer;
-        gl::Texture2D SingleSampledDepthBuffer;
+        gl::FrameBuffer multisampledFBO;
+        gl::RenderBuffer multisampledColorBuffer;
+        gl::RenderBuffer multisampledDepthBuffer;
+        gl::FrameBuffer singleSampledFBO;
+        gl::Texture2D singleSampledColorBuffer;
+        gl::Texture2D singleSampledDepthBuffer;
     };
 
     // the OpenGL data associated with an osc::Mesh
     struct MeshOpenGLData final {
-        osc::UID DataVersion;
-        gl::TypedBufferHandle<GL_ARRAY_BUFFER> ArrayBuffer;
-        gl::TypedBufferHandle<GL_ELEMENT_ARRAY_BUFFER> IndicesBuffer;
-        gl::VertexArray VAO;
+        osc::UID dataVersion;
+        gl::TypedBufferHandle<GL_ARRAY_BUFFER> arrayBuffer;
+        gl::TypedBufferHandle<GL_ELEMENT_ARRAY_BUFFER> indicesBuffer;
+        gl::VertexArray vao;
     };
 
     struct InstancingState final {
-        InstancingState(gl::ArrayBuffer<float, GL_STREAM_DRAW>& buf_, size_t stride_) :
-            Buf{buf_},
-            Stride{std::move(stride_)}
+        InstancingState(
+            gl::ArrayBuffer<float, GL_STREAM_DRAW>& buf_,
+            size_t stride_) :
+
+            buf{buf_},
+            stride{std::move(stride_)}
         {
         }
 
-        gl::ArrayBuffer<float, GL_STREAM_DRAW>& Buf;
-        size_t Stride = 0;
-        size_t BaseOffset = 0;
+        gl::ArrayBuffer<float, GL_STREAM_DRAW>& buf;
+        size_t stride = 0;
+        size_t baseOffset = 0;
     };
 }
 
@@ -877,12 +889,12 @@ public:
 
         Texture2DOpenGLData& bufs = **m_MaybeGPUTexture;
 
-        if (bufs.TextureParamsVersion != m_TextureParamsVersion)
+        if (bufs.textureParamsVersion != m_TextureParamsVersion)
         {
             setTextureParams(bufs);
         }
 
-        return bufs.Texture;
+        return bufs.texture;
     }
 
 private:
@@ -907,7 +919,7 @@ private:
         OSC_ASSERT(m_NumChannels*m_Dimensions.x % 4 == 0 && "the memory alignment of each horizontal line in an OpenGL texture must be a multiple of 4");
 
         // one-time upload, because pixels cannot be altered
-        gl::BindTexture((*m_MaybeGPUTexture)->Texture);
+        gl::BindTexture((*m_MaybeGPUTexture)->texture);
         gl::TexImage2D(
             GL_TEXTURE_2D,
             0,
@@ -919,20 +931,20 @@ private:
             GL_UNSIGNED_BYTE,
             m_Pixels.data()
         );
-        glGenerateMipmap((*m_MaybeGPUTexture)->Texture.type);
+        glGenerateMipmap((*m_MaybeGPUTexture)->texture.type);
         gl::BindTexture();
     }
 
     void setTextureParams(Texture2DOpenGLData& bufs)
     {
-        gl::BindTexture(bufs.Texture);
+        gl::BindTexture(bufs.texture);
         gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, ToGLTextureTextureWrapParam(m_WrapModeU));
         gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, ToGLTextureTextureWrapParam(m_WrapModeV));
         gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, ToGLTextureTextureWrapParam(m_WrapModeW));
         gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, ToGLTextureMinFilterParam(m_FilterMode));
         gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, ToGLTextureMagFilterParam(m_FilterMode));
         gl::BindTexture();
-        bufs.TextureParamsVersion = m_TextureParamsVersion;
+        bufs.textureParamsVersion = m_TextureParamsVersion;
     }
 
     friend class GraphicsBackend;
@@ -1274,7 +1286,7 @@ private:
         {
             uploadToGPU();
         }
-        return (*m_MaybeGPUBuffers)->MultisampledFBO;
+        return (*m_MaybeGPUBuffers)->multisampledFBO;
     }
 
     gl::FrameBuffer& getOutputFrameBuffer()
@@ -1283,7 +1295,7 @@ private:
         {
             uploadToGPU();
         }
-        return (*m_MaybeGPUBuffers)->SingleSampledFBO;
+        return (*m_MaybeGPUBuffers)->singleSampledFBO;
     }
 
     gl::Texture2D& getOutputTexture()
@@ -1292,7 +1304,7 @@ private:
         {
             uploadToGPU();
         }
-        return (*m_MaybeGPUBuffers)->SingleSampledColorBuffer;
+        return (*m_MaybeGPUBuffers)->singleSampledColorBuffer;
     }
 
     void uploadToGPU()
@@ -1301,7 +1313,7 @@ private:
         glm::ivec2 const dimensions = m_Descriptor.getDimensions();
 
         // setup MSXAAed color buffer
-        gl::BindRenderBuffer(bufs.MultisampledColorBuffer);
+        gl::BindRenderBuffer(bufs.multisampledColorBuffer);
         glRenderbufferStorageMultisample(
             GL_RENDERBUFFER,
             m_Descriptor.getAntialiasingLevel(),
@@ -1312,7 +1324,7 @@ private:
         gl::BindRenderBuffer();
 
         // setup MSXAAed depth buffer
-        gl::BindRenderBuffer(bufs.MultisampledDepthBuffer);
+        gl::BindRenderBuffer(bufs.multisampledDepthBuffer);
         glRenderbufferStorageMultisample(
             GL_RENDERBUFFER,
             m_Descriptor.getAntialiasingLevel(),
@@ -1323,15 +1335,15 @@ private:
         gl::BindRenderBuffer();
 
         // setup MSXAAed framebuffer (color+depth)
-        gl::BindFramebuffer(GL_FRAMEBUFFER, bufs.MultisampledFBO);
-        gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, bufs.MultisampledColorBuffer);
-        gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, bufs.MultisampledDepthBuffer);
+        gl::BindFramebuffer(GL_FRAMEBUFFER, bufs.multisampledFBO);
+        gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, bufs.multisampledColorBuffer);
+        gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, bufs.multisampledDepthBuffer);
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
 
         // setup single-sampled color buffer (texture, so it can be sampled as part of compositing a UI)
-        gl::BindTexture(bufs.SingleSampledColorBuffer);
+        gl::BindTexture(bufs.singleSampledColorBuffer);
         gl::TexImage2D(
-            bufs.SingleSampledColorBuffer.type,
+            bufs.singleSampledColorBuffer.type,
             0,
             ToOpenGLColorFormat(getColorFormat()),
             dimensions.x,
@@ -1341,19 +1353,19 @@ private:
             GL_UNSIGNED_BYTE,
             nullptr
         );
-        gl::TexParameteri(bufs.SingleSampledColorBuffer.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
-        gl::TexParameteri(bufs.SingleSampledColorBuffer.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
-        gl::TexParameteri(bufs.SingleSampledColorBuffer.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        gl::TexParameteri(bufs.SingleSampledColorBuffer.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        gl::TexParameteri(bufs.SingleSampledColorBuffer.type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        gl::TexParameteri(bufs.singleSampledColorBuffer.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
+        gl::TexParameteri(bufs.singleSampledColorBuffer.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
+        gl::TexParameteri(bufs.singleSampledColorBuffer.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        gl::TexParameteri(bufs.singleSampledColorBuffer.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        gl::TexParameteri(bufs.singleSampledColorBuffer.type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
         gl::BindTexture();
 
         // setup single-sampled depth buffer (texture, so it can be sampled as part of compositing a UI)
         //
         // https://stackoverflow.com/questions/27535727/opengl-create-a-depth-stencil-texture-for-reading
-        gl::BindTexture(bufs.SingleSampledDepthBuffer);
+        gl::BindTexture(bufs.singleSampledDepthBuffer);
         gl::TexImage2D(
-            bufs.SingleSampledDepthBuffer.type,
+            bufs.singleSampledDepthBuffer.type,
             0,
             GL_DEPTH24_STENCIL8,
             dimensions.x,
@@ -1363,17 +1375,17 @@ private:
             GL_UNSIGNED_INT_24_8,
             nullptr
         );
-        gl::TexParameteri(bufs.SingleSampledDepthBuffer.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
-        gl::TexParameteri(bufs.SingleSampledDepthBuffer.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
-        gl::TexParameteri(bufs.SingleSampledDepthBuffer.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        gl::TexParameteri(bufs.SingleSampledDepthBuffer.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        gl::TexParameteri(bufs.SingleSampledDepthBuffer.type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        gl::TexParameteri(bufs.singleSampledDepthBuffer.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
+        gl::TexParameteri(bufs.singleSampledDepthBuffer.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
+        gl::TexParameteri(bufs.singleSampledDepthBuffer.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        gl::TexParameteri(bufs.singleSampledDepthBuffer.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        gl::TexParameteri(bufs.singleSampledDepthBuffer.type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
         gl::BindTexture();
 
         // setup single-sampled framebuffer (color+depth)
-        gl::BindFramebuffer(GL_FRAMEBUFFER, bufs.SingleSampledFBO);
-        gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, bufs.SingleSampledColorBuffer, 0);
-        gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, bufs.SingleSampledDepthBuffer, 0);
+        gl::BindFramebuffer(GL_FRAMEBUFFER, bufs.singleSampledFBO);
+        gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, bufs.singleSampledColorBuffer, 0);
+        gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, bufs.singleSampledDepthBuffer, 0);
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
     }
 
@@ -1512,7 +1524,7 @@ public:
     {
         auto it = m_Uniforms.begin();
         std::advance(it, i);
-        return it->second.Type;
+        return it->second.shaderType;
     }
 
     // non-PIMPL APIs
@@ -2569,11 +2581,11 @@ public:
 
     gl::VertexArray& updVertexArray()
     {
-        if (!*m_MaybeGPUBuffers || (*m_MaybeGPUBuffers)->DataVersion != *m_Version)
+        if (!*m_MaybeGPUBuffers || (*m_MaybeGPUBuffers)->dataVersion != *m_Version)
         {
             uploadToGPU();
         }
-        return (*m_MaybeGPUBuffers)->VAO;
+        return (*m_MaybeGPUBuffers)->vao;
     }
 
     void draw()
@@ -2699,7 +2711,7 @@ private:
         MeshOpenGLData& buffers = **m_MaybeGPUBuffers;
 
         // upload VBO data into GPU-side buffer
-        gl::BindBuffer(GL_ARRAY_BUFFER, buffers.ArrayBuffer);
+        gl::BindBuffer(GL_ARRAY_BUFFER, buffers.arrayBuffer);
         gl::BufferData(GL_ARRAY_BUFFER, static_cast<GLsizei>(data.size()), data.data(), GL_STATIC_DRAW);
 
         // upload indices into EBO
@@ -2722,13 +2734,13 @@ private:
         }
 
         size_t const eboNumBytes = m_NumIndices * (m_IndicesAre32Bit ? sizeof(uint32_t) : sizeof(uint16_t));
-        gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.IndicesBuffer);
+        gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.indicesBuffer);
         gl::BufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizei>(eboNumBytes), m_IndicesData.data(), GL_STATIC_DRAW);
 
         // configure mesh-level VAO
-        gl::BindVertexArray(buffers.VAO);
-        gl::BindBuffer(GL_ARRAY_BUFFER, buffers.ArrayBuffer);
-        gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.IndicesBuffer);
+        gl::BindVertexArray(buffers.vao);
+        gl::BindBuffer(GL_ARRAY_BUFFER, buffers.arrayBuffer);
+        gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.indicesBuffer);
 
         // activate relevant attributes based on buffer layout
         int64_t byteOffset = 0;
@@ -2758,7 +2770,7 @@ private:
         }
         gl::BindVertexArray();
 
-        buffers.DataVersion = *m_Version;
+        buffers.dataVersion = *m_Version;
     }
 
     DefaultConstructOnCopy<UID> m_UID;
@@ -2925,7 +2937,7 @@ public:
     {
         Impl newImpl;
         std::swap(*this, newImpl);
-        this->m_RenderQueue = std::move(newImpl.m_RenderQueue);
+        m_RenderQueue = std::move(newImpl.m_RenderQueue);
     }
 
     glm::vec4 getBackgroundColor() const
@@ -4009,18 +4021,18 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
         size_t byteStride = 0;
         if (shaderImpl.m_MaybeInstancedModelMatAttr)
         {
-            if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == osc::ShaderType::Mat4)
+            if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == osc::ShaderType::Mat4)
             {
                 byteStride += sizeof(float) * 16;
             }
         }
         if (shaderImpl.m_MaybeInstancedNormalMatAttr)
         {
-            if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat4)
+            if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderType::Mat4)
             {
                 byteStride += sizeof(float) * 16;
             }
-            else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat3)
+            else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderType::Mat3)
             {
                 byteStride += sizeof(float) * 9;
             }
@@ -4037,7 +4049,7 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
         {
             if (shaderImpl.m_MaybeInstancedModelMatAttr)
             {
-                if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == osc::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == osc::ShaderType::Mat4)
                 {
                     static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
                     reinterpret_cast<glm::mat4&>(buf[floatOffset]) = ModelMatrix(el);
@@ -4046,13 +4058,13 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
             }
             if (shaderImpl.m_MaybeInstancedNormalMatAttr)
             {
-                if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat4)
+                if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderType::Mat4)
                 {
                     static_assert(alignof(glm::mat4) == alignof(float) && sizeof(glm::mat4) == 16 * sizeof(float));
                     reinterpret_cast<glm::mat4&>(buf[floatOffset]) = NormalMatrix4(el);
                     floatOffset += 16;
                 }
-                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == osc::ShaderType::Mat3)
+                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == osc::ShaderType::Mat3)
                 {
                     static_assert(alignof(glm::mat3) == alignof(float) && sizeof(glm::mat3) == 9 * sizeof(float));
                     reinterpret_cast<glm::mat3&>(buf[floatOffset]) = NormalMatrix(el);
@@ -4062,7 +4074,7 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
         }
         OSC_ASSERT_ALWAYS(sizeof(float)*floatOffset == els.size() * byteStride);
 
-        auto& vbo = maybeInstancingState.emplace(g_GraphicsContextImpl->m_InstanceGPUBuffer, byteStride).Buf;
+        auto& vbo = maybeInstancingState.emplace(g_GraphicsContextImpl->m_InstanceGPUBuffer, byteStride).buf;
         vbo.assign(nonstd::span<float const>{buf.data(), floatOffset});
     }
     return maybeInstancingState;
@@ -4073,15 +4085,15 @@ void osc::GraphicsBackend::BindToInstancedAttributes(
         Shader::Impl const& shaderImpl,
         InstancingState& ins)
 {
-    gl::BindBuffer(ins.Buf);
+    gl::BindBuffer(ins.buf);
 
     size_t byteOffset = 0;
     if (shaderImpl.m_MaybeInstancedModelMatAttr)
     {
-        if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == ShaderType::Mat4)
+        if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderType::Mat4)
         {
-            gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->Location};
-            gl::VertexAttribPointer(mmtxAttr, false, ins.Stride, ins.BaseOffset + byteOffset);
+            gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
+            gl::VertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
             gl::VertexAttribDivisor(mmtxAttr, 1);
             gl::EnableVertexAttribArray(mmtxAttr);
             byteOffset += sizeof(float) * 16;
@@ -4089,18 +4101,18 @@ void osc::GraphicsBackend::BindToInstancedAttributes(
     }
     if (shaderImpl.m_MaybeInstancedNormalMatAttr)
     {
-        if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat4)
+        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderType::Mat4)
         {
-            gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
-            gl::VertexAttribPointer(mmtxAttr, false, ins.Stride, ins.BaseOffset + byteOffset);
+            gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
+            gl::VertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
             gl::VertexAttribDivisor(mmtxAttr, 1);
             gl::EnableVertexAttribArray(mmtxAttr);
             // unused: byteOffset += sizeof(float) * 16;
         }
-        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat3)
+        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderType::Mat3)
         {
-            gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
-            gl::VertexAttribPointer(mmtxAttr, false, ins.Stride, ins.BaseOffset + byteOffset);
+            gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
+            gl::VertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
             gl::VertexAttribDivisor(mmtxAttr, 1);
             gl::EnableVertexAttribArray(mmtxAttr);
             // unused: byteOffset += sizeof(float) * 9;
@@ -4115,22 +4127,22 @@ void osc::GraphicsBackend::UnbindFromInstancedAttributes(
 {
     if (shaderImpl.m_MaybeInstancedModelMatAttr)
     {
-        if (shaderImpl.m_MaybeInstancedModelMatAttr->Type == ShaderType::Mat4)
+        if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderType::Mat4)
         {
-            gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->Location};
+            gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
             gl::DisableVertexAttribArray(mmtxAttr);
         }
     }
     if (shaderImpl.m_MaybeInstancedNormalMatAttr)
     {
-        if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat4)
+        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderType::Mat4)
         {
-            gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
+            gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
             gl::DisableVertexAttribArray(mmtxAttr);
         }
-        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->Type == ShaderType::Mat3)
+        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderType::Mat3)
         {
-            gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->Location};
+            gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
             gl::DisableVertexAttribArray(mmtxAttr);
         }
     }
@@ -4157,9 +4169,9 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
             // try binding to uModel (standard)
             if (shaderImpl.m_MaybeModelMatUniform)
             {
-                if (shaderImpl.m_MaybeModelMatUniform->Type == ShaderType::Mat4)
+                if (shaderImpl.m_MaybeModelMatUniform->shaderType == ShaderType::Mat4)
                 {
-                    gl::UniformMat4 u{shaderImpl.m_MaybeModelMatUniform->Location};
+                    gl::UniformMat4 u{shaderImpl.m_MaybeModelMatUniform->location};
                     gl::Uniform(u, ModelMatrix(el));
                 }
             }
@@ -4167,14 +4179,14 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
             // try binding to uNormalMat (standard)
             if (shaderImpl.m_MaybeNormalMatUniform)
             {
-                if (shaderImpl.m_MaybeNormalMatUniform->Type == osc::ShaderType::Mat3)
+                if (shaderImpl.m_MaybeNormalMatUniform->shaderType == osc::ShaderType::Mat3)
                 {
-                    gl::UniformMat3 u{shaderImpl.m_MaybeNormalMatUniform->Location};
+                    gl::UniformMat3 u{shaderImpl.m_MaybeNormalMatUniform->location};
                     gl::Uniform(u, NormalMatrix(el));
                 }
-                else if (shaderImpl.m_MaybeNormalMatUniform->Type == osc::ShaderType::Mat4)
+                else if (shaderImpl.m_MaybeNormalMatUniform->shaderType == osc::ShaderType::Mat4)
                 {
-                    gl::UniformMat4 u{shaderImpl.m_MaybeNormalMatUniform->Location};
+                    gl::UniformMat4 u{shaderImpl.m_MaybeNormalMatUniform->location};
                     gl::Uniform(u, NormalMatrix4(el));
                 }
             }
@@ -4187,7 +4199,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
             if (ins)
             {
                 UnbindFromInstancedAttributes(shaderImpl, *ins);
-                ins->BaseOffset += 1 * ins->Stride;
+                ins->baseOffset += 1 * ins->stride;
             }
         }
     }
@@ -4201,7 +4213,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
         if (ins)
         {
             UnbindFromInstancedAttributes(shaderImpl, *ins);
-            ins->BaseOffset += els.size() * ins->Stride;
+            ins->baseOffset += els.size() * ins->stride;
         }
     }
 
@@ -4246,7 +4258,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     MaterialValue const& v,
     int32_t& textureSlot)
 {
-    if (GetShaderType(v) != se.Type)
+    if (GetShaderType(v) != se.shaderType)
     {
         return;  // mismatched types
     }
@@ -4255,71 +4267,71 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     {
     case VariantIndex<MaterialValue, float>():
     {
-        gl::UniformFloat u{se.Location};
+        gl::UniformFloat u{se.location};
         gl::Uniform(u, std::get<float>(v));
         break;
     }
     case VariantIndex<MaterialValue, std::vector<float>>():
     {
         auto const& vals = std::get<std::vector<float>>(v);
-        int32_t const numToAssign = std::min(se.Size, static_cast<int32_t>(vals.size()));
+        int32_t const numToAssign = std::min(se.size, static_cast<int32_t>(vals.size()));
         for (int32_t i = 0; i < numToAssign; ++i)
         {
-            gl::UniformFloat u{se.Location + i};
+            gl::UniformFloat u{se.location + i};
             gl::Uniform(u, vals[i]);
         }
         break;
     }
     case VariantIndex<MaterialValue, glm::vec2>():
     {
-        gl::UniformVec2 u{se.Location};
+        gl::UniformVec2 u{se.location};
         gl::Uniform(u, std::get<glm::vec2>(v));
         break;
     }
     case VariantIndex<MaterialValue, glm::vec3>():
     {
-        gl::UniformVec3 u{se.Location};
+        gl::UniformVec3 u{se.location};
         gl::Uniform(u, std::get<glm::vec3>(v));
         break;
     }
     case VariantIndex<MaterialValue, std::vector<glm::vec3>>():
     {
         auto const& vals = std::get<std::vector<glm::vec3>>(v);
-        int32_t const numToAssign = std::min(se.Size, static_cast<int32_t>(vals.size()));
+        int32_t const numToAssign = std::min(se.size, static_cast<int32_t>(vals.size()));
         for (int32_t i = 0; i < numToAssign; ++i)
         {
-            gl::UniformVec3 u{se.Location + i};
+            gl::UniformVec3 u{se.location + i};
             gl::Uniform(u, vals[i]);
         }
         break;
     }
     case VariantIndex<MaterialValue, glm::vec4>():
     {
-        gl::UniformVec4 u{se.Location};
+        gl::UniformVec4 u{se.location};
         gl::Uniform(u, std::get<glm::vec4>(v));
         break;
     }
     case VariantIndex<MaterialValue, glm::mat3>():
     {
-        gl::UniformMat3 u{se.Location};
+        gl::UniformMat3 u{se.location};
         gl::Uniform(u, std::get<glm::mat3>(v));
         break;
     }
     case VariantIndex<MaterialValue, glm::mat4>():
     {
-        gl::UniformMat4 u{se.Location};
+        gl::UniformMat4 u{se.location};
         gl::Uniform(u, std::get<glm::mat4>(v));
         break;
     }
     case VariantIndex<MaterialValue, int32_t>():
     {
-        gl::UniformInt u{se.Location};
+        gl::UniformInt u{se.location};
         gl::Uniform(u, std::get<int32_t>(v));
         break;
     }
     case VariantIndex<MaterialValue, bool>():
     {
-        gl::UniformBool u{se.Location};
+        gl::UniformBool u{se.location};
         gl::Uniform(u, std::get<bool>(v));
         break;
     }
@@ -4330,7 +4342,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
 
         gl::ActiveTexture(GL_TEXTURE0 + textureSlot);
         gl::BindTexture(texture);
-        gl::UniformSampler2D u{se.Location};
+        gl::UniformSampler2D u{se.location};
         gl::Uniform(u, textureSlot);
 
         ++textureSlot;
@@ -4343,7 +4355,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
 
         gl::ActiveTexture(GL_TEXTURE0 + textureSlot);
         gl::BindTexture(texture);
-        gl::UniformSampler2D u{se.Location};
+        gl::UniformSampler2D u{se.location};
         gl::Uniform(u, textureSlot);
 
         ++textureSlot;
@@ -4385,29 +4397,29 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
         // try binding to uView (standard)
         if (shaderImpl.m_MaybeViewMatUniform)
         {
-            if (shaderImpl.m_MaybeViewMatUniform->Type == ShaderType::Mat4)
+            if (shaderImpl.m_MaybeViewMatUniform->shaderType == ShaderType::Mat4)
             {
-                gl::UniformMat4 u{shaderImpl.m_MaybeViewMatUniform->Location};
-                gl::Uniform(u, scene.ViewMatrix);
+                gl::UniformMat4 u{shaderImpl.m_MaybeViewMatUniform->location};
+                gl::Uniform(u, scene.viewMatrix);
             }
         }
 
         // try binding to uProjection (standard)
         if (shaderImpl.m_MaybeProjMatUniform)
         {
-            if (shaderImpl.m_MaybeProjMatUniform->Type == ShaderType::Mat4)
+            if (shaderImpl.m_MaybeProjMatUniform->shaderType == ShaderType::Mat4)
             {
-                gl::UniformMat4 u{shaderImpl.m_MaybeProjMatUniform->Location};
-                gl::Uniform(u, scene.ProjectionMatrix);
+                gl::UniformMat4 u{shaderImpl.m_MaybeProjMatUniform->location};
+                gl::Uniform(u, scene.projectionMatrix);
             }
         }
 
         if (shaderImpl.m_MaybeViewProjMatUniform)
         {
-            if (shaderImpl.m_MaybeViewProjMatUniform->Type == ShaderType::Mat4)
+            if (shaderImpl.m_MaybeViewProjMatUniform->shaderType == ShaderType::Mat4)
             {
-                gl::UniformMat4 u{shaderImpl.m_MaybeViewProjMatUniform->Location};
-                gl::Uniform(u, scene.ViewProjectionMatrix);
+                gl::UniformMat4 u{shaderImpl.m_MaybeViewProjMatUniform->location};
+                gl::Uniform(u, scene.viewProjectionMatrix);
             }
         }
 
@@ -4525,7 +4537,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera, float aspectRa
         {
             // there are >0 depth-tested elements that are elegible for reordering
 
-            SortRenderQueue(batchIt, depthTestedEnd, scene.CameraPos);
+            SortRenderQueue(batchIt, depthTestedEnd, scene.cameraPos);
             DrawBatchedByOpaqueness(scene, {batchIt, depthTestedEnd});
 
             batchIt = depthTestedEnd;
@@ -4658,9 +4670,9 @@ void osc::GraphicsBackend::RenderScene(Camera::Impl& camera, RenderTexture* mayb
         glm::ivec2 const dimensions = maybeRenderTexture->m_Impl->m_Descriptor.getDimensions();
 
         // blit multisampled scene render to not-multisampled texture
-        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, (*maybeRenderTexture->m_Impl->m_MaybeGPUBuffers)->MultisampledFBO);
+        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, (*maybeRenderTexture->m_Impl->m_MaybeGPUBuffers)->multisampledFBO);
         glReadBuffer(GL_COLOR_ATTACHMENT0);
-        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, (*maybeRenderTexture->m_Impl->m_MaybeGPUBuffers)->SingleSampledFBO);
+        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, (*maybeRenderTexture->m_Impl->m_MaybeGPUBuffers)->singleSampledFBO);
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
         gl::BlitFramebuffer(
             0,
@@ -4741,7 +4753,7 @@ void osc::GraphicsBackend::BlitToScreen(
         glm::ivec2 texDimensions = t.getDimensions();
 
         // blit multisampled scene render to not-multisampled texture
-        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, (*t.m_Impl->m_MaybeGPUBuffers)->SingleSampledFBO);
+        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, (*t.m_Impl->m_MaybeGPUBuffers)->singleSampledFBO);
         glReadBuffer(GL_COLOR_ATTACHMENT0);
         gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, gl::windowFbo);
         glDrawBuffer(GL_COLOR_ATTACHMENT0);

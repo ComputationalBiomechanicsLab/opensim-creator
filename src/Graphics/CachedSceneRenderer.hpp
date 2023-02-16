@@ -7,8 +7,8 @@
 namespace osc { class Config; }
 namespace osc { class MeshCache; }
 namespace osc { class RenderTexture; }
-namespace osc { class SceneDecoration; }
-namespace osc { class SceneRendererParams; }
+namespace osc { struct SceneDecoration; }
+namespace osc { struct SceneRendererParams; }
 namespace osc { class ShaderCache; }
 
 namespace osc

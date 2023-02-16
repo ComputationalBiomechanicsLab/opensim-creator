@@ -5,15 +5,15 @@
 #include <iosfwd>
 #include <string>
 
-namespace osc { class SceneDecoration; }
+namespace osc { struct SceneDecoration; }
 
 namespace osc
 {
     struct DAEMetadata final {
+        DAEMetadata();
+
         std::string author;
         std::string authoringTool;
-
-        DAEMetadata();
     };
 
     void WriteDecorationsAsDAE(

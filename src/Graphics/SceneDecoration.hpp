@@ -16,8 +16,8 @@
 namespace osc
 {
     // represents a renderable decoration for a component in a model
-    class SceneDecoration final {
-    public:
+    struct SceneDecoration final {
+
         explicit SceneDecoration(Mesh const& mesh_) :
 
             mesh{mesh_},

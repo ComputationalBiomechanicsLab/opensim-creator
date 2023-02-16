@@ -46,14 +46,23 @@ namespace osc
     // x size: [-(torusCenterToTubeCenterRadius + tubeRadius), +(torusCenterToTubeCenterRadius + tubeRadius)]
     // y size: [-(torusCenterToTubeCenterRadius + tubeRadius), +(torusCenterToTubeCenterRadius + tubeRadius)]
     // z size: [-tubeRadius, +tubeRadius]
-    Mesh GenTorus(size_t slices, size_t stacks, float torusCenterToTubeCenterRadius, float tubeRadius);
+    Mesh GenTorus(
+        size_t slices,
+        size_t stacks,
+        float torusCenterToTubeCenterRadius,
+        float tubeRadius
+    );
 
     // generates a steps.x * steps.y (NxM) 2D grid of independent points connected
     // to their nearest neighbour by lines (osc::MeshTopology::Lines), where the
     // lowest X/Y values are min.x/min.y and the highest X/Y values are max.x/max.y
     //
     // i.e. the "lowest" grid point is `min`, the next one is `min + (max-min)/steps`
-    Mesh GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max, glm::ivec2 steps);
+    Mesh GenNxMPoint2DGridWithConnectingLines(
+        glm::vec2 min,
+        glm::vec2 max,
+        glm::ivec2 steps
+    );
 
     // returns a triangle mesh where each triangle is part of a quad, and each quad is
     // part of steps.x (N) by steps.y (M) grid

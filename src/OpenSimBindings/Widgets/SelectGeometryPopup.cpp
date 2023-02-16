@@ -105,7 +105,7 @@ public:
 
 private:
 
-    void implDrawContent() override
+    void implDrawContent() final
     {
         // premade geometry section
         //

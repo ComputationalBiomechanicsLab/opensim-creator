@@ -22,6 +22,12 @@ namespace osc
     // might be shared between simulations, threads, etc.) that merely extracts
     // data from simulation reports
     class VirtualOutputExtractor {
+    protected:
+        VirtualOutputExtractor() = default;
+        VirtualOutputExtractor(VirtualOutputExtractor const&) = default;
+        VirtualOutputExtractor(VirtualOutputExtractor&&) noexcept = default;
+        VirtualOutputExtractor& operator=(VirtualOutputExtractor const&) = default;
+        VirtualOutputExtractor& operator=(VirtualOutputExtractor&&) noexcept = default;
     public:
         virtual ~VirtualOutputExtractor() noexcept = default;
 

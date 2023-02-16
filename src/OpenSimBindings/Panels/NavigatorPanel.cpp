@@ -31,69 +31,71 @@ namespace
 {
     // poor-man's abstraction for a constant-sized array
     template<typename T, size_t N>
-    struct SizedArray final {
+    class SizedArray final {
         static_assert(std::is_trivial_v<T>);
         static_assert(N <= std::numeric_limits<int>::max());
 
-        std::array<T, N> els;
-        size_t n = 0;
-
+    public:
         SizedArray& operator=(SizedArray const& rhs) {
-            std::copy(rhs.els.begin(), rhs.els.begin() + rhs.size(), els.begin());
-            n = rhs.n;
+            std::copy(rhs.m_Data.begin(), rhs.m_Data.begin() + rhs.size(), m_Data.begin());
+            m_Size = rhs.m_Size;
             return *this;
         }
 
         void push_back(T v) {
-            if (n >= N) {
+            if (m_Size >= N) {
                 throw std::runtime_error{"cannot render a navigator: the Model/Component tree is too deep"};
             }
-            els[n++] = v;
+            m_Data[m_Size++] = v;
         }
 
         T const* begin() const noexcept {
-            return els.data();
+            return m_Data.data();
         }
 
         T* begin() noexcept {
-            return els.data();
+            return m_Data.data();
         }
 
         T const* end() const noexcept {
-            return els.data() + n;
+            return m_Data.data() + m_Size;
         }
 
         T* end() noexcept {
-            return els.data() + n;
+            return m_Data.data() + m_Size;
         }
 
         size_t size() const noexcept {
-            return n;
+            return m_Size;
         }
 
         ptrdiff_t sizei() const noexcept {
-            return static_cast<ptrdiff_t>(n);
+            return static_cast<ptrdiff_t>(m_Size);
         }
 
         bool empty() const noexcept {
-            return n == 0;
+            return m_Size == 0;
         }
 
         void resize(size_t newsize) noexcept {
-            n = newsize;
+            m_Size = newsize;
         }
 
         void clear() noexcept {
-            n = 0;
+            m_Size = 0;
         }
 
         T& operator[](size_t idx) {
-            return els[idx];
+            return m_Data[idx];
         }
 
         T const& operator[](size_t i) const noexcept {
-            return els[i];
+            return m_Data[i];
         }
+
+    private:
+        std::array<T, N> m_Data;
+        size_t m_Size = 0;
     };
 
     using ComponentPath = SizedArray<OpenSim::Component const*, 16>;

@@ -58,7 +58,7 @@ public:
     }
 
 private:
-    void implDrawContent() override
+    void implDrawContent() final
     {
         UpdateCachedSimulationReportIfNecessary(*m_Model, m_CachedReport);
 

@@ -13,7 +13,8 @@ namespace osc
         ModelEditorMainMenu(
             MainUIStateAPI*,
             EditorAPI*,
-            std::shared_ptr<UndoableModelStatePair>);
+            std::shared_ptr<UndoableModelStatePair>
+        );
         ModelEditorMainMenu(ModelEditorMainMenu const&) = delete;
         ModelEditorMainMenu(ModelEditorMainMenu&&) noexcept;
         ModelEditorMainMenu& operator=(ModelEditorMainMenu const&) = delete;

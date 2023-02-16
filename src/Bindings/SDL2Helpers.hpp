@@ -55,12 +55,12 @@ namespace sdl
     class Window final {
     public:
         Window(Window const&) = delete;
-        Window(Window&& tmp) : m_WindowHandle{tmp.m_WindowHandle}
+        Window(Window&& tmp) noexcept : m_WindowHandle{tmp.m_WindowHandle}
         {
             tmp.m_WindowHandle = nullptr;
         }
         Window& operator=(Window const&) = delete;
-        Window& operator=(Window&& tmp) = delete;
+        Window& operator=(Window&&) noexcept = delete;
         ~Window() noexcept
         {
             if (m_WindowHandle)
@@ -152,7 +152,7 @@ namespace sdl
     class GLContext final {
     public:
         GLContext(GLContext const&) = delete;
-        GLContext(GLContext&& tmp) : m_ContextHandle{tmp.m_ContextHandle}
+        GLContext(GLContext&& tmp) noexcept : m_ContextHandle{tmp.m_ContextHandle}
         {
             tmp.m_ContextHandle = nullptr;
         }

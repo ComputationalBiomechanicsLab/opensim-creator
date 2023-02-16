@@ -16,7 +16,8 @@ namespace osc
         SelectGeometryPopup(
             std::string_view popupName,
             std::filesystem::path const& geometryDir,
-            std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection);
+            std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection
+        );
         SelectGeometryPopup(SelectGeometryPopup const&) = delete;
         SelectGeometryPopup(SelectGeometryPopup&&) noexcept;
         SelectGeometryPopup& operator=(SelectGeometryPopup const&) = delete;

@@ -1295,7 +1295,7 @@ namespace
         return pos - (p1/p2)*forceTorque.force;
     }
 
-    std::optional<osc::ForceValue> GetForceValueInGround(
+    std::optional<osc::ForcePoint> GetForceValueInGround(
         OpenSim::Model const& model,
         SimTK::State const& state,
         OpenSim::HuntCrossleyForce const& hcf)
@@ -1322,10 +1322,10 @@ namespace
             return std::nullopt;  // the resulting force is too small
         }
 
-        return osc::ForceValue{forceTorque.force, *maybePosition};
+        return osc::ForcePoint{forceTorque.force, *maybePosition};
     }
 
-    std::optional<osc::ForceValue> TryGetForceValueInGround(
+    std::optional<osc::ForcePoint> TryGetForceValueInGround(
         OpenSim::Model const& model,
         SimTK::State const& state,
         OpenSim::Force const& force)
@@ -1341,7 +1341,7 @@ namespace
     }
 }
 
-std::optional<osc::ForceValue> osc::TryGetContactForceInGround(
+std::optional<osc::ForcePoint> osc::TryGetContactForceInGround(
     OpenSim::Model const& model,
     SimTK::State const& state,
     OpenSim::HuntCrossleyForce const& hcf)
@@ -1368,5 +1368,5 @@ std::optional<osc::ForceValue> osc::TryGetContactForceInGround(
         return std::nullopt;  // the resulting force is too small
     }
 
-    return osc::ForceValue{forceTorque.force, *maybePosition};
+    return osc::ForcePoint{forceTorque.force, *maybePosition};
 }

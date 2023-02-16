@@ -7,8 +7,8 @@
 
 namespace osc
 {
-    class SceneRendererParams final {
-    public:
+    struct SceneRendererParams final {
+
         SceneRendererParams();
 
         glm::ivec2 dimensions;

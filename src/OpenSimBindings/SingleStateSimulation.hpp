@@ -25,27 +25,27 @@ namespace osc
         SingleStateSimulation& operator=(SingleStateSimulation&&) noexcept;
         ~SingleStateSimulation() noexcept;
 
-        SynchronizedValueGuard<OpenSim::Model const> getModel() const final;
-
-        int getNumReports() const final;
-        SimulationReport getSimulationReport(int reportIndex) const final;
-        std::vector<SimulationReport> getAllSimulationReports() const final;
-
-        SimulationStatus getStatus() const final;
-        SimulationClock::time_point getCurTime() const final;
-        SimulationClock::time_point getStartTime() const final;
-        SimulationClock::time_point getEndTime() const final;
-        float getProgress() const final;
-        ParamBlock const& getParams() const final;
-        nonstd::span<OutputExtractor const> getOutputExtractors() const final;
-
-        void requestStop() final;
-        void stop() final;
-
-        float getFixupScaleFactor() const final;
-        void setFixupScaleFactor(float) final;
-
     private:
+        SynchronizedValueGuard<OpenSim::Model const> implGetModel() const final;
+
+        int implGetNumReports() const final;
+        SimulationReport implGetSimulationReport(int reportIndex) const final;
+        std::vector<SimulationReport> implGetAllSimulationReports() const final;
+
+        SimulationStatus implGetStatus() const final;
+        SimulationClock::time_point implGetCurTime() const final;
+        SimulationClock::time_point implGetStartTime() const final;
+        SimulationClock::time_point implGetEndTime() const final;
+        float implGetProgress() const final;
+        ParamBlock const& implGetParams() const final;
+        nonstd::span<OutputExtractor const> implGetOutputExtractors() const final;
+
+        void implRequestStop() final;
+        void implStop() final;
+
+        float implGetFixupScaleFactor() const final;
+        void implSetFixupScaleFactor(float) final;
+
         class Impl;
         std::unique_ptr<Impl> m_Impl;
     };

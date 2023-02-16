@@ -14,54 +14,89 @@ namespace osc
     // virtual readonly accessor to a `OpenSim::Model` + `SimTK::State` pair, with
     // additional opt-in overrides to aid rendering/UX etc.
     class VirtualConstModelStatePair {
+    protected:
+        VirtualConstModelStatePair() = default;
+        VirtualConstModelStatePair(VirtualConstModelStatePair const&) = default;
+        VirtualConstModelStatePair(VirtualConstModelStatePair&&) noexcept = default;
+        VirtualConstModelStatePair& operator=(VirtualConstModelStatePair const&) = default;
+        VirtualConstModelStatePair& operator=(VirtualConstModelStatePair&&) noexcept = default;
     public:
         virtual ~VirtualConstModelStatePair() noexcept = default;
 
-        virtual OpenSim::Model const& getModel() const = 0;
-
-        virtual SimTK::State const& getState() const = 0;
-
-        // opt-in virtual API (handy for rendering, UI stuff, etc. but not entirely
-        // required for computational stuff)
-
-        // used for UI caching
-        virtual UID getModelVersion() const
+        OpenSim::Model const& getModel() const
         {
-            // assume the version always changes, unless the concrete implementation
-            // provides a way of knowing when it doesn't
-            return UID{};
+            return implGetModel();
+        }
+
+        SimTK::State const& getState() const
+        {
+            return implGetState();
         }
 
         // used for UI caching
-        virtual UID getStateVersion() const
+        UID getModelVersion() const
         {
-            // assume the version always changes, unless the concrete implementation
-            // provides a way of knowing when it doesn't
-            return UID{};
+            return implGetModelVersion();
         }
 
-        virtual OpenSim::Component const* getSelected() const
+        // used for UI caching
+        UID getStateVersion() const
         {
-            return nullptr;
+            return implGetStateVersion();
         }
 
-        virtual OpenSim::Component const* getHovered() const
+        OpenSim::Component const* getSelected() const
         {
-            return nullptr;
+            return implGetSelected();
+        }
+
+        OpenSim::Component const* getHovered() const
+        {
+            return implGetHovered();
         }
 
         // used to scale weird models (e.g. fly leg) in the UI
-        virtual float getFixupScaleFactor() const
+        float getFixupScaleFactor() const
         {
-            return 1.0f;
+            return implGetFixupScaleFactor();
         }
-
-        // concrete helper methods that use the above virutal API
 
         template<typename T>
         T const* getSelectedAs() const
         {
             return dynamic_cast<T const*>(getSelected());
+        }
+
+    private:
+        virtual OpenSim::Model const& implGetModel() const = 0;
+        virtual SimTK::State const& implGetState() const = 0;
+        virtual UID implGetModelVersion() const
+        {
+            // assume the version always changes, unless the concrete implementation
+            // provides a way of knowing when it doesn't
+            return UID{};
+        }
+
+        virtual UID implGetStateVersion() const
+        {
+            // assume the version always changes, unless the concrete implementation
+            // provides a way of knowing when it doesn't
+            return UID{};
+        }
+
+        virtual OpenSim::Component const* implGetSelected() const
+        {
+            return nullptr;
+        }
+
+        virtual OpenSim::Component const* implGetHovered() const
+        {
+            return nullptr;
+        }
+
+        virtual float implGetFixupScaleFactor() const
+        {
+            return 1.0f;
         }
     };
 }

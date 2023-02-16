@@ -14,7 +14,7 @@ TEST(Image, CanLoadImageResource)
     auto config = osc::Config::load();
     auto path = config->getResourceDir() / "textures" / "awesomeface.png";
     
-    osc::Image::Load(path);  // shouldn't throw
+    osc::LoadImageFromFile(path);  // shouldn't throw
 }
 
 TEST(Image, LoadedImageHasExpectedDimensionsEtc)
@@ -22,7 +22,7 @@ TEST(Image, LoadedImageHasExpectedDimensionsEtc)
     std::unique_ptr<osc::Config> config = osc::Config::load();
     std::filesystem::path path = config->getResourceDir() / "textures" / "awesomeface.png";
 
-    osc::Image image = osc::Image::Load(path);
+    osc::Image image = osc::LoadImageFromFile(path);
 
     glm::ivec2 dimensions = image.getDimensions();
     int numChannels = image.getNumChannels();
@@ -36,7 +36,7 @@ TEST(Image, CanMoveConstruct)
 {
     std::unique_ptr<osc::Config> config = osc::Config::load();
     std::filesystem::path path = config->getResourceDir() / "textures" / "awesomeface.png";
-    osc::Image src = osc::Image::Load(path);
+    osc::Image src = osc::LoadImageFromFile(path);
     osc::Image image{std::move(src)};
 
     glm::ivec2 dimensions = image.getDimensions();

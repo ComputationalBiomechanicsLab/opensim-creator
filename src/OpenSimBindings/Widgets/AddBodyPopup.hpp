@@ -16,7 +16,8 @@ namespace osc
         AddBodyPopup(
             EditorAPI*,
             std::shared_ptr<UndoableModelStatePair>,
-            std::string_view popupName);
+            std::string_view popupName
+        );
         AddBodyPopup(AddBodyPopup const&) = delete;
         AddBodyPopup(AddBodyPopup&&) noexcept;
         AddBodyPopup& operator=(AddBodyPopup const&) = delete;

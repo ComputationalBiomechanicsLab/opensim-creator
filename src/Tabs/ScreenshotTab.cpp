@@ -224,7 +224,7 @@ private:
         if (maybeImagePath)
         {
             Image outputImage = renderOutputImage();
-            osc::WriteToPNG(outputImage, *maybeImagePath);
+            osc::WriteImageToPNGFile(outputImage, *maybeImagePath);
             osc::OpenPathInOSDefaultApplication(*maybeImagePath);
         }
     }

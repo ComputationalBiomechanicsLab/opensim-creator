@@ -59,7 +59,7 @@ namespace osc
     //
     // adds compile-time type checking to IDs
     template<typename T>
-    class UIDT : public UID {
+    class UIDT final : public UID {
     public:
 
         UIDT() : UID{}
@@ -135,7 +135,7 @@ namespace osc
 namespace std
 {
     template<>
-    struct hash<osc::UID> {
+    struct hash<osc::UID> final {
         size_t operator()(osc::UID const& id) const
         {
             return static_cast<size_t>(id.get());
@@ -143,7 +143,7 @@ namespace std
     };
 
     template<typename T>
-    struct hash<osc::UIDT<T>> {
+    struct hash<osc::UIDT<T>> final {
         size_t operator()(osc::UID const& id) const
         {
             return static_cast<size_t>(id.get());

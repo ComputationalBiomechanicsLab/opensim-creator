@@ -138,9 +138,9 @@ namespace
         OpenSim::PhysicalFrame const& selectedPf)
     {
         std::unique_ptr<OpenSim::Joint> copy{jointPrototype.clone()};
-        copy->setName(details.JointName);
+        copy->setName(details.jointName);
 
-        if (!details.AddOffsetFrames)
+        if (!details.addOffsetFrames)
         {
             copy->connectSocket_parent_frame(selectedPf);
             copy->connectSocket_child_frame(b);
@@ -1175,41 +1175,41 @@ bool osc::ActionSetModelSceneScaleFactorTo(UndoableModelStatePair& uim, float v)
 }
 
 osc::BodyDetails::BodyDetails() :
-    CenterOfMass{0.0f, 0.0f, 0.0f},
-    Inertia{1.0f, 1.0f, 1.0f},
-    Mass{1.0f},
-    ParentFrameAbsPath{},
-    BodyName{"new_body"},
-    JointTypeIndex{osc::JointRegistry::indexOf<OpenSim::WeldJoint>().value_or(0)},
-    JointName{},
-    MaybeGeometry{nullptr},
-    AddOffsetFrames{true}
+    centerOfMass{0.0f, 0.0f, 0.0f},
+    inertia{1.0f, 1.0f, 1.0f},
+    mass{1.0f},
+    parentFrameAbsPath{},
+    bodyName{"new_body"},
+    jointTypeIndex{osc::JointRegistry::indexOf<OpenSim::WeldJoint>().value_or(0)},
+    jointName{},
+    maybeGeometry{nullptr},
+    addOffsetFrames{true}
 {
 }
 
 bool osc::ActionAddBodyToModel(UndoableModelStatePair& uim, BodyDetails const& details)
 {
-    OpenSim::PhysicalFrame const* const parent = osc::FindComponent<OpenSim::PhysicalFrame>(uim.getModel(), details.ParentFrameAbsPath);
+    OpenSim::PhysicalFrame const* const parent = osc::FindComponent<OpenSim::PhysicalFrame>(uim.getModel(), details.parentFrameAbsPath);
     if (!parent)
     {
         return false;
     }
 
-    SimTK::Vec3 const com = ToSimTKVec3(details.CenterOfMass);
-    SimTK::Inertia const inertia = ToSimTKInertia(details.Inertia);
-    double const mass = static_cast<double>(details.Mass);
+    SimTK::Vec3 const com = ToSimTKVec3(details.centerOfMass);
+    SimTK::Inertia const inertia = ToSimTKInertia(details.inertia);
+    double const mass = static_cast<double>(details.mass);
 
     // create body
-    auto body = std::make_unique<OpenSim::Body>(details.BodyName, mass, com, inertia);
+    auto body = std::make_unique<OpenSim::Body>(details.bodyName, mass, com, inertia);
 
     // create joint between body and whatever the frame is
-    OpenSim::Joint const& jointProto = *osc::JointRegistry::prototypes()[details.JointTypeIndex];
+    OpenSim::Joint const& jointProto = *osc::JointRegistry::prototypes()[details.jointTypeIndex];
     std::unique_ptr<OpenSim::Joint> joint = MakeJoint(details, *body, jointProto, *parent);
 
     // attach decorative geom
-    if (details.MaybeGeometry)
+    if (details.maybeGeometry)
     {
-        body->attachGeometry(details.MaybeGeometry->clone());
+        body->attachGeometry(details.maybeGeometry->clone());
     }
 
     // mutate the model and perform the edit

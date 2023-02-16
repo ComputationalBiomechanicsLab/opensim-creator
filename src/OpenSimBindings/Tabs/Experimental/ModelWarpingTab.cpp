@@ -197,7 +197,8 @@ namespace
     public:
         ModelWarpingDocument() = default;
 
-        ModelWarpingDocument(std::filesystem::path const& osimPath) : m_Model{osimPath}
+        ModelWarpingDocument(std::filesystem::path const& osimPath) :
+            m_Model{osimPath}
         {
         }
 
@@ -532,7 +533,8 @@ namespace
 class osc::ModelWarpingTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{std::move(parent)}
+    Impl(TabHost* parent) :
+        m_Parent{std::move(parent)}
     {
     }
 

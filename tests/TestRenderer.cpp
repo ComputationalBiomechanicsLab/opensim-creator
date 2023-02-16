@@ -2582,7 +2582,7 @@ TEST_F(Renderer, CameraSetClearFlagsCausesCopyToReturnNonEqual)
 // 
 // TODO: RenderTexture (all)
 
-// TODO: Texture: ensure texture debug string contains useful information etc.
+// TODO: texture: ensure texture debug string contains useful information etc.
 
 // TODO: Camera: orthographic size
 // TODO: Camera: fov

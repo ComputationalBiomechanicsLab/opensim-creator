@@ -139,19 +139,20 @@ namespace osc
     // sets the model's scale factor
     bool ActionSetModelSceneScaleFactorTo(UndoableModelStatePair&, float);
 
-    // details of a body that should be added too a model
-    struct BodyDetails {
-        glm::vec3 CenterOfMass;
-        glm::vec3 Inertia;
-        float Mass;
-        std::string ParentFrameAbsPath;
-        std::string BodyName;
-        size_t JointTypeIndex;
-        std::string JointName;
-        std::unique_ptr<OpenSim::Geometry> MaybeGeometry;
-        bool AddOffsetFrames;
+    // details of a body that should be added to a model
+    struct BodyDetails final {
 
         BodyDetails();
+
+        glm::vec3 centerOfMass;
+        glm::vec3 inertia;
+        float mass;
+        std::string parentFrameAbsPath;
+        std::string bodyName;
+        size_t jointTypeIndex;
+        std::string jointName;
+        std::unique_ptr<OpenSim::Geometry> maybeGeometry;
+        bool addOffsetFrames;
     };
 
     // add a new body to the model

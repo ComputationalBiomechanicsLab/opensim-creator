@@ -817,7 +817,7 @@ namespace
         }
 
         // else: try and compute a geometry-to-plane contact force and show it in-UI
-        std::optional<osc::ForceValue> const maybeContact = osc::TryGetContactForceInGround(
+        std::optional<osc::ForcePoint> const maybeContact = osc::TryGetContactForceInGround(
             rs.getModel(),
             rs.getState(),
             hcf

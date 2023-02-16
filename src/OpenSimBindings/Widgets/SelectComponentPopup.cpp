@@ -28,7 +28,7 @@ public:
     }
 
 private:
-    void implDrawContent() override
+    void implDrawContent() final
     {
         OpenSim::Component const* selected = nullptr;
 

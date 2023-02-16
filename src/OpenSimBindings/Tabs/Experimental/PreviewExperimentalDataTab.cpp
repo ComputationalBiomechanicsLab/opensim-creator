@@ -82,16 +82,20 @@ namespace
 
     // a struct that describes how a sequence of N column labels matches up to a column data type (with size N)
     struct ColumnDataTypeMatcher final {
-        ColumnDataType Type;
-        std::vector<osc::CStringView> Suffixes;
 
-        ColumnDataTypeMatcher(ColumnDataType t, std::vector<osc::CStringView> suffixes) :
-            Type{std::move(t)},
-            Suffixes{std::move(suffixes)}
+        ColumnDataTypeMatcher(
+            ColumnDataType t_,
+            std::vector<osc::CStringView> suffixes_) :
+
+            columnDataType{std::move(t_)},
+            suffixes{std::move(suffixes_)}
         {
-            OSC_ASSERT(Suffixes.size() == NumElementsIn(Type));
-            OSC_ASSERT(!Suffixes.empty());
+            OSC_ASSERT(suffixes.size() == NumElementsIn(columnDataType));
+            OSC_ASSERT(!suffixes.empty());
         }
+
+        ColumnDataType columnDataType;
+        std::vector<osc::CStringView> suffixes;
     };
 
     // a sequence of matchers to test against
@@ -136,28 +140,32 @@ namespace
     // returns the number of columns the data type would require
     constexpr int NumColumnsRequiredBy(ColumnDataTypeMatcher const& matcher)
     {
-        return NumElementsIn(matcher.Type);
+        return NumElementsIn(matcher.columnDataType);
     }
 
     // describes the layout of a single column parsed from the data file
     struct ColumnDescription final {
 
-        int Offset;
-        std::string Label;
-        ColumnDataType DataType;
+        ColumnDescription(
+            int offset_,
+            std::string label_,
+            ColumnDataType dataType_) :
 
-        ColumnDescription(int offset, std::string label, ColumnDataType dataType) :
-            Offset{std::move(offset)},
-            Label{std::move(label)},
-            DataType{std::move(dataType)}
+            offset{std::move(offset_)},
+            label{std::move(label_)},
+            dataType{std::move(dataType_)}
         {
         }
+
+        int offset;
+        std::string label;
+        ColumnDataType dataType;
     };
 
     // prints a human-readable representation of a column description
     std::ostream& operator<<(std::ostream& o, ColumnDescription const& desc)
     {
-        return o << "ColumnDescription(Offset=" << desc.Offset << ", DataType = " << desc.DataType << ", Label = \"" << desc.Label << "\")";
+        return o << "ColumnDescription(Offset=" << desc.offset << ", DataType = " << desc.dataType << ", Label = \"" << desc.label << "\")";
     }
 
     // returns true if `s` ends with the given `suffix`
@@ -185,7 +193,7 @@ namespace
         for (int i = 0; i < numColsToTest; ++i)
         {
             std::string const& label = labels[offset + i];
-            osc::CStringView requiredSuffix = matcher.Suffixes[i];
+            osc::CStringView requiredSuffix = matcher.suffixes[i];
 
             if (!EndsWith(label, requiredSuffix))
             {
@@ -229,10 +237,10 @@ namespace
         {
             if (std::optional<ColumnDataTypeMatcher> match = TryMatchColumnsWithType(labels, offset))
             {
-                std::string baseName = RemoveLastNCharacters(labels[offset], match->Suffixes.front().size());
+                std::string baseName = RemoveLastNCharacters(labels[offset], match->suffixes.front().size());
 
-                rv.emplace_back(offset, baseName, match->Type);
-                offset += NumElementsIn(match->Type);
+                rv.emplace_back(offset, baseName, match->columnDataType);
+                offset += NumElementsIn(match->columnDataType);
             }
             else
             {
@@ -245,15 +253,15 @@ namespace
 
     // motions that were parsed from the file
     struct LoadedMotion final {
-        std::vector<ColumnDescription> ColumnDescriptions;
-        size_t RowStride = 1;
-        std::vector<double> Data;
+        std::vector<ColumnDescription> columnDescriptions;
+        size_t rowStride = 1;
+        std::vector<double> data;
     };
 
     // returns the number of rows a loaded motion has
     size_t NumRows(LoadedMotion const& lm)
     {
-        return lm.Data.size() / lm.RowStride;
+        return lm.data.size() / lm.rowStride;
     }
 
     // prints `LoadedMotion` in a human-readable format
@@ -261,13 +269,13 @@ namespace
     {
         o << "LoadedMotion(";
         o << "\n    ColumnDescriptions = [";
-        for (ColumnDescription const& d : mot.ColumnDescriptions)
+        for (ColumnDescription const& d : mot.columnDescriptions)
         {
             o << "\n        " << d;
         }
         o << "\n    ],";
-        o << "\n    RowStride = " << mot.RowStride << ',';
-        o << "\n    Data = [... " << mot.Data.size() << " values (" << NumRows(mot) << " rows)...]";
+        o << "\n    RowStride = " << mot.rowStride << ',';
+        o << "\n    Data = [... " << mot.data.size() << " values (" << NumRows(mot) << " rows)...]";
         o << "\n)";
 
         return o;
@@ -276,18 +284,18 @@ namespace
     // get the time value for a given row
     double GetTime(LoadedMotion const& m, size_t row)
     {
-        return m.Data.at(row * m.RowStride);
+        return m.data.at(row * m.rowStride);
     }
 
     // get data values for a given row
     nonstd::span<double const> GetData(LoadedMotion const& m, size_t row)
     {
-        OSC_ASSERT((row + 1) * m.RowStride <= m.Data.size());
+        OSC_ASSERT((row + 1) * m.rowStride <= m.data.size());
 
-        size_t start = (row * m.RowStride) + 1;
-        size_t numValues = m.RowStride - 1;
+        size_t start = (row * m.rowStride) + 1;
+        size_t numValues = m.rowStride - 1;
 
-        return nonstd::span<double const>(m.Data.data() + start, numValues);
+        return nonstd::span<double const>(m.data.data() + start, numValues);
     }
 
     // compute the stride of the data columns
@@ -296,7 +304,7 @@ namespace
         size_t sum = 0;
         for (ColumnDescription const& d : descriptions)
         {
-            sum += NumElementsIn(d.DataType);
+            sum += NumElementsIn(d.dataType);
         }
         return sum;
     }
@@ -363,8 +371,10 @@ namespace
 
     // high-level caller-provided description of an arrow that they would like to generate
     // decorations for
-    struct DecorativeArrow final
-    {
+    struct DecorativeArrow final {
+
+        DecorativeArrow() = default;
+
         glm::vec3 p0 = {};
         glm::vec3 p1 = {};
         glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -372,8 +382,6 @@ namespace
         float headThickness = 0.05f;
         float percentageHead = 0.15f;
         std::string label;
-
-        DecorativeArrow() = default;
     };
 
     // writes relevant geometry to output for drawing an arrow between two points in space
@@ -441,15 +449,15 @@ namespace
     template<>
     void GenerateDecorations<ColumnDataType::Orientation>(LoadedMotion const& motion, size_t row, ColumnDescription const& columnDescription, DecorationConsumer& out)
     {
-        OSC_ASSERT(columnDescription.DataType == ColumnDataType::Orientation);
+        OSC_ASSERT(columnDescription.dataType == ColumnDataType::Orientation);
 
-        size_t const dataStart = motion.RowStride * row + columnDescription.Offset;
+        size_t const dataStart = motion.rowStride * row + columnDescription.offset;
         glm::quat q
         {
-            static_cast<float>(motion.Data.at(dataStart)),
-            static_cast<float>(motion.Data.at(dataStart + 1)),
-            static_cast<float>(motion.Data.at(dataStart + 2)),
-            static_cast<float>(motion.Data.at(dataStart + 3)),
+            static_cast<float>(motion.data.at(dataStart)),
+            static_cast<float>(motion.data.at(dataStart + 1)),
+            static_cast<float>(motion.data.at(dataStart + 2)),
+            static_cast<float>(motion.data.at(dataStart + 3)),
         };
         q = glm::normalize(q);
 
@@ -458,7 +466,7 @@ namespace
         arrow.p0 = {0.0f, 0.0f, 0.0f};
         arrow.p1 = q * glm::vec3{0.0f, 1.0f, 0.0f};
         arrow.color = {0.0f, 1.0f, 0.0f, 1.0f};
-        arrow.label = columnDescription.Label;
+        arrow.label = columnDescription.label;
 
         GenerateDecorations(arrow, out);
     }
@@ -466,7 +474,7 @@ namespace
     // generic: generate decorations for a runtime-checked type of column data
     void GenerateDecorations(LoadedMotion const& motion, size_t row, ColumnDescription const& desc, DecorationConsumer& out)
     {
-        if (desc.DataType == ColumnDataType::Orientation)
+        if (desc.dataType == ColumnDataType::Orientation)
         {
             GenerateDecorations<ColumnDataType::Orientation>(motion, row, desc, out);
         }
@@ -476,7 +484,7 @@ namespace
     void GenerateDecorations(LoadedMotion const& motion, size_t row, DecorationConsumer& out)
     {
         // generate decorations for each "column" in the row
-        for (ColumnDescription const& desc : motion.ColumnDescriptions)
+        for (ColumnDescription const& desc : motion.columnDescriptions)
         {
             GenerateDecorations(motion, row, desc, out);
         }
@@ -488,9 +496,9 @@ namespace
         OpenSim::Storage const storage{sourceFile.string()};
 
         LoadedMotion rv;
-        rv.ColumnDescriptions = ParseColumnDescriptions(storage.getColumnLabels());
-        rv.RowStride = CalcRowStride(rv.ColumnDescriptions);
-        rv.Data = LoadRowValues(storage, rv.RowStride);
+        rv.columnDescriptions = ParseColumnDescriptions(storage.getColumnLabels());
+        rv.rowStride = CalcRowStride(rv.columnDescriptions);
+        rv.data = LoadRowValues(storage, rv.rowStride);
         return rv;
     }
 
@@ -526,9 +534,10 @@ namespace
 class osc::PreviewExperimentalDataTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{std::move(parent)}
+    Impl(TabHost* parent) :
+        m_Parent{std::move(parent)}
     {
-        osc::log::info("%s", StreamToString(m_Motion).c_str());
+        log::info("%s", StreamToString(m_Motion).c_str());
     }
 
     UID getID() const

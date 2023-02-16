@@ -42,6 +42,15 @@ namespace
 {
     struct PathPoint final {
 
+        PathPoint(OpenSim::ComponentPath userChoice_,
+            OpenSim::ComponentPath actualFrame_,
+            SimTK::Vec3 const& locationInFrame_) :
+            userChoice{std::move(userChoice_)},
+            actualFrame{std::move(actualFrame_)},
+            locationInFrame{locationInFrame_}
+        {
+        }
+
         // what the user chose when the clicked in the UI
         OpenSim::ComponentPath userChoice;
 
@@ -52,19 +61,10 @@ namespace
 
         // location of the point within the frame
         SimTK::Vec3 locationInFrame;
-
-        PathPoint(OpenSim::ComponentPath userChoice_,
-            OpenSim::ComponentPath actualFrame_,
-            SimTK::Vec3 const& locationInFrame_) :
-            userChoice{std::move(userChoice_)},
-            actualFrame{std::move(actualFrame_)},
-            locationInFrame{locationInFrame_}
-        {
-        }
     };
 }
 
-class osc::AddComponentPopup::Impl : public osc::StandardPopup {
+class osc::AddComponentPopup::Impl final : public osc::StandardPopup {
 public:
     Impl(EditorAPI* api,
          std::shared_ptr<UndoableModelStatePair> uum,
@@ -452,7 +452,7 @@ private:
         }
     }
 
-    void implDrawContent() override
+    void implDrawContent() final
     {
         drawNameEditor();
 

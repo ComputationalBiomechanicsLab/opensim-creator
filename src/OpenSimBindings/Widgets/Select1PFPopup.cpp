@@ -28,7 +28,7 @@ public:
     }
 
 private:
-    void implDrawContent() override
+    void implDrawContent() final
     {
         OpenSim::PhysicalFrame const* selected = nullptr;
 

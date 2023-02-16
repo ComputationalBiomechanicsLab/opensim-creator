@@ -78,7 +78,7 @@ namespace
         UiModelStatePair& operator=(UiModelStatePair&&) noexcept = default;
         ~UiModelStatePair() noexcept = default;
 
-        OpenSim::Model const& getModel() const override
+        OpenSim::Model const& implGetModel() const final
         {
             return *m_Model;
         }
@@ -89,7 +89,7 @@ namespace
             return *m_Model;
         }
 
-        osc::UID getModelVersion() const override
+        osc::UID implGetModelVersion() const final
         {
             return m_ModelVersion;
         }
@@ -99,22 +99,22 @@ namespace
             m_ModelVersion = version;
         }
 
-        SimTK::State const& getState() const override
+        SimTK::State const& implGetState() const final
         {
             return m_Model->getWorkingState();
         }
 
-        osc::UID getStateVersion() const override
+        osc::UID implGetStateVersion() const final
         {
             return m_ModelVersion;
         }
 
-        float getFixupScaleFactor() const override
+        float implGetFixupScaleFactor() const final
         {
             return m_FixupScaleFactor;
         }
 
-        void setFixupScaleFactor(float sf) override
+        void implSetFixupScaleFactor(float sf) final
         {
             m_FixupScaleFactor = sf;
         }
@@ -129,12 +129,12 @@ namespace
             m_MaybeSelected = p;
         }
 
-        OpenSim::Component const* getSelected() const override
+        OpenSim::Component const* implGetSelected() const final
         {
             return osc::FindComponent(*m_Model, m_MaybeSelected);
         }
 
-        void setSelected(OpenSim::Component const* c) override
+        void implSetSelected(OpenSim::Component const* c) final
         {
             m_MaybeSelected = osc::GetAbsolutePathOrEmpty(c);
         }
@@ -149,12 +149,12 @@ namespace
             m_MaybeHovered = p;
         }
 
-        OpenSim::Component const* getHovered() const override
+        OpenSim::Component const* implGetHovered() const final
         {
             return osc::FindComponent(*m_Model, m_MaybeHovered);
         }
 
-        void setHovered(OpenSim::Component const* c) override
+        void implSetHovered(OpenSim::Component const* c) final
         {
             m_MaybeHovered = osc::GetAbsolutePathOrEmpty(c);
         }
@@ -796,11 +796,6 @@ bool osc::UndoableModelStatePair::tryCheckout(ModelStateCommit const& commit)
     return m_Impl->tryCheckout(commit);
 }
 
-OpenSim::Model const& osc::UndoableModelStatePair::getModel() const
-{
-    return m_Impl->getModel();
-}
-
 OpenSim::Model& osc::UndoableModelStatePair::updModel()
 {
     return m_Impl->updModel();
@@ -811,52 +806,57 @@ void osc::UndoableModelStatePair::setModel(std::unique_ptr<OpenSim::Model> newMo
     m_Impl->setModel(std::move(newModel));
 }
 
-osc::UID osc::UndoableModelStatePair::getModelVersion() const
-{
-    return m_Impl->getModelVersion();
-}
-
 void osc::UndoableModelStatePair::setModelVersion(UID version)
 {
     m_Impl->setModelVersion(version);
 }
 
-SimTK::State const& osc::UndoableModelStatePair::getState() const
+OpenSim::Model const& osc::UndoableModelStatePair::implGetModel() const
+{
+    return m_Impl->getModel();
+}
+
+osc::UID osc::UndoableModelStatePair::implGetModelVersion() const
+{
+    return m_Impl->getModelVersion();
+}
+
+SimTK::State const& osc::UndoableModelStatePair::implGetState() const
 {
     return m_Impl->getState();
 }
 
-osc::UID osc::UndoableModelStatePair::getStateVersion() const
+osc::UID osc::UndoableModelStatePair::implGetStateVersion() const
 {
     return m_Impl->getStateVersion();
 }
 
-float osc::UndoableModelStatePair::getFixupScaleFactor() const
+float osc::UndoableModelStatePair::implGetFixupScaleFactor() const
 {
     return m_Impl->getFixupScaleFactor();
 }
 
-void osc::UndoableModelStatePair::setFixupScaleFactor(float v)
+void osc::UndoableModelStatePair::implSetFixupScaleFactor(float v)
 {
     m_Impl->setFixupScaleFactor(std::move(v));
 }
 
-OpenSim::Component const* osc::UndoableModelStatePair::getSelected() const
+OpenSim::Component const* osc::UndoableModelStatePair::implGetSelected() const
 {
     return m_Impl->getSelected();
 }
 
-void osc::UndoableModelStatePair::setSelected(OpenSim::Component const* c)
+void osc::UndoableModelStatePair::implSetSelected(OpenSim::Component const* c)
 {
     m_Impl->setSelected(std::move(c));
 }
 
-OpenSim::Component const* osc::UndoableModelStatePair::getHovered() const
+OpenSim::Component const* osc::UndoableModelStatePair::implGetHovered() const
 {
     return m_Impl->getHovered();
 }
 
-void osc::UndoableModelStatePair::setHovered(OpenSim::Component const* c)
+void osc::UndoableModelStatePair::implSetHovered(OpenSim::Component const* c)
 {
     m_Impl->setHovered(std::move(c));
 }

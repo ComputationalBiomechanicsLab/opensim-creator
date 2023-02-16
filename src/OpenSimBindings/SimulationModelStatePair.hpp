@@ -14,7 +14,7 @@ namespace SimTK { class State; }
 namespace osc
 {
     // a readonly model+state pair from a particular step from a simulator
-    class SimulationModelStatePair : public VirtualModelStatePair {
+    class SimulationModelStatePair final : public VirtualModelStatePair {
     public:
         SimulationModelStatePair();
         SimulationModelStatePair(std::shared_ptr<Simulation>, SimulationReport);
@@ -24,21 +24,6 @@ namespace osc
         SimulationModelStatePair& operator=(SimulationModelStatePair&&) noexcept;
         ~SimulationModelStatePair() noexcept;
 
-        OpenSim::Model const& getModel() const override;
-        UID getModelVersion() const override;
-
-        SimTK::State const& getState() const override;
-        UID getStateVersion() const override;
-
-        OpenSim::Component const* getSelected() const override;
-        void setSelected(OpenSim::Component const*) override;
-
-        OpenSim::Component const* getHovered() const override;
-        void setHovered(OpenSim::Component const*) override;
-
-        float getFixupScaleFactor() const override;
-        void setFixupScaleFactor(float) override;
-
         std::shared_ptr<Simulation> updSimulation();
         void setSimulation(std::shared_ptr<Simulation>);
 
@@ -46,6 +31,21 @@ namespace osc
         void setSimulationReport(SimulationReport);
 
     private:
+        OpenSim::Model const& implGetModel() const final;
+        UID implGetModelVersion() const final;
+
+        SimTK::State const& implGetState() const final;
+        UID implGetStateVersion() const final;
+
+        OpenSim::Component const* implGetSelected() const final;
+        void implSetSelected(OpenSim::Component const*) final;
+
+        OpenSim::Component const* implGetHovered() const final;
+        void implSetHovered(OpenSim::Component const*) final;
+
+        float implGetFixupScaleFactor() const final;
+        void implSetFixupScaleFactor(float) final;
+
         class Impl;
         std::unique_ptr<Impl> m_Impl;
     };

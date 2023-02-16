@@ -215,7 +215,11 @@ namespace
 
 class osc::StoFileSimulation::Impl final {
 public:
-    Impl(std::unique_ptr<OpenSim::Model> model, std::filesystem::path const& stoFilePath, float fixupScaleFactor) :
+    Impl(
+        std::unique_ptr<OpenSim::Model> model,
+        std::filesystem::path const& stoFilePath,
+        float fixupScaleFactor) :
+
         m_Model{std::move(model)},
         m_SimulationReports{ExtractReports(*m_Model, stoFilePath)},
         m_FixupScaleFactor{std::move(fixupScaleFactor)}
@@ -316,76 +320,76 @@ osc::StoFileSimulation::StoFileSimulation(StoFileSimulation&&) noexcept = defaul
 osc::StoFileSimulation& osc::StoFileSimulation::operator=(StoFileSimulation&&) noexcept = default;
 osc::StoFileSimulation::~StoFileSimulation() noexcept = default;
 
-osc::SynchronizedValueGuard<OpenSim::Model const> osc::StoFileSimulation::getModel() const
+osc::SynchronizedValueGuard<OpenSim::Model const> osc::StoFileSimulation::implGetModel() const
 {
     return m_Impl->getModel();
 }
 
-int osc::StoFileSimulation::getNumReports() const
+int osc::StoFileSimulation::implGetNumReports() const
 {
     return m_Impl->getNumReports();
 }
 
-osc::SimulationReport osc::StoFileSimulation::getSimulationReport(int reportIndex) const
+osc::SimulationReport osc::StoFileSimulation::implGetSimulationReport(int reportIndex) const
 {
     return m_Impl->getSimulationReport(std::move(reportIndex));
 }
-std::vector<osc::SimulationReport> osc::StoFileSimulation::getAllSimulationReports() const
+std::vector<osc::SimulationReport> osc::StoFileSimulation::implGetAllSimulationReports() const
 {
     return m_Impl->getAllSimulationReports();
 }
 
-osc::SimulationStatus osc::StoFileSimulation::getStatus() const
+osc::SimulationStatus osc::StoFileSimulation::implGetStatus() const
 {
     return m_Impl->getStatus();
 }
 
-osc::SimulationClock::time_point osc::StoFileSimulation::getCurTime() const
+osc::SimulationClock::time_point osc::StoFileSimulation::implGetCurTime() const
 {
     return m_Impl->getCurTime();
 }
 
-osc::SimulationClock::time_point osc::StoFileSimulation::getStartTime() const
+osc::SimulationClock::time_point osc::StoFileSimulation::implGetStartTime() const
 {
     return m_Impl->getStartTime();
 }
 
-osc::SimulationClock::time_point osc::StoFileSimulation::getEndTime() const
+osc::SimulationClock::time_point osc::StoFileSimulation::implGetEndTime() const
 {
     return m_Impl->getEndTime();
 }
 
-float osc::StoFileSimulation::getProgress() const
+float osc::StoFileSimulation::implGetProgress() const
 {
     return m_Impl->getProgress();
 }
 
-osc::ParamBlock const& osc::StoFileSimulation::getParams() const
+osc::ParamBlock const& osc::StoFileSimulation::implGetParams() const
 {
     return m_Impl->getParams();
 }
 
-nonstd::span<osc::OutputExtractor const> osc::StoFileSimulation::getOutputExtractors() const
+nonstd::span<osc::OutputExtractor const> osc::StoFileSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }
 
-void osc::StoFileSimulation::requestStop()
+void osc::StoFileSimulation::implRequestStop()
 {
     m_Impl->requestStop();
 }
 
-void osc::StoFileSimulation::stop()
+void osc::StoFileSimulation::implStop()
 {
     m_Impl->stop();
 }
 
-float osc::StoFileSimulation::getFixupScaleFactor() const
+float osc::StoFileSimulation::implGetFixupScaleFactor() const
 {
     return m_Impl->getFixupScaleFactor();
 }
 
-void osc::StoFileSimulation::setFixupScaleFactor(float v)
+void osc::StoFileSimulation::implSetFixupScaleFactor(float v)
 {
     m_Impl->setFixupScaleFactor(std::move(v));
 }

@@ -30,7 +30,7 @@
 static inline int constexpr c_MaxBodyNameLength = 128;
 static inline int constexpr c_MaxJointNameLength = 128;
 
-class osc::AddBodyPopup::Impl : public osc::StandardPopup {
+class osc::AddBodyPopup::Impl final : public osc::StandardPopup {
 public:
     Impl(EditorAPI* api,
          std::shared_ptr<UndoableModelStatePair> uum,
@@ -43,18 +43,18 @@ public:
     }
 
 private:
-    void implDrawContent() override
+    void implDrawContent() final
     {
         OpenSim::Model const& model = m_Uum->getModel();
 
         OpenSim::PhysicalFrame const* selectedPf =
-            osc::FindComponent<OpenSim::PhysicalFrame>(model, m_BodyDetails.ParentFrameAbsPath);
+            osc::FindComponent<OpenSim::PhysicalFrame>(model, m_BodyDetails.parentFrameAbsPath);
 
         if (!selectedPf)
         {
             // if nothing selected (or not found), coerce the initial selection to ground
             selectedPf = &model.getGround();
-            m_BodyDetails.ParentFrameAbsPath = osc::GetAbsolutePathString(*selectedPf);
+            m_BodyDetails.parentFrameAbsPath = osc::GetAbsolutePathString(*selectedPf);
         }
 
         ImGui::Columns(2);
@@ -71,7 +71,7 @@ private:
             DrawHelpMarker("The name used to identify the OpenSim::Body in the model. OpenSim typically uses the name to identify connections between components in a model, so the name should be unique.");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            osc::InputString("##bodyname", m_BodyDetails.BodyName, c_MaxBodyNameLength);
+            osc::InputString("##bodyname", m_BodyDetails.bodyName, c_MaxBodyNameLength);
             osc::App::upd().addFrameAnnotation("AddBodyPopup::BodyNameInput", osc::GetItemRect());
             ImGui::NextColumn();
         }
@@ -83,7 +83,7 @@ private:
             DrawHelpMarker("The mass of the body in kilograms");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            InputKilogramFloat("##mass", m_BodyDetails.Mass);
+            InputKilogramFloat("##mass", m_BodyDetails.mass);
             ImGui::NextColumn();
         }
 
@@ -94,7 +94,7 @@ private:
             DrawHelpMarker("The location of the mass center in the body frame.");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            osc::InputMetersFloat3("##comeditor", m_BodyDetails.CenterOfMass);
+            osc::InputMetersFloat3("##comeditor", m_BodyDetails.centerOfMass);
             ImGui::NextColumn();
         }
 
@@ -105,7 +105,7 @@ private:
             DrawHelpMarker("The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz]. These are measured about the center of mass, *not* the center of the body frame.");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            osc::InputMetersFloat3("##inertiaeditor", m_BodyDetails.Inertia);
+            osc::InputMetersFloat3("##inertiaeditor", m_BodyDetails.inertia);
             ImGui::NextColumn();
         }
 
@@ -122,7 +122,7 @@ private:
                 if (ImGui::Selectable(pf.getName().c_str(), &pf == selectedPf))
                 {
                     selectedPf = &pf;
-                    m_BodyDetails.ParentFrameAbsPath = osc::GetAbsolutePathString(*selectedPf);
+                    m_BodyDetails.parentFrameAbsPath = osc::GetAbsolutePathString(*selectedPf);
                 }
                 if (&pf == selectedPf)
                 {
@@ -141,9 +141,9 @@ private:
             ImGui::NextColumn();
             {
                 auto names = osc::JointRegistry::nameCStrings();
-                int idx = static_cast<int>(m_BodyDetails.JointTypeIndex);
+                int idx = static_cast<int>(m_BodyDetails.jointTypeIndex);
                 ImGui::Combo("##jointtype", &idx, names.data(), static_cast<int>(names.size()));
-                m_BodyDetails.JointTypeIndex = static_cast<size_t>(idx);
+                m_BodyDetails.jointTypeIndex = static_cast<size_t>(idx);
                 osc::App::upd().addFrameAnnotation("AddBodyPopup::JointTypeInput", osc::GetItemRect());
             }
             ImGui::NextColumn();
@@ -156,7 +156,7 @@ private:
             DrawHelpMarker("The name of the OpenSim::Joint that will join the new body to the existing frame specified above");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            osc::InputString("##jointnameinput", m_BodyDetails.JointName, c_MaxJointNameLength);
+            osc::InputString("##jointnameinput", m_BodyDetails.jointName, c_MaxJointNameLength);
             osc::App::upd().addFrameAnnotation("AddBodyPopup::JointNameInput", osc::GetItemRect());
             ImGui::NextColumn();
         }
@@ -167,7 +167,7 @@ private:
             ImGui::SameLine();
             DrawHelpMarker("Whether osc should automatically add intermediate offset frames to the OpenSim::Joint. A joint can attach to the two bodies (this added one, plus the selected one) directly. However, many OpenSim model designs instead make the joint attach to offset frames which, themselves, attach to the bodies. The utility of doing this is that the offset frames can be manually adjusted later, rather than *having* to attach the center of the joint to the center of the body");
             ImGui::NextColumn();
-            ImGui::Checkbox("##addoffsetframescheckbox", &m_BodyDetails.AddOffsetFrames);
+            ImGui::Checkbox("##addoffsetframescheckbox", &m_BodyDetails.addOffsetFrames);
             osc::App::upd().addFrameAnnotation("AddBodyPopup::AddOffsetFramesInput", osc::GetItemRect());
             ImGui::NextColumn();
         }
@@ -179,7 +179,7 @@ private:
             DrawHelpMarker("Attaches visual geometry to the new body. This is what the OpenSim::Body looks like in the UI. The geometry is purely cosmetic and does not affect the simulation");
             ImGui::NextColumn();
             {
-                std::string label = m_BodyDetails.MaybeGeometry ? GetDisplayName(*m_BodyDetails.MaybeGeometry) : std::string{"attach"};
+                std::string label = m_BodyDetails.maybeGeometry ? GetDisplayName(*m_BodyDetails.maybeGeometry) : std::string{"attach"};
 
                 if (ImGui::Button(label.c_str()))
                 {
@@ -216,14 +216,14 @@ private:
         }
     }
 
-    void implOnClose() override
+    void implOnClose() final
     {
         m_BodyDetails = BodyDetails{};
     }
 
     void onGeometrySelection(std::unique_ptr<OpenSim::Geometry> ptr)
     {
-        m_BodyDetails.MaybeGeometry = std::move(ptr);
+        m_BodyDetails.maybeGeometry = std::move(ptr);
     }
 
     // ability to push popups to the main UI

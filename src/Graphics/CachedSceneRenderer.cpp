@@ -10,14 +10,20 @@
 
 class osc::CachedSceneRenderer::Impl final {
 public:
-    Impl(Config const& config, MeshCache& meshCache, ShaderCache& shaderCache) :
+    Impl(
+        Config const& config,
+        MeshCache& meshCache,
+        ShaderCache& shaderCache) :
+
         m_LastRenderingParams{},
         m_LastDecorationList{},
         m_SceneRenderer{config, meshCache, shaderCache}
     {
     }
 
-    osc::RenderTexture& draw(nonstd::span<SceneDecoration const> decorations, SceneRendererParams const& params)
+    osc::RenderTexture& draw(
+        nonstd::span<SceneDecoration const> decorations,
+        SceneRendererParams const& params)
     {
         if (params != m_LastRenderingParams ||
             !std::equal(decorations.cbegin(), decorations.cend(), m_LastDecorationList.cbegin(), m_LastDecorationList.cend()))

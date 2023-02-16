@@ -29,11 +29,6 @@ namespace
     };
 
     struct NewMeshData final {
-        std::vector<glm::vec3> verts;
-        std::vector<glm::vec3> normals;
-        std::vector<glm::vec2> texcoords;
-        std::vector<uint32_t> indices;
-        osc::MeshTopology topology = osc::MeshTopology::Triangles;
 
         void clear()
         {
@@ -51,6 +46,12 @@ namespace
             texcoords.reserve(s);
             indices.reserve(s);
         }
+
+        std::vector<glm::vec3> verts;
+        std::vector<glm::vec3> normals;
+        std::vector<glm::vec2> texcoords;
+        std::vector<uint32_t> indices;
+        osc::MeshTopology topology = osc::MeshTopology::Triangles;
     };
 
     osc::Mesh CreateMeshFromData(NewMeshData&& data)

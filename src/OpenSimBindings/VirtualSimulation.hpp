@@ -23,6 +23,12 @@ namespace osc
     // the GUI code shouldn't care about the specifics - it's up to each concrete
     // implementation to ensure this API is obeyed w.r.t. multithreading etc.
     class VirtualSimulation {
+    protected:
+        VirtualSimulation() = default;
+        VirtualSimulation(VirtualSimulation const&) = default;
+        VirtualSimulation(VirtualSimulation&&) noexcept = default;
+        VirtualSimulation& operator=(VirtualSimulation const&) = default;
+        VirtualSimulation& operator=(VirtualSimulation&&) noexcept = default;
     public:
         virtual ~VirtualSimulation() noexcept = default;
 
@@ -32,25 +38,101 @@ namespace osc
         //
         // this can lead to mayhem if (e.g.) the model is actually being mutated by
         // multiple threads concurrently
-        virtual SynchronizedValueGuard<OpenSim::Model const> getModel() const = 0;
+        SynchronizedValueGuard<OpenSim::Model const> getModel() const
+        {
+            return implGetModel();
+        }
 
-        virtual int getNumReports() const = 0;
-        virtual SimulationReport getSimulationReport(int reportIndex) const = 0;
-        virtual std::vector<SimulationReport> getAllSimulationReports() const = 0;
+        int getNumReports() const
+        {
+            return implGetNumReports();
+        }
 
-        virtual SimulationStatus getStatus() const = 0;
-        virtual SimulationClock::time_point getCurTime() const = 0;
-        virtual SimulationClock::time_point getStartTime() const = 0;
-        virtual SimulationClock::time_point getEndTime() const = 0;
-        virtual float getProgress() const = 0;
-        virtual ParamBlock const& getParams() const = 0;
-        virtual nonstd::span<OutputExtractor const> getOutputExtractors() const = 0;
+        SimulationReport getSimulationReport(int reportIndex) const
+        {
+            return implGetSimulationReport(reportIndex);
+        }
 
-        virtual void requestStop() = 0;
-        virtual void stop() = 0;
+        std::vector<SimulationReport> getAllSimulationReports() const
+        {
+            return implGetAllSimulationReports();
+        }
+
+        SimulationStatus getStatus() const
+        {
+            return implGetStatus();
+        }
+
+        SimulationClock::time_point getCurTime() const
+        {
+            return implGetCurTime();
+        }
+
+        SimulationClock::time_point getStartTime() const
+        {
+            return implGetStartTime();
+        }
+
+        SimulationClock::time_point getEndTime() const
+        {
+            return implGetEndTime();
+        }
+
+        float getProgress() const
+        {
+            return implGetProgress();
+        }
+
+        ParamBlock const& getParams() const
+        {
+            return implGetParams();
+        }
+
+        nonstd::span<OutputExtractor const> getOutputExtractors() const
+        {
+            return implGetOutputExtractors();
+        }
+
+        void requestStop()
+        {
+            implRequestStop();
+        }
+
+        void stop()
+        {
+            implStop();
+        }
 
         // TODO: these are necessary right now because the fixup scale factor isn't part of the model
-        virtual float getFixupScaleFactor() const = 0;
-        virtual void setFixupScaleFactor(float) = 0;
+        float getFixupScaleFactor() const
+        {
+            return implGetFixupScaleFactor();
+        }
+
+        void setFixupScaleFactor(float newScaleFactor)
+        {
+            implSetFixupScaleFactor(newScaleFactor);
+        }
+
+    private:
+        virtual SynchronizedValueGuard<OpenSim::Model const> implGetModel() const = 0;
+
+        virtual int implGetNumReports() const = 0;
+        virtual SimulationReport implGetSimulationReport(int reportIndex) const = 0;
+        virtual std::vector<SimulationReport> implGetAllSimulationReports() const = 0;
+
+        virtual SimulationStatus implGetStatus() const = 0;
+        virtual SimulationClock::time_point implGetCurTime() const = 0;
+        virtual SimulationClock::time_point implGetStartTime() const = 0;
+        virtual SimulationClock::time_point implGetEndTime() const = 0;
+        virtual float implGetProgress() const = 0;
+        virtual ParamBlock const& implGetParams() const = 0;
+        virtual nonstd::span<OutputExtractor const> implGetOutputExtractors() const = 0;
+
+        virtual void implRequestStop() = 0;
+        virtual void implStop() = 0;
+
+        virtual float implGetFixupScaleFactor() const = 0;
+        virtual void implSetFixupScaleFactor(float) = 0;
     };
 }

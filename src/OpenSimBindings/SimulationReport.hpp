@@ -12,7 +12,7 @@ namespace SimTK { class State; }
 namespace osc
 {
     // reference-counted, immutable, simulation report
-    class SimulationReport {
+    class SimulationReport final {
     public:
         SimulationReport();
         explicit SimulationReport(SimTK::State&&);
@@ -31,6 +31,7 @@ namespace osc
     private:
         friend bool operator==(SimulationReport const&, SimulationReport const&);
         friend bool operator!=(SimulationReport const&, SimulationReport const&);
+
         class Impl;
         std::shared_ptr<Impl> m_Impl;
     };

@@ -6,7 +6,7 @@ namespace OpenSim { class Component; }
 namespace OpenSim { class Model; }
 namespace osc { class CustomDecorationOptions; }
 namespace osc { class MeshCache; }
-namespace osc { class SceneDecoration; }
+namespace osc { struct SceneDecoration; }
 namespace SimTK { class State; }
 
 namespace osc

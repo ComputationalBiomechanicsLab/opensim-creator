@@ -41,23 +41,32 @@ namespace osc
         ComponentOutputExtractor(ComponentOutputExtractor&&) noexcept;
         ComponentOutputExtractor& operator=(ComponentOutputExtractor const&);
         ComponentOutputExtractor& operator=(ComponentOutputExtractor&&) noexcept;
-        ~ComponentOutputExtractor() noexcept;
+        ~ComponentOutputExtractor() noexcept override;
 
         OpenSim::ComponentPath const& getComponentAbsPath() const;
-        std::string const& getName() const override;
-        std::string const& getDescription() const override;
+        std::string const& getName() const final;
+        std::string const& getDescription() const final;
 
-        OutputType getOutputType() const override;
-        float getValueFloat(OpenSim::Component const&,
-                            SimulationReport const&) const override;
-        void getValuesFloat(OpenSim::Component const&,
-                            nonstd::span<SimulationReport const>,
-                            nonstd::span<float> overwriteOut) const override;
-        std::string getValueString(OpenSim::Component const&,
-                                   SimulationReport const&) const override;
+        OutputType getOutputType() const final;
 
-        std::size_t getHash() const override;
-        bool equals(VirtualOutputExtractor const&) const override;
+        float getValueFloat(
+            OpenSim::Component const&,
+            SimulationReport const&
+        ) const final;
+
+        void getValuesFloat(
+            OpenSim::Component const&,
+            nonstd::span<SimulationReport const>,
+            nonstd::span<float> overwriteOut
+        ) const final;
+
+        std::string getValueString(
+            OpenSim::Component const&,
+            SimulationReport const&
+        ) const final;
+
+        std::size_t getHash() const final;
+        bool equals(VirtualOutputExtractor const&) const final;
 
     private:
         class Impl;

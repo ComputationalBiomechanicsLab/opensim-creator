@@ -32,7 +32,7 @@ namespace
 
 bool osc::operator==(LandmarkPair3D const& a, LandmarkPair3D const& b) noexcept
 {
-    return a.Src == b.Src && a.Dest == b.Dest;
+    return a.source == b.source && a.destination == b.destination;
 }
 
 bool osc::operator!=(LandmarkPair3D const& a, LandmarkPair3D const& b) noexcept
@@ -43,13 +43,13 @@ bool osc::operator!=(LandmarkPair3D const& a, LandmarkPair3D const& b) noexcept
 std::ostream& osc::operator<<(std::ostream& o, LandmarkPair3D const& p)
 {
     using osc::operator<<;
-    o << "LandmarkPair3D{Src = " << p.Src << ", dest = " << p.Dest << '}';
+    o << "LandmarkPair3D{Src = " << p.source << ", dest = " << p.destination << '}';
     return o;
 }
 
 bool osc::operator==(TPSCoefficientSolverInputs3D const& a, TPSCoefficientSolverInputs3D const& b) noexcept
 {
-    return a.Landmarks == b.Landmarks && a.BlendingFactor == b.BlendingFactor;
+    return a.landmarks == b.landmarks && a.blendingFactor == b.blendingFactor;
 }
 
 bool osc::operator!=(TPSCoefficientSolverInputs3D const& a, TPSCoefficientSolverInputs3D const& b) noexcept
@@ -61,18 +61,18 @@ std::ostream& osc::operator<<(std::ostream& o, TPSCoefficientSolverInputs3D cons
 {
     o << "TPSCoefficientSolverInputs3D{landmarks = [";
     std::string_view delim = "";
-    for (LandmarkPair3D const& landmark : inputs.Landmarks)
+    for (LandmarkPair3D const& landmark : inputs.landmarks)
     {
         o << delim << landmark;
         delim = ", ";
     }
-    o << "], BlendingFactor = " << inputs.BlendingFactor << '}';
+    o << "], BlendingFactor = " << inputs.blendingFactor << '}';
     return o;
 }
 
 bool osc::operator==(TPSNonAffineTerm3D const& a, TPSNonAffineTerm3D const& b) noexcept
 {
-    return a.Weight == b.Weight && a.ControlPoint == b.ControlPoint;
+    return a.weight == b.weight && a.controlPoint == b.controlPoint;
 }
 
 bool osc::operator!=(TPSNonAffineTerm3D const& a, TPSNonAffineTerm3D const& b) noexcept
@@ -83,7 +83,7 @@ bool osc::operator!=(TPSNonAffineTerm3D const& a, TPSNonAffineTerm3D const& b) n
 std::ostream& osc::operator<<(std::ostream& o, TPSNonAffineTerm3D const& wt)
 {
     using osc::operator<<;
-    return o << "TPSNonAffineTerm3D{Weight = " << wt.Weight << ", ControlPoint = " << wt.ControlPoint << '}';
+    return o << "TPSNonAffineTerm3D{Weight = " << wt.weight << ", ControlPoint = " << wt.controlPoint << '}';
 }
 
 bool osc::operator==(TPSCoefficients3D const& a, TPSCoefficients3D const& b) noexcept
@@ -93,7 +93,7 @@ bool osc::operator==(TPSCoefficients3D const& a, TPSCoefficients3D const& b) noe
         a.a2 == b.a2 &&
         a.a3 == b.a3 &&
         a.a4 == b.a4 &&
-        a.NonAffineTerms == b.NonAffineTerms;
+        a.nonAffineTerms == b.nonAffineTerms;
 }
 
 bool osc::operator!=(TPSCoefficients3D const& a, TPSCoefficients3D const& b) noexcept
@@ -105,9 +105,9 @@ std::ostream& osc::operator<<(std::ostream& o, TPSCoefficients3D const& coefs)
 {
     using osc::operator<<;
     o << "TPSCoefficients3D{a1 = " << coefs.a1 << ", a2 = " << coefs.a2 << ", a3 = " << coefs.a3 << ", a4 = " << coefs.a4;
-    for (size_t i = 0; i < coefs.NonAffineTerms.size(); ++i)
+    for (size_t i = 0; i < coefs.nonAffineTerms.size(); ++i)
     {
-        o << ", w" << i << " = " << coefs.NonAffineTerms[i];
+        o << ", w" << i << " = " << coefs.nonAffineTerms[i];
     }
     o << '}';
     return o;
@@ -164,7 +164,7 @@ osc::TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const&
 
     OSC_PERF("CalcCoefficients");
 
-    int const numPairs = static_cast<int>(inputs.Landmarks.size());
+    int const numPairs = static_cast<int>(inputs.landmarks.size());
 
     if (numPairs == 0)
     {
@@ -180,8 +180,8 @@ osc::TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const&
     {
         for (int col = 0; col < numPairs; ++col)
         {
-            glm::vec3 const& pi = inputs.Landmarks[row].Src;
-            glm::vec3 const& pj = inputs.Landmarks[col].Src;
+            glm::vec3 const& pi = inputs.landmarks[row].source;
+            glm::vec3 const& pj = inputs.landmarks[col].source;
 
             L(row, col) = RadialBasisFunction3D(pi, pj);
         }
@@ -194,9 +194,9 @@ osc::TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const&
         for (int row = 0; row < numPairs; ++row)
         {
             L(row, pStartColumn)     = 1.0;
-            L(row, pStartColumn + 1) = inputs.Landmarks[row].Src.x;
-            L(row, pStartColumn + 2) = inputs.Landmarks[row].Src.y;
-            L(row, pStartColumn + 3) = inputs.Landmarks[row].Src.z;
+            L(row, pStartColumn + 1) = inputs.landmarks[row].source.x;
+            L(row, pStartColumn + 2) = inputs.landmarks[row].source.y;
+            L(row, pStartColumn + 3) = inputs.landmarks[row].source.z;
         }
     }
 
@@ -207,9 +207,9 @@ osc::TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const&
         for (int col = 0; col < numPairs; ++col)
         {
             L(ptStartRow, col)     = 1.0;
-            L(ptStartRow + 1, col) = inputs.Landmarks[col].Src.x;
-            L(ptStartRow + 2, col) = inputs.Landmarks[col].Src.y;
-            L(ptStartRow + 3, col) = inputs.Landmarks[col].Src.z;
+            L(ptStartRow + 1, col) = inputs.landmarks[col].source.x;
+            L(ptStartRow + 2, col) = inputs.landmarks[col].source.y;
+            L(ptStartRow + 3, col) = inputs.landmarks[col].source.z;
         }
     }
 
@@ -233,7 +233,7 @@ osc::TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const&
     SimTK::Vector Vz(numPairs + 4, 0.0);
     for (int row = 0; row < numPairs; ++row)
     {
-        glm::vec3 const blended = glm::mix(inputs.Landmarks[row].Src, inputs.Landmarks[row].Dest, inputs.BlendingFactor);
+        glm::vec3 const blended = glm::mix(inputs.landmarks[row].source, inputs.landmarks[row].destination, inputs.blendingFactor);
         Vx[row] = blended.x;
         Vy[row] = blended.y;
         Vz[row] = blended.z;
@@ -263,12 +263,12 @@ osc::TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const&
     rv.a4 = {Cx[numPairs+3], Cy[numPairs+3], Cz[numPairs+3]};
 
     // populate `wi` coefficients (+ control points, needed at evaluation-time)
-    rv.NonAffineTerms.reserve(numPairs);
+    rv.nonAffineTerms.reserve(numPairs);
     for (int i = 0; i < numPairs; ++i)
     {
         glm::vec3 const weight = {Cx[i], Cy[i], Cz[i]};
-        glm::vec3 const& controlPoint = inputs.Landmarks[i].Src;
-        rv.NonAffineTerms.emplace_back(weight, controlPoint);
+        glm::vec3 const& controlPoint = inputs.landmarks[i].source;
+        rv.nonAffineTerms.emplace_back(weight, controlPoint);
     }
 
     return rv;
@@ -285,9 +285,9 @@ glm::vec3 osc::EvaluateTPSEquation(TPSCoefficients3D const& coefs, glm::vec3 p)
     glm::dvec3 rv = glm::dvec3{coefs.a1} + glm::dvec3{coefs.a2*p.x} + glm::dvec3{coefs.a3*p.y} + glm::dvec3{coefs.a4*p.z};
 
     // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
-    for (TPSNonAffineTerm3D const& term : coefs.NonAffineTerms)
+    for (TPSNonAffineTerm3D const& term : coefs.nonAffineTerms)
     {
-        rv += term.Weight * RadialBasisFunction3D(term.ControlPoint, p);
+        rv += term.weight * RadialBasisFunction3D(term.controlPoint, p);
     }
 
     return rv;

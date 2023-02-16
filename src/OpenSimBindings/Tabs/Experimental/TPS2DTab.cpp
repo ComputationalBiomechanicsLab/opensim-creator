@@ -87,14 +87,15 @@ namespace
     // i.e. in `f(p) = a1 + a2*p.x + a3*p.y + SUM{ wi * U(||controlPoint - p||) }` this encodes
     //      the `wi` and `controlPoint` parts of that equation
     struct TPSNonAffineTerm2D final {
-        glm::vec2 weight;
-        glm::vec2 controlPoint;
 
         TPSNonAffineTerm2D(glm::vec2 weight_, glm::vec2 controlPoint_) :
             weight{weight_},
             controlPoint{controlPoint_}
         {
         }
+
+        glm::vec2 weight;
+        glm::vec2 controlPoint;
     };
 
     // pretty-prints `TPSNonAffineTerm2D`

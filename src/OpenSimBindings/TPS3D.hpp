@@ -26,14 +26,17 @@ namespace osc
 
         LandmarkPair3D() = default;
 
-        LandmarkPair3D(glm::vec3 const& src_, glm::vec3 const& dest_) :
-            Src{src_},
-            Dest{dest_}
+        LandmarkPair3D(
+            glm::vec3 const& source_,
+            glm::vec3 const& destination_) :
+
+            source{source_},
+            destination{destination_}
         {
         }
 
-        glm::vec3 Src;
-        glm::vec3 Dest;
+        glm::vec3 source;
+        glm::vec3 destination;
     };
 
     bool operator==(LandmarkPair3D const&, LandmarkPair3D const&) noexcept;
@@ -51,13 +54,13 @@ namespace osc
             std::vector<LandmarkPair3D> landmarks_,
             float blendingFactor_) :
 
-            Landmarks{std::move(landmarks_)},
-            BlendingFactor{std::move(blendingFactor_)}
+            landmarks{std::move(landmarks_)},
+            blendingFactor{std::move(blendingFactor_)}
         {
         }
 
-        std::vector<LandmarkPair3D> Landmarks;
-        float BlendingFactor = 1.0f;
+        std::vector<LandmarkPair3D> landmarks;
+        float blendingFactor = 1.0f;
     };
 
     bool operator==(TPSCoefficientSolverInputs3D const&, TPSCoefficientSolverInputs3D const&) noexcept;
@@ -69,17 +72,18 @@ namespace osc
     // i.e. in `f(p) = a1 + a2*p.x + a3*p.y + a4*p.z + SUM{ wi * U(||controlPoint - p||) }` this encodes
     //      the `wi` and `controlPoint` parts of that equation
     struct TPSNonAffineTerm3D final {
+
         TPSNonAffineTerm3D(
             glm::vec3 const& weight_,
             glm::vec3 const& controlPoint_) :
 
-            Weight{weight_},
-            ControlPoint{controlPoint_}
+            weight{weight_},
+            controlPoint{controlPoint_}
         {
         }
 
-        glm::vec3 Weight;
-        glm::vec3 ControlPoint;
+        glm::vec3 weight;
+        glm::vec3 controlPoint;
     };
 
     bool operator==(TPSNonAffineTerm3D const&, TPSNonAffineTerm3D const&) noexcept;
@@ -96,7 +100,7 @@ namespace osc
         glm::vec3 a2 = {1.0f, 0.0f, 0.0f};
         glm::vec3 a3 = {0.0f, 1.0f, 0.0f};
         glm::vec3 a4 = {0.0f, 0.0f, 1.0f};
-        std::vector<TPSNonAffineTerm3D> NonAffineTerms;
+        std::vector<TPSNonAffineTerm3D> nonAffineTerms;
     };
 
     bool operator==(TPSCoefficients3D const&, TPSCoefficients3D const&) noexcept;

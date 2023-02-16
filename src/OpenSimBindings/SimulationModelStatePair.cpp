@@ -17,8 +17,7 @@
 class osc::SimulationModelStatePair::Impl final {
 public:
     Impl() :
-        m_Simulation{std::make_shared<Simulation>(SingleStateSimulation{BasicModelStatePair{}})},
-        m_SimulationReport{}
+        m_Simulation{std::make_shared<Simulation>(SingleStateSimulation{BasicModelStatePair{}})}
     {
         // TODO: state extraction
     }
@@ -133,56 +132,6 @@ osc::SimulationModelStatePair::SimulationModelStatePair(SimulationModelStatePair
 osc::SimulationModelStatePair& osc::SimulationModelStatePair::operator=(SimulationModelStatePair&&) noexcept = default;
 osc::SimulationModelStatePair::~SimulationModelStatePair() noexcept = default;
 
-OpenSim::Model const& osc::SimulationModelStatePair::getModel() const
-{
-    return m_Impl->getModel();
-}
-
-osc::UID osc::SimulationModelStatePair::getModelVersion() const
-{
-    return m_Impl->getModelVersion();
-}
-
-SimTK::State const& osc::SimulationModelStatePair::getState() const
-{
-    return m_Impl->getState();
-}
-
-osc::UID osc::SimulationModelStatePair::getStateVersion() const
-{
-    return m_Impl->getStateVersion();
-}
-
-OpenSim::Component const* osc::SimulationModelStatePair::getSelected() const
-{
-    return m_Impl->getSelected();
-}
-
-void osc::SimulationModelStatePair::setSelected(OpenSim::Component const* c)
-{
-    m_Impl->setSelected(std::move(c));
-}
-
-OpenSim::Component const* osc::SimulationModelStatePair::getHovered() const
-{
-    return m_Impl->getHovered();
-}
-
-void osc::SimulationModelStatePair::setHovered(OpenSim::Component const* c)
-{
-    m_Impl->setHovered(std::move(c));
-}
-
-float osc::SimulationModelStatePair::getFixupScaleFactor() const
-{
-    return m_Impl->getFixupScaleFactor();
-}
-
-void osc::SimulationModelStatePair::setFixupScaleFactor(float v)
-{
-    m_Impl->setFixupScaleFactor(std::move(v));
-}
-
 std::shared_ptr<osc::Simulation> osc::SimulationModelStatePair::updSimulation()
 {
     return m_Impl->updSimulation();
@@ -201,4 +150,54 @@ osc::SimulationReport osc::SimulationModelStatePair::getSimulationReport() const
 void osc::SimulationModelStatePair::setSimulationReport(SimulationReport report)
 {
     m_Impl->setSimulationReport(std::move(report));
+}
+
+OpenSim::Model const& osc::SimulationModelStatePair::implGetModel() const
+{
+    return m_Impl->getModel();
+}
+
+osc::UID osc::SimulationModelStatePair::implGetModelVersion() const
+{
+    return m_Impl->getModelVersion();
+}
+
+SimTK::State const& osc::SimulationModelStatePair::implGetState() const
+{
+    return m_Impl->getState();
+}
+
+osc::UID osc::SimulationModelStatePair::implGetStateVersion() const
+{
+    return m_Impl->getStateVersion();
+}
+
+OpenSim::Component const* osc::SimulationModelStatePair::implGetSelected() const
+{
+    return m_Impl->getSelected();
+}
+
+void osc::SimulationModelStatePair::implSetSelected(OpenSim::Component const* c)
+{
+    m_Impl->setSelected(std::move(c));
+}
+
+OpenSim::Component const* osc::SimulationModelStatePair::implGetHovered() const
+{
+    return m_Impl->getHovered();
+}
+
+void osc::SimulationModelStatePair::implSetHovered(OpenSim::Component const* c)
+{
+    m_Impl->setHovered(std::move(c));
+}
+
+float osc::SimulationModelStatePair::implGetFixupScaleFactor() const
+{
+    return m_Impl->getFixupScaleFactor();
+}
+
+void osc::SimulationModelStatePair::implSetFixupScaleFactor(float v)
+{
+    m_Impl->setFixupScaleFactor(std::move(v));
 }

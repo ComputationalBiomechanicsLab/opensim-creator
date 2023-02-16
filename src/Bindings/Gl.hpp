@@ -26,7 +26,7 @@ namespace gl
         {
         }
 
-        char const* what() const noexcept override
+        char const* what() const noexcept final
         {
             return m_Msg.c_str();
         }

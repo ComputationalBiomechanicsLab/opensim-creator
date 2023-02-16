@@ -11,7 +11,7 @@ TEST(ForwardDynamicSimulation, CanInitFromBasicModel)
     osc::BasicModelStatePair modelState;
 
     osc::ForwardDynamicSimulatorParams params;
-    params.FinalTime = osc::SimulationClock::start();  // don't run a full sim
+    params.finalTime = osc::SimulationClock::start();  // don't run a full sim
 
     osc::ForwardDynamicSimulation sim{modelState, params};
 
@@ -26,7 +26,7 @@ TEST(ForwardDynamicSimulation, CanInitFromBasicModel)
     sim.getStatus();
     sim.getCurTime();
     ASSERT_EQ(sim.getStartTime(), osc::SimulationClock::start());
-    ASSERT_EQ(sim.getEndTime(), params.FinalTime);
+    ASSERT_EQ(sim.getEndTime(), params.finalTime);
     sim.getProgress();
     ASSERT_EQ(osc::FromParamBlock(sim.getParams()), params);
     ASSERT_FALSE(sim.getOutputExtractors().empty());

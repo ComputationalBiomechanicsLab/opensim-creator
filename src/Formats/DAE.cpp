@@ -27,8 +27,7 @@ namespace std
     // unordered maps
 
     template<>
-    class hash<glm::vec4> final {
-    public:
+    struct hash<glm::vec4> final {
         size_t operator()(glm::vec4 const& v) const
         {
             return osc::HashOf(v.x, v.y, v.z, v.w);
@@ -53,7 +52,10 @@ namespace
 
     struct DAEMaterial final {
 
-        explicit DAEMaterial(std::string materialID_, glm::vec4 const& color_) :
+        DAEMaterial(
+            std::string materialID_,
+            glm::vec4 const& color_) :
+
             materialID{std::move(materialID_)},
             color{color_}
         {

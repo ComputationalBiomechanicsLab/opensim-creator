@@ -7,8 +7,8 @@
 
 namespace osc
 {
-    class SimpleSceneDecoration final {
-    public:
+    struct SimpleSceneDecoration final {
+
         SimpleSceneDecoration(
             Mesh const& mesh_,
             Transform const& transform_,

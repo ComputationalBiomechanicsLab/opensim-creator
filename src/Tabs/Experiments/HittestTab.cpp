@@ -50,10 +50,14 @@ namespace
     auto constexpr c_TriangleIndices = osc::MakeArray<uint16_t>(0, 1, 2);
 
     struct SceneSphere final {
+
+        SceneSphere(glm::vec3 pos_) :
+            pos{pos_}
+        {
+        }
+
         glm::vec3 pos;
         bool isHovered = false;
-
-        SceneSphere(glm::vec3 pos_) : pos{pos_} {}
     };
 
     std::vector<SceneSphere> GenerateSceneSpheres()

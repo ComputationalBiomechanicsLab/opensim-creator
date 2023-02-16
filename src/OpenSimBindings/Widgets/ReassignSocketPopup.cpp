@@ -25,10 +25,6 @@ namespace
 {
     // parameters that affect which sockets are displayed
     struct PopupParams final {
-        osc::UID modelVersion;
-        OpenSim::ComponentPath path;
-        std::string socketName;
-        std::string search;
 
         PopupParams(
             osc::UID modelVersion_,
@@ -40,6 +36,11 @@ namespace
             socketName{std::move(socketName_)}
         {
         }
+
+        osc::UID modelVersion;
+        OpenSim::ComponentPath path;
+        std::string socketName;
+        std::string search;
     };
 
     bool operator==(PopupParams const& a, PopupParams const& b)
@@ -58,14 +59,15 @@ namespace
 
     // a single user-selectable connectee option
     struct ConnecteeOption final {
-        OpenSim::ComponentPath absPath;
-        std::string name;
 
         explicit ConnecteeOption(OpenSim::Component const& c) :
             absPath{osc::GetAbsolutePath(c)},
             name{c.getName()}
         {
         }
+
+        OpenSim::ComponentPath absPath;
+        std::string name;
     };
 
     // generate a list of possible connectee options, given a set of popup parameters
@@ -123,7 +125,7 @@ public:
     }
 
 private:
-    void implDrawContent() override
+    void implDrawContent() final
     {
         // caching: regenerate cached socket list, if necessary
         //
@@ -200,7 +202,7 @@ private:
         }
     }
 
-    void implOnClose() override
+    void implOnClose() final
     {
         m_EditedParams.search.clear();
         m_Error.clear();

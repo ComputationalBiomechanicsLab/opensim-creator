@@ -15,11 +15,7 @@
 namespace
 {
     // parameters for a shader, to be used as a key into the shader cache
-    struct ShaderInputs {
-        std::filesystem::path vertexShaderPath;
-        std::filesystem::path geometryShaderPath;
-        std::filesystem::path fragmentShaderPath;
-        size_t hash = osc::HashOf(std::filesystem::hash_value(vertexShaderPath), std::filesystem::hash_value(geometryShaderPath), std::filesystem::hash_value(fragmentShaderPath));
+    struct ShaderInputs final {
 
         ShaderInputs(
             std::filesystem::path const& vertexShaderPath_,
@@ -40,6 +36,15 @@ namespace
             fragmentShaderPath{fragmentShaderPath_}
         {
         }
+
+        std::filesystem::path vertexShaderPath;
+        std::filesystem::path geometryShaderPath;
+        std::filesystem::path fragmentShaderPath;
+        size_t hash = osc::HashOf(
+            std::filesystem::hash_value(vertexShaderPath),
+            std::filesystem::hash_value(geometryShaderPath),
+            std::filesystem::hash_value(fragmentShaderPath)
+        );
     };
 
     bool operator==(ShaderInputs const& a, ShaderInputs const& b)
@@ -54,8 +59,8 @@ namespace
 namespace std
 {
     template<>
-    class hash<ShaderInputs> final {
-    public:
+    struct hash<ShaderInputs> final {
+
         size_t operator()(ShaderInputs const& inputs) const
         {
             return inputs.hash;

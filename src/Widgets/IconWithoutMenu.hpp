@@ -12,7 +12,8 @@ namespace osc
         IconWithoutMenu(
             osc::Icon icon,
             osc::CStringView title,
-            osc::CStringView description);
+            osc::CStringView description
+        );
 
         std::string const& getIconID() const
         {

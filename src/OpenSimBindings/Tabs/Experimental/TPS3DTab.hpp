@@ -16,7 +16,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        TPS3DTab(TabHost*);
+        explicit TPS3DTab(TabHost*);
         TPS3DTab(TPS3DTab const&) = delete;
         TPS3DTab(TPS3DTab&&) noexcept;
         TPS3DTab& operator=(TPS3DTab const&) = delete;

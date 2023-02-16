@@ -10,7 +10,7 @@ namespace osc
     // a "smart pointer" that behaves exactly like a unique_ptr but
     // supports copy construction/assignment by calling `T::clone()`
     template<typename T, typename Deleter = std::default_delete<T>>
-    class ClonePtr {
+    class ClonePtr final {
     public:
         typedef T* pointer;
         typedef T element_type;

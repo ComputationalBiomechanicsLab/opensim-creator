@@ -15,8 +15,8 @@ namespace osc
     public:
         OutputPlotsPanel(
             std::string_view panelName,
-            MainUIStateAPI* mainUIStateAPI,
-            SimulatorUIAPI* simulatorUIAPI
+            MainUIStateAPI*,
+            SimulatorUIAPI*
         );
         OutputPlotsPanel(OutputPlotsPanel const&) = delete;
         OutputPlotsPanel(OutputPlotsPanel&&) noexcept;

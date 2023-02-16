@@ -9,23 +9,30 @@
 namespace
 {
     class StdoutSink final : public osc::log::Sink {
-        std::mutex mutex;
-
-        void log(osc::log::LogMessage const& msg) override
+    private:
+        void implLog(osc::log::LogMessage const& msg) final
         {
-            std::lock_guard g{mutex};
+            static std::mutex s_StdoutMutex;
+
+            std::lock_guard g{s_StdoutMutex};
             std::cerr << '[' << msg.loggerName << "] [" << osc::log::toStringView(msg.level) << "] " << msg.payload << std::endl;
         }
     };
 
-    struct CircularLogSink final : public osc::log::Sink {
-        osc::SynchronizedValue<osc::CircularBuffer<osc::log::OwnedLogMessage, osc::log::c_MaxLogTracebackMessages>> storage;
-
-        void log(osc::log::LogMessage const& msg) override
+    class CircularLogSink final : public osc::log::Sink {
+    public:
+        osc::SynchronizedValue<osc::CircularBuffer<osc::log::OwnedLogMessage, osc::log::c_MaxLogTracebackMessages>>& updMessages()
         {
-            auto l = storage.lock();
+            return m_Messages;
+        }
+    private:
+        void implLog(osc::log::LogMessage const& msg) final
+        {
+            auto l = m_Messages.lock();
             l->emplace_back(msg);
         }
+
+        osc::SynchronizedValue<osc::CircularBuffer<osc::log::OwnedLogMessage, osc::log::c_MaxLogTracebackMessages>> m_Messages;
     };
 
     struct GlobalSinks final {
@@ -92,5 +99,5 @@ void osc::log::setTracebackLevel(level::LevelEnum lvl)
 
 osc::SynchronizedValue<osc::CircularBuffer<osc::log::OwnedLogMessage, osc::log::c_MaxLogTracebackMessages>>& osc::log::getTracebackLog()
 {
-    return GetGlobalSinks().tracebackSink->storage;
+    return GetGlobalSinks().tracebackSink->updMessages();
 }

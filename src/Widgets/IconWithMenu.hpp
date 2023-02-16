@@ -15,7 +15,8 @@ namespace osc
             osc::Icon icon,
             osc::CStringView title,
             osc::CStringView description,
-            std::function<void()> contentRenderer);
+            std::function<void()> contentRenderer
+        );
 
         void draw();
     private:

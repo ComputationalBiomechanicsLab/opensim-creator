@@ -18,13 +18,15 @@ namespace osc
         ModelMusclePlotPanel(
             EditorAPI*,
             std::shared_ptr<UndoableModelStatePair>,
-            std::string_view panelName);
+            std::string_view panelName
+        );
         ModelMusclePlotPanel(
             EditorAPI*,
             std::shared_ptr<UndoableModelStatePair>,
             std::string_view panelName,
             OpenSim::ComponentPath const& coordPath,
-            OpenSim::ComponentPath const& musclePath);
+            OpenSim::ComponentPath const& musclePath
+        );
         ModelMusclePlotPanel(ModelMusclePlotPanel const&) = delete;
         ModelMusclePlotPanel(ModelMusclePlotPanel&&) noexcept;
         ModelMusclePlotPanel& operator=(ModelMusclePlotPanel const&) = delete;

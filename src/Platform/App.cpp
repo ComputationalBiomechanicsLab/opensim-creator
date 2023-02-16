@@ -198,6 +198,15 @@ namespace
     // tagged with annotations
     struct AnnotatedScreenshotRequest final {
 
+        AnnotatedScreenshotRequest(
+            uint64_t frameRequested_,
+            std::future<osc::Image> underlyingFuture_) :
+
+            frameRequested{std::move(frameRequested_)},
+            underlyingScreenshotFuture{std::move(underlyingFuture_)}
+        {
+        }
+
         // the frame on which the screenshot was requested
         uint64_t frameRequested;
 
@@ -209,12 +218,6 @@ namespace
 
         // annotations made during the requested frame (if any)
         std::vector<osc::ImageAnnotation> annotations;
-
-        AnnotatedScreenshotRequest(uint64_t frameRequested_, std::future<osc::Image> underlyingFuture_) :
-            frameRequested{std::move(frameRequested_)},
-            underlyingScreenshotFuture{std::move(underlyingFuture_)}
-        {
-        }
     };
 
     // wrapper class for storing std::type_info as a hashable type

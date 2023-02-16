@@ -942,7 +942,7 @@ namespace
             }
         };
 
-        struct TypeInfoEqualTo {
+        struct TypeInfoEqualTo final {
             bool operator()(TypeInfoRef lhs, TypeInfoRef rhs) const
             {
                 return lhs.get() == rhs.get();

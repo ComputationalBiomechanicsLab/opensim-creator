@@ -578,17 +578,17 @@ private:
         return getTabByID(m_RequestedTab);
     }
 
-    UID implAddTab(std::unique_ptr<Tab> tab) override
+    UID implAddTab(std::unique_ptr<Tab> tab) final
     {
         return m_Tabs.emplace_back(std::move(tab))->getID();
     }
 
-    void implSelectTab(UID id) override
+    void implSelectTab(UID id) final
     {
         m_RequestedTab = id;
     }
 
-    void implCloseTab(UID id) override
+    void implCloseTab(UID id) final
     {
         m_DeletedTabs.insert(id);
     }
@@ -738,7 +738,7 @@ private:
         }
     }
 
-    void implResetImgui() override
+    void implResetImgui() final
     {
         m_ImguiWasAggressivelyReset = true;
     }

@@ -27,8 +27,8 @@ namespace osc { struct Transform; }
 namespace osc { class Config; }
 namespace osc { class Mesh; }
 namespace osc { class MeshCache; }
-namespace osc { class PolarPerspectiveCamera; }
-namespace osc { class SceneDecoration; }
+namespace osc { struct PolarPerspectiveCamera; }
+namespace osc { struct SceneDecoration; }
 namespace osc { class ShaderCache; }
 
 namespace osc

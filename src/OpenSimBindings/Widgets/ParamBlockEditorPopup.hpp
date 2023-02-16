@@ -12,7 +12,7 @@ namespace osc
     // popup that edits a parameter block in-place
     class ParamBlockEditorPopup final : public Popup {
     public:
-        explicit ParamBlockEditorPopup(std::string_view popupName, ParamBlock*);
+        ParamBlockEditorPopup(std::string_view popupName, ParamBlock*);
         ParamBlockEditorPopup(ParamBlockEditorPopup const&) = delete;
         ParamBlockEditorPopup(ParamBlockEditorPopup&&) noexcept;
         ParamBlockEditorPopup& operator=(ParamBlockEditorPopup const&) = delete;

@@ -11,7 +11,7 @@
 
 namespace osc
 {
-    class Image {
+    class Image final {
     public:
         Image();
         Image(
@@ -35,6 +35,6 @@ namespace osc
         std::unique_ptr<uint8_t[]> m_Pixels;
     };
 
-    Image LoadImage(std::filesystem::path const&, ImageFlags = ImageFlags_None);
-    void WriteToPNG(Image const&, std::filesystem::path const&);
+    Image LoadImageFromFile(std::filesystem::path const&, ImageFlags = ImageFlags_None);
+    void WriteImageToPNGFile(Image const&, std::filesystem::path const&);
 }

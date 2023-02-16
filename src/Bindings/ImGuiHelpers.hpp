@@ -16,7 +16,7 @@
 #include <string>
 
 namespace osc { class Camera; }
-namespace osc { class PolarPerspectiveCamera; }
+namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { class RenderTexture; }
 namespace osc { class Texture2D; }
 namespace osc { class UID; }

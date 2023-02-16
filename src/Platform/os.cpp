@@ -451,20 +451,21 @@ void osc::WriteTracebackToLog(log::level::LevelEnum lvl)
 namespace
 {
     // temporarily attach a crash logger to the log
-    struct CrashFileSink final : public osc::log::Sink
-    {
+    class CrashFileSink final : public osc::log::Sink {
+    public:
         explicit CrashFileSink(std::ostream& out_) : m_Out{out_}
         {
         }
 
-        void log(osc::log::LogMessage const& msg) override
+    private:
+        void implLog(osc::log::LogMessage const& msg) final
         {
             if (m_Out)
             {
                 m_Out << '[' << msg.loggerName << "] [" << osc::log::toStringView(msg.level) << "] " << msg.payload << std::endl;
             }
         }
-    private:
+
         std::ostream& m_Out;
     };
 

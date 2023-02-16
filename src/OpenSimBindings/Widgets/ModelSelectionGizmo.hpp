@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace osc { class PolarPerspectiveCamera; }
+namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct Rect; }
 namespace osc { class UndoableModelStatePair; }
 

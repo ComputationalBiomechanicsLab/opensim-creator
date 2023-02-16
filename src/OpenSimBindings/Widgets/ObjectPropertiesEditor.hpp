@@ -17,7 +17,8 @@ namespace osc
         ObjectPropertyEdit(
             OpenSim::Object const&,
             OpenSim::AbstractProperty const&,
-            std::function<void(OpenSim::AbstractProperty&)>);
+            std::function<void(OpenSim::AbstractProperty&)>
+        );
 
         std::string const& getComponentAbsPath() const;  // empty if it's just a standalone object
         std::string const& getPropertyName() const;

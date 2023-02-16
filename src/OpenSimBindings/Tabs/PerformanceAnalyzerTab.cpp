@@ -47,7 +47,11 @@ namespace
 class osc::PerformanceAnalyzerTab::Impl final {
 public:
 
-    Impl(TabHost* parent, BasicModelStatePair baseModel, osc::ParamBlock const& params) :
+    Impl(
+        TabHost* parent,
+        BasicModelStatePair baseModel,
+        osc::ParamBlock const& params) :
+
         m_Parent{std::move(parent)},
         m_BaseModel{std::move(baseModel)},
         m_BaseParams{params}
@@ -212,7 +216,7 @@ private:
         // for now, just permute through integration methods
         for (osc::IntegratorMethod m : osc::GetAllIntegratorMethods())
         {
-            params.IntegratorMethodUsed = m;
+            params.integratorMethodUsed = m;
             m_Params.push_back(params);
         }
     }

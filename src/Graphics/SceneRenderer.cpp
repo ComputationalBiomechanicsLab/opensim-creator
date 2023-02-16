@@ -140,7 +140,11 @@ namespace
 
 class osc::SceneRenderer::Impl final {
 public:
-    Impl(Config const& config, MeshCache& meshCache, ShaderCache& shaderCache) :
+    Impl(
+        Config const& config,
+        MeshCache& meshCache,
+        ShaderCache& shaderCache) :
+
         m_SceneColoredElementsMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneShader.vert", config.getResourceDir() / "shaders/SceneShader.frag")},
         m_SceneTexturedElementsMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneTexturedShader.vert", config.getResourceDir() / "shaders/SceneTexturedShader.frag")},
         m_SolidColorMaterial{shaderCache.load(config.getResourceDir() / "shaders/SceneSolidColor.vert", config.getResourceDir() / "shaders/SceneSolidColor.frag")},

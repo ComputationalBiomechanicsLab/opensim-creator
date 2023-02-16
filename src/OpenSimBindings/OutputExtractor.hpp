@@ -30,44 +30,45 @@ namespace osc
         {
         }
 
-        std::string const& getName() const override
+        std::string const& getName() const final
         {
             return m_Output->getName();
         }
 
-        std::string const& getDescription() const override
+        std::string const& getDescription() const final
         {
             return m_Output->getDescription();
         }
 
-        OutputType getOutputType() const override
+        OutputType getOutputType() const final
         {
             return m_Output->getOutputType();
         }
 
-        float getValueFloat(OpenSim::Component const& c, SimulationReport const& r) const override
+        float getValueFloat(OpenSim::Component const& c, SimulationReport const& r) const final
         {
             return m_Output->getValueFloat(c, r);
         }
 
-        void getValuesFloat(OpenSim::Component const& c,
-                            nonstd::span<SimulationReport const> reports,
-                            nonstd::span<float> overwriteOut) const override
+        void getValuesFloat(
+            OpenSim::Component const& c,
+            nonstd::span<SimulationReport const> reports,
+            nonstd::span<float> overwriteOut) const final
         {
             m_Output->getValuesFloat(c, reports, overwriteOut);
         }
 
-        std::string getValueString(OpenSim::Component const& c, SimulationReport const& r) const override
+        std::string getValueString(OpenSim::Component const& c, SimulationReport const& r) const final
         {
             return m_Output->getValueString(c, r);
         }
 
-        std::size_t getHash() const override
+        size_t getHash() const final
         {
             return m_Output->getHash();
         }
 
-        bool equals(VirtualOutputExtractor const& other) const override
+        bool equals(VirtualOutputExtractor const& other) const final
         {
             return m_Output->equals(other);
         }

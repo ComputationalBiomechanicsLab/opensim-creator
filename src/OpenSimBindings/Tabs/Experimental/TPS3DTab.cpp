@@ -481,13 +481,13 @@ namespace
         // write data rows
         for (osc::LandmarkPair3D const& p : pairs)
         {
-            cols.at(0) = std::to_string(p.Src.x);
-            cols.at(1) = std::to_string(p.Src.y);
-            cols.at(2) = std::to_string(p.Src.z);
+            cols.at(0) = std::to_string(p.source.x);
+            cols.at(1) = std::to_string(p.source.y);
+            cols.at(2) = std::to_string(p.source.z);
 
-            cols.at(0) = std::to_string(p.Dest.x);
-            cols.at(1) = std::to_string(p.Dest.y);
-            cols.at(2) = std::to_string(p.Dest.z);
+            cols.at(0) = std::to_string(p.destination.x);
+            cols.at(1) = std::to_string(p.destination.y);
+            cols.at(2) = std::to_string(p.destination.z);
             writer.writeRow(cols);
         }
     }
@@ -651,8 +651,8 @@ namespace
     struct TPSUIViewportHover final {
 
         explicit TPSUIViewportHover(glm::vec3 const& worldspaceLocation_) :
-            MaybeSceneElementID{std::nullopt},
-            WorldspaceLocation{worldspaceLocation_}
+            maybeSceneElementID{std::nullopt},
+            worldspaceLocation{worldspaceLocation_}
         {
         }
 
@@ -660,13 +660,13 @@ namespace
             TPSDocumentElementID sceneElementID_,
             glm::vec3 const& worldspaceLocation_) :
 
-            MaybeSceneElementID{std::move(sceneElementID_)},
-            WorldspaceLocation{worldspaceLocation_}
+            maybeSceneElementID{std::move(sceneElementID_)},
+            worldspaceLocation{worldspaceLocation_}
         {
         }
 
-        std::optional<TPSDocumentElementID> MaybeSceneElementID;
-        glm::vec3 WorldspaceLocation;
+        std::optional<TPSDocumentElementID> maybeSceneElementID;
+        glm::vec3 worldspaceLocation;
     };
 
     // holds information about the user's current selection
@@ -701,61 +701,64 @@ namespace
     // (shared by all panels)
     struct TPSTabSharedState final {
 
-        TPSTabSharedState(osc::UID tabID_, osc::TabHost* parent_) :
-            TabID{std::move(tabID_)},
-            TabHost{std::move(parent_)}
+        TPSTabSharedState(
+            osc::UID tabID_,
+            osc::TabHost* parent_) :
+
+            tabID{std::move(tabID_)},
+            tabHost{std::move(parent_)}
         {
-            OSC_ASSERT(TabHost != nullptr && "top-level tab host required for this UI");
+            OSC_ASSERT(tabHost != nullptr && "top-level tab host required for this UI");
         }
 
         // ID of the top-level TPS3D tab
-        osc::UID TabID;
+        osc::UID tabID;
 
         // handle to the screen that owns the TPS3D tab
-        osc::TabHost* TabHost;
+        osc::TabHost* tabHost;
 
         // cached TPS3D algorithm result (to prevent recomputing it each frame)
-        TPSResultCache MeshResultCache;
+        TPSResultCache meshResultCache;
 
         // the document the user is editing
-        std::shared_ptr<osc::UndoRedoT<TPSDocument>> EditedDocument = std::make_shared<osc::UndoRedoT<TPSDocument>>();
+        std::shared_ptr<osc::UndoRedoT<TPSDocument>> editedDocument = std::make_shared<osc::UndoRedoT<TPSDocument>>();
 
         // `true` if the user wants the cameras to be linked
-        bool LinkCameras = true;
+        bool linkCameras = true;
 
         // `true` if `LinkCameras` should only link the rotational parts of the cameras
-        bool OnlyLinkRotation = false;
+        bool onlyLinkRotation = false;
 
         // shared linked camera
-        osc::PolarPerspectiveCamera LinkedCameraBase = CreateCameraFocusedOn(EditedDocument->getScratch().sourceMesh.getBounds());
+        osc::PolarPerspectiveCamera linkedCameraBase = CreateCameraFocusedOn(editedDocument->getScratch().sourceMesh.getBounds());
 
         // wireframe material, used to draw scene elements in a wireframe style
-        osc::Material WireframeMaterial = osc::CreateWireframeOverlayMaterial(osc::App::config(), *osc::App::singleton<osc::ShaderCache>());
+        osc::Material wireframeMaterial = osc::CreateWireframeOverlayMaterial(osc::App::config(), *osc::App::singleton<osc::ShaderCache>());
 
         // shared sphere mesh (used by rendering code)
-        osc::Mesh LandmarkSphere = osc::App::singleton<osc::MeshCache>()->getSphereMesh();
+        osc::Mesh landmarkSphere = osc::App::singleton<osc::MeshCache>()->getSphereMesh();
 
         // current user selection
-        TPSTabSelection UserSelection;
+        TPSTabSelection userSelection;
 
         // current user hover: reset per-frame
-        std::optional<TPSUIViewportHover> CurrentHover;
+        std::optional<TPSUIViewportHover> currentHover;
 
         // available/active panels that the user can toggle via the `window` menu
-        std::shared_ptr<osc::PanelManager> PanelManager = std::make_shared<osc::PanelManager>();
+        std::shared_ptr<osc::PanelManager> panelManager = std::make_shared<osc::PanelManager>();
 
         // currently active tab-wide popups
-        osc::Popups ActivePopups;
+        osc::Popups activePopups;
     };
 
     TPSDocument const& GetScratch(TPSTabSharedState const& state)
     {
-        return state.EditedDocument->getScratch();
+        return state.editedDocument->getScratch();
     }
 
     TPSDocument& UpdScratch(TPSTabSharedState& state)
     {
-        return state.EditedDocument->updScratch();
+        return state.editedDocument->updScratch();
     }
 
     osc::Mesh const& GetScratchMesh(TPSTabSharedState& state, TPSDocumentInputIdentifier which)
@@ -766,7 +769,7 @@ namespace
     // returns a (potentially cached) post-TPS-warp mesh
     osc::Mesh const& GetResultMesh(TPSTabSharedState& state)
     {
-        return state.MeshResultCache.lookup(state.EditedDocument->getScratch());
+        return state.meshResultCache.lookup(state.editedDocument->getScratch());
     }
 
     // append decorations that are common to all panels to the given output vector
@@ -788,7 +791,7 @@ namespace
         if (wireframeMode)
         {
             osc::SceneDecoration dec{tpsSourceOrDestinationMesh};
-            dec.maybeMaterial = sharedState.WireframeMaterial;
+            dec.maybeMaterial = sharedState.wireframeMaterial;
             out(std::move(dec));
         }
 
@@ -864,7 +867,7 @@ namespace
         {
             if (ImGui::Button(ICON_FA_FILE))
             {
-                ActionCreateNewDocument(*m_State->EditedDocument);
+                ActionCreateNewDocument(*m_State->editedDocument);
             }
             osc::DrawTooltipIfItemHovered("Create New Document", "Creates the default scene (undoable)");
         }
@@ -877,11 +880,11 @@ namespace
             {
                 if (ImGui::MenuItem("Load Source Mesh"))
                 {
-                    ActionBrowseForNewMesh(*m_State->EditedDocument, TPSDocumentInputIdentifier::Source);
+                    ActionBrowseForNewMesh(*m_State->editedDocument, TPSDocumentInputIdentifier::Source);
                 }
                 if (ImGui::MenuItem("Load Destination Mesh"))
                 {
-                    ActionBrowseForNewMesh(*m_State->EditedDocument, TPSDocumentInputIdentifier::Destination);
+                    ActionBrowseForNewMesh(*m_State->editedDocument, TPSDocumentInputIdentifier::Destination);
                 }
                 ImGui::EndPopup();
             }
@@ -900,20 +903,20 @@ namespace
         void drawCameraLockCheckbox()
         {
             {
-                bool linkCameras = m_State->LinkCameras;
+                bool linkCameras = m_State->linkCameras;
                 if (ImGui::Checkbox("link cameras", &linkCameras))
                 {
-                    m_State->LinkCameras = linkCameras;
+                    m_State->linkCameras = linkCameras;
                 }
             }
 
             ImGui::SameLine();
 
             {
-                bool onlyLinkRotation = m_State->OnlyLinkRotation;
+                bool onlyLinkRotation = m_State->onlyLinkRotation;
                 if (ImGui::Checkbox("only link rotation", &onlyLinkRotation))
                 {
-                    m_State->OnlyLinkRotation = onlyLinkRotation;
+                    m_State->onlyLinkRotation = onlyLinkRotation;
                 }
             }
         }
@@ -922,14 +925,14 @@ namespace
         {
             if (ImGui::Button(ICON_FA_ERASER " clear landmarks"))
             {
-                ActionClearAllLandmarks(*m_State->EditedDocument);
+                ActionClearAllLandmarks(*m_State->editedDocument);
             }
         }
 
         std::string m_Label;
         std::shared_ptr<TPSTabSharedState> m_State;
-        osc::UndoButton m_UndoButton{m_State->EditedDocument};
-        osc::RedoButton m_RedoButton{m_State->EditedDocument};
+        osc::UndoButton m_UndoButton{m_State->editedDocument};
+        osc::RedoButton m_RedoButton{m_State->editedDocument};
     };
 
     // widget: bottom status bar (shows status messages, hover information, etc.)
@@ -956,9 +959,9 @@ namespace
     private:
         void drawContent()
         {
-            if (m_State->CurrentHover)
+            if (m_State->currentHover)
             {
-                glm::vec3 const pos = m_State->CurrentHover->WorldspaceLocation;
+                glm::vec3 const pos = m_State->currentHover->worldspaceLocation;
                 ImGui::TextUnformatted("(");
                 ImGui::SameLine();
                 for (int i = 0; i < 3; ++i)
@@ -972,9 +975,9 @@ namespace
                 }
                 ImGui::TextUnformatted(")");
                 ImGui::SameLine();
-                if (m_State->CurrentHover->MaybeSceneElementID)
+                if (m_State->currentHover->maybeSceneElementID)
                 {
-                    ImGui::TextDisabled("(left-click to select %s)", m_State->CurrentHover->MaybeSceneElementID->elementID.c_str());
+                    ImGui::TextDisabled("(left-click to select %s)", m_State->currentHover->maybeSceneElementID->elementID.c_str());
                 }
                 else
                 {
@@ -1012,7 +1015,7 @@ namespace
         {
             if (ImGui::MenuItem(ICON_FA_FILE " New"))
             {
-                ActionCreateNewDocument(*m_State->EditedDocument);
+                ActionCreateNewDocument(*m_State->editedDocument);
             }
 
             if (ImGui::BeginMenu(ICON_FA_FILE_IMPORT " Import"))
@@ -1029,7 +1032,7 @@ namespace
 
             if (ImGui::MenuItem(ICON_FA_TIMES " Close"))
             {
-                m_State->TabHost->closeTab(m_State->TabID);
+                m_State->tabHost->closeTab(m_State->tabID);
             }
 
             if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit"))
@@ -1042,19 +1045,19 @@ namespace
         {
             if (ImGui::MenuItem("Source Mesh"))
             {
-                ActionBrowseForNewMesh(*m_State->EditedDocument, TPSDocumentInputIdentifier::Source);
+                ActionBrowseForNewMesh(*m_State->editedDocument, TPSDocumentInputIdentifier::Source);
             }
             if (ImGui::MenuItem("Destination Mesh"))
             {
-                ActionBrowseForNewMesh(*m_State->EditedDocument, TPSDocumentInputIdentifier::Destination);
+                ActionBrowseForNewMesh(*m_State->editedDocument, TPSDocumentInputIdentifier::Destination);
             }
             if (ImGui::MenuItem("Source Landmarks from CSV"))
             {
-                ActionLoadLandmarksCSV(*m_State->EditedDocument, TPSDocumentInputIdentifier::Source);
+                ActionLoadLandmarksCSV(*m_State->editedDocument, TPSDocumentInputIdentifier::Source);
             }
             if (ImGui::MenuItem("Destination Landmarks from CSV"))
             {
-                ActionLoadLandmarksCSV(*m_State->EditedDocument, TPSDocumentInputIdentifier::Destination);
+                ActionLoadLandmarksCSV(*m_State->editedDocument, TPSDocumentInputIdentifier::Destination);
             }
         }
 
@@ -1080,7 +1083,7 @@ namespace
     // widget: the 'edit' menu (a sub menu of the main menu)
     class TPS3DEditMenu final {
     public:
-        TPS3DEditMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
+        explicit TPS3DEditMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
             m_State{std::move(tabState_)}
         {
         }
@@ -1098,13 +1101,13 @@ namespace
 
         void drawContent()
         {
-            if (ImGui::MenuItem("Undo", nullptr, nullptr, m_State->EditedDocument->canUndo()))
+            if (ImGui::MenuItem("Undo", nullptr, nullptr, m_State->editedDocument->canUndo()))
             {
-                ActionUndo(*m_State->EditedDocument);
+                ActionUndo(*m_State->editedDocument);
             }
-            if (ImGui::MenuItem("Redo", nullptr, nullptr, m_State->EditedDocument->canRedo()))
+            if (ImGui::MenuItem("Redo", nullptr, nullptr, m_State->editedDocument->canRedo()))
             {
-                ActionRedo(*m_State->EditedDocument);
+                ActionRedo(*m_State->editedDocument);
             }
         }
 
@@ -1117,7 +1120,7 @@ namespace
         explicit TPS3DMainMenu(std::shared_ptr<TPSTabSharedState> const& tabState_) :
             m_FileMenu{tabState_},
             m_EditMenu{tabState_},
-            m_WindowMenu{tabState_->PanelManager},
+            m_WindowMenu{tabState_->panelManager},
             m_AboutTab{}
         {
         }
@@ -1304,7 +1307,7 @@ namespace
                 transform.scale *= m_LandmarkRadius;
                 transform.position = *p.maybeSourceLocation;
 
-                osc::SceneDecoration& decoration = rv.emplace_back(m_State->LandmarkSphere);
+                osc::SceneDecoration& decoration = rv.emplace_back(m_State->landmarkSphere);
                 decoration.transform = transform;
                 if (maybeHoveredLandmark && maybeHoveredLandmark->id == p.id && !(m_FirstLandmark && m_SecondLandmark))
                 {
@@ -1348,7 +1351,7 @@ namespace
                 transform.scale *= m_LandmarkRadius;
                 transform.position = m_OriginLandmark.location;
 
-                osc::SceneDecoration& decoration = rv.emplace_back(m_State->LandmarkSphere);
+                osc::SceneDecoration& decoration = rv.emplace_back(m_State->landmarkSphere);
                 decoration.transform = transform;
                 decoration.color = {1.0f, 1.0f, 1.0f, 1.0f};
             }
@@ -1360,7 +1363,7 @@ namespace
                 transform.scale *= m_LandmarkRadius;
                 transform.position = m_FirstLandmark->location;
 
-                osc::SceneDecoration& decoration = rv.emplace_back(m_State->LandmarkSphere);
+                osc::SceneDecoration& decoration = rv.emplace_back(m_State->landmarkSphere);
                 decoration.transform = transform;
                 decoration.color = {1.0f, 1.0f, 1.0f, 1.0f};
                 if (maybeHoveredLandmark && maybeHoveredLandmark->id == m_FirstLandmark->id)
@@ -1399,7 +1402,7 @@ namespace
                 transform.scale *= m_LandmarkRadius;
                 transform.position = m_SecondLandmark->location;
 
-                osc::SceneDecoration& decoration = rv.emplace_back(m_State->LandmarkSphere);
+                osc::SceneDecoration& decoration = rv.emplace_back(m_State->landmarkSphere);
                 decoration.transform = transform;
                 decoration.color = {1.0f, 1.0f, 1.0f, 1.0f};
                 if (maybeHoveredLandmark && maybeHoveredLandmark->id == m_SecondLandmark->id)
@@ -1676,11 +1679,11 @@ namespace
             if (landmarkCollision)
             {
                 // update central state to tell it that there's a new hover
-                m_State->CurrentHover = landmarkCollision;
+                m_State->currentHover = landmarkCollision;
             }
             else if (meshCollision)
             {
-                m_State->CurrentHover.emplace(meshCollision->position);
+                m_State->currentHover.emplace(meshCollision->position);
             }
 
             // ensure the camera is updated *before* rendering; otherwise, it'll be one frame late
@@ -1707,16 +1710,16 @@ namespace
         void updateCamera()
         {
             // if the cameras are linked together, ensure this camera is updated from the linked camera
-            if (m_State->LinkCameras && m_Camera != m_State->LinkedCameraBase)
+            if (m_State->linkCameras && m_Camera != m_State->linkedCameraBase)
             {
-                if (m_State->OnlyLinkRotation)
+                if (m_State->onlyLinkRotation)
                 {
-                    m_Camera.phi = m_State->LinkedCameraBase.phi;
-                    m_Camera.theta = m_State->LinkedCameraBase.theta;
+                    m_Camera.phi = m_State->linkedCameraBase.phi;
+                    m_Camera.theta = m_State->linkedCameraBase.theta;
                 }
                 else
                 {
-                    m_Camera = m_State->LinkedCameraBase;
+                    m_Camera = m_State->linkedCameraBase;
                 }
             }
 
@@ -1725,7 +1728,7 @@ namespace
             {
                 if (osc::UpdatePolarCameraFromImGuiMouseInputs(osc::Dimensions(m_LastTextureHittestResult.rect), m_Camera))
                 {
-                    m_State->LinkedCameraBase = m_Camera;  // reflects latest modification
+                    m_State->linkedCameraBase = m_Camera;  // reflects latest modification
                 }
             }
         }
@@ -1748,7 +1751,7 @@ namespace
                 std::optional<osc::RayCollision> const coll = osc::GetRayCollisionSphere(cameraRay, osc::Sphere{*maybePos, m_LandmarkRadius});
                 if (coll)
                 {
-                    if (!rv || glm::length(rv->WorldspaceLocation - cameraRay.origin) > coll->distance)
+                    if (!rv || glm::length(rv->worldspaceLocation - cameraRay.origin) > coll->distance)
                     {
                         TPSDocumentElementID fullID{m_DocumentIdentifier, TPSDocumentInputElementType::Landmark, p.id};
                         rv.emplace(std::move(fullID), *maybePos);
@@ -1766,18 +1769,18 @@ namespace
             // event: if the user left-clicks and something is hovered, select it; otherwise, add a landmark
             if (htResult.isLeftClickReleasedWithoutDragging)
             {
-                if (landmarkCollision && landmarkCollision->MaybeSceneElementID)
+                if (landmarkCollision && landmarkCollision->maybeSceneElementID)
                 {
                     if (!osc::IsShiftDown())
                     {
-                        m_State->UserSelection.clear();
+                        m_State->userSelection.clear();
                     }
-                    m_State->UserSelection.select(*landmarkCollision->MaybeSceneElementID);
+                    m_State->userSelection.select(*landmarkCollision->maybeSceneElementID);
                 }
                 else if (meshCollision)
                 {
                     ActionAddLandmarkTo(
-                        *m_State->EditedDocument,
+                        *m_State->editedDocument,
                         m_DocumentIdentifier,
                         meshCollision->position
                     );
@@ -1788,19 +1791,19 @@ namespace
             if (htResult.isRightClickReleasedWithoutDragging &&
                 m_DocumentIdentifier == TPSDocumentInputIdentifier::Source &&
                 landmarkCollision &&
-                landmarkCollision->MaybeSceneElementID &&
-                landmarkCollision->MaybeSceneElementID->elementType == TPSDocumentInputElementType::Landmark)
+                landmarkCollision->maybeSceneElementID &&
+                landmarkCollision->maybeSceneElementID->elementType == TPSDocumentInputElementType::Landmark)
             {
                 auto overlay = std::make_shared<TPS3DDefineFramePopup>(
                     m_State,
                     m_Camera,
                     m_WireframeMode,
                     m_LandmarkRadius,
-                    IDedLocation{landmarkCollision->MaybeSceneElementID->elementID, landmarkCollision->WorldspaceLocation}
+                    IDedLocation{landmarkCollision->maybeSceneElementID->elementID, landmarkCollision->worldspaceLocation}
                 );
                 overlay->setRect(htResult.rect);
                 overlay->open();
-                m_State->ActivePopups.push_back(overlay);
+                m_State->activePopups.push_back(overlay);
                 m_MaybeActiveModalOverlay = overlay;
             }
 
@@ -1809,10 +1812,10 @@ namespace
             if (htResult.isHovered && osc::IsAnyKeyPressed({ImGuiKey_Delete, ImGuiKey_Backspace}))
             {
                 ActionDeleteSceneElementsByID(
-                    *m_State->EditedDocument,
-                    m_State->UserSelection.getUnderlyingSet()
+                    *m_State->editedDocument,
+                    m_State->userSelection.getUnderlyingSet()
                 );
-                m_State->UserSelection.clear();
+                m_State->userSelection.clear();
             }
         }
 
@@ -1902,11 +1905,11 @@ namespace
             {
                 if (ImGui::MenuItem("Mesh"))
                 {
-                    ActionBrowseForNewMesh(*m_State->EditedDocument, m_DocumentIdentifier);
+                    ActionBrowseForNewMesh(*m_State->editedDocument, m_DocumentIdentifier);
                 }
                 if (ImGui::MenuItem("Landmarks from CSV"))
                 {
-                    ActionLoadLandmarksCSV(*m_State->EditedDocument, m_DocumentIdentifier);
+                    ActionLoadLandmarksCSV(*m_State->editedDocument, m_DocumentIdentifier);
                 }
                 ImGui::EndPopup();
             }
@@ -1940,7 +1943,7 @@ namespace
             if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
             {
                 osc::AutoFocus(m_Camera, GetScratchMesh(*m_State, m_DocumentIdentifier).getBounds(), osc::AspectRatio(m_LastTextureHittestResult.rect));
-                m_State->LinkedCameraBase = m_Camera;
+                m_State->linkedCameraBase = m_Camera;
             }
             osc::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
         }
@@ -2002,15 +2005,15 @@ namespace
 
                 glm::vec4 const& color = IsFullyPaired(p) ? c_PairedLandmarkColor : c_UnpairedLandmarkColor;
 
-                osc::SceneDecoration& decoration = decorations.emplace_back(m_State->LandmarkSphere, transform, color);
+                osc::SceneDecoration& decoration = decorations.emplace_back(m_State->landmarkSphere, transform, color);
 
-                if (m_State->UserSelection.contains(fullID))
+                if (m_State->userSelection.contains(fullID))
                 {
                     decoration.color += glm::vec4{0.25f, 0.25f, 0.25f, 0.0f};
                     decoration.color = glm::clamp(decoration.color, glm::vec4{0.0f}, glm::vec4{1.0f});
                     decoration.flags = osc::SceneDecorationFlags_IsSelected;
                 }
-                else if (m_State->CurrentHover && m_State->CurrentHover->MaybeSceneElementID == fullID)
+                else if (m_State->currentHover && m_State->currentHover->maybeSceneElementID == fullID)
                 {
                     decoration.color += glm::vec4{0.15f, 0.15f, 0.15f, 0.0f};
                     decoration.color = glm::clamp(decoration.color, glm::vec4{0.0f}, glm::vec4{1.0f});
@@ -2028,7 +2031,7 @@ namespace
                 glm::vec4 color = c_UnpairedLandmarkColor;
                 color.a *= 0.25f;
 
-                decorations.emplace_back(m_State->LandmarkSphere, transform, color);
+                decorations.emplace_back(m_State->landmarkSphere, transform, color);
             }
 
             return decorations;
@@ -2048,7 +2051,10 @@ namespace
     class TPS3DResultPanel final : public TPS3DTabPanel {
     public:
 
-        TPS3DResultPanel(std::string_view panelName_, std::shared_ptr<TPSTabSharedState> state_) :
+        TPS3DResultPanel(
+            std::string_view panelName_,
+            std::shared_ptr<TPSTabSharedState> state_) :
+
             TPS3DTabPanel{std::move(panelName_)},
             m_State{std::move(state_)}
         {
@@ -2074,16 +2080,16 @@ namespace
         void updateCamera()
         {
             // if cameras are linked together, ensure all cameras match the "base" camera
-            if (m_State->LinkCameras && m_Camera != m_State->LinkedCameraBase)
+            if (m_State->linkCameras && m_Camera != m_State->linkedCameraBase)
             {
-                if (m_State->OnlyLinkRotation)
+                if (m_State->onlyLinkRotation)
                 {
-                    m_Camera.phi = m_State->LinkedCameraBase.phi;
-                    m_Camera.theta = m_State->LinkedCameraBase.theta;
+                    m_Camera.phi = m_State->linkedCameraBase.phi;
+                    m_Camera.theta = m_State->linkedCameraBase.theta;
                 }
                 else
                 {
-                    m_Camera = m_State->LinkedCameraBase;
+                    m_Camera = m_State->linkedCameraBase;
                 }
             }
 
@@ -2092,7 +2098,7 @@ namespace
             {
                 if (osc::UpdatePolarCameraFromImGuiMouseInputs(osc::Dimensions(m_LastTextureHittestResult.rect), m_Camera))
                 {
-                    m_State->LinkedCameraBase = m_Camera;  // reflects latest modification
+                    m_State->linkedCameraBase = m_Camera;  // reflects latest modification
                 }
             }
         }
@@ -2196,7 +2202,7 @@ namespace
             if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
             {
                 osc::AutoFocus(m_Camera, GetResultMesh(*m_State).getBounds(), AspectRatio(m_LastTextureHittestResult.rect));
-                m_State->LinkedCameraBase = m_Camera;
+                m_State->linkedCameraBase = m_Camera;
             }
             osc::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
         }
@@ -2209,11 +2215,11 @@ namespace
 
             if (ImGui::SliderFloat(label, &factor, 0.0f, 1.0f))
             {
-                ActionSetBlendFactorWithoutSaving(*m_State->EditedDocument, factor);
+                ActionSetBlendFactorWithoutSaving(*m_State->editedDocument, factor);
             }
             if (ImGui::IsItemDeactivatedAfterEdit())
             {
-                ActionSetBlendFactorAndSave(*m_State->EditedDocument, factor);
+                ActionSetBlendFactorAndSave(*m_State->editedDocument, factor);
             }
         }
 
@@ -2280,7 +2286,7 @@ namespace
 
         out.registerToggleablePanel(
             "History",
-            [state](std::string_view panelName) { return std::make_shared<osc::UndoRedoPanel>(panelName, state->EditedDocument); },
+            [state](std::string_view panelName) { return std::make_shared<osc::UndoRedoPanel>(panelName, state->editedDocument); },
             osc::ToggleablePanelFlags_Default & ~osc::ToggleablePanelFlags_IsEnabledByDefault
         );
 
@@ -2308,8 +2314,8 @@ public:
         OSC_ASSERT(m_State != nullptr && "the tab state should be initialized by this point");
 
         // initialize panels
-        PushBackAvailablePanels(m_State, *m_State->PanelManager);
-        m_State->PanelManager->activateAllDefaultOpenPanels();
+        PushBackAvailablePanels(m_State, *m_State->panelManager);
+        m_State->panelManager->activateAllDefaultOpenPanels();
     }
 
     UID getID() const
@@ -2345,10 +2351,10 @@ public:
     void onTick()
     {
         // re-perform hover test each frame
-        m_State->CurrentHover.reset();
+        m_State->currentHover.reset();
 
         // garbage collect panel data
-        m_State->PanelManager->garbageCollectDeactivatedPanels();
+        m_State->panelManager->garbageCollectDeactivatedPanels();
     }
 
     void onDrawMainMenu()
@@ -2361,11 +2367,11 @@ public:
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         m_TopToolbar.draw();
-        m_State->PanelManager->drawAllActivatedPanels();
+        m_State->panelManager->drawAllActivatedPanels();
         m_StatusBar.draw();
 
         // draw active popups over the UI
-        m_State->ActivePopups.draw();
+        m_State->activePopups.draw();
     }
 
 private:

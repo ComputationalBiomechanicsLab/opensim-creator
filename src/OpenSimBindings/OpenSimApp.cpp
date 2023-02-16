@@ -25,7 +25,6 @@
 #include "src/Tabs/Experiments/RendererSDFTab.hpp"
 #include "src/Tabs/Experiments/RendererShadowMappingTab.hpp"
 #include "src/Tabs/Experiments/RendererTexturingTab.hpp"
-#include "src/OpenSimBindings/Tabs/Experimental/FrameDefinitionTab.hpp"
 #include "src/OpenSimBindings/Tabs/Experimental/MeshHittestTab.hpp"
 #include "src/OpenSimBindings/Tabs/Experimental/ModelWarpingTab.hpp"
 #include "src/OpenSimBindings/Tabs/Experimental/PreviewExperimentalDataTab.hpp"
@@ -54,7 +53,7 @@ namespace
 {
     // an OpenSim log sink that sinks into OSC's main log
     class OpenSimLogSink final : public OpenSim::LogSink {
-        void sinkImpl(std::string const& msg) override
+        void sinkImpl(std::string const& msg) final
         {
             osc::log::info("%s", msg.c_str());
         }
@@ -185,7 +184,6 @@ namespace
         RegisterTab<osc::RendererGeometryShaderTab>(*registry);
         RegisterTab<osc::TPS2DTab>(*registry);
         RegisterTab<osc::TPS3DTab>(*registry);
-        RegisterTab<osc::FrameDefinitionTab>(*registry);
         RegisterTab<osc::ModelWarpingTab>(*registry);
 
         return true;

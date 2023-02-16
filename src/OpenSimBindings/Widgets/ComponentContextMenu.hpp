@@ -20,7 +20,8 @@ namespace osc
             MainUIStateAPI*,
             EditorAPI*,
             std::shared_ptr<UndoableModelStatePair>,
-            OpenSim::ComponentPath const&);
+            OpenSim::ComponentPath const&
+        );
         ComponentContextMenu(ComponentContextMenu const&) = delete;
         ComponentContextMenu(ComponentContextMenu&&) noexcept;
         ComponentContextMenu& operator=(ComponentContextMenu const&) = delete;

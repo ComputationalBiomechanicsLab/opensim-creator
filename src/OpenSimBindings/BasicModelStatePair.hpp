@@ -27,13 +27,13 @@ namespace osc
         BasicModelStatePair& operator=(BasicModelStatePair&&) noexcept;
         ~BasicModelStatePair() noexcept override;
 
-        OpenSim::Model const& getModel() const override;
-        SimTK::State const& getState() const override;
-
-        float getFixupScaleFactor() const override;
-        void setFixupScaleFactor(float) override;
-
     private:
+        OpenSim::Model const& implGetModel() const final;
+        SimTK::State const& implGetState() const final;
+
+        float implGetFixupScaleFactor() const final;
+        void implSetFixupScaleFactor(float) final;
+
         class Impl;
         ClonePtr<Impl> m_Impl;
     };

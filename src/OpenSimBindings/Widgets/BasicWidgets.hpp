@@ -12,11 +12,11 @@ namespace osc { class CustomDecorationOptions; }
 namespace osc { class CustomRenderingOptions; }
 namespace osc { class IconCache; }
 namespace osc { class MainUIStateAPI; }
-namespace osc { class ModelRendererParams; }
-namespace osc { class PolarPerspectiveCamera; }
+namespace osc { struct ModelRendererParams; }
+namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { class ParamBlock; }
 namespace osc { struct Rect; }
-namespace osc { class SceneDecoration; }
+namespace osc { struct SceneDecoration; }
 namespace osc { class VirtualModelStatePair; }
 namespace osc { class VirtualOutputExtractor; }
 namespace osc { class SimulationModelStatePair; }

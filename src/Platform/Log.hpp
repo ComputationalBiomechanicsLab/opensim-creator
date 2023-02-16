@@ -46,10 +46,6 @@ namespace osc::log
     // to prevent needless runtime allocs, this does not own its data. See below if you need an
     // owning version
     struct LogMessage final {
-        std::string_view loggerName;
-        std::chrono::system_clock::time_point time;
-        std::string_view payload;
-        level::LevelEnum level;
 
         LogMessage() = default;
 
@@ -62,16 +58,17 @@ namespace osc::log
             level{level_}
         {
         }
+
+        std::string_view loggerName;
+        std::chrono::system_clock::time_point time;
+        std::string_view payload;
+        level::LevelEnum level;
     };
 
     // a log message that owns all its data
     //
     // useful if you need to persist a log message somewhere
     struct OwnedLogMessage final {
-        std::string loggerName;
-        std::chrono::system_clock::time_point time;
-        std::string payload;
-        log::level::LevelEnum level;
 
         OwnedLogMessage() = default;
 
@@ -82,20 +79,27 @@ namespace osc::log
             level{msg.level}
         {
         }
+
+        std::string loggerName;
+        std::chrono::system_clock::time_point time;
+        std::string payload;
+        log::level::LevelEnum level;
     };
 
     class Sink {
-        level::LevelEnum m_SinkLevel{level::info};
-
-    public:
+    protected:
         Sink() = default;
         Sink(Sink const&) = delete;
         Sink(Sink&&) noexcept = delete;
         Sink& operator=(Sink const&) = delete;
         Sink& operator=(Sink&&) noexcept = delete;
+    public:
         virtual ~Sink() noexcept = default;
 
-        virtual void log(LogMessage const&) = 0;
+        void log(LogMessage const& logMessage)
+        {
+            implLog(logMessage);
+        }
 
         void set_level(level::LevelEnum level) noexcept
         {
@@ -111,13 +115,14 @@ namespace osc::log
         {
             return level >= m_SinkLevel;
         }
+
+    private:
+        virtual void implLog(LogMessage const&) = 0;
+
+        level::LevelEnum m_SinkLevel{level::info};
     };
 
     class Logger final {
-        std::string m_Name;
-        std::vector<std::shared_ptr<Sink>> m_Sinks;
-        level::LevelEnum level{level::trace};
-
     public:
         Logger(std::string _name) :
             m_Name{std::move(_name)},
@@ -212,6 +217,11 @@ namespace osc::log
         {
             return m_Sinks;
         }
+
+    private:
+        std::string m_Name;
+        std::vector<std::shared_ptr<Sink>> m_Sinks;
+        level::LevelEnum level{level::trace};
     };
 
     // global logging API

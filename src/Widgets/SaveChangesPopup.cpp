@@ -16,7 +16,7 @@ public:
     {
     }
 
-    void implDrawContent() override
+    void implDrawContent() final
     {
         ImGui::TextUnformatted(m_Config.content.c_str());
 

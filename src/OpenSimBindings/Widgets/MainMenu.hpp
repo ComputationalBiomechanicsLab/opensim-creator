@@ -14,13 +14,13 @@ namespace osc
 {
     class MainMenuFileTab final {
     public:
-        std::vector<std::filesystem::path> exampleOsimFiles;
-        std::vector<RecentFile> recentlyOpenedFiles;
-        std::optional<SaveChangesPopup> maybeSaveChangesPopup;
-
         MainMenuFileTab();
 
         void draw(MainUIStateAPI*, UndoableModelStatePair* = nullptr);
+
+        std::vector<std::filesystem::path> exampleOsimFiles;
+        std::vector<RecentFile> recentlyOpenedFiles;
+        std::optional<SaveChangesPopup> maybeSaveChangesPopup;
     };
 
     class MainMenuAboutTab final {

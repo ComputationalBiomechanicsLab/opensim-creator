@@ -7,7 +7,7 @@
 #include <optional>
 #include <string>
 
-namespace osc { class PolarPerspectiveCamera; }
+namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct Rect; }
 
 namespace osc

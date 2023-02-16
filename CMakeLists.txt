@@ -519,8 +519,6 @@ add_library(osccore STATIC
     src/OpenSimBindings/Screens/MainUIScreen.cpp
     src/OpenSimBindings/Screens/MainUIScreen.hpp
 
-    src/OpenSimBindings/Tabs/Experimental/FrameDefinitionTab.cpp
-    src/OpenSimBindings/Tabs/Experimental/FrameDefinitionTab.hpp
     src/OpenSimBindings/Tabs/Experimental/MeshHittestTab.cpp
     src/OpenSimBindings/Tabs/Experimental/MeshHittestTab.hpp
     src/OpenSimBindings/Tabs/Experimental/ModelWarpingTab.cpp

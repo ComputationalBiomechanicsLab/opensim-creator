@@ -27,38 +27,38 @@ static osc::CStringView constexpr c_IntegratorAccuracyDesc = "Target accuracy fo
 // public API
 
 osc::ForwardDynamicSimulatorParams::ForwardDynamicSimulatorParams() :
-    FinalTime{SimulationClock::start() + SimulationClock::duration{10.0}},
-    IntegratorMethodUsed{IntegratorMethod::OpenSimManagerDefault},
-    ReportingInterval{1.0/100.0},
-    IntegratorStepLimit{20000},
-    IntegratorMinimumStepSize{1.0e-8},
-    IntegratorMaximumStepSize{1.0},
-    IntegratorAccuracy{1.0e-5}
+    finalTime{SimulationClock::start() + SimulationClock::duration{10.0}},
+    integratorMethodUsed{IntegratorMethod::OpenSimManagerDefault},
+    reportingInterval{1.0/100.0},
+    integratorStepLimit{20000},
+    integratorMinimumStepSize{1.0e-8},
+    integratorMaximumStepSize{1.0},
+    integratorAccuracy{1.0e-5}
 {
 }
 
 bool osc::operator==(ForwardDynamicSimulatorParams const& a, ForwardDynamicSimulatorParams const& b)
 {
     return
-        a.FinalTime == b.FinalTime &&
-        a.IntegratorMethodUsed == b.IntegratorMethodUsed &&
-        a.ReportingInterval == b.ReportingInterval &&
-        a.IntegratorStepLimit == b.IntegratorStepLimit &&
-        a.IntegratorMinimumStepSize == b.IntegratorMinimumStepSize &&
-        a.IntegratorMaximumStepSize == b.IntegratorMaximumStepSize &&
-        a.IntegratorAccuracy == b.IntegratorAccuracy;
+        a.finalTime == b.finalTime &&
+        a.integratorMethodUsed == b.integratorMethodUsed &&
+        a.reportingInterval == b.reportingInterval &&
+        a.integratorStepLimit == b.integratorStepLimit &&
+        a.integratorMinimumStepSize == b.integratorMinimumStepSize &&
+        a.integratorMaximumStepSize == b.integratorMaximumStepSize &&
+        a.integratorAccuracy == b.integratorAccuracy;
 }
 
 osc::ParamBlock osc::ToParamBlock(ForwardDynamicSimulatorParams const& p)
 {
     ParamBlock rv;
-    rv.pushParam(c_FinalTimeTitle, c_FinalTimeDesc, (p.FinalTime - SimulationClock::start()).count());
-    rv.pushParam(c_IntegratorMethodUsedTitle, c_IntegratorMethodUsedDesc, p.IntegratorMethodUsed);
-    rv.pushParam(c_ReportingIntervalTitle, c_ReportingIntervalDesc, p.ReportingInterval.count());
-    rv.pushParam(c_IntegratorStepLimitTitle, c_IntegratorStepLimitDesc, p.IntegratorStepLimit);
-    rv.pushParam(c_IntegratorMinimumStepSizeTitle, c_IntegratorMinimumStepSizeDesc, p.IntegratorMinimumStepSize.count());
-    rv.pushParam(c_IntegratorMaximumStepSizeTitle, c_IntegratorMaximumStepSizeDesc, p.IntegratorMaximumStepSize.count());
-    rv.pushParam(c_IntegratorAccuracyTitle, c_IntegratorAccuracyDesc, p.IntegratorAccuracy);
+    rv.pushParam(c_FinalTimeTitle, c_FinalTimeDesc, (p.finalTime - SimulationClock::start()).count());
+    rv.pushParam(c_IntegratorMethodUsedTitle, c_IntegratorMethodUsedDesc, p.integratorMethodUsed);
+    rv.pushParam(c_ReportingIntervalTitle, c_ReportingIntervalDesc, p.reportingInterval.count());
+    rv.pushParam(c_IntegratorStepLimitTitle, c_IntegratorStepLimitDesc, p.integratorStepLimit);
+    rv.pushParam(c_IntegratorMinimumStepSizeTitle, c_IntegratorMinimumStepSizeDesc, p.integratorMinimumStepSize.count());
+    rv.pushParam(c_IntegratorMaximumStepSizeTitle, c_IntegratorMaximumStepSizeDesc, p.integratorMaximumStepSize.count());
+    rv.pushParam(c_IntegratorAccuracyTitle, c_IntegratorAccuracyDesc, p.integratorAccuracy);
     return rv;
 }
 
@@ -67,31 +67,31 @@ osc::ForwardDynamicSimulatorParams osc::FromParamBlock(ParamBlock const& b)
     ForwardDynamicSimulatorParams rv;
     if (auto finalTime = b.findValue(c_FinalTimeTitle); finalTime && std::holds_alternative<double>(*finalTime))
     {
-        rv.FinalTime = SimulationClock::start() + SimulationClock::duration{std::get<double>(*finalTime)};
+        rv.finalTime = SimulationClock::start() + SimulationClock::duration{std::get<double>(*finalTime)};
     }
     if (auto integMethod = b.findValue(c_IntegratorMethodUsedTitle); integMethod && std::holds_alternative<IntegratorMethod>(*integMethod))
     {
-        rv.IntegratorMethodUsed = std::get<IntegratorMethod>(*integMethod);
+        rv.integratorMethodUsed = std::get<IntegratorMethod>(*integMethod);
     }
     if (auto repInterv = b.findValue(c_ReportingIntervalTitle); repInterv && std::holds_alternative<double>(*repInterv))
     {
-        rv.ReportingInterval = SimulationClock::duration{std::get<double>(*repInterv)};
+        rv.reportingInterval = SimulationClock::duration{std::get<double>(*repInterv)};
     }
     if (auto stepLim = b.findValue(c_IntegratorStepLimitTitle); stepLim && std::holds_alternative<int>(*stepLim))
     {
-        rv.IntegratorStepLimit = std::get<int>(*stepLim);
+        rv.integratorStepLimit = std::get<int>(*stepLim);
     }
     if (auto minStep = b.findValue(c_IntegratorMinimumStepSizeTitle); minStep && std::holds_alternative<double>(*minStep))
     {
-        rv.IntegratorMinimumStepSize = SimulationClock::duration{std::get<double>(*minStep)};
+        rv.integratorMinimumStepSize = SimulationClock::duration{std::get<double>(*minStep)};
     }
     if (auto maxStep = b.findValue(c_IntegratorMaximumStepSizeTitle); maxStep && std::holds_alternative<double>(*maxStep))
     {
-        rv.IntegratorMaximumStepSize = SimulationClock::duration{std::get<double>(*maxStep)};
+        rv.integratorMaximumStepSize = SimulationClock::duration{std::get<double>(*maxStep)};
     }
     if (auto acc = b.findValue(c_IntegratorAccuracyTitle); acc && std::holds_alternative<double>(*acc))
     {
-        rv.IntegratorAccuracy = std::get<double>(*acc);
+        rv.integratorAccuracy = std::get<double>(*acc);
     }
     return rv;
 }

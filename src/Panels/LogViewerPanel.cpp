@@ -17,7 +17,7 @@ public:
     }
 
 private:
-    void implDrawContent() override
+    void implDrawContent() final
     {
         m_Viewer.draw();
     }

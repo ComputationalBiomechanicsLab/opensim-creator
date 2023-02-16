@@ -48,7 +48,7 @@ namespace osc
         void stop() { m_Simulation->stop(); }
 
         float getFixupScaleFactor() const { return m_Simulation->getFixupScaleFactor(); }
-        virtual void setFixupScaleFactor(float v) { m_Simulation->setFixupScaleFactor(v); }
+        void setFixupScaleFactor(float v) { m_Simulation->setFixupScaleFactor(v); }
 
         operator VirtualSimulation& () { return *m_Simulation; }
         operator VirtualSimulation const& () const { return *m_Simulation; }

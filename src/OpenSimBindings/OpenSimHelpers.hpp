@@ -372,6 +372,7 @@ namespace osc
     //
     // helper functions for pulling path points out of geometry paths (e.g. for rendering)
     struct GeometryPathPoint final {
+
         explicit GeometryPathPoint(glm::vec3 const& locationInGround_) :
             locationInGround{locationInGround_}
         {
@@ -393,11 +394,11 @@ namespace osc
     // contact forces
     //
     // helper functions for pulling contact forces out of the model (e.g. for rendering)
-    struct ForceValue final {
+    struct ForcePoint final {
         glm::vec3 force;
         glm::vec3 point;
     };
-    std::optional<ForceValue> TryGetContactForceInGround(
+    std::optional<ForcePoint> TryGetContactForceInGround(
         OpenSim::Model const&,
         SimTK::State const&,
         OpenSim::HuntCrossleyForce const&

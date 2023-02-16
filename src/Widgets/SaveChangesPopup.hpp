@@ -4,7 +4,7 @@
 
 #include <memory>
 
-namespace osc { class SaveChangesPopupConfig; }
+namespace osc { struct SaveChangesPopupConfig; }
 
 namespace osc
 {

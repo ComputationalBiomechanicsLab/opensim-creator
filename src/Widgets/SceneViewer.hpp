@@ -4,8 +4,8 @@
 
 #include <memory>
 
-namespace osc { class SceneDecoration; }
-namespace osc { class SceneRendererParams; }
+namespace osc { struct SceneDecoration; }
+namespace osc { struct SceneRendererParams; }
 
 namespace osc
 {

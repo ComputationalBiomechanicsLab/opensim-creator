@@ -102,77 +102,77 @@ osc::SingleStateSimulation::SingleStateSimulation(SingleStateSimulation&&) noexc
 osc::SingleStateSimulation& osc::SingleStateSimulation::operator=(SingleStateSimulation&&) noexcept = default;
 osc::SingleStateSimulation::~SingleStateSimulation() noexcept = default;
 
-osc::SynchronizedValueGuard<OpenSim::Model const> osc::SingleStateSimulation::getModel() const
+osc::SynchronizedValueGuard<OpenSim::Model const> osc::SingleStateSimulation::implGetModel() const
 {
     return m_Impl->getModel();
 }
 
-int osc::SingleStateSimulation::getNumReports() const
+int osc::SingleStateSimulation::implGetNumReports() const
 {
     return m_Impl->getNumReports();
 }
 
-osc::SimulationReport osc::SingleStateSimulation::getSimulationReport(int reportIndex) const
+osc::SimulationReport osc::SingleStateSimulation::implGetSimulationReport(int reportIndex) const
 {
     return m_Impl->getSimulationReport(reportIndex);
 }
 
-std::vector<osc::SimulationReport> osc::SingleStateSimulation::getAllSimulationReports() const
+std::vector<osc::SimulationReport> osc::SingleStateSimulation::implGetAllSimulationReports() const
 {
     return m_Impl->getAllSimulationReports();
 }
 
-osc::SimulationStatus osc::SingleStateSimulation::getStatus() const
+osc::SimulationStatus osc::SingleStateSimulation::implGetStatus() const
 {
     return m_Impl->getStatus();
 }
 
-osc::SimulationClock::time_point osc::SingleStateSimulation::getCurTime() const
+osc::SimulationClock::time_point osc::SingleStateSimulation::implGetCurTime() const
 {
     return m_Impl->getCurTime();
 }
 
-osc::SimulationClock::time_point osc::SingleStateSimulation::getStartTime() const
+osc::SimulationClock::time_point osc::SingleStateSimulation::implGetStartTime() const
 {
     return m_Impl->getStartTime();
 }
 
-osc::SimulationClock::time_point osc::SingleStateSimulation::getEndTime() const
+osc::SimulationClock::time_point osc::SingleStateSimulation::implGetEndTime() const
 {
     return m_Impl->getEndTime();
 }
 
-float osc::SingleStateSimulation::getProgress() const
+float osc::SingleStateSimulation::implGetProgress() const
 {
     return m_Impl->getProgress();
 }
 
-osc::ParamBlock const& osc::SingleStateSimulation::getParams() const
+osc::ParamBlock const& osc::SingleStateSimulation::implGetParams() const
 {
     return m_Impl->getParams();
 }
 
-nonstd::span<osc::OutputExtractor const> osc::SingleStateSimulation::getOutputExtractors() const
+nonstd::span<osc::OutputExtractor const> osc::SingleStateSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }
 
-void osc::SingleStateSimulation::requestStop()
+void osc::SingleStateSimulation::implRequestStop()
 {
     m_Impl->requestStop();
 }
 
-void osc::SingleStateSimulation::stop()
+void osc::SingleStateSimulation::implStop()
 {
     m_Impl->stop();
 }
 
-float osc::SingleStateSimulation::getFixupScaleFactor() const
+float osc::SingleStateSimulation::implGetFixupScaleFactor() const
 {
     return m_Impl->getFixupScaleFactor();
 }
 
-void osc::SingleStateSimulation::setFixupScaleFactor(float v)
+void osc::SingleStateSimulation::implSetFixupScaleFactor(float v)
 {
     m_Impl->setFixupScaleFactor(v);
 }

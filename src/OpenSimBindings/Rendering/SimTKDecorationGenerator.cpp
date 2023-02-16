@@ -96,7 +96,7 @@ namespace
             return ::ToOscTransform(m_Matter, m_St, d);
         }
 
-        void implementPointGeometry(SimTK::DecorativePoint const&) override
+        void implementPointGeometry(SimTK::DecorativePoint const&) final
         {
             static bool const s_ShownWarningOnce = []()
             {
@@ -106,7 +106,7 @@ namespace
             (void)s_ShownWarningOnce;
         }
 
-        void implementLineGeometry(SimTK::DecorativeLine const& d) override
+        void implementLineGeometry(SimTK::DecorativeLine const& d) final
         {
             osc::Transform const t = ToOscTransform(d);
 
@@ -126,7 +126,7 @@ namespace
             });
         }
 
-        void implementBrickGeometry(SimTK::DecorativeBrick const& d) override
+        void implementBrickGeometry(SimTK::DecorativeBrick const& d) final
         {
             osc::Transform t = ToOscTransform(d);
             t.scale *= osc::ToVec3(d.getHalfLengths());
@@ -139,7 +139,7 @@ namespace
             });
         }
 
-        void implementCylinderGeometry(SimTK::DecorativeCylinder const& d) override
+        void implementCylinderGeometry(SimTK::DecorativeCylinder const& d) final
         {
             float const radius = static_cast<float>(d.getRadius());
 
@@ -156,7 +156,7 @@ namespace
             });
         }
 
-        void implementCircleGeometry(SimTK::DecorativeCircle const& d) override
+        void implementCircleGeometry(SimTK::DecorativeCircle const& d) final
         {
             float const radius = static_cast<float>(d.getRadius());
 
@@ -172,7 +172,7 @@ namespace
             });
         }
 
-        void implementSphereGeometry(SimTK::DecorativeSphere const& d) override
+        void implementSphereGeometry(SimTK::DecorativeSphere const& d) final
         {
             osc::Transform t = ToOscTransform(d);
             t.scale *= m_FixupScaleFactor * static_cast<float>(d.getRadius());
@@ -185,7 +185,7 @@ namespace
             });
         }
 
-        void implementEllipsoidGeometry(SimTK::DecorativeEllipsoid const& d) override
+        void implementEllipsoidGeometry(SimTK::DecorativeEllipsoid const& d) final
         {
             osc::Transform t = ToOscTransform(d);
             t.scale *= osc::ToVec3(d.getRadii());
@@ -198,7 +198,7 @@ namespace
             });
         }
 
-        void implementFrameGeometry(SimTK::DecorativeFrame const& d) override
+        void implementFrameGeometry(SimTK::DecorativeFrame const& d) final
         {
             osc::Transform const t = ToOscTransform(d);
 
@@ -244,7 +244,7 @@ namespace
             }
         }
 
-        void implementTextGeometry(SimTK::DecorativeText const&) override
+        void implementTextGeometry(SimTK::DecorativeText const&) final
         {
             static bool const s_ShownWarningOnce = []()
             {
@@ -254,7 +254,7 @@ namespace
             (void)s_ShownWarningOnce;
         }
 
-        void implementMeshGeometry(SimTK::DecorativeMesh const& d) override
+        void implementMeshGeometry(SimTK::DecorativeMesh const& d) final
         {
             // roughly based on simbody's VisualizerProtocol.cpp:drawPolygonalMesh
             //
@@ -272,7 +272,7 @@ namespace
             });
         }
 
-        void implementMeshFileGeometry(SimTK::DecorativeMeshFile const& d) override
+        void implementMeshFileGeometry(SimTK::DecorativeMeshFile const& d) final
         {
             std::string const& path = d.getMeshFile();
             auto meshLoader = [&path](){ return osc::LoadMeshViaSimTK(path); };
@@ -285,7 +285,7 @@ namespace
             });
         }
 
-        void implementArrowGeometry(SimTK::DecorativeArrow const& d) override
+        void implementArrowGeometry(SimTK::DecorativeArrow const& d) final
         {
             osc::Transform const t = ToOscTransform(d);
 
@@ -326,7 +326,7 @@ namespace
             });
         }
 
-        void implementTorusGeometry(SimTK::DecorativeTorus const& d) override
+        void implementTorusGeometry(SimTK::DecorativeTorus const& d) final
         {
             float const torusCenterToTubeCenterRadius = static_cast<float>(d.getTorusRadius());
             float const tubeRadius = static_cast<float>(d.getTubeRadius());
@@ -339,7 +339,7 @@ namespace
             });
         }
 
-        void implementConeGeometry(SimTK::DecorativeCone const& d) override
+        void implementConeGeometry(SimTK::DecorativeCone const& d) final
         {
             osc::Transform const t = ToOscTransform(d);
 
