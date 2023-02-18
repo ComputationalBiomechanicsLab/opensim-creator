@@ -117,7 +117,6 @@ void osc::StandardPopup::implDrawPopupContent()
     {
         implOnClose();
         ImGui::CloseCurrentPopup();
-        ImGui::EndPopup();
         m_ShouldClose = false;
         m_ShouldOpen = false;
         m_JustOpened = false;

@@ -243,9 +243,9 @@ namespace osc
 
         CircularBuffer() = default;
         CircularBuffer(CircularBuffer const&) = delete;
-        CircularBuffer(CircularBuffer&&) = delete;
+        CircularBuffer(CircularBuffer&&) noexcept = delete;
         CircularBuffer& operator=(CircularBuffer const&) = delete;
-        CircularBuffer& operator=(CircularBuffer&&) = delete;
+        CircularBuffer& operator=(CircularBuffer&&) noexcept = delete;
         ~CircularBuffer() noexcept
         {
             for (T& el : *this)

@@ -130,10 +130,14 @@ private:
 
     void drawUndoButton()
     {
+        int itemFlagsPushed = 0;
+        int styleVarsPushed = 0;
         if (!m_Model->canUndo())
         {
             ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+            ++itemFlagsPushed;
             ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
+            ++styleVarsPushed;
         }
 
         if (ImGui::Button(ICON_FA_UNDO))
@@ -141,20 +145,24 @@ private:
             ActionUndoCurrentlyEditedModel(*m_Model);
         }
 
-        if (!m_Model->canUndo())
-        {
-            ImGui::PopItemFlag();
-            ImGui::PopStyleVar();
-        }
+        osc::PopItemFlags(itemFlagsPushed);
+        itemFlagsPushed = 0;
+        ImGui::PopStyleVar(styleVarsPushed);
+        styleVarsPushed = 0;
+
         osc::DrawTooltipIfItemHovered("Undo", "Undo the model to an earlier version");
     }
 
     void drawRedoButton()
     {
+        int itemFlagsPushed = 0;
+        int styleVarsPushed = 0;
         if (!m_Model->canRedo())
         {
             ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+            ++itemFlagsPushed;
             ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
+            ++styleVarsPushed;
         }
 
         if (ImGui::Button(ICON_FA_REDO))
@@ -162,11 +170,11 @@ private:
             ActionRedoCurrentlyEditedModel(*m_Model);
         }
 
-        if (!m_Model->canRedo())
-        {
-            ImGui::PopItemFlag();
-            ImGui::PopStyleVar();
-        }
+        osc::PopItemFlags(itemFlagsPushed);
+        itemFlagsPushed = 0;
+        ImGui::PopStyleVar(styleVarsPushed);
+        styleVarsPushed = 0;
+
         osc::DrawTooltipIfItemHovered("Redo", "Redo the model to an undone version");
     }
 

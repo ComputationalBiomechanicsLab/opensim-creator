@@ -61,7 +61,7 @@ osc::Image& osc::Image::operator=(Image const& other)
 }
 
 osc::Image::Image(Image&&) noexcept = default;
-osc::Image& osc::Image::operator=(Image&& tmp) noexcept = default;
+osc::Image& osc::Image::operator=(Image&&) noexcept = default;
 osc::Image::~Image() noexcept = default;
 
 glm::ivec2 osc::Image::getDimensions() const

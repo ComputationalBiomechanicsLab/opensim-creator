@@ -30,7 +30,7 @@ namespace osc
         std::string const& getName() const final;
         std::string const& getDescription() const final;
 
-        OutputType getOutputType() const override;
+        OutputType getOutputType() const final;
 
         float getValueFloat(
             OpenSim::Component const&,

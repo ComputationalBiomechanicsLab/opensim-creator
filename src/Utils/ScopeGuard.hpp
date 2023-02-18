@@ -9,14 +9,14 @@ namespace osc
     template<typename Dtor>
     class ScopeGuard final {
     public:
-        ScopeGuard(Dtor&& _dtor) noexcept :
-            m_OnScopeExit{std::move(_dtor)}
+        ScopeGuard(Dtor&& dtor_) noexcept :
+            m_OnScopeExit{std::move(dtor_)}
         {
         }
         ScopeGuard(ScopeGuard const&) = delete;
-        ScopeGuard(ScopeGuard&&) = delete;
+        ScopeGuard(ScopeGuard&&) noexcept = delete;
         ScopeGuard& operator=(ScopeGuard const&) = delete;
-        ScopeGuard& operator=(ScopeGuard&&) = delete;
+        ScopeGuard& operator=(ScopeGuard&&) noexcept = delete;
         ~ScopeGuard() noexcept
         {
             m_OnScopeExit();

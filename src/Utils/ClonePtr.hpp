@@ -38,7 +38,7 @@ namespace osc
             // clones
         }
 
-        ClonePtr(ClonePtr&& tmp) = default;
+        ClonePtr(ClonePtr&&) noexcept = default;
 
         template<typename U, typename E>
         ClonePtr(ClonePtr<U, E>&& tmp) : m_Value{std::move(tmp)}
@@ -73,7 +73,7 @@ namespace osc
             return *this;
         }
 
-        ClonePtr& operator=(ClonePtr&&) = default;
+        ClonePtr& operator=(ClonePtr&&) noexcept = default;
 
         template<typename U, typename E>
         ClonePtr& operator=(ClonePtr<U, E>&& tmp) noexcept

@@ -16,11 +16,11 @@ namespace osc {
         {
         }
         stop_token(stop_token const&) = delete;
-        stop_token(stop_token&& tmp) : m_SharedState{tmp.m_SharedState}
+        stop_token(stop_token&& tmp) noexcept : m_SharedState{tmp.m_SharedState}
         {
         }
         stop_token& operator=(stop_token const&) = delete;
-        stop_token& operator=(stop_token&&) = delete;
+        stop_token& operator=(stop_token&&) noexcept = delete;
         ~stop_token() noexcept = default;
 
         bool stop_requested() const noexcept
@@ -39,11 +39,11 @@ namespace osc {
         {
         }
         stop_source(stop_source const&) = delete;
-        stop_source(stop_source&& tmp) : m_SharedState{std::move(tmp.m_SharedState)}
+        stop_source(stop_source&& tmp) noexcept : m_SharedState{std::move(tmp.m_SharedState)}
         {
         }
         stop_source& operator=(stop_source const&) = delete;
-        stop_source& operator=(stop_source&& tmp)
+        stop_source& operator=(stop_source&& tmp) noexcept
         {
             m_SharedState = std::move(tmp.m_SharedState);
             return *this;
@@ -83,7 +83,7 @@ namespace osc {
         template<typename Function, typename... Args>
         jthread(Function&& f, Args&&... args) :
             m_StopSource{},
-            m_Thread{f, m_StopSource.get_token(), std::forward<Args>(args)...}
+            m_Thread{std::forward<Function>(f), m_StopSource.get_token(), std::forward<Args>(args)...}
         {
         }
 
@@ -93,9 +93,9 @@ namespace osc {
 
         // threads are moveable: the moved-from value is a non-joinable thread that
         // does not represent a thread
-        jthread(jthread&& tmp) = default;
+        jthread(jthread&&) noexcept = default;
 
-        jthread& operator=(jthread&& other)
+        jthread& operator=(jthread&& other) noexcept
         {
             if (joinable())
             {

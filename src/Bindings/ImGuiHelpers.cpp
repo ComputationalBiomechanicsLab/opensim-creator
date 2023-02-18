@@ -772,3 +772,11 @@ bool osc::ItemValueShouldBeSaved()
 
     return false;
 }
+
+void osc::PopItemFlags(int n)
+{
+    for (int i = 0; i < n; ++i)
+    {
+        ImGui::PopItemFlag();
+    }
+}

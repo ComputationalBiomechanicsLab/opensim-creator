@@ -1931,7 +1931,7 @@ private:
     template<typename T>
     void setValue(std::string_view propertyName, T&& v)
     {
-        m_Values.insert_or_assign(std::string{propertyName}, std::forward<T&&>(v));
+        m_Values.insert_or_assign(std::string{propertyName}, std::forward<T>(v));
     }
 
     friend class GraphicsBackend;
@@ -2250,7 +2250,7 @@ private:
     template<typename T>
     void setValue(std::string_view propertyName, T&& v)
     {
-        m_Values.insert_or_assign(std::string{propertyName}, std::forward<T&&>(v));
+        m_Values.insert_or_assign(std::string{propertyName}, std::forward<T>(v));
     }
 
     friend class GraphicsBackend;

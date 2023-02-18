@@ -219,4 +219,6 @@ namespace osc
     // - if there's an active edit and the user presses enter, it should be saved
     // - if there's an active edit and the user presses tab, it should be saved
     bool ItemValueShouldBeSaved();
+
+    void PopItemFlags(int n = 1);
 }

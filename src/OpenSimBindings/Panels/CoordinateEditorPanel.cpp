@@ -60,7 +60,8 @@ private:
             ImGuiTableFlags_Resizable |
             ImGuiTableFlags_Sortable |
             ImGuiTableFlags_SortTristate |
-            ImGuiTableFlags_BordersInner;
+            ImGuiTableFlags_BordersInner |
+            ImGuiTableFlags_SizingStretchSame;
         if (ImGui::BeginTable("##coordinatestable", 3, flags))
         {
             ImGui::TableSetupColumn("Name");

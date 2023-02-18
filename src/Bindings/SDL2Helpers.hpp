@@ -6,6 +6,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 // sdl wrapper: thin C++ wrappers around SDL
 //
@@ -34,9 +35,9 @@ namespace sdl
             }
         }
         Context(Context const&) = delete;
-        Context(Context&&) = delete;
+        Context(Context&&) noexcept = delete;
         Context& operator=(Context const&) = delete;
-        Context& operator=(Context&&) = delete;
+        Context& operator=(Context&&) noexcept = delete;
         ~Context() noexcept
         {
             SDL_Quit();
@@ -55,9 +56,9 @@ namespace sdl
     class Window final {
     public:
         Window(Window const&) = delete;
-        Window(Window&& tmp) noexcept : m_WindowHandle{tmp.m_WindowHandle}
+        Window(Window&& tmp) noexcept :
+            m_WindowHandle{std::exchange(tmp.m_WindowHandle, nullptr)}
         {
-            tmp.m_WindowHandle = nullptr;
         }
         Window& operator=(Window const&) = delete;
         Window& operator=(Window&&) noexcept = delete;
@@ -111,9 +112,9 @@ namespace sdl
     class Renderer final {
     public:
         Renderer(Renderer const&) = delete;
-        Renderer(Renderer&&) = delete;
+        Renderer(Renderer&&) noexcept = delete;
         Renderer& operator=(Renderer const&) = delete;
-        Renderer& operator=(Renderer&&) = delete;
+        Renderer& operator=(Renderer&&) noexcept = delete;
         ~Renderer() noexcept
         {
             SDL_DestroyRenderer(m_RendererHandle);
@@ -152,9 +153,9 @@ namespace sdl
     class GLContext final {
     public:
         GLContext(GLContext const&) = delete;
-        GLContext(GLContext&& tmp) noexcept : m_ContextHandle{tmp.m_ContextHandle}
+        GLContext(GLContext&& tmp) noexcept :
+            m_ContextHandle{std::exchange(tmp.m_ContextHandle, nullptr)}
         {
-            tmp.m_ContextHandle = nullptr;
         }
         GLContext& operator=(GLContext const&) = delete;
         GLContext& operator=(GLContext&&) = delete;
@@ -199,9 +200,9 @@ namespace sdl
     class Surface final {
     public:
         Surface(Surface const&) = delete;
-        Surface(Surface&&) = delete;
+        Surface(Surface&&) noexcept = delete;
         Surface& operator=(Surface const&) = delete;
-        Surface& operator=(Surface&&) = delete;
+        Surface& operator=(Surface&&) noexcept = delete;
         ~Surface() noexcept
         {
             SDL_FreeSurface(m_SurfaceHandle);
@@ -253,9 +254,9 @@ namespace sdl
             }
         }
         SurfaceLock(SurfaceLock const&) = delete;
-        SurfaceLock(SurfaceLock&&) = delete;
+        SurfaceLock(SurfaceLock&&) noexcept = delete;
         SurfaceLock& operator=(SurfaceLock const&) = delete;
-        SurfaceLock& operator=(SurfaceLock&&) = delete;
+        SurfaceLock& operator=(SurfaceLock&&) noexcept = delete;
         ~SurfaceLock() noexcept
         {
             SDL_UnlockSurface(m_SurfaceHandle);
@@ -278,9 +279,9 @@ namespace sdl
     class Texture final {
     public:
         Texture(Texture const&) = delete;
-        Texture(Texture&&) = delete;
+        Texture(Texture&&) noexcept = delete;
         Texture& operator=(Texture const&) = delete;
-        Texture& operator=(Texture&&) = delete;
+        Texture& operator=(Texture&&) noexcept = delete;
         ~Texture() noexcept
         {
             SDL_DestroyTexture(m_TextureHandle);
@@ -363,9 +364,9 @@ namespace sdl
     class Timer final {
     public:
         Timer(Timer const&) = delete;
-        Timer(Timer&&) = delete;
+        Timer(Timer&&) noexcept = delete;
         Timer& operator=(Timer const&) = delete;
-        Timer& operator=(Timer&&) = delete;
+        Timer& operator=(Timer&&) noexcept = delete;
         ~Timer() noexcept
         {
             SDL_RemoveTimer(m_TimerHandle);
