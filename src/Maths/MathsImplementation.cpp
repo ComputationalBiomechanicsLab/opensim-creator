@@ -486,8 +486,8 @@ namespace
 
 osc::PolarPerspectiveCamera::PolarPerspectiveCamera() :
     radius{1.0f},
-    theta{0.0f},
-    phi{0.0f},
+    theta{fpi4},
+    phi{fpi4},
     focusPoint{0.0f, 0.0f, 0.0f},
     fov{120.0f},
     znear{0.1f},
@@ -714,10 +714,13 @@ void osc::AutoFocus(PolarPerspectiveCamera& camera, AABB const& elementAABB, flo
 {
     Sphere const s = ToSphere(elementAABB);
 
+    // HACK: auto-focus the camera with a minimum radius of 1m
+    //
+    // this will break autofocusing on very small models (e.g. insect legs) but
+    // handles the edge-case of autofocusing an empty model (#552), which is a
+    // more common use-case (e.g. for new users and users making human-sized models)
     camera.focusPoint = -s.origin;
-    camera.radius = s.radius / std::tan(0.5f * camera.fov);
-    camera.theta = osc::fpi4;
-    camera.phi = osc::fpi4;
+    camera.radius = std::max(s.radius / std::tan(0.5f * camera.fov), 1.0f);
     camera.rescaleZNearAndZFarBasedOnRadius();
 }
 
