@@ -7894,6 +7894,7 @@ private:
         ImGuizmo::AllowAxisFlip(false);  // user's didn't like this feature in UX sessions
 
         glm::mat4 delta;
+        SetImguizmoStyleToOSCStandard();
         bool manipulated = ImGuizmo::Manipulate(
             glm::value_ptr(m_Shared->GetCamera().getViewMtx()),
             glm::value_ptr(m_Shared->GetCamera().getProjMtx(AspectRatio(sceneRect))),

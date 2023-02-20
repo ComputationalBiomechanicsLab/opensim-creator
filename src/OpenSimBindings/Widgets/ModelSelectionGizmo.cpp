@@ -9,6 +9,7 @@
 #include "src/OpenSimBindings/SimTKHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Utils/Assertions.hpp"
+#include "src/Utils/ScopeGuard.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
@@ -528,6 +529,8 @@ namespace
         // else: it's a supported operation and the gizmo should be drawn
 
         ImGuizmo::SetID(ImGui::GetID(gizmoID));  // important: necessary for multi-viewport gizmos
+        OSC_SCOPE_GUARD({ ImGuizmo::SetID(-1); });
+
         ImGuizmo::SetRect(
             viewportRect.p1.x,
             viewportRect.p1.y,
@@ -541,6 +544,7 @@ namespace
         glm::mat4 currentXformInGround = manipulator.getCurrentModelMatrix();
         glm::mat4 deltaInGround;
 
+        osc::SetImguizmoStyleToOSCStandard();
         bool const gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
             glm::value_ptr(camera.getViewMtx()),
             glm::value_ptr(camera.getProjMtx(AspectRatio(viewportRect))),
@@ -649,7 +653,10 @@ osc::ModelSelectionGizmo::~ModelSelectionGizmo() noexcept = default;
 
 bool osc::ModelSelectionGizmo::isUsing() const
 {
-    return ImGuizmo::IsUsing();
+    ImGuizmo::SetID(ImGui::GetID(this));
+    bool const rv = ImGuizmo::IsUsing();
+    ImGuizmo::SetID(-1);
+    return rv;
 }
 
 bool osc::ModelSelectionGizmo::handleKeyboardInputs()

@@ -19,4 +19,6 @@ namespace osc
         ImGuizmo::OPERATION&,
         ImGuizmo::MODE&
     );
+
+    void SetImguizmoStyleToOSCStandard();
 }

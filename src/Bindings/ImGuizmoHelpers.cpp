@@ -155,3 +155,14 @@ bool osc::UpdateImguizmoStateFromKeyboard(
         return false;
     }
 }
+
+void osc::SetImguizmoStyleToOSCStandard()
+{
+    ImGuizmo::Style& style = ImGuizmo::GetStyle();
+    style.TranslationLineThickness = 5.0f;
+    style.TranslationLineArrowSize = 8.0f;
+    style.RotationLineThickness = 5.0f;
+    style.RotationOuterLineThickness = 7.0f;
+    style.ScaleLineThickness = 5.0f;
+    style.ScaleLineCircleSize = 8.0f;
+}
