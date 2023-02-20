@@ -119,6 +119,14 @@ namespace
         }
     }
 
+    void PushAsBytes(glm::vec4 const& v, std::vector<std::byte>& out)
+    {
+        PushAsBytes(v.x, out);
+        PushAsBytes(v.y, out);
+        PushAsBytes(v.z, out);
+        PushAsBytes(v.w, out);
+    }
+
     void PushAsBytes(glm::vec3 const& v, std::vector<std::byte>& out)
     {
         PushAsBytes(v.x, out);
@@ -2489,6 +2497,18 @@ public:
         m_Version.reset();
     }
 
+    nonstd::span<glm::vec4 const> getTangents() const
+    {
+        return m_Tangents;
+    }
+
+    void setTangents(nonstd::span<glm::vec4 const> newTangents)
+    {
+        m_Tangents.assign(newTangents.begin(), newTangents.end());
+
+        m_Version->reset();
+    }
+
     MeshIndicesView getIndices() const
     {
         if (m_NumIndices <= 0)
@@ -2570,6 +2590,7 @@ public:
         m_Normals.clear();
         m_TexCoords.clear();
         m_Colors.clear();
+        m_Tangents.clear();
         m_IndicesAre32Bit = false;
         m_NumIndices = 0;
         m_IndicesData.clear();
@@ -2659,10 +2680,12 @@ private:
         static_assert(sizeof(decltype(m_Normals)::value_type) == 3*sizeof(float));
         static_assert(sizeof(decltype(m_TexCoords)::value_type) == 2*sizeof(float));
         static_assert(sizeof(decltype(m_Colors)::value_type) == 4*sizeof(uint8_t));
+        static_assert(sizeof(decltype(m_Tangents)::value_type) == 4*sizeof(float));
 
         bool const hasNormals = !m_Normals.empty();
         bool const hasTexCoords = !m_TexCoords.empty();
         bool const hasColors = !m_Colors.empty();
+        bool const hasTangents = !m_Tangents.empty();
 
         // compute the byte stride between each entry in the VBO
         GLsizei byteStride = sizeof(decltype(m_Vertices)::value_type);
@@ -2680,6 +2703,11 @@ private:
         {
             OSC_ASSERT_ALWAYS(m_Colors.size() == m_Vertices.size() && "number of colors != number of verts");
             byteStride += sizeof(decltype(m_Colors)::value_type);
+        }
+        if (hasTangents)
+        {
+            OSC_ASSERT_ALWAYS(m_Tangents.size() == m_Vertices.size() && "number of tangents != number of verts");
+            byteStride += sizeof(decltype(m_Tangents)::value_type);
         }
 
         // pack VBO data into CPU-side buffer
@@ -2699,6 +2727,10 @@ private:
             if (hasColors)
             {
                 PushAsBytes(m_Colors.at(i), data);
+            }
+            if (hasTangents)
+            {
+                PushAsBytes(m_Tangents.at(i), data);
             }
         }
         OSC_ASSERT_ALWAYS(data.size() == byteStride*m_Vertices.size() && "error uploading data to the GPU");
@@ -2764,9 +2796,15 @@ private:
         }
         if (hasColors)
         {
-            glVertexAttribPointer(SHADER_LOC_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
-            glEnableVertexAttribArray(SHADER_LOC_COLOR);
-            // unused: byteOffset += sizeof(decltype(m_Colors)::value_type);
+            glVertexAttribPointer(SHADER_LOC_VERTEX_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
+            glEnableVertexAttribArray(SHADER_LOC_VERTEX_COLOR);
+            byteOffset += sizeof(decltype(m_Colors)::value_type);
+        }
+        if (hasTangents)
+        {
+            glVertexAttribPointer(SHADER_LOC_VERTEX_TANGENT, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
+            glEnableVertexAttribArray(SHADER_LOC_VERTEX_TANGENT);
+            // unused: byteOffset += sizeof(decltype(m_Tangents)::value_type);
         }
         gl::BindVertexArray();
 
@@ -2779,6 +2817,7 @@ private:
     std::vector<glm::vec3> m_Vertices;
     std::vector<glm::vec3> m_Normals;
     std::vector<glm::vec2> m_TexCoords;
+    std::vector<glm::vec4> m_Tangents;
     std::vector<Rgba32> m_Colors;
 
     bool m_IndicesAre32Bit = false;
@@ -2866,6 +2905,16 @@ nonstd::span<osc::Rgba32 const> osc::Mesh::getColors() const
 void osc::Mesh::setColors(nonstd::span<osc::Rgba32 const> colors)
 {
     m_Impl.upd()->setColors(colors);
+}
+
+nonstd::span<glm::vec4 const> osc::Mesh::getTangents() const
+{
+    return m_Impl->getTangents();
+}
+
+void osc::Mesh::setTangents(nonstd::span<glm::vec4 const> newTangents)
+{
+    m_Impl.upd()->setTangents(newTangents);
 }
 
 osc::MeshIndicesView osc::Mesh::getIndices() const

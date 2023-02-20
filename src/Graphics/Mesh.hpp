@@ -6,6 +6,7 @@
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <nonstd/span.hpp>
 
 #include <cstdint>
@@ -49,6 +50,9 @@ namespace osc
 
         nonstd::span<Rgba32 const> getColors() const;
         void setColors(nonstd::span<Rgba32 const>);
+
+        nonstd::span<glm::vec4 const> getTangents() const;
+        void setTangents(nonstd::span<glm::vec4 const>);
 
         MeshIndicesView getIndices() const;
         void setIndices(MeshIndicesView);

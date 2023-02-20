@@ -1786,6 +1786,21 @@ TEST_F(Renderer, MeshSetColorsFollowedByGetColorsReturnsColors)
     ASSERT_EQ(rv.size(), colors.size());
 }
 
+TEST_F(Renderer, MeshGetTangentsInitiallyReturnsEmptySpan)
+{
+    osc::Mesh m;
+    ASSERT_TRUE(m.getTangents().empty());
+}
+
+TEST_F(Renderer, MeshSetTangentsFollowedByGetTangentsReturnsTangents)
+{
+    osc::Mesh m;
+    std::array<glm::vec4, 5> tangents{};
+
+    m.setTangents(tangents);
+    ASSERT_EQ(m.getTangents().size(), tangents.size());
+}
+
 TEST_F(Renderer, MeshGetNumIndicesReturnsZeroOnDefaultConstruction)
 {
     osc::Mesh m;
