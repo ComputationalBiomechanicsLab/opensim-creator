@@ -319,14 +319,12 @@ std::vector<glm::vec3> osc::LoadLandmarksFromCSVFile(std::filesystem::path const
 {
     std::vector<glm::vec3> rv;
 
-    std::ifstream file{p};
-
-    if (!file)
+    auto fInput = std::make_shared<std::ifstream>(p);
+    if (!(*fInput))
     {
         return rv;  // some kind of error opening the file
     }
-
-    osc::CSVReader reader{file};
+    osc::CSVReader reader{fInput};
 
     while (auto maybeCols = reader.next())
     {

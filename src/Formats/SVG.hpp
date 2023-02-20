@@ -6,5 +6,8 @@
 
 namespace osc
 {
-    Texture2D LoadTextureFromSVGFile(std::filesystem::path const&, float scale = 1.0f);
+    Texture2D LoadTextureFromSVGFile(
+        std::filesystem::path const&,
+        float scale = 1.0f
+    );
 }

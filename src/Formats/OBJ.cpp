@@ -69,11 +69,11 @@ namespace
 
 void osc::ObjWriter::write(Mesh const& mesh, ObjWriterFlags flags)
 {
-    WriteHeader(m_OutputStream);
-    WriteVertices(m_OutputStream, mesh);
+    WriteHeader(*m_OutputStream);
+    WriteVertices(*m_OutputStream, mesh);
     if (!(flags & ObjWriterFlags_IgnoreNormals))
     {
-        WriteNormals(m_OutputStream, mesh);
+        WriteNormals(*m_OutputStream, mesh);
     }
-    WriteFaces(m_OutputStream, mesh, flags);
+    WriteFaces(*m_OutputStream, mesh, flags);
 }

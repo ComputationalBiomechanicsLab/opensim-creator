@@ -117,7 +117,7 @@ void osc::StlWriter::write(Mesh const& mesh)
         return;
     }
 
-    WriteHeader(m_OutputStream);
-    WriteNumTriangles(m_OutputStream, mesh);
-    WriteTriangles(m_OutputStream, mesh);
+    WriteHeader(*m_OutputStream);
+    WriteNumTriangles(*m_OutputStream, mesh);
+    WriteTriangles(*m_OutputStream, mesh);
 }

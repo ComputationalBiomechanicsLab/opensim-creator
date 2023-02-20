@@ -424,13 +424,13 @@ namespace
             return;  // user didn't select a save location
         }
 
-        std::ofstream outfile{*maybeCSVPath};
-        if (!outfile)
+        auto fOutput = std::make_shared<std::ofstream>(*maybeCSVPath);
+        if (!fOutput)
         {
             return;  // couldn't open file for writing
         }
+        osc::CSVWriter writer{fOutput};
 
-        osc::CSVWriter writer{outfile};
         std::vector<std::string> cols(3);
         for (TPSDocumentLandmarkPair const& p : doc.landmarkPairs)
         {
@@ -454,15 +454,14 @@ namespace
             return;  // user didn't select a save location
         }
 
-        std::ofstream outfile{*maybeCSVPath};
-        if (!outfile)
+        auto fOutput = std::make_shared<std::ofstream>(*maybeCSVPath);
+        if (!(*fOutput))
         {
             return;  // couldn't open file for writing
         }
+        osc::CSVWriter writer{fOutput};
 
         std::vector<osc::LandmarkPair3D> const pairs = GetLandmarkPairs(doc);
-        osc::CSVWriter writer{outfile};
-
         std::vector<std::string> cols =
         {
             "source.x",
@@ -502,17 +501,12 @@ namespace
             return;  // user didn't select a save location
         }
 
-        std::ofstream outfile
-        {
-            *maybeOBJFile,
-            std::ios_base::out | std::ios_base::trunc,
-        };
-        if (!outfile)
+        auto outFile = std::make_shared<std::ofstream>(*maybeOBJFile, std::ios_base::out | std::ios_base::trunc);
+        if (!(*outFile))
         {
             return;  // couldn't open for writing
         }
-
-        osc::ObjWriter writer{outfile};
+        osc::ObjWriter writer{outFile};
 
         // ignore normals, because warping might have screwed them
         writer.write(mesh, osc::ObjWriterFlags_IgnoreNormals);
@@ -528,17 +522,16 @@ namespace
             return;  // user didn't select a save location
         }
 
-        std::ofstream outfile
-        {
+        auto outFile = std::make_shared<std::ofstream>(
             *maybeSTLPath,
-            std::ios_base::binary | std::ios_base::out | std::ios_base::trunc,
-        };
-        if (!outfile)
+            std::ios_base::binary | std::ios_base::out | std::ios_base::trunc
+        );
+        if (!(*outFile))
         {
             return;  // couldn't open for writing
         }
+        osc::StlWriter writer{outFile};
 
-        osc::StlWriter writer{outfile};
         writer.write(mesh);
     }
 }

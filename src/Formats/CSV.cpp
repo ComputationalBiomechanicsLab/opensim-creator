@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -26,13 +27,15 @@ namespace
 // CSV reader implementation
 class osc::CSVReader::Impl final {
 public:
-    Impl(std::istream& input) : m_Input{input}
+    Impl(std::shared_ptr<std::istream> input) :
+        m_Input{std::move(input)}
     {
+        OSC_ASSERT(m_Input != nullptr);
     }
 
     std::optional<std::vector<std::string>> next()
     {
-        std::istream& in = m_Input.get();
+        std::istream& in = *m_Input;
 
         if (in.eof())
         {
@@ -114,21 +117,23 @@ public:
     }
 
 private:
-    std::reference_wrapper<std::istream> m_Input;
+    std::shared_ptr<std::istream> m_Input;
 };
 
 // CSV writer implementation
 class osc::CSVWriter::Impl final {
 public:
-    Impl(std::ostream& output) : m_Output{output}
+    Impl(std::shared_ptr<std::ostream> output) :
+        m_Output{output}
     {
+        OSC_ASSERT(m_Output != nullptr);
     }
 
     void writeRow(std::vector<std::string> const& cols)
     {
-        std::ostream& out = m_Output.get();
+        std::ostream& out = *m_Output;
 
-        char const* delim = "";
+        std::string_view delim = "";
         for (std::string const& col : cols)
         {
             bool const quoted = ShouldBeQuoted(col);
@@ -162,14 +167,14 @@ public:
     }
 
 private:
-    std::reference_wrapper<std::ostream> m_Output;
+    std::shared_ptr<std::ostream> m_Output;
 };
 
 
 // public API (PIMPL)
 
-osc::CSVReader::CSVReader(std::istream& input) :
-    m_Impl{std::make_unique<Impl>(input)}
+osc::CSVReader::CSVReader(std::shared_ptr<std::istream> input) :
+    m_Impl{std::make_unique<Impl>(std::move(input))}
 {
 }
 
@@ -183,8 +188,8 @@ std::optional<std::vector<std::string>> osc::CSVReader::next()
 }
 
 
-osc::CSVWriter::CSVWriter(std::ostream& output) :
-    m_Impl{std::make_unique<Impl>(output)}
+osc::CSVWriter::CSVWriter(std::shared_ptr<std::ostream> output) :
+    m_Impl{std::make_unique<Impl>(std::move(output))}
 {
 }
 

@@ -14,7 +14,7 @@ namespace osc
     // not designed to be fast: only (mostly) correct and easy to use
     class CSVReader final {
     public:
-        explicit CSVReader(std::istream&);
+        explicit CSVReader(std::shared_ptr<std::istream>);
         CSVReader(CSVReader const&) = delete;
         CSVReader(CSVReader&&) noexcept;
         CSVReader& operator=(CSVReader const&) = delete;
@@ -31,7 +31,7 @@ namespace osc
     // a basic CSV writer
     class CSVWriter final {
     public:
-        explicit CSVWriter(std::ostream&);
+        explicit CSVWriter(std::shared_ptr<std::ostream>);
         CSVWriter(CSVWriter const&) = delete;
         CSVWriter(CSVWriter&&) noexcept;
         CSVWriter& operator=(CSVWriter const&) = delete;

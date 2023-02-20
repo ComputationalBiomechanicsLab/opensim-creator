@@ -1,7 +1,8 @@
 #pragma once
 
-#include <functional>
 #include <iosfwd>
+#include <memory>
+#include <utility>
 
 namespace osc { class Mesh; }
 
@@ -9,8 +10,8 @@ namespace osc
 {
     class StlWriter final {
     public:
-        explicit StlWriter(std::ostream& outputStream_) :
-            m_OutputStream(outputStream_)
+        explicit StlWriter(std::shared_ptr<std::ostream> outputStream_) :
+            m_OutputStream(std::move(outputStream_))
         {
         }
         StlWriter(StlWriter const&) = delete;
@@ -22,6 +23,6 @@ namespace osc
         void write(Mesh const&);
 
     private:
-        std::reference_wrapper<std::ostream> m_OutputStream;
+        std::shared_ptr<std::ostream> m_OutputStream;
     };
 }

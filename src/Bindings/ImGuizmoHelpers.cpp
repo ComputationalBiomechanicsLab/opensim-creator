@@ -3,6 +3,7 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/CStringView.hpp"
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>

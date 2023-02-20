@@ -886,18 +886,19 @@ namespace
         return std::move(ss).str();
     }
 
-    std::vector<Plot> TryLoadSVCFileAsPlots(std::filesystem::path const& p)
+    std::vector<Plot> TryLoadSVCFileAsPlots(std::filesystem::path const& inputPath)
     {
         std::vector<Plot> rv;
-        std::ifstream f{p};
 
-        if (!f)
+        // create input reader
+        auto fInput = std::make_shared<std::ifstream>(inputPath);
+        if (!(*fInput))
         {
             return rv;  // error opening path
         }
-        f.exceptions(std::ios_base::badbit);
+        fInput->exceptions(std::ios_base::badbit);
+        osc::CSVReader reader{fInput};
 
-        osc::CSVReader reader{f};
         std::optional<std::vector<std::string>> maybeHeaders = reader.next();
 
         std::vector<std::vector<PlotDataPoint>> datapointsPerPlot;
@@ -939,7 +940,7 @@ namespace
         else if (datapointsPerPlot.size() == 1)
         {
             // one series: name the series `$filename`
-            rv.emplace_back(p.filename().string(), std::move(datapointsPerPlot.front()));
+            rv.emplace_back(inputPath.filename().string(), std::move(datapointsPerPlot.front()));
             return rv;
         }
         else
@@ -950,7 +951,7 @@ namespace
             for (size_t i = 0; i < datapointsPerPlot.size(); ++i)
             {
                 std::stringstream ss;
-                ss << p.filename();
+                ss << inputPath.filename();
                 ss << " (";
                 if (maybeHeaders && maybeHeaders->size() > i)
                 {
@@ -971,14 +972,12 @@ namespace
 
     void TrySavePlotToCSV(OpenSim::Coordinate const& coord, PlotParameters const& params, Plot const& plot, std::filesystem::path const& outPath)
     {
-        std::ofstream f{outPath};
-
-        if (!f)
+        auto fOutput = std::make_shared<std::ofstream>(outPath);
+        if (!(*fOutput))
         {
             return;  // error opening outfile
         }
-
-        osc::CSVWriter writer{f};
+        osc::CSVWriter writer{fOutput};
 
         // write header
         writer.writeRow({ ComputePlotXAxisTitle(params, coord), ComputePlotYAxisTitle(params) });
@@ -1369,14 +1368,12 @@ namespace
         PlotLines const& lines,
         std::filesystem::path const& outPath)
     {
-        std::ofstream f{outPath};
-
-        if (!f)
+        auto fOutput = std::make_shared<std::ofstream>(outPath);
+        if (!(*fOutput))
         {
             return;  // error opening outfile
         }
-
-        osc::CSVWriter writer{f};
+        osc::CSVWriter writer{fOutput};
 
         // write header
         writer.writeRow(GetAllCSVHeaders(coord, params, lines));
