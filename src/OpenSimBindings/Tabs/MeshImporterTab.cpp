@@ -6023,11 +6023,6 @@ public:
         return m_Name;
     }
 
-    TabHost* parent()
-    {
-        return m_Parent;
-    }
-
     bool isUnsaved() const
     {
         return !m_Shared->IsModelGraphUpToDateWithDisk();
@@ -8255,11 +8250,6 @@ osc::UID osc::MeshImporterTab::implGetID() const
 osc::CStringView osc::MeshImporterTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::MeshImporterTab::implParent() const
-{
-    return m_Impl->parent();
 }
 
 bool osc::MeshImporterTab::implIsUnsaved() const

@@ -16,13 +16,14 @@
 #include "src/Platform/App.hpp"
 
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <SDL_events.h>
 #include <IconsFontAwesome5.h>
 
-#include <array>
 #include <cstdint>
-#include <string>
-#include <utility>
+#include <limits>
+#include <memory>
+#include <optional>
 #include <vector>
 
 namespace
@@ -117,24 +118,19 @@ namespace
 class osc::HittestTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{std::move(parent)}
+    Impl()
     {
         m_Camera.setBackgroundColor({1.0f, 1.0f, 1.0f, 0.0f});
     }
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
-        return m_Name;
-    }
-
-    TabHost* parent()
-    {
-        return m_Parent;
+        return ICON_FA_COOKIE " HittestTab";
     }
 
     void onMount()
@@ -195,10 +191,6 @@ public:
         {
             closestSceneSphere->isHovered = true;
         }
-    }
-
-    void onDrawMainMenu()
-    {
     }
 
     void onDraw()
@@ -277,7 +269,7 @@ public:
             Line ray = GetCameraRay(m_Camera);
             std::optional<RayCollision> maybeCollision = GetRayCollisionTriangle(
                 ray,
-                osc::UnsafeCastTriangleFromPointerToFirstVertex(c_TriangleVerts.data())
+                Triangle{c_TriangleVerts.at(0), c_TriangleVerts.at(1), c_TriangleVerts.at(2)}
             );
 
             Graphics::DrawMesh(
@@ -305,12 +297,8 @@ public:
 
 
 private:
-    // tab state
-    UID m_ID;
-    std::string m_Name = ICON_FA_COOKIE " HittestTab";
-    TabHost* m_Parent;
+    UID m_TabID;
 
-    // rendering
     Camera m_Camera;
     Material m_Material
     {
@@ -346,8 +334,8 @@ osc::CStringView osc::HittestTab::id() noexcept
     return "Hittest/AnalyticGeometry";
 }
 
-osc::HittestTab::HittestTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::HittestTab::HittestTab(TabHost*) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -363,11 +351,6 @@ osc::UID osc::HittestTab::implGetID() const
 osc::CStringView osc::HittestTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::HittestTab::implParent() const
-{
-    return m_Impl->parent();
 }
 
 void osc::HittestTab::implOnMount()
@@ -388,11 +371,6 @@ bool osc::HittestTab::implOnEvent(SDL_Event const& e)
 void osc::HittestTab::implOnTick()
 {
     m_Impl->onTick();
-}
-
-void osc::HittestTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::HittestTab::implOnDraw()

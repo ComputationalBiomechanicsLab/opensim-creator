@@ -12,14 +12,14 @@
 #include "src/Panels/LogViewerPanel.hpp"
 
 #include <nonstd/span.hpp>
-#include <SDL_events.h>
 #define STB_TRUETYPE_IMPLEMENTATION
 #include <stb_truetype.h>  // TODO: should be moved into `Image.hpp` or similar
 #include <IconsFontAwesome5.h>
 
+#include <cstdint>
 #include <memory>
-#include <string>
 #include <utility>
+#include <vector>
 
 namespace
 {
@@ -82,48 +82,14 @@ namespace
 class osc::RendererSDFTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{std::move(parent)}
-    {
-    }
-
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
-        return m_Name;
-    }
-
-    TabHost* parent()
-    {
-        return m_Parent;
-    }
-
-    void onMount()
-    {
-
-    }
-
-    void onUnmount()
-    {
-
-    }
-
-    bool onEvent(SDL_Event const&)
-    {
-        return false;
-    }
-
-    void onTick()
-    {
-
-    }
-
-    void onDrawMainMenu()
-    {
-
+        return ICON_FA_FONT " RendererSDF";
     }
 
     void onDraw()
@@ -131,7 +97,6 @@ public:
         printText(0.0f, 0.0f, "Hello, lack of SDF support!");
         m_LogViewer.draw();
     }
-
 
 private:
     void printText(float x, float y, char const* text)
@@ -174,22 +139,17 @@ private:
         camera.renderToScreen();
     }
 
-    UID m_ID;
-    std::string m_Name = ICON_FA_FONT " RendererSDF";
-    TabHost* m_Parent;
+    UID m_TabID;
 
-    // rendering stuff
     Material m_Material
     {
         Shader
         {
             App::slurp("shaders/ExperimentSDF.vert"),
             App::slurp("shaders/ExperimentSDF.frag"),
-        }
+        },
     };
-
     FontTexture m_FontTexture = CreateFontTexture();
-
     LogViewerPanel m_LogViewer{"log"};
 };
 
@@ -201,8 +161,8 @@ osc::CStringView osc::RendererSDFTab::id() noexcept
     return "Renderer/SDFTab";
 }
 
-osc::RendererSDFTab::RendererSDFTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::RendererSDFTab::RendererSDFTab(TabHost*) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -218,36 +178,6 @@ osc::UID osc::RendererSDFTab::implGetID() const
 osc::CStringView osc::RendererSDFTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::RendererSDFTab::implParent() const
-{
-    return m_Impl->parent();
-}
-
-void osc::RendererSDFTab::implOnMount()
-{
-    m_Impl->onMount();
-}
-
-void osc::RendererSDFTab::implOnUnmount()
-{
-    m_Impl->onUnmount();
-}
-
-bool osc::RendererSDFTab::implOnEvent(SDL_Event const& e)
-{
-    return m_Impl->onEvent(e);
-}
-
-void osc::RendererSDFTab::implOnTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::RendererSDFTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::RendererSDFTab::implOnDraw()

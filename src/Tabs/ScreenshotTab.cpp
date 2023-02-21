@@ -29,6 +29,9 @@
 
 namespace
 {
+    glm::vec4 constexpr c_UnselectedColor = {1.0f, 1.0f, 1.0f, 0.4f};
+    glm::vec4 constexpr c_SelectedColor = {1.0f, 0.0f, 0.0f, 0.8f};
+
     // returns a rect that fully spans at least one dimension of the target rect, but has
     // the given aspect ratio
     //
@@ -80,8 +83,7 @@ namespace
 class osc::ScreenshotTab::Impl final {
 public:
 
-    Impl(TabHost* parent, AnnotatedImage&& annotatedImage) :
-        m_Parent{std::move(parent)},
+    Impl(AnnotatedImage&& annotatedImage) :
         m_AnnotatedImage{std::move(annotatedImage)}
     {
         m_ImageTexture.setFilterMode(osc::TextureFilterMode::Mipmap);
@@ -89,37 +91,12 @@ public:
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
-        return m_Name;
-    }
-
-    TabHost* parent()
-    {
-        return m_Parent;
-    }
-
-    void onMount()
-    {
-
-    }
-
-    void onUnmount()
-    {
-
-    }
-
-    bool onEvent(SDL_Event const&)
-    {
-        return false;
-    }
-
-    void onTick()
-    {
-
+        return ICON_FA_COOKIE " ScreenshotTab";
     }
 
     void onDrawMainMenu()
@@ -145,7 +122,7 @@ public:
             ImGui::PopStyleVar();
 
             Rect imageRect = drawScreenshot();
-            drawOverlays(*ImGui::GetWindowDrawList(), imageRect, m_UnselectedColor, m_SelectedColor);
+            drawOverlays(*ImGui::GetWindowDrawList(), imageRect, c_UnselectedColor, c_SelectedColor);
 
             ImGui::End();
         }
@@ -241,7 +218,7 @@ private:
         ImDrawList drawlist{ImGui::GetDrawListSharedData()};
         drawlist.Flags |= ImDrawListFlags_AntiAliasedLines;
         drawlist.AddDrawCmd();
-        glm::vec4 outlineColor = m_SelectedColor;
+        glm::vec4 outlineColor = c_SelectedColor;
         outlineColor.a = 1.0f;
         drawOverlays(
             drawlist,
@@ -335,21 +312,18 @@ private:
         return rv;
     }
 
-    UID m_ID;
-    std::string m_Name = ICON_FA_COOKIE " ScreenshotTab";
-    TabHost* m_Parent;
+    UID m_TabID;
+
     AnnotatedImage m_AnnotatedImage;
     Texture2D m_ImageTexture = ToTexture(m_AnnotatedImage.image);
     std::unordered_set<std::string> m_SelectedAnnotations;
-    glm::vec4 m_UnselectedColor = {1.0f, 1.0f, 1.0f, 0.4f};
-    glm::vec4 m_SelectedColor = {1.0f, 0.0f, 0.0f, 0.8f};
 };
 
 
 // public API
 
-osc::ScreenshotTab::ScreenshotTab(TabHost* parent, AnnotatedImage&& image) :
-    m_Impl{std::make_unique<Impl>(std::move(parent), std::move(image))}
+osc::ScreenshotTab::ScreenshotTab(TabHost*, AnnotatedImage&& image) :
+    m_Impl{std::make_unique<Impl>(std::move(image))}
 {
 }
 
@@ -365,31 +339,6 @@ osc::UID osc::ScreenshotTab::implGetID() const
 osc::CStringView osc::ScreenshotTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::ScreenshotTab::implParent() const
-{
-    return m_Impl->parent();
-}
-
-void osc::ScreenshotTab::implOnMount()
-{
-    m_Impl->onMount();
-}
-
-void osc::ScreenshotTab::implOnUnmount()
-{
-    m_Impl->onUnmount();
-}
-
-bool osc::ScreenshotTab::implOnEvent(SDL_Event const& e)
-{
-    return m_Impl->onEvent(e);
-}
-
-void osc::ScreenshotTab::implOnTick()
-{
-    m_Impl->onTick();
 }
 
 void osc::ScreenshotTab::implOnDrawMainMenu()

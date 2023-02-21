@@ -237,48 +237,14 @@ namespace
 class osc::CustomWidgetsTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{std::move(parent)}
-    {
-    }
-
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
-        return m_Name;
-    }
-
-    TabHost* parent()
-    {
-        return m_Parent;
-    }
-
-    void onMount()
-    {
-
-    }
-
-    void onUnmount()
-    {
-
-    }
-
-    bool onEvent(SDL_Event const&)
-    {
-        return false;
-    }
-
-    void onTick()
-    {
-
-    }
-
-    void onDrawMainMenu()
-    {
-
+        return ICON_FA_COOKIE " CustomWidgetsTab";
     }
 
     void onDraw()
@@ -289,11 +255,9 @@ public:
         ImGui::End();
     }
 
-
 private:
-    UID m_ID;
-    std::string m_Name = ICON_FA_COOKIE " CustomWidgetsTab";
-    TabHost* m_Parent;
+    UID m_TabID;
+
     float m_Value = 0.0f;
     bool m_Toggle = false;
 };
@@ -306,8 +270,8 @@ osc::CStringView osc::CustomWidgetsTab::id() noexcept
     return "UI/CustomWidgets";
 }
 
-osc::CustomWidgetsTab::CustomWidgetsTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::CustomWidgetsTab::CustomWidgetsTab(TabHost*) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -323,36 +287,6 @@ osc::UID osc::CustomWidgetsTab::implGetID() const
 osc::CStringView osc::CustomWidgetsTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::CustomWidgetsTab::implParent() const
-{
-    return m_Impl->parent();
-}
-
-void osc::CustomWidgetsTab::implOnMount()
-{
-    m_Impl->onMount();
-}
-
-void osc::CustomWidgetsTab::implOnUnmount()
-{
-    m_Impl->onUnmount();
-}
-
-bool osc::CustomWidgetsTab::implOnEvent(SDL_Event const& e)
-{
-    return m_Impl->onEvent(e);
-}
-
-void osc::CustomWidgetsTab::implOnTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::CustomWidgetsTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::CustomWidgetsTab::implOnDraw()

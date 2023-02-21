@@ -10,9 +10,9 @@ namespace osc
     class IconWithoutMenu final {
     public:
         IconWithoutMenu(
-            osc::Icon icon,
-            osc::CStringView title,
-            osc::CStringView description
+            Icon icon,
+            CStringView title,
+            CStringView description
         );
 
         std::string const& getIconID() const
@@ -28,7 +28,7 @@ namespace osc
         bool draw();
 
     private:
-        osc::Icon m_Icon;
+        Icon m_Icon;
         std::string m_Title;
         std::string m_ButtonID;
         std::string m_Description;

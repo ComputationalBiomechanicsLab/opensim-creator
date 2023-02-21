@@ -68,19 +68,12 @@ public:
         return m_Name;
     }
 
-    TabHost* parent()
-    {
-        return m_Parent;
-    }
-
     void onMount()
     {
-
     }
 
     void onUnmount()
     {
-
     }
 
     bool onEvent(SDL_Event const&)
@@ -95,7 +88,6 @@ public:
 
     void onDrawMainMenu()
     {
-
     }
 
     void onDraw()
@@ -276,11 +268,6 @@ osc::UID osc::PerformanceAnalyzerTab::implGetID() const
 osc::CStringView osc::PerformanceAnalyzerTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::PerformanceAnalyzerTab::implParent() const
-{
-    return m_Impl->parent();
 }
 
 void osc::PerformanceAnalyzerTab::implOnMount()

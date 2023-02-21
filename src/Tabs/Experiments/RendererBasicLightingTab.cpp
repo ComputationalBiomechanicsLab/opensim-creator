@@ -16,12 +16,12 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <SDL_events.h>
 
-#include <utility>
+#include <memory>
 
 class osc::RendererBasicLightingTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{parent}
+    Impl()
     {
         m_Camera.setPosition({0.0f, 0.0f, 3.0f});
         m_Camera.setCameraFOV(glm::radians(45.0f));
@@ -34,17 +34,12 @@ public:
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
         return "Basic Lighting (LearnOpenGL)";
-    }
-
-    TabHost* getParent() const
-    {
-        return m_Parent;
     }
 
     void onMount()
@@ -73,14 +68,6 @@ public:
             return true;
         }
         return false;
-    }
-
-    void onTick()
-    {
-    }
-
-    void onDrawMainMenu()
-    {
     }
 
     void onDraw()
@@ -130,21 +117,24 @@ public:
     }
 
 private:
-    UID m_ID;
-    TabHost* m_Parent;
+    UID m_TabID;
 
-    Shader m_LightingShader
+    Material m_LightingMaterial
     {
-        App::slurp("shaders/ExperimentBasicLighting.vert"),
-        App::slurp("shaders/ExperimentBasicLighting.frag"),
+        Shader
+        {
+            App::slurp("shaders/ExperimentBasicLighting.vert"),
+            App::slurp("shaders/ExperimentBasicLighting.frag"),
+        },
     };
-    Material m_LightingMaterial{m_LightingShader};
-    Shader m_LightCubeShader
+    Material m_LightCubeMaterial
     {
-        App::slurp("shaders/ExperimentLightCube.vert"),
-        App::slurp("shaders/ExperimentLightCube.frag"),
+        Shader
+        {
+            App::slurp("shaders/ExperimentLightCube.vert"),
+            App::slurp("shaders/ExperimentLightCube.frag"),
+        },
     };
-    Material m_LightCubeMaterial{m_LightCubeShader};
 
     Mesh m_CubeMesh = GenLearnOpenGLCube();
 
@@ -168,8 +158,8 @@ osc::CStringView osc::RendererBasicLightingTab::id() noexcept
     return "Renderer/BasicLighting";
 }
 
-osc::RendererBasicLightingTab::RendererBasicLightingTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::RendererBasicLightingTab::RendererBasicLightingTab(TabHost*) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -187,11 +177,6 @@ osc::CStringView osc::RendererBasicLightingTab::implGetName() const
     return m_Impl->getName();
 }
 
-osc::TabHost* osc::RendererBasicLightingTab::implParent() const
-{
-    return m_Impl->getParent();
-}
-
 void osc::RendererBasicLightingTab::implOnMount()
 {
     m_Impl->onMount();
@@ -205,16 +190,6 @@ void osc::RendererBasicLightingTab::implOnUnmount()
 bool osc::RendererBasicLightingTab::implOnEvent(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
-}
-
-void osc::RendererBasicLightingTab::implOnTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::RendererBasicLightingTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::RendererBasicLightingTab::implOnDraw()

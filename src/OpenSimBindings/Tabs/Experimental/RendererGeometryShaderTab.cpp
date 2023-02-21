@@ -38,11 +38,6 @@ public:
         return "GeometryShader (LearnOpenGL)";
     }
 
-    TabHost* getParent() const
-    {
-        return m_Parent;
-    }
-
     void onMount()
     {
         App::upd().makeMainEventLoopPolling();
@@ -156,11 +151,6 @@ osc::UID osc::RendererGeometryShaderTab::implGetID() const
 osc::CStringView osc::RendererGeometryShaderTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::RendererGeometryShaderTab::implParent() const
-{
-    return m_Impl->getParent();
 }
 
 void osc::RendererGeometryShaderTab::implOnMount()

@@ -599,7 +599,7 @@ osc::Rect osc::DrawAlignmentAxes(glm::mat4 const& viewMtx)
     Rect const bounds = {topLeft, bottomRight};
     glm::vec2 const origin = Midpoint(bounds);
 
-    auto const labels = osc::MakeSizedArray<char const*, 3>("X", "Y", "Z");
+    auto const labels = osc::MakeSizedArray<osc::CStringView, 3>("X", "Y", "Z");
 
     ImDrawList& drawlist = *ImGui::GetWindowDrawList();
     for (size_t i = 0; i < std::size(labels); ++i)
@@ -617,11 +617,11 @@ osc::Rect osc::DrawAlignmentAxes(glm::mat4 const& viewMtx)
         color[static_cast<glm::vec4::length_type>(i)] = 0.7f;
         ImU32 const colorU32 = ImGui::ColorConvertFloat4ToU32(color);
 
-        glm::vec2 const ts = ImGui::CalcTextSize(labels[i]);
+        glm::vec2 const ts = ImGui::CalcTextSize(labels[i].c_str());
 
         drawlist.AddLine(p1, p2, colorU32, 3.0f);
         drawlist.AddCircleFilled(p2, circleRadius, colorU32);
-        drawlist.AddText(p2 - 0.5f*ts, whiteColorU32, labels[i]);
+        drawlist.AddText(p2 - 0.5f*ts, whiteColorU32, labels[i].c_str());
 
         // also, add a faded line for symmetry
         {

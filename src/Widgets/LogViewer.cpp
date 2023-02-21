@@ -46,7 +46,7 @@ namespace
             auto const& content = guarded_content.lock();
             for (osc::log::OwnedLogMessage const& msg : *content)
             {
-                ss << '[' << osc::log::toCStr(msg.level) << "] " << msg.payload << '\n';
+                ss << '[' << osc::log::toCStringView(msg.level) << "] " << msg.payload << '\n';
             }
         }
 
@@ -68,13 +68,13 @@ public:
             {
                 log::level::LevelEnum const currentLvl = log::getTracebackLevel();
                 ImGui::SetNextItemWidth(200.0f);
-                if (ImGui::BeginCombo("level", osc::log::toCStr(currentLvl)))
+                if (ImGui::BeginCombo("level", log::toCStringView(currentLvl).c_str()))
                 {
                     for (int32_t i = static_cast<int32_t>(log::level::LevelEnum::FIRST); i < static_cast<int32_t>(log::level::LevelEnum::NUM_LEVELS); ++i)
                     {
                         log::level::LevelEnum lvl = static_cast<log::level::LevelEnum>(i);
                         bool isCurrent = lvl == currentLvl;
-                        if (ImGui::Selectable(log::toCStr(lvl), &isCurrent))
+                        if (ImGui::Selectable(log::toCStringView(lvl).c_str(), &isCurrent))
                         {
                             log::setTracebackLevel(lvl);
                         }
@@ -116,7 +116,7 @@ public:
         for (log::OwnedLogMessage const& msg : *contentGuard)
         {
             ImGui::PushStyleColor(ImGuiCol_Text, color(msg.level));
-            ImGui::Text("[%s]", log::toCStr(msg.level));
+            ImGui::Text("[%s]", log::toCStringView(msg.level).c_str());
             ImGui::PopStyleColor();
             ImGui::SameLine();
             ImGui::TextWrapped("%s", msg.payload.c_str());

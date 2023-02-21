@@ -18,6 +18,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <nonstd/span.hpp>
 #include <IconsFontAwesome5.h>
 #include <SDL_events.h>
 
@@ -25,7 +26,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -193,7 +193,7 @@ namespace
 class osc::RendererNormalMappingTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{std::move(parent)}
+    Impl()
     {
         m_NormalMappingMaterial.setTexture("uDiffuseMap", m_DiffuseMap);
         m_NormalMappingMaterial.setTexture("uNormalMap", m_NormalMap);
@@ -210,17 +210,12 @@ public:
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
-        return m_Name;
-    }
-
-    TabHost* parent()
-    {
-        return m_Parent;
+        return ICON_FA_COOKIE " NormalMapping (LearnOpenGL)";
     }
 
     void onMount()
@@ -257,10 +252,6 @@ public:
         float const angle = glm::radians(-10.0f * dt.count());
         glm::vec3 const axis = glm::normalize(glm::vec3{1.0f, 0.0f, 1.0f});
         m_QuadTransform.rotation = glm::normalize(glm::quat{angle, axis});
-    }
-
-    void onDrawMainMenu()
-    {
     }
 
     void onDraw()
@@ -305,9 +296,7 @@ public:
 
 private:
     // tab state
-    UID m_ID;
-    std::string m_Name = ICON_FA_COOKIE " NormalMapping (LearnOpenGL)";
-    TabHost* m_Parent;
+    UID m_TabID;
     bool m_IsMouseCaptured = false;
 
     // rendering state
@@ -348,8 +337,8 @@ osc::CStringView osc::RendererNormalMappingTab::id() noexcept
     return "Renderer/NormalMapping";
 }
 
-osc::RendererNormalMappingTab::RendererNormalMappingTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::RendererNormalMappingTab::RendererNormalMappingTab(TabHost*) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -365,11 +354,6 @@ osc::UID osc::RendererNormalMappingTab::implGetID() const
 osc::CStringView osc::RendererNormalMappingTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::RendererNormalMappingTab::implParent() const
-{
-    return m_Impl->parent();
 }
 
 void osc::RendererNormalMappingTab::implOnMount()
@@ -390,11 +374,6 @@ bool osc::RendererNormalMappingTab::implOnEvent(SDL_Event const& e)
 void osc::RendererNormalMappingTab::implOnTick()
 {
     m_Impl->onTick();
-}
-
-void osc::RendererNormalMappingTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::RendererNormalMappingTab::implOnDraw()

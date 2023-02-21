@@ -21,7 +21,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <cstdint>
-#include <utility>
+#include <memory>
 
 // positions of cubes within the scene
 static glm::vec3 constexpr c_CubePositions[] =
@@ -81,7 +81,7 @@ static float constexpr c_PointLightQuadratics[] = {0.032f, 0.032f, 0.032f, 0.032
 class osc::RendererMultipleLightsTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{parent}
+    Impl()
     {
         m_MultipleLightsMaterial.setTexture("uMaterialDiffuse", m_DiffuseMap);
         m_MultipleLightsMaterial.setTexture("uMaterialSpecular", m_SpecularMap);
@@ -121,17 +121,12 @@ public:
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
         return "Multiple Lights (LearnOpenGL)";
-    }
-
-    TabHost* getParent() const
-    {
-        return m_Parent;
     }
 
     void onMount()
@@ -160,14 +155,6 @@ public:
             return true;
         }
         return false;
-    }
-
-    void onTick()
-    {
-    }
-
-    void onDrawMainMenu()
-    {
     }
 
     void onDraw()
@@ -230,8 +217,7 @@ public:
     }
 
 private:
-    UID m_ID;
-    TabHost* m_Parent;
+    UID m_TabID;
 
     Material m_MultipleLightsMaterial
     {
@@ -239,7 +225,7 @@ private:
         {
             App::slurp("shaders/ExperimentMultipleLights.vert"),
             App::slurp("shaders/ExperimentMultipleLights.frag"),
-    }
+        },
     };
     Material m_LightCubeMaterial
     {
@@ -247,7 +233,7 @@ private:
         {
             App::slurp("shaders/ExperimentLightCube.vert"),
             App::slurp("shaders/ExperimentLightCube.frag"),
-    }
+        },
     };
     Mesh m_Mesh = GenLearnOpenGLCube();
     Texture2D m_DiffuseMap = LoadTexture2DFromImage(App::resource("textures/container2.png"), ImageFlags_FlipVertically);
@@ -271,8 +257,8 @@ osc::CStringView osc::RendererMultipleLightsTab::id() noexcept
     return "Renderer/MultipleLights";
 }
 
-osc::RendererMultipleLightsTab::RendererMultipleLightsTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::RendererMultipleLightsTab::RendererMultipleLightsTab(TabHost*) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -290,11 +276,6 @@ osc::CStringView osc::RendererMultipleLightsTab::implGetName() const
     return m_Impl->getName();
 }
 
-osc::TabHost* osc::RendererMultipleLightsTab::implParent() const
-{
-    return m_Impl->getParent();
-}
-
 void osc::RendererMultipleLightsTab::implOnMount()
 {
     m_Impl->onMount();
@@ -308,16 +289,6 @@ void osc::RendererMultipleLightsTab::implOnUnmount()
 bool osc::RendererMultipleLightsTab::implOnEvent(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
-}
-
-void osc::RendererMultipleLightsTab::implOnTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::RendererMultipleLightsTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::RendererMultipleLightsTab::implOnDraw()

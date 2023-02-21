@@ -4,12 +4,8 @@
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
 
-#include <SDL_events.h>
-
 #include <exception>
 #include <memory>
-
-namespace osc { class TabHost; }
 
 namespace osc
 {
@@ -25,12 +21,6 @@ namespace osc
     private:
         UID implGetID() const final;
         CStringView implGetName() const final;
-        TabHost* implParent() const final;
-        void implOnMount() final;
-        void implOnUnmount() final;
-        bool implOnEvent(SDL_Event const&) final;
-        void implOnTick() final;
-        void implOnDrawMainMenu() final;
         void implOnDraw() final;
 
         class Impl;

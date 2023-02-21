@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/Utils/CircularBuffer.hpp"
+#include "src/Utils/CStringView.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 
 #include <nonstd/span.hpp>
@@ -38,8 +39,7 @@ namespace osc::log
         };
     }
 
-    std::string_view toStringView(level::LevelEnum);
-    char const* toCStr(level::LevelEnum);
+    CStringView toCStringView(level::LevelEnum);
 
     // a log message
     //

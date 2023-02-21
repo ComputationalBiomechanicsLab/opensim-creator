@@ -20,12 +20,10 @@
 #include <glm/vec4.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
-#include <SDL_events.h>
 
 #include <map>
 #include <memory>
 #include <string>
-#include <utility>
 
 namespace
 {
@@ -51,49 +49,19 @@ namespace
 class osc::MeshGenTestTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{std::move(parent)}
+    Impl()
     {
         m_Camera.radius = 5.0f;
     }
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
-        return m_Name;
-    }
-
-    TabHost* parent()
-    {
-        return m_Parent;
-    }
-
-    void onMount()
-    {
-
-    }
-
-    void onUnmount()
-    {
-
-    }
-
-    bool onEvent(SDL_Event const&)
-    {
-        return false;
-    }
-
-    void onTick()
-    {
-
-    }
-
-    void onDrawMainMenu()
-    {
-
+        return ICON_FA_HAT_WIZARD " MeshGenTest";
     }
 
     void onDraw()
@@ -148,9 +116,7 @@ public:
 
 
 private:
-    UID m_ID;
-    std::string m_Name = ICON_FA_HAT_WIZARD " MeshGenTest";
-    TabHost* m_Parent;
+    UID m_TabID;
 
     std::string m_CurrentMesh = "brick";
     std::map<std::string, osc::Mesh> m_AllMeshes = GenerateMeshLookup();
@@ -167,8 +133,8 @@ osc::CStringView osc::MeshGenTestTab::id() noexcept
     return "MeshGen/Test";
 }
 
-osc::MeshGenTestTab::MeshGenTestTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::MeshGenTestTab::MeshGenTestTab(TabHost*) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -184,36 +150,6 @@ osc::UID osc::MeshGenTestTab::implGetID() const
 osc::CStringView osc::MeshGenTestTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::MeshGenTestTab::implParent() const
-{
-    return m_Impl->parent();
-}
-
-void osc::MeshGenTestTab::implOnMount()
-{
-    m_Impl->onMount();
-}
-
-void osc::MeshGenTestTab::implOnUnmount()
-{
-    m_Impl->onUnmount();
-}
-
-bool osc::MeshGenTestTab::implOnEvent(SDL_Event const& e)
-{
-    return m_Impl->onEvent(e);
-}
-
-void osc::MeshGenTestTab::implOnTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::MeshGenTestTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::MeshGenTestTab::implOnDraw()

@@ -17,7 +17,7 @@
 #include <SDL_events.h>
 
 #include <cstdint>
-#include <utility>
+#include <memory>
 
 static glm::vec3 constexpr c_PlaneVertices[] =
 {
@@ -99,7 +99,7 @@ namespace
 
 class osc::RendererBlendingTab::Impl final {
 public:
-    Impl(TabHost* parent) : m_Parent{parent}
+    Impl()
     {
         m_Camera.setPosition({0.0f, 0.0f, 3.0f});
         m_Camera.setCameraFOV(glm::radians(45.0f));
@@ -114,17 +114,12 @@ public:
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
         return "Blending (LearnOpenGL)";
-    }
-
-    TabHost* getParent() const
-    {
-        return m_Parent;
     }
 
     void onMount()
@@ -153,14 +148,6 @@ public:
             return true;
         }
         return false;
-    }
-
-    void onTick()
-    {
-    }
-
-    void onDrawMainMenu()
-    {
     }
 
     void onDraw()
@@ -220,8 +207,8 @@ public:
     }
 
 private:
-    UID m_ID;
-    TabHost* m_Parent;
+    UID m_TabID;
+
     Material m_OpaqueMaterial
     {
         Shader
@@ -252,8 +239,8 @@ osc::CStringView osc::RendererBlendingTab::id() noexcept
     return "Renderer/Blending";
 }
 
-osc::RendererBlendingTab::RendererBlendingTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::RendererBlendingTab::RendererBlendingTab(TabHost*) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -271,11 +258,6 @@ osc::CStringView osc::RendererBlendingTab::implGetName() const
     return m_Impl->getName();
 }
 
-osc::TabHost* osc::RendererBlendingTab::implParent() const
-{
-    return m_Impl->getParent();
-}
-
 void osc::RendererBlendingTab::implOnMount()
 {
     m_Impl->onMount();
@@ -289,16 +271,6 @@ void osc::RendererBlendingTab::implOnUnmount()
 bool osc::RendererBlendingTab::implOnEvent(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
-}
-
-void osc::RendererBlendingTab::implOnTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::RendererBlendingTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::RendererBlendingTab::implOnDraw()

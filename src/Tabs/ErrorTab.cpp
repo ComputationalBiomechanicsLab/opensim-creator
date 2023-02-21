@@ -16,49 +16,19 @@
 class osc::ErrorTab::Impl final {
 public:
 
-    Impl(TabHost* parent, std::exception const& ex) :
-        m_Parent{std::move(parent)},
+    Impl(std::exception const& ex) :
         m_ErrorMessage{ex.what()}
     {
     }
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
-        return m_Name;
-    }
-
-    TabHost* parent()
-    {
-        return m_Parent;
-    }
-
-    void onMount()
-    {
-
-    }
-
-    void onUnmount()
-    {
-
-    }
-
-    bool onEvent(SDL_Event const&)
-    {
-        return false;
-    }
-
-    void onTick()
-    {
-
-    }
-
-    void drawMainMenu()
-    {
+        return ICON_FA_SPIDER " Error";
     }
 
     void onDraw()
@@ -101,18 +71,16 @@ public:
     }
 
 private:
-    UID m_ID;
-    TabHost* m_Parent;
-    std::string m_Name = ICON_FA_SPIDER " Error";
+    UID m_TabID;
     std::string m_ErrorMessage;
-    osc::LogViewer m_LogViewer;
+    LogViewer m_LogViewer;
 };
 
 
-// public API
+// public API (PIMPL)
 
-osc::ErrorTab::ErrorTab(TabHost* parent, std::exception const& ex) :
-    m_Impl{std::make_unique<Impl>(std::move(parent), ex)}
+osc::ErrorTab::ErrorTab(TabHost*, std::exception const& ex) :
+    m_Impl{std::make_unique<Impl>(ex)}
 {
 }
 
@@ -128,36 +96,6 @@ osc::UID osc::ErrorTab::implGetID() const
 osc::CStringView osc::ErrorTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::ErrorTab::implParent() const
-{
-    return m_Impl->parent();
-}
-
-void osc::ErrorTab::implOnMount()
-{
-    m_Impl->onMount();
-}
-
-void osc::ErrorTab::implOnUnmount()
-{
-    m_Impl->onUnmount();
-}
-
-bool osc::ErrorTab::implOnEvent(SDL_Event const& e)
-{
-    return m_Impl->onEvent(e);
-}
-
-void osc::ErrorTab::implOnTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::ErrorTab::implOnDrawMainMenu()
-{
-    m_Impl->drawMainMenu();
 }
 
 void osc::ErrorTab::implOnDraw()

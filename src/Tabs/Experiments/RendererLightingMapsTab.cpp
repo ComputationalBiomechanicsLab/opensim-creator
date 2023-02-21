@@ -15,12 +15,12 @@
 #include <SDL_events.h>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <utility>
+#include <memory>
 
 class osc::RendererLightingMapsTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{parent}
+    Impl()
     {
         m_LightingMapsMaterial.setTexture("uMaterialDiffuse", m_DiffuseMap);
         m_LightingMapsMaterial.setTexture("uMaterialSpecular", m_SpecularMap);
@@ -34,17 +34,12 @@ public:
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
         return "Lighting Maps (LearnOpenGL)";
-    }
-
-    TabHost* getParent() const
-    {
-        return m_Parent;
     }
 
     void onMount()
@@ -73,14 +68,6 @@ public:
             return true;
         }
         return false;
-    }
-
-    void onTick()
-    {
-    }
-
-    void onDrawMainMenu()
-    {
     }
 
     void onDraw()
@@ -129,8 +116,7 @@ public:
     }
 
 private:
-    UID m_ID;
-    TabHost* m_Parent;
+    UID m_TabID;
 
     Material m_LightingMapsMaterial
     {
@@ -138,7 +124,7 @@ private:
         {
             App::slurp("shaders/ExperimentLightingMaps.vert"),
             App::slurp("shaders/ExperimentLightingMaps.frag"),
-        }
+        },
     };
     Material m_LightCubeMaterial
     {
@@ -146,7 +132,7 @@ private:
         {
             App::slurp("shaders/ExperimentLightCube.vert"),
             App::slurp("shaders/ExperimentLightCube.frag"),
-        }
+        },
     };
     Mesh m_Mesh = GenLearnOpenGLCube();
     Texture2D m_DiffuseMap = LoadTexture2DFromImage(App::resource("textures/container2.png"), ImageFlags_FlipVertically);
@@ -172,8 +158,8 @@ osc::CStringView osc::RendererLightingMapsTab::id() noexcept
     return "Renderer/LightingMaps";
 }
 
-osc::RendererLightingMapsTab::RendererLightingMapsTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::RendererLightingMapsTab::RendererLightingMapsTab(TabHost*) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -191,11 +177,6 @@ osc::CStringView osc::RendererLightingMapsTab::implGetName() const
     return m_Impl->getName();
 }
 
-osc::TabHost* osc::RendererLightingMapsTab::implParent() const
-{
-    return m_Impl->getParent();
-}
-
 void osc::RendererLightingMapsTab::implOnMount()
 {
     m_Impl->onMount();
@@ -209,16 +190,6 @@ void osc::RendererLightingMapsTab::implOnUnmount()
 bool osc::RendererLightingMapsTab::implOnEvent(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
-}
-
-void osc::RendererLightingMapsTab::implOnTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::RendererLightingMapsTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::RendererLightingMapsTab::implOnDraw()

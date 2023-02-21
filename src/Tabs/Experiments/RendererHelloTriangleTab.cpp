@@ -12,10 +12,9 @@
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
-#include <SDL_events.h>
 
 #include <cstdint>
-#include <utility>
+#include <memory>
 
 namespace
 {
@@ -46,7 +45,7 @@ namespace
 class osc::RendererHelloTriangleTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{parent}
+    Impl()
     {
         m_Camera.setViewMatrixOverride(glm::mat4{1.0f});
         m_Camera.setProjectionMatrixOverride(glm::mat4{1.0f});
@@ -54,38 +53,12 @@ public:
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
         return "Hello Triangle (LearnOpenGL)";
-    }
-
-    TabHost* getParent() const
-    {
-        return m_Parent;
-    }
-
-    void onMount()
-    {
-    }
-
-    void onUnmount()
-    {
-    }
-
-    bool onEvent(SDL_Event const&)
-    {
-        return false;
-    }
-
-    void onTick()
-    {
-    }
-
-    void onDrawMainMenu()
-    {
     }
 
     void onDraw()
@@ -97,14 +70,16 @@ public:
     }
 
 private:
-    UID m_ID;
-    TabHost* m_Parent;
-    Shader m_Shader
+    UID m_TabID;
+
+    Material m_Material
     {
-        App::slurp("shaders/ExperimentTriangle.vert"),
-        App::slurp("shaders/ExperimentTriangle.frag"),
+        Shader
+        {
+            App::slurp("shaders/ExperimentTriangle.vert"),
+            App::slurp("shaders/ExperimentTriangle.frag"),
+        },
     };
-    Material m_Material{m_Shader};
     Mesh m_TriangleMesh = GenerateTriangleMesh();
     Camera m_Camera;
 };
@@ -117,8 +92,8 @@ osc::CStringView osc::RendererHelloTriangleTab::id() noexcept
     return "Renderer/HelloTriangle";
 }
 
-osc::RendererHelloTriangleTab::RendererHelloTriangleTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::RendererHelloTriangleTab::RendererHelloTriangleTab(TabHost*) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -134,36 +109,6 @@ osc::UID osc::RendererHelloTriangleTab::implGetID() const
 osc::CStringView osc::RendererHelloTriangleTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::RendererHelloTriangleTab::implParent() const
-{
-    return m_Impl->getParent();
-}
-
-void osc::RendererHelloTriangleTab::implOnMount()
-{
-    m_Impl->onMount();
-}
-
-void osc::RendererHelloTriangleTab::implOnUnmount()
-{
-    m_Impl->onUnmount();
-}
-
-bool osc::RendererHelloTriangleTab::implOnEvent(SDL_Event const& e)
-{
-    return m_Impl->onEvent(e);
-}
-
-void osc::RendererHelloTriangleTab::implOnTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::RendererHelloTriangleTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::RendererHelloTriangleTab::implOnDraw()

@@ -26,7 +26,6 @@ namespace osc
     private:
         UID implGetID() const final;
         CStringView implGetName() const final;
-        TabHost* implParent() const final;
         bool implIsUnsaved() const final;
         bool implTrySave() final;
         void implOnMount() final;

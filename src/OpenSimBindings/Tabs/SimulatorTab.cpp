@@ -145,11 +145,6 @@ public:
         return m_Name;
     }
 
-    TabHost* parent()
-    {
-        return m_API;
-    }
-
     void onMount()
     {
         App::upd().makeMainEventLoopWaiting();
@@ -447,11 +442,6 @@ osc::UID osc::SimulatorTab::implGetID() const
 osc::CStringView osc::SimulatorTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::SimulatorTab::implParent() const
-{
-    return m_Impl->parent();
 }
 
 void osc::SimulatorTab::implOnMount()

@@ -76,20 +76,14 @@ std::filesystem::path const& osc::GetUserDataDir()
     return s_UserDataDir;
 }
 
-bool osc::SetClipboardText(char const* s)
+bool osc::SetClipboardText(CStringView sv)
 {
-    return SDL_SetClipboardText(s) == 0;
+    return SDL_SetClipboardText(sv.c_str()) == 0;
 }
 
-bool osc::SetClipboardText(std::string_view sv)
+void osc::SetEnv(CStringView name, CStringView value, bool overwrite)
 {
-    std::string cstr{sv};
-    return SetClipboardText(cstr.c_str());
-}
-
-void osc::SetEnv(char const* name, char const* value, bool overwrite)
-{
-    SDL_setenv(name, value, overwrite ? 1 : 0);
+    SDL_setenv(name.c_str(), value.c_str(), overwrite ? 1 : 0);
 }
 
 std::optional<std::filesystem::path> osc::PromptUserForFile(char const* extensions, char const* defaultPath)
@@ -462,7 +456,7 @@ namespace
         {
             if (m_Out)
             {
-                m_Out << '[' << msg.loggerName << "] [" << osc::log::toStringView(msg.level) << "] " << msg.payload << std::endl;
+                m_Out << '[' << msg.loggerName << "] [" << osc::log::toCStringView(msg.level) << "] " << msg.payload << std::endl;
             }
         }
 
@@ -497,7 +491,7 @@ namespace
             auto guard = osc::log::getTracebackLog().lock();
             for (osc::log::OwnedLogMessage const& msg : *guard)
             {
-                crashReportFile << '[' << msg.loggerName << "] [" << osc::log::toStringView(msg.level) << "] " << msg.payload << '\n';
+                crashReportFile << '[' << msg.loggerName << "] [" << osc::log::toCStringView(msg.level) << "] " << msg.payload << '\n';
             }
             crashReportFile << "----- /log -----\n";
         }

@@ -20,7 +20,9 @@
 #include <IconsFontAwesome5.h>
 #include <SDL_events.h>
 
-#include <string>
+#include <cstdint>
+#include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -76,7 +78,7 @@ namespace
 class osc::RendererShadowMappingTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{std::move(parent)}
+    Impl()
     {
         m_Camera.setNearClippingPlane(0.1f);
         m_Camera.setFarClippingPlane(100.0f);
@@ -89,12 +91,7 @@ public:
 
     CStringView getName() const
     {
-        return m_Name;
-    }
-
-    TabHost* parent()
-    {
-        return m_Parent;
+        return ICON_FA_BOOK " ShadowMapping (LearnOpenGL)";
     }
 
     void onMount()
@@ -123,16 +120,6 @@ public:
             return true;
         }
         return false;
-    }
-
-    void onTick()
-    {
-
-    }
-
-    void onDrawMainMenu()
-    {
-
     }
 
     void onDraw()
@@ -223,10 +210,7 @@ private:
         m_Camera.setProjectionMatrixOverride(std::nullopt);
     }
 
-    // tab state
     UID m_ID;
-    std::string m_Name = ICON_FA_BOOK " ShadowMapping (LearnOpenGL)";
-    TabHost* m_Parent;
     bool m_IsMouseCaptured = false;
 
     Camera m_Camera;
@@ -240,7 +224,7 @@ private:
         {
             App::slurp("shaders/ExperimentShadowMapping.vert"),
             App::slurp("shaders/ExperimentShadowMapping.frag"),
-        }
+        },
     };
     Material m_DepthMaterial
     {
@@ -248,7 +232,7 @@ private:
         {
             App::slurp("shaders/ExperimentShadowMappingDepth.vert"),
             App::slurp("shaders/ExperimentShadowMappingDepth.frag"),
-        }
+        },
     };
     RenderTexture m_DepthTexture{RenderTextureDescriptor{glm::ivec2{1024, 1024}}};
     glm::mat4 m_LatestLightSpaceMatrix{1.0f};
@@ -263,8 +247,8 @@ osc::CStringView osc::RendererShadowMappingTab::id() noexcept
     return "Renderer/ShadowMapping";
 }
 
-osc::RendererShadowMappingTab::RendererShadowMappingTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::RendererShadowMappingTab::RendererShadowMappingTab(TabHost*) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -282,11 +266,6 @@ osc::CStringView osc::RendererShadowMappingTab::implGetName() const
     return m_Impl->getName();
 }
 
-osc::TabHost* osc::RendererShadowMappingTab::implParent() const
-{
-    return m_Impl->parent();
-}
-
 void osc::RendererShadowMappingTab::implOnMount()
 {
     m_Impl->onMount();
@@ -300,16 +279,6 @@ void osc::RendererShadowMappingTab::implOnUnmount()
 bool osc::RendererShadowMappingTab::implOnEvent(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
-}
-
-void osc::RendererShadowMappingTab::implOnTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::RendererShadowMappingTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::RendererShadowMappingTab::implOnDraw()

@@ -143,11 +143,6 @@ public:
         return m_TabName;
     }
 
-    TabHost* parent()
-    {
-        return m_ParentAPI;
-    }
-
     bool isUnsaved() const
     {
         return !m_Model->isUpToDateWithFilesystem();
@@ -403,11 +398,6 @@ osc::UID osc::ModelEditorTab::implGetID() const
 osc::CStringView osc::ModelEditorTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::ModelEditorTab::implParent() const
-{
-    return m_Impl->parent();
 }
 
 bool osc::ModelEditorTab::implIsUnsaved() const

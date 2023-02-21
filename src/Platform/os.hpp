@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/Platform/Log.hpp"
+#include "src/Utils/CStringView.hpp"
 
 #include <filesystem>
 #include <optional>
@@ -39,11 +40,10 @@ namespace osc
     void OpenURLInDefaultBrowser(std::string_view);
 
     // try to copy a string onto the user's clipboard
-    bool SetClipboardText(char const*);
-    bool SetClipboardText(std::string_view);
+    bool SetClipboardText(CStringView);
 
     // set an environment variable's value (process-wide)
-    void SetEnv(char const* name, char const* value, bool overwrite);
+    void SetEnv(CStringView name, CStringView value, bool overwrite);
 
     // synchronously prompt a user to select a single file that ends with the supplied extension(s) (e.g. "obj,osim,stl")
     //

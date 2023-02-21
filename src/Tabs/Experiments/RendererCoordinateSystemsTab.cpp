@@ -20,9 +20,7 @@
 #include <SDL_events.h>
 
 #include <cstdint>
-#include <numeric>
-#include <string>
-#include <utility>
+#include <memory>
 
 // worldspace positions of each cube (step 2)
 static glm::vec3 constexpr c_CubePositions[] =
@@ -42,7 +40,7 @@ static glm::vec3 constexpr c_CubePositions[] =
 class osc::RendererCoordinateSystemsTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{parent}
+    Impl()
     {
         m_Camera.setPosition({0.0f, 0.0f, 3.0f});
         m_Camera.setCameraFOV(glm::radians(45.0f));
@@ -55,17 +53,12 @@ public:
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
         return "Coordinate Systems (LearnOpenGL)";
-    }
-
-    TabHost* getParent() const
-    {
-        return m_Parent;
     }
 
     void onMount()
@@ -104,10 +97,6 @@ public:
         glm::vec3 const axis = glm::normalize(glm::vec3{0.5f, 1.0f, 0.0f});
 
         m_Step1.rotation = glm::angleAxis(angle, axis);
-    }
-
-    void onDrawMainMenu()
-    {
     }
 
     void onDraw()
@@ -171,14 +160,16 @@ public:
     }
 
 private:
-    UID m_ID;
-    TabHost* m_Parent;
-    Shader m_Shader
+    UID m_TabID;
+
+    Material m_Material
     {
-        App::slurp("shaders/ExperimentCoordinateSystems.vert"),
-        App::slurp("shaders/ExperimentCoordinateSystems.frag"),
+        Shader
+        {
+            App::slurp("shaders/ExperimentCoordinateSystems.vert"),
+            App::slurp("shaders/ExperimentCoordinateSystems.frag"),
+        },
     };
-    Material m_Material{m_Shader};
     Mesh m_Mesh = GenLearnOpenGLCube();
     Camera m_Camera;
     bool m_IsMouseCaptured = false;
@@ -198,8 +189,8 @@ osc::CStringView osc::RendererCoordinateSystemsTab::id() noexcept
     return "Renderer/CoordinateSystems";
 }
 
-osc::RendererCoordinateSystemsTab::RendererCoordinateSystemsTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::RendererCoordinateSystemsTab::RendererCoordinateSystemsTab(TabHost*) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -215,11 +206,6 @@ osc::UID osc::RendererCoordinateSystemsTab::implGetID() const
 osc::CStringView osc::RendererCoordinateSystemsTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::RendererCoordinateSystemsTab::implParent() const
-{
-    return m_Impl->getParent();
 }
 
 void osc::RendererCoordinateSystemsTab::implOnMount()
@@ -240,11 +226,6 @@ bool osc::RendererCoordinateSystemsTab::implOnEvent(SDL_Event const& e)
 void osc::RendererCoordinateSystemsTab::implOnTick()
 {
     m_Impl->onTick();
-}
-
-void osc::RendererCoordinateSystemsTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::RendererCoordinateSystemsTab::implOnDraw()

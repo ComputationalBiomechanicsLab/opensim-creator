@@ -548,19 +548,12 @@ public:
         return m_Name;
     }
 
-    TabHost* parent()
-    {
-        return m_Parent;
-    }
-
     void onMount()
     {
-
     }
 
     void onUnmount()
     {
-
     }
 
     bool onEvent(SDL_Event const&)
@@ -570,7 +563,6 @@ public:
 
     void onTick()
     {
-
     }
 
     void onDrawMainMenu()
@@ -652,11 +644,6 @@ osc::UID osc::ModelWarpingTab::implGetID() const
 osc::CStringView osc::ModelWarpingTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::ModelWarpingTab::implParent() const
-{
-    return m_Impl->parent();
 }
 
 void osc::ModelWarpingTab::implOnMount()

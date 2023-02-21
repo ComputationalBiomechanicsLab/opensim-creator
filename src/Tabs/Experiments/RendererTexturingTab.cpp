@@ -18,10 +18,9 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
-#include <SDL_events.h>
+#include <nonstd/span.hpp>
 
 #include <cstdint>
-#include <string>
 #include <utility>
 
 namespace
@@ -52,7 +51,7 @@ namespace
 class osc::RendererTexturingTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{parent}
+    Impl()
     {
         m_Camera.setViewMatrixOverride(glm::mat4{1.0f});
         m_Camera.setProjectionMatrixOverride(glm::mat4{1.0f});
@@ -64,38 +63,12 @@ public:
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
         return "Textures (LearnOpenGL)";
-    }
-
-    TabHost* getParent() const
-    {
-        return m_Parent;
-    }
-
-    void onMount()
-    {
-    }
-
-    void onUnmount()
-    {
-    }
-
-    bool onEvent(SDL_Event const&)
-    {
-        return false;
-    }
-
-    void onTick()
-    {
-    }
-
-    void onDrawMainMenu()
-    {
     }
 
     void onDraw()
@@ -107,8 +80,7 @@ public:
     }
 
 private:
-    UID m_ID;
-    TabHost* m_Parent;
+    UID m_TabID;
     Shader m_Shader
     {
         App::slurp("shaders/ExperimentTexturing.vert"),
@@ -127,8 +99,8 @@ osc::CStringView osc::RendererTexturingTab::id() noexcept
     return "Renderer/Texturing";
 }
 
-osc::RendererTexturingTab::RendererTexturingTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::RendererTexturingTab::RendererTexturingTab(TabHost*) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -144,36 +116,6 @@ osc::UID osc::RendererTexturingTab::implGetID() const
 osc::CStringView osc::RendererTexturingTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::RendererTexturingTab::implParent() const
-{
-    return m_Impl->getParent();
-}
-
-void osc::RendererTexturingTab::implOnMount()
-{
-    m_Impl->onMount();
-}
-
-void osc::RendererTexturingTab::implOnUnmount()
-{
-    m_Impl->onUnmount();
-}
-
-bool osc::RendererTexturingTab::implOnEvent(SDL_Event const& e)
-{
-    return m_Impl->onEvent(e);
-}
-
-void osc::RendererTexturingTab::implOnTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::RendererTexturingTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::RendererTexturingTab::implOnDraw()

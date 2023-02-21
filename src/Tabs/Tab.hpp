@@ -21,7 +21,6 @@ namespace osc
 
         UID getID() const;
         CStringView getName() const;
-        TabHost* parent() const;
         bool isUnsaved() const;
         bool trySave();
         void onMount();
@@ -34,7 +33,6 @@ namespace osc
     private:
         virtual UID implGetID() const = 0;
         virtual CStringView implGetName() const = 0;
-        virtual TabHost* implParent() const = 0;
         virtual bool implIsUnsaved() const
         {
             return false;

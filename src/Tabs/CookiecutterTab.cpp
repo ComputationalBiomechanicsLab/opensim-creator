@@ -15,27 +15,20 @@ public:
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
-        return m_Name;
-    }
-
-    TabHost* parent()
-    {
-        return m_Parent;
+        return ICON_FA_COOKIE " CookiecutterTab";
     }
 
     void onMount()
     {
-
     }
 
     void onUnmount()
     {
-
     }
 
     bool onEvent(SDL_Event const&)
@@ -45,24 +38,18 @@ public:
 
     void onTick()
     {
-
     }
 
     void onDrawMainMenu()
     {
-
     }
 
     void onDraw()
     {
-
     }
 
-
 private:
-    // tab state
-    UID m_ID;
-    std::string m_Name = ICON_FA_COOKIE " CookiecutterTab";
+    UID m_TabID;
     TabHost* m_Parent;
 };
 
@@ -91,11 +78,6 @@ osc::UID osc::CookiecutterTab::implGetID() const
 osc::CStringView osc::CookiecutterTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::CookiecutterTab::implParent() const
-{
-    return m_Impl->parent();
 }
 
 void osc::CookiecutterTab::implOnMount()

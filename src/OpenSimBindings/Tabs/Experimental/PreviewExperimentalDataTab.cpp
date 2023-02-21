@@ -550,19 +550,12 @@ public:
         return m_Name;
     }
 
-    TabHost* parent()
-    {
-        return m_Parent;
-    }
-
     void onMount()
     {
-
     }
 
     void onUnmount()
     {
-
     }
 
     bool onEvent(SDL_Event const&)
@@ -572,12 +565,10 @@ public:
 
     void onTick()
     {
-
     }
 
     void onDrawMainMenu()
     {
-
     }
 
     void onDraw()
@@ -719,11 +710,6 @@ osc::UID osc::PreviewExperimentalDataTab::implGetID() const
 osc::CStringView osc::PreviewExperimentalDataTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::PreviewExperimentalDataTab::implParent() const
-{
-    return m_Impl->parent();
 }
 
 void osc::PreviewExperimentalDataTab::implOnMount()

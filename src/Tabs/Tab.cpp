@@ -20,11 +20,6 @@ osc::CStringView osc::Tab::getName() const
     return implGetName();
 }
 
-osc::TabHost* osc::Tab::parent() const
-{
-    return implParent();
-}
-
 bool osc::Tab::isUnsaved() const
 {
     return implIsUnsaved();

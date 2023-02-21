@@ -49,11 +49,6 @@ public:
         return m_Name;
     }
 
-    TabHost* parent()
-    {
-        return m_Parent;
-    }
-
     void onMount()
     {
     }
@@ -100,7 +95,10 @@ public:
                 nonstd::span<glm::vec3 const> tris = m_Mesh.getVerts();
                 for (size_t i = 0; i < tris.size(); i += 3)
                 {
-                    std::optional<RayCollision> res = GetRayCollisionTriangle(m_Ray, UnsafeCastTriangleFromPointerToFirstVertex(tris.data() + i));
+                    std::optional<RayCollision> const res = GetRayCollisionTriangle(
+                        m_Ray,
+                        Triangle{tris[i], tris[i+1], tris[i+2]}
+                    );
                     if (res)
                     {
                         m_HitPos = res->position;
@@ -257,11 +255,6 @@ osc::UID osc::MeshHittestTab::implGetID() const
 osc::CStringView osc::MeshHittestTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::MeshHittestTab::implParent() const
-{
-    return m_Impl->parent();
 }
 
 void osc::MeshHittestTab::implOnMount()

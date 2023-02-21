@@ -371,19 +371,12 @@ public:
         return m_Name;
     }
 
-    TabHost* parent()
-    {
-        return m_Parent;
-    }
-
     void onMount()
     {
-
     }
 
     void onUnmount()
     {
-
     }
 
     bool onEvent(SDL_Event const&)
@@ -393,7 +386,6 @@ public:
 
     void onTick()
     {
-
     }
 
     void onDrawMainMenu()
@@ -621,11 +613,6 @@ osc::UID osc::TPS2DTab::implGetID() const
 osc::CStringView osc::TPS2DTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::TPS2DTab::implParent() const
-{
-    return m_Impl->parent();
 }
 
 void osc::TPS2DTab::implOnMount()

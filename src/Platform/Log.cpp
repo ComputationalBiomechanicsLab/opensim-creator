@@ -15,7 +15,7 @@ namespace
             static std::mutex s_StdoutMutex;
 
             std::lock_guard g{s_StdoutMutex};
-            std::cerr << '[' << msg.loggerName << "] [" << osc::log::toStringView(msg.level) << "] " << msg.payload << std::endl;
+            std::cerr << '[' << msg.loggerName << "] [" << osc::log::toCStringView(msg.level) << "] " << msg.payload << std::endl;
         }
     };
 
@@ -67,14 +67,9 @@ namespace
 
 // public API
 
-std::string_view osc::log::toStringView(level::LevelEnum level)
+osc::CStringView osc::log::toCStringView(level::LevelEnum level)
 {
-    return c_LogLevelStrings[level];
-}
-
-char const* osc::log::toCStr(level::LevelEnum level)
-{
-    return c_LogLevelStrings[level].c_str();
+    return c_LogLevelStrings.at(level);
 }
 
 std::shared_ptr<osc::log::Logger> osc::log::defaultLogger() noexcept

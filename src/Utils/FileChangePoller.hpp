@@ -8,8 +8,10 @@ namespace osc
 {
     class FileChangePoller final {
     public:
-        FileChangePoller(std::chrono::milliseconds delayBetweenChecks,
-                         std::string const& path);
+        FileChangePoller(
+            std::chrono::milliseconds delayBetweenChecks,
+            std::string const& path
+        );
 
         bool changeWasDetected(std::string const& path);
 

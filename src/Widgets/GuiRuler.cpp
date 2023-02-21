@@ -39,7 +39,7 @@ void osc::GuiRuler::draw(
     }
 
     glm::vec2 mouseLoc = ImGui::GetMousePos();
-    ImDrawList* dl = ImGui::GetWindowDrawList();
+    ImDrawList& dl = *ImGui::GetWindowDrawList();
     ImU32 circleMousedOverNothingColor = ImGui::ColorConvertFloat4ToU32({1.0f, 0.0f, 0.0f, 0.6f});
     ImU32 circleColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 0.8f});
     ImU32 lineColor = circleColor;
@@ -55,8 +55,8 @@ void osc::GuiRuler::draw(
         float bgPad = 5.0f;
         float edgeRounding = bgPad - 2.0f;
 
-        dl->AddRectFilled(pos - bgPad, pos + sz + bgPad, textBgColor, edgeRounding);
-        dl->AddText(pos, textColor, text);
+        dl.AddRectFilled(pos - bgPad, pos + sz + bgPad, textBgColor, edgeRounding);
+        dl.AddText(pos, textColor, text);
     };
 
     if (m_State == State::WaitingForFirstPoint)
@@ -64,13 +64,13 @@ void osc::GuiRuler::draw(
         if (!maybeMouseover)
         {
             // not mousing over anything
-            dl->AddCircleFilled(mouseLoc, circleRadius, circleMousedOverNothingColor);
+            dl.AddCircleFilled(mouseLoc, circleRadius, circleMousedOverNothingColor);
             return;
         }
         else
         {
             // mousing over something
-            dl->AddCircleFilled(mouseLoc, circleRadius, circleColor);
+            dl.AddCircleFilled(mouseLoc, circleRadius, circleColor);
 
             if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
             {
@@ -93,9 +93,9 @@ void osc::GuiRuler::draw(
             glm::vec2 lineMidpoint = (startScreenPos + endScreenPos) / 2.0f;
             float lineWorldLen = glm::length(maybeMouseover->worldspaceLocation - m_StartWorldPos);
 
-            dl->AddCircleFilled(startScreenPos, circleRadius, circleColor);
-            dl->AddLine(startScreenPos, endScreenPos, lineColor, lineThickness);
-            dl->AddCircleFilled(endScreenPos, circleRadius, circleColor);
+            dl.AddCircleFilled(startScreenPos, circleRadius, circleColor);
+            dl.AddLine(startScreenPos, endScreenPos, lineColor, lineThickness);
+            dl.AddCircleFilled(endScreenPos, circleRadius, circleColor);
 
             // label the line's length
             {
@@ -106,7 +106,7 @@ void osc::GuiRuler::draw(
         }
         else
         {
-            dl->AddCircleFilled(startScreenPos, circleRadius, circleColor);
+            dl.AddCircleFilled(startScreenPos, circleRadius, circleColor);
         }
     }
 }

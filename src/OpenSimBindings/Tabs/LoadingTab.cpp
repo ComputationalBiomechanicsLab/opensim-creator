@@ -46,11 +46,6 @@ public:
         return m_Name;
     }
 
-    TabHost* parent()
-    {
-        return m_Parent;
-    }
-
     void onMount()
     {
     }
@@ -201,11 +196,6 @@ osc::UID osc::LoadingTab::implGetID() const
 osc::CStringView osc::LoadingTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::LoadingTab::implParent() const
-{
-    return m_Impl->parent();
 }
 
 void osc::LoadingTab::implOnMount()

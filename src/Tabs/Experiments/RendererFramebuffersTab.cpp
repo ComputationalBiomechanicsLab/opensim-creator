@@ -19,7 +19,7 @@
 #include <SDL_events.h>
 
 #include <cstdint>
-#include <utility>
+#include <memory>
 
 static glm::vec3 constexpr c_PlaneVertices[] =
 {
@@ -60,7 +60,7 @@ namespace
 class osc::RendererFramebuffersTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{ parent }
+    Impl()
     {
         m_SceneCamera.setPosition({0.0f, 0.0f, 3.0f});
         m_SceneCamera.setCameraFOV(glm::radians(45.0f));
@@ -72,17 +72,12 @@ public:
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
         return "Frame Buffers (LearnOpenGL)";
-    }
-
-    TabHost* getParent() const
-    {
-        return m_Parent;
     }
 
     void onMount()
@@ -111,14 +106,6 @@ public:
             return true;
         }
         return false;
-    }
-
-    void onTick()
-    {
-    }
-
-    void onDrawMainMenu()
-    {
     }
 
     void onDraw()
@@ -167,8 +154,7 @@ public:
     }
 
 private:
-    UID m_ID;
-    TabHost* m_Parent;
+    UID m_TabID;
 
     Material m_SceneRenderMaterial
     {
@@ -213,8 +199,8 @@ osc::CStringView osc::RendererFramebuffersTab::id() noexcept
     return "Renderer/Framebuffers";
 }
 
-osc::RendererFramebuffersTab::RendererFramebuffersTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::RendererFramebuffersTab::RendererFramebuffersTab(TabHost*) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -232,11 +218,6 @@ osc::CStringView osc::RendererFramebuffersTab::implGetName() const
     return m_Impl->getName();
 }
 
-osc::TabHost* osc::RendererFramebuffersTab::implParent() const
-{
-    return m_Impl->getParent();
-}
-
 void osc::RendererFramebuffersTab::implOnMount()
 {
     m_Impl->onMount();
@@ -250,16 +231,6 @@ void osc::RendererFramebuffersTab::implOnUnmount()
 bool osc::RendererFramebuffersTab::implOnEvent(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
-}
-
-void osc::RendererFramebuffersTab::implOnTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::RendererFramebuffersTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::RendererFramebuffersTab::implOnDraw()

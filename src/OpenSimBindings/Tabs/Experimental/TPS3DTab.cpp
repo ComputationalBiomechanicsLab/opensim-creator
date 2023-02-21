@@ -2321,11 +2321,6 @@ public:
         return m_Name;
     }
 
-    TabHost* parent()
-    {
-        return m_Parent;
-    }
-
     void onMount()
     {
         App::upd().makeMainEventLoopWaiting();
@@ -2408,11 +2403,6 @@ osc::UID osc::TPS3DTab::implGetID() const
 osc::CStringView osc::TPS3DTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-osc::TabHost* osc::TPS3DTab::implParent() const
-{
-    return m_Impl->parent();
 }
 
 void osc::TPS3DTab::implOnMount()
