@@ -31,113 +31,6 @@
 
 namespace
 {
-    std::vector<glm::vec4> ComputeTangents(
-        osc::MeshTopology topology,
-        nonstd::span<glm::vec3 const> verts,
-        nonstd::span<glm::vec3 const> normals,
-        nonstd::span<glm::vec2 const> texCoords,
-        nonstd::span<uint16_t const> indices)
-    {
-        // related:
-        //
-        // *initial source: https://learnopengl.com/Advanced-Lighting/Normal-Mapping
-        // https://www.cs.utexas.edu/~fussell/courses/cs384g-spring2016/lectures/normal_mapping_tangent.pdf
-        // https://gamedev.stackexchange.com/questions/68612/how-to-compute-tangent-and-bitangent-vectors
-        // https://stackoverflow.com/questions/25349350/calculating-per-vertex-tangents-for-glsl
-        // http://www.terathon.com/code/tangent.html
-        // http://image.diku.dk/projects/media/morten.mikkelsen.08.pdf
-        // http://www.crytek.com/download/Triangle_mesh_tangent_space_calculation.pdf
-
-        std::vector<glm::vec4> rv;
-
-        // edge-case: there's insufficient topological/normal/coordinate data, so
-        //            return fallback-filled ({1,0,0,1}) vector
-        if (topology != osc::MeshTopology::Triangles ||
-            normals.empty() ||
-            texCoords.empty())
-        {
-            rv.assign(verts.size(), {1.0f, 0.0f, 0.0f, 1.0f});
-            return rv;
-        }
-
-        // else: there must be enough data to compute the tangents
-        //
-        // (but, just to keep sane, assert that the mesh data is actually valid)
-        OSC_ASSERT_ALWAYS(std::all_of(
-            indices.begin(),
-            indices.end(),
-            [nVerts = verts.size(), nNormals = normals.size(), nCoords = texCoords.size()](auto index)
-            {
-                return index < nVerts && index < nNormals && index < nCoords;
-            }) && "the provided mesh contains invalid indices");
-
-        // for smooth shading, vertices, normals, texture coordinates, and tangents
-        // may be shared by multiple triangles. In this case, the tangents must be
-        // averaged, so:
-        //
-        // - initialize all tangent vectors to `{0,0,0,0}`s
-        // - initialize a weights vector filled with `0`s
-        // - every time a tangent vector is computed:
-        //     - accumulate a new average: `tangents[i] = (weights[i]*tangents[i] + newTangent)/weights[i]+1;`
-        //     - increment weight: `weights[i]++`
-        rv.assign(verts.size(), {0.0f, 0.0f, 0.0f, 0.0f});
-        std::vector<uint16_t> weights(verts.size(), 0);
-        auto const accumulateTangent = [&rv, &weights](auto i, glm::vec4 const& newTangent)
-        {
-            rv[i] = (static_cast<float>(weights[i])*rv[i] + newTangent)/(static_cast<float>(weights[i]+1));
-            weights[i]++;
-        };
-
-        // compute tangent vectors from triangle primitives
-        for (ptrdiff_t triBegin = 0, end = osc::ssize(indices)-2; triBegin < end; triBegin += 3)
-        {
-            // compute edge vectors in object and tangent (UV) space
-            glm::vec3 const e1 = verts[indices[triBegin+1]] - verts[indices[triBegin+0]];
-            glm::vec3 const e2 = verts[indices[triBegin+2]] - verts[indices[triBegin+0]];
-            glm::vec2 const dUV1 = texCoords[indices[triBegin+1]] - texCoords[indices[triBegin+0]];  // delta UV for edge 1
-            glm::vec2 const dUV2 = texCoords[indices[triBegin+2]] - texCoords[indices[triBegin+0]];
-
-            // this is effectively inline-ing a matrix inversion + multiplication, see:
-            //
-            // - https://www.cs.utexas.edu/~fussell/courses/cs384g-spring2016/lectures/normal_mapping_tangent.pdf
-            // - https://learnopengl.com/Advanced-Lighting/Normal-Mapping
-            float const invDeterminant = 1.0f/(dUV1.x*dUV2.y - dUV2.x*dUV1.y);
-            glm::vec3 const tangent = invDeterminant * glm::vec3
-            {
-                dUV2.y*e1.x - dUV1.y*e2.x,
-                dUV2.y*e1.y - dUV1.y*e2.y,
-                dUV2.y*e1.z - dUV1.y*e2.z,
-            };
-            glm::vec3 const bitangent = invDeterminant * glm::vec3
-            {
-                -dUV2.x*e1.x + dUV1.x*e2.x,
-                -dUV2.x*e1.y + dUV1.x*e2.y,
-                -dUV2.x*e1.z + dUV1.x*e2.z,
-            };
-
-            // care: due to smooth shading, each normal may not actually be orthogonal
-            // to the triangle's surface
-            for (ptrdiff_t iVert = 0; iVert < 3; ++iVert)
-            {
-                auto const triVertIndex = indices[triBegin + iVert];
-
-                // Gram-Schmidt orthogonalization (w.r.t. the stored normal)
-                glm::vec3 const normal = glm::normalize(normals[triVertIndex]);
-                glm::vec3 const orthoTangent = glm::normalize(tangent - glm::dot(normal, tangent)*normal);
-                glm::vec3 const orthoBitangent = glm::normalize(bitangent - (glm::dot(orthoTangent, bitangent)*orthoTangent) - (glm::dot(normal, bitangent)*normal));
-
-                // this algorithm doesn't produce bitangents. Instead, it writes the
-                // "direction" (flip) of the bitangent w.r.t. `cross(normal, tangent)`
-                //
-                // (the shader can recompute the bitangent from: `cross(normal, tangent) * w`)
-                float const w = glm::dot(glm::cross(normal, orthoTangent), orthoBitangent);
-
-                accumulateTangent(triVertIndex, glm::vec4{orthoTangent, w});
-            }
-        }
-        return rv;
-    }
-
     // matches the quad used in LearnOpenGL's normal mapping tutorial
     osc::Mesh GenerateQuad()
     {
@@ -171,12 +64,12 @@ namespace
             0, 2, 3,
         };
 
-        std::vector<glm::vec4> const tangents = ComputeTangents(
+        std::vector<glm::vec4> const tangents = osc::CalcTangentVectors(
             osc::MeshTopology::Triangles,
             verts,
             normals,
             texCoords,
-            indices
+            osc::MeshIndicesView{indices.data(), indices.size()}
         );
         OSC_ASSERT_ALWAYS(tangents.size() == verts.size());
 

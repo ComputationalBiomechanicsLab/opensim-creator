@@ -110,7 +110,7 @@ namespace osc
             return {m_Ptr.u32, m_Size};
         }
 
-        uint32_t operator[](size_t i) const
+        uint32_t operator[](ptrdiff_t i) const
         {
             return !m_IsU32 ? static_cast<uint32_t>(m_Ptr.u16[i]) : m_Ptr.u32[i];
         }

@@ -10,6 +10,7 @@
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <nonstd/span.hpp>
 
 #include <cstdint>
@@ -27,6 +28,8 @@ namespace osc { struct Transform; }
 namespace osc { class Config; }
 namespace osc { class Mesh; }
 namespace osc { class MeshCache; }
+namespace osc { class MeshIndicesView; }
+namespace osc { enum class MeshTopology; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct SceneDecoration; }
 namespace osc { class ShaderCache; }
@@ -136,6 +139,18 @@ namespace osc
 
     // returns the average centerpoint of all vertices in a mesh
     glm::vec3 AverageCenterpoint(Mesh const&);
+
+    // returns tangent vectors for the given (presumed, mesh) data
+    //
+    // the 4th (w) component of each vector indicates the flip direction
+    // of the corresponding bitangent vector (i.e. bitangent = cross(normal, tangent) * w)
+    std::vector<glm::vec4> CalcTangentVectors(
+        MeshTopology const&,
+        nonstd::span<glm::vec3 const> verts,
+        nonstd::span<glm::vec3 const> normals,
+        nonstd::span<glm::vec2 const> texCoords,
+        MeshIndicesView const&
+    );
 
     // returns a material that can draw a mesh's triangles in wireframe-style
     Material CreateWireframeOverlayMaterial(
