@@ -185,7 +185,7 @@ public:
             SimulationClock::time_point playbackPos = implGetSimulationScrubTime();
             if (playbackPos < m_Simulation->getEndTime())
             {
-                osc::App::upd().requestRedraw();
+                App::upd().requestRedraw();
             }
             else
             {

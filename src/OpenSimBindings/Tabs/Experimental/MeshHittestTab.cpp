@@ -51,8 +51,7 @@ public:
 
     void onTick()
     {
-        App const& app = App::get();
-        UpdatePolarCameraFromImGuiMouseInputs(app.dims(), m_PolarCamera);
+        UpdatePolarCameraFromImGuiMouseInputs(App::get().dims(), m_PolarCamera);
 
         // handle hittest
         auto raycastStart = std::chrono::high_resolution_clock::now();
@@ -192,7 +191,7 @@ private:
         {
             App::slurp("shaders/SolidColor.vert"),
             App::slurp("shaders/SolidColor.frag"),
-        }
+        },
     };
     Mesh m_Mesh = LoadMeshViaSimTK(App::resource("geometry/hat_ribs.vtp"));
     Mesh m_SphereMesh = GenUntexturedUVSphere(12, 12);

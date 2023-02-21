@@ -222,10 +222,10 @@ private:
                 {
                     m_Parent.lock()->addAndSelectTab<MeshImporterTab>(m_Parent);
                 }
-                osc::App::upd().addFrameAnnotation("SplashTab/ImportMeshesMenuItem", osc::GetItemRect());
+                App::upd().addFrameAnnotation("SplashTab/ImportMeshesMenuItem", osc::GetItemRect());
                 if (ImGui::MenuItem(ICON_FA_BOOK " Open Documentation"))
                 {
-                    OpenPathInOSDefaultApplication(osc::App::get().getConfig().getHTMLDocsDir() / "index.html");
+                    OpenPathInOSDefaultApplication(App::get().getConfig().getHTMLDocsDir() / "index.html");
                 }
             }
 
@@ -330,7 +330,12 @@ private:
 
     // for rendering the 3D scene
     osc::PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();
-    SceneRenderer m_SceneRenderer{osc::App::config(), *osc::App::singleton<osc::MeshCache>(), *osc::App::singleton<osc::ShaderCache>()};
+    SceneRenderer m_SceneRenderer
+    {
+        App::config(),
+        *osc::App::singleton<osc::MeshCache>(),
+        *osc::App::singleton<osc::ShaderCache>(),
+    };
     SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);
 
     glm::vec2 m_MenuMaxDims = {640.0f, 512.0f};

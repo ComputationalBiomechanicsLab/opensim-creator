@@ -145,7 +145,7 @@ private:
     std::optional<ImGuiItemHittestResult> m_MaybeLastHittest;
 
     // overlay-related data
-    std::shared_ptr<IconCache> m_IconCache = osc::App::singleton<osc::IconCache>(
+    std::shared_ptr<IconCache> m_IconCache = App::singleton<osc::IconCache>(
         App::resource("icons/"),
         ImGui::GetTextLineHeight()/128.0f
     );

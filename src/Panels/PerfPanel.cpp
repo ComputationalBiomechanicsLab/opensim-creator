@@ -46,17 +46,17 @@ private:
         ImGui::Columns();
 
         {
-            bool waiting = osc::App::get().isMainLoopWaiting();
+            bool waiting = App::get().isMainLoopWaiting();
             if (ImGui::Checkbox("waiting", &waiting))
             {
-                osc::App::upd().setMainLoopWaiting(waiting);
+                App::upd().setMainLoopWaiting(waiting);
             }
         }
         {
-            bool vsync = osc::App::get().isVsyncEnabled();
+            bool vsync = App::get().isVsyncEnabled();
             if (ImGui::Checkbox("VSYNC", &vsync))
             {
-                osc::App::upd().setVsync(vsync);
+                App::upd().setVsync(vsync);
             }
         }
         if (ImGui::Button("clear measurements"))

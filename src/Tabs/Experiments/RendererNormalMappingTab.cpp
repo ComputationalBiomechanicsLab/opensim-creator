@@ -188,7 +188,6 @@ public:
     }
 
 private:
-    // tab state
     UID m_TabID;
     bool m_IsMouseCaptured = false;
 

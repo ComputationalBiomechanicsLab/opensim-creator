@@ -70,7 +70,7 @@ public:
 
         if (m_Viewer.isHovered())
         {
-            osc::UpdatePolarCameraFromImGuiMouseInputs(osc::App::get().dims(), m_Camera);
+            osc::UpdatePolarCameraFromImGuiMouseInputs(App::get().dims(), m_Camera);
         }
 
         if (ImGui::Begin("viewer"))
@@ -87,7 +87,7 @@ public:
 
             glm::vec2 contentRegion = ImGui::GetContentRegionAvail();
             m_RenderParams.dimensions = osc::Max(contentRegion, {0.0f, 0.0f});
-            m_RenderParams.samples = osc::App::get().getMSXAASamplesRecommended();
+            m_RenderParams.samples = App::get().getMSXAASamplesRecommended();
 
             {
                 m_RenderParams.lightDirection = osc::RecommendedLightDirection(m_Camera);

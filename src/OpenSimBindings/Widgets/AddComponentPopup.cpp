@@ -175,7 +175,7 @@ private:
         ImGui::NextColumn();
 
         osc::InputString("##componentname", m_Name, 128);
-        osc::App::upd().addFrameAnnotation("AddComponentPopup::ComponentNameInput", osc::GetItemRect());
+        App::upd().addFrameAnnotation("AddComponentPopup::ComponentNameInput", osc::GetItemRect());
 
         ImGui::NextColumn();
 
@@ -247,7 +247,7 @@ private:
 
                 if (selected)
                 {
-                    osc::App::upd().addFrameAnnotation(pf.getName(), osc::GetItemRect());
+                    App::upd().addFrameAnnotation(pf.getName(), osc::GetItemRect());
                 }
             }
 

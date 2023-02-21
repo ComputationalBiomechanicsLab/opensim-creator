@@ -167,7 +167,7 @@ public:
 
         Line ray = GetCameraRay(m_Camera);
         float closestEl = std::numeric_limits<float>::max();
-        std::optional<SceneSphere> closestSceneSphere;
+        SceneSphere* closestSceneSphere = nullptr;
 
         for (SceneSphere& ss : m_SceneSpheres)
         {
@@ -183,7 +183,7 @@ public:
             if (res && res->distance >= 0.0f && res->distance < closestEl)
             {
                 closestEl = res->distance;
-                closestSceneSphere = ss;
+                closestSceneSphere = &ss;
             }
         }
 
@@ -306,7 +306,7 @@ private:
         {
             App::slurp("shaders/SolidColor.vert"),
             App::slurp("shaders/SolidColor.frag"),
-        }
+        },
     };
     Mesh m_SphereMesh = GenUntexturedUVSphere(12, 12);
     Mesh m_WireframeCubeMesh = GenCubeLines();

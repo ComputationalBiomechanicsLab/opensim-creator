@@ -217,7 +217,7 @@ void osc::MainMenuFileTab::draw(std::weak_ptr<MainUIStateAPI> api, UndoableModel
     {
         api.lock()->addAndSelectTab<MeshImporterTab>(api);
     }
-    osc::App::upd().addFrameAnnotation("MainMenu/ImportMeshesMenuItem", osc::GetItemRect());
+    App::upd().addFrameAnnotation("MainMenu/ImportMeshesMenuItem", osc::GetItemRect());
 
 
 

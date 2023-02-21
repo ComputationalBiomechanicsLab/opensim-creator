@@ -79,7 +79,7 @@ private:
 
         if (ImGui::BeginPopupContextItem("##RecentFilesMenu", ImGuiPopupFlags_MouseButtonLeft))
         {
-            std::vector<RecentFile> recentFiles = osc::App::get().getRecentFiles();
+            std::vector<RecentFile> recentFiles = App::get().getRecentFiles();
             std::reverse(recentFiles.begin(), recentFiles.end());  // sort newest -> oldest
             int imguiID = 0;
 
@@ -340,7 +340,10 @@ private:
     EditorAPI* m_EditorAPI;
     std::shared_ptr<osc::UndoableModelStatePair> m_Model;
 
-    std::shared_ptr<IconCache> m_IconCache = osc::App::singleton<osc::IconCache>(osc::App::resource("icons/"), ImGui::GetTextLineHeight()/128.0f);
+    std::shared_ptr<IconCache> m_IconCache = App::singleton<osc::IconCache>(
+        App::resource("icons/"),
+        ImGui::GetTextLineHeight()/128.0f
+    );
 };
 
 osc::ModelEditorToolbar::ModelEditorToolbar(

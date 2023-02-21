@@ -72,7 +72,7 @@ private:
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             osc::InputString("##bodyname", m_BodyDetails.bodyName, c_MaxBodyNameLength);
-            osc::App::upd().addFrameAnnotation("AddBodyPopup::BodyNameInput", osc::GetItemRect());
+            App::upd().addFrameAnnotation("AddBodyPopup::BodyNameInput", osc::GetItemRect());
             ImGui::NextColumn();
         }
 
@@ -126,7 +126,7 @@ private:
                 }
                 if (&pf == selectedPf)
                 {
-                    osc::App::upd().addFrameAnnotation(pf.getName(), osc::GetItemRect());
+                    App::upd().addFrameAnnotation(pf.getName(), osc::GetItemRect());
                 }
             }
             ImGui::EndChild();
@@ -144,7 +144,7 @@ private:
                 int idx = static_cast<int>(m_BodyDetails.jointTypeIndex);
                 ImGui::Combo("##jointtype", &idx, names.data(), static_cast<int>(names.size()));
                 m_BodyDetails.jointTypeIndex = static_cast<size_t>(idx);
-                osc::App::upd().addFrameAnnotation("AddBodyPopup::JointTypeInput", osc::GetItemRect());
+                App::upd().addFrameAnnotation("AddBodyPopup::JointTypeInput", osc::GetItemRect());
             }
             ImGui::NextColumn();
         }
@@ -157,7 +157,7 @@ private:
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             osc::InputString("##jointnameinput", m_BodyDetails.jointName, c_MaxJointNameLength);
-            osc::App::upd().addFrameAnnotation("AddBodyPopup::JointNameInput", osc::GetItemRect());
+            App::upd().addFrameAnnotation("AddBodyPopup::JointNameInput", osc::GetItemRect());
             ImGui::NextColumn();
         }
 
@@ -168,7 +168,7 @@ private:
             DrawHelpMarker("Whether osc should automatically add intermediate offset frames to the OpenSim::Joint. A joint can attach to the two bodies (this added one, plus the selected one) directly. However, many OpenSim model designs instead make the joint attach to offset frames which, themselves, attach to the bodies. The utility of doing this is that the offset frames can be manually adjusted later, rather than *having* to attach the center of the joint to the center of the body");
             ImGui::NextColumn();
             ImGui::Checkbox("##addoffsetframescheckbox", &m_BodyDetails.addOffsetFrames);
-            osc::App::upd().addFrameAnnotation("AddBodyPopup::AddOffsetFramesInput", osc::GetItemRect());
+            App::upd().addFrameAnnotation("AddBodyPopup::AddOffsetFramesInput", osc::GetItemRect());
             ImGui::NextColumn();
         }
 
@@ -191,7 +191,7 @@ private:
                     popup->open();
                     m_EditorAPI->pushPopup(std::move(popup));
                 }
-                osc::App::upd().addFrameAnnotation("AddBodyPopup::GeometryButton", osc::GetItemRect());
+                App::upd().addFrameAnnotation("AddBodyPopup::GeometryButton", osc::GetItemRect());
             }
             ImGui::NextColumn();
         }

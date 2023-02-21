@@ -91,7 +91,7 @@ public:
             {
                 log::getTracebackLog().lock()->clear();
             }
-            osc::App::upd().addFrameAnnotation("LogClearButton", osc::GetItemRect());
+            App::upd().addFrameAnnotation("LogClearButton", osc::GetItemRect());
 
             ImGui::SameLine();
             if (ImGui::Button("turn off"))
