@@ -12,6 +12,7 @@
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/Panels/PanelManager.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
@@ -274,7 +275,12 @@ private:
         ImGui::Dummy({0.0f, 3.0f});
 
         //DrawSelectOwnerMenu(*m_Model, *c);
-        DrawWatchOutputMenu(*m_MainUIStateAPI.lock(), *c);
+        if (DrawWatchOutputMenu(*m_MainUIStateAPI.lock(), *c))
+        {
+            // when the user asks to watch an output, make sure the "Output Watches" panel is
+            // open, so that they can immediately see the side-effect of watching an output (#567)
+            m_EditorAPI->getPanelManager()->setToggleablePanelActivated("Output Watches", true);
+        }
 
         if (ImGui::BeginMenu("Display"))
         {

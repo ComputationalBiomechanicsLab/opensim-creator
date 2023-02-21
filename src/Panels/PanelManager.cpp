@@ -224,6 +224,24 @@ public:
         }
     }
 
+    void setToggleablePanelActivated(std::string_view panelName, bool v)
+    {
+        for (ToggleablePanel& panel : m_ToggleablePanels)
+        {
+            if (panel.getName() == panelName)
+            {
+                if (v)
+                {
+                    panel.activate();
+                }
+                else
+                {
+                    panel.deactivate();
+                }
+            }
+        }
+    }
+
     void activateAllDefaultOpenPanels()
     {
         // initialize default-open tabs
@@ -416,6 +434,11 @@ bool osc::PanelManager::isToggleablePanelActivated(size_t i) const
 void osc::PanelManager::setToggleablePanelActivated(size_t i, bool v)
 {
     m_Impl->setToggleablePanelActivated(i, v);
+}
+
+void osc::PanelManager::setToggleablePanelActivated(std::string_view panelName, bool v)
+{
+    m_Impl->setToggleablePanelActivated(std::move(panelName), v);
 }
 
 void osc::PanelManager::activateAllDefaultOpenPanels()

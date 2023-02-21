@@ -26,7 +26,7 @@ namespace osc
 {
     void DrawComponentHoverTooltip(OpenSim::Component const&);
     void DrawSelectOwnerMenu(VirtualModelStatePair&, OpenSim::Component const&);
-    void DrawWatchOutputMenu(MainUIStateAPI&, OpenSim::Component const&);
+    bool DrawWatchOutputMenu(MainUIStateAPI&, OpenSim::Component const&);
     void DrawSimulationParams(ParamBlock const&);
     void DrawSearchBar(std::string&, int maxLen);
     void DrawOutputNameColumn(

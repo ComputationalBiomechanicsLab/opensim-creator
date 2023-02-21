@@ -40,6 +40,7 @@ namespace osc
         CStringView getToggleablePanelName(size_t) const;
         bool isToggleablePanelActivated(size_t) const;
         void setToggleablePanelActivated(size_t, bool);
+        void setToggleablePanelActivated(std::string_view, bool);
 
         // methods for dynamic panels that have been added at runtime (spawnable)
         size_t getNumDynamicPanels() const;

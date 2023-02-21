@@ -79,8 +79,9 @@ namespace
         ImGui::EndTooltip();
     }
 
-    void DrawOutputWithSubfieldsMenu(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
+    bool DrawOutputWithSubfieldsMenu(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
     {
+        bool outputAdded = false;
         int supportedSubfields = osc::GetSupportedSubfields(o);
 
         // can plot suboutputs
@@ -93,6 +94,7 @@ namespace
                     if (ImGui::MenuItem(GetOutputSubfieldLabel(f)))
                     {
                         api.addUserOutputExtractor(osc::OutputExtractor{osc::ComponentOutputExtractor{o, f}});
+                        outputAdded = true;
                     }
                 }
             }
@@ -103,32 +105,39 @@ namespace
         {
             DrawOutputTooltip(o);
         }
+
+        return outputAdded;
     }
 
-    void DrawOutputWithNoSubfieldsMenuItem(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
+    bool DrawOutputWithNoSubfieldsMenuItem(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
     {
         // can only plot top-level of output
+
+        bool outputAdded = false;
 
         if (ImGui::MenuItem(("  " + o.getName()).c_str()))
         {
             api.addUserOutputExtractor(osc::OutputExtractor{osc::ComponentOutputExtractor{o}});
+            outputAdded = true;
         }
 
         if (ImGui::IsItemHovered())
         {
             DrawOutputTooltip(o);
         }
+
+        return outputAdded;
     }
 
-    void DrawRequestOutputMenuOrMenuItem(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
+    bool DrawRequestOutputMenuOrMenuItem(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
     {
         if (osc::GetSupportedSubfields(o) == static_cast<int>(osc::OutputSubfield::None))
         {
-            DrawOutputWithNoSubfieldsMenuItem(api, o);
+            return DrawOutputWithNoSubfieldsMenuItem(api, o);
         }
         else
         {
-            DrawOutputWithSubfieldsMenu(api, o);
+            return DrawOutputWithSubfieldsMenu(api, o);
         }
     }
 
@@ -195,8 +204,10 @@ void osc::DrawSelectOwnerMenu(osc::VirtualModelStatePair& model, OpenSim::Compon
     }
 }
 
-void osc::DrawWatchOutputMenu(osc::MainUIStateAPI& api, OpenSim::Component const& c)
+bool osc::DrawWatchOutputMenu(MainUIStateAPI& api, OpenSim::Component const& c)
 {
+    bool outputAdded = false;
+
     if (ImGui::BeginMenu("Watch Output"))
     {
         osc::DrawHelpMarker("Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
@@ -220,7 +231,10 @@ void osc::DrawWatchOutputMenu(osc::MainUIStateAPI& api, OpenSim::Component const
             {
                 for (auto const& [name, output] : p->getOutputs())
                 {
-                    DrawRequestOutputMenuOrMenuItem(api, *output);
+                    if (DrawRequestOutputMenuOrMenuItem(api, *output))
+                    {
+                        outputAdded = true;
+                    }
                 }
             }
 
@@ -231,6 +245,8 @@ void osc::DrawWatchOutputMenu(osc::MainUIStateAPI& api, OpenSim::Component const
 
         ImGui::EndMenu();
     }
+
+    return outputAdded;
 }
 
 void osc::DrawSimulationParams(osc::ParamBlock const& params)
