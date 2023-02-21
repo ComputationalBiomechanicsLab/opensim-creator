@@ -1,5 +1,7 @@
 #include "FilesystemHelpers.hpp"
 
+#include <nonstd/span.hpp>
+
 #include <cerrno>
 #include <cstring>
 #include <string>
@@ -9,42 +11,41 @@
 #include <sstream>
 #include <utility>
 
-void osc::FindAllFilesWithExtensionsRecursively(
-        std::filesystem::path const& root,
-        std::string_view const* extensions,
-        size_t n,
-        std::vector<std::filesystem::path>& appendOut)
+std::vector<std::filesystem::path> osc::FindAllFilesWithExtensionsRecursively(
+    std::filesystem::path const& root,
+    nonstd::span<std::string_view> extensions)
 {
+    std::vector<std::filesystem::path> rv;
+
     if (!std::filesystem::exists(root))
     {
-        return;
+        return rv;
     }
 
     if (!std::filesystem::is_directory(root))
     {
-        return;
+        return rv;
     }
 
     for (std::filesystem::directory_entry const& e : std::filesystem::recursive_directory_iterator{root})
     {
-        for (size_t i = 0; i < n; ++i)
+        for (std::string_view const& extension : extensions)
         {
-            if (e.path().extension() == extensions[i])
+            if (e.path().extension() == extension)
             {
-                appendOut.push_back(e.path());
+                rv.push_back(e.path());
             }
         }
     }
+
+    return rv;
 }
 
 std::vector<std::filesystem::path> osc::FindAllFilesWithExtensionsRecursively(
-        std::filesystem::path const& root,
-        std::string_view const* extensions,
-        size_t n)
+    std::filesystem::path const& root,
+    std::string_view extension)
 {
-    std::vector<std::filesystem::path> rv;
-    FindAllFilesWithExtensionsRecursively(root, extensions, n, rv);
-    return rv;
+    return FindAllFilesWithExtensionsRecursively(root, {&extension, 1});
 }
 
 std::vector<std::filesystem::path> osc::GetAllFilesInDirRecursively(std::filesystem::path const& root)

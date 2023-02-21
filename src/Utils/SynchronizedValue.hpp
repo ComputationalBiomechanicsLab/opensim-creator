@@ -98,6 +98,6 @@ namespace osc
 
     private:
         mutable std::mutex m_Mutex;
-        T m_Value;
+        T m_Value{};
     };
 }

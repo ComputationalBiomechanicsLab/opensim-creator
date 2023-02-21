@@ -2268,7 +2268,7 @@ private:
 
 osc::MaterialPropertyBlock::MaterialPropertyBlock()
 {
-    static Cow<Impl> const s_EmptyPropertyBlockImpl = make_cow<Impl>();
+    static CopyOnUpdPtr<Impl> const s_EmptyPropertyBlockImpl = make_cow<Impl>();
     m_Impl = s_EmptyPropertyBlockImpl;
 }
 

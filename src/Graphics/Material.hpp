@@ -3,7 +3,7 @@
 #include "src/Graphics/RenderTexture.hpp"
 #include "src/Graphics/Shader.hpp"
 #include "src/Graphics/Texture2D.hpp"
-#include "src/Utils/Cow.hpp"
+#include "src/Utils/CopyOnUpdPtr.hpp"
 
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x4.hpp>
@@ -90,7 +90,7 @@ namespace osc
         friend std::ostream& operator<<(std::ostream&, Material const&);
 
         class Impl;
-        Cow<Impl> m_Impl;
+        CopyOnUpdPtr<Impl> m_Impl;
     };
 
     inline bool operator==(Material const& a, Material const& b) noexcept

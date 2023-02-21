@@ -10,14 +10,14 @@
 namespace osc
 {
     // evaluate the length of a string at compile-time
-    constexpr std::size_t StrLen(char const* s) noexcept
+    constexpr size_t StrLen(char const* s) noexcept
     {
         if (s == nullptr)
         {
             return 0;
         }
 
-        std::size_t len = 0;
+        size_t len = 0;
         while (*s++ != char{0})
         {
             ++len;
@@ -35,11 +35,13 @@ namespace osc
         CStringView(std::string const& s) : m_Data{s.c_str()}, m_Size{s.size()} {}
         constexpr CStringView& operator=(CStringView const&) noexcept = default;
 
-        constexpr std::size_t size() const noexcept { return m_Size; }
-        constexpr std::size_t length() const noexcept { return m_Size; }
+        constexpr size_t size() const noexcept { return m_Size; }
+        constexpr size_t length() const noexcept { return m_Size; }
         constexpr bool empty() const noexcept { return m_Size == 0; }
         constexpr char const* c_str() const noexcept { return m_Data; }
         constexpr operator std::string_view () const noexcept { return std::string_view{m_Data, m_Size}; }
+        constexpr char const* begin() const noexcept { return m_Data; }
+        constexpr char const* end() const noexcept { return m_Data + m_Size; }
 
     private:
         friend bool operator<(CStringView const&, CStringView const&);
@@ -47,7 +49,7 @@ namespace osc
         friend bool operator!=(CStringView const&, CStringView const&);
 
         char const* m_Data;
-        std::size_t m_Size;
+        size_t m_Size;
     };
 
     inline bool operator<(CStringView const& a, CStringView const& b)
@@ -90,7 +92,7 @@ namespace std
 {
     template<>
     struct hash<osc::CStringView> {
-        std::size_t operator()(osc::CStringView const& sv) const
+        size_t operator()(osc::CStringView const& sv) const
         {
             return std::hash<std::string_view>{}(sv);
         }

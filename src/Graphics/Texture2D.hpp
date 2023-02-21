@@ -2,7 +2,7 @@
 
 #include "src/Graphics/TextureFilterMode.hpp"
 #include "src/Graphics/TextureWrapMode.hpp"
-#include "src/Utils/Cow.hpp"
+#include "src/Utils/CopyOnUpdPtr.hpp"
 #include "src/Utils/CStringView.hpp"
 
 #include <glm/vec2.hpp>
@@ -63,7 +63,7 @@ namespace osc
         friend std::ostream& operator<<(std::ostream&, Texture2D const&);
 
         class Impl;
-        Cow<Impl> m_Impl;
+        CopyOnUpdPtr<Impl> m_Impl;
     };
 
     inline bool operator==(Texture2D const& a, Texture2D const& b) noexcept

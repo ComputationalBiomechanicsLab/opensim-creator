@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/Utils/CStringView.hpp"
+
 #include <nonstd/span.hpp>
 
 #include <algorithm>
@@ -297,10 +299,10 @@ namespace osc
     bool ContainsSubstringCaseInsensitive(std::string const& str, std::string const& substr);
 
     // returns true if `s` ends with `suffix`
-    bool CStrEndsWith(char const* s, std::string_view suffix);
+    bool CStrEndsWith(CStringView, std::string_view suffix);
 
     // returns true if `str` contains `c`
-    bool Contains(char const* str, char e);
+    bool Contains(CStringView, char e);
 
     // combines hash of `T` into the seed value
     template<typename T>

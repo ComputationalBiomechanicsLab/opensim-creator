@@ -3,7 +3,7 @@
 #include "src/Graphics/CameraClearFlags.hpp"
 #include "src/Graphics/CameraProjection.hpp"
 #include "src/Maths/Rect.hpp"
-#include "src/Utils/Cow.hpp"
+#include "src/Utils/CopyOnUpdPtr.hpp"
 
 #include <glm/gtx/quaternion.hpp>
 #include <glm/mat4x4.hpp>
@@ -133,7 +133,7 @@ namespace osc
         friend std::ostream& operator<<(std::ostream&, Camera const&);
 
         class Impl;
-        Cow<Impl> m_Impl;
+        CopyOnUpdPtr<Impl> m_Impl;
     };
 
     bool operator==(Camera const&, Camera const&) noexcept;

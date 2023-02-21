@@ -1,41 +1,25 @@
 #pragma once
 
-#include <cstddef>
+#include <nonstd/span.hpp>
+
 #include <cstdint>
 #include <filesystem>
 #include <string>
 #include <string_view>
-#include <utility>
 #include <vector>
 
-namespace osc {
-    // recursively find all files in `root` with any of the given extensions and
-    // append the found files into the output vector
-    void FindAllFilesWithExtensionsRecursively(
-        std::filesystem::path const& root,
-        std::string_view const* extensions,
-        size_t n,
-        std::vector<std::filesystem::path>& appendOut);
-
+namespace osc
+{
     // recursively find all files in `root` with any of the given extensions and
     // return those files in a vector
     std::vector<std::filesystem::path> FindAllFilesWithExtensionsRecursively(
         std::filesystem::path const& root,
-        std::string_view const* extensions,
-        size_t n);
-
-    // recursively find all files in `root` with any of the given extensions and
-    // return those files in a vector (convenience form)
-    template<typename... Exensions>
-    inline std::vector<std::filesystem::path> FindAllFilesWithExtensionsRecursively(
+        nonstd::span<std::string_view> extensions
+    );
+    std::vector<std::filesystem::path> FindAllFilesWithExtensionsRecursively(
         std::filesystem::path const& root,
-        Exensions&&... exts)
-    {
-        std::string_view extensions[] = {std::forward<Exensions>(exts)...};
-        std::vector<std::filesystem::path> rv;
-        FindAllFilesWithExtensionsRecursively(root, static_cast<std::string_view const*>(extensions), sizeof...(exts), rv);
-        return rv;
-    }
+        std::string_view extension
+    );
 
     // recursively find all files in the supplied (root) directory and return
     // them in a vector

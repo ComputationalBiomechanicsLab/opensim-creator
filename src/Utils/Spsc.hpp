@@ -12,8 +12,8 @@
 #include <utility>
 
 // extremely basic support for a single-producer single-consumer (sp-sc) queue
-namespace osc::spsc {
-
+namespace osc::spsc
+{
     template<typename T>
     class Sender;
 

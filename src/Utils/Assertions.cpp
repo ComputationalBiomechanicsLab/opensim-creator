@@ -20,10 +20,11 @@ namespace
     }
 }
 
-void osc::OnAssertionFailure(char const* failing_code,
-                             char const* func,
-                             char const* file,
-                             unsigned int line) noexcept
+void osc::OnAssertionFailure(
+    char const* failing_code,
+    char const* func,
+    char const* file,
+    unsigned int line) noexcept
 {
     auto& buf = GetGlobalAssertionErrorBuffer();
     auto guard = buf.lock();

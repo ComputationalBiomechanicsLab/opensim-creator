@@ -2,7 +2,7 @@
 
 #include "src/Graphics/MeshIndicesView.hpp"
 #include "src/Graphics/MeshTopology.hpp"
-#include "src/Utils/Cow.hpp"
+#include "src/Utils/CopyOnUpdPtr.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -82,7 +82,7 @@ namespace osc
         friend std::ostream& operator<<(std::ostream&, Mesh const&);
 
         class Impl;
-        Cow<Impl> m_Impl;
+        CopyOnUpdPtr<Impl> m_Impl;
     };
 
     inline bool operator==(Mesh const& a, Mesh const& b) noexcept
@@ -105,7 +105,7 @@ namespace std
         size_t operator()(osc::Mesh const& mesh) const
         {
             using std::hash;
-            return hash<osc::Cow<osc::Mesh::Impl>>{}(mesh.m_Impl);
+            return hash<osc::CopyOnUpdPtr<osc::Mesh::Impl>>{}(mesh.m_Impl);
         }
     };
 }

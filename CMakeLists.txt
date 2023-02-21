@@ -728,7 +728,7 @@ add_library(osccore STATIC
     src/Utils/Assertions.hpp
     src/Utils/CircularBuffer.hpp
     src/Utils/ClonePtr.hpp
-    src/Utils/Cow.hpp
+    src/Utils/CopyOnUpdPtr.hpp
     src/Utils/Cpp20Shims.hpp
     src/Utils/CStringView.hpp
     src/Utils/DefaultConstructOnCopy.hpp

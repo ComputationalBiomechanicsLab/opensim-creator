@@ -233,7 +233,7 @@ namespace osc
 
     public:
         using value_type = T;
-        using size_type = std::size_t;
+        using size_type = size_t;
         using reference = T&;
         using const_reference = T const&;
         using iterator = Iterator<false>;

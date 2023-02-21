@@ -121,23 +121,19 @@ bool osc::ContainsSubstringCaseInsensitive(std::string const& str, std::string c
     return ContainsSubstring(s, ss);
 }
 
-bool osc::CStrEndsWith(char const* s, std::string_view suffix)
+bool osc::CStrEndsWith(CStringView s, std::string_view suffix)
 {
-    size_t sLen = std::strlen(s);
-
-    if (sLen < suffix.length())
+    if (s.size() < suffix.length())
     {
         return false;
     }
 
-    char const* sEnd = s + sLen;
-
-    return std::equal(sEnd - suffix.length(), sEnd, suffix.begin(), suffix.end());
+    return std::equal(s.end() - suffix.length(), s.end(), suffix.begin(), suffix.end());
 }
 
-bool osc::Contains(char const* s, char c)
+bool osc::Contains(CStringView s, char c)
 {
-    return std::strchr(s, c) != nullptr;
+    return std::strchr(s.c_str(), c) != nullptr;
 }
 
 bool osc::StartsWith(std::string_view s, std::string_view prefix)

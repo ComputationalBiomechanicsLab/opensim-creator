@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/Graphics/ShaderType.hpp"
-#include "src/Utils/Cow.hpp"
+#include "src/Utils/CopyOnUpdPtr.hpp"
 #include "src/Utils/CStringView.hpp"
 
 #include <cstddef>
@@ -50,7 +50,7 @@ namespace osc
         friend std::ostream& operator<<(std::ostream&, Shader const&);
 
         class Impl;
-        Cow<Impl> m_Impl;
+        CopyOnUpdPtr<Impl> m_Impl;
     };
 
     inline bool operator==(Shader const& a, Shader const& b) noexcept

@@ -2,7 +2,7 @@
 
 #include "src/Graphics/RenderTextureDescriptor.hpp"
 #include "src/Graphics/RenderTextureFormat.hpp"
-#include "src/Utils/Cow.hpp"
+#include "src/Utils/CopyOnUpdPtr.hpp"
 
 #include <glm/vec2.hpp>
 
@@ -58,7 +58,7 @@ namespace osc
         friend std::ostream& operator<<(std::ostream&, RenderTexture const&);
 
         class Impl;
-        Cow<Impl> m_Impl;
+        CopyOnUpdPtr<Impl> m_Impl;
     };
 
     inline bool operator==(RenderTexture const& a, RenderTexture const& b) noexcept
