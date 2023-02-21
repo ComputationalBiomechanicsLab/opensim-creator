@@ -194,6 +194,7 @@ public:
                 return;
             }
         }
+        m_PanelManager->garbageCollectDeactivatedPanels();
     }
 
     void onDrawMainMenu()
