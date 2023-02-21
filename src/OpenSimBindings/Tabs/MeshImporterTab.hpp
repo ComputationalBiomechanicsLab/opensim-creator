@@ -11,14 +11,13 @@
 #include <vector>
 
 namespace osc { class MainUIStateAPI; }
-namespace osc { class TabHost; }
 
 namespace osc
 {
     class MeshImporterTab final : public Tab {
     public:
-        explicit MeshImporterTab(MainUIStateAPI*);
-        MeshImporterTab(MainUIStateAPI*, std::vector<std::filesystem::path>);
+        explicit MeshImporterTab(std::weak_ptr<MainUIStateAPI>);
+        MeshImporterTab(std::weak_ptr<MainUIStateAPI>, std::vector<std::filesystem::path>);
         MeshImporterTab(MeshImporterTab const&) = delete;
         MeshImporterTab(MeshImporterTab&&) noexcept;
         MeshImporterTab& operator=(MeshImporterTab const&) = delete;

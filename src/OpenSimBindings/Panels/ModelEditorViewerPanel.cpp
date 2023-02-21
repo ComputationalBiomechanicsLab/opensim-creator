@@ -36,15 +36,15 @@ class osc::ModelEditorViewerPanel::Impl final : public osc::StandardPanel {
 public:
 
     Impl(
-        std::string_view panelName,
-        MainUIStateAPI* mainUIStateAPI,
-        EditorAPI* editorAPI,
-        std::shared_ptr<UndoableModelStatePair> model) :
+        std::string_view panelName_,
+        std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+        EditorAPI* editorAPI_,
+        std::shared_ptr<UndoableModelStatePair> model_) :
 
-        StandardPanel{std::move(panelName)},
-        m_MainUIStateAPI{mainUIStateAPI},
-        m_EditorAPI{editorAPI},
-        m_Model{std::move(model)}
+        StandardPanel{std::move(panelName_)},
+        m_MainUIStateAPI{std::move(mainUIStateAPI_)},
+        m_EditorAPI{std::move(editorAPI_)},
+        m_Model{std::move(model_)}
     {
     }
 
@@ -261,7 +261,7 @@ private:
     }
 
     // tab/model state
-    MainUIStateAPI* m_MainUIStateAPI;
+    std::weak_ptr<MainUIStateAPI> m_MainUIStateAPI;
     EditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Model;
 
@@ -288,12 +288,12 @@ private:
 // public API (PIMPL)
 
 osc::ModelEditorViewerPanel::ModelEditorViewerPanel(
-    std::string_view panelName,
-    MainUIStateAPI* mainUIStateAPI,
-    EditorAPI* editorAPI,
-    std::shared_ptr<UndoableModelStatePair> model) :
+    std::string_view panelName_,
+    std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+    EditorAPI* editorAPI_,
+    std::shared_ptr<UndoableModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(panelName), mainUIStateAPI, editorAPI, std::move(model))}
+    m_Impl{std::make_unique<Impl>(std::move(panelName_), std::move(mainUIStateAPI_), editorAPI_, std::move(model_))}
 {
 }
 osc::ModelEditorViewerPanel::ModelEditorViewerPanel(ModelEditorViewerPanel&&) noexcept = default;

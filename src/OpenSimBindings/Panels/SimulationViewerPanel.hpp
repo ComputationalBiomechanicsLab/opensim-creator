@@ -16,7 +16,7 @@ namespace osc
         SimulationViewerPanel(
             std::string_view panelName,
             std::shared_ptr<VirtualModelStatePair>,
-            MainUIStateAPI*
+            std::weak_ptr<MainUIStateAPI>
         );
         SimulationViewerPanel(SimulationViewerPanel const&) = delete;
         SimulationViewerPanel(SimulationViewerPanel&&) noexcept;

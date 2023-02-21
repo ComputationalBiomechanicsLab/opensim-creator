@@ -36,7 +36,7 @@ osc::CStringView osc::ImGuiDemoTab::id() noexcept
     return "Demos/ImGui";
 }
 
-osc::ImGuiDemoTab::ImGuiDemoTab(TabHost*) :
+osc::ImGuiDemoTab::ImGuiDemoTab(std::weak_ptr<TabHost>) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

@@ -16,7 +16,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        RendererMultipleLightsTab(TabHost*);
+        explicit RendererMultipleLightsTab(std::weak_ptr<TabHost>);
         RendererMultipleLightsTab(RendererMultipleLightsTab const&) = delete;
         RendererMultipleLightsTab(RendererMultipleLightsTab&&) noexcept;
         RendererMultipleLightsTab& operator=(RendererMultipleLightsTab const&) = delete;

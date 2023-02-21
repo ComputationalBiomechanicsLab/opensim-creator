@@ -533,36 +533,14 @@ namespace
 class osc::ModelWarpingTab::Impl final {
 public:
 
-    Impl(TabHost* parent) :
-        m_Parent{std::move(parent)}
-    {
-    }
-
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
-        return m_Name;
-    }
-
-    void onMount()
-    {
-    }
-
-    void onUnmount()
-    {
-    }
-
-    bool onEvent(SDL_Event const&)
-    {
-        return false;
-    }
-
-    void onTick()
-    {
+        return ICON_FA_BEZIER_CURVE " ModelWarping";
     }
 
     void onDrawMainMenu()
@@ -607,11 +585,7 @@ public:
     }
 
 private:
-
-    // tab data
-    UID m_ID;
-    std::string m_Name = ICON_FA_BEZIER_CURVE " ModelWarping";
-    TabHost* m_Parent;
+    UID m_TabID;
 
     // top-level state that all panels can potentially access
     std::shared_ptr<ModelWarpingTabState> m_State = std::make_shared<ModelWarpingTabState>();
@@ -629,8 +603,8 @@ osc::CStringView osc::ModelWarpingTab::id() noexcept
     return "Warping/OpenSim";
 }
 
-osc::ModelWarpingTab::ModelWarpingTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::ModelWarpingTab::ModelWarpingTab(std::weak_ptr<TabHost>) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -644,26 +618,6 @@ osc::UID osc::ModelWarpingTab::implGetID() const
 osc::CStringView osc::ModelWarpingTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-void osc::ModelWarpingTab::implOnMount()
-{
-    m_Impl->onMount();
-}
-
-void osc::ModelWarpingTab::implOnUnmount()
-{
-    m_Impl->onUnmount();
-}
-
-bool osc::ModelWarpingTab::implOnEvent(SDL_Event const& e)
-{
-    return m_Impl->onEvent(e);
-}
-
-void osc::ModelWarpingTab::implOnTick()
-{
-    m_Impl->onTick();
 }
 
 void osc::ModelWarpingTab::implOnDrawMainMenu()

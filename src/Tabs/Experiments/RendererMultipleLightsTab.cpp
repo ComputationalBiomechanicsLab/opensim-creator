@@ -257,7 +257,7 @@ osc::CStringView osc::RendererMultipleLightsTab::id() noexcept
     return "Renderer/MultipleLights";
 }
 
-osc::RendererMultipleLightsTab::RendererMultipleLightsTab(TabHost*) :
+osc::RendererMultipleLightsTab::RendererMultipleLightsTab(std::weak_ptr<TabHost>) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

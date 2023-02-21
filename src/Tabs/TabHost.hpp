@@ -20,7 +20,7 @@ namespace osc
         virtual ~TabHost() noexcept = default;
 
         template<typename T, typename... Args>
-        UID addTab(Args... args)
+        UID addTab(Args&&... args)
         {
             return addTab(std::make_unique<T>(std::forward<Args>(args)...));
         }
@@ -29,6 +29,13 @@ namespace osc
         void selectTab(UID);
         void closeTab(UID);
         void resetImgui();
+
+        template<typename T, typename... Args>
+        void addAndSelectTab(Args&&... args)
+        {
+            UID const tabID = addTab<T>(std::forward<Args>(args)...);
+            selectTab(tabID);
+        }
 
     private:
         virtual UID implAddTab(std::unique_ptr<Tab>) = 0;

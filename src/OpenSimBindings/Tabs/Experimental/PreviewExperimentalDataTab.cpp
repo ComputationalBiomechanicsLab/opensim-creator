@@ -534,8 +534,7 @@ namespace
 class osc::PreviewExperimentalDataTab::Impl final {
 public:
 
-    Impl(TabHost* parent) :
-        m_Parent{std::move(parent)}
+    Impl()
     {
         log::info("%s", StreamToString(m_Motion).c_str());
     }
@@ -547,28 +546,7 @@ public:
 
     CStringView getName() const
     {
-        return m_Name;
-    }
-
-    void onMount()
-    {
-    }
-
-    void onUnmount()
-    {
-    }
-
-    bool onEvent(SDL_Event const&)
-    {
-        return false;
-    }
-
-    void onTick()
-    {
-    }
-
-    void onDrawMainMenu()
-    {
+        return ICON_FA_DOT_CIRCLE " Experimental Data";
     }
 
     void onDraw()
@@ -661,10 +639,7 @@ private:
         // use it to set scene annotations based on whether user is clicking or not
     }
 
-    // tab state
     UID m_TabID;
-    std::string m_Name = ICON_FA_DOT_CIRCLE " Experimental Data";
-    TabHost* m_Parent;
 
     // scene state
     std::shared_ptr<LoadedMotion const> m_Motion = std::make_shared<LoadedMotion>(TryLoadOrPrompt(R"(E:\OneDrive\work_current\Gijs - IMU fitting\abduction_bad2.sto)"));
@@ -693,8 +668,8 @@ osc::CStringView osc::PreviewExperimentalDataTab::id() noexcept
     return "OpenSim/PreviewExperimentalData";
 }
 
-osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(std::weak_ptr<TabHost>) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -710,31 +685,6 @@ osc::UID osc::PreviewExperimentalDataTab::implGetID() const
 osc::CStringView osc::PreviewExperimentalDataTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-void osc::PreviewExperimentalDataTab::implOnMount()
-{
-    m_Impl->onMount();
-}
-
-void osc::PreviewExperimentalDataTab::implOnUnmount()
-{
-    m_Impl->onUnmount();
-}
-
-bool osc::PreviewExperimentalDataTab::implOnEvent(SDL_Event const& e)
-{
-    return m_Impl->onEvent(e);
-}
-
-void osc::PreviewExperimentalDataTab::implOnTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::PreviewExperimentalDataTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::PreviewExperimentalDataTab::implOnDraw()

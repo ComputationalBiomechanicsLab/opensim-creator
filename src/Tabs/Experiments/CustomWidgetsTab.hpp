@@ -16,7 +16,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        CustomWidgetsTab(TabHost*);
+        explicit CustomWidgetsTab(std::weak_ptr<TabHost>);
         CustomWidgetsTab(CustomWidgetsTab const&) = delete;
         CustomWidgetsTab(CustomWidgetsTab&&) noexcept;
         CustomWidgetsTab& operator=(CustomWidgetsTab const&) = delete;

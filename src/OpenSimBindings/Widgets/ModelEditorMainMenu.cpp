@@ -34,13 +34,13 @@ auto constexpr c_EditorScreenPanels = osc::MakeArray<char const* const>
 class osc::ModelEditorMainMenu::Impl final {
 public:
     Impl(
-        MainUIStateAPI* mainStateAPI,
-        EditorAPI* editorAPI,
-        std::shared_ptr<UndoableModelStatePair> model) :
+        std::weak_ptr<MainUIStateAPI> mainStateAPI_,
+        EditorAPI* editorAPI_,
+        std::shared_ptr<UndoableModelStatePair> model_) :
 
-        m_MainUIStateAPI{mainStateAPI},
-        m_EditorAPI{editorAPI},
-        m_Model{std::move(model)}
+        m_MainUIStateAPI{std::move(mainStateAPI_)},
+        m_EditorAPI{editorAPI_},
+        m_Model{std::move(model_)}
     {
     }
 
@@ -96,17 +96,17 @@ private:
         {
             if (ImGui::MenuItem(ICON_FA_PLAY " Simulate", "Ctrl+R"))
             {
-                osc::ActionStartSimulatingModel(*m_MainUIStateAPI, *m_Model);
+                osc::ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);
             }
 
             if (ImGui::MenuItem(ICON_FA_EDIT " Edit simulation settings"))
             {
-                m_EditorAPI->pushPopup(std::make_unique<osc::ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
+                m_EditorAPI->pushPopup(std::make_unique<osc::ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI.lock()->updSimulationParams()));
             }
 
             if (ImGui::MenuItem("Simulate Against All Integrators (advanced)"))
             {
-                osc::ActionSimulateAgainstAllIntegrators(*m_MainUIStateAPI, *m_Model);
+                osc::ActionSimulateAgainstAllIntegrators(m_MainUIStateAPI, *m_Model);
             }
             osc::DrawTooltipIfItemHovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
 
@@ -132,7 +132,7 @@ private:
         }
     }
 
-    MainUIStateAPI* m_MainUIStateAPI;
+    std::weak_ptr<MainUIStateAPI> m_MainUIStateAPI;
     EditorAPI* m_EditorAPI;
     std::shared_ptr<osc::UndoableModelStatePair> m_Model;
     MainMenuFileTab m_MainMenuFileTab;
@@ -145,11 +145,11 @@ private:
 // public API (PIMPL)
 
 osc::ModelEditorMainMenu::ModelEditorMainMenu(
-    MainUIStateAPI* mainStateAPI,
-    EditorAPI* editorAPI,
-    std::shared_ptr<UndoableModelStatePair> model) :
+    std::weak_ptr<MainUIStateAPI> mainStateAPI_,
+    EditorAPI* editorAPI_,
+    std::shared_ptr<UndoableModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(mainStateAPI, editorAPI, std::move(model))}
+    m_Impl{std::make_unique<Impl>(std::move(mainStateAPI_), editorAPI_, std::move(model_))}
 {
 }
 

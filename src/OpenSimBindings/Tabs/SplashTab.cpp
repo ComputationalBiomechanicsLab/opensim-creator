@@ -68,7 +68,7 @@ namespace
 class osc::SplashTab::Impl final {
 public:
 
-    Impl(MainUIStateAPI* parent) : m_Parent{std::move(parent)}
+    Impl(std::weak_ptr<MainUIStateAPI> parent_) : m_Parent{std::move(parent_)}
     {
         m_OscLogo.setFilterMode(osc::TextureFilterMode::Linear);
         m_CziLogo.setFilterMode(osc::TextureFilterMode::Linear);
@@ -77,12 +77,12 @@ public:
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
-        return m_Name;
+        return ICON_FA_HOME;
     }
 
     void onMount()
@@ -100,15 +100,10 @@ public:
         if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".osim"))
         {
             // if the user drops an osim file on this tab then it should be loaded
-            UID const tabID = m_Parent->addTab<LoadingTab>(m_Parent, e.drop.file);
-            m_Parent->selectTab(tabID);
+            m_Parent.lock()->addAndSelectTab<LoadingTab>(m_Parent, e.drop.file);
             return true;
         }
         return false;
-    }
-
-    void onTick()
-    {
     }
 
     void drawMainMenu()
@@ -217,16 +212,15 @@ private:
 
                 if (ImGui::MenuItem(ICON_FA_FILE_ALT " New Model"))
                 {
-                    ActionNewModel(*m_Parent);
+                    ActionNewModel(m_Parent);
                 }
                 if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Open Model"))
                 {
-                    ActionOpenModel(*m_Parent);
+                    ActionOpenModel(m_Parent);
                 }
                 if (ImGui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
                 {
-                    UID const tabID = m_Parent->addTab<MeshImporterTab>(m_Parent);
-                    m_Parent->selectTab(tabID);
+                    m_Parent.lock()->addAndSelectTab<MeshImporterTab>(m_Parent);
                 }
                 osc::App::upd().addFrameAnnotation("SplashTab/ImportMeshesMenuItem", osc::GetItemRect());
                 if (ImGui::MenuItem(ICON_FA_BOOK " Open Documentation"))
@@ -252,8 +246,7 @@ private:
                     ImGui::PushID(++imguiID);
                     if (ImGui::MenuItem(label.c_str()))
                     {
-                        UID const tabID = m_Parent->addTab<LoadingTab>(m_Parent, rf.path);
-                        m_Parent->selectTab(tabID);
+                        m_Parent.lock()->addAndSelectTab<LoadingTab>(m_Parent, rf.path);
                     }
                     ImGui::PopID();
                 }
@@ -282,7 +275,7 @@ private:
                     ImGui::PushID(++imguiID);
                     if (ImGui::MenuItem(label.c_str()))
                     {
-                        m_Parent->selectTab(m_Parent->addTab<LoadingTab>(m_Parent, ex));
+                        m_Parent.lock()->addAndSelectTab<LoadingTab>(m_Parent, ex);
                     }
                     ImGui::PopID();
                 }
@@ -332,9 +325,8 @@ private:
     }
 
     // tab data
-    UID m_ID;
-    std::string m_Name = ICON_FA_HOME;
-    MainUIStateAPI* m_Parent;
+    UID m_TabID;
+    std::weak_ptr<MainUIStateAPI> m_Parent;
 
     // for rendering the 3D scene
     osc::PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();
@@ -362,8 +354,8 @@ private:
 
 // public API (PIMPL)
 
-osc::SplashTab::SplashTab(MainUIStateAPI* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::SplashTab::SplashTab(std::weak_ptr<MainUIStateAPI> parent_) :
+    m_Impl{std::make_unique<Impl>(std::move(parent_))}
 {
 }
 
@@ -394,11 +386,6 @@ void osc::SplashTab::implOnUnmount()
 bool osc::SplashTab::implOnEvent(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
-}
-
-void osc::SplashTab::implOnTick()
-{
-    m_Impl->onTick();
 }
 
 void osc::SplashTab::implOnDrawMainMenu()

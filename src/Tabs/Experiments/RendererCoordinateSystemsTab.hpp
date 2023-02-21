@@ -16,7 +16,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        RendererCoordinateSystemsTab(TabHost*);
+        explicit RendererCoordinateSystemsTab(std::weak_ptr<TabHost>);
         RendererCoordinateSystemsTab(RendererCoordinateSystemsTab const&) = delete;
         RendererCoordinateSystemsTab(RendererCoordinateSystemsTab&&) noexcept;
         RendererCoordinateSystemsTab& operator=(RendererCoordinateSystemsTab const&) = delete;

@@ -3916,7 +3916,7 @@ namespace
         glm::vec3 Pos;
     };
 
-    class SharedData final : public std::enable_shared_from_this<SharedData> {
+    class SharedData final {
     public:
         SharedData() = default;
 
@@ -6001,21 +6001,24 @@ namespace
 // mesh importer tab implementation
 class osc::MeshImporterTab::Impl final : public LayerHost {
 public:
-    Impl(MainUIStateAPI* parent) :
-        m_Parent{std::move(parent)},
+    Impl(std::weak_ptr<MainUIStateAPI> parent_) :
+        m_Parent{std::move(parent_)},
         m_Shared{std::make_shared<SharedData>()}
     {
     }
 
-    Impl(MainUIStateAPI* parent, std::vector<std::filesystem::path> meshPaths) :
-        m_Parent{std::move(parent)},
-        m_Shared{std::make_shared<SharedData>(std::move(meshPaths))}
+    Impl(
+        std::weak_ptr<MainUIStateAPI> parent_,
+        std::vector<std::filesystem::path> meshPaths_) :
+
+        m_Parent{std::move(parent_)},
+        m_Shared{std::make_shared<SharedData>(std::move(meshPaths_))}
     {
     }
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
@@ -6088,21 +6091,20 @@ public:
         {
             auto ptr = std::make_unique<UndoableModelStatePair>(std::move(m_Shared->UpdOutputModel()));
             ptr->setFixupScaleFactor(m_Shared->GetSceneScaleFactor());
-            UID tabID = m_Parent->addTab<ModelEditorTab>(m_Parent, std::move(ptr));
-            m_Parent->selectTab(tabID);
+            m_Parent.lock()->addAndSelectTab<ModelEditorTab>(m_Parent, std::move(ptr));
         }
 
         m_Name = m_Shared->GetRecommendedTitle();
 
         if (m_Shared->IsCloseRequested())
         {
-            m_Parent->closeTab(m_ID);
+            m_Parent.lock()->closeTab(m_TabID);
             m_Shared->ResetRequestClose();
         }
 
         if (m_Shared->IsNewMeshImpoterTabRequested())
         {
-            m_Parent->selectTab(m_Parent->addTab<MeshImporterTab>(m_Parent));
+            m_Parent.lock()->addAndSelectTab<MeshImporterTab>(m_Parent);
             m_Shared->ResetRequestNewMeshImporter();
         }
     }
@@ -8197,8 +8199,8 @@ private:
     }
 
     // tab data
-    UID m_ID;
-    MainUIStateAPI* m_Parent;
+    UID m_TabID;
+    std::weak_ptr<MainUIStateAPI> m_Parent;
     std::string m_Name = "MeshImporterTab";
 
     // data shared between states
@@ -8228,13 +8230,18 @@ private:
 
 // public API (PIMPL)
 
-osc::MeshImporterTab::MeshImporterTab(MainUIStateAPI* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::MeshImporterTab::MeshImporterTab(
+    std::weak_ptr<MainUIStateAPI> parent_) :
+
+    m_Impl{std::make_unique<Impl>(std::move(parent_))}
 {
 }
 
-osc::MeshImporterTab::MeshImporterTab(MainUIStateAPI* parent, std::vector<std::filesystem::path> files) :
-    m_Impl{std::make_unique<Impl>(std::move(parent), std::move(files))}
+osc::MeshImporterTab::MeshImporterTab(
+    std::weak_ptr<MainUIStateAPI> parent_,
+    std::vector<std::filesystem::path> files_) :
+
+    m_Impl{std::make_unique<Impl>(std::move(parent_), std::move(files_))}
 {
 }
 

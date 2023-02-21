@@ -13,7 +13,11 @@ namespace osc
 {
     class OutputWatchesPanel final : public Panel {
     public:
-        OutputWatchesPanel(std::string_view panelName, std::shared_ptr<UndoableModelStatePair>, MainUIStateAPI*);
+        OutputWatchesPanel(
+            std::string_view panelName,
+            std::shared_ptr<UndoableModelStatePair>,
+            std::weak_ptr<MainUIStateAPI>
+        );
         OutputWatchesPanel(OutputWatchesPanel const&) = delete;
         OutputWatchesPanel(OutputWatchesPanel&&) noexcept;
         OutputWatchesPanel& operator=(OutputWatchesPanel const&) = delete;

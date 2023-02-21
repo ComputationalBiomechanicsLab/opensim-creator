@@ -7,12 +7,13 @@
 #include <memory>
 
 namespace osc { struct AnnotatedImage; }
+namespace osc { class TabHost; }
 
 namespace osc
 {
     class ScreenshotTab final : public Tab {
     public:
-        ScreenshotTab(TabHost*, AnnotatedImage&&);
+        ScreenshotTab(std::weak_ptr<TabHost>, AnnotatedImage&&);
         ScreenshotTab(ScreenshotTab const&) = delete;
         ScreenshotTab(ScreenshotTab&&) noexcept;
         ScreenshotTab& operator=(ScreenshotTab const&) = delete;

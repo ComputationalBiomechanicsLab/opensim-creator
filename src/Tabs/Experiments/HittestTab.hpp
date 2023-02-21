@@ -16,7 +16,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        HittestTab(TabHost*);
+        explicit HittestTab(std::weak_ptr<TabHost>);
         HittestTab(HittestTab const&) = delete;
         HittestTab(HittestTab&&) noexcept;
         HittestTab& operator=(HittestTab const&) = delete;

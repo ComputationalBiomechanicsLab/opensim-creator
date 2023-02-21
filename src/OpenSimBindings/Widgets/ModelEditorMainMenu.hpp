@@ -11,7 +11,7 @@ namespace osc
     class ModelEditorMainMenu final {
     public:
         ModelEditorMainMenu(
-            MainUIStateAPI*,
+            std::weak_ptr<MainUIStateAPI>,
             EditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );

@@ -64,11 +64,11 @@ class osc::SimulatorTab::Impl final : public SimulatorUIAPI {
 public:
 
     Impl(
-        MainUIStateAPI* api,
-        std::shared_ptr<Simulation> simulation) :
+        std::weak_ptr<MainUIStateAPI> parent_,
+        std::shared_ptr<Simulation> simulation_) :
 
-        m_API{std::move(api)},
-        m_Simulation{std::move(simulation)}
+        m_Parent{std::move(parent_)},
+        m_Simulation{std::move(simulation_)}
     {
         // register panels
 
@@ -83,28 +83,42 @@ public:
             "Navigator",
             [this](std::string_view panelName)
             {
-                return std::make_shared<NavigatorPanel>(panelName, m_ShownModelState);
+                return std::make_shared<NavigatorPanel>(
+                    panelName,
+                    m_ShownModelState
+                );
             }
         );
         m_PanelManager->registerToggleablePanel(
             "Selection Details",
             [this](std::string_view panelName)
             {
-                return std::make_shared<SelectionDetailsPanel>(panelName, this);
+                return std::make_shared<SelectionDetailsPanel>(
+                    panelName,
+                    this
+                );
             }
         );
         m_PanelManager->registerToggleablePanel(
             "Output Plots",
             [this](std::string_view panelName)
             {
-                return std::make_shared<OutputPlotsPanel>(panelName, m_API, this);
+                return std::make_shared<OutputPlotsPanel>(
+                    panelName,
+                    m_Parent,
+                    this
+                );
             }
         );
         m_PanelManager->registerToggleablePanel(
             "Simulation Details",
             [this](std::string_view panelName)
             {
-                return std::make_shared<SimulationDetailsPanel>(panelName, this, m_Simulation);
+                return std::make_shared<SimulationDetailsPanel>(
+                    panelName,
+                    this,
+                    m_Simulation
+                );
             }
         );
         m_PanelManager->registerToggleablePanel(
@@ -118,7 +132,11 @@ public:
             "viewer",
             [this](std::string_view panelName)
             {
-                return std::make_shared<SimulationViewerPanel>(panelName, m_ShownModelState, m_API);
+                return std::make_shared<SimulationViewerPanel>(
+                    panelName,
+                    m_ShownModelState,
+                    m_Parent
+                );
             }
         );
 
@@ -128,7 +146,7 @@ public:
             std::make_shared<SimulationViewerPanel>(
                 m_PanelManager->computeSuggestedDynamicPanelName("viewer"),
                 m_ShownModelState,
-                m_API
+                m_Parent
             )
         );
 
@@ -180,7 +198,7 @@ public:
 
     void onDrawMainMenu()
     {
-        m_MainMenuFileTab.draw(m_API);
+        m_MainMenuFileTab.draw(m_Parent);
         m_MainMenuWindowTab.draw();
         m_MainMenuAboutTab.draw();
     }
@@ -320,32 +338,32 @@ private:
 
     int implGetNumUserOutputExtractors() const final
     {
-        return m_API->getNumUserOutputExtractors();
+        return m_Parent.lock()->getNumUserOutputExtractors();
     }
 
     OutputExtractor const& implGetUserOutputExtractor(int i) const final
     {
-        return m_API->getUserOutputExtractor(i);
+        return m_Parent.lock()->getUserOutputExtractor(i);
     }
 
     void implAddUserOutputExtractor(OutputExtractor const& outputExtractor) final
     {
-        m_API->addUserOutputExtractor(outputExtractor);
+        m_Parent.lock()->addUserOutputExtractor(outputExtractor);
     }
 
     void implRemoveUserOutputExtractor(int i) final
     {
-        m_API->removeUserOutputExtractor(i);
+        m_Parent.lock()->removeUserOutputExtractor(i);
     }
 
     bool implHasUserOutputExtractor(OutputExtractor const& oe) const final
     {
-        return m_API->hasUserOutputExtractor(oe);
+        return m_Parent.lock()->hasUserOutputExtractor(oe);
     }
 
     bool implRemoveUserOutputExtractor(OutputExtractor const& oe) final
     {
-        return m_API->removeUserOutputExtractor(oe);
+        return m_Parent.lock()->removeUserOutputExtractor(oe);
     }
 
     SimulationModelStatePair* implTryGetCurrentSimulationState() final
@@ -395,8 +413,8 @@ private:
 
     // tab data
     UID m_ID;
+    std::weak_ptr<MainUIStateAPI> m_Parent;
     std::string m_Name = ICON_FA_PLAY " Simulation_" + std::to_string(g_SimulationNumber++);
-    MainUIStateAPI* m_API;
 
     // underlying simulation being shown
     std::shared_ptr<Simulation> m_Simulation;
@@ -425,8 +443,11 @@ private:
 
 // public API (PIMPL)
 
-osc::SimulatorTab::SimulatorTab(MainUIStateAPI* api, std::shared_ptr<Simulation> simulation) :
-    m_Impl{std::make_unique<Impl>(std::move(api), std::move(simulation))}
+osc::SimulatorTab::SimulatorTab(
+    std::weak_ptr<MainUIStateAPI> parent_,
+    std::shared_ptr<Simulation> simulation_) :
+
+    m_Impl{std::make_unique<Impl>(std::move(parent_), std::move(simulation_))}
 {
 }
 

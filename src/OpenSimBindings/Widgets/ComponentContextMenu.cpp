@@ -216,17 +216,18 @@ namespace
 
 class osc::ComponentContextMenu::Impl final : public osc::StandardPopup {
 public:
-    Impl(std::string_view popupName,
-         MainUIStateAPI* mainUIStateAPI,
-         EditorAPI* editorAPI,
-         std::shared_ptr<UndoableModelStatePair> model,
-         OpenSim::ComponentPath const& path) :
+    Impl(
+        std::string_view popupName_,
+        std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+        EditorAPI* editorAPI_,
+        std::shared_ptr<UndoableModelStatePair> model_,
+        OpenSim::ComponentPath const& path_) :
 
-        StandardPopup{popupName, {10.0f, 10.0f}, ImGuiWindowFlags_NoMove},
-        m_MainUIStateAPI{std::move(mainUIStateAPI)},
-        m_EditorAPI{std::move(editorAPI)},
-        m_Model{std::move(model)},
-        m_Path{path}
+        StandardPopup{popupName_, {10.0f, 10.0f}, ImGuiWindowFlags_NoMove},
+        m_MainUIStateAPI{std::move(mainUIStateAPI_)},
+        m_EditorAPI{std::move(editorAPI_)},
+        m_Model{std::move(model_)},
+        m_Path{path_}
     {
         setModal(false);
         OSC_ASSERT(m_Model != nullptr);
@@ -273,7 +274,7 @@ private:
         ImGui::Dummy({0.0f, 3.0f});
 
         //DrawSelectOwnerMenu(*m_Model, *c);
-        DrawWatchOutputMenu(*m_MainUIStateAPI, *c);
+        DrawWatchOutputMenu(*m_MainUIStateAPI.lock(), *c);
 
         if (ImGui::BeginMenu("Display"))
         {
@@ -458,7 +459,7 @@ private:
         }
     }
 
-    MainUIStateAPI* m_MainUIStateAPI = nullptr;
+    std::weak_ptr<MainUIStateAPI> m_MainUIStateAPI;
     EditorAPI* m_EditorAPI = nullptr;
     std::shared_ptr<UndoableModelStatePair> m_Model;
     OpenSim::ComponentPath m_Path;
@@ -469,13 +470,13 @@ private:
 // public API (PIMPL)
 
 osc::ComponentContextMenu::ComponentContextMenu(
-    std::string_view popupName,
-    MainUIStateAPI* mainUIStateAPI,
-    EditorAPI* editorAPI,
-    std::shared_ptr<UndoableModelStatePair> model,
-    OpenSim::ComponentPath const& path) :
+    std::string_view popupName_,
+    std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+    EditorAPI* editorAPI_,
+    std::shared_ptr<UndoableModelStatePair> model_,
+    OpenSim::ComponentPath const& path_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(popupName), std::move(mainUIStateAPI), std::move(editorAPI), std::move(model), path)}
+    m_Impl{std::make_unique<Impl>(std::move(popupName_), std::move(mainUIStateAPI_), std::move(editorAPI_), std::move(model_), path_)}
 {
 }
 

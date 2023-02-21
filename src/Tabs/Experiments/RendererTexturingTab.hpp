@@ -14,7 +14,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        RendererTexturingTab(TabHost*);
+        explicit RendererTexturingTab(std::weak_ptr<TabHost>);
         RendererTexturingTab(RendererTexturingTab const&) = delete;
         RendererTexturingTab(RendererTexturingTab&&) noexcept;
         RendererTexturingTab& operator=(RendererTexturingTab const&) = delete;

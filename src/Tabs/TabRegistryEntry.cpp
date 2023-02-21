@@ -11,7 +11,10 @@
 class osc::TabRegistryEntry::Impl final {
 public:
 
-    Impl(CStringView name_, std::function<std::unique_ptr<Tab>(TabHost*)> constructor_) :
+    Impl(
+        CStringView name_,
+        std::function<std::unique_ptr<Tab>(std::weak_ptr<TabHost>)> constructor_) :
+
         m_Name{std::move(name_)},
         m_Constructor{std::move(constructor_)}
     {
@@ -22,17 +25,20 @@ public:
         return m_Name;
     }
 
-    std::unique_ptr<Tab> createTab(TabHost* host) const
+    std::unique_ptr<Tab> createTab(std::weak_ptr<TabHost> host) const
     {
         return m_Constructor(std::move(host));
     }
 
 private:
     std::string m_Name;
-    std::function<std::unique_ptr<Tab>(TabHost*)> m_Constructor;
+    std::function<std::unique_ptr<Tab>(std::weak_ptr<TabHost>)> m_Constructor;
 };
 
-osc::TabRegistryEntry::TabRegistryEntry(CStringView name_, std::function<std::unique_ptr<Tab>(TabHost*)> ctor_) :
+osc::TabRegistryEntry::TabRegistryEntry(
+    CStringView name_,
+    std::function<std::unique_ptr<Tab>(std::weak_ptr<TabHost>)> ctor_) :
+
     m_Impl{std::make_shared<Impl>(std::move(name_), std::move(ctor_))}
 {
 }
@@ -48,7 +54,7 @@ osc::CStringView osc::TabRegistryEntry::getName() const
     return m_Impl->getName();
 }
 
-std::unique_ptr<osc::Tab> osc::TabRegistryEntry::createTab(TabHost* host) const
+std::unique_ptr<osc::Tab> osc::TabRegistryEntry::createTab(std::weak_ptr<TabHost> host) const
 {
     return m_Impl->createTab(std::move(host));
 }

@@ -92,7 +92,7 @@ osc::CStringView osc::RendererHelloTriangleTab::id() noexcept
     return "Renderer/HelloTriangle";
 }
 
-osc::RendererHelloTriangleTab::RendererHelloTriangleTab(TabHost*) :
+osc::RendererHelloTriangleTab::RendererHelloTriangleTab(std::weak_ptr<TabHost>) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

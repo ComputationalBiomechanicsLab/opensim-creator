@@ -11,7 +11,7 @@ namespace osc
     class EditorTabStatusBar final {
     public:
         EditorTabStatusBar(
-            MainUIStateAPI*,
+            std::weak_ptr<MainUIStateAPI>,
             EditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );

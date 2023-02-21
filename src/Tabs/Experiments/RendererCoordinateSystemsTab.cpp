@@ -189,7 +189,7 @@ osc::CStringView osc::RendererCoordinateSystemsTab::id() noexcept
     return "Renderer/CoordinateSystems";
 }
 
-osc::RendererCoordinateSystemsTab::RendererCoordinateSystemsTab(TabHost*) :
+osc::RendererCoordinateSystemsTab::RendererCoordinateSystemsTab(std::weak_ptr<TabHost>) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

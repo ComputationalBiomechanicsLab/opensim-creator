@@ -14,7 +14,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        RendererHelloTriangleTab(TabHost*);
+        explicit RendererHelloTriangleTab(std::weak_ptr<TabHost>);
         RendererHelloTriangleTab(RendererHelloTriangleTab const&) = delete;
         RendererHelloTriangleTab(RendererHelloTriangleTab&&) noexcept;
         RendererHelloTriangleTab& operator=(RendererHelloTriangleTab const&) = delete;

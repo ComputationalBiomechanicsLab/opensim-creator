@@ -4,6 +4,7 @@
 #include "src/Widgets/SaveChangesPopup.hpp"
 
 #include <filesystem>
+#include <memory>
 #include <vector>
 #include <optional>
 
@@ -16,7 +17,7 @@ namespace osc
     public:
         MainMenuFileTab();
 
-        void draw(MainUIStateAPI*, UndoableModelStatePair* = nullptr);
+        void draw(std::weak_ptr<MainUIStateAPI>, UndoableModelStatePair* = nullptr);
 
         std::vector<std::filesystem::path> exampleOsimFiles;
         std::vector<RecentFile> recentlyOpenedFiles;

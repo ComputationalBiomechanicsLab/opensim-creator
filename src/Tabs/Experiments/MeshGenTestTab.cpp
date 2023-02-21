@@ -133,7 +133,7 @@ osc::CStringView osc::MeshGenTestTab::id() noexcept
     return "MeshGen/Test";
 }
 
-osc::MeshGenTestTab::MeshGenTestTab(TabHost*) :
+osc::MeshGenTestTab::MeshGenTestTab(std::weak_ptr<TabHost>) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

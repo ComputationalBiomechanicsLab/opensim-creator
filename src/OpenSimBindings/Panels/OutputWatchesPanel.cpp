@@ -49,7 +49,7 @@ public:
 
     Impl(std::string_view panelName_,
         std::shared_ptr<UndoableModelStatePair> model_,
-        MainUIStateAPI* api_) :
+        std::weak_ptr<MainUIStateAPI> api_) :
 
         StandardPanel{std::move(panelName_)},
         m_API{std::move(api_)},
@@ -62,16 +62,17 @@ private:
     {
         UpdateCachedSimulationReportIfNecessary(*m_Model, m_CachedReport);
 
-        if (m_API->getNumUserOutputExtractors() > 0 && ImGui::BeginTable("##OutputWatchesTable", 2, ImGuiTableFlags_SizingStretchProp))
+        std::shared_ptr<MainUIStateAPI> api = m_API.lock();
+        if (api->getNumUserOutputExtractors() > 0 && ImGui::BeginTable("##OutputWatchesTable", 2, ImGuiTableFlags_SizingStretchProp))
         {
             ImGui::TableSetupColumn("Output", ImGuiTableColumnFlags_WidthStretch);
             ImGui::TableSetupColumn("Value");
             ImGui::TableHeadersRow();
 
-            for (int outputIdx = 0; outputIdx < m_API->getNumUserOutputExtractors(); ++outputIdx)
+            for (int outputIdx = 0; outputIdx < api->getNumUserOutputExtractors(); ++outputIdx)
             {
                 int column = 0;
-                OutputExtractor o = m_API->getUserOutputExtractor(outputIdx);
+                OutputExtractor o = api->getUserOutputExtractor(outputIdx);
 
                 ImGui::PushID(outputIdx);
 
@@ -80,7 +81,7 @@ private:
                 ImGui::TableSetColumnIndex(column++);
                 if (ImGui::SmallButton(ICON_FA_TRASH))
                 {
-                    m_API->removeUserOutputExtractor(outputIdx);
+                    api->removeUserOutputExtractor(outputIdx);
                 }
                 ImGui::SameLine();
                 ImGui::TextUnformatted(o.getName().c_str());
@@ -99,7 +100,7 @@ private:
         }
     }
 
-    MainUIStateAPI* m_API;
+    std::weak_ptr<MainUIStateAPI> m_API;
     std::shared_ptr<UndoableModelStatePair> m_Model;
     CachedSimulationReport m_CachedReport;
 };
@@ -108,11 +109,11 @@ private:
 // public API (PIMPL)
 
 osc::OutputWatchesPanel::OutputWatchesPanel(
-    std::string_view panelName,
-    std::shared_ptr<UndoableModelStatePair> model,
-    MainUIStateAPI* api) :
+    std::string_view panelName_,
+    std::shared_ptr<UndoableModelStatePair> model_,
+    std::weak_ptr<MainUIStateAPI> api_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(panelName), std::move(model), std::move(api))}
+    m_Impl{std::make_unique<Impl>(std::move(panelName_), std::move(model_), std::move(api_))}
 {
 }
 

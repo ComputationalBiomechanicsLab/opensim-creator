@@ -48,11 +48,9 @@ class osc::PerformanceAnalyzerTab::Impl final {
 public:
 
     Impl(
-        TabHost* parent,
         BasicModelStatePair baseModel,
         osc::ParamBlock const& params) :
 
-        m_Parent{std::move(parent)},
         m_BaseModel{std::move(baseModel)},
         m_BaseParams{params}
     {
@@ -60,34 +58,17 @@ public:
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
-        return m_Name;
-    }
-
-    void onMount()
-    {
-    }
-
-    void onUnmount()
-    {
-    }
-
-    bool onEvent(SDL_Event const&)
-    {
-        return false;
+        return ICON_FA_FAST_FORWARD " PerformanceAnalyzerTab";
     }
 
     void onTick()
     {
         startSimsIfNecessary();
-    }
-
-    void onDrawMainMenu()
-    {
     }
 
     void onDraw()
@@ -232,27 +213,28 @@ private:
         }
     }
 
-    // tab data
-    UID m_ID;
-    std::string m_Name = ICON_FA_FAST_FORWARD " PerformanceAnalyzerTab";
-    TabHost* m_Parent;
+    UID m_TabID;
 
     int m_Parallelism = 1;
     BasicModelStatePair m_BaseModel;
-    osc::ParamBlock m_BaseParams;
-    std::vector<osc::ForwardDynamicSimulatorParams> m_Params;
-    std::vector<osc::ForwardDynamicSimulation> m_Sims;
+    ParamBlock m_BaseParams;
+    std::vector<ForwardDynamicSimulatorParams> m_Params;
+    std::vector<ForwardDynamicSimulation> m_Sims;
 
-    osc::OutputExtractor m_WalltimeExtractor = GetSimulatorOutputExtractor("Wall time");
-    osc::OutputExtractor m_StepsTakenExtractor = GetSimulatorOutputExtractor("NumStepsTaken");
-    osc::ParamBlockEditorPopup m_ParamEditor{"parameditor", &m_BaseParams};
+    OutputExtractor m_WalltimeExtractor = GetSimulatorOutputExtractor("Wall time");
+    OutputExtractor m_StepsTakenExtractor = GetSimulatorOutputExtractor("NumStepsTaken");
+    ParamBlockEditorPopup m_ParamEditor{"parameditor", &m_BaseParams};
 };
 
 
 // public API (PIMPL)
 
-osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(TabHost* parent, BasicModelStatePair modelState, ParamBlock const& params) :
-    m_Impl{std::make_unique<Impl>(std::move(parent), std::move(modelState), params)}
+osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(
+    std::weak_ptr<TabHost>,
+    BasicModelStatePair modelState,
+    ParamBlock const& params) :
+
+    m_Impl{std::make_unique<Impl>(std::move(modelState), params)}
 {
 }
 
@@ -270,29 +252,9 @@ osc::CStringView osc::PerformanceAnalyzerTab::implGetName() const
     return m_Impl->getName();
 }
 
-void osc::PerformanceAnalyzerTab::implOnMount()
-{
-    m_Impl->onMount();
-}
-
-void osc::PerformanceAnalyzerTab::implOnUnmount()
-{
-    m_Impl->onUnmount();
-}
-
-bool osc::PerformanceAnalyzerTab::implOnEvent(SDL_Event const& e)
-{
-    return m_Impl->onEvent(e);
-}
-
 void osc::PerformanceAnalyzerTab::implOnTick()
 {
     m_Impl->onTick();
-}
-
-void osc::PerformanceAnalyzerTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::PerformanceAnalyzerTab::implOnDraw()

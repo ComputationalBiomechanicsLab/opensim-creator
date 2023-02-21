@@ -4,8 +4,6 @@
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
 
-#include <SDL_events.h>
-
 #include <memory>
 
 namespace osc { class TabHost; }
@@ -16,7 +14,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        explicit TPS3DTab(TabHost*);
+        explicit TPS3DTab(std::weak_ptr<TabHost>);
         TPS3DTab(TPS3DTab const&) = delete;
         TPS3DTab(TPS3DTab&&) noexcept;
         TPS3DTab& operator=(TPS3DTab const&) = delete;
@@ -28,7 +26,6 @@ namespace osc
         CStringView implGetName() const final;
         void implOnMount() final;
         void implOnUnmount() final;
-        bool implOnEvent(SDL_Event const&) final;
         void implOnTick() final;
         void implOnDrawMainMenu() final;
         void implOnDraw() final;

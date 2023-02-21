@@ -17,7 +17,7 @@ namespace osc
     public:
         ComponentContextMenu(
             std::string_view popupName,
-            MainUIStateAPI*,
+            std::weak_ptr<MainUIStateAPI>,
             EditorAPI*,
             std::shared_ptr<UndoableModelStatePair>,
             OpenSim::ComponentPath const&

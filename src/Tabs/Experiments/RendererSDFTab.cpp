@@ -161,7 +161,7 @@ osc::CStringView osc::RendererSDFTab::id() noexcept
     return "Renderer/SDFTab";
 }
 
-osc::RendererSDFTab::RendererSDFTab(TabHost*) :
+osc::RendererSDFTab::RendererSDFTab(std::weak_ptr<TabHost>) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

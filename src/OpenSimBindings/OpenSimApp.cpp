@@ -65,7 +65,7 @@ namespace
         osc::TabRegistryEntry entry
         {
             TabType::id(),
-            [](osc::TabHost* h) { return std::make_unique<TabType>(h); },
+            [](std::weak_ptr<osc::TabHost> h) { return std::make_unique<TabType>(h); },
         };
         registry.registerTab(entry);
     }

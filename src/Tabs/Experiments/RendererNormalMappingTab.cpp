@@ -337,7 +337,7 @@ osc::CStringView osc::RendererNormalMappingTab::id() noexcept
     return "Renderer/NormalMapping";
 }
 
-osc::RendererNormalMappingTab::RendererNormalMappingTab(TabHost*) :
+osc::RendererNormalMappingTab::RendererNormalMappingTab(std::weak_ptr<TabHost>) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

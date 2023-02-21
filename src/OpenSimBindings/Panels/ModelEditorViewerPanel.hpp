@@ -16,7 +16,7 @@ namespace osc
     public:
         ModelEditorViewerPanel(
             std::string_view panelName,
-            MainUIStateAPI*,
+            std::weak_ptr<MainUIStateAPI>,
             EditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );

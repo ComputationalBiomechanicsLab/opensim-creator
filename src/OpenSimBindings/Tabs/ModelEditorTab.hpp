@@ -9,14 +9,16 @@
 #include <memory>
 
 namespace osc { class MainUIStateAPI; }
-namespace osc { class TabHost; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
     class ModelEditorTab final : public Tab {
     public:
-        ModelEditorTab(MainUIStateAPI*, std::unique_ptr<UndoableModelStatePair>);
+        ModelEditorTab(
+            std::weak_ptr<MainUIStateAPI>,
+            std::unique_ptr<UndoableModelStatePair>
+        );
         ModelEditorTab(ModelEditorTab const&) = delete;
         ModelEditorTab(ModelEditorTab&&) noexcept;
         ModelEditorTab& operator=(ModelEditorTab const&) = delete;

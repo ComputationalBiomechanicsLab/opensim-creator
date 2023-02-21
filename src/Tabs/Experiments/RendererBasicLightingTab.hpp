@@ -16,7 +16,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        RendererBasicLightingTab(TabHost*);
+        explicit RendererBasicLightingTab(std::weak_ptr<TabHost>);
         RendererBasicLightingTab(RendererBasicLightingTab const&) = delete;
         RendererBasicLightingTab(RendererBasicLightingTab&&) noexcept;
         RendererBasicLightingTab& operator=(RendererBasicLightingTab const&) = delete;

@@ -7,11 +7,13 @@
 #include <exception>
 #include <memory>
 
+namespace osc { class TabHost; }
+
 namespace osc
 {
     class ErrorTab final : public Tab {
     public:
-        ErrorTab(TabHost*, std::exception const&);
+        ErrorTab(std::weak_ptr<TabHost>, std::exception const&);
         ErrorTab(ErrorTab const&) = delete;
         ErrorTab(ErrorTab&&) noexcept;
         ErrorTab& operator=(ErrorTab const&) = delete;

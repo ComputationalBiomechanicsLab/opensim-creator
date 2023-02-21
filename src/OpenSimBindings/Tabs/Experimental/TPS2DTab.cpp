@@ -349,7 +349,7 @@ namespace
 class osc::TPS2DTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{std::move(parent)}
+    Impl()
     {
         m_Material.setTexture("uTextureSampler", m_BoxTexture);
         m_WireframeMaterial.setVec4("uColor", {0.0f, 0.0f, 0.0f, 0.15f});
@@ -363,34 +363,12 @@ public:
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
-        return m_Name;
-    }
-
-    void onMount()
-    {
-    }
-
-    void onUnmount()
-    {
-    }
-
-    bool onEvent(SDL_Event const&)
-    {
-        return false;
-    }
-
-    void onTick()
-    {
-    }
-
-    void onDrawMainMenu()
-    {
-
+        return ICON_FA_BEZIER_CURVE " TPS2DTab";
     }
 
     void onDraw()
@@ -556,9 +534,7 @@ private:
     }
 
     // tab data
-    UID m_ID;
-    std::string m_Name = ICON_FA_BEZIER_CURVE " TPS2DTab";
-    TabHost* m_Parent;
+    UID m_TabID;
 
     // TPS algorithm state
     GUIMouseState m_MouseState = GUIInitialMouseState{};
@@ -596,8 +572,8 @@ osc::CStringView osc::TPS2DTab::id() noexcept
     return "Warping/TPS2D";
 }
 
-osc::TPS2DTab::TPS2DTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::TPS2DTab::TPS2DTab(std::weak_ptr<TabHost>) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -613,31 +589,6 @@ osc::UID osc::TPS2DTab::implGetID() const
 osc::CStringView osc::TPS2DTab::implGetName() const
 {
     return m_Impl->getName();
-}
-
-void osc::TPS2DTab::implOnMount()
-{
-    m_Impl->onMount();
-}
-
-void osc::TPS2DTab::implOnUnmount()
-{
-    m_Impl->onUnmount();
-}
-
-bool osc::TPS2DTab::implOnEvent(SDL_Event const& e)
-{
-    return m_Impl->onEvent(e);
-}
-
-void osc::TPS2DTab::implOnTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::TPS2DTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::TPS2DTab::implOnDraw()

@@ -14,7 +14,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        MeshGenTestTab(TabHost*);
+        explicit MeshGenTestTab(std::weak_ptr<TabHost>);
         MeshGenTestTab(MeshGenTestTab const&) = delete;
         MeshGenTestTab(MeshGenTestTab&&) noexcept;
         MeshGenTestTab& operator=(MeshGenTestTab const&) = delete;

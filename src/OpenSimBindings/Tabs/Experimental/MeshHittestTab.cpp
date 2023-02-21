@@ -34,32 +34,19 @@
 class osc::MeshHittestTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{std::move(parent)}
+    Impl()
     {
         m_Camera.setBackgroundColor({1.0f, 1.0f, 1.0f, 1.0f});
     }
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
-        return m_Name;
-    }
-
-    void onMount()
-    {
-    }
-
-    void onUnmount()
-    {
-    }
-
-    bool onEvent(SDL_Event const&)
-    {
-        return false;
+        return ICON_FA_COOKIE " MeshHittestTab";
     }
 
     void onTick()
@@ -116,10 +103,6 @@ public:
         auto raycastEnd = std::chrono::high_resolution_clock::now();
         auto raycastDt = raycastEnd - raycastStart;
         m_RaycastDuration = std::chrono::duration_cast<std::chrono::microseconds>(raycastDt);
-    }
-
-    void onDrawMainMenu()
-    {
     }
 
     void onDraw()
@@ -199,10 +182,7 @@ public:
 
 private:
 
-    // tab state
-    UID m_ID;
-    std::string m_Name = ICON_FA_COOKIE " MeshHittestTab";
-    TabHost* m_Parent;
+    UID m_TabID;
 
     // rendering
     Camera m_Camera;
@@ -238,8 +218,8 @@ osc::CStringView osc::MeshHittestTab::id() noexcept
     return "Hittest/Meshes";
 }
 
-osc::MeshHittestTab::MeshHittestTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::MeshHittestTab::MeshHittestTab(std::weak_ptr<TabHost>) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -257,29 +237,9 @@ osc::CStringView osc::MeshHittestTab::implGetName() const
     return m_Impl->getName();
 }
 
-void osc::MeshHittestTab::implOnMount()
-{
-    m_Impl->onMount();
-}
-
-void osc::MeshHittestTab::implOnUnmount()
-{
-    m_Impl->onUnmount();
-}
-
-bool osc::MeshHittestTab::implOnEvent(SDL_Event const& e)
-{
-    return m_Impl->onEvent(e);
-}
-
 void osc::MeshHittestTab::implOnTick()
 {
     m_Impl->onTick();
-}
-
-void osc::MeshHittestTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::MeshHittestTab::implOnDraw()

@@ -29,8 +29,8 @@ namespace
 
     void WidgetTitleDescription(const char *title, const char *description, ImVec2 pos)
     {
-        ImDrawList *draw_list = ImGui::GetWindowDrawList();
-        ImGuiStyle &style = ImGui::GetStyle();
+        ImDrawList& draw_list = *ImGui::GetWindowDrawList();
+        ImGuiStyle& style = ImGui::GetStyle();
 
         ImVec2 text_pos = pos;
         text_pos.x += style.FramePadding.x;
@@ -38,14 +38,14 @@ namespace
 
         //ImGui::PushFont(g_font_mgr.m_menu_font_medium);
         float title_height = ImGui::GetTextLineHeight();
-        draw_list->AddText(text_pos, ImGui::GetColorU32(ImGuiCol_Text), title);
+        draw_list.AddText(text_pos, ImGui::GetColorU32(ImGuiCol_Text), title);
         //ImGui::PopFont();
 
         if (description) {
             text_pos.y += title_height + style.ItemInnerSpacing.y;
 
             //ImGui::PushFont(g_font_mgr.m_default_font);
-            draw_list->AddText(text_pos, ImGui::GetColorU32(ImVec4(0.94f, 0.94f, 0.94f, 0.70f)), description);
+            draw_list.AddText(text_pos, ImGui::GetColorU32(ImVec4(0.94f, 0.94f, 0.94f, 0.70f)), description);
             //ImGui::PopFont();
         }
     }
@@ -57,7 +57,7 @@ namespace
 
     void DrawSlider(float v, bool hovered, ImVec2 pos, ImVec2 size)
     {
-        ImDrawList *draw_list = ImGui::GetWindowDrawList();
+        ImDrawList& draw_list = *ImGui::GetWindowDrawList();
 
         float radius = GetSliderRadius(size);
         float rounding = size.y * 0.25f;
@@ -70,20 +70,20 @@ namespace
         glm::vec2 pmid(pos.x + radius + v*(size.x - radius*2), pos.y + size.y / 2);
         ImVec2 smin(pos.x + rounding, pmid.y - slot_half_height);
         ImVec2 smax(pmid.x, pmid.y + slot_half_height);
-        draw_list->AddRectFilled(smin, smax, bg, rounding);
+        draw_list.AddRectFilled(smin, smax, bg, rounding);
 
         bg = hovered ? ImGui::GetColorU32(ImGuiCol_FrameBgHovered)
             : ImGui::GetColorU32(ImGuiCol_FrameBg);
 
         smin.x = pmid.x;
         smax.x = pos.x + size.x - rounding;
-        draw_list->AddRectFilled(smin, smax, bg, rounding);
+        draw_list.AddRectFilled(smin, smax, bg, rounding);
 
         if (circular_grab) {
-            draw_list->AddCircleFilled(pmid, radius * 0.8f, ImGui::GetColorU32(ImGuiCol_SliderGrab));
+            draw_list.AddCircleFilled(pmid, radius * 0.8f, ImGui::GetColorU32(ImGuiCol_SliderGrab));
         } else {
             glm::vec2 offs(radius*0.8, radius*0.8);
-            draw_list->AddRectFilled(pmid - offs, pmid + offs, ImGui::GetColorU32(ImGuiCol_SliderGrab), rounding);
+            draw_list.AddRectFilled(pmid - offs, pmid + offs, ImGui::GetColorU32(ImGuiCol_SliderGrab), rounding);
         }
     }
 
@@ -107,8 +107,8 @@ namespace
     {
         ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32_BLACK_TRANS);
 
-        ImGuiStyle &style = ImGui::GetStyle();
-        ImGuiWindow *window = ImGui::GetCurrentWindow();
+        ImGuiStyle& style = ImGui::GetStyle();
+        ImGuiWindow& window = *ImGui::GetCurrentWindow();
 
         //ImGui::PushFont(g_font_mgr.m_menu_font_medium);
         float title_height = ImGui::GetTextLineHeight();
@@ -165,7 +165,7 @@ namespace
         DrawSlider(*v, ImGui::IsItemHovered() || ImGui::IsItemActive(), slider_pos, slider_size);
 
         ImVec2 slider_max = ImVec2(slider_pos.x + slider_size.x, slider_pos.y + slider_size.y);
-        ImGui::RenderNavHighlight(ImRect(slider_pos, slider_max), window->GetID("###slider"));
+        ImGui::RenderNavHighlight(ImRect(slider_pos, slider_max), window.GetID("###slider"));
 
         ImGui::PopStyleColor();
     }
@@ -173,7 +173,7 @@ namespace
 
     void DrawToggle(bool enabled, bool hovered, ImVec2 pos, ImVec2 size)
     {
-        ImDrawList *draw_list = ImGui::GetWindowDrawList();
+        ImDrawList& draw_list = *ImGui::GetWindowDrawList();
 
         float radius = size.y * 0.5f;
         float rounding = size.y * 0.25f;
@@ -186,13 +186,13 @@ namespace
         glm::vec2 pmid(pos.x + radius + (enabled ? 1 : 0) * (size.x - radius * 2), pos.y + size.y / 2.0f);
         ImVec2 smin(pos.x, pmid.y - slot_half_height);
         ImVec2 smax(pos.x + size.x, pmid.y + slot_half_height);
-        draw_list->AddRectFilled(smin, smax, bg, rounding);
+        draw_list.AddRectFilled(smin, smax, bg, rounding);
 
         if (circular_grab) {
-            draw_list->AddCircleFilled(pmid, radius * 0.8f, ImGui::GetColorU32(ImGuiCol_SliderGrab));
+            draw_list.AddCircleFilled(pmid, radius * 0.8f, ImGui::GetColorU32(ImGuiCol_SliderGrab));
         } else {
             glm::vec2 offs(radius*0.8f, radius*0.8f);
-            draw_list->AddRectFilled(pmid - offs, pmid + offs, ImGui::GetColorU32(ImGuiCol_SliderGrab), rounding);
+            draw_list.AddRectFilled(pmid - offs, pmid + offs, ImGui::GetColorU32(ImGuiCol_SliderGrab), rounding);
         }
     }
 
@@ -270,7 +270,7 @@ osc::CStringView osc::CustomWidgetsTab::id() noexcept
     return "UI/CustomWidgets";
 }
 
-osc::CustomWidgetsTab::CustomWidgetsTab(TabHost*) :
+osc::CustomWidgetsTab::CustomWidgetsTab(std::weak_ptr<TabHost>) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

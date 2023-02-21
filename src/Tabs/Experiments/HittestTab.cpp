@@ -167,7 +167,7 @@ public:
 
         Line ray = GetCameraRay(m_Camera);
         float closestEl = std::numeric_limits<float>::max();
-        SceneSphere* closestSceneSphere = nullptr;
+        std::optional<SceneSphere> closestSceneSphere;
 
         for (SceneSphere& ss : m_SceneSpheres)
         {
@@ -183,7 +183,7 @@ public:
             if (res && res->distance >= 0.0f && res->distance < closestEl)
             {
                 closestEl = res->distance;
-                closestSceneSphere = &ss;
+                closestSceneSphere = ss;
             }
         }
 
@@ -334,7 +334,7 @@ osc::CStringView osc::HittestTab::id() noexcept
     return "Hittest/AnalyticGeometry";
 }
 
-osc::HittestTab::HittestTab(TabHost*) :
+osc::HittestTab::HittestTab(std::weak_ptr<TabHost>) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

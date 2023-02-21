@@ -16,7 +16,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        RendererFramebuffersTab(TabHost*);
+        explicit RendererFramebuffersTab(std::weak_ptr<TabHost>);
         RendererFramebuffersTab(RendererFramebuffersTab const&) = delete;
         RendererFramebuffersTab(RendererFramebuffersTab&&) noexcept;
         RendererFramebuffersTab& operator=(RendererFramebuffersTab const&) = delete;

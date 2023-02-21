@@ -16,7 +16,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        RendererBlendingTab(TabHost*);
+        explicit RendererBlendingTab(std::weak_ptr<TabHost>);
         RendererBlendingTab(RendererBlendingTab const&) = delete;
         RendererBlendingTab(RendererBlendingTab&&) noexcept;
         RendererBlendingTab& operator=(RendererBlendingTab const&) = delete;

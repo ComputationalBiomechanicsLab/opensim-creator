@@ -53,7 +53,7 @@ osc::MainMenuFileTab::MainMenuFileTab() :
     std::reverse(recentlyOpenedFiles.begin(), recentlyOpenedFiles.end());
 }
 
-void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* maybeModel)
+void osc::MainMenuFileTab::draw(std::weak_ptr<MainUIStateAPI> api, UndoableModelStatePair* maybeModel)
 {
     // handle hotkeys enabled by just drawing the menu
     {
@@ -63,11 +63,11 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
 
         if (mod && ImGui::IsKeyPressed(ImGuiKey_N))
         {
-            ActionNewModel(*api);
+            ActionNewModel(api);
         }
         else if (mod && ImGui::IsKeyPressed(ImGuiKey_O))
         {
-            ActionOpenModel(*api);
+            ActionOpenModel(api);
         }
         else if (maybeModel && mod && io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_S))
         {
@@ -75,7 +75,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
         }
         else if (maybeModel && mod && ImGui::IsKeyPressed(ImGuiKey_S))
         {
-            ActionSaveModel(*api, *maybeModel);
+            ActionSaveModel(*api.lock(), *maybeModel);
         }
         else if (maybeModel && ImGui::IsKeyPressed(ImGuiKey_F5))
         {
@@ -96,12 +96,12 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
 
     if (ImGui::MenuItem(ICON_FA_FILE " New", "Ctrl+N"))
     {
-        ActionNewModel(*api);
+        ActionNewModel(api);
     }
 
     if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Open", "Ctrl+O"))
     {
-        ActionOpenModel(*api);
+        ActionOpenModel(api);
     }
 
     int imgui_id = 0;
@@ -114,7 +114,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
             ImGui::PushID(++imgui_id);
             if (ImGui::MenuItem(rf.path.filename().string().c_str()))
             {
-                ActionOpenModel(*api, rf.path);
+                ActionOpenModel(api, rf.path);
             }
             ImGui::PopID();
         }
@@ -129,7 +129,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
             ImGui::PushID(++imgui_id);
             if (ImGui::MenuItem(ex.filename().string().c_str()))
             {
-                ActionOpenModel(*api, ex);
+                ActionOpenModel(api, ex);
             }
             ImGui::PopID();
         }
@@ -150,8 +150,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
                 osc::InitializeModel(*cpy);
                 osc::InitializeState(*cpy);
 
-                UID tabID = api->addTab<SimulatorTab>(api, std::make_shared<Simulation>(osc::StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
-                api->selectTab(tabID);
+                api.lock()->addAndSelectTab<SimulatorTab>(api, std::make_shared<Simulation>(osc::StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
             }
             catch (std::exception const& ex)
             {
@@ -166,7 +165,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
     {
         if (maybeModel)
         {
-            ActionSaveModel(*api, *maybeModel);
+            ActionSaveModel(*api.lock(), *maybeModel);
         }
     }
 
@@ -216,8 +215,7 @@ void osc::MainMenuFileTab::draw(MainUIStateAPI* api, UndoableModelStatePair* may
 
     if (ImGui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
     {
-        UID tabID = api->addTab<MeshImporterTab>(api);
-        api->selectTab(tabID);
+        api.lock()->addAndSelectTab<MeshImporterTab>(api);
     }
     osc::App::upd().addFrameAnnotation("MainMenu/ImportMeshesMenuItem", osc::GetItemRect());
 

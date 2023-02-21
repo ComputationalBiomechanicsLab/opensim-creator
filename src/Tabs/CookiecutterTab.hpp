@@ -16,7 +16,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        CookiecutterTab(TabHost*);
+        explicit CookiecutterTab(std::weak_ptr<TabHost>);
         CookiecutterTab(CookiecutterTab const&) = delete;
         CookiecutterTab(CookiecutterTab&&) noexcept;
         CookiecutterTab& operator=(CookiecutterTab const&) = delete;

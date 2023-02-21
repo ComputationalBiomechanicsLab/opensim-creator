@@ -13,7 +13,10 @@ namespace osc
     // reference-counted definition for an available tab
     class TabRegistryEntry final {
     public:
-        TabRegistryEntry(CStringView name_, std::function<std::unique_ptr<Tab>(TabHost*)>);
+        TabRegistryEntry(
+            CStringView name_,
+            std::function<std::unique_ptr<Tab>(std::weak_ptr<TabHost>)> constructor_
+        );
         TabRegistryEntry(TabRegistryEntry const&);
         TabRegistryEntry(TabRegistryEntry&&) noexcept;
         TabRegistryEntry& operator=(TabRegistryEntry const&);
@@ -21,7 +24,7 @@ namespace osc
         ~TabRegistryEntry() noexcept;
 
         CStringView getName() const;
-        std::unique_ptr<Tab> createTab(TabHost* host) const;
+        std::unique_ptr<Tab> createTab(std::weak_ptr<TabHost>) const;
 
     private:
         class Impl;

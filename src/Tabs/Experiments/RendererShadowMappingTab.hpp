@@ -16,7 +16,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        RendererShadowMappingTab(TabHost*);
+        explicit RendererShadowMappingTab(std::weak_ptr<TabHost>);
         RendererShadowMappingTab(RendererShadowMappingTab const&) = delete;
         RendererShadowMappingTab(RendererShadowMappingTab&&) noexcept;
         RendererShadowMappingTab& operator=(RendererShadowMappingTab const&) = delete;

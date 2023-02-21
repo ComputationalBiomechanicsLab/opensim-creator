@@ -25,7 +25,7 @@ namespace osc
         ~MainUIScreen() noexcept override;
 
         UID addTab(std::unique_ptr<Tab>);
-        TabHost* getTabHostAPI();
+        std::weak_ptr<TabHost> getTabHostAPI();
 
     private:
         void implOnMount() final;
@@ -35,6 +35,6 @@ namespace osc
         void implOnDraw() final;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::shared_ptr<Impl> m_Impl;
     };
 }

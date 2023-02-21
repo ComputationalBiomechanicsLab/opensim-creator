@@ -16,7 +16,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        MeshHittestTab(TabHost*);
+        explicit MeshHittestTab(std::weak_ptr<TabHost>);
         MeshHittestTab(MeshHittestTab const&) = delete;
         MeshHittestTab(MeshHittestTab&&) noexcept;
         MeshHittestTab& operator=(MeshHittestTab const&) = delete;
@@ -26,11 +26,7 @@ namespace osc
     private:
         UID implGetID() const final;
         CStringView implGetName() const final;
-        void implOnMount() final;
-        void implOnUnmount() final;
-        bool implOnEvent(SDL_Event const&) final;
         void implOnTick() final;
-        void implOnDrawMainMenu() final;
         void implOnDraw() final;
 
         class Impl;

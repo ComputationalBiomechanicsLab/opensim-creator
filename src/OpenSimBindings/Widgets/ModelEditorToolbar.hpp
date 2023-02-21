@@ -13,7 +13,7 @@ namespace osc
     public:
         ModelEditorToolbar(
             std::string_view,
-            MainUIStateAPI*,
+            std::weak_ptr<MainUIStateAPI>,
             EditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );

@@ -99,7 +99,7 @@ osc::CStringView osc::RendererTexturingTab::id() noexcept
     return "Renderer/Texturing";
 }
 
-osc::RendererTexturingTab::RendererTexturingTab(TabHost*) :
+osc::RendererTexturingTab::RendererTexturingTab(std::weak_ptr<TabHost>) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

@@ -20,7 +20,7 @@
 class osc::RendererGeometryShaderTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{parent}
+    Impl()
     {
         m_SceneCamera.setPosition({0.0f, 0.0f, 3.0f});
         m_SceneCamera.setCameraFOV(glm::radians(45.0f));
@@ -30,7 +30,7 @@ public:
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
@@ -66,14 +66,6 @@ public:
         return false;
     }
 
-    void onTick()
-    {
-    }
-
-    void onDrawMainMenu()
-    {
-    }
-
     void onDraw()
     {
         // handle mouse capturing
@@ -97,8 +89,7 @@ public:
     }
 
 private:
-    UID m_ID;
-    TabHost* m_Parent;
+    UID m_TabID;
 
     Material m_SceneMaterial
     {
@@ -106,7 +97,7 @@ private:
         {
             App::slurp("shaders/ExperimentGeometryShaderScene.vert"),
             App::slurp("shaders/ExperimentGeometryShaderScene.frag"),
-        }
+        },
     };
 
     Material m_NormalsMaterial
@@ -116,10 +107,10 @@ private:
             App::slurp("shaders/ExperimentGeometryShaderNormals.vert"),
             App::slurp("shaders/ExperimentGeometryShaderNormals.geom"),
             App::slurp("shaders/ExperimentGeometryShaderNormals.frag"),
-        }
+        },
     };
 
-    Mesh m_Mesh = osc::LoadMeshViaSimTK(osc::App::resource("geometry/hat_ribs_scap.vtp"));
+    Mesh m_Mesh = LoadMeshViaSimTK(App::resource("geometry/hat_ribs_scap.vtp"));
     Camera m_SceneCamera;
     bool m_IsMouseCaptured = false;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
@@ -134,8 +125,8 @@ osc::CStringView osc::RendererGeometryShaderTab::id() noexcept
     return "Renderer/GeometryShader";
 }
 
-osc::RendererGeometryShaderTab::RendererGeometryShaderTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::RendererGeometryShaderTab::RendererGeometryShaderTab(std::weak_ptr<TabHost>) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 
@@ -166,16 +157,6 @@ void osc::RendererGeometryShaderTab::implOnUnmount()
 bool osc::RendererGeometryShaderTab::implOnEvent(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
-}
-
-void osc::RendererGeometryShaderTab::implOnTick()
-{
-    m_Impl->onTick();
-}
-
-void osc::RendererGeometryShaderTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::RendererGeometryShaderTab::implOnDraw()

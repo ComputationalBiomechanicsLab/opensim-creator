@@ -25,15 +25,15 @@ class osc::CoordinateEditorPanel::Impl final : public osc::StandardPanel {
 public:
 
     Impl(
-        std::string_view panelName,
-        MainUIStateAPI* mainUIStateAPI,
-        EditorAPI* editorAPI,
-        std::shared_ptr<UndoableModelStatePair> uum) :
+        std::string_view panelName_,
+        std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+        EditorAPI* editorAPI_,
+        std::shared_ptr<UndoableModelStatePair> uum_) :
 
-        StandardPanel{std::move(panelName)},
-        m_MainUIStateAPI{std::move(mainUIStateAPI)},
-        m_EditorAPI{std::move(editorAPI)},
-        m_Uum{std::move(uum)}
+        StandardPanel{std::move(panelName_)},
+        m_MainUIStateAPI{std::move(mainUIStateAPI_)},
+        m_EditorAPI{std::move(editorAPI_)},
+        m_Uum{std::move(uum_)}
     {
     }
 
@@ -222,7 +222,7 @@ private:
         }
     }
 
-    MainUIStateAPI* m_MainUIStateAPI;
+    std::weak_ptr<MainUIStateAPI> m_MainUIStateAPI;
     EditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Uum;
 };
@@ -231,12 +231,12 @@ private:
 // public API
 
 osc::CoordinateEditorPanel::CoordinateEditorPanel(
-    std::string_view panelName,
-    MainUIStateAPI* mainUIStateAPI,
-    EditorAPI* editorAPI,
-    std::shared_ptr<UndoableModelStatePair> uum) :
+    std::string_view panelName_,
+    std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+    EditorAPI* editorAPI_,
+    std::shared_ptr<UndoableModelStatePair> uum_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(panelName), std::move(mainUIStateAPI), std::move(editorAPI), std::move(uum))}
+    m_Impl{std::make_unique<Impl>(std::move(panelName_), std::move(mainUIStateAPI_), std::move(editorAPI_), std::move(uum_))}
 {
 }
 

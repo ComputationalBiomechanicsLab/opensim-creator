@@ -5,8 +5,6 @@
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
 
-#include <SDL_events.h>
-
 #include <memory>
 
 namespace osc { class ParamBlock; }
@@ -16,7 +14,11 @@ namespace osc
 {
     class PerformanceAnalyzerTab final : public Tab {
     public:
-        PerformanceAnalyzerTab(TabHost*, BasicModelStatePair, ParamBlock const&);
+        PerformanceAnalyzerTab(
+            std::weak_ptr<TabHost>,
+            BasicModelStatePair,
+            ParamBlock const&
+        );
         PerformanceAnalyzerTab(PerformanceAnalyzerTab const&) = delete;
         PerformanceAnalyzerTab(PerformanceAnalyzerTab&&) noexcept;
         PerformanceAnalyzerTab& operator=(PerformanceAnalyzerTab const&) = delete;
@@ -26,11 +28,7 @@ namespace osc
     private:
         UID implGetID() const final;
         CStringView implGetName() const final;
-        void implOnMount() final;
-        void implOnUnmount() final;
-        bool implOnEvent(SDL_Event const&) final;
         void implOnTick() final;
-        void implOnDrawMainMenu() final;
         void implOnDraw() final;
 
         class Impl;

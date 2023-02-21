@@ -10,13 +10,15 @@
 
 namespace osc { class MainUIStateAPI; }
 namespace osc { class Simulation; }
-namespace osc { class TabHost; }
 
 namespace osc
 {
     class SimulatorTab final : public Tab {
     public:
-        SimulatorTab(MainUIStateAPI*, std::shared_ptr<Simulation>);
+        SimulatorTab(
+            std::weak_ptr<MainUIStateAPI>,
+            std::shared_ptr<Simulation>
+        );
         SimulatorTab(SimulatorTab const&) = delete;
         SimulatorTab(SimulatorTab&&) noexcept;
         SimulatorTab& operator=(SimulatorTab const&) = delete;

@@ -16,12 +16,14 @@
 
 class osc::EditorTabStatusBar::Impl final {
 public:
-    Impl(MainUIStateAPI* mainUIStateAPI,
-         EditorAPI* editorAPI,
-         std::shared_ptr<UndoableModelStatePair> model) :
-        m_MainUIStateAPI{std::move(mainUIStateAPI)},
-        m_EditorAPI{std::move(editorAPI)},
-        m_Model{std::move(model)}
+    Impl(
+        std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+        EditorAPI* editorAPI_,
+        std::shared_ptr<UndoableModelStatePair> model_) :
+
+        m_MainUIStateAPI{std::move(mainUIStateAPI_)},
+        m_EditorAPI{std::move(editorAPI_)},
+        m_Model{std::move(model_)}
     {
     }
 
@@ -86,15 +88,19 @@ private:
         }
     }
 
-    MainUIStateAPI* m_MainUIStateAPI;
+    std::weak_ptr<MainUIStateAPI> m_MainUIStateAPI;
     EditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Model;
 };
 
 // public API (PIMPL)
 
-osc::EditorTabStatusBar::EditorTabStatusBar(MainUIStateAPI* mainUIStateAPI, EditorAPI* editorAPI, std::shared_ptr<UndoableModelStatePair> model) :
-    m_Impl{std::make_unique<Impl>(std::move(mainUIStateAPI), std::move(editorAPI), std::move(model))}
+osc::EditorTabStatusBar::EditorTabStatusBar(
+    std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+    EditorAPI* editorAPI_,
+    std::shared_ptr<UndoableModelStatePair> model_) :
+
+    m_Impl{std::make_unique<Impl>(std::move(mainUIStateAPI_), std::move(editorAPI_), std::move(model_))}
 {
 }
 

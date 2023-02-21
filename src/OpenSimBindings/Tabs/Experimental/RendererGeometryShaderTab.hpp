@@ -16,7 +16,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        RendererGeometryShaderTab(TabHost*);
+        explicit RendererGeometryShaderTab(std::weak_ptr<TabHost>);
         RendererGeometryShaderTab(RendererGeometryShaderTab const&) = delete;
         RendererGeometryShaderTab(RendererGeometryShaderTab&&) noexcept;
         RendererGeometryShaderTab& operator=(RendererGeometryShaderTab const&) = delete;
@@ -29,8 +29,6 @@ namespace osc
         void implOnMount() final;
         void implOnUnmount() final;
         bool implOnEvent(SDL_Event const&) final;
-        void implOnTick() final;
-        void implOnDrawMainMenu() final;
         void implOnDraw() final;
 
         class Impl;

@@ -14,7 +14,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        ImPlotDemoTab(TabHost*);
+        explicit ImPlotDemoTab(std::weak_ptr<TabHost>);
         ImPlotDemoTab(ImPlotDemoTab const&) = delete;
         ImPlotDemoTab(ImPlotDemoTab&&) noexcept;
         ImPlotDemoTab& operator=(ImPlotDemoTab const&) = delete;

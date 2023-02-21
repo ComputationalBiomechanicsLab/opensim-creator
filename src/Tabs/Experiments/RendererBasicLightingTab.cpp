@@ -158,7 +158,7 @@ osc::CStringView osc::RendererBasicLightingTab::id() noexcept
     return "Renderer/BasicLighting";
 }
 
-osc::RendererBasicLightingTab::RendererBasicLightingTab(TabHost*) :
+osc::RendererBasicLightingTab::RendererBasicLightingTab(std::weak_ptr<TabHost>) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

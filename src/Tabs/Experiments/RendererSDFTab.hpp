@@ -14,7 +14,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        RendererSDFTab(TabHost*);
+        explicit RendererSDFTab(std::weak_ptr<TabHost>);
         RendererSDFTab(RendererSDFTab const&) = delete;
         RendererSDFTab(RendererSDFTab&&) noexcept;
         RendererSDFTab& operator=(RendererSDFTab const&) = delete;

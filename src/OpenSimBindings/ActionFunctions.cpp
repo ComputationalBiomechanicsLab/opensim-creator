@@ -62,13 +62,12 @@
 // helper functions
 namespace
 {
-    void OpenOsimInLoadingTab(osc::MainUIStateAPI& api, std::filesystem::path p)
+    void OpenOsimInLoadingTab(std::weak_ptr<osc::MainUIStateAPI> api, std::filesystem::path p)
     {
-        osc::UID const tabID = api.addTab<osc::LoadingTab>(&api, std::move(p));
-        api.selectTab(tabID);
+        api.lock()->addAndSelectTab<osc::LoadingTab>(api, std::move(p));
     }
 
-    void DoOpenFileViaDialog(osc::MainUIStateAPI& api)
+    void DoOpenFileViaDialog(std::weak_ptr<osc::MainUIStateAPI> api)
     {
         std::optional<std::filesystem::path> const maybePath = osc::PromptUserForFile("osim");
 
@@ -191,21 +190,20 @@ void osc::ActionSaveCurrentModelAs(UndoableModelStatePair& uim)
     }
 }
 
-void osc::ActionNewModel(MainUIStateAPI& api)
+void osc::ActionNewModel(std::weak_ptr<osc::MainUIStateAPI> api)
 {
     auto p = std::make_unique<UndoableModelStatePair>();
-    UID const tabID = api.addTab<ModelEditorTab>(&api, std::move(p));
-    api.selectTab(tabID);
+    api.lock()->addAndSelectTab<ModelEditorTab>(api, std::move(p));
 }
 
-void osc::ActionOpenModel(MainUIStateAPI& api)
+void osc::ActionOpenModel(std::weak_ptr<osc::MainUIStateAPI> api)
 {
-    DoOpenFileViaDialog(api);
+    DoOpenFileViaDialog(std::move(api));
 }
 
-void osc::ActionOpenModel(MainUIStateAPI& api, std::filesystem::path const& path)
+void osc::ActionOpenModel(std::weak_ptr<osc::MainUIStateAPI> api, std::filesystem::path const& path)
 {
-    OpenOsimInLoadingTab(api, path);
+    OpenOsimInLoadingTab(std::move(api), path);
 }
 
 bool osc::ActionSaveModel(MainUIStateAPI&, UndoableModelStatePair& model)
@@ -334,7 +332,10 @@ void osc::ActionClearSelectionFromEditedModel(UndoableModelStatePair& model)
     model.setSelected(nullptr);
 }
 
-bool osc::ActionLoadSTOFileAgainstModel(MainUIStateAPI& parent, UndoableModelStatePair const& uim, std::filesystem::path stoPath)
+bool osc::ActionLoadSTOFileAgainstModel(
+    std::weak_ptr<MainUIStateAPI> parent,
+    UndoableModelStatePair const& uim,
+    std::filesystem::path stoPath)
 {
     try
     {
@@ -344,7 +345,7 @@ bool osc::ActionLoadSTOFileAgainstModel(MainUIStateAPI& parent, UndoableModelSta
 
         auto simulation = std::make_shared<Simulation>(StoFileSimulation{std::move(modelCopy), std::move(stoPath), uim.getFixupScaleFactor()});
 
-        parent.selectTab(parent.addTab<SimulatorTab>(&parent, simulation));
+        parent.lock()->addAndSelectTab<SimulatorTab>(parent, simulation);
 
         return true;
     }
@@ -355,15 +356,15 @@ bool osc::ActionLoadSTOFileAgainstModel(MainUIStateAPI& parent, UndoableModelSta
     }
 }
 
-bool osc::ActionStartSimulatingModel(MainUIStateAPI& parent, UndoableModelStatePair const& uim)
+bool osc::ActionStartSimulatingModel(std::weak_ptr<MainUIStateAPI> parent, UndoableModelStatePair const& uim)
 {
     BasicModelStatePair modelState{uim};
-    ForwardDynamicSimulatorParams params = osc::FromParamBlock(parent.getSimulationParams());
+    ForwardDynamicSimulatorParams params = osc::FromParamBlock(parent.lock()->getSimulationParams());
 
     auto simulation = std::make_shared<Simulation>(ForwardDynamicSimulation{std::move(modelState), std::move(params)});
-    auto simulationTab = std::make_unique<SimulatorTab>(&parent, std::move(simulation));
+    auto simulationTab = std::make_unique<SimulatorTab>(parent, std::move(simulation));
 
-    parent.selectTab(parent.addTab(std::move(simulationTab)));
+    parent.lock()->selectTab(parent.lock()->addTab(std::move(simulationTab)));
 
     return true;
 }
@@ -575,10 +576,15 @@ bool osc::ActionReloadOsimFromDisk(UndoableModelStatePair& uim, MeshCache& meshC
     }
 }
 
-bool osc::ActionSimulateAgainstAllIntegrators(MainUIStateAPI& parent, UndoableModelStatePair const& uim)
+bool osc::ActionSimulateAgainstAllIntegrators(
+    std::weak_ptr<MainUIStateAPI> parent,
+    UndoableModelStatePair const& uim)
 {
-    UID const tabID = parent.addTab<PerformanceAnalyzerTab>(&parent, BasicModelStatePair{uim}, parent.getSimulationParams());
-    parent.selectTab(tabID);
+    parent.lock()->addAndSelectTab<PerformanceAnalyzerTab>(
+        parent,
+        BasicModelStatePair{uim},
+        parent.lock()->getSimulationParams()
+    );
     return true;
 }
 

@@ -9,13 +9,12 @@
 #include <memory>
 
 namespace osc { class MainUIStateAPI; }
-namespace osc { class TabHost; }
 
 namespace osc
 {
     class SplashTab final : public Tab {
     public:
-        SplashTab(MainUIStateAPI*);
+        explicit SplashTab(std::weak_ptr<MainUIStateAPI>);
         SplashTab(SplashTab const&) = delete;
         SplashTab(SplashTab&&) noexcept;
         SplashTab& operator=(SplashTab const&) = delete;
@@ -28,7 +27,6 @@ namespace osc
         void implOnMount() final;
         void implOnUnmount() final;
         bool implOnEvent(SDL_Event const&) final;
-        void implOnTick() final;
         void implOnDrawMainMenu() final;
         void implOnDraw() final;
 

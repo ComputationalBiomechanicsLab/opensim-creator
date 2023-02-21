@@ -247,7 +247,7 @@ osc::CStringView osc::RendererShadowMappingTab::id() noexcept
     return "Renderer/ShadowMapping";
 }
 
-osc::RendererShadowMappingTab::RendererShadowMappingTab(TabHost*) :
+osc::RendererShadowMappingTab::RendererShadowMappingTab(std::weak_ptr<TabHost>) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

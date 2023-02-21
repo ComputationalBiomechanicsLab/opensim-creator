@@ -199,7 +199,7 @@ osc::CStringView osc::RendererFramebuffersTab::id() noexcept
     return "Renderer/Framebuffers";
 }
 
-osc::RendererFramebuffersTab::RendererFramebuffersTab(TabHost*) :
+osc::RendererFramebuffersTab::RendererFramebuffersTab(std::weak_ptr<TabHost>) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

@@ -16,13 +16,13 @@
 class osc::SimulationViewerPanel::Impl final : public StandardPanel {
 public:
     Impl(
-        std::string_view panelName,
-        std::shared_ptr<VirtualModelStatePair> modelState,
-        MainUIStateAPI* mainUIStateAPI) :
+        std::string_view panelName_,
+        std::shared_ptr<VirtualModelStatePair> modelState_,
+        std::weak_ptr<MainUIStateAPI> mainUIStateAPI_) :
 
-        StandardPanel{std::move(panelName)},
-        m_Model{std::move(modelState)},
-        m_API{mainUIStateAPI}
+        StandardPanel{std::move(panelName_)},
+        m_Model{std::move(modelState_)},
+        m_API{mainUIStateAPI_}
     {
     }
 
@@ -86,14 +86,14 @@ private:
                 ImGui::Dummy({0.0f, 3.0f});
 
                 DrawSelectOwnerMenu(*m_Model, *selected);
-                DrawWatchOutputMenu(*m_API, *selected);
+                DrawWatchOutputMenu(*m_API.lock(), *selected);
                 ImGui::EndPopup();
             }
         }
     }
 
     std::shared_ptr<VirtualModelStatePair> m_Model;
-    MainUIStateAPI* m_API;
+    std::weak_ptr<MainUIStateAPI> m_API;
     UiModelViewer m_Viewer;
 };
 
@@ -103,7 +103,7 @@ private:
 osc::SimulationViewerPanel::SimulationViewerPanel(
     std::string_view panelName,
     std::shared_ptr<VirtualModelStatePair> modelState,
-    MainUIStateAPI* mainUIStateAPI) :
+    std::weak_ptr<MainUIStateAPI> mainUIStateAPI) :
 
     m_Impl{std::make_unique<Impl>(std::move(panelName), std::move(modelState), std::move(mainUIStateAPI))}
 {

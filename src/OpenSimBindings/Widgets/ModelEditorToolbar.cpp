@@ -28,15 +28,15 @@
 class osc::ModelEditorToolbar::Impl final {
 public:
     Impl(
-        std::string_view label,
-        MainUIStateAPI* mainUIStateAPI,
-        EditorAPI* editorAPI,
-        std::shared_ptr<osc::UndoableModelStatePair> model) :
+        std::string_view label_,
+        std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+        EditorAPI* editorAPI_,
+        std::shared_ptr<osc::UndoableModelStatePair> model_) :
 
-        m_Label{std::move(label)},
-        m_MainUIStateAPI{mainUIStateAPI},
-        m_EditorAPI{editorAPI},
-        m_Model{std::move(model)}
+        m_Label{std::move(label_)},
+        m_MainUIStateAPI{std::move(mainUIStateAPI_)},
+        m_EditorAPI{editorAPI_},
+        m_Model{std::move(model_)}
     {
     }
 
@@ -57,7 +57,7 @@ private:
     {
         if (ImGui::Button(ICON_FA_FILE))
         {
-            ActionNewModel(*m_MainUIStateAPI);
+            ActionNewModel(m_MainUIStateAPI);
         }
         osc::DrawTooltipIfItemHovered("New Model", "Creates a new OpenSim model in a new tab");
     }
@@ -67,7 +67,7 @@ private:
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
         if (ImGui::Button(ICON_FA_FOLDER_OPEN))
         {
-            ActionOpenModel(*m_MainUIStateAPI);
+            ActionOpenModel(m_MainUIStateAPI);
         }
         osc::DrawTooltipIfItemHovered("Open Model", "Opens an existing osim file in a new tab");
         ImGui::SameLine();
@@ -88,7 +88,7 @@ private:
                 ImGui::PushID(imguiID++);
                 if (ImGui::Selectable(rf.path.filename().string().c_str()))
                 {
-                    ActionOpenModel(*m_MainUIStateAPI, rf.path);
+                    ActionOpenModel(m_MainUIStateAPI, rf.path);
                 }
                 ImGui::PopID();
             }
@@ -101,7 +101,7 @@ private:
     {
         if (ImGui::Button(ICON_FA_SAVE))
         {
-            ActionSaveModel(*m_MainUIStateAPI, *m_Model);
+            ActionSaveModel(*m_MainUIStateAPI.lock(), *m_Model);
         }
         osc::DrawTooltipIfItemHovered("Save Model", "Saves the model to an osim file");
     }
@@ -275,7 +275,7 @@ private:
         ImGui::PushStyleColor(ImGuiCol_Text, OSC_POSITIVE_RGBA);
         if (ImGui::Button(ICON_FA_PLAY))
         {
-            osc::ActionStartSimulatingModel(*m_MainUIStateAPI, *m_Model);
+            osc::ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);
         }
         ImGui::PopStyleColor();
         App::upd().addFrameAnnotation("Simulate Button", osc::GetItemRect());
@@ -285,7 +285,7 @@ private:
 
         if (ImGui::Button(ICON_FA_EDIT))
         {
-            m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
+            m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI.lock()->updSimulationParams()));
         }
         osc::DrawTooltipIfItemHovered("Edit Simulation Settings", "Change the parameters used when simulating the model");
 
@@ -336,7 +336,7 @@ private:
     }
 
     std::string m_Label;
-    MainUIStateAPI* m_MainUIStateAPI;
+    std::weak_ptr<MainUIStateAPI> m_MainUIStateAPI;
     EditorAPI* m_EditorAPI;
     std::shared_ptr<osc::UndoableModelStatePair> m_Model;
 
@@ -344,12 +344,12 @@ private:
 };
 
 osc::ModelEditorToolbar::ModelEditorToolbar(
-    std::string_view label,
-    MainUIStateAPI* mainUIStateAPI,
-    EditorAPI* editorAPI,
-    std::shared_ptr<UndoableModelStatePair> model) :
+    std::string_view label_,
+    std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+    EditorAPI* editorAPI_,
+    std::shared_ptr<UndoableModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(label), mainUIStateAPI, editorAPI, std::move(model))}
+    m_Impl{std::make_unique<Impl>(std::move(label_), std::move(mainUIStateAPI_), editorAPI_, std::move(model_))}
 {
 }
 osc::ModelEditorToolbar::ModelEditorToolbar(ModelEditorToolbar&&) noexcept = default;

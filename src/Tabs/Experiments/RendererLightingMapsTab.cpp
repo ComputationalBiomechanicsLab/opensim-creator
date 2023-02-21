@@ -158,7 +158,7 @@ osc::CStringView osc::RendererLightingMapsTab::id() noexcept
     return "Renderer/LightingMaps";
 }
 
-osc::RendererLightingMapsTab::RendererLightingMapsTab(TabHost*) :
+osc::RendererLightingMapsTab::RendererLightingMapsTab(std::weak_ptr<TabHost>) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

@@ -60,11 +60,12 @@
 class osc::ModelEditorTab::Impl final : public EditorAPI {
 public:
 
-    Impl(MainUIStateAPI* parent,
-        std::unique_ptr<UndoableModelStatePair> model) :
+    Impl(
+        std::weak_ptr<MainUIStateAPI> parent_,
+        std::unique_ptr<UndoableModelStatePair> model_) :
 
-        m_ParentAPI{std::move(parent)},
-        m_Model{std::move(model)}
+        m_Parent{std::move(parent_)},
+        m_Model{std::move(model_)}
     {
         // register all panels that the editor tab supports
 
@@ -75,7 +76,11 @@ public:
                 return std::make_shared<NavigatorPanel>(
                     panelName,
                     m_Model,
-                    [this](OpenSim::ComponentPath const& p)  { this->pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_ParentAPI, this, m_Model, p)); });
+                    [this](OpenSim::ComponentPath const& p) 
+                    {
+                        pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_Parent, this, m_Model, p));
+                    }
+                );
             }
         );
         m_PanelManager->registerToggleablePanel(
@@ -96,7 +101,7 @@ public:
             "Coordinates",
             [this](std::string_view panelName)
             {
-                return std::make_shared<CoordinateEditorPanel>(panelName, m_ParentAPI, this, m_Model);
+                return std::make_shared<CoordinateEditorPanel>(panelName, m_Parent, this, m_Model);
             }
         );
         m_PanelManager->registerToggleablePanel(
@@ -110,14 +115,14 @@ public:
             "Output Watches",
             [this](std::string_view panelName)
             {
-                return std::make_shared<OutputWatchesPanel>(panelName, m_Model, m_ParentAPI);
+                return std::make_shared<OutputWatchesPanel>(panelName, m_Model, m_Parent);
             }
         );
         m_PanelManager->registerSpawnablePanel(
             "viewer",
             [this](std::string_view panelName)
             {
-                return std::make_shared<ModelEditorViewerPanel>(panelName, m_ParentAPI, this, m_Model);
+                return std::make_shared<ModelEditorViewerPanel>(panelName, m_Parent, this, m_Model);
             }
         );
         m_PanelManager->registerSpawnablePanel(
@@ -129,7 +134,15 @@ public:
         );
 
         // push one viewer open at the start
-        m_PanelManager->pushDynamicPanel("viewer", std::make_shared<ModelEditorViewerPanel>(m_PanelManager->computeSuggestedDynamicPanelName("viewer"), m_ParentAPI, this, m_Model));
+        m_PanelManager->pushDynamicPanel(
+            "viewer",
+            std::make_shared<ModelEditorViewerPanel>(
+                m_PanelManager->computeSuggestedDynamicPanelName("viewer"),
+                m_Parent,
+                this,
+                m_Model
+            )
+        );
         m_PanelManager->activateAllDefaultOpenPanels();
     }
 
@@ -150,7 +163,7 @@ public:
 
     bool trySave()
     {
-        return ActionSaveModel(*m_ParentAPI, *m_Model);
+        return ActionSaveModel(*m_Parent.lock(), *m_Model);
     }
 
     void onMount()
@@ -220,9 +233,8 @@ public:
 
             if (m_ExceptionThrownLastFrame)
             {
-                UID tabID = m_ParentAPI->addTab<ErrorTab>(m_ParentAPI, ex);
-                m_ParentAPI->selectTab(tabID);
-                m_ParentAPI->closeTab(m_TabID);
+                m_Parent.lock()->addAndSelectTab<ErrorTab>(m_Parent, ex);
+                m_Parent.lock()->closeTab(m_TabID);
             }
             else
             {
@@ -235,13 +247,12 @@ public:
                 catch (std::exception const& ex2)
                 {
                     log::error("model rollback also thrown an exception: %s", ex2.what());
-                    UID tabID = m_ParentAPI->addTab<ErrorTab>(m_ParentAPI, ex2);
-                    m_ParentAPI->selectTab(tabID);
-                    m_ParentAPI->closeTab(m_TabID);
+                    m_Parent.lock()->addAndSelectTab<ErrorTab>(m_Parent, ex2);
+                    m_Parent.lock()->closeTab(m_TabID);
                 }
             }
 
-            m_ParentAPI->resetImgui();
+            m_Parent.lock()->resetImgui();
         }
     }
 
@@ -259,13 +270,12 @@ private:
     {
         if (e.file != nullptr && CStrEndsWith(e.file, ".sto"))
         {
-            return osc::ActionLoadSTOFileAgainstModel(*m_ParentAPI, *m_Model, e.file);
+            return osc::ActionLoadSTOFileAgainstModel(m_Parent, *m_Model, e.file);
         }
         else if (e.type == SDL_DROPFILE && e.file != nullptr && CStrEndsWith(e.file, ".osim"))
         {
             // if the user drops an osim file on this tab then it should be loaded
-            UID const tabID = m_ParentAPI->addTab<LoadingTab>(m_ParentAPI, e.file);
-            m_ParentAPI->selectTab(tabID);
+            m_Parent.lock()->addAndSelectTab<LoadingTab>(m_Parent, e.file);
             return true;
         }
 
@@ -293,7 +303,7 @@ private:
             case SDLK_r:
             {
                 // Ctrl+R: start a new simulation from focused model
-                return osc::ActionStartSimulatingModel(*m_ParentAPI, *m_Model);
+                return osc::ActionStartSimulatingModel(m_Parent, *m_Model);
             }
             case SDLK_a:  // Ctrl+A: clear selection
                 osc::ActionClearSelectionFromEditedModel(*m_Model);
@@ -317,11 +327,11 @@ private:
     {
         auto popup = std::make_unique<ComponentContextMenu>(
             "##componentcontextmenu",
-            m_ParentAPI,
+            m_Parent,
             this,
             m_Model,
             path
-            );
+        );
         pushPopup(std::move(popup));
     }
 
@@ -347,8 +357,8 @@ private:
 
     // tab top-level data
     UID m_TabID;
+    std::weak_ptr<MainUIStateAPI> m_Parent;
     std::string m_TabName = "ModelEditorTab";
-    MainUIStateAPI* m_ParentAPI;
 
     // the model being edited
     std::shared_ptr<UndoableModelStatePair> m_Model;
@@ -364,9 +374,9 @@ private:
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
 
     // non-toggleable UI panels/menus/toolbars
-    ModelEditorMainMenu m_MainMenu{m_ParentAPI, this, m_Model};
-    ModelEditorToolbar m_Toolbar{"##ModelEditorToolbar", m_ParentAPI, this, m_Model};
-    EditorTabStatusBar m_StatusBar{m_ParentAPI, this, m_Model};
+    ModelEditorMainMenu m_MainMenu{m_Parent, this, m_Model};
+    ModelEditorToolbar m_Toolbar{"##ModelEditorToolbar", m_Parent, this, m_Model};
+    EditorTabStatusBar m_StatusBar{m_Parent, this, m_Model};
 
     // manager for popups that are open in this tab
     Popups m_Popups;
@@ -379,10 +389,10 @@ private:
 // public API (PIMPL)
 
 osc::ModelEditorTab::ModelEditorTab(
-    MainUIStateAPI* parent,
-    std::unique_ptr<UndoableModelStatePair> model) :
+    std::weak_ptr<MainUIStateAPI> parent_,
+    std::unique_ptr<UndoableModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(parent), std::move(model))}
+    m_Impl{std::make_unique<Impl>(std::move(parent_), std::move(model_))}
 {
 }
 

@@ -16,7 +16,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        RendererNormalMappingTab(TabHost*);
+        explicit RendererNormalMappingTab(std::weak_ptr<TabHost>);
         RendererNormalMappingTab(RendererNormalMappingTab const&) = delete;
         RendererNormalMappingTab(RendererNormalMappingTab&&) noexcept;
         RendererNormalMappingTab& operator=(RendererNormalMappingTab const&) = delete;

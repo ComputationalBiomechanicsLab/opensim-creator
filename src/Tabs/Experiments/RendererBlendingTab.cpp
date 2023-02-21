@@ -215,7 +215,7 @@ private:
         {
             App::slurp("shaders/ExperimentBlending.vert"),
             App::slurp("shaders/ExperimentBlending.frag"),
-        }
+        },
     };
     Material m_BlendingMaterial = m_OpaqueMaterial;
     Mesh m_CubeMesh = GenLearnOpenGLCube();
@@ -239,7 +239,7 @@ osc::CStringView osc::RendererBlendingTab::id() noexcept
     return "Renderer/Blending";
 }
 
-osc::RendererBlendingTab::RendererBlendingTab(TabHost*) :
+osc::RendererBlendingTab::RendererBlendingTab(std::weak_ptr<TabHost>) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

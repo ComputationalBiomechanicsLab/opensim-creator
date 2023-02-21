@@ -76,9 +76,9 @@ int main(int argc, char** argv)
 
         if (std::optional<osc::TabRegistryEntry> maybeEntry = tabs->getByName(*maybeRequestedTab))
         {
-            osc::TabHost* api = screen->getTabHostAPI();
+            std::weak_ptr<osc::TabHost> api = screen->getTabHostAPI();
             std::unique_ptr<osc::Tab> initialTab = maybeEntry->createTab(api);
-            api->selectTab(api->addTab(std::move(initialTab)));
+            api.lock()->selectTab(api.lock()->addTab(std::move(initialTab)));
         }
         else
         {

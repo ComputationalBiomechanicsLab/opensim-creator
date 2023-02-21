@@ -33,25 +33,27 @@ namespace
 class osc::OutputPlotsPanel::Impl final : public StandardPanel {
 public:
     Impl(
-        std::string_view panelName,
-        MainUIStateAPI* mainUIStateAPI,
-        SimulatorUIAPI* simulatorUIAPI) :
+        std::string_view panelName_,
+        std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+        SimulatorUIAPI* simulatorUIAPI_) :
 
-        StandardPanel{std::move(panelName)},
-        m_API{mainUIStateAPI},
-        m_SimulatorUIAPI{simulatorUIAPI}
+        StandardPanel{std::move(panelName_)},
+        m_API{std::move(mainUIStateAPI_)},
+        m_SimulatorUIAPI{simulatorUIAPI_}
     {
     }
 private:
     void implDrawContent() final
     {
-        if (m_API->getNumUserOutputExtractors() <= 0)
+        std::shared_ptr<MainUIStateAPI> api = m_API.lock();
+
+        if (api->getNumUserOutputExtractors() <= 0)
         {
             ImGui::TextDisabled("(no outputs requested)");
             return;
         }
 
-        if (IsAnyOutputExportableToCSV(*m_API))
+        if (IsAnyOutputExportableToCSV(*api))
         {
             ImGui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
             if (ImGui::BeginPopupContextItem("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
@@ -77,9 +79,9 @@ private:
         ImGui::Separator();
         ImGui::Dummy({0.0f, 5.0f});
 
-        for (int i = 0; i < m_API->getNumUserOutputExtractors(); ++i)
+        for (int i = 0; i < api->getNumUserOutputExtractors(); ++i)
         {
-            osc::OutputExtractor output = m_API->getUserOutputExtractor(i);
+            osc::OutputExtractor output = api->getUserOutputExtractor(i);
 
             ImGui::PushID(i);
             SimulationOutputPlot plot{m_SimulatorUIAPI, output, 64.0f};
@@ -89,16 +91,16 @@ private:
         }
     }
 
-    MainUIStateAPI* m_API;
+    std::weak_ptr<MainUIStateAPI> m_API;
     SimulatorUIAPI* m_SimulatorUIAPI;
 };
 
 osc::OutputPlotsPanel::OutputPlotsPanel(
-    std::string_view panelName,
-    MainUIStateAPI* mainUIStateAPI,
-    SimulatorUIAPI* simulatorUIAPI) :
+    std::string_view panelName_,
+    std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+    SimulatorUIAPI* simulatorUIAPI_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(panelName), mainUIStateAPI, simulatorUIAPI)}
+    m_Impl{std::make_unique<Impl>(std::move(panelName_), std::move(mainUIStateAPI_), simulatorUIAPI_)}
 {
 }
 

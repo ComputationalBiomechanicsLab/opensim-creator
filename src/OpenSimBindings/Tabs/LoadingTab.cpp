@@ -27,36 +27,23 @@ class osc::LoadingTab::Impl final {
 public:
 
     Impl(
-        MainUIStateAPI* parent,
-        std::filesystem::path path) :
+        std::weak_ptr<MainUIStateAPI> parent_,
+        std::filesystem::path path_) :
 
-        m_Parent{std::move(parent)},
-        m_OsimPath{std::move(path)},
+        m_Parent{std::move(parent_)},
+        m_OsimPath{std::move(path_)},
         m_LoadingResult{std::async(std::launch::async, osc::LoadOsimIntoUndoableModel, m_OsimPath)}
     {
     }
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
-        return m_Name;
-    }
-
-    void onMount()
-    {
-    }
-
-    void onUnmount()
-    {
-    }
-
-    bool onEvent(SDL_Event const&)
-    {
-        return false;
+        return "LoadingTab";
     }
 
     void onTick()
@@ -100,13 +87,9 @@ public:
             // there is an existing editor state
             //
             // recycle it so that users can keep their running sims, local edits, etc.
-            m_Parent->selectTab(m_Parent->addTab<ModelEditorTab>(m_Parent, std::move(result)));
-            m_Parent->closeTab(m_ID);
+            m_Parent.lock()->addAndSelectTab<ModelEditorTab>(m_Parent, std::move(result));
+            m_Parent.lock()->closeTab(m_TabID);
         }
-    }
-
-    void onDrawMainMenu()
-    {
     }
 
     void onDraw()
@@ -143,8 +126,8 @@ public:
 
                 if (ImGui::Button("try again"))
                 {
-                    m_Parent->selectTab(m_Parent->addTab<LoadingTab>(m_Parent, m_OsimPath));
-                    m_Parent->closeTab(m_ID);
+                    m_Parent.lock()->addAndSelectTab<LoadingTab>(m_Parent, m_OsimPath);
+                    m_Parent.lock()->closeTab(m_TabID);
                 }
             }
             ImGui::End();
@@ -153,10 +136,8 @@ public:
 
 
 private:
-    // tab data
-    UID m_ID;
-    std::string m_Name = "LoadingTab";
-    MainUIStateAPI* m_Parent;
+    UID m_TabID;
+    std::weak_ptr<MainUIStateAPI> m_Parent;
 
     // filesystem path to the osim being loaded
     std::filesystem::path m_OsimPath;
@@ -179,8 +160,11 @@ private:
 
 // public API (PIMPL)
 
-osc::LoadingTab::LoadingTab(MainUIStateAPI* parent, std::filesystem::path path) :
-    m_Impl{std::make_unique<Impl>(std::move(parent), std::move(path))}
+osc::LoadingTab::LoadingTab(
+    std::weak_ptr<MainUIStateAPI> parent_,
+    std::filesystem::path path_) :
+
+    m_Impl{std::make_unique<Impl>(std::move(parent_), std::move(path_))}
 {
 }
 
@@ -198,29 +182,9 @@ osc::CStringView osc::LoadingTab::implGetName() const
     return m_Impl->getName();
 }
 
-void osc::LoadingTab::implOnMount()
-{
-    m_Impl->onMount();
-}
-
-void osc::LoadingTab::implOnUnmount()
-{
-    m_Impl->onUnmount();
-}
-
-bool osc::LoadingTab::implOnEvent(SDL_Event const& e)
-{
-    return m_Impl->onEvent(e);
-}
-
 void osc::LoadingTab::implOnTick()
 {
     m_Impl->onTick();
-}
-
-void osc::LoadingTab::implOnDrawMainMenu()
-{
-    m_Impl->onDrawMainMenu();
 }
 
 void osc::LoadingTab::implOnDraw()

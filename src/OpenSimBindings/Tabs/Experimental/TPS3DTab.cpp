@@ -696,19 +696,19 @@ namespace
 
         TPSTabSharedState(
             osc::UID tabID_,
-            osc::TabHost* parent_) :
+            std::weak_ptr<osc::TabHost> parent_) :
 
             tabID{std::move(tabID_)},
             tabHost{std::move(parent_)}
         {
-            OSC_ASSERT(tabHost != nullptr && "top-level tab host required for this UI");
+            OSC_ASSERT(tabHost.lock() != nullptr && "top-level tab host required for this UI");
         }
 
         // ID of the top-level TPS3D tab
         osc::UID tabID;
 
         // handle to the screen that owns the TPS3D tab
-        osc::TabHost* tabHost;
+        std::weak_ptr<osc::TabHost> tabHost;
 
         // cached TPS3D algorithm result (to prevent recomputing it each frame)
         TPSResultCache meshResultCache;
@@ -1025,7 +1025,7 @@ namespace
 
             if (ImGui::MenuItem(ICON_FA_TIMES " Close"))
             {
-                m_State->tabHost->closeTab(m_State->tabID);
+                m_State->tabHost.lock()->closeTab(m_State->tabID);
             }
 
             if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit"))
@@ -2301,24 +2301,23 @@ namespace
 class osc::TPS3DTab::Impl final {
 public:
 
-    Impl(TabHost* parent) : m_Parent{std::move(parent)}
+    Impl(std::weak_ptr<TabHost> parent_) : m_Parent{std::move(parent_)}
     {
-        OSC_ASSERT(m_Parent != nullptr);
-        OSC_ASSERT(m_State != nullptr && "the tab state should be initialized by this point");
+        OSC_ASSERT(m_Parent.lock() != nullptr);
 
         // initialize panels
-        PushBackAvailablePanels(m_State, *m_State->panelManager);
-        m_State->panelManager->activateAllDefaultOpenPanels();
+        PushBackAvailablePanels(m_SharedState, *m_SharedState->panelManager);
+        m_SharedState->panelManager->activateAllDefaultOpenPanels();
     }
 
     UID getID() const
     {
-        return m_ID;
+        return m_TabID;
     }
 
     CStringView getName() const
     {
-        return m_Name;
+        return ICON_FA_BEZIER_CURVE " TPS3DTab";
     }
 
     void onMount()
@@ -2331,18 +2330,13 @@ public:
         App::upd().makeMainEventLoopPolling();
     }
 
-    bool onEvent(SDL_Event const&)
-    {
-        return false;
-    }
-
     void onTick()
     {
         // re-perform hover test each frame
-        m_State->currentHover.reset();
+        m_SharedState->currentHover.reset();
 
         // garbage collect panel data
-        m_State->panelManager->garbageCollectDeactivatedPanels();
+        m_SharedState->panelManager->garbageCollectDeactivatedPanels();
     }
 
     void onDrawMainMenu()
@@ -2355,27 +2349,24 @@ public:
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         m_TopToolbar.draw();
-        m_State->panelManager->drawAllActivatedPanels();
+        m_SharedState->panelManager->drawAllActivatedPanels();
         m_StatusBar.draw();
 
         // draw active popups over the UI
-        m_State->activePopups.draw();
+        m_SharedState->activePopups.draw();
     }
 
 private:
-
-    // tab data
-    UID m_ID;
-    std::string m_Name = ICON_FA_BEZIER_CURVE " TPS3DTab";
-    TabHost* m_Parent;
+    UID m_TabID;
+    std::weak_ptr<TabHost> m_Parent;
 
     // top-level state that all panels can potentially access
-    std::shared_ptr<TPSTabSharedState> m_State = std::make_shared<TPSTabSharedState>(m_ID, m_Parent);
+    std::shared_ptr<TPSTabSharedState> m_SharedState = std::make_shared<TPSTabSharedState>(m_TabID, m_Parent);
 
     // not-user-toggleable widgets
-    TPS3DMainMenu m_MainMenu{m_State};
-    TPS3DToolbar m_TopToolbar{"##TPS3DToolbar", m_State};
-    TPS3DStatusBar m_StatusBar{"##TPS3DStatusBar", m_State};
+    TPS3DMainMenu m_MainMenu{m_SharedState};
+    TPS3DToolbar m_TopToolbar{"##TPS3DToolbar", m_SharedState};
+    TPS3DStatusBar m_StatusBar{"##TPS3DStatusBar", m_SharedState};
 };
 
 
@@ -2386,8 +2377,8 @@ osc::CStringView osc::TPS3DTab::id() noexcept
     return "Warping/TPS3D";
 }
 
-osc::TPS3DTab::TPS3DTab(TabHost* parent) :
-    m_Impl{std::make_unique<Impl>(std::move(parent))}
+osc::TPS3DTab::TPS3DTab(std::weak_ptr<TabHost> parent_) :
+    m_Impl{std::make_unique<Impl>(std::move(parent_))}
 {
 }
 
@@ -2413,11 +2404,6 @@ void osc::TPS3DTab::implOnMount()
 void osc::TPS3DTab::implOnUnmount()
 {
     m_Impl->onUnmount();
-}
-
-bool osc::TPS3DTab::implOnEvent(SDL_Event const& e)
-{
-    return m_Impl->onEvent(e);
 }
 
 void osc::TPS3DTab::implOnTick()
