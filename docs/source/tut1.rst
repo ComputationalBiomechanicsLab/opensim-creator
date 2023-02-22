@@ -44,7 +44,7 @@ You should see a 3D viewer with a chequered floor and a set of axes in the middl
 
     This has practical implications. For example, setting a component's ``translation`` to +1 in X does not mean that the component will be positioned at ``(1, 0, 0)`` in the scene. The component may be positioned at ``parent.position + parent.orientation*(1, 0, 0)``, or at some other location, depending on what (and how) the component is attached to the other components in the model (the model's **topology**). This relative, topology-sensitive, approach is in contrast to artistic modelling software (e.g. `Blender <https://www.blender.org>`__), where scene elements are typically transformed independently and relative to the world.
 
-    The only component that doesn't use relative coordinates is the **ground**. The ground is always the "root" of the model's connectivity graph and is always defined to be at, and aligned with, the origin of the world. All other components within the model attach to ground directly or indirectly (i.e. via other components, such as joints).
+    The only component that doesn't use relative coordinates is the **ground**. The ground is always the "root" of the model's connectivity graph and is always defined to be at, and aligned with, the origin of the world - ``(0, 0, 0)``. All other components within the model attach to ground directly or indirectly (i.e. via other components, such as joints).
 
 
 Add a Body with a WeldJoint
@@ -84,28 +84,32 @@ The reason we add joints is because bodies must be connected in a **model topolo
 
 .. note::
 
-    OpenSim models are **stored** in a **hierarchy**. The top-level model "root" contains child components--things like **bodies** and **joints**--and those children, in turn, contain child components--e.g. things like **offset frames** and **decorative geometry**. Clicking something in OpenSim Creator typically selects the exact component you clicked on, so clicking the ``Brick`` in the 3D scene will select the ``Brick`` geometry child of ``pendulum_base``. You can use the navigator panel, or the component path in the status bar at the bottom of the UI, to see where the selected component is in the model's hierarchy.
+    OpenSim models are **stored** in a **hierarchy**. At the top of the hierarchy is the model, which contains child components (e.g. things like **bodies** and **joints**). Those components, in turn, may other child components--e.g. things like **offset frames** and **decorative geometry**.
 
-    Components in an OpenSim model can also use **sockets** to form a **graph-like** connection to some other component. This enables components--which are **stored** in a hierarchy--to connect to each other in a non-hierarchical manner. For example, bodies and joints are direct children of a model--they are, *hierarchically speaking*, siblings--but joints use sockets (``parent_frame`` and ``child_frame``) to connect to two frames/bodies and establish a **joint topology graph**.
+    Clicking something in OpenSim Creator typically selects the component you clicked on, so clicking the ``Brick`` in the 3D scene will select the ``Brick`` geometry that's a child of the ``pendulum_base`` offset frame. You can use the navigator panel, or the component path in the status bar at the bottom of the UI, to see where the selected component is in the model's hierarchy.
 
-    When these tutorials write about the **topology** of the model, they're usually referring to how the various bodies, joints, and frames *physically* affect each other. That topology is usually dictated by the socket connectivity graph. By contrast, the model hierarchy, as shown in OpenSim Creator's navigator panel, is focused on the **storage** of the model. Storage affects things like where the component's data is ultimately saved in the resulting ``.osim`` model file.
+    Components in an OpenSim model can also use **sockets** to form a **graph-like** connection to some other component. This enables components (which are **stored** hierarchically) to connect to each other in a non-hierarchical manner.
+
+    For example, bodies and joints are direct children of a model--they are, *hierarchically speaking*, siblings--but joints use sockets (``parent_frame`` and ``child_frame``) to connect to two frames/bodies and establish a **joint topology graph**.
+
+    When these tutorials write about the **topology** of the model, they're usually referring to how the various bodies, joints, and frames *physically* affect each other. That topology is usually dictated by the socket connectivity graph. By contrast, the model hierarchy, as shown in OpenSim Creator's navigator panel, shows you the hierarchical **storage** of the model. Storage affects things like where the component's data is ultimately saved in the resulting ``.osim`` model file.
 
 
 Reposition the Body
 -------------------
 
-A ``WeldJoint`` mandates that the two frames it's joining must be constrained to the same location and orientation, so how do we move ``pendulum_base``? This is where the offset frames (``ground_offset`` and ``pendulum_base_offset``) come in handy.
+A ``WeldJoint`` mandates that the two frames it's joining must be constrained to the same location and orientation. If that's the case, how do we move ``pendulum_base``?
 
-The ``WeldJoint`` we added (``pendulum_base_to_ground``) is attached to those offset frames, rather than being directly attached to ``pendulum_base`` or ``ground``. Although the ``WeldJoint`` will weld the offset frames together, each of them can each be independently offset/reoriented with respect to what *they* are attached to, which enables us to move things around.
+This is where the offset frames we added (``ground_offset`` and ``pendulum_base_offset``) come in handy. The ``WeldJoint`` (``pendulum_base_to_ground``) is attached to those offset frames, rather than being directly attached to ``pendulum_base`` or ``ground``. So although the ``WeldJoint`` will weld the *offset frames* together, each offset frame can independently be offset (orientation + translation) with respect to what *they* are attached to. This enables us to move things around by changing the offsets.
 
-So, to reposition ``pendulum_base`` in the scene, we can change the offset frame's ``translate`` property. Changing the ``ground_offset`` has the effect of offsetting the joint center from ground. Changing ``pendulum_base_offset`` has the effect of offsetting the joint center from ``pendulum_base``. 
+To reposition ``pendulum_base`` in the scene, we can change an offset frame's ``translate`` property. Changing the ``ground_offset`` has the effect of offsetting the joint center from ground. Changing ``pendulum_base_offset`` has the effect of offsetting the joint center from ``pendulum_base``.
 
-To move  ``pendulum_base`` away from ground in the scene, take the following steps:
+To move ``pendulum_base`` away from the ground, take the following steps:
 
 * Find ``jointset`` in the navigator panel and expand it
-* Find the ``WeldJoint``, ``pendulum_base_to_ground``, in the ``jointset`` and expand it
+* Find the ``WeldJoint`` (``pendulum_base_to_ground``) in the ``jointset`` and expand it
 * Find ``ground_offset`` and click it
-* Use the properties panel to change ``ground_offset``'s ``translation`` property to ``(0.00, 1.00, 0.00)``    
+* Use the properties panel, or the 3D dragging gizmo, to change ``ground_offset``'s ``translation`` property to ``(0.00, 1.00, 0.00)``
 
 This will move the ``ground_offset`` frame +1 in Y (in ``ground``'s reference frame). Because ``ground``'s reference frame is the same as the world's Y, it will move ``ground_offset`` vertically upwards. This has the effect of *also* moving ``pendulum_base`` upwards because it's attached to ``ground_offset`` via the joint:
 
@@ -212,7 +216,7 @@ If you simulate your pendulum model at this point (e.g. by pressing the green bu
 
     This approach can be *extremely* useful. It lets us design physical systems on a computer from basic building blocks, followed by simulating those systems to yield physically-representative data. That data can then be compared to scientific predictions, or experimental measurements, to provide a deeper insight.
 
-    Although a pendulum may not be all that impressive, the principles shown here scale more easily to complex systems. Maybe the pendulum equation is simple, but what about a double pendulum, or a triple pendulum? What if we attach the pendulums to each other with springs, or muscles? What about a human leg containing many bodies, muscles, and joints that are attached to each other?
+    Although a pendulum may not be all that impressive, the principles shown here scale more easily to complex systems. Maybe the pendulum equation is simple, but what about a double pendulum, or (dare we suggest) a triple pendulum? What if we attach the pendulums to each other with springs, or muscles? What about a human leg containing many bodies, muscles, and joints that are attached to each other?
 
 
 (optional) Make the Pendulum Look Nicer

@@ -32,7 +32,9 @@ Topics Covered by this Tutorial
 Create the Foot
 ---------------
 
-Because of how OpenSim computes a model's spatial layout, the most straightforward way to develop a new OpenSim model is to start at whichever body will be directly attached to ground (e.g. ``foot``) followed by adding bodies that are, in turn, attached to that (e.g. ``knee``). Starting from the "middle" (e.g. ``knee``), or a "leaf", of a model's topology graph is more challenging because the position and orientation of those entities may change when they are attached to bodies that are (topographically) closer to ground.
+Because of how OpenSim computes a model's spatial layout, the most straightforward way to develop a new OpenSim model is to start at whichever body will be directly attached to ground (e.g. ``foot``) followed by adding bodies that are, in turn, attached to that (e.g. ``knee``).
+
+Starting from the "middle" (e.g. ``knee``), or a "leaf", of a model's topology graph is more challenging because the position and orientation of those entities may change when they are attached to bodies that are (topographically) closer to ground.
 
 .. note::
 
@@ -72,7 +74,7 @@ This should produce a model with a red sphere (``foot``) that is raised above th
 Add Contact Surfaces & Forces
 -----------------------------
 
-If you simulate the model at this point, ``foot`` will just fall through the floor. The reason this happens is because the chequered floor and red sphere geometry are only decorative: the ``foot`` body is effectively a 0D point in space and has nothing to collide with.
+If you simulate the model at this point, ``foot`` will just fall through the floor. The reason this happens is because the chequered floor and red sphere geometry are only decorative: the ``foot`` body is effectively a 0D point in space that has nothing to collide with.
 
 In order to give ``foot`` a "size" that can "collide" with stuff, we need to explicitly add ``ContactGeometry`` into the model at locations where we *logically* expect collisions to take place. In this case, we will add ``ContactGeometry`` at the same location as the decorations.
 
@@ -208,7 +210,7 @@ Add a Spring between ``foot`` and ``head``
 
 We have now added all of the bodies and joints that make up the model. However, the only forces acting on the model are gravity and the foot collision. Consequently, a simulation of the model won't be very impressive. The model will fall a little, then ``foot`` will collide with ``floor``, then the rest of the (non-colliding) model will roll around and clip through the floor.
 
-The reason this model is unexciting is because there are no forces between the model's bodies. We have attached three bodies (``foot``, ``knee``, and ``head``) with two ``PinJoint`` s and let them drop through space. The joints merely enforce constraints between the bodies. So the model is acts like a passive hinged device that flops around.
+The reason this model is unexciting is because there are no forces between the model's bodies. We have attached three bodies (``foot``, ``knee``, and ``head``) with two ``PinJoint`` s and let them drop through space. The joints merely enforce constraints between the bodies. So the model acts like a passive hinged device that flops around.
 
 We can add **forces** to this model to make it more interesting. Specifically, we will add a ``PointToPointSpring`` between the ``foot`` and ``head``, which will make the model's head "bounce" away from the foot whenever it gets too close (e.g. when the model hits the floor).
 

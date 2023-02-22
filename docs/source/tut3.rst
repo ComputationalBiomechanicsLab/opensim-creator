@@ -105,7 +105,7 @@ Next, you will temporarily convert the mesh importer scene into an OpenSim model
 
 To convert the mesh importer scene into an ``osim`` (for testing), you will need to:
 
-* **Convert your scene into an OpenSim model**. Click the ``Convert to OpenSim Model``. This will convert your scene to an ``osim`` and open it in an ``osim`` editor tab. You can then see how the free-form scene was converted into an OpenSim model.
+* **Convert your scene into an OpenSim model**. Click the green ``Convert to OpenSim Model`` button. This will convert your scene to an ``osim`` and open it in an ``osim`` editor tab. You can then see how the free-form scene was converted into an OpenSim model.
 * **Try simulating the todel**. Adjust the pin joint coordinates (``pendulum_head_to_ground_rz`` and ``pendulum_head_2_to_pendulum_head_rz``) to start the pendulum off at an angle. Start simulating the model (``Ctrl+R``) to see it swinging. Confirm that both bodies swing like a double pendulum. If they don't, close the simulation (and editor), then reopen the mesh importer tab and start fixing things 🔧.
 * **Save the model as an .osim**. After conversion, you can then save your model to disk and use external tooling (e.g. XML editors, OpenSim GUI) to further modify it.
 
@@ -217,7 +217,7 @@ Export and Simulate
 
 Now that we have created a fully modelled and decorated pendulum, we can export it to an ``osim`` and simulate it. To do that:
 
-* **Convert the model to an osim**. Click the ``Convert to OpenSim Model`` button in the mesh importer.
+* **Convert the model to an osim**. Click the green ``Convert to OpenSim Model`` button in the mesh importer.
 * **Tilt a pendulum head slightly**. Use the ``coordinates`` panel to change one of the joint's rotational ``value``, so that the pendulum is tilted slightly.
 * **Request a pendulum head's velocity is plotted**. Right-click a pendulum head in the 3D viewer, go to ``Watch Output > pendulum_head > linear velocity`` and click ``magnitude``.
 * **Simulate the model**. Press ``Ctrl+R`` (run simulation) to start running a forward-dynamic simulation. This should show the pendulum swinging.
