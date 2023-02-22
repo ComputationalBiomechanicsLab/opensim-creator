@@ -91,7 +91,7 @@ namespace
             {
                 if (static_cast<int>(f) & supportedSubfields)
                 {
-                    if (ImGui::MenuItem(GetOutputSubfieldLabel(f)))
+                    if (ImGui::MenuItem(GetOutputSubfieldLabel(f).c_str()))
                     {
                         api.addUserOutputExtractor(osc::OutputExtractor{osc::ComponentOutputExtractor{o, f}});
                         outputAdded = true;

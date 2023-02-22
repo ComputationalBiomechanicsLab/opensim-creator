@@ -102,9 +102,10 @@ namespace
 
     // populates `out` with the sequence of nodes between (ancestor..child]
     void computeComponentPath(
-            OpenSim::Component const* ancestor,
-            OpenSim::Component const* child,
-            ComponentPath& out) {
+        OpenSim::Component const* ancestor,
+        OpenSim::Component const* child,
+        ComponentPath& out)
+    {
 
         out.clear();
 
@@ -127,7 +128,8 @@ namespace
         std::reverse(out.begin(), out.end());
     }
 
-    bool pathContains(ComponentPath const& p, OpenSim::Component const* c) {
+    bool pathContains(ComponentPath const& p, OpenSim::Component const* c)
+    {
         auto end = p.begin() == p.end() ? p.end() : p.end()-1;
         return std::find(p.begin(), end, c) != end;
     }

@@ -780,3 +780,44 @@ void osc::PopItemFlags(int n)
         ImGui::PopItemFlag();
     }
 }
+
+bool osc::Combo(
+    CStringView label,
+    size_t* current,
+    nonstd::span<CStringView const> items)
+{
+    char const* preview = 0 <= *current && *current < items.size() ?
+        items[*current].c_str() :
+        nullptr;
+
+    if (!ImGui::BeginCombo(label.c_str(), preview, ImGuiComboFlags_None))
+    {
+        return false;
+    }
+
+    bool changed = false;
+    for (size_t i = 0; i < items.size(); ++i)
+    {
+        ImGui::PushID(static_cast<int>(i));
+        bool const isSelected = i == *current;
+        if (ImGui::Selectable(items[i].c_str(), isSelected))
+        {
+            changed = true;
+            *current = i;
+        }
+        if (isSelected)
+        {
+            ImGui::SetItemDefaultFocus();
+        }
+        ImGui::PopID();
+    }
+
+    ImGui::EndCombo();
+
+    if (changed)
+    {
+        ImGui::MarkItemEdited(ImGui::GetCurrentContext()->LastItemData.ID);
+    }
+
+    return changed;
+}

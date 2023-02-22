@@ -1,6 +1,7 @@
 #include "IntegratorMethod.hpp"
 
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/CStringView.hpp"
 
 #include <nonstd/span.hpp>
 #include <simmath/ExplicitEulerIntegrator.h>
@@ -27,7 +28,7 @@ static auto constexpr c_IntegratorMethods = osc::MakeSizedArray<osc::IntegratorM
     osc::IntegratorMethod::Verlet
 );
 
-static auto constexpr c_IntegratorMethodStrings = osc::MakeSizedArray<char const*, static_cast<size_t>(osc::IntegratorMethod::TOTAL)>
+static auto constexpr c_IntegratorMethodStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::IntegratorMethod::TOTAL)>
 (
     "OpenSim::Manager Default",
     "Explicit Euler",
@@ -44,12 +45,12 @@ nonstd::span<osc::IntegratorMethod const> osc::GetAllIntegratorMethods()
     return c_IntegratorMethods;
 }
 
-nonstd::span<char const* const> osc::GetAllIntegratorMethodStrings()
+nonstd::span<osc::CStringView const> osc::GetAllIntegratorMethodStrings()
 {
     return c_IntegratorMethodStrings;
 }
 
-char const* osc::GetIntegratorMethodString(IntegratorMethod im)
+osc::CStringView osc::GetIntegratorMethodString(IntegratorMethod im)
 {
     return GetAllIntegratorMethodStrings()[static_cast<size_t>(im)];
 }

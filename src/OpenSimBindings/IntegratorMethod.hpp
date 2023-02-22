@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/Utils/CStringView.hpp"
+
 #include <nonstd/span.hpp>
 
 #include <memory>
@@ -24,8 +26,8 @@ namespace osc
     };
 
     nonstd::span<IntegratorMethod const> GetAllIntegratorMethods();
-    nonstd::span<char const* const> GetAllIntegratorMethodStrings();
-    char const* GetIntegratorMethodString(IntegratorMethod);
+    nonstd::span<CStringView const> GetAllIntegratorMethodStrings();
+    CStringView GetIntegratorMethodString(IntegratorMethod);
     std::unique_ptr<SimTK::Integrator> CreateIntegrator(SimTK::System const&, IntegratorMethod);
 }
 

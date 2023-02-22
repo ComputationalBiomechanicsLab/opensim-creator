@@ -57,10 +57,11 @@ namespace
 
     bool DrawEditor(osc::ParamBlock& b, int idx, osc::IntegratorMethod im)
     {
-        nonstd::span<char const* const> methodStrings = osc::GetAllIntegratorMethodStrings();
-        int method = static_cast<int>(im);
+        nonstd::span<osc::CStringView const> const methodStrings =
+            osc::GetAllIntegratorMethodStrings();
+        size_t method = static_cast<size_t>(im);
 
-        if (ImGui::Combo("##", &method, methodStrings.data(), static_cast<int>(methodStrings.size())))
+        if (osc::Combo("##", &method, methodStrings))
         {
             b.setValue(idx, static_cast<osc::IntegratorMethod>(method));
             return true;

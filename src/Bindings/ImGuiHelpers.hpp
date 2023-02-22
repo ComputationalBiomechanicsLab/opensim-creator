@@ -221,4 +221,10 @@ namespace osc
     bool ItemValueShouldBeSaved();
 
     void PopItemFlags(int n = 1);
+
+    bool Combo(
+        CStringView label,
+        size_t* current,
+        nonstd::span<CStringView const> items
+    );
 }

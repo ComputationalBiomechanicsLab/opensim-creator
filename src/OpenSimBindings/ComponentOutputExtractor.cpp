@@ -206,7 +206,7 @@ public:
         OSC_PERF("osc::ComponentOutputExtractor::getValuesFloat");
         OSC_ASSERT_ALWAYS(reports.size() == out.size());
 
-        OpenSim::AbstractOutput const* ao = FindOutput(c, m_ComponentAbsPath, m_OutputName);
+        OpenSim::AbstractOutput const* const ao = FindOutput(c, m_ComponentAbsPath, m_OutputName);
 
         if (!ao || typeid(*ao) != *m_OutputType || !m_ExtractorFunc)
         {
@@ -227,7 +227,7 @@ public:
 
     std::string getValueString(OpenSim::Component const& c, SimulationReport const& r) const
     {
-        OpenSim::AbstractOutput const* ao = FindOutput(c, m_ComponentAbsPath, m_OutputName);
+        OpenSim::AbstractOutput const* const ao = FindOutput(c, m_ComponentAbsPath, m_OutputName);
         if (ao)
         {
             if (m_ExtractorFunc)
@@ -252,28 +252,25 @@ public:
 
     bool equals(VirtualOutputExtractor const& other)
     {
-        auto otherT = dynamic_cast<ComponentOutputExtractor const*>(&other);
-
+        ComponentOutputExtractor const* const otherT =
+            dynamic_cast<ComponentOutputExtractor const*>(&other);
         if (!otherT)
         {
             return false;
         }
 
-        auto otherImpl = otherT->m_Impl.get();
-
+        ComponentOutputExtractor::Impl const* const otherImpl = otherT->m_Impl.get();
         if (otherImpl == this)
         {
             return true;
         }
 
-        bool result =
+        return
             m_ComponentAbsPath == otherImpl->m_ComponentAbsPath &&
             m_OutputName == otherImpl->m_OutputName &&
             m_Label == otherImpl->m_Label &&
             m_OutputType == otherImpl->m_OutputType &&
             m_ExtractorFunc == otherImpl->m_ExtractorFunc;
-
-        return result;
     }
 
 private:
@@ -287,7 +284,7 @@ private:
 
 // public API
 
-char const* osc::GetOutputSubfieldLabel(OutputSubfield subfield)
+osc::CStringView osc::GetOutputSubfieldLabel(OutputSubfield subfield)
 {
     switch (subfield) {
     case osc::OutputSubfield::X:

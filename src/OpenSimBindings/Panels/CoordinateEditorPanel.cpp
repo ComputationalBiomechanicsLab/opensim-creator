@@ -9,6 +9,7 @@
 #include "src/Panels/StandardPanel.hpp"
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/CStringView.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
@@ -33,7 +34,7 @@ public:
         StandardPanel{std::move(panelName_)},
         m_MainUIStateAPI{std::move(mainUIStateAPI_)},
         m_EditorAPI{std::move(editorAPI_)},
-        m_Uum{std::move(uum_)}
+        m_Model{std::move(uum_)}
     {
     }
 
@@ -42,15 +43,15 @@ private:
     void implDrawContent() final
     {
         // load coords
-        std::vector<OpenSim::Coordinate const*> coordPtrs = GetCoordinatesInModel(m_Uum->getModel());
+        std::vector<OpenSim::Coordinate const*> coordPtrs = GetCoordinatesInModel(m_Model->getModel());
 
         // if there's no coordinates in the model, show a warning message and stop drawing
         if (coordPtrs.empty())
         {
-            char const* const msg = "(there are no coordinates in the model)";
-            float const w = ImGui::CalcTextSize(msg).x;
+            CStringView const msg = "(there are no coordinates in the model)";
+            float const w = ImGui::CalcTextSize(msg.c_str()).x;
             ImGui::SetCursorPosX(0.5f * (ImGui::GetContentRegionAvail().x - w));  // center align
-            ImGui::TextDisabled(msg);
+            ImGui::TextDisabled(msg.c_str());
             return;
         }
 
@@ -120,12 +121,12 @@ private:
     void drawNameCell(OpenSim::Coordinate const& c)
     {
         int stylesPushed = 0;
-        if (&c == m_Uum->getHovered())
+        if (&c == m_Model->getHovered())
         {
             ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
             ++stylesPushed;
         }
-        if (&c == m_Uum->getSelected())
+        if (&c == m_Model->getSelected())
         {
             ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
             ++stylesPushed;
@@ -136,7 +137,7 @@ private:
 
         if (ImGui::IsItemHovered())
         {
-            m_Uum->setHovered(&c);
+            m_Model->setHovered(&c);
 
             std::stringstream ss;
             ss << "    motion type = " << osc::GetMotionTypeDisplayName(c) << '\n';
@@ -147,11 +148,11 @@ private:
 
         if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
         {
-            m_Uum->setSelected(&c);
+            m_Model->setSelected(&c);
         }
         else if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
-            auto popup = std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_MainUIStateAPI, m_EditorAPI, m_Uum, osc::GetAbsolutePath(c));
+            auto popup = std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_MainUIStateAPI, m_EditorAPI, m_Model, osc::GetAbsolutePath(c));
             popup->open();
             m_EditorAPI->pushPopup(std::move(popup));
         }
@@ -161,17 +162,17 @@ private:
     {
         int stylesPushed = 0;
 
-        if (c.getLocked(m_Uum->getState()))
+        if (c.getLocked(m_Model->getState()))
         {
             ImGui::PushStyleColor(ImGuiCol_FrameBg, {0.6f, 0.0f, 0.0f, 1.0f});
             ++stylesPushed;
         }
 
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.0f, ImGui::GetStyle().FramePadding.y});
-        if (ImGui::Button(c.getLocked(m_Uum->getState()) ? ICON_FA_LOCK : ICON_FA_UNLOCK))
+        if (ImGui::Button(c.getLocked(m_Model->getState()) ? ICON_FA_LOCK : ICON_FA_UNLOCK))
         {
-            bool newValue = !c.getLocked(m_Uum->getState());
-            ActionSetCoordinateLockedAndSave(*m_Uum, c, newValue);
+            bool newValue = !c.getLocked(m_Model->getState());
+            ActionSetCoordinateLockedAndSave(*m_Model, c, newValue);
         }
         ImGui::PopStyleVar();
         osc::DrawTooltipIfItemHovered("Toggle Coordinate Lock", "Lock/unlock the coordinate's value.\n\nLocking a coordinate indicates whether the coordinate's value should be constrained to this value during the simulation.");
@@ -182,16 +183,16 @@ private:
 
         float minValue = ConvertCoordValueToDisplayValue(c, c.getRangeMin());
         float maxValue = ConvertCoordValueToDisplayValue(c, c.getRangeMax());
-        float displayedValue = ConvertCoordValueToDisplayValue(c, c.getValue(m_Uum->getState()));
+        float displayedValue = ConvertCoordValueToDisplayValue(c, c.getValue(m_Model->getState()));
         if (ImGui::SliderFloat("##coordinatevalueeditor", &displayedValue, minValue, maxValue))
         {
             double storedValue = ConvertCoordDisplayValueToStorageValue(c, displayedValue);
-            ActionSetCoordinateValue(*m_Uum, c, storedValue);
+            ActionSetCoordinateValue(*m_Model, c, storedValue);
         }
         if (ImGui::IsItemDeactivatedAfterEdit())
         {
             double storedValue = ConvertCoordDisplayValueToStorageValue(c, displayedValue);
-            ActionSetCoordinateValueAndSave(*m_Uum, c, storedValue);
+            ActionSetCoordinateValueAndSave(*m_Model, c, storedValue);
         }
 
         if (ImGui::IsItemHovered())
@@ -206,25 +207,25 @@ private:
 
     void drawSpeedCell(OpenSim::Coordinate const& c)
     {
-        float displayedSpeed = ConvertCoordValueToDisplayValue(c, c.getSpeedValue(m_Uum->getState()));
+        float displayedSpeed = ConvertCoordValueToDisplayValue(c, c.getSpeedValue(m_Model->getState()));
 
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
         if (InputMetersFloat("##coordinatespeededitor", displayedSpeed))
         {
             double storedSpeed = ConvertCoordDisplayValueToStorageValue(c, displayedSpeed);
-            osc::ActionSetCoordinateSpeed(*m_Uum, c, storedSpeed);
+            osc::ActionSetCoordinateSpeed(*m_Model, c, storedSpeed);
         }
 
         if (ImGui::IsItemDeactivatedAfterEdit())
         {
             double storedSpeed = ConvertCoordDisplayValueToStorageValue(c, displayedSpeed);
-            osc::ActionSetCoordinateSpeedAndSave(*m_Uum, c, storedSpeed);
+            osc::ActionSetCoordinateSpeedAndSave(*m_Model, c, storedSpeed);
         }
     }
 
     std::weak_ptr<MainUIStateAPI> m_MainUIStateAPI;
     EditorAPI* m_EditorAPI;
-    std::shared_ptr<UndoableModelStatePair> m_Uum;
+    std::shared_ptr<UndoableModelStatePair> m_Model;
 };
 
 

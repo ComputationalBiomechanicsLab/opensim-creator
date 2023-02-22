@@ -304,7 +304,7 @@ namespace osc
     std::string GetDisplayName(OpenSim::Geometry const&);
 
     // returns a user-visible string for a coordinate's motion type
-    char const* GetMotionTypeDisplayName(OpenSim::Coordinate const&);
+    CStringView GetMotionTypeDisplayName(OpenSim::Coordinate const&);
 
     // tries to set the given component's appearance property's visibility field to the given bool
     //

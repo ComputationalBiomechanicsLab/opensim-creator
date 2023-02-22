@@ -190,18 +190,18 @@ void osc::ActionSaveCurrentModelAs(UndoableModelStatePair& uim)
     }
 }
 
-void osc::ActionNewModel(std::weak_ptr<osc::MainUIStateAPI> api)
+void osc::ActionNewModel(std::weak_ptr<MainUIStateAPI> api)
 {
     auto p = std::make_unique<UndoableModelStatePair>();
     api.lock()->addAndSelectTab<ModelEditorTab>(api, std::move(p));
 }
 
-void osc::ActionOpenModel(std::weak_ptr<osc::MainUIStateAPI> api)
+void osc::ActionOpenModel(std::weak_ptr<MainUIStateAPI> api)
 {
     DoOpenFileViaDialog(std::move(api));
 }
 
-void osc::ActionOpenModel(std::weak_ptr<osc::MainUIStateAPI> api, std::filesystem::path const& path)
+void osc::ActionOpenModel(std::weak_ptr<MainUIStateAPI> api, std::filesystem::path const& path)
 {
     OpenOsimInLoadingTab(std::move(api), path);
 }
@@ -1595,7 +1595,7 @@ bool osc::ActionTranslateStation(
     {
         OpenSim::Model& mutModel = model.updModel();
 
-        OpenSim::Station* mutStation = FindComponentMut<OpenSim::Station>(mutModel, stationPath);
+        OpenSim::Station* const mutStation = FindComponentMut<OpenSim::Station>(mutModel, stationPath);
         if (!mutStation)
         {
             model.setModelVersion(oldVersion);  // the provided path isn't a station
@@ -1658,7 +1658,7 @@ bool osc::ActionTranslatePathPoint(
     {
         OpenSim::Model& mutModel = model.updModel();
 
-        OpenSim::PathPoint* mutPathPoint = FindComponentMut<OpenSim::PathPoint>(mutModel, ppPath);
+        OpenSim::PathPoint* const mutPathPoint = FindComponentMut<OpenSim::PathPoint>(mutModel, ppPath);
         if (!mutPathPoint)
         {
             model.setModelVersion(oldVersion);  // the provided path isn't a station
@@ -1717,7 +1717,7 @@ bool osc::ActionTransformPof(
     {
         OpenSim::Model& mutModel = model.updModel();
 
-        OpenSim::PhysicalOffsetFrame* mutPof = FindComponentMut<OpenSim::PhysicalOffsetFrame>(mutModel, pofPath);
+        OpenSim::PhysicalOffsetFrame* const mutPof = FindComponentMut<OpenSim::PhysicalOffsetFrame>(mutModel, pofPath);
         if (!mutPof)
         {
             model.setModelVersion(oldVersion);  // the provided path isn't a station
@@ -1756,7 +1756,7 @@ bool osc::ActionTransformWrapObject(
     {
         OpenSim::Model& mutModel = model.updModel();
 
-        OpenSim::WrapObject* mutPof = FindComponentMut<OpenSim::WrapObject>(mutModel, pofPath);
+        OpenSim::WrapObject* const mutPof = FindComponentMut<OpenSim::WrapObject>(mutModel, pofPath);
         if (!mutPof)
         {
             model.setModelVersion(oldVersion);  // the provided path isn't a station
@@ -1795,7 +1795,7 @@ bool osc::ActionTransformContactGeometry(
     {
         OpenSim::Model& mutModel = model.updModel();
 
-        OpenSim::ContactGeometry* mutGeom = FindComponentMut<OpenSim::ContactGeometry>(mutModel, pofPath);
+        OpenSim::ContactGeometry* const mutGeom = FindComponentMut<OpenSim::ContactGeometry>(mutModel, pofPath);
         if (!mutGeom)
         {
             model.setModelVersion(oldVersion);  // the provided path doesn't exist in the model

@@ -113,7 +113,7 @@ public:
                 ImGui::TableNextRow();
                 int column = 0;
                 ImGui::TableSetColumnIndex(column++);
-                ImGui::TextUnformatted(GetIntegratorMethodString(m));
+                ImGui::TextUnformatted(GetIntegratorMethodString(m).c_str());
                 ImGui::TableSetColumnIndex(column++);
                 ImGui::ProgressBar(sim.getProgress());
                 ImGui::TableSetColumnIndex(column++);
@@ -170,7 +170,7 @@ private:
             }
 
             IntegratorMethod m = std::get<IntegratorMethod>(sim.getParams().findValue("Integrator Method").value());
-            char const* integratorMethodStr = GetIntegratorMethodString(m);
+            CStringView const integratorMethodStr = GetIntegratorMethodString(m);
             float t = m_WalltimeExtractor.getValueFloat(*sim.getModel(), reports.back());
             float steps = m_StepsTakenExtractor.getValueFloat(*sim.getModel(), reports.back());
 

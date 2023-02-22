@@ -141,19 +141,17 @@ namespace
                 return true;
             }
 
-            auto* otherT = dynamic_cast<AuxiliaryVariableOutputExtractor const*>(&other);
-
+            AuxiliaryVariableOutputExtractor const* const otherT =
+                dynamic_cast<AuxiliaryVariableOutputExtractor const*>(&other);
             if (!otherT)
             {
                 return false;
             }
 
-            bool result =
+            return
                 m_Name == otherT->m_Name &&
                 m_Description == otherT->m_Description &&
                 m_UID == otherT->m_UID;
-
-            return result;
         }
 
     private:

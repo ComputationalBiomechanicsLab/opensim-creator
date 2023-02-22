@@ -2,6 +2,7 @@
 
 #include "src/OpenSimBindings/VirtualOutputExtractor.hpp"
 #include "src/Utils/ClonePtr.hpp"
+#include "src/Utils/CStringView.hpp"
 
 #include <nonstd/span.hpp>
 
@@ -25,7 +26,7 @@ namespace osc
         Default = None,
     };
 
-    char const* GetOutputSubfieldLabel(OutputSubfield);
+    CStringView GetOutputSubfieldLabel(OutputSubfield);
     nonstd::span<OutputSubfield const> GetAllSupportedOutputSubfields();
 
     // returns applicable OutputSubfield ORed together
@@ -35,8 +36,10 @@ namespace osc
     // from a component
     class ComponentOutputExtractor final : public VirtualOutputExtractor {
     public:
-        ComponentOutputExtractor(OpenSim::AbstractOutput const&,
-                                 OutputSubfield = OutputSubfield::None);
+        ComponentOutputExtractor(
+            OpenSim::AbstractOutput const&,
+            OutputSubfield = OutputSubfield::None
+        );
         ComponentOutputExtractor(ComponentOutputExtractor const&);
         ComponentOutputExtractor(ComponentOutputExtractor&&) noexcept;
         ComponentOutputExtractor& operator=(ComponentOutputExtractor const&);

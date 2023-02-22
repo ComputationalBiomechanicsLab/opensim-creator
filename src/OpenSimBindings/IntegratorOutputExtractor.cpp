@@ -182,20 +182,17 @@ bool osc::IntegratorOutputExtractor::equals(VirtualOutputExtractor const& other)
         return true;
     }
 
-    auto const* otherT = dynamic_cast<IntegratorOutputExtractor const*>(&other);
-
+    IntegratorOutputExtractor const* const otherT = dynamic_cast<IntegratorOutputExtractor const*>(&other);
     if (!otherT)
     {
         return false;
     }
 
-    bool result =
+    return
         m_AuxiliaryDataID == otherT->m_AuxiliaryDataID &&
         m_Name == otherT->m_Name &&
         m_Description == otherT->m_Description &&
         m_Extractor == otherT->m_Extractor;
-
-    return result;
 }
 
 int osc::GetNumIntegratorOutputExtractors()

@@ -267,7 +267,6 @@ OpenSim::Component const* osc::GetOwner(OpenSim::Component const& c)
     return c.hasOwner() ? &c.getOwner() : nullptr;
 }
 
-
 int osc::DistanceFromRoot(OpenSim::Component const& c)
 {
     OpenSim::Component const* p = &c;
@@ -387,8 +386,9 @@ std::vector<OpenSim::Coordinate const*> osc::GetCoordinatesInModel(OpenSim::Mode
     return rv;
 }
 
-void osc::GetCoordinatesInModel(OpenSim::Model const& m,
-                                std::vector<OpenSim::Coordinate const*>& out)
+void osc::GetCoordinatesInModel(
+    OpenSim::Model const& m,
+    std::vector<OpenSim::Coordinate const*>& out)
 {
     OpenSim::CoordinateSet const& s = m.getCoordinateSet();
     int len = s.getSize();
@@ -455,7 +455,9 @@ std::vector<OpenSim::AbstractSocket const*> osc::GetAllSockets(OpenSim::Componen
     return rv;
 }
 
-OpenSim::Component const* osc::FindComponent(OpenSim::Component const& c, OpenSim::ComponentPath const& cp)
+OpenSim::Component const* osc::FindComponent(
+    OpenSim::Component const& c,
+    OpenSim::ComponentPath const& cp)
 {
     if (IsEmpty(cp))
     {
@@ -479,17 +481,23 @@ OpenSim::Component const* osc::FindComponent(
     return osc::FindComponent(model, OpenSim::ComponentPath{absPath});
 }
 
-OpenSim::Component* osc::FindComponentMut(OpenSim::Component& c, OpenSim::ComponentPath const& cp)
+OpenSim::Component* osc::FindComponentMut(
+    OpenSim::Component& c,
+    OpenSim::ComponentPath const& cp)
 {
     return const_cast<OpenSim::Component*>(FindComponent(c, cp));
 }
 
-bool osc::ContainsComponent(OpenSim::Component const& root, OpenSim::ComponentPath const& cp)
+bool osc::ContainsComponent(
+    OpenSim::Component const& root,
+    OpenSim::ComponentPath const& cp)
 {
     return FindComponent(root, cp);
 }
 
-OpenSim::AbstractSocket const* osc::FindSocket(OpenSim::Component const& c, std::string const& name)
+OpenSim::AbstractSocket const* osc::FindSocket(
+    OpenSim::Component const& c,
+    std::string const& name)
 {
     try
     {
@@ -501,7 +509,9 @@ OpenSim::AbstractSocket const* osc::FindSocket(OpenSim::Component const& c, std:
     }
 }
 
-OpenSim::AbstractSocket* osc::FindSocketMut(OpenSim::Component& c, std::string const& name)
+OpenSim::AbstractSocket* osc::FindSocketMut(
+    OpenSim::Component& c,
+    std::string const& name)
 {
     try
     {
@@ -513,7 +523,9 @@ OpenSim::AbstractSocket* osc::FindSocketMut(OpenSim::Component& c, std::string c
     }
 }
 
-bool osc::IsAbleToConnectTo(OpenSim::AbstractSocket const& s, OpenSim::Component const& c)
+bool osc::IsAbleToConnectTo(
+    OpenSim::AbstractSocket const& s,
+    OpenSim::Component const& c)
 {
     // yes, this is very very bad
 
@@ -529,12 +541,16 @@ bool osc::IsAbleToConnectTo(OpenSim::AbstractSocket const& s, OpenSim::Component
     }
 }
 
-OpenSim::AbstractProperty* osc::FindPropertyMut(OpenSim::Component& c, std::string const& name)
+OpenSim::AbstractProperty* osc::FindPropertyMut(
+    OpenSim::Component& c,
+    std::string const& name)
 {
     return c.hasProperty(name) ? &c.updPropertyByName(name) : nullptr;
 }
 
-OpenSim::AbstractOutput const* osc::FindOutput(OpenSim::Component const& c, std::string const& outputName)
+OpenSim::AbstractOutput const* osc::FindOutput(
+    OpenSim::Component const& c,
+    std::string const& outputName)
 {
     OpenSim::AbstractOutput const* rv = nullptr;
     try
@@ -543,16 +559,17 @@ OpenSim::AbstractOutput const* osc::FindOutput(OpenSim::Component const& c, std:
     }
     catch (OpenSim::Exception const&)
     {
-        // OpenSim, innit
+        // OpenSim, innit :(
     }
     return rv;
 }
 
-OpenSim::AbstractOutput const* osc::FindOutput(OpenSim::Component const& root,
-                                               OpenSim::ComponentPath const& path,
-                                               std::string const& outputName)
+OpenSim::AbstractOutput const* osc::FindOutput(
+    OpenSim::Component const& root,
+    OpenSim::ComponentPath const& path,
+    std::string const& outputName)
 {
-    OpenSim::Component const* c = FindComponent(root, path);
+    OpenSim::Component const* const c = FindComponent(root, path);
     return c ? FindOutput(*c, outputName) : nullptr;
 }
 
@@ -623,7 +640,7 @@ bool osc::ShouldShowInUI(OpenSim::Component const& c)
 
 bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
 {
-    OpenSim::Component* owner = osc::UpdOwner(c);
+    OpenSim::Component* const owner = osc::UpdOwner(c);
 
     if (!owner)
     {
@@ -641,7 +658,7 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
     if (auto connectees = GetAnyComponentsConnectedViaSocketTo(m, c); !connectees.empty())
     {
         std::stringstream ss;
-        char const* delim = "";
+        CStringView delim = "";
         for (OpenSim::Component const* connectee : connectees)
         {
             ss << delim << connectee->getName();
@@ -950,7 +967,7 @@ std::string osc::GetDisplayName(OpenSim::Geometry const& g)
     }
 }
 
-char const* osc::GetMotionTypeDisplayName(OpenSim::Coordinate const& c)
+osc::CStringView osc::GetMotionTypeDisplayName(OpenSim::Coordinate const& c)
 {
     switch (c.getMotionType()) {
     case OpenSim::Coordinate::MotionType::Rotational:

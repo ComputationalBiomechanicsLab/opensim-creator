@@ -120,20 +120,18 @@ bool osc::MultiBodySystemOutputExtractor::equals(VirtualOutputExtractor const& o
         return true;
     }
 
-    auto* otherT = dynamic_cast<MultiBodySystemOutputExtractor const*>(&other);
-
+    MultiBodySystemOutputExtractor const* const otherT =
+        dynamic_cast<MultiBodySystemOutputExtractor const*>(&other);
     if (!otherT)
     {
         return false;
     }
 
-    bool result =
+    return
         m_AuxiliaryDataID == otherT->m_AuxiliaryDataID &&
         m_Name == otherT->m_Name &&
         m_Description == otherT->m_Description &&
         m_Extractor == otherT->m_Extractor;
-
-    return result;
 }
 
 int osc::GetNumMultiBodySystemOutputExtractors()

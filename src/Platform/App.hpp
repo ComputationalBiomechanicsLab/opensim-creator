@@ -45,7 +45,7 @@ namespace osc
             {
                 return std::apply([](auto&&... innerArgs) -> std::shared_ptr<void>
                 {
-                     auto customDeleter = [](T* t) { delete t; };
+                     auto const customDeleter = [](T* t) { delete t; };
                      return std::shared_ptr<void>{new T{std::forward<Args>(innerArgs)...}, customDeleter};
                 }, std::move(argTuple));
             };

@@ -1164,7 +1164,7 @@ namespace gl
     }
 
     template<typename... T>
-    inline void DrawBuffers(T... vs) noexcept
+    inline void DrawBuffers(T&&... vs) noexcept
     {
         GLenum attachments[sizeof...(vs)] = {static_cast<GLenum>(vs)...};
         glDrawBuffers(sizeof...(vs), attachments);
