@@ -8,8 +8,8 @@ namespace osc
     template<typename T>
     class CopyOnUpdPtr final {
     private:
-        template<typename T, typename... Args>
-        friend CopyOnUpdPtr<T> make_cow(Args&&... args);
+        template<typename U, typename... Args>
+        friend CopyOnUpdPtr<U> make_cow(Args&&... args);
 
         explicit CopyOnUpdPtr(std::shared_ptr<T> p) :
             m_Ptr{std::move(p)}
