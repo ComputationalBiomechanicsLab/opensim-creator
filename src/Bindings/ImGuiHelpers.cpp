@@ -786,7 +786,7 @@ bool osc::Combo(
     size_t* current,
     nonstd::span<CStringView const> items)
 {
-    char const* preview = 0 <= *current && *current < items.size() ?
+    char const* preview = *current < items.size() ?
         items[*current].c_str() :
         nullptr;
 
