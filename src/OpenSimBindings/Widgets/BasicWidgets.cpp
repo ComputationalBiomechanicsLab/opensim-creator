@@ -149,7 +149,7 @@ namespace
         }
         else if (std::holds_alternative<osc::IntegratorMethod>(v))
         {
-            ImGui::Text("%s", osc::GetIntegratorMethodString(std::get<osc::IntegratorMethod>(v)));
+            ImGui::Text("%s", osc::GetIntegratorMethodString(std::get<osc::IntegratorMethod>(v)).c_str());
         }
         else if (std::holds_alternative<int>(v))
         {

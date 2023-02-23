@@ -51,7 +51,7 @@ private:
             CStringView const msg = "(there are no coordinates in the model)";
             float const w = ImGui::CalcTextSize(msg.c_str()).x;
             ImGui::SetCursorPosX(0.5f * (ImGui::GetContentRegionAvail().x - w));  // center align
-            ImGui::TextDisabled(msg.c_str());
+            ImGui::TextDisabled("%s", msg.c_str());
             return;
         }
 
