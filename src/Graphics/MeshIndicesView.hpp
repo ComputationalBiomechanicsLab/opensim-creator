@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <iterator>
 
 namespace osc
 {
@@ -28,7 +29,16 @@ namespace osc
     public:
         class Iterator final {
         public:
-            Iterator(U32PtrOrU16Ptr ptr, bool isU32) noexcept : m_Ptr{ptr}, m_IsU32{isU32} {}
+            using difference_type = void;
+            using value_type = uint32_t;
+            using reference = value_type;
+            using iterator_category = std::forward_iterator_tag;
+
+            Iterator(U32PtrOrU16Ptr ptr, bool isU32) noexcept :
+                m_Ptr{ptr},
+                m_IsU32{isU32}
+            {
+            }
 
             uint32_t operator*() const noexcept
             {
@@ -37,6 +47,10 @@ namespace osc
             bool operator!=(Iterator const& other) const noexcept
             {
                 return m_Ptr.u16 != other.m_Ptr.u16 || m_IsU32 != other.m_IsU32;
+            }
+            bool operator==(Iterator const& other) const noexcept
+            {
+                return !(*this != other);
             }
             Iterator& operator++() noexcept
             {
