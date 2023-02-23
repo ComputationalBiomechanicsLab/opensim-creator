@@ -31,6 +31,7 @@ namespace osc
         public:
             using difference_type = void;
             using value_type = uint32_t;
+            using pointer = void;
             using reference = value_type;
             using iterator_category = std::forward_iterator_tag;
 
