@@ -111,21 +111,68 @@ TEST(OpenSimModel, EditingACoordinateLockMutatesModel)
 // `osim` file (i.e. it's not a code bug in OpenSim Creator)
 TEST(OpenSimModel, DISABLED_CreatingCircularJointConnectionToGroundDoesNotSegfault)
 {
-	auto config = osc::Config::load();
-	//osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
+	std::filesystem::path const path =
+		std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_382_repro.osim";
 
-	OpenSim::Model m;
-	OpenSim::PhysicalFrame const& groundFrame = m.getGround();
+	OpenSim::Model model{path.string()};
+	model.finalizeFromProperties();
+	model.finalizeConnections();  // segfault
+}
 
-	auto pelvis = std::make_unique<OpenSim::Body>("pelvis", 1.0, SimTK::Vec3{}, SimTK::Inertia{});
-	OpenSim::PhysicalFrame const& pelvisFrame = *pelvis;
-	m.addBody(pelvis.release());
+// repro for an OpenSim bug found in #515
+//
+// code inside OpenSim::CoordinateCouplerConstraint assumes that a function property
+// is always set - even though it is listed as OPTIONAL
+TEST(OpenSimModel, DISABLED_CoordinateCouplerConstraintsWithNoCoupledCoordinatesFunctionDoesNotSegfault)
+{
+	std::filesystem::path const path =
+		std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_515_repro.osim";
 
-	m.addJoint(new OpenSim::PinJoint{"ground_pelvis", groundFrame, pelvisFrame});
-	m.addJoint(new OpenSim::PinJoint{"pelvis_ground", pelvisFrame, groundFrame});
+	OpenSim::Model model{path.string()};
+	model.finalizeFromProperties();
+	model.finalizeConnections();
+	model.buildSystem();  // segfault
+}
 
-	m.finalizeFromProperties();
-	m.finalizeConnections();  // segfaults
+// repro for an OpenSim bug found in #517
+//
+// code inside OpenSim::ActivationCoordinateActuator assumes that a coordinate name
+// property is always set - even though it is listed as OPTIONAL
+TEST(OpenSimModel, DISABLED_ActivationCoordinateActuatorWithNoCoordinateNameDoesNotSegfault)
+{
+	std::filesystem::path const path =
+		std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_517_repro.osim";
+
+	OpenSim::Model model{path.string()};
+	model.finalizeFromProperties();
+	model.finalizeConnections();  // segfault (exception after applying #621 patch)
+}
+
+// repro for an Opensim bug found in #523
+//
+// code inside OpenSim::PointToPointActuator segfaults if either `bodyA` or `bodyB` is unspecified
+TEST(OpenSimModel, DISABLED_PointToPointActuatorWithNoBodyAOrBodyBDoesNotSegfault)
+{
+	std::filesystem::path const path =
+		std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_523_repro.osim";
+
+	OpenSim::Model model{path.string()};
+	model.finalizeFromProperties();
+	model.finalizeConnections();  // segfault (exception after applying #621 patch)
+}
+
+// repro for an OpenSim bug found in #524
+//
+// code inside OpenSim::SpringGeneralizeForce assumes that the `coordinate` property
+// is always set - even though it is listed as OPTIONAL
+TEST(OpenSimModel, DISABLED_SpringGeneralizedForceWithNoCoordinateDoesNotSegfault)
+{
+	std::filesystem::path const path =
+		std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_524_repro.osim";
+
+	OpenSim::Model model{path.string()};
+	model.finalizeFromProperties();
+	model.finalizeConnections();  // segfault (exception after applying #621 patch)
 }
 
 // repro for an OpenSim bug found in #621
