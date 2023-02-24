@@ -836,6 +836,15 @@ target_link_options(osccore PUBLIC
 
 # ------------ configure test suite target ------------------ #
 
+# osc_test_config.hpp:
+#
+#     configuration header that's used by the test suite for (e.g.) locating
+#     test fixtures in the source directory
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests/osc_test_config.hpp.in"
+    "osc_test_config.hpp"
+)
+
 # osctests: main exe that links to `osccore` and exercises APIs etc.
 add_executable(testosc EXCLUDE_FROM_ALL
 

@@ -1,5 +1,9 @@
+
+#include "osc_test_config.hpp"
+
 #include "src/OpenSimBindings/ActionFunctions.hpp"
 #include "src/OpenSimBindings/OpenSimApp.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/Config.hpp"
 
@@ -122,4 +126,34 @@ TEST(OpenSimModel, DISABLED_CreatingCircularJointConnectionToGroundDoesNotSegfau
 
 	m.finalizeFromProperties();
 	m.finalizeConnections();  // segfaults
+}
+
+// repro for an OpenSim bug found in #621
+//
+// the way this bug manifests is that:
+//
+// - load an `osim` containing invalid fields (e.g. `<default_value></default_value>` in a
+//   coordinate). This causes OpenSim to initially default the value (via the prototype ctor
+//   and `constructProperties()`), but then wipe the default (due to an XML-loading failure)
+//   (see: `OpenSim::SimpleProperty<T>::readSimplePropertyFromStream`)
+//
+// - copy that `osim`, to produce a copy with an empty property (because copying a wiped array
+//   creates an actually empty (nullptr) array - rather than a pointer to logically correct data
+//   and size==0
+//
+// - call something that accesses the property (e.g. `buildSystem`) --> boom
+TEST(OpenSimModel, LoadingAnOsimWithEmptyFieldsDoesNotSegfault)
+{
+	std::filesystem::path const brokenFilePath =
+		std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_661_repro.osim";
+
+	// sanity check: loading+building an osim is fine
+	{
+		OpenSim::Model model{brokenFilePath.string()};
+		model.buildSystem();  // doesn't segfault, because it relies on unchecked `getProperty` lookups
+	}
+
+	OpenSim::Model m1{brokenFilePath.string()};
+	OpenSim::Model m2{m1};
+	m2.buildSystem();  // segfaults, due to #621 (opensim-core/#3409)
 }

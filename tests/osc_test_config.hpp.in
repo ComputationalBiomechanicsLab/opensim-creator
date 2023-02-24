@@ -1,0 +1,6 @@
+// char[]
+//
+// absolute path to the source directory - necessary for loading test
+// fixture data that is stored in the source dir (cannot use relative
+// directories because the build dir can be different on each platform)
+#define OSC_TESTING_SOURCE_DIR "@CMAKE_CURRENT_SOURCE_DIR@"
