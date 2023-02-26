@@ -88,9 +88,12 @@ public:
     {
         if (!m_InitialTabsCtors.empty())
         {
+            // edge-case: the caller used the API to add tabs, which are already in there
+            // and should behave "as if" added after the ctor-defined tabs (#624)
+            size_t const nManuallyAddedTabs = m_Tabs.size();
             for (auto& initialTab : m_InitialTabsCtors)
             {
-                m_Tabs.push_back(initialTab(weak_from_this()));
+                m_Tabs.insert(m_Tabs.end() - nManuallyAddedTabs, initialTab(weak_from_this()));
             }
             m_RequestedTab = m_Tabs.back()->getID();
             m_InitialTabsCtors.clear();
