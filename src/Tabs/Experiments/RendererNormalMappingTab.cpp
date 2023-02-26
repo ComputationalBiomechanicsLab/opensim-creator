@@ -69,7 +69,7 @@ namespace
             verts,
             normals,
             texCoords,
-            osc::MeshIndicesView{indices.data(), indices.size()}
+            osc::MeshIndicesView{indices}
         );
         OSC_ASSERT_ALWAYS(tangents.size() == verts.size());
 
@@ -173,7 +173,7 @@ public:
             Graphics::DrawMesh(m_QuadMesh, m_QuadTransform, m_NormalMappingMaterial, m_Camera);
         }
 
-        // draw light source
+        // draw light source cube
         {
             m_LightCubeMaterial.setVec3("uLightColor", {1.0f, 1.0f, 1.0f});
             Graphics::DrawMesh(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
