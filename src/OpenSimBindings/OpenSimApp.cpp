@@ -22,6 +22,7 @@
 #include "src/Tabs/Experiments/RendererLightingMapsTab.hpp"
 #include "src/Tabs/Experiments/RendererMultipleLightsTab.hpp"
 #include "src/Tabs/Experiments/RendererNormalMappingTab.hpp"
+#include "src/Tabs/Experiments/RendererParallaxMappingTab.hpp"
 #include "src/Tabs/Experiments/RendererSDFTab.hpp"
 #include "src/Tabs/Experiments/RendererShadowMappingTab.hpp"
 #include "src/Tabs/Experiments/RendererTexturingTab.hpp"
@@ -172,6 +173,7 @@ namespace
         RegisterTab<osc::RendererLightingMapsTab>(*registry);
         RegisterTab<osc::RendererMultipleLightsTab>(*registry);
         RegisterTab<osc::RendererNormalMappingTab>(*registry);
+        RegisterTab<osc::RendererParallaxMappingTab>(*registry);
         RegisterTab<osc::RendererTexturingTab>(*registry);
         RegisterTab<osc::RendererSDFTab>(*registry);
         RegisterTab<osc::RendererShadowMappingTab>(*registry);
