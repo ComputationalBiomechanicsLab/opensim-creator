@@ -134,7 +134,7 @@ private:
 
     void drawPlaybackSpeedSelector()
     {
-        ImGui::SetNextItemWidth(ImGui::CalcTextSize("nnx").x + 2.0f*ImGui::GetStyle().FramePadding.x);
+        ImGui::SetNextItemWidth(ImGui::CalcTextSize("0.000x").x + 2.0f*ImGui::GetStyle().FramePadding.x);
         float speed = m_SimulatorAPI->getSimulationPlaybackSpeed();
         if (ImGui::InputFloat("speed", &speed, 0.0f, 0.0f, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue))
         {

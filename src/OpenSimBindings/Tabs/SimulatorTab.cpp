@@ -182,8 +182,10 @@ public:
     {
         if (m_IsPlayingBack)
         {
-            SimulationClock::time_point playbackPos = implGetSimulationScrubTime();
-            if (playbackPos < m_Simulation->getEndTime())
+            SimulationClock::time_point const playbackPos = implGetSimulationScrubTime();
+
+            if ((m_PlaybackSpeed >= 0.0f && playbackPos < m_Simulation->getEndTime()) ||
+                (m_PlaybackSpeed < 0.0f && playbackPos > m_Simulation->getStartTime()))
             {
                 App::upd().requestRedraw();
             }
@@ -191,9 +193,9 @@ public:
             {
                 m_PlaybackStartSimtime = playbackPos;
                 m_IsPlayingBack = false;
-                return;
             }
         }
+
         m_PanelManager->garbageCollectDeactivatedPanels();
     }
 
@@ -223,7 +225,7 @@ private:
             return std::nullopt;
         }
 
-        int zeroethReportIndex = numSimulationReports-1;
+        int zeroethReportIndex = numSimulationReports - 1;
         for (int i = 0; i < numSimulationReports; ++i)
         {
             SimulationReport r = m_Simulation->getSimulationReport(i);
@@ -285,25 +287,34 @@ private:
         {
             return m_PlaybackStartSimtime;
         }
+        // map wall time onto sim time
+
+        int nReports = m_Simulation->getNumReports();
+        if (nReports <= 0)
+        {
+            return m_Simulation->getStartTime();
+        }
         else
         {
-            // map wall time onto sim time
+            std::chrono::system_clock::time_point wallNow = std::chrono::system_clock::now();
+            std::chrono::system_clock::duration wallDur = wallNow - m_PlaybackStartWallTime;
 
-            int nReports = m_Simulation->getNumReports();
-            if (nReports <= 0)
+            SimulationClock::duration const simDur = m_PlaybackSpeed * SimulationClock::duration{wallDur};
+            SimulationClock::time_point const simNow = m_PlaybackStartSimtime + simDur;
+            SimulationClock::time_point const simEarliest = m_Simulation->getSimulationReport(0).getTime();
+            SimulationClock::time_point const simLatest = m_Simulation->getSimulationReport(nReports - 1).getTime();
+
+            if (simNow < simEarliest)
             {
-                return m_Simulation->getStartTime();
+                return simEarliest;
+            }
+            else if (simNow > simLatest)
+            {
+                return simLatest;
             }
             else
             {
-                std::chrono::system_clock::time_point wallNow = std::chrono::system_clock::now();
-                std::chrono::system_clock::duration wallDur = wallNow - m_PlaybackStartWallTime;
-
-                SimulationClock::duration simDur = m_PlaybackSpeed * osc::SimulationClock::duration{wallDur};
-                osc::SimulationClock::time_point simNow = m_PlaybackStartSimtime + simDur;
-                osc::SimulationClock::time_point simLatest = m_Simulation->getSimulationReport(nReports-1).getTime();
-
-                return simNow <= simLatest ? simNow : simLatest;
+                return simNow;
             }
         }
     }
