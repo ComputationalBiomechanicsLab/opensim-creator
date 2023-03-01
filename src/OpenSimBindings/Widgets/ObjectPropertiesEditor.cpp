@@ -774,7 +774,9 @@ namespace
             // read latest raw value as-stored in edited property
             //
             // care: `getValue` can return `nullptr` if the property is optional (size == 0)
-            std::array<float, 6> rawValue = ToArray(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : SimTK::Vec6{});
+            std::array<float, 6> rawValue = idx < m_EditedProperty.size() ?
+                ToArray(m_EditedProperty.getValue(idx)) :
+                std::array<float, 6>{};
 
             bool shouldSave = false;
             for (int i = 0; i < 2; ++i)
