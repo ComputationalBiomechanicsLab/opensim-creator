@@ -70,6 +70,7 @@ All notable changes to this project will be documented here. The format is based
   left-arrow to orbit the camera, etc.; #44)
 - The software logo now appears in the documentation pages (#615)
 - Fixed the splash screen showing out-of-date recent file entries when files are opened within other tabs (#618)
+- The simulation scrubber also supports setting a negative playback speed (#619)
 
 ## [0.3.2] - 2023/01/09
 
