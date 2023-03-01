@@ -68,6 +68,7 @@ All notable changes to this project will be documented here. The format is based
   easily know it's an option (#50)
 - The model editor's 3D viewport now has the same keybinds as the mesh importer (e.g. press G to grab, R to rotate,
   left-arrow to orbit the camera, etc.; #44)
+- The software logo now appears in the documentation pages (#615)
 
 ## [0.3.2] - 2023/01/09
 
