@@ -471,52 +471,52 @@ void osc::DrawAdvancedParamsEditor(
     {
         osc::FocusAlongX(params.camera);
     }
-    osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along +X, pointing towards the center. Hotkey: X");
+    osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along +X, pointing towards the center (Hotkey: X).");
     ImGui::SameLine();
     if (ImGui::Button("-X"))
     {
         osc::FocusAlongMinusX(params.camera);
     }
-    osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along -X, pointing towards the center. Hotkey: Ctrl+X");
+    osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along -X, pointing towards the center (Hotkey: Ctrl+X).");
 
     ImGui::SameLine();
     if (ImGui::Button("+Y"))
     {
         osc::FocusAlongY(params.camera);
     }
-    osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along +Y, pointing towards the center. Hotkey: Y");
+    osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along +Y, pointing towards the center (Hotkey: Y).");
     ImGui::SameLine();
     if (ImGui::Button("-Y"))
     {
         osc::FocusAlongMinusY(params.camera);
     }
-    osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along -Y, pointing towards the center. (no hotkey, because Ctrl+Y is taken by 'Redo'");
+    osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along -Y, pointing towards the center.");
 
     ImGui::SameLine();
     if (ImGui::Button("+Z"))
     {
         osc::FocusAlongZ(params.camera);
     }
-    osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along +Z, pointing towards the center. Hotkey: Z");
+    osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along +Z, pointing towards the center.");
     ImGui::SameLine();
     if (ImGui::Button("-Z"))
     {
         osc::FocusAlongMinusZ(params.camera);
     }
-    osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along -Z, pointing towards the center. (no hotkey, because Ctrl+Z is taken by 'Undo')");
+    osc::DrawTooltipBodyOnlyIfItemHovered("Position camera along -Z, pointing towards the center.");
 
-    if (ImGui::Button("Zoom in"))
+    if (ImGui::Button("Zoom In (Hotkey: =)"))
     {
         osc::ZoomIn(params.camera);
     }
 
     ImGui::SameLine();
-    if (ImGui::Button("Zoom out"))
+    if (ImGui::Button("Zoom Out (Hotkey: -)"))
     {
         osc::ZoomOut(params.camera);
     }
 
-    if (ImGui::Button("reset camera"))
+    if (ImGui::Button("Reset Camera"))
     {
         osc::Reset(params.camera);
     }
@@ -630,7 +630,7 @@ void osc::DrawCameraControlButtons(
         {
             iconCache.getIcon("plusx"),
             "Focus Camera Along +X",
-            "Rotates the camera to focus along the +X direction",
+            "Rotates the camera to focus along the +X direction (Hotkey: X)",
         };
         if (plusXbutton.draw())
         {
@@ -643,7 +643,7 @@ void osc::DrawCameraControlButtons(
         {
             iconCache.getIcon("plusy"),
             "Focus Camera Along +Y",
-            "Rotates the camera to focus along the +Y direction",
+            "Rotates the camera to focus along the +Y direction (Hotkey: Y)",
         };
         if (plusYbutton.draw())
         {
@@ -670,7 +670,7 @@ void osc::DrawCameraControlButtons(
         {
             iconCache.getIcon("zoomin"),
             "Zoom in Camera",
-            "Moves the camera one step towards its focus point",
+            "Moves the camera one step towards its focus point (Hotkey: =)",
         };
         if (zoomInButton.draw())
         {
@@ -686,7 +686,7 @@ void osc::DrawCameraControlButtons(
         {
             iconCache.getIcon("minusx"),
             "Focus Camera Along -X",
-            "Rotates the camera to focus along the -X direction",
+            "Rotates the camera to focus along the -X direction (Hotkey: Ctrl+X)",
         };
         if (minusXbutton.draw())
         {
@@ -726,7 +726,7 @@ void osc::DrawCameraControlButtons(
         {
             iconCache.getIcon("zoomout"),
             "Zoom Out Camera",
-            "Moves the camera one step away from its focus point",
+            "Moves the camera one step away from its focus point (Hotkey: -)",
         };
         if (zoomOutButton.draw())
         {
@@ -745,7 +745,7 @@ void osc::DrawCameraControlButtons(
         {
             iconCache.getIcon("zoomauto"),
             "Auto-Focus Camera",
-            "Try to automatically adjust the camera's zoom etc. to suit the model's dimensions. Hotkey: Ctrl+F",
+            "Try to automatically adjust the camera's zoom etc. to suit the model's dimensions (Hotkey: Ctrl+F)",
         };
         if (autoFocusButton.draw() && maybeSceneAABB)
         {

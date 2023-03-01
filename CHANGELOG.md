@@ -71,6 +71,7 @@ All notable changes to this project will be documented here. The format is based
 - The software logo now appears in the documentation pages (#615)
 - Fixed the splash screen showing out-of-date recent file entries when files are opened within other tabs (#618)
 - The simulation scrubber also supports setting a negative playback speed (#619)
+- The camera control hotkeys (e.g. for zooming in, looking along an axis) are now documented in the button's tooltips (#620)
 
 ## [0.3.2] - 2023/01/09
 
