@@ -350,15 +350,16 @@ osc::Mesh osc::GenUntexturedSimbodyCylinder(size_t nsides)
         for (size_t side = 1; side < nsides; ++side)
         {
             float const theta = side * stepAngle;
-            glm::vec3 const p2 = {std::cos(theta), c_TopY, std::sin(theta)};
+            glm::vec3 const p2 = {c_Radius*std::cos(theta), c_TopY, c_Radius*std::sin(theta)};
             uint32_t const p2Index = pushData(p2, topNormal);
 
-            pushTriangle(midpointIndex, p1Index, p2Index);
+            // care: the outer-facing direction must wind counter-clockwise (#626)
+            pushTriangle(midpointIndex, p2Index, p1Index);
             p1Index = p2Index;
         }
 
         // finish loop
-        pushTriangle(midpointIndex, p1Index, loopStartIndex);
+        pushTriangle(midpointIndex, loopStartIndex, p1Index);
     }
 
     // bottom: another triangle fan
@@ -378,9 +379,10 @@ osc::Mesh osc::GenUntexturedSimbodyCylinder(size_t nsides)
         for (size_t side = 1; side < nsides; ++side)
         {
             float const theta = side * stepAngle;
-            glm::vec3 const p2 = {c_Radius * std::cos(theta), c_BottomY, c_Radius * std::sin(theta)};
+            glm::vec3 const p2 = {c_Radius*std::cos(theta), c_BottomY, c_Radius*std::sin(theta)};
             uint32_t const p2Index = pushData(p2, bottomNormal);
 
+            // care: the outer-facing direction must wind counter-clockwise (#626)
             pushTriangle(midpointIndex, p1Index, p2Index);
             p1Index = p2Index;
         }
@@ -413,15 +415,16 @@ osc::Mesh osc::GenUntexturedSimbodyCylinder(size_t nsides)
             uint32_t const e2TopIdx = pushData({x, c_TopY, z}, normal);
             uint32_t const e2BottomIdx = pushData({x, c_BottomY, z}, normal);
 
-            pushTriangle(e1TopIdx, e1BottomIdx, e2BottomIdx);
-            pushTriangle(e2BottomIdx, e2TopIdx, e1TopIdx);
+            // care: the outer-facing direction must wind counter-clockwise (#626)
+            pushTriangle(e1TopIdx, e2TopIdx, e1BottomIdx);
+            pushTriangle(e2TopIdx, e2BottomIdx, e1BottomIdx);
 
             e1TopIdx = e2TopIdx;
             e1BottomIdx = e2BottomIdx;
         }
-        // finish loop
-        pushTriangle(e1TopIdx, e1BottomIdx, firstEdgeBottom);
-        pushTriangle(firstEdgeBottom, firstEdgeTop, e1TopIdx);
+        // finish loop (making sure to wind it correctly - #626)
+        pushTriangle(e1TopIdx, firstEdgeTop, e1BottomIdx);
+        pushTriangle(firstEdgeTop, firstEdgeBottom, e1BottomIdx);
     }
 
     return CreateMeshFromData(std::move(data));
