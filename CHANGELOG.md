@@ -72,6 +72,8 @@ All notable changes to this project will be documented here. The format is based
 - Fixed the splash screen showing out-of-date recent file entries when files are opened within other tabs (#618)
 - The simulation scrubber also supports setting a negative playback speed (#619)
 - The camera control hotkeys (e.g. for zooming in, looking along an axis) are now documented in the button's tooltips (#620)
+- If a simulation fails to start, the error now be shown in the toolbar and a panel will pop up explaining that
+  the simulator tab is "waiting for first simulation report, open the log for more details" (#623)
 
 ## [0.3.2] - 2023/01/09
 
