@@ -87,6 +87,11 @@ public:
 
     void onMount()
     {
+        // edge-case: reset the file tab whenever the splash screen is (re)mounted,
+        // because actions within other tabs may have updated things like recently
+        // used files etc. (#618)
+        m_MainMenuFileTab = MainMenuFileTab{};
+
         App::upd().makeMainEventLoopWaiting();
     }
 
