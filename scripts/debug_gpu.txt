@@ -1,1 +1,0 @@
-INTEL_DEBUG=tex,stall,perf,fail,color,blit LIBGL_NO_DRAWARRAYS=true LIBGL_DEBUG=verbose MESA_DEBUG=flush,incomplete_tex,incomplete_fbo,context ososc

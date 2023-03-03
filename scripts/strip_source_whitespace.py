@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+
+# recursively tries to strip whitespace from all files in OSC's source
+# tree
+#
+# (whitespace sometimes slips in from various text editors etc.)
+
 import os
 import re
 
