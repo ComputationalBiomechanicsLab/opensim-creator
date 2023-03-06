@@ -317,7 +317,10 @@ void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& fp)
         // aggressively exit this thread, returning the status code. Do **not**
         // return from this thread, because it should'nt behave as-if it were
         // the calling thread
-        exit(rv);
+        //
+        // use `_exit`, rather than `exit`, because we don't want the fork to
+        // potentially call `atexit` handlers that screw the parent (#627)
+        _exit(rv);
     }
 }
 
