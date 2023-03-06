@@ -401,8 +401,14 @@ private:
         {
             ImGui::Begin("Waiting for simulation");
             ImGui::TextDisabled("(waiting for first simulation state)");
-            ImGui::TextDisabled("(open the log panel with window -> log to see any error messages from OpenSim)");
             ImGui::End();
+
+            // and show the log, so that the user can see any errors from the integrator (#628)
+            //
+            // this might be less necessary once the integrator correctly reports errors to
+            // this UI panel (#625)
+            LogViewerPanel p{"Log"};
+            p.draw();
         }
     }
 
