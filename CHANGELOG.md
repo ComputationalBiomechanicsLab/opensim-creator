@@ -4,80 +4,87 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
-- The scene light's slope/height no longer tracks along with the camera, which makes shadow rendering
-  look a little bit better (thanks @tgeijten, #549)
+- (new changes should be listed here)
+
+
+## [0.4.0] - 2023/03/06
+
+- Added 'Lines of Action (effective)' and 'Lines of Action (anatomical)' rendering options to the model viewer
+  (#562). They can be seperately toggled for muscle insertion/origin (#577). Clicking a line of action selects
+  the associated muscle (#571). Thanks to @modenaxe for open-sourcing https://github.com/modenaxe/MuscleForceDirection
+- `Station`s (#85), `PathPoint`s (#85), `PhysicalOffsetFrame`s (#583), `WrapObject`s (#588), and
+  `ContactGeometry` (#596) can now be translated (or rotated, #584) in a model editor viewport with a
+  clickable gizmo
+- The editor and simulator screens now have toolbars at the top containing common actions (e.g. undo/redo,
+  save, load, scrub the simulation, etc.)
+- OSC's logo was updated to make it visually distinct from OpenSim, and new icons have been added for toggling
+  frames, markers, contact geometry, and wrap surfaces
+- The model editor's 3D viewport now has the same keybinds as the mesh importer tab (e.g. press G to grab, R to
+  rotate, left-arrow to orbit the camera, etc.; #44)
+- The "Reload [Model]" button now forces OSC to also reload any associated mesh files, which is handy when
+  seperately editing mesh files in something like Maya/Blender (#594)
+- Pressing the F5 key now performs the "Reload Model" action (#595)
+- The simulation tab' time scrubber is now in the top toolbar of the simulator tab, and includes controls for
+  stepping between states and changing playback speed (#563, #556). It supports a negative playback speed (#619)
+- The `import CSV overlay` feature in the muscle plot panel can now import multiple curves from a single file (#587)
+- There is now an (extremely EXPERIMENTAL) option to visualize plane contact forces in the 3D visualizer, using
+  an algorithm similar to what's used in tgeijten/SCONE (#449)
+- Shadow rendering is now default-enabled (#489). The scene light's slope/height no longer tracks along with
+  the camera, which makes the shadow angle look a little bit better (thanks @tgeijten, #549)
 - The camera now auto-focuses on the centerpoint of the model's bounding sphere when first loaded (previously:
-  would focus on ground, #550)
-- The camera now auto-zooms the scene when first loaded (previously: would try, but was a looser fit, #551)
+  would focus on ground, #550) and it also auto-zooms the scene when first loaded (previously: it would try
+  to auto-zoom, but it was a looser fit, #551)
 - The colored alignment axes in the bottom-left of the viewport now also show the opposite direction
-  of each axis in a slightly-faded color, to make them more symmetrical (#554)
-- Shadow rendering is now default-enabled (#489)
+  of each axis in a slightly-faded color, to make them appear more symmetrical (#554)
 - All mesh geometry that is used by example models is now centralized in the `geometry/` folder in
   OSC's resource directory (previously: some models had their own `Geometry/` dir, #560)
-- The simulation tab' time scrubber is now in the top toolbar, and includes controls for stepping
-  between states and changing playback speed (#563, #556)
 - Muscle coloring/rendering options now use generic terms like "Fibers & Tendons", rather than
   OpenSim/SCONE specific terms (#557)
+- Added "Show All" to the "Display" menu of a component (previously: would only be available if the
+  right-clicks nothing, #527)
+- Added a "Show/Hide all of TYPE" option to the "Display" menu of a component in the editor (#528)
+- The status (e.g. Running/Completed/Error) of the underlying simulator is now presented in the
+  simulator UI's toolbar (#538)
+- The UI's font size was reduced from 16 px (height) to 15 px (#570)
+- Added basic documentation for the `ConstantDistanceConstraint` component (#534)
+- Simplified the ruler tool so that it only shows the distance between two points (previously: would
+  show a tooltip describing the second point, but that tooltip could overlap with the measurement, #31)
+- Fixed inconsistent joint naming in tutorial 2, such that all joints are named `parent_to_child` (previously:
+  `foot_to_ground` was in error, #546)
+- Body center of masses are now an opt-in visualization option with a checkbox (previously: would show on hover,
+  #573)
+- Rendering `OpenSim::PointToPointSpring`s is how a user-facing toggle (previously: was always on, #576)
+- The direction that the editor's 3D scene light is now right-to-left, to more closely match OpenSim GUI (#590)
+- The camera control hotkeys (e.g. for zooming in, looking along an axis) are now documented in the button's tooltips (#620)
+- There is now a toggle that affects whether the dragging gizmos operate in world-space (ground) or the parent frame (#584)
+- Added muscle coloring style "OpenSim (Appearance Property)", which uses the muscle colors as-defined in the osim
+  file (previously: would always use OpenSim's state-dependent coloring method, which is based on activation, #586)
+- The simulator panel will now only render the UI once one simulation state has been emitted from the simulator (#589)
+- The spherical end-caps of muscle geometry now align better with the muscle cylinders they are attached to (#593)
+- "Toggle Frame Visibility" (model-wide) now appears as an option when right-clicking joints, so users can more
+  easily know it's an option (#50)
+- Fixed a bug in the DAE exporter that caused it to throw an 'argument not found' exception (#581)
 - The simulation parameters editor popup now has enough precision to modify the simulation step
   size, which is in standard units (seconds), but typically has very small values (nanoseconds, #553)
 - Properties that have a name that begins with "socket_" now no longer appear in property editors
   when adding/editing a component in the model. Users should use the socket UI (right-click menu) to
   edit component sockets instead (#542)
-- Added "Show All" to the "Display" menu of a component (previously: would be available if the right-clicks
-  nothing, #527)
-- Added a "Show/Hide all of TYPE" option to the "Display" menu of a component in the editor (#528)
-- The status of the underlying simulator is now presented in the simulator UI's toolbar (#538)
-- Added basic documentation for the `ConstantDistanceConstraint` component (#534)
-- Renamed `osc::MeshTopography` to `osc::MeshTopology` (#544)
-- Simplified the ruler tool so that it only shows the distance between two points (previously: would
-  show a tooltip describing the second point, but that tooltip could overlap with the measurement, #31)
-- Fixed inconsistent joint naming in tutorial 2, such that all joints are named `parent_to_child` (previously:
-  `foot_to_ground` was in error, #546)
-- Fixed a memory leak in that would occur as the undo/redo buffer fills (i.e. over a longer editing session,
-  #566)
-- Internal: the editor and simulation tabs are now widget-ized, so that new panels can be added more easily (#565)
-- Internal: reorganized panel widgets from `Widgets/` to `Panels/` to (#564)
-- The UI's font size was reduced from 16 px (height) to 15 px (#570)
-- Added 'Lines of Action (effective)' and 'Lines of Action (anatomical)' rendering options to the model viewer
-  (#562) - thanks to @modenaxe for open-sourcing https://github.com/modenaxe/MuscleForceDirection (check it out!)
-- Internal: OpenSim-related rendering code is now centralized in `src/OpenSimBindings/Rendering` (#572)
-- Body center of masses are now an opt-in visualization option with a checkbox (previously: would show on hover,
-  #573)
-- Rendering `OpenSim::PointToPointSpring`s is how a user-facing toggle (previously: was always on, #576)
-- Clicking a line of action now selects the associated muscle (#571)
-- Fixed a bug in the DAE exporter that caused it to throw an 'argument not found' exception (#581)
-- Lines of action rendering now has separate checkboxes for muscle insertion/origin (#577)
-- Stations can now be dragged around (translated) in model editor tab's 3D viewport (#85)
-- Muscle path points can now be dragged around (translated) in the model editor tab's 3D viewport (#85)
-- There is now a toggle that affects whether the dragging gizmos operate in world-space (ground) or the parent frame (#584)
-- The `import CSV overlay` feature in the muscle plot panel can now import multiple curves from a single file (#587)
-- Added muscle coloring style "OpenSim (Appearance Property)", which uses the muscle colors as-defined in the osim
-  file (previously: would always use OpenSim's state-dependent coloring method, which is based on activation, #586)
-- The direction that the editor's 3D scene light is now right-to-left, to more closely match OpenSim GUI (#590)
-- The simulator panel will now only render the UI once one simulation state has been emitted from the simulator (#589)
-- Physical offset frames can now be translated+rotated in the model editor tab's 3D viewport (#583)
-- Wrap objects can now be translated+rotated in the model editor tab's 3D viewport (#588)
-- The "Reload [Model]" button now forces OSC to also reload any mesh files (#594)
-- Pressing the F5 key now performs the "Reload Model" action (#595)
-- Contact geometry can now be translated+rotated in the model editor tab's 3D viewport (#596)
-- Hotfixed a bug from OpenSim where inertia edits were not applied to the model (#597, related: opensim-core/#3395,
-  thanks to @jesse-gilmer for spotting this :))
-- The spherical end-caps of muscle geometry now align better with the muscle cylinders they are attached to (#593)
-- There is now an (extremely EXPERIMENTAL) option to visualize plane contact forces in the 3D visualizer (#449)
-- "Toggle Frame Visibility" (model-wide) now appears as an option when right-clicking joints, so users can more
-  easily know it's an option (#50)
-- The model editor's 3D viewport now has the same keybinds as the mesh importer (e.g. press G to grab, R to rotate,
-  left-arrow to orbit the camera, etc.; #44)
-- The software logo now appears in the documentation pages (#615)
 - Fixed the splash screen showing out-of-date recent file entries when files are opened within other tabs (#618)
-- The simulation scrubber also supports setting a negative playback speed (#619)
-- The camera control hotkeys (e.g. for zooming in, looking along an axis) are now documented in the button's tooltips (#620)
 - If a simulation fails to start, the error now be shown in the toolbar and a panel will pop up explaining that
   the simulator tab is "waiting for first simulation report, open the log for more details" (#623)
 - Cylinders generated by OSC now have correct surface normals, which is handy when exporting the model to
   (e.g.) a DAE file (#626)
+- Fixed a memory leak in that would occur as the undo/redo buffer fills (i.e. over a longer editing session,
+  #566)
+- Hotfixed a bug from OpenSim where inertia edits were not applied to the model (#597, related: opensim-core/#3395,
+  thanks to @jesse-gilmer for spotting this :))
 - Attempting to open a file/folder (e.g. `osim` or `open parent directory of osim`) via OSC in Ubuntu no longer
   causes a crash if `xdg-open` is unavailable (e.g. on WSL2, #627)
+- The (new) OSC logo now appears in the documentation pages (#615)
+- Internal: renamed `osc::MeshTopography` to `osc::MeshTopology` (#544)
+- Internal: the editor and simulation tabs are now widget-ized, so that new panels can be added more easily (#565)
+- Internal: reorganized panel widgets from `Widgets/` to `Panels/` to (#564)
+- Internal: OpenSim-related rendering code is now centralized in `src/OpenSimBindings/Rendering` (#572)
 
 ## [0.3.2] - 2023/01/09
 
