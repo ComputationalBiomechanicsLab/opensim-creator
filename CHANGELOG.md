@@ -22,7 +22,7 @@ All notable changes to this project will be documented here. The format is based
 - The model editor's 3D viewport now has the same keybinds as the mesh importer tab (e.g. press G to grab, R to
   rotate, left-arrow to orbit the camera, etc.; #44)
 - The "Reload [Model]" button now forces OSC to also reload any associated mesh files, which is handy when
-  seperately editing mesh files in something like Maya/Blender (#594)
+  seperately editing mesh files in something like Maya/Blender (thanks @JuliaVanBeesel, #594)
 - Pressing the F5 key now performs the "Reload Model" action (#595)
 - The simulation tab' time scrubber is now in the top toolbar of the simulator tab, and includes controls for
   stepping between states and changing playback speed (#563, #556). It supports a negative playback speed (#619)
