@@ -856,6 +856,7 @@ add_executable(testosc EXCLUDE_FROM_ALL
     tests/TestForwardDynamicSimulation.cpp
     tests/TestImage.cpp
     tests/TestOpenSim.cpp
+    tests/TestOpenSimActions.cpp
     tests/TestOpenSimHelpers.cpp
     tests/TestOsc.cpp
     tests/TestRenderer.cpp
