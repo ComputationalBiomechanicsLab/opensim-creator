@@ -151,8 +151,10 @@ namespace
                 auto pof1 = std::make_unique<OpenSim::PhysicalOffsetFrame>();
                 pof1->setParentFrame(selectedPf);
                 pof1->setName(selectedPf.getName() + "_offset");
-                copy->addFrame(pof1.get());
-                copy->connectSocket_parent_frame(*pof1.release());
+
+                OpenSim::PhysicalOffsetFrame* ptr = pof1.get();
+                copy->addFrame(pof1.release());  // care: ownership change happens here (#642)
+                copy->connectSocket_parent_frame(*ptr);
             }
 
             // add second offset frame as joint's child
@@ -160,8 +162,10 @@ namespace
                 auto pof2 = std::make_unique<OpenSim::PhysicalOffsetFrame>();
                 pof2->setParentFrame(b);
                 pof2->setName(b.getName() + "_offset");
-                copy->addFrame(pof2.get());
-                copy->connectSocket_child_frame(*pof2.release());
+
+                OpenSim::PhysicalOffsetFrame* ptr = pof2.get();
+                copy->addFrame(pof2.release());  // care: ownership change happens here (#642)
+                copy->connectSocket_child_frame(*ptr);
             }
         }
 

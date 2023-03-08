@@ -4,7 +4,8 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
-- (new changes should be listed here)
+- Fixed a segfault that would occur when adding a body with an invalid name. It now throws an exception and prints
+  an error to the log instead (thanks @AdrianHendrik, #642)
 
 
 ## [0.4.0] - 2023/03/06

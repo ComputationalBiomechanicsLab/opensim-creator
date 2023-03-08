@@ -3448,11 +3448,12 @@ namespace
         SetJointCoordinateNames(*jointUniqPtr, jointName);
 
         // add + connect the joint to the POFs
-        jointUniqPtr->addFrame(parentPOF.get());
-        jointUniqPtr->addFrame(childPOF.get());
+        OpenSim::PhysicalOffsetFrame* parentPtr = parentPOF.get();
+        OpenSim::PhysicalOffsetFrame* childPtr = childPOF.get();
+        jointUniqPtr->addFrame(parentPOF.release());  // care: ownership change happens here (#642)
+        jointUniqPtr->addFrame(childPOF.release());  // care: ownership change happens here (#642)
         jointUniqPtr->connectSocket_parent_frame(*parentPOF);
-        jointUniqPtr->connectSocket_child_frame(*childPOF.release());
-        OpenSim::PhysicalOffsetFrame* parentPtr = parentPOF.release();
+        jointUniqPtr->connectSocket_child_frame(*childPtr);
 
         // if a child body was created during this step (e.g. because it's not a cyclic connection)
         // then add it to the model
