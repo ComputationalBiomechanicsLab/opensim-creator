@@ -127,7 +127,8 @@ public:
 
         StandardPanel{std::move(panelName)},
         m_EditorAPI{std::move(editorAPI)},
-        m_Model{std::move(model)}
+        m_Model{std::move(model)},
+        m_SelectionPropertiesEditor{editorAPI, m_Model, [model = m_Model](){ return model->getSelected(); }}
     {
     }
 
@@ -157,7 +158,7 @@ private:
 
         // property editors
         {
-            auto maybeUpdater = m_ObjectPropsEditor.draw(*m_Model->getSelected());
+            auto maybeUpdater = m_SelectionPropertiesEditor.draw();
             if (maybeUpdater)
             {
                 osc::ActionApplyPropertyEdit(*m_Model, *maybeUpdater);
@@ -168,7 +169,7 @@ private:
     EditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Model;
     ObjectNameEditor m_NameEditor{m_Model};
-    ObjectPropertiesEditor m_ObjectPropsEditor;
+    ObjectPropertiesEditor m_SelectionPropertiesEditor;
 };
 
 

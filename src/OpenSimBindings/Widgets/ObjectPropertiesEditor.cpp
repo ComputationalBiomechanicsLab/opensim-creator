@@ -6,6 +6,7 @@
 #include "src/Maths/Constants.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/SimTKHelpers.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Assertions.hpp"
@@ -37,8 +38,10 @@
 #include <unordered_map>
 #include <utility>
 
+// helper functions
 namespace
 {
+    // unpack a SimTK::Vec6 into an array
     std::array<float, 6> ToArray(SimTK::Vec6 const& v)
     {
         return
@@ -52,6 +55,7 @@ namespace
         };
     }
 
+    // extract linear RGBA values from an OpenSim::Appearance
     glm::vec4 ExtractRgba(OpenSim::Appearance const& appearance)
     {
         SimTK::Vec3 const rgb = appearance.get_color();
@@ -119,21 +123,34 @@ namespace
         }
     }
 
-    std::string GetAbsPathOrEmptyIfNotAComponent(OpenSim::Object const& obj)
+    // wraps an object accessor with property information so that an individual
+    // property accesssor with the same lifetime semantics as the object can exist
+    std::function<OpenSim::AbstractProperty const*()> MakePropertyAccessor(
+        std::function<OpenSim::Object const*()> const& objAccessor,
+        std::string propertyName)
     {
-        if (auto c = dynamic_cast<OpenSim::Component const*>(&obj))
+        return [objAccessor, propertyName]() -> OpenSim::AbstractProperty const*
         {
-            return osc::GetAbsolutePathString(*c);
-        }
-        else
-        {
-            return std::string{};
-        }
-    }
+            OpenSim::Object const* maybeObj = objAccessor();
+            if (!maybeObj)
+            {
+                return nullptr;
+            }
+            OpenSim::Object const& obj = *maybeObj;
 
+            if (!obj.hasProperty(propertyName))
+            {
+                return nullptr;
+            }
+            return &obj.getPropertyByName(propertyName);
+        };
+    }
+}
+
+// property editor base class etc.
+namespace
+{
     // type-erased property editor
-    //
-    // *must* be called with the correct type (use the typeids as registry keys)
     class VirtualPropertyEditor {
     protected:
         VirtualPropertyEditor() = default;
@@ -144,89 +161,53 @@ namespace
     public:
         virtual ~VirtualPropertyEditor() noexcept = default;
 
-        std::type_info const& getPropertyTypeInfo() const
+        bool isCompatibleWith(OpenSim::AbstractProperty const& prop) const
         {
-            return implGetPropertyTypeInfo();
+            return typeid(prop) == implGetTypeInfo();
         }
 
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> draw(OpenSim::AbstractProperty const& prop)
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> draw()
         {
-            return implDraw(prop);
+            return implDraw();
         }
 
     private:
-        virtual std::type_info const& implGetPropertyTypeInfo() const = 0;
-        virtual std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw(OpenSim::AbstractProperty const&) = 0;
+        virtual std::type_info const& implGetTypeInfo() const = 0;
+        virtual std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() = 0;
     };
+}
 
-    // typed virtual property editor
-    //
-    // performs runtime downcasting, but the caller *must* ensure it calls with the
-    // correct type
-    template<typename TConcreteProperty>
-    class VirtualPropertyEditorT : public VirtualPropertyEditor {
-    public:
-        static std::type_info const& propertyType()
-        {
-            return typeid(TConcreteProperty);
-        }
-
-    private:
-        std::type_info const& implGetPropertyTypeInfo() const final
-        {
-            return typeid(TConcreteProperty);
-        }
-
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw(OpenSim::AbstractProperty const& abstractProp) final
-        {
-            return implDrawDowncasted(dynamic_cast<TConcreteProperty const&>(abstractProp));
-        }
-
-        virtual std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDrawDowncasted(TConcreteProperty const& prop) = 0;
-    };
-
-    // concrete property editor class that wraps a virtual property editor implementation
-    //
-    // (prefer this in downstream code to handling pointers manually)
-    class PropertyEditor final {
-    private:
-        // force callers to use the `MakePropertyEditor` helper, in case later code changes
-        // from using unique_ptr
-        template<typename TConcretePropertyEditor, typename... CtorArgs>
-        friend PropertyEditor MakePropertyEditor(CtorArgs&&... args);
-
-        explicit PropertyEditor(std::unique_ptr<VirtualPropertyEditor> p) :
-            m_VirtualEditor{std::move(p)}
-        {
-        }
-
-    public:
-
-        std::type_info const& getPropertyTypeInfo() const
-        {
-            return m_VirtualEditor->getPropertyTypeInfo();
-        }
-
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> draw(OpenSim::AbstractProperty const& prop)
-        {
-            return m_VirtualEditor->draw(prop);
-        }
-
-    private:
-        std::unique_ptr<VirtualPropertyEditor> m_VirtualEditor;
-    };
-
-    template<typename TConcretePropertyEditor, typename... CtorArgs>
-    PropertyEditor MakePropertyEditor(CtorArgs&&... args)
-    {
-        return PropertyEditor{std::make_unique<TConcretePropertyEditor>(std::forward<CtorArgs>(args)...)};
-    }
-
+// concrete property editors for simple (e.g. bool, double) types
+namespace
+{
     // concrete property editor for a simple `std::string` value
-    class StringPropertyEditor final : public VirtualPropertyEditorT<OpenSim::SimpleProperty<std::string>> {
-    private:
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDrawDowncasted(OpenSim::SimpleProperty<std::string> const& prop) final
+    class StringPropertyEditor final : public VirtualPropertyEditor {
+    public:
+        using property_type = OpenSim::SimpleProperty<std::string>;
+
+        StringPropertyEditor(
+            osc::EditorAPI*,
+            std::shared_ptr<osc::UndoableModelStatePair const>,
+            std::function<property_type const* ()> accessor_) :
+
+            m_Accessor{std::move(accessor_)}
         {
+        }
+    private:
+        std::type_info const& implGetTypeInfo() const final
+        {
+            return typeid(property_type);
+        }
+
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() final
+        {
+            property_type const* maybeProp = m_Accessor();
+            if (!maybeProp)
+            {
+                return std::nullopt;
+            }
+            property_type const& prop = *maybeProp;
+
             // update any cached data
             if (!prop.equals(m_OriginalProperty))
             {
@@ -296,15 +277,39 @@ namespace
             return rv;
         }
 
-        OpenSim::SimpleProperty<std::string> m_OriginalProperty{"blank", true};
-        OpenSim::SimpleProperty<std::string> m_EditedProperty{"blank", true};
+        std::function<property_type const*()> m_Accessor;
+        property_type m_OriginalProperty{"blank", true};
+        property_type m_EditedProperty{"blank", true};
     };
 
     // concrete property editor for a simple double value
-    class DoublePropertyEditor final : public VirtualPropertyEditorT<OpenSim::SimpleProperty<double>> {
-    private:
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDrawDowncasted(OpenSim::SimpleProperty<double> const& prop) final
+    class DoublePropertyEditor final : public VirtualPropertyEditor {
+    public:
+        using property_type = OpenSim::SimpleProperty<double>;
+
+        DoublePropertyEditor(
+            osc::EditorAPI*,
+            std::shared_ptr<osc::UndoableModelStatePair const>,
+            std::function<property_type const*()> accessor_) :
+
+            m_Accessor{std::move(accessor_)}
         {
+        }
+    private:
+        std::type_info const& implGetTypeInfo() const final
+        {
+            return typeid(property_type);
+        }
+
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() final
+        {
+            property_type const* maybeProp = m_Accessor();
+            if (!maybeProp)
+            {
+                return std::nullopt;
+            }
+            property_type const& prop = *maybeProp;
+
             // update any cached data
             if (!prop.equals(m_OriginalProperty))
             {
@@ -373,15 +378,39 @@ namespace
             return rv;
         }
 
-        OpenSim::SimpleProperty<double> m_OriginalProperty{"blank", true};
-        OpenSim::SimpleProperty<double> m_EditedProperty{"blank", true};
+        std::function<property_type const*()> m_Accessor;
+        property_type m_OriginalProperty{"blank", true};
+        property_type m_EditedProperty{"blank", true};
     };
 
     // concrete property editor for a simple `bool` value
-    class BoolPropertyEditor final : public VirtualPropertyEditorT<OpenSim::SimpleProperty<bool>> {
-    private:
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDrawDowncasted(OpenSim::SimpleProperty<bool> const& prop) final
+    class BoolPropertyEditor final : public VirtualPropertyEditor {
+    public:
+        using property_type = OpenSim::SimpleProperty<bool>;
+
+        BoolPropertyEditor(
+            osc::EditorAPI*,
+            std::shared_ptr<osc::UndoableModelStatePair const>,
+            std::function<property_type const*()> accessor_) :
+
+            m_Accessor{std::move(accessor_)}
         {
+        }
+    private:
+        std::type_info const& implGetTypeInfo() const final
+        {
+            return typeid(property_type);
+        }
+
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() final
+        {
+            property_type const* maybeProp = m_Accessor();
+            if (!maybeProp)
+            {
+                return std::nullopt;
+            }
+            property_type const& prop = *maybeProp;
+
             // update any cached data
             if (!prop.equals(m_OriginalProperty))
             {
@@ -452,15 +481,39 @@ namespace
             return rv;
         }
 
-        OpenSim::SimpleProperty<bool> m_OriginalProperty{"blank", true};
-        OpenSim::SimpleProperty<bool> m_EditedProperty{"blank", true};
+        std::function<property_type const*()> m_Accessor;
+        property_type m_OriginalProperty{"blank", true};
+        property_type m_EditedProperty{"blank", true};
     };
 
     // concrete property editor for a simple `Vec3` value
-    class Vec3PropertyEditor final : public VirtualPropertyEditorT<OpenSim::SimpleProperty<SimTK::Vec3>> {
-    private:
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDrawDowncasted(OpenSim::SimpleProperty<SimTK::Vec3> const& prop) final
+    class Vec3PropertyEditor final : public VirtualPropertyEditor {
+    public:
+        using property_type = OpenSim::SimpleProperty<SimTK::Vec3>;
+
+        Vec3PropertyEditor(
+            osc::EditorAPI*,
+            std::shared_ptr<osc::UndoableModelStatePair const>,
+            std::function<property_type const*()> accessor_) :
+
+            m_Accessor{std::move(accessor_)}
         {
+        }
+    private:
+        std::type_info const& implGetTypeInfo() const final
+        {
+            return typeid(property_type);
+        }
+
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() final
+        {
+            property_type const* maybeProp = m_Accessor();
+            if (!maybeProp)
+            {
+                return std::nullopt;
+            }
+            property_type const& prop = *maybeProp;
+
             // update any cached data
             if (!prop.equals(m_OriginalProperty))
             {
@@ -716,17 +769,41 @@ namespace
             }
         }
 
-        OpenSim::SimpleProperty<SimTK::Vec3> m_OriginalProperty{"blank", true};
-        OpenSim::SimpleProperty<SimTK::Vec3> m_EditedProperty{"blank", true};
+        std::function<property_type const*()> m_Accessor;
+        property_type m_OriginalProperty{"blank", true};
+        property_type m_EditedProperty{"blank", true};
         float m_StepSize = 0.001f;
         bool m_OrientationValsAreInRadians = false;
     };
 
     // concrete property editor for a simple `Vec6` value
-    class Vec6PropertyEditor final : public VirtualPropertyEditorT<OpenSim::SimpleProperty<SimTK::Vec6>> {
-    private:
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDrawDowncasted(OpenSim::SimpleProperty<SimTK::Vec6> const& prop) final
+    class Vec6PropertyEditor final : public VirtualPropertyEditor {
+    public:
+        using property_type = OpenSim::SimpleProperty<SimTK::Vec6>;
+
+        Vec6PropertyEditor(
+            osc::EditorAPI*,
+            std::shared_ptr<osc::UndoableModelStatePair const>,
+            std::function<property_type const*()> accessor_) :
+
+            m_Accessor{std::move(accessor_)}
         {
+        }
+    private:
+        std::type_info const& implGetTypeInfo() const final
+        {
+            return typeid(property_type);
+        }
+
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() final
+        {
+            property_type const* maybeProp = m_Accessor();
+            if (!maybeProp)
+            {
+                return std::nullopt;
+            }
+            property_type const& prop = *maybeProp;
+
             // update any cached data
             if (!prop.equals(m_OriginalProperty))
             {
@@ -804,15 +881,43 @@ namespace
             return rv;
         }
 
-        OpenSim::SimpleProperty<SimTK::Vec6> m_OriginalProperty{"blank", true};
-        OpenSim::SimpleProperty<SimTK::Vec6> m_EditedProperty{"blank", true};
+        std::function<property_type const*()> m_Accessor;
+        property_type m_OriginalProperty{"blank", true};
+        property_type m_EditedProperty{"blank", true};
     };
+}
 
+// concrete property editors for object types
+namespace
+{
     // concrete property editor for an OpenSim::Appearance
-    class AppearancePropertyEditor final : public VirtualPropertyEditorT<OpenSim::ObjectProperty<OpenSim::Appearance>> {
-    private:
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDrawDowncasted(OpenSim::ObjectProperty<OpenSim::Appearance> const& prop) final
+    class AppearancePropertyEditor final : public VirtualPropertyEditor {
+    public:
+        using property_type = OpenSim::ObjectProperty<OpenSim::Appearance>;
+
+        AppearancePropertyEditor(
+            osc::EditorAPI*,
+            std::shared_ptr<osc::UndoableModelStatePair const>,
+            std::function<property_type const*()> accessor_) :
+
+            m_Accessor{std::move(accessor_)}
         {
+        }
+    private:
+        std::type_info const& implGetTypeInfo() const final
+        {
+            return typeid(property_type);
+        }
+
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() final
+        {
+            property_type const* maybeProp = m_Accessor();
+            if (!maybeProp)
+            {
+                return std::nullopt;
+            }
+            property_type const& prop = *maybeProp;
+
             if (prop.isListProperty())
             {
                 return std::nullopt;  // HACK: ignore list props for now
@@ -865,73 +970,128 @@ namespace
 
             return rv;
         }
+
+        std::function<property_type const*()> m_Accessor;
     };
 
-    class ContactParameterSetEditor final : public VirtualPropertyEditorT<OpenSim::ObjectProperty<OpenSim::HuntCrossleyForce::ContactParametersSet>> {
+    // concrete property editor for an `OpenSim::HuntCrossleyForce::ContactParametersSet`
+    class ContactParameterSetEditor final : public VirtualPropertyEditor {
+    public:
+        using property_type = OpenSim::ObjectProperty<OpenSim::HuntCrossleyForce::ContactParametersSet>;
+
+        ContactParameterSetEditor(
+            osc::EditorAPI* api,
+            std::shared_ptr<osc::UndoableModelStatePair const> targetModel_,
+            std::function<property_type const*()> accessor_) :
+
+            m_API{api},
+            m_TargetModel{std::move(targetModel_)},
+            m_Accessor{std::move(accessor_)}
+        {
+        }
     private:
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDrawDowncasted(OpenSim::ObjectProperty<OpenSim::HuntCrossleyForce::ContactParametersSet> const& prop) final
+        std::type_info const& implGetTypeInfo() const final
+        {
+            return typeid(property_type);
+        }
+
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() final
         {
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
-            if (prop.getValue().getSize() > 0)
+
+            property_type const* maybeProp = m_Accessor();
+            if (!maybeProp)
             {
-                OpenSim::HuntCrossleyForce::ContactParameters const& params = prop.getValue()[0];
-
-                ImGui::Columns();
-                auto resp = m_NestedEditors.draw(params);
-                ImGui::Columns(2);
-
-                if (resp)
-                {
-                    // careful here: the response has a correct updater but doesn't know the full
-                    // path to the housing component, so we have to wrap the updater with
-                    // appropriate lookups etc
-
-                    rv = [=](OpenSim::AbstractProperty& p) mutable
-                    {
-                        auto* downcasted = dynamic_cast<OpenSim::Property<OpenSim::HuntCrossleyForce::ContactParametersSet>*>(&p);
-                        if (downcasted && downcasted->getValue().getSize() > 0)
-                        {
-                            OpenSim::HuntCrossleyForce::ContactParameters& contactParams = downcasted->getValue()[0];
-                            if (params.hasProperty(resp->getPropertyName()))
-                            {
-                                OpenSim::AbstractProperty& childP = contactParams.updPropertyByName(resp->getPropertyName());
-                                resp->apply(childP);
-                            }
-                        }
-                    };
-                }
+                return std::nullopt;  // cannot find property
             }
+            property_type const& prop = *maybeProp;
+
+            if (prop.getValue().getSize() <= 0)
+            {
+                return std::nullopt;  // no editable contact set on the property
+            }
+
+            OpenSim::HuntCrossleyForce::ContactParameters const& params = prop.getValue()[0];
+
+            // update cached editors, if necessary
+            if (!m_MaybeNestedEditor)
+            {
+                m_MaybeNestedEditor.emplace(m_API, m_TargetModel, [&params]() { return &params; });
+            }
+            osc::ObjectPropertiesEditor& nestedEditor = *m_MaybeNestedEditor;
+
+            ImGui::Columns();
+            auto resp = nestedEditor.draw();
+            ImGui::Columns(2);
+
+            if (resp)
+            {
+                // careful here: the response has a correct updater but doesn't know the full
+                // path to the housing component, so we have to wrap the updater with
+                // appropriate lookups etc
+
+                rv = [=](OpenSim::AbstractProperty& p) mutable
+                {
+                    auto* downcasted = dynamic_cast<OpenSim::Property<OpenSim::HuntCrossleyForce::ContactParametersSet>*>(&p);
+                    if (downcasted && downcasted->getValue().getSize() > 0)
+                    {
+                        OpenSim::HuntCrossleyForce::ContactParameters& contactParams = downcasted->getValue()[0];
+                        if (params.hasProperty(resp->getPropertyName()))
+                        {
+                            OpenSim::AbstractProperty& childP = contactParams.updPropertyByName(resp->getPropertyName());
+                            resp->apply(childP);
+                        }
+                    }
+                };
+            }
+
             return rv;
         }
 
-        osc::ObjectPropertiesEditor m_NestedEditors;
+        osc::EditorAPI* m_API;
+        std::shared_ptr<osc::UndoableModelStatePair const> m_TargetModel;
+        std::function<property_type const*()> m_Accessor;
+        std::optional<osc::ObjectPropertiesEditor> m_MaybeNestedEditor;
     };
+}
 
+// type-erased registry for all property editors
+namespace
+{
     // a registry containing all known property editors
     class PropertyEditorRegistry final {
     public:
         PropertyEditorRegistry()
         {
-            m_Lut.insert(MakeLookupEntry<StringPropertyEditor>());
-            m_Lut.insert(MakeLookupEntry<DoublePropertyEditor>());
-            m_Lut.insert(MakeLookupEntry<BoolPropertyEditor>());
-            m_Lut.insert(MakeLookupEntry<Vec3PropertyEditor>());
-            m_Lut.insert(MakeLookupEntry<Vec6PropertyEditor>());
-            m_Lut.insert(MakeLookupEntry<AppearancePropertyEditor>());
-            m_Lut.insert(MakeLookupEntry<ContactParameterSetEditor>());
+            registerEditor<StringPropertyEditor>();
+            registerEditor<DoublePropertyEditor>();
+            registerEditor<BoolPropertyEditor>();
+            registerEditor<Vec3PropertyEditor>();
+            registerEditor<Vec6PropertyEditor>();
+            registerEditor<AppearancePropertyEditor>();
+            registerEditor<ContactParameterSetEditor>();
         }
 
-        std::optional<PropertyEditor> tryCreateEditorFor(OpenSim::AbstractProperty const& prop) const
+        std::unique_ptr<VirtualPropertyEditor> tryCreateEditor(
+            osc::EditorAPI* editorAPI,
+            std::shared_ptr<osc::UndoableModelStatePair const> targetModel,
+            std::function<OpenSim::AbstractProperty const*()> genericAccessor) const
         {
+            OpenSim::AbstractProperty const* maybeProp = genericAccessor();
+            if (!maybeProp)
+            {
+                return nullptr;  // cannot access the property
+            }
+            OpenSim::AbstractProperty const& prop = *maybeProp;
+
             auto const it = m_Lut.find(typeid(prop));
-            if (it != m_Lut.end())
+            if (it == m_Lut.end())
             {
-                return it->second();
+                return nullptr;  // no property editor registered for the given typeid
             }
-            else
-            {
-                return std::nullopt;
-            }
+
+            // else: instantiate new property editor
+            return it->second(editorAPI, targetModel, genericAccessor);
         }
 
     private:
@@ -951,14 +1111,35 @@ namespace
             }
         };
 
-        using PropertyEditorCtor = PropertyEditor(*)(void);
+        using PropertyEditorCtor = std::function<std::unique_ptr<VirtualPropertyEditor>(osc::EditorAPI*, std::shared_ptr<osc::UndoableModelStatePair const>, std::function<OpenSim::AbstractProperty const*()>)>;
         using PropertyEditorLUT = std::unordered_map<TypeInfoRef, PropertyEditorCtor, TypeInfoHasher, TypeInfoEqualTo>;
 
-        template<typename TPropertyEditor>
-        PropertyEditorLUT::value_type MakeLookupEntry()
+        template<typename TConcretePropertyEditor>
+        void registerEditor()
         {
-            TypeInfoRef typeInfo = TPropertyEditor::propertyType();
-            auto ctor = []() { return MakePropertyEditor<TPropertyEditor>(); };
+            m_Lut.insert(MakeRegistryEntry<TConcretePropertyEditor>());
+        }
+
+        template<typename TConcretePropertyEditor>
+        static PropertyEditorLUT::value_type MakeRegistryEntry()
+        {
+            TypeInfoRef typeInfo = typeid(TConcretePropertyEditor::property_type);
+            auto ctor = [](osc::EditorAPI* api, std::shared_ptr<osc::UndoableModelStatePair const> targetModel, std::function<OpenSim::AbstractProperty const*()> genericAccessor)
+            {
+                auto downcastedAccessor = [genericAccessor]() -> TConcretePropertyEditor::property_type const*
+                {
+                    OpenSim::AbstractProperty const* genericProp = genericAccessor();
+                    if (genericProp)
+                    {
+                        return dynamic_cast<TConcretePropertyEditor::property_type const*>(genericProp);
+                    }
+                    else
+                    {
+                        return nullptr;
+                    }
+                };
+                return std::make_unique<TConcretePropertyEditor>(api, targetModel, downcastedAccessor);
+            };
             return PropertyEditorLUT::value_type(typeInfo, ctor);
         }
 
@@ -976,41 +1157,51 @@ namespace
 // top-level implementation of the properties editor
 class osc::ObjectPropertiesEditor::Impl final {
 public:
+    Impl(
+        EditorAPI* api_,
+        std::shared_ptr<osc::UndoableModelStatePair const> targetModel_,
+        std::function<OpenSim::Object const*()> objectGetter_) :
+
+        m_API{api_},
+        m_TargetModel{std::move(targetModel_)},
+        m_ObjectGetter{std::move(objectGetter_)}
+    {
+    }
 
     // draw all property editors for the given object
+    std::optional<ObjectPropertyEdit> draw()
+    {
+        if (OpenSim::Object const* maybeObj = m_ObjectGetter())
+        {
+            return draw(*maybeObj);
+        }
+        else
+        {
+            return std::nullopt;  // object inaccessible: don't show editors
+        }
+    }
+private:
+
     std::optional<ObjectPropertyEdit> draw(OpenSim::Object const& obj)
     {
-        // clear cache, if necessary
+        // if necessary, update cached property editors
         if (m_PreviousObject != &obj)
         {
             m_PropertyEditorsByName.clear();
             m_PreviousObject = &obj;
         }
 
-        // go through each property, potentially collecting a single property
-        // edit application
+        // draw each editor and return the last property edit (or std::nullopt)
         std::optional<ObjectPropertyEdit> rv;
 
         ImGui::Columns(2);
         for (int i = 0; i < obj.getNumProperties(); ++i)
         {
             ImGui::PushID(i);
-
-            OpenSim::AbstractProperty const& prop = obj.getPropertyByIndex(i);
-
-            // #542: ignore properties that begin with `socket_`, because they are
-            // proxy properties to the object's sockets (which should be manipulated
-            // via socket, rather than text, editors)
-            if (!osc::StartsWith(prop.getName(), "socket_"))
+            if (std::optional<ObjectPropertyEdit> maybeEdit = drawPropertyEditor(obj, obj.getPropertyByIndex(i)))
             {
-                std::optional<ObjectPropertyEdit> resp = drawPropertyEditor(obj, prop);
-
-                if (!rv)
-                {
-                    rv = std::move(resp);
-                }
+                rv = std::move(maybeEdit);
             }
-
             ImGui::PopID();
         }
         ImGui::Columns();
@@ -1018,32 +1209,43 @@ public:
         return rv;
     }
 
-private:
-
     // draw a single property editor for one property of an object
-    std::optional<ObjectPropertyEdit> drawPropertyEditor(OpenSim::Object const& obj, OpenSim::AbstractProperty const& prop)
+    std::optional<ObjectPropertyEdit> drawPropertyEditor(
+        OpenSim::Object const& obj,
+        OpenSim::AbstractProperty const& prop)
     {
         std::optional<ObjectPropertyEdit> rv;
 
-        // three cases:s
+        // #542: ignore properties that begin with `socket_`, because they are
+        // proxy properties to the object's sockets (which should be manipulated
+        // via socket, rather than text, editors)
+        if (osc::StartsWith(prop.getName(), "socket_"))
+        {
+            return rv;
+        }
+
+        // three cases:
         //
         // - use existing active property editor
         // - create a new active property editor
         // - there's no property editor available for the given type, so show a not-editable string
 
-        auto const [it, inserted] = m_PropertyEditorsByName.try_emplace(prop.getName(), std::nullopt);
-        if (inserted || (it->second && it->second->getPropertyTypeInfo() != typeid(prop)))
+        auto const [it, inserted] = m_PropertyEditorsByName.try_emplace(prop.getName(), nullptr);
+        if (inserted || (it->second && !it->second->isCompatibleWith(prop)))
         {
             // need to create a new editor because either it hasn't been made yet or the existing
             // editor is for a different type
-            it->second = GetGlobalPropertyEditorRegistry().tryCreateEditorFor(prop);
+
+            // wrap property accesses via the object accessor so that they can be runtime-checked
+            std::function<OpenSim::AbstractProperty const*()> accessor = MakePropertyAccessor(m_ObjectGetter, prop.getName());
+            it->second = GetGlobalPropertyEditorRegistry().tryCreateEditor(m_API, m_TargetModel, accessor);
         }
 
         if (it->second)
         {
             // there is an editor, so draw it etc.
             ImGui::PushID(prop.getName().c_str());
-            std::optional<std::function<void(OpenSim::AbstractProperty&)>> maybeUpdater = it->second->draw(prop);
+            std::optional<std::function<void(OpenSim::AbstractProperty&)>> maybeUpdater = it->second->draw();
             ImGui::PopID();
             if (maybeUpdater)
             {
@@ -1063,44 +1265,22 @@ private:
         return rv;
     }
 
-    std::unordered_map<std::string, std::optional<PropertyEditor>> m_PropertyEditorsByName;
+    EditorAPI* m_API;
+    std::shared_ptr<osc::UndoableModelStatePair const> m_TargetModel;
+    std::function<OpenSim::Object const*()> m_ObjectGetter;
     OpenSim::Object const* m_PreviousObject = nullptr;
+    std::unordered_map<std::string, std::unique_ptr<VirtualPropertyEditor>> m_PropertyEditorsByName;
 };
-
-
-// public API (ObjectPropertyEdit)
-
-osc::ObjectPropertyEdit::ObjectPropertyEdit(
-    OpenSim::Object const& obj,
-    OpenSim::AbstractProperty const& prop,
-    std::function<void(OpenSim::AbstractProperty&)> updater) :
-
-    m_ComponentAbsPath{GetAbsPathOrEmptyIfNotAComponent(obj)},
-    m_PropertyName{prop.getName()},
-    m_Updater{std::move(updater)}
-{
-}
-
-std::string const& osc::ObjectPropertyEdit::getComponentAbsPath() const
-{
-    return m_ComponentAbsPath;
-}
-
-std::string const& osc::ObjectPropertyEdit::getPropertyName() const
-{
-    return m_PropertyName;
-}
-
-void osc::ObjectPropertyEdit::apply(OpenSim::AbstractProperty& prop)
-{
-    m_Updater(prop);
-}
 
 
 // public API (ObjectPropertiesEditor)
 
-osc::ObjectPropertiesEditor::ObjectPropertiesEditor() :
-    m_Impl{std::make_unique<Impl>()}
+osc::ObjectPropertiesEditor::ObjectPropertiesEditor(
+    EditorAPI* api_,
+    std::shared_ptr<osc::UndoableModelStatePair const> targetModel_,
+    std::function<OpenSim::Object const*()> objectGetter_) :
+
+    m_Impl{std::make_unique<Impl>(api_, std::move(targetModel_), std::move(objectGetter_))}
 {
 }
 
@@ -1108,7 +1288,7 @@ osc::ObjectPropertiesEditor::ObjectPropertiesEditor(ObjectPropertiesEditor&&) no
 osc::ObjectPropertiesEditor& osc::ObjectPropertiesEditor::operator=(ObjectPropertiesEditor&&) noexcept = default;
 osc::ObjectPropertiesEditor::~ObjectPropertiesEditor() noexcept = default;
 
-std::optional<osc::ObjectPropertyEdit> osc::ObjectPropertiesEditor::draw(OpenSim::Object const& obj)
+std::optional<osc::ObjectPropertyEdit> osc::ObjectPropertiesEditor::draw()
 {
-    return m_Impl->draw(obj);
+    return m_Impl->draw();
 }

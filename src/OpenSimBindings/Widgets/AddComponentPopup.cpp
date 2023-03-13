@@ -71,10 +71,11 @@ public:
          std::unique_ptr<OpenSim::Component> prototype,
          std::string_view popupName) :
 
-         StandardPopup{std::move(popupName)},
-         m_EditorAPI{std::move(api)},
-         m_Uum{std::move(uum)},
-         m_Proto{std::move(prototype)}
+        StandardPopup{std::move(popupName)},
+        m_EditorAPI{api},
+        m_Uum{std::move(uum)},
+        m_Proto{std::move(prototype)},
+        m_PrototypePropertiesEditor{api, m_Uum, [proto = m_Proto]() { return proto.get(); }}
     {
     }
 
@@ -191,7 +192,7 @@ private:
 
         ImGui::Dummy({0.0f, 3.0f});
 
-        auto maybeUpdater = m_PropEditor.draw(*m_Proto);
+        auto maybeUpdater = m_PrototypePropertiesEditor.draw();
         if (maybeUpdater)
         {
             OpenSim::AbstractProperty* prop = osc::FindPropertyMut(*m_Proto, maybeUpdater->getPropertyName());
@@ -480,7 +481,7 @@ private:
     std::shared_ptr<UndoableModelStatePair> m_Uum;
 
     // a prototypical version of the component being added
-    std::unique_ptr<OpenSim::Component> m_Proto;
+    std::shared_ptr<OpenSim::Component> m_Proto;  // (may be shared with editor popups etc)
 
     // cached sequence of OpenSim::PhysicalFrame sockets in the prototype
     std::vector<OpenSim::AbstractSocket const*> m_ProtoSockets{GetAllSockets(*m_Proto)};
@@ -489,7 +490,7 @@ private:
     std::string m_Name{m_Proto->getConcreteClassName()};
 
     // a property editor for the prototype's properties
-    ObjectPropertiesEditor m_PropEditor;
+    ObjectPropertiesEditor m_PrototypePropertiesEditor;
 
     // absolute paths to user-selected connectees of the prototype's sockets
     std::vector<OpenSim::ComponentPath> m_SocketConnecteePaths{m_ProtoSockets.size()};
