@@ -231,8 +231,8 @@ namespace osc
     bool ActionTransformPof(
         UndoableModelStatePair&,
         OpenSim::PhysicalOffsetFrame const&,
-        glm::vec3 const& deltaPosition,
-        glm::vec3 const& newEulers
+        glm::vec3 const& deltaTranslationInParentFrame,
+        glm::vec3 const& newPofEulers
     );
 
     bool ActionTransformWrapObject(

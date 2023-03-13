@@ -30,6 +30,7 @@
 #include <sstream>
 #include <utility>
 
+// common/virtual manipulator data/APIs
 namespace
 {
     // operations that are supported by a manipulator
@@ -40,7 +41,7 @@ namespace
         SupportedManipulationOpFlags_Rotation = 1<<1,
     };
 
-    // virtual base class that each concrete manipulator inherits from
+    // type-erased virtual base class that each concrete manipulator inherits from
     class VirtualSelectionManipulator {
     protected:
         VirtualSelectionManipulator() = default;
@@ -66,9 +67,9 @@ namespace
             implOnApplyTranslation(deltaTranslationInGround);
         }
 
-        void onApplyRotation(glm::vec3 const& newEulerRadiansInGround)
+        void onApplyRotation(glm::vec3 const& deltaEulerRadiansInGround)
         {
-            implOnApplyRotation(newEulerRadiansInGround);
+            implOnApplyRotation(deltaEulerRadiansInGround);
         }
 
         void onSave()
@@ -79,11 +80,11 @@ namespace
         virtual SupportedManipulationOpFlags implGetSupportedManipulationOps() const = 0;
         virtual glm::mat4 implGetCurrentModelMatrix() const = 0;
         virtual void implOnApplyTranslation(glm::vec3 const& deltaTranslationInGround) {}  // default to noop
-        virtual void implOnApplyRotation(glm::vec3 const& newEulerRadiansInGround) {}  // default to noop
+        virtual void implOnApplyRotation(glm::vec3 const& deltaEulerRadiansInGround) {}  // default to noop
         virtual void implOnSave() = 0;
     };
 
-    // standard implementation of the data storage for a selection manipulator
+    // concrete implementation of a selection manipulator for `TComponent`
     //
     // effectively, only stores the model+path to the thing being manipulated, and performs
     // runtime checks to ensure the component still exists in the model
@@ -97,6 +98,7 @@ namespace
             m_Model{std::move(model_)},
             m_ComponentAbsPath{component.getAbsolutePath()}
         {
+            OSC_ASSERT(m_Model != nullptr);
             OSC_ASSERT(osc::FindComponent<TComponent>(m_Model->getModel(), m_ComponentAbsPath));
         }
 
@@ -121,10 +123,64 @@ namespace
         }
 
     private:
+        // perform runtime lookup for `TComponent` and forward into concrete implementation
+        glm::mat4 implGetCurrentModelMatrix() const final
+        {
+            TComponent const* maybeSelected = findSelection();
+            if (!maybeSelected)
+            {
+                return glm::mat4{1.0f};  // selection of that type does not exist in the model
+            }
+            return implGetCurrentModelMatrix(*maybeSelected);
+        }
+
+        // perform runtime lookup for `TComponent` and forward into concrete implementation
+        void implOnApplyTranslation(glm::vec3 const& deltaTranslationInGround) final
+        {
+            TComponent const* maybeSelected = findSelection();
+            if (!maybeSelected)
+            {
+                return;  // selection of that type does not exist in the model
+            }
+            implOnApplyTranslation(*maybeSelected, deltaTranslationInGround);
+        }
+
+        // perform runtime lookup for `TComponent` and forward into concrete implementation
+        void implOnApplyRotation(glm::vec3 const& deltaEulerRadiansInGround) final
+        {
+            TComponent const* maybeSelected = findSelection();
+            if (!maybeSelected)
+            {
+                return;  // selection of that type does not exist in the model
+            }
+            implOnApplyRotation(*maybeSelected, deltaEulerRadiansInGround);
+        }
+
+        void implOnSave() final
+        {
+            TComponent const* maybeSelected = findSelection();
+            if (!maybeSelected)
+            {
+                return;  // selection of that type does not exist in the model
+            }
+            implOnSave(*maybeSelected);
+        }
+
+        // inheritors must implement concrete manipulation methods
+        virtual glm::mat4 implGetCurrentModelMatrix(TComponent const&) const = 0;
+        virtual void implOnApplyTranslation(TComponent const&, glm::vec3 const& deltaTranslationInGround) = 0;
+        virtual void implOnApplyRotation(TComponent const&, glm::vec3 const& deltaEulerRadiansInGround) {}  // default to noop
+        virtual void implOnSave(TComponent const&) = 0;
+
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
         OpenSim::ComponentPath m_ComponentAbsPath;
     };
+}
 
+// concrete manipulator implementations
+namespace
+{
+    // manipulator for `OpenSim::Station`
     class StationManipulator final : public StandardSelectionManipulatorImpl<OpenSim::Station> {
     public:
         StationManipulator(
@@ -140,15 +196,9 @@ namespace
             return SupportedManipulationOpFlags_Translation;
         }
 
-        glm::mat4 implGetCurrentModelMatrix() const final
+        glm::mat4 implGetCurrentModelMatrix(
+            OpenSim::Station const& station) const final
         {
-            OpenSim::Station const* maybeStation = findSelection();
-            if (!maybeStation)
-            {
-                return glm::mat4{1.0f};
-            }
-            OpenSim::Station const& station = *maybeStation;
-
             SimTK::State const& state = getState();
             glm::mat4 currentXformInGround = osc::ToMat4(station.getParentFrame().getRotationInGround(state));
             currentXformInGround[3] = glm::vec4{osc::ToVec3(station.getLocationInGround(state)), 1.0f};
@@ -156,15 +206,10 @@ namespace
             return currentXformInGround;
         }
 
-        void implOnApplyTranslation(glm::vec3 const& deltaTranslationInGround) final
+        void implOnApplyTranslation(
+            OpenSim::Station const& station,
+            glm::vec3 const& deltaTranslationInGround) final
         {
-            OpenSim::Station const* maybeStation = findSelection();
-            if (!maybeStation)
-            {
-                return;  // station doesn't exist in the model?
-            }
-            OpenSim::Station const& station = *maybeStation;
-
             SimTK::Rotation const parentToGroundRotation = station.getParentFrame().getRotationInGround(getState());
             SimTK::InverseRotation const& groundToParentRotation = parentToGroundRotation.invert();
             glm::vec3 const translationInParent = osc::ToVec3(groundToParentRotation * osc::ToSimTKVec3(deltaTranslationInGround));
@@ -172,15 +217,13 @@ namespace
             ActionTranslateStation(getUndoableModel(), station, translationInParent);
         }
 
-        void implOnSave() final
+        void implOnSave(OpenSim::Station const& station) final
         {
-            if (OpenSim::Station const* station = findSelection())
-            {
-                ActionTranslateStationAndSave(getUndoableModel(), *station, {});
-            }
+            ActionTranslateStationAndSave(getUndoableModel(), station, {});
         }
     };
 
+    // manipulator for `OpenSim::PathPoint`
     class PathPointManipulator : public StandardSelectionManipulatorImpl<OpenSim::PathPoint> {
     public:
         PathPointManipulator(
@@ -195,15 +238,9 @@ namespace
             return SupportedManipulationOpFlags_Translation;
         }
 
-        glm::mat4 implGetCurrentModelMatrix() const final
+        glm::mat4 implGetCurrentModelMatrix(
+            OpenSim::PathPoint const& pathPoint) const final
         {
-            OpenSim::PathPoint const* maybePathPoint = findSelection();
-            if (!maybePathPoint)
-            {
-                return glm::mat4{1.0f};  // pathpoint is no longer in the model?
-            }
-            OpenSim::PathPoint const& pathPoint = *maybePathPoint;
-
             SimTK::State const& state = getState();
             glm::mat4 currentXformInGround = osc::ToMat4(pathPoint.getParentFrame().getRotationInGround(state));
             currentXformInGround[3] = glm::vec4{osc::ToVec3(pathPoint.getLocationInGround(state)), 1.0f};
@@ -211,34 +248,24 @@ namespace
             return currentXformInGround;
         }
 
-        void implOnApplyTranslation(glm::vec3 const& deltaTranslationInGround) final
+        void implOnApplyTranslation(
+            OpenSim::PathPoint const& pathPoint,
+            glm::vec3 const& deltaTranslationInGround) final
         {
-            OpenSim::PathPoint const* maybePathPoint = findSelection();
-            if (!maybePathPoint)
-            {
-                return;  // pathpoint is no longer in the model?
-            }
-            OpenSim::PathPoint const& pathPoint = *maybePathPoint;
-
             SimTK::Rotation const parentToGroundRotation = pathPoint.getParentFrame().getRotationInGround(getState());
             SimTK::InverseRotation const& groundToParentRotation = parentToGroundRotation.invert();
             glm::vec3 const translationInParent = osc::ToVec3(groundToParentRotation * osc::ToSimTKVec3(deltaTranslationInGround));
+
             ActionTranslatePathPoint(getUndoableModel(), pathPoint, translationInParent);
         }
 
-        void implOnSave() final
+        void implOnSave(OpenSim::PathPoint const& pathPoint) final
         {
-            OpenSim::PathPoint const* maybePathPoint = findSelection();
-            if (!maybePathPoint)
-            {
-                return;  // pathpoint is no longer in the model?
-            }
-            OpenSim::PathPoint const& pathPoint = *maybePathPoint;
-
             ActionTranslatePathPointAndSave(getUndoableModel(), pathPoint, {});
         }
     };
 
+    // manipulator for `OpenSim::PhysicalOffsetFrame`
     class PhysicalOffsetFrameManipulator final : public StandardSelectionManipulatorImpl<OpenSim::PhysicalOffsetFrame> {
     public:
         PhysicalOffsetFrameManipulator(
@@ -253,73 +280,59 @@ namespace
             return SupportedManipulationOpFlags_Translation | SupportedManipulationOpFlags_Rotation;
         }
 
-        glm::mat4 implGetCurrentModelMatrix() const final
+        glm::mat4 implGetCurrentModelMatrix(
+            OpenSim::PhysicalOffsetFrame const& pof) const final
         {
-            OpenSim::PhysicalOffsetFrame const* maybePof = findSelection();
-            if (!maybePof)
-            {
-                return glm::mat4{1.0f};  // pof doesn't exist in the model
-            }
-            OpenSim::PhysicalOffsetFrame const& pof = *maybePof;
+            return osc::ToMat4x4(pof.getTransformInGround(getState()));
+        }
 
-            // use the PoF's own rotation as its local space
+        void implOnApplyTranslation(
+            OpenSim::PhysicalOffsetFrame const& pof,
+            glm::vec3 const& deltaTranslationInGround) final
+        {
+            SimTK::Rotation const parentToGroundRotation = pof.getParentFrame().getRotationInGround(getState());
+            SimTK::InverseRotation const& groundToParentRotation = parentToGroundRotation.invert();
+            SimTK::Vec3 const deltaTranslationInParent = groundToParentRotation * osc::ToSimTKVec3(deltaTranslationInGround);
+            SimTK::Vec3 const eulersInPofFrame = pof.get_orientation();
+
+            ActionTransformPof(
+                getUndoableModel(),
+                pof,
+                osc::ToVec3(deltaTranslationInParent),
+                osc::ToVec3(eulersInPofFrame)
+            );
+        }
+
+        void implOnApplyRotation(
+            OpenSim::PhysicalOffsetFrame const& pof,
+            glm::vec3 const& deltaEulerRadiansInGround) final
+        {
+            OpenSim::Frame const& parent = pof.getParentFrame();
             SimTK::State const& state = getState();
-            glm::mat4 currentXformInGround = osc::ToMat4(pof.getRotationInGround(state));
-            currentXformInGround[3] = glm::vec4{osc::ToVec3(pof.getPositionInGround(state)), 1.0f};
-            return currentXformInGround;
+
+            glm::quat const deltaRotationInGround{deltaEulerRadiansInGround};
+            glm::quat const oldRotationInGround{osc::ToQuat(pof.getRotationInGround(state))};
+            glm::quat const parentRotationInGround = osc::ToQuat(parent.getRotationInGround(state));
+            glm::quat const newRotationInGround = glm::normalize(deltaRotationInGround * oldRotationInGround);
+            glm::quat const newRotationInParent = glm::inverse(parentRotationInGround) * newRotationInGround;
+
+            ActionTransformPof(
+                getUndoableModel(),
+                pof,
+                glm::vec3{},  // no translation delta
+                osc::ExtractEulerAngleXYZ(newRotationInParent)
+            );
         }
 
-        void implOnApplyTranslation(glm::vec3 const& deltaTranslationInGround) final
+        void implOnSave(OpenSim::PhysicalOffsetFrame const& pof) final
         {
-            OpenSim::PhysicalOffsetFrame const* maybePof = findSelection();
-            if (!maybePof)
-            {
-                return;  // pof doesn't exist in the model
-            }
-            OpenSim::PhysicalOffsetFrame const& pof = *maybePof;
-
-            glm::vec3 translationInPofFrame{};
-            glm::vec3 eulersInPofFrame{};
-            SimTK::Rotation const pofToGroundRotation =  pof.getRotationInGround(getState());
-            SimTK::InverseRotation const& groundToParentRotation = pofToGroundRotation.invert();
-            translationInPofFrame = osc::ToVec3(groundToParentRotation * osc::ToSimTKVec3(deltaTranslationInGround));
-            eulersInPofFrame = osc::ToVec3(pof.get_orientation());
-            ActionTransformPof(getUndoableModel(), pof, translationInPofFrame, eulersInPofFrame);
-        }
-
-        void implOnApplyRotation(glm::vec3 const& newEulerRadiansInGround) final
-        {
-            OpenSim::PhysicalOffsetFrame const* maybePof = findSelection();
-            if (!maybePof)
-            {
-                return;  // pof doesn't exist in the model
-            }
-            OpenSim::PhysicalOffsetFrame const& pof = *maybePof;
-
-            glm::vec3 translationInPofFrame{};
-            glm::vec3 eulersInPofFrame{};
-            osc::Transform t = osc::ToTransform(pof.getTransformInGround(getState()));
-            ApplyWorldspaceRotation(t, newEulerRadiansInGround, getCurrentModelMatrix()[3]);  // TODO: refactor this garbage
-            translationInPofFrame = {};
-            eulersInPofFrame = ExtractEulerAngleXYZ(t);
-            ActionTransformPof(getUndoableModel(), pof, translationInPofFrame, eulersInPofFrame);
-        }
-
-        void implOnSave() final
-        {
-            OpenSim::PhysicalOffsetFrame const* maybePof = findSelection();
-            if (!maybePof)
-            {
-                return;  // pof doesn't exist in the model
-            }
-            OpenSim::PhysicalOffsetFrame const& pof = *maybePof;
-
             std::stringstream ss;
             ss << "transformed " << pof.getName();
             getUndoableModel().commit(std::move(ss).str());
         }
     };
 
+    // manipulator for `OpenSim::WrapObject`
     class WrapObjectManipulator final : public StandardSelectionManipulatorImpl<OpenSim::WrapObject> {
     public:
         WrapObjectManipulator(
@@ -334,78 +347,63 @@ namespace
             return SupportedManipulationOpFlags_Rotation | SupportedManipulationOpFlags_Translation;
         }
 
-        glm::mat4 implGetCurrentModelMatrix() const final
+        glm::mat4 implGetCurrentModelMatrix(
+            OpenSim::WrapObject const& wrapObj) const final
         {
-            OpenSim::WrapObject const* maybeWrapObj = findSelection();
-            if (!maybeWrapObj)
-            {
-                return glm::mat4{1.0f};  // wrap object doesn't exist in the model
-            }
-            OpenSim::WrapObject const& wrapObj = *maybeWrapObj;
-
             SimTK::Transform const wrapToFrame = wrapObj.getTransform();
             SimTK::Transform const frameToGround = wrapObj.getFrame().getTransformInGround(getState());
             SimTK::Transform const wrapToGround = frameToGround * wrapToFrame;
+
             return osc::ToMat4x4(wrapToGround);
         }
 
-        void implOnApplyTranslation(glm::vec3 const& deltaTranslationInGround) final
+        void implOnApplyTranslation(
+            OpenSim::WrapObject const& wrapObj,
+            glm::vec3 const& deltaTranslationInGround) final
         {
-            OpenSim::WrapObject const* maybeWrapObj = findSelection();
-            if (!maybeWrapObj)
-            {
-                return;  // wrap object doesn't exist in the model
-            }
-            OpenSim::WrapObject const& wrapObj = *maybeWrapObj;
-
-            glm::vec3 translationInPofFrame{};
-            glm::vec3 eulersInPofFrame{};
             SimTK::Rotation const frameToGroundRotation = wrapObj.getFrame().getTransformInGround(getState()).R();
             SimTK::InverseRotation const& groundToFrameRotation = frameToGroundRotation.invert();
-            translationInPofFrame = osc::ToVec3(groundToFrameRotation * osc::ToSimTKVec3(deltaTranslationInGround));
-            eulersInPofFrame = osc::ToVec3(wrapObj.get_xyz_body_rotation());
-            ActionTransformWrapObject(getUndoableModel(), wrapObj, translationInPofFrame, eulersInPofFrame);
+            glm::vec3 const translationInPofFrame = osc::ToVec3(groundToFrameRotation * osc::ToSimTKVec3(deltaTranslationInGround));
+
+            ActionTransformWrapObject(
+                getUndoableModel(),
+                wrapObj,
+                translationInPofFrame,
+                osc::ToVec3(wrapObj.get_xyz_body_rotation())
+            );
         }
 
-        void implOnApplyRotation(glm::vec3 const& newEulerRadiansInGround) final
+        void implOnApplyRotation(
+            OpenSim::WrapObject const& wrapObj,
+            glm::vec3 const& deltaEulerRadiansInGround) final
         {
-            // TODO: fix this gigantic mess
+            OpenSim::Frame const& parent = wrapObj.getFrame();
+            SimTK::State const& state = getState();
+                    
+            glm::quat const deltaRotationInGround{deltaEulerRadiansInGround};
+            glm::quat const oldRotationInGround{osc::ToQuat(parent.getTransformInGround(state).R() * wrapObj.getTransform().R())};
+            glm::quat const parentRotationInGround = osc::ToQuat(parent.getRotationInGround(state));
+            glm::quat const newRotationInGround = glm::normalize(deltaRotationInGround * oldRotationInGround);
+            glm::quat const newRotationInParent = glm::inverse(parentRotationInGround) * newRotationInGround;
 
-            OpenSim::WrapObject const* maybeWrapObj = findSelection();
-            if (!maybeWrapObj)
-            {
-                return;  // wrap object doesn't exist in the model
-            }
-            OpenSim::WrapObject const& wrapObj = *maybeWrapObj;
-            SimTK::Transform const wrapToFrame = wrapObj.getTransform();
-            SimTK::Transform const frameToGround = wrapObj.getFrame().getTransformInGround(getState());
-            SimTK::Transform const wrapToGround = frameToGround * wrapToFrame;
-
-            glm::vec3 translationInPofFrame{};
-            glm::vec3 eulersInPofFrame{};
-            osc::Transform wrapToGroundXform = osc::ToTransform(wrapToGround);
-            ApplyWorldspaceRotation(wrapToGroundXform, newEulerRadiansInGround, osc::ToMat4x4(wrapToGround)[3]);
-            SimTK::Transform newWrapToFrameXForm = frameToGround.invert() * osc::ToSimTKTransform(wrapToGroundXform);
-            translationInPofFrame = {};
-            eulersInPofFrame = osc::ExtractEulerAngleXYZ(osc::ToTransform(newWrapToFrameXForm));
-            ActionTransformWrapObject(getUndoableModel(), wrapObj, translationInPofFrame, eulersInPofFrame);
+            ActionTransformWrapObject(
+                getUndoableModel(),
+                wrapObj,
+                glm::vec3{},  // no translation
+                osc::ExtractEulerAngleXYZ(newRotationInParent)
+            );
         }
 
-        void implOnSave() final
+        void implOnSave(
+            OpenSim::WrapObject const& wrapObj) final
         {
-            OpenSim::WrapObject const* maybeWrapObj = findSelection();
-            if (!maybeWrapObj)
-            {
-                return;  // wrap object doesn't exist in the model
-            }
-            OpenSim::WrapObject const& wrapObj = *maybeWrapObj;
-
             std::stringstream ss;
             ss << "transformed " << wrapObj.getName();
             getUndoableModel().commit(std::move(ss).str());
         }
     };
 
+    // manipulator for `OpenSim::ContactGeometry`
     class ContactGeometryManipulator final : public StandardSelectionManipulatorImpl<OpenSim::ContactGeometry> {
     public:
         ContactGeometryManipulator(
@@ -420,15 +418,9 @@ namespace
             return SupportedManipulationOpFlags_Rotation | SupportedManipulationOpFlags_Translation;
         }
 
-        glm::mat4 implGetCurrentModelMatrix() const final
+        glm::mat4 implGetCurrentModelMatrix(
+            OpenSim::ContactGeometry const& contactGeom) const final
         {
-            OpenSim::ContactGeometry const* maybeContactGeom = findSelection();
-            if (!maybeContactGeom)
-            {
-                return glm::mat4{1.0f};  // wrap object doesn't exist in the model
-            }
-            OpenSim::ContactGeometry const& contactGeom = *maybeContactGeom;
-
             SimTK::Transform const wrapToFrame = contactGeom.getTransform();
             SimTK::Transform const frameToGround = contactGeom.getFrame().getTransformInGround(getState());
             SimTK::Transform const wrapToGround = frameToGround * wrapToFrame;
@@ -436,75 +428,56 @@ namespace
             return osc::ToMat4x4(wrapToGround);
         }
 
-        void implOnApplyTranslation(glm::vec3 const& deltaTranslationInGround) final
+        void implOnApplyTranslation(
+            OpenSim::ContactGeometry const& contactGeom,
+            glm::vec3 const& deltaTranslationInGround) final
         {
-            OpenSim::ContactGeometry const* maybeContactGeom = findSelection();
-            if (!maybeContactGeom)
-            {
-                return;  // wrap object doesn't exist in the model
-            }
-            OpenSim::ContactGeometry const& contactGeom = *maybeContactGeom;
-
-            glm::vec3 translationInPofFrame{};
-            glm::vec3 eulersInPofFrame{};
             SimTK::Rotation const frameToGroundRotation = contactGeom.getFrame().getTransformInGround(getState()).R();
             SimTK::InverseRotation const& groundToFrameRotation = frameToGroundRotation.invert();
-            translationInPofFrame = osc::ToVec3(groundToFrameRotation * osc::ToSimTKVec3(deltaTranslationInGround));
-            eulersInPofFrame = osc::ToVec3(contactGeom.get_orientation());
+            glm::vec3 const translationInPofFrame = osc::ToVec3(groundToFrameRotation * osc::ToSimTKVec3(deltaTranslationInGround));
 
             osc::ActionTransformContactGeometry(
                 getUndoableModel(),
                 contactGeom,
                 translationInPofFrame,
-                eulersInPofFrame
+                osc::ToVec3(contactGeom.get_orientation())
             );
         }
 
-        void implOnApplyRotation(glm::vec3 const& newEulerRadiansInGround) final
+        void implOnApplyRotation(
+            OpenSim::ContactGeometry const& contactGeom,
+            glm::vec3 const& deltaEulerRadiansInGround) final
         {
-            // TODO: fix this gigantic mess
+            OpenSim::Frame const& parent = contactGeom.getFrame();
+            SimTK::State const& state = getState();
 
-            OpenSim::ContactGeometry const* maybeContactGeom = findSelection();
-            if (!maybeContactGeom)
-            {
-                return;  // wrap object doesn't exist in the model
-            }
-            OpenSim::ContactGeometry const& contactGeom = *maybeContactGeom;
-            SimTK::Transform const wrapToFrame = contactGeom.getTransform();
-            SimTK::Transform const frameToGround = contactGeom.getFrame().getTransformInGround(getState());
-            SimTK::Transform const wrapToGround = frameToGround * wrapToFrame;
-
-            glm::vec3 translationInPofFrame{};
-            glm::vec3 eulersInPofFrame{};
-            osc::Transform wrapToGroundXform = osc::ToTransform(wrapToGround);
-            ApplyWorldspaceRotation(wrapToGroundXform, newEulerRadiansInGround, osc::ToMat4x4(wrapToGround)[3]);
-            SimTK::Transform newWrapToFrameXForm = frameToGround.invert() * osc::ToSimTKTransform(wrapToGroundXform);
-            translationInPofFrame = {};
-            eulersInPofFrame = osc::ExtractEulerAngleXYZ(osc::ToTransform(newWrapToFrameXForm));
+            glm::quat const deltaRotationInGround{deltaEulerRadiansInGround};
+            glm::quat const oldRotationInGround{osc::ToQuat(parent.getTransformInGround(state).R() * contactGeom.getTransform().R())};
+            glm::quat const parentRotationInGround = osc::ToQuat(parent.getRotationInGround(state));
+            glm::quat const newRotationInGround = glm::normalize(deltaRotationInGround * oldRotationInGround);
+            glm::quat const newRotationInParent = glm::inverse(parentRotationInGround) * newRotationInGround;
 
             osc::ActionTransformContactGeometry(
                 getUndoableModel(),
                 contactGeom,
-                translationInPofFrame,
-                eulersInPofFrame
+                glm::vec3{},  // no translation
+                osc::ExtractEulerAngleXYZ(newRotationInParent)
             );
         }
 
-        void implOnSave() final
+        void implOnSave(
+            OpenSim::ContactGeometry const& contactGeom) final
         {
-            OpenSim::ContactGeometry const* maybeContactGeom = findSelection();
-            if (!maybeContactGeom)
-            {
-                return;  // wrap object doesn't exist in the model
-            }
-            OpenSim::ContactGeometry const& contactGeom = *maybeContactGeom;
-
             std::stringstream ss;
             ss << "transformed " << contactGeom.getName();
             getUndoableModel().commit(std::move(ss).str());
         }
     };
+}
 
+// drawing/rendering code
+namespace
+{
     void DrawGizmoOverlayInner(
         void* gizmoID,
         osc::PolarPerspectiveCamera const& camera,

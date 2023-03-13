@@ -6,6 +6,8 @@ All notable changes to this project will be documented here. The format is based
 
 - Fixed a segfault that would occur when adding a body with an invalid name. It now throws an exception and prints
   an error to the log instead (thanks @AdrianHendrik, #642)
+- Fixed the manipulation gizmo rotation operation being broken when rotating scene elements (mostly, when rotating
+  PhysicalOffsetFrames - thanks @AdrianHendrik, #642)
 
 
 ## [0.4.0] - 2023/03/06

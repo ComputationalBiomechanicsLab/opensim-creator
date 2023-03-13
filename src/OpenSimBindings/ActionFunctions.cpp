@@ -1712,8 +1712,8 @@ bool osc::ActionTranslatePathPointAndSave(
 bool osc::ActionTransformPof(
     UndoableModelStatePair& model,
     OpenSim::PhysicalOffsetFrame const& pof,
-    glm::vec3 const& deltaPosition,
-    glm::vec3 const& newEulers)
+    glm::vec3 const& deltaTranslationInParentFrame,
+    glm::vec3 const& newPofEulers)
 {
     OpenSim::ComponentPath const pofPath = osc::GetAbsolutePath(pof);
     UID const oldVersion = model.getModelVersion();
@@ -1729,11 +1729,11 @@ bool osc::ActionTransformPof(
         }
 
         SimTK::Vec3 const originalPos = mutPof->get_translation();
-        SimTK::Vec3 const newPos = originalPos + ToSimTKVec3(deltaPosition);
+        SimTK::Vec3 const newPos = originalPos + ToSimTKVec3(deltaTranslationInParentFrame);
 
         // perform mutation
         mutPof->set_translation(newPos);
-        mutPof->set_orientation(ToSimTKVec3(newEulers));
+        mutPof->set_orientation(ToSimTKVec3(newPofEulers));
         osc::InitializeModel(mutModel);
         osc::InitializeState(mutModel);
 
