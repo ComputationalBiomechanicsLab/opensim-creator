@@ -8,6 +8,8 @@ All notable changes to this project will be documented here. The format is based
   an error to the log instead (thanks @AdrianHendrik, #642)
 - Fixed the manipulation gizmo rotation operation being broken when rotating scene elements (mostly, when rotating
   PhysicalOffsetFrames - thanks @AdrianHendrik, #642)
+- Fixed "step by" popup radian buttons always change the step size to degrees, even when editing a quantity that is
+  expressed in radians (thanks @AdrianHendrik, #643)
 
 
 ## [0.4.0] - 2023/03/06
