@@ -301,15 +301,15 @@ private:
             SimTK::Vec3& location = pp->upd_location();
 
             static_assert(c_LocationInputIDs.size() == 3);
-            for (int i = 0; i < c_LocationInputIDs.size(); ++i)
+            for (int dim = 0; dim < c_LocationInputIDs.size(); ++dim)
             {
-                float v = static_cast<float>(location[i]);
+                float v = static_cast<float>(location[dim]);
 
                 ImGui::TableSetColumnIndex(column++);
                 ImGui::SetNextItemWidth(inputWidth);
-                if (ImGui::InputFloat(c_LocationInputIDs[i].c_str(), &v))
+                if (ImGui::InputFloat(c_LocationInputIDs[dim].c_str(), &v))
                 {
-                    location[i] = static_cast<double>(v);
+                    location[dim] = static_cast<double>(v);
                 }
             }
         }
