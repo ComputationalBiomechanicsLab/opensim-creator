@@ -29,6 +29,16 @@ namespace
 }
 
 osc::ObjectPropertyEdit::ObjectPropertyEdit(
+    OpenSim::AbstractProperty const& prop,
+    std::function<void(OpenSim::AbstractProperty&)> updater) :
+
+    m_ComponentAbsPath{},
+    m_PropertyName{prop.getName()},
+    m_Updater{std::move(updater)}
+{
+}
+
+osc::ObjectPropertyEdit::ObjectPropertyEdit(
     OpenSim::Object const& obj,
     OpenSim::AbstractProperty const& prop,
     std::function<void(OpenSim::AbstractProperty&)> updater) :

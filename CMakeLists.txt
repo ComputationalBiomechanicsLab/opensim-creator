@@ -556,6 +556,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/Widgets/ComponentDetails.hpp
     src/OpenSimBindings/Widgets/EditorTabStatusBar.cpp
     src/OpenSimBindings/Widgets/EditorTabStatusBar.hpp
+    src/OpenSimBindings/Widgets/GeometryPathPropertyEditorPopup.cpp
+    src/OpenSimBindings/Widgets/GeometryPathPropertyEditorPopup.hpp
     src/OpenSimBindings/Widgets/MainMenu.cpp
     src/OpenSimBindings/Widgets/MainMenu.hpp
     src/OpenSimBindings/Widgets/ModelActionsMenuItems.cpp

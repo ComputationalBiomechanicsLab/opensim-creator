@@ -16,7 +16,7 @@ namespace osc
     public:
         ObjectPropertiesEditor(
             EditorAPI*,
-            std::shared_ptr<osc::UndoableModelStatePair const> targetModel,
+            std::shared_ptr<UndoableModelStatePair const> targetModel,
             std::function<OpenSim::Object const*()> objectGetter
         );
         ObjectPropertiesEditor(ObjectPropertiesEditor const&) = delete;

@@ -4,6 +4,8 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Maths/Constants.hpp"
+#include "src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp"
+#include "src/OpenSimBindings/Widgets/GeometryPathPropertyEditorPopup.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/SimTKHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
@@ -24,6 +26,7 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Simulation/Model/Appearance.h>
+#include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <SimTKcommon/Constants.h>
 #include <SimTKcommon/SmallMatrix.h>
@@ -1053,6 +1056,76 @@ namespace
         std::function<property_type const*()> m_Accessor;
         std::optional<osc::ObjectPropertiesEditor> m_MaybeNestedEditor;
     };
+
+    // concrete property editor for an OpenSim::GeometryPath
+    class GeometryPathPropertyEditor final : public VirtualPropertyEditor {
+    public:
+        using property_type = OpenSim::ObjectProperty<OpenSim::GeometryPath>;
+
+        GeometryPathPropertyEditor(
+            osc::EditorAPI* api_,
+            std::shared_ptr<osc::UndoableModelStatePair const> targetModel_,
+            std::function<property_type const*()> accessor_) :
+
+            m_API{api_},
+            m_TargetModel{std::move(targetModel_)},
+            m_Accessor{std::move(accessor_)}
+        {
+        }
+    private:
+        std::type_info const& implGetTypeInfo() const final
+        {
+            return typeid(property_type);
+        }
+
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() final
+        {
+            property_type const* maybeProp = m_Accessor();
+            if (!maybeProp)
+            {
+                return std::nullopt;
+            }
+            property_type const& prop = *maybeProp;
+
+            ImGui::Separator();
+            DrawPropertyName(prop);
+            ImGui::NextColumn();
+            if (ImGui::Button(ICON_FA_EDIT))
+            {
+                m_API->pushPopup(createGeometryPathEditorPopup());
+            }
+            ImGui::NextColumn();
+
+
+            if (*m_ReturnValueHolder)
+            {
+                std::optional<osc::ObjectPropertyEdit> edit;
+                std::swap(*m_ReturnValueHolder, edit);
+                return edit->getUpdater();
+            }
+            else
+            {
+                return std::nullopt;
+            }
+        }
+
+        std::unique_ptr<osc::Popup> createGeometryPathEditorPopup()
+        {
+            return std::make_unique<osc::GeometryPathPropertyEditorPopup>(
+                "Edit Geometry Path",
+                m_TargetModel,
+                m_Accessor,
+                [rvHolder = m_ReturnValueHolder](osc::ObjectPropertyEdit edit) { *rvHolder = std::move(edit); }
+            );
+        }
+
+        osc::EditorAPI* m_API;
+        std::shared_ptr<osc::UndoableModelStatePair const> m_TargetModel;
+        std::function<property_type const*()> m_Accessor;
+
+        // shared between this property editor and a popup it may have spawned
+        std::shared_ptr<std::optional<osc::ObjectPropertyEdit>> m_ReturnValueHolder = std::make_shared<std::optional<osc::ObjectPropertyEdit>>();
+    };
 }
 
 // type-erased registry for all property editors
@@ -1070,6 +1143,7 @@ namespace
             registerEditor<Vec6PropertyEditor>();
             registerEditor<AppearancePropertyEditor>();
             registerEditor<ContactParameterSetEditor>();
+            registerEditor<GeometryPathPropertyEditor>();
         }
 
         std::unique_ptr<VirtualPropertyEditor> tryCreateEditor(
@@ -1168,25 +1242,29 @@ public:
     {
     }
 
-    // draw all property editors for the given object
     std::optional<ObjectPropertyEdit> draw()
     {
         if (OpenSim::Object const* maybeObj = m_ObjectGetter())
         {
-            return draw(*maybeObj);
+            // object accessible: draw property editors
+            return drawPropertyEditors(*maybeObj);
         }
         else
         {
-            return std::nullopt;  // object inaccessible: don't show editors
+            // object inaccessible: draw nothing
+            return std::nullopt;
         }
     }
 private:
 
-    std::optional<ObjectPropertyEdit> draw(OpenSim::Object const& obj)
+    // draws all property editors for the given object
+    std::optional<ObjectPropertyEdit> drawPropertyEditors(
+        OpenSim::Object const& obj)
     {
-        // if necessary, update cached property editors
         if (m_PreviousObject != &obj)
         {
+            // the object has changed since the last draw call, so
+            // reset all property editor state
             m_PropertyEditorsByName.clear();
             m_PreviousObject = &obj;
         }
@@ -1198,38 +1276,76 @@ private:
         for (int i = 0; i < obj.getNumProperties(); ++i)
         {
             ImGui::PushID(i);
-            if (std::optional<ObjectPropertyEdit> maybeEdit = drawPropertyEditor(obj, obj.getPropertyByIndex(i)))
+            std::optional<ObjectPropertyEdit> maybeEdit = tryDrawPropertyEditor(obj, obj.getPropertyByIndex(i));
+            ImGui::PopID();
+
+            if (maybeEdit)
             {
                 rv = std::move(maybeEdit);
             }
-            ImGui::PopID();
         }
         ImGui::Columns();
 
         return rv;
     }
 
-    // draw a single property editor for one property of an object
-    std::optional<ObjectPropertyEdit> drawPropertyEditor(
+    // tries to draw one property editor for one property of an object
+    std::optional<ObjectPropertyEdit> tryDrawPropertyEditor(
         OpenSim::Object const& obj,
         OpenSim::AbstractProperty const& prop)
     {
-        std::optional<ObjectPropertyEdit> rv;
-
-        // #542: ignore properties that begin with `socket_`, because they are
-        // proxy properties to the object's sockets (which should be manipulated
-        // via socket, rather than text, editors)
         if (osc::StartsWith(prop.getName(), "socket_"))
         {
-            return rv;
+            // #542: ignore properties that begin with `socket_`, because
+            // they are proxy properties to the object's sockets and should
+            // be manipulated via socket, rather than property, editors
+            return std::nullopt;
         }
+        else if (VirtualPropertyEditor* maybeEditor = tryGetPropertyEditor(prop))
+        {
+            return drawPropertyEditor(obj, prop, *maybeEditor);
+        }
+        else
+        {
+            drawNonEditablePropertyDetails(prop);
+            return std::nullopt;
+        }
+    }
 
-        // three cases:
-        //
-        // - use existing active property editor
-        // - create a new active property editor
-        // - there's no property editor available for the given type, so show a not-editable string
+    // draws a property editor for the given object+property
+    std::optional<ObjectPropertyEdit> drawPropertyEditor(
+        OpenSim::Object const& obj,
+        OpenSim::AbstractProperty const& prop,
+        VirtualPropertyEditor& editor)
+    {
+        ImGui::PushID(prop.getName().c_str());
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> maybeUpdater = editor.draw();
+        ImGui::PopID();
 
+        if (maybeUpdater)
+        {
+            return ObjectPropertyEdit{obj, prop, std::move(maybeUpdater).value()};
+        }
+        else
+        {
+            return std::nullopt;
+        }
+    }
+
+    // draws a non-editable representation of a property
+    void drawNonEditablePropertyDetails(
+        OpenSim::AbstractProperty const& prop)
+    {
+        ImGui::Separator();
+        DrawPropertyName(prop);
+        ImGui::NextColumn();
+        ImGui::TextUnformatted(prop.toString().c_str());
+        ImGui::NextColumn();
+    }
+
+    // try get/construct a property editor for the given property
+    VirtualPropertyEditor* tryGetPropertyEditor(OpenSim::AbstractProperty const& prop)
+    {
         auto const [it, inserted] = m_PropertyEditorsByName.try_emplace(prop.getName(), nullptr);
         if (inserted || (it->second && !it->second->isCompatibleWith(prop)))
         {
@@ -1241,28 +1357,7 @@ private:
             it->second = GetGlobalPropertyEditorRegistry().tryCreateEditor(m_API, m_TargetModel, accessor);
         }
 
-        if (it->second)
-        {
-            // there is an editor, so draw it etc.
-            ImGui::PushID(prop.getName().c_str());
-            std::optional<std::function<void(OpenSim::AbstractProperty&)>> maybeUpdater = it->second->draw();
-            ImGui::PopID();
-            if (maybeUpdater)
-            {
-                rv.emplace(ObjectPropertyEdit{obj, prop, std::move(maybeUpdater).value()});
-            }
-        }
-        else
-        {
-            // no editor available for this type
-            ImGui::Separator();
-            DrawPropertyName(prop);
-            ImGui::NextColumn();
-            ImGui::TextUnformatted(prop.toString().c_str());
-            ImGui::NextColumn();
-        }
-
-        return rv;
+        return it->second.get();
     }
 
     EditorAPI* m_API;

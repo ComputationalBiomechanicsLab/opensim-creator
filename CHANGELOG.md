@@ -10,6 +10,8 @@ All notable changes to this project will be documented here. The format is based
   PhysicalOffsetFrames - thanks @AdrianHendrik, #642)
 - Fixed "step by" popup radian buttons always change the step size to degrees, even when editing a quantity that is
   expressed in radians (thanks @AdrianHendrik, #643)
+- Added basic support for editing `GeometryPath` properties (i.e. moving/deleting/adding/editing points in paths), so
+  that the GUI supports adding `Ligament`s and `PathSpring`s (#645, #522, #518, #30)
 
 
 ## [0.4.0] - 2023/03/06
