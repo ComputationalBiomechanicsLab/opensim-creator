@@ -324,11 +324,6 @@ namespace
 
             // probably shouldn't allow two grounds in a model (#521)
             "Ground",
-
-            // OpenSim Creator doesn't provide a way of specifying the required GeometryPath (#518)
-            //
-            // (can be un-blacklisted once #522 is implemented)
-            "Blankevoort1991Ligament",
         };
     }
 
