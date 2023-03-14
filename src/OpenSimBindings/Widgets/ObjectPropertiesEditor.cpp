@@ -1123,15 +1123,15 @@ namespace
         template<typename TConcretePropertyEditor>
         static PropertyEditorLUT::value_type MakeRegistryEntry()
         {
-            TypeInfoRef typeInfo = typeid(TConcretePropertyEditor::property_type);
+            TypeInfoRef typeInfo = typeid(typename TConcretePropertyEditor::property_type);
             auto ctor = [](osc::EditorAPI* api, std::shared_ptr<osc::UndoableModelStatePair const> targetModel, std::function<OpenSim::AbstractProperty const*()> genericAccessor)
             {
-                auto downcastedAccessor = [genericAccessor]() -> TConcretePropertyEditor::property_type const*
+                auto downcastedAccessor = [genericAccessor]() -> typename TConcretePropertyEditor::property_type const*
                 {
                     OpenSim::AbstractProperty const* genericProp = genericAccessor();
                     if (genericProp)
                     {
-                        return dynamic_cast<TConcretePropertyEditor::property_type const*>(genericProp);
+                        return dynamic_cast<typename TConcretePropertyEditor::property_type const*>(genericProp);
                     }
                     else
                     {
@@ -1140,7 +1140,7 @@ namespace
                 };
                 return std::make_unique<TConcretePropertyEditor>(api, targetModel, downcastedAccessor);
             };
-            return PropertyEditorLUT::value_type(typeInfo, ctor);
+            return typename PropertyEditorLUT::value_type(typeInfo, ctor);
         }
 
         PropertyEditorLUT m_Lut;
