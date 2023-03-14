@@ -143,7 +143,7 @@ public:
         std::function<OpenSim::ObjectProperty<OpenSim::GeometryPath> const*()> accessor_,
         std::function<void(ObjectPropertyEdit)> onEditCallback_) :
 
-        StandardPopup{popupName_, {0.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize},
+        StandardPopup{popupName_, {768.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize},
         m_TargetModel{std::move(targetModel_)},
         m_Accessor{std::move(accessor_)},
         m_OnEditCallback{std::move(onEditCallback_)},
