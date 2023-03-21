@@ -43,6 +43,7 @@
 #include "src/Utils/Perf.hpp"
 #include "src/Utils/UID.hpp"
 
+#include <ankerl/unordered_dense.h>
 #include <GL/glew.h>
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x4.hpp>
@@ -51,7 +52,6 @@
 #include <glm/vec4.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <nonstd/span.hpp>
-#include <robin_hood.h>
 
 #include <algorithm>
 #include <array>
@@ -306,7 +306,7 @@ namespace
     }
 
     template<typename Key>
-    ShaderElement const* TryGetValue(robin_hood::unordered_map<std::string, ShaderElement> const& m, Key const& k)
+    ShaderElement const* TryGetValue(ankerl::unordered_dense::map<std::string, ShaderElement> const& m, Key const& k)
     {
         auto const it = m.find(k);
         return it != m.end() ? &it->second : nullptr;
@@ -1542,12 +1542,12 @@ public:
         return m_Program;
     }
 
-    robin_hood::unordered_map<std::string, ShaderElement> const& getUniforms() const
+    ankerl::unordered_dense::map<std::string, ShaderElement> const& getUniforms() const
     {
         return m_Uniforms;
     }
 
-    robin_hood::unordered_map<std::string, ShaderElement> const& getAttributes() const
+    ankerl::unordered_dense::map<std::string, ShaderElement> const& getAttributes() const
     {
         return m_Attributes;
     }
@@ -1652,8 +1652,8 @@ private:
 
     UID m_UID;
     gl::Program m_Program;
-    robin_hood::unordered_map<std::string, ShaderElement> m_Uniforms;
-    robin_hood::unordered_map<std::string, ShaderElement> m_Attributes;
+    ankerl::unordered_dense::map<std::string, ShaderElement> m_Uniforms;
+    ankerl::unordered_dense::map<std::string, ShaderElement> m_Attributes;
     std::optional<ShaderElement> m_MaybeModelMatUniform;
     std::optional<ShaderElement> m_MaybeNormalMatUniform;
     std::optional<ShaderElement> m_MaybeViewMatUniform;
@@ -1945,7 +1945,7 @@ private:
     friend class GraphicsBackend;
 
     Shader m_Shader;
-    robin_hood::unordered_map<std::string, MaterialValue> m_Values;
+    ankerl::unordered_dense::map<std::string, MaterialValue> m_Values;
     bool m_IsTransparent = false;
     bool m_IsDepthTested = true;
     bool m_IsWireframeMode = false;
@@ -2263,7 +2263,7 @@ private:
 
     friend class GraphicsBackend;
 
-    robin_hood::unordered_map<std::string, MaterialValue> m_Values;
+    ankerl::unordered_dense::map<std::string, MaterialValue> m_Values;
 };
 
 osc::MaterialPropertyBlock::MaterialPropertyBlock()
@@ -4279,7 +4279,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
 
     Material::Impl& matImpl = const_cast<Material::Impl&>(*els.front().material.m_Impl);
     Shader::Impl& shaderImpl = const_cast<Shader::Impl&>(*matImpl.m_Shader.m_Impl);
-    robin_hood::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
+    ankerl::unordered_dense::map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
     // bind property block variables (if applicable)
     for (auto const& [name, value] : els.front().propBlock.m_Impl->m_Values)
@@ -4426,7 +4426,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
 
     Material::Impl& matImpl = const_cast<Material::Impl&>(*els.front().material.m_Impl);
     Shader::Impl& shaderImpl = const_cast<Shader::Impl&>(*matImpl.m_Shader.m_Impl);
-    robin_hood::unordered_map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
+    ankerl::unordered_dense::map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
     // preemptively upload instance data
     std::optional<InstancingState> maybeInstances = UploadInstanceData(els, shaderImpl);

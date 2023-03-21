@@ -323,11 +323,11 @@ if(TRUE)
     target_include_directories(stb INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb)
 endif()
 
-# DEPENDENCY: robin-hood-hashing
+# DEPENDENCY: unordered_dense
 #     header-only library, used for high-perf associative lookups
 if(TRUE)
-    add_library(robin-hood-hashing INTERFACE)
-    target_include_directories(stb INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/robin-hood-hashing/src/include)
+    add_library(unordered-dense INTERFACE)
+    target_include_directories(unordered-dense INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/unordered_dense/include)
 endif()
 
 # DEPENDENCY: tomlplusplus
@@ -532,6 +532,9 @@ target_link_libraries(osc-all-deps INTERFACE
 
     # GUI asset parsing (image files, sound files, etc.)
     stb
+
+    # high-performance associative lookups
+    unordered-dense
 
     # config file parsing
     tomlplusplus

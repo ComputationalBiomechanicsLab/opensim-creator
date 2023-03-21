@@ -28,6 +28,7 @@ All notable changes to this project will be documented here. The format is based
 - Fixed initial default panel positioning in "Simulate Against All Integrators" (#630)
 - Internal: Test sources were reorganized to match the source tree (#652)
 - Internal: Automated tests that add each component type to a blank model were added (#298)
+- Internal: Switched `robin-hood-hashing` for `ankerl::unordered_dense` (#651)
 
 
 ## [0.4.0] - 2023/03/06
