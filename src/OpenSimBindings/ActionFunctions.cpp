@@ -382,6 +382,13 @@ bool osc::ActionUpdateModelFromBackingFile(UndoableModelStatePair& uim)
     }
 
     std::filesystem::path const path = uim.getFilesystemPath();
+
+    if (!std::filesystem::exists(path))
+    {
+        // the file does not exist? (e.g. because the user deleted it externally - #495)
+        return false;
+    }
+
     std::filesystem::file_time_type const lastSaveTime = std::filesystem::last_write_time(path);
 
     if (uim.getLastFilesystemWriteTime() >= lastSaveTime)
