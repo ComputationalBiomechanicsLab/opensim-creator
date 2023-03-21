@@ -853,6 +853,7 @@ configure_file(
 
 # osctests: main exe that links to `osccore` and exercises APIs etc.
 add_executable(testosc EXCLUDE_FROM_ALL
+    tests/Utils/TestFileChangePoller.cpp
 
     tests/TestAlgorithms.cpp
     tests/TestBVH.cpp
