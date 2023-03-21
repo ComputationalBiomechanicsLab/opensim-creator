@@ -764,8 +764,8 @@ add_library(osccore STATIC
     src/Widgets/LogViewer.cpp
     src/Widgets/LogViewer.hpp
     src/Widgets/Popup.hpp
-    src/Widgets/Popups.cpp
-    src/Widgets/Popups.hpp
+    src/Widgets/PopupManager.cpp
+    src/Widgets/PopupManager.hpp
     src/Widgets/RedoButton.cpp
     src/Widgets/RedoButton.hpp
     src/Widgets/SaveChangesPopupConfig.hpp

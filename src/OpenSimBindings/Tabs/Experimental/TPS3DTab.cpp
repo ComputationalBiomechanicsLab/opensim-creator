@@ -42,7 +42,7 @@
 #include "src/Utils/UID.hpp"
 #include "src/Utils/UndoRedo.hpp"
 #include "src/Widgets/Popup.hpp"
-#include "src/Widgets/Popups.hpp"
+#include "src/Widgets/PopupManager.hpp"
 #include "src/Widgets/RedoButton.hpp"
 #include "src/Widgets/StandardPopup.hpp"
 #include "src/Widgets/UndoButton.hpp"
@@ -741,7 +741,7 @@ namespace
         std::shared_ptr<osc::PanelManager> panelManager = std::make_shared<osc::PanelManager>();
 
         // currently active tab-wide popups
-        osc::Popups activePopups;
+        osc::PopupManager popupManager;
     };
 
     TPSDocument const& GetScratch(TPSTabSharedState const& state)
@@ -1796,7 +1796,7 @@ namespace
                 );
                 overlay->setRect(htResult.rect);
                 overlay->open();
-                m_State->activePopups.push_back(overlay);
+                m_State->popupManager.push_back(overlay);
                 m_MaybeActiveModalOverlay = overlay;
             }
 
@@ -2353,7 +2353,7 @@ public:
         m_StatusBar.draw();
 
         // draw active popups over the UI
-        m_SharedState->activePopups.draw();
+        m_SharedState->popupManager.draw();
     }
 
 private:

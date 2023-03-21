@@ -1,4 +1,4 @@
-#include "Popups.hpp"
+#include "PopupManager.hpp"
 
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Cpp20Shims.hpp"
@@ -6,17 +6,17 @@
 
 #include <cstddef>
 
-osc::Popups::Popups() = default;
-osc::Popups::Popups(Popups&&) noexcept = default;
-osc::Popups& osc::Popups::operator=(Popups&&) noexcept = default;
-osc::Popups::~Popups() noexcept = default;
+osc::PopupManager::PopupManager() = default;
+osc::PopupManager::PopupManager(PopupManager&&) noexcept = default;
+osc::PopupManager& osc::PopupManager::operator=(PopupManager&&) noexcept = default;
+osc::PopupManager::~PopupManager() noexcept = default;
 
-void osc::Popups::push_back(std::shared_ptr<Popup> popup)
+void osc::PopupManager::push_back(std::shared_ptr<Popup> popup)
 {
     m_Popups.push_back(std::move(popup));
 }
 
-void osc::Popups::openAll()
+void osc::PopupManager::openAll()
 {
     for (std::shared_ptr<Popup>& popup : m_Popups)
     {
@@ -24,7 +24,7 @@ void osc::Popups::openAll()
     }
 }
 
-void osc::Popups::draw()
+void osc::PopupManager::draw()
 {
     // begin and (if applicable) draw bottom-to-top in a nested fashion
     ptrdiff_t nOpened = 0;

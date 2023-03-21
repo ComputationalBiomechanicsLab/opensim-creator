@@ -23,6 +23,7 @@ All notable changes to this project will be documented here. The format is based
 - Clicking a `PathSpring`'s path in the 3D viewport now selects the `PathSpring` rather than the underlying
   `GeometryPath` (#650)
 - Internal: Renamed `src/OpenSimBindings/Renderering` to `src/OpenSimBindings/Graphics`
+- Internal: Renamed `osc::Popups` to `osc::PopupManager`
 
 
 ## [0.4.0] - 2023/03/06

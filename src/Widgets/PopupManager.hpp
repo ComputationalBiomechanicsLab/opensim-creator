@@ -8,14 +8,14 @@ namespace osc { class Popup; }
 namespace osc
 {
     // generic storage for a drawable popup stack
-    class Popups final {
+    class PopupManager final {
     public:
-        Popups();
-        Popups(Popups const&) = delete;
-        Popups(Popups&&) noexcept;
-        Popups& operator=(Popups const&) = delete;
-        Popups& operator=(Popups&&) noexcept;
-        ~Popups() noexcept;
+        PopupManager();
+        PopupManager(PopupManager const&) = delete;
+        PopupManager(PopupManager&&) noexcept;
+        PopupManager& operator=(PopupManager const&) = delete;
+        PopupManager& operator=(PopupManager&&) noexcept;
+        ~PopupManager() noexcept;
 
         void push_back(std::shared_ptr<Popup>);
         void openAll();

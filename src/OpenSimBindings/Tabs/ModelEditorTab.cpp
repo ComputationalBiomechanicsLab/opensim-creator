@@ -37,7 +37,7 @@
 #include "src/Utils/Perf.hpp"
 #include "src/Utils/UID.hpp"
 #include "src/Widgets/Popup.hpp"
-#include "src/Widgets/Popups.hpp"
+#include "src/Widgets/PopupManager.hpp"
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -170,7 +170,7 @@ public:
     {
         App::upd().makeMainEventLoopWaiting();
         m_TabName = computeTabName();
-        m_Popups.openAll();
+        m_PopupManager.openAll();
     }
 
     void onUnmount()
@@ -222,7 +222,7 @@ public:
             m_Toolbar.draw();
             m_PanelManager->drawAllActivatedPanels();
             m_StatusBar.draw();
-            m_Popups.draw();
+            m_PopupManager.draw();
 
             m_ExceptionThrownLastFrame = false;
         }
@@ -339,7 +339,7 @@ private:
     void implPushPopup(std::unique_ptr<Popup> popup) final
     {
         popup->open();
-        m_Popups.push_back(std::move(popup));
+        m_PopupManager.push_back(std::move(popup));
     }
 
     void implAddMusclePlot(OpenSim::Coordinate const& coord, OpenSim::Muscle const& muscle) final
@@ -380,7 +380,7 @@ private:
     EditorTabStatusBar m_StatusBar{m_Parent, this, m_Model};
 
     // manager for popups that are open in this tab
-    Popups m_Popups;
+    PopupManager m_PopupManager;
 
     // flag that's set+reset each frame to prevent continual throwing
     bool m_ExceptionThrownLastFrame = false;
