@@ -17,7 +17,7 @@ All notable changes to this project will be documented here. The format is based
   creating a bare-minimum geometry path, #518)
 - Fixed any active popups/modals closing when changing between tabs in the main UI (#448)
 - Fixed deleting a backing `osim` file while editing it via the model editor no longer causes the editor tab to close
-  with a "file not found" error message (#495)
+  with a "file not found" error message (thanks @JuliaVanBeesel, #495)
 
 
 ## [0.4.0] - 2023/03/06
