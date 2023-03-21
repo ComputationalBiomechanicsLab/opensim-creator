@@ -38,11 +38,6 @@ set(
     "enable address sanitizer (libASAN): useful for spotting memory access violations and leaks"
 )
 set(
-    OSC_DEFAULT_USE_MULTI_VIEWPORT OFF
-    CACHE BOOL
-    "enable/disable osc using multi viewport when not explicitly specified a the user/config"
-)
-set(
     OSC_DEFAULT_RESOURCE_DIR "../resources"
     CACHE STRING
     "default location of runtime resources dir when not specified by user/config"
@@ -105,16 +100,6 @@ else()
     string(RANDOM RANDOM_ID)
     set(OSC_BUILD_ID "CUSTOM_${RANDOM_ID}" CACHE STRING "build ID")
     unset(RANDOM_ID)
-endif()
-
-# set OSC_DEFAULT_USE_MULTI_VIEWPORT_CBOOL
-#
-# this is a C-like boolean that tells OSC whether to use a multi-viewport
-# mode
-if(${OSC_DEFAULT_USE_MULTI_VIEWPORT})
-    set(OSC_DEFAULT_USE_MULTI_VIEWPORT_CBOOL "true")
-else()
-    set(OSC_DEFAULT_USE_MULTI_VIEWPORT_CBOOL "false")
 endif()
 
 # set CMAKE_CXX_INCLUDE_WHAT_YOU_USE

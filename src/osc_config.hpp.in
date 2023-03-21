@@ -35,15 +35,6 @@
 // the binary, which is handy for user bug reports, etc.
 #define OSC_BUILD_ID "@OSC_BUILD_ID@"
 
-// bool
-//
-// force-enables multi viewport support (e.g. the ability to drag panels
-// out of the main window) when not specified by user/config
-//
-// multi-viewport is only really decent in Windows. Tends to be hit-or-miss
-// on Linux/Mac because they have different desktop compositors.
-#define OSC_DEFAULT_USE_MULTI_VIEWPORT @OSC_DEFAULT_USE_MULTI_VIEWPORT_CBOOL@
-
 // char[]
 //
 // default location of OSC's runtime resources dir when it is not externally

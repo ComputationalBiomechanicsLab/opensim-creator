@@ -164,7 +164,6 @@ std::unique_ptr<osc::Config> osc::Config::load()
 
     // set defaults (in case underlying file can't be found)
     rv->resourceDir = OSC_DEFAULT_RESOURCE_DIR;
-    rv->useMultiViewport = OSC_DEFAULT_USE_MULTI_VIEWPORT;
 
     TryUpdateConfigFromConfigFile(*rv);
 

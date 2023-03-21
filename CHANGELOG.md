@@ -24,6 +24,7 @@ All notable changes to this project will be documented here. The format is based
   `GeometryPath` (#650)
 - Internal: Renamed `src/OpenSimBindings/Renderering` to `src/OpenSimBindings/Graphics`
 - Internal: Renamed `osc::Popups` to `osc::PopupManager`
+- Removed OSC_DEFAULT_USE_MULTI_VIEWPORT as a build option (it is available as a runtime config option, #444)
 
 
 ## [0.4.0] - 2023/03/06
