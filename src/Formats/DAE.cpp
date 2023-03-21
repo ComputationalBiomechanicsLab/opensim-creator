@@ -15,6 +15,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <ctime>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -206,7 +207,8 @@ namespace
 
     void WriteTopLevelAssetBlock(std::ostream& o, osc::DAEMetadata const& metadata)
     {
-        auto t = std::chrono::system_clock::now();
+        std::time_t const t =
+            std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
         o << fmt::format(
 R"(  <asset>
@@ -214,8 +216,8 @@ R"(  <asset>
       <author>{}</author>
       <authoring_tool>{}</authoring_tool>
     </contributor>
-    <created>{}</created>
-    <modified>{}</modified>
+    <created>{:%Y-%m-%d %H:%M:%S}</created>
+    <modified>{:%Y-%m-%d %H:%M:%S}</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Y_UP</up_axis>
   </asset>)",
