@@ -73,6 +73,11 @@ public:
 
     void onDraw()
     {
+        ImGui::DockSpaceOverViewport(
+            ImGui::GetMainViewport(),
+            ImGuiDockNodeFlags_PassthruCentralNode
+        );
+
         ImGui::Begin("Inputs");
 
         ImGui::InputInt("parallelism", &m_Parallelism);
