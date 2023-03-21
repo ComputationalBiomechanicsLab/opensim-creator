@@ -21,7 +21,7 @@
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Segment.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
-#include "src/OpenSimBindings/Rendering/SimTKMeshLoader.hpp"
+#include "src/OpenSimBindings/Graphics/SimTKMeshLoader.hpp"
 #include "src/OpenSimBindings/TPS3D.hpp"
 #include "src/OpenSimBindings/Widgets/MainMenu.hpp"
 #include "src/Panels/LogViewerPanel.hpp"

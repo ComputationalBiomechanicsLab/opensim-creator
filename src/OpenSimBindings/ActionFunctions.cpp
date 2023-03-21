@@ -1,9 +1,9 @@
 #include "ActionFunctions.hpp"
 
 #include "src/Graphics/MeshCache.hpp"
+#include "src/OpenSimBindings/Graphics/CustomDecorationOptions.hpp"
+#include "src/OpenSimBindings/Graphics/OpenSimDecorationGenerator.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
-#include "src/OpenSimBindings/Rendering/CustomDecorationOptions.hpp"
-#include "src/OpenSimBindings/Rendering/OpenSimDecorationGenerator.hpp"
 #include "src/OpenSimBindings/Tabs/ModelEditorTab.hpp"
 #include "src/OpenSimBindings/Tabs/LoadingTab.hpp"
 #include "src/OpenSimBindings/Tabs/SimulatorTab.hpp"

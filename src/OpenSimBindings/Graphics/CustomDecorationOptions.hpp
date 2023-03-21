@@ -1,8 +1,8 @@
 #pragma once
 
-#include "src/OpenSimBindings/Rendering/MuscleColoringStyle.hpp"
-#include "src/OpenSimBindings/Rendering/MuscleDecorationStyle.hpp"
-#include "src/OpenSimBindings/Rendering/MuscleSizingStyle.hpp"
+#include "src/OpenSimBindings/Graphics/MuscleColoringStyle.hpp"
+#include "src/OpenSimBindings/Graphics/MuscleDecorationStyle.hpp"
+#include "src/OpenSimBindings/Graphics/MuscleSizingStyle.hpp"
 #include "src/Utils/CStringView.hpp"
 
 #include <cstdint>

@@ -25,7 +25,7 @@
 #include "src/Maths/Transform.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
-#include "src/OpenSimBindings/Rendering/SimTKMeshLoader.hpp"
+#include "src/OpenSimBindings/Graphics/SimTKMeshLoader.hpp"
 #include "src/OpenSimBindings/Tabs/ModelEditorTab.hpp"
 #include "src/OpenSimBindings/Widgets/MainMenu.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"

@@ -7,7 +7,7 @@
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/Shader.hpp"
 #include "src/Maths/Transform.hpp"
-#include "src/OpenSimBindings/Rendering/SimTKMeshLoader.hpp"
+#include "src/OpenSimBindings/Graphics/SimTKMeshLoader.hpp"
 #include "src/Platform/App.hpp"
 
 #include <glm/mat4x4.hpp>

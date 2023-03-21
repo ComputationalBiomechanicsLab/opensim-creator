@@ -6,7 +6,7 @@
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Segment.hpp"
 #include "src/Maths/Triangle.hpp"
-#include "src/OpenSimBindings/Rendering/SimTKMeshLoader.hpp"
+#include "src/OpenSimBindings/Graphics/SimTKMeshLoader.hpp"
 #include "src/OpenSimBindings/SimTKHelpers.hpp"
 #include "src/Platform/Log.hpp"
 

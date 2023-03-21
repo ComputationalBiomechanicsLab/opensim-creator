@@ -1,8 +1,8 @@
 #pragma once
 
 #include "src/Maths/PolarPerspectiveCamera.hpp"
-#include "src/OpenSimBindings/Rendering/CustomDecorationOptions.hpp"
-#include "src/OpenSimBindings/Rendering/CustomRenderingOptions.hpp"
+#include "src/OpenSimBindings/Graphics/CustomDecorationOptions.hpp"
+#include "src/OpenSimBindings/Graphics/CustomRenderingOptions.hpp"
 
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
