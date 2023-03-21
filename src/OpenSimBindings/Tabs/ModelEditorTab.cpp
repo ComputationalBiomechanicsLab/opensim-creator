@@ -170,6 +170,7 @@ public:
     {
         App::upd().makeMainEventLoopWaiting();
         m_TabName = computeTabName();
+        m_Popups.openAll();
     }
 
     void onUnmount()

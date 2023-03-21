@@ -18,6 +18,7 @@ namespace osc
         ~Popups() noexcept;
 
         void push_back(std::shared_ptr<Popup>);
+        void openAll();
         void draw();
     private:
         std::vector<std::shared_ptr<Popup>> m_Popups;

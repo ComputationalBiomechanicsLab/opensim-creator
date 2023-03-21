@@ -16,6 +16,14 @@ void osc::Popups::push_back(std::shared_ptr<Popup> popup)
     m_Popups.push_back(std::move(popup));
 }
 
+void osc::Popups::openAll()
+{
+    for (std::shared_ptr<Popup>& popup : m_Popups)
+    {
+        popup->open();
+    }
+}
+
 void osc::Popups::draw()
 {
     // begin and (if applicable) draw bottom-to-top in a nested fashion
