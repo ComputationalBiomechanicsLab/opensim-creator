@@ -18,6 +18,8 @@ All notable changes to this project will be documented here. The format is based
 - Fixed any active popups/modals closing when changing between tabs in the main UI (#448)
 - Fixed deleting a backing `osim` file while editing it via the model editor no longer causes the editor tab to close
   with a "file not found" error message (thanks @JuliaVanBeesel, #495)
+- Fixed path points for non-muscular components that use `GeometryPath` (e.g. `PathSpring`) are now
+  clickable in the 3D viewport (#647)
 
 
 ## [0.4.0] - 2023/03/06

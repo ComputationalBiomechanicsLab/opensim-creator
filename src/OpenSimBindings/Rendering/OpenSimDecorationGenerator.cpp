@@ -44,6 +44,8 @@
 #include <utility>
 #include <vector>
 
+inline static constexpr float c_GeometryPathBaseRadius = 0.005f;
+
 namespace
 {
     // helper: convert a physical frame's transform to ground into an osc::Transform
@@ -78,6 +80,31 @@ namespace
         }
     }
 
+    glm::vec4 GetGeometryPathDefaultColor(OpenSim::GeometryPath const& gp)
+    {
+        SimTK::Vec3 const c = gp.getDefaultColor();
+        return glm::vec4{osc::ToVec3(c), 1.0f};
+    }
+
+    glm::vec4 GetGeometryPathColor(OpenSim::GeometryPath const& gp, SimTK::State const& st)
+    {
+        // returns the same color that OpenSim emits (which is usually just activation-based,
+        // but might change in future versions of OpenSim)
+        SimTK::Vec3 const c = gp.getColor(st);
+        return glm::vec4{osc::ToVec3(c), 1.0f};
+    }
+
+    glm::vec4 CalcOSCMuscleColor(
+        OpenSim::Muscle const& musc,
+        SimTK::State const& st,
+        osc::MuscleColoringStyle s)
+    {
+        glm::vec4 const zeroColor = {50.0f / 255.0f, 50.0f / 255.0f, 166.0f / 255.0f, 1.0f};
+        glm::vec4 const fullColor = {255.0f / 255.0f, 25.0f / 255.0f, 25.0f / 255.0f, 1.0f};
+        float const factor = GetMuscleColorFactor(musc, st, s);
+        return zeroColor + factor * (fullColor - zeroColor);
+    }
+
     // helper: returns the color a muscle should have, based on a variety of options (style, user-defined stuff in OpenSim, etc.)
     //
     // this is just a rough estimation of how SCONE is coloring things
@@ -86,25 +113,14 @@ namespace
         SimTK::State const& st,
         osc::MuscleColoringStyle s)
     {
-        if (s == osc::MuscleColoringStyle::OpenSimAppearanceProperty)
+        switch (s)
         {
-            SimTK::Vec3 c = musc.getGeometryPath().getDefaultColor();
-            return glm::vec4{osc::ToVec3(c), 1.0f};
-        }
-        else if (s == osc::MuscleColoringStyle::OpenSim)
-        {
-            // use the same color that OpenSim emits (which is usually just activation-based, but might
-            // change in the future)
-            SimTK::Vec3 c = musc.getGeometryPath().getColor(st);
-            return glm::vec4{osc::ToVec3(c), 1.0f};
-        }
-        else
-        {
-            // compute the color from the chosen color option
-            glm::vec4 const zeroColor = {50.0f/255.0f, 50.0f/255.0f, 166.0f/255.0f, 1.0f};
-            glm::vec4 const fullColor = {255.0f/255.0f, 25.0f/255.0f, 25.0f/255.0f, 1.0f};
-            float const factor = GetMuscleColorFactor(musc, st, s);
-            return zeroColor + factor * (fullColor - zeroColor);
+        case osc::MuscleColoringStyle::OpenSimAppearanceProperty:
+            return GetGeometryPathDefaultColor(musc.getGeometryPath());
+        case osc::MuscleColoringStyle::OpenSim:
+            return GetGeometryPathColor(musc.getGeometryPath(), st);
+        default:
+            return CalcOSCMuscleColor(musc, st, s);
         }
     }
 
@@ -131,7 +147,7 @@ namespace
             return GetSconeStyleAutomaticMuscleRadiusCalc(musc) * fixupScaleFactor;
         case osc::MuscleSizingStyle::OpenSim:
         default:
-            return 0.005f * fixupScaleFactor;
+            return c_GeometryPathBaseRadius * fixupScaleFactor;
         }
     }
 }
@@ -294,7 +310,7 @@ namespace
         glm::vec3 const p1 = TransformInGround(p2p.getBody1(), rs.getState()) * osc::ToVec3(p2p.getPoint1());
         glm::vec3 const p2 = TransformInGround(p2p.getBody2(), rs.getState()) * osc::ToVec3(p2p.getPoint2());
 
-        float const radius = 0.005f * rs.getFixupScaleFactor();
+        float const radius = c_GeometryPathBaseRadius * rs.getFixupScaleFactor();
         osc::Transform const cylinderXform = osc::SimbodyCylinderToSegmentTransform({p1, p2}, radius);
 
         rs.consume(p2p, osc::SceneDecoration
@@ -569,6 +585,93 @@ namespace
         }
     }
 
+    // helper method: emits points (if required) and cylinders for a simple (no tendons)
+    // point-based line (e.g. muscle or geometry path)
+    void EmitPointBasedLine(
+        RendererState& rs,
+        OpenSim::Component const& hittestTarget,
+        nonstd::span<osc::GeometryPathPoint const> points,
+        float radius,
+        glm::vec4 const& color)
+    {
+        if (points.empty())
+        {
+            // edge-case: there's no points to emit
+            return;
+        }
+
+        // helper function: emits a sphere decoration
+        auto const emitSphere = [&rs, &hittestTarget, radius, color](
+            osc::GeometryPathPoint const& pp,
+            glm::vec3 const& upDirection)
+        {
+            // ensure that user-defined path points are independently selectable (#425)
+            OpenSim::Component const& c = pp.maybeUnderlyingUserPathPoint ?
+                *pp.maybeUnderlyingUserPathPoint :
+                hittestTarget;
+
+            // ensure the sphere directionally tries to line up with the cylinders, to make
+            // the "join" between the sphere and cylinders nicer (#593)
+            osc::Transform t;
+            t.scale *= radius;
+            t.rotation = glm::normalize(glm::rotation(glm::vec3{0.0f, 1.0f, 0.0f}, upDirection));
+            t.position = pp.locationInGround;
+
+            rs.consume(c, osc::SceneDecoration
+            {
+                rs.getSphereMesh(),
+                t,
+                color,
+            });
+        };
+
+        // helper function: emits a cylinder decoration between two points
+        auto const emitCylinder = [&rs, &hittestTarget, radius, color](
+            glm::vec3 const& p1,
+            glm::vec3 const& p2)
+        {
+            osc::Transform const cylinderXform =
+                osc::SimbodyCylinderToSegmentTransform({p1, p2}, radius);
+
+            rs.consume(hittestTarget, osc::SceneDecoration
+            {
+                rs.getCylinderMesh(),
+                cylinderXform,
+                color,
+            });
+        };
+
+        // if required, draw first path point
+        if (rs.getShowPathPoints())
+        {
+            osc::GeometryPathPoint const& firstPoint = points.front();
+            glm::vec3 const& ppPos = firstPoint.locationInGround;
+            glm::vec3 const direction = points.size() == 1 ?
+                glm::vec3{0.0f, 1.0f, 0.0f} :
+                glm::normalize(points[1].locationInGround - ppPos);
+
+            emitSphere(firstPoint, direction);
+        }
+
+        // draw remaining cylinders and (if required) muscle path points
+        for (size_t i = 1; i < points.size(); ++i)
+        {
+            osc::GeometryPathPoint const& point = points[i];
+
+            glm::vec3 const& prevPos = points[i - 1].locationInGround;
+            glm::vec3 const& curPos = point.locationInGround;
+
+            emitCylinder(prevPos, curPos);
+
+            // if required, draw path points
+            if (rs.getShowPathPoints())
+            {
+                glm::vec3 const direction = glm::normalize(curPos - prevPos);
+                emitSphere(point, direction);
+            }
+        }
+    }
+
     // OSC-specific decoration handler for "OpenSim-style" (line of action) decoration for an `OpenSim::Muscle`
     //
     // the reason this is used, rather than OpenSim's implementation, is because this custom implementation
@@ -577,90 +680,40 @@ namespace
         RendererState& rs,
         OpenSim::Muscle const& musc)
     {
-        std::vector<osc::GeometryPathPoint> const pps = osc::GetAllPathPoints(musc.getGeometryPath(), rs.getState());
+        std::vector<osc::GeometryPathPoint> const points =
+            osc::GetAllPathPoints(musc.getGeometryPath(), rs.getState());
 
-        if (pps.empty())
-        {
-            return;  // edge case: there are no points in the path
-        }
-
-        float const fiberUiRadius = GetMuscleSize(
+        float const radius = GetMuscleSize(
             musc,
             rs.getFixupScaleFactor(),
             rs.getOptions().getMuscleSizingStyle()
         );
 
-        glm::vec4 const fiberColor = GetMuscleColor(
+        glm::vec4 const color = GetMuscleColor(
             musc,
             rs.getState(),
             rs.getOptions().getMuscleColoringStyle()
         );
 
-        // helper function: emits a sphere decoration
-        auto const emitSphere = [&rs, &musc, fiberUiRadius, fiberColor](osc::GeometryPathPoint const& pp, glm::vec3 const& upDirection)
-        {
-            // ensure that user-defined path points are independently selectable (#425)
-            OpenSim::Component const& c = pp.maybeUnderlyingUserPathPoint ?
-                *pp.maybeUnderlyingUserPathPoint :
-                static_cast<OpenSim::Component const&>(musc);
+        EmitPointBasedLine(rs, musc, points, radius, color);
+    }
 
-            // ensure the sphere directionally tries to line up with the cylinders, to make
-            // the "join" between the sphere and cylinders nicer (#593)
-            osc::Transform t;
-            t.scale *= fiberUiRadius;
-            t.rotation = glm::normalize(glm::rotation(glm::vec3{0.0f, 1.0f, 0.0f}, upDirection));
-            t.position = pp.locationInGround;
+    // custom implementation of `OpenSim::GeometryPath::generateDecorations` that also
+    // handles tagging
+    void HandleGenericGeometryPath(
+        RendererState& rs,
+        OpenSim::GeometryPath const& gp,
+        OpenSim::Component const& hittestTarget)
+    {
+        // this specialized `OpenSim::GeometryPath` handler is used, rather than
+        // `emitGenericDecorations`, because the custom implementation also coerces
+        // selection hits to enable users to click on individual path points within
+        // a path (#647)
 
-            rs.consume(c, osc::SceneDecoration
-            {
-                rs.getSphereMesh(),
-                t,
-                fiberColor,
-            });
-        };
+        std::vector<osc::GeometryPathPoint> const points = osc::GetAllPathPoints(gp, rs.getState());
+        glm::vec4 const color = GetGeometryPathColor(gp, rs.getState());
 
-        // helper function: emits a cylinder decoration
-        auto const emitCylinder = [&rs, &musc, fiberUiRadius, fiberColor](glm::vec3 const& p1, glm::vec3 const& p2)
-        {
-            osc::Transform const cylinderXform = osc::SimbodyCylinderToSegmentTransform({p1, p2}, fiberUiRadius);
-
-            rs.consume(musc, osc::SceneDecoration
-            {
-                rs.getCylinderMesh(),
-                cylinderXform,
-                fiberColor,
-            });
-        };
-
-        // if required, draw first muscle path point
-        if (rs.getShowPathPoints())
-        {
-            osc::GeometryPathPoint const& pp = pps.front();
-            glm::vec3 const& ppPos = pp.locationInGround;
-            glm::vec3 const direction =
-                pps.size() == 1 ?
-                glm::vec3{0.0f, 1.0f, 0.0f} :
-                glm::normalize(pps[1].locationInGround - ppPos);
-
-            emitSphere(pp, direction);
-        }
-
-        // draw remaining cylinders and (if required) muscle path points
-        for (size_t i = 1; i < pps.size(); ++i)
-        {
-            osc::GeometryPathPoint const& pp = pps[i];
-
-            glm::vec3 const& prevPos = pps[i - 1].locationInGround;
-            glm::vec3 const& curPos = pp.locationInGround;
-
-            emitCylinder(prevPos, curPos);
-
-            if (rs.getShowPathPoints())
-            {
-                glm::vec3 const direction = glm::normalize(curPos - prevPos);
-                emitSphere(pp, direction);
-            }
-        }
+        EmitPointBasedLine(rs, hittestTarget, points, c_GeometryPathBaseRadius, color);
     }
 
     void DrawLineOfActionArrow(
@@ -744,7 +797,7 @@ namespace
         if (!gp.hasOwner())
         {
             // it's a standalone path that's not part of a muscle
-            rs.emitGenericDecorations(gp, gp);
+            HandleGenericGeometryPath(rs, gp, gp);
             return;
         }
 
@@ -771,13 +824,13 @@ namespace
         else if (auto const* pa = dynamic_cast<OpenSim::PathActuator const*>(&gp.getOwner()); pa)
         {
             // owner is a path actuator, coerce selection "hit" to the path actuator (#519)
-            rs.emitGenericDecorations(gp, *pa);
+            HandleGenericGeometryPath(rs, gp, *pa);
             return;
         }
         else
         {
             // it's a path in some non-muscular context
-            rs.emitGenericDecorations(gp, gp);
+            HandleGenericGeometryPath(rs, gp, gp);
             return;
         }
     }
