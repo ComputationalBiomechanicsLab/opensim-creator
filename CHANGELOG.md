@@ -27,6 +27,7 @@ All notable changes to this project will be documented here. The format is based
 - Removed OSC_DEFAULT_USE_MULTI_VIEWPORT as a build option (it is available as a runtime config option, #444)
 - Fixed initial default panel positioning in "Simulate Against All Integrators" (#630)
 - Internal: Test sources were reorganized to match the source tree (#652)
+- Internal: Automated tests that add each component type to a blank model were added (#298)
 
 
 ## [0.4.0] - 2023/03/06
