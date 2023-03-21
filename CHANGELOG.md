@@ -20,6 +20,8 @@ All notable changes to this project will be documented here. The format is based
   with a "file not found" error message (thanks @JuliaVanBeesel, #495)
 - Fixed path points for non-muscular components that use `GeometryPath` (e.g. `PathSpring`) are now
   clickable in the 3D viewport (#647)
+- Clicking a `PathSpring`'s path in the 3D viewport now selects the `PathSpring` rather than the underlying
+  `GeometryPath` (#650)
 
 
 ## [0.4.0] - 2023/03/06

@@ -27,6 +27,7 @@
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/Model/PathSpring.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
 #include <OpenSim/Simulation/Model/Station.h>
@@ -825,6 +826,12 @@ namespace
         {
             // owner is a path actuator, coerce selection "hit" to the path actuator (#519)
             HandleGenericGeometryPath(rs, gp, *pa);
+            return;
+        }
+        else if (auto const* pathSpring = dynamic_cast<OpenSim::PathSpring const*>(&gp.getOwner()); pathSpring)
+        {
+            // owner is a path spring, coerce selection "hit" to the path spring (#650)
+            HandleGenericGeometryPath(rs, gp, *pathSpring);
             return;
         }
         else
