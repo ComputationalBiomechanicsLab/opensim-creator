@@ -22,7 +22,7 @@
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
-#include <imgui/backends/imgui_impl_sdl.h>
+#include <imgui/backends/imgui_impl_sdl2.h>
 #include <SDL.h>
 #include <SDL_error.h>
 #include <SDL_keyboard.h>

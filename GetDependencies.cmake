@@ -264,7 +264,7 @@ if(TRUE)
         third_party/imgui/imgui_tables.cpp
         third_party/imgui/imgui_demo.cpp  # useful for osc devs to see what widgets are available
         third_party/imgui/backends/imgui_impl_opengl3.cpp
-        third_party/imgui/backends/imgui_impl_sdl.cpp
+        third_party/imgui/backends/imgui_impl_sdl2.cpp
     )
     target_link_libraries(imgui PUBLIC sdl2 glew glm)
     target_include_directories(imgui PUBLIC third_party/ third_party/imgui/)
