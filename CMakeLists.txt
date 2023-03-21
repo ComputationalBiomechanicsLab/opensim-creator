@@ -839,19 +839,20 @@ configure_file(
 
 # osctests: main exe that links to `osccore` and exercises APIs etc.
 add_executable(testosc EXCLUDE_FROM_ALL
-    tests/Utils/TestFileChangePoller.cpp
 
-    tests/TestAlgorithms.cpp
-    tests/TestBVH.cpp
-    tests/TestCSV.cpp
-    tests/TestForwardDynamicSimulation.cpp
-    tests/TestImage.cpp
-    tests/TestOpenSim.cpp
-    tests/TestOpenSimActions.cpp
-    tests/TestOpenSimHelpers.cpp
-    tests/TestOsc.cpp
-    tests/TestRenderer.cpp
-    tests/TestTypeRegistry.cpp
+    tests/Formats/TestCSV.cpp
+    tests/Graphics/TestImage.cpp
+    tests/Graphics/TestRenderer.cpp
+    tests/Maths/TestBVH.cpp
+    tests/OpenSimBindings/TestForwardDynamicSimulation.cpp
+    tests/OpenSimBindings/TestOpenSim.cpp
+    tests/OpenSimBindings/TestOpenSimActions.cpp
+    tests/OpenSimBindings/TestOpenSimHelpers.cpp
+    tests/OpenSimBindings/TestTypeRegistry.cpp
+    tests/Utils/TestFileChangePoller.cpp
+    tests/Utils/TestAlgorithms.cpp
+
+    tests/testosc.cpp  # entrypoint (main)
 )
 
 # osctests: target properties
@@ -932,8 +933,7 @@ endif()
 #     executable frontend to the `osccore` library
 add_executable(osc
 
-    # the CLI frontend
-    src/osc.cpp
+    src/osc.cpp  # entrypoint (main)
 
     # Windows: also link a resources file (rc)
     #
