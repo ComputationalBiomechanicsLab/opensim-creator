@@ -1769,12 +1769,12 @@ public:
 
     std::optional<nonstd::span<float const>> getFloatArray(std::string_view propertyName) const
     {
-        return getValue<std::vector<float>>(std::move(propertyName));
+        return getValue<std::vector<float>, nonstd::span<float const>>(std::move(propertyName));
     }
 
     void setFloatArray(std::string_view propertyName, nonstd::span<float const> v)
     {
-        setValue(std::move(propertyName), std::vector<float>(v.begin(), v.end()));
+        setValue<std::vector<float>>(std::move(propertyName), std::vector<float>(v.begin(), v.end()));
     }
 
     std::optional<glm::vec2> getVec2(std::string_view propertyName) const
@@ -1799,7 +1799,7 @@ public:
 
     std::optional<nonstd::span<glm::vec3 const>> getVec3Array(std::string_view propertyName) const
     {
-        return getValue<std::vector<glm::vec3>>(std::move(propertyName));
+        return getValue<std::vector<glm::vec3>, nonstd::span<glm::vec3 const>>(std::move(propertyName));
     }
 
     void setVec3Array(std::string_view propertyName, nonstd::span<glm::vec3 const> value)
@@ -1918,8 +1918,8 @@ public:
     }
 
 private:
-    template<typename T>
-    std::optional<T> getValue(std::string_view propertyName) const
+    template<typename T, typename TConverted = T>
+    std::optional<TConverted> getValue(std::string_view propertyName) const
     {
         auto const it = m_Values.find(std::string{std::move(propertyName)});
 
@@ -1933,7 +1933,7 @@ private:
             return std::nullopt;
         }
 
-        return std::get<T>(it->second);
+        return TConverted{std::get<T>(it->second)};
     }
 
     template<typename T>

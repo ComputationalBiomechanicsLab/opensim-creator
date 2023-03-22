@@ -30,6 +30,7 @@ All notable changes to this project will be documented here. The format is based
 - Internal: Automated tests that add each component type to a blank model were added (#298)
 - Internal: Switched `robin-hood-hashing` for `ankerl::unordered_dense` (#651)
 - Internal: Benchmark sources were reorganized to match the source tree (#653)
+- Internal: Fixed osc::Material::getFloat/Vec3Array returning undefined memory (unused in user-facing code, #656)
 
 
 ## [0.4.0] - 2023/03/06
