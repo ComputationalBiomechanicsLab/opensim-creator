@@ -228,14 +228,21 @@ TEST(ControllerRegistry, CanAddAnyControllerWithoutASegfault)
         // default-construct the controller
         std::unique_ptr<OpenSim::Controller> controller{prototype->clone()};
 
-		// add it to the model
-		model.addController(controller.release());
+        // add it to the model
+        model.addController(controller.release());
 
         // initialize the model+system+state
-		//
-		// (doesn't seem to throw for any controller I've tested up to now)
-        model.finalizeFromProperties();
-        model.buildSystem();
+        try
+        {
+            model.finalizeFromProperties();
+            model.buildSystem();
+        }
+        catch (std::exception const&)
+        {
+            // ok: it might throw because the controller might need more information
+            //
+            // (but it definitely shouldn't segfault etc. - the error should be recoverable)
+        }
     }
 }
 
