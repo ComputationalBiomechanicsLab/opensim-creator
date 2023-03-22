@@ -1,7 +1,7 @@
-#include "src/OpenSimBindings/Rendering/OpenSimRenderer.hpp"
+#include "src/OpenSimBindings/Graphics/OpenSimDecorationGenerator.hpp"
 
 #include "src/Graphics/MeshCache.hpp"
-#include "src/OpenSimBindings/Rendering/CustomDecorationOptions.hpp"
+#include "src/OpenSimBindings/Graphics/CustomDecorationOptions.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/Platform/Config.hpp"
 

@@ -897,8 +897,8 @@ endif()
 if(${OSC_BUILD_BENCHMARKS})
     # benchosc: main exe that links to `osccore` and benches parts of the APIs
     add_executable(benchosc EXCLUDE_FROM_ALL
-
-        benches/BenchOpenSimHelpers.cpp
+        benches/OpenSimBindings/BenchOpenSimHelpers.cpp
+        benches/OpenSimBindings/BenchOpenSimRenderer.cpp
     )
 
     set_target_properties(benchosc PROPERTIES
