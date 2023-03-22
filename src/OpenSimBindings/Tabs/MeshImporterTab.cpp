@@ -3452,7 +3452,7 @@ namespace
         OpenSim::PhysicalOffsetFrame* childPtr = childPOF.get();
         jointUniqPtr->addFrame(parentPOF.release());  // care: ownership change happens here (#642)
         jointUniqPtr->addFrame(childPOF.release());  // care: ownership change happens here (#642)
-        jointUniqPtr->connectSocket_parent_frame(*parentPOF);
+        jointUniqPtr->connectSocket_parent_frame(*parentPtr);
         jointUniqPtr->connectSocket_child_frame(*childPtr);
 
         // if a child body was created during this step (e.g. because it's not a cyclic connection)
