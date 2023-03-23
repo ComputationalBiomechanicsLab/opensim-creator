@@ -55,81 +55,43 @@ static constexpr char const g_VertexShaderSrc[] =
 R"(
     #version 330 core
 
-    // gouraud_shader:
-    //
-    // performs lighting calculations per vertex (Gouraud shading), rather
-    // than per frag ((Blinn-)Phong shading)
-
-    uniform mat4 uProjMat;
-    uniform mat4 uViewMat;
+    uniform mat4 uViewProjMat;
+    uniform mat4 uLightSpaceMat;
     uniform vec3 uLightDir;
-    uniform vec3 uLightColor;
     uniform vec3 uViewPos;
+    uniform float uDiffuseStrength = 0.85f;
+    uniform float uSpecularStrength = 0.4f;
+    uniform float uShininess = 8;
 
     layout (location = 0) in vec3 aPos;
-    layout (location = 1) in vec2 aTexCoord;
     layout (location = 2) in vec3 aNormal;
-
-    layout (location = 6) in mat4x3 aModelMat;
+    layout (location = 6) in mat4 aModelMat;
     layout (location = 10) in mat3 aNormalMat;
-    layout (location = 13) in vec4 aRgba0;
-    layout (location = 14) in float aRimIntensity;
 
-    out vec4 GouraudBrightness;
-    out vec4 Rgba0;
-    out float RimIntensity;
-    out vec2 TexCoord;
-
-    const float ambientStrength = 0.7f;
-    const float diffuseStrength = 0.3f;
-    const float specularStrength = 0.1f;
-    const float shininess = 32;
+    out vec3 FragWorldPos;
+    out vec4 FragLightSpacePos;
+    out vec3 NormalWorldDir;
+    out float NonAmbientBrightness;
 
     void main()
     {
-        mat4 modelMat = mat4(vec4(aModelMat[0], 0), vec4(aModelMat[1], 0), vec4(aModelMat[2], 0), vec4(aModelMat[3], 1));
-
-        gl_Position = uProjMat * uViewMat * modelMat * vec4(aPos, 1.0);
-
         vec3 normalDir = normalize(aNormalMat * aNormal);
-        vec3 fragPos = vec3(modelMat * vec4(aPos, 1.0));
+        vec3 fragPos = vec3(aModelMat * vec4(aPos, 1.0));
         vec3 frag2viewDir = normalize(uViewPos - fragPos);
         vec3 frag2lightDir = normalize(-uLightDir);  // light dir is in the opposite direction
+        vec3 halfwayDir = 0.5 * (frag2lightDir + frag2viewDir);
 
-        vec3 ambientComponent = ambientStrength * uLightColor;
+        float diffuseAmt = uDiffuseStrength * abs(dot(normalDir, frag2lightDir));
+        float specularAmt = uSpecularStrength * pow(abs(dot(normalDir, halfwayDir)), uShininess);
 
-        float diffuseAmount = max(dot(normalDir, frag2lightDir), 0.0);
-        vec3 diffuseComponent = diffuseStrength * diffuseAmount * uLightColor;
+        vec4 worldPos = aModelMat * vec4(aPos, 1.0);
 
-        vec3 halfwayDir = normalize(frag2lightDir + frag2viewDir);
-        float specularAmmount = pow(max(dot(normalDir, halfwayDir), 0.0), shininess);
-        vec3 specularComponent = specularStrength * specularAmmount * uLightColor;
+        FragWorldPos = vec3(aModelMat * vec4(aPos, 1.0));
+        FragLightSpacePos = uLightSpaceMat * worldPos;
+        NormalWorldDir = normalDir;
+        NonAmbientBrightness = diffuseAmt + specularAmt;
 
-        vec3 lightStrength = ambientComponent + diffuseComponent + specularComponent;
-
-        GouraudBrightness = vec4(uLightColor * lightStrength, 1.0);
-        Rgba0 = aRgba0;
-        RimIntensity = aRimIntensity;
-        TexCoord = aTexCoord;
-    }
-)";
-
-static constexpr char const g_GeometryShaderSrc[] =
-R"(
-    #version 330 core
-
-    layout (triangles) in;
-    layout (line_strip, max_vertices = 6) out;
-
-    void main()
-    {
-        gl_Position = gl_in[0].gl_Position;
-        EmitVertex();
-        gl_Position = gl_in[1].gl_Position;
-        EmitVertex();
-        gl_Position = gl_in[2].gl_Position;
-        EmitVertex();
-        EndPrimitive();
+        gl_Position = uViewProjMat * worldPos;
     }
 )";
 
@@ -137,24 +99,78 @@ static constexpr char const g_FragmentShaderSrc[] =
 R"(
     #version 330 core
 
-    uniform bool uIsTextured = false;
-    uniform sampler2D uSampler0;
+    uniform bool uHasShadowMap = false;
+    uniform vec3 uLightDir;
+    uniform sampler2D uShadowMapTexture;
+    uniform float uAmbientStrength = 0.15f;
+    uniform vec3 uLightColor;
+    uniform vec4 uDiffuseColor = vec4(1.0, 1.0, 1.0, 1.0);
+    uniform float uNear;
+    uniform float uFar;
 
-    in vec4 GouraudBrightness;
-    in vec4 Rgba0;
-    in float RimIntensity;
-    in vec2 TexCoord;
+    in vec3 FragWorldPos;
+    in vec4 FragLightSpacePos;
+    in vec3 NormalWorldDir;
+    in float NonAmbientBrightness;
 
-    layout (location = 0) out vec4 Color0Out;
-    layout (location = 1) out float Color1Out;
+    out vec4 Color0Out;
+
+    float CalculateShadowAmount()
+    {
+        // perspective divide
+        vec3 projCoords = FragLightSpacePos.xyz / FragLightSpacePos.w;
+
+        // map to [0, 1]
+        projCoords = 0.5*projCoords + 0.5;
+
+        // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+        float closestDepth = texture(uShadowMapTexture, projCoords.xy).r;
+
+        // get depth of current fragment from light's perspective
+        float currentDepth = projCoords.z;
+
+        // calculate bias (based on depth map resolution and slope)
+        float bias = max(0.025 * (1.0 - abs(dot(NormalWorldDir, uLightDir))), 0.0025);
+
+        // check whether current frag pos is in shadow
+        // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
+        // PCF
+        float shadow = 0.0;
+        vec2 texelSize = 1.0 / textureSize(uShadowMapTexture, 0);
+        for(int x = -1; x <= 1; ++x)
+        {
+            for(int y = -1; y <= 1; ++y)
+            {
+                float pcfDepth = texture(uShadowMapTexture, projCoords.xy + vec2(x, y) * texelSize).r;
+                if (pcfDepth < 1.0)
+                {
+                    shadow += (currentDepth - bias) > pcfDepth  ? 1.0 : 0.0;
+                }
+            }
+        }
+        shadow /= 9.0;
+
+        return shadow;
+    }
+
+    float LinearizeDepth(float depth)
+    {
+        // from: https://learnopengl.com/Advanced-OpenGL/Depth-testing
+        //
+        // only really works with perspective cameras: orthogonal cameras
+        // don't need this unprojection math trick
+
+        float z = depth * 2.0 - 1.0;
+        return (2.0 * uNear * uFar) / (uFar + uNear - z * (uFar - uNear));
+    }
 
     void main()
     {
-        vec4 color = uIsTextured ? texture(uSampler0, TexCoord) : Rgba0;
-        color *= GouraudBrightness;
-
-        Color0Out = color;
-        Color1Out = RimIntensity;
+        float shadowAmt = uHasShadowMap ? 0.5*CalculateShadowAmount() : 0.0f;
+        float brightness = uAmbientStrength + ((1.0 - shadowAmt) * NonAmbientBrightness);
+        Color0Out = vec4(brightness * uLightColor, 1.0) * uDiffuseColor;
+        Color0Out.a *= 1.0 - (LinearizeDepth(gl_FragCoord.z) / uFar);  // fade into background at high distances
+        Color0Out.a = clamp(Color0Out.a, 0.0, 1.0);
     }
 )";
 
@@ -185,29 +201,135 @@ R"(
 )";
 
 // expected, based on the above shader code
-static constexpr std::array<osc::CStringView, 7> g_ExpectedPropertyNames =
+static constexpr std::array<osc::CStringView, 14> g_ExpectedPropertyNames =
 {
-    "uProjMat",
-    "uViewMat",
+    "uViewProjMat",
+    "uLightSpaceMat",
     "uLightDir",
-    "uLightColor",
     "uViewPos",
-    "uIsTextured",
-    "uSampler0",
+    "uDiffuseStrength",
+    "uSpecularStrength",
+    "uShininess",
+    "uHasShadowMap",
+    "uShadowMapTexture",
+    "uAmbientStrength",
+    "uLightColor",
+    "uDiffuseColor",
+    "uNear",
+    "uFar",
 };
 
-static constexpr std::array<osc::ShaderType, 7> g_ExpectedPropertyTypes =
+static constexpr std::array<osc::ShaderType, 14> g_ExpectedPropertyTypes =
 {
     osc::ShaderType::Mat4,
     osc::ShaderType::Mat4,
     osc::ShaderType::Vec3,
     osc::ShaderType::Vec3,
-    osc::ShaderType::Vec3,
+    osc::ShaderType::Float,
+    osc::ShaderType::Float,
+    osc::ShaderType::Float,
     osc::ShaderType::Bool,
     osc::ShaderType::Sampler2D,
+    osc::ShaderType::Float,
+    osc::ShaderType::Vec3,
+    osc::ShaderType::Vec4,
+    osc::ShaderType::Float,
+    osc::ShaderType::Float,
 };
-
 static_assert(g_ExpectedPropertyNames.size() == g_ExpectedPropertyTypes.size());
+
+static constexpr char const g_GeometryShaderVertSrc[] =
+R"(
+    #version 330 core
+
+    // draw_normals: program that draws mesh normals
+    //
+    // This vertex shader just passes each vertex/normal to the geometry shader, which
+    // then uses that information to draw lines for each normal.
+
+    layout (location = 0) in vec3 aPos;
+    layout (location = 2) in vec3 aNormal;
+
+    out VS_OUT {
+        vec3 normal;
+    } vs_out;
+
+    void main()
+    {
+        gl_Position = vec4(aPos, 1.0f);
+        vs_out.normal = aNormal;
+    }
+)";
+
+static constexpr char const g_GeometryShaderGeomSrc[] =
+R"(
+    #version 330 core
+
+    // draw_normals: program that draws mesh normals
+    //
+    // This geometry shader generates a line strip for each normal it is given. The downstream
+    // fragment shader then fills in each line, so that the viewer can see normals as lines
+    // poking out of the mesh
+
+    uniform mat4 uModelMat;
+    uniform mat4 uViewProjMat;
+    uniform mat4 uNormalMat;
+
+    layout (triangles) in;
+    in VS_OUT {
+        vec3 normal;
+    } gs_in[];
+
+    layout (line_strip, max_vertices = 6) out;
+
+    const float NORMAL_LINE_LEN = 0.01f;
+
+    void GenerateLine(int index)
+    {
+        vec4 origVertexPos = uViewProjMat * uModelMat * gl_in[index].gl_Position;
+
+        // emit original vertex in original position
+        gl_Position = origVertexPos;
+        EmitVertex();
+
+        // calculate normal vector *direction*
+        vec4 normalVec = normalize(uViewProjMat * uNormalMat * vec4(gs_in[index].normal, 0.0f));
+
+        // then scale the direction vector to some fixed length (of line)
+        normalVec *= NORMAL_LINE_LEN;
+
+        // emit another vertex (the line "tip")
+        gl_Position = origVertexPos + normalVec;
+        EmitVertex();
+
+        // emit line primitve
+        EndPrimitive();
+    }
+
+    void main()
+    {
+        GenerateLine(0); // first vertex normal
+        GenerateLine(1); // second vertex normal
+        GenerateLine(2); // third vertex normal
+    }
+)";
+
+static constexpr char const g_GeometryShaderFragSrc[] =
+R"(
+    #version 330 core
+
+    // draw_normals: program that draws mesh normals
+    //
+    // this frag shader doesn't do much: just color each line emitted by the geometry shader
+    // so that the viewers can "see" normals
+
+    out vec4 FragColor;
+
+    void main()
+    {
+        FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    }
+)";
 
 static std::default_random_engine& GetRngEngine()
 {
@@ -335,7 +457,7 @@ TEST_F(Renderer, ShaderCanBeConstructedFromVertexAndFragmentShaderSource)
 
 TEST_F(Renderer, ShaderCanBeConstructedFromVertexGeometryAndFragmentShaderSources)
 {
-    osc::Shader s{g_VertexShaderSrc, g_GeometryShaderSrc, g_FragmentShaderSrc};
+    osc::Shader s{g_GeometryShaderVertSrc, g_GeometryShaderGeomSrc, g_GeometryShaderFragSrc};
 }
 
 TEST_F(Renderer, ShaderCanBeCopyConstructed)
@@ -1133,7 +1255,7 @@ TEST_F(Renderer, MaterialPropertyBlockCanCompareEquals)
     osc::MaterialPropertyBlock m1;
     osc::MaterialPropertyBlock m2;
 
-    m1 == m2;
+    ASSERT_TRUE(m1 == m2);
 }
 
 TEST_F(Renderer, MaterialPropertyBlockCopyConstructionComparesEqual)
@@ -1424,7 +1546,7 @@ TEST_F(Renderer, TextureCanBeComparedForEquality)
     osc::Texture2D t1 = GenerateTexture();
     osc::Texture2D t2 = GenerateTexture();
 
-    t1 == t2;  // just ensure it compiles + runs
+    (void)(t1 == t2);  // just ensure it compiles + runs
 }
 
 TEST_F(Renderer, TextureCopyConstructingComparesEqual)
@@ -1450,7 +1572,7 @@ TEST_F(Renderer, TextureCanBeComparedForNotEquals)
     osc::Texture2D t1 = GenerateTexture();
     osc::Texture2D t2 = GenerateTexture();
 
-    t1 != t2;
+    (void)(t1 != t2);  // just ensure this expression compiles
 }
 
 TEST_F(Renderer, TextureChangingWrapModeMakesCopyUnequal)
@@ -1905,7 +2027,7 @@ TEST_F(Renderer, MeshCanBeComparedForEquality)
     osc::Mesh m1;
     osc::Mesh m2;
 
-    m1 == m2;
+    (void)(m1 == m2);  // just ensure the expression compiles
 }
 
 TEST_F(Renderer, MeshCopiesAreEqual)
@@ -1921,7 +2043,7 @@ TEST_F(Renderer, MeshCanBeComparedForNotEquals)
     osc::Mesh m1;
     osc::Mesh m2;
 
-    m1 != m2;
+    (void)(m1 != m2);  // just ensure the expression compiles
 }
 
 TEST_F(Renderer, MeshCanBeWrittenToOutputStreamForDebugging)
@@ -2399,7 +2521,7 @@ TEST_F(Renderer, CameraSetDirectionToStandardDirectionCausesGetDirectionToReturn
     camera.setDirection(differentDirection);
 
     // not guaranteed: the camera stores *rotation*, not *direction*
-    camera.getDirection() == differentDirection;
+    (void)(camera.getDirection() == differentDirection);  // just ensure it compiles
 
     camera.setDirection(defaultDirection);
 
