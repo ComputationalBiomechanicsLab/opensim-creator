@@ -1118,6 +1118,20 @@ namespace
         }
     }
 
+    GLint ToOpenGLPackAlignment(osc::RenderTextureFormat f)
+    {
+        static_assert(static_cast<size_t>(osc::RenderTextureFormat::TOTAL) == 2);
+
+        switch (f)
+        {
+        case osc::RenderTextureFormat::ARGB32:
+            return 4;
+        case osc::RenderTextureFormat::RED:
+        default:
+            return 1;
+        }
+    }
+
     int32_t GetNumChannels(osc::RenderTextureFormat f)
     {
         switch (f)
@@ -4896,8 +4910,9 @@ void osc::GraphicsBackend::ReadPixels(RenderTexture const& source, Image& dest)
 
     gl::BindFramebuffer(GL_FRAMEBUFFER, const_cast<RenderTexture::Impl&>(*source.m_Impl).getOutputFrameBuffer());
     glViewport(0, 0, dims.x, dims.y);
-    OSC_ASSERT(reinterpret_cast<uintptr_t>(pixels.data()) % 4 == 0 && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-    gl::PixelStorei(GL_PACK_ALIGNMENT, 4);
+    GLint const packFormat = ToOpenGLPackAlignment(source.getColorFormat());
+    OSC_ASSERT(reinterpret_cast<uintptr_t>(pixels.data()) % packFormat == 0 && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+    gl::PixelStorei(GL_PACK_ALIGNMENT, packFormat);
     glReadPixels(0, 0, dims.x, dims.y, ToOpenGLColorFormat(source.getColorFormat()), GL_UNSIGNED_BYTE, pixels.data());
     gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
 
