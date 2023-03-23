@@ -1228,4 +1228,9 @@ namespace gl
     {
         glDisable(cap);
     }
+
+    inline void PixelStorei(GLenum name, GLint param)
+    {
+        glPixelStorei(name, param);
+    }
 }

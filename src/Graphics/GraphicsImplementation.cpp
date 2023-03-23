@@ -787,6 +787,31 @@ namespace
             return GL_REPEAT;
         }
     }
+
+    GLenum ToOpenGLColorFormat(int32_t numColorChannels)
+    {
+        switch (numColorChannels)
+        {
+        case 1:
+            return GL_RED;
+        case 3:
+            return GL_RGB;
+        case 4:
+        default:
+            return GL_RGBA;
+        }
+    }
+
+    GLint ToOpenGLUnpackAlignment(int32_t numColorChannels)
+    {
+        switch (numColorChannels)
+        {
+        case 4:
+            return 4;
+        default:
+            return 1;
+        }
+    }
 }
 
 class osc::Texture2D::Impl final {
@@ -910,32 +935,21 @@ private:
     {
         *m_MaybeGPUTexture = Texture2DOpenGLData{};
 
-        GLenum format = GL_RGBA;
-        switch (m_NumChannels)
-        {
-        case 1:
-            format = GL_RED;
-            break;
-        case 3:
-            format = GL_RGB;
-            break;
-        case 4:
-            format = GL_RGBA;
-            break;
-        }
-
-        OSC_ASSERT(m_NumChannels*m_Dimensions.x % 4 == 0 && "the memory alignment of each horizontal line in an OpenGL texture must be a multiple of 4");
+        GLint const unpackAlignment = ToOpenGLUnpackAlignment(m_NumChannels);
+        OSC_ASSERT(m_NumChannels*m_Dimensions.x % unpackAlignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+        OSC_ASSERT(reinterpret_cast<intptr_t>(m_Pixels.data()) % unpackAlignment == 0 && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
 
         // one-time upload, because pixels cannot be altered
         gl::BindTexture((*m_MaybeGPUTexture)->texture);
+        gl::PixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment);
         gl::TexImage2D(
             GL_TEXTURE_2D,
             0,
-            format,
+            ToOpenGLColorFormat(m_NumChannels),
             m_Dimensions.x,
             m_Dimensions.y,
             0,
-            format,
+            ToOpenGLColorFormat(m_NumChannels),
             GL_UNSIGNED_BYTE,
             m_Pixels.data()
         );
@@ -3817,8 +3831,17 @@ public:
             glm::ivec2 const dims = osc::App::get().idims();
 
             std::vector<uint8_t> pixels(static_cast<size_t>(4*dims.x*dims.y));
-            OSC_ASSERT(reinterpret_cast<uintptr_t>(pixels.data()) % 4 == 0 && "glReadPixels must be called with a buffer that is aligned to 4 bytes (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-            glReadPixels(0, 0, dims.x, dims.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+            OSC_ASSERT(reinterpret_cast<uintptr_t>(pixels.data()) % 4 == 0 && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+            gl::PixelStorei(GL_PACK_ALIGNMENT, 4);
+            glReadPixels(
+                0,
+                0,
+                dims.x,
+                dims.y,
+                GL_RGBA,
+                GL_UNSIGNED_BYTE,
+                pixels.data()
+            );
 
             Image screenshot{dims, pixels, 4};
 
@@ -4873,7 +4896,8 @@ void osc::GraphicsBackend::ReadPixels(RenderTexture const& source, Image& dest)
 
     gl::BindFramebuffer(GL_FRAMEBUFFER, const_cast<RenderTexture::Impl&>(*source.m_Impl).getOutputFrameBuffer());
     glViewport(0, 0, dims.x, dims.y);
-    OSC_ASSERT(reinterpret_cast<uintptr_t>(pixels.data()) % 4 == 0 && "glReadPixels must be called with a buffer that is aligned to 4 bytes (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+    OSC_ASSERT(reinterpret_cast<uintptr_t>(pixels.data()) % 4 == 0 && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+    gl::PixelStorei(GL_PACK_ALIGNMENT, 4);
     glReadPixels(0, 0, dims.x, dims.y, ToOpenGLColorFormat(source.getColorFormat()), GL_UNSIGNED_BYTE, pixels.data());
     gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
 
