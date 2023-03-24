@@ -111,10 +111,16 @@ flycheck_*.el
 # network security
 /network-security.data
 
+# Visual Studio
+.vs/
+CMakeSettings.json
+out/
+
 # Visual Studio Code user directory
 .vscode/
 
 # artefacts/side-effects from the OSC build script
+dependencies-install/
 opensim-build/
 opensim-dependencies-build/
 opensim-dependencies-install/
