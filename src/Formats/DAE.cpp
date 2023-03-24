@@ -7,8 +7,6 @@
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Utils/Algorithms.hpp"
 
-#include <fmt/chrono.h>
-#include <fmt/format.h>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <nonstd/span.hpp>
@@ -16,6 +14,7 @@
 #include <chrono>
 #include <cstdint>
 #include <ctime>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -207,48 +206,40 @@ namespace
 
     void WriteTopLevelAssetBlock(std::ostream& o, osc::DAEMetadata const& metadata)
     {
-        std::time_t const t =
-            std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        std::chrono::system_clock::time_point const tp = std::chrono::system_clock::now();
+        std::time_t const t = std::chrono::system_clock::to_time_t(tp);
 
-        o << fmt::format(
-R"(  <asset>
-    <contributor>
-      <author>{}</author>
-      <authoring_tool>{}</authoring_tool>
-    </contributor>
-    <created>{:%Y-%m-%d %H:%M:%S}</created>
-    <modified>{:%Y-%m-%d %H:%M:%S}</modified>
-    <unit name="meter" meter="1"/>
-    <up_axis>Y_UP</up_axis>
-  </asset>)",
-            metadata.author,
-            metadata.authoringTool,
-            fmt::localtime(t),
-            fmt::localtime(t)
-        );
-        o << '\n';
+        o << "  <asset>\n";
+        o << "    <contributor>\n";
+        o << "      <author>" << metadata.author << "</author>\n";
+        o << "      <authoring_tool>" << metadata.authoringTool << "</authoring_tool>\n";
+        o << "    </contributor>\n";
+        o << "    <created>" << std::put_time(std::gmtime(&t), "%Y-%m-%d %H:%M:%S") << "</created>\n";
+        o << "    <modified>" << std::put_time(std::gmtime(&t), "%Y-%m-%d %H:%M:%S") << "</modified>\n";
+        o << "    <unit name=\"meter\" meter=\"1\" />\n";
+        o << "    <up_axis>Y_UP</up_axis>\n";
+        o << "  </asset>\n";
     }
 
     void WriteEffect(std::ostream& o, DAEMaterial const& material)
     {
-        o << fmt::format(R"(    <effect id="{}-effect">
-      <profile_COMMON>
-        <technique sid="common">
-          <lambert>
-            <emission>
-              <color sid="emission">0 0 0 1</color>
-            </emission>
-            <diffuse>
-              <color sid="diffuse">{}</color>
-            </diffuse>
-            <reflectivity>
-              <float sid="specular">0.0</float>
-            </reflectivity>
-          </lambert>
-        </technique>
-      </profile_COMMON>
-    </effect>)", material.materialID, ToDaeList(ToFloatSpan(material.color)));
-        o << '\n';
+        o << "    <effect id=\"" << material.materialID << "-effect\">\n";
+        o << "      <profile_COMMON>\n";
+        o << "        <technique sid=\"common\">\n";
+        o << "          <lambert>\n";
+        o << "            <emission>\n";
+        o << "              <color sid=\"emission\">0 0 0 1</color>\n";
+        o << "            </emission>\n";
+        o << "            <diffuse>\n";
+        o << "              <color sid=\"diffuse\">" << ToDaeList(ToFloatSpan(material.color)) << "</color>\n";
+        o << "            </diffuse>\n";
+        o << "            <reflectivity>\n";
+        o << "              <float sid=\"specular\">0.0</float>\n";
+        o << "            </reflectivity>\n";
+        o << "          </lambert>\n";
+        o << "        </technique>\n";
+        o << "      </profile_COMMON>\n";
+        o << "    </effect>\n";
     }
 
     void WriteLibraryEffects(std::ostream& o, nonstd::span<DAEMaterial const> materials)
@@ -263,9 +254,9 @@ R"(  <asset>
 
     void WriteMaterial(std::ostream& o, DAEMaterial const& material)
     {
-        o << fmt::format(R"(    <material id="{}-material" name="{}">
-      <instance_effect url="#{}-effect"/>
-    </material>)", material.materialID, material.materialID, material.materialID);
+        o << "    <material id=\"" << material.materialID << "-material\" name=\"" << material.materialID << "\">\n";
+        o << "      <instance_effect url=\"#" << material.materialID << "-effect\"/>\n";
+        o << "    </material>\n";
     }
 
     void WriteLibraryMaterials(std::ostream& o, nonstd::span<DAEMaterial const> materials)
@@ -284,24 +275,16 @@ R"(  <asset>
         size_t const floatCount = 3 * vals.size();
         size_t const vertCount = vals.size();
 
-        o << fmt::format(
-R"(        <source id="{}-positions">
-          <float_array id="{}-positions-array" count="{}">{}</float_array>
-          <technique_common>
-            <accessor source="#{}-positions-array" count="{}" stride="3">
-              <param name="X" type="float"/>
-              <param name="Y" type="float"/>
-              <param name="Z" type="float"/>
-            </accessor>
-          </technique_common>
-        </source>)",
-            geom.geometryID,
-            geom.geometryID,
-            floatCount,
-            ToDaeList(ToFloatSpan(vals)),
-            geom.geometryID,
-            vertCount);
-        o << '\n';
+        o << "        <source id=\"" << geom.geometryID << "-positions\">\n";
+        o << "          <float_array id=\"" << geom.geometryID << "-positions-array\" count=\"" << floatCount << "\">" << ToDaeList(ToFloatSpan(vals)) << "</float_array>\n";
+        o << "          <technique_common>\n";
+        o << "            <accessor source=\"#" << geom.geometryID << "-positions-array\" count=\"" << vertCount << "\" stride=\"3\">\n";
+        o << "              <param name=\"X\" type=\"float\"/>\n";
+        o << "              <param name=\"Y\" type=\"float\"/>\n";
+        o << "              <param name=\"Z\" type=\"float\"/>\n";
+        o << "            </accessor>\n";
+        o << "          </technique_common>\n";
+        o << "        </source>\n";
     }
 
     void WriteMeshNormalsSource(std::ostream& o, DAEGeometry const& geom)
@@ -310,24 +293,16 @@ R"(        <source id="{}-positions">
         size_t const floatCount = 3 * vals.size();
         size_t const normalCount = vals.size();
 
-        o << fmt::format(
-R"(        <source id="{}-normals">
-          <float_array id="{}-normals-array" count="{}">{}</float_array>
-          <technique_common>
-            <accessor source="#{}-normals-array" count="{}" stride="3">
-              <param name="X" type="float"/>
-              <param name="Y" type="float"/>
-              <param name="Z" type="float"/>
-            </accessor>
-          </technique_common>
-        </source>)",
-            geom.geometryID,
-            geom.geometryID,
-            floatCount,
-            ToDaeList(ToFloatSpan(vals)),
-            geom.geometryID,
-            normalCount);
-        o << '\n';
+        o << "        <source id=\""  << geom.geometryID << "-normals\">\n";
+        o << "          <float_array id=\"" << geom.geometryID << "-normals-array\" count=\"" << floatCount << "\">" << ToDaeList(ToFloatSpan(vals)) << "</float_array>\n";
+        o << "          <technique_common>\n";
+        o << "            <accessor source=\"#" << geom.geometryID << "-normals-array\" count=\"" << normalCount << "\" stride=\"3\">\n";
+        o << "              <param name=\"X\" type=\"float\"/>\n";
+        o << "              <param name=\"Y\" type=\"float\"/>\n";
+        o << "              <param name=\"Z\" type=\"float\"/>\n";
+        o << "            </accessor>\n";
+        o << "          </technique_common>\n";
+        o << "        </source>\n";
     }
 
     void WriteMeshTextureCoordsSource(std::ostream& o, DAEGeometry const& geom)
@@ -336,34 +311,22 @@ R"(        <source id="{}-normals">
         size_t const floatCount = 2 * vals.size();
         size_t const coordCount = vals.size();
 
-o << fmt::format(
-R"(        <source id="{}-map-0">
-          <float_array id="{}-map-0-array" count="{}">{}</float_array>
-          <technique_common>
-            <accessor source="#{}-map-0-array" count="{}" stride="2">
-              <param name="S" type="float"/>
-              <param name="T" type="float"/>
-            </accessor>
-          </technique_common>
-        </source>)",
-            geom.geometryID,
-            geom.geometryID,
-            floatCount,
-            ToDaeList(ToFloatSpan(vals)),
-            geom.geometryID,
-            coordCount);
-        o << '\n';
+        o << "        <source id=\"" << geom.geometryID << "-map-0\">\n";
+        o << "          <float_array id=\"" << geom.geometryID << "-map-0-array\" count=\"" << floatCount << "\">" << ToDaeList(ToFloatSpan(vals)) <<  "</float_array>\n";
+        o << "          <technique_common>\n";
+        o << "            <accessor source=\"#" << geom.geometryID << "-map-0-array\" count=\"" << coordCount << "\" stride=\"2\">\n";
+        o << "              <param name=\"S\" type=\"float\"/>\n";
+        o << "              <param name=\"T\" type=\"float\"/>\n";
+        o << "            </accessor>\n";
+        o << "          </technique_common>\n";
+        o << "        </source>\n";
     }
 
     void WriteMeshVertices(std::ostream& o, DAEGeometry const& geom)
     {
-        o << fmt::format(
-R"(        <vertices id="{}-vertices">
-          <input semantic="POSITION" source="#{}-positions"/>
-        </vertices>)",
-            geom.geometryID,
-            geom.geometryID);
-        o << '\n';
+        o << "        <vertices id=\"" << geom.geometryID << "-vertices\">\n";
+        o << "          <input semantic=\"POSITION\" source=\"#" << geom.geometryID << "-positions\"/>\n";
+        o << "        </vertices>\n";
     }
 
     void WriteMeshTriangles(std::ostream& o, DAEGeometry const& geom)
@@ -371,19 +334,15 @@ R"(        <vertices id="{}-vertices">
         osc::MeshIndicesView const indices = geom.mesh.getIndices();
         size_t const numTriangles = indices.size() / 3;
 
-        o << fmt::format(R"(        <triangles count="{}">)", numTriangles);
-        o << '\n';
-        o << fmt::format(R"(          <input semantic="VERTEX" source="#{}-vertices" offset="0" />)", geom.geometryID);
-        o << '\n';
+        o << "        <triangles count=\"" << numTriangles << "\">\n";
+        o << "          <input semantic=\"VERTEX\" source=\"#" << geom.geometryID << "-vertices\" offset=\"0\" />\n";
         if (!geom.mesh.getNormals().empty())
         {
-            o << fmt::format(R"(          <input semantic="NORMAL" source="#{}-normals" offset="0" />)", geom.geometryID);
-            o << '\n';
+            o << "          <input semantic=\"NORMAL\" source=\"#" << geom.geometryID << "-normals\" offset=\"0\" />\n";
         }
         if (!geom.mesh.getTexCoords().empty())
         {
-            o << fmt::format(R"(          <input semantic="TEXCOORD" source="#{}-map-0" offset="0" set="0"/>)", geom.geometryID);
-            o << '\n';
+            o << "          <input semantic=\"TEXCOORD\" source=\"#" << geom.geometryID << "-map-0\" offset=\"0\" set=\"0\"/>\n";
         }
 
         o << "          <p>";
@@ -420,11 +379,9 @@ R"(        <vertices id="{}-vertices">
 
     void WriteGeometry(std::ostream& o, DAEGeometry const& geom)
     {
-        o << fmt::format(R"(    <geometry id="{}" name="{}">)", geom.geometryID, geom.geometryID);
-        o << '\n';
+        o << "    <geometry id=\"" << geom.geometryID << "\" name=\"" << geom.geometryID << "\">\n";
         WriteMesh(o, geom);
-        o << R"(    </geometry>)";
-        o << '\n';
+        o << "    </geometry>\n";
     }
 
     void WriteLibraryGeometries(std::ostream& o, nonstd::span<DAEGeometry const> geoms)
@@ -458,30 +415,26 @@ R"(        <vertices id="{}-vertices">
 
     void WriteInstanceGeometryBindMaterial(std::ostream& o, DAEInstance const& instance)
     {
-        o << fmt::format(R"(          <bind_material>
-            <technique_common>
-              <instance_material symbol="{}-material" target="#{}-material" />
-            </technique_common>
-          </bind_material>)", instance.materialID, instance.materialID);
+        o << "          <bind_material>\n";
+        o << "            <technique_common>\n";
+        o << "              <instance_material symbol=\"" << instance.materialID << "-material\" target=\"#" << instance.materialID << "-material\" />\n";
+        o << "            </technique_common>\n";
+        o << "          </bind_material>\n";
     }
 
     void WriteNodeInstanceGeometry(std::ostream& o, DAEInstance const& instance)
     {
-        o << fmt::format(R"(        <instance_geometry url="#{}" name="{}">)", instance.geometryID, instance.geometryID);
-        o << '\n';
+        o << "        <instance_geometry url=\"#" << instance.geometryID << "\" name=\"" << instance.geometryID << "\">\n";
         WriteInstanceGeometryBindMaterial(o, instance);
-        o << "        </instance_geometry>";
-        o << '\n';
+        o << "        </instance_geometry>\n";
     }
 
     void WriteSceneNode(std::ostream& o, DAEInstance const& instance)
     {
-        o << fmt::format(R"(      <node id="{}" name="{}" type="NODE">)", instance.instanceID, instance.instanceID);
-        o << '\n';
+        o << "      <node id=\"" << instance.instanceID << "\" name=\"" << instance.instanceID << "\" type=\"NODE\">\n";
         WriteTransformMatrix(o, instance.transform);
         WriteNodeInstanceGeometry(o, instance);
-        o << R"(      </node>)";
-        o << '\n';
+        o << "      </node>\n";
     }
 
     void WriteMainScene(std::ostream& o, DAESceneGraph const& graph)

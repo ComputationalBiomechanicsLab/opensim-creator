@@ -394,31 +394,6 @@ if(TRUE)
     )
 endif()
 
-# DEPENDENCY: fmt
-#     shim for C++20#'s <format>
-if(TRUE)
-    add_library(fmt STATIC
-        third_party/fmt/src/format.cc
-        third_party/fmt/src/os.cc
-
-        third_party/fmt/include/fmt/args.h
-        third_party/fmt/include/fmt/chrono.h
-        third_party/fmt/include/fmt/color.h
-        third_party/fmt/include/fmt/compile.h
-        third_party/fmt/include/fmt/core.h
-        third_party/fmt/include/fmt/format.h
-        third_party/fmt/include/fmt/format-inl.h
-        third_party/fmt/include/fmt/os.h
-        third_party/fmt/include/fmt/ostream.h
-        third_party/fmt/include/fmt/printf.h
-        third_party/fmt/include/fmt/ranges.h
-        third_party/fmt/include/fmt/std.h
-        third_party/fmt/include/fmt/xchar.h
-    )
-    target_include_directories(fmt PUBLIC third_party/fmt/include)
-    target_compile_features(fmt PUBLIC cxx_std_17)
-endif()
-
 # DEPENDENCY: OpenSim
 #     primary dependency for performing musculoskeletal simulations
 #
@@ -541,9 +516,6 @@ target_link_libraries(osc-all-deps INTERFACE
 
     # shim for C++20's std::span
     span-lite
-
-    # shim for C++20's std::format
-    fmt
 
     # svg support
     lunasvg

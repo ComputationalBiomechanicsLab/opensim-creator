@@ -34,6 +34,7 @@ All notable changes to this project will be documented here. The format is based
 - Internal: The renderer's unit tests now pass on MacOS (previously: had a shader-compiler error, #657)
 - The build scripts (e.g. `scripts/build_debian-buster.sh`) now build single-threaded by default, because
   the OpenSim build step can exhaust a computer's RAM (#659)
+- Internal: Dropped `fmt` library: collides with OpenSim and does not compile on modern GCC (#660)
 
 
 ## [0.4.0] - 2023/03/06
