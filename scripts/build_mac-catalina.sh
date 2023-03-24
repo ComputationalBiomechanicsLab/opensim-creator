@@ -28,7 +28,11 @@ OSC_BUILD_TYPE=${OSC_BUILD_TYPE:-`echo ${OSC_BASE_BUILD_TYPE}`}
 OSC_CXX_FLAGS=${OSC_CXX_FLAGS:-`echo -fno-omit-frame-pointer`}
 
 # maximum number of build jobs to run concurrently
-OSC_BUILD_CONCURRENCY=${OSC_BUILD_CONCURRENCY:-$(sysctl -n hw.physicalcpu)}
+#
+# defaulted to 1, rather than `sysctl -n hw.physicalcpu`, because OpenSim
+# requires a large  amount of RAM--more than most machines have--to build
+# concurrently, #659
+OSC_BUILD_CONCURRENCY=${OSC_BUILD_CONCURRENCY:-1}
 
 # which build system to use (e.g. Ninja, Makefile: see https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html)
 OSC_GENERATOR=${OSC_GENERATOR:-`echo Unix Makefiles`}

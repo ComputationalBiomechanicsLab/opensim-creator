@@ -13,7 +13,11 @@ IF NOT DEFINED OSC_OPENSIM_BUILD_TYPE (set OSC_OPENSIM_BUILD_TYPE=RelWithDebInfo
 IF NOT DEFINED OSC_BUILD_TYPE (set OSC_BUILD_TYPE=RelWithDebInfo)
 
 REM maximum number of build jobs to run concurrently
-IF NOT DEFINED OSC_BUILD_CONCURRENCY (set OSC_BUILD_CONCURRENCY=%NUM_PROCESSORS%)
+REM
+REM defaulted to 1, rather than `%NUMBER_OF_PROCESSORS%`, because OpenSim
+REM requires a large amount of RAM--more than most machines have--to build
+REM concurrently, #659
+IF NOT DEFINED OSC_BUILD_CONCURRENCY (set OSC_BUILD_CONCURRENCY=1)
 
 REM which OSC build target to build
 REM

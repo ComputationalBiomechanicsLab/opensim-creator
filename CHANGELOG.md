@@ -31,7 +31,9 @@ All notable changes to this project will be documented here. The format is based
 - Internal: Switched `robin-hood-hashing` for `ankerl::unordered_dense` (#651)
 - Internal: Benchmark sources were reorganized to match the source tree (#653)
 - Internal: Fixed osc::Material::getFloat/Vec3Array returning undefined memory (unused in user-facing code, #656)
-- Internal: The renderer's unit tests now pass on MacOS (previously: had a shader-compiler error, #657) 
+- Internal: The renderer's unit tests now pass on MacOS (previously: had a shader-compiler error, #657)
+- The build scripts (e.g. `scripts/build_debian-buster.sh`) now build single-threaded by default, because
+  the OpenSim build step can exhaust a computer's RAM (#659)
 
 
 ## [0.4.0] - 2023/03/06

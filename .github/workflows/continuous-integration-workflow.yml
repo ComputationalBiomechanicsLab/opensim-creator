@@ -15,6 +15,7 @@ jobs:
     - name: run build_windows.bat
       run: |
         cd $env:GITHUB_WORKSPACE\osc
+        set OSC_BUILD_CONCURRENCY=%NUMBER_OFPROCESSORS%
         scripts\\build_windows.bat || exit /b
     - uses: actions/upload-artifact@v2
       with:
@@ -33,6 +34,7 @@ jobs:
     - name: run build script
       run: |
         cd $GITHUB_WORKSPACE/osc
+        export OSC_BUILD_CONCURRENCY=$(nproc)
         ./scripts/build_debian-buster.sh
     - uses: actions/upload-artifact@v2
       with:
@@ -55,6 +57,7 @@ jobs:
     - name: run build script
       run: |
         cd $GITHUB_WORKSPACE
+        export OSC_BUILD_CONCURRENCY=$(sysctl -n hw.physicalcpu)
         ./scripts/build_mac-catalina.sh
     - uses: actions/upload-artifact@v2
       with:

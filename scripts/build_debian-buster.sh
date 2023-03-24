@@ -27,7 +27,10 @@ OSC_OPENSIM_BUILD_TYPE=${OSC_OPENSIM_BUILD_TYPE:-`echo ${OSC_BASE_BUILD_TYPE}`}
 OSC_BUILD_TYPE=${OSC_BUILD_TYPE-`echo ${OSC_BASE_BUILD_TYPE}`}
 
 # maximum number of build jobs to run concurrently
-OSC_BUILD_CONCURRENCY=${OSC_BUILD_CONCURRENCY:-$(nproc)}
+#
+# defaulted to 1, rather than `nproc`, because OpenSim requires a large
+# amount of RAM--more than most machines have--to build concurrently, #659
+OSC_BUILD_CONCURRENCY=${OSC_BUILD_CONCURRENCY:-1}
 
 # which OSC build target to build
 #
