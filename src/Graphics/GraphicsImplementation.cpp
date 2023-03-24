@@ -4695,11 +4695,6 @@ void osc::GraphicsBackend::RenderScene(Camera::Impl& camera, RenderTexture* mayb
         {
             RenderTexture::Impl& cameraRenderTex = *maybeRenderTexture->m_Impl.upd();
 
-            // clear the MSXAA-resolved output texture
-            // TODO: unnecessary, because it is blitted to later
-            // gl::BindFramebuffer(GL_FRAMEBUFFER, cameraRenderTex.getOutputFrameBuffer());
-            // gl::Clear(clearFlags);
-
             // clear the written-to MSXAA texture
             gl::BindFramebuffer(GL_FRAMEBUFFER, cameraRenderTex.getFrameBuffer());
             gl::Clear(clearFlags);
