@@ -2703,42 +2703,46 @@ private:
 
     void uploadToGPU()
     {
-        // the decltype higher-level sizeofs are used in this function: check them
+        bool const hasNormals = !m_Normals.empty();
+        bool const hasTexCoords = !m_TexCoords.empty();
+        bool const hasColors = !m_Colors.empty();
+        bool const hasTangents = !m_Tangents.empty();
+
+        // check that the data stored in this mesh object is valid
+        OSC_ASSERT_ALWAYS((!hasNormals || m_Normals.size() == m_Vertices.size()) && "number of normals != number of verts");
+        OSC_ASSERT_ALWAYS((!hasTexCoords || m_TexCoords.size() == m_Vertices.size()) && "number of uvs != number of verts");
+        OSC_ASSERT_ALWAYS((!hasColors || m_Colors.size() == m_Vertices.size()) && "number of colors != number of verts");
+        OSC_ASSERT_ALWAYS((!hasTangents || m_Tangents.size() == m_Vertices.size()) && "number of tangents != number of verts");
+
+        // `sizeof(decltype(T)::value_type)` is used in this function
+        //
+        // check at compile-time that the resulting type is as-expected
         static_assert(sizeof(decltype(m_Vertices)::value_type) == 3*sizeof(float));
         static_assert(sizeof(decltype(m_Normals)::value_type) == 3*sizeof(float));
         static_assert(sizeof(decltype(m_TexCoords)::value_type) == 2*sizeof(float));
         static_assert(sizeof(decltype(m_Colors)::value_type) == 4*sizeof(uint8_t));
         static_assert(sizeof(decltype(m_Tangents)::value_type) == 4*sizeof(float));
 
-        bool const hasNormals = !m_Normals.empty();
-        bool const hasTexCoords = !m_TexCoords.empty();
-        bool const hasColors = !m_Colors.empty();
-        bool const hasTangents = !m_Tangents.empty();
-
-        // compute the byte stride between each entry in the VBO
+        // calculate the number of bytes between each entry in the packed VBO
         GLsizei byteStride = sizeof(decltype(m_Vertices)::value_type);
         if (hasNormals)
         {
-            OSC_ASSERT_ALWAYS(m_Normals.size() == m_Vertices.size() && "number of normals != number of verts");
             byteStride += sizeof(decltype(m_Normals)::value_type);
         }
         if (hasTexCoords)
         {
-            OSC_ASSERT_ALWAYS(m_TexCoords.size() == m_Vertices.size() && "number of uvs != number of verts");
             byteStride += sizeof(decltype(m_TexCoords)::value_type);
         }
         if (hasColors)
         {
-            OSC_ASSERT_ALWAYS(m_Colors.size() == m_Vertices.size() && "number of colors != number of verts");
             byteStride += sizeof(decltype(m_Colors)::value_type);
         }
         if (hasTangents)
         {
-            OSC_ASSERT_ALWAYS(m_Tangents.size() == m_Vertices.size() && "number of tangents != number of verts");
             byteStride += sizeof(decltype(m_Tangents)::value_type);
         }
 
-        // pack VBO data into CPU-side buffer
+        // allocate+pack mesh data into CPU-side vector
         std::vector<std::byte> data;
         data.reserve(byteStride * m_Vertices.size());
         for (size_t i = 0; i < m_Vertices.size(); ++i)
@@ -2761,38 +2765,39 @@ private:
                 PushAsBytes(m_Tangents.at(i), data);
             }
         }
-        OSC_ASSERT_ALWAYS(data.size() == byteStride*m_Vertices.size() && "error uploading data to the GPU");
+        OSC_ASSERT_ALWAYS(data.size() == byteStride*m_Vertices.size() && "error packing mesh data into a CPU buffer: unexpected final size");
 
-        // create the GPU-side buffers
+        // allocate GPU-side buffers (or re-use the last ones)
         if (!(*m_MaybeGPUBuffers))
         {
             *m_MaybeGPUBuffers = MeshOpenGLData{};
         }
         MeshOpenGLData& buffers = **m_MaybeGPUBuffers;
 
-        // upload VBO data into GPU-side buffer
+        // upload CPU-side vector data into the GPU-side buffer
+        static_assert(alignof(float) == alignof(GLfloat), "OpenGL: glBufferData: clients must align data elements consistently with the requirements of the client platform");
         gl::BindBuffer(GL_ARRAY_BUFFER, buffers.arrayBuffer);
         gl::BufferData(GL_ARRAY_BUFFER, static_cast<GLsizei>(data.size()), data.data(), GL_STATIC_DRAW);
 
-        // upload indices into EBO
+        // check that the indices stored in this mesh object are all valid
+        //
+        // this is to ensure nothing bizzare happens in the GPU at runtime (e.g. indexing
+        // into invalid locations in the VBO - #460)
+        if (m_NumIndices > 0)
         {
-            // before uploading, bounds-check the indices, to ensure nothing bizzare
-            // happens at runtime (e.g. GPU driver behaving bizzarely, #460)
-            if (m_NumIndices > 0)
+            if (m_IndicesAre32Bit)
             {
-                if (m_IndicesAre32Bit)
-                {
-                    nonstd::span<uint32_t const> const indices(&m_IndicesData.front().u32, m_NumIndices);
-                    OSC_ASSERT_ALWAYS(std::all_of(indices.begin(), indices.end(), [nVerts = m_Vertices.size()](uint32_t i) { return i < nVerts; }));
-                }
-                else
-                {
-                    nonstd::span<uint16_t const> const indices(&m_IndicesData.front().u16.a, m_NumIndices);
-                    OSC_ASSERT_ALWAYS(std::all_of(indices.begin(), indices.end(), [nVerts = m_Vertices.size()](uint16_t i) { return i < nVerts; }));
-                }
+                nonstd::span<uint32_t const> const indices(&m_IndicesData.front().u32, m_NumIndices);
+                OSC_ASSERT_ALWAYS(std::all_of(indices.begin(), indices.end(), [nVerts = m_Vertices.size()](uint32_t i) { return i < nVerts; }));
+            }
+            else
+            {
+                nonstd::span<uint16_t const> const indices(&m_IndicesData.front().u16.a, m_NumIndices);
+                OSC_ASSERT_ALWAYS(std::all_of(indices.begin(), indices.end(), [nVerts = m_Vertices.size()](uint16_t i) { return i < nVerts; }));
             }
         }
 
+        // upload CPU-side element data into the GPU-side buffer
         size_t const eboNumBytes = m_NumIndices * (m_IndicesAre32Bit ? sizeof(uint32_t) : sizeof(uint16_t));
         gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.indicesBuffer);
         gl::BufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizei>(eboNumBytes), m_IndicesData.data(), GL_STATIC_DRAW);
@@ -2834,7 +2839,7 @@ private:
             glEnableVertexAttribArray(SHADER_LOC_VERTEX_TANGENT);
             // unused: byteOffset += sizeof(decltype(m_Tangents)::value_type);
         }
-        gl::BindVertexArray();
+        gl::BindVertexArray();  // VAO configuration complete
 
         buffers.dataVersion = *m_Version;
     }
