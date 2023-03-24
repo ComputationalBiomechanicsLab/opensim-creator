@@ -4,7 +4,7 @@
 #include "src/Platform/os.hpp"
 #include "osc_config.hpp"
 
-#include <toml.hpp>
+#include <toml++/toml.h>
 
 #include <algorithm>
 #include <chrono>

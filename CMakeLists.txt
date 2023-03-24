@@ -66,15 +66,6 @@ set(
 
 # -------------- top-level build configuration (vars etc.) ---------------- #
 
-# set OSC_GENERATOR_IS_MULTI_CONFIG
-#
-# effectively, tests if the user is using a multi-config generator, like
-# Visual Studio, which lets developers change their build configuration
-# (Release, Debug) in a single configuration
-#
-# this can affect things like deciding which/where to link libraries
-get_property(OSC_GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-
 # set LINUX
 #
 # this is based on whether the UNIX variant being used appears to be LINUX
@@ -131,10 +122,63 @@ endif()
 
 # ------------------ configure dependencies -------------------- #
 
-# all dependency management is handled from a separate CMake file that exports
-# the dependencies as targets - along with some other useful vars (e.g. a list
-# of all dependencies that should be copied into the install, etc.)
-include(GetDependencies.cmake)
+cmake_policy(SET CMP0072 NEW)
+find_package(OpenGL REQUIRED)
+find_package(glew REQUIRED CONFIG)
+find_package(glm REQUIRED CONFIG)
+find_package(SDL2 REQUIRED CONFIG)
+find_package(nativefiledialog REQUIRED CONFIG)
+find_package(imgui REQUIRED CONFIG)
+find_package(IconFontCppHeaders REQUIRED CONFIG)
+find_package(ImGuizmo REQUIRED CONFIG)
+find_package(implot REQUIRED CONFIG)
+find_package(stb REQUIRED CONFIG)
+find_package(lunasvg REQUIRED CONFIG)
+find_package(OpenSim REQUIRED CONFIG)
+find_package(benchmark REQUIRED CONFIG)
+find_package(GTest REQUIRED CONFIG)
+find_package(span-lite REQUIRED CONFIG)
+find_package(tomlplusplus REQUIRED CONFIG)
+find_package(unordered_dense REQUIRED CONFIG)
+
+set(OSC_OPENSIM_LIBS
+
+    osimCommon
+    osimSimulation
+    osimActuators
+    osimAnalyses
+    osimTools
+    osimLepton
+    osimExampleComponents
+    SimTKcommon
+    SimTKmath
+    SimTKsimbody
+)
+
+if(WIN32)
+    # in Windows, copy all DLLs in the OpenSim install dir
+    #
+    # this is necessary because there's a bunch of transitive DLLs that
+    # must be included (e.g. liblapack, libgfortran). On the other systems,
+    # these might be provided by the base OS
+
+    file(GLOB OPENSIM_DLLS LIST_DIRECTORIES false CONFIGURE_DEPENDS ${OpenSim_ROOT_DIR}/bin/*.dll)
+    foreach(OPENSIM_DLL ${OPENSIM_DLLS})
+        list(APPEND OSC_LIB_FILES_TO_COPY ${OPENSIM_DLL})
+    endforeach()
+    unset(OPENSIM_DLL)
+    unset(OPENSIM_DLLS)
+else()
+    # on Linux/mac, only copy the direct dependencies (it's assumed that
+    # the OSes provide the rest)
+    foreach(OPENSIM_LIB ${OSC_OPENSIM_LIBS})
+        list(APPEND OSC_LIB_FILES_TO_COPY $<TARGET_FILE:${OPENSIM_LIB}>)
+    endforeach()
+endif()
+# copy SDL2 lib if on Windows/Mac
+if(NOT LINUX)
+    list(APPEND OSC_LIB_FILES_TO_COPY $<TARGET_FILE:SDL2::SDL2>)
+endif()
 
 
 # ------------- configure configuration header ----------------- #
@@ -793,8 +837,21 @@ target_link_libraries(osccore PUBLIC
     # so that it uses the standard flags etc.
     osc_configuration
 
-    # see: GetDependencies.cmake
-    osc-all-deps
+    OpenGL::GL
+    GLEW::glew_s
+    glm::glm
+    SDL2::SDL2
+    nativefiledialog
+    imgui
+    IconFontCppHeaders
+    ImGuizmo
+    implot
+    stb
+    unordered_dense::unordered_dense
+    tomlplusplus::tomlplusplus
+    nonstd::span-lite
+    lunasvg::lunasvg
+    ${OSC_OPENSIM_LIBS}
 )
 
 # osccore: link options
@@ -886,10 +943,8 @@ target_link_libraries(testosc PUBLIC
 #
 # this is how IDEs like Visual Studio integrate their test parser with
 # the test framework
-if(NOT APPLE)  # TODO: fix apple: it's trying to run this shit while installing, where the RPATH is set up in install-mode
-    include(GoogleTest)
-    gtest_discover_tests(testosc)
-endif()
+include(GoogleTest)
+gtest_add_tests(TARGET testosc)
 
 
 # ------------ configure benchmark target ------------------ #

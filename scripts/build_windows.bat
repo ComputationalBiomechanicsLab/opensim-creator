@@ -59,45 +59,33 @@ IF %OSC_SHOULD_PIP_INSTALL% == "YES" (
 REM ----- ensure all submodules are up-to-date -----
 git submodule update --init --recursive
 
-echo "----- building OpenSim's dependencies (e.g. Simbody) -----"
-mkdir opensim-dependencies-build
-cd opensim-dependencies-build
-cmake ../third_party/opensim-core/dependencies %OSC_CMAKE_GENFLAGS% -DOPENSIM_WITH_CASADI=OFF -DOPENSIM_WITH_TROPTER=OFF -DCMAKE_INSTALL_PREFIX=../dependencies-install || exit /b
-cmake --build . --config %OSC_OPENSIM_DEPS_BUILD_TYPE% -j%OSC_BUILD_CONCURRENCY% || exit /b
-
+REM ----- build dependencies -----
+mkdir osc-dependencies-build
+cd osc-dependencies-build
+cmake -S ../third_party -B . %OSC_CMAKE_GENFLAGS% -DCMAKE_INSTALL_PREFIX="../osc-dependencies-install" || exit /b
+cmake --build . --config %OSC_BUILD_TYPE% -j%OSC_BUILD_CONCURRENCY% || exit /b
 echo "----- dependencies built, printing build dir -----"
 dir .
 
 echo "----- dependencies built, printing install dir -----"
-dir ../dependencies-install
+dir ../osc-dependencies-install
 
 REM pop back into the top-level dir
 cd ..
 
-
-echo "----- building OpenSim -----"
-mkdir opensim-build
-cd opensim-build
-cmake ../third_party/opensim-core %OSC_CMAKE_GENFLAGS% -DOPENSIM_WITH_CASADI=OFF -DOPENSIM_WITH_TROPTER=OFF -DBUILD_API_ONLY=ON -DOPENSIM_DISABLE_LOG_FILE=ON -DOPENSIM_BUILD_INDIVIDUAL_APPS=OFF -DOPENSIM_DEPENDENCIES_DIR=../dependencies-install -DBUILD_JAVA_WRAPPING=OFF -DCMAKE_INSTALL_PREFIX=../opensim-install || exit /b
-cmake --build . --config %OSC_OPENSIM_BUILD_TYPE% --target install -j%OSC_BUILD_CONCURRENCY% || exit /b
-
-echo "----- OpenSim built, printing build dir -----"
-dir .
-
-echo "----- OpenSim built, printing install dir -----"
-dir ../opensim-install
-
-REM pop back into the top-level dir
-cd ..
-
-echo "----- building OSC -----"
+REM ----- build osc -----
 mkdir osc-build
 cd osc-build
-cmake .. %OSC_CMAKE_GENFLAGS% -DCMAKE_PREFIX_PATH=%cd%/../opensim-install/cmake -DCMAKE_INSTALL_PATH=%cd%/../osc-install || exit /b
-cmake --build . --config %OSC_BUILD_TYPE% --target %OSC_BUILD_TARGET% -j%OSC_BUILD_CONCURRENCY% || exit /b
+cmake ..  %OSC_CMAKE_GENFLAGS% -DCMAKE_PREFIX_PATH="%cd%/../osc-dependencies-install" || exit \b
 
-echo "----- osc built, printing build dir -----"
-dir .
+REM ----- test osc -----
+REM
+REM but don't run Renderer tests, because the Windows CI machine doesn't have OpenGL4 :<
+cmake --build . --target testosc --config %OSC_BUILD_TYPE% -j%OSC_BUILD_CONCURRENCY% || exit \b
+.\%OSC_BUILD_TYPE%\testosc --gtest_filter='-Renderer*' || exit \b
+
+# then build final package
+cmake --build . --target package --config %OSC_BUILD_TYPE% || exit \b
 
 REM ----- final checks: if there was an error, try to exit this script with an error -----
 if %errorlevel% neq 0 exit /b %errorlevel%

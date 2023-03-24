@@ -3,7 +3,7 @@
 #include "src/Utils/Assertions.hpp"
 
 #include <glm/vec2.hpp>
-#include <lunasvg.h>
+#include <lunasvg/lunasvg.h>
 #include <nonstd/span.hpp>
 
 #include <cstdint>

@@ -5,7 +5,7 @@
 #     - this script should run to completion on a clean install of the
 #       OSes and produce a ready-to-use osc build
 #
-#     - run this from the repo root dir
+#     - run this from the repo root (opensim-creator) dir
 
 
 # error out of this script if it fails for any reason
@@ -14,14 +14,11 @@ set -xeuo pipefail
 
 # ----- handle external build parameters ----- #
 
-# base build type: used if one of the below isn't overridden
+# "base" build type to use when build types haven't been specified
 OSC_BASE_BUILD_TYPE=${OSC_BASE_BUILD_TYPE:-Release}
 
-# build type for OpenSim's dependencies (e.g. Simbody)
-OSC_OPENSIM_DEPS_BUILD_TYPE=${OSC_OPENSIM_DEPS_BUILD_TYPE:-`echo ${OSC_BASE_BUILD_TYPE}`}
-
-# build type for OpenSim
-OSC_OPENSIM_BUILD_TYPE=${OSC_OPENSIM_BUILD_TYPE:-`echo ${OSC_BASE_BUILD_TYPE}`}
+# build type for all of OSC's dependencies
+OSC_DEPS_BUILD_TYPE=${OSC_DEPS_BUILD_TYPE:-`echo ${OSC_BASE_BUILD_TYPE}`}
 
 # build type for OSC
 OSC_BUILD_TYPE=${OSC_BUILD_TYPE-`echo ${OSC_BASE_BUILD_TYPE}`}
@@ -34,27 +31,13 @@ OSC_BUILD_CONCURRENCY=${OSC_BUILD_CONCURRENCY:-1}
 
 # which OSC build target to build
 #
-#     osc        just build the osc binary
+#     osc        just build the `osc` binary
 #     package    package everything into a .deb installer
 OSC_BUILD_TARGET=${OSC_BUILD_TARGET:-package}
 
 # set this if you want to skip installing system-level deps
 #
 #     OSC_SKIP_APT
-
-# set this if you want to skip downloading + building OpenSim
-# from source
-#
-# if you skip this, you may also need to set the `CMAKE_PREFIX_PATH`
-# environment variable to point to an existing OpenSim install. The
-# GetDependencies.cmake file in OSC will try and locate OpenSim
-# automatically but you might need to give it a hint
-#
-#     OSC_SKIP_OPENSIM
-
-# set this if you want to skip building OSC
-#
-#     OSC_SKIP_OSC
 
 # set this if you want to build the docs
 #
@@ -65,12 +48,13 @@ echo "----- starting build -----"
 echo ""
 echo "----- printing build parameters -----"
 echo ""
-echo "    OSC_BASE_BUILD_TYPE = ${OSC_BASE_BUILD_TYPE}"
-echo "    OSC_OPENSIM_DEPS_BUILD_TYPE = ${OSC_OPENSIM_DEPS_BUILD_TYPE}"
-echo "    OSC_OPENSIM_BUILD_TYPE = ${OSC_OPENSIM_BUILD_TYPE}"
-echo "    OSC_BUILD_TYPE = ${OSC_BUILD_TYPE}"
+echo "    OSC_BASE_BUILD_TYPE   = ${OSC_BASE_BUILD_TYPE}"
+echo "    OSC_DEPS_BUILD_TYPE   = ${OSC_DEPS_BUILD_TYPE}"
+echo "    OSC_BUILD_TYPE        = ${OSC_BUILD_TYPE}"
 echo "    OSC_BUILD_CONCURRENCY = ${OSC_BUILD_CONCURRENCY}"
-echo "    OSC_BUILD_TARGET = ${OSC_BUILD_TARGET}"
+echo "    OSC_BUILD_TARGET      = ${OSC_BUILD_TARGET}"
+echo "    OSC_SKIP_APT          = ${OSC_SKIP_APT:-OFF}"
+echo "    OSC_BUILD_DOCS        = ${OSC_BUILD_DOCS:-OFF}"
 echo ""
 set -x
 
@@ -120,66 +104,29 @@ c++ --version
 cmake --version
 make --version
 
+echo "----- building OSC's dependencies -----"
+cmake \
+    -S third_party \
+    -B "osc-deps-build" \
+    -DCMAKE_BUILD_TYPE=${OSC_DEPS_BUILD_TYPE} \
+    -DCMAKE_INSTALL_PREFIX="osc-deps-install"
+cmake \
+    --build "osc-deps-build" \
+    -j${OSC_BUILD_CONCURRENCY}
 
-if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
-    echo "----- downloading, building, and installing (locally) OpenSim -----"
+echo "----- building OSC -----"
+cmake .. \
+    -S . \
+    -B "osc-build" \
+    -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE} \
+    -DCMAKE_PREFIX_PATH="${PWD}/osc-deps-install" \
+    ${OSC_BUILD_DOCS:+-DOSC_BUILD_DOCS=ON}
 
-    echo "--- building OpenSim's dependencies ---"
-    mkdir -p opensim-dependencies-build/
-    cd opensim-dependencies-build/
-    cmake ../third_party/opensim-core/dependencies \
-        -DCMAKE_BUILD_TYPE=${OSC_OPENSIM_DEPS_BUILD_TYPE} \
-        -DCMAKE_INSTALL_PREFIX=../opensim-dependencies-install \
-        -DOPENSIM_WITH_CASADI=OFF \
-        -DOPENSIM_WITH_TROPTER=OFF
-    cmake --build . -j${OSC_BUILD_CONCURRENCY}
-    echo "DEBUG: listing contents of OpenSim dependencies build dir"
-    ls .
-    cd -
+# build tests and the final package
+cmake \
+    --build "osc-build" \
+    --target testosc ${OSC_BUILD_TARGET} \
+    -j${OSC_BUILD_CONCURRENCY}
 
-    echo "--- building OpenSim ---"
-    mkdir -p opensim-build/
-    cd opensim-build/
-    cmake ../third_party/opensim-core/ \
-        -DOPENSIM_DEPENDENCIES_DIR=../opensim-dependencies-install/ \
-        -DCMAKE_INSTALL_PREFIX=../opensim-install/ \
-        -DBUILD_JAVA_WRAPPING=OFF \
-        -DCMAKE_BUILD_TYPE=${OSC_OPENSIM_BUILD_TYPE} \
-        -DOPENSIM_DISABLE_LOG_FILE=ON \
-        -DOPENSIM_WITH_CASADI=OFF \
-        -DOPENSIM_WITH_TROPTER=OFF \
-        -DOPENSIM_COPY_DEPENDENCIES=ON
-    cmake --build . --target install -j${OSC_BUILD_CONCURRENCY}
-    echo "DEBUG: listing contents of OpenSim build dir"
-    ls .
-    cd -
-
-    echo "----- finished downloading, building, and installing OpenSim -----"
-else
-    echo "----- skipping OpenSim build (OSC_SKIP_OPENSIM is set) -----"
-fi
-
-if [[ -z ${OSC_SKIP_OSC:+x} ]]; then
-    echo "----- building OSC -----"
-
-    mkdir -p osc-build/
-    cd osc-build/
-    cmake .. \
-        -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE} \
-        -DCMAKE_PREFIX_PATH=${PWD}/../opensim-install \
-        -DCMAKE_INSTALL_PREFIX=${PWD}/../osc-install \
-        ${OSC_BUILD_DOCS:+-DOSC_BUILD_DOCS=ON}
-    cmake --build . --target ${OSC_BUILD_TARGET} -j${OSC_BUILD_CONCURRENCY}
-    echo "DEBUG: listing contents of final build dir"
-    ls .
-    cd -
-
-    echo "----- finished building OSC (yay!) -----"
-    echo ""
-    echo "  depending on what target you built, you should be able to run commands like:"
-    echo ""
-    echo "      osc-build/osc  # run the osc binary"
-    echo "      apt-get install -yf osc-build/osc-*.deb  # install the package, then run 'osc'"
-else
-    echo "----- skipping OSC build (OSC_SKIP_OSC is set) -----"
-fi
+# ensure tests pass
+osc-build/testosc

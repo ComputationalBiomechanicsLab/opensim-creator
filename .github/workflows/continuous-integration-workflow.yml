@@ -8,15 +8,18 @@ jobs:
     name: Build on Windows
     runs-on: windows-2022
     steps:
+
     - uses: actions/checkout@v2
       with:
         path: osc
         submodules: 'recursive'
+
     - name: run build_windows.bat
       run: |
         cd $env:GITHUB_WORKSPACE\osc
-        set OSC_BUILD_CONCURRENCY=%NUMBER_OFPROCESSORS%
+        set OSC_BUILD_CONCURRENCY=%NUMBER_OF_PROCESSORS%
         scripts\\build_windows.bat || exit /b
+
     - uses: actions/upload-artifact@v2
       with:
         name: OpenSimCreator_Win64.zip
@@ -27,20 +30,25 @@ jobs:
     name: Build on Ubuntu 20.04
     runs-on: ubuntu-20.04
     steps:
+
     - uses: actions/checkout@v2
       with:
         path: osc
         submodules: 'recursive'
+
     - name: run build script
       run: |
         cd $GITHUB_WORKSPACE/osc
+        sudo apt-get install xvfb  # virtual desktop, for tests
         export OSC_BUILD_CONCURRENCY=$(nproc)
-        ./scripts/build_debian-buster.sh
+        xvfb-run ./scripts/build_debian-buster.sh
+
     - uses: actions/upload-artifact@v2
       with:
         name: OpenSimCreator_Deb.zip
         path: osc/osc-build/*.deb
         if-no-files-found: error
+
     - uses: actions/upload-artifact@v2
       with:
         name: osc_docs
@@ -51,14 +59,17 @@ jobs:
     name: Build on Mac (catalina)
     runs-on: macos-11
     steps:
+
     - uses: actions/checkout@v2
       with:
         submodules: 'recursive'
+
     - name: run build script
       run: |
         cd $GITHUB_WORKSPACE
         export OSC_BUILD_CONCURRENCY=$(sysctl -n hw.physicalcpu)
         ./scripts/build_mac-catalina.sh
+
     - uses: actions/upload-artifact@v2
       with:
         name: OpenSimCreator_MacOSX.zip
