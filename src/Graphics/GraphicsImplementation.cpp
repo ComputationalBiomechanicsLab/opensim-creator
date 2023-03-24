@@ -111,41 +111,14 @@ static osc::CStringView constexpr c_QuadFragmentShaderSrc = R"(
 // generic utility functions
 namespace
 {
-    void PushAsBytes(float v, std::vector<std::byte>& out)
+    template<typename T>
+    void PushAsBytes(T const& v, std::vector<std::byte>& out)
     {
-        for (size_t i = 0; i < sizeof(float); ++i)
-        {
-            out.push_back(reinterpret_cast<std::byte*>(&v)[i]);
-        }
-    }
-
-    void PushAsBytes(glm::vec4 const& v, std::vector<std::byte>& out)
-    {
-        PushAsBytes(v.x, out);
-        PushAsBytes(v.y, out);
-        PushAsBytes(v.z, out);
-        PushAsBytes(v.w, out);
-    }
-
-    void PushAsBytes(glm::vec3 const& v, std::vector<std::byte>& out)
-    {
-        PushAsBytes(v.x, out);
-        PushAsBytes(v.y, out);
-        PushAsBytes(v.z, out);
-    }
-
-    void PushAsBytes(glm::vec2 const& v, std::vector<std::byte>& out)
-    {
-        PushAsBytes(v.x, out);
-        PushAsBytes(v.y, out);
-    }
-
-    void PushAsBytes(osc::Rgba32 const& c, std::vector<std::byte>& out)
-    {
-        out.push_back(static_cast<std::byte>(c.r));
-        out.push_back(static_cast<std::byte>(c.g));
-        out.push_back(static_cast<std::byte>(c.b));
-        out.push_back(static_cast<std::byte>(c.a));
+        out.insert(
+            out.end(),
+            reinterpret_cast<std::byte const*>(&v),  // it is always safe to cast to std::byte/char
+            reinterpret_cast<std::byte const*>(&v) + sizeof(T)
+        );
     }
 }
 
@@ -2708,12 +2681,6 @@ private:
         bool const hasColors = !m_Colors.empty();
         bool const hasTangents = !m_Tangents.empty();
 
-        // check that the data stored in this mesh object is valid
-        OSC_ASSERT_ALWAYS((!hasNormals || m_Normals.size() == m_Vertices.size()) && "number of normals != number of verts");
-        OSC_ASSERT_ALWAYS((!hasTexCoords || m_TexCoords.size() == m_Vertices.size()) && "number of uvs != number of verts");
-        OSC_ASSERT_ALWAYS((!hasColors || m_Colors.size() == m_Vertices.size()) && "number of colors != number of verts");
-        OSC_ASSERT_ALWAYS((!hasTangents || m_Tangents.size() == m_Vertices.size()) && "number of tangents != number of verts");
-
         // `sizeof(decltype(T)::value_type)` is used in this function
         //
         // check at compile-time that the resulting type is as-expected
@@ -2742,30 +2709,38 @@ private:
             byteStride += sizeof(decltype(m_Tangents)::value_type);
         }
 
+        // check that the data stored in this mesh object is valid before indexing into it
+        OSC_ASSERT_ALWAYS((!hasNormals || m_Normals.size() == m_Vertices.size()) && "number of normals != number of verts");
+        OSC_ASSERT_ALWAYS((!hasTexCoords || m_TexCoords.size() == m_Vertices.size()) && "number of uvs != number of verts");
+        OSC_ASSERT_ALWAYS((!hasColors || m_Colors.size() == m_Vertices.size()) && "number of colors != number of verts");
+        OSC_ASSERT_ALWAYS((!hasTangents || m_Tangents.size() == m_Vertices.size()) && "number of tangents != number of verts");
+
         // allocate+pack mesh data into CPU-side vector
         std::vector<std::byte> data;
         data.reserve(byteStride * m_Vertices.size());
         for (size_t i = 0; i < m_Vertices.size(); ++i)
         {
-            PushAsBytes(m_Vertices.at(i), data);
+            PushAsBytes(m_Vertices[i], data);
             if (hasNormals)
             {
-                PushAsBytes(m_Normals.at(i), data);
+                PushAsBytes(m_Normals[i], data);
             }
             if (hasTexCoords)
             {
-                PushAsBytes(m_TexCoords.at(i), data);
+                PushAsBytes(m_TexCoords[i], data);
             }
             if (hasColors)
             {
-                PushAsBytes(m_Colors.at(i), data);
+                PushAsBytes(m_Colors[i], data);
             }
             if (hasTangents)
             {
-                PushAsBytes(m_Tangents.at(i), data);
+                PushAsBytes(m_Tangents[i], data);
             }
         }
-        OSC_ASSERT_ALWAYS(data.size() == byteStride*m_Vertices.size() && "error packing mesh data into a CPU buffer: unexpected final size");
+
+        // check that the above packing procedure worked as expected
+        OSC_ASSERT(data.size() == byteStride*m_Vertices.size() && "error packing mesh data into a CPU buffer: unexpected final size");
 
         // allocate GPU-side buffers (or re-use the last ones)
         if (!(*m_MaybeGPUBuffers))
@@ -2810,11 +2785,12 @@ private:
         // activate relevant attributes based on buffer layout
         int64_t byteOffset = 0;
 
-        // define vertex locations in buffer
-        glVertexAttribPointer(SHADER_LOC_VERTEX_POSITION, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
-        glEnableVertexAttribArray(SHADER_LOC_VERTEX_POSITION);
-        byteOffset += sizeof(decltype(m_Vertices)::value_type);
-
+        if (true)  // mesh always has vertices
+        {
+            glVertexAttribPointer(SHADER_LOC_VERTEX_POSITION, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
+            glEnableVertexAttribArray(SHADER_LOC_VERTEX_POSITION);
+            byteOffset += sizeof(decltype(m_Vertices)::value_type);
+        }
         if (hasNormals)
         {
             glVertexAttribPointer(SHADER_LOC_VERTEX_NORMAL, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
@@ -2825,7 +2801,7 @@ private:
         {
             glVertexAttribPointer(SHADER_LOC_VERTEX_TEXCOORD01, 2, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
             glEnableVertexAttribArray(SHADER_LOC_VERTEX_TEXCOORD01);
-            byteOffset += sizeof(decltype(m_TexCoords)::value_type);;
+            byteOffset += sizeof(decltype(m_TexCoords)::value_type);
         }
         if (hasColors)
         {
