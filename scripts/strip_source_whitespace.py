@@ -14,7 +14,7 @@ pattern = re.compile(r"[ \t]+$", re.MULTILINE)
 # tabs
 # pattern = re.compile(r"\t", re.MULTILINE)
 
-for root, subdirs, files in os.walk("opensim-creator\\src"):
+for root, subdirs, files in os.walk("src"):
     for file in files:
         p = os.path.join(root, file)
 
