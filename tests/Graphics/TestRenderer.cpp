@@ -2,6 +2,7 @@
 #include "src/Graphics/CameraClearFlags.hpp"
 #include "src/Graphics/CameraProjection.hpp"
 #include "src/Graphics/Color.hpp"
+#include "src/Graphics/Cubemap.hpp"
 #include "src/Graphics/DepthStencilFormat.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsContext.hpp"
@@ -15,6 +16,7 @@
 #include "src/Graphics/RenderTextureDescriptor.hpp"
 #include "src/Graphics/RenderTextureFormat.hpp"
 #include "src/Graphics/Texture2D.hpp"
+#include "src/Graphics/TextureFormat.hpp"
 #include "src/Graphics/TextureWrapMode.hpp"
 #include "src/Graphics/TextureFilterMode.hpp"
 #include "src/Graphics/Shader.hpp"
@@ -601,6 +603,48 @@ TEST_F(Renderer, ShaderGetPropertyTypeReturnsExpectedType)
     }
 }
 
+TEST_F(Renderer, ShaderGetPropertyForCubemapReturnsExpectedType)
+{
+    // from: https://learnopengl.com/Advanced-OpenGL/Cubemaps
+    char constexpr c_CubemapVertexShader[] = R"(
+#version 330 core
+
+layout (location = 0) in vec3 aPos;
+
+out vec3 TexCoords;
+
+uniform mat4 projection;
+uniform mat4 view;
+
+void main()
+{
+    TexCoords = aPos;
+    gl_Position = projection * view * vec4(aPos, 1.0);
+}
+)";
+
+    char constexpr c_CubemapFragmentShader[] = R"(
+#version 330 core
+
+out vec4 FragColor;
+
+in vec3 TexCoords;
+
+uniform samplerCube skybox;
+
+void main()
+{
+    FragColor = texture(skybox, TexCoords);
+}
+)";
+
+    osc::Shader shader{c_CubemapVertexShader, c_CubemapFragmentShader};
+    std::optional<size_t> index = shader.findPropertyIndex("skybox");
+
+    ASSERT_TRUE(index.has_value());
+    ASSERT_EQ(shader.getPropertyType(*index), osc::ShaderType::SamplerCube);
+}
+
 TEST_F(Renderer, MaterialCanBeConstructed)
 {
     GenerateMaterial();  // should compile and run fine
@@ -937,6 +981,59 @@ TEST_F(Renderer, MaterialSetRenderTextureFollowedByClearRenderTextureClearsTheRe
     ASSERT_FALSE(mat.getRenderTexture(key));
 }
 
+TEST_F(Renderer, MaterialGetCubemapInitiallyReturnsNothing)
+{
+    osc::Material const mat = GenerateMaterial();
+
+    ASSERT_FALSE(mat.getCubemap("cubemap").has_value());
+}
+
+TEST_F(Renderer, MaterialGetCubemapReturnsSomethingAfterSettingCubemap)
+{
+    osc::Material mat = GenerateMaterial();
+
+    ASSERT_FALSE(mat.getCubemap("cubemap").has_value());
+
+    osc::Cubemap const cubemap{1, osc::TextureFormat::RGBA32};
+
+    mat.setCubemap("cubemap", cubemap);
+
+    ASSERT_TRUE(mat.getCubemap("cubemap").has_value());
+}
+
+TEST_F(Renderer, MaterialGetCubemapReturnsTheCubemapThatWasLastSet)
+{
+    osc::Material mat = GenerateMaterial();
+
+    ASSERT_FALSE(mat.getCubemap("cubemap").has_value());
+
+    osc::Cubemap const firstCubemap{1, osc::TextureFormat::RGBA32};
+    osc::Cubemap const secondCubemap{2, osc::TextureFormat::RGBA32};  // different
+
+    mat.setCubemap("cubemap", firstCubemap);
+    ASSERT_EQ(mat.getCubemap("cubemap"), firstCubemap);
+
+    mat.setCubemap("cubemap", secondCubemap);
+    ASSERT_EQ(mat.getCubemap("cubemap"), secondCubemap);
+}
+
+TEST_F(Renderer, MaterialClearCubemapClearsTheCubemap)
+{
+    osc::Material mat = GenerateMaterial();
+
+    ASSERT_FALSE(mat.getCubemap("cubemap").has_value());
+
+    osc::Cubemap const cubemap{1, osc::TextureFormat::RGBA32};
+
+    mat.setCubemap("cubemap", cubemap);
+
+    ASSERT_TRUE(mat.getCubemap("cubemap").has_value());
+
+    mat.clearCubemap("cubemap");
+
+    ASSERT_FALSE(mat.getCubemap("cubemap").has_value());
+}
+
 TEST_F(Renderer, MaterialGetTransparentIsInitiallyFalse)
 {
     osc::Material mat = GenerateMaterial();
@@ -969,6 +1066,25 @@ TEST_F(Renderer, MaterialSetDepthTestedBehavesAsExpected)
     ASSERT_TRUE(mat.getDepthTested());
     mat.setDepthTested(false);
     ASSERT_FALSE(mat.getDepthTested());
+}
+
+TEST_F(Renderer, MaterialGetDepthFunctionIsInitiallyDefault)
+{
+    osc::Material mat = GenerateMaterial();
+    ASSERT_EQ(mat.getDepthFunction(), osc::DepthFunction::Default);
+}
+
+TEST_F(Renderer, MaterialSetDepthFunctionBehavesAsExpected)
+{
+    osc::Material mat = GenerateMaterial();
+
+    ASSERT_EQ(mat.getDepthFunction(), osc::DepthFunction::Default);
+
+    static_assert(osc::DepthFunction::Default != osc::DepthFunction::LessOrEqual);
+
+    mat.setDepthFunction(osc::DepthFunction::LessOrEqual);
+
+    ASSERT_EQ(mat.getDepthFunction(), osc::DepthFunction::LessOrEqual);
 }
 
 TEST_F(Renderer, MaterialGetWireframeModeIsInitiallyFalse)

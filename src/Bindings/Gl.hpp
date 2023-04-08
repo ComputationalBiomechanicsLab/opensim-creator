@@ -377,6 +377,11 @@ namespace gl
         glUniform1i(u.geti(), v);
     }
 
+    inline void Uniform(UniformSamplerCube& u, GLint v) noexcept
+    {
+        glUniform1i(u.geti(), v);
+    }
+
     // set the value of an `sampler2DMS` uniform
     inline void Uniform(UniformSampler2DMS& u, GLint v) noexcept
     {

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/Graphics/Cubemap.hpp"
+#include "src/Graphics/DepthFunction.hpp"
 #include "src/Graphics/RenderTexture.hpp"
 #include "src/Graphics/Shader.hpp"
 #include "src/Graphics/Texture2D.hpp"
@@ -69,11 +71,18 @@ namespace osc
         void setRenderTexture(std::string_view propertyName, RenderTexture);
         void clearRenderTexture(std::string_view propertyName);
 
+        std::optional<Cubemap> getCubemap(std::string_view propertyName) const;
+        void setCubemap(std::string_view propertyName, Cubemap);
+        void clearCubemap(std::string_view propertyName);
+
         bool getTransparent() const;
         void setTransparent(bool);
 
         bool getDepthTested() const;
         void setDepthTested(bool);
+
+        DepthFunction getDepthFunction() const;
+        void setDepthFunction(DepthFunction);
 
         bool getWireframeMode() const;
         void setWireframeMode(bool);

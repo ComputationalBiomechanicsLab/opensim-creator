@@ -3,6 +3,7 @@
 #include "src/Graphics/Camera.hpp"
 #include "src/Graphics/CameraClearFlags.hpp"
 #include "src/Graphics/CameraProjection.hpp"
+#include "src/Graphics/Cubemap.hpp"
 #include "src/Graphics/DepthStencilFormat.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsContext.hpp"
@@ -16,6 +17,7 @@
 #include "src/Graphics/Texture2D.hpp"
 #include "src/Graphics/TextureWrapMode.hpp"
 #include "src/Graphics/TextureFilterMode.hpp"
+#include "src/Graphics/TextureFormat.hpp"
 #include "src/Graphics/Shader.hpp"
 #include "src/Graphics/ShaderType.hpp"
 
@@ -140,7 +142,8 @@ namespace
         int32_t,
         bool,
         osc::Texture2D,
-        osc::RenderTexture
+        osc::RenderTexture,
+        osc::Cubemap
     >;
 
     osc::ShaderType GetShaderType(MaterialValue const& v)
@@ -170,6 +173,8 @@ namespace
         case VariantIndex<MaterialValue, osc::Texture2D>():
         case VariantIndex<MaterialValue, osc::RenderTexture>():
             return osc::ShaderType::Sampler2D;
+        case VariantIndex<MaterialValue, osc::Cubemap>():
+            return osc::ShaderType::SamplerCube;
         default:
             return osc::ShaderType::Unknown;
         }
@@ -190,6 +195,7 @@ namespace
         "Int",
         "Bool",
         "Sampler2D",
+        "SamplerCube",
         "Unknown"
     );
 
@@ -216,6 +222,8 @@ namespace
             return osc::ShaderType::Bool;
         case GL_SAMPLER_2D:
             return osc::ShaderType::Sampler2D;
+        case GL_SAMPLER_CUBE:
+            return osc::ShaderType::SamplerCube;
         case GL_INT_VEC2:
         case GL_INT_VEC3:
         case GL_INT_VEC4:
@@ -693,6 +701,184 @@ namespace osc
             Image& dest
         );
     };
+}
+
+//////////////////////////////////
+//
+// cubemap stuff
+//
+//////////////////////////////////
+
+namespace
+{
+    // returns the number of bytes required to represent a pixel of
+    // a texture in the given format
+    size_t NumBytesPerPixel(osc::TextureFormat format)
+    {
+        static_assert(static_cast<std::underlying_type_t<osc::TextureFormat>>(osc::TextureFormat::TOTAL) == 2);
+        switch (format)
+        {
+        case osc::TextureFormat::RGBA32:
+            return 4;
+        case osc::TextureFormat::RGB24:
+        default:
+            return 3;
+        }
+    }
+
+    // the OpenGL data associated with an osc::Texture2D
+    struct CubemapOpenGLData final {
+        gl::TextureCubemap texture;
+    };
+
+    GLint ToOpenGLUnpackAlignment(osc::TextureFormat format)
+    {
+        static_assert(static_cast<size_t>(osc::TextureFormat::TOTAL) == 2);
+        switch (format)
+        {
+        case osc::TextureFormat::RGBA32:
+            return 4;
+        default:
+            return 1;
+        }
+    }
+
+    GLenum ToOpenGLColorFormat(osc::TextureFormat format)
+    {
+        static_assert(static_cast<size_t>(osc::TextureFormat::TOTAL) == 2);
+        switch (format)
+        {
+        case osc::TextureFormat::RGB24:
+            return GL_RGB;
+        case osc::TextureFormat::RGBA32:
+        default:
+            return GL_RGBA;
+        }
+    }
+}
+
+class osc::Cubemap::Impl final {
+public:
+    Impl(int32_t width, TextureFormat format) :
+        m_Width{width},
+        m_Format{format}
+    {
+        OSC_THROWING_ASSERT(m_Width > 0 && "the width of a cubemap must be a positive number");
+        OSC_ASSERT(0 <= static_cast<std::underlying_type_t<TextureFormat>>(m_Format) && static_cast<std::underlying_type_t<TextureFormat>>(m_Format) < static_cast<std::underlying_type_t<TextureFormat>>(TextureFormat::TOTAL));
+
+        size_t const numFaces = static_cast<size_t>(osc::CubemapFace::TOTAL);
+        size_t const numPixelsPerFace = m_Width*m_Width*NumBytesPerPixel(m_Format);
+        m_Data.resize(numFaces * numPixelsPerFace);
+    }
+
+    int32_t getWidth() const
+    {
+        return m_Width;
+    }
+
+    TextureFormat getTextureFormat() const
+    {
+        return m_Format;
+    }
+
+    void setPixelData(CubemapFace face, nonstd::span<uint8_t const> channelsRowByRow)
+    {
+        OSC_ASSERT(0 <= static_cast<std::underlying_type_t<CubemapFace>>(face) && static_cast<std::underlying_type_t<CubemapFace>>(face) < static_cast<std::underlying_type_t<CubemapFace>>(CubemapFace::TOTAL));
+
+        size_t const numPixelsPerFace = m_Width*m_Width*NumBytesPerPixel(m_Format);
+
+        OSC_THROWING_ASSERT(channelsRowByRow.size() == numPixelsPerFace && "incorrect number of pixels handed to Cubemap::setPixelData: all faces must be square and of equal size");
+
+        size_t const offset = static_cast<size_t>(face)*numPixelsPerFace;
+
+        OSC_ASSERT(offset+numPixelsPerFace <= m_Data.size() && "out of range assignment detected: this should be handled in the constructor");
+
+        std::copy(channelsRowByRow.begin(), channelsRowByRow.end(), m_Data.begin() + offset);
+    }
+
+    gl::TextureCubemap& updCubemap()
+    {
+        if (!*m_MaybeGPUTexture)
+        {
+            uploadToGPU();
+        }
+        OSC_ASSERT(*m_MaybeGPUTexture);
+
+        CubemapOpenGLData& bufs = **m_MaybeGPUTexture;
+
+        return bufs.texture;
+    }
+private:
+    void uploadToGPU()
+    {
+        // create new OpenGL handle(s)
+        *m_MaybeGPUTexture = CubemapOpenGLData{};
+
+        // check that CPU data is correctly aligned for unpacking onto the GPU
+        GLint const unpackAlignment = ToOpenGLUnpackAlignment(m_Format);
+        OSC_ASSERT(NumBytesPerPixel(m_Format)*m_Width % unpackAlignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+        OSC_ASSERT(reinterpret_cast<intptr_t>(m_Data.data()) % unpackAlignment == 0 && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+
+        // upload each face of the cubemap
+        size_t const numPixelsPerFace = m_Width*m_Width*NumBytesPerPixel(m_Format);
+        gl::BindTexture((*m_MaybeGPUTexture)->texture);
+        gl::PixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment);
+        for (GLint faceIdx = 0; faceIdx < static_cast<GLint>(osc::CubemapFace::TOTAL); ++faceIdx)
+        {
+            size_t const begin = faceIdx*numPixelsPerFace;
+            size_t const end = begin + numPixelsPerFace;
+            OSC_ASSERT(end <= m_Data.size());
+
+            gl::TexImage2D(
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIdx,
+                0,
+                ToOpenGLColorFormat(m_Format),
+                m_Width,
+                m_Width,
+                0,
+                ToOpenGLColorFormat(m_Format),
+                GL_UNSIGNED_BYTE,
+                m_Data.data() + begin
+            );
+        }
+        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        gl::BindTexture();
+    }
+
+    int32_t m_Width;
+    TextureFormat m_Format;
+    std::vector<uint8_t> m_Data;
+
+    DefaultConstructOnCopy<std::optional<CubemapOpenGLData>> m_MaybeGPUTexture;
+};
+
+osc::Cubemap::Cubemap(int32_t width, TextureFormat format) :
+    m_Impl{make_cow<Impl>(width, format)}
+{
+}
+osc::Cubemap::Cubemap(Cubemap const&) = default;
+osc::Cubemap::Cubemap(Cubemap&&) noexcept = default;
+osc::Cubemap& osc::Cubemap::operator=(Cubemap const&) = default;
+osc::Cubemap& osc::Cubemap::operator=(Cubemap&&) noexcept = default;
+osc::Cubemap::~Cubemap() noexcept = default;
+
+int32_t osc::Cubemap::getWidth() const
+{
+    return m_Impl->getWidth();
+}
+
+osc::TextureFormat osc::Cubemap::getTextureFormat() const
+{
+    return m_Impl->getTextureFormat();
+}
+
+void osc::Cubemap::setPixelData(CubemapFace face, nonstd::span<uint8_t const> channelsRowByRow)
+{
+    m_Impl.upd()->setPixelData(face, channelsRowByRow);
 }
 
 
@@ -1747,6 +1933,22 @@ std::ostream& osc::operator<<(std::ostream& o, Shader const& shader)
 //
 //////////////////////////////////
 
+namespace
+{
+    GLenum ToGLDepthFunc(osc::DepthFunction f)
+    {
+        static_assert(static_cast<size_t>(osc::DepthFunction::TOTAL) == 2);
+        switch (f)
+        {
+        case osc::DepthFunction::LessOrEqual:
+            return GL_LEQUAL;
+        case osc::DepthFunction::Less:
+        default:
+            return GL_LESS;
+        }
+    }
+}
+
 class osc::Material::Impl final {
 public:
     Impl(Shader shader) : m_Shader{std::move(shader)}
@@ -1888,6 +2090,21 @@ public:
         m_Values.erase(std::string{std::move(propertyName)});
     }
 
+    std::optional<Cubemap> getCubemap(std::string_view propertyName) const
+    {
+        return getValue<Cubemap>(std::move(propertyName));
+    }
+
+    void setCubemap(std::string_view propertyName, Cubemap cubemap)
+    {
+        setValue(std::move(propertyName), std::move(cubemap));
+    }
+
+    void clearCubemap(std::string_view propertyName)
+    {
+        m_Values.erase(std::string{std::move(propertyName)});
+    }
+
     bool getTransparent() const
     {
         return m_IsTransparent;
@@ -1906,6 +2123,16 @@ public:
     void setDepthTested(bool v)
     {
         m_IsDepthTested = std::move(v);
+    }
+
+    DepthFunction getDepthFunction() const
+    {
+        return m_DepthFunction;
+    }
+
+    void setDepthFunction(DepthFunction f)
+    {
+        m_DepthFunction = f;
     }
 
     bool getWireframeMode() const
@@ -1950,6 +2177,7 @@ private:
     bool m_IsTransparent = false;
     bool m_IsDepthTested = true;
     bool m_IsWireframeMode = false;
+    DepthFunction m_DepthFunction = osc::DepthFunction::Default;
 };
 
 osc::Material::Material(Shader shader) :
@@ -2098,6 +2326,21 @@ void osc::Material::clearRenderTexture(std::string_view propertyName)
     m_Impl.upd()->clearRenderTexture(std::move(propertyName));
 }
 
+std::optional<osc::Cubemap> osc::Material::getCubemap(std::string_view propertyName) const
+{
+    return m_Impl->getCubemap(std::move(propertyName));
+}
+
+void osc::Material::setCubemap(std::string_view propertyName, Cubemap cubemap)
+{
+    m_Impl.upd()->setCubemap(std::move(propertyName), std::move(cubemap));
+}
+
+void osc::Material::clearCubemap(std::string_view propertyName)
+{
+    m_Impl.upd()->clearCubemap(std::move(propertyName));
+}
+
 bool osc::Material::getTransparent() const
 {
     return m_Impl->getTransparent();
@@ -2116,6 +2359,16 @@ bool osc::Material::getDepthTested() const
 void osc::Material::setDepthTested(bool v)
 {
     m_Impl.upd()->setDepthTested(std::move(v));
+}
+
+osc::DepthFunction osc::Material::getDepthFunction() const
+{
+    return m_Impl->getDepthFunction();
+}
+
+void osc::Material::setDepthFunction(DepthFunction f)
+{
+    m_Impl.upd()->setDepthFunction(f);
 }
 
 bool osc::Material::getWireframeMode() const
@@ -4428,6 +4681,19 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
         ++textureSlot;
         break;
     }
+    case VariantIndex<MaterialValue, Cubemap>():
+    {
+        Cubemap::Impl& impl = const_cast<Cubemap::Impl&>(*std::get<Cubemap>(v).m_Impl);
+        gl::TextureCubemap& texture = impl.updCubemap();
+
+        gl::ActiveTexture(GL_TEXTURE0 + textureSlot);
+        gl::BindTexture(texture);
+        gl::UniformSamplerCube u{se.location};
+        gl::Uniform(u, textureSlot);
+
+        ++textureSlot;
+        break;
+    }
     default:
     {
         break;
@@ -4457,6 +4723,11 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
     if (matImpl.getWireframeMode())
     {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+
+    if (matImpl.getDepthFunction() != DepthFunction::Default)
+    {
+        glDepthFunc(ToGLDepthFunc(matImpl.getDepthFunction()));
     }
 
     // bind material variables
@@ -4512,6 +4783,11 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
     if (matImpl.getWireframeMode())
     {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+
+    if (matImpl.getDepthFunction() != DepthFunction::Default)
+    {
+        glDepthFunc(ToGLDepthFunc(DepthFunction::Default));
     }
 }
 

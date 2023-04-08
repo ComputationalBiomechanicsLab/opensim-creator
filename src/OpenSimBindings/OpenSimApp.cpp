@@ -17,6 +17,7 @@
 #include "src/Tabs/Experiments/RendererBasicLightingTab.hpp"
 #include "src/Tabs/Experiments/RendererBlendingTab.hpp"
 #include "src/Tabs/Experiments/RendererCoordinateSystemsTab.hpp"
+#include "src/Tabs/Experiments/RendererCubemapsTab.hpp"
 #include "src/Tabs/Experiments/RendererFramebuffersTab.hpp"
 #include "src/Tabs/Experiments/RendererHelloTriangleTab.hpp"
 #include "src/Tabs/Experiments/RendererLightingMapsTab.hpp"
@@ -168,6 +169,7 @@ namespace
         RegisterTab<osc::RendererBasicLightingTab>(*registry);
         RegisterTab<osc::RendererBlendingTab>(*registry);
         RegisterTab<osc::RendererCoordinateSystemsTab>(*registry);
+        RegisterTab<osc::RendererCubemapsTab>(*registry);
         RegisterTab<osc::RendererFramebuffersTab>(*registry);
         RegisterTab<osc::RendererHelloTriangleTab>(*registry);
         RegisterTab<osc::RendererLightingMapsTab>(*registry);

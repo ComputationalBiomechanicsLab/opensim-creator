@@ -17,6 +17,7 @@ namespace osc
         Int,
         Bool,
         Sampler2D,
+        SamplerCube,
         Unknown,
         TOTAL,
     };

@@ -35,6 +35,7 @@ All notable changes to this project will be documented here. The format is based
 - The build scripts (e.g. `scripts/build_debian-buster.sh`) now build single-threaded by default, because
   the OpenSim build step can exhaust a computer's RAM (#659)
 - Internal: Dropped `fmt` library: collides with OpenSim and does not compile on modern GCC (#660)
+- Internal: Cubemap rendering support was added to the graphics backend (#599)
 
 
 ## [0.4.0] - 2023/03/06

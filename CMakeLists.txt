@@ -431,6 +431,8 @@ add_library(osccore STATIC
     src/Graphics/CameraProjection.hpp
     src/Graphics/Color.cpp
     src/Graphics/Color.hpp
+    src/Graphics/Cubemap.hpp
+    src/Graphics/CubemapFace.hpp
     src/Graphics/DepthStencilFormat.hpp
     src/Graphics/Graphics.hpp
     src/Graphics/GraphicsContext.hpp
@@ -476,6 +478,7 @@ add_library(osccore STATIC
     src/Graphics/SimpleSceneDecoration.hpp
     src/Graphics/Texture2D.hpp
     src/Graphics/TextureFilterMode.hpp
+    src/Graphics/TextureFormat.hpp
     src/Graphics/TextureGen.cpp
     src/Graphics/TextureGen.hpp
     src/Graphics/TextureWrapMode.hpp
@@ -725,6 +728,8 @@ add_library(osccore STATIC
     src/Tabs/Experiments/RendererBlendingTab.hpp
     src/Tabs/Experiments/RendererCoordinateSystemsTab.cpp
     src/Tabs/Experiments/RendererCoordinateSystemsTab.hpp
+    src/Tabs/Experiments/RendererCubemapsTab.cpp
+    src/Tabs/Experiments/RendererCubemapsTab.hpp
     src/Tabs/Experiments/RendererFramebuffersTab.cpp
     src/Tabs/Experiments/RendererFramebuffersTab.hpp
     src/Tabs/Experiments/RendererHelloTriangleTab.cpp
@@ -898,8 +903,13 @@ configure_file(
 add_executable(testosc EXCLUDE_FROM_ALL
 
     tests/Formats/TestCSV.cpp
+
+    tests/Graphics/TestCubemap.cpp
+    tests/Graphics/TestCubemapFace.cpp
     tests/Graphics/TestImage.cpp
     tests/Graphics/TestRenderer.cpp
+    tests/Graphics/TestTextureFormat.cpp
+
     tests/Maths/TestBVH.cpp
     tests/OpenSimBindings/TestForwardDynamicSimulation.cpp
     tests/OpenSimBindings/TestOpenSim.cpp
