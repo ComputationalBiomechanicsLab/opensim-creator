@@ -26,6 +26,7 @@ namespace osc { struct Rect; }
 namespace osc { struct Segment; }
 namespace osc { struct Transform; }
 namespace osc { class Config; }
+namespace osc { class Image; }
 namespace osc { class Mesh; }
 namespace osc { class MeshCache; }
 namespace osc { class MeshIndicesView; }
@@ -158,7 +159,15 @@ namespace osc
         ShaderCache&
     );
 
+    // returns a texture loaded from the provided image data
+    //
+    // throws if the image isn't representable as a GPU texture
+    Texture2D ToTexture2D(Image const&);
+
     // returns a texture loaded from disk via osc::Image
+    //
+    // throws if the image data isn't representable as a GPU texture (e.g. because it has
+    // an incorrect number of color channels)
     Texture2D LoadTexture2DFromImage(
         std::filesystem::path const&,
         ImageFlags = ImageFlags_None

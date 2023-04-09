@@ -703,21 +703,18 @@ namespace osc
     };
 }
 
-//////////////////////////////////
-//
-// cubemap stuff
-//
-//////////////////////////////////
-
 namespace
 {
     // returns the number of bytes required to represent a pixel of
     // a texture in the given format
     size_t NumBytesPerPixel(osc::TextureFormat format)
     {
-        static_assert(static_cast<std::underlying_type_t<osc::TextureFormat>>(osc::TextureFormat::TOTAL) == 2);
+        static_assert(static_cast<size_t>(osc::TextureFormat::TOTAL) == 3);
+
         switch (format)
         {
+        case osc::TextureFormat::R8:
+            return 1;
         case osc::TextureFormat::RGBA32:
             return 4;
         case osc::TextureFormat::RGB24:
@@ -726,18 +723,16 @@ namespace
         }
     }
 
-    // the OpenGL data associated with an osc::Texture2D
-    struct CubemapOpenGLData final {
-        gl::TextureCubemap texture;
-    };
-
     GLint ToOpenGLUnpackAlignment(osc::TextureFormat format)
     {
-        static_assert(static_cast<size_t>(osc::TextureFormat::TOTAL) == 2);
+        static_assert(static_cast<size_t>(osc::TextureFormat::TOTAL) == 3);
+
         switch (format)
         {
         case osc::TextureFormat::RGBA32:
             return 4;
+        case osc::TextureFormat::R8:
+        case osc::TextureFormat::RGB24:
         default:
             return 1;
         }
@@ -745,9 +740,12 @@ namespace
 
     GLenum ToOpenGLColorFormat(osc::TextureFormat format)
     {
-        static_assert(static_cast<size_t>(osc::TextureFormat::TOTAL) == 2);
+        static_assert(static_cast<size_t>(osc::TextureFormat::TOTAL) == 3);
+
         switch (format)
         {
+        case osc::TextureFormat::R8:
+            return GL_RED;
         case osc::TextureFormat::RGB24:
             return GL_RGB;
         case osc::TextureFormat::RGBA32:
@@ -755,6 +753,20 @@ namespace
             return GL_RGBA;
         }
     }
+}
+
+//////////////////////////////////
+//
+// cubemap stuff
+//
+//////////////////////////////////
+
+namespace
+{
+    // the OpenGL data associated with an osc::Texture2D
+    struct CubemapOpenGLData final {
+        gl::TextureCubemap texture;
+    };
 }
 
 class osc::Cubemap::Impl final {
@@ -919,7 +931,7 @@ namespace
         }
     }
 
-        GLint ToGLTextureMagFilterParam(osc::TextureFilterMode m)
+    GLint ToGLTextureMagFilterParam(osc::TextureFilterMode m)
     {
         switch (m)
         {
@@ -946,53 +958,27 @@ namespace
             return GL_REPEAT;
         }
     }
-
-    GLenum ToOpenGLColorFormat(int32_t numColorChannels)
-    {
-        switch (numColorChannels)
-        {
-        case 1:
-            return GL_RED;
-        case 3:
-            return GL_RGB;
-        case 4:
-        default:
-            return GL_RGBA;
-        }
-    }
-
-    GLint ToOpenGLUnpackAlignment(int32_t numColorChannels)
-    {
-        switch (numColorChannels)
-        {
-        case 4:
-            return 4;
-        default:
-            return 1;
-        }
-    }
 }
 
 class osc::Texture2D::Impl final {
 public:
     Impl(glm::ivec2 dimensions, nonstd::span<Rgba32 const> pixelsRowByRow) :
-        Impl{std::move(dimensions), {&pixelsRowByRow[0].r, 4 * pixelsRowByRow.size()}, 4}
+        Impl
+        {
+            std::move(dimensions),
+            TextureFormat::RGBA32,
+            nonstd::span<uint8_t const>{&pixelsRowByRow[0].r, 4 * pixelsRowByRow.size()}
+        }
     {
     }
 
-    Impl(glm::ivec2 dimensions, nonstd::span<uint8_t const> pixelsRowByRow) :
-        Impl{std::move(dimensions), std::move(pixelsRowByRow), 1}
-    {
-    }
-
-    Impl(glm::ivec2 dimensions, nonstd::span<uint8_t const> channels, int32_t numChannels) :
-        m_Dimensions{std::move(dimensions)},
-        m_Pixels(channels.data(), channels.data() + channels.size()),
-        m_NumChannels{numChannels}
+    Impl(glm::ivec2 dimensions, TextureFormat format, nonstd::span<uint8_t const> channelsRowByRow) :
+        m_Dimensions{dimensions},
+        m_Format{format},
+        m_PixelData(channelsRowByRow.data(), channelsRowByRow.data() + channelsRowByRow.size())
     {
         OSC_THROWING_ASSERT(m_Dimensions.x >= 0 && m_Dimensions.y >= 0);
-        OSC_THROWING_ASSERT(static_cast<ptrdiff_t>(m_Dimensions.x * m_Dimensions.y) == m_Pixels.size()/m_NumChannels);
-        OSC_THROWING_ASSERT(m_NumChannels == 1 || m_NumChannels == 3 || m_NumChannels == 4);
+        OSC_THROWING_ASSERT(static_cast<ptrdiff_t>(m_Dimensions.x * m_Dimensions.y) == m_PixelData.size()/NumBytesPerPixel(m_Format));
     }
 
     glm::ivec2 getDimensions() const
@@ -1094,9 +1080,9 @@ private:
     {
         *m_MaybeGPUTexture = Texture2DOpenGLData{};
 
-        GLint const unpackAlignment = ToOpenGLUnpackAlignment(m_NumChannels);
-        OSC_ASSERT(m_NumChannels*m_Dimensions.x % unpackAlignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-        OSC_ASSERT(reinterpret_cast<intptr_t>(m_Pixels.data()) % unpackAlignment == 0 && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+        GLint const unpackAlignment = ToOpenGLUnpackAlignment(m_Format);
+        OSC_ASSERT(NumBytesPerPixel(m_Format)*m_Dimensions.x % unpackAlignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+        OSC_ASSERT(reinterpret_cast<intptr_t>(m_PixelData.data()) % unpackAlignment == 0 && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
 
         // one-time upload, because pixels cannot be altered
         gl::BindTexture((*m_MaybeGPUTexture)->texture);
@@ -1104,13 +1090,13 @@ private:
         gl::TexImage2D(
             GL_TEXTURE_2D,
             0,
-            ToOpenGLColorFormat(m_NumChannels),
+            ToOpenGLColorFormat(m_Format),
             m_Dimensions.x,
             m_Dimensions.y,
             0,
-            ToOpenGLColorFormat(m_NumChannels),
+            ToOpenGLColorFormat(m_Format),
             GL_UNSIGNED_BYTE,
-            m_Pixels.data()
+            m_PixelData.data()
         );
         glGenerateMipmap((*m_MaybeGPUTexture)->texture.type);
         gl::BindTexture();
@@ -1131,8 +1117,8 @@ private:
     friend class GraphicsBackend;
 
     glm::ivec2 m_Dimensions;
-    std::vector<uint8_t> m_Pixels;
-    int32_t m_NumChannels;
+    TextureFormat m_Format;
+    std::vector<uint8_t> m_PixelData;
     TextureWrapMode m_WrapModeU = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeV = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeW = TextureWrapMode::Repeat;
@@ -1152,19 +1138,31 @@ std::ostream& osc::operator<<(std::ostream& o, TextureFilterMode twm)
     return o << c_TextureFilterModeStrings.at(static_cast<size_t>(twm));
 }
 
+std::optional<osc::TextureFormat> osc::NumChannelsAsTextureFormat(int32_t numChannels) noexcept
+{
+    static_assert(static_cast<size_t>(osc::TextureFormat::TOTAL) == 3);
+
+    switch (numChannels)
+    {
+    case 1:
+        return osc::TextureFormat::R8;
+    case 3:
+        return osc::TextureFormat::RGB24;
+    case 4:
+        return osc::TextureFormat::RGBA32;
+    default:
+        return std::nullopt;
+    }
+}
+
 
 osc::Texture2D::Texture2D(glm::ivec2 dimensions, nonstd::span<Rgba32 const> pixels) :
     m_Impl{make_cow<Impl>(std::move(dimensions), std::move(pixels))}
 {
 }
 
-osc::Texture2D::Texture2D(glm::ivec2 dimensions, nonstd::span<uint8_t const> pixels) :
-    m_Impl{make_cow<Impl>(std::move(dimensions), std::move(pixels))}
-{
-}
-
-osc::Texture2D::Texture2D(glm::ivec2 dimensions, nonstd::span<uint8_t const> channels, int32_t numChannels) :
-    m_Impl{make_cow<Impl>(std::move(dimensions), std::move(channels), std::move(numChannels))}
+osc::Texture2D::Texture2D(glm::ivec2 dimensions, TextureFormat format, nonstd::span<uint8_t const> channelsRowByRow) :
+    m_Impl{make_cow<Impl>(std::move(dimensions), std::move(format), std::move(channelsRowByRow))}
 {
 }
 

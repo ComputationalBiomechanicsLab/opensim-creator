@@ -1436,31 +1436,10 @@ TEST_F(Renderer, TextureRGBAThrowsIfDimensionsDontMatchNumberOfPixels)
     ASSERT_ANY_THROW({ osc::Texture2D t({1, 2}, pixels); });
 }
 
-TEST_F(Renderer, TextureCanConstructFromSingleChannelPixels)
-{
-    std::vector<std::uint8_t> pixels(4);
-    osc::Texture2D t{{2, 2}, pixels};
-}
-
-TEST_F(Renderer, TextureSingleChannelConstructorThrowsIfDimensionsDoesNotMatchNumberOfPixels)
-{
-    std::vector<std::uint8_t> pixels(4);
-    ASSERT_ANY_THROW({ osc::Texture2D t({2, 1}, pixels); });
-}
-
-TEST_F(Renderer, TextureSingleChannelConstructedReturnsCorrectValuesOnGetters)
-{
-    std::vector<std::uint8_t> pixels(4);
-    osc::Texture2D t{{2, 2}, pixels};
-
-    ASSERT_EQ(t.getDimensions(), glm::ivec2(2,2));
-    ASSERT_EQ(t.getAspectRatio(), 1.0f);
-}
-
 TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForSingleChannelData)
 {
     std::vector<std::uint8_t> singleChannelPixels(16);
-    osc::Texture2D t{{4, 4}, singleChannelPixels, 1};
+    osc::Texture2D t{{4, 4}, osc::TextureFormat::R8, singleChannelPixels};
 
     ASSERT_EQ(t.getDimensions(), glm::ivec2(4,4));
     ASSERT_EQ(t.getAspectRatio(), 1.0f);
@@ -1469,7 +1448,7 @@ TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForSingleChannelData)
 TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForRGBData)
 {
     std::vector<std::uint8_t> rgbPixels(12);
-    osc::Texture2D t{{2, 2}, rgbPixels, 3};
+    osc::Texture2D t{{2, 2}, osc::TextureFormat::RGB24, rgbPixels};
 
     ASSERT_EQ(t.getDimensions(), glm::ivec2(2,2));
     ASSERT_EQ(t.getAspectRatio(), 1.0f);
@@ -1478,22 +1457,10 @@ TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForRGBData)
 TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForRGBAData)
 {
     std::vector<std::uint8_t> rgbaPixels(16);
-    osc::Texture2D t{{2, 2}, rgbaPixels, 4};
+    osc::Texture2D t{{2, 2}, osc::TextureFormat::RGBA32, rgbaPixels};
 
     ASSERT_EQ(t.getDimensions(), glm::ivec2(2,2));
     ASSERT_EQ(t.getAspectRatio(), 1.0f);
-}
-
-TEST_F(Renderer, TextureWith2NumberOfChannelsThrowsException)
-{
-    std::vector<std::uint8_t> weirdPixels(8);
-    ASSERT_ANY_THROW({ osc::Texture2D t({2, 2}, weirdPixels, 2); });
-}
-
-TEST_F(Renderer, TextureWith5ChannelsThrowsException)
-{
-    std::vector<std::uint8_t> weirdPixels(20);
-    ASSERT_ANY_THROW({ osc::Texture2D t({2, 2}, weirdPixels, 5); });
 }
 
 TEST_F(Renderer, TextureCanCopyConstruct)

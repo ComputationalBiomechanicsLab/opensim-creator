@@ -5,6 +5,7 @@
 #include "src/Graphics/Camera.hpp"
 #include "src/Graphics/Color.hpp"
 #include "src/Graphics/Graphics.hpp"
+#include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/RenderTexture.hpp"
 #include "src/Graphics/Shader.hpp"
@@ -66,16 +67,6 @@ namespace
         {
             targetRect.p1 + scale*(rect.p1 - sourceRect.p1),
             targetRect.p1 + scale*(rect.p2 - sourceRect.p1),
-        };
-    }
-
-    osc::Texture2D ToTexture(osc::Image const& img)
-    {
-        return osc::Texture2D
-        {
-            img.getDimensions(),
-            img.getPixelData(),
-            img.getNumChannels(),
         };
     }
 }
@@ -315,7 +306,7 @@ private:
     UID m_TabID;
 
     AnnotatedImage m_AnnotatedImage;
-    Texture2D m_ImageTexture = ToTexture(m_AnnotatedImage.image);
+    Texture2D m_ImageTexture = ToTexture2D(m_AnnotatedImage.image);
     std::unordered_set<std::string> m_SelectedAnnotations;
 };
 

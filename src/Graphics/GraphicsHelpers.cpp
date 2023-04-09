@@ -7,6 +7,7 @@
 #include "src/Graphics/MeshTopology.hpp"
 #include "src/Graphics/ShaderCache.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
+#include "src/Graphics/TextureFormat.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/BVH.hpp"
 #include "src/Maths/Constants.hpp"
@@ -22,6 +23,10 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/gtx/transform.hpp>
+
+#include <optional>
+#include <sstream>
+#include <stdexcept>
 
 namespace
 {
@@ -473,10 +478,32 @@ osc::Material osc::CreateWireframeOverlayMaterial(Config const& config, ShaderCa
     return material;
 }
 
+osc::Texture2D osc::ToTexture2D(Image const& image)
+{
+    std::optional<TextureFormat> const format = NumChannelsAsTextureFormat(image.getNumChannels());
+    if (!format)
+    {
+        std::stringstream ss;
+        ss << "number of color channels in this image (" << image.getNumChannels() << ") cannot be represented by a GPU texture";
+        throw std::runtime_error{std::move(ss).str()};
+    }
+
+    return Texture2D{image.getDimensions(), *format, image.getPixelData()};
+}
+
 osc::Texture2D osc::LoadTexture2DFromImage(std::filesystem::path const& path, ImageFlags flags)
 {
     Image const img = LoadImageFromFile(path, flags);
-    return Texture2D{img.getDimensions(), img.getPixelData(), img.getNumChannels()};
+    try
+    {
+        return ToTexture2D(img);
+    }
+    catch (std::exception const& ex)
+    {
+        std::stringstream ss;
+        ss << path << ": " << ex.what();
+        throw std::runtime_error{std::move(ss).str()};
+    }
 }
 
 osc::AABB osc::GetWorldspaceAABB(SceneDecoration const& cd)

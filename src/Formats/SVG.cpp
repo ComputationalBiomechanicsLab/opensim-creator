@@ -26,7 +26,7 @@ osc::Texture2D osc::LoadTextureFromSVGFile(std::filesystem::path const& p, float
     lunasvg::Bitmap bitmap = doc->renderToBitmap(bitmapDimensions.x, bitmapDimensions.y, 0x00000000);
     bitmap.convertToRGBA();
 
-    osc::Texture2D t({bitmap.width(), bitmap.height()}, {bitmap.data(), bitmap.width()*bitmap.height()*4}, 4);
+    osc::Texture2D t({bitmap.width(), bitmap.height()}, TextureFormat::RGBA32, {bitmap.data(), bitmap.width()*bitmap.height()*4});
     t.setWrapMode(osc::TextureWrapMode::Clamp);
     t.setFilterMode(osc::TextureFilterMode::Nearest);
 
