@@ -21,6 +21,7 @@
 #include <imgui.h>
 #include <SDL_events.h>
 
+#include <array>
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -69,8 +70,11 @@ public:
     Impl(std::weak_ptr<TabHost> parent_) :
         m_Parent{std::move(parent_)}
     {
-        m_BasicMaterial.setTexture("uTexture", m_ContainerTexture);
-        m_ReflectionMaterial.setCubemap("uSkybox", m_Cubemap);
+        for (CubeMaterial& cubeMat : m_CubeMaterials)
+        {
+            cubeMat.material.setTexture("uTexture", m_ContainerTexture);
+            cubeMat.material.setCubemap("uSkybox", m_Cubemap);
+        }
 
         // set the depth function to LessOrEqual because the skybox shader
         // performs a trick in which it sets gl_Position = v.xyww in order
@@ -159,26 +163,16 @@ public:
 
     void drawInSceneCube()
     {
+        m_CubeProperties.setVec3("uCameraPos", m_Camera.getPosition());
+        m_CubeProperties.setFloat("uIOR", m_IOR);
         Graphics::DrawMesh(
             m_Cube,
             Transform{},
-            updCubeMaterial(),
-            m_Camera
+            m_CubeMaterials.at(m_CubeMaterialIndex).material,
+            m_Camera,
+            m_CubeProperties
         );
         m_Camera.renderToScreen();
-    }
-
-    Material& updCubeMaterial()
-    {
-        if (m_ShowingEnvmap)
-        {
-            m_ReflectionMaterial.setVec3("uCameraPos", m_Camera.getPosition());
-            return m_ReflectionMaterial;
-        }
-        else
-        {
-            return m_BasicMaterial;
-        }
     }
 
     void drawSkybox()
@@ -199,7 +193,19 @@ public:
     void draw2DUI()
     {
         ImGui::Begin("controls");
-        ImGui::Checkbox("Environment Map", &m_ShowingEnvmap);
+        if (ImGui::BeginCombo("Cube Texturing", m_CubeMaterials.at(m_CubeMaterialIndex).label.c_str()))
+        {
+            for (size_t i = 0; i < m_CubeMaterials.size(); ++i)
+            {
+                bool selected = i == m_CubeMaterialIndex;
+                if (ImGui::Selectable(m_CubeMaterials[i].label.c_str(), &selected))
+                {
+                    m_CubeMaterialIndex = i;
+                }
+            }
+            ImGui::EndCombo();
+        }
+        ImGui::InputFloat("IOR", &m_IOR);
         ImGui::End();
     }
 
@@ -207,25 +213,54 @@ private:
     UID m_TabID;
     std::weak_ptr<TabHost> m_Parent;
 
-    Material m_BasicMaterial
+    struct CubeMaterial final {
+        CStringView label;
+        Material material;
+    };
+    std::array<CubeMaterial, 3> m_CubeMaterials =
     {
-        Shader
+        CubeMaterial
         {
-            App::slurp("shaders/ExperimentCubemap.vert"),
-            App::slurp("shaders/ExperimentCubemap.frag"),
+            "Basic",
+            Material
+            {
+                Shader
+                {
+                    App::slurp("shaders/ExperimentCubemap.vert"),
+                    App::slurp("shaders/ExperimentCubemap.frag"),
+                },
+            },
+        },
+        CubeMaterial
+        {
+            "Reflection",
+            Material
+            {
+                Shader
+                {
+                    App::slurp("shaders/ExperimentCubemapReflection.vert"),
+                    App::slurp("shaders/ExperimentCubemapReflection.frag"),
+                },
+            },
+        },
+        CubeMaterial
+        {
+            "Refraction",
+            Material
+            {
+                Shader
+                {
+                    App::slurp("shaders/ExperimentCubemapRefraction.vert"),
+                    App::slurp("shaders/ExperimentCubemapRefraction.frag"),
+                },
+            },
         },
     };
-    Material m_ReflectionMaterial
-    {
-        Shader
-        {
-            App::slurp("shaders/ExperimentCubemapReflection.vert"),
-            App::slurp("shaders/ExperimentCubemapReflection.frag"),
-        },
-    };
+    size_t m_CubeMaterialIndex = 0;
+    MaterialPropertyBlock m_CubeProperties;
     Mesh m_Cube = GenLearnOpenGLCube();
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(App::resource("textures/container.jpg"));
-    bool m_ShowingEnvmap = false;
+    float m_IOR = 1.52;
 
     Material m_SkyboxMaterial
     {
