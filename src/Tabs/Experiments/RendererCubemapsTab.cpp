@@ -70,6 +70,7 @@ public:
         m_Parent{std::move(parent_)}
     {
         m_BasicMaterial.setTexture("uTexture", m_ContainerTexture);
+        m_ReflectionMaterial.setCubemap("uSkybox", m_Cubemap);
 
         // set the depth function to LessOrEqual because the skybox shader
         // performs a trick in which it sets gl_Position = v.xyww in order
@@ -151,35 +152,55 @@ public:
         // clear screen and ensure camera has correct pixel rect
         m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
 
-        // draw the cube
-        {
-            Graphics::DrawMesh(
-                m_Cube,
-                Transform{},
-                m_BasicMaterial,
-                m_Camera
-            );
-            m_Camera.renderToScreen();
-        }
+        drawInSceneCube();
+        drawSkybox();
+        draw2DUI();
+    }
 
-        // draw the skybox in a separate pass after everything else
-        // (but don't clear the existing content)
-        //
-        // use the same view matrix but drop translation so that the camera always
-        // ends up in the middle of the box
+    void drawInSceneCube()
+    {
+        Graphics::DrawMesh(
+            m_Cube,
+            Transform{},
+            updCubeMaterial(),
+            m_Camera
+        );
+        m_Camera.renderToScreen();
+    }
+
+    Material& updCubeMaterial()
+    {
+        if (m_ShowingEnvmap)
         {
-            m_Camera.setClearFlags(CameraClearFlags::Nothing);
-            m_Camera.setViewMatrixOverride(glm::mat4{glm::mat3{m_Camera.getViewMatrix()}});
-            Graphics::DrawMesh(
-                m_Skybox,
-                Transform{},
-                m_SkyboxMaterial,
-                m_Camera
-            );
-            m_Camera.renderToScreen();
-            m_Camera.setViewMatrixOverride(std::nullopt);
-            m_Camera.setClearFlags(CameraClearFlags::Default);
+            m_ReflectionMaterial.setVec3("uCameraPos", m_Camera.getPosition());
+            return m_ReflectionMaterial;
         }
+        else
+        {
+            return m_BasicMaterial;
+        }
+    }
+
+    void drawSkybox()
+    {
+        m_Camera.setClearFlags(CameraClearFlags::Nothing);
+        m_Camera.setViewMatrixOverride(glm::mat4{glm::mat3{m_Camera.getViewMatrix()}});
+        Graphics::DrawMesh(
+            m_Skybox,
+            Transform{},
+            m_SkyboxMaterial,
+            m_Camera
+        );
+        m_Camera.renderToScreen();
+        m_Camera.setViewMatrixOverride(std::nullopt);
+        m_Camera.setClearFlags(CameraClearFlags::Default);
+    }
+
+    void draw2DUI()
+    {
+        ImGui::Begin("controls");
+        ImGui::Checkbox("Environment Map", &m_ShowingEnvmap);
+        ImGui::End();
     }
 
 private:
@@ -194,8 +215,17 @@ private:
             App::slurp("shaders/ExperimentCubemap.frag"),
         },
     };
+    Material m_ReflectionMaterial
+    {
+        Shader
+        {
+            App::slurp("shaders/ExperimentCubemapReflection.vert"),
+            App::slurp("shaders/ExperimentCubemapReflection.frag"),
+        },
+    };
     Mesh m_Cube = GenLearnOpenGLCube();
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(App::resource("textures/container.jpg"));
+    bool m_ShowingEnvmap = false;
 
     Material m_SkyboxMaterial
     {
