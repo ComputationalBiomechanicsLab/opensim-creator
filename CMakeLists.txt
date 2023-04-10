@@ -732,6 +732,8 @@ add_library(osccore STATIC
     src/Tabs/Experiments/RendererCubemapsTab.hpp
     src/Tabs/Experiments/RendererFramebuffersTab.cpp
     src/Tabs/Experiments/RendererFramebuffersTab.hpp
+    src/Tabs/Experiments/RendererGammaTab.cpp
+    src/Tabs/Experiments/RendererGammaTab.hpp
     src/Tabs/Experiments/RendererHelloTriangleTab.cpp
     src/Tabs/Experiments/RendererHelloTriangleTab.hpp
     src/Tabs/Experiments/RendererLightingMapsTab.cpp
