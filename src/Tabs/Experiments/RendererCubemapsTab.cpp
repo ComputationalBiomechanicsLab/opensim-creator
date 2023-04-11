@@ -260,7 +260,7 @@ private:
     MaterialPropertyBlock m_CubeProperties;
     Mesh m_Cube = GenLearnOpenGLCube();
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(App::resource("textures/container.jpg"));
-    float m_IOR = 1.52;
+    float m_IOR = 1.52f;
 
     Material m_SkyboxMaterial
     {
