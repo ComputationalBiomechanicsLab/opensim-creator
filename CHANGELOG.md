@@ -39,6 +39,7 @@ All notable changes to this project will be documented here. The format is based
 - Internal: Ajay Seth (@aseth1) is now correctly listed as the final (PI) author (#668)
 - Internal: Added automated test that ensures OSC can load all example osims with no issues (#661)
 - Internal: Added automated test that ensures OSC can export all example osims to DAE with no issues (#662)
+- Internal: Added basic tests for DAE formatter (#662)
 
 
 ## [0.4.0] - 2023/03/06

@@ -907,6 +907,7 @@ configure_file(
 add_executable(testosc EXCLUDE_FROM_ALL
 
     tests/Formats/TestCSV.cpp
+    tests/Formats/TestDAE.cpp
 
     tests/Graphics/TestCubemap.cpp
     tests/Graphics/TestCubemapFace.cpp
