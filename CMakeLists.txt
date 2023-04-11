@@ -734,6 +734,8 @@ add_library(osccore STATIC
     src/Tabs/Experiments/RendererFramebuffersTab.hpp
     src/Tabs/Experiments/RendererGammaTab.cpp
     src/Tabs/Experiments/RendererGammaTab.hpp
+    src/Tabs/Experiments/RendererHDRTab.cpp
+    src/Tabs/Experiments/RendererHDRTab.hpp
     src/Tabs/Experiments/RendererHelloTriangleTab.cpp
     src/Tabs/Experiments/RendererHelloTriangleTab.hpp
     src/Tabs/Experiments/RendererLightingMapsTab.cpp
@@ -910,6 +912,7 @@ add_executable(testosc EXCLUDE_FROM_ALL
     tests/Graphics/TestCubemapFace.cpp
     tests/Graphics/TestImage.cpp
     tests/Graphics/TestRenderer.cpp
+    tests/Graphics/TestRenderTextureFormat.cpp
     tests/Graphics/TestTextureFormat.cpp
 
     tests/Maths/TestBVH.cpp

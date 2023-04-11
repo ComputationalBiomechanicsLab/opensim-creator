@@ -20,6 +20,7 @@
 #include "src/Tabs/Experiments/RendererCubemapsTab.hpp"
 #include "src/Tabs/Experiments/RendererFramebuffersTab.hpp"
 #include "src/Tabs/Experiments/RendererGammaTab.hpp"
+#include "src/Tabs/Experiments/RendererHDRTab.hpp"
 #include "src/Tabs/Experiments/RendererHelloTriangleTab.hpp"
 #include "src/Tabs/Experiments/RendererLightingMapsTab.hpp"
 #include "src/Tabs/Experiments/RendererMultipleLightsTab.hpp"
@@ -173,6 +174,7 @@ namespace
         RegisterTab<osc::RendererCubemapsTab>(*registry);
         RegisterTab<osc::RendererFramebuffersTab>(*registry);
         RegisterTab<osc::RendererGammaTab>(*registry);
+        RegisterTab<osc::RendererHDRTab>(*registry);
         RegisterTab<osc::RendererHelloTriangleTab>(*registry);
         RegisterTab<osc::RendererLightingMapsTab>(*registry);
         RegisterTab<osc::RendererMultipleLightsTab>(*registry);

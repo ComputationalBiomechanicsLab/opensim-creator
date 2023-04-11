@@ -753,6 +753,13 @@ namespace
             return GL_RGBA;
         }
     }
+
+    GLenum ToOpenGLPixelDataType(osc::TextureFormat)
+    {
+        static_assert(static_cast<size_t>(osc::TextureFormat::TOTAL) == 3);
+
+        return GL_UNSIGNED_BYTE;  // only 8-bit-per-channel textures are supported
+    }
 }
 
 //////////////////////////////////
@@ -841,6 +848,7 @@ private:
             size_t const end = begin + numPixelsPerFace;
             OSC_ASSERT(end <= m_Data.size());
 
+            static_assert(static_cast<size_t>(osc::TextureFormat::TOTAL) == 3, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
             gl::TexImage2D(
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIdx,
                 0,
@@ -849,7 +857,7 @@ private:
                 m_Width,
                 0,
                 ToOpenGLColorFormat(m_Format),
-                GL_UNSIGNED_BYTE,
+                ToOpenGLPixelDataType(m_Format),
                 m_Data.data() + begin
             );
         }
@@ -1087,6 +1095,8 @@ private:
         // one-time upload, because pixels cannot be altered
         gl::BindTexture((*m_MaybeGPUTexture)->texture);
         gl::PixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment);
+
+        static_assert(static_cast<size_t>(osc::TextureFormat::TOTAL) == 3, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
         gl::TexImage2D(
             GL_TEXTURE_2D,
             0,
@@ -1095,7 +1105,7 @@ private:
             m_Dimensions.y,
             0,
             ToOpenGLColorFormat(m_Format),
-            GL_UNSIGNED_BYTE,
+            ToOpenGLPixelDataType(m_Format),
             m_PixelData.data()
         );
         glGenerateMipmap((*m_MaybeGPUTexture)->texture.type);
@@ -1254,7 +1264,8 @@ namespace
     static auto constexpr c_RenderTextureFormatStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::RenderTextureFormat::TOTAL)>
     (
         "ARGB32",
-        "RED"
+        "RED",
+        "ARGBHalf"
     );
 
     static auto constexpr c_DepthStencilFormatStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::DepthStencilFormat::TOTAL)>
@@ -1264,42 +1275,84 @@ namespace
 
     GLenum ToOpenGLColorFormat(osc::RenderTextureFormat f)
     {
+        static_assert(static_cast<size_t>(osc::RenderTextureFormat::TOTAL) == 3);
+
         switch (f)
         {
-        case osc::RenderTextureFormat::ARGB32:
-            return GL_RGBA;
         case osc::RenderTextureFormat::RED:
-        default:
-            static_assert(static_cast<size_t>(osc::RenderTextureFormat::RED) + 1 == static_cast<size_t>(osc::RenderTextureFormat::TOTAL));
             return GL_RED;
+        case osc::RenderTextureFormat::ARGBHalf:
+            return GL_RGBA16F;
+        case osc::RenderTextureFormat::ARGB32:
+        default:
+            return GL_RGBA;
         }
     }
 
-    GLint ToOpenGLPackAlignment(osc::RenderTextureFormat f)
+    GLenum ToOpenGLPixelDataType(osc::RenderTextureFormat f)
     {
-        static_assert(static_cast<size_t>(osc::RenderTextureFormat::TOTAL) == 2);
+        static_assert(static_cast<size_t>(osc::RenderTextureFormat::TOTAL) == 3);
 
         switch (f)
         {
+        case osc::RenderTextureFormat::ARGBHalf:
+            return GL_HALF_FLOAT;
+        case osc::RenderTextureFormat::RED:
+        case osc::RenderTextureFormat::ARGB32:
+        default:
+            return GL_UNSIGNED_BYTE;
+        }
+    }
+
+    GLenum ToImageColorFormat(osc::RenderTextureFormat f)
+    {
+        static_assert(static_cast<size_t>(osc::RenderTextureFormat::TOTAL) == 3);
+
+        switch (f)
+        {
+        case osc::RenderTextureFormat::RED:
+            return GL_RED;
+        case osc::RenderTextureFormat::ARGBHalf:
+        case osc::RenderTextureFormat::ARGB32:
+        default:
+            return GL_RGBA;
+        }
+    }
+
+    GLint ToImagePixelPackAlignment(osc::RenderTextureFormat f)
+    {
+        static_assert(static_cast<size_t>(osc::RenderTextureFormat::TOTAL) == 3);
+
+        switch (f)
+        {
+        case osc::RenderTextureFormat::ARGBHalf:
         case osc::RenderTextureFormat::ARGB32:
             return 4;
         case osc::RenderTextureFormat::RED:
         default:
             return 1;
         }
+    }
+
+    GLenum ToImageDataType(osc::RenderTextureFormat)
+    {
+        static_assert(static_cast<size_t>(osc::RenderTextureFormat::TOTAL) == 3);
+
+        return GL_UNSIGNED_BYTE;
     }
 
     int32_t GetNumChannels(osc::RenderTextureFormat f)
     {
+        static_assert(static_cast<size_t>(osc::RenderTextureFormat::TOTAL) == 3);
+
         switch (f)
         {
-        case osc::RenderTextureFormat::ARGB32:
-            return 4;
         case osc::RenderTextureFormat::RED:
             return 1;
+        case osc::RenderTextureFormat::ARGBHalf:
+        case osc::RenderTextureFormat::ARGB32:
         default:
-            static_assert(static_cast<size_t>(osc::RenderTextureFormat::TOTAL) == 2);
-            return 1;
+            return 4;
         }
     }
 }
@@ -1534,6 +1587,7 @@ private:
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
 
         // setup single-sampled color buffer (texture, so it can be sampled as part of compositing a UI)
+        static_assert(static_cast<size_t>(osc::RenderTextureFormat::TOTAL) == 3, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
         gl::BindTexture(bufs.singleSampledColorBuffer);
         gl::TexImage2D(
             bufs.singleSampledColorBuffer.type,
@@ -1542,8 +1596,8 @@ private:
             dimensions.x,
             dimensions.y,
             0,
-            ToOpenGLColorFormat(getColorFormat()),
-            GL_UNSIGNED_BYTE,
+            GL_RGBA,  // doesn't matter: we aren't uploading data (TODO: see static_assert above)
+            GL_UNSIGNED_BYTE,  // doesn't matter: we aren't uploading data (TODO: see static_assert above)
             nullptr
         );
         gl::TexParameteri(bufs.singleSampledColorBuffer.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
@@ -5160,10 +5214,18 @@ void osc::GraphicsBackend::ReadPixels(RenderTexture const& source, Image& dest)
 
     gl::BindFramebuffer(GL_FRAMEBUFFER, const_cast<RenderTexture::Impl&>(*source.m_Impl).getOutputFrameBuffer());
     glViewport(0, 0, dims.x, dims.y);
-    GLint const packFormat = ToOpenGLPackAlignment(source.getColorFormat());
+    GLint const packFormat = ToImagePixelPackAlignment(source.getColorFormat());
     OSC_ASSERT(reinterpret_cast<uintptr_t>(pixels.data()) % packFormat == 0 && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
     gl::PixelStorei(GL_PACK_ALIGNMENT, packFormat);
-    glReadPixels(0, 0, dims.x, dims.y, ToOpenGLColorFormat(source.getColorFormat()), GL_UNSIGNED_BYTE, pixels.data());
+    glReadPixels(
+        0,
+        0,
+        dims.x,
+        dims.y,
+        ToImageColorFormat(source.getColorFormat()),
+        ToImageDataType(source.getColorFormat()),
+        pixels.data()
+    );
     gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
 
     dest = Image{dims, pixels, channels};
