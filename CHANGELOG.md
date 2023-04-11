@@ -36,6 +36,7 @@ All notable changes to this project will be documented here. The format is based
   the OpenSim build step can exhaust a computer's RAM (#659)
 - Internal: Dropped `fmt` library: collides with OpenSim and does not compile on modern GCC (#660)
 - Internal: Cubemap rendering support was added to the graphics backend (#599)
+- Internal: Ajay Seth (@aseth1) is now correctly listed as the final (PI) author (#668)
 
 
 ## [0.4.0] - 2023/03/06
