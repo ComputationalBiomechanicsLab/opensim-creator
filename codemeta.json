@@ -9,15 +9,15 @@
       "name": "Kewley, Adam"
     },
     {
+      "@id": "https://orcid.org/0000-0001-5457-0103",
+      "@type": "Person",
+      "name": "Beesel, Julia"
+    },
+    {
       "affiliation": "Delft University of Technology",
       "@id": "https://orcid.org/0000-0003-4217-1580",
       "@type": "Person",
       "name": "Seth, Ajay"
-    },
-    {
-      "@id": "https://orcid.org/0000-0001-5457-0103",
-      "@type": "Person",
-      "name": "Beesel, Julia"
     }
   ],
   "url": "https://zenodo.org/record/7704600",
