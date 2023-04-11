@@ -40,6 +40,7 @@ All notable changes to this project will be documented here. The format is based
 - Internal: Added automated test that ensures OSC can load all example osims with no issues (#661)
 - Internal: Added automated test that ensures OSC can export all example osims to DAE with no issues (#662)
 - Internal: Added basic tests for DAE formatter (#662)
+- Internal: Added automated test that ensures OSC can render muscles as defined by a GeometryPath's color property (#663)
 
 
 ## [0.4.0] - 2023/03/06

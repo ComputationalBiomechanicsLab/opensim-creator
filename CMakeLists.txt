@@ -918,6 +918,7 @@ add_executable(testosc EXCLUDE_FROM_ALL
 
     tests/Maths/TestBVH.cpp
 
+    tests/OpenSimBindings/Graphics/TestOpenSimDecorationGenerator.cpp
     tests/OpenSimBindings/TestForwardDynamicSimulation.cpp
     tests/OpenSimBindings/TestOpenSim.cpp
     tests/OpenSimBindings/TestOpenSimActions.cpp
