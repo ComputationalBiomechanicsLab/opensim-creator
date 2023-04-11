@@ -37,6 +37,7 @@ All notable changes to this project will be documented here. The format is based
 - Internal: Dropped `fmt` library: collides with OpenSim and does not compile on modern GCC (#660)
 - Internal: Cubemap rendering support was added to the graphics backend (#599)
 - Internal: Ajay Seth (@aseth1) is now correctly listed as the final (PI) author (#668)
+- Internal: Added automated test that ensures OSC can load all example files with no issues (#661)
 
 
 ## [0.4.0] - 2023/03/06

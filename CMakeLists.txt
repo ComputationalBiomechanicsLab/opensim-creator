@@ -916,11 +916,14 @@ add_executable(testosc EXCLUDE_FROM_ALL
     tests/Graphics/TestTextureFormat.cpp
 
     tests/Maths/TestBVH.cpp
+
     tests/OpenSimBindings/TestForwardDynamicSimulation.cpp
     tests/OpenSimBindings/TestOpenSim.cpp
     tests/OpenSimBindings/TestOpenSimActions.cpp
     tests/OpenSimBindings/TestOpenSimHelpers.cpp
     tests/OpenSimBindings/TestTypeRegistry.cpp
+    tests/OpenSimBindings/TestUndoableModelStatePair.cpp
+
     tests/Utils/TestFileChangePoller.cpp
     tests/Utils/TestAlgorithms.cpp
 
