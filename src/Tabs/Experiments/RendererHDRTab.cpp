@@ -175,6 +175,8 @@ public:
 
         Graphics::DrawMesh(m_QuadMesh, Transform{}, m_TonemapMaterial, orthoCamera);
         orthoCamera.renderToScreen();
+
+        m_TonemapMaterial.clearRenderTexture("uTexture");
     }
 
     void draw2DUI()

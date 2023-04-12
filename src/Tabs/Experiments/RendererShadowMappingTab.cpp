@@ -164,6 +164,8 @@ private:
         m_Camera.renderToScreen();
         m_Camera.setPixelRect(std::nullopt);
         Graphics::BlitToScreen(m_DepthTexture, Rect{viewportRect.p1, viewportRect.p1 + 200.0f});
+
+        m_SceneMaterial.clearRenderTexture("uShadowMapTexture");
     }
 
     void drawMeshesWithMaterial(Material const& material)
