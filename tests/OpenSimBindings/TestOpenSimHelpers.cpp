@@ -12,6 +12,11 @@
 #include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
+#include <filesystem>
+#include <memory>
+#include <string>
+#include <vector>
+
 // repro for #263 (https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/263)
 //
 // Effectively, this is what the joint switcher in the UI is doing. It is permitted for the
@@ -141,4 +146,35 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionFor
 	{
 		ASSERT_EQ(c.getAbsolutePath(), osc::GetAbsolutePathOrEmpty(&c));
 	}
+}
+
+// #665: test that the caller can at least *try* to delete anything they want from a complicated
+// model without anything exploding (deletion failure is ok, though)
+TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFaultsOrExceptions)
+{
+    auto config = osc::Config::load();
+    std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";\
+
+    OpenSim::Model const originalModel{modelPath.string()};
+    OpenSim::Model modifiedModel{originalModel};
+    osc::InitializeModel(modifiedModel);
+    osc::InitializeModel(modifiedModel);
+
+    // iterate over the original (const) model, so that iterator
+    // invalidation can't happen
+    for (OpenSim::Component const& c : originalModel.getComponentList())
+    {
+        // if the component still exists in the to-be-deleted-from model
+        // (it may have been indirectly deleted), then try to delete it
+        OpenSim::Component* lookup = osc::FindComponentMut(modifiedModel, c.getAbsolutePath());
+        if (lookup)
+        {
+            if (osc::TryDeleteComponentFromModel(modifiedModel, *lookup))
+            {
+                osc::log::info("deleted %s (%s)", c.getName().c_str(), c.getConcreteClassName().c_str());
+                osc::InitializeModel(modifiedModel);
+                osc::InitializeState(modifiedModel);
+            }
+        }
+    }
 }

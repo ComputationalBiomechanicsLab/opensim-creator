@@ -650,7 +650,7 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
 
     if (&c.getRoot() != &m)
     {
-        log::error("cannot delete %s: it is not owned by the provided model");
+        log::error("cannot delete %s: it is not owned by the provided model", c.getName().c_str());
         return false;
     }
 
@@ -687,11 +687,13 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
 
     bool rv = false;
 
-    if (auto* js = dynamic_cast<OpenSim::JointSet*>(owner))
-    {
-        rv = TryDeleteItemFromSet(*js, dynamic_cast<OpenSim::Joint*>(&c));
-    }
-    else if (auto* bs = dynamic_cast<OpenSim::BodySet*>(owner))
+    // disable deleting joints: it's super-easy to segfault because of some unknown
+    // fuckery happening in OpenSim::Model::createMultibodySystem
+    // if (auto* js = dynamic_cast<OpenSim::JointSet*>(owner))
+    // {
+    //    rv = TryDeleteItemFromSet(*js, dynamic_cast<OpenSim::Joint*>(&c));
+    // }
+    if (auto* bs = dynamic_cast<OpenSim::BodySet*>(owner))
     {
         rv = TryDeleteItemFromSet(*bs, dynamic_cast<OpenSim::Body*>(&c));
     }
@@ -750,10 +752,11 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
             // assignment
 
             OpenSim::ObjectProperty<OpenSim::Geometry>& prop =
-                static_cast<OpenSim::ObjectProperty<OpenSim::Geometry>&>(frame->updProperty_attached_geometry());
+                dynamic_cast<OpenSim::ObjectProperty<OpenSim::Geometry>&>(frame->updProperty_attached_geometry());
 
             std::unique_ptr<OpenSim::ObjectProperty<OpenSim::Geometry>> copy{prop.clone()};
             copy->clear();
+
             for (int i = 0; i < prop.size(); ++i)
             {
                 OpenSim::Geometry& g = prop[i];
