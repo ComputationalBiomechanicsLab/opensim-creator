@@ -4,6 +4,16 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+
+## [0.4.1] - 2023/04/13
+
+0.4.1 is a patch release that fixes some bugs that were found in 0.4.1. The only noteworthy user-facing
+feature is that `GeometryPath`s can now be edited, giving users a new way to define muscles and other
+path-based geometry (e.g. `PathSpring`).
+
+0.4.1 also includes a variety of internal changes that make building and testing OSC easier. If you are
+a user, these aren't important to you, but they make developers feel fuzzy inside.
+
 - Fixed a segfault that would occur when adding a body with an invalid name. It now throws an exception and prints
   an error to the log instead (thanks @AdrianHendrik, #642)
 - Fixed the manipulation gizmo rotation operation being broken when rotating scene elements (mostly, when rotating
@@ -22,18 +32,19 @@ All notable changes to this project will be documented here. The format is based
   clickable in the 3D viewport (#647)
 - Clicking a `PathSpring`'s path in the 3D viewport now selects the `PathSpring` rather than the underlying
   `GeometryPath` (#650)
-- Internal: Renamed `src/OpenSimBindings/Renderering` to `src/OpenSimBindings/Graphics`
-- Internal: Renamed `osc::Popups` to `osc::PopupManager`
 - Removed OSC_DEFAULT_USE_MULTI_VIEWPORT as a build option (it is available as a runtime config option, #444)
 - Fixed initial default panel positioning in "Simulate Against All Integrators" (#630)
-- Internal: Test sources were reorganized to match the source tree (#652)
-- Internal: Automated tests that add each component type to a blank model were added (#298)
-- Internal: Switched `robin-hood-hashing` for `ankerl::unordered_dense` (#651)
-- Internal: Benchmark sources were reorganized to match the source tree (#653)
-- Internal: Fixed osc::Material::getFloat/Vec3Array returning undefined memory (unused in user-facing code, #656)
-- Internal: The renderer's unit tests now pass on MacOS (previously: had a shader-compiler error, #657)
 - The build scripts (e.g. `scripts/build_debian-buster.sh`) now build single-threaded by default, because
   the OpenSim build step can exhaust a computer's RAM (#659)
+- Disabled being able to delete joints from a model: it can cause segfaults that crash the UI (#665)
+- Internal: Fixed osc::Material::getFloat/Vec3Array returning undefined memory (unused in user-facing code, #656)
+- Internal: Renamed `src/OpenSimBindings/Renderering` to `src/OpenSimBindings/Graphics`
+- Internal: Renamed `osc::Popups` to `osc::PopupManager`
+- Internal: Added tests that ensure add each component type to a blank model (#298)
+- Internal: Refactored test source files to match the source tree (#652)
+- Internal: Refactored benchmark source files to match the source tree (#653)
+- Internal: Switched `robin-hood-hashing` for `ankerl::unordered_dense` (#651)
+- Internal: The renderer's unit tests now pass on MacOS (previously: had a shader-compiler error, #657)
 - Internal: Dropped `fmt` library: collides with OpenSim and does not compile on modern GCC (#660)
 - Internal: Cubemap rendering support was added to the graphics backend (#599)
 - Internal: Ajay Seth (@aseth1) is now correctly listed as the final (PI) author (#668)
