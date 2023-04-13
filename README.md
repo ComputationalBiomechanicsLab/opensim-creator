@@ -1,5 +1,5 @@
 ![workflow](https://github.com/ComputationalBiomechanicsLab/opensim-creator/actions/workflows/continuous-integration-workflow.yml/badge.svg)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7704600.svg)](https://doi.org/10.5281/zenodo.7704600)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7825543.svg)](https://doi.org/10.5281/zenodo.7825543)
 
 # OpenSim Creator <img src="resources/textures/logo.svg" align="right" alt="OpenSim Creator Logo" width="128" height="128" />
 
