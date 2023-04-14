@@ -7,7 +7,7 @@ All notable changes to this project will be documented here. The format is based
 
 ## [0.4.1] - 2023/04/13
 
-0.4.1 is a patch release that fixes some bugs that were found in 0.4.1. The only noteworthy user-facing
+0.4.1 is a patch release that fixes some bugs that were found in 0.4.0. The only noteworthy user-facing
 feature is that `GeometryPath`s can now be edited, giving users a new way to define muscles and other
 path-based geometry (e.g. `PathSpring`).
 
