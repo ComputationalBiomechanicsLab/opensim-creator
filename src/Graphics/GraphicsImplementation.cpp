@@ -132,6 +132,7 @@ namespace
 {
     using MaterialValue = std::variant<
         osc::Color,
+        std::vector<osc::Color>,
         float,
         std::vector<float>,
         glm::vec2,
@@ -154,6 +155,7 @@ namespace
         switch (v.index())
         {
         case VariantIndex<MaterialValue, osc::Color>():
+        case VariantIndex<MaterialValue, std::vector<osc::Color>>():
             return osc::ShaderType::Vec4;
         case VariantIndex<MaterialValue, glm::vec2>():
             return osc::ShaderType::Vec2;
@@ -2025,6 +2027,16 @@ public:
         setValue(std::move(propertyName), color);
     }
 
+    std::optional<nonstd::span<Color const>> getColorArray(std::string_view propertyName) const
+    {
+        return getValue<std::vector<osc::Color>, nonstd::span<osc::Color const>>(std::move(propertyName));
+    }
+
+    void setColorArray(std::string_view propertyName, nonstd::span<Color const> colors)
+    {
+        setValue<std::vector<osc::Color>>(std::move(propertyName), std::vector<osc::Color>(colors.begin(), colors.end()));
+    }
+
     std::optional<float> getFloat(std::string_view propertyName) const
     {
         return getValue<float>(std::move(propertyName));
@@ -2269,6 +2281,16 @@ std::optional<osc::Color> osc::Material::getColor(std::string_view propertyName)
 void osc::Material::setColor(std::string_view propertyName, Color const& color)
 {
     m_Impl.upd()->setColor(std::move(propertyName), color);
+}
+
+std::optional<nonstd::span<osc::Color const>> osc::Material::getColorArray(std::string_view propertyName) const
+{
+    return m_Impl->getColorArray(std::move(propertyName));
+}
+
+void osc::Material::setColorArray(std::string_view propertyName, nonstd::span<osc::Color const> colors)
+{
+    m_Impl.upd()->setColorArray(std::move(propertyName), std::move(colors));
 }
 
 std::optional<float> osc::Material::getFloat(std::string_view propertyName) const
@@ -4684,9 +4706,26 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     {
         // colors are converted from sRGB to linear when passed to
         // the shader
-        glm::vec4 const linearColor = osc::ToLinear(std::get<osc::Color>(v));
+
+        // TODO: actually convert it (requires full linear color support: #600)
+        //glm::vec4 const linearColor = osc::ToLinear(std::get<osc::Color>(v));
+        glm::vec4 const linearColor = std::get<osc::Color>(v);  // TODO: replace with the above
         gl::UniformVec4 u{se.location};
         gl::Uniform(u, linearColor);
+        break;
+    }
+    case VariantIndex<MaterialValue, std::vector<osc::Color>>():
+    {
+        auto const& colors = std::get<std::vector<osc::Color>>(v);
+        int32_t const numToAssign = std::min(se.size, static_cast<int32_t>(colors.size()));
+        for (int32_t i = 0; i < numToAssign; ++i)
+        {
+            // TODO: actually convert it (requires full linear color support: #600)
+            //glm::vec4 const linearColor = osc::ToLinear(std::get<osc::Color>(v));
+            glm::vec4 const linearColor = colors[i];  // TODO: replace with the above
+            gl::UniformVec4 u{se.location + i};
+            gl::Uniform(u, linearColor);
+        }
         break;
     }
     case VariantIndex<MaterialValue, float>():

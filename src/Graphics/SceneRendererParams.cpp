@@ -13,7 +13,7 @@ osc::SceneRendererParams::SceneRendererParams() :
     projectionMatrix{1.0f},
     viewPos{0.0f, 0.0f, 0.0f},
     lightDirection{-0.34f, -0.25f, 0.05f},
-    lightColor{248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f},
+    lightColor{248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f, 1.0f},
     ambientStrength{0.15f},
     diffuseStrength{0.85f},
     specularStrength{0.4f},

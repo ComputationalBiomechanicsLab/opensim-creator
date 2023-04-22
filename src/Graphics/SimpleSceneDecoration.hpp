@@ -1,9 +1,8 @@
 #pragma once
 
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Maths/Transform.hpp"
-
-#include <glm/vec4.hpp>
 
 namespace osc
 {
@@ -12,7 +11,7 @@ namespace osc
         SimpleSceneDecoration(
             Mesh const& mesh_,
             Transform const& transform_,
-            glm::vec4 const& color_) :
+            Color const& color_) :
 
             mesh{mesh_},
             transform{transform_},
@@ -22,6 +21,6 @@ namespace osc
 
         Mesh mesh;
         Transform transform;
-        glm::vec4 color;
+        Color color;
     };
 }

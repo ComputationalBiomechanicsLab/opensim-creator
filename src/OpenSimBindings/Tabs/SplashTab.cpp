@@ -30,7 +30,6 @@
 #include "src/Widgets/LogViewer.hpp"
 
 #include <glm/vec2.hpp>
-#include <glm/vec4.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <nonstd/span.hpp>
@@ -59,7 +58,7 @@ namespace
         rv.farClippingPlane = camera.zfar;
         rv.viewPos = camera.getPos();
         rv.lightDirection = {-0.34f, -0.25f, 0.05f};
-        rv.lightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
+        rv.lightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f, 1.0f};
         rv.backgroundColor = {0.89f, 0.89f, 0.89f, 1.0f};
         return rv;
     }

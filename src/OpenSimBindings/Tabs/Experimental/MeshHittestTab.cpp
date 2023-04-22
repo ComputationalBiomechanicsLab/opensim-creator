@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
@@ -121,7 +122,7 @@ public:
         }
 
         // draw mesh
-        m_Material.setVec4("uColor", m_IsMousedOver ? glm::vec4{0.0f, 1.0f, 0.0f, 1.0f} : glm::vec4{1.0f, 0.0f, 0.0f, 1.0f});
+        m_Material.setColor("uColor", m_IsMousedOver ? Color::green() : Color::red());
         m_Material.setDepthTested(true);
         Graphics::DrawMesh(m_Mesh, Transform{}, m_Material, m_Camera);
 
@@ -133,7 +134,7 @@ public:
             uint16_t indices[] = {0, 1, 2};
             m.setIndices(indices);
 
-            m_Material.setVec4("uColor", {0.0f, 0.0f, 0.0f, 1.0f});
+            m_Material.setColor("uColor", Color::black());
             m_Material.setDepthTested(false);
             Graphics::DrawMesh(m, Transform{}, m_Material, m_Camera);
         }
@@ -141,7 +142,7 @@ public:
         if (m_UseBVH)
         {
             // draw BVH AABBs
-            m_Material.setVec4("uColor", {0.0f, 0.0f, 0.0f, 1.0f});
+            m_Material.setColor("uColor", Color::black());
             m_Material.setDepthTested(true);
             osc::DrawBVH(
                 *App::singleton<MeshCache>(),

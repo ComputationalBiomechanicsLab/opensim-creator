@@ -3,6 +3,7 @@
 #include "osc_config.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Graphics/Color.hpp"
 #include "src/Maths/Constants.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp"
 #include "src/OpenSimBindings/Widgets/GeometryPathPropertyEditorPopup.hpp"
@@ -59,7 +60,7 @@ namespace
     }
 
     // extract linear RGBA values from an OpenSim::Appearance
-    glm::vec4 ExtractRgba(OpenSim::Appearance const& appearance)
+    osc::Color ExtractRgba(OpenSim::Appearance const& appearance)
     {
         SimTK::Vec3 const rgb = appearance.get_color();
         double const a = appearance.get_opacity();
@@ -580,14 +581,14 @@ namespace
 
                 // draw dimension hint (color bar next to the input)
                 {
-                    glm::vec4 color = {0.0f, 0.0f, 0.0f, 0.6f};
+                    osc::Color color = {0.0f, 0.0f, 0.0f, 0.6f};
                     color[i] = 1.0f;
 
                     ImDrawList* const l = ImGui::GetWindowDrawList();
                     glm::vec2 const p = ImGui::GetCursorScreenPos();
                     float const h = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y + 2.0f*ImGui::GetStyle().FrameBorderSize;
                     glm::vec2 const dims = glm::vec2{4.0f, h};
-                    l->AddRectFilled(p, p + dims, ImGui::ColorConvertFloat4ToU32(color));
+                    l->AddRectFilled(p, p + dims, ImGui::ColorConvertFloat4ToU32(glm::vec4{color}));
                     ImGui::SetCursorScreenPos({p.x + 4.0f, p.y});
                 }
 
@@ -938,12 +939,12 @@ namespace
             ImGui::NextColumn();
 
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv = std::nullopt;
-            glm::vec4 color = ExtractRgba(prop.getValue());
+            osc::Color color = ExtractRgba(prop.getValue());
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
             ImGui::PushID(1);
-            if (ImGui::ColorEdit4("##coloreditor", glm::value_ptr(color)))
+            if (ImGui::ColorEdit4("##coloreditor", osc::ValuePtr(color)))
             {
                 SimTK::Vec3 newColor;
                 newColor[0] = static_cast<double>(color[0]);

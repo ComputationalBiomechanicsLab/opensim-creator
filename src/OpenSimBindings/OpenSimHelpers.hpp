@@ -1,11 +1,11 @@
 #pragma once
 
+#include "src/Graphics/Color.hpp"
 #include "src/Maths/Plane.hpp"
 #include "src/Maths/PointDirection.hpp"
 #include "src/Utils/CStringView.hpp"
 
 #include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/ComponentPath.h>
 
@@ -312,7 +312,7 @@ namespace osc
     // the value was set)
     bool TrySetAppearancePropertyIsVisibleTo(OpenSim::Component&, bool);
 
-    glm::vec4 GetSuggestedBoneColor() noexcept;  // best guess, based on shaders etc.
+    Color GetSuggestedBoneColor() noexcept;  // best guess, based on shaders etc.
 
     // returns `true` if the given model's display properties asks to show frames
     bool IsShowingFrames(OpenSim::Model const&);

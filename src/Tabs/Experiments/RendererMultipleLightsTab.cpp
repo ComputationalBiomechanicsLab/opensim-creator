@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
@@ -48,30 +49,30 @@ static glm::vec3 constexpr c_PointLightPositions[] =
 };
 
 // ambient color of the point lights
-static glm::vec3 constexpr c_PointLightAmbients[] =
+static float constexpr c_PointLightAmbients[] =
 {
-    {0.05f, 0.05f, 0.05f},
-    {0.05f, 0.05f, 0.05f},
-    {0.05f, 0.05f, 0.05f},
-    {0.05f, 0.05f, 0.05f},
+    0.05f,
+    0.05f,
+    0.05f,
+    0.05f,
 };
 
 // diffuse color of the point lights
-static glm::vec3 constexpr c_PointLightDiffuses[] =
+static float constexpr c_PointLightDiffuses[] =
 {
-    {0.8f, 0.8f, 0.8f},
-    {0.8f, 0.8f, 0.8f},
-    {0.8f, 0.8f, 0.8f},
-    {0.8f, 0.8f, 0.8f},
+    0.8f,
+    0.8f,
+    0.8f,
+    0.8f,
 };
 
 // specular color of the point lights
-static glm::vec3 constexpr c_PointLightSpeculars[] =
+static float constexpr c_PointLightSpeculars[] =
 {
-    {1.0f, 1.0f, 1.0f},
-    {1.0f, 1.0f, 1.0f},
-    {1.0f, 1.0f, 1.0f},
-    {1.0f, 1.0f, 1.0f},
+    1.0f,
+    1.0f,
+    1.0f,
+    1.0f,
 };
 
 static float constexpr c_PointLightConstants[] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -86,13 +87,13 @@ public:
         m_MultipleLightsMaterial.setTexture("uMaterialDiffuse", m_DiffuseMap);
         m_MultipleLightsMaterial.setTexture("uMaterialSpecular", m_SpecularMap);
         m_MultipleLightsMaterial.setVec3("uDirLightDirection", {-0.2f, -1.0f, -0.3f});
-        m_MultipleLightsMaterial.setVec3("uDirLightAmbient", {0.05f, 0.05f, 0.05f});
-        m_MultipleLightsMaterial.setVec3("uDirLightDiffuse", {0.4f, 0.4f, 0.4f});
-        m_MultipleLightsMaterial.setVec3("uDirLightSpecular", {0.5f, 0.5f, 0.5f});
+        m_MultipleLightsMaterial.setFloat("uDirLightAmbient", 0.05f);
+        m_MultipleLightsMaterial.setFloat("uDirLightDiffuse", 0.4f);
+        m_MultipleLightsMaterial.setFloat("uDirLightSpecular", 0.5f);
 
-        m_MultipleLightsMaterial.setVec3("uSpotLightAmbient", {0.0f, 0.0f, 0.0f});
-        m_MultipleLightsMaterial.setVec3("uSpotLightDiffuse", {1.0f, 1.0f, 1.0f});
-        m_MultipleLightsMaterial.setVec3("uSpotLightSpecular", {1.0f, 1.0f, 1.0f});
+        m_MultipleLightsMaterial.setFloat("uSpotLightAmbient", 0.0f);
+        m_MultipleLightsMaterial.setFloat("uSpotLightDiffuse", 1.0f);
+        m_MultipleLightsMaterial.setFloat("uSpotLightSpecular", 1.0f);
         m_MultipleLightsMaterial.setFloat("uSpotLightConstant", 1.0f);
         m_MultipleLightsMaterial.setFloat("uSpotLightLinear", 0.09f);
         m_MultipleLightsMaterial.setFloat("uSpotLightQuadratic", 0.032f);
@@ -103,11 +104,11 @@ public:
         m_MultipleLightsMaterial.setFloatArray("uPointLightConstant", c_PointLightConstants);
         m_MultipleLightsMaterial.setFloatArray("uPointLightLinear", c_PointLightLinears);
         m_MultipleLightsMaterial.setFloatArray("uPointLightQuadratic", c_PointLightQuadratics);
-        m_MultipleLightsMaterial.setVec3Array("uPointLightAmbient", c_PointLightAmbients);
-        m_MultipleLightsMaterial.setVec3Array("uPointLightDiffuse", c_PointLightDiffuses);
-        m_MultipleLightsMaterial.setVec3Array("uPointLightSpecular", c_PointLightSpeculars);
+        m_MultipleLightsMaterial.setFloatArray("uPointLightAmbient", c_PointLightAmbients);
+        m_MultipleLightsMaterial.setFloatArray("uPointLightDiffuse", c_PointLightDiffuses);
+        m_MultipleLightsMaterial.setFloatArray("uPointLightSpecular", c_PointLightSpeculars);
 
-        m_LightCubeMaterial.setVec3("uLightColor", {1.0f, 1.0f, 1.0f});
+        m_LightCubeMaterial.setColor("uLightColor", Color::white());
 
         m_Camera.setPosition({0.0f, 0.0f, 3.0f});
         m_Camera.setCameraFOV(glm::radians(45.0f));

@@ -1,6 +1,7 @@
 #include "ImGuiHelpers.hpp"
 
 #include "src/Graphics/Camera.hpp"
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/RenderTexture.hpp"
 #include "src/Graphics/Texture2D.hpp"
 #include "src/Maths/CollisionTests.hpp"
@@ -613,9 +614,9 @@ osc::Rect osc::DrawAlignmentAxes(glm::mat4 const& viewMtx)
         glm::vec2 const p1 = origin;
         glm::vec2 const p2 = origin + linelen*view;
 
-        glm::vec4 color = {0.15f, 0.15f, 0.15f, 1.0f};
-        color[static_cast<glm::vec4::length_type>(i)] = 0.7f;
-        ImU32 const colorU32 = ImGui::ColorConvertFloat4ToU32(color);
+        Color color = {0.15f, 0.15f, 0.15f, 1.0f};
+        color[i] = 0.7f;
+        ImU32 const colorU32 = ImGui::ColorConvertFloat4ToU32(glm::vec4{color});
 
         glm::vec2 const ts = ImGui::CalcTextSize(labels[i].c_str());
 
@@ -626,7 +627,7 @@ osc::Rect osc::DrawAlignmentAxes(glm::mat4 const& viewMtx)
         // also, add a faded line for symmetry
         {
             color.a *= 0.15f;
-            ImU32 const colorFadedU32 = ImGui::ColorConvertFloat4ToU32(color);
+            ImU32 const colorFadedU32 = ImGui::ColorConvertFloat4ToU32(glm::vec4{color});
             glm::vec2 const p2rev = origin - linelen*view;
             drawlist.AddLine(p1, p2rev, colorFadedU32, 3.0f);
 

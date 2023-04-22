@@ -1,5 +1,6 @@
 #include "SimTKDecorationGenerator.hpp"
 
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/SimpleSceneDecoration.hpp"
@@ -44,15 +45,15 @@ namespace
         return osc::ToVec3(sf);
     }
 
-    // extracts RGBA from geometry
-    glm::vec4 GetColor(SimTK::DecorativeGeometry const& geom)
+    // extracts RGBA color from geometry
+    osc::Color GetColor(SimTK::DecorativeGeometry const& geom)
     {
         SimTK::Vec3 const& rgb = geom.getColor();
 
         float ar = static_cast<float>(geom.getOpacity());
         ar = ar < 0.0f ? 1.0f : ar;
 
-        return osc::ToVec4(rgb, ar);
+        return osc::Color{osc::ToVec4(rgb, ar)};
     }
 
     // creates a geometry-to-ground transform for the given geometry
@@ -110,8 +111,8 @@ namespace
         {
             osc::Transform const t = ToOscTransform(d);
 
-            glm::vec3 const p1 = TransformPoint(t, osc::ToVec4(d.getPoint1()));
-            glm::vec3 const p2 = TransformPoint(t, osc::ToVec4(d.getPoint2()));
+            glm::vec3 const p1 = TransformPoint(t, osc::ToVec3(d.getPoint1()));
+            glm::vec3 const p2 = TransformPoint(t, osc::ToVec3(d.getPoint2()));
 
             float const thickness = c_LineThickness * m_FixupScaleFactor;
 
@@ -206,13 +207,12 @@ namespace
             {
                 float const radius = 0.05f * c_FrameAxisLengthRescale * m_FixupScaleFactor;
                 osc::Transform const sphereXform = t.withScale(radius);
-                glm::vec4 const white = {1.0f, 1.0f, 1.0f, 1.0f};
 
                 m_Consumer(osc::SimpleSceneDecoration
                 {
                     m_MeshCache.getSphereMesh(),
                     sphereXform,
-                    white
+                    osc::Color::white(),
                 });
             }
 
@@ -232,7 +232,7 @@ namespace
                 };
                 osc::Transform const legXform = SimbodyCylinderToSegmentTransform(line, legThickness);
 
-                glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
+                osc::Color color = {0.0f, 0.0f, 0.0f, 1.0f};
                 color[axis] = 1.0f;
 
                 m_Consumer(osc::SimpleSceneDecoration
@@ -305,7 +305,7 @@ namespace
             constexpr float neckThickness = 0.005f;
             constexpr float headThickness = 0.02f;
 
-            glm::vec4 const color = GetColor(d);
+            osc::Color const color = GetColor(d);
 
             // emit neck cylinder
             osc::Transform const neckXform = osc::SimbodyCylinderToSegmentTransform({neckStart, neckEnd}, neckThickness);

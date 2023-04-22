@@ -2,6 +2,7 @@
 
 #include "src/Bindings/GlmHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
@@ -25,7 +26,6 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <glm/gtx/transform.hpp>
 #include <nonstd/span.hpp>
 
@@ -157,8 +157,8 @@ public:
         m_SceneTexturedElementsMaterial.setVec2("uTextureScale", {200.0f, 200.0f});
         m_SceneTexturedElementsMaterial.setTransparent(true);
 
-        m_RimsSelectedColor.setVec4("uDiffuseColor", {1.0f, 0.0f, 0.0f, 1.0f});
-        m_RimsHoveredColor.setVec4("uDiffuseColor", {0.5, 0.0f, 0.0f, 1.0f});
+        m_RimsSelectedColor.setColor("uDiffuseColor", Color::red());
+        m_RimsHoveredColor.setColor("uDiffuseColor", {0.5, 0.0f, 0.0f, 1.0f});
 
         m_EdgeDetectorMaterial.setTransparent(true);
         m_EdgeDetectorMaterial.setDepthTested(false);
@@ -193,7 +193,7 @@ public:
         {
             m_SceneColoredElementsMaterial.setVec3("uViewPos", m_Camera.getPosition());
             m_SceneColoredElementsMaterial.setVec3("uLightDir", params.lightDirection);
-            m_SceneColoredElementsMaterial.setVec3("uLightColor", params.lightColor);
+            m_SceneColoredElementsMaterial.setColor("uLightColor", params.lightColor);
             m_SceneColoredElementsMaterial.setFloat("uAmbientStrength", params.ambientStrength);
             m_SceneColoredElementsMaterial.setFloat("uDiffuseStrength", params.diffuseStrength);
             m_SceneColoredElementsMaterial.setFloat("uSpecularStrength", params.specularStrength);
@@ -217,12 +217,12 @@ public:
             transparentMaterial.setTransparent(true);
 
             MaterialPropertyBlock propBlock;
-            glm::vec4 lastColor = {-1.0f, -1.0f, -1.0f, 0.0f};
+            Color lastColor = {-1.0f, -1.0f, -1.0f, 0.0f};
             for (SceneDecoration const& dec : decorations)
             {
                 if (dec.color != lastColor)
                 {
-                    propBlock.setVec4("uDiffuseColor", dec.color);
+                    propBlock.setColor("uDiffuseColor", dec.color);
                     lastColor = dec.color;
                 }
 
@@ -251,7 +251,7 @@ public:
             {
                 m_SceneTexturedElementsMaterial.setVec3("uViewPos", m_Camera.getPosition());
                 m_SceneTexturedElementsMaterial.setVec3("uLightDir", params.lightDirection);
-                m_SceneTexturedElementsMaterial.setVec3("uLightColor", params.lightColor);
+                m_SceneTexturedElementsMaterial.setColor("uLightColor", params.lightColor);
                 m_SceneTexturedElementsMaterial.setFloat("uAmbientStrength", 0.7f);
                 m_SceneTexturedElementsMaterial.setFloat("uDiffuseStrength", 0.4f);
                 m_SceneTexturedElementsMaterial.setFloat("uSpecularStrength", 0.4f);
@@ -376,7 +376,7 @@ private:
         m_Camera.setFarClippingPlane(params.farClippingPlane);
         m_Camera.setViewMatrixOverride(params.viewMatrix);
         m_Camera.setProjectionMatrixOverride(params.projectionMatrix);
-        m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
+        m_Camera.setBackgroundColor(Color::clear());
 
         // draw all selected geometry in a solid color
         for (SceneDecoration const& dec : decorations)
@@ -405,7 +405,7 @@ private:
         // the off-screen texture is rendered as a quad via an edge-detection kernel
         // that transforms the solid shapes into "rims"
         m_EdgeDetectorMaterial.setRenderTexture("uScreenTexture", m_RimsTexture);
-        m_EdgeDetectorMaterial.setVec4("uRimRgba", params.rimColor);
+        m_EdgeDetectorMaterial.setColor("uRimRgba", params.rimColor);
         m_EdgeDetectorMaterial.setVec2("uRimThickness", 0.5f*rimThicknessNDC);
         m_EdgeDetectorMaterial.setVec2("uTextureOffset", rimRectUV.p1);
         m_EdgeDetectorMaterial.setVec2("uTextureScale", osc::Dimensions(rimRectUV));

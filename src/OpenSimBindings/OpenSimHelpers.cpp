@@ -14,7 +14,6 @@
 
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/Array.h>
@@ -1000,12 +999,12 @@ bool osc::TrySetAppearancePropertyIsVisibleTo(OpenSim::Component& c, bool v)
     return true;
 }
 
-glm::vec4 osc::GetSuggestedBoneColor() noexcept
+osc::Color osc::GetSuggestedBoneColor() noexcept
 {
-    glm::vec4 usualDefault = {232.0f / 255.0f, 216.0f / 255.0f, 200.0f/255.0f, 1.0f};
-    glm::vec4 white = {1.0f, 1.0f, 1.0f, 1.0f};
+    Color usualDefault = {232.0f / 255.0f, 216.0f / 255.0f, 200.0f/255.0f, 1.0f};
+    Color white = {1.0f, 1.0f, 1.0f, 1.0f};
     float brightenAmount = 0.1f;
-    return glm::mix(usualDefault, white, brightenAmount);
+    return Lerp(usualDefault, white, brightenAmount);
 }
 
 bool osc::IsShowingFrames(OpenSim::Model const& model)

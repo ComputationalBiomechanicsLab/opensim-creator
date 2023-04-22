@@ -1,6 +1,7 @@
 #include "SimulationToolbar.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Graphics/Color.hpp"
 #include "src/OpenSimBindings/Widgets/SimulationScrubber.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
@@ -17,7 +18,7 @@
 
 namespace
 {
-    glm::vec4 CalcStatusColor(osc::SimulationStatus status)
+    osc::Color CalcStatusColor(osc::SimulationStatus status)
     {
         switch (status)
         {
@@ -30,7 +31,7 @@ namespace
         case osc::SimulationStatus::Error:
             return OSC_NEGATIVE_RGBA;
         default:
-            return ImGui::GetStyle().Colors[ImGuiCol_Text];
+            return osc::Color{glm::vec4{ImGui::GetStyle().Colors[ImGuiCol_Text]}};
         }
     }
 }
@@ -105,7 +106,7 @@ private:
         SimulationStatus const status = m_Simulation->getStatus();
         ImGui::TextDisabled("simulator status:");
         ImGui::SameLine();
-        ImGui::PushStyleColor(ImGuiCol_Text, CalcStatusColor(status));
+        ImGui::PushStyleColor(ImGuiCol_Text, glm::vec4{CalcStatusColor(status)});
         ImGui::TextUnformatted(GetAllSimulationStatusStrings()[static_cast<size_t>(status)]);
         ImGui::PopStyleColor();
     }

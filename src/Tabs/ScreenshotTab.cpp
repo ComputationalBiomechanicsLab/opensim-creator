@@ -30,8 +30,8 @@
 
 namespace
 {
-    glm::vec4 constexpr c_UnselectedColor = {1.0f, 1.0f, 1.0f, 0.4f};
-    glm::vec4 constexpr c_SelectedColor = {1.0f, 0.0f, 0.0f, 0.8f};
+    osc::Color constexpr c_UnselectedColor = {1.0f, 1.0f, 1.0f, 0.4f};
+    osc::Color constexpr c_SelectedColor = {1.0f, 0.0f, 0.0f, 0.8f};
 
     // returns a rect that fully spans at least one dimension of the target rect, but has
     // the given aspect ratio
@@ -145,7 +145,11 @@ private:
         return imageRect;
     }
 
-    void drawOverlays(ImDrawList& drawlist, Rect const& imageRect, glm::vec4 const& unselectedColor, glm::vec4 const& selectedColor)
+    void drawOverlays(
+        ImDrawList& drawlist,
+        Rect const& imageRect,
+        Color const& unselectedColor,
+        Color const& selectedColor)
     {
         glm::vec2 const mousePos = ImGui::GetMousePos();
         bool const leftClickReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
@@ -209,7 +213,7 @@ private:
         ImDrawList drawlist{ImGui::GetDrawListSharedData()};
         drawlist.Flags |= ImDrawListFlags_AntiAliasedLines;
         drawlist.AddDrawCmd();
-        glm::vec4 outlineColor = c_SelectedColor;
+        Color outlineColor = c_SelectedColor;
         outlineColor.a = 1.0f;
         drawOverlays(
             drawlist,

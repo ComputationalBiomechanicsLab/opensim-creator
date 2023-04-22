@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/Mesh.hpp"
@@ -82,7 +83,7 @@ public:
         }
         m_SceneCamera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
 
-        m_SceneMaterial.setVec4("uDiffuseColor", m_MeshColor);
+        m_SceneMaterial.setColor("uDiffuseColor", m_MeshColor);
         Graphics::DrawMesh(m_Mesh, osc::Transform{}, m_SceneMaterial, m_SceneCamera);
         Graphics::DrawMesh(m_Mesh, osc::Transform{}, m_NormalsMaterial, m_SceneCamera);
         m_SceneCamera.renderToScreen();
@@ -114,7 +115,7 @@ private:
     Camera m_SceneCamera;
     bool m_IsMouseCaptured = false;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
-    glm::vec4 m_MeshColor = {1.0f, 1.0f, 1.0f, 1.0f};
+    Color m_MeshColor = Color::white();
 };
 
 

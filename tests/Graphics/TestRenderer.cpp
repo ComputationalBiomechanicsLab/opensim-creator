@@ -714,6 +714,7 @@ TEST_F(Renderer, MaterialGetShaderReturnsSuppliedShader)
 TEST_F(Renderer, MaterialGetColorOnNewMaterialReturnsEmptyOptional)
 {
     osc::Material mat = GenerateMaterial();
+
     ASSERT_FALSE(mat.getColor("someKey"));
 }
 
@@ -729,6 +730,36 @@ TEST_F(Renderer, MaterialCallingGetColorOnMaterialAfterSetColorReturnsTheColor)
     mat.setColor("someKey", osc::Color::red());
 
     ASSERT_EQ(mat.getColor("someKey"), osc::Color::red());
+}
+
+TEST_F(Renderer, MaterialGetColorArrayReturnsEmptyOnNewMaterial)
+{
+    osc::Material mat = GenerateMaterial();
+
+    ASSERT_FALSE(mat.getColorArray("someKey"));
+}
+
+TEST_F(Renderer, MaterialCanCallSetColorArrayOnNewMaterial)
+{
+    osc::Material mat = GenerateMaterial();
+    osc::Color colors[] = {osc::Color::black(), osc::Color::blue()};
+
+    mat.setColorArray("someKey", colors);
+}
+
+TEST_F(Renderer, MaterialCallingGetColorArrayOnMaterialAfterSettingThemReturnsTheSameColors)
+{
+    osc::Material mat = GenerateMaterial();
+    osc::Color const colors[] = {osc::Color::red(), osc::Color::green(), osc::Color::blue()};
+    osc::CStringView const key = "someKey";
+
+    mat.setColorArray(key, colors);
+
+    std::optional<nonstd::span<osc::Color const>> rv = mat.getColorArray(key);
+
+    ASSERT_TRUE(rv);
+    ASSERT_EQ(std::size(*rv), std::size(colors));
+    ASSERT_TRUE(std::equal(std::begin(colors), std::end(colors), std::begin(*rv)));
 }
 TEST_F(Renderer, MaterialGetFloatOnNewMaterialReturnsEmptyOptional)
 {

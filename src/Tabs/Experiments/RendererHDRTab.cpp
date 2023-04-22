@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
@@ -16,6 +17,7 @@
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/Transform.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Utils/Algorithms.hpp"
 
 #include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>
@@ -34,14 +36,14 @@ static glm::vec3 constexpr c_LightPositions[] =
     { 0.8f, -1.7f, 6.0f},
 };
 
-static glm::vec3 constexpr c_LightColors[] =
+static osc::Color constexpr c_LightColors[] =
 {
-    {200.0f, 200.0f, 200.0f},
-    {0.1f, 0.0f, 0.0f},
-    {0.0f, 0.0f, 0.2f},
-    {0.0f, 0.1f, 0.0f},
+    {200.0f, 200.0f, 200.0f, 1.0f},
+    {0.1f, 0.0f, 0.0f, 1.0f},
+    {0.0f, 0.0f, 0.2f, 1.0f},
+    {0.0f, 0.1f, 0.0f, 1.0f},
 };
-static_assert(sizeof(c_LightPositions) == sizeof(c_LightColors));
+static_assert(std::size(c_LightPositions) == std::size(c_LightColors));
 
 namespace
 {
@@ -61,7 +63,7 @@ public:
         m_Parent{std::move(parent_)}
     {
         m_SceneMaterial.setVec3Array("uSceneLightPositions", c_LightPositions);
-        m_SceneMaterial.setVec3Array("uSceneLightColors", c_LightColors);
+        m_SceneMaterial.setColorArray("uSceneLightColors", c_LightColors);
         m_SceneMaterial.setTexture("uDiffuseTexture", m_WoodTexture);
         m_SceneMaterial.setBool("uInverseNormals", true);
 

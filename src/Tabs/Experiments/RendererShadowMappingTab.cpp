@@ -152,7 +152,6 @@ private:
 
         m_Camera.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
 
-        m_SceneMaterial.setVec3("uLightColor", glm::vec3{0.3f});
         m_SceneMaterial.setVec3("uLightWorldPos", m_LightPos);
         m_SceneMaterial.setVec3("uViewWorldPos", m_Camera.getPosition());
         m_SceneMaterial.setMat4("uLightSpaceMat", m_LatestLightSpaceMatrix);

@@ -352,13 +352,13 @@ public:
     Impl()
     {
         m_Material.setTexture("uTextureSampler", m_BoxTexture);
-        m_WireframeMaterial.setVec4("uColor", {0.0f, 0.0f, 0.0f, 0.15f});
+        m_WireframeMaterial.setColor("uColor", {0.0f, 0.0f, 0.0f, 0.15f});
         m_WireframeMaterial.setTransparent(true);
         m_WireframeMaterial.setWireframeMode(true);
         m_WireframeMaterial.setDepthTested(false);
         m_Camera.setViewMatrixOverride(glm::mat4{1.0f});
         m_Camera.setProjectionMatrixOverride(glm::mat4{1.0f});
-        m_Camera.setBackgroundColor({1.0f, 1.0f, 1.0f, 1.0f});
+        m_Camera.setBackgroundColor(Color::white());
     }
 
     UID getID() const

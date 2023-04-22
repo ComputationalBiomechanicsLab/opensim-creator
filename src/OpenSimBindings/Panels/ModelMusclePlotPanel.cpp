@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Formats/CSV.hpp"
+#include "src/Graphics/Color.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp"
 #include "src/OpenSimBindings/ActionFunctions.hpp"
 #include "src/OpenSimBindings/ModelStateCommit.hpp"
@@ -1753,7 +1754,7 @@ namespace
             {
                 Plot const& plot = m_Lines.getOtherPlot(i);
 
-                glm::vec4 color = m_ComputedPlotLineBaseColor;
+                osc::Color color = m_ComputedPlotLineBaseColor;
 
                 if (IsExternallyProvided(plot))
                 {
@@ -1780,7 +1781,7 @@ namespace
 
                 std::string const lineName = IthPlotLineName(plot, i + 1);
 
-                ImPlot::PushStyleColor(ImPlotCol_Line, color);
+                ImPlot::PushStyleColor(ImPlotCol_Line, glm::vec4{color});
                 PlotLine(lineName, plot);
                 ImPlot::PopStyleColor(ImPlotCol_Line);
 
@@ -1818,7 +1819,7 @@ namespace
                 std::string const lineName = IthPlotLineName(plot, m_Lines.getNumOtherPlots() + 1);
 
                 // locked curves should have a blue tint
-                glm::vec4 color = m_ComputedPlotLineBaseColor;
+                osc::Color color = m_ComputedPlotLineBaseColor;
 
                 if (IsExternallyProvided(plot))
                 {
@@ -1836,7 +1837,7 @@ namespace
                     ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
                 }
 
-                ImPlot::PushStyleColor(ImPlotCol_Line, color);
+                ImPlot::PushStyleColor(ImPlotCol_Line, glm::vec4{color});
                 PlotLine(lineName, plot);
                 ImPlot::PopStyleColor(ImPlotCol_Line);
 
@@ -2108,7 +2109,7 @@ namespace
 
         // UI/drawing/widget state
         std::vector<MuscleOutput> m_AvailableMuscleOutputs = GenerateMuscleOutputs();
-        glm::vec4 m_ComputedPlotLineBaseColor = {1.0f, 1.0f, 1.0f, 1.0f};
+        osc::Color m_ComputedPlotLineBaseColor = osc::Color::white();
         bool m_LegendPopupIsOpen = false;
         bool m_ShowMarkersOnActivePlot = true;
         bool m_ShowMarkersOnOtherPlots = false;
@@ -2116,8 +2117,8 @@ namespace
         ImPlotFlags m_PlotFlags = ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame | ImPlotFlags_NoTitle;
         ImPlotLocation m_LegendLocation = ImPlotLocation_NorthWest;
         ImPlotLegendFlags m_LegendFlags = ImPlotLegendFlags_None;
-        glm::vec4 m_LockedCurveTint = {0.5f, 0.5f, 1.0f, 1.1f};
-        glm::vec4 m_LoadedCurveTint = {0.5f, 1.0f, 0.5f, 1.0f};
+        osc::Color m_LockedCurveTint = {0.5f, 0.5f, 1.0f, 1.1f};
+        osc::Color m_LoadedCurveTint = {0.5f, 1.0f, 0.5f, 1.0f};
     };
 }
 

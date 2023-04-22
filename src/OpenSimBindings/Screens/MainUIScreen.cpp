@@ -28,7 +28,6 @@
 #include "src/Widgets/SaveChangesPopup.hpp"
 #include "src/Widgets/SaveChangesPopupConfig.hpp"
 
-#include <glm/vec4.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui_internal.h>

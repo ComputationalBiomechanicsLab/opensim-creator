@@ -1,5 +1,6 @@
 #include "GraphicsHelpers.hpp"
 
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Image.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
@@ -43,9 +44,7 @@ namespace
         t.scale *= 0.5f * Dimensions(n.getBounds());
         t.position = Midpoint(n.getBounds());
 
-        glm::vec4 const color = {0.0f, 0.0f, 0.0f, 1.0f};
-
-        out(osc::SceneDecoration{mesh, t, color});
+        out(osc::SceneDecoration{mesh, t, osc::Color::black()});
 
         if (n.isNode())
         {
@@ -66,7 +65,7 @@ namespace
         t.scale *= glm::vec3{50.0f, 50.0f, 1.0f};
         t.rotation = rotation;
 
-        glm::vec4 const color = {0.7f, 0.7f, 0.7f, 0.15f};
+        osc::Color const color = {0.7f, 0.7f, 0.7f, 0.15f};
 
         out(osc::SceneDecoration{grid, t, color});
     }
@@ -92,13 +91,12 @@ void osc::DrawAABB(
     std::function<void(osc::SceneDecoration&&)> const& out)
 {
     Mesh const cube = cache.getCubeWireMesh();
-    glm::vec4 const color = {0.0f, 0.0f, 0.0f, 1.0f};
 
     Transform t;
     t.scale = 0.5f * Dimensions(aabb);
     t.position = Midpoint(aabb);
 
-    out(osc::SceneDecoration{cube, t, color});
+    out(osc::SceneDecoration{cube, t, osc::Color::black()});
 }
 
 void osc::DrawAABBs(
@@ -107,7 +105,6 @@ void osc::DrawAABBs(
     std::function<void(osc::SceneDecoration&&)> const& out)
 {
     Mesh const cube = cache.getCubeWireMesh();
-    glm::vec4 const color = {0.0f, 0.0f, 0.0f, 1.0f};
 
     for (AABB const& aabb : aabbs)
     {
@@ -115,7 +112,7 @@ void osc::DrawAABBs(
         t.scale = 0.5f * Dimensions(aabb);
         t.position = Midpoint(aabb);
 
-        out(osc::SceneDecoration{cube, t, color});
+        out(osc::SceneDecoration{cube, t, osc::Color::black()});
     }
 }
 
@@ -128,24 +125,20 @@ void osc::DrawXZFloorLines(
 
     // X line
     {
-        glm::vec4 const color = {1.0f, 0.0f, 0.0f, 1.0f};
-
         Transform t;
         t.scale *= scale;
         t.rotation = glm::angleAxis(fpi2, glm::vec3{0.0f, 0.0f, 1.0f});
 
-        out(osc::SceneDecoration{yLine, t, color});
+        out(osc::SceneDecoration{yLine, t, Color::red()});
     }
 
     // Z line
     {
-        glm::vec4 const color = {0.0f, 1.0f, 0.0f, 1.0f};
-
         Transform t;
         t.scale *= scale;
         t.rotation = glm::angleAxis(fpi2, glm::vec3{1.0f, 0.0f, 0.0f});
 
-        out(osc::SceneDecoration{yLine, t, color});
+        out(osc::SceneDecoration{yLine, t, Color::blue()});
     }
 }
 
@@ -179,7 +172,7 @@ osc::ArrowProperties::ArrowProperties() :
     tipLength{},
     neckThickness{},
     headThickness{},
-    color{}
+    color{Color::black()}
 {
 }
 
@@ -209,7 +202,7 @@ void osc::DrawArrow(
 void osc::DrawLineSegment(
     MeshCache& cache,
     Segment const& segment,
-    glm::vec4 const& color,
+    Color const& color,
     float radius,
     std::function<void(osc::SceneDecoration&&)> const& out)
 {
@@ -472,7 +465,7 @@ osc::Material osc::CreateWireframeOverlayMaterial(Config const& config, ShaderCa
     std::filesystem::path const vertShader = config.getResourceDir() / "shaders/SceneSolidColor.vert";
     std::filesystem::path const fragShader = config.getResourceDir() / "shaders/SceneSolidColor.frag";
     osc::Material material{cache.load(vertShader, fragShader)};
-    material.setVec4("uDiffuseColor", {0.0f, 0.0f, 0.0f, 0.6f});
+    material.setColor("uDiffuseColor", osc::Color{0.0f, 0.0f, 0.0f, 0.6f});
     material.setWireframeMode(true);
     material.setTransparent(true);
     return material;

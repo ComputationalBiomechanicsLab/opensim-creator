@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/MaterialPropertyBlock.hpp"
@@ -16,7 +17,6 @@
 #include "src/Platform/App.hpp"
 
 #include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <SDL_events.h>
 #include <IconsFontAwesome5.h>
 
@@ -98,10 +98,10 @@ namespace
         return rv;
     }
 
-    osc::MaterialPropertyBlock GeneratePropertyBlock(glm::vec4 const& v)
+    osc::MaterialPropertyBlock GeneratePropertyBlock(osc::Color const& color)
     {
         osc::MaterialPropertyBlock p;
-        p.setVec4("uColor", v);
+        p.setColor("uColor", color);
         return p;
     }
 

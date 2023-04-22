@@ -1,6 +1,7 @@
 #include "PreviewExperimentalDataTab.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
@@ -23,7 +24,6 @@
 #include "src/Utils/CStringView.hpp"
 
 #include <glm/vec2.hpp>
-#include <glm/vec4.hpp>
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
 #include <nonstd/span.hpp>
@@ -357,7 +357,7 @@ namespace
         osc::Transform t;
         t.rotation = glm::angleAxis(osc::fpi2, glm::vec3{-1.0f, 0.0f, 0.0f});
         t.scale = {50.0f, 50.0f, 1.0f};
-        glm::vec4 color = {128.0f/255.0f, 128.0f/255.0f, 128.0f/255.0f, 1.0f};
+        osc::Color const color = {128.0f/255.0f, 128.0f/255.0f, 128.0f/255.0f, 1.0f};
 
         return osc::SceneDecoration
         {
@@ -377,7 +377,7 @@ namespace
 
         glm::vec3 p0 = {};
         glm::vec3 p1 = {};
-        glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f};
+        osc::Color color = osc::Color::white();
         float neckThickness = 0.025f;
         float headThickness = 0.05f;
         float percentageHead = 0.15f;
@@ -605,7 +605,7 @@ private:
         params.farClippingPlane = m_Camera.zfar;
         params.viewPos = m_Camera.getPos();
         params.lightDirection = osc::RecommendedLightDirection(m_Camera);
-        params.lightColor = {1.0f, 1.0f, 1.0f};
+        params.lightColor = Color::white();
         params.backgroundColor = {96.0f / 255.0f, 96.0f / 255.0f, 96.0f / 255.0f, 1.0f};
         return params;
     }

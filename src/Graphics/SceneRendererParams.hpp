@@ -4,7 +4,6 @@
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 
 namespace osc
@@ -25,7 +24,7 @@ namespace osc
         glm::mat4 projectionMatrix;
         glm::vec3 viewPos;
         glm::vec3 lightDirection;
-        glm::vec3 lightColor;
+        Color lightColor;  // ignores alpha
         float ambientStrength;
         float diffuseStrength;
         float specularStrength;

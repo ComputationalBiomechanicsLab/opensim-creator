@@ -16,6 +16,18 @@ TEST(Color, RGBAFloatConstructorIsConstexpr)
     osc::Color constexpr color{0.0f, 0.0f, 0.0f, 0.0f};
 }
 
+TEST(Color, CanBeExplicitlyConstructedFromVec3)
+{
+    glm::vec3 const v = {0.25f, 0.387f, 0.1f};
+    osc::Color const color{v};
+
+    // ensure vec3 ctor creates a solid color with a == 1.0f
+    ASSERT_EQ(color.r, v.x);
+    ASSERT_EQ(color.g, v.y);
+    ASSERT_EQ(color.b, v.z);
+    ASSERT_EQ(color.a, 1.0f);
+}
+
 TEST(Color, CanBeExplicitlyConstructedFromVec4)
 {
     osc::Color const color{glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}};
@@ -24,6 +36,16 @@ TEST(Color, CanBeExplicitlyConstructedFromVec4)
 TEST(Color, CanBeImplicitlyConvertedToVec4)
 {
     glm::vec4 constexpr v = osc::Color{0.0f, 0.0f, 1.0f, 0.0f};
+}
+
+TEST(Color, BracketOpertatorOnConstColorWorksAsExpected)
+{
+    osc::Color const color = {0.32f, 0.41f, 0.78f, 0.93f};
+
+    ASSERT_EQ(color[0], color.r);
+    ASSERT_EQ(color[1], color.g);
+    ASSERT_EQ(color[2], color.b);
+    ASSERT_EQ(color[3], color.a);
 }
 
 TEST(Color, Vec4ConstructorIsConstexpr)
@@ -73,6 +95,33 @@ TEST(Color, InequalityReturnsFalseForEquivalentColors)
     osc::Color const b = {0.0f, 0.0f, 1.0f, 0.5f};
 
     ASSERT_FALSE(a != b);
+}
+
+TEST(Color, CanMultiplyColors)
+{
+    osc::Color const a = {0.64f, 0.90f, 0.21f, 0.89f};
+    osc::Color const b = {0.12f, 0.10f, 0.23f, 0.01f};
+
+    osc::Color const rv = a * b;
+
+    ASSERT_EQ(rv.r, a.r * b.r);
+    ASSERT_EQ(rv.g, a.g * b.g);
+    ASSERT_EQ(rv.b, a.b * b.b);
+    ASSERT_EQ(rv.a, a.a * b.a);
+}
+
+TEST(Color, CanBeMutablyMultiplied)
+{
+    osc::Color const a = {0.64f, 0.90f, 0.21f, 0.89f};
+    osc::Color const b = {0.12f, 0.10f, 0.23f, 0.01f};
+
+    osc::Color rv = a;
+    rv *= b;
+
+    ASSERT_EQ(rv.r, a.r * b.r);
+    ASSERT_EQ(rv.g, a.g * b.g);
+    ASSERT_EQ(rv.b, a.b * b.b);
+    ASSERT_EQ(rv.a, a.a * b.a);
 }
 
 TEST(Color, ToLinearReturnsLinearizedVersionOfColor)
@@ -128,6 +177,11 @@ TEST(Color, ToRgba32ReturnsRgba32VersionOfTheColor)
     ASSERT_EQ(expected.a, got.a);
 }
 
+TEST(Color, CanGetBlackColor)
+{
+    ASSERT_EQ(osc::Color::black(), osc::Color(0.0f, 0.0f, 0.0f, 1.0f));
+}
+
 TEST(Color, CanGetBlueColor)
 {
     ASSERT_EQ(osc::Color::blue(), osc::Color(0.0f, 0.0f, 1.0f, 1.0f));
@@ -138,9 +192,24 @@ TEST(Color, CanGetClearColor)
     ASSERT_EQ(osc::Color::clear(), osc::Color(0.0f, 0.0f, 0.0f, 0.0f));
 }
 
+TEST(Color, CanGetGreenColor)
+{
+    ASSERT_EQ(osc::Color::green(), osc::Color(0.0f, 1.0f, 0.0f, 1.0f));
+}
+
 TEST(Color, CanGetRedColor)
 {
     ASSERT_EQ(osc::Color::red(), osc::Color(1.0f, 0.0f, 0.0f, 1.0f));
+}
+
+TEST(Color, CanGetWhiteColor)
+{
+    ASSERT_EQ(osc::Color::white(), osc::Color(1.0f, 1.0f, 1.0f, 1.0f));
+}
+
+TEST(Color, CanGetYellowColor)
+{
+    ASSERT_EQ(osc::Color::yellow(), osc::Color(1.0f, 1.0f, 0.0f, 1.0f));
 }
 
 TEST(Color, ValuePtrConstVersionReturnsAddressOfColor)
@@ -155,3 +224,61 @@ TEST(Color, ValuePtrMutatingVersionReturnsAddressOfColor)
     ASSERT_EQ(&color.r, osc::ValuePtr(color));
 }
 
+TEST(Color, LerpWithZeroReturnsFirstColor)
+{
+    osc::Color const a = osc::Color::red();
+    osc::Color const b = osc::Color::blue();
+
+    ASSERT_EQ(osc::Lerp(a, b, 0.0f), a);
+}
+
+TEST(Color, LerpWithOneReturnsSecondColor)
+{
+    osc::Color const a = osc::Color::red();
+    osc::Color const b = osc::Color::blue();
+
+    ASSERT_EQ(osc::Lerp(a, b, 1.0f), b);
+}
+
+TEST(Color, LerpBelowZeroReturnsFirstColor)
+{
+    // tests that `t` is appropriately clamped
+
+    osc::Color const a = osc::Color::red();
+    osc::Color const b = osc::Color::blue();
+
+    ASSERT_EQ(osc::Lerp(a, b, -1.0f), a);
+}
+
+TEST(Color, LerpAboveOneReturnsSecondColor)
+{
+    // tests that `t` is appropriately clamped
+
+    osc::Color const a = osc::Color::red();
+    osc::Color const b = osc::Color::blue();
+
+    ASSERT_EQ(osc::Lerp(a, b, 2.0f), b);
+}
+
+TEST(Color, LerpBetweenTheTwoColorsReturnsExpectedResult)
+{
+    osc::Color const a = osc::Color::red();
+    osc::Color const b = osc::Color::blue();
+    float const t = 0.5f;
+    float const tolerance = 0.0001f;
+
+    osc::Color const rv = osc::Lerp(a, b, t);
+
+    for (size_t i = 0; i < 4; ++i)
+    {
+        ASSERT_NEAR(rv[i], (1.0f-t)*a[i] + t*b[i], tolerance);
+    }
+}
+
+TEST(Color, CanBeHashed)
+{
+    osc::Color const a = osc::Color::red();
+    osc::Color const b = osc::Color::blue();
+
+    ASSERT_NE(std::hash<osc::Color>{}(a), std::hash<osc::Color>{}(b));
+}

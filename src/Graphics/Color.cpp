@@ -1,5 +1,7 @@
 #include "Color.hpp"
 
+#include "src/Utils/Algorithms.hpp"
+
 #include <glm/glm.hpp>
 #include <glm/vec4.hpp>
 
@@ -26,6 +28,16 @@ osc::Color osc::ToSRGB(Color const& c) noexcept
         std::pow(c.b, 1.0f/2.2f),
         c.a
     };
+}
+
+osc::Color osc::Lerp(Color const& a, Color const& b, float t) noexcept
+{
+    return osc::Color{glm::mix(glm::vec4{a}, glm::vec4{b}, glm::clamp(t, 0.0f, 1.0f))};
+}
+
+size_t std::hash<osc::Color>::operator()(osc::Color const& color) const
+{
+    return osc::HashOf(color.r, color.g, color.b, color.a);
 }
 
 osc::Rgba32 osc::ToRgba32(glm::vec4 const& v) noexcept

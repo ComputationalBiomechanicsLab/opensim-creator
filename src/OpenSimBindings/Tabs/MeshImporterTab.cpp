@@ -282,14 +282,14 @@ namespace
         ImGui::Dummy({0.0f, 5.0f});
     }
 
-    glm::vec4 FaintifyColor(glm::vec4 const& srcColor)
+    osc::Color FaintifyColor(osc::Color const& srcColor)
     {
-        glm::vec4 color = srcColor;
+        osc::Color color = srcColor;
         color.a *= 0.2f;
         return color;
     }
 
-    glm::vec4 RedifyColor(glm::vec4 const& srcColor)
+    osc::Color RedifyColor(osc::Color const& srcColor)
     {
         constexpr float factor = 0.8f;
         return {srcColor[0], factor * srcColor[1], factor * srcColor[2], factor * srcColor[3]};
@@ -422,7 +422,7 @@ namespace
         UID groupId = c_EmptyID;
         Mesh mesh;
         Transform transform;
-        glm::vec4 color;
+        osc::Color color = osc::Color::black();
         osc::SceneDecorationFlags flags;
         std::optional<osc::Material> maybeMaterial;
         std::optional<osc::MaterialPropertyBlock> maybePropertyBlock;
@@ -4386,10 +4386,10 @@ namespace
             return v.result();
         }
 
-        void DrawConnectionLines(ImVec4 colorVec, std::unordered_set<UID> const& excludedIDs) const
+        void DrawConnectionLines(osc::Color const& color, std::unordered_set<UID> const& excludedIDs) const
         {
             ModelGraph const& mg = GetModelGraph();
-            ImU32 color = ImGui::ColorConvertFloat4ToU32(colorVec);
+            ImU32 colorU32 = ImGui::ColorConvertFloat4ToU32(glm::vec4{color});
 
             for (SceneEl const& el : mg.iter())
             {
@@ -4407,24 +4407,24 @@ namespace
 
                 if (el.GetNumCrossReferences() > 0)
                 {
-                    DrawConnectionLines(el, color, excludedIDs);
+                    DrawConnectionLines(el, colorU32, excludedIDs);
                 }
                 else if (!IsAChildAttachmentInAnyJoint(mg, el))
                 {
-                    DrawConnectionLineToGround(el, color);
+                    DrawConnectionLineToGround(el, colorU32);
                 }
             }
         }
 
-        void DrawConnectionLines(ImVec4 colorVec) const
+        void DrawConnectionLines(osc::Color const& color) const
         {
-            DrawConnectionLines(colorVec, {});
+            DrawConnectionLines(color, {});
         }
 
         void DrawConnectionLines(Hover const& currentHover) const
         {
             ModelGraph const& mg = GetModelGraph();
-            ImU32 color = ImGui::ColorConvertFloat4ToU32(m_Colors.connectionLines);
+            ImU32 color = ImGui::ColorConvertFloat4ToU32(glm::vec4{m_Colors.connectionLines});
 
             for (SceneEl const& el : mg.iter())
             {
@@ -4476,7 +4476,7 @@ namespace
             p.projectionMatrix = m_3DSceneCamera.getProjMtx(osc::AspectRatio(p.dimensions));
             p.viewPos = m_3DSceneCamera.getPos();
             p.lightDirection = osc::RecommendedLightDirection(m_3DSceneCamera);
-            p.lightColor = {1.0f, 1.0f, 1.0f};
+            p.lightColor = osc::Color::white();
             p.ambientStrength = 0.35f;
             p.diffuseStrength = 0.65f;
             p.specularStrength = 0.4f;
@@ -4545,17 +4545,17 @@ namespace
             return m_SceneRenderer.updRenderTexture();
         }
 
-        nonstd::span<glm::vec4 const> GetColors() const
+        nonstd::span<osc::Color const> GetColors() const
         {
-            static_assert(alignof(decltype(m_Colors)) == alignof(glm::vec4));
-            static_assert(sizeof(m_Colors) % sizeof(glm::vec4) == 0);
-            glm::vec4 const* start = reinterpret_cast<glm::vec4 const*>(&m_Colors);
-            return {start, start + sizeof(m_Colors)/sizeof(glm::vec4)};
+            static_assert(alignof(decltype(m_Colors)) == alignof(osc::Color));
+            static_assert(sizeof(m_Colors) % sizeof(osc::Color) == 0);
+            osc::Color const* start = reinterpret_cast<osc::Color const*>(&m_Colors);
+            return {start, start + sizeof(m_Colors)/sizeof(osc::Color)};
         }
 
-        void SetColor(size_t i, glm::vec4 const& newColorValue)
+        void SetColor(size_t i, osc::Color const& newColorValue)
         {
-            reinterpret_cast<glm::vec4*>(&m_Colors)[i] = newColorValue;
+            reinterpret_cast<osc::Color*>(&m_Colors)[i] = newColorValue;
         }
 
         nonstd::span<char const* const> GetColorLabels() const
@@ -4568,32 +4568,32 @@ namespace
             return osc::Color{m_Colors.sceneBackground};
         }
 
-        glm::vec4 const& GetColorMesh() const
+        osc::Color const& GetColorMesh() const
         {
             return m_Colors.meshes;
         }
 
-        void SetColorMesh(glm::vec4 const& newColor)
+        void SetColorMesh(osc::Color const& newColor)
         {
             m_Colors.meshes = newColor;
         }
 
-        glm::vec4 const& GetColorGround() const
+        osc::Color const& GetColorGround() const
         {
             return m_Colors.ground;
         }
 
-        glm::vec4 const& GetColorStation() const
+        osc::Color const& GetColorStation() const
         {
             return m_Colors.stations;
         }
 
-        glm::vec4 const& GetColorConnectionLine() const
+        osc::Color const& GetColorConnectionLine() const
         {
             return m_Colors.connectionLines;
         }
 
-        void SetColorConnectionLine(glm::vec4 const& newColor)
+        void SetColorConnectionLine(osc::Color const& newColor)
         {
             m_Colors.connectionLines = newColor;
         }
@@ -4730,7 +4730,7 @@ namespace
             t.scale *= 0.5f;
 
             osc::Material material{osc::App::singleton<osc::ShaderCache>()->load(osc::App::resource("shaders/SolidColor.vert"), osc::App::resource("shaders/SolidColor.frag"))};
-            material.setVec4("uColor", m_Colors.gridLines);
+            material.setColor("uColor", m_Colors.gridLines);
 
             DrawableThing dt;
             dt.id = c_EmptyID;
@@ -4761,7 +4761,7 @@ namespace
             float alpha = 1.0f,
             osc::SceneDecorationFlags flags = osc::SceneDecorationFlags_None,
             glm::vec3 legLen = {1.0f, 1.0f, 1.0f},
-            glm::vec3 coreColor = {1.0f, 1.0f, 1.0f}) const
+            osc::Color coreColor = osc::Color::white()) const
         {
             float const coreRadius = GetSphereRadius();
             float const legThickness = 0.5f * coreRadius;
@@ -4781,7 +4781,7 @@ namespace
                 sphere.groupId = groupID;
                 sphere.mesh = m_SphereMesh;
                 sphere.transform = t;
-                sphere.color = {coreColor, alpha};
+                sphere.color = osc::Color{coreColor.r, coreColor.g, coreColor.b, coreColor.a * alpha};
                 sphere.flags = flags;
             }
 
@@ -4807,7 +4807,7 @@ namespace
                 t.rotation = glm::normalize(xform.rotation * glm::rotation(meshDirection, cylinderDirection));
                 t.position = xform.position + (t.rotation * (((GetSphereRadius() + (0.5f * actualLegLen)) - cylinderPullback) * meshDirection));
 
-                glm::vec4 color = {0.0f, 0.0f, 0.0f, alpha};
+                osc::Color color = {0.0f, 0.0f, 0.0f, alpha};
                 color[i] = 1.0f;
 
                 DrawableThing& se = appendOut.emplace_back();
@@ -4837,7 +4837,7 @@ namespace
                 originCube.groupId = groupID;
                 originCube.mesh = osc::App::singleton<osc::MeshCache>()->getBrickMesh();
                 originCube.transform = scaled;
-                originCube.color = glm::vec4{1.0f, 1.0f, 1.0f, 1.0f};
+                originCube.color = osc::Color::white();
                 originCube.flags = osc::SceneDecorationFlags_None;
             }
 
@@ -4858,7 +4858,7 @@ namespace
                 t.rotation = xform.rotation * glm::rotation(meshDirection, coneDirection);
                 t.position = xform.position + (t.rotation * ((halfWidth + (0.5f * coneHeight)) * meshDirection));
 
-                glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
+                osc::Color color = {0.0f, 0.0f, 0.0f, 1.0f};
                 color[i] = 1.0f;
 
                 DrawableThing& legCube = appendOut.emplace_back();
@@ -5052,7 +5052,7 @@ namespace
             return rv;
         }
 
-        DrawableThing GenerateBodyElSphere(BodyEl const& bodyEl, glm::vec4 const& color) const
+        DrawableThing GenerateBodyElSphere(BodyEl const& bodyEl, osc::Color const& color) const
         {
             DrawableThing rv;
             rv.id = bodyEl.GetID();
@@ -5064,7 +5064,7 @@ namespace
             return rv;
         }
 
-        DrawableThing GenerateGroundSphere(glm::vec4 const& color) const
+        DrawableThing GenerateGroundSphere(osc::Color const& color) const
         {
             DrawableThing rv;
             rv.id = c_GroundID;
@@ -5076,7 +5076,7 @@ namespace
             return rv;
         }
 
-        DrawableThing GenerateStationSphere(StationEl const& el, glm::vec4 const& color) const
+        DrawableThing GenerateStationSphere(StationEl const& el, osc::Color const& color) const
         {
             DrawableThing rv;
             rv.id = el.GetID();
@@ -5239,14 +5239,14 @@ namespace
         //
         // these are runtime-editable color values for things in the scene
         struct {
-            glm::vec4 ground{196.0f/255.0f, 196.0f/255.0f, 196.0/255.0f, 1.0f};
-            glm::vec4 meshes{1.0f, 1.0f, 1.0f, 1.0f};
-            glm::vec4 stations{196.0f/255.0f, 0.0f, 0.0f, 1.0f};
-            glm::vec4 connectionLines{0.6f, 0.6f, 0.6f, 1.0f};
-            glm::vec4 sceneBackground{96.0f/255.0f, 96.0f/255.0f, 96.0f/255.0f, 1.0f};
-            glm::vec4 gridLines{112.0f/255.0f, 112.0f/255.0f, 112.0f/255.0f, 1.0f};
+            osc::Color ground{196.0f/255.0f, 196.0f/255.0f, 196.0f/255.0f, 1.0f};
+            osc::Color meshes{1.0f, 1.0f, 1.0f, 1.0f};
+            osc::Color stations{196.0f/255.0f, 0.0f, 0.0f, 1.0f};
+            osc::Color connectionLines{0.6f, 0.6f, 0.6f, 1.0f};
+            osc::Color sceneBackground{96.0f/255.0f, 96.0f/255.0f, 96.0f/255.0f, 1.0f};
+            osc::Color gridLines{112.0f/255.0f, 112.0f/255.0f, 112.0f/255.0f, 1.0f};
         } m_Colors;
-        static auto constexpr c_ColorNames = osc::MakeSizedArray<char const*, sizeof(decltype(m_Colors))/sizeof(glm::vec4)>(
+        static auto constexpr c_ColorNames = osc::MakeSizedArray<char const*, sizeof(decltype(m_Colors))/sizeof(osc::Color)>(
             "ground",
             "meshes",
             "stations",
@@ -5893,7 +5893,7 @@ namespace
                     std::swap(parentPos, childPos);
                 }
 
-                ImU32 strongColorU2 = ImGui::ColorConvertFloat4ToU32(m_Shared->GetColorConnectionLine());
+                ImU32 strongColorU2 = ImGui::ColorConvertFloat4ToU32(glm::vec4{m_Shared->GetColorConnectionLine()});
 
                 m_Shared->DrawConnectionLine(strongColorU2, parentPos, childPos);
             }
@@ -7578,15 +7578,15 @@ private:
 
         if (ImGui::BeginPopupContextItem("##addpainttoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
         {
-            nonstd::span<glm::vec4 const> colors = m_Shared->GetColors();
+            nonstd::span<osc::Color const> colors = m_Shared->GetColors();
             nonstd::span<char const* const> labels = m_Shared->GetColorLabels();
             OSC_ASSERT(colors.size() == labels.size() && "every color should have a label");
 
             for (size_t i = 0; i < colors.size(); ++i)
             {
-                glm::vec4 colorVal = colors[i];
+                osc::Color colorVal = colors[i];
                 ImGui::PushID(imguiID++);
-                if (ImGui::ColorEdit4(labels[i], glm::value_ptr(colorVal)))
+                if (ImGui::ColorEdit4(labels[i], osc::ValuePtr(colorVal)))
                 {
                     m_Shared->SetColor(i, colorVal);
                 }

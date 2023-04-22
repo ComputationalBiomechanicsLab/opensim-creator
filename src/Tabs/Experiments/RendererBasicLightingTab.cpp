@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/MeshGen.hpp"
@@ -12,7 +13,6 @@
 #include "src/Utils/UID.hpp"
 
 #include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <SDL_events.h>
 
@@ -89,8 +89,8 @@ public:
         m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
 
         // draw cube
-        m_LightingMaterial.setVec3("uObjectColor", m_ObjectColor);
-        m_LightingMaterial.setVec3("uLightColor", m_LightColor);
+        m_LightingMaterial.setColor("uObjectColor", m_ObjectColor);
+        m_LightingMaterial.setColor("uLightColor", m_LightColor);
         m_LightingMaterial.setVec3("uLightPos", m_LightTransform.position);
         m_LightingMaterial.setVec3("uViewPos", m_Camera.getPosition());
         m_LightingMaterial.setFloat("uAmbientStrength", m_AmbientStrength);
@@ -99,7 +99,7 @@ public:
         Graphics::DrawMesh(m_CubeMesh, osc::Transform{}, m_LightingMaterial, m_Camera);
 
         // draw lamp
-        m_LightCubeMaterial.setVec3("uLightColor", m_LightColor);
+        m_LightCubeMaterial.setColor("uLightColor", m_LightColor);
         Graphics::DrawMesh(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
 
         // render to output (window)
@@ -111,8 +111,8 @@ public:
         ImGui::InputFloat("ambient strength", &m_AmbientStrength);
         ImGui::InputFloat("diffuse strength", &m_DiffuseStrength);
         ImGui::InputFloat("specular strength", &m_SpecularStrength);
-        ImGui::ColorEdit3("object color", glm::value_ptr(m_ObjectColor));
-        ImGui::ColorEdit3("light color", glm::value_ptr(m_LightColor));
+        ImGui::ColorEdit3("object color", ValuePtr(m_ObjectColor));
+        ImGui::ColorEdit3("light color", ValuePtr(m_LightColor));
         ImGui::End();
     }
 
@@ -143,8 +143,8 @@ private:
     bool m_IsMouseCaptured = false;
 
     Transform m_LightTransform;
-    glm::vec3 m_ObjectColor = {1.0f, 0.5f, 0.31f};
-    glm::vec3 m_LightColor = {1.0f, 1.0f, 1.0f};
+    Color m_ObjectColor = {1.0f, 0.5f, 0.31f, 1.0f};
+    Color m_LightColor = {1.0f, 1.0f, 1.0f, 1.0f};
     float m_AmbientStrength = 0.1f;
     float m_DiffuseStrength = 1.0f;
     float m_SpecularStrength = 0.5f;

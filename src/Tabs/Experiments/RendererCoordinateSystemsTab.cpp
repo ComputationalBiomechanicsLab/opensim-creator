@@ -16,7 +16,6 @@
 #include "src/Utils/UID.hpp"
 
 #include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <SDL_events.h>
 
 #include <cstdint>

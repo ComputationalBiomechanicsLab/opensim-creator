@@ -175,7 +175,7 @@ public:
 
         // draw light source cube
         {
-            m_LightCubeMaterial.setVec3("uLightColor", {1.0f, 1.0f, 1.0f});
+            m_LightCubeMaterial.setColor("uLightColor", Color::white());
             Graphics::DrawMesh(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
         }
 

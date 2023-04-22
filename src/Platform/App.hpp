@@ -10,7 +10,6 @@
 
 #include <SDL_events.h>
 #include <glm/vec2.hpp>
-#include <glm/vec4.hpp>
 
 #include <chrono>
 #include <cstdint>

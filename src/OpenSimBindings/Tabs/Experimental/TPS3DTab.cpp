@@ -7,6 +7,7 @@
 #include "src/Formats/STL.hpp"
 #include "src/Graphics/CachedSceneRenderer.hpp"
 #include "src/Graphics/Camera.hpp"
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
@@ -82,8 +83,8 @@
 namespace
 {
     static glm::vec2 constexpr c_OverlayPadding = {10.0f, 10.0f};
-    static glm::vec4 constexpr c_PairedLandmarkColor = {0.0f, 1.0f, 0.0f, 1.0f};
-    static glm::vec4 constexpr c_UnpairedLandmarkColor = {1.0f, 0.0f, 0.0f, 1.0f};
+    static osc::Color constexpr c_PairedLandmarkColor = osc::Color::blue();
+    static osc::Color constexpr c_UnpairedLandmarkColor = osc::Color::red();
 }
 
 // TPS document datastructure
@@ -771,7 +772,7 @@ namespace
         osc::Mesh const& tpsSourceOrDestinationMesh,
         bool wireframeMode,
         std::function<void(osc::SceneDecoration&&)> const& out,
-        glm::vec4 meshColor = {1.0f, 1.0f, 1.0f, 1.0f})
+        osc::Color meshColor = osc::Color::white())
     {
         // draw the mesh
         {
@@ -959,9 +960,9 @@ namespace
                 ImGui::SameLine();
                 for (int i = 0; i < 3; ++i)
                 {
-                    glm::vec4 color = {0.5f, 0.5f, 0.5f, 1.0f};
+                    osc::Color color = {0.5f, 0.5f, 0.5f, 1.0f};
                     color[i] = 1.0f;
-                    ImGui::PushStyleColor(ImGuiCol_Text, color);
+                    ImGui::PushStyleColor(ImGuiCol_Text, glm::vec4{color});
                     ImGui::Text("%f", pos[i]);
                     ImGui::SameLine();
                     ImGui::PopStyleColor();
@@ -1276,7 +1277,7 @@ namespace
                 GetScratchMesh(*m_State, TPSDocumentInputIdentifier::Source),
                 m_WireframeMode,
                 appendToRv,
-                glm::vec4{1.0f, 1.0f, 1.0f, 0.25f}
+                osc::Color{1.0f, 1.0f, 1.0f, 0.25f}
             );
 
             // append not-special landmarks (i.e. landmarks that aren't part of the selection)
@@ -1451,7 +1452,7 @@ namespace
 
                 for (size_t i = 0; i < axes.size(); ++i)
                 {
-                    glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
+                    osc::Color color = {0.0f, 0.0f, 0.0f, 1.0f};
                     color[static_cast<int>(i)] = 1.0f;
 
                     osc::DrawLineSegment(
@@ -1996,20 +1997,26 @@ namespace
                 transform.scale *= m_LandmarkRadius;
                 transform.position = *maybeLocation;
 
-                glm::vec4 const& color = IsFullyPaired(p) ? c_PairedLandmarkColor : c_UnpairedLandmarkColor;
+                osc::Color const& color = IsFullyPaired(p) ? c_PairedLandmarkColor : c_UnpairedLandmarkColor;
 
                 osc::SceneDecoration& decoration = decorations.emplace_back(m_State->landmarkSphere, transform, color);
 
                 if (m_State->userSelection.contains(fullID))
                 {
-                    decoration.color += glm::vec4{0.25f, 0.25f, 0.25f, 0.0f};
-                    decoration.color = glm::clamp(decoration.color, glm::vec4{0.0f}, glm::vec4{1.0f});
+                    glm::vec4 tmpColor = decoration.color;
+                    tmpColor += glm::vec4{0.25f, 0.25f, 0.25f, 0.0f};
+                    tmpColor = glm::clamp(tmpColor, glm::vec4{0.0f}, glm::vec4{1.0f});
+
+                    decoration.color = osc::Color{tmpColor};
                     decoration.flags = osc::SceneDecorationFlags_IsSelected;
                 }
                 else if (m_State->currentHover && m_State->currentHover->maybeSceneElementID == fullID)
                 {
-                    decoration.color += glm::vec4{0.15f, 0.15f, 0.15f, 0.0f};
-                    decoration.color = glm::clamp(decoration.color, glm::vec4{0.0f}, glm::vec4{1.0f});
+                    glm::vec4 tmpColor = decoration.color; 
+                    tmpColor += glm::vec4{0.15f, 0.15f, 0.15f, 0.0f};
+                    tmpColor = glm::clamp(tmpColor, glm::vec4{0.0f}, glm::vec4{1.0f});
+
+                    decoration.color = osc::Color{tmpColor};
                     decoration.flags = osc::SceneDecorationFlags_IsHovered;
                 }
             }
@@ -2021,7 +2028,7 @@ namespace
                 transform.scale *= m_LandmarkRadius;
                 transform.position = maybeMeshCollision->position;
 
-                glm::vec4 color = c_UnpairedLandmarkColor;
+                osc::Color color = c_UnpairedLandmarkColor;
                 color.a *= 0.25f;
 
                 decorations.emplace_back(m_State->landmarkSphere, transform, color);

@@ -1,5 +1,6 @@
 #include "SceneDecoration.hpp"
 
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Maths/AABB.hpp"

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/ImageFlags.hpp"
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/RenderTexture.hpp"
@@ -84,7 +85,7 @@ namespace osc
         float tipLength;
         float neckThickness;
         float headThickness;
-        glm::vec4 color;
+        Color color;
     };
     void DrawArrow(
         MeshCache&,
@@ -95,7 +96,7 @@ namespace osc
     void DrawLineSegment(
         MeshCache&,
         Segment const&,
-        glm::vec4 const& color,
+        Color const& color,
         float radius,
         std::function<void(SceneDecoration&&)> const&
     );

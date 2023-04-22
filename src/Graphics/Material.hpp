@@ -40,6 +40,9 @@ namespace osc
         std::optional<Color> getColor(std::string_view propertyName) const;
         void setColor(std::string_view propertyName, Color const&);
 
+        std::optional<nonstd::span<Color const>> getColorArray(std::string_view propertyName) const;
+        void setColorArray(std::string_view propertyName, nonstd::span<Color const>);
+
         std::optional<float> getFloat(std::string_view propertyName) const;
         void setFloat(std::string_view propertyName, float);
 

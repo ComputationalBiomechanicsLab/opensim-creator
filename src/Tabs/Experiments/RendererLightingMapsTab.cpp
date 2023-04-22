@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
@@ -91,14 +92,14 @@ public:
         // draw cube
         m_LightingMapsMaterial.setVec3("uViewPos", m_Camera.getPosition());
         m_LightingMapsMaterial.setVec3("uLightPos", m_LightTransform.position);
-        m_LightingMapsMaterial.setVec3("uLightAmbient", m_LightAmbient);
-        m_LightingMapsMaterial.setVec3("uLightDiffuse", m_LightDiffuse);
-        m_LightingMapsMaterial.setVec3("uLightSpecular", m_LightSpecular);
+        m_LightingMapsMaterial.setFloat("uLightAmbient", m_LightAmbient);
+        m_LightingMapsMaterial.setFloat("uLightDiffuse", m_LightDiffuse);
+        m_LightingMapsMaterial.setFloat("uLightSpecular", m_LightSpecular);
         m_LightingMapsMaterial.setFloat("uMaterialShininess", m_MaterialShininess);
         Graphics::DrawMesh(m_Mesh, Transform{}, m_LightingMapsMaterial, m_Camera);
 
         // draw lamp
-        m_LightCubeMaterial.setVec3("uLightColor", {1.0f, 1.0f, 1.0f});
+        m_LightCubeMaterial.setColor("uLightColor", Color::white());
         osc::Graphics::DrawMesh(m_Mesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
 
         // render 3D scene
@@ -108,9 +109,9 @@ public:
         // render 2D UI
         ImGui::Begin("controls");
         ImGui::InputFloat3("uLightPos", glm::value_ptr(m_LightTransform.position));
-        ImGui::InputFloat3("uLightAmbient", glm::value_ptr(m_LightAmbient));
-        ImGui::InputFloat3("uLightDiffuse", glm::value_ptr(m_LightDiffuse));
-        ImGui::InputFloat3("uLightSpecular", glm::value_ptr(m_LightSpecular));
+        ImGui::InputFloat("uLightAmbient", &m_LightAmbient);
+        ImGui::InputFloat("uLightDiffuse", &m_LightDiffuse);
+        ImGui::InputFloat("uLightSpecular", &m_LightSpecular);
         ImGui::InputFloat("uMaterialShininess", &m_MaterialShininess);
         ImGui::End();
     }
@@ -143,10 +144,9 @@ private:
     bool m_IsMouseCaptured = false;
 
     Transform m_LightTransform;
-    glm::vec3 m_LightAmbient = {0.2f, 0.2f, 0.2f};
-    glm::vec3 m_LightDiffuse = {0.5f, 0.5f, 0.5f};
-    glm::vec3 m_LightSpecular = {1.0f, 1.0f, 1.0f};
-
+    float m_LightAmbient = 0.2f;
+    float m_LightDiffuse = 0.5f;
+    float m_LightSpecular = 1.0f;
     float m_MaterialShininess = 64.0f;
 };
 

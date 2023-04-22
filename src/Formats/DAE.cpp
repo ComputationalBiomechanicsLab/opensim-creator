@@ -2,6 +2,7 @@
 
 #include "osc_config.hpp"
 
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/SceneDecoration.hpp"
 #include "src/Maths/MathHelpers.hpp"
@@ -20,20 +21,6 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
-
-namespace std
-{
-    // declare a hash function for glm::vec4, so it can be used as a key in
-    // unordered maps
-
-    template<>
-    struct hash<glm::vec4> final {
-        size_t operator()(glm::vec4 const& v) const
-        {
-            return osc::HashOf(v.x, v.y, v.z, v.w);
-        }
-    };
-}
 
 // scene-to-graph conversion stuff
 namespace
@@ -54,7 +41,7 @@ namespace
 
         DAEMaterial(
             std::string materialID_,
-            glm::vec4 const& color_) :
+            osc::Color const& color_) :
 
             materialID{std::move(materialID_)},
             color{color_}
@@ -62,7 +49,7 @@ namespace
         }
 
         std::string materialID;
-        glm::vec4 color;
+        osc::Color color;
     };
 
     struct DAEInstance final {
@@ -101,7 +88,7 @@ namespace
         int64_t latestMesh = 0;
         int64_t latestMaterial = 0;
         std::unordered_map<osc::Mesh, std::string> mesh2id;
-        std::unordered_map<glm::vec4, std::string> color2materialid;
+        std::unordered_map<osc::Color, std::string> color2materialid;
         int64_t latestInstance = 0;
 
         for (osc::SceneDecoration const& el : els)
@@ -153,9 +140,9 @@ namespace
         return {glm::value_ptr(s[0]), 3 * s.size()};
     }
 
-    nonstd::span<float const> ToFloatSpan(nonstd::span<glm::vec4 const> s)
+    nonstd::span<float const> ToFloatSpan(nonstd::span<osc::Color const> s)
     {
-        return {glm::value_ptr(s[0]), 4 * s.size()};
+        return {osc::ValuePtr(s[0]), 4 * s.size()};
     }
 
     nonstd::span<float const> ToFloatSpan(glm::vec2 const& v)
@@ -168,9 +155,9 @@ namespace
         return {glm::value_ptr(v), 3};
     }
 
-    nonstd::span<float const> ToFloatSpan(glm::vec4 const& v)
+    nonstd::span<float const> ToFloatSpan(osc::Color const& v)
     {
-        return {glm::value_ptr(v), 4};
+        return {osc::ValuePtr(v), 4};
     }
 
     template<typename T>

@@ -1,5 +1,6 @@
 #include "OpenSimDecorationGenerator.hpp"
 
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
@@ -19,7 +20,6 @@
 #include "src/Utils/Perf.hpp"
 
 #include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -81,35 +81,35 @@ namespace
         }
     }
 
-    glm::vec4 GetGeometryPathDefaultColor(OpenSim::GeometryPath const& gp)
+    osc::Color GetGeometryPathDefaultColor(OpenSim::GeometryPath const& gp)
     {
         SimTK::Vec3 const c = gp.getDefaultColor();
-        return glm::vec4{osc::ToVec3(c), 1.0f};
+        return osc::Color{osc::ToVec3(c)};
     }
 
-    glm::vec4 GetGeometryPathColor(OpenSim::GeometryPath const& gp, SimTK::State const& st)
+    osc::Color GetGeometryPathColor(OpenSim::GeometryPath const& gp, SimTK::State const& st)
     {
         // returns the same color that OpenSim emits (which is usually just activation-based,
         // but might change in future versions of OpenSim)
         SimTK::Vec3 const c = gp.getColor(st);
-        return glm::vec4{osc::ToVec3(c), 1.0f};
+        return osc::Color{osc::ToVec3(c)};
     }
 
-    glm::vec4 CalcOSCMuscleColor(
+    osc::Color CalcOSCMuscleColor(
         OpenSim::Muscle const& musc,
         SimTK::State const& st,
         osc::MuscleColoringStyle s)
     {
-        glm::vec4 const zeroColor = {50.0f / 255.0f, 50.0f / 255.0f, 166.0f / 255.0f, 1.0f};
-        glm::vec4 const fullColor = {255.0f / 255.0f, 25.0f / 255.0f, 25.0f / 255.0f, 1.0f};
+        osc::Color const zeroColor = {50.0f / 255.0f, 50.0f / 255.0f, 166.0f / 255.0f, 1.0f};
+        osc::Color const fullColor = {255.0f / 255.0f, 25.0f / 255.0f, 25.0f / 255.0f, 1.0f};
         float const factor = GetMuscleColorFactor(musc, st, s);
-        return zeroColor + factor * (fullColor - zeroColor);
+        return osc::Lerp(zeroColor, fullColor, factor);
     }
 
     // helper: returns the color a muscle should have, based on a variety of options (style, user-defined stuff in OpenSim, etc.)
     //
     // this is just a rough estimation of how SCONE is coloring things
-    glm::vec4 GetMuscleColor(
+    osc::Color GetMuscleColor(
         OpenSim::Muscle const& musc,
         SimTK::State const& st,
         osc::MuscleColoringStyle s)
@@ -318,7 +318,7 @@ namespace
         {
             rs.getCylinderMesh(),
             cylinderXform,
-            glm::vec4{0.7f, 0.7f, 0.7f, 1.0f},
+            osc::Color{0.7f, 0.7f, 0.7f, 1.0f},
         });
     }
 
@@ -337,7 +337,7 @@ namespace
         {
             rs.getSphereMesh(),
             xform,
-            glm::vec4{1.0f, 0.0f, 0.0f, 1.0f},
+            osc::Color::red(),
         });
     }
 
@@ -353,7 +353,7 @@ namespace
         {
             rs.getSphereMesh(),
             t,
-            glm::vec4{1.0f, 1.0f, 0.0f, 0.2f},
+            osc::Color{1.0f, 1.0f, 0.0f, 0.2f},
         });
     }
 
@@ -373,7 +373,7 @@ namespace
             {
                 rs.getSphereMesh(),
                 t,
-                glm::vec4{0.0f, 0.0f, 0.0f, 1.0f},
+                osc::Color::black(),
             });
         }
     }
@@ -408,12 +408,12 @@ namespace
         );
         float const tendonUiRadius = 0.618f * fiberUiRadius;  // or fixupScaleFactor * 0.005f;
 
-        glm::vec4 const fiberColor = GetMuscleColor(
+        osc::Color const fiberColor = GetMuscleColor(
             muscle,
             rs.getState(),
             rs.getOptions().getMuscleColoringStyle()
         );
-        glm::vec4 const tendonColor = {204.0f/255.0f, 203.0f/255.0f, 200.0f/255.0f, 1.0f};
+        osc::Color const tendonColor = {204.0f/255.0f, 203.0f/255.0f, 200.0f/255.0f, 1.0f};
 
         osc::SceneDecoration fiberSpherePrototype =
         {
@@ -593,7 +593,7 @@ namespace
         OpenSim::Component const& hittestTarget,
         nonstd::span<osc::GeometryPathPoint const> points,
         float radius,
-        glm::vec4 const& color)
+        osc::Color const& color)
     {
         if (points.empty())
         {
@@ -690,7 +690,7 @@ namespace
             rs.getOptions().getMuscleSizingStyle()
         );
 
-        glm::vec4 const color = GetMuscleColor(
+        osc::Color const color = GetMuscleColor(
             musc,
             rs.getState(),
             rs.getOptions().getMuscleColoringStyle()
@@ -712,7 +712,7 @@ namespace
         // a path (#647)
 
         std::vector<osc::GeometryPathPoint> const points = osc::GetAllPathPoints(gp, rs.getState());
-        glm::vec4 const color = GetGeometryPathColor(gp, rs.getState());
+        osc::Color const color = GetGeometryPathColor(gp, rs.getState());
 
         EmitPointBasedLine(rs, hittestTarget, points, c_GeometryPathBaseRadius, color);
     }
@@ -721,7 +721,7 @@ namespace
         RendererState& rs,
         OpenSim::Muscle const& muscle,
         osc::PointDirection const& loaPointDirection,
-        glm::vec4 const& color)
+        osc::Color const& color)
     {
         float const fixupScaleFactor = rs.getFixupScaleFactor();
 
@@ -743,8 +743,8 @@ namespace
         RendererState& rs,
         OpenSim::Muscle const& musc)
     {
-        glm::vec4 constexpr c_EffectiveLineOfActionColor = {0.0f, 1.0f, 0.0f, 1.0f};
-        glm::vec4 constexpr c_AnatomicalLineOfActionColor = {1.0f, 0.0f, 0.0f, 1.0f};
+        osc::Color constexpr c_EffectiveLineOfActionColor = osc::Color::green();
+        osc::Color constexpr c_AnatomicalLineOfActionColor = osc::Color::red();
 
         // if options request, render effective muscle lines of action
         if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForOrigin() ||

@@ -62,12 +62,12 @@ static glm::vec3 constexpr c_LightPositions[] =
     { 3.0f, 0.0f, 0.0f},
 };
 
-static glm::vec3 const c_LightColors[] =
+static osc::Color constexpr c_LightColors[] =
 {
-    glm::vec3(0.25f),
-    glm::vec3(0.50f),
-    glm::vec3(0.75f),
-    glm::vec3(1.00f),
+    {0.25f, 0.25f, 0.25f, 1.0f},
+    {0.50f, 0.50f, 0.50f, 1.0f},
+    {0.75f, 0.75f, 0.75f, 1.0f},
+    {1.00f, 1.00f, 1.00f, 1.0f},
 };
 
 namespace
@@ -91,7 +91,7 @@ public:
     {
         m_Material.setTexture("uFloorTexture", m_WoodTexture);
         m_Material.setVec3Array("uLightPositions", c_LightPositions);
-        m_Material.setVec3Array("uLightColors", c_LightColors);
+        m_Material.setColorArray("uLightColors", c_LightColors);
 
         m_Camera.setPosition({0.0f, 0.0f, 3.0f});
         m_Camera.setCameraFOV(glm::radians(45.0f));
