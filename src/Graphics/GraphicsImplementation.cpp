@@ -4146,7 +4146,7 @@ public:
         gl::UseProgram();
     }
 
-    void clearScreen(glm::vec4 const& color)
+    void clearScreen(Color const& color)
     {
         gl::ClearColor(color.r, color.g, color.b, color.a);
         gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -4322,7 +4322,7 @@ void osc::GraphicsContext::clearProgram()
     g_GraphicsContextImpl->clearProgram();
 }
 
-void osc::GraphicsContext::clearScreen(glm::vec4 const& color)
+void osc::GraphicsContext::clearScreen(Color const& color)
 {
     g_GraphicsContextImpl->clearScreen(color);
 }

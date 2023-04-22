@@ -2,13 +2,12 @@
 
 #include "src/Graphics/Image.hpp"
 
-#include <glm/vec4.hpp>
-
 #include <cstdint>
 #include <future>
 #include <string>
 
 struct SDL_Window;
+namespace osc { struct Color; }
 
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
@@ -36,7 +35,7 @@ namespace osc
         void disableDebugMode();
 
         void clearProgram();
-        void clearScreen(glm::vec4 const&);
+        void clearScreen(Color const&);
 
         // HACK: this is needed by ImGui, because it uses OpenGL "in the raw"
         void* updRawGLContextHandle();

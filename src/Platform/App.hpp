@@ -27,6 +27,7 @@
 #include <utility>
 #include <vector>
 
+namespace osc { struct Color; }
 namespace osc { class Config; }
 namespace osc { class Screen; }
 
@@ -241,7 +242,7 @@ namespace osc
         void requestRedraw();  // threadsafe: used to make a waiting loop redraw
 
         // fill all pixels in the screen with the given color
-        void clearScreen(glm::vec4 const& color);
+        void clearScreen(Color const&);
 
         // get the user's current mouse state
         //

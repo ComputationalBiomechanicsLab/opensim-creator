@@ -513,7 +513,7 @@ public:
         SDL_PushEvent(&e);
     }
 
-    void clearScreen(glm::vec4 const& color)
+    void clearScreen(Color const& color)
     {
         m_GraphicsContext.clearScreen(color);
     }
@@ -1188,7 +1188,7 @@ void osc::App::requestRedraw()
     m_Impl->requestRedraw();
 }
 
-void osc::App::clearScreen(glm::vec4 const& color)
+void osc::App::clearScreen(Color const& color)
 {
     m_Impl->clearScreen(color);
 }
