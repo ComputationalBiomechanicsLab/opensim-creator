@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/Graphics/Color.hpp"
+
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -28,8 +30,8 @@ namespace osc
         float diffuseStrength;
         float specularStrength;
         float shininess;
-        glm::vec4 backgroundColor;
-        glm::vec4 rimColor;
+        Color backgroundColor;
+        Color rimColor;
         glm::vec2 rimThicknessInPixels;
         glm::vec3 floorLocation;
         float fixupScaleFactor;

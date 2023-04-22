@@ -128,7 +128,30 @@ TEST(Color, ToRgba32ReturnsRgba32VersionOfTheColor)
     ASSERT_EQ(expected.a, got.a);
 }
 
+TEST(Color, CanGetBlueColor)
+{
+    ASSERT_EQ(osc::Color::blue(), osc::Color(0.0f, 1.0f, 0.0f, 1.0f));
+}
+
+TEST(Color, CanGetClearColor)
+{
+    ASSERT_EQ(osc::Color::clear(), osc::Color(0.0f, 0.0f, 0.0f, 0.0f));
+}
+
 TEST(Color, CanGetRedColor)
 {
     ASSERT_EQ(osc::Color::red(), osc::Color(1.0f, 0.0f, 0.0f, 1.0f));
 }
+
+TEST(Color, ValuePtrConstVersionReturnsAddressOfColor)
+{
+    osc::Color const color = osc::Color::red();
+    ASSERT_EQ(&color.r, osc::ValuePtr(color));
+}
+
+TEST(Color, ValuePtrMutatingVersionReturnsAddressOfColor)
+{
+    osc::Color color = osc::Color::red();
+    ASSERT_EQ(&color.r, osc::ValuePtr(color));
+}
+

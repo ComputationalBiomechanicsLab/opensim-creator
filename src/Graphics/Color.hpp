@@ -26,6 +26,16 @@ namespace osc
             return glm::vec4{r, g, b, a};
         }
 
+        static constexpr Color blue()
+        {
+            return {0.0f, 0.0f, 1.0f, 1.0f};
+        }
+
+        static constexpr Color clear()
+        {
+            return {0.0f, 0.0f, 0.0f, 0.0f};
+        }
+
         static constexpr Color red()
         {
             return {1.0f, 0.0f, 0.0f, 1.0f};
@@ -61,6 +71,18 @@ namespace osc
     inline glm::vec4 ToVec4(Color const& c) noexcept
     {
         return glm::vec4{c};
+    }
+
+    // returns a pointer to the first float element in the color (used by ImGui etc.)
+    constexpr float const* ValuePtr(Color const& color)
+    {
+        return &color.r;
+    }
+
+    // returns a pointer to the first float element in the color (used by ImGui etc.)
+    constexpr float* ValuePtr(Color& color)
+    {
+        return &color.r;
     }
 
     // float-/double-based inputs assume normalized color range (i.e. 0 to 1)

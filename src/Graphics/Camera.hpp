@@ -2,6 +2,7 @@
 
 #include "src/Graphics/CameraClearFlags.hpp"
 #include "src/Graphics/CameraProjection.hpp"
+#include "src/Graphics/Color.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Utils/CopyOnUpdPtr.hpp"
 
@@ -35,8 +36,8 @@ namespace osc
         // reset to default parameters
         void reset();
 
-        glm::vec4 getBackgroundColor() const;
-        void setBackgroundColor(glm::vec4 const&);
+        Color getBackgroundColor() const;
+        void setBackgroundColor(Color const&);
 
         CameraProjection getCameraProjection() const;
         void setCameraProjection(CameraProjection);

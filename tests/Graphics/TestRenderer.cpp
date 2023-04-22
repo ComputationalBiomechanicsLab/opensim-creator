@@ -354,6 +354,11 @@ static bool GenerateBool()
     return GenerateInt();
 }
 
+static osc::Color GenerateColor()
+{
+    return osc::Color{GenerateFloat(), GenerateFloat(), GenerateFloat(), GenerateFloat()};
+}
+
 static glm::vec2 GenerateVec2()
 {
     return glm::vec2{GenerateFloat(), GenerateFloat()};
@@ -2552,19 +2557,19 @@ TEST_F(Renderer, CameraCanGetBackgroundColor)
 {
     osc::Camera camera;
 
-    ASSERT_EQ(camera.getBackgroundColor(), glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(camera.getBackgroundColor(), osc::Color::clear());
 }
 
 TEST_F(Renderer, CameraCanSetBackgroundColor)
 {
     osc::Camera camera;
-    camera.setBackgroundColor(GenerateVec4());
+    camera.setBackgroundColor(GenerateColor());
 }
 
 TEST_F(Renderer, CameraSetBackgroundColorMakesGetBackgroundColorReturnTheColor)
 {
     osc::Camera camera;
-    glm::vec4 color = GenerateVec4();
+    osc::Color const color = GenerateColor();
 
     camera.setBackgroundColor(color);
 
@@ -2578,7 +2583,7 @@ TEST_F(Renderer, CameraSetBackgroundColorMakesCameraCompareNonEqualWithCopySourc
 
     ASSERT_EQ(camera, copy);
 
-    copy.setBackgroundColor(GenerateVec4());
+    copy.setBackgroundColor(GenerateColor());
 
     ASSERT_NE(camera, copy);
 }

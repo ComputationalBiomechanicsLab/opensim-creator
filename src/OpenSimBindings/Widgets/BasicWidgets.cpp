@@ -7,6 +7,7 @@
 #include "src/Maths/Constants.hpp"
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Rect.hpp"
+#include "src/Graphics/Color.hpp"
 #include "src/OpenSimBindings/Graphics/CustomDecorationOptions.hpp"
 #include "src/OpenSimBindings/Graphics/CustomRenderingOptions.hpp"
 #include "src/OpenSimBindings/Graphics/ModelRendererParams.hpp"
@@ -546,7 +547,7 @@ void osc::DrawAdvancedParamsEditor(
     ImGui::Text("advanced scene properties:");
     ImGui::Separator();
     ImGui::ColorEdit3("light_color", glm::value_ptr(params.lightColor));
-    ImGui::ColorEdit3("background color", glm::value_ptr(params.backgroundColor));
+    ImGui::ColorEdit3("background color", ValuePtr(params.backgroundColor));
     osc::InputMetersFloat3("floor location", params.floorLocation);
     osc::DrawTooltipBodyOnlyIfItemHovered("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
 }

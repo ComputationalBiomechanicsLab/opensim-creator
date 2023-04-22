@@ -4563,9 +4563,9 @@ namespace
             return c_ColorNames;
         }
 
-        glm::vec4 const& GetColorSceneBackground() const
+        osc::Color GetColorSceneBackground() const
         {
-            return m_Colors.sceneBackground;
+            return osc::Color{m_Colors.sceneBackground};
         }
 
         glm::vec4 const& GetColorMesh() const

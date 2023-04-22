@@ -3346,12 +3346,12 @@ public:
         m_RenderQueue = std::move(newImpl.m_RenderQueue);
     }
 
-    glm::vec4 getBackgroundColor() const
+    Color getBackgroundColor() const
     {
         return m_BackgroundColor;
     }
 
-    void setBackgroundColor(glm::vec4 const& color)
+    void setBackgroundColor(Color const& color)
     {
         m_BackgroundColor = color;
     }
@@ -3570,7 +3570,7 @@ private:
 
     friend class GraphicsBackend;
 
-    glm::vec4 m_BackgroundColor = {0.0f, 0.0f, 0.0f, 0.0f};
+    Color m_BackgroundColor = Color::clear();
     CameraProjection m_CameraProjection = CameraProjection::Perspective;
     float m_OrthographicSize = 2.0f;
     float m_PerspectiveFov = fpi2;
@@ -3609,14 +3609,14 @@ void osc::Camera::reset()
     m_Impl.upd()->reset();
 }
 
-glm::vec4 osc::Camera::getBackgroundColor() const
+osc::Color osc::Camera::getBackgroundColor() const
 {
     return m_Impl->getBackgroundColor();
 }
 
-void osc::Camera::setBackgroundColor(glm::vec4 const& v)
+void osc::Camera::setBackgroundColor(Color const& color)
 {
-    m_Impl.upd()->setBackgroundColor(v);
+    m_Impl.upd()->setBackgroundColor(color);
 }
 
 osc::CameraProjection osc::Camera::getCameraProjection() const
@@ -5173,7 +5173,7 @@ void osc::GraphicsBackend::BlitToScreen(
     if (flags == BlitFlags::AlphaBlend)
     {
         Camera c;
-        c.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
+        c.setBackgroundColor(Color::clear());
         c.setPixelRect(rect);
         c.setProjectionMatrixOverride(glm::mat4{1.0f});
         c.setViewMatrixOverride(glm::mat4{1.0f});
@@ -5227,7 +5227,7 @@ void osc::GraphicsBackend::BlitToScreen(
     OSC_ASSERT(*t.m_Impl->m_MaybeGPUBuffers && "the input texture has not been rendered to");
 
     Camera c;
-    c.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
+    c.setBackgroundColor(Color::clear());
     c.setPixelRect(rect);
     c.setProjectionMatrixOverride(glm::mat4{1.0f});
     c.setViewMatrixOverride(glm::mat4{1.0f});
@@ -5244,7 +5244,7 @@ void osc::GraphicsBackend::BlitToScreen(
 void osc::GraphicsBackend::Blit(Texture2D const& source, RenderTexture& dest)
 {
     Camera c;
-    c.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
+    c.setBackgroundColor(Color::clear());
     c.setProjectionMatrixOverride(glm::mat4{1.0f});
     c.setViewMatrixOverride(glm::mat4{1.0f});
 
