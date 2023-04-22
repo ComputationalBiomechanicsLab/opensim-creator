@@ -3,7 +3,30 @@
 #include <glm/glm.hpp>
 #include <glm/vec4.hpp>
 
+#include <cmath>
 #include <cstdint>
+
+osc::Color osc::ToLinear(Color const& c) noexcept
+{
+    return
+    {
+        std::pow(c.r, 2.2f),
+        std::pow(c.g, 2.2f),
+        std::pow(c.b, 2.2f),
+        c.a
+    };
+}
+
+osc::Color osc::ToSRGB(Color const& c) noexcept
+{
+    return
+    {
+        std::pow(c.r, 1.0f/2.2f),
+        std::pow(c.g, 1.0f/2.2f),
+        std::pow(c.b, 1.0f/2.2f),
+        c.a
+    };
+}
 
 osc::Rgba32 osc::ToRgba32(glm::vec4 const& v) noexcept
 {
