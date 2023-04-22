@@ -130,7 +130,7 @@ TEST(Color, ToRgba32ReturnsRgba32VersionOfTheColor)
 
 TEST(Color, CanGetBlueColor)
 {
-    ASSERT_EQ(osc::Color::blue(), osc::Color(0.0f, 1.0f, 0.0f, 1.0f));
+    ASSERT_EQ(osc::Color::blue(), osc::Color(0.0f, 0.0f, 1.0f, 1.0f));
 }
 
 TEST(Color, CanGetClearColor)
