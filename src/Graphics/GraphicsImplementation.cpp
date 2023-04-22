@@ -2480,6 +2480,16 @@ public:
         return m_Values.empty();
     }
 
+    std::optional<Color> getColor(std::string_view propertyName) const
+    {
+        return getValue<Color>(std::move(propertyName));
+    }
+
+    void setColor(std::string_view propertyName, Color const& color)
+    {
+        setValue(std::move(propertyName), color);
+    }
+
     std::optional<float> getFloat(std::string_view propertyName) const
     {
         return getValue<float>(std::move(propertyName));
@@ -2615,6 +2625,16 @@ void osc::MaterialPropertyBlock::clear()
 bool osc::MaterialPropertyBlock::isEmpty() const
 {
     return m_Impl->isEmpty();
+}
+
+std::optional<osc::Color> osc::MaterialPropertyBlock::getColor(std::string_view propertyName) const
+{
+    return m_Impl->getColor(std::move(propertyName));
+}
+
+void osc::MaterialPropertyBlock::setColor(std::string_view propertyName, Color const& color)
+{
+    m_Impl.upd()->setColor(std::move(propertyName), color);
 }
 
 std::optional<float> osc::MaterialPropertyBlock::getFloat(std::string_view propertyName) const

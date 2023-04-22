@@ -1251,6 +1251,26 @@ TEST_F(Renderer, MaterialPropertyBlockClearClearsProperties)
     ASSERT_TRUE(mpb.isEmpty());
 }
 
+TEST_F(Renderer, MaterialPropertyBlockGetColorOnNewMPBlReturnsEmptyOptional)
+{
+    osc::MaterialPropertyBlock mpb;
+    ASSERT_FALSE(mpb.getColor("someKey"));
+}
+
+TEST_F(Renderer, MaterialPropertyBlockCanCallSetColorOnNewMaterial)
+{
+    osc::MaterialPropertyBlock mpb;
+    mpb.setColor("someKey", osc::Color::red());
+}
+
+TEST_F(Renderer, MaterialPropertyBlockCallingGetColorOnMPBAfterSetColorReturnsTheColor)
+{
+    osc::MaterialPropertyBlock mpb;
+    mpb.setColor("someKey", osc::Color::red());
+
+    ASSERT_EQ(mpb.getColor("someKey"), osc::Color::red());
+}
+
 TEST_F(Renderer, MaterialPropertyBlockGetFloatReturnsEmptyOnDefaultConstructedInstance)
 {
     osc::MaterialPropertyBlock mpb;

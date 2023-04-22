@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Texture2D.hpp"
 #include "src/Utils/CopyOnUpdPtr.hpp"
 
@@ -31,6 +32,12 @@ namespace osc
 
         void clear();
         bool isEmpty() const;
+
+        // note: this differs from merely setting a vec4, because it is assumed
+        // that the provided color is in sRGB and needs to be converted to a
+        // linear color in the shader
+        std::optional<Color> getColor(std::string_view propertyName) const;
+        void setColor(std::string_view propertyName, Color const&);
 
         std::optional<float> getFloat(std::string_view propertyName) const;
         void setFloat(std::string_view propertyName, float);
