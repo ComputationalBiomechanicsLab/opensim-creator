@@ -5,17 +5,17 @@
 uniform vec3 uViewPos;
 
 uniform vec3 uDirLightDirection;
-uniform vec3 uDirLightAmbient;
-uniform vec3 uDirLightDiffuse;
-uniform vec3 uDirLightSpecular;
+uniform float uDirLightAmbient;
+uniform float uDirLightDiffuse;
+uniform float uDirLightSpecular;
 
 uniform vec3 uPointLightPos[NR_POINT_LIGHTS];
 uniform float uPointLightConstant[NR_POINT_LIGHTS];
 uniform float uPointLightLinear[NR_POINT_LIGHTS];
 uniform float uPointLightQuadratic[NR_POINT_LIGHTS];
-uniform vec3 uPointLightAmbient[NR_POINT_LIGHTS];
-uniform vec3 uPointLightDiffuse[NR_POINT_LIGHTS];
-uniform vec3 uPointLightSpecular[NR_POINT_LIGHTS];
+uniform float uPointLightAmbient[NR_POINT_LIGHTS];
+uniform float uPointLightDiffuse[NR_POINT_LIGHTS];
+uniform float uPointLightSpecular[NR_POINT_LIGHTS];
 
 uniform vec3 uSpotLightPosition;
 uniform vec3 uSpotLightDirection;
@@ -24,9 +24,9 @@ uniform float uSpotLightOuterCutoff;
 uniform float uSpotLightConstant;
 uniform float uSpotLightLinear;
 uniform float uSpotLightQuadratic;
-uniform vec3 uSpotLightAmbient;
-uniform vec3 uSpotLightDiffuse;
-uniform vec3 uSpotLightSpecular;
+uniform float uSpotLightAmbient;
+uniform float uSpotLightDiffuse;
+uniform float uSpotLightSpecular;
 
 uniform sampler2D uMaterialDiffuse;
 uniform sampler2D uMaterialSpecular;
@@ -42,9 +42,9 @@ out vec4 FragColor;
 // calculates the color when using a directional light
 vec3 CalcDirLight(
     vec3 dirDirection,
-    vec3 dirAmbient,
-    vec3 dirDiffuse,
-    vec3 dirSpecular,
+    float dirAmbient,
+    float dirDiffuse,
+    float dirSpecular,
     vec3 normal,
     vec3 viewDir)
 {
@@ -71,9 +71,9 @@ vec3 CalcPointLight(
     float pointConstant,
     float pointLinear,
     float pointQuadratic,
-    vec3 pointAmbient,
-    vec3 pointDiffuse,
-    vec3 pointSpecular,
+    float pointAmbient,
+    float pointDiffuse,
+    float pointSpecular,
     vec3 normal,
     vec3 fragPos,
     vec3 viewDir)
@@ -112,9 +112,9 @@ vec3 CalcSpotLight(
     float spotConstant,
     float spotLinear,
     float spotQuadratic,
-    vec3 spotAmbient,
-    vec3 spotDiffuse,
-    vec3 spotSpecular,
+    float spotAmbient,
+    float spotDiffuse,
+    float spotSpecular,
     vec3 normal,
     vec3 fragPos,
     vec3 viewDir)

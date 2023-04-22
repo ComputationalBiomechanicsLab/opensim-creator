@@ -2,7 +2,7 @@
 
 uniform sampler2D uFloorTexture;
 uniform vec3 uLightPositions[4];
-uniform vec3 uLightColors[4];
+uniform vec4 uLightColors[4];
 uniform vec3 uViewPos;
 uniform bool uGamma;
 
@@ -52,7 +52,7 @@ void main()
             normalize(Normal),
             FragPos,
             uLightPositions[i],
-            uLightColors[i]
+            vec3(uLightColors[i])
         );
     }
     color *= brightness;

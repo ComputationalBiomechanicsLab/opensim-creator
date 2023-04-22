@@ -1,7 +1,7 @@
 #version 330 core
 
 uniform vec3 uSceneLightPositions[4];
-uniform vec3 uSceneLightColors[4];
+uniform vec4 uSceneLightColors[4];
 uniform sampler2D uDiffuseTexture;
 
 in vec3 FragPos;
@@ -25,7 +25,7 @@ void main()
         // diffuse
         vec3 lightDir = normalize(uSceneLightPositions[i] - FragPos);
         float diff = max(dot(lightDir, normal), 0.0);
-        vec3 diffuse = uSceneLightColors[i] * diff * color;
+        vec3 diffuse = vec3(uSceneLightColors[i]) * diff * color;
         vec3 result = diffuse;
         // attenuation (use quadratic as we have gamma correction)
         float distance = length(FragPos - uSceneLightPositions[i]);

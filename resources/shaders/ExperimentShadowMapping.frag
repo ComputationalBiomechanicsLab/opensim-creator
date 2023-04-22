@@ -1,6 +1,5 @@
 #version 330 core
 
-uniform vec3 uLightColor;
 uniform vec3 uLightWorldPos;
 uniform vec3 uViewWorldPos;
 uniform sampler2D uDiffuseTexture;

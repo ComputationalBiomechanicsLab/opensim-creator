@@ -4,7 +4,7 @@ uniform bool uHasShadowMap = false;
 uniform vec3 uLightDir;
 uniform sampler2D uShadowMapTexture;
 uniform float uAmbientStrength = 0.15f;
-uniform vec3 uLightColor;
+uniform vec4 uLightColor;
 uniform vec4 uDiffuseColor = vec4(1.0, 1.0, 1.0, 1.0);
 uniform float uNear;
 uniform float uFar;
@@ -69,7 +69,7 @@ void main()
 {
     float shadowAmt = uHasShadowMap ? 0.5*CalculateShadowAmount() : 0.0f;
     float brightness = uAmbientStrength + ((1.0 - shadowAmt) * NonAmbientBrightness);
-    Color0Out = vec4(brightness * uLightColor, 1.0) * uDiffuseColor;
+    Color0Out = vec4(brightness * vec3(uLightColor), 1.0) * uDiffuseColor;
     Color0Out.a *= 1.0 - (LinearizeDepth(gl_FragCoord.z) / uFar);  // fade into background at high distances
     Color0Out.a = clamp(Color0Out.a, 0.0, 1.0);
 }

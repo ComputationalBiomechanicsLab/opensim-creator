@@ -2,9 +2,9 @@
 
 uniform vec3 uViewPos;
 uniform vec3 uLightPos;
-uniform vec3 uLightAmbient;
-uniform vec3 uLightDiffuse;
-uniform vec3 uLightSpecular;
+uniform float uLightAmbient;
+uniform float uLightDiffuse;
+uniform float uLightSpecular;
 uniform sampler2D uMaterialDiffuse;
 uniform sampler2D uMaterialSpecular;
 uniform float uMaterialShininess;
