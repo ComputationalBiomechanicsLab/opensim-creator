@@ -26,6 +26,11 @@ namespace osc
             return glm::vec4{r, g, b, a};
         }
 
+        static constexpr Color red()
+        {
+            return {1.0f, 0.0f, 0.0f, 1.0f};
+        }
+
         float r;
         float g;
         float b;

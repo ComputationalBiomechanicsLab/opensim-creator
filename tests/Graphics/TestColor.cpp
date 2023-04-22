@@ -127,3 +127,8 @@ TEST(Color, ToRgba32ReturnsRgba32VersionOfTheColor)
     ASSERT_EQ(expected.b, got.b);
     ASSERT_EQ(expected.a, got.a);
 }
+
+TEST(Color, CanGetRedColor)
+{
+    ASSERT_EQ(osc::Color::red(), osc::Color(1.0f, 0.0f, 0.0f, 1.0f));
+}

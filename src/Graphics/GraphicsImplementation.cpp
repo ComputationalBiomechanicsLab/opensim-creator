@@ -131,6 +131,7 @@ namespace
 namespace
 {
     using MaterialValue = std::variant<
+        osc::Color,
         float,
         std::vector<float>,
         glm::vec2,
@@ -152,6 +153,8 @@ namespace
 
         switch (v.index())
         {
+        case VariantIndex<MaterialValue, osc::Color>():
+            return osc::ShaderType::Vec4;
         case VariantIndex<MaterialValue, glm::vec2>():
             return osc::ShaderType::Vec2;
         case VariantIndex<MaterialValue, float>():
@@ -2012,6 +2015,16 @@ public:
         return m_Shader;
     }
 
+    std::optional<Color> getColor(std::string_view propertyName) const
+    {
+        return getValue<Color>(std::move(propertyName));
+    }
+
+    void setColor(std::string_view propertyName, Color const& color)
+    {
+        setValue(std::move(propertyName), color);
+    }
+
     std::optional<float> getFloat(std::string_view propertyName) const
     {
         return getValue<float>(std::move(propertyName));
@@ -2246,6 +2259,16 @@ osc::Material::~Material() noexcept = default;
 osc::Shader const& osc::Material::getShader() const
 {
     return m_Impl->getShader();
+}
+
+std::optional<osc::Color> osc::Material::getColor(std::string_view propertyName) const
+{
+    return m_Impl->getColor(std::move(propertyName));
+}
+
+void osc::Material::setColor(std::string_view propertyName, Color const& color)
+{
+    m_Impl.upd()->setColor(std::move(propertyName), color);
 }
 
 std::optional<float> osc::Material::getFloat(std::string_view propertyName) const
@@ -4637,6 +4660,15 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
 
     switch (v.index())
     {
+    case VariantIndex<MaterialValue, osc::Color>():
+    {
+        // colors are converted from sRGB to linear when passed to
+        // the shader
+        glm::vec4 const linearColor = osc::ToLinear(std::get<osc::Color>(v));
+        gl::UniformVec4 u{se.location};
+        gl::Uniform(u, linearColor);
+        break;
+    }
     case VariantIndex<MaterialValue, float>():
     {
         gl::UniformFloat u{se.location};

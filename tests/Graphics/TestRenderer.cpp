@@ -706,6 +706,25 @@ TEST_F(Renderer, MaterialGetShaderReturnsSuppliedShader)
     ASSERT_EQ(material.getShader(), shader);
 }
 
+TEST_F(Renderer, MaterialGetColorOnNewMaterialReturnsEmptyOptional)
+{
+    osc::Material mat = GenerateMaterial();
+    ASSERT_FALSE(mat.getColor("someKey"));
+}
+
+TEST_F(Renderer, MaterialCanCallSetColorOnNewMaterial)
+{
+    osc::Material mat = GenerateMaterial();
+    mat.setColor("someKey", osc::Color::red());
+}
+
+TEST_F(Renderer, MaterialCallingGetColorOnMaterialAfterSetColorReturnsTheColor)
+{
+    osc::Material mat = GenerateMaterial();
+    mat.setColor("someKey", osc::Color::red());
+
+    ASSERT_EQ(mat.getColor("someKey"), osc::Color::red());
+}
 TEST_F(Renderer, MaterialGetFloatOnNewMaterialReturnsEmptyOptional)
 {
     osc::Material mat = GenerateMaterial();
