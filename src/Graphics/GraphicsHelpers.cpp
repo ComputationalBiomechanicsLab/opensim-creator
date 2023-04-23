@@ -465,7 +465,7 @@ osc::Material osc::CreateWireframeOverlayMaterial(Config const& config, ShaderCa
     std::filesystem::path const vertShader = config.getResourceDir() / "shaders/SceneSolidColor.vert";
     std::filesystem::path const fragShader = config.getResourceDir() / "shaders/SceneSolidColor.frag";
     osc::Material material{cache.load(vertShader, fragShader)};
-    material.setColor("uDiffuseColor", osc::Color{0.0f, 0.0f, 0.0f, 0.6f});
+    material.setColor("uDiffuseColor", {0.0f, 0.0f, 0.0f, 0.6f});
     material.setWireframeMode(true);
     material.setTransparent(true);
     return material;

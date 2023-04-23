@@ -166,7 +166,7 @@ public:
     void drawHDRTextureViaTonemapperToScreen()
     {
         Camera orthoCamera;
-        orthoCamera.setBackgroundColor({0.0f, 0.0f, 0.0f, 0.0f});
+        orthoCamera.setBackgroundColor(Color::clear());
         orthoCamera.setPixelRect(GetMainViewportWorkspaceScreenRect());
         orthoCamera.setProjectionMatrixOverride(glm::mat4{1.0f});
         orthoCamera.setViewMatrixOverride(glm::mat4{1.0f});

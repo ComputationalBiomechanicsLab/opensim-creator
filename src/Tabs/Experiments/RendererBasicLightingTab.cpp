@@ -144,7 +144,7 @@ private:
 
     Transform m_LightTransform;
     Color m_ObjectColor = {1.0f, 0.5f, 0.31f, 1.0f};
-    Color m_LightColor = {1.0f, 1.0f, 1.0f, 1.0f};
+    Color m_LightColor = Color::white();
     float m_AmbientStrength = 0.1f;
     float m_DiffuseStrength = 1.0f;
     float m_SpecularStrength = 0.5f;

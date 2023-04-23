@@ -899,7 +899,7 @@ namespace
         p.tipLength = tipLength;
         p.headThickness = fixupScaleFactor*baseRadius;
         p.neckThickness = fixupScaleFactor*baseRadius*0.6f;
-        p.color = {1.0f, 1.0f, 0.0f, 1.0f};
+        p.color = osc::Color::yellow();
 
         osc::DrawArrow(rs.updMeshCache(), p, [&hcf, &rs](osc::SceneDecoration&& d)
         {

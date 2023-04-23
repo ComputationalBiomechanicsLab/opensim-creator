@@ -1002,9 +1002,8 @@ bool osc::TrySetAppearancePropertyIsVisibleTo(OpenSim::Component& c, bool v)
 osc::Color osc::GetSuggestedBoneColor() noexcept
 {
     Color usualDefault = {232.0f / 255.0f, 216.0f / 255.0f, 200.0f/255.0f, 1.0f};
-    Color white = {1.0f, 1.0f, 1.0f, 1.0f};
     float brightenAmount = 0.1f;
-    return Lerp(usualDefault, white, brightenAmount);
+    return Lerp(usualDefault, Color::white(), brightenAmount);
 }
 
 bool osc::IsShowingFrames(OpenSim::Model const& model)

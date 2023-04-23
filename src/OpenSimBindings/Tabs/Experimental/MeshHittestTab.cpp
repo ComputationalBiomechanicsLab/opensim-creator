@@ -37,7 +37,7 @@ public:
 
     Impl()
     {
-        m_Camera.setBackgroundColor({1.0f, 1.0f, 1.0f, 1.0f});
+        m_Camera.setBackgroundColor(Color::white());
     }
 
     UID getID() const

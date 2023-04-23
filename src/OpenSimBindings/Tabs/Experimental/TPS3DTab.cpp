@@ -1347,7 +1347,7 @@ namespace
 
                 osc::SceneDecoration& decoration = rv.emplace_back(m_State->landmarkSphere);
                 decoration.transform = transform;
-                decoration.color = {1.0f, 1.0f, 1.0f, 1.0f};
+                decoration.color = osc::Color::white();
             }
 
             // draw first landmark
@@ -1359,7 +1359,7 @@ namespace
 
                 osc::SceneDecoration& decoration = rv.emplace_back(m_State->landmarkSphere);
                 decoration.transform = transform;
-                decoration.color = {1.0f, 1.0f, 1.0f, 1.0f};
+                decoration.color = osc::Color::white();
                 if (maybeHoveredLandmark && maybeHoveredLandmark->id == m_FirstLandmark->id)
                 {
                     // hovering over first landmark (can be deselected)
@@ -1398,7 +1398,7 @@ namespace
 
                 osc::SceneDecoration& decoration = rv.emplace_back(m_State->landmarkSphere);
                 decoration.transform = transform;
-                decoration.color = {1.0f, 1.0f, 1.0f, 1.0f};
+                decoration.color = osc::Color::white();
                 if (maybeHoveredLandmark && maybeHoveredLandmark->id == m_SecondLandmark->id)
                 {
                     // hovering over second landmark (can be deselected)

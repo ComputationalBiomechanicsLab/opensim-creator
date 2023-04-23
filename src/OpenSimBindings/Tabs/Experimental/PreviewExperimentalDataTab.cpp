@@ -465,7 +465,7 @@ namespace
         DecorativeArrow arrow;
         arrow.p0 = {0.0f, 0.0f, 0.0f};
         arrow.p1 = q * glm::vec3{0.0f, 1.0f, 0.0f};
-        arrow.color = {0.0f, 1.0f, 0.0f, 1.0f};
+        arrow.color = osc::Color::green();
         arrow.label = columnDescription.label;
 
         GenerateDecorations(arrow, out);

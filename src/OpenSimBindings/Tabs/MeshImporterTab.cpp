@@ -4563,9 +4563,9 @@ namespace
             return c_ColorNames;
         }
 
-        osc::Color GetColorSceneBackground() const
+        osc::Color const& GetColorSceneBackground() const
         {
-            return osc::Color{m_Colors.sceneBackground};
+            return m_Colors.sceneBackground;
         }
 
         osc::Color const& GetColorMesh() const

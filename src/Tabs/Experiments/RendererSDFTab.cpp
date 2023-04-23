@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
+#include "src/Graphics/Color.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/MeshGen.hpp"
@@ -107,7 +108,7 @@ private:
         camera.setPosition({ 0.0f, 0.0f, 1.0f });
         camera.setNearClippingPlane(0.1f);
         camera.setFarClippingPlane(2.0f);
-        camera.setBackgroundColor({ 0.0f, 0.0f, 0.0f, 0.0f });
+        camera.setBackgroundColor(Color::clear());
 
         m_Material.setTexture("uTexture", m_FontTexture.texture);
         m_Material.setTransparent(true);

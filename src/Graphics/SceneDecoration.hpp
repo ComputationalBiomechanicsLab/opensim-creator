@@ -18,10 +18,7 @@ namespace osc
     struct SceneDecoration final {
 
         explicit SceneDecoration(Mesh const& mesh_) :
-
-            mesh{mesh_},
-            transform{},
-            color{1.0f, 1.0f, 1.0f, 1.0f}
+            mesh{mesh_}
         {
         }
 
@@ -78,8 +75,8 @@ namespace osc
         }
 
         Mesh mesh;
-        Transform transform;
-        Color color;
+        Transform transform{};
+        Color color = Color::white();
         std::string id;
         SceneDecorationFlags flags = SceneDecorationFlags_None;
         std::optional<Material> maybeMaterial = std::nullopt;
