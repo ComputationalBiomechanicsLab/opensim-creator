@@ -3,6 +3,7 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
 #include "src/Graphics/Color.hpp"
+#include "src/Graphics/ColorSpace.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/MeshGen.hpp"
@@ -73,7 +74,13 @@ namespace
         std::vector<uint8_t> pixels(512 * 512);
 
         stbtt_BakeFontBitmap(ttfData.data(), 0, 64., pixels.data(), 512, 512, 32, 96, glyphData.storage); // no guarantee this fits!
-        auto t = osc::Texture2D{{512, 512}, osc::TextureFormat::R8, pixels};
+        osc::Texture2D t = osc::Texture2D
+        {
+            {512, 512},
+            osc::TextureFormat::R8,
+            pixels,
+            osc::ColorSpace::sRGB
+        };
         t.setFilterMode(osc::TextureFilterMode::Linear);
 
         return FontTexture{t, glyphData};

@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
+#include "src/Graphics/ColorSpace.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
@@ -210,8 +211,14 @@ private:
     };
     Mesh m_CubeMesh = GenLearnOpenGLCube();
     Mesh m_QuadMesh = GenerateQuad();
-    Texture2D m_DiffuseMap = LoadTexture2DFromImage(App::resource("textures/brickwall.jpg"));
-    Texture2D m_NormalMap = LoadTexture2DFromImage(App::resource("textures/brickwall_normal.jpg"));
+    Texture2D m_DiffuseMap = LoadTexture2DFromImage(
+        App::resource("textures/brickwall.jpg"),
+        ColorSpace::sRGB
+    );
+    Texture2D m_NormalMap = LoadTexture2DFromImage(
+        App::resource("textures/brickwall_normal.jpg"),
+        ColorSpace::Linear
+    );
 
     // scene state
     Camera m_Camera;

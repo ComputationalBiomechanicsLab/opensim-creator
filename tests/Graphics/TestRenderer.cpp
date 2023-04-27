@@ -2,6 +2,7 @@
 #include "src/Graphics/CameraClearFlags.hpp"
 #include "src/Graphics/CameraProjection.hpp"
 #include "src/Graphics/Color.hpp"
+#include "src/Graphics/ColorSpace.hpp"
 #include "src/Graphics/Cubemap.hpp"
 #include "src/Graphics/DepthStencilFormat.hpp"
 #include "src/Graphics/Graphics.hpp"
@@ -392,7 +393,8 @@ static glm::mat4x3 GenerateMat4x3()
 static osc::Texture2D GenerateTexture()
 {
     std::vector<osc::Rgba32> pixels(4);
-    return osc::Texture2D{{2, 2}, pixels};
+
+    return osc::Texture2D{{2, 2}, pixels, osc::ColorSpace::sRGB};
 }
 
 static osc::Material GenerateMaterial()
@@ -1502,19 +1504,19 @@ TEST_F(Renderer, MaterialPropertyBlockPrintingToOutputStreamMentionsMaterialProp
 TEST_F(Renderer, TextureCanConstructFromRGBAPixels)
 {
     std::vector<osc::Rgba32> pixels(4);
-    osc::Texture2D t{{2, 2}, pixels};
+    osc::Texture2D t{{2, 2}, pixels, osc::ColorSpace::sRGB};
 }
 
 TEST_F(Renderer, TextureRGBAThrowsIfDimensionsDontMatchNumberOfPixels)
 {
     std::vector<osc::Rgba32> pixels(4);
-    ASSERT_ANY_THROW({ osc::Texture2D t({1, 2}, pixels); });
+    ASSERT_ANY_THROW({ osc::Texture2D t({1, 2}, pixels, osc::ColorSpace::sRGB); });
 }
 
 TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForSingleChannelData)
 {
     std::vector<std::uint8_t> singleChannelPixels(16);
-    osc::Texture2D t{{4, 4}, osc::TextureFormat::R8, singleChannelPixels};
+    osc::Texture2D t{{4, 4}, osc::TextureFormat::R8, singleChannelPixels, osc::ColorSpace::sRGB};
 
     ASSERT_EQ(t.getDimensions(), glm::ivec2(4,4));
     ASSERT_EQ(t.getAspectRatio(), 1.0f);
@@ -1523,7 +1525,7 @@ TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForSingleChannelData)
 TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForRGBData)
 {
     std::vector<std::uint8_t> rgbPixels(12);
-    osc::Texture2D t{{2, 2}, osc::TextureFormat::RGB24, rgbPixels};
+    osc::Texture2D t{{2, 2}, osc::TextureFormat::RGB24, rgbPixels, osc::ColorSpace::sRGB};
 
     ASSERT_EQ(t.getDimensions(), glm::ivec2(2,2));
     ASSERT_EQ(t.getAspectRatio(), 1.0f);
@@ -1532,7 +1534,7 @@ TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForRGBData)
 TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForRGBAData)
 {
     std::vector<std::uint8_t> rgbaPixels(16);
-    osc::Texture2D t{{2, 2}, osc::TextureFormat::RGBA32, rgbaPixels};
+    osc::Texture2D t{{2, 2}, osc::TextureFormat::RGBA32, rgbaPixels, osc::ColorSpace::sRGB};
 
     ASSERT_EQ(t.getDimensions(), glm::ivec2(2,2));
     ASSERT_EQ(t.getAspectRatio(), 1.0f);
@@ -1572,7 +1574,7 @@ TEST_F(Renderer, TextureGetWidthReturnsSuppliedWidth)
     int height = 6;
     std::vector<osc::Rgba32> pixels(width*height);
 
-    osc::Texture2D t{{width, height}, pixels};
+    osc::Texture2D t{{width, height}, pixels, osc::ColorSpace::sRGB};
 
     ASSERT_EQ(t.getDimensions().x, width);
 }
@@ -1583,7 +1585,7 @@ TEST_F(Renderer, TextureGetHeightReturnsSuppliedHeight)
     int height = 6;
     std::vector<osc::Rgba32> pixels(width*height);
 
-    osc::Texture2D t{{width, height}, pixels};
+    osc::Texture2D t{{width, height}, pixels, osc::ColorSpace::sRGB};
 
     ASSERT_EQ(t.getDimensions().y, height);
 }
@@ -1594,16 +1596,33 @@ TEST_F(Renderer, TextureGetAspectRatioReturnsExpectedRatio)
     int height = 37;
     std::vector<osc::Rgba32> pixels(width*height);
 
-    osc::Texture2D t{{width, height}, pixels};
+    osc::Texture2D t{{width, height}, pixels, osc::ColorSpace::sRGB};
 
     float expected = static_cast<float>(width) / static_cast<float>(height);
 
     ASSERT_FLOAT_EQ(t.getAspectRatio(), expected);
 }
 
+TEST_F(Renderer, TextureGetColorSpaceReturnsProvidedColorSpaceIfSRGB)
+{
+    osc::Rgba32 pixels[] = {{}};
+    osc::Texture2D t{{1, 1}, pixels, osc::ColorSpace::sRGB};
+
+    ASSERT_EQ(t.getColorSpace(), osc::ColorSpace::sRGB);
+}
+
+TEST_F(Renderer, TextureGetColorSpaceReturnsProvidedColorSpaceIfLinear)
+{
+    osc::Rgba32 pixels[] = {{}};
+    osc::Texture2D t{{1, 1}, pixels, osc::ColorSpace::Linear};
+
+    ASSERT_EQ(t.getColorSpace(), osc::ColorSpace::Linear);
+}
+
 TEST_F(Renderer, TextureGetWrapModeReturnsRepeatedByDefault)
 {
     osc::Texture2D t = GenerateTexture();
+
     ASSERT_EQ(t.getWrapMode(), osc::TextureWrapMode::Repeat);
 }
 
@@ -1829,13 +1848,22 @@ TEST_F(Renderer, MeshTopologyAllCanBeWrittenToStream)
 
 TEST_F(Renderer, LoadTexture2DFromImageResourceCanLoadImageFile)
 {
-    osc::Texture2D const t = osc::LoadTexture2DFromImage(osc::App::resource("textures/awesomeface.png"));
+    osc::Texture2D const t = osc::LoadTexture2DFromImage(
+        osc::App::resource("textures/awesomeface.png"),
+        osc::ColorSpace::sRGB
+    );
     ASSERT_EQ(t.getDimensions(), glm::ivec2(512, 512));
 }
 
 TEST_F(Renderer, LoadTexture2DFromImageResourceThrowsIfResourceNotFound)
 {
-    ASSERT_ANY_THROW({ osc::LoadTexture2DFromImage(osc::App::resource("textures/doesnt_exist.png")); });
+    ASSERT_ANY_THROW(
+    {
+        osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/doesnt_exist.png"),
+            osc::ColorSpace::sRGB
+        );
+    });
 }
 
 TEST_F(Renderer, MeshCanBeDefaultConstructed)

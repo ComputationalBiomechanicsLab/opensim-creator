@@ -3,6 +3,7 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
 #include "src/Graphics/Color.hpp"
+#include "src/Graphics/ColorSpace.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
@@ -215,7 +216,10 @@ private:
     Camera m_Camera;
     Mesh m_CubeMesh = GenCube();
     Mesh m_QuadMesh = GenTexturedQuad();
-    Texture2D m_WoodTexture = LoadTexture2DFromImage(App::resource("textures/wood.png"));  // TODO: provide gamma-corrected load function
+    Texture2D m_WoodTexture = LoadTexture2DFromImage(
+        App::resource("textures/wood.png"),
+        ColorSpace::sRGB
+    );
     Transform m_CorridoorTransform = CalcCorridoorTransform();
     RenderTexture m_SceneHDRTexture;
     bool m_IsMouseCaptured = true;

@@ -1,5 +1,6 @@
 #include "SVG.hpp"
 
+#include "src/Graphics/ColorSpace.hpp"
 #include "src/Utils/Assertions.hpp"
 
 #include <glm/vec2.hpp>
@@ -26,9 +27,15 @@ osc::Texture2D osc::LoadTextureFromSVGFile(std::filesystem::path const& p, float
     lunasvg::Bitmap bitmap = doc->renderToBitmap(bitmapDimensions.x, bitmapDimensions.y, 0x00000000);
     bitmap.convertToRGBA();
 
-    osc::Texture2D t({bitmap.width(), bitmap.height()}, TextureFormat::RGBA32, {bitmap.data(), bitmap.width()*bitmap.height()*4});
-    t.setWrapMode(osc::TextureWrapMode::Clamp);
-    t.setFilterMode(osc::TextureFilterMode::Nearest);
-
-    return t;
+    // return as a GPU-ready texture
+    Texture2D rv
+    {
+        {bitmap.width(), bitmap.height()},
+        TextureFormat::RGBA32,
+        {bitmap.data(), bitmap.width()*bitmap.height()*4},
+        ColorSpace::sRGB,
+    };
+    rv.setWrapMode(TextureWrapMode::Clamp);
+    rv.setFilterMode(TextureFilterMode::Nearest);
+    return rv;
 }

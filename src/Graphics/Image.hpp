@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/Graphics/ColorSpace.hpp"
 #include "src/Graphics/ImageFlags.hpp"
 
 #include <glm/vec2.hpp>
@@ -17,7 +18,8 @@ namespace osc
         Image(
             glm::ivec2 dimensions,
             nonstd::span<uint8_t const> channelsRowByRow,
-            int32_t numChannels
+            int32_t numChannels,
+            ColorSpace
         );
         Image(Image const&);
         Image(Image&&) noexcept;
@@ -28,13 +30,23 @@ namespace osc
         glm::ivec2 getDimensions() const;
         int32_t getNumChannels() const;
         nonstd::span<uint8_t const> getPixelData() const;
+        ColorSpace getColorSpace() const;
 
     private:
         glm::ivec2 m_Dimensions;
         int32_t m_NumChannels;
         std::unique_ptr<uint8_t[]> m_Pixels;
+        ColorSpace m_ColorSpace;
     };
 
-    Image LoadImageFromFile(std::filesystem::path const&, ImageFlags = ImageFlags_None);
-    void WriteImageToPNGFile(Image const&, std::filesystem::path const&);
+    Image LoadImageFromFile(
+        std::filesystem::path const&,
+        ColorSpace colorSpace,
+        ImageFlags = ImageFlags_None
+    );
+
+    void WriteImageToPNGFile(
+        Image const&,
+        std::filesystem::path const&
+    );
 }

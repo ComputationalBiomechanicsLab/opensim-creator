@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
+#include "src/Graphics/ColorSpace.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
@@ -46,8 +47,22 @@ public:
         m_Camera.setNearClippingPlane(0.1f);
         m_Camera.setFarClippingPlane(100.0f);
         m_Camera.setBackgroundColor({0.2f, 0.3f, 0.3f, 1.0f});
-        m_Material.setTexture("uTexture1", LoadTexture2DFromImage(App::resource("textures/container.jpg"), ImageFlags_FlipVertically));
-        m_Material.setTexture("uTexture2", LoadTexture2DFromImage(App::resource("textures/awesomeface.png"), ImageFlags_FlipVertically));
+        m_Material.setTexture(
+            "uTexture1",
+            LoadTexture2DFromImage(
+                App::resource("textures/container.jpg"),
+                ColorSpace::sRGB,
+                ImageFlags_FlipVertically
+            )
+        );
+        m_Material.setTexture(
+            "uTexture2",
+            LoadTexture2DFromImage(
+                App::resource("textures/awesomeface.png"),
+                ColorSpace::sRGB,
+                ImageFlags_FlipVertically
+            )
+        );
     }
 
     UID getID() const

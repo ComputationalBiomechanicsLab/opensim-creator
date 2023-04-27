@@ -3,6 +3,7 @@
 #include "src/Graphics/Camera.hpp"
 #include "src/Graphics/CameraClearFlags.hpp"
 #include "src/Graphics/CameraProjection.hpp"
+#include "src/Graphics/ColorSpace.hpp"
 #include "src/Graphics/Cubemap.hpp"
 #include "src/Graphics/DepthStencilFormat.hpp"
 #include "src/Graphics/Graphics.hpp"
@@ -975,19 +976,30 @@ namespace
 
 class osc::Texture2D::Impl final {
 public:
-    Impl(glm::ivec2 dimensions, nonstd::span<Rgba32 const> pixelsRowByRow) :
+    Impl(
+        glm::ivec2 dimensions,
+        nonstd::span<Rgba32 const> pixelsRowByRow,
+        ColorSpace colorSpace) :
+
         Impl
         {
             std::move(dimensions),
             TextureFormat::RGBA32,
-            nonstd::span<uint8_t const>{&pixelsRowByRow[0].r, 4 * pixelsRowByRow.size()}
+            nonstd::span<uint8_t const>{&pixelsRowByRow[0].r, 4 * pixelsRowByRow.size()},
+            colorSpace,
         }
     {
     }
 
-    Impl(glm::ivec2 dimensions, TextureFormat format, nonstd::span<uint8_t const> channelsRowByRow) :
+    Impl(
+        glm::ivec2 dimensions,
+        TextureFormat format,
+        nonstd::span<uint8_t const> channelsRowByRow,
+        ColorSpace colorSpace) :
+
         m_Dimensions{dimensions},
         m_Format{format},
+        m_ColorSpace{colorSpace},
         m_PixelData(channelsRowByRow.data(), channelsRowByRow.data() + channelsRowByRow.size())
     {
         OSC_THROWING_ASSERT(m_Dimensions.x >= 0 && m_Dimensions.y >= 0);
@@ -1002,6 +1014,11 @@ public:
     float getAspectRatio() const
     {
         return AspectRatio(m_Dimensions);
+    }
+
+    ColorSpace getColorSpace() const
+    {
+        return m_ColorSpace;
     }
 
     TextureWrapMode getWrapMode() const
@@ -1133,6 +1150,7 @@ private:
 
     glm::ivec2 m_Dimensions;
     TextureFormat m_Format;
+    ColorSpace m_ColorSpace;
     std::vector<uint8_t> m_PixelData;
     TextureWrapMode m_WrapModeU = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeV = TextureWrapMode::Repeat;
@@ -1171,13 +1189,22 @@ std::optional<osc::TextureFormat> osc::NumChannelsAsTextureFormat(int32_t numCha
 }
 
 
-osc::Texture2D::Texture2D(glm::ivec2 dimensions, nonstd::span<Rgba32 const> pixels) :
-    m_Impl{make_cow<Impl>(std::move(dimensions), std::move(pixels))}
+osc::Texture2D::Texture2D(
+    glm::ivec2 dimensions,
+    nonstd::span<Rgba32 const> pixels,
+    ColorSpace colorSpace) :
+
+    m_Impl{make_cow<Impl>(std::move(dimensions), std::move(pixels), std::move(colorSpace))}
 {
 }
 
-osc::Texture2D::Texture2D(glm::ivec2 dimensions, TextureFormat format, nonstd::span<uint8_t const> channelsRowByRow) :
-    m_Impl{make_cow<Impl>(std::move(dimensions), std::move(format), std::move(channelsRowByRow))}
+osc::Texture2D::Texture2D(
+    glm::ivec2 dimensions,
+    TextureFormat format,
+    nonstd::span<uint8_t const> channelsRowByRow,
+    ColorSpace colorSpace) :
+
+    m_Impl{make_cow<Impl>(std::move(dimensions), std::move(format), std::move(channelsRowByRow), std::move(colorSpace))}
 {
 }
 
@@ -1195,6 +1222,11 @@ glm::ivec2 osc::Texture2D::getDimensions() const
 float osc::Texture2D::getAspectRatio() const
 {
     return m_Impl->getAspectRatio();
+}
+
+osc::ColorSpace osc::Texture2D::getColorSpace() const
+{
+    return m_Impl->getColorSpace();
 }
 
 osc::TextureWrapMode osc::Texture2D::getWrapMode() const
@@ -4208,7 +4240,7 @@ public:
                 pixels.data()
             );
 
-            Image screenshot{dims, pixels, 4};
+            Image screenshot{dims, pixels, 4, ColorSpace::sRGB};
 
             // copy image to requests [0..n-2]
             for (ptrdiff_t i = 0, len = static_cast<ptrdiff_t>(m_ActiveScreenshotRequests.size())-1; i < len; ++i)
@@ -5319,5 +5351,5 @@ void osc::GraphicsBackend::ReadPixels(RenderTexture const& source, Image& dest)
     );
     gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
 
-    dest = Image{dims, pixels, channels};
+    dest = Image{dims, pixels, channels, ColorSpace::sRGB};
 }

@@ -912,6 +912,7 @@ add_executable(testosc EXCLUDE_FROM_ALL
     tests/Graphics/TestColor.cpp
     tests/Graphics/TestCubemap.cpp
     tests/Graphics/TestCubemapFace.cpp
+    tests/Graphics/TestGraphicsHelpers.cpp
     tests/Graphics/TestImage.cpp
     tests/Graphics/TestRenderer.cpp
     tests/Graphics/TestRenderTextureFormat.cpp

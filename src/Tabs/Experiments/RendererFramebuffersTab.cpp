@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
+#include "src/Graphics/ColorSpace.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
@@ -169,8 +170,14 @@ private:
     bool m_IsMouseCaptured = false;
     glm::vec3 m_CameraEulers = { 0.0f, 0.0f, 0.0f };
 
-    Texture2D m_ContainerTexture = LoadTexture2DFromImage(App::resource("textures/container.jpg"));
-    Texture2D m_MetalTexture = LoadTexture2DFromImage(App::resource("textures/metal.png"));
+    Texture2D m_ContainerTexture = LoadTexture2DFromImage(
+        App::resource("textures/container.jpg"),
+        ColorSpace::sRGB
+    );
+    Texture2D m_MetalTexture = LoadTexture2DFromImage(
+        App::resource("textures/metal.png"),
+        ColorSpace::sRGB
+    );
 
     Mesh m_CubeMesh = GenLearnOpenGLCube();
     Mesh m_PlaneMesh = GeneratePlane();

@@ -3,6 +3,7 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Bindings/GlmHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
+#include "src/Graphics/ColorSpace.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
@@ -542,7 +543,10 @@ private:
     float m_BlendingFactor = 1.0f;
 
     // GUI state (rendering, colors, etc.)
-    Texture2D m_BoxTexture = LoadTexture2DFromImage(App::resource("textures/container.jpg"));
+    Texture2D m_BoxTexture = LoadTexture2DFromImage(
+        App::resource("textures/container.jpg"),
+        ColorSpace::sRGB
+    );
     Mesh m_InputGrid = GenNxMTriangleQuad2DGrid({50, 50});
     Mesh m_OutputGrid = m_InputGrid;
     Material m_Material = Material

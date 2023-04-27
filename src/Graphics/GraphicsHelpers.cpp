@@ -1,6 +1,7 @@
 #include "GraphicsHelpers.hpp"
 
 #include "src/Graphics/Color.hpp"
+#include "src/Graphics/ColorSpace.hpp"
 #include "src/Graphics/Image.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshCache.hpp"
@@ -481,12 +482,21 @@ osc::Texture2D osc::ToTexture2D(Image const& image)
         throw std::runtime_error{std::move(ss).str()};
     }
 
-    return Texture2D{image.getDimensions(), *format, image.getPixelData()};
+    return Texture2D
+    {
+        image.getDimensions(),
+        *format,
+        image.getPixelData(),
+        image.getColorSpace(),
+    };
 }
 
-osc::Texture2D osc::LoadTexture2DFromImage(std::filesystem::path const& path, ImageFlags flags)
+osc::Texture2D osc::LoadTexture2DFromImage(
+    std::filesystem::path const& path,
+    ColorSpace colorSpace,
+    ImageFlags flags)
 {
-    Image const img = LoadImageFromFile(path, flags);
+    Image const img = LoadImageFromFile(path, colorSpace, flags);
     try
     {
         return ToTexture2D(img);

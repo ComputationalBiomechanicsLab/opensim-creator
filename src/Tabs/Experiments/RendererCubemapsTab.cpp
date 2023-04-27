@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
+#include "src/Graphics/ColorSpace.hpp"
 #include "src/Graphics/Cubemap.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
@@ -42,7 +43,10 @@ namespace
         static_assert(textures.size() > 1);
 
         // load the first face, so we know the width
-        osc::Image image = osc::LoadImageFromFile(resourcesDir / "textures" / std::string_view{textures.front()});
+        osc::Image image = osc::LoadImageFromFile(
+            resourcesDir / "textures" / std::string_view{textures.front()},
+            osc::ColorSpace::sRGB
+        );
         OSC_THROWING_ASSERT(image.getDimensions().x == image.getDimensions().y);
         OSC_THROWING_ASSERT(image.getNumChannels() == 3);
         int32_t const width = image.getDimensions().x;
@@ -54,7 +58,10 @@ namespace
         cubemap.setPixelData(osc::CubemapFace::PositiveX, image.getPixelData());
         for (int32_t i = 1; i < static_cast<int32_t>(osc::CubemapFace::TOTAL); ++i)
         {
-            image = osc::LoadImageFromFile(resourcesDir / "textures" / std::string_view{textures[i]});
+            image = osc::LoadImageFromFile(
+                resourcesDir / "textures" / std::string_view{textures[i]},
+                osc::ColorSpace::sRGB
+            );
             OSC_THROWING_ASSERT(image.getDimensions().x == width);
             OSC_THROWING_ASSERT(image.getDimensions().y == width);
             cubemap.setPixelData(static_cast<osc::CubemapFace>(i), image.getPixelData());
@@ -259,7 +266,10 @@ private:
     size_t m_CubeMaterialIndex = 0;
     MaterialPropertyBlock m_CubeProperties;
     Mesh m_Cube = GenLearnOpenGLCube();
-    Texture2D m_ContainerTexture = LoadTexture2DFromImage(App::resource("textures/container.jpg"));
+    Texture2D m_ContainerTexture = LoadTexture2DFromImage(
+        App::resource("textures/container.jpg"),
+        ColorSpace::sRGB
+    );
     float m_IOR = 1.52f;
 
     Material m_SkyboxMaterial

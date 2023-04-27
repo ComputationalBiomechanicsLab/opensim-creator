@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/Graphics/ColorSpace.hpp"
 #include "src/Graphics/TextureFilterMode.hpp"
 #include "src/Graphics/TextureFormat.hpp"
 #include "src/Graphics/TextureWrapMode.hpp"
@@ -24,8 +25,17 @@ namespace osc
     // a handle to a 2D texture that can be rendered by the graphics backend
     class Texture2D final {
     public:
-        Texture2D(glm::ivec2 dimensions, nonstd::span<Rgba32 const> rgbaPixelsRowByRow);
-        Texture2D(glm::ivec2 dimensions, TextureFormat, nonstd::span<uint8_t const> channelsRowByRow);
+        Texture2D(
+            glm::ivec2 dimensions,
+            nonstd::span<Rgba32 const> rgbaPixelsRowByRow,
+            ColorSpace
+        );
+        Texture2D(
+            glm::ivec2 dimensions,
+            TextureFormat,
+            nonstd::span<uint8_t const> channelsRowByRow,
+            ColorSpace
+        );
         Texture2D(Texture2D const&);
         Texture2D(Texture2D&&) noexcept;
         Texture2D& operator=(Texture2D const&);
@@ -34,6 +44,8 @@ namespace osc
 
         glm::ivec2 getDimensions() const;
         float getAspectRatio() const;
+
+        ColorSpace getColorSpace() const;
 
         TextureWrapMode getWrapMode() const;  // same as getWrapModeU
         void setWrapMode(TextureWrapMode);  // sets all axes

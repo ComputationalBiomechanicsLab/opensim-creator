@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
+#include "src/Graphics/ColorSpace.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
@@ -216,7 +217,10 @@ private:
 
     Camera m_Camera;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
-    Texture2D m_WoodTexture = osc::LoadTexture2DFromImage(App::resource("textures/wood.png"));
+    Texture2D m_WoodTexture = LoadTexture2DFromImage(
+        App::resource("textures/wood.png"),
+        ColorSpace::sRGB
+    );
     Mesh m_CubeMesh = osc::GenCube();
     Mesh m_PlaneMesh = GeneratePlaneMesh();
     Material m_SceneMaterial

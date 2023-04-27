@@ -1,5 +1,6 @@
 #include "ImageGen.hpp"
 
+#include "src/Graphics/ColorSpace.hpp"
 #include "src/Graphics/Rgb24.hpp"
 
 #include <array>
@@ -30,6 +31,7 @@ osc::Image osc::GenerateChequeredFloorImage()
     {
         glm::vec2{textureWidth, textureHeight},
         nonstd::span<uint8_t const>{&pixels.front().r, sizeof(pixels)},
-        sizeof(Rgb24)  // num channels
+        sizeof(Rgb24),  // num channels
+        ColorSpace::sRGB,
     };
 }

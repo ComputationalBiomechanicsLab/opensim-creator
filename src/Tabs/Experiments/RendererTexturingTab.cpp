@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
+#include "src/Graphics/ColorSpace.hpp"
 #include "src/Graphics/Graphics.hpp"
 #include "src/Graphics/GraphicsHelpers.hpp"
 #include "src/Graphics/Material.hpp"
@@ -54,10 +55,21 @@ public:
     {
         m_Camera.setViewMatrixOverride(glm::mat4{1.0f});
         m_Camera.setProjectionMatrixOverride(glm::mat4{1.0f});
-        Texture2D container = LoadTexture2DFromImage(App::resource("textures/container.jpg"), ImageFlags_FlipVertically);
+        Texture2D container = LoadTexture2DFromImage(
+            App::resource("textures/container.jpg"),
+            ColorSpace::sRGB,
+            ImageFlags_FlipVertically
+        );
         container.setWrapMode(osc::TextureWrapMode::Clamp);
         m_Material.setTexture("uTexture1", std::move(container));
-        m_Material.setTexture("uTexture2", LoadTexture2DFromImage(App::resource("textures/awesomeface.png"), ImageFlags_FlipVertically));
+        m_Material.setTexture(
+            "uTexture2",
+            LoadTexture2DFromImage(
+                App::resource("textures/awesomeface.png"),
+                ColorSpace::sRGB,
+                ImageFlags_FlipVertically
+            )
+        );
     }
 
     UID getID() const

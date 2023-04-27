@@ -1,5 +1,6 @@
 #include "Image.hpp"
 
+#include "src/Graphics/ColorSpace.hpp"
 #include "src/Utils/Assertions.hpp"
 
 #include <glm/vec2.hpp>
@@ -25,18 +26,21 @@ static std::mutex g_StbiMutex;
 osc::Image::Image() :
     m_Dimensions{glm::ivec2{0, 0}},
     m_NumChannels{4},
-    m_Pixels{nullptr}
+    m_Pixels{nullptr},
+    m_ColorSpace{osc::ColorSpace::sRGB}
 {
 }
 
 osc::Image::Image(
     glm::ivec2 dimensions,
     nonstd::span<uint8_t const> channelsRowByRow,
-    int32_t numChannels) :
+    int32_t numChannels,
+    ColorSpace colorSpace) :
 
     m_Dimensions{std::move(dimensions)},
     m_NumChannels{std::move(numChannels)},
-    m_Pixels{new uint8_t[dimensions.x * dimensions.y * numChannels]}
+    m_Pixels{new uint8_t[dimensions.x * dimensions.y * numChannels]},
+    m_ColorSpace{std::move(colorSpace)}
 {
     std::copy(channelsRowByRow.begin(), channelsRowByRow.end(), m_Pixels.get());
 }
@@ -79,7 +83,15 @@ nonstd::span<uint8_t const> osc::Image::getPixelData() const
     return {m_Pixels.get(), static_cast<std::size_t>(m_Dimensions.x * m_Dimensions.y * m_NumChannels)};
 }
 
-osc::Image osc::LoadImageFromFile(std::filesystem::path const& p, ImageFlags flags)
+osc::ColorSpace osc::Image::getColorSpace() const
+{
+    return m_ColorSpace;
+}
+
+osc::Image osc::LoadImageFromFile(
+    std::filesystem::path const& p,
+    ColorSpace colorSpace,
+    ImageFlags flags)
 {
     std::lock_guard stbiGuard{g_StbiMutex};
 
@@ -110,10 +122,18 @@ osc::Image osc::LoadImageFromFile(std::filesystem::path const& p, ImageFlags fla
 
     nonstd::span<uint8_t> dataSpan{pixels.get(), static_cast<size_t>(dims.x * dims.y * channels)};
 
-    return Image{dims, dataSpan, channels};
+    return Image
+    {
+        dims,
+        dataSpan,
+        channels,
+        colorSpace,
+    };
 }
 
-void osc::WriteImageToPNGFile(Image const& image, std::filesystem::path const& outpath)
+void osc::WriteImageToPNGFile(
+    Image const& image,
+    std::filesystem::path const& outpath)
 {
     std::string const pathStr = outpath.string();
     int32_t const w = image.getDimensions().x;

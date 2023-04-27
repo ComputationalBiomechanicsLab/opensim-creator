@@ -171,6 +171,7 @@ namespace osc
     // an incorrect number of color channels)
     Texture2D LoadTexture2DFromImage(
         std::filesystem::path const&,
+        ColorSpace,
         ImageFlags = ImageFlags_None
     );
 
