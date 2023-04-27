@@ -48,7 +48,8 @@ osc::Image::Image(
 osc::Image::Image(Image const& other) :
     m_Dimensions{other.m_Dimensions},
     m_NumChannels{other.m_NumChannels},
-    m_Pixels{new uint8_t[m_Dimensions.x * m_Dimensions.y * m_NumChannels]}
+    m_Pixels{new uint8_t[m_Dimensions.x * m_Dimensions.y * m_NumChannels]},
+    m_ColorSpace{other.m_ColorSpace}
 {
     std::copy(
         other.m_Pixels.get(),
