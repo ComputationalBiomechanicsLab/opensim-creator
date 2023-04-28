@@ -2,7 +2,6 @@
 
 #include <gtest/gtest.h>
 
-#include <cmath>
 #include <type_traits>
 #include <utility>
 
@@ -125,14 +124,36 @@ TEST(Color, CanBeMutablyMultiplied)
     ASSERT_EQ(rv.a, a.a * b.a);
 }
 
+TEST(Color, ToLinearReturnsLinearizedVersionOfOneColorChannel)
+{
+    float const sRGBColor = 0.02f;
+    float const linearColor = osc::ToLinear(sRGBColor);
+
+    // we don't test what the actual equation is, just that low
+    // sRGB colors map to higher linear colors (i.e. they are
+    // "stretched out" from the bottom of the curve)
+    ASSERT_GT(sRGBColor, linearColor);
+}
+
+TEST(Color, ToSRGBReturnsSRGBVersionOfOneColorChannel)
+{
+    float const linearColor = 0.4f;
+    float const sRGBColor = osc::ToSRGB(linearColor);
+
+    // we don't test what the actual equation is, just that low-ish
+    // linear colors are less than the equivalent sRGB color (because
+    // sRGB will stretch lower colors out)
+    ASSERT_LT(linearColor, sRGBColor);
+}
+
 TEST(Color, ToLinearReturnsLinearizedVersionOfColor)
 {
     osc::Color const sRGBColor = {0.5f, 0.5f, 0.5f, 0.5f};
     osc::Color const linearColor = osc::ToLinear(sRGBColor);
 
-    ASSERT_EQ(linearColor.r, std::pow(sRGBColor.r, 2.2f));
-    ASSERT_EQ(linearColor.g, std::pow(sRGBColor.g, 2.2f));
-    ASSERT_EQ(linearColor.b, std::pow(sRGBColor.b, 2.2f));
+    ASSERT_EQ(linearColor.r, osc::ToLinear(sRGBColor.r));
+    ASSERT_EQ(linearColor.g, osc::ToLinear(sRGBColor.g));
+    ASSERT_EQ(linearColor.b, osc::ToLinear(sRGBColor.b));
     ASSERT_EQ(linearColor.a, sRGBColor.a);
 }
 
@@ -141,9 +162,9 @@ TEST(Color, ToSRGBReturnsColorWithGammaCurveApplied)
     osc::Color const linearColor = {0.25f, 0.25f, 0.25f, 0.6f};
     osc::Color const sRGBColor = osc::ToSRGB(linearColor);
 
-    ASSERT_EQ(sRGBColor.r, std::pow(linearColor.r, 1.0f/2.2f));
-    ASSERT_EQ(sRGBColor.g, std::pow(linearColor.g, 1.0f/2.2f));
-    ASSERT_EQ(sRGBColor.b, std::pow(linearColor.b, 1.0f/2.2f));
+    ASSERT_EQ(sRGBColor.r, osc::ToSRGB(linearColor.r));
+    ASSERT_EQ(sRGBColor.g, osc::ToSRGB(linearColor.g));
+    ASSERT_EQ(sRGBColor.b, osc::ToSRGB(linearColor.b));
     ASSERT_EQ(sRGBColor.a, linearColor.a);
 }
 

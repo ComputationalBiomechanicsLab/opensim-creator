@@ -122,6 +122,12 @@ namespace osc
         };
     }
 
+    // returns the linear version of one (presumed to be) sRGB color channel value
+    float ToLinear(float colorChannelValue) noexcept;
+
+    // returns the linear version of one (presumed to be) linear color channel value
+    float ToSRGB(float colorChannelValue) noexcept;
+
     // returns the linear version of a (presumed to be) sRGB color
     Color ToLinear(Color const&) noexcept;
 

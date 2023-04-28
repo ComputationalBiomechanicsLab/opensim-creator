@@ -10,9 +10,11 @@ namespace osc
 	// conversion
 	enum class ColorSpace {
 		// hint: typical image files (e.g. from photo editors, online, etc.) are defined in sRGB
-		sRGB,
+		sRGB = 0,
 
 		// hint: data image files (e.g. bump maps, normal maps) are usually defined in a linear color space
 		Linear,
+
+		TOTAL,
 	};
 }

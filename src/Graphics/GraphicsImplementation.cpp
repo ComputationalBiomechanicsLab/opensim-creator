@@ -744,9 +744,27 @@ namespace
         }
     }
 
-    GLenum ToOpenGLColorFormat(osc::TextureFormat format)
+    GLenum ToOpenGLInternalFormat(osc::TextureFormat format, osc::ColorSpace colorSpace)
     {
         static_assert(static_cast<size_t>(osc::TextureFormat::TOTAL) == 3);
+        static_assert(static_cast<size_t>(osc::ColorSpace::TOTAL) == 2);
+
+        switch (format)
+        {
+        case osc::TextureFormat::R8:
+            return GL_RED;
+        case osc::TextureFormat::RGB24:
+            return colorSpace == osc::ColorSpace::sRGB ? GL_SRGB8 : GL_RGB8;
+        case osc::TextureFormat::RGBA32:
+        default:
+            return colorSpace == osc::ColorSpace::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+        }
+    }
+
+    GLenum ToOpenGLProvidedFormat(osc::TextureFormat format, osc::ColorSpace colorSpace)
+    {
+        static_assert(static_cast<size_t>(osc::TextureFormat::TOTAL) == 3);
+        static_assert(static_cast<size_t>(osc::ColorSpace::TOTAL) == 2);
 
         switch (format)
         {
@@ -858,11 +876,11 @@ private:
             gl::TexImage2D(
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIdx,
                 0,
-                ToOpenGLColorFormat(m_Format),
+                ToOpenGLInternalFormat(m_Format, osc::ColorSpace::sRGB),  // cubemaps are always sRGB
                 m_Width,
                 m_Width,
                 0,
-                ToOpenGLColorFormat(m_Format),
+                ToOpenGLProvidedFormat(m_Format, osc::ColorSpace::sRGB),  // cubemaps are always sRGB
                 ToOpenGLPixelDataType(m_Format),
                 m_Data.data() + begin
             );
@@ -1122,11 +1140,11 @@ private:
         gl::TexImage2D(
             GL_TEXTURE_2D,
             0,
-            ToOpenGLColorFormat(m_Format),
+            ToOpenGLInternalFormat(m_Format, m_ColorSpace),
             m_Dimensions.x,
             m_Dimensions.y,
             0,
-            ToOpenGLColorFormat(m_Format),
+            ToOpenGLProvidedFormat(m_Format, m_ColorSpace),
             ToOpenGLPixelDataType(m_Format),
             m_PixelData.data()
         );
@@ -1310,7 +1328,7 @@ namespace
         "D24_UNorm_S8_UInt"
     );
 
-    GLenum ToOpenGLColorFormat(osc::RenderTextureFormat f)
+    GLenum ToInternalOpenGLColorFormat(osc::RenderTextureFormat f)
     {
         static_assert(static_cast<size_t>(osc::RenderTextureFormat::TOTAL) == 3);
 
@@ -1322,7 +1340,8 @@ namespace
             return GL_RGBA16F;
         case osc::RenderTextureFormat::ARGB32:
         default:
-            return GL_RGBA;
+            // TODO: add support for flipping to GL_RGBA8 if the caller stipulates non-SRGB rendering (e.g. for depth maps)
+            return GL_SRGB8_ALPHA8;
         }
     }
 
@@ -1600,7 +1619,7 @@ private:
         glRenderbufferStorageMultisample(
             GL_RENDERBUFFER,
             m_Descriptor.getAntialiasingLevel(),
-            ToOpenGLColorFormat(getColorFormat()),
+            ToInternalOpenGLColorFormat(getColorFormat()),
             dimensions.x,
             dimensions.y
         );
@@ -1629,12 +1648,12 @@ private:
         gl::TexImage2D(
             bufs.singleSampledColorBuffer.type,
             0,
-            ToOpenGLColorFormat(getColorFormat()),
+            ToInternalOpenGLColorFormat(getColorFormat()),
             dimensions.x,
             dimensions.y,
             0,
-            GL_RGBA,  // doesn't matter: we aren't uploading data (TODO: see static_assert above)
-            GL_UNSIGNED_BYTE,  // doesn't matter: we aren't uploading data (TODO: see static_assert above)
+            GL_RGBA,  // doesn't matter: we aren't uploading data (see static_assert above)
+            GL_UNSIGNED_BYTE,  // doesn't matter: we aren't uploading data (see static_assert above)
             nullptr
         );
         gl::TexParameteri(bufs.singleSampledColorBuffer.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
@@ -3901,6 +3920,10 @@ namespace
         // MSXAA is used to smooth out the model
         glEnable(GL_MULTISAMPLE);
 
+        // shader calculations are done in linear space, but writes to framebuffers
+        // should respect whether the framebuffer is using an sRGB internal format
+        glEnable(GL_FRAMEBUFFER_SRGB);
+
         // print OpenGL information if in debug mode
         osc::log::info(
             "OpenGL initialized: info: %s, %s, (%s), GLSL %s",
@@ -4739,9 +4762,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
         // colors are converted from sRGB to linear when passed to
         // the shader
 
-        // TODO: actually convert it (requires full linear color support: #600)
-        //glm::vec4 const linearColor = osc::ToLinear(std::get<osc::Color>(v));
-        glm::vec4 const linearColor = std::get<osc::Color>(v);  // TODO: replace with the above
+        glm::vec4 const linearColor = osc::ToLinear(std::get<osc::Color>(v));
         gl::UniformVec4 u{se.location};
         gl::Uniform(u, linearColor);
         break;
@@ -4752,9 +4773,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
         int32_t const numToAssign = std::min(se.size, static_cast<int32_t>(colors.size()));
         for (int32_t i = 0; i < numToAssign; ++i)
         {
-            // TODO: actually convert it (requires full linear color support: #600)
-            //glm::vec4 const linearColor = osc::ToLinear(std::get<osc::Color>(v));
-            glm::vec4 const linearColor = colors[i];  // TODO: replace with the above
+            glm::vec4 const linearColor = osc::ToLinear(colors[i]);
             gl::UniformVec4 u{se.location + i};
             gl::Uniform(u, linearColor);
         }

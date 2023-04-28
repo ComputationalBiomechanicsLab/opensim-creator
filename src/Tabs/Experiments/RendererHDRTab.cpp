@@ -37,12 +37,12 @@ static glm::vec3 constexpr c_LightPositions[] =
     { 0.8f, -1.7f, 6.0f},
 };
 
-static osc::Color constexpr c_LightColors[] =
+static osc::Color const c_LightColors[] =
 {
-    {200.0f, 200.0f, 200.0f, 1.0f},
-    {0.1f, 0.0f, 0.0f, 1.0f},
-    {0.0f, 0.0f, 0.2f, 1.0f},
-    {0.0f, 0.1f, 0.0f, 1.0f},
+    osc::ToSRGB({200.0f, 200.0f, 200.0f, 1.0f}),
+    osc::ToSRGB({0.1f, 0.0f, 0.0f, 1.0f}),
+    osc::ToSRGB({0.0f, 0.0f, 0.2f, 1.0f}),
+    osc::ToSRGB({0.0f, 0.1f, 0.0f, 1.0f}),
 };
 static_assert(std::size(c_LightPositions) == std::size(c_LightColors));
 

@@ -61,7 +61,7 @@ void osc::ImGuiApplyDarkTheme()
     colors[ImGuiCol_TextDisabled] = ImVec4(0.36f, 0.42f, 0.47f, 1.00f);
     colors[ImGuiCol_WindowBg] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
     colors[ImGuiCol_ChildBg] = ImVec4(0.15f, 0.18f, 0.22f, 1.00f);
-    colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
+    colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.08f, 0.08f, 1.00f);
     colors[ImGuiCol_Border] = ImVec4(0.08f, 0.10f, 0.12f, 1.00f);
     colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
     colors[ImGuiCol_FrameBg] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
@@ -104,7 +104,7 @@ void osc::ImGuiApplyDarkTheme()
     colors[ImGuiCol_NavHighlight] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
     colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
     colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
-    colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
+    colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.6f);
 }
 
 bool osc::UpdatePolarCameraFromImGuiMouseInputs(glm::vec2 viewportDims, osc::PolarPerspectiveCamera& camera)
@@ -830,4 +830,47 @@ bool osc::Combo(
     }
 
     return changed;
+}
+
+// create a lookup table that maps sRGB color bytes to linear-space color bytes
+static std::array<uint8_t, 256> CreateSRGBToLinearLUT()
+{
+    std::array<uint8_t, 256> rv;
+    for (size_t i = 0; i < 256; ++i)
+    {
+        rv[i] = static_cast<uint8_t>(255.0f*osc::ToLinear(static_cast<float>(i)/255.0f));
+    }
+    return rv;
+}
+
+static std::array<uint8_t, 256> const& GetSRGBToLinearLUT()
+{
+    static std::array<uint8_t, 256> s_LUT = CreateSRGBToLinearLUT();
+    return s_LUT;
+}
+
+void osc::ConvertDrawDataFromSRGBToLinear(ImDrawData& dd)
+{
+    std::array<uint8_t, 256> const& lut = GetSRGBToLinearLUT();
+
+    for (int i = 0; i < dd.CmdListsCount; ++i)
+    {
+        for (ImDrawVert& v : dd.CmdLists[i]->VtxBuffer)
+        {
+            uint8_t const rSRGB = static_cast<uint8_t>((v.col >> IM_COL32_R_SHIFT) & 0xFF);
+            uint8_t const gSRGB = static_cast<uint8_t>((v.col >> IM_COL32_G_SHIFT) & 0xFF);
+            uint8_t const bSRGB = static_cast<uint8_t>((v.col >> IM_COL32_B_SHIFT) & 0xFF);
+            uint8_t const aSRGB = static_cast<uint8_t>((v.col >> IM_COL32_A_SHIFT) & 0xFF);
+
+            uint8_t const rLinear = lut[rSRGB];
+            uint8_t const gLinear = lut[gSRGB];
+            uint8_t const bLinear = lut[bSRGB];
+
+            v.col =
+                static_cast<ImU32>(rLinear) << IM_COL32_R_SHIFT |
+                static_cast<ImU32>(gLinear) << IM_COL32_G_SHIFT |
+                static_cast<ImU32>(bLinear) << IM_COL32_B_SHIFT |
+                static_cast<ImU32>(aSRGB) << IM_COL32_A_SHIFT;
+        }
+    }
 }

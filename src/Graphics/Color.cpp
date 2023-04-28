@@ -8,14 +8,53 @@
 #include <cmath>
 #include <cstdint>
 
+// the sRGB <--> linear relationship is commonly simplified to:
+//
+// - linear = sRGB ^ 2.2
+// - sRGB = linear ^ (1.0/2.2)
+//
+// but the actual equation is a little more nuanced, and is explained here:
+//
+// - https://en.wikipedia.org/wiki/SRGB
+//
+// and this implementation is effectively copied from:
+//
+// - https://stackoverflow.com/questions/61138110/what-is-the-correct-gamma-correction-function
+//
+// (because I am a lazy bastard)
+
+float osc::ToLinear(float srgb) noexcept
+{
+    if (srgb <= 0.04045f)
+    {
+        return srgb / 12.92f;
+    }
+    else
+    {
+        return std::pow((srgb + 0.055f) / 1.055f, 2.4f);
+    }
+}
+
+float osc::ToSRGB(float linear) noexcept
+{
+    if (linear <= 0.0031308f)
+    {
+        return linear * 12.92f;
+    }
+    else
+    {
+        return std::pow(linear, 1.0f/2.4f)*1.055f - 0.055f;
+    }
+}
+
 osc::Color osc::ToLinear(Color const& c) noexcept
 {
     return
     {
-        std::pow(c.r, 2.2f),
-        std::pow(c.g, 2.2f),
-        std::pow(c.b, 2.2f),
-        c.a
+        ToLinear(c.r),
+        ToLinear(c.g),
+        ToLinear(c.b),
+        c.a,
     };
 }
 
@@ -23,10 +62,10 @@ osc::Color osc::ToSRGB(Color const& c) noexcept
 {
     return
     {
-        std::pow(c.r, 1.0f/2.2f),
-        std::pow(c.g, 1.0f/2.2f),
-        std::pow(c.b, 1.0f/2.2f),
-        c.a
+        ToSRGB(c.r),
+        ToSRGB(c.g),
+        ToSRGB(c.b),
+        c.a,
     };
 }
 

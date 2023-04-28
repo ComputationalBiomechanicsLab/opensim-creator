@@ -1381,6 +1381,25 @@ void osc::ImGuiRender()
 
     {
         OSC_PERF("ImGuiRender/ImGui_ImplOpenGL3_RenderDrawData");
+
+        // HACK: convert all ImGui-provided colors from sRGB to linear
+        //
+        // this is necessary because the ImGui OpenGL backend's shaders
+        // assume all color vertices and colors from textures are in
+        // sRGB, but OSC can provide ImGui with linear OR sRGB textures
+        // because OSC assumes the OpenGL backend is using automatic
+        // color conversion support (in ImGui, it isn't)
+        //
+        // so what we do here is linearize all colors from ImGui and
+        // always provide textures in the OSC style. The shaders in ImGui
+        // then write linear color values to the screen, but because we
+        // are *also* enabling GL_FRAMEBUFFER_SRGB, the OpenGL backend
+        // will correctly convert those linear colors to sRGB if necessary
+        // automatically
+        //
+        // (this shitshow is because ImGui's OpenGL backend behaves differently
+        //  from OSCs - ultimately, we need an ImGui_ImplOSC backend)
+        ConvertDrawDataFromSRGBToLinear(*ImGui::GetDrawData());
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
