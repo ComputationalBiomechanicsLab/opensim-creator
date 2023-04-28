@@ -459,6 +459,7 @@ private:
         m_Camera.setViewMatrixOverride(matrices.viewMatrix);
         m_Camera.setProjectionMatrixOverride(matrices.projMatrix);
         m_ShadowMapTexture.setDimensions({1024, 1024});
+        m_ShadowMapTexture.setReadWrite(RenderTextureReadWrite::Linear);  // it's writing distances
         m_Camera.renderTo(m_ShadowMapTexture);
 
         return Shadows{m_ShadowMapTexture, matrices.projMatrix * matrices.viewMatrix};

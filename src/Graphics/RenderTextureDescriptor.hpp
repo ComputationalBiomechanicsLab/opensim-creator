@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/Graphics/RenderTextureFormat.hpp"
+#include "src/Graphics/RenderTextureReadWrite.hpp"
 #include "src/Graphics/DepthStencilFormat.hpp"
 
 #include <glm/vec2.hpp>
@@ -30,6 +31,9 @@ namespace osc
         DepthStencilFormat getDepthStencilFormat() const;
         void setDepthStencilFormat(DepthStencilFormat);
 
+        RenderTextureReadWrite getReadWrite() const;
+        void setReadWrite(RenderTextureReadWrite);
+
     private:
         friend class GraphicsBackend;
         friend bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);
@@ -40,6 +44,7 @@ namespace osc
         int32_t m_AnialiasingLevel;
         RenderTextureFormat m_ColorFormat;
         DepthStencilFormat m_DepthStencilFormat;
+        RenderTextureReadWrite m_ReadWrite;
     };
 
     bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&);

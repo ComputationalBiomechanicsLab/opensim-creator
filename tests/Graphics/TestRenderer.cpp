@@ -16,6 +16,7 @@
 #include "src/Graphics/RenderTexture.hpp"
 #include "src/Graphics/RenderTextureDescriptor.hpp"
 #include "src/Graphics/RenderTextureFormat.hpp"
+#include "src/Graphics/RenderTextureReadWrite.hpp"
 #include "src/Graphics/Texture2D.hpp"
 #include "src/Graphics/TextureFormat.hpp"
 #include "src/Graphics/TextureWrapMode.hpp"
@@ -2406,6 +2407,34 @@ TEST_F(Renderer, RenderTextureDescriptorGetDepthStencilFormatReturnsDefaultValue
     ASSERT_EQ(d1.getDepthStencilFormat(), osc::DepthStencilFormat::D24_UNorm_S8_UInt);
 }
 
+TEST_F(Renderer, RenderTextureDescriptorStandardCtorGetReadWriteReturnsDefaultValue)
+{
+    osc::RenderTextureDescriptor d1{{1, 1}};
+    ASSERT_EQ(d1.getReadWrite(), osc::RenderTextureReadWrite::Default);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorSetReadWriteMakesGetReadWriteReturnNewValue)
+{
+    osc::RenderTextureDescriptor d1{{1, 1}};
+    ASSERT_EQ(d1.getReadWrite(), osc::RenderTextureReadWrite::Default);
+
+    d1.setReadWrite(osc::RenderTextureReadWrite::Linear);
+
+    ASSERT_EQ(d1.getReadWrite(), osc::RenderTextureReadWrite::Linear);
+}
+
+TEST_F(Renderer, RenderTextureSetReadWriteChangesEquality)
+{
+    osc::RenderTextureDescriptor d1{{1, 1}};
+    osc::RenderTextureDescriptor d2{d1};
+
+    ASSERT_EQ(d1, d2);
+
+    d2.setReadWrite(osc::RenderTextureReadWrite::Linear);
+
+    ASSERT_NE(d1, d2);
+}
+
 TEST_F(Renderer, RenderTextureDescriptorComparesEqualOnCopyConstruct)
 {
     osc::RenderTextureDescriptor d1{{1, 1}};
@@ -2494,22 +2523,32 @@ TEST_F(Renderer, RenderTextureCanBeConstructedFromADescriptor)
     osc::RenderTexture d{d1};
 }
 
+TEST_F(Renderer, RenderTextureDefaultCtorAssignsDefaultReadWrite)
+{
+    osc::RenderTexture t;
+
+    ASSERT_EQ(t.getReadWrite(), osc::RenderTextureReadWrite::Default);
+}
+
 TEST_F(Renderer, RenderTextureFromDescriptorHasExpectedValues)
 {
     int width = 5;
     int height = 8;
     int32_t aaLevel = 4;
     osc::RenderTextureFormat format = osc::RenderTextureFormat::RED;
+    osc::RenderTextureReadWrite rw = osc::RenderTextureReadWrite::Linear;
 
     osc::RenderTextureDescriptor desc{{width, height}};
     desc.setAntialiasingLevel(aaLevel);
     desc.setColorFormat(format);
+    desc.setReadWrite(rw);
 
     osc::RenderTexture tex{desc};
 
     ASSERT_EQ(tex.getDimensions(), glm::ivec2(width, height));
     ASSERT_EQ(tex.getAntialiasingLevel(), aaLevel);
     ASSERT_EQ(tex.getColorFormat(), format);
+    ASSERT_EQ(tex.getReadWrite(), rw);
 }
 
 TEST_F(Renderer, RenderTextureSetColorFormatCausesGetColorFormatToReturnValue)

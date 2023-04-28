@@ -2,6 +2,7 @@
 
 #include "src/Graphics/RenderTextureDescriptor.hpp"
 #include "src/Graphics/RenderTextureFormat.hpp"
+#include "src/Graphics/RenderTextureReadWrite.hpp"
 #include "src/Utils/CopyOnUpdPtr.hpp"
 
 #include <glm/vec2.hpp>
@@ -40,6 +41,9 @@ namespace osc
 
         DepthStencilFormat getDepthStencilFormat() const;
         void setDepthStencilFormat(DepthStencilFormat);
+
+        RenderTextureReadWrite getReadWrite() const;
+        void setReadWrite(RenderTextureReadWrite);
 
         void reformat(RenderTextureDescriptor const& d);
 

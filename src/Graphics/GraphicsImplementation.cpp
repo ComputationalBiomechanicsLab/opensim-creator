@@ -1328,9 +1328,10 @@ namespace
         "D24_UNorm_S8_UInt"
     );
 
-    GLenum ToInternalOpenGLColorFormat(osc::RenderTextureFormat f)
+    GLenum ToInternalOpenGLColorFormat(osc::RenderTextureFormat f, osc::RenderTextureReadWrite rw)
     {
         static_assert(static_cast<size_t>(osc::RenderTextureFormat::TOTAL) == 3);
+        static_assert(static_cast<size_t>(osc::RenderTextureReadWrite::TOTAL) == 2);
 
         switch (f)
         {
@@ -1340,8 +1341,7 @@ namespace
             return GL_RGBA16F;
         case osc::RenderTextureFormat::ARGB32:
         default:
-            // TODO: add support for flipping to GL_RGBA8 if the caller stipulates non-SRGB rendering (e.g. for depth maps)
-            return GL_SRGB8_ALPHA8;
+            return rw == osc::RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
         }
     }
 
@@ -1427,7 +1427,8 @@ osc::RenderTextureDescriptor::RenderTextureDescriptor(glm::ivec2 dimensions) :
     m_Dimensions{Max(dimensions, glm::ivec2{0, 0})},
     m_AnialiasingLevel{1},
     m_ColorFormat{RenderTextureFormat::ARGB32},
-    m_DepthStencilFormat{DepthStencilFormat::D24_UNorm_S8_UInt}
+    m_DepthStencilFormat{DepthStencilFormat::D24_UNorm_S8_UInt},
+    m_ReadWrite{RenderTextureReadWrite::Default}
 {
 }
 
@@ -1473,13 +1474,24 @@ void osc::RenderTextureDescriptor::setDepthStencilFormat(DepthStencilFormat f)
     m_DepthStencilFormat = f;
 }
 
+osc::RenderTextureReadWrite osc::RenderTextureDescriptor::getReadWrite() const
+{
+    return m_ReadWrite;
+}
+
+void osc::RenderTextureDescriptor::setReadWrite(RenderTextureReadWrite rw)
+{
+    m_ReadWrite = rw;
+}
+
 bool osc::operator==(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
 {
     return
         a.m_Dimensions == b.m_Dimensions &&
         a.m_AnialiasingLevel == b.m_AnialiasingLevel &&
         a.m_ColorFormat == b.m_ColorFormat &&
-        a.m_DepthStencilFormat == b.m_DepthStencilFormat;
+        a.m_DepthStencilFormat == b.m_DepthStencilFormat &&
+        a.m_ReadWrite == b.m_ReadWrite;
 }
 
 bool osc::operator!=(RenderTextureDescriptor const& a, RenderTextureDescriptor const& b)
@@ -1565,6 +1577,20 @@ public:
         }
     }
 
+    RenderTextureReadWrite getReadWrite() const
+    {
+        return m_Descriptor.getReadWrite();
+    }
+
+    void setReadWrite(RenderTextureReadWrite rw)
+    {
+        if (rw != m_Descriptor.getReadWrite())
+        {
+            m_Descriptor.setReadWrite(rw);
+            m_MaybeGPUBuffers->reset();
+        }
+    }
+
     void reformat(RenderTextureDescriptor const& d)
     {
         if (d != m_Descriptor)
@@ -1619,7 +1645,7 @@ private:
         glRenderbufferStorageMultisample(
             GL_RENDERBUFFER,
             m_Descriptor.getAntialiasingLevel(),
-            ToInternalOpenGLColorFormat(getColorFormat()),
+            ToInternalOpenGLColorFormat(getColorFormat(), getReadWrite()),
             dimensions.x,
             dimensions.y
         );
@@ -1648,7 +1674,7 @@ private:
         gl::TexImage2D(
             bufs.singleSampledColorBuffer.type,
             0,
-            ToInternalOpenGLColorFormat(getColorFormat()),
+            ToInternalOpenGLColorFormat(getColorFormat(), getReadWrite()),
             dimensions.x,
             dimensions.y,
             0,
@@ -1757,6 +1783,16 @@ osc::DepthStencilFormat osc::RenderTexture::getDepthStencilFormat() const
 void osc::RenderTexture::setDepthStencilFormat(DepthStencilFormat format)
 {
     m_Impl.upd()->setDepthStencilFormat(format);
+}
+
+osc::RenderTextureReadWrite osc::RenderTexture::getReadWrite() const
+{
+    return m_Impl->getReadWrite();
+}
+
+void osc::RenderTexture::setReadWrite(RenderTextureReadWrite rw)
+{
+    m_Impl.upd()->setReadWrite(rw);
 }
 
 void osc::RenderTexture::reformat(RenderTextureDescriptor const& d)
@@ -4225,7 +4261,11 @@ public:
 
     void clearScreen(Color const& color)
     {
-        gl::ClearColor(color.r, color.g, color.b, color.a);
+        // clear color is in sRGB, but the framebuffer is sRGB-corrected (GL_FRAMEBUFFER_SRGB)
+        // and assumes that the given colors are in linear space
+        Color const linearColor = ToLinear(color);
+
+        gl::ClearColor(linearColor.r, linearColor.g, linearColor.b, linearColor.a);
         gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
@@ -5154,11 +5194,14 @@ void osc::GraphicsBackend::RenderScene(Camera::Impl& camera, RenderTexture* mayb
             GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT :
             GL_DEPTH_BUFFER_BIT;
 
+        // clear color is in sRGB, but the framebuffer is sRGB-corrected and assumes that
+        // the given colors are in linear space
+        Color const linearColor = ToLinear(camera.m_BackgroundColor);
         gl::ClearColor(
-            camera.m_BackgroundColor.r,
-            camera.m_BackgroundColor.g,
-            camera.m_BackgroundColor.b,
-            camera.m_BackgroundColor.a
+            linearColor.r,
+            linearColor.g,
+            linearColor.b,
+            linearColor.a
         );
 
         if (maybeRenderTexture)
