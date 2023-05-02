@@ -29,6 +29,9 @@ void main()
     vec3 frag2lightDir = normalize(-uLightDir);
     vec3 halfwayDir = 0.5 * (frag2lightDir + frag2viewDir);
 
+    // care: these lighting calculations use "double-sided normals", because
+    // mesh data from users can have screwed normals/winding, but OSC still
+    // should try its best to render it "correct enough" (#168, #318)
     float diffuseAmt = uDiffuseStrength * abs(dot(normalDir, frag2lightDir));
     float specularAmt = uSpecularStrength * pow(abs(dot(normalDir, halfwayDir)), uShininess);
 

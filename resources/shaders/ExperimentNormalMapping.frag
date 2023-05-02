@@ -6,6 +6,10 @@
 uniform sampler2D uDiffuseMap;
 uniform sampler2D uNormalMap;
 uniform bool uEnableNormalMapping = true;
+uniform float uAmbientStrength = 0.0;
+uniform float uDiffuseStrength = 0.5;
+uniform float uSpecularStrength = 1.0;
+uniform float uSpecularShininess = 32.0;
 
 in vec3 FragWorldPos;
 in vec2 TexCoord;
@@ -24,11 +28,10 @@ float CalcBrightnessWithoutNormalMapping()
     vec3 reflectTangentDir = reflect(-lightTangentDir, NormalTangentDir);
     vec3 halfwayTangentDir = normalize(lightTangentDir + viewTangentDir);
 
-    float ambientStrength = 0.1;
-    float diffuseStrength = max(dot(lightTangentDir, NormalTangentDir), 0.0);
-    float specularStrength = 0.2 * pow(max(dot(NormalTangentDir, halfwayTangentDir), 0.0), 32.0);
+    float diffuseStrength = uDiffuseStrength * max(dot(lightTangentDir, NormalTangentDir), 0.0);
+    float specularStrength = uSpecularStrength * pow(max(dot(NormalTangentDir, halfwayTangentDir), 0.0), uSpecularShininess);
 
-    return ambientStrength + diffuseStrength + specularStrength;
+    return uAmbientStrength + diffuseStrength + specularStrength;
 }
 
 float CalcBrightnessWithNormalMapping()
@@ -43,11 +46,10 @@ float CalcBrightnessWithNormalMapping()
     vec3 reflectTangentDir = reflect(-lightTangentDir, normalTangentDir);
     vec3 halfwayTangentDir = normalize(lightTangentDir + viewTangentDir);
 
-    float ambientStrength = 0.1;
-    float diffuseStrength = max(dot(lightTangentDir, normalTangentDir), 0.0);
-    float specularStrength = 0.2 * pow(max(dot(normalTangentDir, halfwayTangentDir), 0.0), 32.0);
+    float diffuseStrength = uDiffuseStrength * max(dot(lightTangentDir, normalTangentDir), 0.0);
+    float specularStrength = uSpecularStrength * pow(max(dot(normalTangentDir, halfwayTangentDir), 0.0), uSpecularShininess);
 
-    return ambientStrength + diffuseStrength + specularStrength;
+    return uAmbientStrength + diffuseStrength + specularStrength;
 }
 
 void main()

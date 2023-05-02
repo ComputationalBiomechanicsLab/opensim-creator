@@ -52,28 +52,28 @@ static glm::vec3 constexpr c_PointLightPositions[] =
 // ambient color of the point lights
 static float constexpr c_PointLightAmbients[] =
 {
-    0.05f,
-    0.05f,
-    0.05f,
-    0.05f,
+    0.001f,
+    0.001f,
+    0.001f,
+    0.001f,
 };
 
 // diffuse color of the point lights
 static float constexpr c_PointLightDiffuses[] =
 {
-    0.8f,
-    0.8f,
-    0.8f,
-    0.8f,
+    0.2f,
+    0.2f,
+    0.2f,
+    0.2f,
 };
 
 // specular color of the point lights
 static float constexpr c_PointLightSpeculars[] =
 {
-    1.0f,
-    1.0f,
-    1.0f,
-    1.0f,
+    0.5f,
+    0.5f,
+    0.5f,
+    0.5f,
 };
 
 static float constexpr c_PointLightConstants[] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -88,13 +88,14 @@ public:
         m_MultipleLightsMaterial.setTexture("uMaterialDiffuse", m_DiffuseMap);
         m_MultipleLightsMaterial.setTexture("uMaterialSpecular", m_SpecularMap);
         m_MultipleLightsMaterial.setVec3("uDirLightDirection", {-0.2f, -1.0f, -0.3f});
-        m_MultipleLightsMaterial.setFloat("uDirLightAmbient", 0.05f);
-        m_MultipleLightsMaterial.setFloat("uDirLightDiffuse", 0.4f);
-        m_MultipleLightsMaterial.setFloat("uDirLightSpecular", 0.5f);
+        m_MultipleLightsMaterial.setFloat("uDirLightAmbient", 0.01f);
+        m_MultipleLightsMaterial.setFloat("uDirLightDiffuse", 0.2f);
+        m_MultipleLightsMaterial.setFloat("uDirLightSpecular", 0.4f);
 
         m_MultipleLightsMaterial.setFloat("uSpotLightAmbient", 0.0f);
         m_MultipleLightsMaterial.setFloat("uSpotLightDiffuse", 1.0f);
-        m_MultipleLightsMaterial.setFloat("uSpotLightSpecular", 1.0f);
+        m_MultipleLightsMaterial.setFloat("uSpotLightSpecular", 0.75f);
+
         m_MultipleLightsMaterial.setFloat("uSpotLightConstant", 1.0f);
         m_MultipleLightsMaterial.setFloat("uSpotLightLinear", 0.09f);
         m_MultipleLightsMaterial.setFloat("uSpotLightQuadratic", 0.032f);
@@ -253,7 +254,7 @@ private:
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
     bool m_IsMouseCaptured = false;
 
-    float m_MaterialShininess = 16.0f;
+    float m_MaterialShininess = 64.0f;
 
     LogViewerPanel m_LogViewer{"log"};
     PerfPanel m_PerfPanel{"perf"};

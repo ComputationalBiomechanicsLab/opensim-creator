@@ -4477,10 +4477,7 @@ namespace
             p.viewPos = m_3DSceneCamera.getPos();
             p.lightDirection = osc::RecommendedLightDirection(m_3DSceneCamera);
             p.lightColor = osc::Color::white();
-            p.ambientStrength = 0.35f;
-            p.diffuseStrength = 0.65f;
-            p.specularStrength = 0.4f;
-            p.shininess = 32;
+            p.ambientStrength *= 1.5f;
             p.backgroundColor = GetColorSceneBackground();
 
             std::vector<osc::SceneDecoration> decs;

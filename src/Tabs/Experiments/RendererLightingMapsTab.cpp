@@ -153,8 +153,8 @@ private:
     bool m_IsMouseCaptured = false;
 
     Transform m_LightTransform;
-    float m_LightAmbient = 0.2f;
-    float m_LightDiffuse = 0.5f;
+    float m_LightAmbient = 0.02f;
+    float m_LightDiffuse = 0.4f;
     float m_LightSpecular = 1.0f;
     float m_MaterialShininess = 64.0f;
 };

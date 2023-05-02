@@ -173,7 +173,6 @@ public:
 
         // render scene
         m_Material.setVec3("uViewPos", m_Camera.getPosition());
-        m_Material.setBool("uGamma", m_IsGammaCorrected);
         Graphics::DrawMesh(m_PlaneMesh, Transform{}, m_Material, m_Camera);
         m_Camera.renderToScreen();
     }
@@ -181,8 +180,7 @@ public:
     void draw2DUI()
     {
         ImGui::Begin("controls");
-        ImGui::Text("TODO: requires sRGB/linear colorspace support in backend (osc::Color, etc.)");
-        ImGui::Checkbox("gamma corrected", &m_IsGammaCorrected);
+        ImGui::Text("no need to gamma correct - OSC is a gamma-corrected renderer");
         ImGui::End();
     }
 
@@ -207,8 +205,6 @@ private:
     Camera m_Camera;
     bool m_IsMouseCaptured = true;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
-
-    bool m_IsGammaCorrected = false;
 };
 
 

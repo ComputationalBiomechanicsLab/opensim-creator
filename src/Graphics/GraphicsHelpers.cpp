@@ -520,12 +520,14 @@ osc::SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
     glm::vec2 renderDims)
 {
     osc::SceneRendererParams rv;
-    rv.drawFloor = false;
-    rv.backgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
     rv.dimensions = renderDims;
+    rv.samples = samples;
+    rv.drawMeshNormals = false;
+    rv.drawFloor = false;
     rv.viewMatrix = camera.getViewMtx();
     rv.projectionMatrix = camera.getProjMtx(osc::AspectRatio(renderDims));
-    rv.samples = samples;
+    rv.viewPos = camera.getPos();
     rv.lightDirection = osc::RecommendedLightDirection(camera);
+    rv.backgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
     return rv;
 }

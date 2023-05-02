@@ -26,6 +26,9 @@ namespace
             { 1.0f, -1.0f, 0.0f},  // bottom-right
             { 0.0f,  1.0f, 0.0f},  // top-middle
         };
+
+        // care: we're using colors that are equivalent in sRGB and linear
+        //       color spaces here
         osc::Rgba32 const colors[] =
         {
             {0xff, 0x00, 0x00, 0xff},

@@ -646,7 +646,12 @@ glm::vec3 osc::RecommendedLightDirection(osc::PolarPerspectiveCamera const& c)
     //
     // and the offset angle should try to closely match OpenSim GUI, which lights
     // scenes right-to-left (almost +1 in Z, but slightly along -X also) - #590
-    float const theta = c.theta + fpi4;
+    //
+    // but don't offset this too much, because we are using double-sided normals
+    // (#318, #168) and, if the camera is too angled relative to the PoV, it's
+    // possible to see angled parts of the scene be illuminated from the back (which
+    // should be impossible)
+    float const theta = c.theta + fpi4/2.0f;
 
     // #549: phi shouldn't track with the camera, because changing the "height"/"slope"
     // of the camera with shadow rendering (#10) looks bizzare

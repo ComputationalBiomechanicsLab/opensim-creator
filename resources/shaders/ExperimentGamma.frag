@@ -4,7 +4,6 @@ uniform sampler2D uFloorTexture;
 uniform vec3 uLightPositions[4];
 uniform vec4 uLightColors[4];
 uniform vec3 uViewPos;
-uniform bool uGamma;
 
 in vec3 FragPos;
 in vec3 Normal;
@@ -32,7 +31,7 @@ vec3 BlinnPhong(
     // simple attenuation
     float max_distance = 1.5;
     float distance = length(lightPos - fragPos);
-    float attenuation = 1.0 / (uGamma ? distance * distance : distance);
+    float attenuation = 1.0 / (distance*distance);
 
     diffuse *= attenuation;
     specular *= attenuation;
@@ -56,12 +55,6 @@ void main()
         );
     }
     color *= brightness;
-
-    // if necessary, gamma-correct the output color
-    if (uGamma)
-    {
-        color = pow(color, vec3(1.0/2.2));
-    }
 
     FragColor = vec4(color, 1.0);
 }

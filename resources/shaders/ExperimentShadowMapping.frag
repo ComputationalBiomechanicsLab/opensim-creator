@@ -59,13 +59,13 @@ void main()
 {
     vec3 frag2LightWorldDir = normalize(uLightWorldPos - FragWorldPos);
 
-    float ambientAmt = 0.3;
-    float diffuseAmt = max(dot(frag2LightWorldDir, NormalWorldDir), 0.0);
+    float ambientAmt = 0.01;
+    float diffuseAmt = 0.25*max(dot(frag2LightWorldDir, NormalWorldDir), 0.0);
     float specularAmt = 0.0;
     {
         vec3 frag2ViewWorldDir = normalize(uLightWorldPos - FragWorldPos);
-        vec3 halfwayDir = normalize(frag2LightWorldDir + frag2ViewWorldDir);
-        specularAmt = pow(max(dot(NormalWorldDir, halfwayDir), 0.0), 64.0);
+        vec3 halfwayDir = 0.5*(frag2LightWorldDir + frag2ViewWorldDir);
+        specularAmt = pow(max(dot(NormalWorldDir, halfwayDir), 0.0), 16.0);
     }
     float shadowAmt = CalculateShadowAmount();
 

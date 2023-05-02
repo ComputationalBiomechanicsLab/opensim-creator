@@ -89,7 +89,7 @@ vec3 CalcPointLight(
 
     // attenuation
     float distance = length(pointPos - fragPos);
-    float attenuation = 1.0 / (pointConstant + pointLinear * distance + pointQuadratic * (distance * distance));    
+    float attenuation = 1.0 / (pointConstant + pointLinear*distance + pointQuadratic*(distance*distance));
 
     // combine results
     vec3 ambientAmt = pointAmbient * vec3(texture(uMaterialDiffuse, TexCoords));
@@ -130,7 +130,7 @@ vec3 CalcSpotLight(
 
     // attenuation
     float distance = length(spotPosition - fragPos);
-    float attenuation = 1.0 / (spotConstant + spotLinear * distance + spotQuadratic * (distance * distance));
+    float attenuation = 1.0 / (spotConstant + spotLinear*distance + spotQuadratic * (distance*distance));
 
     // spotlight intensity
     float theta = dot(lightDir, normalize(-spotDirection));

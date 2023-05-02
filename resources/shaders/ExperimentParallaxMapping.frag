@@ -148,9 +148,9 @@ vec3 CalcFragColorWithMapping()
     vec3 tangentLight2FragReflectionDir = reflect(-tangentFrag2LightDir, tangentNormalDir);
     vec3 tangentHalfwayDir = 0.5 * (tangentFrag2LightDir + tangentFrag2ViewDir);
 
-    float ambientStrength = 0.1;
-    float diffuseStrength = max(dot(tangentFrag2LightDir, tangentNormalDir), 0.0);
-    float specularStrength = 0.2 * pow(max(dot(tangentNormalDir, tangentHalfwayDir), 0.0), 32.0);
+    float ambientStrength = 0.02;
+    float diffuseStrength = 0.7 * max(dot(tangentFrag2LightDir, tangentNormalDir), 0.0);
+    float specularStrength = 0.5 * pow(max(dot(tangentNormalDir, tangentHalfwayDir), 0.0), 32.0);
     float strength = ambientStrength + diffuseStrength + specularStrength;
 
     return strength * texture(uDiffuseMap, displacedTexCoord).rgb;

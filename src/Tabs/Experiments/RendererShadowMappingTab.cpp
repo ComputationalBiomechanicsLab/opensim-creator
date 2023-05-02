@@ -83,6 +83,10 @@ public:
     {
         m_Camera.setNearClippingPlane(0.1f);
         m_Camera.setFarClippingPlane(100.0f);
+
+        RenderTextureDescriptor shadowmapDescriptor{glm::ivec2{1024, 1024}};
+        shadowmapDescriptor.setReadWrite(osc::RenderTextureReadWrite::Linear);
+        m_DepthTexture.reformat(shadowmapDescriptor);
     }
 
     UID getID() const
@@ -239,7 +243,7 @@ private:
             App::slurp("shaders/ExperimentShadowMappingDepth.frag"),
         },
     };
-    RenderTexture m_DepthTexture{RenderTextureDescriptor{glm::ivec2{1024, 1024}}};
+    RenderTexture m_DepthTexture;
     glm::mat4 m_LatestLightSpaceMatrix{1.0f};
     glm::vec3 m_LightPos = {-2.0f, 4.0f, -1.0f};
 };
