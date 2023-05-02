@@ -334,9 +334,18 @@ bool osc::UpdatePolarCameraFromImGuiInputs(
     Rect const& viewportRect,
     std::optional<osc::AABB> maybeSceneAABB)
 {
-    bool const rv1 = UpdatePolarCameraFromImGuiMouseInputs(osc::Dimensions(viewportRect), camera);
-    bool const rv2 = UpdatePolarCameraFromImGuiKeyboardInputs(camera, viewportRect, maybeSceneAABB);
-    return rv1 || rv2;
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    // we don't check `io.WantCaptureMouse` because clicking/dragging on an ImGui::Image
+    // is classed as a mouse interaction
+    bool const mouseHandled =
+        UpdatePolarCameraFromImGuiMouseInputs(osc::Dimensions(viewportRect), camera);
+    bool const keyboardHandled = !io.WantCaptureKeyboard ?
+        UpdatePolarCameraFromImGuiKeyboardInputs(camera, viewportRect, maybeSceneAABB) :
+        false;
+
+    return mouseHandled || keyboardHandled;
 }
 
 void osc::UpdateEulerCameraFromImGuiUserInput(Camera& camera, glm::vec3& eulers)

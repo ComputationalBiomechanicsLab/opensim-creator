@@ -4,6 +4,9 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Fixed keyboard keyboard camera controls (e.g. arrow keys) should no longer control the camera if the
+  user is interacting with some other UI element (e.g. a text input box, thanks @itbellix, #679)
+
 
 ## [0.4.1] - 2023/04/13
 
