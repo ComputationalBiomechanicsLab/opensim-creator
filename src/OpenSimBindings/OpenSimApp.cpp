@@ -63,17 +63,6 @@ namespace
         }
     };
 
-    template<typename TabType>
-    void RegisterTab(osc::TabRegistry& registry)
-    {
-        osc::TabRegistryEntry entry
-        {
-            TabType::id(),
-            [](std::weak_ptr<osc::TabHost> h) { return std::make_unique<TabType>(h); },
-        };
-        registry.registerTab(entry);
-    }
-
     bool InitializeOpenSim(osc::Config const& config)
     {
         std::filesystem::path geometryDir = config.getResourceDir() / "geometry";
@@ -164,37 +153,51 @@ namespace
         OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(geometryDir.string());
         osc::log::info("added geometry search path entry: %s", geometryDir.string().c_str());
 
-        // register any user-accessible tabs
-        std::shared_ptr<osc::TabRegistry> const registry = osc::App::singleton<osc::TabRegistry>();
-        RegisterTab<osc::CustomWidgetsTab>(*registry);
-        RegisterTab<osc::HittestTab>(*registry);
-        RegisterTab<osc::RendererBasicLightingTab>(*registry);
-        RegisterTab<osc::RendererBlendingTab>(*registry);
-        RegisterTab<osc::RendererCoordinateSystemsTab>(*registry);
-        RegisterTab<osc::RendererCubemapsTab>(*registry);
-        RegisterTab<osc::RendererFramebuffersTab>(*registry);
-        RegisterTab<osc::RendererGammaTab>(*registry);
-        RegisterTab<osc::RendererHDRTab>(*registry);
-        RegisterTab<osc::RendererHelloTriangleTab>(*registry);
-        RegisterTab<osc::RendererLightingMapsTab>(*registry);
-        RegisterTab<osc::RendererMultipleLightsTab>(*registry);
-        RegisterTab<osc::RendererNormalMappingTab>(*registry);
-        RegisterTab<osc::RendererParallaxMappingTab>(*registry);
-        RegisterTab<osc::RendererTexturingTab>(*registry);
-        RegisterTab<osc::RendererSDFTab>(*registry);
-        RegisterTab<osc::RendererShadowMappingTab>(*registry);
-        RegisterTab<osc::ImGuiDemoTab>(*registry);
-        RegisterTab<osc::ImPlotDemoTab>(*registry);
-        RegisterTab<osc::ImGuizmoDemoTab>(*registry);
-        RegisterTab<osc::MeshGenTestTab>(*registry);
-        RegisterTab<osc::MeshHittestTab>(*registry);
-        RegisterTab<osc::PreviewExperimentalDataTab>(*registry);
-        RegisterTab<osc::RendererGeometryShaderTab>(*registry);
-        RegisterTab<osc::TPS2DTab>(*registry);
-        RegisterTab<osc::TPS3DTab>(*registry);
-        RegisterTab<osc::ModelWarpingTab>(*registry);
-
         return true;
+    }
+
+
+    template<typename TabType>
+    void RegisterTab(osc::TabRegistry& registry)
+    {
+        osc::TabRegistryEntry entry
+        {
+            TabType::id(),
+            [](std::weak_ptr<osc::TabHost> h) { return std::make_unique<TabType>(h); },
+        };
+        registry.registerTab(entry);
+    }
+
+    // registers user-accessible tabs
+    void InitializeTabRegistry(osc::TabRegistry& registry)
+    {
+        RegisterTab<osc::CustomWidgetsTab>(registry);
+        RegisterTab<osc::HittestTab>(registry);
+        RegisterTab<osc::RendererBasicLightingTab>(registry);
+        RegisterTab<osc::RendererBlendingTab>(registry);
+        RegisterTab<osc::RendererCoordinateSystemsTab>(registry);
+        RegisterTab<osc::RendererCubemapsTab>(registry);
+        RegisterTab<osc::RendererFramebuffersTab>(registry);
+        RegisterTab<osc::RendererGammaTab>(registry);
+        RegisterTab<osc::RendererHDRTab>(registry);
+        RegisterTab<osc::RendererHelloTriangleTab>(registry);
+        RegisterTab<osc::RendererLightingMapsTab>(registry);
+        RegisterTab<osc::RendererMultipleLightsTab>(registry);
+        RegisterTab<osc::RendererNormalMappingTab>(registry);
+        RegisterTab<osc::RendererParallaxMappingTab>(registry);
+        RegisterTab<osc::RendererTexturingTab>(registry);
+        RegisterTab<osc::RendererSDFTab>(registry);
+        RegisterTab<osc::RendererShadowMappingTab>(registry);
+        RegisterTab<osc::ImGuiDemoTab>(registry);
+        RegisterTab<osc::ImPlotDemoTab>(registry);
+        RegisterTab<osc::ImGuizmoDemoTab>(registry);
+        RegisterTab<osc::MeshGenTestTab>(registry);
+        RegisterTab<osc::MeshHittestTab>(registry);
+        RegisterTab<osc::PreviewExperimentalDataTab>(registry);
+        RegisterTab<osc::RendererGeometryShaderTab>(registry);
+        RegisterTab<osc::TPS2DTab>(registry);
+        RegisterTab<osc::TPS3DTab>(registry);
+        RegisterTab<osc::ModelWarpingTab>(registry);
     }
 }
 
@@ -210,4 +213,5 @@ bool osc::GlobalInitOpenSim(Config const& config)
 osc::OpenSimApp::OpenSimApp() : App{}
 {
     GlobalInitOpenSim(getConfig());
+    InitializeTabRegistry(*singleton<osc::TabRegistry>());
 }

@@ -19,7 +19,8 @@
 
 TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
 {
-    osc::OpenSimApp app;
+    osc::GlobalInitOpenSim(*osc::Config::load());
+
     osc::MeshCache meshCache;
 
     // turn as many decoration options on as possible, so that the code gets tested
