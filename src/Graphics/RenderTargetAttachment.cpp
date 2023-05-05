@@ -13,5 +13,5 @@ osc::RenderTargetAttachment::RenderTargetAttachment(
 	loadAction{loadAction_},
 	storeAction{storeAction_}
 {
-	OSC_ASSERT(buffer != nullptr);
+	OSC_THROWING_ASSERT(buffer != nullptr);
 }

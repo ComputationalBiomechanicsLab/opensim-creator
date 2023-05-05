@@ -10,6 +10,7 @@
 #include <iosfwd>
 #include <optional>
 
+namespace osc { class RenderBuffer; }
 namespace osc { class RenderTexture; }
 namespace osc { void DrawTextureAsImGuiImage(RenderTexture const&, glm::vec2); }
 
@@ -46,6 +47,9 @@ namespace osc
         void setReadWrite(RenderTextureReadWrite);
 
         void reformat(RenderTextureDescriptor const& d);
+
+        std::shared_ptr<RenderBuffer> updColorBuffer();
+        std::shared_ptr<RenderBuffer> updDepthBuffer();
 
         friend void swap(RenderTexture& a, RenderTexture& b) noexcept
         {

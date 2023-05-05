@@ -1921,6 +1921,16 @@ public:
         gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, gl::windowFbo);
     }
 
+    std::shared_ptr<RenderBuffer> updColorBuffer()
+    {
+        return m_ColorBuffer;
+    }
+
+    std::shared_ptr<RenderBuffer> updDepthBuffer()
+    {
+        return m_DepthBuffer;
+    }
+
 private:
     friend class GraphicsBackend;
 
@@ -2002,6 +2012,16 @@ void osc::RenderTexture::setReadWrite(RenderTextureReadWrite rw)
 void osc::RenderTexture::reformat(RenderTextureDescriptor const& d)
 {
     m_Impl.upd()->reformat(d);
+}
+
+std::shared_ptr<osc::RenderBuffer> osc::RenderTexture::updColorBuffer()
+{
+    return m_Impl.upd()->updColorBuffer();
+}
+
+std::shared_ptr<osc::RenderBuffer> osc::RenderTexture::updDepthBuffer()
+{
+    return m_Impl.upd()->updDepthBuffer();
 }
 
 void* osc::RenderTexture::getTextureHandleHACK() const

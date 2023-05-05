@@ -464,7 +464,9 @@ add_library(osccore STATIC
     src/Graphics/RenderTarget.hpp
     src/Graphics/RenderTargetAttachment.cpp
     src/Graphics/RenderTargetAttachment.hpp
+    src/Graphics/RenderTargetColorAttachment.cpp
     src/Graphics/RenderTargetColorAttachment.hpp
+    src/Graphics/RenderTargetDepthAttachment.cpp
     src/Graphics/RenderTargetDepthAttachment.hpp
     src/Graphics/RenderTexture.hpp
     src/Graphics/RenderTextureDescriptor.hpp
@@ -925,6 +927,9 @@ add_executable(testosc EXCLUDE_FROM_ALL
     tests/Graphics/TestGraphicsHelpers.cpp
     tests/Graphics/TestImage.cpp
     tests/Graphics/TestRenderer.cpp
+    tests/Graphics/TestRenderTarget.cpp
+    tests/Graphics/TestRenderTargetColorAttachment.cpp
+    tests/Graphics/TestRenderTargetDepthAttachment.cpp
     tests/Graphics/TestRenderTextureFormat.cpp
     tests/Graphics/TestTextureFormat.cpp
 

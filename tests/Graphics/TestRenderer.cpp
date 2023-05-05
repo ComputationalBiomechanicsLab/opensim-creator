@@ -2563,6 +2563,20 @@ TEST_F(Renderer, RenderTextureSetColorFormatCausesGetColorFormatToReturnValue)
     ASSERT_EQ(d.getColorFormat(), osc::RenderTextureFormat::RED);
 }
 
+TEST_F(Renderer, RenderTextureUpdColorBufferReturnsNonNullPtr)
+{
+    osc::RenderTexture rt{{1, 1}};
+
+    ASSERT_NE(rt.updColorBuffer(), nullptr);
+}
+
+TEST_F(Renderer, RenderTextureUpdDepthBufferReturnsNonNullPtr)
+{
+    osc::RenderTexture rt{{1, 1}};
+
+    ASSERT_NE(rt.updDepthBuffer(), nullptr);
+}
+
 TEST_F(Renderer, CameraProjectionCanBeStreamed)
 {
     for (int i = 0; i < static_cast<int>(osc::CameraProjection::TOTAL); ++i)
