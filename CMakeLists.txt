@@ -457,6 +457,15 @@ add_library(osccore STATIC
     src/Graphics/MeshIndicesView.hpp
     src/Graphics/Mesh.hpp
     src/Graphics/MeshTopology.hpp
+    src/Graphics/RenderBuffer.hpp
+    src/Graphics/RenderBufferLoadAction.hpp
+    src/Graphics/RenderBufferStoreAction.hpp
+    src/Graphics/RenderTarget.cpp
+    src/Graphics/RenderTarget.hpp
+    src/Graphics/RenderTargetAttachment.cpp
+    src/Graphics/RenderTargetAttachment.hpp
+    src/Graphics/RenderTargetColorAttachment.hpp
+    src/Graphics/RenderTargetDepthAttachment.hpp
     src/Graphics/RenderTexture.hpp
     src/Graphics/RenderTextureDescriptor.hpp
     src/Graphics/RenderTextureFormat.hpp
