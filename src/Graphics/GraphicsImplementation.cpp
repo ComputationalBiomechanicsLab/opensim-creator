@@ -12,6 +12,7 @@
 #include "src/Graphics/MaterialPropertyBlock.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshTopology.hpp"
+#include "src/Graphics/RenderBuffer.hpp"
 #include "src/Graphics/RenderTexture.hpp"
 #include "src/Graphics/RenderTextureDescriptor.hpp"
 #include "src/Graphics/RenderTextureFormat.hpp"
@@ -566,14 +567,9 @@ namespace
         osc::UID textureParamsVersion;
     };
 
-    // the OpenGL data associated with an osc::RenderTexture
-    struct RenderTextureOpenGLData final {
-        gl::FrameBuffer multisampledFBO;
-        gl::RenderBuffer multisampledColorBuffer;
-        gl::RenderBuffer multisampledDepthBuffer;
-        gl::FrameBuffer singleSampledFBO;
-        gl::Texture2D singleSampledColorBuffer;
-        gl::Texture2D singleSampledDepthBuffer;
+    struct RenderBufferOpenGLData final {
+        gl::RenderBuffer multisampledRBO;
+        gl::Texture2D singleSampledTexture;
     };
 
     // the OpenGL data associated with an osc::Mesh
@@ -658,9 +654,26 @@ namespace osc
             nonstd::span<RenderObject const>
         );
 
+        static Rect CalcViewportRect(
+            Camera::Impl&,
+            RenderTexture* maybeRenderTexture
+        );
+        static Rect SetupTopLevelPipelineState(
+            Camera::Impl&,
+            RenderTexture* maybeRenderTexture
+        );
+        static std::optional<gl::FrameBuffer> BindAndClearRenderBuffers(
+            Camera::Impl&,
+            RenderTexture* maybeRenderTexture
+        );
+        static void ResolveRenderBuffers(RenderTexture*);
         static void FlushRenderQueue(
             Camera::Impl& camera,
             float aspectRatio
+        );
+        static void TeardownTopLevelPipelineState(
+            Camera::Impl&,
+            RenderTexture* maybeRenderTexture
         );
 
         static void RenderScene(
@@ -1328,20 +1341,30 @@ namespace
         "D24_UNorm_S8_UInt"
     );
 
-    GLenum ToInternalOpenGLColorFormat(osc::RenderTextureFormat f, osc::RenderTextureReadWrite rw)
+    GLenum ToInternalOpenGLColorFormat(
+        osc::RenderBufferType type,
+        osc::RenderTextureDescriptor const& desc)
     {
-        static_assert(static_cast<size_t>(osc::RenderTextureFormat::TOTAL) == 3);
-        static_assert(static_cast<size_t>(osc::RenderTextureReadWrite::TOTAL) == 2);
-
-        switch (f)
+        static_assert(static_cast<size_t>(osc::RenderBufferType::TOTAL) == 2, "review code below, which treats RenderBufferType as a bool");
+        if (type == osc::RenderBufferType::Depth)
         {
-        case osc::RenderTextureFormat::RED:
-            return GL_RED;
-        case osc::RenderTextureFormat::ARGBHalf:
-            return GL_RGBA16F;
-        case osc::RenderTextureFormat::ARGB32:
-        default:
-            return rw == osc::RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+            return GL_DEPTH24_STENCIL8;
+        }
+        else
+        {
+            static_assert(static_cast<size_t>(osc::RenderTextureFormat::TOTAL) == 3);
+            static_assert(static_cast<size_t>(osc::RenderTextureReadWrite::TOTAL) == 2);
+
+            switch (desc.getColorFormat())
+            {
+            case osc::RenderTextureFormat::RED:
+                return GL_RED;
+            case osc::RenderTextureFormat::ARGBHalf:
+                return GL_RGBA16F;
+            case osc::RenderTextureFormat::ARGB32:
+            default:
+                return desc.getReadWrite() == osc::RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+            }
         }
     }
 
@@ -1501,24 +1524,38 @@ bool osc::operator!=(RenderTextureDescriptor const& a, RenderTextureDescriptor c
 
 std::ostream& osc::operator<<(std::ostream& o, RenderTextureDescriptor const& rtd)
 {
-    return o << "RenderTextureDescriptor(width = " << rtd.m_Dimensions.x << ", height = " << rtd.m_Dimensions.y << ", aa = " << rtd.m_AnialiasingLevel << ", colorFormat = " << rtd.m_ColorFormat << ", depthFormat = " << rtd.m_DepthStencilFormat << ")";
+    return o <<
+        "RenderTextureDescriptor(width = " << rtd.m_Dimensions.x
+        << ", height = " << rtd.m_Dimensions.y
+        << ", aa = " << rtd.m_AnialiasingLevel
+        << ", colorFormat = " << rtd.m_ColorFormat
+        << ", depthFormat = " << rtd.m_DepthStencilFormat
+        << ")";
 }
 
-class osc::RenderTexture::Impl final {
+class osc::RenderBuffer::Impl final {
 public:
-    Impl() :
-        m_Descriptor{glm::ivec2{1, 1}}
+    Impl(
+        RenderTextureDescriptor const& descriptor_,
+        RenderBufferType type_) :
+
+        m_Descriptor{descriptor_},
+        m_BufferType{type_}
     {
     }
 
-    Impl(glm::ivec2 dimensions) :
-        m_Descriptor{dimensions}
+    void reformat(RenderTextureDescriptor const& newDescriptor)
     {
+        if (m_Descriptor != newDescriptor)
+        {
+            m_Descriptor = newDescriptor;
+            m_MaybeOpenGLData->reset();
+        }
     }
 
-    Impl(RenderTextureDescriptor const& desc) :
-        m_Descriptor{desc}
+    RenderTextureDescriptor const& getDescriptor() const
     {
+        return m_Descriptor;
     }
 
     glm::ivec2 getDimensions() const
@@ -1526,12 +1563,12 @@ public:
         return m_Descriptor.getDimensions();
     }
 
-    void setDimensions(glm::ivec2 d)
+    void setDimensions(glm::ivec2 newDims)
     {
-        if (d != getDimensions())
+        if (newDims != getDimensions())
         {
-            m_Descriptor.setDimensions(d);
-            m_MaybeGPUBuffers->reset();
+            m_Descriptor.setDimensions(newDims);
+            m_MaybeOpenGLData->reset();
         }
     }
 
@@ -1540,12 +1577,12 @@ public:
         return m_Descriptor.getColorFormat();
     }
 
-    void setColorFormat(RenderTextureFormat format)
+    void setColorFormat(RenderTextureFormat newFormat)
     {
-        if (format != m_Descriptor.getColorFormat())
+        if (newFormat != getColorFormat())
         {
-            m_Descriptor.setColorFormat(format);
-            m_MaybeGPUBuffers->reset();
+            m_Descriptor.setColorFormat(newFormat);
+            m_MaybeOpenGLData->reset();
         }
     }
 
@@ -1554,12 +1591,12 @@ public:
         return m_Descriptor.getAntialiasingLevel();
     }
 
-    void setAntialiasingLevel(int32_t level)
+    void setAntialiasingLevel(int32_t newLevel)
     {
-        if (level != m_Descriptor.getAntialiasingLevel())
+        if (newLevel != getAntialiasingLevel())
         {
-            m_Descriptor.setAntialiasingLevel(level);
-            m_MaybeGPUBuffers->reset();
+            m_Descriptor.setAntialiasingLevel(newLevel);
+            m_MaybeOpenGLData->reset();
         }
     }
 
@@ -1568,12 +1605,12 @@ public:
         return m_Descriptor.getDepthStencilFormat();
     }
 
-    void setDepthStencilFormat(DepthStencilFormat format)
+    void setDepthStencilFormat(DepthStencilFormat newDepthStencilFormat)
     {
-        if (format != m_Descriptor.getDepthStencilFormat())
+        if (newDepthStencilFormat != getDepthStencilFormat())
         {
-            m_Descriptor.setDepthStencilFormat(format);
-            m_MaybeGPUBuffers->reset();
+            m_Descriptor.setDepthStencilFormat(newDepthStencilFormat);
+            m_MaybeOpenGLData->reset();
         }
     }
 
@@ -1582,146 +1619,313 @@ public:
         return m_Descriptor.getReadWrite();
     }
 
+    void setReadWrite(RenderTextureReadWrite newReadWrite)
+    {
+        if (newReadWrite != m_Descriptor.getReadWrite())
+        {
+            m_Descriptor.setReadWrite(newReadWrite);
+            m_MaybeOpenGLData->reset();
+        }
+    }
+
+    gl::RenderBuffer& updRBO()
+    {
+        if (!*m_MaybeOpenGLData)
+        {
+            uploadToGPU();
+        }
+        return (*m_MaybeOpenGLData)->multisampledRBO;
+    }
+
+    gl::Texture2D& updResolvedTexture()
+    {
+        if (!*m_MaybeOpenGLData)
+        {
+            uploadToGPU();
+        }
+        return (*m_MaybeOpenGLData)->singleSampledTexture;
+    }
+
+    void uploadToGPU()
+    {
+        RenderBufferOpenGLData& data = m_MaybeOpenGLData->emplace();
+        glm::ivec2 const dimensions = m_Descriptor.getDimensions();
+
+        // setup multisampled RBO
+        gl::BindRenderBuffer(data.multisampledRBO);
+        glRenderbufferStorageMultisample(
+            GL_RENDERBUFFER,
+            m_Descriptor.getAntialiasingLevel(),
+            ToInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
+            dimensions.x,
+            dimensions.y
+        );
+        gl::BindRenderBuffer();
+
+        // setup resolved texture
+        static_assert(static_cast<size_t>(osc::RenderTextureFormat::TOTAL) == 3, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
+        static_assert(static_cast<size_t>(osc::RenderBufferType::TOTAL) == 2, "review code below, which treats RenderBufferType as a bool");
+        gl::BindTexture(data.singleSampledTexture);
+        gl::TexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            ToInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
+            dimensions.x,
+            dimensions.y,
+            0,
+            // shouldn't matter, because we aren't uploading, but setting this wrong actually does cause errors
+            m_BufferType == osc::RenderBufferType::Color ? GL_RGBA : GL_DEPTH_STENCIL,
+            // shouldn't matter, because we aren't uploading, but setting this wrong actually does cause errors
+            m_BufferType == osc::RenderBufferType::Color ? GL_UNSIGNED_BYTE : GL_UNSIGNED_INT_24_8,
+            nullptr
+        );
+        gl::TexParameteri(
+            GL_TEXTURE_2D,
+            GL_TEXTURE_MIN_FILTER,
+            GL_LINEAR
+        );
+        gl::TexParameteri(
+            GL_TEXTURE_2D,
+            GL_TEXTURE_MAG_FILTER,
+            GL_LINEAR
+        );
+        gl::TexParameteri(
+            GL_TEXTURE_2D,
+            GL_TEXTURE_WRAP_S,
+            GL_CLAMP_TO_EDGE
+        );
+        gl::TexParameteri(
+            GL_TEXTURE_2D,
+            GL_TEXTURE_WRAP_T,
+            GL_CLAMP_TO_EDGE
+        );
+        gl::TexParameteri(
+            GL_TEXTURE_2D,
+            GL_TEXTURE_WRAP_R,
+            GL_CLAMP_TO_EDGE
+        );
+        gl::BindTexture();
+    }
+
+    bool hasBeenRenderedTo() const
+    {
+        return m_MaybeOpenGLData->has_value();
+    }
+
+private:
+    RenderTextureDescriptor m_Descriptor;
+    RenderBufferType m_BufferType;
+    DefaultConstructOnCopy<std::optional<RenderBufferOpenGLData>> m_MaybeOpenGLData;
+};
+
+osc::RenderBuffer::RenderBuffer(
+    RenderTextureDescriptor const& descriptor_,
+    RenderBufferType type_) :
+
+    m_Impl{std::make_unique<Impl>(descriptor_, type_)}
+{
+}
+
+osc::RenderBuffer::~RenderBuffer() noexcept = default;
+
+class osc::RenderTexture::Impl final {
+public:
+    Impl() :
+        Impl{glm::ivec2{1, 1}}
+    {
+    }
+
+    Impl(glm::ivec2 dimensions) :
+        Impl{RenderTextureDescriptor{dimensions}}
+    {
+    }
+
+    Impl(RenderTextureDescriptor const& descriptor) :
+        m_ColorBuffer{std::make_shared<RenderBuffer>(descriptor, RenderBufferType::Color)},
+        m_DepthBuffer{std::make_shared<RenderBuffer>(descriptor, RenderBufferType::Depth)}
+    {
+    }
+
+    glm::ivec2 getDimensions() const
+    {
+        return m_ColorBuffer->m_Impl->getDimensions();
+    }
+
+    void setDimensions(glm::ivec2 newDims)
+    {
+        if (newDims != getDimensions())
+        {
+            m_ColorBuffer->m_Impl->setDimensions(newDims);
+            m_DepthBuffer->m_Impl->setDimensions(newDims);
+        }
+    }
+
+    RenderTextureFormat getColorFormat() const
+    {
+        return m_ColorBuffer->m_Impl->getColorFormat();
+    }
+
+    void setColorFormat(RenderTextureFormat newFormat)
+    {
+        if (newFormat != getColorFormat())
+        {
+            m_ColorBuffer->m_Impl->setColorFormat(newFormat);
+            m_DepthBuffer->m_Impl->setColorFormat(newFormat);
+        }
+    }
+
+    int32_t getAntialiasingLevel() const
+    {
+        return m_ColorBuffer->m_Impl->getAntialiasingLevel();
+    }
+
+    void setAntialiasingLevel(int32_t newLevel)
+    {
+        if (newLevel != getAntialiasingLevel())
+        {
+            m_ColorBuffer->m_Impl->setAntialiasingLevel(newLevel);
+            m_DepthBuffer->m_Impl->setAntialiasingLevel(newLevel);
+        }
+    }
+
+    DepthStencilFormat getDepthStencilFormat() const
+    {
+        return m_ColorBuffer->m_Impl->getDepthStencilFormat();
+    }
+
+    void setDepthStencilFormat(DepthStencilFormat newFormat)
+    {
+        if (newFormat != getDepthStencilFormat())
+        {
+            m_ColorBuffer->m_Impl->setDepthStencilFormat(newFormat);
+            m_DepthBuffer->m_Impl->setDepthStencilFormat(newFormat);
+        }
+    }
+
+    RenderTextureReadWrite getReadWrite() const
+    {
+        return m_ColorBuffer->m_Impl->getReadWrite();
+    }
+
     void setReadWrite(RenderTextureReadWrite rw)
     {
-        if (rw != m_Descriptor.getReadWrite())
+        if (rw != getReadWrite())
         {
-            m_Descriptor.setReadWrite(rw);
-            m_MaybeGPUBuffers->reset();
+            m_ColorBuffer->m_Impl->setReadWrite(rw);
+            m_DepthBuffer->m_Impl->setReadWrite(rw);
         }
     }
 
     void reformat(RenderTextureDescriptor const& d)
     {
-        if (d != m_Descriptor)
+        if (d != m_ColorBuffer->m_Impl->getDescriptor())
         {
-            m_Descriptor = d;
-            m_MaybeGPUBuffers->reset();
+            m_ColorBuffer->m_Impl->reformat(d);
+            m_DepthBuffer->m_Impl->reformat(d);
         }
+    }
+
+    gl::RenderBuffer& getColorRBO()
+    {
+        return m_ColorBuffer->m_Impl->updRBO();
+    }
+
+    gl::Texture2D& getResolvedColorTexture()
+    {
+        return m_ColorBuffer->m_Impl->updResolvedTexture();
+    }
+
+    gl::RenderBuffer& getDepthStencilRBO()
+    {
+        return m_DepthBuffer->m_Impl->updRBO();
+    }
+
+    gl::Texture2D& getResolvedDepthTexture()
+    {
+        return m_DepthBuffer->m_Impl->updResolvedTexture();
     }
 
     void* getTextureHandleHACK() const
     {
         // yes, this is a shitshow of casting, const-casting, etc. - it's purely here until and osc-specific
         // ImGui backend is written
-        return reinterpret_cast<void*>(static_cast<uintptr_t>(const_cast<Impl&>(*this).getOutputTexture().get()));
+        return
+            reinterpret_cast<void*>(
+                static_cast<uintptr_t>(
+                    const_cast<Impl&>(*this).getResolvedColorTexture().get()
+                )
+            );
+    }
+
+    bool hasBeenRenderedTo() const
+    {
+        return m_ColorBuffer->m_Impl->hasBeenRenderedTo();
+    }
+
+    void resolveBuffers()
+    {
+        OSC_PERF("GraphicsBackend::RenderScene/blit output (resolve MSXAA)");
+
+        glm::ivec2 const dimensions = getDimensions();
+
+        gl::FrameBuffer msaaFBO;
+        gl::BindFramebuffer(
+            GL_READ_FRAMEBUFFER,
+            msaaFBO
+        );
+        gl::FramebufferRenderbuffer(
+            GL_READ_FRAMEBUFFER,
+            GL_COLOR_ATTACHMENT0,
+            m_ColorBuffer->m_Impl->updRBO()
+        );
+        gl::FramebufferRenderbuffer(
+            GL_READ_FRAMEBUFFER,
+            GL_DEPTH_STENCIL_ATTACHMENT,
+            m_DepthBuffer->m_Impl->updRBO()
+        );
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
+
+        gl::FrameBuffer ssFBO;
+        gl::BindFramebuffer(
+            GL_DRAW_FRAMEBUFFER,
+            ssFBO
+        );
+        gl::FramebufferTexture2D(
+            GL_DRAW_FRAMEBUFFER,
+            GL_COLOR_ATTACHMENT0,
+            m_ColorBuffer->m_Impl->updResolvedTexture(),
+            0
+        );
+        gl::FramebufferTexture2D(
+            GL_DRAW_FRAMEBUFFER,
+            GL_DEPTH_STENCIL_ATTACHMENT,
+            m_DepthBuffer->m_Impl->updResolvedTexture(),
+            0
+        );
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+        gl::BlitFramebuffer(
+            0,
+            0,
+            dimensions.x,
+            dimensions.y,
+            0,
+            0,
+            dimensions.x,
+            dimensions.y,
+            GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
+            GL_NEAREST
+        );
+
+        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, gl::windowFbo);
+        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, gl::windowFbo);
     }
 
 private:
-    gl::FrameBuffer& getFrameBuffer()
-    {
-        if (!*m_MaybeGPUBuffers)
-        {
-            uploadToGPU();
-        }
-        return (*m_MaybeGPUBuffers)->multisampledFBO;
-    }
-
-    gl::FrameBuffer& getOutputFrameBuffer()
-    {
-        if (!*m_MaybeGPUBuffers)
-        {
-            uploadToGPU();
-        }
-        return (*m_MaybeGPUBuffers)->singleSampledFBO;
-    }
-
-    gl::Texture2D& getOutputTexture()
-    {
-        if (!*m_MaybeGPUBuffers)
-        {
-            uploadToGPU();
-        }
-        return (*m_MaybeGPUBuffers)->singleSampledColorBuffer;
-    }
-
-    void uploadToGPU()
-    {
-        RenderTextureOpenGLData& bufs = m_MaybeGPUBuffers->emplace();
-        glm::ivec2 const dimensions = m_Descriptor.getDimensions();
-
-        // setup MSXAAed color buffer
-        gl::BindRenderBuffer(bufs.multisampledColorBuffer);
-        glRenderbufferStorageMultisample(
-            GL_RENDERBUFFER,
-            m_Descriptor.getAntialiasingLevel(),
-            ToInternalOpenGLColorFormat(getColorFormat(), getReadWrite()),
-            dimensions.x,
-            dimensions.y
-        );
-        gl::BindRenderBuffer();
-
-        // setup MSXAAed depth buffer
-        gl::BindRenderBuffer(bufs.multisampledDepthBuffer);
-        glRenderbufferStorageMultisample(
-            GL_RENDERBUFFER,
-            m_Descriptor.getAntialiasingLevel(),
-            GL_DEPTH24_STENCIL8,
-            dimensions.x,
-            dimensions.y
-        );
-        gl::BindRenderBuffer();
-
-        // setup MSXAAed framebuffer (color+depth)
-        gl::BindFramebuffer(GL_FRAMEBUFFER, bufs.multisampledFBO);
-        gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, bufs.multisampledColorBuffer);
-        gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, bufs.multisampledDepthBuffer);
-        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-
-        // setup single-sampled color buffer (texture, so it can be sampled as part of compositing a UI)
-        static_assert(static_cast<size_t>(osc::RenderTextureFormat::TOTAL) == 3, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
-        gl::BindTexture(bufs.singleSampledColorBuffer);
-        gl::TexImage2D(
-            bufs.singleSampledColorBuffer.type,
-            0,
-            ToInternalOpenGLColorFormat(getColorFormat(), getReadWrite()),
-            dimensions.x,
-            dimensions.y,
-            0,
-            GL_RGBA,  // doesn't matter: we aren't uploading data (see static_assert above)
-            GL_UNSIGNED_BYTE,  // doesn't matter: we aren't uploading data (see static_assert above)
-            nullptr
-        );
-        gl::TexParameteri(bufs.singleSampledColorBuffer.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
-        gl::TexParameteri(bufs.singleSampledColorBuffer.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
-        gl::TexParameteri(bufs.singleSampledColorBuffer.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        gl::TexParameteri(bufs.singleSampledColorBuffer.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        gl::TexParameteri(bufs.singleSampledColorBuffer.type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        gl::BindTexture();
-
-        // setup single-sampled depth buffer (texture, so it can be sampled as part of compositing a UI)
-        //
-        // https://stackoverflow.com/questions/27535727/opengl-create-a-depth-stencil-texture-for-reading
-        gl::BindTexture(bufs.singleSampledDepthBuffer);
-        gl::TexImage2D(
-            bufs.singleSampledDepthBuffer.type,
-            0,
-            GL_DEPTH24_STENCIL8,
-            dimensions.x,
-            dimensions.y,
-            0,
-            GL_DEPTH_STENCIL,
-            GL_UNSIGNED_INT_24_8,
-            nullptr
-        );
-        gl::TexParameteri(bufs.singleSampledDepthBuffer.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
-        gl::TexParameteri(bufs.singleSampledDepthBuffer.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
-        gl::TexParameteri(bufs.singleSampledDepthBuffer.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        gl::TexParameteri(bufs.singleSampledDepthBuffer.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        gl::TexParameteri(bufs.singleSampledDepthBuffer.type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        gl::BindTexture();
-
-        // setup single-sampled framebuffer (color+depth)
-        gl::BindFramebuffer(GL_FRAMEBUFFER, bufs.singleSampledFBO);
-        gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, bufs.singleSampledColorBuffer, 0);
-        gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, bufs.singleSampledDepthBuffer, 0);
-        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-    }
-
     friend class GraphicsBackend;
 
-    RenderTextureDescriptor m_Descriptor;
-    DefaultConstructOnCopy<std::optional<RenderTextureOpenGLData>> m_MaybeGPUBuffers;
+    std::shared_ptr<RenderBuffer> m_ColorBuffer;
+    std::shared_ptr<RenderBuffer> m_DepthBuffer;
 };
 
 osc::RenderTexture::RenderTexture() :
@@ -4905,7 +5109,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     case VariantIndex<MaterialValue, RenderTexture>():
     {
         RenderTexture::Impl& impl = const_cast<RenderTexture::Impl&>(*std::get<RenderTexture>(v).m_Impl);
-        gl::Texture2D& texture = impl.getOutputTexture();
+        gl::Texture2D& texture = impl.getResolvedColorTexture();
 
         gl::ActiveTexture(GL_TEXTURE0 + textureSlot);
         gl::BindTexture(texture);
@@ -5139,35 +5343,36 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera, float aspectRa
     queue.clear();
 }
 
-void osc::GraphicsBackend::RenderScene(Camera::Impl& camera, RenderTexture* maybeRenderTexture)
+osc::Rect osc::GraphicsBackend::CalcViewportRect(
+    Camera::Impl& camera,
+    RenderTexture* maybeRenderTexture)
 {
-    OSC_PERF("GraphicsBackend::RenderScene");
+    Rect const targetRect = maybeRenderTexture ? Rect{{}, maybeRenderTexture->getDimensions()} : Rect{{}, osc::App::get().dims()};
+    std::optional<Rect> const maybePixelRect = camera.getPixelRect();
+    Rect const cameraRect = maybePixelRect ? *maybePixelRect : targetRect;
+    glm::vec2 const cameraRectBottomLeft = BottomLeft(cameraRect);
+    glm::vec2 const viewportDims = osc::Dimensions(targetRect);
+    glm::vec2 const outputDimensions = Dimensions(cameraRect);
+    glm::vec2 const topLeft = {cameraRectBottomLeft.x, viewportDims.y - cameraRectBottomLeft.y};
 
-    // setup generic pipeline state
-    {
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    }
+    return Rect{topLeft, topLeft + outputDimensions};
+}
 
-    // setup output viewport
-    float aspectRatio = 1.0f;
-    {
-        Rect const targetRect = maybeRenderTexture ? Rect{{}, maybeRenderTexture->getDimensions()} : Rect{{}, osc::App::get().dims()};
-        std::optional<Rect> const maybePixelRect = camera.getPixelRect();
-        Rect const cameraRect = maybePixelRect ? *maybePixelRect : targetRect;
-        glm::vec2 const cameraRectBottomLeft = BottomLeft(cameraRect);
-        glm::vec2 const viewportDims = osc::Dimensions(targetRect);
-        glm::ivec2 const outputDimensions = Dimensions(cameraRect);
-        aspectRatio = osc::AspectRatio(outputDimensions);
+osc::Rect osc::GraphicsBackend::SetupTopLevelPipelineState(
+    Camera::Impl& camera,
+    RenderTexture* maybeRenderTexture)
+{
+    Rect const viewportRect = CalcViewportRect(camera, maybeRenderTexture);
+    glm::vec2 const viewportDims = Dimensions(viewportRect);
 
-        gl::Viewport(
-            static_cast<GLsizei>(cameraRectBottomLeft.x),
-            static_cast<GLsizei>(viewportDims.y - cameraRectBottomLeft.y),
-            static_cast<GLsizei>(outputDimensions.x),
-            static_cast<GLsizei>(outputDimensions.y)
-        );
-    }
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    gl::Viewport(
+        static_cast<GLsizei>(viewportRect.p1.x),
+        static_cast<GLsizei>(viewportRect.p1.y),
+        static_cast<GLsizei>(viewportDims.x),
+        static_cast<GLsizei>(viewportDims.y)
+    );
 
-    // setup scissor testing (if applicable)
     if (camera.m_MaybeScissorRect)
     {
         Rect const scissorRect = *camera.m_MaybeScissorRect;
@@ -5186,10 +5391,49 @@ void osc::GraphicsBackend::RenderScene(Camera::Impl& camera, RenderTexture* mayb
         gl::Disable(GL_SCISSOR_TEST);
     }
 
+    return viewportRect;
+}
+
+void osc::GraphicsBackend::TeardownTopLevelPipelineState(
+    Camera::Impl& camera,
+    RenderTexture* maybeRenderTexture)
+{
+    if (camera.m_MaybeScissorRect)
+    {
+        gl::Disable(GL_SCISSOR_TEST);
+    }
+    gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+    gl::UseProgram();
+}
+
+std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
+    Camera::Impl& camera,
+    RenderTexture* maybeRenderTexture)
+{
+    // if necessary, create pass-specific FBO
+    std::optional<gl::FrameBuffer> maybeRenderFBO;
+    if (maybeRenderTexture)
+    {
+        gl::FrameBuffer& fbo = maybeRenderFBO.emplace();
+        gl::BindFramebuffer(
+            GL_DRAW_FRAMEBUFFER,
+            fbo
+        );
+        gl::FramebufferRenderbuffer(
+            GL_DRAW_FRAMEBUFFER,
+            GL_COLOR_ATTACHMENT0,
+            const_cast<RenderTexture::Impl&>(*maybeRenderTexture->m_Impl).getColorRBO()
+        );
+        gl::FramebufferRenderbuffer(
+            GL_DRAW_FRAMEBUFFER,
+            GL_DEPTH_STENCIL_ATTACHMENT,
+            const_cast<RenderTexture::Impl&>(*maybeRenderTexture->m_Impl).getDepthStencilRBO()
+        );
+    }
+
+    // if necessary, clear the target FBO
     if (camera.m_ClearFlags != CameraClearFlags::Nothing)
     {
-        // bind to output and clear it
-
         GLenum const clearFlags = camera.m_ClearFlags == CameraClearFlags::SolidColor ?
             GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT :
             GL_DEPTH_BUFFER_BIT;
@@ -5203,76 +5447,41 @@ void osc::GraphicsBackend::RenderScene(Camera::Impl& camera, RenderTexture* mayb
             linearColor.b,
             linearColor.a
         );
-
-        if (maybeRenderTexture)
-        {
-            RenderTexture::Impl& cameraRenderTex = *maybeRenderTexture->m_Impl.upd();
-
-            // clear the written-to MSXAA texture
-            gl::BindFramebuffer(GL_FRAMEBUFFER, cameraRenderTex.getFrameBuffer());
-            gl::Clear(clearFlags);
-        }
-        else
-        {
-            gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-            gl::Clear(clearFlags);
-        }
-    }
-    else
-    {
-        // just bind to the output, but don't clear it
-
-        if (maybeRenderTexture)
-        {
-            gl::BindFramebuffer(GL_FRAMEBUFFER, maybeRenderTexture->m_Impl.upd()->getFrameBuffer());
-        }
-        else
-        {
-            gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-        }
+        gl::Clear(clearFlags);
     }
 
-    // DRAW: flush the render queue
-    {
-        FlushRenderQueue(camera, aspectRatio);
-    }
+    return maybeRenderFBO;
+}
 
-    // blit output to resolve MSXAA samples (if appliicable)
+void osc::GraphicsBackend::ResolveRenderBuffers(RenderTexture* maybeRenderTexture)
+{
+    // if necessary, resolve any render buffers
     if (maybeRenderTexture)
     {
-        OSC_PERF("GraphicsBackend::RenderScene/blit output (resolve MSXAA)");
-
-        glm::ivec2 const dimensions = maybeRenderTexture->m_Impl->m_Descriptor.getDimensions();
-
-        // blit multisampled scene render to not-multisampled texture
-        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, (*maybeRenderTexture->m_Impl->m_MaybeGPUBuffers)->multisampledFBO);
-        glReadBuffer(GL_COLOR_ATTACHMENT0);
-        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, (*maybeRenderTexture->m_Impl->m_MaybeGPUBuffers)->singleSampledFBO);
-        glDrawBuffer(GL_COLOR_ATTACHMENT0);
-        gl::BlitFramebuffer(
-            0,
-            0,
-            dimensions.x,
-            dimensions.y,
-            0,
-            0,
-            dimensions.x,
-            dimensions.y,
-            GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
-            GL_NEAREST
-        );
-
-        // rebind to the screen (the start of RenderScene bound to the output texture)
-        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+        const_cast<osc::RenderTexture::Impl&>(*maybeRenderTexture->m_Impl).resolveBuffers();
     }
+}
 
-    if (camera.m_MaybeScissorRect)
+void osc::GraphicsBackend::RenderScene(Camera::Impl& camera, RenderTexture* maybeRenderTexture)
+{
+    OSC_PERF("GraphicsBackend::RenderScene");
+
+    Rect const viewportRect = SetupTopLevelPipelineState(
+        camera,
+        maybeRenderTexture
+    );
+
     {
-        gl::Disable(GL_SCISSOR_TEST);
+        std::optional<gl::FrameBuffer> const maybeTmpFBO =
+            BindAndClearRenderBuffers(camera, maybeRenderTexture);
+        FlushRenderQueue(camera, AspectRatio(viewportRect));
+        ResolveRenderBuffers(maybeRenderTexture);
     }
 
-    // cleanup
-    gl::UseProgram();
+    TeardownTopLevelPipelineState(
+        camera,
+        maybeRenderTexture
+    );
 }
 
 void osc::GraphicsBackend::DrawMesh(
@@ -5301,7 +5510,7 @@ void osc::GraphicsBackend::BlitToScreen(
     BlitFlags flags)
 {
     OSC_ASSERT(g_GraphicsContextImpl);
-    OSC_ASSERT(*t.m_Impl->m_MaybeGPUBuffers && "the input texture has not been rendered to");
+    OSC_ASSERT(t.m_Impl->hasBeenRenderedTo() && "the input texture has not been rendered to");
 
     if (flags == BlitFlags::AlphaBlend)
     {
@@ -5328,10 +5537,25 @@ void osc::GraphicsBackend::BlitToScreen(
         glm::ivec2 texDimensions = t.getDimensions();
 
         // blit multisampled scene render to not-multisampled texture
-        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, (*t.m_Impl->m_MaybeGPUBuffers)->singleSampledFBO);
+        gl::FrameBuffer fbo;
+        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+        gl::FramebufferTexture2D(
+            GL_READ_FRAMEBUFFER,
+            GL_COLOR_ATTACHMENT0,
+            const_cast<RenderTexture::Impl&>(*t.m_Impl).getResolvedColorTexture(),
+            0
+        );
+        gl::FramebufferTexture2D(
+            GL_READ_FRAMEBUFFER,
+            GL_DEPTH_STENCIL_ATTACHMENT,
+            const_cast<RenderTexture::Impl&>(*t.m_Impl).getResolvedDepthTexture(),
+            0
+        );
         glReadBuffer(GL_COLOR_ATTACHMENT0);
+
         gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, gl::windowFbo);
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
         gl::BlitFramebuffer(
             0,
             0,
@@ -5357,7 +5581,7 @@ void osc::GraphicsBackend::BlitToScreen(
     BlitFlags)
 {
     OSC_ASSERT(g_GraphicsContextImpl);
-    OSC_ASSERT(*t.m_Impl->m_MaybeGPUBuffers && "the input texture has not been rendered to");
+    OSC_ASSERT(t.m_Impl->hasBeenRenderedTo() && "the input texture has not been rendered to");
 
     Camera c;
     c.setBackgroundColor(Color::clear());
@@ -5397,8 +5621,21 @@ void osc::GraphicsBackend::ReadPixels(RenderTexture const& source, Image& dest)
 
     std::vector<uint8_t> pixels(static_cast<size_t>(channels*dims.x*dims.y));
 
-    gl::BindFramebuffer(GL_FRAMEBUFFER, const_cast<RenderTexture::Impl&>(*source.m_Impl).getOutputFrameBuffer());
-    glViewport(0, 0, dims.x, dims.y);
+    gl::FrameBuffer fbo;
+    gl::BindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+    gl::FramebufferTexture2D(
+        GL_READ_FRAMEBUFFER,
+        GL_COLOR_ATTACHMENT0,
+        const_cast<RenderTexture::Impl&>(*source.m_Impl).getResolvedColorTexture(),
+        0
+    );
+    gl::FramebufferTexture2D(
+        GL_READ_FRAMEBUFFER,
+        GL_DEPTH_STENCIL_ATTACHMENT,
+        const_cast<RenderTexture::Impl&>(*source.m_Impl).getResolvedDepthTexture(),
+        0
+    );
+    gl::Viewport(0, 0, dims.x, dims.y);
     GLint const packFormat = ToImagePixelPackAlignment(source.getColorFormat());
     OSC_ASSERT(reinterpret_cast<uintptr_t>(pixels.data()) % packFormat == 0 && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
     gl::PixelStorei(GL_PACK_ALIGNMENT, packFormat);

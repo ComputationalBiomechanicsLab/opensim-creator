@@ -6,9 +6,18 @@
 
 namespace osc
 {
+	enum class RenderBufferType {
+		Color = 0,
+		Depth,
+		TOTAL,
+	};
+
 	class RenderBuffer final {
 	public:
-		RenderBuffer() = delete;
+		RenderBuffer(
+			RenderTextureDescriptor const&,
+			RenderBufferType
+		);
 		RenderBuffer(RenderBuffer const&) = delete;
 		RenderBuffer(RenderBuffer&&) noexcept = delete;
 		RenderBuffer& operator=(RenderBuffer const&) = delete;
@@ -18,11 +27,6 @@ namespace osc
 	private:
 		friend class GraphicsBackend;
 		friend class RenderTexture;
-
-		explicit RenderBuffer(
-			std::shared_ptr<RenderTextureDescriptor>,
-			bool isColor
-		);
 
 		class Impl;
 		std::unique_ptr<Impl> m_Impl;
