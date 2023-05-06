@@ -3,7 +3,10 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
 #include "src/Graphics/Color.hpp"
+#include "src/Graphics/ColorSpace.hpp"
 #include "src/Graphics/Graphics.hpp"
+#include "src/Graphics/GraphicsHelpers.hpp"
+#include "src/Graphics/ImageFlags.hpp"
 #include "src/Graphics/Material.hpp"
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshGen.hpp"
@@ -15,6 +18,7 @@
 #include "src/Graphics/RenderTexture.hpp"
 #include "src/Graphics/RenderTextureFormat.hpp"
 #include "src/Graphics/Shader.hpp"
+#include "src/Graphics/Texture2D.hpp"
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/Transform.hpp"
@@ -38,7 +42,6 @@ namespace
 {
     constexpr glm::vec3 c_ObjectPositions[] =
     {
-        {0.0f, 0.0f ,0.0f},
         {-3.0,  -0.5, -3.0},
         { 0.0,  -0.5, -3.0},
         { 3.0,  -0.5, -3.0},
@@ -216,13 +219,21 @@ public:
 
     void renderSceneToGBuffers()
     {
+        m_GBuffer.material.setTexture("uDiffuseMap", m_DiffuseMap);
+        m_GBuffer.material.setTexture("uSpecularMap", m_SpecularMap);
+
         // render scene cubes
         Transform transform;
         transform.scale = glm::vec3{0.5f};
         for (glm::vec3 const& objectPosition : c_ObjectPositions)
         {
             transform.position = objectPosition;
-            Graphics::DrawMesh(m_CubeMesh, transform, m_GBuffer.material, m_Camera);
+            Graphics::DrawMesh(
+                m_CubeMesh,
+                transform,
+                m_GBuffer.material,
+                m_Camera
+            );
         }
         m_Camera.renderTo(m_GBuffer.renderTarget);
     }
@@ -314,6 +325,16 @@ private:
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
     Mesh m_CubeMesh = GenCube();
     Mesh m_QuadMesh = GenTexturedQuad();
+    Texture2D m_DiffuseMap = LoadTexture2DFromImage(
+        App::resource("textures/container2.png"),
+        ColorSpace::sRGB,
+        ImageFlags_FlipVertically
+    );
+    Texture2D m_SpecularMap = LoadTexture2DFromImage(
+        App::resource("textures/container2_specular.png"),
+        ColorSpace::sRGB,
+        ImageFlags_FlipVertically
+    );
 
     // rendering state
     struct GBufferRenderingState final {

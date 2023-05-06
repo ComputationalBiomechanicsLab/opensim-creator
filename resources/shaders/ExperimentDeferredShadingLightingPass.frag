@@ -21,7 +21,7 @@ void main()
     vec3 FragPos = texture(uPositionTex, TexCoord).rgb;
     vec3 Normal = texture(uNormalTex, TexCoord).rgb;
     vec3 Diffuse = texture(uAlbedoTex, TexCoord).rgb;
-    float Specular = 0.0;
+    float Specular = texture(uAlbedoTex, TexCoord).a;
 
     // then calculate lighting as usual
     vec3 lighting  = Diffuse * 0.1; // hard-coded ambient component
