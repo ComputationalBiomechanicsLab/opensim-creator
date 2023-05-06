@@ -5475,11 +5475,13 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
         );
 
         // attach buffers
-        for (RenderTargetColorAttachment& colorAttachment : maybeCustomRenderTarget->colors)
+        for (size_t i = 0; i < maybeCustomRenderTarget->colors.size(); ++i)
         {
+            RenderTargetColorAttachment& colorAttachment = maybeCustomRenderTarget->colors[i];
+
             gl::FramebufferRenderbuffer(
                 GL_DRAW_FRAMEBUFFER,
-                GL_COLOR_ATTACHMENT0,
+                GL_COLOR_ATTACHMENT0 + static_cast<GLint>(i),
                 colorAttachment.buffer->m_Impl->updRBO()
             );
         }
@@ -5488,6 +5490,15 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
             GL_DEPTH_STENCIL_ATTACHMENT,
             maybeCustomRenderTarget->depth.buffer->m_Impl->updRBO()
         );
+
+        // tell OpenGL to use all buffers when drawing/clearing
+        std::vector<GLenum> drawBuffers;
+        drawBuffers.reserve(maybeCustomRenderTarget->colors.size());
+        for (size_t i = 0; i < maybeCustomRenderTarget->colors.size(); ++i)
+        {
+            drawBuffers.push_back(GL_COLOR_ATTACHMENT0 + static_cast<GLint>(i));
+        }
+        glDrawBuffers(static_cast<GLsizei>(drawBuffers.size()), drawBuffers.data());
 
         // clear buffers based on buffer flags
         static_assert(static_cast<size_t>(osc::RenderBufferLoadAction::TOTAL) == 2);

@@ -18,6 +18,7 @@
 #include "src/Tabs/Experiments/RendererBlendingTab.hpp"
 #include "src/Tabs/Experiments/RendererCoordinateSystemsTab.hpp"
 #include "src/Tabs/Experiments/RendererCubemapsTab.hpp"
+#include "src/Tabs/Experiments/RendererDeferredShadingTab.hpp"
 #include "src/Tabs/Experiments/RendererFramebuffersTab.hpp"
 #include "src/Tabs/Experiments/RendererGammaTab.hpp"
 #include "src/Tabs/Experiments/RendererHDRTab.hpp"
@@ -177,6 +178,7 @@ namespace
         RegisterTab<osc::RendererBlendingTab>(registry);
         RegisterTab<osc::RendererCoordinateSystemsTab>(registry);
         RegisterTab<osc::RendererCubemapsTab>(registry);
+        RegisterTab<osc::RendererDeferredShadingTab>(registry);
         RegisterTab<osc::RendererFramebuffersTab>(registry);
         RegisterTab<osc::RendererGammaTab>(registry);
         RegisterTab<osc::RendererHDRTab>(registry);
