@@ -3831,7 +3831,7 @@ public:
         static_assert(static_cast<size_t>(CameraClearFlags::TOTAL) == 3);
         static_assert(static_cast<size_t>(RenderTextureReadWrite::TOTAL) == 2);
 
-        RenderTarget rt
+        RenderTarget renderTargetThatWritesToRenderTexture
         {
             {
                 RenderTargetColorAttachment
@@ -3874,7 +3874,12 @@ public:
             },
         };
 
-        GraphicsBackend::RenderScene(*this, &rt);
+        renderTo(renderTargetThatWritesToRenderTexture);
+    }
+
+    void renderTo(RenderTarget& renderTarget)
+    {
+        GraphicsBackend::RenderScene(*this, &renderTarget);
     }
 
     bool operator==(Impl const& other) const noexcept
@@ -4112,6 +4117,11 @@ void osc::Camera::renderToScreen()
 void osc::Camera::renderTo(RenderTexture& renderTexture)
 {
     m_Impl.upd()->renderTo(renderTexture);
+}
+
+void osc::Camera::renderTo(RenderTarget& renderTarget)
+{
+    m_Impl.upd()->renderTo(renderTarget);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, Camera const& camera)

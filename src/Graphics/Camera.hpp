@@ -15,6 +15,7 @@
 #include <optional>
 
 namespace osc { class RenderTexture; }
+namespace osc { struct RenderTarget; }
 
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
@@ -120,6 +121,7 @@ namespace osc
         // the rendered geometry
         void renderToScreen();
         void renderTo(RenderTexture&);
+        void renderTo(RenderTarget&);
 
         friend void swap(Camera& a, Camera& b) noexcept
         {
