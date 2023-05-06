@@ -13,6 +13,11 @@
 #include "src/Graphics/Mesh.hpp"
 #include "src/Graphics/MeshTopology.hpp"
 #include "src/Graphics/RenderBuffer.hpp"
+#include "src/Graphics/RenderBufferLoadAction.hpp"
+#include "src/Graphics/RenderBufferStoreAction.hpp"
+#include "src/Graphics/RenderTarget.hpp"
+#include "src/Graphics/RenderTargetColorAttachment.hpp"
+#include "src/Graphics/RenderTargetDepthAttachment.hpp"
 #include "src/Graphics/RenderTexture.hpp"
 #include "src/Graphics/RenderTextureDescriptor.hpp"
 #include "src/Graphics/RenderTextureFormat.hpp"
@@ -654,32 +659,37 @@ namespace osc
             nonstd::span<RenderObject const>
         );
 
+        static void ValidateRenderTarget(
+            RenderTarget&
+        );
         static Rect CalcViewportRect(
             Camera::Impl&,
-            RenderTexture* maybeRenderTexture
+            RenderTarget* maybeCustomRenderTarget
         );
         static Rect SetupTopLevelPipelineState(
             Camera::Impl&,
-            RenderTexture* maybeRenderTexture
+            RenderTarget* maybeCustomRenderTarget
         );
         static std::optional<gl::FrameBuffer> BindAndClearRenderBuffers(
             Camera::Impl&,
-            RenderTexture* maybeRenderTexture
+            RenderTarget* maybeCustomRenderTarget
         );
-        static void ResolveRenderBuffers(RenderTexture*);
+        static void ResolveRenderBuffers(
+            RenderTarget& maybeCustomRenderTarget
+        );
         static void FlushRenderQueue(
             Camera::Impl& camera,
             float aspectRatio
         );
         static void TeardownTopLevelPipelineState(
             Camera::Impl&,
-            RenderTexture* maybeRenderTexture
+            RenderTarget* maybeCustomRenderTarget
         );
-
         static void RenderScene(
             Camera::Impl& camera,
-            RenderTexture* renderTexture
+            RenderTarget* maybeCustomRenderTarget = nullptr
         );
+
 
         static void DrawMesh(
             Mesh const&,
@@ -1860,65 +1870,6 @@ public:
     bool hasBeenRenderedTo() const
     {
         return m_ColorBuffer->m_Impl->hasBeenRenderedTo();
-    }
-
-    void resolveBuffers()
-    {
-        OSC_PERF("GraphicsBackend::RenderScene/blit output (resolve MSXAA)");
-
-        glm::ivec2 const dimensions = getDimensions();
-
-        gl::FrameBuffer msaaFBO;
-        gl::BindFramebuffer(
-            GL_READ_FRAMEBUFFER,
-            msaaFBO
-        );
-        gl::FramebufferRenderbuffer(
-            GL_READ_FRAMEBUFFER,
-            GL_COLOR_ATTACHMENT0,
-            m_ColorBuffer->m_Impl->updRBO()
-        );
-        gl::FramebufferRenderbuffer(
-            GL_READ_FRAMEBUFFER,
-            GL_DEPTH_STENCIL_ATTACHMENT,
-            m_DepthBuffer->m_Impl->updRBO()
-        );
-        glReadBuffer(GL_COLOR_ATTACHMENT0);
-
-        gl::FrameBuffer ssFBO;
-        gl::BindFramebuffer(
-            GL_DRAW_FRAMEBUFFER,
-            ssFBO
-        );
-        gl::FramebufferTexture2D(
-            GL_DRAW_FRAMEBUFFER,
-            GL_COLOR_ATTACHMENT0,
-            m_ColorBuffer->m_Impl->updResolvedTexture(),
-            0
-        );
-        gl::FramebufferTexture2D(
-            GL_DRAW_FRAMEBUFFER,
-            GL_DEPTH_STENCIL_ATTACHMENT,
-            m_DepthBuffer->m_Impl->updResolvedTexture(),
-            0
-        );
-        glDrawBuffer(GL_COLOR_ATTACHMENT0);
-
-        gl::BlitFramebuffer(
-            0,
-            0,
-            dimensions.x,
-            dimensions.y,
-            0,
-            0,
-            dimensions.x,
-            dimensions.y,
-            GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
-            GL_NEAREST
-        );
-
-        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, gl::windowFbo);
-        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, gl::windowFbo);
     }
 
     std::shared_ptr<RenderBuffer> updColorBuffer()
@@ -3872,12 +3823,58 @@ public:
 
     void renderToScreen()
     {
-        GraphicsBackend::RenderScene(*this, nullptr);
+        GraphicsBackend::RenderScene(*this);
     }
 
     void renderTo(RenderTexture& renderTexture)
     {
-        GraphicsBackend::RenderScene(*this, &renderTexture);
+        static_assert(static_cast<size_t>(CameraClearFlags::TOTAL) == 3);
+        static_assert(static_cast<size_t>(RenderTextureReadWrite::TOTAL) == 2);
+
+        RenderTarget rt
+        {
+            {
+                RenderTargetColorAttachment
+                {
+                    // attach to render texture's color buffer
+                    renderTexture.updColorBuffer(),
+
+                    // load the color buffer based on this camera's clear flags
+                    getClearFlags() == CameraClearFlags::SolidColor ?
+                        RenderBufferLoadAction::Clear :
+                        RenderBufferLoadAction::Load,
+
+                    // TODO/HACK: always resolve MSXAA (this was legacy behavior in earlier
+                    // versions of OSC
+                    RenderBufferStoreAction::Resolve,
+
+                    // ensure clear color matches colorspace of render texture
+                    renderTexture.getReadWrite() == RenderTextureReadWrite::sRGB ?
+                        ToLinear(getBackgroundColor()) :
+                        getBackgroundColor(),
+                },
+            },
+            RenderTargetDepthAttachment
+            {
+                // attach to the render texture's depth buffer
+                renderTexture.updDepthBuffer(),
+
+                // load the color buffer based on this camera's clear flags
+                //
+                // TODO/BUG/HACK: it doesn't look like the flags are combine-able, so
+                // hackily clear it using the solid color flag also
+                (getClearFlags() == CameraClearFlags::SolidColor || getClearFlags() == CameraClearFlags::Depth) ?
+                    RenderBufferLoadAction::Clear :
+                    RenderBufferLoadAction::Load,
+
+                // TODO/HACK: don't resolve MSXAA for depth buffers. This is legacy
+                // behavior, because OSC doesn't typically sample the depth buffer in
+                // a downstream shader
+                RenderBufferStoreAction::DontCare,
+            },
+        };
+
+        GraphicsBackend::RenderScene(*this, &rt);
     }
 
     bool operator==(Impl const& other) const noexcept
@@ -5363,26 +5360,52 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera, float aspectRa
     queue.clear();
 }
 
+void osc::GraphicsBackend::ValidateRenderTarget(RenderTarget& renderTarget)
+{
+    // ensure there is at least one color attachment
+    OSC_THROWING_ASSERT(!renderTarget.colors.empty() && "a render target must have one or more color attachments");
+
+    OSC_THROWING_ASSERT(renderTarget.colors.front().buffer != nullptr && "a color attachment must have a non-null render buffer");
+    glm::ivec2 const firstColorBufferDimensions = renderTarget.colors.front().buffer->m_Impl->getDimensions();
+    int32_t const firstColorBufferSamples = renderTarget.colors.front().buffer->m_Impl->getAntialiasingLevel();
+
+    // validate other buffers against the first
+    for (auto it = renderTarget.colors.begin()+1; it != renderTarget.colors.end(); ++it)
+    {
+        RenderTargetColorAttachment const& colorAttachment = *it;
+        OSC_THROWING_ASSERT(colorAttachment.buffer != nullptr);
+        OSC_THROWING_ASSERT(colorAttachment.buffer->m_Impl->getDimensions() == firstColorBufferDimensions);
+        OSC_THROWING_ASSERT(colorAttachment.buffer->m_Impl->getAntialiasingLevel() == firstColorBufferSamples);
+    }
+    OSC_THROWING_ASSERT(renderTarget.depth.buffer != nullptr);
+    OSC_THROWING_ASSERT(renderTarget.depth.buffer->m_Impl->getDimensions() == firstColorBufferDimensions);
+    OSC_THROWING_ASSERT(renderTarget.depth.buffer->m_Impl->getAntialiasingLevel() == firstColorBufferSamples);
+}
+
 osc::Rect osc::GraphicsBackend::CalcViewportRect(
     Camera::Impl& camera,
-    RenderTexture* maybeRenderTexture)
+    RenderTarget* maybeCustomRenderTarget)
 {
-    Rect const targetRect = maybeRenderTexture ? Rect{{}, maybeRenderTexture->getDimensions()} : Rect{{}, osc::App::get().dims()};
-    std::optional<Rect> const maybePixelRect = camera.getPixelRect();
-    Rect const cameraRect = maybePixelRect ? *maybePixelRect : targetRect;
+    glm::vec2 const targetDims = maybeCustomRenderTarget ?
+        maybeCustomRenderTarget->colors.front().buffer->m_Impl->getDimensions() :
+        App::get().idims();
+
+    Rect const cameraRect = camera.getPixelRect() ?
+        *camera.getPixelRect() :
+        Rect{{}, targetDims};
+
     glm::vec2 const cameraRectBottomLeft = BottomLeft(cameraRect);
-    glm::vec2 const viewportDims = osc::Dimensions(targetRect);
     glm::vec2 const outputDimensions = Dimensions(cameraRect);
-    glm::vec2 const topLeft = {cameraRectBottomLeft.x, viewportDims.y - cameraRectBottomLeft.y};
+    glm::vec2 const topLeft = {cameraRectBottomLeft.x, targetDims.y - cameraRectBottomLeft.y};
 
     return Rect{topLeft, topLeft + outputDimensions};
 }
 
 osc::Rect osc::GraphicsBackend::SetupTopLevelPipelineState(
     Camera::Impl& camera,
-    RenderTexture* maybeRenderTexture)
+    RenderTarget* maybeCustomRenderTarget)
 {
-    Rect const viewportRect = CalcViewportRect(camera, maybeRenderTexture);
+    Rect const viewportRect = CalcViewportRect(camera, maybeCustomRenderTarget);
     glm::vec2 const viewportDims = Dimensions(viewportRect);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -5416,7 +5439,7 @@ osc::Rect osc::GraphicsBackend::SetupTopLevelPipelineState(
 
 void osc::GraphicsBackend::TeardownTopLevelPipelineState(
     Camera::Impl& camera,
-    RenderTexture* maybeRenderTexture)
+    RenderTarget*)
 {
     if (camera.m_MaybeScissorRect)
     {
@@ -5428,79 +5451,192 @@ void osc::GraphicsBackend::TeardownTopLevelPipelineState(
 
 std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
     Camera::Impl& camera,
-    RenderTexture* maybeRenderTexture)
+    RenderTarget* maybeCustomRenderTarget)
 {
     // if necessary, create pass-specific FBO
     std::optional<gl::FrameBuffer> maybeRenderFBO;
-    if (maybeRenderTexture)
+
+    if (maybeCustomRenderTarget)
     {
         gl::FrameBuffer& fbo = maybeRenderFBO.emplace();
         gl::BindFramebuffer(
             GL_DRAW_FRAMEBUFFER,
             fbo
         );
-        gl::FramebufferRenderbuffer(
-            GL_DRAW_FRAMEBUFFER,
-            GL_COLOR_ATTACHMENT0,
-            const_cast<RenderTexture::Impl&>(*maybeRenderTexture->m_Impl).getColorRBO()
-        );
+
+        // attach buffers
+        for (RenderTargetColorAttachment& colorAttachment : maybeCustomRenderTarget->colors)
+        {
+            gl::FramebufferRenderbuffer(
+                GL_DRAW_FRAMEBUFFER,
+                GL_COLOR_ATTACHMENT0,
+                colorAttachment.buffer->m_Impl->updRBO()
+            );
+        }
         gl::FramebufferRenderbuffer(
             GL_DRAW_FRAMEBUFFER,
             GL_DEPTH_STENCIL_ATTACHMENT,
-            const_cast<RenderTexture::Impl&>(*maybeRenderTexture->m_Impl).getDepthStencilRBO()
+            maybeCustomRenderTarget->depth.buffer->m_Impl->updRBO()
         );
+
+        // clear buffers based on buffer flags
+        static_assert(static_cast<size_t>(osc::RenderBufferLoadAction::TOTAL) == 2);
+        for (size_t i = 0; i < maybeCustomRenderTarget->colors.size(); ++i)
+        {
+            RenderTargetColorAttachment& colorAttachment = maybeCustomRenderTarget->colors[i];
+            if (colorAttachment.loadAction == osc::RenderBufferLoadAction::Clear)
+            {
+                glm::vec4 const color = colorAttachment.clearColor;
+                glClearBufferfv(GL_COLOR, static_cast<GLint>(i), glm::value_ptr(color));
+            }
+        }
+        if (maybeCustomRenderTarget->depth.loadAction == osc::RenderBufferLoadAction::Clear)
+        {
+            gl::Clear(GL_DEPTH_BUFFER_BIT);
+        }
     }
-
-    // if necessary, clear the target FBO
-    if (camera.m_ClearFlags != CameraClearFlags::Nothing)
+    else
     {
-        GLenum const clearFlags = camera.m_ClearFlags == CameraClearFlags::SolidColor ?
-            GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT :
-            GL_DEPTH_BUFFER_BIT;
+        // we're rendering to the window
+        if (camera.m_ClearFlags != CameraClearFlags::Nothing)
+        {
+            // clear window
+            GLenum const clearFlags = camera.m_ClearFlags == CameraClearFlags::SolidColor ?
+                GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT :
+                GL_DEPTH_BUFFER_BIT;
 
-        // clear color is in sRGB, but the framebuffer is sRGB-corrected and assumes that
-        // the given colors are in linear space
-        Color const linearColor = ToLinear(camera.m_BackgroundColor);
-        gl::ClearColor(
-            linearColor.r,
-            linearColor.g,
-            linearColor.b,
-            linearColor.a
-        );
-        gl::Clear(clearFlags);
+            // clear color is in sRGB, but the window's framebuffer is sRGB-corrected
+            // and assume that clear colors are in linear space
+            Color const linearColor = ToLinear(camera.m_BackgroundColor);
+            gl::ClearColor(
+                linearColor.r,
+                linearColor.g,
+                linearColor.b,
+                linearColor.a
+            );
+            gl::Clear(clearFlags);
+        }
     }
 
     return maybeRenderFBO;
 }
 
-void osc::GraphicsBackend::ResolveRenderBuffers(RenderTexture* maybeRenderTexture)
+void osc::GraphicsBackend::ResolveRenderBuffers(RenderTarget& renderTarget)
 {
-    // if necessary, resolve any render buffers
-    if (maybeRenderTexture)
+    static_assert(static_cast<size_t>(RenderBufferStoreAction::TOTAL) == 2, "check 'if's etc. in this code");
+
+    OSC_PERF("RenderTexture::resolveBuffers");
+
+    glm::ivec2 const dimensions = renderTarget.colors.at(0).buffer->m_Impl->getDimensions();
+
+    // setup FBOs
+    gl::FrameBuffer multisampledReadFBO;
+    gl::BindFramebuffer(GL_READ_FRAMEBUFFER, multisampledReadFBO);
+    gl::FrameBuffer resolvedDrawFBO;
+    gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, resolvedDrawFBO);
+
+    // resolve color buffers with a blit
+    for (size_t i = 0; i < renderTarget.colors.size(); ++i)
     {
-        const_cast<osc::RenderTexture::Impl&>(*maybeRenderTexture->m_Impl).resolveBuffers();
+        RenderTargetColorAttachment const& attachment = renderTarget.colors[i];
+
+        if (attachment.storeAction == RenderBufferStoreAction::Resolve)
+        {
+            GLint const attachmentLoc = GL_COLOR_ATTACHMENT0 + static_cast<GLint>(i);
+
+            gl::FramebufferRenderbuffer(
+                GL_READ_FRAMEBUFFER,
+                attachmentLoc,
+                attachment.buffer->m_Impl->updRBO()
+            );
+            gl::FramebufferTexture2D(
+                GL_DRAW_FRAMEBUFFER,
+                attachmentLoc,
+                attachment.buffer->m_Impl->updResolvedTexture(),
+                0
+            );
+            glReadBuffer(attachmentLoc);
+            glDrawBuffer(attachmentLoc);
+            gl::BlitFramebuffer(
+                0,
+                0,
+                dimensions.x,
+                dimensions.y,
+                0,
+                0,
+                dimensions.x,
+                dimensions.y,
+                GL_COLOR_BUFFER_BIT,
+                GL_NEAREST
+            );
+        }
     }
+
+    // resolve depth buffer with a blit
+    if (renderTarget.depth.storeAction == RenderBufferStoreAction::Resolve)
+    {
+        GLint const attachmentLoc = GL_DEPTH_ATTACHMENT;
+
+        gl::FramebufferRenderbuffer(
+            GL_READ_FRAMEBUFFER,
+            attachmentLoc,
+            renderTarget.depth.buffer->m_Impl->updRBO()
+        );
+        gl::FramebufferTexture2D(
+            GL_DRAW_FRAMEBUFFER,
+            attachmentLoc,
+            renderTarget.depth.buffer->m_Impl->updResolvedTexture(),
+            0
+        );
+        glReadBuffer(attachmentLoc);
+        glDrawBuffer(attachmentLoc);
+        gl::BlitFramebuffer(
+            0,
+            0,
+            dimensions.x,
+            dimensions.y,
+            0,
+            0,
+            dimensions.x,
+            dimensions.y,
+            GL_DEPTH_BUFFER_BIT,
+            GL_NEAREST
+        );
+    }
+    gl::BindFramebuffer(GL_READ_FRAMEBUFFER, gl::windowFbo);
+    gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, gl::windowFbo);
 }
 
-void osc::GraphicsBackend::RenderScene(Camera::Impl& camera, RenderTexture* maybeRenderTexture)
+void osc::GraphicsBackend::RenderScene(
+    Camera::Impl& camera,
+    RenderTarget* maybeCustomRenderTarget)
 {
     OSC_PERF("GraphicsBackend::RenderScene");
 
+    if (maybeCustomRenderTarget)
+    {
+        ValidateRenderTarget(*maybeCustomRenderTarget);
+    }
+
     Rect const viewportRect = SetupTopLevelPipelineState(
         camera,
-        maybeRenderTexture
+        maybeCustomRenderTarget
     );
 
     {
         std::optional<gl::FrameBuffer> const maybeTmpFBO =
-            BindAndClearRenderBuffers(camera, maybeRenderTexture);
+            BindAndClearRenderBuffers(camera, maybeCustomRenderTarget);
         FlushRenderQueue(camera, AspectRatio(viewportRect));
-        ResolveRenderBuffers(maybeRenderTexture);
+    }
+
+    if (maybeCustomRenderTarget)
+    {
+        ResolveRenderBuffers(*maybeCustomRenderTarget);
     }
 
     TeardownTopLevelPipelineState(
         camera,
-        maybeRenderTexture
+        maybeCustomRenderTarget
     );
 }
 

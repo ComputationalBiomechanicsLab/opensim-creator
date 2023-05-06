@@ -3,7 +3,8 @@
 namespace osc
 {
 	enum class RenderBufferStoreAction {
-		Resolve,
+		Resolve = 0,
 		DontCare,
+		TOTAL,
 	};
 }
