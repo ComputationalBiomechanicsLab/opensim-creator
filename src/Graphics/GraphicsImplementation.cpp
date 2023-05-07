@@ -923,7 +923,7 @@ public:
         size_t const destinationDataStart = faceIndex * numBytesPerCubeFace;
         size_t const destinationDataEnd = destinationDataStart + numBytesPerCubeFace;
 
-        OSC_ASSERT(0 <= faceIndex && faceIndex < static_cast<size_t>(CubemapFace::TOTAL) && "invalid cubemap face passed to Cubemap::setPixelData");
+        OSC_ASSERT(faceIndex < static_cast<size_t>(CubemapFace::TOTAL) && "invalid cubemap face passed to Cubemap::setPixelData");
         OSC_THROWING_ASSERT(data.size() == numBytesPerCubeFace && "incorrect amount of data passed to Cubemap::setPixelData: the data must match the dimensions and texture format of the cubemap");
         OSC_ASSERT(destinationDataEnd <= m_Data.size() && "out of range assignment detected: this should be handled in the constructor");
 
@@ -1522,9 +1522,10 @@ namespace
                 return CPUImageFormat::R8;
             case osc::RenderTextureFormat::ARGBHalf:
                 return CPUImageFormat::RGBA;
+            default:
+                return CPUImageFormat::RGBA;  // shouldn't be hit (static asserts)
             }
         }
-        return CPUImageFormat::RGBA;  // shouldn't be hit (check static_asserts)
     }
 
     constexpr CPUDataType ToEquivalentCPUDataType(
@@ -1550,9 +1551,10 @@ namespace
                 return CPUDataType::UnsignedByte;
             case osc::RenderTextureFormat::ARGBHalf:
                 return CPUDataType::HalfFloat;
+            default:
+                return CPUDataType::UnsignedByte;  // shouldn't be hit
             }
         }
-        return CPUDataType::UnsignedByte;  // shouldn't be hit (static_assert)
     }
 
     GLenum ToOpenGLPixelDataType(osc::RenderTextureFormat f)
