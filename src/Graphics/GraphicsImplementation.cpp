@@ -4666,7 +4666,7 @@ public:
         // and assumes that the given colors are in linear space
         Color const linearColor = ToLinear(color);
 
-        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, gl::windowFbo);
         gl::ClearColor(linearColor.r, linearColor.g, linearColor.b, linearColor.a);
         gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
@@ -5689,7 +5689,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
     }
     else
     {
-        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
 
         // we're rendering to the window
         if (camera.m_ClearFlags != CameraClearFlags::Nothing)
@@ -5907,7 +5907,6 @@ void osc::GraphicsBackend::BlitToScreen(
         glReadBuffer(GL_COLOR_ATTACHMENT0);
 
         gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, gl::windowFbo);
-        glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
         gl::BlitFramebuffer(
             0,
@@ -5974,6 +5973,8 @@ void osc::GraphicsBackend::ReadPixels(RenderTexture const& source, Image& dest)
 
     std::vector<uint8_t> pixels(static_cast<size_t>(channels*dims.x*dims.y));
 
+    gl::Viewport(0, 0, dims.x, dims.y);
+
     gl::FrameBuffer fbo;
     gl::BindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
     gl::FramebufferTexture2D(
@@ -5988,7 +5989,7 @@ void osc::GraphicsBackend::ReadPixels(RenderTexture const& source, Image& dest)
         const_cast<RenderTexture::Impl&>(*source.m_Impl).getResolvedDepthTexture(),
         0
     );
-    gl::Viewport(0, 0, dims.x, dims.y);
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
     GLint const packFormat = ToImagePixelPackAlignment(source.getColorFormat());
     OSC_ASSERT(reinterpret_cast<uintptr_t>(pixels.data()) % packFormat == 0 && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
     gl::PixelStorei(GL_PACK_ALIGNMENT, packFormat);
@@ -6001,6 +6002,7 @@ void osc::GraphicsBackend::ReadPixels(RenderTexture const& source, Image& dest)
         ToImageDataType(source.getColorFormat()),
         pixels.data()
     );
+
     gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
 
     dest = Image{dims, pixels, channels, ColorSpace::sRGB};
