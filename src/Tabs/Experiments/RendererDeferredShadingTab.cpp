@@ -141,8 +141,6 @@ public:
     void onMount()
     {
         App::upd().makeMainEventLoopPolling();
-
-        // capture the mouse when mounting this tab
         m_IsMouseCaptured = true;
     }
 

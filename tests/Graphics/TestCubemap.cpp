@@ -196,3 +196,8 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForWidth)
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
     }
 }
+
+TEST(Cubemap, SetPixelDataWorksWithFloatingPointTextureFormats)
+{
+    osc::TextureFormat const format = osc::TextureFormat::RGBAFloat;
+}

@@ -19,7 +19,10 @@ namespace osc
 
         int32_t getWidth() const;
         TextureFormat getTextureFormat() const;
-        void setPixelData(CubemapFace, nonstd::span<uint8_t const> channelsRowByRow);
+
+        // `data` must match the channel layout, bytes per channel, and
+        // width*height of the cubemap, or an exception will be thrown
+        void setPixelData(CubemapFace, nonstd::span<uint8_t const> data);
 
     private:
         friend class GraphicsBackend;

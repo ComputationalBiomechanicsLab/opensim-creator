@@ -29,6 +29,7 @@
 #include "src/Tabs/Experiments/RendererParallaxMappingTab.hpp"
 #include "src/Tabs/Experiments/RendererSDFTab.hpp"
 #include "src/Tabs/Experiments/RendererShadowMappingTab.hpp"
+#include "src/Tabs/Experiments/RendererSSAOTab.hpp"
 #include "src/Tabs/Experiments/RendererTexturingTab.hpp"
 #include "src/OpenSimBindings/Tabs/Experimental/MeshHittestTab.hpp"
 #include "src/OpenSimBindings/Tabs/Experimental/ModelWarpingTab.hpp"
@@ -190,6 +191,7 @@ namespace
         RegisterTab<osc::RendererTexturingTab>(registry);
         RegisterTab<osc::RendererSDFTab>(registry);
         RegisterTab<osc::RendererShadowMappingTab>(registry);
+        RegisterTab<osc::RendererSSAOTab>(registry);
         RegisterTab<osc::ImGuiDemoTab>(registry);
         RegisterTab<osc::ImPlotDemoTab>(registry);
         RegisterTab<osc::ImGuizmoDemoTab>(registry);

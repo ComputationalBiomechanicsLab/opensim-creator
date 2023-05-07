@@ -764,6 +764,8 @@ add_library(osccore STATIC
     src/Tabs/Experiments/RendererSDFTab.hpp
     src/Tabs/Experiments/RendererShadowMappingTab.cpp
     src/Tabs/Experiments/RendererShadowMappingTab.hpp
+    src/Tabs/Experiments/RendererSSAOTab.cpp
+    src/Tabs/Experiments/RendererSSAOTab.hpp
     src/Tabs/Experiments/RendererTexturingTab.cpp
     src/Tabs/Experiments/RendererTexturingTab.hpp
     src/Tabs/CookiecutterTab.cpp

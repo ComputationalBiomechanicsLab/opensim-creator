@@ -474,7 +474,7 @@ osc::Material osc::CreateWireframeOverlayMaterial(Config const& config, ShaderCa
 
 osc::Texture2D osc::ToTexture2D(Image const& image)
 {
-    std::optional<TextureFormat> const format = NumChannelsAsTextureFormat(image.getNumChannels());
+    std::optional<TextureFormat> const format = ToTextureFormat<uint8_t>(image.getNumChannels());
     if (!format)
     {
         std::stringstream ss;
