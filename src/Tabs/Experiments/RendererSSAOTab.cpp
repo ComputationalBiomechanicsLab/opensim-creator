@@ -3,11 +3,20 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Graphics/Camera.hpp"
 #include "src/Graphics/Color.hpp"
+#include "src/Graphics/ColorSpace.hpp"
+#include "src/Graphics/Mesh.hpp"
+#include "src/Graphics/MeshGen.hpp"
 #include "src/Graphics/Texture2D.hpp"
+#include "src/Graphics/TextureFormat.hpp"
+#include "src/Graphics/TextureFilterMode.hpp"
+#include "src/Graphics/TextureFormat.hpp"
+#include "src/Graphics/TextureWrapMode.hpp"
 #include "src/Platform/App.hpp"
 
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <IconsFontAwesome5.h>
+#include <nonstd/span.hpp>
 #include <SDL_events.h>
 
 #include <cstddef>
@@ -55,29 +64,53 @@ namespace
         return rv;
     }
 
-    std::vector<glm::vec3> GenerateNoiseTexturePixels(size_t numPixels)
+    std::vector<glm::vec4> GenerateNoiseTexturePixels(size_t numPixels)
     {
         std::default_random_engine rng{std::random_device{}()};
         std::uniform_real_distribution<float> minusOneToOne{-1.0f, 1.0f};
 
-        std::vector<glm::vec3> rv;
+        std::vector<glm::vec4> rv;
         rv.reserve(numPixels);
         for (size_t i = 0; i < numPixels; ++i)
         {
-            rv.push_back(glm::vec3
+            rv.push_back(glm::vec4
             {
                 minusOneToOne(rng),
                 minusOneToOne(rng),
                 0.0f,  // rotate around z-axis in tangent space
+                0.0f,  // ignored (Texture2D doesn't support RGB --> RGBA upload conversion)
             });
         }
         return rv;
     }
 
+    template<typename T>
+    nonstd::span<uint8_t const> ToByteSpan(nonstd::span<T const> vs)
+    {
+        return
+        {
+            reinterpret_cast<uint8_t const*>(vs.data()),
+            reinterpret_cast<uint8_t const*>(vs.data() + vs.size())
+        };
+    }
+
     osc::Texture2D GenerateNoiseTexture(glm::ivec2 dimensions)
     {
-        std::vector<glm::vec3> const pixels =
+        std::vector<glm::vec4> const pixels =
             GenerateNoiseTexturePixels(static_cast<size_t>(dimensions.x * dimensions.y));
+
+        osc::Texture2D rv
+        {
+            dimensions,
+            osc::TextureFormat::RGBAFloat,
+            ToByteSpan<glm::vec4>(pixels),
+            osc::ColorSpace::Linear,
+        };
+
+        rv.setFilterMode(osc::TextureFilterMode::Nearest);
+        rv.setWrapMode(osc::TextureWrapMode::Repeat);
+
+        return rv;
     }
 }
 
@@ -145,10 +178,24 @@ private:
     std::weak_ptr<TabHost> m_Parent;
 
     std::vector<glm::vec3> m_SampleKernel = GenerateSampleKernel(64);
-    //osc::Texture2D m_NoiseTexture = GenerateNoiseTexture({4, 4});
+    osc::Texture2D m_NoiseTexture = GenerateNoiseTexture({4, 4});
+    glm::vec3 m_LightPosition = {2.0f, 4.0f, -2.0f};
+    glm::vec3 m_LightColor = {0.2f, 0.2f, 0.7f};
+
     Camera m_Camera = CreateCameraWithSameParamsAsLearnOpenGL();
     bool m_IsMouseCaptured = true;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+
+    Mesh m_SphereMesh = GenUntexturedUVSphere(32, 32);
+    Mesh m_CubeMesh = GenCube();
+    Mesh m_QuadMesh = GenTexturedQuad();
+
+    // TODO:
+    //
+    // - gbuffer (geometry pass)
+    // - ssao pass
+    // - blur pass
+    // - lighting pass
 };
 
 
