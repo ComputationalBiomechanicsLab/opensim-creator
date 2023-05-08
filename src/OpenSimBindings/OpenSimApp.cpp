@@ -14,23 +14,23 @@
 #include "src/Tabs/Experiments/ImGuizmoDemoTab.hpp"
 #include "src/Tabs/Experiments/ImPlotDemoTab.hpp"
 #include "src/Tabs/Experiments/MeshGenTestTab.hpp"
-#include "src/Tabs/Experiments/RendererBasicLightingTab.hpp"
-#include "src/Tabs/Experiments/RendererBlendingTab.hpp"
-#include "src/Tabs/Experiments/RendererCoordinateSystemsTab.hpp"
-#include "src/Tabs/Experiments/RendererCubemapsTab.hpp"
-#include "src/Tabs/Experiments/RendererDeferredShadingTab.hpp"
-#include "src/Tabs/Experiments/RendererFramebuffersTab.hpp"
-#include "src/Tabs/Experiments/RendererGammaTab.hpp"
-#include "src/Tabs/Experiments/RendererHDRTab.hpp"
-#include "src/Tabs/Experiments/RendererHelloTriangleTab.hpp"
-#include "src/Tabs/Experiments/RendererLightingMapsTab.hpp"
-#include "src/Tabs/Experiments/RendererMultipleLightsTab.hpp"
-#include "src/Tabs/Experiments/RendererNormalMappingTab.hpp"
-#include "src/Tabs/Experiments/RendererParallaxMappingTab.hpp"
 #include "src/Tabs/Experiments/RendererSDFTab.hpp"
-#include "src/Tabs/Experiments/RendererShadowMappingTab.hpp"
-#include "src/Tabs/Experiments/RendererSSAOTab.hpp"
-#include "src/Tabs/Experiments/RendererTexturingTab.hpp"
+#include "src/Tabs/LearnOpenGL/LOGLBasicLightingTab.hpp"
+#include "src/Tabs/LearnOpenGL/LOGLBlendingTab.hpp"
+#include "src/Tabs/LearnOpenGL/LOGLCoordinateSystemsTab.hpp"
+#include "src/Tabs/LearnOpenGL/LOGLCubemapsTab.hpp"
+#include "src/Tabs/LearnOpenGL/LOGLDeferredShadingTab.hpp"
+#include "src/Tabs/LearnOpenGL/LOGLFramebuffersTab.hpp"
+#include "src/Tabs/LearnOpenGL/LOGLGammaTab.hpp"
+#include "src/Tabs/LearnOpenGL/LOGLHDRTab.hpp"
+#include "src/Tabs/LearnOpenGL/LOGLHelloTriangleTab.hpp"
+#include "src/Tabs/LearnOpenGL/LOGLLightingMapsTab.hpp"
+#include "src/Tabs/LearnOpenGL/LOGLMultipleLightsTab.hpp"
+#include "src/Tabs/LearnOpenGL/LOGLNormalMappingTab.hpp"
+#include "src/Tabs/LearnOpenGL/LOGLParallaxMappingTab.hpp"
+#include "src/Tabs/LearnOpenGL/LOGLShadowMappingTab.hpp"
+#include "src/Tabs/LearnOpenGL/LOGLSSAOTab.hpp"
+#include "src/Tabs/LearnOpenGL/LOGLTexturingTab.hpp"
 #include "src/OpenSimBindings/Tabs/Experimental/MeshHittestTab.hpp"
 #include "src/OpenSimBindings/Tabs/Experimental/ModelWarpingTab.hpp"
 #include "src/OpenSimBindings/Tabs/Experimental/PreviewExperimentalDataTab.hpp"
@@ -175,23 +175,23 @@ namespace
     {
         RegisterTab<osc::CustomWidgetsTab>(registry);
         RegisterTab<osc::HittestTab>(registry);
-        RegisterTab<osc::RendererBasicLightingTab>(registry);
-        RegisterTab<osc::RendererBlendingTab>(registry);
-        RegisterTab<osc::RendererCoordinateSystemsTab>(registry);
-        RegisterTab<osc::RendererCubemapsTab>(registry);
-        RegisterTab<osc::RendererDeferredShadingTab>(registry);
-        RegisterTab<osc::RendererFramebuffersTab>(registry);
-        RegisterTab<osc::RendererGammaTab>(registry);
-        RegisterTab<osc::RendererHDRTab>(registry);
-        RegisterTab<osc::RendererHelloTriangleTab>(registry);
-        RegisterTab<osc::RendererLightingMapsTab>(registry);
-        RegisterTab<osc::RendererMultipleLightsTab>(registry);
-        RegisterTab<osc::RendererNormalMappingTab>(registry);
-        RegisterTab<osc::RendererParallaxMappingTab>(registry);
-        RegisterTab<osc::RendererTexturingTab>(registry);
+        RegisterTab<osc::LOGLBasicLightingTab>(registry);
+        RegisterTab<osc::LOGLBlendingTab>(registry);
+        RegisterTab<osc::LOGLCoordinateSystemsTab>(registry);
+        RegisterTab<osc::LOGLCubemapsTab>(registry);
+        RegisterTab<osc::LOGLDeferredShadingTab>(registry);
+        RegisterTab<osc::LOGLFramebuffersTab>(registry);
+        RegisterTab<osc::LOGLGammaTab>(registry);
+        RegisterTab<osc::LOGLHDRTab>(registry);
+        RegisterTab<osc::LOGLHelloTriangleTab>(registry);
+        RegisterTab<osc::LOGLLightingMapsTab>(registry);
+        RegisterTab<osc::LOGLMultipleLightsTab>(registry);
+        RegisterTab<osc::LOGLNormalMappingTab>(registry);
+        RegisterTab<osc::LOGLParallaxMappingTab>(registry);
+        RegisterTab<osc::LOGLTexturingTab>(registry);
         RegisterTab<osc::RendererSDFTab>(registry);
-        RegisterTab<osc::RendererShadowMappingTab>(registry);
-        RegisterTab<osc::RendererSSAOTab>(registry);
+        RegisterTab<osc::LOGLShadowMappingTab>(registry);
+        RegisterTab<osc::LOGLSSAOTab>(registry);
         RegisterTab<osc::ImGuiDemoTab>(registry);
         RegisterTab<osc::ImPlotDemoTab>(registry);
         RegisterTab<osc::ImGuizmoDemoTab>(registry);

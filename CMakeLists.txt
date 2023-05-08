@@ -734,40 +734,42 @@ add_library(osccore STATIC
     src/Tabs/Experiments/ImPlotDemoTab.hpp
     src/Tabs/Experiments/MeshGenTestTab.cpp
     src/Tabs/Experiments/MeshGenTestTab.hpp
-    src/Tabs/Experiments/RendererBasicLightingTab.cpp
-    src/Tabs/Experiments/RendererBasicLightingTab.hpp
-    src/Tabs/Experiments/RendererBlendingTab.cpp
-    src/Tabs/Experiments/RendererBlendingTab.hpp
-    src/Tabs/Experiments/RendererCoordinateSystemsTab.cpp
-    src/Tabs/Experiments/RendererCoordinateSystemsTab.hpp
-    src/Tabs/Experiments/RendererCubemapsTab.cpp
-    src/Tabs/Experiments/RendererCubemapsTab.hpp
-    src/Tabs/Experiments/RendererDeferredShadingTab.cpp
-    src/Tabs/Experiments/RendererDeferredShadingTab.hpp
-    src/Tabs/Experiments/RendererFramebuffersTab.cpp
-    src/Tabs/Experiments/RendererFramebuffersTab.hpp
-    src/Tabs/Experiments/RendererGammaTab.cpp
-    src/Tabs/Experiments/RendererGammaTab.hpp
-    src/Tabs/Experiments/RendererHDRTab.cpp
-    src/Tabs/Experiments/RendererHDRTab.hpp
-    src/Tabs/Experiments/RendererHelloTriangleTab.cpp
-    src/Tabs/Experiments/RendererHelloTriangleTab.hpp
-    src/Tabs/Experiments/RendererLightingMapsTab.cpp
-    src/Tabs/Experiments/RendererLightingMapsTab.hpp
-    src/Tabs/Experiments/RendererMultipleLightsTab.cpp
-    src/Tabs/Experiments/RendererMultipleLightsTab.hpp
-    src/Tabs/Experiments/RendererNormalMappingTab.cpp
-    src/Tabs/Experiments/RendererNormalMappingTab.hpp
-    src/Tabs/Experiments/RendererParallaxMappingTab.cpp
-    src/Tabs/Experiments/RendererParallaxMappingTab.hpp
     src/Tabs/Experiments/RendererSDFTab.cpp
     src/Tabs/Experiments/RendererSDFTab.hpp
-    src/Tabs/Experiments/RendererShadowMappingTab.cpp
-    src/Tabs/Experiments/RendererShadowMappingTab.hpp
-    src/Tabs/Experiments/RendererSSAOTab.cpp
-    src/Tabs/Experiments/RendererSSAOTab.hpp
-    src/Tabs/Experiments/RendererTexturingTab.cpp
-    src/Tabs/Experiments/RendererTexturingTab.hpp
+
+    src/Tabs/LearnOpenGL/LOGLBasicLightingTab.cpp
+    src/Tabs/LearnOpenGL/LOGLBasicLightingTab.hpp
+    src/Tabs/LearnOpenGL/LOGLBlendingTab.cpp
+    src/Tabs/LearnOpenGL/LOGLBlendingTab.hpp
+    src/Tabs/LearnOpenGL/LOGLCoordinateSystemsTab.cpp
+    src/Tabs/LearnOpenGL/LOGLCoordinateSystemsTab.hpp
+    src/Tabs/LearnOpenGL/LOGLCubemapsTab.cpp
+    src/Tabs/LearnOpenGL/LOGLCubemapsTab.hpp
+    src/Tabs/LearnOpenGL/LOGLDeferredShadingTab.cpp
+    src/Tabs/LearnOpenGL/LOGLDeferredShadingTab.hpp
+    src/Tabs/LearnOpenGL/LOGLFramebuffersTab.cpp
+    src/Tabs/LearnOpenGL/LOGLFramebuffersTab.hpp
+    src/Tabs/LearnOpenGL/LOGLGammaTab.cpp
+    src/Tabs/LearnOpenGL/LOGLGammaTab.hpp
+    src/Tabs/LearnOpenGL/LOGLHDRTab.cpp
+    src/Tabs/LearnOpenGL/LOGLHDRTab.hpp
+    src/Tabs/LearnOpenGL/LOGLHelloTriangleTab.cpp
+    src/Tabs/LearnOpenGL/LOGLHelloTriangleTab.hpp
+    src/Tabs/LearnOpenGL/LOGLLightingMapsTab.cpp
+    src/Tabs/LearnOpenGL/LOGLLightingMapsTab.hpp
+    src/Tabs/LearnOpenGL/LOGLMultipleLightsTab.cpp
+    src/Tabs/LearnOpenGL/LOGLMultipleLightsTab.hpp
+    src/Tabs/LearnOpenGL/LOGLNormalMappingTab.cpp
+    src/Tabs/LearnOpenGL/LOGLNormalMappingTab.hpp
+    src/Tabs/LearnOpenGL/LOGLParallaxMappingTab.cpp
+    src/Tabs/LearnOpenGL/LOGLParallaxMappingTab.hpp
+    src/Tabs/LearnOpenGL/LOGLShadowMappingTab.cpp
+    src/Tabs/LearnOpenGL/LOGLShadowMappingTab.hpp
+    src/Tabs/LearnOpenGL/LOGLSSAOTab.cpp
+    src/Tabs/LearnOpenGL/LOGLSSAOTab.hpp
+    src/Tabs/LearnOpenGL/LOGLTexturingTab.cpp
+    src/Tabs/LearnOpenGL/LOGLTexturingTab.hpp
+
     src/Tabs/CookiecutterTab.cpp
     src/Tabs/CookiecutterTab.hpp
     src/Tabs/ErrorTab.cpp
