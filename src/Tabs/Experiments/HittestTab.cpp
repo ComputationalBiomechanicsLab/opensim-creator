@@ -13,8 +13,9 @@
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/Sphere.hpp"
 #include "src/Maths/Triangle.hpp"
-#include "src/Utils/Algorithms.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Utils/Algorithms.hpp"
+#include "src/Utils/CStringView.hpp"
 
 #include <glm/vec3.hpp>
 #include <SDL_events.h>
@@ -28,6 +29,8 @@
 
 namespace
 {
+    constexpr osc::CStringView c_TabStringID = "Experiments/Hittest";
+
     auto constexpr c_CrosshairVerts = osc::MakeArray<glm::vec3>
     (
         // -X to +X
@@ -130,7 +133,7 @@ public:
 
     CStringView getName() const
     {
-        return ICON_FA_COOKIE " HittestTab";
+        return c_TabStringID;
     }
 
     void onMount()
@@ -331,7 +334,7 @@ private:
 
 osc::CStringView osc::HittestTab::id() noexcept
 {
-    return "Hittest/AnalyticGeometry";
+    return c_TabStringID;
 }
 
 osc::HittestTab::HittestTab(std::weak_ptr<TabHost>) :

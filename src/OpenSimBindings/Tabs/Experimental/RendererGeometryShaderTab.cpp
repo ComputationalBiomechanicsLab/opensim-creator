@@ -123,7 +123,7 @@ private:
 
 osc::CStringView osc::RendererGeometryShaderTab::id() noexcept
 {
-    return "Renderer/GeometryShader";
+    return "OpenSim/Experimental/GeometryShader";
 }
 
 osc::RendererGeometryShaderTab::RendererGeometryShaderTab(std::weak_ptr<TabHost>) :

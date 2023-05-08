@@ -564,6 +564,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/Screens/MainUIScreen.cpp
     src/OpenSimBindings/Screens/MainUIScreen.hpp
 
+    src/OpenSimBindings/Tabs/Experimental/FrameDefinitionTab.cpp
+    src/OpenSimBindings/Tabs/Experimental/FrameDefinitionTab.hpp
     src/OpenSimBindings/Tabs/Experimental/MeshHittestTab.cpp
     src/OpenSimBindings/Tabs/Experimental/MeshHittestTab.hpp
     src/OpenSimBindings/Tabs/Experimental/ModelWarpingTab.cpp
@@ -722,16 +724,17 @@ add_library(osccore STATIC
     src/Screens/CookiecutterScreen.hpp
     src/Screens/Screen.hpp
 
+    src/Tabs/Demos/ImGuiDemoTab.cpp
+    src/Tabs/Demos/ImGuiDemoTab.hpp
+    src/Tabs/Demos/ImGuizmoDemoTab.cpp
+    src/Tabs/Demos/ImGuizmoDemoTab.hpp
+    src/Tabs/Demos/ImPlotDemoTab.cpp
+    src/Tabs/Demos/ImPlotDemoTab.hpp
+
     src/Tabs/Experiments/CustomWidgetsTab.cpp
     src/Tabs/Experiments/CustomWidgetsTab.hpp
     src/Tabs/Experiments/HittestTab.cpp
     src/Tabs/Experiments/HittestTab.hpp
-    src/Tabs/Experiments/ImGuiDemoTab.cpp
-    src/Tabs/Experiments/ImGuiDemoTab.hpp
-    src/Tabs/Experiments/ImGuizmoDemoTab.cpp
-    src/Tabs/Experiments/ImGuizmoDemoTab.hpp
-    src/Tabs/Experiments/ImPlotDemoTab.cpp
-    src/Tabs/Experiments/ImPlotDemoTab.hpp
     src/Tabs/Experiments/MeshGenTestTab.cpp
     src/Tabs/Experiments/MeshGenTestTab.hpp
     src/Tabs/Experiments/RendererSDFTab.cpp

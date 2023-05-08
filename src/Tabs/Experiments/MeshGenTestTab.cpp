@@ -12,12 +12,12 @@
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Widgets/SceneViewer.hpp"
+#include "src/Utils/CStringView.hpp"
 
 #include <glm/gtx/transform.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
-#include <IconsFontAwesome5.h>
 #include <imgui.h>
 
 #include <map>
@@ -26,6 +26,8 @@
 
 namespace
 {
+    constexpr osc::CStringView c_TabStringID = "Experiments/MeshGen";
+
     std::map<std::string, osc::Mesh> GenerateMeshLookup()
     {
         osc::MeshCache& cache = *osc::App::singleton<osc::MeshCache>();
@@ -60,7 +62,7 @@ public:
 
     CStringView getName() const
     {
-        return ICON_FA_HAT_WIZARD " MeshGenTest";
+        return c_TabStringID;
     }
 
     void onDraw()
@@ -129,7 +131,7 @@ private:
 
 osc::CStringView osc::MeshGenTestTab::id() noexcept
 {
-    return "MeshGen/Test";
+    return c_TabStringID;
 }
 
 osc::MeshGenTestTab::MeshGenTestTab(std::weak_ptr<TabHost>) :

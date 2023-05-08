@@ -1,6 +1,7 @@
 #include "CustomWidgetsTab.hpp"
 
-#include <IconsFontAwesome5.h>
+#include "src/Utils/CStringView.hpp"
+
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <SDL_events.h>
@@ -10,6 +11,8 @@
 
 namespace
 {
+    constexpr osc::CStringView c_TabStringID = "Experiments/CustomWidgets";
+
     float GetWidgetTitleDescriptionHeight(const char *, const char *description)
     {
         //ImGui::PushFont(g_font_mgr.m_menu_font_medium);
@@ -244,7 +247,7 @@ public:
 
     CStringView getName() const
     {
-        return ICON_FA_COOKIE " CustomWidgetsTab";
+        return c_TabStringID;
     }
 
     void onDraw()
@@ -267,7 +270,7 @@ private:
 
 osc::CStringView osc::CustomWidgetsTab::id() noexcept
 {
-    return "UI/CustomWidgets";
+    return c_TabStringID;
 }
 
 osc::CustomWidgetsTab::CustomWidgetsTab(std::weak_ptr<TabHost>) :

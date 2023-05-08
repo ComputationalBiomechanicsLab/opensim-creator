@@ -1,10 +1,16 @@
 #include "ImGuiDemoTab.hpp"
 
-#include <IconsFontAwesome5.h>
+#include "src/Utils/CStringView.hpp"
+
 #include <imgui.h>
 
 #include <string>
 #include <utility>
+
+namespace
+{
+    constexpr osc::CStringView c_TabStringID = "Demos/ImGui";
+}
 
 class osc::ImGuiDemoTab::Impl final {
 public:
@@ -16,7 +22,7 @@ public:
 
     CStringView getName() const
     {
-        return ICON_FA_HAT_WIZARD " ImGuiDemoTab";
+        return c_TabStringID;
     }
 
     void onDraw()
@@ -33,7 +39,7 @@ private:
 
 osc::CStringView osc::ImGuiDemoTab::id() noexcept
 {
-    return "Demos/ImGui";
+    return c_TabStringID;
 }
 
 osc::ImGuiDemoTab::ImGuiDemoTab(std::weak_ptr<TabHost>) :

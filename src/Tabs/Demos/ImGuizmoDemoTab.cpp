@@ -4,6 +4,7 @@
 #include "src/Maths/MathHelpers.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Maths/Rect.hpp"
+#include "src/Utils/CStringView.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
@@ -11,9 +12,13 @@
 #include <glm/vec3.hpp>
 #include <imgui.h>
 #include <ImGuizmo.h>
-#include <IconsFontAwesome5.h>
 
 #include <memory>
+
+namespace
+{
+    constexpr osc::CStringView c_TabStringID = "Demos/ImGuizmo";
+}
 
 class osc::ImGuizmoDemoTab::Impl final {
 public:
@@ -25,7 +30,7 @@ public:
 
     CStringView getName() const
     {
-        return ICON_FA_HAT_WIZARD " ImGuizmoDemoTab";
+        return c_TabStringID;
     }
 
     void onDraw()

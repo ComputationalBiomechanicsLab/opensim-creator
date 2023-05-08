@@ -670,7 +670,7 @@ private:
 
 osc::CStringView osc::PreviewExperimentalDataTab::id() noexcept
 {
-    return "OpenSim/PreviewExperimentalData";
+    return "OpenSim/Experimental/PreviewExperimentalData";
 }
 
 osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(std::weak_ptr<TabHost>) :

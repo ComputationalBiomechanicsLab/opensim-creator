@@ -1,4 +1,4 @@
-#include "CookiecutterTab.hpp"
+#include "FrameDefinitionTab.hpp"
 
 #include "src/Utils/CStringView.hpp"
 
@@ -10,10 +10,10 @@
 
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "CookiecutterTab";
+    constexpr osc::CStringView c_TabStringID = "OpenSim/Experimental/FrameDefinition";
 }
 
-class osc::CookiecutterTab::Impl final {
+class osc::FrameDefinitionTab::Impl final {
 public:
 
     Impl(std::weak_ptr<TabHost> parent_) :
@@ -64,56 +64,56 @@ private:
 
 // public API (PIMPL)
 
-osc::CStringView osc::CookiecutterTab::id() noexcept
+osc::CStringView osc::FrameDefinitionTab::id() noexcept
 {
     return c_TabStringID;
 }
 
-osc::CookiecutterTab::CookiecutterTab(std::weak_ptr<TabHost> parent_) :
+osc::FrameDefinitionTab::FrameDefinitionTab(std::weak_ptr<TabHost> parent_) :
     m_Impl{std::make_unique<Impl>(std::move(parent_))}
 {
 }
 
-osc::CookiecutterTab::CookiecutterTab(CookiecutterTab&&) noexcept = default;
-osc::CookiecutterTab& osc::CookiecutterTab::operator=(CookiecutterTab&&) noexcept = default;
-osc::CookiecutterTab::~CookiecutterTab() noexcept = default;
+osc::FrameDefinitionTab::FrameDefinitionTab(FrameDefinitionTab&&) noexcept = default;
+osc::FrameDefinitionTab& osc::FrameDefinitionTab::operator=(FrameDefinitionTab&&) noexcept = default;
+osc::FrameDefinitionTab::~FrameDefinitionTab() noexcept = default;
 
-osc::UID osc::CookiecutterTab::implGetID() const
+osc::UID osc::FrameDefinitionTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::CookiecutterTab::implGetName() const
+osc::CStringView osc::FrameDefinitionTab::implGetName() const
 {
     return m_Impl->getName();
 }
 
-void osc::CookiecutterTab::implOnMount()
+void osc::FrameDefinitionTab::implOnMount()
 {
     m_Impl->onMount();
 }
 
-void osc::CookiecutterTab::implOnUnmount()
+void osc::FrameDefinitionTab::implOnUnmount()
 {
     m_Impl->onUnmount();
 }
 
-bool osc::CookiecutterTab::implOnEvent(SDL_Event const& e)
+bool osc::FrameDefinitionTab::implOnEvent(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
 }
 
-void osc::CookiecutterTab::implOnTick()
+void osc::FrameDefinitionTab::implOnTick()
 {
     m_Impl->onTick();
 }
 
-void osc::CookiecutterTab::implOnDrawMainMenu()
+void osc::FrameDefinitionTab::implOnDrawMainMenu()
 {
     m_Impl->onDrawMainMenu();
 }
 
-void osc::CookiecutterTab::implOnDraw()
+void osc::FrameDefinitionTab::implOnDraw()
 {
     m_Impl->onDraw();
 }

@@ -600,7 +600,7 @@ private:
 
 osc::CStringView osc::ModelWarpingTab::id() noexcept
 {
-    return "Warping/OpenSim";
+    return "OpenSim/Experimental/ModelWarping";
 }
 
 osc::ModelWarpingTab::ModelWarpingTab(std::weak_ptr<TabHost>) :

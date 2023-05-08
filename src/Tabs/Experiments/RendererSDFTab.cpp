@@ -12,6 +12,7 @@
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Panels/LogViewerPanel.hpp"
+#include "src/Utils/CStringView.hpp"
 
 #include <nonstd/span.hpp>
 #define STB_TRUETYPE_IMPLEMENTATION
@@ -25,6 +26,8 @@
 
 namespace
 {
+    constexpr osc::CStringView c_TabStringID = "Experiments/SDF";
+
     struct CharMetadata final {
         stbtt_bakedchar storage[96];
     };
@@ -97,7 +100,7 @@ public:
 
     CStringView getName() const
     {
-        return ICON_FA_FONT " RendererSDF";
+        return c_TabStringID;
     }
 
     void onDraw()
@@ -166,7 +169,7 @@ private:
 
 osc::CStringView osc::RendererSDFTab::id() noexcept
 {
-    return "Renderer/SDFTab";
+    return c_TabStringID;
 }
 
 osc::RendererSDFTab::RendererSDFTab(std::weak_ptr<TabHost>) :

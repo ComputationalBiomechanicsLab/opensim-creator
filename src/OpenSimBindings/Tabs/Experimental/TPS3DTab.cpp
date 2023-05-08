@@ -2393,7 +2393,7 @@ private:
 
 osc::CStringView osc::TPS3DTab::id() noexcept
 {
-    return "Warping/TPS3D";
+    return "OpenSim/Experimental/TPS3D";
 }
 
 osc::TPS3DTab::TPS3DTab(std::weak_ptr<TabHost> parent_) :

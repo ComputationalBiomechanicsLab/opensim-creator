@@ -1,9 +1,15 @@
 #include "ImPlotDemoTab.hpp"
 
-#include <IconsFontAwesome5.h>
+#include "src/Utils/CStringView.hpp"
+
 #include <implot.h>
 
 #include <memory>
+
+namespace
+{
+    constexpr osc::CStringView c_TabStringID = "Demos/ImPlot";
+}
 
 class osc::ImPlotDemoTab::Impl final {
 public:
@@ -15,7 +21,7 @@ public:
 
     CStringView getName() const
     {
-        return ICON_FA_HAT_WIZARD " ImPlotDemo";
+        return c_TabStringID;
     }
 
     void onMount()
@@ -42,7 +48,7 @@ private:
 
 osc::CStringView osc::ImPlotDemoTab::id() noexcept
 {
-    return "Demos/ImPlot";
+    return c_TabStringID;
 }
 
 osc::ImPlotDemoTab::ImPlotDemoTab(std::weak_ptr<TabHost>) :

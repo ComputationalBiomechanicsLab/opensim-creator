@@ -8,11 +8,11 @@
 #include "src/Utils/CStringView.hpp"
 
 // registered tabs
+#include "src/Tabs/Demos/ImGuiDemoTab.hpp"
+#include "src/Tabs/Demos/ImGuizmoDemoTab.hpp"
+#include "src/Tabs/Demos/ImPlotDemoTab.hpp"
 #include "src/Tabs/Experiments/CustomWidgetsTab.hpp"
 #include "src/Tabs/Experiments/HittestTab.hpp"
-#include "src/Tabs/Experiments/ImGuiDemoTab.hpp"
-#include "src/Tabs/Experiments/ImGuizmoDemoTab.hpp"
-#include "src/Tabs/Experiments/ImPlotDemoTab.hpp"
 #include "src/Tabs/Experiments/MeshGenTestTab.hpp"
 #include "src/Tabs/Experiments/RendererSDFTab.hpp"
 #include "src/Tabs/LearnOpenGL/LOGLBasicLightingTab.hpp"
@@ -31,6 +31,7 @@
 #include "src/Tabs/LearnOpenGL/LOGLShadowMappingTab.hpp"
 #include "src/Tabs/LearnOpenGL/LOGLSSAOTab.hpp"
 #include "src/Tabs/LearnOpenGL/LOGLTexturingTab.hpp"
+#include "src/OpenSimBindings/Tabs/Experimental/FrameDefinitionTab.hpp"
 #include "src/OpenSimBindings/Tabs/Experimental/MeshHittestTab.hpp"
 #include "src/OpenSimBindings/Tabs/Experimental/ModelWarpingTab.hpp"
 #include "src/OpenSimBindings/Tabs/Experimental/PreviewExperimentalDataTab.hpp"
@@ -202,6 +203,7 @@ namespace
         RegisterTab<osc::TPS2DTab>(registry);
         RegisterTab<osc::TPS3DTab>(registry);
         RegisterTab<osc::ModelWarpingTab>(registry);
+        RegisterTab<osc::FrameDefinitionTab>(registry);
     }
 }
 

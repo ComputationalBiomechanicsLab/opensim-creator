@@ -215,7 +215,7 @@ private:
 
 osc::CStringView osc::MeshHittestTab::id() noexcept
 {
-    return "Hittest/Meshes";
+    return "OpenSim/Experimental/MeshHittest";
 }
 
 osc::MeshHittestTab::MeshHittestTab(std::weak_ptr<TabHost>) :
