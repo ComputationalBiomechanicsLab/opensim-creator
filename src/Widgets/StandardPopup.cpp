@@ -59,23 +59,45 @@ bool osc::StandardPopup::implBeginPopup()
 
     if (m_IsModal)
     {
-        // center the modal if no position is specified (otherwise: use the position)
+        // if specified, set the position of the modal upon appearing
+        //
+        // else, position the modal in the center of the viewport
+        if (m_MaybePosition)
         {
-            if (m_MaybePosition)
-            {
-                ImGui::SetNextWindowPos(static_cast<glm::vec2>(*m_MaybePosition));
-            }
-            else
-            {
-                ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-                ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2{0.5f, 0.5f});
-            }
-
-            // set size (modals only?)
-            ImGui::SetNextWindowSize(glm::vec2{m_Dimensions});
+            ImGui::SetNextWindowPos(
+                static_cast<glm::vec2>(*m_MaybePosition),
+                ImGuiCond_Appearing
+            );
+        }
+        else
+        {
+            ImGui::SetNextWindowPos(
+                ImGui::GetMainViewport()->GetCenter(),
+                ImGuiCond_Appearing,
+                ImVec2{0.5f, 0.5f}
+            );
         }
 
-        // try to show modal
+        // if the modal doesn't auto-resize each frame, then set the size of
+        // modal only upon appearing
+        //
+        // else, set the position every frame, because the __nonzero__ dimensions
+        // will stretch out the modal accordingly
+        if (!(m_PopupFlags & ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::SetNextWindowSize(
+                glm::vec2{m_Dimensions},
+                ImGuiCond_Appearing
+            );
+        }
+        else
+        {
+            ImGui::SetNextWindowSize(
+                glm::vec2{m_Dimensions}
+            );
+        }
+
+        // try to begin the modal window
         implBeforeImguiBeginPopup();
         bool const opened = ImGui::BeginPopupModal(m_PopupName.c_str(), nullptr, m_PopupFlags);
         implAfterImguiBeginPopup();
@@ -89,11 +111,21 @@ bool osc::StandardPopup::implBeginPopup()
     }
     else
     {
+        // if specified, set the position of the modal upon appearing
+        //
+        // else, do nothing - the popup's position will be determined
+        // by other means (unlike a modal, which usually takes control
+        // of the screen and, therefore, should proabably be centered
+        // in it)
         if (m_MaybePosition)
         {
-            ImGui::SetNextWindowPos(static_cast<glm::vec2>(*m_MaybePosition));
+            ImGui::SetNextWindowPos(
+                static_cast<glm::vec2>(*m_MaybePosition),
+                ImGuiCond_Appearing
+            );
         }
 
+        // try to begin the popup window
         implBeforeImguiBeginPopup();
         bool const opened = ImGui::BeginPopup(m_PopupName.c_str(), m_PopupFlags);
         implAfterImguiBeginPopup();

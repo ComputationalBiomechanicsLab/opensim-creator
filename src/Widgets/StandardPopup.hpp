@@ -53,16 +53,10 @@ namespace osc
         void implEndPopup() final;
 
         // derivers can/must provide these
-        virtual void implBeforeImguiBeginPopup()
-        {
-        }
-        virtual void implAfterImguiBeginPopup()
-        {
-        }
+        virtual void implBeforeImguiBeginPopup() {}
+        virtual void implAfterImguiBeginPopup() {}
         virtual void implDrawContent() = 0;
-        virtual void implOnClose()
-        {
-        }
+        virtual void implOnClose() {}
 
         std::string m_PopupName;
         glm::ivec2 m_Dimensions;
