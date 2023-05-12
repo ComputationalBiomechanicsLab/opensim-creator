@@ -1,8 +1,13 @@
 #include "ExcitationEditorTab.hpp"
 
+#include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Maths/CollisionTests.hpp"
+#include "src/Maths/MathHelpers.hpp"
+#include "src/Maths/Rect.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Panels/PanelManager.hpp"
 #include "src/Panels/StandardPanel.hpp"
+#include "src/Platform/Log.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
@@ -11,6 +16,7 @@
 #include <glm/vec2.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
+#include <implot.h>
 #include <SDL_events.h>
 
 #include <algorithm>
@@ -169,6 +175,8 @@ namespace
     };
 
     // constraint form of vector indicating one of 8 directions in 2D space
+    //
+    // left-handed (screen-space) coordinate system, with Y pointing down and X pointing right
     class GridDirection final {
     public:
         constexpr static GridDirection North() noexcept { return {0, -1}; }
@@ -178,10 +186,10 @@ namespace
         constexpr static GridDirection South() noexcept { return {0, 1}; }
         constexpr static GridDirection SouthWest() noexcept { return {-1, 1}; }
         constexpr static GridDirection West() noexcept { return {-1, 0}; }
-        constexpr static GridDirection NorthWest() noexcept { return {-1, 1}; }
-
+        constexpr static GridDirection NorthWest() noexcept { return {-1, -1}; }
     private:
         friend constexpr glm::ivec2 ToVec2(GridDirection const&) noexcept;
+        friend constexpr std::optional<GridDirection> FromVec2(glm::ivec2) noexcept;
 
         constexpr GridDirection(int x, int y) : m_Offset{x, y} {}       
 
@@ -191,6 +199,12 @@ namespace
     constexpr glm::ivec2 ToVec2(GridDirection const& d) noexcept
     {
         return d.m_Offset;
+    }
+
+    constexpr std::optional<GridDirection> FromVec2(glm::ivec2 v) noexcept
+    {
+        v = glm::clamp(v, -1, 1);
+        return v != glm::ivec2{0, 0} ? GridDirection{v.x, v.y} : std::optional<GridDirection>{};
     }
 
     constexpr bool IsNorthward(GridDirection const& d) noexcept
@@ -216,7 +230,7 @@ namespace
     constexpr bool IsDiagonal(GridDirection const& d) noexcept
     {
         glm::ivec2 const v = ToVec2(d);
-        return v.x*v.y == 0;
+        return v.x*v.y != 0;
     }
 
     enum GridOperation {
@@ -230,12 +244,28 @@ namespace
     public:
         size_t getNumRows() const
         {
-            return m_Cells.size() / m_NumColumns;
+            if (m_NumColumns != 0)
+            {
+                return (m_Cells.size() + (m_NumColumns - 1)) / m_NumColumns;
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         size_t getNumColumns() const
         {
             return m_NumColumns;
+        }
+
+        glm::ivec2 getDimensions() const
+        {
+            return glm::ivec2
+            {
+                static_cast<glm::ivec2::value_type>(getNumColumns()),
+                static_cast<glm::ivec2::value_type>(getNumRows()),
+            };
         }
 
         osc::UID getCellID(glm::ivec2 coord) const
@@ -248,14 +278,14 @@ namespace
             m_Cells.at(toCellIndex(coord)) = newID;
         }
 
-        GridOperation calcAvaliableDirectionalOperation(osc::UID id, GridDirection direction) const
+        GridOperation calcAvaliableDirectionalOperation(glm::ivec2 gridCoord, GridDirection direction) const
         {
-            return lookupDirectionalOperation(id, direction).operationType;
+            return lookupDirectionalOperation(gridCoord, direction).operationType;
         }
 
-        void doDirectionalOperation(osc::UID id, GridDirection direction)
+        void doDirectionalOperation(glm::ivec2 gridCoord, GridDirection direction)
         {
-            lookupDirectionalOperation(id, direction).execute(*this, id, direction);
+            lookupDirectionalOperation(gridCoord, direction).execute(*this, gridCoord, direction);
         }
 
         void removeCell(osc::UID id)
@@ -267,20 +297,38 @@ namespace
             }
         }
     private:
-        static void NoneDirectionalOp(GridLayout& grid, osc::UID id, GridDirection direction)
+        static void NoneDirectionalOp(GridLayout& grid, glm::ivec2 gridCoord, GridDirection direction)
         {
+            // noop
         }
 
-        static void MoveDirectionalOp(GridLayout& grid, osc::UID id, GridDirection direction)
+        static void MoveDirectionalOp(GridLayout& grid, glm::ivec2 gridCoord, GridDirection direction)
         {
+            glm::ivec2 const adjacentCoord = gridCoord + ToVec2(direction);
+
+            // TODO: insert
         }
 
-        static void SwapDirectionalOp(GridLayout&, osc::UID, GridDirection)
+        static void SwapDirectionalOp(GridLayout&, glm::ivec2 gridCoord, GridDirection)
         {
+            // TODO: swapsies
         }
 
-        static void AddDirectionalOp(GridLayout&, osc::UID, GridDirection)
+        static void AddDirectionalOp(GridLayout& grid, glm::ivec2 gridCoord, GridDirection direction)
         {
+            glm::ivec2 const adjacentCoord = gridCoord + ToVec2(direction);
+            if (adjacentCoord.x >= grid.getNumColumns())
+            {
+                grid.addColumnToRight();
+            }
+            else if (adjacentCoord.y >= grid.getNumRows())
+            {
+                grid.addRowToBottom();
+            }
+            else
+            {
+                // TODO: add to empty slot
+            }
         }
 
         struct DirectionalOperation final {
@@ -290,24 +338,22 @@ namespace
             static DirectionalOperation Add() { return {GridOperation::Add, AddDirectionalOp}; }
 
         private:
-            DirectionalOperation(GridOperation operationType_, void (*execute_)(GridLayout&, osc::UID, GridDirection)) :
-                operationType{operationType_}, execute{execute_}
+            DirectionalOperation(
+                GridOperation operationType_,
+                void (*execute_)(GridLayout&, glm::ivec2, GridDirection)) :
+
+                operationType{operationType_},
+                execute{execute_}
             {
             }
         public:
             GridOperation operationType = GridOperation::None;
-            void (*execute)(GridLayout&, osc::UID, GridDirection) = NoneDirectionalOp;
+            void (*execute)(GridLayout&, glm::ivec2, GridDirection) = NoneDirectionalOp;
         };
 
-        DirectionalOperation lookupDirectionalOperation(osc::UID id, GridDirection direction) const
+        DirectionalOperation lookupDirectionalOperation(glm::ivec2 gridCoord, GridDirection direction) const
         {
-            std::optional<glm::ivec2> const maybeCoord = tryGetCoordinateByID(id);
-            if (!maybeCoord)
-            {
-                return DirectionalOperation::None();  // element with given `id` not found within the grid
-            }
-
-            glm::ivec2 const adjacentCoord = *maybeCoord + ToVec2(direction);
+            glm::ivec2 const adjacentCoord = gridCoord + ToVec2(direction);
 
             if (isWithinGridBounds(adjacentCoord))
             {
@@ -356,6 +402,11 @@ namespace
             return coord.y*m_NumColumns + coord.x;
         }
 
+        size_t toCellIndex(glm::ivec2 coord, size_t numCols) const
+        {
+            return coord.y*numCols + coord.x;
+        }
+
         std::optional<size_t> tryGetIndexByID(osc::UID id) const
         {
             auto const it = std::find(m_Cells.begin(), m_Cells.end(), id);
@@ -377,8 +428,8 @@ namespace
             {
                 return glm::ivec2
                 {
-                    *maybeIndex / m_NumColumns,
                     *maybeIndex % m_NumColumns,
+                    *maybeIndex / m_NumColumns,
                 };
             }
             else
@@ -392,6 +443,37 @@ namespace
             return
                 0 <= coord.x && coord.x < getNumColumns() &&
                 0 <= coord.y && coord.y < getNumRows();
+        }
+
+        void addRowToBottom()
+        {
+            m_Cells.resize(m_Cells.size() + m_NumColumns, osc::UID::empty());
+        }
+
+        void addColumnToRight()
+        {
+            size_t const numRows = getNumRows();
+            size_t const oldNumCols = getNumColumns();
+            size_t const newNumCols = oldNumCols + 1;
+
+            std::vector<osc::UID> newCells(numRows*newNumCols, osc::UID::empty());
+            for (size_t row = 0; row < numRows; ++row)
+            {
+                for (size_t col = 0; col < oldNumCols; ++col)
+                {
+                    glm::ivec2 const coord =
+                    {
+                        static_cast<glm::ivec2::value_type>(col),
+                        static_cast<glm::ivec2::value_type>(row),
+                    };
+                    size_t const oldIndex = toCellIndex(coord, oldNumCols);
+                    size_t const newIndex = toCellIndex(coord, newNumCols);
+                    newCells.at(newIndex) = m_Cells.at(oldIndex);
+                }
+            }
+
+            m_NumColumns = newNumCols;
+            m_Cells = std::move(newCells);
         }
 
         size_t m_NumColumns = 1;
@@ -416,6 +498,11 @@ namespace
         {
             return m_GridLayout;
         }
+
+        GridLayout& updGridLayout()
+        {
+            return m_GridLayout;
+        }
     private:
         std::unordered_map<osc::UID, ExcitationPattern> m_ExcitationPatternsByID;
         GridLayout m_GridLayout;
@@ -433,9 +520,21 @@ namespace
             m_Model{std::move(model_)}
         {
         }
+
+        GridLayout& updGridLayout()
+        {
+            return m_UndoableDocument->updScratch().updGridLayout();
+        }
+
+        GridLayout const& getGridLayout() const
+        {
+            return m_UndoableDocument->getScratch().getGridLayout();
+        }
+
     private:
         std::shared_ptr<osc::UndoableModelStatePair const> m_Model;
-        std::shared_ptr<osc::UndoRedoT<ExcitationDocument>> m_UndoableDocument;
+        std::shared_ptr<osc::UndoRedoT<ExcitationDocument>> m_UndoableDocument =
+            std::make_shared<osc::UndoRedoT<ExcitationDocument>>();
     };
 
     class ExcitationPlotsPanel final : public osc::StandardPanel {
@@ -449,9 +548,206 @@ namespace
         {
         }
     private:
+        void implBeforeImGuiBegin() final
+        {
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+        }
+
+        void implAfterImGuiBegin() final
+        {
+            ImGui::PopStyleVar();
+        }
+
         void implDrawContent() final
         {
-            ImGui::TextWrapped("Work in progress: this tab is just stubbed here while I develop the underlying code on-branch");
+            osc::Rect const contentScreenRect = osc::ContentRegionAvailScreenRect();
+            glm::vec2 const contentDims = osc::Dimensions(contentScreenRect);
+            glm::ivec2 const gridDims = m_Shared->getGridLayout().getDimensions();
+            glm::vec2 const cellDims = contentDims / glm::vec2{gridDims};
+
+            int imguiID = 0;
+            for (int row = 0; row < gridDims.y; ++row)
+            {
+                for (int col = 0; col < gridDims.x; ++col)
+                {
+                    // compute screen rect for each cell then draw it in that rect
+                    glm::ivec2 const gridCoord = {col, row};
+                    glm::vec2 const cellScreenTopLeft = contentScreenRect.p1 + glm::vec2{gridCoord}*cellDims;
+                    glm::vec2 const cellScreenBottomRight = cellScreenTopLeft + cellDims;
+                    osc::Rect const cellScreenRect = {cellScreenTopLeft, cellScreenBottomRight};
+
+                    ImGui::PushID(imguiID++);
+                    drawCell(gridCoord, cellScreenRect);
+                    ImGui::PopID();
+                }
+            }
+        }
+
+        void drawCell(glm::ivec2 gridCoord, osc::Rect const& screenSpaceRect)
+        {
+            drawCellContent(gridCoord, screenSpaceRect);
+            drawCellBorder(screenSpaceRect);
+            if (osc::IsPointInRect(screenSpaceRect, ImGui::GetIO().MousePos))
+            {
+                drawCellOverlays(gridCoord, screenSpaceRect);
+            }
+        }
+
+        void drawCellContent(glm::ivec2 gridCoord, osc::Rect const& screenSpaceRect)
+        {
+            osc::Rect const actualRect =
+            {
+                screenSpaceRect.p1 + 25.0f,
+                screenSpaceRect.p2 - 25.0f,
+            };
+
+            size_t constexpr nFakeDataPoints = 100;
+            std::vector<glm::vec2> fakeData;
+            fakeData.reserve(nFakeDataPoints);
+            for (size_t i = 0; i < nFakeDataPoints; ++i)
+            {
+                float const x = static_cast<float>(i)/static_cast<float>(nFakeDataPoints-1);
+                float const y = 0.5f*(std::sin(x*30.0f) + 1.0f);
+                fakeData.push_back({x, y});
+            }
+
+            ImGui::SetCursorScreenPos(actualRect.p1);
+            ImPlotFlags const flags = ImPlotFlags_CanvasOnly | ImPlotFlags_NoInputs | ImPlotFlags_NoFrame;
+            ImPlot::PushStyleColor(ImPlotCol_AxisBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));
+            ImPlot::PushStyleColor(ImPlotCol_FrameBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));
+            ImPlot::PushStyleColor(ImPlotCol_PlotBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));
+            if (ImPlot::BeginPlot("##demoplot", osc::Dimensions(actualRect), flags))
+            {
+                ImPlot::SetupAxes(
+                    "x",
+                    "y",
+                    ImPlotAxisFlags_Lock,
+                    ImPlotAxisFlags_Lock
+                );
+                ImPlot::SetupAxisLimits(
+                    ImAxis_X1,
+                    -0.02,
+                    1.02
+                );
+                ImPlot::SetupAxisLimits(
+                    ImAxis_Y1,
+                    -0.02,
+                    1.02
+                );
+                ImPlot::SetupAxisTicks(
+                    ImAxis_X1,
+                    0.0,
+                    1.0,
+                    2
+                );
+                ImPlot::SetupAxisTicks(
+                    ImAxis_Y1,
+                    0.0,
+                    1.0,
+                    2
+                );
+                ImPlot::SetupFinish();
+
+                ImPlot::PlotLine(
+                    "series",
+                    &fakeData.front().x,
+                    &fakeData.front().y,
+                    static_cast<int>(fakeData.size()),
+                    0,
+                    0,
+                    sizeof(decltype(fakeData)::value_type)
+                );
+
+                ImPlot::EndPlot();
+            }
+            ImPlot::PopStyleColor();
+            ImPlot::PopStyleColor();
+            ImPlot::PopStyleColor();
+        }
+
+        void drawCellBorder(osc::Rect const& screenSpaceRect)
+        {
+            glm::vec4 bgColor = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+            bgColor *= 0.2f;
+
+            ImGui::GetWindowDrawList()->AddRect(
+                screenSpaceRect.p1,
+                screenSpaceRect.p2,
+                ImGui::ColorConvertFloat4ToU32(bgColor)
+            );
+        }
+
+        void drawCellOverlays(glm::ivec2 gridCoord, osc::Rect const& screenSpaceRect)
+        {
+            int imguiID = 0;
+            for (int rowDirection = -1; rowDirection <= 1; ++rowDirection)
+            {
+                for (int colDirection = -1; colDirection <= 1; ++colDirection)
+                {
+                   std::optional<GridDirection> const maybeDir = FromVec2({colDirection, rowDirection});
+                   if (maybeDir)
+                   {
+                       ImGui::PushID(imguiID++);
+                       drawCellOverlay(gridCoord, screenSpaceRect, *maybeDir);
+                       ImGui::PopID();
+                   }
+                }
+            }
+        }
+
+        osc::CStringView calcOverlayIconText(GridDirection direction, GridOperation operation) const
+        {
+            switch (operation)
+            {
+            case GridOperation::Add: return "+";
+            case GridOperation::Move: return "M";
+            case GridOperation::Swap: return "S";
+            default: return "?";
+            }
+        }
+
+        glm::vec2 calcButtonDimensions(osc::CStringView buttonText) const
+        {
+            glm::vec2 v = ImGui::CalcTextSize(buttonText.c_str());
+            v += 2.0f*glm::vec2{ImGui::GetStyle().FramePadding};
+            v += 2.0f*ImGui::GetStyle().FrameBorderSize;
+            return v;
+        }
+
+        void drawCellOverlay(glm::ivec2 gridCoord, osc::Rect screenSpaceRect, GridDirection direction)
+        {
+            GridOperation const operation = m_Shared->getGridLayout().calcAvaliableDirectionalOperation(gridCoord, direction);
+            if (operation == GridOperation::None)
+            {
+                return;
+            }
+
+            osc::CStringView const iconText = calcOverlayIconText(direction, operation);
+
+            glm::vec2 const padding = ImGui::GetStyle().FramePadding;
+            glm::vec2 const cellHalfDims = 0.5f * osc::Dimensions(screenSpaceRect);
+            glm::vec2 const cellSpaceMidpoint = osc::Midpoint(screenSpaceRect) - screenSpaceRect.p1;
+            glm::vec2 const cellSpaceLabelDirection = ToVec2(direction);
+            glm::vec2 const cellSpaceOutwardPoint = cellSpaceMidpoint + cellSpaceLabelDirection*(cellHalfDims - padding);
+            glm::vec2 const buttonDims = calcButtonDimensions(iconText);
+            glm::vec2 const cellSpaceDirectionCorrection = -(cellSpaceLabelDirection+1.0f)/2.0f;
+            glm::vec2 const cellSpaceLabelTopRight = cellSpaceOutwardPoint + buttonDims*cellSpaceDirectionCorrection;
+            glm::vec2 const screenSpaceLabelTopRight = screenSpaceRect.p1 + cellSpaceLabelTopRight;
+
+            glm::vec4 buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
+            buttonColor.a *= 0.25f;
+            glm::vec4 textColor = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+            textColor.a *= 0.25f;
+
+            ImGui::SetCursorScreenPos(screenSpaceLabelTopRight);
+            ImGui::PushStyleColor(ImGuiCol_Button, buttonColor);
+            ImGui::PushStyleColor(ImGuiCol_Text, textColor);
+            if (ImGui::Button(iconText.c_str()))
+            {
+                m_Shared->updGridLayout().doDirectionalOperation(gridCoord, direction);
+            }
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor();
         }
 
         std::shared_ptr<ExcitationEditorSharedState> m_Shared;
