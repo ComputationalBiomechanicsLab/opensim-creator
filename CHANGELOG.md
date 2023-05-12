@@ -6,6 +6,8 @@ All notable changes to this project will be documented here. The format is based
 
 - Fixed keyboard keyboard camera controls (e.g. arrow keys) should no longer control the camera if the
   user is interacting with some other UI element (e.g. a text input box, thanks @itbellix, #679)
+- The "Simulate Against All Integrators" button in the tools menu now better-aligns with other buttons
+  in the same menu (#684)
 - Internal: OSC's renderer can now render all not-PBR parts of the LearnOpenGL tutorial series, which
   required adding support for multiple render targets (MRTs, #493)
 

@@ -104,7 +104,7 @@ private:
                 m_EditorAPI->pushPopup(std::make_unique<osc::ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI.lock()->updSimulationParams()));
             }
 
-            if (ImGui::MenuItem("Simulate Against All Integrators (advanced)"))
+            if (ImGui::MenuItem("         Simulate Against All Integrators (advanced)"))
             {
                 osc::ActionSimulateAgainstAllIntegrators(m_MainUIStateAPI, *m_Model);
             }
