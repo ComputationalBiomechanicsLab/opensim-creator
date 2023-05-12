@@ -34,12 +34,8 @@ namespace osc
         void implDraw() final;
 
         // inheritors can/must provide these
-        virtual void implBeforeImGuiBegin()
-        {
-        }
-        virtual void implAfterImGuiBegin()
-        {
-        }
+        virtual void implBeforeImGuiBegin() {}
+        virtual void implAfterImGuiBegin() {}
         virtual void implDrawContent() = 0;
 
         std::string m_PanelName;

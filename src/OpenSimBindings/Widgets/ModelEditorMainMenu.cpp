@@ -4,6 +4,7 @@
 #include "src/OpenSimBindings/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "src/OpenSimBindings/MiddlewareAPIs/EditorAPI.hpp"
 #include "src/OpenSimBindings/Panels/ModelMusclePlotPanel.hpp"
+#include "src/OpenSimBindings/Tabs/Experimental/ExcitationEditorTab.hpp"
 #include "src/OpenSimBindings/Widgets/MainMenu.hpp"
 #include "src/OpenSimBindings/Widgets/ModelActionsMenuItems.hpp"
 #include "src/OpenSimBindings/Widgets/ParamBlockEditorPopup.hpp"
@@ -104,11 +105,27 @@ private:
                 m_EditorAPI->pushPopup(std::make_unique<osc::ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI.lock()->updSimulationParams()));
             }
 
-            if (ImGui::MenuItem("         Simulate Against All Integrators (advanced)"))
+            if (ImGui::BeginMenu("         Experimental Tools"))
             {
-                osc::ActionSimulateAgainstAllIntegrators(m_MainUIStateAPI, *m_Model);
+                if (ImGui::MenuItem("Excitation Editor"))
+                {
+                    if (auto api = m_MainUIStateAPI.lock())
+                    {
+                        api->addAndSelectTab<ExcitationEditorTab>(
+                            m_MainUIStateAPI,
+                            m_Model
+                        );
+                    }
+                }
+
+                if (ImGui::MenuItem("Simulate Against All Integrators (advanced)"))
+                {
+                    osc::ActionSimulateAgainstAllIntegrators(m_MainUIStateAPI, *m_Model);
+                }
+
+                osc::DrawTooltipIfItemHovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
+                ImGui::EndMenu();
             }
-            osc::DrawTooltipIfItemHovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
 
             ImGui::EndMenu();
         }

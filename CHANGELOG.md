@@ -8,6 +8,8 @@ All notable changes to this project will be documented here. The format is based
   user is interacting with some other UI element (e.g. a text input box, thanks @itbellix, #679)
 - The "Simulate Against All Integrators" button in the tools menu now better-aligns with other buttons
   in the same menu (#684)
+- Experimental model-editing-related tabs now appear in an `Experimental Tools` submenu in `Tools`, and
+  an experimental excitation editor has been added that has a launch button in this new menu (#685)
 - Internal: OSC's renderer can now render all not-PBR parts of the LearnOpenGL tutorial series, which
   required adding support for multiple render targets (MRTs, #493)
 
