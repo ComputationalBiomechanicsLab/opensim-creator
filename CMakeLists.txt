@@ -793,6 +793,24 @@ add_library(osccore STATIC
     src/Tabs/TabRegistryEntry.cpp
     src/Tabs/TabRegistryEntry.hpp
 
+    src/Utils/PropertySystem/AbstractProperty.hpp
+    src/Utils/PropertySystem/AbstractSocket.hpp
+    src/Utils/PropertySystem/Component.cpp
+    src/Utils/PropertySystem/Component.hpp
+    src/Utils/PropertySystem/ComponentIterator.hpp
+    src/Utils/PropertySystem/ComponentList.hpp
+    src/Utils/PropertySystem/ComponentMemberOffset.hpp
+    src/Utils/PropertySystem/ComponentPath.cpp
+    src/Utils/PropertySystem/ComponentPath.hpp
+    src/Utils/PropertySystem/Property.hpp
+    src/Utils/PropertySystem/PropertyDefinition.hpp
+    src/Utils/PropertySystem/PropertyMetadata.hpp
+    src/Utils/PropertySystem/PropertySystemMacros.hpp
+    src/Utils/PropertySystem/PropertyType.hpp
+    src/Utils/PropertySystem/Socket.cpp
+    src/Utils/PropertySystem/Socket.hpp
+    src/Utils/PropertySystem/SocketDefinition.hpp
+    src/Utils/PropertySystem/TypedComponentList.hpp
     src/Utils/Algorithms.cpp
     src/Utils/Algorithms.hpp
     src/Utils/Assertions.cpp

@@ -288,6 +288,7 @@ namespace osc
 
     // returns true if `str` contains the supplied substring
     bool ContainsSubstring(std::string const& str, std::string_view substr);
+    bool ContainsSubstring(std::string_view str, std::string_view substr);
 
     // returns a lower-cased version of a string
     std::string ToLower(std::string const&);

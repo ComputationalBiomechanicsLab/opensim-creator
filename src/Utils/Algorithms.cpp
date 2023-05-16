@@ -86,6 +86,17 @@ bool osc::ContainsSubstring(std::string const& str, std::string_view substr)
     return str.find(substr) != std::string::npos;
 }
 
+bool osc::ContainsSubstring(std::string_view str, std::string_view substr)
+{
+    auto const it = std::search(
+        str.begin(),
+        str.end(),
+        substr.begin(),
+        substr.end()
+    );
+    return it != str.end();
+}
+
 std::string osc::ToLower(std::string const& s)
 {
     std::string cpy = s;
