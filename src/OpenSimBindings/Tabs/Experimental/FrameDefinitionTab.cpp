@@ -158,7 +158,7 @@ namespace
 
         while (cursor < pathEnd)
         {
-            Lookahead l = getLookahead(cursor, pathEnd);
+            l = getLookahead(cursor, pathEnd);
 
             if (l.a == '.' && (l.b == c_NullChar || l.b == c_PathSeperator))
             {
@@ -1017,7 +1017,7 @@ private: \
         _property_##name##_offset_getter, \
         _property_##name##_name, \
         _property_##name##_description \
-    > name;
+    > name
 
 namespace osc::ps
 {

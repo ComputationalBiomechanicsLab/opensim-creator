@@ -342,6 +342,9 @@ target_compile_options(osc_configuration INTERFACE
         # disabled: requires newer gcc and broken by nativefiledialog
         # -Wno-format-truncation
 
+        # disable: offsetof used in OSC's component/propertytree API
+        -Wno-invalid-offsetof
+
         # disabled: doesn't work in some contexts where forward declarations are necessary
         # -Wredundant-decls
 
