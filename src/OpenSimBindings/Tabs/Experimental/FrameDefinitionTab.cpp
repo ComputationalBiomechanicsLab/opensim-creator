@@ -1002,7 +1002,7 @@ private: \
         _property_##name##_offset_getter, \
         _property_##name##_name, \
         _property_##name##_description \
-    > name;
+    > name
 
 #define OSC_PROPERTY(ValueType, name, description) \
     static constexpr char _property_##name##_name[] = #name; \
