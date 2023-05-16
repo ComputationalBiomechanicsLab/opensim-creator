@@ -26,6 +26,7 @@ namespace
 {
     constexpr osc::CStringView c_TabStringID = "OpenSim/Experimental/FrameDefinition";
     constexpr char c_PathSeperator = '/';
+    constexpr std::string::value_type c_NullChar = {};
 
     /**
     * Returns a normalized form of `path`. A normalized path string is
@@ -49,8 +50,6 @@ namespace
     */
     std::string NormalizePathString(std::string path)
     {
-        constexpr std::string::value_type c_NullChar = {};
-
         // pathEnd is guaranteed to be a NUL terminator since C++11
         char* pathBegin = &path[0];
         char* pathEnd = &path[path.size()];
@@ -792,6 +791,7 @@ namespace osc::ps
         }
 
     private:
+        friend class ComponentList;
         friend void RegisterSocketInParent(
             Component& parent,
             AbstractSocket const&,
@@ -814,6 +814,15 @@ namespace osc::ps
         std::vector<ComponentMemberOffset> m_DeclarationOrderedPropertyOffsets;
         std::vector<ComponentMemberOffset> m_DeclarationOrderedSocketOffsets;
         std::vector<ClonePtr<Component>> m_LexographicallyOrderedSubcomponents;
+    };
+
+    // type-erased component list container
+    class ComponentList : public Component {
+    };
+
+    template<typename TComponent>
+    class TypedComponentList : public ComponentList {
+        void append(std::unique_ptr<TComponent> component);
     };
 
     Component const& GetRoot(Component const& component)
@@ -901,14 +910,10 @@ namespace osc::ps
 
     void Component::setName(std::string_view newName)
     {
-        auto const doRenameOneSocket = [](
-            Component& renamedComponent,
-            AbstractSocket& socket,
-            CStringView oldComponentName,
-            std::string_view newComponentName)
+        if (!tryGetParent() || !dynamic_cast<ComponentList const*>(tryGetParent()))
         {
-            std::string_view const path = socket.getConnecteePath();
-        };
+            return;  // can only rename a component that's within a component list
+        }
 
         CStringView const oldName = this->getName();
         for (auto it = ComponentIterator{*this}; it != ComponentIterator{}; ++it)
@@ -921,18 +926,7 @@ namespace osc::ps
                 {
                     auto elEnd = std::find(elBegin, path.end(), ComponentPath::delimiter());
                     std::string_view const el(&*elBegin, elEnd - elBegin);
-                }
-
-
-                if (Contains(it->getIthSocket(i).getConnecteePath(), oldName))
-                {
-
-                    doRenameOneSocket(
-                        *this,
-                        it->updIthSocket(i),
-                        oldName,
-                        newName
-                    );
+                    // TODO: rename path fragments etc.
                 }
             }
         }
@@ -1035,7 +1029,7 @@ namespace osc::ps
         OSC_COMPONENT(Sphere);
     private:
         OSC_PROPERTY(float, radius, "the radius of the sphere");
-        OSC_PROPERTY(std::string, name, "name of the sphere");
+        OSC_PROPERTY(std::string, humanReadableName, "human readable name of the sphere");
         OSC_PROPERTY(glm::vec3, position, "the position of the point in 3D space");
 
         OSC_SOCKET(Sphere, sphere2sphere, "sphere to sphere connection");
