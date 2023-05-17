@@ -15,17 +15,8 @@ namespace
 		{
 			return std::make_unique<BlankComponent>(*this);
 		}
-
-		friend bool operator==(BlankComponent const&, BlankComponent const&) noexcept;
 		float m_Value = 1.0f;
 	};
-
-	bool operator==(BlankComponent const& a, BlankComponent const& b) noexcept
-	{
-		return
-			static_cast<osc::Component const&>(a) == static_cast<osc::Component const&>(b) &&
-			a.m_Value == b.m_Value;
-	}
 }
 
 TEST(Component, BlankComponentCanBeConstructed)
