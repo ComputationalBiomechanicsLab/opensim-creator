@@ -49,11 +49,6 @@ osc::Component::Component(Component&& tmp) noexcept :
     }
 }
 
-std::unique_ptr<osc::Component> osc::Component::clone() const
-{
-    return implClone();
-}
-
 osc::Component const* osc::Component::tryGetParent() const
 {
     return m_Parent;

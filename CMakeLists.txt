@@ -975,6 +975,8 @@ add_executable(testosc EXCLUDE_FROM_ALL
     tests/OpenSimBindings/TestTypeRegistry.cpp
     tests/OpenSimBindings/TestUndoableModelStatePair.cpp
 
+    tests/Utils/PropertySystem/TestComponent.cpp
+    tests/Utils/PropertySystem/TestPropertySystemMacros.cpp
     tests/Utils/TestFileChangePoller.cpp
     tests/Utils/TestAlgorithms.cpp
 

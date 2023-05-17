@@ -2,6 +2,8 @@
 
 #include "src/Utils/PropertySystem/AbstractProperty.hpp"
 
+namespace osc { template<typename TParent, typename TValue, auto FuncGetOffsetInParent, char const* VName, char const* VDescription> class PropertyDefinition; }
+
 namespace osc
 {
     // PROPERTY
@@ -9,11 +11,27 @@ namespace osc
     // - a single instance
     // - of a type selected from a compile-time set of simple types (e.g. float, string)
     // - that is always a direct member of a component class
-
-    // typed base class for a property
     template<typename TValue>
     class Property : public AbstractProperty {
+    private:
+        // Property<T> can only be constructed via a PropertyDefinition
+        template<
+            typename TParent,
+            typename TValue,
+            auto FuncGetOffsetInParent,
+            char const* VName,
+            char const* VDescription
+        >
+        friend class PropertyDefinition;
+
+        Property() = default;
+        Property(Property const&) = default;
+        Property(Property&&) noexcept = default;
+        Property& operator=(Property const&) = default;
+        Property& operator=(Property&&) noexcept = default;
     public:
+        virtual ~Property() noexcept override = default;
+
         TValue const& getValue() const
         {
             return implGetValue();

@@ -36,17 +36,17 @@ private: \
         _property_##name##_description \
     > name
 
-#define OSC_PROPERTY(ValueType, name, description) \
-    static constexpr char _property_##name##_name[] = #name; \
-    static constexpr char _property_##name##_description[] = #description;  \
-    static constexpr size_t _property_##name##_offset_getter() \
+#define OSC_PROPERTY(ValueType, memberName, defaultValue, stringName, description) \
+    static constexpr char _property_##memberName##_name[] = stringName; \
+    static constexpr char _property_##memberName##_description[] = description;  \
+    static constexpr size_t _property_##memberName##_offset_getter() \
     { \
-        return offsetof(Self, name); \
+        return offsetof(Self, memberName); \
     } \
     osc::PropertyDefinition< \
         Self, \
         ValueType, \
-        _property_##name##_offset_getter, \
-        _property_##name##_name, \
-        _property_##name##_description \
-    > name
+        _property_##memberName##_offset_getter, \
+        _property_##memberName##_name, \
+        _property_##memberName##_description \
+    > memberName{defaultValue}

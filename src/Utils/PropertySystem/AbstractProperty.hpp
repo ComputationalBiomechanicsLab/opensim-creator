@@ -3,13 +3,18 @@
 #include "src/Utils/PropertySystem/PropertyType.hpp"
 #include "src/Utils/CStringView.hpp"
 
+namespace osc { class Component; }
+namespace osc { template<typename TValue> class Property; }
+
 namespace osc
 {
-    class Component;
-
     // type-erased base class for a property
     class AbstractProperty {
-    protected:
+    private:
+        // only a Property<TValue> may construct this base class
+        template<typename TValue>
+        friend class Property;
+
         AbstractProperty() = default;
         AbstractProperty(AbstractProperty const&) = default;
         AbstractProperty(AbstractProperty&&) noexcept = default;

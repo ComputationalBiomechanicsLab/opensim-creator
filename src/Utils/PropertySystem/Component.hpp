@@ -10,23 +10,21 @@
 #include <string_view>
 #include <vector>
 
+namespace osc { class AbstractProperty; }
+namespace osc { class AbstractSocket; }
+namespace osc { class ComponentPath; }
+
 namespace osc
 {
     // COMPONENT
     //
     // - a named object
-    // - that may have a (component) parent
+    // - that may have a parent
     // - and may own:
     //
     //   - properties (simple values)
     //   - sockets (graph edges)
-    //   - subcomponents (children)
-
-
-    class AbstractProperty;
-    class AbstractSocket;
-    class ComponentPath;
-
+    //   - components (children)
     class Component {
     protected:
         Component();
@@ -37,7 +35,7 @@ namespace osc
     public:
         virtual ~Component() noexcept = default;
 
-        std::unique_ptr<Component> clone() const;
+        std::unique_ptr<Component> clone() const { return implClone(); }
 
         Component const* tryGetParent() const;
         Component* tryUpdParent();
@@ -77,7 +75,7 @@ namespace osc
 
         virtual std::unique_ptr<Component> implClone() const = 0;
 
-        Component* m_Parent = nullptr;
+        Component* m_Parent;
         std::string m_Name;
         std::vector<ComponentMemberOffset> m_DeclarationOrderedPropertyOffsets;
         std::vector<ComponentMemberOffset> m_DeclarationOrderedSocketOffsets;

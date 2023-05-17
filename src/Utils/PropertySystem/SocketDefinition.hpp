@@ -7,11 +7,11 @@
 #include <limits>
 #include <string_view>
 
+namespace osc { class AbstractSocket; }
+namespace osc { class Component; }
+
 namespace osc
 {
-    class AbstractSocket;
-    class Component;
-
     void RegisterSocketInParent(
         Component& parent,
         AbstractSocket const&,

@@ -31,12 +31,7 @@ namespace osc
     >
     class PropertyDefinition final : public Property<TValue> {
     public:
-        PropertyDefinition() :
-            PropertyDefinition{TValue{}}
-        {
-        }
-
-        PropertyDefinition(TValue initialValue_) :
+        explicit PropertyDefinition(TValue initialValue_) :
             m_Value{std::move(initialValue_)}
         {
             static_assert(FuncGetOffsetInParent() < std::numeric_limits<ComponentMemberOffset>::max(), "might not fit into component's offset table");

@@ -2,14 +2,19 @@
 
 #include "src/Utils/CStringView.hpp"
 
+namespace osc { class Component; }
+namespace osc { class ComponentPath; }
+namespace osc { template<typename TComponent> class Socket; }
+
 namespace osc
 {
-    class ComponentPath;
-    class Component;
-
     // type-erased base class for a socket
     class AbstractSocket {
-    protected:
+    private:
+        // only a Socket<TValue> may construct this base class
+        template<typename TComponent> 
+        friend class Socket;
+
         AbstractSocket() = default;
         AbstractSocket(AbstractSocket const&) = default;
         AbstractSocket(AbstractSocket&&) noexcept = default;
