@@ -102,8 +102,8 @@ ExternalProject_Add(IconFontCppHeaders
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/IconFontCppHeaders
 
     # we provide our own cmake for this dependency
-    PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/IconFontCppHeaders.cmake" <SOURCE_DIR>/CMakeLists.txt
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/IconFontCppHeadersConfig.cmake.in" <SOURCE_DIR>/IconFontCppHeadersConfig.cmake.in
+    PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/IconFontCppHeaders.cmake" <SOURCE_DIR>/CMakeLists.txt
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/IconFontCppHeadersConfig.cmake.in" <SOURCE_DIR>/IconFontCppHeadersConfig.cmake.in
 
     CMAKE_CACHE_ARGS
         ${OSC_DEPENDENCY_CMAKE_ARGS}
@@ -113,8 +113,8 @@ ExternalProject_Add(stb
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stb
 
     # we provide our own cmake for this dependency
-    PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/stb.cmake" <SOURCE_DIR>/CMakeLists.txt
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/stbConfig.cmake.in" <SOURCE_DIR>/stbConfig.cmake.in
+    PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/stb.cmake" <SOURCE_DIR>/CMakeLists.txt
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/stbConfig.cmake.in" <SOURCE_DIR>/stbConfig.cmake.in
 
     CMAKE_CACHE_ARGS
         ${OSC_DEPENDENCY_CMAKE_ARGS}
@@ -124,8 +124,8 @@ ExternalProject_Add(nativefiledialog
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/nativefiledialog
 
     # we provide our own cmake for this dependency
-    PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/nativefiledialog.cmake" <SOURCE_DIR>/CMakeLists.txt
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/nativefiledialogConfig.cmake.in" <SOURCE_DIR>/nativefiledialogConfig.cmake.in
+    PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/nativefiledialog.cmake" <SOURCE_DIR>/CMakeLists.txt
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/nativefiledialogConfig.cmake.in" <SOURCE_DIR>/nativefiledialogConfig.cmake.in
 
     CMAKE_CACHE_ARGS
         ${OSC_DEPENDENCY_CMAKE_ARGS}
@@ -136,8 +136,8 @@ ExternalProject_Add(imgui
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui
 
     # we provide our own cmake for this dependency
-    PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/imgui.cmake" <SOURCE_DIR>/CMakeLists.txt
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/imguiConfig.cmake.in" <SOURCE_DIR>/imguiConfig.cmake.in
+    PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/imgui.cmake" <SOURCE_DIR>/CMakeLists.txt
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/imguiConfig.cmake.in" <SOURCE_DIR>/imguiConfig.cmake.in
 
     CMAKE_CACHE_ARGS
         ${OSC_DEPENDENCY_CMAKE_ARGS}
@@ -149,8 +149,8 @@ ExternalProject_Add(ImGuizmo
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ImGuizmo
 
     # we provide our own cmake for this dependency
-    PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ImGuizmo.cmake" <SOURCE_DIR>/CMakeLists.txt
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ImGuizmoConfig.cmake.in" <SOURCE_DIR>/ImGuizmoConfig.cmake.in
+    PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ImGuizmo.cmake" <SOURCE_DIR>/CMakeLists.txt
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ImGuizmoConfig.cmake.in" <SOURCE_DIR>/ImGuizmoConfig.cmake.in
 
     CMAKE_CACHE_ARGS
         ${OSC_DEPENDENCY_CMAKE_ARGS}
@@ -162,8 +162,8 @@ ExternalProject_Add(implot
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/implot
 
     # we provide our own cmake for this dependency
-    PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/implot.cmake" <SOURCE_DIR>/CMakeLists.txt
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/implotConfig.cmake.in" <SOURCE_DIR>/implotConfig.cmake.in
+    PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/implot.cmake" <SOURCE_DIR>/CMakeLists.txt
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/implotConfig.cmake.in" <SOURCE_DIR>/implotConfig.cmake.in
 
     CMAKE_CACHE_ARGS
         ${OSC_DEPENDENCY_CMAKE_ARGS}
