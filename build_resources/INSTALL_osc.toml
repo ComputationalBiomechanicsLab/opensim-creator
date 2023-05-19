@@ -2,7 +2,7 @@ resources = "resources"
 docs = "share/doc/html"
 
 # handy for auto-opening an in-development tab
-# initial_tab = "OpenSim/PreviewExperimentalData"
+# initial_tab = "LearnOpenGL/Blending"
 
 [experimental_feature_flags]
 
