@@ -82,7 +82,7 @@ REM ----- test osc -----
 REM
 REM but don't run Renderer tests, because the Windows CI machine doesn't have OpenGL4 :<
 cmake --build . --target testosc --config %OSC_BUILD_TYPE% -j%OSC_BUILD_CONCURRENCY% || exit \b
-.\%OSC_BUILD_TYPE%\testosc --gtest_filter="-Renderer*" || exit \b
+.\tests\%OSC_BUILD_TYPE%\testosc --gtest_filter="-Renderer*" || exit \b
 
 REM then build final package
 cmake --build . --target package --config %OSC_BUILD_TYPE% -j%OSC_BUILD_CONCURRENCY% || exit \b

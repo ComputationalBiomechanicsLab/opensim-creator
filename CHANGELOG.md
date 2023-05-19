@@ -12,6 +12,10 @@ All notable changes to this project will be documented here. The format is based
   an experimental excitation editor has been added that has a launch button in this new menu (#685)
 - Internal: OSC's renderer can now render all not-PBR parts of the LearnOpenGL tutorial series, which
   required adding support for multiple render targets (MRTs, #493)
+- Internal: OpenSimCreator's source code is now split into "OpenSimCreator" and "oscar" (#635):
+  - OpenSimCreator: code that is specifically for the OSC UI, and might depend on OpenSim
+  - Oscar: OpenSim-independent engine code for creating a scientific UI
+- Internal: The "oscar" (engine) part of OSC is now compiled with /W4 on windows (#686)
 
 
 ## [0.4.1] - 2023/04/13

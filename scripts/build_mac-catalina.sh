@@ -131,7 +131,7 @@ cmake \
     -j${OSC_BUILD_CONCURRENCY}
 
 echo "----- building OSC -----"
-cmake .. \
+cmake \
     -S . \
     -B "osc-build" \
     -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE} \
@@ -145,4 +145,4 @@ cmake \
     -j${OSC_BUILD_CONCURRENCY}
 
 # ensure tests pass
-osc-build/testosc
+osc-build/tests/testosc

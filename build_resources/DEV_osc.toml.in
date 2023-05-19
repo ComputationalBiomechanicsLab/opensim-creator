@@ -11,8 +11,8 @@
 # so, changing this will only affect developers - if you want to affect end-users then edit an
 # INSTALL configuration file.
 
-resources = "@CMAKE_CURRENT_SOURCE_DIR@/resources"
-docs = "@CMAKE_CURRENT_SOURCE_DIR@/docs/build"
+resources = "@CMAKE_CURRENT_SOURCE_DIR@/../../resources"
+docs = "@CMAKE_CURRENT_SOURCE_DIR@/../../docs/build"
 
 # handy for auto-opening an in-development tab
 # initial_tab = "LearnOpenGL/Blending"

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# recursively tries to strip whitespace from all files in OSC's source
+# recursively tries to strip whitespace from all files in a source
 # tree
 #
 # (whitespace sometimes slips in from various text editors etc.)
@@ -8,11 +8,8 @@
 import os
 import re
 
-# trailing whitespace
+# trailing whitespace/tabs
 pattern = re.compile(r"[ \t]+$", re.MULTILINE)
-
-# tabs
-# pattern = re.compile(r"\t", re.MULTILINE)
 
 for root, subdirs, files in os.walk("src"):
     for file in files:

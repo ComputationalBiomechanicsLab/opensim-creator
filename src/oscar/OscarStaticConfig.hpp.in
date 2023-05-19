@@ -1,0 +1,57 @@
+// int
+//
+// major (breaking) version number of OSC
+#define OSC_VERSION_MAJOR @osc_VERSION_MAJOR@
+
+// int
+//
+// minor (slightly breaking) version number of OSC
+#define OSC_VERSION_MINOR @osc_VERSION_MINOR@
+
+// int
+//
+// patch version number of OSC
+#define OSC_VERSION_PATCH @osc_VERSION_PATCH@
+
+// char[]
+//
+// full application name string
+#define OSC_APPNAME_STRING "@OSC_APPNAME@"
+
+// char[]
+//
+// full version string of OSC (e.g. 1.0.3)
+#define OSC_VERSION_STRING "@osc_VERSION_MAJOR@.@osc_VERSION_MINOR@.@osc_VERSION_PATCH@"
+
+// char[]
+//
+// which GLSL version should be used by default, if it isn't already
+// specified in shader headers (e.g. as in ImGui)
+#define OSC_GLSL_VERSION "#version 330 core"
+
+// char[]
+//
+// unique build ID for this build of OSC. Bakes the build ID into
+// the binary, which is handy for user bug reports, etc.
+#define OSC_BUILD_ID "@OSC_BUILD_ID@"
+
+// char[]
+//
+// default location of OSC's runtime resources dir when it is not externally
+// specified by the user (commandline args, environment var) or config file
+//
+// this is an "oh shit, we can't even find the config file" fallback to try
+// and get the application booting anyway
+#define OSC_DEFAULT_RESOURCE_DIR "@OSC_DEFAULT_RESOURCE_DIR@"
+
+// char[]
+//
+// the internet location of the OSC repo. Used by in-app links, shortcuts, etc.
+// to the repo so that users can just click and go, rather than having to separately
+// browse to the repo
+#define OSC_REPO_URL "@OSC_REPO_URL@"
+
+// char[]
+//
+// printf-style formatting string for ImGui float inputs
+#define OSC_DEFAULT_FLOAT_INPUT_FORMAT "%.6f"

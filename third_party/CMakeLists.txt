@@ -179,6 +179,7 @@ ExternalProject_Add(opensim-core-dependencies
         -DOPENSIM_WITH_CASADI:BOOL=OFF
         -DOPENSIM_WITH_TROPTER:BOOL=OFF
         -DCMAKE_INSTALL_PREFIX:STRING=<INSTALL_DIR>
+        "-DSIMBODY_EXTRA_CMAKE_ARGS:STRING=-DBUILD_VISUALIZER:BOOL=OFF"
 )
 
 ExternalProject_Add(opensim-core
