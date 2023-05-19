@@ -15,13 +15,7 @@ namespace osc
     class Property : public AbstractProperty {
     private:
         // Property<T> can only be constructed via a PropertyDefinition
-        template<
-            typename TParent,
-            typename TValue,
-            auto FuncGetOffsetInParent,
-            char const* VName,
-            char const* VDescription
-        >
+        template<typename, typename, auto, char const*, char const*>
         friend class PropertyDefinition;
 
         Property() = default;
