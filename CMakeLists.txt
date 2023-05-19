@@ -4,6 +4,13 @@ project(osc VERSION 0.4.1 LANGUAGES C CXX)
 
 enable_testing()
 
+# -------------- set static top-level vars -------------- #
+
+set(OSC_AUTHOR "Adam Kewley")
+set(OSC_AUTHOR_EMAIL "contact@adamkewley.com")
+set(OSC_PACKAGE_NAME "OpenSimCreator")
+set(OSC_SOFTWARE_DESCRIPTION "A standalone GUI for building OpenSim models")
+
 
 # -------------- gather user-facing build config options ---------------- #
 
@@ -30,7 +37,7 @@ set(
 set(
     OSC_FORCE_UNDEFINE_NDEBUG OFF
     CACHE BOOL
-    "force disable NDEBUG, even if running in Release mode. This enables *a lot* of runtime assertions (standard lib, SimTK, OpenSim)"
+    "force disable NDEBUG, even if running in Release mode. This enables *a lot* of runtime assertions"
 )
 set(
     OSC_USE_ASAN OFF
@@ -70,11 +77,7 @@ set(
 #
 # this is based on whether the UNIX variant being used appears to be LINUX
 if(UNIX AND NOT APPLE)
-    if(CMAKE_SYSTEM_NAME MATCHES ".*Linux")
-        set(LINUX TRUE)
-    else()
-        message(WARNING "you are building on a UNIX system that may not be supported yet - beware!")
-    endif()
+    set(LINUX TRUE)
 endif()
 
 # set OSC_BUILD_ID
@@ -1207,13 +1210,13 @@ endif()
 include(InstallRequiredSystemLibraries)
 
 # install-time: set necessary CPack variables
-set(CPACK_PACKAGE_NAME "OpenSimCreator")
+set(CPACK_PACKAGE_NAME "${OSC_PACKAGE_NAME}")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
-set(CPACK_PACKAGE_VENDOR "Adam Kewley")
-set(CPACK_PACKAGE_CONTACT "Adam Kewley <contact@adamkewley.com>")
-set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/ComputationalBiomechanicsLab/opensim-creator")
-set(CPACK_PACKAGE_DESCRIPTION "A standalone GUI for building OpenSim models")
-set(CPACK_PACKAGE_EXECUTABLES "osc;OpenSimCreator")
+set(CPACK_PACKAGE_VENDOR "${OSC_AUTHOR}")
+set(CPACK_PACKAGE_CONTACT "${OSC_AUTHOR} <${OSC_AUTHOR_EMAIL}>")
+set(CPACK_PACKAGE_HOMEPAGE_URL "${OSC_REPO_URL}")
+set(CPACK_PACKAGE_DESCRIPTION "${OSC_SOFTWARE_DESCRIPTION}")
+set(CPACK_PACKAGE_EXECUTABLES "osc;${OSC_PACKAGE_NAME}")
 
 # Windows install/packaging:
 #
@@ -1252,7 +1255,7 @@ if (WIN32)
     )
 
     # packaging: use NSIS to package everything into a self-extracting installer
-    set(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenSimCreator")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "${OSC_PACKAGE_NAME}")
     set(CPACK_GENERATOR NSIS)
     set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/textures/logo.ico")
     set(CPACK_NSIS_INSTALLED_ICON_NAME "resources/textures/logo.ico")
@@ -1264,18 +1267,16 @@ if (WIN32)
     # versions that breaks it. There's a PR about it here:
     #
     # - https://gitlab.kitware.com/cmake/cmake/-/issues/23001
-    #
-    # We disable it in OpenSim Creator also because it hits our users and these
-    # early versions of OpenSim Creator can just overwrite-install. See issue:
-    #
-    # - https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/131
 
     set(CPACK_NSIS_HELP_LINK ${CPACK_PACKAGE_HOMEPAGE_URL})
-    set(CPACK_NSIS_CONTACT "contact@adamkewley.com")
+    set(CPACK_NSIS_CONTACT "${OSC_AUTHOR_EMAIL}")
     set(CPACK_NSIS_MODIFY_PATH OFF)  # do not prompt the user to modify the PATH
     set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
-    # set(CPACK_NSIS_MUI_FINISHPAGE_RUN osc)  # DISALLOWED: boots app with admin privs: see #95 (or inkscape's CMake file)
-    # set(CPACK_NSIS_CREATE_ICONS "CreateShortCut '\$SMPROGRAMS\\\\OpenSimCreator\\\\osc.lnk' '\$INSTDIR\\\\bin\\\\osc.exe'")
+
+    # BROKE: set(CPACK_NSIS_MUI_FINISHPAGE_RUN osc)
+    #
+    # it boots the app with admin privs if the installer is ran with admin privs
+    # see opensim-creator/#95 (or inkscape's CMake file)
 endif()
 
 # Linux install/packaging:
