@@ -16,6 +16,10 @@ All notable changes to this project will be documented here. The format is based
   - OpenSimCreator: code that is specifically for the OSC UI, and might depend on OpenSim
   - Oscar: OpenSim-independent engine code for creating a scientific UI
 - Internal: The "oscar" (engine) part of OSC is now compiled with /W4 on windows (#686)
+- Internal: `osc::PanelManager` now takes a `numInitiallyOpenedPanels` argument when registering spawnable
+  panels (#692)
+- Internal: `osc::PanelManager`'s lifetime hook methods (e.g. `onMount`) now follow the same naming
+  conventions as `osc::Tab` (#691)
 
 
 ## [0.4.1] - 2023/04/13

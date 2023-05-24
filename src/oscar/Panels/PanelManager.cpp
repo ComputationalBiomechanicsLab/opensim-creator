@@ -149,10 +149,12 @@ namespace
     public:
         SpawnablePanel(
             std::string_view baseName_,
-            std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_) :
+            std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_,
+            size_t numInitiallyOpenedPanels_) :
 
             m_BaseName{std::move(baseName_)},
-            m_ConstructorFunc{std::move(constructorFunc_)}
+            m_ConstructorFunc{std::move(constructorFunc_)},
+            m_NumInitiallyOpenedPanels{numInitiallyOpenedPanels_}
         {
         }
 
@@ -176,9 +178,15 @@ namespace
             };
         }
 
+        size_t getNumInitiallyOpenedPanels() const
+        {
+            return m_NumInitiallyOpenedPanels;
+        }
+
     private:
         std::string m_BaseName;
         std::function<std::shared_ptr<osc::Panel>(std::string_view)> m_ConstructorFunc;
+        size_t m_NumInitiallyOpenedPanels;
     };
 }
 
@@ -195,9 +203,10 @@ public:
 
     void registerSpawnablePanel(
         std::string_view baseName,
-        std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_)
+        std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_,
+        size_t numInitiallyOpenedPanels)
     {
-        m_SpawnablePanels.emplace_back(baseName, constructorFunc_);
+        m_SpawnablePanels.emplace_back(baseName, constructorFunc_, numInitiallyOpenedPanels);
     }
 
     size_t getNumToggleablePanels() const
@@ -242,8 +251,13 @@ public:
         }
     }
 
-    void activateAllDefaultOpenPanels()
+    void onMount()
     {
+        if (!m_FirstMount)
+        {
+            return;  // already mounted once
+        }
+
         // initialize default-open tabs
         for (ToggleablePanel& panel : m_ToggleablePanels)
         {
@@ -252,9 +266,27 @@ public:
                 panel.activate();
             }
         }
+
+        // initialize dynamic tabs that have some "initial" number
+        // of spawned tabs
+        for (size_t iPanel = 0; iPanel < m_SpawnablePanels.size(); ++iPanel)
+        {
+            SpawnablePanel& panel = m_SpawnablePanels[iPanel];
+            for (size_t i = 0; i < panel.getNumInitiallyOpenedPanels(); ++i)
+            {
+                createDynamicPanel(i);
+            }
+        }
+
+        m_FirstMount = false;
     }
 
-    void garbageCollectDeactivatedPanels()
+    void onUnmount()
+    {
+        // noop: we only mount the panels once and never unmount them
+    }
+
+    void onTick()
     {
         // garbage collect closed-panel instance data
         for (ToggleablePanel& panel : m_ToggleablePanels)
@@ -272,7 +304,7 @@ public:
         }
     }
 
-    void drawAllActivatedPanels()
+    void onDraw()
     {
         for (ToggleablePanel& panel : m_ToggleablePanels)
         {
@@ -387,6 +419,7 @@ private:
     std::vector<ToggleablePanel> m_ToggleablePanels;
     std::vector<DynamicPanel> m_DynamicPanels;
     std::vector<SpawnablePanel> m_SpawnablePanels;
+    bool m_FirstMount = true;
 };
 
 
@@ -411,9 +444,10 @@ void osc::PanelManager::registerToggleablePanel(
 
 void osc::PanelManager::registerSpawnablePanel(
     std::string_view baseName,
-    std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_)
+    std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_,
+    size_t numInitiallyOpenedPanels)
 {
-    m_Impl->registerSpawnablePanel(std::move(baseName), std::move(constructorFunc_));
+    m_Impl->registerSpawnablePanel(std::move(baseName), std::move(constructorFunc_), numInitiallyOpenedPanels);
 }
 
 size_t osc::PanelManager::getNumToggleablePanels() const
@@ -441,19 +475,24 @@ void osc::PanelManager::setToggleablePanelActivated(std::string_view panelName, 
     m_Impl->setToggleablePanelActivated(std::move(panelName), v);
 }
 
-void osc::PanelManager::activateAllDefaultOpenPanels()
+void osc::PanelManager::onMount()
 {
-    m_Impl->activateAllDefaultOpenPanels();
+    m_Impl->onMount();
 }
 
-void osc::PanelManager::garbageCollectDeactivatedPanels()
+void osc::PanelManager::onUnmount()
 {
-    m_Impl->garbageCollectDeactivatedPanels();
+    m_Impl->onUnmount();
 }
 
-void osc::PanelManager::drawAllActivatedPanels()
+void osc::PanelManager::onTick()
 {
-    m_Impl->drawAllActivatedPanels();
+    m_Impl->onTick();
+}
+
+void osc::PanelManager::onDraw()
+{
+    m_Impl->onDraw();
 }
 
 size_t osc::PanelManager::getNumDynamicPanels() const

@@ -32,7 +32,8 @@ namespace osc
 
         void registerSpawnablePanel(
             std::string_view baseName,
-            std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_
+            std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_,
+            size_t numInitiallyOpenedPanels
         );
 
         // methods for panels that are either enabled or disabled (toggleable)
@@ -54,9 +55,10 @@ namespace osc
         std::string computeSuggestedDynamicPanelName(std::string_view baseName);
         void pushDynamicPanel(std::string_view baseName, std::shared_ptr<Panel>);
 
-        void activateAllDefaultOpenPanels();
-        void garbageCollectDeactivatedPanels();
-        void drawAllActivatedPanels();
+        void onMount();
+        void onUnmount();
+        void onTick();
+        void onDraw();
 
     private:
         class Impl;

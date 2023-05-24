@@ -2327,7 +2327,6 @@ public:
 
         // initialize panels
         PushBackAvailablePanels(m_SharedState, *m_SharedState->panelManager);
-        m_SharedState->panelManager->activateAllDefaultOpenPanels();
     }
 
     UID getID() const
@@ -2343,10 +2342,12 @@ public:
     void onMount()
     {
         App::upd().makeMainEventLoopWaiting();
+        m_SharedState->panelManager->onMount();
     }
 
     void onUnmount()
     {
+        m_SharedState->panelManager->onUnmount();
         App::upd().makeMainEventLoopPolling();
     }
 
@@ -2356,7 +2357,7 @@ public:
         m_SharedState->currentHover.reset();
 
         // garbage collect panel data
-        m_SharedState->panelManager->garbageCollectDeactivatedPanels();
+        m_SharedState->panelManager->onTick();
     }
 
     void onDrawMainMenu()
@@ -2369,7 +2370,7 @@ public:
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         m_TopToolbar.draw();
-        m_SharedState->panelManager->drawAllActivatedPanels();
+        m_SharedState->panelManager->onDraw();
         m_StatusBar.draw();
 
         // draw active popups over the UI

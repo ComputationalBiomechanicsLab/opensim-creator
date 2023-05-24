@@ -124,27 +124,17 @@ public:
             [this](std::string_view panelName)
             {
                 return std::make_shared<ModelEditorViewerPanel>(panelName, m_Parent, this, m_Model);
-            }
+            },
+            1  // have one viewer open at the start
         );
         m_PanelManager->registerSpawnablePanel(
             "muscleplot",
             [this](std::string_view panelName)
             {
                 return std::make_shared<ModelMusclePlotPanel>(this, m_Model, panelName);
-            }
+            },
+            0  // no muscle plots open at the start
         );
-
-        // push one viewer open at the start
-        m_PanelManager->pushDynamicPanel(
-            "viewer",
-            std::make_shared<ModelEditorViewerPanel>(
-                m_PanelManager->computeSuggestedDynamicPanelName("viewer"),
-                m_Parent,
-                this,
-                m_Model
-            )
-        );
-        m_PanelManager->activateAllDefaultOpenPanels();
     }
 
     UID getID() const
@@ -172,10 +162,12 @@ public:
         App::upd().makeMainEventLoopWaiting();
         m_TabName = computeTabName();
         m_PopupManager.openAll();
+        m_PanelManager->onMount();
     }
 
     void onUnmount()
     {
+        m_PanelManager->onUnmount();
         App::upd().makeMainEventLoopPolling();
     }
 
@@ -203,7 +195,7 @@ public:
         }
 
         m_TabName = computeTabName();
-        m_PanelManager->garbageCollectDeactivatedPanels();
+        m_PanelManager->onTick();
     }
 
     void onDrawMainMenu()
@@ -221,7 +213,7 @@ public:
         try
         {
             m_Toolbar.draw();
-            m_PanelManager->drawAllActivatedPanels();
+            m_PanelManager->onDraw();
             m_StatusBar.draw();
             m_PopupManager.draw();
 

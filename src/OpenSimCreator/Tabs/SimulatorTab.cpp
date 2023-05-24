@@ -138,20 +138,9 @@ public:
                     m_ShownModelState,
                     m_Parent
                 );
-            }
+            },
+            1  // by default, open one viewer
         );
-
-        // by default, open one viewer
-        m_PanelManager->pushDynamicPanel(
-            "viewer",
-            std::make_shared<SimulationViewerPanel>(
-                m_PanelManager->computeSuggestedDynamicPanelName("viewer"),
-                m_ShownModelState,
-                m_Parent
-            )
-        );
-
-        m_PanelManager->activateAllDefaultOpenPanels();
     }
 
     UID getID() const
@@ -167,10 +156,12 @@ public:
     void onMount()
     {
         App::upd().makeMainEventLoopWaiting();
+        m_PanelManager->onMount();
     }
 
     void onUnmount()
     {
+        m_PanelManager->onUnmount();
         App::upd().makeMainEventLoopPolling();
     }
 
@@ -197,7 +188,7 @@ public:
             }
         }
 
-        m_PanelManager->garbageCollectDeactivatedPanels();
+        m_PanelManager->onTick();
     }
 
     void onDrawMainMenu()
@@ -396,7 +387,7 @@ private:
             m_ShownModelState->setSimulationReport(*maybeReport);
 
             OSC_PERF("draw simulation screen");
-            m_PanelManager->drawAllActivatedPanels();
+            m_PanelManager->onDraw();
         }
         else
         {

@@ -775,7 +775,6 @@ public:
                 );
             }
         );
-        m_PanelManager->activateAllDefaultOpenPanels();
     }
 
     UID getID() const
@@ -788,8 +787,15 @@ public:
         return c_TabStringID;
     }
 
-    void onMount() {}
-    void onUnmount() {}
+    void onMount()
+    {
+        m_PanelManager->onMount();
+    }
+
+    void onUnmount()
+    {
+        m_PanelManager->onUnmount();
+    }
 
     bool onEvent(SDL_Event const&)
     {
@@ -798,7 +804,7 @@ public:
 
     void onTick()
     {
-        m_PanelManager->garbageCollectDeactivatedPanels();
+        m_PanelManager->onTick();
     }
 
     void onDrawMainMenu()
@@ -812,7 +818,7 @@ public:
             ImGui::GetMainViewport(),
             ImGuiDockNodeFlags_PassthruCentralNode
         );
-        m_PanelManager->drawAllActivatedPanels();
+        m_PanelManager->onDraw();
         // TODO:
         //
         // - render a toolbar with new/save/open/undo/redo etc.
