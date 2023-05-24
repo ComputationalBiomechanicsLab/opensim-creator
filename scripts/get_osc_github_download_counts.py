@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+
+# run this to get the download counters for osc on GitHub
+
 import datetime
 import itertools
 import functools

@@ -1,3 +1,5 @@
+# usage (unix only): `source env_mesa_debugging.sh`
+
 # these are environment variables for strictly debugging the graphics layer
 # with Mesa (Linux)
 #

@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+# usage: `./osc 2>&1 | python3 filter_libasan_leaks.py`
+#
+# this is a script for filtering+condensing the various known
+# memory leaks in OSC that haven't been fixed in upstream libraries
+# yet.
+
 import re
 import sys
 
