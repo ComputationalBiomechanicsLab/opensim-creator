@@ -5,6 +5,9 @@ find_package(OpenSim REQUIRED CONFIG)
 #     library code behind the OpenSim Creator application
 add_library(OpenSimCreator STATIC
 
+    FrameDefinition/FrameDefinitionTab.cpp
+    FrameDefinition/FrameDefinitionTab.hpp
+
     Graphics/CachedModelRenderer.cpp
     Graphics/CachedModelRenderer.hpp
     Graphics/CustomDecorationOptions.cpp
@@ -54,8 +57,6 @@ add_library(OpenSimCreator STATIC
     Screens/MainUIScreen.cpp
     Screens/MainUIScreen.hpp
 
-    Tabs/Experimental/FrameDefinitionTab.cpp
-    Tabs/Experimental/FrameDefinitionTab.hpp
     Tabs/Experimental/MeshHittestTab.cpp
     Tabs/Experimental/MeshHittestTab.hpp
     Tabs/Experimental/ModelWarpingTab.cpp
@@ -183,7 +184,7 @@ add_library(OpenSimCreator STATIC
     VirtualModelStatePair.hpp
     VirtualOutputExtractor.hpp
     VirtualSimulation.hpp
-)
+ )
 
 # OpenSimCreator: target properties
 set_target_properties(OpenSimCreator PROPERTIES

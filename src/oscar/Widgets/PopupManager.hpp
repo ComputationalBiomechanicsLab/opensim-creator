@@ -18,6 +18,7 @@ namespace osc
         ~PopupManager() noexcept;
 
         void push_back(std::shared_ptr<Popup>);
+        void onMount() { openAll(); }
         void openAll();
         void draw();
     private:

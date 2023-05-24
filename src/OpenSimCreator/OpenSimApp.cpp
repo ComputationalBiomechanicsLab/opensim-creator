@@ -1,6 +1,6 @@
 #include "OpenSimApp.hpp"
 
-#include "OpenSimCreator/Tabs/Experimental/FrameDefinitionTab.hpp"
+#include "OpenSimCreator/FrameDefinition/FrameDefinitionTab.hpp"
 #include "OpenSimCreator/Tabs/Experimental/MeshHittestTab.hpp"
 #include "OpenSimCreator/Tabs/Experimental/ModelWarpingTab.hpp"
 #include "OpenSimCreator/Tabs/Experimental/PreviewExperimentalDataTab.hpp"
