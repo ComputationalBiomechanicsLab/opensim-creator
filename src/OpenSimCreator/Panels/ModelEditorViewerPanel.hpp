@@ -3,9 +3,11 @@
 #include <oscar/Panels/Panel.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
+#include <functional>
 #include <memory>
 #include <string_view>
 
+namespace OpenSim { class ComponentPath; }
 namespace osc { class EditorAPI; }
 namespace osc { class MainUIStateAPI; }
 namespace osc { class UndoableModelStatePair; }
@@ -15,10 +17,15 @@ namespace osc
     class ModelEditorViewerPanel final : public Panel {
     public:
         ModelEditorViewerPanel(
-            std::string_view panelName,
+            std::string_view panelName_,
             std::weak_ptr<MainUIStateAPI>,
             EditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
+        );
+        ModelEditorViewerPanel(
+            std::string_view panelName_,
+            std::shared_ptr<UndoableModelStatePair>,
+            std::function<void(OpenSim::ComponentPath const& absPath)> const& onRightClickedAComponent
         );
         ModelEditorViewerPanel(ModelEditorViewerPanel const&) = delete;
         ModelEditorViewerPanel(ModelEditorViewerPanel&&) noexcept;

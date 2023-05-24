@@ -43,9 +43,22 @@ public:
         std::shared_ptr<UndoableModelStatePair> model_) :
 
         StandardPanel{std::move(panelName_)},
-        m_MainUIStateAPI{std::move(mainUIStateAPI_)},
-        m_EditorAPI{std::move(editorAPI_)},
-        m_Model{std::move(model_)}
+        m_Model{std::move(model_)},
+        m_OnRightClickedAComponent{[this, menuName = std::string{getName()} + "_contextmenu", editorAPI_, mainUIStateAPI_](OpenSim::ComponentPath const& absPath)
+        {
+            editorAPI_->pushPopup(std::make_unique<ComponentContextMenu>(menuName, mainUIStateAPI_, editorAPI_, m_Model, absPath));
+        }}
+    {
+    }
+
+    Impl(
+        std::string_view panelName_,
+        std::shared_ptr<UndoableModelStatePair> model_,
+        std::function<void(OpenSim::ComponentPath const&)> const& onRightClickedAComponent) :
+
+        StandardPanel{panelName_},
+        m_Model{std::move(model_)},
+        m_OnRightClickedAComponent{onRightClickedAComponent}
     {
     }
 
@@ -177,7 +190,7 @@ private:
             // right-click: draw a context menu
             std::string const menuName = std::string{getName()} + "_contextmenu";
             OpenSim::ComponentPath const path = osc::GetAbsolutePathOrEmpty(maybeHover);
-            m_EditorAPI->pushPopup(std::make_unique<ComponentContextMenu>(menuName, m_MainUIStateAPI, m_EditorAPI, m_Model, path));
+            m_OnRightClickedAComponent(path);
         }
     }
 
@@ -262,9 +275,8 @@ private:
     }
 
     // tab/model state
-    std::weak_ptr<MainUIStateAPI> m_MainUIStateAPI;
-    EditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Model;
+    std::function<void(OpenSim::ComponentPath const&)> m_OnRightClickedAComponent;
 
     // 3D render/image state
     ModelRendererParams m_Params;
@@ -297,6 +309,15 @@ osc::ModelEditorViewerPanel::ModelEditorViewerPanel(
     m_Impl{std::make_unique<Impl>(std::move(panelName_), std::move(mainUIStateAPI_), editorAPI_, std::move(model_))}
 {
 }
+osc::ModelEditorViewerPanel::ModelEditorViewerPanel(
+    std::string_view panelName_,
+    std::shared_ptr<UndoableModelStatePair> model_,
+    std::function<void(OpenSim::ComponentPath const&)> const& onRightClickedAComponent) :
+
+    m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), std::move(onRightClickedAComponent))}
+{
+}
+
 osc::ModelEditorViewerPanel::ModelEditorViewerPanel(ModelEditorViewerPanel&&) noexcept = default;
 osc::ModelEditorViewerPanel& osc::ModelEditorViewerPanel::operator=(ModelEditorViewerPanel&&) noexcept = default;
 osc::ModelEditorViewerPanel::~ModelEditorViewerPanel() noexcept = default;

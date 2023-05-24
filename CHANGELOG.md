@@ -20,6 +20,8 @@ All notable changes to this project will be documented here. The format is based
   panels (#692)
 - Internal: `osc::PanelManager`'s lifetime hook methods (e.g. `onMount`) now follow the same naming
   conventions as `osc::Tab` (#691)
+- Internal: `osc::ModelViewerEditorPanel` can now be constructed with a custom `onComponentRightClicked`
+  callback, so that external code (e.g. in a frame editor, #490), can render custom context menus (#694)
 
 
 ## [0.4.1] - 2023/04/13
