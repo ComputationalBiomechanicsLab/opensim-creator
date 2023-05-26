@@ -4,11 +4,13 @@
 #include "OpenSimCreator/Graphics/SimTKMeshLoader.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanel.hpp"
+#include "OpenSimCreator/Panels/NavigatorPanel.hpp"
 #include "OpenSimCreator/Panels/PropertiesPanel.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
 #include "OpenSimCreator/ActionFunctions.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
+#include "OpenSimCreator/SimTKHelpers.hpp"
 
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Panels/LogViewerPanel.hpp>
@@ -35,9 +37,13 @@
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <SDL_events.h>
 
+#include <atomic>
+#include <cstdint>
 #include <filesystem>
 #include <memory>
 #include <optional>
+#include <sstream>
+#include <string>
 #include <string_view>
 #include <utility>
 
@@ -51,7 +57,6 @@ namespace
     {
         auto model = std::make_unique<OpenSim::Model>();
         model->updDisplayHints().set_show_frames(false);
-
         return std::make_shared<osc::UndoableModelStatePair>(std::move(model));
     }
 
@@ -101,8 +106,91 @@ namespace
         }
     }
 
+    int32_t GetNextGeometrySuffix()
+    {
+        static std::atomic<int32_t> s_GeometryCounter = 0;
+        return s_GeometryCounter++;
+    }
+
+    void ActionAddSphereInMeshFrame(
+        osc::UndoableModelStatePair& model,
+        OpenSim::Mesh const& mesh,
+        std::optional<glm::vec3> const& maybeClickPosInGround)
+    {
+        // if the caller requests that the sphere is placed at a particular
+        // location in ground, then place it in the correct location w.r.t.
+        // the mesh frame
+        SimTK::Vec3 translationInMeshFrame = {0.0, 0.0, 0.0};
+        if (maybeClickPosInGround)
+        {
+            SimTK::Transform const mesh2ground = mesh.getFrame().getTransformInGround(model.getState());
+            SimTK::Transform const ground2mesh = mesh2ground.invert();
+            SimTK::Vec3 const translationInGround = osc::ToSimTKVec3(*maybeClickPosInGround);
+
+            translationInMeshFrame = ground2mesh * translationInGround;
+        }
+
+        // generate sphere name
+        std::string sphereName;
+        {
+            std::stringstream ss;
+            ss << "sphere_" << GetNextGeometrySuffix();
+            sphereName = std::move(ss).str();
+        }
+
+        OpenSim::Model const& immutableModel = model.getModel();
+
+        // add an offset frame to the mesh: this is how the sphere can be
+        // freely moved in the scene
+        auto meshPhysicalOffsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+        meshPhysicalOffsetFrame->setParentFrame(dynamic_cast<OpenSim::PhysicalFrame const&>(mesh.getFrame()));
+        meshPhysicalOffsetFrame->setName(sphereName + "_offset");
+        meshPhysicalOffsetFrame->set_translation(translationInMeshFrame);
+
+        // attach the sphere to the frame
+        {
+            auto sphere = std::make_unique<OpenSim::Sphere>();
+            sphere->setName(sphereName);
+            meshPhysicalOffsetFrame->attachGeometry(sphere.release());
+        }
+
+        // create a human-readable commit message
+        std::string commitMessage;
+        {
+            std::stringstream ss;
+            ss << "added " << sphereName;
+            commitMessage = std::move(ss).str();
+        }
+
+        // finally, perform the model mutation
+        {
+            OpenSim::Model& mutableModel = model.updModel();
+            mutableModel.addComponent(meshPhysicalOffsetFrame.release());
+            mutableModel.finalizeConnections();
+
+            osc::InitializeModel(mutableModel);
+            osc::InitializeState(mutableModel);
+            model.commit(commitMessage);
+        }
+    }
+
     void DrawRightClickedNothingContextMenu(osc::UndoableModelStatePair& model)
     {
+        if (ImGui::MenuItem("Add Mesh"))
+        {
+            ActionPromptUserToAddMeshFile(model);
+        }
+    }
+
+    void DrawRightClickedMeshContextMenu(
+        osc::UndoableModelStatePair& model,
+        OpenSim::Mesh const& mesh,
+        std::optional<glm::vec3> const& maybeClickPosInGround)
+    {
+        if (ImGui::MenuItem("add sphere"))
+        {
+            ActionAddSphereInMeshFrame(model, mesh, maybeClickPosInGround);
+        }
     }
 
     class FrameDefinitionContextMenu final : public osc::StandardPopup {
@@ -110,11 +198,13 @@ namespace
         FrameDefinitionContextMenu(
             std::string_view popupName_,
             std::shared_ptr<osc::UndoableModelStatePair> model_,
-            OpenSim::ComponentPath componentPath_) :
+            OpenSim::ComponentPath componentPath_,
+            std::optional<glm::vec3> maybeClickPosInGround_) :
 
             StandardPopup{popupName_, {10.0f, 10.0f}, ImGuiWindowFlags_NoMove},
             m_Model{std::move(model_)},
-            m_ComponentPath{std::move(componentPath_)}
+            m_ComponentPath{std::move(componentPath_)},
+            m_MaybeClickPosInGround{std::move(maybeClickPosInGround_)}
         {
             setModal(false);
             OSC_ASSERT(m_Model != nullptr);
@@ -123,16 +213,20 @@ namespace
     private:
         void implDrawContent() final
         {
-            // - figure out what is right-clicked
-            // - drop into specialized context menu
-            if (ImGui::MenuItem("Add Mesh"))
+            OpenSim::Component const* maybeComponent = osc::FindComponent(m_Model->getModel(), m_ComponentPath);
+            if (!maybeComponent)
             {
-                ActionPromptUserToAddMeshFile(*m_Model);
+                DrawRightClickedNothingContextMenu(*m_Model);
+            }
+            else if (OpenSim::Mesh const* maybeMesh = dynamic_cast<OpenSim::Mesh const*>(maybeComponent))
+            {
+                DrawRightClickedMeshContextMenu(*m_Model, *maybeMesh, m_MaybeClickPosInGround);
             }
         }
 
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
         OpenSim::ComponentPath m_ComponentPath;
+        std::optional<glm::vec3> m_MaybeClickPosInGround;
     };
 
     class FrameDefinitionTabNavigatorPanel final : public osc::StandardPanel {
@@ -205,6 +299,16 @@ public:
             }
         );
         m_PanelManager->registerToggleablePanel(
+            "Navigator (legacy)",
+            [this](std::string_view panelName)
+            {
+                return std::make_shared<NavigatorPanel>(
+                    panelName,
+                    m_Model
+                );
+            }
+        );
+        m_PanelManager->registerToggleablePanel(
             "Properties",
             [this](std::string_view panelName)
             {
@@ -225,12 +329,13 @@ public:
                 auto rv = std::make_shared<ModelEditorViewerPanel>(
                     panelName,
                     m_Model,
-                    [this](OpenSim::ComponentPath const& absPath)
+                    [this](OpenSim::ComponentPath const& absPath, std::optional<glm::vec3> maybeClickPosInGround)
                     {
                         pushPopup(std::make_unique<FrameDefinitionContextMenu>(
                             "##ContextMenu",
                             m_Model,
-                            absPath
+                            absPath,
+                            std::move(maybeClickPosInGround)
                         ));
                     }
                 );
@@ -244,7 +349,7 @@ public:
                 rv->setBackgroundColor({48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f});
                 return rv;
             },
-            1
+            2
         );
     }
 

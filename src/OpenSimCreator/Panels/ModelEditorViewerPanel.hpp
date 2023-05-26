@@ -3,8 +3,11 @@
 #include <oscar/Panels/Panel.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
+#include <glm/vec3.hpp>
+
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string_view>
 
 namespace OpenSim { class ComponentPath; }
@@ -27,7 +30,7 @@ namespace osc
         ModelEditorViewerPanel(
             std::string_view panelName_,
             std::shared_ptr<UndoableModelStatePair>,
-            std::function<void(OpenSim::ComponentPath const& absPath)> const& onRightClickedAComponent
+            std::function<void(OpenSim::ComponentPath const& absPath, std::optional<glm::vec3> maybeClickPosInGround)> const& onRightClickedAComponent
         );
         ModelEditorViewerPanel(ModelEditorViewerPanel const&) = delete;
         ModelEditorViewerPanel(ModelEditorViewerPanel&&) noexcept;

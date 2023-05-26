@@ -274,7 +274,7 @@ public:
             SpawnablePanel& panel = m_SpawnablePanels[iPanel];
             for (size_t i = 0; i < panel.getNumInitiallyOpenedPanels(); ++i)
             {
-                createDynamicPanel(i);
+                createDynamicPanel(iPanel);
             }
         }
 
