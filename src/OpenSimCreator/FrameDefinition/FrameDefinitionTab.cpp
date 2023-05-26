@@ -1,11 +1,13 @@
 #include "FrameDefinitionTab.hpp"
 
 #include "OpenSimCreator/Graphics/CustomRenderingOptions.hpp"
+#include "OpenSimCreator/Graphics/SimTKMeshLoader.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanel.hpp"
 #include "OpenSimCreator/Panels/PropertiesPanel.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
+#include "OpenSimCreator/ActionFunctions.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
 
 #include <oscar/Graphics/Color.hpp>
@@ -14,20 +16,28 @@
 #include <oscar/Panels/PanelManager.hpp>
 #include <oscar/Panels/StandardPanel.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Platform/Log.hpp>
+#include <oscar/Platform/os.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <oscar/Widgets/Popup.hpp>
 #include <oscar/Widgets/PopupManager.hpp>
 #include <oscar/Widgets/StandardPopup.hpp>
 #include <oscar/Widgets/WindowMenu.hpp>
 
+#include <IconsFontAwesome5.h>
 #include <imgui.h>
+#include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <SDL_events.h>
 
+#include <filesystem>
 #include <memory>
+#include <optional>
 #include <string_view>
 #include <utility>
 
@@ -39,21 +49,67 @@ namespace
     // suitable for the frame definition UI
     std::shared_ptr<osc::UndoableModelStatePair> MakeSharedUndoableFrameDefinitionModel()
     {
-        auto rv = std::make_shared<osc::UndoableModelStatePair>();
-        rv->updModel().updDisplayHints().set_show_frames(false);
-        osc::InitializeModel(rv->updModel());
-        osc::InitializeState(rv->updModel());
-        return rv;
-    }
-}
+        auto model = std::make_unique<OpenSim::Model>();
+        model->updDisplayHints().set_show_frames(false);
 
-namespace osc
-{
-    class FrameDefinitionContextMenu final : public StandardPopup {
+        return std::make_shared<osc::UndoableModelStatePair>(std::move(model));
+    }
+
+    void ActionPromptUserToAddMeshFile(osc::UndoableModelStatePair& model)
+    {
+        std::optional<std::filesystem::path> const maybeMeshPath =
+            osc::PromptUserForFile(osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats());
+        if (!maybeMeshPath)
+        {
+            return;  // user didn't select anything
+        }
+        std::filesystem::path const& meshPath = *maybeMeshPath;
+        std::string const meshName = osc::FileNameWithoutExtension(meshPath);
+
+        OpenSim::Model const& immutableModel = model.getModel();
+
+        // add an offset frame that is connected to ground - this will become
+        // the mesh's offset frame
+        auto meshPhysicalOffsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+        meshPhysicalOffsetFrame->setParentFrame(immutableModel.getGround());
+        meshPhysicalOffsetFrame->setName(meshName + "_offset");
+
+        // attach the mesh to the frame
+        {
+            auto mesh = std::make_unique<OpenSim::Mesh>(meshPath.string());
+            mesh->setName(meshName);
+            meshPhysicalOffsetFrame->attachGeometry(mesh.release());
+        }
+
+        // create a human-readable commit message
+        std::string commitMessage;
+        {
+            std::stringstream ss;
+            ss << "added " << meshPath.filename();
+            commitMessage = std::move(ss).str();
+        }
+
+        // finally, perform the model mutation
+        {
+            OpenSim::Model& mutableModel = model.updModel();
+            mutableModel.addComponent(meshPhysicalOffsetFrame.release());
+            mutableModel.finalizeConnections();
+
+            osc::InitializeModel(mutableModel);
+            osc::InitializeState(mutableModel);
+            model.commit(commitMessage);
+        }
+    }
+
+    void DrawRightClickedNothingContextMenu(osc::UndoableModelStatePair& model)
+    {
+    }
+
+    class FrameDefinitionContextMenu final : public osc::StandardPopup {
     public:
         FrameDefinitionContextMenu(
             std::string_view popupName_,
-            std::shared_ptr<UndoableModelStatePair> model_,
+            std::shared_ptr<osc::UndoableModelStatePair> model_,
             OpenSim::ComponentPath componentPath_) :
 
             StandardPopup{popupName_, {10.0f, 10.0f}, ImGuiWindowFlags_NoMove},
@@ -67,14 +123,19 @@ namespace osc
     private:
         void implDrawContent() final
         {
-            ImGui::Text("hello");
+            // - figure out what is right-clicked
+            // - drop into specialized context menu
+            if (ImGui::MenuItem("Add Mesh"))
+            {
+                ActionPromptUserToAddMeshFile(*m_Model);
+            }
         }
 
-        std::shared_ptr<UndoableModelStatePair> m_Model;
+        std::shared_ptr<osc::UndoableModelStatePair> m_Model;
         OpenSim::ComponentPath m_ComponentPath;
     };
 
-    class FrameDefinitionTabNavigatorPanel final : public StandardPanel {
+    class FrameDefinitionTabNavigatorPanel final : public osc::StandardPanel {
     public:
         FrameDefinitionTabNavigatorPanel(std::string_view panelName_) :
             StandardPanel{panelName_}
@@ -90,8 +151,8 @@ namespace osc
     class FrameDefinitionTabMainMenu final {
     public:
         explicit FrameDefinitionTabMainMenu(
-            std::shared_ptr<UndoableModelStatePair> model_,
-            std::shared_ptr<PanelManager> panelManager_) :
+            std::shared_ptr<osc::UndoableModelStatePair> model_,
+            std::shared_ptr<osc::PanelManager> panelManager_) :
             m_Model{std::move(model_)},
             m_WindowMenu{std::move(panelManager_)}
         {
@@ -99,14 +160,32 @@ namespace osc
 
         void draw()
         {
+            drawEditMenu();
             m_WindowMenu.draw();
             m_AboutMenu.draw();
         }
 
     private:
-        std::shared_ptr<UndoableModelStatePair> m_Model;
-        WindowMenu m_WindowMenu;
-        MainMenuAboutTab m_AboutMenu;
+        void drawEditMenu()
+        {
+            if (ImGui::BeginMenu("Edit"))
+            {
+                if (ImGui::MenuItem(ICON_FA_UNDO " Undo", nullptr, false, m_Model->canUndo()))
+                {
+                    osc::ActionUndoCurrentlyEditedModel(*m_Model);
+                }
+
+                if (ImGui::MenuItem(ICON_FA_REDO " Redo", nullptr, false, m_Model->canRedo()))
+                {
+                    osc::ActionRedoCurrentlyEditedModel(*m_Model);
+                }
+                ImGui::EndMenu();
+            }
+        }
+
+        std::shared_ptr<osc::UndoableModelStatePair> m_Model;
+        osc::WindowMenu m_WindowMenu;
+        osc::MainMenuAboutTab m_AboutMenu;
     };
 }
 
