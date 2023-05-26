@@ -26,7 +26,7 @@ public:
         SceneRendererParams const& params)
     {
         if (params != m_LastRenderingParams ||
-            !std::equal(decorations.cbegin(), decorations.cend(), m_LastDecorationList.cbegin(), m_LastDecorationList.cend()))
+            !std::equal(decorations.begin(), decorations.end(), m_LastDecorationList.cbegin(), m_LastDecorationList.cend()))
         {
             // inputs have changed: cache the new ones and re-render
             m_LastRenderingParams = params;

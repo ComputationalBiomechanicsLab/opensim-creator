@@ -5,6 +5,7 @@
 #include <nonstd/span.hpp>
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <cmath>
