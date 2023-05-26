@@ -87,10 +87,16 @@ void osc::SetEnv(CStringView name, CStringView value, bool overwrite)
     SDL_setenv(name.c_str(), value.c_str(), overwrite ? 1 : 0);
 }
 
-std::optional<std::filesystem::path> osc::PromptUserForFile(char const* extensions, char const* defaultPath)
+std::optional<std::filesystem::path> osc::PromptUserForFile(
+    std::optional<CStringView> maybeCommaDelimitedExtensions,
+    std::optional<CStringView> maybeInitialDirectoryToOpen)
 {
     nfdchar_t* path = nullptr;
-    nfdresult_t const result = NFD_OpenDialog(extensions, defaultPath, &path);
+    nfdresult_t const result = NFD_OpenDialog(
+        maybeCommaDelimitedExtensions ? maybeCommaDelimitedExtensions->c_str() : nullptr,
+        maybeInitialDirectoryToOpen ? maybeInitialDirectoryToOpen->c_str() : nullptr,
+        &path
+    );
     OSC_SCOPE_GUARD_IF(path, { free(path); });
 
     if (path && result == NFD_OKAY)
@@ -103,10 +109,16 @@ std::optional<std::filesystem::path> osc::PromptUserForFile(char const* extensio
     }
 }
 
-std::vector<std::filesystem::path> osc::PromptUserForFiles(char const* extensions, char const* defaultPath)
+std::vector<std::filesystem::path> osc::PromptUserForFiles(
+    std::optional<CStringView> maybeCommaDelimitedExtensions,
+    std::optional<CStringView> maybeInitialDirectoryToOpen)
 {
     nfdpathset_t s{};
-    nfdresult_t result = NFD_OpenDialogMultiple(extensions, defaultPath, &s);
+    nfdresult_t result = NFD_OpenDialogMultiple(
+        maybeCommaDelimitedExtensions ? maybeCommaDelimitedExtensions->c_str() : nullptr,
+        maybeInitialDirectoryToOpen ? maybeInitialDirectoryToOpen->c_str() : nullptr,
+        &s
+    );
 
     std::vector<std::filesystem::path> rv;
 
@@ -132,15 +144,21 @@ std::vector<std::filesystem::path> osc::PromptUserForFiles(char const* extension
     return rv;
 }
 
-std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary(char const* extension, char const* defaultPath)
+std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary(
+    std::optional<CStringView> maybeExtension,
+    std::optional<CStringView> maybeInitialDirectoryToOpen)
 {
-    if (extension)
+    if (maybeExtension)
     {
-        OSC_ASSERT(!Contains(extension, ',') && "can only provide one extension to this implementation!");
+        OSC_ASSERT(!Contains(*maybeExtension, ',') && "can only provide one extension to this implementation!");
     }
 
     nfdchar_t* path = nullptr;
-    nfdresult_t const result = NFD_SaveDialog(extension, defaultPath, &path);
+    nfdresult_t const result = NFD_SaveDialog(
+        maybeExtension ? maybeExtension->c_str() : nullptr,
+        maybeInitialDirectoryToOpen ? maybeInitialDirectoryToOpen->c_str() : nullptr,
+        &path
+    );
     OSC_SCOPE_GUARD_IF(path, { free(path); });
 
     if (result != NFD_OKAY)
@@ -150,10 +168,10 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
 
     std::filesystem::path p{path};
 
-    if (extension && !CStrEndsWith(path, extension))
+    if (maybeExtension && !CStrEndsWith(path, *maybeExtension))
     {
         p += '.';
-        p += extension;
+        p += std::string_view{*maybeExtension};
     }
 
     return p;

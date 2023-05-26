@@ -84,7 +84,7 @@ namespace
 
     std::optional<std::filesystem::path> PromptUserForGeometryFile()
     {
-        return osc::PromptUserForFile(osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats().c_str());
+        return osc::PromptUserForFile(osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats());
     }
 
     std::unique_ptr<OpenSim::Mesh> LoadGeometryFile(std::filesystem::path const& p)
