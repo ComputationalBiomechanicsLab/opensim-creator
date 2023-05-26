@@ -1,11 +1,14 @@
 #include "FrameDefinitionTab.hpp"
 
+#include "OpenSimCreator/Graphics/CustomRenderingOptions.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanel.hpp"
 #include "OpenSimCreator/Panels/PropertiesPanel.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
+#include "OpenSimCreator/OpenSimHelpers.hpp"
 
+#include <oscar/Graphics/Color.hpp>
 #include <oscar/Panels/LogViewerPanel.hpp>
 #include <oscar/Panels/Panel.hpp>
 #include <oscar/Panels/PanelManager.hpp>
@@ -21,6 +24,7 @@
 
 #include <imgui.h>
 #include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <SDL_events.h>
 
 #include <memory>
@@ -30,6 +34,17 @@
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "OpenSim/Experimental/FrameDefinition";
+
+    // custom helper that customizes the OpenSim model defaults to be more
+    // suitable for the frame definition UI
+    std::shared_ptr<osc::UndoableModelStatePair> MakeSharedUndoableFrameDefinitionModel()
+    {
+        auto rv = std::make_shared<osc::UndoableModelStatePair>();
+        rv->updModel().updDisplayHints().set_show_frames(false);
+        osc::InitializeModel(rv->updModel());
+        osc::InitializeState(rv->updModel());
+        return rv;
+    }
 }
 
 namespace osc
@@ -128,7 +143,7 @@ public:
             "viewer",
             [this](std::string_view panelName)
             {
-                return std::make_shared<ModelEditorViewerPanel>(
+                auto rv = std::make_shared<ModelEditorViewerPanel>(
                     panelName,
                     m_Model,
                     [this](OpenSim::ComponentPath const& absPath)
@@ -140,6 +155,15 @@ public:
                         ));
                     }
                 );
+
+                // customize the appearance of the generic OpenSim model viewer to be
+                // more appropriate for the frame definition workflow
+                osc::CustomRenderingOptions opts = rv->getCustomRenderingOptions();
+                opts.setDrawFloor(false);
+                opts.setDrawXZGrid(true);
+                rv->setCustomRenderingOptions(opts);
+                rv->setBackgroundColor({48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f});
+                return rv;
             },
             1
         );
@@ -218,7 +242,7 @@ private:
     UID m_TabID;
     std::weak_ptr<TabHost> m_Parent;
 
-    std::shared_ptr<UndoableModelStatePair> m_Model = std::make_shared<UndoableModelStatePair>();
+    std::shared_ptr<UndoableModelStatePair> m_Model = MakeSharedUndoableFrameDefinitionModel();
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
     PopupManager m_PopupManager;
 

@@ -319,7 +319,7 @@ namespace
     // action: prompt the user to browse for a different source mesh
     void ActionBrowseForNewMesh(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentInputIdentifier which)
     {
-        std::optional<std::filesystem::path> const maybeMeshPath = osc::PromptUserForFile("vtp,obj");
+        std::optional<std::filesystem::path> const maybeMeshPath = osc::PromptUserForFile(osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats().c_str());
         if (!maybeMeshPath)
         {
             return;  // user didn't select anything

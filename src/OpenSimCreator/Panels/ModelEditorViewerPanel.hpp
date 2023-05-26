@@ -8,6 +8,8 @@
 #include <string_view>
 
 namespace OpenSim { class ComponentPath; }
+namespace osc { struct Color; }
+namespace osc { class CustomRenderingOptions; }
 namespace osc { class EditorAPI; }
 namespace osc { class MainUIStateAPI; }
 namespace osc { class UndoableModelStatePair; }
@@ -32,6 +34,10 @@ namespace osc
         ModelEditorViewerPanel& operator=(ModelEditorViewerPanel const&) = delete;
         ModelEditorViewerPanel& operator=(ModelEditorViewerPanel&&) noexcept;
         ~ModelEditorViewerPanel() noexcept;
+
+        CustomRenderingOptions const& getCustomRenderingOptions() const;
+        void setCustomRenderingOptions(CustomRenderingOptions const&);
+        void setBackgroundColor(Color const&);
 
     private:
         CStringView implGetName() const final;

@@ -133,6 +133,11 @@ osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
     return rv;
 }
 
+std::string osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats()
+{
+    return "obj,vtp,stl";
+}
+
 osc::Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
 {
     SimTK::DecorativeMeshFile const dmf{p.string()};

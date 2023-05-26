@@ -1,5 +1,7 @@
 #include "SelectGeometryPopup.hpp"
 
+#include "OpenSimCreator/Graphics/SimTKMeshLoader.hpp"
+
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/Algorithms.hpp>
@@ -82,7 +84,7 @@ namespace
 
     std::optional<std::filesystem::path> PromptUserForGeometryFile()
     {
-        return osc::PromptUserForFile("vtp,stl");
+        return osc::PromptUserForFile(osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats().c_str());
     }
 
     std::unique_ptr<OpenSim::Mesh> LoadGeometryFile(std::filesystem::path const& p)
@@ -177,9 +179,9 @@ private:
 
         if (ImGui::Button("Open Mesh File"))
         {
-            if (auto maybeVTP = PromptUserForGeometryFile())
+            if (auto maybeMeshFile = PromptUserForGeometryFile())
             {
-                m_Result = onVTPChoiceMade(std::move(maybeVTP).value());
+                m_Result = onMeshFileChosen(std::move(maybeMeshFile).value());
             }
         }
         osc::DrawTooltipIfItemHovered("Open Mesh File", "Open a mesh file on the filesystem");
@@ -200,7 +202,7 @@ private:
         }
     }
 
-    std::unique_ptr<OpenSim::Mesh> onVTPChoiceMade(std::filesystem::path path)
+    std::unique_ptr<OpenSim::Mesh> onMeshFileChosen(std::filesystem::path path)
     {
         auto rv = LoadGeometryFile(path);
 
@@ -221,7 +223,7 @@ private:
         {
             if (ImGui::Selectable(p.filename().string().c_str()))
             {
-                return onVTPChoiceMade(p.filename());
+                return onMeshFileChosen(p.filename());
             }
         }
         return nullptr;

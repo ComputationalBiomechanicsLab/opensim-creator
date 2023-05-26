@@ -62,6 +62,21 @@ public:
     {
     }
 
+    CustomRenderingOptions const& getCustomRenderingOptions() const
+    {
+        return m_Params.renderingOptions;
+    }
+
+    void setCustomRenderingOptions(CustomRenderingOptions const& newOptions)
+    {
+        m_Params.renderingOptions = newOptions;
+    }
+
+    void setBackgroundColor(Color const& newBgColor)
+    {
+        m_Params.backgroundColor = newBgColor;
+    }
+
 private:
     void implBeforeImGuiBegin() final
     {
@@ -314,13 +329,28 @@ osc::ModelEditorViewerPanel::ModelEditorViewerPanel(
     std::shared_ptr<UndoableModelStatePair> model_,
     std::function<void(OpenSim::ComponentPath const&)> const& onRightClickedAComponent) :
 
-    m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), std::move(onRightClickedAComponent))}
+    m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), onRightClickedAComponent)}
 {
 }
 
 osc::ModelEditorViewerPanel::ModelEditorViewerPanel(ModelEditorViewerPanel&&) noexcept = default;
 osc::ModelEditorViewerPanel& osc::ModelEditorViewerPanel::operator=(ModelEditorViewerPanel&&) noexcept = default;
 osc::ModelEditorViewerPanel::~ModelEditorViewerPanel() noexcept = default;
+
+osc::CustomRenderingOptions const& osc::ModelEditorViewerPanel::getCustomRenderingOptions() const
+{
+    return m_Impl->getCustomRenderingOptions();
+}
+
+void osc::ModelEditorViewerPanel::setCustomRenderingOptions(CustomRenderingOptions const& newRenderingOptions)
+{
+    m_Impl->setCustomRenderingOptions(newRenderingOptions);
+}
+
+void osc::ModelEditorViewerPanel::setBackgroundColor(Color const& newBackgroundColor)
+{
+    m_Impl->setBackgroundColor(newBackgroundColor);
+}
 
 osc::CStringView osc::ModelEditorViewerPanel::implGetName() const
 {

@@ -4243,7 +4243,7 @@ namespace
 
         std::vector<std::filesystem::path> PromptUserForMeshFiles() const
         {
-            return osc::PromptUserForFiles("obj,vtp,stl");
+            return osc::PromptUserForFiles(osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats().c_str());
         }
 
         void PromptUserForMeshFilesAndPushThemOntoMeshLoader()

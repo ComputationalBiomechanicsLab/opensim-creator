@@ -57,21 +57,21 @@ namespace osc
     // set an environment variable's value (process-wide)
     void SetEnv(CStringView name, CStringView value, bool overwrite);
 
-    // synchronously prompt a user to select a single file that ends with the supplied extension(s) (e.g. "obj,osim,stl")
+    // synchronously prompt a user to select a single file that ends with the supplied extension(s) (e.g. "txt,csv,tsv")
     //
     // - `extensions` can be nullptr, meaning "don't filter by extension"
     // - `extensions` can be a single extension (e.g. "blend")
-    // - `extensions` can be a comma-delimited list of multiple extensions (e.g. "vtp,obj")
+    // - `extensions` can be a comma-delimited list of multiple extensions (e.g. "txt,csv,tsv")
     // - `defaultPath` indicates which dir to initially open, can be nullptr, which will open a system-defined default
     //
     // returns std::nullopt if the user doesn't select a file
     std::optional<std::filesystem::path> PromptUserForFile(char const* extensions, char const* defaultPath = nullptr);
 
-    // synchronously prompt a user to select files ending with the supplied extensions (e.g. "obj,vtp,stl")
+    // synchronously prompt a user to select files ending with the supplied extensions (e.g. "txt,csv,tsv")
     //
     // - `extensions` can be nullptr, meaning "don't filter by extension"
     // - `extensions` can be a single extension (e.g. "blend")
-    // - `extensions` can be a comma-delimited list of multiple extensions (e.g. "vtp,obj")
+    // - `extensions` can be a comma-delimited list of multiple extensions (e.g. "txt,csv,tsv")
     // - `defaultPath` indicates which dir to initially open, can be nullptr, which will open a system-defined default
     std::vector<std::filesystem::path> PromptUserForFiles(char const* extensions, char const* defaultPath = nullptr);
 
