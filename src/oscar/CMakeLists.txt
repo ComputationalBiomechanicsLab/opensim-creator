@@ -393,6 +393,8 @@ add_library(oscar STATIC
     Tabs/LearnOpenGL/LOGLBasicLightingTab.hpp
     Tabs/LearnOpenGL/LOGLBlendingTab.cpp
     Tabs/LearnOpenGL/LOGLBlendingTab.hpp
+    Tabs/LearnOpenGL/LOGLBloomTab.cpp
+    Tabs/LearnOpenGL/LOGLBloomTab.hpp
     Tabs/LearnOpenGL/LOGLCoordinateSystemsTab.cpp
     Tabs/LearnOpenGL/LOGLCoordinateSystemsTab.hpp
     Tabs/LearnOpenGL/LOGLCubemapsTab.cpp

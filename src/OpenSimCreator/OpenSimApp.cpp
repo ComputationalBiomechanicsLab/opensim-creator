@@ -20,6 +20,7 @@
 #include <oscar/Tabs/Experiments/RendererSDFTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/LOGLBasicLightingTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/LOGLBlendingTab.hpp>
+#include <oscar/Tabs/LearnOpenGL/LOGLBloomTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/LOGLCoordinateSystemsTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/LOGLCubemapsTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/LOGLDeferredShadingTab.hpp>
@@ -177,6 +178,7 @@ namespace
         RegisterTab<osc::HittestTab>(registry);
         RegisterTab<osc::LOGLBasicLightingTab>(registry);
         RegisterTab<osc::LOGLBlendingTab>(registry);
+        RegisterTab<osc::LOGLBloomTab>(registry);
         RegisterTab<osc::LOGLCoordinateSystemsTab>(registry);
         RegisterTab<osc::LOGLCubemapsTab>(registry);
         RegisterTab<osc::LOGLDeferredShadingTab>(registry);
