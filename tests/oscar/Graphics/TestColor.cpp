@@ -7,13 +7,33 @@
 
 TEST(Color, CanConstructFromRGBAFloats)
 {
-    osc::Color const color{1.0f, 0.0f, 0.0f, 0.0f};
+    osc::Color const color{5.0f, 4.0f, 3.0f, 2.0f};
+    ASSERT_EQ(color.r, 5.0f);
+    ASSERT_EQ(color.g, 4.0f);
+    ASSERT_EQ(color.b, 3.0f);
+    ASSERT_EQ(color.a, 2.0f);
 }
 
 TEST(Color, RGBAFloatConstructorIsConstexpr)
 {
     // must compile
     osc::Color constexpr color{0.0f, 0.0f, 0.0f, 0.0f};
+}
+
+TEST(Color, CanConstructFromRGBFloats)
+{
+    osc::Color const color{5.0f, 4.0f, 3.0f};
+    ASSERT_EQ(color.r, 5.0f);
+    ASSERT_EQ(color.g, 4.0f);
+    ASSERT_EQ(color.b, 3.0f);
+
+    ASSERT_EQ(color.a, 1.0f);  // default value when given RGB
+}
+
+TEST(Color, RGBFloatConstructorIsConstexpr)
+{
+    // must compile
+    osc::Color constexpr color{0.0f, 0.0f, 0.0f};
 }
 
 TEST(Color, CanBeExplicitlyConstructedFromVec3)

@@ -64,6 +64,11 @@ namespace osc
         {
         }
 
+        constexpr Color(float r_, float g_, float b_) :
+            r{r_}, g{g_}, b{b_}, a{1.0f}
+        {
+        }
+
         constexpr Color& operator*=(Color const& other) noexcept
         {
             r *= other.r;
