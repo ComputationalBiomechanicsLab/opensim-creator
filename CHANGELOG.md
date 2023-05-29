@@ -22,6 +22,7 @@ All notable changes to this project will be documented here. The format is based
   conventions as `osc::Tab` (#691)
 - Internal: `osc::ModelViewerEditorPanel` can now be constructed with a custom `onComponentRightClicked`
   callback, so that external code (e.g. in a frame editor, #490), can render custom context menus (#694)
+- Internal: The software packaging scripts no longer have an `OpenSimCreator` prefix (#698)
 
 
 ## [0.4.1] - 2023/04/13

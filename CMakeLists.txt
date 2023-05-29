@@ -133,4 +133,4 @@ if(${OSC_BUILD_BENCHMARKS})
 endif()
 
 # install/packaging
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/OpenSimCreatorPackaging.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Packaging.cmake)
