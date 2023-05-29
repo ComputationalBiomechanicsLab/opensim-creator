@@ -25,6 +25,7 @@
 #include "oscar/Maths/Rect.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Utils/Algorithms.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <glm/vec2.hpp>
@@ -359,26 +360,23 @@ private:
 
     void drawOverlays(Rect const& viewportRect)
     {
-        Graphics::BlitToScreen(
-            m_GBuffer.albedo,
-            Rect{viewportRect.p1, viewportRect.p1 + 200.0f}
+        float constexpr w = 200.0f;
+
+        auto const textures = MakeArray<RenderTexture const*>(
+            &m_GBuffer.albedo,
+            &m_GBuffer.normal,
+            &m_GBuffer.position,
+            &m_SSAO.outputTexture,
+            &m_Blur.outputTexture
         );
-        Graphics::BlitToScreen(
-            m_GBuffer.normal,
-            Rect{viewportRect.p1 + glm::vec2{200.0f, 0.0f}, viewportRect.p1 + glm::vec2{200.0f, 0.0f} + 200.0f}
-        );
-        Graphics::BlitToScreen(
-            m_GBuffer.position,
-            Rect{viewportRect.p1 + glm::vec2{400.0f, 0.0f}, viewportRect.p1 + glm::vec2{400.0f, 0.0f} + 200.0f}
-        );
-        Graphics::BlitToScreen(
-            m_SSAO.outputTexture,
-            Rect{viewportRect.p1 + glm::vec2{600.0f, 0.0f}, viewportRect.p1 + glm::vec2{600.0f, 0.0f} + 200.0f}
-        );
-        Graphics::BlitToScreen(
-            m_Blur.outputTexture,
-            Rect{viewportRect.p1 + glm::vec2{800.0f, 0.0f}, viewportRect.p1 + glm::vec2{800.0f, 0.0f} + 200.0f}
-        );
+
+        for (size_t i = 0; i < textures.size(); ++i)
+        {
+            glm::vec2 const offset = {static_cast<float>(i)*w, 0.0f};
+            Rect const overlayRect{viewportRect.p1 + offset, viewportRect.p1 + offset + w};
+
+            Graphics::BlitToScreen(*textures[i], overlayRect);
+        }
     }
 
     UID m_TabID;

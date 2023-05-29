@@ -1,11 +1,23 @@
 #include "LOGLBloomTab.hpp"
 
+#include "oscar/Bindings/ImGuiHelpers.hpp"
 #include "oscar/Graphics/Camera.hpp"
+#include "oscar/Graphics/Color.hpp"
+#include "oscar/Graphics/GraphicsHelpers.hpp"
+#include "oscar/Graphics/Material.hpp"
+#include "oscar/Graphics/Mesh.hpp"
+#include "oscar/Graphics/MeshGen.hpp"
+#include "oscar/Graphics/Shader.hpp"
+#include "oscar/Graphics/Texture2D.hpp"
 #include "oscar/Maths/Transform.hpp"
+#include "oscar/Maths/MathHelpers.hpp"
+#include "oscar/Platform/App.hpp"
 #include "oscar/Utils/Algorithms.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
+#include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>
+#include <imgui.h>
 #include <SDL_events.h>
 
 #include <string>
@@ -52,36 +64,140 @@ public:
 
     void onMount()
     {
+        App::upd().makeMainEventLoopPolling();
+        m_IsMouseCaptured = true;
     }
 
     void onUnmount()
     {
+        App::upd().setShowCursor(true);
+        App::upd().makeMainEventLoopWaiting();
+        m_IsMouseCaptured = false;
     }
 
-    bool onEvent(SDL_Event const&)
+    bool onEvent(SDL_Event const& e)
     {
+        // handle mouse input
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+        {
+            m_IsMouseCaptured = false;
+            return true;
+        }
+        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect())
+        {
+            m_IsMouseCaptured = true;
+            return true;
+        }
         return false;
     }
 
-    void onTick()
-    {
-    }
-
-    void onDrawMainMenu()
-    {
-    }
+    void onTick() {}
+    void onDrawMainMenu() {}
 
     void onDraw()
     {
+        // handle mouse capturing
+        if (m_IsMouseCaptured)
+        {
+            UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+            App::upd().setShowCursor(false);
+        }
+        else
+        {
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
+            App::upd().setShowCursor(true);
+        }
+
+        draw3DScene();
     }
 
 private:
+    void draw3DScene()
+    {
+        Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
+
+        reformatAllTextures(viewportRect);
+        renderSceneMRT();
+        renderBlurredBrightness();
+        renderCombinedScene();
+        blitCombinedSceneToScreen(viewportRect);
+        drawOverlays(viewportRect);
+    }
+
+    void reformatAllTextures(Rect const&)
+    {
+        //glm::vec2 const viewportDims = Dimensions(viewportRect);
+        //int32_t const samples = App::get().getMSXAASamplesRecommended();
+
+        // TODO: reformat them all
+    }
+
+    void renderSceneMRT()
+    {
+        // TODO: render the cubes + lights via an MRT shader that writes
+        // the scene and the thresholded brightness in one pass
+    }
+
+    void renderBlurredBrightness()
+    {
+        // TODO: pump thresholded output through blurring shader
+    }
+
+    void renderCombinedScene()
+    {
+        // TODO: composite the scene render and the blurred brightness into one scene
+    }
+
+    void blitCombinedSceneToScreen(Rect const&)
+    {
+        // TODO: blit the final render texture to the screen
+    }
+
+    void drawOverlays(Rect const&)
+    {
+        // TODO: use Graphics::BlitToScreen to draw each intermediate texture
+        // to the corner of the viewport (see SSAO impl)
+    }
+
     UID m_TabID;
     std::weak_ptr<TabHost> m_Parent;
 
-
+    Shader m_SceneShader
+    {
+        App::slurp("shaders/ExperimentBloom.vert"),
+        App::slurp("shaders/ExperimentBloom.frag"),
+    };
+    Shader m_LightboxShader
+    {
+        App::slurp("shaders/ExperimentBloomLightBox.vert"),
+        App::slurp("shaders/ExperimentBloomLightBox.frag"),
+    };
+    Shader m_BlurShader
+    {
+        App::slurp("shaders/ExperimentBloomBlur.vert"),
+        App::slurp("shaders/ExperimentBloomBlur.frag"),
+    };
+    Shader m_FinalShader
+    {
+        App::slurp("shaders/ExperimentBloomFinal.vert"),
+        App::slurp("shaders/ExperimentBloomFinal.frag"),
+    };
+    Texture2D m_WoodTexture = osc::LoadTexture2DFromImage(
+        App::resource("textures/wood.png"),
+        ColorSpace::sRGB
+    );
+    Texture2D m_ContainerTexture = osc::LoadTexture2DFromImage(
+        App::resource("textures/container2.png"),
+        ColorSpace::sRGB
+    );
+    Mesh m_CubeMesh = osc::GenCube();
+    Mesh m_QuadMesh = GenTexturedQuad();
 
     Camera m_Camera;
+    bool m_IsMouseCaptured = true;
+    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+
     bool m_UseBloom = true;
     float m_Exposure = 1.0f;
 };
