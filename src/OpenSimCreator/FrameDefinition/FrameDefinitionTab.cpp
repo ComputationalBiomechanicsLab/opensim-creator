@@ -4,6 +4,7 @@
 #include "OpenSimCreator/Graphics/SimTKMeshLoader.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanel.hpp"
+#include "OpenSimCreator/Panels/ModelEditorViewerPanelRightClickEvent.hpp"
 #include "OpenSimCreator/Panels/NavigatorPanel.hpp"
 #include "OpenSimCreator/Panels/PropertiesPanel.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
@@ -12,7 +13,10 @@
 #include "OpenSimCreator/OpenSimHelpers.hpp"
 #include "OpenSimCreator/SimTKHelpers.hpp"
 
+#include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
+#include <oscar/Maths/Rect.hpp>
 #include <oscar/Panels/LogViewerPanel.hpp>
 #include <oscar/Panels/Panel.hpp>
 #include <oscar/Panels/PanelManager.hpp>
@@ -60,6 +64,53 @@ namespace
         return std::make_shared<osc::UndoableModelStatePair>(std::move(model));
     }
 
+    // modal popup for a 3D viewport that can be used to define the second
+    // point in an edge
+    class DefineEdgePopup final : public osc::StandardPopup {
+    public:
+        DefineEdgePopup(
+            std::shared_ptr<osc::UndoableModelStatePair> model_,
+            OpenSim::ComponentPath sourcePointAbsPath_,
+            osc::Rect const& popupRect) :
+
+            StandardPopup
+            {
+                "##DefineEdgeOverlay",
+                osc::Dimensions(popupRect),
+                osc::GetMinimalWindowFlags() & ~(ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs),
+            },
+            m_Model{std::move(model_)},
+            m_SourcePointAbsPath{std::move(sourcePointAbsPath_)}
+        {
+            setModal(true);
+            setRect(popupRect);
+        }
+
+    private:
+        void implBeforeImguiBeginPopup() final
+        {
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+        }
+
+        void implAfterImguiBeginPopup() final
+        {
+            ImGui::PopStyleVar();
+        }
+
+        void implDrawContent() final
+        {
+            if (ImGui::IsKeyReleased(ImGuiKey_Escape))
+            {
+                requestClose();
+            }
+
+            ImGui::Text("TODO: draw edge definition popup content");
+        }
+
+        std::shared_ptr<osc::UndoableModelStatePair> m_Model;
+        OpenSim::ComponentPath m_SourcePointAbsPath;
+    };
+
     void ActionPromptUserToAddMeshFile(osc::UndoableModelStatePair& model)
     {
         std::optional<std::filesystem::path> const maybeMeshPath =
@@ -106,7 +157,7 @@ namespace
         }
     }
 
-    int32_t GetNextGeometrySuffix()
+    int32_t GetNextGlobalGeometrySuffix()
     {
         static std::atomic<int32_t> s_GeometryCounter = 0;
         return s_GeometryCounter++;
@@ -134,7 +185,7 @@ namespace
         std::string sphereName;
         {
             std::stringstream ss;
-            ss << "sphere_" << GetNextGeometrySuffix();
+            ss << "sphere_" << GetNextGlobalGeometrySuffix();
             sphereName = std::move(ss).str();
         }
 
@@ -148,9 +199,13 @@ namespace
         meshPhysicalOffsetFrame->set_translation(translationInMeshFrame);
 
         // attach the sphere to the frame
+        OpenSim::Sphere const* spherePtr = nullptr;
         {
             auto sphere = std::make_unique<OpenSim::Sphere>();
             sphere->setName(sphereName);
+            sphere->set_radius(0.01);  // 1 cm radius - like a small marker
+            sphere->upd_Appearance().set_color({0.1, 1.0, 0.1});  // green(ish) - so it's visually distinct from a mesh
+            spherePtr = sphere.get();
             meshPhysicalOffsetFrame->attachGeometry(sphere.release());
         }
 
@@ -167,9 +222,10 @@ namespace
             OpenSim::Model& mutableModel = model.updModel();
             mutableModel.addComponent(meshPhysicalOffsetFrame.release());
             mutableModel.finalizeConnections();
-
             osc::InitializeModel(mutableModel);
             osc::InitializeState(mutableModel);
+
+            model.setSelected(spherePtr);
             model.commit(commitMessage);
         }
     }
@@ -193,21 +249,51 @@ namespace
         }
     }
 
+    void DrawRightClickedSphereContextMenu(
+        osc::EditorAPI& editor,
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        OpenSim::Sphere const& sphere,
+        osc::Rect const& visualizerRect)
+    {
+        if (ImGui::MenuItem("create edge"))
+        {
+            auto popup = std::make_unique<DefineEdgePopup>(
+                model,
+                sphere.getAbsolutePath(),
+                visualizerRect
+            );
+            editor.pushPopup(std::move(popup));
+        }
+    }
+
+    void DrawRightClickedUnknownComponentContextMenu(
+        osc::UndoableModelStatePair& model,
+        OpenSim::Component const& component)
+    {
+        ImGui::TextDisabled("Unknown component type");
+    }
+
     class FrameDefinitionContextMenu final : public osc::StandardPopup {
     public:
         FrameDefinitionContextMenu(
             std::string_view popupName_,
+            osc::EditorAPI* editorAPI_,
             std::shared_ptr<osc::UndoableModelStatePair> model_,
+            osc::Rect const& visualizerRect_,
             OpenSim::ComponentPath componentPath_,
             std::optional<glm::vec3> maybeClickPosInGround_) :
 
             StandardPopup{popupName_, {10.0f, 10.0f}, ImGuiWindowFlags_NoMove},
+            m_EditorAPI{editorAPI_},
             m_Model{std::move(model_)},
+            m_VisualizerRect{visualizerRect_},
             m_ComponentPath{std::move(componentPath_)},
             m_MaybeClickPosInGround{std::move(maybeClickPosInGround_)}
         {
-            setModal(false);
+            OSC_ASSERT(m_EditorAPI != nullptr);
             OSC_ASSERT(m_Model != nullptr);
+
+            setModal(false);
         }
 
     private:
@@ -222,9 +308,19 @@ namespace
             {
                 DrawRightClickedMeshContextMenu(*m_Model, *maybeMesh, m_MaybeClickPosInGround);
             }
+            else if (OpenSim::Sphere const* maybeSphere = dynamic_cast<OpenSim::Sphere const*>(maybeComponent))
+            {
+                DrawRightClickedSphereContextMenu(*m_EditorAPI, m_Model, *maybeSphere, m_VisualizerRect);
+            }
+            else
+            {
+                DrawRightClickedUnknownComponentContextMenu(*m_Model, *maybeComponent);
+            }
         }
 
+        osc::EditorAPI* m_EditorAPI;
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
+        osc::Rect m_VisualizerRect;
         OpenSim::ComponentPath m_ComponentPath;
         std::optional<glm::vec3> m_MaybeClickPosInGround;
     };
@@ -238,7 +334,7 @@ namespace
     private:
         void implDrawContent() final
         {
-            ImGui::Text("navigator todo");
+            ImGui::Text("TODO: draw navigator content");
         }
     };
 
@@ -329,13 +425,15 @@ public:
                 auto rv = std::make_shared<ModelEditorViewerPanel>(
                     panelName,
                     m_Model,
-                    [this](OpenSim::ComponentPath const& absPath, std::optional<glm::vec3> maybeClickPosInGround)
+                    [this](ModelEditorViewerPanelRightClickEvent const& e)
                     {
                         pushPopup(std::make_unique<FrameDefinitionContextMenu>(
                             "##ContextMenu",
+                            this,
                             m_Model,
-                            absPath,
-                            std::move(maybeClickPosInGround)
+                            e.viewportScreenRect,
+                            e.componentAbsPathOrEmpty,
+                            e.maybeClickPositionInGround
                         ));
                     }
                 );
@@ -349,7 +447,7 @@ public:
                 rv->setBackgroundColor({48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f});
                 return rv;
             },
-            2
+            1
         );
     }
 

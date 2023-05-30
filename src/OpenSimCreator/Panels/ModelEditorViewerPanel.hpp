@@ -15,6 +15,7 @@ namespace osc { struct Color; }
 namespace osc { class CustomRenderingOptions; }
 namespace osc { class EditorAPI; }
 namespace osc { class MainUIStateAPI; }
+namespace osc { struct ModelEditorViewerPanelRightClickEvent; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc
@@ -30,7 +31,7 @@ namespace osc
         ModelEditorViewerPanel(
             std::string_view panelName_,
             std::shared_ptr<UndoableModelStatePair>,
-            std::function<void(OpenSim::ComponentPath const& absPath, std::optional<glm::vec3> maybeClickPosInGround)> const& onRightClickedAComponent
+            std::function<void(ModelEditorViewerPanelRightClickEvent const&)> const& onRightClickedAComponent
         );
         ModelEditorViewerPanel(ModelEditorViewerPanel const&) = delete;
         ModelEditorViewerPanel(ModelEditorViewerPanel&&) noexcept;

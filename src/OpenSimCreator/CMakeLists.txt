@@ -37,6 +37,7 @@ add_library(OpenSimCreator STATIC
     Panels/CoordinateEditorPanel.hpp
     Panels/ModelEditorViewerPanel.cpp
     Panels/ModelEditorViewerPanel.hpp
+    Panels/ModelEditorViewerPanelRightClickEvent.hpp
     Panels/ModelMusclePlotPanel.cpp
     Panels/ModelMusclePlotPanel.hpp
     Panels/NavigatorPanel.cpp

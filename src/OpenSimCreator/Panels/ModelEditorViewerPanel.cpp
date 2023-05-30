@@ -3,6 +3,7 @@
 #include "OpenSimCreator/Graphics/CachedModelRenderer.hpp"
 #include "OpenSimCreator/Graphics/ModelRendererParams.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
+#include "OpenSimCreator/Panels/ModelEditorViewerPanelRightClickEvent.hpp"
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 #include "OpenSimCreator/Widgets/ComponentContextMenu.hpp"
 #include "OpenSimCreator/Widgets/ModelSelectionGizmo.hpp"
@@ -44,9 +45,16 @@ public:
 
         StandardPanel{std::move(panelName_)},
         m_Model{std::move(model_)},
-        m_OnRightClickedAComponent{[this, menuName = std::string{getName()} + "_contextmenu", editorAPI_, mainUIStateAPI_](OpenSim::ComponentPath const& absPath, std::optional<glm::vec3>)
+        m_OnRightClickedAComponent{[this, menuName = std::string{getName()} + "_contextmenu", editorAPI_, mainUIStateAPI_](ModelEditorViewerPanelRightClickEvent const& e)
         {
-            editorAPI_->pushPopup(std::make_unique<ComponentContextMenu>(menuName, mainUIStateAPI_, editorAPI_, m_Model, absPath));
+            auto popup = std::make_unique<ComponentContextMenu>(
+                menuName,
+                mainUIStateAPI_,
+                editorAPI_,
+                m_Model,
+                e.componentAbsPathOrEmpty
+            );
+            editorAPI_->pushPopup(std::move(popup));
         }}
     {
     }
@@ -54,7 +62,7 @@ public:
     Impl(
         std::string_view panelName_,
         std::shared_ptr<UndoableModelStatePair> model_,
-        std::function<void(OpenSim::ComponentPath const&, std::optional<glm::vec3>)> const& onRightClickedAComponent) :
+        std::function<void(ModelEditorViewerPanelRightClickEvent const&)> const& onRightClickedAComponent) :
 
         StandardPanel{panelName_},
         m_Model{std::move(model_)},
@@ -202,10 +210,14 @@ private:
         // right-click: open context menu
         if (imguiHittest.isRightClickReleasedWithoutDragging)
         {
-            // right-click: draw a context menu
-            std::string const menuName = std::string{getName()} + "_contextmenu";
-            OpenSim::ComponentPath const path = osc::GetAbsolutePathOrEmpty(maybeHover);
-            m_OnRightClickedAComponent(path, maybeSceneHittest ? std::optional<glm::vec3>{maybeSceneHittest->worldspaceLocation} : std::nullopt);
+            // right-click: pump a right-click event
+            ModelEditorViewerPanelRightClickEvent const e
+            {
+                viewportRect,
+                osc::GetAbsolutePathOrEmpty(maybeHover).toString(),
+                maybeSceneHittest ? std::optional<glm::vec3>{maybeSceneHittest->worldspaceLocation} : std::nullopt,
+            };
+            m_OnRightClickedAComponent(e);
         }
     }
 
@@ -291,7 +303,7 @@ private:
 
     // tab/model state
     std::shared_ptr<UndoableModelStatePair> m_Model;
-    std::function<void(OpenSim::ComponentPath const&, std::optional<glm::vec3>)> m_OnRightClickedAComponent;
+    std::function<void(ModelEditorViewerPanelRightClickEvent const&)> m_OnRightClickedAComponent;
 
     // 3D render/image state
     ModelRendererParams m_Params;
@@ -327,7 +339,7 @@ osc::ModelEditorViewerPanel::ModelEditorViewerPanel(
 osc::ModelEditorViewerPanel::ModelEditorViewerPanel(
     std::string_view panelName_,
     std::shared_ptr<UndoableModelStatePair> model_,
-    std::function<void(OpenSim::ComponentPath const&, std::optional<glm::vec3>)> const& onRightClickedAComponent) :
+    std::function<void(ModelEditorViewerPanelRightClickEvent const&)> const& onRightClickedAComponent) :
 
     m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), onRightClickedAComponent)}
 {
