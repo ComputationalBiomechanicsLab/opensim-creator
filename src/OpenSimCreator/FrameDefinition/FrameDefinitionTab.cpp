@@ -49,6 +49,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <unordered_set>
 #include <utility>
 
 namespace
@@ -64,26 +65,45 @@ namespace
         return std::make_shared<osc::UndoableModelStatePair>(std::move(model));
     }
 
-    // modal popup for a 3D viewport that can be used to define the second
-    // point in an edge
-    class DefineEdgePopup final : public osc::StandardPopup {
+    // options provided when creating a "choose components" popup
+    struct ChooseComponentPopupOptions final {
+        std::string popupHeaderText = "choose something";
+
+        bool userCanChoosePoints = false;
+
+        // (maybe) the components that the user has already chosen, or is
+        // assigning to (and, therefore, should maybe be highlighted but
+        // non-selectable)
+        std::unordered_set<std::string> componentsBeingAssignedTo;
+
+        size_t numComponentsUserMustChoose = 1;
+
+        std::function<bool(std::unordered_set<std::string> const&)> onUserFinishedChoosing = [](std::unordered_set<std::string> const&)
+        {
+            return true;
+        };
+    };
+
+    // modal popup that prompts the user to select components in the model (e.g.
+    // to define an edge, or a frame)
+    class ChooseComponentsPopup final : public osc::StandardPopup {
     public:
-        DefineEdgePopup(
+        ChooseComponentsPopup(
             std::shared_ptr<osc::UndoableModelStatePair> model_,
-            OpenSim::ComponentPath sourcePointAbsPath_,
-            osc::Rect const& popupRect) :
+            osc::Rect const& popupRect_,
+            ChooseComponentPopupOptions options_) :
 
             StandardPopup
             {
-                "##DefineEdgeOverlay",
-                osc::Dimensions(popupRect),
+                "##ChooseComponentPopup",
+                osc::Dimensions(popupRect_),
                 osc::GetMinimalWindowFlags() & ~(ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs),
             },
             m_Model{std::move(model_)},
-            m_SourcePointAbsPath{std::move(sourcePointAbsPath_)}
+            m_Options{std::move(options_)}
         {
             setModal(true);
-            setRect(popupRect);
+            setRect(popupRect_);
         }
 
     private:
@@ -105,10 +125,16 @@ namespace
             }
 
             ImGui::Text("TODO: draw edge definition popup content");
+            ImGui::Text("TODO: - should be a 3D render");
+            ImGui::Text("TODO: - with a camera that is identical to the source camera");
+            ImGui::Text("TODO: - that shows non-selectable objects in a faded way");
+            ImGui::Text("TODO: - and shows selectable objects in a solid non-faded color");
+            ImGui::Text("TODO: - and has hover logic");
+            ImGui::Text("TODO: - and highlights selected objects");
         }
 
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
-        OpenSim::ComponentPath m_SourcePointAbsPath;
+        ChooseComponentPopupOptions m_Options;
     };
 
     void ActionPromptUserToAddMeshFile(osc::UndoableModelStatePair& model)
@@ -257,10 +283,21 @@ namespace
     {
         if (ImGui::MenuItem("create edge"))
         {
-            auto popup = std::make_unique<DefineEdgePopup>(
+            ChooseComponentPopupOptions options;
+            options.popupHeaderText = "choose other point";
+            options.componentsBeingAssignedTo = {sphere.getAbsolutePathString()};
+            options.numComponentsUserMustChoose = 1;
+            options.onUserFinishedChoosing = [model, spherePath = sphere.getAbsolutePathString()](std::unordered_set<std::string> const& choices)
+            {
+                // TODO: figure out if the spherePath+choices is enough to add
+                // a new edge into the model and then add the new edge to the model
+                return true;
+            };
+
+            auto popup = std::make_unique<ChooseComponentsPopup>(
                 model,
-                sphere.getAbsolutePath(),
-                visualizerRect
+                visualizerRect,
+                std::move(options)
             );
             editor.pushPopup(std::move(popup));
         }
