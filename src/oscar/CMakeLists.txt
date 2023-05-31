@@ -323,6 +323,7 @@ target_link_libraries(oscar PUBLIC
 
     OpenGL::GL
     GLEW::glew_s
+    ${CMAKE_DL_LIBS}  # used by OpenGL bindings
     glm::glm
     SDL2::SDL2
     nativefiledialog
