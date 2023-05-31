@@ -12,7 +12,7 @@
 #include "oscar/Utils/Algorithms.hpp"
 #include "oscar/Utils/SynchronizedValue.hpp"
 #include "oscar/Utils/UID.hpp"
-#include "oscar/OscarStaticConfig.hpp"
+#include "OscarConfiguration.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/vec2.hpp>

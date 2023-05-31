@@ -48,7 +48,7 @@
 #include <oscar/Utils/UID.hpp>
 #include <oscar/Widgets/LogViewer.hpp>
 #include <oscar/Widgets/SaveChangesPopup.hpp>
-#include <oscar/OscarStaticConfig.hpp>
+#include <OscarConfiguration.hpp>
 
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x3.hpp>

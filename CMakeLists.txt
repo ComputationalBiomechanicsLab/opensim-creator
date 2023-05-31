@@ -143,9 +143,8 @@ endif()
 
 # -------------- add/include subdirectories for each part of the project ---------------- #
 
-add_subdirectory(src/oscar)
-add_subdirectory(src/OpenSimCreator)
-add_subdirectory(apps/osc)
+add_subdirectory(src)
+add_subdirectory(apps)
 add_subdirectory(tests)
 if(OSC_BUILD_DOCS)
     add_subdirectory(docs)

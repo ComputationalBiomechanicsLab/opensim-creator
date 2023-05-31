@@ -19,7 +19,7 @@
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
-#include <oscar/OscarStaticConfig.hpp>
+#include <OscarConfiguration.hpp>
 
 #include <imgui.h>
 #include <IconsFontAwesome5.h>

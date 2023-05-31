@@ -2,7 +2,7 @@
 
 #include "oscar/Graphics/Mesh.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
-#include "oscar/OscarStaticConfig.hpp"
+#include "OscarConfiguration.hpp"
 
 #include <cstddef>
 #include <iostream>

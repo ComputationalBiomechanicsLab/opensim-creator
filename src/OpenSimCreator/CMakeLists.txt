@@ -194,7 +194,7 @@ target_include_directories(OpenSimCreator PUBLIC
 
 # OpenSimCreator: libraries
 target_link_libraries(OpenSimCreator PUBLIC
-    osc_configuration
+    oscar_configuration
     oscar
     osimCommon
     osimSimulation

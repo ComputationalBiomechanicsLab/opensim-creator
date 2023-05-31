@@ -27,7 +27,7 @@
 #include <oscar/Tabs/TabHost.hpp>
 #include <oscar/Utils/Algorithms.hpp>
 #include <oscar/Widgets/LogViewer.hpp>
-#include <oscar/OscarStaticConfig.hpp>
+#include <OscarConfiguration.hpp>
 
 #include <glm/vec2.hpp>
 #include <IconsFontAwesome5.h>

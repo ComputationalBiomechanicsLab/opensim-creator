@@ -6,7 +6,7 @@
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Widgets/StandardPopup.hpp>
-#include <oscar/OscarStaticConfig.hpp>
+#include <OscarConfiguration.hpp>
 
 #include <imgui.h>
 #include <nonstd/span.hpp>

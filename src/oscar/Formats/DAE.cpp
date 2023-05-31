@@ -6,7 +6,7 @@
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Platform/os.hpp"
 #include "oscar/Utils/Algorithms.hpp"
-#include "oscar/OscarStaticConfig.hpp"
+#include "OscarConfiguration.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>

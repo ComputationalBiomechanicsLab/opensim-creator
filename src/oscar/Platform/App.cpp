@@ -14,7 +14,7 @@
 #include "oscar/Utils/Perf.hpp"
 #include "oscar/Utils/ScopeGuard.hpp"
 #include "oscar/Utils/SynchronizedValue.hpp"
-#include "oscar/OscarStaticConfig.hpp"
+#include "OscarConfiguration.hpp"
 
 #include <glm/vec2.hpp>
 #include <IconsFontAwesome5.h>

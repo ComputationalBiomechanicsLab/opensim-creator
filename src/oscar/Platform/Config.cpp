@@ -1,8 +1,8 @@
 #include "Config.hpp"
 
-#include "oscar/OscarStaticConfig.hpp"
 #include "oscar/Platform/Log.hpp"
 #include "oscar/Platform/os.hpp"
+#include "OscarConfiguration.hpp"
 
 #include <toml++/toml.h>
 

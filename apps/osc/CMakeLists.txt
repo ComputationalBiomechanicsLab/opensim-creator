@@ -17,7 +17,7 @@ add_executable(osc
 target_link_libraries(osc PUBLIC
 
     # so that it uses the standard flags etc.
-    osc_configuration
+    oscar_configuration
 
     # so that it can boot into the main osc codebase
     OpenSimCreator

@@ -26,7 +26,7 @@ add_executable(testoscar EXCLUDE_FROM_ALL
 target_link_libraries(testoscar PUBLIC
 
     # set compile options
-    osc_configuration
+    oscar_configuration
 
     # link to the to-be-tested library
     oscar

@@ -8,7 +8,7 @@ add_executable(benchosc EXCLUDE_FROM_ALL
 
 target_link_libraries(benchosc PUBLIC
     # set compile options
-    osc_configuration
+    oscar_configuration
 
     # link to the to-be-tested library
     OpenSimCreator
