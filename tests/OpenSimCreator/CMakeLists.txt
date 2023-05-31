@@ -24,18 +24,6 @@ add_executable(testopensimcreator EXCLUDE_FROM_ALL
     testopensimcreator.cpp  # entrypoint (main)
 )
 
-set_target_properties(testopensimcreator PROPERTIES
-
-    # disable compiler-specific language extensions
-    CXX_EXTENSIONS OFF
-
-    # strictly require the requested C++ standard (e.g. C++17)
-    CXX_STANDARD_REQUIRED YES
-
-    # export compile commands, so clang-tidy works correctly
-    EXPORT_COMPILE_COMMANDS ON
-)
-
 target_link_libraries(testopensimcreator PUBLIC
 
     # set compile options

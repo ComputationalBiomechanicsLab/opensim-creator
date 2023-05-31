@@ -6,17 +6,6 @@ add_executable(benchosc EXCLUDE_FROM_ALL
     OpenSimCreator/BenchOpenSimRenderer.cpp
 )
 
-set_target_properties(benchosc PROPERTIES
-    # disable compiler-specific language extensions
-    CXX_EXTENSIONS OFF
-
-    # strictly require the requested C++ standard (e.g. C++17)
-    CXX_STANDARD_REQUIRED YES
-
-    # export compile commands, so clang-tidy works correctly
-    EXPORT_COMPILE_COMMANDS ON
-)
-
 target_link_libraries(benchosc PUBLIC
     # set compile options
     osc_configuration

@@ -13,19 +13,6 @@ add_executable(osc
     $<$<CXX_COMPILER_ID:MSVC>:${CMAKE_CURRENT_SOURCE_DIR}/../../build_resources/resources.rc>
 )
 
-# osc: target properties
-set_target_properties(osc PROPERTIES
-
-    # disable compiler-specific language extensions
-    CXX_EXTENSIONS OFF
-
-    # strictly require the requested C++ standard (e.g. C++17)
-    CXX_STANDARD_REQUIRED YES
-
-    # export compile commands, so clang-tidy works correctly
-    EXPORT_COMPILE_COMMANDS ON
-)
-
 # osc: link to necessary libraries
 target_link_libraries(osc PUBLIC
 

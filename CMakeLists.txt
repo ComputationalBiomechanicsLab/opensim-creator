@@ -100,6 +100,13 @@ set(
     "unique identifier for this particular build configuration (handy for bug tracing)"
 )
 
+
+# -------------- set/mutate internal vars ---------------- #
+
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # set LINUX
 #
 # this is based on whether the UNIX variant being used appears to be LINUX

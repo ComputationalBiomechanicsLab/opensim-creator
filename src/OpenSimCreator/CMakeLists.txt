@@ -187,20 +187,6 @@ add_library(OpenSimCreator STATIC
     VirtualSimulation.hpp
  )
 
-# OpenSimCreator: target properties
-set_target_properties(OpenSimCreator PROPERTIES
-
-    # disable compiler-specific language extensions
-    CXX_EXTENSIONS OFF
-
-    # strictly require the requested C++ standard (e.g. C++17)
-    CXX_STANDARD_REQUIRED YES
-
-    # export compile commands, so clang-tidy works correctly
-    EXPORT_COMPILE_COMMANDS ON
-)
-
-
 # OpenSimCreator: compile-time includes
 target_include_directories(OpenSimCreator PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/..

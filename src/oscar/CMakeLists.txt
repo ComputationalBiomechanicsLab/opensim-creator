@@ -515,19 +515,6 @@ target_compile_options(oscar PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>: /W4>
 )
 
-# oscar: target properties
-set_target_properties(oscar PROPERTIES
-
-    # disable compiler-specific language extensions
-    CXX_EXTENSIONS OFF
-
-    # strictly require the requested C++ standard (e.g. C++17)
-    CXX_STANDARD_REQUIRED YES
-
-    # export compile commands, so clang-tidy works correctly
-    EXPORT_COMPILE_COMMANDS ON
-)
-
 # oscar: compile-time includes
 target_include_directories(oscar PUBLIC
 
