@@ -56,40 +56,55 @@ set(
     "user-facing name of the application"
 )
 set(
+    OSC_PACKAGE_NAME "OpenSimCreator"
+    CACHE STRING
+    "prefix for the name of the package (e.g. OSC_PACKAGE_NAME-version.exe)"
+)
+set(
+    OSC_SOFTWARE_DESCRIPTION "A standalone GUI for building OpenSim models"
+    CACHE STRING
+    "desription of what the software does (shows in package installers on Debian, for example)"
+)
+set(
+    OSC_AUTHOR "Adam Kewley"
+    CACHE STRING
+    "user-facing name of the author (appears in installer, etc.)"
+)
+set(
+    OSC_AUTHOR_EMAIL "contact@adamkewley.com"
+    CACHE STRING
+    "user-facing email of the author (appears in 'email support', installer, etc.)"
+)
+set(
     OSC_BUILD_BENCHMARKS OFF
     CACHE BOOL
     "enable/disable building the benchmark suite (handy for development)"
 )
-
-
-# -------------- set top-level build vars ---------------- #
-
-set(OSC_AUTHOR "Adam Kewley")
-set(OSC_AUTHOR_EMAIL "contact@adamkewley.com")
-set(OSC_PACKAGE_NAME "OpenSimCreator")
-set(OSC_SOFTWARE_DESCRIPTION "A standalone GUI for building OpenSim models")
-
-# set LINUX
-#
-# this is based on whether the UNIX variant being used appears to be LINUX
-if(UNIX AND NOT APPLE)
-    set(LINUX TRUE)
-endif()
 
 # set OSC_BUILD_ID
 #
 # this is so that errors in the binary can potentially be linked to the source
 # that produced the binary later on (user errors, etc.)
 if(DEFINED ENV{GITHUB_RUN_ID})
-
     # build is running inside GitHub Action CI - use that ID
-    set(OSC_BUILD_ID "GITHUB_$ENV{GITHUB_RUN_ID}.$ENV{GITHUB_RUN_NUMBER}" CACHE STRING "build ID")
+    set(OSC_DEFAULT_BUILD_ID "GITHUB_$ENV{GITHUB_RUN_ID}.$ENV{GITHUB_RUN_NUMBER}")
 else()
-
     # build is probably running on a dev's machine - generate a random ID
     string(RANDOM RANDOM_ID)
-    set(OSC_BUILD_ID "CUSTOM_${RANDOM_ID}" CACHE STRING "build ID")
+    set(OSC_DEFAULT_BUILD_ID "CUSTOM_${RANDOM_ID}")
     unset(RANDOM_ID)
+endif()
+set(
+    OSC_BUILD_ID "${OSC_DEFAULT_BUILD_ID}"
+    CACHE STRING
+    "unique identifier for this particular build configuration (handy for bug tracing)"
+)
+
+# set LINUX
+#
+# this is based on whether the UNIX variant being used appears to be LINUX
+if(UNIX AND NOT APPLE)
+    set(LINUX TRUE)
 endif()
 
 # set CMAKE_CXX_INCLUDE_WHAT_YOU_USE
