@@ -1,6 +1,6 @@
 #version 330 core
 
-uniform vec3 uLightColor;
+uniform vec4 uLightColor;
 
 in vec3 FragWorldPos;
 in vec3 NormalWorld;
@@ -11,7 +11,7 @@ layout (location = 1) out vec4 BrightColor;
 
 void main()
 {
-    FragColor = vec4(uLightColor, 1.0);
+    FragColor = uLightColor;
 
     // thresholded write
     if (dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722)) > 1.0)

@@ -22,12 +22,12 @@ void main()
     for (int i = 0; i < 4; ++i)
     {
         vec3 frag2LightWorld =  uLightPositions[i] - FragWorldPos;
-        float frag2LightWorldDistance = length(frag2LightWorld);
-        vec3 frag2LightWorldDir = frag2LightWorld / frag2LightWorldDistance;
+        float frag2LightWorldLen = length(frag2LightWorld);
+        vec3 frag2LightWorldDir = frag2LightWorld / frag2LightWorldLen;
         
         float diffuseBrightness = max(dot(frag2LightWorldDir, normalWorldDir), 0.0);
         vec3 unattenuatedColor = vec3(uLightColors[i]) * diffuseBrightness * diffuseColor;
-        float attenuation = 1.0/(frag2LightWorldDistance*frag2LightWorldDistance);
+        float attenuation = 1.0/(frag2LightWorldLen*frag2LightWorldLen);
 
         totalLightColor += (attenuation * unattenuatedColor);
     }

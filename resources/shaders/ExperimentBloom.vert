@@ -19,5 +19,5 @@ void main()
     FragWorldPos = vec3(affineWorldPos);
     NormalWorld = uNormalMat * aNormal;
     TexCoord = aTexCoord;
-    gl_Position = uViewProjMat * uModelMat * affineWorldPos;
+    gl_Position = uViewProjMat * affineWorldPos;
 }
