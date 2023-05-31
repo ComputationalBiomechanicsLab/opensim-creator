@@ -78,11 +78,14 @@ mkdir osc-build
 cd osc-build
 cmake ..  %OSC_CMAKE_GENFLAGS% -DCMAKE_PREFIX_PATH="%cd%/../osc-dependencies-install" || exit \b
 
-REM ----- test osc -----
+REM ----- test OpenSimCreator and oscar -----
 REM
 REM but don't run Renderer tests, because the Windows CI machine doesn't have OpenGL4 :<
-cmake --build . --target testosc --config %OSC_BUILD_TYPE% -j%OSC_BUILD_CONCURRENCY% || exit \b
-.\tests\%OSC_BUILD_TYPE%\testosc --gtest_filter="-Renderer*" || exit \b
+cmake --build . --target testopensimcreator --config %OSC_BUILD_TYPE% -j%OSC_BUILD_CONCURRENCY% || exit \b
+.\tests\OpenSimCreator\%OSC_BUILD_TYPE%\testopensimcreator --gtest_filter="-Renderer*" || exit \b
+
+cmake --build . --target testoscar --config %OSC_BUILD_TYPE% -j%OSC_BUILD_CONCURRENCY% || exit \b
+.\tests\oscar\%OSC_BUILD_TYPE%\testoscar --gtest_filter="-Renderer*" || exit \b
 
 REM then build final package
 cmake --build . --target package --config %OSC_BUILD_TYPE% -j%OSC_BUILD_CONCURRENCY% || exit \b

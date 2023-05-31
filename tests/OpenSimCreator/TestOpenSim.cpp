@@ -1,9 +1,8 @@
-#include "osc_test_config.hpp"
-
 #include "OpenSimCreator/ActionFunctions.hpp"
 #include "OpenSimCreator/OpenSimApp.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
+#include "testopensimcreator_config.hpp"
 
 #include <oscar/Platform/Config.hpp>
 

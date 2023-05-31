@@ -1,7 +1,7 @@
 #include "OpenSimCreator/ActionFunctions.hpp"
 
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
-#include "osc_test_config.hpp"
+#include "testopensimcreator_config.hpp"
 
 #include <gtest/gtest.h>
 #include <OpenSim/Simulation/Model/Model.h>

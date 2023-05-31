@@ -122,11 +122,12 @@ cmake \
     -DCMAKE_PREFIX_PATH="${PWD}/osc-deps-install" \
     ${OSC_BUILD_DOCS:+-DOSC_BUILD_DOCS=ON}
 
-# build tests and the final package
+# build oscar and opensimcreator tests and the final package
 cmake \
     --build "osc-build" \
-    --target testosc ${OSC_BUILD_TARGET} \
+    --target testopensimcreator testoscar ${OSC_BUILD_TARGET} \
     -j${OSC_BUILD_CONCURRENCY}
 
 # ensure tests pass
-osc-build/tests/testosc
+osc-build/tests/OpenSimCreator/testopensimcreator
+osc-build/tests/oscar/testoscar

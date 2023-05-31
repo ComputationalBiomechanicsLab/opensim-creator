@@ -3,7 +3,7 @@
 #include "OpenSimCreator/Graphics/CustomDecorationOptions.hpp"
 #include "OpenSimCreator/Graphics/MuscleColoringStyle.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
-#include "osc_test_config.hpp"
+#include "testopensimcreator_config.hpp"
 
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/SceneDecoration.hpp>
