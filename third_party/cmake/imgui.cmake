@@ -24,6 +24,7 @@ target_compile_features(imgui
 target_link_libraries(imgui
     PUBLIC SDL2::SDL2
     PUBLIC glm::glm
+    PUBLIC ${CMAKE_DL_LIBS}  # imgui_impl_opengl3.cpp references `dlclose`
 )
 
 include(GNUInstallDirs)
