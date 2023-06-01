@@ -65,6 +65,17 @@ namespace
         return std::make_shared<osc::UndoableModelStatePair>(std::move(model));
     }
 
+    // gets the next unique suffix numer for geometry
+    int32_t GetNextGlobalGeometrySuffix()
+    {
+        static std::atomic<int32_t> s_GeometryCounter = 0;
+        return s_GeometryCounter++;
+    }
+}
+
+// choose component modal flow
+namespace
+{
     // options provided when creating a "choose components" popup
     struct ChooseComponentPopupOptions final {
         std::string popupHeaderText = "choose something";
@@ -136,7 +147,11 @@ namespace
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
         ChooseComponentPopupOptions m_Options;
     };
+}
 
+// user-enactable actions
+namespace
+{
     void ActionPromptUserToAddMeshFile(osc::UndoableModelStatePair& model)
     {
         std::optional<std::filesystem::path> const maybeMeshPath =
@@ -164,12 +179,12 @@ namespace
         }
 
         // create a human-readable commit message
-        std::string commitMessage;
+        std::string const commitMessage = [&meshPath]()
         {
             std::stringstream ss;
             ss << "added " << meshPath.filename();
-            commitMessage = std::move(ss).str();
-        }
+            return std::move(ss).str();
+        }();
 
         // finally, perform the model mutation
         {
@@ -181,12 +196,6 @@ namespace
             osc::InitializeState(mutableModel);
             model.commit(commitMessage);
         }
-    }
-
-    int32_t GetNextGlobalGeometrySuffix()
-    {
-        static std::atomic<int32_t> s_GeometryCounter = 0;
-        return s_GeometryCounter++;
     }
 
     void ActionAddSphereInMeshFrame(
@@ -208,12 +217,12 @@ namespace
         }
 
         // generate sphere name
-        std::string sphereName;
+        std::string const sphereName = []()
         {
             std::stringstream ss;
             ss << "sphere_" << GetNextGlobalGeometrySuffix();
-            sphereName = std::move(ss).str();
-        }
+            return std::move(ss).str();
+        }();
 
         OpenSim::Model const& immutableModel = model.getModel();
 
@@ -225,23 +234,24 @@ namespace
         meshPhysicalOffsetFrame->set_translation(translationInMeshFrame);
 
         // attach the sphere to the frame
-        OpenSim::Sphere const* spherePtr = nullptr;
+        OpenSim::Sphere const* const spherePtr = [&sphereName, &meshPhysicalOffsetFrame]()
         {
             auto sphere = std::make_unique<OpenSim::Sphere>();
             sphere->setName(sphereName);
             sphere->set_radius(0.01);  // 1 cm radius - like a small marker
             sphere->upd_Appearance().set_color({0.1, 1.0, 0.1});  // green(ish) - so it's visually distinct from a mesh
-            spherePtr = sphere.get();
+            OpenSim::Sphere const* ptr = sphere.get();
             meshPhysicalOffsetFrame->attachGeometry(sphere.release());
-        }
+            return ptr;
+        }();
 
         // create a human-readable commit message
-        std::string commitMessage;
+        std::string const commitMessage = [&sphereName]()
         {
             std::stringstream ss;
             ss << "added " << sphereName;
-            commitMessage = std::move(ss).str();
-        }
+            return std::move(ss).str();
+        }();
 
         // finally, perform the model mutation
         {
@@ -255,7 +265,11 @@ namespace
             model.commit(commitMessage);
         }
     }
+}
 
+// context menu
+namespace
+{
     void DrawRightClickedNothingContextMenu(osc::UndoableModelStatePair& model)
     {
         if (ImGui::MenuItem("Add Mesh"))
@@ -279,27 +293,26 @@ namespace
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
         OpenSim::Sphere const& sphere,
-        osc::Rect const& visualizerRect)
+        std::optional<osc::Rect> const& maybeVisualizerRect)
     {
-        if (ImGui::MenuItem("create edge"))
+        if (maybeVisualizerRect && ImGui::MenuItem("create edge"))
         {
             ChooseComponentPopupOptions options;
             options.popupHeaderText = "choose other point";
             options.componentsBeingAssignedTo = {sphere.getAbsolutePathString()};
             options.numComponentsUserMustChoose = 1;
-            options.onUserFinishedChoosing = [model, spherePath = sphere.getAbsolutePathString()](std::unordered_set<std::string> const& choices)
+            options.onUserFinishedChoosing = [model, spherePath = sphere.getAbsolutePathString()](std::unordered_set<std::string> const& choices) -> bool
             {
                 // TODO: figure out if the spherePath+choices is enough to add
                 // a new edge into the model and then add the new edge to the model
-                return true;
+                throw std::runtime_error{"todo: handle completion"};
             };
 
-            auto popup = std::make_unique<ChooseComponentsPopup>(
+            editor.pushPopup(std::make_unique<ChooseComponentsPopup>(
                 model,
-                visualizerRect,
+                *maybeVisualizerRect,
                 std::move(options)
-            );
-            editor.pushPopup(std::move(popup));
+            ));
         }
     }
 
@@ -310,20 +323,21 @@ namespace
         ImGui::TextDisabled("Unknown component type");
     }
 
+    // popup state for the frame definition tab's general context menu
     class FrameDefinitionContextMenu final : public osc::StandardPopup {
     public:
         FrameDefinitionContextMenu(
             std::string_view popupName_,
             osc::EditorAPI* editorAPI_,
             std::shared_ptr<osc::UndoableModelStatePair> model_,
-            osc::Rect const& visualizerRect_,
             OpenSim::ComponentPath componentPath_,
-            std::optional<glm::vec3> maybeClickPosInGround_) :
+            std::optional<osc::Rect> maybeVisualizerRect_ = std::nullopt,
+            std::optional<glm::vec3> maybeClickPosInGround_ = std::nullopt) :
 
             StandardPopup{popupName_, {10.0f, 10.0f}, ImGuiWindowFlags_NoMove},
             m_EditorAPI{editorAPI_},
             m_Model{std::move(model_)},
-            m_VisualizerRect{visualizerRect_},
+            m_MaybeVisualizerRect{std::move(maybeVisualizerRect_)},
             m_ComponentPath{std::move(componentPath_)},
             m_MaybeClickPosInGround{std::move(maybeClickPosInGround_)}
         {
@@ -336,7 +350,7 @@ namespace
     private:
         void implDrawContent() final
         {
-            OpenSim::Component const* maybeComponent = osc::FindComponent(m_Model->getModel(), m_ComponentPath);
+            OpenSim::Component const* const maybeComponent = osc::FindComponent(m_Model->getModel(), m_ComponentPath);
             if (!maybeComponent)
             {
                 DrawRightClickedNothingContextMenu(*m_Model);
@@ -347,7 +361,7 @@ namespace
             }
             else if (OpenSim::Sphere const* maybeSphere = dynamic_cast<OpenSim::Sphere const*>(maybeComponent))
             {
-                DrawRightClickedSphereContextMenu(*m_EditorAPI, m_Model, *maybeSphere, m_VisualizerRect);
+                DrawRightClickedSphereContextMenu(*m_EditorAPI, m_Model, *maybeSphere, m_MaybeVisualizerRect);
             }
             else
             {
@@ -357,11 +371,15 @@ namespace
 
         osc::EditorAPI* m_EditorAPI;
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
-        osc::Rect m_VisualizerRect;
         OpenSim::ComponentPath m_ComponentPath;
+        std::optional<osc::Rect> m_MaybeVisualizerRect;
         std::optional<glm::vec3> m_MaybeClickPosInGround;
     };
+}
 
+// other panels/widgets
+namespace
+{
     class FrameDefinitionTabNavigatorPanel final : public osc::StandardPanel {
     public:
         FrameDefinitionTabNavigatorPanel(std::string_view panelName_) :
@@ -468,8 +486,8 @@ public:
                             "##ContextMenu",
                             this,
                             m_Model,
-                            e.viewportScreenRect,
                             e.componentAbsPathOrEmpty,
+                            e.viewportScreenRect,
                             e.maybeClickPositionInGround
                         ));
                     }
@@ -537,9 +555,14 @@ public:
     }
 
 private:
-    void implPushComponentContextMenuPopup(OpenSim::ComponentPath const&) final
+    void implPushComponentContextMenuPopup(OpenSim::ComponentPath const& componentPath) final
     {
-        // todo: custom context menu for this screen
+        pushPopup(std::make_unique<FrameDefinitionContextMenu>(
+            "##ContextMenu",
+            this,
+            m_Model,
+            componentPath
+        ));
     }
 
     void implPushPopup(std::unique_ptr<Popup> popup) final
