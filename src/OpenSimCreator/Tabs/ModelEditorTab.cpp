@@ -5,6 +5,8 @@
 #include "OpenSimCreator/Panels/CoordinateEditorPanel.hpp"
 #include "OpenSimCreator/Panels/NavigatorPanel.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanel.hpp"
+#include "OpenSimCreator/Panels/ModelEditorViewerPanelRightClickEvent.hpp"
+#include "OpenSimCreator/Panels/ModelEditorViewerPanelParameters.hpp"
 #include "OpenSimCreator/Panels/ModelMusclePlotPanel.hpp"
 #include "OpenSimCreator/Panels/OutputWatchesPanel.hpp"
 #include "OpenSimCreator/Panels/PropertiesPanel.hpp"
@@ -123,7 +125,19 @@ public:
             "viewer",
             [this](std::string_view panelName)
             {
-                return std::make_shared<ModelEditorViewerPanel>(panelName, m_Parent, this, m_Model);
+                auto onRightClick = [model = m_Model, menuName = std::string{panelName} + "_contextmenu", editorAPI = this, mainUIStateAPI = m_Parent](ModelEditorViewerPanelRightClickEvent const& e)
+                {
+                    editorAPI->pushPopup(std::make_unique<ComponentContextMenu>(
+                        menuName,
+                        mainUIStateAPI,
+                        editorAPI,
+                        model,
+                        e.componentAbsPathOrEmpty
+                    ));
+                };
+                ModelEditorViewerPanelParameters panelParams{m_Model, onRightClick};
+
+                return std::make_shared<ModelEditorViewerPanel>(panelName, panelParams);
             },
             1  // have one viewer open at the start
         );

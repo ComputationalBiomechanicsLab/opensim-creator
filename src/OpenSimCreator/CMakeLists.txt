@@ -37,6 +37,9 @@ add_library(OpenSimCreator STATIC
     Panels/CoordinateEditorPanel.hpp
     Panels/ModelEditorViewerPanel.cpp
     Panels/ModelEditorViewerPanel.hpp
+    Panels/ModelEditorViewerPanelLayer.hpp
+    Panels/ModelEditorViewerPanelLayerFlags.hpp
+    Panels/ModelEditorViewerPanelParameters.hpp
     Panels/ModelEditorViewerPanelRightClickEvent.hpp
     Panels/ModelMusclePlotPanel.cpp
     Panels/ModelMusclePlotPanel.hpp
@@ -185,7 +188,7 @@ add_library(OpenSimCreator STATIC
     VirtualModelStatePair.hpp
     VirtualOutputExtractor.hpp
     VirtualSimulation.hpp
- )
+)
 
 # OpenSimCreator: compile-time includes
 target_include_directories(OpenSimCreator PUBLIC

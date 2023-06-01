@@ -633,6 +633,14 @@ bool osc::ModelSelectionGizmo::isUsing() const
     return rv;
 }
 
+bool osc::ModelSelectionGizmo::isOver() const
+{
+    ImGuizmo::SetID(ImGui::GetID(this));
+    bool const rv = ImGuizmo::IsOver();
+    ImGuizmo::SetID(-1);
+    return rv;
+}
+
 bool osc::ModelSelectionGizmo::handleKeyboardInputs()
 {
     return osc::UpdateImguizmoStateFromKeyboard(m_GizmoOperation, m_GizmoMode);

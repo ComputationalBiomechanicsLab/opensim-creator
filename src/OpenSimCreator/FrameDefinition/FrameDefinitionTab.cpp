@@ -4,6 +4,8 @@
 #include "OpenSimCreator/Graphics/SimTKMeshLoader.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanel.hpp"
+#include "OpenSimCreator/Panels/ModelEditorViewerPanelLayer.hpp"
+#include "OpenSimCreator/Panels/ModelEditorViewerPanelParameters.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelRightClickEvent.hpp"
 #include "OpenSimCreator/Panels/NavigatorPanel.hpp"
 #include "OpenSimCreator/Panels/PropertiesPanel.hpp"
@@ -77,7 +79,7 @@ namespace
 namespace
 {
     // options provided when creating a "choose components" popup
-    struct ChooseComponentPopupOptions final {
+    struct ChooseComponentsEditorLayerParameters final {
         std::string popupHeaderText = "choose something";
 
         bool userCanChoosePoints = false;
@@ -97,42 +99,30 @@ namespace
 
     // modal popup that prompts the user to select components in the model (e.g.
     // to define an edge, or a frame)
-    class ChooseComponentsPopup final : public osc::StandardPopup {
+    class ChooseComponentsEditorLayer final : public osc::ModelEditorViewerPanelLayer {
     public:
-        ChooseComponentsPopup(
+        ChooseComponentsEditorLayer(
             std::shared_ptr<osc::UndoableModelStatePair> model_,
-            osc::Rect const& popupRect_,
-            ChooseComponentPopupOptions options_) :
+            ChooseComponentsEditorLayerParameters parameters_) :
 
-            StandardPopup
-            {
-                "##ChooseComponentPopup",
-                osc::Dimensions(popupRect_),
-                osc::GetMinimalWindowFlags() & ~(ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs),
-            },
             m_Model{std::move(model_)},
-            m_Options{std::move(options_)}
+            m_Parameters{std::move(parameters_)}
         {
-            setModal(true);
-            setRect(popupRect_);
         }
 
     private:
-        void implBeforeImguiBeginPopup() final
+        float implGetBackgroundAlpha() const final
         {
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+            return 0.8f;
         }
 
-        void implAfterImguiBeginPopup() final
-        {
-            ImGui::PopStyleVar();
-        }
-
-        void implDrawContent() final
+        void implOnDraw(
+            osc::ModelEditorViewerPanelParameters& panelParams,
+            osc::ModelEditorViewerPanelState const& panelState) final
         {
             if (ImGui::IsKeyReleased(ImGuiKey_Escape))
             {
-                requestClose();
+                m_ShouldClose = true;
             }
 
             ImGui::Text("TODO: draw edge definition popup content");
@@ -144,8 +134,14 @@ namespace
             ImGui::Text("TODO: - and highlights selected objects");
         }
 
+        bool implShouldClose() const final
+        {
+            return m_ShouldClose;
+        }
+
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
-        ChooseComponentPopupOptions m_Options;
+        ChooseComponentsEditorLayerParameters m_Parameters;
+        bool m_ShouldClose = false;
     };
 }
 
@@ -293,26 +289,28 @@ namespace
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
         OpenSim::Sphere const& sphere,
-        std::optional<osc::Rect> const& maybeVisualizerRect)
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent)
     {
-        if (maybeVisualizerRect && ImGui::MenuItem("create edge"))
+        if (maybeSourceEvent && ImGui::MenuItem("create edge"))
         {
-            ChooseComponentPopupOptions options;
-            options.popupHeaderText = "choose other point";
-            options.componentsBeingAssignedTo = {sphere.getAbsolutePathString()};
-            options.numComponentsUserMustChoose = 1;
-            options.onUserFinishedChoosing = [model, spherePath = sphere.getAbsolutePathString()](std::unordered_set<std::string> const& choices) -> bool
-            {
-                // TODO: figure out if the spherePath+choices is enough to add
-                // a new edge into the model and then add the new edge to the model
-                throw std::runtime_error{"todo: handle completion"};
-            };
+            osc::PanelManager& panelManager = *editor.getPanelManager();
 
-            editor.pushPopup(std::make_unique<ChooseComponentsPopup>(
-                model,
-                *maybeVisualizerRect,
-                std::move(options)
-            ));
+            if (osc::ModelEditorViewerPanel* visualizer = panelManager.tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName))
+            {
+                // TODO: wire into the visualizer
+                ChooseComponentsEditorLayerParameters options;
+                options.popupHeaderText = "choose other point";
+                options.componentsBeingAssignedTo = {sphere.getAbsolutePathString()};
+                options.numComponentsUserMustChoose = 1;
+                options.onUserFinishedChoosing = [model, spherePath = sphere.getAbsolutePathString()](std::unordered_set<std::string> const& choices) -> bool
+                {
+                    // TODO: figure out if the spherePath+choices is enough to add
+                    // a new edge into the model and then add the new edge to the model
+                    throw std::runtime_error{"todo: handle completion"};
+                };
+
+                visualizer->pushLayer(std::make_unique<ChooseComponentsEditorLayer>(model, options));
+            }
         }
     }
 
@@ -331,15 +329,13 @@ namespace
             osc::EditorAPI* editorAPI_,
             std::shared_ptr<osc::UndoableModelStatePair> model_,
             OpenSim::ComponentPath componentPath_,
-            std::optional<osc::Rect> maybeVisualizerRect_ = std::nullopt,
-            std::optional<glm::vec3> maybeClickPosInGround_ = std::nullopt) :
+            std::optional<osc::ModelEditorViewerPanelRightClickEvent> maybeSourceVisualizerEvent_ = std::nullopt) :
 
             StandardPopup{popupName_, {10.0f, 10.0f}, ImGuiWindowFlags_NoMove},
             m_EditorAPI{editorAPI_},
             m_Model{std::move(model_)},
-            m_MaybeVisualizerRect{std::move(maybeVisualizerRect_)},
             m_ComponentPath{std::move(componentPath_)},
-            m_MaybeClickPosInGround{std::move(maybeClickPosInGround_)}
+            m_MaybeSourceVisualizerEvent{maybeSourceVisualizerEvent_}
         {
             OSC_ASSERT(m_EditorAPI != nullptr);
             OSC_ASSERT(m_Model != nullptr);
@@ -357,11 +353,11 @@ namespace
             }
             else if (OpenSim::Mesh const* maybeMesh = dynamic_cast<OpenSim::Mesh const*>(maybeComponent))
             {
-                DrawRightClickedMeshContextMenu(*m_Model, *maybeMesh, m_MaybeClickPosInGround);
+                DrawRightClickedMeshContextMenu(*m_Model, *maybeMesh, m_MaybeSourceVisualizerEvent ? m_MaybeSourceVisualizerEvent->maybeClickPositionInGround : std::nullopt);
             }
             else if (OpenSim::Sphere const* maybeSphere = dynamic_cast<OpenSim::Sphere const*>(maybeComponent))
             {
-                DrawRightClickedSphereContextMenu(*m_EditorAPI, m_Model, *maybeSphere, m_MaybeVisualizerRect);
+                DrawRightClickedSphereContextMenu(*m_EditorAPI, m_Model, *maybeSphere, m_MaybeSourceVisualizerEvent);
             }
             else
             {
@@ -372,8 +368,7 @@ namespace
         osc::EditorAPI* m_EditorAPI;
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
         OpenSim::ComponentPath m_ComponentPath;
-        std::optional<osc::Rect> m_MaybeVisualizerRect;
-        std::optional<glm::vec3> m_MaybeClickPosInGround;
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> m_MaybeSourceVisualizerEvent;
     };
 }
 
@@ -477,8 +472,8 @@ public:
             "viewer",
             [this](std::string_view panelName)
             {
-                auto rv = std::make_shared<ModelEditorViewerPanel>(
-                    panelName,
+                ModelEditorViewerPanelParameters panelParams
+                {
                     m_Model,
                     [this](ModelEditorViewerPanelRightClickEvent const& e)
                     {
@@ -487,20 +482,15 @@ public:
                             this,
                             m_Model,
                             e.componentAbsPathOrEmpty,
-                            e.viewportScreenRect,
-                            e.maybeClickPositionInGround
+                            e
                         ));
                     }
-                );
+                };
+                panelParams.updRenderParams().renderingOptions.setDrawFloor(false);
+                panelParams.updRenderParams().renderingOptions.setDrawXZGrid(true);
+                panelParams.updRenderParams().backgroundColor = {48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f};
 
-                // customize the appearance of the generic OpenSim model viewer to be
-                // more appropriate for the frame definition workflow
-                osc::CustomRenderingOptions opts = rv->getCustomRenderingOptions();
-                opts.setDrawFloor(false);
-                opts.setDrawXZGrid(true);
-                rv->setCustomRenderingOptions(opts);
-                rv->setBackgroundColor({48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f});
-                return rv;
+                return std::make_shared<ModelEditorViewerPanel>(panelName, panelParams);
             },
             1
         );

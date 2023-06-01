@@ -1,11 +1,11 @@
 #include "ModelEditorViewerPanel.hpp"
 
 #include "OpenSimCreator/Graphics/CachedModelRenderer.hpp"
-#include "OpenSimCreator/Graphics/ModelRendererParams.hpp"
-#include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
+#include "OpenSimCreator/Panels/ModelEditorViewerPanelLayer.hpp"
+#include "OpenSimCreator/Panels/ModelEditorViewerPanelParameters.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelRightClickEvent.hpp"
+#include "OpenSimCreator/Panels/ModelEditorViewerPanelState.hpp"
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
-#include "OpenSimCreator/Widgets/ComponentContextMenu.hpp"
 #include "OpenSimCreator/Widgets/ModelSelectionGizmo.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
@@ -19,12 +19,12 @@
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Panels/StandardPanel.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Utils/Algorithms.hpp>
 #include <oscar/Widgets/GuiRuler.hpp>
 #include <oscar/Widgets/IconWithoutMenu.hpp>
 
 #include <imgui.h>
 #include <ImGuizmo.h>
-#include <OpenSim/Common/ComponentPath.h>
 
 #include <cstdint>
 #include <memory>
@@ -33,56 +33,53 @@
 #include <string_view>
 #include <sstream>
 #include <utility>
+#include <vector>
+
+namespace
+{
+    class RulerLayer final : public osc::ModelEditorViewerPanelLayer {
+    public:
+        RulerLayer()
+        {
+            m_Ruler.startMeasuring();
+        }
+
+    private:
+        void implOnDraw(
+            osc::ModelEditorViewerPanelParameters& params,
+            osc::ModelEditorViewerPanelState const& state) final
+        {
+            m_Ruler.draw(
+                params.getRenderParams().camera,
+                state.viewportRect,
+                state.maybeBaseLayerHittest
+            );
+        }
+
+        bool implShouldClose() const
+        {
+            return !m_Ruler.isMeasuring();
+        }
+
+        osc::GuiRuler m_Ruler;
+    };
+}
 
 class osc::ModelEditorViewerPanel::Impl final : public osc::StandardPanel {
 public:
 
     Impl(
         std::string_view panelName_,
-        std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
-        EditorAPI* editorAPI_,
-        std::shared_ptr<UndoableModelStatePair> model_) :
-
-        StandardPanel{std::move(panelName_)},
-        m_Model{std::move(model_)},
-        m_OnRightClickedAComponent{[this, menuName = std::string{getName()} + "_contextmenu", editorAPI_, mainUIStateAPI_](ModelEditorViewerPanelRightClickEvent const& e)
-        {
-            auto popup = std::make_unique<ComponentContextMenu>(
-                menuName,
-                mainUIStateAPI_,
-                editorAPI_,
-                m_Model,
-                e.componentAbsPathOrEmpty
-            );
-            editorAPI_->pushPopup(std::move(popup));
-        }}
-    {
-    }
-
-    Impl(
-        std::string_view panelName_,
-        std::shared_ptr<UndoableModelStatePair> model_,
-        std::function<void(ModelEditorViewerPanelRightClickEvent const&)> const& onRightClickedAComponent) :
+        ModelEditorViewerPanelParameters const& parameters_) :
 
         StandardPanel{panelName_},
-        m_Model{std::move(model_)},
-        m_OnRightClickedAComponent{onRightClickedAComponent}
+        m_Parameters{parameters_}
     {
     }
 
-    CustomRenderingOptions const& getCustomRenderingOptions() const
+    ModelEditorViewerPanelLayer& pushLayer(std::unique_ptr<ModelEditorViewerPanelLayer> layer)
     {
-        return m_Params.renderingOptions;
-    }
-
-    void setCustomRenderingOptions(CustomRenderingOptions const& newOptions)
-    {
-        m_Params.renderingOptions = newOptions;
-    }
-
-    void setBackgroundColor(Color const& newBgColor)
-    {
-        m_Params.backgroundColor = newBgColor;
+        return *m_Layers.emplace_back(std::move(layer));
     }
 
 private:
@@ -98,15 +95,15 @@ private:
 
     void implDrawContent() final
     {
-        // compute viewer size (all available space)
+        // compute viewer size (fill the whole panel)
         Rect const viewportRect = ContentRegionAvailScreenRect();
 
         // if this is the first frame being rendered, auto-focus the scene
         if (!m_MaybeLastHittest)
         {
             m_CachedModelRenderer.autoFocusCamera(
-                *m_Model,
-                m_Params,
+                *m_Parameters.getModelSharedPtr(),
+                m_Parameters.updRenderParams(),
                 AspectRatio(viewportRect)
             );
         }
@@ -122,8 +119,8 @@ private:
         // render the 3D scene to a texture and blit it via ImGui::Image
         {
             osc::RenderTexture& sceneTexture = m_CachedModelRenderer.draw(
-                *m_Model,
-                m_Params,
+                *m_Parameters.getModelSharedPtr(),
+                m_Parameters.getRenderParams(),
                 Dimensions(viewportRect),
                 App::get().getMSXAASamplesRecommended()
             );
@@ -131,7 +128,9 @@ private:
         }
 
         // item-hittest the ImGui::Image so we know whether the user is interacting with it
-        ImGuiItemHittestResult const imguiHittest = HittestLastImguiItem();
+        ImGuiItemHittestResult imguiHittest = HittestLastImguiItem();
+        imguiHittest.isHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
+
         m_MaybeLastHittest = imguiHittest;
 
         // if hovering the image item, and not dragging the mouse around, 3D-hittest the
@@ -141,20 +140,20 @@ private:
             !IsDraggingWithAnyMouseButtonDown())
         {
             maybeSceneCollision = m_CachedModelRenderer.getClosestCollision(
-                m_Params,
+                m_Parameters.getRenderParams(),
                 ImGui::GetMousePos(),
                 viewportRect
             );
         }
 
-        // if the mouse hits something in 3D, and the mouse isn't busy doing something
-        // else (e.g. dragging around) then lookup the 3D hit in the model, so we know
-        // whether the user is interacting with a component in the model
+        // if the mouse hits something in 3D, and the mouse isn't busy using a gizmo,
+        // then lookup the 3D hit in the model, so we know whether the user is
+        // interacting with a component in the model
         OpenSim::Component const* maybeHover = nullptr;
-        if (maybeSceneCollision && !isUsingAnOverlay())
+        if (maybeSceneCollision && !m_Gizmo.isUsing() && !m_Gizmo.isOver())
         {
             maybeHover = osc::FindComponent(
-                m_Model->getModel(),
+                m_Parameters.getModelSharedPtr()->getModel(),
                 maybeSceneCollision->decorationID
             );
         }
@@ -172,11 +171,19 @@ private:
             imguiHittest,
             maybeHover
         );
+
+        // garbage-collect closed layers
+        garbageCollectClosedLayers();
+    }
+
+    void garbageCollectClosedLayers()
+    {
+        osc::RemoveErase(m_Layers, [](auto const& layerPtr) { return layerPtr->shouldClose(); });
     }
 
     bool isUsingAnOverlay() const
     {
-        return m_Ruler.isMeasuring() || m_Gizmo.isUsing();
+        return !m_Layers.empty() || m_Gizmo.isUsing();
     }
 
     // uses ImGui's 2D drawlist to draw interactive widgets/overlays on the panel
@@ -188,7 +195,7 @@ private:
     {
         // draw generic overlays (i.e. the buttons for toggling things)
         DrawViewerImGuiOverlays(
-            m_Params,
+            m_Parameters.updRenderParams(),
             m_CachedModelRenderer.getDrawlist(),
             m_CachedModelRenderer.getRootAABB(),
             viewportRect,
@@ -196,28 +203,60 @@ private:
             [this]() { drawExtraTopButtons(); }
         );
 
-        // if applicable, draw the ruler
-        m_Ruler.draw(m_Params.camera, viewportRect, maybeSceneHittest);
-
-        // draw gizmo manipulators over the top
-        m_Gizmo.draw(viewportRect, m_Params.camera);
-
-        if (maybeHover)
+        if (m_Layers.empty())
         {
-            DrawComponentHoverTooltip(*maybeHover);
+            // draw gizmo manipulators over the top
+            m_Gizmo.draw(viewportRect, m_Parameters.getRenderParams().camera);
+
+            if (maybeHover)
+            {
+                DrawComponentHoverTooltip(*maybeHover);
+            }
+
+            // right-click: open context menu
+            if (imguiHittest.isRightClickReleasedWithoutDragging)
+            {
+                // right-click: pump a right-click event
+                ModelEditorViewerPanelRightClickEvent const e
+                {
+                    std::string{getName()},
+                    viewportRect,
+                    osc::GetAbsolutePathOrEmpty(maybeHover).toString(),
+                    maybeSceneHittest ? std::optional<glm::vec3>{maybeSceneHittest->worldspaceLocation} : std::nullopt,
+                };
+                m_Parameters.callOnRightClickHandler(e);
+            }
         }
-
-        // right-click: open context menu
-        if (imguiHittest.isRightClickReleasedWithoutDragging)
+        else
         {
-            // right-click: pump a right-click event
-            ModelEditorViewerPanelRightClickEvent const e
+            ModelEditorViewerPanelState state
             {
                 viewportRect,
-                osc::GetAbsolutePathOrEmpty(maybeHover).toString(),
-                maybeSceneHittest ? std::optional<glm::vec3>{maybeSceneHittest->worldspaceLocation} : std::nullopt,
+                maybeSceneHittest,
             };
-            m_OnRightClickedAComponent(e);
+
+            int id = 0;
+            for (auto const& layerPtr : m_Layers)
+            {
+                ModelEditorViewerPanelLayerFlags const layerFlags = layerPtr->getFlags();
+                ImGuiWindowFlags windowFlags = osc::GetMinimalWindowFlags();
+
+                if (layerFlags & ModelEditorViewerPanelLayerFlags_CapturesInputs)
+                {
+                    windowFlags &= ~ImGuiWindowFlags_NoInputs;
+                }
+
+                windowFlags &= ~ImGuiWindowFlags_NoBackground;
+                ImGui::SetNextWindowBgAlpha(layerPtr->getBackgroundAlpha());
+
+                ImGui::SetNextWindowPos(viewportRect.p1);
+                if (ImGui::BeginChild(id, Dimensions(viewportRect), false, windowFlags))
+                {
+                    layerPtr->onDraw(m_Parameters, state);
+                    ImGui::EndChild();
+                }
+                ++id;
+            }
         }
     }
 
@@ -232,7 +271,7 @@ private:
         };
         if (rulerButton.draw())
         {
-            m_Ruler.toggleMeasuring();
+            pushLayer(std::make_unique<RulerLayer>());
         }
         ImGui::SameLine();
 
@@ -265,7 +304,7 @@ private:
         {
             return true;
         }
-        else if (UpdatePolarCameraFromImGuiInputs(m_Params.camera, viewportRect, m_CachedModelRenderer.getRootAABB()))
+        else if (UpdatePolarCameraFromImGuiInputs(m_Parameters.updRenderParams().camera, viewportRect, m_CachedModelRenderer.getRootAABB()))
         {
             return true;
         }
@@ -283,30 +322,25 @@ private:
         // handle hover mutations
         if (isUsingAnOverlay())
         {
-            m_Model->setHovered(nullptr);
+            m_Parameters.getModelSharedPtr()->setHovered(nullptr);
         }
-        else if (imguiHittest.isHovered && maybeHover != m_Model->getHovered())
+        else if (imguiHittest.isHovered && maybeHover != m_Parameters.getModelSharedPtr()->getHovered())
         {
             // care: this code must check whether the hover != current hover
             // (even if null), because there might be multiple viewports open
             // (#582)
-            m_Model->setHovered(maybeHover);
+            m_Parameters.getModelSharedPtr()->setHovered(maybeHover);
         }
 
         // left-click: set model selection to (potentially empty) hover
         if (imguiHittest.isLeftClickReleasedWithoutDragging &&
             !isUsingAnOverlay())
         {
-            m_Model->setSelected(maybeHover);
+            m_Parameters.getModelSharedPtr()->setSelected(maybeHover);
         }
     }
 
-    // tab/model state
-    std::shared_ptr<UndoableModelStatePair> m_Model;
-    std::function<void(ModelEditorViewerPanelRightClickEvent const&)> m_OnRightClickedAComponent;
-
-    // 3D render/image state
-    ModelRendererParams m_Params;
+    ModelEditorViewerPanelParameters m_Parameters;
     CachedModelRenderer m_CachedModelRenderer
     {
         App::get().getConfig(),
@@ -320,8 +354,8 @@ private:
         App::resource("icons/"),
         ImGui::GetTextLineHeight()/128.0f
     );
-    GuiRuler m_Ruler;
-    ModelSelectionGizmo m_Gizmo{m_Model};
+    std::vector<std::unique_ptr<ModelEditorViewerPanelLayer>> m_Layers;
+    ModelSelectionGizmo m_Gizmo{m_Parameters.getModelSharedPtr()};
 };
 
 
@@ -329,19 +363,9 @@ private:
 
 osc::ModelEditorViewerPanel::ModelEditorViewerPanel(
     std::string_view panelName_,
-    std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
-    EditorAPI* editorAPI_,
-    std::shared_ptr<UndoableModelStatePair> model_) :
+    ModelEditorViewerPanelParameters const& parameters_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(panelName_), std::move(mainUIStateAPI_), editorAPI_, std::move(model_))}
-{
-}
-osc::ModelEditorViewerPanel::ModelEditorViewerPanel(
-    std::string_view panelName_,
-    std::shared_ptr<UndoableModelStatePair> model_,
-    std::function<void(ModelEditorViewerPanelRightClickEvent const&)> const& onRightClickedAComponent) :
-
-    m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), onRightClickedAComponent)}
+    m_Impl{std::make_unique<Impl>(panelName_, parameters_)}
 {
 }
 
@@ -349,19 +373,9 @@ osc::ModelEditorViewerPanel::ModelEditorViewerPanel(ModelEditorViewerPanel&&) no
 osc::ModelEditorViewerPanel& osc::ModelEditorViewerPanel::operator=(ModelEditorViewerPanel&&) noexcept = default;
 osc::ModelEditorViewerPanel::~ModelEditorViewerPanel() noexcept = default;
 
-osc::CustomRenderingOptions const& osc::ModelEditorViewerPanel::getCustomRenderingOptions() const
+osc::ModelEditorViewerPanelLayer& osc::ModelEditorViewerPanel::pushLayer(std::unique_ptr<ModelEditorViewerPanelLayer> layer)
 {
-    return m_Impl->getCustomRenderingOptions();
-}
-
-void osc::ModelEditorViewerPanel::setCustomRenderingOptions(CustomRenderingOptions const& newRenderingOptions)
-{
-    m_Impl->setCustomRenderingOptions(newRenderingOptions);
-}
-
-void osc::ModelEditorViewerPanel::setBackgroundColor(Color const& newBackgroundColor)
-{
-    m_Impl->setBackgroundColor(newBackgroundColor);
+    return m_Impl->pushLayer(std::move(layer));
 }
 
 osc::CStringView osc::ModelEditorViewerPanel::implGetName() const

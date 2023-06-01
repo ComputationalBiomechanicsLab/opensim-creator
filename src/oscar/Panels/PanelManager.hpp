@@ -2,6 +2,7 @@
 
 #include "oscar/Panels/ToggleablePanelFlags.hpp"
 #include "oscar/Utils/CStringView.hpp"
+#include "oscar/Utils/UID.hpp"
 
 #include <nonstd/span.hpp>
 
@@ -24,17 +25,28 @@ namespace osc
         PanelManager& operator=(PanelManager&&) noexcept;
         ~PanelManager() noexcept;
 
+        // register a panel that can be toggled on/off
         void registerToggleablePanel(
             std::string_view baseName,
             std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_,
             ToggleablePanelFlags flags_ = ToggleablePanelFlags_Default
         );
 
+        // register a panel that can spawn N copies (e.g. visualizers)
         void registerSpawnablePanel(
             std::string_view baseName,
             std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_,
             size_t numInitiallyOpenedPanels
         );
+
+        // returns the panel with the given name, or `nullptr` if not found
+        Panel* tryUpdPanelByName(std::string_view);
+        template<typename TConcretePanel>
+        TConcretePanel* tryUpdPanelByNameT(std::string_view name)
+        {
+            Panel* p = tryUpdPanelByName(name);
+            return p ? dynamic_cast<TConcretePanel*>(p) : nullptr;
+        }
 
         // methods for panels that are either enabled or disabled (toggleable)
         size_t getNumToggleablePanels() const;
@@ -43,7 +55,7 @@ namespace osc
         void setToggleablePanelActivated(size_t, bool);
         void setToggleablePanelActivated(std::string_view, bool);
 
-        // methods for dynamic panels that have been added at runtime (spawnable)
+        // methods for dynamic panels that have been added at runtime (i.e. have been spawned)
         size_t getNumDynamicPanels() const;
         CStringView getDynamicPanelName(size_t) const;
         void deactivateDynamicPanel(size_t);

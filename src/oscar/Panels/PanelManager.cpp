@@ -34,6 +34,11 @@ namespace
         {
         }
 
+        osc::Panel* updPtrOrNull()
+        {
+            return m_Instance ? m_Instance->get() : nullptr;
+        }
+
         osc::CStringView getName() const
         {
             return m_Name;
@@ -111,6 +116,11 @@ namespace
             m_Instance{std::move(instance)}
         {
             m_Instance->open();
+        }
+
+        osc::Panel* updPtrOrNull()
+        {
+            return m_Instance.get();
         }
 
         size_t getSpawnablePanelID() const
@@ -207,6 +217,27 @@ public:
         size_t numInitiallyOpenedPanels)
     {
         m_SpawnablePanels.emplace_back(baseName, constructorFunc_, numInitiallyOpenedPanels);
+    }
+
+    Panel* tryUpdPanelByName(std::string_view name)
+    {
+        for (ToggleablePanel& panel : m_ToggleablePanels)
+        {
+            if (Panel* p = panel.updPtrOrNull(); p && p->getName() == name)
+            {
+                return p;
+            }
+        }
+
+        for (DynamicPanel& panel : m_DynamicPanels)
+        {
+            if (Panel* p = panel.updPtrOrNull(); p && p->getName() == name)
+            {
+                return p;
+            }
+        }
+
+        return nullptr;
     }
 
     size_t getNumToggleablePanels() const
@@ -448,6 +479,11 @@ void osc::PanelManager::registerSpawnablePanel(
     size_t numInitiallyOpenedPanels)
 {
     m_Impl->registerSpawnablePanel(std::move(baseName), std::move(constructorFunc_), numInitiallyOpenedPanels);
+}
+
+osc::Panel* osc::PanelManager::tryUpdPanelByName(std::string_view name)
+{
+    return m_Impl->tryUpdPanelByName(name);
 }
 
 size_t osc::PanelManager::getNumToggleablePanels() const

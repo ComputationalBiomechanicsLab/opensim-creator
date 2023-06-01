@@ -21,6 +21,7 @@ namespace osc
         ~ModelSelectionGizmo() noexcept;
 
         bool isUsing() const;
+        bool isOver() const;
 
         bool handleKeyboardInputs();
         void draw(Rect const& screenRect, PolarPerspectiveCamera const&);

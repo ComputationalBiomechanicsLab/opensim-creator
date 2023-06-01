@@ -25,14 +25,14 @@ void osc::GuiRuler::draw(
     }
 
     // users can exit measuring through these actions
-    if (ImGui::IsKeyDown(ImGuiKey_Escape) || ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+    if (ImGui::IsKeyDown(ImGuiKey_Escape) || ImGui::IsMouseReleased(ImGuiMouseButton_Right))
     {
         stopMeasuring();
         return;
     }
 
     // users can "finish" the measurement through these actions
-    if (m_State == State::WaitingForSecondPoint && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+    if (m_State == State::WaitingForSecondPoint && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
     {
         stopMeasuring();
         return;
@@ -72,7 +72,7 @@ void osc::GuiRuler::draw(
             // mousing over something
             dl.AddCircleFilled(mouseLoc, circleRadius, circleColor);
 
-            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
             {
                 m_State = State::WaitingForSecondPoint;
                 m_StartWorldPos = maybeMouseover->worldspaceLocation;
