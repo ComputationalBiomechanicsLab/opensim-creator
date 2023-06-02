@@ -107,10 +107,8 @@ namespace
                 return true;
             }
 
-            if (m_Gizmo.isOver() && !osc::IsDraggingWithAnyMouseButtonDown())
-            {
-                return true;
-            }
+            // care: ImGuizmo::isOver can return `true` even if it
+            // isn't being drawn this frame
 
             return false;
         }
