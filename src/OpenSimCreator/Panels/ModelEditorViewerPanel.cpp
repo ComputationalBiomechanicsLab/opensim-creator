@@ -317,22 +317,27 @@ private:
 
     void implDrawContent() final
     {
-        m_State.viewportRect = ContentRegionAvailScreenRect();
+        bool const isHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
 
-        // if necessary, auto-focus the camera
-        if (m_IsFirstFrame && m_AutoFocusOnFirstFrame)
+        m_State.viewportRect = ContentRegionAvailScreenRect();
+        m_State.isLeftClickReleasedWithoutDragging = IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
+        m_State.isRightClickReleasedWithoutDragging = IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
+
+        // if necessary, auto-focus the camera on the first frame
+        if (m_IsFirstFrame)
         {
             m_State.updRenderer().autoFocusCamera(
                 *m_Parameters.getModelSharedPtr(),
                 m_Parameters.updRenderParams(),
                 AspectRatio(m_State.viewportRect)
             );
+            m_IsFirstFrame = false;
         }
 
         layersOnNewFrame();
 
         // if the viewer is hovered, handle inputs
-        if (m_MaybeLastHittest && m_MaybeLastHittest->isHovered)
+        if (isHovered)
         {
             layersHandleMouseInputs();
             layersHandleKeyboardInputs();
@@ -351,22 +356,12 @@ private:
                 Dimensions(m_State.viewportRect)
             );
         }
+
+        // update state scene AABB
         m_State.maybeSceneAABB = m_State.getRenderer().getRootAABB();
 
-        // 2D-hittest the ImGui::Image
-        ImGuiItemHittestResult imguiHittest;
-        imguiHittest.rect = m_State.viewportRect;
-        imguiHittest.isHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
-        imguiHittest.isLeftClickReleasedWithoutDragging = imguiHittest.isHovered && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
-        imguiHittest.isRightClickReleasedWithoutDragging = imguiHittest.isHovered && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
-
-        // update internal state
-        m_MaybeLastHittest = imguiHittest;
-        m_State.isLeftClickReleasedWithoutDragging = imguiHittest.isLeftClickReleasedWithoutDragging;
-        m_State.isRightClickReleasedWithoutDragging = imguiHittest.isRightClickReleasedWithoutDragging;
-
         // if hovering in 2D, 3D-hittest the scene
-        if (imguiHittest.isHovered)
+        if (isHovered)
         {
             m_State.maybeBaseLayerHittest = m_State.getRenderer().getClosestCollision(
                 m_Parameters.getRenderParams(),
@@ -392,11 +387,9 @@ private:
             m_State.maybeHoveredComponent = nullptr;
         }
 
-        // handle drawing+cleaning layers
         layersDraw();
         layersGarbageCollect();
-        m_State.flushLayerQueueTo(m_Layers);
-        m_IsFirstFrame = false;
+        layersPopQueuedNewLayers();
     }
 
     void layersOnNewFrame()
@@ -422,7 +415,8 @@ private:
     {
         for (auto it = m_Layers.rbegin(); it != m_Layers.rend(); ++it)
         {
-            if ((*it)->handleMouseInputs(m_Parameters, m_State) || (*it)->getFlags() & ModelEditorViewerPanelLayerFlags_CapturesMouseInputs)
+            if ((*it)->handleMouseInputs(m_Parameters, m_State) ||
+                (*it)->getFlags() & ModelEditorViewerPanelLayerFlags_CapturesMouseInputs)
             {
                 return;
             }
@@ -431,29 +425,34 @@ private:
 
     void layersDraw()
     {
-        int id = 0;
+        int childWindowID = 0;
         for (auto it = m_Layers.begin(); it != m_Layers.end(); ++it)
         {
             ModelEditorViewerPanelLayer& layer = **it;
-            ModelEditorViewerPanelLayerFlags const layerFlags = layer.getFlags();
 
             ImGuiWindowFlags windowFlags = osc::GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs;
+
+            // if any layer above this one captures mouse inputs then disable this layer's inputs
             if (std::find_if(it+1, m_Layers.end(), [](auto const& layerPtr) -> bool { return layerPtr->getFlags() & ModelEditorViewerPanelLayerFlags_CapturesMouseInputs; }) != m_Layers.end())
             {
                 windowFlags |= ImGuiWindowFlags_NoInputs;
             }
 
+            // layers always have a background (although, it can be entirely invisible)
             windowFlags &= ~ImGuiWindowFlags_NoBackground;
             ImGui::SetNextWindowBgAlpha(layer.getBackgroundAlpha());
 
+            // draw the layer in a child window, so that ImGui understands that hittests
+            // should happen window-by-window (otherwise, you'll have problems with overlapping
+            // buttons, widgets, etc.)
             ImGui::SetNextWindowPos(m_State.viewportRect.p1);
-            if (ImGui::BeginChild(id, Dimensions(m_State.viewportRect), false, windowFlags))
+            if (ImGui::BeginChild(childWindowID, Dimensions(m_State.viewportRect), false, windowFlags))
             {
                 layer.onDraw(m_Parameters, m_State);
                 ImGui::EndChild();
             }
 
-            ++id;
+            ++childWindowID;
         }
     }
 
@@ -465,12 +464,15 @@ private:
         });
     }
 
+    void layersPopQueuedNewLayers()
+    {
+        m_State.flushLayerQueueTo(m_Layers);
+    }
+
     ModelEditorViewerPanelParameters m_Parameters;
     ModelEditorViewerPanelState m_State{getName()};
-    bool m_IsFirstFrame = true;
-    bool m_AutoFocusOnFirstFrame = true;
-    std::optional<ImGuiItemHittestResult> m_MaybeLastHittest;
     std::vector<std::unique_ptr<ModelEditorViewerPanelLayer>> m_Layers;
+    bool m_IsFirstFrame = true;
 };
 
 
