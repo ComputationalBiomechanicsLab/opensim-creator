@@ -31,9 +31,28 @@ namespace osc
             return implGetBackgroundAlpha();
         }
 
+        void onNewFrame()
+        {
+            implOnNewFrame();
+        }
+
+        bool handleMouseInputs(
+            ModelEditorViewerPanelParameters& params,
+            ModelEditorViewerPanelState& state)
+        {
+            return implHandleMouseInputs(params, state);
+        }
+
+        bool handleKeyboardInputs(
+            ModelEditorViewerPanelParameters& params,
+            ModelEditorViewerPanelState& state)
+        {
+            return implHandleKeyboardInputs(params, state);
+        }
+
         void onDraw(
             ModelEditorViewerPanelParameters& params,
-            ModelEditorViewerPanelState const& state)
+            ModelEditorViewerPanelState& state)
         {
             implOnDraw(params, state);
         }
@@ -54,7 +73,28 @@ namespace osc
             return 0.0f;
         }
 
-        virtual void implOnDraw(ModelEditorViewerPanelParameters&, ModelEditorViewerPanelState const&) = 0;
+        virtual void implOnNewFrame()
+        {
+        }
+
+        virtual bool implHandleMouseInputs(
+            ModelEditorViewerPanelParameters&,
+            ModelEditorViewerPanelState&)
+        {
+            return false;
+        }
+
+        virtual bool implHandleKeyboardInputs(
+            ModelEditorViewerPanelParameters&,
+            ModelEditorViewerPanelState&)
+        {
+            return false;
+        }
+
+        virtual void implOnDraw(
+            ModelEditorViewerPanelParameters&,
+            ModelEditorViewerPanelState&) = 0;
+
         virtual bool implShouldClose() const = 0;
 	};
 }

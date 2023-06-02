@@ -118,7 +118,7 @@ namespace
 
         void implOnDraw(
             osc::ModelEditorViewerPanelParameters& panelParams,
-            osc::ModelEditorViewerPanelState const& panelState) final
+            osc::ModelEditorViewerPanelState& panelState) final
         {
             if (ImGui::IsKeyReleased(ImGuiKey_Escape))
             {
@@ -297,7 +297,6 @@ namespace
 
             if (osc::ModelEditorViewerPanel* visualizer = panelManager.tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName))
             {
-                // TODO: wire into the visualizer
                 ChooseComponentsEditorLayerParameters options;
                 options.popupHeaderText = "choose other point";
                 options.componentsBeingAssignedTo = {sphere.getAbsolutePathString()};

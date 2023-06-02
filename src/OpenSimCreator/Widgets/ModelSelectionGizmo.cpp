@@ -502,7 +502,9 @@ namespace
         }
         // else: it's a supported operation and the gizmo should be drawn
 
-        ImGuizmo::SetID(ImGui::GetID(gizmoID));  // important: necessary for multi-viewport gizmos
+        // important: necessary for multi-viewport gizmos
+        // also important: don't use ImGui::GetID(), because it uses an ID stack and we might want to know if "isover" etc. is true outside of a window
+        ImGuizmo::SetID(static_cast<int>(std::hash<void*>{}(gizmoID)));
         OSC_SCOPE_GUARD({ ImGuizmo::SetID(-1); });
 
         ImGuizmo::SetRect(
@@ -627,7 +629,7 @@ osc::ModelSelectionGizmo::~ModelSelectionGizmo() noexcept = default;
 
 bool osc::ModelSelectionGizmo::isUsing() const
 {
-    ImGuizmo::SetID(ImGui::GetID(this));
+    ImGuizmo::SetID(static_cast<int>(std::hash<ModelSelectionGizmo const*>{}(this)));
     bool const rv = ImGuizmo::IsUsing();
     ImGuizmo::SetID(-1);
     return rv;
@@ -635,7 +637,7 @@ bool osc::ModelSelectionGizmo::isUsing() const
 
 bool osc::ModelSelectionGizmo::isOver() const
 {
-    ImGuizmo::SetID(ImGui::GetID(this));
+    ImGuizmo::SetID(static_cast<int>(std::hash<ModelSelectionGizmo const*>{}(this)));
     bool const rv = ImGuizmo::IsOver();
     ImGuizmo::SetID(-1);
     return rv;
