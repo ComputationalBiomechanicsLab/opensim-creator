@@ -7,7 +7,7 @@
 #include <SDL_events.h>
 
 namespace osc { class ModelEditorViewerPanelParameters; }
-namespace osc { struct ModelEditorViewerPanelState; }
+namespace osc { class ModelEditorViewerPanelState; }
 
 namespace osc
 {

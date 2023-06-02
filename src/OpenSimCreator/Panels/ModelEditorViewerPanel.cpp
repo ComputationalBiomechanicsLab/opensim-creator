@@ -45,6 +45,16 @@ namespace
         }
 
     private:
+        osc::ModelEditorViewerPanelLayerFlags implGetFlags() const final
+        {
+            return osc::ModelEditorViewerPanelLayerFlags_CapturesMouseInputs;
+        }
+
+        bool implHandleMouseInputs()
+        {
+            return true;  // always handles the mouse
+        }
+
         void implOnDraw(
             osc::ModelEditorViewerPanelParameters& params,
             osc::ModelEditorViewerPanelState& state) final
@@ -257,7 +267,7 @@ namespace
                 // right-click: pump a right-click event
                 osc::ModelEditorViewerPanelRightClickEvent const e
                 {
-                    state.panelName,
+                    std::string{state.getPanelName()},
                     state.viewportRect,
                     osc::GetAbsolutePathOrEmpty(state.maybeHoveredComponent).toString(),
                     state.maybeBaseLayerHittest ? std::optional<glm::vec3>{state.maybeBaseLayerHittest->worldspaceLocation} : std::nullopt,
@@ -307,13 +317,12 @@ private:
 
     void implDrawContent() final
     {
-        m_State.panelName = getName();
         m_State.viewportRect = ContentRegionAvailScreenRect();
 
         // if necessary, auto-focus the camera
         if (m_IsFirstFrame && m_AutoFocusOnFirstFrame)
         {
-            m_CachedModelRenderer.autoFocusCamera(
+            m_State.updRenderer().autoFocusCamera(
                 *m_Parameters.getModelSharedPtr(),
                 m_Parameters.updRenderParams(),
                 AspectRatio(m_State.viewportRect)
@@ -321,20 +330,17 @@ private:
         }
 
         layersOnNewFrame();
-        layersGarbageCollect();
 
         // if the viewer is hovered, handle inputs
         if (m_MaybeLastHittest && m_MaybeLastHittest->isHovered)
         {
             layersHandleMouseInputs();
-            layersGarbageCollect();
             layersHandleKeyboardInputs();
-            layersGarbageCollect();
         }
 
         // render the 3D scene to a texture and present it via an ImGui::Image
         {
-            osc::RenderTexture& sceneTexture = m_CachedModelRenderer.draw(
+            osc::RenderTexture& sceneTexture = m_State.updRenderer().draw(
                 *m_Parameters.getModelSharedPtr(),
                 m_Parameters.getRenderParams(),
                 Dimensions(m_State.viewportRect),
@@ -345,7 +351,7 @@ private:
                 Dimensions(m_State.viewportRect)
             );
         }
-        m_State.maybeSceneAABB = m_CachedModelRenderer.getRootAABB();
+        m_State.maybeSceneAABB = m_State.getRenderer().getRootAABB();
 
         // 2D-hittest the ImGui::Image
         ImGuiItemHittestResult imguiHittest;
@@ -362,7 +368,7 @@ private:
         // if hovering in 2D, 3D-hittest the scene
         if (imguiHittest.isHovered)
         {
-            m_State.maybeBaseLayerHittest = m_CachedModelRenderer.getClosestCollision(
+            m_State.maybeBaseLayerHittest = m_State.getRenderer().getClosestCollision(
                 m_Parameters.getRenderParams(),
                 ImGui::GetMousePos(),
                 m_State.viewportRect
@@ -389,7 +395,7 @@ private:
         // handle drawing+cleaning layers
         layersDraw();
         layersGarbageCollect();
-
+        m_State.flushLayerQueueTo(m_Layers);
         m_IsFirstFrame = false;
     }
 
@@ -460,13 +466,7 @@ private:
     }
 
     ModelEditorViewerPanelParameters m_Parameters;
-    ModelEditorViewerPanelState m_State;
-    CachedModelRenderer m_CachedModelRenderer
-    {
-        App::get().getConfig(),
-        App::singleton<MeshCache>(),
-        *App::singleton<ShaderCache>(),
-    };
+    ModelEditorViewerPanelState m_State{getName()};
     bool m_IsFirstFrame = true;
     bool m_AutoFocusOnFirstFrame = true;
     std::optional<ImGuiItemHittestResult> m_MaybeLastHittest;
