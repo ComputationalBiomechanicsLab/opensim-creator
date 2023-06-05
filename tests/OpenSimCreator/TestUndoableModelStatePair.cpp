@@ -26,7 +26,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
 
     // turn as many decoration options on as possible, so that the code gets tested
     // against them (#661)
-    osc::CustomDecorationOptions decorationOpts;
+    osc::ModelDecorationOptions decorationOpts;
     decorationOpts.setShouldShowAnatomicalMuscleLineOfActionForInsertion(true);
     decorationOpts.setShouldShowAnatomicalMuscleLineOfActionForOrigin(true);
     decorationOpts.setShouldShowEffectiveMuscleLineOfActionForInsertion(true);

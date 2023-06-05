@@ -1,6 +1,6 @@
 #include "OverlayDecorationGenerator.hpp"
 
-#include "OpenSimCreator/Graphics/ModelSceneDecorationsParams.hpp"
+#include "OpenSimCreator/Graphics/OverlayDecorationOptions.hpp"
 
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 
@@ -8,7 +8,7 @@
 
 void osc::GenerateOverlayDecorations(
     MeshCache& meshCache,
-    CustomRenderingOptions const& params,
+    OverlayDecorationOptions const& params,
     BVH const& sceneBVH,
     std::function<void(SceneDecoration&&)> const& out)
 {

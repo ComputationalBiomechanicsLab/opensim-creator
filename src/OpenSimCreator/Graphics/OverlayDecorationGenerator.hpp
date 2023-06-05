@@ -3,8 +3,8 @@
 #include <functional>
 
 namespace osc { struct BVH; }
-namespace osc { class CustomRenderingOptions; }
 namespace osc { class MeshCache; }
+namespace osc { class OverlayDecorationOptions; }
 namespace osc { struct SceneDecoration; }
 
 namespace osc
@@ -13,7 +13,7 @@ namespace osc
     // output consumer
 	void GenerateOverlayDecorations(
         MeshCache&,
-        CustomRenderingOptions const&,
+        OverlayDecorationOptions const&,
         BVH const& sceneBVH,
         std::function<void(SceneDecoration&&)> const& out
 	);

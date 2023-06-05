@@ -1,6 +1,6 @@
 #include "ActionFunctions.hpp"
 
-#include "OpenSimCreator/Graphics/CustomDecorationOptions.hpp"
+#include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
 #include "OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "OpenSimCreator/Tabs/ModelEditorTab.hpp"
@@ -444,7 +444,7 @@ bool osc::ActionAutoscaleSceneScaleFactor(UndoableModelStatePair& uim)
         *osc::App::singleton<osc::MeshCache>(),
         uim.getModel(),
         uim.getState(),
-        CustomDecorationOptions{},
+        OpenSimDecorationOptions{},
         uim.getFixupScaleFactor()
     );
     uim.setFixupScaleFactor(sf);

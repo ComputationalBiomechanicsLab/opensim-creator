@@ -1,7 +1,7 @@
 #include "BasicWidgets.hpp"
 
-#include "OpenSimCreator/Graphics/CustomDecorationOptions.hpp"
 #include "OpenSimCreator/Graphics/CustomRenderingOptions.hpp"
+#include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
 #include "OpenSimCreator/Graphics/ModelRendererParams.hpp"
 #include "OpenSimCreator/Graphics/MuscleDecorationStyle.hpp"
 #include "OpenSimCreator/Graphics/MuscleSizingStyle.hpp"
@@ -345,7 +345,7 @@ void osc::DrawOutputNameColumn(
     }
 }
 
-void osc::DrawMuscleRenderingOptionsRadioButtions(CustomDecorationOptions& opts)
+void osc::DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions& opts)
 {
     osc::MuscleDecorationStyle const currentStyle = opts.getMuscleDecorationStyle();
     nonstd::span<osc::MuscleDecorationStyle const> const allStyles = osc::GetAllMuscleDecorationStyles();
@@ -361,7 +361,7 @@ void osc::DrawMuscleRenderingOptionsRadioButtions(CustomDecorationOptions& opts)
     }
 }
 
-void osc::DrawMuscleSizingOptionsRadioButtons(CustomDecorationOptions& opts)
+void osc::DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions& opts)
 {
     osc::MuscleSizingStyle const currentStyle = opts.getMuscleSizingStyle();
     nonstd::span<osc::MuscleSizingStyle const> const allStyles = osc::GetAllMuscleSizingStyles();
@@ -377,7 +377,7 @@ void osc::DrawMuscleSizingOptionsRadioButtons(CustomDecorationOptions& opts)
     }
 }
 
-void osc::DrawMuscleColoringOptionsRadioButtons(CustomDecorationOptions& opts)
+void osc::DrawMuscleColoringOptionsRadioButtons(OpenSimDecorationOptions& opts)
 {
     osc::MuscleColoringStyle const currentStyle = opts.getMuscleColoringStyle();
     nonstd::span<osc::MuscleColoringStyle const> const allStyles = osc::GetAllMuscleColoringStyles();
@@ -393,7 +393,7 @@ void osc::DrawMuscleColoringOptionsRadioButtons(CustomDecorationOptions& opts)
     }
 }
 
-void osc::DrawMuscleDecorationOptionsEditor(CustomDecorationOptions& opts)
+void osc::DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions& opts)
 {
     int id = 0;
 
@@ -440,7 +440,32 @@ void osc::DrawRenderingOptionsEditor(CustomRenderingOptions& opts)
     }
 }
 
-void osc::DrawCustomDecorationOptionCheckboxes(CustomDecorationOptions& opts)
+void osc::DrawOverlayOptionsEditor(OverlayDecorationOptions& opts)
+{
+    std::optional<ptrdiff_t> lastGroup;
+    for (size_t i = 0; i < opts.getNumOptions(); ++i)
+    {
+        // print header, if necessary
+        ptrdiff_t const group = opts.getOptionGroupIndex(i);
+        if (group != lastGroup)
+        {
+            if (lastGroup)
+            {
+                ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+            }
+            ImGui::TextDisabled("%s", opts.getGroupLabel(group).c_str());
+            lastGroup = group;
+        }
+
+        bool value = opts.getOptionValue(i);
+        if (ImGui::Checkbox(opts.getOptionLabel(i).c_str(), &value))
+        {
+            opts.setOptionValue(i, value);
+        }
+    }
+}
+
+void osc::DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions& opts)
 {
     int imguiID = 0;
     for (size_t i = 0; i < opts.getNumOptions(); ++i)
@@ -557,6 +582,9 @@ void osc::DrawVisualAidsContextMenuContent(ModelRendererParams& params)
 {
     // generic rendering options
     DrawRenderingOptionsEditor(params.renderingOptions);
+
+    // overlay options
+    DrawOverlayOptionsEditor(params.overlayOptions);
 
     // OpenSim-specific extra rendering options
     ImGui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});

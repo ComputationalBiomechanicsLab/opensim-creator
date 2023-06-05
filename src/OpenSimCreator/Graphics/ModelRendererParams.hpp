@@ -1,7 +1,8 @@
 #pragma once
 
-#include "OpenSimCreator/Graphics/CustomDecorationOptions.hpp"
 #include "OpenSimCreator/Graphics/CustomRenderingOptions.hpp"
+#include "OpenSimCreator/Graphics/OverlayDecorationOptions.hpp"
+#include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
 
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
@@ -13,7 +14,8 @@ namespace osc
     struct ModelRendererParams final {
         ModelRendererParams();
 
-        CustomDecorationOptions decorationOptions;
+        OpenSimDecorationOptions decorationOptions;
+        OverlayDecorationOptions overlayOptions;
         CustomRenderingOptions renderingOptions;
         Color lightColor;
         Color backgroundColor;

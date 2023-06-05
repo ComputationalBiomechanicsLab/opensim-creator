@@ -28,24 +28,6 @@ namespace osc
         bool getDrawShadows() const;
         void setDrawShadows(bool);
 
-        bool getDrawXZGrid() const;
-        void setDrawXZGrid(bool);
-
-        bool getDrawXYGrid() const;
-        void setDrawXYGrid(bool);
-
-        bool getDrawYZGrid() const;
-        void setDrawYZGrid(bool);
-
-        bool getDrawAxisLines() const;
-        void setDrawAxisLines(bool);
-
-        bool getDrawAABBs() const;
-        void setDrawAABBs(bool);
-
-        bool getDrawBVH() const;
-        void setDrawBVH(bool);
-
         bool getDrawSelectionRims() const;
         void setDrawSelectionRims(bool);
 

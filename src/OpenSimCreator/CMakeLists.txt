@@ -10,16 +10,14 @@ add_library(OpenSimCreator STATIC
 
     Graphics/CachedModelRenderer.cpp
     Graphics/CachedModelRenderer.hpp
-    Graphics/CustomDecorationOptions.cpp
-    Graphics/CustomDecorationOptions.hpp
+    Graphics/ComponentAbsPathDecorationTagger.hpp
+    Graphics/ComponentSceneDecorationFlagsTagger.hpp
     Graphics/CustomRenderingOptions.cpp
     Graphics/CustomRenderingOptions.hpp
+    Graphics/OpenSimDecorationOptions.cpp
+    Graphics/OpenSimDecorationOptions.hpp
     Graphics/ModelRendererParams.cpp
     Graphics/ModelRendererParams.hpp
-    Graphics/ModelSceneDecorationsParams.cpp
-    Graphics/ModelSceneDecorationsParams.hpp
-    Graphics/ModelSceneDecorations.cpp
-    Graphics/ModelSceneDecorations.hpp
     Graphics/MuscleColoringStyle.cpp
     Graphics/MuscleColoringStyle.hpp
     Graphics/MuscleDecorationStyle.cpp
@@ -28,8 +26,12 @@ add_library(OpenSimCreator STATIC
     Graphics/MuscleSizingStyle.hpp
     Graphics/OpenSimDecorationGenerator.cpp
     Graphics/OpenSimDecorationGenerator.hpp
+    Graphics/OpenSimGraphicsHelpers.cpp
+    Graphics/OpenSimGraphicsHelpers.hpp
     Graphics/OverlayDecorationGenerator.cpp
     Graphics/OverlayDecorationGenerator.hpp
+    Graphics/OverlayDecorationOptions.cpp
+    Graphics/OverlayDecorationOptions.hpp
     Graphics/SimTKDecorationGenerator.cpp
     Graphics/SimTKDecorationGenerator.hpp
     Graphics/SimTKMeshLoader.cpp
@@ -159,6 +161,8 @@ add_library(OpenSimCreator STATIC
     IntegratorOutputExtractor.hpp
     ModelStateCommit.cpp
     ModelStateCommit.hpp
+    ModelStatePairInfo.cpp
+    ModelStatePairInfo.hpp
     MultiBodySystemOutputExtractor.cpp
     MultiBodySystemOutputExtractor.hpp
     ObjectPropertyEdit.cpp
@@ -196,7 +200,7 @@ add_library(OpenSimCreator STATIC
     VirtualModelStatePair.hpp
     VirtualOutputExtractor.hpp
     VirtualSimulation.hpp
- "Panels/ModelEditorViewerPanelState.cpp" "Graphics/ModelSceneDecorationsParams.cpp" "Graphics/ModelSceneDecorations.cpp" "Graphics/OverlayDecorationGenerator.cpp")
+)
 
 # OpenSimCreator: compile-time includes
 target_include_directories(OpenSimCreator PUBLIC

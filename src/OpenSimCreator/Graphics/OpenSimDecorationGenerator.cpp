@@ -1,6 +1,6 @@
 #include "OpenSimDecorationGenerator.hpp"
 
-#include "OpenSimCreator/Graphics/CustomDecorationOptions.hpp"
+#include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
 #include "OpenSimCreator/Graphics/SimTKDecorationGenerator.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
 #include "OpenSimCreator/SimTKHelpers.hpp"
@@ -167,7 +167,7 @@ namespace
             osc::MeshCache& meshCache,
             OpenSim::Model const& model,
             SimTK::State const& state,
-            osc::CustomDecorationOptions const& opts,
+            osc::OpenSimDecorationOptions const& opts,
             float fixupScaleFactor,
             std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> const& out) :
 
@@ -215,7 +215,7 @@ namespace
             return m_State;
         }
 
-        osc::CustomDecorationOptions const& getOptions() const
+        osc::OpenSimDecorationOptions const& getOptions() const
         {
             return m_Opts;
         }
@@ -293,7 +293,7 @@ namespace
         bool m_ShowPathPoints = m_ModelDisplayHints.get_show_path_points();
         SimTK::SimbodyMatterSubsystem const& m_MatterSubsystem = m_Model.getSystem().getMatterSubsystem();
         SimTK::State const& m_State;
-        osc::CustomDecorationOptions const& m_Opts;
+        osc::OpenSimDecorationOptions const& m_Opts;
         float m_FixupScaleFactor;
         std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> const& m_Out;
         SimTK::Array_<SimTK::DecorativeGeometry> m_GeomList;
@@ -913,7 +913,7 @@ void osc::GenerateModelDecorations(
     MeshCache& meshCache,
     OpenSim::Model const& model,
     SimTK::State const& state,
-    CustomDecorationOptions const& opts,
+    OpenSimDecorationOptions const& opts,
     float fixupScaleFactor,
     std::function<void(OpenSim::Component const&, SceneDecoration&&)> const& out)
 {
@@ -977,7 +977,7 @@ float osc::GetRecommendedScaleFactor(
     MeshCache& meshCache,
     OpenSim::Model const& model,
     SimTK::State const& state,
-    CustomDecorationOptions const& opts,
+    OpenSimDecorationOptions const& opts,
     float fixupScaleFactor)
 {
     // generate decorations as if they were empty-sized and union their

@@ -8,7 +8,8 @@
 #include <optional>
 #include <string>
 
-namespace osc { class CustomDecorationOptions; }
+namespace osc { class OpenSimDecorationOptions; }
+namespace osc { class OverlayDecorationOptions; }
 namespace osc { class CustomRenderingOptions; }
 namespace osc { class IconCache; }
 namespace osc { class MainUIStateAPI; }
@@ -36,12 +37,13 @@ namespace osc
     );
 
     // basic wigetized parts of the 3D viewer
-    void DrawMuscleRenderingOptionsRadioButtions(CustomDecorationOptions&);
-    void DrawMuscleSizingOptionsRadioButtons(CustomDecorationOptions&);
-    void DrawMuscleColoringOptionsRadioButtons(CustomDecorationOptions&);
-    void DrawMuscleDecorationOptionsEditor(CustomDecorationOptions&);
+    void DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions&);
+    void DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions&);
+    void DrawMuscleColoringOptionsRadioButtons(OpenSimDecorationOptions&);
+    void DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions&);
     void DrawRenderingOptionsEditor(CustomRenderingOptions&);
-    void DrawCustomDecorationOptionCheckboxes(CustomDecorationOptions&);
+    void DrawOverlayOptionsEditor(OverlayDecorationOptions&);
+    void DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions&);
     void DrawAdvancedParamsEditor(ModelRendererParams&, nonstd::span<SceneDecoration const>);
     void DrawVisualAidsContextMenuContent(ModelRendererParams&);
     void DrawViewerTopButtonRow(

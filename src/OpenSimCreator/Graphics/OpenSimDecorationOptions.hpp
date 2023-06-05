@@ -11,9 +11,9 @@
 
 namespace osc
 {
-    class CustomDecorationOptions final {
+    class OpenSimDecorationOptions final {
     public:
-        CustomDecorationOptions();
+        OpenSimDecorationOptions();
 
         MuscleDecorationStyle getMuscleDecorationStyle() const;
         void setMuscleDecorationStyle(MuscleDecorationStyle);
@@ -55,7 +55,7 @@ namespace osc
         bool getShouldShowContactForces() const;
 
     private:
-        friend bool operator==(CustomDecorationOptions const&, CustomDecorationOptions const&) noexcept;
+        friend bool operator==(OpenSimDecorationOptions const&, OpenSimDecorationOptions const&) noexcept;
 
         MuscleDecorationStyle m_MuscleDecorationStyle;
         MuscleColoringStyle m_MuscleColoringStyle;
@@ -63,9 +63,9 @@ namespace osc
         uint32_t m_Flags;
     };
 
-    bool operator==(CustomDecorationOptions const&, CustomDecorationOptions const&) noexcept;
+    bool operator==(OpenSimDecorationOptions const&, OpenSimDecorationOptions const&) noexcept;
 
-    inline bool operator!=(CustomDecorationOptions const& a, CustomDecorationOptions const& b)
+    inline bool operator!=(OpenSimDecorationOptions const& a, OpenSimDecorationOptions const& b)
     {
         return !(a == b);
     }

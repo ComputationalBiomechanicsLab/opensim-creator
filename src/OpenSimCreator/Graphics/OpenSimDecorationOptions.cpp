@@ -1,4 +1,4 @@
-#include "CustomDecorationOptions.hpp"
+#include "OpenSimDecorationOptions.hpp"
 
 #include <oscar/Utils/Algorithms.hpp>
 
@@ -60,7 +60,7 @@ namespace
     }
 }
 
-osc::CustomDecorationOptions::CustomDecorationOptions() :
+osc::OpenSimDecorationOptions::OpenSimDecorationOptions() :
     m_MuscleDecorationStyle{MuscleDecorationStyle::Default},
     m_MuscleColoringStyle{MuscleColoringStyle::Default},
     m_MuscleSizingStyle{MuscleSizingStyle::Default},
@@ -69,137 +69,137 @@ osc::CustomDecorationOptions::CustomDecorationOptions() :
     static_assert(std::is_same_v<std::underlying_type_t<CustomDecorationOptionFlags_>, std::decay_t<decltype(m_Flags)>>);
 }
 
-osc::MuscleDecorationStyle osc::CustomDecorationOptions::getMuscleDecorationStyle() const
+osc::MuscleDecorationStyle osc::OpenSimDecorationOptions::getMuscleDecorationStyle() const
 {
     return m_MuscleDecorationStyle;
 }
 
-void osc::CustomDecorationOptions::setMuscleDecorationStyle(MuscleDecorationStyle s)
+void osc::OpenSimDecorationOptions::setMuscleDecorationStyle(MuscleDecorationStyle s)
 {
     m_MuscleDecorationStyle = s;
 }
 
-osc::MuscleColoringStyle osc::CustomDecorationOptions::getMuscleColoringStyle() const
+osc::MuscleColoringStyle osc::OpenSimDecorationOptions::getMuscleColoringStyle() const
 {
     return m_MuscleColoringStyle;
 }
 
-void osc::CustomDecorationOptions::setMuscleColoringStyle(MuscleColoringStyle s)
+void osc::OpenSimDecorationOptions::setMuscleColoringStyle(MuscleColoringStyle s)
 {
     m_MuscleColoringStyle = s;
 }
 
-osc::MuscleSizingStyle osc::CustomDecorationOptions::getMuscleSizingStyle() const
+osc::MuscleSizingStyle osc::OpenSimDecorationOptions::getMuscleSizingStyle() const
 {
     return m_MuscleSizingStyle;
 }
 
-void osc::CustomDecorationOptions::setMuscleSizingStyle(MuscleSizingStyle s)
+void osc::OpenSimDecorationOptions::setMuscleSizingStyle(MuscleSizingStyle s)
 {
     m_MuscleSizingStyle = s;
 }
 
-size_t osc::CustomDecorationOptions::getNumOptions() const
+size_t osc::OpenSimDecorationOptions::getNumOptions() const
 {
     return static_cast<size_t>(CustomDecorationOptionFlags_COUNT);
 }
 
-bool osc::CustomDecorationOptions::getOptionValue(ptrdiff_t i) const
+bool osc::OpenSimDecorationOptions::getOptionValue(ptrdiff_t i) const
 {
     return m_Flags & (1<<i);
 }
 
-void osc::CustomDecorationOptions::setOptionValue(ptrdiff_t i, bool v)
+void osc::OpenSimDecorationOptions::setOptionValue(ptrdiff_t i, bool v)
 {
     SetFlag(m_Flags, 1<<i, v);
 }
 
-osc::CStringView osc::CustomDecorationOptions::getOptionLabel(ptrdiff_t i) const
+osc::CStringView osc::OpenSimDecorationOptions::getOptionLabel(ptrdiff_t i) const
 {
     return c_CustomDecorationOptionLabels.at(i);
 }
 
-std::optional<osc::CStringView> osc::CustomDecorationOptions::getOptionDescription(ptrdiff_t i) const
+std::optional<osc::CStringView> osc::OpenSimDecorationOptions::getOptionDescription(ptrdiff_t i) const
 {
     return c_CustomDecorationDescriptions.at(i);
 }
 
-bool osc::CustomDecorationOptions::getShouldShowScapulo() const
+bool osc::OpenSimDecorationOptions::getShouldShowScapulo() const
 {
     return m_Flags & CustomDecorationOptionFlags_ShouldShowScapulo;
 }
 
-void osc::CustomDecorationOptions::setShouldShowScapulo(bool v)
+void osc::OpenSimDecorationOptions::setShouldShowScapulo(bool v)
 {
     SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowScapulo, v);
 }
 
-bool osc::CustomDecorationOptions::getShouldShowEffectiveMuscleLineOfActionForOrigin() const
+bool osc::OpenSimDecorationOptions::getShouldShowEffectiveMuscleLineOfActionForOrigin() const
 {
     return m_Flags & CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfActionForOrigin;
 }
 
-void osc::CustomDecorationOptions::setShouldShowEffectiveMuscleLineOfActionForOrigin(bool v)
+void osc::OpenSimDecorationOptions::setShouldShowEffectiveMuscleLineOfActionForOrigin(bool v)
 {
     SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfActionForOrigin, v);
 }
 
-bool osc::CustomDecorationOptions::getShouldShowEffectiveMuscleLineOfActionForInsertion() const
+bool osc::OpenSimDecorationOptions::getShouldShowEffectiveMuscleLineOfActionForInsertion() const
 {
     return m_Flags & CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfActionForInsertion;
 }
 
-void osc::CustomDecorationOptions::setShouldShowEffectiveMuscleLineOfActionForInsertion(bool v)
+void osc::OpenSimDecorationOptions::setShouldShowEffectiveMuscleLineOfActionForInsertion(bool v)
 {
     SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfActionForInsertion, v);
 }
 
-bool osc::CustomDecorationOptions::getShouldShowAnatomicalMuscleLineOfActionForOrigin() const
+bool osc::OpenSimDecorationOptions::getShouldShowAnatomicalMuscleLineOfActionForOrigin() const
 {
     return m_Flags & CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfActionForOrigin;
 }
 
-void osc::CustomDecorationOptions::setShouldShowAnatomicalMuscleLineOfActionForOrigin(bool v)
+void osc::OpenSimDecorationOptions::setShouldShowAnatomicalMuscleLineOfActionForOrigin(bool v)
 {
     SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfActionForOrigin, v);
 }
 
-bool osc::CustomDecorationOptions::getShouldShowAnatomicalMuscleLineOfActionForInsertion() const
+bool osc::OpenSimDecorationOptions::getShouldShowAnatomicalMuscleLineOfActionForInsertion() const
 {
     return m_Flags & CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfActionForInsertion;
 }
 
-void osc::CustomDecorationOptions::setShouldShowAnatomicalMuscleLineOfActionForInsertion(bool v)
+void osc::OpenSimDecorationOptions::setShouldShowAnatomicalMuscleLineOfActionForInsertion(bool v)
 {
     SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfActionForInsertion, v);
 }
 
-bool osc::CustomDecorationOptions::getShouldShowCentersOfMass() const
+bool osc::OpenSimDecorationOptions::getShouldShowCentersOfMass() const
 {
     return m_Flags & CustomDecorationOptionFlags_ShouldShowCentersOfMass;
 }
 
-void osc::CustomDecorationOptions::setShouldShowCentersOfMass(bool v)
+void osc::OpenSimDecorationOptions::setShouldShowCentersOfMass(bool v)
 {
     SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowCentersOfMass, v);
 }
 
-bool osc::CustomDecorationOptions::getShouldShowPointToPointSprings() const
+bool osc::OpenSimDecorationOptions::getShouldShowPointToPointSprings() const
 {
     return m_Flags & CustomDecorationOptionFlags_ShouldShowPointToPointSprings;
 }
 
-void osc::CustomDecorationOptions::setShouldShowPointToPointSprings(bool v)
+void osc::OpenSimDecorationOptions::setShouldShowPointToPointSprings(bool v)
 {
     SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowPointToPointSprings, v);
 }
 
-bool osc::CustomDecorationOptions::getShouldShowContactForces() const
+bool osc::OpenSimDecorationOptions::getShouldShowContactForces() const
 {
     return m_Flags & CustomDecorationOptionFlags_ShouldShowContactForces;
 }
 
-bool osc::operator==(CustomDecorationOptions const& a, CustomDecorationOptions const& b) noexcept
+bool osc::operator==(OpenSimDecorationOptions const& a, OpenSimDecorationOptions const& b) noexcept
 {
     return
         a.m_MuscleDecorationStyle == b.m_MuscleDecorationStyle &&

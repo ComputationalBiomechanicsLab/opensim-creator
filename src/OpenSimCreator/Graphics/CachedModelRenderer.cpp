@@ -1,171 +1,30 @@
 #include "CachedModelRenderer.hpp"
 
-#include "OpenSimCreator/Graphics/CustomDecorationOptions.hpp"
-#include "OpenSimCreator/Graphics/CustomRenderingOptions.hpp"
 #include "OpenSimCreator/Graphics/ModelRendererParams.hpp"
-#include "OpenSimCreator/Graphics/ModelSceneDecorations.hpp"
-#include "OpenSimCreator/Graphics/ModelSceneDecorationsParams.hpp"
-#include "OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp"
+#include "OpenSimCreator/Graphics/OpenSimGraphicsHelpers.hpp"
 #include "OpenSimCreator/Graphics/OverlayDecorationGenerator.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
+#include "OpenSimCreator/ModelStatePairInfo.hpp"
 #include "OpenSimCreator/VirtualConstModelStatePair.hpp"
 
-#include <oscar/Graphics/GraphicsHelpers.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
-#include <oscar/Graphics/SceneDecoration.hpp>
-#include <oscar/Graphics/SceneDecorationFlags.hpp>
-#include <oscar/Graphics/SceneRenderer.hpp>
+#include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>
-#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/PolarPerspectiveCamera.hpp>
-#include <oscar/Maths/Rect.hpp>
+#include <oscar/Graphics/GraphicsHelpers.hpp>
+#include <oscar/Graphics/SceneCollision.hpp>
+#include <oscar/Graphics/SceneDecoration.hpp>
+#include <oscar/Graphics/SceneRenderer.hpp>
+#include <oscar/Graphics/SceneRendererParams.hpp>
 #include <oscar/Utils/Perf.hpp>
-#include <oscar/Utils/UID.hpp>
 
+#include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
-#include <OpenSim/Common/ComponentPath.h>
-#include <OpenSim/Simulation/Model/Model.h>
 
+#include <cstdint>
+#include <functional>
 #include <memory>
-#include <string>
+#include <optional>
 #include <utility>
 #include <vector>
-
-namespace OpenSim { class Component; }
-
-namespace
-{
-    // helper: compute the decoration flags for a given component
-    osc::SceneDecorationFlags ComputeSceneDecorationFlags(
-        OpenSim::Component const& component,
-        OpenSim::Component const* selected,
-        OpenSim::Component const* hovered)
-    {
-        osc::SceneDecorationFlags rv = osc::SceneDecorationFlags_CastsShadows;
-
-        if (&component == selected)
-        {
-            rv |= osc::SceneDecorationFlags_IsSelected;
-        }
-
-        if (&component == hovered)
-        {
-            rv |= osc::SceneDecorationFlags_IsHovered;
-        }
-
-        OpenSim::Component const* ptr = osc::GetOwner(component);
-        while (ptr)
-        {
-            if (ptr == selected)
-            {
-                rv |= osc::SceneDecorationFlags_IsChildOfSelected;
-            }
-            if (ptr == hovered)
-            {
-                rv |= osc::SceneDecorationFlags_IsChildOfHovered;
-            }
-            ptr = osc::GetOwner(*ptr);
-        }
-
-        return rv;
-    }
-
-    // auto-focus the given camera on the given decorations
-    void AutoFocus(
-        osc::ModelSceneDecorations const& decorations,
-        float aspectRatio,
-        osc::PolarPerspectiveCamera& camera)
-    {
-        if (std::optional<osc::AABB> const root = decorations.getRootAABB())
-        {
-            osc::AutoFocus(camera, *root, aspectRatio);
-        }
-    }
-
-    // generate model decorations via the SimTK/OpenSim backend
-    void GenerateModelDecorations(
-        osc::VirtualConstModelStatePair const& model,
-        osc::ModelSceneDecorationsParams const& params,
-        osc::MeshCache& meshCache,
-        osc::ModelSceneDecorations& out)
-    {
-        OpenSim::Component const* selected = model.getSelected();
-        OpenSim::Component const* hovered = model.getHovered();
-        OpenSim::Component const* lastComponent = nullptr;
-        osc::SceneDecorationFlags lastFlags = osc::SceneDecorationFlags_None;
-        std::string lastID;
-
-        osc::GenerateModelDecorations(
-            meshCache,
-            model.getModel(),
-            model.getState(),
-            params.decorationOptions,
-            params.fixupScaleFactor,
-            [&out, selected, hovered, lastComponent, lastID, lastFlags](OpenSim::Component const& c, osc::SceneDecoration&& dec) mutable
-            {
-                if (&c == lastComponent)
-                {
-                    dec.id = lastID;
-                    dec.flags = lastFlags;
-                }
-                else
-                {
-                    osc::GetAbsolutePathString(c, lastID);
-                    dec.id = lastID;
-                    dec.flags = ComputeSceneDecorationFlags(c, selected, hovered);
-                    lastFlags = dec.flags;
-                    lastComponent = &c;
-                }
-                out.push_back(std::move(dec));
-            }
-        );
-    }
-
-    // generate all model scene decorations for the given model+state pair and parameters
-    void GenerateModelSceneDecorations(
-        osc::VirtualConstModelStatePair const& model,
-        osc::ModelSceneDecorationsParams const& params,
-        osc::MeshCache& meshCache,
-        osc::ModelSceneDecorations& out)
-    {
-        out.clear();
-        GenerateModelDecorations(model, params, meshCache, out);
-        out.computeBVH();  // only hittest model decorations
-        auto onAppend = [&out](osc::SceneDecoration&& dec) { out.push_back(std::move(dec)); };
-        osc::GenerateOverlayDecorations(meshCache, params.renderingOptions, out.getBVH(), onAppend);
-    }
-
-    // create low-level scene renderer parameters from the given high-level model
-    // rendering parameters
-    osc::SceneRendererParams CreateSceneRenderParams(
-        glm::vec2 dims,
-        int32_t samples,
-        osc::ModelRendererParams const& renderParams,
-        float fixupScaleFactor)
-    {
-        osc::SceneRendererParams params;
-        if (dims.x >= 1.0f && dims.y >= 1.0f)
-        {
-            params.dimensions = dims;
-        }
-        params.samples = samples;
-        params.lightDirection = osc::RecommendedLightDirection(renderParams.camera);
-        params.drawFloor = renderParams.renderingOptions.getDrawFloor();
-        params.viewMatrix = renderParams.camera.getViewMtx();
-        params.projectionMatrix = renderParams.camera.getProjMtx(osc::AspectRatio(dims));
-        params.nearClippingPlane = renderParams.camera.znear;
-        params.farClippingPlane = renderParams.camera.zfar;
-        params.viewPos = renderParams.camera.getPos();
-        params.fixupScaleFactor = fixupScaleFactor;
-        params.drawRims = renderParams.renderingOptions.getDrawSelectionRims();
-        params.drawMeshNormals = renderParams.renderingOptions.getDrawMeshNormals();
-        params.drawShadows = renderParams.renderingOptions.getDrawShadows();
-        params.lightColor = renderParams.lightColor;
-        params.backgroundColor = renderParams.backgroundColor;
-        params.floorLocation = renderParams.floorLocation;
-        return params;
-    }
-}
 
 class osc::CachedModelRenderer::Impl final {
 public:
@@ -185,7 +44,10 @@ public:
         float aspectRatio)
     {
         generateDecorationsCached(modelState, params);
-        ::AutoFocus(m_Scene, aspectRatio, params.camera);
+        if (std::optional<AABB> aabb = m_BVH.getRootAABB())
+        {
+            AutoFocus(params.camera, *aabb, aspectRatio);
+        }
     }
 
     RenderTexture& draw(
@@ -197,10 +59,10 @@ public:
         OSC_PERF("CachedModelRenderer/draw");
 
         // setup render/rasterization parameters
-        osc::SceneRendererParams const rendererParameters = CreateSceneRenderParams(
-            dims,
-            samples,
+        osc::SceneRendererParams const rendererParameters = CalcSceneRendererParams(
             renderParams,
+            dims,
+            samples,            
             modelState.getFixupScaleFactor()
         );
 
@@ -209,7 +71,7 @@ public:
             rendererParameters != m_PrevRendererParams)
         {
             OSC_PERF("CachedModelRenderer/draw/render");
-            m_Renderer.draw(m_Scene.getDrawlist(), rendererParameters);
+            m_Renderer.draw(m_Drawlist, rendererParameters);
             m_PrevRendererParams = rendererParameters;
         }
 
@@ -223,12 +85,12 @@ public:
 
     nonstd::span<SceneDecoration const> getDrawlist() const
     {
-        return m_Scene.getDrawlist();
+        return m_Drawlist;
     }
 
     std::optional<AABB> getRootAABB() const
     {
-        return m_Scene.getRootAABB();
+        return m_BVH.getRootAABB();
     }
 
     std::optional<SceneCollision> getClosestCollision(
@@ -236,7 +98,9 @@ public:
         glm::vec2 mouseScreenPos,
         Rect const& viewportScreenRect) const
     {
-        return m_Scene.getClosestCollision(
+        return GetClosestCollision(
+            m_BVH,
+            m_Drawlist,
             params.camera,
             mouseScreenPos,
             viewportScreenRect
@@ -246,32 +110,49 @@ public:
 private:
     bool generateDecorationsCached(
         VirtualConstModelStatePair const& modelState,
-        ModelRendererParams const& renderParams)
+        ModelRendererParams const& params)
     {
         OSC_PERF("CachedModelRenderer/generateDecorationsCached");
 
-        ModelSceneDecorationsParams decorationParams
+        ModelStatePairInfo const info{modelState};
+        if (info != m_PrevModelStateInfo ||
+            params.decorationOptions != m_PrevDecorationOptions ||
+            params.overlayOptions != m_PrevOverlayOptions)
         {
-            modelState,
-            renderParams.decorationOptions,
-            renderParams.renderingOptions
-        };
+            m_Drawlist.clear();
+            m_BVH.clear();
 
-        if (decorationParams == m_PrevSceneParams)
-        {
-            return false;  // no decoration generation necessary
+            // regenerate
+            auto onComponentDecoration = [this](OpenSim::Component const&, SceneDecoration&& dec)
+            {
+                m_Drawlist.push_back(std::move(dec));
+            };
+            auto onOverlayDecoration = [this](SceneDecoration&& dec)
+            {
+                m_Drawlist.push_back(std::move(dec));
+            };
+
+            GenerateDecorations(modelState, params.decorationOptions, *m_MeshCache, onComponentDecoration);
+            UpdateSceneBVH(m_Drawlist, m_BVH);
+            GenerateOverlayDecorations(*m_MeshCache, params.overlayOptions, m_BVH, onOverlayDecoration);
+
+            m_PrevModelStateInfo = info;
+            m_PrevDecorationOptions = params.decorationOptions;
+            m_PrevOverlayOptions = params.overlayOptions;
+            return true;   // updated
         }
         else
         {
-            GenerateModelSceneDecorations(modelState, decorationParams, *m_MeshCache, m_Scene);
-            m_PrevSceneParams = std::move(decorationParams);
-            return true;  // new decorations were generated
+            return false;  // already up to date
         }
     }
 
     std::shared_ptr<MeshCache> m_MeshCache;
-    ModelSceneDecorationsParams m_PrevSceneParams;
-    ModelSceneDecorations m_Scene;
+    ModelStatePairInfo m_PrevModelStateInfo;
+    OpenSimDecorationOptions m_PrevDecorationOptions;
+    OverlayDecorationOptions m_PrevOverlayOptions;
+    std::vector<SceneDecoration> m_Drawlist;
+    BVH m_BVH;
     SceneRendererParams m_PrevRendererParams;
     SceneRenderer m_Renderer;
 };

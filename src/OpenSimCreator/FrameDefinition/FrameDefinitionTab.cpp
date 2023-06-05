@@ -486,7 +486,7 @@ public:
                     }
                 };
                 panelParams.updRenderParams().renderingOptions.setDrawFloor(false);
-                panelParams.updRenderParams().renderingOptions.setDrawXZGrid(true);
+                panelParams.updRenderParams().overlayOptions.setDrawXZGrid(true);
                 panelParams.updRenderParams().backgroundColor = {48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f};
 
                 return std::make_shared<ModelEditorViewerPanel>(panelName, panelParams);

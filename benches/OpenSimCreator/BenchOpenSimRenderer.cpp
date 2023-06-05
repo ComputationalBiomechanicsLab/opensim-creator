@@ -23,7 +23,7 @@ static void BM_OpenSimRenderRajagopalDecorations(benchmark::State& state)
     SimTK::State const& modelState = osc::InitializeState(model);
 
     osc::MeshCache meshCache;
-    osc::CustomDecorationOptions decorationOptions;
+    osc::OpenSimDecorationOptions decorationOptions;
     std::function<void(OpenSim::Component const&, osc::SceneDecoration&&)> outputFunc = [](OpenSim::Component const&, osc::SceneDecoration&&) {};
 
 
