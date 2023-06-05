@@ -117,6 +117,21 @@ void osc::DrawAABBs(
     }
 }
 
+void osc::DrawAABBs(
+    MeshCache& cache,
+    BVH const& bvh,
+    std::function<void(SceneDecoration&&)> const& out)
+{
+    for (BVHNode const& node : bvh.nodes)
+    {
+        if (!node.isLeaf())
+        {
+            continue;
+        }
+        DrawAABB(cache, node.getBounds(), out);
+    }
+}
+
 void osc::DrawXZFloorLines(
     MeshCache& cache,
     std::function<void(osc::SceneDecoration&&)> const& out,

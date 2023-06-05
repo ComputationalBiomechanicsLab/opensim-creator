@@ -11,8 +11,8 @@ namespace SimTK { class State; }
 
 namespace osc
 {
-    // generates 3D decorations for the given {model, state, options} tuple and
-    // appends them to the output vector
+    // generates 3D decorations for the given model (+other data) and passes
+    // them to the output consumer
     void GenerateModelDecorations(
         MeshCache&,
         OpenSim::Model const&,

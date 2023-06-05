@@ -116,7 +116,7 @@ namespace osc
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
     glm::vec3 ExtractEulerAngleXYZ(glm::mat4 const&) noexcept;
 
-    // returns an XY NDC point converted from a screen point
+    // returns an XY NDC point converted from a screen/viewport point
     //
     // - input screen point has origin in top-left, Y goes down
     // - input screen point has range: (0,0) is top-left, (1, 1) is bottom-right
@@ -132,7 +132,7 @@ namespace osc
     // - output point has range: (0, 0) for top-left, (1, 1) for bottom-right
     glm::vec2 NDCPointToTopLeftRelPos(glm::vec2 ndcPos);
 
-    // returns an NDC affine point vector (i.e. {x, y, z, 1.0}) converted from a screen point
+    // returns an NDC affine point vector (i.e. {x, y, z, 1.0}) converted from a screen/viewport point
     //
     // - input screen point has origin in top-left, Y goes down
     // - input screen point has range: (0,0) is top-left, (1, 1) is bottom-right
@@ -142,6 +142,20 @@ namespace osc
     // - output will therefore be: {xNDC, yNDC, -1.0f, 1.0f}
     glm::vec4 TopleftRelPosToNDCCube(glm::vec2 relpos);
 
+    // "un-project" a screen/viewport point into 3D world-space, assuming a
+    // perspective camera
+    //
+    // - input screen point has origin in top-left, Y goes down
+    // - input screen point has range: (0,0) is top-left, (1, 1) is bottom-right
+    // - `cameraWorldspaceOrigin` is the location of the camera in world space
+    // - `cameraViewMatrix` transforms points from world-space to view-space
+    // - `cameraProjMatrix` transforms points from view-space to world-space
+    Line PerspectiveUnprojectTopLeftScreenPosToWorldRay(
+        glm::vec2 relpos,
+        glm::vec3 cameraWorldspaceOrigin,
+        glm::mat4 const& cameraViewMatrix,
+        glm::mat4 const& cameraProjMatrix
+    );
 
     // ----- osc::Rect helpers -----
 

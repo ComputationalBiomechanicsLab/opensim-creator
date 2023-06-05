@@ -56,6 +56,12 @@ namespace osc
         std::function<void(SceneDecoration&&)> const&
     );
 
+    void DrawAABBs(
+        MeshCache&,
+        BVH const& drawLeafNodesOfThis,
+        std::function<void(SceneDecoration&&)> const&
+    );
+
     void DrawXZFloorLines(
         MeshCache&,
         std::function<void(SceneDecoration&&)> const&,

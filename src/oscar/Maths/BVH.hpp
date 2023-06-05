@@ -148,6 +148,10 @@ namespace osc
         // returns the maximum depth of the given BVH tree
         size_t getMaxDepth() const;
 
+        // returns the AABB of the root node, or `std::nullopt` if there are no nodes in
+        // the tree
+        std::optional<AABB> getRootAABB() const;
+
         std::vector<BVHNode> nodes;
         std::vector<BVHPrim> prims;
     };

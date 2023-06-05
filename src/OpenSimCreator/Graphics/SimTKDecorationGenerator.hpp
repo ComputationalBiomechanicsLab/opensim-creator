@@ -10,6 +10,8 @@ namespace SimTK { class State; }
 
 namespace osc
 {
+    // generates `osc::SimpleSceneDecoration`s for the given `SimTK::DecorativeGeometry`
+    // and passes them to the output consumer
     void GenerateDecorations(
         MeshCache&,
         SimTK::SimbodyMatterSubsystem const&,

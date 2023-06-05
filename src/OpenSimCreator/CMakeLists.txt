@@ -16,6 +16,10 @@ add_library(OpenSimCreator STATIC
     Graphics/CustomRenderingOptions.hpp
     Graphics/ModelRendererParams.cpp
     Graphics/ModelRendererParams.hpp
+    Graphics/ModelSceneDecorationsParams.cpp
+    Graphics/ModelSceneDecorationsParams.hpp
+    Graphics/ModelSceneDecorations.cpp
+    Graphics/ModelSceneDecorations.hpp
     Graphics/MuscleColoringStyle.cpp
     Graphics/MuscleColoringStyle.hpp
     Graphics/MuscleDecorationStyle.cpp
@@ -24,6 +28,8 @@ add_library(OpenSimCreator STATIC
     Graphics/MuscleSizingStyle.hpp
     Graphics/OpenSimDecorationGenerator.cpp
     Graphics/OpenSimDecorationGenerator.hpp
+    Graphics/OverlayDecorationGenerator.cpp
+    Graphics/OverlayDecorationGenerator.hpp
     Graphics/SimTKDecorationGenerator.cpp
     Graphics/SimTKDecorationGenerator.hpp
     Graphics/SimTKMeshLoader.cpp
@@ -190,7 +196,7 @@ add_library(OpenSimCreator STATIC
     VirtualModelStatePair.hpp
     VirtualOutputExtractor.hpp
     VirtualSimulation.hpp
- "Panels/ModelEditorViewerPanelState.cpp")
+ "Panels/ModelEditorViewerPanelState.cpp" "Graphics/ModelSceneDecorationsParams.cpp" "Graphics/ModelSceneDecorations.cpp" "Graphics/OverlayDecorationGenerator.cpp")
 
 # OpenSimCreator: compile-time includes
 target_include_directories(OpenSimCreator PUBLIC

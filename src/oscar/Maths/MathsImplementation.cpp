@@ -402,6 +402,11 @@ size_t osc::BVH::getMaxDepth() const
     return maxdepth;
 }
 
+std::optional<osc::AABB> osc::BVH::getRootAABB() const
+{
+    return !nodes.empty() ? nodes.front().getBounds() : std::optional<osc::AABB>{};
+}
+
 
 // osc::Disc implementation
 
@@ -587,25 +592,15 @@ glm::vec2 osc::PolarPerspectiveCamera::projectOntoScreenRect(glm::vec3 const& wo
 
 osc::Line osc::PolarPerspectiveCamera::unprojectTopLeftPosToWorldRay(glm::vec2 pos, glm::vec2 dims) const noexcept
 {
-    glm::mat4 projMtx = getProjMtx(dims.x/dims.y);
-    glm::mat4 viewMtx = getViewMtx();
+    glm::mat4 const viewMatrix = getViewMtx();
+    glm::mat4 const projectionMatrix = getProjMtx(dims.x/dims.y);
 
-    // position of point, as if it were on the front of the 3D NDC cube
-    glm::vec4 lineOriginNDC = TopleftRelPosToNDCCube(pos/dims);
-
-    glm::vec4 lineOriginView = glm::inverse(projMtx) * lineOriginNDC;
-    lineOriginView /= lineOriginView.w;  // perspective divide
-
-    // location of mouse in worldspace
-    glm::vec3 lineOriginWorld = glm::vec3{glm::inverse(viewMtx) * lineOriginView};
-
-    // direction vector from camera to mouse location (i.e. the projection)
-    glm::vec3 lineDirWorld = glm::normalize(lineOriginWorld - this->getPos());
-
-    Line rv;
-    rv.dir = lineDirWorld;
-    rv.origin = lineOriginWorld;
-    return rv;
+    return PerspectiveUnprojectTopLeftScreenPosToWorldRay(
+        pos/dims,
+        this->getPos(),
+        viewMatrix,
+        projectionMatrix
+    );
 }
 
 bool osc::operator==(PolarPerspectiveCamera const& a, PolarPerspectiveCamera const& b) noexcept
@@ -1324,6 +1319,30 @@ glm::vec2 osc::NDCPointToTopLeftRelPos(glm::vec2 p)
 glm::vec4 osc::TopleftRelPosToNDCCube(glm::vec2 relpos)
 {
     return {TopleftRelPosToNDCPoint(relpos), -1.0f, 1.0f};
+}
+
+osc::Line osc::PerspectiveUnprojectTopLeftScreenPosToWorldRay(
+    glm::vec2 relpos,
+    glm::vec3 cameraWorldspaceLocation,
+    glm::mat4 const& viewMatrix,
+    glm::mat4 const& projMatrix)
+{
+    // position of point, as if it were on the front of the 3D NDC cube
+    glm::vec4 lineOriginNDC = TopleftRelPosToNDCCube(relpos);
+
+    glm::vec4 lineOriginView = glm::inverse(projMatrix) * lineOriginNDC;
+    lineOriginView /= lineOriginView.w;  // perspective divide
+
+    // location of mouse in worldspace
+    glm::vec3 lineOriginWorld = glm::vec3{glm::inverse(viewMatrix) * lineOriginView};
+
+    // direction vector from camera to mouse location (i.e. the projection)
+    glm::vec3 lineDirWorld = glm::normalize(lineOriginWorld - cameraWorldspaceLocation);
+
+    Line rv;
+    rv.dir = lineDirWorld;
+    rv.origin = lineOriginWorld;
+    return rv;
 }
 
 glm::vec2 osc::MinValuePerDimension(Rect const& r) noexcept
