@@ -315,6 +315,11 @@ private:
 
     void implDrawContent() final
     {
+        // HACK: garbage-collect one frame later, because the layers
+        // may have submitted textures to ImGui that are then invalid
+        // because GCing destroyed them before they were rendered
+        layersGarbageCollect();
+
         bool const isHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
 
         m_State.viewportRect = ContentRegionAvailScreenRect();
@@ -386,7 +391,6 @@ private:
         }
 
         layersDraw();
-        layersGarbageCollect();
         layersPopQueuedNewLayers();
     }
 

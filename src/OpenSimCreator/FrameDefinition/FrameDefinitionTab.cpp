@@ -14,6 +14,7 @@
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelState.hpp"
 #include "OpenSimCreator/Panels/NavigatorPanel.hpp"
 #include "OpenSimCreator/Panels/PropertiesPanel.hpp"
+#include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
 #include "OpenSimCreator/ActionFunctions.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
@@ -39,6 +40,7 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Utils/Algorithms.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
@@ -70,6 +72,7 @@
 #include <utility>
 #include <vector>
 
+// top-level helper functions
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "OpenSim/Experimental/FrameDefinition";
@@ -89,16 +92,21 @@ namespace
         static std::atomic<int32_t> s_GeometryCounter = 0;
         return s_GeometryCounter++;
     }
+
+    bool IsPoint(OpenSim::Component const& component)
+    {
+        return dynamic_cast<OpenSim::Sphere const*>(&component);
+    }
 }
 
-// choose component modal flow
+// choose `n` components UI flow
 namespace
 {
     // parameters used to create a "choose components" layer
     struct ChooseComponentsEditorLayerParameters final {
         std::string popupHeaderText = "choose something";
 
-        bool userCanChoosePoints = false;
+        bool userCanChoosePoints = true;
 
         // (maybe) the components that the user has already chosen, or is
         // assigning to (and, therefore, should maybe be highlighted but
@@ -128,7 +136,7 @@ namespace
         std::shared_ptr<osc::UndoableModelStatePair> model;
         ChooseComponentsEditorLayerParameters popupParams;
         osc::ModelRendererParams renderParams;
-        OpenSim::ComponentPath hoveredComponent;
+        std::string hoveredComponent;
         std::unordered_set<std::string> alreadyChosenComponents;
         bool shouldClosePopup = false;
     };
@@ -152,11 +160,32 @@ namespace
     {
         out.clear();
 
-        auto const onModelDecoration = [&out](OpenSim::Component const& component, osc::SceneDecoration&& decoration)
+        auto const onModelDecoration = [&state, &out](OpenSim::Component const& component, osc::SceneDecoration&& decoration)
         {
-            // TODO: change highlighting/selection based on the panel state
+            // update flags based on path
+            std::string const absPath = osc::GetAbsolutePathString(component);
+            if (osc::Contains(state.popupParams.componentsBeingAssignedTo, absPath))
+            {
+                decoration.flags |= osc::SceneDecorationFlags_IsSelected;
+            }
+            if (osc::Contains(state.alreadyChosenComponents, absPath))
+            {
+                decoration.flags |= osc::SceneDecorationFlags_IsSelected;
+            }
+            if (absPath == state.hoveredComponent)
+            {
+                decoration.flags |= osc::SceneDecorationFlags_IsHovered;
+            }
 
-            decoration.color = osc::Color::red();
+            if (state.popupParams.userCanChoosePoints && IsPoint(component))
+            {
+                decoration.id = absPath;
+            }
+            else
+            {
+                decoration.color.a *= 0.2f;  // fade non-selectable objects
+            }
+
             out.decorations.push_back(std::move(decoration));
         };
 
@@ -213,9 +242,6 @@ namespace
             osc::ModelEditorViewerPanelParameters& params,
             osc::ModelEditorViewerPanelState& state) final
         {
-            m_IsHandlingMouseInputs = true;
-
-            // try updating the camera (mouse panning, etc.)
             bool rv = osc::UpdatePolarCameraFromImGuiMouseInputs(
                 osc::Dimensions(state.viewportRect),
                 params.updRenderParams().camera
@@ -228,8 +254,7 @@ namespace
 
             if (m_IsLeftClickReleasedWithoutDragging)
             {
-                // TODO: possibly toggle selection
-                rv = true;
+                rv = tryToggleHover() || rv;
             }
 
             return rv;
@@ -239,8 +264,12 @@ namespace
             osc::ModelEditorViewerPanelParameters& panelParams,
             osc::ModelEditorViewerPanelState& panelState) final
         {
+            bool const layerIsHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
+
             // update this layer's state from provided state
             m_State.renderParams = panelParams.getRenderParams();
+            m_IsLeftClickReleasedWithoutDragging = osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
+            m_IsRightClickReleasedWithoutDragging = osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
             if (ImGui::IsKeyReleased(ImGuiKey_Escape))
             {
                 m_State.shouldClosePopup = true;
@@ -263,18 +292,48 @@ namespace
                 m_Renderer.updRenderTexture(),
                 osc::Dimensions(panelState.viewportRect)
             );
-            m_IsLeftClickReleasedWithoutDragging = osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
-            m_IsRightClickReleasedWithoutDragging = osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
 
-            // generate decoarations
+            // do hovertest
+            if (layerIsHovered)
+            {
+                std::optional<osc::SceneCollision> const collision = osc::GetClosestCollision(
+                    m_Decorations.bvh,
+                    m_Decorations.decorations,
+                    m_State.renderParams.camera,
+                    ImGui::GetMousePos(),
+                    panelState.viewportRect
+                );
+                if (collision)
+                {
+                    m_State.hoveredComponent = collision->decorationID;
+                }
+                else
+                {
+                    m_State.hoveredComponent = {};
+                }
+            }
+
+            // show tooltip
+            if (OpenSim::Component const* c = osc::FindComponent(m_State.model->getModel(), m_State.hoveredComponent))
+            {
+                osc::DrawComponentHoverTooltip(*c);
+            }
+
+            // show header
             ImGui::SetCursorScreenPos(panelState.viewportRect.p1);
-            ImGui::Text("TODO: draw edge definition popup content");
-            ImGui::Text("TODO: - should be a 3D render");
-            ImGui::Text("TODO: - with a camera that is identical to the source camera");
-            ImGui::Text("TODO: - that shows non-selectable objects in a faded way");
-            ImGui::Text("TODO: - and shows selectable objects in a solid non-faded color");
-            ImGui::Text("TODO: - and has hover logic");
-            ImGui::Text("TODO: - and highlights selected objects");
+            ImGui::TextUnformatted(m_State.popupParams.popupHeaderText.c_str());
+
+            // handle completion state (i.e. user selected enough components)
+            if (m_State.alreadyChosenComponents.size() == m_State.popupParams.numComponentsUserMustChoose)
+            {
+                m_State.popupParams.onUserFinishedChoosing(m_State.alreadyChosenComponents);
+                m_State.shouldClosePopup = true;
+            }
+        }
+
+        float implGetBackgroundAlpha() const final
+        {
+            return 1.0f;
         }
 
         bool implShouldClose() const final
@@ -282,10 +341,41 @@ namespace
             return m_State.shouldClosePopup;
         }
 
+        bool tryToggleHover()
+        {
+            std::string const& absPath = m_State.hoveredComponent;
+            OpenSim::Component const* component = osc::FindComponent(m_State.model->getModel(), absPath);
+
+            if (!component)
+            {
+                return false;  // nothing hovered
+            }
+            else if (osc::Contains(m_State.popupParams.componentsBeingAssignedTo, absPath))
+            {
+                return false;  // cannot be selected
+            }
+            else if (auto it = m_State.alreadyChosenComponents.find(absPath); it != m_State.alreadyChosenComponents.end())
+            {
+                m_State.alreadyChosenComponents.erase(it);
+                return true;   // de-selected
+            }
+            else if (
+                m_State.alreadyChosenComponents.size() < m_State.popupParams.numComponentsUserMustChoose &&
+                m_State.popupParams.userCanChoosePoints &&
+                IsPoint(*component))
+            {
+                m_State.alreadyChosenComponents.insert(absPath);
+                return true;   // selected
+            }
+            else
+            {
+                return false;  // don't know how to handle
+            }
+        }
+
         ChooseComponentsEditorLayerSharedState m_State;
         BVHedDecorations m_Decorations;
         osc::SceneRenderer m_Renderer;
-        bool m_IsHandlingMouseInputs = false;
         bool m_IsLeftClickReleasedWithoutDragging = false;
         bool m_IsRightClickReleasedWithoutDragging = false;
     };
