@@ -54,9 +54,12 @@
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Common/ComponentSocket.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <SDL_events.h>
+#include <SimTKcommon/internal/DecorativeGeometry.h>
 
 #include <atomic>
 #include <cstdint>
@@ -76,6 +79,9 @@
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "OpenSim/Experimental/FrameDefinition";
+    constexpr double c_SphereDefaultRadius = 0.01;
+    constexpr osc::Color c_SphereDefaultColor = {0.1f, 1.0f, 0.1f};
+    constexpr osc::Color c_EdgeDefaultColor = {1.0f, 0.1f, 0.1f};
 
     // custom helper that customizes the OpenSim model defaults to be more
     // suitable for the frame definition UI
@@ -96,6 +102,13 @@ namespace
     bool IsPoint(OpenSim::Component const& component)
     {
         return dynamic_cast<OpenSim::Sphere const*>(&component);
+    }
+
+    void SetupDefault3DViewportRenderingParams(osc::ModelRendererParams& renderParams)
+    {
+        renderParams.renderingOptions.setDrawFloor(false);
+        renderParams.overlayOptions.setDrawXZGrid(true);
+        renderParams.backgroundColor = {48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f};
     }
 }
 
@@ -381,6 +394,35 @@ namespace
     };
 }
 
+// HACK: the OpenSim property macros etc. only work in the OpenSim namespace
+//
+// (see: https://github.com/opensim-org/opensim-core/pull/3469)
+namespace OpenSim
+{
+    class PointToPointEdge : public ModelComponent {
+    public:
+        OpenSim_DECLARE_CONCRETE_OBJECT(PointToPointEdge, ModelComponent);
+    public:
+        OpenSim_DECLARE_SOCKET(pointA, OpenSim::Sphere, "first point the edge is connected to");
+        OpenSim_DECLARE_SOCKET(pointB, OpenSim::Sphere, "second point the edge is connected to");
+
+        void generateDecorations(
+            bool fixed,
+            const ModelDisplayHints& hints,
+            const SimTK::State& state,
+            SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
+        {
+            OpenSim::Sphere const& pointA = getConnectee<OpenSim::Sphere>("pointA");
+            OpenSim::Sphere const& pointB = getConnectee<OpenSim::Sphere>("pointB");
+
+            SimTK::Vec3 const pointAGroundLoc = pointA.getFrame().getPositionInGround(state);
+            SimTK::Vec3 const pointBGroundLoc = pointB.getFrame().getPositionInGround(state);
+
+            appendToThis.push_back(SimTK::DecorativeLine{pointAGroundLoc, pointBGroundLoc});
+        }
+    };
+}
+
 // user-enactable actions
 namespace
 {
@@ -470,8 +512,9 @@ namespace
         {
             auto sphere = std::make_unique<OpenSim::Sphere>();
             sphere->setName(sphereName);
-            sphere->set_radius(0.01);  // 1 cm radius - like a small marker
-            sphere->upd_Appearance().set_color({0.1, 1.0, 0.1});  // green(ish) - so it's visually distinct from a mesh
+            sphere->set_radius(c_SphereDefaultRadius);
+            sphere->upd_Appearance().set_color({c_SphereDefaultColor.r, c_SphereDefaultColor.g, c_SphereDefaultColor.b});
+            sphere->upd_Appearance().set_opacity(c_SphereDefaultColor.a);
             OpenSim::Sphere const* ptr = sphere.get();
             meshPhysicalOffsetFrame->attachGeometry(sphere.release());
             return ptr;
@@ -495,6 +538,95 @@ namespace
 
             model.setSelected(spherePtr);
             model.commit(commitMessage);
+        }
+    }
+
+    void ActionAddPointToPointEdge(
+        osc::UndoableModelStatePair& model,
+        OpenSim::Sphere const& pointA,
+        OpenSim::Sphere const& pointB)
+    {
+        // generate edge name
+        std::string const edgeName = []()
+        {
+            std::stringstream ss;
+            ss << "edge_" << GetNextGlobalGeometrySuffix();
+            return std::move(ss).str();
+        }();
+
+        // create edge
+        auto edge = std::make_unique<OpenSim::PointToPointEdge>();
+        edge->connectSocket_pointA(pointA);
+        edge->connectSocket_pointB(pointB);
+
+        // create a human-readable commit message
+        std::string const commitMessage = [&edgeName]()
+        {
+            std::stringstream ss;
+            ss << "added " << edgeName;
+            return std::move(ss).str();
+        }();
+
+        // finally, perform the model mutation
+        {
+            OpenSim::Model& mutableModel = model.updModel();
+            OpenSim::PointToPointEdge const* edgePtr = edge.get();
+
+            mutableModel.addComponent(edge.release());
+            mutableModel.finalizeConnections();
+            osc::InitializeModel(mutableModel);
+            osc::InitializeState(mutableModel);
+            model.setSelected(edgePtr);
+            model.commit(commitMessage);
+        }
+    }
+
+    void ActionPushCreateEdgeToOtherPointLayer(
+        osc::EditorAPI& editor,
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        OpenSim::Sphere const& sphere,
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent)
+    {
+        osc::PanelManager& panelManager = *editor.getPanelManager();
+
+        if (osc::ModelEditorViewerPanel* visualizer = panelManager.tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName))
+        {
+            ChooseComponentsEditorLayerParameters options;
+            options.popupHeaderText = "choose other point";
+            options.componentsBeingAssignedTo = {sphere.getAbsolutePathString()};
+            options.numComponentsUserMustChoose = 1;
+            options.onUserFinishedChoosing = [model, pointAPath = sphere.getAbsolutePathString()](std::unordered_set<std::string> const& choices) -> bool
+            {
+                if (choices.empty())
+                {
+                    osc::log::error("user selections from the 'choose components' layer was empty: this bug should be reported");
+                    return false;
+                }
+                if (choices.size() > 1)
+                {
+                    osc::log::warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
+                }
+                std::string const& pointBPath = *choices.begin();
+
+                OpenSim::Sphere const* pointA = osc::FindComponent<OpenSim::Sphere>(model->getModel(), pointAPath);
+                if (!pointA)
+                {
+                    osc::log::error("point A's component path (%s) does not exist in the model", pointAPath.c_str());
+                    return false;
+                }
+
+                OpenSim::Sphere const* pointB = osc::FindComponent<OpenSim::Sphere>(model->getModel(), pointBPath);
+                if (!pointB)
+                {
+                    osc::log::error("point B's component path (%s) does not exist in the model", pointBPath.c_str());
+                    return false;
+                }
+
+                ActionAddPointToPointEdge(*model, *pointA, *pointB);
+                return true;
+            };
+
+            visualizer->pushLayer(std::make_unique<ChooseComponentsEditorLayer>(model, options));
         }
     }
 }
@@ -529,23 +661,7 @@ namespace
     {
         if (maybeSourceEvent && ImGui::MenuItem("create edge"))
         {
-            osc::PanelManager& panelManager = *editor.getPanelManager();
-
-            if (osc::ModelEditorViewerPanel* visualizer = panelManager.tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName))
-            {
-                ChooseComponentsEditorLayerParameters options;
-                options.popupHeaderText = "choose other point";
-                options.componentsBeingAssignedTo = {sphere.getAbsolutePathString()};
-                options.numComponentsUserMustChoose = 1;
-                options.onUserFinishedChoosing = [model, spherePath = sphere.getAbsolutePathString()](std::unordered_set<std::string> const& choices) -> bool
-                {
-                    // TODO: figure out if the spherePath+choices is enough to add
-                    // a new edge into the model and then add the new edge to the model
-                    throw std::runtime_error{"todo: handle completion"};
-                };
-
-                visualizer->pushLayer(std::make_unique<ChooseComponentsEditorLayer>(model, options));
-            }
+            ActionPushCreateEdgeToOtherPointLayer(editor, model, sphere, maybeSourceEvent);
         }
     }
 
@@ -670,6 +786,8 @@ public:
     Impl(std::weak_ptr<TabHost> parent_) :
         m_Parent{std::move(parent_)}
     {
+        // register user-visible panels that this tab can host
+
         m_PanelManager->registerToggleablePanel(
             "Navigator",
             [this](std::string_view panelName)
@@ -721,9 +839,7 @@ public:
                         ));
                     }
                 };
-                panelParams.updRenderParams().renderingOptions.setDrawFloor(false);
-                panelParams.updRenderParams().overlayOptions.setDrawXZGrid(true);
-                panelParams.updRenderParams().backgroundColor = {48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f};
+                SetupDefault3DViewportRenderingParams(panelParams.updRenderParams());
 
                 return std::make_shared<ModelEditorViewerPanel>(panelName, panelParams);
             },
