@@ -1,7 +1,7 @@
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 
-#include "OpenSimCreator/Graphics/CustomDecorationOptions.hpp"
 #include "OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp"
+#include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
 #include "OpenSimCreator/OpenSimApp.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
 #include "testopensimcreator_config.hpp"
@@ -26,7 +26,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
 
     // turn as many decoration options on as possible, so that the code gets tested
     // against them (#661)
-    osc::ModelDecorationOptions decorationOpts;
+    osc::OpenSimDecorationOptions decorationOpts;
     decorationOpts.setShouldShowAnatomicalMuscleLineOfActionForInsertion(true);
     decorationOpts.setShouldShowAnatomicalMuscleLineOfActionForOrigin(true);
     decorationOpts.setShouldShowEffectiveMuscleLineOfActionForInsertion(true);

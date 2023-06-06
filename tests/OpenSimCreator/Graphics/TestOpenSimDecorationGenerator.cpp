@@ -1,6 +1,6 @@
 #include "OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp"
 
-#include "OpenSimCreator/Graphics/CustomDecorationOptions.hpp"
+#include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
 #include "OpenSimCreator/Graphics/MuscleColoringStyle.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
 #include "testopensimcreator_config.hpp"
@@ -29,7 +29,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGen
     model.buildSystem();
     SimTK::State& state = model.initializeState();
 
-    osc::ModelDecorationOptions opts;
+    osc::OpenSimDecorationOptions opts;
     opts.setMuscleColoringStyle(osc::MuscleColoringStyle::OpenSimAppearanceProperty);
 
     osc::MeshCache meshCache;
