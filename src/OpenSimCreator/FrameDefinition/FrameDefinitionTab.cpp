@@ -112,7 +112,7 @@ namespace OpenSim
     }
 
     class FrameDefinitionPoint : public ModelComponent {
-        OpenSim_DECLARE_ABSTRACT_OBJECT(FrameDefinitionPoint, ModelComponent);
+        OpenSim_DECLARE_ABSTRACT_OBJECT(FrameDefinitionPoint, ModelComponent)
     public:
         SimTK::Vec3 getPositionInGround(SimTK::State const& state) const
         {
@@ -123,7 +123,7 @@ namespace OpenSim
     };
 
     class FrameDefinitionSphere : public FrameDefinitionPoint {
-        OpenSim_DECLARE_CONCRETE_OBJECT(FrameDefinitionSphere, FrameDefinitionPoint);
+        OpenSim_DECLARE_CONCRETE_OBJECT(FrameDefinitionSphere, FrameDefinitionPoint)
     public:
         OpenSim_DECLARE_PROPERTY(radius, double, "radius of the sphere");
         OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance, "Default appearance attributes for this Geometry");
@@ -162,7 +162,7 @@ namespace OpenSim
     };
 
     class FrameDefinitionMidpoint final : public FrameDefinitionPoint {
-        OpenSim_DECLARE_CONCRETE_OBJECT(FrameDefinitionMidpoint, FrameDefinitionPoint);
+        OpenSim_DECLARE_CONCRETE_OBJECT(FrameDefinitionMidpoint, FrameDefinitionPoint)
     public:
         OpenSim_DECLARE_PROPERTY(radius, double, "radius of the midpoint (decorative)");
         OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance, "appearance attributes for the midpoint (decorative)");
@@ -228,7 +228,7 @@ namespace OpenSim
     }
 
     class FrameDefinitionEdge : public ModelComponent {
-        OpenSim_DECLARE_ABSTRACT_OBJECT(FrameDefinitionEdge, ModelComponent);
+        OpenSim_DECLARE_ABSTRACT_OBJECT(FrameDefinitionEdge, ModelComponent)
     public:
         EdgeCoordinates getEdgeCoordinatesInGround(SimTK::State const& state) const
         {
@@ -239,7 +239,7 @@ namespace OpenSim
     };
 
     class FrameDefinitionPointToPointEdge final : public FrameDefinitionEdge {
-        OpenSim_DECLARE_CONCRETE_OBJECT(FrameDefinitionPointToPointEdge, ModelComponent);
+        OpenSim_DECLARE_CONCRETE_OBJECT(FrameDefinitionPointToPointEdge, ModelComponent)
     public:
         OpenSim_DECLARE_SOCKET(pointA, FrameDefinitionPoint, "first point the edge is connected to");
         OpenSim_DECLARE_SOCKET(pointB, FrameDefinitionPoint, "second point the edge is connected to");
@@ -268,7 +268,7 @@ namespace OpenSim
     };
 
     class FrameDefinitionCrossProductEdge : public FrameDefinitionEdge {
-        OpenSim_DECLARE_CONCRETE_OBJECT(FrameDefinitionCrossProductEdge, ModelComponent);
+        OpenSim_DECLARE_CONCRETE_OBJECT(FrameDefinitionCrossProductEdge, ModelComponent)
     public:
         OpenSim_DECLARE_SOCKET(edgeA, FrameDefinitionEdge, "first edge argument to the cross product calculation");
         OpenSim_DECLARE_SOCKET(edgeB, FrameDefinitionEdge, "second edge argument to the cross product calculation");
