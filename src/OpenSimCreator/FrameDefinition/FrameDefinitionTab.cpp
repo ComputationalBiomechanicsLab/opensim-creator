@@ -1,22 +1,35 @@
 #include "FrameDefinitionTab.hpp"
 
 #include "OpenSimCreator/Graphics/CustomRenderingOptions.hpp"
+#include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
+#include "OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp"
+#include "OpenSimCreator/Graphics/OverlayDecorationGenerator.hpp"
+#include "OpenSimCreator/Graphics/OpenSimGraphicsHelpers.hpp"
 #include "OpenSimCreator/Graphics/SimTKMeshLoader.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanel.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelLayer.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelParameters.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelRightClickEvent.hpp"
+#include "OpenSimCreator/Panels/ModelEditorViewerPanelState.hpp"
 #include "OpenSimCreator/Panels/NavigatorPanel.hpp"
 #include "OpenSimCreator/Panels/PropertiesPanel.hpp"
-#include "OpenSimCreator/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
 #include "OpenSimCreator/ActionFunctions.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
 #include "OpenSimCreator/SimTKHelpers.hpp"
+#include "OpenSimCreator/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/VirtualConstModelStatePair.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
+#include <oscar/Graphics/GraphicsHelpers.hpp>
+#include <oscar/Graphics/MeshCache.hpp>
+#include <oscar/Graphics/SceneDecoration.hpp>
+#include <oscar/Graphics/SceneRenderer.hpp>
+#include <oscar/Graphics/SceneRendererParams.hpp>
+#include <oscar/Graphics/ShaderCache.hpp>
+#include <oscar/Maths/BVH.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Panels/LogViewerPanel.hpp>
@@ -45,7 +58,9 @@
 
 #include <atomic>
 #include <cstdint>
+#include <cstddef>
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <sstream>
@@ -53,6 +68,7 @@
 #include <string_view>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 namespace
 {
@@ -78,7 +94,7 @@ namespace
 // choose component modal flow
 namespace
 {
-    // options provided when creating a "choose components" popup
+    // parameters used to create a "choose components" layer
     struct ChooseComponentsEditorLayerParameters final {
         std::string popupHeaderText = "choose something";
 
@@ -97,6 +113,77 @@ namespace
         };
     };
 
+    // top-level shared state for the "choose components" layer
+    struct ChooseComponentsEditorLayerSharedState final {
+        explicit ChooseComponentsEditorLayerSharedState(
+            std::shared_ptr<osc::UndoableModelStatePair> model_,
+            ChooseComponentsEditorLayerParameters parameters_) :
+
+            model{std::move(model_)},
+            popupParams{std::move(parameters_)}
+        {
+        }
+
+        std::shared_ptr<osc::MeshCache> meshCache = osc::App::singleton<osc::MeshCache>();
+        std::shared_ptr<osc::UndoableModelStatePair> model;
+        ChooseComponentsEditorLayerParameters popupParams;
+        osc::ModelRendererParams renderParams;
+        OpenSim::ComponentPath hoveredComponent;
+        std::unordered_set<std::string> alreadyChosenComponents;
+        bool shouldClosePopup = false;
+    };
+
+    // grouping of scene (3D) decorations and an associated scene BVH
+    struct BVHedDecorations final {
+        void clear()
+        {
+            decorations.clear();
+            bvh.clear();
+        }
+
+        std::vector<osc::SceneDecoration> decorations;
+        osc::BVH bvh;
+    };
+
+    // generates scene decorations for the "choose components" layer
+    void GenerateChooseComponentsDecorations(
+        ChooseComponentsEditorLayerSharedState const& state,
+        BVHedDecorations& out)
+    {
+        out.clear();
+
+        auto const onModelDecoration = [&out](OpenSim::Component const& component, osc::SceneDecoration&& decoration)
+        {
+            // TODO: change highlighting/selection based on the panel state
+
+            decoration.color = osc::Color::red();
+            out.decorations.push_back(std::move(decoration));
+        };
+
+        osc::GenerateModelDecorations(
+            *state.meshCache,
+            state.model->getModel(),
+            state.model->getState(),
+            state.renderParams.decorationOptions,
+            state.model->getFixupScaleFactor(),
+            onModelDecoration
+        );
+
+        osc::UpdateSceneBVH(out.decorations, out.bvh);
+
+        auto const onOverlayDecoration = [&](osc::SceneDecoration&& decoration)
+        {
+            out.decorations.push_back(std::move(decoration));
+        };
+
+        osc::GenerateOverlayDecorations(
+            *state.meshCache,
+            state.renderParams.overlayOptions,
+            out.bvh,
+            onOverlayDecoration
+        );
+    }
+
     // modal popup that prompts the user to select components in the model (e.g.
     // to define an edge, or a frame)
     class ChooseComponentsEditorLayer final : public osc::ModelEditorViewerPanelLayer {
@@ -105,26 +192,82 @@ namespace
             std::shared_ptr<osc::UndoableModelStatePair> model_,
             ChooseComponentsEditorLayerParameters parameters_) :
 
-            m_Model{std::move(model_)},
-            m_Parameters{std::move(parameters_)}
+            m_State{std::move(model_), std::move(parameters_)},
+            m_Renderer{osc::App::get().config(), *osc::App::singleton<osc::MeshCache>(), *osc::App::singleton<osc::ShaderCache>()}
         {
         }
 
     private:
-        float implGetBackgroundAlpha() const final
+        bool implHandleKeyboardInputs(
+            osc::ModelEditorViewerPanelParameters& params,
+            osc::ModelEditorViewerPanelState& state) final
         {
-            return 0.8f;
+            return osc::UpdatePolarCameraFromImGuiKeyboardInputs(
+                params.updRenderParams().camera,
+                state.viewportRect,
+                m_Decorations.bvh.getRootAABB()
+            );
+        }
+
+        bool implHandleMouseInputs(
+            osc::ModelEditorViewerPanelParameters& params,
+            osc::ModelEditorViewerPanelState& state) final
+        {
+            m_IsHandlingMouseInputs = true;
+
+            // try updating the camera (mouse panning, etc.)
+            bool rv = osc::UpdatePolarCameraFromImGuiMouseInputs(
+                osc::Dimensions(state.viewportRect),
+                params.updRenderParams().camera
+            );
+
+            if (osc::IsDraggingWithAnyMouseButtonDown())
+            {
+                m_State.hoveredComponent = {};
+            }
+
+            if (m_IsLeftClickReleasedWithoutDragging)
+            {
+                // TODO: possibly toggle selection
+                rv = true;
+            }
+
+            return rv;
         }
 
         void implOnDraw(
             osc::ModelEditorViewerPanelParameters& panelParams,
             osc::ModelEditorViewerPanelState& panelState) final
         {
+            // update this layer's state from provided state
+            m_State.renderParams = panelParams.getRenderParams();
             if (ImGui::IsKeyReleased(ImGuiKey_Escape))
             {
-                m_ShouldClose = true;
+                m_State.shouldClosePopup = true;
             }
 
+            // generate decorations + rendering params
+            GenerateChooseComponentsDecorations(m_State, m_Decorations);
+            osc::SceneRendererParams const rendererParameters = osc::CalcSceneRendererParams(
+                m_State.renderParams,
+                osc::Dimensions(panelState.viewportRect),
+                osc::App::get().getMSXAASamplesRecommended(),
+                m_State.model->getFixupScaleFactor()
+            );
+
+            // render to a texture (no caching)
+            m_Renderer.draw(m_Decorations.decorations, rendererParameters);
+
+            // blit texture as ImGui image
+            osc::DrawTextureAsImGuiImage(
+                m_Renderer.updRenderTexture(),
+                osc::Dimensions(panelState.viewportRect)
+            );
+            m_IsLeftClickReleasedWithoutDragging = osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
+            m_IsRightClickReleasedWithoutDragging = osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
+
+            // generate decoarations
+            ImGui::SetCursorScreenPos(panelState.viewportRect.p1);
             ImGui::Text("TODO: draw edge definition popup content");
             ImGui::Text("TODO: - should be a 3D render");
             ImGui::Text("TODO: - with a camera that is identical to the source camera");
@@ -136,12 +279,15 @@ namespace
 
         bool implShouldClose() const final
         {
-            return m_ShouldClose;
+            return m_State.shouldClosePopup;
         }
 
-        std::shared_ptr<osc::UndoableModelStatePair> m_Model;
-        ChooseComponentsEditorLayerParameters m_Parameters;
-        bool m_ShouldClose = false;
+        ChooseComponentsEditorLayerSharedState m_State;
+        BVHedDecorations m_Decorations;
+        osc::SceneRenderer m_Renderer;
+        bool m_IsHandlingMouseInputs = false;
+        bool m_IsLeftClickReleasedWithoutDragging = false;
+        bool m_IsRightClickReleasedWithoutDragging = false;
     };
 }
 
