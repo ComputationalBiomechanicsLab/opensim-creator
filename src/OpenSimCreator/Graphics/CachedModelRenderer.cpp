@@ -26,6 +26,69 @@
 #include <utility>
 #include <vector>
 
+namespace
+{
+    // cache for decorations generated from a model+state+params
+    class CachedDecorationState final {
+    public:
+        explicit CachedDecorationState(std::shared_ptr<osc::MeshCache> meshCache_) :
+            m_MeshCache{std::move(meshCache_)}
+        {
+        }
+
+        bool update(
+            osc::VirtualConstModelStatePair const& modelState,
+            osc::ModelRendererParams const& params)
+        {
+            OSC_PERF("CachedModelRenderer/generateDecorationsCached");
+
+            osc::ModelStatePairInfo const info{modelState};
+            if (info != m_PrevModelStateInfo ||
+                params.decorationOptions != m_PrevDecorationOptions ||
+                params.overlayOptions != m_PrevOverlayOptions)
+            {
+                m_Drawlist.clear();
+                m_BVH.clear();
+
+                // regenerate
+                auto const onComponentDecoration = [this](OpenSim::Component const&, osc::SceneDecoration&& dec)
+                {
+                    m_Drawlist.push_back(std::move(dec));
+                };
+                auto const onOverlayDecoration = [this](osc::SceneDecoration&& dec)
+                {
+                    m_Drawlist.push_back(std::move(dec));
+                };
+
+                GenerateDecorations(modelState, params.decorationOptions, *m_MeshCache, onComponentDecoration);
+                UpdateSceneBVH(m_Drawlist, m_BVH);
+                GenerateOverlayDecorations(*m_MeshCache, params.overlayOptions, m_BVH, onOverlayDecoration);
+
+                m_PrevModelStateInfo = info;
+                m_PrevDecorationOptions = params.decorationOptions;
+                m_PrevOverlayOptions = params.overlayOptions;
+                return true;   // updated
+            }
+            else
+            {
+                return false;  // already up to date
+            }
+        }
+
+        nonstd::span<osc::SceneDecoration const> getDrawlist() const { return m_Drawlist; }
+        osc::BVH const& getBVH() const { return m_BVH; }
+        std::optional<osc::AABB> getAABB() const { return m_BVH.getRootAABB(); }
+
+    private:
+        std::shared_ptr<osc::MeshCache> m_MeshCache;
+        osc::ModelStatePairInfo m_PrevModelStateInfo;
+        osc::OpenSimDecorationOptions m_PrevDecorationOptions;
+        osc::OverlayDecorationOptions m_PrevOverlayOptions;
+        std::vector<osc::SceneDecoration> m_Drawlist;
+        osc::BVH m_BVH;
+    };
+}
+
 class osc::CachedModelRenderer::Impl final {
 public:
     Impl(
@@ -33,7 +96,7 @@ public:
         std::shared_ptr<MeshCache> meshCache,
         ShaderCache& shaderCache) :
 
-        m_MeshCache{meshCache},
+        m_DecorationCache{meshCache},
         m_Renderer{config, *meshCache, shaderCache}
     {
     }
@@ -43,8 +106,8 @@ public:
         ModelRendererParams& params,
         float aspectRatio)
     {
-        generateDecorationsCached(modelState, params);
-        if (std::optional<AABB> aabb = m_BVH.getRootAABB())
+        m_DecorationCache.update(modelState, params);
+        if (std::optional<AABB> const aabb = m_DecorationCache.getAABB())
         {
             AutoFocus(params.camera, *aabb, aspectRatio);
         }
@@ -59,7 +122,7 @@ public:
         OSC_PERF("CachedModelRenderer/draw");
 
         // setup render/rasterization parameters
-        osc::SceneRendererParams const rendererParameters = CalcSceneRendererParams(
+        SceneRendererParams const rendererParameters = CalcSceneRendererParams(
             renderParams,
             dims,
             samples,            
@@ -67,11 +130,11 @@ public:
         );
 
         // if the decorations or rendering params have changed, re-render
-        if (generateDecorationsCached(modelState, renderParams) ||
+        if (m_DecorationCache.update(modelState, renderParams) ||
             rendererParameters != m_PrevRendererParams)
         {
             OSC_PERF("CachedModelRenderer/draw/render");
-            m_Renderer.draw(m_Drawlist, rendererParameters);
+            m_Renderer.draw(m_DecorationCache.getDrawlist(), rendererParameters);
             m_PrevRendererParams = rendererParameters;
         }
 
@@ -85,12 +148,12 @@ public:
 
     nonstd::span<SceneDecoration const> getDrawlist() const
     {
-        return m_Drawlist;
+        return m_DecorationCache.getDrawlist();
     }
 
     std::optional<AABB> getRootAABB() const
     {
-        return m_BVH.getRootAABB();
+        return m_DecorationCache.getAABB();
     }
 
     std::optional<SceneCollision> getClosestCollision(
@@ -99,8 +162,8 @@ public:
         Rect const& viewportScreenRect) const
     {
         return GetClosestCollision(
-            m_BVH,
-            m_Drawlist,
+            m_DecorationCache.getBVH(),
+            m_DecorationCache.getDrawlist(),
             params.camera,
             mouseScreenPos,
             viewportScreenRect
@@ -108,51 +171,7 @@ public:
     }
 
 private:
-    bool generateDecorationsCached(
-        VirtualConstModelStatePair const& modelState,
-        ModelRendererParams const& params)
-    {
-        OSC_PERF("CachedModelRenderer/generateDecorationsCached");
-
-        ModelStatePairInfo const info{modelState};
-        if (info != m_PrevModelStateInfo ||
-            params.decorationOptions != m_PrevDecorationOptions ||
-            params.overlayOptions != m_PrevOverlayOptions)
-        {
-            m_Drawlist.clear();
-            m_BVH.clear();
-
-            // regenerate
-            auto onComponentDecoration = [this](OpenSim::Component const&, SceneDecoration&& dec)
-            {
-                m_Drawlist.push_back(std::move(dec));
-            };
-            auto onOverlayDecoration = [this](SceneDecoration&& dec)
-            {
-                m_Drawlist.push_back(std::move(dec));
-            };
-
-            GenerateDecorations(modelState, params.decorationOptions, *m_MeshCache, onComponentDecoration);
-            UpdateSceneBVH(m_Drawlist, m_BVH);
-            GenerateOverlayDecorations(*m_MeshCache, params.overlayOptions, m_BVH, onOverlayDecoration);
-
-            m_PrevModelStateInfo = info;
-            m_PrevDecorationOptions = params.decorationOptions;
-            m_PrevOverlayOptions = params.overlayOptions;
-            return true;   // updated
-        }
-        else
-        {
-            return false;  // already up to date
-        }
-    }
-
-    std::shared_ptr<MeshCache> m_MeshCache;
-    ModelStatePairInfo m_PrevModelStateInfo;
-    OpenSimDecorationOptions m_PrevDecorationOptions;
-    OverlayDecorationOptions m_PrevOverlayOptions;
-    std::vector<SceneDecoration> m_Drawlist;
-    BVH m_BVH;
+    CachedDecorationState m_DecorationCache;
     SceneRendererParams m_PrevRendererParams;
     SceneRenderer m_Renderer;
 };
