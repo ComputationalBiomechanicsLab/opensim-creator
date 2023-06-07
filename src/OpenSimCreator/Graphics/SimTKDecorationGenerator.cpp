@@ -11,6 +11,7 @@
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Triangle.hpp>
 #include <oscar/Platform/Log.hpp>
+#include <oscar/Utils/Algorithms.hpp>
 
 #include <glm/glm.hpp>
 #include <simbody/internal/common.h>
@@ -71,6 +72,38 @@ namespace
         rv.scale = GetScaleFactors(g);
 
         return rv;
+    }
+
+    size_t HashOf(SimTK::Vec3 const& v)
+    {
+        return osc::HashOf(v[0], v[1], v[2]);
+    }
+
+    size_t HashOf(SimTK::PolygonalMesh const& mesh)
+    {
+        size_t hash = 0;
+
+        // combine vertex data into hash
+        int const numVerts = mesh.getNumVertices();
+        hash = osc::HashCombine(hash, osc::HashOf(numVerts));
+        for (int vert = 0; vert < numVerts; ++vert)
+        {
+            hash = osc::HashCombine(hash, HashOf(mesh.getVertexPosition(vert)));
+        }
+
+        // combine face indices into mesh
+        int const numFaces = mesh.getNumFaces();
+        hash = osc::HashCombine(hash, osc::HashOf(numFaces));
+        for (int face = 0; face < numFaces; ++face)
+        {
+            int const numVertsInFace = mesh.getNumVerticesForFace(face);
+            for (int faceVert = 0; faceVert < numVertsInFace; ++faceVert)
+            {
+                hash = osc::HashCombine(hash, osc::HashOf(mesh.getFaceVertex(face, faceVert)));
+            }
+        }
+
+        return hash;
     }
 
     // an implementation of SimTK::DecorativeGeometryImplementation that emits generic
@@ -257,12 +290,15 @@ namespace
 
         void implementMeshGeometry(SimTK::DecorativeMesh const& d) final
         {
-            // roughly based on simbody's VisualizerProtocol.cpp:drawPolygonalMesh
+            // the ID of an in-memory mesh is derived from the hash of its data
             //
-            // (it uses impl pointers to figure out mesh caching - unsure if that's a
-            //  good idea, but it is reproduced here for consistency)
-
-            std::string const id = std::to_string(reinterpret_cast<uintptr_t>(static_cast<void const*>(&d.getMesh().getImpl())));
+            // (Simbody visualizer uses memory addresses, but this is invalid in
+            //  OSC because there's a chance of memory re-use screwing with that
+            //  caching mechanism)
+            //
+            // (and, yes, hash isn't equality, but it's closer than relying on memory
+            //  addresses)
+            std::string const id = std::to_string(HashOf(d.getMesh()));
             auto const meshLoaderFunc = [&d]() { return osc::ToOscMesh(d.getMesh()); };
 
             m_Consumer(osc::SimpleSceneDecoration

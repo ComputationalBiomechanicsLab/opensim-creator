@@ -87,7 +87,7 @@ osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
             };
 
             pushTriangle({quadVerts[0], quadVerts[1], quadVerts[2]});
-            pushTriangle({quadVerts[2], quadVerts[3], quadVerts[0]});
+            pushTriangle({quadVerts[0], quadVerts[2], quadVerts[3]});
         }
         else
         {
