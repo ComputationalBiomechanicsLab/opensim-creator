@@ -10,6 +10,9 @@ All notable changes to this project will be documented here. The format is based
   in the same menu (#684)
 - Experimental model-editing-related tabs now appear in an `Experimental Tools` submenu in `Tools`, and
   an experimental excitation editor has been added that has a launch button in this new menu (#685)
+- The `Appearance` property editor only updates the model after the user lets go of their mouse (#702)
+  - This is to improve the performance of scrolling through colors
+  - And prevents color edits from filling the undo/redo buffer of the UI
 - Internal: OSC's renderer can now render all not-PBR parts of the LearnOpenGL tutorial series, which
   required adding support for multiple render targets (MRTs, #493)
 - Internal: OpenSimCreator's source code is now split into "OpenSimCreator" and "oscar" (#635):

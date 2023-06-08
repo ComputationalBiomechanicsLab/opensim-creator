@@ -922,28 +922,56 @@ namespace
             }
             property_type const& prop = *maybeProp;
 
-            if (prop.isListProperty())
+            // update any cached data
+            if (!prop.equals(m_OriginalProperty))
             {
-                return std::nullopt;  // HACK: ignore list props for now
-            }
-
-            if (prop.size() == 0)
-            {
-                return std::nullopt;  // HACK: ignore optional props for now
+                m_OriginalProperty = prop;
+                m_EditedProperty = prop;
             }
 
             ImGui::Separator();
 
             // draw name of the property in left-hand column
-            DrawPropertyName(prop);
+            DrawPropertyName(m_EditedProperty);
             ImGui::NextColumn();
 
-            std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv = std::nullopt;
-            osc::Color color = ExtractRgba(prop.getValue());
+            // draw `n` editors in right-hand column
+            std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
+            for (int idx = 0; idx < std::max(m_EditedProperty.size(), 1); ++idx)
+            {
+                ImGui::PushID(idx);
+                std::optional<std::function<void(OpenSim::AbstractProperty&)>> editorRv = drawIthEditor(idx);
+                ImGui::PopID();
 
+                if (!rv)
+                {
+                    rv = std::move(editorRv);
+                }
+            }
+            ImGui::NextColumn();
+
+            return rv;
+        }
+
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> drawIthEditor(int idx)
+        {
+            std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
+
+            if (m_EditedProperty.isListProperty())
+            {
+                return rv;  // // HACK: ignore list props for now
+            }
+
+            if (m_EditedProperty.size() == 0)
+            {
+                return rv;  // HACK: ignore optional props for now
+            }
+
+            bool shouldSave = false;
+
+            osc::Color color = ExtractRgba(m_EditedProperty.getValue());
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
-            ImGui::PushID(1);
             if (ImGui::ColorEdit4("##coloreditor", osc::ValuePtr(color)))
             {
                 SimTK::Vec3 newColor;
@@ -951,31 +979,29 @@ namespace
                 newColor[1] = static_cast<double>(color[1]);
                 newColor[2] = static_cast<double>(color[2]);
 
-                OpenSim::Appearance newAppearance{prop.getValue()};
-                newAppearance.set_color(newColor);
-                newAppearance.set_opacity(static_cast<double>(color[3]));
-
-                rv = MakePropValueSetter<OpenSim::Appearance>(0, newAppearance);
+                m_EditedProperty.updValue().set_color(newColor);
+                m_EditedProperty.updValue().set_opacity(static_cast<double>(color[3]));
             }
-            ImGui::PopID();
+            shouldSave = shouldSave || osc::ItemValueShouldBeSaved();
 
-            bool isVisible = prop.getValue().get_visible();
-            ImGui::PushID(2);
+            bool isVisible = m_EditedProperty.getValue().get_visible();
             if (ImGui::Checkbox("is visible", &isVisible))
             {
-                OpenSim::Appearance newAppearance{prop.getValue()};
-                newAppearance.set_visible(isVisible);
-
-                rv = MakePropValueSetter<OpenSim::Appearance>(0, newAppearance);
+                m_EditedProperty.updValue().set_visible(isVisible);
             }
-            ImGui::PopID();
+            shouldSave = shouldSave || osc::ItemValueShouldBeSaved();
 
-            ImGui::NextColumn();
+            if (shouldSave)
+            {
+                rv = MakePropValueSetter<OpenSim::Appearance>(idx, m_EditedProperty.getValue(idx));
+            }
 
             return rv;
         }
 
         std::function<property_type const*()> m_Accessor;
+        property_type m_OriginalProperty{"blank", true};
+        property_type m_EditedProperty{"blank", true};
     };
 
     // concrete property editor for an `OpenSim::HuntCrossleyForce::ContactParametersSet`
