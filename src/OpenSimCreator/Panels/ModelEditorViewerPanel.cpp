@@ -343,7 +343,11 @@ private:
         if (isHovered)
         {
             layersHandleMouseInputs();
-            layersHandleKeyboardInputs();
+
+            if (!ImGui::GetIO().WantCaptureKeyboard)
+            {
+                layersHandleKeyboardInputs();
+            }
         }
 
         // render the 3D scene to a texture and present it via an ImGui::Image
