@@ -1162,7 +1162,32 @@ namespace
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         OpenSim::Component const&)
     {
-        // TODO: focus camera etc.
+        if (ImGui::BeginMenu(ICON_FA_CAMERA " Focus Camera"))
+        {
+            if (ImGui::MenuItem("On Ground"))
+            {
+                osc::ModelEditorViewerPanel* visualizer =
+                    editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
+                if (visualizer)
+                {
+                    visualizer->focusOn({});
+                }
+            }
+
+            if (maybeSourceEvent &&
+                maybeSourceEvent->maybeClickPositionInGround &&
+                ImGui::MenuItem("On Click Position"))
+            {
+                osc::ModelEditorViewerPanel* visualizer =
+                    editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
+                if (visualizer)
+                {
+                    visualizer->focusOn(*maybeSourceEvent->maybeClickPositionInGround);
+                }
+            }
+
+            ImGui::EndMenu();
+        }
     }
 
     void DrawRightClickedMeshContextMenu(
@@ -1173,7 +1198,7 @@ namespace
     {
         DrawGenericRightClickComponentContextMenuHeader(editor, model, maybeSourceEvent, mesh);
 
-        if (ImGui::MenuItem("add sphere"))
+        if (ImGui::MenuItem(ICON_FA_CIRCLE " Add Sphere"))
         {
             ActionAddSphereInMeshFrame(
                 *model,

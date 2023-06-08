@@ -23,6 +23,7 @@
 #include <oscar/Widgets/GuiRuler.hpp>
 #include <oscar/Widgets/IconWithoutMenu.hpp>
 
+#include <glm/vec3.hpp>
 #include <imgui.h>
 #include <ImGuizmo.h>
 
@@ -302,6 +303,11 @@ public:
         return *m_Layers.emplace_back(std::move(layer));
     }
 
+    void focusOn(glm::vec3 const& pos)
+    {
+        m_Parameters.updRenderParams().camera.focusPoint = -pos;
+    }
+
 private:
     void implBeforeImGuiBegin() final
     {
@@ -499,6 +505,11 @@ osc::ModelEditorViewerPanel::~ModelEditorViewerPanel() noexcept = default;
 osc::ModelEditorViewerPanelLayer& osc::ModelEditorViewerPanel::pushLayer(std::unique_ptr<ModelEditorViewerPanelLayer> layer)
 {
     return m_Impl->pushLayer(std::move(layer));
+}
+
+void osc::ModelEditorViewerPanel::focusOn(glm::vec3 const& pos)
+{
+    m_Impl->focusOn(pos);
 }
 
 osc::CStringView osc::ModelEditorViewerPanel::implGetName() const
