@@ -467,6 +467,7 @@ namespace
 
     // top-level shared state for the "choose components" layer
     struct ChooseComponentsEditorLayerSharedState final {
+
         explicit ChooseComponentsEditorLayerSharedState(
             std::shared_ptr<osc::UndoableModelStatePair> model_,
             ChooseComponentsEditorLayerParameters parameters_) :
@@ -579,6 +580,8 @@ namespace
             osc::ModelEditorViewerPanelParameters& params,
             osc::ModelEditorViewerPanelState& state) final
         {
+
+
             return osc::UpdatePolarCameraFromImGuiKeyboardInputs(
                 params.updRenderParams().camera,
                 state.viewportRect,
@@ -1131,7 +1134,8 @@ namespace
 // context menu
 namespace
 {
-    void DrawRightClickedNothingContextMenu(osc::UndoableModelStatePair& model)
+    void DrawRightClickedNothingContextMenu(
+        osc::UndoableModelStatePair& model)
     {
         if (ImGui::MenuItem("Add Mesh"))
         {
@@ -1139,23 +1143,56 @@ namespace
         }
     }
 
-    void DrawRightClickedMeshContextMenu(
-        osc::UndoableModelStatePair& model,
-        OpenSim::Mesh const& mesh,
-        std::optional<glm::vec3> const& maybeClickPosInGround)
+    void DrawGenericRightClickComponentContextMenuHeader(
+        osc::EditorAPI& editor,
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
+        OpenSim::Component const& c)
     {
+        ImGui::TextUnformatted(osc::Ellipsis(c.getName(), 15).c_str());
+        ImGui::SameLine();
+        ImGui::TextDisabled("%s", c.getConcreteClassName().c_str());
+        ImGui::Separator();
+        ImGui::Dummy({0.0f, 3.0f});
+    }
+
+    void DrawGenericRightClickComponentContextMenuActions(
+        osc::EditorAPI& editor,
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
+        OpenSim::Component const&)
+    {
+        // TODO: focus camera etc.
+    }
+
+    void DrawRightClickedMeshContextMenu(
+        osc::EditorAPI& editor,
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
+        OpenSim::Mesh const& mesh)
+    {
+        DrawGenericRightClickComponentContextMenuHeader(editor, model, maybeSourceEvent, mesh);
+
         if (ImGui::MenuItem("add sphere"))
         {
-            ActionAddSphereInMeshFrame(model, mesh, maybeClickPosInGround);
+            ActionAddSphereInMeshFrame(
+                *model,
+                mesh,
+                maybeSourceEvent ? maybeSourceEvent->maybeClickPositionInGround : std::nullopt
+            );
         }
+
+        DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, mesh);
     }
 
     void DrawRightClickedPointContextMenu(
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
-        OpenSim::FDVirtualPoint const& point,
-        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent)
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
+        OpenSim::FDVirtualPoint const& point)
     {
+        DrawGenericRightClickComponentContextMenuHeader(editor, model, maybeSourceEvent, point);
+
         if (maybeSourceEvent && ImGui::MenuItem("create edge"))
         {
             ActionPushCreateEdgeToOtherPointLayer(editor, model, point, maybeSourceEvent);
@@ -1165,25 +1202,34 @@ namespace
         {
             ActionPushCreateMidpointToAnotherPointLayer(editor, model, point, maybeSourceEvent);
         }
+
+        DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, point);
     }
 
     void DrawRightClickedEdgeContextMenu(
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
-        OpenSim::FDVirtualEdge const& edge,
-        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent)
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
+        OpenSim::FDVirtualEdge const& edge)
     {
+        DrawGenericRightClickComponentContextMenuHeader(editor, model, maybeSourceEvent, edge);
+
         if (maybeSourceEvent && ImGui::MenuItem("create cross product"))
         {
             ActionPushCreateCrossProductEdgeLayer(editor, model, edge, maybeSourceEvent);
         }
+
+        DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, edge);
     }
 
     void DrawRightClickedUnknownComponentContextMenu(
-        osc::UndoableModelStatePair& model,
+        osc::EditorAPI& editor,
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         OpenSim::Component const& component)
     {
-        ImGui::TextDisabled("Unknown component type");
+        DrawGenericRightClickComponentContextMenuHeader(editor, model, maybeSourceEvent, component);
+        DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, component);
     }
 
     // popup state for the frame definition tab's general context menu
@@ -1211,6 +1257,7 @@ namespace
     private:
         void implDrawContent() final
         {
+
             OpenSim::Component const* const maybeComponent = osc::FindComponent(m_Model->getModel(), m_ComponentPath);
             if (!maybeComponent)
             {
@@ -1218,19 +1265,19 @@ namespace
             }
             else if (OpenSim::Mesh const* maybeMesh = dynamic_cast<OpenSim::Mesh const*>(maybeComponent))
             {
-                DrawRightClickedMeshContextMenu(*m_Model, *maybeMesh, m_MaybeSourceVisualizerEvent ? m_MaybeSourceVisualizerEvent->maybeClickPositionInGround : std::nullopt);
+                DrawRightClickedMeshContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeMesh);
             }
             else if (OpenSim::FDVirtualPoint const* maybePoint = dynamic_cast<OpenSim::FDVirtualPoint const*>(maybeComponent))
             {
-                DrawRightClickedPointContextMenu(*m_EditorAPI, m_Model, *maybePoint, m_MaybeSourceVisualizerEvent);
+                DrawRightClickedPointContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybePoint);
             }
             else if (OpenSim::FDVirtualEdge const* maybeEdge = dynamic_cast<OpenSim::FDVirtualEdge const*>(maybeComponent))
             {
-                DrawRightClickedEdgeContextMenu(*m_EditorAPI, m_Model, *maybeEdge, m_MaybeSourceVisualizerEvent);
+                DrawRightClickedEdgeContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeEdge);
             }
             else
             {
-                DrawRightClickedUnknownComponentContextMenu(*m_Model, *maybeComponent);
+                DrawRightClickedUnknownComponentContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeComponent);
             }
         }
 
