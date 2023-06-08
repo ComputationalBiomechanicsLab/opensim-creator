@@ -242,9 +242,8 @@ private:
         if (!c)
         {
             // draw context menu content that's shown when nothing was right-clicked
-            ImGui::TextDisabled("(nothing selected)");
-            ImGui::Separator();
-            ImGui::Dummy({0.0f, 3.0f});
+            DrawNothingRightClickedContextMenuHeader();
+            DrawContextMenuSeparator();
             if (ImGui::BeginMenu("Add"))
             {
                 m_ModelActionsMenuBar.draw();
@@ -269,11 +268,8 @@ private:
             return;
         }
 
-        ImGui::TextUnformatted(osc::Ellipsis(c->getName(), 15).c_str());
-        ImGui::SameLine();
-        ImGui::TextDisabled("%s", c->getConcreteClassName().c_str());
-        ImGui::Separator();
-        ImGui::Dummy({0.0f, 3.0f});
+        DrawRightClickedComponentContextMenuHeader(*c);
+        DrawContextMenuSeparator();
 
         //DrawSelectOwnerMenu(*m_Model, *c);
         if (DrawWatchOutputMenu(*m_MainUIStateAPI.lock(), *c))

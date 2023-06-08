@@ -26,6 +26,9 @@ namespace OpenSim { class Component; }
 namespace osc
 {
     void DrawComponentHoverTooltip(OpenSim::Component const&);
+    void DrawNothingRightClickedContextMenuHeader();
+    void DrawRightClickedComponentContextMenuHeader(OpenSim::Component const&);
+    void DrawContextMenuSeparator();
     void DrawSelectOwnerMenu(VirtualModelStatePair&, OpenSim::Component const&);
     bool DrawWatchOutputMenu(MainUIStateAPI&, OpenSim::Component const&);
     void DrawSimulationParams(ParamBlock const&);

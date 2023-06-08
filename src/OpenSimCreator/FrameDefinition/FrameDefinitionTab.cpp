@@ -80,10 +80,10 @@ namespace
 {
     constexpr osc::CStringView c_TabStringID = "OpenSim/Experimental/FrameDefinition";
     constexpr double c_SphereDefaultRadius = 0.01;
-    constexpr osc::Color c_SphereDefaultColor = {0.1f, 1.0f, 0.1f};
-    constexpr osc::Color c_MidpointDefaultColor = {0.1f, 1.0f, 1.0f};
-    constexpr osc::Color c_PointToPointEdgeDefaultColor = {1.0f, 1.0f, 1.0f};
-    constexpr osc::Color c_CrossProductEdgeDefaultColor = {0.8f, 1.0f, 0.8f};
+    constexpr osc::Color c_SphereDefaultColor = {1.0f, 1.0f, 0.75f};
+    constexpr osc::Color c_MidpointDefaultColor = {0.75f, 1.0f, 1.0f};
+    constexpr osc::Color c_PointToPointEdgeDefaultColor = {0.75f, 1.0f, 1.0f};
+    constexpr osc::Color c_CrossProductEdgeDefaultColor = {0.75f, 1.0f, 1.0f};
 }
 
 // custom OpenSim components for this screen
@@ -1137,23 +1137,13 @@ namespace
     void DrawRightClickedNothingContextMenu(
         osc::UndoableModelStatePair& model)
     {
-        if (ImGui::MenuItem("Add Mesh"))
+        osc::DrawNothingRightClickedContextMenuHeader();
+        osc::DrawContextMenuSeparator();
+
+        if (ImGui::MenuItem(ICON_FA_CUBE " Add Mesh"))
         {
             ActionPromptUserToAddMeshFile(model);
         }
-    }
-
-    void DrawGenericRightClickComponentContextMenuHeader(
-        osc::EditorAPI& editor,
-        std::shared_ptr<osc::UndoableModelStatePair> model,
-        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::Component const& c)
-    {
-        ImGui::TextUnformatted(osc::Ellipsis(c.getName(), 15).c_str());
-        ImGui::SameLine();
-        ImGui::TextDisabled("%s", c.getConcreteClassName().c_str());
-        ImGui::Separator();
-        ImGui::Dummy({0.0f, 3.0f});
     }
 
     void DrawGenericRightClickComponentContextMenuActions(
@@ -1196,7 +1186,8 @@ namespace
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         OpenSim::Mesh const& mesh)
     {
-        DrawGenericRightClickComponentContextMenuHeader(editor, model, maybeSourceEvent, mesh);
+        osc::DrawRightClickedComponentContextMenuHeader(mesh);
+        osc::DrawContextMenuSeparator();
 
         if (ImGui::MenuItem(ICON_FA_CIRCLE " Add Sphere"))
         {
@@ -1216,7 +1207,8 @@ namespace
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         OpenSim::FDVirtualPoint const& point)
     {
-        DrawGenericRightClickComponentContextMenuHeader(editor, model, maybeSourceEvent, point);
+        osc::DrawRightClickedComponentContextMenuHeader(point);
+        osc::DrawContextMenuSeparator();
 
         if (maybeSourceEvent && ImGui::MenuItem("create edge"))
         {
@@ -1237,7 +1229,8 @@ namespace
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         OpenSim::FDVirtualEdge const& edge)
     {
-        DrawGenericRightClickComponentContextMenuHeader(editor, model, maybeSourceEvent, edge);
+        osc::DrawRightClickedComponentContextMenuHeader(edge);
+        osc::DrawContextMenuSeparator();
 
         if (maybeSourceEvent && ImGui::MenuItem("create cross product"))
         {
@@ -1253,7 +1246,8 @@ namespace
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         OpenSim::Component const& component)
     {
-        DrawGenericRightClickComponentContextMenuHeader(editor, model, maybeSourceEvent, component);
+        osc::DrawRightClickedComponentContextMenuHeader(component);
+        osc::DrawContextMenuSeparator();
         DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, component);
     }
 
@@ -1282,7 +1276,6 @@ namespace
     private:
         void implDrawContent() final
         {
-
             OpenSim::Component const* const maybeComponent = osc::FindComponent(m_Model->getModel(), m_ComponentPath);
             if (!maybeComponent)
             {
@@ -1460,9 +1453,16 @@ public:
         App::upd().makeMainEventLoopPolling();
     }
 
-    bool onEvent(SDL_Event const&)
+    bool onEvent(SDL_Event const& e)
     {
-        return false;
+        if (e.type == SDL_KEYDOWN)
+        {
+            return onKeydownEvent(e.key);
+        }
+        else
+        {
+            return false;
+        }
     }
 
     void onTick()
@@ -1486,6 +1486,28 @@ public:
     }
 
 private:
+    bool onKeydownEvent(SDL_KeyboardEvent const& e)
+    {
+        bool const ctrlOrSuperDown = osc::IsCtrlOrSuperDown();
+
+        if (ctrlOrSuperDown && e.keysym.mod & KMOD_SHIFT && e.keysym.sym == SDLK_z)
+        {
+            // Ctrl+Shift+Z: redo
+            osc::ActionRedoCurrentlyEditedModel(*m_Model);
+            return true;
+        }
+        else if (ctrlOrSuperDown && e.keysym.sym == SDLK_z)
+        {
+            // Ctrl+Z: undo
+            osc::ActionUndoCurrentlyEditedModel(*m_Model);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     void implPushComponentContextMenuPopup(OpenSim::ComponentPath const& componentPath) final
     {
         pushPopup(std::make_unique<FrameDefinitionContextMenu>(

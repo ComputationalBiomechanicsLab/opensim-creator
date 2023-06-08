@@ -25,6 +25,7 @@
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Utils/Algorithms.hpp>
 #include <oscar/Widgets/GuiRuler.hpp>
 #include <oscar/Widgets/IconWithMenu.hpp>
 
@@ -166,6 +167,24 @@ namespace
 
 
 // public API
+
+void osc::DrawNothingRightClickedContextMenuHeader()
+{
+    ImGui::TextDisabled("(nothing selected)");
+}
+
+void osc::DrawRightClickedComponentContextMenuHeader(OpenSim::Component const& c)
+{
+    ImGui::TextUnformatted(Ellipsis(c.getName(), 15).c_str());
+    ImGui::SameLine();
+    ImGui::TextDisabled("%s", c.getConcreteClassName().c_str());
+}
+
+void osc::DrawContextMenuSeparator()
+{
+    ImGui::Separator();
+    ImGui::Dummy({0.0f, 3.0f});
+}
 
 void osc::DrawComponentHoverTooltip(OpenSim::Component const& hovered)
 {
