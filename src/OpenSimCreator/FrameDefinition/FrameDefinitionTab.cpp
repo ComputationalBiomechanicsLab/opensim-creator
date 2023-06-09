@@ -222,14 +222,9 @@ namespace OpenSim
         }
 
     private:
-        OpenSim::Frame const& getFrame() const
-        {
-            return getConnectee<Frame>("frame");
-        }
-
         SimTK::Vec3 implGetPositionInGround(SimTK::State const& state) const final
         {
-            return getFrame().getPositionInGround(state);
+            return getConnectee<Frame>("frame").getPositionInGround(state);
         }
     };
 
@@ -303,7 +298,7 @@ namespace OpenSim
 
     // "an edge derived from two virtual points"
     class FDPointToPointEdge final : public FDVirtualEdge {
-        OpenSim_DECLARE_CONCRETE_OBJECT(FDPointToPointEdge, ModelComponent)
+        OpenSim_DECLARE_CONCRETE_OBJECT(FDPointToPointEdge, FDVirtualEdge)
     public:
         OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance, "The appearance of the edge (decorative)");
         OpenSim_DECLARE_SOCKET(pointA, FDVirtualPoint, "The first point that the edge is connected to");
@@ -319,7 +314,7 @@ namespace OpenSim
             bool,
             const ModelDisplayHints&,
             const SimTK::State& state,
-            SimTK::Array_<SimTK::DecorativeGeometry>& appendOut) const
+            SimTK::Array_<SimTK::DecorativeGeometry>& appendOut) const final
         {
             EdgePoints const coords = getEdgePointsInGround(state);
 
@@ -345,7 +340,7 @@ namespace OpenSim
 
     // "an edge calculated from the cross product between two other edges"
     class FDCrossProductEdge final : public FDVirtualEdge {
-        OpenSim_DECLARE_CONCRETE_OBJECT(FDCrossProductEdge, ModelComponent)
+        OpenSim_DECLARE_CONCRETE_OBJECT(FDCrossProductEdge, FDVirtualEdge)
     public:
         OpenSim_DECLARE_PROPERTY(showPlane, bool, "Whether to show the plane of the two edges the cross product was created from (decorative)");
         OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance, "The appearance of the edge (decorative)");
@@ -354,7 +349,7 @@ namespace OpenSim
 
         FDCrossProductEdge()
         {
-            constructProperty_showPlane(true);
+            constructProperty_showPlane(false);
             constructProperty_Appearance(Appearance{});
             SetColorAndOpacity(upd_Appearance(), c_CrossProductEdgeDefaultColor);
         }
@@ -363,7 +358,7 @@ namespace OpenSim
             bool,
             const ModelDisplayHints&,
             const SimTK::State& state,
-            SimTK::Array_<SimTK::DecorativeGeometry>& appendOut) const
+            SimTK::Array_<SimTK::DecorativeGeometry>& appendOut) const final
         {
             EdgePoints const coords = getEdgePointsInGround(state);
 
