@@ -107,9 +107,9 @@ osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
             {
                 osc::Triangle const tri =
                 {
+                    center,
                     GetFaceVertex(mesh, face, vert),
                     GetFaceVertex(mesh, face, vert + 1),
-                    center,
                 };
                 pushTriangle(tri);
             }
@@ -117,9 +117,9 @@ osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
             // complete the polygon loop
             osc::Triangle const tri =
             {
+                center,
                 GetFaceVertex(mesh, face, nVerts - 1),
                 GetFaceVertex(mesh, face, 0),
-                center,
             };
             pushTriangle(tri);
         }
