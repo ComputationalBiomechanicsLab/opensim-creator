@@ -32,6 +32,7 @@
 #include <oscar/Tabs/LearnOpenGL/LOGLMultipleLightsTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/LOGLNormalMappingTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/LOGLParallaxMappingTab.hpp>
+#include <oscar/Tabs/LearnOpenGL/LOGLPointShadowsTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/LOGLShadowMappingTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/LOGLSSAOTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/LOGLTexturingTab.hpp>
@@ -190,6 +191,7 @@ namespace
         RegisterTab<osc::LOGLMultipleLightsTab>(registry);
         RegisterTab<osc::LOGLNormalMappingTab>(registry);
         RegisterTab<osc::LOGLParallaxMappingTab>(registry);
+        RegisterTab<osc::LOGLPointShadowsTab>(registry);
         RegisterTab<osc::LOGLTexturingTab>(registry);
         RegisterTab<osc::RendererSDFTab>(registry);
         RegisterTab<osc::LOGLShadowMappingTab>(registry);
