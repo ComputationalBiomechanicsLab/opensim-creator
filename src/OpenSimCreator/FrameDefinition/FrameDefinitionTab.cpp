@@ -1129,23 +1129,66 @@ namespace
 
         visualizer->pushLayer(std::make_unique<ChooseComponentsEditorLayer>(model, options));
     }
+
+    void ActionSwapSocketAssignments(
+        osc::UndoableModelStatePair& model,
+        OpenSim::ComponentPath componentAbsPath,
+        std::string firstSocketName,
+        std::string secondSocketName)
+    {
+        // create commit message
+        std::string const commitMessage = [&componentAbsPath, &firstSocketName, &secondSocketName]()
+        {
+            std::stringstream ss;
+            ss << "swapped socket '" << firstSocketName << "' with socket '" << secondSocketName << " in " << componentAbsPath.getComponentName().c_str();
+            return std::move(ss).str();
+        }();
+
+        // look things up in the mutable model
+        OpenSim::Model& mutModel = model.updModel();
+        OpenSim::Component* const component = osc::FindComponentMut(mutModel, componentAbsPath);
+        if (!component)
+        {
+            osc::log::error("failed to find %s in model, skipping action", componentAbsPath.toString().c_str());
+            return;
+        }
+
+        OpenSim::AbstractSocket* const firstSocket = osc::FindSocketMut(*component, firstSocketName);
+        if (!firstSocket)
+        {
+            osc::log::error("failed to find socket %s in %s, skipping action", firstSocketName.c_str(), component->getName().c_str());
+            return;
+        }
+
+        OpenSim::AbstractSocket* const secondSocket = osc::FindSocketMut(*component, secondSocketName);
+        if (!secondSocket)
+        {
+            osc::log::error("failed to find socket %s in %s, skipping action", secondSocketName.c_str(), component->getName().c_str());
+            return;
+        }
+
+        // perform swap
+        std::string const firstSocketPath = firstSocket->getConnecteePath();
+        firstSocket->setConnecteePath(secondSocket->getConnecteePath());
+        secondSocket->setConnecteePath(firstSocketPath);
+
+        // finalize and commit
+        osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
+        model.commit(commitMessage);
+    }
+
+    void ActionSwapPointToPointEdgeEnds(
+        osc::UndoableModelStatePair& model,
+        OpenSim::FDPointToPointEdge const& edge)
+    {
+        ActionSwapSocketAssignments(model, edge.getAbsolutePath(), "pointA", "pointB");
+    }
 }
 
 // context menu
 namespace
 {
-    void DrawRightClickedNothingContextMenu(
-        osc::UndoableModelStatePair& model)
-    {
-        osc::DrawNothingRightClickedContextMenuHeader();
-        osc::DrawContextMenuSeparator();
-
-        if (ImGui::MenuItem(ICON_FA_CUBE " Add Mesh"))
-        {
-            ActionPromptUserToAddMeshFile(model);
-        }
-    }
-
     void DrawGenericRightClickComponentContextMenuActions(
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
@@ -1180,6 +1223,30 @@ namespace
         }
     }
 
+    void DrawGenericRightClickEdgeContextMenuActions(
+        osc::EditorAPI& editor,
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
+        OpenSim::FDVirtualEdge const& edge)
+    {
+        if (maybeSourceEvent && ImGui::MenuItem(ICON_FA_TIMES " Create Cross Product Edge"))
+        {
+            ActionPushCreateCrossProductEdgeLayer(editor, model, edge, maybeSourceEvent);
+        }
+    }
+
+    void DrawRightClickedNothingContextMenu(
+        osc::UndoableModelStatePair& model)
+    {
+        osc::DrawNothingRightClickedContextMenuHeader();
+        osc::DrawContextMenuSeparator();
+
+        if (ImGui::MenuItem(ICON_FA_CUBE " Add Mesh"))
+        {
+            ActionPromptUserToAddMeshFile(model);
+        }
+    }
+
     void DrawRightClickedMeshContextMenu(
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
@@ -1210,12 +1277,12 @@ namespace
         osc::DrawRightClickedComponentContextMenuHeader(point);
         osc::DrawContextMenuSeparator();
 
-        if (maybeSourceEvent && ImGui::MenuItem("create edge"))
+        if (maybeSourceEvent && ImGui::MenuItem(ICON_FA_GRIP_LINES " Create Edge"))
         {
             ActionPushCreateEdgeToOtherPointLayer(editor, model, point, maybeSourceEvent);
         }
 
-        if (maybeSourceEvent && ImGui::MenuItem("create midpoint"))
+        if (maybeSourceEvent && ImGui::MenuItem(ICON_FA_DOT_CIRCLE " Create Midpoint"))
         {
             ActionPushCreateMidpointToAnotherPointLayer(editor, model, point, maybeSourceEvent);
         }
@@ -1223,20 +1290,31 @@ namespace
         DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, point);
     }
 
-    void DrawRightClickedEdgeContextMenu(
+    void DrawRightClickedPointToPointEdgeContextMenu(
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::FDVirtualEdge const& edge)
+        OpenSim::FDPointToPointEdge const& edge)
     {
         osc::DrawRightClickedComponentContextMenuHeader(edge);
         osc::DrawContextMenuSeparator();
-
-        if (maybeSourceEvent && ImGui::MenuItem("create cross product"))
+        DrawGenericRightClickEdgeContextMenuActions(editor, model, maybeSourceEvent, edge);
+        if (ImGui::MenuItem(ICON_FA_RECYCLE " Swap Direction"))
         {
-            ActionPushCreateCrossProductEdgeLayer(editor, model, edge, maybeSourceEvent);
+            ActionSwapPointToPointEdgeEnds(*model, edge);
         }
+        DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, edge);
+    }
 
+    void DrawRightClickedCrossProductEdgeContextMenu(
+        osc::EditorAPI& editor,
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
+        OpenSim::FDCrossProductEdge const& edge)
+    {
+        osc::DrawRightClickedComponentContextMenuHeader(edge);
+        osc::DrawContextMenuSeparator();
+        DrawGenericRightClickEdgeContextMenuActions(editor, model, maybeSourceEvent, edge);
         DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, edge);
     }
 
@@ -1289,9 +1367,13 @@ namespace
             {
                 DrawRightClickedPointContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybePoint);
             }
-            else if (OpenSim::FDVirtualEdge const* maybeEdge = dynamic_cast<OpenSim::FDVirtualEdge const*>(maybeComponent))
+            else if (OpenSim::FDPointToPointEdge const* maybeP2PEdge = dynamic_cast<OpenSim::FDPointToPointEdge const*>(maybeComponent))
             {
-                DrawRightClickedEdgeContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeEdge);
+                DrawRightClickedPointToPointEdgeContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeP2PEdge);
+            }
+            else if (OpenSim::FDCrossProductEdge const* maybeCPEdge = dynamic_cast<OpenSim::FDCrossProductEdge const*>(maybeComponent))
+            {
+                DrawRightClickedCrossProductEdgeContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeCPEdge);
             }
             else
             {
