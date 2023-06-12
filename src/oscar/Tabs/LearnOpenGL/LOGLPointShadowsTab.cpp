@@ -172,6 +172,10 @@ private:
 
     void drawShadowPassToCubemap()
     {
+        // m_ShadowMappingMaterial.setMat4Array("uShadowMatrices", {});  // TODO
+        // m_ShadowMappingMaterial.setVec3("uLightPos", {});  // TODO
+        // m_ShadowMappingMaterial.setFloat("uFarPlane", {});  // TODO
+
         // create mat4 shadowTransforms[6];
         // create projection matrix with FoV=90deg, 1 near, 25 far
         // for each cube face:
@@ -183,6 +187,14 @@ private:
 
     void drawShadowmappedSceneToScreen()
     {
+        // m_SceneMaterial.setBool("uReverseNormals", {});  // TODO
+        // m_SceneMaterial.setTexture("uDiffuseTexture", {});  // TODO
+        // m_SceneMaterial.setCubemap("uDepthMap", {});  // TODO
+        // m_SceneMaterial.setVec3("uLightPos", {});  // TODO
+        // m_SceneMaterial.setVec3("uViewPos", {});  // TODO
+        // m_SceneMaterial.setFloat("uFarPlane", {});  // TODO
+        // m_SceneMaterial.setBool("uShadows", {});  // TODO
+
         // render: render scene to screen as normal, using the depth cubemaps for shadow mapping
     }
 
