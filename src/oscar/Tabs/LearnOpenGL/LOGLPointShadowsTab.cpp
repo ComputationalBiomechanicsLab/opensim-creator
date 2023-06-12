@@ -56,13 +56,23 @@ namespace
         MakeRotatedTransform()
     );
 
-    osc::Camera CreateCamera()
+    osc::Camera CreateSceneCamera()
     {
         osc::Camera rv;
         rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
         rv.setPosition({0.0f, 0.0f, 3.0f});
         rv.setNearClippingPlane(0.1f);
         rv.setFarClippingPlane(100.0f);
+        return rv;
+    }
+
+    osc::Camera CreateShadowmappingCamera()
+    {
+        osc::Camera rv;
+        rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
+        rv.setCameraFOV(glm::radians(90.0f));
+        rv.setNearClippingPlane(1.0f);
+        rv.setFarClippingPlane(25.0f);
         return rv;
     }
 
@@ -128,9 +138,7 @@ public:
         m_LightPos.z = 3.0f * std::sin(0.5f * seconds);
     }
 
-    void onDrawMainMenu()
-    {
-    }
+    void onDrawMainMenu() {}
 
     void onDraw()
     {
@@ -143,7 +151,7 @@ private:
     {
         if (m_IsMouseCaptured)
         {
-            UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
+            UpdateEulerCameraFromImGuiUserInput(m_SceneCamera, m_CameraEulers);
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
@@ -156,13 +164,30 @@ private:
 
     void draw3DScene()
     {
-        // TODO
+        drawShadowPassToCubemap();
+        drawShadowmappedSceneToScreen();
+    }
+
+    void drawShadowPassToCubemap()
+    {
+        // create mat4 shadowTransforms[6];
+        // create projection matrix with FoV=90deg, 1 near, 25 far
+        // for each cube face:
+        //   create shadowTransform:
+        //     projection * lookAt(from=lightPos, to=lightPos+axis, up=appropriateUp)
+        // assign shadowTransforms to shadow mapping material
+        //   the shadow mapping material uses each to create NDC for each cube face
+    }
+
+    void drawShadowmappedSceneToScreen()
+    {
+        // render: render scene to screen as normal, using the depth cubemaps for shadow mapping
     }
 
     UID m_TabID;
     std::weak_ptr<TabHost> m_Parent;
 
-    Camera m_Camera = CreateCamera();
+    Camera m_SceneCamera = CreateSceneCamera();
     bool m_IsMouseCaptured = false;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
