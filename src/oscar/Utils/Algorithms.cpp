@@ -97,9 +97,9 @@ bool osc::ContainsSubstring(std::string_view str, std::string_view substr)
     return it != str.end();
 }
 
-std::string osc::ToLower(std::string const& s)
+std::string osc::ToLower(std::string_view s)
 {
-    std::string cpy = s;
+    std::string cpy{s};
     std::transform(cpy.begin(), cpy.end(), cpy.begin(), [](uint8_t c)
     {
         return static_cast<std::string::value_type>(std::tolower(c));

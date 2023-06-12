@@ -150,6 +150,17 @@ namespace OpenSim
         return line;
     }
 
+    SimTK::DecorativeFrame CreateDecorativeFrame(
+        SimTK::Transform const& transformInGround)
+    {
+        // adapted from OpenSim::FrameGeometry (Geometry.cpp)
+        SimTK::DecorativeFrame frame(1.0);
+        frame.setTransform(transformInGround);
+        frame.setScale(0.2);
+        frame.setLineThickness(0.004);
+        return frame;
+    }
+
     // returns a SimTK::DecorativeMesh reperesentation of the parallelogram formed between
     // two (potentially disconnected) edges, starting at `origin`
     SimTK::DecorativeMesh CreateParallelogramMesh(
@@ -267,6 +278,11 @@ namespace OpenSim
         SimTK::Vec3 end;
     };
 
+    SimTK::UnitVec3 CalcDirection(EdgePoints const& a)
+    {
+        return SimTK::UnitVec3{a.end - a.start};
+    }
+
     EdgePoints CrossProduct(EdgePoints const& a, EdgePoints const& b)
     {
         // TODO: if cross product isn't possible (e.g. angle between vectors is zero)
@@ -280,8 +296,8 @@ namespace OpenSim
     }
 
     // virtual base class for "an edge that starts at one location and ends at another"
-    class VirtualEdge : public ModelComponent {
-        OpenSim_DECLARE_ABSTRACT_OBJECT(VirtualEdge, ModelComponent)
+    class FDVirtualEdge : public ModelComponent {
+        OpenSim_DECLARE_ABSTRACT_OBJECT(FDVirtualEdge, ModelComponent)
     public:
         EdgePoints getEdgePointsInGround(SimTK::State const& state) const
         {
@@ -292,8 +308,8 @@ namespace OpenSim
     };
 
     // "an edge derived from two virtual points"
-    class FDPointToPointEdge final : public VirtualEdge {
-        OpenSim_DECLARE_CONCRETE_OBJECT(FDPointToPointEdge, VirtualEdge)
+    class FDPointToPointEdge final : public FDVirtualEdge {
+        OpenSim_DECLARE_CONCRETE_OBJECT(FDPointToPointEdge, FDVirtualEdge)
     public:
         OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance, "The appearance of the edge (decorative)");
         OpenSim_DECLARE_SOCKET(pointA, Point, "The first point that the edge is connected to");
@@ -334,13 +350,13 @@ namespace OpenSim
     };
 
     // "an edge calculated from the cross product between two other edges"
-    class FDCrossProductEdge final : public VirtualEdge {
-        OpenSim_DECLARE_CONCRETE_OBJECT(FDCrossProductEdge, VirtualEdge)
+    class FDCrossProductEdge final : public FDVirtualEdge {
+        OpenSim_DECLARE_CONCRETE_OBJECT(FDCrossProductEdge, FDVirtualEdge)
     public:
         OpenSim_DECLARE_PROPERTY(showPlane, bool, "Whether to show the plane of the two edges the cross product was created from (decorative)");
         OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance, "The appearance of the edge (decorative)");
-        OpenSim_DECLARE_SOCKET(edgeA, VirtualEdge, "The first edge parameter to the cross product calculation");
-        OpenSim_DECLARE_SOCKET(edgeB, VirtualEdge, "The second edge parameter to the cross product calculation");
+        OpenSim_DECLARE_SOCKET(edgeA, FDVirtualEdge, "The first edge parameter to the cross product calculation");
+        OpenSim_DECLARE_SOCKET(edgeB, FDVirtualEdge, "The second edge parameter to the cross product calculation");
 
         FDCrossProductEdge()
         {
@@ -382,8 +398,8 @@ namespace OpenSim
         {
             return
             {
-                getConnectee<VirtualEdge>("edgeA").getEdgePointsInGround(state),
-                getConnectee<VirtualEdge>("edgeB").getEdgePointsInGround(state),
+                getConnectee<FDVirtualEdge>("edgeA").getEdgePointsInGround(state),
+                getConnectee<FDVirtualEdge>("edgeB").getEdgePointsInGround(state),
             };
         }
 
@@ -391,6 +407,272 @@ namespace OpenSim
         {
             std::pair<EdgePoints, EdgePoints> const edgePoints = getBothEdgePoints(state);
             return  CrossProduct(edgePoints.first, edgePoints.second);
+        }
+    };
+
+    // "enumeration of possible axes a user may define"
+    enum class AxisIndex : int32_t {
+        X = 0,
+        Y,
+        Z,
+        TOTAL
+    };
+
+    // returns the next axis in the circular sequence x-y-z
+    constexpr AxisIndex Next(AxisIndex axis)
+    {
+        return static_cast<AxisIndex>((static_cast<int32_t>(axis) + 1) % static_cast<int32_t>(AxisIndex::TOTAL));
+    }
+    static_assert(Next(AxisIndex::X) == AxisIndex::Y);
+    static_assert(Next(AxisIndex::Y) == AxisIndex::Z);
+    static_assert(Next(AxisIndex::Z) == AxisIndex::X);
+
+    char ToChar(AxisIndex axis)
+    {
+        static_assert(static_cast<size_t>(AxisIndex::TOTAL) == 3);
+        switch (axis)
+        {
+        case AxisIndex::X:
+            return 'x';
+        case AxisIndex::Y:
+            return 'y';
+        case AxisIndex::Z:
+        default:
+            return 'z';
+        }
+    }
+
+    // returns `c` parsed as an axis index
+    std::optional<AxisIndex> ParseAxisIndex(char c)
+    {
+        switch (c)
+        {
+        case 'x':
+        case 'X':
+            return AxisIndex::X;
+        case 'y':
+        case 'Y':
+            return AxisIndex::Y;
+        case 'z':
+        case 'Z':
+            return AxisIndex::Z;
+        default:
+            return std::nullopt;
+        }
+    }
+
+    // returns the integer index equivalent of the given `axis` enumeration
+    ptrdiff_t ToIndex(AxisIndex axis)
+    {
+        return static_cast<ptrdiff_t>(axis);
+    }
+
+    // "the (potentially, negated) index of an axis in n-dimensional space"
+    struct MaybeNegatedAxis final {
+        MaybeNegatedAxis(
+            AxisIndex axisIndex_,
+            bool isNegated_) :
+
+            axisIndex{axisIndex_},
+            isNegated{isNegated_}
+        {
+        }
+        AxisIndex axisIndex;
+        bool isNegated;
+    };
+
+    // returns true if the arguments are orthogonal to eachover
+    bool IsOrthogonal(MaybeNegatedAxis const& a, MaybeNegatedAxis const& b)
+    {
+        return a.axisIndex != b.axisIndex;
+    }
+
+    // returns a (possibly, negated) axis index parsed from the given input
+    std::optional<MaybeNegatedAxis> ParseAxisDimension(std::string_view s)
+    {
+        if (s.empty())
+        {
+            return std::nullopt;
+        }
+
+        // handle (+consume) sign
+        bool isNegated = false;
+        switch (s.front())
+        {
+        case '-':
+            isNegated = true;
+            [[fallthrough]];
+        case '+':
+            s = s.substr(1);
+            break;
+        }
+
+        if (s.empty())
+        {
+            return std::nullopt;
+        }
+
+        std::optional<AxisIndex> const maybeAxisIndex = ParseAxisIndex(s.front());
+
+        if (!maybeAxisIndex)
+        {
+            return std::nullopt;
+        }
+
+        return MaybeNegatedAxis{*maybeAxisIndex, isNegated};
+    }
+
+    std::string ToString(MaybeNegatedAxis const& ax)
+    {
+        std::string rv;
+        rv.reserve(2);
+        rv.push_back(ax.isNegated ? '-' : '+');
+        rv.push_back(ToChar(ax.axisIndex));
+        return rv;
+    }
+
+    // "a frame defined from two non-parallel edges"
+    class LandmarkDefinedFrame final : public OpenSim::PhysicalFrame {
+        OpenSim_DECLARE_CONCRETE_OBJECT(LandmarkDefinedFrame, Frame)
+    public:
+        OpenSim_DECLARE_SOCKET(axisEdge, FDVirtualEdge, "The edge from which to create the first axis");
+        OpenSim_DECLARE_SOCKET(otherEdge, FDVirtualEdge, "Some other edge that is non-parallel to `axisEdge` and can be used (via a cross product) to define the frame");
+        OpenSim_DECLARE_SOCKET(origin, OpenSim::Point, "The origin (position) of the frame");
+        OpenSim_DECLARE_PROPERTY(axisEdgeDimension, std::string, "The dimension to assign to `axisEdge`. Can be -x, +x, -y, +y, -z, or +z");
+        OpenSim_DECLARE_PROPERTY(secondAxisDimension, std::string, "The dimension to assign to the second axis that is generated from the cross-product of `axisEdge` with `otherEdge`. Can be -x, +x, -y, +y, -z, or +z and must be orthogonal to `axisEdgeDimension`");
+        OpenSim_DECLARE_PROPERTY(forceShowingFrame, bool, "Whether to forcibly show the frame's decoration, even if showing frames is disabled at the model-level (decorative)");
+
+        LandmarkDefinedFrame()
+        {
+            constructProperty_axisEdgeDimension("+x");
+            constructProperty_secondAxisDimension("+y");
+            constructProperty_forceShowingFrame(true);
+        }
+
+    private:
+        void generateDecorations(
+            bool,
+            const ModelDisplayHints&,
+            const SimTK::State& state,
+            SimTK::Array_<SimTK::DecorativeGeometry>& appendOut) const final
+        {
+            if (get_forceShowingFrame() &&
+                !getModel().get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames())
+            {
+                appendOut.push_back(CreateDecorativeFrame(
+                    getTransformInGround(state)
+                ));
+            }
+        }
+
+        void extendFinalizeFromProperties() final
+        {
+            // TODO: `secondAxisDimension` must be orthogonal to `axisEdgeDimension`
+            for (OpenSim::Property<std::string> const* prop : {&getProperty_axisEdgeDimension(), &getProperty_axisEdgeDimension()})
+            {
+                if (!ParseAxisDimension(prop->getValue()))
+                {
+                    std::stringstream ss;
+                    ss << prop->getName() << ": has an invalid value ('" << prop->getValue() << "'): permitted values are -x, +x, -y, +y, -z, or +z";
+                    OPENSIM_THROW_FRMOBJ(OpenSim::Exception, std::move(ss).str());
+                }
+            }
+
+            // TODO: precompute axis string from props
+        }
+
+        SimTK::Transform calcTransformInGround(SimTK::State const& state) const final
+        {
+            // parse axis dimension string
+            std::optional<MaybeNegatedAxis> const ax1 = ParseAxisDimension(get_axisEdgeDimension());
+            std::optional<MaybeNegatedAxis> const ax2 = ParseAxisDimension(get_secondAxisDimension());
+
+            // validation check
+            if (!ax1 || !ax2 || !IsOrthogonal(*ax1, *ax2))
+            {
+                return SimTK::Transform{};  // error fallback
+            }
+
+            // get other components via sockets
+            EdgePoints const axisEdgePoints = getConnectee<FDVirtualEdge>("axisEdge").getEdgePointsInGround(state);
+            EdgePoints const otherEdgePoints = getConnectee<FDVirtualEdge>("otherEdge").getEdgePointsInGround(state);
+            SimTK::Vec3 const originPointInGround = getConnectee<OpenSim::Point>("origin").getLocationInGround(state);
+
+            // this is what the algorithm must ultimately compute in order to
+            // calculate a change-of-basis (rotation) matrix
+            std::array<SimTK::UnitVec3, 3> axes{};
+            static_assert(axes.size() == static_cast<size_t>(AxisIndex::TOTAL));
+
+            // assign first axis
+            SimTK::UnitVec3& firstAxisDir = axes.at(ToIndex(ax1->axisIndex));
+            {
+                firstAxisDir = CalcDirection(axisEdgePoints);
+                if (ax1->isNegated)
+                {
+                    firstAxisDir = -firstAxisDir;
+                }
+            }
+
+            // compute second axis (via cross product)
+            SimTK::UnitVec3& secondAxisDir = axes.at(ToIndex(ax2->axisIndex));
+            {
+                SimTK::UnitVec3 const otherEdgeDir = CalcDirection(otherEdgePoints);
+                secondAxisDir = SimTK::UnitVec3{SimTK::cross(firstAxisDir, otherEdgeDir)};
+                if (ax2->isNegated)
+                {
+                    secondAxisDir = -secondAxisDir;
+                }
+            }
+
+            // compute third axis (via cross product)
+            AxisIndex const thirdAxisIndex = Next(ax2->axisIndex) != ax1->axisIndex ?
+                Next(ax2->axisIndex) :
+                Next(ax1->axisIndex);
+            SimTK::UnitVec3& thirdAxisDir = axes.at(ToIndex(thirdAxisIndex));
+            {
+                // the "axis" and "other" can be in reverse order - ensure that the cross
+                // product is done the right way around!
+                auto const [first, second] = ax1->axisIndex < ax2->axisIndex ?
+                    std::tie(firstAxisDir, secondAxisDir) :
+                    std::tie(secondAxisDir, firstAxisDir);
+                thirdAxisDir = SimTK::UnitVec3{SimTK::cross(first, second)};
+            }
+
+            // create transform from parts
+            SimTK::Mat33 rotationMatrix;
+            rotationMatrix.col(0) = SimTK::Vec3{axes[0]};
+            rotationMatrix.col(1) = SimTK::Vec3{axes[1]};
+            rotationMatrix.col(2) = SimTK::Vec3{axes[2]};
+            SimTK::Rotation const rotation{rotationMatrix};
+            SimTK::Transform const transform{rotation, originPointInGround};
+
+            return transform;
+        }
+
+        SimTK::SpatialVec calcVelocityInGround(SimTK::State const& state) const final
+        {
+            return {};  // TODO: see OffsetFrame::calcVelocityInGround
+        }
+
+        SimTK::SpatialVec calcAccelerationInGround(SimTK::State const& state) const final
+        {
+            return {};  // TODO: see OffsetFrame::calcAccelerationInGround
+        }
+
+        Frame const& extendFindBaseFrame() const
+        {
+            return *this;
+        }
+
+        SimTK::Transform extendFindTransformInBaseFrame() const final
+        {
+            return {};
+        }
+
+        void extendAddToSystem(SimTK::MultibodySystem& system) const final
+        {
+            Super::extendAddToSystem(system);
+            setMobilizedBodyIndex(getModel().getGround().getMobilizedBodyIndex()); // TODO: the frame must be associated to a mobod
         }
     };
 }
@@ -421,7 +703,7 @@ namespace
 
     bool IsEdge(OpenSim::Component const& component)
     {
-        return dynamic_cast<OpenSim::VirtualEdge const*>(&component);
+        return dynamic_cast<OpenSim::FDVirtualEdge const*>(&component);
     }
 
     void SetupDefault3DViewportRenderingParams(osc::ModelRendererParams& renderParams)
@@ -923,8 +1205,8 @@ namespace
 
     void ActionAddCrossProductEdge(
         osc::UndoableModelStatePair& model,
-        OpenSim::VirtualEdge const& edgeA,
-        OpenSim::VirtualEdge const& edgeB)
+        OpenSim::FDVirtualEdge const& edgeA,
+        OpenSim::FDVirtualEdge const& edgeB)
     {
         // generate name
         std::string const edgeName = []()
@@ -1070,7 +1352,7 @@ namespace
     void ActionPushCreateCrossProductEdgeLayer(
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
-        OpenSim::VirtualEdge const& firstEdge,
+        OpenSim::FDVirtualEdge const& firstEdge,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent)
     {
         osc::ModelEditorViewerPanel* const visualizer =
@@ -1099,14 +1381,14 @@ namespace
             }
             std::string const& edgeBPath = *choices.begin();
 
-            OpenSim::VirtualEdge const* edgeA = osc::FindComponent<OpenSim::VirtualEdge>(model->getModel(), edgeAPath);
+            OpenSim::FDVirtualEdge const* edgeA = osc::FindComponent<OpenSim::FDVirtualEdge>(model->getModel(), edgeAPath);
             if (!edgeA)
             {
                 osc::log::error("edge A's component path (%s) does not exist in the model", edgeAPath.c_str());
                 return false;
             }
 
-            OpenSim::VirtualEdge const* edgeB = osc::FindComponent<OpenSim::VirtualEdge>(model->getModel(), edgeBPath);
+            OpenSim::FDVirtualEdge const* edgeB = osc::FindComponent<OpenSim::FDVirtualEdge>(model->getModel(), edgeBPath);
             if (!edgeB)
             {
                 osc::log::error("point B's component path (%s) does not exist in the model", edgeBPath.c_str());
@@ -1174,6 +1456,187 @@ namespace
     {
         ActionSwapSocketAssignments(model, edge.getAbsolutePath(), "pointA", "pointB");
     }
+
+    void ActionAddFrame(
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        OpenSim::FDVirtualEdge const& firstEdge,
+        OpenSim::MaybeNegatedAxis firstEdgeAxis,
+        OpenSim::FDVirtualEdge const& otherEdge,
+        OpenSim::Point const& origin)
+    {
+        // generate name
+        std::string const frameName = []()
+        {
+            std::stringstream ss;
+            ss << "frame_" << GetNextGlobalGeometrySuffix();
+            return std::move(ss).str();
+        }();
+
+        // generate commit message
+        std::string const commitMessage = [&frameName]()
+        {
+            std::stringstream ss;
+            ss << "added frame (" << frameName << ')';
+            return std::move(ss).str();
+        }();
+
+        // create the frame
+        auto frame = std::make_unique<OpenSim::LandmarkDefinedFrame>();
+        frame->set_axisEdgeDimension(OpenSim::ToString(firstEdgeAxis));
+        frame->connectSocket_axisEdge(firstEdge);
+        frame->connectSocket_otherEdge(otherEdge);
+        frame->connectSocket_origin(origin);
+
+        // perform model mutation
+        {
+            OpenSim::Model& mutModel = model->updModel();
+            OpenSim::LandmarkDefinedFrame const* const framePtr = frame.get();
+
+            mutModel.addComponent(frame.release());
+            mutModel.finalizeConnections();
+            osc::InitializeModel(mutModel);
+            osc::InitializeState(mutModel);
+            model->setSelected(framePtr);
+            model->commit(commitMessage);
+        }
+    }
+
+    void ActionEnterPickOriginForFrameDefinition(
+        osc::ModelEditorViewerPanel& visualizer,
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        std::string const& firstEdgeAbsPath,
+        OpenSim::MaybeNegatedAxis firstEdgeAxis,
+        std::string const& secondEdgeAbsPath)
+    {
+        ChooseComponentsEditorLayerParameters options;
+        options.popupHeaderText = "choose frame origin";
+        options.userCanChoosePoints = true;
+        options.userCanChooseEdges = false;
+        options.numComponentsUserMustChoose = 1;
+        options.onUserFinishedChoosing = [
+            model,
+            firstEdgeAbsPath = firstEdgeAbsPath,
+            firstEdgeAxis,
+            secondEdgeAbsPath
+        ](std::unordered_set<std::string> const& choices) -> bool
+        {
+            if (choices.empty())
+            {
+                osc::log::error("user selections from the 'choose components' layer was empty: this bug should be reported");
+                return false;
+            }
+            if (choices.size() > 1)
+            {
+                osc::log::warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
+            }
+            std::string const& originPath = *choices.begin();
+
+            OpenSim::FDVirtualEdge const* firstEdge = osc::FindComponent<OpenSim::FDVirtualEdge>(model->getModel(), firstEdgeAbsPath);
+            if (!firstEdge)
+            {
+                osc::log::error("the first edge's component path (%s) does not exist in the model", firstEdgeAbsPath.c_str());
+                return false;
+            }
+
+            OpenSim::FDVirtualEdge const* otherEdge = osc::FindComponent<OpenSim::FDVirtualEdge>(model->getModel(), secondEdgeAbsPath);
+            if (!otherEdge)
+            {
+                osc::log::error("the second edge's component path (%s) does not exist in the model", secondEdgeAbsPath.c_str());
+                return false;
+            }
+
+            OpenSim::Point const* originPoint = osc::FindComponent<OpenSim::Point>(model->getModel(), originPath);
+            if (!originPoint)
+            {
+                osc::log::error("the origin's component path (%s) does not exist in the model", originPath.c_str());
+                return false;
+            }
+
+            ActionAddFrame(
+                model,
+                *firstEdge,
+                firstEdgeAxis,
+                *otherEdge,
+                *originPoint
+            );
+            return true;
+        };
+
+        visualizer.pushLayer(std::make_unique<ChooseComponentsEditorLayer>(model, options));
+    }
+
+    void ActionEnterPickOtherEdgeStateForFrameDefinition(
+        osc::ModelEditorViewerPanel& visualizer,
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        OpenSim::FDVirtualEdge const& firstEdge,
+        OpenSim::MaybeNegatedAxis firstEdgeAxis)
+    {
+        ChooseComponentsEditorLayerParameters options;
+        options.popupHeaderText = "choose other edge";
+        options.userCanChoosePoints = false;
+        options.userCanChooseEdges = true;
+        options.componentsBeingAssignedTo = {firstEdge.getAbsolutePathString()};
+        options.numComponentsUserMustChoose = 1;
+        options.onUserFinishedChoosing = [
+            visualizerPtr = &visualizer,  // TODO: implement weak_ptr for panel lookup
+            model,
+            firstEdgeAbsPath = firstEdge.getAbsolutePathString(),
+            firstEdgeAxis
+        ](std::unordered_set<std::string> const& choices) -> bool
+        {
+            // go into "pick origin" state
+
+            if (choices.empty())
+            {
+                osc::log::error("user selections from the 'choose components' layer was empty: this bug should be reported");
+                return false;
+            }
+            if (choices.size() > 1)
+            {
+                osc::log::warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
+            }
+            std::string const& otherEdgePath = *choices.begin();
+
+            ActionEnterPickOriginForFrameDefinition(
+                *visualizerPtr,  // TODO: unsafe if not guarded by weak_ptr or similar
+                model,
+                firstEdgeAbsPath,
+                firstEdgeAxis,
+                otherEdgePath
+            );
+            return true;
+        };
+
+        visualizer.pushLayer(std::make_unique<ChooseComponentsEditorLayer>(model, options));
+    }
+
+    void ActionPushCreateFrameLayer(
+        osc::EditorAPI& editor,
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        OpenSim::FDVirtualEdge const& firstEdge,
+        OpenSim::MaybeNegatedAxis firstEdgeAxis,
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent)
+    {
+        if (!maybeSourceEvent)
+        {
+            return;
+        }
+
+        osc::ModelEditorViewerPanel* const visualizer =
+            editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
+
+        if (!visualizer)
+        {
+            return;  // can't figure out which visualizer to push the layer to
+        }
+
+        ActionEnterPickOtherEdgeStateForFrameDefinition(
+            *visualizer,
+            model,
+            firstEdge,
+            firstEdgeAxis
+        );
+    }
 }
 
 // context menu
@@ -1217,11 +1680,84 @@ namespace
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::VirtualEdge const& edge)
+        OpenSim::FDVirtualEdge const& edge)
     {
         if (maybeSourceEvent && ImGui::MenuItem(ICON_FA_TIMES " Create Cross Product Edge"))
         {
             ActionPushCreateCrossProductEdgeLayer(editor, model, edge, maybeSourceEvent);
+        }
+
+        if (maybeSourceEvent && ImGui::BeginMenu("     Create frame with this edge as"))
+        {
+            if (ImGui::MenuItem("+x"))
+            {
+                ActionPushCreateFrameLayer(
+                    editor,
+                    model,
+                    edge,
+                    OpenSim::MaybeNegatedAxis{OpenSim::AxisIndex::X, false},
+                    maybeSourceEvent
+                );
+            }
+
+            if (ImGui::MenuItem("+y"))
+            {
+                ActionPushCreateFrameLayer(
+                    editor,
+                    model,
+                    edge,
+                    OpenSim::MaybeNegatedAxis{OpenSim::AxisIndex::Y, false},
+                    maybeSourceEvent
+                );
+            }
+
+            if (ImGui::MenuItem("+z"))
+            {
+                ActionPushCreateFrameLayer(
+                    editor,
+                    model,
+                    edge,
+                    OpenSim::MaybeNegatedAxis{OpenSim::AxisIndex::Z, false},
+                    maybeSourceEvent
+                );
+            }
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("-x"))
+            {
+                ActionPushCreateFrameLayer(
+                    editor,
+                    model,
+                    edge,
+                    OpenSim::MaybeNegatedAxis{OpenSim::AxisIndex::X, true},
+                    maybeSourceEvent
+                );
+            }
+
+            if (ImGui::MenuItem("-y"))
+            {
+                ActionPushCreateFrameLayer(
+                    editor,
+                    model,
+                    edge,
+                    OpenSim::MaybeNegatedAxis{OpenSim::AxisIndex::Y, true},
+                    maybeSourceEvent
+                );
+            }
+
+            if (ImGui::MenuItem("-z"))
+            {
+                ActionPushCreateFrameLayer(
+                    editor,
+                    model,
+                    edge,
+                    OpenSim::MaybeNegatedAxis{OpenSim::AxisIndex::Z, true},
+                    maybeSourceEvent
+                );
+            }
+
+            ImGui::EndMenu();
         }
     }
 

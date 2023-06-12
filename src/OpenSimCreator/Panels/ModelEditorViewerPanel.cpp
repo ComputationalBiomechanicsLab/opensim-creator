@@ -300,7 +300,9 @@ public:
 
     ModelEditorViewerPanelLayer& pushLayer(std::unique_ptr<ModelEditorViewerPanelLayer> layer)
     {
-        return *m_Layers.emplace_back(std::move(layer));
+        // care: do not push new layers directly into `m_Layers`, because `pushLayer` can be
+        // called during iteration over `m_Layers` (e.g. during drawing)
+        return m_State.pushLayer(std::move(layer));
     }
 
     void focusOn(glm::vec3 const& pos)

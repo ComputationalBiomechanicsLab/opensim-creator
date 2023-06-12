@@ -42,9 +42,9 @@ namespace osc
 			return m_CachedModelRenderer.getDrawlist();
 		}
 
-		void pushLayer(std::unique_ptr<ModelEditorViewerPanelLayer> layer)
+		ModelEditorViewerPanelLayer& pushLayer(std::unique_ptr<ModelEditorViewerPanelLayer> layer)
 		{
-			m_LayerQueue.push_back(std::move(layer));
+			return *m_LayerQueue.emplace_back(std::move(layer));
 		}
 
 		CachedModelRenderer const& getRenderer() const

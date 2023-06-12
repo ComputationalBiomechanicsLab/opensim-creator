@@ -292,7 +292,7 @@ namespace osc
     bool ContainsSubstring(std::string_view str, std::string_view substr);
 
     // returns a lower-cased version of a string
-    std::string ToLower(std::string const&);
+    std::string ToLower(std::string_view);
 
     // returns true if `str` is equivalent to `other` (case-insensitive)
     bool IsEqualCaseInsensitive(std::string const&, std::string const&);
