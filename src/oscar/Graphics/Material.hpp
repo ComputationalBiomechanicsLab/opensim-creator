@@ -67,6 +67,9 @@ namespace osc
         std::optional<glm::mat4> getMat4(std::string_view propertyName) const;
         void setMat4(std::string_view propertyName, glm::mat4 const&);
 
+        std::optional<nonstd::span<glm::mat4 const>> getMat4Array(std::string_view propertyName) const;
+        void setMat4Array(std::string_view propertyName, nonstd::span<glm::mat4 const>);
+
         std::optional<int32_t> getInt(std::string_view propertyName) const;
         void setInt(std::string_view propertyName, int32_t);
 

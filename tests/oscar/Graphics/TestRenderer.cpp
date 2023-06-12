@@ -846,7 +846,7 @@ TEST_F(Renderer, MaterialSetFloatArrayOnMaterialCausesGetFloatArrayToReturnThePr
 
     mat.setFloatArray(key, values);
 
-    nonstd::span<float const> rv = *mat.getFloatArray(key);
+    nonstd::span<float const> rv = mat.getFloatArray(key).value();
     ASSERT_TRUE(std::equal(rv.begin(), rv.end(), values.begin(), values.end()));
 }
 
@@ -913,7 +913,7 @@ TEST_F(Renderer, MaterialSetVec3ArrayOnMaterialCausesGetVec3ArrayToReutrnTheProv
 
     mat.setVec3Array(key, values);
 
-    nonstd::span<glm::vec3 const> rv = *mat.getVec3Array(key);
+    nonstd::span<glm::vec3 const> rv = mat.getVec3Array(key).value();
     ASSERT_TRUE(std::equal(rv.begin(), rv.end(), values.begin(), values.end()));
 }
 
@@ -951,6 +951,30 @@ TEST_F(Renderer, MaterialSetMat4OnMaterialCausesGetMat4ToReturnTheProvidedValue)
     mat.setMat4(key, value);
 
     ASSERT_EQ(*mat.getMat4(key), value);
+}
+
+TEST_F(Renderer, MaterialGetMat4ArrayInitiallyReturnsNothing)
+{
+    osc::Material mat = GenerateMaterial();
+    ASSERT_FALSE(mat.getMat4Array("someKey").has_value());
+}
+
+TEST_F(Renderer, MaterialSetMat4ArrayCausesGetMat4ArrayToReturnSameSequenceOfValues)
+{
+    auto const mat4Array = osc::MakeArray<glm::mat4>(
+        GenerateMat4x4(),
+        GenerateMat4x4(),
+        GenerateMat4x4(),
+        GenerateMat4x4()
+    );
+
+    osc::Material mat = GenerateMaterial();
+    mat.setMat4Array("someKey", mat4Array);
+
+    std::optional<nonstd::span<glm::mat4 const>> rv = mat.getMat4Array("someKey");
+    ASSERT_TRUE(rv.has_value());
+    ASSERT_EQ(mat4Array.size(), rv->size());
+    ASSERT_TRUE(std::equal(mat4Array.begin(), mat4Array.end(), rv->begin()));
 }
 
 TEST_F(Renderer, MaterialSetIntOnMaterialCausesGetIntToReturnTheProvidedValue)

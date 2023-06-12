@@ -148,6 +148,7 @@ namespace
         glm::vec4,
         glm::mat3,
         glm::mat4,
+        std::vector<glm::mat4>,
         int32_t,
         bool,
         osc::Texture2D,
@@ -177,6 +178,7 @@ namespace
         case VariantIndex<MaterialValue, glm::mat3>():
             return osc::ShaderType::Mat3;
         case VariantIndex<MaterialValue, glm::mat4>():
+        case VariantIndex<MaterialValue, std::vector<glm::mat4>>():
             return osc::ShaderType::Mat4;
         case VariantIndex<MaterialValue, int32_t>():
             return osc::ShaderType::Int;
@@ -2556,6 +2558,16 @@ public:
         setValue(std::move(propertyName), value);
     }
 
+    std::optional<nonstd::span<glm::mat4 const>> getMat4Array(std::string_view propertyName) const
+    {
+        return getValue<std::vector<glm::mat4>, nonstd::span<glm::mat4 const>>(std::move(propertyName));
+    }
+
+    void setMat4Array(std::string_view propertyName, nonstd::span<glm::mat4 const> mats)
+    {
+        setValue(std::move(propertyName), std::vector<glm::mat4>(mats.begin(), mats.end()));
+    }
+
     std::optional<int32_t> getInt(std::string_view propertyName) const
     {
         return getValue<int32_t>(std::move(propertyName));
@@ -2810,6 +2822,16 @@ std::optional<glm::mat4> osc::Material::getMat4(std::string_view propertyName) c
 void osc::Material::setMat4(std::string_view propertyName, glm::mat4 const& mat)
 {
     m_Impl.upd()->setMat4(std::move(propertyName), mat);
+}
+
+std::optional<nonstd::span<glm::mat4 const>> osc::Material::getMat4Array(std::string_view propertyName) const
+{
+    return m_Impl->getMat4Array(std::move(propertyName));
+}
+
+void osc::Material::setMat4Array(std::string_view propertyName, nonstd::span<glm::mat4 const> mats)
+{
+    m_Impl.upd()->setMat4Array(std::move(propertyName), std::move(mats));
 }
 
 std::optional<int32_t> osc::Material::getInt(std::string_view propertyName) const
@@ -5282,6 +5304,17 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     {
         gl::UniformMat4 u{se.location};
         gl::Uniform(u, std::get<glm::mat4>(v));
+        break;
+    }
+    case VariantIndex<MaterialValue, std::vector<glm::mat4>>():
+    {
+        auto const& vals = std::get<std::vector<glm::mat4>>(v);
+        int32_t const numToAssign = std::min(se.size, static_cast<int32_t>(vals.size()));
+        for (int32_t i = 0; i < numToAssign; ++i)
+        {
+            gl::UniformMat4 u{se.location + i};
+            gl::Uniform(u, vals[i]);
+        }
         break;
     }
     case VariantIndex<MaterialValue, int32_t>():
