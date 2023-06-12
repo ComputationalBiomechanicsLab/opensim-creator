@@ -134,9 +134,7 @@ namespace OpenSim
         OpenSim::Appearance const& appearance)
     {
         SimTK::DecorativeSphere sphere{radius};
-        SimTK::Transform t;
-        t.setP(position);
-        sphere.setTransform(t);
+        sphere.setTransform(SimTK::Transform{position});
         SetGeomAppearance(sphere, appearance);
         return sphere;
     }
@@ -152,6 +150,8 @@ namespace OpenSim
         return line;
     }
 
+    // returns a SimTK::DecorativeMesh reperesentation of the parallelogram formed between
+    // two (potentially disconnected) edges, starting at `origin`
     SimTK::DecorativeMesh CreateParallelogramMesh(
         SimTK::Vec3 const& origin,
         SimTK::Vec3 const& firstEdge,
@@ -181,27 +181,14 @@ namespace OpenSim
         return rv;
     }
 
-    // virtual base class for "a point in the frame definition scene"
-    class FDVirtualPoint : public ModelComponent {
-        OpenSim_DECLARE_ABSTRACT_OBJECT(FDVirtualPoint, ModelComponent)
-    public:
-        SimTK::Vec3 getPositionInGround(SimTK::State const& state) const
-        {
-            return implGetPositionInGround(state);
-        }
-    private:
-        virtual SimTK::Vec3 implGetPositionInGround(SimTK::State const&) const = 0;
-    };
-
-    // "the center of a sphere located on a frame"
-    class FDSphere final : public FDVirtualPoint {
-        OpenSim_DECLARE_CONCRETE_OBJECT(FDSphere, FDVirtualPoint)
+    // a (decorative) sphere landmark, where the center is the point of interest
+    class SphereLandmark final : public OpenSim::Station {
+        OpenSim_DECLARE_CONCRETE_OBJECT(SphereLandmark, OpenSim::Station)
     public:
         OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the sphere (decorative)");
         OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance, "The appearance of the sphere (decorative)");
-        OpenSim_DECLARE_SOCKET(frame, Frame, "The frame to which the sphere is attached");
 
-        FDSphere()
+        SphereLandmark()
         {
             constructProperty_radius(c_SphereDefaultRadius);
             constructProperty_Appearance(Appearance{});
@@ -216,28 +203,22 @@ namespace OpenSim
         {
             appendOut.push_back(CreateDecorativeSphere(
                 get_radius(),
-                getPositionInGround(state),
+                getLocationInGround(state),
                 get_Appearance()
             ));
-        }
-
-    private:
-        SimTK::Vec3 implGetPositionInGround(SimTK::State const& state) const final
-        {
-            return getConnectee<Frame>("frame").getPositionInGround(state);
         }
     };
 
     // "a point between two other points"
-    class FDMidpoint final : public FDVirtualPoint {
-        OpenSim_DECLARE_CONCRETE_OBJECT(FDMidpoint, FDVirtualPoint)
+    class MidpointLandmark final : public OpenSim::Point {
+        OpenSim_DECLARE_CONCRETE_OBJECT(MidpointLandmark, OpenSim::Point)
     public:
         OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the midpoint (decorative)");
         OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance, "The appearance of the midpoint (decorative)");
-        OpenSim_DECLARE_SOCKET(pointA, FDVirtualPoint, "The first point that the midpoint is between");
-        OpenSim_DECLARE_SOCKET(pointB, FDVirtualPoint, "The second point that the midpoint is between");
+        OpenSim_DECLARE_SOCKET(pointA, OpenSim::Point, "The first point that the midpoint is between");
+        OpenSim_DECLARE_SOCKET(pointB, OpenSim::Point, "The second point that the midpoint is between");
 
-        FDMidpoint()
+        MidpointLandmark()
         {
             constructProperty_radius(c_SphereDefaultRadius);
             constructProperty_Appearance(Appearance{});
@@ -252,17 +233,31 @@ namespace OpenSim
         {
             appendOut.push_back(CreateDecorativeSphere(
                 get_radius(),
-                getPositionInGround(state),
+                getLocationInGround(state),
                 get_Appearance()
             ));
         }
 
     private:
-        SimTK::Vec3 implGetPositionInGround(SimTK::State const& state) const final
+        SimTK::Vec3 calcLocationInGround(const SimTK::State& state) const final
         {
-            SimTK::Vec3 const pointAPos = getConnectee<FDVirtualPoint>("pointA").getPositionInGround(state);
-            SimTK::Vec3 const pointBPos = getConnectee<FDVirtualPoint>("pointB").getPositionInGround(state);
-            return 0.5*(pointAPos + pointBPos);
+            SimTK::Vec3 const pointALocation = getConnectee<OpenSim::Point>("pointA").getLocationInGround(state);
+            SimTK::Vec3 const pointBLocation = getConnectee<OpenSim::Point>("pointB").getLocationInGround(state);
+            return 0.5*(pointALocation + pointBLocation);
+        }
+
+        SimTK::Vec3 calcVelocityInGround(const SimTK::State& state) const final
+        {
+            SimTK::Vec3 const pointAVelocity = getConnectee<OpenSim::Point>("pointA").getVelocityInGround(state);
+            SimTK::Vec3 const pointBVelocity = getConnectee<OpenSim::Point>("pointB").getVelocityInGround(state);
+            return 0.5*(pointAVelocity + pointBVelocity);
+        }
+
+        SimTK::Vec3 calcAccelerationInGround(const SimTK::State& state) const final
+        {
+            SimTK::Vec3 const pointAAcceleration = getConnectee<OpenSim::Point>("pointA").getAccelerationInGround(state);
+            SimTK::Vec3 const pointBAcceleration = getConnectee<OpenSim::Point>("pointB").getAccelerationInGround(state);
+            return 0.5*(pointAAcceleration + pointBAcceleration);
         }
     };
 
@@ -285,8 +280,8 @@ namespace OpenSim
     }
 
     // virtual base class for "an edge that starts at one location and ends at another"
-    class FDVirtualEdge : public ModelComponent {
-        OpenSim_DECLARE_ABSTRACT_OBJECT(FDVirtualEdge, ModelComponent)
+    class VirtualEdge : public ModelComponent {
+        OpenSim_DECLARE_ABSTRACT_OBJECT(VirtualEdge, ModelComponent)
     public:
         EdgePoints getEdgePointsInGround(SimTK::State const& state) const
         {
@@ -297,12 +292,12 @@ namespace OpenSim
     };
 
     // "an edge derived from two virtual points"
-    class FDPointToPointEdge final : public FDVirtualEdge {
-        OpenSim_DECLARE_CONCRETE_OBJECT(FDPointToPointEdge, FDVirtualEdge)
+    class FDPointToPointEdge final : public VirtualEdge {
+        OpenSim_DECLARE_CONCRETE_OBJECT(FDPointToPointEdge, VirtualEdge)
     public:
         OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance, "The appearance of the edge (decorative)");
-        OpenSim_DECLARE_SOCKET(pointA, FDVirtualPoint, "The first point that the edge is connected to");
-        OpenSim_DECLARE_SOCKET(pointB, FDVirtualPoint, "The second point that the edge is connected to");
+        OpenSim_DECLARE_SOCKET(pointA, Point, "The first point that the edge is connected to");
+        OpenSim_DECLARE_SOCKET(pointB, Point, "The second point that the edge is connected to");
 
         FDPointToPointEdge()
         {
@@ -328,24 +323,24 @@ namespace OpenSim
     private:
         EdgePoints implGetEdgePointsInGround(SimTK::State const& state) const final
         {
-            FDVirtualPoint const& pointA = getConnectee<FDVirtualPoint>("pointA");
-            SimTK::Vec3 const pointAGroundLoc = pointA.getPositionInGround(state);
+            OpenSim::Point const& pointA = getConnectee<OpenSim::Point>("pointA");
+            SimTK::Vec3 const pointAGroundLoc = pointA.getLocationInGround(state);
 
-            FDVirtualPoint const& pointB = getConnectee<FDVirtualPoint>("pointB");
-            SimTK::Vec3 const pointBGroundLoc = pointB.getPositionInGround(state);
+            OpenSim::Point const& pointB = getConnectee<OpenSim::Point>("pointB");
+            SimTK::Vec3 const pointBGroundLoc = pointB.getLocationInGround(state);
 
             return {pointAGroundLoc, pointBGroundLoc};
         }
     };
 
     // "an edge calculated from the cross product between two other edges"
-    class FDCrossProductEdge final : public FDVirtualEdge {
-        OpenSim_DECLARE_CONCRETE_OBJECT(FDCrossProductEdge, FDVirtualEdge)
+    class FDCrossProductEdge final : public VirtualEdge {
+        OpenSim_DECLARE_CONCRETE_OBJECT(FDCrossProductEdge, VirtualEdge)
     public:
         OpenSim_DECLARE_PROPERTY(showPlane, bool, "Whether to show the plane of the two edges the cross product was created from (decorative)");
         OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance, "The appearance of the edge (decorative)");
-        OpenSim_DECLARE_SOCKET(edgeA, FDVirtualEdge, "The first edge parameter to the cross product calculation");
-        OpenSim_DECLARE_SOCKET(edgeB, FDVirtualEdge, "The second edge parameter to the cross product calculation");
+        OpenSim_DECLARE_SOCKET(edgeA, VirtualEdge, "The first edge parameter to the cross product calculation");
+        OpenSim_DECLARE_SOCKET(edgeB, VirtualEdge, "The second edge parameter to the cross product calculation");
 
         FDCrossProductEdge()
         {
@@ -387,8 +382,8 @@ namespace OpenSim
         {
             return
             {
-                getConnectee<FDVirtualEdge>("edgeA").getEdgePointsInGround(state),
-                getConnectee<FDVirtualEdge>("edgeB").getEdgePointsInGround(state),
+                getConnectee<VirtualEdge>("edgeA").getEdgePointsInGround(state),
+                getConnectee<VirtualEdge>("edgeB").getEdgePointsInGround(state),
             };
         }
 
@@ -421,12 +416,12 @@ namespace
 
     bool IsPoint(OpenSim::Component const& component)
     {
-        return dynamic_cast<OpenSim::FDVirtualPoint const*>(&component);
+        return dynamic_cast<OpenSim::Point const*>(&component);
     }
 
     bool IsEdge(OpenSim::Component const& component)
     {
-        return dynamic_cast<OpenSim::FDVirtualEdge const*>(&component);
+        return dynamic_cast<OpenSim::VirtualEdge const*>(&component);
     }
 
     void SetupDefault3DViewportRenderingParams(osc::ModelRendererParams& renderParams)
@@ -815,12 +810,12 @@ namespace
         meshPhysicalOffsetFrame->set_translation(translationInMeshFrame);
 
         // attach the sphere to the frame
-        OpenSim::FDSphere const* const spherePtr = [&sphereName, &meshPhysicalOffsetFrame]()
+        OpenSim::SphereLandmark const* const spherePtr = [&sphereName, &meshPhysicalOffsetFrame]()
         {
-            auto sphere = std::make_unique<OpenSim::FDSphere>();
+            auto sphere = std::make_unique<OpenSim::SphereLandmark>();
             sphere->setName(sphereName);
-            sphere->connectSocket_frame(*meshPhysicalOffsetFrame);
-            OpenSim::FDSphere const* ptr = sphere.get();
+            sphere->connectSocket_parent_frame(*meshPhysicalOffsetFrame);
+            OpenSim::SphereLandmark const* ptr = sphere.get();
             meshPhysicalOffsetFrame->addComponent(sphere.release());
             return ptr;
         }();
@@ -848,8 +843,8 @@ namespace
 
     void ActionAddPointToPointEdge(
         osc::UndoableModelStatePair& model,
-        OpenSim::FDVirtualPoint const& pointA,
-        OpenSim::FDVirtualPoint const& pointB)
+        OpenSim::Point const& pointA,
+        OpenSim::Point const& pointB)
     {
         // generate edge name
         std::string const edgeName = []()
@@ -888,8 +883,8 @@ namespace
 
     void ActionAddMidpoint(
         osc::UndoableModelStatePair& model,
-        OpenSim::FDVirtualPoint const& pointA,
-        OpenSim::FDVirtualPoint const& pointB)
+        OpenSim::Point const& pointA,
+        OpenSim::Point const& pointB)
     {
         // generate name
         std::string const midpointName = []()
@@ -900,7 +895,7 @@ namespace
         }();
 
         // construct midpoint
-        auto midpoint = std::make_unique<OpenSim::FDMidpoint>();
+        auto midpoint = std::make_unique<OpenSim::MidpointLandmark>();
         midpoint->connectSocket_pointA(pointA);
         midpoint->connectSocket_pointB(pointB);
 
@@ -915,7 +910,7 @@ namespace
         // finally, perform the model mutation
         {
             OpenSim::Model& mutableModel = model.updModel();
-            OpenSim::FDMidpoint const* midpointPtr = midpoint.get();
+            OpenSim::MidpointLandmark const* midpointPtr = midpoint.get();
 
             mutableModel.addComponent(midpoint.release());
             mutableModel.finalizeConnections();
@@ -928,8 +923,8 @@ namespace
 
     void ActionAddCrossProductEdge(
         osc::UndoableModelStatePair& model,
-        OpenSim::FDVirtualEdge const& edgeA,
-        OpenSim::FDVirtualEdge const& edgeB)
+        OpenSim::VirtualEdge const& edgeA,
+        OpenSim::VirtualEdge const& edgeB)
     {
         // generate name
         std::string const edgeName = []()
@@ -969,7 +964,7 @@ namespace
     void ActionPushCreateEdgeToOtherPointLayer(
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
-        OpenSim::FDVirtualPoint const& point,
+        OpenSim::Point const& point,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent)
     {
         osc::ModelEditorViewerPanel* const visualizer =
@@ -998,14 +993,14 @@ namespace
             }
             std::string const& pointBPath = *choices.begin();
 
-            OpenSim::FDVirtualPoint const* pointA = osc::FindComponent<OpenSim::FDVirtualPoint>(model->getModel(), pointAPath);
+            OpenSim::Point const* pointA = osc::FindComponent<OpenSim::Point>(model->getModel(), pointAPath);
             if (!pointA)
             {
                 osc::log::error("point A's component path (%s) does not exist in the model", pointAPath.c_str());
                 return false;
             }
 
-            OpenSim::FDVirtualPoint const* pointB = osc::FindComponent<OpenSim::FDVirtualPoint>(model->getModel(), pointBPath);
+            OpenSim::Point const* pointB = osc::FindComponent<OpenSim::Point>(model->getModel(), pointBPath);
             if (!pointB)
             {
                 osc::log::error("point B's component path (%s) does not exist in the model", pointBPath.c_str());
@@ -1022,7 +1017,7 @@ namespace
     void ActionPushCreateMidpointToAnotherPointLayer(
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
-        OpenSim::FDVirtualPoint const& point,
+        OpenSim::Point const& point,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent)
     {
         osc::ModelEditorViewerPanel* const visualizer =
@@ -1051,14 +1046,14 @@ namespace
             }
             std::string const& pointBPath = *choices.begin();
 
-            OpenSim::FDVirtualPoint const* pointA = osc::FindComponent<OpenSim::FDVirtualPoint>(model->getModel(), pointAPath);
+            OpenSim::Point const* pointA = osc::FindComponent<OpenSim::Point>(model->getModel(), pointAPath);
             if (!pointA)
             {
                 osc::log::error("point A's component path (%s) does not exist in the model", pointAPath.c_str());
                 return false;
             }
 
-            OpenSim::FDVirtualPoint const* pointB = osc::FindComponent<OpenSim::FDVirtualPoint>(model->getModel(), pointBPath);
+            OpenSim::Point const* pointB = osc::FindComponent<OpenSim::Point>(model->getModel(), pointBPath);
             if (!pointB)
             {
                 osc::log::error("point B's component path (%s) does not exist in the model", pointBPath.c_str());
@@ -1075,7 +1070,7 @@ namespace
     void ActionPushCreateCrossProductEdgeLayer(
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
-        OpenSim::FDVirtualEdge const& firstEdge,
+        OpenSim::VirtualEdge const& firstEdge,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent)
     {
         osc::ModelEditorViewerPanel* const visualizer =
@@ -1104,14 +1099,14 @@ namespace
             }
             std::string const& edgeBPath = *choices.begin();
 
-            OpenSim::FDVirtualEdge const* edgeA = osc::FindComponent<OpenSim::FDVirtualEdge>(model->getModel(), edgeAPath);
+            OpenSim::VirtualEdge const* edgeA = osc::FindComponent<OpenSim::VirtualEdge>(model->getModel(), edgeAPath);
             if (!edgeA)
             {
                 osc::log::error("edge A's component path (%s) does not exist in the model", edgeAPath.c_str());
                 return false;
             }
 
-            OpenSim::FDVirtualEdge const* edgeB = osc::FindComponent<OpenSim::FDVirtualEdge>(model->getModel(), edgeBPath);
+            OpenSim::VirtualEdge const* edgeB = osc::FindComponent<OpenSim::VirtualEdge>(model->getModel(), edgeBPath);
             if (!edgeB)
             {
                 osc::log::error("point B's component path (%s) does not exist in the model", edgeBPath.c_str());
@@ -1222,7 +1217,7 @@ namespace
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::FDVirtualEdge const& edge)
+        OpenSim::VirtualEdge const& edge)
     {
         if (maybeSourceEvent && ImGui::MenuItem(ICON_FA_TIMES " Create Cross Product Edge"))
         {
@@ -1267,7 +1262,7 @@ namespace
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::FDVirtualPoint const& point)
+        OpenSim::Point const& point)
     {
         osc::DrawRightClickedComponentContextMenuHeader(point);
         osc::DrawContextMenuSeparator();
@@ -1358,7 +1353,7 @@ namespace
             {
                 DrawRightClickedMeshContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeMesh);
             }
-            else if (OpenSim::FDVirtualPoint const* maybePoint = dynamic_cast<OpenSim::FDVirtualPoint const*>(maybeComponent))
+            else if (OpenSim::Point const* maybePoint = dynamic_cast<OpenSim::Point const*>(maybeComponent))
             {
                 DrawRightClickedPointContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybePoint);
             }
