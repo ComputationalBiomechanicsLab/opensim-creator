@@ -4,11 +4,13 @@
 #include "oscar/Graphics/Camera.hpp"
 #include "oscar/Graphics/ColorSpace.hpp"
 #include "oscar/Graphics/GraphicsHelpers.hpp"
+#include "oscar/Graphics/Material.hpp"
 #include "oscar/Graphics/Mesh.hpp"
 #include "oscar/Graphics/MeshGen.hpp"
 #include "oscar/Graphics/RenderTexture.hpp"
 #include "oscar/Graphics/RenderTextureDescriptor.hpp"
 #include "oscar/Graphics/RenderTextureReadWrite.hpp"
+#include "oscar/Graphics/Shader.hpp"
 #include "oscar/Graphics/Texture2D.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
@@ -186,6 +188,16 @@ private:
 
     UID m_TabID;
     std::weak_ptr<TabHost> m_Parent;
+
+    Material m_ShadowMappingMaterial
+    {
+        Shader
+        {
+            App::slurp("shaders/ExperimentPointShadows.vert"),
+            App::slurp("shaders/ExperimentPointShadows.geom"),
+            App::slurp("shaders/ExperimentPointShadows.frag"),
+        },
+    };
 
     Camera m_SceneCamera = CreateSceneCamera();
     bool m_IsMouseCaptured = false;
