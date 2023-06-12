@@ -1871,7 +1871,11 @@ namespace
             // draw vertical drop line where the coordinate's value currently is
             {
                 double v = coordinateXInDegrees;
-                ImPlot::DragLineX(10, &v, {1.0f, 1.0f, 0.0f, 0.6f}, 1.0f, ImPlotDragToolFlags_NoInputs);
+
+                // CARE: this drag line shouldn't cause ImPlot to re-fit because it will
+                // make ImPlot re-fit the plot as the user's mouse moves/drags over it, which
+                // looks very very glitchy (#490)
+                ImPlot::DragLineX(10, &v, {1.0f, 1.0f, 0.0f, 0.6f}, 1.0f, ImPlotDragToolFlags_NoInputs | ImPlotDragToolFlags_NoFit);
             }
 
             // also, draw an X tag on the axes where the coordinate's value currently is
@@ -1881,7 +1885,11 @@ namespace
             if (maybeMouseX)
             {
                 double v = *maybeMouseX;
-                ImPlot::DragLineX(11, &v, {1.0f, 1.0f, 0.0f, 0.3f}, 1.0f, ImPlotDragToolFlags_NoInputs);
+
+                // CARE: this drag line shouldn't cause ImPlot to re-fit because it will
+                // make ImPlot re-fit the plot as the user's mouse moves/drags over it, which
+                // looks very very glitchy (#490)
+                ImPlot::DragLineX(11, &v, {1.0f, 1.0f, 0.0f, 0.3f}, 1.0f, ImPlotDragToolFlags_NoInputs | ImPlotDragToolFlags_NoFit);
             }
 
             // also, draw a faded X tag on the axes where the mouse currently is (in X)
@@ -1905,7 +1913,12 @@ namespace
                     if (maybeCoordinateY)
                     {
                         double v = *maybeCoordinateY;
-                        ImPlot::DragLineY(13, &v, {1.0f, 1.0f, 0.0f, 0.6f}, 1.0f, ImPlotDragToolFlags_NoInputs);
+
+                        // CARE: this drag line shouldn't cause ImPlot to re-fit because it will
+                        // make ImPlot re-fit the plot as the user's mouse moves/drags over it, which
+                        // looks very very glitchy (#490)
+                        ImPlot::DragLineY(13, &v, {1.0f, 1.0f, 0.0f, 0.6f}, 1.0f, ImPlotDragToolFlags_NoInputs | ImPlotDragToolFlags_NoFit);
+
                         ImPlot::Annotation(static_cast<float>(coordinateXInDegrees), *maybeCoordinateY, {1.0f, 1.0f, 1.0f, 1.0f}, {10.0f, 10.0f}, true, "%f", *maybeCoordinateY);
                     }
                 }
@@ -1917,7 +1930,12 @@ namespace
                     if (maybeHoverY)
                     {
                         double v = *maybeHoverY;
-                        ImPlot::DragLineY(14, &v, {1.0f, 1.0f, 0.0f, 0.3f}, 1.0f, ImPlotDragToolFlags_NoInputs);
+
+                        // CARE: this drag line shouldn't cause ImPlot to re-fit because it will
+                        // make ImPlot re-fit the plot as the user's mouse moves/drags over it, which
+                        // looks very very glitchy (#490)
+                        ImPlot::DragLineY(14, &v, {1.0f, 1.0f, 0.0f, 0.3f}, 1.0f, ImPlotDragToolFlags_NoInputs | ImPlotDragToolFlags_NoFit);
+
                         ImPlot::Annotation(*maybeMouseX, *maybeHoverY, {1.0f, 1.0f, 1.0f, 0.6f}, {10.0f, 10.0f}, true, "%f", *maybeHoverY);
                     }
                 }

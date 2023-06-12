@@ -13,6 +13,8 @@ All notable changes to this project will be documented here. The format is based
 - The `Appearance` property editor only updates the model after the user lets go of their mouse (#702)
   - This is to improve the performance of scrolling through colors
   - And prevents color edits from filling the undo/redo buffer of the UI
+- Fixed live muscle plot sometimes glitches when moving the mouse over it with particular
+  plots (thanks @JuliaVanBeesel, #703)
 - Internal: OSC's renderer can now render all not-PBR parts of the LearnOpenGL tutorial series, which
   required adding support for multiple render targets (MRTs, #493)
 - Internal: OpenSimCreator's source code is now split into "OpenSimCreator" and "oscar" (#635):
