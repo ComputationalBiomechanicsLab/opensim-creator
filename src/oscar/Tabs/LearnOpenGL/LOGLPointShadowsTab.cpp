@@ -198,6 +198,14 @@ private:
             App::slurp("shaders/ExperimentPointShadows.frag"),
         },
     };
+    Material m_SceneMaterial
+    {
+        Shader
+        {
+            App::slurp("shaders/ExperimentPointShadowsScene.vert"),
+            App::slurp("shaders/ExperimentPointShadowsScene.frag"),
+        },
+    };
 
     Camera m_SceneCamera = CreateSceneCamera();
     bool m_IsMouseCaptured = false;
