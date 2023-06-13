@@ -590,6 +590,7 @@ namespace OpenSim
 
         void extendFinalizeFromProperties() final
         {
+            // ensure `axisEdge` is a correct property value
             std::optional<MaybeNegatedAxis> const maybeAxisEdge = ParseAxisDimension(get_axisEdgeDimension());
             if (!maybeAxisEdge)
             {
@@ -599,6 +600,7 @@ namespace OpenSim
             }
             MaybeNegatedAxis const& axisEdge = *maybeAxisEdge;
 
+            // ensure `otherEdge` is a correct property value
             std::optional<MaybeNegatedAxis> const maybeOtherEdge = ParseAxisDimension(get_secondAxisDimension());
             if (!maybeOtherEdge)
             {
@@ -608,6 +610,7 @@ namespace OpenSim
             }
             MaybeNegatedAxis const& otherEdge = *maybeOtherEdge;
 
+            // ensure `axisEdge` is orthogonal to `otherEdge`
             if (!IsOrthogonal(axisEdge, otherEdge))
             {
                 std::stringstream ss;
@@ -660,18 +663,17 @@ namespace OpenSim
             }
 
             // compute third axis (via cross product)
-            AxisIndex const thirdAxisIndex = Next(ax2->axisIndex) != ax1->axisIndex ?
-                Next(ax2->axisIndex) :
-                Next(ax1->axisIndex);
-            SimTK::UnitVec3& thirdAxisDir = axes.at(ToIndex(thirdAxisIndex));
+            struct ThirdEdgeOperands
             {
-                // the "axis" and "other" can be in reverse order - ensure that the cross
-                // product is done the right way around!
-                auto const [first, second] = ax1->axisIndex < ax2->axisIndex ?
-                    std::tie(firstAxisDir, secondAxisDir) :
-                    std::tie(secondAxisDir, firstAxisDir);
-                thirdAxisDir = SimTK::UnitVec3{SimTK::cross(first, second)};
-            }
+                SimTK::UnitVec3 const& firstDir;
+                SimTK::UnitVec3 const& secondDir;
+                AxisIndex resultAxisIndex;
+            };
+            ThirdEdgeOperands const ops = Next(ax1->axisIndex) == ax2->axisIndex ?
+                ThirdEdgeOperands{firstAxisDir, secondAxisDir, Next(ax2->axisIndex)} :
+                ThirdEdgeOperands{secondAxisDir, firstAxisDir, Next(ax1->axisIndex)};
+
+            axes.at(ToIndex(ops.resultAxisIndex)) = SimTK::UnitVec3{SimTK::cross(ops.firstDir, ops.secondDir)};
 
             // create transform from parts
             SimTK::Mat33 rotationMatrix;
