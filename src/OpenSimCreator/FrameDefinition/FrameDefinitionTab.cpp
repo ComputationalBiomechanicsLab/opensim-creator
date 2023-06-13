@@ -150,6 +150,7 @@ namespace OpenSim
         return line;
     }
 
+    // returns a decorative frame based on the provided transform
     SimTK::DecorativeFrame CreateDecorativeFrame(
         SimTK::Transform const& transformInGround)
     {
@@ -192,7 +193,7 @@ namespace OpenSim
         return rv;
     }
 
-    // a (decorative) sphere landmark, where the center is the point of interest
+    // a sphere landmark, where the center of the sphere is the point of interest
     class SphereLandmark final : public OpenSim::Station {
         OpenSim_DECLARE_CONCRETE_OBJECT(SphereLandmark, OpenSim::Station)
     public:
@@ -220,7 +221,7 @@ namespace OpenSim
         }
     };
 
-    // "a point between two other points"
+    // a landmark defined as a point between two other points
     class MidpointLandmark final : public OpenSim::Point {
         OpenSim_DECLARE_CONCRETE_OBJECT(MidpointLandmark, OpenSim::Point)
     public:
@@ -278,11 +279,17 @@ namespace OpenSim
         SimTK::Vec3 end;
     };
 
+    // returns the direction vector between the `start` and `end` points
     SimTK::UnitVec3 CalcDirection(EdgePoints const& a)
     {
         return SimTK::UnitVec3{a.end - a.start};
     }
 
+    // returns points for an edge that:
+    //
+    // - originates at `a.start`
+    // - points in the direction of `a x b`
+    // - has a magnitude of min(|a|, |b|) - handy for rendering
     EdgePoints CrossProduct(EdgePoints const& a, EdgePoints const& b)
     {
         // TODO: if cross product isn't possible (e.g. angle between vectors is zero)
@@ -295,7 +302,8 @@ namespace OpenSim
         return {a.start, a.start + (resultEdgeLength*resultEdge)};
     }
 
-    // virtual base class for "an edge that starts at one location and ends at another"
+    // virtual base class for an edge that starts at one location in ground and ends at
+    // some other location in ground
     class FDVirtualEdge : public ModelComponent {
         OpenSim_DECLARE_ABSTRACT_OBJECT(FDVirtualEdge, ModelComponent)
     public:
@@ -307,7 +315,7 @@ namespace OpenSim
         virtual EdgePoints implGetEdgePointsInGround(SimTK::State const&) const = 0;
     };
 
-    // "an edge derived from two virtual points"
+    // an edge that starts at virtual `pointA` and ends at virtual `pointB`
     class FDPointToPointEdge final : public FDVirtualEdge {
         OpenSim_DECLARE_CONCRETE_OBJECT(FDPointToPointEdge, FDVirtualEdge)
     public:
@@ -349,7 +357,11 @@ namespace OpenSim
         }
     };
 
-    // "an edge calculated from the cross product between two other edges"
+    // an edge that is computed from `edgeA x edgeB`
+    //
+    // - originates at `a.start`
+    // - points in the direction of `a x b`
+    // - has a magnitude of min(|a|, |b|) - handy for rendering
     class FDCrossProductEdge final : public FDVirtualEdge {
         OpenSim_DECLARE_CONCRETE_OBJECT(FDCrossProductEdge, FDVirtualEdge)
     public:
@@ -410,7 +422,7 @@ namespace OpenSim
         }
     };
 
-    // "enumeration of possible axes a user may define"
+    // enumeration of the possible axes a user may define
     enum class AxisIndex : int32_t {
         X = 0,
         Y,
@@ -418,7 +430,7 @@ namespace OpenSim
         TOTAL
     };
 
-    // returns the next axis in the circular sequence x-y-z
+    // returns the next `AxisIndex` in the circular sequence X -> Y -> Z
     constexpr AxisIndex Next(AxisIndex axis)
     {
         return static_cast<AxisIndex>((static_cast<int32_t>(axis) + 1) % static_cast<int32_t>(AxisIndex::TOTAL));
@@ -427,6 +439,7 @@ namespace OpenSim
     static_assert(Next(AxisIndex::Y) == AxisIndex::Z);
     static_assert(Next(AxisIndex::Z) == AxisIndex::X);
 
+    // returns a char representation of the given `AxisIndex`
     char ToChar(AxisIndex axis)
     {
         static_assert(static_cast<size_t>(AxisIndex::TOTAL) == 3);
@@ -442,7 +455,8 @@ namespace OpenSim
         }
     }
 
-    // returns `c` parsed as an axis index
+    // returns `c` parsed as an `AxisIndex`, or `std::nullopt` if the given char
+    // cannot be parsed as an axis index
     std::optional<AxisIndex> ParseAxisIndex(char c)
     {
         switch (c)
@@ -461,13 +475,13 @@ namespace OpenSim
         }
     }
 
-    // returns the integer index equivalent of the given `axis` enumeration
+    // returns the integer index equivalent of the given `AxisIndex`
     ptrdiff_t ToIndex(AxisIndex axis)
     {
         return static_cast<ptrdiff_t>(axis);
     }
 
-    // "the (potentially, negated) index of an axis in n-dimensional space"
+    // the potentially negated index of an axis in n-dimensional space
     struct MaybeNegatedAxis final {
         MaybeNegatedAxis(
             AxisIndex axisIndex_,
@@ -481,13 +495,15 @@ namespace OpenSim
         bool isNegated;
     };
 
-    // returns true if the arguments are orthogonal to eachover
+    // returns `true` if the arguments are orthogonal to eachover; otherwise, returns `false`
     bool IsOrthogonal(MaybeNegatedAxis const& a, MaybeNegatedAxis const& b)
     {
         return a.axisIndex != b.axisIndex;
     }
 
-    // returns a (possibly, negated) axis index parsed from the given input
+    // returns a (possibly negated) `AxisIndex` parsed from the given input
+    //
+    // if the input is invalid in some way, returns `std::nullopt`
     std::optional<MaybeNegatedAxis> ParseAxisDimension(std::string_view s)
     {
         if (s.empty())
@@ -522,6 +538,7 @@ namespace OpenSim
         return MaybeNegatedAxis{*maybeAxisIndex, isNegated};
     }
 
+    // returns a string representation of the given (possibly negated) axis
     std::string ToString(MaybeNegatedAxis const& ax)
     {
         std::string rv;
@@ -531,7 +548,13 @@ namespace OpenSim
         return rv;
     }
 
-    // "a frame defined from two non-parallel edges"
+    // a frame that is defined by:
+    //
+    // - an "axis" edge
+    // - a designation of what axis the "axis" edge lies along
+    // - an "other" edge, which should be non-parallel to the "axis" edge
+    // - a desgination of what axis the cross product `axis x other` lies along
+    // - an "origin" point, which is where the origin of the frame should be defined
     class LandmarkDefinedFrame final : public OpenSim::PhysicalFrame {
         OpenSim_DECLARE_CONCRETE_OBJECT(LandmarkDefinedFrame, Frame)
     public:
@@ -567,18 +590,30 @@ namespace OpenSim
 
         void extendFinalizeFromProperties() final
         {
-            // TODO: `secondAxisDimension` must be orthogonal to `axisEdgeDimension`
-            for (OpenSim::Property<std::string> const* prop : {&getProperty_axisEdgeDimension(), &getProperty_axisEdgeDimension()})
+            std::optional<MaybeNegatedAxis> const maybeAxisEdge = ParseAxisDimension(get_axisEdgeDimension());
+            if (!maybeAxisEdge)
             {
-                if (!ParseAxisDimension(prop->getValue()))
-                {
-                    std::stringstream ss;
-                    ss << prop->getName() << ": has an invalid value ('" << prop->getValue() << "'): permitted values are -x, +x, -y, +y, -z, or +z";
-                    OPENSIM_THROW_FRMOBJ(OpenSim::Exception, std::move(ss).str());
-                }
+                std::stringstream ss;
+                ss << getProperty_axisEdgeDimension().getName() << ": has an invalid value ('" << get_axisEdgeDimension() << "'): permitted values are -x, +x, -y, +y, -z, or +z";
+                OPENSIM_THROW_FRMOBJ(OpenSim::Exception, std::move(ss).str());
             }
+            MaybeNegatedAxis const& axisEdge = *maybeAxisEdge;
 
-            // TODO: precompute axis string from props
+            std::optional<MaybeNegatedAxis> const maybeOtherEdge = ParseAxisDimension(get_secondAxisDimension());
+            if (!maybeOtherEdge)
+            {
+                std::stringstream ss;
+                ss << getProperty_secondAxisDimension().getName() << ": has an invalid value ('" << get_secondAxisDimension() << "'): permitted values are -x, +x, -y, +y, -z, or +z";
+                OPENSIM_THROW_FRMOBJ(OpenSim::Exception, std::move(ss).str());
+            }
+            MaybeNegatedAxis const& otherEdge = *maybeOtherEdge;
+
+            if (!IsOrthogonal(axisEdge, otherEdge))
+            {
+                std::stringstream ss;
+                ss << getProperty_axisEdgeDimension().getName() << " (" << get_axisEdgeDimension() << ") and " << getProperty_secondAxisDimension().getName() << " (" << get_secondAxisDimension() << ") are not orthogonal";
+                OPENSIM_THROW_FRMOBJ(OpenSim::Exception, std::move(ss).str());
+            }
         }
 
         SimTK::Transform calcTransformInGround(SimTK::State const& state) const final
@@ -1084,22 +1119,14 @@ namespace
 
         OpenSim::Model const& immutableModel = model.getModel();
 
-        // add an offset frame to the mesh: this is how the sphere can be
-        // freely moved in the scene
-        auto meshPhysicalOffsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-        meshPhysicalOffsetFrame->setParentFrame(dynamic_cast<OpenSim::PhysicalFrame const&>(mesh.getFrame()));
-        meshPhysicalOffsetFrame->setName(sphereName + "_offset");
-        meshPhysicalOffsetFrame->set_translation(translationInMeshFrame);
-
-        // attach the sphere to the frame
-        OpenSim::SphereLandmark const* const spherePtr = [&sphereName, &meshPhysicalOffsetFrame]()
+        // attach the sphere to the mesh's frame
+        std::unique_ptr<OpenSim::SphereLandmark> sphere = [&mesh, &translationInMeshFrame, &sphereName]()
         {
             auto sphere = std::make_unique<OpenSim::SphereLandmark>();
             sphere->setName(sphereName);
-            sphere->connectSocket_parent_frame(*meshPhysicalOffsetFrame);
-            OpenSim::SphereLandmark const* ptr = sphere.get();
-            meshPhysicalOffsetFrame->addComponent(sphere.release());
-            return ptr;
+            sphere->set_location(translationInMeshFrame);
+            sphere->connectSocket_parent_frame(mesh.getFrame());
+            return sphere;
         }();
 
         // create a human-readable commit message
@@ -1113,7 +1140,9 @@ namespace
         // finally, perform the model mutation
         {
             OpenSim::Model& mutableModel = model.updModel();
-            mutableModel.addComponent(meshPhysicalOffsetFrame.release());
+            OpenSim::SphereLandmark const* const spherePtr = sphere.get();
+
+            mutableModel.addComponent(sphere.release());
             mutableModel.finalizeConnections();
             osc::InitializeModel(mutableModel);
             osc::InitializeState(mutableModel);
