@@ -496,6 +496,11 @@ namespace OpenSim
         bool isNegated;
     };
 
+    MaybeNegatedAxis Next(MaybeNegatedAxis ax)
+    {
+        return MaybeNegatedAxis{Next(ax.axisIndex), ax.isNegated};
+    }
+
     // returns `true` if the arguments are orthogonal to eachover; otherwise, returns `false`
     bool IsOrthogonal(MaybeNegatedAxis const& a, MaybeNegatedAxis const& b)
     {
@@ -1515,6 +1520,7 @@ namespace
         // create the frame
         auto frame = std::make_unique<OpenSim::LandmarkDefinedFrame>();
         frame->set_axisEdgeDimension(OpenSim::ToString(firstEdgeAxis));
+        frame->set_secondAxisDimension(ToString(Next(firstEdgeAxis)));
         frame->connectSocket_axisEdge(firstEdge);
         frame->connectSocket_otherEdge(otherEdge);
         frame->connectSocket_origin(origin);
