@@ -889,6 +889,109 @@ namespace
         property_type m_OriginalProperty{"blank", true};
         property_type m_EditedProperty{"blank", true};
     };
+
+    class IntPropertyEditor final : public VirtualPropertyEditor {
+    public:
+        using property_type = OpenSim::SimpleProperty<int>;
+
+        IntPropertyEditor(
+            osc::EditorAPI*,
+            std::shared_ptr<osc::UndoableModelStatePair const>,
+            std::function<property_type const*()> accessor_) :
+
+            m_Accessor{std::move(accessor_)}
+        {
+        }
+
+    private:
+        std::type_info const& implGetTypeInfo() const final
+        {
+            return typeid(property_type);
+        }
+
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() final
+        {
+            property_type const* maybeProp = m_Accessor();
+            if (!maybeProp)
+            {
+                return std::nullopt;
+            }
+            property_type const& prop = *maybeProp;
+
+            // update any cached data
+            if (!prop.equals(m_OriginalProperty))
+            {
+                m_OriginalProperty = prop;
+                m_EditedProperty = prop;
+            }
+
+            ImGui::Separator();
+
+            // draw name of the property in left-hand column
+            DrawPropertyName(m_EditedProperty);
+            ImGui::NextColumn();
+
+            // draw `n` editors in right-hand column
+            std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
+            for (int idx = 0; idx < std::max(m_EditedProperty.size(), 1); ++idx)
+            {
+                ImGui::PushID(idx);
+                std::optional<std::function<void(OpenSim::AbstractProperty&)>> editorRv = drawIthEditor(idx);
+                ImGui::PopID();
+
+                if (!rv)
+                {
+                    rv = std::move(editorRv);
+                }
+            }
+            ImGui::NextColumn();
+
+            return rv;
+        }
+
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> drawIthEditor(int idx)
+        {
+            std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
+
+            // draw trash can that can delete an element from the property's list
+            if (m_EditedProperty.isListProperty())
+            {
+                if (ImGui::Button(ICON_FA_TRASH))
+                {
+                    rv = MakePropElementDeleter<int>(idx);
+                }
+                ImGui::SameLine();
+            }
+
+            // read stored value from edited property
+            //
+            // care: optional properties have size==0, so perform a range check
+            int value = idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : false;
+            bool edited = false;
+
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            if (ImGui::InputInt("##inteditor", &value))
+            {
+                // update the edited property - don't rely on ImGui to remember edits
+                m_EditedProperty.setValue(idx, value);
+                edited = true;
+            }
+
+            // globally annotate the editor rect, for downstream screenshot automation
+            osc::App::upd().addFrameAnnotation("ObjectPropertiesEditor::IntEditor/" + m_EditedProperty.getName(), osc::GetItemRect());
+
+            if (edited || osc::ItemValueShouldBeSaved())
+            {
+                rv = MakePropValueSetter<int>(idx, m_EditedProperty.getValue(idx));
+            }
+
+            return rv;
+        }
+
+        std::function<property_type const*()> m_Accessor;
+        property_type m_OriginalProperty{"blank", true};
+        property_type m_EditedProperty{"blank", true};
+    };
 }
 
 // concrete property editors for object types
@@ -1168,6 +1271,7 @@ namespace
             registerEditor<BoolPropertyEditor>();
             registerEditor<Vec3PropertyEditor>();
             registerEditor<Vec6PropertyEditor>();
+            registerEditor<IntPropertyEditor>();
             registerEditor<AppearancePropertyEditor>();
             registerEditor<ContactParameterSetEditor>();
             registerEditor<GeometryPathPropertyEditor>();

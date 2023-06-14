@@ -15,6 +15,8 @@ All notable changes to this project will be documented here. The format is based
   - And prevents color edits from filling the undo/redo buffer of the UI
 - Fixed live muscle plot sometimes glitches when moving the mouse over it with particular
   plots (thanks @JuliaVanBeesel, #703)
+- Added support for editing `int` property values, which is handy for some component types (e.g.
+  `PrescribedController`, #704)
 - Internal: OSC's renderer can now render all not-PBR parts of the LearnOpenGL tutorial series, which
   required adding support for multiple render targets (MRTs, #493)
 - Internal: OpenSimCreator's source code is now split into "OpenSimCreator" and "oscar" (#635):
