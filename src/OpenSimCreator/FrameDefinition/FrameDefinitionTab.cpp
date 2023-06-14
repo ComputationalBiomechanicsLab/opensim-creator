@@ -181,6 +181,7 @@ namespace OpenSim
             };
 
             SimTK::Array_<int> face;
+            face.reserve(static_cast<unsigned int>(verts.size()));
             for (SimTK::Vec3 const& vert : verts)
             {
                 face.push_back(polygonalMesh.addVertex(vert));
@@ -188,7 +189,7 @@ namespace OpenSim
             polygonalMesh.addFace(face);
         }
 
-        SimTK::DecorativeMesh rv{polygonalMesh};
+        SimTK::DecorativeMesh rv{std::move(polygonalMesh)};
         SetGeomAppearance(rv, appearance);
         return rv;
     }
@@ -511,16 +512,11 @@ namespace OpenSim
             return std::nullopt;
         }
 
-        // handle (+consume) sign
-        bool isNegated = false;
-        switch (s.front())
+        // handle and consume sign prefix
+        bool const isNegated = s.front() == '-';
+        if (isNegated || s.front() == '+')
         {
-        case '-':
-            isNegated = true;
-            [[fallthrough]];
-        case '+':
             s = s.substr(1);
-            break;
         }
 
         if (s.empty())
@@ -528,8 +524,8 @@ namespace OpenSim
             return std::nullopt;
         }
 
+        // handle axis suffix
         std::optional<AxisIndex> const maybeAxisIndex = ParseAxisIndex(s.front());
-
         if (!maybeAxisIndex)
         {
             return std::nullopt;
@@ -590,6 +586,15 @@ namespace OpenSim
 
         void extendFinalizeFromProperties() final
         {
+            tryParseAxisArgumentsAsOrthogonalAxes();  // throws on error
+        }
+
+        struct ParsedAxisArguments final {
+            MaybeNegatedAxis axisEdge;
+            MaybeNegatedAxis otherEdge;
+        };
+        ParsedAxisArguments tryParseAxisArgumentsAsOrthogonalAxes() const
+        {
             // ensure `axisEdge` is a correct property value
             std::optional<MaybeNegatedAxis> const maybeAxisEdge = ParseAxisDimension(get_axisEdgeDimension());
             if (!maybeAxisEdge)
@@ -617,24 +622,22 @@ namespace OpenSim
                 ss << getProperty_axisEdgeDimension().getName() << " (" << get_axisEdgeDimension() << ") and " << getProperty_secondAxisDimension().getName() << " (" << get_secondAxisDimension() << ") are not orthogonal";
                 OPENSIM_THROW_FRMOBJ(OpenSim::Exception, std::move(ss).str());
             }
+
+            return ParsedAxisArguments{axisEdge, otherEdge};
         }
 
         SimTK::Transform calcTransformInGround(SimTK::State const& state) const final
         {
-            // parse axis dimension string
-            std::optional<MaybeNegatedAxis> const ax1 = ParseAxisDimension(get_axisEdgeDimension());
-            std::optional<MaybeNegatedAxis> const ax2 = ParseAxisDimension(get_secondAxisDimension());
+            // parse axis properties
+            auto const [axisEdge, otherEdge] = tryParseAxisArgumentsAsOrthogonalAxes();
 
-            // validation check
-            if (!ax1 || !ax2 || !IsOrthogonal(*ax1, *ax2))
-            {
-                return SimTK::Transform{};  // error fallback
-            }
-
-            // get other components via sockets
-            EdgePoints const axisEdgePoints = getConnectee<FDVirtualEdge>("axisEdge").getEdgePointsInGround(state);
-            EdgePoints const otherEdgePoints = getConnectee<FDVirtualEdge>("otherEdge").getEdgePointsInGround(state);
-            SimTK::Vec3 const originPointInGround = getConnectee<OpenSim::Point>("origin").getLocationInGround(state);
+            // get other edges/points via sockets
+            SimTK::UnitVec3 const axisEdgeDir =
+                CalcDirection(getConnectee<FDVirtualEdge>("axisEdge").getEdgePointsInGround(state));
+            SimTK::UnitVec3 const otherEdgeDir =
+                CalcDirection(getConnectee<FDVirtualEdge>("otherEdge").getEdgePointsInGround(state));
+            SimTK::Vec3 const originLocationInGround =
+                getConnectee<OpenSim::Point>("origin").getLocationInGround(state);
 
             // this is what the algorithm must ultimately compute in order to
             // calculate a change-of-basis (rotation) matrix
@@ -642,48 +645,44 @@ namespace OpenSim
             static_assert(axes.size() == static_cast<size_t>(AxisIndex::TOTAL));
 
             // assign first axis
-            SimTK::UnitVec3& firstAxisDir = axes.at(ToIndex(ax1->axisIndex));
-            {
-                firstAxisDir = CalcDirection(axisEdgePoints);
-                if (ax1->isNegated)
-                {
-                    firstAxisDir = -firstAxisDir;
-                }
-            }
+            SimTK::UnitVec3& firstAxisDir = axes.at(ToIndex(axisEdge.axisIndex));
+            firstAxisDir = axisEdge.isNegated ? -axisEdgeDir : axisEdgeDir;
 
             // compute second axis (via cross product)
-            SimTK::UnitVec3& secondAxisDir = axes.at(ToIndex(ax2->axisIndex));
+            SimTK::UnitVec3& secondAxisDir = axes.at(ToIndex(otherEdge.axisIndex));
             {
-                SimTK::UnitVec3 const otherEdgeDir = CalcDirection(otherEdgePoints);
-                secondAxisDir = SimTK::UnitVec3{SimTK::cross(firstAxisDir, otherEdgeDir)};
-                if (ax2->isNegated)
+                secondAxisDir = SimTK::UnitVec3{SimTK::cross(axisEdgeDir, otherEdgeDir)};
+                if (otherEdge.isNegated)
                 {
                     secondAxisDir = -secondAxisDir;
                 }
             }
 
             // compute third axis (via cross product)
-            struct ThirdEdgeOperands
             {
-                SimTK::UnitVec3 const& firstDir;
-                SimTK::UnitVec3 const& secondDir;
-                AxisIndex resultAxisIndex;
-            };
-            ThirdEdgeOperands const ops = Next(ax1->axisIndex) == ax2->axisIndex ?
-                ThirdEdgeOperands{firstAxisDir, secondAxisDir, Next(ax2->axisIndex)} :
-                ThirdEdgeOperands{secondAxisDir, firstAxisDir, Next(ax1->axisIndex)};
+                // care: the user is allowed to specify axes out-of-order
+                //
+                // so this bit of code calculates the correct ordering, assuming that
+                // axes are in a circular X -> Y -> Z relationship w.r.t. cross products
+                struct ThirdEdgeOperands final
+                {
+                    SimTK::UnitVec3 const& firstDir;
+                    SimTK::UnitVec3 const& secondDir;
+                    AxisIndex resultAxisIndex;
+                };
+                ThirdEdgeOperands const ops = Next(axisEdge.axisIndex) == otherEdge.axisIndex ?
+                    ThirdEdgeOperands{firstAxisDir, secondAxisDir, Next(otherEdge.axisIndex)} :
+                    ThirdEdgeOperands{secondAxisDir, firstAxisDir, Next(axisEdge.axisIndex)};
 
-            axes.at(ToIndex(ops.resultAxisIndex)) = SimTK::UnitVec3{SimTK::cross(ops.firstDir, ops.secondDir)};
+                SimTK::UnitVec3 const thirdAxisDir = SimTK::UnitVec3{SimTK::cross(ops.firstDir, ops.secondDir)};
+                axes.at(ToIndex(ops.resultAxisIndex)) = thirdAxisDir;
+            }
 
-            // create transform from parts
-            SimTK::Mat33 rotationMatrix;
-            rotationMatrix.col(0) = SimTK::Vec3{axes[0]};
-            rotationMatrix.col(1) = SimTK::Vec3{axes[1]};
-            rotationMatrix.col(2) = SimTK::Vec3{axes[2]};
+            // create transform from orthogonal axes and origin
+            SimTK::Mat33 const rotationMatrix{SimTK::Vec3{axes[0]}, SimTK::Vec3{axes[1]}, SimTK::Vec3{axes[2]}};
             SimTK::Rotation const rotation{rotationMatrix};
-            SimTK::Transform const transform{rotation, originPointInGround};
 
-            return transform;
+            return SimTK::Transform{rotation, originLocationInGround};
         }
 
         SimTK::SpatialVec calcVelocityInGround(SimTK::State const& state) const final
@@ -889,8 +888,6 @@ namespace
             osc::ModelEditorViewerPanelParameters& params,
             osc::ModelEditorViewerPanelState& state) final
         {
-
-
             return osc::UpdatePolarCameraFromImGuiKeyboardInputs(
                 params.updRenderParams().camera,
                 state.viewportRect,
@@ -1084,11 +1081,15 @@ namespace
         // finally, perform the model mutation
         {
             OpenSim::Model& mutableModel = model.updModel();
+            OpenSim::PhysicalOffsetFrame const* const pofPtr = meshPhysicalOffsetFrame.get();
+
             mutableModel.addComponent(meshPhysicalOffsetFrame.release());
             mutableModel.finalizeConnections();
 
             osc::InitializeModel(mutableModel);
             osc::InitializeState(mutableModel);
+            model.setSelected(pofPtr);
+
             model.commit(commitMessage);
         }
     }
@@ -1124,11 +1125,11 @@ namespace
         // attach the sphere to the mesh's frame
         std::unique_ptr<OpenSim::SphereLandmark> sphere = [&mesh, &translationInMeshFrame, &sphereName]()
         {
-            auto sphere = std::make_unique<OpenSim::SphereLandmark>();
-            sphere->setName(sphereName);
-            sphere->set_location(translationInMeshFrame);
-            sphere->connectSocket_parent_frame(mesh.getFrame());
-            return sphere;
+            auto rv = std::make_unique<OpenSim::SphereLandmark>();
+            rv->setName(sphereName);
+            rv->set_location(translationInMeshFrame);
+            rv->connectSocket_parent_frame(mesh.getFrame());
+            return rv;
         }();
 
         // create a human-readable commit message
