@@ -73,7 +73,7 @@ target_compile_options(oscar_configuration INTERFACE
 
         # warn if data is casted to a higher alignment (e.g. char -> int64_t)
         #
-        # todo: set to =strict
+        # (set to =strict if the code quality is high enough and Clang in CI is high enough)
         -Wcast-align
 
         # disabled: broken in stb
@@ -130,7 +130,9 @@ target_compile_options(oscar_configuration INTERFACE
         # warn if a float constant does not have the 'f' suffix
         # -Wunsuffixed-float-constants
 
-        # todo: warn if using now-deprecated C/C++ constructs
+        # warn if using now-deprecated C/C++ constructs
+        #
+        # (enable occasionally and ensure that CI etc. have relevant compiler version)
         # -Wtraditional
 
         -Wno-multichar

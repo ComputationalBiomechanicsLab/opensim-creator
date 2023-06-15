@@ -98,8 +98,6 @@ private:
             }
         }
         ImGui::PopStyleVar();
-
-        // TODO: can't autoscale without a state
     }
 
     void drawSimulationStatusGroup()

@@ -430,8 +430,8 @@ namespace
 
         auto emitTendonSphere = [&](glm::vec3 const& pos)
         {
-            // TODO: this should ensure that the points are selectable, like OpenSim muscles
-            // TODO: these should be rotated to line up better (#593)
+            // TODO: this should ensure that the points are selectable, like OpenSim muscles (#706)
+            // TODO: these should be rotated to line up better (#593, #688)
             osc::SceneDecoration copy{tendonSpherePrototype};
             copy.transform.position = pos;
             rs.consume(muscle, std::move(copy));

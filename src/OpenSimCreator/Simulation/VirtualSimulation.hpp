@@ -105,7 +105,6 @@ namespace osc
             implStop();
         }
 
-        // TODO: these are necessary right now because the fixup scale factor isn't part of the model
         float getFixupScaleFactor() const
         {
             return implGetFixupScaleFactor();

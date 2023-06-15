@@ -581,9 +581,7 @@ namespace
         OpenSim::Component const& selected,
         bool& wasUsingLastFrameStorage)
     {
-        // try to downcast the selection as a station
-        //
-        // todo: OpenSim::PathPoint, etc.
+        // use downcasting to figure out which gizmo implementation to use
         if (OpenSim::Station const* const maybeStation = dynamic_cast<OpenSim::Station const*>(&selected))
         {
             StationManipulator manipulator{model, *maybeStation};

@@ -104,7 +104,6 @@ namespace osc
         ptrdiff_t id;
     };
 
-    // TODO: should be a class
     struct BVH final {
 
         void clear();

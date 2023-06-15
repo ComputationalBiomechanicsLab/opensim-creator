@@ -1304,7 +1304,7 @@ namespace
             return std::nullopt;
         }
 
-        // TODO: this maths seems sketchy, it's inspired by SCONE/model_tools.cpp:GetPlaneCop but
+        // this maths seems sketchy, it's inspired by SCONE/model_tools.cpp:GetPlaneCop but
         // it feels a bit like `p1` is always going to be zero
         glm::vec3 const pos = glm::cross(plane.normal, forceTorque.torque) / forceScaler;
         glm::vec3 const posRelativeToPlaneOrigin = pos - plane.origin;

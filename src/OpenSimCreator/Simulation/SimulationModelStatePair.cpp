@@ -20,7 +20,6 @@ public:
     Impl() :
         m_Simulation{std::make_shared<Simulation>(SingleStateSimulation{BasicModelStatePair{}})}
     {
-        // TODO: state extraction
     }
 
     Impl(std::shared_ptr<Simulation> simulation, SimulationReport simulationReport) :
@@ -31,7 +30,7 @@ public:
 
     OpenSim::Model const& getModel() const
     {
-        return *m_Simulation->getModel();  // TODO: UH OH - lock leak
+        return *m_Simulation->getModel();  // TODO: UH OH - lock leak (#707 - are locks necessary?)
     }
 
     UID getModelVersion() const

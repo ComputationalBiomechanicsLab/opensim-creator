@@ -243,7 +243,6 @@ private:
 
     void drawScaleFactorGroup()
     {
-        // TODO: tooltip on hover
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
         ImGui::TextUnformatted(ICON_FA_EXPAND_ALT);
         osc::DrawTooltipIfItemHovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
