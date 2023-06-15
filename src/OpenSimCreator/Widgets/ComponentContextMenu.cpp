@@ -7,8 +7,8 @@
 #include "OpenSimCreator/Widgets/SelectComponentPopup.hpp"
 #include "OpenSimCreator/Widgets/Select1PFPopup.hpp"
 #include "OpenSimCreator/Widgets/SelectGeometryPopup.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/ActionFunctions.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
 #include "OpenSimCreator/TypeRegistry.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 

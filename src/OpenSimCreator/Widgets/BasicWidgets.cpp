@@ -8,11 +8,11 @@
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "OpenSimCreator/Simulation/IntegratorMethod.hpp"
 #include "OpenSimCreator/Simulation/SimulationModelStatePair.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/ParamBlock.hpp"
+#include "OpenSimCreator/Utils/ParamValue.hpp"
 #include "OpenSimCreator/ComponentOutputExtractor.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
 #include "OpenSimCreator/OutputExtractor.hpp"
-#include "OpenSimCreator/ParamBlock.hpp"
-#include "OpenSimCreator/ParamValue.hpp"
 #include "OpenSimCreator/VirtualModelStatePair.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>

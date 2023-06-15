@@ -1,6 +1,6 @@
 #include "TypeRegistry.hpp"
 
-#include "OpenSimCreator/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
 #include <oscar/Utils/Algorithms.hpp>
 #include <oscar/Utils/CStringView.hpp>

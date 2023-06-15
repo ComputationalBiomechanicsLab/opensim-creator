@@ -5,11 +5,11 @@
 #include "OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp"
 #include "OpenSimCreator/Simulation/IntegratorMethod.hpp"
 #include "OpenSimCreator/Simulation/SimulationStatus.hpp"
+#include "OpenSimCreator/Utils/ParamBlock.hpp"
+#include "OpenSimCreator/Utils/ParamValue.hpp"
 #include "OpenSimCreator/Widgets/ParamBlockEditorPopup.hpp"
 #include "OpenSimCreator/BasicModelStatePair.hpp"
 #include "OpenSimCreator/OutputExtractor.hpp"
-#include "OpenSimCreator/ParamBlock.hpp"
-#include "OpenSimCreator/ParamValue.hpp"
 
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>

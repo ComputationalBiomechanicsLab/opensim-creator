@@ -6,8 +6,8 @@
 #include "OpenSimCreator/Tabs/MeshImporterTab.hpp"
 #include "OpenSimCreator/Tabs/ModelEditorTab.hpp"
 #include "OpenSimCreator/Tabs/SplashTab.hpp"
+#include "OpenSimCreator/Utils/ParamBlock.hpp"
 #include "OpenSimCreator/OutputExtractor.hpp"
-#include "OpenSimCreator/ParamBlock.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>

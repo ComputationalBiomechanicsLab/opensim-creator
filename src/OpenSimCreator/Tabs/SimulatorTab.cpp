@@ -19,7 +19,7 @@
 #include "OpenSimCreator/Widgets/SimulationToolbar.hpp"
 #include "OpenSimCreator/ComponentOutputExtractor.hpp"
 #include "OpenSimCreator/OutputExtractor.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/VirtualOutputExtractor.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>

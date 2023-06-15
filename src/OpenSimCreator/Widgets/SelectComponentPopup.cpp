@@ -1,6 +1,6 @@
 #include "SelectComponentPopup.hpp"
 
-#include "OpenSimCreator/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 
 #include <oscar/Widgets/StandardPopup.hpp>

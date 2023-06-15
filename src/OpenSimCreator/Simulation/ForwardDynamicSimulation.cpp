@@ -5,9 +5,9 @@
 #include "OpenSimCreator/Simulation/SimulationClock.hpp"
 #include "OpenSimCreator/Simulation/SimulationReport.hpp"
 #include "OpenSimCreator/Simulation/SimulationStatus.hpp"
+#include "OpenSimCreator/Utils/ParamBlock.hpp"
 #include "OpenSimCreator/BasicModelStatePair.hpp"
 #include "OpenSimCreator/OutputExtractor.hpp"
-#include "OpenSimCreator/ParamBlock.hpp"
 
 #include <oscar/Utils/SynchronizedValue.hpp>
 

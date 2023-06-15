@@ -18,7 +18,7 @@
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
 #include "OpenSimCreator/ActionFunctions.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/VirtualConstModelStatePair.hpp"
 

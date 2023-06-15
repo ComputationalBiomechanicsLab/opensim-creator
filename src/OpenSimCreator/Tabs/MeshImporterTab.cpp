@@ -5,7 +5,7 @@
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "OpenSimCreator/Tabs/ModelEditorTab.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/TypeRegistry.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 

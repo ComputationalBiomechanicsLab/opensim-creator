@@ -1,7 +1,7 @@
 #include "UndoableModelStatePair.hpp"
 
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/ModelStateCommit.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
 
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/Assertions.hpp>

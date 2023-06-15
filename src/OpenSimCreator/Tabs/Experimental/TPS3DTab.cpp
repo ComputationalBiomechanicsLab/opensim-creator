@@ -1,7 +1,7 @@
 #include "TPS3DTab.hpp"
 
+#include "OpenSimCreator/Utils/TPS3D.hpp"
 #include "OpenSimCreator/Bindings/SimTKMeshLoader.hpp"
-#include "OpenSimCreator/TPS3D.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>

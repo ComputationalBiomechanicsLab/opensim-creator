@@ -14,7 +14,7 @@
 #include "OpenSimCreator/Tabs/PerformanceAnalyzerTab.hpp"
 #include "OpenSimCreator/Widgets/ObjectPropertiesEditor.hpp"
 #include "OpenSimCreator/BasicModelStatePair.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/TypeRegistry.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 

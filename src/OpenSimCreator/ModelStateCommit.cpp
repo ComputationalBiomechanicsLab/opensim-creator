@@ -1,7 +1,7 @@
 #include "ModelStateCommit.hpp"
 
 #include "OpenSimCreator/VirtualConstModelStatePair.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>

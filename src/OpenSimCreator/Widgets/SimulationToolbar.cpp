@@ -2,7 +2,7 @@
 
 #include "OpenSimCreator/Simulation/Simulation.hpp"
 #include "OpenSimCreator/Widgets/SimulationScrubber.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>

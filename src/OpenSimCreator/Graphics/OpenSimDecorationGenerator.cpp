@@ -3,7 +3,7 @@
 #include "OpenSimCreator/Bindings/SimTKDecorationGenerator.hpp"
 #include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
 #include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/VirtualConstModelStatePair.hpp"
 
 #include <oscar/Graphics/Color.hpp>

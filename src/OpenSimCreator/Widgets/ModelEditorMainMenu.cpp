@@ -7,8 +7,8 @@
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
 #include "OpenSimCreator/Widgets/ModelActionsMenuItems.hpp"
 #include "OpenSimCreator/Widgets/ParamBlockEditorPopup.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/ActionFunctions.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>

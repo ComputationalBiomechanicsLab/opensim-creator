@@ -121,6 +121,14 @@ add_library(OpenSimCreator STATIC
     Tabs/SplashTab.cpp
     Tabs/SplashTab.hpp
 
+    Utils/OpenSimHelpers.cpp
+    Utils/OpenSimHelpers.hpp
+    Utils/ParamBlock.hpp
+    Utils/ParamBlock.cpp
+    Utils/ParamValue.hpp
+    Utils/TPS3D.cpp
+    Utils/TPS3D.hpp
+
     Widgets/AddBodyPopup.cpp
     Widgets/AddBodyPopup.hpp
     Widgets/AddComponentPopup.cpp
@@ -184,15 +192,8 @@ add_library(OpenSimCreator STATIC
     ObjectPropertyEdit.hpp
     OpenSimApp.cpp
     OpenSimApp.hpp
-    OpenSimHelpers.cpp
-    OpenSimHelpers.hpp
     OutputExtractor.cpp
     OutputExtractor.hpp
-    ParamBlock.hpp
-    ParamBlock.cpp
-    ParamValue.hpp
-    TPS3D.cpp
-    TPS3D.hpp
     TypeRegistry.cpp
     TypeRegistry.hpp
     UndoableModelStatePair.cpp

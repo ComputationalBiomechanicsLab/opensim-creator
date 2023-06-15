@@ -3,7 +3,7 @@
 #include "OpenSimCreator/Simulation/Simulation.hpp"
 #include "OpenSimCreator/Simulation/SimulationReport.hpp"
 #include "OpenSimCreator/Simulation/SingleStateSimulation.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
 #include <oscar/Utils/SynchronizedValue.hpp>
 #include <oscar/Utils/UID.hpp>

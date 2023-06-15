@@ -2,7 +2,7 @@
 
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 #include "OpenSimCreator/Widgets/UiModelViewer.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/VirtualModelStatePair.hpp"
 
 #include <oscar/Panels/StandardPanel.hpp>

@@ -1,7 +1,7 @@
 #include "ComponentOutputExtractor.hpp"
 
 #include "OpenSimCreator/Simulation/SimulationReport.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Algorithms.hpp>

@@ -2,7 +2,7 @@
 
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "OpenSimCreator/Tabs/ModelEditorTab.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>

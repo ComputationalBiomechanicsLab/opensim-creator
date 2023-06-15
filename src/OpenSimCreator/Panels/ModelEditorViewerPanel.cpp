@@ -7,7 +7,7 @@
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelState.hpp"
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 #include "OpenSimCreator/Widgets/ModelSelectionGizmo.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>

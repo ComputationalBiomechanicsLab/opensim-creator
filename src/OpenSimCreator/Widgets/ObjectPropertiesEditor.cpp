@@ -3,7 +3,7 @@
 #include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
 #include "OpenSimCreator/Widgets/GeometryPathPropertyEditorPopup.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>

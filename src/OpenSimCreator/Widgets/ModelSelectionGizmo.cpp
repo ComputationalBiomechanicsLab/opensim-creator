@@ -1,8 +1,8 @@
 #include "ModelSelectionGizmo.hpp"
 
 #include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/ActionFunctions.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 
 #include <oscar/Bindings/ImGuizmoHelpers.hpp>

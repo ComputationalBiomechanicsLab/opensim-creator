@@ -3,8 +3,8 @@
 #include "OpenSimCreator/Simulation/SimulationClock.hpp"
 #include "OpenSimCreator/Simulation/SimulationReport.hpp"
 #include "OpenSimCreator/Simulation/SimulationStatus.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
-#include "OpenSimCreator/ParamBlock.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/ParamBlock.hpp"
 
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/Algorithms.hpp>
