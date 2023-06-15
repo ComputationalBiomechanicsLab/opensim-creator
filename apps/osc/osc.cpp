@@ -1,5 +1,5 @@
 #include "OpenSimCreator/Screens/MainUIScreen.hpp"
-#include "OpenSimCreator/OpenSimApp.hpp"
+#include "OpenSimCreator/OpenSimCreatorApp.hpp"
 
 #include "oscar/Platform/Config.hpp"
 #include "oscar/Platform/Log.hpp"
@@ -64,7 +64,7 @@ int main(int argc, char** argv)
     }
 
     // init top-level application state
-    osc::OpenSimApp app;
+    osc::OpenSimCreatorApp app;
 
     // init top-level screen (tab host)
     auto screen = std::make_unique<osc::MainUIScreen>(std::vector<std::filesystem::path>(argv, argv + argc));

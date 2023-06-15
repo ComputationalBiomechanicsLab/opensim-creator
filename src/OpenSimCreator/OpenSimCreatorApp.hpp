@@ -12,8 +12,8 @@ namespace osc
     bool GlobalInitOpenSim(Config const&);
 
     // an `osc::App` that also calls `GlobalInitOpenSim`
-    class OpenSimApp final : public App {
+    class OpenSimCreatorApp final : public App {
     public:
-        OpenSimApp();
+        OpenSimCreatorApp();
     };
 }

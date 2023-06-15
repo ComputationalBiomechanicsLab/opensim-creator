@@ -1,4 +1,4 @@
-#include "OpenSimApp.hpp"
+#include "OpenSimCreatorApp.hpp"
 
 #include "OpenSimCreator/Tabs/FrameDefinitionTab.hpp"
 #include "OpenSimCreator/Tabs/Experimental/MeshHittestTab.hpp"
@@ -219,7 +219,7 @@ bool osc::GlobalInitOpenSim(Config const& config)
     return s_OpenSimInitialized;
 }
 
-osc::OpenSimApp::OpenSimApp() : App{}
+osc::OpenSimCreatorApp::OpenSimCreatorApp() : App{}
 {
     GlobalInitOpenSim(getConfig());
     InitializeTabRegistry(*singleton<osc::TabRegistry>());

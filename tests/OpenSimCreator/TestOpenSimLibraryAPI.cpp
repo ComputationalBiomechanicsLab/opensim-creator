@@ -1,7 +1,7 @@
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/ActionFunctions.hpp"
-#include "OpenSimCreator/OpenSimApp.hpp"
+#include "OpenSimCreator/OpenSimCreatorApp.hpp"
 #include "testopensimcreator_config.hpp"
 
 #include <oscar/Platform/Config.hpp>

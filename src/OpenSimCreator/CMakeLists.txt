@@ -201,8 +201,8 @@ add_library(OpenSimCreator STATIC
     ActionFunctions.hpp
     ComponentRegistry.cpp
     ComponentRegistry.hpp
-    OpenSimApp.cpp
-    OpenSimApp.hpp
+    OpenSimCreatorApp.cpp
+    OpenSimCreatorApp.hpp
 )
 
 # OpenSimCreator: compile-time includes
