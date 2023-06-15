@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OpenSimCreator/VirtualModelStatePair.hpp"
+#include "OpenSimCreator/Model/VirtualModelStatePair.hpp"
 
 #include <oscar/Utils/ClonePtr.hpp>
 

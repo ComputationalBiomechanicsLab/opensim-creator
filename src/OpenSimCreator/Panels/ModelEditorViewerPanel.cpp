@@ -1,14 +1,14 @@
 #include "ModelEditorViewerPanel.hpp"
 
 #include "OpenSimCreator/Graphics/CachedModelRenderer.hpp"
+#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelLayer.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelParameters.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelRightClickEvent.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelState.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 #include "OpenSimCreator/Widgets/ModelSelectionGizmo.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/UndoableModelStatePair.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Bindings/ImGuizmoHelpers.hpp>

@@ -1,5 +1,6 @@
 #include "ForwardDynamicSimulation.hpp"
 
+#include "OpenSimCreator/Model/BasicModelStatePair.hpp"
 #include "OpenSimCreator/Outputs/OutputExtractor.hpp"
 #include "OpenSimCreator/Simulation/ForwardDynamicSimulator.hpp"
 #include "OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp"
@@ -7,7 +8,6 @@
 #include "OpenSimCreator/Simulation/SimulationReport.hpp"
 #include "OpenSimCreator/Simulation/SimulationStatus.hpp"
 #include "OpenSimCreator/Utils/ParamBlock.hpp"
-#include "OpenSimCreator/BasicModelStatePair.hpp"
 
 #include <oscar/Utils/SynchronizedValue.hpp>
 

@@ -1,9 +1,9 @@
 #include "ModelWarpingTab.hpp"
 
-#include "OpenSimCreator/Widgets/MainMenu.hpp"
-#include "OpenSimCreator/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/Utils/TPS3D.hpp"
+#include "OpenSimCreator/Widgets/MainMenu.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Maths/MathHelpers.hpp>

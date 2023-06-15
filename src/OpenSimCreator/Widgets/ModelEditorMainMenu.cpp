@@ -2,14 +2,14 @@
 
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
+#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Panels/ModelMusclePlotPanel.hpp"
 #include "OpenSimCreator/Tabs/Experimental/ExcitationEditorTab.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
 #include "OpenSimCreator/Widgets/ModelActionsMenuItems.hpp"
 #include "OpenSimCreator/Widgets/ParamBlockEditorPopup.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/ActionFunctions.hpp"
-#include "OpenSimCreator/UndoableModelStatePair.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Widgets/WindowMenu.hpp>

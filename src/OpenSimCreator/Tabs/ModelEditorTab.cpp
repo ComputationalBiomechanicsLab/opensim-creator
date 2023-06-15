@@ -2,6 +2,7 @@
 
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Panels/CoordinateEditorPanel.hpp"
 #include "OpenSimCreator/Panels/NavigatorPanel.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanel.hpp"
@@ -18,9 +19,8 @@
 #include "OpenSimCreator/Widgets/ModelEditorToolbar.hpp"
 #include "OpenSimCreator/Widgets/ParamBlockEditorPopup.hpp"
 #include "OpenSimCreator/Widgets/UiModelViewer.hpp"
-#include "OpenSimCreator/ActionFunctions.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/ActionFunctions.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Panels/LogViewerPanel.hpp>

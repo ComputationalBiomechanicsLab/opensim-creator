@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OpenSimCreator/ObjectPropertyEdit.hpp"
+#include "OpenSimCreator/Model/ObjectPropertyEdit.hpp"
 
 #include <functional>
 #include <memory>

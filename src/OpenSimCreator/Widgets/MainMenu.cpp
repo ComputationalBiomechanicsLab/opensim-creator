@@ -1,13 +1,13 @@
 #include "MainMenu.hpp"
 
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Simulation/Simulation.hpp"
 #include "OpenSimCreator/Simulation/StoFileSimulation.hpp"
 #include "OpenSimCreator/Tabs/MeshImporterTab.hpp"
 #include "OpenSimCreator/Tabs/SimulatorTab.hpp"
-#include "OpenSimCreator/ActionFunctions.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/ActionFunctions.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/MeshCache.hpp>

@@ -1,9 +1,9 @@
 #include "SimulationViewerPanel.hpp"
 
+#include "OpenSimCreator/Model/VirtualModelStatePair.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 #include "OpenSimCreator/Widgets/UiModelViewer.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/VirtualModelStatePair.hpp"
 
 #include <oscar/Panels/StandardPanel.hpp>
 

@@ -40,6 +40,19 @@ add_library(OpenSimCreator STATIC
     MiddlewareAPIs/MainUIStateAPI.hpp
     MiddlewareAPIs/SimulatorUIAPI.hpp
 
+    Model/BasicModelStatePair.cpp
+    Model/BasicModelStatePair.hpp
+    Model/ModelStateCommit.cpp
+    Model/ModelStateCommit.hpp
+    Model/ModelStatePairInfo.cpp
+    Model/ModelStatePairInfo.hpp
+    Model/ObjectPropertyEdit.cpp
+    Model/ObjectPropertyEdit.hpp
+    Model/UndoableModelStatePair.cpp
+    Model/UndoableModelStatePair.hpp
+    Model/VirtualConstModelStatePair.hpp
+    Model/VirtualModelStatePair.hpp
+
     Outputs/ComponentOutputExtractor.cpp
     Outputs/ComponentOutputExtractor.hpp
     Outputs/IntegratorOutputExtractor.cpp
@@ -186,22 +199,10 @@ add_library(OpenSimCreator STATIC
 
     ActionFunctions.cpp
     ActionFunctions.hpp
-    BasicModelStatePair.cpp
-    BasicModelStatePair.hpp
-    ModelStateCommit.cpp
-    ModelStateCommit.hpp
-    ModelStatePairInfo.cpp
-    ModelStatePairInfo.hpp
-    ObjectPropertyEdit.cpp
-    ObjectPropertyEdit.hpp
     OpenSimApp.cpp
     OpenSimApp.hpp
     TypeRegistry.cpp
     TypeRegistry.hpp
-    UndoableModelStatePair.cpp
-    UndoableModelStatePair.hpp
-    VirtualConstModelStatePair.hpp
-    VirtualModelStatePair.hpp
 )
 
 # OpenSimCreator: compile-time includes

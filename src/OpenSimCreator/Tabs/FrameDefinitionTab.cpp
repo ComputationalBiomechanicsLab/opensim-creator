@@ -8,6 +8,8 @@
 #include "OpenSimCreator/Graphics/OverlayDecorationGenerator.hpp"
 #include "OpenSimCreator/Graphics/OpenSimGraphicsHelpers.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
+#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/Model/VirtualConstModelStatePair.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanel.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelLayer.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelParameters.hpp"
@@ -15,12 +17,10 @@
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelState.hpp"
 #include "OpenSimCreator/Panels/NavigatorPanel.hpp"
 #include "OpenSimCreator/Panels/PropertiesPanel.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
 #include "OpenSimCreator/ActionFunctions.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/VirtualConstModelStatePair.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>

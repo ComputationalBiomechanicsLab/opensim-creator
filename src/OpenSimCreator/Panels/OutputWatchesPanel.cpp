@@ -2,8 +2,8 @@
 
 #include "OpenSimCreator/Simulation/SimulationReport.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Outputs/OutputExtractor.hpp"
-#include "OpenSimCreator/UndoableModelStatePair.hpp"
 
 #include <oscar/Panels/StandardPanel.hpp>
 #include <oscar/Utils/UID.hpp>

@@ -4,6 +4,8 @@
 #include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
 #include "OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "OpenSimCreator/Model/BasicModelStatePair.hpp"
+#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Simulation/ForwardDynamicSimulation.hpp"
 #include "OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp"
 #include "OpenSimCreator/Simulation/Simulation.hpp"
@@ -12,11 +14,9 @@
 #include "OpenSimCreator/Tabs/LoadingTab.hpp"
 #include "OpenSimCreator/Tabs/SimulatorTab.hpp"
 #include "OpenSimCreator/Tabs/PerformanceAnalyzerTab.hpp"
-#include "OpenSimCreator/Widgets/ObjectPropertiesEditor.hpp"
-#include "OpenSimCreator/BasicModelStatePair.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Widgets/ObjectPropertiesEditor.hpp"
 #include "OpenSimCreator/TypeRegistry.hpp"
-#include "OpenSimCreator/UndoableModelStatePair.hpp"
 
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Platform/App.hpp>

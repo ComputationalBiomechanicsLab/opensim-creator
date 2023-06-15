@@ -1,7 +1,7 @@
 #include "OpenSimCreator/Simulation/ForwardDynamicSimulation.hpp"
 
+#include "OpenSimCreator/Model/BasicModelStatePair.hpp"
 #include "OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp"
-#include "OpenSimCreator/BasicModelStatePair.hpp"
 
 #include <gtest/gtest.h>
 #include <OpenSim/Simulation/Model/Model.h>

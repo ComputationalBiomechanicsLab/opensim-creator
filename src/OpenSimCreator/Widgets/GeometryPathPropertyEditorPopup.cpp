@@ -1,6 +1,6 @@
 #include "GeometryPathPropertyEditorPopup.hpp"
 
-#include "OpenSimCreator/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/Log.hpp>

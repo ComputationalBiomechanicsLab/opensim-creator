@@ -1,8 +1,8 @@
 #include "NavigatorPanel.hpp"
 
-#include "OpenSimCreator/Widgets/BasicWidgets.hpp"
+#include "OpenSimCreator/Model/VirtualModelStatePair.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/VirtualModelStatePair.hpp"
+#include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Panels/StandardPanel.hpp>

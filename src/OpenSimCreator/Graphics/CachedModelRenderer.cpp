@@ -3,8 +3,8 @@
 #include "OpenSimCreator/Graphics/ModelRendererParams.hpp"
 #include "OpenSimCreator/Graphics/OpenSimGraphicsHelpers.hpp"
 #include "OpenSimCreator/Graphics/OverlayDecorationGenerator.hpp"
-#include "OpenSimCreator/ModelStatePairInfo.hpp"
-#include "OpenSimCreator/VirtualConstModelStatePair.hpp"
+#include "OpenSimCreator/Model/ModelStatePairInfo.hpp"
+#include "OpenSimCreator/Model/VirtualConstModelStatePair.hpp"
 
 #include <oscar/Maths/AABB.hpp>
 #include <oscar/Maths/BVH.hpp>

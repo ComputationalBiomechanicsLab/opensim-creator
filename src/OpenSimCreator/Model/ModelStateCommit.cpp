@@ -1,6 +1,6 @@
 #include "ModelStateCommit.hpp"
 
-#include "OpenSimCreator/VirtualConstModelStatePair.hpp"
+#include "OpenSimCreator/Model/VirtualConstModelStatePair.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
 #include <oscar/Utils/CStringView.hpp>

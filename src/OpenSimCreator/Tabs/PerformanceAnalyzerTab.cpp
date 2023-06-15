@@ -1,5 +1,6 @@
 #include "PerformanceAnalyzerTab.hpp"
 
+#include "OpenSimCreator/Model/BasicModelStatePair.hpp"
 #include "OpenSimCreator/Outputs/OutputExtractor.hpp"
 #include "OpenSimCreator/Simulation/ForwardDynamicSimulation.hpp"
 #include "OpenSimCreator/Simulation/ForwardDynamicSimulator.hpp"
@@ -9,7 +10,6 @@
 #include "OpenSimCreator/Utils/ParamBlock.hpp"
 #include "OpenSimCreator/Utils/ParamValue.hpp"
 #include "OpenSimCreator/Widgets/ParamBlockEditorPopup.hpp"
-#include "OpenSimCreator/BasicModelStatePair.hpp"
 
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>

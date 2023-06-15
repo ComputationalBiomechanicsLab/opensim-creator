@@ -4,7 +4,7 @@
 #include "OpenSimCreator/Graphics/ComponentAbsPathDecorationTagger.hpp"
 #include "OpenSimCreator/Graphics/ComponentSceneDecorationFlagsTagger.hpp"
 #include "OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp"
-#include "OpenSimCreator/VirtualConstModelStatePair.hpp"
+#include "OpenSimCreator/Model/VirtualConstModelStatePair.hpp"
 
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/SceneDecoration.hpp>

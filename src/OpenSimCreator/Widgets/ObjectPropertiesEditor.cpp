@@ -2,9 +2,9 @@
 
 #include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
-#include "OpenSimCreator/Widgets/GeometryPathPropertyEditorPopup.hpp"
+#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/Widgets/GeometryPathPropertyEditorPopup.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>

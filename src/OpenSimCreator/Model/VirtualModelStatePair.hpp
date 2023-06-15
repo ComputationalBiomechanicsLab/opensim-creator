@@ -1,14 +1,8 @@
 #pragma once
 
-#include "OpenSimCreator/VirtualConstModelStatePair.hpp"
-
-#include <oscar/Utils/UID.hpp>
-
-#include <optional>
+#include "OpenSimCreator/Model/VirtualConstModelStatePair.hpp"
 
 namespace OpenSim { class Component; }
-namespace OpenSim { class Model; }
-namespace SimTK { class State; }
 
 namespace osc
 {
@@ -38,14 +32,8 @@ namespace osc
             implSetFixupScaleFactor(newScaleFactor);
         }
     private:
-        virtual void implSetSelected(OpenSim::Component const*)
-        {
-        }
-        virtual void implSetHovered(OpenSim::Component const*)
-        {
-        }
-        virtual void implSetFixupScaleFactor(float)
-        {
-        }
+        virtual void implSetSelected(OpenSim::Component const*) {}
+        virtual void implSetHovered(OpenSim::Component const*) {}
+        virtual void implSetFixupScaleFactor(float) {}
     };
 }

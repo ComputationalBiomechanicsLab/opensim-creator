@@ -1,6 +1,6 @@
 #include "OpenSimCreator/ActionFunctions.hpp"
 
-#include "OpenSimCreator/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "testopensimcreator_config.hpp"
 
 #include <gtest/gtest.h>

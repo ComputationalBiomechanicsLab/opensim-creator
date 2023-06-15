@@ -1,4 +1,4 @@
-#include "OpenSimCreator/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 
 #include "OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp"
 #include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"

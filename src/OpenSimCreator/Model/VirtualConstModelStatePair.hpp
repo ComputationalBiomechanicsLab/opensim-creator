@@ -1,6 +1,5 @@
 #pragma once
 
-#include <oscar/Utils/SynchronizedValue.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <optional>

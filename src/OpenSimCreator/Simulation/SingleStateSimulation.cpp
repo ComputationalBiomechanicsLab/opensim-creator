@@ -1,6 +1,6 @@
 #include "SingleStateSimulation.hpp"
 
-#include "OpenSimCreator/BasicModelStatePair.hpp"
+#include "OpenSimCreator/Model/BasicModelStatePair.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/Utils/ParamBlock.hpp"
 
