@@ -5,9 +5,6 @@ find_package(OpenSim REQUIRED CONFIG)
 #     library code behind the OpenSim Creator application
 add_library(OpenSimCreator STATIC
 
-    FrameDefinition/FrameDefinitionTab.cpp
-    FrameDefinition/FrameDefinitionTab.hpp
-
     Graphics/CachedModelRenderer.cpp
     Graphics/CachedModelRenderer.hpp
     Graphics/ComponentAbsPathDecorationTagger.hpp
@@ -85,6 +82,8 @@ add_library(OpenSimCreator STATIC
     Tabs/Experimental/TPS3DTab.hpp
     Tabs/Experimental/ExcitationEditorTab.cpp
     Tabs/Experimental/ExcitationEditorTab.hpp
+    Tabs/FrameDefinitionTab.cpp
+    Tabs/FrameDefinitionTab.hpp
     Tabs/LoadingTab.cpp
     Tabs/LoadingTab.hpp
     Tabs/MeshImporterTab.cpp
