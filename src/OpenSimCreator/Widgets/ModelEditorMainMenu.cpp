@@ -6,10 +6,10 @@
 #include "OpenSimCreator/Panels/ModelMusclePlotPanel.hpp"
 #include "OpenSimCreator/Tabs/Experimental/ExcitationEditorTab.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/UndoableModelActions.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
 #include "OpenSimCreator/Widgets/ModelActionsMenuItems.hpp"
 #include "OpenSimCreator/Widgets/ParamBlockEditorPopup.hpp"
-#include "OpenSimCreator/ActionFunctions.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Widgets/WindowMenu.hpp>

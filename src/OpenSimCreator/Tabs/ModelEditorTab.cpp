@@ -12,6 +12,8 @@
 #include "OpenSimCreator/Panels/OutputWatchesPanel.hpp"
 #include "OpenSimCreator/Panels/PropertiesPanel.hpp"
 #include "OpenSimCreator/Tabs/LoadingTab.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/UndoableModelActions.hpp"
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 #include "OpenSimCreator/Widgets/ComponentContextMenu.hpp"
 #include "OpenSimCreator/Widgets/EditorTabStatusBar.hpp"
@@ -19,8 +21,6 @@
 #include "OpenSimCreator/Widgets/ModelEditorToolbar.hpp"
 #include "OpenSimCreator/Widgets/ParamBlockEditorPopup.hpp"
 #include "OpenSimCreator/Widgets/UiModelViewer.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/ActionFunctions.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Panels/LogViewerPanel.hpp>

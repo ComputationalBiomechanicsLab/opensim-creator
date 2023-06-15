@@ -151,6 +151,8 @@ add_library(OpenSimCreator STATIC
     Utils/ParamValue.hpp
     Utils/TPS3D.cpp
     Utils/TPS3D.hpp
+    Utils/UndoableModelActions.cpp
+    Utils/UndoableModelActions.hpp
 
     Widgets/AddBodyPopup.cpp
     Widgets/AddBodyPopup.hpp
@@ -197,8 +199,6 @@ add_library(OpenSimCreator STATIC
     Widgets/UiModelViewer.cpp
     Widgets/UiModelViewer.hpp
 
-    ActionFunctions.cpp
-    ActionFunctions.hpp
     ComponentRegistry.cpp
     ComponentRegistry.hpp
     OpenSimCreatorApp.cpp

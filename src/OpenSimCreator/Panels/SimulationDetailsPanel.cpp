@@ -44,7 +44,7 @@ private:
             ImGui::Columns(2);
             ImGui::Text("num reports");
             ImGui::NextColumn();
-            ImGui::Text("%i", m_Simulation->getNumReports());
+            ImGui::Text("%zu", m_Simulation->getNumReports());
             ImGui::NextColumn();
             ImGui::Columns();
         }

@@ -4,7 +4,7 @@
 #include "OpenSimCreator/Model/ModelStateCommit.hpp"
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/ActionFunctions.hpp"
+#include "OpenSimCreator/Utils/UndoableModelActions.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Formats/CSV.hpp>

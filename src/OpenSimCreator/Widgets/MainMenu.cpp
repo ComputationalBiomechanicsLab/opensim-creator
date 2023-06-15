@@ -7,7 +7,7 @@
 #include "OpenSimCreator/Tabs/MeshImporterTab.hpp"
 #include "OpenSimCreator/Tabs/SimulatorTab.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/ActionFunctions.hpp"
+#include "OpenSimCreator/Utils/UndoableModelActions.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/MeshCache.hpp>

@@ -3,12 +3,12 @@
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/UndoableModelActions.hpp"
 #include "OpenSimCreator/Widgets/ComponentContextMenu.hpp"
 #include "OpenSimCreator/Widgets/ObjectPropertiesEditor.hpp"
 #include "OpenSimCreator/Widgets/ReassignSocketPopup.hpp"
 #include "OpenSimCreator/Widgets/SelectComponentPopup.hpp"
 #include "OpenSimCreator/Widgets/SelectGeometryPopup.hpp"
-#include "OpenSimCreator/ActionFunctions.hpp"
 #include "OpenSimCreator/ComponentRegistry.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>

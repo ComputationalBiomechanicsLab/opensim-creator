@@ -2,14 +2,14 @@
 
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/UndoableModelActions.hpp"
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 #include "OpenSimCreator/Widgets/ModelActionsMenuItems.hpp"
 #include "OpenSimCreator/Widgets/ReassignSocketPopup.hpp"
 #include "OpenSimCreator/Widgets/SelectComponentPopup.hpp"
 #include "OpenSimCreator/Widgets/Select1PFPopup.hpp"
 #include "OpenSimCreator/Widgets/SelectGeometryPopup.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/ActionFunctions.hpp"
 #include "OpenSimCreator/ComponentRegistry.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>

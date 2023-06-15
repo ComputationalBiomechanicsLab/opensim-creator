@@ -1,4 +1,4 @@
-#include "ActionFunctions.hpp"
+#include "UndoableModelActions.hpp"
 
 #include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
 #include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"

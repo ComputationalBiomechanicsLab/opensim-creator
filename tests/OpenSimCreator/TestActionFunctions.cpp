@@ -1,4 +1,4 @@
-#include "OpenSimCreator/ActionFunctions.hpp"
+#include "OpenSimCreator/Utils/UndoableModelActions.hpp"
 
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "testopensimcreator_config.hpp"
