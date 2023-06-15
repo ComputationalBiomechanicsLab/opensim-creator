@@ -2,6 +2,9 @@
 
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/SimulatorUIAPI.hpp"
+#include "OpenSimCreator/Outputs/ComponentOutputExtractor.hpp"
+#include "OpenSimCreator/Outputs/OutputExtractor.hpp"
+#include "OpenSimCreator/Outputs/VirtualOutputExtractor.hpp"
 #include "OpenSimCreator/Panels/NavigatorPanel.hpp"
 #include "OpenSimCreator/Panels/OutputPlotsPanel.hpp"
 #include "OpenSimCreator/Panels/SelectionDetailsPanel.hpp"
@@ -17,10 +20,7 @@
 #include "OpenSimCreator/Widgets/SimulationOutputPlot.hpp"
 #include "OpenSimCreator/Widgets/SimulationScrubber.hpp"
 #include "OpenSimCreator/Widgets/SimulationToolbar.hpp"
-#include "OpenSimCreator/ComponentOutputExtractor.hpp"
-#include "OpenSimCreator/OutputExtractor.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
-#include "OpenSimCreator/VirtualOutputExtractor.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Panels/LogViewerPanel.hpp>

@@ -1,7 +1,7 @@
 #include "IntegratorOutputExtractor.hpp"
 
+#include "OpenSimCreator/Outputs/VirtualOutputExtractor.hpp"
 #include "OpenSimCreator/Simulation/SimulationReport.hpp"
-#include "OpenSimCreator/VirtualOutputExtractor.hpp"
 
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Algorithms.hpp>

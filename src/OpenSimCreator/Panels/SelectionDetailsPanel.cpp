@@ -1,9 +1,9 @@
 #include "SelectionDetailsPanel.hpp"
 
 #include "OpenSimCreator/MiddlewareAPIs/SimulatorUIAPI.hpp"
+#include "OpenSimCreator/Outputs/ComponentOutputExtractor.hpp"
 #include "OpenSimCreator/Widgets/ComponentDetails.hpp"
 #include "OpenSimCreator/Widgets/SimulationOutputPlot.hpp"
-#include "OpenSimCreator/ComponentOutputExtractor.hpp"
 #include "OpenSimCreator/Simulation/SimulationModelStatePair.hpp"
 
 #include <oscar/Panels/StandardPanel.hpp>

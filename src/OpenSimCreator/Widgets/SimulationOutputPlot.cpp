@@ -4,8 +4,8 @@
 #include "OpenSimCreator/Simulation/SimulationReport.hpp"
 #include "OpenSimCreator/Simulation/VirtualSimulation.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/SimulatorUIAPI.hpp"
-#include "OpenSimCreator/OutputExtractor.hpp"
-#include "OpenSimCreator/VirtualOutputExtractor.hpp"
+#include "OpenSimCreator/Outputs/OutputExtractor.hpp"
+#include "OpenSimCreator/Outputs/VirtualOutputExtractor.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/Log.hpp>

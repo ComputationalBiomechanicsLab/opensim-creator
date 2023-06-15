@@ -40,6 +40,16 @@ add_library(OpenSimCreator STATIC
     MiddlewareAPIs/MainUIStateAPI.hpp
     MiddlewareAPIs/SimulatorUIAPI.hpp
 
+    Outputs/ComponentOutputExtractor.cpp
+    Outputs/ComponentOutputExtractor.hpp
+    Outputs/IntegratorOutputExtractor.cpp
+    Outputs/IntegratorOutputExtractor.hpp
+    Outputs/MultiBodySystemOutputExtractor.cpp
+    Outputs/MultiBodySystemOutputExtractor.hpp
+    Outputs/OutputExtractor.cpp
+    Outputs/OutputExtractor.hpp
+    Outputs/VirtualOutputExtractor.hpp
+
     Panels/CoordinateEditorPanel.cpp
     Panels/CoordinateEditorPanel.hpp
     Panels/ModelEditorViewerPanel.cpp
@@ -178,29 +188,20 @@ add_library(OpenSimCreator STATIC
     ActionFunctions.hpp
     BasicModelStatePair.cpp
     BasicModelStatePair.hpp
-    ComponentOutputExtractor.cpp
-    ComponentOutputExtractor.hpp
-    IntegratorOutputExtractor.cpp
-    IntegratorOutputExtractor.hpp
     ModelStateCommit.cpp
     ModelStateCommit.hpp
     ModelStatePairInfo.cpp
     ModelStatePairInfo.hpp
-    MultiBodySystemOutputExtractor.cpp
-    MultiBodySystemOutputExtractor.hpp
     ObjectPropertyEdit.cpp
     ObjectPropertyEdit.hpp
     OpenSimApp.cpp
     OpenSimApp.hpp
-    OutputExtractor.cpp
-    OutputExtractor.hpp
     TypeRegistry.cpp
     TypeRegistry.hpp
     UndoableModelStatePair.cpp
     UndoableModelStatePair.hpp
     VirtualConstModelStatePair.hpp
     VirtualModelStatePair.hpp
-    VirtualOutputExtractor.hpp
 )
 
 # OpenSimCreator: compile-time includes

@@ -2,7 +2,7 @@
 
 #include "OpenSimCreator/Simulation/SimulationReport.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
-#include "OpenSimCreator/OutputExtractor.hpp"
+#include "OpenSimCreator/Outputs/OutputExtractor.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 
 #include <oscar/Panels/StandardPanel.hpp>

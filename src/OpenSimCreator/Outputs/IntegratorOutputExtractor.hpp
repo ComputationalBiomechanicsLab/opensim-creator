@@ -1,7 +1,7 @@
 #pragma once
 
-#include "OpenSimCreator/VirtualOutputExtractor.hpp"
-#include "OpenSimCreator/OutputExtractor.hpp"
+#include "OpenSimCreator/Outputs/OutputExtractor.hpp"
+#include "OpenSimCreator/Outputs/VirtualOutputExtractor.hpp"
 
 #include <oscar/Utils/UID.hpp>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OpenSimCreator/VirtualOutputExtractor.hpp"
+#include "OpenSimCreator/Outputs/VirtualOutputExtractor.hpp"
 
 #include <oscar/Utils/ClonePtr.hpp>
 #include <oscar/Utils/CStringView.hpp>

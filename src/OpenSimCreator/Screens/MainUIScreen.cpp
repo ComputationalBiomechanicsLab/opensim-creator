@@ -1,13 +1,13 @@
 #include "MainUIScreen.hpp"
 
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "OpenSimCreator/Outputs/OutputExtractor.hpp"
 #include "OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp"
 #include "OpenSimCreator/Tabs/LoadingTab.hpp"
 #include "OpenSimCreator/Tabs/MeshImporterTab.hpp"
 #include "OpenSimCreator/Tabs/ModelEditorTab.hpp"
 #include "OpenSimCreator/Tabs/SplashTab.hpp"
 #include "OpenSimCreator/Utils/ParamBlock.hpp"
-#include "OpenSimCreator/OutputExtractor.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>

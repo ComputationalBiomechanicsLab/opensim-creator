@@ -4,7 +4,7 @@
 #include "OpenSimCreator/MiddlewareAPIs/SimulatorUIAPI.hpp"
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 #include "OpenSimCreator/Widgets/SimulationOutputPlot.hpp"
-#include "OpenSimCreator/OutputExtractor.hpp"
+#include "OpenSimCreator/Outputs/OutputExtractor.hpp"
 
 #include <oscar/Panels/StandardPanel.hpp>
 #include <oscar/Platform/os.hpp>
