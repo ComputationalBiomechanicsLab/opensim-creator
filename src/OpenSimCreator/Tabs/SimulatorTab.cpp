@@ -210,15 +210,15 @@ public:
 private:
     std::optional<SimulationReport> tryFindNthReportAfter(SimulationClock::time_point t, int offset = 0)
     {
-        int const numSimulationReports = m_Simulation->getNumReports();
+        ptrdiff_t const numSimulationReports = m_Simulation->getNumReports();
 
-        if (numSimulationReports <= 0)
+        if (numSimulationReports == 0)
         {
             return std::nullopt;
         }
 
-        int zeroethReportIndex = numSimulationReports - 1;
-        for (int i = 0; i < numSimulationReports; ++i)
+        ptrdiff_t zeroethReportIndex = static_cast<ptrdiff_t>(numSimulationReports) - 1;
+        for (ptrdiff_t i = 0; i < numSimulationReports; ++i)
         {
             SimulationReport r = m_Simulation->getSimulationReport(i);
             if (r.getTime() >= t)
@@ -228,7 +228,7 @@ private:
             }
         }
 
-        int const reportIndex = zeroethReportIndex + offset;
+        ptrdiff_t const reportIndex = zeroethReportIndex + offset;
         if (0 <= reportIndex && reportIndex < numSimulationReports)
         {
             return m_Simulation->getSimulationReport(reportIndex);
@@ -281,7 +281,7 @@ private:
         }
         // map wall time onto sim time
 
-        int nReports = m_Simulation->getNumReports();
+        ptrdiff_t const nReports = m_Simulation->getNumReports();
         if (nReports <= 0)
         {
             return m_Simulation->getStartTime();

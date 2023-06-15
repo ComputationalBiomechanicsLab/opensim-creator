@@ -71,13 +71,13 @@ public:
         return m_ModelState.lockChild<OpenSim::Model>([](BasicModelStatePair const& p) -> decltype(auto) { return p.getModel(); });
     }
 
-    int getNumReports() const
+    ptrdiff_t getNumReports() const
     {
         popReportsHACK();
-        return static_cast<int>(m_Reports.size());
+        return m_Reports.size();
     }
 
-    SimulationReport getSimulationReport(int reportIndex) const
+    SimulationReport getSimulationReport(ptrdiff_t reportIndex) const
     {
         popReportsHACK();
         return m_Reports.at(reportIndex);
@@ -220,12 +220,12 @@ osc::SynchronizedValueGuard<OpenSim::Model const> osc::ForwardDynamicSimulation:
     return m_Impl->getModel();
 }
 
-int osc::ForwardDynamicSimulation::implGetNumReports() const
+ptrdiff_t osc::ForwardDynamicSimulation::implGetNumReports() const
 {
     return m_Impl->getNumReports();
 }
 
-osc::SimulationReport osc::ForwardDynamicSimulation::implGetSimulationReport(int reportIndex) const
+osc::SimulationReport osc::ForwardDynamicSimulation::implGetSimulationReport(ptrdiff_t reportIndex) const
 {
     return m_Impl->getSimulationReport(std::move(reportIndex));
 }

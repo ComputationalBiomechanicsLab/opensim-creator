@@ -244,7 +244,7 @@ public:
     {
         VirtualSimulation& sim = m_API->updSimulation();
 
-        int nReports = sim.getNumReports();
+        ptrdiff_t const nReports = sim.getNumReports();
         osc::OutputType outputType = m_OutputExtractor.getOutputType();
 
         if (nReports <= 0)
@@ -283,7 +283,7 @@ private:
         ImU32 const hoverTimeLineColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 0.0f, 0.3f});
 
         // collect data
-        int nReports = sim.getNumReports();
+        ptrdiff_t const nReports = sim.getNumReports();
         if (nReports <= 0)
         {
             ImGui::Text("no data (yet)");

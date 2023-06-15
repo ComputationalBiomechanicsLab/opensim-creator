@@ -232,12 +232,12 @@ public:
         return {m_ModelMutex, *m_Model};
     }
 
-    int getNumReports() const
+    size_t getNumReports() const
     {
-        return static_cast<int>(m_SimulationReports.size());
+        return m_SimulationReports.size();
     }
 
-    SimulationReport getSimulationReport(int reportIndex) const
+    SimulationReport getSimulationReport(ptrdiff_t reportIndex) const
     {
         return m_SimulationReports.at(reportIndex);
     }
@@ -326,15 +326,16 @@ osc::SynchronizedValueGuard<OpenSim::Model const> osc::StoFileSimulation::implGe
     return m_Impl->getModel();
 }
 
-int osc::StoFileSimulation::implGetNumReports() const
+ptrdiff_t osc::StoFileSimulation::implGetNumReports() const
 {
     return m_Impl->getNumReports();
 }
 
-osc::SimulationReport osc::StoFileSimulation::implGetSimulationReport(int reportIndex) const
+osc::SimulationReport osc::StoFileSimulation::implGetSimulationReport(ptrdiff_t reportIndex) const
 {
     return m_Impl->getSimulationReport(std::move(reportIndex));
 }
+
 std::vector<osc::SimulationReport> osc::StoFileSimulation::implGetAllSimulationReports() const
 {
     return m_Impl->getAllSimulationReports();

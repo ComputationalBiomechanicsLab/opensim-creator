@@ -9,6 +9,7 @@
 
 #include <nonstd/span.hpp>
 
+#include <cstddef>
 #include <memory>
 #include <vector>
 
@@ -33,8 +34,8 @@ namespace osc
 
         SynchronizedValueGuard<OpenSim::Model const> getModel() const { return m_Simulation->getModel(); }
 
-        int getNumReports() { return m_Simulation->getNumReports(); }
-        SimulationReport getSimulationReport(int reportIndex) { return m_Simulation->getSimulationReport(std::move(reportIndex)); }
+        size_t getNumReports() { return m_Simulation->getNumReports(); }
+        SimulationReport getSimulationReport(ptrdiff_t reportIndex) { return m_Simulation->getSimulationReport(std::move(reportIndex)); }
         std::vector<SimulationReport> getAllSimulationReports() const { return m_Simulation->getAllSimulationReports(); }
 
         SimulationStatus getStatus() const { return m_Simulation->getStatus(); }

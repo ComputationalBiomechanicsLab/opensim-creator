@@ -8,6 +8,7 @@
 
 #include <nonstd/span.hpp>
 
+#include <cstddef>
 #include <vector>
 
 namespace osc { class OutputExtractor; }
@@ -44,12 +45,12 @@ namespace osc
             return implGetModel();
         }
 
-        int getNumReports() const
+        size_t getNumReports() const
         {
             return implGetNumReports();
         }
 
-        SimulationReport getSimulationReport(int reportIndex) const
+        SimulationReport getSimulationReport(ptrdiff_t reportIndex) const
         {
             return implGetSimulationReport(reportIndex);
         }
@@ -118,8 +119,8 @@ namespace osc
     private:
         virtual SynchronizedValueGuard<OpenSim::Model const> implGetModel() const = 0;
 
-        virtual int implGetNumReports() const = 0;
-        virtual SimulationReport implGetSimulationReport(int reportIndex) const = 0;
+        virtual ptrdiff_t implGetNumReports() const = 0;
+        virtual SimulationReport implGetSimulationReport(ptrdiff_t) const = 0;
         virtual std::vector<SimulationReport> implGetAllSimulationReports() const = 0;
 
         virtual SimulationStatus implGetStatus() const = 0;

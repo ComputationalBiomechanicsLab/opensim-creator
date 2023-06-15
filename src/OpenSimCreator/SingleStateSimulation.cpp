@@ -18,12 +18,12 @@ public:
         return m_ModelState.lockChild<OpenSim::Model>([](BasicModelStatePair const& ms) -> OpenSim::Model const& { return ms.getModel(); });
     }
 
-    int getNumReports() const
+    ptrdiff_t getNumReports() const
     {
         return 0;
     }
 
-    SimulationReport getSimulationReport(int reportIndex) const
+    SimulationReport getSimulationReport(ptrdiff_t) const
     {
         throw std::runtime_error{"invalid method call on a SingleStateSimulation"};
     }
@@ -107,12 +107,12 @@ osc::SynchronizedValueGuard<OpenSim::Model const> osc::SingleStateSimulation::im
     return m_Impl->getModel();
 }
 
-int osc::SingleStateSimulation::implGetNumReports() const
+ptrdiff_t osc::SingleStateSimulation::implGetNumReports() const
 {
     return m_Impl->getNumReports();
 }
 
-osc::SimulationReport osc::SingleStateSimulation::implGetSimulationReport(int reportIndex) const
+osc::SimulationReport osc::SingleStateSimulation::implGetSimulationReport(ptrdiff_t reportIndex) const
 {
     return m_Impl->getSimulationReport(reportIndex);
 }
