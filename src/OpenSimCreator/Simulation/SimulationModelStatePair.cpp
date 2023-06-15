@@ -1,9 +1,9 @@
 #include "SimulationModelStatePair.hpp"
 
+#include "OpenSimCreator/Simulation/Simulation.hpp"
+#include "OpenSimCreator/Simulation/SimulationReport.hpp"
+#include "OpenSimCreator/Simulation/SingleStateSimulation.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
-#include "OpenSimCreator/Simulation.hpp"
-#include "OpenSimCreator/SimulationReport.hpp"
-#include "OpenSimCreator/SingleStateSimulation.hpp"
 
 #include <oscar/Utils/SynchronizedValue.hpp>
 #include <oscar/Utils/UID.hpp>

@@ -6,13 +6,13 @@
 #include "OpenSimCreator/Graphics/MuscleDecorationStyle.hpp"
 #include "OpenSimCreator/Graphics/MuscleSizingStyle.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "OpenSimCreator/Simulation/IntegratorMethod.hpp"
+#include "OpenSimCreator/Simulation/SimulationModelStatePair.hpp"
 #include "OpenSimCreator/ComponentOutputExtractor.hpp"
-#include "OpenSimCreator/IntegratorMethod.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
 #include "OpenSimCreator/OutputExtractor.hpp"
 #include "OpenSimCreator/ParamBlock.hpp"
 #include "OpenSimCreator/ParamValue.hpp"
-#include "OpenSimCreator/SimulationModelStatePair.hpp"
 #include "OpenSimCreator/VirtualModelStatePair.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>

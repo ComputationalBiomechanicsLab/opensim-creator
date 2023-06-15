@@ -7,6 +7,11 @@
 #include "OpenSimCreator/Panels/SelectionDetailsPanel.hpp"
 #include "OpenSimCreator/Panels/SimulationDetailsPanel.hpp"
 #include "OpenSimCreator/Panels/SimulationViewerPanel.hpp"
+#include "OpenSimCreator/Simulation/Simulation.hpp"
+#include "OpenSimCreator/Simulation/SimulationClock.hpp"
+#include "OpenSimCreator/Simulation/SimulationModelStatePair.hpp"
+#include "OpenSimCreator/Simulation/SimulationReport.hpp"
+#include "OpenSimCreator/Simulation/VirtualSimulation.hpp"
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
 #include "OpenSimCreator/Widgets/SimulationOutputPlot.hpp"
@@ -15,12 +20,7 @@
 #include "OpenSimCreator/ComponentOutputExtractor.hpp"
 #include "OpenSimCreator/OutputExtractor.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
-#include "OpenSimCreator/Simulation.hpp"
-#include "OpenSimCreator/SimulationClock.hpp"
-#include "OpenSimCreator/SimulationModelStatePair.hpp"
-#include "OpenSimCreator/SimulationReport.hpp"
 #include "OpenSimCreator/VirtualOutputExtractor.hpp"
-#include "OpenSimCreator/VirtualSimulation.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Panels/LogViewerPanel.hpp>

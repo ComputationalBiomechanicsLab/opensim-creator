@@ -1,8 +1,8 @@
 #pragma once
 
+#include "OpenSimCreator/Simulation/SimulationStatus.hpp"
 #include "OpenSimCreator/BasicModelStatePair.hpp"
 #include "OpenSimCreator/OutputExtractor.hpp"
-#include "OpenSimCreator/SimulationStatus.hpp"
 
 #include <functional>
 #include <memory>

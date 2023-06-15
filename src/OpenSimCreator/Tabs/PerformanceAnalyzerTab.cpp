@@ -1,15 +1,15 @@
 #include "PerformanceAnalyzerTab.hpp"
 
+#include "OpenSimCreator/Simulation/ForwardDynamicSimulation.hpp"
+#include "OpenSimCreator/Simulation/ForwardDynamicSimulator.hpp"
+#include "OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp"
+#include "OpenSimCreator/Simulation/IntegratorMethod.hpp"
+#include "OpenSimCreator/Simulation/SimulationStatus.hpp"
 #include "OpenSimCreator/Widgets/ParamBlockEditorPopup.hpp"
 #include "OpenSimCreator/BasicModelStatePair.hpp"
-#include "OpenSimCreator/ForwardDynamicSimulation.hpp"
-#include "OpenSimCreator/ForwardDynamicSimulator.hpp"
-#include "OpenSimCreator/ForwardDynamicSimulatorParams.hpp"
-#include "OpenSimCreator/IntegratorMethod.hpp"
 #include "OpenSimCreator/OutputExtractor.hpp"
 #include "OpenSimCreator/ParamBlock.hpp"
 #include "OpenSimCreator/ParamValue.hpp"
-#include "OpenSimCreator/SimulationStatus.hpp"
 
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>

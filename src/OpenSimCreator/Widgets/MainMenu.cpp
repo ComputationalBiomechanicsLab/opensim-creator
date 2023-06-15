@@ -1,11 +1,11 @@
 #include "MainMenu.hpp"
 
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "OpenSimCreator/Simulation/Simulation.hpp"
+#include "OpenSimCreator/Simulation/StoFileSimulation.hpp"
 #include "OpenSimCreator/Tabs/MeshImporterTab.hpp"
 #include "OpenSimCreator/Tabs/SimulatorTab.hpp"
 #include "OpenSimCreator/ActionFunctions.hpp"
-#include "OpenSimCreator/Simulation.hpp"
-#include "OpenSimCreator/StoFileSimulation.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 

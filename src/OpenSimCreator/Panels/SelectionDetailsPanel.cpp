@@ -4,7 +4,7 @@
 #include "OpenSimCreator/Widgets/ComponentDetails.hpp"
 #include "OpenSimCreator/Widgets/SimulationOutputPlot.hpp"
 #include "OpenSimCreator/ComponentOutputExtractor.hpp"
-#include "OpenSimCreator/SimulationModelStatePair.hpp"
+#include "OpenSimCreator/Simulation/SimulationModelStatePair.hpp"
 
 #include <oscar/Panels/StandardPanel.hpp>
 

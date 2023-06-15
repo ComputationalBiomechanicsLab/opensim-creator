@@ -1,8 +1,8 @@
 #include "SimulationDetailsPanel.hpp"
 
+#include "OpenSimCreator/Simulation/Simulation.hpp"
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 #include "OpenSimCreator/Widgets/SimulationOutputPlot.hpp"
-#include "OpenSimCreator/Simulation.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/os.hpp>

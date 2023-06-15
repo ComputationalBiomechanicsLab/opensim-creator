@@ -1,9 +1,9 @@
 #pragma once
 
-#include "OpenSimCreator/SimulationClock.hpp"
-#include "OpenSimCreator/SimulationReport.hpp"
-#include "OpenSimCreator/SimulationStatus.hpp"
-#include "OpenSimCreator/VirtualSimulation.hpp"
+#include "OpenSimCreator/Simulation/SimulationClock.hpp"
+#include "OpenSimCreator/Simulation/SimulationReport.hpp"
+#include "OpenSimCreator/Simulation/SimulationStatus.hpp"
+#include "OpenSimCreator/Simulation/VirtualSimulation.hpp"
 
 #include <oscar/Utils/SynchronizedValue.hpp>
 

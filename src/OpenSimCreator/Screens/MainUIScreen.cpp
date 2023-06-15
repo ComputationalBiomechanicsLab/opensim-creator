@@ -1,11 +1,11 @@
 #include "MainUIScreen.hpp"
 
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp"
 #include "OpenSimCreator/Tabs/LoadingTab.hpp"
 #include "OpenSimCreator/Tabs/MeshImporterTab.hpp"
 #include "OpenSimCreator/Tabs/ModelEditorTab.hpp"
 #include "OpenSimCreator/Tabs/SplashTab.hpp"
-#include "OpenSimCreator/ForwardDynamicSimulatorParams.hpp"
 #include "OpenSimCreator/OutputExtractor.hpp"
 #include "OpenSimCreator/ParamBlock.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"

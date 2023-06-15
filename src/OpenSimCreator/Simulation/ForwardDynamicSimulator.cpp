@@ -1,13 +1,13 @@
 #include "ForwardDynamicSimulator.hpp"
 
+#include "OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp"
+#include "OpenSimCreator/Simulation/IntegratorMethod.hpp"
+#include "OpenSimCreator/Simulation/SimulationClock.hpp"
+#include "OpenSimCreator/Simulation/SimulationReport.hpp"
+#include "OpenSimCreator/Simulation/SimulationStatus.hpp"
 #include "OpenSimCreator/BasicModelStatePair.hpp"
-#include "OpenSimCreator/ForwardDynamicSimulatorParams.hpp"
 #include "OpenSimCreator/IntegratorOutputExtractor.hpp"
-#include "OpenSimCreator/IntegratorMethod.hpp"
 #include "OpenSimCreator/MultiBodySystemOutputExtractor.hpp"
-#include "OpenSimCreator/SimulationClock.hpp"
-#include "OpenSimCreator/SimulationReport.hpp"
-#include "OpenSimCreator/SimulationStatus.hpp"
 #include "OpenSimCreator/VirtualOutputExtractor.hpp"
 
 #include <oscar/Platform/Log.hpp>

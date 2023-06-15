@@ -1,10 +1,10 @@
 #include "SimulationOutputPlot.hpp"
 
+#include "OpenSimCreator/Simulation/SimulationClock.hpp"
+#include "OpenSimCreator/Simulation/SimulationReport.hpp"
+#include "OpenSimCreator/Simulation/VirtualSimulation.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/SimulatorUIAPI.hpp"
-#include "OpenSimCreator/SimulationClock.hpp"
-#include "OpenSimCreator/SimulationReport.hpp"
 #include "OpenSimCreator/OutputExtractor.hpp"
-#include "OpenSimCreator/VirtualSimulation.hpp"
 #include "OpenSimCreator/VirtualOutputExtractor.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>

@@ -68,6 +68,28 @@ add_library(OpenSimCreator STATIC
     Screens/MainUIScreen.cpp
     Screens/MainUIScreen.hpp
 
+    Simulation/ForwardDynamicSimulation.cpp
+    Simulation/ForwardDynamicSimulation.hpp
+    Simulation/ForwardDynamicSimulator.cpp
+    Simulation/ForwardDynamicSimulator.hpp
+    Simulation/ForwardDynamicSimulatorParams.cpp
+    Simulation/ForwardDynamicSimulatorParams.hpp
+    Simulation/IntegratorMethod.cpp
+    Simulation/IntegratorMethod.hpp
+    Simulation/Simulation.hpp
+    Simulation/SimulationClock.hpp
+    Simulation/SimulationModelStatePair.cpp
+    Simulation/SimulationModelStatePair.hpp
+    Simulation/SimulationReport.cpp
+    Simulation/SimulationReport.hpp
+    Simulation/SimulationStatus.cpp
+    Simulation/SimulationStatus.hpp
+    Simulation/SingleStateSimulation.cpp
+    Simulation/SingleStateSimulation.hpp
+    Simulation/StoFileSimulation.hpp
+    Simulation/StoFileSimulation.cpp
+    Simulation/VirtualSimulation.hpp
+
     Tabs/Experimental/MeshHittestTab.cpp
     Tabs/Experimental/MeshHittestTab.hpp
     Tabs/Experimental/ModelWarpingTab.cpp
@@ -148,14 +170,6 @@ add_library(OpenSimCreator STATIC
     BasicModelStatePair.hpp
     ComponentOutputExtractor.cpp
     ComponentOutputExtractor.hpp
-    ForwardDynamicSimulation.cpp
-    ForwardDynamicSimulation.hpp
-    ForwardDynamicSimulator.cpp
-    ForwardDynamicSimulator.hpp
-    ForwardDynamicSimulatorParams.cpp
-    ForwardDynamicSimulatorParams.hpp
-    IntegratorMethod.cpp
-    IntegratorMethod.hpp
     IntegratorOutputExtractor.cpp
     IntegratorOutputExtractor.hpp
     ModelStateCommit.cpp
@@ -177,18 +191,6 @@ add_library(OpenSimCreator STATIC
     ParamValue.hpp
     SimTKHelpers.cpp
     SimTKHelpers.hpp
-    Simulation.hpp
-    SimulationClock.hpp
-    SimulationModelStatePair.cpp
-    SimulationModelStatePair.hpp
-    SimulationReport.cpp
-    SimulationReport.hpp
-    SimulationStatus.cpp
-    SimulationStatus.hpp
-    SingleStateSimulation.cpp
-    SingleStateSimulation.hpp
-    StoFileSimulation.hpp
-    StoFileSimulation.cpp
     TPS3D.cpp
     TPS3D.hpp
     TypeRegistry.cpp
@@ -198,7 +200,6 @@ add_library(OpenSimCreator STATIC
     VirtualConstModelStatePair.hpp
     VirtualModelStatePair.hpp
     VirtualOutputExtractor.hpp
-    VirtualSimulation.hpp
 )
 
 # OpenSimCreator: compile-time includes

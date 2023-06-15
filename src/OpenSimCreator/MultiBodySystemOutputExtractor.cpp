@@ -1,6 +1,6 @@
 #include "MultiBodySystemOutputExtractor.hpp"
 
-#include "OpenSimCreator/SimulationReport.hpp"
+#include "OpenSimCreator/Simulation/SimulationReport.hpp"
 
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Algorithms.hpp>

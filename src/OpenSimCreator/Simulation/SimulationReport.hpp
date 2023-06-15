@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OpenSimCreator/SimulationClock.hpp"
+#include "OpenSimCreator/Simulation/SimulationClock.hpp"
 
 #include <oscar/Utils/UID.hpp>
 

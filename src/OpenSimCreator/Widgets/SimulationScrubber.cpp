@@ -1,8 +1,8 @@
 #include "SimulationScrubber.hpp"
 
+#include "OpenSimCreator/Simulation/Simulation.hpp"
+#include "OpenSimCreator/Simulation/SimulationClock.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/SimulatorUIAPI.hpp"
-#include "OpenSimCreator/Simulation.hpp"
-#include "OpenSimCreator/SimulationClock.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 

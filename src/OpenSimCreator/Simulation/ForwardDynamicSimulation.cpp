@@ -1,13 +1,13 @@
 #include "ForwardDynamicSimulation.hpp"
 
+#include "OpenSimCreator/Simulation/ForwardDynamicSimulator.hpp"
+#include "OpenSimCreator/Simulation/ForwardDynamicSimulatorParams.hpp"
+#include "OpenSimCreator/Simulation/SimulationClock.hpp"
+#include "OpenSimCreator/Simulation/SimulationReport.hpp"
+#include "OpenSimCreator/Simulation/SimulationStatus.hpp"
 #include "OpenSimCreator/BasicModelStatePair.hpp"
-#include "OpenSimCreator/ForwardDynamicSimulator.hpp"
-#include "OpenSimCreator/ForwardDynamicSimulatorParams.hpp"
 #include "OpenSimCreator/OutputExtractor.hpp"
 #include "OpenSimCreator/ParamBlock.hpp"
-#include "OpenSimCreator/SimulationClock.hpp"
-#include "OpenSimCreator/SimulationReport.hpp"
-#include "OpenSimCreator/SimulationStatus.hpp"
 
 #include <oscar/Utils/SynchronizedValue.hpp>
 

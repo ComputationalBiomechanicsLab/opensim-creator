@@ -1,10 +1,10 @@
 #include "StoFileSimulation.hpp"
 
+#include "OpenSimCreator/Simulation/SimulationClock.hpp"
+#include "OpenSimCreator/Simulation/SimulationReport.hpp"
+#include "OpenSimCreator/Simulation/SimulationStatus.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
 #include "OpenSimCreator/ParamBlock.hpp"
-#include "OpenSimCreator/SimulationClock.hpp"
-#include "OpenSimCreator/SimulationReport.hpp"
-#include "OpenSimCreator/SimulationStatus.hpp"
 
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Utils/Algorithms.hpp>
