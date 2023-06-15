@@ -1,5 +1,5 @@
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/OpenSimApp.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
 #include "OpenSimCreator/TypeRegistry.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 

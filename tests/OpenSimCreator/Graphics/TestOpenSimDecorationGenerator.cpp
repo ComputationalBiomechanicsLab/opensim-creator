@@ -2,7 +2,7 @@
 
 #include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
 #include "OpenSimCreator/Graphics/MuscleColoringStyle.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "testopensimcreator_config.hpp"
 
 #include <oscar/Graphics/MeshCache.hpp>

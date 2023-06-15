@@ -2,8 +2,8 @@
 
 #include "OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp"
 #include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
+#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/OpenSimApp.hpp"
-#include "OpenSimCreator/OpenSimHelpers.hpp"
 #include "testopensimcreator_config.hpp"
 
 #include <oscar/Formats/DAE.hpp>
