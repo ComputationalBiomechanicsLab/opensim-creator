@@ -16,7 +16,7 @@
 #include "OpenSimCreator/Tabs/PerformanceAnalyzerTab.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/Widgets/ObjectPropertiesEditor.hpp"
-#include "OpenSimCreator/TypeRegistry.hpp"
+#include "OpenSimCreator/ComponentRegistry.hpp"
 
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Platform/App.hpp>

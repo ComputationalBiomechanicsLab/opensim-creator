@@ -10,7 +10,7 @@
 #include "OpenSimCreator/Widgets/SelectGeometryPopup.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/ActionFunctions.hpp"
-#include "OpenSimCreator/TypeRegistry.hpp"
+#include "OpenSimCreator/ComponentRegistry.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Panels/PanelManager.hpp>

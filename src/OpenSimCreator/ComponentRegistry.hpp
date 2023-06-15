@@ -24,7 +24,7 @@ namespace osc
     // - return entries contiguously in memory
     // - return entires in a format that's useful for downstream (e.g. contiguous strings for ImGui)
     template<typename T>
-    struct TypeRegistry {
+    struct ComponentRegistry {
         static CStringView name() noexcept;
         static CStringView description() noexcept;
         static nonstd::span<std::shared_ptr<T const> const> prototypes() noexcept;
@@ -49,11 +49,11 @@ namespace osc
         }
     };
 
-    struct JointRegistry : TypeRegistry<OpenSim::Joint> {};
-    struct ContactGeometryRegistry : TypeRegistry<OpenSim::ContactGeometry> {};
-    struct ConstraintRegistry : TypeRegistry<OpenSim::Constraint> {};
-    struct ForceRegistry : TypeRegistry<OpenSim::Force> {};
-    struct ControllerRegistry : TypeRegistry<OpenSim::Controller> {};
-    struct ProbeRegistry : TypeRegistry<OpenSim::Probe> {};
-    struct UngroupedRegistry : TypeRegistry<OpenSim::Component> {};
+    struct JointRegistry : ComponentRegistry<OpenSim::Joint> {};
+    struct ContactGeometryRegistry : ComponentRegistry<OpenSim::ContactGeometry> {};
+    struct ConstraintRegistry : ComponentRegistry<OpenSim::Constraint> {};
+    struct ForceRegistry : ComponentRegistry<OpenSim::Force> {};
+    struct ControllerRegistry : ComponentRegistry<OpenSim::Controller> {};
+    struct ProbeRegistry : ComponentRegistry<OpenSim::Probe> {};
+    struct UngroupedRegistry : ComponentRegistry<OpenSim::Component> {};
 }

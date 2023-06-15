@@ -1,4 +1,4 @@
-#include "OpenSimCreator/TypeRegistry.hpp"
+#include "OpenSimCreator/ComponentRegistry.hpp"
 
 #include <oscar/Utils/CStringView.hpp>
 
@@ -40,14 +40,14 @@ namespace
 			return TestCase
 			{
 				typeid(T).name(),
-				osc::TypeRegistry<OpenSim::Joint>::indexOf<T>(),
+				osc::ComponentRegistry<OpenSim::Joint>::indexOf<T>(),
 				{std::forward<Names>(names)...}
 			};
 		}
 	};
 }
 
-TEST(TypeRegistry, CoordsHaveExpectedNames)
+TEST(ComponentRegistry, CoordsHaveExpectedNames)
 {
 	// ensure the typeregistry sets the default OpenSim coordinate names to something
 	// easier to work with
@@ -75,7 +75,7 @@ TEST(TypeRegistry, CoordsHaveExpectedNames)
 	{
 		ASSERT_TRUE(tc.maybeIndex) << tc.name << " does not exist in the registry(it should)";
 
-		auto proto = osc::TypeRegistry<OpenSim::Joint>::prototypes()[*tc.maybeIndex];
+		auto proto = osc::ComponentRegistry<OpenSim::Joint>::prototypes()[*tc.maybeIndex];
 		auto const& coordProp = proto->getProperty_coordinates();
 
 		ASSERT_EQ(coordProp.size(), tc.expectedNames.size()) << tc.name <<  " has different number of coords from expected";

@@ -3,7 +3,7 @@
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
 #include "OpenSimCreator/Widgets/AddBodyPopup.hpp"
 #include "OpenSimCreator/Widgets/AddComponentPopup.hpp"
-#include "OpenSimCreator/TypeRegistry.hpp"
+#include "OpenSimCreator/ComponentRegistry.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
@@ -77,26 +77,26 @@ private:
     void renderButton()
     {
         std::stringstream label;
-        label << osc::TypeRegistry<T>::name();
+        label << osc::ComponentRegistry<T>::name();
 
         // action: add joint
         if (ImGui::BeginMenu(label.str().c_str()))
         {
-            auto names = osc::TypeRegistry<T>::nameCStrings();
+            auto names = osc::ComponentRegistry<T>::nameCStrings();
 
             for (size_t i = 0; i < names.size(); ++i)
             {
                 if (ImGui::MenuItem(names[i]))
                 {
-                    std::unique_ptr<T> copy{osc::TypeRegistry<T>::prototypes()[i]->clone()};
-                    auto popup = std::make_unique<AddComponentPopup>(m_EditorAPI, m_Uum, std::move(copy), "Add " + osc::TypeRegistry<T>::name());
+                    std::unique_ptr<T> copy{osc::ComponentRegistry<T>::prototypes()[i]->clone()};
+                    auto popup = std::make_unique<AddComponentPopup>(m_EditorAPI, m_Uum, std::move(copy), "Add " + osc::ComponentRegistry<T>::name());
                     popup->open();
                     m_EditorAPI->pushPopup(std::move(popup));
                 }
 
                 if (ImGui::IsItemHovered())
                 {
-                    DrawTooltip(names[i], osc::TypeRegistry<T>::descriptionCStrings()[i]);
+                    DrawTooltip(names[i], osc::ComponentRegistry<T>::descriptionCStrings()[i]);
                 }
             }
 
@@ -105,10 +105,10 @@ private:
         if (ImGui::IsItemHovered())
         {
             std::stringstream ttTitle;
-            ttTitle << "Add a " << osc::TypeRegistry<T>::name() << " into the model";
+            ttTitle << "Add a " << osc::ComponentRegistry<T>::name() << " into the model";
             DrawTooltip(
                 ttTitle.str().c_str(),
-                osc::TypeRegistry<T>::description().c_str());
+                osc::ComponentRegistry<T>::description().c_str());
         }
     }
 

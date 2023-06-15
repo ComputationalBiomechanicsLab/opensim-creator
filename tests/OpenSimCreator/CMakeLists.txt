@@ -17,8 +17,8 @@ add_executable(testopensimcreator EXCLUDE_FROM_ALL
     Simulation/TestForwardDynamicSimulation.cpp
     Utils/TestOpenSimHelpers.cpp
     TestActionFunctions.cpp
+    TestComponentRegistry.cpp
     TestOpenSimLibraryAPI.cpp
-    TestTypeRegistry.cpp
 
     testopensimcreator.cpp  # entrypoint (main)
 )

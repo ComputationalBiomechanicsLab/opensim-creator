@@ -1,4 +1,4 @@
-#include "TypeRegistry.hpp"
+#include "ComponentRegistry.hpp"
 
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
@@ -696,393 +696,393 @@ namespace
 }
 
 
-// TypeRegistry<OpenSim::Joint>
+// ComponentRegistry<OpenSim::Joint>
 
 template<>
-osc::CStringView osc::TypeRegistry<OpenSim::Joint>::name() noexcept
+osc::CStringView osc::ComponentRegistry<OpenSim::Joint>::name() noexcept
 {
     return "Joint";
 }
 
 template<>
-osc::CStringView osc::TypeRegistry<OpenSim::Joint>::description() noexcept
+osc::CStringView osc::ComponentRegistry<OpenSim::Joint>::description() noexcept
 {
     return "An OpenSim::Joint is a OpenSim::ModelComponent which connects two PhysicalFrames together and specifies their relative permissible motion as described in internal coordinates.";
 }
 
 template<>
-nonstd::span<std::shared_ptr<OpenSim::Joint const> const> osc::TypeRegistry<OpenSim::Joint>::prototypes() noexcept
+nonstd::span<std::shared_ptr<OpenSim::Joint const> const> osc::ComponentRegistry<OpenSim::Joint>::prototypes() noexcept
 {
     static std::vector<std::shared_ptr<OpenSim::Joint const>> const s_Protos = CreatePrototypeLutT<OpenSim::Joint>();
     return s_Protos;
 }
 
 template<>
-nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Joint>::nameStrings() noexcept
+nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Joint>::nameStrings() noexcept
 {
     static std::vector<osc::CStringView> const s_Names = CreateNameViews(prototypes());
     return s_Names;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Joint>::nameCStrings() noexcept
+nonstd::span<char const* const> osc::ComponentRegistry<OpenSim::Joint>::nameCStrings() noexcept
 {
     static std::vector<char const*> const s_CStrs = CreateCStrings(nameStrings());
     return s_CStrs;
 }
 
 template<>
-nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Joint>::descriptionStrings() noexcept
+nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Joint>::descriptionStrings() noexcept
 {
     static std::vector<osc::CStringView> const s_Descriptions = CreateDescriptionViews(prototypes());
     return s_Descriptions;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Joint>::descriptionCStrings() noexcept
+nonstd::span<char const* const> osc::ComponentRegistry<OpenSim::Joint>::descriptionCStrings() noexcept
 {
     static std::vector<char const*> const s_DescriptionCStrs = CreateCStrings(descriptionStrings());
     return s_DescriptionCStrs;
 }
 
 template<>
-std::optional<size_t> osc::TypeRegistry<OpenSim::Joint>::indexOf(OpenSim::Joint const& joint) noexcept
+std::optional<size_t> osc::ComponentRegistry<OpenSim::Joint>::indexOf(OpenSim::Joint const& joint) noexcept
 {
     return ::IndexOf(prototypes(), typeid(joint));
 }
 
 
-// TypeRegistry<OpenSim::ContactGeometry>
+// ComponentRegistry<OpenSim::ContactGeometry>
 
 template<>
-osc::CStringView osc::TypeRegistry<OpenSim::ContactGeometry>::name() noexcept
+osc::CStringView osc::ComponentRegistry<OpenSim::ContactGeometry>::name() noexcept
 {
     return "Contact Geometry";
 }
 
 template<>
-osc::CStringView osc::TypeRegistry<OpenSim::ContactGeometry>::description() noexcept
+osc::CStringView osc::ComponentRegistry<OpenSim::ContactGeometry>::description() noexcept
 {
     return "Add a geometry with a physical shape that participates in contact modeling. The geometry is attached to an OpenSim::PhysicalFrame in the model (e.g. a body) and and moves with that frame.";
 }
 
 template<>
-nonstd::span<std::shared_ptr<OpenSim::ContactGeometry const> const> osc::TypeRegistry<OpenSim::ContactGeometry>::prototypes() noexcept
+nonstd::span<std::shared_ptr<OpenSim::ContactGeometry const> const> osc::ComponentRegistry<OpenSim::ContactGeometry>::prototypes() noexcept
 {
     static std::vector<std::shared_ptr<OpenSim::ContactGeometry const>> const s_Protos = CreatePrototypeLutT<OpenSim::ContactGeometry>();
     return s_Protos;
 }
 
 template<>
-nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::ContactGeometry>::nameStrings() noexcept
+nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::ContactGeometry>::nameStrings() noexcept
 {
     static std::vector<osc::CStringView> const s_Names = CreateNameViews(prototypes());
     return s_Names;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::ContactGeometry>::nameCStrings() noexcept
+nonstd::span<char const* const> osc::ComponentRegistry<OpenSim::ContactGeometry>::nameCStrings() noexcept
 {
     static std::vector<char const*> const s_CStrs = CreateCStrings(nameStrings());
     return s_CStrs;
 }
 
 template<>
-nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::ContactGeometry>::descriptionStrings() noexcept
+nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::ContactGeometry>::descriptionStrings() noexcept
 {
     static std::vector<osc::CStringView> const s_Descriptions = CreateDescriptionViews(prototypes());
     return s_Descriptions;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::ContactGeometry>::descriptionCStrings() noexcept
+nonstd::span<char const* const> osc::ComponentRegistry<OpenSim::ContactGeometry>::descriptionCStrings() noexcept
 {
     static std::vector<char const*> const s_DescriptionCStrs = CreateCStrings(descriptionStrings());
     return s_DescriptionCStrs;
 }
 
 template<>
-std::optional<size_t> osc::TypeRegistry<OpenSim::ContactGeometry>::indexOf(OpenSim::ContactGeometry const& cg) noexcept
+std::optional<size_t> osc::ComponentRegistry<OpenSim::ContactGeometry>::indexOf(OpenSim::ContactGeometry const& cg) noexcept
 {
     return ::IndexOf(prototypes(), typeid(cg));
 }
 
 
-// TypeRegistry<OpenSim::Constraint>
+// ComponentRegistry<OpenSim::Constraint>
 
 template<>
-osc::CStringView osc::TypeRegistry<OpenSim::Constraint>::name() noexcept
+osc::CStringView osc::ComponentRegistry<OpenSim::Constraint>::name() noexcept
 {
     return "Constraint";
 }
 
 template<>
-osc::CStringView osc::TypeRegistry<OpenSim::Constraint>::description() noexcept
+osc::CStringView osc::ComponentRegistry<OpenSim::Constraint>::description() noexcept
 {
     return "A constraint typically constrains the motion of physical frame(s) in the model some way. For example, an OpenSim::ConstantDistanceConstraint constrains the system to *have* to keep two frames at some constant distance from eachover.";
 }
 
 template<>
-nonstd::span<std::shared_ptr<OpenSim::Constraint const> const> osc::TypeRegistry<OpenSim::Constraint>::prototypes() noexcept
+nonstd::span<std::shared_ptr<OpenSim::Constraint const> const> osc::ComponentRegistry<OpenSim::Constraint>::prototypes() noexcept
 {
     static std::vector<std::shared_ptr<OpenSim::Constraint const>> const s_Protos = CreatePrototypeLutT<OpenSim::Constraint>();
     return s_Protos;
 }
 
 template<>
-nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Constraint>::nameStrings() noexcept
+nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Constraint>::nameStrings() noexcept
 {
     static std::vector<osc::CStringView> const s_Names = CreateNameViews(prototypes());
     return s_Names;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Constraint>::nameCStrings() noexcept
+nonstd::span<char const* const> osc::ComponentRegistry<OpenSim::Constraint>::nameCStrings() noexcept
 {
     static std::vector<char const*> const s_CStrs = CreateCStrings(nameStrings());
     return s_CStrs;
 }
 
 template<>
-nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Constraint>::descriptionStrings() noexcept
+nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Constraint>::descriptionStrings() noexcept
 {
     static std::vector<osc::CStringView> const s_Descriptions = CreateDescriptionViews(prototypes());
     return s_Descriptions;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Constraint>::descriptionCStrings() noexcept
+nonstd::span<char const* const> osc::ComponentRegistry<OpenSim::Constraint>::descriptionCStrings() noexcept
 {
     static std::vector<char const*> const s_DescriptionCStrs = CreateCStrings(descriptionStrings());
     return s_DescriptionCStrs;
 }
 
 template<>
-std::optional<size_t> osc::TypeRegistry<OpenSim::Constraint>::indexOf(OpenSim::Constraint const& cg) noexcept
+std::optional<size_t> osc::ComponentRegistry<OpenSim::Constraint>::indexOf(OpenSim::Constraint const& cg) noexcept
 {
     return ::IndexOf(prototypes(), typeid(cg));
 }
 
 
-// TypeRegistry<OpenSim::Force>
+// ComponentRegistry<OpenSim::Force>
 
 template<>
-osc::CStringView osc::TypeRegistry<OpenSim::Force>::name() noexcept
+osc::CStringView osc::ComponentRegistry<OpenSim::Force>::name() noexcept
 {
     return "Force";
 }
 
 template<>
-osc::CStringView osc::TypeRegistry<OpenSim::Force>::description() noexcept
+osc::CStringView osc::ComponentRegistry<OpenSim::Force>::description() noexcept
 {
     return "During a simulation, the force is applied to bodies or generalized coordinates in the model. Muscles are specialized `OpenSim::Force`s with biomech-focused features.";
 }
 
 template<>
-nonstd::span<std::shared_ptr<OpenSim::Force const> const> osc::TypeRegistry<OpenSim::Force>::prototypes() noexcept
+nonstd::span<std::shared_ptr<OpenSim::Force const> const> osc::ComponentRegistry<OpenSim::Force>::prototypes() noexcept
 {
     static std::vector<std::shared_ptr<OpenSim::Force const>> const s_Protos = CreatePrototypeLutT<OpenSim::Force>();
     return s_Protos;
 }
 
 template<>
-nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Force>::nameStrings() noexcept
+nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Force>::nameStrings() noexcept
 {
     static std::vector<osc::CStringView> const s_Names = CreateNameViews(prototypes());
     return s_Names;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Force>::nameCStrings() noexcept
+nonstd::span<char const* const> osc::ComponentRegistry<OpenSim::Force>::nameCStrings() noexcept
 {
     static std::vector<char const*> const s_CStrs = CreateCStrings(nameStrings());
     return s_CStrs;
 }
 
 template<>
-nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Force>::descriptionStrings() noexcept
+nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Force>::descriptionStrings() noexcept
 {
     static std::vector<osc::CStringView> const s_Descriptions = CreateDescriptionViews(prototypes());
     return s_Descriptions;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Force>::descriptionCStrings() noexcept
+nonstd::span<char const* const> osc::ComponentRegistry<OpenSim::Force>::descriptionCStrings() noexcept
 {
     static std::vector<char const*> const s_DescriptionCStrs = CreateCStrings(descriptionStrings());
     return s_DescriptionCStrs;
 }
 
 template<>
-std::optional<size_t> osc::TypeRegistry<OpenSim::Force>::indexOf(OpenSim::Force const& cg) noexcept
+std::optional<size_t> osc::ComponentRegistry<OpenSim::Force>::indexOf(OpenSim::Force const& cg) noexcept
 {
     return ::IndexOf(prototypes(), typeid(cg));
 }
 
 
-// TypeRegistry<OpenSim::Controller>
+// ComponentRegistry<OpenSim::Controller>
 
 template<>
-osc::CStringView osc::TypeRegistry<OpenSim::Controller>::name() noexcept
+osc::CStringView osc::ComponentRegistry<OpenSim::Controller>::name() noexcept
 {
     return "Controller";
 }
 
 template<>
-osc::CStringView osc::TypeRegistry<OpenSim::Controller>::description() noexcept
+osc::CStringView osc::ComponentRegistry<OpenSim::Controller>::description() noexcept
 {
     return "A controller computes and sets the values of the controls for the actuators under its control.";
 }
 
 template<>
-nonstd::span<std::shared_ptr<OpenSim::Controller const> const> osc::TypeRegistry<OpenSim::Controller>::prototypes() noexcept
+nonstd::span<std::shared_ptr<OpenSim::Controller const> const> osc::ComponentRegistry<OpenSim::Controller>::prototypes() noexcept
 {
     static std::vector<std::shared_ptr<OpenSim::Controller const>> const s_Protos = CreatePrototypeLutT<OpenSim::Controller>();
     return s_Protos;
 }
 
 template<>
-nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Controller>::nameStrings() noexcept
+nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Controller>::nameStrings() noexcept
 {
     static std::vector<osc::CStringView> const s_Names = CreateNameViews(prototypes());
     return s_Names;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Controller>::nameCStrings() noexcept
+nonstd::span<char const* const> osc::ComponentRegistry<OpenSim::Controller>::nameCStrings() noexcept
 {
     static std::vector<char const*> const s_CStrs = CreateCStrings(nameStrings());
     return s_CStrs;
 }
 
 template<>
-nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Controller>::descriptionStrings() noexcept
+nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Controller>::descriptionStrings() noexcept
 {
     static std::vector<osc::CStringView> const s_Descriptions = CreateDescriptionViews(prototypes());
     return s_Descriptions;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Controller>::descriptionCStrings() noexcept
+nonstd::span<char const* const> osc::ComponentRegistry<OpenSim::Controller>::descriptionCStrings() noexcept
 {
     static std::vector<char const*> const s_DescriptionCStrs = CreateCStrings(descriptionStrings());
     return s_DescriptionCStrs;
 }
 
 template<>
-std::optional<size_t> osc::TypeRegistry<OpenSim::Controller>::indexOf(OpenSim::Controller const& cg) noexcept
+std::optional<size_t> osc::ComponentRegistry<OpenSim::Controller>::indexOf(OpenSim::Controller const& cg) noexcept
 {
     return ::IndexOf(prototypes(), typeid(cg));
 }
 
 
-// TypeRegistry<OpenSim::Probe>
+// ComponentRegistry<OpenSim::Probe>
 
 template<>
-osc::CStringView osc::TypeRegistry<OpenSim::Probe>::name() noexcept
+osc::CStringView osc::ComponentRegistry<OpenSim::Probe>::name() noexcept
 {
     return "Probe";
 }
 
 template<>
-osc::CStringView osc::TypeRegistry<OpenSim::Probe>::description() noexcept
+osc::CStringView osc::ComponentRegistry<OpenSim::Probe>::description() noexcept
 {
     return "This class represents a Probe which is designed to query a Vector of model values given system state. This model quantity is specified as a SimTK::Vector by the pure virtual method computeProbeInputs(), which must be specified for each child Probe.  In addition, the Probe model component interface allows <I> operations </I> to be performed on this value (specified by the property: probe_operation), and then have this result scaled (by the scalar property: 'scale_factor'). A controller computes and sets the values of the controls for the actuators under its control.";
 }
 
 template<>
-nonstd::span<std::shared_ptr<OpenSim::Probe const> const> osc::TypeRegistry<OpenSim::Probe>::prototypes() noexcept
+nonstd::span<std::shared_ptr<OpenSim::Probe const> const> osc::ComponentRegistry<OpenSim::Probe>::prototypes() noexcept
 {
     static std::vector<std::shared_ptr<OpenSim::Probe const>> const s_Protos = CreatePrototypeLutT<OpenSim::Probe>();
     return s_Protos;
 }
 
 template<>
-nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Probe>::nameStrings() noexcept
+nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Probe>::nameStrings() noexcept
 {
     static std::vector<osc::CStringView> const s_Names = CreateNameViews(prototypes());
     return s_Names;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Probe>::nameCStrings() noexcept
+nonstd::span<char const* const> osc::ComponentRegistry<OpenSim::Probe>::nameCStrings() noexcept
 {
     static std::vector<char const*> const s_CStrs = CreateCStrings(nameStrings());
     return s_CStrs;
 }
 
 template<>
-nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Probe>::descriptionStrings() noexcept
+nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Probe>::descriptionStrings() noexcept
 {
     static std::vector<osc::CStringView> const s_Descriptions = CreateDescriptionViews(prototypes());
     return s_Descriptions;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Probe>::descriptionCStrings() noexcept
+nonstd::span<char const* const> osc::ComponentRegistry<OpenSim::Probe>::descriptionCStrings() noexcept
 {
     static std::vector<char const*> const s_DescriptionCStrs = CreateCStrings(descriptionStrings());
     return s_DescriptionCStrs;
 }
 
 template<>
-std::optional<size_t> osc::TypeRegistry<OpenSim::Probe>::indexOf(OpenSim::Probe const& cg) noexcept
+std::optional<size_t> osc::ComponentRegistry<OpenSim::Probe>::indexOf(OpenSim::Probe const& cg) noexcept
 {
     return ::IndexOf(prototypes(), typeid(cg));
 }
 
 
-// TypeRegistry<OpenSim::Component>
+// ComponentRegistry<OpenSim::Component>
 
 template<>
-osc::CStringView osc::TypeRegistry<OpenSim::Component>::name() noexcept
+osc::CStringView osc::ComponentRegistry<OpenSim::Component>::name() noexcept
 {
     return "Component";
 }
 
 template<>
-osc::CStringView osc::TypeRegistry<OpenSim::Component>::description() noexcept
+osc::CStringView osc::ComponentRegistry<OpenSim::Component>::description() noexcept
 {
     return "These are all the components that OpenSim Creator knows about, but can't put into an existing category (e.g. Force)";
 }
 
 template<>
-nonstd::span<std::shared_ptr<OpenSim::Component const> const> osc::TypeRegistry<OpenSim::Component>::prototypes() noexcept
+nonstd::span<std::shared_ptr<OpenSim::Component const> const> osc::ComponentRegistry<OpenSim::Component>::prototypes() noexcept
 {
     static std::vector<std::shared_ptr<OpenSim::Component const>> const s_Protos = CreateOtherComponentLut();
     return s_Protos;
 }
 
 template<>
-nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Component>::nameStrings() noexcept
+nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Component>::nameStrings() noexcept
 {
     static std::vector<osc::CStringView> const s_Names = CreateNameViews(prototypes());
     return s_Names;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Component>::nameCStrings() noexcept
+nonstd::span<char const* const> osc::ComponentRegistry<OpenSim::Component>::nameCStrings() noexcept
 {
     static std::vector<char const*> const s_CStrs = CreateCStrings(nameStrings());
     return s_CStrs;
 }
 
 template<>
-nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Component>::descriptionStrings() noexcept
+nonstd::span<osc::CStringView const> osc::ComponentRegistry<OpenSim::Component>::descriptionStrings() noexcept
 {
     static std::vector<osc::CStringView> const s_Descriptions = CreateDescriptionViews(prototypes());
     return s_Descriptions;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Component>::descriptionCStrings() noexcept
+nonstd::span<char const* const> osc::ComponentRegistry<OpenSim::Component>::descriptionCStrings() noexcept
 {
     static std::vector<char const*> const s_DescriptionCStrs = CreateCStrings(descriptionStrings());
     return s_DescriptionCStrs;
 }
 
 template<>
-std::optional<size_t> osc::TypeRegistry<OpenSim::Component>::indexOf(OpenSim::Component const& cg) noexcept
+std::optional<size_t> osc::ComponentRegistry<OpenSim::Component>::indexOf(OpenSim::Component const& cg) noexcept
 {
     return ::IndexOf(prototypes(), typeid(cg));
 }

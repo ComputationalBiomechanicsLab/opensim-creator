@@ -7,7 +7,7 @@
 #include "OpenSimCreator/Tabs/ModelEditorTab.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
-#include "OpenSimCreator/TypeRegistry.hpp"
+#include "OpenSimCreator/ComponentRegistry.hpp"
 
 #include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
