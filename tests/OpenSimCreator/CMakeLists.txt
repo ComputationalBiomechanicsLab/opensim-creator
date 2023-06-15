@@ -13,13 +13,12 @@ configure_file(
 add_executable(testopensimcreator EXCLUDE_FROM_ALL
 
     Graphics/TestOpenSimDecorationGenerator.cpp
-
-    TestForwardDynamicSimulation.cpp
-    TestOpenSim.cpp
-    TestOpenSimActions.cpp
-    TestOpenSimHelpers.cpp
+    Model/TestUndoableModelStatePair.cpp
+    Simulation/TestForwardDynamicSimulation.cpp
+    Utils/TestOpenSimHelpers.cpp
+    TestActionFunctions.cpp
+    TestOpenSimLibraryAPI.cpp
     TestTypeRegistry.cpp
-    TestUndoableModelStatePair.cpp
 
     testopensimcreator.cpp  # entrypoint (main)
 )
