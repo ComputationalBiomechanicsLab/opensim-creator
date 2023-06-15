@@ -1,6 +1,6 @@
 #include "OpenSimHelpers.hpp"
 
-#include "OpenSimCreator/SimTKHelpers.hpp"
+#include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 
 #include <oscar/Maths/MathHelpers.hpp>

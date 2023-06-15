@@ -1,6 +1,6 @@
 #include "SelectGeometryPopup.hpp"
 
-#include "OpenSimCreator/Graphics/SimTKMeshLoader.hpp"
+#include "OpenSimCreator/Bindings/SimTKMeshLoader.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/os.hpp>

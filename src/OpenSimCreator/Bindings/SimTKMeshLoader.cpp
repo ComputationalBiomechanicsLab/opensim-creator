@@ -1,6 +1,6 @@
 #include "SimTKMeshLoader.hpp"
 
-#include "OpenSimCreator/SimTKHelpers.hpp"
+#include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
 
 #include <oscar/Graphics/Mesh.hpp>
 #include <oscar/Graphics/MeshTopology.hpp>

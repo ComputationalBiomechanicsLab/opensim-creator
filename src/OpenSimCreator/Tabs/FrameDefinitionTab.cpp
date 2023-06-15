@@ -1,11 +1,12 @@
 #include "FrameDefinitionTab.hpp"
 
+#include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
+#include "OpenSimCreator/Bindings/SimTKMeshLoader.hpp"
 #include "OpenSimCreator/Graphics/CustomRenderingOptions.hpp"
 #include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
 #include "OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp"
 #include "OpenSimCreator/Graphics/OverlayDecorationGenerator.hpp"
 #include "OpenSimCreator/Graphics/OpenSimGraphicsHelpers.hpp"
-#include "OpenSimCreator/Graphics/SimTKMeshLoader.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanel.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelLayer.hpp"
@@ -18,7 +19,6 @@
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
 #include "OpenSimCreator/ActionFunctions.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
-#include "OpenSimCreator/SimTKHelpers.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/VirtualConstModelStatePair.hpp"
 

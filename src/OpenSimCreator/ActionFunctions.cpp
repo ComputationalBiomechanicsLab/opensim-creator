@@ -1,5 +1,6 @@
 #include "ActionFunctions.hpp"
 
+#include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
 #include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
 #include "OpenSimCreator/Graphics/OpenSimDecorationGenerator.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
@@ -14,7 +15,6 @@
 #include "OpenSimCreator/Widgets/ObjectPropertiesEditor.hpp"
 #include "OpenSimCreator/BasicModelStatePair.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
-#include "OpenSimCreator/SimTKHelpers.hpp"
 #include "OpenSimCreator/TypeRegistry.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 

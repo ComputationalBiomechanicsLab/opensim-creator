@@ -1,9 +1,9 @@
 #include "OpenSimDecorationGenerator.hpp"
 
+#include "OpenSimCreator/Bindings/SimTKDecorationGenerator.hpp"
+#include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
 #include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
-#include "OpenSimCreator/Graphics/SimTKDecorationGenerator.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
-#include "OpenSimCreator/SimTKHelpers.hpp"
 #include "OpenSimCreator/VirtualConstModelStatePair.hpp"
 
 #include <oscar/Graphics/Color.hpp>

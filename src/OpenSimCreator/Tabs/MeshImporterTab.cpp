@@ -1,11 +1,11 @@
 #include "MeshImporterTab.hpp"
 
-#include "OpenSimCreator/Graphics/SimTKMeshLoader.hpp"
+#include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
+#include "OpenSimCreator/Bindings/SimTKMeshLoader.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "OpenSimCreator/Tabs/ModelEditorTab.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
 #include "OpenSimCreator/OpenSimHelpers.hpp"
-#include "OpenSimCreator/SimTKHelpers.hpp"
 #include "OpenSimCreator/TypeRegistry.hpp"
 #include "OpenSimCreator/UndoableModelStatePair.hpp"
 

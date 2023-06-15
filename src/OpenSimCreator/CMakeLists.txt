@@ -4,6 +4,12 @@ find_package(OpenSim REQUIRED CONFIG)
 #
 #     library code behind the OpenSim Creator application
 add_library(OpenSimCreator STATIC
+    Bindings/SimTKDecorationGenerator.cpp
+    Bindings/SimTKDecorationGenerator.hpp
+    Bindings/SimTKMeshLoader.cpp
+    Bindings/SimTKMeshLoader.hpp
+    Bindings/SimTKHelpers.cpp
+    Bindings/SimTKHelpers.hpp
 
     Graphics/CachedModelRenderer.cpp
     Graphics/CachedModelRenderer.hpp
@@ -29,10 +35,6 @@ add_library(OpenSimCreator STATIC
     Graphics/OverlayDecorationGenerator.hpp
     Graphics/OverlayDecorationOptions.cpp
     Graphics/OverlayDecorationOptions.hpp
-    Graphics/SimTKDecorationGenerator.cpp
-    Graphics/SimTKDecorationGenerator.hpp
-    Graphics/SimTKMeshLoader.cpp
-    Graphics/SimTKMeshLoader.hpp
 
     MiddlewareAPIs/EditorAPI.hpp
     MiddlewareAPIs/MainUIStateAPI.hpp
@@ -189,8 +191,6 @@ add_library(OpenSimCreator STATIC
     ParamBlock.hpp
     ParamBlock.cpp
     ParamValue.hpp
-    SimTKHelpers.cpp
-    SimTKHelpers.hpp
     TPS3D.cpp
     TPS3D.hpp
     TypeRegistry.cpp
