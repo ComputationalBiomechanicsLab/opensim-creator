@@ -16,7 +16,7 @@ add_executable(testopensimcreator EXCLUDE_FROM_ALL
     Model/TestUndoableModelStatePair.cpp
     Simulation/TestForwardDynamicSimulation.cpp
     Utils/TestOpenSimHelpers.cpp
-    TestActionFunctions.cpp
+    Utils/TestUndoableModelActions.cpp
     TestComponentRegistry.cpp
     TestOpenSimLibraryAPI.cpp
 
