@@ -86,14 +86,19 @@ namespace
     constexpr osc::Color c_CrossProductEdgeDefaultColor = {0.75f, 1.0f, 1.0f};
 }
 
-// custom OpenSim components for this screen
-namespace OpenSim
+// helper functions
+namespace
 {
-    // HACK: OpenSim namespace is REQUIRED
-    //
-    // because OpenSim's property macros etc. assume so much, see:
-    //
-    //  - https://github.com/opensim-org/opensim-core/pull/3469
+    SimTK::Vec3 CalcLocationInFrame(
+        OpenSim::Frame const& frame,
+        SimTK::State const& state,
+        glm::vec3 const& locationInGround)
+    {
+        SimTK::Transform const mesh2ground = frame.getTransformInGround(state);
+        SimTK::Transform const ground2mesh = mesh2ground.invert();
+        SimTK::Vec3 const translationInGround = osc::ToSimTKVec3(locationInGround);
+        return ground2mesh * translationInGround;
+    }
 
     // returns the RGB components of `color`
     SimTK::Vec3 ToRGBVec3(osc::Color const& color)
@@ -192,6 +197,55 @@ namespace OpenSim
         SimTK::DecorativeMesh rv{std::move(polygonalMesh)};
         SetGeomAppearance(rv, appearance);
         return rv;
+    }
+
+    // custom helper that customizes the OpenSim model defaults to be more
+    // suitable for the frame definition UI
+    std::shared_ptr<osc::UndoableModelStatePair> MakeSharedUndoableFrameDefinitionModel()
+    {
+        auto model = std::make_unique<OpenSim::Model>();
+        model->updDisplayHints().set_show_frames(false);
+        return std::make_shared<osc::UndoableModelStatePair>(std::move(model));
+    }
+
+    // gets the next unique suffix numer for geometry
+    int32_t GetNextGlobalGeometrySuffix()
+    {
+        static std::atomic<int32_t> s_GeometryCounter = 0;
+        return s_GeometryCounter++;
+    }
+
+    // returns a scene element name that should
+    std::string GenerateSceneElementName(std::string_view prefix)
+    {
+        std::stringstream ss;
+        ss << prefix;
+        ss << GetNextGlobalGeometrySuffix();
+        return std::move(ss).str();
+    }
+
+    // mutates the given render params to match the style of the frame definition UI
+    void SetupDefault3DViewportRenderingParams(osc::ModelRendererParams& renderParams)
+    {
+        renderParams.renderingOptions.setDrawFloor(false);
+        renderParams.overlayOptions.setDrawXZGrid(true);
+        renderParams.backgroundColor = {48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f};
+    }
+}
+
+// custom OpenSim components for this screen
+namespace OpenSim
+{
+    // HACK: OpenSim namespace is REQUIRED
+    //
+    // because OpenSim's property macros etc. assume so much, see:
+    //
+    //  - https://github.com/opensim-org/opensim-core/pull/3469
+
+    // returns `true` if the given component is a point in the frame definition scene
+    bool IsPoint(OpenSim::Component const& component)
+    {
+        return dynamic_cast<OpenSim::Point const*>(&component);
     }
 
     // a sphere landmark, where the center of the sphere is the point of interest
@@ -315,6 +369,11 @@ namespace OpenSim
     private:
         virtual EdgePoints implGetEdgePointsInGround(SimTK::State const&) const = 0;
     };
+
+    bool IsEdge(OpenSim::Component const& component)
+    {
+        return dynamic_cast<OpenSim::FDVirtualEdge const*>(&component);
+    }
 
     // an edge that starts at virtual `pointA` and ends at virtual `pointB`
     class FDPointToPointEdge final : public FDVirtualEdge {
@@ -718,43 +777,6 @@ namespace OpenSim
     };
 }
 
-// top-level helper functions
-namespace
-{
-    // custom helper that customizes the OpenSim model defaults to be more
-    // suitable for the frame definition UI
-    std::shared_ptr<osc::UndoableModelStatePair> MakeSharedUndoableFrameDefinitionModel()
-    {
-        auto model = std::make_unique<OpenSim::Model>();
-        model->updDisplayHints().set_show_frames(false);
-        return std::make_shared<osc::UndoableModelStatePair>(std::move(model));
-    }
-
-    // gets the next unique suffix numer for geometry
-    int32_t GetNextGlobalGeometrySuffix()
-    {
-        static std::atomic<int32_t> s_GeometryCounter = 0;
-        return s_GeometryCounter++;
-    }
-
-    bool IsPoint(OpenSim::Component const& component)
-    {
-        return dynamic_cast<OpenSim::Point const*>(&component);
-    }
-
-    bool IsEdge(OpenSim::Component const& component)
-    {
-        return dynamic_cast<OpenSim::FDVirtualEdge const*>(&component);
-    }
-
-    void SetupDefault3DViewportRenderingParams(osc::ModelRendererParams& renderParams)
-    {
-        renderParams.renderingOptions.setDrawFloor(false);
-        renderParams.overlayOptions.setDrawXZGrid(true);
-        renderParams.backgroundColor = {48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f};
-    }
-}
-
 // choose `n` components UI flow
 namespace
 {
@@ -1107,23 +1129,12 @@ namespace
         // if the caller requests that the sphere is placed at a particular
         // location in ground, then place it in the correct location w.r.t.
         // the mesh frame
-        SimTK::Vec3 translationInMeshFrame = {0.0, 0.0, 0.0};
-        if (maybeClickPosInGround)
-        {
-            SimTK::Transform const mesh2ground = mesh.getFrame().getTransformInGround(model.getState());
-            SimTK::Transform const ground2mesh = mesh2ground.invert();
-            SimTK::Vec3 const translationInGround = osc::ToSimTKVec3(*maybeClickPosInGround);
-
-            translationInMeshFrame = ground2mesh * translationInGround;
-        }
+        SimTK::Vec3 const translationInMeshFrame = maybeClickPosInGround ?
+            CalcLocationInFrame(mesh.getFrame(), model.getState(), *maybeClickPosInGround) :
+            SimTK::Vec3{0.0, 0.0, 0.0};
 
         // generate sphere name
-        std::string const sphereName = []()
-        {
-            std::stringstream ss;
-            ss << "sphere_" << GetNextGlobalGeometrySuffix();
-            return std::move(ss).str();
-        }();
+        std::string const sphereName = GenerateSceneElementName("sphere_");
 
         OpenSim::Model const& immutableModel = model.getModel();
 
@@ -1160,18 +1171,32 @@ namespace
         }
     }
 
+    void ActionAddOffsetFrameInMeshFrame(
+        osc::UndoableModelStatePair& model,
+        OpenSim::Mesh const& mesh,
+        std::optional<glm::vec3> const& maybeClickPosInGround)
+    {
+        // if the caller requests that the sphere is placed at a particular
+        // location in ground, then place it in the correct location w.r.t.
+        // the mesh frame
+        SimTK::Vec3 translationInMeshFrame = {0.0, 0.0, 0.0};
+        if (maybeClickPosInGround)
+        {
+            SimTK::Transform const mesh2ground = mesh.getFrame().getTransformInGround(model.getState());
+            SimTK::Transform const ground2mesh = mesh2ground.invert();
+            SimTK::Vec3 const translationInGround = osc::ToSimTKVec3(*maybeClickPosInGround);
+
+            translationInMeshFrame = ground2mesh * translationInGround;
+        }
+    }
+
     void ActionAddPointToPointEdge(
         osc::UndoableModelStatePair& model,
         OpenSim::Point const& pointA,
         OpenSim::Point const& pointB)
     {
         // generate edge name
-        std::string const edgeName = []()
-        {
-            std::stringstream ss;
-            ss << "edge_" << GetNextGlobalGeometrySuffix();
-            return std::move(ss).str();
-        }();
+        std::string const edgeName = GenerateSceneElementName("edge_");
 
         // create edge
         auto edge = std::make_unique<OpenSim::FDPointToPointEdge>();
@@ -1206,12 +1231,7 @@ namespace
         OpenSim::Point const& pointB)
     {
         // generate name
-        std::string const midpointName = []()
-        {
-            std::stringstream ss;
-            ss << "midpoint_" << GetNextGlobalGeometrySuffix();
-            return std::move(ss).str();
-        }();
+        std::string const midpointName = GenerateSceneElementName("midpoint_");
 
         // construct midpoint
         auto midpoint = std::make_unique<OpenSim::MidpointLandmark>();
@@ -1246,12 +1266,7 @@ namespace
         OpenSim::FDVirtualEdge const& edgeB)
     {
         // generate name
-        std::string const edgeName = []()
-        {
-            std::stringstream ss;
-            ss << "crossproduct_" << GetNextGlobalGeometrySuffix();
-            return std::move(ss).str();
-        }();
+        std::string const edgeName = GenerateSceneElementName("crossproduct_");
 
         // construct
         auto edge = std::make_unique<OpenSim::FDCrossProductEdge>();
@@ -1502,12 +1517,7 @@ namespace
         OpenSim::Point const& origin)
     {
         // generate name
-        std::string const frameName = []()
-        {
-            std::stringstream ss;
-            ss << "frame_" << GetNextGlobalGeometrySuffix();
-            return std::move(ss).str();
-        }();
+        std::string const frameName = GenerateSceneElementName("frame_");
 
         // generate commit message
         std::string const commitMessage = [&frameName]()
@@ -1973,6 +1983,7 @@ namespace
         explicit FrameDefinitionTabMainMenu(
             std::shared_ptr<osc::UndoableModelStatePair> model_,
             std::shared_ptr<osc::PanelManager> panelManager_) :
+
             m_Model{std::move(model_)},
             m_WindowMenu{std::move(panelManager_)}
         {
