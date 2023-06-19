@@ -23,6 +23,7 @@
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Formats/OBJ.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
@@ -62,9 +63,11 @@
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 
 #include <atomic>
+#include <cerrno>
 #include <cstdint>
 #include <cstddef>
 #include <filesystem>
+#include <fstream>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -901,27 +904,6 @@ namespace
             }
         }
 
-        std::vector<OpenSim::PhysicalFrame const*> GetParentToChildFramesInclusive(
-            OpenSim::PhysicalFrame const& frame)
-        {
-            std::vector<OpenSim::PhysicalFrame const*> rv{&frame};
-        }
-
-        OpenSim::Mesh const* TryFindMeshThatFrameIsAttachedTo(
-            OpenSim::PhysicalFrame const& frame)
-        {
-
-        }
-
-        void ActionAttachBodyToFrame(
-            osc::UndoableModelStatePair& model,
-            OpenSim::PhysicalFrame const& frame)
-        {
-            // calculate which mesh the frame is attached to (if any)
-            // then figure out if any other bodies in the model are attached to the mesh's frame
-            // if not, attach a body to the frame
-        }
-
         void ActionAddPointToPointEdge(
             osc::UndoableModelStatePair& model,
             OpenSim::Point const& pointA,
@@ -1088,6 +1070,58 @@ namespace
                 model->setSelected(framePtr);
                 model->commit(commitMessage);
             }
+        }
+
+        osc::Transform CalcTransformWithRespectTo(
+            OpenSim::Mesh const& mesh,
+            OpenSim::Frame const& frame,
+            SimTK::State const& state)
+        {
+            SimTK::Transform const meshToGround = mesh.getFrame().getTransformInGround(state);
+            SimTK::Transform const groundToFrame = frame.getTransformInGround(state).invert();
+            SimTK::Transform const meshToFrame = groundToFrame * meshToGround;
+
+            osc::Transform rv = osc::ToTransform(meshToFrame);
+            rv.scale = osc::ToVec3(mesh.get_scale_factors());
+
+            return rv;
+        }
+
+        void ActionReexportMeshOBJWithRespectTo(
+            OpenSim::Model const& model,
+            SimTK::State const& state,
+            OpenSim::Mesh const& openSimMesh,
+            OpenSim::Frame const& frame)
+        {
+            // prompt user for a save location
+            std::optional<std::filesystem::path> const maybeUserSaveLocation =
+                osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
+            if (!maybeUserSaveLocation)
+            {
+                return;  // user didn't select a save location
+            }
+            std::filesystem::path const& userSaveLocation = *maybeUserSaveLocation;
+
+            // load raw mesh data into an osc mesh for processing
+            osc::Mesh oscMesh = osc::LoadMeshViaSimTK(openSimMesh.get_mesh_file());
+
+            // bake transform into mesh data
+            oscMesh.transformVerts(CalcTransformWithRespectTo(openSimMesh, frame, state));
+
+            // write transformed mesh to output
+            std::ios_base::openmode const outputFlags =
+                std::ios_base::out |
+                std::ios_base::trunc |
+                std::ios_base::binary;
+            auto outFile = std::make_shared<std::ofstream>(userSaveLocation, outputFlags);
+            if (!(*outFile))
+            {
+                std::string const error = osc::StrerrorThreadsafe(errno);
+                osc::log::error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
+                return;
+            }
+            osc::ObjWriter writer{outFile};
+            writer.write(oscMesh, osc::ObjWriterFlags_IgnoreNormals);
         }
     }
 }
@@ -1734,7 +1768,7 @@ namespace
             PushCreateCrossProductEdgeLayer(editor, model, edge, maybeSourceEvent);
         }
 
-        if (maybeSourceEvent && ImGui::BeginMenu("     Create frame with this edge as"))
+        if (maybeSourceEvent && ImGui::BeginMenu("        Create frame with this edge as"))
         {
             if (ImGui::MenuItem("+x"))
             {
@@ -1845,6 +1879,50 @@ namespace
                 mesh,
                 maybeSourceEvent ? maybeSourceEvent->maybeClickPositionInGround : std::nullopt
             );
+        }
+
+        if (ImGui::BeginMenu(ICON_FA_FILE_EXPORT " Re-Export"))
+        {
+            if (ImGui::BeginMenu("With Respect to Scene"))
+            {
+                if (ImGui::MenuItem(".obj"))
+                {
+                    ActionReexportMeshOBJWithRespectTo(
+                        model->getModel(),
+                        model->getState(),
+                        mesh,
+                        model->getModel().getGround()
+                    );
+                }
+
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("With Respect to Frame"))
+            {
+                int imguiID = 0;
+                for (OpenSim::Frame const& frame : model->getModel().getComponentList<OpenSim::Frame>())
+                {
+                    ImGui::PushID(imguiID++);
+                    if (ImGui::BeginMenu(frame.getName().c_str()))
+                    {
+                        if (ImGui::MenuItem(".obj"))
+                        {
+                            ActionReexportMeshOBJWithRespectTo(
+                                model->getModel(),
+                                model->getState(),
+                                mesh,
+                                frame
+                            );
+                        }
+                        ImGui::EndMenu();
+                    }
+                    ImGui::PopID();
+                }
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMenu();
         }
 
         DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, mesh);
