@@ -2,6 +2,7 @@
 
 #include "oscar/Graphics/MeshIndicesView.hpp"
 #include "oscar/Graphics/MeshTopology.hpp"
+#include "oscar/Maths/Transform.hpp"
 #include "oscar/Utils/CopyOnUpdPtr.hpp"
 
 #include <glm/vec2.hpp>
@@ -16,6 +17,7 @@
 
 namespace osc { struct AABB; }
 namespace osc { struct BVH; }
+namespace osc { struct Transform; }
 namespace osc { struct Rgba32; }
 
 // note: implementation is in `GraphicsImplementation.cpp`
@@ -40,6 +42,7 @@ namespace osc
         nonstd::span<glm::vec3 const> getVerts() const;
         void setVerts(nonstd::span<glm::vec3 const>);
         void transformVerts(std::function<void(nonstd::span<glm::vec3>)> const&);
+        void transformVerts(Transform const&);
 
         nonstd::span<glm::vec3 const> getNormals() const;
         void setNormals(nonstd::span<glm::vec3 const>);

@@ -2040,6 +2040,50 @@ TEST_F(Renderer, MeshTransformVertsCausesTransformedMeshToNotBeEqualToInitialMes
     ASSERT_NE(m, copy);
 }
 
+TEST_F(Renderer, MeshTransformVertsWithTransformAppliesTransformToVerts)
+{
+    // create appropriate transform
+    osc::Transform t;
+    t.scale *= 0.25f;
+    t.position = {1.0f, 0.25f, 0.125f};
+    t.rotation = glm::quat{glm::vec3{glm::radians(90.0f), 0.0f, 0.0f}};
+
+    // generate "original" verts
+    std::vector<glm::vec3> originalVerts = GenerateTriangleVerts();
+
+    // precompute "expected" verts
+    std::vector<glm::vec3> expectedVerts;
+    expectedVerts.reserve(originalVerts.size());
+    for (glm::vec3& v : originalVerts)
+    {
+        expectedVerts.push_back(t * v);
+    }
+
+    // create mesh with "original" verts
+    osc::Mesh m;
+    m.setVerts(originalVerts);
+
+    // then apply the transform
+    m.transformVerts(t);
+
+    // the mesh's verts should match expectations
+    std::vector<glm::vec3> outputVerts(m.getVerts().begin(), m.getVerts().end());
+
+    ASSERT_EQ(outputVerts, expectedVerts);
+}
+
+TEST_F(Renderer, MeshTransformVertsWithTransformCausesTransformedMeshToNotBeEqualToInitialMesh)
+{
+    osc::Mesh m;
+    osc::Mesh copy{m};
+
+    ASSERT_EQ(m, copy);
+
+    copy.transformVerts(osc::Transform{});  // noop transform also triggers this (meshes aren't value-comparable)
+
+    ASSERT_NE(m, copy);
+}
+
 TEST_F(Renderer, MeshGetNormalsReturnsEmptyOnDefaultConstruction)
 {
     osc::Mesh m;
