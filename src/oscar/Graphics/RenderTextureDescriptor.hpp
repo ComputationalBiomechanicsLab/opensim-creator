@@ -1,8 +1,9 @@
 #pragma once
 
+#include "oscar/Graphics/DepthStencilFormat.hpp"
 #include "oscar/Graphics/RenderTextureFormat.hpp"
 #include "oscar/Graphics/RenderTextureReadWrite.hpp"
-#include "oscar/Graphics/DepthStencilFormat.hpp"
+#include "oscar/Graphics/TextureDimension.hpp"
 
 #include <glm/vec2.hpp>
 
@@ -21,6 +22,9 @@ namespace osc
 
         glm::ivec2 getDimensions() const;
         void setDimensions(glm::ivec2);
+
+        TextureDimension getDimension() const;
+        void setDimension(TextureDimension);
 
         int32_t getAntialiasingLevel() const;
         void setAntialiasingLevel(int32_t);
@@ -41,6 +45,7 @@ namespace osc
         friend std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
 
         glm::ivec2 m_Dimensions;
+        TextureDimension m_Dimension;
         int32_t m_AnialiasingLevel;
         RenderTextureFormat m_ColorFormat;
         DepthStencilFormat m_DepthStencilFormat;

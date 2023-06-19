@@ -111,6 +111,7 @@ add_library(oscar STATIC
     Graphics/ShaderType.hpp
     Graphics/SimpleSceneDecoration.hpp
     Graphics/Texture2D.hpp
+    Graphics/TextureDimension.hpp
     Graphics/TextureFilterMode.hpp
     Graphics/TextureFormat.hpp
     Graphics/TextureGen.cpp

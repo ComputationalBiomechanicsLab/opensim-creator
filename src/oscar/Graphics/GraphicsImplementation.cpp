@@ -1639,6 +1639,7 @@ std::ostream& osc::operator<<(std::ostream& o, DepthStencilFormat f)
 
 osc::RenderTextureDescriptor::RenderTextureDescriptor(glm::ivec2 dimensions) :
     m_Dimensions{Max(dimensions, glm::ivec2{0, 0})},
+    m_Dimension{TextureDimension::Tex2D},
     m_AnialiasingLevel{1},
     m_ColorFormat{RenderTextureFormat::ARGB32},
     m_DepthStencilFormat{DepthStencilFormat::D24_UNorm_S8_UInt},
@@ -1655,6 +1656,16 @@ void osc::RenderTextureDescriptor::setDimensions(glm::ivec2 d)
 {
     OSC_THROWING_ASSERT(d.x >= 0 && d.y >= 0);
     m_Dimensions = d;
+}
+
+osc::TextureDimension osc::RenderTextureDescriptor::getDimension() const
+{
+    return m_Dimension;
+}
+
+void osc::RenderTextureDescriptor::setDimension(TextureDimension newDimension)
+{
+    m_Dimension = newDimension;
 }
 
 int32_t osc::RenderTextureDescriptor::getAntialiasingLevel() const
@@ -1702,6 +1713,7 @@ bool osc::operator==(RenderTextureDescriptor const& a, RenderTextureDescriptor c
 {
     return
         a.m_Dimensions == b.m_Dimensions &&
+        a.m_Dimension == b.m_Dimension &&
         a.m_AnialiasingLevel == b.m_AnialiasingLevel &&
         a.m_ColorFormat == b.m_ColorFormat &&
         a.m_DepthStencilFormat == b.m_DepthStencilFormat &&
@@ -1733,6 +1745,7 @@ public:
         m_Descriptor{descriptor_},
         m_BufferType{type_}
     {
+        OSC_THROWING_ASSERT((getDimension() != TextureDimension::Cube || getDimensions().x == getDimensions().y) && "cannot construct a Cube renderbuffer with non-square dimensions");
     }
 
     void reformat(RenderTextureDescriptor const& newDescriptor)
@@ -1756,9 +1769,27 @@ public:
 
     void setDimensions(glm::ivec2 newDims)
     {
+        OSC_THROWING_ASSERT((getDimension() != osc::TextureDimension::Cube || newDims.x == newDims.y) && "cannot set a cubemap to have non-square dimensions");
+
         if (newDims != getDimensions())
         {
             m_Descriptor.setDimensions(newDims);
+            m_MaybeOpenGLData->reset();
+        }
+    }
+
+    TextureDimension getDimension() const
+    {
+        return m_Descriptor.getDimension();
+    }
+
+    void setDimension(TextureDimension newDimension)
+    {
+        OSC_THROWING_ASSERT((newDimension != osc::TextureDimension::Cube || getDimensions().x == getDimensions().y) && "cannot set dimensionality to Cube for non-square render buffer");
+
+        if (newDimension != getDimension())
+        {
+            m_Descriptor.setDimension(newDimension);
             m_MaybeOpenGLData->reset();
         }
     }
@@ -1839,6 +1870,8 @@ public:
 
     void uploadToGPU()
     {
+        // TODO: figure out how to upload cubemaps
+
         RenderBufferOpenGLData& data = m_MaybeOpenGLData->emplace();
         glm::ivec2 const dimensions = m_Descriptor.getDimensions();
 
@@ -1946,6 +1979,20 @@ public:
         {
             m_ColorBuffer->m_Impl->setDimensions(newDims);
             m_DepthBuffer->m_Impl->setDimensions(newDims);
+        }
+    }
+
+    TextureDimension getDimension() const
+    {
+        return m_ColorBuffer->m_Impl->getDimension();
+    }
+
+    void setDimension(TextureDimension newDimension)
+    {
+        if (newDimension != getDimension())
+        {
+            m_ColorBuffer->m_Impl->setDimension(newDimension);
+            m_DepthBuffer->m_Impl->setDimension(newDimension);
         }
     }
 
@@ -2097,6 +2144,16 @@ glm::ivec2 osc::RenderTexture::getDimensions() const
 void osc::RenderTexture::setDimensions(glm::ivec2 d)
 {
     m_Impl.upd()->setDimensions(std::move(d));
+}
+
+osc::TextureDimension osc::RenderTexture::getDimension() const
+{
+    return m_Impl->getDimension();
+}
+
+void osc::RenderTexture::setDimension(TextureDimension newDimension)
+{
+    m_Impl.upd()->setDimension(newDimension);
 }
 
 osc::RenderTextureFormat osc::RenderTexture::getColorFormat() const

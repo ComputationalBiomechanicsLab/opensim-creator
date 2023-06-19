@@ -34,6 +34,9 @@ namespace osc
         glm::ivec2 getDimensions() const;
         void setDimensions(glm::ivec2);
 
+        TextureDimension getDimension() const;
+        void setDimension(TextureDimension);
+
         RenderTextureFormat getColorFormat() const;
         void setColorFormat(RenderTextureFormat);
 

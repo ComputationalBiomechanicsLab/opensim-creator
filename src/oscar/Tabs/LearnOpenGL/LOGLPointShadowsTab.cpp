@@ -3,6 +3,7 @@
 #include "oscar/Bindings/ImGuiHelpers.hpp"
 #include "oscar/Graphics/Camera.hpp"
 #include "oscar/Graphics/ColorSpace.hpp"
+#include "oscar/Graphics/Graphics.hpp"
 #include "oscar/Graphics/GraphicsHelpers.hpp"
 #include "oscar/Graphics/Material.hpp"
 #include "oscar/Graphics/Mesh.hpp"
@@ -12,7 +13,9 @@
 #include "oscar/Graphics/RenderTextureReadWrite.hpp"
 #include "oscar/Graphics/Shader.hpp"
 #include "oscar/Graphics/Texture2D.hpp"
+#include "oscar/Graphics/TextureDimension.hpp"
 #include "oscar/Maths/Transform.hpp"
+#include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Platform/App.hpp"
 #include "oscar/Utils/Algorithms.hpp"
 #include "oscar/Utils/CStringView.hpp"
@@ -23,6 +26,7 @@
 #include <IconsFontAwesome5.h>
 #include <SDL_events.h>
 
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <string>
@@ -50,13 +54,66 @@ namespace
         return rv;
     }
 
-    auto const c_CubeTransforms = osc::MakeArray<osc::Transform>(
+    struct SceneCube final {
+        SceneCube(osc::Transform transform_) :
+            transform{transform_}
+        {
+        }
+
+        SceneCube(osc::Transform transform_, bool invertNormals_) :
+            transform{transform_},
+            invertNormals{invertNormals_}
+        {
+        }
+
+        osc::Transform transform;
+        bool invertNormals = false;
+    };
+
+    SceneCube const c_SceneCubes[] =
+    {
+        SceneCube{MakeTransform(0.5f, {}), true},
         MakeTransform(0.5f, {4.0f, -3.5f, 0.0f}),
         MakeTransform(0.75f, {2.0f, 3.0f, 1.0f}),
         MakeTransform(0.5f, {-3.0f, -1.0f, 0.0f}),
         MakeTransform(0.5f, {-1.5f, 1.0f, 1.5f}),
         MakeRotatedTransform()
-    );
+    };
+
+    // describes the direction of each cube face and which direction is "up"
+    // from the perspective of looking at that face from the center of the cube
+    struct CubemapFaceDetails final {
+        glm::vec3 direction;
+        glm::vec3 up;
+    };
+    CubemapFaceDetails constexpr c_CubemapFacesDetails[] =
+    {
+        {{ 1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},
+        {{-1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},
+        {{ 0.0f,  1.0f,  0.0f}, {0.0f,  0.0f,  1.0f}},
+        {{ 0.0f, -1.0f,  0.0f}, {0.0f,  0.0f, -1.0f}},
+        {{ 0.0f,  0.0f,  1.0f}, {0.0f, -1.0f,  0.0f}},
+        {{ 0.0f,  0.0f, -1.0f}, {0.0f, -1.0f,  0.0f}},
+    };
+
+    glm::mat4 CalcCubemapViewMatrix(CubemapFaceDetails const& faceDetails, glm::vec3 cubeCenter)
+    {
+        return glm::lookAt(cubeCenter, cubeCenter + faceDetails.direction, faceDetails.up);
+    }
+
+    std::array<glm::mat4, 6> CalcAllCubemapViewProjMatrices(
+        glm::mat4 const& projectionMatrix,
+        glm::vec3 cubeCenter)
+    {
+        static_assert(std::size(c_CubemapFacesDetails) == 6);
+
+        std::array<glm::mat4, 6> rv{};
+        for (size_t i = 0; i < 6; ++i)
+        {
+            rv[i] = projectionMatrix * CalcCubemapViewMatrix(c_CubemapFacesDetails[i], cubeCenter);
+        }
+        return rv;
+    }
 
     osc::Camera CreateSceneCamera()
     {
@@ -80,8 +137,8 @@ namespace
 
     osc::RenderTexture CreateDepthTexture()
     {
-        // TODO: this needs to be a cubemap
         osc::RenderTextureDescriptor desc{c_ShadowmapDims};
+        desc.setDimension(osc::TextureDimension::Cube);
         desc.setReadWrite(osc::RenderTextureReadWrite::Linear);
         return osc::RenderTexture{std::move(desc)};
     }
@@ -172,17 +229,32 @@ private:
 
     void drawShadowPassToCubemap()
     {
-        // m_ShadowMappingMaterial.setMat4Array("uShadowMatrices", {});  // TODO
-        // m_ShadowMappingMaterial.setVec3("uLightPos", {});  // TODO
-        // m_ShadowMappingMaterial.setFloat("uFarPlane", {});  // TODO
+        // create a 90 degree cube cone projection matrix
+        float const farPlane = 25.0f;
+        float const nearPlane = 1.0f;
+        glm::mat4 const projectionMatrix = glm::perspective(
+            glm::radians(90.0f),
+            AspectRatio(c_ShadowmapDims),
+            nearPlane,
+            farPlane
+        );
 
-        // create mat4 shadowTransforms[6];
-        // create projection matrix with FoV=90deg, 1 near, 25 far
-        // for each cube face:
-        //   create shadowTransform:
-        //     projection * lookAt(from=lightPos, to=lightPos+axis, up=appropriateUp)
-        // assign shadowTransforms to shadow mapping material
-        //   the shadow mapping material uses each to create NDC for each cube face
+        // have the cone point toward all 6 faces of the cube
+        std::array<glm::mat4, 6> const shadowMatrices =
+            CalcAllCubemapViewProjMatrices(projectionMatrix, m_LightPos);
+
+        // pass data to material
+        m_ShadowMappingMaterial.setMat4Array("uShadowMatrices", shadowMatrices);
+        m_ShadowMappingMaterial.setVec3("uLightPos", m_LightPos);
+        m_ShadowMappingMaterial.setFloat("uFarPlane", farPlane);
+
+        // render (shadowmapping does not use the camera's view/projection matrices)
+        Camera camera;
+        for (SceneCube const& sceneCube : c_SceneCubes)
+        {
+            Graphics::DrawMesh(m_CubeMesh, sceneCube.transform, m_ShadowMappingMaterial, camera);
+        }
+        camera.renderTo(m_DepthTexture);
     }
 
     void drawShadowmappedSceneToScreen()
