@@ -503,7 +503,7 @@ namespace
             return;  // user didn't select a save location
         }
 
-        auto outFile = std::make_shared<std::ofstream>(*maybeOBJFile, std::ios_base::out | std::ios_base::trunc);
+        auto outFile = std::make_shared<std::ofstream>(*maybeOBJFile, std::ios_base::out | std::ios_base::trunc, std::ios_base::binary);
         if (!(*outFile))
         {
             return;  // couldn't open for writing
@@ -526,7 +526,7 @@ namespace
 
         auto outFile = std::make_shared<std::ofstream>(
             *maybeSTLPath,
-            std::ios_base::binary | std::ios_base::out | std::ios_base::trunc
+            std::ios_base::out | std::ios_base::trunc | std::ios_base::binary
         );
         if (!(*outFile))
         {
