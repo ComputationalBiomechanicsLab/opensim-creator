@@ -2051,19 +2051,6 @@ namespace
 // other panels/widgets
 namespace
 {
-    class FrameDefinitionTabNavigatorPanel final : public osc::StandardPanel {
-    public:
-        FrameDefinitionTabNavigatorPanel(std::string_view panelName_) :
-            StandardPanel{panelName_}
-        {
-        }
-    private:
-        void implDrawContent() final
-        {
-            ImGui::Text("TODO: draw navigator content");
-        }
-    };
-
     class FrameDefinitionTabMainMenu final {
     public:
         explicit FrameDefinitionTabMainMenu(
@@ -2116,15 +2103,6 @@ public:
 
         m_PanelManager->registerToggleablePanel(
             "Navigator",
-            [this](std::string_view panelName)
-            {
-                return std::make_shared<FrameDefinitionTabNavigatorPanel>(
-                    panelName
-                );
-            }
-        );
-        m_PanelManager->registerToggleablePanel(
-            "Navigator (legacy)",
             [this](std::string_view panelName)
             {
                 return std::make_shared<NavigatorPanel>(
