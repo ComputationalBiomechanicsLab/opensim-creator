@@ -2447,6 +2447,53 @@ TEST_F(Renderer, RenderTextureDescriptorSetReadWriteMakesGetReadWriteReturnNewVa
     ASSERT_EQ(d1.getReadWrite(), osc::RenderTextureReadWrite::Linear);
 }
 
+TEST_F(Renderer, RenderTextureDescriptorGetDimensionReturns2DOnConstruction)
+{
+    osc::RenderTextureDescriptor d1{{1, 1}};
+
+    ASSERT_EQ(d1.getDimension(), osc::TextureDimension::Tex2D);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorSetDimensionCausesGetDimensionToReturnTheSetDimension)
+{
+    osc::RenderTextureDescriptor d1{{1, 1}};
+    d1.setDimension(osc::TextureDimension::Cube);
+
+    ASSERT_EQ(d1.getDimension(), osc::TextureDimension::Cube);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorSetDimensionChangesDescriptorEquality)
+{
+    osc::RenderTextureDescriptor d1{{1, 1}};
+    osc::RenderTextureDescriptor d2{d1};
+
+    ASSERT_EQ(d1, d2);
+
+    d1.setDimension(osc::TextureDimension::Cube);
+
+    ASSERT_NE(d1, d2);
+}
+
+TEST_F(Renderer, RenderTextureDescriptorSetDimensionToCubeOnRectangularDimensionsCausesNoError)
+{
+    // logically, a cubemap's dimensions must be square, but RenderTextureDescriptor
+    // allows changing the dimension independently from changing the dimensions without
+    // throwing an error, so that code like:
+    //
+    // desc.setDimension(TextureDimension::Cube);
+    // desc.setDimensions({2,2});
+    //
+    // is permitted, even though the first line might create an "invalid" descriptor
+
+    osc::RenderTextureDescriptor rect{{1, 2}};
+    rect.setDimension(osc::TextureDimension::Cube);
+
+    // also permitted
+    osc::RenderTextureDescriptor initiallySquare{{1, 1}};
+    initiallySquare.setDimensions({1, 2});
+    initiallySquare.setDimension(osc::TextureDimension::Cube);
+}
+
 TEST_F(Renderer, RenderTextureSetReadWriteChangesEquality)
 {
     osc::RenderTextureDescriptor d1{{1, 1}};
@@ -2534,6 +2581,55 @@ TEST_F(Renderer, RenderTextureDefaultConstructorCreates1x1RgbaRenderTexture)
     ASSERT_EQ(tex.getAntialiasingLevel(), 1);
 }
 
+TEST_F(Renderer, RenderTextureDefaultConstructorHasTex2DDimension)
+{
+    osc::RenderTexture const tex;
+    ASSERT_EQ(tex.getDimension(), osc::TextureDimension::Tex2D);
+}
+
+TEST_F(Renderer, RenderTextureSetDimensionSetsTheDimension)
+{
+    osc::RenderTexture tex;
+    tex.setDimension(osc::TextureDimension::Cube);
+    ASSERT_EQ(tex.getDimension(), osc::TextureDimension::Cube);
+}
+
+TEST_F(Renderer, RenderTextureThrowsIfGivenNonSquareButCubeDimensionalityDescriptor)
+{
+    osc::RenderTextureDescriptor desc{{1, 2}};  // not square
+    desc.setDimension(osc::TextureDimension::Cube);  // permitted, at least for now
+
+    ASSERT_ANY_THROW(osc::RenderTexture rt(desc));
+}
+
+TEST_F(Renderer, RenderTextureSetDimensionThrowsIfSetToCubeOnNonSquareRenderTexture)
+{
+    osc::RenderTexture t;
+    t.setDimensions({1, 2});  // not square
+
+    ASSERT_ANY_THROW(t.setDimension(osc::TextureDimension::Cube));
+}
+
+TEST_F(Renderer, RenderTextureSetDimensionsThrowsIfSettingNonSquareOnCubeDimensionTexture)
+{
+    osc::RenderTexture t;
+    t.setDimension(osc::TextureDimension::Cube);
+
+    ASSERT_ANY_THROW(t.setDimensions({1, 2}));
+}
+
+TEST_F(Renderer, RenderTextureSetDimensionChangesEquality)
+{
+    osc::RenderTexture t1;
+    osc::RenderTexture t2{t1};
+
+    ASSERT_EQ(t1, t2);
+
+    t2.setDimension(osc::TextureDimension::Cube);
+
+    ASSERT_NE(t1, t2);
+}
+
 TEST_F(Renderer, RenderTextureCanBeConstructedFromDimensions)
 {
     glm::ivec2 const dims = {12, 12};
@@ -2556,13 +2652,15 @@ TEST_F(Renderer, RenderTextureDefaultCtorAssignsDefaultReadWrite)
 
 TEST_F(Renderer, RenderTextureFromDescriptorHasExpectedValues)
 {
-    int width = 5;
+    int width = 8;
     int height = 8;
     int32_t aaLevel = 4;
     osc::RenderTextureFormat format = osc::RenderTextureFormat::RED;
     osc::RenderTextureReadWrite rw = osc::RenderTextureReadWrite::Linear;
+    osc::TextureDimension dimension = osc::TextureDimension::Cube;
 
     osc::RenderTextureDescriptor desc{{width, height}};
+    desc.setDimension(dimension);
     desc.setAntialiasingLevel(aaLevel);
     desc.setColorFormat(format);
     desc.setReadWrite(rw);
@@ -2570,6 +2668,7 @@ TEST_F(Renderer, RenderTextureFromDescriptorHasExpectedValues)
     osc::RenderTexture tex{desc};
 
     ASSERT_EQ(tex.getDimensions(), glm::ivec2(width, height));
+    ASSERT_EQ(tex.getDimension(), osc::TextureDimension::Cube);
     ASSERT_EQ(tex.getAntialiasingLevel(), aaLevel);
     ASSERT_EQ(tex.getColorFormat(), format);
     ASSERT_EQ(tex.getReadWrite(), rw);
