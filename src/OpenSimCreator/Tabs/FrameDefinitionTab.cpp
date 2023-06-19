@@ -821,7 +821,7 @@ namespace
                 OpenSim::Model& mutableModel = model.updModel();
                 OpenSim::PhysicalOffsetFrame const* const pofPtr = meshPhysicalOffsetFrame.get();
 
-                mutableModel.addComponent(meshPhysicalOffsetFrame.release());
+                mutableModel.addModelComponent(meshPhysicalOffsetFrame.release());
                 mutableModel.finalizeConnections();
                 osc::InitializeModel(mutableModel);
                 osc::InitializeState(mutableModel);
@@ -858,7 +858,7 @@ namespace
                 OpenSim::Model& mutableModel = model.updModel();
                 OpenSim::SphereLandmark const* const spherePtr = sphere.get();
 
-                mutableModel.addComponent(sphere.release());
+                mutableModel.addModelComponent(sphere.release());
                 mutableModel.finalizeConnections();
                 osc::InitializeModel(mutableModel);
                 osc::InitializeState(mutableModel);
@@ -895,7 +895,7 @@ namespace
                 OpenSim::Model& mutableModel = model.updModel();
                 OpenSim::PhysicalOffsetFrame const* const pofPtr = pof.get();
 
-                mutableModel.addComponent(pof.release());
+                mutableModel.addModelComponent(pof.release());
                 mutableModel.finalizeConnections();
                 osc::InitializeModel(mutableModel);
                 osc::InitializeState(mutableModel);
@@ -922,7 +922,7 @@ namespace
                 OpenSim::Model& mutableModel = model.updModel();
                 OpenSim::FDPointToPointEdge const* edgePtr = edge.get();
 
-                mutableModel.addComponent(edge.release());
+                mutableModel.addModelComponent(edge.release());
                 mutableModel.finalizeConnections();
                 osc::InitializeModel(mutableModel);
                 osc::InitializeState(mutableModel);
@@ -949,7 +949,7 @@ namespace
                 OpenSim::Model& mutableModel = model.updModel();
                 OpenSim::MidpointLandmark const* midpointPtr = midpoint.get();
 
-                mutableModel.addComponent(midpoint.release());
+                mutableModel.addModelComponent(midpoint.release());
                 mutableModel.finalizeConnections();
                 osc::InitializeModel(mutableModel);
                 osc::InitializeState(mutableModel);
@@ -976,7 +976,7 @@ namespace
                 OpenSim::Model& mutableModel = model.updModel();
                 OpenSim::FDCrossProductEdge const* edgePtr = edge.get();
 
-                mutableModel.addComponent(edge.release());
+                mutableModel.addModelComponent(edge.release());
                 mutableModel.finalizeConnections();
                 osc::InitializeModel(mutableModel);
                 osc::InitializeState(mutableModel);
@@ -1063,7 +1063,7 @@ namespace
                 OpenSim::Model& mutModel = model->updModel();
                 OpenSim::LandmarkDefinedFrame const* const framePtr = frame.get();
 
-                mutModel.addComponent(frame.release());
+                mutModel.addModelComponent(frame.release());
                 mutModel.finalizeConnections();
                 osc::InitializeModel(mutModel);
                 osc::InitializeState(mutModel);
