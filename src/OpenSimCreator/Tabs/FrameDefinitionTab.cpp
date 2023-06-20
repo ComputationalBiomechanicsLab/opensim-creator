@@ -1766,8 +1766,9 @@ namespace
             PushCreateCrossProductEdgeLayer(editor, model, edge, maybeSourceEvent);
         }
 
-        if (maybeSourceEvent && ImGui::BeginMenu("        Create frame with this edge as"))
+        if (maybeSourceEvent && ImGui::BeginMenu(ICON_FA_ARROWS_ALT " Create Frame With This Edge as"))
         {
+            ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 0.5f, 0.5f, 1.0f});
             if (ImGui::MenuItem("+x"))
             {
                 ActionPushCreateFrameLayer(
@@ -1778,7 +1779,9 @@ namespace
                     maybeSourceEvent
                 );
             }
+            ImGui::PopStyleColor();
 
+            ImGui::PushStyleColor(ImGuiCol_Text, {0.5f, 1.0f, 0.5f, 1.0f});
             if (ImGui::MenuItem("+y"))
             {
                 ActionPushCreateFrameLayer(
@@ -1789,7 +1792,9 @@ namespace
                     maybeSourceEvent
                 );
             }
+            ImGui::PopStyleColor();
 
+            ImGui::PushStyleColor(ImGuiCol_Text, {0.5f, 0.5f, 1.0f, 1.0f});
             if (ImGui::MenuItem("+z"))
             {
                 ActionPushCreateFrameLayer(
@@ -1800,9 +1805,11 @@ namespace
                     maybeSourceEvent
                 );
             }
+            ImGui::PopStyleColor();
 
             ImGui::Separator();
 
+            ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 0.5f, 0.5f, 1.0f});
             if (ImGui::MenuItem("-x"))
             {
                 ActionPushCreateFrameLayer(
@@ -1813,7 +1820,9 @@ namespace
                     maybeSourceEvent
                 );
             }
+            ImGui::PopStyleColor();
 
+            ImGui::PushStyleColor(ImGuiCol_Text, {0.5f, 1.0f, 0.5f, 1.0f});
             if (ImGui::MenuItem("-y"))
             {
                 ActionPushCreateFrameLayer(
@@ -1824,7 +1833,9 @@ namespace
                     maybeSourceEvent
                 );
             }
+            ImGui::PopStyleColor();
 
+            ImGui::PushStyleColor(ImGuiCol_Text, {0.5f, 0.5f, 1.0f, 1.0f});
             if (ImGui::MenuItem("-z"))
             {
                 ActionPushCreateFrameLayer(
@@ -1835,6 +1846,7 @@ namespace
                     maybeSourceEvent
                 );
             }
+            ImGui::PopStyleColor();
 
             ImGui::EndMenu();
         }
