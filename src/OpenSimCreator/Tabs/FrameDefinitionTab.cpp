@@ -1981,6 +1981,10 @@ namespace
                                 frame
                             );
                         }
+                        if (ImGui::IsItemHovered())
+                        {
+                            model->setHovered(&frame);
+                        }
                         ImGui::PopID();
                     }
 
@@ -2006,6 +2010,10 @@ namespace
                                 mesh,
                                 frame
                             );
+                        }
+                        if (ImGui::IsItemHovered())
+                        {
+                            model->setHovered(&frame);
                         }
                         ImGui::PopID();
                     }
@@ -2051,6 +2059,8 @@ namespace
                     ImGui::PushID(imguiID++);
                     if (ImGui::BeginMenu(frame.getName().c_str()))
                     {
+                        model->setHovered(&frame);
+
                         SimTK::Transform const groundToFrame = frame.getTransformInGround(model->getState()).invert();
                         glm::vec3 position = osc::ToVec3(groundToFrame * point.getLocationInGround(model->getState()));
 
@@ -2125,6 +2135,8 @@ namespace
                     ImGui::PushID(imguiID++);
                     if (ImGui::BeginMenu(otherFrame.getName().c_str()))
                     {
+                        model->setHovered(&otherFrame);
+
                         SimTK::Transform const xform = frame.findTransformBetween(model->getState(), otherFrame);
                         glm::vec3 position = osc::ToVec3(xform.p());
                         glm::vec3 rotationEulers = osc::ToVec3(xform.R().convertRotationToBodyFixedXYZ());
