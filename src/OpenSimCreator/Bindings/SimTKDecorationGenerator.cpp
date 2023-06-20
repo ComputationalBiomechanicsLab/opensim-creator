@@ -339,8 +339,8 @@ namespace
             glm::vec3 const headStart = neckEnd;
             glm::vec3 const headEnd = end;
 
-            constexpr float neckThickness = 0.005f;
-            constexpr float headThickness = 0.02f;
+            float const neckThickness = static_cast<float>(d.getLineThickness());
+            float const headThickness = 1.75f * neckThickness;
 
             osc::Color const color = GetColor(d);
 

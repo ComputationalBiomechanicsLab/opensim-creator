@@ -162,6 +162,18 @@ namespace
         return line;
     }
 
+    // returns a decorative arrow between `startPosition` and `endPosition` with `appearance`
+    SimTK::DecorativeArrow CreateDecorativeArrow(
+        SimTK::Vec3 const& startPosition,
+        SimTK::Vec3 const& endPosition,
+        OpenSim::Appearance const& appearance)
+    {
+        SimTK::DecorativeArrow arrow{startPosition, endPosition, 1.75 * c_SphereDefaultRadius};
+        arrow.setLineThickness(0.5 * c_SphereDefaultRadius);
+        SetGeomAppearance(arrow, appearance);
+        return arrow;
+    }
+
     // returns a decorative frame based on the provided transform
     SimTK::DecorativeFrame CreateDecorativeFrame(
         SimTK::Transform const& transformInGround)
@@ -415,7 +427,7 @@ namespace OpenSim
         {
             EdgePoints const coords = getEdgePointsInGround(state);
 
-            appendOut.push_back(CreateDecorativeLine(
+            appendOut.push_back(CreateDecorativeArrow(
                 coords.start,
                 coords.end,
                 get_Appearance()
@@ -464,7 +476,7 @@ namespace OpenSim
             EdgePoints const coords = getEdgePointsInGround(state);
 
             // draw edge
-            appendOut.push_back(CreateDecorativeLine(
+            appendOut.push_back(CreateDecorativeArrow(
                 coords.start,
                 coords.end,
                 get_Appearance()
