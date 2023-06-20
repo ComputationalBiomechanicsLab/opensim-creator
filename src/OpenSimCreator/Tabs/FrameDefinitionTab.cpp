@@ -2291,6 +2291,12 @@ private:
             osc::ActionUndoCurrentlyEditedModel(*m_Model);
             return true;
         }
+        else if (e.keysym.sym == SDLK_BACKSPACE || e.keysym.sym == SDLK_DELETE)
+        {
+            // BACKSPACE/DELETE: delete selection
+            osc::ActionTryDeleteSelectionFromEditedModel(*m_Model);
+            return true;
+        }
         else
         {
             return false;

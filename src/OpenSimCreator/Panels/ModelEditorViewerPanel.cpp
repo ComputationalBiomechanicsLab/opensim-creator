@@ -26,6 +26,7 @@
 #include <glm/vec3.hpp>
 #include <imgui.h>
 #include <ImGuizmo.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 #include <cstdint>
 #include <memory>
@@ -228,19 +229,23 @@ namespace
             {
                 params.getModelSharedPtr()->setHovered(nullptr);
             }
-            else if (state.maybeHoveredComponent != params.getModelSharedPtr()->getHovered())
+            else if (state.maybeHoveredComponentAbsPath != osc::GetAbsolutePathOrEmpty(params.getModelSharedPtr()->getHovered()))
             {
                 // care: this code must check whether the hover != current hover
                 // (even if null), because there might be multiple viewports open
                 // (#582)
-                params.getModelSharedPtr()->setHovered(state.maybeHoveredComponent);
+                params.getModelSharedPtr()->setHovered(
+                    osc::FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath)
+                );
                 rv = true;
             }
 
             // if left-clicked, update top-level model selection
             if (state.isLeftClickReleasedWithoutDragging)
             {
-                params.getModelSharedPtr()->setSelected(state.maybeHoveredComponent);
+                params.getModelSharedPtr()->setSelected(
+                    osc::FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath)
+                );
                 rv = true;
             }
 
@@ -252,11 +257,14 @@ namespace
             osc::ModelEditorViewerPanelState& state) final
         {
             // hover, but not panning: show tooltip
-            if (state.maybeHoveredComponent &&
+            if (!state.maybeHoveredComponentAbsPath.toString().empty() &&
                 m_IsHandlingMouseInputs &&
                 !osc::IsDraggingWithAnyMouseButtonDown())
             {
-                osc::DrawComponentHoverTooltip(*state.maybeHoveredComponent);
+                if (OpenSim::Component const* c = osc::FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath))
+                {
+                    osc::DrawComponentHoverTooltip(*c);
+                }
             }
 
             // right-click: open context menu
@@ -268,7 +276,7 @@ namespace
                 {
                     std::string{state.getPanelName()},
                     state.viewportRect,
-                    osc::GetAbsolutePathOrEmpty(state.maybeHoveredComponent).toString(),
+                    state.maybeHoveredComponentAbsPath.toString(),
                     state.maybeBaseLayerHittest ? std::optional<glm::vec3>{state.maybeBaseLayerHittest->worldspaceLocation} : std::nullopt,
                 };
                 params.callOnRightClickHandler(e);
@@ -392,14 +400,11 @@ private:
         // if there's a 3D-hit, transform it into an OpenSim-hit
         if (m_State.maybeBaseLayerHittest)
         {
-            m_State.maybeHoveredComponent = osc::FindComponent(
-                m_Parameters.getModelSharedPtr()->getModel(),
-                m_State.maybeBaseLayerHittest->decorationID
-            );
+            m_State.maybeHoveredComponentAbsPath = m_State.maybeBaseLayerHittest->decorationID;
         }
         else
         {
-            m_State.maybeHoveredComponent = nullptr;
+            m_State.maybeHoveredComponentAbsPath = {};
         }
 
         layersDraw();

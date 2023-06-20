@@ -97,6 +97,7 @@ namespace
 
     bool IsConnectedViaSocketTo(OpenSim::Component& c, OpenSim::Component const& other)
     {
+        // TODO: .getSocketNames() should be `const` in OpenSim >4.4
         for (std::string const& socketName : c.getSocketNames())
         {
             OpenSim::AbstractSocket const& sock = c.getSocket(socketName);
@@ -110,24 +111,38 @@ namespace
 
     std::vector<OpenSim::Component*> GetAnyComponentsConnectedViaSocketTo(
         OpenSim::Component& root,
-        OpenSim::Component const& other)
+        OpenSim::Component const& component)
     {
         std::vector<OpenSim::Component*> rv;
 
-        if (IsConnectedViaSocketTo(root, other))
+        if (IsConnectedViaSocketTo(root, component))
         {
             rv.push_back(&root);
         }
 
-        for (OpenSim::Component& c : root.updComponentList())
+        for (OpenSim::Component& modelComponent : root.updComponentList())
         {
-            if (IsConnectedViaSocketTo(c, other))
+            if (IsConnectedViaSocketTo(modelComponent, component))
             {
-                rv.push_back(&c);
+                rv.push_back(&modelComponent);
             }
         }
 
         return rv;
+    }
+
+    std::vector<OpenSim::Component*> GetAnyNonChildrenComponentsConnectedViaSocketTo(
+        OpenSim::Component& root,
+        OpenSim::Component const& component)
+    {
+        std::vector<OpenSim::Component*> allConnectees = GetAnyComponentsConnectedViaSocketTo(root, component);
+        osc::RemoveErase(allConnectees, [&root, &component](OpenSim::Component* connectee)
+        {
+            return
+                osc::IsInclusiveChildOf(&component, connectee) &&
+                GetAnyComponentsConnectedViaSocketTo(root, *connectee).empty();  // care: the child may, itself, have things connected to it
+        });
+        return allConnectees;
     }
 
     // (a memory-safe stdlib version of OpenSim::GeometryPath::getPointForceDirections)
@@ -654,8 +669,9 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
         return false;
     }
 
-    // check if anything connects to the component via a socket
-    if (auto connectees = GetAnyComponentsConnectedViaSocketTo(m, c); !connectees.empty())
+    // check if anything connects to the component as a non-child (i.e. non-hierarchically)
+    // via a socket to the component, which may break the other component (so halt deletion)
+    if (auto connectees = GetAnyNonChildrenComponentsConnectedViaSocketTo(m, c); !connectees.empty())
     {
         std::stringstream ss;
         CStringView delim = "";
@@ -693,7 +709,11 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
     // {
     //    rv = TryDeleteItemFromSet(*js, dynamic_cast<OpenSim::Joint*>(&c));
     // }
-    if (auto* bs = dynamic_cast<OpenSim::BodySet*>(owner))
+    if (auto* cs = dynamic_cast<OpenSim::ComponentSet*>(owner))
+    {
+        rv = TryDeleteItemFromSet<OpenSim::ModelComponent, OpenSim::ModelComponent>(*cs, dynamic_cast<OpenSim::ModelComponent*>(&c));
+    }
+    else if (auto* bs = dynamic_cast<OpenSim::BodySet*>(owner))
     {
         rv = TryDeleteItemFromSet(*bs, dynamic_cast<OpenSim::Body*>(&c));
     }

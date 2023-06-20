@@ -10,6 +10,7 @@
 #include <oscar/Utils/CStringView.hpp>
 
 #include <nonstd/span.hpp>
+#include <OpenSim/Common/ComponentPath.h>
 
 #include <optional>
 #include <string>
@@ -35,7 +36,7 @@ namespace osc
 		bool isRightClickReleasedWithoutDragging = false;
 		std::optional<AABB> maybeSceneAABB;
 		std::optional<SceneCollision> maybeBaseLayerHittest;
-		OpenSim::Component const* maybeHoveredComponent = nullptr;
+		OpenSim::ComponentPath maybeHoveredComponentAbsPath;
 
 		nonstd::span<osc::SceneDecoration const> getDrawlist() const
 		{
