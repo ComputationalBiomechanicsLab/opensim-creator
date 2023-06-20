@@ -23,6 +23,7 @@
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Formats/OBJ.hpp>
+#include <oscar/Formats/STL.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
@@ -1154,6 +1155,43 @@ namespace
             osc::ObjWriter writer{outFile};
             writer.write(oscMesh, osc::ObjWriterFlags_IgnoreNormals);
         }
+
+        void ActionReexportMeshSTLWithRespectTo(
+            OpenSim::Model const& model,
+            SimTK::State const& state,
+            OpenSim::Mesh const& openSimMesh,
+            OpenSim::Frame const& frame)
+        {
+            // prompt user for a save location
+            std::optional<std::filesystem::path> const maybeUserSaveLocation =
+                osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
+            if (!maybeUserSaveLocation)
+            {
+                return;  // user didn't select a save location
+            }
+            std::filesystem::path const& userSaveLocation = *maybeUserSaveLocation;
+
+            // load raw mesh data into an osc mesh for processing
+            osc::Mesh oscMesh = osc::LoadMeshViaSimTK(openSimMesh.get_mesh_file());
+
+            // bake transform into mesh data
+            oscMesh.transformVerts(CalcTransformWithRespectTo(openSimMesh, frame, state));
+
+            // write transformed mesh to output
+            std::ios_base::openmode const outputFlags =
+                std::ios_base::out |
+                std::ios_base::trunc |
+                std::ios_base::binary;
+            auto outFile = std::make_shared<std::ofstream>(userSaveLocation, outputFlags);
+            if (!(*outFile))
+            {
+                std::string const error = osc::StrerrorThreadsafe(errno);
+                osc::log::error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
+                return;
+            }
+            osc::StlWriter writer{outFile};
+            writer.write(oscMesh);
+        }
     }
 }
 
@@ -1915,7 +1953,7 @@ namespace
             );
         }
 
-        if (ImGui::MenuItem(ICON_FA_ARROWS_ALT " Add Offset Frame"))
+        if (ImGui::MenuItem(ICON_FA_ARROWS_ALT " Add Custom (Offset) Frame"))
         {
             ActionAddOffsetFrameInMeshFrame(
                 *model,
@@ -1937,6 +1975,32 @@ namespace
                         if (ImGui::MenuItem(frame.getName().c_str()))
                         {
                             ActionReexportMeshOBJWithRespectTo(
+                                model->getModel(),
+                                model->getState(),
+                                mesh,
+                                frame
+                            );
+                        }
+                        ImGui::PopID();
+                    }
+
+                    ImGui::EndMenu();
+                }
+
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu(".stl"))
+            {
+                if (ImGui::BeginMenu("With Respect to"))
+                {
+                    int imguiID = 0;
+                    for (OpenSim::Frame const& frame : model->getModel().getComponentList<OpenSim::Frame>())
+                    {
+                        ImGui::PushID(imguiID++);
+                        if (ImGui::MenuItem(frame.getName().c_str()))
+                        {
+                            ActionReexportMeshSTLWithRespectTo(
                                 model->getModel(),
                                 model->getState(),
                                 mesh,
