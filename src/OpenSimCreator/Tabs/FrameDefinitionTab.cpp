@@ -804,45 +804,59 @@ namespace
     // user-enactable actions
     namespace
     {
-        void ActionPromptUserToAddMeshFile(osc::UndoableModelStatePair& model)
+        void ActionPromptUserToAddMeshFiles(osc::UndoableModelStatePair& model)
         {
-            std::optional<std::filesystem::path> const maybeMeshPath =
-                osc::PromptUserForFile(osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats());
-            if (!maybeMeshPath)
+            std::vector<std::filesystem::path> const meshPaths =
+                osc::PromptUserForFiles(osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats());
+            if (meshPaths.empty())
             {
                 return;  // user didn't select anything
             }
-            std::filesystem::path const& meshPath = *maybeMeshPath;
-            std::string const meshName = osc::FileNameWithoutExtension(meshPath);
-
-            // add an offset frame that is connected to ground - this will become
-            // the mesh's offset frame
-            auto meshPhysicalOffsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-            meshPhysicalOffsetFrame->setParentFrame(model.getModel().getGround());
-            meshPhysicalOffsetFrame->setName(meshName + "_offset");
-
-            // attach the mesh to the frame
-            {
-                auto mesh = std::make_unique<OpenSim::Mesh>(meshPath.string());
-                mesh->setName(meshName);
-                meshPhysicalOffsetFrame->attachGeometry(mesh.release());
-            }
 
             // create a human-readable commit message
-            std::string const commitMessage = GenerateAddedSomethingCommitMessage(meshPath.filename().string());
+            std::string const commitMessage = [&meshPaths]()
+            {
+                if (meshPaths.size() == 1)
+                {
+                    return GenerateAddedSomethingCommitMessage(meshPaths.front().filename().string());
+                }
+                else
+                {
+                    std::stringstream ss;
+                    ss << "added " << meshPaths.size() << " meshes";
+                    return std::move(ss).str();
+                }
+            }();
 
             // perform the model mutation
+            OpenSim::Model& mutableModel = model.updModel();
+            for (std::filesystem::path const& meshPath : meshPaths)
             {
-                OpenSim::Model& mutableModel = model.updModel();
-                OpenSim::PhysicalOffsetFrame const* const pofPtr = meshPhysicalOffsetFrame.get();
+                std::string const meshName = osc::FileNameWithoutExtension(meshPath);
 
+                // add an offset frame that is connected to ground - this will become
+                // the mesh's offset frame
+                auto meshPhysicalOffsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+                meshPhysicalOffsetFrame->setParentFrame(model.getModel().getGround());
+                meshPhysicalOffsetFrame->setName(meshName + "_offset");
+
+                // attach the mesh to the frame
+                {
+                    auto mesh = std::make_unique<OpenSim::Mesh>(meshPath.string());
+                    mesh->setName(meshName);
+                    meshPhysicalOffsetFrame->attachGeometry(mesh.release());
+                }
+
+                // add it to the model and select it (i.e. always select the last mesh)
+                OpenSim::PhysicalOffsetFrame const* const pofPtr = meshPhysicalOffsetFrame.get();
                 mutableModel.addModelComponent(meshPhysicalOffsetFrame.release());
                 mutableModel.finalizeConnections();
-                osc::InitializeModel(mutableModel);
-                osc::InitializeState(mutableModel);
                 model.setSelected(pofPtr);
-                model.commit(commitMessage);
             }
+
+            model.commit(commitMessage);
+            osc::InitializeModel(mutableModel);
+            osc::InitializeState(mutableModel);
         }
 
         void ActionAddSphereInMeshFrame(
@@ -1877,9 +1891,9 @@ namespace
         osc::DrawNothingRightClickedContextMenuHeader();
         osc::DrawContextMenuSeparator();
 
-        if (ImGui::MenuItem(ICON_FA_CUBE " Add Mesh"))
+        if (ImGui::MenuItem(ICON_FA_CUBE " Add Meshes"))
         {
-            ActionPromptUserToAddMeshFile(model);
+            ActionPromptUserToAddMeshFiles(model);
         }
     }
 
