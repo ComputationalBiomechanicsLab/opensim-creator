@@ -1800,7 +1800,7 @@ namespace
     {
         if (ImGui::BeginMenu(ICON_FA_CAMERA " Focus Camera"))
         {
-            if (ImGui::MenuItem("On Ground"))
+            if (ImGui::MenuItem("on Ground"))
             {
                 osc::ModelEditorViewerPanel* visualizer =
                     editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
@@ -1812,7 +1812,7 @@ namespace
 
             if (maybeSourceEvent &&
                 maybeSourceEvent->maybeClickPositionInGround &&
-                ImGui::MenuItem("On Click Position"))
+                ImGui::MenuItem("on Click Position"))
             {
                 osc::ModelEditorViewerPanel* visualizer =
                     editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
@@ -2288,7 +2288,16 @@ public:
             {
                 return std::make_shared<NavigatorPanel>(
                     panelName,
-                    m_Model
+                    m_Model,
+                    [this](OpenSim::ComponentPath const& rightClickedPath)
+                    {
+                        pushPopup(std::make_unique<FrameDefinitionContextMenu>(
+                            "##ContextMenu",
+                            this,
+                            m_Model,
+                            rightClickedPath
+                        ));
+                    }
                 );
             }
         );
