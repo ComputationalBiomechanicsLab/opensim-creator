@@ -1055,6 +1055,13 @@ namespace
             ActionSwapSocketAssignments(model, edge.getAbsolutePath(), "pointA", "pointB");
         }
 
+        void ActionSwapCrossProductEdgeOperands(
+            osc::UndoableModelStatePair& model,
+            OpenSim::FDCrossProductEdge const& edge)
+        {
+            ActionSwapSocketAssignments(model, edge.getAbsolutePath(), "edgeA", "edgeB");
+        }
+
         void ActionAddFrame(
             std::shared_ptr<osc::UndoableModelStatePair> model,
             OpenSim::FDVirtualEdge const& firstEdge,
@@ -2014,6 +2021,10 @@ namespace
         osc::DrawRightClickedComponentContextMenuHeader(edge);
         osc::DrawContextMenuSeparator();
         DrawGenericRightClickEdgeContextMenuActions(editor, model, maybeSourceEvent, edge);
+        if (ImGui::MenuItem(ICON_FA_RECYCLE " Swap Operands"))
+        {
+            ActionSwapCrossProductEdgeOperands(*model, edge);
+        }
         DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, edge);
     }
 
