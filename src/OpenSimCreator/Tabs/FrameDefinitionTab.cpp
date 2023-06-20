@@ -1870,7 +1870,7 @@ namespace
             );
         }
 
-        if (ImGui::MenuItem("        Add Offset Frame"))
+        if (ImGui::MenuItem(ICON_FA_ARROWS_ALT " Add Offset Frame"))
         {
             ActionAddOffsetFrameInMeshFrame(
                 *model,
@@ -1879,7 +1879,7 @@ namespace
             );
         }
 
-        if (ImGui::BeginMenu(ICON_FA_FILE_EXPORT " Re-Export"))
+        if (ImGui::BeginMenu(ICON_FA_FILE_EXPORT " Export"))
         {
             if (ImGui::BeginMenu(".obj"))
             {
