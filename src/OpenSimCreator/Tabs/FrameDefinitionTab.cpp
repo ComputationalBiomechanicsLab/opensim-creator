@@ -9,7 +9,6 @@
 #include "OpenSimCreator/Graphics/OpenSimGraphicsHelpers.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
-#include "OpenSimCreator/Model/VirtualConstModelStatePair.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanel.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelLayer.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelParameters.hpp"
@@ -50,7 +49,11 @@
 #include <oscar/Widgets/PopupManager.hpp>
 #include <oscar/Widgets/StandardPopup.hpp>
 #include <oscar/Widgets/WindowMenu.hpp>
+#include <OscarConfiguration.hpp>
 
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
@@ -1077,13 +1080,8 @@ namespace
             OpenSim::Frame const& frame,
             SimTK::State const& state)
         {
-            SimTK::Transform const meshToGround = mesh.getFrame().getTransformInGround(state);
-            SimTK::Transform const groundToFrame = frame.getTransformInGround(state).invert();
-            SimTK::Transform const meshToFrame = groundToFrame * meshToGround;
-
-            osc::Transform rv = osc::ToTransform(meshToFrame);
+            osc::Transform rv = osc::ToTransform(mesh.getFrame().findTransformBetween(state, frame));
             rv.scale = osc::ToVec3(mesh.get_scale_factors());
-
             return rv;
         }
 
@@ -1883,30 +1881,15 @@ namespace
 
         if (ImGui::BeginMenu(ICON_FA_FILE_EXPORT " Re-Export"))
         {
-            if (ImGui::BeginMenu("With Respect to Scene"))
+            if (ImGui::BeginMenu(".obj"))
             {
-                if (ImGui::MenuItem(".obj"))
+                if (ImGui::BeginMenu("With Respect to"))
                 {
-                    ActionReexportMeshOBJWithRespectTo(
-                        model->getModel(),
-                        model->getState(),
-                        mesh,
-                        model->getModel().getGround()
-                    );
-                }
-
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::BeginMenu("With Respect to Frame"))
-            {
-                int imguiID = 0;
-                for (OpenSim::Frame const& frame : model->getModel().getComponentList<OpenSim::Frame>())
-                {
-                    ImGui::PushID(imguiID++);
-                    if (ImGui::BeginMenu(frame.getName().c_str()))
+                    int imguiID = 0;
+                    for (OpenSim::Frame const& frame : model->getModel().getComponentList<OpenSim::Frame>())
                     {
-                        if (ImGui::MenuItem(".obj"))
+                        ImGui::PushID(imguiID++);
+                        if (ImGui::MenuItem(frame.getName().c_str()))
                         {
                             ActionReexportMeshOBJWithRespectTo(
                                 model->getModel(),
@@ -1915,10 +1898,12 @@ namespace
                                 frame
                             );
                         }
-                        ImGui::EndMenu();
+                        ImGui::PopID();
                     }
-                    ImGui::PopID();
+
+                    ImGui::EndMenu();
                 }
+
                 ImGui::EndMenu();
             }
 
@@ -1978,6 +1963,55 @@ namespace
         DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, edge);
     }
 
+    void DrawRightClickedFrameContextMenu(
+        osc::EditorAPI& editor,
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
+        OpenSim::Frame const& frame)
+    {
+        osc::DrawRightClickedComponentContextMenuHeader(frame);
+        osc::DrawContextMenuSeparator();
+
+        if (ImGui::BeginMenu(ICON_FA_CALCULATOR " Calculate Transform"))
+        {
+            if (ImGui::BeginMenu("With Respect to"))
+            {
+                int imguiID = 0;
+                for (OpenSim::Frame const& otherFrame : model->getModel().getComponentList<OpenSim::Frame>())
+                {
+                    ImGui::PushID(imguiID++);
+                    if (ImGui::BeginMenu(otherFrame.getName().c_str()))
+                    {
+                        SimTK::Transform const xform = frame.findTransformBetween(model->getState(), otherFrame);
+                        glm::vec3 position = osc::ToVec3(xform.p());
+                        glm::vec3 rotationEulers = osc::ToVec3(xform.R().convertRotationToBodyFixedXYZ());
+
+                        ImGui::Text("translation");
+                        ImGui::SameLine();
+                        osc::DrawHelpMarker("translation", "Translational offset (in meters) of the frame's origin expressed in the chosen frame");
+                        ImGui::SameLine();
+                        ImGui::InputFloat3("##translation", glm::value_ptr(position), OSC_DEFAULT_FLOAT_INPUT_FORMAT, ImGuiInputTextFlags_ReadOnly);
+
+                        ImGui::Text("orientation");
+                        ImGui::SameLine();
+                        osc::DrawHelpMarker("orientation", "Orientation offset (in radians) of the frame, expressed in the chosen frame as a frame-fixed x-y-z rotation sequence");
+                        ImGui::SameLine();
+                        ImGui::InputFloat3("##orientation", glm::value_ptr(rotationEulers), OSC_DEFAULT_FLOAT_INPUT_FORMAT, ImGuiInputTextFlags_ReadOnly);
+
+                        ImGui::EndMenu();
+                    }
+                    ImGui::PopID();
+                }
+
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMenu();
+        }
+
+        DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, frame);
+    }
+
     void DrawRightClickedUnknownComponentContextMenu(
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
@@ -2026,6 +2060,10 @@ namespace
             else if (OpenSim::Point const* maybePoint = dynamic_cast<OpenSim::Point const*>(maybeComponent))
             {
                 DrawRightClickedPointContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybePoint);
+            }
+            else if (OpenSim::Frame const* maybeFrame = dynamic_cast<OpenSim::Frame const*>(maybeComponent))
+            {
+                DrawRightClickedFrameContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeFrame);
             }
             else if (OpenSim::FDPointToPointEdge const* maybeP2PEdge = dynamic_cast<OpenSim::FDPointToPointEdge const*>(maybeComponent))
             {
