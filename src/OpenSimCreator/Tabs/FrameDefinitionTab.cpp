@@ -1932,6 +1932,36 @@ namespace
             PushCreateMidpointToAnotherPointLayer(editor, model, point, maybeSourceEvent);
         }
 
+        if (ImGui::BeginMenu(ICON_FA_CALCULATOR " Calculate Position"))
+        {
+            if (ImGui::BeginMenu("With Respect to"))
+            {
+                int imguiID = 0;
+                for (OpenSim::Frame const& frame : model->getModel().getComponentList<OpenSim::Frame>())
+                {
+                    ImGui::PushID(imguiID++);
+                    if (ImGui::BeginMenu(frame.getName().c_str()))
+                    {
+                        SimTK::Transform const groundToFrame = frame.getTransformInGround(model->getState()).invert();
+                        glm::vec3 position = osc::ToVec3(groundToFrame * point.getLocationInGround(model->getState()));
+
+                        ImGui::Text("translation");
+                        ImGui::SameLine();
+                        osc::DrawHelpMarker("translation", "Translational offset (in meters) of the point expressed in the chosen frame");
+                        ImGui::SameLine();
+                        ImGui::InputFloat3("##translation", glm::value_ptr(position), OSC_DEFAULT_FLOAT_INPUT_FORMAT, ImGuiInputTextFlags_ReadOnly);
+
+                        ImGui::EndMenu();
+                    }
+                    ImGui::PopID();
+                }
+
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMenu();
+        }
+
         DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, point);
     }
 
