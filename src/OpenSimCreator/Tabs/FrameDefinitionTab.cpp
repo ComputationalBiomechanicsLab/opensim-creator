@@ -1873,7 +1873,7 @@ namespace
         osc::DrawRightClickedComponentContextMenuHeader(mesh);
         osc::DrawContextMenuSeparator();
 
-        if (ImGui::MenuItem(ICON_FA_CIRCLE " Add Sphere"))
+        if (ImGui::MenuItem(ICON_FA_CIRCLE " Add Sphere Landmark"))
         {
             ActionAddSphereInMeshFrame(
                 *model,
