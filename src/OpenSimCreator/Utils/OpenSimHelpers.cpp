@@ -709,9 +709,9 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
     // {
     //    rv = TryDeleteItemFromSet(*js, dynamic_cast<OpenSim::Joint*>(&c));
     // }
-    if (auto* cs = dynamic_cast<OpenSim::ComponentSet*>(owner))
+    if (auto* componentSet = dynamic_cast<OpenSim::ComponentSet*>(owner))
     {
-        rv = TryDeleteItemFromSet<OpenSim::ModelComponent, OpenSim::ModelComponent>(*cs, dynamic_cast<OpenSim::ModelComponent*>(&c));
+        rv = TryDeleteItemFromSet<OpenSim::ModelComponent, OpenSim::ModelComponent>(*componentSet, dynamic_cast<OpenSim::ModelComponent*>(&c));
     }
     else if (auto* bs = dynamic_cast<OpenSim::BodySet*>(owner))
     {
