@@ -68,50 +68,62 @@
 #include <fstream>
 #include <functional>
 #include <future>
-#include <string>
-#include <string_view>
-#include <sstream>
 #include <iostream>
 #include <limits>
 #include <optional>
+#include <string>
+#include <string_view>
+#include <sstream>
+#include <type_traits>
 #include <unordered_set>
 #include <utility>
 #include <variant>
 #include <vector>
 
-// generic graphics algorithms/constants
-//
-// (these have nothing to do with TPS, but are used to help render the UI)
+// constants
 namespace
 {
-    static glm::vec2 constexpr c_OverlayPadding = {10.0f, 10.0f};
-    static osc::Color constexpr c_PairedLandmarkColor = osc::Color::green();
-    static osc::Color constexpr c_UnpairedLandmarkColor = osc::Color::red();
+    constexpr glm::vec2 c_OverlayPadding = {10.0f, 10.0f};
+    constexpr osc::Color c_PairedLandmarkColor = osc::Color::green();
+    constexpr osc::Color c_UnpairedLandmarkColor = osc::Color::red();
 }
 
-// TPS document datastructure
-//
-// this covers the datastructures that the user is dynamically editing
+// generic helpers
 namespace
 {
-    // an enum used to identify one of the two inputs (source/destination) of the TPS
-    // document at runtime
+    // returns the TOTAL member of the given enum as a size_t
+    template<typename TEnumWithTOTALMember>
+    constexpr size_t NumChoices()
+    {
+        static_assert(
+            std::is_enum_v<TEnumWithTOTALMember> &&
+            std::numeric_limits<std::underlying_type_t<TEnumWithTOTALMember>>::max() <= std::numeric_limits<size_t>::max()
+        );
+
+        return static_cast<size_t>(TEnumWithTOTALMember::TOTAL);
+    }
+}
+
+// Thin-Plate Spline (TPS) document datastructure
+//
+// the core datastructures that the user edits via the UI
+namespace
+{
+    // identifies one of the two inputs (source/destination) of the TPS document
     enum class TPSDocumentInputIdentifier {
         Source = 0,
         Destination,
         TOTAL,
     };
 
-    // an enum used to identify what type of part of the input is described
+    // identifies a specific part of the input of the TPS document
     enum class TPSDocumentInputElementType {
         Landmark = 0,
         Mesh,
         TOTAL,
     };
 
-    // a single landmark pair in the TPS document
-    //
-    // (can be midway through definition by the user)
+    // a landmark pair in the TPS document (might be midway through definition)
     struct TPSDocumentLandmarkPair final {
 
         explicit TPSDocumentLandmarkPair(std::string id_) :
@@ -124,7 +136,9 @@ namespace
         std::optional<glm::vec3> maybeDestinationLocation;
     };
 
-    // the whole TPS document that the user edits in-place
+    // a TPS document
+    //
+    // a central datastructure that the user edits in-place via the UI
     struct TPSDocument final {
         osc::Mesh sourceMesh = osc::GenUntexturedUVSphere(16, 16);
         osc::Mesh destinationMesh = osc::GenUntexturedYToYCylinder(16);
@@ -133,7 +147,7 @@ namespace
         size_t nextLandmarkID = 0;
     };
 
-    // an associative identifier to specific element in a TPS document
+    // an associative identifier that points to a specific part of a TPS document
     //
     // (handy for selection logic etc.)
     struct TPSDocumentElementID final {
@@ -143,8 +157,8 @@ namespace
             TPSDocumentInputElementType elementType_,
             std::string elementID_) :
 
-            whichInput{std::move(whichInput_)},
-            elementType{std::move(elementType_)},
+            whichInput{whichInput_},
+            elementType{elementType_},
             elementID{std::move(elementID_)}
         {
         }
@@ -154,8 +168,7 @@ namespace
         std::string elementID;
     };
 
-    // (necessary for storage in associative datastructures)
-    bool operator==(TPSDocumentElementID const& a, TPSDocumentElementID const& b)
+    bool operator==(TPSDocumentElementID const& a, TPSDocumentElementID const& b) noexcept
     {
         return
             a.whichInput == b.whichInput &&
@@ -166,62 +179,68 @@ namespace
 
 namespace std
 {
-    // (necessary for storage in associative datastructures)
     template<>
     struct hash<TPSDocumentElementID> {
-        size_t operator()(TPSDocumentElementID const& el) const
+        size_t operator()(TPSDocumentElementID const& el) const noexcept
         {
             return osc::HashOf(el.whichInput, el.elementType, el.elementID);
         }
     };
 }
 
+// TPS document helper functions
 namespace
 {
-    // helper: returns the (mutable) source/destination of the given landmark pair, if available
+    // returns the (mutable) source/destination of the given landmark pair, if available
     std::optional<glm::vec3>& UpdLocation(TPSDocumentLandmarkPair& landmarkPair, TPSDocumentInputIdentifier which)
     {
-        static_assert(static_cast<int>(TPSDocumentInputIdentifier::TOTAL) == 2);
+        static_assert(NumChoices<TPSDocumentInputIdentifier>() == 2);
         return which == TPSDocumentInputIdentifier::Source ? landmarkPair.maybeSourceLocation : landmarkPair.maybeDestinationLocation;
     }
 
-    // helper: returns the source/destination of the given landmark pair, if available
+    // returns the source/destination of the given landmark pair, if available
     std::optional<glm::vec3> const& GetLocation(TPSDocumentLandmarkPair const& landmarkPair, TPSDocumentInputIdentifier which)
     {
-        static_assert(static_cast<int>(TPSDocumentInputIdentifier::TOTAL) == 2);
+        static_assert(NumChoices<TPSDocumentInputIdentifier>() == 2);
         return which == TPSDocumentInputIdentifier::Source ? landmarkPair.maybeSourceLocation : landmarkPair.maybeDestinationLocation;
     }
 
-    // helper: returns the source/destination mesh in the given document (mutable)
+    // returns `true` if the given landmark pair has a location assigned for `which`
+    bool HasLocation(TPSDocumentLandmarkPair const& landmarkPair, TPSDocumentInputIdentifier which)
+    {
+        return GetLocation(landmarkPair, which).has_value();
+    }
+
+    // returns the (mutable) source/destination mesh in the given document
     osc::Mesh& UpdMesh(TPSDocument& doc, TPSDocumentInputIdentifier which)
     {
-        static_assert(static_cast<int>(TPSDocumentInputIdentifier::TOTAL) == 2);
+        static_assert(NumChoices<TPSDocumentInputIdentifier>() == 2);
         return which == TPSDocumentInputIdentifier::Source ? doc.sourceMesh : doc.destinationMesh;
     }
 
-    // helper: returns the source/destination mesh in the given document
+    // returns the source/destination mesh in the given document
     osc::Mesh const& GetMesh(TPSDocument const& doc, TPSDocumentInputIdentifier which)
     {
-        static_assert(static_cast<int>(TPSDocumentInputIdentifier::TOTAL) == 2);
+        static_assert(NumChoices<TPSDocumentInputIdentifier>() == 2);
         return which == TPSDocumentInputIdentifier::Source ? doc.sourceMesh : doc.destinationMesh;
     }
 
-    // helper: returns `true` if both the source and destination are defined for the given UI landmark
+    // returns `true` if both the source and destination are defined for the given UI landmark
     bool IsFullyPaired(TPSDocumentLandmarkPair const& p)
     {
         return p.maybeSourceLocation && p.maybeDestinationLocation;
     }
 
-    // helper: returns `true` if the given UI landmark has either a source or a destination defined
+    // returns `true` if the given UI landmark has either a source or a destination defined
     bool HasSourceOrDestinationLocation(TPSDocumentLandmarkPair const& p)
     {
         return p.maybeSourceLocation || p.maybeDestinationLocation;
     }
 
-    // helper: returns source + destination landmark pair, if the provided UI landmark has both defined
+    // returns source + destination landmark pair, if both are fully defined; otherwise, returns std::nullopt
     std::optional<osc::LandmarkPair3D> TryExtractLandmarkPair(TPSDocumentLandmarkPair const& p)
     {
-        if (p.maybeSourceLocation && p.maybeDestinationLocation)
+        if (IsFullyPaired(p))
         {
             return osc::LandmarkPair3D{*p.maybeSourceLocation, *p.maybeDestinationLocation};
         }
@@ -231,7 +250,7 @@ namespace
         }
     }
 
-    // helper: returns all paired landmarks in the document argument
+    // returns all fully paired landmarks in `doc`
     std::vector<osc::LandmarkPair3D> GetLandmarkPairs(TPSDocument const& doc)
     {
         std::vector<osc::LandmarkPair3D> rv;
@@ -247,18 +266,11 @@ namespace
         return rv;
     }
 
-    // helper: returns the count of landmarks in the document for which `which` is defined
+    // returns the count of landmarks in the document for which `which` is defined
     size_t CountNumLandmarksForInput(TPSDocument const& doc, TPSDocumentInputIdentifier which)
     {
-        size_t rv = 0;
-        for (TPSDocumentLandmarkPair const& p : doc.landmarkPairs)
-        {
-            if (GetLocation(p, which))
-            {
-                ++rv;
-            }
-        }
-        return rv;
+        auto const predicate = [which](TPSDocumentLandmarkPair const& p) { return HasLocation(p, which); };
+        return std::count_if(doc.landmarkPairs.begin(), doc.landmarkPairs.end(), predicate);
     }
 
     // helper: add a source/destination landmark at the given location
@@ -294,20 +306,24 @@ namespace
             UpdLocation(p, which) = pos;
         }
     }
+}
 
-    // action: try to undo the last change
+// user-enactable actions
+namespace
+{
+    // if possible, undos the document to the last change
     void ActionUndo(osc::UndoRedoT<TPSDocument>& doc)
     {
         doc.undo();
     }
 
-    // action: try to redo the last undone change
+    // if possible, redos the document to the last undone change
     void ActionRedo(osc::UndoRedoT<TPSDocument>& doc)
     {
         doc.redo();
     }
 
-    // action: add a landmark to the source mesh and return its ID
+    // adds a landmark to the source mesh
     void ActionAddLandmarkTo(
         osc::UndoRedoT<TPSDocument>& doc,
         TPSDocumentInputIdentifier which,
@@ -317,10 +333,13 @@ namespace
         doc.commitScratch("added landmark");
     }
 
-    // action: prompt the user to browse for a different source mesh
-    void ActionBrowseForNewMesh(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentInputIdentifier which)
+    // prompts the user to browse for an input mesh and assigns it to the document
+    void ActionBrowseForNewMesh(
+        osc::UndoRedoT<TPSDocument>& doc,
+        TPSDocumentInputIdentifier which)
     {
-        std::optional<std::filesystem::path> const maybeMeshPath = osc::PromptUserForFile(osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats());
+        std::optional<std::filesystem::path> const maybeMeshPath =
+            osc::PromptUserForFile(osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats());
         if (!maybeMeshPath)
         {
             return;  // user didn't select anything
@@ -331,10 +350,13 @@ namespace
         doc.commitScratch("changed mesh");
     }
 
-    // action: load landmarks from a headerless CSV file into source/destination
-    void ActionLoadLandmarksCSV(osc::UndoRedoT<TPSDocument>& doc, TPSDocumentInputIdentifier which)
+    // loads landmarks from a CSV file into source/destination slot of the document
+    void ActionLoadLandmarksCSV(
+        osc::UndoRedoT<TPSDocument>& doc,
+        TPSDocumentInputIdentifier which)
     {
-        std::optional<std::filesystem::path> const maybeCSVPath = osc::PromptUserForFile("csv");
+        std::optional<std::filesystem::path> const maybeCSVPath =
+            osc::PromptUserForFile("csv");
         if (!maybeCSVPath)
         {
             return;  // user didn't select anything
@@ -354,34 +376,34 @@ namespace
         doc.commitScratch("loaded landmarks");
     }
 
-    // action: set the TPS blending factor for the result, but don't save it to undo/redo storage
+    // sets the TPS blending factor for the result, but does not save the change to undo/redo storage
     void ActionSetBlendFactorWithoutSaving(osc::UndoRedoT<TPSDocument>& doc, float factor)
     {
         doc.updScratch().blendingFactor = factor;
     }
 
-    // action: set the TPS blending factor and save a commit of the change
+    // sets the TPS blending factor for the result and saves the change to undo/redo storage
     void ActionSetBlendFactorAndSave(osc::UndoRedoT<TPSDocument>& doc, float factor)
     {
         ActionSetBlendFactorWithoutSaving(doc, factor);
         doc.commitScratch("changed blend factor");
     }
 
-    // action: create a "fresh" TPS document
+    // creates a "fresh" (default) TPS document
     void ActionCreateNewDocument(osc::UndoRedoT<TPSDocument>& doc)
     {
         doc.updScratch() = TPSDocument{};
         doc.commitScratch("created new document");
     }
 
-    // action: clear all user-assigned landmarks in the TPS document
+    // clears all user-assigned landmarks in the TPS document
     void ActionClearAllLandmarks(osc::UndoRedoT<TPSDocument>& doc)
     {
         doc.updScratch().landmarkPairs.clear();
         doc.commitScratch("cleared all landmarks");
     }
 
-    // action: delete the specified landmarks
+    // deletes the specified landmarks from the TPS document
     void ActionDeleteSceneElementsByID(
         osc::UndoRedoT<TPSDocument>& doc,
         std::unordered_set<TPSDocumentElementID> const& elementIDs)
@@ -417,7 +439,7 @@ namespace
         doc.commitScratch("deleted elements");
     }
 
-    // action: save all source/destination landmarks to a simple headerless CSV file (matches loading)
+    // saves all source/destination landmarks to a simple headerless CSV file (matches loading)
     void ActionSaveLandmarksToCSV(TPSDocument const& doc, TPSDocumentInputIdentifier which)
     {
         std::optional<std::filesystem::path> const maybeCSVPath =
@@ -447,7 +469,7 @@ namespace
         }
     }
 
-    // action: save all pairable landmarks in the TPS document to a user-specified CSV file
+    // saves all pairable landmarks in the TPS document to a user-specified CSV file
     void ActionSaveLandmarksToPairedCSV(TPSDocument const& doc)
     {
         std::optional<std::filesystem::path> const maybeCSVPath =
@@ -487,14 +509,14 @@ namespace
             cols.at(1) = std::to_string(p.source.y);
             cols.at(2) = std::to_string(p.source.z);
 
-            cols.at(0) = std::to_string(p.destination.x);
-            cols.at(1) = std::to_string(p.destination.y);
-            cols.at(2) = std::to_string(p.destination.z);
+            cols.at(3) = std::to_string(p.destination.x);
+            cols.at(4) = std::to_string(p.destination.y);
+            cols.at(5) = std::to_string(p.destination.z);
             writer.writeRow(cols);
         }
     }
 
-    // action: prompt the user to save the result (transformed) mesh to an obj file
+    // prompts the user to save the mesh to an obj file
     void ActionTrySaveMeshToObj(osc::Mesh const& mesh)
     {
         std::optional<std::filesystem::path> const maybeOBJFile =
@@ -515,7 +537,7 @@ namespace
         writer.write(mesh, osc::ObjWriterFlags_IgnoreNormals);
     }
 
-    // action: prompt the user to save the result (transformed) mesh to an stl file
+    // prompts the user to save the mesh to an stl file
     void ActionTrySaveMeshToStl(osc::Mesh const& mesh)
     {
         std::optional<std::filesystem::path> const maybeSTLPath =
@@ -539,18 +561,15 @@ namespace
     }
 }
 
-
-// generic result cache helper class
+// TPS result cache
+//
+// caches the result of an (expensive) TPS warp of the mesh by checking
+// whether the input arguments have changed
 namespace
 {
-    // a cache that only recomputes the transformed mesh if the document
-    // has changed
-    //
-    // (e.g. when a user adds a new landmark or changes the blending factor)
+    // a cache for TPS mesh warping results
     class TPSResultCache final {
     public:
-
-        // lookup, or recompute, the transformed mesh
         osc::Mesh const& lookup(TPSDocument const& doc)
         {
             updateResultMesh(doc);
@@ -638,16 +657,13 @@ namespace
     };
 }
 
-// TPSUI top-level state
-//
-// these are datastructures that are shared between panels etc.
+// UI: top-level datastructures that are shared between panels etc.
 namespace
 {
-    // holds information about the user's current mouse hover
+    // a mouse hovertest result
     struct TPSUIViewportHover final {
 
         explicit TPSUIViewportHover(glm::vec3 const& worldspaceLocation_) :
-            maybeSceneElementID{std::nullopt},
             worldspaceLocation{worldspaceLocation_}
         {
         }
@@ -661,12 +677,12 @@ namespace
         {
         }
 
-        std::optional<TPSDocumentElementID> maybeSceneElementID;
+        std::optional<TPSDocumentElementID> maybeSceneElementID = std::nullopt;
         glm::vec3 worldspaceLocation;
     };
 
-    // holds information about the user's current selection
-    struct TPSTabSelection final {
+    // the user's current selection
+    struct TPSUIUserSelection final {
 
         void clear()
         {
@@ -692,16 +708,14 @@ namespace
         std::unordered_set<TPSDocumentElementID> m_SelectedSceneElements;
     };
 
-    // shared, top-level TPS3D tab state
-    //
-    // (shared by all panels)
-    struct TPSTabSharedState final {
+    // top-level UI state that is shared by all UI panels
+    struct TPSUISharedState final {
 
-        TPSTabSharedState(
+        TPSUISharedState(
             osc::UID tabID_,
             std::weak_ptr<osc::TabHost> parent_) :
 
-            tabID{std::move(tabID_)},
+            tabID{tabID_},
             tabHost{std::move(parent_)}
         {
             OSC_ASSERT(tabHost.lock() != nullptr && "top-level tab host required for this UI");
@@ -716,7 +730,7 @@ namespace
         // cached TPS3D algorithm result (to prevent recomputing it each frame)
         TPSResultCache meshResultCache;
 
-        // the document the user is editing
+        // the document that the user is editing
         std::shared_ptr<osc::UndoRedoT<TPSDocument>> editedDocument = std::make_shared<osc::UndoRedoT<TPSDocument>>();
 
         // `true` if the user wants the cameras to be linked
@@ -735,7 +749,7 @@ namespace
         osc::Mesh landmarkSphere = osc::App::singleton<osc::MeshCache>()->getSphereMesh();
 
         // current user selection
-        TPSTabSelection userSelection;
+        TPSUIUserSelection userSelection;
 
         // current user hover: reset per-frame
         std::optional<TPSUIViewportHover> currentHover;
@@ -745,32 +759,35 @@ namespace
 
         // currently active tab-wide popups
         osc::PopupManager popupManager;
+
+        // shared mesh cache
+        std::shared_ptr<osc::MeshCache> meshCache = osc::App::singleton<osc::MeshCache>();
     };
 
-    TPSDocument const& GetScratch(TPSTabSharedState const& state)
+    TPSDocument const& GetScratch(TPSUISharedState const& state)
     {
         return state.editedDocument->getScratch();
     }
 
-    TPSDocument& UpdScratch(TPSTabSharedState& state)
+    TPSDocument& UpdScratch(TPSUISharedState& state)
     {
         return state.editedDocument->updScratch();
     }
 
-    osc::Mesh const& GetScratchMesh(TPSTabSharedState& state, TPSDocumentInputIdentifier which)
+    osc::Mesh const& GetScratchMesh(TPSUISharedState& state, TPSDocumentInputIdentifier which)
     {
         return GetMesh(GetScratch(state), std::move(which));
     }
 
     // returns a (potentially cached) post-TPS-warp mesh
-    osc::Mesh const& GetResultMesh(TPSTabSharedState& state)
+    osc::Mesh const& GetResultMesh(TPSUISharedState& state)
     {
         return state.meshResultCache.lookup(state.editedDocument->getScratch());
     }
 
     // append decorations that are common to all panels to the given output vector
     void AppendCommonDecorations(
-        TPSTabSharedState const& sharedState,
+        TPSUISharedState const& sharedState,
         osc::Mesh const& tpsSourceOrDestinationMesh,
         bool wireframeMode,
         std::function<void(osc::SceneDecoration&&)> const& out,
@@ -792,25 +809,23 @@ namespace
         }
 
         // add grid decorations
-        DrawXZGrid(*osc::App::singleton<osc::MeshCache>(), out);
-        DrawXZFloorLines(*osc::App::singleton<osc::MeshCache>(), out, 100.0f);
+        DrawXZGrid(*sharedState.meshCache, out);
+        DrawXZFloorLines(*sharedState.meshCache, out, 100.0f);
     }
 }
 
 
-// TPS3D UI widgets
-//
-// these appear within panels in the UI
+// UI: widgets that appear within panels in the UI
 namespace
 {
-    // widget: the top toolbar (contains icons for new, save, open, undo, redo, etc.)
+    // the top toolbar (contains icons for new, save, open, undo, redo, etc.)
     class TPS3DToolbar final {
     public:
         TPS3DToolbar(
             std::string_view label,
-            std::shared_ptr<TPSTabSharedState> tabState_) :
+            std::shared_ptr<TPSUISharedState> tabState_) :
 
-            m_Label{std::move(label)},
+            m_Label{label},
             m_State{std::move(tabState_)}
         {
         }
@@ -825,6 +840,7 @@ namespace
             }
             ImGui::End();
         }
+
     private:
         void drawContent()
         {
@@ -926,7 +942,7 @@ namespace
         }
 
         std::string m_Label;
-        std::shared_ptr<TPSTabSharedState> m_State;
+        std::shared_ptr<TPSUISharedState> m_State;
         osc::UndoButton m_UndoButton{m_State->editedDocument};
         osc::RedoButton m_RedoButton{m_State->editedDocument};
     };
@@ -936,7 +952,7 @@ namespace
     public:
         TPS3DStatusBar(
             std::string_view label,
-            std::shared_ptr<TPSTabSharedState> tabState_) :
+            std::shared_ptr<TPSUISharedState> tabState_) :
 
             m_Label{std::move(label)},
             m_State{std::move(tabState_)}
@@ -987,13 +1003,13 @@ namespace
         }
 
         std::string m_Label;
-        std::shared_ptr<TPSTabSharedState> m_State;
+        std::shared_ptr<TPSUISharedState> m_State;
     };
 
     // widget: the 'file' menu (a sub menu of the main menu)
     class TPS3DFileMenu final {
     public:
-        explicit TPS3DFileMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
+        explicit TPS3DFileMenu(std::shared_ptr<TPSUISharedState> tabState_) :
             m_State{std::move(tabState_)}
         {
         }
@@ -1073,13 +1089,13 @@ namespace
             }
         }
 
-        std::shared_ptr<TPSTabSharedState> m_State;
+        std::shared_ptr<TPSUISharedState> m_State;
     };
 
     // widget: the 'edit' menu (a sub menu of the main menu)
     class TPS3DEditMenu final {
     public:
-        explicit TPS3DEditMenu(std::shared_ptr<TPSTabSharedState> tabState_) :
+        explicit TPS3DEditMenu(std::shared_ptr<TPSUISharedState> tabState_) :
             m_State{std::move(tabState_)}
         {
         }
@@ -1107,13 +1123,13 @@ namespace
             }
         }
 
-        std::shared_ptr<TPSTabSharedState> m_State;
+        std::shared_ptr<TPSUISharedState> m_State;
     };
 
     // widget: the main menu (contains multiple submenus: 'file', 'edit', 'about', etc.)
     class TPS3DMainMenu final {
     public:
-        explicit TPS3DMainMenu(std::shared_ptr<TPSTabSharedState> const& tabState_) :
+        explicit TPS3DMainMenu(std::shared_ptr<TPSUISharedState> const& tabState_) :
             m_FileMenu{tabState_},
             m_EditMenu{tabState_},
             m_WindowMenu{tabState_->panelManager},
@@ -1162,7 +1178,7 @@ namespace
     public:
         TPS3DInputPanel(
             std::string_view panelName_,
-            std::shared_ptr<TPSTabSharedState> state_,
+            std::shared_ptr<TPSUISharedState> state_,
             TPSDocumentInputIdentifier documentIdentifier_) :
 
             WarpingTabPanel{std::move(panelName_), ImGuiDockNodeFlags_PassthruCentralNode},
@@ -1539,7 +1555,7 @@ namespace
             return decorations;
         }
 
-        std::shared_ptr<TPSTabSharedState> m_State;
+        std::shared_ptr<TPSUISharedState> m_State;
         TPSDocumentInputIdentifier m_DocumentIdentifier;
         osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(GetScratchMesh(*m_State, m_DocumentIdentifier).getBounds());
         osc::CachedSceneRenderer m_CachedRenderer{osc::App::config(), *osc::App::singleton<osc::MeshCache>(), *osc::App::singleton<osc::ShaderCache>()};
@@ -1554,7 +1570,7 @@ namespace
 
         TPS3DResultPanel(
             std::string_view panelName_,
-            std::shared_ptr<TPSTabSharedState> state_) :
+            std::shared_ptr<TPSUISharedState> state_) :
 
             WarpingTabPanel{std::move(panelName_)},
             m_State{std::move(state_)}
@@ -1757,7 +1773,7 @@ namespace
             return m_CachedRenderer.draw(decorations, params);
         }
 
-        std::shared_ptr<TPSTabSharedState> m_State;
+        std::shared_ptr<TPSUISharedState> m_State;
         osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(GetResultMesh(*m_State).getBounds());
         osc::CachedSceneRenderer m_CachedRenderer
         {
@@ -1772,7 +1788,7 @@ namespace
     };
 
     // pushes all available panels the TPS3D tab can render into the out param
-    void PushBackAvailablePanels(std::shared_ptr<TPSTabSharedState> const& state, osc::PanelManager& out)
+    void PushBackAvailablePanels(std::shared_ptr<TPSUISharedState> const& state, osc::PanelManager& out)
     {
         out.registerToggleablePanel(
             "Source Mesh",
@@ -1874,7 +1890,7 @@ private:
     std::weak_ptr<TabHost> m_Parent;
 
     // top-level state that all panels can potentially access
-    std::shared_ptr<TPSTabSharedState> m_SharedState = std::make_shared<TPSTabSharedState>(m_TabID, m_Parent);
+    std::shared_ptr<TPSUISharedState> m_SharedState = std::make_shared<TPSUISharedState>(m_TabID, m_Parent);
 
     // not-user-toggleable widgets
     TPS3DMainMenu m_MainMenu{m_SharedState};
@@ -1887,7 +1903,7 @@ private:
 
 osc::CStringView osc::WarpingTab::id() noexcept
 {
-    return "OpenSim/Experimental/TPS3D";
+    return "OpenSim/Warping";
 }
 
 osc::WarpingTab::WarpingTab(std::weak_ptr<TabHost> parent_) :
