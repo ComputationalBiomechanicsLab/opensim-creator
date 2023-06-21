@@ -1,12 +1,12 @@
 #include "OpenSimCreatorApp.hpp"
 
-#include "OpenSimCreator/Tabs/FrameDefinitionTab.hpp"
 #include "OpenSimCreator/Tabs/Experimental/MeshHittestTab.hpp"
 #include "OpenSimCreator/Tabs/Experimental/ModelWarpingTab.hpp"
 #include "OpenSimCreator/Tabs/Experimental/PreviewExperimentalDataTab.hpp"
 #include "OpenSimCreator/Tabs/Experimental/RendererGeometryShaderTab.hpp"
 #include "OpenSimCreator/Tabs/Experimental/TPS2DTab.hpp"
-#include "OpenSimCreator/Tabs/Experimental/TPS3DTab.hpp"
+#include "OpenSimCreator/Tabs/FrameDefinitionTab.hpp"
+#include "OpenSimCreator/Tabs/WarpingTab.hpp"
 
 #include <oscar/Platform/Config.hpp>
 #include <oscar/Platform/Log.hpp>
@@ -204,7 +204,7 @@ namespace
         RegisterTab<osc::PreviewExperimentalDataTab>(registry);
         RegisterTab<osc::RendererGeometryShaderTab>(registry);
         RegisterTab<osc::TPS2DTab>(registry);
-        RegisterTab<osc::TPS3DTab>(registry);
+        RegisterTab<osc::WarpingTab>(registry);
         RegisterTab<osc::ModelWarpingTab>(registry);
         RegisterTab<osc::FrameDefinitionTab>(registry);
     }

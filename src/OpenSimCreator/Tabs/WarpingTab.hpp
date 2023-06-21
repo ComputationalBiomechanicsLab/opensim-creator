@@ -10,16 +10,16 @@ namespace osc { class TabHost; }
 
 namespace osc
 {
-    class TPS3DTab final : public Tab {
+    class WarpingTab final : public Tab {
     public:
         static CStringView id() noexcept;
 
-        explicit TPS3DTab(std::weak_ptr<TabHost>);
-        TPS3DTab(TPS3DTab const&) = delete;
-        TPS3DTab(TPS3DTab&&) noexcept;
-        TPS3DTab& operator=(TPS3DTab const&) = delete;
-        TPS3DTab& operator=(TPS3DTab&&) noexcept;
-        ~TPS3DTab() noexcept override;
+        explicit WarpingTab(std::weak_ptr<TabHost>);
+        WarpingTab(WarpingTab const&) = delete;
+        WarpingTab(WarpingTab&&) noexcept;
+        WarpingTab& operator=(WarpingTab const&) = delete;
+        WarpingTab& operator=(WarpingTab&&) noexcept;
+        ~WarpingTab() noexcept override;
 
     private:
         UID implGetID() const final;

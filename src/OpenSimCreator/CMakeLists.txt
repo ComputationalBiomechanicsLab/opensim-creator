@@ -125,8 +125,6 @@ add_library(OpenSimCreator STATIC
     Tabs/Experimental/RendererGeometryShaderTab.hpp
     Tabs/Experimental/TPS2DTab.cpp
     Tabs/Experimental/TPS2DTab.hpp
-    Tabs/Experimental/TPS3DTab.cpp
-    Tabs/Experimental/TPS3DTab.hpp
     Tabs/Experimental/ExcitationEditorTab.cpp
     Tabs/Experimental/ExcitationEditorTab.hpp
     Tabs/FrameDefinitionTab.cpp
@@ -143,6 +141,8 @@ add_library(OpenSimCreator STATIC
     Tabs/SimulatorTab.hpp
     Tabs/SplashTab.cpp
     Tabs/SplashTab.hpp
+    Tabs/WarpingTab.cpp
+    Tabs/WarpingTab.hpp
 
     Utils/OpenSimHelpers.cpp
     Utils/OpenSimHelpers.hpp
