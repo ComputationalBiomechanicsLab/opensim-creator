@@ -71,7 +71,7 @@ namespace
             return static_cast<float>(musc.getActuation(st)) / static_cast<float>(musc.getMaxIsometricForce());
         case osc::MuscleColoringStyle::FiberLength:
         {
-            float nfl = static_cast<float>(musc.getNormalizedFiberLength(st));  // 1.0f == ideal length
+            float const nfl = static_cast<float>(musc.getNormalizedFiberLength(st));  // 1.0f == ideal length
             float fl = nfl - 1.0f;
             fl = std::abs(fl);
             fl = std::min(fl, 1.0f);
@@ -131,10 +131,10 @@ namespace
     // similar to how SCONE does it, so that users can compare between the two apps
     float GetSconeStyleAutomaticMuscleRadiusCalc(OpenSim::Muscle const& m)
     {
-        float f = static_cast<float>(m.getMaxIsometricForce());
-        float specificTension = 0.25e6f;  // magic number?
-        float pcsa = f / specificTension;
-        float widthFactor = 0.25f;
+        float const f = static_cast<float>(m.getMaxIsometricForce());
+        float const specificTension = 0.25e6f;  // magic number?
+        float const pcsa = f / specificTension;
+        float const widthFactor = 0.25f;
         return widthFactor * std::sqrt(pcsa / osc::fpi);
     }
 
@@ -983,31 +983,26 @@ float osc::GetRecommendedScaleFactor(
     // generate decorations as if they were empty-sized and union their
     // AABBs to get an idea of what the "true" scale of the model probably
     // is (without the model containing oversized frames, etc.)
-    std::vector<SceneDecoration> decs;
+    std::optional<AABB> aabb;
     GenerateModelDecorations(
         meshCache,
         model,
         state,
         opts,
         fixupScaleFactor,
-        [&decs](OpenSim::Component const&, SceneDecoration&& dec)
+        [&aabb](OpenSim::Component const&, SceneDecoration&& dec)
         {
-            decs.push_back(std::move(dec));
+            AABB const decorationAABB = GetWorldspaceAABB(dec);
+            aabb = aabb ? Union(*aabb, decorationAABB) : decorationAABB;
         }
     );
 
-    if (decs.empty())
+    if (!aabb)
     {
         return 1.0f;
     }
 
-    AABB aabb = GetWorldspaceAABB(decs[0]);
-    for (SceneDecoration const& dec : decs)
-    {
-        aabb = Union(aabb, GetWorldspaceAABB(dec));
-    }
-
-    float longest = LongestDim(aabb);
+    float longest = LongestDim(*aabb);
     float rv = 1.0f;
 
     while (longest < 0.1)

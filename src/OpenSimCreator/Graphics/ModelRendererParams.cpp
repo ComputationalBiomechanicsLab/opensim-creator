@@ -14,9 +14,9 @@
 osc::ModelRendererParams::ModelRendererParams() :
     decorationOptions{},
     renderingOptions{},
-    lightColor{osc::SceneRendererParams{}.lightColor},
-    backgroundColor{osc::SceneRendererParams{}.backgroundColor},
-    floorLocation{osc::SceneRendererParams{}.floorLocation},
-    camera{osc::CreateCameraWithRadius(5.0f)}
+    lightColor{SceneRendererParams::DefaultLightColor()},
+    backgroundColor{SceneRendererParams::DefaultBackgroundColor()},
+    floorLocation{SceneRendererParams::DefaultFloorLocation()},
+    camera{CreateCameraWithRadius(5.0f)}
 {
 }

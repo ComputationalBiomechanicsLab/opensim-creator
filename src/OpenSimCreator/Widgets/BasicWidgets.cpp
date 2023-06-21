@@ -26,6 +26,7 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Widgets/GuiRuler.hpp>
 #include <oscar/Widgets/IconWithMenu.hpp>
 
@@ -369,9 +370,9 @@ void osc::DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions& opts
     osc::MuscleDecorationStyle const currentStyle = opts.getMuscleDecorationStyle();
     nonstd::span<osc::MuscleDecorationStyle const> const allStyles = osc::GetAllMuscleDecorationStyles();
     nonstd::span<char const* const>  const allStylesStrings = osc::GetAllMuscleDecorationStyleStrings();
-    int const currentStyleIndex = osc::GetIndexOf(currentStyle);
+    ptrdiff_t const currentStyleIndex = osc::GetIndexOf(currentStyle);
 
-    for (int i = 0; i < static_cast<int>(allStyles.size()); ++i)
+    for (ptrdiff_t i = 0; i < osc::ssize(allStyles); ++i)
     {
         if (ImGui::RadioButton(allStylesStrings[i], i == currentStyleIndex))
         {
@@ -385,9 +386,9 @@ void osc::DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions& opts)
     osc::MuscleSizingStyle const currentStyle = opts.getMuscleSizingStyle();
     nonstd::span<osc::MuscleSizingStyle const> const allStyles = osc::GetAllMuscleSizingStyles();
     nonstd::span<char const* const>  const allStylesStrings = osc::GetAllMuscleSizingStyleStrings();
-    int const currentStyleIndex = osc::GetIndexOf(currentStyle);
+    ptrdiff_t const currentStyleIndex = osc::GetIndexOf(currentStyle);
 
-    for (int i = 0; i < static_cast<int>(allStyles.size()); ++i)
+    for (ptrdiff_t i = 0; i < osc::ssize(allStyles); ++i)
     {
         if (ImGui::RadioButton(allStylesStrings[i], i == currentStyleIndex))
         {
@@ -401,9 +402,9 @@ void osc::DrawMuscleColoringOptionsRadioButtons(OpenSimDecorationOptions& opts)
     osc::MuscleColoringStyle const currentStyle = opts.getMuscleColoringStyle();
     nonstd::span<osc::MuscleColoringStyle const> const allStyles = osc::GetAllMuscleColoringStyles();
     nonstd::span<char const* const>  const allStylesStrings = osc::GetAllMuscleColoringStyleStrings();
-    int const currentStyleIndex = osc::GetIndexOf(currentStyle);
+    ptrdiff_t const currentStyleIndex = osc::GetIndexOf(currentStyle);
 
-    for (int i = 0; i < static_cast<int>(allStyles.size()); ++i)
+    for (ptrdiff_t i = 0; i < osc::ssize(allStyles); ++i)
     {
         if (ImGui::RadioButton(allStylesStrings[i], i == currentStyleIndex))
         {

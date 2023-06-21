@@ -10,6 +10,21 @@ namespace osc
 {
     struct SceneRendererParams final {
 
+        static constexpr Color DefaultLightColor()
+        {
+            return {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f, 1.0f};
+        }
+
+        static constexpr Color DefaultBackgroundColor()
+        {
+            return {0.89f, 0.89f, 0.89f, 1.0f};
+        }
+
+        static constexpr glm::vec3 DefaultFloorLocation()
+        {
+            return {0.0f, -0.001f, 0.0f};
+        }
+
         SceneRendererParams();
 
         glm::ivec2 dimensions;

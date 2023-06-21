@@ -55,14 +55,24 @@ namespace
                 {
                     m_Drawlist.push_back(std::move(dec));
                 };
+                GenerateDecorations(
+                    modelState,
+                    params.decorationOptions,
+                    *m_MeshCache,
+                    onComponentDecoration
+                );
+                UpdateSceneBVH(m_Drawlist, m_BVH);
+
                 auto const onOverlayDecoration = [this](osc::SceneDecoration&& dec)
                 {
                     m_Drawlist.push_back(std::move(dec));
                 };
-
-                GenerateDecorations(modelState, params.decorationOptions, *m_MeshCache, onComponentDecoration);
-                UpdateSceneBVH(m_Drawlist, m_BVH);
-                GenerateOverlayDecorations(*m_MeshCache, params.overlayOptions, m_BVH, onOverlayDecoration);
+                GenerateOverlayDecorations(
+                    *m_MeshCache,
+                    params.overlayOptions,
+                    m_BVH,
+                    onOverlayDecoration
+                );
 
                 m_PrevModelStateInfo = info;
                 m_PrevDecorationOptions = params.decorationOptions;

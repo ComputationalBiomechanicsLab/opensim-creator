@@ -29,7 +29,7 @@ nonstd::span<char const* const> osc::GetAllMuscleSizingStyleStrings()
     return c_StyleStrings;
 }
 
-int osc::GetIndexOf(MuscleSizingStyle s)
+ptrdiff_t osc::GetIndexOf(MuscleSizingStyle s)
 {
-    return static_cast<int>(s);
+    return static_cast<ptrdiff_t>(s);
 }

@@ -2,6 +2,8 @@
 
 #include <nonstd/span.hpp>
 
+#include <cstddef>
+
 namespace osc
 {
     enum class MuscleDecorationStyle {
@@ -14,5 +16,5 @@ namespace osc
 
     nonstd::span<MuscleDecorationStyle const> GetAllMuscleDecorationStyles();
     nonstd::span<char const* const> GetAllMuscleDecorationStyleStrings();
-    int GetIndexOf(MuscleDecorationStyle);
+    ptrdiff_t GetIndexOf(MuscleDecorationStyle);
 }

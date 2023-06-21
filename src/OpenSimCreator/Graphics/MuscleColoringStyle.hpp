@@ -2,10 +2,12 @@
 
 #include <nonstd/span.hpp>
 
+#include <cstddef>
+
 namespace osc
 {
     enum class MuscleColoringStyle {
-        OpenSimAppearanceProperty,
+        OpenSimAppearanceProperty = 0,
         OpenSim,
         Activation,
         Excitation,
@@ -17,5 +19,5 @@ namespace osc
 
     nonstd::span<MuscleColoringStyle const> GetAllMuscleColoringStyles();
     nonstd::span<char const* const> GetAllMuscleColoringStyleStrings();
-    int GetIndexOf(MuscleColoringStyle);
+    ptrdiff_t GetIndexOf(MuscleColoringStyle);
 }

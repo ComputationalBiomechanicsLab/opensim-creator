@@ -27,13 +27,13 @@
 #include <utility>
 #include <vector>
 
-static inline float constexpr c_LineThickness = 0.005f;
-static inline float constexpr c_FrameAxisLengthRescale = 0.25f;
-static inline float constexpr c_FrameAxisThickness = 0.0025f;
-
 // helper functions
 namespace
 {
+    inline constexpr float c_LineThickness = 0.005f;
+    inline constexpr float c_FrameAxisLengthRescale = 0.25f;
+    inline constexpr float c_FrameAxisThickness = 0.0025f;
+
     // extracts scale factors from geometry
     glm::vec3 GetScaleFactors(SimTK::DecorativeGeometry const& geom)
     {
@@ -41,7 +41,7 @@ namespace
 
         for (int i = 0; i < 3; ++i)
         {
-            sf[i] = sf[i] <= 0 ? 1.0 : sf[i];
+            sf[i] = sf[i] <= 0.0 ? 1.0 : sf[i];
         }
 
         return osc::ToVec3(sf);
@@ -119,7 +119,7 @@ namespace
 
             m_MeshCache{meshCache},
             m_Matter{matter},
-            m_St{st},
+            m_State{st},
             m_FixupScaleFactor{fixupScaleFactor},
             m_Consumer{out}
         {
@@ -128,7 +128,7 @@ namespace
     private:
         osc::Transform ToOscTransform(SimTK::DecorativeGeometry const& d) const
         {
-            return ::ToOscTransform(m_Matter, m_St, d);
+            return ::ToOscTransform(m_Matter, m_State, d);
         }
 
         void implementPointGeometry(SimTK::DecorativePoint const&) final
@@ -170,7 +170,7 @@ namespace
             {
                 m_MeshCache.getBrickMesh(),
                 t,
-                GetColor(d)
+                GetColor(d),
             });
         }
 
@@ -273,7 +273,7 @@ namespace
                 {
                     m_MeshCache.getCylinderMesh(),
                     legXform,
-                    color
+                    color,
                 });
             }
         }
@@ -312,13 +312,13 @@ namespace
         void implementMeshFileGeometry(SimTK::DecorativeMeshFile const& d) final
         {
             std::string const& path = d.getMeshFile();
-            auto meshLoader = [&path](){ return osc::LoadMeshViaSimTK(path); };
+            auto const meshLoader = [&path](){ return osc::LoadMeshViaSimTK(path); };
 
             m_Consumer(osc::SimpleSceneDecoration
             {
                 m_MeshCache.get(path, meshLoader),
                 ToOscTransform(d),
-                GetColor(d)
+                GetColor(d),
             });
         }
 
@@ -350,7 +350,7 @@ namespace
             {
                 m_MeshCache.getCylinderMesh(),
                 neckXform,
-                color
+                color,
             });
 
             // emit head cone
@@ -359,7 +359,7 @@ namespace
             {
                 m_MeshCache.getConeMesh(),
                 headXform,
-                color
+                color,
             });
         }
 
@@ -372,7 +372,7 @@ namespace
             {
                 m_MeshCache.getTorusMesh(torusCenterToTubeCenterRadius, tubeRadius),
                 ToOscTransform(d),
-                GetColor(d)
+                GetColor(d),
             });
         }
 
@@ -396,13 +396,13 @@ namespace
             {
                 m_MeshCache.getConeMesh(),
                 coneXform,
-                GetColor(d)
+                GetColor(d),
             });
         }
 
         osc::MeshCache& m_MeshCache;
         SimTK::SimbodyMatterSubsystem const& m_Matter;
-        SimTK::State const& m_St;
+        SimTK::State const& m_State;
         float m_FixupScaleFactor;
         std::function<void(osc::SimpleSceneDecoration&&)> const& m_Consumer;
     };

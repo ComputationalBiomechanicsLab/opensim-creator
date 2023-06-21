@@ -31,7 +31,7 @@ nonstd::span<char const* const> osc::GetAllMuscleDecorationStyleStrings()
     return c_StyleStrings;
 }
 
-int osc::GetIndexOf(MuscleDecorationStyle s)
+ptrdiff_t osc::GetIndexOf(MuscleDecorationStyle s)
 {
-    return static_cast<int>(s);
+    return static_cast<ptrdiff_t>(s);
 }
