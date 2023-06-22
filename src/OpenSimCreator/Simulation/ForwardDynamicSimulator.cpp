@@ -92,12 +92,12 @@ namespace
         {
         }
 
-        std::string const& getName() const final
+        osc::CStringView getName() const final
         {
             return m_Name;
         }
 
-        std::string const& getDescription() const final
+        osc::CStringView getDescription() const final
         {
             return m_Description;
         }

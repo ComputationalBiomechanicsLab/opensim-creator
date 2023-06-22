@@ -48,9 +48,9 @@ osc::SceneRendererParams osc::CalcSceneRendererParams(
 }
 
 void osc::GenerateDecorations(
+    MeshCache& meshCache,
     VirtualConstModelStatePair const& msp,
     OpenSimDecorationOptions const& options,
-    MeshCache& meshCache,
     std::function<void(OpenSim::Component const&, SceneDecoration&&)> const& out)
 {
     ComponentAbsPathDecorationTagger pathTagger{};

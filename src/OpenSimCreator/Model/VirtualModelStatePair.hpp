@@ -22,6 +22,7 @@ namespace osc
         {
             implSetSelected(newSelection);
         }
+
         void setHovered(OpenSim::Component const* newHover)
         {
             implSetHovered(newHover);

@@ -56,11 +56,10 @@ namespace
                     m_Drawlist.push_back(std::move(dec));
                 };
                 GenerateDecorations(
+                    *m_MeshCache,
                     modelState,
                     params.decorationOptions,
-                    *m_MeshCache,
-                    onComponentDecoration
-                );
+                    onComponentDecoration);
                 UpdateSceneBVH(m_Drawlist, m_BVH);
 
                 auto const onOverlayDecoration = [this](osc::SceneDecoration&& dec)

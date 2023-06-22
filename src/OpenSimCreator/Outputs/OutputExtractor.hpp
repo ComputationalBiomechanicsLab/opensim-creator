@@ -2,6 +2,8 @@
 
 #include "OpenSimCreator/Outputs/VirtualOutputExtractor.hpp"
 
+#include <oscar/Utils/CStringView.hpp>
+
 #include <nonstd/span.hpp>
 
 #include <cstddef>
@@ -30,12 +32,12 @@ namespace osc
         {
         }
 
-        std::string const& getName() const final
+        CStringView getName() const final
         {
             return m_Output->getName();
         }
 
-        std::string const& getDescription() const final
+        CStringView getDescription() const final
         {
             return m_Output->getDescription();
         }

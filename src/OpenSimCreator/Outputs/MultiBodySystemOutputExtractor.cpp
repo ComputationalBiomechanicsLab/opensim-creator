@@ -61,12 +61,12 @@ osc::MultiBodySystemOutputExtractor::MultiBodySystemOutputExtractor(std::string_
 {
 }
 
-std::string const& osc::MultiBodySystemOutputExtractor::getName() const
+osc::CStringView osc::MultiBodySystemOutputExtractor::getName() const
 {
     return m_Name;
 }
 
-std::string const& osc::MultiBodySystemOutputExtractor::getDescription() const
+osc::CStringView osc::MultiBodySystemOutputExtractor::getDescription() const
 {
     return m_Description;
 }

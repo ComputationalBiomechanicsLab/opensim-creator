@@ -125,12 +125,12 @@ osc::IntegratorOutputExtractor::IntegratorOutputExtractor(std::string_view name,
 {
 }
 
-std::string const& osc::IntegratorOutputExtractor::getName() const
+osc::CStringView osc::IntegratorOutputExtractor::getName() const
 {
     return m_Name;
 }
 
-std::string const& osc::IntegratorOutputExtractor::getDescription() const
+osc::CStringView osc::IntegratorOutputExtractor::getDescription() const
 {
     return m_Description;
 }

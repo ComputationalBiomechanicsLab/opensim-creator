@@ -172,12 +172,12 @@ public:
         return m_ComponentAbsPath;
     }
 
-    std::string const& getName() const
+    osc::CStringView getName() const
     {
         return m_Label;
     }
 
-    std::string const& getDescription() const
+    osc::CStringView getDescription() const
     {
         return GetNoDescriptionString();
     }
@@ -340,12 +340,12 @@ OpenSim::ComponentPath const& osc::ComponentOutputExtractor::getComponentAbsPath
     return m_Impl->getComponentAbsPath();
 }
 
-std::string const& osc::ComponentOutputExtractor::getName() const
+osc::CStringView osc::ComponentOutputExtractor::getName() const
 {
     return m_Impl->getName();
 }
 
-std::string const& osc::ComponentOutputExtractor::getDescription() const
+osc::CStringView osc::ComponentOutputExtractor::getDescription() const
 {
     return m_Impl->getDescription();
 }

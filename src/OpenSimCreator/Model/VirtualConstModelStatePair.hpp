@@ -26,19 +26,15 @@ namespace osc
         {
             return implGetModel();
         }
-
-        SimTK::State const& getState() const
-        {
-            return implGetState();
-        }
-
-        // used for UI caching
         UID getModelVersion() const
         {
             return implGetModelVersion();
         }
 
-        // used for UI caching
+        SimTK::State const& getState() const
+        {
+            return implGetState();
+        }
         UID getStateVersion() const
         {
             return implGetStateVersion();
@@ -47,6 +43,12 @@ namespace osc
         OpenSim::Component const* getSelected() const
         {
             return implGetSelected();
+        }
+
+        template<typename T>
+        T const* getSelectedAs() const
+        {
+            return dynamic_cast<T const*>(getSelected());
         }
 
         OpenSim::Component const* getHovered() const
@@ -60,15 +62,8 @@ namespace osc
             return implGetFixupScaleFactor();
         }
 
-        template<typename T>
-        T const* getSelectedAs() const
-        {
-            return dynamic_cast<T const*>(getSelected());
-        }
-
     private:
         virtual OpenSim::Model const& implGetModel() const = 0;
-        virtual SimTK::State const& implGetState() const = 0;
         virtual UID implGetModelVersion() const
         {
             // assume the version always changes, unless the concrete implementation
@@ -76,6 +71,7 @@ namespace osc
             return UID{};
         }
 
+        virtual SimTK::State const& implGetState() const = 0;
         virtual UID implGetStateVersion() const
         {
             // assume the version always changes, unless the concrete implementation

@@ -3,6 +3,7 @@
 #include "OpenSimCreator/Outputs/OutputExtractor.hpp"
 #include "OpenSimCreator/Outputs/VirtualOutputExtractor.hpp"
 
+#include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <nonstd/span.hpp>
@@ -31,8 +32,8 @@ namespace osc
             ExtractorFn extractor
         );
 
-        std::string const& getName() const final;
-        std::string const& getDescription() const final;
+        CStringView getName() const final;
+        CStringView getDescription() const final;
 
         OutputType getOutputType() const final;
 

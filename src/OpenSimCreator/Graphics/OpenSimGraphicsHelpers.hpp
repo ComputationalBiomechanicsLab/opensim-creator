@@ -30,9 +30,9 @@ namespace osc
     );
 
     void GenerateDecorations(
+        MeshCache&,
         VirtualConstModelStatePair const&,
         OpenSimDecorationOptions const&,
-        MeshCache&,
         std::function<void(OpenSim::Component const&, SceneDecoration&&)> const& out
     );
 
