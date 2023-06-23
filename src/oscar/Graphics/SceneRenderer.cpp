@@ -205,7 +205,7 @@ public:
             m_SceneColoredElementsMaterial.setFloat("uAmbientStrength", params.ambientStrength);
             m_SceneColoredElementsMaterial.setFloat("uDiffuseStrength", params.diffuseStrength);
             m_SceneColoredElementsMaterial.setFloat("uSpecularStrength", params.specularStrength);
-            m_SceneColoredElementsMaterial.setFloat("uShininess", params.shininess);
+            m_SceneColoredElementsMaterial.setFloat("uShininess", params.specularShininess);
             m_SceneColoredElementsMaterial.setFloat("uNear", m_Camera.getNearClippingPlane());
             m_SceneColoredElementsMaterial.setFloat("uFar", m_Camera.getFarClippingPlane());
 

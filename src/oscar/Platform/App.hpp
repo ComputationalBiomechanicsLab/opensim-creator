@@ -32,7 +32,7 @@ namespace osc { class Screen; }
 
 namespace osc
 {
-    // top-level applicaiton class
+    // top-level application class
     //
     // the top-level osc process holds one copy of this class, which maintains all global
     // systems (windowing, event pumping, timers, graphics, logging, etc.)

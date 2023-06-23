@@ -1,47 +1,28 @@
 #pragma once
 
+#include <nonstd/span.hpp>
+
 #include <iosfwd>
-#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
 
 namespace osc
 {
-    // a basic CSV parser that has an Rust-iterator-like `next` API for pulling out
-    // each row, which is returned as a list of strings (python-like)
-    //
-    // not designed to be fast: only (mostly) correct and easy to use
-    class CSVReader final {
-    public:
-        explicit CSVReader(std::shared_ptr<std::istream>);
-        CSVReader(CSVReader const&) = delete;
-        CSVReader(CSVReader&&) noexcept;
-        CSVReader& operator=(CSVReader const&) = delete;
-        CSVReader& operator=(CSVReader&&) noexcept;
-        ~CSVReader() noexcept;
+    // returns a vector of column data if a row could be read; otherwise, returns std::nullopt
+    std::optional<std::vector<std::string>> ReadCSVRow(
+        std::istream&
+    );
 
-        std::optional<std::vector<std::string>> next();
+    // returns `true` if a row was read from the input and written as columns to the output
+    bool ReadCSVRowIntoVector(
+        std::istream&,
+        std::vector<std::string>& overwriteOut
+    );
 
-    private:
-        class Impl;
-        std::unique_ptr<Impl> m_Impl;
-    };
-
-    // a basic CSV writer
-    class CSVWriter final {
-    public:
-        explicit CSVWriter(std::shared_ptr<std::ostream>);
-        CSVWriter(CSVWriter const&) = delete;
-        CSVWriter(CSVWriter&&) noexcept;
-        CSVWriter& operator=(CSVWriter const&) = delete;
-        CSVWriter& operator=(CSVWriter&&) noexcept;
-        ~CSVWriter() noexcept;
-
-        void writeRow(std::vector<std::string> const&);
-
-    private:
-        class Impl;
-        std::unique_ptr<Impl> m_Impl;
-    };
+    // writes the given columns to the output stream as an ASCII encoded text row
+    void WriteCSVRow(
+        std::ostream&,
+        nonstd::span<std::string const> columns
+    );
 }

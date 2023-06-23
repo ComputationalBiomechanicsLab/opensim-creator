@@ -221,8 +221,8 @@ namespace
 
             // try updating the camera (mouse panning, etc.)
             bool rv = osc::UpdatePolarCameraFromImGuiMouseInputs(
-                osc::Dimensions(state.viewportRect),
-                params.updRenderParams().camera
+                params.updRenderParams().camera,
+                osc::Dimensions(state.viewportRect)
             );
 
             if (osc::IsDraggingWithAnyMouseButtonDown())

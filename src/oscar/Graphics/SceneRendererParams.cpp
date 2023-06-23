@@ -17,7 +17,7 @@ osc::SceneRendererParams::SceneRendererParams() :
     ambientStrength{0.01f},
     diffuseStrength{0.55f},
     specularStrength{0.7f},
-    shininess{6.0f},
+    specularShininess{6.0f},
     backgroundColor{DefaultBackgroundColor()},
     rimColor{0.95f, 0.35f, 0.0f, 1.0f},
     rimThicknessInPixels{1.0f, 1.0f},
@@ -45,7 +45,7 @@ bool osc::operator==(SceneRendererParams const& a, SceneRendererParams const& b)
         a.ambientStrength == b.ambientStrength &&
         a.diffuseStrength == b.diffuseStrength &&
         a.specularStrength == b.specularStrength &&
-        a.shininess == b.shininess &&
+        a.specularShininess == b.specularShininess &&
         a.backgroundColor == b.backgroundColor &&
         a.rimColor == b.rimColor &&
         a.rimThicknessInPixels == b.rimThicknessInPixels &&

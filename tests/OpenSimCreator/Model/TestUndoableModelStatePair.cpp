@@ -66,7 +66,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
 
             // and all decorations can be exported to a DAE format
             std::stringstream daeData;
-            osc::WriteDecorationsAsDAE(decorations, daeData);
+            osc::WriteDecorationsAsDAE(daeData, decorations);
 
             // and content is actually written to the DAE stream
             ASSERT_FALSE(daeData.str().empty());

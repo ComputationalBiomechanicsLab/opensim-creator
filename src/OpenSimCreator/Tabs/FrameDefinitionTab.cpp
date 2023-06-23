@@ -1182,19 +1182,23 @@ namespace
             oscMesh.transformVerts(CalcTransformWithRespectTo(openSimMesh, frame, state));
 
             // write transformed mesh to output
-            std::ios_base::openmode const outputFlags =
-                std::ios_base::out |
-                std::ios_base::trunc |
-                std::ios_base::binary;
-            auto outFile = std::make_shared<std::ofstream>(userSaveLocation, outputFlags);
-            if (!(*outFile))
+            std::ofstream outputFileStream
+            {
+                userSaveLocation,
+                std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
+            };
+            if (!outputFileStream)
             {
                 std::string const error = osc::StrerrorThreadsafe(errno);
                 osc::log::error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
                 return;
             }
-            osc::ObjWriter writer{outFile};
-            writer.write(oscMesh, osc::ObjWriterFlags_IgnoreNormals);
+
+            osc::WriteMeshAsObj(
+                outputFileStream,
+                oscMesh,
+                osc::ObjWriterFlags_NoWriteNormals
+            );
         }
 
         void ActionReexportMeshSTLWithRespectTo(
@@ -1219,19 +1223,19 @@ namespace
             oscMesh.transformVerts(CalcTransformWithRespectTo(openSimMesh, frame, state));
 
             // write transformed mesh to output
-            std::ios_base::openmode const outputFlags =
-                std::ios_base::out |
-                std::ios_base::trunc |
-                std::ios_base::binary;
-            auto outFile = std::make_shared<std::ofstream>(userSaveLocation, outputFlags);
-            if (!(*outFile))
+            std::ofstream outputFileStream
+            {
+                userSaveLocation,
+                std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
+            };
+            if (!outputFileStream)
             {
                 std::string const error = osc::StrerrorThreadsafe(errno);
                 osc::log::error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
                 return;
             }
-            osc::StlWriter writer{outFile};
-            writer.write(oscMesh);
+
+            osc::WriteMeshAsStl(outputFileStream, oscMesh);
         }
     }
 }
@@ -1382,8 +1386,8 @@ namespace
             osc::ModelEditorViewerPanelState& state) final
         {
             bool rv = osc::UpdatePolarCameraFromImGuiMouseInputs(
-                osc::Dimensions(state.viewportRect),
-                params.updRenderParams().camera
+                params.updRenderParams().camera,
+                osc::Dimensions(state.viewportRect)
             );
 
             if (osc::IsDraggingWithAnyMouseButtonDown())
@@ -1820,7 +1824,25 @@ namespace
         OpenSim::ComponentPath jointFrameAbsPath,
         OpenSim::ComponentPath parentFrameAbsPath)
     {
-        // TODO
+        // TODO: add a body+joint to the model with the mesh attached to it
+        //
+        // - 1) CHECK ARGS:
+        //
+        //   - search all provided paths and make sure they exist and have
+        //     the expected type
+        //
+        // - 2) CREATE BODY + FREEJOINT
+        //
+        // - 3) MOVE MESH FROM COMPONENTSET TO BODY
+        // 
+        //   - the body shall have the mesh as part of its geometry set
+        //   - and the mesh shall be removed from the `componentset`
+        //   - and if the mesh is the only child of an offset frame, then
+        //     that offset frame shall be adopted as a child of the body
+        //   - and any elements in `componentset` (e.g. landmarks, edges)
+        //     that depend only on that offset shall be adopted by the body
+        //   - but any elements in `componentset` that only partially depend
+        //     on the offset frame shall remain in `componentset`
     }
 
     void PushPickParentFrameForBodyCreactionLayer(

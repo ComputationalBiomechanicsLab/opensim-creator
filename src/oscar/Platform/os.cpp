@@ -63,6 +63,13 @@ namespace
     }
 }
 
+std::tm osc::GetSystemCalendarTime()
+{
+    std::chrono::system_clock::time_point const tp = std::chrono::system_clock::now();
+    std::time_t const t = std::chrono::system_clock::to_time_t(tp);
+    return osc::GMTimeThreadsafe(t);
+}
+
 std::filesystem::path const& osc::CurrentExeDir()
 {
     // can be expensive to compute: cache after first retrieval

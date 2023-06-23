@@ -43,7 +43,7 @@ namespace osc
         float ambientStrength;
         float diffuseStrength;
         float specularStrength;
-        float shininess;
+        float specularShininess;
         Color backgroundColor;
         Color rimColor;
         glm::vec2 rimThicknessInPixels;

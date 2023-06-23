@@ -111,14 +111,14 @@ namespace
     }
 }
 
-void osc::StlWriter::write(Mesh const& mesh)
+void osc::WriteMeshAsStl(std::ostream& output, Mesh const& mesh)
 {
     if (mesh.getTopology() != MeshTopology::Triangles)
     {
         return;
     }
 
-    WriteHeader(*m_OutputStream);
-    WriteNumTriangles(*m_OutputStream, mesh);
-    WriteTriangles(*m_OutputStream, mesh);
+    WriteHeader(output);
+    WriteNumTriangles(output, mesh);
+    WriteTriangles(output, mesh);
 }

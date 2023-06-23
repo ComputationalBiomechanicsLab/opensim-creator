@@ -28,24 +28,26 @@ namespace osc
 
     // updates a polar comera's rotation, position, etc. based on ImGui mouse input state
     bool UpdatePolarCameraFromImGuiMouseInputs(
-        glm::vec2 viewportDims,
-        PolarPerspectiveCamera&
+        PolarPerspectiveCamera&,
+        glm::vec2 viewportDims
     );
     // updates a polar comera's rotation, position, etc. based on ImGui keyboard input state
     bool UpdatePolarCameraFromImGuiKeyboardInputs(
         PolarPerspectiveCamera&,
         Rect const& viewportRect,
-        std::optional<osc::AABB> maybeSceneAABB
+        std::optional<AABB> maybeSceneAABB
     );
     // updates a polar comera's rotation, position, etc. based on ImGui input (mouse+keyboard) state
     bool UpdatePolarCameraFromImGuiInputs(
         PolarPerspectiveCamera&,
         Rect const& viewportRect,
-        std::optional<osc::AABB> maybeSceneAABB
+        std::optional<AABB> maybeSceneAABB
     );
 
-    void UpdateEulerCameraFromImGuiUserInput(Camera&, glm::vec3& eulers);
-
+    void UpdateEulerCameraFromImGuiUserInput(
+        Camera&,
+        glm::vec3& eulers
+    );
 
     // returns the ImGui content region available in screenspace as a `Rect`
     Rect ContentRegionAvailScreenRect();
@@ -75,7 +77,11 @@ namespace osc
     );
 
     // draws a texture using ImGui::ImageButton
-    bool ImageButton(CStringView, Texture2D const&, glm::vec2 dims);
+    bool ImageButton(
+        CStringView,
+        Texture2D const&,
+        glm::vec2 dims
+    );
 
     // returns the screenspace bounding rectangle of the last-drawn item
     Rect GetItemRect();

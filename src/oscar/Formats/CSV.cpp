@@ -1,11 +1,7 @@
 #include "CSV.hpp"
 
-#include "oscar/Utils/Assertions.hpp"
-
 #include <algorithm>
-#include <functional>
 #include <iostream>
-#include <memory>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -24,180 +20,138 @@ namespace
     }
 }
 
-// CSV reader implementation
-class osc::CSVReader::Impl final {
-public:
-    Impl(std::shared_ptr<std::istream> input) :
-        m_Input{std::move(input)}
+// public API
+
+std::optional<std::vector<std::string>> osc::ReadCSVRow(
+    std::istream& in)
+{
+    std::optional<std::vector<std::string>> cols;
+    cols.emplace();
+
+    if (!ReadCSVRowIntoVector(in, *cols))
     {
-        OSC_ASSERT(m_Input != nullptr);
+        cols.reset();
+    }
+    return cols;
+}
+
+bool osc::ReadCSVRowIntoVector(
+    std::istream& in,
+    std::vector<std::string>& out)
+{
+    if (in.eof())
+    {
+        return false;
     }
 
-    std::optional<std::vector<std::string>> next()
+    std::vector<std::string> cols;
+    std::string s;
+    bool insideQuotes = false;
+
+    while (!in.bad())
     {
-        std::istream& in = *m_Input;
+        auto const c = in.get();
 
-        if (in.eof())
+        if (c == std::istream::traits_type::eof())
         {
-            return std::nullopt;
+            // EOF
+            cols.push_back(s);
+            break;
         }
-
-        std::vector<std::string> cols;
-        std::string s;
-        bool insideQuotes = false;
-
-        while (!in.bad())
+        else if (c == '\n' && !insideQuotes)
         {
-            auto const c = in.get();
-
-            if (c == std::istream::traits_type::eof())
-            {
-                // EOF
-                cols.push_back(s);
-                break;
-            }
-            else if (c == '\n' && !insideQuotes)
-            {
-                // standard newline
-                cols.push_back(s);
-                break;
-            }
-            else if (c == '\r' && in.peek() == '\n' && !insideQuotes)
-            {
-                // windows newline
-
-                in.get();  // skip the \n
-                cols.push_back(s);
-                break;
-            }
-            else if (c == '"' && s.empty() && !insideQuotes)
-            {
-                // quote at beginning of quoted column
-                insideQuotes = true;
-                continue;
-            }
-            else if (c == '"' && in.peek() == '"')
-            {
-                // escaped quote
-
-                in.get();  // skip the second '"'
-                s += '"';
-                continue;
-            }
-            else if (c == '"' && insideQuotes)
-            {
-                // quote at end of of quoted column
-                insideQuotes = false;
-                continue;
-            }
-            else if (c == ',' && !insideQuotes)
-            {
-                // comma delimiter at end of column
-
-                cols.push_back(s);
-                s.clear();
-                continue;
-            }
-            else
-            {
-                // normal text
-                s += static_cast<char>(c);
-                continue;
-            }
+            // standard newline
+            cols.push_back(s);
+            break;
         }
-
-        if (!cols.empty())
+        else if (c == '\r' && in.peek() == '\n' && !insideQuotes)
         {
-            return cols;
+            // windows newline
+
+            in.get();  // skip the \n
+            cols.push_back(s);
+            break;
+        }
+        else if (c == '"' && s.empty() && !insideQuotes)
+        {
+            // quote at beginning of quoted column
+            insideQuotes = true;
+            continue;
+        }
+        else if (c == '"' && in.peek() == '"')
+        {
+            // escaped quote
+
+            in.get();  // skip the second '"'
+            s += '"';
+            continue;
+        }
+        else if (c == '"' && insideQuotes)
+        {
+            // quote at end of of quoted column
+            insideQuotes = false;
+            continue;
+        }
+        else if (c == ',' && !insideQuotes)
+        {
+            // comma delimiter at end of column
+
+            cols.push_back(s);
+            s.clear();
+            continue;
         }
         else
         {
-            return std::nullopt;
+            // normal text
+            s += static_cast<char>(c);
+            continue;
         }
     }
 
-private:
-    std::shared_ptr<std::istream> m_Input;
-};
-
-// CSV writer implementation
-class osc::CSVWriter::Impl final {
-public:
-    Impl(std::shared_ptr<std::ostream> output) :
-        m_Output{output}
+    if (!cols.empty())
     {
-        OSC_ASSERT(m_Output != nullptr);
+        out = std::move(cols);
+        return true;
     }
-
-    void writeRow(std::vector<std::string> const& cols)
+    else
     {
-        std::ostream& out = *m_Output;
+        return false;
+    }
+}
 
-        std::string_view delim = "";
-        for (std::string const& col : cols)
+void osc::WriteCSVRow(
+    std::ostream& out,
+    nonstd::span<std::string const> columns)
+{
+    std::string_view delim = "";
+    for (std::string const& column : columns)
+    {
+        bool const quoted = ShouldBeQuoted(column);
+
+        out << delim;
+        if (quoted)
         {
-            bool const quoted = ShouldBeQuoted(col);
-
-            out << delim;
-            if (quoted)
-            {
-                out << '"';
-            }
-
-            for (char c : col)
-            {
-                if (c != '"')
-                {
-                    out << c;
-                }
-                else
-                {
-                    out << '"' << '"';
-                }
-            }
-
-            if (quoted)
-            {
-                out << '"';
-            }
-
-            delim = ",";
+            out << '"';
         }
-        out << '\n';
+
+        for (char c : column)
+        {
+            if (c != '"')
+            {
+                out << c;
+            }
+            else
+            {
+                out << '"' << '"';
+            }
+        }
+
+        if (quoted)
+        {
+            out << '"';
+        }
+
+        delim = ",";
     }
-
-private:
-    std::shared_ptr<std::ostream> m_Output;
-};
-
-
-// public API (PIMPL)
-
-osc::CSVReader::CSVReader(std::shared_ptr<std::istream> input) :
-    m_Impl{std::make_unique<Impl>(std::move(input))}
-{
-}
-
-osc::CSVReader::CSVReader(CSVReader&&) noexcept = default;
-osc::CSVReader& osc::CSVReader::operator=(CSVReader&&) noexcept = default;
-osc::CSVReader::~CSVReader() noexcept = default;
-
-std::optional<std::vector<std::string>> osc::CSVReader::next()
-{
-    return m_Impl->next();
-}
-
-
-osc::CSVWriter::CSVWriter(std::shared_ptr<std::ostream> output) :
-    m_Impl{std::make_unique<Impl>(std::move(output))}
-{
-}
-
-osc::CSVWriter::CSVWriter(CSVWriter&&) noexcept = default;
-osc::CSVWriter& osc::CSVWriter::operator=(CSVWriter&&) noexcept = default;
-osc::CSVWriter::~CSVWriter() noexcept = default;
-
-void osc::CSVWriter::writeRow(std::vector<std::string> const& cols)
-{
-    m_Impl->writeRow(cols);
+    out << '\n';
 }

@@ -557,7 +557,7 @@ public:
         glm::vec2 dims = ImGui::GetContentRegionAvail();
         if (m_RenderIsMousedOver)
         {
-            osc::UpdatePolarCameraFromImGuiMouseInputs(dims, m_Camera);
+            osc::UpdatePolarCameraFromImGuiMouseInputs(m_Camera, dims);
         }
 
         if (m_ActiveRow < NumRows(*m_Motion))

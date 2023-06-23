@@ -107,7 +107,9 @@ void osc::ImGuiApplyDarkTheme()
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.6f);
 }
 
-bool osc::UpdatePolarCameraFromImGuiMouseInputs(glm::vec2 viewportDims, osc::PolarPerspectiveCamera& camera)
+bool osc::UpdatePolarCameraFromImGuiMouseInputs(
+    osc::PolarPerspectiveCamera& camera,
+    glm::vec2 viewportDims)
 {
     bool modified = false;
 
@@ -340,7 +342,7 @@ bool osc::UpdatePolarCameraFromImGuiInputs(
     // we don't check `io.WantCaptureMouse` because clicking/dragging on an ImGui::Image
     // is classed as a mouse interaction
     bool const mouseHandled =
-        UpdatePolarCameraFromImGuiMouseInputs(osc::Dimensions(viewportRect), camera);
+        UpdatePolarCameraFromImGuiMouseInputs(camera, osc::Dimensions(viewportRect));
     bool const keyboardHandled = !io.WantCaptureKeyboard ?
         UpdatePolarCameraFromImGuiKeyboardInputs(camera, viewportRect, maybeSceneAABB) :
         false;

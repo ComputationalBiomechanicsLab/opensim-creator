@@ -5552,7 +5552,7 @@ namespace
 
             if (isRenderHovered)
             {
-                UpdatePolarCameraFromImGuiMouseInputs(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
+                UpdatePolarCameraFromImGuiMouseInputs(m_Shared->UpdCamera(), m_Shared->Get3DSceneDims());
             }
         }
 
@@ -5950,7 +5950,7 @@ namespace
 
             if (isRenderHovered)
             {
-                UpdatePolarCameraFromImGuiMouseInputs(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
+                UpdatePolarCameraFromImGuiMouseInputs(m_Shared->UpdCamera(), m_Shared->Get3DSceneDims());
             }
 
             if (m_AnimationFraction < 1.0f)
@@ -6128,7 +6128,7 @@ public:
 
         if (!m_Maybe3DViewerModal && m_Shared->IsRenderHovered() && !ImGuizmo::IsUsing())
         {
-            UpdatePolarCameraFromImGuiMouseInputs(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
+            UpdatePolarCameraFromImGuiMouseInputs(m_Shared->UpdCamera(), m_Shared->Get3DSceneDims());
         }
 
         // draw history panel (if enabled)

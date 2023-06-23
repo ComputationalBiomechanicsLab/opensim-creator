@@ -48,6 +48,8 @@ namespace osc
             return {1.0f, 1.0f, 0.0f, 1.0f};
         }
 
+        Color() = default;
+
         // i.e. a "solid" color (no transparency)
         explicit constexpr Color(glm::vec3 const& v) :
             r{v.x}, g{v.y}, b{v.z}, a{1.0f}

@@ -13,6 +13,9 @@
 // os: where all the icky OS/distro/filesystem-specific stuff is hidden
 namespace osc
 {
+    // returns current system time as a calendar time
+    std::tm GetSystemCalendarTime();
+
     // returns a `std::tm` populated 'as-if' by calling `std::gmtime(&t)`, but in
     // an OS-defined threadsafe way
     //

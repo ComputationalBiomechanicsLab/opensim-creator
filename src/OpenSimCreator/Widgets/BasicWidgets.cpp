@@ -72,7 +72,7 @@ namespace
             return;
         }
 
-        osc::WriteDecorationsAsDAE(scene, outfile);
+        osc::WriteDecorationsAsDAE(outfile, scene);
         osc::log::info("wrote scene as a DAE file to %s", daePath.string().c_str());
     }
 

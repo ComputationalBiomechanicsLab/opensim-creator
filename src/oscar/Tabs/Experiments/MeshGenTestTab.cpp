@@ -71,7 +71,7 @@ public:
 
         if (m_Viewer.isHovered())
         {
-            osc::UpdatePolarCameraFromImGuiMouseInputs(App::get().dims(), m_Camera);
+            osc::UpdatePolarCameraFromImGuiMouseInputs(m_Camera, App::get().dims());
         }
 
         if (ImGui::Begin("viewer"))

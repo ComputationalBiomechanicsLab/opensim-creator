@@ -2,6 +2,7 @@
 
 #include <nonstd/span.hpp>
 
+#include <ctime>
 #include <iosfwd>
 #include <string>
 
@@ -14,11 +15,13 @@ namespace osc
 
         std::string author;
         std::string authoringTool;
+        std::tm creationTime;
+        std::tm modificationTime;
     };
 
     void WriteDecorationsAsDAE(
-        nonstd::span<SceneDecoration const>,
         std::ostream&,
+        nonstd::span<SceneDecoration const>,
         DAEMetadata const& = {}
     );
 }

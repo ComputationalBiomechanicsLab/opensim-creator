@@ -12,10 +12,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <nonstd/span.hpp>
 
-#include <chrono>
 #include <cstdint>
 #include <ctime>
-#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -193,17 +191,13 @@ namespace
 
     void WriteTopLevelAssetBlock(std::ostream& o, osc::DAEMetadata const& metadata)
     {
-        std::chrono::system_clock::time_point const tp = std::chrono::system_clock::now();
-        std::time_t const t = std::chrono::system_clock::to_time_t(tp);
-        std::tm const calendarTime = osc::GMTimeThreadsafe(t);
-
         o << "  <asset>\n";
         o << "    <contributor>\n";
         o << "      <author>" << metadata.author << "</author>\n";
         o << "      <authoring_tool>" << metadata.authoringTool << "</authoring_tool>\n";
         o << "    </contributor>\n";
-        o << "    <created>" << std::put_time(&calendarTime, "%Y-%m-%d %H:%M:%S") << "</created>\n";
-        o << "    <modified>" << std::put_time(&calendarTime, "%Y-%m-%d %H:%M:%S") << "</modified>\n";
+        o << "    <created>" << std::put_time(&metadata.creationTime, "%Y-%m-%d %H:%M:%S") << "</created>\n";
+        o << "    <modified>" << std::put_time(&metadata.modificationTime, "%Y-%m-%d %H:%M:%S") << "</modified>\n";
         o << "    <unit name=\"meter\" meter=\"1\" />\n";
         o << "    <up_axis>Y_UP</up_axis>\n";
         o << "  </asset>\n";
@@ -456,11 +450,16 @@ namespace
 
 osc::DAEMetadata::DAEMetadata() :
     author{OSC_APPNAME_STRING},
-    authoringTool{OSC_APPNAME_STRING " v" OSC_VERSION_STRING " (build " OSC_BUILD_ID ")"}
+    authoringTool{OSC_APPNAME_STRING " v" OSC_VERSION_STRING " (build " OSC_BUILD_ID ")"},
+    creationTime{GetSystemCalendarTime()},
+    modificationTime{creationTime}
 {
 }
 
-void osc::WriteDecorationsAsDAE(nonstd::span<SceneDecoration const> els, std::ostream& o, DAEMetadata const& metadata)
+void osc::WriteDecorationsAsDAE(
+    std::ostream& o,
+    nonstd::span<SceneDecoration const> els,
+    DAEMetadata const& metadata)
 {
     DAESceneGraph const graph = ToDAESceneGraph(els);
 

@@ -449,22 +449,20 @@ namespace
             return;  // user didn't select a save location
         }
 
-        auto fOutput = std::make_shared<std::ofstream>(*maybeCSVPath);
-        if (!fOutput)
+        std::ofstream fileOutputStream{*maybeCSVPath};
+        if (!fileOutputStream)
         {
             return;  // couldn't open file for writing
         }
-        osc::CSVWriter writer{fOutput};
 
-        std::vector<std::string> cols(3);
         for (TPSDocumentLandmarkPair const& p : doc.landmarkPairs)
         {
             if (std::optional<glm::vec3> const loc = GetLocation(p, which))
             {
-                cols.at(0) = std::to_string(loc->x);
-                cols.at(1) = std::to_string(loc->y);
-                cols.at(2) = std::to_string(loc->z);
-                writer.writeRow(cols);
+                osc::WriteCSVRow(
+                    fileOutputStream,
+                    std::array<std::string, 3>{std::to_string(loc->x), std::to_string(loc->y), std::to_string(loc->z)}
+                );
             }
         }
     }
@@ -479,62 +477,72 @@ namespace
             return;  // user didn't select a save location
         }
 
-        auto fOutput = std::make_shared<std::ofstream>(*maybeCSVPath);
-        if (!(*fOutput))
+        std::ofstream fileOutputStream{*maybeCSVPath};
+        if (!fileOutputStream)
         {
             return;  // couldn't open file for writing
         }
-        osc::CSVWriter writer{fOutput};
 
         std::vector<osc::LandmarkPair3D> const pairs = GetLandmarkPairs(doc);
-        std::vector<std::string> cols =
-        {
-            "source.x",
-            "source.y",
-            "source.z",
-            "dest.x",
-            "dest.y",
-            "dest.z",
-        };
 
         // write header
-        {
-            writer.writeRow(cols);
-        }
+        osc::WriteCSVRow(
+            fileOutputStream,
+            std::array<std::string, 6>
+            {
+                "source.x",
+                "source.y",
+                "source.z",
+                "dest.x",
+                "dest.y",
+                "dest.z",
+            }
+        );
 
         // write data rows
         for (osc::LandmarkPair3D const& p : pairs)
         {
-            cols.at(0) = std::to_string(p.source.x);
-            cols.at(1) = std::to_string(p.source.y);
-            cols.at(2) = std::to_string(p.source.z);
+            osc::WriteCSVRow(
+                fileOutputStream,
+                std::array<std::string, 6>
+                {
+                    std::to_string(p.source.x),
+                    std::to_string(p.source.y),
+                    std::to_string(p.source.z),
 
-            cols.at(3) = std::to_string(p.destination.x);
-            cols.at(4) = std::to_string(p.destination.y);
-            cols.at(5) = std::to_string(p.destination.z);
-            writer.writeRow(cols);
+                    std::to_string(p.destination.x),
+                    std::to_string(p.destination.y),
+                    std::to_string(p.destination.z),
+                }
+            );
         }
     }
 
     // prompts the user to save the mesh to an obj file
     void ActionTrySaveMeshToObj(osc::Mesh const& mesh)
     {
-        std::optional<std::filesystem::path> const maybeOBJFile =
+        std::optional<std::filesystem::path> const maybeSavePath =
             osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
-        if (!maybeOBJFile)
+        if (!maybeSavePath)
         {
             return;  // user didn't select a save location
         }
 
-        auto outFile = std::make_shared<std::ofstream>(*maybeOBJFile, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
-        if (!(*outFile))
+        std::ofstream outputFileStream
+        {
+            *maybeSavePath,
+            std::ios_base::out | std::ios_base::trunc | std::ios_base::binary
+        };
+        if (!outputFileStream)
         {
             return;  // couldn't open for writing
         }
-        osc::ObjWriter writer{outFile};
 
-        // ignore normals, because warping might have screwed them
-        writer.write(mesh, osc::ObjWriterFlags_IgnoreNormals);
+        osc::WriteMeshAsObj(
+            outputFileStream,
+            mesh,
+            osc::ObjWriterFlags_NoWriteNormals  // warping might have screwed them
+        );
     }
 
     // prompts the user to save the mesh to an stl file
@@ -547,17 +555,17 @@ namespace
             return;  // user didn't select a save location
         }
 
-        auto outFile = std::make_shared<std::ofstream>(
+        std::ofstream outputFileStream
+        {
             *maybeSTLPath,
-            std::ios_base::out | std::ios_base::trunc | std::ios_base::binary
-        );
-        if (!(*outFile))
+            std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
+        };
+        if (!outputFileStream)
         {
             return;  // couldn't open for writing
         }
-        osc::StlWriter writer{outFile};
 
-        writer.write(mesh);
+        osc::WriteMeshAsStl(outputFileStream, mesh);
     }
 }
 
@@ -1254,7 +1262,7 @@ namespace
             // if the user interacts with the render, update the camera as necessary
             if (m_LastTextureHittestResult.isHovered)
             {
-                if (osc::UpdatePolarCameraFromImGuiMouseInputs(osc::Dimensions(m_LastTextureHittestResult.rect), m_Camera))
+                if (osc::UpdatePolarCameraFromImGuiMouseInputs(m_Camera, osc::Dimensions(m_LastTextureHittestResult.rect)))
                 {
                     m_State->linkedCameraBase = m_Camera;  // reflects latest modification
                 }
@@ -1613,7 +1621,7 @@ namespace
             // update camera if user drags it around etc.
             if (m_LastTextureHittestResult.isHovered)
             {
-                if (osc::UpdatePolarCameraFromImGuiMouseInputs(osc::Dimensions(m_LastTextureHittestResult.rect), m_Camera))
+                if (osc::UpdatePolarCameraFromImGuiMouseInputs(m_Camera, osc::Dimensions(m_LastTextureHittestResult.rect)))
                 {
                     m_State->linkedCameraBase = m_Camera;  // reflects latest modification
                 }

@@ -893,37 +893,41 @@ namespace
         std::vector<Plot> rv;
 
         // create input reader
-        auto fInput = std::make_shared<std::ifstream>(inputPath);
-        if (!(*fInput))
+        std::ifstream inputFileStream{inputPath};
+        inputFileStream.exceptions(std::ios_base::badbit);
+        if (!inputFileStream)
         {
             return rv;  // error opening path
         }
-        fInput->exceptions(std::ios_base::badbit);
-        osc::CSVReader reader{fInput};
 
-        std::optional<std::vector<std::string>> maybeHeaders = reader.next();
-
-        std::vector<std::vector<PlotDataPoint>> datapointsPerPlot;
-        while (std::optional<std::vector<std::string>> row = reader.next())
+        std::vector<std::string> maybeHeaders;
+        if (!osc::ReadCSVRowIntoVector(inputFileStream, maybeHeaders))
         {
-            if (row->size() < 2)
+            return rv;  // no CSV data (headers) in top row
+        }
+
+        std::vector<std::string> row;
+        std::vector<std::vector<PlotDataPoint>> datapointsPerPlot;
+        while (osc::ReadCSVRowIntoVector(inputFileStream, row))
+        {
+            if (row.size() < 2)
             {
                 // ignore rows that do not contain enough columns
                 continue;
             }
 
             // parse first column as a number (independent variable)
-            std::optional<float> independentVar = osc::FromCharsStripWhitespace((*row)[0]);
+            std::optional<float> independentVar = osc::FromCharsStripWhitespace(row[0]);
             if (!independentVar)
             {
                 continue;  // cannot parse independent variable: skip entire row
             }
 
             // parse remaining columns as datapoints for each plot
-            for (size_t i = 1; i < row->size(); ++i)
+            for (size_t i = 1; i < row.size(); ++i)
             {
                 // parse column as a number (dependent variable)
-                std::optional<float> dependentVar = osc::FromCharsStripWhitespace((*row)[i]);
+                std::optional<float> dependentVar = osc::FromCharsStripWhitespace(row[i]);
                 if (!dependentVar)
                 {
                     continue;  // parsing error: skip this column
@@ -955,9 +959,9 @@ namespace
                 std::stringstream ss;
                 ss << inputPath.filename();
                 ss << " (";
-                if (maybeHeaders && maybeHeaders->size() > i)
+                if (maybeHeaders.size() > i)
                 {
-                    ss << (*maybeHeaders)[i];
+                    ss << row[i];
                 }
                 else
                 {
@@ -974,21 +978,26 @@ namespace
 
     void TrySavePlotToCSV(OpenSim::Coordinate const& coord, PlotParameters const& params, Plot const& plot, std::filesystem::path const& outPath)
     {
-        auto fOutput = std::make_shared<std::ofstream>(outPath);
-        if (!(*fOutput))
+        std::ofstream fileOutputStream{outPath};
+        if (!fileOutputStream)
         {
             return;  // error opening outfile
         }
-        osc::CSVWriter writer{fOutput};
 
         // write header
-        writer.writeRow({ ComputePlotXAxisTitle(params, coord), ComputePlotYAxisTitle(params) });
+        osc::WriteCSVRow(
+            fileOutputStream,
+            std::array<std::string, 2>{ComputePlotXAxisTitle(params, coord), ComputePlotYAxisTitle(params)}
+        );
 
         // write data rows
         auto lock = plot.lockDataPoints();
-        for (PlotDataPoint p : *lock)
+        for (PlotDataPoint const& p : *lock)
         {
-            writer.writeRow({ std::to_string(p.x), std::to_string(p.y) });
+            osc::WriteCSVRow(
+                fileOutputStream,
+                std::array<std::string, 2>{std::to_string(p.x), std::to_string(p.y)}
+            );
         }
     }
 
@@ -1370,15 +1379,14 @@ namespace
         PlotLines const& lines,
         std::filesystem::path const& outPath)
     {
-        auto fOutput = std::make_shared<std::ofstream>(outPath);
-        if (!(*fOutput))
+        std::ofstream outputFileStream{outPath};
+        if (!outputFileStream)
         {
             return;  // error opening outfile
         }
-        osc::CSVWriter writer{fOutput};
 
         // write header
-        writer.writeRow(GetAllCSVHeaders(coord, params, lines));
+        osc::WriteCSVRow(outputFileStream, GetAllCSVHeaders(coord, params, lines));
 
         // get incrementable cursors to all curves in the plot
         std::vector<LineCursor> cursors = GetCursorsToAllPlotLines(lines);
@@ -1420,7 +1428,8 @@ namespace
                 }
             }
 
-            writer.writeRow(cols);
+            osc::WriteCSVRow(outputFileStream, cols);
+
             maybeX = maybeNextX;
             maybeNextX = std::nullopt;
         }
