@@ -8,6 +8,7 @@
 #include "OpenSimCreator/Graphics/OverlayDecorationGenerator.hpp"
 #include "OpenSimCreator/Graphics/OpenSimGraphicsHelpers.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
+#include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanel.hpp"
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelLayer.hpp"
@@ -16,6 +17,7 @@
 #include "OpenSimCreator/Panels/ModelEditorViewerPanelState.hpp"
 #include "OpenSimCreator/Panels/NavigatorPanel.hpp"
 #include "OpenSimCreator/Panels/PropertiesPanel.hpp"
+#include "OpenSimCreator/Tabs/ModelEditorTab.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/Utils/UndoableModelActions.hpp"
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
@@ -60,6 +62,7 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Common/ComponentSocket.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/Model/Ground.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
@@ -315,9 +318,9 @@ namespace OpenSim
     }
 
     // returns `true` if the given component is a frame in the frame definition scene
-    bool IsFrame(OpenSim::Component const& component)
+    bool IsPhysicalFrame(OpenSim::Component const& component)
     {
-        return dynamic_cast<OpenSim::Frame const*>(&component);
+        return dynamic_cast<OpenSim::PhysicalFrame const*>(&component);
     }
 
     // a sphere landmark, where the center of the sphere is the point of interest
@@ -843,400 +846,426 @@ namespace OpenSim
 // general (not layer-system-dependent) user-enactable actions
 namespace
 {
-    // user-enactable actions
-    namespace
+    void ActionPromptUserToAddMeshFiles(osc::UndoableModelStatePair& model)
     {
-        void ActionPromptUserToAddMeshFiles(osc::UndoableModelStatePair& model)
+        std::vector<std::filesystem::path> const meshPaths =
+            osc::PromptUserForFiles(osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats());
+        if (meshPaths.empty())
         {
-            std::vector<std::filesystem::path> const meshPaths =
-                osc::PromptUserForFiles(osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats());
-            if (meshPaths.empty())
-            {
-                return;  // user didn't select anything
-            }
-
-            // create a human-readable commit message
-            std::string const commitMessage = [&meshPaths]()
-            {
-                if (meshPaths.size() == 1)
-                {
-                    return GenerateAddedSomethingCommitMessage(meshPaths.front().filename().string());
-                }
-                else
-                {
-                    std::stringstream ss;
-                    ss << "added " << meshPaths.size() << " meshes";
-                    return std::move(ss).str();
-                }
-            }();
-
-            // perform the model mutation
-            OpenSim::Model& mutableModel = model.updModel();
-            for (std::filesystem::path const& meshPath : meshPaths)
-            {
-                std::string const meshName = osc::FileNameWithoutExtension(meshPath);
-
-                // add an offset frame that is connected to ground - this will become
-                // the mesh's offset frame
-                auto meshPhysicalOffsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-                meshPhysicalOffsetFrame->setParentFrame(model.getModel().getGround());
-                meshPhysicalOffsetFrame->setName(meshName + "_offset");
-
-                // attach the mesh to the frame
-                {
-                    auto mesh = std::make_unique<OpenSim::Mesh>(meshPath.string());
-                    mesh->setName(meshName);
-                    meshPhysicalOffsetFrame->attachGeometry(mesh.release());
-                }
-
-                // add it to the model and select it (i.e. always select the last mesh)
-                OpenSim::PhysicalOffsetFrame const* const pofPtr = meshPhysicalOffsetFrame.get();
-                mutableModel.addModelComponent(meshPhysicalOffsetFrame.release());
-                mutableModel.finalizeConnections();
-                model.setSelected(pofPtr);
-            }
-
-            model.commit(commitMessage);
-            osc::InitializeModel(mutableModel);
-            osc::InitializeState(mutableModel);
+            return;  // user didn't select anything
         }
 
-        void ActionAddSphereInMeshFrame(
-            osc::UndoableModelStatePair& model,
-            OpenSim::Mesh const& mesh,
-            std::optional<glm::vec3> const& maybeClickPosInGround)
+        // create a human-readable commit message
+        std::string const commitMessage = [&meshPaths]()
         {
-            // if the caller requests a location via a click, set the position accordingly
-            SimTK::Vec3 const locationInMeshFrame = maybeClickPosInGround ?
-                CalcLocationInFrame(mesh.getFrame(), model.getState(), *maybeClickPosInGround) :
-                SimTK::Vec3{0.0, 0.0, 0.0};
-
-            std::string const sphereName = GenerateSceneElementName("sphere_");
-            std::string const commitMessage = GenerateAddedSomethingCommitMessage(sphereName);
-
-            // create sphere component
-            std::unique_ptr<OpenSim::SphereLandmark> sphere = [&mesh, &locationInMeshFrame, &sphereName]()
+            if (meshPaths.size() == 1)
             {
-                auto rv = std::make_unique<OpenSim::SphereLandmark>();
-                rv->setName(sphereName);
-                rv->set_location(locationInMeshFrame);
-                rv->connectSocket_parent_frame(mesh.getFrame());
-                return rv;
-            }();
-
-            // perform the model mutation
-            {
-                OpenSim::Model& mutableModel = model.updModel();
-                OpenSim::SphereLandmark const* const spherePtr = sphere.get();
-
-                mutableModel.addModelComponent(sphere.release());
-                mutableModel.finalizeConnections();
-                osc::InitializeModel(mutableModel);
-                osc::InitializeState(mutableModel);
-                model.setSelected(spherePtr);
-                model.commit(commitMessage);
+                return GenerateAddedSomethingCommitMessage(meshPaths.front().filename().string());
             }
-        }
-
-        void ActionAddOffsetFrameInMeshFrame(
-            osc::UndoableModelStatePair& model,
-            OpenSim::Mesh const& mesh,
-            std::optional<glm::vec3> const& maybeClickPosInGround)
-        {
-            // if the caller requests a location via a click, set the position accordingly
-            SimTK::Vec3 const locationInMeshFrame = maybeClickPosInGround ?
-                CalcLocationInFrame(mesh.getFrame(), model.getState(), *maybeClickPosInGround) :
-                SimTK::Vec3{0.0, 0.0, 0.0};
-
-            std::string const pofName = GenerateSceneElementName("pof_");
-            std::string const commitMessage = GenerateAddedSomethingCommitMessage(pofName);
-
-            // create physical offset frame
-            std::unique_ptr<OpenSim::PhysicalOffsetFrame> pof = [&mesh, &locationInMeshFrame, &pofName]()
-            {
-                auto rv = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-                rv->setName(pofName);
-                rv->set_translation(locationInMeshFrame);
-                rv->connectSocket_parent(mesh.getFrame());
-                return rv;
-            }();
-
-            // perform model mutation
-            {
-                OpenSim::Model& mutableModel = model.updModel();
-                OpenSim::PhysicalOffsetFrame const* const pofPtr = pof.get();
-
-                mutableModel.addModelComponent(pof.release());
-                mutableModel.finalizeConnections();
-                osc::InitializeModel(mutableModel);
-                osc::InitializeState(mutableModel);
-                model.setSelected(pofPtr);
-                model.commit(commitMessage);
-            }
-        }
-
-        void ActionAddPointToPointEdge(
-            osc::UndoableModelStatePair& model,
-            OpenSim::Point const& pointA,
-            OpenSim::Point const& pointB)
-        {
-            std::string const edgeName = GenerateSceneElementName("edge_");
-            std::string const commitMessage = GenerateAddedSomethingCommitMessage(edgeName);
-
-            // create edge
-            auto edge = std::make_unique<OpenSim::FDPointToPointEdge>();
-            edge->connectSocket_pointA(pointA);
-            edge->connectSocket_pointB(pointB);
-
-            // perform model mutation
-            {
-                OpenSim::Model& mutableModel = model.updModel();
-                OpenSim::FDPointToPointEdge const* edgePtr = edge.get();
-
-                mutableModel.addModelComponent(edge.release());
-                mutableModel.finalizeConnections();
-                osc::InitializeModel(mutableModel);
-                osc::InitializeState(mutableModel);
-                model.setSelected(edgePtr);
-                model.commit(commitMessage);
-            }
-        }
-
-        void ActionAddMidpoint(
-            osc::UndoableModelStatePair& model,
-            OpenSim::Point const& pointA,
-            OpenSim::Point const& pointB)
-        {
-            std::string const midpointName = GenerateSceneElementName("midpoint_");
-            std::string const commitMessage = GenerateAddedSomethingCommitMessage(midpointName);
-
-            // create midpoint component
-            auto midpoint = std::make_unique<OpenSim::MidpointLandmark>();
-            midpoint->connectSocket_pointA(pointA);
-            midpoint->connectSocket_pointB(pointB);
-
-            // perform model mutation
-            {
-                OpenSim::Model& mutableModel = model.updModel();
-                OpenSim::MidpointLandmark const* midpointPtr = midpoint.get();
-
-                mutableModel.addModelComponent(midpoint.release());
-                mutableModel.finalizeConnections();
-                osc::InitializeModel(mutableModel);
-                osc::InitializeState(mutableModel);
-                model.setSelected(midpointPtr);
-                model.commit(commitMessage);
-            }
-        }
-
-        void ActionAddCrossProductEdge(
-            osc::UndoableModelStatePair& model,
-            OpenSim::FDVirtualEdge const& edgeA,
-            OpenSim::FDVirtualEdge const& edgeB)
-        {
-            std::string const edgeName = GenerateSceneElementName("crossproduct_");
-            std::string const commitMessage = GenerateAddedSomethingCommitMessage(edgeName);
-
-            // create cross product edge component
-            auto edge = std::make_unique<OpenSim::FDCrossProductEdge>();
-            edge->connectSocket_edgeA(edgeA);
-            edge->connectSocket_edgeB(edgeB);
-
-            // perform model mutation
-            {
-                OpenSim::Model& mutableModel = model.updModel();
-                OpenSim::FDCrossProductEdge const* edgePtr = edge.get();
-
-                mutableModel.addModelComponent(edge.release());
-                mutableModel.finalizeConnections();
-                osc::InitializeModel(mutableModel);
-                osc::InitializeState(mutableModel);
-                model.setSelected(edgePtr);
-                model.commit(commitMessage);
-            }
-        }
-
-        void ActionSwapSocketAssignments(
-            osc::UndoableModelStatePair& model,
-            OpenSim::ComponentPath componentAbsPath,
-            std::string firstSocketName,
-            std::string secondSocketName)
-        {
-            // create commit message
-            std::string const commitMessage = [&componentAbsPath, &firstSocketName, &secondSocketName]()
+            else
             {
                 std::stringstream ss;
-                ss << "swapped socket '" << firstSocketName << "' with socket '" << secondSocketName << " in " << componentAbsPath.getComponentName().c_str();
+                ss << "added " << meshPaths.size() << " meshes";
                 return std::move(ss).str();
-            }();
+            }
+        }();
 
-            // look things up in the mutable model
-            OpenSim::Model& mutModel = model.updModel();
-            OpenSim::Component* const component = osc::FindComponentMut(mutModel, componentAbsPath);
-            if (!component)
+        // perform the model mutation
+        OpenSim::Model& mutableModel = model.updModel();
+        for (std::filesystem::path const& meshPath : meshPaths)
+        {
+            std::string const meshName = osc::FileNameWithoutExtension(meshPath);
+
+            // add an offset frame that is connected to ground - this will become
+            // the mesh's offset frame
+            auto meshPhysicalOffsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+            meshPhysicalOffsetFrame->setParentFrame(model.getModel().getGround());
+            meshPhysicalOffsetFrame->setName(meshName + "_offset");
+
+            // attach the mesh to the frame
             {
-                osc::log::error("failed to find %s in model, skipping action", componentAbsPath.toString().c_str());
-                return;
+                auto mesh = std::make_unique<OpenSim::Mesh>(meshPath.string());
+                mesh->setName(meshName);
+                meshPhysicalOffsetFrame->attachGeometry(mesh.release());
             }
 
-            OpenSim::AbstractSocket* const firstSocket = osc::FindSocketMut(*component, firstSocketName);
-            if (!firstSocket)
-            {
-                osc::log::error("failed to find socket %s in %s, skipping action", firstSocketName.c_str(), component->getName().c_str());
-                return;
-            }
+            // add it to the model and select it (i.e. always select the last mesh)
+            OpenSim::PhysicalOffsetFrame const* const pofPtr = meshPhysicalOffsetFrame.get();
+            mutableModel.addModelComponent(meshPhysicalOffsetFrame.release());
+            mutableModel.finalizeConnections();
+            model.setSelected(pofPtr);
+        }
 
-            OpenSim::AbstractSocket* const secondSocket = osc::FindSocketMut(*component, secondSocketName);
-            if (!secondSocket)
-            {
-                osc::log::error("failed to find socket %s in %s, skipping action", secondSocketName.c_str(), component->getName().c_str());
-                return;
-            }
+        model.commit(commitMessage);
+        osc::InitializeModel(mutableModel);
+        osc::InitializeState(mutableModel);
+    }
 
-            // perform swap
-            std::string const firstSocketPath = firstSocket->getConnecteePath();
-            firstSocket->setConnecteePath(secondSocket->getConnecteePath());
-            secondSocket->setConnecteePath(firstSocketPath);
+    void ActionAddSphereInMeshFrame(
+        osc::UndoableModelStatePair& model,
+        OpenSim::Mesh const& mesh,
+        std::optional<glm::vec3> const& maybeClickPosInGround)
+    {
+        // if the caller requests a location via a click, set the position accordingly
+        SimTK::Vec3 const locationInMeshFrame = maybeClickPosInGround ?
+            CalcLocationInFrame(mesh.getFrame(), model.getState(), *maybeClickPosInGround) :
+            SimTK::Vec3{0.0, 0.0, 0.0};
 
-            // finalize and commit
-            osc::InitializeModel(mutModel);
-            osc::InitializeState(mutModel);
+        std::string const sphereName = GenerateSceneElementName("sphere_");
+        std::string const commitMessage = GenerateAddedSomethingCommitMessage(sphereName);
+
+        // create sphere component
+        std::unique_ptr<OpenSim::SphereLandmark> sphere = [&mesh, &locationInMeshFrame, &sphereName]()
+        {
+            auto rv = std::make_unique<OpenSim::SphereLandmark>();
+            rv->setName(sphereName);
+            rv->set_location(locationInMeshFrame);
+            rv->connectSocket_parent_frame(mesh.getFrame());
+            return rv;
+        }();
+
+        // perform the model mutation
+        {
+            OpenSim::Model& mutableModel = model.updModel();
+            OpenSim::SphereLandmark const* const spherePtr = sphere.get();
+
+            mutableModel.addModelComponent(sphere.release());
+            mutableModel.finalizeConnections();
+            osc::InitializeModel(mutableModel);
+            osc::InitializeState(mutableModel);
+            model.setSelected(spherePtr);
             model.commit(commitMessage);
         }
+    }
 
-        void ActionSwapPointToPointEdgeEnds(
-            osc::UndoableModelStatePair& model,
-            OpenSim::FDPointToPointEdge const& edge)
+    void ActionAddOffsetFrameInMeshFrame(
+        osc::UndoableModelStatePair& model,
+        OpenSim::Mesh const& mesh,
+        std::optional<glm::vec3> const& maybeClickPosInGround)
+    {
+        // if the caller requests a location via a click, set the position accordingly
+        SimTK::Vec3 const locationInMeshFrame = maybeClickPosInGround ?
+            CalcLocationInFrame(mesh.getFrame(), model.getState(), *maybeClickPosInGround) :
+            SimTK::Vec3{0.0, 0.0, 0.0};
+
+        std::string const pofName = GenerateSceneElementName("pof_");
+        std::string const commitMessage = GenerateAddedSomethingCommitMessage(pofName);
+
+        // create physical offset frame
+        std::unique_ptr<OpenSim::PhysicalOffsetFrame> pof = [&mesh, &locationInMeshFrame, &pofName]()
         {
-            ActionSwapSocketAssignments(model, edge.getAbsolutePath(), "pointA", "pointB");
-        }
-
-        void ActionSwapCrossProductEdgeOperands(
-            osc::UndoableModelStatePair& model,
-            OpenSim::FDCrossProductEdge const& edge)
-        {
-            ActionSwapSocketAssignments(model, edge.getAbsolutePath(), "edgeA", "edgeB");
-        }
-
-        void ActionAddFrame(
-            std::shared_ptr<osc::UndoableModelStatePair> model,
-            OpenSim::FDVirtualEdge const& firstEdge,
-            OpenSim::MaybeNegatedAxis firstEdgeAxis,
-            OpenSim::FDVirtualEdge const& otherEdge,
-            OpenSim::Point const& origin)
-        {
-            std::string const frameName = GenerateSceneElementName("frame_");
-            std::string const commitMessage = GenerateAddedSomethingCommitMessage(frameName);
-
-            // create the frame
-            auto frame = std::make_unique<OpenSim::LandmarkDefinedFrame>();
-            frame->set_axisEdgeDimension(OpenSim::ToString(firstEdgeAxis));
-            frame->set_secondAxisDimension(ToString(Next(firstEdgeAxis)));
-            frame->connectSocket_axisEdge(firstEdge);
-            frame->connectSocket_otherEdge(otherEdge);
-            frame->connectSocket_origin(origin);
-
-            // perform model mutation
-            {
-                OpenSim::Model& mutModel = model->updModel();
-                OpenSim::LandmarkDefinedFrame const* const framePtr = frame.get();
-
-                mutModel.addModelComponent(frame.release());
-                mutModel.finalizeConnections();
-                osc::InitializeModel(mutModel);
-                osc::InitializeState(mutModel);
-                model->setSelected(framePtr);
-                model->commit(commitMessage);
-            }
-        }
-
-        osc::Transform CalcTransformWithRespectTo(
-            OpenSim::Mesh const& mesh,
-            OpenSim::Frame const& frame,
-            SimTK::State const& state)
-        {
-            osc::Transform rv = osc::ToTransform(mesh.getFrame().findTransformBetween(state, frame));
-            rv.scale = osc::ToVec3(mesh.get_scale_factors());
+            auto rv = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+            rv->setName(pofName);
+            rv->set_translation(locationInMeshFrame);
+            rv->connectSocket_parent(mesh.getFrame());
             return rv;
-        }
+        }();
 
-        void ActionReexportMeshOBJWithRespectTo(
-            OpenSim::Model const& model,
-            SimTK::State const& state,
-            OpenSim::Mesh const& openSimMesh,
-            OpenSim::Frame const& frame)
+        // perform model mutation
         {
-            // prompt user for a save location
-            std::optional<std::filesystem::path> const maybeUserSaveLocation =
-                osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
-            if (!maybeUserSaveLocation)
-            {
-                return;  // user didn't select a save location
-            }
-            std::filesystem::path const& userSaveLocation = *maybeUserSaveLocation;
+            OpenSim::Model& mutableModel = model.updModel();
+            OpenSim::PhysicalOffsetFrame const* const pofPtr = pof.get();
 
-            // load raw mesh data into an osc mesh for processing
-            osc::Mesh oscMesh = osc::LoadMeshViaSimTK(openSimMesh.get_mesh_file());
-
-            // bake transform into mesh data
-            oscMesh.transformVerts(CalcTransformWithRespectTo(openSimMesh, frame, state));
-
-            // write transformed mesh to output
-            std::ofstream outputFileStream
-            {
-                userSaveLocation,
-                std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
-            };
-            if (!outputFileStream)
-            {
-                std::string const error = osc::StrerrorThreadsafe(errno);
-                osc::log::error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
-                return;
-            }
-
-            osc::WriteMeshAsObj(
-                outputFileStream,
-                oscMesh,
-                osc::ObjWriterFlags_NoWriteNormals
-            );
+            mutableModel.addModelComponent(pof.release());
+            mutableModel.finalizeConnections();
+            osc::InitializeModel(mutableModel);
+            osc::InitializeState(mutableModel);
+            model.setSelected(pofPtr);
+            model.commit(commitMessage);
         }
+    }
 
-        void ActionReexportMeshSTLWithRespectTo(
-            OpenSim::Model const& model,
-            SimTK::State const& state,
-            OpenSim::Mesh const& openSimMesh,
-            OpenSim::Frame const& frame)
+    void ActionAddPointToPointEdge(
+        osc::UndoableModelStatePair& model,
+        OpenSim::Point const& pointA,
+        OpenSim::Point const& pointB)
+    {
+        std::string const edgeName = GenerateSceneElementName("edge_");
+        std::string const commitMessage = GenerateAddedSomethingCommitMessage(edgeName);
+
+        // create edge
+        auto edge = std::make_unique<OpenSim::FDPointToPointEdge>();
+        edge->connectSocket_pointA(pointA);
+        edge->connectSocket_pointB(pointB);
+
+        // perform model mutation
         {
-            // prompt user for a save location
-            std::optional<std::filesystem::path> const maybeUserSaveLocation =
-                osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
-            if (!maybeUserSaveLocation)
-            {
-                return;  // user didn't select a save location
-            }
-            std::filesystem::path const& userSaveLocation = *maybeUserSaveLocation;
+            OpenSim::Model& mutableModel = model.updModel();
+            OpenSim::FDPointToPointEdge const* edgePtr = edge.get();
 
-            // load raw mesh data into an osc mesh for processing
-            osc::Mesh oscMesh = osc::LoadMeshViaSimTK(openSimMesh.get_mesh_file());
-
-            // bake transform into mesh data
-            oscMesh.transformVerts(CalcTransformWithRespectTo(openSimMesh, frame, state));
-
-            // write transformed mesh to output
-            std::ofstream outputFileStream
-            {
-                userSaveLocation,
-                std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
-            };
-            if (!outputFileStream)
-            {
-                std::string const error = osc::StrerrorThreadsafe(errno);
-                osc::log::error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
-                return;
-            }
-
-            osc::WriteMeshAsStl(outputFileStream, oscMesh);
+            mutableModel.addModelComponent(edge.release());
+            mutableModel.finalizeConnections();
+            osc::InitializeModel(mutableModel);
+            osc::InitializeState(mutableModel);
+            model.setSelected(edgePtr);
+            model.commit(commitMessage);
         }
+    }
+
+    void ActionAddMidpoint(
+        osc::UndoableModelStatePair& model,
+        OpenSim::Point const& pointA,
+        OpenSim::Point const& pointB)
+    {
+        std::string const midpointName = GenerateSceneElementName("midpoint_");
+        std::string const commitMessage = GenerateAddedSomethingCommitMessage(midpointName);
+
+        // create midpoint component
+        auto midpoint = std::make_unique<OpenSim::MidpointLandmark>();
+        midpoint->connectSocket_pointA(pointA);
+        midpoint->connectSocket_pointB(pointB);
+
+        // perform model mutation
+        {
+            OpenSim::Model& mutableModel = model.updModel();
+            OpenSim::MidpointLandmark const* midpointPtr = midpoint.get();
+
+            mutableModel.addModelComponent(midpoint.release());
+            mutableModel.finalizeConnections();
+            osc::InitializeModel(mutableModel);
+            osc::InitializeState(mutableModel);
+            model.setSelected(midpointPtr);
+            model.commit(commitMessage);
+        }
+    }
+
+    void ActionAddCrossProductEdge(
+        osc::UndoableModelStatePair& model,
+        OpenSim::FDVirtualEdge const& edgeA,
+        OpenSim::FDVirtualEdge const& edgeB)
+    {
+        std::string const edgeName = GenerateSceneElementName("crossproduct_");
+        std::string const commitMessage = GenerateAddedSomethingCommitMessage(edgeName);
+
+        // create cross product edge component
+        auto edge = std::make_unique<OpenSim::FDCrossProductEdge>();
+        edge->connectSocket_edgeA(edgeA);
+        edge->connectSocket_edgeB(edgeB);
+
+        // perform model mutation
+        {
+            OpenSim::Model& mutableModel = model.updModel();
+            OpenSim::FDCrossProductEdge const* edgePtr = edge.get();
+
+            mutableModel.addModelComponent(edge.release());
+            mutableModel.finalizeConnections();
+            osc::InitializeModel(mutableModel);
+            osc::InitializeState(mutableModel);
+            model.setSelected(edgePtr);
+            model.commit(commitMessage);
+        }
+    }
+
+    void ActionSwapSocketAssignments(
+        osc::UndoableModelStatePair& model,
+        OpenSim::ComponentPath componentAbsPath,
+        std::string firstSocketName,
+        std::string secondSocketName)
+    {
+        // create commit message
+        std::string const commitMessage = [&componentAbsPath, &firstSocketName, &secondSocketName]()
+        {
+            std::stringstream ss;
+            ss << "swapped socket '" << firstSocketName << "' with socket '" << secondSocketName << " in " << componentAbsPath.getComponentName().c_str();
+            return std::move(ss).str();
+        }();
+
+        // look things up in the mutable model
+        OpenSim::Model& mutModel = model.updModel();
+        OpenSim::Component* const component = osc::FindComponentMut(mutModel, componentAbsPath);
+        if (!component)
+        {
+            osc::log::error("failed to find %s in model, skipping action", componentAbsPath.toString().c_str());
+            return;
+        }
+
+        OpenSim::AbstractSocket* const firstSocket = osc::FindSocketMut(*component, firstSocketName);
+        if (!firstSocket)
+        {
+            osc::log::error("failed to find socket %s in %s, skipping action", firstSocketName.c_str(), component->getName().c_str());
+            return;
+        }
+
+        OpenSim::AbstractSocket* const secondSocket = osc::FindSocketMut(*component, secondSocketName);
+        if (!secondSocket)
+        {
+            osc::log::error("failed to find socket %s in %s, skipping action", secondSocketName.c_str(), component->getName().c_str());
+            return;
+        }
+
+        // perform swap
+        std::string const firstSocketPath = firstSocket->getConnecteePath();
+        firstSocket->setConnecteePath(secondSocket->getConnecteePath());
+        secondSocket->setConnecteePath(firstSocketPath);
+
+        // finalize and commit
+        osc::InitializeModel(mutModel);
+        osc::InitializeState(mutModel);
+        model.commit(commitMessage);
+    }
+
+    void ActionSwapPointToPointEdgeEnds(
+        osc::UndoableModelStatePair& model,
+        OpenSim::FDPointToPointEdge const& edge)
+    {
+        ActionSwapSocketAssignments(model, edge.getAbsolutePath(), "pointA", "pointB");
+    }
+
+    void ActionSwapCrossProductEdgeOperands(
+        osc::UndoableModelStatePair& model,
+        OpenSim::FDCrossProductEdge const& edge)
+    {
+        ActionSwapSocketAssignments(model, edge.getAbsolutePath(), "edgeA", "edgeB");
+    }
+
+    void ActionAddFrame(
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        OpenSim::FDVirtualEdge const& firstEdge,
+        OpenSim::MaybeNegatedAxis firstEdgeAxis,
+        OpenSim::FDVirtualEdge const& otherEdge,
+        OpenSim::Point const& origin)
+    {
+        std::string const frameName = GenerateSceneElementName("frame_");
+        std::string const commitMessage = GenerateAddedSomethingCommitMessage(frameName);
+
+        // create the frame
+        auto frame = std::make_unique<OpenSim::LandmarkDefinedFrame>();
+        frame->set_axisEdgeDimension(OpenSim::ToString(firstEdgeAxis));
+        frame->set_secondAxisDimension(ToString(Next(firstEdgeAxis)));
+        frame->connectSocket_axisEdge(firstEdge);
+        frame->connectSocket_otherEdge(otherEdge);
+        frame->connectSocket_origin(origin);
+
+        // perform model mutation
+        {
+            OpenSim::Model& mutModel = model->updModel();
+            OpenSim::LandmarkDefinedFrame const* const framePtr = frame.get();
+
+            mutModel.addModelComponent(frame.release());
+            mutModel.finalizeConnections();
+            osc::InitializeModel(mutModel);
+            osc::InitializeState(mutModel);
+            model->setSelected(framePtr);
+            model->commit(commitMessage);
+        }
+    }
+
+    osc::Transform CalcTransformWithRespectTo(
+        OpenSim::Mesh const& mesh,
+        OpenSim::Frame const& frame,
+        SimTK::State const& state)
+    {
+        osc::Transform rv = osc::ToTransform(mesh.getFrame().findTransformBetween(state, frame));
+        rv.scale = osc::ToVec3(mesh.get_scale_factors());
+        return rv;
+    }
+
+    void ActionReexportMeshOBJWithRespectTo(
+        OpenSim::Model const& model,
+        SimTK::State const& state,
+        OpenSim::Mesh const& openSimMesh,
+        OpenSim::Frame const& frame)
+    {
+        // prompt user for a save location
+        std::optional<std::filesystem::path> const maybeUserSaveLocation =
+            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
+        if (!maybeUserSaveLocation)
+        {
+            return;  // user didn't select a save location
+        }
+        std::filesystem::path const& userSaveLocation = *maybeUserSaveLocation;
+
+        // load raw mesh data into an osc mesh for processing
+        osc::Mesh oscMesh = osc::LoadMeshViaSimTK(openSimMesh.get_mesh_file());
+
+        // bake transform into mesh data
+        oscMesh.transformVerts(CalcTransformWithRespectTo(openSimMesh, frame, state));
+
+        // write transformed mesh to output
+        std::ofstream outputFileStream
+        {
+            userSaveLocation,
+            std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
+        };
+        if (!outputFileStream)
+        {
+            std::string const error = osc::StrerrorThreadsafe(errno);
+            osc::log::error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
+            return;
+        }
+
+        osc::WriteMeshAsObj(
+            outputFileStream,
+            oscMesh,
+            osc::ObjWriterFlags_NoWriteNormals
+        );
+    }
+
+    void ActionReexportMeshSTLWithRespectTo(
+        OpenSim::Model const& model,
+        SimTK::State const& state,
+        OpenSim::Mesh const& openSimMesh,
+        OpenSim::Frame const& frame)
+    {
+        // prompt user for a save location
+        std::optional<std::filesystem::path> const maybeUserSaveLocation =
+            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
+        if (!maybeUserSaveLocation)
+        {
+            return;  // user didn't select a save location
+        }
+        std::filesystem::path const& userSaveLocation = *maybeUserSaveLocation;
+
+        // load raw mesh data into an osc mesh for processing
+        osc::Mesh oscMesh = osc::LoadMeshViaSimTK(openSimMesh.get_mesh_file());
+
+        // bake transform into mesh data
+        oscMesh.transformVerts(CalcTransformWithRespectTo(openSimMesh, frame, state));
+
+        // write transformed mesh to output
+        std::ofstream outputFileStream
+        {
+            userSaveLocation,
+            std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
+        };
+        if (!outputFileStream)
+        {
+            std::string const error = osc::StrerrorThreadsafe(errno);
+            osc::log::error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
+            return;
+        }
+
+        osc::WriteMeshAsStl(outputFileStream, oscMesh);
+    }
+
+    std::unique_ptr<osc::UndoableModelStatePair> MakeUndoableModelFromSceneModel(
+        osc::UndoableModelStatePair const& sceneModel)
+    {
+        auto modelCopy = std::make_unique<OpenSim::Model>(sceneModel.getModel());
+        modelCopy->upd_ComponentSet().clearAndDestroy();
+        return std::make_unique<osc::UndoableModelStatePair>(std::move(modelCopy));
+    }
+
+    void ActionExportFrameDefinitionSceneModelToEditorTab(
+        std::weak_ptr<osc::TabHost> maybeTabHost,
+        osc::UndoableModelStatePair const& model)
+    {
+        std::shared_ptr<osc::TabHost> tabHost = maybeTabHost.lock();
+        if (!tabHost)
+        {
+            return;
+        }
+
+        std::shared_ptr<osc::MainUIStateAPI> mainUIStateAPI = std::dynamic_pointer_cast<osc::MainUIStateAPI>(tabHost);
+        if (!mainUIStateAPI)
+        {
+            return;
+        }
+
+        mainUIStateAPI->addAndSelectTab<osc::ModelEditorTab>(
+            mainUIStateAPI,
+            MakeUndoableModelFromSceneModel(model)
+        );
     }
 }
 
@@ -1817,6 +1846,23 @@ namespace
         );
     }
 
+    void RecursivelyReassignAllSockets(
+        OpenSim::Component& root,
+        OpenSim::Component const& from,
+        OpenSim::Component const& to)
+    {
+        for (OpenSim::Component& c : root.updComponentList())
+        {
+            for (OpenSim::AbstractSocket* socket : osc::UpdAllSockets(c))
+            {
+                if (osc::IsConnectedTo(*socket, from))
+                {
+                    osc::TryConnectTo(*socket, to);
+                }
+            }
+        }
+    }
+
     void ActionCreateBodyFromFrame(
         std::shared_ptr<osc::UndoableModelStatePair> model,
         OpenSim::ComponentPath frameAbsPath,
@@ -1824,25 +1870,153 @@ namespace
         OpenSim::ComponentPath jointFrameAbsPath,
         OpenSim::ComponentPath parentFrameAbsPath)
     {
-        // TODO: add a body+joint to the model with the mesh attached to it
-        //
-        // - 1) CHECK ARGS:
-        //
-        //   - search all provided paths and make sure they exist and have
-        //     the expected type
-        //
-        // - 2) CREATE BODY + FREEJOINT
-        //
-        // - 3) MOVE MESH FROM COMPONENTSET TO BODY
-        // 
-        //   - the body shall have the mesh as part of its geometry set
-        //   - and the mesh shall be removed from the `componentset`
-        //   - and if the mesh is the only child of an offset frame, then
-        //     that offset frame shall be adopted as a child of the body
-        //   - and any elements in `componentset` (e.g. landmarks, edges)
-        //     that depend only on that offset shall be adopted by the body
-        //   - but any elements in `componentset` that only partially depend
-        //     on the offset frame shall remain in `componentset`
+        // validate external inputs
+
+        osc::log::info("validate external inputs");
+        OpenSim::PhysicalFrame const* const meshFrame =
+            osc::FindComponent<OpenSim::PhysicalFrame>(model->getModel(), frameAbsPath);
+        if (!meshFrame)
+        {
+            osc::log::error("%s: cannot find frame: skipping body creation", frameAbsPath.toString().c_str());
+            return;
+        }
+
+        OpenSim::Mesh const* const mesh =
+            osc::FindComponent<OpenSim::Mesh>(model->getModel(), meshAbsPath);
+        if (!mesh)
+        {
+            osc::log::error("%s: cannot find mesh: skipping body creation", meshAbsPath.toString().c_str());
+            return;
+        }
+
+        OpenSim::PhysicalFrame const* const jointFrame =
+            osc::FindComponent<OpenSim::PhysicalFrame>(model->getModel(), jointFrameAbsPath);
+        if (!jointFrame)
+        {
+            osc::log::error("%s: cannot find joint frame: skipping body creation", jointFrameAbsPath.toString().c_str());
+            return;
+        }
+
+        OpenSim::PhysicalFrame const* const parentFrame =
+            osc::FindComponent<OpenSim::PhysicalFrame>(model->getModel(), parentFrameAbsPath);
+        if (!parentFrame)
+        {
+            osc::log::error("%s: cannot find parent frame: skipping body creation", parentFrameAbsPath.toString().c_str());
+            return;
+        }
+
+        // create body
+        osc::log::info("create body");
+        std::string const bodyName = meshFrame->getName() + "_body";
+        double const bodyMass = 1.0;
+        SimTK::Vec3 const bodyCenterOfMass = {0.0, 0.0, 0.0};
+        SimTK::Inertia const bodyInertia = {1.0, 1.0, 1.0};
+        auto body = std::make_unique<OpenSim::Body>(
+            bodyName,
+            bodyMass,
+            bodyCenterOfMass,
+            bodyInertia
+        );
+
+        // create joint (centered using offset frames)
+        osc::log::info("create joint");
+        auto joint = std::make_unique<OpenSim::FreeJoint>();
+        joint->setName(meshFrame->getName() + "_joint");
+        {
+            auto jointParentPof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+            jointParentPof->setParentFrame(*parentFrame);
+            jointParentPof->setName(meshFrame->getName() + "_parent_offset");
+            jointParentPof->setOffsetTransform(jointFrame->findTransformBetween(model->getState(), *parentFrame));
+
+            OpenSim::PhysicalOffsetFrame* ptr = jointParentPof.get();
+            joint->addFrame(jointParentPof.release());  // care: ownership change happens here (#642)
+            joint->connectSocket_parent_frame(*ptr);
+        }
+        {
+            auto jointChildPof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+            jointChildPof->setParentFrame(*body);
+            jointChildPof->setName(meshFrame->getName() + "_child_offset");
+            jointChildPof->setOffsetTransform(jointFrame->findTransformBetween(model->getState(), *meshFrame));
+
+            OpenSim::PhysicalOffsetFrame* ptr = jointChildPof.get();
+            joint->addFrame(jointChildPof.release());
+            joint->connectSocket_child_frame(*ptr);
+        }
+
+        // create PoF for the mesh
+        osc::log::info("create pof");
+        auto meshPof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+        meshPof->setParentFrame(*body);
+        meshPof->setName(mesh->getFrame().getName());
+        meshPof->setOffsetTransform(mesh->getFrame().findTransformBetween(model->getState(), *meshFrame));
+
+        // create commit message
+        std::string const commitMessage = [&body]()
+        {
+            std::stringstream ss;
+            ss << "created " << body->getName();
+            return std::move(ss).str();
+        }();
+
+        // start mutating the model
+        osc::log::info("start model mutation");
+        try
+        {
+            OpenSim::Model& mutModel = model->updModel();
+            OpenSim::Body const* const bodyPtr = body.get();
+            OpenSim::PhysicalOffsetFrame* meshPofPtr = meshPof.get();
+
+            body->addComponent(meshPof.release());
+            mutModel.addJoint(joint.release());
+            mutModel.addBody(body.release());
+
+            // attach copy of source mesh to mesh PoF
+            //
+            // (must be done after adding body etc. to model and finalizing - #325)
+            mutModel.finalizeConnections();
+            meshPofPtr->attachGeometry(new OpenSim::Mesh{*mesh});
+
+            // ensure model is in a valid, initialized, state before moving
+            // and reassigning things around
+            mutModel.finalizeConnections();
+            osc::InitializeModel(mutModel);
+            osc::InitializeState(mutModel);
+
+            // if the mesh's PoF was only used by the mesh then reassign
+            // everything to the new PoF and delete the old one
+            if (auto const* pof = osc::GetOwner<OpenSim::PhysicalOffsetFrame>(*mesh);
+                pof && osc::GetNumChildren(*pof) == 3)  // mesh+frame geom+wrap object set
+            {
+                osc::log::info("reassign sockets");
+                RecursivelyReassignAllSockets(mutModel, *pof, *meshPofPtr);
+                mutModel.finalizeConnections();
+                if (auto* mutPof = osc::FindComponentMut<OpenSim::PhysicalOffsetFrame>(mutModel, osc::GetAbsolutePathOrEmpty(pof)))
+                {
+                    osc::log::info("delete old pof");
+                    osc::TryDeleteComponentFromModel(mutModel, *mutPof);
+                    mutModel.finalizeConnections();
+                }
+            }
+
+            // delete old mesh
+            if (auto* mutMesh = osc::FindComponentMut<OpenSim::Mesh>(mutModel, osc::GetAbsolutePathOrEmpty(mesh)))
+            {
+                osc::log::info("delete old mesh");
+                osc::TryDeleteComponentFromModel(mutModel, *mutMesh);
+                mutModel.finalizeConnections();
+            }
+
+            mutModel.finalizeConnections();
+            osc::InitializeModel(mutModel);
+            osc::InitializeState(mutModel);
+            model->setSelected(bodyPtr);
+            model->commit(commitMessage);
+        }
+        catch (std::exception const& ex)
+        {
+            osc::log::error("error detected while trying to add a body to the model: %s", ex.what());
+            model->rollback();
+        }
     }
 
     void PushPickParentFrameForBodyCreactionLayer(
@@ -1857,6 +2031,7 @@ namespace
         options.canChooseItem = [bodyFrame = osc::FindComponent(model->getModel(), frameAbsPath)](OpenSim::Component const& c)
         {
             return
+                OpenSim::IsPhysicalFrame(c) &&
                 &c != bodyFrame &&
                 !IsChildOfA<OpenSim::ComponentSet>(c) &&
                 (osc::DerivesFrom<OpenSim::Ground>(c) || IsChildOfA<OpenSim::BodySet>(c));
@@ -1875,7 +2050,7 @@ namespace
                 return false;
             }
 
-            OpenSim::Frame const* parentFrame = osc::FindComponent<OpenSim::Frame>(model->getModel(), *choices.begin());
+            OpenSim::PhysicalFrame const* parentFrame = osc::FindComponent<OpenSim::PhysicalFrame>(model->getModel(), *choices.begin());
             if (!parentFrame)
             {
                 osc::log::error("user selection from 'choose components' layer did not select a frame: this shouldn't happen?");
@@ -1904,7 +2079,7 @@ namespace
     {
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose joint center frame";
-        options.canChooseItem = OpenSim::IsFrame;
+        options.canChooseItem = OpenSim::IsPhysicalFrame;
         options.numComponentsUserMustChoose = 1;
         options.onUserFinishedChoosing = [
             visualizerPtr = &visualizer,  // TODO: implement weak_ptr for panel lookup
@@ -2503,9 +2678,11 @@ namespace
     class FrameDefinitionTabMainMenu final {
     public:
         explicit FrameDefinitionTabMainMenu(
+            std::weak_ptr<osc::TabHost> tabHost_,
             std::shared_ptr<osc::UndoableModelStatePair> model_,
             std::shared_ptr<osc::PanelManager> panelManager_) :
 
+            m_TabHost{std::move(tabHost_)},
             m_Model{std::move(model_)},
             m_WindowMenu{std::move(panelManager_)}
         {
@@ -2532,10 +2709,16 @@ namespace
                 {
                     osc::ActionRedoCurrentlyEditedModel(*m_Model);
                 }
+
+                if (ImGui::MenuItem("Export to OpenSim"))
+                {
+                    ActionExportFrameDefinitionSceneModelToEditorTab(m_TabHost, *m_Model);
+                }
                 ImGui::EndMenu();
             }
         }
 
+        std::weak_ptr<osc::TabHost> m_TabHost;
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
         osc::WindowMenu m_WindowMenu;
         osc::MainMenuAboutTab m_AboutMenu;
@@ -2548,8 +2731,6 @@ public:
     Impl(std::weak_ptr<TabHost> parent_) :
         m_Parent{std::move(parent_)}
     {
-        // register user-visible panels that this tab can host
-
         m_PanelManager->registerToggleablePanel(
             "Navigator",
             [this](std::string_view panelName)
@@ -2726,7 +2907,7 @@ private:
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
     PopupManager m_PopupManager;
 
-    FrameDefinitionTabMainMenu m_MainMenu{m_Model, m_PanelManager};
+    FrameDefinitionTabMainMenu m_MainMenu{m_Parent, m_Model, m_PanelManager};
 };
 
 

@@ -108,6 +108,9 @@ namespace osc
     // returns all components between the root (element 0) and the given component (element n-1) inclusive
     std::vector<OpenSim::Component const*> GetPathElements(OpenSim::Component const&);
 
+    // returns the number of direct children that the component owns
+    size_t GetNumChildren(OpenSim::Component const&);
+
     // returns `true` if `c == parent` or `c` is a descendent of `parent`
     bool IsInclusiveChildOf(
         OpenSim::Component const* parent,
@@ -167,6 +170,9 @@ namespace osc
     // returns all sockets that are directly attached to the given component
     std::vector<OpenSim::AbstractSocket const*> GetAllSockets(OpenSim::Component const&);
 
+    // returns all (mutable) sockets that are directly attached to the given component
+    std::vector<OpenSim::AbstractSocket*> UpdAllSockets(OpenSim::Component&);
+
     // returns a pointer if the given path resolves a component relative to root
     OpenSim::Component const* FindComponent(
         OpenSim::Component const& root,
@@ -217,9 +223,21 @@ namespace osc
         std::string const& socketName
     );
 
+    // returns `true` if the socket is connected to the component
+    bool IsConnectedTo(
+        OpenSim::AbstractSocket const&,
+        OpenSim::Component const&
+    );
+
     // returns true if the socket is able to connect to the component
     bool IsAbleToConnectTo(
         OpenSim::AbstractSocket const&,
+        OpenSim::Component const&
+    );
+
+    // returns `true` if the socket was successfully connected to the component
+    bool TryConnectTo(
+        OpenSim::AbstractSocket&,
         OpenSim::Component const&
     );
 

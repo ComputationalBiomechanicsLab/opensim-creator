@@ -337,6 +337,19 @@ std::vector<OpenSim::Component const*> osc::GetPathElements(OpenSim::Component c
     return rv;
 }
 
+size_t osc::GetNumChildren(OpenSim::Component const& c)
+{
+    size_t rv = 0;
+    for (OpenSim::Component const& descendant : c.getComponentList())
+    {
+        if (&descendant.getOwner() == &c)
+        {
+            ++rv;
+        }
+    }
+    return rv;
+}
+
 bool osc::IsInclusiveChildOf(OpenSim::Component const* parent, OpenSim::Component const* c)
 {
     if (!c)
@@ -470,6 +483,18 @@ std::vector<OpenSim::AbstractSocket const*> osc::GetAllSockets(OpenSim::Componen
     return rv;
 }
 
+std::vector<OpenSim::AbstractSocket*> osc::UpdAllSockets(OpenSim::Component& c)
+{
+    std::vector<OpenSim::AbstractSocket*> rv;
+
+    for (std::string const& name : GetSocketNames(c))
+    {
+        rv.push_back(&c.updSocket(name));
+    }
+
+    return rv;
+}
+
 OpenSim::Component const* osc::FindComponent(
     OpenSim::Component const& c,
     OpenSim::ComponentPath const& cp)
@@ -538,6 +563,13 @@ OpenSim::AbstractSocket* osc::FindSocketMut(
     }
 }
 
+bool osc::IsConnectedTo(
+    OpenSim::AbstractSocket const& s,
+    OpenSim::Component const& c)
+{
+    return &s.getConnecteeAsObject() == &c;
+}
+
 bool osc::IsAbleToConnectTo(
     OpenSim::AbstractSocket const& s,
     OpenSim::Component const& c)
@@ -548,6 +580,21 @@ bool osc::IsAbleToConnectTo(
     try
     {
         copy->connect(c);
+        return true;
+    }
+    catch (OpenSim::Exception const&)
+    {
+        return false;
+    }
+}
+
+bool osc::TryConnectTo(
+    OpenSim::AbstractSocket& socket,
+    OpenSim::Component const& c)
+{
+    try
+    {
+        socket.connect(c);
         return true;
     }
     catch (OpenSim::Exception const&)
