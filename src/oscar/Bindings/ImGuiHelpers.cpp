@@ -440,12 +440,18 @@ void osc::DrawTextureAsImGuiImage(RenderTexture const& t, glm::vec2 dims)
     ImGui::Image(t.getTextureHandleHACK(), dims, uv0, uv1);
 }
 
+bool osc::ImageButton(
+    CStringView label,
+    Texture2D const& t,
+    glm::vec2 dims,
+    Rect const& textureCoords)
+{
+    return ImGui::ImageButton(label.c_str(), t.getTextureHandleHACK(), dims, textureCoords.p1, textureCoords.p2);
+}
+
 bool osc::ImageButton(CStringView label, Texture2D const& t, glm::vec2 dims)
 {
-    glm::vec2 const uv0 = {0.0f, 1.0f};
-    glm::vec2 const uv1 = {1.0f, 0.0f};
-
-    return ImGui::ImageButton(label.c_str(), t.getTextureHandleHACK(), dims, uv0, uv1);
+    return ImageButton(label, t, dims, Rect{{0.0f, 1.0f}, {1.0f, 0.0f}});
 }
 
 osc::Rect osc::GetItemRect()

@@ -80,6 +80,12 @@ namespace osc
     bool ImageButton(
         CStringView,
         Texture2D const&,
+        glm::vec2 dims,
+        Rect const& textureCoords
+    );
+    bool ImageButton(
+        CStringView,
+        Texture2D const&,
         glm::vec2 dims
     );
 

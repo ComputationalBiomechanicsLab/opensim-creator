@@ -182,7 +182,7 @@ private:
     void drawToggleFramesButton()
     {
         Icon const icon = m_IconCache->getIcon(IsShowingFrames(m_Model->getModel()) ? "frame_colored" : "frame_bw");
-        if (osc::ImageButton("##toggleframes", icon.getTexture(), icon.getDimensions()))
+        if (osc::ImageButton("##toggleframes", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
         {
             ActionToggleFrames(*m_Model);
         }
@@ -192,7 +192,7 @@ private:
     void drawToggleMarkersButton()
     {
         Icon const icon = m_IconCache->getIcon(IsShowingMarkers(m_Model->getModel()) ? "marker_colored" : "marker");
-        if (osc::ImageButton("##togglemarkers", icon.getTexture(), icon.getDimensions()))
+        if (osc::ImageButton("##togglemarkers", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
         {
             ActionToggleMarkers(*m_Model);
         }
@@ -202,7 +202,7 @@ private:
     void drawToggleWrapGeometryButton()
     {
         Icon const icon = m_IconCache->getIcon(IsShowingWrapGeometry(m_Model->getModel()) ? "wrap_colored" : "wrap");
-        if (osc::ImageButton("##togglewrapgeom", icon.getTexture(), icon.getDimensions()))
+        if (osc::ImageButton("##togglewrapgeom", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
         {
             ActionToggleWrapGeometry(*m_Model);
         }
@@ -212,7 +212,7 @@ private:
     void drawToggleContactGeometryButton()
     {
         Icon const icon = m_IconCache->getIcon(IsShowingContactGeometry(m_Model->getModel()) ? "contact_colored" : "contact");
-        if (osc::ImageButton("##togglecontactgeom", icon.getTexture(), icon.getDimensions()))
+        if (osc::ImageButton("##togglecontactgeom", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
         {
             ActionToggleContactGeometry(*m_Model);
         }

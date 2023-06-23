@@ -24,7 +24,11 @@ public:
             {
                 Texture2D texture = LoadTextureFromSVGFile(p, verticalScale);
                 texture.setFilterMode(TextureFilterMode::Nearest);
-                m_Icons.try_emplace(p.stem().string(), std::move(texture), glm::vec2{0.0f, 1.0f}, glm::vec2{1.0f, 0.0f});
+                m_Icons.try_emplace(
+                    p.stem().string(),
+                    std::move(texture),
+                    Rect{{0.0f, 1.0f}, {1.0f, 0.0f}}
+                );
             }
         }
     }

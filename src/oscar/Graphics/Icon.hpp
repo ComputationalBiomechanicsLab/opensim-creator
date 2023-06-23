@@ -1,8 +1,7 @@
 #pragma once
 
 #include "oscar/Graphics/Texture2D.hpp"
-
-#include <glm/vec2.hpp>
+#include "oscar/Maths/Rect.hpp"
 
 #include <utility>
 
@@ -12,12 +11,10 @@ namespace osc
     public:
         Icon(
             Texture2D texture_,
-            glm::vec2 topLeftTextureCoord_,
-            glm::vec2 bottomRightTextureCoord_) :
+            Rect const& textureCoordinates_) :
 
             m_Texture{std::move(texture_)},
-            m_TopLeftTextureCoord{topLeftTextureCoord_},
-            m_BottomRightTextureCoord{bottomRightTextureCoord_}
+            m_TextureCoordinates{textureCoordinates_}
         {
         }
 
@@ -31,19 +28,13 @@ namespace osc
             return m_Texture.getDimensions();
         }
 
-        glm::vec2 getTopLeftTextureCoord() const
+        Rect const& getTextureCoordinates() const
         {
-            return m_TopLeftTextureCoord;
-        }
-
-        glm::vec2 getBottomRightTextureCoord() const
-        {
-            return m_BottomRightTextureCoord;
+            return m_TextureCoordinates;
         }
 
     private:
         Texture2D m_Texture;
-        glm::vec2 m_TopLeftTextureCoord;
-        glm::vec2 m_BottomRightTextureCoord;
+        Rect m_TextureCoordinates;
     };
 }

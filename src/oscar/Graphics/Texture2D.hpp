@@ -16,8 +16,9 @@
 
 namespace osc { struct Rgba32; }
 namespace osc { class Texture2D; }
+namespace osc { struct Rect; }
 namespace osc { void DrawTextureAsImGuiImage(Texture2D const&, glm::vec2, glm::vec2, glm::vec2); }
-namespace osc { bool ImageButton(CStringView label, Texture2D const& t, glm::vec2 dims); }
+namespace osc { bool ImageButton(CStringView, Texture2D const&, glm::vec2, Rect const&); }
 
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
@@ -66,7 +67,7 @@ namespace osc
 
     private:
         friend void osc::DrawTextureAsImGuiImage(Texture2D const&, glm::vec2, glm::vec2, glm::vec2);
-        friend bool osc::ImageButton(CStringView label, Texture2D const& t, glm::vec2 dims);
+        friend bool osc::ImageButton(CStringView label, Texture2D const& t, glm::vec2, Rect const&);
         void* getTextureHandleHACK() const;  // used by ImGui... for now
 
         friend class GraphicsBackend;
