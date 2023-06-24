@@ -11,8 +11,8 @@
 #include "OpenSimCreator/Simulation/SimulationStatus.hpp"
 
 #include <oscar/Platform/Log.hpp>
-#include <oscar/Utils/Algorithms.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <nonstd/span.hpp>

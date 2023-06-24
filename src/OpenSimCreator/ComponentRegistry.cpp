@@ -2,9 +2,9 @@
 
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
-#include <oscar/Utils/Algorithms.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/Macros.hpp>
+#include <oscar/Utils/SetHelpers.hpp>
 
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/ArrayPtrs.h>
@@ -585,7 +585,11 @@ namespace
             }
         }
 
-        osc::Sort(rv, osc::IsConcreteClassNameLexographicallyLowerThan<std::shared_ptr<OpenSim::Component const>>);
+        std::sort(
+            rv.begin(),
+            rv.end(),
+            osc::IsConcreteClassNameLexographicallyLowerThan<std::shared_ptr<OpenSim::Component const>>
+        );
 
         return rv;
     }
@@ -689,7 +693,11 @@ namespace
             rv.emplace_back(c.clone());
         }
 
-        osc::Sort(rv, osc::IsConcreteClassNameLexographicallyLowerThan<std::shared_ptr<OpenSim::Component const>>);
+        std::sort(
+            rv.begin(),
+            rv.end(),
+            osc::IsConcreteClassNameLexographicallyLowerThan<std::shared_ptr<OpenSim::Component const>>
+        );
 
         return rv;
     }

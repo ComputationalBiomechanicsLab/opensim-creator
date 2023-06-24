@@ -37,14 +37,17 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/Styling.hpp>
 #include <oscar/Tabs/TabHost.hpp>
-#include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/ArrayHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/ClonePtr.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/DefaultConstructOnCopy.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
+#include <oscar/Utils/SetHelpers.hpp>
 #include <oscar/Utils/Spsc.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <oscar/Widgets/LogViewer.hpp>
 #include <oscar/Widgets/SaveChangesPopup.hpp>
@@ -3587,7 +3590,7 @@ namespace
         // note: these bodies may use the non-participating bodies (above) as parents
         for (JointEl const& jointEl : mg.iter<JointEl>())
         {
-            if (jointEl.getParentID() == c_GroundID || ContainsKey(visitedBodies, jointEl.getParentID()))
+            if (jointEl.getParentID() == c_GroundID || visitedBodies.find(jointEl.getParentID()) != visitedBodies.end())
             {
                 AttachJointRecursive(mg, *model, jointEl, visitedBodies, visitedJoints);
             }
@@ -5651,7 +5654,7 @@ namespace
         // returns true if the user has already selected the given scene element
         bool IsSelected(SceneEl const& el) const
         {
-            return Contains(m_SelectedEls, el.GetID());
+            return std::find(m_SelectedEls.begin(), m_SelectedEls.end(), el.GetID()) != m_SelectedEls.end();
         }
 
         // returns true if the user can (de)select the given element
@@ -5730,7 +5733,7 @@ namespace
                 return;
             }
 
-            RemoveErase(m_SelectedEls, [elID = el.GetID()](UID id) { return id == elID; } );
+            osc::erase_if(m_SelectedEls, [elID = el.GetID()](UID id) { return id == elID; } );
         }
 
         void TryToggleSelectionStateOf(SceneEl const& el)
@@ -7418,8 +7421,7 @@ private:
         {
             return a->GetCommitTime() < b->GetCommitTime();
         };
-
-        osc::Sort(commits, orderedByTime);
+        std::sort(commits.begin(), commits.end(), orderedByTime);
 
         int i = 0;
         for (ModelGraphCommit const* c : commits)

@@ -6,7 +6,7 @@
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>

@@ -2,8 +2,9 @@
 
 #include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Formats/CSV.hpp>
-#include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/ParalellizationHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 
 #include <Simbody.h>
 

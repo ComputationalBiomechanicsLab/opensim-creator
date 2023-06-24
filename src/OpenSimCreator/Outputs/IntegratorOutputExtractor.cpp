@@ -4,7 +4,7 @@
 #include "OpenSimCreator/Simulation/SimulationReport.hpp"
 
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <nonstd/span.hpp>

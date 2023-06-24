@@ -1,6 +1,6 @@
 #include "Perf.hpp"
 
-#include "oscar/Utils/Algorithms.hpp"
+#include "oscar/Utils/HashHelpers.hpp"
 #include "oscar/Utils/SynchronizedValue.hpp"
 
 #include <algorithm>

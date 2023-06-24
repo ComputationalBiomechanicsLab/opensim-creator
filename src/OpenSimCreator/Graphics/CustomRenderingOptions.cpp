@@ -1,6 +1,6 @@
 #include "CustomRenderingOptions.hpp"
 
-#include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/ArrayHelpers.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>

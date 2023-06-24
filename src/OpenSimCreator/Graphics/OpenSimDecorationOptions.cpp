@@ -1,6 +1,6 @@
 #include "OpenSimDecorationOptions.hpp"
 
-#include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/ArrayHelpers.hpp>
 
 #include <cstdint>
 #include <type_traits>

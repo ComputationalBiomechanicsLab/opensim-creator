@@ -7,8 +7,8 @@
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/Utils/Algorithms.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Widgets/StandardPopup.hpp>
 
 #include <imgui.h>
@@ -158,11 +158,17 @@ private:
         OpenSim::Model const& model = m_Uum->getModel();
 
         bool hasName = !m_Name.empty();
-        bool allSocketsAssigned = AllOf(m_SocketConnecteePaths, [&model](OpenSim::ComponentPath const& cp)
-        {
-            return ContainsComponent(model, cp);
-        });
-        bool hasEnoughPathPoints = !dynamic_cast<OpenSim::PathActuator const*>(m_Proto.get()) || m_PathPoints.size() >= 2;
+        bool allSocketsAssigned = std::all_of(
+            m_SocketConnecteePaths.begin(),
+            m_SocketConnecteePaths.end(),
+            [&model](OpenSim::ComponentPath const& cp)
+            {
+                return ContainsComponent(model, cp);
+            }
+        );
+        bool hasEnoughPathPoints =
+            !dynamic_cast<OpenSim::PathActuator const*>(m_Proto.get()) ||
+            m_PathPoints.size() >= 2;
 
         return hasName && allSocketsAssigned && hasEnoughPathPoints;
     }
@@ -271,7 +277,11 @@ private:
         // choices
         for (OpenSim::Component const& c : model.getComponentList())
         {
-            if (ContainsIf(m_PathPoints, [&c](auto const& p) { return p.userChoice == osc::GetAbsolutePath(c); }))
+            auto const isSameUserChoiceAsComponent = [&c](PathPoint const& p)
+            {
+                return p.userChoice == osc::GetAbsolutePath(c);
+            };
+            if (std::any_of(m_PathPoints.begin(), m_PathPoints.end(), isSameUserChoiceAsComponent))
             {
                 continue;  // already selected
             }

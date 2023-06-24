@@ -6,7 +6,7 @@
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Widgets/StandardPopup.hpp>
 
 #include <glm/vec2.hpp>

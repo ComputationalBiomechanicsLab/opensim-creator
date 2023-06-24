@@ -2,7 +2,7 @@
 
 #include "oscar/Bindings/ImGuiHelpers.hpp"
 #include "oscar/Platform/Styling.hpp"
-#include "oscar/Utils/Algorithms.hpp"
+#include "oscar/Utils/ArrayHelpers.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <IconsFontAwesome5.h>

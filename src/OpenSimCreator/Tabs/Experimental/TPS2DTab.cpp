@@ -14,8 +14,9 @@
 #include <oscar/Panels/LogViewerPanel.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
-#include <oscar/Utils/Algorithms.hpp>
 #include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
+#include <oscar/Utils/VariantHelpers.hpp>
 
 #include <glm/mat3x4.hpp>
 #include <glm/vec2.hpp>

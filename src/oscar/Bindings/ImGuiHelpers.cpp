@@ -9,7 +9,7 @@
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Maths/Rect.hpp"
 #include "oscar/Maths/PolarPerspectiveCamera.hpp"
-#include "oscar/Utils/Algorithms.hpp"
+#include "oscar/Utils/ArrayHelpers.hpp"
 #include "oscar/Utils/SynchronizedValue.hpp"
 #include "oscar/Utils/UID.hpp"
 #include "OscarConfiguration.hpp"

@@ -43,10 +43,11 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Utils/Algorithms.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
+#include <oscar/Utils/SetHelpers.hpp>
+#include <oscar/Utils/TypeHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <oscar/Widgets/Popup.hpp>
 #include <oscar/Widgets/PopupManager.hpp>

@@ -63,7 +63,6 @@ namespace osc
         void setIndices(nonstd::span<uint32_t const>);
 
         AABB const& getBounds() const;  // local-space
-        glm::vec3 getMidpoint() const;  // local-space
         BVH const& getBVH() const;  // local-space
 
         void clear();

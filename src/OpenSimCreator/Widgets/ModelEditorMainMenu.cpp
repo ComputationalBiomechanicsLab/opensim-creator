@@ -15,7 +15,7 @@
 #include <oscar/Widgets/WindowMenu.hpp>
 #include <oscar/Platform/Config.hpp>
 #include <oscar/Platform/Styling.hpp>
-#include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/ArrayHelpers.hpp>
 
 #include <imgui.h>
 #include <IconsFontAwesome5.h>

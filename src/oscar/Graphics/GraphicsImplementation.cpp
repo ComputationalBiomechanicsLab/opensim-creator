@@ -45,12 +45,14 @@
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
 #include "oscar/Platform/Log.hpp"
-#include "oscar/Utils/Algorithms.hpp"
+#include "oscar/Utils/ArrayHelpers.hpp"
 #include "oscar/Utils/Assertions.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 #include "oscar/Utils/DefaultConstructOnCopy.hpp"
 #include "oscar/Utils/Perf.hpp"
 #include "oscar/Utils/UID.hpp"
+#include "oscar/Utils/VariantHelpers.hpp"
 
 #include <ankerl/unordered_dense.h>
 #include <GL/glew.h>
@@ -360,7 +362,7 @@ namespace
             mesh{mesh_},
             propBlock{maybePropBlock_ ? std::move(maybePropBlock_).value() : osc::MaterialPropertyBlock{}},
             transform{transform_},
-            worldMidpoint{material.getTransparent() ? osc::TransformPoint(transform_, mesh.getMidpoint()) : glm::vec3{}}
+            worldMidpoint{material.getTransparent() ? osc::TransformPoint(transform_, osc::Midpoint(mesh.getBounds())) : glm::vec3{}}
         {
         }
 
@@ -374,7 +376,7 @@ namespace
             mesh{mesh_},
             propBlock{maybePropBlock_ ? std::move(maybePropBlock_).value() : osc::MaterialPropertyBlock{}},
             transform{transform_},
-            worldMidpoint{material.getTransparent() ? transform_ * glm::vec4{mesh.getMidpoint(), 1.0f} : glm::vec3{}}
+            worldMidpoint{material.getTransparent() ? transform_ * glm::vec4{osc::Midpoint(mesh.getBounds()), 1.0f} : glm::vec3{}}
         {
         }
 
@@ -1675,7 +1677,7 @@ int32_t osc::RenderTextureDescriptor::getAntialiasingLevel() const
 
 void osc::RenderTextureDescriptor::setAntialiasingLevel(int32_t level)
 {
-    OSC_THROWING_ASSERT(level <= 64 && osc::NumBitsSetIn(level) == 1);
+    OSC_THROWING_ASSERT(level <= 64 && osc::popcount(static_cast<uint32_t>(level)) == 1);
     m_AnialiasingLevel = level;
 }
 
@@ -3853,11 +3855,6 @@ void osc::Mesh::setIndices(nonstd::span<uint32_t const> indices)
 osc::AABB const& osc::Mesh::getBounds() const
 {
     return m_Impl->getBounds();
-}
-
-glm::vec3 osc::Mesh::getMidpoint() const
-{
-    return m_Impl->getMidpoint();
 }
 
 osc::BVH const& osc::Mesh::getBVH() const

@@ -4,8 +4,9 @@
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
+#include <oscar/Utils/TypeHelpers.hpp>
 
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
@@ -112,11 +113,11 @@ namespace
         OpenSim::AbstractOutput const& ao,
         osc::OutputSubfield subfield)
     {
-        if (osc::Is<OpenSim::Output<double>>(ao))
+        if (osc::TypeIDEquals<OpenSim::Output<double>>(ao))
         {
             return output_magic::extractTypeErased<OpenSim::Output<double>>;
         }
-        else if (osc::Is<OpenSim::Output<SimTK::Vec3>>(ao))
+        else if (osc::TypeIDEquals<OpenSim::Output<SimTK::Vec3>>(ao))
         {
             switch (subfield) {
             case osc::OutputSubfield::X:
@@ -310,7 +311,7 @@ nonstd::span<osc::OutputSubfield const> osc::GetAllSupportedOutputSubfields()
 
 int osc::GetSupportedSubfields(OpenSim::AbstractOutput const& ao)
 {
-    if (Is<OpenSim::Output<SimTK::Vec3>>(ao))
+    if (TypeIDEquals<OpenSim::Output<SimTK::Vec3>>(ao))
     {
         int rv = static_cast<int>(osc::OutputSubfield::X);
         rv |= static_cast<int>(osc::OutputSubfield::Y);

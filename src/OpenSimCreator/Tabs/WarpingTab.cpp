@@ -37,10 +37,10 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Tabs/TabHost.hpp>
-#include <oscar/Utils/Algorithms.hpp>
 #include <oscar/Utils/CStringView.hpp>
-#include <oscar/Utils/ScopeGuard.hpp>
+#include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
+#include <oscar/Utils/ScopeGuard.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <oscar/Utils/UndoRedo.hpp>
 #include <oscar/Widgets/Popup.hpp>

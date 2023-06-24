@@ -1,6 +1,6 @@
 #include "MuscleDecorationStyle.hpp"
 
-#include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/ArrayHelpers.hpp>
 
 #include <nonstd/span.hpp>
 

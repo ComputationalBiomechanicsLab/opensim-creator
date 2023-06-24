@@ -11,7 +11,7 @@
 #include <oscar/Maths/Segment.hpp>
 #include <oscar/Maths/Triangle.hpp>
 #include <oscar/Platform/Log.hpp>
-#include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/HashHelpers.hpp>
 
 #include <glm/glm.hpp>
 #include <simbody/internal/common.h>

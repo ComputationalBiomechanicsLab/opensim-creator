@@ -14,7 +14,6 @@
 #include "oscar/Panels/PerfPanel.hpp"
 #include "oscar/Platform/App.hpp"
 #include "oscar/Platform/Log.hpp"
-#include "oscar/Utils/Algorithms.hpp"
 #include "oscar/Utils/CStringView.hpp"
 #include "oscar/Utils/UID.hpp"
 

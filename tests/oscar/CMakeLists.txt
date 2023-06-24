@@ -20,6 +20,9 @@ add_executable(testoscar EXCLUDE_FROM_ALL
 
     Maths/TestBVH.cpp
 
+    Utils/TestFileChangePoller.cpp
+    Utils/TestStringHelpers.cpp
+
     testoscar.cpp  # entry point
 )
 

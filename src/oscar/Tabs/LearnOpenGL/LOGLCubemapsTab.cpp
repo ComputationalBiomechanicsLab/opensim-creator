@@ -14,7 +14,7 @@
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
 #include "oscar/Platform/Config.hpp"
-#include "oscar/Utils/Algorithms.hpp"
+#include "oscar/Utils/ArrayHelpers.hpp"
 #include "oscar/Utils/Assertions.hpp"
 #include "oscar/Utils/CStringView.hpp"
 

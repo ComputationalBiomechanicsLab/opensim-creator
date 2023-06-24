@@ -33,10 +33,10 @@
 #include <oscar/Platform/Styling.hpp>
 #include <oscar/Tabs/ErrorTab.hpp>
 #include <oscar/Tabs/TabHost.hpp>
-#include <oscar/Utils/Algorithms.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/FileChangePoller.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <oscar/Widgets/Popup.hpp>

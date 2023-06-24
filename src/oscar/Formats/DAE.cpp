@@ -5,7 +5,6 @@
 #include "oscar/Graphics/SceneDecoration.hpp"
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Platform/os.hpp"
-#include "oscar/Utils/Algorithms.hpp"
 #include "OscarConfiguration.hpp"
 
 #include <glm/mat4x4.hpp>

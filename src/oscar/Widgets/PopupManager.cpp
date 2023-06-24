@@ -1,6 +1,5 @@
 #include "PopupManager.hpp"
 
-#include "oscar/Utils/Algorithms.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Widgets/Popup.hpp"
 
@@ -49,5 +48,5 @@ void osc::PopupManager::draw()
     }
 
     // garbage-collect any closed popups
-    osc::RemoveErase(m_Popups, [](auto const& ptr) { return !ptr->isOpen(); });
+    osc::erase_if(m_Popups, [](auto const& ptr) { return !ptr->isOpen(); });
 }

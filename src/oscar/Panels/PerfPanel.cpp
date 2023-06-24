@@ -2,7 +2,6 @@
 
 #include "oscar/Panels/StandardPanel.hpp"
 #include "oscar/Platform/App.hpp"
-#include "oscar/Utils/Algorithms.hpp"
 #include "oscar/Utils/Perf.hpp"
 
 #include <imgui.h>
@@ -69,7 +68,7 @@ private:
         {
             m_MeasurementBuffer.clear();
             GetAllMeasurements(m_MeasurementBuffer);
-            Sort(m_MeasurementBuffer, LexographicallyHighestLabel);
+            std::sort(m_MeasurementBuffer.begin(), m_MeasurementBuffer.end(), LexographicallyHighestLabel);
         }
 
         ImGuiTableFlags flags =

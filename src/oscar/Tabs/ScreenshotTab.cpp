@@ -16,8 +16,8 @@
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Platform/App.hpp"
 #include "oscar/Platform/os.hpp"
-#include "oscar/Utils/Algorithms.hpp"
 #include "oscar/Utils/Assertions.hpp"
+#include "oscar/Utils/SetHelpers.hpp"
 
 #include <IconsFontAwesome5.h>
 #include <SDL_events.h>

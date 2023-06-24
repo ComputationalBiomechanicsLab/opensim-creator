@@ -21,7 +21,6 @@
 #include <oscar/Tabs/ScreenshotTab.hpp>
 #include <oscar/Tabs/Tab.hpp>
 #include <oscar/Tabs/TabRegistry.hpp>
-#include <oscar/Utils/Algorithms.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/Perf.hpp>
@@ -335,12 +334,12 @@ public:
 
     bool implHasUserOutputExtractor(OutputExtractor const& oe) const final
     {
-        return osc::Contains(m_UserOutputExtractors, oe);
+        return std::find(m_UserOutputExtractors.begin(), m_UserOutputExtractors.end(), oe) != m_UserOutputExtractors.end();
     }
 
     bool implRemoveUserOutputExtractor(OutputExtractor const& oe) final
     {
-        auto it = osc::Find(m_UserOutputExtractors, oe);
+        auto const it = std::find(m_UserOutputExtractors.begin(), m_UserOutputExtractors.end(), oe);
         if (it != m_UserOutputExtractors.end())
         {
             m_UserOutputExtractors.erase(it);

@@ -3,7 +3,7 @@
 #include "oscar/Graphics/Mesh.hpp"
 #include "oscar/Graphics/MeshGen.hpp"
 #include "oscar/Platform/Log.hpp"
-#include "oscar/Utils/Algorithms.hpp"
+#include "oscar/Utils/HashHelpers.hpp"
 #include "oscar/Utils/SynchronizedValue.hpp"
 
 #include <functional>

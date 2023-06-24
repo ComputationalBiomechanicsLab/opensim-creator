@@ -28,8 +28,9 @@
 #include "oscar/Maths/BVH.hpp"
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Platform/App.hpp"
-#include "oscar/Utils/Algorithms.hpp"
+#include "oscar/Utils/ArrayHelpers.hpp"
 #include "oscar/Utils/CStringView.hpp"
+#include "oscar/Utils/StringHelpers.hpp"
 
 #include <gtest/gtest.h>
 
@@ -2222,30 +2223,6 @@ TEST_F(Renderer, MeshGetBooundsReturnsNonemptyForIndexedVerts)
     m.setIndices(pyramidIndices);
     osc::AABB expected = osc::AABBFromVerts(pyramid);
     ASSERT_EQ(m.getBounds(), expected);
-}
-
-TEST_F(Renderer, MeshGetMidpointReturnsZeroVecOnInitialization)
-{
-    osc::Mesh m;
-    glm::vec3 expected = {};
-    ASSERT_EQ(m.getMidpoint(), expected);
-}
-
-TEST_F(Renderer, MeshGetMidpointReturnsExpectedMidpoint)
-{
-    glm::vec3 pyramid[] =
-    {
-        {-1.0f, -1.0f, 0.0f},  // base: bottom-left
-        { 1.0f, -1.0f, 0.0f},  // base: bottom-right
-        { 0.0f,  1.0f, 0.0f},  // base: top-middle
-    };
-    std::uint16_t pyramidIndices[] = {0, 1, 2};
-
-    osc::Mesh m;
-    m.setVerts(pyramid);
-    m.setIndices(pyramidIndices);
-    glm::vec3 expected = osc::Midpoint(osc::AABBFromVerts(pyramid));
-    ASSERT_EQ(m.getMidpoint(), expected);
 }
 
 TEST_F(Renderer, MeshGetBVHReturnsEmptyBVHOnInitialization)

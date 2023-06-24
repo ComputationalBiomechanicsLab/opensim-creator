@@ -2,9 +2,12 @@
 
 #include <atomic>
 #include <cstddef>
+#include <iterator>
 #include <memory>
 #include <thread>
 #include <type_traits>
+#include <unordered_set>
+#include <vector>
 
 // shims: *roughly* compatible shims to features available in newer C++es
 namespace osc {
@@ -157,5 +160,88 @@ namespace osc {
     constexpr std::ptrdiff_t ssize(const T (&)[N]) noexcept
     {
         return N;
+    }
+
+    // C++20: erase_if (for unordered_set)
+    //
+    // see: https://en.cppreference.com/w/cpp/container/unordered_set/erase_if
+    template<
+        typename Key,
+        typename Hash,
+        typename KeyEqual,
+        typename Alloc,
+        typename UnaryPredicate
+    >
+    typename std::unordered_set<Key, Hash, KeyEqual, Alloc>::size_type RemoveErase(
+        std::unordered_set<Key, Hash, KeyEqual, Alloc>& c,
+        UnaryPredicate pred)
+    {
+        auto oldSize = c.size();
+        for (auto it = c.begin(), end = c.end(); it != end;)
+        {
+            if (pred(*it))
+            {
+                it = c.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+        return oldSize - c.size();
+    }
+
+    // C++20: std::erase_if (std::vector)
+    //
+    // see: https://en.cppreference.com/w/cpp/container/vector/erase2
+    template<
+        typename T,
+        typename Alloc,
+        typename UnaryPredicate
+    >
+    constexpr typename std::vector<T, Alloc>::size_type erase_if(
+        std::vector<T, Alloc>& c,
+        UnaryPredicate pred)
+    {
+        auto const it = std::remove_if(c.begin(), c.end(), pred);
+        auto const r = std::distance(it, c.end());
+        c.erase(it, c.end());
+        return r;
+    }
+
+    // C++20: popcount
+    //
+    // see: https://en.cppreference.com/w/cpp/numeric/popcount
+    template<typename T>
+    constexpr int popcount(T x) noexcept
+    {
+        static_assert(std::is_unsigned_v<T> && sizeof(T) <= sizeof(unsigned long long));
+
+        unsigned long long uv = x;
+        int i = 0;
+        while (uv)
+        {
+            uv &= (uv - 1);
+            ++i;
+        }
+        return i;
+    }
+
+    // C++20: countr_zero: counts the number of consecutive 0 bits, starting from the least significant bit 
+    //
+    // see: https://en.cppreference.com/w/cpp/numeric/countr_zero
+    template<typename T>
+    constexpr int countr_zero(T x)
+    {
+        static_assert(std::is_unsigned_v<T> && sizeof(T) <= sizeof(unsigned long long));
+
+        unsigned long long uv = x;
+        int rv = 0;
+        while (!(uv & 0x1))
+        {
+            uv >>= 1;
+            ++rv;
+        }
+        return rv;
     }
 }

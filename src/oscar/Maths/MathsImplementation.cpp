@@ -999,6 +999,36 @@ namespace
 
 // MathHelpers
 
+// returns `true` if the values of `a` and `b` are effectively equal
+//
+// this algorithm is designed to be correct, rather than fast
+bool osc::IsEffectivelyEqual(double a, double b) noexcept
+{
+    // why:
+    //
+    //     http://realtimecollisiondetection.net/blog/?p=89
+    //     https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
+    //
+    // machine epsilon is only relevant for numbers < 1.0, so the epsilon
+    // value must be scaled up to the magnitude of the operands if you need
+    // a more-correct equality comparison
+
+    double const scaledEpsilon = std::max({1.0, a, b}) * std::numeric_limits<double>::epsilon();
+    return std::abs(a - b) < scaledEpsilon;
+}
+
+bool osc::IsLessThanOrEffectivelyEqual(double a, double b) noexcept
+{
+    if (a <= b)
+    {
+        return true;
+    }
+    else
+    {
+        return IsEffectivelyEqual(a, b);
+    }
+}
+
 bool osc::AreAtSameLocation(glm::vec3 const& a, glm::vec3 const& b) noexcept
 {
     constexpr float eps2 = std::numeric_limits<float>::epsilon() * std::numeric_limits<float>::epsilon();

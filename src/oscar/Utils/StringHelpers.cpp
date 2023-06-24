@@ -1,36 +1,14 @@
-#include "Algorithms.hpp"
+#include "StringHelpers.hpp"
+
+#include "oscar/Utils/CStringView.hpp"
 
 #include <algorithm>
-#include <cctype>
+#include <cstddef>
 #include <cstring>
-#include <filesystem>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
-
-int32_t osc::NumBitsSetIn(int32_t v)
-{
-    uint32_t uv = static_cast<uint32_t>(v);
-    uint32_t i = 0;
-    while (uv)
-    {
-        uv &= (uv - 1);
-        ++i;
-    }
-    return static_cast<int32_t>(i);
-}
-
-int32_t osc::LeastSignificantBitIndex(int32_t v)
-{
-    uint32_t uv = static_cast<uint32_t>(v);
-    uint32_t i = 0;
-    while (!(uv & 0x1))
-    {
-        uv >>= 1;
-        ++i;
-    }
-    return static_cast<int32_t>(i);
-}
 
 bool osc::IsStringCaseInsensitiveGreaterThan(std::string const& a, std::string const& b)
 {
@@ -63,24 +41,6 @@ bool osc::IsStringCaseInsensitiveGreaterThan(std::string const& a, std::string c
     }
 }
 
-bool osc::IsFilenameLexographicallyGreaterThan(std::filesystem::path const& p1, std::filesystem::path const& p2)
-{
-    return IsStringCaseInsensitiveGreaterThan(p1.filename().string(), p2.filename().string());
-}
-
-bool osc::IsSubpath(std::filesystem::path const& dir, std::filesystem::path const& pth)
-{
-    auto dirNumComponents = std::distance(dir.begin(), dir.end());
-    auto pathNumComponents = std::distance(pth.begin(), pth.end());
-
-    if (pathNumComponents < dirNumComponents)
-    {
-        return false;
-    }
-
-    return std::equal(dir.begin(), dir.end(), pth.begin());
-}
-
 bool osc::ContainsSubstring(std::string const& str, std::string_view substr)
 {
     return str.find(substr) != std::string::npos;
@@ -100,7 +60,7 @@ bool osc::ContainsSubstring(std::string_view str, std::string_view substr)
 std::string osc::ToLower(std::string_view s)
 {
     std::string cpy{s};
-    std::transform(cpy.begin(), cpy.end(), cpy.begin(), [](uint8_t c)
+    std::transform(cpy.begin(), cpy.end(), cpy.begin(), [](std::string::value_type c)
     {
         return static_cast<std::string::value_type>(std::tolower(c));
     });
@@ -109,7 +69,7 @@ std::string osc::ToLower(std::string_view s)
 
 bool osc::IsEqualCaseInsensitive(std::string const& s1, std::string const& s2)
 {
-    auto compareChars = [](uint8_t c1, uint8_t c2)
+    auto const compareChars = [](std::string::value_type c1, std::string::value_type c2)
     {
         return std::tolower(c1) == std::tolower(c2);
     };
@@ -194,14 +154,14 @@ std::optional<float> osc::FromCharsStripWhitespace(std::string_view v)
     return i == v.size() ? std::optional<float>{fpv} : std::optional<float>{};
 }
 
-std::string osc::Ellipsis(std::string_view v, int32_t maxLen)
+std::string osc::Ellipsis(std::string_view v, size_t maxLen)
 {
     if (v.length() <= maxLen)
     {
         return std::string{v};
     }
 
-    std::string_view substr = v.substr(0, std::max(0, maxLen-3));
+    std::string_view substr = v.substr(0, std::max(0ll, static_cast<ptrdiff_t>(maxLen)-3));
     std::string rv;
     rv.reserve(substr.length() + 3);
     rv = substr;

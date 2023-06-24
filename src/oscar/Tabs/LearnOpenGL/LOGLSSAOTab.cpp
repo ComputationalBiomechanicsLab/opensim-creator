@@ -25,7 +25,7 @@
 #include "oscar/Maths/Rect.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
-#include "oscar/Utils/Algorithms.hpp"
+#include "oscar/Utils/ArrayHelpers.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <glm/vec2.hpp>

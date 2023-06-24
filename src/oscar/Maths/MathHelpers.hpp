@@ -28,6 +28,13 @@ namespace osc { struct Segment; }
 //               osc struct
 namespace osc
 {
+    // returns `true` if the values of `a` and `b` are effectively equal
+    //
+    // this algorithm is designed to be correct, rather than fast
+    bool IsEffectivelyEqual(double a, double b) noexcept;
+
+    bool IsLessThanOrEffectivelyEqual(double a, double b) noexcept;
+
     // ----- glm::vecX/glm::matX helpers -----
 
     // returns true if the provided vectors are at the same location

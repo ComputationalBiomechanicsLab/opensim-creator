@@ -7,8 +7,8 @@
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Panels/StandardPanel.hpp>
 #include <oscar/Platform/Styling.hpp>
-#include <oscar/Utils/Algorithms.hpp>
 #include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 
 #include <imgui.h>
 #include <IconsFontAwesome5.h>

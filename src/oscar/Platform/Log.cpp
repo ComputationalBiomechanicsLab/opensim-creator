@@ -1,6 +1,6 @@
 #include "Log.hpp"
 
-#include "oscar/Utils/Algorithms.hpp"
+#include "oscar/Utils/ArrayHelpers.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <iostream>

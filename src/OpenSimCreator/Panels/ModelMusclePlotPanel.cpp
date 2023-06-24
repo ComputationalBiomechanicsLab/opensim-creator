@@ -7,15 +7,17 @@
 #include "OpenSimCreator/Utils/UndoableModelActions.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Formats/CSV.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/Assertions.hpp>
-#include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
 
 #include <glm/glm.hpp>
@@ -1032,7 +1034,7 @@ namespace
 
         void clearUnlockedPlots()
         {
-            osc::RemoveErase(m_PreviousPlots, [](std::shared_ptr<Plot> const& p) { return !p->getIsLocked(); });
+            osc::erase_if(m_PreviousPlots, [](std::shared_ptr<Plot> const& p) { return !p->getIsLocked(); });
         }
 
         PlottingTaskStatus getPlottingTaskStatus() const
@@ -1131,7 +1133,7 @@ namespace
     private:
         void clearComputedPlots()
         {
-            osc::RemoveErase(m_PreviousPlots, [](auto const& ptr) { return ptr->tryGetParameters() != nullptr; });
+            osc::erase_if(m_PreviousPlots, [](auto const& ptr) { return ptr->tryGetParameters() != nullptr; });
         }
 
         void checkForParameterChangesAndStartPlotting(PlotParameters const& desiredParams)
@@ -1214,7 +1216,7 @@ namespace
                 return i++ < idxOfDeleteableEnd && !p->getIsLocked();
             };
 
-            osc::RemoveErase(m_PreviousPlots, shouldDelete);
+            osc::erase_if(m_PreviousPlots, shouldDelete);
         }
 
         std::shared_ptr<Plot> m_ActivePlot;
@@ -2173,7 +2175,11 @@ namespace
             {
                 coordinates.push_back(&coord);
             }
-            osc::Sort(coordinates, osc::IsNameLexographicallyLowerThan<OpenSim::Component const*>);
+            std::sort(
+                coordinates.begin(),
+                coordinates.end(),
+                osc::IsNameLexographicallyLowerThan<OpenSim::Component const*>
+            );
 
             ImGui::Text("select coordinate:");
 
@@ -2212,7 +2218,11 @@ namespace
             {
                 muscles.push_back(&musc);
             }
-            osc::Sort(muscles, osc::IsNameLexographicallyLowerThan<OpenSim::Component const*>);
+            std::sort(
+                muscles.begin(),
+                muscles.end(),
+                osc::IsNameLexographicallyLowerThan<OpenSim::Component const*>
+            );
 
             ImGui::Text("select muscle:");
 

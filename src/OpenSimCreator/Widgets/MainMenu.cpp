@@ -15,8 +15,9 @@
 #include <oscar/Platform/Config.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/ArrayHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <OscarConfiguration.hpp>
@@ -258,8 +259,8 @@ void osc::MainMenuAboutTab::draw()
         DrawHelpMarker("the level of MultiSample Anti-Aliasing to use. This only affects 3D renders *within* the UI, not the whole UI (panels etc. will not be affected)");
         ImGui::NextColumn();
         {
-            int samplesIdx = LeastSignificantBitIndex(App::get().getMSXAASamplesRecommended());
-            int maxSamplesIdx = LeastSignificantBitIndex(App::get().getMSXAASamplesMax());
+            int samplesIdx = countr_zero(static_cast<uint32_t>(App::get().getMSXAASamplesRecommended()));
+            int maxSamplesIdx = countr_zero(static_cast<uint32_t>(App::get().getMSXAASamplesMax()));
             OSC_ASSERT(static_cast<size_t>(maxSamplesIdx) < c_AntialiasingLevels.size());
 
             if (ImGui::Combo("##msxaa", &samplesIdx, c_AntialiasingLevels.data(), maxSamplesIdx + 1))

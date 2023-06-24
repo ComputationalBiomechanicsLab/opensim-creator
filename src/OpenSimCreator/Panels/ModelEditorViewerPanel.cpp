@@ -19,7 +19,7 @@
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Panels/StandardPanel.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Widgets/GuiRuler.hpp>
 #include <oscar/Widgets/IconWithoutMenu.hpp>
 
@@ -477,7 +477,7 @@ private:
 
     void layersGarbageCollect()
     {
-        osc::RemoveErase(m_Layers, [](auto const& layerPtr)
+        osc::erase_if(m_Layers, [](auto const& layerPtr)
         {
             return layerPtr->shouldClose();
         });

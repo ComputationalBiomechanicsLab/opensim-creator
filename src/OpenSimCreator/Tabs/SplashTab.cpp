@@ -25,7 +25,7 @@
 #include <oscar/Platform/RecentFile.hpp>
 #include <oscar/Platform/Styling.hpp>
 #include <oscar/Tabs/TabHost.hpp>
-#include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Widgets/LogViewer.hpp>
 #include <OscarConfiguration.hpp>
 

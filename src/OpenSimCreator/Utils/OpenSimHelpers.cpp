@@ -7,11 +7,11 @@
 #include <oscar/Maths/Plane.hpp>
 #include <oscar/Maths/Transform.hpp>
 #include <oscar/Platform/Log.hpp>
-#include <oscar/Utils/Algorithms.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/Perf.hpp>
+#include <oscar/Utils/TypeHelpers.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp>
@@ -136,7 +136,7 @@ namespace
         OpenSim::Component const& component)
     {
         std::vector<OpenSim::Component*> allConnectees = GetAnyComponentsConnectedViaSocketTo(root, component);
-        osc::RemoveErase(allConnectees, [&root, &component](OpenSim::Component* connectee)
+        osc::erase_if(allConnectees, [&root, &component](OpenSim::Component* connectee)
         {
             return
                 osc::IsInclusiveChildOf(&component, connectee) &&
@@ -686,11 +686,14 @@ std::optional<std::filesystem::path> osc::FindGeometryFileAbsPath(
 
 bool osc::ShouldShowInUI(OpenSim::Component const& c)
 {
-    if (Is<OpenSim::PathWrapPoint>(c))
+    if (TypeIDEquals<OpenSim::PathWrapPoint>(c))
     {
         return false;
     }
-    else if (Is<OpenSim::Station>(c) && c.hasOwner() && DerivesFrom<OpenSim::PathPoint>(c.getOwner()))
+    else if (
+        TypeIDEquals<OpenSim::Station>(c) &&
+        c.hasOwner() &&
+        DerivesFrom<OpenSim::PathPoint>(c.getOwner()))
     {
         return false;
     }

@@ -33,4 +33,12 @@ namespace osc
 
     // returns the given path's filename without an extension (e.g. /dir/model.osim --> model)
     std::string FileNameWithoutExtension(std::filesystem::path const&);
+
+    // returns true if `b` is lexographically greater than `a`, ignoring case
+    //
+    // e.g. "b" > "a", "B" > "a" (this isn't true if case-sensitive)
+    bool IsFilenameLexographicallyGreaterThan(std::filesystem::path const& p1, std::filesystem::path const& p2);
+
+    // returns true if `path` is within `dir` (non-recursive)
+    bool IsSubpath(std::filesystem::path const& dir, std::filesystem::path const& path);
 }

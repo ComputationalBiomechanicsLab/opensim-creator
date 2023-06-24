@@ -7,9 +7,9 @@
 #include "OpenSimCreator/Utils/ParamBlock.hpp"
 
 #include <oscar/Platform/Log.hpp>
-#include <oscar/Utils/Algorithms.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/Array.h>

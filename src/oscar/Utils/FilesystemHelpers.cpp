@@ -1,6 +1,7 @@
 #include "FilesystemHelpers.hpp"
 
 #include "oscar/Platform/os.hpp"
+#include "oscar/Utils/StringHelpers.hpp"
 
 #include <nonstd/span.hpp>
 
@@ -137,4 +138,22 @@ std::vector<uint8_t> osc::SlurpFileIntoVector(std::filesystem::path const& p)
 std::string osc::FileNameWithoutExtension(std::filesystem::path const& p)
 {
     return p.filename().replace_extension("").string();
+}
+
+bool osc::IsFilenameLexographicallyGreaterThan(std::filesystem::path const& p1, std::filesystem::path const& p2)
+{
+    return IsStringCaseInsensitiveGreaterThan(p1.filename().string(), p2.filename().string());
+}
+
+bool osc::IsSubpath(std::filesystem::path const& dir, std::filesystem::path const& pth)
+{
+    auto dirNumComponents = std::distance(dir.begin(), dir.end());
+    auto pathNumComponents = std::distance(pth.begin(), pth.end());
+
+    if (pathNumComponents < dirNumComponents)
+    {
+        return false;
+    }
+
+    return std::equal(dir.begin(), dir.end(), pth.begin());
 }

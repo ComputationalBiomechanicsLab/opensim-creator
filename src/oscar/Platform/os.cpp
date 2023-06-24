@@ -1,9 +1,9 @@
 #include "os.hpp"
 
 #include "oscar/Platform/Log.hpp"
-#include "oscar/Utils/Algorithms.hpp"
 #include "oscar/Utils/Assertions.hpp"
 #include "oscar/Utils/ScopeGuard.hpp"
+#include "oscar/Utils/StringHelpers.hpp"
 
 #include <nfd.h>
 #include <SDL_clipboard.h>

@@ -9,7 +9,6 @@
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Panels/StandardPanel.hpp>
 #include <oscar/Platform/Styling.hpp>
-#include <oscar/Utils/Algorithms.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <IconsFontAwesome5.h>
@@ -82,10 +81,18 @@ private:
                     switch (spec.SortDirection)
                     {
                     case ImGuiSortDirection_Ascending:
-                        Sort(coordPtrs, osc::IsNameLexographicallyLowerThan<OpenSim::Component const*>);
+                        std::sort(
+                            coordPtrs.begin(),
+                            coordPtrs.end(),
+                            osc::IsNameLexographicallyLowerThan<OpenSim::Component const*>
+                        );
                         break;
                     case ImGuiSortDirection_Descending:
-                        Sort(coordPtrs, osc::IsNameLexographicallyGreaterThan<OpenSim::Component const*>);
+                        std::sort(
+                            coordPtrs.begin(),
+                            coordPtrs.end(),
+                            osc::IsNameLexographicallyGreaterThan<OpenSim::Component const*>
+                        );
                         break;
                     case ImGuiSortDirection_None:
                     default:

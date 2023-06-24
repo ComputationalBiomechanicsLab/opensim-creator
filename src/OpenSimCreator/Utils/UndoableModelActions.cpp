@@ -22,7 +22,8 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/FilesystemHelpers.hpp>
+#include <oscar/Utils/TypeHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <OpenSim/Common/Component.h>

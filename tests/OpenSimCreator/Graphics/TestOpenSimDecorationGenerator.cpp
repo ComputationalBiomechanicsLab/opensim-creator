@@ -7,7 +7,7 @@
 
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/SceneDecoration.hpp>
-#include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Platform/Log.hpp>
 
 #include <gtest/gtest.h>

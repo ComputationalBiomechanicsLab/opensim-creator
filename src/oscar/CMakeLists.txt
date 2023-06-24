@@ -68,8 +68,6 @@ add_library(oscar STATIC
     Graphics/Image.hpp
     Graphics/ImageAnnotation.hpp
     Graphics/ImageFlags.hpp
-    Graphics/ImageGen.cpp
-    Graphics/ImageGen.hpp
     Graphics/Material.hpp
     Graphics/MaterialPropertyBlock.hpp
     Graphics/MeshCache.cpp
@@ -256,8 +254,7 @@ add_library(oscar STATIC
     Utils/PropertySystem/Socket.hpp
     Utils/PropertySystem/SocketDefinition.hpp
     Utils/PropertySystem/TypedComponentList.hpp
-    Utils/Algorithms.cpp
-    Utils/Algorithms.hpp
+    Utils/ArrayHelpers.hpp
     Utils/Assertions.cpp
     Utils/Assertions.hpp
     Utils/CircularBuffer.hpp
@@ -270,17 +267,24 @@ add_library(oscar STATIC
     Utils/FileChangePoller.hpp
     Utils/FilesystemHelpers.cpp
     Utils/FilesystemHelpers.hpp
+    Utils/HashHelpers.hpp
     Utils/Macros.hpp
     Utils/MethodTestMacro.hpp
+    Utils/ParalellizationHelpers.hpp
     Utils/Perf.cpp
     Utils/Perf.hpp
     Utils/ScopeGuard.hpp
+    Utils/SetHelpers.hpp
     Utils/Spsc.hpp
+    Utils/StringHelpers.cpp
+    Utils/StringHelpers.hpp
     Utils/SynchronizedValue.hpp
+    Utils/TypeHelpers.hpp
     Utils/UID.cpp
     Utils/UID.hpp
     Utils/UndoRedo.cpp
     Utils/UndoRedo.hpp
+    Utils/VariantHelpers.hpp
 
     Widgets/GuiRuler.cpp
     Widgets/GuiRuler.hpp

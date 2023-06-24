@@ -9,7 +9,8 @@
 #include "oscar/Platform/os.hpp"
 #include "oscar/Platform/RecentFile.hpp"
 #include "oscar/Screens/Screen.hpp"
-#include "oscar/Utils/Algorithms.hpp"
+#include "oscar/Utils/ArrayHelpers.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/FilesystemHelpers.hpp"
 #include "oscar/Utils/Perf.hpp"
 #include "oscar/Utils/ScopeGuard.hpp"
@@ -351,7 +352,7 @@ public:
             throw std::runtime_error{"tried to set number of multisamples higher than supported by hardware"};
         }
 
-        if (NumBitsSetIn(s) != 1)
+        if (popcount(static_cast<uint32_t>(s)) != 1)
         {
             throw std::runtime_error{"tried to set number of multisamples to an invalid value. Must be 1, or a multiple of 2 (1x, 2x, 4x, 8x...)"};
         }
@@ -647,7 +648,7 @@ public:
         }
 
         // clear potentially duplicate entries from existing list
-        osc::RemoveErase(rfs, [&p](RecentFile const& rf) { return rf.path == p; });
+        osc::erase_if(rfs, [&p](RecentFile const& rf) { return rf.path == p; });
 
         // write by truncating existing list file
         std::ofstream fd{recentFilesPath, std::ios::trunc};
@@ -857,7 +858,13 @@ private:
                 }
 
                 // gc any invalid (i.e. handled) requests
-                osc::RemoveErase(m_ActiveAnnotatedScreenshotRequests, [](AnnotatedScreenshotRequest const& req) { return !req.underlyingScreenshotFuture.valid(); });
+                osc::erase_if(
+                    m_ActiveAnnotatedScreenshotRequests,
+                    [](AnnotatedScreenshotRequest const& req)
+                    {
+                        return !req.underlyingScreenshotFuture.valid();
+                    }
+                );
             }
 
             // care: only update the frame counter here because the above methods

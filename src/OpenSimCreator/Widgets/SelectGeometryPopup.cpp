@@ -4,7 +4,7 @@
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Utils/Algorithms.hpp>
+#include <oscar/Utils/ArrayHelpers.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Widgets/StandardPopup.hpp>
 
