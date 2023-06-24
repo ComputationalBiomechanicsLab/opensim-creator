@@ -38,6 +38,7 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <numeric>
 #include <stack>
 #include <stdexcept>
 #include <utility>
@@ -784,15 +785,7 @@ float osc::Volume(Tetrahedron const& t)
 glm::vec3 osc::Center(Tetrahedron const& t)
 {
     // arithmetic mean of tetrahedron vertices
-
-    glm::vec<3, double> acc = t[0];
-    for (size_t i = 1; i < t.size(); ++i)
-    {
-        acc += t[i];
-    }
-    acc /= static_cast<double>(t.size());
-
-    return acc;
+    return std::reduce(t.begin(), t.end()) / static_cast<float>(t.size());
 }
 
 
@@ -1172,13 +1165,7 @@ glm::vec3 osc::Midpoint(glm::vec3 const& a, glm::vec3 const& b) noexcept
 
 glm::vec3 osc::Midpoint(nonstd::span<glm::vec3 const> vs) noexcept
 {
-    glm::vec3 rv = {};
-    for (glm::vec3 const& v : vs)
-    {
-        rv += v;
-    }
-    rv /= vs.size();
-    return rv;
+    return std::reduce(vs.begin(), vs.end()) / static_cast<float>(vs.size());
 }
 
 
@@ -1464,10 +1451,10 @@ osc::Rect osc::NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const&
 
 osc::Sphere osc::BoundingSphereOf(nonstd::span<glm::vec3 const> points) noexcept
 {
-    AABB aabb = AABBFromVerts(points);
+    AABB const aabb = AABBFromVerts(points);
 
     Sphere rv{};
-    rv.origin = (aabb.min + aabb.max) / 2.0f;
+    rv.origin = Midpoint(aabb);
     rv.radius = 0.0f;
 
     // edge-case: no points provided
@@ -1666,7 +1653,7 @@ osc::AABB osc::TransformAABB(AABB const& aabb, glm::mat4 const& m) noexcept
 {
     auto verts = ToCubeVerts(aabb);
 
-    for (auto& vert : verts)
+    for (glm::vec3& vert : verts)
     {
         glm::vec4 p = m * glm::vec4{vert, 1.0f};
         vert = glm::vec3{p / p.w}; // perspective divide
@@ -1737,7 +1724,9 @@ osc::AABB osc::AABBFromVerts(nonstd::span<glm::vec3 const> vs) noexcept
     return rv;
 }
 
-osc::AABB osc::AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices)
+osc::AABB osc::AABBFromIndexedVerts(
+    nonstd::span<glm::vec3 const> verts,
+    nonstd::span<uint32_t const> indices)
 {
     AABB rv{};
 
@@ -1774,7 +1763,9 @@ osc::AABB osc::AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd:
     return rv;
 }
 
-osc::AABB osc::AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices)
+osc::AABB osc::AABBFromIndexedVerts(
+    nonstd::span<glm::vec3 const> verts,
+    nonstd::span<uint16_t const> indices)
 {
     AABB rv{};
 
@@ -2050,15 +2041,14 @@ std::optional<osc::RayCollision> osc::GetRayCollisionSphere(Line const& l, Spher
 
 std::optional<osc::RayCollision> osc::GetRayCollisionAABB(Line const& l, AABB const& bb) noexcept
 {
-    float t0 = std::numeric_limits<float>::lowest();
-    float t1 = std::numeric_limits<float>::max();
-
     // intersect the ray with each axis-aligned slab for each dimension
     //
     // i.e. figure out where the line intersects the front+back of the AABB
     //      in (e.g.) X, then Y, then Z, and intersect those interactions such
     //      that if the intersection is ever empty (or, negative here) then there
     //      is no intersection
+    float t0 = std::numeric_limits<float>::lowest();
+    float t1 = std::numeric_limits<float>::max();
     for (glm::vec3::length_type i = 0; i < 3; ++i)
     {
         float invDir = 1.0f / l.dir[i];

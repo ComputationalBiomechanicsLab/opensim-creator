@@ -41,6 +41,7 @@
 #include <mutex>
 #include <sstream>
 #include <stdexcept>
+#include <unordered_map>
 
 // handy macro for calling SDL_GL_SetAttribute with error checking
 #define OSC_SDL_GL_SetAttribute_CHECK(attr, value)                                                                     \

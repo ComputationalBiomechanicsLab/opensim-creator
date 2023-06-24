@@ -172,7 +172,7 @@ namespace osc {
         typename Alloc,
         typename UnaryPredicate
     >
-    typename std::unordered_set<Key, Hash, KeyEqual, Alloc>::size_type RemoveErase(
+    typename std::unordered_set<Key, Hash, KeyEqual, Alloc>::size_type erase_if(
         std::unordered_set<Key, Hash, KeyEqual, Alloc>& c,
         UnaryPredicate pred)
     {

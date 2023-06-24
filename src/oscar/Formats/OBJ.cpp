@@ -48,7 +48,7 @@ namespace
         }
 
         auto view = mesh.getIndices();
-        for (ptrdiff_t i = 0; i < ssize(view) - 2; i += 3)
+        for (ptrdiff_t i = 0; i < ssize(view)-2; i += 3)
         {
             // vertex indices start at 1 in OBJ
             uint32_t const i0 = view[i]+1;

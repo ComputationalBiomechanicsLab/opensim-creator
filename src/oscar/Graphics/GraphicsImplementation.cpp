@@ -4802,7 +4802,7 @@ public:
             Image screenshot{dims, pixels, 4, ColorSpace::sRGB};
 
             // copy image to requests [0..n-2]
-            for (ptrdiff_t i = 0, len = static_cast<ptrdiff_t>(m_ActiveScreenshotRequests.size())-1; i < len; ++i)
+            for (ptrdiff_t i = 0, len = osc::ssize(m_ActiveScreenshotRequests)-1; i < len; ++i)
             {
                 m_ActiveScreenshotRequests[i].set_value(screenshot);
             }

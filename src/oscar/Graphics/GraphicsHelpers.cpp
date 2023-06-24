@@ -113,7 +113,7 @@ void osc::DrawAABBs(
         t.scale = 0.5f * Dimensions(aabb);
         t.position = Midpoint(aabb);
 
-        out(osc::SceneDecoration{cube, t, osc::Color::black()});
+        out(SceneDecoration{cube, t, Color::black()});
     }
 }
 
@@ -230,8 +230,7 @@ void osc::UpdateSceneBVH(nonstd::span<SceneDecoration const> sceneEls, BVH& bvh)
 {
     std::vector<AABB> aabbs;
     aabbs.reserve(sceneEls.size());
-
-    for (auto const& el : sceneEls)
+    for (SceneDecoration const& el : sceneEls)
     {
         aabbs.push_back(GetWorldspaceAABB(el));
     }
@@ -338,11 +337,13 @@ glm::vec3 osc::MassCenter(Mesh const& m)
     glm::dvec3 weightedCenterOfMass = {0.0, 0.0, 0.0};
     for (size_t i = 0; i < len; i += 3)
     {
-        Tetrahedron tetrahedron;
-        tetrahedron[0] = {0.0f, 0.0f, 0.0f};  // reference point
-        tetrahedron[1] = verts[indices[i]];
-        tetrahedron[2] = verts[indices[i+1]];
-        tetrahedron[3] = verts[indices[i+2]];
+        Tetrahedron tetrahedron
+        {
+            glm::vec3{0.0f, 0.0f, 0.0f},  // reference point
+            verts[indices[i]],
+            verts[indices[i+1]],
+            verts[indices[i+2]],
+        };
 
         double const volume = Volume(tetrahedron);
         glm::dvec3 const centerOfMass = Center(tetrahedron);

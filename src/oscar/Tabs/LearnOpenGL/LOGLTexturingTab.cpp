@@ -32,12 +32,12 @@ namespace
         osc::Mesh quad = osc::GenTexturedQuad();
 
         quad.transformVerts([](nonstd::span<glm::vec3> vs)
+        {
+            for (glm::vec3& v : vs)
             {
-                for (glm::vec3& v : vs)
-                {
-                    v *= 0.5f;  // to match LearnOpenGL
-                }
-            });
+                v *= 0.5f;  // to match LearnOpenGL
+            }
+        });
 
         std::vector<glm::vec2> coords{quad.getTexCoords().begin(), quad.getTexCoords().end()};
         for (glm::vec2& coord : coords)

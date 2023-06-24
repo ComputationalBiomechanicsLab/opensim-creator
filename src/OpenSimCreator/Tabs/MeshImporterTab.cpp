@@ -6279,7 +6279,7 @@ private:
             meshes.insert(m_MaybeHover.ID);
         }
 
-        RemoveErase(meshes, [&mg](UID meshID) { return !mg.ContainsEl<MeshEl>(meshID); });
+        erase_if(meshes, [&mg](UID meshID) { return !mg.ContainsEl<MeshEl>(meshID); });
 
         if (meshes.empty())
         {

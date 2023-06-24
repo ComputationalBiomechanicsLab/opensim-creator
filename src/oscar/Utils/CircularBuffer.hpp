@@ -5,6 +5,7 @@
 #include <array>
 #include <cstddef>
 #include <iterator>
+#include <memory>
 #include <optional>
 #include <stdexcept>
 #include <utility>
@@ -248,10 +249,7 @@ namespace osc
         CircularBuffer& operator=(CircularBuffer&&) noexcept = delete;
         ~CircularBuffer() noexcept
         {
-            for (T& el : *this)
-            {
-                el.~T();
-            }
+            std::destroy(this->begin(), this->end());
         }
 
 
@@ -375,11 +373,7 @@ namespace osc
 
         constexpr void clear() noexcept
         {
-            for (T& el : *this)
-            {
-                el.~T();
-            }
-
+            std::destroy(this->begin(), this->end());
             _begin = 0;
             _end = 0;
         }
@@ -425,11 +419,7 @@ namespace osc
         {
             OSC_ASSERT(last == end() && "can currently only erase elements from end of circular buffer");
 
-            for (auto it = first; it < last; ++it)
-            {
-                it->~T();
-            }
-
+            std::destroy(first, last);
             _end -= std::distance(first, last);
 
             return end();

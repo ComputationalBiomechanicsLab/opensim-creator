@@ -2,9 +2,21 @@
 
 #include <glm/vec3.hpp>
 
+#include <array>
+
 namespace osc
 {
     struct Tetrahedron final {
+
+        glm::vec3 const* begin() const
+        {
+            return verts.data();
+        }
+
+        glm::vec3 const* end() const
+        {
+            return verts.data() + verts.size();
+        }
 
         glm::vec3 const& operator[](size_t i) const
         {
@@ -21,7 +33,7 @@ namespace osc
             return 4;
         }
 
-        glm::vec3 verts[4];
+        std::array<glm::vec3, 4> verts;
     };
 
     float Volume(Tetrahedron const&);

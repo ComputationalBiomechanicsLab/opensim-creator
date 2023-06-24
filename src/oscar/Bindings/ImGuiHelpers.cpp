@@ -477,14 +477,7 @@ osc::ImGuiItemHittestResult osc::HittestLastImguiItem(float dragThreshold)
 
 bool osc::IsAnyKeyDown(nonstd::span<ImGuiKey const> keys)
 {
-    for (ImGuiKey const key : keys)
-    {
-        if (ImGui::IsKeyDown(key))
-        {
-            return true;
-        }
-    }
-    return false;
+    return std::any_of(keys.begin(), keys.end(), [](ImGuiKey k) { return ImGui::IsKeyDown(k); });
 }
 
 bool osc::IsAnyKeyDown(std::initializer_list<ImGuiKey const> keys)
@@ -494,14 +487,7 @@ bool osc::IsAnyKeyDown(std::initializer_list<ImGuiKey const> keys)
 
 bool osc::IsAnyKeyPressed(nonstd::span<ImGuiKey const> keys)
 {
-    for (ImGuiKey const key : keys)
-    {
-        if (ImGui::IsKeyPressed(key))
-        {
-            return true;
-        }
-    }
-    return false;
+    return std::any_of(keys.begin(), keys.end(), [](ImGuiKey k) { return ImGui::IsKeyPressed(k); });
 }
 bool osc::IsAnyKeyPressed(std::initializer_list<ImGuiKey const> keys)
 {

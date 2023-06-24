@@ -161,7 +161,7 @@ std::string osc::Ellipsis(std::string_view v, size_t maxLen)
         return std::string{v};
     }
 
-    std::string_view substr = v.substr(0, std::max(0ll, static_cast<ptrdiff_t>(maxLen)-3));
+    std::string_view substr = v.substr(0, std::max(static_cast<ptrdiff_t>(0), static_cast<ptrdiff_t>(maxLen)-3));
     std::string rv;
     rv.reserve(substr.length() + 3);
     rv = substr;

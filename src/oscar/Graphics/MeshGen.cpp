@@ -218,7 +218,7 @@ osc::Mesh osc::GenTexturedQuad()
 osc::Mesh osc::GenUntexturedUVSphere(size_t sectors, size_t stacks)
 {
     NewMeshData data;
-    data.reserve(2u*3u*stacks*sectors);
+    data.reserve(2ll*3ll*stacks*sectors);
 
     // this is a shitty alg that produces a shitty UV sphere. I don't have
     // enough time to implement something better, like an isosphere, or
@@ -562,7 +562,7 @@ osc::Mesh osc::GenCube()
     data.reserve(c_ShadedTexturedCubeVerts.size());
 
     uint16_t index = 0;
-    for (auto const& v : c_ShadedTexturedCubeVerts)
+    for (TexturedVert const& v : c_ShadedTexturedCubeVerts)
     {
         data.verts.push_back(v.pos);
         data.normals.push_back(v.norm);
@@ -584,7 +584,7 @@ osc::Mesh osc::GenCubeLines()
     data.topology = MeshTopology::Lines;
 
     uint16_t index = 0;
-    for (auto const& v : c_CubeEdgeLines)
+    for (UntexturedVert const& v : c_CubeEdgeLines)
     {
         data.verts.push_back(v.pos);
         data.indices.push_back(index++);
@@ -674,7 +674,11 @@ osc::Mesh osc::GenTorus(size_t slices, size_t stacks, float torusCenterToTubeCen
     {
         for (size_t slice = 0; slice < slices+1; ++slice)
         {
-            glm::vec2 const uv = {static_cast<float>(stack)/static_cast<float>(stacks), static_cast<float>(slice)/static_cast<float>(slices)};
+            glm::vec2 const uv =
+            {
+                static_cast<float>(stack)/static_cast<float>(stacks),
+                static_cast<float>(slice)/static_cast<float>(slices),
+            };
             data.texcoords.push_back(uv);
             data.verts.push_back(torusFn(uv));
         }
