@@ -518,7 +518,7 @@ int32_t osc::SceneRenderer::getSamples() const
 
 void osc::SceneRenderer::draw(nonstd::span<SceneDecoration const> decs, SceneRendererParams const& params)
 {
-    m_Impl->draw(std::move(decs), params);
+    m_Impl->draw(decs, params);
 }
 
 osc::RenderTexture& osc::SceneRenderer::updRenderTexture()

@@ -1,29 +1,34 @@
 #include "SimulationStatus.hpp"
 
-#include <oscar/Utils/ArrayHelpers.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <nonstd/span.hpp>
 
 #include <cstddef>
 #include <array>
 
-static auto constexpr c_SimulatorStatuses = osc::MakeSizedArray<osc::SimulationStatus, static_cast<size_t>(osc::SimulationStatus::TOTAL)>
-(
-    osc::SimulationStatus::Initializing,
-    osc::SimulationStatus::Running,
-    osc::SimulationStatus::Completed,
-    osc::SimulationStatus::Cancelled,
-    osc::SimulationStatus::Error
-);
+namespace
+{
+    auto constexpr c_SimulatorStatuses = osc::to_array<osc::SimulationStatus>(
+    {
+        osc::SimulationStatus::Initializing,
+        osc::SimulationStatus::Running,
+        osc::SimulationStatus::Completed,
+        osc::SimulationStatus::Cancelled,
+        osc::SimulationStatus::Error,
+    });
+    static_assert(c_SimulatorStatuses.size() == static_cast<size_t>(osc::SimulationStatus::TOTAL));
 
-static auto constexpr c_SimulatorStatusStrings = osc::MakeSizedArray<char const*, static_cast<size_t>(osc::SimulationStatus::TOTAL)>
-(
-    "Initializing",
-    "Running",
-    "Completed",
-    "Cancelled",
-    "Error"
-);
+    auto constexpr c_SimulatorStatusStrings = osc::to_array<char const*>(
+    {
+        "Initializing",
+        "Running",
+        "Completed",
+        "Cancelled",
+        "Error",
+    });
+    static_assert(c_SimulatorStatusStrings.size() == static_cast<size_t>(osc::SimulationStatus::TOTAL));
+}
 
 
 // public API

@@ -16,7 +16,7 @@
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Platform/App.hpp"
-#include "oscar/Utils/ArrayHelpers.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <glm/vec3.hpp>
@@ -32,19 +32,22 @@ namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Bloom";
 
-    constexpr auto c_SceneLightPositions = osc::MakeArray<glm::vec3>(
-        glm::vec3{ 0.0f, 0.5f,  1.5f},
-        glm::vec3{-4.0f, 0.5f, -3.0f},
-        glm::vec3{ 3.0f, 0.5f,  1.0f},
-        glm::vec3{-0.8f, 2.4f, -1.0f}
-    );
+    constexpr auto c_SceneLightPositions = osc::to_array<glm::vec3>(
+    {
+        { 0.0f, 0.5f,  1.5f},
+        {-4.0f, 0.5f, -3.0f},
+        { 3.0f, 0.5f,  1.0f},
+        {-0.8f, 2.4f, -1.0f},
+    });
 
-    auto c_SceneLightColors = osc::MakeSizedArray<osc::Color, c_SceneLightPositions.size()>(
-        osc::ToSRGB(osc::Color{ 5.0f, 5.0f,  5.0f}),
-        osc::ToSRGB(osc::Color{10.0f, 0.0f,  0.0f}),
-        osc::ToSRGB(osc::Color{ 0.0f, 0.0f, 15.0f}),
-        osc::ToSRGB(osc::Color{ 0.0f, 5.0f,  0.0f})
-    );
+    auto c_SceneLightColors = osc::to_array<osc::Color>(
+    {
+        osc::ToSRGB({ 5.0f, 5.0f,  5.0f}),
+        osc::ToSRGB({10.0f, 0.0f,  0.0f}),
+        osc::ToSRGB({ 0.0f, 0.0f, 15.0f}),
+        osc::ToSRGB({ 0.0f, 5.0f,  0.0f}),
+    });
+    static_assert(c_SceneLightColors.size() == c_SceneLightPositions.size());
 
     std::vector<glm::mat4> CreateCubeTransforms()
     {
@@ -338,12 +341,13 @@ private:
     {
         float constexpr w = 200.0f;
 
-        auto const textures = MakeArray<RenderTexture const*>(
+        auto const textures = osc::to_array<RenderTexture const*>(
+        {
             &m_SceneHDRColorOutput,
             &m_SceneHDRThresholdedOutput,
             &m_PingPongBlurOutputBuffers[0],
-            &m_PingPongBlurOutputBuffers[1]
-        );
+            &m_PingPongBlurOutputBuffers[1],
+        });
 
         for (size_t i = 0; i < textures.size(); ++i)
         {
@@ -415,9 +419,6 @@ private:
     Camera m_Camera;
     bool m_IsMouseCaptured = true;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
-
-    bool m_UseBloom = true;
-    float m_Exposure = 1.0f;
 };
 
 

@@ -132,7 +132,6 @@ using osc::Sphere;
 using osc::Mesh;
 using osc::Transform;
 using osc::PolarPerspectiveCamera;
-using osc::Segment;
 using osc::Rect;
 using osc::Line;
 
@@ -3374,8 +3373,8 @@ namespace
         OpenSim::Joint& joint,
         std::string const& prefix)
     {
-        constexpr std::array<char const*, 3> const translationNames = {"_tx", "_ty", "_tz"};
-        constexpr std::array<char const*, 3> const rotationNames = {"_rx", "_ry", "_rz"};
+        constexpr auto c_TranslationNames = osc::to_array({"_tx", "_ty", "_tz"});
+        constexpr auto c_RotationNames = osc::to_array({"_rx", "_ry", "_rz"});
 
         JointDegreesOfFreedom dofs = GetDegreesOfFreedom(*osc::JointRegistry::indexOf(joint));
 
@@ -3384,7 +3383,7 @@ namespace
         {
             if (dofs.translation[i] != -1)
             {
-                joint.upd_coordinates(dofs.translation[i]).setName(prefix + translationNames[i]);
+                joint.upd_coordinates(dofs.translation[i]).setName(prefix + c_TranslationNames[i]);
             }
         }
 
@@ -3393,7 +3392,7 @@ namespace
         {
             if (dofs.orientation[i] != -1)
             {
-                joint.upd_coordinates(dofs.orientation[i]).setName(prefix + rotationNames[i]);
+                joint.upd_coordinates(dofs.orientation[i]).setName(prefix + c_RotationNames[i]);
             }
         }
     }
@@ -5246,14 +5245,16 @@ namespace
             osc::Color sceneBackground{96.0f/255.0f, 96.0f/255.0f, 96.0f/255.0f, 1.0f};
             osc::Color gridLines{112.0f/255.0f, 112.0f/255.0f, 112.0f/255.0f, 1.0f};
         } m_Colors;
-        static auto constexpr c_ColorNames = osc::MakeSizedArray<char const*, sizeof(decltype(m_Colors))/sizeof(osc::Color)>(
+        static auto constexpr c_ColorNames = osc::to_array<char const*>(
+        {
             "ground",
             "meshes",
             "stations",
             "connection lines",
             "scene background",
-            "grid lines"
-        );
+            "grid lines",
+        });
+        static_assert(c_ColorNames.size() == sizeof(decltype(m_Colors))/sizeof(osc::Color));
 
         // VISIBILITY
         //
@@ -5270,7 +5271,8 @@ namespace
             bool stationConnectionLines = true;
             bool floor = true;
         } m_VisibilityFlags;
-        static auto constexpr c_VisibilityFlagNames = osc::MakeSizedArray<char const*, sizeof(decltype(m_VisibilityFlags))/sizeof(bool)>(
+        static auto constexpr c_VisibilityFlagNames = osc::to_array<char const*>(
+        {
             "ground",
             "meshes",
             "bodies",
@@ -5280,8 +5282,9 @@ namespace
             "mesh connection lines",
             "body-to-ground connection lines",
             "station connection lines",
-            "grid lines"
-        );
+            "grid lines",
+        });
+        static_assert(c_VisibilityFlagNames.size() == sizeof(decltype(m_VisibilityFlags))/sizeof(bool));
 
         // LOCKING
         //
@@ -5293,13 +5296,15 @@ namespace
             bool joints = true;
             bool stations = true;
         } m_InteractivityFlags;
-        static auto constexpr c_InteractivityFlagNames = osc::MakeSizedArray<char const*, sizeof(decltype(m_InteractivityFlags))/sizeof(bool)>(
+        static auto constexpr c_InteractivityFlagNames = osc::to_array<char const*>(
+        {
             "ground",
             "meshes",
             "bodies",
             "joints",
-            "stations"
-        );
+            "stations",
+        });
+        static_assert(c_InteractivityFlagNames.size() == sizeof(decltype(m_InteractivityFlags))/sizeof(bool));
 
     public:
         // WINDOWS
@@ -5307,12 +5312,14 @@ namespace
         // these are runtime-editable flags that dictate which panels are open
         static inline size_t constexpr c_NumPanelStates = 4;
         std::array<bool, c_NumPanelStates> m_PanelStates{false, true, false, false};
-        static auto constexpr c_OpenedPanelNames = osc::MakeSizedArray<char const*, c_NumPanelStates>(
+        static auto constexpr c_OpenedPanelNames = osc::to_array<char const*>(
+        {
             "History",
             "Navigator",
             "Log",
-            "Performance"
-        );
+            "Performance",
+        });
+        static_assert(c_OpenedPanelNames.size() == c_NumPanelStates);
         enum PanelIndex_ {
             PanelIndex_History = 0,
             PanelIndex_Navigator,
@@ -7671,7 +7678,6 @@ private:
 
     std::optional<AABB> CalcSceneAABB() const
     {
-        auto const it = m_DrawablesBuffer.begin();
         std::optional<AABB> rv;
         for (DrawableThing const& drawable : m_DrawablesBuffer)
         {

@@ -15,23 +15,12 @@
 #include <oscar/Widgets/WindowMenu.hpp>
 #include <oscar/Platform/Config.hpp>
 #include <oscar/Platform/Styling.hpp>
-#include <oscar/Utils/ArrayHelpers.hpp>
 
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
 
 #include <memory>
 #include <utility>
-
-auto constexpr c_EditorScreenPanels = osc::MakeArray<char const* const>
-(
-    "Navigator",
-    "Properties",
-    "Log",
-    "Coordinates",
-    "Performance",
-    "Output Watches"
-);
 
 class osc::ModelEditorMainMenu::Impl final {
 public:

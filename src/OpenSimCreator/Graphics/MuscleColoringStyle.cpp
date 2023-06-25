@@ -1,31 +1,36 @@
 #include "MuscleColoringStyle.hpp"
 
-#include <oscar/Utils/ArrayHelpers.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <nonstd/span.hpp>
 
 #include <array>
 #include <cstddef>
 
-static auto constexpr c_ColorStyles = osc::MakeSizedArray<osc::MuscleColoringStyle, static_cast<size_t>(osc::MuscleColoringStyle::TOTAL)>
-(
-    osc::MuscleColoringStyle::OpenSimAppearanceProperty,
-    osc::MuscleColoringStyle::OpenSim,
-    osc::MuscleColoringStyle::Activation,
-    osc::MuscleColoringStyle::Excitation,
-    osc::MuscleColoringStyle::Force,
-    osc::MuscleColoringStyle::FiberLength
-);
+namespace
+{
+    auto constexpr c_ColorStyles = osc::to_array<osc::MuscleColoringStyle>(
+    {
+        osc::MuscleColoringStyle::OpenSimAppearanceProperty,
+        osc::MuscleColoringStyle::OpenSim,
+        osc::MuscleColoringStyle::Activation,
+        osc::MuscleColoringStyle::Excitation,
+        osc::MuscleColoringStyle::Force,
+        osc::MuscleColoringStyle::FiberLength,
+    });
+    static_assert(c_ColorStyles.size() == static_cast<size_t>(osc::MuscleColoringStyle::TOTAL));
 
-static auto constexpr c_ColorStyleStrings = osc::MakeSizedArray<char const*, static_cast<size_t>(osc::MuscleColoringStyle::TOTAL)>
-(
-    "OpenSim (Appearance Property)",
-    "OpenSim",
-    "Activation",
-    "Excitation",
-    "Force",
-    "Fiber Length"
-);
+    auto constexpr c_ColorStyleStrings = osc::to_array<char const*>(
+    {
+        "OpenSim (Appearance Property)",
+        "OpenSim",
+        "Activation",
+        "Excitation",
+        "Force",
+        "Fiber Length",
+    });
+    static_assert(c_ColorStyleStrings.size() == static_cast<size_t>(osc::MuscleColoringStyle::TOTAL));
+}
 
 nonstd::span<osc::MuscleColoringStyle const> osc::GetAllMuscleColoringStyles()
 {

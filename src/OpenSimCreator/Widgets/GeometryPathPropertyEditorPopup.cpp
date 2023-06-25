@@ -4,7 +4,7 @@
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/Log.hpp>
-#include <oscar/Utils/ArrayHelpers.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Widgets/StandardPopup.hpp>
 
@@ -20,10 +20,11 @@
 #include <string_view>
 #include <utility>
 
-static constexpr auto c_LocationInputIDs = osc::MakeSizedArray<osc::CStringView, 3>("##xinput", "##yinput", "##zinput");
-
 namespace
 {
+    constexpr auto c_LocationInputIDs = osc::to_array<osc::CStringView>({ "##xinput", "##yinput", "##zinput" });
+    static_assert(c_LocationInputIDs.size() == 3);
+
     OpenSim::GeometryPath InitGeometryPathFromPropOrDefault(std::function<OpenSim::ObjectProperty<OpenSim::GeometryPath> const* ()> const& accessor)
     {
         OpenSim::ObjectProperty<OpenSim::GeometryPath> const* maybeGeomPath = accessor();

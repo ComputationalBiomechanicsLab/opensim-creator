@@ -15,7 +15,7 @@ public:
         CStringView name_,
         std::function<std::unique_ptr<Tab>(std::weak_ptr<TabHost>)> constructor_) :
 
-        m_Name{std::move(name_)},
+        m_Name{name_},
         m_Constructor{std::move(constructor_)}
     {
     }
@@ -39,7 +39,7 @@ osc::TabRegistryEntry::TabRegistryEntry(
     CStringView name_,
     std::function<std::unique_ptr<Tab>(std::weak_ptr<TabHost>)> ctor_) :
 
-    m_Impl{std::make_shared<Impl>(std::move(name_), std::move(ctor_))}
+    m_Impl{std::make_shared<Impl>(name_, std::move(ctor_))}
 {
 }
 

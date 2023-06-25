@@ -9,13 +9,13 @@
 #include <utility>
 
 osc::StandardPanel::StandardPanel(std::string_view name) :
-    StandardPanel{std::move(name), ImGuiWindowFlags_None}
+    StandardPanel{name, ImGuiWindowFlags_None}
 {
 }
 
 osc::StandardPanel::StandardPanel(std::string_view name, ImGuiWindowFlags imGuiWindowFlags) :
-    m_PanelName{std::move(name)},
-    m_PanelFlags{std::move(imGuiWindowFlags)}
+    m_PanelName{name},
+    m_PanelFlags{imGuiWindowFlags}
 {
 }
 

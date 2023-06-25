@@ -246,18 +246,21 @@ void osc::WriteTracebackToLog(log::level::LevelEnum lvl)
     }
 }
 
-/* This structure mirrors the one found in /usr/include/asm/ucontext.h */
-typedef struct _sig_ucontext {
-    unsigned long uc_flags;
-    ucontext_t* uc_link;
-    stack_t uc_stack;
-    sigcontext uc_mcontext;
-    sigset_t uc_sigmask;
-} sig_ucontext_t;
+namespace
+{
+    /* This structure mirrors the one found in /usr/include/asm/ucontext.h */
+    typedef struct osc_sig_ucontext {
+        unsigned long uc_flags;
+        ucontext_t* uc_link;
+        stack_t uc_stack;
+        sigcontext uc_mcontext;
+        sigset_t uc_sigmask;
+    } osc_sig_ucontext_t;
+}
 
 static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
 {
-    sig_ucontext_t* uc = static_cast<sig_ucontext_t*>(ucontext);
+    osc_sig_ucontext_t* uc = static_cast<osc_sig_ucontext_t*>(ucontext);
 
     /* Get the address at the time the signal was raised */
 #if defined(__i386__)  // gcc specific

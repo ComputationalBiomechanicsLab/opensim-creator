@@ -1130,7 +1130,7 @@ void osc::GetAbsolutePathString(OpenSim::Component const& c, std::string& out)
     constexpr ptrdiff_t c_MaxEls = 16;
 
     ptrdiff_t nEls = 0;
-    std::array<OpenSim::Component const*, c_MaxEls> els;
+    std::array<OpenSim::Component const*, c_MaxEls> els{};
     OpenSim::Component const* cur = &c;
     OpenSim::Component const* next = osc::GetOwner(*cur);
 

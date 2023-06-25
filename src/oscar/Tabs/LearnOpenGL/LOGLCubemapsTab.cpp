@@ -16,6 +16,7 @@
 #include "oscar/Platform/Config.hpp"
 #include "oscar/Utils/ArrayHelpers.hpp"
 #include "oscar/Utils/Assertions.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <glm/vec3.hpp>
@@ -34,14 +35,16 @@ namespace
 
     osc::Cubemap LoadCubemap(std::filesystem::path const& resourcesDir)
     {
-        auto textures = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::CubemapFace::TOTAL)>(
+        auto constexpr textures = osc::to_array<osc::CStringView>(
+        {
             "skybox_right.jpg",
             "skybox_left.jpg",
             "skybox_top.jpg",
             "skybox_bottom.jpg",
             "skybox_front.jpg",
-            "skybox_back.jpg"
-        );
+            "skybox_back.jpg",
+        });
+        static_assert(textures.size() == static_cast<size_t>(osc::CubemapFace::TOTAL));
         static_assert(textures.size() > 1);
 
         // load the first face, so we know the width

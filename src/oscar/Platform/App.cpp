@@ -9,7 +9,6 @@
 #include "oscar/Platform/os.hpp"
 #include "oscar/Platform/RecentFile.hpp"
 #include "oscar/Screens/Screen.hpp"
-#include "oscar/Utils/ArrayHelpers.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/FilesystemHelpers.hpp"
 #include "oscar/Utils/Perf.hpp"
@@ -53,7 +52,7 @@
         }                                                                                                              \
     }
 
-static auto constexpr c_IconRanges = osc::MakeArray<ImWchar>(ICON_MIN_FA, ICON_MAX_FA, 0);
+static auto constexpr c_IconRanges = osc::to_array<ImWchar>({ ICON_MIN_FA, ICON_MAX_FA, 0 });
 
 namespace
 {
@@ -158,7 +157,7 @@ namespace
             bool exists = std::filesystem::exists(path);
             std::chrono::seconds timestampSecs{timestamp};
 
-            rv.push_back(osc::RecentFile{exists, std::move(timestampSecs), std::move(path)});
+            rv.push_back(osc::RecentFile{exists, timestampSecs, std::move(path)});
         }
 
         return rv;
@@ -202,7 +201,7 @@ namespace
             uint64_t frameRequested_,
             std::future<osc::Image> underlyingFuture_) :
 
-            frameRequested{std::move(frameRequested_)},
+            frameRequested{frameRequested_},
             underlyingScreenshotFuture{std::move(underlyingFuture_)}
         {
         }
@@ -410,7 +409,7 @@ public:
 
     void addFrameAnnotation(std::string_view label, Rect screenRect)
     {
-        m_FrameAnnotations.push_back(ImageAnnotation{std::string{label}, std::move(screenRect)});
+        m_FrameAnnotations.push_back(ImageAnnotation{std::string{label}, screenRect});
     }
 
     std::future<Image> requestScreenshot()
@@ -967,7 +966,7 @@ std::string osc::App::slurp(std::string_view s)
 
 std::vector<uint8_t> osc::App::slurpBinary(std::string_view s)
 {
-    return get().slurpBinaryResource(std::move(s));
+    return get().slurpBinaryResource(s);
 }
 
 osc::App::App() : m_Impl{new Impl{}}
@@ -1021,7 +1020,7 @@ float osc::App::aspectRatio() const
 
 void osc::App::setShowCursor(bool v)
 {
-    m_Impl->setShowCursor(std::move(v));
+    m_Impl->setShowCursor(v);
 }
 
 bool osc::App::isWindowFocused() const
@@ -1051,7 +1050,7 @@ int32_t osc::App::getMSXAASamplesRecommended() const
 
 void osc::App::setMSXAASamplesRecommended(int32_t s)
 {
-    m_Impl->setMSXAASamplesRecommended(std::move(s));
+    m_Impl->setMSXAASamplesRecommended(s);
 }
 
 int32_t osc::App::getMSXAASamplesMax() const
@@ -1081,7 +1080,7 @@ bool osc::App::isVsyncEnabled() const
 
 void osc::App::setVsync(bool v)
 {
-    m_Impl->setVsync(std::move(v));
+    m_Impl->setVsync(v);
 }
 
 void osc::App::enableVsync()
@@ -1096,7 +1095,7 @@ void osc::App::disableVsync()
 
 void osc::App::addFrameAnnotation(std::string_view label, Rect screenRect)
 {
-    m_Impl->addFrameAnnotation(std::move(label), std::move(screenRect));
+    m_Impl->addFrameAnnotation(label, screenRect);
 }
 
 std::future<osc::Image> osc::App::requestScreenshot()
@@ -1176,7 +1175,7 @@ bool osc::App::isMainLoopWaiting() const
 
 void osc::App::setMainLoopWaiting(bool v)
 {
-    m_Impl->setMainLoopWaiting(std::move(v));
+    m_Impl->setMainLoopWaiting(v);
 }
 
 void osc::App::makeMainEventLoopWaiting()
@@ -1206,7 +1205,7 @@ osc::MouseState osc::App::getMouseState() const
 
 void osc::App::warpMouseInWindow(glm::vec2 v) const
 {
-    m_Impl->warpMouseInWindow(std::move(v));
+    m_Impl->warpMouseInWindow(v);
 }
 
 bool osc::App::isShiftPressed() const
@@ -1226,7 +1225,7 @@ bool osc::App::isAltPressed() const
 
 void osc::App::setMainWindowSubTitle(std::string_view sv)
 {
-    m_Impl->setMainWindowSubTitle(std::move(sv));
+    m_Impl->setMainWindowSubTitle(sv);
 }
 
 void osc::App::unsetMainWindowSubTitle()
@@ -1246,17 +1245,17 @@ osc::Config& osc::App::updConfig()
 
 std::filesystem::path osc::App::getResource(std::string_view p) const
 {
-    return m_Impl->getResource(std::move(p));
+    return m_Impl->getResource(p);
 }
 
 std::string osc::App::slurpResource(std::string_view p) const
 {
-    return m_Impl->slurpResource(std::move(p));
+    return m_Impl->slurpResource(p);
 }
 
 std::vector<uint8_t> osc::App::slurpBinaryResource(std::string_view p) const
 {
-    return m_Impl->slurpBinaryResource(std::move(p));
+    return m_Impl->slurpBinaryResource(p);
 }
 
 std::vector<osc::RecentFile> osc::App::getRecentFiles() const

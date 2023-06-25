@@ -1,6 +1,6 @@
 #include "CustomRenderingOptions.hpp"
 
-#include <oscar/Utils/ArrayHelpers.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>
@@ -26,31 +26,34 @@ namespace
             CustomRenderingOptionFlags_DrawSelectionRims,
     };
 
-    auto constexpr c_CustomRenderingOptionLabels = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(CustomRenderingOptionFlags_COUNT)>
-    (
+    auto constexpr c_CustomRenderingOptionLabels = osc::to_array<osc::CStringView>(
+    {
         "Floor",
         "Mesh Normals",
         "Shadows",
-        "Selection Rims"
-    );
+        "Selection Rims",
+    });
+    static_assert(c_CustomRenderingOptionLabels.size() == static_cast<size_t>(CustomRenderingOptionFlags_COUNT));
 
     enum class CustomRenderingOptionGroup : uint32_t {
         Rendering = 0,
         COUNT,
     };
 
-    auto constexpr c_CustomRenderingOptionGroupLabels = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(CustomRenderingOptionGroup::COUNT)>
-    (
-        "Rendering"
-    );
+    auto constexpr c_CustomRenderingOptionGroupLabels = osc::to_array<osc::CStringView>(
+    {
+        "Rendering",
+    });
+    static_assert(c_CustomRenderingOptionGroupLabels.size() == static_cast<size_t>(CustomRenderingOptionGroup::COUNT));
 
-    auto constexpr c_CustomRenderingOptionGroups = osc::MakeSizedArray<CustomRenderingOptionGroup, static_cast<size_t>(CustomRenderingOptionFlags_COUNT)>
-    (
+    auto constexpr c_CustomRenderingOptionGroups = osc::to_array<CustomRenderingOptionGroup>(
+    {
         CustomRenderingOptionGroup::Rendering,
         CustomRenderingOptionGroup::Rendering,
         CustomRenderingOptionGroup::Rendering,
-        CustomRenderingOptionGroup::Rendering
-    );
+        CustomRenderingOptionGroup::Rendering,
+    });
+    static_assert(c_CustomRenderingOptionGroups.size() == static_cast<size_t>(CustomRenderingOptionFlags_COUNT));
 
     void SetFlag(uint32_t& flags, uint32_t flag, bool v)
     {

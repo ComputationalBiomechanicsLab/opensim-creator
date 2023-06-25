@@ -9,7 +9,7 @@
 #include <utility>
 
 osc::StandardPopup::StandardPopup(std::string_view popupName) :
-    StandardPopup{std::move(popupName), {512.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize}
+    StandardPopup{popupName, {512.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize}
 {
 }
 
@@ -18,10 +18,10 @@ osc::StandardPopup::StandardPopup(
     glm::vec2 dimensions,
     ImGuiWindowFlags popupFlags) :
 
-    m_PopupName{std::move(popupName)},
+    m_PopupName{popupName},
     m_Dimensions{dimensions},
     m_MaybePosition{std::nullopt},
-    m_PopupFlags{std::move(popupFlags)},
+    m_PopupFlags{popupFlags},
     m_ShouldOpen{false},
     m_ShouldClose{false},
     m_JustOpened{false},
@@ -182,7 +182,7 @@ bool osc::StandardPopup::isModal() const
 
 void osc::StandardPopup::setModal(bool v)
 {
-    m_IsModal = std::move(v);
+    m_IsModal = v;
 }
 
 void osc::StandardPopup::setRect(osc::Rect const& rect)

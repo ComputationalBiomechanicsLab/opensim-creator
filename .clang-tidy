@@ -1,0 +1,20 @@
+---
+Checks: >
+  clang-analyzer-*,
+  bugprone-*,
+  -bugprone-narrowing-conversions,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-implicit-widening-of-multiplication-result,
+  -bugprone-lambda-function-name,
+  -bugprone-branch-clone,
+  misc-*,
+  -misc-non-private-member-variables-in-classes,
+  -misc-no-recursion
+#  concurrency-,
+#  modernize-*,
+#  -modernize-use-trailing-return-type,
+#  -modernize-pass-by-value,
+#  -modernize-use-nodiscard
+
+# disabled: OpenSim contains memory-leaking code that I cannot disable :<
+# WarningsAsErrors: "*"

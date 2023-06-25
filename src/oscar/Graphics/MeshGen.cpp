@@ -235,8 +235,8 @@ osc::Mesh osc::GenUntexturedUVSphere(size_t sectors, size_t stacks)
     // phi = PI/2. The coordinate [1, 0, 0] is theta = PI/2, phi = 0
     std::vector<UntexturedVert> points;
 
-    float const thetaStep = 2.0f * fpi / sectors;
-    float const phiStep = fpi / stacks;
+    float const thetaStep = 2.0f * fpi / static_cast<float>(sectors);
+    float const phiStep = fpi / static_cast<float>(stacks);
 
     for (size_t stack = 0; stack <= stacks; ++stack)
     {
@@ -245,7 +245,7 @@ osc::Mesh osc::GenUntexturedUVSphere(size_t sectors, size_t stacks)
 
         for (size_t sector = 0; sector <= sectors; ++sector)
         {
-            float const theta = sector * thetaStep;
+            float const theta = static_cast<float>(sector) * thetaStep;
             float const x = std::sin(theta) * std::cos(phi);
             float const z = -std::cos(theta) * std::cos(phi);
             glm::vec3 const pos = {x, y, z};
@@ -312,7 +312,7 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
 
     OSC_ASSERT(3 <= nsides && nsides < 1000000 && "the backend only supports 32-bit indices, you should double-check that this code would work (change this assertion if it does)");
 
-    float const stepAngle = 2.0f*fpi / nsides;
+    float const stepAngle = 2.0f*fpi / static_cast<float>(nsides);
 
     NewMeshData data;
 
@@ -349,7 +349,7 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
         uint32_t p1Index = loopStartIndex;
         for (size_t side = 1; side < nsides; ++side)
         {
-            float const theta = side * stepAngle;
+            float const theta = static_cast<float>(side) * stepAngle;
             glm::vec3 const p2 = {c_Radius*std::cos(theta), c_TopY, c_Radius*std::sin(theta)};
             uint32_t const p2Index = pushData(p2, topNormal);
 
@@ -378,7 +378,7 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
         uint32_t p1Index = loopStartIndex;
         for (size_t side = 1; side < nsides; ++side)
         {
-            float const theta = side * stepAngle;
+            float const theta = static_cast<float>(side) * stepAngle;
             glm::vec3 const p2 = {c_Radius*std::cos(theta), c_BottomY, c_Radius*std::sin(theta)};
             uint32_t const p2Index = pushData(p2, bottomNormal);
 
@@ -405,7 +405,7 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
         uint32_t e1BottomIdx = firstEdgeBottom;
         for (size_t i = 1; i < nsides; ++i)
         {
-            float const theta = i * stepAngle;
+            float const theta = static_cast<float>(i) * stepAngle;
             float const xDir = std::cos(theta);
             float const zDir = std::sin(theta);
             float const x = c_Radius * xDir;
@@ -433,11 +433,11 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
 osc::Mesh osc::GenUntexturedYToYCone(size_t nsides)
 {
     NewMeshData data;
-    data.reserve(2*3*nsides);
+    data.reserve(static_cast<size_t>(2*3)*nsides);
 
     constexpr float topY = +1.0f;
     constexpr float bottomY = -1.0f;
-    const float stepAngle = 2.0f*fpi / nsides;
+    const float stepAngle = 2.0f*fpi / static_cast<float>(nsides);
 
     uint16_t index = 0;
     auto const push = [&data, &index](glm::vec3 const& pos, glm::vec3 const& norm)
@@ -454,8 +454,8 @@ osc::Mesh osc::GenUntexturedYToYCone(size_t nsides)
 
         for (size_t i = 0; i < nsides; ++i)
         {
-            float const thetaStart = i * stepAngle;
-            float const thetaEnd = (i + 1) * stepAngle;
+            float const thetaStart = static_cast<float>(i) * stepAngle;
+            float const thetaEnd = static_cast<float>(i + 1) * stepAngle;
 
             glm::vec3 const p1 = {std::cos(thetaStart), bottomY, std::sin(thetaStart)};
             glm::vec3 const p2 = {std::cos(thetaEnd), bottomY, std::sin(thetaEnd)};
@@ -470,8 +470,8 @@ osc::Mesh osc::GenUntexturedYToYCone(size_t nsides)
     {
         for (size_t i = 0; i < nsides; ++i)
         {
-            float const thetaStart = i * stepAngle;
-            float const thetaEnd = (i + 1) * stepAngle;
+            float const thetaStart = static_cast<float>(i) * stepAngle;
+            float const thetaEnd = static_cast<float>(i + 1) * stepAngle;
 
             Triangle const triangle =
             {
@@ -519,7 +519,7 @@ osc::Mesh osc::GenNbyNGrid(size_t n)
     // lines parallel to X axis
     for (size_t i = 0; i < nlines; ++i)
     {
-        float const y = min + i * stepSize;
+        float const y = min + static_cast<float>(i) * stepSize;
 
         push({-1.0f, y, z});
         push({+1.0f, y, z});
@@ -528,7 +528,7 @@ osc::Mesh osc::GenNbyNGrid(size_t n)
     // lines parallel to Y axis
     for (size_t i = 0; i < nlines; ++i)
     {
-        float const x = min + i * stepSize;
+        float const x = min + static_cast<float>(i) * stepSize;
 
         push({x, -1.0f, z});
         push({x, +1.0f, z});
@@ -614,8 +614,8 @@ osc::Mesh osc::GenCircle(size_t nsides)
     float const step = 2.0f*fpi / static_cast<float>(nsides);
     for (size_t i = 0; i < nsides; ++i)
     {
-        float const theta1 = i * step;
-        float const theta2 = (i+1) * step;
+        float const theta1 = static_cast<float>(i) * step;
+        float const theta2 = static_cast<float>(i + 1) * step;
 
         push(0.0f, 0.0f, 0.0f);
         push(std::sin(theta1), std::cos(theta1), 0.0f);
@@ -762,11 +762,11 @@ osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max
 
     // create vector of grid points
     std::vector<glm::vec3> verts;
-    verts.reserve(static_cast<size_t>(steps.x * steps.y));
+    verts.reserve(static_cast<size_t>(steps.x) * static_cast<size_t>(steps.y));
 
     // create vector of line indices (indices to the two points that make a grid line)
     std::vector<uint32_t> indices;
-    indices.reserve(static_cast<size_t>(4 * steps.x * steps.y));
+    indices.reserve(static_cast<size_t>(4) * static_cast<size_t>(steps.x) * static_cast<size_t>(steps.y));
 
     // precompute spatial step between points
     glm::vec2 const stepSize = (max - min) / glm::vec2{steps - 1};
@@ -781,15 +781,15 @@ osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max
         // emit rest of the first row (only has horizontal links)
         for (int32_t x = 1; x < steps.x; ++x)
         {
-            glm::vec3 const pos = {min.x + x*stepSize.x, min.y, zValue};
+            glm::vec3 const pos = {min.x + static_cast<float>(x)*stepSize.x, min.y, zValue};
             verts.push_back(pos);
             uint32_t const index = static_cast<int32_t>(verts.size() - 1);
             indices.push_back(index - 1);  // link to previous point
             indices.push_back(index);      // and then the new point
         }
 
-        OSC_ASSERT(verts.size() == steps.x && "all points in the first row have not been emitted");
-        OSC_ASSERT(indices.size() == 2 * (steps.x - 1) && "all lines in the first row have not been emitted");
+        OSC_ASSERT(verts.size() == static_cast<size_t>(steps.x) && "all points in the first row have not been emitted");
+        OSC_ASSERT(indices.size() == static_cast<size_t>(2 * (steps.x - 1)) && "all lines in the first row have not been emitted");
     }
 
     // push remaining rows (all points have verticals, first point of each row has no horizontal)
@@ -797,7 +797,7 @@ osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max
     {
         // emit leftmost point (only has a vertical link)
         {
-            verts.push_back({min.x, min.y + y*stepSize.y, zValue});
+            verts.push_back({min.x, min.y + static_cast<float>(y)*stepSize.y, zValue});
             uint32_t const index = static_cast<int32_t>(verts.size() - 1);
             indices.push_back(index - steps.x);  // link the point one row above
             indices.push_back(index);            // to the point (vertically)
@@ -806,7 +806,7 @@ osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max
         // emit rest of the row (has vertical and horizontal links)
         for (int32_t x = 1; x < steps.x; ++x)
         {
-            glm::vec3 const pos = {min.x + x*stepSize.x, min.y + y*stepSize.y, zValue};
+            glm::vec3 const pos = {min.x + static_cast<float>(x)*stepSize.x, min.y + y*stepSize.y, zValue};
             verts.push_back(pos);
             uint32_t const index = static_cast<int32_t>(verts.size() - 1);
             indices.push_back(index - 1);        // link the previous point
@@ -816,13 +816,13 @@ osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max
         }
     }
 
-    OSC_ASSERT(verts.size() == steps.x*steps.y && "incorrect number of vertices emitted");
-    OSC_ASSERT(indices.size() <= 4 * steps.y * steps.y && "too many indices were emitted?");
+    OSC_ASSERT(verts.size() == static_cast<size_t>(steps.x*steps.y) && "incorrect number of vertices emitted");
+    OSC_ASSERT(indices.size() <= static_cast<size_t>(4 * steps.y * steps.y) && "too many indices were emitted?");
 
     // emit data as a renderable mesh
     osc::Mesh rv;
     rv.setTopology(osc::MeshTopology::Lines);
-    rv.setVerts(std::move(verts));
+    rv.setVerts(verts);
     rv.setIndices(indices);
     return rv;
 }
@@ -845,15 +845,15 @@ osc::Mesh osc::GenNxMTriangleQuad2DGrid(glm::ivec2 steps)
 
     // create a vector of triangle verts
     std::vector<glm::vec3> verts;
-    verts.reserve(static_cast<size_t>(steps.x * steps.y));
+    verts.reserve(static_cast<size_t>(steps.x) * static_cast<size_t>(steps.y));
 
     // create a vector of texture coordinates (1:1 with verts)
     std::vector<glm::vec2> coords;
-    coords.reserve(static_cast<size_t>(steps.x * steps.y));
+    coords.reserve(static_cast<size_t>(steps.x) * static_cast<size_t>(steps.y));
 
     // create a vector of triangle primitive indices (2 triangles, or 6 indices, per grid cell)
     std::vector<uint32_t> indices;
-    indices.reserve(static_cast<size_t>(6 * (steps.x-1) * (steps.y-1)));
+    indices.reserve(static_cast<size_t>(6) * static_cast<size_t>(steps.x-1) * static_cast<size_t>(steps.y-1));
 
     // precompute step/min in each direction
     glm::vec2 const vectorStep = glm::vec2{2.0f, 2.0f} / glm::vec2{steps - 1};
@@ -864,22 +864,25 @@ osc::Mesh osc::GenNxMTriangleQuad2DGrid(glm::ivec2 steps)
     // push first row of verts + texture coords for all columns
     for (int32_t col = 0; col < steps.x; ++col)
     {
-        verts.emplace_back(vectorMin.x + col*vectorStep.x, vectorMin.y, zValue);
-        coords.emplace_back(uvMin.x + col*uvStep.x, uvMin.y);
+        verts.emplace_back(vectorMin.x + static_cast<float>(col)*vectorStep.x, vectorMin.y, zValue);
+        coords.emplace_back(uvMin.x + static_cast<float>(col)*uvStep.x, uvMin.y);
     }
 
     // then work through the next rows, which can safely assume there's a row above them
     for (int32_t row = 1; row < steps.y; ++row)
     {
+        float const rowf = static_cast<float>(row);
+
         // push point + coord of the first column's left-edge
-        verts.emplace_back(vectorMin.x, vectorMin.y + row*vectorStep.y, zValue);
-        coords.emplace_back(uvMin.x, uvMin.y + row*uvStep.y);
+        verts.emplace_back(vectorMin.x, vectorMin.y + rowf*vectorStep.y, zValue);
+        coords.emplace_back(uvMin.x, uvMin.y + rowf*uvStep.y);
 
         // then, for all remaining columns, push the right-edge data and the triangles
         for (int32_t col = 1; col < steps.x; ++col)
         {
-            verts.emplace_back(vectorMin.x + col*vectorStep.x, vectorMin.y + row*vectorStep.y, zValue);
-            coords.emplace_back(uvMin.x + col*uvStep.x, uvMin.y + row*uvStep.y);
+            float const colf = static_cast<float>(col);
+            verts.emplace_back(vectorMin.x + colf*vectorStep.x, vectorMin.y + rowf*vectorStep.y, zValue);
+            coords.emplace_back(uvMin.x + colf*uvStep.x, uvMin.y + rowf*uvStep.y);
 
             // triangles (anti-clockwise wound)
             int32_t const currentIdx = row*steps.x + col;

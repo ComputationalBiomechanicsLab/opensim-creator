@@ -44,6 +44,7 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
@@ -230,13 +231,13 @@ namespace
     {
         SimTK::PolygonalMesh polygonalMesh;
         {
-            std::array<SimTK::Vec3, 4> const verts
+            auto const verts = osc::to_array(
             {
                 origin,
                 origin + firstEdge,
                 origin + firstEdge + secondEdge,
                 origin + secondEdge,
-            };
+            });
 
             SimTK::Array_<int> face;
             face.reserve(static_cast<unsigned int>(verts.size()));
@@ -726,7 +727,7 @@ namespace OpenSim
 
         void extendFinalizeFromProperties() final
         {
-            Super::extendFinalizeFromProperties();
+            OpenSim::PhysicalFrame::extendFinalizeFromProperties();  // call parent
             tryParseAxisArgumentsAsOrthogonalAxes();  // throws on error
         }
 
@@ -838,7 +839,7 @@ namespace OpenSim
 
         void extendAddToSystem(SimTK::MultibodySystem& system) const final
         {
-            Super::extendAddToSystem(system);
+            OpenSim::PhysicalFrame::extendAddToSystem(system);  // call parent
             setMobilizedBodyIndex(getModel().getGround().getMobilizedBodyIndex()); // TODO: the frame must be associated to a mobod
         }
     };

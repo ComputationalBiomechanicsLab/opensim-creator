@@ -989,7 +989,7 @@ namespace
         // write header
         osc::WriteCSVRow(
             fileOutputStream,
-            std::array<std::string, 2>{ComputePlotXAxisTitle(params, coord), ComputePlotYAxisTitle(params)}
+            osc::to_array({ ComputePlotXAxisTitle(params, coord), ComputePlotYAxisTitle(params) })
         );
 
         // write data rows
@@ -998,7 +998,7 @@ namespace
         {
             osc::WriteCSVRow(
                 fileOutputStream,
-                std::array<std::string, 2>{std::to_string(p.x), std::to_string(p.y)}
+                osc::to_array({ std::to_string(p.x), std::to_string(p.y) })
             );
         }
     }

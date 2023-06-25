@@ -14,7 +14,7 @@
 #include "oscar/Maths/Sphere.hpp"
 #include "oscar/Maths/Triangle.hpp"
 #include "oscar/Platform/App.hpp"
-#include "oscar/Utils/ArrayHelpers.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <glm/vec3.hpp>
@@ -31,27 +31,27 @@ namespace
 {
     constexpr osc::CStringView c_TabStringID = "Experiments/Hittest";
 
-    auto constexpr c_CrosshairVerts = osc::MakeArray<glm::vec3>
-    (
+    auto constexpr c_CrosshairVerts = osc::to_array<glm::vec3>(
+    {
         // -X to +X
-        glm::vec3{-0.05f, 0.0f, 0.0f},
-        glm::vec3{+0.05f, 0.0f, 0.0f},
+        {-0.05f, 0.0f, 0.0f},
+        {+0.05f, 0.0f, 0.0f},
 
         // -Y to +Y
-        glm::vec3{0.0f, -0.05f, 0.0f},
-        glm::vec3{0.0f, +0.05f, 0.0f}
-    );
+        {0.0f, -0.05f, 0.0f},
+        {0.0f, +0.05f, 0.0f},
+    });
 
-    auto constexpr c_CrosshairIndices = osc::MakeArray<uint16_t>(0, 1, 2, 3);
+    auto constexpr c_CrosshairIndices = osc::to_array<uint16_t>({ 0, 1, 2, 3 });
 
-    auto constexpr c_TriangleVerts = osc::MakeArray<glm::vec3>
-    (
-        glm::vec3{-10.0f, -10.0f, 0.0f},
-        glm::vec3{+0.0f, +10.0f, 0.0f},
-        glm::vec3{+10.0f, -10.0f, 0.0f}
-    );
+    auto constexpr c_TriangleVerts = osc::to_array<glm::vec3>(
+    {
+        {-10.0f, -10.0f, 0.0f},
+        {+0.0f, +10.0f, 0.0f},
+        {+10.0f, -10.0f, 0.0f},
+    });
 
-    auto constexpr c_TriangleIndices = osc::MakeArray<uint16_t>(0, 1, 2);
+    auto constexpr c_TriangleIndices = osc::to_array<uint16_t>({ 0, 1, 2 });
 
     struct SceneSphere final {
 

@@ -30,7 +30,7 @@ class osc::PerfPanel::Impl final : public osc::StandardPanel {
 public:
 
     Impl(std::string_view panelName) :
-        StandardPanel{std::move(panelName)}
+        StandardPanel{panelName}
     {
     }
 
@@ -120,7 +120,7 @@ private:
 // public API
 
 osc::PerfPanel::PerfPanel(std::string_view panelName) :
-    m_Impl{std::make_unique<Impl>(std::move(panelName))}
+    m_Impl{std::make_unique<Impl>(panelName)}
 {
 }
 

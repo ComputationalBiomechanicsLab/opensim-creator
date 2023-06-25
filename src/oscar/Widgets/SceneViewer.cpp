@@ -70,7 +70,7 @@ osc::SceneViewer::~SceneViewer() noexcept = default;
 
 void osc::SceneViewer::draw(nonstd::span<SceneDecoration const> els, SceneRendererParams const& params)
 {
-    m_Impl->draw(std::move(els), params);
+    m_Impl->draw(els, params);
 }
 
 bool osc::SceneViewer::isHovered() const

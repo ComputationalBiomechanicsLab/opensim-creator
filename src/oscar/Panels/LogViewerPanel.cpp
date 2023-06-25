@@ -12,7 +12,7 @@ class osc::LogViewerPanel::Impl final : public StandardPanel {
 public:
 
     Impl(std::string_view panelName) :
-        StandardPanel{std::move(panelName), ImGuiWindowFlags_MenuBar}
+        StandardPanel{panelName, ImGuiWindowFlags_MenuBar}
     {
     }
 
@@ -26,7 +26,7 @@ private:
 };
 
 osc::LogViewerPanel::LogViewerPanel(std::string_view panelName) :
-    m_Impl{std::make_unique<Impl>(std::move(panelName))}
+    m_Impl{std::make_unique<Impl>(panelName)}
 {
 }
 osc::LogViewerPanel::LogViewerPanel(LogViewerPanel&&) noexcept = default;

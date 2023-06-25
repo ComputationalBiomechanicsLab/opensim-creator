@@ -22,11 +22,11 @@ osc::Texture2D osc::GenChequeredFloorTexture()
     constexpr Rgb24 onColor = {0xff, 0xff, 0xff};
     constexpr Rgb24 offColor = {0xf3, 0xf3, 0xf3};
 
-    std::array<Rgb24, textureWidth * textureHeight> pixels;
+    std::array<Rgb24, textureWidth * textureHeight> pixels{};
     for (size_t row = 0; row < textureHeight; ++row)
     {
         size_t const rowStart = row * textureWidth;
-        bool yOn = (row / chequerHeight) % 2 == 0;
+        bool const yOn = (row / chequerHeight) % 2 == 0;
         for (size_t col = 0; col < textureWidth; ++col)
         {
             bool const xOn = (col / chequerWidth) % 2 == 0;

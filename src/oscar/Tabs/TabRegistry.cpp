@@ -65,5 +65,5 @@ osc::TabRegistryEntry osc::TabRegistry::operator[](size_t i) const
 
 std::optional<osc::TabRegistryEntry> osc::TabRegistry::getByName(std::string_view name) const
 {
-    return m_Impl->getByName(std::move(name));
+    return m_Impl->getByName(name);
 }

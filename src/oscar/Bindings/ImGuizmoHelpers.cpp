@@ -2,7 +2,7 @@
 
 #include "oscar/Bindings/ImGuiHelpers.hpp"
 #include "oscar/Platform/Styling.hpp"
-#include "oscar/Utils/ArrayHelpers.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <IconsFontAwesome5.h>
@@ -13,8 +13,8 @@
 
 bool osc::DrawGizmoModeSelector(ImGuizmo::MODE& mode)
 {
-    auto constexpr modeLabels = osc::MakeArray<char const*>("local", "global");
-    auto constexpr modes = osc::MakeSizedArray<ImGuizmo::MODE, modeLabels.size()>(ImGuizmo::LOCAL, ImGuizmo::WORLD);
+    auto constexpr modeLabels = osc::to_array({ "local", "global" });
+    auto constexpr modes = osc::to_array<ImGuizmo::MODE, 2>({ ImGuizmo::LOCAL, ImGuizmo::WORLD });
 
     bool rv = false;
     int currentMode = static_cast<int>(std::distance(std::begin(modes), std::find(std::begin(modes), std::end(modes), mode)));

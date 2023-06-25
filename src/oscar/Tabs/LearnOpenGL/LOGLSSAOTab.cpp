@@ -25,7 +25,7 @@
 #include "oscar/Maths/Rect.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
-#include "oscar/Utils/ArrayHelpers.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <glm/vec2.hpp>
@@ -115,7 +115,7 @@ namespace
     osc::Texture2D GenerateNoiseTexture(glm::ivec2 dimensions)
     {
         std::vector<glm::vec4> const pixels =
-            GenerateNoiseTexturePixels(static_cast<size_t>(dimensions.x * dimensions.y));
+            GenerateNoiseTexturePixels(static_cast<size_t>(dimensions.x) * static_cast<size_t>(dimensions.y));
 
         osc::Texture2D rv
         {
@@ -362,13 +362,14 @@ private:
     {
         float constexpr w = 200.0f;
 
-        auto const textures = MakeArray<RenderTexture const*>(
+        auto const textures = osc::to_array<RenderTexture const*>(
+        {
             &m_GBuffer.albedo,
             &m_GBuffer.normal,
             &m_GBuffer.position,
             &m_SSAO.outputTexture,
-            &m_Blur.outputTexture
-        );
+            &m_Blur.outputTexture,
+        });
 
         for (size_t i = 0; i < textures.size(); ++i)
         {

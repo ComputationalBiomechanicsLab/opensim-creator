@@ -11,7 +11,7 @@
 
 osc::UndoRedoEntryMetadata::UndoRedoEntryMetadata(std::string_view message_) :
     m_Time{std::chrono::system_clock::now()},
-    m_Message{std::move(message_)}
+    m_Message{message_}
 {
 }
 
@@ -33,7 +33,7 @@ osc::UndoRedo::~UndoRedo() noexcept = default;
 void osc::UndoRedo::commitScratch(std::string_view commitMsg)
 {
     m_Undo.push_back(std::move(m_Head));
-    m_Head = implCreateCommitFromScratch(std::move(commitMsg));
+    m_Head = implCreateCommitFromScratch(commitMsg);
     m_Redo.clear();
 }
 

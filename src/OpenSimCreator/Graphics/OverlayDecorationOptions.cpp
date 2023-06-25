@@ -1,6 +1,6 @@
 #include "OverlayDecorationOptions.hpp"
 
-#include <oscar/Utils/ArrayHelpers.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <cstddef>
@@ -26,16 +26,17 @@ namespace
         CustomRenderingOptionFlags_Default = CustomRenderingOptionFlags_None,
     };
 
-    auto constexpr c_CustomRenderingOptionLabels = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(CustomRenderingOptionFlags_COUNT)>
-    (
+    auto constexpr c_CustomRenderingOptionLabels = osc::to_array<osc::CStringView>(
+    {
         "XZ Grid",
         "XY Grid",
         "YZ Grid",
         "Axis Lines",
 
         "AABBs",
-        "BVH"
-    );
+        "BVH",
+    });
+    static_assert(c_CustomRenderingOptionLabels.size() == static_cast<size_t>(CustomRenderingOptionFlags_COUNT));
 
     enum class CustomRenderingOptionGroup : uint32_t {
         Alignment,
@@ -43,22 +44,24 @@ namespace
         COUNT,
     };
 
-    auto constexpr c_CustomRenderingOptionGroupLabels = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(CustomRenderingOptionGroup::COUNT)>
-    (
+    auto constexpr c_CustomRenderingOptionGroupLabels = osc::to_array<osc::CStringView>(
+    {
         "Alignment",
-        "Development"
-    );
+        "Development",
+    });
+    static_assert(c_CustomRenderingOptionGroupLabels.size() == static_cast<size_t>(CustomRenderingOptionGroup::COUNT));
 
-    auto constexpr c_CustomRenderingOptionGroups = osc::MakeSizedArray<CustomRenderingOptionGroup, static_cast<size_t>(CustomRenderingOptionFlags_COUNT)>
-    (
+    auto constexpr c_CustomRenderingOptionGroups = osc::to_array<CustomRenderingOptionGroup>(
+    {
         CustomRenderingOptionGroup::Alignment,
         CustomRenderingOptionGroup::Alignment,
         CustomRenderingOptionGroup::Alignment,
         CustomRenderingOptionGroup::Alignment,
 
         CustomRenderingOptionGroup::Development,
-        CustomRenderingOptionGroup::Development
-    );
+        CustomRenderingOptionGroup::Development,
+    });
+    static_assert(c_CustomRenderingOptionGroups.size() == static_cast<size_t>(CustomRenderingOptionFlags_COUNT));
 
     void SetFlag(uint32_t& flags, uint32_t flag, bool v)
     {

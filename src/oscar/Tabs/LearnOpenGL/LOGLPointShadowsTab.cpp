@@ -139,7 +139,7 @@ namespace
         osc::RenderTextureDescriptor desc{c_ShadowmapDims};
         desc.setDimension(osc::TextureDimension::Cube);
         desc.setReadWrite(osc::RenderTextureReadWrite::Linear);
-        return osc::RenderTexture{std::move(desc)};
+        return osc::RenderTexture{desc};
     }
 }
 

@@ -31,9 +31,9 @@ namespace
             std::filesystem::path geometryShaderPath_,
             std::filesystem::path fragmentShaderPath_) :
 
-            vertexShaderPath{vertexShaderPath_},
-            geometryShaderPath{geometryShaderPath_},
-            fragmentShaderPath{fragmentShaderPath_}
+            vertexShaderPath{std::move(vertexShaderPath_)},
+            geometryShaderPath{std::move(geometryShaderPath_)},
+            fragmentShaderPath{std::move(fragmentShaderPath_)}
         {
         }
 

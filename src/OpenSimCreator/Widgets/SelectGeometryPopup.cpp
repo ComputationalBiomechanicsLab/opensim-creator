@@ -5,6 +5,7 @@
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/ArrayHelpers.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Widgets/StandardPopup.hpp>
 
@@ -29,9 +30,8 @@ static inline int constexpr c_SearchMaxLen = 128;
 
 namespace
 {
-    using Geom_ctor_fn = std::unique_ptr<OpenSim::Geometry>(*)(void);
-    constexpr auto c_GeomCtors = osc::MakeArray<Geom_ctor_fn>
-    (
+    using Geom_ctor_fn = std::unique_ptr<OpenSim::Geometry>(void);
+    constexpr auto c_GeomCtors = osc::MakeArray<Geom_ctor_fn*>(
         []()
         {
             auto ptr = std::make_unique<OpenSim::Brick>();
@@ -69,17 +69,16 @@ namespace
         }
     );
 
-    constexpr auto c_GeomNames = osc::MakeArray<char const*>
-    (
+    constexpr auto c_GeomNames = osc::to_array(
+    {
         "Brick",
         "Sphere",
         "Cylinder",
         "LineGeometry",
         "Ellipsoid",
         "Arrow (CARE: may not work in OpenSim's main UI)",
-        "Cone"
-    );
-
+        "Cone",
+    });
     static_assert(c_GeomCtors.size() == c_GeomNames.size());
 
     std::optional<std::filesystem::path> PromptUserForGeometryFile()

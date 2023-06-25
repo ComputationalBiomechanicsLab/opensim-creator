@@ -1,6 +1,6 @@
 #include "OpenSimDecorationOptions.hpp"
 
-#include <oscar/Utils/ArrayHelpers.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <cstdint>
 #include <type_traits>
@@ -25,7 +25,8 @@ namespace
             CustomDecorationOptionFlags_ShouldShowPointToPointSprings,
     };
 
-    auto constexpr c_CustomDecorationOptionLabels = osc::MakeSizedArray<osc::CStringView, CustomDecorationOptionFlags_COUNT>(
+    auto constexpr c_CustomDecorationOptionLabels = osc::to_array<osc::CStringView>(
+    {
         "Scapulothoracic Joints",
         "Origin Lines of Action (effective)",
         "Insertion Lines of Action (effective)",
@@ -33,10 +34,12 @@ namespace
         "Insertion Lines of Action (anatomical)",
         "Centers of Mass",
         "Point-to-Point Springs",
-        "Plane Contact Forces (EXPERIMENTAL)"
-    );
+        "Plane Contact Forces (EXPERIMENTAL)",
+    });
+    static_assert(c_CustomDecorationOptionLabels.size() == CustomDecorationOptionFlags_COUNT);
 
-    auto constexpr c_CustomDecorationDescriptions = osc::MakeSizedArray<std::optional<osc::CStringView>, CustomDecorationOptionFlags_COUNT>(
+    auto constexpr c_CustomDecorationDescriptions = osc::to_array<std::optional<osc::CStringView>>(
+    {
         std::nullopt,
         "Draws direction vectors that show the effective mechanical effect of the muscle action on the attached body.\n\n'Effective' refers to the fact that this algorithm computes the 'effective' attachment position of the muscle, which can change because of muscle wrapping and via point calculations (see: section 5.4.3 of Yamaguchi's book 'Dynamic Modeling of Musculoskeletal Motion: A Vectorized Approach for Biomechanical Analysis in Three Dimensions', title 'EFFECTIVE ORIGIN AND INSERTION POINTS').\n\nOpenSim Creator's implementation of this algorithm is based on Luca Modenese (@modenaxe)'s implementation here:\n\n    - https://github.com/modenaxe/MuscleForceDirection\n\nThanks to @modenaxe for open-sourcing the original algorithm!",
         "Draws direction vectors that show the effective mechanical effect of the muscle action on the attached body.\n\n'Effective' refers to the fact that this algorithm computes the 'effective' attachment position of the muscle, which can change because of muscle wrapping and via point calculations (see: section 5.4.3 of Yamaguchi's book 'Dynamic Modeling of Musculoskeletal Motion: A Vectorized Approach for Biomechanical Analysis in Three Dimensions', title 'EFFECTIVE ORIGIN AND INSERTION POINTS').\n\nOpenSim Creator's implementation of this algorithm is based on Luca Modenese (@modenaxe)'s implementation here:\n\n    - https://github.com/modenaxe/MuscleForceDirection\n\nThanks to @modenaxe for open-sourcing the original algorithm!",
@@ -44,8 +47,9 @@ namespace
         "Draws direction vectors that show the mechanical effect of the muscle action on the bodies attached to the origin/insertion points.\n\n'Anatomical' here means 'the first/last points of the muscle path' see the documentation for 'effective' lines of action for contrast.\n\nOpenSim Creator's implementation of this algorithm is based on Luca Modenese (@modenaxe)'s implementation here:\n\n    - https://github.com/modenaxe/MuscleForceDirection\n\nThanks to @modenaxe for open-sourcing the original algorithm!",
         std::nullopt,
         std::nullopt,
-        "Tries to draw the direction of contact forces on planes in the scene.\n\nEXPERIMENTAL: the implementation of this visualization is work-in-progress and written by someone with a highschool-level understanding of Torque. Report any bugs or implementation opinions on GitHub.\n\nOpenSim Creator's implementation of this algorithm is very roughly based on Thomas Geijtenbeek's (better) implementation in scone-studio, here:\n\n    - https://github.com/tgeijten/scone-studio \n\nThanks to @tgeijten for writing an awesome project (that OSC has probably mis-implemented ;) - again, report any bugs, folks)"
-    );
+        "Tries to draw the direction of contact forces on planes in the scene.\n\nEXPERIMENTAL: the implementation of this visualization is work-in-progress and written by someone with a highschool-level understanding of Torque. Report any bugs or implementation opinions on GitHub.\n\nOpenSim Creator's implementation of this algorithm is very roughly based on Thomas Geijtenbeek's (better) implementation in scone-studio, here:\n\n    - https://github.com/tgeijten/scone-studio \n\nThanks to @tgeijten for writing an awesome project (that OSC has probably mis-implemented ;) - again, report any bugs, folks)",
+    });
+    static_assert(c_CustomDecorationDescriptions.size() == CustomDecorationOptionFlags_COUNT);
 
     void SetFlag(uint32_t& flags, uint32_t flag, bool v)
     {

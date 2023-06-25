@@ -65,5 +65,5 @@ osc::IconCache::~IconCache() noexcept = default;
 
 osc::Icon const& osc::IconCache::getIcon(std::string_view iconName) const
 {
-    return m_Impl->getIcon(std::move(iconName));
+    return m_Impl->getIcon(iconName);
 }

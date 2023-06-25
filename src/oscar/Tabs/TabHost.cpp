@@ -18,12 +18,12 @@ osc::UID osc::TabHost::addTab(std::unique_ptr<Tab> tab)
 
 void osc::TabHost::selectTab(UID tabID)
 {
-    implSelectTab(std::move(tabID));
+    implSelectTab(tabID);
 }
 
 void osc::TabHost::closeTab(UID tabID)
 {
-    implCloseTab(std::move(tabID));
+    implCloseTab(tabID);
 }
 
 void osc::TabHost::resetImgui()

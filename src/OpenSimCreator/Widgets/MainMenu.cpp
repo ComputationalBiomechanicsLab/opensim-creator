@@ -39,8 +39,13 @@
 #include <typeinfo>
 #include <utility>
 
-static auto constexpr c_AntialiasingLevels = osc::MakeArray<char const*>("x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128");
-
+namespace
+{
+    auto constexpr c_AntialiasingLevels = osc::to_array<char const* const>(
+    {
+        "x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128"
+    });
+}
 
 // public API
 
@@ -181,26 +186,26 @@ void osc::MainMenuFileTab::draw(std::weak_ptr<MainUIStateAPI> api, UndoableModel
     ImGui::Separator();
 
     {
-        bool modelHasBackingFile = maybeModel && osc::HasInputFileName(maybeModel->getModel());
+        bool const modelHasBackingFile = maybeModel && osc::HasInputFileName(maybeModel->getModel());
 
-        if (ImGui::MenuItem(ICON_FA_RECYCLE " Reload", "F5", false, modelHasBackingFile))
+        if (ImGui::MenuItem(ICON_FA_RECYCLE " Reload", "F5", false, modelHasBackingFile) && maybeModel)
         {
             osc::ActionReloadOsimFromDisk(*maybeModel, *App::upd().singleton<MeshCache>());
         }
         osc::DrawTooltipIfItemHovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
 
-        if (ImGui::MenuItem(ICON_FA_CLIPBOARD " Copy .osim path to clipboard", nullptr, false, modelHasBackingFile))
+        if (ImGui::MenuItem(ICON_FA_CLIPBOARD " Copy .osim path to clipboard", nullptr, false, modelHasBackingFile) && maybeModel)
         {
             osc::ActionCopyModelPathToClipboard(*maybeModel);
         }
         osc::DrawTooltipIfItemHovered("Copy .osim path to clipboard", "Copies the absolute path to the model's .osim file into your clipboard.\n\nThis is handy if you want to (e.g.) load the osim via a script, open it from the command line in another app, etc.");
 
-        if (ImGui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", nullptr, false, modelHasBackingFile))
+        if (ImGui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", nullptr, false, modelHasBackingFile) && maybeModel)
         {
             osc::ActionOpenOsimParentDirectory(*maybeModel);
         }
 
-        if (ImGui::MenuItem(ICON_FA_LINK " Open .osim in external editor", nullptr, false, modelHasBackingFile))
+        if (ImGui::MenuItem(ICON_FA_LINK " Open .osim in external editor", nullptr, false, modelHasBackingFile) && maybeModel)
         {
             osc::ActionOpenOsimInExternalEditor(*maybeModel);
         }

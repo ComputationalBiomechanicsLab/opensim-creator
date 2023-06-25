@@ -8,6 +8,7 @@
 
 #include <functional>
 #include <string>
+#include <utility>
 
 osc::IconWithMenu::IconWithMenu(
     osc::Icon icon,
@@ -15,7 +16,7 @@ osc::IconWithMenu::IconWithMenu(
     osc::CStringView description,
     std::function<void()> contentRenderer) :
 
-    m_IconWithoutMenu{icon, title, description},
+    m_IconWithoutMenu{std::move(icon), title, description},
     m_ContextMenuID{"##" + m_IconWithoutMenu.getIconID()},
     m_ContentRenderer{std::move(contentRenderer)}
 {

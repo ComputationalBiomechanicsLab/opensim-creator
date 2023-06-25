@@ -1,6 +1,6 @@
 #include "Log.hpp"
 
-#include "oscar/Utils/ArrayHelpers.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <iostream>
@@ -53,16 +53,17 @@ namespace
         return s_GlobalSinks;
     }
 
-    auto constexpr c_LogLevelStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::log::level::LevelEnum::NUM_LEVELS)>
-    (
+    auto constexpr c_LogLevelStrings = osc::to_array<osc::CStringView>(
+    {
         "trace",
         "debug",
         "info",
         "warning",
         "error",
         "critical",
-        "off"
-    );
+        "off",
+    });
+    static_assert(c_LogLevelStrings.size() == static_cast<size_t>(osc::log::level::LevelEnum::NUM_LEVELS));
 }
 
 // public API

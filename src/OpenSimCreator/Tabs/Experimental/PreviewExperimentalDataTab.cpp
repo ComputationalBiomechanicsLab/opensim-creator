@@ -21,6 +21,7 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/ArrayHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 
@@ -50,24 +51,26 @@ namespace
     };
 
     // human-readable name of a data type
-    static auto constexpr c_ColumnDataTypeStrings = osc::MakeSizedArray<osc::CStringView, static_cast<int>(ColumnDataType::TOTAL)>
-    (
+    auto constexpr c_ColumnDataTypeStrings = osc::to_array<osc::CStringView>(
+    {
         "Point",
         "PointForce",
         "BodyForce",
         "Orientation",
-        "Unknown"
-    );
+        "Unknown",
+    });
+    static_assert(c_ColumnDataTypeStrings.size() == static_cast<int>(ColumnDataType::TOTAL));
 
     // the number of floating-point values the column is backed by
-    static auto constexpr c_ColumnDataSizes = osc::MakeSizedArray<int, static_cast<int>(ColumnDataType::TOTAL)>
-    (
+    auto constexpr c_ColumnDataSizes = osc::to_array<int>(
+    {
         3,
         6,
         3,
         4,
-        1
-    );
+        1,
+    });
+    static_assert(c_ColumnDataSizes.size() == static_cast<int>(ColumnDataType::TOTAL));
 
     // prints a human-readable representation of a column data type
     std::ostream& operator<<(std::ostream& o, ColumnDataType dt)

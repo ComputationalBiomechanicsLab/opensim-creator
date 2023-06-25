@@ -1,6 +1,6 @@
 #include "IntegratorMethod.hpp"
 
-#include <oscar/Utils/ArrayHelpers.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <nonstd/span.hpp>
@@ -16,29 +16,34 @@
 #include <cstddef>
 #include <memory>
 
-static auto constexpr c_IntegratorMethods = osc::MakeSizedArray<osc::IntegratorMethod, static_cast<size_t>(osc::IntegratorMethod::TOTAL)>
-(
-    osc::IntegratorMethod::OpenSimManagerDefault,
-    osc::IntegratorMethod::ExplicitEuler,
-    osc::IntegratorMethod::RungeKutta2,
-    osc::IntegratorMethod::RungeKutta3,
-    osc::IntegratorMethod::RungeKuttaFeldberg,
-    osc::IntegratorMethod::RungeKuttaMerson,
-    osc::IntegratorMethod::SemiExplicitEuler2,
-    osc::IntegratorMethod::Verlet
-);
+namespace
+{
+    auto constexpr c_IntegratorMethods = osc::to_array<osc::IntegratorMethod>(
+    {
+        osc::IntegratorMethod::OpenSimManagerDefault,
+        osc::IntegratorMethod::ExplicitEuler,
+        osc::IntegratorMethod::RungeKutta2,
+        osc::IntegratorMethod::RungeKutta3,
+        osc::IntegratorMethod::RungeKuttaFeldberg,
+        osc::IntegratorMethod::RungeKuttaMerson,
+        osc::IntegratorMethod::SemiExplicitEuler2,
+        osc::IntegratorMethod::Verlet,
+    });
+    static_assert(c_IntegratorMethods.size() == static_cast<size_t>(osc::IntegratorMethod::TOTAL));
 
-static auto constexpr c_IntegratorMethodStrings = osc::MakeSizedArray<osc::CStringView, static_cast<size_t>(osc::IntegratorMethod::TOTAL)>
-(
-    "OpenSim::Manager Default",
-    "Explicit Euler",
-    "Runge Kutta 2",
-    "Runge Kutta 3",
-    "Runge Kutta Feldberg",
-    "Runge Kutta Merson",
-    "Semi Explicit Euler 2",
-    "Verlet"
-);
+    auto constexpr c_IntegratorMethodStrings = osc::to_array<osc::CStringView>(
+    {
+        "OpenSim::Manager Default",
+        "Explicit Euler",
+        "Runge Kutta 2",
+        "Runge Kutta 3",
+        "Runge Kutta Feldberg",
+        "Runge Kutta Merson",
+        "Semi Explicit Euler 2",
+        "Verlet",
+    });
+    static_assert(c_IntegratorMethodStrings.size() == static_cast<size_t>(osc::IntegratorMethod::TOTAL));
+}
 
 nonstd::span<osc::IntegratorMethod const> osc::GetAllIntegratorMethods()
 {

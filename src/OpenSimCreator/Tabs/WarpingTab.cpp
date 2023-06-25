@@ -37,6 +37,7 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Tabs/TabHost.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
@@ -461,7 +462,12 @@ namespace
             {
                 osc::WriteCSVRow(
                     fileOutputStream,
-                    std::array<std::string, 3>{std::to_string(loc->x), std::to_string(loc->y), std::to_string(loc->z)}
+                    osc::to_array(
+                    {
+                        std::to_string(loc->x),
+                        std::to_string(loc->y),
+                        std::to_string(loc->z),
+                    })
                 );
             }
         }
@@ -488,7 +494,7 @@ namespace
         // write header
         osc::WriteCSVRow(
             fileOutputStream,
-            std::array<std::string, 6>
+            osc::to_array<std::string>(
             {
                 "source.x",
                 "source.y",
@@ -496,7 +502,7 @@ namespace
                 "dest.x",
                 "dest.y",
                 "dest.z",
-            }
+            })
         );
 
         // write data rows
@@ -504,7 +510,7 @@ namespace
         {
             osc::WriteCSVRow(
                 fileOutputStream,
-                std::array<std::string, 6>
+                osc::to_array(
                 {
                     std::to_string(p.source.x),
                     std::to_string(p.source.y),
@@ -513,7 +519,7 @@ namespace
                     std::to_string(p.destination.x),
                     std::to_string(p.destination.y),
                     std::to_string(p.destination.z),
-                }
+                })
             );
         }
     }

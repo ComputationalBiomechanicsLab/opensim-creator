@@ -71,7 +71,6 @@ void osc::Component::setName(std::string_view)
         return;  // can only rename a component that's within a component list
     }
 
-    CStringView const oldName = this->getName();
     for (auto it = ComponentIterator{*this}; it != ComponentIterator{}; ++it)
     {
         for (size_t i = 0, nSockets = it->getNumSockets(); i < nSockets; ++i)

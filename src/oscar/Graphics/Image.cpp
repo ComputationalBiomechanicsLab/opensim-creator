@@ -37,10 +37,10 @@ osc::Image::Image(
     int32_t numChannels,
     ColorSpace colorSpace) :
 
-    m_Dimensions{std::move(dimensions)},
-    m_NumChannels{std::move(numChannels)},
+    m_Dimensions{dimensions},
+    m_NumChannels{numChannels},
     m_Pixels{new uint8_t[dimensions.x * dimensions.y * numChannels]},
-    m_ColorSpace{std::move(colorSpace)}
+    m_ColorSpace{colorSpace}
 {
     std::copy(channelsRowByRow.begin(), channelsRowByRow.end(), m_Pixels.get());
 }

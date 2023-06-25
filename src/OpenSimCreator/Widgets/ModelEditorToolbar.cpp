@@ -147,9 +147,7 @@ private:
         }
 
         osc::PopItemFlags(itemFlagsPushed);
-        itemFlagsPushed = 0;
         ImGui::PopStyleVar(styleVarsPushed);
-        styleVarsPushed = 0;
 
         osc::DrawTooltipIfItemHovered("Undo", "Undo the model to an earlier version");
     }
@@ -172,9 +170,7 @@ private:
         }
 
         osc::PopItemFlags(itemFlagsPushed);
-        itemFlagsPushed = 0;
         ImGui::PopStyleVar(styleVarsPushed);
-        styleVarsPushed = 0;
 
         osc::DrawTooltipIfItemHovered("Redo", "Redo the model to an undone version");
     }

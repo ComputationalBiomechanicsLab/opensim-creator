@@ -16,7 +16,7 @@ public:
         std::string_view panelName_,
         std::shared_ptr<UndoRedo> storage_) :
 
-        StandardPanel{std::move(panelName_)},
+        StandardPanel{panelName_},
         m_Storage{std::move(storage_)}
     {
     }
@@ -72,7 +72,7 @@ private:
 // public API (PIMPL)
 
 osc::UndoRedoPanel::UndoRedoPanel(std::string_view panelName_, std::shared_ptr<osc::UndoRedo> storage_) :
-    m_Impl{std::make_unique<Impl>(std::move(panelName_), std::move(storage_))}
+    m_Impl{std::make_unique<Impl>(panelName_, std::move(storage_))}
 {
 }
 

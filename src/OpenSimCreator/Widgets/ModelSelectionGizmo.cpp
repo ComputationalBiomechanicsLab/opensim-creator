@@ -80,8 +80,8 @@ namespace
     private:
         virtual SupportedManipulationOpFlags implGetSupportedManipulationOps() const = 0;
         virtual glm::mat4 implGetCurrentModelMatrix() const = 0;
-        virtual void implOnApplyTranslation(glm::vec3 const& deltaTranslationInGround) {}  // default to noop
-        virtual void implOnApplyRotation(glm::vec3 const& deltaEulerRadiansInGround) {}  // default to noop
+        virtual void implOnApplyTranslation(glm::vec3 const&) {}  // default to noop
+        virtual void implOnApplyRotation(glm::vec3 const&) {}  // default to noop
         virtual void implOnSave() = 0;
     };
 
@@ -170,7 +170,7 @@ namespace
         // inheritors must implement concrete manipulation methods
         virtual glm::mat4 implGetCurrentModelMatrix(TComponent const&) const = 0;
         virtual void implOnApplyTranslation(TComponent const&, glm::vec3 const& deltaTranslationInGround) = 0;
-        virtual void implOnApplyRotation(TComponent const&, glm::vec3 const& deltaEulerRadiansInGround) {}  // default to noop
+        virtual void implOnApplyRotation(TComponent const&, glm::vec3 const&) {}  // default to noop
         virtual void implOnSave(TComponent const&) = 0;
 
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
