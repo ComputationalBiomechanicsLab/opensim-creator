@@ -52,7 +52,9 @@ namespace
             return osc::ModelEditorViewerPanelLayerFlags_CapturesMouseInputs;
         }
 
-        bool implHandleMouseInputs()
+        bool implHandleMouseInputs(
+            osc::ModelEditorViewerPanelParameters&,
+            osc::ModelEditorViewerPanelState&) final
         {
             return true;  // always handles the mouse
         }
@@ -116,8 +118,8 @@ namespace
         }
 
         bool implHandleKeyboardInputs(
-            osc::ModelEditorViewerPanelParameters& params,
-            osc::ModelEditorViewerPanelState& state) final
+            osc::ModelEditorViewerPanelParameters&,
+            osc::ModelEditorViewerPanelState&) final
         {
             return m_Gizmo.handleKeyboardInputs();
         }

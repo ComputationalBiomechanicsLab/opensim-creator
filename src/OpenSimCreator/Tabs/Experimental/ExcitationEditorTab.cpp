@@ -298,19 +298,28 @@ namespace
             }
         }
     private:
-        static void NoneDirectionalOp(GridLayout& grid, glm::ivec2 gridCoord, GridDirection direction)
+        static void NoneDirectionalOp(
+            GridLayout&,
+            glm::ivec2,
+            GridDirection)
         {
             // noop
         }
 
-        static void MoveDirectionalOp(GridLayout& grid, glm::ivec2 gridCoord, GridDirection direction)
+        static void MoveDirectionalOp(
+            GridLayout&,
+            glm::ivec2,
+            GridDirection)
         {
-            glm::ivec2 const adjacentCoord = gridCoord + ToVec2(direction);
+            //glm::ivec2 const adjacentCoord = gridCoord + ToVec2(direction);
 
             // TODO: insert
         }
 
-        static void SwapDirectionalOp(GridLayout&, glm::ivec2 gridCoord, GridDirection)
+        static void SwapDirectionalOp(
+            GridLayout&,
+            glm::ivec2,
+            GridDirection)
         {
             // TODO: swapsies
         }
@@ -594,7 +603,7 @@ namespace
             }
         }
 
-        void drawCellContent(glm::ivec2 gridCoord, osc::Rect const& screenSpaceRect)
+        void drawCellContent(glm::ivec2, osc::Rect const& screenSpaceRect)
         {
             osc::Rect const actualRect =
             {
@@ -696,7 +705,7 @@ namespace
             }
         }
 
-        osc::CStringView calcOverlayIconText(GridDirection direction, GridOperation operation) const
+        osc::CStringView calcOverlayIconText(GridDirection, GridOperation operation) const
         {
             switch (operation)
             {
