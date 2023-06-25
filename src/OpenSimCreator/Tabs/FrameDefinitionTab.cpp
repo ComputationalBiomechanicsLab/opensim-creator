@@ -710,8 +710,8 @@ namespace OpenSim
 
     private:
         void generateDecorations(
-            bool fixed,
-            const ModelDisplayHints& hints,
+            bool,
+            const ModelDisplayHints&,
             const SimTK::State& state,
             SimTK::Array_<SimTK::DecorativeGeometry>& appendOut) const final
         {
@@ -826,12 +826,12 @@ namespace OpenSim
             return SimTK::Transform{rotation, originLocationInGround};
         }
 
-        SimTK::SpatialVec calcVelocityInGround(SimTK::State const& state) const final
+        SimTK::SpatialVec calcVelocityInGround(SimTK::State const&) const final
         {
             return {};  // TODO: see OffsetFrame::calcVelocityInGround
         }
 
-        SimTK::SpatialVec calcAccelerationInGround(SimTK::State const& state) const final
+        SimTK::SpatialVec calcAccelerationInGround(SimTK::State const&) const final
         {
             return {};  // TODO: see OffsetFrame::calcAccelerationInGround
         }
@@ -1162,7 +1162,7 @@ namespace
     }
 
     void ActionReexportMeshOBJWithRespectTo(
-        OpenSim::Model const& model,
+        OpenSim::Model const&,
         SimTK::State const& state,
         OpenSim::Mesh const& openSimMesh,
         OpenSim::Frame const& frame)
@@ -1203,7 +1203,7 @@ namespace
     }
 
     void ActionReexportMeshSTLWithRespectTo(
-        OpenSim::Model const& model,
+        OpenSim::Model const&,
         SimTK::State const& state,
         OpenSim::Mesh const& openSimMesh,
         OpenSim::Frame const& frame)
@@ -2188,7 +2188,7 @@ namespace
 {
     void DrawGenericRightClickComponentContextMenuActions(
         osc::EditorAPI& editor,
-        std::shared_ptr<osc::UndoableModelStatePair> model,
+        std::shared_ptr<osc::UndoableModelStatePair>,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         OpenSim::Component const&)
     {

@@ -231,8 +231,14 @@ target_compile_options(OpenSimCreator PUBLIC
         # disable warning 4996: Simbody uses a deprecated iterator class
         /wd4996
 
-        # turn warning level up to "production grade" (note: /W4 explodes because of Simbody)
+        # turn warning level to "production grade" (note: /W4 explodes because of Simbody)
         /W3
+    >
+
+    # gcc/clang
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
+        # disable extra-semicolon detection: broken by OpenSim_DECLARE_ macros (see: opensim-core/3496)
+        -Wno-extra-semi
     >
 )
 
