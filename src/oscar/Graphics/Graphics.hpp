@@ -26,7 +26,7 @@ namespace osc::Graphics
         Transform const&,
         Material const&,
         Camera&,
-        std::optional<MaterialPropertyBlock> = std::nullopt
+        std::optional<MaterialPropertyBlock> const& = std::nullopt
     );
 
     void DrawMesh(
@@ -34,7 +34,7 @@ namespace osc::Graphics
         glm::mat4 const&,
         Material const&,
         Camera&,
-        std::optional<MaterialPropertyBlock> = std::nullopt
+        std::optional<MaterialPropertyBlock> const& = std::nullopt
     );
 
     void Blit(

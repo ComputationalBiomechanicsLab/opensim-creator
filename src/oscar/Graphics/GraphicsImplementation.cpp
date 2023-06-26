@@ -357,11 +357,11 @@ namespace
             osc::Mesh const& mesh_,
             osc::Transform const& transform_,
             osc::Material const& material_,
-            std::optional<osc::MaterialPropertyBlock> maybePropBlock_) :
+            std::optional<osc::MaterialPropertyBlock> const& maybePropBlock_) :
 
             material{material_},
             mesh{mesh_},
-            propBlock{maybePropBlock_ ? std::move(maybePropBlock_).value() : osc::MaterialPropertyBlock{}},
+            maybePropBlock{maybePropBlock_},
             transform{transform_},
             worldMidpoint{material.getTransparent() ? osc::TransformPoint(transform_, osc::Midpoint(mesh.getBounds())) : glm::vec3{}}
         {
@@ -371,11 +371,11 @@ namespace
             osc::Mesh const& mesh_,
             glm::mat4 const& transform_,
             osc::Material const& material_,
-            std::optional<osc::MaterialPropertyBlock> maybePropBlock_) :
+            std::optional<osc::MaterialPropertyBlock> const& maybePropBlock_) :
 
             material{material_},
             mesh{mesh_},
-            propBlock{maybePropBlock_ ? std::move(maybePropBlock_).value() : osc::MaterialPropertyBlock{}},
+            maybePropBlock{maybePropBlock_},
             transform{transform_},
             worldMidpoint{material.getTransparent() ? transform_ * glm::vec4{osc::Midpoint(mesh.getBounds()), 1.0f} : glm::vec3{}}
         {
@@ -387,14 +387,14 @@ namespace
 
             swap(a.material, b.material);
             swap(a.mesh, b.mesh);
-            swap(a.propBlock, b.propBlock);
+            swap(a.maybePropBlock, b.maybePropBlock);
             swap(a.transform, b.transform);
             swap(a.worldMidpoint, b.worldMidpoint);
         }
 
         osc::Material material;
         osc::Mesh mesh;
-        osc::MaterialPropertyBlock propBlock;
+        std::optional<osc::MaterialPropertyBlock> maybePropBlock;
         Mat4OrTransform transform;
         glm::vec3 worldMidpoint;
     };
@@ -404,7 +404,7 @@ namespace
         return
             a.material == b.material &&
             a.mesh == b.mesh &&
-            a.propBlock == b.propBlock &&
+            a.maybePropBlock == b.maybePropBlock &&
             a.transform == b.transform &&
             a.worldMidpoint == b.worldMidpoint;
     }
@@ -468,48 +468,48 @@ namespace
 
     class RenderObjectHasMaterial final {
     public:
-        RenderObjectHasMaterial(osc::Material const& material) :
+        explicit RenderObjectHasMaterial(osc::Material const* material) :
             m_Material{material}
         {
         }
 
         bool operator()(RenderObject const& ro) const
         {
-            return ro.material == m_Material;
+            return ro.material == *m_Material;
         }
     private:
-        std::reference_wrapper<osc::Material const> m_Material;
+        osc::Material const* m_Material;
     };
 
     class RenderObjectHasMaterialPropertyBlock final {
     public:
-        RenderObjectHasMaterialPropertyBlock(osc::MaterialPropertyBlock const& mpb) :
+        explicit RenderObjectHasMaterialPropertyBlock(std::optional<osc::MaterialPropertyBlock> const* mpb) :
             m_Mpb{mpb}
         {
         }
 
         bool operator()(RenderObject const& ro) const
         {
-            return ro.propBlock == m_Mpb;
+            return ro.maybePropBlock == *m_Mpb;
         }
 
     private:
-        std::reference_wrapper<osc::MaterialPropertyBlock const> m_Mpb;
+        std::optional<osc::MaterialPropertyBlock> const* m_Mpb;
     };
 
     class RenderObjectHasMesh final {
     public:
-        RenderObjectHasMesh(osc::Mesh const& mesh) :
+        RenderObjectHasMesh(osc::Mesh const* mesh) :
             m_Mesh{mesh}
         {
         }
 
         bool operator()(RenderObject const& ro) const
         {
-            return ro.mesh == m_Mesh;
+            return ro.mesh == *m_Mesh;
         }
     private:
-        std::reference_wrapper<osc::Mesh const> m_Mesh;
+        osc::Mesh const* m_Mesh;
     };
 
     // sort a sequence of `RenderObject`s for optimal drawing
@@ -524,19 +524,19 @@ namespace
             auto materialBatchStart = begin;
             while (materialBatchStart != opaqueEnd)
             {
-                auto const materialBatchEnd = std::partition(materialBatchStart, opaqueEnd, RenderObjectHasMaterial{materialBatchStart->material});
+                auto const materialBatchEnd = std::partition(materialBatchStart, opaqueEnd, RenderObjectHasMaterial{&materialBatchStart->material});
 
                 // then sub-sub-partition by material property block
                 auto propBatchStart = materialBatchStart;
                 while (propBatchStart != materialBatchEnd)
                 {
-                    auto const propBatchEnd = std::partition(propBatchStart, materialBatchEnd, RenderObjectHasMaterialPropertyBlock{propBatchStart->propBlock});
+                    auto const propBatchEnd = std::partition(propBatchStart, materialBatchEnd, RenderObjectHasMaterialPropertyBlock{&propBatchStart->maybePropBlock});
 
                     // then sub-sub-sub-partition by mesh
                     auto meshBatchStart = propBatchStart;
                     while (meshBatchStart != propBatchEnd)
                     {
-                        auto const meshBatchEnd = std::partition(meshBatchStart, propBatchEnd, RenderObjectHasMesh{meshBatchStart->mesh});
+                        auto const meshBatchEnd = std::partition(meshBatchStart, propBatchEnd, RenderObjectHasMesh{&meshBatchStart->mesh});
                         meshBatchStart = meshBatchEnd;
                     }
                     propBatchStart = propBatchEnd;
@@ -701,7 +701,7 @@ namespace osc
             Transform const&,
             Material const&,
             Camera&,
-            std::optional<MaterialPropertyBlock>
+            std::optional<MaterialPropertyBlock> const&
         );
 
         static void DrawMesh(
@@ -709,7 +709,7 @@ namespace osc
             glm::mat4 const&,
             Material const&,
             Camera&,
-            std::optional<MaterialPropertyBlock>
+            std::optional<MaterialPropertyBlock> const&
         );
 
         static void BlitToScreen(
@@ -3487,11 +3487,6 @@ public:
         return m_AABB;
     }
 
-    glm::vec3 getMidpoint() const
-    {
-        return m_Midpoint;
-    }
-
     BVH const& getBVH() const
     {
         return m_TriangleBVH;
@@ -3510,7 +3505,6 @@ public:
         m_NumIndices = 0;
         m_IndicesData.clear();
         m_AABB = {};
-        m_Midpoint = {};
     }
 
     // non-PIMPL methods
@@ -3585,7 +3579,6 @@ private:
                 m_AABB = AABBFromIndexedVerts(m_Vertices, indices);
             }
         }
-        m_Midpoint = Midpoint(m_AABB);
     }
 
     void uploadToGPU()
@@ -3748,7 +3741,6 @@ private:
     std::vector<PackedIndex> m_IndicesData;
 
     AABB m_AABB = {};
-    glm::vec3 m_Midpoint = {};
     BVH m_TriangleBVH;
 
     DefaultConstructOnCopy<std::optional<MeshOpenGLData>> m_MaybeGPUBuffers;
@@ -5001,9 +4993,9 @@ void osc::Graphics::DrawMesh(
     Transform const& transform,
     Material const& material,
     Camera& camera,
-    std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock)
+    std::optional<MaterialPropertyBlock> const& maybeMaterialPropertyBlock)
 {
-    GraphicsBackend::DrawMesh(mesh, transform, material, camera, std::move(maybeMaterialPropertyBlock));
+    GraphicsBackend::DrawMesh(mesh, transform, material, camera, maybeMaterialPropertyBlock);
 }
 
 void osc::Graphics::DrawMesh(
@@ -5011,9 +5003,9 @@ void osc::Graphics::DrawMesh(
     glm::mat4 const& transform,
     Material const& material,
     Camera& camera,
-    std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock)
+    std::optional<MaterialPropertyBlock> const& maybeMaterialPropertyBlock)
 {
-    GraphicsBackend::DrawMesh(mesh, transform, material, camera, std::move(maybeMaterialPropertyBlock));
+    GraphicsBackend::DrawMesh(mesh, transform, material, camera, maybeMaterialPropertyBlock);
 }
 
 void osc::Graphics::Blit(Texture2D const& source, RenderTexture& dest)
@@ -5275,12 +5267,15 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
     ankerl::unordered_dense::map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
     // bind property block variables (if applicable)
-    for (auto const& [name, value] : els.front().propBlock.m_Impl->m_Values)
+    if (els.front().maybePropBlock)
     {
-        auto const it = uniforms.find(name);
-        if (it != uniforms.end())
+        for (auto const& [name, value] : els.front().maybePropBlock->m_Impl->m_Values)
         {
-            TryBindMaterialValueToShaderElement(it->second, value, textureSlot);
+            auto const it = uniforms.find(name);
+            if (it != uniforms.end())
+            {
+                TryBindMaterialValueToShaderElement(it->second, value, textureSlot);
+            }
         }
     }
 
@@ -5288,7 +5283,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
     auto batchIt = els.begin();
     while (batchIt != els.end())
     {
-        auto const batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasMesh{batchIt->mesh});
+        auto const batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasMesh{&batchIt->mesh});
         HandleBatchWithSameMesh({batchIt, batchEnd}, ins);
         batchIt = batchEnd;
     }
@@ -5530,7 +5525,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
     auto batchIt = els.begin();
     while (batchIt != els.end())
     {
-        auto const batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasMaterialPropertyBlock{batchIt->propBlock});
+        auto const batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasMaterialPropertyBlock{&batchIt->maybePropBlock});
         HandleBatchWithSameMaterialPropertyBlock({batchIt, batchEnd}, textureSlot, maybeInstances);
         batchIt = batchEnd;
     }
@@ -5557,7 +5552,7 @@ void osc::GraphicsBackend::DrawBatchedByMaterial(
     auto batchIt = els.begin();
     while (batchIt != els.end())
     {
-        auto const batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasMaterial{batchIt->material});
+        auto const batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasMaterial{&batchIt->material});
         HandleBatchWithSameMaterial(scene, {batchIt, batchEnd});
         batchIt = batchEnd;
     }
@@ -5961,9 +5956,9 @@ void osc::GraphicsBackend::DrawMesh(
     Transform const& transform,
     Material const& material,
     Camera& camera,
-    std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock)
+    std::optional<MaterialPropertyBlock> const& maybeMaterialPropertyBlock)
 {
-    camera.m_Impl.upd()->m_RenderQueue.emplace_back(mesh, transform, material, std::move(maybeMaterialPropertyBlock));
+    camera.m_Impl.upd()->m_RenderQueue.emplace_back(mesh, transform, material, maybeMaterialPropertyBlock);
 }
 
 void osc::GraphicsBackend::DrawMesh(
@@ -5971,9 +5966,9 @@ void osc::GraphicsBackend::DrawMesh(
     glm::mat4 const& transform,
     Material const& material,
     Camera& camera,
-    std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock)
+    std::optional<MaterialPropertyBlock> const& maybeMaterialPropertyBlock)
 {
-    camera.m_Impl.upd()->m_RenderQueue.emplace_back(mesh, transform, material, std::move(maybeMaterialPropertyBlock));
+    camera.m_Impl.upd()->m_RenderQueue.emplace_back(mesh, transform, material, maybeMaterialPropertyBlock);
 }
 
 void osc::GraphicsBackend::BlitToScreen(

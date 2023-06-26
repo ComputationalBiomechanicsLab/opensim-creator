@@ -233,7 +233,7 @@ private:
                 floorTransform,
                 m_SceneMaterial,
                 m_Camera,
-                std::move(floorProps)
+                floorProps
             );
         }
 
@@ -269,7 +269,7 @@ private:
                 lightTransform,
                 m_LightboxMaterial,
                 m_Camera,
-                std::move(lightProps)
+                lightProps
             );
         }
     }
