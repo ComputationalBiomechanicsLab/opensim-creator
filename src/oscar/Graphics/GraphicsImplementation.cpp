@@ -1753,10 +1753,14 @@ public:
         m_BufferType{type_}
     {
         OSC_THROWING_ASSERT((getDimension() != TextureDimension::Cube || getDimensions().x == getDimensions().y) && "cannot construct a Cube renderbuffer with non-square dimensions");
+        OSC_THROWING_ASSERT((getDimension() != TextureDimension::Cube || getAntialiasingLevel() == 1) && "cannot construct a Cube renderbuffer that is anti-aliased (not supported by backends like OpenGL)");
     }
 
     void reformat(RenderTextureDescriptor const& newDescriptor)
     {
+        OSC_THROWING_ASSERT((newDescriptor.getDimension() != TextureDimension::Cube || newDescriptor.getDimensions().x == newDescriptor.getDimensions().y) && "cannot reformat a render buffer to a Cube dimensionality with non-square dimensions");
+        OSC_THROWING_ASSERT((newDescriptor.getDimension() != TextureDimension::Cube || newDescriptor.getAntialiasingLevel() == 1) && "cannot reformat a renderbuffer to a Cube dimensionality with is anti-aliased (not supported by backends like OpenGL)");
+
         if (m_Descriptor != newDescriptor)
         {
             m_Descriptor = newDescriptor;
@@ -1776,7 +1780,7 @@ public:
 
     void setDimensions(glm::ivec2 newDims)
     {
-        OSC_THROWING_ASSERT((getDimension() != osc::TextureDimension::Cube || newDims.x == newDims.y) && "cannot set a cubemap to have non-square dimensions");
+        OSC_THROWING_ASSERT((getDimension() != TextureDimension::Cube || newDims.x == newDims.y) && "cannot set a cubemap to have non-square dimensions");
 
         if (newDims != getDimensions())
         {
@@ -1793,6 +1797,7 @@ public:
     void setDimension(TextureDimension newDimension)
     {
         OSC_THROWING_ASSERT((newDimension != osc::TextureDimension::Cube || getDimensions().x == getDimensions().y) && "cannot set dimensionality to Cube for non-square render buffer");
+        OSC_THROWING_ASSERT((newDimension != TextureDimension::Cube || getAntialiasingLevel() == 1) && "cannot set dimensionality to Cube for an anti-aliased render buffer (not supported by backends like OpenGL)");
 
         if (newDimension != getDimension())
         {
@@ -1822,6 +1827,8 @@ public:
 
     void setAntialiasingLevel(int32_t newLevel)
     {
+        OSC_THROWING_ASSERT((getDimension() != TextureDimension::Cube || newLevel == 1) && "cannot set anti-aliasing level >1 on a cube render buffer (it is not supported by backends like OpenGL)");
+
         if (newLevel != getAntialiasingLevel())
         {
             m_Descriptor.setAntialiasingLevel(newLevel);
@@ -4676,7 +4683,7 @@ severity = %s
             return;
         }
 
-        GLint flags;
+        GLint flags{};
         glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
         if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
         {

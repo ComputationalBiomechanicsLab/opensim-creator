@@ -2615,12 +2615,68 @@ TEST_F(Renderer, RenderTextureSetDimensionSetsTheDimension)
     ASSERT_EQ(tex.getDimension(), osc::TextureDimension::Cube);
 }
 
+TEST_F(Renderer, RenderTextureSetDimensionToCubeThrowsIfRenderTextureIsMultisampled)
+{
+    // edge-case: OpenGL doesn't support rendering to a multisampled cube texture,
+    // so loudly throw an error if the caller is trying to render a multisampled
+    // cubemap
+    osc::RenderTexture tex;
+    tex.setAntialiasingLevel(2);
+    ASSERT_ANY_THROW(tex.setDimension(osc::TextureDimension::Cube));
+}
+
+TEST_F(Renderer, RenderTextureSetAntialiasingToNonOneOnCubeDimensionalityRenderTextureThrows)
+{
+    // edge-case: OpenGL doesn't support rendering to a multisampled cube texture,
+    // so loudly throw an error if the caller is trying to render a multisampled
+    // cubemap
+    osc::RenderTexture tex;
+    tex.setDimension(osc::TextureDimension::Cube);
+    ASSERT_ANY_THROW(tex.setAntialiasingLevel(2));
+}
+
+TEST_F(Renderer, RenderTextureCtorThrowsIfGivenCubeDimensionalityAndAntialiasedDescriptor)
+{
+    // edge-case: OpenGL doesn't support rendering to a multisampled cube texture,
+    // so loudly throw an error if the caller is trying to render a multisampled
+    // cubemap
+    osc::RenderTextureDescriptor desc{{1, 1}};
+
+    // allowed: RenderTextureDescriptor is non-throwing until the texture is actually constructed
+    desc.setAntialiasingLevel(2);
+    desc.setDimension(osc::TextureDimension::Cube);
+
+    // throws because the descriptor is bad
+    ASSERT_ANY_THROW(osc::RenderTexture rt(desc));
+}
+
+TEST_F(Renderer, RenderTextureReformatThrowsIfGivenCubeDimensionalityAndAntialiasedDescriptor)
+{
+    // allowed: RenderTextureDescriptor is non-throwing until the texture is actually constructed
+    osc::RenderTextureDescriptor desc{{1, 1}};
+    desc.setAntialiasingLevel(2);
+    desc.setDimension(osc::TextureDimension::Cube);
+
+    // throws because the descriptor is bad
+    ASSERT_ANY_THROW(osc::RenderTexture().reformat(desc));
+}
+
 TEST_F(Renderer, RenderTextureThrowsIfGivenNonSquareButCubeDimensionalityDescriptor)
 {
     osc::RenderTextureDescriptor desc{{1, 2}};  // not square
     desc.setDimension(osc::TextureDimension::Cube);  // permitted, at least for now
 
     ASSERT_ANY_THROW(osc::RenderTexture rt(desc));
+}
+
+TEST_F(Renderer, RenderTextureReformatThrowsIfGivenNonSquareButCubeDimensionalityDescriptor)
+{
+    // allowed: RenderTextureDescriptor is non-throwing until the texture is actually constructed
+    osc::RenderTextureDescriptor desc{{1, 2}};
+    desc.setDimension(osc::TextureDimension::Cube);
+
+    // throws because the descriptor is bad
+    ASSERT_ANY_THROW(osc::RenderTexture().reformat(desc));
 }
 
 TEST_F(Renderer, RenderTextureSetDimensionThrowsIfSetToCubeOnNonSquareRenderTexture)
@@ -2675,7 +2731,7 @@ TEST_F(Renderer, RenderTextureFromDescriptorHasExpectedValues)
 {
     int width = 8;
     int height = 8;
-    int32_t aaLevel = 4;
+    int32_t aaLevel = 1;
     osc::RenderTextureFormat format = osc::RenderTextureFormat::RED;
     osc::RenderTextureReadWrite rw = osc::RenderTextureReadWrite::Linear;
     osc::TextureDimension dimension = osc::TextureDimension::Cube;
