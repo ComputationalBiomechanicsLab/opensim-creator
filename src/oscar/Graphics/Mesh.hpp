@@ -16,7 +16,7 @@
 #include <vector>
 
 namespace osc { struct AABB; }
-namespace osc { struct BVH; }
+namespace osc { class BVH; }
 namespace osc { struct Transform; }
 namespace osc { struct Rgba32; }
 

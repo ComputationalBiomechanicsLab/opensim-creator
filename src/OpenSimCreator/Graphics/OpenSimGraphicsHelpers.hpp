@@ -12,7 +12,7 @@
 #include <optional>
 
 namespace OpenSim { class Component; }
-namespace osc { struct BVH; }
+namespace osc { class BVH; }
 namespace osc { class MeshCache; }
 namespace osc { struct ModelRendererParams; }
 namespace osc { class OpenSimDecorationOptions; }

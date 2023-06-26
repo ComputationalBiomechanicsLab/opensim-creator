@@ -32,29 +32,6 @@
 
 namespace
 {
-    // assumes `pos` is in-bounds
-    void DrawBVHRecursive(
-        osc::Mesh const& mesh,
-        osc::BVH const& bvh,
-        ptrdiff_t pos,
-        std::function<void(osc::SceneDecoration&&)> const& out)
-    {
-        osc::BVHNode const& n = bvh.nodes[pos];
-
-        osc::Transform t;
-        t.scale *= 0.5f * Dimensions(n.getBounds());
-        t.position = Midpoint(n.getBounds());
-
-        out(osc::SceneDecoration{mesh, t, osc::Color::black()});
-
-        if (n.isNode())
-        {
-            // it's an internal node
-            DrawBVHRecursive(mesh, bvh, pos+1, out);
-            DrawBVHRecursive(mesh, bvh, pos+n.getNumLhsNodes()+1, out);
-        }
-    }
-
     void DrawGrid(
         osc::MeshCache& cache,
         glm::quat const& rotation,
@@ -75,15 +52,15 @@ namespace
 void osc::DrawBVH(
     MeshCache& cache,
     BVH const& sceneBVH,
-    std::function<void(osc::SceneDecoration&&)> const& out)
+    std::function<void(SceneDecoration&&)> const& out)
 {
-    if (sceneBVH.nodes.empty())
+    sceneBVH.forEachLeafOrInnerNodeUnordered([cube = cache.getCubeWireMesh(), &out](BVHNode const& node)
     {
-        return;
-    }
-
-    Mesh const cube = cache.getCubeWireMesh();
-    DrawBVHRecursive(cube, sceneBVH, 0, out);
+        osc::Transform t;
+        t.scale *= 0.5f * Dimensions(node.getBounds());
+        t.position = Midpoint(node.getBounds());
+        out(SceneDecoration{cube, t, Color::black()});
+    });
 }
 
 void osc::DrawAABB(
@@ -122,14 +99,10 @@ void osc::DrawAABBs(
     BVH const& bvh,
     std::function<void(SceneDecoration&&)> const& out)
 {
-    for (BVHNode const& node : bvh.nodes)
+    bvh.forEachLeafNode([&cache, &out](BVHNode const& node)
     {
-        if (!node.isLeaf())
-        {
-            continue;
-        }
         DrawAABB(cache, node.getBounds(), out);
-    }
+    });
 }
 
 void osc::DrawXZFloorLines(

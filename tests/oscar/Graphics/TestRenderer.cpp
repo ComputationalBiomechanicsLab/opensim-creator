@@ -2229,7 +2229,7 @@ TEST_F(Renderer, MeshGetBVHReturnsEmptyBVHOnInitialization)
 {
     osc::Mesh m;
     osc::BVH const& bvh = m.getBVH();
-    ASSERT_TRUE(bvh.nodes.empty());
+    ASSERT_TRUE(bvh.empty());
 }
 
 TEST_F(Renderer, MeshGetBVHReturnsExpectedRootNode)
@@ -2250,8 +2250,8 @@ TEST_F(Renderer, MeshGetBVHReturnsExpectedRootNode)
 
     osc::BVH const& bvh = m.getBVH();
 
-    ASSERT_FALSE(bvh.nodes.empty());
-    ASSERT_EQ(expectedRoot, bvh.nodes.front().getBounds());
+    ASSERT_FALSE(bvh.empty());
+    ASSERT_EQ(expectedRoot, bvh.getRootAABB());
 }
 
 TEST_F(Renderer, MeshCanBeComparedForEquality)

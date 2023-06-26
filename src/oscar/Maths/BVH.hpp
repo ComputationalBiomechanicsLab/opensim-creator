@@ -7,6 +7,8 @@
 #include <nonstd/span.hpp>
 
 #include <cstdint>
+#include <cstddef>
+#include <functional>
 #include <optional>
 #include <utility>
 #include <vector>
@@ -30,7 +32,7 @@ namespace osc
     private:
         BVHNode(AABB const& bounds_, size_t data_) :
             m_Bounds{bounds_},
-            m_Data{std::move(data_)}
+            m_Data{data_}
         {
         }
     public:
@@ -73,7 +75,7 @@ namespace osc
     class BVHPrim final {
     public:
         BVHPrim(ptrdiff_t id_, AABB const& bounds_) :
-            m_ID{std::move(id_)},
+            m_ID{id_},
             m_Bounds{bounds_}
         {
         }
@@ -95,7 +97,11 @@ namespace osc
 
     struct BVHCollision final : public RayCollision {
 
-        BVHCollision(float distance_, glm::vec3 position_, ptrdiff_t id_) :
+        BVHCollision(
+            float distance_,
+            glm::vec3 position_,
+            ptrdiff_t id_) :
+
             RayCollision{distance_, position_},
             id{id_}
         {
@@ -104,8 +110,8 @@ namespace osc
         ptrdiff_t id;
     };
 
-    struct BVH final {
-
+    class BVH final {
+    public:
         void clear();
 
         // triangle BVHes
@@ -135,7 +141,7 @@ namespace osc
         // AABB BVHes
         //
         // prim.id will refer to the index of the AABB
-        void buildFromAABBs(nonstd::span<AABB const> aabbs);
+        void buildFromAABBs(nonstd::span<AABB const>);
 
         // returns prim.id of the AABB (leaf) that the line intersects, or -1 if no intersection
         //
@@ -144,6 +150,9 @@ namespace osc
         // returns true if at least one collision was found and appended to the output
         std::vector<BVHCollision> getRayAABBCollisions(Line const&) const;
 
+        // returns `true` if the BVH contains no nodes
+        [[nodiscard]] bool empty() const;
+
         // returns the maximum depth of the given BVH tree
         size_t getMaxDepth() const;
 
@@ -151,7 +160,14 @@ namespace osc
         // the tree
         std::optional<AABB> getRootAABB() const;
 
-        std::vector<BVHNode> nodes;
-        std::vector<BVHPrim> prims;
+        // calls the given function with each leaf node in the tree
+        void forEachLeafNode(std::function<void(BVHNode const&)> const&) const;
+
+        // calls the given function with each leaf or inner node in the tree
+        void forEachLeafOrInnerNodeUnordered(std::function<void(BVHNode const&)> const&) const;
+
+    private:
+        std::vector<BVHNode> m_Nodes;
+        std::vector<BVHPrim> m_Prims;
     };
 }

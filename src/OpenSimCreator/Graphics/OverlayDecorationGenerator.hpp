@@ -2,7 +2,7 @@
 
 #include <functional>
 
-namespace osc { struct BVH; }
+namespace osc { class BVH; }
 namespace osc { class MeshCache; }
 namespace osc { class OverlayDecorationOptions; }
 namespace osc { struct SceneDecoration; }

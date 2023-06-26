@@ -21,7 +21,7 @@
 #include <vector>
 
 namespace osc { struct AABB; }
-namespace osc { struct BVH; }
+namespace osc { class BVH; }
 namespace osc { struct Line; }
 namespace osc { struct Rect; }
 namespace osc { struct Segment; }

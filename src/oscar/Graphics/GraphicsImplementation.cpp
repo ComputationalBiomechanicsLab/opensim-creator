@@ -3556,7 +3556,7 @@ private:
             if (m_Topology == MeshTopology::Triangles)
             {
                 m_TriangleBVH.buildFromIndexedTriangles(m_Vertices, indices);
-                m_AABB = m_TriangleBVH.nodes.front().getBounds();
+                m_AABB = m_TriangleBVH.getRootAABB().value_or(AABB{});
             }
             else
             {
@@ -3571,7 +3571,7 @@ private:
             if (m_Topology == MeshTopology::Triangles)
             {
                 m_TriangleBVH.buildFromIndexedTriangles(m_Vertices, indices);
-                m_AABB = m_TriangleBVH.nodes.empty() ? AABB{} : m_TriangleBVH.nodes.front().getBounds();
+                m_AABB = m_TriangleBVH.getRootAABB().value_or(AABB{});
             }
             else
             {
