@@ -1276,7 +1276,7 @@ namespace
 {
     // parameters used to create a "choose components" layer
     struct ChooseComponentsEditorLayerParameters final {
-        std::string popupHeaderText = "choose something";
+        std::string popupHeaderText = "Choose Something";
 
         // predicate that is used to test whether the element is choose-able
         std::function<bool(OpenSim::Component const&)> canChooseItem = [](OpenSim::Component const&) { return true; };
@@ -1494,14 +1494,31 @@ namespace
             }
 
             // show header
-            ImGui::SetCursorScreenPos(panelState.viewportRect.p1);
-            ImGui::TextUnformatted(m_State.popupParams.popupHeaderText.c_str());
+            ImGui::SetCursorScreenPos(panelState.viewportRect.p1 + glm::vec2{10.0f, 10.0f});
+            ImGui::Text("%s (ESC to cancel)", m_State.popupParams.popupHeaderText.c_str());
 
             // handle completion state (i.e. user selected enough components)
             if (m_State.alreadyChosenComponents.size() == m_State.popupParams.numComponentsUserMustChoose)
             {
                 m_State.popupParams.onUserFinishedChoosing(m_State.alreadyChosenComponents);
                 m_State.shouldClosePopup = true;
+            }
+
+            // draw cancellation button
+            {
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
+
+                osc::CStringView constexpr cancellationButtonText = ICON_FA_ARROW_LEFT " Cancel (ESC)";
+                glm::vec2 const margin = {25.0f, 25.0f};
+                glm::vec2 const buttonDims = osc::CalcButtonSize(cancellationButtonText);
+                glm::vec2 const buttonTopLeft = panelState.viewportRect.p2 - (buttonDims + margin);
+                ImGui::SetCursorScreenPos(buttonTopLeft);
+                if (ImGui::Button(cancellationButtonText.c_str()))
+                {
+                    m_State.shouldClosePopup = true;
+                }
+
+                ImGui::PopStyleVar();
             }
         }
 

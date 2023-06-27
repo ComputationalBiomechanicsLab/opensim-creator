@@ -5525,20 +5525,19 @@ namespace
         // draw a user-clickable button for cancelling out of this choosing state
         void DrawCancelButton()
         {
-            char const* const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
-
-            glm::vec2 framePad = {10.0f, 10.0f};
-            glm::vec2 margin = {25.0f, 35.0f};
-            Rect sceneRect = m_Shared->Get3DSceneRect();
-            glm::vec2 textDims = ImGui::CalcTextSize(text);
-
-            ImGui::SetCursorScreenPos(sceneRect.p2 - textDims - framePad - margin);
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, framePad);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
             ImGui::PushStyleColor(ImGuiCol_Button, OSC_GREYED_RGBA);
-            if (ImGui::Button(text))
+
+            osc::CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
+            glm::vec2 const margin = {25.0f, 35.0f};
+            glm::vec2 const buttonTopLeft = m_Shared->Get3DSceneRect().p2 - (osc::CalcButtonSize(text) + margin);
+
+            ImGui::SetCursorScreenPos(buttonTopLeft);
+            if (ImGui::Button(text.c_str()))
             {
                 requestPop();
             }
+
             ImGui::PopStyleColor();
             ImGui::PopStyleVar();
         }
@@ -5923,20 +5922,19 @@ namespace
         // draw a user-clickable button for cancelling out of this choosing state
         void DrawCancelButton()
         {
-            char const* const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
-
-            glm::vec2 framePad = {10.0f, 10.0f};
-            glm::vec2 margin = {25.0f, 35.0f};
-            Rect sceneRect = m_Shared->Get3DSceneRect();
-            glm::vec2 textDims = ImGui::CalcTextSize(text);
-
-            ImGui::SetCursorScreenPos(sceneRect.p2 - textDims - framePad - margin);
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, framePad);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
             ImGui::PushStyleColor(ImGuiCol_Button, OSC_GREYED_RGBA);
-            if (ImGui::Button(text))
+
+            osc::CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
+            glm::vec2 const margin = {25.0f, 35.0f};
+            glm::vec2 const buttonTopLeft = m_Shared->Get3DSceneRect().p2 - (osc::CalcButtonSize(text) + margin);
+
+            ImGui::SetCursorScreenPos(buttonTopLeft);
+            if (ImGui::Button(text.c_str()))
             {
                 requestPop();
             }
+
             ImGui::PopStyleColor();
             ImGui::PopStyleVar();
         }
@@ -7791,20 +7789,19 @@ private:
 
     void Draw3DViewerOverlayConvertToOpenSimModelButton()
     {
-        char const* const text = "Convert to OpenSim Model " ICON_FA_ARROW_RIGHT;
-
-        glm::vec2 framePad = {10.0f, 10.0f};
-        glm::vec2 margin = {25.0f, 35.0f};
-        Rect sceneRect = m_Shared->Get3DSceneRect();
-        glm::vec2 textDims = ImGui::CalcTextSize(text);
-
-        ImGui::SetCursorScreenPos(sceneRect.p2 - textDims - framePad - margin);
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, framePad);
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
         ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
-        if (ImGui::Button(text))
+
+        osc::CStringView constexpr text = "Convert to OpenSim Model " ICON_FA_ARROW_RIGHT;
+        glm::vec2 constexpr margin = {25.0f, 35.0f};
+        glm::vec2 const buttonTopLeft = m_Shared->Get3DSceneRect().p2 - (osc::CalcButtonSize(text) + margin);
+
+        ImGui::SetCursorScreenPos(buttonTopLeft);
+        if (ImGui::Button(text.c_str()))
         {
             m_Shared->TryCreateOutputModel();
         }
+
         ImGui::PopStyleColor();
         ImGui::PopStyleVar();
         osc::DrawTooltipIfItemHovered("Convert current scene to an OpenSim Model", "This will attempt to convert the current scene into an OpenSim model, followed by showing the model in OpenSim Creator's OpenSim model editor screen.\n\nYour progress in this tab will remain untouched.");

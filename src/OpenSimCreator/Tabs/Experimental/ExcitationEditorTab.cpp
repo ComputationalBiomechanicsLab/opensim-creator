@@ -716,14 +716,6 @@ namespace
             }
         }
 
-        glm::vec2 calcButtonDimensions(osc::CStringView buttonText) const
-        {
-            glm::vec2 v = ImGui::CalcTextSize(buttonText.c_str());
-            v += 2.0f*glm::vec2{ImGui::GetStyle().FramePadding};
-            v += 2.0f*ImGui::GetStyle().FrameBorderSize;
-            return v;
-        }
-
         void drawCellOverlay(glm::ivec2 gridCoord, osc::Rect screenSpaceRect, GridDirection direction)
         {
             GridOperation const operation = m_Shared->getGridLayout().calcAvaliableDirectionalOperation(gridCoord, direction);
@@ -739,7 +731,7 @@ namespace
             glm::vec2 const cellSpaceMidpoint = osc::Midpoint(screenSpaceRect) - screenSpaceRect.p1;
             glm::vec2 const cellSpaceLabelDirection = ToVec2(direction);
             glm::vec2 const cellSpaceOutwardPoint = cellSpaceMidpoint + cellSpaceLabelDirection*(cellHalfDims - padding);
-            glm::vec2 const buttonDims = calcButtonDimensions(iconText);
+            glm::vec2 const buttonDims = osc::CalcButtonSize(iconText);
             glm::vec2 const cellSpaceDirectionCorrection = -(cellSpaceLabelDirection+1.0f)/2.0f;
             glm::vec2 const cellSpaceLabelTopRight = cellSpaceOutwardPoint + buttonDims*cellSpaceDirectionCorrection;
             glm::vec2 const screenSpaceLabelTopRight = screenSpaceRect.p1 + cellSpaceLabelTopRight;

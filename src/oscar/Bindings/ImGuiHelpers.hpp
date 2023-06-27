@@ -76,6 +76,10 @@ namespace osc
         glm::vec2 dims
     );
 
+    // returns the dimensions of a button with the given content
+    glm::vec2 CalcButtonSize(CStringView);
+    float CalcButtonWidth(CStringView);
+
     // draws a texture using ImGui::ImageButton
     bool ImageButton(
         CStringView,

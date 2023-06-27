@@ -440,6 +440,18 @@ void osc::DrawTextureAsImGuiImage(RenderTexture const& t, glm::vec2 dims)
     ImGui::Image(t.getTextureHandleHACK(), dims, uv0, uv1);
 }
 
+glm::vec2 osc::CalcButtonSize(CStringView content)
+{
+    glm::vec2 const padding = ImGui::GetStyle().FramePadding;
+    glm::vec2 const contentDims = ImGui::CalcTextSize(content.c_str());
+    return contentDims + 2.0f*padding;
+}
+
+float osc::CalcButtonWidth(CStringView content)
+{
+    return CalcButtonSize(content).x;
+}
+
 bool osc::ImageButton(
     CStringView label,
     Texture2D const& t,
