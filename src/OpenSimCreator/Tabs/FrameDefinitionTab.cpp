@@ -186,17 +186,6 @@ namespace
         return sphere;
     }
 
-    // returns a decorative line between `startPosition` and `endPosition` with `appearance`
-    SimTK::DecorativeLine CreateDecorativeLine(
-        SimTK::Vec3 const& startPosition,
-        SimTK::Vec3 const& endPosition,
-        OpenSim::Appearance const& appearance)
-    {
-        SimTK::DecorativeLine line{startPosition, endPosition};
-        SetGeomAppearance(line, appearance);
-        return line;
-    }
-
     // returns a decorative arrow between `startPosition` and `endPosition` with `appearance`
     SimTK::DecorativeArrow CreateDecorativeArrow(
         SimTK::Vec3 const& startPosition,
@@ -1252,13 +1241,13 @@ namespace
         std::weak_ptr<osc::TabHost> maybeTabHost,
         osc::UndoableModelStatePair const& model)
     {
-        std::shared_ptr<osc::TabHost> tabHost = maybeTabHost.lock();
+        std::shared_ptr<osc::TabHost> const tabHost = maybeTabHost.lock();
         if (!tabHost)
         {
             return;
         }
 
-        std::shared_ptr<osc::MainUIStateAPI> mainUIStateAPI = std::dynamic_pointer_cast<osc::MainUIStateAPI>(tabHost);
+        std::shared_ptr<osc::MainUIStateAPI> const mainUIStateAPI = std::dynamic_pointer_cast<osc::MainUIStateAPI>(tabHost);
         if (!mainUIStateAPI)
         {
             return;
@@ -1579,10 +1568,10 @@ namespace
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
         OpenSim::Point const& point,
-        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent)
+        osc::ModelEditorViewerPanelRightClickEvent const& sourceEvent)
     {
         osc::ModelEditorViewerPanel* const visualizer =
-            editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
+            editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
         if (!visualizer)
         {
             return;  // can't figure out which visualizer to push the layer to
@@ -1631,10 +1620,10 @@ namespace
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
         OpenSim::Point const& point,
-        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent)
+        osc::ModelEditorViewerPanelRightClickEvent const& sourceEvent)
     {
         osc::ModelEditorViewerPanel* const visualizer =
-            editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
+            editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
         if (!visualizer)
         {
             return;  // can't figure out which visualizer to push the layer to
@@ -1683,10 +1672,11 @@ namespace
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
         OpenSim::FDVirtualEdge const& firstEdge,
-        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent)
+        osc::ModelEditorViewerPanelRightClickEvent const& sourceEvent)
     {
         osc::ModelEditorViewerPanel* const visualizer =
-            editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
+            editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
+
         if (!visualizer)
         {
             return;  // can't figure out which visualizer to push the layer to
@@ -1744,9 +1734,9 @@ namespace
         options.numComponentsUserMustChoose = 1;
         options.onUserFinishedChoosing = [
             model,
-                firstEdgeAbsPath = firstEdgeAbsPath,
-                firstEdgeAxis,
-                secondEdgeAbsPath
+            firstEdgeAbsPath = firstEdgeAbsPath,
+            firstEdgeAxis,
+            secondEdgeAbsPath
         ](std::unordered_set<std::string> const& choices) -> bool
         {
             if (choices.empty())
@@ -2210,7 +2200,7 @@ namespace
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         OpenSim::Component const&)
     {
-        if (ImGui::BeginMenu(ICON_FA_CAMERA " Focus Camera"))
+        if (maybeSourceEvent && ImGui::BeginMenu(ICON_FA_CAMERA " Focus Camera"))
         {
             if (ImGui::MenuItem("on Ground"))
             {
@@ -2222,8 +2212,7 @@ namespace
                 }
             }
 
-            if (maybeSourceEvent &&
-                maybeSourceEvent->maybeClickPositionInGround &&
+            if (maybeSourceEvent->maybeClickPositionInGround &&
                 ImGui::MenuItem("on Click Position"))
             {
                 osc::ModelEditorViewerPanel* visualizer =
@@ -2246,7 +2235,7 @@ namespace
     {
         if (maybeSourceEvent && ImGui::MenuItem(ICON_FA_TIMES " Create Cross Product Edge"))
         {
-            PushCreateCrossProductEdgeLayer(editor, model, edge, maybeSourceEvent);
+            PushCreateCrossProductEdgeLayer(editor, model, edge, *maybeSourceEvent);
         }
 
         if (maybeSourceEvent && ImGui::BeginMenu(ICON_FA_ARROWS_ALT " Create Frame With This Edge as"))
@@ -2490,11 +2479,11 @@ namespace
 
         if (maybeSourceEvent && ImGui::MenuItem(ICON_FA_GRIP_LINES " Create Edge"))
         {
-            PushCreateEdgeToOtherPointLayer(editor, model, point, maybeSourceEvent);
+            PushCreateEdgeToOtherPointLayer(editor, model, point, *maybeSourceEvent);
         }
         if (maybeSourceEvent && ImGui::MenuItem(ICON_FA_DOT_CIRCLE " Create Midpoint"))
         {
-            PushCreateMidpointToAnotherPointLayer(editor, model, point, maybeSourceEvent);
+            PushCreateMidpointToAnotherPointLayer(editor, model, point, *maybeSourceEvent);
         }
         DrawCalculatePositionMenu(model, point);
         DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, point);
@@ -2778,7 +2767,7 @@ public:
         );
         m_PanelManager->registerToggleablePanel(
             "Log",
-            [this](std::string_view panelName)
+            [](std::string_view panelName)
             {
                 return std::make_shared<LogViewerPanel>(panelName);
             }
@@ -2925,7 +2914,6 @@ private:
     std::shared_ptr<UndoableModelStatePair> m_Model = MakeSharedUndoableFrameDefinitionModel();
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
     PopupManager m_PopupManager;
-
     FrameDefinitionTabMainMenu m_MainMenu{m_Parent, m_Model, m_PanelManager};
 };
 
