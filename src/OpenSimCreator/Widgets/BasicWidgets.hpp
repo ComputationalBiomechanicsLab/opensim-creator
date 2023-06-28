@@ -1,10 +1,13 @@
 #pragma once
 
 #include <oscar/Maths/AABB.hpp>
+#include <oscar/Utils/CStringView.hpp>
 
+#include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
 
 #include <functional>
+#include <memory>
 #include <optional>
 #include <string>
 
@@ -18,6 +21,7 @@ namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { class ParamBlock; }
 namespace osc { struct Rect; }
 namespace osc { struct SceneDecoration; }
+namespace osc { class UndoableModelStatePair; }
 namespace osc { class VirtualModelStatePair; }
 namespace osc { class VirtualOutputExtractor; }
 namespace osc { class SimulationModelStatePair; }
@@ -69,4 +73,20 @@ namespace osc
         IconCache&,
         std::function<void()> const& drawExtraElementsInTop = []() {}
     );
+
+    // toolbar stuff
+    bool BeginToolbar(CStringView label, std::optional<glm::vec2> padding = {});  // behaves the same as ImGui::Begin (i.e. you must call ImGui::End)
+    void DrawNewModelButton(std::weak_ptr<MainUIStateAPI> const&);
+    void DrawOpenModelButtonWithRecentFilesDropdown(std::weak_ptr<MainUIStateAPI> const&);
+    void DrawSaveModelButton(std::weak_ptr<MainUIStateAPI> const&, UndoableModelStatePair&);
+    void DrawReloadModelButton(UndoableModelStatePair&);
+    void DrawUndoButton(UndoableModelStatePair&);
+    void DrawRedoButton(UndoableModelStatePair&);
+    void DrawUndoAndRedoButtons(UndoableModelStatePair&);
+    void DrawToggleFramesButton(UndoableModelStatePair&, IconCache&);
+    void DrawToggleMarkersButton(UndoableModelStatePair&, IconCache&);
+    void DrawToggleWrapGeometryButton(UndoableModelStatePair&, IconCache&);
+    void DrawToggleContactGeometryButton(UndoableModelStatePair&, IconCache&);
+    void DrawAllDecorationToggleButtons(UndoableModelStatePair&, IconCache&);
+    void DrawSceneScaleFactorEditorControls(UndoableModelStatePair&);
 }

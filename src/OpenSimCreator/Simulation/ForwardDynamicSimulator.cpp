@@ -88,7 +88,7 @@ namespace
         AuxiliaryVariableOutputExtractor(std::string name, std::string description, osc::UID uid) :
             m_Name{std::move(name)},
             m_Description{std::move(description)},
-            m_UID{std::move(uid)}
+            m_UID{uid}
         {
         }
 

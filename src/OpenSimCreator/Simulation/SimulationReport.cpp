@@ -92,5 +92,5 @@ SimTK::State& osc::SimulationReport::updStateHACK()
 
 std::optional<float> osc::SimulationReport::getAuxiliaryValue(UID id) const
 {
-    return m_Impl->getAuxiliaryValue(std::move(id));
+    return m_Impl->getAuxiliaryValue(id);
 }

@@ -55,9 +55,9 @@ namespace
 osc::MultiBodySystemOutputExtractor::MultiBodySystemOutputExtractor(std::string_view name,
                                                                     std::string_view description,
                                                                     ExtractorFn extractor) :
-    m_Name{std::move(name)},
-    m_Description{std::move(description)},
-    m_Extractor{std::move(extractor)}
+    m_Name{name},
+    m_Description{description},
+    m_Extractor{extractor}
 {
 }
 

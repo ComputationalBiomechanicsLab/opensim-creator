@@ -21,7 +21,7 @@ public:
         std::string_view panelName,
         SimulatorUIAPI* simulatorUIAPI) :
 
-        StandardPanel{std::move(panelName)},
+        StandardPanel{panelName},
         m_SimulatorUIAPI{simulatorUIAPI}
     {
     }
@@ -80,7 +80,7 @@ private:
 };
 
 osc::SelectionDetailsPanel::SelectionDetailsPanel(std::string_view panelName, SimulatorUIAPI* simulatorUIAPI) :
-    m_Impl{std::make_unique<Impl>(std::move(panelName), simulatorUIAPI)}
+    m_Impl{std::make_unique<Impl>(panelName, simulatorUIAPI)}
 {
 }
 

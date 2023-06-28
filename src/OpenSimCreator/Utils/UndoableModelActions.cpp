@@ -445,8 +445,7 @@ bool osc::ActionAutoscaleSceneScaleFactor(UndoableModelStatePair& uim)
         *osc::App::singleton<osc::MeshCache>(),
         uim.getModel(),
         uim.getState(),
-        OpenSimDecorationOptions{},
-        uim.getFixupScaleFactor()
+        OpenSimDecorationOptions{}
     );
     uim.setFixupScaleFactor(sf);
     return true;

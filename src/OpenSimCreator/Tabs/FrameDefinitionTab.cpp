@@ -2731,6 +2731,37 @@ namespace
         osc::WindowMenu m_WindowMenu;
         osc::MainMenuAboutTab m_AboutMenu;
     };
+
+    class FrameDefinitionTabToolbar final {
+    public:
+        FrameDefinitionTabToolbar(
+            std::string_view label_,
+            std::shared_ptr<osc::UndoableModelStatePair> model_) :
+
+            m_Label{label_},
+            m_Model{std::move(model_)}
+        {
+        }
+
+        void draw()
+        {
+            if (osc::BeginToolbar(m_Label, glm::vec2{5.0f, 5.0f}))
+            {
+                drawContent();
+            }
+            ImGui::End();
+        }
+    private:
+        void drawContent()
+        {
+            osc::DrawUndoAndRedoButtons(*m_Model);
+            osc::SameLineWithVerticalSeperator();
+            osc::DrawSceneScaleFactorEditorControls(*m_Model);
+        }
+
+        std::string m_Label;
+        std::shared_ptr<osc::UndoableModelStatePair> m_Model;
+    };
 }
 
 class osc::FrameDefinitionTab::Impl final : public EditorAPI {
@@ -2849,6 +2880,7 @@ public:
             ImGui::GetMainViewport(),
             ImGuiDockNodeFlags_PassthruCentralNode
         );
+        m_Toolbar.draw();
         m_PanelManager->onDraw();
         m_PopupManager.draw();
     }
@@ -2915,6 +2947,7 @@ private:
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
     PopupManager m_PopupManager;
     FrameDefinitionTabMainMenu m_MainMenu{m_Parent, m_Model, m_PanelManager};
+    FrameDefinitionTabToolbar m_Toolbar{"##FrameDefinitionToolbar", m_Model};
 };
 
 

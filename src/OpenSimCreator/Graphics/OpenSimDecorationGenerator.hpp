@@ -28,7 +28,6 @@ namespace osc
         MeshCache&,
         OpenSim::Model const&,
         SimTK::State const&,
-        OpenSimDecorationOptions const&,
-        float fixupScaleFactor
+        OpenSimDecorationOptions const&
     );
 }

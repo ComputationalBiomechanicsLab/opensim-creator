@@ -880,3 +880,15 @@ void osc::ConvertDrawDataFromSRGBToLinear(ImDrawData& dd)
         }
     }
 }
+
+void osc::VerticalSeperator()
+{
+    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+}
+
+void osc::SameLineWithVerticalSeperator()
+{
+    ImGui::SameLine();
+    VerticalSeperator();
+    ImGui::SameLine();
+}

@@ -2,6 +2,7 @@
 
 #include "OpenSimCreator/Utils/TPS3D.hpp"
 #include "OpenSimCreator/Bindings/SimTKMeshLoader.hpp"
+#include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
@@ -846,9 +847,7 @@ namespace
 
         void draw()
         {
-            float const height = ImGui::GetFrameHeight() + 2.0f*ImGui::GetStyle().WindowPadding.y;
-            ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
-            if (osc::BeginMainViewportTopBar(m_Label, height, flags))
+            if (osc::BeginToolbar(m_Label))
             {
                 drawContent();
             }

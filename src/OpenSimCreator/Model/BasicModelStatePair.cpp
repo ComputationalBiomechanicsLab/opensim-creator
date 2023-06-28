@@ -64,7 +64,7 @@ public:
 
     void setFixupScaleFactor(float v)
     {
-        m_FixupScaleFactor = std::move(v);
+        m_FixupScaleFactor = v;
     }
 
 private:
@@ -111,5 +111,5 @@ float osc::BasicModelStatePair::implGetFixupScaleFactor() const
 
 void osc::BasicModelStatePair::implSetFixupScaleFactor(float v)
 {
-    m_Impl->setFixupScaleFactor(std::move(v));
+    m_Impl->setFixupScaleFactor(v);
 }

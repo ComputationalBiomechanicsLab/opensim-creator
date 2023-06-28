@@ -126,8 +126,8 @@ public:
         EditorAPI* editorAPI,
         std::shared_ptr<UndoableModelStatePair> model) :
 
-        StandardPanel{std::move(panelName)},
-        m_EditorAPI{std::move(editorAPI)},
+        StandardPanel{panelName},
+        m_EditorAPI{editorAPI},
         m_Model{std::move(model)},
         m_SelectionPropertiesEditor{editorAPI, m_Model, [model = m_Model](){ return model->getSelected(); }}
     {
@@ -180,7 +180,7 @@ osc::PropertiesPanel::PropertiesPanel(
     std::string_view panelName,
     EditorAPI* editorAPI,
     std::shared_ptr<UndoableModelStatePair> model) :
-    m_Impl{std::make_unique<Impl>(std::move(panelName), std::move(editorAPI), std::move(model))}
+    m_Impl{std::make_unique<Impl>(panelName, editorAPI, std::move(model))}
 {
 }
 

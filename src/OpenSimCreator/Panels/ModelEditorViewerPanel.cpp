@@ -83,7 +83,7 @@ namespace
     class ButtonAndGizmoControlsLayer final : public osc::ModelEditorViewerPanelLayer {
     public:
         explicit ButtonAndGizmoControlsLayer(std::shared_ptr<osc::UndoableModelStatePair> model_) :
-            m_Gizmo{model_}
+            m_Gizmo{std::move(model_)}
         {
         }
     private:

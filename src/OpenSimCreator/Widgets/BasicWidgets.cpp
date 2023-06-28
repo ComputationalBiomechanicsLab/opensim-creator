@@ -6,6 +6,7 @@
 #include "OpenSimCreator/Graphics/MuscleDecorationStyle.hpp"
 #include "OpenSimCreator/Graphics/MuscleSizingStyle.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Model/VirtualModelStatePair.hpp"
 #include "OpenSimCreator/Outputs/ComponentOutputExtractor.hpp"
 #include "OpenSimCreator/Outputs/OutputExtractor.hpp"
@@ -14,17 +15,21 @@
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/Utils/ParamBlock.hpp"
 #include "OpenSimCreator/Utils/ParamValue.hpp"
+#include "OpenSimCreator/Utils/UndoableModelActions.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Formats/DAE.hpp>
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/IconCache.hpp>
+#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/SceneDecoration.hpp>
 #include <oscar/Maths/Constants.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Rect.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Platform/App.hpp>
+#include <oscar/Platform/RecentFile.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Widgets/GuiRuler.hpp>
@@ -33,6 +38,7 @@
 #include <glm/vec2.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <IconsFontAwesome5.h>
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
@@ -40,6 +46,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <SimTKcommon/basics.h>
 
+#include <algorithm>
 #include <cstdio>
 #include <cstddef>
 #include <filesystem>
@@ -48,6 +55,7 @@
 #include <string>
 #include <utility>
 #include <variant>
+#include <vector>
 
 // export utils
 namespace
@@ -836,4 +844,229 @@ void osc::DrawViewerImGuiOverlays(
         maybeSceneAABB,
         iconCache
     );
+}
+
+bool osc::BeginToolbar(CStringView label, std::optional<glm::vec2> padding)
+{
+    if (padding)
+    {
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, *padding);
+    }
+
+    float const height = ImGui::GetFrameHeight() + 2.0f*ImGui::GetStyle().WindowPadding.y;
+    ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
+    bool rv = osc::BeginMainViewportTopBar(label, height, flags);
+    if (padding)
+    {
+        ImGui::PopStyleVar();
+    }
+    return rv;
+}
+
+void osc::DrawNewModelButton(std::weak_ptr<MainUIStateAPI> const& api)
+{
+    if (ImGui::Button(ICON_FA_FILE))
+    {
+        ActionNewModel(api);
+    }
+    osc::DrawTooltipIfItemHovered("New Model", "Creates a new OpenSim model in a new tab");
+}
+
+void osc::DrawOpenModelButtonWithRecentFilesDropdown(std::weak_ptr<MainUIStateAPI> const& api)
+{
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
+    if (ImGui::Button(ICON_FA_FOLDER_OPEN))
+    {
+        ActionOpenModel(api);
+    }
+    osc::DrawTooltipIfItemHovered("Open Model", "Opens an existing osim file in a new tab");
+    ImGui::SameLine();
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {1.0f, ImGui::GetStyle().FramePadding.y});
+    ImGui::Button(ICON_FA_CARET_DOWN);
+    osc::DrawTooltipIfItemHovered("Open Recent File", "Opens a recently-opened osim file in a new tab");
+    ImGui::PopStyleVar();
+    ImGui::PopStyleVar();
+
+    if (ImGui::BeginPopupContextItem("##RecentFilesMenu", ImGuiPopupFlags_MouseButtonLeft))
+    {
+        std::vector<RecentFile> recentFiles = App::get().getRecentFiles();
+        std::reverse(recentFiles.begin(), recentFiles.end());  // sort newest -> oldest
+        int imguiID = 0;
+
+        for (RecentFile const& rf : recentFiles)
+        {
+            ImGui::PushID(imguiID++);
+            if (ImGui::Selectable(rf.path.filename().string().c_str()))
+            {
+                ActionOpenModel(api, rf.path);
+            }
+            ImGui::PopID();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void osc::DrawSaveModelButton(
+    std::weak_ptr<MainUIStateAPI> const& api,
+    UndoableModelStatePair& model)
+{
+    if (ImGui::Button(ICON_FA_SAVE))
+    {
+        ActionSaveModel(*api.lock(), model);
+    }
+    osc::DrawTooltipIfItemHovered("Save Model", "Saves the model to an osim file");
+}
+
+void osc::DrawReloadModelButton(UndoableModelStatePair& model)
+{
+    if (!HasInputFileName(model.getModel()))
+    {
+        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
+    }
+
+    if (ImGui::Button(ICON_FA_RECYCLE))
+    {
+        ActionReloadOsimFromDisk(model, *App::upd().singleton<MeshCache>());
+    }
+
+    if (!HasInputFileName(model.getModel()))
+    {
+        ImGui::PopItemFlag();
+        ImGui::PopStyleVar();
+    }
+
+    osc::DrawTooltipIfItemHovered("Reload Model", "Reloads the model from its source osim file");
+}
+
+void osc::DrawUndoButton(UndoableModelStatePair& model)
+{
+    int itemFlagsPushed = 0;
+    int styleVarsPushed = 0;
+    if (!model.canUndo())
+    {
+        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+        ++itemFlagsPushed;
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
+        ++styleVarsPushed;
+    }
+
+    if (ImGui::Button(ICON_FA_UNDO))
+    {
+        ActionUndoCurrentlyEditedModel(model);
+    }
+
+    osc::PopItemFlags(itemFlagsPushed);
+    ImGui::PopStyleVar(styleVarsPushed);
+
+    osc::DrawTooltipIfItemHovered("Undo", "Undo the model to an earlier version");
+}
+
+void osc::DrawRedoButton(UndoableModelStatePair& model)
+{
+    int itemFlagsPushed = 0;
+    int styleVarsPushed = 0;
+    if (!model.canRedo())
+    {
+        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+        ++itemFlagsPushed;
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
+        ++styleVarsPushed;
+    }
+
+    if (ImGui::Button(ICON_FA_REDO))
+    {
+        ActionRedoCurrentlyEditedModel(model);
+    }
+
+    osc::PopItemFlags(itemFlagsPushed);
+    ImGui::PopStyleVar(styleVarsPushed);
+
+    osc::DrawTooltipIfItemHovered("Redo", "Redo the model to an undone version");
+}
+
+void osc::DrawUndoAndRedoButtons(UndoableModelStatePair& model)
+{
+    DrawUndoButton(model);
+    ImGui::SameLine();
+    DrawRedoButton(model);
+}
+
+void osc::DrawToggleFramesButton(UndoableModelStatePair& model, IconCache& icons)
+{
+    Icon const icon = icons.getIcon(IsShowingFrames(model.getModel()) ? "frame_colored" : "frame_bw");
+    if (osc::ImageButton("##toggleframes", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
+    {
+        ActionToggleFrames(model);
+    }
+    osc::DrawTooltipIfItemHovered("Toggle Rendering Frames", "Toggles whether frames (coordinate systems) within the model should be rendered in the 3D scene.");
+}
+
+void osc::DrawToggleMarkersButton(UndoableModelStatePair& model, IconCache& icons)
+{
+    Icon const icon = icons.getIcon(IsShowingMarkers(model.getModel()) ? "marker_colored" : "marker");
+    if (osc::ImageButton("##togglemarkers", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
+    {
+        ActionToggleMarkers(model);
+    }
+    osc::DrawTooltipIfItemHovered("Toggle Rendering Markers", "Toggles whether markers should be rendered in the 3D scene");
+}
+
+void osc::DrawToggleWrapGeometryButton(UndoableModelStatePair& model, IconCache& icons)
+{
+    Icon const icon = icons.getIcon(IsShowingWrapGeometry(model.getModel()) ? "wrap_colored" : "wrap");
+    if (osc::ImageButton("##togglewrapgeom", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
+    {
+        ActionToggleWrapGeometry(model);
+    }
+    osc::DrawTooltipIfItemHovered("Toggle Rendering Wrap Geometry", "Toggles whether wrap geometry should be rendered in the 3D scene.\n\nNOTE: This is a model-level property. Individual wrap geometries *within* the model may have their visibility set to 'false', which will cause them to be hidden from the visualizer, even if this is enabled.");
+}
+
+void osc::DrawToggleContactGeometryButton(UndoableModelStatePair& model, IconCache& icons)
+{
+    Icon const icon = icons.getIcon(IsShowingContactGeometry(model.getModel()) ? "contact_colored" : "contact");
+    if (osc::ImageButton("##togglecontactgeom", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
+    {
+        ActionToggleContactGeometry(model);
+    }
+    osc::DrawTooltipIfItemHovered("Toggle Rendering Contact Geometry", "Toggles whether contact geometry should be rendered in the 3D scene");
+}
+
+void osc::DrawAllDecorationToggleButtons(UndoableModelStatePair& model, IconCache& icons)
+{
+    DrawToggleFramesButton(model, icons);
+    ImGui::SameLine();
+    DrawToggleMarkersButton(model, icons);
+    ImGui::SameLine();
+    DrawToggleWrapGeometryButton(model, icons);
+    ImGui::SameLine();
+    DrawToggleContactGeometryButton(model, icons);
+}
+
+void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
+{
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
+    ImGui::TextUnformatted(ICON_FA_EXPAND_ALT);
+    osc::DrawTooltipIfItemHovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
+    ImGui::SameLine();
+
+    {
+        float scaleFactor = model.getFixupScaleFactor();
+        ImGui::SetNextItemWidth(ImGui::CalcTextSize("0.00000").x);
+        if (ImGui::InputFloat("##scaleinput", &scaleFactor))
+        {
+            osc::ActionSetModelSceneScaleFactorTo(model, scaleFactor);
+        }
+    }
+    ImGui::PopStyleVar();
+
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
+    ImGui::SameLine();
+    if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
+    {
+        osc::ActionAutoscaleSceneScaleFactor(model);
+    }
+    ImGui::PopStyleVar();
+    osc::DrawTooltipIfItemHovered("Autoscale Scale Factor", "Try to autoscale the model's scale factor based on the current dimensions of the model");
 }

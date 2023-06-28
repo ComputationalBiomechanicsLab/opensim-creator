@@ -227,7 +227,7 @@ ptrdiff_t osc::ForwardDynamicSimulation::implGetNumReports() const
 
 osc::SimulationReport osc::ForwardDynamicSimulation::implGetSimulationReport(ptrdiff_t reportIndex) const
 {
-    return m_Impl->getSimulationReport(std::move(reportIndex));
+    return m_Impl->getSimulationReport(reportIndex);
 }
 
 std::vector<osc::SimulationReport> osc::ForwardDynamicSimulation::implGetAllSimulationReports() const
@@ -287,5 +287,5 @@ float osc::ForwardDynamicSimulation::implGetFixupScaleFactor() const
 
 void osc::ForwardDynamicSimulation::implSetFixupScaleFactor(float v)
 {
-    m_Impl->setFixupScaleFactor(std::move(v));
+    m_Impl->setFixupScaleFactor(v);
 }

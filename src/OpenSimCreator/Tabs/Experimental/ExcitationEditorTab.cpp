@@ -58,7 +58,7 @@ namespace
             LineStyle lineStyleToNextPoint_) :
 
             startPosition{startPosition_},
-            lineStyleToNextPoint{std::move(lineStyleToNextPoint_)}
+            lineStyleToNextPoint{lineStyleToNextPoint_}
         {
         }
 
@@ -72,7 +72,7 @@ namespace
             LineStyle lineStyleToNextPoint_,
             osc::UID id_) :
 
-            ExcitationCurveSegment{startPosition_, std::move(lineStyleToNextPoint_)},
+            ExcitationCurveSegment{startPosition_, lineStyleToNextPoint_},
             id{id_}
         {
         }
@@ -112,7 +112,7 @@ namespace
         osc::UID addSegment(ExcitationCurveSegment segment)
         {
             osc::UID id;
-            m_SegmentsByID.insert_or_assign(id, std::move(segment));
+            m_SegmentsByID.insert_or_assign(id, segment);
             return id;
         }
 

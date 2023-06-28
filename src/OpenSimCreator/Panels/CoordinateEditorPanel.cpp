@@ -31,9 +31,9 @@ public:
         EditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> uum_) :
 
-        StandardPanel{std::move(panelName_)},
+        StandardPanel{panelName_},
         m_MainUIStateAPI{std::move(mainUIStateAPI_)},
-        m_EditorAPI{std::move(editorAPI_)},
+        m_EditorAPI{editorAPI_},
         m_Model{std::move(uum_)}
     {
     }
@@ -245,7 +245,7 @@ osc::CoordinateEditorPanel::CoordinateEditorPanel(
     EditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> uum_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(panelName_), std::move(mainUIStateAPI_), std::move(editorAPI_), std::move(uum_))}
+    m_Impl{std::make_unique<Impl>(panelName_, std::move(mainUIStateAPI_), editorAPI_, std::move(uum_))}
 {
 }
 

@@ -24,7 +24,7 @@ public:
         SimulatorUIAPI* simulatorUIAPI,
         std::shared_ptr<Simulation> simulation) :
 
-        StandardPanel{std::move(panelName)},
+        StandardPanel{panelName},
         m_SimulatorUIAPI{simulatorUIAPI},
         m_Simulation{std::move(simulation)}
     {
@@ -133,7 +133,7 @@ osc::SimulationDetailsPanel::SimulationDetailsPanel(
     SimulatorUIAPI* simulatorUIAPI,
     std::shared_ptr<Simulation> simulation) :
 
-    m_Impl{std::make_unique<Impl>(std::move(panelName), simulatorUIAPI, std::move(simulation))}
+    m_Impl{std::make_unique<Impl>(panelName, simulatorUIAPI, std::move(simulation))}
 {
 }
 

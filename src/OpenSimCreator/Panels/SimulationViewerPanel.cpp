@@ -21,9 +21,9 @@ public:
         std::shared_ptr<VirtualModelStatePair> modelState_,
         std::weak_ptr<MainUIStateAPI> mainUIStateAPI_) :
 
-        StandardPanel{std::move(panelName_)},
+        StandardPanel{panelName_},
         m_Model{std::move(modelState_)},
-        m_API{mainUIStateAPI_}
+        m_API{std::move(mainUIStateAPI_)}
     {
     }
 
@@ -106,7 +106,7 @@ osc::SimulationViewerPanel::SimulationViewerPanel(
     std::shared_ptr<VirtualModelStatePair> modelState,
     std::weak_ptr<MainUIStateAPI> mainUIStateAPI) :
 
-    m_Impl{std::make_unique<Impl>(std::move(panelName), std::move(modelState), std::move(mainUIStateAPI))}
+    m_Impl{std::make_unique<Impl>(panelName, std::move(modelState), std::move(mainUIStateAPI))}
 {
 }
 osc::SimulationViewerPanel::SimulationViewerPanel(SimulationViewerPanel&&) noexcept = default;

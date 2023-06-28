@@ -1708,11 +1708,8 @@ glm::vec3::length_type osc::LongestDimIndex(AABB const& a) noexcept
 
 float osc::LongestDim(AABB const& a) noexcept
 {
-    glm::vec3 dims = Dimensions(a);
-    float rv = dims[0];
-    rv = std::max(rv, dims[1]);
-    rv = std::max(rv, dims[2]);
-    return rv;
+    glm::vec3 const dims = Dimensions(a);
+    return std::max({dims[0], dims[1], dims[2]});
 }
 
 std::array<glm::vec3, 8> osc::ToCubeVerts(AABB const& aabb) noexcept

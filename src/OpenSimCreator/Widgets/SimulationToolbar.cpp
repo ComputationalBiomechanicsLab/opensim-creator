@@ -1,6 +1,7 @@
 #include "SimulationToolbar.hpp"
 
 #include "OpenSimCreator/Simulation/Simulation.hpp"
+#include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 #include "OpenSimCreator/Widgets/SimulationScrubber.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
@@ -53,15 +54,11 @@ public:
 
     void draw()
     {
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {5.0f, 5.0f});
-        float const height = ImGui::GetFrameHeight() + 2.0f*ImGui::GetStyle().WindowPadding.y;
-        ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
-        if (osc::BeginMainViewportTopBar(m_Label, height, flags))
+        if (BeginToolbar(m_Label, glm::vec2{5.0f, 5.0f}))
         {
             drawContent();
         }
         ImGui::End();
-        ImGui::PopStyleVar();
     }
 
 private:

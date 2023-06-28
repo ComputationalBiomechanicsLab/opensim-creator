@@ -2636,7 +2636,7 @@ public:
 
     void setMat4Array(std::string_view propertyName, nonstd::span<glm::mat4 const> mats)
     {
-        setValue(std::move(propertyName), std::vector<glm::mat4>(mats.begin(), mats.end()));
+        setValue(propertyName, std::vector<glm::mat4>(mats.begin(), mats.end()));
     }
 
     std::optional<int32_t> getInt(std::string_view propertyName) const
@@ -2646,7 +2646,7 @@ public:
 
     void setInt(std::string_view propertyName, int32_t value)
     {
-        setValue(std::move(propertyName), value);
+        setValue(propertyName, value);
     }
 
     std::optional<bool> getBool(std::string_view propertyName) const

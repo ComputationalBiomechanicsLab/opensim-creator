@@ -52,7 +52,7 @@ public:
         std::shared_ptr<UndoableModelStatePair> model_,
         std::weak_ptr<MainUIStateAPI> api_) :
 
-        StandardPanel{std::move(panelName_)},
+        StandardPanel{panelName_},
         m_API{std::move(api_)},
         m_Model{std::move(model_)}
     {
@@ -114,7 +114,7 @@ osc::OutputWatchesPanel::OutputWatchesPanel(
     std::shared_ptr<UndoableModelStatePair> model_,
     std::weak_ptr<MainUIStateAPI> api_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(panelName_), std::move(model_), std::move(api_))}
+    m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), std::move(api_))}
 {
 }
 

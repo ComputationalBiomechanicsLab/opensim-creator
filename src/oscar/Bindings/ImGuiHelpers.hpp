@@ -247,4 +247,7 @@ namespace osc
     // converts all color values in all draw commands' vertex buffers from sRGB to linear
     // color space
     void ConvertDrawDataFromSRGBToLinear(ImDrawData&);
+
+    void VerticalSeperator();
+    void SameLineWithVerticalSeperator();
 }

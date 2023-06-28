@@ -38,7 +38,7 @@ public:
         std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
         SimulatorUIAPI* simulatorUIAPI_) :
 
-        StandardPanel{std::move(panelName_)},
+        StandardPanel{panelName_},
         m_API{std::move(mainUIStateAPI_)},
         m_SimulatorUIAPI{simulatorUIAPI_}
     {
@@ -101,7 +101,7 @@ osc::OutputPlotsPanel::OutputPlotsPanel(
     std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
     SimulatorUIAPI* simulatorUIAPI_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(panelName_), std::move(mainUIStateAPI_), simulatorUIAPI_)}
+    m_Impl{std::make_unique<Impl>(panelName_, std::move(mainUIStateAPI_), simulatorUIAPI_)}
 {
 }
 

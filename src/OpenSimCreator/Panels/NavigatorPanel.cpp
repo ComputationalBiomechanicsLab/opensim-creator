@@ -166,7 +166,7 @@ public:
         std::shared_ptr<VirtualModelStatePair> model,
         std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
 
-        StandardPanel{std::move(panelName)},
+        StandardPanel{panelName},
         m_Model{std::move(model)},
         m_OnRightClick{std::move(onRightClick)}
     {
@@ -423,7 +423,7 @@ osc::NavigatorPanel::NavigatorPanel(
     std::shared_ptr<VirtualModelStatePair> model,
     std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
 
-    m_Impl{std::make_unique<Impl>(std::move(panelName), std::move(model), std::move(onRightClick))}
+    m_Impl{std::make_unique<Impl>(panelName, std::move(model), std::move(onRightClick))}
 {
 }
 

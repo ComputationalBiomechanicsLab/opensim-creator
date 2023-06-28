@@ -84,7 +84,7 @@ namespace
 
     osc::Color GetGeometryPathDefaultColor(OpenSim::GeometryPath const& gp)
     {
-        SimTK::Vec3 const c = gp.getDefaultColor();
+        SimTK::Vec3 const& c = gp.getDefaultColor();
         return osc::Color{osc::ToVec3(c)};
     }
 
@@ -977,19 +977,16 @@ float osc::GetRecommendedScaleFactor(
     MeshCache& meshCache,
     OpenSim::Model const& model,
     SimTK::State const& state,
-    OpenSimDecorationOptions const& opts,
-    float fixupScaleFactor)
+    OpenSimDecorationOptions const& opts)
 {
-    // generate decorations as if they were empty-sized and union their
-    // AABBs to get an idea of what the "true" scale of the model probably
-    // is (without the model containing oversized frames, etc.)
+    // generate+union all scene decorations to get an idea of the scene size
     std::optional<AABB> aabb;
     GenerateModelDecorations(
         meshCache,
         model,
         state,
         opts,
-        fixupScaleFactor,
+        1.0f,
         [&aabb](OpenSim::Component const&, SceneDecoration&& dec)
         {
             AABB const decorationAABB = GetWorldspaceAABB(dec);
@@ -999,13 +996,16 @@ float osc::GetRecommendedScaleFactor(
 
     if (!aabb)
     {
-        return 1.0f;
+        return 1.0f;  // no scene elements
     }
 
+    // calculate the longest dimension and use that to figure out
+    // what the smallest scale factor that would cause that dimension
+    // to be >=1 cm (roughly the length of a frame leg in OSC's
+    // decoration generator)
     float longest = LongestDim(*aabb);
     float rv = 1.0f;
-
-    while (longest < 0.1)
+    while (longest < 0.01)
     {
         longest *= 10.0f;
         rv /= 10.0f;

@@ -327,7 +327,7 @@ int osc::GetSupportedSubfields(OpenSim::AbstractOutput const& ao)
 
 osc::ComponentOutputExtractor::ComponentOutputExtractor(OpenSim::AbstractOutput const& ao,
                                                         OutputSubfield subfield) :
-    m_Impl{std::make_unique<Impl>(ao, std::move(subfield))}
+    m_Impl{std::make_unique<Impl>(ao, subfield)}
 {
 }
 osc::ComponentOutputExtractor::ComponentOutputExtractor(ComponentOutputExtractor const&) = default;
@@ -366,7 +366,7 @@ void osc::ComponentOutputExtractor::getValuesFloat(OpenSim::Component const& c,
                                                    nonstd::span<osc::SimulationReport const> reports,
                                                    nonstd::span<float> out) const
 {
-    m_Impl->getValuesFloat(c, std::move(reports), std::move(out));
+    m_Impl->getValuesFloat(c, reports, out);
 }
 
 std::string osc::ComponentOutputExtractor::getValueString(OpenSim::Component const& c,

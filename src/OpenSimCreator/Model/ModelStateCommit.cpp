@@ -26,12 +26,12 @@ public:
     Impl(VirtualConstModelStatePair const& msp, std::string_view message, UID parent) :
         m_AccessMutex{},
         m_ID{},
-        m_MaybeParentID{std::move(parent)},
+        m_MaybeParentID{parent},
         m_CommitTime{std::chrono::system_clock::now()},
         m_Model{std::make_unique<OpenSim::Model>(msp.getModel())},
         m_ModelVersion{msp.getModelVersion()},
         m_FixupScaleFactor{msp.getFixupScaleFactor()},
-        m_CommitMessage{std::move(message)}
+        m_CommitMessage{message}
     {
         osc::InitializeModel(*m_Model);
         osc::InitializeState(*m_Model);
@@ -92,12 +92,12 @@ private:
 // public API (PIMPL)
 
 osc::ModelStateCommit::ModelStateCommit(VirtualConstModelStatePair const& p, std::string_view message) :
-    m_Impl{std::make_shared<Impl>(p, std::move(message))}
+    m_Impl{std::make_shared<Impl>(p, message)}
 {
 }
 
 osc::ModelStateCommit::ModelStateCommit(VirtualConstModelStatePair const& p, std::string_view message, UID parent) :
-    m_Impl{std::make_shared<Impl>(p, std::move(message), std::move(parent))}
+    m_Impl{std::make_shared<Impl>(p, message, parent)}
 {
 }
 

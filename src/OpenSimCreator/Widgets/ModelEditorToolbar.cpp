@@ -3,16 +3,13 @@
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
+#include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 #include "OpenSimCreator/Widgets/ParamBlockEditorPopup.hpp"
-#include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/Utils/UndoableModelActions.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Graphics/Icon.hpp>
 #include <oscar/Graphics/IconCache.hpp>
-#include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/Platform/RecentFile.hpp>
 #include <oscar/Platform/Styling.hpp>
 
 #include <imgui.h>
@@ -43,228 +40,25 @@ public:
 
     void draw()
     {
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {5.0f, 5.0f});
-        float const height = ImGui::GetFrameHeight() + 2.0f*ImGui::GetStyle().WindowPadding.y;
-        ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
-        if (osc::BeginMainViewportTopBar(m_Label, height, flags))
+        if (BeginToolbar(m_Label, glm::vec2{5.0f, 5.0f}))
         {
             drawContent();
         }
         ImGui::End();
-        ImGui::PopStyleVar();
     }
 private:
-    void drawNewModelButton()
+    void drawModelFileRelatedButtons()
     {
-        if (ImGui::Button(ICON_FA_FILE))
-        {
-            ActionNewModel(m_MainUIStateAPI);
-        }
-        osc::DrawTooltipIfItemHovered("New Model", "Creates a new OpenSim model in a new tab");
-    }
-
-    void drawOpenButton()
-    {
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
-        if (ImGui::Button(ICON_FA_FOLDER_OPEN))
-        {
-            ActionOpenModel(m_MainUIStateAPI);
-        }
-        osc::DrawTooltipIfItemHovered("Open Model", "Opens an existing osim file in a new tab");
+        DrawNewModelButton(m_MainUIStateAPI);
         ImGui::SameLine();
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {1.0f, ImGui::GetStyle().FramePadding.y});
-        ImGui::Button(ICON_FA_CARET_DOWN);
-        osc::DrawTooltipIfItemHovered("Open Recent File", "Opens a recently-opened osim file in a new tab");
-        ImGui::PopStyleVar();
-        ImGui::PopStyleVar();
-
-        if (ImGui::BeginPopupContextItem("##RecentFilesMenu", ImGuiPopupFlags_MouseButtonLeft))
-        {
-            std::vector<RecentFile> recentFiles = App::get().getRecentFiles();
-            std::reverse(recentFiles.begin(), recentFiles.end());  // sort newest -> oldest
-            int imguiID = 0;
-
-            for (RecentFile const& rf : recentFiles)
-            {
-                ImGui::PushID(imguiID++);
-                if (ImGui::Selectable(rf.path.filename().string().c_str()))
-                {
-                    ActionOpenModel(m_MainUIStateAPI, rf.path);
-                }
-                ImGui::PopID();
-            }
-
-            ImGui::EndPopup();
-        }
-    }
-
-    void drawSaveButton()
-    {
-        if (ImGui::Button(ICON_FA_SAVE))
-        {
-            ActionSaveModel(*m_MainUIStateAPI.lock(), *m_Model);
-        }
-        osc::DrawTooltipIfItemHovered("Save Model", "Saves the model to an osim file");
-    }
-
-    void drawReloadButton()
-    {
-        if (!HasInputFileName(m_Model->getModel()))
-        {
-            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
-        }
-
-        if (ImGui::Button(ICON_FA_RECYCLE))
-        {
-            ActionReloadOsimFromDisk(*m_Model, *App::upd().singleton<MeshCache>());
-        }
-
-        if (!HasInputFileName(m_Model->getModel()))
-        {
-            ImGui::PopItemFlag();
-            ImGui::PopStyleVar();
-        }
-
-        osc::DrawTooltipIfItemHovered("Reload Model", "Reloads the model from its source osim file");
-    }
-
-    void drawUndoButton()
-    {
-        int itemFlagsPushed = 0;
-        int styleVarsPushed = 0;
-        if (!m_Model->canUndo())
-        {
-            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-            ++itemFlagsPushed;
-            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
-            ++styleVarsPushed;
-        }
-
-        if (ImGui::Button(ICON_FA_UNDO))
-        {
-            ActionUndoCurrentlyEditedModel(*m_Model);
-        }
-
-        osc::PopItemFlags(itemFlagsPushed);
-        ImGui::PopStyleVar(styleVarsPushed);
-
-        osc::DrawTooltipIfItemHovered("Undo", "Undo the model to an earlier version");
-    }
-
-    void drawRedoButton()
-    {
-        int itemFlagsPushed = 0;
-        int styleVarsPushed = 0;
-        if (!m_Model->canRedo())
-        {
-            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-            ++itemFlagsPushed;
-            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
-            ++styleVarsPushed;
-        }
-
-        if (ImGui::Button(ICON_FA_REDO))
-        {
-            ActionRedoCurrentlyEditedModel(*m_Model);
-        }
-
-        osc::PopItemFlags(itemFlagsPushed);
-        ImGui::PopStyleVar(styleVarsPushed);
-
-        osc::DrawTooltipIfItemHovered("Redo", "Redo the model to an undone version");
-    }
-
-    void drawToggleFramesButton()
-    {
-        Icon const icon = m_IconCache->getIcon(IsShowingFrames(m_Model->getModel()) ? "frame_colored" : "frame_bw");
-        if (osc::ImageButton("##toggleframes", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
-        {
-            ActionToggleFrames(*m_Model);
-        }
-        osc::DrawTooltipIfItemHovered("Toggle Rendering Frames", "Toggles whether frames (coordinate systems) within the model should be rendered in the 3D scene.");
-    }
-
-    void drawToggleMarkersButton()
-    {
-        Icon const icon = m_IconCache->getIcon(IsShowingMarkers(m_Model->getModel()) ? "marker_colored" : "marker");
-        if (osc::ImageButton("##togglemarkers", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
-        {
-            ActionToggleMarkers(*m_Model);
-        }
-        osc::DrawTooltipIfItemHovered("Toggle Rendering Markers", "Toggles whether markers should be rendered in the 3D scene");
-    }
-
-    void drawToggleWrapGeometryButton()
-    {
-        Icon const icon = m_IconCache->getIcon(IsShowingWrapGeometry(m_Model->getModel()) ? "wrap_colored" : "wrap");
-        if (osc::ImageButton("##togglewrapgeom", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
-        {
-            ActionToggleWrapGeometry(*m_Model);
-        }
-        osc::DrawTooltipIfItemHovered("Toggle Rendering Wrap Geometry", "Toggles whether wrap geometry should be rendered in the 3D scene.\n\nNOTE: This is a model-level property. Individual wrap geometries *within* the model may have their visibility set to 'false', which will cause them to be hidden from the visualizer, even if this is enabled.");
-    }
-
-    void drawToggleContactGeometryButton()
-    {
-        Icon const icon = m_IconCache->getIcon(IsShowingContactGeometry(m_Model->getModel()) ? "contact_colored" : "contact");
-        if (osc::ImageButton("##togglecontactgeom", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
-        {
-            ActionToggleContactGeometry(*m_Model);
-        }
-        osc::DrawTooltipIfItemHovered("Toggle Rendering Contact Geometry", "Toggles whether contact geometry should be rendered in the 3D scene");
-    }
-
-    void drawFileRelatedActionsGroup()
-    {
-        drawNewModelButton();
+        DrawOpenModelButtonWithRecentFilesDropdown(m_MainUIStateAPI);
         ImGui::SameLine();
-
-        drawOpenButton();
+        DrawSaveModelButton(m_MainUIStateAPI, *m_Model);
         ImGui::SameLine();
-
-        drawSaveButton();
-        ImGui::SameLine();
-
-        drawReloadButton();
+        DrawReloadModelButton(*m_Model);
     }
 
-    void drawUndoRedoGroup()
-    {
-        drawUndoButton();
-        ImGui::SameLine();
-
-        drawRedoButton();
-    }
-
-    void drawScaleFactorGroup()
-    {
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
-        ImGui::TextUnformatted(ICON_FA_EXPAND_ALT);
-        osc::DrawTooltipIfItemHovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
-        ImGui::SameLine();
-
-        {
-            float scaleFactor = m_Model->getFixupScaleFactor();
-            ImGui::SetNextItemWidth(ImGui::CalcTextSize("0.00000").x);
-            if (ImGui::InputFloat("##scaleinput", &scaleFactor))
-            {
-                osc::ActionSetModelSceneScaleFactorTo(*m_Model, scaleFactor);
-            }
-        }
-        ImGui::PopStyleVar();
-
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
-        ImGui::SameLine();
-        if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
-        {
-            osc::ActionAutoscaleSceneScaleFactor(*m_Model);
-        }
-        ImGui::PopStyleVar();
-        osc::DrawTooltipIfItemHovered("Autoscale Scale Factor", "Try to autoscale the model's scale factor based on the current dimensions of the model");
-    }
-
-    void drawSimulationGroup()
+    void drawForwardDynamicSimulationControls()
     {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
 
@@ -288,47 +82,21 @@ private:
         ImGui::PopStyleVar();
     }
 
-    void drawDecorationsGroup()
-    {
-        drawToggleFramesButton();
-        ImGui::SameLine();
-
-        drawToggleMarkersButton();
-        ImGui::SameLine();
-
-        drawToggleWrapGeometryButton();
-        ImGui::SameLine();
-
-        drawToggleContactGeometryButton();
-    }
-
     void drawContent()
     {
-        drawFileRelatedActionsGroup();
+        drawModelFileRelatedButtons();
+        SameLineWithVerticalSeperator();
 
-        ImGui::SameLine();
-        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-        ImGui::SameLine();
+        DrawUndoAndRedoButtons(*m_Model);
+        SameLineWithVerticalSeperator();
 
-        drawUndoRedoGroup();
+        DrawSceneScaleFactorEditorControls(*m_Model);
+        SameLineWithVerticalSeperator();
 
-        ImGui::SameLine();
-        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-        ImGui::SameLine();
+        drawForwardDynamicSimulationControls();
+        SameLineWithVerticalSeperator();
 
-        drawScaleFactorGroup();
-
-        ImGui::SameLine();
-        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-        ImGui::SameLine();
-
-        drawSimulationGroup();
-
-        ImGui::SameLine();
-        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-        ImGui::SameLine();
-
-        drawDecorationsGroup();
+        DrawAllDecorationToggleButtons(*m_Model, *m_IconCache);
     }
 
     std::string m_Label;
@@ -341,6 +109,9 @@ private:
         ImGui::GetTextLineHeight()/128.0f
     );
 };
+
+
+// public API
 
 osc::ModelEditorToolbar::ModelEditorToolbar(
     std::string_view label_,
