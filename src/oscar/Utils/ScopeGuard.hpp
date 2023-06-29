@@ -27,6 +27,6 @@ namespace osc
     };
 }
 
-#define OSC_SCOPE_GUARD(action) osc::ScopeGuard OSC_TOKENPASTE2(guard_, __LINE__){[&]() action};
+#define OSC_SCOPE_GUARD(action) osc::ScopeGuard const OSC_TOKENPASTE2(guard_, __LINE__){[&]() action};
 
 #define OSC_SCOPE_GUARD_IF(cond, action) OSC_SCOPE_GUARD({ if (cond) { action } })
