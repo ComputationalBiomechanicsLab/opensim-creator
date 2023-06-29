@@ -2219,6 +2219,30 @@ namespace
         }
     }
 
+    // draws a "With Respect to" menu that prompts the user to select a frame
+    // that they would like a calculation to be expressed in
+    //
+    // calls `onFrameMenuItemClicked` when the user clicks a frame's menu item
+    void DrawWithRespectToMenuItems(
+        OpenSim::Model const& model,
+        std::function<void(OpenSim::Frame const&)> const& onFrameMenuItemClicked)
+    {
+        if (ImGui::BeginMenu("With Respect to"))
+        {
+            int imguiID = 0;
+            for (OpenSim::Frame const& frame : model.getComponentList<OpenSim::Frame>())
+            {
+                ImGui::PushID(imguiID++);
+                if (ImGui::BeginMenu(frame.getName().c_str()))
+                {
+                    onFrameMenuItemClicked(frame);
+                    ImGui::EndMenu();
+                }
+            }
+            ImGui::EndMenu();
+        }
+    }
+
     // draws the given location (in ground)'s location w.r.t. the given frame as
     // copyable fields
     void DrawPointTranslationInformationWithRespectTo(
@@ -2374,7 +2398,7 @@ namespace
 // context menu
 namespace
 {
-    void DrawGenericRightClickComponentContextMenuActions(
+    void DrawFocusCameraMenu(
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair>,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
@@ -2407,18 +2431,18 @@ namespace
         }
     }
 
-    void DrawGenericRightClickEdgeContextMenuActions(
+    void DrawEdgeAddContextMenuItems(
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
         std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         OpenSim::FDVirtualEdge const& edge)
     {
-        if (maybeSourceEvent && ImGui::MenuItem(ICON_FA_TIMES " Create Cross Product Edge"))
+        if (maybeSourceEvent && ImGui::MenuItem(ICON_FA_TIMES " Cross Product Edge"))
         {
             PushCreateCrossProductEdgeLayer(editor, model, edge, *maybeSourceEvent);
         }
 
-        if (maybeSourceEvent && ImGui::BeginMenu(ICON_FA_ARROWS_ALT " Create Frame With This Edge as"))
+        if (maybeSourceEvent && ImGui::BeginMenu(ICON_FA_ARROWS_ALT " Frame With This Edge as"))
         {
             ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 0.5f, 0.5f, 1.0f});
             if (ImGui::MenuItem("+x"))
@@ -2504,170 +2528,6 @@ namespace
         }
     }
 
-    void DrawRightClickedNothingContextMenu(
-        osc::UndoableModelStatePair& model)
-    {
-        osc::DrawNothingRightClickedContextMenuHeader();
-        osc::DrawContextMenuSeparator();
-
-        if (ImGui::MenuItem(ICON_FA_CUBE " Add Meshes"))
-        {
-            ActionPromptUserToAddMeshFiles(model);
-        }
-    }
-
-    void DrawRightClickedMeshContextMenu(
-        osc::EditorAPI& editor,
-        std::shared_ptr<osc::UndoableModelStatePair> model,
-        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::Mesh const& mesh)
-    {
-        osc::DrawRightClickedComponentContextMenuHeader(mesh);
-        osc::DrawContextMenuSeparator();
-
-        if (ImGui::MenuItem(ICON_FA_CIRCLE " Add Sphere Landmark"))
-        {
-            ActionAddSphereInMeshFrame(
-                *model,
-                mesh,
-                maybeSourceEvent ? maybeSourceEvent->maybeClickPositionInGround : std::nullopt
-            );
-        }
-
-        if (ImGui::MenuItem(ICON_FA_ARROWS_ALT " Add Custom (Offset) Frame"))
-        {
-            ActionAddOffsetFrameInMeshFrame(
-                *model,
-                mesh,
-                maybeSourceEvent ? maybeSourceEvent->maybeClickPositionInGround : std::nullopt
-            );
-        }
-
-        if (ImGui::BeginMenu(ICON_FA_FILE_EXPORT " Export"))
-        {
-            if (ImGui::BeginMenu(".obj"))
-            {
-                if (ImGui::BeginMenu("With Respect to"))
-                {
-                    int imguiID = 0;
-                    for (OpenSim::Frame const& frame : model->getModel().getComponentList<OpenSim::Frame>())
-                    {
-                        ImGui::PushID(imguiID++);
-                        if (ImGui::MenuItem(frame.getName().c_str()))
-                        {
-                            ActionReexportMeshOBJWithRespectTo(
-                                model->getModel(),
-                                model->getState(),
-                                mesh,
-                                frame
-                            );
-                        }
-                        if (ImGui::IsItemHovered())
-                        {
-                            model->setHovered(&frame);
-                        }
-                        ImGui::PopID();
-                    }
-
-                    ImGui::EndMenu();
-                }
-
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::BeginMenu(".stl"))
-            {
-                if (ImGui::BeginMenu("With Respect to"))
-                {
-                    int imguiID = 0;
-                    for (OpenSim::Frame const& frame : model->getModel().getComponentList<OpenSim::Frame>())
-                    {
-                        ImGui::PushID(imguiID++);
-                        if (ImGui::MenuItem(frame.getName().c_str()))
-                        {
-                            ActionReexportMeshSTLWithRespectTo(
-                                model->getModel(),
-                                model->getState(),
-                                mesh,
-                                frame
-                            );
-                        }
-                        if (ImGui::IsItemHovered())
-                        {
-                            model->setHovered(&frame);
-                        }
-                        ImGui::PopID();
-                    }
-
-                    ImGui::EndMenu();
-                }
-
-                ImGui::EndMenu();
-            }
-
-            ImGui::EndMenu();
-        }
-
-        DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, mesh);
-    }
-
-    void DrawRightClickedPointContextMenu(
-        osc::EditorAPI& editor,
-        std::shared_ptr<osc::UndoableModelStatePair> model,
-        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::Point const& point)
-    {
-        osc::DrawRightClickedComponentContextMenuHeader(point);
-        osc::DrawContextMenuSeparator();
-
-        if (maybeSourceEvent && ImGui::MenuItem(ICON_FA_GRIP_LINES " Create Edge"))
-        {
-            PushCreateEdgeToOtherPointLayer(editor, model, point, *maybeSourceEvent);
-        }
-        if (maybeSourceEvent && ImGui::MenuItem(ICON_FA_DOT_CIRCLE " Create Midpoint"))
-        {
-            PushCreateMidpointToAnotherPointLayer(editor, model, point, *maybeSourceEvent);
-        }
-        DrawCalculateMenu(model->getModel(), model->getState(), point);
-        DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, point);
-    }
-
-    void DrawRightClickedPointToPointEdgeContextMenu(
-        osc::EditorAPI& editor,
-        std::shared_ptr<osc::UndoableModelStatePair> model,
-        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::FDPointToPointEdge const& edge)
-    {
-        osc::DrawRightClickedComponentContextMenuHeader(edge);
-        osc::DrawContextMenuSeparator();
-
-        DrawGenericRightClickEdgeContextMenuActions(editor, model, maybeSourceEvent, edge);
-        if (ImGui::MenuItem(ICON_FA_RECYCLE " Swap Direction"))
-        {
-            ActionSwapPointToPointEdgeEnds(*model, edge);
-        }
-        DrawCalculateMenu(model->getModel(), model->getState(), edge);
-        DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, edge);
-    }
-
-    void DrawRightClickedCrossProductEdgeContextMenu(
-        osc::EditorAPI& editor,
-        std::shared_ptr<osc::UndoableModelStatePair> model,
-        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::FDCrossProductEdge const& edge)
-    {
-        osc::DrawRightClickedComponentContextMenuHeader(edge);
-        osc::DrawContextMenuSeparator();
-
-        DrawGenericRightClickEdgeContextMenuActions(editor, model, maybeSourceEvent, edge);
-        if (ImGui::MenuItem(ICON_FA_RECYCLE " Swap Operands"))
-        {
-            ActionSwapCrossProductEdgeOperands(*model, edge);
-        }
-        DrawCalculateMenu(model->getModel(), model->getState(), edge);
-        DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, edge);
-    }
-
     void DrawCreateBodyMenuItem(
         osc::EditorAPI& editor,
         std::shared_ptr<osc::UndoableModelStatePair> model,
@@ -2680,7 +2540,7 @@ namespace
             groundOrExistingBody = TryGetFirstDescendentOfType<OpenSim::Body>(frame);
         }
 
-        if (ImGui::MenuItem(ICON_FA_WEIGHT " Create Body From This", nullptr, false, !groundOrExistingBody))
+        if (ImGui::MenuItem(ICON_FA_WEIGHT " Body From This", nullptr, false, !groundOrExistingBody))
         {
             ActionCreateBodyFromFrame(editor, model, maybeSourceEvent, frame);
         }
@@ -2690,6 +2550,177 @@ namespace
             ss << "Cannot create a body from this frame: it is already the frame of " << groundOrExistingBody->getName();
             osc::DrawTooltipBodyOnly(std::move(ss).str());
         }
+    }
+    void DrawMeshAddContextMenuItems(
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
+        OpenSim::Mesh const& mesh)
+    {
+        if (ImGui::MenuItem(ICON_FA_CIRCLE " Sphere Landmark"))
+        {
+            ActionAddSphereInMeshFrame(
+                *model,
+                mesh,
+                maybeSourceEvent ? maybeSourceEvent->maybeClickPositionInGround : std::nullopt
+            );
+        }
+        if (ImGui::MenuItem(ICON_FA_ARROWS_ALT " Custom (Offset) Frame"))
+        {
+            ActionAddOffsetFrameInMeshFrame(
+                *model,
+                mesh,
+                maybeSourceEvent ? maybeSourceEvent->maybeClickPositionInGround : std::nullopt
+            );
+        }
+    }
+
+    void DrawMeshExportContextMenuContent(
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        OpenSim::Mesh const& mesh)
+    {
+        if (ImGui::BeginMenu(".obj"))
+        {
+            DrawWithRespectToMenuItems(model->getModel(), [model, &mesh](OpenSim::Frame const& frame)
+            {
+                ActionReexportMeshOBJWithRespectTo(
+                    model->getModel(),
+                    model->getState(),
+                    mesh,
+                    frame
+                );
+            });
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu(".stl"))
+        {
+            DrawWithRespectToMenuItems(model->getModel(), [model, &mesh](OpenSim::Frame const& frame)
+            {
+                ActionReexportMeshSTLWithRespectTo(
+                    model->getModel(),
+                    model->getState(),
+                    mesh,
+                    frame
+                );
+            });
+            ImGui::EndMenu();
+        }
+    }
+
+    void DrawPointAddContextMenuItems(
+        osc::EditorAPI& editor,
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
+        OpenSim::Point const& point)
+    {
+        if (maybeSourceEvent && ImGui::MenuItem(ICON_FA_GRIP_LINES " Edge"))
+        {
+            PushCreateEdgeToOtherPointLayer(editor, model, point, *maybeSourceEvent);
+        }
+        if (maybeSourceEvent && ImGui::MenuItem(ICON_FA_DOT_CIRCLE " Midpoint"))
+        {
+            PushCreateMidpointToAnotherPointLayer(editor, model, point, *maybeSourceEvent);
+        }
+    }
+
+    void DrawRightClickedNothingContextMenu(
+        osc::UndoableModelStatePair& model)
+    {
+        osc::DrawNothingRightClickedContextMenuHeader();
+        osc::DrawContextMenuSeparator();
+
+        if (ImGui::BeginMenu(ICON_FA_PLUS " Add"))
+        {
+            if (ImGui::MenuItem(ICON_FA_CUBES " Meshes"))
+            {
+                ActionPromptUserToAddMeshFiles(model);
+            }
+            ImGui::EndMenu();
+        }
+    }
+
+    void DrawRightClickedMeshContextMenu(
+        osc::EditorAPI& editor,
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
+        OpenSim::Mesh const& mesh)
+    {
+        osc::DrawRightClickedComponentContextMenuHeader(mesh);
+        osc::DrawContextMenuSeparator();
+
+        if (ImGui::BeginMenu(ICON_FA_PLUS " Add"))
+        {
+            DrawMeshAddContextMenuItems(model, maybeSourceEvent, mesh);
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu(ICON_FA_FILE_EXPORT " Export"))
+        {
+            DrawMeshExportContextMenuContent(model, mesh);
+            ImGui::EndMenu();
+        }
+        DrawFocusCameraMenu(editor, model, maybeSourceEvent, mesh);
+    }
+
+    void DrawRightClickedPointContextMenu(
+        osc::EditorAPI& editor,
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
+        OpenSim::Point const& point)
+    {
+        osc::DrawRightClickedComponentContextMenuHeader(point);
+        osc::DrawContextMenuSeparator();
+
+        if (ImGui::BeginMenu(ICON_FA_PLUS " Add"))
+        {
+            DrawPointAddContextMenuItems(editor, model, maybeSourceEvent, point);
+            ImGui::EndMenu();
+        }
+        DrawCalculateMenu(model->getModel(), model->getState(), point);
+        DrawFocusCameraMenu(editor, model, maybeSourceEvent, point);
+    }
+
+    void DrawRightClickedPointToPointEdgeContextMenu(
+        osc::EditorAPI& editor,
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
+        OpenSim::FDPointToPointEdge const& edge)
+    {
+        osc::DrawRightClickedComponentContextMenuHeader(edge);
+        osc::DrawContextMenuSeparator();
+
+        if (ImGui::BeginMenu(ICON_FA_PLUS " Add"))
+        {
+            DrawEdgeAddContextMenuItems(editor, model, maybeSourceEvent, edge);
+            ImGui::EndMenu();
+        }
+        if (ImGui::MenuItem(ICON_FA_RECYCLE " Swap Direction"))
+        {
+            ActionSwapPointToPointEdgeEnds(*model, edge);
+        }
+        DrawCalculateMenu(model->getModel(), model->getState(), edge);
+        DrawFocusCameraMenu(editor, model, maybeSourceEvent, edge);
+    }
+
+    void DrawRightClickedCrossProductEdgeContextMenu(
+        osc::EditorAPI& editor,
+        std::shared_ptr<osc::UndoableModelStatePair> model,
+        std::optional<osc::ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
+        OpenSim::FDCrossProductEdge const& edge)
+    {
+        osc::DrawRightClickedComponentContextMenuHeader(edge);
+        osc::DrawContextMenuSeparator();
+
+        if (ImGui::BeginMenu(ICON_FA_PLUS " Add"))
+        {
+            DrawEdgeAddContextMenuItems(editor, model, maybeSourceEvent, edge);
+            ImGui::EndMenu();
+        }
+        if (ImGui::MenuItem(ICON_FA_RECYCLE " Swap Operands"))
+        {
+            ActionSwapCrossProductEdgeOperands(*model, edge);
+        }
+        DrawCalculateMenu(model->getModel(), model->getState(), edge);
+        DrawFocusCameraMenu(editor, model, maybeSourceEvent, edge);
     }
 
     void DrawRightClickedFrameContextMenu(
@@ -2701,9 +2732,13 @@ namespace
         osc::DrawRightClickedComponentContextMenuHeader(frame);
         osc::DrawContextMenuSeparator();
 
-        DrawCreateBodyMenuItem(editor, model, maybeSourceEvent, frame);
+        if (ImGui::BeginMenu(ICON_FA_PLUS " Add"))
+        {
+            DrawCreateBodyMenuItem(editor, model, maybeSourceEvent, frame);
+            ImGui::EndMenu();
+        }
         DrawCalculateMenu(model->getModel(), model->getState(), frame);
-        DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, frame);
+        DrawFocusCameraMenu(editor, model, maybeSourceEvent, frame);
     }
 
     void DrawRightClickedUnknownComponentContextMenu(
@@ -2715,7 +2750,7 @@ namespace
         osc::DrawRightClickedComponentContextMenuHeader(component);
         osc::DrawContextMenuSeparator();
 
-        DrawGenericRightClickComponentContextMenuActions(editor, model, maybeSourceEvent, component);
+        DrawFocusCameraMenu(editor, model, maybeSourceEvent, component);
     }
 
     // popup state for the frame definition tab's general context menu
