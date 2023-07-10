@@ -2853,11 +2853,6 @@ namespace
                 {
                     osc::ActionRedoCurrentlyEditedModel(*m_Model);
                 }
-
-                if (ImGui::MenuItem("Export to OpenSim"))
-                {
-                    ActionExportFrameDefinitionSceneModelToEditorTab(m_TabHost, *m_Model);
-                }
                 ImGui::EndMenu();
             }
         }
@@ -2872,9 +2867,11 @@ namespace
     public:
         FrameDefinitionTabToolbar(
             std::string_view label_,
+            std::weak_ptr<osc::TabHost> tabHost_,
             std::shared_ptr<osc::UndoableModelStatePair> model_) :
 
             m_Label{label_},
+            m_TabHost{std::move(tabHost_)},
             m_Model{std::move(model_)}
         {
         }
@@ -2893,9 +2890,15 @@ namespace
             osc::DrawUndoAndRedoButtons(*m_Model);
             osc::SameLineWithVerticalSeperator();
             osc::DrawSceneScaleFactorEditorControls(*m_Model);
+            osc::SameLineWithVerticalSeperator();
+            if (ImGui::Button("Export to OpenSim"))
+            {
+                ActionExportFrameDefinitionSceneModelToEditorTab(m_TabHost, *m_Model);
+            }
         }
 
         std::string m_Label;
+        std::weak_ptr<osc::TabHost> m_TabHost;
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
     };
 }
@@ -3083,7 +3086,7 @@ private:
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
     PopupManager m_PopupManager;
     FrameDefinitionTabMainMenu m_MainMenu{m_Parent, m_Model, m_PanelManager};
-    FrameDefinitionTabToolbar m_Toolbar{"##FrameDefinitionToolbar", m_Model};
+    FrameDefinitionTabToolbar m_Toolbar{"##FrameDefinitionToolbar", m_Parent, m_Model};
 };
 
 
