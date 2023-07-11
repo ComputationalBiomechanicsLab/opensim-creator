@@ -1971,6 +1971,10 @@ namespace
         osc::log::info("start model mutation");
         try
         {
+            // CARE: store mesh path before mutatingthe model, because the mesh reference
+            // may become invalidated by other model mutations
+            OpenSim::ComponentPath const meshPath = osc::GetAbsolutePath(*mesh);
+
             OpenSim::Model& mutModel = model->updModel();
             OpenSim::Body const* const bodyPtr = body.get();
             OpenSim::PhysicalOffsetFrame* meshPofPtr = meshPof.get();
@@ -2008,7 +2012,7 @@ namespace
             }
 
             // delete old mesh
-            if (auto* mutMesh = osc::FindComponentMut<OpenSim::Mesh>(mutModel, osc::GetAbsolutePathOrEmpty(mesh)))
+            if (auto* mutMesh = osc::FindComponentMut<OpenSim::Mesh>(mutModel, meshAbsPath))
             {
                 osc::log::info("delete old mesh");
                 osc::TryDeleteComponentFromModel(mutModel, *mutMesh);
