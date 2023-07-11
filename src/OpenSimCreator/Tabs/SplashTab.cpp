@@ -69,9 +69,9 @@ public:
 
     Impl(std::weak_ptr<MainUIStateAPI> parent_) : m_Parent{std::move(parent_)}
     {
-        m_OscLogo.setFilterMode(osc::TextureFilterMode::Linear);
-        m_CziLogo.setFilterMode(osc::TextureFilterMode::Linear);
-        m_TudLogo.setFilterMode(osc::TextureFilterMode::Linear);
+        m_MainAppLogo.setFilterMode(TextureFilterMode::Linear);
+        m_CziLogo.setFilterMode(TextureFilterMode::Linear);
+        m_TudLogo.setFilterMode(TextureFilterMode::Linear);
     }
 
     UID getID() const
@@ -139,10 +139,10 @@ private:
         // pretend the attributation bar isn't there (avoid it)
         tabRect.p2.y -= std::max(m_TudLogo.getDimensions().y, m_CziLogo.getDimensions().y) - 2.0f*ImGui::GetStyle().WindowPadding.y;
 
-        glm::vec2 const menuAndTopLogoDims = osc::Min(osc::Dimensions(tabRect), glm::vec2{m_MenuMaxDims.x, m_MenuMaxDims.y + m_TopLogoDims.y + m_TopLogoPadding.y});
+        glm::vec2 const menuAndTopLogoDims = osc::Min(osc::Dimensions(tabRect), glm::vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
         glm::vec2 const menuAndTopLogoTopLeft = tabRect.p1 + 0.5f*(Dimensions(tabRect) - menuAndTopLogoDims);
-        glm::vec2 const menuDims = {menuAndTopLogoDims.x, menuAndTopLogoDims.y - m_TopLogoDims.y - m_TopLogoPadding.y};
-        glm::vec2 const menuTopLeft = glm::vec2{menuAndTopLogoTopLeft.x, menuAndTopLogoTopLeft.y + m_TopLogoDims.y + m_TopLogoPadding.y};
+        glm::vec2 const menuDims = {menuAndTopLogoDims.x, menuAndTopLogoDims.y - m_MainAppLogoDims.y - m_TopLogoPadding.y};
+        glm::vec2 const menuTopLeft = glm::vec2{menuAndTopLogoTopLeft.x, menuAndTopLogoTopLeft.y + m_MainAppLogoDims.y + m_TopLogoPadding.y};
 
         return Rect{menuTopLeft, menuTopLeft + menuDims};
     }
@@ -152,16 +152,16 @@ private:
         Rect const mmr = calcMainMenuRect();
         glm::vec2 const topLeft
         {
-            mmr.p1.x + Dimensions(mmr).x/2.0f - m_TopLogoDims.x/2.0f,
-            mmr.p1.y - m_TopLogoPadding.y - m_TopLogoDims.y,
+            mmr.p1.x + Dimensions(mmr).x/2.0f - m_MainAppLogoDims.x/2.0f,
+            mmr.p1.y - m_TopLogoPadding.y - m_MainAppLogoDims.y,
         };
 
-        return Rect{topLeft, topLeft + m_TopLogoDims};
+        return Rect{topLeft, topLeft + m_MainAppLogoDims};
     }
 
     void drawBackground()
     {
-        Rect const screenRect = osc::GetMainViewportWorkspaceScreenRect();
+        Rect const screenRect = GetMainViewportWorkspaceScreenRect();
 
         ImGui::SetNextWindowPos(screenRect.p1);
         ImGui::SetNextWindowSize(Dimensions(screenRect));
@@ -181,7 +181,7 @@ private:
             m_LastSceneRendererParams = params;
         }
 
-        osc::DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture());
+        DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture());
 
         ImGui::End();
     }
@@ -192,127 +192,144 @@ private:
 
         ImGui::SetNextWindowPos(logoRect.p1);
         ImGui::Begin("##osclogo", nullptr, GetMinimalWindowFlags());
-        osc::DrawTextureAsImGuiImage(m_OscLogo, osc::Dimensions(logoRect));
+        DrawTextureAsImGuiImage(m_MainAppLogo, Dimensions(logoRect));
         ImGui::End();
     }
 
     void drawMenu()
     {
-        {
-            Rect const mmr = calcMainMenuRect();
-            ImGui::SetNextWindowPos(mmr.p1);
-            ImGui::SetNextWindowSize({Dimensions(mmr).x, -1.0f});
-            ImGui::SetNextWindowSizeConstraints(Dimensions(mmr), Dimensions(mmr));
-        }
+        // center the menu window
+        Rect const mmr = calcMainMenuRect();
+        ImGui::SetNextWindowPos(mmr.p1);
+        ImGui::SetNextWindowSize({Dimensions(mmr).x, -1.0f});
+        ImGui::SetNextWindowSizeConstraints(Dimensions(mmr), Dimensions(mmr));
 
         if (ImGui::Begin("Splash screen", nullptr, ImGuiWindowFlags_NoTitleBar))
         {
-            ImGui::Columns(2, 0, false);
-
-            // left column: actions and recent files
-            {
-                ImGui::TextDisabled("Actions");
-                ImGui::Dummy({0.0f, 2.0f});
-
-                if (ImGui::MenuItem(ICON_FA_FILE_ALT " New Model"))
-                {
-                    ActionNewModel(m_Parent);
-                }
-                if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Open Model"))
-                {
-                    ActionOpenModel(m_Parent);
-                }
-                if (ImGui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
-                {
-                    m_Parent.lock()->addAndSelectTab<MeshImporterTab>(m_Parent);
-                }
-                App::upd().addFrameAnnotation("SplashTab/ImportMeshesMenuItem", osc::GetItemRect());
-                if (ImGui::MenuItem(ICON_FA_BOOK " Open Documentation"))
-                {
-                    OpenPathInOSDefaultApplication(App::get().getConfig().getHTMLDocsDir() / "index.html");
-                }
-            }
-
-            ImGui::Dummy({0.0f, 1.0f*ImGui::GetTextLineHeight()});
-            ImGui::TextDisabled("Recent Models");
-            ImGui::Dummy({0.0f, 2.0f});
-
-            // de-dupe imgui IDs because these lists may contain duplicate
-            // names
-            int imguiID = 0;
-
-            if (!m_MainMenuFileTab.recentlyOpenedFiles.empty())
-            {
-                for (RecentFile const& rf : m_MainMenuFileTab.recentlyOpenedFiles)
-                {
-                    std::string const label = std::string{ICON_FA_FILE} + " " + rf.path.filename().string();
-
-                    ImGui::PushID(++imguiID);
-                    if (ImGui::MenuItem(label.c_str()))
-                    {
-                        m_Parent.lock()->addAndSelectTab<LoadingTab>(m_Parent, rf.path);
-                    }
-                    ImGui::PopID();
-                }
-            }
-            else
-            {
-                ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
-                ImGui::TextWrapped("No files opened recently. Try:");
-                ImGui::BulletText("Creating a new model (Ctrl+N)");
-                ImGui::BulletText("Opening an existing model (Ctrl+O)");
-                ImGui::BulletText("Opening an example (right-side)");
-                ImGui::PopStyleColor();
-            }
-            ImGui::NextColumn();
-
-            // right column: example model files
-            if (!m_MainMenuFileTab.exampleOsimFiles.empty())
-            {
-                ImGui::TextDisabled("Example Models");
-                ImGui::Dummy({0.0f, 2.0f});
-
-                for (std::filesystem::path const& ex : m_MainMenuFileTab.exampleOsimFiles)
-                {
-                    std::string const label = std::string{ICON_FA_FILE} + " " + ex.filename().string();
-
-                    ImGui::PushID(++imguiID);
-                    if (ImGui::MenuItem(label.c_str()))
-                    {
-                        m_Parent.lock()->addAndSelectTab<LoadingTab>(m_Parent, ex);
-                    }
-                    ImGui::PopID();
-                }
-            }
-            ImGui::NextColumn();
-
-            ImGui::Columns();
+            drawMenuContent();
         }
         ImGui::End();
     }
 
+    void drawMenuContent()
+    {
+        // de-dupe imgui IDs because these lists may contain duplicate
+        // names
+        int imguiID = 0;
+
+        ImGui::Columns(2, 0, false);
+        drawMenuLeftColumnContent(imguiID);
+        ImGui::NextColumn();
+        drawMenuRightColumnContent(imguiID);
+        ImGui::NextColumn();
+        ImGui::Columns();
+    }
+
+    void drawActionsMenuSection()
+    {
+        ImGui::TextDisabled("Actions");
+        ImGui::Dummy({0.0f, 2.0f});
+
+        if (ImGui::MenuItem(ICON_FA_FILE_ALT " New Model"))
+        {
+            ActionNewModel(m_Parent);
+        }
+        if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Open Model"))
+        {
+            ActionOpenModel(m_Parent);
+        }
+        if (ImGui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
+        {
+            m_Parent.lock()->addAndSelectTab<MeshImporterTab>(m_Parent);
+        }
+        App::upd().addFrameAnnotation("SplashTab/ImportMeshesMenuItem", GetItemRect());
+        if (ImGui::MenuItem(ICON_FA_BOOK " Open Documentation"))
+        {
+            OpenPathInOSDefaultApplication(App::get().getConfig().getHTMLDocsDir() / "index.html");
+        }
+    }
+
+    void drawRecentlyOpenedFilesMenuSection(int& imguiID)
+    {
+        if (!m_MainMenuFileTab.recentlyOpenedFiles.empty())
+        {
+            for (RecentFile const& rf : m_MainMenuFileTab.recentlyOpenedFiles)
+            {
+                std::string const label = std::string{ICON_FA_FILE} + " " + rf.path.filename().string();
+
+                ImGui::PushID(++imguiID);
+                if (ImGui::MenuItem(label.c_str()))
+                {
+                    m_Parent.lock()->addAndSelectTab<LoadingTab>(m_Parent, rf.path);
+                }
+                ImGui::PopID();
+            }
+        }
+        else
+        {
+            ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
+            ImGui::TextWrapped("No files opened recently. Try:");
+            ImGui::BulletText("Creating a new model (Ctrl+N)");
+            ImGui::BulletText("Opening an existing model (Ctrl+O)");
+            ImGui::BulletText("Opening an example (right-side)");
+            ImGui::PopStyleColor();
+        }
+    }
+
+    void drawMenuLeftColumnContent(int& imguiID)
+    {
+        drawActionsMenuSection();
+
+        ImGui::Dummy({0.0f, 1.0f*ImGui::GetTextLineHeight()});
+        ImGui::TextDisabled("Recent Models");
+        ImGui::Dummy({0.0f, 2.0f});
+
+        drawRecentlyOpenedFilesMenuSection(imguiID);
+    }
+
+    void drawMenuRightColumnContent(int& imguiID)
+    {
+        if (!m_MainMenuFileTab.exampleOsimFiles.empty())
+        {
+            ImGui::TextDisabled("Example Models");
+            ImGui::Dummy({0.0f, 2.0f});
+
+            for (std::filesystem::path const& ex : m_MainMenuFileTab.exampleOsimFiles)
+            {
+                std::string const label = std::string{ICON_FA_FILE} + " " + ex.filename().string();
+
+                ImGui::PushID(++imguiID);
+                if (ImGui::MenuItem(label.c_str()))
+                {
+                    m_Parent.lock()->addAndSelectTab<LoadingTab>(m_Parent, ex);
+                }
+                ImGui::PopID();
+            }
+        }
+    }
+
     void drawAttributationLogos()
     {
-        Rect const viewportRect = osc::GetMainViewportWorkspaceScreenRect();
+        Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
         glm::vec2 loc = viewportRect.p2;
         loc.x = loc.x - 2.0f*ImGui::GetStyle().WindowPadding.x - m_CziLogo.getDimensions().x - 2.0f*ImGui::GetStyle().ItemSpacing.x - m_TudLogo.getDimensions().x;
         loc.y = loc.y - 2.0f*ImGui::GetStyle().WindowPadding.y - std::max(m_CziLogo.getDimensions().y, m_TudLogo.getDimensions().y);
 
         ImGui::SetNextWindowPos(loc);
         ImGui::Begin("##czlogo", nullptr, GetMinimalWindowFlags());
-        osc::DrawTextureAsImGuiImage(m_CziLogo);
+        DrawTextureAsImGuiImage(m_CziLogo);
         ImGui::End();
 
         loc.x += m_CziLogo.getDimensions().x + 2.0f*ImGui::GetStyle().ItemSpacing.x;
         ImGui::SetNextWindowPos(loc);
         ImGui::Begin("##tudlogo", nullptr, GetMinimalWindowFlags());
-        osc::DrawTextureAsImGuiImage(m_TudLogo);
+        DrawTextureAsImGuiImage(m_TudLogo);
         ImGui::End();
     }
 
     void drawVersionInfo()
     {
-        Rect const tabRect = osc::GetMainViewportWorkspaceScreenRect();
+        Rect const tabRect = GetMainViewportWorkspaceScreenRect();
         float const h = ImGui::GetTextLineHeightWithSpacing();
         float constexpr padding = 5.0f;
 
@@ -333,25 +350,22 @@ private:
     std::weak_ptr<MainUIStateAPI> m_Parent;
 
     // for rendering the 3D scene
-    osc::PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();
+    PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();
     SceneRenderer m_SceneRenderer
     {
         App::config(),
-        *osc::App::singleton<osc::MeshCache>(),
-        *osc::App::singleton<osc::ShaderCache>(),
+        *App::singleton<MeshCache>(),
+        *App::singleton<ShaderCache>(),
     };
     SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);
 
-    glm::vec2 m_MenuMaxDims = {640.0f, 512.0f};
-
-    // main app logo, blitted to top of the screen
-    Texture2D m_OscLogo = LoadTextureFromSVGFile(App::resource("textures/banner.svg"));
-    // attributation logos, blitted to bottom of screen
+    Texture2D m_MainAppLogo = LoadTextureFromSVGFile(App::resource("textures/banner.svg"));
     Texture2D m_CziLogo = LoadTextureFromSVGFile(App::resource("textures/chanzuckerberg_logo.svg"), 0.5f);
     Texture2D m_TudLogo = LoadTextureFromSVGFile(App::resource("textures/tudelft_logo.svg"), 0.5f);
 
     // dimensions of stuff
-    glm::vec2 m_TopLogoDims =  m_OscLogo.getDimensions();//[d =]() { return glm::vec2{d.x / (d.y/128.0f), 128.0f}; }();
+    glm::vec2 m_SplashMenuMaxDims = {640.0f, 512.0f};
+    glm::vec2 m_MainAppLogoDims =  m_MainAppLogo.getDimensions();
     glm::vec2 m_TopLogoPadding = {25.0f, 35.0f};
 
     // UI state
