@@ -2238,10 +2238,9 @@ namespace
             for (OpenSim::Frame const& frame : model.getComponentList<OpenSim::Frame>())
             {
                 ImGui::PushID(imguiID++);
-                if (ImGui::BeginMenu(frame.getName().c_str()))
+                if (ImGui::MenuItem(frame.getName().c_str()))
                 {
                     onFrameMenuItemClicked(frame);
-                    ImGui::EndMenu();
                 }
                 ImGui::PopID();
             }
