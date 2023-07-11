@@ -2218,6 +2218,7 @@ namespace
                     onFrameMenuOpened(frame);
                     ImGui::EndMenu();
                 }
+                ImGui::PopID();
             }
             ImGui::EndMenu();
         }
@@ -2242,6 +2243,7 @@ namespace
                     onFrameMenuItemClicked(frame);
                     ImGui::EndMenu();
                 }
+                ImGui::PopID();
             }
             ImGui::EndMenu();
         }
