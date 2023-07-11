@@ -2,7 +2,31 @@
 
 All notable changes to this project will be documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+
 ## [Unreleased]
+
+
+## [0.5.0] - 2023/07/11
+
+0.5.0 adds support for "workflows", and implements two of them: frame definition and mesh warping.
+
+The frame definition workflow makes it easier to define locations/rotations/frames on meshes according
+to ISB-style relationships. For example, it has support for defining landmarks, midpoints, edges between
+points, cross product edges, and frames that are defined w.r.t. those points/edges. This enables users
+to visually place frames on bone scans according to ISB rules with visual feedback and on-the-fly
+calculations, which should be useful to model builders.
+
+The mesh warping workflow introduces a UI for the Thin Plate Spline (TPS) algorithm. The UI asks users
+to pair landmarks from two separate meshes in order to create a TPS warping kernel. The warping kernel
+can be then be used to warp any point in 3D space. We anticipate that this will be a useful tool for
+performing morphology-driven model scaling and creating blended models.
+
+The "workflows" feature, including the frame definition and mesh warping workflows, are work in progress.
+If you think something is missing, or broken, report it on the issues page. We anticipate that interesting
+features from each specific workflow (e.g. the `calculate` feature in the frame definition UI) will gradually
+be ported to existing UIs (e.g. the model editor).
+
+Change list:
 
 - Fixed keyboard keyboard camera controls (e.g. arrow keys) should no longer control the camera if the
   user is interacting with some other UI element (e.g. a text input box, thanks @itbellix, #679)
