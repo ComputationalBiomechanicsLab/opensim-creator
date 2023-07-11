@@ -22,8 +22,8 @@
   ],
   "url": "https://zenodo.org/record/7825543",
   "codeRepository": "https://github.com/ComputationalBiomechanicsLab/opensim-creator",
-  "datePublished": "2023-04-13",
-  "version": "0.4.1",
+  "datePublished": "2023-07-11",
+  "version": "0.5.0",
   "keywords": [
     "OpenSim",
     "Biomechanics",
@@ -33,8 +33,8 @@
     "Simulation Software"
   ],
   "@context": "https://schema.org/",
-  "identifier": "https://doi.org/10.5281/zenodo.7825543",
-  "@id": "https://doi.org/10.5281/zenodo.7825543",
+  "identifier": "https://doi.org/10.5281/zenodo.8136614",
+  "@id": "https://doi.org/10.5281/zenodo.8136614",
   "@type": "SoftwareSourceCode",
   "name": "OpenSim Creator"
 }
