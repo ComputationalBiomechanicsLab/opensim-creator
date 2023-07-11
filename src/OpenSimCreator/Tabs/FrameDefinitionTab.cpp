@@ -1881,7 +1881,7 @@ namespace
     {
         // validate external inputs
 
-        osc::log::info("validate external inputs");
+        osc::log::debug("validate external inputs");
         OpenSim::PhysicalFrame const* const meshFrame =
             osc::FindComponent<OpenSim::PhysicalFrame>(model->getModel(), frameAbsPath);
         if (!meshFrame)
@@ -1915,7 +1915,7 @@ namespace
         }
 
         // create body
-        osc::log::info("create body");
+        osc::log::debug("create body");
         std::string const bodyName = meshFrame->getName() + "_body";
         double const bodyMass = 1.0;
         SimTK::Vec3 const bodyCenterOfMass = {0.0, 0.0, 0.0};
@@ -1928,7 +1928,7 @@ namespace
         );
 
         // create joint (centered using offset frames)
-        osc::log::info("create joint");
+        osc::log::debug("create joint");
         auto joint = std::make_unique<OpenSim::FreeJoint>();
         joint->setName(meshFrame->getName() + "_joint");
         {
@@ -1953,7 +1953,7 @@ namespace
         }
 
         // create PoF for the mesh
-        osc::log::info("create pof");
+        osc::log::debug("create pof");
         auto meshPof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         meshPof->setParentFrame(*body);
         meshPof->setName(mesh->getFrame().getName());
@@ -1968,7 +1968,7 @@ namespace
         }();
 
         // start mutating the model
-        osc::log::info("start model mutation");
+        osc::log::debug("start model mutation");
         try
         {
             // CARE: store mesh path before mutatingthe model, because the mesh reference
@@ -2000,12 +2000,12 @@ namespace
             if (auto const* pof = osc::GetOwner<OpenSim::PhysicalOffsetFrame>(*mesh);
                 pof && osc::GetNumChildren(*pof) == 3)  // mesh+frame geom+wrap object set
             {
-                osc::log::info("reassign sockets");
+                osc::log::debug("reassign sockets");
                 RecursivelyReassignAllSockets(mutModel, *pof, *meshPofPtr);
                 mutModel.finalizeConnections();
                 if (auto* mutPof = osc::FindComponentMut<OpenSim::PhysicalOffsetFrame>(mutModel, osc::GetAbsolutePathOrEmpty(pof)))
                 {
-                    osc::log::info("delete old pof");
+                    osc::log::debug("delete old pof");
                     osc::TryDeleteComponentFromModel(mutModel, *mutPof);
                     mutModel.finalizeConnections();
                 }
@@ -2014,7 +2014,7 @@ namespace
             // delete old mesh
             if (auto* mutMesh = osc::FindComponentMut<OpenSim::Mesh>(mutModel, meshAbsPath))
             {
-                osc::log::info("delete old mesh");
+                osc::log::debug("delete old mesh");
                 osc::TryDeleteComponentFromModel(mutModel, *mutMesh);
                 mutModel.finalizeConnections();
             }
