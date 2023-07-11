@@ -12,9 +12,9 @@ test suite isn't available that covers the changes).
 - [ ] Bump OSC's version number in `CMakeLists.txt` (`project`)
 - [ ] Clean-build OSC on Linux with:
   - `-DCMAKE_BUILD_TYPE=Debug` (incl. for Simbody+OpenSim)
-  - `-DOSC_FORCE_ASSERTIONS=ON`
+  - `CC=clang CXX=clang++ CCFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address` (incl. for Simbody+OpenSim)
+  - `-DOSC_FORCE_ASSERTS_ENABLED=ON`
   - `-DOSC_FORCE_UNDEFINE_NDEBUG=ON`
-  - libASAN
 - [ ] Ensure test suite passes with debug+ASAN build
 - [ ] Manually spot-check new changes with debug+ASAN build
 - [ ] Go through manual QA process (list below)
