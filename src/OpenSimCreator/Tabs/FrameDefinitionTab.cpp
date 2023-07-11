@@ -91,7 +91,7 @@
 // top-level constants
 namespace
 {
-    constexpr osc::CStringView c_TabStringID = "OpenSim/Experimental/FrameDefinition";
+    constexpr osc::CStringView c_TabStringID = "OpenSim/FrameDefinition";
     constexpr double c_SphereDefaultRadius = 0.01;
     constexpr osc::Color c_SphereDefaultColor = {1.0f, 1.0f, 0.75f};
     constexpr osc::Color c_MidpointDefaultColor = {0.75f, 1.0f, 1.0f};
