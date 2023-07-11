@@ -16,6 +16,7 @@
 #include <string>
 
 namespace osc { class Camera; }
+namespace osc { struct Color; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { class RenderTexture; }
 namespace osc { class Texture2D; }
@@ -138,6 +139,13 @@ namespace osc
     // returns `true` if the user is dragging their mouse with any button pressed
     bool IsDraggingWithAnyMouseButtonDown();
 
+    // (lower-level tooltip methods: prefer using higher-level 'DrawTooltip(txt)' methods)
+    void BeginTooltip();
+    void EndTooltip();
+    void TooltipHeaderText(CStringView);
+    void TooltipDescriptionSpacer();
+    void TooltipDescriptionText(CStringView);
+
     // draws an overlay tooltip (content only)
     void DrawTooltipBodyOnly(CStringView);
 
@@ -205,6 +213,10 @@ namespace osc
     // push an osc::UID as if it were an ImGui ID (via ImGui::PushID)
     void PushID(UID const&);
 
+    // push an osc::Color as an ImGui style color var (via ImGui::PushStyleColor())
+    void PushStyleColor(ImGuiCol, Color const&);
+    void PopStyleColor(int count = 1);
+
     // returns "minimal" window flags (i.e. no title bar, can't move the window - ideal for images etc.)
     ImGuiWindowFlags GetMinimalWindowFlags();
 
@@ -228,6 +240,12 @@ namespace osc
 
     // draw text, but centered on the current window/line
     void TextCentered(CStringView);
+
+    // draw faded (muted) text
+    void TextFaded(CStringView);
+
+    // draw warning text
+    void TextWarning(CStringView);
 
     // returns `true` if a given item (usually, input) should be saved based on heuristics
     //

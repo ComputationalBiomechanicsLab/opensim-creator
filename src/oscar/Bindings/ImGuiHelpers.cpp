@@ -551,13 +551,38 @@ bool osc::IsDraggingWithAnyMouseButtonDown()
         ImGui::IsMouseDragging(ImGuiMouseButton_Right);
 }
 
-void osc::DrawTooltipBodyOnly(CStringView label)
+void osc::BeginTooltip()
 {
     ImGui::BeginTooltip();
     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-    ImGui::TextUnformatted(label.c_str());
+}
+
+void osc::EndTooltip()
+{
     ImGui::PopTextWrapPos();
     ImGui::EndTooltip();
+}
+
+void osc::TooltipHeaderText(CStringView s)
+{
+    ImGui::TextUnformatted(s.c_str());
+}
+
+void osc::TooltipDescriptionSpacer()
+{
+    ImGui::Dummy({0.0f, 1.0f});
+}
+
+void osc::TooltipDescriptionText(CStringView s)
+{
+    TextFaded(s);
+}
+
+void osc::DrawTooltipBodyOnly(CStringView label)
+{
+    BeginTooltip();
+    TooltipHeaderText(label);
+    EndTooltip();
 }
 
 void osc::DrawTooltipBodyOnlyIfItemHovered(CStringView label)
@@ -570,20 +595,14 @@ void osc::DrawTooltipBodyOnlyIfItemHovered(CStringView label)
 
 void osc::DrawTooltip(CStringView header, CStringView description)
 {
-    ImGui::BeginTooltip();
-    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-    ImGui::TextUnformatted(header.c_str());
-
+    BeginTooltip();
+    TooltipHeaderText(header);
     if (!description.empty())
     {
-        ImGui::Dummy({0.0f, 1.0f});
-        ImGui::PushStyleColor(ImGuiCol_Text, {0.7f, 0.7f, 0.7f, 1.0f});
-        ImGui::TextUnformatted(description.c_str());
-        ImGui::PopStyleColor();
+        TooltipDescriptionSpacer();
+        TooltipDescriptionText(description);
     }
-
-    ImGui::PopTextWrapPos();
-    ImGui::EndTooltip();
+    EndTooltip();
 }
 
 void osc::DrawTooltipIfItemHovered(CStringView header, CStringView description)
@@ -712,6 +731,16 @@ void osc::PushID(UID const& id)
     ImGui::PushID(static_cast<int>(id.get()));
 }
 
+void osc::PushStyleColor(ImGuiCol index, Color const& c)
+{
+    ImGui::PushStyleColor(index, {c.r, c.g, c.b, c.a});
+}
+
+void osc::PopStyleColor(int count)
+{
+    ImGui::PopStyleColor(count);
+}
+
 ImGuiWindowFlags osc::GetMinimalWindowFlags()
 {
     return
@@ -772,6 +801,20 @@ void osc::TextCentered(CStringView s)
 
     ImGui::SetCursorPosX(0.5f * (windowWidth - textWidth));
     ImGui::TextUnformatted(s.c_str());
+}
+
+void osc::TextFaded(CStringView s)
+{
+    ImGui::PushStyleColor(ImGuiCol_Text, {0.7f, 0.7f, 0.7f, 1.0f});
+    ImGui::TextUnformatted(s.c_str());
+    ImGui::PopStyleColor();
+}
+
+void osc::TextWarning(CStringView s)
+{
+    PushStyleColor(ImGuiCol_Text, Color::yellow());
+    ImGui::TextUnformatted(s.c_str());
+    PopStyleColor();
 }
 
 bool osc::ItemValueShouldBeSaved()

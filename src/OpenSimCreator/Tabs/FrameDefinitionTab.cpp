@@ -2891,9 +2891,44 @@ namespace
             osc::SameLineWithVerticalSeperator();
             osc::DrawSceneScaleFactorEditorControls(*m_Model);
             osc::SameLineWithVerticalSeperator();
-            if (ImGui::Button("Export to OpenSim"))
+            drawExportToOpenSimButton();
+        }
+
+        void drawExportToOpenSimButton()
+        {
+            size_t const numBodies = osc::GetNumChildren(m_Model->getModel().getBodySet());
+
+            if (numBodies == 0)
+            {
+                ImGui::BeginDisabled();
+            }
+            if (ImGui::Button(ICON_FA_FILE_EXPORT " Export to OpenSim"))
             {
                 ActionExportFrameDefinitionSceneModelToEditorTab(m_TabHost, *m_Model);
+            }
+            if (numBodies == 0)
+            {
+                ImGui::EndDisabled();
+            }
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            {
+                drawExportToOpenSimTooltipContent(numBodies);
+            }
+        }
+
+        void drawExportToOpenSimTooltipContent(size_t numBodies)
+        {
+            osc::BeginTooltip();
+            osc::TooltipHeaderText("Export to OpenSim");
+            osc::TooltipDescriptionSpacer();
+            osc::TooltipDescriptionText("Exports the frame definition scene to opensim.");
+            if (numBodies == 0)
+            {
+                ImGui::Separator();
+                osc::TextWarning("Warning:");
+                ImGui::SameLine();
+                ImGui::Text("You currently have %zu bodies defined. Use the 'Add > Body from This' feature on a frame in your scene to add a new body", numBodies);
+                osc::EndTooltip();
             }
         }
 
