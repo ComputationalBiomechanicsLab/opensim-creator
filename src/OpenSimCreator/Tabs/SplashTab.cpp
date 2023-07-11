@@ -1,8 +1,10 @@
 #include "SplashTab.hpp"
 
 #include "OpenSimCreator/MiddlewareAPIs/MainUIStateAPI.hpp"
+#include "OpenSimCreator/Tabs/FrameDefinitionTab.hpp"
 #include "OpenSimCreator/Tabs/LoadingTab.hpp"
 #include "OpenSimCreator/Tabs/MeshImporterTab.hpp"
+#include "OpenSimCreator/Tabs/WarpingTab.hpp"
 #include "OpenSimCreator/Utils/UndoableModelActions.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
 
@@ -225,11 +227,8 @@ private:
         ImGui::Columns();
     }
 
-    void drawActionsMenuSection()
+    void drawActionsMenuSectionContent()
     {
-        ImGui::TextDisabled("Actions");
-        ImGui::Dummy({0.0f, 2.0f});
-
         if (ImGui::MenuItem(ICON_FA_FILE_ALT " New Model"))
         {
             ActionNewModel(m_Parent);
@@ -249,7 +248,23 @@ private:
         }
     }
 
-    void drawRecentlyOpenedFilesMenuSection(int& imguiID)
+    void drawWorkflowsMenuSectionContent()
+    {
+        if (ImGui::MenuItem(ICON_FA_ARROWS_ALT " Frame Definition"))
+        {
+            m_Parent.lock()->addAndSelectTab<FrameDefinitionTab>(m_Parent);
+        }
+        if (ImGui::MenuItem(ICON_FA_MAGIC " Mesh Importer"))
+        {
+            m_Parent.lock()->addAndSelectTab<MeshImporterTab>(m_Parent);
+        }
+        if (ImGui::MenuItem(ICON_FA_CUBE " Mesh Warping"))
+        {
+            m_Parent.lock()->addAndSelectTab<WarpingTab>(m_Parent);
+        }
+    }
+
+    void drawRecentlyOpenedFilesMenuSectionContent(int& imguiID)
     {
         if (!m_MainMenuFileTab.recentlyOpenedFiles.empty())
         {
@@ -278,13 +293,22 @@ private:
 
     void drawMenuLeftColumnContent(int& imguiID)
     {
-        drawActionsMenuSection();
+        ImGui::TextDisabled("Actions");
+        ImGui::Dummy({0.0f, 2.0f});
+
+        drawActionsMenuSectionContent();
+
+        ImGui::Dummy({0.0f, 1.0f*ImGui::GetTextLineHeight()});
+        ImGui::TextDisabled("Workflows");
+        ImGui::Dummy({0.0f, 2.0f});
+
+        drawWorkflowsMenuSectionContent();
 
         ImGui::Dummy({0.0f, 1.0f*ImGui::GetTextLineHeight()});
         ImGui::TextDisabled("Recent Models");
         ImGui::Dummy({0.0f, 2.0f});
 
-        drawRecentlyOpenedFilesMenuSection(imguiID);
+        drawRecentlyOpenedFilesMenuSectionContent(imguiID);
     }
 
     void drawMenuRightColumnContent(int& imguiID)

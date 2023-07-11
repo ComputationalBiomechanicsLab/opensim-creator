@@ -18,6 +18,8 @@ All notable changes to this project will be documented here. The format is based
 - Added support for editing `int` property values, which is handy for some component types (e.g.
   `PrescribedController`, #704)
 - Added an "Export to OpenSim" button to the frame definition UI (#713)
+- The splash screen now contains a "Workflows" section, which shows users the available specialized
+  workflow tabs (#720)
 - Internal: OSC's renderer can now render all not-PBR parts of the LearnOpenGL tutorial series, which
   required adding support for multiple render targets (MRTs, #493)
 - Internal: OpenSimCreator's source code is now split into "OpenSimCreator" and "oscar" (#635):
