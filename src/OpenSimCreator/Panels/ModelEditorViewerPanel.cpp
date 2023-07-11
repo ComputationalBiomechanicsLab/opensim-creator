@@ -446,7 +446,6 @@ private:
 
     void layersDraw()
     {
-        int childWindowID = 0;
         for (auto it = m_Layers.begin(); it != m_Layers.end(); ++it)
         {
             ModelEditorViewerPanelLayer& layer = **it;
@@ -467,13 +466,12 @@ private:
             // should happen window-by-window (otherwise, you'll have problems with overlapping
             // buttons, widgets, etc.)
             ImGui::SetNextWindowPos(m_State.viewportRect.p1);
-            if (ImGui::BeginChild(childWindowID, Dimensions(m_State.viewportRect), false, windowFlags))
+            std::string const childID = std::to_string(std::distance(it, m_Layers.end()));
+            if (ImGui::BeginChild(childID.c_str(), Dimensions(m_State.viewportRect), false, windowFlags))
             {
                 layer.onDraw(m_Parameters, m_State);
                 ImGui::EndChild();
             }
-
-            ++childWindowID;
         }
     }
 
