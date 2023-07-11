@@ -4730,6 +4730,7 @@ namespace
 
             osc::Material material{osc::App::singleton<osc::ShaderCache>()->load(osc::App::resource("shaders/SolidColor.vert"), osc::App::resource("shaders/SolidColor.frag"))};
             material.setColor("uColor", m_Colors.gridLines);
+            material.setTransparent(true);
 
             DrawableThing dt;
             dt.id = c_EmptyID;
@@ -5242,8 +5243,8 @@ namespace
             osc::Color meshes{1.0f, 1.0f, 1.0f, 1.0f};
             osc::Color stations{196.0f/255.0f, 0.0f, 0.0f, 1.0f};
             osc::Color connectionLines{0.6f, 0.6f, 0.6f, 1.0f};
-            osc::Color sceneBackground{96.0f/255.0f, 96.0f/255.0f, 96.0f/255.0f, 1.0f};
-            osc::Color gridLines{112.0f/255.0f, 112.0f/255.0f, 112.0f/255.0f, 1.0f};
+            osc::Color sceneBackground{48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f};
+            osc::Color gridLines{0.7f, 0.7f, 0.7f, 0.15f};
         } m_Colors;
         static auto constexpr c_ColorNames = osc::to_array<char const*>(
         {
