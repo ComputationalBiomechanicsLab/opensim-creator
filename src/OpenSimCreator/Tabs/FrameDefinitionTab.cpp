@@ -2933,8 +2933,8 @@ namespace
                 osc::TextWarning("Warning:");
                 ImGui::SameLine();
                 ImGui::Text("You currently have %zu bodies defined. Use the 'Add > Body from This' feature on a frame in your scene to add a new body", numBodies);
-                osc::EndTooltip();
             }
+            osc::EndTooltip();
         }
 
         std::string m_Label;
