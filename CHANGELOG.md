@@ -20,6 +20,8 @@ All notable changes to this project will be documented here. The format is based
 - Added an "Export to OpenSim" button to the frame definition UI (#713)
 - The splash screen now contains a "Workflows" section, which shows users the available specialized
   workflow tabs (#720)
+- Selected elements (e.g. when selecting a frame in an add component dialog) are now easier to
+  differentiate from not-selected elements in the UI (thanks @aseth, #677)
 - Internal: OSC's renderer can now render all not-PBR parts of the LearnOpenGL tutorial series, which
   required adding support for multiple render targets (MRTs, #493)
 - Internal: OpenSimCreator's source code is now split into "OpenSimCreator" and "oscar" (#635):
