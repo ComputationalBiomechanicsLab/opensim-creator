@@ -9,12 +9,13 @@ Checks: >
   -bugprone-branch-clone,
   misc-*,
   -misc-non-private-member-variables-in-classes,
-  -misc-no-recursion
-#  concurrency-,
+  -misc-no-recursion,
+  concurrency-*
 #  modernize-*,
 #  -modernize-use-trailing-return-type,
 #  -modernize-pass-by-value,
-#  -modernize-use-nodiscard
+#  -modernize-use-nodiscard,
+#  -modernize-raw-string-literal
 
 # disabled: OpenSim contains memory-leaking code that I cannot disable :<
 # WarningsAsErrors: "*"
