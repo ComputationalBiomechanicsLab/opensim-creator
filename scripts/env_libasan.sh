@@ -5,4 +5,19 @@
 #     - CXXFLAGS="-fsanitize=address"
 #     - LDFLAGS="-fsanitize=address"
 
-export ASAN_OPTIONS="detect_container_overflow=0:fast_unwind_on_malloc=0:malloc_context_size=30:check_initialization_order=true:detect_stack_use_after_return=true:atexit=true:strict_init_order=true"
+# care: you might see "unknown module" in libASAN's trace
+#
+# it's because some libraries leak but are unloaded before ASAN
+# has a chance to scan them:
+#
+# - https://github.com/google/sanitizers/issues/89
+#
+# the workaround is to compile a C library:
+#     #include <stdio.h>
+#     int dlclose(void *handle) {}
+#
+# with: `gcc -c in.c -fpic -o out.o && gcc -shared in.o -o out.so`
+#
+# then LD_PRELOAD it to overwrite unloading libraries: `LD_PRELOAD=${PWD}/out.so`
+
+export ASAN_OPTIONS="strict_string_checks=true:malloc_context_size=30:check_initialization_order=true:detect_stack_use_after_return=true"
