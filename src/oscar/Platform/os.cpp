@@ -215,10 +215,21 @@ std::tm osc::GMTimeThreadsafe(std::time_t t)
 
 std::string osc::StrerrorThreadsafe(int errnum)
 {
-    char buf[512];
+    char buf[1024];
     // ignore return value because strerror_r has two versions in
     // Linux and the GNU version doesn't return a useful error code
-    auto maybeStaticPtrOrErrorCodeXSIWtfEtcv = strerror_r(errnum, buf, sizeof(buf));
+    auto maybeErr = strerror_r(errnum, buf, sizeof(buf));
+
+    if (std::is_same_v<int, decltype(maybeErr)> && !maybeErr)
+    {
+        osc::log::warn("a call to strerror_r failed with error code %i", maybeErr);
+        return {};
+    }
+    else
+    {
+        (void)maybeErr;
+    }
+
     std::string rv{buf};
     if (rv.size() == sizeof(buf))
     {
@@ -260,6 +271,9 @@ namespace
 
 static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
 {
+    signal(SIGABRT, SIG_DFL);  // reset abort signal handler
+    signal(SIGSEGV, SIG_DFL);  // reset segfault signal handler
+
     osc_sig_ucontext_t* uc = static_cast<osc_sig_ucontext_t*>(ucontext);
 
     /* Get the address at the time the signal was raised */
@@ -275,7 +289,7 @@ static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
         stderr,
         "osc: critical error: signal %d (%s) received from OS: address is %p from %p\n",
         sig_num,
-        strsignal(sig_num),
+        sigdescr_np(sig_num),
         info->si_addr,
         callerAddress);
 
@@ -287,7 +301,7 @@ static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
 
     if (messages == nullptr)
     {
-        exit(EXIT_FAILURE);
+        return;
     }
 
     OSC_SCOPE_GUARD({ free(messages); });
@@ -297,8 +311,6 @@ static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
     {
         fprintf(stderr, "    #%-2d %s\n", i, messages[i]);
     }
-
-    exit(EXIT_FAILURE);
 }
 
 void osc::InstallBacktraceHandler()
@@ -313,9 +325,7 @@ void osc::InstallBacktraceHandler()
     {
         fprintf(
             stderr,
-            "osc: warning: could not set signal handler for %d (%s): error reporting may not work as intended\n",
-            SIGSEGV,
-            strsignal(SIGSEGV));
+            "osc: warning: could not set signal handler for SIGSEGV: error reporting may not work as intended\n");
     }
 
     // install abort handler: this triggers whenever a non-throwing `assert` causes a termination
@@ -323,9 +333,7 @@ void osc::InstallBacktraceHandler()
     {
         fprintf(
             stderr,
-            "osc: warning: could not set signal handler for %d (%s): error reporting may not work as intended\n",
-            SIGABRT,
-            strsignal(SIGABRT));
+            "osc: warning: could not set signal handler fori SIGABRT: error reporting may not work as intended\n");
     }
 }
 
