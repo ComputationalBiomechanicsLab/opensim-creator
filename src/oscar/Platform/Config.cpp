@@ -83,7 +83,7 @@ class osc::Config::Impl final {
 public:
     std::filesystem::path resourceDir;
     std::filesystem::path htmlDocsDir;
-    bool useMultiViewport;
+    bool useMultiViewport = false;
     std::unordered_map<std::string, bool> m_PanelsEnabledState = MakeDefaultPanelStates();
     std::optional<std::string> m_MaybeInitialTab;
 };

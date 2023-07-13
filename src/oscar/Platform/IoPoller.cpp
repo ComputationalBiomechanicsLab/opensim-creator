@@ -10,6 +10,17 @@
 #include <algorithm>
 #include <cstddef>
 
+namespace
+{
+    template<typename T, size_t N>
+    std::array<T, N> ArrayFilledWith(T v)
+    {
+        std::array<T, N> rv;
+        std::fill(rv.begin(), rv.end(), v);
+        return rv;
+    }
+}
+
 osc::IoPoller::IoPoller() :
     DisplaySize{-1.0f, -1.0f},
     Ticks{App::get().getTicks()},
@@ -21,17 +32,14 @@ osc::IoPoller::IoPoller() :
     WantMousePosWarpTo{false},
     MousePosWarpTo{-1.0f, -1.0f},
     MousePressed{false, false, false},
-    // KeysDown: handled below
+    KeysDown{ArrayFilledWith<bool, 512>(false)},
     KeyShift{false},
     KeyCtrl{false},
     KeyAlt{false},
-    // KeysDownDuration: handled below
-    // KeysDownDurationPrev: handled below
+    KeysDownDuration{ArrayFilledWith<float, 512>(-1.0f)},
+    KeysDownDurationPrev{ArrayFilledWith<float, 512>(-1.0f)},
     _mousePressedEvents{false, false, false}
 {
-    std::fill(KeysDown.begin(), KeysDown.end(), false);
-    std::fill(KeysDownDuration.begin(), KeysDownDuration.end(), -1.0f);
-    std::fill(KeysDownDurationPrev.begin(), KeysDownDurationPrev.end(), -1.0f);
 }
 
 // feed an event into `IoPoller`, which may update some internal datastructures

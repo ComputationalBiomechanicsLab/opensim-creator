@@ -244,16 +244,16 @@ public:
 
         // hittest + draw disc
         {
-            Line ray = GetCameraRay(m_Camera);
+            Line const ray = GetCameraRay(m_Camera);
 
-            Disc sceneDisc;
+            Disc sceneDisc{};
             sceneDisc.origin = {0.0f, 0.0f, 0.0f};
             sceneDisc.normal = {0.0f, 1.0f, 0.0f};
             sceneDisc.radius = {10.0f};
 
             std::optional<RayCollision> maybeCollision = GetRayCollisionDisc(ray, sceneDisc);
 
-            Disc meshDisc;
+            Disc meshDisc{};
             meshDisc.origin = {0.0f, 0.0f, 0.0f};
             meshDisc.normal = {0.0f, 0.0f, 1.0f};
             meshDisc.radius = 1.0f;

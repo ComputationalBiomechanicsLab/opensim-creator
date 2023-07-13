@@ -210,14 +210,14 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
 
 std::tm osc::GMTimeThreadsafe(std::time_t t)
 {
-    std::tm rv;
+    std::tm rv{};
     gmtime_r(&t, &rv);
     return rv;
 }
 
 std::string osc::StrerrorThreadsafe(int errnum)
 {
-    std::array<char, 1024> buf;
+    std::array<char, 1024> buf{};
 
     // ignore return value because strerror_r has two versions in
     // Linux and the GNU version doesn't return a useful error code
@@ -262,13 +262,13 @@ void osc::WriteTracebackToLog(log::level::LevelEnum lvl)
 namespace
 {
     /* This structure mirrors the one found in /usr/include/asm/ucontext.h */
-    struct osc_sig_ucontext {
+    struct osc_sig_ucontext final {
         unsigned long uc_flags;
         ucontext_t* uc_link;
         stack_t uc_stack;
         sigcontext uc_mcontext;
         sigset_t uc_sigmask;
-    } osc_sig_ucontext_t;
+    };
 }
 
 static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
@@ -357,7 +357,7 @@ void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& fp)
         // what it's doing (xdg-open, itself, forks + detaches)
         log::info("fork()ed a subprocess for 'xdg-open %s'", fp.c_str());
 
-        int rv;
+        int rv = 0;
         waitpid(pid, &rv, 0);
 
         if (rv)
