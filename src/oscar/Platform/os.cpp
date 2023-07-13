@@ -243,15 +243,14 @@ std::string osc::StrerrorThreadsafe(int errnum)
 
 void osc::WriteTracebackToLog(log::level::LevelEnum lvl)
 {
-    void* array[50];
-    int size = backtrace(array, 50);
-    char** messages = backtrace_symbols(array, size);
+    std::array<void*, 50> ary{};
+    int const size = backtrace(ary.data(), ary.size());
+    char** const messages = backtrace_symbols(ary.data(), size);
 
     if (messages == nullptr)
     {
         return;
     }
-
     OSC_SCOPE_GUARD({ free(messages); });
 
     for (size_t i = 0; i < size; ++i)
