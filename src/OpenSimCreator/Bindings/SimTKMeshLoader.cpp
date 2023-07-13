@@ -6,6 +6,7 @@
 #include <oscar/Graphics/MeshTopology.hpp>
 #include <oscar/Maths/MathHelpers.hpp>
 #include <oscar/Maths/Triangle.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 
 #include <glm/vec3.hpp>
 #include <SimTKcommon/internal/DecorativeGeometry.h>
@@ -81,13 +82,13 @@ osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
         {
             // quad (render as two triangles)
 
-            glm::vec3 const quadVerts[4] =
+            auto const quadVerts = osc::to_array<glm::vec3>(
             {
                 GetFaceVertex(mesh, face, 0),
                 GetFaceVertex(mesh, face, 1),
                 GetFaceVertex(mesh, face, 2),
                 GetFaceVertex(mesh, face, 3),
-            };
+            });
 
             pushTriangle({quadVerts[0], quadVerts[1], quadVerts[2]});
             pushTriangle({quadVerts[0], quadVerts[2], quadVerts[3]});

@@ -16,16 +16,6 @@
 
 // public API
 
-SimTK::Vec3 osc::ToSimTKVec3(float v[3])
-{
-    return
-    {
-        static_cast<double>(v[0]),
-        static_cast<double>(v[1]),
-        static_cast<double>(v[2]),
-    };
-}
-
 SimTK::Vec3 osc::ToSimTKVec3(glm::vec3 const& v)
 {
     return
@@ -43,16 +33,6 @@ SimTK::Mat33 osc::ToSimTKMat3(glm::mat3 const& m)
         static_cast<double>(m[0][0]), static_cast<double>(m[1][0]), static_cast<double>(m[2][0]),
         static_cast<double>(m[0][1]), static_cast<double>(m[1][1]), static_cast<double>(m[2][1]),
         static_cast<double>(m[0][2]), static_cast<double>(m[1][2]), static_cast<double>(m[2][2]),
-    };
-}
-
-SimTK::Inertia osc::ToSimTKInertia(float v[3])
-{
-    return
-    {
-        static_cast<double>(v[0]),
-        static_cast<double>(v[1]),
-        static_cast<double>(v[2]),
     };
 }
 

@@ -183,7 +183,7 @@ bool osc::IntegratorOutputExtractor::equals(VirtualOutputExtractor const& other)
         return true;
     }
 
-    IntegratorOutputExtractor const* const otherT = dynamic_cast<IntegratorOutputExtractor const*>(&other);
+    auto const* const otherT = dynamic_cast<IntegratorOutputExtractor const*>(&other);
     if (!otherT)
     {
         return false;
@@ -203,7 +203,7 @@ int osc::GetNumIntegratorOutputExtractors()
 
 osc::IntegratorOutputExtractor const& osc::GetIntegratorOutputExtractor(int idx)
 {
-    return static_cast<osc::IntegratorOutputExtractor const&>(GetAllIntegratorOutputExtractors().at(static_cast<size_t>(idx)).getInner());
+    return dynamic_cast<osc::IntegratorOutputExtractor const&>(GetAllIntegratorOutputExtractors().at(static_cast<size_t>(idx)).getInner());
 }
 
 osc::OutputExtractor osc::GetIntegratorOutputExtractorDynamic(int idx)

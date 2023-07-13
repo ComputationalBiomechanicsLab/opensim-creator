@@ -52,7 +52,7 @@ namespace
     {
         SimTK::Vec3 const& rgb = geom.getColor();
 
-        float ar = static_cast<float>(geom.getOpacity());
+        auto ar = static_cast<float>(geom.getOpacity());
         ar = ar < 0.0f ? 1.0f : ar;
 
         return osc::Color{osc::ToVec4(rgb, ar)};
@@ -176,7 +176,7 @@ namespace
 
         void implementCylinderGeometry(SimTK::DecorativeCylinder const& d) final
         {
-            float const radius = static_cast<float>(d.getRadius());
+            auto const radius = static_cast<float>(d.getRadius());
 
             osc::Transform t = ToOscTransform(d);
             t.scale.x *= radius;
@@ -193,7 +193,7 @@ namespace
 
         void implementCircleGeometry(SimTK::DecorativeCircle const& d) final
         {
-            float const radius = static_cast<float>(d.getRadius());
+            auto const radius = static_cast<float>(d.getRadius());
 
             osc::Transform t = ToOscTransform(d);
             t.scale.x *= radius;
@@ -365,8 +365,8 @@ namespace
 
         void implementTorusGeometry(SimTK::DecorativeTorus const& d) final
         {
-            float const torusCenterToTubeCenterRadius = static_cast<float>(d.getTorusRadius());
-            float const tubeRadius = static_cast<float>(d.getTubeRadius());
+            auto const torusCenterToTubeCenterRadius = static_cast<float>(d.getTorusRadius());
+            auto const tubeRadius = static_cast<float>(d.getTubeRadius());
 
             m_Consumer(osc::SimpleSceneDecoration
             {
@@ -386,8 +386,8 @@ namespace
             glm::vec3 const pos = TransformPoint(t, posBase);
             glm::vec3 const dir = TransformDirection(t, posDir);
 
-            float const radius = static_cast<float>(d.getBaseRadius());
-            float const height = static_cast<float>(d.getHeight());
+            auto const radius = static_cast<float>(d.getBaseRadius());
+            auto const height = static_cast<float>(d.getHeight());
 
             osc::Transform coneXform = osc::YToYCylinderToSegmentTransform({pos, pos + height*dir}, radius);
             coneXform.scale *= t.scale;

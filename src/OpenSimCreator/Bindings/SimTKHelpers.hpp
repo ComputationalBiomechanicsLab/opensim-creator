@@ -15,11 +15,9 @@
 
 namespace osc
 {
-    // converters: from osc types to SimTK
-    SimTK::Vec3 ToSimTKVec3(float v[3]);
+    // converters: from osc types to SimTK,
     SimTK::Vec3 ToSimTKVec3(glm::vec3 const&);
     SimTK::Mat33 ToSimTKMat3(glm::mat3 const&);
-    SimTK::Inertia ToSimTKInertia(float v[3]);
     SimTK::Inertia ToSimTKInertia(glm::vec3 const&);
     SimTK::Transform ToSimTKTransform(glm::mat4x3 const&);
     SimTK::Transform ToSimTKTransform(Transform const&);

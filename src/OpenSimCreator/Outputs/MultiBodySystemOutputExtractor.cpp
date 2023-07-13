@@ -121,8 +121,7 @@ bool osc::MultiBodySystemOutputExtractor::equals(VirtualOutputExtractor const& o
         return true;
     }
 
-    MultiBodySystemOutputExtractor const* const otherT =
-        dynamic_cast<MultiBodySystemOutputExtractor const*>(&other);
+    auto const* const otherT = dynamic_cast<MultiBodySystemOutputExtractor const*>(&other);
     if (!otherT)
     {
         return false;
@@ -142,7 +141,7 @@ int osc::GetNumMultiBodySystemOutputExtractors()
 
 osc::MultiBodySystemOutputExtractor const& osc::GetMultiBodySystemOutputExtractor(int idx)
 {
-    return static_cast<MultiBodySystemOutputExtractor const&>(GetAllMultiBodySystemOutputExtractors().at(static_cast<size_t>(idx)).getInner());
+    return dynamic_cast<MultiBodySystemOutputExtractor const&>(GetAllMultiBodySystemOutputExtractors().at(static_cast<size_t>(idx)).getInner());
 }
 
 osc::OutputExtractor osc::GetMultiBodySystemOutputExtractorDynamic(int idx)
