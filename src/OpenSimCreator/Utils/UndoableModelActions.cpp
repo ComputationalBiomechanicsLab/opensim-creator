@@ -1004,9 +1004,7 @@ bool osc::ActionAssignContactGeometryToHCF(UndoableModelStatePair& uim, OpenSim:
         // the HuntCrossleyForce has a parameter)
         if (mutHCF->get_contact_parameters().getSize() == 0)
         {
-            // disable lint because OpenSim's Set API is bad enough to
-            // cause clang-tidy to cry
-            mutHCF->updContactParametersSet().cloneAndAppend(OpenSim::HuntCrossleyForce::ContactParameters{});  // NOLINT(clang-analyzer-cplusplus.NewDeleteLeaks)
+            mutHCF->updContactParametersSet().cloneAndAppend(OpenSim::HuntCrossleyForce::ContactParameters{});
         }
 
         mutHCF->updContactParametersSet()[0].updGeometry().appendValue(geom->getName());
