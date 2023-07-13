@@ -937,34 +937,34 @@ void osc::GenerateModelDecorations(
         {
             continue;
         }
-        else if (typeid(c) == typeid(OpenSim::GeometryPath))
+        else if (auto const* const gp = dynamic_cast<OpenSim::GeometryPath const*>(&c))
         {
-            HandleGeometryPath(rendererState, static_cast<OpenSim::GeometryPath const&>(c));
+            HandleGeometryPath(rendererState, *gp);
         }
-        else if (typeid(c) == typeid(OpenSim::Body))
+        else if (auto const* const b = dynamic_cast<OpenSim::Body const*>(&c))
         {
-            HandleBody(rendererState, static_cast<OpenSim::Body const&>(c));
+            HandleBody(rendererState, *b);
         }
-        else if (typeid(c) == typeid(OpenSim::FrameGeometry))
+        else if (auto const* const fg = dynamic_cast<OpenSim::FrameGeometry const*>(&c))
         {
-            HandleFrameGeometry(rendererState, static_cast<OpenSim::FrameGeometry const&>(c));
+            HandleFrameGeometry(rendererState, *fg);
         }
-        else if (opts.getShouldShowPointToPointSprings() && typeid(c) == typeid(OpenSim::PointToPointSpring))
+        else if (auto const* const p2p = dynamic_cast<OpenSim::PointToPointSpring const*>(&c); p2p && opts.getShouldShowPointToPointSprings())
         {
-            HandlePointToPointSpring(rendererState, static_cast<OpenSim::PointToPointSpring const&>(c));
+            HandlePointToPointSpring(rendererState, *p2p);
         }
         else if (typeid(c) == typeid(OpenSim::Station))
         {
             // CARE: it's a typeid comparison because OpenSim::Marker inherits from OpenSim::Station
-            HandleStation(rendererState, static_cast<OpenSim::Station const&>(c));
+            HandleStation(rendererState, dynamic_cast<OpenSim::Station const&>(c));
         }
-        else if (opts.getShouldShowScapulo() && typeid(c) == typeid(OpenSim::ScapulothoracicJoint))
+        else if (auto const* const sj = dynamic_cast<OpenSim::ScapulothoracicJoint const*>(&c); sj && opts.getShouldShowScapulo())
         {
-            HandleScapulothoracicJoint(rendererState, static_cast<OpenSim::ScapulothoracicJoint const&>(c));
+            HandleScapulothoracicJoint(rendererState, *sj);
         }
-        else if (typeid(c) == typeid(OpenSim::HuntCrossleyForce))
+        else if (auto const* const hcf = dynamic_cast<OpenSim::HuntCrossleyForce const*>(&c))
         {
-            HandleHuntCrossleyForce(rendererState, static_cast<OpenSim::HuntCrossleyForce const&>(c));
+            HandleHuntCrossleyForce(rendererState, *hcf);
         }
         else
         {
