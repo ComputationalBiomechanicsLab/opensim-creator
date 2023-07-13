@@ -32,6 +32,7 @@ namespace osc
         constexpr CStringView(CStringView const&) noexcept = default;
         constexpr CStringView(char const* s) : m_Data{s}, m_Size{StrLen(s)} {}
         constexpr CStringView(std::nullptr_t) : CStringView{} {}
+        template<size_t N> constexpr CStringView(char const s[N]) : m_Data{s}, m_Size{N} {}
         CStringView(std::string const& s) : m_Data{s.c_str()}, m_Size{s.size()} {}
         constexpr CStringView& operator=(CStringView const&) noexcept = default;
 

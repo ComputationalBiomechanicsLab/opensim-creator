@@ -1,22 +1,23 @@
 #pragma once
 
+#include "oscar/Utils/CStringView.hpp"
 #include "oscar/Utils/Macros.hpp"
 
 namespace osc
 {
     // calls into (hidden) assertion-handling implementation
     [[noreturn]] void OnAssertionFailure(
-        char const* failingCode,
-        char const* func,
-        char const* file,
+        CStringView failingCode,
+        CStringView func,
+        CStringView file,
         unsigned int line
     ) noexcept;
 
     // calls into (hidden) throwing-assertion implementation
     [[noreturn]] void OnThrowingAssertionFailure(
-        char const* failingCode,
-        char const* func,
-        char const* file,
+        CStringView failingCode,
+        CStringView func,
+        CStringView file,
         unsigned int line
     );
 }
