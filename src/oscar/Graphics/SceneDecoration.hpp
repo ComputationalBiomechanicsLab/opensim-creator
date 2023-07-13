@@ -29,6 +29,13 @@ namespace osc
         {
         }
 
+        explicit SceneDecoration(SimpleSceneDecoration&& dec) noexcept :
+            mesh{std::move(dec.mesh)},
+            transform{std::move(dec.transform)},
+            color{std::move(dec.color)}
+        {
+        }
+
         SceneDecoration(
             Mesh const& mesh_,
             Transform const& transform_,

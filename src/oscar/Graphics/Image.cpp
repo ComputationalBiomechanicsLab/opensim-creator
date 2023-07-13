@@ -31,10 +31,10 @@ namespace
 }
 
 osc::Image::Image() :
-    m_Dimensions{glm::ivec2{0, 0}},
+    m_Dimensions{0, 0},
     m_NumChannels{4},
     m_Pixels{nullptr},
-    m_ColorSpace{osc::ColorSpace::sRGB}
+    m_ColorSpace{ColorSpace::sRGB}
 {
 }
 

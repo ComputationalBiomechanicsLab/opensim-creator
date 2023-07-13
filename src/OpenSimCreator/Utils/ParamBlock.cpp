@@ -14,9 +14,9 @@ namespace
 {
     struct Param final {
         Param(std::string_view name_, std::string_view description_, osc::ParamValue value_) :
-            name{std::move(name_)},
-            description{std::move(description_)},
-            value{std::move(value_)}
+            name{name_},
+            description{description_},
+            value{value_}
         {
         }
 
@@ -75,17 +75,17 @@ public:
         Param* p = find(std::string{name});
         if (p)
         {
-            *p = Param{std::move(name), std::move(description), std::move(v)};
+            *p = Param{name, description, v};
         }
         else
         {
-            m_Params.emplace_back(std::move(name), std::move(description), std::move(v));
+            m_Params.emplace_back(name, description, v);
         }
     }
 
     void setValue(int idx, ParamValue v)
     {
-        get(idx).value = std::move(v);
+        get(idx).value = v;
     }
 
     void setValue(std::string const& name, ParamValue value)
@@ -94,7 +94,7 @@ public:
 
         if (p)
         {
-            p->value = std::move(value);
+            p->value = value;
         }
         else
         {
@@ -148,17 +148,17 @@ int osc::ParamBlock::size() const
 
 std::string const& osc::ParamBlock::getName(int idx) const
 {
-    return m_Impl->getName(std::move(idx));
+    return m_Impl->getName(idx);
 }
 
 std::string const& osc::ParamBlock::getDescription(int idx) const
 {
-    return m_Impl->getDescription(std::move(idx));
+    return m_Impl->getDescription(idx);
 }
 
 osc::ParamValue const& osc::ParamBlock::getValue(int idx) const
 {
-    return m_Impl->getValue(std::move(idx));
+    return m_Impl->getValue(idx);
 }
 
 std::optional<osc::ParamValue> osc::ParamBlock::findValue(char const* name) const
@@ -178,15 +178,15 @@ std::optional<osc::ParamValue> osc::ParamBlock::findValue(std::string const& nam
 
 void osc::ParamBlock::pushParam(std::string_view name, std::string_view description, ParamValue value)
 {
-    m_Impl->pushParam(std::move(name), std::move(description), std::move(value));
+    m_Impl->pushParam(name, description, value);
 }
 
 void osc::ParamBlock::setValue(int idx, ParamValue value)
 {
-    m_Impl->setValue(std::move(idx), std::move(value));
+    m_Impl->setValue(idx, value);
 }
 
 void osc::ParamBlock::setValue(std::string const& name, ParamValue value)
 {
-    m_Impl->setValue(name, std::move(value));
+    m_Impl->setValue(name, value);
 }

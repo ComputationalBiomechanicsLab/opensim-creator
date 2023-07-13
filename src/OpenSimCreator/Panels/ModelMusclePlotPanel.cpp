@@ -63,9 +63,9 @@ namespace
             char const* units,
             double(*getter)(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const& c)) :
 
-            m_Name{std::move(name)},
-            m_Units{std::move(units)},
-            m_Getter{std::move(getter)}
+            m_Name{name},
+            m_Units{units},
+            m_Getter{getter}
         {
         }
 
@@ -272,8 +272,8 @@ namespace
             m_Commit{std::move(commit)},
             m_CoordinatePath{std::move(coordinatePath)},
             m_MusclePath{std::move(musclePath)},
-            m_Output{std::move(output)},
-            m_RequestedNumDataPoints{std::move(requestedNumDataPoints)}
+            m_Output{output},
+            m_RequestedNumDataPoints{requestedNumDataPoints}
         {
         }
 
@@ -686,7 +686,7 @@ namespace
 
         void setIsLocked(bool v)
         {
-            m_IsLocked = std::move(v);
+            m_IsLocked = v;
         }
 
         void setCommit(osc::ModelStateCommit const& commit)
@@ -1088,7 +1088,7 @@ namespace
             {
                 return;
             }
-            m_MaxHistoryEntries = std::move(i);
+            m_MaxHistoryEntries = i;
         }
 
         void setActivePlotCommit(osc::ModelStateCommit const& commit)
@@ -1484,7 +1484,7 @@ namespace
             osc::EditorAPI* editorAPI,
             std::shared_ptr<osc::UndoableModelStatePair> uim) :
 
-            m_EditorAPI{std::move(editorAPI)},
+            m_EditorAPI{editorAPI},
             m_Model{std::move(uim)}
         {
             OSC_ASSERT(m_Model != nullptr);
@@ -1496,7 +1496,7 @@ namespace
             OpenSim::ComponentPath const& coordPath,
             OpenSim::ComponentPath const& musclePath) :
 
-            m_EditorAPI{std::move(editorAPI)},
+            m_EditorAPI{editorAPI},
             m_Model{std::move(uim)},
             m_PlotParams{m_Model->getLatestCommit(), coordPath, musclePath, GetDefaultMuscleOutput(), c_DefaultNumPlotPoints}
         {
@@ -2261,9 +2261,9 @@ public:
         std::shared_ptr<UndoableModelStatePair> uim,
         std::string_view panelName) :
 
-        m_SharedData{std::move(editorAPI), std::move(uim)},
+        m_SharedData{editorAPI, std::move(uim)},
         m_ActiveState{std::make_unique<PickMuscleState>(m_SharedData)},
-        m_PanelName{std::move(panelName)}
+        m_PanelName{panelName}
     {
     }
 
@@ -2274,9 +2274,9 @@ public:
         OpenSim::ComponentPath const& coordPath,
         OpenSim::ComponentPath const& musclePath) :
 
-        m_SharedData{std::move(editorAPI), std::move(uim), coordPath, musclePath},
+        m_SharedData{editorAPI, std::move(uim), coordPath, musclePath},
         m_ActiveState{std::make_unique<ShowingPlotState>(m_SharedData)},
-        m_PanelName{std::move(panelName)}
+        m_PanelName{panelName}
     {
     }
 
@@ -2344,7 +2344,7 @@ osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
     std::shared_ptr<UndoableModelStatePair> uim,
     std::string_view panelName) :
 
-    m_Impl{std::make_unique<Impl>(std::move(editorAPI), std::move(uim), std::move(panelName))}
+    m_Impl{std::make_unique<Impl>(editorAPI, std::move(uim), panelName)}
 {
 }
 
@@ -2355,7 +2355,7 @@ osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
     OpenSim::ComponentPath const& coordPath,
     OpenSim::ComponentPath const& musclePath) :
 
-    m_Impl{std::make_unique<Impl>(std::move(editorAPI), std::move(uim), std::move(panelName), coordPath, musclePath)}
+    m_Impl{std::make_unique<Impl>(editorAPI, std::move(uim), panelName, coordPath, musclePath)}
 {
 }
 

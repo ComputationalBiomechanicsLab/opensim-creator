@@ -91,7 +91,7 @@ namespace
             ColumnDataType t_,
             std::vector<osc::CStringView> suffixes_) :
 
-            columnDataType{std::move(t_)},
+            columnDataType{t_},
             suffixes{std::move(suffixes_)}
         {
             OSC_ASSERT(suffixes.size() == NumElementsIn(columnDataType));
@@ -155,9 +155,9 @@ namespace
             std::string label_,
             ColumnDataType dataType_) :
 
-            offset{std::move(offset_)},
+            offset{offset_},
             label{std::move(label_)},
-            dataType{std::move(dataType_)}
+            dataType{dataType_}
         {
         }
 

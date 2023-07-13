@@ -179,7 +179,7 @@ OpenSim::Component const* osc::SimulationModelStatePair::implGetSelected() const
 
 void osc::SimulationModelStatePair::implSetSelected(OpenSim::Component const* c)
 {
-    m_Impl->setSelected(std::move(c));
+    m_Impl->setSelected(c);
 }
 
 OpenSim::Component const* osc::SimulationModelStatePair::implGetHovered() const
@@ -189,7 +189,7 @@ OpenSim::Component const* osc::SimulationModelStatePair::implGetHovered() const
 
 void osc::SimulationModelStatePair::implSetHovered(OpenSim::Component const* c)
 {
-    m_Impl->setHovered(std::move(c));
+    m_Impl->setHovered(c);
 }
 
 float osc::SimulationModelStatePair::implGetFixupScaleFactor() const
@@ -199,5 +199,5 @@ float osc::SimulationModelStatePair::implGetFixupScaleFactor() const
 
 void osc::SimulationModelStatePair::implSetFixupScaleFactor(float v)
 {
-    m_Impl->setFixupScaleFactor(std::move(v));
+    m_Impl->setFixupScaleFactor(v);
 }

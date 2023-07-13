@@ -238,7 +238,7 @@ public:
 
     void setUpToDateWithFilesystem(std::filesystem::file_time_type t)
     {
-        m_MaybeFilesystemTimestamp = std::move(t);
+        m_MaybeFilesystemTimestamp = t;
         m_MaybeCommitSavedToDisk = m_CurrentHead;
     }
 
@@ -285,7 +285,7 @@ public:
         try
         {
             OSC_PERF("commit model");
-            doCommit(std::move(message));
+            doCommit(message);
         }
         catch (std::exception const& ex)
         {
@@ -386,7 +386,7 @@ private:
 
     UID doCommit(std::string_view message)
     {
-        auto commit = ModelStateCommit{m_Scratch, std::move(message), m_CurrentHead};
+        auto commit = ModelStateCommit{m_Scratch, message, m_CurrentHead};
         UID commitID = commit.getID();
 
         m_Commits.try_emplace(commitID, std::move(commit));
@@ -748,7 +748,7 @@ bool osc::UndoableModelStatePair::isUpToDateWithFilesystem() const
 
 void osc::UndoableModelStatePair::setUpToDateWithFilesystem(std::filesystem::file_time_type t)
 {
-    m_Impl->setUpToDateWithFilesystem(std::move(t));
+    m_Impl->setUpToDateWithFilesystem(t);
 }
 
 std::filesystem::file_time_type osc::UndoableModelStatePair::getLastFilesystemWriteTime() const
@@ -784,7 +784,7 @@ void osc::UndoableModelStatePair::doRedo()
 
 void osc::UndoableModelStatePair::commit(std::string_view message)
 {
-    m_Impl->commit(std::move(message));
+    m_Impl->commit(message);
 }
 
 void osc::UndoableModelStatePair::rollback()
@@ -839,7 +839,7 @@ float osc::UndoableModelStatePair::implGetFixupScaleFactor() const
 
 void osc::UndoableModelStatePair::implSetFixupScaleFactor(float v)
 {
-    m_Impl->setFixupScaleFactor(std::move(v));
+    m_Impl->setFixupScaleFactor(v);
 }
 
 OpenSim::Component const* osc::UndoableModelStatePair::implGetSelected() const
@@ -849,7 +849,7 @@ OpenSim::Component const* osc::UndoableModelStatePair::implGetSelected() const
 
 void osc::UndoableModelStatePair::implSetSelected(OpenSim::Component const* c)
 {
-    m_Impl->setSelected(std::move(c));
+    m_Impl->setSelected(c);
 }
 
 OpenSim::Component const* osc::UndoableModelStatePair::implGetHovered() const
@@ -859,5 +859,5 @@ OpenSim::Component const* osc::UndoableModelStatePair::implGetHovered() const
 
 void osc::UndoableModelStatePair::implSetHovered(OpenSim::Component const* c)
 {
-    m_Impl->setHovered(std::move(c));
+    m_Impl->setHovered(c);
 }
