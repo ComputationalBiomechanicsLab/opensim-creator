@@ -262,7 +262,7 @@ void osc::WriteTracebackToLog(log::level::LevelEnum lvl)
 namespace
 {
     /* This structure mirrors the one found in /usr/include/asm/ucontext.h */
-    typedef struct osc_sig_ucontext {
+    struct osc_sig_ucontext {
         unsigned long uc_flags;
         ucontext_t* uc_link;
         stack_t uc_stack;
@@ -276,7 +276,7 @@ static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
     signal(SIGABRT, SIG_DFL);  // reset abort signal handler
     signal(SIGSEGV, SIG_DFL);  // reset segfault signal handler
 
-    osc_sig_ucontext_t* uc = static_cast<osc_sig_ucontext_t*>(ucontext);
+    auto* uc = static_cast<osc_sig_ucontext_t*>(ucontext);
 
     /* Get the address at the time the signal was raised */
 #if defined(__i386__)  // gcc specific
@@ -295,17 +295,16 @@ static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
         info->si_addr,
         callerAddress);
 
-    void* array[50];
-    int size = backtrace(array, 50);
-    array[1] = callerAddress;  // overwrite sigaction with caller's address
+    std::array<void*, 50> ary{};
+    int const size = backtrace(ary.data(), ary.size());
+    ary[1] = callerAddress;  // overwrite sigaction with caller's address
 
-    char** messages = backtrace_symbols(array, size);
+    char** const messages = backtrace_symbols(ary.data(), size);
 
     if (messages == nullptr)
     {
         return;
     }
-
     OSC_SCOPE_GUARD({ free(messages); });
 
     /* skip first stack frame (points here) */
@@ -374,7 +373,7 @@ void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& fp)
         //
         // immediately `exec` into `xdg-open`, which will aggro-replace this process
         // image (+ this thread) with xdg-open
-        int rv = execlp("xdg-open", "xdg-open", fp.c_str(), (char*)NULL);
+        int rv = execlp("xdg-open", "xdg-open", fp.c_str(), static_cast<char*>(nullptr));
 
         // this thread only reaches here if there is some kind of error in `exec`
         //
