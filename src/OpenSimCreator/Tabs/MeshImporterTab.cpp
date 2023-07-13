@@ -3252,13 +3252,13 @@ namespace
     // result of a lookup for (effectively) a physicalframe
     struct JointAttachmentCachedLookupResult {
         // can be nullptr (indicating Ground)
-        BodyEl const* bodyEl;
+        BodyEl const* bodyEl = nullptr;
 
         // can be nullptr (indicating ground/cache hit)
         std::unique_ptr<OpenSim::Body> createdBody;
 
         // always != nullptr, can point to `createdBody`, or an existing body from the cache, or Ground
-        OpenSim::PhysicalFrame* physicalFrame;
+        OpenSim::PhysicalFrame* physicalFrame = nullptr;
     };
 
     // cached lookup of a physical frame
@@ -3675,10 +3675,10 @@ namespace
         // import all the bodies from the model file
         for (OpenSim::Body const& b : m.getComponentList<OpenSim::Body>())
         {
-            std::string name = b.getName();
-            Transform xform = ToOsimTransform(b.getTransformInGround(st));
+            std::string const name = b.getName();
+            Transform const xform = ToOsimTransform(b.getTransformInGround(st));
 
-            BodyEl& el = rv.AddEl<BodyEl>(name, xform);
+            auto& el = rv.AddEl<BodyEl>(name, xform);
             el.setMass(b.getMass());
 
             bodyLookup.emplace(&b, el.GetID());
@@ -3718,7 +3718,7 @@ namespace
             }
             else
             {
-                auto it = bodyLookup.find(static_cast<OpenSim::Body const*>(parentBodyOrGround));
+                auto it = bodyLookup.find(dynamic_cast<OpenSim::Body const*>(parentBodyOrGround));
                 if (it == bodyLookup.end())
                 {
                     // joint is attached to a body that isn't ground or cached?
@@ -3739,7 +3739,7 @@ namespace
             }
             else
             {
-                auto it = bodyLookup.find(static_cast<OpenSim::Body const*>(childBodyOrGround));
+                auto it = bodyLookup.find(dynamic_cast<OpenSim::Body const*>(childBodyOrGround));
                 if (it == bodyLookup.end())
                 {
                     // joint is attached to a body that isn't ground or cached?
@@ -3757,9 +3757,9 @@ namespace
                 continue;
             }
 
-            Transform xform = ToOsimTransform(parentFrame.getTransformInGround(st));
+            Transform const xform = ToOsimTransform(parentFrame.getTransformInGround(st));
 
-            JointEl& jointEl = rv.AddEl<JointEl>(type, name, parent, child, xform);
+            auto& jointEl = rv.AddEl<JointEl>(type, name, parent, child, xform);
             jointLookup.emplace(&j, jointEl.GetID());
         }
 
@@ -3820,7 +3820,7 @@ namespace
                 continue;
             }
 
-            MeshEl& el = rv.AddEl<MeshEl>(attachment, meshData, realLocation);
+            auto& el = rv.AddEl<MeshEl>(attachment, meshData, realLocation);
             osc::Transform newTransform = ToOsimTransform(frame.getTransformInGround(st));
             newTransform.scale = osc::ToVec3(mesh.get_scale_factors());
 
@@ -3852,7 +3852,7 @@ namespace
             }
             else
             {
-                if (auto it = bodyLookup.find(static_cast<OpenSim::Body const*>(frameBodyOrGround)); it != bodyLookup.end())
+                if (auto it = bodyLookup.find(dynamic_cast<OpenSim::Body const*>(frameBodyOrGround)); it != bodyLookup.end())
                 {
                     attachment = it->second;
                 }
@@ -4189,7 +4189,7 @@ namespace
 
                 if (el)
                 {
-                    MeshEl& mesh = mg.AddEl<MeshEl>(ok.preferredAttachmentPoint, lm.meshData, lm.path);
+                    auto& mesh = mg.AddEl<MeshEl>(ok.preferredAttachmentPoint, lm.meshData, lm.path);
                     mesh.SetXform(el->GetXform());
                     mg.Select(mesh);
                     mg.Select(*el);
@@ -4544,7 +4544,7 @@ namespace
         {
             static_assert(alignof(decltype(m_Colors)) == alignof(osc::Color));
             static_assert(sizeof(m_Colors) % sizeof(osc::Color) == 0);
-            osc::Color const* start = reinterpret_cast<osc::Color const*>(&m_Colors);
+            auto const* start = reinterpret_cast<osc::Color const*>(&m_Colors);
             return {start, start + sizeof(m_Colors)/sizeof(osc::Color)};
         }
 
@@ -6259,8 +6259,7 @@ private:
             return;  // can't attach to it as-if it were a body
         }
 
-        BodyEl const* bodyEl = mg.TryGetElByID<BodyEl>(maybeID);
-
+        auto const* bodyEl = mg.TryGetElByID<BodyEl>(maybeID);
         if (!bodyEl)
         {
             return;  // suggested attachment parent isn't in the current model graph?
@@ -6873,7 +6872,7 @@ private:
                 }
                 osc::DrawTooltipIfItemHovered("Add body", c_StationDescription);
 
-                if (MeshEl const* meshEl = dynamic_cast<MeshEl const*>(&el))
+                if (auto const* meshEl = dynamic_cast<MeshEl const*>(&el))
                 {
                     if (ImGui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
                     {
@@ -7180,7 +7179,7 @@ private:
     // draw the "Mass" editor for a `BodyEl`
     void DrawMassEditor(BodyEl const& bodyEl)
     {
-        float curMass = static_cast<float>(bodyEl.getMass());
+        auto curMass = static_cast<float>(bodyEl.getMass());
         if (ImGui::InputFloat("Mass", &curMass, 0.0f, 0.0f, OSC_DEFAULT_FLOAT_INPUT_FORMAT))
         {
             m_Shared->UpdModelGraph().UpdElByID<BodyEl>(bodyEl.GetID()).setMass(static_cast<double>(curMass));
@@ -7543,7 +7542,7 @@ private:
         if (ImGui::MenuItem(ICON_FA_MAP_PIN " Station"))
         {
             ModelGraph& mg = m_Shared->UpdModelGraph();
-            StationEl& e = mg.AddEl<StationEl>(UIDT<StationEl>{}, c_GroundID, glm::vec3{}, GenerateName(StationEl::Class()));
+            auto& e = mg.AddEl<StationEl>(UIDT<StationEl>{}, c_GroundID, glm::vec3{}, GenerateName(StationEl::Class()));
             SelectOnly(mg, e);
         }
         osc::DrawTooltipIfItemHovered("Add Station", StationEl::Class().GetDescriptionCStr());

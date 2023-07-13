@@ -26,6 +26,7 @@ namespace osc
 
     class MainMenuAboutTab final {
     public:
+        MainMenuAboutTab() {}
         void draw();
     };
 }

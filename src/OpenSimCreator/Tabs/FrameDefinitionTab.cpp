@@ -2401,8 +2401,7 @@ namespace
         {
             if (ImGui::MenuItem("on Ground"))
             {
-                osc::ModelEditorViewerPanel* visualizer =
-                    editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
+                auto* visualizer = editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
                 if (visualizer)
                 {
                     visualizer->focusOn({});
