@@ -1926,6 +1926,12 @@ namespace
         template<bool IsConst, typename T = SceneEl>
         class Iterator final {
         public:
+            using difference_type = void;
+            using value_type = T;
+            using pointer = typename std::conditional<IsConst, T const*, T*>::type;
+            using reference = typename std::conditional<IsConst, T const&, T&>::type;
+            using iterator_category = std::input_iterator_tag;
+
             Iterator(
                 std::map<UID, ClonePtr<SceneEl>>::iterator pos,
                 std::map<UID, ClonePtr<SceneEl>>::iterator end) :
@@ -1933,8 +1939,10 @@ namespace
                 m_End{end}
             {
                 // ensure iterator initially points at an element with the correct type
-                while (m_Pos != m_End) {
-                    if (dynamic_cast<T const*>(m_Pos->second.get())) {
+                while (m_Pos != m_End)
+                {
+                    if (dynamic_cast<T const*>(m_Pos->second.get()))
+                    {
                         break;
                     }
                     ++m_Pos;
@@ -1953,8 +1961,10 @@ namespace
 
             Iterator& operator++() noexcept
             {
-                while (++m_Pos != m_End) {
-                    if (dynamic_cast<T const*>(m_Pos->second.get())) {
+                while (++m_Pos != m_End)
+                {
+                    if (dynamic_cast<T const*>(m_Pos->second.get()))
+                    {
                         break;
                     }
                 }
