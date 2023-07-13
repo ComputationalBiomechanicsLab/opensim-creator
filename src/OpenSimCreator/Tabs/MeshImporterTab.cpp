@@ -1982,7 +1982,7 @@ namespace
             }
 
             template<bool OtherConst>
-            bool operator==(Iterator<OtherConst> const& other) const noexcept
+            bool operator==(Iterator<OtherConst, T> const& other) const noexcept
             {
                 return !(*this != other);
             }
