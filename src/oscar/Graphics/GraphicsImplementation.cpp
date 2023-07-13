@@ -4691,7 +4691,7 @@ severity = %s
 
 class osc::GraphicsContext::Impl final {
 public:
-    Impl(SDL_Window& window) : m_GLContext{CreateOpenGLContext(window)}
+    explicit Impl(SDL_Window& window) : m_GLContext{CreateOpenGLContext(window)}
     {
         m_QuadMaterial.setDepthTested(false);  // it's for fullscreen rendering
     }
