@@ -302,7 +302,7 @@ namespace
             std::string_view panelName_,
             std::shared_ptr<ModelWarpingTabState> state_) :
 
-            StandardPanel{std::move(panelName_)},
+            StandardPanel{panelName_},
             m_State{std::move(state_)}
         {
             OSC_ASSERT(m_State != nullptr);

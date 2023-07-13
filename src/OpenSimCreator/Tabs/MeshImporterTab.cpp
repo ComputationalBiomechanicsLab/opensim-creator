@@ -558,11 +558,11 @@ namespace
             std::unique_ptr<SceneEl> defaultObject) :
 
             m_ID{},
-            m_Name{std::move(name)},
-            m_NamePluralized{std::move(namePluralized)},
-            m_NameOptionallyPluralized{std::move(nameOptionallyPluralized)},
-            m_Icon{std::move(icon)},
-            m_Description{std::move(description)},
+            m_Name{name},
+            m_NamePluralized{namePluralized},
+            m_NameOptionallyPluralized{nameOptionallyPluralized},
+            m_Icon{icon},
+            m_Description{description},
             m_DefaultObject{std::move(defaultObject)},
             m_UniqueCounter{0}
         {
@@ -793,7 +793,7 @@ namespace
 
         void SetLabel(std::string_view newLabel)
         {
-            implSetLabel(std::move(newLabel));
+            implSetLabel(newLabel);
         }
 
         Transform GetXform() const
@@ -1111,8 +1111,8 @@ namespace
             Mesh const& meshData,
             std::filesystem::path const& path) :
 
-            m_ID{std::move(id)},
-            m_Attachment{std::move(attachment)},
+            m_ID{id},
+            m_Attachment{attachment},
             m_MeshData{meshData},
             m_Path{path}
         {
@@ -1123,7 +1123,7 @@ namespace
             Mesh const& meshData,
             std::filesystem::path const& path) :
 
-            MeshEl{UIDT<MeshEl>{}, std::move(attachment), meshData, path}
+            MeshEl{UIDT<MeshEl>{}, attachment, meshData, path}
         {
         }
 
@@ -1454,11 +1454,11 @@ namespace
             UIDT<BodyEl> child,
             Transform const& xform) :
 
-            m_ID{std::move(id)},
-            m_JointTypeIndex{std::move(jointTypeIdx)},
+            m_ID{id},
+            m_JointTypeIndex{jointTypeIdx},
             m_UserAssignedName{SanitizeToOpenSimComponentName(userAssignedName)},
-            m_Parent{std::move(parent)},
-            m_Child{std::move(child)},
+            m_Parent{parent},
+            m_Child{child},
             m_Xform{xform}
         {
         }
@@ -1473,11 +1473,11 @@ namespace
             JointEl
             {
                 UIDT<JointEl>{},
-                std::move(jointTypeIdx),
+                jointTypeIdx,
                 userAssignedName,
-                std::move(parent),
-                std::move(child),
-                xform
+                parent,
+                child,
+                xform,
             }
         {
         }
@@ -1695,8 +1695,8 @@ namespace
             glm::vec3 const& position,
             std::string const& name) :
 
-            m_ID{std::move(id)},
-            m_Attachment{std::move(attachment)},
+            m_ID{id},
+            m_Attachment{attachment},
             m_Position{position},
             m_Name{SanitizeToOpenSimComponentName(name)}
         {
@@ -1708,7 +1708,7 @@ namespace
             std::string const& name) :
 
             m_ID{},
-            m_Attachment{std::move(attachment)},
+            m_Attachment{attachment},
             m_Position{position},
             m_Name{SanitizeToOpenSimComponentName(name)}
         {
@@ -2637,7 +2637,7 @@ namespace
             m_ID{},
             m_ParentID{parentID},
             m_ModelGraph{std::move(modelGraph)},
-            m_CommitMessage{std::move(commitMessage)},
+            m_CommitMessage{commitMessage},
             m_CommitTime{std::chrono::system_clock::now()}
         {
         }

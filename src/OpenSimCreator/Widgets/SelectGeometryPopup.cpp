@@ -98,7 +98,7 @@ public:
          std::filesystem::path const& geometryDir,
          std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection) :
 
-        StandardPopup{std::move(popupName)},
+        StandardPopup{popupName},
         m_OnSelection{std::move(onSelection)},
         m_GeometryFiles{GetAllFilesInDirRecursively(geometryDir)}
     {
@@ -252,7 +252,7 @@ osc::SelectGeometryPopup::SelectGeometryPopup(
     std::filesystem::path const& geometryDir,
     std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection) :
 
-    m_Impl{std::make_unique<Impl>(std::move(popupName), geometryDir, std::move(onSelection))}
+    m_Impl{std::make_unique<Impl>(popupName, geometryDir, std::move(onSelection))}
 {
 }
 

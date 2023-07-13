@@ -31,7 +31,7 @@ public:
         EditorAPI* editorAPI_,
         std::shared_ptr<osc::UndoableModelStatePair> model_) :
 
-        m_Label{std::move(label_)},
+        m_Label{label_},
         m_MainUIStateAPI{std::move(mainUIStateAPI_)},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)}
@@ -119,7 +119,7 @@ osc::ModelEditorToolbar::ModelEditorToolbar(
     EditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(label_), std::move(mainUIStateAPI_), editorAPI_, std::move(model_))}
+    m_Impl{std::make_unique<Impl>(label_, std::move(mainUIStateAPI_), editorAPI_, std::move(model_))}
 {
 }
 osc::ModelEditorToolbar::ModelEditorToolbar(ModelEditorToolbar&&) noexcept = default;

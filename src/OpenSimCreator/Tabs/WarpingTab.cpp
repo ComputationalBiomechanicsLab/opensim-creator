@@ -791,7 +791,7 @@ namespace
 
     osc::Mesh const& GetScratchMesh(TPSUISharedState& state, TPSDocumentInputIdentifier which)
     {
-        return GetMesh(GetScratch(state), std::move(which));
+        return GetMesh(GetScratch(state), which);
     }
 
     // returns a (potentially cached) post-TPS-warp mesh
@@ -967,7 +967,7 @@ namespace
             std::string_view label,
             std::shared_ptr<TPSUISharedState> tabState_) :
 
-            m_Label{std::move(label)},
+            m_Label{label},
             m_State{std::move(tabState_)}
         {
         }
@@ -1194,9 +1194,9 @@ namespace
             std::shared_ptr<TPSUISharedState> state_,
             TPSDocumentInputIdentifier documentIdentifier_) :
 
-            WarpingTabPanel{std::move(panelName_), ImGuiDockNodeFlags_PassthruCentralNode},
+            WarpingTabPanel{panelName_, ImGuiDockNodeFlags_PassthruCentralNode},
             m_State{std::move(state_)},
-            m_DocumentIdentifier{std::move(documentIdentifier_)}
+            m_DocumentIdentifier{documentIdentifier_}
         {
             OSC_ASSERT(m_State != nullptr && "the input panel requires a valid sharedState state");
         }
@@ -1585,7 +1585,7 @@ namespace
             std::string_view panelName_,
             std::shared_ptr<TPSUISharedState> state_) :
 
-            WarpingTabPanel{std::move(panelName_)},
+            WarpingTabPanel{panelName_},
             m_State{std::move(state_)}
         {
             OSC_ASSERT(m_State != nullptr && "the input panel requires a valid sharedState state");

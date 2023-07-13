@@ -21,7 +21,7 @@ public:
          std::function<void(OpenSim::ComponentPath const&)> onSelection,
          std::function<bool(OpenSim::Component const&)> filter) :
 
-        StandardPopup{std::move(popupName)},
+        StandardPopup{popupName},
         m_Model{std::move(model)},
         m_OnSelection{std::move(onSelection)},
         m_Filter{std::move(filter)}
@@ -68,7 +68,7 @@ osc::SelectComponentPopup::SelectComponentPopup(
     std::function<void(OpenSim::ComponentPath const&)> onSelection,
     std::function<bool(OpenSim::Component const&)> filter) :
 
-    m_Impl{std::make_unique<Impl>(std::move(popupName), std::move(model), std::move(onSelection), std::move(filter))}
+    m_Impl{std::make_unique<Impl>(popupName, std::move(model), std::move(onSelection), std::move(filter))}
 {
 }
 

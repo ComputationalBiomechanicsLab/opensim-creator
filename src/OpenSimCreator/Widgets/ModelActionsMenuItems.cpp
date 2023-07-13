@@ -32,7 +32,7 @@ public:
         EditorAPI* api,
         std::shared_ptr<UndoableModelStatePair> uum_) :
 
-        m_EditorAPI{std::move(api)},
+        m_EditorAPI{api},
         m_Uum{std::move(uum_)}
     {
     }
@@ -120,7 +120,7 @@ private:
 // public API (PIMPL)
 
 osc::ModelActionsMenuItems::ModelActionsMenuItems(EditorAPI* api, std::shared_ptr<UndoableModelStatePair> m) :
-    m_Impl{std::make_unique<Impl>(std::move(api), std::move(m))}
+    m_Impl{std::make_unique<Impl>(api, std::move(m))}
 {
 }
 

@@ -413,7 +413,7 @@ osc::GeometryPathPropertyEditorPopup::GeometryPathPropertyEditorPopup(
     std::function<OpenSim::ObjectProperty<OpenSim::GeometryPath> const*()> accessor_,
     std::function<void(ObjectPropertyEdit)> onEditCallback_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(popupName_), std::move(targetModel_), std::move(accessor_), std::move(onEditCallback_))}
+    m_Impl{std::make_unique<Impl>(popupName_, std::move(targetModel_), std::move(accessor_), std::move(onEditCallback_))}
 {
 }
 osc::GeometryPathPropertyEditorPopup::GeometryPathPropertyEditorPopup(GeometryPathPropertyEditorPopup&&) noexcept = default;

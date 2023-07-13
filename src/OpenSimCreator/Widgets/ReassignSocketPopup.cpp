@@ -32,7 +32,7 @@ namespace
             OpenSim::ComponentPath path_,
             std::string socketName_) :
 
-            modelVersion{std::move(modelVersion_)},
+            modelVersion{modelVersion_},
             path{std::move(path_)},
             socketName{std::move(socketName_)}
         {
@@ -119,7 +119,7 @@ public:
          std::string_view componentAbsPath,
          std::string_view socketName) :
 
-        StandardPopup{std::move(popupName)},
+        StandardPopup{popupName},
         m_Model{std::move(model)},
         m_Params{m_Model->getModelVersion(), std::string{componentAbsPath}, std::string{socketName}}
     {
@@ -225,7 +225,7 @@ osc::ReassignSocketPopup::ReassignSocketPopup(
     std::string_view componentAbsPath,
     std::string_view socketName) :
 
-    m_Impl{std::make_unique<Impl>(std::move(popupName), std::move(model), std::move(componentAbsPath), std::move(socketName))}
+    m_Impl{std::make_unique<Impl>(popupName, std::move(model), componentAbsPath, socketName)}
 {
 }
 

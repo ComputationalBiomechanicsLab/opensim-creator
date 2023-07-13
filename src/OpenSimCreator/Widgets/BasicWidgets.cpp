@@ -996,7 +996,7 @@ void osc::DrawUndoAndRedoButtons(UndoableModelStatePair& model)
 
 void osc::DrawToggleFramesButton(UndoableModelStatePair& model, IconCache& icons)
 {
-    Icon const icon = icons.getIcon(IsShowingFrames(model.getModel()) ? "frame_colored" : "frame_bw");
+    Icon const& icon = icons.getIcon(IsShowingFrames(model.getModel()) ? "frame_colored" : "frame_bw");
     if (osc::ImageButton("##toggleframes", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
     {
         ActionToggleFrames(model);
@@ -1006,7 +1006,7 @@ void osc::DrawToggleFramesButton(UndoableModelStatePair& model, IconCache& icons
 
 void osc::DrawToggleMarkersButton(UndoableModelStatePair& model, IconCache& icons)
 {
-    Icon const icon = icons.getIcon(IsShowingMarkers(model.getModel()) ? "marker_colored" : "marker");
+    Icon const& icon = icons.getIcon(IsShowingMarkers(model.getModel()) ? "marker_colored" : "marker");
     if (osc::ImageButton("##togglemarkers", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
     {
         ActionToggleMarkers(model);
@@ -1016,7 +1016,7 @@ void osc::DrawToggleMarkersButton(UndoableModelStatePair& model, IconCache& icon
 
 void osc::DrawToggleWrapGeometryButton(UndoableModelStatePair& model, IconCache& icons)
 {
-    Icon const icon = icons.getIcon(IsShowingWrapGeometry(model.getModel()) ? "wrap_colored" : "wrap");
+    Icon const& icon = icons.getIcon(IsShowingWrapGeometry(model.getModel()) ? "wrap_colored" : "wrap");
     if (osc::ImageButton("##togglewrapgeom", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
     {
         ActionToggleWrapGeometry(model);
@@ -1026,7 +1026,7 @@ void osc::DrawToggleWrapGeometryButton(UndoableModelStatePair& model, IconCache&
 
 void osc::DrawToggleContactGeometryButton(UndoableModelStatePair& model, IconCache& icons)
 {
-    Icon const icon = icons.getIcon(IsShowingContactGeometry(model.getModel()) ? "contact_colored" : "contact");
+    Icon const& icon = icons.getIcon(IsShowingContactGeometry(model.getModel()) ? "contact_colored" : "contact");
     if (osc::ImageButton("##togglecontactgeom", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
     {
         ActionToggleContactGeometry(model);

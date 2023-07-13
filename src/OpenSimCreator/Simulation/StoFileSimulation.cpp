@@ -223,7 +223,7 @@ public:
 
         m_Model{std::move(model)},
         m_SimulationReports{ExtractReports(*m_Model, stoFilePath)},
-        m_FixupScaleFactor{std::move(fixupScaleFactor)}
+        m_FixupScaleFactor{fixupScaleFactor}
     {
     }
 
@@ -299,7 +299,7 @@ public:
 
     void setFixupScaleFactor(float v)
     {
-        m_FixupScaleFactor = std::move(v);
+        m_FixupScaleFactor = v;
     }
 
 private:
@@ -313,7 +313,7 @@ private:
 };
 
 osc::StoFileSimulation::StoFileSimulation(std::unique_ptr<OpenSim::Model> model, std::filesystem::path const& stoFilePath, float fixupScaleFactor) :
-    m_Impl{std::make_unique<Impl>(std::move(model), stoFilePath, std::move(fixupScaleFactor))}
+    m_Impl{std::make_unique<Impl>(std::move(model), stoFilePath, fixupScaleFactor)}
 {
 }
 
@@ -333,7 +333,7 @@ ptrdiff_t osc::StoFileSimulation::implGetNumReports() const
 
 osc::SimulationReport osc::StoFileSimulation::implGetSimulationReport(ptrdiff_t reportIndex) const
 {
-    return m_Impl->getSimulationReport(std::move(reportIndex));
+    return m_Impl->getSimulationReport(reportIndex);
 }
 
 std::vector<osc::SimulationReport> osc::StoFileSimulation::implGetAllSimulationReports() const
@@ -393,5 +393,5 @@ float osc::StoFileSimulation::implGetFixupScaleFactor() const
 
 void osc::StoFileSimulation::implSetFixupScaleFactor(float v)
 {
-    m_Impl->setFixupScaleFactor(std::move(v));
+    m_Impl->setFixupScaleFactor(v);
 }

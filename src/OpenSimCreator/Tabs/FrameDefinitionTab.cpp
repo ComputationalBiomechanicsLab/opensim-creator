@@ -136,10 +136,8 @@ namespace
         SimTK::State const& state,
         glm::vec3 const& locationInGround)
     {
-        SimTK::Transform const mesh2ground = frame.getTransformInGround(state);
-        SimTK::Transform const ground2mesh = mesh2ground.invert();
         SimTK::Vec3 const translationInGround = osc::ToSimTKVec3(locationInGround);
-        return ground2mesh * translationInGround;
+        return frame.getTransformInGround(state).invert() * translationInGround;
     }
 
     // returns the RGB components of `color`
@@ -237,7 +235,7 @@ namespace
             polygonalMesh.addFace(face);
         }
 
-        SimTK::DecorativeMesh rv{std::move(polygonalMesh)};
+        SimTK::DecorativeMesh rv{polygonalMesh};
         SetGeomAppearance(rv, appearance);
         return rv;
     }

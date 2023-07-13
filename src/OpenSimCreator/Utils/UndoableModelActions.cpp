@@ -349,7 +349,7 @@ bool osc::ActionLoadSTOFileAgainstModel(
         osc::InitializeModel(*modelCopy);
         osc::InitializeState(*modelCopy);
 
-        auto simulation = std::make_shared<Simulation>(StoFileSimulation{std::move(modelCopy), std::move(stoPath), uim.getFixupScaleFactor()});
+        auto simulation = std::make_shared<Simulation>(StoFileSimulation{std::move(modelCopy), stoPath, uim.getFixupScaleFactor()});
 
         parent.lock()->addAndSelectTab<SimulatorTab>(parent, simulation);
 
@@ -367,7 +367,7 @@ bool osc::ActionStartSimulatingModel(std::weak_ptr<MainUIStateAPI> parent, Undoa
     BasicModelStatePair modelState{uim};
     ForwardDynamicSimulatorParams params = osc::FromParamBlock(parent.lock()->getSimulationParams());
 
-    auto simulation = std::make_shared<Simulation>(ForwardDynamicSimulation{std::move(modelState), std::move(params)});
+    auto simulation = std::make_shared<Simulation>(ForwardDynamicSimulation{std::move(modelState), params});
     auto simulationTab = std::make_unique<SimulatorTab>(parent, std::move(simulation));
 
     parent.lock()->selectTab(parent.lock()->addTab(std::move(simulationTab)));

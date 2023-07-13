@@ -225,7 +225,7 @@ public:
 
         StandardPopup{popupName_, {10.0f, 10.0f}, ImGuiWindowFlags_NoMove},
         m_MainUIStateAPI{std::move(mainUIStateAPI_)},
-        m_EditorAPI{std::move(editorAPI_)},
+        m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)},
         m_Path{path_}
     {
@@ -477,7 +477,7 @@ osc::ComponentContextMenu::ComponentContextMenu(
     std::shared_ptr<UndoableModelStatePair> model_,
     OpenSim::ComponentPath const& path_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(popupName_), std::move(mainUIStateAPI_), std::move(editorAPI_), std::move(model_), path_)}
+    m_Impl{std::make_unique<Impl>(popupName_, std::move(mainUIStateAPI_), editorAPI_, std::move(model_), path_)}
 {
 }
 

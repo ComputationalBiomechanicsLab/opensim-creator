@@ -23,7 +23,7 @@ public:
         std::shared_ptr<UndoableModelStatePair> model_) :
 
         m_MainUIStateAPI{std::move(mainUIStateAPI_)},
-        m_EditorAPI{std::move(editorAPI_)},
+        m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)}
     {
     }
@@ -101,7 +101,7 @@ osc::EditorTabStatusBar::EditorTabStatusBar(
     EditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(mainUIStateAPI_), std::move(editorAPI_), std::move(model_))}
+    m_Impl{std::make_unique<Impl>(std::move(mainUIStateAPI_), editorAPI_, std::move(model_))}
 {
 }
 

@@ -22,8 +22,8 @@ public:
         SimulatorUIAPI* simulatorAPI,
         std::shared_ptr<Simulation> simulation) :
 
-        m_Label{std::move(label)},
-        m_SimulatorAPI{std::move(simulatorAPI)},
+        m_Label{label},
+        m_SimulatorAPI{simulatorAPI},
         m_Simulation{std::move(simulation)}
     {
     }
@@ -195,7 +195,7 @@ osc::SimulationScrubber::SimulationScrubber(
     SimulatorUIAPI* simulatorAPI,
     std::shared_ptr<Simulation> simulation) :
 
-    m_Impl{std::make_unique<Impl>(std::move(label), std::move(simulatorAPI), std::move(simulation))}
+    m_Impl{std::make_unique<Impl>(label, simulatorAPI, std::move(simulation))}
 {
 }
 

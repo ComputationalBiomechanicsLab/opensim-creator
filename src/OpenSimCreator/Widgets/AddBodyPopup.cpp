@@ -37,8 +37,8 @@ public:
          std::shared_ptr<UndoableModelStatePair> uum,
          std::string_view popupName) :
 
-        StandardPopup{std::move(popupName)},
-        m_EditorAPI{std::move(api)},
+        StandardPopup{popupName},
+        m_EditorAPI{api},
         m_Uum{std::move(uum)}
     {
     }
@@ -243,7 +243,7 @@ osc::AddBodyPopup::AddBodyPopup(
     std::shared_ptr<UndoableModelStatePair> uum,
     std::string_view popupName) :
 
-    m_Impl{std::make_unique<Impl>(std::move(api), std::move(uum), std::move(popupName))}
+    m_Impl{std::make_unique<Impl>(api, std::move(uum), popupName)}
 {
 }
 osc::AddBodyPopup::AddBodyPopup(AddBodyPopup&&) noexcept = default;

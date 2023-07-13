@@ -90,8 +90,8 @@ class osc::ParamBlockEditorPopup::Impl final : public StandardPopup {
 public:
 
     Impl(std::string_view popupName, ParamBlock* paramBlock) :
-        StandardPopup{std::move(popupName), {512.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize},
-        m_OutputTarget{std::move(paramBlock)},
+        StandardPopup{popupName, {512.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize},
+        m_OutputTarget{paramBlock},
         m_LocalCopy{*m_OutputTarget}
     {
     }
@@ -141,7 +141,7 @@ private:
 };
 
 osc::ParamBlockEditorPopup::ParamBlockEditorPopup(std::string_view popupName, ParamBlock* paramBlock) :
-    m_Impl{std::make_unique<Impl>(std::move(popupName), std::move(paramBlock))}
+    m_Impl{std::make_unique<Impl>(popupName, paramBlock)}
 {
 }
 

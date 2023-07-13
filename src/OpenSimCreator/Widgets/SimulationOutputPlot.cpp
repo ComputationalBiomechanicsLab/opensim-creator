@@ -234,9 +234,9 @@ class osc::SimulationOutputPlot::Impl final {
 public:
 
     Impl(SimulatorUIAPI* api, OutputExtractor outputExtractor, float height) :
-        m_API{std::move(api)},
+        m_API{api},
         m_OutputExtractor{std::move(outputExtractor)},
-        m_Height{std::move(height)}
+        m_Height{height}
     {
     }
 
@@ -403,7 +403,7 @@ private:
 // public API
 
 osc::SimulationOutputPlot::SimulationOutputPlot(SimulatorUIAPI* api, OutputExtractor outputExtractor, float height) :
-    m_Impl{std::make_unique<Impl>(std::move(api), std::move(outputExtractor), std::move(height))}
+    m_Impl{std::make_unique<Impl>(api, std::move(outputExtractor), height)}
 {
 }
 

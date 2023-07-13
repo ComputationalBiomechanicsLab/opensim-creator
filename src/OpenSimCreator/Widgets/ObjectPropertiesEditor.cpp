@@ -62,7 +62,7 @@ namespace
     // extract linear RGBA values from an OpenSim::Appearance
     osc::Color ExtractRgba(OpenSim::Appearance const& appearance)
     {
-        SimTK::Vec3 const rgb = appearance.get_color();
+        SimTK::Vec3 const& rgb = appearance.get_color();
         double const a = appearance.get_opacity();
 
         return

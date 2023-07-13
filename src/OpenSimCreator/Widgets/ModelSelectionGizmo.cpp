@@ -294,7 +294,7 @@ namespace
             SimTK::Rotation const parentToGroundRotation = pof.getParentFrame().getRotationInGround(getState());
             SimTK::InverseRotation const& groundToParentRotation = parentToGroundRotation.invert();
             SimTK::Vec3 const deltaTranslationInParent = groundToParentRotation * osc::ToSimTKVec3(deltaTranslationInGround);
-            SimTK::Vec3 const eulersInPofFrame = pof.get_orientation();
+            SimTK::Vec3 const& eulersInPofFrame = pof.get_orientation();
 
             ActionTransformPof(
                 getUndoableModel(),
@@ -351,7 +351,7 @@ namespace
         glm::mat4 implGetCurrentModelMatrix(
             OpenSim::WrapObject const& wrapObj) const final
         {
-            SimTK::Transform const wrapToFrame = wrapObj.getTransform();
+            SimTK::Transform const& wrapToFrame = wrapObj.getTransform();
             SimTK::Transform const frameToGround = wrapObj.getFrame().getTransformInGround(getState());
             SimTK::Transform const wrapToGround = frameToGround * wrapToFrame;
 

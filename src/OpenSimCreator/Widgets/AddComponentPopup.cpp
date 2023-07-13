@@ -72,7 +72,7 @@ public:
          std::unique_ptr<OpenSim::Component> prototype,
          std::string_view popupName) :
 
-        StandardPopup{std::move(popupName)},
+        StandardPopup{popupName},
         m_EditorAPI{api},
         m_Uum{std::move(uum)},
         m_Proto{std::move(prototype)},
@@ -522,7 +522,7 @@ osc::AddComponentPopup::AddComponentPopup(
     std::unique_ptr<OpenSim::Component> prototype,
     std::string_view popupName) :
 
-    m_Impl{std::make_unique<Impl>(std::move(api), std::move(uum), std::move(prototype), std::move(popupName))}
+    m_Impl{std::make_unique<Impl>(api, std::move(uum), std::move(prototype), popupName)}
 {
 }
 
