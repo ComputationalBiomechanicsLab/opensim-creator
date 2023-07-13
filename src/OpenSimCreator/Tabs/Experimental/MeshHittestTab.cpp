@@ -22,6 +22,7 @@
 #include <oscar/Maths/Triangle.hpp>
 #include <oscar/Panels/PerfPanel.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <glm/vec3.hpp>
@@ -29,6 +30,7 @@
 #include <imgui.h>
 #include <SDL_events.h>
 
+#include <array>
 #include <chrono>
 #include <string>
 #include <utility>
@@ -132,8 +134,7 @@ public:
         {
             Mesh m;
             m.setVerts(m_Tris);
-            uint16_t indices[] = {0, 1, 2};
-            m.setIndices(indices);
+            m.setIndices(osc::to_array<uint16_t>({0, 1, 2}));
 
             m_Material.setColor("uColor", Color::black());
             m_Material.setDepthTested(false);
@@ -201,7 +202,7 @@ private:
 
     // other state
     bool m_UseBVH = false;
-    glm::vec3 m_Tris[3]{};
+    std::array<glm::vec3, 3> m_Tris{};
     std::chrono::microseconds m_RaycastDuration{0};
     PolarPerspectiveCamera m_PolarCamera;
     bool m_IsMousedOver = false;

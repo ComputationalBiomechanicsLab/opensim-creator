@@ -59,7 +59,14 @@
 #include <utility>
 #include <vector>
 
-static std::atomic<int> g_SimulationNumber = 1;
+namespace
+{
+    int GetNextSimulationNumber()
+    {
+        static std::atomic<int> s_SimulationNumber = 1;
+        return s_SimulationNumber++;
+    }
+}
 
 class osc::SimulatorTab::Impl final : public SimulatorUIAPI {
 public:
@@ -268,7 +275,7 @@ private:
         return m_PlaybackSpeed;
     }
 
-    void implSetSimulationPlaybackSpeed(float v)
+    void implSetSimulationPlaybackSpeed(float v) final
     {
         m_PlaybackSpeed = v;
     }
@@ -426,7 +433,7 @@ private:
     // tab data
     UID m_ID;
     std::weak_ptr<MainUIStateAPI> m_Parent;
-    std::string m_Name = ICON_FA_PLAY " Simulation_" + std::to_string(g_SimulationNumber++);
+    std::string m_Name = ICON_FA_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber());
 
     // underlying simulation being shown
     std::shared_ptr<Simulation> m_Simulation;

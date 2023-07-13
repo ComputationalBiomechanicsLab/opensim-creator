@@ -299,7 +299,7 @@ namespace
         size_t start = (row * m.rowStride) + 1;
         size_t numValues = m.rowStride - 1;
 
-        return nonstd::span<double const>(m.data.data() + start, numValues);
+        return {m.data.data() + start, numValues};
     }
 
     // compute the stride of the data columns

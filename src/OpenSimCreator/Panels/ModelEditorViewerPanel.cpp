@@ -70,7 +70,7 @@ namespace
             );
         }
 
-        bool implShouldClose() const
+        bool implShouldClose() const final
         {
             return !m_Ruler.isMeasuring();
         }
@@ -104,7 +104,7 @@ namespace
 
         bool implHandleMouseInputs(
             osc::ModelEditorViewerPanelParameters&,
-            osc::ModelEditorViewerPanelState&)
+            osc::ModelEditorViewerPanelState&) final
         {
             if (m_Gizmo.isUsing())
             {

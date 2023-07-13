@@ -219,7 +219,7 @@ private:
         // names
         int imguiID = 0;
 
-        ImGui::Columns(2, 0, false);
+        ImGui::Columns(2, nullptr, false);
         drawMenuLeftColumnContent(imguiID);
         ImGui::NextColumn();
         drawMenuRightColumnContent(imguiID);

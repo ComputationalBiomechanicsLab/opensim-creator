@@ -255,8 +255,7 @@ public:
 
     bool equals(VirtualOutputExtractor const& other)
     {
-        ComponentOutputExtractor const* const otherT =
-            dynamic_cast<ComponentOutputExtractor const*>(&other);
+        auto const* const otherT = dynamic_cast<ComponentOutputExtractor const*>(&other);
         if (!otherT)
         {
             return false;

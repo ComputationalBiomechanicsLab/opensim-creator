@@ -492,7 +492,7 @@ namespace
             return PlottingTaskStatus::Cancelled;
         }
 
-        OpenSim::Muscle const* maybeMuscle = osc::FindComponent<OpenSim::Muscle>(*model, params.getMusclePath());
+        auto const* maybeMuscle = osc::FindComponent<OpenSim::Muscle>(*model, params.getMusclePath());
         if (!maybeMuscle)
         {
             shared.setErrorMessage(params.getMusclePath().toString() + ": cannot find a muscle with this name");
@@ -563,7 +563,7 @@ namespace
             }
 
             float const xDisplayVal = osc::ConvertCoordValueToDisplayValue(coord, xVal);
-            float const yVal = static_cast<float>(params.getMuscleOutput()(state, muscle, coord));
+            auto const yVal = static_cast<float>(params.getMuscleOutput()(state, muscle, coord));
 
             callback(PlotDataPoint{xDisplayVal, yVal});
         }
@@ -1285,9 +1285,9 @@ namespace
         headers.push_back(ComputePlotXAxisTitle(params, coord));
         for (size_t i = 0, len = lines.getNumOtherPlots(); i < len; ++i)
         {
-            headers.push_back(std::string{lines.getOtherPlot(i).getName()});
+            headers.emplace_back(to_string(lines.getOtherPlot(i).getName()));
         }
-        headers.push_back(std::string{lines.getActivePlot().getName()});
+        headers.emplace_back(to_string(lines.getActivePlot().getName()));
         return headers;
     }
 
@@ -1420,7 +1420,7 @@ namespace
                 }
                 else
                 {
-                    cols.push_back({});  // blank cell
+                    cols.emplace_back();  // blank cell
                 }
 
                 std::optional<float> maybeDataX = data ? std::optional<float>{data->x} : std::optional<float>{};
@@ -1602,7 +1602,7 @@ namespace
             PlotParameters const& latestParams = getSharedStateData().getPlotParams();
             auto modelGuard = latestParams.getCommit().getModel();
 
-            OpenSim::Coordinate const* maybeCoord = osc::FindComponent<OpenSim::Coordinate>(*modelGuard, latestParams.getCoordinatePath());
+            auto const* maybeCoord = osc::FindComponent<OpenSim::Coordinate>(*modelGuard, latestParams.getCoordinatePath());
             if (!maybeCoord)
             {
                 ImGui::Text("(no coordinate named %s in model)", latestParams.getCoordinatePath().toString().c_str());
@@ -1698,7 +1698,7 @@ namespace
             ImGui::SetNextItemWidth(muscleNameWidth);
             if (ImGui::BeginCombo("##musclename", muscleName.c_str(), ImGuiComboFlags_NoArrowButton))
             {
-                OpenSim::Muscle const* current = osc::FindComponent<OpenSim::Muscle>(getSharedStateData().getModel().getModel(), getSharedStateData().getPlotParams().getMusclePath());
+                auto const* current = osc::FindComponent<OpenSim::Muscle>(getSharedStateData().getModel().getModel(), getSharedStateData().getPlotParams().getMusclePath());
                 for (OpenSim::Muscle const& musc : getSharedStateData().getModel().getModel().getComponentList<OpenSim::Muscle>())
                 {
                     bool selected = &musc == current;
@@ -1734,7 +1734,7 @@ namespace
             ImGui::SetNextItemWidth(coordNameWidth);
             if (ImGui::BeginCombo("##coordname", coordName.c_str(), ImGuiComboFlags_NoArrowButton))
             {
-                OpenSim::Coordinate const* current = osc::FindComponent<OpenSim::Coordinate>(getSharedStateData().getModel().getModel(), getSharedStateData().getPlotParams().getCoordinatePath());
+                auto const* current = osc::FindComponent<OpenSim::Coordinate>(getSharedStateData().getModel().getModel(), getSharedStateData().getPlotParams().getCoordinatePath());
                 for (OpenSim::Coordinate const& c : getSharedStateData().getModel().getModel().getComponentList<OpenSim::Coordinate>())
                 {
                     bool selected = &c == current;
@@ -2041,7 +2041,7 @@ namespace
 
                 if (ImGui::MenuItem("duplicate plot"))
                 {
-                    OpenSim::Muscle const* musc = osc::FindComponent<OpenSim::Muscle>(getSharedStateData().getModel().getModel(), getSharedStateData().getPlotParams().getMusclePath());
+                    auto const* musc = osc::FindComponent<OpenSim::Muscle>(getSharedStateData().getModel().getModel(), getSharedStateData().getPlotParams().getMusclePath());
                     if (musc)
                     {
                         updSharedStateData().updEditorAPI().addMusclePlot(coord, *musc);

@@ -41,6 +41,10 @@ public:
         InitializeState(*m_Model);
         m_Model->updWorkingState() = o.m_Model->getWorkingState();
     }
+    Impl(Impl&&) noexcept = default;
+    Impl& operator=(Impl const&) = delete;
+    Impl& operator=(Impl&&) noexcept = default;
+    ~Impl() noexcept = default;
 
     std::unique_ptr<Impl> clone()
     {

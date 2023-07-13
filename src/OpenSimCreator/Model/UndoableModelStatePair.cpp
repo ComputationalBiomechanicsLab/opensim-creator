@@ -77,7 +77,7 @@ namespace
         UiModelStatePair(UiModelStatePair&&) noexcept = default;
         UiModelStatePair& operator=(UiModelStatePair const&) = delete;
         UiModelStatePair& operator=(UiModelStatePair&&) noexcept = default;
-        ~UiModelStatePair() noexcept = default;
+        ~UiModelStatePair() noexcept override = default;
 
         OpenSim::Model const& implGetModel() const final
         {

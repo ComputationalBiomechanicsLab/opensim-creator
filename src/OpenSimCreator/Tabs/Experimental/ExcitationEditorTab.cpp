@@ -618,7 +618,7 @@ namespace
             {
                 float const x = static_cast<float>(i)/static_cast<float>(nFakeDataPoints-1);
                 float const y = 0.5f*(std::sin(x*30.0f) + 1.0f);
-                fakeData.push_back({x, y});
+                fakeData.emplace_back(x, y);
             }
 
             ImGui::SetCursorScreenPos(actualRect.p1);
