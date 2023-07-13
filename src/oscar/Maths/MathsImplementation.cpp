@@ -927,7 +927,7 @@ namespace
     // only real-valued results supported - no complex-plane results
     QuadraticFormulaResult solveQuadratic(float a, float b, float c)
     {
-        QuadraticFormulaResult res;
+        QuadraticFormulaResult res{};
 
         // b2 - 4ac
         float const discriminant = b*b - 4.0f*a*c;
@@ -1364,8 +1364,8 @@ glm::mat4 osc::Dir1ToDir2Xform(glm::vec3 const& a, glm::vec3 const& b) noexcept
         return glm::mat4{1.0f};
     }
 
-    float theta;
-    glm::vec3 rotationAxis;
+    float theta{};
+    glm::vec3 rotationAxis{};
     if(cosTheta < static_cast<float>(-1.0f) + std::numeric_limits<float>::epsilon())
     {
         // `a` and `b` point in opposite directions
@@ -1442,7 +1442,7 @@ osc::Line osc::PerspectiveUnprojectTopLeftScreenPosToWorldRay(
     // direction vector from camera to mouse location (i.e. the projection)
     glm::vec3 lineDirWorld = glm::normalize(lineOriginWorld - cameraWorldspaceLocation);
 
-    Line rv;
+    Line rv{};
     rv.dir = lineDirWorld;
     rv.origin = lineOriginWorld;
     return rv;
@@ -1590,7 +1590,7 @@ osc::Transform osc::SphereToSphereTransform(Sphere const& a, Sphere const& b) no
 
 osc::AABB osc::ToAABB(Sphere const& s) noexcept
 {
-    AABB rv;
+    AABB rv{};
     rv.min = s.origin - s.radius;
     rv.max = s.origin + s.radius;
     return rv;
@@ -1598,7 +1598,7 @@ osc::AABB osc::ToAABB(Sphere const& s) noexcept
 
 osc::Line osc::TransformLine(Line const& l, glm::mat4 const& m) noexcept
 {
-    Line rv;
+    Line rv{};
     rv.dir = m * glm::vec4{l.dir, 0.0f};
     rv.origin = m * glm::vec4{l.origin, 1.0f};
     return rv;
@@ -1652,7 +1652,7 @@ glm::mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b) noexcept
 
 osc::AABB osc::InvertedAABB() noexcept
 {
-    AABB rv;
+    AABB rv{};
     rv.min = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
     rv.max = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
     return rv;
@@ -2201,7 +2201,7 @@ std::optional<osc::RayCollision> osc::GetRayCollisionDisc(Line const& l, Disc co
     // think of this as a ray-plane intersection test with the additional
     // constraint that the ray has to be within the radius of the disc
 
-    Plane p;
+    Plane p{};
     p.origin = d.origin;
     p.normal = d.normal;
 
@@ -2214,8 +2214,8 @@ std::optional<osc::RayCollision> osc::GetRayCollisionDisc(Line const& l, Disc co
 
     // figure out whether the plane hit is within the disc's radius
     glm::vec3 v = maybePlaneCollision->position - d.origin;
-    float d2 = glm::dot(v, v);
-    float r2 = glm::dot(d.radius, d.radius);
+    float const d2 = glm::dot(v, v);
+    float const r2 = glm::dot(d.radius, d.radius);
 
     if (d2 > r2)
     {

@@ -40,14 +40,17 @@ namespace
         {-0.8f, 2.4f, -1.0f},
     });
 
-    auto c_SceneLightColors = osc::to_array<osc::Color>(
+    std::array<osc::Color, c_SceneLightPositions.size()> const& GetSceneLightColors()
     {
-        osc::ToSRGB({ 5.0f, 5.0f,  5.0f}),
-        osc::ToSRGB({10.0f, 0.0f,  0.0f}),
-        osc::ToSRGB({ 0.0f, 0.0f, 15.0f}),
-        osc::ToSRGB({ 0.0f, 5.0f,  0.0f}),
-    });
-    static_assert(c_SceneLightColors.size() == c_SceneLightPositions.size());
+        static auto const s_SceneLightColors = osc::to_array<osc::Color>(
+        {
+            osc::ToSRGB({ 5.0f, 5.0f,  5.0f}),
+            osc::ToSRGB({10.0f, 0.0f,  0.0f}),
+            osc::ToSRGB({ 0.0f, 0.0f, 15.0f}),
+            osc::ToSRGB({ 0.0f, 5.0f,  0.0f}),
+        });
+        return s_SceneLightColors;
+    }
 
     std::vector<glm::mat4> CreateCubeTransforms()
     {
@@ -112,7 +115,7 @@ public:
         m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 1.0f});
 
         m_SceneMaterial.setVec3Array("uLightPositions", c_SceneLightPositions);
-        m_SceneMaterial.setColorArray("uLightColors", c_SceneLightColors);
+        m_SceneMaterial.setColorArray("uLightColors", GetSceneLightColors());
     }
 
     UID getID() const
@@ -253,7 +256,7 @@ private:
 
     void drawLightBoxesToCamera()
     {
-        static_assert(c_SceneLightPositions.size() == c_SceneLightColors.size());
+        std::array<osc::Color, c_SceneLightPositions.size()> const& sceneLightColors = GetSceneLightColors();
 
         for (size_t i = 0; i < c_SceneLightPositions.size(); ++i)
         {
@@ -262,7 +265,7 @@ private:
             lightTransform = glm::scale(lightTransform, glm::vec3(0.25f));
 
             MaterialPropertyBlock lightProps;
-            lightProps.setColor("uLightColor", c_SceneLightColors[i]);
+            lightProps.setColor("uLightColor", sceneLightColors[i]);
 
             Graphics::DrawMesh(
                 m_CubeMesh,

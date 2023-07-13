@@ -148,7 +148,7 @@ namespace
             std::istringstream ss{line};
 
             // read line content
-            uint64_t timestamp;
+            uint64_t timestamp = 0;
             std::filesystem::path path;
             ss >> timestamp;
             ss >> path;

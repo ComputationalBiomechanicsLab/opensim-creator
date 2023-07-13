@@ -15,7 +15,7 @@ namespace
     template<typename T, size_t N>
     std::array<T, N> ArrayFilledWith(T v)
     {
-        std::array<T, N> rv;
+        std::array<T, N> rv{};
         std::fill(rv.begin(), rv.end(), v);
         return rv;
     }
