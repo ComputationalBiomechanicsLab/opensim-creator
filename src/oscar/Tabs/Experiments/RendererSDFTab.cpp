@@ -12,6 +12,7 @@
 #include "oscar/Platform/App.hpp"
 #include "oscar/Platform/Log.hpp"
 #include "oscar/Panels/LogViewerPanel.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <nonstd/span.hpp>
@@ -19,6 +20,7 @@
 #include <stb_truetype.h>  // TODO: should be moved into `Image.hpp` or similar
 #include <IconsFontAwesome5.h>
 
+#include <array>
 #include <cstdint>
 #include <memory>
 #include <utility>
@@ -29,7 +31,7 @@ namespace
     constexpr osc::CStringView c_TabStringID = "Experiments/SDF";
 
     struct CharMetadata final {
-        stbtt_bakedchar storage[96];
+        std::array<stbtt_bakedchar, 96> storage{};
     };
 
     struct FontTexture final {
@@ -76,7 +78,7 @@ namespace
         CharMetadata glyphData;
         std::vector<uint8_t> pixels(512 * 512);
 
-        stbtt_BakeFontBitmap(ttfData.data(), 0, 64., pixels.data(), 512, 512, 32, 96, glyphData.storage); // no guarantee this fits!
+        stbtt_BakeFontBitmap(ttfData.data(), 0, 64., pixels.data(), 512, 512, 32, 96, glyphData.storage.data()); // no guarantee this fits!
         osc::Texture2D t = osc::Texture2D
         {
             {512, 512},
@@ -129,11 +131,28 @@ private:
             {
                 // the Y axis is screenspace (Y goes down)
                 stbtt_aligned_quad q;
-                stbtt_GetBakedQuad(m_FontTexture.metadata.storage, 512,512, *text-32, &x, &y, &q, 1);  //1=opengl & d3d10+,0=d3d9
+                stbtt_GetBakedQuad(m_FontTexture.metadata.storage.data(), 512,512, *text-32, &x, &y, &q, 1);  //1=opengl & d3d10+,0=d3d9
 
-                glm::vec3 verts[] = { {q.x0, -q.y0, 0.0f}, { q.x1, -q.y0, 0.0f }, { q.x1, -q.y1, 0.0f }, { q.x0, -q.y0, 0.0f }, { q.x0, -q.y1, 0.0f }, { q.x1, -q.y1, 0.0f } };
-                glm::vec2 coords[] = { { q.s0, q.t0 }, { q.s1, q.t0 }, { q.s1, q.t1 }, { q.s0, q.t0 }, { q.s0, q.t1 }, { q.s1, q.t1 } };
-                uint16_t indices[] = { 0, 1, 2, 3, 4, 5 };
+                auto const verts = osc::to_array<glm::vec3>(
+                {
+                    {q.x0, -q.y0, 0.0f},
+                    {q.x1, -q.y0, 0.0f},
+                    {q.x1, -q.y1, 0.0f},
+                    {q.x0, -q.y0, 0.0f},
+                    {q.x0, -q.y1, 0.0f},
+                    {q.x1, -q.y1, 0.0f},
+                });
+                auto const coords = osc::to_array<glm::vec2>(
+                {
+                    { q.s0, q.t0 },
+                    { q.s1, q.t0 },
+                    { q.s1, q.t1 },
+                    { q.s0, q.t0 },
+                    { q.s0, q.t1 },
+                    { q.s1, q.t1 },
+                });
+                auto const indices = osc::to_array<uint16_t>({ 0, 1, 2, 3, 4, 5 });
+                static_assert(verts.size() == coords.size() && verts.size() == indices.size());
 
                 osc::Mesh m;
                 m.setVerts(verts);

@@ -192,12 +192,11 @@ namespace
         {
             // it's a leaf node, so we've sucessfully found the AABB that intersected
 
-            out.push_back(osc::BVHCollision
-            {
+            out.emplace_back(
                 res->distance,
                 res->position,
-                prims[node.getFirstPrimOffset()].getID(),
-            });
+                prims[node.getFirstPrimOffset()].getID()
+            );
             return true;
         }
 
@@ -1262,12 +1261,13 @@ glm::vec3 osc::KahanSum(nonstd::span<glm::vec3 const> vs) noexcept
     glm::vec3 sum{};  // accumulator
     glm::vec3 c{};    // running compensation of low-order bits
 
-    for (size_t i = 0; i < vs.size(); ++i)
+    for (glm::vec3 const& v : vs)
     {
-        glm::vec3 y = vs[i] - c;  // subtract the compensation amount from the next number
-        glm::vec3 t = sum + y;    // perform the summation (might lose information)
-        c = (t - sum) - y;        // (t-sum) yields the retained (high-order) parts of `y`, so `c` contains the "lost" information
-        sum = t;                  // CAREFUL: algebreically, `c` always == 0 - despite the computer's (actual) limited precision, the compiler might elilde all of this
+        glm::vec3 const y = v - c;    // subtract the compensation amount from the next number
+        glm::vec3 const t = sum + y;  // perform the summation (might lose information)
+
+        c = (t - sum) - y;            // (t-sum) yields the retained (high-order) parts of `y`, so `c` contains the "lost" information
+        sum = t;                      // CAREFUL: algebreically, `c` always == 0 - despite the computer's (actual) limited precision, the compiler might elilde all of this
     }
 
     return sum;

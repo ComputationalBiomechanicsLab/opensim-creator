@@ -23,6 +23,7 @@
 #include "oscar/Maths/Rect.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <glm/vec3.hpp>
@@ -42,7 +43,7 @@ namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/DeferredShading";
 
-    constexpr glm::vec3 c_ObjectPositions[] =
+    auto constexpr c_ObjectPositions = osc::to_array<glm::vec3>(
     {
         {-3.0,  -0.5, -3.0},
         { 0.0,  -0.5, -3.0},
@@ -53,9 +54,8 @@ namespace
         {-3.0,  -0.5,  3.0},
         { 0.0,  -0.5,  3.0},
         { 3.0,  -0.5,  3.0},
-    };
-
-    constexpr size_t c_NumLights = 32;
+    });
+    size_t constexpr c_NumLights = 32;
 
     glm::vec3 GenerateSceneLightPosition(std::default_random_engine& rng)
     {

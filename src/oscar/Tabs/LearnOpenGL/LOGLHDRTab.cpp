@@ -18,6 +18,7 @@
 #include "oscar/Maths/Rect.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <glm/vec3.hpp>
@@ -28,27 +29,29 @@
 #include <string>
 #include <utility>
 
-static glm::vec3 constexpr c_LightPositions[] =
-{
-    { 0.0f,  0.0f, 49.5f},
-    {-1.4f, -1.9f, 9.0f},
-    { 0.0f, -1.8f, 4.0f},
-    { 0.8f, -1.7f, 6.0f},
-};
-
-static osc::Color const c_LightColors[] =
-{
-    osc::ToSRGB({200.0f, 200.0f, 200.0f, 1.0f}),
-    osc::ToSRGB({0.1f, 0.0f, 0.0f, 1.0f}),
-    osc::ToSRGB({0.0f, 0.0f, 0.2f, 1.0f}),
-    osc::ToSRGB({0.0f, 0.1f, 0.0f, 1.0f}),
-};
-static_assert(std::size(c_LightPositions) == std::size(c_LightColors));
-
-constexpr osc::CStringView c_TabStringID = "LearnOpenGL/HDR";
-
 namespace
 {
+    auto constexpr c_LightPositions = osc::to_array<glm::vec3>(
+    {
+        { 0.0f,  0.0f, 49.5f},
+        {-1.4f, -1.9f, 9.0f},
+        { 0.0f, -1.8f, 4.0f},
+        { 0.8f, -1.7f, 6.0f},
+    });
+
+    osc::CStringView constexpr c_TabStringID = "LearnOpenGL/HDR";
+
+    std::array<osc::Color, c_LightPositions.size()> GetLightColors()
+    {
+        return osc::to_array<osc::Color>(
+        {
+            osc::ToSRGB({200.0f, 200.0f, 200.0f, 1.0f}),
+            osc::ToSRGB({0.1f, 0.0f, 0.0f, 1.0f}),
+            osc::ToSRGB({0.0f, 0.0f, 0.2f, 1.0f}),
+            osc::ToSRGB({0.0f, 0.1f, 0.0f, 1.0f}),
+        });
+    }
+
     osc::Transform CalcCorridoorTransform()
     {
         osc::Transform rv;
@@ -65,7 +68,7 @@ public:
         m_Parent{std::move(parent_)}
     {
         m_SceneMaterial.setVec3Array("uSceneLightPositions", c_LightPositions);
-        m_SceneMaterial.setColorArray("uSceneLightColors", c_LightColors);
+        m_SceneMaterial.setColorArray("uSceneLightColors", GetLightColors());
         m_SceneMaterial.setTexture("uDiffuseTexture", m_WoodTexture);
         m_SceneMaterial.setBool("uInverseNormals", true);
 

@@ -12,6 +12,7 @@
 #include "oscar/Panels/LogViewerPanel.hpp"
 #include "oscar/Panels/PerfPanel.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <glm/mat4x4.hpp>
@@ -21,67 +22,63 @@
 #include <cstdint>
 #include <memory>
 
-static glm::vec3 constexpr c_PlaneVertices[] =
-{
-    { 5.0f, -0.5f,  5.0f},
-    {-5.0f, -0.5f,  5.0f},
-    {-5.0f, -0.5f, -5.0f},
-
-    { 5.0f, -0.5f,  5.0f},
-    {-5.0f, -0.5f, -5.0f},
-    { 5.0f, -0.5f, -5.0f},
-};
-
-static glm::vec2 constexpr c_PlaneTexCoords[] =
-{
-    {2.0f, 0.0f},
-    {0.0f, 0.0f},
-    {0.0f, 2.0f},
-
-    {2.0f, 0.0f},
-    {0.0f, 2.0f},
-    {2.0f, 2.0f},
-};
-
-static uint16_t constexpr c_PlaneIndices[] = {0, 2, 1, 3, 5, 4};
-
-static glm::vec3 constexpr c_TransparentVerts[] =
-{
-    {0.0f,  0.5f, 0.0f},
-    {0.0f, -0.5f, 0.0f},
-    {1.0f, -0.5f, 0.0f},
-
-    {0.0f,  0.5f, 0.0f},
-    {1.0f, -0.5f, 0.0f},
-    {1.0f,  0.5f, 0.0f},
-};
-
-static glm::vec2 constexpr c_TransparentTexCoords[] =
-{
-    {0.0f, 0.0f},
-    {0.0f, 1.0f},
-    {1.0f, 1.0f},
-
-    {0.0f, 0.0f},
-    {1.0f, 1.0f},
-    {1.0f, 0.0f},
-};
-
-static uint16_t constexpr c_TransparentIndices[] = {0, 1, 2, 3, 4, 5};
-
-static glm::vec3 constexpr c_WindowLocations[] =
-{
-    {-1.5f, 0.0f, -0.48f},
-    { 1.5f, 0.0f,  0.51f},
-    { 0.0f, 0.0f,  0.7f},
-    {-0.3f, 0.0f, -2.3f},
-    { 0.5f, 0.0f, -0.6},
-};
-
-static constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Blending";
-
 namespace
 {
+    auto constexpr c_PlaneVertices = osc::to_array<glm::vec3>(
+    {
+        { 5.0f, -0.5f,  5.0f},
+        {-5.0f, -0.5f,  5.0f},
+        {-5.0f, -0.5f, -5.0f},
+
+        { 5.0f, -0.5f,  5.0f},
+        {-5.0f, -0.5f, -5.0f},
+        { 5.0f, -0.5f, -5.0f},
+    });
+    auto constexpr c_PlaneTexCoords = osc::to_array<glm::vec2>(
+    {
+        {2.0f, 0.0f},
+        {0.0f, 0.0f},
+        {0.0f, 2.0f},
+
+        {2.0f, 0.0f},
+        {0.0f, 2.0f},
+        {2.0f, 2.0f},
+    });
+    auto constexpr c_PlaneIndices = osc::to_array<uint16_t>({0, 2, 1, 3, 5, 4});
+
+    auto constexpr c_TransparentVerts = osc::to_array<glm::vec3>(
+    {
+        {0.0f,  0.5f, 0.0f},
+        {0.0f, -0.5f, 0.0f},
+        {1.0f, -0.5f, 0.0f},
+
+        {0.0f,  0.5f, 0.0f},
+        {1.0f, -0.5f, 0.0f},
+        {1.0f,  0.5f, 0.0f},
+    });
+    auto constexpr c_TransparentTexCoords = osc::to_array<glm::vec2>(
+    {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 1.0f},
+
+        {0.0f, 0.0f},
+        {1.0f, 1.0f},
+        {1.0f, 0.0f},
+    });
+    auto constexpr c_TransparentIndices = osc::to_array<uint16_t>({0, 1, 2, 3, 4, 5});
+
+    auto constexpr c_WindowLocations = osc::to_array<glm::vec3>(
+    {
+        {-1.5f, 0.0f, -0.48f},
+        { 1.5f, 0.0f,  0.51f},
+        { 0.0f, 0.0f,  0.7f},
+        {-0.3f, 0.0f, -2.3f},
+        { 0.5f, 0.0f, -0.6},
+    });
+
+    osc::CStringView constexpr c_TabStringID = "LearnOpenGL/Blending";
+
     osc::Mesh GeneratePlane()
     {
         osc::Mesh rv;

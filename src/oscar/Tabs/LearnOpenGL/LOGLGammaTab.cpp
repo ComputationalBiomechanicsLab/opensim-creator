@@ -11,6 +11,7 @@
 #include "oscar/Graphics/Texture2D.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <glm/vec2.hpp>
@@ -20,61 +21,58 @@
 #include <string>
 #include <utility>
 
-static glm::vec3 constexpr c_PlaneVertices[] =
-{
-    { 10.0f, -0.5f,  10.0f},
-    {-10.0f, -0.5f,  10.0f},
-    {-10.0f, -0.5f, -10.0f},
-
-    { 10.0f, -0.5f,  10.0f},
-    {-10.0f, -0.5f, -10.0f},
-    { 10.0f, -0.5f, -10.0f},
-};
-
-static glm::vec2 constexpr c_PlaneTexCoords[] =
-{
-    {10.0f, 0.0f},
-    {0.0f,  0.0f},
-    {0.0f,  10.0f},
-
-    {10.0f, 0.0f},
-    {0.0f,  10.0f},
-    {10.0f, 10.0f},
-};
-
-static glm::vec3 constexpr c_PlaneNormals[] =
-{
-    {0.0f, 1.0f, 0.0f},
-    {0.0f, 1.0f, 0.0f},
-    {0.0f, 1.0f, 0.0f},
-
-    {0.0f, 1.0f, 0.0f},
-    {0.0f, 1.0f, 0.0f},
-    {0.0f, 1.0f, 0.0f},
-};
-
-static uint16_t constexpr c_PlaneIndices[] = {0, 2, 1, 3, 5, 4};
-
-static glm::vec3 constexpr c_LightPositions[] =
-{
-    {-3.0f, 0.0f, 0.0f},
-    {-1.0f, 0.0f, 0.0f},
-    { 1.0f, 0.0f, 0.0f},
-    { 3.0f, 0.0f, 0.0f},
-};
-
-static osc::Color constexpr c_LightColors[] =
-{
-    {0.25f, 0.25f, 0.25f, 1.0f},
-    {0.50f, 0.50f, 0.50f, 1.0f},
-    {0.75f, 0.75f, 0.75f, 1.0f},
-    {1.00f, 1.00f, 1.00f, 1.0f},
-};
-
-constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Gamma";
-
 namespace
 {
+    auto constexpr c_PlaneVertices = osc::to_array<glm::vec3>(
+    {
+        { 10.0f, -0.5f,  10.0f},
+        {-10.0f, -0.5f,  10.0f},
+        {-10.0f, -0.5f, -10.0f},
+
+        { 10.0f, -0.5f,  10.0f},
+        {-10.0f, -0.5f, -10.0f},
+        { 10.0f, -0.5f, -10.0f},
+    });
+    auto constexpr c_PlaneTexCoords = osc::to_array<glm::vec2>(
+    {
+        {10.0f, 0.0f},
+        {0.0f,  0.0f},
+        {0.0f,  10.0f},
+
+        {10.0f, 0.0f},
+        {0.0f,  10.0f},
+        {10.0f, 10.0f},
+    });
+    auto constexpr c_PlaneNormals = osc::to_array<glm::vec3>(
+    {
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+    });
+    auto constexpr c_PlaneIndices = osc::to_array<uint16_t>({0, 2, 1, 3, 5, 4});
+
+    auto constexpr c_LightPositions = osc::to_array<glm::vec3>(
+    {
+        {-3.0f, 0.0f, 0.0f},
+        {-1.0f, 0.0f, 0.0f},
+        { 1.0f, 0.0f, 0.0f},
+        { 3.0f, 0.0f, 0.0f},
+    });
+
+    auto constexpr c_LightColors = osc::to_array<osc::Color>(
+    {
+        {0.25f, 0.25f, 0.25f, 1.0f},
+        {0.50f, 0.50f, 0.50f, 1.0f},
+        {0.75f, 0.75f, 0.75f, 1.0f},
+        {1.00f, 1.00f, 1.00f, 1.0f},
+    });
+
+    osc::CStringView constexpr c_TabStringID = "LearnOpenGL/Gamma";
+
     osc::Mesh GeneratePlane()
     {
         osc::Mesh rv;

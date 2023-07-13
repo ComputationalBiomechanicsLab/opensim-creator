@@ -177,9 +177,10 @@ namespace
 
     osc::AppClock::duration ConvertPerfTicksToFClockDuration(Uint64 ticks, Uint64 frequency)
     {
-        double dticks = static_cast<double>(ticks);
-        double fq = static_cast<double>(frequency);
-        float dur = static_cast<float>(dticks/fq);
+        auto const dticks = static_cast<double>(ticks);
+        auto const fq = static_cast<double>(frequency);
+        auto const dur = static_cast<float>(dticks/fq);
+
         return osc::AppClock::duration{dur};
     }
 
