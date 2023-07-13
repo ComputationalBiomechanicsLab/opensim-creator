@@ -59,6 +59,18 @@
 
 namespace
 {
+    // minor alias for setlocale so that any linter complaints about MT unsafety
+    // are all deduped to this one source location
+    //
+    // it's UNSAFE because `setlocale` is a global mutation
+    void setLocaleUNSAFE(int category, char const* locale)
+    {
+        // disable lint because this function is only called once at application
+        // init time
+
+        std::setlocale(category, locale); // NOLINT(concurrency-mt-unsafe)
+    }
+
     // an OpenSim log sink that sinks into OSC's main log
     class OpenSimLogSink final : public OpenSim::LogSink {
         void sinkImpl(std::string const& msg) final
@@ -89,25 +101,25 @@ namespace
         osc::SetEnv("LC_MESSAGES", locale, true);
         osc::SetEnv("LC_ALL", locale, true);
 #ifdef LC_CTYPE
-        setlocale(LC_CTYPE, locale);
+        setLocaleUNSAFE(LC_CTYPE, locale);
 #endif
 #ifdef LC_NUMERIC
-        setlocale(LC_NUMERIC, locale);
+        setLocaleUNSAFE(LC_NUMERIC, locale);
 #endif
 #ifdef LC_TIME
-        setlocale(LC_TIME, locale);
+        setLocaleUNSAFE(LC_TIME, locale);
 #endif
 #ifdef LC_COLLATE
-        setlocale(LC_COLLATE, locale);
+        setLocaleUNSAFE(LC_COLLATE, locale);
 #endif
 #ifdef LC_MONETARY
-        setlocale(LC_MONETARY, locale);
+        setLocaleUNSAFE(LC_MONETARY, locale);
 #endif
 #ifdef LC_MESSAGES
-        setlocale(LC_MESSAGES, locale);
+        setLocaleUNSAFE(LC_MESSAGES, locale);
 #endif
 #ifdef LC_ALL
-        setlocale(LC_ALL, locale);
+        setLocaleUNSAFE(LC_ALL, locale);
 #endif
         std::locale::global(std::locale{locale});
 
