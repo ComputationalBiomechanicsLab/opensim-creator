@@ -46,6 +46,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <SimTKcommon/basics.h>
 
+#include <array>
 #include <algorithm>
 #include <cstdio>
 #include <cstddef>
@@ -218,10 +219,10 @@ void osc::DrawSelectOwnerMenu(osc::VirtualModelStatePair& model, OpenSim::Compon
         {
             c = &c->getOwner();
 
-            char buf[128];
-            std::snprintf(buf, sizeof(buf), "%s (%s)", c->getName().c_str(), c->getConcreteClassName().c_str());
+            std::array<char, 128> buf{};
+            std::snprintf(buf.data(), buf.size(), "%s (%s)", c->getName().c_str(), c->getConcreteClassName().c_str());
 
-            if (ImGui::MenuItem(buf))
+            if (ImGui::MenuItem(buf.data()))
             {
                 model.setSelected(c);
             }

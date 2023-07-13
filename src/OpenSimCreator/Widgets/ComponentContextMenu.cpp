@@ -50,14 +50,13 @@ namespace
         osc::UndoableModelStatePair& uim,
         OpenSim::ComponentPath const& jointPath)
     {
-        OpenSim::Joint const* joint = osc::FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
+        auto const* joint = osc::FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
         if (!joint)
         {
             return;
         }
 
         std::optional<int> maybeIdx = osc::FindJointInParentJointSet(*joint);
-
         if (!maybeIdx)
         {
             return;
@@ -162,7 +161,7 @@ namespace
         std::shared_ptr<osc::UndoableModelStatePair> const& uim,
         OpenSim::ComponentPath const& hcfPath)
     {
-        OpenSim::HuntCrossleyForce const* hcf = osc::FindComponent<OpenSim::HuntCrossleyForce>(uim->getModel(), hcfPath);
+        auto const* const hcf = osc::FindComponent<OpenSim::HuntCrossleyForce>(uim->getModel(), hcfPath);
         if (!hcf)
         {
             return;
@@ -364,7 +363,7 @@ private:
         {
             DrawHCFContextualActions(m_EditorAPI, m_Model, m_Path);
         }
-        else if (OpenSim::Muscle const* m = dynamic_cast<OpenSim::Muscle const*>(c))
+        else if (auto const* m = dynamic_cast<OpenSim::Muscle const*>(c))
         {
             drawAddMusclePlotMenu(*m);
             DrawPathActuatorContextualParams(m_EditorAPI, m_Model, m_Path);  // a muscle is a path actuator

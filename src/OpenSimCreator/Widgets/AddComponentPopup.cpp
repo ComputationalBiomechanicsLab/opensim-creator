@@ -119,8 +119,7 @@ private:
         }
 
         // assign path points (if applicable)
-        OpenSim::PathActuator* pa = dynamic_cast<OpenSim::PathActuator*>(rv.get());
-        if (pa)
+        if (auto* pa = dynamic_cast<OpenSim::PathActuator*>(rv.get()))
         {
             if (m_PathPoints.size() < 2)
             {
@@ -136,8 +135,7 @@ private:
                     return nullptr;  // invalid path slipped through
                 }
 
-                OpenSim::PhysicalFrame const* pof = FindComponent<OpenSim::PhysicalFrame>(model, pp.actualFrame);
-
+                auto const* pof = FindComponent<OpenSim::PhysicalFrame>(model, pp.actualFrame);
                 if (!pof)
                 {
                     return nullptr;  // invalid path slipped through
@@ -394,8 +392,7 @@ private:
     {
         OpenSim::Model const& model = m_Uum->getModel();
 
-        OpenSim::PathActuator* protoAsPA = dynamic_cast<OpenSim::PathActuator*>(m_Proto.get());
-
+        auto* protoAsPA = dynamic_cast<OpenSim::PathActuator*>(m_Proto.get());
         if (!protoAsPA)
         {
             return;  // not a path actuator

@@ -30,7 +30,7 @@ namespace
         //
         //       see: #553
 
-        float fv = static_cast<float>(v);
+        auto fv = static_cast<float>(v);
         if (ImGui::InputFloat("##", &fv, 0.0f, 0.0f, "%.9f"))
         {
             b.setValue(idx, static_cast<double>(fv));
@@ -59,7 +59,7 @@ namespace
     {
         nonstd::span<osc::CStringView const> const methodStrings =
             osc::GetAllIntegratorMethodStrings();
-        size_t method = static_cast<size_t>(im);
+        auto method = static_cast<size_t>(im);
 
         if (osc::Combo("##", &method, methodStrings))
         {

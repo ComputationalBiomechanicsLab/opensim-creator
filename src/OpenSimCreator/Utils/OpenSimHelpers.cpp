@@ -382,11 +382,11 @@ OpenSim::Component const* osc::IsInclusiveChildOf(nonstd::span<OpenSim::Componen
 {
     while (c)
     {
-        for (size_t i = 0; i < parents.size(); ++i)
+        for (OpenSim::Component const* parent : parents)
         {
-            if (c == parents[i])
+            if (c == parent)
             {
-                return parents[i];
+                return parent;
             }
         }
         c = c->hasOwner() ? &c->getOwner() : nullptr;
@@ -430,7 +430,7 @@ void osc::GetCoordinatesInModel(
 
 float osc::ConvertCoordValueToDisplayValue(OpenSim::Coordinate const& c, double v)
 {
-    float rv = static_cast<float>(v);
+    auto rv = static_cast<float>(v);
 
     if (c.getMotionType() == OpenSim::Coordinate::MotionType::Rotational)
     {
@@ -442,7 +442,7 @@ float osc::ConvertCoordValueToDisplayValue(OpenSim::Coordinate const& c, double 
 
 double osc::ConvertCoordDisplayValueToStorageValue(OpenSim::Coordinate const& c, float v)
 {
-    double rv = static_cast<double>(v);
+    auto rv = static_cast<double>(v);
 
     if (c.getMotionType() == OpenSim::Coordinate::MotionType::Rotational)
     {
@@ -821,8 +821,7 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
             // to support list element deletion, but does support full
             // assignment
 
-            OpenSim::ObjectProperty<OpenSim::Geometry>& prop =
-                dynamic_cast<OpenSim::ObjectProperty<OpenSim::Geometry>&>(frame->updProperty_attached_geometry());
+            auto& prop = dynamic_cast<OpenSim::ObjectProperty<OpenSim::Geometry>&>(frame->updProperty_attached_geometry());
 
             std::unique_ptr<OpenSim::ObjectProperty<OpenSim::Geometry>> copy{prop.clone()};
             copy->clear();
@@ -904,9 +903,9 @@ void osc::AddComponentToModel(OpenSim::Model& m, std::unique_ptr<OpenSim::Compon
     }
     else if (dynamic_cast<OpenSim::Body*>(c.get()))
     {
-        m.addBody(static_cast<OpenSim::Body*>(c.release()));
+        m.addBody(dynamic_cast<OpenSim::Body*>(c.release()));
     }
-    else if (OpenSim::Joint* j = dynamic_cast<OpenSim::Joint*>(c.get()))
+    else if (auto* j = dynamic_cast<OpenSim::Joint*>(c.get()))
     {
         // HOTFIX: `OpenSim::Ground` should never be listed as a joint's parent, because it
         //         causes a segfault in OpenSim 4.4 (#543)
@@ -915,31 +914,31 @@ void osc::AddComponentToModel(OpenSim::Model& m, std::unique_ptr<OpenSim::Compon
             throw std::runtime_error{"cannot create a new joint with 'ground' as the child: did you mix up parent/child?"};
         }
 
-        m.addJoint(static_cast<OpenSim::Joint*>(c.release()));
+        m.addJoint(dynamic_cast<OpenSim::Joint*>(c.release()));
     }
     else if (dynamic_cast<OpenSim::Constraint*>(c.get()))
     {
-        m.addConstraint(static_cast<OpenSim::Constraint*>(c.release()));
+        m.addConstraint(dynamic_cast<OpenSim::Constraint*>(c.release()));
     }
     else if (dynamic_cast<OpenSim::Force*>(c.get()))
     {
-        m.addForce(static_cast<OpenSim::Force*>(c.release()));
+        m.addForce(dynamic_cast<OpenSim::Force*>(c.release()));
     }
     else if (dynamic_cast<OpenSim::Probe*>(c.get()))
     {
-        m.addProbe(static_cast<OpenSim::Probe*>(c.release()));
+        m.addProbe(dynamic_cast<OpenSim::Probe*>(c.release()));
     }
     else if (dynamic_cast<OpenSim::ContactGeometry*>(c.get()))
     {
-        m.addContactGeometry(static_cast<OpenSim::ContactGeometry*>(c.release()));
+        m.addContactGeometry(dynamic_cast<OpenSim::ContactGeometry*>(c.release()));
     }
     else if (dynamic_cast<OpenSim::Marker*>(c.get()))
     {
-        m.addMarker(static_cast<OpenSim::Marker*>(c.release()));
+        m.addMarker(dynamic_cast<OpenSim::Marker*>(c.release()));
     }
     else if (dynamic_cast<OpenSim::Controller*>(c.get()))
     {
-        m.addController(static_cast<OpenSim::Controller*>(c.release()));
+        m.addController(dynamic_cast<OpenSim::Controller*>(c.release()));
     }
     else
     {
@@ -1030,7 +1029,7 @@ std::string osc::GetRecommendedDocumentName(osc::UndoableModelStatePair const& u
 
 std::string osc::GetDisplayName(OpenSim::Geometry const& g)
 {
-    if (OpenSim::Mesh const* mesh = dynamic_cast<OpenSim::Mesh const*>(&g); mesh)
+    if (auto const* mesh = dynamic_cast<OpenSim::Mesh const*>(&g); mesh)
     {
         return mesh->getGeometryFilename();
     }
@@ -1232,11 +1231,9 @@ std::vector<osc::GeometryPathPoint> osc::GetAllPathPoints(OpenSim::GeometryPath 
 
         OpenSim::AbstractPathPoint const& ap = *pps[i];
 
-        if (typeid(ap) == typeid(OpenSim::PathWrapPoint))
+        if (auto const* pwp = dynamic_cast<OpenSim::PathWrapPoint const*>(&ap))
         {
             // special case: it's a wrapping point, so add each part of the wrap
-            OpenSim::PathWrapPoint const* pwp = static_cast<OpenSim::PathWrapPoint const*>(&ap);
-
             Transform const body2ground = ToTransform(pwp->getParentFrame().getTransformInGround(st));
             OpenSim::Array<SimTK::Vec3> const& wrapPath = pwp->getWrapPath(st);
 
