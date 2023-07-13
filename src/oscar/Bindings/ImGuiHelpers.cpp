@@ -697,7 +697,7 @@ bool osc::InputString(CStringView label, std::string& s, size_t maxLen, ImGuiInp
 
     if (ImGui::InputText(label.c_str(), bufGuard->data(), maxLen, flags))
     {
-        s = bufGuard->data();
+        s = *bufGuard->data();
         return true;
     }
     else

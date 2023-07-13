@@ -12,8 +12,6 @@
 #include <glm/vec3.hpp>
 
 osc::ModelRendererParams::ModelRendererParams() :
-    decorationOptions{},
-    renderingOptions{},
     lightColor{SceneRendererParams::DefaultLightColor()},
     backgroundColor{SceneRendererParams::DefaultBackgroundColor()},
     floorLocation{SceneRendererParams::DefaultFloorLocation()},

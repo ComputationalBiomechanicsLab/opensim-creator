@@ -15,11 +15,7 @@
 #include <vector>
 
 osc::Component::Component() :
-    m_Parent{nullptr},
-    m_Name{},
-    m_DeclarationOrderedPropertyOffsets{},
-    m_DeclarationOrderedSocketOffsets{},
-    m_LexographicallyOrderedSubcomponents{}
+    m_Parent{nullptr}
 {
 }
 
@@ -76,7 +72,7 @@ void osc::Component::setName(std::string_view)
         for (size_t i = 0, nSockets = it->getNumSockets(); i < nSockets; ++i)
         {
             std::string_view const path = it->getIthSocket(i).getConnecteePath();
-            auto elBegin = path.begin();
+            auto const elBegin = path.begin();
             while (elBegin != path.end())
             {
                 auto elEnd = std::find(elBegin, path.end(), ComponentPath::delimiter());

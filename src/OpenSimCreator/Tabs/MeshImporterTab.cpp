@@ -138,36 +138,36 @@ using osc::Line;
 // user-facing string constants
 namespace
 {
-    static osc::CStringView constexpr c_GroundLabel = "Ground";
-    static osc::CStringView constexpr c_GroundLabelPluralized = "Ground";
-    static osc::CStringView constexpr c_GroundLabelOptionallyPluralized = "Ground(s)";
-    static osc::CStringView constexpr c_GroundDescription = "Ground is an inertial reference frame in which the motion of all frames and points may conveniently and efficiently be expressed. It is always defined to be at (0, 0, 0) in 'worldspace' and cannot move. All bodies in the model must eventually attach to ground via joints.";
+    osc::CStringView constexpr c_GroundLabel = "Ground";
+    osc::CStringView constexpr c_GroundLabelPluralized = "Ground";
+    osc::CStringView constexpr c_GroundLabelOptionallyPluralized = "Ground(s)";
+    osc::CStringView constexpr c_GroundDescription = "Ground is an inertial reference frame in which the motion of all frames and points may conveniently and efficiently be expressed. It is always defined to be at (0, 0, 0) in 'worldspace' and cannot move. All bodies in the model must eventually attach to ground via joints.";
 
-    static osc::CStringView constexpr c_MeshLabel = "Mesh";
-    static osc::CStringView constexpr c_MeshLabelPluralized = "Meshes";
-    static osc::CStringView constexpr c_MeshLabelOptionallyPluralized = "Mesh(es)";
-    static osc::CStringView constexpr c_MeshDescription = "Meshes are decorational components in the model. They can be translated, rotated, and scaled. Typically, meshes are 'attached' to other elements in the model, such as bodies. When meshes are 'attached' to something, they will 'follow' the thing they are attached to.";
-    static osc::CStringView constexpr c_MeshAttachmentCrossrefName = "parent";
+    osc::CStringView constexpr c_MeshLabel = "Mesh";
+    osc::CStringView constexpr c_MeshLabelPluralized = "Meshes";
+    osc::CStringView constexpr c_MeshLabelOptionallyPluralized = "Mesh(es)";
+    osc::CStringView constexpr c_MeshDescription = "Meshes are decorational components in the model. They can be translated, rotated, and scaled. Typically, meshes are 'attached' to other elements in the model, such as bodies. When meshes are 'attached' to something, they will 'follow' the thing they are attached to.";
+    osc::CStringView constexpr c_MeshAttachmentCrossrefName = "parent";
 
-    static osc::CStringView constexpr c_BodyLabel = "Body";
-    static osc::CStringView constexpr c_BodyLabelPluralized = "Bodies";
-    static osc::CStringView constexpr c_BodyLabelOptionallyPluralized = "Body(s)";
-    static osc::CStringView constexpr c_BodyDescription = "Bodies are active elements in the model. They define a 'frame' (effectively, a location + orientation) with a mass.\n\nOther body properties (e.g. inertia) can be edited in the main OpenSim Creator editor after you have converted the model into an OpenSim model.";
+    osc::CStringView constexpr c_BodyLabel = "Body";
+    osc::CStringView constexpr c_BodyLabelPluralized = "Bodies";
+    osc::CStringView constexpr c_BodyLabelOptionallyPluralized = "Body(s)";
+    osc::CStringView constexpr c_BodyDescription = "Bodies are active elements in the model. They define a 'frame' (effectively, a location + orientation) with a mass.\n\nOther body properties (e.g. inertia) can be edited in the main OpenSim Creator editor after you have converted the model into an OpenSim model.";
 
-    static osc::CStringView constexpr c_JointLabel = "Joint";
-    static osc::CStringView constexpr c_JointLabelPluralized = "Joints";
-    static osc::CStringView constexpr c_JointLabelOptionallyPluralized = "Joint(s)";
-    static osc::CStringView constexpr c_JointDescription = "Joints connect two physical frames (i.e. bodies and ground) together and specifies their relative permissible motion (e.g. PinJoints only allow rotation along one axis).\n\nIn OpenSim, joints are the 'edges' of a directed topology graph where bodies are the 'nodes'. All bodies in the model must ultimately connect to ground via joints.";
-    static osc::CStringView constexpr c_JointParentCrossrefName = "parent";
-    static osc::CStringView constexpr c_JointChildCrossrefName = "child";
+    osc::CStringView constexpr c_JointLabel = "Joint";
+    osc::CStringView constexpr c_JointLabelPluralized = "Joints";
+    osc::CStringView constexpr c_JointLabelOptionallyPluralized = "Joint(s)";
+    osc::CStringView constexpr c_JointDescription = "Joints connect two physical frames (i.e. bodies and ground) together and specifies their relative permissible motion (e.g. PinJoints only allow rotation along one axis).\n\nIn OpenSim, joints are the 'edges' of a directed topology graph where bodies are the 'nodes'. All bodies in the model must ultimately connect to ground via joints.";
+    osc::CStringView constexpr c_JointParentCrossrefName = "parent";
+    osc::CStringView constexpr c_JointChildCrossrefName = "child";
 
-    static osc::CStringView constexpr c_StationLabel = "Station";
-    static osc::CStringView constexpr c_StationLabelPluralized = "Stations";
-    static osc::CStringView constexpr c_StationLabelOptionallyPluralized = "Station(s)";
-    static osc::CStringView constexpr c_StationDescription = "Stations are points of interest in the model. They can be used to compute a 3D location in the frame of the thing they are attached to.\n\nThe utility of stations is that you can use them to visually mark points of interest. Those points of interest will then be defined with respect to whatever they are attached to. This is useful because OpenSim typically requires relative coordinates for things in the model (e.g. muscle paths).";
-    static osc::CStringView constexpr c_StationParentCrossrefName = "parent";
+    osc::CStringView constexpr c_StationLabel = "Station";
+    osc::CStringView constexpr c_StationLabelPluralized = "Stations";
+    osc::CStringView constexpr c_StationLabelOptionallyPluralized = "Station(s)";
+    osc::CStringView constexpr c_StationDescription = "Stations are points of interest in the model. They can be used to compute a 3D location in the frame of the thing they are attached to.\n\nThe utility of stations is that you can use them to visually mark points of interest. Those points of interest will then be defined with respect to whatever they are attached to. This is useful because OpenSim typically requires relative coordinates for things in the model (e.g. muscle paths).";
+    osc::CStringView constexpr c_StationParentCrossrefName = "parent";
 
-    static osc::CStringView constexpr c_TranslationDescription = "Translation of the component in ground. OpenSim defines this as 'unitless'; however, OpenSim models typically use meters.";
+    osc::CStringView constexpr c_TranslationDescription = "Translation of the component in ground. OpenSim defines this as 'unitless'; however, OpenSim models typically use meters.";
 }
 
 // senteniel UID constants
@@ -3924,7 +3924,7 @@ namespace
 
         bool HasOutputModel() const
         {
-            return m_MaybeOutputModel.get() != nullptr;
+            return m_MaybeOutputModel != nullptr;
         }
 
         std::unique_ptr<OpenSim::Model>& UpdOutputModel()
@@ -4040,9 +4040,9 @@ namespace
             m_CloseRequested = false;
         }
 
-        bool IsNewMeshImpoterTabRequested()
+        bool IsNewMeshImpoterTabRequested() const
         {
-            return m_NewTabRequested == true;
+            return m_NewTabRequested;
         }
 
         void RequestNewMeshImporterTab()
@@ -5973,7 +5973,6 @@ namespace
             DrawCancelButton();
         }
 
-    private:
         // data that's shared between other UI states
         std::shared_ptr<SharedData> m_Shared;
 

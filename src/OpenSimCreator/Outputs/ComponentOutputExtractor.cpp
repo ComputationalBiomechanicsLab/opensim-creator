@@ -91,7 +91,7 @@ namespace
 
     std::string const& GetNoDescriptionString()
     {
-        static std::string const s_NoDescriptionStr = "";
+        static std::string const s_NoDescriptionStr;
         return s_NoDescriptionStr;
     }
 

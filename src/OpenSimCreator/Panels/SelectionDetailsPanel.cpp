@@ -74,7 +74,6 @@ private:
         }
     }
 
-private:
     SimulatorUIAPI* m_SimulatorUIAPI;
     ComponentDetails m_ComponentDetailsWidget;
 };

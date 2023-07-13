@@ -118,7 +118,6 @@ namespace
 osc::IntegratorOutputExtractor::IntegratorOutputExtractor(std::string_view name,
                                                           std::string_view description,
                                                           ExtractorFn extractor) :
-    m_AuxiliaryDataID{},
     m_Name{name},
     m_Description{description},
     m_Extractor{extractor}

@@ -31,7 +31,7 @@ std::ostream& osc::operator<<(std::ostream& o, glm::mat3 const& m)
     // prints in row-major, because that's how most people debug matrices
     for (glm::mat3::length_type row = 0; row < 3; ++row)
     {
-        std::string_view delim = "";
+        std::string_view delim;
         for (glm::mat3::length_type col = 0; col < 3; ++col)
         {
             o << delim << m[col][row];
@@ -47,7 +47,7 @@ std::ostream& osc::operator<<(std::ostream& o, glm::mat4x3 const& m)
     // prints in row-major, because that's how most people debug matrices
     for (glm::mat4x3::length_type row = 0; row < 3; ++row)
     {
-        std::string_view delim = "";
+        std::string_view delim;
         for (glm::mat4x3::length_type col = 0; col < 4; ++col)
         {
             o << delim << m[col][row];
@@ -62,7 +62,7 @@ std::ostream& osc::operator<<(std::ostream& o, glm::mat4 const& m)
 {
     // prints in row-major, because that's how most people debug matrices
     for (glm::mat4::length_type row = 0; row < 4; ++row) {
-        std::string_view delim = "";
+        std::string_view delim;
         for (glm::mat4::length_type col = 0; col < 4; ++col)
         {
             o << delim << m[col][row];

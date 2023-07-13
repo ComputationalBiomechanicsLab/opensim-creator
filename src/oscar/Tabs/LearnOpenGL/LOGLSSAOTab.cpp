@@ -19,7 +19,6 @@
 #include "oscar/Graphics/Texture2D.hpp"
 #include "oscar/Graphics/TextureFormat.hpp"
 #include "oscar/Graphics/TextureFilterMode.hpp"
-#include "oscar/Graphics/TextureFormat.hpp"
 #include "oscar/Graphics/TextureWrapMode.hpp"
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Maths/Rect.hpp"

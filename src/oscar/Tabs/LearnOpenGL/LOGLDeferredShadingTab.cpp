@@ -230,7 +230,7 @@ public:
         m_Camera.renderTo(m_GBuffer.renderTarget);
     }
 
-    void drawGBufferOverlays(Rect const& viewportRect)
+    void drawGBufferOverlays(Rect const& viewportRect) const
     {
         Graphics::BlitToScreen(
             m_GBuffer.albedo,

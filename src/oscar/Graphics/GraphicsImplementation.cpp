@@ -3687,8 +3687,8 @@ private:
         // activate relevant attributes based on buffer layout
         int64_t byteOffset = 0;
 
-        if (true)  // mesh always has vertices
-        {
+
+        {  // mesh always has vertices
             glVertexAttribPointer(SHADER_LOC_VERTEX_POSITION, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
             glEnableVertexAttribArray(SHADER_LOC_VERTEX_POSITION);
             byteOffset += sizeof(decltype(m_Vertices)::value_type);
@@ -4281,7 +4281,7 @@ void osc::Camera::setClearFlags(CameraClearFlags flags)
 
 std::optional<osc::Rect> osc::Camera::getPixelRect() const
 {
-    return m_Impl.get()->getPixelRect();
+    return m_Impl->getPixelRect();
 }
 
 void osc::Camera::setPixelRect(std::optional<Rect> maybePixelRect)

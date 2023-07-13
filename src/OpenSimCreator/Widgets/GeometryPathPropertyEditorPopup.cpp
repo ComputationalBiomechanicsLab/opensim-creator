@@ -32,7 +32,7 @@ namespace
         {
             return OpenSim::GeometryPath{};  // default it
         }
-        else if (maybeGeomPath->size() >= 1)
+        else if (!maybeGeomPath->empty())
         {
             return maybeGeomPath->getValue(0);
         }
@@ -121,7 +121,7 @@ namespace
         {
             if (auto* gpProp = dynamic_cast<OpenSim::ObjectProperty<OpenSim::GeometryPath>*>(&prop))
             {
-                if (gpProp->size() >= 1)
+                if (!gpProp->empty())
                 {
                     gpProp->updValue() = editedPath;  // just overwrite it
                 }

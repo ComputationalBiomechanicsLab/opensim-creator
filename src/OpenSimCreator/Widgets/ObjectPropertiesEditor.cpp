@@ -1065,7 +1065,7 @@ namespace
                 return rv;  // // HACK: ignore list props for now
             }
 
-            if (m_EditedProperty.size() == 0)
+            if (m_EditedProperty.empty())
             {
                 return rv;  // HACK: ignore optional props for now
             }

@@ -482,7 +482,6 @@ private:
         drawBottomButtons();
     }
 
-private:
     EditorAPI* m_EditorAPI;
 
     // the model that the component should be added to

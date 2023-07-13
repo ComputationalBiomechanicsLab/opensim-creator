@@ -161,7 +161,7 @@ namespace
     std::string ToDaeList(nonstd::span<T const> vs)
     {
         std::stringstream ss;
-        std::string_view delim = "";
+        std::string_view delim;
         for (float v : vs)
         {
             ss << delim << v;
@@ -327,7 +327,7 @@ namespace
         }
 
         o << "          <p>";
-        std::string_view delim = "";
+        std::string_view delim;
         for (uint32_t v : indices)
         {
             o << delim << v;
@@ -381,7 +381,7 @@ namespace
 
         // row-major
         o << R"(        <matrix sid="transform">)";
-        std::string_view delim = "";
+        std::string_view delim;
         for (glm::mat4::length_type row = 0; row < 4; ++row)
         {
             o << delim << m[0][row];

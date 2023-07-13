@@ -664,7 +664,6 @@ private:
         return m_MaybeCommitSavedToDisk;
     }
 
-private:
     // mutable staging area that calling code can mutate
     UiModelStatePair m_Scratch;
 

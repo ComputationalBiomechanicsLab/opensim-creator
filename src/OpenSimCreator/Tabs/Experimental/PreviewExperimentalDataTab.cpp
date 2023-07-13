@@ -623,7 +623,7 @@ private:
         UpdateSceneBVH(m_Decorations, m_SceneBVH);
     }
 
-    void updateScene3DHittest()
+    void updateScene3DHittest() const
     {
         if (!m_RenderIsMousedOver)
         {

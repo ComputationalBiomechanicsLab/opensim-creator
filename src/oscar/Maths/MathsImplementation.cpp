@@ -8,10 +8,8 @@
 #include "oscar/Maths/RayCollision.hpp"
 #include "oscar/Maths/EulerPerspectiveCamera.hpp"
 #include "oscar/Maths/Line.hpp"
-#include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Maths/Plane.hpp"
 #include "oscar/Maths/PolarPerspectiveCamera.hpp"
-#include "oscar/Maths/RayCollision.hpp"
 #include "oscar/Maths/Rect.hpp"
 #include "oscar/Maths/Segment.hpp"
 #include "oscar/Maths/Sphere.hpp"
@@ -1544,7 +1542,7 @@ osc::Sphere osc::BoundingSphereOf(nonstd::span<glm::vec3 const> points) noexcept
     rv.radius = 0.0f;
 
     // edge-case: no points provided
-    if (points.size() == 0)
+    if (points.empty())
     {
         return rv;
     }

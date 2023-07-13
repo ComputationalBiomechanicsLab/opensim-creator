@@ -402,7 +402,6 @@ private:
         return rv;
     }
 
-private:
     std::shared_ptr<VirtualModelStatePair> m_Model;
     std::function<void(OpenSim::ComponentPath const&)> m_OnRightClick;
     std::string m_CurrentSearch;

@@ -61,7 +61,7 @@ bool osc::operator!=(TPSCoefficientSolverInputs3D const& a, TPSCoefficientSolver
 std::ostream& osc::operator<<(std::ostream& o, TPSCoefficientSolverInputs3D const& inputs)
 {
     o << "TPSCoefficientSolverInputs3D{landmarks = [";
-    std::string_view delim = "";
+    std::string_view delim;
     for (LandmarkPair3D const& landmark : inputs.landmarks)
     {
         o << delim << landmark;

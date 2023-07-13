@@ -198,8 +198,6 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
-#include <cstring>  // strerror_r()
-#include <ctime>  // gmtime_r()
 
 #include <execinfo.h>
 #include <ucontext.h>

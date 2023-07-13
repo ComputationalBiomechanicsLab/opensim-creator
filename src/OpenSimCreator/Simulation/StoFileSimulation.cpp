@@ -139,7 +139,7 @@ namespace
         {
             std::stringstream ss;
             ss << "the provided STO file is missing the following columns:\n";
-            std::string_view delim = "";
+            std::string_view delim;
             for (std::string const& el : missing)
             {
                 ss << delim << el;

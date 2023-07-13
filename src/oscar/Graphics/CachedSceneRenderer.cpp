@@ -15,8 +15,6 @@ public:
         MeshCache& meshCache,
         ShaderCache& shaderCache) :
 
-        m_LastRenderingParams{},
-        m_LastDecorationList{},
         m_SceneRenderer{config, meshCache, shaderCache}
     {
     }
