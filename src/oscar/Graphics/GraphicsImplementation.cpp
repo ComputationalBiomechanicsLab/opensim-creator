@@ -2313,19 +2313,19 @@ private:
     {
         constexpr GLsizei maxNameLen = 128;
 
-        GLint numAttrs;
+        GLint numAttrs = 0;
         glGetProgramiv(m_Program.get(), GL_ACTIVE_ATTRIBUTES, &numAttrs);
 
-        GLint numUniforms;
+        GLint numUniforms = 0;
         glGetProgramiv(m_Program.get(), GL_ACTIVE_UNIFORMS, &numUniforms);
 
         m_Attributes.reserve(numAttrs);
         for (GLint i = 0; i < numAttrs; i++)
         {
-            GLint size; // size of the variable
-            GLenum type; // type of the variable (float, vec3 or mat4, etc)
+            GLint size = 0; // size of the variable
+            GLenum type = 0; // type of the variable (float, vec3 or mat4, etc)
             std::array<GLchar, maxNameLen> name{}; // variable name in GLSL
-            GLsizei length; // name length
+            GLsizei length = 0; // name length
             glGetActiveAttrib(
                 m_Program.get() ,
                 static_cast<GLuint>(i),
@@ -2348,10 +2348,10 @@ private:
         m_Uniforms.reserve(numUniforms);
         for (GLint i = 0; i < numUniforms; i++)
         {
-            GLint size; // size of the variable
-            GLenum type; // type of the variable (float, vec3 or mat4, etc)
+            GLint size = 0; // size of the variable
+            GLenum type = 0; // type of the variable (float, vec3 or mat4, etc)
             std::array<GLchar, maxNameLen> name{}; // variable name in GLSL
-            GLsizei length; // name length
+            GLsizei length = 0; // name length
             glGetActiveUniform(
                 m_Program.get(),
                 static_cast<GLuint>(i),
@@ -4587,7 +4587,7 @@ namespace
         // if context is not debug-mode, then some of the glGet*s below can fail
         // (e.g. GL_DEBUG_OUTPUT_SYNCHRONOUS on apple).
         {
-            GLint flags;
+            GLint flags = 0;
             glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
             if (!(flags & GL_CONTEXT_FLAG_DEBUG_BIT))
             {
@@ -4650,7 +4650,7 @@ severity = %s
             return;
         }
 
-        GLint flags;
+        GLint flags = 0;
         glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
         if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
         {
@@ -4848,6 +4848,26 @@ public:
         return reinterpret_cast<char const*>(s);
     }
 
+    Material const& getQuadMaterial() const
+    {
+        return m_QuadMaterial;
+    }
+
+    Mesh const& getQuadMesh() const
+    {
+        return m_QuadMesh;
+    }
+
+    std::vector<float>& updInstanceCPUBuffer()
+    {
+        return m_InstanceCPUBuffer;
+    }
+
+    gl::ArrayBuffer<float, GL_STREAM_DRAW>& updInstanceGPUBuffer()
+    {
+        return m_InstanceGPUBuffer;
+    }
+
 private:
 
     // active OpenGL context for the application
@@ -4863,8 +4883,6 @@ private:
 
     // a "queue" of active screenshot requests
     std::vector<std::promise<Image>> m_ActiveScreenshotRequests;
-
-public:
 
     // a generic quad rendering material: used for some blitting operations
     Material m_QuadMaterial
@@ -5075,7 +5093,7 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
         // write the instance data into a CPU-side buffer
 
         OSC_PERF("GraphicsBackend::UploadInstanceData");
-        std::vector<float>& buf = g_GraphicsContextImpl->m_InstanceCPUBuffer;
+        std::vector<float>& buf = g_GraphicsContextImpl->updInstanceCPUBuffer();
         buf.resize(els.size() * (byteStride/sizeof(float)));
 
         size_t floatOffset = 0;
@@ -5108,7 +5126,7 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
         }
         OSC_ASSERT_ALWAYS(sizeof(float)*floatOffset == els.size() * byteStride);
 
-        auto& vbo = maybeInstancingState.emplace(g_GraphicsContextImpl->m_InstanceGPUBuffer, byteStride).buf;
+        auto& vbo = maybeInstancingState.emplace(g_GraphicsContextImpl->updInstanceGPUBuffer(), byteStride).buf;
         vbo.assign(nonstd::span<float const>{buf.data(), floatOffset});
     }
     return maybeInstancingState;
@@ -5988,10 +6006,11 @@ void osc::GraphicsBackend::BlitToScreen(
         c.setViewMatrixOverride(glm::mat4{1.0f});
         c.setClearFlags(CameraClearFlags::Nothing);
 
-        g_GraphicsContextImpl->m_QuadMaterial.setRenderTexture("uTexture", t);
-        Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, g_GraphicsContextImpl->m_QuadMaterial, c);
+        Material m = g_GraphicsContextImpl->getQuadMaterial();
+        m.setRenderTexture("uTexture", t);
+        Graphics::DrawMesh(g_GraphicsContextImpl->getQuadMesh(), Transform{}, m, c);
         c.renderToScreen();
-        g_GraphicsContextImpl->m_QuadMaterial.clearRenderTexture("uTexture");
+        m.clearRenderTexture("uTexture");
     }
     else
     {
@@ -6059,7 +6078,7 @@ void osc::GraphicsBackend::BlitToScreen(
     Material copy{material};
 
     copy.setRenderTexture("uTexture", t);
-    Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, copy, c);
+    Graphics::DrawMesh(g_GraphicsContextImpl->getQuadMesh(), Transform{}, copy, c);
     c.renderToScreen();
     copy.clearRenderTexture("uTexture");
 }
@@ -6071,13 +6090,11 @@ void osc::GraphicsBackend::Blit(Texture2D const& source, RenderTexture& dest)
     c.setProjectionMatrixOverride(glm::mat4{1.0f});
     c.setViewMatrixOverride(glm::mat4{1.0f});
 
-    g_GraphicsContextImpl->m_QuadMaterial.setTexture("uTexture", source);
+    Material m = g_GraphicsContextImpl->getQuadMaterial();
+    m.setTexture("uTexture", source);
 
-    Graphics::DrawMesh(g_GraphicsContextImpl->m_QuadMesh, Transform{}, g_GraphicsContextImpl->m_QuadMaterial, c);
-
+    Graphics::DrawMesh(g_GraphicsContextImpl->getQuadMesh(), Transform{}, m, c);
     c.renderTo(dest);
-
-    g_GraphicsContextImpl->m_QuadMaterial.clearTexture("uTexture");
 }
 
 void osc::GraphicsBackend::ReadPixels(RenderTexture const& source, Image& dest)

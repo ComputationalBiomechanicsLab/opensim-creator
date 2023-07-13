@@ -100,7 +100,7 @@ void osc::GuiRuler::draw(
 
             // label the line's length
             {
-                std::array<char, 1024> buf;
+                std::array<char, 64> buf{};
                 std::snprintf(buf.data(), buf.size(), "%.5f", lineWorldLen);
                 drawTooltipWithBg(lineMidpoint + offsetVec, buf.data());
             }
