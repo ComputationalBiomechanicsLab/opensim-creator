@@ -55,7 +55,7 @@ namespace
     }
 
     struct SceneCube final {
-        SceneCube(osc::Transform transform_) :
+        explicit SceneCube(osc::Transform transform_) :
             transform{transform_}
         {
         }
@@ -75,11 +75,11 @@ namespace
         static auto const s_SceneCubes = osc::to_array<SceneCube>(
         {
             SceneCube{MakeTransform(0.5f, {}), true},
-            MakeTransform(0.5f, {4.0f, -3.5f, 0.0f}),
-            MakeTransform(0.75f, {2.0f, 3.0f, 1.0f}),
-            MakeTransform(0.5f, {-3.0f, -1.0f, 0.0f}),
-            MakeTransform(0.5f, {-1.5f, 1.0f, 1.5f}),
-            MakeRotatedTransform(),
+            SceneCube{MakeTransform(0.5f, {4.0f, -3.5f, 0.0f})},
+            SceneCube{MakeTransform(0.75f, {2.0f, 3.0f, 1.0f})},
+            SceneCube{MakeTransform(0.5f, {-3.0f, -1.0f, 0.0f})},
+            SceneCube{MakeTransform(0.5f, {-1.5f, 1.0f, 1.5f})},
+            SceneCube{MakeRotatedTransform()},
         });
         return s_SceneCubes;
     }
@@ -151,7 +151,7 @@ namespace
 class osc::LOGLPointShadowsTab::Impl final {
 public:
 
-    Impl(std::weak_ptr<TabHost> parent_) :
+    explicit Impl(std::weak_ptr<TabHost> parent_) :
         m_Parent{std::move(parent_)}
     {
     }

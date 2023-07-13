@@ -11,7 +11,7 @@
 class osc::LogViewerPanel::Impl final : public StandardPanel {
 public:
 
-    Impl(std::string_view panelName) :
+    explicit Impl(std::string_view panelName) :
         StandardPanel{panelName, ImGuiWindowFlags_MenuBar}
     {
     }

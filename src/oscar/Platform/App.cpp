@@ -227,7 +227,7 @@ namespace
     // wrapper class for storing std::type_info as a hashable type
     class TypeInfoReference {
     public:
-        TypeInfoReference(std::type_info const& typeInfo) noexcept :
+        explicit TypeInfoReference(std::type_info const& typeInfo) noexcept :
             m_TypeInfo{&typeInfo}
         {
         }
@@ -677,7 +677,7 @@ public:
     std::shared_ptr<void> updSingleton(std::type_info const& typeinfo, std::function<std::shared_ptr<void>()> const& ctor)
     {
         auto lock = m_Singletons.lock();
-        auto const [it, inserted] = lock->try_emplace(typeinfo, nullptr);
+        auto const [it, inserted] = lock->try_emplace(TypeInfoReference{typeinfo}, nullptr);
         if (inserted)
         {
             it->second = ctor();

@@ -87,7 +87,7 @@ namespace
 class osc::LOGLParallaxMappingTab::Impl final {
 public:
 
-    Impl(std::weak_ptr<TabHost> parent_) :
+    explicit Impl(std::weak_ptr<TabHost> parent_) :
         m_Parent{std::move(parent_)}
     {
         m_ParallaxMappingMaterial.setTexture("uDiffuseMap", m_DiffuseMap);

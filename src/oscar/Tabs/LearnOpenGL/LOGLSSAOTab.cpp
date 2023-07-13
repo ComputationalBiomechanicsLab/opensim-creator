@@ -189,7 +189,7 @@ namespace
 class osc::LOGLSSAOTab::Impl final {
 public:
 
-    Impl(std::weak_ptr<TabHost> parent_) :
+    explicit Impl(std::weak_ptr<TabHost> parent_) :
         m_Parent{std::move(parent_)}
     {
     }

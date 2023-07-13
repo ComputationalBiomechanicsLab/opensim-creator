@@ -263,7 +263,7 @@ namespace
 {
     /* This structure mirrors the one found in /usr/include/asm/ucontext.h */
     struct osc_sig_ucontext final {
-        unsigned long uc_flags;
+        unsigned long uc_flags;  // NOLINT(google-runtime-int)
         ucontext_t* uc_link;
         stack_t uc_stack;
         sigcontext uc_mcontext;

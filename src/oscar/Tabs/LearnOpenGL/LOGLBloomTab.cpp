@@ -106,7 +106,7 @@ namespace
 class osc::LOGLBloomTab::Impl final {
 public:
 
-    Impl(std::weak_ptr<TabHost> parent_) :
+    explicit Impl(std::weak_ptr<TabHost> parent_) :
         m_Parent{std::move(parent_)}
     {
         m_Camera.setPosition({0.0f, 0.0f, 5.0f});

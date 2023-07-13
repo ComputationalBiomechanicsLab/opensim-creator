@@ -55,7 +55,7 @@ namespace
 
     struct SceneSphere final {
 
-        SceneSphere(glm::vec3 pos_) :
+        explicit SceneSphere(glm::vec3 pos_) :
             pos{pos_}
         {
         }

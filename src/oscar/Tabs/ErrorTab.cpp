@@ -16,7 +16,7 @@
 class osc::ErrorTab::Impl final {
 public:
 
-    Impl(std::exception const& ex) :
+    explicit Impl(std::exception const& ex) :
         m_ErrorMessage{ex.what()}
     {
     }

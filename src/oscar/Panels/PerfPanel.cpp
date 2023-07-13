@@ -29,7 +29,7 @@ namespace
 class osc::PerfPanel::Impl final : public osc::StandardPanel {
 public:
 
-    Impl(std::string_view panelName) :
+    explicit Impl(std::string_view panelName) :
         StandardPanel{panelName}
     {
     }

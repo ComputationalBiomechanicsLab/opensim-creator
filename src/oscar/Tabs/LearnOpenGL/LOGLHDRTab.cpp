@@ -64,7 +64,7 @@ namespace
 class osc::LOGLHDRTab::Impl final {
 public:
 
-    Impl(std::weak_ptr<TabHost> parent_) :
+    explicit Impl(std::weak_ptr<TabHost> parent_) :
         m_Parent{std::move(parent_)}
     {
         m_SceneMaterial.setVec3Array("uSceneLightPositions", c_LightPositions);
