@@ -71,7 +71,7 @@ namespace
             return static_cast<float>(musc.getActuation(st)) / static_cast<float>(musc.getMaxIsometricForce());
         case osc::MuscleColoringStyle::FiberLength:
         {
-            float const nfl = static_cast<float>(musc.getNormalizedFiberLength(st));  // 1.0f == ideal length
+            auto const nfl = static_cast<float>(musc.getNormalizedFiberLength(st));  // 1.0f == ideal length
             float fl = nfl - 1.0f;
             fl = std::abs(fl);
             fl = std::min(fl, 1.0f);
@@ -131,7 +131,7 @@ namespace
     // similar to how SCONE does it, so that users can compare between the two apps
     float GetSconeStyleAutomaticMuscleRadiusCalc(OpenSim::Muscle const& m)
     {
-        float const f = static_cast<float>(m.getMaxIsometricForce());
+        auto const f = static_cast<float>(m.getMaxIsometricForce());
         float const specificTension = 0.25e6f;  // magic number?
         float const pcsa = f / specificTension;
         float const widthFactor = 0.25f;
@@ -476,9 +476,9 @@ namespace
 
         // else: the path is >= 2 points, so it's possible to measure a traversal
         //       length along it
-        float tendonLen = static_cast<float>(muscle.getTendonLength(rs.getState()) * 0.5);
+        auto tendonLen = static_cast<float>(muscle.getTendonLength(rs.getState()) * 0.5);
         tendonLen = std::clamp(tendonLen, 0.0f, tendonLen);
-        float fiberLen = static_cast<float>(muscle.getFiberLength(rs.getState()));
+        auto fiberLen = static_cast<float>(muscle.getFiberLength(rs.getState()));
         fiberLen = std::clamp(fiberLen, 0.0f, fiberLen);
         float const fiberEnd = tendonLen + fiberLen;
 

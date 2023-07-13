@@ -15,6 +15,7 @@
 #include <SimTKcommon/SmallMatrix.h>
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <memory>
 #include <typeinfo>
@@ -195,10 +196,10 @@ public:
 
     float getValueFloat(OpenSim::Component const& c, SimulationReport const& r) const
     {
-        float v[1];
-        nonstd::span<SimulationReport const> reports(&r, 1);
+        std::array<float, 1> v{};
+        nonstd::span<SimulationReport const> const reports(&r, 1);
         getValuesFloat(c, reports, v);
-        return v[0];
+        return v.front();
     }
 
     void getValuesFloat(OpenSim::Component const& c,

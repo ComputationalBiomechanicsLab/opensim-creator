@@ -37,12 +37,6 @@ namespace
         static_assert(N <= std::numeric_limits<int>::max());
 
     public:
-        SizedArray& operator=(SizedArray const& rhs) {
-            std::copy(rhs.m_Data.begin(), rhs.m_Data.begin() + rhs.size(), m_Data.begin());
-            m_Size = rhs.m_Size;
-            return *this;
-        }
-
         void push_back(T v) {
             if (m_Size >= N) {
                 throw std::runtime_error{"cannot render a navigator: the Model/Component tree is too deep"};
@@ -95,7 +89,7 @@ namespace
         }
 
     private:
-        std::array<T, N> m_Data;
+        std::array<T, N> m_Data{};
         size_t m_Size = 0;
     };
 
@@ -236,19 +230,19 @@ private:
         OpenSim::Component const* selection = m_Model->getSelected();
         OpenSim::Component const* hover = m_Model->getHovered();
 
-        ComponentPath selectionPath;
+        ComponentPath selectionPath{};
         if (selection)
         {
             computeComponentPath(root, selection, selectionPath);
         }
 
-        ComponentPath hoverPath;
+        ComponentPath hoverPath{};
         if (hover)
         {
             computeComponentPath(root, hover, hoverPath);
         }
 
-        Response response;
+        Response const response;
 
         // init iterators: this alg. is single-pass with a 1-token lookahead
         auto const lst = root->getComponentList();
@@ -266,9 +260,9 @@ private:
 
         int imguiTreeDepth = 0;
         int imguiId = 0;
-        bool hasSearch = !m_CurrentSearch.empty();
+        bool const hasSearch = !m_CurrentSearch.empty();
 
-        float unindentPerLevel = ImGui::GetTreeNodeToLabelSpacing() - 15.0f;
+        float const unindentPerLevel = ImGui::GetTreeNodeToLabelSpacing() - 15.0f;
 
         while (lookahead)
         {
@@ -314,7 +308,7 @@ private:
             }
             OSC_ASSERT((lookahead || !lookahead) && "a lookahead is not *required* at this point");
 
-            bool searchHit = hasSearch && isSearchHit(m_CurrentSearch, currentPath);
+            bool const searchHit = hasSearch && isSearchHit(m_CurrentSearch, currentPath);
 
             // skip rendering if a parent node is collapsed
             if (imguiTreeDepth < currentPath.sizei() - 1)
@@ -332,8 +326,8 @@ private:
             OSC_ASSERT(imguiTreeDepth <= currentPath.sizei() - 1);
 
             // handle display mode (node vs leaf)
-            bool isInternalNode = currentPath.size() < 2 || lookaheadPath.size() > currentPath.size();
-            ImGuiTreeNodeFlags nodeFlags = isInternalNode ? ImGuiTreeNodeFlags_OpenOnArrow : (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet);
+            bool const isInternalNode = currentPath.size() < 2 || lookaheadPath.size() > currentPath.size();
+            ImGuiTreeNodeFlags const nodeFlags = isInternalNode ? ImGuiTreeNodeFlags_OpenOnArrow : (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet);
 
             // handle coloring
             int styles = 0;

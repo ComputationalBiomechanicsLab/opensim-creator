@@ -56,7 +56,7 @@ public:
     {
         // CARE: the reason we delay construction is because std::enable_shared_from_this
         // does not work until after the inheriting class's constructor completes
-        m_InitialTabsCtors.push_back([](std::weak_ptr<MainUIStateAPI> api)
+        m_InitialTabsCtors.emplace_back([](std::weak_ptr<MainUIStateAPI> api)
         {
             return std::make_unique<SplashTab>(api);
         });
@@ -68,7 +68,7 @@ public:
         // does not work until after the inheriting class's constructor completes
 
         // always ensure the splash tab is available
-        m_InitialTabsCtors.push_back([](std::weak_ptr<MainUIStateAPI> api)
+        m_InitialTabsCtors.emplace_back([](std::weak_ptr<MainUIStateAPI> api)
         {
             return std::make_unique<SplashTab>(api);
         });
@@ -76,7 +76,7 @@ public:
         // queue a tab for each supplied path (i.e. load the path)
         for (std::filesystem::path const& path : paths)
         {
-            m_InitialTabsCtors.push_back([path](std::weak_ptr<MainUIStateAPI> api)
+            m_InitialTabsCtors.emplace_back([path](std::weak_ptr<MainUIStateAPI> api)
             {
                 return std::make_unique<LoadingTab>(api, path);
             });
