@@ -20,8 +20,15 @@
 #include <stdexcept>
 #include <utility>
 
-// this mutex is required because stbi has global methods (e.g. stbi_set_flip_vertically_on_load)
-static std::mutex g_StbiMutex;
+namespace
+{
+    // this mutex is required because stbi has global mutable state (e.g. stbi_set_flip_vertically_on_load)
+    auto LockStbiAPI()
+    {
+        static std::mutex s_StbiMutex;
+        return std::lock_guard{s_StbiMutex};
+    }
+}
 
 osc::Image::Image() :
     m_Dimensions{glm::ivec2{0, 0}},
@@ -94,7 +101,7 @@ osc::Image osc::LoadImageFromFile(
     ColorSpace colorSpace,
     ImageFlags flags)
 {
-    std::lock_guard stbiGuard{g_StbiMutex};
+    auto guard = LockStbiAPI();
 
     if (flags & ImageFlags_FlipVertically)
     {
@@ -137,13 +144,19 @@ void osc::WriteImageToPNGFile(
     std::filesystem::path const& outpath)
 {
     std::string const pathStr = outpath.string();
-    int32_t const w = image.getDimensions().x;
-    int32_t const h = image.getDimensions().y;
-    int32_t const strideBetweenRows = w * image.getNumChannels();
+    glm::ivec2 dims = image.getDimensions();
+    int32_t const strideBetweenRows = dims.x * image.getNumChannels();
 
-    std::lock_guard stbiGuard{g_StbiMutex};
+    auto guard = LockStbiAPI();
     stbi_flip_vertically_on_write(true);
-    auto const rv = stbi_write_png(pathStr.c_str(), w, h, image.getNumChannels(), image.getPixelData().data(), strideBetweenRows);
+    auto const rv = stbi_write_png(
+        pathStr.c_str(),
+        dims.x,
+        dims.y,
+        image.getNumChannels(),
+        image.getPixelData().data(),
+        strideBetweenRows
+    );
     stbi_flip_vertically_on_write(false);
 
     OSC_ASSERT(rv != 0);

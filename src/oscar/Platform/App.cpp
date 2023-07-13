@@ -42,20 +42,24 @@
 #include <stdexcept>
 #include <unordered_map>
 
-// handy macro for calling SDL_GL_SetAttribute with error checking
-#define OSC_SDL_GL_SetAttribute_CHECK(attr, value)                                                                     \
-    {                                                                                                                  \
-        int rv = SDL_GL_SetAttribute((attr), (value));                                                                 \
-        if (rv != 0) {                                                                                                 \
-            throw std::runtime_error{std::string{"SDL_GL_SetAttribute failed when setting " #attr " = " #value " : "} +            \
-                                     SDL_GetError()};                                                                  \
-        }                                                                                                              \
-    }
-
-static auto constexpr c_IconRanges = osc::to_array<ImWchar>({ ICON_MIN_FA, ICON_MAX_FA, 0 });
-
 namespace
 {
+    auto constexpr c_IconRanges = osc::to_array<ImWchar>({ ICON_MIN_FA, ICON_MAX_FA, 0 });
+
+    void Sdl_GL_SetAttributeOrThrow(
+        SDL_GLattr attr,
+        osc::CStringView attrReadableName,
+        int value,
+        osc::CStringView valueReadableName)
+    {
+        if (SDL_GL_SetAttribute(attr, value))
+        {
+            std::stringstream msg;
+            msg << "SDL_GL_SetAttribute failed when setting " << attrReadableName << " = " << valueReadableName << ": " << SDL_GetError();
+            throw std::runtime_error{std::move(msg).str()};
+        }
+    }
+
     // install backtrace dumper
     //
     // useful if the application fails in prod: can provide some basic backtrace
@@ -85,10 +89,10 @@ namespace
     {
         osc::log::info("initializing main application window");
 
-        OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-        OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+        Sdl_GL_SetAttributeOrThrow(SDL_GL_CONTEXT_PROFILE_MASK, "SDL_GL_CONTEXT_PROFILE_MASK", SDL_GL_CONTEXT_PROFILE_CORE, "SDL_GL_CONTEXT_PROFILE_CORE");
+        Sdl_GL_SetAttributeOrThrow(SDL_GL_CONTEXT_MAJOR_VERSION, "SDL_GL_CONTEXT_MAJOR_VERSION", 3, "3");
+        Sdl_GL_SetAttributeOrThrow(SDL_GL_CONTEXT_MINOR_VERSION, "SDL_GL_CONTEXT_MINOR_VERSION", 3, "3");
+        Sdl_GL_SetAttributeOrThrow(SDL_GL_CONTEXT_FLAGS, "SDL_GL_CONTEXT_FLAGS", SDL_GL_CONTEXT_DEBUG_FLAG, "SDL_GL_CONTEXT_DEBUG_FLAG");
 
         // careful about setting resolution, position, etc. - some people have *very* shitty
         // screens on their laptop (e.g. ultrawide, sub-HD, minus space for the start bar, can
