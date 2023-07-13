@@ -231,9 +231,9 @@ private:
                 {
                     std::vector<glm::vec3> verts;
                     verts.reserve(drawlist.VtxBuffer.size());
-                    for (int i = 0; i < drawlist.VtxBuffer.size(); ++i)
+                    for (ImDrawVert const& vert : drawlist.VtxBuffer)
                     {
-                        verts.push_back(glm::vec3{glm::vec2{drawlist.VtxBuffer[i].pos}, 0.0f});
+                        verts.emplace_back(vert.pos.x, vert.pos.y, 0.0f);
                     }
                     mesh.setVerts(verts);
                 }
@@ -242,10 +242,10 @@ private:
                 {
                     std::vector<Rgba32> colors;
                     colors.reserve(drawlist.VtxBuffer.size());
-                    for (int i = 0; i < drawlist.VtxBuffer.size(); ++i)
+                    for (ImDrawVert const& vert : drawlist.VtxBuffer)
                     {
-                        ImU32 colorImgui = drawlist.VtxBuffer[i].col;
-                        glm::vec4 linearColor = ImGui::ColorConvertU32ToFloat4(colorImgui);
+                        ImU32 const colorImgui = vert.col;
+                        glm::vec4 const linearColor = ImGui::ColorConvertU32ToFloat4(colorImgui);
                         colors.push_back(ToRgba32(linearColor));
                     }
                     mesh.setColors(colors);

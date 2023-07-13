@@ -14,6 +14,7 @@
 #include "oscar/Panels/PerfPanel.hpp"
 #include "oscar/Platform/App.hpp"
 #include "oscar/Platform/Log.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 #include "oscar/Utils/UID.hpp"
 
@@ -24,62 +25,41 @@
 #include <cstdint>
 #include <memory>
 
-static constexpr osc::CStringView c_TabStringID = "LearnOpenGL/MultipleLights";
-
-// positions of cubes within the scene
-static glm::vec3 constexpr c_CubePositions[] =
+namespace
 {
-    { 0.0f,  0.0f,  0.0f },
-    { 2.0f,  5.0f, -15.0f},
-    {-1.5f, -2.2f, -2.5f },
-    {-3.8f, -2.0f, -12.3f},
-    { 2.4f, -0.4f, -3.5f },
-    {-1.7f,  3.0f, -7.5f },
-    { 1.3f, -2.0f, -2.5f },
-    { 1.5f,  2.0f, -2.5f },
-    { 1.5f,  0.2f, -1.5f },
-    {-1.3f,  1.0f, -1.5  },
-};
+    osc::CStringView constexpr c_TabStringID = "LearnOpenGL/MultipleLights";
 
-// positions of point lights within the scene (the camera also has a spotlight)
-static glm::vec3 constexpr c_PointLightPositions[] =
-{
-    { 0.7f,  0.2f,  2.0f },
-    { 2.3f, -3.3f, -4.0f },
-    {-4.0f,  2.0f, -12.0f},
-    { 0.0f,  0.0f, -3.0f },
-};
+    // positions of cubes within the scene
+    auto constexpr c_CubePositions = osc::to_array<glm::vec3>(
+    {
+        { 0.0f,  0.0f,  0.0f },
+        { 2.0f,  5.0f, -15.0f},
+        {-1.5f, -2.2f, -2.5f },
+        {-3.8f, -2.0f, -12.3f},
+        { 2.4f, -0.4f, -3.5f },
+        {-1.7f,  3.0f, -7.5f },
+        { 1.3f, -2.0f, -2.5f },
+        { 1.5f,  2.0f, -2.5f },
+        { 1.5f,  0.2f, -1.5f },
+        {-1.3f,  1.0f, -1.5  },
+    });
 
-// ambient color of the point lights
-static float constexpr c_PointLightAmbients[] =
-{
-    0.001f,
-    0.001f,
-    0.001f,
-    0.001f,
-};
+    // positions of point lights within the scene (the camera also has a spotlight)
+    auto constexpr c_PointLightPositions = osc::to_array<glm::vec3>(
+    {
+        { 0.7f,  0.2f,  2.0f },
+        { 2.3f, -3.3f, -4.0f },
+        {-4.0f,  2.0f, -12.0f},
+        { 0.0f,  0.0f, -3.0f },
+    });
 
-// diffuse color of the point lights
-static float constexpr c_PointLightDiffuses[] =
-{
-    0.2f,
-    0.2f,
-    0.2f,
-    0.2f,
-};
-
-// specular color of the point lights
-static float constexpr c_PointLightSpeculars[] =
-{
-    0.5f,
-    0.5f,
-    0.5f,
-    0.5f,
-};
-
-static float constexpr c_PointLightConstants[] = {1.0f, 1.0f, 1.0f, 1.0f};
-static float constexpr c_PointLightLinears[] = {0.09f, 0.09f, 0.09f, 0.09f};
-static float constexpr c_PointLightQuadratics[] = {0.032f, 0.032f, 0.032f, 0.032f};
+    auto constexpr c_PointLightAmbients = osc::to_array<float>({0.001f, 0.001f, 0.001f, 0.001f});
+    auto constexpr c_PointLightDiffuses = osc::to_array<float>({0.2f, 0.2f, 0.2f, 0.2f});
+    auto constexpr c_PointLightSpeculars = osc::to_array<float>({0.5f, 0.5f, 0.5f, 0.5f});
+    auto constexpr c_PointLightConstants = osc::to_array<float>({1.0f, 1.0f, 1.0f, 1.0f});
+    auto constexpr c_PointLightLinears = osc::to_array<float>({0.09f, 0.09f, 0.09f, 0.09f});
+    auto constexpr c_PointLightQuadratics = osc::to_array<float>({0.032f, 0.032f, 0.032f, 0.032f});
+}
 
 class osc::LOGLMultipleLightsTab::Impl final {
 public:

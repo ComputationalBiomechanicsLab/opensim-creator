@@ -91,13 +91,12 @@ namespace
         rv.reserve(numPixels);
         for (size_t i = 0; i < numPixels; ++i)
         {
-            rv.push_back(glm::vec4
-            {
+            rv.emplace_back(
                 minusOneToOne(rng),
                 minusOneToOne(rng),
                 0.0f,  // rotate around z-axis in tangent space
-                0.0f,  // ignored (Texture2D doesn't support RGB --> RGBA upload conversion)
-            });
+                0.0f   // ignored (Texture2D doesn't support RGB --> RGBA upload conversion)
+            );
         }
         return rv;
     }

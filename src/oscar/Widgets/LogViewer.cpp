@@ -70,7 +70,7 @@ public:
                 ImGui::SetNextItemWidth(200.0f);
                 if (ImGui::BeginCombo("level", log::toCStringView(currentLvl).c_str()))
                 {
-                    for (int32_t i = static_cast<int32_t>(log::level::LevelEnum::FIRST); i < static_cast<int32_t>(log::level::LevelEnum::NUM_LEVELS); ++i)
+                    for (auto i = static_cast<int32_t>(log::level::LevelEnum::FIRST); i < static_cast<int32_t>(log::level::LevelEnum::NUM_LEVELS); ++i)
                     {
                         log::level::LevelEnum lvl = static_cast<log::level::LevelEnum>(i);
                         bool isCurrent = lvl == currentLvl;

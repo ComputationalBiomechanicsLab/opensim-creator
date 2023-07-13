@@ -9,6 +9,7 @@
 #include "oscar/Graphics/Shader.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <glm/mat4x4.hpp>
@@ -23,22 +24,23 @@ namespace
 
     osc::Mesh GenerateTriangleMesh()
     {
-        glm::vec3 const points[] =
+        auto constexpr points = osc::to_array<glm::vec3>(
         {
             {-1.0f, -1.0f, 0.0f},  // bottom-left
             { 1.0f, -1.0f, 0.0f},  // bottom-right
             { 0.0f,  1.0f, 0.0f},  // top-middle
-        };
+        });
 
         // care: we're using colors that are equivalent in sRGB and linear
         //       color spaces here
-        osc::Rgba32 const colors[] =
+        auto constexpr colors = osc::to_array<osc::Rgba32>(
         {
             {0xff, 0x00, 0x00, 0xff},
             {0x00, 0xff, 0x00, 0xff},
             {0x00, 0x00, 0xff, 0xff},
-        };
-        uint16_t const indices[] = {0, 1, 2};
+        });
+
+        auto constexpr indices = osc::to_array<uint16_t>({0, 1, 2});
 
         osc::Mesh m;
         m.setVerts(points);

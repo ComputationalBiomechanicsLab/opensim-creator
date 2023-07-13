@@ -17,6 +17,7 @@
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 #include "oscar/Utils/UID.hpp"
 
@@ -69,15 +70,19 @@ namespace
         bool invertNormals = false;
     };
 
-    SceneCube const c_SceneCubes[] =
+    auto const& GetSceneCubes()
     {
-        SceneCube{MakeTransform(0.5f, {}), true},
-        MakeTransform(0.5f, {4.0f, -3.5f, 0.0f}),
-        MakeTransform(0.75f, {2.0f, 3.0f, 1.0f}),
-        MakeTransform(0.5f, {-3.0f, -1.0f, 0.0f}),
-        MakeTransform(0.5f, {-1.5f, 1.0f, 1.5f}),
-        MakeRotatedTransform()
-    };
+        static auto const s_SceneCubes = osc::to_array<SceneCube>(
+        {
+            SceneCube{MakeTransform(0.5f, {}), true},
+            MakeTransform(0.5f, {4.0f, -3.5f, 0.0f}),
+            MakeTransform(0.75f, {2.0f, 3.0f, 1.0f}),
+            MakeTransform(0.5f, {-3.0f, -1.0f, 0.0f}),
+            MakeTransform(0.5f, {-1.5f, 1.0f, 1.5f}),
+            MakeRotatedTransform(),
+        });
+        return s_SceneCubes;
+    }
 
     // describes the direction of each cube face and which direction is "up"
     // from the perspective of looking at that face from the center of the cube
@@ -249,7 +254,7 @@ private:
 
         // render (shadowmapping does not use the camera's view/projection matrices)
         Camera camera;
-        for (SceneCube const& sceneCube : c_SceneCubes)
+        for (SceneCube const& sceneCube : GetSceneCubes())
         {
             Graphics::DrawMesh(m_CubeMesh, sceneCube.transform, m_ShadowMappingMaterial, camera);
         }
