@@ -905,7 +905,7 @@ public:
     {
         OSC_THROWING_ASSERT(m_Width > 0 && "the width of a cubemap must be a positive number");
 
-        size_t const numFaces = static_cast<size_t>(osc::CubemapFace::TOTAL);
+        auto const numFaces = static_cast<size_t>(osc::CubemapFace::TOTAL);
         size_t const numPixelsPerFace = static_cast<size_t>(m_Width*m_Width)*NumBytesPerPixel(m_Format);
         m_Data.resize(numFaces * numPixelsPerFace);
     }
@@ -922,8 +922,8 @@ public:
 
     void setPixelData(CubemapFace face, nonstd::span<uint8_t const> data)
     {
-        size_t const faceIndex = static_cast<size_t>(face);
-        size_t const numPixels = static_cast<size_t>(m_Width) * static_cast<size_t>(m_Width);
+        auto const faceIndex = static_cast<size_t>(face);
+        auto const numPixels = static_cast<size_t>(m_Width) * static_cast<size_t>(m_Width);
         size_t const numBytesPerCubeFace = numPixels * NumBytesPerPixel(m_Format);
         size_t const destinationDataStart = faceIndex * numBytesPerCubeFace;
         size_t const destinationDataEnd = destinationDataStart + numBytesPerCubeFace;
@@ -957,7 +957,7 @@ private:
         size_t const numBytesPerPixel = NumBytesPerPixel(m_Format);
         size_t const numBytesPerRow = m_Width * numBytesPerPixel;
         size_t const numBytesPerFace = m_Width * numBytesPerRow;
-        size_t const numFaces = static_cast<size_t>(osc::CubemapFace::TOTAL);
+        auto const numFaces = static_cast<size_t>(osc::CubemapFace::TOTAL);
         size_t const numBytesInCubemap = numFaces * numBytesPerFace;
         CPUDataType const cpuDataType = ToEquivalentCPUDataType(m_Format);  // TextureFormat's datatype == CPU format's datatype for cubemaps
         CPUImageFormat const cpuChannelLayout = ToEquivalentCPUImageFormat(m_Format);  // TextureFormat's layout == CPU formats's layout for cubemaps
@@ -2324,7 +2324,7 @@ private:
         {
             GLint size; // size of the variable
             GLenum type; // type of the variable (float, vec3 or mat4, etc)
-            GLchar name[maxNameLen]; // variable name in GLSL
+            std::array<GLchar, maxNameLen> name{}; // variable name in GLSL
             GLsizei length; // name length
             glGetActiveAttrib(
                 m_Program.get() ,
@@ -2333,13 +2333,13 @@ private:
                 &length,
                 &size,
                 &type,
-                name
+                name.data()
             );
 
             static_assert(sizeof(GLint) <= sizeof(int32_t));
             m_Attributes.try_emplace(
-                NormalizeShaderElementName(name),
-                static_cast<int32_t>(glGetAttribLocation(m_Program.get(), name)),
+                NormalizeShaderElementName(name.data()),
+                static_cast<int32_t>(glGetAttribLocation(m_Program.get(), name.data())),
                 GLShaderTypeToShaderTypeInternal(type),
                 static_cast<int32_t>(size)
             );
@@ -2350,7 +2350,7 @@ private:
         {
             GLint size; // size of the variable
             GLenum type; // type of the variable (float, vec3 or mat4, etc)
-            GLchar name[maxNameLen]; // variable name in GLSL
+            std::array<GLchar, maxNameLen> name{}; // variable name in GLSL
             GLsizei length; // name length
             glGetActiveUniform(
                 m_Program.get(),
@@ -2359,13 +2359,13 @@ private:
                 &length,
                 &size,
                 &type,
-                name
+                name.data()
             );
 
             static_assert(sizeof(GLint) <= sizeof(int32_t));
             m_Uniforms.try_emplace(
-                NormalizeShaderElementName(name),
-                static_cast<int32_t>(glGetUniformLocation(m_Program.get(), name)),
+                NormalizeShaderElementName(name.data()),
+                static_cast<int32_t>(glGetUniformLocation(m_Program.get(), name.data())),
                 GLShaderTypeToShaderTypeInternal(type),
                 static_cast<int32_t>(size)
             );
@@ -5407,7 +5407,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     }
     case VariantIndex<MaterialValue, Texture2D>():
     {
-        Texture2D::Impl & impl = const_cast<Texture2D::Impl&>(*std::get<Texture2D>(v).m_Impl);
+        auto& impl = const_cast<Texture2D::Impl&>(*std::get<Texture2D>(v).m_Impl);
         gl::Texture2D& texture = impl.updTexture();
 
         gl::ActiveTexture(GL_TEXTURE0 + textureSlot);
@@ -5420,7 +5420,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     }
     case VariantIndex<MaterialValue, RenderTexture>():
     {
-        RenderTexture::Impl& impl = const_cast<RenderTexture::Impl&>(*std::get<RenderTexture>(v).m_Impl);
+        auto& impl = const_cast<RenderTexture::Impl&>(*std::get<RenderTexture>(v).m_Impl);
         gl::Texture2D const& texture = impl.getResolvedColorTexture();
 
         gl::ActiveTexture(GL_TEXTURE0 + textureSlot);
@@ -5433,7 +5433,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     }
     case VariantIndex<MaterialValue, Cubemap>():
     {
-        Cubemap::Impl& impl = const_cast<Cubemap::Impl&>(*std::get<Cubemap>(v).m_Impl);
+        auto& impl = const_cast<Cubemap::Impl&>(*std::get<Cubemap>(v).m_Impl);
         gl::TextureCubemap const& texture = impl.updCubemap();
 
         gl::ActiveTexture(GL_TEXTURE0 + textureSlot);
@@ -5458,8 +5458,8 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
 {
     OSC_PERF("GraphicsBackend::HandleBatchWithSameMaterial");
 
-    Material::Impl& matImpl = const_cast<Material::Impl&>(*els.front().material.m_Impl);
-    Shader::Impl& shaderImpl = const_cast<Shader::Impl&>(*matImpl.m_Shader.m_Impl);
+    auto& matImpl = const_cast<Material::Impl&>(*els.front().material.m_Impl);
+    auto& shaderImpl = const_cast<Shader::Impl&>(*matImpl.m_Shader.m_Impl);
     ankerl::unordered_dense::map<std::string, ShaderElement> const& uniforms = shaderImpl.getUniforms();
 
     // preemptively upload instance data
@@ -5998,9 +5998,9 @@ void osc::GraphicsBackend::BlitToScreen(
         // rect is currently top-left, must be converted to bottom-left
 
         int32_t const windowHeight = App::get().idims().y;
-        int32_t const rectHeight = static_cast<int32_t>(rect.p2.y - rect.p1.y);
-        int32_t const p1y = static_cast<int32_t>((windowHeight - static_cast<int32_t>(rect.p1.y)) - rectHeight);
-        int32_t const p2y = static_cast<int32_t>(windowHeight - static_cast<int32_t>(rect.p1.y));
+        auto const rectHeight = static_cast<int32_t>(rect.p2.y - rect.p1.y);
+        auto const p1y = static_cast<int32_t>((windowHeight - static_cast<int32_t>(rect.p1.y)) - rectHeight);
+        auto const p2y = static_cast<int32_t>(windowHeight - static_cast<int32_t>(rect.p1.y));
         glm::ivec2 const texDimensions = t.getDimensions();
 
         // blit multisampled scene render to not-multisampled texture

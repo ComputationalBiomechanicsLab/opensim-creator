@@ -90,7 +90,7 @@ namespace
         glm::vec3 direction;
         glm::vec3 up;
     };
-    CubemapFaceDetails constexpr c_CubemapFacesDetails[] =
+    auto constexpr c_CubemapFacesDetails = osc::to_array<CubemapFaceDetails>(
     {
         {{ 1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},
         {{-1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},
@@ -98,7 +98,7 @@ namespace
         {{ 0.0f, -1.0f,  0.0f}, {0.0f,  0.0f, -1.0f}},
         {{ 0.0f,  0.0f,  1.0f}, {0.0f, -1.0f,  0.0f}},
         {{ 0.0f,  0.0f, -1.0f}, {0.0f, -1.0f,  0.0f}},
-    };
+    });
 
     glm::mat4 CalcCubemapViewMatrix(CubemapFaceDetails const& faceDetails, glm::vec3 cubeCenter)
     {

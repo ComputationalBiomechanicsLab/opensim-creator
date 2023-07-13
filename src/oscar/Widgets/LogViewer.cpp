@@ -72,7 +72,7 @@ public:
                 {
                     for (auto i = static_cast<int32_t>(log::level::LevelEnum::FIRST); i < static_cast<int32_t>(log::level::LevelEnum::NUM_LEVELS); ++i)
                     {
-                        log::level::LevelEnum lvl = static_cast<log::level::LevelEnum>(i);
+                        auto const lvl = static_cast<log::level::LevelEnum>(i);
                         bool isCurrent = lvl == currentLvl;
                         if (ImGui::Selectable(log::toCStringView(lvl).c_str(), &isCurrent))
                         {
