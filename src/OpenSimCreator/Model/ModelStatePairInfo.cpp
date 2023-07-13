@@ -15,7 +15,7 @@ osc::ModelStatePairInfo::ModelStatePairInfo(VirtualConstModelStatePair const& ms
 
 bool osc::operator==(ModelStatePairInfo const& a, ModelStatePairInfo const& b) noexcept
 {
-    return 
+    return
         a.m_ModelVersion == b.m_ModelVersion &&
         a.m_StateVersion == b.m_StateVersion &&
         a.m_Selection == b.m_Selection &&

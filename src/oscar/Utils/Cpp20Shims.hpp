@@ -229,7 +229,7 @@ namespace osc {
         return i;
     }
 
-    // C++20: countr_zero: counts the number of consecutive 0 bits, starting from the least significant bit 
+    // C++20: countr_zero: counts the number of consecutive 0 bits, starting from the least significant bit
     //
     // see: https://en.cppreference.com/w/cpp/numeric/countr_zero
     template<typename T>

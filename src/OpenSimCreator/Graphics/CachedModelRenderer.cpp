@@ -135,7 +135,7 @@ public:
         SceneRendererParams const rendererParameters = CalcSceneRendererParams(
             renderParams,
             dims,
-            samples,            
+            samples,
             modelState.getFixupScaleFactor()
         );
 

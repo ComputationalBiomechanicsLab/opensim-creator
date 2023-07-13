@@ -8,7 +8,7 @@ namespace osc
 	enum ModelEditorViewerPanelLayerFlags_ : int32_t {
 		ModelEditorViewerPanelLayerFlags_None = 0,
 		ModelEditorViewerPanelLayerFlags_CapturesMouseInputs = 1<<0,
-	
+
 		ModelEditorViewerPanelLayerFlags_Default =
 			ModelEditorViewerPanelLayerFlags_CapturesMouseInputs
 	};
