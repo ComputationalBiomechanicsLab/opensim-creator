@@ -12,6 +12,7 @@
 #include <SDL_stdinc.h>
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstring>
 #include <ctime>
@@ -135,7 +136,7 @@ std::vector<std::filesystem::path> osc::PromptUserForFiles(
         rv.reserve(len);
         for (size_t i = 0; i < len; ++i)
         {
-            rv.push_back(NFD_PathSet_GetPath(&s, i));
+            rv.emplace_back(NFD_PathSet_GetPath(&s, i));
         }
 
         NFD_PathSet_Free(&s);
@@ -193,13 +194,14 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
 #define __USE_GNU
 #endif
 
-#include <errno.h>  // ERANGE
+#include <cerrno>  // ERANGE
+#include <csignal>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>  // strerror_r()
+#include <ctime>  // gmtime_r()
+
 #include <execinfo.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>  // strerror_r()
-#include <time.h>  // gmtime_r()
 #include <ucontext.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -215,10 +217,11 @@ std::tm osc::GMTimeThreadsafe(std::time_t t)
 
 std::string osc::StrerrorThreadsafe(int errnum)
 {
-    char buf[1024];
+    std::array<char, 1024> buf;
+
     // ignore return value because strerror_r has two versions in
     // Linux and the GNU version doesn't return a useful error code
-    auto maybeErr = strerror_r(errnum, buf, sizeof(buf));
+    auto maybeErr = strerror_r(errnum, buf.data(), buf.size());
 
     if (std::is_same_v<int, decltype(maybeErr)> && !maybeErr)
     {
@@ -231,7 +234,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
     }
 
     std::string rv{buf};
-    if (rv.size() == sizeof(buf))
+    if (rv.size() == buf.size())
     {
         osc::log::warn("a call to strerror_r returned an error string that was as big as the buffer: an OS error message may have been truncated!");
     }

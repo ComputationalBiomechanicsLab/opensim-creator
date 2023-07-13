@@ -45,7 +45,7 @@ namespace
     std::vector<osc::OutputExtractor> GetFdSimulatorOutputExtractorsAsVector()
     {
         std::vector<osc::OutputExtractor> rv;
-        int nOutputExtractors = osc::GetNumFdSimulatorOutputExtractors();
+        int const nOutputExtractors = osc::GetNumFdSimulatorOutputExtractors();
         rv.reserve(nOutputExtractors);
         for (int i = 0; i < nOutputExtractors; ++i)
         {
@@ -166,21 +166,23 @@ private:
     {
         auto& reports = const_cast<std::vector<SimulationReport>&>(m_Reports);
 
-        std::size_t nReportsBefore = reports.size();
+        size_t const nReportsBefore = reports.size();
 
         // pop them onto the local reports queue
         {
             auto guard = const_cast<SynchronizedValue<std::vector<SimulationReport>>&>(m_ReportQueue).lock();
 
             reports.reserve(reports.size() + guard->size());
-            std::copy(std::make_move_iterator(guard->begin()),
-                      std::make_move_iterator(guard->end()),
-                      std::back_inserter(reports));
+            std::copy(
+                std::make_move_iterator(guard->begin()),
+                std::make_move_iterator(guard->end()),
+                std::back_inserter(reports)
+            );
             guard->clear();
         }
 
-        std::size_t nReportsAfter = reports.size();
-        std::size_t nAdded = nReportsAfter-nReportsBefore;
+        size_t const nReportsAfter = reports.size();
+        size_t const nAdded = nReportsAfter-nReportsBefore;
 
         if (nAdded <= 0)
         {

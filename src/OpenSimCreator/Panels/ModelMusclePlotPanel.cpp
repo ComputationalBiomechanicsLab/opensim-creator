@@ -244,7 +244,7 @@ namespace
             {"Fiber Passive Power", "W", GetFiberPassivePower},
             {"Tendon Power", "W", GetTendonPower},
             {"Muscle Power", "W", GetMusclePower},
-            }};
+        }};
         std::sort(rv.begin(), rv.end());
         return rv;
     }

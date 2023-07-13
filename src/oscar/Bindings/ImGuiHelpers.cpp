@@ -779,7 +779,7 @@ bool osc::IsMouseInMainViewportWorkspaceScreenRect()
 bool osc::BeginMainViewportTopBar(CStringView label, float height, ImGuiWindowFlags flags)
 {
     // https://github.com/ocornut/imgui/issues/3518
-    ImGuiViewportP* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));
+    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));
     return ImGui::BeginViewportSideBar(label.c_str(), viewport, ImGuiDir_Up, height, flags);
 }
 
@@ -787,7 +787,7 @@ bool osc::BeginMainViewportTopBar(CStringView label, float height, ImGuiWindowFl
 bool osc::BeginMainViewportBottomBar(CStringView label)
 {
     // https://github.com/ocornut/imgui/issues/3518
-    ImGuiViewportP* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));
+    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));
     ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
     float const height = ImGui::GetFrameHeight() + ImGui::GetStyle().WindowPadding.y;
 
@@ -906,10 +906,10 @@ void osc::ConvertDrawDataFromSRGBToLinear(ImDrawData& dd)
     {
         for (ImDrawVert& v : dd.CmdLists[i]->VtxBuffer)
         {
-            uint8_t const rSRGB = static_cast<uint8_t>((v.col >> IM_COL32_R_SHIFT) & 0xFF);
-            uint8_t const gSRGB = static_cast<uint8_t>((v.col >> IM_COL32_G_SHIFT) & 0xFF);
-            uint8_t const bSRGB = static_cast<uint8_t>((v.col >> IM_COL32_B_SHIFT) & 0xFF);
-            uint8_t const aSRGB = static_cast<uint8_t>((v.col >> IM_COL32_A_SHIFT) & 0xFF);
+            auto const rSRGB = static_cast<uint8_t>((v.col >> IM_COL32_R_SHIFT) & 0xFF);
+            auto const gSRGB = static_cast<uint8_t>((v.col >> IM_COL32_G_SHIFT) & 0xFF);
+            auto const bSRGB = static_cast<uint8_t>((v.col >> IM_COL32_B_SHIFT) & 0xFF);
+            auto const aSRGB = static_cast<uint8_t>((v.col >> IM_COL32_A_SHIFT) & 0xFF);
 
             uint8_t const rLinear = lut[rSRGB];
             uint8_t const gLinear = lut[gSRGB];

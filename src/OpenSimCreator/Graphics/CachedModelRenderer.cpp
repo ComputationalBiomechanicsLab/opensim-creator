@@ -59,7 +59,8 @@ namespace
                     *m_MeshCache,
                     modelState,
                     params.decorationOptions,
-                    onComponentDecoration);
+                    onComponentDecoration
+                );
                 UpdateSceneBVH(m_Drawlist, m_BVH);
 
                 auto const onOverlayDecoration = [this](osc::SceneDecoration&& dec)

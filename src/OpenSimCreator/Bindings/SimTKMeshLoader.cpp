@@ -33,13 +33,16 @@ osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
     // see: simbody VisualizerProtocol.cpp:drawPolygonalMesh(...) for what this is
     // roughly based on
 
-    std::vector<glm::vec3> verts;
-    std::vector<glm::vec3> normals;
-    std::vector<uint32_t> indices;
+    size_t const numVerts = mesh.getNumVertices();
 
-    verts.reserve(static_cast<size_t>(mesh.getNumVertices()));
-    normals.reserve(static_cast<size_t>(mesh.getNumVertices()));
-    indices.reserve(static_cast<size_t>(mesh.getNumVertices()));
+    std::vector<glm::vec3> verts;
+    verts.reserve(numVerts);
+
+    std::vector<glm::vec3> normals;
+    normals.reserve(numVerts);
+
+    std::vector<uint32_t> indices;
+    indices.reserve(numVerts);
 
     uint32_t index = 0;
     auto const pushTriangle = [&verts, &normals, &indices, &index](osc::Triangle const& tri)
@@ -66,7 +69,7 @@ osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
         {
             // triangle
 
-            osc::Triangle const triangle =
+            Triangle const triangle =
             {
                 GetFaceVertex(mesh, face, 0),
                 GetFaceVertex(mesh, face, 1),
@@ -105,7 +108,7 @@ osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
 
             for (int vert = 0; vert < nVerts - 1; ++vert)
             {
-                osc::Triangle const tri =
+                Triangle const tri =
                 {
                     center,
                     GetFaceVertex(mesh, face, vert),
@@ -115,7 +118,7 @@ osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
             }
 
             // complete the polygon loop
-            osc::Triangle const tri =
+            Triangle const tri =
             {
                 center,
                 GetFaceVertex(mesh, face, nVerts - 1),
@@ -125,8 +128,8 @@ osc::Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
         }
     }
 
-    osc::Mesh rv;
-    rv.setTopology(osc::MeshTopology::Triangles);
+    Mesh rv;
+    rv.setTopology(MeshTopology::Triangles);
     rv.setVerts(verts);
     rv.setNormals(normals);
     rv.setIndices(indices);

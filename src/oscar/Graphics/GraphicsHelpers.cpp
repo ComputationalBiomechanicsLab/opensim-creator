@@ -143,7 +143,7 @@ void osc::DrawXYGrid(
     MeshCache& cache,
     std::function<void(osc::SceneDecoration&&)> const& out)
 {
-    glm::quat const rotation = glm::identity<glm::quat>();
+    auto const rotation = glm::identity<glm::quat>();
     DrawGrid(cache, rotation, out);
 }
 

@@ -62,8 +62,8 @@ void osc::IoPoller::onUpdate()
     DisplaySize = app.dims();
 
     // Ticks, (IO ctor: TickFrequency), DeltaTime
-    auto curTicks = app.getTicks();
-    double dTicks = static_cast<double>(curTicks - Ticks);
+    auto const curTicks = app.getTicks();
+    auto const dTicks = static_cast<double>(curTicks - Ticks);
     DeltaTime = static_cast<float>(dTicks/static_cast<double>(TickFrequency));
     Ticks = curTicks;
 

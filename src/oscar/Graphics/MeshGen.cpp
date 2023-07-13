@@ -319,7 +319,7 @@ osc::Mesh osc::GenUntexturedYToYCylinder(size_t nsides)
     // helper: push mesh *data* (i.e. vert and normal) to the output
     auto const pushData = [&data](glm::vec3 const& pos, glm::vec3 const& norm)
     {
-        uint32_t const idx = static_cast<uint32_t>(data.verts.size());
+        auto const idx = static_cast<uint32_t>(data.verts.size());
         data.verts.push_back(pos);
         data.normals.push_back(norm);
         return idx;
@@ -513,7 +513,7 @@ osc::Mesh osc::GenNbyNGrid(size_t n)
     {
         data.verts.push_back(pos);
         data.indices.push_back(index++);
-        data.normals.push_back(glm::vec3{0.0f, 0.0f, 1.0f});
+        data.normals.emplace_back(0.0f, 0.0f, 1.0f);
     };
 
     // lines parallel to X axis
@@ -606,9 +606,9 @@ osc::Mesh osc::GenCircle(size_t nsides)
     uint16_t index = 0;
     auto push = [&data, &index](float x, float y, float z)
     {
-        data.verts.push_back({x, y, z});
+        data.verts.emplace_back(x, y, z);
         data.indices.push_back(index++);
-        data.normals.push_back({0.0f, 0.0f, 1.0f});
+        data.normals.emplace_back(0.0f, 0.0f, 1.0f);
     };
 
     float const step = 2.0f*fpi / static_cast<float>(nsides);
@@ -775,7 +775,7 @@ osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max
     {
         // emit top-leftmost point (no links)
         {
-            verts.push_back({min, zValue});
+            verts.emplace_back(min, zValue);
         }
 
         // emit rest of the first row (only has horizontal links)
@@ -797,7 +797,7 @@ osc::Mesh osc::GenNxMPoint2DGridWithConnectingLines(glm::vec2 min, glm::vec2 max
     {
         // emit leftmost point (only has a vertical link)
         {
-            verts.push_back({min.x, min.y + static_cast<float>(y)*stepSize.y, zValue});
+            verts.emplace_back(min.x, min.y + static_cast<float>(y)*stepSize.y, zValue);
             uint32_t const index = static_cast<int32_t>(verts.size() - 1);
             indices.push_back(index - steps.x);  // link the point one row above
             indices.push_back(index);            // to the point (vertically)
@@ -871,7 +871,7 @@ osc::Mesh osc::GenNxMTriangleQuad2DGrid(glm::ivec2 steps)
     // then work through the next rows, which can safely assume there's a row above them
     for (int32_t row = 1; row < steps.y; ++row)
     {
-        float const rowf = static_cast<float>(row);
+        auto const rowf = static_cast<float>(row);
 
         // push point + coord of the first column's left-edge
         verts.emplace_back(vectorMin.x, vectorMin.y + rowf*vectorStep.y, zValue);
@@ -880,7 +880,7 @@ osc::Mesh osc::GenNxMTriangleQuad2DGrid(glm::ivec2 steps)
         // then, for all remaining columns, push the right-edge data and the triangles
         for (int32_t col = 1; col < steps.x; ++col)
         {
-            float const colf = static_cast<float>(col);
+            auto const colf = static_cast<float>(col);
             verts.emplace_back(vectorMin.x + colf*vectorStep.x, vectorMin.y + rowf*vectorStep.y, zValue);
             coords.emplace_back(uvMin.x + colf*uvStep.x, uvMin.y + rowf*uvStep.y);
 

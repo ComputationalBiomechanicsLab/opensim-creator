@@ -64,11 +64,11 @@ namespace
         static_assert(sizeof(float) == 4);
         static_assert(sizeof(uint8_t) == 1);
 
-        uint8_t const* const ptr = reinterpret_cast<uint8_t const*>(&v);  // typecasting to a byte is always safe
-        o << static_cast<uint8_t>(ptr[0]);
-        o << static_cast<uint8_t>(ptr[1]);
-        o << static_cast<uint8_t>(ptr[2]);
-        o << static_cast<uint8_t>(ptr[3]);
+        auto const* const ptr = reinterpret_cast<uint8_t const*>(&v);  // typecasting to a byte is always safe
+        o << ptr[0];
+        o << ptr[1];
+        o << ptr[2];
+        o << ptr[3];
     }
 
     void WriteVec3IEEE(std::ostream& o, glm::vec3 const& v)
