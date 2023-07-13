@@ -233,7 +233,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
         (void)maybeErr;
     }
 
-    std::string rv{buf};
+    std::string rv{buf.data()};
     if (rv.size() == buf.size())
     {
         osc::log::warn("a call to strerror_r returned an error string that was as big as the buffer: an OS error message may have been truncated!");
