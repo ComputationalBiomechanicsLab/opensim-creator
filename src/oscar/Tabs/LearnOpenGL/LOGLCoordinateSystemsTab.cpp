@@ -13,6 +13,7 @@
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Panels/PerfPanel.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 #include "oscar/Utils/UID.hpp"
 
@@ -22,22 +23,25 @@
 #include <cstdint>
 #include <memory>
 
-// worldspace positions of each cube (step 2)
-static glm::vec3 constexpr c_CubePositions[] =
+namespace
 {
-    { 0.0f,  0.0f,  0.0f },
-    { 2.0f,  5.0f, -15.0f},
-    {-1.5f, -2.2f, -2.5f },
-    {-3.8f, -2.0f, -12.3f},
-    { 2.4f, -0.4f, -3.5f },
-    {-1.7f,  3.0f, -7.5f },
-    { 1.3f, -2.0f, -2.5f },
-    { 1.5f,  2.0f, -2.5f },
-    { 1.5f,  0.2f, -1.5f },
-    {-1.3f,  1.0f, -1.5  },
-};
+    // worldspace positions of each cube (step 2)
+    auto constexpr c_CubePositions = osc::to_array<glm::vec3>(
+    {
+        { 0.0f,  0.0f,  0.0f },
+        { 2.0f,  5.0f, -15.0f},
+        {-1.5f, -2.2f, -2.5f },
+        {-3.8f, -2.0f, -12.3f},
+        { 2.4f, -0.4f, -3.5f },
+        {-1.7f,  3.0f, -7.5f },
+        { 1.3f, -2.0f, -2.5f },
+        { 1.5f,  2.0f, -2.5f },
+        { 1.5f,  0.2f, -1.5f },
+        {-1.3f,  1.0f, -1.5  },
+    });
 
-static constexpr osc::CStringView c_TabStringID = "LearnOpenGL/CoordinateSystems";
+    osc::CStringView constexpr c_TabStringID = "LearnOpenGL/CoordinateSystems";
+}
 
 class osc::LOGLCoordinateSystemsTab::Impl final {
 public:

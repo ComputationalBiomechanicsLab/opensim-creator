@@ -14,6 +14,7 @@
 #include "oscar/Panels/PerfPanel.hpp"
 #include "oscar/Platform/App.hpp"
 #include "oscar/Utils/Assertions.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <glm/mat4x4.hpp>
@@ -23,34 +24,41 @@
 #include <cstdint>
 #include <memory>
 
-static glm::vec3 constexpr c_PlaneVertices[] =
-{
-    { 5.0f, -0.5f,  5.0f},
-    {-5.0f, -0.5f,  5.0f},
-    {-5.0f, -0.5f, -5.0f},
-
-    { 5.0f, -0.5f,  5.0f},
-    {-5.0f, -0.5f, -5.0f},
-    { 5.0f, -0.5f, -5.0f},
-};
-
-static glm::vec2 constexpr c_PlaneTexCoords[] =
-{
-    {2.0f, 0.0f},
-    {0.0f, 0.0f},
-    {0.0f, 2.0f},
-
-    {2.0f, 0.0f},
-    {0.0f, 2.0f},
-    {2.0f, 2.0f},
-};
-
-static uint16_t constexpr  c_PlaneIndices[] = {0, 2, 1, 3, 5, 4};
-
-constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Framebuffers";
-
 namespace
 {
+    auto constexpr c_PlaneVertices = osc::to_array<glm::vec3>(
+    {
+        { 5.0f, -0.5f,  5.0f},
+        {-5.0f, -0.5f,  5.0f},
+        {-5.0f, -0.5f, -5.0f},
+
+        { 5.0f, -0.5f,  5.0f},
+        {-5.0f, -0.5f, -5.0f},
+        { 5.0f, -0.5f, -5.0f},
+    });
+    auto constexpr c_PlaneTexCoords = osc::to_array<glm::vec2>(
+    {
+        {2.0f, 0.0f},
+        {0.0f, 0.0f},
+        {0.0f, 2.0f},
+
+        {2.0f, 0.0f},
+        {0.0f, 2.0f},
+        {2.0f, 2.0f},
+    });
+    auto constexpr c_PlaneIndices = osc::to_array<uint16_t>(
+    {
+        0,
+        2,
+        1,
+
+        3,
+        5,
+        4,
+    });
+
+    osc::CStringView constexpr c_TabStringID = "LearnOpenGL/Framebuffers";
+
     osc::Mesh GeneratePlane()
     {
         osc::Mesh rv;
