@@ -55,10 +55,10 @@ public:
             m_IsInTranslateMode ? ImGuizmo::TRANSLATE : ImGuizmo::ROTATE,
             ImGuizmo::LOCAL,
             glm::value_ptr(m_ModelMatrix),
-            NULL,
-            NULL, //&snap[0],   // snap
-            NULL, // bound sizing?
-            NULL  // bound sizing snap
+            nullptr,
+            nullptr, //&snap[0],   // snap
+            nullptr, // bound sizing?
+            nullptr  // bound sizing snap
         );
     }
 
