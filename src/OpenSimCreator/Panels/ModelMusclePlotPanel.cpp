@@ -1017,7 +1017,7 @@ namespace
     // holds a collection of plotlines that are to-be-drawn on the plot
     class PlotLines final {
     public:
-        PlotLines(PlotParameters const& params) :
+        explicit PlotLines(PlotParameters const& params) :
             m_ActivePlot{std::make_shared<Plot>(params)},
             m_PlottingTask{params, m_ActivePlot}
         {
@@ -1537,7 +1537,7 @@ namespace
     // base class for a single widget state
     class MusclePlotState {
     protected:
-        MusclePlotState(SharedStateData& shared_) : m_Shared{&shared_} {}
+        explicit MusclePlotState(SharedStateData& shared_) : m_Shared{&shared_} {}
         MusclePlotState(MusclePlotState const&) = default;
         MusclePlotState(MusclePlotState&&) noexcept = default;
         MusclePlotState& operator=(MusclePlotState const&) = default;

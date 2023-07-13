@@ -62,7 +62,7 @@ public:
         });
     }
 
-    Impl(std::vector<std::filesystem::path> const& paths)
+    explicit Impl(std::vector<std::filesystem::path> const& paths)
     {
         // CARE: the reason we delay construction is because std::enable_shared_from_this
         // does not work until after the inheriting class's constructor completes

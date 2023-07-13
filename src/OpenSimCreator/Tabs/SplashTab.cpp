@@ -69,7 +69,8 @@ namespace
 class osc::SplashTab::Impl final {
 public:
 
-    Impl(std::weak_ptr<MainUIStateAPI> parent_) : m_Parent{std::move(parent_)}
+    explicit Impl(std::weak_ptr<MainUIStateAPI> parent_) :
+        m_Parent{std::move(parent_)}
     {
         m_MainAppLogo.setFilterMode(TextureFilterMode::Linear);
         m_CziLogo.setFilterMode(TextureFilterMode::Linear);

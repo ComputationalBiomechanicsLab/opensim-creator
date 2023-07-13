@@ -47,12 +47,12 @@ namespace
         {
         }
 
-        UiModelStatePair(std::string const& osim) :
+        explicit UiModelStatePair(std::string const& osim) :
             UiModelStatePair{std::make_unique<OpenSim::Model>(osim)}
         {
         }
 
-        UiModelStatePair(std::unique_ptr<OpenSim::Model> _model) :
+        explicit UiModelStatePair(std::unique_ptr<OpenSim::Model> _model) :
             m_Model{std::move(_model)},
             m_ModelVersion{},
             m_FixupScaleFactor{1.0f},

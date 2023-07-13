@@ -87,7 +87,7 @@ namespace
 class osc::LOGLGammaTab::Impl final {
 public:
 
-    Impl(std::weak_ptr<TabHost> parent_) :
+    explicit Impl(std::weak_ptr<TabHost> parent_) :
         m_Parent{std::move(parent_)}
     {
         m_Material.setTexture("uFloorTexture", m_WoodTexture);

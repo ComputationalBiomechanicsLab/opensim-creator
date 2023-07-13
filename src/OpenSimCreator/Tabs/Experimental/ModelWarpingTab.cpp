@@ -141,7 +141,7 @@ namespace
     // its (assumed) mesh assignment
     struct ModelWarpTarget final {
 
-        ModelWarpTarget(
+        explicit ModelWarpTarget(
             OpenSim::ComponentPath componentAbsPath_,
             std::optional<OpenSim::ComponentPath> maybeConnectedMeshWarpPath_ = std::nullopt) :
             componentAbsPath{std::move(componentAbsPath_)},
@@ -177,7 +177,7 @@ namespace
             osc::InitializeState(*m_Model);
         }
 
-        ImmutableInitializedModel(std::filesystem::path const& osimPath) :
+        explicit ImmutableInitializedModel(std::filesystem::path const& osimPath) :
             m_Model{std::make_unique<OpenSim::Model>(osimPath.string())}
         {
             osc::InitializeModel(*m_Model);
@@ -198,7 +198,7 @@ namespace
     public:
         ModelWarpingDocument() = default;
 
-        ModelWarpingDocument(std::filesystem::path const& osimPath) :
+        explicit ModelWarpingDocument(std::filesystem::path const& osimPath) :
             m_Model{osimPath}
         {
         }

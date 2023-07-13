@@ -99,7 +99,7 @@ namespace
 
     class Curve final {
     public:
-        explicit Curve(std::initializer_list<ExcitationCurveSegment> curveSegments) :
+        Curve(std::initializer_list<ExcitationCurveSegment> curveSegments) :
             m_SegmentsByID{CreateCurveSegmentLookup(curveSegments)}
         {
         }

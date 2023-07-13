@@ -450,7 +450,7 @@ namespace
     // (handy for scene sorting)
     class RenderObjectIsFartherFrom final {
     public:
-        RenderObjectIsFartherFrom(glm::vec3 const& pos) : m_Pos{pos} {}
+        explicit RenderObjectIsFartherFrom(glm::vec3 const& pos) : m_Pos{pos} {}
 
         bool operator()(RenderObject const& a, RenderObject const& b) const
         {
@@ -499,7 +499,7 @@ namespace
 
     class RenderObjectHasMesh final {
     public:
-        RenderObjectHasMesh(osc::Mesh const* mesh) :
+        explicit RenderObjectHasMesh(osc::Mesh const* mesh) :
             m_Mesh{mesh}
         {
         }
@@ -1971,12 +1971,12 @@ public:
     {
     }
 
-    Impl(glm::ivec2 dimensions) :
+    explicit Impl(glm::ivec2 dimensions) :
         Impl{RenderTextureDescriptor{dimensions}}
     {
     }
 
-    Impl(RenderTextureDescriptor const& descriptor) :
+    explicit Impl(RenderTextureDescriptor const& descriptor) :
         m_ColorBuffer{std::make_shared<RenderBuffer>(descriptor, RenderBufferType::Color)},
         m_DepthBuffer{std::make_shared<RenderBuffer>(descriptor, RenderBufferType::Depth)}
     {
@@ -2520,7 +2520,7 @@ namespace
 
 class osc::Material::Impl final {
 public:
-    Impl(Shader shader) : m_Shader{std::move(shader)}
+    explicit Impl(Shader shader) : m_Shader{std::move(shader)}
     {
     }
 

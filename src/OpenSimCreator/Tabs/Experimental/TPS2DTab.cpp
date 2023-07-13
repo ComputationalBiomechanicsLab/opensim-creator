@@ -304,7 +304,7 @@ namespace
     // points
     class ThinPlateWarper2D final {
     public:
-        ThinPlateWarper2D(nonstd::span<LandmarkPair2D const> landmarkPairs) :
+        explicit ThinPlateWarper2D(nonstd::span<LandmarkPair2D const> landmarkPairs) :
             m_Coefficients{CalcCoefficients(landmarkPairs)}
         {
         }

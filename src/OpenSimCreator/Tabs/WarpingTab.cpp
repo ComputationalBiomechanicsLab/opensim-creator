@@ -1842,7 +1842,7 @@ namespace
 class osc::WarpingTab::Impl final {
 public:
 
-    Impl(std::weak_ptr<TabHost> parent_) : m_Parent{std::move(parent_)}
+    explicit Impl(std::weak_ptr<TabHost> parent_) : m_Parent{std::move(parent_)}
     {
         OSC_ASSERT(m_Parent.lock() != nullptr);
 

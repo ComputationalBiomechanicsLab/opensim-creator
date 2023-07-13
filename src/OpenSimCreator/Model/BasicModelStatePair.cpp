@@ -18,7 +18,7 @@ public:
         InitializeState(*m_Model);
     }
 
-    Impl(VirtualModelStatePair const& p) :
+    explicit Impl(VirtualModelStatePair const& p) :
         Impl{p.getModel(), p.getState(), p.getFixupScaleFactor()}
     {
     }

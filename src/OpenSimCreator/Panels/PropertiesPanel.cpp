@@ -69,7 +69,7 @@ namespace
 
     class ObjectNameEditor final {
     public:
-        ObjectNameEditor(std::shared_ptr<osc::UndoableModelStatePair> model_) :
+        explicit ObjectNameEditor(std::shared_ptr<osc::UndoableModelStatePair> model_) :
             m_Model{std::move(model_)}
         {
         }

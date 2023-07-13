@@ -74,10 +74,10 @@ namespace
 class osc::ScreenshotTab::Impl final {
 public:
 
-    Impl(AnnotatedImage&& annotatedImage) :
+    explicit Impl(AnnotatedImage&& annotatedImage) :
         m_AnnotatedImage{std::move(annotatedImage)}
     {
-        m_ImageTexture.setFilterMode(osc::TextureFilterMode::Mipmap);
+        m_ImageTexture.setFilterMode(TextureFilterMode::Mipmap);
     }
 
     UID getID() const

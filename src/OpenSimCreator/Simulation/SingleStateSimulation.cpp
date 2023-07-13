@@ -8,7 +8,7 @@
 
 class osc::SingleStateSimulation::Impl final {
 public:
-    Impl(BasicModelStatePair modelState) :
+    explicit Impl(BasicModelStatePair modelState) :
         m_ModelState{std::move(modelState)}
     {
     }

@@ -362,7 +362,7 @@ namespace
     // a layer that is hosted by the parent
     class Layer {
     protected:
-        Layer(LayerHost& parent) : m_Parent{&parent}
+        explicit Layer(LayerHost& parent) : m_Parent{&parent}
         {
         }
         Layer(Layer const&) = default;
@@ -1951,7 +1951,7 @@ namespace
             // implict conversion from non-const- to const-iterator
 
             template<bool IsConst_ = IsConst>
-            operator typename std::enable_if_t<!IsConst_, Iterator<true, T>>() const noexcept
+            explicit operator typename std::enable_if_t<!IsConst_, Iterator<true, T>>() const noexcept
             {
                 return Iterator<true, T>{m_Pos, m_End};
             }
@@ -2018,7 +2018,7 @@ namespace
         template<bool IsConst, typename T = SceneEl>
         class Iterable final {
         public:
-            Iterable(std::map<UID, ClonePtr<SceneEl>>& els) :
+            explicit Iterable(std::map<UID, ClonePtr<SceneEl>>& els) :
                 m_Begin{els.begin(), els.end()},
                 m_End{els.end(), els.end()}
             {
@@ -2660,7 +2660,7 @@ namespace
     // undoable model graph storage
     class CommittableModelGraph final {
     public:
-        CommittableModelGraph(std::unique_ptr<ModelGraph> mg) :
+        explicit CommittableModelGraph(std::unique_ptr<ModelGraph> mg) :
             m_Scratch{std::move(mg)},
             m_Current{c_EmptyID},
             m_BranchHead{c_EmptyID},
@@ -2669,7 +2669,7 @@ namespace
             Commit("created model graph");
         }
 
-        CommittableModelGraph(ModelGraph const& mg) :
+        explicit CommittableModelGraph(ModelGraph const& mg) :
             CommittableModelGraph{std::make_unique<ModelGraph>(mg)}
         {
         }
@@ -3919,7 +3919,7 @@ namespace
     public:
         SharedData() = default;
 
-        SharedData(std::vector<std::filesystem::path> meshFiles)
+        explicit SharedData(std::vector<std::filesystem::path> meshFiles)
         {
             PushMeshLoadRequests(std::move(meshFiles));
         }
@@ -4342,7 +4342,7 @@ namespace
         {
             class Visitor final : public ConstSceneElVisitor {
             public:
-                Visitor(SharedData const& shared) : m_Shared{shared} {}
+                explicit Visitor(SharedData const& shared) : m_Shared{shared} {}
 
                 void operator()(GroundEl const&) final
                 {
@@ -5670,7 +5670,7 @@ namespace
 
             struct Visitor final : public ConstSceneElVisitor {
             public:
-                Visitor(ChooseElLayerOptions const& opts) : m_Opts{opts}
+                explicit Visitor(ChooseElLayerOptions const& opts) : m_Opts{opts}
                 {
                 }
 
@@ -6004,7 +6004,7 @@ namespace
 // mesh importer tab implementation
 class osc::MeshImporterTab::Impl final : public LayerHost {
 public:
-    Impl(std::weak_ptr<MainUIStateAPI> parent_) :
+    explicit Impl(std::weak_ptr<MainUIStateAPI> parent_) :
         m_Parent{std::move(parent_)},
         m_Shared{std::make_shared<SharedData>()}
     {
