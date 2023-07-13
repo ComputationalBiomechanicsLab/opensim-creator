@@ -56,7 +56,7 @@ void osc::ImGuiApplyDarkTheme()
     ImGui::GetStyle().GrabRounding = 20.0f;
     ImGui::GetStyle().GrabMinSize = 10.0f;
 
-    ImVec4* colors = ImGui::GetStyle().Colors;
+    auto& colors = ImGui::GetStyle().Colors;
     colors[ImGuiCol_Text] = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
     colors[ImGuiCol_TextDisabled] = ImVec4(0.36f, 0.42f, 0.47f, 1.00f);
     colors[ImGuiCol_WindowBg] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);

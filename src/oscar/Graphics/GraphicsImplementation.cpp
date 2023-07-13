@@ -1350,12 +1350,7 @@ template<> std::optional<osc::TextureFormat> osc::ToTextureFormat<uint8_t>(size_
 template<> std::optional<osc::TextureFormat> osc::ToTextureFormat<float>(size_t numChannels) noexcept
 {
     static_assert(NumTextureFormats() == 4);
-
-    switch (numChannels)
-    {
-    case 4: return osc::TextureFormat::RGBAFloat;
-    default: return std::nullopt;
-    }
+    return numChannels == 4 ? osc::TextureFormat::RGBAFloat : std::optional<osc::TextureFormat>{};
 }
 
 osc::Texture2D::Texture2D(

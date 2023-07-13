@@ -1180,33 +1180,29 @@ namespace
 
         UID implGetCrossReferenceConnecteeID(int i) const final
         {
-            switch (i) {
-            case 0:
-                return m_Attachment;
-            default:
+            if (i != 0)
+            {
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
+            return m_Attachment;
         }
 
         void implSetCrossReferenceConnecteeID(int i, UID id) final
         {
-            switch (i) {
-            case 0:
-                m_Attachment = osc::DowncastID<BodyEl>(id);
-                break;
-            default:
+            if (i != 0)
+            {
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
+            m_Attachment = osc::DowncastID<BodyEl>(id);
         }
 
         osc::CStringView implGetCrossReferenceLabel(int i) const final
         {
-            switch (i) {
-            case 0:
-                return c_MeshAttachmentCrossrefName;
-            default:
+            if (i != 0)
+            {
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
+            return c_MeshAttachmentCrossrefName;
         }
 
         SceneElFlags implGetFlags() const final
@@ -1752,38 +1748,35 @@ namespace
 
         UID implGetCrossReferenceConnecteeID(int i) const final
         {
-            switch (i) {
-            case 0:
-                return m_Attachment;
-            default:
+            if (i != 0)
+            {
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
+            return m_Attachment;
         }
 
         void implSetCrossReferenceConnecteeID(int i, UID id) final
         {
-            switch (i) {
-            case 0:
-                m_Attachment = osc::DowncastID<BodyEl>(id);
-                break;
-            default:
+            if (i != 0)
+            {
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
+            m_Attachment = osc::DowncastID<BodyEl>(id);
         }
 
         osc::CStringView implGetCrossReferenceLabel(int i) const final
         {
-            switch (i) {
-            case 0:
-                return c_StationParentCrossrefName;
-            default:
+            if (i != 0)
+            {
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
+            return c_StationParentCrossrefName;
         }
 
         SceneElFlags implGetFlags() const final
         {
-            return SceneElFlags_CanChangeLabel |
+            return
+                SceneElFlags_CanChangeLabel |
                 SceneElFlags_CanChangePosition |
                 SceneElFlags_CanDelete |
                 SceneElFlags_CanSelect;
