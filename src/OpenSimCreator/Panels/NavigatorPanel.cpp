@@ -142,14 +142,10 @@ namespace
 
     bool isSearchHit(std::string const& searchStr, ComponentPath const& cp)
     {
-        for (auto const& c : cp)
+        return std::any_of(cp.begin(), cp.end(), [&searchStr](OpenSim::Component const* c)
         {
-            if (osc::ContainsSubstringCaseInsensitive(c->getName(), searchStr))
-            {
-                return true;
-            }
-        }
-        return false;
+            return osc::ContainsSubstringCaseInsensitive(c->getName(), searchStr);
+        });
     }
 }
 

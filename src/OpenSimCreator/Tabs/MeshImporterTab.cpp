@@ -187,7 +187,7 @@ namespace
 // other constants
 namespace
 {
-    static float constexpr c_ConnectionLineWidth = 1.0f;
+    float constexpr c_ConnectionLineWidth = 1.0f;
 }
 
 // generic helper functions
@@ -2314,15 +2314,11 @@ namespace
     // returns `true` if `body` participates in any joint in the model graph
     bool IsAChildAttachmentInAnyJoint(ModelGraph const& mg, SceneEl const& el)
     {
-        UID id = el.GetID();
-        for (JointEl const& j : mg.iter<JointEl>())
+        auto it = mg.iter<JointEl>();
+        return std::any_of(it.begin(), it.end(), [id = el.GetID()](JointEl const& j)
         {
-            if (j.getChildID() == id)
-            {
-                return true;
-            }
-        }
-        return false;
+            return j.getChildID() == id;
+        });
     }
 
     // returns `true` if a Joint is complete b.s.

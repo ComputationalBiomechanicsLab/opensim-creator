@@ -92,7 +92,7 @@ namespace
     std::optional<std::string> TryGetModelSaveLocation(OpenSim::Model const& m)
     {
         if (std::string const& backing_path = m.getInputFileName();
-            backing_path != "Unassigned" && backing_path.size() > 0)
+            !backing_path.empty() && backing_path != "Unassigned")
         {
             // the model has an associated file
             //
