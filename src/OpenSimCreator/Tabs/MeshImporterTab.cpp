@@ -425,7 +425,7 @@ namespace
         Mesh mesh;
         Transform transform;
         osc::Color color = osc::Color::black();
-        osc::SceneDecorationFlags flags;
+        osc::SceneDecorationFlags flags = osc::SceneDecorationFlags_None;
         std::optional<osc::Material> maybeMaterial;
         std::optional<osc::MaterialPropertyBlock> maybePropertyBlock;
     };
@@ -653,6 +653,12 @@ namespace
 
     // a visitor for `const` scene elements
     class ConstSceneElVisitor {
+    protected:
+        ConstSceneElVisitor() = default;
+        ConstSceneElVisitor(ConstSceneElVisitor const&) = default;
+        ConstSceneElVisitor(ConstSceneElVisitor&&) noexcept = default;
+        ConstSceneElVisitor& operator=(ConstSceneElVisitor const&) = default;
+        ConstSceneElVisitor& operator=(ConstSceneElVisitor&&) noexcept = default;
     public:
         virtual ~ConstSceneElVisitor() noexcept = default;
         virtual void operator()(GroundEl const&) = 0;
@@ -664,6 +670,12 @@ namespace
 
     // a visitor for non-`const` scene elements
     class SceneElVisitor {
+    protected:
+        SceneElVisitor() = default;
+        SceneElVisitor(SceneElVisitor const&) = default;
+        SceneElVisitor(SceneElVisitor&&) noexcept = default;
+        SceneElVisitor& operator=(SceneElVisitor const&) = default;
+        SceneElVisitor& operator=(SceneElVisitor&&) noexcept = default;
     public:
         virtual ~SceneElVisitor() noexcept = default;
         virtual void operator()(GroundEl&) = 0;
@@ -1627,7 +1639,7 @@ namespace
             m_Xform.scale = {1.0f, 1.0f, 1.0f};
         }
 
-        void implSetScale(glm::vec3 const&)
+        void implSetScale(glm::vec3 const&) final
         {
             // ignore
         }
@@ -2363,8 +2375,7 @@ namespace
             return true;  // it's directly attached to ground
         }
 
-        BodyEl const* parent = modelGraph.TryGetElByID<BodyEl>(joint.getParentID());
-
+        auto const* parent = modelGraph.TryGetElByID<BodyEl>(joint.getParentID());
         if (!parent)
         {
             return false;  // joint's parent is garbage
@@ -2492,11 +2503,11 @@ namespace
 
         BodyEl const* bodyEl = nullptr;
 
-        if (BodyEl const* be = mg.TryGetElByID<BodyEl>(parent))
+        if (auto const* be = mg.TryGetElByID<BodyEl>(parent))
         {
             bodyEl = be;
         }
-        else if (MeshEl const* me = mg.TryGetElByID<MeshEl>(parent))
+        else if (auto const* me = mg.TryGetElByID<MeshEl>(parent))
         {
             bodyEl = mg.TryGetElByID<BodyEl>(me->getParentID());
         }
@@ -2506,11 +2517,11 @@ namespace
             return false;  // parent isn't attached to any body (or isn't a body)
         }
 
-        if (BodyEl const* be = mg.TryGetElByID<BodyEl>(id))
+        if (auto const* be = mg.TryGetElByID<BodyEl>(id))
         {
             return be->GetID() == bodyEl->GetID();
         }
-        else if (MeshEl const* me = mg.TryGetElByID<MeshEl>(id))
+        else if (auto const* me = mg.TryGetElByID<MeshEl>(id))
         {
             return me->getParentID() == bodyEl->GetID();
         }
@@ -2537,9 +2548,9 @@ namespace
     void SelectAnythingGroupedWith(ModelGraph& mg, UID el)
     {
         ForEachIDInSelectionGroup(mg, el, [&mg](UID other)
-            {
-                mg.Select(other);
-            });
+        {
+            mg.Select(other);
+        });
     }
 
     // returns the ID of the thing the station should attach to when trying to
@@ -2550,11 +2561,11 @@ namespace
         public:
             explicit Visitor(ModelGraph const& mg) : m_Mg{mg} {}
 
-            void operator()(GroundEl const&) { m_Result = c_GroundID; }
-            void operator()(MeshEl const& meshEl) { m_Mg.ContainsEl<BodyEl>(meshEl.getParentID()) ? m_Result = osc::DowncastID<BodyEl>(meshEl.getParentID()) : c_GroundID; }
-            void operator()(BodyEl const& bodyEl) { m_Result = bodyEl.GetID(); }
-            void operator()(JointEl const&) { m_Result = c_GroundID; }  // can't be attached
-            void operator()(StationEl const&) { m_Result = c_GroundID; }  // can't be attached
+            void operator()(GroundEl const&) final { m_Result = c_GroundID; }
+            void operator()(MeshEl const& meshEl) final { m_Mg.ContainsEl<BodyEl>(meshEl.getParentID()) ? m_Result = osc::DowncastID<BodyEl>(meshEl.getParentID()) : c_GroundID; }
+            void operator()(BodyEl const& bodyEl) final { m_Result = bodyEl.GetID(); }
+            void operator()(JointEl const&) final { m_Result = c_GroundID; }  // can't be attached
+            void operator()(StationEl const&) final { m_Result = c_GroundID; }  // can't be attached
 
             UIDT<BodyEl> result() const { return m_Result; }
 
@@ -2820,8 +2831,7 @@ namespace
 
         for (UID id : meshIDs)
         {
-            MeshEl* ptr = mg.TryUpdElByID<MeshEl>(id);
-
+            auto* ptr = mg.TryUpdElByID<MeshEl>(id);
             if (!ptr)
             {
                 continue;  // hardening: ignore invalid assignments
@@ -2853,7 +2863,7 @@ namespace
         glm::vec3 childPos = GetPosition(mg, childID);
         glm::vec3 midPoint = osc::Midpoint(parentPos, childPos);
 
-        JointEl& jointEl = mg.AddEl<JointEl>(jointTypeIdx, "", parentID, osc::DowncastID<BodyEl>(childID), Transform{midPoint});
+        auto& jointEl = mg.AddEl<JointEl>(jointTypeIdx, "", parentID, osc::DowncastID<BodyEl>(childID), Transform{midPoint});
         SelectOnly(mg, jointEl);
 
         cmg.Commit("added " + jointEl.GetLabel());
@@ -2901,21 +2911,18 @@ namespace
         ModelGraph& mg = cmg.UpdScratch();
 
         SceneEl* el = mg.TryUpdElByID(id);
-
         if (!el)
         {
             return false;
         }
 
         SceneEl const* aEl = mg.TryGetElByID(a);
-
         if (!aEl)
         {
             return false;
         }
 
         SceneEl const* bEl = mg.TryGetElByID(b);
-
         if (!bEl)
         {
             return false;
@@ -2932,14 +2939,12 @@ namespace
         ModelGraph& mg = cmg.UpdScratch();
 
         SceneEl* el = mg.TryUpdElByID(id);
-
         if (!el)
         {
             return false;
         }
 
         SceneEl* otherEl = mg.TryUpdElByID(other);
-
         if (!otherEl)
         {
             return false;
@@ -2956,14 +2961,12 @@ namespace
         ModelGraph& mg = cmg.UpdScratch();
 
         SceneEl* el = mg.TryUpdElByID(id);
-
         if (!el)
         {
             return false;
         }
 
-        MeshEl const* mesh = mg.TryGetElByID<MeshEl>(meshID);
-
+        auto const* mesh = mg.TryGetElByID<MeshEl>(meshID);
         if (!mesh)
         {
             return false;
@@ -2980,14 +2983,12 @@ namespace
         ModelGraph& mg = cmg.UpdScratch();
 
         SceneEl* const el = mg.TryUpdElByID(id);
-
         if (!el)
         {
             return false;
         }
 
-        MeshEl const* mesh = mg.TryGetElByID<MeshEl>(meshID);
-
+        auto const* mesh = mg.TryGetElByID<MeshEl>(meshID);
         if (!mesh)
         {
             return false;
@@ -3006,14 +3007,12 @@ namespace
         ModelGraph& mg = cmg.UpdScratch();
 
         SceneEl* const el = mg.TryUpdElByID(id);
-
         if (!el)
         {
             return false;
         }
 
-        MeshEl const* mesh = mg.TryGetElByID<MeshEl>(meshID);
-
+        auto const* mesh = mg.TryGetElByID<MeshEl>(meshID);
         if (!mesh)
         {
             return false;
@@ -3033,8 +3032,8 @@ namespace
         }
 
         ModelGraph& mg = cmg.UpdScratch();
-        SceneEl* el = mg.TryUpdElByID(id);
 
+        SceneEl* el = mg.TryUpdElByID(id);
         if (!el)
         {
             return false;
@@ -3069,8 +3068,8 @@ namespace
     bool DeleteEl(CommittableModelGraph& cmg, UID id)
     {
         ModelGraph& mg = cmg.UpdScratch();
-        SceneEl* el = mg.TryUpdElByID(id);
 
+        SceneEl* el = mg.TryUpdElByID(id);
         if (!el)
         {
             return false;
@@ -3098,14 +3097,12 @@ namespace
         ModelGraph& mg = cmg.UpdScratch();
 
         SceneEl* el = mg.TryUpdElByID(id);
-
         if (!el)
         {
             return false;
         }
 
         SceneEl* otherEl = mg.TryUpdElByID(other);
-
         if (!otherEl)
         {
             return false;
@@ -3122,11 +3119,11 @@ namespace
     {
         ModelGraph& mg = cmg.UpdScratch();
 
-        BodyEl& b = mg.AddEl<BodyEl>(GenerateName(BodyEl::Class()), Transform{pos});
+        auto& b = mg.AddEl<BodyEl>(GenerateName(BodyEl::Class()), Transform{pos});
         mg.DeSelectAll();
         mg.Select(b.GetID());
 
-        MeshEl* el = mg.TryUpdElByID<MeshEl>(andTryAttach);
+        auto* el = mg.TryUpdElByID<MeshEl>(andTryAttach);
         if (el)
         {
             if (el->getParentID() == c_GroundID || el->getParentID() == c_EmptyID)
@@ -3155,7 +3152,7 @@ namespace
             return false;
         }
 
-        StationEl& station = mg.AddEl<StationEl>(UIDT<StationEl>{}, GetStationAttachmentParent(mg, el), loc, GenerateName(StationEl::Class()));
+        auto& station = mg.AddEl<StationEl>(UIDT<StationEl>{}, GetStationAttachmentParent(mg, el), loc, GenerateName(StationEl::Class()));
         SelectOnly(mg, station);
         cmg.Commit("added station " + station.GetLabel());
         return true;
@@ -3165,8 +3162,7 @@ namespace
     {
         ModelGraph& mg = cmg.UpdScratch();
 
-        SceneEl const* el = mg.TryGetElByID(elID);
-
+        auto const* el = mg.TryGetElByID(elID);
         if (!el)
         {
             return false;
@@ -3807,7 +3803,7 @@ namespace
             }
             else
             {
-                if (auto bodyIt = bodyLookup.find(static_cast<OpenSim::Body const*>(frameBodyOrGround)); bodyIt != bodyLookup.end())
+                if (auto bodyIt = bodyLookup.find(dynamic_cast<OpenSim::Body const*>(frameBodyOrGround)); bodyIt != bodyLookup.end())
                 {
                     attachment = bodyIt->second;
                 }

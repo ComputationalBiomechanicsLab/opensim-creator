@@ -1161,7 +1161,7 @@ namespace
         TPS3DFileMenu m_FileMenu;
         TPS3DEditMenu m_EditMenu;
         osc::WindowMenu m_WindowMenu;
-        osc::MainMenuAboutTab m_AboutTab{};
+        osc::MainMenuAboutTab m_AboutTab;
     };
 }
 

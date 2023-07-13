@@ -582,27 +582,27 @@ namespace
         bool& wasUsingLastFrameStorage)
     {
         // use downcasting to figure out which gizmo implementation to use
-        if (OpenSim::Station const* const maybeStation = dynamic_cast<OpenSim::Station const*>(&selected))
+        if (auto const* const maybeStation = dynamic_cast<OpenSim::Station const*>(&selected))
         {
             StationManipulator manipulator{model, *maybeStation};
             DrawGizmoOverlayInner(gizmoID, camera, viewportRect, operation, mode, manipulator, wasUsingLastFrameStorage);
         }
-        else if (OpenSim::PathPoint const* const maybePathPoint = dynamic_cast<OpenSim::PathPoint const*>(&selected))
+        else if (auto const* const maybePathPoint = dynamic_cast<OpenSim::PathPoint const*>(&selected))
         {
             PathPointManipulator manipulator{model, *maybePathPoint};
             DrawGizmoOverlayInner(gizmoID, camera, viewportRect, operation, mode, manipulator, wasUsingLastFrameStorage);
         }
-        else if (OpenSim::PhysicalOffsetFrame const* const maybePof = dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&selected))
+        else if (auto const* const maybePof = dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&selected))
         {
             PhysicalOffsetFrameManipulator manipulator{model, *maybePof};
             DrawGizmoOverlayInner(gizmoID, camera, viewportRect, operation, mode, manipulator, wasUsingLastFrameStorage);
         }
-        else if (OpenSim::WrapObject const* const maybeWrapObject = dynamic_cast<OpenSim::WrapObject const*>(&selected))
+        else if (auto const* const maybeWrapObject = dynamic_cast<OpenSim::WrapObject const*>(&selected))
         {
             WrapObjectManipulator manipulator{model, *maybeWrapObject};
             DrawGizmoOverlayInner(gizmoID, camera, viewportRect, operation, mode, manipulator, wasUsingLastFrameStorage);
         }
-        else if (OpenSim::ContactGeometry const* const maybeContactGeom = dynamic_cast<OpenSim::ContactGeometry const*>(&selected))
+        else if (auto const* const maybeContactGeom = dynamic_cast<OpenSim::ContactGeometry const*>(&selected))
         {
             ContactGeometryManipulator manipulator{model, *maybeContactGeom};
             DrawGizmoOverlayInner(gizmoID, camera, viewportRect, operation, mode, manipulator, wasUsingLastFrameStorage);

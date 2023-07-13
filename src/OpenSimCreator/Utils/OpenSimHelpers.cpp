@@ -1228,10 +1228,13 @@ std::vector<osc::GeometryPathPoint> osc::GetAllPathPoints(OpenSim::GeometryPath 
 
     for (int i = 0; i < pps.getSize(); ++i)
     {
+        OpenSim::AbstractPathPoint const* const ap = pps[i];
 
-        OpenSim::AbstractPathPoint const& ap = *pps[i];
-
-        if (auto const* pwp = dynamic_cast<OpenSim::PathWrapPoint const*>(&ap))
+        if (!ap)
+        {
+            continue;
+        }
+        else if (auto const* pwp = dynamic_cast<OpenSim::PathWrapPoint const*>(ap))
         {
             // special case: it's a wrapping point, so add each part of the wrap
             Transform const body2ground = ToTransform(pwp->getParentFrame().getTransformInGround(st));
@@ -1245,7 +1248,7 @@ std::vector<osc::GeometryPathPoint> osc::GetAllPathPoints(OpenSim::GeometryPath 
         }
         else
         {
-            rv.emplace_back(ap, ToVec3(ap.getLocationInGround(st)));
+            rv.emplace_back(*ap, ToVec3(ap->getLocationInGround(st)));
         }
     }
 

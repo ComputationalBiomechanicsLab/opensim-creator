@@ -30,7 +30,7 @@ static inline int constexpr c_SearchMaxLen = 128;
 
 namespace
 {
-    using Geom_ctor_fn = std::unique_ptr<OpenSim::Geometry>(void);
+    using Geom_ctor_fn = std::unique_ptr<OpenSim::Geometry>();
     constexpr auto c_GeomCtors = osc::MakeArray<Geom_ctor_fn*>(
         []()
         {

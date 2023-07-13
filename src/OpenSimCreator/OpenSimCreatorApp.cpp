@@ -80,14 +80,14 @@ namespace
         // but it *reads* OSIM files with the assumption that numbers will be in the format 'x.y'
         osc::log::info("setting locale to US (so that numbers are always in the format '0.x'");
         char const* locale = "C";
-        osc::SetEnv("LANG", locale, 1);
-        osc::SetEnv("LC_CTYPE", locale, 1);
-        osc::SetEnv("LC_NUMERIC", locale, 1);
-        osc::SetEnv("LC_TIME", locale, 1);
-        osc::SetEnv("LC_COLLATE", locale, 1);
-        osc::SetEnv("LC_MONETARY", locale, 1);
-        osc::SetEnv("LC_MESSAGES", locale, 1);
-        osc::SetEnv("LC_ALL", locale, 1);
+        osc::SetEnv("LANG", locale, true);
+        osc::SetEnv("LC_CTYPE", locale, true);
+        osc::SetEnv("LC_NUMERIC", locale, true);
+        osc::SetEnv("LC_TIME", locale, true);
+        osc::SetEnv("LC_COLLATE", locale, true);
+        osc::SetEnv("LC_MONETARY", locale, true);
+        osc::SetEnv("LC_MESSAGES", locale, true);
+        osc::SetEnv("LC_ALL", locale, true);
 #ifdef LC_CTYPE
         setlocale(LC_CTYPE, locale);
 #endif

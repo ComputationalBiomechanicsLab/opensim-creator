@@ -296,7 +296,7 @@ private:
     {
         OpenSim::AbstractPathPoint& app = pps.get(i);
 
-        if (OpenSim::PathPoint* pp = dynamic_cast<OpenSim::PathPoint*>(&app))
+        if (auto* const pp = dynamic_cast<OpenSim::PathPoint*>(&app))
         {
             float const inputWidth = ImGui::CalcTextSize("0.00000").x;
 
@@ -305,7 +305,7 @@ private:
             static_assert(c_LocationInputIDs.size() == 3);
             for (int dim = 0; dim < c_LocationInputIDs.size(); ++dim)
             {
-                float v = static_cast<float>(location[dim]);
+                auto v = static_cast<float>(location[dim]);
 
                 ImGui::TableSetColumnIndex(column++);
                 ImGui::SetNextItemWidth(inputWidth);

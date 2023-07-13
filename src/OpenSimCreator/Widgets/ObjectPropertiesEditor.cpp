@@ -362,7 +362,7 @@ namespace
             // read stored value from edited property
             //
             // care: optional properties have size==0, so perform a range check
-            float value = static_cast<float>(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : 0.0);
+            auto value = static_cast<float>(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : 0.0);
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             if (ImGui::InputFloat("##doubleeditor", &value, 0.0f, 0.0f, OSC_DEFAULT_FLOAT_INPUT_FORMAT))

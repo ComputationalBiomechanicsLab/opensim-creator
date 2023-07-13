@@ -473,10 +473,10 @@ namespace OpenSim
     private:
         EdgePoints implGetEdgePointsInGround(SimTK::State const& state) const final
         {
-            OpenSim::Point const& pointA = getConnectee<OpenSim::Point>("pointA");
+            auto const& pointA = getConnectee<OpenSim::Point>("pointA");
             SimTK::Vec3 const pointAGroundLoc = pointA.getLocationInGround(state);
 
-            OpenSim::Point const& pointB = getConnectee<OpenSim::Point>("pointB");
+            auto const& pointB = getConnectee<OpenSim::Point>("pointB");
             SimTK::Vec3 const pointBGroundLoc = pointB.getLocationInGround(state);
 
             return {pointAGroundLoc, pointBGroundLoc};
@@ -1570,8 +1570,7 @@ namespace
         OpenSim::Point const& point,
         osc::ModelEditorViewerPanelRightClickEvent const& sourceEvent)
     {
-        osc::ModelEditorViewerPanel* const visualizer =
-            editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
+        auto* const visualizer = editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
         if (!visualizer)
         {
             return;  // can't figure out which visualizer to push the layer to
@@ -1595,14 +1594,14 @@ namespace
             }
             std::string const& pointBPath = *choices.begin();
 
-            OpenSim::Point const* pointA = osc::FindComponent<OpenSim::Point>(model->getModel(), pointAPath);
+            auto const* pointA = osc::FindComponent<OpenSim::Point>(model->getModel(), pointAPath);
             if (!pointA)
             {
                 osc::log::error("point A's component path (%s) does not exist in the model", pointAPath.c_str());
                 return false;
             }
 
-            OpenSim::Point const* pointB = osc::FindComponent<OpenSim::Point>(model->getModel(), pointBPath);
+            auto const* pointB = osc::FindComponent<OpenSim::Point>(model->getModel(), pointBPath);
             if (!pointB)
             {
                 osc::log::error("point B's component path (%s) does not exist in the model", pointBPath.c_str());
@@ -1622,8 +1621,7 @@ namespace
         OpenSim::Point const& point,
         osc::ModelEditorViewerPanelRightClickEvent const& sourceEvent)
     {
-        osc::ModelEditorViewerPanel* const visualizer =
-            editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
+        auto* const visualizer = editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
         if (!visualizer)
         {
             return;  // can't figure out which visualizer to push the layer to
@@ -1647,14 +1645,14 @@ namespace
             }
             std::string const& pointBPath = *choices.begin();
 
-            OpenSim::Point const* pointA = osc::FindComponent<OpenSim::Point>(model->getModel(), pointAPath);
+            auto const* pointA = osc::FindComponent<OpenSim::Point>(model->getModel(), pointAPath);
             if (!pointA)
             {
                 osc::log::error("point A's component path (%s) does not exist in the model", pointAPath.c_str());
                 return false;
             }
 
-            OpenSim::Point const* pointB = osc::FindComponent<OpenSim::Point>(model->getModel(), pointBPath);
+            auto const* pointB = osc::FindComponent<OpenSim::Point>(model->getModel(), pointBPath);
             if (!pointB)
             {
                 osc::log::error("point B's component path (%s) does not exist in the model", pointBPath.c_str());
@@ -1674,9 +1672,7 @@ namespace
         OpenSim::FDVirtualEdge const& firstEdge,
         osc::ModelEditorViewerPanelRightClickEvent const& sourceEvent)
     {
-        osc::ModelEditorViewerPanel* const visualizer =
-            editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
-
+        auto* const visualizer = editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
         if (!visualizer)
         {
             return;  // can't figure out which visualizer to push the layer to
@@ -1700,14 +1696,14 @@ namespace
             }
             std::string const& edgeBPath = *choices.begin();
 
-            OpenSim::FDVirtualEdge const* edgeA = osc::FindComponent<OpenSim::FDVirtualEdge>(model->getModel(), edgeAPath);
+            auto const* edgeA = osc::FindComponent<OpenSim::FDVirtualEdge>(model->getModel(), edgeAPath);
             if (!edgeA)
             {
                 osc::log::error("edge A's component path (%s) does not exist in the model", edgeAPath.c_str());
                 return false;
             }
 
-            OpenSim::FDVirtualEdge const* edgeB = osc::FindComponent<OpenSim::FDVirtualEdge>(model->getModel(), edgeBPath);
+            auto const* edgeB = osc::FindComponent<OpenSim::FDVirtualEdge>(model->getModel(), edgeBPath);
             if (!edgeB)
             {
                 osc::log::error("point B's component path (%s) does not exist in the model", edgeBPath.c_str());
@@ -1750,21 +1746,21 @@ namespace
             }
             std::string const& originPath = *choices.begin();
 
-            OpenSim::FDVirtualEdge const* firstEdge = osc::FindComponent<OpenSim::FDVirtualEdge>(model->getModel(), firstEdgeAbsPath);
+            auto const* firstEdge = osc::FindComponent<OpenSim::FDVirtualEdge>(model->getModel(), firstEdgeAbsPath);
             if (!firstEdge)
             {
                 osc::log::error("the first edge's component path (%s) does not exist in the model", firstEdgeAbsPath.c_str());
                 return false;
             }
 
-            OpenSim::FDVirtualEdge const* otherEdge = osc::FindComponent<OpenSim::FDVirtualEdge>(model->getModel(), secondEdgeAbsPath);
+            auto const* otherEdge = osc::FindComponent<OpenSim::FDVirtualEdge>(model->getModel(), secondEdgeAbsPath);
             if (!otherEdge)
             {
                 osc::log::error("the second edge's component path (%s) does not exist in the model", secondEdgeAbsPath.c_str());
                 return false;
             }
 
-            OpenSim::Point const* originPoint = osc::FindComponent<OpenSim::Point>(model->getModel(), originPath);
+            auto const* originPoint = osc::FindComponent<OpenSim::Point>(model->getModel(), originPath);
             if (!originPoint)
             {
                 osc::log::error("the origin's component path (%s) does not exist in the model", originPath.c_str());
@@ -1839,9 +1835,7 @@ namespace
             return;  // there is no way to figure out which visualizer to push the layer to
         }
 
-        osc::ModelEditorViewerPanel* const visualizer =
-            editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
-
+        auto* const visualizer = editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
         if (!visualizer)
         {
             return;  // the visualizer that the user clicked cannot be found
@@ -1882,32 +1876,28 @@ namespace
         // validate external inputs
 
         osc::log::debug("validate external inputs");
-        OpenSim::PhysicalFrame const* const meshFrame =
-            osc::FindComponent<OpenSim::PhysicalFrame>(model->getModel(), frameAbsPath);
+        auto const* const meshFrame = osc::FindComponent<OpenSim::PhysicalFrame>(model->getModel(), frameAbsPath);
         if (!meshFrame)
         {
             osc::log::error("%s: cannot find frame: skipping body creation", frameAbsPath.toString().c_str());
             return;
         }
 
-        OpenSim::Mesh const* const mesh =
-            osc::FindComponent<OpenSim::Mesh>(model->getModel(), meshAbsPath);
+        auto const* const mesh = osc::FindComponent<OpenSim::Mesh>(model->getModel(), meshAbsPath);
         if (!mesh)
         {
             osc::log::error("%s: cannot find mesh: skipping body creation", meshAbsPath.toString().c_str());
             return;
         }
 
-        OpenSim::PhysicalFrame const* const jointFrame =
-            osc::FindComponent<OpenSim::PhysicalFrame>(model->getModel(), jointFrameAbsPath);
+        auto const* const jointFrame = osc::FindComponent<OpenSim::PhysicalFrame>(model->getModel(), jointFrameAbsPath);
         if (!jointFrame)
         {
             osc::log::error("%s: cannot find joint frame: skipping body creation", jointFrameAbsPath.toString().c_str());
             return;
         }
 
-        OpenSim::PhysicalFrame const* const parentFrame =
-            osc::FindComponent<OpenSim::PhysicalFrame>(model->getModel(), parentFrameAbsPath);
+        auto const* const parentFrame = osc::FindComponent<OpenSim::PhysicalFrame>(model->getModel(), parentFrameAbsPath);
         if (!parentFrame)
         {
             osc::log::error("%s: cannot find parent frame: skipping body creation", parentFrameAbsPath.toString().c_str());
@@ -2063,7 +2053,7 @@ namespace
                 return false;
             }
 
-            OpenSim::PhysicalFrame const* parentFrame = osc::FindComponent<OpenSim::PhysicalFrame>(model->getModel(), *choices.begin());
+            auto const* const parentFrame = osc::FindComponent<OpenSim::PhysicalFrame>(model->getModel(), *choices.begin());
             if (!parentFrame)
             {
                 osc::log::error("user selection from 'choose components' layer did not select a frame: this shouldn't happen?");
@@ -2107,7 +2097,7 @@ namespace
                 return false;
             }
 
-            OpenSim::Frame const* jointFrame = osc::FindComponent<OpenSim::Frame>(model->getModel(), *choices.begin());
+            auto const* const jointFrame = osc::FindComponent<OpenSim::Frame>(model->getModel(), *choices.begin());
             if (!jointFrame)
             {
                 osc::log::error("user selection from 'choose components' layer did not select a frame: this shouldn't happen?");
@@ -2149,7 +2139,7 @@ namespace
                 return false;
             }
 
-            OpenSim::Mesh const* mesh = osc::FindComponent<OpenSim::Mesh>(model->getModel(), *choices.begin());
+            auto const* const mesh = osc::FindComponent<OpenSim::Mesh>(model->getModel(), *choices.begin());
             if (!mesh)
             {
                 osc::log::error("user selection from 'choose components' layer did not select a mesh: this shouldn't happen?");
@@ -2179,9 +2169,7 @@ namespace
             return;  // there is no way to figure out which visualizer to push the layer to
         }
 
-        osc::ModelEditorViewerPanel* const visualizer =
-            editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
-
+        auto* const visualizer = editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
         if (!visualizer)
         {
             return;  // the visualizer that the user clicked cannot be found
@@ -2424,8 +2412,7 @@ namespace
             if (maybeSourceEvent->maybeClickPositionInGround &&
                 ImGui::MenuItem("on Click Position"))
             {
-                osc::ModelEditorViewerPanel* visualizer =
-                    editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
+                auto* visualizer = editor.getPanelManager()->tryUpdPanelByNameT<osc::ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
                 if (visualizer)
                 {
                     visualizer->focusOn(*maybeSourceEvent->maybeClickPositionInGround);
@@ -2788,23 +2775,23 @@ namespace
             {
                 DrawRightClickedNothingContextMenu(*m_Model);
             }
-            else if (OpenSim::Mesh const* maybeMesh = dynamic_cast<OpenSim::Mesh const*>(maybeComponent))
+            else if (auto const* maybeMesh = dynamic_cast<OpenSim::Mesh const*>(maybeComponent))
             {
                 DrawRightClickedMeshContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeMesh);
             }
-            else if (OpenSim::Point const* maybePoint = dynamic_cast<OpenSim::Point const*>(maybeComponent))
+            else if (auto const* maybePoint = dynamic_cast<OpenSim::Point const*>(maybeComponent))
             {
                 DrawRightClickedPointContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybePoint);
             }
-            else if (OpenSim::Frame const* maybeFrame = dynamic_cast<OpenSim::Frame const*>(maybeComponent))
+            else if (auto const* maybeFrame = dynamic_cast<OpenSim::Frame const*>(maybeComponent))
             {
                 DrawRightClickedFrameContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeFrame);
             }
-            else if (OpenSim::FDPointToPointEdge const* maybeP2PEdge = dynamic_cast<OpenSim::FDPointToPointEdge const*>(maybeComponent))
+            else if (auto const* maybeP2PEdge = dynamic_cast<OpenSim::FDPointToPointEdge const*>(maybeComponent))
             {
                 DrawRightClickedPointToPointEdgeContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeP2PEdge);
             }
-            else if (OpenSim::FDCrossProductEdge const* maybeCPEdge = dynamic_cast<OpenSim::FDCrossProductEdge const*>(maybeComponent))
+            else if (auto const* maybeCPEdge = dynamic_cast<OpenSim::FDCrossProductEdge const*>(maybeComponent))
             {
                 DrawRightClickedCrossProductEdgeContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeCPEdge);
             }
@@ -3109,12 +3096,12 @@ private:
         m_PopupManager.push_back(std::move(popup));
     }
 
-    void implAddMusclePlot(OpenSim::Coordinate const&, OpenSim::Muscle const&)
+    void implAddMusclePlot(OpenSim::Coordinate const&, OpenSim::Muscle const&) final
     {
         // ignore: not applicable in this tab
     }
 
-    std::shared_ptr<PanelManager> implGetPanelManager()
+    std::shared_ptr<PanelManager> implGetPanelManager() final
     {
         return m_PanelManager;
     }
