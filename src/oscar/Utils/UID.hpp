@@ -62,7 +62,7 @@ namespace osc
     class UIDT final : public UID {
     public:
 
-        UIDT() : UID{}
+        UIDT() noexcept : UID{}
         {
         }
 

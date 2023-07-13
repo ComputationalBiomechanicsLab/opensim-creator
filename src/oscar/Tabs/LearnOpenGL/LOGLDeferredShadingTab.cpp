@@ -71,7 +71,7 @@ namespace
 
     std::vector<glm::vec3> GenerateNSceneLightPositions(size_t n)
     {
-        auto const generator = [rng = std::default_random_engine{}]() mutable
+        auto const generator = [rng = std::default_random_engine{std::random_device{}()}]() mutable
         {
             return GenerateSceneLightPosition(rng);
         };
@@ -84,7 +84,7 @@ namespace
 
     std::vector<glm::vec3> GenerateNSceneLightColors(size_t n)
     {
-        auto const generator = [rng = std::default_random_engine{}]() mutable
+        auto const generator = [rng = std::default_random_engine{std::random_device{}()}]() mutable
         {
             osc::Color const sRGBColor = GenerateSceneLightColor(rng);
             osc::Color const linearColor = osc::ToLinear(sRGBColor);
