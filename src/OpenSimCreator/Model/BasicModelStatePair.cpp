@@ -19,13 +19,18 @@ public:
     }
 
     Impl(VirtualModelStatePair const& p) :
-        Impl{p.getModel(), p.getState()}
+        Impl{p.getModel(), p.getState(), p.getFixupScaleFactor()}
     {
-        m_FixupScaleFactor = p.getFixupScaleFactor();
     }
 
     Impl(OpenSim::Model const& m, SimTK::State const& st) :
-        m_Model(std::make_unique<OpenSim::Model>(m))
+        Impl{m, st, 1.0f}
+    {
+    }
+
+    Impl(OpenSim::Model const& m, SimTK::State const& st, float fixupScaleFactor) :
+        m_Model(std::make_unique<OpenSim::Model>(m)),
+        m_FixupScaleFactor{fixupScaleFactor}
     {
         InitializeModel(*m_Model);
         InitializeState(*m_Model);
