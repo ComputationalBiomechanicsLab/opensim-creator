@@ -276,7 +276,7 @@ static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
     signal(SIGABRT, SIG_DFL);  // reset abort signal handler
     signal(SIGSEGV, SIG_DFL);  // reset segfault signal handler
 
-    auto* uc = static_cast<osc_sig_ucontext_t*>(ucontext);
+    auto* uc = static_cast<osc_sig_ucontext*>(ucontext);
 
     /* Get the address at the time the signal was raised */
 #if defined(__i386__)  // gcc specific
