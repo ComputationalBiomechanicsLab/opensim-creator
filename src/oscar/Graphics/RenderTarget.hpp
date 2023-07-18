@@ -7,13 +7,13 @@
 
 namespace osc
 {
-	struct RenderTarget final {
-		RenderTarget(
-			std::vector<RenderTargetColorAttachment>,
-			RenderTargetDepthAttachment
-		);
+    struct RenderTarget final {
+        RenderTarget(
+            std::vector<RenderTargetColorAttachment>,
+            RenderTargetDepthAttachment
+        );
 
-		std::vector<RenderTargetColorAttachment> colors;
-		RenderTargetDepthAttachment depth;
-	};
+        std::vector<RenderTargetColorAttachment> colors;
+        RenderTargetDepthAttachment depth;
+    };
 }

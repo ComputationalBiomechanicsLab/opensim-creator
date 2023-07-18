@@ -7,10 +7,10 @@
 #include <vector>
 
 osc::RenderTarget::RenderTarget(
-	std::vector<RenderTargetColorAttachment> colors_,
-	RenderTargetDepthAttachment depth_) :
+    std::vector<RenderTargetColorAttachment> colors_,
+    RenderTargetDepthAttachment depth_) :
 
-	colors{std::move(colors_)},
-	depth{std::move(depth_)}
+    colors{std::move(colors_)},
+    depth{std::move(depth_)}
 {
 }

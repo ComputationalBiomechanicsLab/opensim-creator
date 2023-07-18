@@ -11,15 +11,15 @@ namespace osc { class ModelEditorViewerPanelState; }
 
 namespace osc
 {
-	class ModelEditorViewerPanelLayer {
-	protected:
+    class ModelEditorViewerPanelLayer {
+    protected:
         ModelEditorViewerPanelLayer() = default;
-		ModelEditorViewerPanelLayer(ModelEditorViewerPanelLayer const&) = default;
-		ModelEditorViewerPanelLayer(ModelEditorViewerPanelLayer&&) noexcept = default;
-		ModelEditorViewerPanelLayer& operator=(ModelEditorViewerPanelLayer const&) = default;
-		ModelEditorViewerPanelLayer& operator=(ModelEditorViewerPanelLayer&&) noexcept = default;
-	public:
-		virtual ~ModelEditorViewerPanelLayer() noexcept = default;
+        ModelEditorViewerPanelLayer(ModelEditorViewerPanelLayer const&) = default;
+        ModelEditorViewerPanelLayer(ModelEditorViewerPanelLayer&&) noexcept = default;
+        ModelEditorViewerPanelLayer& operator=(ModelEditorViewerPanelLayer const&) = default;
+        ModelEditorViewerPanelLayer& operator=(ModelEditorViewerPanelLayer&&) noexcept = default;
+    public:
+        virtual ~ModelEditorViewerPanelLayer() noexcept = default;
 
         ModelEditorViewerPanelLayerFlags getFlags() const
         {
@@ -62,7 +62,7 @@ namespace osc
             return implShouldClose();
         }
 
-	private:
+    private:
         virtual ModelEditorViewerPanelLayerFlags implGetFlags() const
         {
             return ModelEditorViewerPanelLayerFlags_Default;
@@ -96,5 +96,5 @@ namespace osc
             ModelEditorViewerPanelState&) = 0;
 
         virtual bool implShouldClose() const = 0;
-	};
+    };
 }

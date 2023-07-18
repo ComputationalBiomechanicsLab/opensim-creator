@@ -5,14 +5,14 @@
 #include <oscar/Platform/App.hpp>
 
 osc::ModelEditorViewerPanelState::ModelEditorViewerPanelState(
-	std::string_view panelName_) :
+    std::string_view panelName_) :
 
-	m_PanelName{panelName_},
-	m_CachedModelRenderer
-	{
-		App::get().getConfig(),
-		App::singleton<MeshCache>(),
-		*App::singleton<ShaderCache>(),
-	}
+    m_PanelName{panelName_},
+    m_CachedModelRenderer
+    {
+        App::get().getConfig(),
+        App::singleton<MeshCache>(),
+        *App::singleton<ShaderCache>(),
+    }
 {
 }

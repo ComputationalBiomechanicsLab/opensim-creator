@@ -11,10 +11,10 @@ namespace osc
 {
     // generates 3D overlays for the given options and passes them to the
     // output consumer
-	void GenerateOverlayDecorations(
+    void GenerateOverlayDecorations(
         MeshCache&,
         OverlayDecorationOptions const&,
         BVH const& sceneBVH,
         std::function<void(SceneDecoration&&)> const& out
-	);
+    );
 }

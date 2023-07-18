@@ -8,15 +8,15 @@
 
 namespace osc
 {
-	struct RenderTargetAttachment {
-		RenderTargetAttachment(
-			std::shared_ptr<RenderBuffer> buffer_,
-			RenderBufferLoadAction loadAction_,
-			RenderBufferStoreAction storeAction_
-		);
+    struct RenderTargetAttachment {
+        RenderTargetAttachment(
+            std::shared_ptr<RenderBuffer> buffer_,
+            RenderBufferLoadAction loadAction_,
+            RenderBufferStoreAction storeAction_
+        );
 
-		std::shared_ptr<RenderBuffer> buffer;
-		RenderBufferLoadAction loadAction;
-		RenderBufferStoreAction storeAction;
-	};
+        std::shared_ptr<RenderBuffer> buffer;
+        RenderBufferLoadAction loadAction;
+        RenderBufferStoreAction storeAction;
+    };
 }

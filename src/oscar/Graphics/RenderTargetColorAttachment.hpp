@@ -9,18 +9,18 @@
 
 namespace osc
 {
-	struct RenderTargetColorAttachment final : public RenderTargetAttachment {
+    struct RenderTargetColorAttachment final : public RenderTargetAttachment {
 
-		RenderTargetColorAttachment(
-			std::shared_ptr<RenderBuffer>,
-			RenderBufferLoadAction,
-			RenderBufferStoreAction,
-			Color clearColor_
-		);
+        RenderTargetColorAttachment(
+            std::shared_ptr<RenderBuffer>,
+            RenderBufferLoadAction,
+            RenderBufferStoreAction,
+            Color clearColor_
+        );
 
-		Color clearColor;
-	};
+        Color clearColor;
+    };
 
-	bool operator==(RenderTargetColorAttachment const&, RenderTargetColorAttachment const&) noexcept;
-	bool operator!=(RenderTargetColorAttachment const&, RenderTargetColorAttachment const&) noexcept;
+    bool operator==(RenderTargetColorAttachment const&, RenderTargetColorAttachment const&) noexcept;
+    bool operator!=(RenderTargetColorAttachment const&, RenderTargetColorAttachment const&) noexcept;
 }

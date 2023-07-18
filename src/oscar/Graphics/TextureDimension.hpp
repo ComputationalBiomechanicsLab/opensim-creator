@@ -4,8 +4,8 @@
 
 namespace osc
 {
-	enum class TextureDimension : int32_t {
-		Tex2D,
-		Cube,
-	};
+    enum class TextureDimension : int32_t {
+        Tex2D,
+        Cube,
+    };
 }

@@ -4,5 +4,5 @@
 
 namespace osc
 {
-	using ComponentMemberOffset = uint16_t;
+    using ComponentMemberOffset = uint16_t;
 }

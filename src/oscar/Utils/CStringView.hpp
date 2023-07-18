@@ -36,11 +36,11 @@ namespace osc
         constexpr CStringView& operator=(CStringView const&) noexcept = default;
 
         // explicitly necessary because arrays might otherwise decay into pointers
-	template<size_t N>
+    template<size_t N>
         static constexpr CStringView FromArray(char const (&s)[N]) noexcept
-	{
+    {
             return {&s[0], N};
-	}
+    }
 
         constexpr size_t size() const noexcept { return m_Size; }
         constexpr size_t length() const noexcept { return m_Size; }
