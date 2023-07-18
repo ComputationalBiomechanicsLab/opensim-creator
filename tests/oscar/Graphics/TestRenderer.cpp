@@ -3004,7 +3004,7 @@ TEST_F(Renderer, CameraSetViewMatrixOverrideSetsANewViewMatrixThatCanBeRetrieved
 
     // these shouldn't matter - they're overridden
     camera.setCameraProjection(osc::CameraProjection::Orthographic);
-    camera.setPosition({7.0f, 5.0f, -3.0f});  
+    camera.setPosition({7.0f, 5.0f, -3.0f});
 
     glm::mat4 viewMatrix{1.0f};
     viewMatrix[0][1] = 9.0f;  // change some part of it
@@ -3053,7 +3053,7 @@ TEST_F(Renderer, CameraSetProjectionMatrixOverrideSetsANewProjectionMatrixThatCa
 
     // these shouldn't matter - they're overridden
     camera.setCameraProjection(osc::CameraProjection::Orthographic);
-    camera.setPosition({7.0f, 5.0f, -3.0f});  
+    camera.setPosition({7.0f, 5.0f, -3.0f});
 
     glm::mat4 ProjectionMatrix{1.0f};
     ProjectionMatrix[0][1] = 9.0f;  // change some part of it
@@ -3155,7 +3155,7 @@ TEST_F(Renderer, CameraSetClearFlagsCausesCopyToReturnNonEqual)
 // TODO Mesh::setIndices MeshIndicesView
 // TODO Mesh ensure > 2^16 indices are allowed
 // TODO Mesh::clear
-// 
+//
 // TODO: RenderTexture (all)
 
 // TODO: texture: ensure texture debug string contains useful information etc.

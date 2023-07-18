@@ -105,7 +105,7 @@ namespace
         *o << tc;
     }
 
-    TestCase g_TestCases[] = 
+    TestCase g_TestCases[] =
     {
         // it strips purely-whitespace strings
         {"", std::nullopt},

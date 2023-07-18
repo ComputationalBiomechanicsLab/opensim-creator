@@ -80,7 +80,7 @@ TEST(Color, ToVec4ExplicitlyConvertsToVec4)
     glm::vec4 const v = osc::ToVec4(c);
 
     ASSERT_EQ(v.x, c.r);
-    ASSERT_EQ(v.y, c.g); 
+    ASSERT_EQ(v.y, c.g);
     ASSERT_EQ(v.z, c.b);
     ASSERT_EQ(v.a, c.a);
 }

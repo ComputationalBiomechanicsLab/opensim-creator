@@ -15,7 +15,7 @@ TEST(Image, CanLoadImageResource)
 {
     auto config = osc::Config::load();
     auto path = config->getResourceDir() / "textures" / "awesomeface.png";
-    
+
     osc::LoadImageFromFile(path, osc::ColorSpace::sRGB);  // shouldn't throw
 }
 
