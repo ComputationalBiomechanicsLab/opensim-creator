@@ -41,7 +41,7 @@ def replace_leading_tabs_with_spaces_in(dirpath):
                 should_write = should_write or changed
             
             if should_write:
-                new_content = "\n".join(new_lines)
+                new_content = "\n".join(new_lines) + "\n"  # trailing newline
                 with open(path, "w") as f:
                     f.write(new_content)
 
