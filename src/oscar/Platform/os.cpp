@@ -289,7 +289,7 @@ static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
         stderr,
         "osc: critical error: signal %d (%s) received from OS: address is %p from %p\n",
         sig_num,
-        sigdescr_np(sig_num),
+        strsignal(sig_num),
         info->si_addr,
         callerAddress);
 
