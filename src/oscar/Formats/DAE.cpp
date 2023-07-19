@@ -306,7 +306,7 @@ namespace
     void WriteMeshVertices(std::ostream& o, DAEGeometry const& geom)
     {
         o << "        <vertices id=\"" << geom.geometryID << "-vertices\">\n";
-        o << "          <input semantic=\"POSITION\" source=\"#" << geom.geometryID << "-positions\"/>\n";
+        o << R"(           <input semantic="POSITION" source="#)" << geom.geometryID << "-positions\"/>\n";
         o << "        </vertices>\n";
     }
 
@@ -316,14 +316,14 @@ namespace
         size_t const numTriangles = indices.size() / 3;
 
         o << "        <triangles count=\"" << numTriangles << "\">\n";
-        o << "          <input semantic=\"VERTEX\" source=\"#" << geom.geometryID << "-vertices\" offset=\"0\" />\n";
+        o << R"(            <input semantic="VERTEX" source="#)" << geom.geometryID << "-vertices\" offset=\"0\" />\n";
         if (!geom.mesh.getNormals().empty())
         {
-            o << "          <input semantic=\"NORMAL\" source=\"#" << geom.geometryID << "-normals\" offset=\"0\" />\n";
+            o << R"(            <input semantic="NORMAL" source="#)" << geom.geometryID << "-normals\" offset=\"0\" />\n";
         }
         if (!geom.mesh.getTexCoords().empty())
         {
-            o << "          <input semantic=\"TEXCOORD\" source=\"#" << geom.geometryID << "-map-0\" offset=\"0\" set=\"0\"/>\n";
+            o << R"(            <input semantic="TEXCOORD" source="#)" << geom.geometryID << "-map-0\" offset=\"0\" set=\"0\"/>\n";
         }
 
         o << "          <p>";

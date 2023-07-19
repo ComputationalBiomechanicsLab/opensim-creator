@@ -16,7 +16,6 @@ Checks: >
   -modernize-use-trailing-return-type,
   -modernize-pass-by-value,
   -modernize-use-nodiscard,
-  -modernize-raw-string-literal,
   cppcoreguidelines-*,
   -cppcoreguidelines-non-private-member-variables-in-classes,
   -cppcoreguidelines-pro-type-const-cast,
