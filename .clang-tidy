@@ -59,8 +59,7 @@ Checks: >
   -readability-container-data-pointer,
   -readability-simplify-boolean-expr,
   -readability-static-accessed-through-instance,
-  cert-*,
-  -cert-dcl16-c
+  cert-*
 
 # disabled: OpenSim contains memory-leaking code that I cannot disable :<
 # WarningsAsErrors: "*"

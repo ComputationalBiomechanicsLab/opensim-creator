@@ -218,7 +218,7 @@ osc::Mesh osc::GenTexturedQuad()
 osc::Mesh osc::GenUntexturedUVSphere(size_t sectors, size_t stacks)
 {
     NewMeshData data;
-    data.reserve(2ll*3ll*stacks*sectors);
+    data.reserve(2LL*3LL*stacks*sectors);
 
     // this is a shitty alg that produces a shitty UV sphere. I don't have
     // enough time to implement something better, like an isosphere, or
