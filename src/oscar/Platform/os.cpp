@@ -500,7 +500,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
     return std::string{buf};
 }
 
-void osc::WriteTracebackToLog(log::level::LevelEnum lvl)
+void osc::WriteTracebackToLog(log::Level lvl)
 {
     constexpr size_t skipped_frames = 0;
     constexpr size_t num_frames = 16;
@@ -610,7 +610,7 @@ namespace
             std::shared_ptr<osc::log::Sink> sink = std::make_shared<CrashFileSink>(crashReportFile);
 
             osc::log::defaultLogger()->sinks().push_back(sink);
-            osc::WriteTracebackToLog(osc::log::level::err);
+            osc::WriteTracebackToLog(osc::log::Level::err);
             osc::log::defaultLogger()->sinks().erase(osc::log::defaultLogger()->sinks().end() - 1);
 
             crashReportFile << "----- /traceback -----\n";
@@ -622,7 +622,7 @@ namespace
     void signal_handler(int)
     {
         osc::log::error("signal caught by OSC: printing backtrace");
-        osc::WriteTracebackToLog(osc::log::level::err);
+        osc::WriteTracebackToLog(osc::log::Level::err);
     }
 }
 

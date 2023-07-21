@@ -29,18 +29,30 @@
 #include <cstddef>
 #include <memory>
 #include <sstream>
+#include <type_traits>
 #include <utility>
 
 // common/virtual manipulator data/APIs
 namespace
 {
     // operations that are supported by a manipulator
-    using SupportedManipulationOpFlags = int32_t;
-    enum SupportedManipulationOpFlags_ : int32_t {
-        SupportedManipulationOpFlags_None = 0,
-        SupportedManipulationOpFlags_Translation = 1<<0,
-        SupportedManipulationOpFlags_Rotation = 1<<1,
+    enum class SupportedManipulationOpFlags : uint32_t {
+        None        = 0u,
+        Translation = 1u<<0u,
+        Rotation    = 1u<<1u,
     };
+
+    constexpr SupportedManipulationOpFlags operator|(SupportedManipulationOpFlags a, SupportedManipulationOpFlags b) noexcept
+    {
+        using T = std::underlying_type_t<SupportedManipulationOpFlags>;
+        return static_cast<SupportedManipulationOpFlags>(static_cast<T>(a) | static_cast<T>(b));
+    }
+
+    constexpr bool operator&(SupportedManipulationOpFlags a, SupportedManipulationOpFlags b) noexcept
+    {
+        using T = std::underlying_type_t<SupportedManipulationOpFlags>;
+        return static_cast<T>(a) & static_cast<T>(b);
+    }
 
     // type-erased virtual base class that each concrete manipulator inherits from
     class VirtualSelectionManipulator {
@@ -194,7 +206,7 @@ namespace
 
         SupportedManipulationOpFlags implGetSupportedManipulationOps() const final
         {
-            return SupportedManipulationOpFlags_Translation;
+            return SupportedManipulationOpFlags::Translation;
         }
 
         glm::mat4 implGetCurrentModelMatrix(
@@ -236,7 +248,7 @@ namespace
     private:
         SupportedManipulationOpFlags implGetSupportedManipulationOps() const final
         {
-            return SupportedManipulationOpFlags_Translation;
+            return SupportedManipulationOpFlags::Translation;
         }
 
         glm::mat4 implGetCurrentModelMatrix(
@@ -278,7 +290,7 @@ namespace
     private:
         SupportedManipulationOpFlags implGetSupportedManipulationOps() const final
         {
-            return SupportedManipulationOpFlags_Translation | SupportedManipulationOpFlags_Rotation;
+            return SupportedManipulationOpFlags::Translation | SupportedManipulationOpFlags::Rotation;
         }
 
         glm::mat4 implGetCurrentModelMatrix(
@@ -345,7 +357,7 @@ namespace
     private:
         SupportedManipulationOpFlags implGetSupportedManipulationOps() const final
         {
-            return SupportedManipulationOpFlags_Rotation | SupportedManipulationOpFlags_Translation;
+            return SupportedManipulationOpFlags::Rotation | SupportedManipulationOpFlags::Translation;
         }
 
         glm::mat4 implGetCurrentModelMatrix(
@@ -416,7 +428,7 @@ namespace
     private:
         SupportedManipulationOpFlags implGetSupportedManipulationOps() const final
         {
-            return SupportedManipulationOpFlags_Rotation | SupportedManipulationOpFlags_Translation;
+            return SupportedManipulationOpFlags::Rotation | SupportedManipulationOpFlags::Translation;
         }
 
         glm::mat4 implGetCurrentModelMatrix(
@@ -491,11 +503,11 @@ namespace
         // figure out whether the gizmo should even be drawn
         {
             SupportedManipulationOpFlags const flags = manipulator.getSupportedManipulationOps();
-            if (operation == ImGuizmo::TRANSLATE && !(flags & SupportedManipulationOpFlags_Translation))
+            if (operation == ImGuizmo::TRANSLATE && !(flags & SupportedManipulationOpFlags::Translation))
             {
                 return;
             }
-            if (operation == ImGuizmo::ROTATE && !(flags & SupportedManipulationOpFlags_Rotation))
+            if (operation == ImGuizmo::ROTATE && !(flags & SupportedManipulationOpFlags::Rotation))
             {
                 return;
             }

@@ -320,7 +320,7 @@ private:
         std::optional<AABB> maybeRimWorldspaceAABB;
         for (SceneDecoration const& dec : decorations)
         {
-            if (dec.flags & (SceneDecorationFlags_IsSelected | SceneDecorationFlags_IsChildOfSelected | SceneDecorationFlags_IsHovered | SceneDecorationFlags_IsChildOfHovered))
+            if (dec.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected | SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered))
             {
                 AABB const decAABB = WorldpaceAABB(dec);
                 maybeRimWorldspaceAABB = maybeRimWorldspaceAABB ? Union(*maybeRimWorldspaceAABB, decAABB) : decAABB;
@@ -389,11 +389,11 @@ private:
         // draw all selected geometry in a solid color
         for (SceneDecoration const& dec : decorations)
         {
-            if (dec.flags & (SceneDecorationFlags_IsSelected | SceneDecorationFlags_IsChildOfSelected))
+            if (dec.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected))
             {
                 Graphics::DrawMesh(dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsSelectedColor);
             }
-            else if (dec.flags & (SceneDecorationFlags_IsHovered | SceneDecorationFlags_IsChildOfHovered))
+            else if (dec.flags & (SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered))
             {
                 Graphics::DrawMesh(dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsHoveredColor);
             }
@@ -445,7 +445,7 @@ private:
         std::optional<AABB> casterAABBs;
         for (SceneDecoration const& dec : decorations)
         {
-            if (dec.flags & SceneDecorationFlags_CastsShadows)
+            if (dec.flags & SceneDecorationFlags::CastsShadows)
             {
                 AABB const decorationAABB = WorldpaceAABB(dec);
                 casterAABBs = casterAABBs ? Union(*casterAABBs, decorationAABB) : decorationAABB;

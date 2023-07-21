@@ -3,6 +3,7 @@
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
+#include <cstddef>
 #include <iostream>
 #include <mutex>
 
@@ -63,14 +64,14 @@ namespace
         "critical",
         "off",
     });
-    static_assert(c_LogLevelStrings.size() == static_cast<size_t>(osc::log::level::LevelEnum::NUM_LEVELS));
+    static_assert(c_LogLevelStrings.size() == static_cast<size_t>(osc::log::Level::NUM_LEVELS));
 }
 
 // public API
 
-osc::CStringView osc::log::toCStringView(level::LevelEnum level)
+osc::CStringView osc::log::toCStringView(Level level)
 {
-    return c_LogLevelStrings.at(level);
+    return c_LogLevelStrings.at(static_cast<ptrdiff_t>(level));
 }
 
 std::shared_ptr<osc::log::Logger> osc::log::defaultLogger() noexcept
@@ -83,12 +84,12 @@ osc::log::Logger* osc::log::defaultLoggerRaw() noexcept
     return GetGlobalSinks().defaultLogSink.get();
 }
 
-osc::log::level::LevelEnum osc::log::getTracebackLevel()
+osc::log::Level osc::log::getTracebackLevel()
 {
     return GetGlobalSinks().tracebackSink->level();
 }
 
-void osc::log::setTracebackLevel(level::LevelEnum lvl)
+void osc::log::setTracebackLevel(Level lvl)
 {
     GetGlobalSinks().tracebackSink->set_level(lvl);
 }

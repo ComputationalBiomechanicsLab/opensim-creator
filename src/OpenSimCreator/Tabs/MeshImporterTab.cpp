@@ -425,7 +425,7 @@ namespace
         Mesh mesh;
         Transform transform;
         osc::Color color = osc::Color::black();
-        osc::SceneDecorationFlags flags = osc::SceneDecorationFlags_None;
+        osc::SceneDecorationFlags flags = osc::SceneDecorationFlags::None;
         std::optional<osc::Material> maybeMaterial;
         std::optional<osc::MaterialPropertyBlock> maybePropertyBlock;
     };
@@ -2577,23 +2577,23 @@ namespace
     {
         if (id == c_EmptyID)
         {
-            return osc::SceneDecorationFlags_None;
+            return osc::SceneDecorationFlags::None;
         }
         else if (mg.IsSelected(id))
         {
-            return osc::SceneDecorationFlags_IsSelected;
+            return osc::SceneDecorationFlags::IsSelected;
         }
         else if (id == hoverID)
         {
-            return osc::SceneDecorationFlags_IsHovered | osc::SceneDecorationFlags_IsChildOfHovered;
+            return osc::SceneDecorationFlags::IsHovered | osc::SceneDecorationFlags::IsChildOfHovered;
         }
         else if (IsInSelectionGroupOf(mg, hoverID, id))
         {
-            return osc::SceneDecorationFlags_IsChildOfHovered;
+            return osc::SceneDecorationFlags::IsChildOfHovered;
         }
         else
         {
-            return osc::SceneDecorationFlags_None;
+            return osc::SceneDecorationFlags::None;
         }
     }
 }
@@ -4716,7 +4716,7 @@ namespace
             dt.mesh = osc::App::singleton<osc::MeshCache>()->get100x100GridMesh();
             dt.transform = t;
             dt.color = m_Colors.gridLines;
-            dt.flags = osc::SceneDecorationFlags_None;
+            dt.flags = osc::SceneDecorationFlags::None;
             dt.maybeMaterial = std::move(material);
             return dt;
         }
@@ -4737,7 +4737,7 @@ namespace
             Transform const& xform,
             std::vector<DrawableThing>& appendOut,
             float alpha = 1.0f,
-            osc::SceneDecorationFlags flags = osc::SceneDecorationFlags_None,
+            osc::SceneDecorationFlags flags = osc::SceneDecorationFlags::None,
             glm::vec3 legLen = {1.0f, 1.0f, 1.0f},
             osc::Color coreColor = osc::Color::white()) const
         {
@@ -4816,7 +4816,7 @@ namespace
                 originCube.mesh = osc::App::singleton<osc::MeshCache>()->getBrickMesh();
                 originCube.transform = scaled;
                 originCube.color = osc::Color::white();
-                originCube.flags = osc::SceneDecorationFlags_None;
+                originCube.flags = osc::SceneDecorationFlags::None;
             }
 
             // legs
@@ -4845,7 +4845,7 @@ namespace
                 legCube.mesh = osc::App::singleton<osc::MeshCache>()->getConeMesh();
                 legCube.transform = t;
                 legCube.color = color;
-                legCube.flags = osc::SceneDecorationFlags_None;
+                legCube.flags = osc::SceneDecorationFlags::None;
             }
         }
 
@@ -5026,7 +5026,7 @@ namespace
             rv.mesh = meshEl.getMeshData();
             rv.transform = meshEl.GetXform();
             rv.color = meshEl.getParentID() == c_GroundID || meshEl.getParentID() == c_EmptyID ? RedifyColor(GetColorMesh()) : GetColorMesh();
-            rv.flags = osc::SceneDecorationFlags_None;
+            rv.flags = osc::SceneDecorationFlags::None;
             return rv;
         }
 
@@ -5038,7 +5038,7 @@ namespace
             rv.mesh = m_SphereMesh;
             rv.transform = SphereMeshToSceneSphereTransform(SphereAtTranslation(bodyEl.GetXform().position));
             rv.color = color;
-            rv.flags = osc::SceneDecorationFlags_None;
+            rv.flags = osc::SceneDecorationFlags::None;
             return rv;
         }
 
@@ -5050,7 +5050,7 @@ namespace
             rv.mesh = m_SphereMesh;
             rv.transform = SphereMeshToSceneSphereTransform(SphereAtTranslation({0.0f, 0.0f, 0.0f}));
             rv.color = color;
-            rv.flags = osc::SceneDecorationFlags_None;
+            rv.flags = osc::SceneDecorationFlags::None;
             return rv;
         }
 
@@ -5062,7 +5062,7 @@ namespace
             rv.mesh = m_SphereMesh;
             rv.transform = SphereMeshToSceneSphereTransform(SphereAtTranslation(el.GetPos()));
             rv.color = color;
-            rv.flags = osc::SceneDecorationFlags_None;
+            rv.flags = osc::SceneDecorationFlags::None;
             return rv;
         }
 
@@ -5127,7 +5127,7 @@ namespace
                         el.GetXform(),
                         m_Out,
                         1.0f,
-                        osc::SceneDecorationFlags_None,
+                        osc::SceneDecorationFlags::None,
                         GetJointAxisLengths(el));
                 }
                 void operator()(StationEl const& el) final
@@ -5740,15 +5740,15 @@ namespace
         {
             if (IsSelected(el))
             {
-                return osc::SceneDecorationFlags_IsSelected;
+                return osc::SceneDecorationFlags::IsSelected;
             }
             else if (IsHovered(el))
             {
-                return osc::SceneDecorationFlags_IsHovered;
+                return osc::SceneDecorationFlags::IsHovered;
             }
             else
             {
-                return osc::SceneDecorationFlags_None;
+                return osc::SceneDecorationFlags::None;
             }
         }
 

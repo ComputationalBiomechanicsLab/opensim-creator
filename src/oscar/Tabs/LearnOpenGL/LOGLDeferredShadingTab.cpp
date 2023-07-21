@@ -6,7 +6,7 @@
 #include "oscar/Graphics/ColorSpace.hpp"
 #include "oscar/Graphics/Graphics.hpp"
 #include "oscar/Graphics/GraphicsHelpers.hpp"
-#include "oscar/Graphics/ImageFlags.hpp"
+#include "oscar/Graphics/ImageLoadingFlags.hpp"
 #include "oscar/Graphics/Material.hpp"
 #include "oscar/Graphics/Mesh.hpp"
 #include "oscar/Graphics/MeshGen.hpp"
@@ -320,12 +320,12 @@ private:
     Texture2D m_DiffuseMap = LoadTexture2DFromImage(
         App::resource("textures/container2.png"),
         ColorSpace::sRGB,
-        ImageFlags_FlipVertically
+        ImageLoadingFlags::FlipVertically
     );
     Texture2D m_SpecularMap = LoadTexture2DFromImage(
         App::resource("textures/container2_specular.png"),
         ColorSpace::sRGB,
-        ImageFlags_FlipVertically
+        ImageLoadingFlags::FlipVertically
     );
 
     // rendering state

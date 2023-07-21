@@ -65,7 +65,7 @@ namespace osc
     private:
         virtual ModelEditorViewerPanelLayerFlags implGetFlags() const
         {
-            return ModelEditorViewerPanelLayerFlags_Default;
+            return ModelEditorViewerPanelLayerFlags::Default;
         }
 
         virtual float implGetBackgroundAlpha() const

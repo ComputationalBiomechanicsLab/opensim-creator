@@ -99,11 +99,11 @@ osc::ColorSpace osc::Image::getColorSpace() const
 osc::Image osc::LoadImageFromFile(
     std::filesystem::path const& p,
     ColorSpace colorSpace,
-    ImageFlags flags)
+    ImageLoadingFlags flags)
 {
     auto guard = LockStbiAPI();
 
-    if (flags & ImageFlags_FlipVertically)
+    if (flags & ImageLoadingFlags::FlipVertically)
     {
         stbi_set_flip_vertically_on_load(true);
     }
@@ -116,7 +116,7 @@ osc::Image osc::LoadImageFromFile(
         stbi_image_free,
     };
 
-    if (flags & ImageFlags_FlipVertically)
+    if (flags & ImageLoadingFlags::FlipVertically)
     {
         stbi_set_flip_vertically_on_load(false);
     }

@@ -369,7 +369,7 @@ namespace
             t,
             color,
             std::string{},
-            osc::SceneDecorationFlags_None
+            osc::SceneDecorationFlags::None
         };
     }
 
@@ -423,7 +423,7 @@ namespace
                 t,
                 arrow.color,
                 arrow.label,
-                osc::SceneDecorationFlags_None,
+                osc::SceneDecorationFlags::None,
             });
         }
 
@@ -440,7 +440,7 @@ namespace
                 t,
                 arrow.color,
                 arrow.label,
-                osc::SceneDecorationFlags_None,
+                osc::SceneDecorationFlags::None,
             });
         }
     }

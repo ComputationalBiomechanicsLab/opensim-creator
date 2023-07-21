@@ -33,7 +33,7 @@ namespace osc
     std::filesystem::path const& GetUserDataDir();
 
     // writes a backtrace for the calling thread's stack to the log at the specified level
-    void WriteTracebackToLog(log::level::LevelEnum);
+    void WriteTracebackToLog(log::Level);
 
     // installs a signal handler that prints a backtrace
     //

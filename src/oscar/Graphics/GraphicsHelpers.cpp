@@ -483,7 +483,7 @@ osc::Texture2D osc::ToTexture2D(Image const& image)
 osc::Texture2D osc::LoadTexture2DFromImage(
     std::filesystem::path const& path,
     ColorSpace colorSpace,
-    ImageFlags flags)
+    ImageLoadingFlags flags)
 {
     Image const img = LoadImageFromFile(path, colorSpace, flags);
     try

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "oscar/Graphics/ColorSpace.hpp"
-#include "oscar/Graphics/ImageFlags.hpp"
+#include "oscar/Graphics/ImageLoadingFlags.hpp"
 
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
@@ -42,7 +42,7 @@ namespace osc
     Image LoadImageFromFile(
         std::filesystem::path const&,
         ColorSpace colorSpace,
-        ImageFlags = ImageFlags_None
+        ImageLoadingFlags = ImageLoadingFlags::None
     );
 
     void WriteImageToPNGFile(

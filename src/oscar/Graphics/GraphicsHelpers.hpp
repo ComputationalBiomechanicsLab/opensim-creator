@@ -1,7 +1,7 @@
 #pragma once
 
 #include "oscar/Graphics/Color.hpp"
-#include "oscar/Graphics/ImageFlags.hpp"
+#include "oscar/Graphics/ImageLoadingFlags.hpp"
 #include "oscar/Graphics/Material.hpp"
 #include "oscar/Graphics/RenderTexture.hpp"
 #include "oscar/Graphics/SceneCollision.hpp"
@@ -178,7 +178,7 @@ namespace osc
     Texture2D LoadTexture2DFromImage(
         std::filesystem::path const&,
         ColorSpace,
-        ImageFlags = ImageFlags_None
+        ImageLoadingFlags = ImageLoadingFlags::None
     );
 
     AABB GetWorldspaceAABB(SceneDecoration const&);

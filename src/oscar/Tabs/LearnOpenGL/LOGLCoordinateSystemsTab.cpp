@@ -58,7 +58,7 @@ public:
             LoadTexture2DFromImage(
                 App::resource("textures/container.jpg"),
                 ColorSpace::sRGB,
-                ImageFlags_FlipVertically
+                ImageLoadingFlags::FlipVertically
             )
         );
         m_Material.setTexture(
@@ -66,7 +66,7 @@ public:
             LoadTexture2DFromImage(
                 App::resource("textures/awesomeface.png"),
                 ColorSpace::sRGB,
-                ImageFlags_FlipVertically
+                ImageLoadingFlags::FlipVertically
             )
         );
     }

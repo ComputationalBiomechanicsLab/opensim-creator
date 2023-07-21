@@ -223,12 +223,12 @@ private:
     Texture2D m_DiffuseMap = LoadTexture2DFromImage(
         App::resource("textures/container2.png"),
         ColorSpace::sRGB,
-        ImageFlags_FlipVertically
+        ImageLoadingFlags::FlipVertically
     );
     Texture2D m_SpecularMap = LoadTexture2DFromImage(
         App::resource("textures/container2_specular.png"),
         ColorSpace::sRGB,
-        ImageFlags_FlipVertically
+        ImageLoadingFlags::FlipVertically
     );
 
     Camera m_Camera;

@@ -23,23 +23,19 @@
 
 namespace osc::log
 {
+    enum class Level : int32_t {
+        FIRST = 0,
+        trace = FIRST,
+        debug,
+        info,
+        warn,
+        err,
+        critical,
+        off,
+        NUM_LEVELS
+    };
 
-    namespace level
-    {
-        enum LevelEnum : int32_t {
-            FIRST = 0,
-            trace = FIRST,
-            debug,
-            info,
-            warn,
-            err,
-            critical,
-            off,
-            NUM_LEVELS
-        };
-    }
-
-    CStringView toCStringView(level::LevelEnum);
+    CStringView toCStringView(Level);
 
     // a log message
     //
@@ -51,7 +47,7 @@ namespace osc::log
 
         LogMessage(std::string_view loggerName_,
                    std::string_view payload_,
-                   level::LevelEnum level_) :
+                   Level level_) :
             loggerName{loggerName_},
             time{std::chrono::system_clock::now()},
             payload{payload_},
@@ -62,7 +58,7 @@ namespace osc::log
         std::string_view loggerName;
         std::chrono::system_clock::time_point time;
         std::string_view payload;
-        level::LevelEnum level;
+        Level level;
     };
 
     // a log message that owns all its data
@@ -83,7 +79,7 @@ namespace osc::log
         std::string loggerName;
         std::chrono::system_clock::time_point time;
         std::string payload;
-        log::level::LevelEnum level;
+        Level level;
     };
 
     class Sink {
@@ -101,17 +97,17 @@ namespace osc::log
             implLog(logMessage);
         }
 
-        void set_level(level::LevelEnum level) noexcept
+        void set_level(Level level) noexcept
         {
             m_SinkLevel = level;
         }
 
-        [[nodiscard]] level::LevelEnum level() const noexcept
+        [[nodiscard]] Level level() const noexcept
         {
             return m_SinkLevel;
         }
 
-        [[nodiscard]] bool should_log(level::LevelEnum level) const noexcept
+        [[nodiscard]] bool should_log(Level level) const noexcept
         {
             return level >= m_SinkLevel;
         }
@@ -119,7 +115,7 @@ namespace osc::log
     private:
         virtual void implLog(LogMessage const&) = 0;
 
-        level::LevelEnum m_SinkLevel{level::info};
+        Level m_SinkLevel = Level::info;
     };
 
     class Logger final {
@@ -137,7 +133,7 @@ namespace osc::log
         }
 
         template<typename... Args>
-        void log(level::LevelEnum msgLvl, char const* fmt, ...)
+        void log(Level msgLvl, char const* fmt, ...)
         {
             if (msgLvl < level)
             {
@@ -175,37 +171,37 @@ namespace osc::log
         template<typename... Args>
         void trace(char const* fmt, Args const&... args)
         {
-            log(level::trace, fmt, args...);
+            log(Level::trace, fmt, args...);
         }
 
         template<typename... Args>
         void debug(char const* fmt, Args const&... args)
         {
-            log(level::debug, fmt, args...);
+            log(Level::debug, fmt, args...);
         }
 
         template<typename... Args>
         void info(char const* fmt, Args const&... args)
         {
-            log(level::info, fmt, args...);
+            log(Level::info, fmt, args...);
         }
 
         template<typename... Args>
         void warn(char const* fmt, Args const&... args)
         {
-            log(level::warn, fmt, args...);
+            log(Level::warn, fmt, args...);
         }
 
         template<typename... Args>
         void error(char const* fmt, Args const&... args)
         {
-            log(level::err, fmt, args...);
+            log(Level::err, fmt, args...);
         }
 
         template<typename... Args>
         void critical(char const* fmt, Args const&... args)
         {
-            log(level::critical, fmt, args...);
+            log(Level::critical, fmt, args...);
         }
 
         [[nodiscard]] std::vector<std::shared_ptr<Sink>> const& sinks() const noexcept
@@ -221,7 +217,7 @@ namespace osc::log
     private:
         std::string m_Name;
         std::vector<std::shared_ptr<Sink>> m_Sinks;
-        level::LevelEnum level{level::trace};
+        Level level = Level::trace;
     };
 
     // global logging API
@@ -229,7 +225,7 @@ namespace osc::log
     Logger* defaultLoggerRaw() noexcept;
 
     template<typename... Args>
-    inline void log(level::LevelEnum level, char const* fmt, Args const&... args)
+    inline void log(Level level, char const* fmt, Args const&... args)
     {
         defaultLoggerRaw()->log(level, fmt, args...);
     }
@@ -272,7 +268,7 @@ namespace osc::log
 
     static size_t constexpr c_MaxLogTracebackMessages = 256;
 
-    [[nodiscard]] level::LevelEnum getTracebackLevel();
-    void setTracebackLevel(level::LevelEnum);
+    [[nodiscard]] Level getTracebackLevel();
+    void setTracebackLevel(Level);
     [[nodiscard]] SynchronizedValue<CircularBuffer<OwnedLogMessage, c_MaxLogTracebackMessages>>& getTracebackLog();
 }

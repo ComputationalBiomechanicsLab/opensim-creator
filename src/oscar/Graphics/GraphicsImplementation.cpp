@@ -4103,7 +4103,7 @@ public:
 
     void renderTo(RenderTexture& renderTexture)
     {
-        static_assert(static_cast<size_t>(CameraClearFlags::TOTAL) == 3);
+        static_assert(CameraClearFlags::All == (CameraClearFlags::SolidColor | CameraClearFlags::Depth));
         static_assert(static_cast<size_t>(RenderTextureReadWrite::TOTAL) == 2);
 
         RenderTarget renderTargetThatWritesToRenderTexture
@@ -4115,7 +4115,7 @@ public:
                     renderTexture.updColorBuffer(),
 
                     // load the color buffer based on this camera's clear flags
-                    getClearFlags() == CameraClearFlags::SolidColor ?
+                    getClearFlags() & CameraClearFlags::SolidColor ?
                         RenderBufferLoadAction::Clear :
                         RenderBufferLoadAction::Load,
 
@@ -4136,7 +4136,7 @@ public:
                 //
                 // TODO/BUG/HACK: it doesn't look like the flags in CameraClearFlags are
                 // combine-able, so clear it using the solid color flag also
-                (getClearFlags() == CameraClearFlags::SolidColor || getClearFlags() == CameraClearFlags::Depth) ?
+                getClearFlags() & (CameraClearFlags::SolidColor | CameraClearFlags::Depth) ?
                     RenderBufferLoadAction::Clear :
                     RenderBufferLoadAction::Load,
 
@@ -4496,20 +4496,20 @@ namespace
     }
 
     // maps an OpenGL debug message severity level to a log level
-    constexpr osc::log::level::LevelEnum OpenGLDebugSevToLogLvl(GLenum sev) noexcept
+    constexpr osc::log::Level OpenGLDebugSevToLogLvl(GLenum sev) noexcept
     {
         switch (sev)
         {
         case GL_DEBUG_SEVERITY_HIGH:
-            return osc::log::level::err;
+            return osc::log::Level::err;
         case GL_DEBUG_SEVERITY_MEDIUM:
-            return osc::log::level::warn;
+            return osc::log::Level::warn;
         case GL_DEBUG_SEVERITY_LOW:
-            return osc::log::level::debug;
+            return osc::log::Level::debug;
         case GL_DEBUG_SEVERITY_NOTIFICATION:
-            return osc::log::level::trace;
+            return osc::log::Level::trace;
         default:
-            return osc::log::level::info;
+            return osc::log::Level::info;
         }
     }
 
@@ -4626,7 +4626,7 @@ namespace
         const GLchar* message,
         void const*)
     {
-        osc::log::level::LevelEnum const lvl = OpenGLDebugSevToLogLvl(severity);
+        osc::log::Level const lvl = OpenGLDebugSevToLogLvl(severity);
         char const* const sourceCStr = OpenGLDebugSrcToCStr(source);
         char const* const typeCStr = OpenGLDebugTypeToCStr(type);
         char const* const severityCStr = OpenGLDebugSevToCStr(severity);
@@ -5827,7 +5827,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
         if (camera.m_ClearFlags != CameraClearFlags::Nothing)
         {
             // clear window
-            GLenum const clearFlags = camera.m_ClearFlags == CameraClearFlags::SolidColor ?
+            GLenum const clearFlags = camera.m_ClearFlags & CameraClearFlags::SolidColor ?
                 GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT :
                 GL_DEPTH_BUFFER_BIT;
 

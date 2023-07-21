@@ -60,7 +60,7 @@ public:
         Texture2D container = LoadTexture2DFromImage(
             App::resource("textures/container.jpg"),
             ColorSpace::sRGB,
-            ImageFlags_FlipVertically
+            ImageLoadingFlags::FlipVertically
         );
         container.setWrapMode(osc::TextureWrapMode::Clamp);
         m_Material.setTexture("uTexture1", std::move(container));
@@ -69,7 +69,7 @@ public:
             LoadTexture2DFromImage(
                 App::resource("textures/awesomeface.png"),
                 ColorSpace::sRGB,
-                ImageFlags_FlipVertically
+                ImageLoadingFlags::FlipVertically
             )
         );
     }

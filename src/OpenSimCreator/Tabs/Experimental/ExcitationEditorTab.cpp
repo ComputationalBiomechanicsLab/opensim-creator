@@ -234,7 +234,7 @@ namespace
         return v.x*v.y != 0;
     }
 
-    enum GridOperation {
+    enum class GridOperation {
         None,
         Move,
         Swap,

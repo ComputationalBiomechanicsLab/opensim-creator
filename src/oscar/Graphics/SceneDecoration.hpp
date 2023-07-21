@@ -85,7 +85,7 @@ namespace osc
         Transform transform{};
         Color color = Color::white();
         std::string id;
-        SceneDecorationFlags flags = SceneDecorationFlags_None;
+        SceneDecorationFlags flags = SceneDecorationFlags::None;
         std::optional<Material> maybeMaterial = std::nullopt;
         std::optional<MaterialPropertyBlock> maybeMaterialProps = std::nullopt;
     };

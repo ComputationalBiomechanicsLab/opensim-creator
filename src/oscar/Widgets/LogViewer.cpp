@@ -16,21 +16,21 @@
 
 namespace
 {
-    [[nodiscard]] ImVec4 color(osc::log::level::LevelEnum lvl)
+    [[nodiscard]] ImVec4 color(osc::log::Level lvl)
     {
         switch (lvl)
         {
-        case osc::log::level::trace:
+        case osc::log::Level::trace:
             return ImVec4{0.5f, 0.5f, 0.5f, 1.0f};
-        case osc::log::level::debug:
+        case osc::log::Level::debug:
             return ImVec4{0.8f, 0.8f, 0.8f, 1.0f};
-        case osc::log::level::info:
+        case osc::log::Level::info:
             return ImVec4{0.5f, 0.5f, 1.0f, 1.0f};
-        case osc::log::level::warn:
+        case osc::log::Level::warn:
             return ImVec4{1.0f, 1.0f, 0.0f, 1.0f};
-        case osc::log::level::err:
+        case osc::log::Level::err:
             return ImVec4{1.0f, 0.0f, 0.0f, 1.0f};
-        case osc::log::level::critical:
+        case osc::log::Level::critical:
             return ImVec4{1.0f, 0.0f, 0.0f, 1.0f};
         default:
             return ImVec4{1.0f, 1.0f, 1.0f, 1.0f};
@@ -66,13 +66,13 @@ public:
 
             // draw level selector
             {
-                log::level::LevelEnum const currentLvl = log::getTracebackLevel();
+                log::Level const currentLvl = log::getTracebackLevel();
                 ImGui::SetNextItemWidth(200.0f);
                 if (ImGui::BeginCombo("level", log::toCStringView(currentLvl).c_str()))
                 {
-                    for (auto i = static_cast<int32_t>(log::level::LevelEnum::FIRST); i < static_cast<int32_t>(log::level::LevelEnum::NUM_LEVELS); ++i)
+                    for (auto i = static_cast<int32_t>(log::Level::FIRST); i < static_cast<int32_t>(log::Level::NUM_LEVELS); ++i)
                     {
-                        auto const lvl = static_cast<log::level::LevelEnum>(i);
+                        auto const lvl = static_cast<log::Level>(i);
                         bool isCurrent = lvl == currentLvl;
                         if (ImGui::Selectable(log::toCStringView(lvl).c_str(), &isCurrent))
                         {
@@ -96,7 +96,7 @@ public:
             ImGui::SameLine();
             if (ImGui::Button("turn off"))
             {
-                log::setTracebackLevel(log::level::off);
+                log::setTracebackLevel(log::Level::off);
             }
 
             ImGui::SameLine();

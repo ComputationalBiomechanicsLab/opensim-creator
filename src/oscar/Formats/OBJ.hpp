@@ -2,21 +2,28 @@
 
 #include <cstdint>
 #include <iosfwd>
+#include <type_traits>
 
 namespace osc { class Mesh; }
 
 namespace osc
 {
-    using ObjWriterFlags = int32_t;
-    enum ObjWriterFlags_ {
-        ObjWriterFlags_None = 0,
-        ObjWriterFlags_NoWriteNormals = 1<<0,
-        ObjWriterFlags_Default = ObjWriterFlags_None,
+    enum class ObjWriterFlags : uint32_t {
+        None = 0,
+        NoWriteNormals = 1u<<0u,
+
+        Default = None,
     };
+
+    constexpr bool operator&(ObjWriterFlags a, ObjWriterFlags b) noexcept
+    {
+        using T = std::underlying_type_t<ObjWriterFlags>;
+        return static_cast<T>(a) & static_cast<T>(b);
+    }
 
     void WriteMeshAsObj(
         std::ostream&,
         Mesh const&,
-        ObjWriterFlags = ObjWriterFlags_Default
+        ObjWriterFlags = ObjWriterFlags::Default
     );
 }

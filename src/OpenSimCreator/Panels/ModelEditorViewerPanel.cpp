@@ -49,7 +49,7 @@ namespace
     private:
         osc::ModelEditorViewerPanelLayerFlags implGetFlags() const final
         {
-            return osc::ModelEditorViewerPanelLayerFlags_CapturesMouseInputs;
+            return osc::ModelEditorViewerPanelLayerFlags::CapturesMouseInputs;
         }
 
         bool implHandleMouseInputs(
@@ -89,10 +89,10 @@ namespace
     private:
         osc::ModelEditorViewerPanelLayerFlags implGetFlags() const final
         {
-            osc::ModelEditorViewerPanelLayerFlags flags = osc::ModelEditorViewerPanelLayerFlags_None;
+            osc::ModelEditorViewerPanelLayerFlags flags = osc::ModelEditorViewerPanelLayerFlags::None;
             if (m_Gizmo.isUsing())
             {
-                flags |= osc::ModelEditorViewerPanelLayerFlags_CapturesMouseInputs;
+                flags |= osc::ModelEditorViewerPanelLayerFlags::CapturesMouseInputs;
             }
             return flags;
         }
@@ -437,7 +437,7 @@ private:
         for (auto it = m_Layers.rbegin(); it != m_Layers.rend(); ++it)
         {
             if ((*it)->handleMouseInputs(m_Parameters, m_State) ||
-                (*it)->getFlags() & ModelEditorViewerPanelLayerFlags_CapturesMouseInputs)
+                (*it)->getFlags() & ModelEditorViewerPanelLayerFlags::CapturesMouseInputs)
             {
                 return;
             }
@@ -453,7 +453,7 @@ private:
             ImGuiWindowFlags windowFlags = osc::GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs;
 
             // if any layer above this one captures mouse inputs then disable this layer's inputs
-            if (std::find_if(it+1, m_Layers.end(), [](auto const& layerPtr) -> bool { return layerPtr->getFlags() & ModelEditorViewerPanelLayerFlags_CapturesMouseInputs; }) != m_Layers.end())
+            if (std::find_if(it+1, m_Layers.end(), [](auto const& layerPtr) -> bool { return layerPtr->getFlags() & ModelEditorViewerPanelLayerFlags::CapturesMouseInputs; }) != m_Layers.end())
             {
                 windowFlags |= ImGuiWindowFlags_NoInputs;
             }

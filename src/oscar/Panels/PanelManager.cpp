@@ -46,7 +46,7 @@ namespace
 
         bool isEnabledByDefault() const
         {
-            return m_Flags & osc::ToggleablePanelFlags_IsEnabledByDefault;
+            return m_Flags & osc::ToggleablePanelFlags::IsEnabledByDefault;
         }
 
         bool isActivated() const

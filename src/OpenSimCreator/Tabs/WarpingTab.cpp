@@ -548,7 +548,7 @@ namespace
         osc::WriteMeshAsObj(
             outputFileStream,
             mesh,
-            osc::ObjWriterFlags_NoWriteNormals  // warping might have screwed them
+            osc::ObjWriterFlags::NoWriteNormals  // warping might have screwed them
         );
     }
 
@@ -1538,7 +1538,7 @@ namespace
                     tmpColor = glm::clamp(tmpColor, glm::vec4{0.0f}, glm::vec4{1.0f});
 
                     decoration.color = osc::Color{tmpColor};
-                    decoration.flags = osc::SceneDecorationFlags_IsSelected;
+                    decoration.flags = osc::SceneDecorationFlags::IsSelected;
                 }
                 else if (m_State->currentHover && m_State->currentHover->maybeSceneElementID == fullID)
                 {
@@ -1547,7 +1547,7 @@ namespace
                     tmpColor = glm::clamp(tmpColor, glm::vec4{0.0f}, glm::vec4{1.0f});
 
                     decoration.color = osc::Color{tmpColor};
-                    decoration.flags = osc::SceneDecorationFlags_IsHovered;
+                    decoration.flags = osc::SceneDecorationFlags::IsHovered;
                 }
             }
 
@@ -1820,19 +1820,19 @@ namespace
         out.registerToggleablePanel(
             "History",
             [state](std::string_view panelName) { return std::make_shared<osc::UndoRedoPanel>(panelName, state->editedDocument); },
-            osc::ToggleablePanelFlags_Default & ~osc::ToggleablePanelFlags_IsEnabledByDefault
+            osc::ToggleablePanelFlags::Default - osc::ToggleablePanelFlags::IsEnabledByDefault
         );
 
         out.registerToggleablePanel(
             "Log",
             [](std::string_view panelName) { return std::make_shared<osc::LogViewerPanel>(panelName); },
-            osc::ToggleablePanelFlags_Default & ~osc::ToggleablePanelFlags_IsEnabledByDefault
+            osc::ToggleablePanelFlags::Default - osc::ToggleablePanelFlags::IsEnabledByDefault
         );
 
         out.registerToggleablePanel(
             "Performance",
             [](std::string_view panelName) { return std::make_shared<osc::PerfPanel>(panelName); },
-            osc::ToggleablePanelFlags_Default & ~osc::ToggleablePanelFlags_IsEnabledByDefault
+            osc::ToggleablePanelFlags::Default - osc::ToggleablePanelFlags::IsEnabledByDefault
         );
     }
 }

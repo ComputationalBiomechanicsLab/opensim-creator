@@ -32,16 +32,16 @@ namespace osc
     private:
         SceneDecorationFlags ComputeFlags(OpenSim::Component const& component) const
         {
-            SceneDecorationFlags rv = SceneDecorationFlags_CastsShadows;
+            SceneDecorationFlags rv = SceneDecorationFlags::CastsShadows;
 
             if (&component == m_Selected)
             {
-                rv |= SceneDecorationFlags_IsSelected;
+                rv |= SceneDecorationFlags::IsSelected;
             }
 
             if (&component == m_Hovered)
             {
-                rv |= SceneDecorationFlags_IsHovered;
+                rv |= SceneDecorationFlags::IsHovered;
             }
 
             OpenSim::Component const* ptr = GetOwner(component);
@@ -49,11 +49,11 @@ namespace osc
             {
                 if (ptr == m_Selected)
                 {
-                    rv |= SceneDecorationFlags_IsChildOfSelected;
+                    rv |= SceneDecorationFlags::IsChildOfSelected;
                 }
                 if (ptr == m_Hovered)
                 {
-                    rv |= SceneDecorationFlags_IsChildOfHovered;
+                    rv |= SceneDecorationFlags::IsChildOfHovered;
                 }
                 ptr = GetOwner(*ptr);
             }
@@ -64,6 +64,6 @@ namespace osc
         OpenSim::Component const* m_Selected;
         OpenSim::Component const* m_Hovered;
         OpenSim::Component const* m_LastComponent = nullptr;
-        SceneDecorationFlags m_Flags = SceneDecorationFlags_None;
+        SceneDecorationFlags m_Flags = SceneDecorationFlags::None;
     };
 }

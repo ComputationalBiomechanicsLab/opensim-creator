@@ -1186,7 +1186,7 @@ namespace
         osc::WriteMeshAsObj(
             outputFileStream,
             oscMesh,
-            osc::ObjWriterFlags_NoWriteNormals
+            osc::ObjWriterFlags::NoWriteNormals
         );
     }
 
@@ -1327,15 +1327,15 @@ namespace
             std::string const absPath = osc::GetAbsolutePathString(component);
             if (osc::Contains(state.popupParams.componentsBeingAssignedTo, absPath))
             {
-                decoration.flags |= osc::SceneDecorationFlags_IsSelected;
+                decoration.flags |= osc::SceneDecorationFlags::IsSelected;
             }
             if (osc::Contains(state.alreadyChosenComponents, absPath))
             {
-                decoration.flags |= osc::SceneDecorationFlags_IsSelected;
+                decoration.flags |= osc::SceneDecorationFlags::IsSelected;
             }
             if (absPath == state.hoveredComponent)
             {
-                decoration.flags |= osc::SceneDecorationFlags_IsHovered;
+                decoration.flags |= osc::SceneDecorationFlags::IsHovered;
             }
 
             if (state.popupParams.canChooseItem(component))

@@ -55,7 +55,7 @@ namespace
             uint32_t const i1 = view[i+1]+1;
             uint32_t const i2 = view[i+2]+1;
 
-            if (!(flags & osc::ObjWriterFlags_NoWriteNormals))
+            if (!(flags & osc::ObjWriterFlags::NoWriteNormals))
             {
                 o << "f " << i0 << "//" << i0 << ' ' << i1  << "//" << i1 << ' ' << i2 << "//" << i2 << '\n';
             }
@@ -75,7 +75,7 @@ void osc::WriteMeshAsObj(
 {
     WriteHeader(out);
     WriteVertices(out, mesh);
-    if (!(flags & ObjWriterFlags_NoWriteNormals))
+    if (!(flags & ObjWriterFlags::NoWriteNormals))
     {
         WriteNormals(out, mesh);
     }
