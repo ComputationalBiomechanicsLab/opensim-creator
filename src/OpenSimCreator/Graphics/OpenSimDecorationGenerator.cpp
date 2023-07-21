@@ -46,10 +46,10 @@
 #include <utility>
 #include <vector>
 
-inline static constexpr float c_GeometryPathBaseRadius = 0.005f;
-
 namespace
 {
+    inline constexpr float c_GeometryPathBaseRadius = 0.005f;
+
     // helper: convert a physical frame's transform to ground into an osc::Transform
     osc::Transform TransformInGround(OpenSim::Frame const& frame, SimTK::State const& state)
     {

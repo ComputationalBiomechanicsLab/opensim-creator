@@ -9,20 +9,23 @@
 #include <optional>
 #include <variant>
 
-static osc::CStringView constexpr c_FinalTimeTitle = "Final Time (sec)";
-static osc::CStringView constexpr c_FinalTimeDesc = "The final time, in seconds, that the forward dynamic simulation should integrate up to";
-static osc::CStringView constexpr c_IntegratorMethodUsedTitle = "Integrator Method";
-static osc::CStringView constexpr c_IntegratorMethodUsedDesc = "The integrator that the forward dynamic simulator should use. OpenSim's default integrator is a good choice if you aren't familiar with the other integrators. Changing the integrator can have a large impact on the performance and accuracy of the simulation.";
-static osc::CStringView constexpr c_ReportingIntervalTitle = "Reporting Interval (sec)";
-static osc::CStringView constexpr c_ReportingIntervalDesc = "How often the simulator should emit a simulation report. This affects how many datapoints are collected for the animation, output values, etc.";
-static osc::CStringView constexpr c_IntegratorStepLimitTitle = "Integrator Step Limit";
-static osc::CStringView constexpr c_IntegratorStepLimitDesc = "The maximum number of *internal* steps that can be taken within a single call to the integrator's stepTo/stepBy function. This is mostly an internal engine concern, but can occasionally affect how often reports are emitted";
-static osc::CStringView constexpr c_IntegratorMinimumStepSizeTitle = "Minimum Step Size (sec)";
-static osc::CStringView constexpr c_IntegratorMinimumStepSizeDesc = "The minimum step size, in seconds, that the integrator must take during the simulation. Note: this is mostly only relevant for error-corrected integrators that change their step size dynamically as the simulation runs.";
-static osc::CStringView constexpr c_IntegratorMaximumStepSizeTitle = "Maximum step size (sec)";
-static osc::CStringView constexpr c_IntegratorMaximumStepSizeDesc = "The maximum step size, in seconds, that the integrator must take during the simulation. Note: this is mostly only relevant for error-correct integrators that change their step size dynamically as the simulation runs";
-static osc::CStringView constexpr c_IntegratorAccuracyTitle = "Accuracy";
-static osc::CStringView constexpr c_IntegratorAccuracyDesc = "Target accuracy for the integrator. Mostly only relevant for error-controlled integrators that change their step size by comparing this accuracy value to measured integration error";
+namespace
+{
+    osc::CStringView constexpr c_FinalTimeTitle = "Final Time (sec)";
+    osc::CStringView constexpr c_FinalTimeDesc = "The final time, in seconds, that the forward dynamic simulation should integrate up to";
+    osc::CStringView constexpr c_IntegratorMethodUsedTitle = "Integrator Method";
+    osc::CStringView constexpr c_IntegratorMethodUsedDesc = "The integrator that the forward dynamic simulator should use. OpenSim's default integrator is a good choice if you aren't familiar with the other integrators. Changing the integrator can have a large impact on the performance and accuracy of the simulation.";
+    osc::CStringView constexpr c_ReportingIntervalTitle = "Reporting Interval (sec)";
+    osc::CStringView constexpr c_ReportingIntervalDesc = "How often the simulator should emit a simulation report. This affects how many datapoints are collected for the animation, output values, etc.";
+    osc::CStringView constexpr c_IntegratorStepLimitTitle = "Integrator Step Limit";
+    osc::CStringView constexpr c_IntegratorStepLimitDesc = "The maximum number of *internal* steps that can be taken within a single call to the integrator's stepTo/stepBy function. This is mostly an internal engine concern, but can occasionally affect how often reports are emitted";
+    osc::CStringView constexpr c_IntegratorMinimumStepSizeTitle = "Minimum Step Size (sec)";
+    osc::CStringView constexpr c_IntegratorMinimumStepSizeDesc = "The minimum step size, in seconds, that the integrator must take during the simulation. Note: this is mostly only relevant for error-corrected integrators that change their step size dynamically as the simulation runs.";
+    osc::CStringView constexpr c_IntegratorMaximumStepSizeTitle = "Maximum step size (sec)";
+    osc::CStringView constexpr c_IntegratorMaximumStepSizeDesc = "The maximum step size, in seconds, that the integrator must take during the simulation. Note: this is mostly only relevant for error-correct integrators that change their step size dynamically as the simulation runs";
+    osc::CStringView constexpr c_IntegratorAccuracyTitle = "Accuracy";
+    osc::CStringView constexpr c_IntegratorAccuracyDesc = "Target accuracy for the integrator. Mostly only relevant for error-controlled integrators that change their step size by comparing this accuracy value to measured integration error";
+}
 
 
 // public API

@@ -29,10 +29,10 @@
 #include <cstddef>
 #include <string>
 
-static inline float constexpr c_DefaultDragThreshold = 5.0f;
-
 namespace
 {
+    inline float constexpr c_DefaultDragThreshold = 5.0f;
+
     template<typename TCollection, typename UCollection>
     float diff(TCollection const& older, UCollection const& newer, size_t n)
     {
@@ -881,21 +881,24 @@ bool osc::Combo(
     return changed;
 }
 
-// create a lookup table that maps sRGB color bytes to linear-space color bytes
-static std::array<uint8_t, 256> CreateSRGBToLinearLUT()
+namespace
 {
-    std::array<uint8_t, 256> rv{};
-    for (size_t i = 0; i < 256; ++i)
+    // create a lookup table that maps sRGB color bytes to linear-space color bytes
+    std::array<uint8_t, 256> CreateSRGBToLinearLUT()
     {
-        rv[i] = static_cast<uint8_t>(255.0f*osc::ToLinear(static_cast<float>(i)/255.0f));
+        std::array<uint8_t, 256> rv{};
+        for (size_t i = 0; i < 256; ++i)
+        {
+            rv[i] = static_cast<uint8_t>(255.0f*osc::ToLinear(static_cast<float>(i)/255.0f));
+        }
+        return rv;
     }
-    return rv;
-}
 
-static std::array<uint8_t, 256> const& GetSRGBToLinearLUT()
-{
-    static std::array<uint8_t, 256> const s_LUT = CreateSRGBToLinearLUT();
-    return s_LUT;
+    std::array<uint8_t, 256> const& GetSRGBToLinearLUT()
+    {
+        static std::array<uint8_t, 256> const s_LUT = CreateSRGBToLinearLUT();
+        return s_LUT;
+    }
 }
 
 void osc::ConvertDrawDataFromSRGBToLinear(ImDrawData& dd)

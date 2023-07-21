@@ -435,12 +435,15 @@ void osc::WriteTracebackToLog(log::level::LevelEnum lvl)
     }
 }
 
-[[noreturn]] static void OSC_critical_error_handler(int sig_num, siginfo_t* info, void* ucontext)
+namespace
 {
-    osc::log::error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
-    osc::log::error("backtrace:");
-    osc::WriteTracebackToLog(osc::log::level::err);
-    exit(EXIT_FAILURE);
+    [[noreturn]] void OSC_critical_error_handler(int sig_num, siginfo_t* info, void* ucontext)
+    {
+        osc::log::error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
+        osc::log::error("backtrace:");
+        osc::WriteTracebackToLog(osc::log::level::err);
+        exit(EXIT_FAILURE);
+    }
 }
 
 void osc::InstallBacktraceHandler()

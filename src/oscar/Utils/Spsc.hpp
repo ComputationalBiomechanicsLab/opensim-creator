@@ -195,10 +195,11 @@ namespace osc::spsc
         spsc::Receiver<Output> m_Rx;
 
         // MAIN function for an SPSC worker thread
-        static int main(osc::stop_token,
-                        spsc::Receiver<Input> rx,
-                        spsc::Sender<Output> tx,
-                        Func input2output)
+        static int main(
+            osc::stop_token,
+            spsc::Receiver<Input> rx,
+            spsc::Sender<Output> tx,
+            Func input2output)
         {
             // continously try to receive input messages and
             // respond to them one-by-one

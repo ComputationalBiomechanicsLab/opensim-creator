@@ -25,11 +25,11 @@
 #include <vector>
 #include <utility>
 
-// maximum length of the search string
-static inline int constexpr c_SearchMaxLen = 128;
-
 namespace
 {
+    // maximum length of the search string
+    inline int constexpr c_SearchMaxLen = 128;
+
     using Geom_ctor_fn = std::unique_ptr<OpenSim::Geometry>();
     constexpr auto c_GeomCtors = osc::MakeArray<Geom_ctor_fn*>(
         []()

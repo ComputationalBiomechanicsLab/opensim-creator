@@ -39,11 +39,21 @@
 
 namespace OpenSim { class Component; }
 
-static osc::UID const c_WalltimeUID;
-static osc::UID const c_StepDurationUID;
 
 namespace
 {
+    osc::UID GetWalltimeUID()
+    {
+        static osc::UID const s_WalltimeUID;
+        return s_WalltimeUID;
+    }
+
+    osc::UID GetStepDurationUID()
+    {
+        static osc::UID const s_StepDurationUID;
+        return s_StepDurationUID;
+    }
+
     // exclusively owned input data
     class SimulatorThreadInput final {
     public:
@@ -169,14 +179,14 @@ namespace
             osc::OutputExtractor out{AuxiliaryVariableOutputExtractor{
                 "Wall time",
                 "Total cumulative time spent computing the simulation",
-                c_WalltimeUID
+                GetWalltimeUID(),
             }};
             rv.push_back(out);
 
             osc::OutputExtractor out2{AuxiliaryVariableOutputExtractor{
                 "Step Wall Time",
                 "How long it took, in wall time, to compute the last integration step",
-                c_StepDurationUID
+                GetStepDurationUID(),
             }};
             rv.push_back(out2);
         }
@@ -235,8 +245,8 @@ namespace
 
         // populate forward dynamic simulator outputs
         {
-            auxValues.emplace(c_WalltimeUID, wallTime.count());
-            auxValues.emplace(c_StepDurationUID, stepDuration.count());
+            auxValues.emplace(GetWalltimeUID(), wallTime.count());
+            auxValues.emplace(GetStepDurationUID(), stepDuration.count());
         }
 
         // populate integrator outputs

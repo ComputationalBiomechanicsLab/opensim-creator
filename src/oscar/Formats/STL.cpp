@@ -17,10 +17,10 @@
 #include <stdexcept>
 #include <string_view>
 
-static std::string_view constexpr c_Header = "Exported from " OSC_APPNAME_STRING;
-
 namespace
 {
+    std::string_view constexpr c_Header = "Exported from " OSC_APPNAME_STRING;
+
     template<typename T>
     T const& ElementAt(nonstd::span<T const> vs, ptrdiff_t i)
     {

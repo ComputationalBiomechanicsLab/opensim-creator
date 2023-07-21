@@ -28,6 +28,135 @@ namespace
         glm::vec2 uv;
     };
 
+    // standard textured cube with dimensions [-1, +1] in xyz and uv coords of
+    // (0, 0) bottom-left, (1, 1) top-right for each (quad) face
+    std::array<TexturedVert, 36> constexpr c_ShadedTexturedCubeVerts =
+    {{
+        // back face
+        {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}},  // bottom-left
+        {{1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}},  // top-right
+        {{1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}},  // bottom-right
+        {{1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}},  // top-right
+        {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}},  // bottom-left
+        {{-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}},  // top-left
+
+        // front face
+        {{-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
+        {{1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},  // bottom-right
+        {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
+        {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
+        {{-1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},  // top-left
+        {{-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
+
+        // left face
+        {{-1.0f, 1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},  // top-right
+        {{-1.0f, 1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},  // top-left
+        {{-1.0f, -1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},  // bottom-left
+        {{-1.0f, -1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},  // bottom-left
+        {{-1.0f, -1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},  // bottom-right
+        {{-1.0f, 1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},  // top-right
+
+        // right face
+        {{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},  // top-left
+        {{1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},  // bottom-right
+        {{1.0f, 1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},  // top-right
+        {{1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},  // bottom-right
+        {{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},  // top-left
+        {{1.0f, -1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},  // bottom-left
+
+        // bottom face
+        {{-1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}},  // top-right
+        {{1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f}},  // top-left
+        {{1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}},  // bottom-left
+        {{1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}},  // bottom-left
+        {{-1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}},  // bottom-right
+        {{-1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}},  // top-right
+
+        // top face
+        {{-1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}},  // top-left
+        {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},  // bottom-right
+        {{1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}},  // top-right
+        {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},  // bottom-right
+        {{-1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}},  // top-left
+        {{-1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}}  // bottom-left
+    }};
+
+    // standard textured quad
+    // - dimensions [-1, +1] in xy and [0, 0] in z
+    // - uv coords are (0, 0) bottom-left, (1, 1) top-right
+    // - normal is +1 in Z, meaning that it faces toward the camera
+    std::array<TexturedVert, 6> constexpr c_ShadedTexturedQuadVerts =
+    {{
+        // CCW winding (culling)
+        {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
+        {{1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},  // bottom-right
+        {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
+
+        {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
+        {{-1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},  // top-left
+        {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
+    }};
+
+    // a cube wire mesh, suitable for `osc::MeshTopology::Lines` drawing
+    //
+    // a pair of verts per edge of the cube. The cube has 12 edges, so 24 lines
+    std::array<UntexturedVert, 24> constexpr c_CubeEdgeLines =
+    {{
+        // back
+
+        // back bottom left -> back bottom right
+        {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+        {{+1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+
+        // back bottom right -> back top right
+        {{+1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+        {{+1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+
+        // back top right -> back top left
+        {{+1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+        {{-1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+
+        // back top left -> back bottom left
+        {{-1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+        {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+
+        // front
+
+        // front bottom left -> front bottom right
+        {{-1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+        {{+1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+
+        // front bottom right -> front top right
+        {{+1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+        {{+1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+
+        // front top right -> front top left
+        {{+1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+        {{-1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+
+        // front top left -> front bottom left
+        {{-1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+        {{-1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+
+        // front-to-back edges
+
+        // front bottom left -> back bottom left
+        {{-1.0f, -1.0f, +1.0f}, {-1.0f, -1.0f, +1.0f}},
+        {{-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f, -1.0f}},
+
+        // front bottom right -> back bottom right
+        {{+1.0f, -1.0f, +1.0f}, {+1.0f, -1.0f, +1.0f}},
+        {{+1.0f, -1.0f, -1.0f}, {+1.0f, -1.0f, -1.0f}},
+
+        // front top left -> back top left
+        {{-1.0f, +1.0f, +1.0f}, {-1.0f, +1.0f, +1.0f}},
+        {{-1.0f, +1.0f, -1.0f}, {-1.0f, +1.0f, -1.0f}},
+
+        // front top right -> back top right
+        {{+1.0f, +1.0f, +1.0f}, {+1.0f, +1.0f, +1.0f}},
+        {{+1.0f, +1.0f, -1.0f}, {+1.0f, +1.0f, -1.0f}}
+    }};
+
     struct NewMeshData final {
 
         void clear()
@@ -65,135 +194,6 @@ namespace
         return rv;
     }
 }
-
-// standard textured cube with dimensions [-1, +1] in xyz and uv coords of
-// (0, 0) bottom-left, (1, 1) top-right for each (quad) face
-static std::array<TexturedVert, 36> constexpr c_ShadedTexturedCubeVerts =
-{{
-    // back face
-    {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}},  // bottom-left
-    {{1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}},  // top-right
-    {{1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}},  // bottom-right
-    {{1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}},  // top-right
-    {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}},  // bottom-left
-    {{-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}},  // top-left
-
-    // front face
-    {{-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
-    {{1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},  // bottom-right
-    {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
-    {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
-    {{-1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},  // top-left
-    {{-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
-
-    // left face
-    {{-1.0f, 1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},  // top-right
-    {{-1.0f, 1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},  // top-left
-    {{-1.0f, -1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},  // bottom-left
-    {{-1.0f, -1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},  // bottom-left
-    {{-1.0f, -1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},  // bottom-right
-    {{-1.0f, 1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},  // top-right
-
-    // right face
-    {{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},  // top-left
-    {{1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},  // bottom-right
-    {{1.0f, 1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},  // top-right
-    {{1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},  // bottom-right
-    {{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},  // top-left
-    {{1.0f, -1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},  // bottom-left
-
-    // bottom face
-    {{-1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}},  // top-right
-    {{1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f}},  // top-left
-    {{1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}},  // bottom-left
-    {{1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}},  // bottom-left
-    {{-1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}},  // bottom-right
-    {{-1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}},  // top-right
-
-    // top face
-    {{-1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}},  // top-left
-    {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},  // bottom-right
-    {{1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}},  // top-right
-    {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},  // bottom-right
-    {{-1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}},  // top-left
-    {{-1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}}  // bottom-left
-}};
-
-// standard textured quad
-// - dimensions [-1, +1] in xy and [0, 0] in z
-// - uv coords are (0, 0) bottom-left, (1, 1) top-right
-// - normal is +1 in Z, meaning that it faces toward the camera
-static std::array<TexturedVert, 6> constexpr c_ShadedTexturedQuadVerts =
-{{
-    // CCW winding (culling)
-    {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
-    {{1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},  // bottom-right
-    {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
-
-    {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
-    {{-1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},  // top-left
-    {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
-}};
-
-// a cube wire mesh, suitable for `osc::MeshTopology::Lines` drawing
-//
-// a pair of verts per edge of the cube. The cube has 12 edges, so 24 lines
-static std::array<UntexturedVert, 24> constexpr c_CubeEdgeLines =
-{{
-    // back
-
-    // back bottom left -> back bottom right
-    {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-    {{+1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-
-    // back bottom right -> back top right
-    {{+1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-    {{+1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-
-    // back top right -> back top left
-    {{+1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-    {{-1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-
-    // back top left -> back bottom left
-    {{-1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-    {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-
-    // front
-
-    // front bottom left -> front bottom right
-    {{-1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-    {{+1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-
-    // front bottom right -> front top right
-    {{+1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-    {{+1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-
-    // front top right -> front top left
-    {{+1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-    {{-1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-
-    // front top left -> front bottom left
-    {{-1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-    {{-1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-
-    // front-to-back edges
-
-    // front bottom left -> back bottom left
-    {{-1.0f, -1.0f, +1.0f}, {-1.0f, -1.0f, +1.0f}},
-    {{-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f, -1.0f}},
-
-    // front bottom right -> back bottom right
-    {{+1.0f, -1.0f, +1.0f}, {+1.0f, -1.0f, +1.0f}},
-    {{+1.0f, -1.0f, -1.0f}, {+1.0f, -1.0f, -1.0f}},
-
-    // front top left -> back top left
-    {{-1.0f, +1.0f, +1.0f}, {-1.0f, +1.0f, +1.0f}},
-    {{-1.0f, +1.0f, -1.0f}, {-1.0f, +1.0f, -1.0f}},
-
-    // front top right -> back top right
-    {{+1.0f, +1.0f, +1.0f}, {+1.0f, +1.0f, +1.0f}},
-    {{+1.0f, +1.0f, -1.0f}, {+1.0f, +1.0f, -1.0f}}
-}};
 
 osc::Mesh osc::GenTexturedQuad()
 {

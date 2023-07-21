@@ -3,7 +3,10 @@
 #include "oscar/Utils/CStringView.hpp"
 
 
-static osc::CStringView constexpr c_ModelNoBackingFileSenteniel = "Unassigned";
+namespace
+{
+    osc::CStringView constexpr c_ModelNoBackingFileSenteniel = "Unassigned";
+}
 
 std::filesystem::file_time_type GetLastModificationTime(std::string const& path)
 {

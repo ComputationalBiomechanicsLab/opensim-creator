@@ -24,14 +24,14 @@
 #include <utility>
 #include <vector>
 
-// maximum distance between the current commit and the "root" commit (i.e. a commit with no parent)
-static inline int constexpr c_MaxUndo = 32;
-
-// maximum distance between the branch head and the current commit (i.e. how big the redo buffer can be)
-static inline int constexpr c_MaxRedo = 32;
-
 namespace
 {
+    // maximum distance between the current commit and the "root" commit (i.e. a commit with no parent)
+    inline int constexpr c_MaxUndo = 32;
+
+    // maximum distance between the branch head and the current commit (i.e. how big the redo buffer can be)
+    inline int constexpr c_MaxRedo = 32;
+
     std::unique_ptr<OpenSim::Model> makeNewModel()
     {
         auto rv = std::make_unique<OpenSim::Model>();

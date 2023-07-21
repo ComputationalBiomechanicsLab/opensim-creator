@@ -18,10 +18,10 @@
 #include <utility>
 #include <vector>
 
-static inline int32_t constexpr c_NumMSXAASamples = 4;
-
 namespace
 {
+    int32_t constexpr c_NumMSXAASamples = 4;
+
     std::optional<std::filesystem::path> TryGetConfigLocation()
     {
         std::filesystem::path p = osc::CurrentExeDir();

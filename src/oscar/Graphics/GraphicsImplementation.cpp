@@ -79,44 +79,49 @@
 #include <variant>
 #include <vector>
 
-// vertex shader source used for blitting a textured quad (common use-case)
-//
-// it's here, rather than in an external resource file, because it is eagerly
-// loaded while the graphics backend is initialized (i.e. potentially before
-// the application is fully loaded)
-static osc::CStringView constexpr c_QuadVertexShaderSrc = R"(
-    #version 330 core
+// shader source
+namespace
+{
+    // vertex shader source used for blitting a textured quad (common use-case)
+    //
+    // it's here, rather than in an external resource file, because it is eagerly
+    // loaded while the graphics backend is initialized (i.e. potentially before
+    // the application is fully loaded)
+    osc::CStringView constexpr c_QuadVertexShaderSrc = R"(
+        #version 330 core
 
-    layout (location = 0) in vec3 aPos;
-    layout (location = 1) in vec2 aTexCoord;
+        layout (location = 0) in vec3 aPos;
+        layout (location = 1) in vec2 aTexCoord;
 
-    out vec2 TexCoord;
+        out vec2 TexCoord;
 
-    void main()
-    {
-        TexCoord = aTexCoord;
-        gl_Position = vec4(aPos, 1.0);
-    }
-)";
+        void main()
+        {
+            TexCoord = aTexCoord;
+            gl_Position = vec4(aPos, 1.0);
+        }
+    )";
 
-// fragment shader source used for blitting a textured quad
-//
-// it's here, rather than in an external resource file, because it is eagerly
-// loaded while the graphics backend is initialized (i.e. potentially before
-// the application is fully loaded)
-static osc::CStringView constexpr c_QuadFragmentShaderSrc = R"(
-    #version 330 core
+    // fragment shader source used for blitting a textured quad
+    //
+    // it's here, rather than in an external resource file, because it is eagerly
+    // loaded while the graphics backend is initialized (i.e. potentially before
+    // the application is fully loaded)
+    osc::CStringView constexpr c_QuadFragmentShaderSrc = R"(
+        #version 330 core
 
-    uniform sampler2D uTexture;
+        uniform sampler2D uTexture;
 
-    in vec2 TexCoord;
-    out vec4 FragColor;
+        in vec2 TexCoord;
+        out vec4 FragColor;
 
-    void main()
-    {
-        FragColor = texture(uTexture, TexCoord);
-    }
-)";
+        void main()
+        {
+            FragColor = texture(uTexture, TexCoord);
+        }
+    )";
+}
+
 
 // generic utility functions
 namespace
