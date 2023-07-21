@@ -60,8 +60,7 @@ Checks: >
   -readability-simplify-boolean-expr,
   -readability-static-accessed-through-instance,
   cert-*,
-  -cert-dcl16-c,
-  -cert-err33-c
+  -cert-dcl16-c
 
 # disabled: OpenSim contains memory-leaking code that I cannot disable :<
 # WarningsAsErrors: "*"

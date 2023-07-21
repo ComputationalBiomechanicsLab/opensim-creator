@@ -67,8 +67,10 @@ namespace
     {
         // disable lint because this function is only called once at application
         // init time
-
-        std::setlocale(category, locale); // NOLINT(concurrency-mt-unsafe)
+        if (std::setlocale(category, locale) == nullptr)  // NOLINT(concurrency-mt-unsafe)
+        {
+            osc::log::error("error setting locale category %i to %s", category, locale);
+        }
     }
 
     // an OpenSim log sink that sinks into OSC's main log

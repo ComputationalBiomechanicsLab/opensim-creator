@@ -53,6 +53,7 @@
 #include <filesystem>
 #include <map>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <variant>
@@ -219,10 +220,14 @@ void osc::DrawSelectOwnerMenu(osc::VirtualModelStatePair& model, OpenSim::Compon
         {
             c = &c->getOwner();
 
-            std::array<char, 128> buf{};
-            std::snprintf(buf.data(), buf.size(), "%s (%s)", c->getName().c_str(), c->getConcreteClassName().c_str());
+            std::string const menuLabel = [&c]()
+            {
+                std::stringstream ss;
+                ss << c->getName() << '(' << c->getConcreteClassName() << ')';
+                return std::move(ss).str();
+            }();
 
-            if (ImGui::MenuItem(buf.data()))
+            if (ImGui::MenuItem(menuLabel.c_str()))
             {
                 model.setSelected(c);
             }

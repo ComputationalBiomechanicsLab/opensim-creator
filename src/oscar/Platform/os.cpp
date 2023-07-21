@@ -271,8 +271,17 @@ namespace
 
 static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
 {
-    signal(SIGABRT, SIG_DFL);  // reset abort signal handler
-    signal(SIGSEGV, SIG_DFL);  // reset segfault signal handler
+    // reset abort signal handler
+    if (signal(SIGABRT, SIG_DFL) == SIG_ERR)
+    {
+        osc::log::error("failed to reset SIGABRT handler - the program may not be able to crash correctly");
+    }
+
+    // reset segfault signal handler
+    if (signal(SIGSEGV, SIG_DFL) == SIG_ERR)
+    {
+        osc::log::error("failed to reset SIGSEGV handler - the program may not be able to crash correctly");
+    }
 
     auto* uc = static_cast<osc_sig_ucontext*>(ucontext);
 
@@ -285,13 +294,7 @@ static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
 #error Unsupported architecture.
 #endif
 
-    fprintf(
-        stderr,
-        "osc: critical error: signal %d (%s) received from OS: address is %p from %p\n",
-        sig_num,
-        strsignal(sig_num),
-        info->si_addr,
-        callerAddress);
+    std::cerr << "osc: critical error: signal " << sig_num << '(' << strsignal(sig_num) << ") received from OS: address is " <<  info->si_addr << " from " << callerAddress;
 
     std::array<void*, 50> ary{};
     int const size = backtrace(ary.data(), ary.size());
@@ -308,7 +311,7 @@ static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
     /* skip first stack frame (points here) */
     for (int i = 1; i < size; ++i)
     {
-        fprintf(stderr, "    #%-2d %s\n", i, messages[i]);
+        std::cerr << "    #" << std::setw(2) << i << ' ' << messages[i] << '\n';
     }
 }
 
@@ -322,17 +325,13 @@ void osc::InstallBacktraceHandler()
     // install segfault handler
     if (sigaction(SIGSEGV, &sigact, nullptr) != 0)
     {
-        fprintf(
-            stderr,
-            "osc: warning: could not set signal handler for SIGSEGV: error reporting may not work as intended\n");
+        osc::log::error("osc: warning: could not set signal handler for SIGSEGV: error reporting may not work as intended");
     }
 
     // install abort handler: this triggers whenever a non-throwing `assert` causes a termination
     if (sigaction(SIGABRT, &sigact, nullptr) != 0)
     {
-        fprintf(
-            stderr,
-            "osc: warning: could not set signal handler fori SIGABRT: error reporting may not work as intended\n");
+        osc::log::error("osc: warning: could not set signal handler for SIGABRT: error reporting may not work as intended");
     }
 }
 

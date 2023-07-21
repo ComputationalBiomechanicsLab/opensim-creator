@@ -9,9 +9,9 @@
 #include <imgui.h>
 #include <SDL_events.h>
 
-#include <array>
-#include <cstdio>
+#include <iomanip>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -100,9 +100,13 @@ void osc::GuiRuler::draw(
 
             // label the line's length
             {
-                std::array<char, 64> buf{};
-                std::snprintf(buf.data(), buf.size(), "%.5f", lineWorldLen);
-                drawTooltipWithBg(lineMidpoint + offsetVec, buf.data());
+                std::string const lineLenLabel = [&lineWorldLen]()
+                {
+                    std::stringstream ss;
+                    ss << std::setprecision(5) << lineWorldLen;
+                    return std::move(ss).str();
+                }();
+                drawTooltipWithBg(lineMidpoint + offsetVec, lineLenLabel.c_str());
             }
         }
         else
