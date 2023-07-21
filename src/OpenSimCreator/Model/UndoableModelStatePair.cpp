@@ -54,10 +54,7 @@ namespace
 
         explicit UiModelStatePair(std::unique_ptr<OpenSim::Model> _model) :
             m_Model{std::move(_model)},
-            m_ModelVersion{},
-            m_FixupScaleFactor{1.0f},
-            m_MaybeSelected{},
-            m_MaybeHovered{}
+            m_FixupScaleFactor{1.0f}
         {
             osc::InitializeModel(*m_Model);
             osc::InitializeState(*m_Model);
@@ -65,7 +62,6 @@ namespace
 
         UiModelStatePair(UiModelStatePair const& other) :
             m_Model{std::make_unique<OpenSim::Model>(*other.m_Model)},
-            m_ModelVersion{},
             m_FixupScaleFactor{other.m_FixupScaleFactor},
             m_MaybeSelected{other.m_MaybeSelected},
             m_MaybeHovered{other.m_MaybeHovered}

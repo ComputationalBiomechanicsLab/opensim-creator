@@ -1195,10 +1195,8 @@ osc::BodyDetails::BodyDetails() :
     centerOfMass{0.0f, 0.0f, 0.0f},
     inertia{1.0f, 1.0f, 1.0f},
     mass{1.0f},
-    parentFrameAbsPath{},
     bodyName{"new_body"},
     jointTypeIndex{osc::JointRegistry::indexOf<OpenSim::WeldJoint>().value_or(0)},
-    jointName{},
     maybeGeometry{nullptr},
     addOffsetFrames{true}
 {

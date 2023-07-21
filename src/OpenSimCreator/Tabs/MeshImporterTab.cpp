@@ -557,7 +557,6 @@ namespace
             osc::CStringView description,
             std::unique_ptr<SceneEl> defaultObject) :
 
-            m_ID{},
             m_Name{name},
             m_NamePluralized{namePluralized},
             m_NameOptionallyPluralized{nameOptionallyPluralized},
@@ -1097,8 +1096,6 @@ namespace
         }
 
         MeshEl() :
-            m_ID{},
-            m_Attachment{},
             m_MeshData{osc::App::singleton<osc::MeshCache>()->getBrickMesh()},
             m_Path{"invalid"}
         {
@@ -1286,10 +1283,7 @@ namespace
             return s_Class;
         }
 
-        BodyEl() :
-            m_ID{},
-            m_Name{"prototype"},
-            m_Xform{}
+        BodyEl() : m_Name{"prototype"}
         {
             // default ctor for prototype storage
         }
@@ -1432,12 +1426,8 @@ namespace
         }
 
         JointEl() :
-            m_ID{},
             m_JointTypeIndex{0},
-            m_UserAssignedName{"prototype"},
-            m_Parent{},
-            m_Child{},
-            m_Xform{}
+            m_UserAssignedName{"prototype"}
         {
             // default ctor for prototype allocation
         }
@@ -1676,11 +1666,7 @@ namespace
             return s_Class;
         }
 
-        StationEl() :
-            m_ID{},
-            m_Attachment{},
-            m_Position{},
-            m_Name{"prototype"}
+        StationEl() : m_Name{"prototype"}
         {
             // default ctor for prototype allocation
         }
@@ -1703,7 +1689,6 @@ namespace
             glm::vec3 const& position,
             std::string const& name) :
 
-            m_ID{},
             m_Attachment{attachment},
             m_Position{position},
             m_Name{SanitizeToOpenSimComponentName(name)}
@@ -1826,7 +1811,7 @@ namespace
 
         UIDT<StationEl> m_ID;
         UIDT<BodyEl> m_Attachment;  // can be c_GroundID
-        glm::vec3 m_Position;
+        glm::vec3 m_Position{};
         std::string m_Name;
     };
 
@@ -2633,7 +2618,6 @@ namespace
             ClonePtr<ModelGraph> modelGraph,
             std::string_view commitMessage) :
 
-            m_ID{},
             m_ParentID{parentID},
             m_ModelGraph{std::move(modelGraph)},
             m_CommitMessage{commitMessage},
@@ -2662,8 +2646,7 @@ namespace
         explicit CommittableModelGraph(std::unique_ptr<ModelGraph> mg) :
             m_Scratch{std::move(mg)},
             m_Current{c_EmptyID},
-            m_BranchHead{c_EmptyID},
-            m_Commits{}
+            m_BranchHead{c_EmptyID}
         {
             Commit("created model graph");
         }

@@ -1145,8 +1145,7 @@ namespace
         explicit TPS3DMainMenu(std::shared_ptr<TPSUISharedState> const& tabState_) :
             m_FileMenu{tabState_},
             m_EditMenu{tabState_},
-            m_WindowMenu{tabState_->panelManager},
-            m_AboutTab{}
+            m_WindowMenu{tabState_->panelManager}
         {
         }
 

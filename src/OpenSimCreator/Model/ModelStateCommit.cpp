@@ -24,8 +24,6 @@ public:
     }
 
     Impl(VirtualConstModelStatePair const& msp, std::string_view message, UID parent) :
-        m_AccessMutex{},
-        m_ID{},
         m_MaybeParentID{parent},
         m_CommitTime{std::chrono::system_clock::now()},
         m_Model{std::make_unique<OpenSim::Model>(msp.getModel())},
