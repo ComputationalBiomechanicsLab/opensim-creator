@@ -311,8 +311,6 @@ osc::Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, osc::Mes
         });
     });
 
-    // TODO: come up with a more robust way to transform the normals
-
     return rv;
 }
 

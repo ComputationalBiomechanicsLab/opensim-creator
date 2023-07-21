@@ -1440,8 +1440,6 @@ namespace
     // over the current plot
     void ActionPromptUserForCSVOverlayFile(PlotLines& lines)
     {
-        // TODO: error propagation (#375)
-
         std::optional<std::filesystem::path> const maybeCSVPath =
             osc::PromptUserForFile("csv");
 

@@ -313,7 +313,7 @@ namespace
         {
             //glm::ivec2 const adjacentCoord = gridCoord + ToVec2(direction);
 
-            // TODO: insert
+            // insert
         }
 
         static void SwapDirectionalOp(
@@ -321,7 +321,7 @@ namespace
             glm::ivec2,
             GridDirection)
         {
-            // TODO: swapsies
+            // swapsies
         }
 
         static void AddDirectionalOp(GridLayout& grid, glm::ivec2 gridCoord, GridDirection direction)
@@ -337,7 +337,7 @@ namespace
             }
             else
             {
-                // TODO: add to empty slot
+                // add to empty slot
             }
         }
 
@@ -810,7 +810,7 @@ public:
 
     void onDrawMainMenu()
     {
-        // TODO: redundantly show new/save/open etc.
+        // redundantly show new/save/open etc.
     }
 
     void onDraw()
@@ -820,8 +820,7 @@ public:
             ImGuiDockNodeFlags_PassthruCentralNode
         );
         m_PanelManager->onDraw();
-        // TODO:
-        //
+
         // - render a toolbar with new/save/open/undo/redo etc.
         //
         // - render a table using data from the `GridLayout`
