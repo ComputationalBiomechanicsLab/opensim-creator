@@ -294,7 +294,7 @@ static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
 #error Unsupported architecture.
 #endif
 
-    std::cerr << "osc: critical error: signal " << sig_num << '(' << strsignal(sig_num) << ") received from OS: address is " <<  info->si_addr << " from " << callerAddress;
+    std::cerr << "osc: critical error: signal " << sig_num << '(' << strsignal(sig_num) << ") received from OS: address is " <<  info->si_addr << " from " << callerAddress;  // NOLINT(concurrency-mt-unsafe)
 
     std::array<void*, 50> ary{};
     int const size = backtrace(ary.data(), ary.size());

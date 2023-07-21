@@ -29,7 +29,7 @@ void osc::OnThrowingAssertionFailure(
     CStringView file,
     unsigned int line)
 {
-    std::string msg = [&]()
+    std::string const msg = [&]()
     {
         std::stringstream ss;
         ss << file << ':' << func << ':' << ':' << line << ": throw_if_not(" << failingCode << ") failed";
@@ -37,5 +37,5 @@ void osc::OnThrowingAssertionFailure(
     }();
 
     log::error("%s", msg.c_str());
-    throw std::runtime_error{std::move(msg)};
+    throw std::runtime_error{msg};
 }
