@@ -9,28 +9,12 @@
 
 namespace osc
 {
-    // evaluate the length of a string at compile-time
-    constexpr size_t StrLen(char const* s) noexcept
-    {
-        if (s == nullptr)
-        {
-            return 0;
-        }
-
-        size_t len = 0;
-        while (*s++ != char{0})
-        {
-            ++len;
-        }
-        return len;
-    }
-
     // represents a view into a NUL-terminated C string
     class CStringView final {
     public:
         constexpr CStringView() noexcept : m_Data{nullptr}, m_Size{0} {}
         constexpr CStringView(CStringView const&) noexcept = default;
-        constexpr CStringView(char const* s) noexcept : m_Data{s}, m_Size{StrLen(s)} {}
+        constexpr CStringView(char const* s) noexcept : m_Data{s}, m_Size{std::string_view{s}.size()} {}
         constexpr CStringView(std::nullptr_t) noexcept : CStringView{} {}
         CStringView(std::string const& s) noexcept : m_Data{s.c_str()}, m_Size{s.size()} {}
         constexpr CStringView& operator=(CStringView const&) noexcept = default;
