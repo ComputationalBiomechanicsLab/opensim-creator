@@ -22,6 +22,10 @@ namespace osc
     // note: C++20 may make this obsolete (timezone and calendar support)
     std::tm GMTimeThreadsafe(std::time_t);
 
+    // returns a `std::string` describing the current value of `errno` in an OS-defined
+    // threadsafe way
+    std::string CurrentErrnoAsString();
+
     // returns a `std::string` describing the given error number, but in an OS-defined
     // threadsafe way (unlike `strerror()`, which _may_ be undefined)
     std::string StrerrorThreadsafe(int errnum);

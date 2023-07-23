@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cerrno>
 #include <cstddef>
 #include <ctime>
 #include <fstream>
@@ -50,7 +51,7 @@ namespace
             sv = sv.substr(0, sv.size()-1);
         }
 
-        return std::filesystem::path{p};
+        return std::filesystem::path{sv};
     }
 
     std::filesystem::path getCurrentExeDir()
@@ -189,6 +190,12 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
     return p;
 }
 
+std::string osc::CurrentErrnoAsString()
+{
+    return StrerrorThreadsafe(errno);
+}
+
+
 #ifdef __LINUX__
 
 #ifndef _GNU_SOURCE
@@ -243,7 +250,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
     return rv;
 }
 
-void osc::WriteTracebackToLog(log::level::LevelEnum lvl)
+void osc::WriteTracebackToLog(log::Level lvl)
 {
     std::array<void*, 50> ary{};
     int const size = backtrace(ary.data(), ary.size());
@@ -420,7 +427,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
 }
 
 
-void osc::WriteTracebackToLog(log::level::LevelEnum lvl)
+void osc::WriteTracebackToLog(log::Level lvl)
 {
     void* array[50];
     int size = backtrace(array, 50);
@@ -445,7 +452,7 @@ namespace
     {
         osc::log::error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
         osc::log::error("backtrace:");
-        osc::WriteTracebackToLog(osc::log::level::err);
+        osc::WriteTracebackToLog(osc::log::Level::err);
         exit(EXIT_FAILURE);
     }
 }
