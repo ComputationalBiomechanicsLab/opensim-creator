@@ -16,7 +16,7 @@ namespace
     // an empty string
     std::string GetAbsPathOrEmptyIfNotAComponent(OpenSim::Object const& obj)
     {
-        if (auto c = dynamic_cast<OpenSim::Component const*>(&obj))
+        if (auto const* c = dynamic_cast<OpenSim::Component const*>(&obj))
         {
             return osc::GetAbsolutePathString(*c);
         }
