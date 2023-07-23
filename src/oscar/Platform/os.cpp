@@ -14,7 +14,6 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
-#include <cstring>
 #include <ctime>
 #include <fstream>
 #include <memory>
@@ -27,6 +26,7 @@ namespace
 {
     std::filesystem::path convertSDLPathToStdpath(char const* methodname, char* p)
     {
+        // nullptr disallowed
         if (p == nullptr)
         {
             std::stringstream ss;
@@ -34,9 +34,10 @@ namespace
             throw std::runtime_error{std::move(ss).str()};
         }
 
-        size_t len = std::strlen(p);
+        std::string_view sv{p};
 
-        if (len == 0)
+        // empty string disallowed
+        if (sv.empty())
         {
             std::stringstream ss;
             ss << methodname << ": returned an empty string";
@@ -44,7 +45,10 @@ namespace
         }
 
         // remove trailing slash: it interferes with std::filesystem::path
-        p[len - 1] = '\0';
+        if (sv.back() == '/' || sv.back() == '\\')
+        {
+            sv = sv.substr(0, sv.size()-1);
+        }
 
         return std::filesystem::path{p};
     }

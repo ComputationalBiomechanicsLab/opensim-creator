@@ -99,7 +99,6 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <cmath>
 #include <exception>
 #include <filesystem>

@@ -13,6 +13,7 @@
 #include "oscar/Utils/FilesystemHelpers.hpp"
 #include "oscar/Utils/Perf.hpp"
 #include "oscar/Utils/ScopeGuard.hpp"
+#include "oscar/Utils/StringHelpers.hpp"
 #include "oscar/Utils/SynchronizedValue.hpp"
 #include "OscarConfiguration.hpp"
 
@@ -30,7 +31,6 @@
 #include <SDL_video.h>
 
 #include <algorithm>
-#include <cstring>
 #include <cstddef>
 #include <cstdint>
 #include <cmath>
@@ -536,7 +536,7 @@ public:
 
         if (isWindowFocused())
         {
-            static bool const s_CanUseGlobalMouseState = strncmp(SDL_GetCurrentVideoDriver(), "wayland", 7) != 0;
+            static bool const s_CanUseGlobalMouseState = !StartsWith(SDL_GetCurrentVideoDriver(), "wayland");
 
             if (s_CanUseGlobalMouseState)
             {

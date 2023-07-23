@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <cstring>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -107,7 +106,7 @@ bool osc::CStrEndsWith(CStringView s, std::string_view suffix)
 
 bool osc::Contains(CStringView s, char c)
 {
-    return std::strchr(s.c_str(), c) != nullptr;
+    return std::find(s.begin(), s.end(), c) != s.end();
 }
 
 bool osc::StartsWith(std::string_view s, std::string_view prefix)

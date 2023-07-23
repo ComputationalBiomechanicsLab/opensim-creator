@@ -6,7 +6,6 @@
 #include <nonstd/span.hpp>
 
 #include <cerrno>
-#include <cstring>
 #include <string>
 #include <filesystem>
 #include <fstream>
