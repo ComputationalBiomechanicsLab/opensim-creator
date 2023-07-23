@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace osc
@@ -14,10 +15,12 @@ namespace osc
 
     class PerfMeasurement final {
     public:
-        PerfMeasurement(int64_t id,
-                        char const* label,
-                        char const* filename,
-                        unsigned int line) :
+        PerfMeasurement(
+            int64_t id,
+            std::string_view label,
+            std::string_view filename,
+            unsigned int line) :
+
             m_ID{id},
             m_Label{label},
             m_Filename{filename},
@@ -90,7 +93,7 @@ namespace osc
         osc::PerfClock::duration m_LastDuration{0};
     };
 
-    int64_t AllocateMeasurementID(char const* label, char const* filename, unsigned int line);
+    int64_t AllocateMeasurementID(std::string_view label, std::string_view filename, unsigned int line);
     void SubmitMeasurement(int64_t id, PerfClock::time_point start, PerfClock::time_point end) noexcept;
     void ClearPerfMeasurements();
     size_t GetAllMeasurements(std::vector<PerfMeasurement>& appendOut);

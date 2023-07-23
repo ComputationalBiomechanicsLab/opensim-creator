@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <unordered_map>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -14,11 +15,11 @@
 namespace
 {
     int64_t GenerateID(
-        char const* label,
-        char const* filename,
+        std::string_view label,
+        std::string_view filename,
         unsigned int line)
     {
-        return static_cast<int64_t>(osc::HashOf(std::string{label}, std::string{filename}, line));
+        return static_cast<int64_t>(osc::HashOf(label, filename, line));
     }
 
     osc::SynchronizedValue<std::unordered_map<int64_t, osc::PerfMeasurement>>& GetMeasurementStorage()
@@ -31,7 +32,7 @@ namespace
 
 // public API
 
-int64_t osc::AllocateMeasurementID(char const* label, char const* filename, unsigned int line)
+int64_t osc::AllocateMeasurementID(std::string_view label, std::string_view filename, unsigned int line)
 {
     int64_t id = GenerateID(label, filename, line);
 
