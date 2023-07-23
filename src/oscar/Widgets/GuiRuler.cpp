@@ -3,6 +3,7 @@
 #include "oscar/Graphics/SceneCollision.hpp"
 #include "oscar/Maths/PolarPerspectiveCamera.hpp"
 #include "oscar/Maths/Rect.hpp"
+#include "oscar/Utils/CStringView.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -50,14 +51,14 @@ void osc::GuiRuler::draw(
     float lineThickness = 3.0f;
     glm::vec2 labelOffsetWhenNoLine = {10.0f, -10.0f};
 
-    auto drawTooltipWithBg = [&dl, &textBgColor, &textColor](glm::vec2 const& pos, char const* text)
+    auto drawTooltipWithBg = [&dl, &textBgColor, &textColor](glm::vec2 const& pos, CStringView tooltipText)
     {
-        glm::vec2 sz = ImGui::CalcTextSize(text);
+        glm::vec2 sz = ImGui::CalcTextSize(tooltipText.c_str());
         float bgPad = 5.0f;
         float edgeRounding = bgPad - 2.0f;
 
         dl.AddRectFilled(pos - bgPad, pos + sz + bgPad, textBgColor, edgeRounding);
-        dl.AddText(pos, textColor, text);
+        dl.AddText(pos, textColor, tooltipText.c_str());
     };
 
     if (m_State == State::WaitingForFirstPoint)
@@ -106,7 +107,7 @@ void osc::GuiRuler::draw(
                     ss << std::setprecision(5) << lineWorldLen;
                     return std::move(ss).str();
                 }();
-                drawTooltipWithBg(lineMidpoint + offsetVec, lineLenLabel.c_str());
+                drawTooltipWithBg(lineMidpoint + offsetVec, lineLenLabel);
             }
         }
         else
