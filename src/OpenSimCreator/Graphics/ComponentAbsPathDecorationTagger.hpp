@@ -24,7 +24,7 @@ namespace osc
             decoration.id = m_ID;
         }
     private:
-        OpenSim::Component const* m_LastComponent;
+        OpenSim::Component const* m_LastComponent = nullptr;
         std::string m_ID;
     };
 }
