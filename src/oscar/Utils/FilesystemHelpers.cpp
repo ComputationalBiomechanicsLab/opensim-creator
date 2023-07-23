@@ -5,7 +5,6 @@
 
 #include <nonstd/span.hpp>
 
-#include <cerrno>
 #include <string>
 #include <filesystem>
 #include <fstream>
@@ -84,7 +83,7 @@ std::string osc::SlurpFileIntoString(std::filesystem::path const& p)
     if (!f)
     {
         std::stringstream msg;
-        msg << p << ": error opening file: " << osc::StrerrorThreadsafe(errno);
+        msg << p << ": error opening file: " << osc::CurrentErrnoAsString();
         throw std::runtime_error{std::move(msg).str()};
     }
 
@@ -98,7 +97,7 @@ std::string osc::SlurpFileIntoString(std::filesystem::path const& p)
     catch (std::exception const& ex)
     {
         std::stringstream msg;
-        msg << p << ": error reading file: " << ex.what() << "(strerror = " << osc::StrerrorThreadsafe(errno) << ')';
+        msg << p << ": error reading file: " << ex.what() << "(strerror = " << osc::CurrentErrnoAsString() << ')';
         throw std::runtime_error{std::move(msg).str()};
     }
 
@@ -112,7 +111,7 @@ std::vector<uint8_t> osc::SlurpFileIntoVector(std::filesystem::path const& p)
     if (!f)
     {
         std::stringstream msg;
-        msg << p << ": error opening file: " << osc::StrerrorThreadsafe(errno);
+        msg << p << ": error opening file: " << osc::CurrentErrnoAsString();
         throw std::runtime_error{std::move(msg).str()};
     }
     f.exceptions(std::ifstream::failbit | std::ifstream::badbit);

@@ -73,7 +73,6 @@
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 
 #include <atomic>
-#include <cerrno>
 #include <cstdint>
 #include <cstddef>
 #include <filesystem>
@@ -1178,7 +1177,7 @@ namespace
         };
         if (!outputFileStream)
         {
-            std::string const error = osc::StrerrorThreadsafe(errno);
+            std::string const error = osc::CurrentErrnoAsString();
             osc::log::error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
             return;
         }
@@ -1219,7 +1218,7 @@ namespace
         };
         if (!outputFileStream)
         {
-            std::string const error = osc::StrerrorThreadsafe(errno);
+            std::string const error = osc::CurrentErrnoAsString();
             osc::log::error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
             return;
         }

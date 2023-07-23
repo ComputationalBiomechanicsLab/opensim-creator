@@ -652,17 +652,6 @@ namespace
         return it == container.end() ? std::nullopt : std::optional<size_t>{std::distance(container.begin(), it)};
     }
 
-    template<typename T>
-    void AddTypeIDsFromRegistry(
-        nonstd::span<std::shared_ptr<T const> const> protos,
-        std::unordered_set<std::type_info const*>& out)
-    {
-        for (auto const& ptr : protos)
-        {
-            out.insert(&typeid(*ptr));
-        }
-    }
-
     std::vector<std::shared_ptr<OpenSim::Component const>> CreateOtherComponentLut()
     {
         std::unordered_set<std::string> const& grouped = GetSetOfAllGroupedElements();
