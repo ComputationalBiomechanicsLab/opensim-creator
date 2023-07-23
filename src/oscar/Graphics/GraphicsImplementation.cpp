@@ -274,9 +274,9 @@ namespace
         }
     }
 
-    std::string NormalizeShaderElementName(char const* name)
+    std::string NormalizeShaderElementName(std::string_view openGLName)
     {
-        std::string s{name};
+        std::string s{openGLName};
         auto loc = s.find('[');
         if (loc != std::string::npos)
         {
@@ -4514,7 +4514,7 @@ namespace
     }
 
     // returns a string representation of an OpenGL debug message severity level
-    constexpr char const* OpenGLDebugSevToCStr(GLenum sev) noexcept
+    constexpr osc::CStringView OpenGLDebugSevToStrView(GLenum sev) noexcept
     {
         switch (sev)
         {
@@ -4532,7 +4532,7 @@ namespace
     }
 
     // returns a string representation of an OpenGL debug message source
-    constexpr char const* OpenGLDebugSrcToCStr(GLenum src) noexcept
+    constexpr osc::CStringView OpenGLDebugSrcToStrView(GLenum src) noexcept
     {
         switch (src)
         {
@@ -4554,7 +4554,7 @@ namespace
     }
 
     // returns a string representation of an OpenGL debug message type
-    constexpr char const* OpenGLDebugTypeToCStr(GLenum type) noexcept
+    constexpr osc::CStringView OpenGLDebugTypeToStrView(GLenum type) noexcept
     {
         switch (type)
         {
@@ -4627,9 +4627,9 @@ namespace
         void const*)
     {
         osc::log::Level const lvl = OpenGLDebugSevToLogLvl(severity);
-        char const* const sourceCStr = OpenGLDebugSrcToCStr(source);
-        char const* const typeCStr = OpenGLDebugTypeToCStr(type);
-        char const* const severityCStr = OpenGLDebugSevToCStr(severity);
+        osc::CStringView const sourceCStr = OpenGLDebugSrcToStrView(source);
+        osc::CStringView const typeCStr = OpenGLDebugTypeToStrView(type);
+        osc::CStringView const severityCStr = OpenGLDebugSevToStrView(severity);
 
         osc::log::log(lvl,
             R"(OpenGL Debug message:
@@ -4638,7 +4638,7 @@ message = %s
 source = %s
 type = %s
 severity = %s
-)", id, message, sourceCStr, typeCStr, severityCStr);
+)", id, message, sourceCStr.c_str(), typeCStr.c_str(), severityCStr.c_str());
     }
 
     // enable OpenGL API debugging
