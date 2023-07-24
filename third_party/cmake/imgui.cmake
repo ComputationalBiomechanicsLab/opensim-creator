@@ -6,13 +6,19 @@ find_package(SDL2 REQUIRED)
 find_package(glm REQUIRED)
 
 add_library(imgui STATIC
+    backends/imgui_impl_opengl3.cpp
+    backends/imgui_impl_opengl3.h
+    backends/imgui_impl_sdl2.cpp
+    backends/imgui_impl_sdl2.h
+    misc/cpp/imgui_stdlib.cpp
+    misc/cpp/imgui_stdlib.h
     imgui.cpp
+    imgui.h
     imgui_draw.cpp
+    imgui_internal.h
     imgui_widgets.cpp
     imgui_tables.cpp
     imgui_demo.cpp
-    backends/imgui_impl_opengl3.cpp
-    backends/imgui_impl_sdl2.cpp
 )
 target_include_directories(imgui
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -49,6 +55,12 @@ install(
         backends/imgui_impl_sdl2.h
     DESTINATION
         include/imgui/backends
+)
+install(
+    FILES
+        misc/cpp/imgui_stdlib.h
+    DESTINATION
+        include/imgui/misc/cpp
 )
 install(
     EXPORT imguiTargets
