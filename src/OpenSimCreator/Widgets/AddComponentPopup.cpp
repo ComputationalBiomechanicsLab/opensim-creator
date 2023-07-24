@@ -180,7 +180,7 @@ private:
         DrawHelpMarker("Name the newly-added component will have after being added into the model. Note: this is used to derive the name of subcomponents (e.g. path points)");
         ImGui::NextColumn();
 
-        osc::InputString("##componentname", m_Name, 128);
+        osc::InputString("##componentname", m_Name);
         App::upd().addFrameAnnotation("AddComponentPopup::ComponentNameInput", osc::GetItemRect());
 
         ImGui::NextColumn();
@@ -404,7 +404,7 @@ private:
         DrawHelpMarker("The Component being added is (effectively) a line that connects physical frames (e.g. bodies) in the model. For example, an OpenSim::Muscle can be described as an actuator that connects bodies in the model together. You **must** specify at least two physical frames on the line in order to add a PathActuator component.\n\nDetails: in OpenSim, some `Components` are `PathActuator`s. All `Muscle`s are defined as `PathActuator`s. A `PathActuator` is an `Actuator` that actuates along a path. Therefore, a `Model` containing a `PathActuator` with zero or one points would be invalid. This is why it is required that you specify at least two points");
         ImGui::Separator();
 
-        osc::InputString(ICON_FA_SEARCH " search", m_PathSearchString, 128);
+        osc::InputString(ICON_FA_SEARCH " search", m_PathSearchString);
 
         ImGui::Columns(2);
         int imguiID = 0;

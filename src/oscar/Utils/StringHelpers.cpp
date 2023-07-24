@@ -88,8 +88,8 @@ bool osc::ContainsSubstringCaseInsensitive(std::string const& str, std::string c
         return false;
     }
 
-    std::string s = ToLower(str);
-    std::string ss = ToLower(substr);
+    std::string const s = ToLower(str);
+    std::string const ss = ToLower(substr);
 
     return ContainsSubstring(s, ss);
 }
@@ -166,4 +166,22 @@ std::string osc::Ellipsis(std::string_view v, size_t maxLen)
     rv = substr;
     rv += "...";
     return rv;
+}
+
+std::string_view osc::SubstringAfterLast(std::string_view sv, char delimiter)
+{
+    size_t const pos = sv.rfind(delimiter);
+
+    if (pos == std::string_view::npos)
+    {
+        return sv;  // `sv` is empty or contains no delimiter
+    }
+    else if (pos == sv.size()-1)
+    {
+        return {};  // `delimiter` is the last in `sv`
+    }
+    else
+    {
+        return sv.substr(pos+1);
+    }
 }

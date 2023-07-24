@@ -7,6 +7,7 @@
 #include "OpenSimCreator/Tabs/Experimental/ExcitationEditorTab.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/Utils/UndoableModelActions.hpp"
+#include "OpenSimCreator/Widgets/ExportPointsPopup.hpp"
 #include "OpenSimCreator/Widgets/MainMenu.hpp"
 #include "OpenSimCreator/Widgets/ModelActionsMenuItems.hpp"
 #include "OpenSimCreator/Widgets/ParamBlockEditorPopup.hpp"
@@ -93,6 +94,11 @@ private:
             if (ImGui::MenuItem(ICON_FA_EDIT " Edit simulation settings"))
             {
                 m_EditorAPI->pushPopup(std::make_unique<osc::ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI.lock()->updSimulationParams()));
+            }
+
+            if (ImGui::MenuItem("         Export Points"))
+            {
+                m_EditorAPI->pushPopup(std::make_unique<ExportPointsPopup>("Export Points", m_Model));
             }
 
             if (ImGui::BeginMenu("         Experimental Tools"))

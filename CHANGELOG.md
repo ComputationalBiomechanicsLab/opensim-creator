@@ -5,6 +5,9 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Added "Export Points" tool, which lets users export points in a model w.r.t. some frame as a CSV (#742)
+- The upper input size limit on many text inputs was removed
+
 
 ## [0.5.0] - 2023/07/11
 

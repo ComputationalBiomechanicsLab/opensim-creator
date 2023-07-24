@@ -263,7 +263,7 @@ namespace
             std::string value = idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : std::string{};
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            if (osc::InputString("##stringeditor", value, 128))
+            if (osc::InputString("##stringeditor", value))
             {
                 // update the edited property - don't rely on ImGui to remember edits
                 m_EditedProperty.setValue(idx, value);

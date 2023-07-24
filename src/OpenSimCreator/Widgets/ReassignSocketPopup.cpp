@@ -163,7 +163,7 @@ private:
         ImGui::Separator();
         ImGui::Dummy({0.0f, 0.25f * ImGui::GetTextLineHeight()});
 
-        osc::DrawSearchBar(m_EditedParams.search, 256);
+        osc::DrawSearchBar(m_EditedParams.search);
 
         std::optional<OpenSim::ComponentPath> userSelection;
         int id = 0;  // care: necessary because multiple connectees may have the same name

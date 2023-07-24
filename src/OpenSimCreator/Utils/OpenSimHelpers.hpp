@@ -190,6 +190,12 @@ namespace osc
         return dynamic_cast<T const*>(FindComponent(root, cp));
     }
 
+    template<typename T>
+    T const* FindComponent(OpenSim::Component const& root, std::string const& cp)
+    {
+        return dynamic_cast<T const*>(FindComponent(root, cp));
+    }
+
     // returns a mutable pointer if the given path resolves a component relative to root
     OpenSim::Component* FindComponentMut(
         OpenSim::Component& root,

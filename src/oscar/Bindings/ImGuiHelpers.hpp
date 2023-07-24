@@ -172,7 +172,6 @@ namespace osc
     bool InputString(
         CStringView label,
         std::string& editedString,
-        size_t maxLen,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
     );
 

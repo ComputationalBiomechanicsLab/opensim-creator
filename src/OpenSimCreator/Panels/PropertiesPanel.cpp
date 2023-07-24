@@ -101,7 +101,7 @@ namespace
             ImGui::NextColumn();
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            osc::InputString("##nameeditor", m_EditedName, 128);
+            osc::InputString("##nameeditor", m_EditedName);
             if (osc::ItemValueShouldBeSaved())
             {
                 osc::ActionSetComponentName(*m_Model, osc::GetAbsolutePath(*selected), m_EditedName);

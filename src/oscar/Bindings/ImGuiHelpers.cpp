@@ -21,6 +21,7 @@
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <imgui/misc/cpp/imgui_stdlib.h>
 #include <nonstd/span.hpp>
 #include <SDL_events.h>
 
@@ -685,25 +686,9 @@ void osc::DrawHelpMarker(CStringView desc)
     DrawTooltipIfItemHovered(desc);
 }
 
-bool osc::InputString(CStringView label, std::string& s, size_t maxLen, ImGuiInputTextFlags flags)
+bool osc::InputString(CStringView label, std::string& s, ImGuiInputTextFlags flags)
 {
-    static SynchronizedValue<std::string> s_Buf;
-
-    auto bufGuard = s_Buf.lock();
-
-    *bufGuard = s;
-    bufGuard->resize(std::max(maxLen, std::size(s)));
-    (*bufGuard)[std::size(s)] = '\0';
-
-    if (ImGui::InputText(label.c_str(), bufGuard->data(), maxLen, flags))
-    {
-        s = *bufGuard->data();
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    return ImGui::InputText(label.c_str(), &s, flags);  // uses `imgui_stdlib`
 }
 
 bool osc::InputMetersFloat(CStringView label, float& v, float step, float step_fast, ImGuiInputTextFlags flags)

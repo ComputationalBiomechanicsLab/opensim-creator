@@ -69,4 +69,9 @@ namespace osc
     // returns a string that *may* be truncated with ellipsis (...) if the length
     // of the input character sequence exceeds the given maximum length
     std::string Ellipsis(std::string_view, size_t maxLen);
+
+    // returns the end of the string between the last occurance of the delimiter and
+    // the end of the string, or the input string if the delimiter does not occur within
+    // the string.
+    std::string_view SubstringAfterLast(std::string_view, char delimiter);
 }

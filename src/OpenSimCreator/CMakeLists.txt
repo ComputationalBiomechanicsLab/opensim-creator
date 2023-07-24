@@ -166,6 +166,8 @@ add_library(OpenSimCreator STATIC
     Widgets/ComponentDetails.hpp
     Widgets/EditorTabStatusBar.cpp
     Widgets/EditorTabStatusBar.hpp
+    Widgets/ExportPointsPopup.cpp
+    Widgets/ExportPointsPopup.hpp
     Widgets/GeometryPathPropertyEditorPopup.cpp
     Widgets/GeometryPathPropertyEditorPopup.hpp
     Widgets/MainMenu.cpp

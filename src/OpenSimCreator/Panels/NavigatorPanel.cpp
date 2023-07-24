@@ -213,7 +213,7 @@ private:
             ImGui::EndPopup();
         }
         ImGui::SameLine();
-        osc::DrawSearchBar(m_CurrentSearch, 256);
+        osc::DrawSearchBar(m_CurrentSearch);
 
         ImGui::Dummy({0.0f, 3.0f});
         ImGui::Separator();

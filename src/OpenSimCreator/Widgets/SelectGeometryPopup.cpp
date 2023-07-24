@@ -27,9 +27,6 @@
 
 namespace
 {
-    // maximum length of the search string
-    inline int constexpr c_SearchMaxLen = 128;
-
     using Geom_ctor_fn = std::unique_ptr<OpenSim::Geometry>();
     constexpr auto c_GeomCtors = osc::MakeArray<Geom_ctor_fn*>(
         []()
@@ -138,7 +135,7 @@ private:
         ImGui::Dummy({0.0f, 2.0f});
 
         // let the user search through mesh files in pre-established Geometry/ dirs
-        osc::InputString("search", m_Search, c_SearchMaxLen);
+        osc::InputString("search", m_Search);
         ImGui::Dummy({0.0f, 1.0f});
 
         ImGui::BeginChild(

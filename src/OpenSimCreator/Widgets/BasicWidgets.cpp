@@ -312,7 +312,7 @@ void osc::DrawSimulationParams(osc::ParamBlock const& params)
     ImGui::Columns();
 }
 
-void osc::DrawSearchBar(std::string& out, int maxLen)
+void osc::DrawSearchBar(std::string& out)
 {
     if (!out.empty())
     {
@@ -336,7 +336,7 @@ void osc::DrawSearchBar(std::string& out, int maxLen)
 
     ImGui::SameLine();
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-    osc::InputString("##hirarchtsearchbar", out, maxLen);
+    osc::InputString("##hirarchtsearchbar", out);
 }
 
 void osc::DrawOutputNameColumn(
