@@ -4,6 +4,8 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/UID.hpp>
 
+#include <SDL_events.h>
+
 #include <memory>
 
 namespace osc { class TabHost; }
@@ -26,6 +28,7 @@ namespace osc
         CStringView implGetName() const final;
         void implOnMount() final;
         void implOnUnmount() final;
+        bool implOnEvent(SDL_Event const&) final;
         void implOnTick() final;
         void implOnDrawMainMenu() final;
         void implOnDraw() final;

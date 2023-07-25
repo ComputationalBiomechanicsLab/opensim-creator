@@ -1843,6 +1843,18 @@ public:
         App::upd().makeMainEventLoopPolling();
     }
 
+    bool onEvent(SDL_Event const& e)
+    {
+        if (e.type == SDL_KEYDOWN)
+        {
+            return onKeydownEvent(e.key);
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     void onTick()
     {
         // re-perform hover test each frame
@@ -1870,6 +1882,28 @@ public:
     }
 
 private:
+    bool onKeydownEvent(SDL_KeyboardEvent const& e)
+    {
+        bool const ctrlOrSuperDown = osc::IsCtrlOrSuperDown();
+
+        if (ctrlOrSuperDown && e.keysym.mod & KMOD_SHIFT && e.keysym.sym == SDLK_z)
+        {
+            // Ctrl+Shift+Z: redo
+            ActionRedo(*m_SharedState->editedDocument);
+            return true;
+        }
+        else if (ctrlOrSuperDown && e.keysym.sym == SDLK_z)
+        {
+            // Ctrl+Z: undo
+            ActionUndo(*m_SharedState->editedDocument);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     UID m_TabID;
     std::weak_ptr<TabHost> m_Parent;
 
@@ -1917,6 +1951,11 @@ void osc::WarpingTab::implOnMount()
 void osc::WarpingTab::implOnUnmount()
 {
     m_Impl->onUnmount();
+}
+
+bool osc::WarpingTab::implOnEvent(SDL_Event const& e)
+{
+    return m_Impl->onEvent(e);
 }
 
 void osc::WarpingTab::implOnTick()
