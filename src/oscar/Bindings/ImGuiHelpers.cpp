@@ -425,7 +425,14 @@ void osc::DrawTextureAsImGuiImage(
     glm::vec2 topLeftCoord,
     glm::vec2 bottomRightCoord)
 {
-    ImGui::Image(t.getTextureHandleHACK(), dims, topLeftCoord, bottomRightCoord);
+    if (void* handle = t.getTextureHandleHACK())
+    {
+        ImGui::Image(handle, dims, topLeftCoord, bottomRightCoord);
+    }
+    else
+    {
+        ImGui::Dummy(dims);
+    }
 }
 
 void osc::DrawTextureAsImGuiImage(RenderTexture const& tex)
@@ -438,7 +445,14 @@ void osc::DrawTextureAsImGuiImage(RenderTexture const& t, glm::vec2 dims)
     glm::vec2 const uv0 = {0.0f, 1.0f};
     glm::vec2 const uv1 = {1.0f, 0.0f};
 
-    ImGui::Image(t.getTextureHandleHACK(), dims, uv0, uv1);
+    if (void* handle = t.getTextureHandleHACK())
+    {
+        ImGui::Image(handle, dims, uv0, uv1);
+    }
+    else
+    {
+        ImGui::Dummy(dims);
+    }
 }
 
 glm::vec2 osc::CalcButtonSize(CStringView content)
@@ -459,7 +473,15 @@ bool osc::ImageButton(
     glm::vec2 dims,
     Rect const& textureCoords)
 {
-    return ImGui::ImageButton(label.c_str(), t.getTextureHandleHACK(), dims, textureCoords.p1, textureCoords.p2);
+    if (void* handle = t.getTextureHandleHACK())
+    {
+        return ImGui::ImageButton(label.c_str(), handle, dims, textureCoords.p1, textureCoords.p2);
+    }
+    else
+    {
+        ImGui::Dummy(dims);
+        return false;
+    }
 }
 
 bool osc::ImageButton(CStringView label, Texture2D const& t, glm::vec2 dims)
