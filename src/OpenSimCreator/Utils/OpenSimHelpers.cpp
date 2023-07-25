@@ -407,6 +407,20 @@ OpenSim::Component const* osc::FindFirstAncestorInclusive(OpenSim::Component con
     return nullptr;
 }
 
+OpenSim::Component const* osc::FindFirstDescendent(
+    OpenSim::Component const& c,
+    bool(*pred)(OpenSim::Component const&))
+{
+    for (OpenSim::Component const& descendent : c.getComponentList())
+    {
+        if (pred(c))
+        {
+            return &descendent;
+        }
+    }
+    return nullptr;
+}
+
 std::vector<OpenSim::Coordinate const*> osc::GetCoordinatesInModel(OpenSim::Model const& model)
 {
     std::vector<OpenSim::Coordinate const*> rv;
@@ -600,6 +614,23 @@ bool osc::TryConnectTo(
     catch (OpenSim::Exception const&)
     {
         return false;
+    }
+}
+
+void osc::RecursivelyReassignAllSockets(
+    OpenSim::Component& root,
+    OpenSim::Component const& from,
+    OpenSim::Component const& to)
+{
+    for (OpenSim::Component& c : root.updComponentList())
+    {
+        for (OpenSim::AbstractSocket* socket : osc::UpdAllSockets(c))
+        {
+            if (osc::IsConnectedTo(*socket, from))
+            {
+                osc::TryConnectTo(*socket, to);
+            }
+        }
     }
 }
 

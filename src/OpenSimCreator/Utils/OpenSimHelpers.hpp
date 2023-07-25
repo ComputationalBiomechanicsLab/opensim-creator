@@ -127,7 +127,10 @@ namespace osc
     );
 
     // returns the first ancestor of `c` for which the given predicate returns `true`
-    OpenSim::Component const* FindFirstAncestorInclusive(OpenSim::Component const*, bool(*pred)(OpenSim::Component const*));
+    OpenSim::Component const* FindFirstAncestorInclusive(
+        OpenSim::Component const*,
+        bool(*pred)(OpenSim::Component const*)
+    );
 
     // returns the first ancestor of `c` that has type `T`
     template<typename T>
@@ -135,16 +138,40 @@ namespace osc
     {
         OpenSim::Component const* rv = FindFirstAncestorInclusive(c, [](OpenSim::Component const* el)
         {
-                return static_cast<bool>(dynamic_cast<T const*>(el));
+            return dynamic_cast<T const*>(el) != nullptr;
         });
 
-        return static_cast<T const*>(rv);
+        return dynamic_cast<T const*>(rv);
     }
 
     template<typename T>
     T* FindAncestorWithTypeMut(OpenSim::Component* c)
     {
         return const_cast<T*>(FindAncestorWithType<T>(c));
+    }
+
+    // returns `true` if `c` is a child of a component that derives from `T`
+    template<typename T>
+    bool IsChildOfA(OpenSim::Component const& c)
+    {
+        return FindAncestorWithType<T>(&c) != nullptr;
+    }
+
+    OpenSim::Component const* FindFirstDescendent(
+        OpenSim::Component const&,
+        bool(*pred)(OpenSim::Component const&)
+    );
+
+    // returns the first direct descendent of `component` that has type `T`, or
+    // `nullptr` if no such descendent exists
+    template<typename T>
+    T const* FindFirstDescendentOfType(OpenSim::Component const& c)
+    {
+        OpenSim::Component const* rv = FindFirstDescendent(c, [](OpenSim::Component const& el)
+        {
+            return dynamic_cast<T const*>(&el) != nullptr;
+        });
+        return dynamic_cast<T const*>(rv);
     }
 
     // returns a vector containing points to all user-editable coordinates in the model
@@ -246,6 +273,16 @@ namespace osc
     bool TryConnectTo(
         OpenSim::AbstractSocket&,
         OpenSim::Component const&
+    );
+
+    // recursively traverses all components within `root` and reassigns any sockets
+    // pointing to `from` to instead point to `to`
+    //
+    // note: must be called on a component that already has finalized connections
+    void RecursivelyReassignAllSockets(
+        OpenSim::Component& root,
+        OpenSim::Component const& from,
+        OpenSim::Component const& to
     );
 
     // returns a pointer to the property if the component has a property with the given name

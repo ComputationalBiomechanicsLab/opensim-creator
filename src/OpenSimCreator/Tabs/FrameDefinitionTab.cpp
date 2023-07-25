@@ -101,34 +101,6 @@ namespace
 // helper functions
 namespace
 {
-    // returns the first direct descendent of `component` that has type `T`, or
-    // `nullptr` if no such descendent exists
-    template<typename T>
-    T const* TryGetFirstDescendentOfType(OpenSim::Component const& component)
-    {
-        for (T const& descendent : component.getComponentList<T>())
-        {
-            return &descendent;
-        }
-        return nullptr;
-    }
-
-    // returns `true` if `c` is a child of a component that derives from `T`
-    template<typename T>
-    bool IsChildOfA(OpenSim::Component const& c)
-    {
-        OpenSim::Component const* owner = osc::GetOwner(c);
-        while (owner)
-        {
-            if (dynamic_cast<T const*>(owner))
-            {
-                return true;
-            }
-            owner = osc::GetOwner(*owner);
-        }
-        return false;
-    }
-
     // returns the ground-based location re-expressed w.r.t. the given frame
     SimTK::Vec3 CalcLocationInFrame(
         OpenSim::Frame const& frame,
@@ -137,12 +109,6 @@ namespace
     {
         SimTK::Vec3 const translationInGround = osc::ToSimTKVec3(locationInGround);
         return frame.getTransformInGround(state).invert() * translationInGround;
-    }
-
-    // returns the RGB components of `color`
-    SimTK::Vec3 ToRGBVec3(osc::Color const& color)
-    {
-        return {color.r, color.g, color.b};
     }
 
     // sets the appearance of `geometry` (SimTK) from `appearance` (OpenSim)
@@ -167,7 +133,7 @@ namespace
         OpenSim::Appearance& appearance,
         osc::Color const& color)
     {
-        appearance.set_color(ToRGBVec3(color));
+        appearance.set_color(osc::ToSimTKRGBVec3(color));
         appearance.set_opacity(color.a);
     }
 
@@ -1846,23 +1812,6 @@ namespace
         );
     }
 
-    void RecursivelyReassignAllSockets(
-        OpenSim::Component& root,
-        OpenSim::Component const& from,
-        OpenSim::Component const& to)
-    {
-        for (OpenSim::Component& c : root.updComponentList())
-        {
-            for (OpenSim::AbstractSocket* socket : osc::UpdAllSockets(c))
-            {
-                if (osc::IsConnectedTo(*socket, from))
-                {
-                    osc::TryConnectTo(*socket, to);
-                }
-            }
-        }
-    }
-
     void ActionCreateBodyFromFrame(
         std::shared_ptr<osc::UndoableModelStatePair> model,
         OpenSim::ComponentPath frameAbsPath,
@@ -1988,7 +1937,7 @@ namespace
                 pof && osc::GetNumChildren(*pof) == 3)  // mesh+frame geom+wrap object set
             {
                 osc::log::debug("reassign sockets");
-                RecursivelyReassignAllSockets(mutModel, *pof, *meshPofPtr);
+                osc::RecursivelyReassignAllSockets(mutModel, *pof, *meshPofPtr);
                 mutModel.finalizeConnections();
                 if (auto* mutPof = osc::FindComponentMut<OpenSim::PhysicalOffsetFrame>(mutModel, osc::GetAbsolutePathOrEmpty(pof)))
                 {
@@ -2033,8 +1982,8 @@ namespace
             return
                 OpenSim::IsPhysicalFrame(c) &&
                 &c != bodyFrame &&
-                !IsChildOfA<OpenSim::ComponentSet>(c) &&
-                (osc::DerivesFrom<OpenSim::Ground>(c) || IsChildOfA<OpenSim::BodySet>(c));
+                !osc::IsChildOfA<OpenSim::ComponentSet>(c) &&
+                (osc::DerivesFrom<OpenSim::Ground>(c) || osc::IsChildOfA<OpenSim::BodySet>(c));
         };
         options.numComponentsUserMustChoose = 1;
         options.onUserFinishedChoosing = [
@@ -2122,7 +2071,7 @@ namespace
     {
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose mesh to attach the body to";
-        options.canChooseItem = [](OpenSim::Component const& c) { return OpenSim::IsMesh(c) && !IsChildOfA<OpenSim::Body>(c); };
+        options.canChooseItem = [](OpenSim::Component const& c) { return OpenSim::IsMesh(c) && !osc::IsChildOfA<OpenSim::Body>(c); };
         options.numComponentsUserMustChoose = 1;
         options.onUserFinishedChoosing = [
             visualizerPtr = &visualizer,  // TODO: implement weak_ptr for panel lookup
@@ -2525,7 +2474,7 @@ namespace
         OpenSim::Component const* groundOrExistingBody = dynamic_cast<OpenSim::Ground const*>(&frame);
         if (!groundOrExistingBody)
         {
-            groundOrExistingBody = TryGetFirstDescendentOfType<OpenSim::Body>(frame);
+            groundOrExistingBody = osc::FindFirstDescendentOfType<OpenSim::Body>(frame);
         }
 
         if (ImGui::MenuItem(ICON_FA_WEIGHT " Body From This", nullptr, false, !groundOrExistingBody))

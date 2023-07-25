@@ -1,7 +1,5 @@
 #pragma once
 
-#include <oscar/Maths/Transform.hpp>
-
 #include <glm/gtx/quaternion.hpp>
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x3.hpp>
@@ -13,6 +11,9 @@
 #include <SimTKcommon/internal/Transform.h>
 #include <SimTKcommon/internal/Rotation.h>
 
+namespace osc { struct Color; }
+namespace osc { struct Transform; }
+
 namespace osc
 {
     // converters: from osc types to SimTK,
@@ -22,6 +23,7 @@ namespace osc
     SimTK::Transform ToSimTKTransform(glm::mat4x3 const&);
     SimTK::Transform ToSimTKTransform(Transform const&);
     SimTK::Rotation ToSimTKRotation(glm::quat const&);
+    SimTK::Vec3 ToSimTKRGBVec3(Color const&);
 
     // converters: from SimTK types to osc
     glm::vec3 ToVec3(SimTK::Vec3 const&);

@@ -1,5 +1,6 @@
 #include "SimTKHelpers.hpp"
 
+#include <oscar/Graphics/Color.hpp>
 #include <oscar/Maths/Transform.hpp>
 
 #include <glm/gtx/quaternion.hpp>
@@ -69,6 +70,11 @@ SimTK::Transform osc::ToSimTKTransform(Transform const& t)
 SimTK::Rotation osc::ToSimTKRotation(glm::quat const& q)
 {
     return SimTK::Rotation{ToSimTKMat3(glm::toMat3(q))};
+}
+
+SimTK::Vec3 osc::ToSimTKRGBVec3(Color const& color)
+{
+    return {color.r, color.g, color.b};
 }
 
 glm::vec3 osc::ToVec3(SimTK::Vec3 const& v)
