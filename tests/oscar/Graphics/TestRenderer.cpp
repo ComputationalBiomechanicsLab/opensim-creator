@@ -30,6 +30,7 @@
 #include "oscar/Platform/App.hpp"
 #include "oscar/Utils/ArrayHelpers.hpp"
 #include "oscar/Utils/CStringView.hpp"
+#include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/EnumHelpers.hpp"
 #include "oscar/Utils/StringHelpers.hpp"
 
@@ -42,403 +43,432 @@
 #include <string>
 #include <unordered_set>
 
-static std::unique_ptr<osc::App> g_App;
+namespace
+{
+    std::unique_ptr<osc::App> g_App;
 
-class Renderer : public ::testing::Test {
-protected:
-    static void SetUpTestSuite()
-    {
-        g_App = std::make_unique<osc::App>();
-    }
-
-    static void TearDownTestSuite()
-    {
-        g_App.reset();
-    }
-};
-
-static constexpr char const g_VertexShaderSrc[] =
-R"(
-    #version 330 core
-
-    uniform mat4 uViewProjMat;
-    uniform mat4 uLightSpaceMat;
-    uniform vec3 uLightDir;
-    uniform vec3 uViewPos;
-    uniform float uDiffuseStrength = 0.85f;
-    uniform float uSpecularStrength = 0.4f;
-    uniform float uShininess = 8;
-
-    layout (location = 0) in vec3 aPos;
-    layout (location = 2) in vec3 aNormal;
-    layout (location = 6) in mat4 aModelMat;
-    layout (location = 10) in mat3 aNormalMat;
-
-    out vec3 FragWorldPos;
-    out vec4 FragLightSpacePos;
-    out vec3 NormalWorldDir;
-    out float NonAmbientBrightness;
-
-    void main()
-    {
-        vec3 normalDir = normalize(aNormalMat * aNormal);
-        vec3 fragPos = vec3(aModelMat * vec4(aPos, 1.0));
-        vec3 frag2viewDir = normalize(uViewPos - fragPos);
-        vec3 frag2lightDir = normalize(-uLightDir);  // light dir is in the opposite direction
-        vec3 halfwayDir = 0.5 * (frag2lightDir + frag2viewDir);
-
-        float diffuseAmt = uDiffuseStrength * abs(dot(normalDir, frag2lightDir));
-        float specularAmt = uSpecularStrength * pow(abs(dot(normalDir, halfwayDir)), uShininess);
-
-        vec4 worldPos = aModelMat * vec4(aPos, 1.0);
-
-        FragWorldPos = vec3(aModelMat * vec4(aPos, 1.0));
-        FragLightSpacePos = uLightSpaceMat * worldPos;
-        NormalWorldDir = normalDir;
-        NonAmbientBrightness = diffuseAmt + specularAmt;
-
-        gl_Position = uViewProjMat * worldPos;
-    }
-)";
-
-static constexpr char const g_FragmentShaderSrc[] =
-R"(
-    #version 330 core
-
-    uniform bool uHasShadowMap = false;
-    uniform vec3 uLightDir;
-    uniform sampler2D uShadowMapTexture;
-    uniform float uAmbientStrength = 0.15f;
-    uniform vec3 uLightColor;
-    uniform vec4 uDiffuseColor = vec4(1.0, 1.0, 1.0, 1.0);
-    uniform float uNear;
-    uniform float uFar;
-
-    in vec3 FragWorldPos;
-    in vec4 FragLightSpacePos;
-    in vec3 NormalWorldDir;
-    in float NonAmbientBrightness;
-
-    out vec4 Color0Out;
-
-    float CalculateShadowAmount()
-    {
-        // perspective divide
-        vec3 projCoords = FragLightSpacePos.xyz / FragLightSpacePos.w;
-
-        // map to [0, 1]
-        projCoords = 0.5*projCoords + 0.5;
-
-        // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-        float closestDepth = texture(uShadowMapTexture, projCoords.xy).r;
-
-        // get depth of current fragment from light's perspective
-        float currentDepth = projCoords.z;
-
-        // calculate bias (based on depth map resolution and slope)
-        float bias = max(0.025 * (1.0 - abs(dot(NormalWorldDir, uLightDir))), 0.0025);
-
-        // check whether current frag pos is in shadow
-        // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
-        // PCF
-        float shadow = 0.0;
-        vec2 texelSize = 1.0 / textureSize(uShadowMapTexture, 0);
-        for(int x = -1; x <= 1; ++x)
+    class Renderer : public ::testing::Test {
+    protected:
+        static void SetUpTestSuite()
         {
-            for(int y = -1; y <= 1; ++y)
+            g_App = std::make_unique<osc::App>();
+        }
+
+        static void TearDownTestSuite()
+        {
+            g_App.reset();
+        }
+    };
+
+    constexpr osc::CStringView c_VertexShaderSrc = R"(
+        #version 330 core
+
+        uniform mat4 uViewProjMat;
+        uniform mat4 uLightSpaceMat;
+        uniform vec3 uLightDir;
+        uniform vec3 uViewPos;
+        uniform float uDiffuseStrength = 0.85f;
+        uniform float uSpecularStrength = 0.4f;
+        uniform float uShininess = 8;
+
+        layout (location = 0) in vec3 aPos;
+        layout (location = 2) in vec3 aNormal;
+        layout (location = 6) in mat4 aModelMat;
+        layout (location = 10) in mat3 aNormalMat;
+
+        out vec3 FragWorldPos;
+        out vec4 FragLightSpacePos;
+        out vec3 NormalWorldDir;
+        out float NonAmbientBrightness;
+
+        void main()
+        {
+            vec3 normalDir = normalize(aNormalMat * aNormal);
+            vec3 fragPos = vec3(aModelMat * vec4(aPos, 1.0));
+            vec3 frag2viewDir = normalize(uViewPos - fragPos);
+            vec3 frag2lightDir = normalize(-uLightDir);  // light dir is in the opposite direction
+            vec3 halfwayDir = 0.5 * (frag2lightDir + frag2viewDir);
+
+            float diffuseAmt = uDiffuseStrength * abs(dot(normalDir, frag2lightDir));
+            float specularAmt = uSpecularStrength * pow(abs(dot(normalDir, halfwayDir)), uShininess);
+
+            vec4 worldPos = aModelMat * vec4(aPos, 1.0);
+
+            FragWorldPos = vec3(aModelMat * vec4(aPos, 1.0));
+            FragLightSpacePos = uLightSpaceMat * worldPos;
+            NormalWorldDir = normalDir;
+            NonAmbientBrightness = diffuseAmt + specularAmt;
+
+            gl_Position = uViewProjMat * worldPos;
+        }
+    )";
+
+    constexpr osc::CStringView c_FragmentShaderSrc = R"(
+        #version 330 core
+
+        uniform bool uHasShadowMap = false;
+        uniform vec3 uLightDir;
+        uniform sampler2D uShadowMapTexture;
+        uniform float uAmbientStrength = 0.15f;
+        uniform vec3 uLightColor;
+        uniform vec4 uDiffuseColor = vec4(1.0, 1.0, 1.0, 1.0);
+        uniform float uNear;
+        uniform float uFar;
+
+        in vec3 FragWorldPos;
+        in vec4 FragLightSpacePos;
+        in vec3 NormalWorldDir;
+        in float NonAmbientBrightness;
+
+        out vec4 Color0Out;
+
+        float CalculateShadowAmount()
+        {
+            // perspective divide
+            vec3 projCoords = FragLightSpacePos.xyz / FragLightSpacePos.w;
+
+            // map to [0, 1]
+            projCoords = 0.5*projCoords + 0.5;
+
+            // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+            float closestDepth = texture(uShadowMapTexture, projCoords.xy).r;
+
+            // get depth of current fragment from light's perspective
+            float currentDepth = projCoords.z;
+
+            // calculate bias (based on depth map resolution and slope)
+            float bias = max(0.025 * (1.0 - abs(dot(NormalWorldDir, uLightDir))), 0.0025);
+
+            // check whether current frag pos is in shadow
+            // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
+            // PCF
+            float shadow = 0.0;
+            vec2 texelSize = 1.0 / textureSize(uShadowMapTexture, 0);
+            for(int x = -1; x <= 1; ++x)
             {
-                float pcfDepth = texture(uShadowMapTexture, projCoords.xy + vec2(x, y) * texelSize).r;
-                if (pcfDepth < 1.0)
+                for(int y = -1; y <= 1; ++y)
                 {
-                    shadow += (currentDepth - bias) > pcfDepth  ? 1.0 : 0.0;
+                    float pcfDepth = texture(uShadowMapTexture, projCoords.xy + vec2(x, y) * texelSize).r;
+                    if (pcfDepth < 1.0)
+                    {
+                        shadow += (currentDepth - bias) > pcfDepth  ? 1.0 : 0.0;
+                    }
                 }
             }
+            shadow /= 9.0;
+
+            return shadow;
         }
-        shadow /= 9.0;
 
-        return shadow;
-    }
+        float LinearizeDepth(float depth)
+        {
+            // from: https://learnopengl.com/Advanced-OpenGL/Depth-testing
+            //
+            // only really works with perspective cameras: orthogonal cameras
+            // don't need this unprojection math trick
 
-    float LinearizeDepth(float depth)
+            float z = depth * 2.0 - 1.0;
+            return (2.0 * uNear * uFar) / (uFar + uNear - z * (uFar - uNear));
+        }
+
+        void main()
+        {
+            float shadowAmt = uHasShadowMap ? 0.5*CalculateShadowAmount() : 0.0f;
+            float brightness = uAmbientStrength + ((1.0 - shadowAmt) * NonAmbientBrightness);
+            Color0Out = vec4(brightness * uLightColor, 1.0) * uDiffuseColor;
+            Color0Out.a *= 1.0 - (LinearizeDepth(gl_FragCoord.z) / uFar);  // fade into background at high distances
+            Color0Out.a = clamp(Color0Out.a, 0.0, 1.0);
+        }
+    )";
+
+    constexpr osc::CStringView c_VertexShaderWithArray = R"(
+        #version 330 core
+
+        layout (location = 0) in vec3 aPos;
+
+        void main()
+        {
+            gl_Position = vec4(aPos, 1.0);
+        }
+    )";
+
+    constexpr osc::CStringView c_FragmentShaderWithArray = R"(
+        #version 330 core
+
+        uniform vec4 uFragColor[3];
+
+        out vec4 FragColor;
+
+        void main()
+        {
+            FragColor = uFragColor[0];
+        }
+    )";
+
+    // expected, based on the above shader code
+    constexpr std::array<osc::CStringView, 14> c_ExpectedPropertyNames = osc::to_array<osc::CStringView>(
     {
-        // from: https://learnopengl.com/Advanced-OpenGL/Depth-testing
+        "uViewProjMat",
+        "uLightSpaceMat",
+        "uLightDir",
+        "uViewPos",
+        "uDiffuseStrength",
+        "uSpecularStrength",
+        "uShininess",
+        "uHasShadowMap",
+        "uShadowMapTexture",
+        "uAmbientStrength",
+        "uLightColor",
+        "uDiffuseColor",
+        "uNear",
+        "uFar",
+    });
+
+    constexpr std::array<osc::ShaderType, 14> c_ExpectedPropertyTypes = osc::to_array(
+    {
+        osc::ShaderType::Mat4,
+        osc::ShaderType::Mat4,
+        osc::ShaderType::Vec3,
+        osc::ShaderType::Vec3,
+        osc::ShaderType::Float,
+        osc::ShaderType::Float,
+        osc::ShaderType::Float,
+        osc::ShaderType::Bool,
+        osc::ShaderType::Sampler2D,
+        osc::ShaderType::Float,
+        osc::ShaderType::Vec3,
+        osc::ShaderType::Vec4,
+        osc::ShaderType::Float,
+        osc::ShaderType::Float,
+    });
+    static_assert(c_ExpectedPropertyNames.size() == c_ExpectedPropertyTypes.size());
+
+    constexpr osc::CStringView c_GeometryShaderVertSrc = R"(
+        #version 330 core
+
+        // draw_normals: program that draws mesh normals
         //
-        // only really works with perspective cameras: orthogonal cameras
-        // don't need this unprojection math trick
+        // This vertex shader just passes each vertex/normal to the geometry shader, which
+        // then uses that information to draw lines for each normal.
 
-        float z = depth * 2.0 - 1.0;
-        return (2.0 * uNear * uFar) / (uFar + uNear - z * (uFar - uNear));
+        layout (location = 0) in vec3 aPos;
+        layout (location = 2) in vec3 aNormal;
+
+        out VS_OUT {
+            vec3 normal;
+        } vs_out;
+
+        void main()
+        {
+            gl_Position = vec4(aPos, 1.0f);
+            vs_out.normal = aNormal;
+        }
+    )";
+
+    constexpr osc::CStringView c_GeometryShaderGeomSrc = R"(
+        #version 330 core
+
+        // draw_normals: program that draws mesh normals
+        //
+        // This geometry shader generates a line strip for each normal it is given. The downstream
+        // fragment shader then fills in each line, so that the viewer can see normals as lines
+        // poking out of the mesh
+
+        uniform mat4 uModelMat;
+        uniform mat4 uViewProjMat;
+        uniform mat4 uNormalMat;
+
+        layout (triangles) in;
+        in VS_OUT {
+            vec3 normal;
+        } gs_in[];
+
+        layout (line_strip, max_vertices = 6) out;
+
+        const float NORMAL_LINE_LEN = 0.01f;
+
+        void GenerateLine(int index)
+        {
+            vec4 origVertexPos = uViewProjMat * uModelMat * gl_in[index].gl_Position;
+
+            // emit original vertex in original position
+            gl_Position = origVertexPos;
+            EmitVertex();
+
+            // calculate normal vector *direction*
+            vec4 normalVec = normalize(uViewProjMat * uNormalMat * vec4(gs_in[index].normal, 0.0f));
+
+            // then scale the direction vector to some fixed length (of line)
+            normalVec *= NORMAL_LINE_LEN;
+
+            // emit another vertex (the line "tip")
+            gl_Position = origVertexPos + normalVec;
+            EmitVertex();
+
+            // emit line primitve
+            EndPrimitive();
+        }
+
+        void main()
+        {
+            GenerateLine(0); // first vertex normal
+            GenerateLine(1); // second vertex normal
+            GenerateLine(2); // third vertex normal
+        }
+    )";
+
+    constexpr osc::CStringView c_GeometryShaderFragSrc = R"(
+        #version 330 core
+
+        // draw_normals: program that draws mesh normals
+        //
+        // this frag shader doesn't do much: just color each line emitted by the geometry shader
+        // so that the viewers can "see" normals
+
+        out vec4 FragColor;
+
+        void main()
+        {
+            FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        }
+    )";
+
+    // from: https://learnopengl.com/Advanced-OpenGL/Cubemaps
+    constexpr osc::CStringView c_CubemapVertexShader = R"(
+        #version 330 core
+
+        layout (location = 0) in vec3 aPos;
+
+        out vec3 TexCoords;
+
+        uniform mat4 projection;
+        uniform mat4 view;
+
+        void main()
+        {
+            TexCoords = aPos;
+            gl_Position = projection * view * vec4(aPos, 1.0);
+        }
+    )";
+
+    constexpr osc::CStringView c_CubemapFragmentShader = R"(
+        #version 330 core
+
+        out vec4 FragColor;
+
+        in vec3 TexCoords;
+
+        uniform samplerCube skybox;
+
+        void main()
+        {
+            FragColor = texture(skybox, TexCoords);
+        }
+    )";
+
+    std::default_random_engine& GetRngEngine()
+    {
+        static std::default_random_engine e{};  // deterministic, because test failures due to RNG can suck
+        return e;
     }
 
-    void main()
+    float GenerateFloat()
     {
-        float shadowAmt = uHasShadowMap ? 0.5*CalculateShadowAmount() : 0.0f;
-        float brightness = uAmbientStrength + ((1.0 - shadowAmt) * NonAmbientBrightness);
-        Color0Out = vec4(brightness * uLightColor, 1.0) * uDiffuseColor;
-        Color0Out.a *= 1.0 - (LinearizeDepth(gl_FragCoord.z) / uFar);  // fade into background at high distances
-        Color0Out.a = clamp(Color0Out.a, 0.0, 1.0);
-    }
-)";
-
-static constexpr char const g_VertexShaderWithArray[] =
-R"(
-    #version 330 core
-
-    layout (location = 0) in vec3 aPos;
-
-    void main()
-    {
-        gl_Position = vec4(aPos, 1.0);
-    }
-)";
-
-static constexpr char const g_FragmentShaderWithArray[] =
-R"(
-    #version 330 core
-
-    uniform vec4 uFragColor[3];
-
-    out vec4 FragColor;
-
-    void main()
-    {
-        FragColor = uFragColor[0];
-    }
-)";
-
-// expected, based on the above shader code
-static constexpr std::array<osc::CStringView, 14> g_ExpectedPropertyNames =
-{
-    "uViewProjMat",
-    "uLightSpaceMat",
-    "uLightDir",
-    "uViewPos",
-    "uDiffuseStrength",
-    "uSpecularStrength",
-    "uShininess",
-    "uHasShadowMap",
-    "uShadowMapTexture",
-    "uAmbientStrength",
-    "uLightColor",
-    "uDiffuseColor",
-    "uNear",
-    "uFar",
-};
-
-static constexpr std::array<osc::ShaderType, 14> g_ExpectedPropertyTypes =
-{
-    osc::ShaderType::Mat4,
-    osc::ShaderType::Mat4,
-    osc::ShaderType::Vec3,
-    osc::ShaderType::Vec3,
-    osc::ShaderType::Float,
-    osc::ShaderType::Float,
-    osc::ShaderType::Float,
-    osc::ShaderType::Bool,
-    osc::ShaderType::Sampler2D,
-    osc::ShaderType::Float,
-    osc::ShaderType::Vec3,
-    osc::ShaderType::Vec4,
-    osc::ShaderType::Float,
-    osc::ShaderType::Float,
-};
-static_assert(g_ExpectedPropertyNames.size() == g_ExpectedPropertyTypes.size());
-
-static constexpr char const g_GeometryShaderVertSrc[] =
-R"(
-    #version 330 core
-
-    // draw_normals: program that draws mesh normals
-    //
-    // This vertex shader just passes each vertex/normal to the geometry shader, which
-    // then uses that information to draw lines for each normal.
-
-    layout (location = 0) in vec3 aPos;
-    layout (location = 2) in vec3 aNormal;
-
-    out VS_OUT {
-        vec3 normal;
-    } vs_out;
-
-    void main()
-    {
-        gl_Position = vec4(aPos, 1.0f);
-        vs_out.normal = aNormal;
-    }
-)";
-
-static constexpr char const g_GeometryShaderGeomSrc[] =
-R"(
-    #version 330 core
-
-    // draw_normals: program that draws mesh normals
-    //
-    // This geometry shader generates a line strip for each normal it is given. The downstream
-    // fragment shader then fills in each line, so that the viewer can see normals as lines
-    // poking out of the mesh
-
-    uniform mat4 uModelMat;
-    uniform mat4 uViewProjMat;
-    uniform mat4 uNormalMat;
-
-    layout (triangles) in;
-    in VS_OUT {
-        vec3 normal;
-    } gs_in[];
-
-    layout (line_strip, max_vertices = 6) out;
-
-    const float NORMAL_LINE_LEN = 0.01f;
-
-    void GenerateLine(int index)
-    {
-        vec4 origVertexPos = uViewProjMat * uModelMat * gl_in[index].gl_Position;
-
-        // emit original vertex in original position
-        gl_Position = origVertexPos;
-        EmitVertex();
-
-        // calculate normal vector *direction*
-        vec4 normalVec = normalize(uViewProjMat * uNormalMat * vec4(gs_in[index].normal, 0.0f));
-
-        // then scale the direction vector to some fixed length (of line)
-        normalVec *= NORMAL_LINE_LEN;
-
-        // emit another vertex (the line "tip")
-        gl_Position = origVertexPos + normalVec;
-        EmitVertex();
-
-        // emit line primitve
-        EndPrimitive();
+        return static_cast<float>(std::uniform_real_distribution{}(GetRngEngine()));
     }
 
-    void main()
+    int GenerateInt()
     {
-        GenerateLine(0); // first vertex normal
-        GenerateLine(1); // second vertex normal
-        GenerateLine(2); // third vertex normal
-    }
-)";
-
-static constexpr char const g_GeometryShaderFragSrc[] =
-R"(
-    #version 330 core
-
-    // draw_normals: program that draws mesh normals
-    //
-    // this frag shader doesn't do much: just color each line emitted by the geometry shader
-    // so that the viewers can "see" normals
-
-    out vec4 FragColor;
-
-    void main()
-    {
-        FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-    }
-)";
-
-static std::default_random_engine& GetRngEngine()
-{
-    static std::default_random_engine e{};  // deterministic, because test failures due to RNG can suck
-    return e;
-}
-
-static float GenerateFloat()
-{
-    return static_cast<float>(std::uniform_real_distribution{}(GetRngEngine()));
-}
-
-static int GenerateInt()
-{
-    return std::uniform_int_distribution{}(GetRngEngine());
-}
-
-static bool GenerateBool()
-{
-    return GenerateInt();
-}
-
-static osc::Color GenerateColor()
-{
-    return osc::Color{GenerateFloat(), GenerateFloat(), GenerateFloat(), GenerateFloat()};
-}
-
-static glm::vec2 GenerateVec2()
-{
-    return glm::vec2{GenerateFloat(), GenerateFloat()};
-}
-
-static glm::vec3 GenerateVec3()
-{
-    return glm::vec3{GenerateFloat(), GenerateFloat(), GenerateFloat()};
-}
-
-static glm::vec4 GenerateVec4()
-{
-    return glm::vec4{GenerateFloat(), GenerateFloat(), GenerateFloat(), GenerateFloat()};
-}
-
-static glm::mat3x3 GenerateMat3x3()
-{
-    return glm::mat3{GenerateVec3(), GenerateVec3(), GenerateVec3()};
-}
-
-static glm::mat4x4 GenerateMat4x4()
-{
-    return glm::mat4{GenerateVec4(), GenerateVec4(), GenerateVec4(), GenerateVec4()};
-}
-
-static glm::mat4x3 GenerateMat4x3()
-{
-    return glm::mat4x3{GenerateVec3(), GenerateVec3(), GenerateVec3(), GenerateVec3()};
-}
-
-static osc::Texture2D GenerateTexture()
-{
-    std::vector<osc::Rgba32> pixels(4);
-
-    return osc::Texture2D{{2, 2}, pixels, osc::ColorSpace::sRGB};
-}
-
-static osc::Material GenerateMaterial()
-{
-    osc::Shader shader{g_VertexShaderSrc, g_FragmentShaderSrc};
-    return osc::Material{shader};
-}
-
-static std::vector<glm::vec3> GenerateTriangleVerts()
-{
-    std::vector<glm::vec3> rv;
-    for (size_t i = 0; i < 30; ++i)
-    {
-        rv.push_back(GenerateVec3());
-    }
-    return rv;
-}
-
-static osc::RenderTexture GenerateRenderTexture()
-{
-    osc::RenderTextureDescriptor d{{2, 2}};
-    return osc::RenderTexture{d};
-}
-
-template<typename T>
-static bool SpansEqual(nonstd::span<T const> a, nonstd::span<T const> b)
-{
-    if (a.size() != b.size())
-    {
-        return false;
+        return std::uniform_int_distribution{}(GetRngEngine());
     }
 
-    for (size_t i = 0; i < a.size(); ++i)
+    bool GenerateBool()
     {
-        if (a[i] != b[i])
+        return GenerateInt();
+    }
+
+    osc::Color GenerateColor()
+    {
+        return osc::Color{GenerateFloat(), GenerateFloat(), GenerateFloat(), GenerateFloat()};
+    }
+
+    glm::vec2 GenerateVec2()
+    {
+        return glm::vec2{GenerateFloat(), GenerateFloat()};
+    }
+
+    glm::vec3 GenerateVec3()
+    {
+        return glm::vec3{GenerateFloat(), GenerateFloat(), GenerateFloat()};
+    }
+
+    glm::vec4 GenerateVec4()
+    {
+        return glm::vec4{GenerateFloat(), GenerateFloat(), GenerateFloat(), GenerateFloat()};
+    }
+
+    glm::mat3x3 GenerateMat3x3()
+    {
+        return glm::mat3{GenerateVec3(), GenerateVec3(), GenerateVec3()};
+    }
+
+    glm::mat4x4 GenerateMat4x4()
+    {
+        return glm::mat4{GenerateVec4(), GenerateVec4(), GenerateVec4(), GenerateVec4()};
+    }
+
+    glm::mat4x3 GenerateMat4x3()
+    {
+        return glm::mat4x3{GenerateVec3(), GenerateVec3(), GenerateVec3(), GenerateVec3()};
+    }
+
+    osc::Texture2D GenerateTexture()
+    {
+        std::vector<osc::Rgba32> pixels(4);
+
+        return osc::Texture2D{{2, 2}, pixels, osc::ColorSpace::sRGB};
+    }
+
+    osc::Material GenerateMaterial()
+    {
+        osc::Shader shader{c_VertexShaderSrc, c_FragmentShaderSrc};
+        return osc::Material{shader};
+    }
+
+    std::vector<glm::vec3> GenerateTriangleVerts()
+    {
+        std::vector<glm::vec3> rv;
+        for (size_t i = 0; i < 30; ++i)
+        {
+            rv.push_back(GenerateVec3());
+        }
+        return rv;
+    }
+
+    osc::RenderTexture GenerateRenderTexture()
+    {
+        osc::RenderTextureDescriptor d{{2, 2}};
+        return osc::RenderTexture{d};
+    }
+
+    template<typename T>
+    bool SpansEqual(nonstd::span<T const> a, nonstd::span<T const> b)
+    {
+        if (a.size() != b.size())
         {
             return false;
         }
-    }
 
-    return true;
+        for (size_t i = 0; i < a.size(); ++i)
+        {
+            if (a[i] != b[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
 
 
@@ -464,45 +494,45 @@ TEST_F(Renderer, ShaderTypeCanBeIteratedOverAndAllCanBeStreamed)
 
 TEST_F(Renderer, ShaderCanBeConstructedFromVertexAndFragmentShaderSource)
 {
-    osc::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
+    osc::Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
 }
 
 TEST_F(Renderer, ShaderCanBeConstructedFromVertexGeometryAndFragmentShaderSources)
 {
-    osc::Shader s{g_GeometryShaderVertSrc, g_GeometryShaderGeomSrc, g_GeometryShaderFragSrc};
+    osc::Shader s{c_GeometryShaderVertSrc, c_GeometryShaderGeomSrc, c_GeometryShaderFragSrc};
 }
 
 TEST_F(Renderer, ShaderCanBeCopyConstructed)
 {
-    osc::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
+    osc::Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
     osc::Shader copy{s};
 }
 
 TEST_F(Renderer, ShaderCanBeMoveConstructed)
 {
-    osc::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
+    osc::Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
     osc::Shader copy{std::move(s)};
 }
 
 TEST_F(Renderer, ShaderCanBeCopyAssigned)
 {
-    osc::Shader s1{g_VertexShaderSrc, g_FragmentShaderSrc};
-    osc::Shader s2{g_VertexShaderSrc, g_FragmentShaderSrc};
+    osc::Shader s1{c_VertexShaderSrc, c_FragmentShaderSrc};
+    osc::Shader s2{c_VertexShaderSrc, c_FragmentShaderSrc};
 
     s1 = s2;
 }
 
 TEST_F(Renderer, ShaderCanBeMoveAssigned)
 {
-    osc::Shader s1{g_VertexShaderSrc, g_FragmentShaderSrc};
-    osc::Shader s2{g_VertexShaderSrc, g_FragmentShaderSrc};
+    osc::Shader s1{c_VertexShaderSrc, c_FragmentShaderSrc};
+    osc::Shader s2{c_VertexShaderSrc, c_FragmentShaderSrc};
 
     s1 = std::move(s2);
 }
 
 TEST_F(Renderer, ShaderThatIsCopyConstructedEqualsSrcShader)
 {
-    osc::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
+    osc::Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
     osc::Shader copy{s};
 
     ASSERT_EQ(s, copy);
@@ -510,15 +540,15 @@ TEST_F(Renderer, ShaderThatIsCopyConstructedEqualsSrcShader)
 
 TEST_F(Renderer, ShadersThatDifferCompareNotEqual)
 {
-    osc::Shader s1{g_VertexShaderSrc, g_FragmentShaderSrc};
-    osc::Shader s2{g_VertexShaderSrc, g_FragmentShaderSrc};
+    osc::Shader s1{c_VertexShaderSrc, c_FragmentShaderSrc};
+    osc::Shader s2{c_VertexShaderSrc, c_FragmentShaderSrc};
 
     ASSERT_NE(s1, s2);
 }
 
 TEST_F(Renderer, ShaderCanBeWrittenToOutputStream)
 {
-    osc::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
+    osc::Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
 
     std::stringstream ss;
     ss << s;  // shouldn't throw etc.
@@ -531,13 +561,13 @@ TEST_F(Renderer, ShaderOutputStreamContainsExpectedInfo)
     // this test is flakey, but is just ensuring that the string printout has enough information
     // to help debugging etc.
 
-    osc::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
+    osc::Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
 
     std::stringstream ss;
     ss << s;
     std::string str{std::move(ss).str()};
 
-    for (auto const& propName : g_ExpectedPropertyNames)
+    for (auto const& propName : c_ExpectedPropertyNames)
     {
         ASSERT_TRUE(osc::ContainsSubstring(str, std::string{propName}));
     }
@@ -545,9 +575,9 @@ TEST_F(Renderer, ShaderOutputStreamContainsExpectedInfo)
 
 TEST_F(Renderer, ShaderFindPropertyIndexCanFindAllExpectedProperties)
 {
-    osc::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
+    osc::Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
 
-    for (auto const& propName : g_ExpectedPropertyNames)
+    for (auto const& propName : c_ExpectedPropertyNames)
     {
         ASSERT_TRUE(s.findPropertyIndex(std::string{propName}));
     }
@@ -555,16 +585,16 @@ TEST_F(Renderer, ShaderFindPropertyIndexCanFindAllExpectedProperties)
 TEST_F(Renderer, ShaderHasExpectedNumberOfProperties)
 {
     // (effectively, number of properties == number of uniforms)
-    osc::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
-    ASSERT_EQ(s.getPropertyCount(), g_ExpectedPropertyNames.size());
+    osc::Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
+    ASSERT_EQ(s.getPropertyCount(), c_ExpectedPropertyNames.size());
 }
 
 TEST_F(Renderer, ShaderIteratingOverPropertyIndicesForNameReturnsValidPropertyName)
 {
-    osc::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
+    osc::Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
 
     std::unordered_set<std::string> allPropNames;
-    for (auto const& sv : g_ExpectedPropertyNames)
+    for (auto const& sv : c_ExpectedPropertyNames)
     {
         allPropNames.insert(std::string{sv});
     }
@@ -580,9 +610,9 @@ TEST_F(Renderer, ShaderIteratingOverPropertyIndicesForNameReturnsValidPropertyNa
 
 TEST_F(Renderer, ShaderGetPropertyNameReturnsGivenPropertyName)
 {
-    osc::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
+    osc::Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
 
-    for (auto const& propName : g_ExpectedPropertyNames)
+    for (auto const& propName : c_ExpectedPropertyNames)
     {
         std::optional<size_t> idx = s.findPropertyIndex(std::string{propName});
         ASSERT_TRUE(idx);
@@ -592,20 +622,20 @@ TEST_F(Renderer, ShaderGetPropertyNameReturnsGivenPropertyName)
 
 TEST_F(Renderer, ShaderGetPropertyNameStillWorksIfTheUniformIsAnArray)
 {
-    osc::Shader s{g_VertexShaderWithArray, g_FragmentShaderWithArray};
+    osc::Shader s{c_VertexShaderWithArray, c_FragmentShaderWithArray};
     ASSERT_FALSE(s.findPropertyIndex("uFragColor[0]").has_value()) << "shouldn't expose 'raw' name";
     ASSERT_TRUE(s.findPropertyIndex("uFragColor").has_value()) << "should work, because the backend should normalize array-like uniforms to the original name (not uFragColor[0])";
 }
 
 TEST_F(Renderer, ShaderGetPropertyTypeReturnsExpectedType)
 {
-    osc::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
+    osc::Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
 
-    for (size_t i = 0; i < g_ExpectedPropertyNames.size(); ++i)
+    for (size_t i = 0; i < c_ExpectedPropertyNames.size(); ++i)
     {
-        static_assert(g_ExpectedPropertyNames.size() == g_ExpectedPropertyTypes.size());
-        auto const& propName = g_ExpectedPropertyNames[i];
-        osc::ShaderType expectedType = g_ExpectedPropertyTypes[i];
+        static_assert(c_ExpectedPropertyNames.size() == c_ExpectedPropertyTypes.size());
+        auto const& propName = c_ExpectedPropertyNames[i];
+        osc::ShaderType expectedType = c_ExpectedPropertyTypes[i];
 
         std::optional<size_t> idx = s.findPropertyIndex(std::string{propName});
         ASSERT_TRUE(idx);
@@ -615,39 +645,6 @@ TEST_F(Renderer, ShaderGetPropertyTypeReturnsExpectedType)
 
 TEST_F(Renderer, ShaderGetPropertyForCubemapReturnsExpectedType)
 {
-    // from: https://learnopengl.com/Advanced-OpenGL/Cubemaps
-    char constexpr c_CubemapVertexShader[] = R"(
-#version 330 core
-
-layout (location = 0) in vec3 aPos;
-
-out vec3 TexCoords;
-
-uniform mat4 projection;
-uniform mat4 view;
-
-void main()
-{
-    TexCoords = aPos;
-    gl_Position = projection * view * vec4(aPos, 1.0);
-}
-)";
-
-    char constexpr c_CubemapFragmentShader[] = R"(
-#version 330 core
-
-out vec4 FragColor;
-
-in vec3 TexCoords;
-
-uniform samplerCube skybox;
-
-void main()
-{
-    FragColor = texture(skybox, TexCoords);
-}
-)";
-
     osc::Shader shader{c_CubemapVertexShader, c_CubemapFragmentShader};
     std::optional<size_t> index = shader.findPropertyIndex("skybox");
 
@@ -710,7 +707,7 @@ TEST_F(Renderer, MaterialThatIsCopyAssignedEqualsSourceMaterial)
 
 TEST_F(Renderer, MaterialGetShaderReturnsSuppliedShader)
 {
-    osc::Shader shader{g_VertexShaderSrc, g_FragmentShaderSrc};
+    osc::Shader shader{c_VertexShaderSrc, c_FragmentShaderSrc};
     osc::Material material{shader};
 
     ASSERT_EQ(material.getShader(), shader);

@@ -129,9 +129,9 @@ TEST(Cubemap, GetFormatReturnsConstructedFormat)
 TEST(Cubemap, SetDataWorksForAnyFaceIfGivenCorrectNumberOfBytes)
 {
     osc::TextureFormat const format = osc::TextureFormat::RGBA32;
-    size_t constexpr bytesPerPixelForFormat = 4;
-    int32_t constexpr width = 5;
-    int32_t constexpr nPixels = width*width*bytesPerPixelForFormat;
+    constexpr size_t bytesPerPixelForFormat = 4;
+    constexpr int32_t width = 5;
+    constexpr int32_t nPixels = width*width*bytesPerPixelForFormat;
     std::array<uint8_t, nPixels> const data = {};
 
     osc::Cubemap cubemap{width, format};
@@ -147,9 +147,9 @@ TEST(Cubemap, SetDataWorksForAnyFaceIfGivenCorrectNumberOfBytes)
 TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGBA32)
 {
     osc::TextureFormat const format = osc::TextureFormat::RGBA32;
-    size_t constexpr incorrectBytesPerPixelForFormat = 3;
-    int32_t constexpr width = 5;
-    int32_t constexpr nPixels = width*width*incorrectBytesPerPixelForFormat;
+    constexpr size_t incorrectBytesPerPixelForFormat = 3;
+    constexpr int32_t width = 5;
+    constexpr int32_t nPixels = width*width*incorrectBytesPerPixelForFormat;
     std::array<uint8_t, nPixels> const data = {};
 
     osc::Cubemap cubemap{width, format};
@@ -165,9 +165,9 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGBA32)
 TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGB24)
 {
     osc::TextureFormat const format = osc::TextureFormat::RGB24;
-    size_t constexpr incorrectBytesPerPixelForFormat = 4;
-    int32_t constexpr width = 5;
-    int32_t constexpr nPixels = width*width*incorrectBytesPerPixelForFormat;
+    constexpr size_t incorrectBytesPerPixelForFormat = 4;
+    constexpr int32_t width = 5;
+    constexpr int32_t nPixels = width*width*incorrectBytesPerPixelForFormat;
     std::array<uint8_t, nPixels> const data = {};
 
     osc::Cubemap cubemap{width, format};
@@ -183,10 +183,10 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGB24)
 TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForWidth)
 {
     osc::TextureFormat const format = osc::TextureFormat::RGBA32;
-    size_t constexpr bytesPerPixelForFormat = 4;
-    int32_t constexpr width = 5;
-    int32_t constexpr nPixels = width*width*bytesPerPixelForFormat;
-    int32_t constexpr incorrectNPixels = nPixels+3;
+    constexpr size_t bytesPerPixelForFormat = 4;
+    constexpr int32_t width = 5;
+    constexpr int32_t nPixels = width*width*bytesPerPixelForFormat;
+    constexpr int32_t incorrectNPixels = nPixels+3;
     std::array<uint8_t, incorrectNPixels> const data = {};
 
     osc::Cubemap cubemap{width, format};

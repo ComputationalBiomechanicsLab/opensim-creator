@@ -17,7 +17,7 @@ TEST(Color, CanConstructFromRGBAFloats)
 TEST(Color, RGBAFloatConstructorIsConstexpr)
 {
     // must compile
-    osc::Color constexpr color{0.0f, 0.0f, 0.0f, 0.0f};
+    constexpr osc::Color color{0.0f, 0.0f, 0.0f, 0.0f};
 }
 
 TEST(Color, CanConstructFromRGBFloats)
@@ -33,7 +33,7 @@ TEST(Color, CanConstructFromRGBFloats)
 TEST(Color, RGBFloatConstructorIsConstexpr)
 {
     // must compile
-    osc::Color constexpr color{0.0f, 0.0f, 0.0f};
+    constexpr osc::Color color{0.0f, 0.0f, 0.0f};
 }
 
 TEST(Color, CanBeExplicitlyConstructedFromVec3)
@@ -55,7 +55,7 @@ TEST(Color, CanBeExplicitlyConstructedFromVec4)
 
 TEST(Color, CanBeImplicitlyConvertedToVec4)
 {
-    glm::vec4 constexpr v = osc::Color{0.0f, 0.0f, 1.0f, 0.0f};
+    constexpr glm::vec4 v = osc::Color{0.0f, 0.0f, 1.0f, 0.0f};
 }
 
 TEST(Color, BracketOpertatorOnConstColorWorksAsExpected)
@@ -71,7 +71,7 @@ TEST(Color, BracketOpertatorOnConstColorWorksAsExpected)
 TEST(Color, Vec4ConstructorIsConstexpr)
 {
     // must compile
-    osc::Color constexpr color{glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}};
+    constexpr osc::Color color{glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}};
 }
 
 TEST(Color, ToVec4ExplicitlyConvertsToVec4)
@@ -193,7 +193,7 @@ TEST(Color, ToLinearFollowedByToSRGBEffectivelyReuturnsOriginalColor)
     osc::Color const originalColor = {0.1f, 0.1f, 0.1f, 0.5f};
     osc::Color const converted = osc::ToSRGB(osc::ToLinear(originalColor));
 
-    float constexpr tolerance = 0.0001f;
+    constexpr float tolerance = 0.0001f;
     ASSERT_NEAR(originalColor.r, converted.r, tolerance);
     ASSERT_NEAR(originalColor.g, converted.g, tolerance);
     ASSERT_NEAR(originalColor.b, converted.b, tolerance);
