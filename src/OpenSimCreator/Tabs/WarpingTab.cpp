@@ -256,8 +256,16 @@ namespace
     // returns the count of landmarks in the document for which `which` is defined
     size_t CountNumLandmarksForInput(TPSDocument const& doc, TPSDocumentInputIdentifier which)
     {
-        auto const predicate = [which](TPSDocumentLandmarkPair const& p) { return HasLocation(p, which); };
-        return std::count_if(doc.landmarkPairs.begin(), doc.landmarkPairs.end(), predicate);
+        auto const hasLocation = [which](TPSDocumentLandmarkPair const& p) { return HasLocation(p, which); };
+        return std::count_if(doc.landmarkPairs.begin(), doc.landmarkPairs.end(), hasLocation);
+    }
+
+    // returns the next available (presumably, unique) landmark ID
+    std::string NextLandmarkID(TPSDocument& doc)
+    {
+        std::stringstream ss;
+        ss << "landmark_" << doc.nextLandmarkID++;
+        return std::move(ss).str();
     }
 
     // helper: add a source/destination landmark at the given location
@@ -287,9 +295,7 @@ namespace
         // assign the location to the relevant part of the pair
         if (!wasAssignedToExistingEmptySlot)
         {
-            std::stringstream ss;
-            ss << "landmark_" << doc.nextLandmarkID++;
-            TPSDocumentLandmarkPair& p = doc.landmarkPairs.emplace_back(std::move(ss).str());
+            TPSDocumentLandmarkPair& p = doc.landmarkPairs.emplace_back(NextLandmarkID(doc));
             UpdLocation(p, which) = pos;
         }
     }
@@ -405,10 +411,11 @@ namespace
         {
             if (id.elementType == TPSDocumentInputElementType::Landmark)
             {
-                auto it = std::find_if(
+                auto const pairHasID = [&id](TPSDocumentLandmarkPair const& p) { return p.id == id.elementID; };
+                auto const it = std::find_if(
                     scratch.landmarkPairs.begin(),
                     scratch.landmarkPairs.end(),
-                    [&id](TPSDocumentLandmarkPair const& p) { return p.id == id.elementID; }
+                    pairHasID
                 );
                 if (it != scratch.landmarkPairs.end())
                 {
@@ -716,16 +723,16 @@ namespace
             std::weak_ptr<osc::TabHost> parent_) :
 
             tabID{tabID_},
-            tabHost{std::move(parent_)}
+            tabHost{parent_.lock()}
         {
-            OSC_ASSERT(tabHost.lock() != nullptr && "top-level tab host required for this UI");
+            OSC_ASSERT(tabHost != nullptr && "top-level tab host required for this UI");
         }
 
         // ID of the top-level TPS3D tab
         osc::UID tabID;
 
         // handle to the screen that owns the TPS3D tab
-        std::weak_ptr<osc::TabHost> tabHost;
+        std::shared_ptr<osc::TabHost> tabHost;
 
         // cached TPS3D algorithm result (to prevent recomputing it each frame)
         TPSResultCache meshResultCache;
@@ -743,7 +750,10 @@ namespace
         osc::PolarPerspectiveCamera linkedCameraBase = CreateCameraFocusedOn(editedDocument->getScratch().sourceMesh.getBounds());
 
         // wireframe material, used to draw scene elements in a wireframe style
-        osc::Material wireframeMaterial = osc::CreateWireframeOverlayMaterial(osc::App::config(), *osc::App::singleton<osc::ShaderCache>());
+        osc::Material wireframeMaterial = osc::CreateWireframeOverlayMaterial(
+            osc::App::config(),
+            *osc::App::singleton<osc::ShaderCache>()
+        );
 
         // shared sphere mesh (used by rendering code)
         osc::Mesh landmarkSphere = osc::App::singleton<osc::MeshCache>()->getSphereMesh();
@@ -879,13 +889,15 @@ namespace
             {
                 ActionCreateNewDocument(*m_State->editedDocument);
             }
-            osc::DrawTooltipIfItemHovered("Create New Document", "Creates the default scene (undoable)");
+            osc::DrawTooltipIfItemHovered(
+                "Create New Document",
+                "Creates the default scene (undoable)"
+            );
         }
 
         void drawOpenDocumentButton()
         {
             ImGui::Button(ICON_FA_FOLDER_OPEN);
-
             if (ImGui::BeginPopupContextItem("##OpenFolder", ImGuiPopupFlags_MouseButtonLeft))
             {
                 if (ImGui::MenuItem("Load Source Mesh"))
@@ -898,7 +910,10 @@ namespace
                 }
                 ImGui::EndPopup();
             }
-            osc::DrawTooltipIfItemHovered("Open File", "Open Source/Destination data");
+            osc::DrawTooltipIfItemHovered(
+                "Open File",
+                "Open Source/Destination data"
+            );
         }
 
         void drawSaveLandmarksButton()
@@ -907,28 +922,17 @@ namespace
             {
                 ActionSaveLandmarksToPairedCSV(GetScratch(*m_State));
             }
-            osc::DrawTooltipIfItemHovered("Save Landmarks to CSV", "Saves all pair-able landmarks to a CSV file, for external processing");
+            osc::DrawTooltipIfItemHovered(
+                "Save Landmarks to CSV",
+                "Saves all pair-able landmarks to a CSV file, for external processing"
+            );
         }
 
         void drawCameraLockCheckbox()
         {
-            {
-                bool linkCameras = m_State->linkCameras;
-                if (ImGui::Checkbox("link cameras", &linkCameras))
-                {
-                    m_State->linkCameras = linkCameras;
-                }
-            }
-
+            ImGui::Checkbox("link cameras", &m_State->linkCameras);
             ImGui::SameLine();
-
-            {
-                bool onlyLinkRotation = m_State->onlyLinkRotation;
-                if (ImGui::Checkbox("only link rotation", &onlyLinkRotation))
-                {
-                    m_State->onlyLinkRotation = onlyLinkRotation;
-                }
-            }
+            ImGui::Checkbox("only link rotation", &m_State->onlyLinkRotation);
         }
 
         void drawResetLandmarksButton()
@@ -971,33 +975,43 @@ namespace
         {
             if (m_State->currentHover)
             {
-                glm::vec3 const pos = m_State->currentHover->worldspaceLocation;
-                ImGui::TextUnformatted("(");
-                ImGui::SameLine();
-                for (int i = 0; i < 3; ++i)
-                {
-                    osc::Color color = {0.5f, 0.5f, 0.5f, 1.0f};
-                    color[i] = 1.0f;
-                    ImGui::PushStyleColor(ImGuiCol_Text, glm::vec4{color});
-                    ImGui::Text("%f", pos[i]);
-                    ImGui::SameLine();
-                    ImGui::PopStyleColor();
-                }
-                ImGui::TextUnformatted(")");
-                ImGui::SameLine();
-                if (m_State->currentHover->maybeSceneElementID)
-                {
-                    ImGui::TextDisabled("(left-click to select %s)", m_State->currentHover->maybeSceneElementID->elementID.c_str());
-                }
-                else
-                {
-                    ImGui::TextDisabled("(left-click to add a landmark)");
-                }
+                drawCurrentHoverInfo(*m_State->currentHover);
             }
             else
             {
                 ImGui::TextDisabled("(nothing hovered)");
             }
+        }
+
+        void drawCurrentHoverInfo(TPSUIViewportHover const& hover)
+        {
+            drawColorCodedXYZ(hover.worldspaceLocation);
+            ImGui::SameLine();
+            if (hover.maybeSceneElementID)
+            {
+                ImGui::TextDisabled("(left-click to select %s)", hover.maybeSceneElementID->elementID.c_str());
+            }
+            else
+            {
+                ImGui::TextDisabled("(left-click to add a landmark)");
+            }
+        }
+
+        void drawColorCodedXYZ(glm::vec3 pos)
+        {
+            ImGui::TextUnformatted("(");
+            ImGui::SameLine();
+            for (int i = 0; i < 3; ++i)
+            {
+                osc::Color color = {0.5f, 0.5f, 0.5f, 1.0f};
+                color[i] = 1.0f;
+
+                ImGui::PushStyleColor(ImGuiCol_Text, glm::vec4{color});
+                ImGui::Text("%f", pos[i]);
+                ImGui::SameLine();
+                ImGui::PopStyleColor();
+            }
+            ImGui::TextUnformatted(")");
         }
 
         std::string m_Label;
@@ -1042,7 +1056,7 @@ namespace
 
             if (ImGui::MenuItem(ICON_FA_TIMES " Close"))
             {
-                m_State->tabHost.lock()->closeTab(m_State->tabID);
+                m_State->tabHost->closeTab(m_State->tabID);
             }
 
             if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit"))
@@ -1330,45 +1344,28 @@ namespace
             ImGui::SetCursorScreenPos(renderRect.p1 + c_OverlayPadding);
 
             drawInformationIcon();
-
             ImGui::SameLine();
-
             drawImportButton();
-
             ImGui::SameLine();
-
             drawExportButton();
-
             ImGui::SameLine();
-
             drawAutoFitCameraButton();
-
             ImGui::SameLine();
-
             drawLandmarkRadiusSlider();
         }
 
         // draws a information icon that shows basic mesh info when hovered
         void drawInformationIcon()
         {
-            // use text-like button to ensure the information icon aligns with other row items
-            ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.0f, 0.0f, 0.0f});
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {0.0f, 0.0f, 0.0f, 0.0f});
-            ImGui::Button(ICON_FA_INFO_CIRCLE);
-            ImGui::PopStyleColor();
-            ImGui::PopStyleColor();
-
+            osc::ButtonNoBg(ICON_FA_INFO_CIRCLE);
             if (ImGui::IsItemHovered())
             {
-                ImGui::BeginTooltip();
-                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                osc::BeginTooltip();
 
                 ImGui::TextDisabled("Input Information:");
-
                 drawInformationTable();
 
-                ImGui::PopTextWrapPos();
-                ImGui::EndTooltip();
+                osc::EndTooltip();
             }
         }
 
@@ -1555,7 +1552,12 @@ namespace
         std::shared_ptr<TPSUISharedState> m_State;
         TPSDocumentInputIdentifier m_DocumentIdentifier;
         osc::PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(GetScratchMesh(*m_State, m_DocumentIdentifier).getBounds());
-        osc::CachedSceneRenderer m_CachedRenderer{osc::App::config(), *osc::App::singleton<osc::MeshCache>(), *osc::App::singleton<osc::ShaderCache>()};
+        osc::CachedSceneRenderer m_CachedRenderer
+        {
+            osc::App::config(),
+            *osc::App::singleton<osc::MeshCache>(),
+            *osc::App::singleton<osc::ShaderCache>(),
+        };
         osc::ImGuiItemHittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;
         float m_LandmarkRadius = 0.05f;
@@ -1624,47 +1626,28 @@ namespace
             ImGui::SetCursorScreenPos(renderRect.p1 + m_OverlayPadding);
 
             drawInformationIcon();
-
             ImGui::SameLine();
-
             drawExportButton();
-
             ImGui::SameLine();
-
             drawAutoFitCameraButton();
-
             ImGui::SameLine();
-
-            {
-                ImGui::Checkbox("show destination", &m_ShowDestinationMesh);
-            }
-
+            ImGui::Checkbox("show destination", &m_ShowDestinationMesh);
             ImGui::SameLine();
-
             drawBlendingFactorSlider();
         }
 
         // draws a information icon that shows basic mesh info when hovered
         void drawInformationIcon()
         {
-            // use text-like button to ensure the information icon aligns with other row items
-            ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.0f, 0.0f, 0.0f});
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {0.0f, 0.0f, 0.0f, 0.0f});
-            ImGui::Button(ICON_FA_INFO_CIRCLE);
-            ImGui::PopStyleColor();
-            ImGui::PopStyleColor();
-
+            osc::ButtonNoBg(ICON_FA_INFO_CIRCLE);
             if (ImGui::IsItemHovered())
             {
-                ImGui::BeginTooltip();
-                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                osc::BeginTooltip();
 
                 ImGui::TextDisabled("Result Information:");
-
                 drawInformationTable();
 
-                ImGui::PopTextWrapPos();
-                ImGui::EndTooltip();
+                osc::EndTooltip();
             }
         }
 
@@ -1715,18 +1698,25 @@ namespace
         {
             if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
             {
-                osc::AutoFocus(m_Camera, GetResultMesh(*m_State).getBounds(), AspectRatio(m_LastTextureHittestResult.rect));
+                osc::AutoFocus(
+                    m_Camera,
+                    GetResultMesh(*m_State).getBounds(),
+                    AspectRatio(m_LastTextureHittestResult.rect)
+                );
                 m_State->linkedCameraBase = m_Camera;
             }
-            osc::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
+            osc::DrawTooltipIfItemHovered(
+                "Autoscale Scene",
+                "Zooms camera to try and fit everything in the scene into the viewer"
+            );
         }
 
         void drawBlendingFactorSlider()
         {
             char const* const label = "blending factor";
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - m_OverlayPadding.x);
-            float factor = GetScratch(*m_State).blendingFactor;
 
+            float factor = GetScratch(*m_State).blendingFactor;
             if (ImGui::SliderFloat(label, &factor, 0.0f, 1.0f))
             {
                 ActionSetBlendFactorWithoutSaving(*m_State->editedDocument, factor);
@@ -1776,7 +1766,7 @@ namespace
         {
             osc::App::config(),
             *osc::App::singleton<osc::MeshCache>(),
-            *osc::App::singleton<osc::ShaderCache>()
+            *osc::App::singleton<osc::ShaderCache>(),
         };
         osc::ImGuiItemHittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;
@@ -1828,9 +1818,6 @@ public:
 
     explicit Impl(std::weak_ptr<TabHost> parent_) : m_Parent{std::move(parent_)}
     {
-        OSC_ASSERT(m_Parent.lock() != nullptr);
-
-        // initialize panels
         PushBackAvailablePanels(m_SharedState, *m_SharedState->panelManager);
     }
 

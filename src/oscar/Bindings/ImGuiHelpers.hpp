@@ -81,6 +81,11 @@ namespace osc
     glm::vec2 CalcButtonSize(CStringView);
     float CalcButtonWidth(CStringView);
 
+    bool ButtonNoBg(
+        CStringView,
+        glm::vec2 size = {0.0f, 0.0f}
+    );
+
     // draws a texture using ImGui::ImageButton
     bool ImageButton(
         CStringView,

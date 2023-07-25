@@ -467,6 +467,17 @@ float osc::CalcButtonWidth(CStringView content)
     return CalcButtonSize(content).x;
 }
 
+bool osc::ButtonNoBg(CStringView label, glm::vec2 size)
+{
+    ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.0f, 0.0f, 0.0f});
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {0.0f, 0.0f, 0.0f, 0.0f});
+    bool const rv = ImGui::Button(label.c_str(), size);
+    ImGui::PopStyleColor();
+    ImGui::PopStyleColor();
+
+    return rv;
+}
+
 bool osc::ImageButton(
     CStringView label,
     Texture2D const& t,
