@@ -1,5 +1,7 @@
 #include "oscar/Graphics/Cubemap.hpp"
 
+#include "oscar/Utils/EnumHelpers.hpp"
+
 #include <gtest/gtest.h>
 
 #include <type_traits>
@@ -135,7 +137,7 @@ TEST(Cubemap, SetDataWorksForAnyFaceIfGivenCorrectNumberOfBytes)
     osc::Cubemap cubemap{width, format};
 
     static_assert(std::is_same_v<std::underlying_type_t<osc::CubemapFace>, int32_t>);
-    for (int32_t i = 0; i < static_cast<int32_t>(osc::CubemapFace::TOTAL); ++i)
+    for (int32_t i = 0; i < static_cast<int32_t>(osc::NumOptions<osc::CubemapFace>()); ++i)
     {
         osc::CubemapFace const face = static_cast<osc::CubemapFace>(i);
         cubemap.setPixelData(face, data);
@@ -153,7 +155,7 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGBA32)
     osc::Cubemap cubemap{width, format};
 
     static_assert(std::is_same_v<std::underlying_type_t<osc::CubemapFace>, int32_t>);
-    for (int32_t i = 0; i < static_cast<int32_t>(osc::CubemapFace::TOTAL); ++i)
+    for (int32_t i = 0; i < static_cast<int32_t>(osc::NumOptions<osc::CubemapFace>()); ++i)
     {
         osc::CubemapFace const face = static_cast<osc::CubemapFace>(i);
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
@@ -171,7 +173,7 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGB24)
     osc::Cubemap cubemap{width, format};
 
     static_assert(std::is_same_v<std::underlying_type_t<osc::CubemapFace>, int32_t>);
-    for (int32_t i = 0; i < static_cast<int32_t>(osc::CubemapFace::TOTAL); ++i)
+    for (int32_t i = 0; i < static_cast<int32_t>(osc::NumOptions<osc::CubemapFace>()); ++i)
     {
         osc::CubemapFace const face = static_cast<osc::CubemapFace>(i);
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
@@ -190,7 +192,7 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForWidth)
     osc::Cubemap cubemap{width, format};
 
     static_assert(std::is_same_v<std::underlying_type_t<osc::CubemapFace>, int32_t>);
-    for (int32_t i = 0; i < static_cast<int32_t>(osc::CubemapFace::TOTAL); ++i)
+    for (int32_t i = 0; i < static_cast<int32_t>(osc::NumOptions<osc::CubemapFace>()); ++i)
     {
         osc::CubemapFace const face = static_cast<osc::CubemapFace>(i);
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });

@@ -1,5 +1,7 @@
 #include "oscar/Graphics/RenderTextureFormat.hpp"
 
+#include "oscar/Utils/EnumHelpers.hpp"
+
 #include <gtest/gtest.h>
 
 #include <sstream>
@@ -8,7 +10,7 @@
 
 TEST(RenderTextureFormat, AnyValueCanBePrintedToStream)
 {
-    for (int32_t i = 0; i < static_cast<int32_t>(osc::RenderTextureFormat::TOTAL); ++i)
+    for (size_t i = 0; i < osc::NumOptions<osc::RenderTextureFormat>(); ++i)
     {
         auto const format = static_cast<osc::RenderTextureFormat>(i);
         std::stringstream ss;

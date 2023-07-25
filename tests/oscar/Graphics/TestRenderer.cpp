@@ -30,6 +30,7 @@
 #include "oscar/Platform/App.hpp"
 #include "oscar/Utils/ArrayHelpers.hpp"
 #include "oscar/Utils/CStringView.hpp"
+#include "oscar/Utils/EnumHelpers.hpp"
 #include "oscar/Utils/StringHelpers.hpp"
 
 #include <gtest/gtest.h>
@@ -453,7 +454,7 @@ TEST_F(Renderer, ShaderTypeCanStreamToString)
 
 TEST_F(Renderer, ShaderTypeCanBeIteratedOverAndAllCanBeStreamed)
 {
-    for (int i = 0; i < static_cast<int>(osc::ShaderType::TOTAL); ++i)
+    for (size_t i = 0; i < osc::NumOptions<osc::ShaderType>(); ++i)
     {
         // shouldn't crash - if it does then we've missed a case somewhere
         std::stringstream ss;
@@ -1860,7 +1861,7 @@ TEST_F(Renderer, TextureCanBeWrittenToOutputStream)
 
 TEST_F(Renderer, MeshTopologyAllCanBeWrittenToStream)
 {
-    for (int i = 0; i < static_cast<int>(osc::MeshTopology::TOTAL); ++i)
+    for (size_t i = 0; i < osc::NumOptions<osc::MeshTopology>(); ++i)
     {
         osc::MeshTopology mt = static_cast<osc::MeshTopology>(i);
 
@@ -2290,7 +2291,7 @@ TEST_F(Renderer, MeshCanBeWrittenToOutputStreamForDebugging)
 
 TEST_F(Renderer, RenderTextureFormatCanBeIteratedOverAndStreamedToString)
 {
-    for (int i = 0; i < static_cast<int>(osc::RenderTextureFormat::TOTAL); ++i)
+    for (size_t i = 0; i < osc::NumOptions<osc::RenderTextureFormat>(); ++i)
     {
         std::stringstream ss;
         ss << static_cast<osc::RenderTextureFormat>(i);  // shouldn't throw
@@ -2299,7 +2300,7 @@ TEST_F(Renderer, RenderTextureFormatCanBeIteratedOverAndStreamedToString)
 
 TEST_F(Renderer, DepthStencilFormatCanBeIteratedOverAndStreamedToString)
 {
-    for (int i = 0; i < static_cast<int>(osc::DepthStencilFormat::TOTAL); ++i)
+    for (size_t i = 0; i < osc::NumOptions<osc::DepthStencilFormat>(); ++i)
     {
         std::stringstream ss;
         ss << static_cast<osc::DepthStencilFormat>(i);  // shouldn't throw
@@ -2779,7 +2780,7 @@ TEST_F(Renderer, RenderTextureUpdDepthBufferReturnsNonNullPtr)
 
 TEST_F(Renderer, CameraProjectionCanBeStreamed)
 {
-    for (int i = 0; i < static_cast<int>(osc::CameraProjection::TOTAL); ++i)
+    for (size_t i = 0; i < osc::NumOptions<osc::CameraProjection>(); ++i)
     {
         std::stringstream ss;
         ss << static_cast<osc::CameraProjection>(i);

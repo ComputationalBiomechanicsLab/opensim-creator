@@ -1,5 +1,7 @@
 #include "oscar/Graphics/TextureFormat.hpp"
 
+#include "oscar/Utils/EnumHelpers.hpp"
+
 #include <gtest/gtest.h>
 
 #include <cstdint>
@@ -10,7 +12,7 @@ static_assert(std::is_same_v<std::underlying_type_t<osc::TextureFormat>, int32_t
 
 TEST(TextureFormat, NumChannelsReturnsExpectedValues)
 {
-    static_assert(static_cast<size_t>(osc::TextureFormat::TOTAL) == 4);
+    static_assert(osc::NumOptions<osc::TextureFormat>() == 4);
 
     ASSERT_EQ(osc::NumChannels(osc::TextureFormat::R8), 1);
     ASSERT_EQ(osc::NumChannels(osc::TextureFormat::RGB24), 3);
@@ -20,7 +22,7 @@ TEST(TextureFormat, NumChannelsReturnsExpectedValues)
 
 TEST(TextureFormat, NumBytesPerChannelReturnsExpectedValues)
 {
-    static_assert(static_cast<size_t>(osc::TextureFormat::TOTAL) == 4);
+    static_assert(osc::NumOptions<osc::TextureFormat>() == 4);
 
     ASSERT_EQ(osc::NumBytesPerChannel(osc::TextureFormat::R8), 1);
     ASSERT_EQ(osc::NumBytesPerChannel(osc::TextureFormat::RGB24), 1);
@@ -30,7 +32,7 @@ TEST(TextureFormat, NumBytesPerChannelReturnsExpectedValues)
 
 TEST(TextureFormat, NumBytesPerPixelReturnsExpectedValues)
 {
-    static_assert(static_cast<size_t>(osc::TextureFormat::TOTAL) == 4);
+    static_assert(osc::NumOptions<osc::TextureFormat>() == 4);
 
     ASSERT_EQ(osc::NumBytesPerPixel(osc::TextureFormat::R8), 1);
     ASSERT_EQ(osc::NumBytesPerPixel(osc::TextureFormat::RGB24), 3);
@@ -40,7 +42,7 @@ TEST(TextureFormat, NumBytesPerPixelReturnsExpectedValues)
 
 TEST(TextureFormat, ToTextureFormatReturnsExpectedValues)
 {
-    static_assert(static_cast<size_t>(osc::TextureFormat::TOTAL) == 4);
+    static_assert(osc::NumOptions<osc::TextureFormat>() == 4);
 
     ASSERT_EQ(osc::ToTextureFormat<uint8_t>(1), osc::TextureFormat::R8);
     ASSERT_EQ(osc::ToTextureFormat<uint8_t>(2), std::nullopt);
