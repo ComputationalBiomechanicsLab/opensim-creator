@@ -1,5 +1,6 @@
 #include "BasicWidgets.hpp"
 
+#include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
 #include "OpenSimCreator/Graphics/CustomRenderingOptions.hpp"
 #include "OpenSimCreator/Graphics/OpenSimDecorationOptions.hpp"
 #include "OpenSimCreator/Graphics/ModelRendererParams.hpp"
@@ -34,6 +35,7 @@
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Widgets/GuiRuler.hpp>
 #include <oscar/Widgets/IconWithMenu.hpp>
+#include <OscarConfiguration.hpp>
 
 #include <glm/vec2.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -45,6 +47,7 @@
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Point.h>
 #include <SimTKcommon/basics.h>
 
 #include <array>
@@ -416,6 +419,103 @@ void osc::DrawWithRespectToMenuContainingMenuItemPerFrame(
                 onFrameMenuItemClicked(frame);
             }
             ImGui::PopID();
+        }
+        ImGui::EndMenu();
+    }
+}
+
+void osc::DrawPointTranslationInformationWithRespectTo(
+    OpenSim::Frame const& frame,
+    SimTK::State const& state,
+    glm::vec3 locationInGround)
+{
+    SimTK::Transform const groundToFrame = frame.getTransformInGround(state).invert();
+    glm::vec3 position = osc::ToVec3(groundToFrame * osc::ToSimTKVec3(locationInGround));
+
+    ImGui::Text("translation");
+    ImGui::SameLine();
+    osc::DrawHelpMarker("translation", "Translational offset (in meters) of the point expressed in the chosen frame");
+    ImGui::SameLine();
+    ImGui::InputFloat3("##translation", glm::value_ptr(position), OSC_DEFAULT_FLOAT_INPUT_FORMAT, ImGuiInputTextFlags_ReadOnly);
+}
+
+void osc::DrawDirectionInformationWithRepsectTo(
+    OpenSim::Frame const& frame,
+    SimTK::State const& state,
+    glm::vec3 directionInGround)
+{
+    SimTK::Transform const groundToFrame = frame.getTransformInGround(state).invert();
+    glm::vec3 direction = osc::ToVec3(groundToFrame.xformBaseVecToFrame(osc::ToSimTKVec3(directionInGround)));
+
+    ImGui::Text("direction");
+    ImGui::SameLine();
+    osc::DrawHelpMarker("direction", "a unit vector expressed in the given frame");
+    ImGui::SameLine();
+    ImGui::InputFloat3("##direction", glm::value_ptr(direction), OSC_DEFAULT_FLOAT_INPUT_FORMAT, ImGuiInputTextFlags_ReadOnly);
+}
+
+void osc::DrawFrameInformationExpressedIn(
+    OpenSim::Frame const& parent,
+    SimTK::State const& state,
+    OpenSim::Frame const& xFrame)
+{
+    SimTK::Transform const xform = parent.findTransformBetween(state, xFrame);
+    glm::vec3 position = osc::ToVec3(xform.p());
+    glm::vec3 rotationEulers = osc::ToVec3(xform.R().convertRotationToBodyFixedXYZ());
+
+    ImGui::Text("translation");
+    ImGui::SameLine();
+    osc::DrawHelpMarker("translation", "Translational offset (in meters) of the frame's origin expressed in the chosen frame");
+    ImGui::SameLine();
+    ImGui::InputFloat3("##translation", glm::value_ptr(position), OSC_DEFAULT_FLOAT_INPUT_FORMAT, ImGuiInputTextFlags_ReadOnly);
+
+    ImGui::Text("orientation");
+    ImGui::SameLine();
+    osc::DrawHelpMarker("orientation", "Orientation offset (in radians) of the frame, expressed in the chosen frame as a frame-fixed x-y-z rotation sequence");
+    ImGui::SameLine();
+    ImGui::InputFloat3("##orientation", glm::value_ptr(rotationEulers), OSC_DEFAULT_FLOAT_INPUT_FORMAT, ImGuiInputTextFlags_ReadOnly);
+}
+
+void osc::DrawCalculateMenu(
+    OpenSim::Component const& root,
+    SimTK::State const& state,
+    OpenSim::Point const& point)
+{
+    if (ImGui::BeginMenu(ICON_FA_CALCULATOR " Calculate"))
+    {
+        if (ImGui::BeginMenu("Position"))
+        {
+            auto const onFrameMenuOpened = [&state, &point](OpenSim::Frame const& frame)
+            {
+                osc::DrawPointTranslationInformationWithRespectTo(
+                    frame,
+                    state,
+                    osc::ToVec3(point.getLocationInGround(state))
+                );
+            };
+
+            osc::DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenu();
+    }
+}
+
+void osc::DrawCalculateMenu(
+    OpenSim::Component const& root,
+    SimTK::State const& state,
+    OpenSim::Frame const& frame)
+{
+    if (ImGui::BeginMenu(ICON_FA_CALCULATOR " Calculate"))
+    {
+        if (ImGui::BeginMenu("Transform"))
+        {
+            auto const onFrameMenuOpened = [&state, &frame](OpenSim::Frame const& otherFrame)
+            {
+                osc::DrawFrameInformationExpressedIn(frame, state, otherFrame);
+            };
+            osc::DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+            ImGui::EndMenu();
         }
         ImGui::EndMenu();
     }

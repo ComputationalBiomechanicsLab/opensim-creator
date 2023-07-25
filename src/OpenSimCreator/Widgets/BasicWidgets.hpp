@@ -4,6 +4,7 @@
 #include <oscar/Utils/CStringView.hpp>
 
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 
 #include <functional>
@@ -26,7 +27,9 @@ namespace osc { class VirtualModelStatePair; }
 namespace osc { class VirtualOutputExtractor; }
 namespace osc { class SimulationModelStatePair; }
 namespace OpenSim { class Component; }
+namespace OpenSim { class Point; }
 namespace OpenSim { class Frame; }
+namespace SimTK { class State; }
 
 namespace osc
 {
@@ -62,6 +65,32 @@ namespace osc
     void DrawWithRespectToMenuContainingMenuItemPerFrame(
         OpenSim::Component const& root,
         std::function<void(OpenSim::Frame const&)> const& onFrameMenuItemClicked
+    );
+
+    void DrawPointTranslationInformationWithRespectTo(
+        OpenSim::Frame const&,
+        SimTK::State const&,
+        glm::vec3 locationInGround
+    );
+    void DrawDirectionInformationWithRepsectTo(
+        OpenSim::Frame const&,
+        SimTK::State const&,
+        glm::vec3 directionInGround
+    );
+    void DrawFrameInformationExpressedIn(
+        OpenSim::Frame const& parent,
+        SimTK::State const&,
+        OpenSim::Frame const&
+    );
+    void DrawCalculateMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Point const&
+    );
+    void DrawCalculateMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Frame const&
     );
 
     // basic wigetized parts of the 3D viewer

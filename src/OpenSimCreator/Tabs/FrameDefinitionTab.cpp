@@ -2132,109 +2132,6 @@ namespace
 // "calculate" context menu
 namespace
 {
-    // draws the given location (in ground)'s location w.r.t. the given frame as
-    // copyable fields
-    void DrawPointTranslationInformationWithRespectTo(
-        SimTK::State const& state,
-        OpenSim::Frame const& frame,
-        SimTK::Vec3 locationInGround)
-    {
-        SimTK::Transform const groundToFrame = frame.getTransformInGround(state).invert();
-        glm::vec3 position = osc::ToVec3(groundToFrame * locationInGround);
-
-        ImGui::Text("translation");
-        ImGui::SameLine();
-        osc::DrawHelpMarker("translation", "Translational offset (in meters) of the point expressed in the chosen frame");
-        ImGui::SameLine();
-        ImGui::InputFloat3("##translation", glm::value_ptr(position), OSC_DEFAULT_FLOAT_INPUT_FORMAT, ImGuiInputTextFlags_ReadOnly);
-    }
-
-    void DrawDirectionInformationWithRepsectTo(
-        SimTK::State const& state,
-        OpenSim::Frame const& frame,
-        SimTK::UnitVec3 directionInGround)
-    {
-        SimTK::Transform const groundToFrame = frame.getTransformInGround(state).invert();
-        glm::vec3 direction = osc::ToVec3(groundToFrame.xformBaseVecToFrame(directionInGround));
-
-        ImGui::Text("direction");
-        ImGui::SameLine();
-        osc::DrawHelpMarker("direction", "a unit vector expressed in the given frame");
-        ImGui::SameLine();
-        ImGui::InputFloat3("##direction", glm::value_ptr(direction), OSC_DEFAULT_FLOAT_INPUT_FORMAT, ImGuiInputTextFlags_ReadOnly);
-    }
-
-    // draws the calculate menu for an OpenSim point
-    void DrawCalculateMenu(
-        OpenSim::Model const& model,
-        SimTK::State const& state,
-        OpenSim::Point const& point)
-    {
-        if (ImGui::BeginMenu(ICON_FA_CALCULATOR " Calculate"))
-        {
-            if (ImGui::BeginMenu("Position"))
-            {
-                auto const onFrameMenuOpened = [&state, &point](OpenSim::Frame const& frame)
-                {
-                    DrawPointTranslationInformationWithRespectTo(
-                        state,
-                        frame,
-                        point.getLocationInGround(state)
-                    );
-                };
-
-                osc::DrawWithRespectToMenuContainingMenuPerFrame(model, onFrameMenuOpened);
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenu();
-        }
-    }
-
-    // draws the given frame's transform location w.r.t. another frame as
-    // copyable fields
-    void DrawPointTranslationInformationWithRespectTo(
-        SimTK::State const& state,
-        OpenSim::Frame const& frame,
-        OpenSim::Frame const& otherFrame)
-    {
-        SimTK::Transform const xform = frame.findTransformBetween(state, otherFrame);
-        glm::vec3 position = osc::ToVec3(xform.p());
-        glm::vec3 rotationEulers = osc::ToVec3(xform.R().convertRotationToBodyFixedXYZ());
-
-        ImGui::Text("translation");
-        ImGui::SameLine();
-        osc::DrawHelpMarker("translation", "Translational offset (in meters) of the frame's origin expressed in the chosen frame");
-        ImGui::SameLine();
-        ImGui::InputFloat3("##translation", glm::value_ptr(position), OSC_DEFAULT_FLOAT_INPUT_FORMAT, ImGuiInputTextFlags_ReadOnly);
-
-        ImGui::Text("orientation");
-        ImGui::SameLine();
-        osc::DrawHelpMarker("orientation", "Orientation offset (in radians) of the frame, expressed in the chosen frame as a frame-fixed x-y-z rotation sequence");
-        ImGui::SameLine();
-        ImGui::InputFloat3("##orientation", glm::value_ptr(rotationEulers), OSC_DEFAULT_FLOAT_INPUT_FORMAT, ImGuiInputTextFlags_ReadOnly);
-    }
-
-    // draws the calculate menu for an OpenSim frame
-    void DrawCalculateMenu(
-        OpenSim::Component const& root,
-        SimTK::State const& state,
-        OpenSim::Frame const& frame)
-    {
-        if (ImGui::BeginMenu(ICON_FA_CALCULATOR " Calculate"))
-        {
-            if (ImGui::BeginMenu("Transform"))
-            {
-                auto const onFrameMenuOpened = [&state, &frame](OpenSim::Frame const& otherFrame)
-                {
-                    DrawPointTranslationInformationWithRespectTo(state, frame, otherFrame);
-                };
-                osc::DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenu();
-        }
-    }
-
     // draws the calculate menu for an edge
     void DrawCalculateMenu(
         OpenSim::Component const& root,
@@ -2247,10 +2144,10 @@ namespace
             {
                 auto const onFrameMenuOpened = [&state, &edge](OpenSim::Frame const& frame)
                 {
-                    DrawPointTranslationInformationWithRespectTo(
-                        state,
+                    osc::DrawPointTranslationInformationWithRespectTo(
                         frame,
-                        edge.getEdgePointsInGround(state).start
+                        state,
+                        osc::ToVec3(edge.getEdgePointsInGround(state).start)
                     );
                 };
                 osc::DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
@@ -2261,10 +2158,10 @@ namespace
             {
                 auto const onFrameMenuOpened = [&state, &edge](OpenSim::Frame const& frame)
                 {
-                    DrawPointTranslationInformationWithRespectTo(
-                        state,
+                    osc::DrawPointTranslationInformationWithRespectTo(
                         frame,
-                        edge.getEdgePointsInGround(state).end
+                        state,
+                        osc::ToVec3(edge.getEdgePointsInGround(state).end)
                     );
                 };
 
@@ -2276,10 +2173,10 @@ namespace
             {
                 auto const onFrameMenuOpened = [&state, &edge](OpenSim::Frame const& frame)
                 {
-                    DrawDirectionInformationWithRepsectTo(
-                        state,
+                    osc::DrawDirectionInformationWithRepsectTo(
                         frame,
-                        OpenSim::CalcDirection(edge.getEdgePointsInGround(state))
+                        state,
+                        osc::ToVec3(OpenSim::CalcDirection(edge.getEdgePointsInGround(state)))
                     );
                 };
 
@@ -2574,7 +2471,7 @@ namespace
             DrawPointAddContextMenuItems(editor, model, maybeSourceEvent, point);
             ImGui::EndMenu();
         }
-        DrawCalculateMenu(model->getModel(), model->getState(), point);
+        osc::DrawCalculateMenu(model->getModel(), model->getState(), point);
         DrawFocusCameraMenu(editor, model, maybeSourceEvent, point);
     }
 
@@ -2636,7 +2533,7 @@ namespace
             DrawCreateBodyMenuItem(editor, model, maybeSourceEvent, frame);
             ImGui::EndMenu();
         }
-        DrawCalculateMenu(model->getModel(), model->getState(), frame);
+        osc::DrawCalculateMenu(model->getModel(), model->getState(), frame);
         DrawFocusCameraMenu(editor, model, maybeSourceEvent, frame);
     }
 
