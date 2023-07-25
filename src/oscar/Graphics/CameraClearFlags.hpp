@@ -12,7 +12,7 @@ namespace osc
         Depth      = 1u << 1u,
 
         All = SolidColor | Depth,
-        Default = SolidColor,
+        Default = SolidColor | Depth,
     };
 
     constexpr CameraClearFlags operator|(CameraClearFlags a, CameraClearFlags b) noexcept

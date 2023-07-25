@@ -46,6 +46,8 @@ namespace osc
         glm::ivec2 getDimensions() const;
         float getAspectRatio() const;
 
+        TextureFormat getTextureFormat() const;
+
         ColorSpace getColorSpace() const;
 
         TextureWrapMode getWrapMode() const;  // same as getWrapModeU

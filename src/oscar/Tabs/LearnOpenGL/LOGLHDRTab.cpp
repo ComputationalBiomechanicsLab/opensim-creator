@@ -150,7 +150,7 @@ public:
             descriptor.setAntialiasingLevel(App::get().getMSXAASamplesRecommended());
             if (m_Use16BitFormat)
             {
-                descriptor.setColorFormat(RenderTextureFormat::ARGBHalf);
+                descriptor.setColorFormat(RenderTextureFormat::ARGBFloat16);
             }
 
             m_SceneHDRTexture.reformat(descriptor);

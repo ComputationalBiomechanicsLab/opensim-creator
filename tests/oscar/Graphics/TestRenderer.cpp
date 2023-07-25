@@ -1561,6 +1561,38 @@ TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForRGBAData)
     ASSERT_EQ(t.getAspectRatio(), 1.0f);
 }
 
+TEST_F(Renderer, TextureGetTextureFormatReturnsExpectedFormatForSingleChannelArg)
+{
+    std::vector<std::uint8_t> singleChannelPixels(16);
+    osc::Texture2D t{{4, 4}, osc::TextureFormat::R8, singleChannelPixels, osc::ColorSpace::sRGB};
+
+    ASSERT_EQ(t.getTextureFormat(), osc::TextureFormat::R8);
+}
+
+TEST_F(Renderer, TextureGetTextureFormatReturnsExpectedFormatForRGBChannelArg)
+{
+    std::vector<std::uint8_t> rgbPixels(12);
+    osc::Texture2D t{{2, 2}, osc::TextureFormat::RGB24, rgbPixels, osc::ColorSpace::sRGB};
+
+    ASSERT_EQ(t.getTextureFormat(), osc::TextureFormat::RGB24);
+}
+
+TEST_F(Renderer, TextureGetTextureFormatReturnsExpectedFormatForRGBAChannelArg)
+{
+    std::vector<std::uint8_t> rgbaPixels(16);
+    osc::Texture2D t{{2, 2}, osc::TextureFormat::RGBA32, rgbaPixels, osc::ColorSpace::sRGB};
+
+    ASSERT_EQ(t.getTextureFormat(), osc::TextureFormat::RGBA32);
+}
+
+TEST_F(Renderer, TextureGetTextureFormatReturnsExpectedFormatForFloatChannelArg)
+{
+    std::vector<std::uint8_t> rgbafPixels(2*2*4*4);
+    osc::Texture2D t{{2, 2}, osc::TextureFormat::RGBAFloat, rgbafPixels, osc::ColorSpace::sRGB};
+
+    ASSERT_EQ(t.getTextureFormat(), osc::TextureFormat::RGBAFloat);
+}
+
 TEST_F(Renderer, TextureCanCopyConstruct)
 {
     osc::Texture2D t = GenerateTexture();
@@ -2423,9 +2455,9 @@ TEST_F(Renderer, RenderTextureDescriptorSetColorFormatMakesGetColorFormatReturnT
 
     ASSERT_EQ(d.getColorFormat(), osc::RenderTextureFormat::ARGB32);
 
-    d.setColorFormat(osc::RenderTextureFormat::RED);
+    d.setColorFormat(osc::RenderTextureFormat::Red8);
 
-    ASSERT_EQ(d.getColorFormat(), osc::RenderTextureFormat::RED);
+    ASSERT_EQ(d.getColorFormat(), osc::RenderTextureFormat::Red8);
 }
 
 TEST_F(Renderer, RenderTextureDescriptorGetDepthStencilFormatReturnsDefaultValue)
@@ -2714,7 +2746,7 @@ TEST_F(Renderer, RenderTextureFromDescriptorHasExpectedValues)
     int width = 8;
     int height = 8;
     int32_t aaLevel = 1;
-    osc::RenderTextureFormat format = osc::RenderTextureFormat::RED;
+    osc::RenderTextureFormat format = osc::RenderTextureFormat::Red8;
     osc::RenderTextureReadWrite rw = osc::RenderTextureReadWrite::Linear;
     osc::TextureDimension dimension = osc::TextureDimension::Cube;
 
@@ -2740,9 +2772,9 @@ TEST_F(Renderer, RenderTextureSetColorFormatCausesGetColorFormatToReturnValue)
 
     ASSERT_EQ(d.getColorFormat(), osc::RenderTextureFormat::ARGB32);
 
-    d.setColorFormat(osc::RenderTextureFormat::RED);
+    d.setColorFormat(osc::RenderTextureFormat::Red8);
 
-    ASSERT_EQ(d.getColorFormat(), osc::RenderTextureFormat::RED);
+    ASSERT_EQ(d.getColorFormat(), osc::RenderTextureFormat::Red8);
 }
 
 TEST_F(Renderer, RenderTextureUpdColorBufferReturnsNonNullPtr)
@@ -2880,6 +2912,32 @@ TEST_F(Renderer, CameraSetBackgroundColorMakesCameraCompareNonEqualWithCopySourc
     copy.setBackgroundColor(GenerateColor());
 
     ASSERT_NE(camera, copy);
+}
+
+TEST_F(Renderer, CameraGetClearFlagsReturnsColorAndDepthOnDefaultConstruction)
+{
+    osc::Camera camera;
+
+    ASSERT_TRUE(camera.getClearFlags() & osc::CameraClearFlags::SolidColor);
+    ASSERT_TRUE(camera.getClearFlags() & osc::CameraClearFlags::Depth);
+}
+
+TEST_F(Renderer, CameraSetClearFlagsWorksAsExpected)
+{
+    osc::Camera camera;
+
+    auto const flagsToTest = osc::to_array(
+    {
+        osc::CameraClearFlags::SolidColor,
+        osc::CameraClearFlags::Depth,
+        osc::CameraClearFlags::SolidColor | osc::CameraClearFlags::Depth,
+    });
+
+    for (osc::CameraClearFlags flags : flagsToTest)
+    {
+        camera.setClearFlags(flags);
+        ASSERT_EQ(camera.getClearFlags(), flags);
+    }
 }
 
 TEST_F(Renderer, CameraGetCameraProjectionReturnsProject)
@@ -3098,19 +3156,17 @@ TEST_F(Renderer, CameraGetInverseViewProjectionMatrixReturnsExpectedAnswerWhenUs
     ASSERT_EQ(camera.getInverseViewProjectionMatrix(1.0f), expected);
 }
 
-TEST_F(Renderer, CameraGetClearFlagsReturnsSolidColorOnDefaultConstruction)
+TEST_F(Renderer, CameraGetClearFlagsReturnsDefaultOnDefaultConstruction)
 {
-    static_assert(osc::CameraClearFlags::Default == osc::CameraClearFlags::SolidColor);
-
     osc::Camera camera;
-    ASSERT_EQ(camera.getClearFlags(), osc::CameraClearFlags::SolidColor);
+    ASSERT_EQ(camera.getClearFlags(), osc::CameraClearFlags::Default);
 }
 
 TEST_F(Renderer, CameraSetClearFlagsCausesGetClearFlagsToReturnNewValue)
 {
     osc::Camera camera;
 
-    ASSERT_EQ(camera.getClearFlags(), osc::CameraClearFlags::SolidColor);
+    ASSERT_EQ(camera.getClearFlags(), osc::CameraClearFlags::Default);
 
     camera.setClearFlags(osc::CameraClearFlags::Nothing);
 
@@ -3123,7 +3179,7 @@ TEST_F(Renderer, CameraSetClearFlagsCausesCopyToReturnNonEqual)
     osc::Camera copy{camera};
 
     ASSERT_EQ(camera, copy);
-    ASSERT_EQ(camera.getClearFlags(), osc::CameraClearFlags::SolidColor);
+    ASSERT_EQ(camera.getClearFlags(), osc::CameraClearFlags::Default);
 
     camera.setClearFlags(osc::CameraClearFlags::Nothing);
 

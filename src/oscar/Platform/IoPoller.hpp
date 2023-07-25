@@ -13,12 +13,6 @@ namespace osc {
         // drawable size of display
         glm::vec2 DisplaySize;
 
-        // number of ticks since the last call to update
-        uint64_t Ticks;
-
-        // ticks per per second
-        uint64_t TickFrequency;
-
         // seconds since last update
         float DeltaTime;
 

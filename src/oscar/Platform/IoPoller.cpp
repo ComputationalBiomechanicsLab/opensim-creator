@@ -23,8 +23,6 @@ namespace
 
 osc::IoPoller::IoPoller() :
     DisplaySize{-1.0f, -1.0f},
-    Ticks{App::get().getTicks()},
-    TickFrequency{App::get().getTickFrequency()},
     DeltaTime{0.0f},
     MousePos{0.0f, 0.0f},
     MousePosPrevious{0.0f, 0.0f},
@@ -67,13 +65,9 @@ void osc::IoPoller::onEvent(SDL_Event const& e)
 void osc::IoPoller::onUpdate()
 {
     App const& app = App::get();
-    DisplaySize = app.dims();
 
-    // Ticks, (IO ctor: TickFrequency), DeltaTime
-    auto const curTicks = app.getTicks();
-    auto const dTicks = static_cast<double>(curTicks - Ticks);
-    DeltaTime = static_cast<float>(dTicks/static_cast<double>(TickFrequency));
-    Ticks = curTicks;
+    DisplaySize = app.dims();
+    DeltaTime = static_cast<float>(app.getFrameDeltaSinceLastFrame().count());
 
     // MousePos, MousePosPrevious, MousePosDelta, MousePressed
     auto mouseState = app.getMouseState();

@@ -144,10 +144,10 @@ public:
     void onTick()
     {
         // rotate the quad over time
-        AppClock::duration const dt = App::get().getDeltaSinceAppStartup();
-        float const angle = glm::radians(-10.0f * dt.count());
+        AppClock::duration const dt = App::get().getFrameDeltaSinceAppStartup();
+        double const angle = glm::radians(-10.0 * dt.count());
         glm::vec3 const axis = glm::normalize(glm::vec3{1.0f, 0.0f, 1.0f});
-        m_QuadTransform.rotation = glm::normalize(glm::quat{angle, axis});
+        m_QuadTransform.rotation = glm::normalize(glm::quat{static_cast<float>(angle), axis});
     }
 
     void onDraw()

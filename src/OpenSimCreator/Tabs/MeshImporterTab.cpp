@@ -6055,7 +6055,7 @@ public:
 
     void onTick()
     {
-        float dt = osc::App::get().getDeltaSinceLastFrame().count();
+        auto const dt = static_cast<float>(osc::App::get().getFrameDeltaSinceLastFrame().count());
 
         m_Shared->tick(dt);
 

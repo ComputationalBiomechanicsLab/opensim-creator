@@ -27,5 +27,5 @@ TEST(RenderTextureFormat, DefaultsToRGBA32)
 
 TEST(RenderTextureFormat, DefaultHDRFormatIsARGBHalf)
 {
-    static_assert(osc::RenderTextureFormat::DefaultHDR == osc::RenderTextureFormat::ARGBHalf);
+    static_assert(osc::RenderTextureFormat::DefaultHDR == osc::RenderTextureFormat::ARGBFloat16);
 }

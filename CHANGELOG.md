@@ -5,6 +5,8 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Internal: the rendering API now supports rendering into cubemap render textures (#671)
+
 
 ## [0.5.1] - 2023/07/27
 

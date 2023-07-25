@@ -332,8 +332,8 @@ private:
     struct GBufferRenderingState final {
         Material material = LoadGBufferMaterial();
         RenderTexture albedo = RenderTextureWithColorFormat(RenderTextureFormat::ARGB32);
-        RenderTexture normal = RenderTextureWithColorFormat(RenderTextureFormat::ARGBHalf);
-        RenderTexture position = RenderTextureWithColorFormat(RenderTextureFormat::ARGBHalf);
+        RenderTexture normal = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
+        RenderTexture position = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
         RenderTarget renderTarget
         {
             {

@@ -157,10 +157,10 @@ namespace
     osc::AppClock::duration ConvertPerfTicksToFClockDuration(Uint64 ticks, Uint64 frequency)
     {
         auto const dticks = static_cast<double>(ticks);
-        auto const fq = static_cast<double>(frequency);
-        auto const dur = static_cast<float>(dticks/fq);
+        auto const dfrequency = static_cast<double>(frequency);
+        auto const duration = static_cast<osc::AppClock::rep>(dticks/dfrequency);
 
-        return osc::AppClock::duration{dur};
+        return osc::AppClock::duration{duration};
     }
 
     osc::AppClock::time_point ConvertPerfCounterToFClock(Uint64 ticks, Uint64 frequency)
@@ -431,37 +431,22 @@ public:
         return m_FrameCounter;
     }
 
-    uint64_t getTicks() const
-    {
-        return SDL_GetPerformanceCounter();
-    }
-
-    uint64_t getTickFrequency() const
-    {
-        return SDL_GetPerformanceFrequency();
-    }
-
-    osc::AppClock::time_point getCurrentTime() const
-    {
-        return ConvertPerfCounterToFClock(SDL_GetPerformanceCounter(), m_AppCounterFq);
-    }
-
-    osc::AppClock::time_point getAppStartupTime() const
+    AppClock::time_point getAppStartupTime() const
     {
         return m_AppStartupTime;
     }
 
-    osc::AppClock::time_point getFrameStartTime() const
+    AppClock::duration getFrameDeltaSinceAppStartup() const
+    {
+        return m_FrameStartTime - m_AppStartupTime;
+    }
+
+    AppClock::time_point getFrameStartTime() const
     {
         return m_FrameStartTime;
     }
 
-    osc::AppClock::duration getDeltaSinceAppStartup() const
-    {
-        return getCurrentTime() - m_AppStartupTime;
-    }
-
-    osc::AppClock::duration getDeltaSinceLastFrame() const
+    AppClock::duration getFrameDeltaSinceLastFrame() const
     {
         return m_TimeSinceLastFrame;
     }
@@ -1116,24 +1101,14 @@ uint64_t osc::App::getFrameCount() const
     return m_Impl->getFrameCount();
 }
 
-uint64_t osc::App::getTicks() const
-{
-    return m_Impl->getTicks();
-}
-
-uint64_t osc::App::getTickFrequency() const
-{
-    return m_Impl->getTickFrequency();
-}
-
-osc::AppClock::time_point osc::App::getCurrentTime() const
-{
-    return m_Impl->getCurrentTime();
-}
-
 osc::AppClock::time_point osc::App::getAppStartupTime() const
 {
     return m_Impl->getAppStartupTime();
+}
+
+osc::AppClock::duration osc::App::getFrameDeltaSinceAppStartup() const
+{
+    return m_Impl->getFrameDeltaSinceAppStartup();
 }
 
 osc::AppClock::time_point osc::App::getFrameStartTime() const
@@ -1141,14 +1116,9 @@ osc::AppClock::time_point osc::App::getFrameStartTime() const
     return m_Impl->getFrameStartTime();
 }
 
-osc::AppClock::duration osc::App::getDeltaSinceAppStartup() const
+osc::AppClock::duration osc::App::getFrameDeltaSinceLastFrame() const
 {
-    return m_Impl->getDeltaSinceAppStartup();
-}
-
-osc::AppClock::duration osc::App::getDeltaSinceLastFrame() const
-{
-    return m_Impl->getDeltaSinceLastFrame();
+    return m_Impl->getFrameDeltaSinceLastFrame();
 }
 
 bool osc::App::isMainLoopWaiting() const

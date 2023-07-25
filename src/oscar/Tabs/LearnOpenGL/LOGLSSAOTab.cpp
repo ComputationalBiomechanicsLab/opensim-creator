@@ -398,8 +398,8 @@ private:
     struct GBufferRenderingState final {
         Material material = LoadGBufferMaterial();
         RenderTexture albedo = RenderTextureWithColorFormat(RenderTextureFormat::ARGB32);
-        RenderTexture normal = RenderTextureWithColorFormat(RenderTextureFormat::ARGBHalf);
-        RenderTexture position = RenderTextureWithColorFormat(RenderTextureFormat::ARGBHalf);
+        RenderTexture normal = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
+        RenderTexture position = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
         RenderTarget renderTarget
         {
             {
@@ -448,7 +448,7 @@ private:
 
     struct SSAORenderingState final {
         Material material = LoadSSAOMaterial();
-        RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::RED);
+        RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::Red8);
 
         void reformat(glm::vec2 dims, int32_t samples)
         {
@@ -459,7 +459,7 @@ private:
 
     struct BlurRenderingState final {
         Material material = LoadBlurMaterial();
-        RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::RED);
+        RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::Red8);
 
         void reformat(glm::vec2 dims, int32_t samples)
         {

@@ -70,18 +70,17 @@ namespace
         bool invertNormals = false;
     };
 
-    auto const& GetSceneCubes()
+    auto MakeSceneCubes()
     {
-        static auto const s_SceneCubes = osc::to_array<SceneCube>(
+        return osc::to_array<SceneCube>(
         {
-            SceneCube{MakeTransform(0.5f, {}), true},
+            SceneCube{MakeTransform(5.0f, {}), true},
             SceneCube{MakeTransform(0.5f, {4.0f, -3.5f, 0.0f})},
             SceneCube{MakeTransform(0.75f, {2.0f, 3.0f, 1.0f})},
             SceneCube{MakeTransform(0.5f, {-3.0f, -1.0f, 0.0f})},
             SceneCube{MakeTransform(0.5f, {-1.5f, 1.0f, 1.5f})},
             SceneCube{MakeRotatedTransform()},
         });
-        return s_SceneCubes;
     }
 
     // describes the direction of each cube face and which direction is "up"
@@ -100,7 +99,7 @@ namespace
         {{ 0.0f,  0.0f, -1.0f}, {0.0f, -1.0f,  0.0f}},
     });
 
-    glm::mat4 CalcCubemapViewMatrix(CubemapFaceDetails const& faceDetails, glm::vec3 cubeCenter)
+    glm::mat4 CalcCubemapViewMatrix(CubemapFaceDetails const& faceDetails, glm::vec3 const& cubeCenter)
     {
         return glm::lookAt(cubeCenter, cubeCenter + faceDetails.direction, faceDetails.up);
     }
@@ -134,6 +133,7 @@ namespace
         osc::RenderTextureDescriptor desc{c_ShadowmapDims};
         desc.setDimension(osc::TextureDimension::Cube);
         desc.setReadWrite(osc::RenderTextureReadWrite::Linear);
+        desc.setColorFormat(osc::RenderTextureFormat::Depth);
         return osc::RenderTexture{desc};
     }
 }
@@ -144,6 +144,11 @@ public:
     explicit Impl(std::weak_ptr<TabHost> parent_) :
         m_Parent{std::move(parent_)}
     {
+        m_SceneCamera.setPosition({0.0f, 0.0f, 5.0f});
+        m_SceneCamera.setCameraFOV(glm::radians(45.0f));
+        m_SceneCamera.setNearClippingPlane(0.1f);
+        m_SceneCamera.setFarClippingPlane(100.0f);
+        m_SceneCamera.setBackgroundColor(Color::clear());
     }
 
     UID getID() const
@@ -187,8 +192,8 @@ public:
     void onTick()
     {
         // move light position over time
-        float const seconds = App::get().getDeltaSinceAppStartup().count();
-        m_LightPos.z = 3.0f * std::sin(0.5f * seconds);
+        double const seconds = App::get().getFrameDeltaSinceAppStartup().count();
+        m_LightPos.x = static_cast<float>(3.0 * std::sin(0.5 * seconds));
     }
 
     void onDrawMainMenu() {}
@@ -197,6 +202,7 @@ public:
     {
         handleMouseCapture();
         draw3DScene();
+        draw2DUI();
     }
 
 private:
@@ -217,15 +223,17 @@ private:
 
     void draw3DScene()
     {
+        Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
+
         drawShadowPassToCubemap();
-        drawShadowmappedSceneToScreen();
+        drawShadowmappedSceneToScreen(viewportRect);
     }
 
     void drawShadowPassToCubemap()
     {
         // create a 90 degree cube cone projection matrix
+        float const nearPlane = 0.1f;
         float const farPlane = 25.0f;
-        float const nearPlane = 1.0f;
         glm::mat4 const projectionMatrix = glm::perspective(
             glm::radians(90.0f),
             AspectRatio(c_ShadowmapDims),
@@ -244,24 +252,53 @@ private:
 
         // render (shadowmapping does not use the camera's view/projection matrices)
         Camera camera;
-        for (SceneCube const& sceneCube : GetSceneCubes())
+        for (SceneCube const& sceneCube : m_SceneCubes)
         {
             Graphics::DrawMesh(m_CubeMesh, sceneCube.transform, m_ShadowMappingMaterial, camera);
         }
         camera.renderTo(m_DepthTexture);
     }
 
-    void drawShadowmappedSceneToScreen()
+    void drawShadowmappedSceneToScreen(Rect const& viewportRect)
     {
-        // m_SceneMaterial.setBool("uReverseNormals", {});
-        // m_SceneMaterial.setTexture("uDiffuseTexture", {});
-        // m_SceneMaterial.setCubemap("uDepthMap", {});
-        // m_SceneMaterial.setVec3("uLightPos", {});
-        // m_SceneMaterial.setVec3("uViewPos", {});
-        // m_SceneMaterial.setFloat("uFarPlane", {});
-        // m_SceneMaterial.setBool("uShadows", {});
+        Material material = m_UseSoftShadows ? m_SoftSceneMaterial : m_SceneMaterial;
 
-        // render: render scene to screen as normal, using the depth cubemaps for shadow mapping
+        // set shared material params
+        material.setTexture("uDiffuseTexture", m_WoodTexture);
+        material.setVec3("uLightPos", m_LightPos);
+        material.setVec3("uViewPos", m_SceneCamera.getPosition());
+        material.setFloat("uFarPlane", 25.0f);
+        material.setBool("uShadows", m_ShowShadows);
+
+        for (SceneCube const& cube : m_SceneCubes)
+        {
+            MaterialPropertyBlock mpb;
+            mpb.setBool("uReverseNormals", cube.invertNormals);
+            material.setRenderTexture("uDepthMap", m_DepthTexture);
+            Graphics::DrawMesh(m_CubeMesh, cube.transform, material, m_SceneCamera, std::move(mpb));
+            material.clearRenderTexture("uDepthMap");
+        }
+
+        // also, draw the light as a little cube
+        {
+            material.setBool("uShadows", m_ShowShadows);  // always render shadows
+            Transform t;
+            t.scale *= 0.1f;
+            t.position = m_LightPos;
+            Graphics::DrawMesh(m_CubeMesh, t, material, m_SceneCamera);
+        }
+
+        m_SceneCamera.setPixelRect(viewportRect);
+        m_SceneCamera.renderToScreen();
+        m_SceneCamera.setPixelRect(std::nullopt);
+    }
+
+    void draw2DUI()
+    {
+        ImGui::Begin("controls");
+        ImGui::Checkbox("show shadows", &m_ShowShadows);
+        ImGui::Checkbox("soften shadows", &m_UseSoftShadows);
+        ImGui::End();
     }
 
     UID m_TabID;
@@ -285,6 +322,16 @@ private:
         },
     };
 
+    Material m_SoftSceneMaterial
+    {
+        Shader
+        {
+            App::slurp("shaders/ExperimentPointShadowsScene.vert"),
+            App::slurp("shaders/ExperimentPointShadowsSoftScene.frag"),
+        }
+    };
+
+
     Camera m_SceneCamera = CreateSceneCamera();
     bool m_IsMouseCaptured = false;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
@@ -293,8 +340,11 @@ private:
         ColorSpace::sRGB
     );
     Mesh m_CubeMesh = GenCube();
+    std::array<SceneCube, 6> m_SceneCubes = MakeSceneCubes();
     RenderTexture m_DepthTexture = CreateDepthTexture();
     glm::vec3 m_LightPos = {0.0f, 0.0f, 0.0f};
+    bool m_ShowShadows = true;
+    bool m_UseSoftShadows = false;
 };
 
 

@@ -203,27 +203,18 @@ namespace osc
         // returns the number of times the application has drawn a frame to the screen
         uint64_t getFrameCount() const;
 
-        // returns the number of "ticks" recorded on the application's high-resolution
-        // monotonically-increasing clock
-        //
-        // care: this always fetches from the underlying platform API, so should only really
-        //       be used infrequently: animations etc. should use the frame-based clocks|
-        uint64_t getTicks() const;
-
-        // returns the number of "ticks" that pass in the application's high-resolution
-        // clock per second.
-        //
-        // usage e.g.: dt = (getTicks()-previousTicks)/getTickFrequency()
-        //
-        // care: this always fetches from the underlying platform API, so should only really
-        //       be used infrequently: animations etc. should use the frame-based clocks|
-        uint64_t getTickFrequency() const;
-
-        AppClock::time_point getCurrentTime() const;  // care: always fetches the time *right now*
+        // returns the time at which the app started up (arbitrary timepoint, don't assume 0)
         AppClock::time_point getAppStartupTime() const;
+
+        // returns the time delta between when the app started up and the current frame
+        AppClock::duration getFrameDeltaSinceAppStartup() const;
+
+        // returns the time at which the current frame started
         AppClock::time_point getFrameStartTime() const;
-        AppClock::duration getDeltaSinceAppStartup() const;
-        AppClock::duration getDeltaSinceLastFrame() const;
+
+        // returns the time delta between when the current frame started and when the previous
+        // frame started
+        AppClock::duration getFrameDeltaSinceLastFrame() const;
 
         // makes main application event loop wait, rather than poll, for events
         //

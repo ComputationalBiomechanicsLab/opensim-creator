@@ -7,7 +7,7 @@ namespace osc
 {
     // definition of application's runtime clock
     struct AppClock final {
-        using rep = float;
+        using rep = double;
         using period = std::ratio<1>;
         using duration = std::chrono::duration<rep, period>;
         using time_point = std::chrono::time_point<AppClock>;

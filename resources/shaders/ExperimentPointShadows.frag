@@ -3,15 +3,16 @@
 uniform vec3 uLightPos;
 uniform float uFarPlane;
 
-in vec4 FragPos;
+in vec4 WorldFragPos;
+out vec4 FragColor;
 
 void main()
 {
-    float lightDistance = length(FragPos.xyz - uLightPos);
+    float lightDistance = length(WorldFragPos.xyz - uLightPos);
     
     // map to [0;1] range by dividing by far_plane
     lightDistance = lightDistance / uFarPlane;
     
     // write this as modified depth
-    gl_FragDepth = lightDistance;
+    FragColor.r = lightDistance;
 }
