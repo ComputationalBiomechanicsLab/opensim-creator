@@ -202,13 +202,7 @@ private:
             double storedValue = ConvertCoordDisplayValueToStorageValue(c, displayedValue);
             ActionSetCoordinateValueAndSave(*m_Model, c, storedValue);
         }
-
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::BeginTooltip();
-            ImGui::Text("Ctrl-click the slider to edit");
-            ImGui::EndTooltip();
-        }
+        osc::DrawTooltipBodyOnlyIfItemHovered("Ctrl-click the slider to edit");
 
         ImGui::PopStyleColor(stylesPushed);
     }

@@ -75,11 +75,10 @@ private:
         if (ImGui::IsItemHovered())
         {
             m_Model->setHovered(&c);
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+
+            osc::BeginTooltip();
             ImGui::TextDisabled("%s", c.getConcreteClassName().c_str());
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
+            osc::EndTooltip();
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {

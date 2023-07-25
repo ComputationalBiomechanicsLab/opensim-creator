@@ -92,9 +92,7 @@ namespace
 
     void DrawOutputTooltip(OpenSim::AbstractOutput const& o)
     {
-        ImGui::BeginTooltip();
-        ImGui::Text("%s", o.getTypeName().c_str());
-        ImGui::EndTooltip();
+        osc::DrawTooltip(o.getTypeName());
     }
 
     bool DrawOutputWithSubfieldsMenu(osc::MainUIStateAPI& api, OpenSim::AbstractOutput const& o)
@@ -203,15 +201,13 @@ void osc::DrawContextMenuSeparator()
 
 void osc::DrawComponentHoverTooltip(OpenSim::Component const& hovered)
 {
-    ImGui::BeginTooltip();
-    ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
+    osc::BeginTooltip();
 
     ImGui::TextUnformatted(hovered.getName().c_str());
     ImGui::SameLine();
     ImGui::TextDisabled("%s", hovered.getConcreteClassName().c_str());
 
-    ImGui::PopTextWrapPos();
-    ImGui::EndTooltip();
+    osc::EndTooltip();
 }
 
 void osc::DrawSelectOwnerMenu(osc::VirtualModelStatePair& model, OpenSim::Component const& selected)
@@ -324,12 +320,7 @@ void osc::DrawSearchBar(std::string& out)
         {
             out.clear();
         }
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::BeginTooltip();
-            ImGui::Text("Clear the search string");
-            ImGui::EndTooltip();
-        }
+        osc::DrawTooltipBodyOnlyIfItemHovered("Clear the search string");
     }
     else
     {

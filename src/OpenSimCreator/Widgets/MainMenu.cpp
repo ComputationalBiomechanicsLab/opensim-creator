@@ -419,48 +419,33 @@ void osc::MainMenuAboutTab::draw()
         ImGui::TextUnformatted("OpenSim Creator Documentation");
         ImGui::NextColumn();
         ImGui::PushID(id++);
-        if (ImGui::Button(ICON_FA_LINK " open")) {
+        if (ImGui::Button(ICON_FA_LINK " open"))
+        {
             OpenPathInOSDefaultApplication(App::get().getConfig().getHTMLDocsDir() / "index.html");
         }
-        if (ImGui::IsItemHovered()) {
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-            ImGui::TextUnformatted("this will open the (locally installed) documentation in a separate browser window");
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
+        osc::DrawTooltipBodyOnlyIfItemHovered("this will open the (locally installed) documentation in a separate browser window");
         ImGui::PopID();
         ImGui::NextColumn();
 
         ImGui::TextUnformatted("OpenSim Creator GitHub");
         ImGui::NextColumn();
         ImGui::PushID(id++);
-        if (ImGui::Button(ICON_FA_LINK " open")) {
+        if (ImGui::Button(ICON_FA_LINK " open"))
+        {
             OpenPathInOSDefaultApplication(OSC_REPO_URL);
         }
-        if (ImGui::IsItemHovered()) {
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-            ImGui::TextUnformatted("this will open the GitHub homepage in a separate browser window");
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
+        osc::DrawTooltipBodyOnlyIfItemHovered("this will open the GitHub homepage in a separate browser window");
         ImGui::PopID();
         ImGui::NextColumn();
 
         ImGui::TextUnformatted("OpenSim Documentation");
         ImGui::NextColumn();
         ImGui::PushID(id++);
-        if (ImGui::Button(ICON_FA_LINK " open")) {
+        if (ImGui::Button(ICON_FA_LINK " open"))
+        {
             OpenPathInOSDefaultApplication("https://simtk-confluence.stanford.edu/display/OpenSim/Documentation");
         }
-        if (ImGui::IsItemHovered()) {
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-            ImGui::TextUnformatted("this will open the documentation in a separate browser window");
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
+        osc::DrawTooltipBodyOnlyIfItemHovered("this will open the documentation in a separate browser window");
         ImGui::PopID();
         ImGui::NextColumn();
 

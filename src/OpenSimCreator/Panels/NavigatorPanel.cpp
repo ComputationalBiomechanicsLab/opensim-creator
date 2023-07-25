@@ -367,11 +367,7 @@ private:
                 rv.type = ResponseType::HoverChanged;
                 rv.ptr = cur;
 
-                ImGui::BeginTooltip();
-                ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
-                ImGui::TextUnformatted(cur->getConcreteClassName().c_str());
-                ImGui::PopTextWrapPos();
-                ImGui::EndTooltip();
+                osc::DrawTooltip(cur->getConcreteClassName());
             }
 
             if (ImGui::IsItemClicked(ImGuiMouseButton_Left))

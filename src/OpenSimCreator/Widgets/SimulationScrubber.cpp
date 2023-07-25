@@ -167,12 +167,10 @@ private:
 
         if (ImGui::IsItemHovered())
         {
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            osc::BeginTooltip();
             ImGui::TextUnformatted("Left-Click: Change simulation time being shown");
             ImGui::TextUnformatted("Ctrl-Click: Type in the simulation time being shown");
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
+            osc::EndTooltip();
         }
     }
 
