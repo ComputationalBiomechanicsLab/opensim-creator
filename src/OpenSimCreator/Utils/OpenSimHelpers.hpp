@@ -13,6 +13,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace OpenSim { class AbstractOutput; }
@@ -427,4 +428,23 @@ namespace osc
         SimTK::State const&,
         OpenSim::HuntCrossleyForce const&
     );
+
+    // point info
+    //
+    // extract point-like information from generic OpenSim components
+    struct PointInfo final {
+        PointInfo(
+            glm::vec3 location_,
+            OpenSim::ComponentPath frameAbsPath_) :
+
+            location{location_},
+            frameAbsPath{std::move(frameAbsPath_)}
+        {
+        }
+
+        glm::vec3 location;
+        OpenSim::ComponentPath frameAbsPath;
+    };
+    bool CanExtractPointInfoFrom(OpenSim::Component const&, SimTK::State const&);
+    std::optional<PointInfo> TryExtractPointInfo(OpenSim::Component const&, SimTK::State const&);
 }

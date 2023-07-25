@@ -1,5 +1,6 @@
 #include "ExportPointsPopup.hpp"
 
+#include "OpenSimCreator/Bindings/SimTKHelpers.hpp"
 #include "OpenSimCreator/Model/VirtualConstModelStatePair.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
@@ -40,98 +41,36 @@ namespace
     osc::CStringView constexpr c_ExplanationText = "Exports the chosen points within the model, potentially with respect to a chosen frame, as a standard data file (CSV)";
     osc::CStringView constexpr c_OriginalFrameLabel = "(original frame)";
 
-    struct PointSelectorState final {
+    struct PointSelectorUiState final {
         std::string searchString;
         std::unordered_set<std::string> selectedPointAbsPaths;
     };
 
-    struct FrameSelectorState final {
+    struct FrameSelectorUiState final {
         std::optional<std::string> maybeSelectedFrameAbsPath;
     };
 
-    struct OutputFormatState final {
+    struct OutputFormatEditorUiState final {
         bool exportPointNamesAsAbsPaths = true;
     };
 
-    struct PointInfo final {
-        PointInfo(
-            SimTK::Vec3 location_,
-            OpenSim::ComponentPath frameAbsPath_) :
-
-            location{location_},
-            frameAbsPath{frameAbsPath_}
-        {
-        }
-
-        SimTK::Vec3 location;
-        OpenSim::ComponentPath frameAbsPath;
+    struct UiState final {
+        PointSelectorUiState pointSelector;
+        FrameSelectorUiState frameSelector;
+        OutputFormatEditorUiState outputFormat;
     };
 
-    std::optional<PointInfo> TryGetPointInfo(
-        OpenSim::Component const& c,
-        SimTK::State const& st)
+    bool IsVisibleInPointList(
+        PointSelectorUiState const& uiState,
+        OpenSim::Component const& component,
+        SimTK::State const& state)
     {
-        if (auto const* pwp = dynamic_cast<OpenSim::PathWrapPoint const*>(&c))
-        {
-            // BODGE/HACK: path wrap points don't update the cache correctly?
-            return std::nullopt;
-        }
-        else if (auto const* station = dynamic_cast<OpenSim::Station const*>(&c))
-        {
-            // BODGE/HACK: OpenSim redundantly stores path point information
-            // in a child called 'station'. These must be filtered because, otherwise,
-            // the user will just see a bunch of 'station' entries below each path
-            // point
-            {
-                OpenSim::Component const* owner = osc::GetOwner(*station);
-                if (station->getName() == "station" && dynamic_cast<OpenSim::PathPoint const*>(owner))
-                {
-                    return std::nullopt;
-                }
-            }
-
-            return PointInfo
-            {
-                station->get_location(),
-                osc::GetAbsolutePath(station->getParentFrame()),
-            };
-        }
-        else if (auto const* pp = dynamic_cast<OpenSim::PathPoint const*>(&c))
-        {
-            return PointInfo
-            {
-                pp->getLocation(st),
-                osc::GetAbsolutePath(pp->getParentFrame()),
-            };
-        }
-        else if (auto const* point = dynamic_cast<OpenSim::Point const*>(&c))
-        {
-            return PointInfo
-            {
-                point->getLocationInGround(st),
-                OpenSim::ComponentPath{"/ground"},
-            };
-        }
-        else if (auto const* frame = dynamic_cast<OpenSim::Frame const*>(&c))
-        {
-            return PointInfo
-            {
-                frame->getPositionInGround(st),
-                OpenSim::ComponentPath{"/ground"},
-            };
-        }
-        else
-        {
-            return std::nullopt;
-        }
+        return
+            osc::CanExtractPointInfoFrom(component, state) &&
+            osc::ContainsSubstringCaseInsensitive(component.getName(), uiState.searchString);
     }
 
-    bool IsPoint(OpenSim::Component const& c, SimTK::State const& st)
-    {
-        return TryGetPointInfo(c, st) != std::nullopt;
-    }
-
-    void DrawExplanationHeader()
+    void DrawExportPointsPopupDescriptionSection()
     {
         ImGui::Text("Description:");
         ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
@@ -139,61 +78,55 @@ namespace
         ImGui::PopStyleColor();
     }
 
-    bool ShouldShowInPointSelector(
-        PointSelectorState const& state,
-        OpenSim::Component const& c,
-        SimTK::State const& st)
+    void DrawPointListElementHoverTooltip(
+        OpenSim::Component const& component,
+        SimTK::State const& state)
     {
-        return
-            IsPoint(c, st) &&
-            osc::ContainsSubstringCaseInsensitive(c.getName(), state.searchString);
-    }
+        osc::BeginTooltip();
+        ImGui::TextUnformatted(component.getName().c_str());
+        ImGui::SameLine();
+        ImGui::TextDisabled("%s", component.getConcreteClassName().c_str());
 
-    void TryDrawPointSelector(
-        PointSelectorState& state,
-        OpenSim::Component const& c,
-        SimTK::State const& st)
-    {
-        if (!ShouldShowInPointSelector(state, c, st))
+        if (std::optional<osc::PointInfo> const pointInfo = osc::TryExtractPointInfo(component, state))
         {
-            return;
+            ImGui::TextDisabled("Expressed In: %s", pointInfo->frameAbsPath.toString().c_str());
         }
 
-        std::string const p = osc::GetAbsolutePathString(c);
+        osc::EndTooltip();
+    }
 
-        bool selected = osc::Contains(state.selectedPointAbsPaths, p);
-        if (ImGui::Checkbox(c.getName().c_str(), &selected))
+    void DrawPointListElement(
+        PointSelectorUiState& uiState,
+        OpenSim::Component const& component,
+        SimTK::State const& state)
+    {
+        OSC_ASSERT(osc::CanExtractPointInfoFrom(component, state));
+
+        std::string const absPath = osc::GetAbsolutePathString(component);
+
+        bool selected = osc::Contains(uiState.selectedPointAbsPaths, absPath);
+        if (ImGui::Checkbox(component.getName().c_str(), &selected))
         {
             if (selected)
             {
-                state.selectedPointAbsPaths.insert(p);
+                uiState.selectedPointAbsPaths.insert(absPath);
             }
             else
             {
-                state.selectedPointAbsPaths.erase(p);
+                uiState.selectedPointAbsPaths.erase(absPath);
             }
         }
 
         if (ImGui::IsItemHovered())
         {
-            osc::BeginTooltip();
-            ImGui::TextUnformatted(c.getName().c_str());
-            ImGui::SameLine();
-            ImGui::TextDisabled("%s", c.getConcreteClassName().c_str());
-
-            if (std::optional<PointInfo> const pi = TryGetPointInfo(c, st))
-            {
-                ImGui::TextDisabled("Expressed In: %s", pi->frameAbsPath.toString().c_str());
-            }
-
-            osc::EndTooltip();
+            DrawPointListElementHoverTooltip(component, state);
         }
     }
 
-    void DrawFilteredPointList(
-        PointSelectorState& state,
+    void DrawPointSelectionList(
+        PointSelectorUiState& uiState,
         OpenSim::Model const& model,
-        SimTK::State const& st)
+        SimTK::State const& state)
     {
         auto color = ImGui::GetStyle().Colors[ImGuiCol_FrameBg];
         color.w *= 0.5f;
@@ -205,87 +138,90 @@ namespace
         if (showingListBox)
         {
             int imguiID = 0;
-            for (OpenSim::Component const& c : model.getComponentList())
+            for (OpenSim::Component const& component : model.getComponentList())
             {
-                ImGui::PushID(imguiID++);
-                TryDrawPointSelector(state, c, st);
-                ImGui::PopID();
+                if (IsVisibleInPointList(uiState, component, state))
+                {
+                    ImGui::PushID(imguiID++);
+                    DrawPointListElement(uiState, component, state);
+                    ImGui::PopID();
+                }
             }
             ImGui::EndListBox();
         }
     }
 
     void ActionSelectAllListedComponents(
-        PointSelectorState& state,
+        PointSelectorUiState& uiState,
         OpenSim::Model const& model,
-        SimTK::State const& st)
+        SimTK::State const& state)
     {
-        for (OpenSim::Component const& c : model.getComponentList())
+        for (OpenSim::Component const& component : model.getComponentList())
         {
-            if (ShouldShowInPointSelector(state, c, st))
+            if (IsVisibleInPointList(uiState, component, state))
             {
-                state.selectedPointAbsPaths.insert(osc::GetAbsolutePathString(c));
+                uiState.selectedPointAbsPaths.insert(osc::GetAbsolutePathString(component));
             }
         }
     }
 
     void ActionDeselectAllListedComponents(
-        PointSelectorState& state,
+        PointSelectorUiState& uiState,
         OpenSim::Model const& model,
-        SimTK::State const& st)
+        SimTK::State const& state)
     {
-        for (OpenSim::Component const& c : model.getComponentList())
+        for (OpenSim::Component const& component : model.getComponentList())
         {
-            if (ShouldShowInPointSelector(state, c, st))
+            if (IsVisibleInPointList(uiState, component, state))
             {
-                state.selectedPointAbsPaths.erase(osc::GetAbsolutePathString(c));
+                uiState.selectedPointAbsPaths.erase(osc::GetAbsolutePathString(component));
             }
         }
     }
 
-    void ActionClearSelectedComponents(PointSelectorState& state)
+    void ActionClearSelectedComponents(PointSelectorUiState& uiState)
     {
-        state.selectedPointAbsPaths.clear();
+        uiState.selectedPointAbsPaths.clear();
     }
 
     void DrawSelectionManipulatorButtons(
-        PointSelectorState& state,
+        PointSelectorUiState& uiState,
         OpenSim::Model const& model,
-        SimTK::State const& st)
+        SimTK::State const& state)
     {
         if (ImGui::Button("Select Listed"))
         {
-            ActionSelectAllListedComponents(state, model, st);
+            ActionSelectAllListedComponents(uiState, model, state);
         }
 
         ImGui::SameLine();
 
         if (ImGui::Button("De-Select Listed"))
         {
-            ActionDeselectAllListedComponents(state, model, st);
+            ActionDeselectAllListedComponents(uiState, model, state);
         }
 
         ImGui::SameLine();
 
         if (ImGui::Button("Clear Selection"))
         {
-            ActionClearSelectedComponents(state);
+            ActionClearSelectedComponents(uiState);
         }
     }
 
     void DrawPointSelector(
-        PointSelectorState& state,
+        PointSelectorUiState& uiState,
         OpenSim::Model const& model,
-        SimTK::State const& st)
+        SimTK::State const& state)
     {
         ImGui::Text("Which Points:");
-        osc::InputString("search", state.searchString);
-        DrawFilteredPointList(state, model, st);
-        DrawSelectionManipulatorButtons(state, model, st);
+        osc::InputString("search", uiState.searchString);
+        DrawPointSelectionList(uiState, model, state);
+        DrawSelectionManipulatorButtons(uiState, model, state);
     }
 
     OpenSim::Component const* TryGetMaybeSelectedFrameOrNullptr(
-        FrameSelectorState const& uiState,
+        FrameSelectorUiState const& uiState,
         OpenSim::Model const& model)
     {
         return uiState.maybeSelectedFrameAbsPath ?
@@ -294,50 +230,62 @@ namespace
     }
 
     std::string CalcComboLabel(
-        FrameSelectorState const& uiState,
+        FrameSelectorUiState const& uiState,
         OpenSim::Model const& model)
     {
         OpenSim::Component const* c = TryGetMaybeSelectedFrameOrNullptr(uiState, model);
         return c ? c->getName() : std::string{c_OriginalFrameLabel};
     }
 
-    void DrawFrameSelector(
-        FrameSelectorState& uiState,
-        OpenSim::Model const& model,
-        SimTK::State const& st)
+    void DrawOriginalFrameSelectable(FrameSelectorUiState& uiState)
     {
-        ImGui::Text("Express Points In:");
+        bool const selected = uiState.maybeSelectedFrameAbsPath != std::nullopt;
+        if (ImGui::Selectable(c_OriginalFrameLabel.c_str(), selected))
+        {
+            uiState.maybeSelectedFrameAbsPath.reset();
+        }
+    }
 
+    void DrawModelFrameSelectable(
+        FrameSelectorUiState& uiState,
+        OpenSim::Frame const& frame)
+    {
+        std::string const absPath = osc::GetAbsolutePathString(frame);
+        bool const selected = uiState.maybeSelectedFrameAbsPath == absPath;
+
+        if (ImGui::Selectable(frame.getName().c_str(), selected))
+        {
+            uiState.maybeSelectedFrameAbsPath = absPath;
+        }
+    }
+
+    void DrawModelFrameSelectables(
+        FrameSelectorUiState& uiState,
+        OpenSim::Model const& model)
+    {
+        int imguiID = 0;
+        for (OpenSim::Frame const& frame : model.getComponentList<OpenSim::Frame>())
+        {
+            ImGui::PushID(imguiID++);
+            DrawModelFrameSelectable(uiState, frame);
+            ImGui::PopID();
+        }
+    }
+
+    void DrawFrameSelector(FrameSelectorUiState& uiState, OpenSim::Model const& model)
+    {
         std::string const label = CalcComboLabel(uiState, model);
 
+        ImGui::Text("Express Points In:");
         if (ImGui::BeginCombo("Frame", label.c_str()))
         {
-            // draw "original frame" selector...
-            if (ImGui::Selectable(c_OriginalFrameLabel.c_str(), uiState.maybeSelectedFrameAbsPath != std::nullopt))
-            {
-                uiState.maybeSelectedFrameAbsPath.reset();
-            }
-
-            // ... then draw one selector per frame in the model
-            int imguiID = 0;
-            for (OpenSim::Frame const& frame : model.getComponentList<OpenSim::Frame>())
-            {
-                std::string const absPath = osc::GetAbsolutePathString(frame);
-                bool const selected = uiState.maybeSelectedFrameAbsPath == absPath;
-
-                ImGui::PushID(imguiID++);
-                if (ImGui::Selectable(frame.getName().c_str(), selected))
-                {
-                    uiState.maybeSelectedFrameAbsPath = absPath;
-                }
-                ImGui::PopID();
-            }
-
+            DrawOriginalFrameSelectable(uiState);
+            DrawModelFrameSelectables(uiState, model);
             ImGui::EndCombo();
         }
     }
 
-    void DrawOutputFormatEditor(OutputFormatState& uiState)
+    void DrawOutputFormatEditor(OutputFormatEditorUiState& uiState)
     {
         ImGui::Checkbox("Export Point Names as Absolute Paths", &uiState.exportPointNamesAsAbsPaths);
         osc::DrawTooltipBodyOnlyIfItemHovered("If selected, the exported point name will be the full path to the point (e.g. `/forceset/somemuscle/geometrypath/pointname`), rather than just the name of the point (e.g. `pointname`)");
@@ -389,10 +337,10 @@ namespace
         return rv;
     }
 
-    SimTK::Vec3 CalcReexpressedFrame(
+    glm::vec3 CalcReexpressedFrame(
         OpenSim::Model const& model,
         SimTK::State const& state,
-        PointInfo const& pointInfo,
+        osc::PointInfo const& pointInfo,
         SimTK::Transform const& ground2otherFrame)
     {
         OpenSim::Frame const* const frame = osc::FindComponent<OpenSim::Frame>(model, pointInfo.frameAbsPath);
@@ -401,37 +349,58 @@ namespace
             return pointInfo.location;  // cannot find frame (bug?)
         }
 
-        return ground2otherFrame * frame->getTransformInGround(state) * pointInfo.location;
+        return osc::ToVec3(ground2otherFrame * frame->getTransformInGround(state) * osc::ToSimTKVec3(pointInfo.location));
     }
 
-    ExportStepReturn PromptUserForSaveLocationAndExportPoints(
+    void TryWriteOneCSVDataRow(
+        OpenSim::Model const& model,
+        SimTK::State const& state,
+        bool shouldExportPointsWithAbsPathNames,
+        std::optional<SimTK::Transform> const& maybeGround2ReexpressedFrame,
+        std::string const& pointAbsPath,
+        std::ostream& out)
+    {
+        OpenSim::Component const* const c = osc::FindComponent(model, pointAbsPath);
+        if (!c)
+        {
+            return;  // skip writing: point no longer exists in model
+        }
+
+        std::optional<osc::PointInfo> const pi = osc::TryExtractPointInfo(*c, state);
+        if (!pi)
+        {
+            return;  // skip writing: cannot extract point info for the component
+        }
+
+        // else: compute position, name, etc. and emit as a CSV data row
+
+        glm::vec3 const position = maybeGround2ReexpressedFrame ?
+            CalcReexpressedFrame(model, state, *pi, *maybeGround2ReexpressedFrame) :
+            pi->location;
+
+        std::string const name = shouldExportPointsWithAbsPathNames ?
+            osc::GetAbsolutePathString(*c) :
+            c->getName();
+
+        auto const columns = osc::to_array<std::string>(
+        {
+            name,
+            std::to_string(position[0]),
+            std::to_string(position[1]),
+            std::to_string(position[2]),
+        });
+
+        osc::WriteCSVRow(out, columns);
+    }
+
+    void WritePointsAsCSVTo(
         OpenSim::Model const& model,
         SimTK::State const& state,
         std::unordered_set<std::string> const& pointAbsPaths,
         std::optional<std::string> const& maybeAbsPathOfFrameToReexpressPointsIn,
-        bool shouldExportPointsWithAbsPathNames)
+        bool shouldExportPointsWithAbsPathNames,
+        std::ostream& out)
     {
-        std::optional<std::filesystem::path> const saveLoc = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
-        if (!saveLoc)
-        {
-            return ExportStepReturn::UserCancelled;
-        }
-
-        std::ofstream fOut;
-        fOut.exceptions(std::ios_base::badbit | std::ios_base::failbit);
-        fOut.open(*saveLoc);
-        if (!fOut)
-        {
-            return ExportStepReturn::IoError;
-        }
-
-
-        // write header
-        osc::WriteCSVRow(
-            fOut,
-            osc::to_array<std::string>({ "Name", "X", "Y", "Z" })
-        );
-
         std::vector<std::string> const sortedRowAbsPaths = GetSortedListOfOutputPointAbsPaths(
             pointAbsPaths,
             shouldExportPointsWithAbsPathNames
@@ -443,38 +412,57 @@ namespace
             maybeAbsPathOfFrameToReexpressPointsIn
         );
 
+        // write header row
+        osc::WriteCSVRow(
+            out,
+            osc::to_array<std::string>({ "Name", "X", "Y", "Z" })
+        );
+
+        // write data rows
         for (std::string const& path : sortedRowAbsPaths)
         {
-            OpenSim::Component const* c = osc::FindComponent(model, path);
-            if (!c)
-            {
-                continue;  // no longer exists in model
-            }
-
-            std::optional<PointInfo> const pi = TryGetPointInfo(*c, state);
-            if (!pi)
-            {
-                continue;  // cannot extract point info for the component
-            }
-
-            SimTK::Vec3 const position = maybeGround2ReexpressedFrame ?
-                CalcReexpressedFrame(model, state, *pi, *maybeGround2ReexpressedFrame) :
-                pi->location;
-
-            std::string const name = shouldExportPointsWithAbsPathNames ?
-                osc::GetAbsolutePathString(*c) :
-                c->getName();
-
-            auto const columns = osc::to_array<std::string>(
-            {
-                name,
-                std::to_string(position[0]),
-                std::to_string(position[1]),
-                std::to_string(position[2]),
-            });
-
-            osc::WriteCSVRow(fOut, columns);
+            TryWriteOneCSVDataRow(
+                model,
+                state,
+                shouldExportPointsWithAbsPathNames,
+                maybeGround2ReexpressedFrame,
+                path,
+                out
+            );
         }
+    }
+
+    ExportStepReturn ActionPromptUserForSaveLocationAndExportPoints(
+        OpenSim::Model const& model,
+        SimTK::State const& state,
+        std::unordered_set<std::string> const& pointAbsPaths,
+        std::optional<std::string> const& maybeAbsPathOfFrameToReexpressPointsIn,
+        bool shouldExportPointsWithAbsPathNames)
+    {
+        // prompt user to select a save location
+        std::optional<std::filesystem::path> const saveLoc = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+        if (!saveLoc)
+        {
+            return ExportStepReturn::UserCancelled;
+        }
+
+        // open the save location for writing
+        std::ofstream fOut;
+        fOut.exceptions(std::ios_base::badbit | std::ios_base::failbit);
+        fOut.open(*saveLoc);
+        if (!fOut)
+        {
+            return ExportStepReturn::IoError;
+        }
+
+        WritePointsAsCSVTo(
+            model,
+            state,
+            pointAbsPaths,
+            maybeAbsPathOfFrameToReexpressPointsIn,
+            shouldExportPointsWithAbsPathNames,
+            fOut
+        );
 
         return ExportStepReturn::Done;
     }
@@ -497,11 +485,11 @@ private:
         OpenSim::Model const& model = m_Model->getModel();
         SimTK::State const& state = m_Model->getState();
 
-        DrawExplanationHeader();
+        DrawExportPointsPopupDescriptionSection();
         ImGui::Separator();
         DrawPointSelector(m_PointSelectorState, model, state);
         ImGui::Separator();
-        DrawFrameSelector(m_FrameSelectorState, model, state);
+        DrawFrameSelector(m_FrameSelectorState, model);
         ImGui::Separator();
         DrawOutputFormatEditor(m_OutputFormatState);
         ImGui::Separator();
@@ -520,7 +508,7 @@ private:
         if (ImGui::Button(ICON_FA_UPLOAD " Export to CSV"))
         {
             static_assert(static_cast<size_t>(ExportStepReturn::TOTAL) == 3, "review error handling");
-            ExportStepReturn const rv = PromptUserForSaveLocationAndExportPoints(
+            ExportStepReturn const rv = ActionPromptUserForSaveLocationAndExportPoints(
                 m_Model->getModel(),
                 m_Model->getState(),
                 m_PointSelectorState.selectedPointAbsPaths,
@@ -535,9 +523,9 @@ private:
     }
 
     std::shared_ptr<VirtualConstModelStatePair const> m_Model;
-    PointSelectorState m_PointSelectorState;
-    FrameSelectorState m_FrameSelectorState;
-    OutputFormatState m_OutputFormatState;
+    PointSelectorUiState m_PointSelectorState;
+    FrameSelectorUiState m_FrameSelectorState;
+    OutputFormatEditorUiState m_OutputFormatState;
 };
 
 

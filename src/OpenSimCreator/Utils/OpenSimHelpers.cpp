@@ -1459,3 +1459,67 @@ std::optional<osc::ForcePoint> osc::TryGetContactForceInGround(
 
     return osc::ForcePoint{forceTorque.force, *maybePosition};
 }
+
+bool osc::CanExtractPointInfoFrom(OpenSim::Component const& c, SimTK::State const& st)
+{
+    return TryExtractPointInfo(c, st) != std::nullopt;
+}
+
+std::optional<osc::PointInfo> osc::TryExtractPointInfo(
+    OpenSim::Component const& c,
+    SimTK::State const& st)
+{
+    if (auto const* pwp = dynamic_cast<OpenSim::PathWrapPoint const*>(&c))
+    {
+        // BODGE/HACK: path wrap points don't update the cache correctly?
+        return std::nullopt;
+    }
+    else if (auto const* station = dynamic_cast<OpenSim::Station const*>(&c))
+    {
+        // BODGE/HACK: OpenSim redundantly stores path point information
+        // in a child called 'station'. These must be filtered because, otherwise,
+        // the user will just see a bunch of 'station' entries below each path
+        // point
+        {
+            OpenSim::Component const* owner = osc::GetOwner(*station);
+            if (station->getName() == "station" && dynamic_cast<OpenSim::PathPoint const*>(owner))
+            {
+                return std::nullopt;
+            }
+        }
+
+        return PointInfo
+        {
+            ToVec3(station->get_location()),
+            osc::GetAbsolutePath(station->getParentFrame()),
+        };
+    }
+    else if (auto const* pp = dynamic_cast<OpenSim::PathPoint const*>(&c))
+    {
+        return PointInfo
+        {
+            ToVec3(pp->getLocation(st)),
+            osc::GetAbsolutePath(pp->getParentFrame()),
+        };
+    }
+    else if (auto const* point = dynamic_cast<OpenSim::Point const*>(&c))
+    {
+        return PointInfo
+        {
+            ToVec3(point->getLocationInGround(st)),
+            OpenSim::ComponentPath{"/ground"},
+        };
+    }
+    else if (auto const* frame = dynamic_cast<OpenSim::Frame const*>(&c))
+    {
+        return PointInfo
+        {
+            ToVec3(frame->getPositionInGround(st)),
+            OpenSim::ComponentPath{"/ground"},
+        };
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
