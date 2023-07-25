@@ -1,7 +1,9 @@
 #include "CustomRenderingOptions.hpp"
 
+#include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/EnumHelpers.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -9,69 +11,69 @@
 
 namespace
 {
-    // flags that toggle the viewer's behavior
-    using CustomRenderingOptionFlags = uint32_t;
-    enum CustomRenderingOptionFlags_ : uint32_t {
-        CustomRenderingOptionFlags_None = 0,
+    enum class CustomRenderingOptionFlags : uint32_t {
+        None              = 0,
+        DrawFloor         = 1u << 0,
+        MeshNormals       = 1u << 1,
+        Shadows           = 1u << 2,
+        DrawSelectionRims = 1u << 3,
+        NUM_OPTIONS = 4,
 
-        CustomRenderingOptionFlags_DrawFloor = 1 << 0,
-        CustomRenderingOptionFlags_MeshNormals = 1 << 1,
-        CustomRenderingOptionFlags_Shadows = 1 << 2,
-        CustomRenderingOptionFlags_DrawSelectionRims = 1 << 3,
-
-        CustomRenderingOptionFlags_COUNT = 4,
-        CustomRenderingOptionFlags_Default =
-            CustomRenderingOptionFlags_DrawFloor |
-            CustomRenderingOptionFlags_Shadows |
-            CustomRenderingOptionFlags_DrawSelectionRims,
+        Default = DrawFloor | Shadows | DrawSelectionRims,
     };
 
-    auto constexpr c_CustomRenderingOptionLabels = osc::to_array<osc::CStringView>(
+    std::array<osc::CStringView, osc::NumOptions<CustomRenderingOptionFlags>()> constexpr c_CustomRenderingOptionLabels = osc::to_array<osc::CStringView>(
     {
         "Floor",
         "Mesh Normals",
         "Shadows",
         "Selection Rims",
     });
-    static_assert(c_CustomRenderingOptionLabels.size() == static_cast<size_t>(CustomRenderingOptionFlags_COUNT));
 
-    enum class CustomRenderingOptionGroup : uint32_t {
+    enum class CustomRenderingOptionGroup {
         Rendering = 0,
-        COUNT,
+        NUM_OPTIONS,
     };
 
-    auto constexpr c_CustomRenderingOptionGroupLabels = osc::to_array<osc::CStringView>(
+    std::array<osc::CStringView, osc::NumOptions<CustomRenderingOptionGroup>()> constexpr c_CustomRenderingOptionGroupLabels = osc::to_array<osc::CStringView>(
     {
         "Rendering",
     });
-    static_assert(c_CustomRenderingOptionGroupLabels.size() == static_cast<size_t>(CustomRenderingOptionGroup::COUNT));
 
-    auto constexpr c_CustomRenderingOptionGroups = osc::to_array<CustomRenderingOptionGroup>(
+    std::array<CustomRenderingOptionGroup, osc::NumOptions<CustomRenderingOptionFlags>()> constexpr c_CustomRenderingOptionGroups = osc::to_array<CustomRenderingOptionGroup>(
     {
         CustomRenderingOptionGroup::Rendering,
         CustomRenderingOptionGroup::Rendering,
         CustomRenderingOptionGroup::Rendering,
         CustomRenderingOptionGroup::Rendering,
     });
-    static_assert(c_CustomRenderingOptionGroups.size() == static_cast<size_t>(CustomRenderingOptionFlags_COUNT));
 
-    void SetFlag(uint32_t& flags, uint32_t flag, bool v)
+    void SetFlag(uint32_t& flags, CustomRenderingOptionFlags flag, bool v)
     {
+        static_assert(std::is_same_v<std::underlying_type_t<CustomRenderingOptionFlags>, uint32_t>);
+
         if (v)
         {
-            flags |= flag;
+            flags |= static_cast<std::underlying_type_t<CustomRenderingOptionFlags>>(flag);
         }
         else
         {
-            flags &= ~flag;
+            flags &= ~static_cast<std::underlying_type_t<CustomRenderingOptionFlags>>(flag);
         }
+    }
+
+    bool GetFlag(uint32_t flags, CustomRenderingOptionFlags flag)
+    {
+        static_assert(std::is_same_v<std::underlying_type_t<CustomRenderingOptionFlags>, uint32_t>);
+
+        return flags & static_cast<uint32_t>(flag);
     }
 }
 
 osc::CustomRenderingOptions::CustomRenderingOptions() :
-    m_Flags{static_cast<int32_t>(CustomRenderingOptionFlags_Default)}
+    m_Flags{static_cast<uint32_t>(CustomRenderingOptionFlags::Default)}
 {
-    static_assert(std::is_same_v<std::underlying_type_t<CustomRenderingOptionFlags_>, std::decay_t<decltype(m_Flags)>>);
+    static_assert(std::is_same_v<std::underlying_type_t<CustomRenderingOptionFlags>, std::decay_t<decltype(m_Flags)>>);
 }
 
 osc::CStringView osc::CustomRenderingOptions::getGroupLabel(ptrdiff_t i) const
@@ -81,7 +83,7 @@ osc::CStringView osc::CustomRenderingOptions::getGroupLabel(ptrdiff_t i) const
 
 size_t osc::CustomRenderingOptions::getNumOptions() const
 {
-    return static_cast<size_t>(CustomRenderingOptionFlags_COUNT);
+    return osc::NumOptions<CustomRenderingOptionFlags>();
 }
 
 bool osc::CustomRenderingOptions::getOptionValue(ptrdiff_t i) const
@@ -91,7 +93,9 @@ bool osc::CustomRenderingOptions::getOptionValue(ptrdiff_t i) const
 
 void osc::CustomRenderingOptions::setOptionValue(ptrdiff_t i, bool v)
 {
-    SetFlag(m_Flags, 1<<i, v);
+    OSC_ASSERT(static_cast<size_t>(i) <= osc::NumOptions<CustomRenderingOptionFlags>());
+
+    SetFlag(m_Flags, static_cast<CustomRenderingOptionFlags>(1u<<i), v);
 }
 
 osc::CStringView osc::CustomRenderingOptions::getOptionLabel(ptrdiff_t i) const
@@ -106,40 +110,40 @@ ptrdiff_t osc::CustomRenderingOptions::getOptionGroupIndex(ptrdiff_t i) const
 
 bool osc::CustomRenderingOptions::getDrawFloor() const
 {
-    return m_Flags & CustomRenderingOptionFlags_DrawFloor;
+    return GetFlag(m_Flags, CustomRenderingOptionFlags::DrawFloor);
 }
 
 void osc::CustomRenderingOptions::setDrawFloor(bool v)
 {
-    SetFlag(m_Flags, CustomRenderingOptionFlags_DrawFloor, v);
+    SetFlag(m_Flags, CustomRenderingOptionFlags::DrawFloor, v);
 }
 
 bool osc::CustomRenderingOptions::getDrawMeshNormals() const
 {
-    return m_Flags & CustomRenderingOptionFlags_MeshNormals;
+    return GetFlag(m_Flags, CustomRenderingOptionFlags::MeshNormals);
 }
 
 void osc::CustomRenderingOptions::setDrawMeshNormals(bool v)
 {
-    SetFlag(m_Flags, CustomRenderingOptionFlags_MeshNormals, v);
+    SetFlag(m_Flags, CustomRenderingOptionFlags::MeshNormals, v);
 }
 
 bool osc::CustomRenderingOptions::getDrawShadows() const
 {
-    return m_Flags & CustomRenderingOptionFlags_Shadows;
+    return GetFlag(m_Flags, CustomRenderingOptionFlags::Shadows);
 }
 
 void osc::CustomRenderingOptions::setDrawShadows(bool v)
 {
-    SetFlag(m_Flags, CustomRenderingOptionFlags_Shadows, v);
+    SetFlag(m_Flags, CustomRenderingOptionFlags::Shadows, v);
 }
 
 bool osc::CustomRenderingOptions::getDrawSelectionRims() const
 {
-    return m_Flags & CustomRenderingOptionFlags_DrawSelectionRims;
+    return GetFlag(m_Flags, CustomRenderingOptionFlags::DrawSelectionRims);
 }
 
 void osc::CustomRenderingOptions::setDrawSelectionRims(bool v)
 {
-    SetFlag(m_Flags, CustomRenderingOptionFlags_DrawSelectionRims, v);
+    SetFlag(m_Flags, CustomRenderingOptionFlags::DrawSelectionRims, v);
 }

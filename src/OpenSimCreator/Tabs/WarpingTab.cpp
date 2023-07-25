@@ -40,6 +40,7 @@
 #include <oscar/Tabs/TabHost.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
@@ -90,22 +91,6 @@ namespace
     constexpr osc::Color c_UnpairedLandmarkColor = osc::Color::red();
 }
 
-// generic helpers
-namespace
-{
-    // returns the TOTAL member of the given enum as a size_t
-    template<typename TEnumWithTOTALMember>
-    constexpr size_t NumChoices()
-    {
-        static_assert(
-            std::is_enum_v<TEnumWithTOTALMember> &&
-            std::numeric_limits<std::underlying_type_t<TEnumWithTOTALMember>>::max() <= std::numeric_limits<size_t>::max()
-        );
-
-        return static_cast<size_t>(TEnumWithTOTALMember::TOTAL);
-    }
-}
-
 // Thin-Plate Spline (TPS) document datastructure
 //
 // the core datastructures that the user edits via the UI
@@ -115,14 +100,14 @@ namespace
     enum class TPSDocumentInputIdentifier {
         Source = 0,
         Destination,
-        TOTAL,
+        NUM_OPTIONS,
     };
 
     // identifies a specific part of the input of the TPS document
     enum class TPSDocumentInputElementType {
         Landmark = 0,
         Mesh,
-        TOTAL,
+        NUM_OPTIONS,
     };
 
     // a landmark pair in the TPS document (might be midway through definition)
@@ -196,14 +181,14 @@ namespace
     // returns the (mutable) source/destination of the given landmark pair, if available
     std::optional<glm::vec3>& UpdLocation(TPSDocumentLandmarkPair& landmarkPair, TPSDocumentInputIdentifier which)
     {
-        static_assert(NumChoices<TPSDocumentInputIdentifier>() == 2);
+        static_assert(osc::NumOptions<TPSDocumentInputIdentifier>() == 2);
         return which == TPSDocumentInputIdentifier::Source ? landmarkPair.maybeSourceLocation : landmarkPair.maybeDestinationLocation;
     }
 
     // returns the source/destination of the given landmark pair, if available
     std::optional<glm::vec3> const& GetLocation(TPSDocumentLandmarkPair const& landmarkPair, TPSDocumentInputIdentifier which)
     {
-        static_assert(NumChoices<TPSDocumentInputIdentifier>() == 2);
+        static_assert(osc::NumOptions<TPSDocumentInputIdentifier>() == 2);
         return which == TPSDocumentInputIdentifier::Source ? landmarkPair.maybeSourceLocation : landmarkPair.maybeDestinationLocation;
     }
 
@@ -216,14 +201,14 @@ namespace
     // returns the (mutable) source/destination mesh in the given document
     osc::Mesh& UpdMesh(TPSDocument& doc, TPSDocumentInputIdentifier which)
     {
-        static_assert(NumChoices<TPSDocumentInputIdentifier>() == 2);
+        static_assert(osc::NumOptions<TPSDocumentInputIdentifier>() == 2);
         return which == TPSDocumentInputIdentifier::Source ? doc.sourceMesh : doc.destinationMesh;
     }
 
     // returns the source/destination mesh in the given document
     osc::Mesh const& GetMesh(TPSDocument const& doc, TPSDocumentInputIdentifier which)
     {
-        static_assert(NumChoices<TPSDocumentInputIdentifier>() == 2);
+        static_assert(osc::NumOptions<TPSDocumentInputIdentifier>() == 2);
         return which == TPSDocumentInputIdentifier::Source ? doc.sourceMesh : doc.destinationMesh;
     }
 

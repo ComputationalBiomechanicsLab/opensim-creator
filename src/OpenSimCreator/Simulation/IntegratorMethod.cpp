@@ -2,6 +2,7 @@
 
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/EnumHelpers.hpp>
 
 #include <nonstd/span.hpp>
 #include <simmath/ExplicitEulerIntegrator.h>
@@ -29,7 +30,7 @@ namespace
         osc::IntegratorMethod::SemiExplicitEuler2,
         osc::IntegratorMethod::Verlet,
     });
-    static_assert(c_IntegratorMethods.size() == static_cast<size_t>(osc::IntegratorMethod::TOTAL));
+    static_assert(c_IntegratorMethods.size() == osc::NumOptions<osc::IntegratorMethod>());
 
     auto constexpr c_IntegratorMethodStrings = osc::to_array<osc::CStringView>(
     {
@@ -42,7 +43,7 @@ namespace
         "Semi Explicit Euler 2",
         "Verlet",
     });
-    static_assert(c_IntegratorMethodStrings.size() == static_cast<size_t>(osc::IntegratorMethod::TOTAL));
+    static_assert(c_IntegratorMethodStrings.size() == osc::NumOptions<osc::IntegratorMethod>());
 }
 
 nonstd::span<osc::IntegratorMethod const> osc::GetAllIntegratorMethods()

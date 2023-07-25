@@ -9,7 +9,7 @@ namespace osc
     enum class RenderBufferType {
         Color = 0,
         Depth,
-        TOTAL,
+        NUM_OPTIONS,
     };
 
     class RenderBuffer final {

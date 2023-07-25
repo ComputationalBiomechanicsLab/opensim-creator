@@ -16,7 +16,6 @@ namespace osc
     enum class OutputType {
         Float = 0,
         String,
-        TOTAL,
     };
 
     // interface for something that can extract data from simulation reports

@@ -1,10 +1,8 @@
 #pragma once
 
-#include <cstdint>
-
 namespace osc
 {
-    enum class TextureDimension : int32_t {
+    enum class TextureDimension {
         Tex2D,
         Cube,
     };

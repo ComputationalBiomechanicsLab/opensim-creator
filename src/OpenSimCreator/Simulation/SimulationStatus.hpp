@@ -12,7 +12,7 @@ namespace osc
         Completed,
         Cancelled,
         Error,
-        TOTAL,
+        NUM_OPTIONS,
     };
 
     nonstd::span<SimulationStatus const> GetAllSimulationStatuses();

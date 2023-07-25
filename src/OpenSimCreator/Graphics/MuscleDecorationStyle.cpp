@@ -1,6 +1,7 @@
 #include "MuscleDecorationStyle.hpp"
 
 #include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/EnumHelpers.hpp>
 
 #include <nonstd/span.hpp>
 
@@ -15,7 +16,7 @@ namespace
         osc::MuscleDecorationStyle::FibersAndTendons,
         osc::MuscleDecorationStyle::Hidden,
     });
-    static_assert(c_Styles.size() == static_cast<size_t>(osc::MuscleDecorationStyle::TOTAL));
+    static_assert(c_Styles.size() == osc::NumOptions<osc::MuscleDecorationStyle>());
 
     auto constexpr c_StyleStrings = osc::to_array<char const*>(
     {
@@ -23,7 +24,7 @@ namespace
         "Fibers & Tendons",
         "Hidden",
     });
-    static_assert(c_StyleStrings.size() == static_cast<size_t>(osc::MuscleDecorationStyle::TOTAL));
+    static_assert(c_StyleStrings.size() == osc::NumOptions<osc::MuscleDecorationStyle>());
 }
 
 nonstd::span<osc::MuscleDecorationStyle const> osc::GetAllMuscleDecorationStyles()

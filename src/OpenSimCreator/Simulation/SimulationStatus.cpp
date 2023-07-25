@@ -1,6 +1,7 @@
 #include "SimulationStatus.hpp"
 
 #include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/EnumHelpers.hpp>
 
 #include <nonstd/span.hpp>
 
@@ -17,7 +18,7 @@ namespace
         osc::SimulationStatus::Cancelled,
         osc::SimulationStatus::Error,
     });
-    static_assert(c_SimulatorStatuses.size() == static_cast<size_t>(osc::SimulationStatus::TOTAL));
+    static_assert(c_SimulatorStatuses.size() == osc::NumOptions<osc::SimulationStatus>());
 
     auto constexpr c_SimulatorStatusStrings = osc::to_array<char const*>(
     {
@@ -27,7 +28,7 @@ namespace
         "Cancelled",
         "Error",
     });
-    static_assert(c_SimulatorStatusStrings.size() == static_cast<size_t>(osc::SimulationStatus::TOTAL));
+    static_assert(c_SimulatorStatusStrings.size() == osc::NumOptions<osc::SimulationStatus>());
 }
 
 

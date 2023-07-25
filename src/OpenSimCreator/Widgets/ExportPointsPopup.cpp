@@ -10,6 +10,7 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Widgets/StandardPopup.hpp>
@@ -295,7 +296,7 @@ namespace
         UserCancelled = 0,
         IoError,
         Done,
-        TOTAL,
+        NUM_OPTIONS,
     };
 
     std::optional<SimTK::Transform> TryGetTransformToReexpressPointsIn(
@@ -507,7 +508,7 @@ private:
 
         if (ImGui::Button(ICON_FA_UPLOAD " Export to CSV"))
         {
-            static_assert(static_cast<size_t>(ExportStepReturn::TOTAL) == 3, "review error handling");
+            static_assert(osc::NumOptions<ExportStepReturn>() == 3, "review error handling");
             ExportStepReturn const rv = ActionPromptUserForSaveLocationAndExportPoints(
                 m_Model->getModel(),
                 m_Model->getState(),

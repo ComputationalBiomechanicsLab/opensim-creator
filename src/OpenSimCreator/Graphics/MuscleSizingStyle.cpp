@@ -1,6 +1,7 @@
 #include "MuscleSizingStyle.hpp"
 
 #include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/EnumHelpers.hpp>
 
 #include <nonstd/span.hpp>
 
@@ -14,14 +15,14 @@ namespace
         osc::MuscleSizingStyle::OpenSim,
         osc::MuscleSizingStyle::PcsaDerived,
     });
-    static_assert(c_Styles.size() == static_cast<size_t>(osc::MuscleSizingStyle::TOTAL));
+    static_assert(c_Styles.size() == osc::NumOptions<osc::MuscleSizingStyle>());
 
     auto constexpr c_StyleStrings = osc::to_array<char const*>(
     {
         "OpenSim",
         "PCSA-derived",
     });
-    static_assert(c_StyleStrings.size() == static_cast<size_t>(osc::MuscleSizingStyle::TOTAL));
+    static_assert(c_StyleStrings.size() == osc::NumOptions<osc::MuscleSizingStyle>());
 }
 
 nonstd::span<osc::MuscleSizingStyle const> osc::GetAllMuscleSizingStyles()

@@ -23,6 +23,7 @@
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 
 #include <glm/vec2.hpp>
@@ -47,7 +48,7 @@ namespace
         BodyForce,
         Orientation,
         Unknown,
-        TOTAL,
+        NUM_OPTIONS,
     };
 
     // human-readable name of a data type
@@ -59,7 +60,7 @@ namespace
         "Orientation",
         "Unknown",
     });
-    static_assert(c_ColumnDataTypeStrings.size() == static_cast<int>(ColumnDataType::TOTAL));
+    static_assert(c_ColumnDataTypeStrings.size() == osc::NumOptions<ColumnDataType>());
 
     // the number of floating-point values the column is backed by
     auto constexpr c_ColumnDataSizes = osc::to_array<int>(
@@ -70,7 +71,7 @@ namespace
         4,
         1,
     });
-    static_assert(c_ColumnDataSizes.size() == static_cast<int>(ColumnDataType::TOTAL));
+    static_assert(c_ColumnDataSizes.size() == osc::NumOptions<ColumnDataType>());
 
     // prints a human-readable representation of a column data type
     std::ostream& operator<<(std::ostream& o, ColumnDataType dt)

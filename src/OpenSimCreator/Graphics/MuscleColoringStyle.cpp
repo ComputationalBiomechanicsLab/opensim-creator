@@ -1,6 +1,7 @@
 #include "MuscleColoringStyle.hpp"
 
 #include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/EnumHelpers.hpp>
 
 #include <nonstd/span.hpp>
 
@@ -18,7 +19,7 @@ namespace
         osc::MuscleColoringStyle::Force,
         osc::MuscleColoringStyle::FiberLength,
     });
-    static_assert(c_ColorStyles.size() == static_cast<size_t>(osc::MuscleColoringStyle::TOTAL));
+    static_assert(c_ColorStyles.size() == osc::NumOptions<osc::MuscleColoringStyle>());
 
     auto constexpr c_ColorStyleStrings = osc::to_array<char const*>(
     {
@@ -29,7 +30,7 @@ namespace
         "Force",
         "Fiber Length",
     });
-    static_assert(c_ColorStyleStrings.size() == static_cast<size_t>(osc::MuscleColoringStyle::TOTAL));
+    static_assert(c_ColorStyleStrings.size() == osc::NumOptions<osc::MuscleColoringStyle>());
 }
 
 nonstd::span<osc::MuscleColoringStyle const> osc::GetAllMuscleColoringStyles()

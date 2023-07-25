@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
 namespace osc
 {
     enum class CubemapFace : int32_t {
@@ -11,6 +9,6 @@ namespace osc
         NegativeY,
         PositiveZ,
         NegativeZ,
-        TOTAL,
+        NUM_OPTIONS,
     };
 }

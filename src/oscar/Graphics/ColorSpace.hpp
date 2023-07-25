@@ -15,6 +15,6 @@ namespace osc
         // hint: data image files (e.g. bump maps, normal maps) are usually defined in a linear color space
         Linear,
 
-        TOTAL,
+        NUM_OPTIONS,
     };
 }

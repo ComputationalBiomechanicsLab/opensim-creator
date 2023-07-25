@@ -18,6 +18,7 @@
 #include "oscar/Utils/Assertions.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
+#include "oscar/Utils/EnumHelpers.hpp"
 
 #include <glm/vec3.hpp>
 #include <imgui.h>
@@ -44,7 +45,7 @@ namespace
             "skybox_front.jpg",
             "skybox_back.jpg",
         });
-        static_assert(textures.size() == static_cast<size_t>(osc::CubemapFace::TOTAL));
+        static_assert(textures.size() == osc::NumOptions<osc::CubemapFace>());
         static_assert(textures.size() > 1);
 
         // load the first face, so we know the width
@@ -58,10 +59,10 @@ namespace
 
         // load all face data into the cubemap
         static_assert(static_cast<int32_t>(osc::CubemapFace::PositiveX) == 0);
-        static_assert(static_cast<size_t>(osc::CubemapFace::TOTAL) == textures.size());
+        static_assert(osc::NumOptions<osc::CubemapFace>() == textures.size());
         osc::Cubemap cubemap{width, osc::TextureFormat::RGB24};
         cubemap.setPixelData(osc::CubemapFace::PositiveX, image.getPixelData());
-        for (int32_t i = 1; i < static_cast<int32_t>(osc::CubemapFace::TOTAL); ++i)
+        for (int32_t i = 1; i < osc::NumOptions<osc::CubemapFace>(); ++i)
         {
             image = osc::LoadImageFromFile(
                 resourcesDir / "textures" / std::string_view{textures[i]},

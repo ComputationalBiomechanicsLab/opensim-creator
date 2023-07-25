@@ -263,6 +263,7 @@ add_library(oscar STATIC
     Utils/Cpp20Shims.hpp
     Utils/CStringView.hpp
     Utils/DefaultConstructOnCopy.hpp
+    Utils/EnumHelpers.hpp
     Utils/FileChangePoller.cpp
     Utils/FileChangePoller.hpp
     Utils/FilesystemHelpers.cpp

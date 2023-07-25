@@ -2,6 +2,7 @@
 
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/EnumHelpers.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -38,10 +39,10 @@ namespace
     });
     static_assert(c_CustomRenderingOptionLabels.size() == static_cast<size_t>(CustomRenderingOptionFlags_COUNT));
 
-    enum class CustomRenderingOptionGroup : uint32_t {
+    enum class CustomRenderingOptionGroup {
         Alignment,
         Development,
-        COUNT,
+        NUM_OPTIONS,
     };
 
     auto constexpr c_CustomRenderingOptionGroupLabels = osc::to_array<osc::CStringView>(
@@ -49,7 +50,7 @@ namespace
         "Alignment",
         "Development",
     });
-    static_assert(c_CustomRenderingOptionGroupLabels.size() == static_cast<size_t>(CustomRenderingOptionGroup::COUNT));
+    static_assert(c_CustomRenderingOptionGroupLabels.size() == osc::NumOptions<CustomRenderingOptionGroup>());
 
     auto constexpr c_CustomRenderingOptionGroups = osc::to_array<CustomRenderingOptionGroup>(
     {

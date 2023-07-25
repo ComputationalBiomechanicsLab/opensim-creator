@@ -2,15 +2,17 @@
 
 namespace osc
 {
-    // enum that dictates the color conversion mode of a `RenderTexture`
     enum class RenderTextureReadWrite {
-        // render texture contains sRGB data, perform linear <--> sRGB
+        // render texture contains sRGB data, perform linear <--> sRGB when loading
+        // textels in a shader
         sRGB = 0,
 
-        // render texture contains linear data, don't perform any conversions
+        // render texture contains linear data, don't perform any conversions when
+        // loading textels in a shader
         Linear,
 
-        TOTAL,
+        NUM_OPTIONS,
+
         Default = sRGB,
     };
 }

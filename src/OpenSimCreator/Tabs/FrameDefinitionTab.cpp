@@ -46,6 +46,7 @@
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
 #include <oscar/Utils/TypeHelpers.hpp>
@@ -512,17 +513,17 @@ namespace OpenSim
     };
 
     // enumeration of the possible axes a user may define
-    enum class AxisIndex : int32_t {
+    enum class AxisIndex {
         X = 0,
         Y,
         Z,
-        TOTAL
+        NUM_OPTIONS
     };
 
     // returns the next `AxisIndex` in the circular sequence X -> Y -> Z
     constexpr AxisIndex Next(AxisIndex axis)
     {
-        return static_cast<AxisIndex>((static_cast<int32_t>(axis) + 1) % static_cast<int32_t>(AxisIndex::TOTAL));
+        return static_cast<AxisIndex>((static_cast<size_t>(axis) + 1) % osc::NumOptions<AxisIndex>());
     }
     static_assert(Next(AxisIndex::X) == AxisIndex::Y);
     static_assert(Next(AxisIndex::Y) == AxisIndex::Z);
@@ -531,7 +532,7 @@ namespace OpenSim
     // returns a char representation of the given `AxisIndex`
     char ToChar(AxisIndex axis)
     {
-        static_assert(static_cast<size_t>(AxisIndex::TOTAL) == 3);
+        static_assert(osc::NumOptions<AxisIndex>() == 3);
         switch (axis)
         {
         case AxisIndex::X:
@@ -736,7 +737,7 @@ namespace OpenSim
             // this is what the algorithm must ultimately compute in order to
             // calculate a change-of-basis (rotation) matrix
             std::array<SimTK::UnitVec3, 3> axes{};
-            static_assert(axes.size() == static_cast<size_t>(AxisIndex::TOTAL));
+            static_assert(axes.size() == osc::NumOptions<AxisIndex>());
 
             // assign first axis
             SimTK::UnitVec3& firstAxisDir = axes.at(ToIndex(axisEdge.axisIndex));

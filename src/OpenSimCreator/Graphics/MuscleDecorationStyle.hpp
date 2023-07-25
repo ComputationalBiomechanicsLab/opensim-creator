@@ -10,7 +10,8 @@ namespace osc
         OpenSim = 0,
         FibersAndTendons,
         Hidden,
-        TOTAL,
+        NUM_OPTIONS,
+
         Default = OpenSim,
     };
 

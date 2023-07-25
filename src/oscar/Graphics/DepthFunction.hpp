@@ -6,7 +6,8 @@ namespace osc
     {
         Less = 0,
         LessOrEqual,
-        TOTAL,
+        NUM_OPTIONS,
+
         Default = Less,
     };
 }

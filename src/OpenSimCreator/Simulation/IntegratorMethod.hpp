@@ -22,7 +22,7 @@ namespace osc
         RungeKuttaMerson,
         SemiExplicitEuler2,
         Verlet,
-        TOTAL,
+        NUM_OPTIONS,
     };
 
     nonstd::span<IntegratorMethod const> GetAllIntegratorMethods();

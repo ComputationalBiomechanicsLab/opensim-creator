@@ -1,13 +1,12 @@
 #pragma once
 
-#include <cstdint>
 #include <iosfwd>
 
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
     // data type of a material-assignable property parsed from the shader code
-    enum class ShaderType : int32_t {
+    enum class ShaderType {
         Float = 0,
         Vec2,
         Vec3,
@@ -19,7 +18,7 @@ namespace osc
         Sampler2D,
         SamplerCube,
         Unknown,
-        TOTAL,
+        NUM_OPTIONS,
     };
 
     std::ostream& operator<<(std::ostream&, ShaderType);

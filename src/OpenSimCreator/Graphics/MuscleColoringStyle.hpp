@@ -13,7 +13,8 @@ namespace osc
         Excitation,
         Force,
         FiberLength,
-        TOTAL,
+        NUM_OPTIONS,
+
         Default = OpenSim,
     };
 

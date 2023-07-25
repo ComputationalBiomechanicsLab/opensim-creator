@@ -32,7 +32,7 @@ namespace osc::log
         err,
         critical,
         off,
-        NUM_LEVELS
+        NUM_LEVELS,
     };
 
     CStringView toCStringView(Level);
