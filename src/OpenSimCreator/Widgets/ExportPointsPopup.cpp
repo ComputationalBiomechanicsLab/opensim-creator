@@ -135,7 +135,7 @@ namespace
     {
         ImGui::Text("Description:");
         ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
-        ImGui::TextWrapped(c_ExplanationText.c_str());
+        ImGui::TextWrapped("%s", c_ExplanationText.c_str());
         ImGui::PopStyleColor();
     }
 
