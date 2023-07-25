@@ -43,6 +43,7 @@
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
+#include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <SimTKcommon/basics.h>
 
@@ -376,6 +377,47 @@ void osc::DrawOutputNameColumn(
     {
         ImGui::SameLine();
         osc::DrawHelpMarker(output.getName(), output.getDescription());
+    }
+}
+
+void osc::DrawWithRespectToMenuContainingMenuPerFrame(
+    OpenSim::Component const& root,
+    std::function<void(OpenSim::Frame const&)> const& onFrameMenuOpened)
+{
+    if (ImGui::BeginMenu("With Respect to"))
+    {
+        int imguiID = 0;
+        for (OpenSim::Frame const& frame : root.getComponentList<OpenSim::Frame>())
+        {
+            ImGui::PushID(imguiID++);
+            if (ImGui::BeginMenu(frame.getName().c_str()))
+            {
+                onFrameMenuOpened(frame);
+                ImGui::EndMenu();
+            }
+            ImGui::PopID();
+        }
+        ImGui::EndMenu();
+    }
+}
+
+void osc::DrawWithRespectToMenuContainingMenuItemPerFrame(
+    OpenSim::Component const& root,
+    std::function<void(OpenSim::Frame const&)> const& onFrameMenuItemClicked)
+{
+    if (ImGui::BeginMenu("With Respect to"))
+    {
+        int imguiID = 0;
+        for (OpenSim::Frame const& frame : root.getComponentList<OpenSim::Frame>())
+        {
+            ImGui::PushID(imguiID++);
+            if (ImGui::MenuItem(frame.getName().c_str()))
+            {
+                onFrameMenuItemClicked(frame);
+            }
+            ImGui::PopID();
+        }
+        ImGui::EndMenu();
     }
 }
 

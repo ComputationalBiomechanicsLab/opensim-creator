@@ -26,6 +26,7 @@ namespace osc { class VirtualModelStatePair; }
 namespace osc { class VirtualOutputExtractor; }
 namespace osc { class SimulationModelStatePair; }
 namespace OpenSim { class Component; }
+namespace OpenSim { class Frame; }
 
 namespace osc
 {
@@ -41,6 +42,26 @@ namespace osc
         VirtualOutputExtractor const& output,
         bool centered = true,
         SimulationModelStatePair* maybeActiveSate = nullptr
+    );
+
+    // draws a "With Respect to" menu that prompts the user to hover a frame
+    // within the given component hierarchy (from `root`)
+    //
+    // calls `onFrameMenuOpened` when the user is hovering a frame's menu
+    // (i.e. `ImGui::BeginMenu($FRAME)` returned `true`)
+    void DrawWithRespectToMenuContainingMenuPerFrame(
+        OpenSim::Component const& root,
+        std::function<void(OpenSim::Frame const&)> const& onFrameMenuOpened
+    );
+
+    // draws a "With Respect to" menu that prompts the user to click a frame
+    // within the given component hierarchy (from `root`)
+    //
+    // calls `onFrameMenuItemClicked` when the user clicks the `ImGui::MenuItem`
+    // associated with a frame
+    void DrawWithRespectToMenuContainingMenuItemPerFrame(
+        OpenSim::Component const& root,
+        std::function<void(OpenSim::Frame const&)> const& onFrameMenuItemClicked
     );
 
     // basic wigetized parts of the 3D viewer

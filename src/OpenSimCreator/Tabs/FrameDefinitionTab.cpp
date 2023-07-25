@@ -2132,56 +2132,6 @@ namespace
 // "calculate" context menu
 namespace
 {
-    // draws a "With Respect to" menu that prompts the user to select a frame
-    // that they would like a calculation to be expressed in
-    //
-    // calls `onFrameMenuOpened` when the user has opened a particular frame's
-    // menu
-    void DrawWithRespectToMenu(
-        OpenSim::Model const& model,
-        std::function<void(OpenSim::Frame const&)> const& onFrameMenuOpened)
-    {
-        if (ImGui::BeginMenu("With Respect to"))
-        {
-            int imguiID = 0;
-            for (OpenSim::Frame const& frame : model.getComponentList<OpenSim::Frame>())
-            {
-                ImGui::PushID(imguiID++);
-                if (ImGui::BeginMenu(frame.getName().c_str()))
-                {
-                    onFrameMenuOpened(frame);
-                    ImGui::EndMenu();
-                }
-                ImGui::PopID();
-            }
-            ImGui::EndMenu();
-        }
-    }
-
-    // draws a "With Respect to" menu that prompts the user to select a frame
-    // that they would like a calculation to be expressed in
-    //
-    // calls `onFrameMenuItemClicked` when the user clicks a frame's menu item
-    void DrawWithRespectToMenuItems(
-        OpenSim::Model const& model,
-        std::function<void(OpenSim::Frame const&)> const& onFrameMenuItemClicked)
-    {
-        if (ImGui::BeginMenu("With Respect to"))
-        {
-            int imguiID = 0;
-            for (OpenSim::Frame const& frame : model.getComponentList<OpenSim::Frame>())
-            {
-                ImGui::PushID(imguiID++);
-                if (ImGui::MenuItem(frame.getName().c_str()))
-                {
-                    onFrameMenuItemClicked(frame);
-                }
-                ImGui::PopID();
-            }
-            ImGui::EndMenu();
-        }
-    }
-
     // draws the given location (in ground)'s location w.r.t. the given frame as
     // copyable fields
     void DrawPointTranslationInformationWithRespectTo(
@@ -2224,14 +2174,16 @@ namespace
         {
             if (ImGui::BeginMenu("Position"))
             {
-                DrawWithRespectToMenu(model, [&state, &point](OpenSim::Frame const& frame)
+                auto const onFrameMenuOpened = [&state, &point](OpenSim::Frame const& frame)
                 {
                     DrawPointTranslationInformationWithRespectTo(
                         state,
                         frame,
                         point.getLocationInGround(state)
                     );
-                });
+                };
+
+                osc::DrawWithRespectToMenuContainingMenuPerFrame(model, onFrameMenuOpened);
                 ImGui::EndMenu();
             }
             ImGui::EndMenu();
@@ -2264,7 +2216,7 @@ namespace
 
     // draws the calculate menu for an OpenSim frame
     void DrawCalculateMenu(
-        OpenSim::Model const& model,
+        OpenSim::Component const& root,
         SimTK::State const& state,
         OpenSim::Frame const& frame)
     {
@@ -2272,10 +2224,11 @@ namespace
         {
             if (ImGui::BeginMenu("Transform"))
             {
-                DrawWithRespectToMenu(model, [&state, &frame](OpenSim::Frame const& otherFrame)
+                auto const onFrameMenuOpened = [&state, &frame](OpenSim::Frame const& otherFrame)
                 {
                     DrawPointTranslationInformationWithRespectTo(state, frame, otherFrame);
-                });
+                };
+                osc::DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
                 ImGui::EndMenu();
             }
             ImGui::EndMenu();
@@ -2284,7 +2237,7 @@ namespace
 
     // draws the calculate menu for an edge
     void DrawCalculateMenu(
-        OpenSim::Model const& model,
+        OpenSim::Component const& root,
         SimTK::State const& state,
         OpenSim::FDVirtualEdge const& edge)
     {
@@ -2292,40 +2245,45 @@ namespace
         {
             if (ImGui::BeginMenu("Start Point"))
             {
-                DrawWithRespectToMenu(model, [&state, &edge](OpenSim::Frame const& frame)
+                auto const onFrameMenuOpened = [&state, &edge](OpenSim::Frame const& frame)
                 {
                     DrawPointTranslationInformationWithRespectTo(
                         state,
                         frame,
                         edge.getEdgePointsInGround(state).start
                     );
-                });
+                };
+                osc::DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
                 ImGui::EndMenu();
             }
 
             if (ImGui::BeginMenu("End Point"))
             {
-                DrawWithRespectToMenu(model, [&state, &edge](OpenSim::Frame const& frame)
+                auto const onFrameMenuOpened = [&state, &edge](OpenSim::Frame const& frame)
                 {
                     DrawPointTranslationInformationWithRespectTo(
                         state,
                         frame,
                         edge.getEdgePointsInGround(state).end
                     );
-                });
+                };
+
+                osc::DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
                 ImGui::EndMenu();
             }
 
             if (ImGui::BeginMenu("Direction"))
             {
-                DrawWithRespectToMenu(model, [&state, &edge](OpenSim::Frame const& frame)
+                auto const onFrameMenuOpened = [&state, &edge](OpenSim::Frame const& frame)
                 {
                     DrawDirectionInformationWithRepsectTo(
                         state,
                         frame,
                         OpenSim::CalcDirection(edge.getEdgePointsInGround(state))
                     );
-                });
+                };
+
+                osc::DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
                 ImGui::EndMenu();
             }
 
@@ -2517,7 +2475,7 @@ namespace
     {
         if (ImGui::BeginMenu(".obj"))
         {
-            DrawWithRespectToMenuItems(model->getModel(), [model, &mesh](OpenSim::Frame const& frame)
+            auto const onFrameMenuItemClicked = [model, &mesh](OpenSim::Frame const& frame)
             {
                 ActionReexportMeshOBJWithRespectTo(
                     model->getModel(),
@@ -2525,13 +2483,15 @@ namespace
                     mesh,
                     frame
                 );
-            });
+            };
+
+            osc::DrawWithRespectToMenuContainingMenuItemPerFrame(model->getModel(), onFrameMenuItemClicked);
             ImGui::EndMenu();
         }
 
         if (ImGui::BeginMenu(".stl"))
         {
-            DrawWithRespectToMenuItems(model->getModel(), [model, &mesh](OpenSim::Frame const& frame)
+            auto const onFrameMenuItemClicked = [model, &mesh](OpenSim::Frame const& frame)
             {
                 ActionReexportMeshSTLWithRespectTo(
                     model->getModel(),
@@ -2539,7 +2499,9 @@ namespace
                     mesh,
                     frame
                 );
-            });
+            };
+
+            osc::DrawWithRespectToMenuContainingMenuItemPerFrame(model->getModel(), onFrameMenuItemClicked);
             ImGui::EndMenu();
         }
     }
