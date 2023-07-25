@@ -13,8 +13,8 @@ class testname final {                                                         \
     static NoType& test(...);                                                  \
                                                                                \
 public:                                                                        \
-    static bool constexpr value = sizeof(test<T>(0)) == sizeof(YesType);       \
+    static constexpr bool value = sizeof(test<T>(0)) == sizeof(YesType);       \
 };                                                                             \
                                                                                \
 template<typename T>                                                           \
-inline bool constexpr testname ## _v = testname<T>::value;
+inline constexpr bool testname ## _v = testname<T>::value;

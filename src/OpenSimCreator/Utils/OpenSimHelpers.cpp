@@ -75,6 +75,11 @@
 #include <utility>
 #include <vector>
 
+namespace
+{
+    constexpr glm::vec3 c_ContactHalfSpaceUpwardsNormal = {-1.0f, 0.0f, 0.0f};
+}
+
 // helpers
 namespace
 {
@@ -1368,8 +1373,6 @@ namespace
         OpenSim::ContactHalfSpace const& halfSpace,
         SimTK::State const& state)
     {
-        glm::vec3 constexpr c_ContactHalfSpaceUpwardsNormal = {-1.0f, 0.0f, 0.0f};
-
         // go through the contact geometries that are attached to the force
         //
         // - if there's a plane, then the plane's location+normal are needed in order

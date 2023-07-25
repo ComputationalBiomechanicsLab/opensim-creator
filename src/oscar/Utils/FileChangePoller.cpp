@@ -5,7 +5,7 @@
 
 namespace
 {
-    osc::CStringView constexpr c_ModelNoBackingFileSenteniel = "Unassigned";
+    constexpr osc::CStringView c_ModelNoBackingFileSenteniel = "Unassigned";
 }
 
 std::filesystem::file_time_type GetLastModificationTime(std::string const& path)

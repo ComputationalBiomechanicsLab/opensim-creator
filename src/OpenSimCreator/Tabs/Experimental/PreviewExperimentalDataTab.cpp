@@ -52,7 +52,7 @@ namespace
     };
 
     // human-readable name of a data type
-    auto constexpr c_ColumnDataTypeStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_ColumnDataTypeStrings = osc::to_array<osc::CStringView>(
     {
         "Point",
         "PointForce",
@@ -63,7 +63,7 @@ namespace
     static_assert(c_ColumnDataTypeStrings.size() == osc::NumOptions<ColumnDataType>());
 
     // the number of floating-point values the column is backed by
-    auto constexpr c_ColumnDataSizes = osc::to_array<int>(
+    constexpr auto c_ColumnDataSizes = osc::to_array<int>(
     {
         3,
         6,

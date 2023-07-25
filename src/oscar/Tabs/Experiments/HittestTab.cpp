@@ -31,7 +31,7 @@ namespace
 {
     constexpr osc::CStringView c_TabStringID = "Experiments/Hittest";
 
-    auto constexpr c_CrosshairVerts = osc::to_array<glm::vec3>(
+    constexpr auto c_CrosshairVerts = osc::to_array<glm::vec3>(
     {
         // -X to +X
         {-0.05f, 0.0f, 0.0f},
@@ -42,16 +42,16 @@ namespace
         {0.0f, +0.05f, 0.0f},
     });
 
-    auto constexpr c_CrosshairIndices = osc::to_array<uint16_t>({ 0, 1, 2, 3 });
+    constexpr auto c_CrosshairIndices = osc::to_array<uint16_t>({ 0, 1, 2, 3 });
 
-    auto constexpr c_TriangleVerts = osc::to_array<glm::vec3>(
+    constexpr auto c_TriangleVerts = osc::to_array<glm::vec3>(
     {
         {-10.0f, -10.0f, 0.0f},
         {+0.0f, +10.0f, 0.0f},
         {+10.0f, -10.0f, 0.0f},
     });
 
-    auto constexpr c_TriangleIndices = osc::to_array<uint16_t>({ 0, 1, 2 });
+    constexpr auto c_TriangleIndices = osc::to_array<uint16_t>({ 0, 1, 2 });
 
     struct SceneSphere final {
 

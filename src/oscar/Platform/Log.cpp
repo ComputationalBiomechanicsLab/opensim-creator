@@ -54,7 +54,7 @@ namespace
         return s_GlobalSinks;
     }
 
-    auto constexpr c_LogLevelStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_LogLevelStrings = osc::to_array<osc::CStringView>(
     {
         "trace",
         "debug",

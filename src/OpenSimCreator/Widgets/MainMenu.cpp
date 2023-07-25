@@ -41,7 +41,7 @@
 
 namespace
 {
-    auto constexpr c_AntialiasingLevels = osc::to_array<char const* const>(
+    constexpr auto c_AntialiasingLevels = osc::to_array<char const* const>(
     {
         "x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128"
     });
@@ -243,7 +243,7 @@ void osc::MainMenuAboutTab::draw()
         return;
     }
 
-    float constexpr menuWidth = 400;
+    constexpr float menuWidth = 400;
     ImGui::Dummy({menuWidth, 0});
 
     ImGui::TextUnformatted("graphics");

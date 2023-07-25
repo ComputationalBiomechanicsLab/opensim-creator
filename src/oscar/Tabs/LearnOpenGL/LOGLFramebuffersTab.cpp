@@ -26,7 +26,7 @@
 
 namespace
 {
-    auto constexpr c_PlaneVertices = osc::to_array<glm::vec3>(
+    constexpr auto c_PlaneVertices = osc::to_array<glm::vec3>(
     {
         { 5.0f, -0.5f,  5.0f},
         {-5.0f, -0.5f,  5.0f},
@@ -36,7 +36,7 @@ namespace
         {-5.0f, -0.5f, -5.0f},
         { 5.0f, -0.5f, -5.0f},
     });
-    auto constexpr c_PlaneTexCoords = osc::to_array<glm::vec2>(
+    constexpr auto c_PlaneTexCoords = osc::to_array<glm::vec2>(
     {
         {2.0f, 0.0f},
         {0.0f, 0.0f},
@@ -46,7 +46,7 @@ namespace
         {0.0f, 2.0f},
         {2.0f, 2.0f},
     });
-    auto constexpr c_PlaneIndices = osc::to_array<uint16_t>(
+    constexpr auto c_PlaneIndices = osc::to_array<uint16_t>(
     {
         0,
         2,
@@ -57,7 +57,7 @@ namespace
         4,
     });
 
-    osc::CStringView constexpr c_TabStringID = "LearnOpenGL/Framebuffers";
+    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Framebuffers";
 
     osc::Mesh GeneratePlane()
     {

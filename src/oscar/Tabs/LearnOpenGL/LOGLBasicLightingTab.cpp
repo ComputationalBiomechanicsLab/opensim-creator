@@ -20,7 +20,7 @@
 
 namespace
 {
-    osc::CStringView constexpr c_TabStringID = "LearnOpenGL/BasicLighting";
+    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/BasicLighting";
 }
 
 class osc::LOGLBasicLightingTab::Impl final {

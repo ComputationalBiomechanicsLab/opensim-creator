@@ -49,6 +49,8 @@
 namespace
 {
     inline constexpr float c_GeometryPathBaseRadius = 0.005f;
+    constexpr osc::Color c_EffectiveLineOfActionColor = osc::Color::green();
+    constexpr osc::Color c_AnatomicalLineOfActionColor = osc::Color::red();
 
     // helper: convert a physical frame's transform to ground into an osc::Transform
     osc::Transform TransformInGround(OpenSim::Frame const& frame, SimTK::State const& state)
@@ -742,9 +744,6 @@ namespace
         RendererState& rs,
         OpenSim::Muscle const& musc)
     {
-        osc::Color constexpr c_EffectiveLineOfActionColor = osc::Color::green();
-        osc::Color constexpr c_AnatomicalLineOfActionColor = osc::Color::red();
-
         // if options request, render effective muscle lines of action
         if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForOrigin() ||
             rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForInsertion())

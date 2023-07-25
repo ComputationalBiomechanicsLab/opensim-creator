@@ -358,7 +358,7 @@ private:
 
     void drawOverlays(Rect const& viewportRect)
     {
-        float constexpr w = 200.0f;
+        float const w = 200.0f;
 
         auto const textures = osc::to_array<RenderTexture const*>(
         {

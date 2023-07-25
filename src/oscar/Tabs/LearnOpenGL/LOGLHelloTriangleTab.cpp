@@ -24,7 +24,7 @@ namespace
 
     osc::Mesh GenerateTriangleMesh()
     {
-        auto constexpr points = osc::to_array<glm::vec3>(
+        constexpr auto points = osc::to_array<glm::vec3>(
         {
             {-1.0f, -1.0f, 0.0f},  // bottom-left
             { 1.0f, -1.0f, 0.0f},  // bottom-right
@@ -33,14 +33,14 @@ namespace
 
         // care: we're using colors that are equivalent in sRGB and linear
         //       color spaces here
-        auto constexpr colors = osc::to_array<osc::Rgba32>(
+        constexpr auto colors = osc::to_array<osc::Rgba32>(
         {
             {0xff, 0x00, 0x00, 0xff},
             {0x00, 0xff, 0x00, 0xff},
             {0x00, 0x00, 0xff, 0xff},
         });
 
-        auto constexpr indices = osc::to_array<uint16_t>({0, 1, 2});
+        constexpr auto indices = osc::to_array<uint16_t>({0, 1, 2});
 
         osc::Mesh m;
         m.setVerts(points);

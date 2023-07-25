@@ -576,7 +576,7 @@ public:
 
     Rect calcMenuRect()
     {
-        glm::vec2 constexpr menuMaxDims = {640.0f, 512.0f};
+        constexpr glm::vec2 menuMaxDims = {640.0f, 512.0f};
 
         Rect const tabRect = osc::GetMainViewportWorkspaceScreenRect();
         glm::vec2 const menuDims = osc::Min(osc::Dimensions(tabRect), menuMaxDims);

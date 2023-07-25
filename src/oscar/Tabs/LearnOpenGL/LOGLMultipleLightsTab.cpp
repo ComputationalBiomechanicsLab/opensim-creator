@@ -27,10 +27,10 @@
 
 namespace
 {
-    osc::CStringView constexpr c_TabStringID = "LearnOpenGL/MultipleLights";
+    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/MultipleLights";
 
     // positions of cubes within the scene
-    auto constexpr c_CubePositions = osc::to_array<glm::vec3>(
+    constexpr auto c_CubePositions = osc::to_array<glm::vec3>(
     {
         { 0.0f,  0.0f,  0.0f },
         { 2.0f,  5.0f, -15.0f},
@@ -45,20 +45,19 @@ namespace
     });
 
     // positions of point lights within the scene (the camera also has a spotlight)
-    auto constexpr c_PointLightPositions = osc::to_array<glm::vec3>(
+    constexpr auto c_PointLightPositions = osc::to_array<glm::vec3>(
     {
         { 0.7f,  0.2f,  2.0f },
         { 2.3f, -3.3f, -4.0f },
         {-4.0f,  2.0f, -12.0f},
         { 0.0f,  0.0f, -3.0f },
     });
-
-    auto constexpr c_PointLightAmbients = osc::to_array<float>({0.001f, 0.001f, 0.001f, 0.001f});
-    auto constexpr c_PointLightDiffuses = osc::to_array<float>({0.2f, 0.2f, 0.2f, 0.2f});
-    auto constexpr c_PointLightSpeculars = osc::to_array<float>({0.5f, 0.5f, 0.5f, 0.5f});
-    auto constexpr c_PointLightConstants = osc::to_array<float>({1.0f, 1.0f, 1.0f, 1.0f});
-    auto constexpr c_PointLightLinears = osc::to_array<float>({0.09f, 0.09f, 0.09f, 0.09f});
-    auto constexpr c_PointLightQuadratics = osc::to_array<float>({0.032f, 0.032f, 0.032f, 0.032f});
+    constexpr auto c_PointLightAmbients = osc::to_array<float>({0.001f, 0.001f, 0.001f, 0.001f});
+    constexpr auto c_PointLightDiffuses = osc::to_array<float>({0.2f, 0.2f, 0.2f, 0.2f});
+    constexpr auto c_PointLightSpeculars = osc::to_array<float>({0.5f, 0.5f, 0.5f, 0.5f});
+    constexpr auto c_PointLightConstants = osc::to_array<float>({1.0f, 1.0f, 1.0f, 1.0f});
+    constexpr auto c_PointLightLinears = osc::to_array<float>({0.09f, 0.09f, 0.09f, 0.09f});
+    constexpr auto c_PointLightQuadratics = osc::to_array<float>({0.032f, 0.032f, 0.032f, 0.032f});
 }
 
 class osc::LOGLMultipleLightsTab::Impl final {

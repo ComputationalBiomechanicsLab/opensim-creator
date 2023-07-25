@@ -30,8 +30,8 @@
 
 namespace
 {
-    osc::Color constexpr c_UnselectedColor = {1.0f, 1.0f, 1.0f, 0.4f};
-    osc::Color constexpr c_SelectedColor = {1.0f, 0.0f, 0.0f, 0.8f};
+    constexpr osc::Color c_UnselectedColor = {1.0f, 1.0f, 1.0f, 0.4f};
+    constexpr osc::Color c_SelectedColor = {1.0f, 0.0f, 0.0f, 0.8f};
 
     // returns a rect that fully spans at least one dimension of the target rect, but has
     // the given aspect ratio

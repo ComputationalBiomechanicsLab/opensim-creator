@@ -32,7 +32,7 @@
 
 namespace
 {
-    inline float constexpr c_DefaultDragThreshold = 5.0f;
+    inline constexpr float c_DefaultDragThreshold = 5.0f;
 
     template<typename TCollection, typename UCollection>
     float diff(TCollection const& older, UCollection const& newer, size_t n)

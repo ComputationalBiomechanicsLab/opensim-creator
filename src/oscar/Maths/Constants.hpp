@@ -6,8 +6,8 @@
 
 namespace osc
 {
-    static inline float constexpr fpi = static_cast<float>(M_PI);
-    static inline float constexpr fpi2 = fpi/2.0f;
-    static inline float constexpr fpi4 = fpi/4.0f;
-    static inline float constexpr f1pi = 1.0f/fpi;
+    static inline constexpr float fpi = static_cast<float>(M_PI);
+    static inline constexpr float fpi2 = fpi/2.0f;
+    static inline constexpr float fpi4 = fpi/4.0f;
+    static inline constexpr float f1pi = 1.0f/fpi;
 }

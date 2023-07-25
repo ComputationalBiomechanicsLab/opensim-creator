@@ -27,7 +27,7 @@ namespace
         CustomRenderingOptionFlags_Default = CustomRenderingOptionFlags_None,
     };
 
-    auto constexpr c_CustomRenderingOptionLabels = osc::to_array<osc::CStringView>(
+    constexpr auto c_CustomRenderingOptionLabels = osc::to_array<osc::CStringView>(
     {
         "XZ Grid",
         "XY Grid",
@@ -45,14 +45,14 @@ namespace
         NUM_OPTIONS,
     };
 
-    auto constexpr c_CustomRenderingOptionGroupLabels = osc::to_array<osc::CStringView>(
+    constexpr auto c_CustomRenderingOptionGroupLabels = osc::to_array<osc::CStringView>(
     {
         "Alignment",
         "Development",
     });
     static_assert(c_CustomRenderingOptionGroupLabels.size() == osc::NumOptions<CustomRenderingOptionGroup>());
 
-    auto constexpr c_CustomRenderingOptionGroups = osc::to_array<CustomRenderingOptionGroup>(
+    constexpr auto c_CustomRenderingOptionGroups = osc::to_array<CustomRenderingOptionGroup>(
     {
         CustomRenderingOptionGroup::Alignment,
         CustomRenderingOptionGroup::Alignment,

@@ -22,7 +22,7 @@ namespace
         Default = DrawFloor | Shadows | DrawSelectionRims,
     };
 
-    std::array<osc::CStringView, osc::NumOptions<CustomRenderingOptionFlags>()> constexpr c_CustomRenderingOptionLabels = osc::to_array<osc::CStringView>(
+    constexpr std::array<osc::CStringView, osc::NumOptions<CustomRenderingOptionFlags>()> c_CustomRenderingOptionLabels = osc::to_array<osc::CStringView>(
     {
         "Floor",
         "Mesh Normals",
@@ -35,12 +35,12 @@ namespace
         NUM_OPTIONS,
     };
 
-    std::array<osc::CStringView, osc::NumOptions<CustomRenderingOptionGroup>()> constexpr c_CustomRenderingOptionGroupLabels = osc::to_array<osc::CStringView>(
+    constexpr std::array<osc::CStringView, osc::NumOptions<CustomRenderingOptionGroup>()> c_CustomRenderingOptionGroupLabels = osc::to_array<osc::CStringView>(
     {
         "Rendering",
     });
 
-    std::array<CustomRenderingOptionGroup, osc::NumOptions<CustomRenderingOptionFlags>()> constexpr c_CustomRenderingOptionGroups = osc::to_array<CustomRenderingOptionGroup>(
+    constexpr std::array<CustomRenderingOptionGroup, osc::NumOptions<CustomRenderingOptionFlags>()> c_CustomRenderingOptionGroups = osc::to_array<CustomRenderingOptionGroup>(
     {
         CustomRenderingOptionGroup::Rendering,
         CustomRenderingOptionGroup::Rendering,

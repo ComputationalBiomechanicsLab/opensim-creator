@@ -1461,7 +1461,7 @@ namespace
             {
                 ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
 
-                osc::CStringView constexpr cancellationButtonText = ICON_FA_ARROW_LEFT " Cancel (ESC)";
+                constexpr osc::CStringView cancellationButtonText = ICON_FA_ARROW_LEFT " Cancel (ESC)";
                 glm::vec2 const margin = {25.0f, 25.0f};
                 glm::vec2 const buttonDims = osc::CalcButtonSize(cancellationButtonText);
                 glm::vec2 const buttonTopLeft = panelState.viewportRect.p2 - (buttonDims + margin);

@@ -137,36 +137,36 @@ using osc::Line;
 // user-facing string constants
 namespace
 {
-    osc::CStringView constexpr c_GroundLabel = "Ground";
-    osc::CStringView constexpr c_GroundLabelPluralized = "Ground";
-    osc::CStringView constexpr c_GroundLabelOptionallyPluralized = "Ground(s)";
-    osc::CStringView constexpr c_GroundDescription = "Ground is an inertial reference frame in which the motion of all frames and points may conveniently and efficiently be expressed. It is always defined to be at (0, 0, 0) in 'worldspace' and cannot move. All bodies in the model must eventually attach to ground via joints.";
+    constexpr osc::CStringView c_GroundLabel = "Ground";
+    constexpr osc::CStringView c_GroundLabelPluralized = "Ground";
+    constexpr osc::CStringView c_GroundLabelOptionallyPluralized = "Ground(s)";
+    constexpr osc::CStringView c_GroundDescription = "Ground is an inertial reference frame in which the motion of all frames and points may conveniently and efficiently be expressed. It is always defined to be at (0, 0, 0) in 'worldspace' and cannot move. All bodies in the model must eventually attach to ground via joints.";
 
-    osc::CStringView constexpr c_MeshLabel = "Mesh";
-    osc::CStringView constexpr c_MeshLabelPluralized = "Meshes";
-    osc::CStringView constexpr c_MeshLabelOptionallyPluralized = "Mesh(es)";
-    osc::CStringView constexpr c_MeshDescription = "Meshes are decorational components in the model. They can be translated, rotated, and scaled. Typically, meshes are 'attached' to other elements in the model, such as bodies. When meshes are 'attached' to something, they will 'follow' the thing they are attached to.";
-    osc::CStringView constexpr c_MeshAttachmentCrossrefName = "parent";
+    constexpr osc::CStringView c_MeshLabel = "Mesh";
+    constexpr osc::CStringView c_MeshLabelPluralized = "Meshes";
+    constexpr osc::CStringView c_MeshLabelOptionallyPluralized = "Mesh(es)";
+    constexpr osc::CStringView c_MeshDescription = "Meshes are decorational components in the model. They can be translated, rotated, and scaled. Typically, meshes are 'attached' to other elements in the model, such as bodies. When meshes are 'attached' to something, they will 'follow' the thing they are attached to.";
+    constexpr osc::CStringView c_MeshAttachmentCrossrefName = "parent";
 
-    osc::CStringView constexpr c_BodyLabel = "Body";
-    osc::CStringView constexpr c_BodyLabelPluralized = "Bodies";
-    osc::CStringView constexpr c_BodyLabelOptionallyPluralized = "Body(s)";
-    osc::CStringView constexpr c_BodyDescription = "Bodies are active elements in the model. They define a 'frame' (effectively, a location + orientation) with a mass.\n\nOther body properties (e.g. inertia) can be edited in the main OpenSim Creator editor after you have converted the model into an OpenSim model.";
+    constexpr osc::CStringView c_BodyLabel = "Body";
+    constexpr osc::CStringView c_BodyLabelPluralized = "Bodies";
+    constexpr osc::CStringView c_BodyLabelOptionallyPluralized = "Body(s)";
+    constexpr osc::CStringView c_BodyDescription = "Bodies are active elements in the model. They define a 'frame' (effectively, a location + orientation) with a mass.\n\nOther body properties (e.g. inertia) can be edited in the main OpenSim Creator editor after you have converted the model into an OpenSim model.";
 
-    osc::CStringView constexpr c_JointLabel = "Joint";
-    osc::CStringView constexpr c_JointLabelPluralized = "Joints";
-    osc::CStringView constexpr c_JointLabelOptionallyPluralized = "Joint(s)";
-    osc::CStringView constexpr c_JointDescription = "Joints connect two physical frames (i.e. bodies and ground) together and specifies their relative permissible motion (e.g. PinJoints only allow rotation along one axis).\n\nIn OpenSim, joints are the 'edges' of a directed topology graph where bodies are the 'nodes'. All bodies in the model must ultimately connect to ground via joints.";
-    osc::CStringView constexpr c_JointParentCrossrefName = "parent";
-    osc::CStringView constexpr c_JointChildCrossrefName = "child";
+    constexpr osc::CStringView c_JointLabel = "Joint";
+    constexpr osc::CStringView c_JointLabelPluralized = "Joints";
+    constexpr osc::CStringView c_JointLabelOptionallyPluralized = "Joint(s)";
+    constexpr osc::CStringView c_JointDescription = "Joints connect two physical frames (i.e. bodies and ground) together and specifies their relative permissible motion (e.g. PinJoints only allow rotation along one axis).\n\nIn OpenSim, joints are the 'edges' of a directed topology graph where bodies are the 'nodes'. All bodies in the model must ultimately connect to ground via joints.";
+    constexpr osc::CStringView c_JointParentCrossrefName = "parent";
+    constexpr osc::CStringView c_JointChildCrossrefName = "child";
 
-    osc::CStringView constexpr c_StationLabel = "Station";
-    osc::CStringView constexpr c_StationLabelPluralized = "Stations";
-    osc::CStringView constexpr c_StationLabelOptionallyPluralized = "Station(s)";
-    osc::CStringView constexpr c_StationDescription = "Stations are points of interest in the model. They can be used to compute a 3D location in the frame of the thing they are attached to.\n\nThe utility of stations is that you can use them to visually mark points of interest. Those points of interest will then be defined with respect to whatever they are attached to. This is useful because OpenSim typically requires relative coordinates for things in the model (e.g. muscle paths).";
-    osc::CStringView constexpr c_StationParentCrossrefName = "parent";
+    constexpr osc::CStringView c_StationLabel = "Station";
+    constexpr osc::CStringView c_StationLabelPluralized = "Stations";
+    constexpr osc::CStringView c_StationLabelOptionallyPluralized = "Station(s)";
+    constexpr osc::CStringView c_StationDescription = "Stations are points of interest in the model. They can be used to compute a 3D location in the frame of the thing they are attached to.\n\nThe utility of stations is that you can use them to visually mark points of interest. Those points of interest will then be defined with respect to whatever they are attached to. This is useful because OpenSim typically requires relative coordinates for things in the model (e.g. muscle paths).";
+    constexpr osc::CStringView c_StationParentCrossrefName = "parent";
 
-    osc::CStringView constexpr c_TranslationDescription = "Translation of the component in ground. OpenSim defines this as 'unitless'; however, OpenSim models typically use meters.";
+    constexpr osc::CStringView c_TranslationDescription = "Translation of the component in ground. OpenSim defines this as 'unitless'; however, OpenSim models typically use meters.";
 }
 
 // senteniel UID constants
@@ -186,7 +186,7 @@ namespace
 // other constants
 namespace
 {
-    float constexpr c_ConnectionLineWidth = 1.0f;
+    constexpr float c_ConnectionLineWidth = 1.0f;
 }
 
 // generic helper functions
@@ -5223,7 +5223,7 @@ namespace
             osc::Color sceneBackground{48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f};
             osc::Color gridLines{0.7f, 0.7f, 0.7f, 0.15f};
         } m_Colors;
-        static auto constexpr c_ColorNames = osc::to_array<char const*>(
+        static constexpr auto c_ColorNames = osc::to_array<char const*>(
         {
             "ground",
             "meshes",
@@ -5249,7 +5249,7 @@ namespace
             bool stationConnectionLines = true;
             bool floor = true;
         } m_VisibilityFlags;
-        static auto constexpr c_VisibilityFlagNames = osc::to_array<char const*>(
+        static constexpr auto c_VisibilityFlagNames = osc::to_array<char const*>(
         {
             "ground",
             "meshes",
@@ -5274,7 +5274,7 @@ namespace
             bool joints = true;
             bool stations = true;
         } m_InteractivityFlags;
-        static auto constexpr c_InteractivityFlagNames = osc::to_array<char const*>(
+        static constexpr auto c_InteractivityFlagNames = osc::to_array<char const*>(
         {
             "ground",
             "meshes",
@@ -5288,9 +5288,9 @@ namespace
         // WINDOWS
         //
         // these are runtime-editable flags that dictate which panels are open
-        static inline size_t constexpr c_NumPanelStates = 4;
+        static inline constexpr size_t c_NumPanelStates = 4;
         std::array<bool, c_NumPanelStates> m_PanelStates{false, true, false, false};
-        static auto constexpr c_OpenedPanelNames = osc::to_array<char const*>(
+        static constexpr auto c_OpenedPanelNames = osc::to_array<char const*>(
         {
             "History",
             "Navigator",
@@ -7768,8 +7768,8 @@ private:
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
         ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
 
-        osc::CStringView constexpr text = "Convert to OpenSim Model " ICON_FA_ARROW_RIGHT;
-        glm::vec2 constexpr margin = {25.0f, 35.0f};
+        constexpr osc::CStringView text = "Convert to OpenSim Model " ICON_FA_ARROW_RIGHT;
+        constexpr glm::vec2 margin = {25.0f, 35.0f};
         glm::vec2 const buttonTopLeft = m_Shared->Get3DSceneRect().p2 - (osc::CalcButtonSize(text) + margin);
 
         ImGui::SetCursorScreenPos(buttonTopLeft);

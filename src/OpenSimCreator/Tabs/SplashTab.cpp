@@ -356,7 +356,7 @@ private:
     {
         Rect const tabRect = GetMainViewportWorkspaceScreenRect();
         float const h = ImGui::GetTextLineHeightWithSpacing();
-        float constexpr padding = 5.0f;
+        float const padding = 5.0f;
 
         glm::vec2 const pos
         {

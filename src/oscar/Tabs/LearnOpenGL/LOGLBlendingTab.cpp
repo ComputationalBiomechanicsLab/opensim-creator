@@ -24,7 +24,7 @@
 
 namespace
 {
-    auto constexpr c_PlaneVertices = osc::to_array<glm::vec3>(
+    constexpr auto c_PlaneVertices = osc::to_array<glm::vec3>(
     {
         { 5.0f, -0.5f,  5.0f},
         {-5.0f, -0.5f,  5.0f},
@@ -34,7 +34,7 @@ namespace
         {-5.0f, -0.5f, -5.0f},
         { 5.0f, -0.5f, -5.0f},
     });
-    auto constexpr c_PlaneTexCoords = osc::to_array<glm::vec2>(
+    constexpr auto c_PlaneTexCoords = osc::to_array<glm::vec2>(
     {
         {2.0f, 0.0f},
         {0.0f, 0.0f},
@@ -44,9 +44,9 @@ namespace
         {0.0f, 2.0f},
         {2.0f, 2.0f},
     });
-    auto constexpr c_PlaneIndices = osc::to_array<uint16_t>({0, 2, 1, 3, 5, 4});
+    constexpr auto c_PlaneIndices = osc::to_array<uint16_t>({0, 2, 1, 3, 5, 4});
 
-    auto constexpr c_TransparentVerts = osc::to_array<glm::vec3>(
+    constexpr auto c_TransparentVerts = osc::to_array<glm::vec3>(
     {
         {0.0f,  0.5f, 0.0f},
         {0.0f, -0.5f, 0.0f},
@@ -56,7 +56,7 @@ namespace
         {1.0f, -0.5f, 0.0f},
         {1.0f,  0.5f, 0.0f},
     });
-    auto constexpr c_TransparentTexCoords = osc::to_array<glm::vec2>(
+    constexpr auto c_TransparentTexCoords = osc::to_array<glm::vec2>(
     {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
@@ -66,9 +66,9 @@ namespace
         {1.0f, 1.0f},
         {1.0f, 0.0f},
     });
-    auto constexpr c_TransparentIndices = osc::to_array<uint16_t>({0, 1, 2, 3, 4, 5});
+    constexpr auto c_TransparentIndices = osc::to_array<uint16_t>({0, 1, 2, 3, 4, 5});
 
-    auto constexpr c_WindowLocations = osc::to_array<glm::vec3>(
+    constexpr auto c_WindowLocations = osc::to_array<glm::vec3>(
     {
         {-1.5f, 0.0f, -0.48f},
         { 1.5f, 0.0f,  0.51f},
@@ -77,7 +77,7 @@ namespace
         { 0.5f, 0.0f, -0.6},
     });
 
-    osc::CStringView constexpr c_TabStringID = "LearnOpenGL/Blending";
+    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Blending";
 
     osc::Mesh GeneratePlane()
     {

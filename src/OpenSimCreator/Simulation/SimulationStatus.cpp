@@ -10,7 +10,7 @@
 
 namespace
 {
-    auto constexpr c_SimulatorStatuses = osc::to_array<osc::SimulationStatus>(
+    constexpr auto c_SimulatorStatuses = osc::to_array<osc::SimulationStatus>(
     {
         osc::SimulationStatus::Initializing,
         osc::SimulationStatus::Running,
@@ -20,7 +20,7 @@ namespace
     });
     static_assert(c_SimulatorStatuses.size() == osc::NumOptions<osc::SimulationStatus>());
 
-    auto constexpr c_SimulatorStatusStrings = osc::to_array<char const*>(
+    constexpr auto c_SimulatorStatusStrings = osc::to_array<char const*>(
     {
         "Initializing",
         "Running",

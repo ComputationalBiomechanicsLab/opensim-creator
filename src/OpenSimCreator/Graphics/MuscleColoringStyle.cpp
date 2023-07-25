@@ -10,7 +10,7 @@
 
 namespace
 {
-    auto constexpr c_ColorStyles = osc::to_array<osc::MuscleColoringStyle>(
+    constexpr auto c_ColorStyles = osc::to_array<osc::MuscleColoringStyle>(
     {
         osc::MuscleColoringStyle::OpenSimAppearanceProperty,
         osc::MuscleColoringStyle::OpenSim,
@@ -21,7 +21,7 @@ namespace
     });
     static_assert(c_ColorStyles.size() == osc::NumOptions<osc::MuscleColoringStyle>());
 
-    auto constexpr c_ColorStyleStrings = osc::to_array<char const*>(
+    constexpr auto c_ColorStyleStrings = osc::to_array<char const*>(
     {
         "OpenSim (Appearance Property)",
         "OpenSim",

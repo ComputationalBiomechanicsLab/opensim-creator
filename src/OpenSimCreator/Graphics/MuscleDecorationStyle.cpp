@@ -10,7 +10,7 @@
 
 namespace
 {
-    auto constexpr c_Styles = osc::to_array<osc::MuscleDecorationStyle>(
+    constexpr auto c_Styles = osc::to_array<osc::MuscleDecorationStyle>(
     {
         osc::MuscleDecorationStyle::OpenSim,
         osc::MuscleDecorationStyle::FibersAndTendons,
@@ -18,7 +18,7 @@ namespace
     });
     static_assert(c_Styles.size() == osc::NumOptions<osc::MuscleDecorationStyle>());
 
-    auto constexpr c_StyleStrings = osc::to_array<char const*>(
+    constexpr auto c_StyleStrings = osc::to_array<char const*>(
     {
         "OpenSim",
         "Fibers & Tendons",

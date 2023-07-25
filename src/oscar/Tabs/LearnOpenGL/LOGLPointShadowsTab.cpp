@@ -90,7 +90,7 @@ namespace
         glm::vec3 direction;
         glm::vec3 up;
     };
-    auto constexpr c_CubemapFacesDetails = osc::to_array<CubemapFaceDetails>(
+    constexpr auto c_CubemapFacesDetails = osc::to_array<CubemapFaceDetails>(
     {
         {{ 1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},
         {{-1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},

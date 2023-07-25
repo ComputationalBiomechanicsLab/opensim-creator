@@ -95,7 +95,7 @@ public:
 
     void onDraw()
     {
-        glm::vec2 constexpr menuDims = {512.0f, 512.0f};
+        constexpr glm::vec2 menuDims = {512.0f, 512.0f};
 
         Rect const tabRect = osc::GetMainViewportWorkspaceScreenRect();
         glm::vec2 const windowDims = osc::Dimensions(tabRect);

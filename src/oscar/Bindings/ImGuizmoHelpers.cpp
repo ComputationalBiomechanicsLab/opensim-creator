@@ -13,8 +13,8 @@
 
 bool osc::DrawGizmoModeSelector(ImGuizmo::MODE& mode)
 {
-    auto constexpr modeLabels = osc::to_array({ "local", "global" });
-    auto constexpr modes = osc::to_array<ImGuizmo::MODE, 2>({ ImGuizmo::LOCAL, ImGuizmo::WORLD });
+    constexpr auto modeLabels = osc::to_array({ "local", "global" });
+    constexpr auto modes = osc::to_array<ImGuizmo::MODE, 2>({ ImGuizmo::LOCAL, ImGuizmo::WORLD });
 
     bool rv = false;
     int currentMode = static_cast<int>(std::distance(std::begin(modes), std::find(std::begin(modes), std::end(modes), mode)));
@@ -26,8 +26,8 @@ bool osc::DrawGizmoModeSelector(ImGuizmo::MODE& mode)
         rv = true;
     }
     ImGui::PopStyleVar();
-    osc::CStringView constexpr tooltipTitle = "Manipulation coordinate system";
-    osc::CStringView constexpr tooltipDesc = "This affects whether manipulations (such as the arrow gizmos that you can use to translate things) are performed relative to the global coordinate system or the selection's (local) one. Local manipulations can be handy when translating/rotating something that's already rotated.";
+    constexpr osc::CStringView tooltipTitle = "Manipulation coordinate system";
+    constexpr osc::CStringView tooltipDesc = "This affects whether manipulations (such as the arrow gizmos that you can use to translate things) are performed relative to the global coordinate system or the selection's (local) one. Local manipulations can be handy when translating/rotating something that's already rotated.";
     osc::DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
 
     return rv;

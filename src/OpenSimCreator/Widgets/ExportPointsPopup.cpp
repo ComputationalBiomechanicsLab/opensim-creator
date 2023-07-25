@@ -39,8 +39,8 @@
 
 namespace
 {
-    osc::CStringView constexpr c_ExplanationText = "Exports the chosen points within the model, potentially with respect to a chosen frame, as a standard data file (CSV)";
-    osc::CStringView constexpr c_OriginalFrameLabel = "(original frame)";
+    constexpr osc::CStringView c_ExplanationText = "Exports the chosen points within the model, potentially with respect to a chosen frame, as a standard data file (CSV)";
+    constexpr osc::CStringView c_OriginalFrameLabel = "(original frame)";
 
     struct PointSelectorUiState final {
         std::string searchString;

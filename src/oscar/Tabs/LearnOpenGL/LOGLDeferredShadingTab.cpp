@@ -43,7 +43,7 @@ namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/DeferredShading";
 
-    auto constexpr c_ObjectPositions = osc::to_array<glm::vec3>(
+    constexpr auto c_ObjectPositions = osc::to_array<glm::vec3>(
     {
         {-3.0,  -0.5, -3.0},
         { 0.0,  -0.5, -3.0},
@@ -55,7 +55,7 @@ namespace
         { 0.0,  -0.5,  3.0},
         { 3.0,  -0.5,  3.0},
     });
-    size_t constexpr c_NumLights = 32;
+    constexpr size_t c_NumLights = 32;
 
     glm::vec3 GenerateSceneLightPosition(std::default_random_engine& rng)
     {

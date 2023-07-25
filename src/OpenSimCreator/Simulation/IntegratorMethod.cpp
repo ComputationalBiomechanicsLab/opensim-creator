@@ -19,7 +19,7 @@
 
 namespace
 {
-    auto constexpr c_IntegratorMethods = osc::to_array<osc::IntegratorMethod>(
+    constexpr auto c_IntegratorMethods = osc::to_array<osc::IntegratorMethod>(
     {
         osc::IntegratorMethod::OpenSimManagerDefault,
         osc::IntegratorMethod::ExplicitEuler,
@@ -32,7 +32,7 @@ namespace
     });
     static_assert(c_IntegratorMethods.size() == osc::NumOptions<osc::IntegratorMethod>());
 
-    auto constexpr c_IntegratorMethodStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_IntegratorMethodStrings = osc::to_array<osc::CStringView>(
     {
         "OpenSim::Manager Default",
         "Explicit Euler",

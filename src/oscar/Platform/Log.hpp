@@ -266,7 +266,7 @@ namespace osc::log
         defaultLoggerRaw()->critical(fmt, args...);
     }
 
-    static size_t constexpr c_MaxLogTracebackMessages = 256;
+    constexpr static size_t c_MaxLogTracebackMessages = 256;
 
     [[nodiscard]] Level getTracebackLevel();
     void setTracebackLevel(Level);

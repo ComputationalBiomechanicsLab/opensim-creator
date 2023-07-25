@@ -20,7 +20,7 @@
 
 namespace
 {
-    int32_t constexpr c_NumMSXAASamples = 4;
+    constexpr int32_t c_NumMSXAASamples = 4;
 
     std::optional<std::filesystem::path> TryGetConfigLocation()
     {

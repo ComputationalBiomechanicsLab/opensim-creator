@@ -23,7 +23,7 @@
 
 namespace
 {
-    auto constexpr c_PlaneVertices = osc::to_array<glm::vec3>(
+    constexpr auto c_PlaneVertices = osc::to_array<glm::vec3>(
     {
         { 10.0f, -0.5f,  10.0f},
         {-10.0f, -0.5f,  10.0f},
@@ -33,7 +33,7 @@ namespace
         {-10.0f, -0.5f, -10.0f},
         { 10.0f, -0.5f, -10.0f},
     });
-    auto constexpr c_PlaneTexCoords = osc::to_array<glm::vec2>(
+    constexpr auto c_PlaneTexCoords = osc::to_array<glm::vec2>(
     {
         {10.0f, 0.0f},
         {0.0f,  0.0f},
@@ -43,7 +43,7 @@ namespace
         {0.0f,  10.0f},
         {10.0f, 10.0f},
     });
-    auto constexpr c_PlaneNormals = osc::to_array<glm::vec3>(
+    constexpr auto c_PlaneNormals = osc::to_array<glm::vec3>(
     {
         {0.0f, 1.0f, 0.0f},
         {0.0f, 1.0f, 0.0f},
@@ -53,9 +53,9 @@ namespace
         {0.0f, 1.0f, 0.0f},
         {0.0f, 1.0f, 0.0f},
     });
-    auto constexpr c_PlaneIndices = osc::to_array<uint16_t>({0, 2, 1, 3, 5, 4});
+    constexpr auto c_PlaneIndices = osc::to_array<uint16_t>({0, 2, 1, 3, 5, 4});
 
-    auto constexpr c_LightPositions = osc::to_array<glm::vec3>(
+    constexpr auto c_LightPositions = osc::to_array<glm::vec3>(
     {
         {-3.0f, 0.0f, 0.0f},
         {-1.0f, 0.0f, 0.0f},
@@ -63,7 +63,7 @@ namespace
         { 3.0f, 0.0f, 0.0f},
     });
 
-    auto constexpr c_LightColors = osc::to_array<osc::Color>(
+    constexpr auto c_LightColors = osc::to_array<osc::Color>(
     {
         {0.25f, 0.25f, 0.25f, 1.0f},
         {0.50f, 0.50f, 0.50f, 1.0f},
@@ -71,7 +71,7 @@ namespace
         {1.00f, 1.00f, 1.00f, 1.0f},
     });
 
-    osc::CStringView constexpr c_TabStringID = "LearnOpenGL/Gamma";
+    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Gamma";
 
     osc::Mesh GeneratePlane()
     {

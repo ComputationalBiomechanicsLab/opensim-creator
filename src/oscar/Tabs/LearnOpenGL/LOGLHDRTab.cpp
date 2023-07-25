@@ -31,7 +31,7 @@
 
 namespace
 {
-    auto constexpr c_LightPositions = osc::to_array<glm::vec3>(
+    constexpr auto c_LightPositions = osc::to_array<glm::vec3>(
     {
         { 0.0f,  0.0f, 49.5f},
         {-1.4f, -1.9f, 9.0f},
@@ -39,7 +39,7 @@ namespace
         { 0.8f, -1.7f, 6.0f},
     });
 
-    osc::CStringView constexpr c_TabStringID = "LearnOpenGL/HDR";
+    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/HDR";
 
     std::array<osc::Color, c_LightPositions.size()> GetLightColors()
     {

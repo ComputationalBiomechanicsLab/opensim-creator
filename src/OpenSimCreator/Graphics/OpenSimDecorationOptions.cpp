@@ -25,7 +25,7 @@ namespace
             CustomDecorationOptionFlags_ShouldShowPointToPointSprings,
     };
 
-    auto constexpr c_CustomDecorationOptionLabels = osc::to_array<osc::CStringView>(
+    constexpr auto c_CustomDecorationOptionLabels = osc::to_array<osc::CStringView>(
     {
         "Scapulothoracic Joints",
         "Origin Lines of Action (effective)",
@@ -38,7 +38,7 @@ namespace
     });
     static_assert(c_CustomDecorationOptionLabels.size() == CustomDecorationOptionFlags_COUNT);
 
-    auto constexpr c_CustomDecorationDescriptions = osc::to_array<std::optional<osc::CStringView>>(
+    constexpr auto c_CustomDecorationDescriptions = osc::to_array<std::optional<osc::CStringView>>(
     {
         std::nullopt,
         "Draws direction vectors that show the effective mechanical effect of the muscle action on the attached body.\n\n'Effective' refers to the fact that this algorithm computes the 'effective' attachment position of the muscle, which can change because of muscle wrapping and via point calculations (see: section 5.4.3 of Yamaguchi's book 'Dynamic Modeling of Musculoskeletal Motion: A Vectorized Approach for Biomechanical Analysis in Three Dimensions', title 'EFFECTIVE ORIGIN AND INSERTION POINTS').\n\nOpenSim Creator's implementation of this algorithm is based on Luca Modenese (@modenaxe)'s implementation here:\n\n    - https://github.com/modenaxe/MuscleForceDirection\n\nThanks to @modenaxe for open-sourcing the original algorithm!",

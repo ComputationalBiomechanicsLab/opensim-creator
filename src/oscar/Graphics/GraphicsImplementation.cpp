@@ -88,7 +88,7 @@ namespace
     // it's here, rather than in an external resource file, because it is eagerly
     // loaded while the graphics backend is initialized (i.e. potentially before
     // the application is fully loaded)
-    osc::CStringView constexpr c_QuadVertexShaderSrc = R"(
+    constexpr osc::CStringView c_QuadVertexShaderSrc = R"(
         #version 330 core
 
         layout (location = 0) in vec3 aPos;
@@ -108,7 +108,7 @@ namespace
     // it's here, rather than in an external resource file, because it is eagerly
     // loaded while the graphics backend is initialized (i.e. potentially before
     // the application is fully loaded)
-    osc::CStringView constexpr c_QuadFragmentShaderSrc = R"(
+    constexpr osc::CStringView c_QuadFragmentShaderSrc = R"(
         #version 330 core
 
         uniform sampler2D uTexture;
@@ -206,7 +206,7 @@ namespace
 namespace
 {
     // LUT for human-readable form of the above
-    auto constexpr c_ShaderTypeInternalStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_ShaderTypeInternalStrings = osc::to_array<osc::CStringView>(
     {
         "Float",
         "Vec2",
@@ -1044,7 +1044,7 @@ void osc::Cubemap::setPixelData(CubemapFace face, nonstd::span<uint8_t const> ch
 
 namespace
 {
-    auto constexpr c_TextureWrapModeStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_TextureWrapModeStrings = osc::to_array<osc::CStringView>(
     {
         "Repeat",
         "Clamp",
@@ -1052,7 +1052,7 @@ namespace
     });
     static_assert(c_TextureWrapModeStrings.size() == osc::NumOptions<osc::TextureWrapMode>());
 
-    auto constexpr c_TextureFilterModeStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_TextureFilterModeStrings = osc::to_array<osc::CStringView>(
     {
         "Nearest",
         "Linear",
@@ -1466,7 +1466,7 @@ std::ostream& osc::operator<<(std::ostream& o, Texture2D const&)
 
 namespace
 {
-    auto constexpr c_RenderTextureFormatStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_RenderTextureFormatStrings = osc::to_array<osc::CStringView>(
     {
         "ARGB32",
         "RED",
@@ -1474,7 +1474,7 @@ namespace
     });
     static_assert(c_RenderTextureFormatStrings.size() == osc::NumOptions<osc::RenderTextureFormat>());
 
-    auto constexpr c_DepthStencilFormatStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_DepthStencilFormatStrings = osc::to_array<osc::CStringView>(
     {
         "D24_UNorm_S8_UInt",
     });
@@ -3295,7 +3295,7 @@ std::ostream& osc::operator<<(std::ostream& o, MaterialPropertyBlock const&)
 
 namespace
 {
-    auto constexpr c_MeshTopologyStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_MeshTopologyStrings = osc::to_array<osc::CStringView>(
     {
         "Triangles",
         "Lines",
@@ -3887,7 +3887,7 @@ std::ostream& osc::operator<<(std::ostream& o, Mesh const&)
 namespace
 {
     // LUT for human-readable form of the above
-    auto constexpr c_CameraProjectionStrings = osc::to_array<osc::CStringView>(
+    constexpr auto c_CameraProjectionStrings = osc::to_array<osc::CStringView>(
     {
         "Perspective",
         "Orthographic",

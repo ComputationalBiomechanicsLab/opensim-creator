@@ -26,7 +26,7 @@
 namespace
 {
     // worldspace positions of each cube (step 2)
-    auto constexpr c_CubePositions = osc::to_array<glm::vec3>(
+    constexpr auto c_CubePositions = osc::to_array<glm::vec3>(
     {
         { 0.0f,  0.0f,  0.0f },
         { 2.0f,  5.0f, -15.0f},
@@ -40,7 +40,7 @@ namespace
         {-1.3f,  1.0f, -1.5  },
     });
 
-    osc::CStringView constexpr c_TabStringID = "LearnOpenGL/CoordinateSystems";
+    constexpr osc::CStringView c_TabStringID = "LearnOpenGL/CoordinateSystems";
 }
 
 class osc::LOGLCoordinateSystemsTab::Impl final {
@@ -111,7 +111,7 @@ public:
 
     void onTick()
     {
-        float constexpr rotationSpeed = glm::radians(50.0f);
+        float const rotationSpeed = glm::radians(50.0f);
         float const dt = App::get().getDeltaSinceAppStartup().count();
         float const angle = rotationSpeed * dt;
         glm::vec3 const axis = glm::normalize(glm::vec3{0.5f, 1.0f, 0.0f});

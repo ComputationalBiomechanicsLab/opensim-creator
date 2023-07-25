@@ -33,10 +33,7 @@
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Cubemaps";
-
-    osc::Cubemap LoadCubemap(std::filesystem::path const& resourcesDir)
-    {
-        auto constexpr textures = osc::to_array<osc::CStringView>(
+    constexpr auto c_SkyboxTextureFilenames = osc::to_array<osc::CStringView>(
         {
             "skybox_right.jpg",
             "skybox_left.jpg",
@@ -45,12 +42,15 @@ namespace
             "skybox_front.jpg",
             "skybox_back.jpg",
         });
-        static_assert(textures.size() == osc::NumOptions<osc::CubemapFace>());
-        static_assert(textures.size() > 1);
+    static_assert(c_SkyboxTextureFilenames.size() == osc::NumOptions<osc::CubemapFace>());
+    static_assert(c_SkyboxTextureFilenames.size() > 1);
+
+    osc::Cubemap LoadCubemap(std::filesystem::path const& resourcesDir)
+    {
 
         // load the first face, so we know the width
         osc::Image image = osc::LoadImageFromFile(
-            resourcesDir / "textures" / std::string_view{textures.front()},
+            resourcesDir / "textures" / std::string_view{c_SkyboxTextureFilenames.front()},
             osc::ColorSpace::sRGB
         );
         OSC_THROWING_ASSERT(image.getDimensions().x == image.getDimensions().y);
@@ -59,13 +59,13 @@ namespace
 
         // load all face data into the cubemap
         static_assert(static_cast<int32_t>(osc::CubemapFace::PositiveX) == 0);
-        static_assert(osc::NumOptions<osc::CubemapFace>() == textures.size());
+        static_assert(osc::NumOptions<osc::CubemapFace>() == c_SkyboxTextureFilenames.size());
         osc::Cubemap cubemap{width, osc::TextureFormat::RGB24};
         cubemap.setPixelData(osc::CubemapFace::PositiveX, image.getPixelData());
         for (int32_t i = 1; i < osc::NumOptions<osc::CubemapFace>(); ++i)
         {
             image = osc::LoadImageFromFile(
-                resourcesDir / "textures" / std::string_view{textures[i]},
+                resourcesDir / "textures" / std::string_view{c_SkyboxTextureFilenames[i]},
                 osc::ColorSpace::sRGB
             );
             OSC_THROWING_ASSERT(image.getDimensions().x == width);

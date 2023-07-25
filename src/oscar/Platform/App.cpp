@@ -44,7 +44,7 @@
 
 namespace
 {
-    auto constexpr c_IconRanges = osc::to_array<ImWchar>({ ICON_MIN_FA, ICON_MAX_FA, 0 });
+    constexpr auto c_IconRanges = osc::to_array<ImWchar>({ ICON_MIN_FA, ICON_MAX_FA, 0 });
 
     void Sdl_GL_SetAttributeOrThrow(
         SDL_GLattr attr,
@@ -97,11 +97,11 @@ namespace
         // careful about setting resolution, position, etc. - some people have *very* shitty
         // screens on their laptop (e.g. ultrawide, sub-HD, minus space for the start bar, can
         // be <700 px high)
-        int constexpr x = SDL_WINDOWPOS_CENTERED;
-        int constexpr y = SDL_WINDOWPOS_CENTERED;
-        int constexpr width = 800;
-        int constexpr height = 600;
-        Uint32 constexpr flags =
+        constexpr int x = SDL_WINDOWPOS_CENTERED;
+        constexpr int y = SDL_WINDOWPOS_CENTERED;
+        constexpr int width = 800;
+        constexpr int height = 600;
+        constexpr Uint32 flags =
             SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
 
         return sdl::CreateWindoww(OSC_APPNAME_STRING, x, y, width, height, flags);

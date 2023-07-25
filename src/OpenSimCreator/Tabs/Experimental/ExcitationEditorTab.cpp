@@ -611,7 +611,7 @@ namespace
                 screenSpaceRect.p2 - 25.0f,
             };
 
-            size_t constexpr nFakeDataPoints = 100;
+            constexpr size_t nFakeDataPoints = 100;
             std::vector<glm::vec2> fakeData;
             fakeData.reserve(nFakeDataPoints);
             for (size_t i = 0; i < nFakeDataPoints; ++i)

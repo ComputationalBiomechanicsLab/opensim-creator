@@ -10,14 +10,14 @@
 
 namespace
 {
-    auto constexpr c_Styles = osc::to_array<osc::MuscleSizingStyle>(
+    constexpr auto c_Styles = osc::to_array<osc::MuscleSizingStyle>(
     {
         osc::MuscleSizingStyle::OpenSim,
         osc::MuscleSizingStyle::PcsaDerived,
     });
     static_assert(c_Styles.size() == osc::NumOptions<osc::MuscleSizingStyle>());
 
-    auto constexpr c_StyleStrings = osc::to_array<char const*>(
+    constexpr auto c_StyleStrings = osc::to_array<char const*>(
     {
         "OpenSim",
         "PCSA-derived",
