@@ -480,10 +480,10 @@ namespace gl
 
         GLboolean const normgl = normalized ? GL_TRUE : GL_FALSE;
         GLsizei const stridegl = static_cast<GLsizei>(stride);
-        void const* const offsetgl = reinterpret_cast<void*>(offset);
 
         if constexpr (TGlsl::size <= 4)
         {
+            void const* const offsetgl = reinterpret_cast<void*>(offset);
             glVertexAttribPointer(
                 attr.get(),
                 TGlsl::size,
@@ -497,14 +497,14 @@ namespace gl
         {
             for (size_t i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i)
             {
-                void* off = reinterpret_cast<void*>(offset + (i * TGlsl::elementsPerLocation * sizeof(float)));
+                void* offsetgl = reinterpret_cast<void*>(offset + (i * TGlsl::elementsPerLocation * sizeof(float)));
                 glVertexAttribPointer(
                     attr.get() + static_cast<GLuint>(i),
                     TGlsl::elementsPerLocation,
                     SourceType,
                     normgl,
                     stridegl,
-                    off
+                    offsetgl
                 );
             }
         }
