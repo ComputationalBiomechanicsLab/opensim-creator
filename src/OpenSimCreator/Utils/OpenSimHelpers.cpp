@@ -1458,7 +1458,7 @@ std::optional<osc::PointInfo> osc::TryExtractPointInfo(
     OpenSim::Component const& c,
     SimTK::State const& st)
 {
-    if (auto const* pwp = dynamic_cast<OpenSim::PathWrapPoint const*>(&c))
+    if (dynamic_cast<OpenSim::PathWrapPoint const*>(&c))
     {
         // BODGE/HACK: path wrap points don't update the cache correctly?
         return std::nullopt;

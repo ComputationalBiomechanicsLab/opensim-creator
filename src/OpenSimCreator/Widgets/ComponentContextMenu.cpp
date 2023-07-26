@@ -351,15 +351,15 @@ private:
         {
             DrawModelContextualActions(*m_Model);
         }
-        else if (auto const* pf = dynamic_cast<OpenSim::PhysicalFrame const*>(c))
+        else if (dynamic_cast<OpenSim::PhysicalFrame const*>(c))
         {
             DrawPhysicalFrameContextualActions(m_EditorAPI, m_Model, m_Path);
         }
-        else if (auto const* joint = dynamic_cast<OpenSim::Joint const*>(c))
+        else if (dynamic_cast<OpenSim::Joint const*>(c))
         {
             DrawJointContextualActions(*m_Model, m_Path);
         }
-        else if (auto const* hcf = dynamic_cast<OpenSim::HuntCrossleyForce const*>(c))
+        else if (dynamic_cast<OpenSim::HuntCrossleyForce const*>(c))
         {
             DrawHCFContextualActions(m_EditorAPI, m_Model, m_Path);
         }
@@ -368,7 +368,7 @@ private:
             drawAddMusclePlotMenu(*m);
             DrawPathActuatorContextualParams(m_EditorAPI, m_Model, m_Path);  // a muscle is a path actuator
         }
-        else if (auto const* pa = dynamic_cast<OpenSim::PathActuator const*>(c))
+        else if (dynamic_cast<OpenSim::PathActuator const*>(c))
         {
             DrawPathActuatorContextualParams(m_EditorAPI, m_Model, m_Path);
         }
