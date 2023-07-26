@@ -126,9 +126,6 @@ target_compile_options(oscar_configuration INTERFACE
         # disable: broken in OSC (int == size_t etc.)
         -Wno-sign-compare
 
-        # disable: offsetof used in OSC's component/propertytree API
-        -Wno-invalid-offsetof
-
         # disabled: doesn't work in some contexts where forward declarations are necessary
         # -Wredundant-decls
 
