@@ -119,8 +119,6 @@ add_library(OpenSimCreator STATIC
     Tabs/Experimental/MeshHittestTab.hpp
     Tabs/Experimental/ModelWarpingTab.cpp
     Tabs/Experimental/ModelWarpingTab.hpp
-    Tabs/Experimental/PreviewExperimentalDataTab.cpp
-    Tabs/Experimental/PreviewExperimentalDataTab.hpp
     Tabs/Experimental/RendererGeometryShaderTab.cpp
     Tabs/Experimental/RendererGeometryShaderTab.hpp
     Tabs/Experimental/TPS2DTab.cpp
