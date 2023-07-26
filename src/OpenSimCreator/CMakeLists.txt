@@ -241,13 +241,6 @@ target_compile_options(OpenSimCreator PUBLIC
 # OpenSimCreator: link options
 target_link_options(OpenSimCreator PUBLIC
 
-    # MSVC (Windows)
-    $<$<CXX_COMPILER_ID:MSVC>:
-
-        # ignore error from ImGui, which uses locally-defined symbols
-        /ignore:4217
-    >
-
     # Linux /w GCC or Clang
     $<$<AND:$<BOOL:LINUX>,$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>>:
 

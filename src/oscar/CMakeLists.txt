@@ -321,13 +321,3 @@ target_link_libraries(oscar PUBLIC
     nonstd::span-lite
     lunasvg::lunasvg
 )
-
-target_link_options(oscar PUBLIC
-
-    # MSVC (Windows)
-    $<$<CXX_COMPILER_ID:MSVC>:
-
-        # ignore error from ImGui, which uses locally-defined symbols
-        /ignore:4217
-    >
-)
