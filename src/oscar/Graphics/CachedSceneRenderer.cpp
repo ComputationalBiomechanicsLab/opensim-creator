@@ -19,7 +19,7 @@ public:
     {
     }
 
-    osc::RenderTexture& draw(
+    osc::RenderTexture& render(
         nonstd::span<SceneDecoration const> decorations,
         SceneRendererParams const& params)
     {
@@ -29,7 +29,7 @@ public:
             // inputs have changed: cache the new ones and re-render
             m_LastRenderingParams = params;
             m_LastDecorationList.assign(decorations.begin(), decorations.end());
-            m_SceneRenderer.draw(m_LastDecorationList, m_LastRenderingParams);
+            m_SceneRenderer.render(m_LastDecorationList, m_LastRenderingParams);
         }
 
         return m_SceneRenderer.updRenderTexture();
@@ -53,9 +53,9 @@ osc::CachedSceneRenderer::CachedSceneRenderer(CachedSceneRenderer&&) noexcept = 
 osc::CachedSceneRenderer& osc::CachedSceneRenderer::operator=(CachedSceneRenderer&&) noexcept = default;
 osc::CachedSceneRenderer::~CachedSceneRenderer() noexcept = default;
 
-osc::RenderTexture& osc::CachedSceneRenderer::draw(
+osc::RenderTexture& osc::CachedSceneRenderer::render(
     nonstd::span<SceneDecoration const> decorations,
     SceneRendererParams const& params)
 {
-    return m_Impl->draw(decorations, params);
+    return m_Impl->render(decorations, params);
 }

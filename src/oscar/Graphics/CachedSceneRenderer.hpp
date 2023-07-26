@@ -23,7 +23,7 @@ namespace osc
         CachedSceneRenderer& operator=(CachedSceneRenderer&&) noexcept;
         ~CachedSceneRenderer() noexcept;
 
-        RenderTexture& draw(nonstd::span<SceneDecoration const>, SceneRendererParams const&);
+        RenderTexture& render(nonstd::span<SceneDecoration const>, SceneRendererParams const&);
 
     private:
         class Impl;

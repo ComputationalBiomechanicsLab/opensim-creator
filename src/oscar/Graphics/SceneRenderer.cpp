@@ -168,7 +168,7 @@ public:
         return m_OutputTexture.getAntialiasingLevel();
     }
 
-    void draw(
+    void render(
         nonstd::span<SceneDecoration const> decorations,
         SceneRendererParams const& params)
     {
@@ -504,11 +504,11 @@ int32_t osc::SceneRenderer::getSamples() const
     return m_Impl->getSamples();
 }
 
-void osc::SceneRenderer::draw(
+void osc::SceneRenderer::render(
     nonstd::span<SceneDecoration const> decs,
     SceneRendererParams const& params)
 {
-    m_Impl->draw(decs, params);
+    m_Impl->render(decs, params);
 }
 
 osc::RenderTexture& osc::SceneRenderer::updRenderTexture()

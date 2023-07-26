@@ -1412,7 +1412,7 @@ namespace
             );
 
             // render to a texture (no caching)
-            m_Renderer.draw(m_Decorations.decorations, rendererParameters);
+            m_Renderer.render(m_Decorations.decorations, rendererParameters);
 
             // blit texture as ImGui image
             osc::DrawTextureAsImGuiImage(

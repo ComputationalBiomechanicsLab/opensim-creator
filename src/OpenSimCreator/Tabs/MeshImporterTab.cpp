@@ -4462,7 +4462,7 @@ namespace
             }
 
             // render
-            m_SceneRenderer.draw(decs, p);
+            m_SceneRenderer.render(decs, p);
 
             // send texture to ImGui
             osc::DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture(), m_SceneRenderer.getDimensions());

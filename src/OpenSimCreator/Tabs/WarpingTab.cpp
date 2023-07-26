@@ -1469,7 +1469,7 @@ namespace
                 dims
             );
             std::vector<osc::SceneDecoration> const decorations = generateDecorations(maybeMeshCollision, maybeLandmarkCollision);
-            return m_CachedRenderer.draw(decorations, params);
+            return m_CachedRenderer.render(decorations, params);
         }
 
         // returns a fresh list of 3D decorations for this panel's 3D render
@@ -1752,7 +1752,7 @@ namespace
                 osc::App::get().getMSXAASamplesRecommended(),
                 dims
             );
-            return m_CachedRenderer.draw(decorations, params);
+            return m_CachedRenderer.render(decorations, params);
         }
 
         std::shared_ptr<TPSUISharedState> m_State;

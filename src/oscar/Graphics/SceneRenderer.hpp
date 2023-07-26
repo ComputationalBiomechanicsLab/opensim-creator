@@ -25,7 +25,7 @@ namespace osc
 
         glm::ivec2 getDimensions() const;
         int32_t getSamples() const;
-        void draw(nonstd::span<SceneDecoration const>, SceneRendererParams const&);
+        void render(nonstd::span<SceneDecoration const>, SceneRendererParams const&);
         RenderTexture& updRenderTexture();
 
     private:

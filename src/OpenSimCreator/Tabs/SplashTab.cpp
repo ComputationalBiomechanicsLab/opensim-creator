@@ -180,7 +180,7 @@ private:
 
         if (params != m_LastSceneRendererParams)
         {
-            m_SceneRenderer.draw({}, params);
+            m_SceneRenderer.render({}, params);
             m_LastSceneRendererParams = params;
         }
 

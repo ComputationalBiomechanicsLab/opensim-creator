@@ -20,7 +20,7 @@ public:
 
     void onDraw(nonstd::span<SceneDecoration const> els, SceneRendererParams const& params)
     {
-        m_Renderer.draw(els, params);
+        m_Renderer.render(els, params);
 
         // emit the texture to ImGui
         osc::DrawTextureAsImGuiImage(m_Renderer.updRenderTexture(), m_Renderer.getDimensions());

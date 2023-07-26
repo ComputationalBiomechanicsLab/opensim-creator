@@ -144,7 +144,7 @@ public:
             rendererParameters != m_PrevRendererParams)
         {
             OSC_PERF("CachedModelRenderer/onDraw/render");
-            m_Renderer.draw(m_DecorationCache.getDrawlist(), rendererParameters);
+            m_Renderer.render(m_DecorationCache.getDrawlist(), rendererParameters);
             m_PrevRendererParams = rendererParameters;
         }
 

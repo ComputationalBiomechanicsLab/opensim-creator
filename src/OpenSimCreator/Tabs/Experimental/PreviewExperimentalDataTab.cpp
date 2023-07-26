@@ -544,7 +544,7 @@ private:
         if (params != m_LastRendererParams)
         {
             generateSceneDecorations();
-            m_Renderer.draw(m_Decorations, params);
+            m_Renderer.render(m_Decorations, params);
             m_LastRendererParams = params;
         }
 
