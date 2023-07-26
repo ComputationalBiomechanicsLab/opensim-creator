@@ -256,7 +256,7 @@ void osc::WriteTracebackToLog(log::Level lvl)
     {
         return;
     }
-    OSC_SCOPE_GUARD({ free(messages); });
+    osc::ScopeGuard g{[&messages]() { free(messages); }};
 
     for (size_t i = 0; i < size; ++i)
     {
@@ -313,7 +313,7 @@ static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
     {
         return;
     }
-    OSC_SCOPE_GUARD({ free(messages); });
+    osc::ScopeGuard g{[&messages]() { free(messages); }};
 
     /* skip first stack frame (points here) */
     for (int i = 1; i < size; ++i)
@@ -433,8 +433,7 @@ void osc::WriteTracebackToLog(log::Level lvl)
     {
         return;
     }
-
-    OSC_SCOPE_GUARD({ free(messages); });
+    osc::ScopeGuard g{[&messages]() { free(messages); }};
 
     for (int i = 0; i < size; ++i)
     {
