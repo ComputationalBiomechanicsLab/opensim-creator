@@ -479,7 +479,7 @@ osc::CStringView osc::GetCoordDisplayValueUnitsString(OpenSim::Coordinate const&
     case OpenSim::Coordinate::MotionType::Rotational:
         return "deg";
     default:
-        return "";
+        return {};
     }
 }
 
@@ -760,7 +760,7 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
     if (auto connectees = GetAnyNonChildrenComponentsConnectedViaSocketTo(m, c); !connectees.empty())
     {
         std::stringstream ss;
-        CStringView delim = "";
+        CStringView delim;
         for (OpenSim::Component const* connectee : connectees)
         {
             ss << delim << connectee->getName();

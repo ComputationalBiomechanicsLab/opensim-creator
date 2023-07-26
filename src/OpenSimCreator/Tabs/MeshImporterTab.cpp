@@ -2840,7 +2840,7 @@ namespace
         glm::vec3 childPos = GetPosition(mg, childID);
         glm::vec3 midPoint = osc::Midpoint(parentPos, childPos);
 
-        auto& jointEl = mg.AddEl<JointEl>(jointTypeIdx, "", parentID, osc::DowncastID<BodyEl>(childID), Transform{midPoint});
+        auto& jointEl = mg.AddEl<JointEl>(jointTypeIdx, std::string{}, parentID, osc::DowncastID<BodyEl>(childID), Transform{midPoint});
         SelectOnly(mg, jointEl);
 
         cmg.Commit("added " + jointEl.GetLabel());

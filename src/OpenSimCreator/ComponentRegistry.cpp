@@ -483,7 +483,7 @@ namespace
                 []()
                 {
                     auto c = std::make_shared<OpenSim::SpringGeneralizedForce>();
-                    c->set_coordinate("");
+                    c->set_coordinate(std::string{});
                     return c;
                 }()
             },
@@ -505,7 +505,7 @@ namespace
                 []()
                 {
                     auto c = std::make_shared<OpenSim::ActivationCoordinateActuator>();
-                    c->set_coordinate("");
+                    c->set_coordinate(std::string{});
                     return c;
                 }()
             },
@@ -516,8 +516,8 @@ namespace
                 []()
                 {
                     auto c = std::make_shared<OpenSim::ExpressionBasedPointToPointForce>();
-                    c->set_body1("");
-                    c->set_body2("");
+                    c->set_body1(std::string{});
+                    c->set_body2(std::string{});
                     return c;
                 }()
             },
@@ -528,8 +528,8 @@ namespace
                 []()
                 {
                     auto c = std::make_shared<OpenSim::PointToPointActuator>();
-                    c->set_bodyA("");
-                    c->set_bodyB("");
+                    c->set_bodyA(std::string{});
+                    c->set_bodyB(std::string{});
                     return c;
                 }()
             },

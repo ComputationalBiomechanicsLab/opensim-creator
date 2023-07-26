@@ -577,7 +577,7 @@ public:
 
     void unsetMainWindowSubTitle()
     {
-        setMainWindowSubTitle("");
+        setMainWindowSubTitle({});
     }
 
     osc::Config const& getConfig() const

@@ -95,7 +95,7 @@ namespace
                 continue;  // unsupported
             }
 
-            auto [meshIt, meshInserted] = mesh2id.try_emplace(el.mesh, "");
+            auto [meshIt, meshInserted] = mesh2id.try_emplace(el.mesh, std::string{});
             if (meshInserted)
             {
                 std::stringstream id;
@@ -105,7 +105,7 @@ namespace
                 rv.geometries.emplace_back(meshIt->second, meshIt->first);
             }
 
-            auto [materialIt, materialInserted] = color2materialid.try_emplace(el.color, "");
+            auto [materialIt, materialInserted] = color2materialid.try_emplace(el.color, std::string{});
             if (materialInserted)
             {
                 std::stringstream id;

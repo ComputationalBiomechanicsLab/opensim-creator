@@ -135,7 +135,7 @@ std::vector<uint8_t> osc::SlurpFileIntoVector(std::filesystem::path const& p)
 
 std::string osc::FileNameWithoutExtension(std::filesystem::path const& p)
 {
-    return p.filename().replace_extension("").string();
+    return p.filename().replace_extension({}).string();
 }
 
 bool osc::IsFilenameLexographicallyGreaterThan(std::filesystem::path const& p1, std::filesystem::path const& p2)

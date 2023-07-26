@@ -61,7 +61,7 @@ namespace
 
         if (!maybeCSVPath)
         {
-            return "";  // user probably cancelled out
+            return {};  // user probably cancelled out
         }
 
         std::filesystem::path const& csvPath = *maybeCSVPath;
@@ -71,7 +71,7 @@ namespace
         if (!fout)
         {
             osc::log::error("%s: error opening file for writing", csvPath.string().c_str());
-            return "";  // error opening output file for writing
+            return {};  // error opening output file for writing
         }
 
         fout << "time," << header << '\n';
@@ -83,7 +83,7 @@ namespace
         if (!fout)
         {
             osc::log::error("%s: error encountered while writing CSV data to file", csvPath.string().c_str());
-            return "";  // error writing
+            return {};  // error writing
         }
 
         osc::log::info("%: successfully wrote CSV data to output file", csvPath.string().c_str());
@@ -185,7 +185,7 @@ namespace
         if (!maybeCSVPath)
         {
             // user probably cancelled out
-            return "";
+            return {};
         }
         std::filesystem::path const& csvPath = *maybeCSVPath;
 
@@ -194,7 +194,7 @@ namespace
         if (!fout)
         {
             osc::log::error("%s: error opening file for writing", csvPath.string().c_str());
-            return "";  // error opening output file for writing
+            return {};  // error opening output file for writing
         }
 
         // header line
