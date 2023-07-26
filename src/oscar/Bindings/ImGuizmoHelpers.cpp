@@ -10,6 +10,7 @@
 #include <ImGuizmo.h>
 
 #include <iterator>
+#include <utility>
 
 bool osc::DrawGizmoModeSelector(ImGuizmo::MODE& mode)
 {
