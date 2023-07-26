@@ -1,5 +1,7 @@
 #pragma once
 
+#include "oscar/Utils/CStringView.hpp"
+
 #include <SDL_events.h>
 
 #include <typeinfo>
@@ -20,9 +22,9 @@ namespace osc
     public:
         virtual ~Screen() noexcept = default;
 
-        char const* name() const
+        CStringView getName() const
         {
-            return implName();
+            return implGetName();
         }
 
         void onMount()
@@ -53,7 +55,7 @@ namespace osc
     private:
 
         // returns the name of the screen (handy for debugging/logging)
-        virtual char const* implName() const
+        virtual CStringView implGetName() const
         {
             Screen const& s = *this;
             return typeid(s).name();

@@ -239,7 +239,7 @@ class osc::App::Impl final {
 public:
     void show(std::unique_ptr<Screen> s)
     {
-        log::info("showing screen %s", s->name());
+        log::info("showing screen %s", s->getName().c_str());
 
         if (m_CurrentScreen)
         {
@@ -686,7 +686,7 @@ private:
             return;
         }
 
-        log::info("unmounting screen %s", m_CurrentScreen->name());
+        log::info("unmounting screen %s", m_CurrentScreen->getName().c_str());
 
         try
         {
@@ -694,7 +694,7 @@ private:
         }
         catch (std::exception const& ex)
         {
-            log::error("error unmounting screen %s: %s", m_CurrentScreen->name(), ex.what());
+            log::error("error unmounting screen %s: %s", m_CurrentScreen->getName().c_str(), ex.what());
             m_CurrentScreen.reset();
             throw;
         }
@@ -706,9 +706,9 @@ private:
         // to "warm up" (e.g. because it's using ImGui)
         m_NumFramesToPoll = 2;
 
-        log::info("mounting screen %s", m_CurrentScreen->name());
+        log::info("mounting screen %s", m_CurrentScreen->getName().c_str());
         m_CurrentScreen->onMount();
-        log::info("transitioned main screen to %s", m_CurrentScreen->name());
+        log::info("transitioned main screen to %s", m_CurrentScreen->getName().c_str());
     }
 
     // the main application loop
