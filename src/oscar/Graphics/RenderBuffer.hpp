@@ -1,17 +1,12 @@
 #pragma once
 
+#include "oscar/Graphics/RenderBufferType.hpp"
 #include "oscar/Graphics/RenderTextureDescriptor.hpp"
 
 #include <memory>
 
 namespace osc
 {
-    enum class RenderBufferType {
-        Color = 0,
-        Depth,
-        NUM_OPTIONS,
-    };
-
     class RenderBuffer final {
     public:
         RenderBuffer(

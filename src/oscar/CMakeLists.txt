@@ -80,6 +80,7 @@ add_library(oscar STATIC
     Graphics/RenderBuffer.hpp
     Graphics/RenderBufferLoadAction.hpp
     Graphics/RenderBufferStoreAction.hpp
+    Graphics/RenderBufferType.hpp
     Graphics/RenderTarget.cpp
     Graphics/RenderTarget.hpp
     Graphics/RenderTargetAttachment.cpp
