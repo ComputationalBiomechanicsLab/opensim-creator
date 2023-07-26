@@ -227,7 +227,6 @@ add_library(oscar STATIC
     Tabs/ErrorTab.hpp
     Tabs/ScreenshotTab.cpp
     Tabs/ScreenshotTab.hpp
-    Tabs/Tab.cpp
     Tabs/Tab.hpp
     Tabs/TabHost.cpp
     Tabs/TabHost.hpp
