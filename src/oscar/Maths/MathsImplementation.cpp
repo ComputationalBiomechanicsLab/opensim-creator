@@ -986,37 +986,6 @@ namespace
         return res;
     }
 
-    std::optional<osc::RayCollision> GetRayCollisionSphere(osc::Sphere const& s, osc::Line const& l) noexcept
-    {
-        // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
-
-        glm::vec3 L = s.origin - l.origin;  // line origin to sphere origin
-        float tca = glm::dot(L, l.dir);  // projected line from middle of hitline to sphere origin
-
-        if (tca < 0.0f)
-        {
-            // line is pointing away from the sphere
-            return std::nullopt;
-        }
-
-        float d2 = glm::dot(L, L) - tca*tca;
-        float r2 = s.radius * s.radius;
-
-        if (d2 > r2)
-        {
-            // line is not within the sphere's radius
-            return std::nullopt;
-        }
-
-        // the collision points are on the sphere's surface (R), and D
-        // is how far the hitline midpoint is from the radius. Can use
-        // Pythag to figure out the midpoint length (thc)
-        float thc = glm::sqrt(r2 - d2);
-        float distance = tca - thc;
-
-        return osc::RayCollision{distance, l.origin + distance*l.dir};
-    }
-
     std::optional<osc::RayCollision> GetRayCollisionSphereAnalytic(osc::Sphere const& s, osc::Line const& l) noexcept
     {
         // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection

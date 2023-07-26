@@ -18,7 +18,6 @@ namespace osc
     void ForEachParUnseq(size_t minChunkSize, nonstd::span<T> vals, UnaryFunction f)
     {
         size_t const chunkSize = std::max(minChunkSize, vals.size()/std::thread::hardware_concurrency());
-        size_t const remainder = vals.size() % chunkSize;
         size_t const nTasks = vals.size()/chunkSize;
 
         if (nTasks > 1)

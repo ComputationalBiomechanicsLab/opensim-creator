@@ -1,5 +1,7 @@
 #include "oscar/Utils/StringHelpers.hpp"
 
+#include "oscar/Utils/Cpp20Shims.hpp"
+
 #include <gtest/gtest.h>
 
 #include <iostream>
@@ -14,7 +16,7 @@ TEST(Algorithms, TrimLeadingAndTrailingWhitespaceWorksAsExpected)
         std::string_view expectedOutput;
     };
 
-    TestCase testCases[] =
+    auto const testCases = osc::to_array<TestCase>(
     {
         // trivial case
         {"", ""},
@@ -50,7 +52,7 @@ TEST(Algorithms, TrimLeadingAndTrailingWhitespaceWorksAsExpected)
         {"a ", "a"},
         {" a ", "a"},
         {"\r\na ", "a"},
-    };
+    });
 
     for (TestCase const& tc : testCases)
     {
@@ -105,7 +107,7 @@ namespace
         *o << tc;
     }
 
-    TestCase g_TestCases[] =
+    auto constexpr c_TestCases = osc::to_array<TestCase>(
     {
         // it strips purely-whitespace strings
         {"", std::nullopt},
@@ -142,7 +144,7 @@ namespace
         // care: std::from_chars won't do this
         {"+0", 0.0f},
         {" +1", 1.0f},
-    };
+    });
 
     // see: googletest/docs/advanced.md "How to write value-parameterized tests"
     class FromCharsStripWhitespace : public testing::TestWithParam<TestCase> {
@@ -152,7 +154,7 @@ namespace
 INSTANTIATE_TEST_SUITE_P(
     FromCharsStripWhitespaceChecks,
     FromCharsStripWhitespace,
-    testing::ValuesIn(g_TestCases)
+    testing::ValuesIn(c_TestCases)
 );
 
 TEST_P(FromCharsStripWhitespace, Check)

@@ -238,8 +238,6 @@ private:
             computeComponentPath(root, hover, hoverPath);
         }
 
-        Response const response;
-
         // init iterators: this alg. is single-pass with a 1-token lookahead
         auto const lst = root->getComponentList();
         auto it = lst.begin();

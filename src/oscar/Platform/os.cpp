@@ -205,7 +205,6 @@ std::string osc::CurrentErrnoAsString()
 #define __USE_GNU
 #endif
 
-#include <cerrno>  // ERANGE
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
@@ -228,10 +227,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
 {
     std::array<char, 1024> buf{};
 
-    // ignore return value because strerror_r has two versions in
-    // Linux and the GNU version doesn't return a useful error code
     auto maybeErr = strerror_r(errnum, buf.data(), buf.size());
-
     if (std::is_same_v<int, decltype(maybeErr)> && !maybeErr)
     {
         osc::log::warn("a call to strerror_r failed with error code %i", maybeErr);
@@ -239,7 +235,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
     }
     else
     {
-        (void)maybeErr;
+        static_cast<void>(maybeErr);
     }
 
     std::string rv{buf.data()};

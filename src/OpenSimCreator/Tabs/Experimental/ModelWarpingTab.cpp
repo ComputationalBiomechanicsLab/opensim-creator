@@ -428,8 +428,6 @@ namespace
                 drawMissingMessage();
                 return;
             }
-            MeshLandmarksFile const& location = *maybeLocation;
-
             ImGui::TextUnformatted("source landmarks exist");
         }
 
@@ -441,8 +439,6 @@ namespace
                 drawMissingMessage();
                 return;
             }
-            std::filesystem::path const& location = *maybeLocation;
-
             ImGui::TextUnformatted("destination mesh exists");
         }
 
@@ -454,8 +450,6 @@ namespace
                 drawMissingMessage();
                 return;
             }
-            MeshLandmarksFile const& location = *maybeLocation;
-
             ImGui::TextUnformatted("destination landmarks exist");
         }
 
@@ -524,7 +518,6 @@ namespace
                 drawMissingMessage();
                 return;
             }
-            OpenSim::ComponentPath const& path = *p.second.maybeConnectedMeshWarpPath;
         }
 
         std::shared_ptr<ModelWarpingTabState> m_State;

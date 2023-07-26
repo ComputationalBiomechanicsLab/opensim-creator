@@ -779,11 +779,6 @@ namespace
         return state.editedDocument->getScratch();
     }
 
-    TPSDocument& UpdScratch(TPSUISharedState& state)
-    {
-        return state.editedDocument->updScratch();
-    }
-
     osc::Mesh const& GetScratchMesh(TPSUISharedState& state, TPSDocumentInputIdentifier which)
     {
         return GetMesh(GetScratch(state), which);

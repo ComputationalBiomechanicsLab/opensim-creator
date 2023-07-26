@@ -1642,11 +1642,6 @@ namespace
         Transform m_Xform;  // joint center
     };
 
-    bool IsAttachedTo(JointEl const& joint, BodyEl const& b)
-    {
-        return joint.getParentID() == b.GetID() || joint.getChildID() == b.GetID();
-    }
-
     // a station (point of interest)
     class StationEl final : public SceneEl {
     public:

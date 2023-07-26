@@ -49,7 +49,6 @@ void osc::GuiRuler::draw(
     ImU32 textColor = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
     float circleRadius = 5.0f;
     float lineThickness = 3.0f;
-    glm::vec2 labelOffsetWhenNoLine = {10.0f, -10.0f};
 
     auto drawTooltipWithBg = [&dl, &textBgColor, &textColor](glm::vec2 const& pos, CStringView tooltipText)
     {

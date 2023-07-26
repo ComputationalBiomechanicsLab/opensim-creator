@@ -1320,12 +1320,6 @@ namespace
         std::vector<PlotDataPoint>::const_iterator m_Cursor = m_Data.begin();
     };
 
-    // returns true if the given `LineCursor` is still pointing at data (rather than off the end)
-    bool HasData(LineCursor const& c)
-    {
-        return c.peek().has_value();
-    }
-
     bool LessThanAssumingEmptyHighest(std::optional<float> const& a, std::optional<float> const& b)
     {
         // this is defined differently from the C++ standard, which makes the

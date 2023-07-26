@@ -7,10 +7,12 @@
 
 #include <gtest/gtest.h>
 
+#include <array>
+
 TEST(GraphicsHelpers, ToTexture2DPropagatesSRGBColorSpace)
 {
-	uint8_t data[] = {0xff};
-	osc::Image srgbImage{{1, 1},  data, 1, osc::ColorSpace::sRGB};
+	std::array<uint8_t, 1> const data = {0xff};
+	osc::Image srgbImage{{1, 1},  data, data.size(), osc::ColorSpace::sRGB};
 
 	osc::Texture2D rv = osc::ToTexture2D(srgbImage);
 

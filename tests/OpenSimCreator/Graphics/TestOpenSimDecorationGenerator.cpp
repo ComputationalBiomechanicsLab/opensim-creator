@@ -40,7 +40,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGen
         state,
         opts,
         1.0f,
-        [this, &passedTest](OpenSim::Component const& c, osc::SceneDecoration&& dec)
+        [&passedTest](OpenSim::Component const& c, osc::SceneDecoration&& dec)
         {
             if (osc::ContainsSubstringCaseInsensitive(c.getName(), "muscle1"))
             {

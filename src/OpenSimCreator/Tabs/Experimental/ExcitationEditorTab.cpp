@@ -80,11 +80,6 @@ namespace
         osc::UID id;
     };
 
-    bool HasLowerXStartingPosition(ExcitationCurveSegment const& a, ExcitationCurveSegment const& b) noexcept
-    {
-        return a.startPosition.x < b.startPosition.x;
-    }
-
     std::unordered_map<osc::UID, ExcitationCurveSegment> CreateCurveSegmentLookup(
         std::initializer_list<ExcitationCurveSegment> segments)
     {
@@ -206,26 +201,6 @@ namespace
     {
         v = glm::clamp(v, -1, 1);
         return v != glm::ivec2{0, 0} ? GridDirection{v.x, v.y} : std::optional<GridDirection>{};
-    }
-
-    constexpr bool IsNorthward(GridDirection const& d) noexcept
-    {
-        return ToVec2(d).y == -1;
-    }
-
-    constexpr bool IsEastward(GridDirection const& d) noexcept
-    {
-        return ToVec2(d).x == 1;
-    }
-
-    constexpr bool IsSouthward(GridDirection const& d) noexcept
-    {
-        return ToVec2(d).y == 1;
-    }
-
-    constexpr bool IsWestward(GridDirection const& d) noexcept
-    {
-        return ToVec2(d).x == -1;
     }
 
     constexpr bool IsDiagonal(GridDirection const& d) noexcept

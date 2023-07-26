@@ -137,21 +137,6 @@ namespace
         return {glm::value_ptr(s[0]), 3 * s.size()};
     }
 
-    nonstd::span<float const> ToFloatSpan(nonstd::span<osc::Color const> s)
-    {
-        return {osc::ValuePtr(s[0]), 4 * s.size()};
-    }
-
-    nonstd::span<float const> ToFloatSpan(glm::vec2 const& v)
-    {
-        return {glm::value_ptr(v), 2};
-    }
-
-    nonstd::span<float const> ToFloatSpan(glm::vec3 const& v)
-    {
-        return {glm::value_ptr(v), 3};
-    }
-
     nonstd::span<float const> ToFloatSpan(osc::Color const& v)
     {
         return {osc::ValuePtr(v), 4};
@@ -431,15 +416,6 @@ namespace
 
         o << R"(    </visual_scene>
   </library_visual_scenes>)";
-        o << '\n';
-    }
-
-    void WriteSceneList(std::ostream& o)
-    {
-        o << R"(
-  <scene>
-    <instance_visual_scene url="#Scene"/>
-  </scene>)";
         o << '\n';
     }
 }

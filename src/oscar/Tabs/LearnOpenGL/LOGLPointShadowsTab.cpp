@@ -129,16 +129,6 @@ namespace
         return rv;
     }
 
-    osc::Camera CreateShadowmappingCamera()
-    {
-        osc::Camera rv;
-        rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
-        rv.setCameraFOV(glm::radians(90.0f));
-        rv.setNearClippingPlane(1.0f);
-        rv.setFarClippingPlane(25.0f);
-        return rv;
-    }
-
     osc::RenderTexture CreateDepthTexture()
     {
         osc::RenderTextureDescriptor desc{c_ShadowmapDims};

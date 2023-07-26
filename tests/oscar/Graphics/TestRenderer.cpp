@@ -368,7 +368,9 @@ namespace
 
     std::default_random_engine& GetRngEngine()
     {
-        static std::default_random_engine e{};  // deterministic, because test failures due to RNG can suck
+        // the RNG is deliberately deterministic, so that
+	// test errors are reproducible
+        static std::default_random_engine e{};  // NOLINT(cert-msc32-c,cert-msc51-cpp)
         return e;
     }
 
@@ -415,11 +417,6 @@ namespace
     glm::mat4x4 GenerateMat4x4()
     {
         return glm::mat4{GenerateVec4(), GenerateVec4(), GenerateVec4(), GenerateVec4()};
-    }
-
-    glm::mat4x3 GenerateMat4x3()
-    {
-        return glm::mat4x3{GenerateVec3(), GenerateVec3(), GenerateVec3(), GenerateVec3()};
     }
 
     osc::Texture2D GenerateTexture()
@@ -505,7 +502,7 @@ TEST_F(Renderer, ShaderCanBeConstructedFromVertexGeometryAndFragmentShaderSource
 TEST_F(Renderer, ShaderCanBeCopyConstructed)
 {
     osc::Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
-    osc::Shader copy{s};
+    osc::Shader{s};
 }
 
 TEST_F(Renderer, ShaderCanBeMoveConstructed)
@@ -533,7 +530,7 @@ TEST_F(Renderer, ShaderCanBeMoveAssigned)
 TEST_F(Renderer, ShaderThatIsCopyConstructedEqualsSrcShader)
 {
     osc::Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
-    osc::Shader copy{s};
+    osc::Shader copy{s}; // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(s, copy);
 }
@@ -660,13 +657,13 @@ TEST_F(Renderer, MaterialCanBeConstructed)
 TEST_F(Renderer, MaterialCanBeCopyConstructed)
 {
     osc::Material material = GenerateMaterial();
-    osc::Material copy{material};
+    osc::Material{material};
 }
 
 TEST_F(Renderer, MaterialCanBeMoveConstructed)
 {
     osc::Material material = GenerateMaterial();
-    osc::Material copy{std::move(material)};
+    osc::Material{std::move(material)};
 }
 
 TEST_F(Renderer, MaterialCanBeCopyAssigned)
@@ -688,7 +685,7 @@ TEST_F(Renderer, MaterialCanBeMoveAssigned)
 TEST_F(Renderer, MaterialThatIsCopyConstructedEqualsSourceMaterial)
 {
     osc::Material material = GenerateMaterial();
-    osc::Material copy{material};
+    osc::Material copy{material}; // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(material, copy);
 }
@@ -744,7 +741,7 @@ TEST_F(Renderer, MaterialGetColorArrayReturnsEmptyOnNewMaterial)
 TEST_F(Renderer, MaterialCanCallSetColorArrayOnNewMaterial)
 {
     osc::Material mat = GenerateMaterial();
-    osc::Color colors[] = {osc::Color::black(), osc::Color::blue()};
+    auto const colors = osc::to_array({osc::Color::black(), osc::Color::blue()});
 
     mat.setColorArray("someKey", colors);
 }
@@ -752,7 +749,7 @@ TEST_F(Renderer, MaterialCanCallSetColorArrayOnNewMaterial)
 TEST_F(Renderer, MaterialCallingGetColorArrayOnMaterialAfterSettingThemReturnsTheSameColors)
 {
     osc::Material mat = GenerateMaterial();
-    osc::Color const colors[] = {osc::Color::red(), osc::Color::green(), osc::Color::blue()};
+    auto const colors = osc::to_array({osc::Color::red(), osc::Color::green(), osc::Color::blue()});
     osc::CStringView const key = "someKey";
 
     mat.setColorArray(key, colors);
@@ -1198,7 +1195,7 @@ TEST_F(Renderer, MaterialSetWireframeModeCausesMaterialCopiesToReturnNonEqual)
 TEST_F(Renderer, MaterialCanCompareEquals)
 {
     osc::Material mat = GenerateMaterial();
-    osc::Material copy{mat};
+    osc::Material copy{mat};  // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(mat, copy);
 }
@@ -1260,7 +1257,7 @@ TEST_F(Renderer, MaterialPropertyBlockCanDefaultConstruct)
 TEST_F(Renderer, MaterialPropertyBlockCanCopyConstruct)
 {
     osc::MaterialPropertyBlock mpb;
-    osc::MaterialPropertyBlock copy{mpb};
+    osc::MaterialPropertyBlock{mpb};
 }
 
 TEST_F(Renderer, MaterialPropertyBlockCanMoveConstruct)
@@ -1478,7 +1475,7 @@ TEST_F(Renderer, MaterialPropertyBlockCanCompareEquals)
 TEST_F(Renderer, MaterialPropertyBlockCopyConstructionComparesEqual)
 {
     osc::MaterialPropertyBlock m;
-    osc::MaterialPropertyBlock copy{m};
+    osc::MaterialPropertyBlock copy{m};  // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(m, copy);
 }
@@ -1567,7 +1564,7 @@ TEST_F(Renderer, TextureWithRuntimeNumberOfChannelsWorksForRGBAData)
 TEST_F(Renderer, TextureCanCopyConstruct)
 {
     osc::Texture2D t = GenerateTexture();
-    osc::Texture2D copy{t};
+    osc::Texture2D{t};
 }
 
 TEST_F(Renderer, TextureCanMoveConstruct)
@@ -1629,7 +1626,7 @@ TEST_F(Renderer, TextureGetAspectRatioReturnsExpectedRatio)
 
 TEST_F(Renderer, TextureGetColorSpaceReturnsProvidedColorSpaceIfSRGB)
 {
-    osc::Rgba32 pixels[] = {{}};
+    std::array<osc::Rgba32, 1> const pixels{};
     osc::Texture2D t{{1, 1}, pixels, osc::ColorSpace::sRGB};
 
     ASSERT_EQ(t.getColorSpace(), osc::ColorSpace::sRGB);
@@ -1637,7 +1634,7 @@ TEST_F(Renderer, TextureGetColorSpaceReturnsProvidedColorSpaceIfSRGB)
 
 TEST_F(Renderer, TextureGetColorSpaceReturnsProvidedColorSpaceIfLinear)
 {
-    osc::Rgba32 pixels[] = {{}};
+    std::array<osc::Rgba32, 1> const pixels{};
     osc::Texture2D t{{1, 1}, pixels, osc::ColorSpace::Linear};
 
     ASSERT_EQ(t.getColorSpace(), osc::ColorSpace::Linear);
@@ -1753,7 +1750,7 @@ TEST_F(Renderer, TextureCanBeComparedForEquality)
 TEST_F(Renderer, TextureCopyConstructingComparesEqual)
 {
     osc::Texture2D t = GenerateTexture();
-    osc::Texture2D tcopy{t};
+    osc::Texture2D tcopy{t};  // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(t, tcopy);
 }
@@ -1860,7 +1857,7 @@ TEST_F(Renderer, MeshTopologyAllCanBeWrittenToStream)
 {
     for (size_t i = 0; i < osc::NumOptions<osc::MeshTopology>(); ++i)
     {
-        osc::MeshTopology mt = static_cast<osc::MeshTopology>(i);
+        auto const mt = static_cast<osc::MeshTopology>(i);
 
         std::stringstream ss;
 
@@ -1898,7 +1895,7 @@ TEST_F(Renderer, MeshCanBeDefaultConstructed)
 TEST_F(Renderer, MeshCanBeCopyConstructed)
 {
     osc::Mesh m;
-    osc::Mesh copy{m};
+    osc::Mesh{m};
 }
 
 TEST_F(Renderer, MeshCanBeMoveConstructed)
@@ -2192,13 +2189,13 @@ TEST_F(Renderer, MeshGetBoundsReturnsEmptyBoundsOnInitialization)
 
 TEST_F(Renderer, MeshGetBoundsReturnsEmptyForMeshWithUnindexedVerts)
 {
-    glm::vec3 pyramid[] =
+    auto const pyramid = osc::to_array<glm::vec3>(
     {
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
         { 0.0f,  1.0f, 0.0f},  // base: top-middle
         { 0.0f,  0.0f, 1.0f},  // tip
-    };
+    });
 
     osc::Mesh m;
     m.setVerts(pyramid);
@@ -2208,13 +2205,13 @@ TEST_F(Renderer, MeshGetBoundsReturnsEmptyForMeshWithUnindexedVerts)
 
 TEST_F(Renderer, MeshGetBooundsReturnsNonemptyForIndexedVerts)
 {
-    glm::vec3 pyramid[] =
+    auto const pyramid = osc::to_array<glm::vec3>(
     {
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
         { 0.0f,  1.0f, 0.0f},  // base: top-middle
-    };
-    std::uint16_t pyramidIndices[] = {0, 1, 2};
+    });
+    auto const pyramidIndices = osc::to_array<uint16_t>({0, 1, 2});
 
     osc::Mesh m;
     m.setVerts(pyramid);
@@ -2232,13 +2229,13 @@ TEST_F(Renderer, MeshGetBVHReturnsEmptyBVHOnInitialization)
 
 TEST_F(Renderer, MeshGetBVHReturnsExpectedRootNode)
 {
-    glm::vec3 pyramid[] =
+    auto const pyramid = osc::to_array<glm::vec3>(
     {
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
         { 0.0f,  1.0f, 0.0f},  // base: top-middle
-    };
-    std::uint16_t pyramidIndices[] = {0, 1, 2};
+    });
+    auto const pyramidIndices = osc::to_array<uint16_t>({0, 1, 2});
 
     osc::Mesh m;
     m.setVerts(pyramid);
@@ -2263,7 +2260,7 @@ TEST_F(Renderer, MeshCanBeComparedForEquality)
 TEST_F(Renderer, MeshCopiesAreEqual)
 {
     osc::Mesh m;
-    osc::Mesh copy{m};
+    osc::Mesh copy{m};  // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(m, copy);
 }
@@ -2326,13 +2323,7 @@ TEST_F(Renderer, RenderTextureDescriptorCoercesNegativeHeightsToZero)
 TEST_F(Renderer, RenderTextureDescriptorCanBeCopyConstructed)
 {
     osc::RenderTextureDescriptor d1{{1, 1}};
-    osc::RenderTextureDescriptor d2{d1};
-}
-
-TEST_F(Renderer, RenderTextureDescriptorCanBeMoveConstructed)
-{
-    osc::RenderTextureDescriptor d1{{1, 1}};
-    osc::RenderTextureDescriptor d2{std::move(d1)};
+    osc::RenderTextureDescriptor{d1};
 }
 
 TEST_F(Renderer, RenderTextureDescriptorCanBeCopyAssigned)
@@ -2340,13 +2331,6 @@ TEST_F(Renderer, RenderTextureDescriptorCanBeCopyAssigned)
     osc::RenderTextureDescriptor d1{{1, 1}};
     osc::RenderTextureDescriptor d2{{1, 1}};
     d1 = d2;
-}
-
-TEST_F(Renderer, RenderTextureDescriptorCanBeMoveAssigned)
-{
-    osc::RenderTextureDescriptor d1{{1, 1}};
-    osc::RenderTextureDescriptor d2{{1, 1}};
-    d1 = std::move(d2);
 }
 
 TEST_F(Renderer, RenderTextureDescriptorGetWidthReturnsConstructedWith)
@@ -2794,13 +2778,13 @@ TEST_F(Renderer, CameraCanDefaultConstruct)
 TEST_F(Renderer, CameraCanBeCopyConstructed)
 {
     osc::Camera c;
-    osc::Camera copy{c};
+    osc::Camera{c};
 }
 
 TEST_F(Renderer, CameraThatIsCopyConstructedComparesEqual)
 {
     osc::Camera c;
-    osc::Camera copy{c};
+    osc::Camera copy{c};  // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(c, copy);
 }

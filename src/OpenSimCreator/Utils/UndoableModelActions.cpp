@@ -1164,8 +1164,6 @@ bool osc::ActionReassignComponentSocket(
         return false;
     }
 
-    OpenSim::Object const& previousConnectee = mutSocket->getConnecteeAsObject();
-
     try
     {
         mutSocket->connect(connectee);

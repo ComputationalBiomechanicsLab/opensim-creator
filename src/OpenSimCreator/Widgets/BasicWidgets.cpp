@@ -765,8 +765,6 @@ void osc::DrawViewerTopButtonRow(
     IconCache& iconCache,
     std::function<void()> const& drawExtraElements)
 {
-    float const iconPadding = 2.0f;
-
     IconWithMenu muscleStylingButton
     {
         iconCache.getIcon("muscle_coloring"),

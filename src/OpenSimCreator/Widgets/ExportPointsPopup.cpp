@@ -309,7 +309,7 @@ namespace
             return std::nullopt;  // caller doesn't want re-expression
         }
 
-        OpenSim::Frame const* const frame = osc::FindComponent<OpenSim::Frame>(model, *maybeAbsPathOfFrameToReexpressPointsIn);
+        auto const* const frame = osc::FindComponent<OpenSim::Frame>(model, *maybeAbsPathOfFrameToReexpressPointsIn);
         if (!frame)
         {
             return std::nullopt;  // the selected frame doesn't exist in the model (bug?)
@@ -344,7 +344,7 @@ namespace
         osc::PointInfo const& pointInfo,
         SimTK::Transform const& ground2otherFrame)
     {
-        OpenSim::Frame const* const frame = osc::FindComponent<OpenSim::Frame>(model, pointInfo.frameAbsPath);
+        auto const* const frame = osc::FindComponent<OpenSim::Frame>(model, pointInfo.frameAbsPath);
         if (!frame)
         {
             return pointInfo.location;  // cannot find frame (bug?)

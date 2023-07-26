@@ -78,11 +78,6 @@ namespace
         float phi;
     };
 
-    std::ostream& operator<<(std::ostream& o, PolarAngles const& angles)
-    {
-        return o << "PolarAngles(theta = " << angles.theta << ", phi = " << angles.phi << ')';
-    }
-
     PolarAngles CalcPolarAngles(glm::vec3 const& directionFromOrigin)
     {
         // X is left-to-right
@@ -100,15 +95,6 @@ namespace
         float const theta = std::atan2(directionFromOrigin.x, directionFromOrigin.z);
         float const phi = std::asin(directionFromOrigin.y);
         return PolarAngles{theta, phi};
-    }
-
-    glm::vec3 PolarToCartesian(glm::vec3 focus, float radius, float theta, float phi)
-    {
-        float x = radius * std::sin(theta) * std::cos(phi);
-        float y = radius * std::sin(phi);
-        float z = radius * std::cos(theta) * std::cos(phi);
-
-        return -focus + glm::vec3{x, y, z};
     }
 
     struct ShadowCameraMatrices final {

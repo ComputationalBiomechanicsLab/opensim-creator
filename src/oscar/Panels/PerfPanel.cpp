@@ -15,11 +15,6 @@
 
 namespace
 {
-    bool HighestTotalDuration(osc::PerfMeasurement const& a, osc::PerfMeasurement const& b)
-    {
-        return a.getTotalDuration() > b.getTotalDuration();
-    }
-
     bool LexographicallyHighestLabel(osc::PerfMeasurement const& a, osc::PerfMeasurement const& b)
     {
         return a.getLabel() > b.getLabel();

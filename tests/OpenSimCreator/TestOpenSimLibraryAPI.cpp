@@ -13,6 +13,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
 
+#include <array>
 #include <filesystem>
 
 
@@ -45,8 +46,8 @@ TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 	SimTK::State st = model.getWorkingState();
 
 	// lookup components
-	OpenSim::Coordinate const& coord = model.getComponent<OpenSim::Coordinate>(coordinatePath);
-	OpenSim::Muscle const& musc = model.getComponent<OpenSim::Muscle>(musclePath);
+	auto const& coord = model.getComponent<OpenSim::Coordinate>(coordinatePath);
+	auto const& musc = model.getComponent<OpenSim::Muscle>(musclePath);
 
 	// setting `fixBug` to `true` makes this test pass
 	if (bool fixBug = true)
@@ -56,7 +57,7 @@ TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 
 	// compute two moment arms at one particular coordinate value
 	coord.setLocked(st, false);
-	double values[2];
+	std::array<double, 2> values{};
 	double newCoordVal = coord.getValue(st) + 0.01;  // just ensure the coord changes from default
 	coord.setValue(st, newCoordVal);
 	for (int i = 0; i < 2; ++i)
@@ -91,7 +92,7 @@ TEST(OpenSimModel, EditingACoordinateLockMutatesModel)
 	model.equilibrateMuscles(model.updWorkingState());
 	model.realizeReport(model.updWorkingState());
 
-	OpenSim::Coordinate const& coord = model.getComponent<OpenSim::Coordinate>(coordinatePath);
+	auto const& coord = model.getComponent<OpenSim::Coordinate>(coordinatePath);
 	SimTK::State state = model.updWorkingState();
 
 	ASSERT_TRUE(model.getWorkingState().isConsistent(state));

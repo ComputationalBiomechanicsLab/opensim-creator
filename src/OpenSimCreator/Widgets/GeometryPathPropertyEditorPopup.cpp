@@ -181,11 +181,6 @@ private:
     {
         OpenSim::PathPointSet& pps = m_EditedGeometryPath.updPathPointSet();
 
-        ImGuiTableFlags const tableFlags =
-            ImGuiTableFlags_NoSavedSettings |
-            ImGuiTableFlags_BordersInner |
-            ImGuiTableFlags_SizingStretchSame;
-
         if (ImGui::BeginTable("##GeometryPathEditorTable", 6))
         {
             ImGui::TableSetupColumn("Actions");

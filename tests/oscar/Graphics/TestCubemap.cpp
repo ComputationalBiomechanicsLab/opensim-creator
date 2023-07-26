@@ -26,7 +26,7 @@ TEST(Cubemap, ConstructorThrowsIfGivenNegativeWidth)
 TEST(Cubemap, CanBeCopyConstructed)
 {
     osc::Cubemap const source{1, osc::TextureFormat::RGBA32};
-    osc::Cubemap copy{source};
+    osc::Cubemap{source};
 }
 
 static_assert(std::is_nothrow_move_constructible_v<osc::Cubemap>);
@@ -34,7 +34,7 @@ static_assert(std::is_nothrow_move_constructible_v<osc::Cubemap>);
 TEST(Cubemap, CanBeMoveConstructed)
 {
     osc::Cubemap source{1, osc::TextureFormat::RGBA32};
-    osc::Cubemap other{std::move(source)};
+    osc::Cubemap{std::move(source)};
 }
 
 TEST(Cubemap, CanBeCopyAssigned)
@@ -78,7 +78,7 @@ TEST(Cubemap, CanBeReferenceComparedForEquality)
 TEST(Cubemap, CopiesCompareEqual)
 {
     osc::Cubemap const cubemap{1, osc::TextureFormat::RGBA32};
-    osc::Cubemap const copy{cubemap};
+    osc::Cubemap const copy{cubemap}; // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(cubemap, copy);
 }
@@ -139,7 +139,7 @@ TEST(Cubemap, SetDataWorksForAnyFaceIfGivenCorrectNumberOfBytes)
     static_assert(std::is_same_v<std::underlying_type_t<osc::CubemapFace>, int32_t>);
     for (int32_t i = 0; i < static_cast<int32_t>(osc::NumOptions<osc::CubemapFace>()); ++i)
     {
-        osc::CubemapFace const face = static_cast<osc::CubemapFace>(i);
+        auto const face = static_cast<osc::CubemapFace>(i);
         cubemap.setPixelData(face, data);
     }
 }
@@ -157,7 +157,7 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGBA32)
     static_assert(std::is_same_v<std::underlying_type_t<osc::CubemapFace>, int32_t>);
     for (int32_t i = 0; i < static_cast<int32_t>(osc::NumOptions<osc::CubemapFace>()); ++i)
     {
-        osc::CubemapFace const face = static_cast<osc::CubemapFace>(i);
+        auto const face = static_cast<osc::CubemapFace>(i);
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
     }
 }
@@ -175,7 +175,7 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGB24)
     static_assert(std::is_same_v<std::underlying_type_t<osc::CubemapFace>, int32_t>);
     for (int32_t i = 0; i < static_cast<int32_t>(osc::NumOptions<osc::CubemapFace>()); ++i)
     {
-        osc::CubemapFace const face = static_cast<osc::CubemapFace>(i);
+        auto const face = static_cast<osc::CubemapFace>(i);
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
     }
 }
@@ -194,12 +194,12 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForWidth)
     static_assert(std::is_same_v<std::underlying_type_t<osc::CubemapFace>, int32_t>);
     for (int32_t i = 0; i < static_cast<int32_t>(osc::NumOptions<osc::CubemapFace>()); ++i)
     {
-        osc::CubemapFace const face = static_cast<osc::CubemapFace>(i);
+        auto const face = static_cast<osc::CubemapFace>(i);
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
     }
 }
 
 TEST(Cubemap, SetPixelDataWorksWithFloatingPointTextureFormats)
 {
-    osc::TextureFormat const format = osc::TextureFormat::RGBAFloat;
+    [[maybe_unused]] osc::TextureFormat const format = osc::TextureFormat::RGBAFloat;
 }

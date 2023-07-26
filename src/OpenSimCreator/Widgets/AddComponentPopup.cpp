@@ -73,7 +73,6 @@ public:
          std::string_view popupName) :
 
         StandardPopup{popupName},
-        m_EditorAPI{api},
         m_Uum{std::move(uum)},
         m_Proto{std::move(prototype)},
         m_PrototypePropertiesEditor{api, m_Uum, [proto = m_Proto]() { return proto.get(); }}
@@ -390,8 +389,6 @@ private:
 
     void drawPathPointEditor()
     {
-        OpenSim::Model const& model = m_Uum->getModel();
-
         auto* protoAsPA = dynamic_cast<OpenSim::PathActuator*>(m_Proto.get());
         if (!protoAsPA)
         {
@@ -481,8 +478,6 @@ private:
 
         drawBottomButtons();
     }
-
-    EditorAPI* m_EditorAPI;
 
     // the model that the component should be added to
     std::shared_ptr<UndoableModelStatePair> m_Uum;

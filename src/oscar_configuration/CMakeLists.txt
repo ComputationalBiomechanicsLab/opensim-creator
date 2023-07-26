@@ -76,9 +76,8 @@ target_compile_options(oscar_configuration INTERFACE
         # (set to =strict if the code quality is high enough and Clang in CI is high enough)
         -Wcast-align
 
-        # disabled: broken in stb
         # warn if casting C string constants from `char const*` to `char*`
-        # -Wwrite-strings
+        -Wwrite-strings
 
         # warn if a dangling else is detected
         -Wdangling-else
@@ -95,9 +94,8 @@ target_compile_options(oscar_configuration INTERFACE
         # warn if a structure is given the 'packed' attribute (disallowed: alignment)
         -Wpacked
 
-        # disabled: broken in stb
         # warn if a case in a switch statement implicitly falls through after a statement
-        # -Wimplicit-fallthrough
+        -Wimplicit-fallthrough
 
         # disabled: requires newer gcc
         # warn if calls to `strcmp` and `strncmp` are determined to be invalid at compile-time
@@ -114,9 +112,8 @@ target_compile_options(oscar_configuration INTERFACE
         # warn if using trampoline functions (requires executable stack)
         # -Wtrampolines
 
-        # disabled: broken in STB
         # warn if a pointer is cast in a C-style cast in such a way that it removes qualifiers (e.g. char const* -> char*)
-        # -Wcast-qual
+        -Wcast-qual
 
         # disabled: broken in osc
         # warn if an implicit conversion may alter a value
@@ -135,19 +132,8 @@ target_compile_options(oscar_configuration INTERFACE
         # (enable occasionally and ensure that CI etc. have relevant compiler version)
         # -Wtraditional
 
-        -Wno-multichar
-
-        # disable: broken by STB headers
-        -Wno-unused
-
-        # disable: broken by STB headers
+        # disable: broken in OSC (int == size_t etc.)
         -Wno-sign-compare
-
-        # disable: broken by STB headers
-        -Wno-missing-field-initializers
-
-        # disabled: requires newer gcc and broken by nativefiledialog
-        # -Wno-format-truncation
 
         # disable: offsetof used in OSC's component/propertytree API
         -Wno-invalid-offsetof
@@ -169,8 +155,6 @@ target_compile_options(oscar_configuration INTERFACE
 
     # clang flags
     $<$<CXX_COMPILER_ID:Clang>:
-        -Wno-cast-align
-
         # required in earlier clangs. Just setting
         # -fno-omit-frame-pointer (above) is not enough
         #

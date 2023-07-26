@@ -56,14 +56,6 @@ namespace
         glm::vec2 dest;
     };
 
-    // pretty-prints `LandmarkPair2D`
-    std::ostream& operator<<(std::ostream& o, LandmarkPair2D const& p)
-    {
-        using osc::operator<<;
-        o << "LandmarkPair2D{src = " << p.src << ", dest = " << p.dest << '}';
-        return o;
-    }
-
     // this is effectviely the "U" term in the TPS algorithm literature (which is usually U(r) = r^2 * log(r^2))
     //
     // i.e. U(||pi - p||) in the literature is equivalent to `RadialBasisFunction2D(pi, p)` here
@@ -100,13 +92,6 @@ namespace
         glm::vec2 controlPoint;
     };
 
-    // pretty-prints `TPSNonAffineTerm2D`
-    std::ostream& operator<<(std::ostream& o, TPSNonAffineTerm2D const& wt)
-    {
-        using osc::operator<<;
-        return o << "TPSNonAffineTerm2D{weight = " << wt.weight << ", controlPoint = " << wt.controlPoint << '}';
-    }
-
     // all coefficients in the 2D TPS equation
     //
     // i.e. these are the a1, a2, a3, and w's (+ control points) terms of the equation
@@ -116,19 +101,6 @@ namespace
         glm::vec2 a3 = {0.0f, 1.0f};
         std::vector<TPSNonAffineTerm2D> weights;
     };
-
-    // pretty-prints TPSCoefficients2D
-    std::ostream& operator<<(std::ostream& o, TPSCoefficients2D const& coefs)
-    {
-        using osc::operator<<;
-        o << "TPSCoefficients2D{a1 = " << coefs.a1 << ", a2 = " << coefs.a2 << ", a3 = " << coefs.a3;
-        for (size_t i = 0; i < coefs.weights.size(); ++i)
-        {
-            o << ", w" << i << " = " << coefs.weights[i];
-        }
-        o << '}';
-        return o;
-    }
 
     // evaluates the TPS equation with the given coefficients and input point
     glm::vec2 Evaluate(TPSCoefficients2D const& coefs, glm::vec2 p)

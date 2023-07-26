@@ -1417,51 +1417,6 @@ namespace
 
         return pos - (p1/p2)*forceTorque.force;
     }
-
-    std::optional<osc::ForcePoint> GetForceValueInGround(
-        OpenSim::Model const& model,
-        SimTK::State const& state,
-        OpenSim::HuntCrossleyForce const& hcf)
-    {
-        // try and find a contact half space to attach the force vectors to
-        OpenSim::ContactHalfSpace const* const maybeContactHalfSpace = TryFindFirstContactHalfSpace(model, hcf);
-        if (!maybeContactHalfSpace)
-        {
-            return std::nullopt;  // couldn't find a ContactHalfSpace
-        }
-        osc::Plane const contactPlaneInGround = ToAnalyticPlaneInGround(*maybeContactHalfSpace, state);
-
-        // try and compute the force vectors
-        std::optional<ForceTorque> const maybeForceTorque = TryComputeCurrentForceTorque(hcf, state);
-        if (!maybeForceTorque)
-        {
-            return std::nullopt;  // couldn't extract force+torque from the HCF
-        }
-        ForceTorque const& forceTorque = *maybeForceTorque;
-
-        std::optional<glm::vec3> maybePosition = ComputeCenterOfPressure(contactPlaneInGround, forceTorque);
-        if (!maybePosition)
-        {
-            return std::nullopt;  // the resulting force is too small
-        }
-
-        return osc::ForcePoint{forceTorque.force, *maybePosition};
-    }
-
-    std::optional<osc::ForcePoint> TryGetForceValueInGround(
-        OpenSim::Model const& model,
-        SimTK::State const& state,
-        OpenSim::Force const& force)
-    {
-        if (auto const* hcf = dynamic_cast<OpenSim::HuntCrossleyForce const*>(&force))
-        {
-            return GetForceValueInGround(model, state, *hcf);
-        }
-        else
-        {
-            return std::nullopt;
-        }
-    }
 }
 
 std::optional<osc::ForcePoint> osc::TryGetContactForceInGround(

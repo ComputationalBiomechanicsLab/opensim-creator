@@ -17,7 +17,7 @@ TEST(Color, CanConstructFromRGBAFloats)
 TEST(Color, RGBAFloatConstructorIsConstexpr)
 {
     // must compile
-    constexpr osc::Color color{0.0f, 0.0f, 0.0f, 0.0f};
+    [[maybe_unused]] constexpr osc::Color color{0.0f, 0.0f, 0.0f, 0.0f};
 }
 
 TEST(Color, CanConstructFromRGBFloats)
@@ -33,7 +33,7 @@ TEST(Color, CanConstructFromRGBFloats)
 TEST(Color, RGBFloatConstructorIsConstexpr)
 {
     // must compile
-    constexpr osc::Color color{0.0f, 0.0f, 0.0f};
+    [[maybe_unused]] constexpr osc::Color color{0.0f, 0.0f, 0.0f};
 }
 
 TEST(Color, CanBeExplicitlyConstructedFromVec3)
@@ -50,12 +50,12 @@ TEST(Color, CanBeExplicitlyConstructedFromVec3)
 
 TEST(Color, CanBeExplicitlyConstructedFromVec4)
 {
-    osc::Color const color{glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}};
+    [[maybe_unused]] osc::Color const color{glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}};
 }
 
 TEST(Color, CanBeImplicitlyConvertedToVec4)
 {
-    constexpr glm::vec4 v = osc::Color{0.0f, 0.0f, 1.0f, 0.0f};
+    [[maybe_unused]] constexpr glm::vec4 v = osc::Color{0.0f, 0.0f, 1.0f, 0.0f};
 }
 
 TEST(Color, BracketOpertatorOnConstColorWorksAsExpected)
@@ -71,7 +71,7 @@ TEST(Color, BracketOpertatorOnConstColorWorksAsExpected)
 TEST(Color, Vec4ConstructorIsConstexpr)
 {
     // must compile
-    constexpr osc::Color color{glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}};
+    [[maybe_unused]] constexpr osc::Color color{glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}};
 }
 
 TEST(Color, ToVec4ExplicitlyConvertsToVec4)

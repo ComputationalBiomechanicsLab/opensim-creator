@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 #include <glm/vec2.hpp>
 
+#include <array>
 #include <filesystem>
 #include <memory>
 #include <utility>
@@ -56,7 +57,7 @@ TEST(Image, WhenDefaultConstructedHasSRGBColorSpace)
 
 TEST(Image, WhenConstructedWithSRGBGetColorSpaceReturnsSRGB)
 {
-    uint8_t data[] = {0xff};
+    std::array<uint8_t, 1> const data = {0xff};
     osc::Image image{{1, 1}, data, 1, osc::ColorSpace::sRGB};
 
     ASSERT_EQ(image.getColorSpace(), osc::ColorSpace::sRGB);
@@ -64,7 +65,7 @@ TEST(Image, WhenConstructedWithSRGBGetColorSpaceReturnsSRGB)
 
 TEST(Image, WhenConstructedWithLinearGetColorSpaceReturnsSRGB)
 {
-    uint8_t data[] = {0xff};
+    std::array<uint8_t, 1> const data = {0xff};
     osc::Image image{{1, 1}, data, 1, osc::ColorSpace::Linear};
 
     ASSERT_EQ(image.getColorSpace(), osc::ColorSpace::Linear);

@@ -95,7 +95,7 @@ public:
         );
         m_PanelManager->registerToggleablePanel(
             "Log",
-            [this](std::string_view panelName)
+            [](std::string_view panelName)
             {
                 return std::make_shared<LogViewerPanel>(panelName);
             }

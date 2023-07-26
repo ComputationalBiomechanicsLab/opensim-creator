@@ -415,11 +415,6 @@ namespace
             a.worldMidpoint == b.worldMidpoint;
     }
 
-    bool operator!=(RenderObject const& a, RenderObject const& b) noexcept
-    {
-        return !(a == b);
-    }
-
     // returns true if the render object is opaque
     bool IsOpaque(RenderObject const& ro)
     {
@@ -1562,21 +1557,6 @@ namespace
             default:
                 return CPUDataType::UnsignedByte;  // shouldn't be hit
             }
-        }
-    }
-
-    GLenum ToOpenGLPixelDataType(osc::RenderTextureFormat f)
-    {
-        static_assert(osc::NumOptions<osc::RenderTextureFormat>() == 3);
-
-        switch (f)
-        {
-        case osc::RenderTextureFormat::ARGBHalf:
-            return GL_HALF_FLOAT;
-        case osc::RenderTextureFormat::RED:
-        case osc::RenderTextureFormat::ARGB32:
-        default:
-            return GL_UNSIGNED_BYTE;
         }
     }
 
@@ -4483,12 +4463,11 @@ namespace
         // see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glGet.xhtml
         if (v < 4)
         {
-            static bool const s_ShowWarningOnce = [&]()
+            [[maybe_unused]] static bool const s_ShowWarningOnce = [&]()
             {
                 osc::log::warn("the current OpenGl backend only supports %i samples. Technically, this is invalid (4 *should* be the minimum)", v);
                 return true;
             }();
-            (void)s_ShowWarningOnce;
         }
         OSC_ASSERT_ALWAYS(v < 1<<16 && "number of samples is greater than the maximum supported by the application");
 

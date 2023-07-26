@@ -67,13 +67,12 @@ namespace
     // information than "yeah, it's broke"
     bool EnsureBacktraceHandlerEnabled()
     {
-        static bool const s_BacktraceEnabled = []()
+        [[maybe_unused]] static bool const s_BacktraceEnabled = []()
         {
             osc::log::info("enabling backtrace handler");
             osc::InstallBacktraceHandler();
             return true;
         }();
-        (void)s_BacktraceEnabled;
 
         return s_BacktraceEnabled;
     }
@@ -105,30 +104,6 @@ namespace
             SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
 
         return sdl::CreateWindoww(OSC_APPNAME_STRING, x, y, width, height, flags);
-    }
-
-    // returns refresh rate of highest refresh rate display on the computer
-    int GetHighestRefreshRateDisplay()
-    {
-        int numDisplays = SDL_GetNumVideoDisplays();
-
-        if (numDisplays < 1)
-        {
-            return 60;  // this should be impossible but, you know, coding.
-        }
-
-        int highestRefreshRate = 30;
-        SDL_DisplayMode modeStruct{};
-        for (int display = 0; display < numDisplays; ++display)
-        {
-            int numModes = SDL_GetNumDisplayModes(display);
-            for (int mode = 0; mode < numModes; ++mode)
-            {
-                SDL_GetDisplayMode(display, mode, &modeStruct);
-                highestRefreshRate = std::max(highestRefreshRate, modeStruct.refresh_rate);
-            }
-        }
-        return highestRefreshRate;
     }
 
     // load the "recent files" file that osc persists to disk

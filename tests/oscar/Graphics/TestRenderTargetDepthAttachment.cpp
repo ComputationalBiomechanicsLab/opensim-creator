@@ -45,7 +45,7 @@ TEST(RenderTargetDepthAttachment, EqualityReturnsTrueForCopies)
 		osc::RenderBufferLoadAction::Clear,
 		osc::RenderBufferStoreAction::Resolve,
 	};
-	osc::RenderTargetDepthAttachment copy = attachment;
+	osc::RenderTargetDepthAttachment const copy = attachment;  // NOLINT(performance-unnecessary-copy-initialization)
 
 	ASSERT_EQ(copy, attachment);
 }

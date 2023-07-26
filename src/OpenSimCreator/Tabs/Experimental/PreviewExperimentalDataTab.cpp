@@ -73,12 +73,6 @@ namespace
     });
     static_assert(c_ColumnDataSizes.size() == osc::NumOptions<ColumnDataType>());
 
-    // prints a human-readable representation of a column data type
-    std::ostream& operator<<(std::ostream& o, ColumnDataType dt)
-    {
-        return o << c_ColumnDataTypeStrings.at(static_cast<size_t>(dt));
-    }
-
     // returns the number of floating-point values the column is backed by
     constexpr int NumElementsIn(ColumnDataType dt)
     {
@@ -166,12 +160,6 @@ namespace
         std::string label;
         ColumnDataType dataType;
     };
-
-    // prints a human-readable representation of a column description
-    std::ostream& operator<<(std::ostream& o, ColumnDescription const& desc)
-    {
-        return o << "ColumnDescription(Offset=" << desc.offset << ", DataType = " << desc.dataType << ", Label = \"" << desc.label << "\")";
-    }
 
     // returns true if `s` ends with the given `suffix`
     bool EndsWith(std::string const& s, std::string_view suffix)
@@ -267,40 +255,6 @@ namespace
     size_t NumRows(LoadedMotion const& lm)
     {
         return lm.data.size() / lm.rowStride;
-    }
-
-    // prints `LoadedMotion` in a human-readable format
-    std::ostream& operator<<(std::ostream& o, LoadedMotion const& mot)
-    {
-        o << "LoadedMotion(";
-        o << "\n    ColumnDescriptions = [";
-        for (ColumnDescription const& d : mot.columnDescriptions)
-        {
-            o << "\n        " << d;
-        }
-        o << "\n    ],";
-        o << "\n    RowStride = " << mot.rowStride << ',';
-        o << "\n    Data = [... " << mot.data.size() << " values (" << NumRows(mot) << " rows)...]";
-        o << "\n)";
-
-        return o;
-    }
-
-    // get the time value for a given row
-    double GetTime(LoadedMotion const& m, size_t row)
-    {
-        return m.data.at(row * m.rowStride);
-    }
-
-    // get data values for a given row
-    nonstd::span<double const> GetData(LoadedMotion const& m, size_t row)
-    {
-        OSC_ASSERT((row + 1) * m.rowStride <= m.data.size());
-
-        size_t start = (row * m.rowStride) + 1;
-        size_t numValues = m.rowStride - 1;
-
-        return {m.data.data() + start, numValues};
     }
 
     // compute the stride of the data columns

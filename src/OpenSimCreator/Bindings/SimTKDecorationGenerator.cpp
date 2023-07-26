@@ -133,12 +133,11 @@ namespace
 
         void implementPointGeometry(SimTK::DecorativePoint const&) final
         {
-            static bool const s_ShownWarningOnce = []()
+            [[maybe_unused]] static bool const s_ShownWarningOnce = []()
             {
                 osc::log::warn("this model uses implementPointGeometry, which is not yet implemented in OSC");
                 return true;
             }();
-            (void)s_ShownWarningOnce;
         }
 
         void implementLineGeometry(SimTK::DecorativeLine const& d) final
@@ -280,12 +279,11 @@ namespace
 
         void implementTextGeometry(SimTK::DecorativeText const&) final
         {
-            static bool const s_ShownWarningOnce = []()
+            [[maybe_unused]] static bool const s_ShownWarningOnce = []()
             {
                 osc::log::warn("this model uses implementTextGeometry, which is not yet implemented in OSC");
                 return true;
             }();
-            (void)s_ShownWarningOnce;
         }
 
         void implementMeshGeometry(SimTK::DecorativeMesh const& d) final

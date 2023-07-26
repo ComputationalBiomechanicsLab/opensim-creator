@@ -51,12 +51,12 @@ TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
 
 	for (OpenSim::ComponentPath const& p : allJointPaths)
 	{
-		OpenSim::Joint const& joint = model.getModel().getComponent<OpenSim::Joint>(p);
+		auto const& joint = model.getModel().getComponent<OpenSim::Joint>(p);
 
 		std::string msg = "changed " + joint.getAbsolutePathString();
 
 		OpenSim::Component const& parent = joint.getOwner();
-		OpenSim::JointSet const* jointSet = dynamic_cast<OpenSim::JointSet const*>(&parent);
+		auto const* jointSet = dynamic_cast<OpenSim::JointSet const*>(&parent);
 
 		if (!jointSet)
 		{
@@ -80,7 +80,6 @@ TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
 		osc::CopyCommonJointProperties(joint, *replacement);
 
 		// update model
-		auto* ptr = replacement.get();
 		const_cast<OpenSim::JointSet&>(*jointSet).set(static_cast<int>(idx), replacement.release());
 		model.updModel();  // dirty it
 		model.commit(msg);
