@@ -28,74 +28,74 @@
 
 namespace
 {
-	// a single instance of a joint to test
-	struct TestCase {
-		std::string name;
-		std::optional<size_t> maybeIndex;
-		std::vector<osc::CStringView> expectedNames;
+    // a single instance of a joint to test
+    struct TestCase {
+        std::string name;
+        std::optional<size_t> maybeIndex;
+        std::vector<osc::CStringView> expectedNames;
 
-		template<typename T, typename... Names>
-		static TestCase create(Names... names)
-		{
-			return TestCase
-			{
-				typeid(T).name(),
-				osc::ComponentRegistry<OpenSim::Joint>::indexOf<T>(),
-				{std::forward<Names>(names)...}
-			};
-		}
-	};
+        template<typename T, typename... Names>
+        static TestCase create(Names... names)
+        {
+            return TestCase
+            {
+                typeid(T).name(),
+                osc::ComponentRegistry<OpenSim::Joint>::indexOf<T>(),
+                {std::forward<Names>(names)...}
+            };
+        }
+    };
 }
 
 TEST(ComponentRegistry, CoordsHaveExpectedNames)
 {
-	// ensure the typeregistry sets the default OpenSim coordinate names to something
-	// easier to work with
-	//
-	// the documentation/screenshots etc. assume that coordinates end up with with these
-	// names, so if you want to change them you should ensure the change doesn't cause
-	// a problem w.r.t. UX, docs, etc.
+    // ensure the typeregistry sets the default OpenSim coordinate names to something
+    // easier to work with
+    //
+    // the documentation/screenshots etc. assume that coordinates end up with with these
+    // names, so if you want to change them you should ensure the change doesn't cause
+    // a problem w.r.t. UX, docs, etc.
 
-	// all of the test cases
-	std::vector<TestCase> testCases =
-	{
-		TestCase::create<OpenSim::BallJoint>("rx", "ry", "rz"),
-		TestCase::create<OpenSim::EllipsoidJoint>("rx", "ry", "rz"),
-		TestCase::create<OpenSim::FreeJoint>("rx", "ry", "rz", "tx", "ty", "tz"),
-		TestCase::create<OpenSim::GimbalJoint>("rx", "ry", "rz"),
-		TestCase::create<OpenSim::PinJoint>("rz"),
-		TestCase::create<OpenSim::PlanarJoint>("rz", "tx", "ty"),
-		TestCase::create<OpenSim::ScapulothoracicJoint>("rx_abduction", "ry_elevation", "rz_upwardrotation", "ryp_winging"),
-		TestCase::create<OpenSim::SliderJoint>("tx"),
-		TestCase::create<OpenSim::UniversalJoint>("rx", "ry"),
-	};
+    // all of the test cases
+    std::vector<TestCase> testCases =
+    {
+        TestCase::create<OpenSim::BallJoint>("rx", "ry", "rz"),
+        TestCase::create<OpenSim::EllipsoidJoint>("rx", "ry", "rz"),
+        TestCase::create<OpenSim::FreeJoint>("rx", "ry", "rz", "tx", "ty", "tz"),
+        TestCase::create<OpenSim::GimbalJoint>("rx", "ry", "rz"),
+        TestCase::create<OpenSim::PinJoint>("rz"),
+        TestCase::create<OpenSim::PlanarJoint>("rz", "tx", "ty"),
+        TestCase::create<OpenSim::ScapulothoracicJoint>("rx_abduction", "ry_elevation", "rz_upwardrotation", "ryp_winging"),
+        TestCase::create<OpenSim::SliderJoint>("tx"),
+        TestCase::create<OpenSim::UniversalJoint>("rx", "ry"),
+    };
 
-	// go through each test case and ensure the names match
-	for (TestCase const& tc : testCases)
-	{
-		ASSERT_TRUE(tc.maybeIndex) << tc.name << " does not exist in the registry(it should)";
+    // go through each test case and ensure the names match
+    for (TestCase const& tc : testCases)
+    {
+        ASSERT_TRUE(tc.maybeIndex) << tc.name << " does not exist in the registry(it should)";
 
-		auto proto = osc::ComponentRegistry<OpenSim::Joint>::prototypes()[*tc.maybeIndex];
-		auto const& coordProp = proto->getProperty_coordinates();
+        auto proto = osc::ComponentRegistry<OpenSim::Joint>::prototypes()[*tc.maybeIndex];
+        auto const& coordProp = proto->getProperty_coordinates();
 
-		ASSERT_EQ(coordProp.size(), tc.expectedNames.size()) << tc.name <<  " has different number of coords from expected";
+        ASSERT_EQ(coordProp.size(), tc.expectedNames.size()) << tc.name <<  " has different number of coords from expected";
 
-		for (int i = 0; i < coordProp.size(); ++i)
-		{
-			ASSERT_EQ(coordProp.getValue(i).getName(), tc.expectedNames[i]) << tc.name << " coordinate " << i << " has different name from expected";
-		}
-	}
+        for (int i = 0; i < coordProp.size(); ++i)
+        {
+            ASSERT_EQ(coordProp.getValue(i).getName(), tc.expectedNames[i]) << tc.name << " coordinate " << i << " has different name from expected";
+        }
+    }
 }
 
 // #298: try adding every available joint type into a blank OpenSim model to ensure
 //       that all joint types can be added without an exception/segfault
 TEST(JointRegistry, CanAddAnyJointWithoutAnExceptionOrSegfault)
 {
-	for (std::shared_ptr<OpenSim::Joint const> const& prototype : osc::JointRegistry::prototypes())
-	{
+    for (std::shared_ptr<OpenSim::Joint const> const& prototype : osc::JointRegistry::prototypes())
+    {
         ASSERT_TRUE(prototype != nullptr);
 
-		// create a blank model
+        // create a blank model
         OpenSim::Model model;
 
         // create a body
@@ -113,37 +113,37 @@ TEST(JointRegistry, CanAddAnyJointWithoutAnExceptionOrSegfault)
         model.addBody(body.release());
 
         // initialize the model+system+state
-		//
-		// (shouldn't throw or segfault)
+        //
+        // (shouldn't throw or segfault)
         model.finalizeFromProperties();
         model.buildSystem();
-	}
+    }
 }
 
 // #298: try adding every available contact geometry type into a blank OpenSim model
 //       to ensure that all contact geometries can be added without an exception/segfault
 TEST(ContactGeometryRegistry, CanAddAnyContactGeometryWithoutAnExceptionOrSegfault)
 {
-	for (std::shared_ptr<OpenSim::ContactGeometry const> const& prototype : osc::ContactGeometryRegistry::prototypes())
-	{
+    for (std::shared_ptr<OpenSim::ContactGeometry const> const& prototype : osc::ContactGeometryRegistry::prototypes())
+    {
         ASSERT_TRUE(prototype != nullptr);
 
-		// create a blank model
+        // create a blank model
         OpenSim::Model model;
 
-		// create contact geometry attached to model's ground frame
+        // create contact geometry attached to model's ground frame
         std::unique_ptr<OpenSim::ContactGeometry> geom{prototype->clone()};
         geom->connectSocket_frame(model.getGround());
 
-		// add it to the model
+        // add it to the model
         model.addContactGeometry(geom.release());
 
-		// initialize the model+system+state
+        // initialize the model+system+state
         //
         // (shouldn't throw or segfault)
         model.finalizeFromProperties();
         model.buildSystem();
-	}
+    }
 }
 
 // #298: try adding every available constraint to a blank OpenSim model
@@ -154,7 +154,7 @@ TEST(ContactGeometryRegistry, CanAddAnyContactGeometryWithoutAnExceptionOrSegfau
 TEST(ConstraintRegistry, CanAddAnyConstraintWithoutASegfault)
 {
     for (std::shared_ptr<OpenSim::Constraint const> const& prototype : osc::ConstraintRegistry::prototypes())
-	{
+    {
         ASSERT_TRUE(prototype != nullptr);
 
         // create a blank model
@@ -167,17 +167,17 @@ TEST(ConstraintRegistry, CanAddAnyConstraintWithoutASegfault)
         model.addConstraint(constraint.release());
 
         // initialize the model+system+state
-		try
-		{
+        try
+        {
             model.finalizeFromProperties();
             model.buildSystem();
-		}
-		catch (std::exception const&)
-		{
-			// ok: it might throw because the constraint might need more information
-			//
-			// (but it definitely shouldn't segfault etc. - the error should be recoverable)
-		}
+        }
+        catch (std::exception const&)
+        {
+            // ok: it might throw because the constraint might need more information
+            //
+            // (but it definitely shouldn't segfault etc. - the error should be recoverable)
+        }
     }
 }
 
@@ -189,7 +189,7 @@ TEST(ConstraintRegistry, CanAddAnyConstraintWithoutASegfault)
 TEST(ForceRegistry, CanAddAnyForceWithoutASegfault)
 {
     for (std::shared_ptr<OpenSim::Force const> const& prototype : osc::ForceRegistry::prototypes())
-	{
+    {
         ASSERT_TRUE(prototype != nullptr);
 
         // create a blank model
@@ -200,13 +200,13 @@ TEST(ForceRegistry, CanAddAnyForceWithoutASegfault)
 
         // initialize the model+system+state
         try
-		{
-			model.addForce(force.release());  // finalizes, so can throw
+        {
+            model.addForce(force.release());  // finalizes, so can throw
             model.finalizeFromProperties();
             model.buildSystem();
         }
         catch (std::exception const&)
-		{
+        {
             // ok: it might throw because the constraint might need more information
             //
             // (but it definitely shouldn't segfault etc. - the error should be recoverable)
@@ -219,7 +219,7 @@ TEST(ForceRegistry, CanAddAnyForceWithoutASegfault)
 TEST(ControllerRegistry, CanAddAnyControllerWithoutASegfault)
 {
     for (std::shared_ptr<OpenSim::Controller const> const& prototype : osc::ControllerRegistry::prototypes())
-	{
+    {
         ASSERT_TRUE(prototype != nullptr);
 
         // create a blank model
@@ -251,7 +251,7 @@ TEST(ControllerRegistry, CanAddAnyControllerWithoutASegfault)
 TEST(ProbeRegistry, CanAddAnyProbeWithoutASegfault)
 {
     for (std::shared_ptr<OpenSim::Probe const> const& prototype : osc::ProbeRegistry::prototypes())
-	{
+    {
         ASSERT_TRUE(prototype != nullptr);
 
         // create a blank model

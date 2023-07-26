@@ -369,7 +369,7 @@ namespace
     std::default_random_engine& GetRngEngine()
     {
         // the RNG is deliberately deterministic, so that
-	// test errors are reproducible
+    // test errors are reproducible
         static std::default_random_engine e{};  // NOLINT(cert-msc32-c,cert-msc51-cpp)
         return e;
     }

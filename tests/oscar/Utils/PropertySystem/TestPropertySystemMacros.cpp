@@ -10,89 +10,89 @@
 // helper classes that use the macros
 namespace
 {
-	class BlankComponentWithComponentMacro final : public osc::Component {
-		OSC_COMPONENT(BlankComponentWithComponentMacro);
-	};
+    class BlankComponentWithComponentMacro final : public osc::Component {
+        OSC_COMPONENT(BlankComponentWithComponentMacro);
+    };
 
-	class ComponentWithStringProp final : public osc::Component {
-		OSC_COMPONENT(ComponentWithStringProp);
+    class ComponentWithStringProp final : public osc::Component {
+        OSC_COMPONENT(ComponentWithStringProp);
 
-	public:
-		std::string const& getString()
-		{
-			return *m_StringProperty;
-		}
+    public:
+        std::string const& getString()
+        {
+            return *m_StringProperty;
+        }
 
-		std::string& updString()
-		{
-			return *m_StringProperty;
-		}
+        std::string& updString()
+        {
+            return *m_StringProperty;
+        }
 
-		OSC_PROPERTY(
-			std::string,
-			m_StringProperty,
-			"defaultValue",
-			"stringName",
-			"some description"
-		);
-	};
+        OSC_PROPERTY(
+            std::string,
+            m_StringProperty,
+            "defaultValue",
+            "stringName",
+            "some description"
+        );
+    };
 }
 
 TEST(PropertySystemMacros, CanDefineComponent)
 {
-	BlankComponentWithComponentMacro isConstructable{};
+    BlankComponentWithComponentMacro isConstructable{};
 }
 
 TEST(PropertySystemMacros, CanDefineStringProperties)
 {
-	ComponentWithStringProp c;
+    ComponentWithStringProp c;
 }
 
 TEST(PropertySystemMacros, MacroDefinedPropertyGetOwnerReturnsComponent)
 {
-	ComponentWithStringProp c;
-	ASSERT_EQ(&c.m_StringProperty.getOwner(), &c);
+    ComponentWithStringProp c;
+    ASSERT_EQ(&c.m_StringProperty.getOwner(), &c);
 }
 
 TEST(PropertySystemMacros, MacroDefinedPropertyUpdOwnerReturnsComponent)
 {
-	ComponentWithStringProp c;
-	ASSERT_EQ(&c.m_StringProperty.updOwner(), &c);
+    ComponentWithStringProp c;
+    ASSERT_EQ(&c.m_StringProperty.updOwner(), &c);
 }
 
 TEST(PropertySystemMacros, StringMacroDefinedPropertyHasExpectedPropertyType)
 {
-	ComponentWithStringProp c;
-	ASSERT_EQ(c.m_StringProperty.getPropertyType(), osc::PropertyType::String);
+    ComponentWithStringProp c;
+    ASSERT_EQ(c.m_StringProperty.getPropertyType(), osc::PropertyType::String);
 }
 
 TEST(PropertySystemMacros, MacroDefinedPropertyHasExpectedDefaultValue)
 {
-	ComponentWithStringProp c;
-	ASSERT_EQ(c.m_StringProperty.getValue(), "defaultValue");
+    ComponentWithStringProp c;
+    ASSERT_EQ(c.m_StringProperty.getValue(), "defaultValue");
 }
 
 TEST(PropertySystemMacros, MacroDefinedPropertyHasExpectedName)
 {
-	ComponentWithStringProp c;
-	ASSERT_EQ(c.m_StringProperty.getName(), "stringName");
+    ComponentWithStringProp c;
+    ASSERT_EQ(c.m_StringProperty.getName(), "stringName");
 }
 
 TEST(PropertySystemMacros, MacroDefinedPropertyHasExpectedDescription)
 {
-	ComponentWithStringProp c;
-	ASSERT_EQ(c.m_StringProperty.getDescription(), "some description");
+    ComponentWithStringProp c;
+    ASSERT_EQ(c.m_StringProperty.getDescription(), "some description");
 }
 
 TEST(PropertySystemMacros, MacroDefinedPropertyCanAlsoBeReadViaMemberMethod)
 {
-	ComponentWithStringProp c;
-	ASSERT_EQ(c.m_StringProperty.getValue(), c.getString());
+    ComponentWithStringProp c;
+    ASSERT_EQ(c.m_StringProperty.getValue(), c.getString());
 }
 
 TEST(PropertySystemMacros, MacroDefinedPropertyCanBeUpdatedViaMemberMethod)
 {
-	ComponentWithStringProp c;
-	c.updString() = "newValue";
-	ASSERT_EQ(c.m_StringProperty.getValue(), "newValue");
+    ComponentWithStringProp c;
+    c.updString() = "newValue";
+    ASSERT_EQ(c.m_StringProperty.getValue(), "newValue");
 }

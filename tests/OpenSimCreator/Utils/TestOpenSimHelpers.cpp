@@ -25,127 +25,127 @@
 // the joint) but it shouldn't hard crash (it is)
 TEST(OpenSimHelpers, CanSwapACustomJointForAFreeJoint)
 {
-	return;  // disable
+    return;  // disable
 
-	auto config = osc::Config::load();
-	osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
+    auto config = osc::Config::load();
+    osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
 
-	std::filesystem::path modelPath = config->getResourceDir() / "models" / "Leg39" / "leg39.osim";
+    std::filesystem::path modelPath = config->getResourceDir() / "models" / "Leg39" / "leg39.osim";
 
-	osc::UndoableModelStatePair model{std::make_unique<OpenSim::Model>(modelPath.string())};
+    osc::UndoableModelStatePair model{std::make_unique<OpenSim::Model>(modelPath.string())};
 
-	model.updModel();  // should be fine, before any edits
-	model.getState();  // also should be fine
+    model.updModel();  // should be fine, before any edits
+    model.getState();  // also should be fine
 
-	auto maybeIdx = osc::JointRegistry::indexOf<OpenSim::FreeJoint>();
-	ASSERT_TRUE(maybeIdx) << "can't find FreeJoint in type registry?";
-	auto idx = *maybeIdx;
+    auto maybeIdx = osc::JointRegistry::indexOf<OpenSim::FreeJoint>();
+    ASSERT_TRUE(maybeIdx) << "can't find FreeJoint in type registry?";
+    auto idx = *maybeIdx;
 
-	// cache joint paths, because we are changing the model during this test and it might
-	// invalidate the model's `getComponentList` function
-	std::vector<OpenSim::ComponentPath> allJointPaths;
-	for (OpenSim::Joint const& joint : model.getModel().getComponentList<OpenSim::Joint>())
-	{
-		allJointPaths.push_back(joint.getAbsolutePath());
-	}
+    // cache joint paths, because we are changing the model during this test and it might
+    // invalidate the model's `getComponentList` function
+    std::vector<OpenSim::ComponentPath> allJointPaths;
+    for (OpenSim::Joint const& joint : model.getModel().getComponentList<OpenSim::Joint>())
+    {
+        allJointPaths.push_back(joint.getAbsolutePath());
+    }
 
-	for (OpenSim::ComponentPath const& p : allJointPaths)
-	{
-		auto const& joint = model.getModel().getComponent<OpenSim::Joint>(p);
+    for (OpenSim::ComponentPath const& p : allJointPaths)
+    {
+        auto const& joint = model.getModel().getComponent<OpenSim::Joint>(p);
 
-		std::string msg = "changed " + joint.getAbsolutePathString();
+        std::string msg = "changed " + joint.getAbsolutePathString();
 
-		OpenSim::Component const& parent = joint.getOwner();
-		auto const* jointSet = dynamic_cast<OpenSim::JointSet const*>(&parent);
+        OpenSim::Component const& parent = joint.getOwner();
+        auto const* jointSet = dynamic_cast<OpenSim::JointSet const*>(&parent);
 
-		if (!jointSet)
-		{
-			continue;  // this joint doesn't count
-		}
+        if (!jointSet)
+        {
+            continue;  // this joint doesn't count
+        }
 
-		int jointIdx = -1;
-		for (int i = 0; i < jointSet->getSize(); ++i)
-		{
-			OpenSim::Joint const* j = &(*jointSet)[i];
-			if (j == &joint)
-			{
-				jointIdx = i;
-			}
-		}
+        int jointIdx = -1;
+        for (int i = 0; i < jointSet->getSize(); ++i)
+        {
+            OpenSim::Joint const* j = &(*jointSet)[i];
+            if (j == &joint)
+            {
+                jointIdx = i;
+            }
+        }
 
-		ASSERT_NE(jointIdx, -1) << "the joint should exist within its parent set";
+        ASSERT_NE(jointIdx, -1) << "the joint should exist within its parent set";
 
-		auto replacement = std::unique_ptr<OpenSim::Joint>{osc::JointRegistry::prototypes()[jointIdx]->clone()};
+        auto replacement = std::unique_ptr<OpenSim::Joint>{osc::JointRegistry::prototypes()[jointIdx]->clone()};
 
-		osc::CopyCommonJointProperties(joint, *replacement);
+        osc::CopyCommonJointProperties(joint, *replacement);
 
-		// update model
-		const_cast<OpenSim::JointSet&>(*jointSet).set(static_cast<int>(idx), replacement.release());
-		model.updModel();  // dirty it
-		model.commit(msg);
+        // update model
+        const_cast<OpenSim::JointSet&>(*jointSet).set(static_cast<int>(idx), replacement.release());
+        model.updModel();  // dirty it
+        model.commit(msg);
 
-		osc::log::info("%s", msg.c_str());
-	}
+        osc::log::info("%s", msg.c_str());
+    }
 }
 
 TEST(OpenSimHelpers, GetAbsolutePathStringWorksForModel)
 {
-	OpenSim::Model m;
-	std::string const s = osc::GetAbsolutePathString(m);
-	ASSERT_EQ(s, "/");
+    OpenSim::Model m;
+    std::string const s = osc::GetAbsolutePathString(m);
+    ASSERT_EQ(s, "/");
 }
 
 TEST(OpenSimHelpers, GetAbsolutePathStringWithOutparamWorksForModel)
 {
-	OpenSim::Model m;
-	std::string outparam = "somejunk";
-	osc::GetAbsolutePathString(m, outparam);
-	ASSERT_EQ(outparam, "/");
+    OpenSim::Model m;
+    std::string outparam = "somejunk";
+    osc::GetAbsolutePathString(m, outparam);
+    ASSERT_EQ(outparam, "/");
 }
 
 TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForComplexModel)
 {
-	auto config = osc::Config::load();
-	std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    auto config = osc::Config::load();
+    std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
-	OpenSim::Model m{modelPath.string()};
-	std::string outparam;
-	for (OpenSim::Component const& c : m.getComponentList())
-	{
-		// test both the "pure" and "assigning" versions at the same time
-		osc::GetAbsolutePathString(c, outparam);
-		ASSERT_EQ(c.getAbsolutePathString(), osc::GetAbsolutePathString(c));
-		ASSERT_EQ(c.getAbsolutePathString(), outparam);
-	}
+    OpenSim::Model m{modelPath.string()};
+    std::string outparam;
+    for (OpenSim::Component const& c : m.getComponentList())
+    {
+        // test both the "pure" and "assigning" versions at the same time
+        osc::GetAbsolutePathString(c, outparam);
+        ASSERT_EQ(c.getAbsolutePathString(), osc::GetAbsolutePathString(c));
+        ASSERT_EQ(c.getAbsolutePathString(), outparam);
+    }
 }
 
 TEST(OpenSimHelpers, GetAbsolutePathReturnsSameResultAsOpenSimVersionForComplexModel)
 {
-	auto config = osc::Config::load();
-	std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    auto config = osc::Config::load();
+    std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
-	OpenSim::Model m{modelPath.string()};
-	for (OpenSim::Component const& c : m.getComponentList())
-	{
-		ASSERT_EQ(c.getAbsolutePath(), osc::GetAbsolutePath(c));
-	}
+    OpenSim::Model m{modelPath.string()};
+    for (OpenSim::Component const& c : m.getComponentList())
+    {
+        ASSERT_EQ(c.getAbsolutePath(), osc::GetAbsolutePath(c));
+    }
 }
 
 TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsEmptyIfPassedANullptr)
 {
-	ASSERT_EQ(OpenSim::ComponentPath{}, osc::GetAbsolutePathOrEmpty(nullptr));
+    ASSERT_EQ(OpenSim::ComponentPath{}, osc::GetAbsolutePathOrEmpty(nullptr));
 }
 
 TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionForComplexModel)
 {
-	auto config = osc::Config::load();
-	std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    auto config = osc::Config::load();
+    std::filesystem::path modelPath = config->getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
-	OpenSim::Model m{modelPath.string()};
-	for (OpenSim::Component const& c : m.getComponentList())
-	{
-		ASSERT_EQ(c.getAbsolutePath(), osc::GetAbsolutePathOrEmpty(&c));
-	}
+    OpenSim::Model m{modelPath.string()};
+    for (OpenSim::Component const& c : m.getComponentList())
+    {
+        ASSERT_EQ(c.getAbsolutePath(), osc::GetAbsolutePathOrEmpty(&c));
+    }
 }
 
 // #665: test that the caller can at least *try* to delete anything they want from a complicated

@@ -22,53 +22,53 @@
 // https://github.com/opensim-org/opensim-core/issues/3211
 TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 {
-	auto config = osc::Config::load();
-	//osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
+    auto config = osc::Config::load();
+    //osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
 
-	// data sources
-	std::filesystem::path modelPath{config->getResourceDir() / "models" / "Arm26" / "arm26.osim"};
+    // data sources
+    std::filesystem::path modelPath{config->getResourceDir() / "models" / "Arm26" / "arm26.osim"};
     OpenSim::ComponentPath coordinatePath{"/jointset/r_shoulder/r_shoulder_elev"};
     OpenSim::ComponentPath musclePath{"/forceset/BIClong"};
 
-	// load osim into a base copy of the model
-	OpenSim::Model baseModel{modelPath.string()};
-	baseModel.buildSystem();
-	baseModel.initializeState();
-	baseModel.equilibrateMuscles(baseModel.updWorkingState());
+    // load osim into a base copy of the model
+    OpenSim::Model baseModel{modelPath.string()};
+    baseModel.buildSystem();
+    baseModel.initializeState();
+    baseModel.equilibrateMuscles(baseModel.updWorkingState());
 
-	// copy-construct the model that's actually simulated
-	OpenSim::Model model{baseModel};
-	model.buildSystem();
-	model.initializeState();
-	model.updWorkingState() = baseModel.getWorkingState();  // is this technically illegal?
+    // copy-construct the model that's actually simulated
+    OpenSim::Model model{baseModel};
+    model.buildSystem();
+    model.initializeState();
+    model.updWorkingState() = baseModel.getWorkingState();  // is this technically illegal?
 
-	// take a local copy of the state
-	SimTK::State st = model.getWorkingState();
+    // take a local copy of the state
+    SimTK::State st = model.getWorkingState();
 
-	// lookup components
-	auto const& coord = model.getComponent<OpenSim::Coordinate>(coordinatePath);
-	auto const& musc = model.getComponent<OpenSim::Muscle>(musclePath);
+    // lookup components
+    auto const& coord = model.getComponent<OpenSim::Coordinate>(coordinatePath);
+    auto const& musc = model.getComponent<OpenSim::Muscle>(musclePath);
 
-	// setting `fixBug` to `true` makes this test pass
-	if (bool fixBug = true)
-	{
-		musc.getGeometryPath().computeMomentArm(st, coord);
-	}
+    // setting `fixBug` to `true` makes this test pass
+    if (bool fixBug = true)
+    {
+        musc.getGeometryPath().computeMomentArm(st, coord);
+    }
 
-	// compute two moment arms at one particular coordinate value
-	coord.setLocked(st, false);
-	std::array<double, 2> values{};
-	double newCoordVal = coord.getValue(st) + 0.01;  // just ensure the coord changes from default
-	coord.setValue(st, newCoordVal);
-	for (int i = 0; i < 2; ++i)
-	{
-		st.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
-		model.equilibrateMuscles(st);
-		model.realizeDynamics(st);
-		values[i] = musc.getGeometryPath().computeMomentArm(st, coord);
-	}
+    // compute two moment arms at one particular coordinate value
+    coord.setLocked(st, false);
+    std::array<double, 2> values{};
+    double newCoordVal = coord.getValue(st) + 0.01;  // just ensure the coord changes from default
+    coord.setValue(st, newCoordVal);
+    for (int i = 0; i < 2; ++i)
+    {
+        st.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
+        model.equilibrateMuscles(st);
+        model.realizeDynamics(st);
+        values[i] = musc.getGeometryPath().computeMomentArm(st, coord);
+    }
 
-	ASSERT_EQ(values[0], values[1]);
+    ASSERT_EQ(values[0], values[1]);
 }
 
 // repro for a bug found in OpenSim Creator
@@ -80,28 +80,28 @@ TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 // breaks this test, and prompts removing fixups from OSC
 TEST(OpenSimModel, EditingACoordinateLockMutatesModel)
 {
-	auto config = osc::Config::load();
-	//osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
+    auto config = osc::Config::load();
+    //osc::GlobalInitOpenSim(*config);  // ensure muscles are available etc.
 
-	std::filesystem::path modelPath{config->getResourceDir() / "models" / "Arm26" / "arm26.osim"};
+    std::filesystem::path modelPath{config->getResourceDir() / "models" / "Arm26" / "arm26.osim"};
     OpenSim::ComponentPath coordinatePath{"/jointset/r_shoulder/r_shoulder_elev"};
 
-	OpenSim::Model model{modelPath.string()};
-	model.buildSystem();
-	model.initializeState();
-	model.equilibrateMuscles(model.updWorkingState());
-	model.realizeReport(model.updWorkingState());
+    OpenSim::Model model{modelPath.string()};
+    model.buildSystem();
+    model.initializeState();
+    model.equilibrateMuscles(model.updWorkingState());
+    model.realizeReport(model.updWorkingState());
 
-	auto const& coord = model.getComponent<OpenSim::Coordinate>(coordinatePath);
-	SimTK::State state = model.updWorkingState();
+    auto const& coord = model.getComponent<OpenSim::Coordinate>(coordinatePath);
+    SimTK::State state = model.updWorkingState();
 
-	ASSERT_TRUE(model.getWorkingState().isConsistent(state));
-	ASSERT_FALSE(coord.getLocked(state));
+    ASSERT_TRUE(model.getWorkingState().isConsistent(state));
+    ASSERT_FALSE(coord.getLocked(state));
 
-	coord.setLocked(state, true);  // required
-	model.realizeReport(state);  // required: makes the state inconsistent? Despite not changing the system?
+    coord.setLocked(state, true);  // required
+    model.realizeReport(state);  // required: makes the state inconsistent? Despite not changing the system?
 
-	ASSERT_FALSE(model.getWorkingState().isConsistent(state));
+    ASSERT_FALSE(model.getWorkingState().isConsistent(state));
 }
 
 // repro for an OpenSim bug found in #382
@@ -111,12 +111,12 @@ TEST(OpenSimModel, EditingACoordinateLockMutatesModel)
 // `osim` file (i.e. it's not a code bug in OpenSim Creator)
 TEST(OpenSimModel, DISABLED_CreatingCircularJointConnectionToGroundDoesNotSegfault)
 {
-	std::filesystem::path const path =
-		std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_382_repro.osim";
+    std::filesystem::path const path =
+        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_382_repro.osim";
 
-	OpenSim::Model model{path.string()};
-	model.finalizeFromProperties();
-	model.finalizeConnections();  // segfault
+    OpenSim::Model model{path.string()};
+    model.finalizeFromProperties();
+    model.finalizeConnections();  // segfault
 }
 
 // repro for an OpenSim bug found in #515
@@ -125,13 +125,13 @@ TEST(OpenSimModel, DISABLED_CreatingCircularJointConnectionToGroundDoesNotSegfau
 // is always set - even though it is listed as OPTIONAL
 TEST(OpenSimModel, DISABLED_CoordinateCouplerConstraintsWithNoCoupledCoordinatesFunctionDoesNotSegfault)
 {
-	std::filesystem::path const path =
-		std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_515_repro.osim";
+    std::filesystem::path const path =
+        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_515_repro.osim";
 
-	OpenSim::Model model{path.string()};
-	model.finalizeFromProperties();
-	model.finalizeConnections();
-	model.buildSystem();  // segfault
+    OpenSim::Model model{path.string()};
+    model.finalizeFromProperties();
+    model.finalizeConnections();
+    model.buildSystem();  // segfault
 }
 
 // repro for an OpenSim bug found in #517
@@ -140,12 +140,12 @@ TEST(OpenSimModel, DISABLED_CoordinateCouplerConstraintsWithNoCoupledCoordinates
 // property is always set - even though it is listed as OPTIONAL
 TEST(OpenSimModel, DISABLED_ActivationCoordinateActuatorWithNoCoordinateNameDoesNotSegfault)
 {
-	std::filesystem::path const path =
-		std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_517_repro.osim";
+    std::filesystem::path const path =
+        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_517_repro.osim";
 
-	OpenSim::Model model{path.string()};
-	model.finalizeFromProperties();
-	model.finalizeConnections();  // segfault (exception after applying #621 patch)
+    OpenSim::Model model{path.string()};
+    model.finalizeFromProperties();
+    model.finalizeConnections();  // segfault (exception after applying #621 patch)
 }
 
 // repro for an Opensim bug found in #523
@@ -153,12 +153,12 @@ TEST(OpenSimModel, DISABLED_ActivationCoordinateActuatorWithNoCoordinateNameDoes
 // code inside OpenSim::PointToPointActuator segfaults if either `bodyA` or `bodyB` is unspecified
 TEST(OpenSimModel, DISABLED_PointToPointActuatorWithNoBodyAOrBodyBDoesNotSegfault)
 {
-	std::filesystem::path const path =
-		std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_523_repro.osim";
+    std::filesystem::path const path =
+        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_523_repro.osim";
 
-	OpenSim::Model model{path.string()};
-	model.finalizeFromProperties();
-	model.finalizeConnections();  // segfault (exception after applying #621 patch)
+    OpenSim::Model model{path.string()};
+    model.finalizeFromProperties();
+    model.finalizeConnections();  // segfault (exception after applying #621 patch)
 }
 
 // repro for an OpenSim bug found in #524
@@ -167,12 +167,12 @@ TEST(OpenSimModel, DISABLED_PointToPointActuatorWithNoBodyAOrBodyBDoesNotSegfaul
 // is always set - even though it is listed as OPTIONAL
 TEST(OpenSimModel, DISABLED_SpringGeneralizedForceWithNoCoordinateDoesNotSegfault)
 {
-	std::filesystem::path const path =
-		std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_524_repro.osim";
+    std::filesystem::path const path =
+        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_524_repro.osim";
 
-	OpenSim::Model model{path.string()};
-	model.finalizeFromProperties();
-	model.finalizeConnections();  // segfault (exception after applying #621 patch)
+    OpenSim::Model model{path.string()};
+    model.finalizeFromProperties();
+    model.finalizeConnections();  // segfault (exception after applying #621 patch)
 }
 
 // repro for an OpenSim bug found in #621
@@ -191,16 +191,16 @@ TEST(OpenSimModel, DISABLED_SpringGeneralizedForceWithNoCoordinateDoesNotSegfaul
 // - call something that accesses the property (e.g. `buildSystem`) --> boom
 TEST(OpenSimModel, LoadingAnOsimWithEmptyFieldsDoesNotSegfault)
 {
-	std::filesystem::path const brokenFilePath =
-		std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_661_repro.osim";
+    std::filesystem::path const brokenFilePath =
+        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "test_fixtures" / "opensim-creator_661_repro.osim";
 
-	// sanity check: loading+building an osim is fine
-	{
-		OpenSim::Model model{brokenFilePath.string()};
-		model.buildSystem();  // doesn't segfault, because it relies on unchecked `getProperty` lookups
-	}
+    // sanity check: loading+building an osim is fine
+    {
+        OpenSim::Model model{brokenFilePath.string()};
+        model.buildSystem();  // doesn't segfault, because it relies on unchecked `getProperty` lookups
+    }
 
-	OpenSim::Model m1{brokenFilePath.string()};
-	OpenSim::Model m2{m1};
-	m2.buildSystem();  // segfaults, due to #621 (opensim-core/#3409)
+    OpenSim::Model m1{brokenFilePath.string()};
+    OpenSim::Model m2{m1};
+    m2.buildSystem();  // segfaults, due to #621 (opensim-core/#3409)
 }
