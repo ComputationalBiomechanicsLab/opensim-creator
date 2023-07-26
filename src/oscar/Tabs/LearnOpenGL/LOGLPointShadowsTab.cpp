@@ -253,13 +253,13 @@ private:
 
     void drawShadowmappedSceneToScreen()
     {
-        // m_SceneMaterial.setBool("uReverseNormals", {});  // TODO
-        // m_SceneMaterial.setTexture("uDiffuseTexture", {});  // TODO
-        // m_SceneMaterial.setCubemap("uDepthMap", {});  // TODO
-        // m_SceneMaterial.setVec3("uLightPos", {});  // TODO
-        // m_SceneMaterial.setVec3("uViewPos", {});  // TODO
-        // m_SceneMaterial.setFloat("uFarPlane", {});  // TODO
-        // m_SceneMaterial.setBool("uShadows", {});  // TODO
+        // m_SceneMaterial.setBool("uReverseNormals", {});
+        // m_SceneMaterial.setTexture("uDiffuseTexture", {});
+        // m_SceneMaterial.setCubemap("uDepthMap", {});
+        // m_SceneMaterial.setVec3("uLightPos", {});
+        // m_SceneMaterial.setVec3("uViewPos", {});
+        // m_SceneMaterial.setFloat("uFarPlane", {});
+        // m_SceneMaterial.setBool("uShadows", {});
 
         // render: render scene to screen as normal, using the depth cubemaps for shadow mapping
     }
