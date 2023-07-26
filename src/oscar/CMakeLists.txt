@@ -235,24 +235,6 @@ add_library(oscar STATIC
     Tabs/TabRegistryEntry.cpp
     Tabs/TabRegistryEntry.hpp
 
-    Utils/PropertySystem/AbstractProperty.hpp
-    Utils/PropertySystem/AbstractSocket.hpp
-    Utils/PropertySystem/Component.cpp
-    Utils/PropertySystem/Component.hpp
-    Utils/PropertySystem/ComponentIterator.hpp
-    Utils/PropertySystem/ComponentList.hpp
-    Utils/PropertySystem/ComponentMemberOffset.hpp
-    Utils/PropertySystem/ComponentPath.cpp
-    Utils/PropertySystem/ComponentPath.hpp
-    Utils/PropertySystem/Property.hpp
-    Utils/PropertySystem/PropertyDefinition.hpp
-    Utils/PropertySystem/PropertyMetadata.hpp
-    Utils/PropertySystem/PropertySystemMacros.hpp
-    Utils/PropertySystem/PropertyType.hpp
-    Utils/PropertySystem/Socket.cpp
-    Utils/PropertySystem/Socket.hpp
-    Utils/PropertySystem/SocketDefinition.hpp
-    Utils/PropertySystem/TypedComponentList.hpp
     Utils/ArrayHelpers.hpp
     Utils/Assertions.cpp
     Utils/Assertions.hpp
