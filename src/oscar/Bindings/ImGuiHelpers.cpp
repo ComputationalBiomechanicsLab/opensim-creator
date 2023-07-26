@@ -1,5 +1,6 @@
 #include "ImGuiHelpers.hpp"
 
+#include "oscar/Bindings/ImGuiHelpers.hpp"
 #include "oscar/Graphics/Camera.hpp"
 #include "oscar/Graphics/Color.hpp"
 #include "oscar/Graphics/RenderTexture.hpp"
@@ -469,11 +470,11 @@ float osc::CalcButtonWidth(CStringView content)
 
 bool osc::ButtonNoBg(CStringView label, glm::vec2 size)
 {
-    ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.0f, 0.0f, 0.0f});
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {0.0f, 0.0f, 0.0f, 0.0f});
+    osc::PushStyleColor(ImGuiCol_Button, Color::clear());
+    osc::PushStyleColor(ImGuiCol_ButtonHovered, Color::clear());
     bool const rv = ImGui::Button(label.c_str(), size);
-    ImGui::PopStyleColor();
-    ImGui::PopStyleColor();
+    osc::PopStyleColor();
+    osc::PopStyleColor();
 
     return rv;
 }

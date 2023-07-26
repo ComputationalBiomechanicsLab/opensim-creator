@@ -5499,7 +5499,7 @@ namespace
         void DrawCancelButton()
         {
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
-            ImGui::PushStyleColor(ImGuiCol_Button, static_cast<glm::vec4>(osc::Color::halfGrey()));
+            osc::PushStyleColor(ImGuiCol_Button, osc::Color::halfGrey());
 
             osc::CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
             glm::vec2 const margin = {25.0f, 35.0f};
@@ -5511,7 +5511,7 @@ namespace
                 requestPop();
             }
 
-            ImGui::PopStyleColor();
+            osc::PopStyleColor();
             ImGui::PopStyleVar();
         }
 
@@ -5896,7 +5896,7 @@ namespace
         void DrawCancelButton()
         {
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
-            ImGui::PushStyleColor(ImGuiCol_Button, static_cast<glm::vec4>(osc::Color::halfGrey()));
+            osc::PushStyleColor(ImGuiCol_Button, osc::Color::halfGrey());
 
             osc::CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
             glm::vec2 const margin = {25.0f, 35.0f};
@@ -5908,7 +5908,7 @@ namespace
                 requestPop();
             }
 
-            ImGui::PopStyleColor();
+            osc::PopStyleColor();
             ImGui::PopStyleVar();
         }
 
@@ -7438,12 +7438,12 @@ private:
 
             if (id == m_MaybeHover.ID)
             {
-                ImGui::PushStyleColor(ImGuiCol_Text, static_cast<glm::vec4>(osc::Color::yellow()));
+                osc::PushStyleColor(ImGuiCol_Text, osc::Color::yellow());
                 ++styles;
             }
             else if (m_Shared->IsSelected(id))
             {
-                ImGui::PushStyleColor(ImGuiCol_Text, static_cast<glm::vec4>(osc::Color::yellow()));
+                osc::PushStyleColor(ImGuiCol_Text, osc::Color::yellow());
                 ++styles;
             }
 
@@ -7761,7 +7761,7 @@ private:
     void Draw3DViewerOverlayConvertToOpenSimModelButton()
     {
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
-        ImGui::PushStyleColor(ImGuiCol_Button, static_cast<glm::vec4>(Color::darkGreen()));
+        osc::PushStyleColor(ImGuiCol_Button, Color::darkGreen());
 
         constexpr osc::CStringView text = "Convert to OpenSim Model " ICON_FA_ARROW_RIGHT;
         constexpr glm::vec2 margin = {25.0f, 35.0f};
@@ -7773,7 +7773,7 @@ private:
             m_Shared->TryCreateOutputModel();
         }
 
-        ImGui::PopStyleColor();
+        osc::PopStyleColor();
         ImGui::PopStyleVar();
         osc::DrawTooltipIfItemHovered("Convert current scene to an OpenSim Model", "This will attempt to convert the current scene into an OpenSim model, followed by showing the model in OpenSim Creator's OpenSim model editor screen.\n\nYour progress in this tab will remain untouched.");
     }

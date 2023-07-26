@@ -2237,7 +2237,7 @@ namespace
 
         if (maybeSourceEvent && ImGui::BeginMenu(ICON_FA_ARROWS_ALT " Frame With This Edge as"))
         {
-            ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 0.5f, 0.5f, 1.0f});
+            osc::PushStyleColor(ImGuiCol_Text, osc::Color::mutedRed());
             if (ImGui::MenuItem("+x"))
             {
                 ActionPushCreateFrameLayer(
@@ -2248,9 +2248,9 @@ namespace
                     maybeSourceEvent
                 );
             }
-            ImGui::PopStyleColor();
+            osc::PopStyleColor();
 
-            ImGui::PushStyleColor(ImGuiCol_Text, {0.5f, 1.0f, 0.5f, 1.0f});
+            osc::PushStyleColor(ImGuiCol_Text, osc::Color::mutedGreen());
             if (ImGui::MenuItem("+y"))
             {
                 ActionPushCreateFrameLayer(
@@ -2261,9 +2261,9 @@ namespace
                     maybeSourceEvent
                 );
             }
-            ImGui::PopStyleColor();
+            osc::PopStyleColor();
 
-            ImGui::PushStyleColor(ImGuiCol_Text, {0.5f, 0.5f, 1.0f, 1.0f});
+            osc::PushStyleColor(ImGuiCol_Text, osc::Color::mutedGreen());
             if (ImGui::MenuItem("+z"))
             {
                 ActionPushCreateFrameLayer(
@@ -2274,11 +2274,11 @@ namespace
                     maybeSourceEvent
                 );
             }
-            ImGui::PopStyleColor();
+            osc::PopStyleColor();
 
             ImGui::Separator();
 
-            ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 0.5f, 0.5f, 1.0f});
+            osc::PushStyleColor(ImGuiCol_Text, osc::Color::mutedRed());
             if (ImGui::MenuItem("-x"))
             {
                 ActionPushCreateFrameLayer(
@@ -2289,9 +2289,9 @@ namespace
                     maybeSourceEvent
                 );
             }
-            ImGui::PopStyleColor();
+            osc::PopStyleColor();
 
-            ImGui::PushStyleColor(ImGuiCol_Text, {0.5f, 1.0f, 0.5f, 1.0f});
+            osc::PushStyleColor(ImGuiCol_Text, osc::Color::mutedGreen());
             if (ImGui::MenuItem("-y"))
             {
                 ActionPushCreateFrameLayer(
@@ -2302,9 +2302,9 @@ namespace
                     maybeSourceEvent
                 );
             }
-            ImGui::PopStyleColor();
+            osc::PopStyleColor();
 
-            ImGui::PushStyleColor(ImGuiCol_Text, {0.5f, 0.5f, 1.0f, 1.0f});
+            osc::PushStyleColor(ImGuiCol_Text, osc::Color::mutedBlue());
             if (ImGui::MenuItem("-z"))
             {
                 ActionPushCreateFrameLayer(
@@ -2315,7 +2315,7 @@ namespace
                     maybeSourceEvent
                 );
             }
-            ImGui::PopStyleColor();
+            osc::PopStyleColor();
 
             ImGui::EndMenu();
         }

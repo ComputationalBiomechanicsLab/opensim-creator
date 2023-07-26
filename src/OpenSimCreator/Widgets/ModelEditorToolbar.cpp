@@ -62,12 +62,12 @@ private:
     {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
 
-        ImGui::PushStyleColor(ImGuiCol_Text, static_cast<glm::vec4>(Color::darkGreen()));
+        osc::PushStyleColor(ImGuiCol_Text, Color::darkGreen());
         if (ImGui::Button(ICON_FA_PLAY))
         {
             osc::ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);
         }
-        ImGui::PopStyleColor();
+        osc::PopStyleColor();
         App::upd().addFrameAnnotation("Simulate Button", osc::GetItemRect());
         osc::DrawTooltipIfItemHovered("Simulate Model", "Run a forward-dynamic simulation of the model");
 

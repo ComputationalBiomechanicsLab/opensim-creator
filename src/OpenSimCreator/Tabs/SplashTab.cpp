@@ -283,12 +283,12 @@ private:
         }
         else
         {
-            ImGui::PushStyleColor(ImGuiCol_Text, static_cast<glm::vec4>(osc::Color::halfGrey()));
+            osc::PushStyleColor(ImGuiCol_Text, osc::Color::halfGrey());
             ImGui::TextWrapped("No files opened recently. Try:");
             ImGui::BulletText("Creating a new model (Ctrl+N)");
             ImGui::BulletText("Opening an existing model (Ctrl+O)");
             ImGui::BulletText("Opening an example (right-side)");
-            ImGui::PopStyleColor();
+            osc::PopStyleColor();
         }
     }
 

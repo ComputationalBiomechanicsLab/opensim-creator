@@ -101,9 +101,9 @@ private:
         SimulationStatus const status = m_Simulation->getStatus();
         ImGui::TextDisabled("simulator status:");
         ImGui::SameLine();
-        ImGui::PushStyleColor(ImGuiCol_Text, glm::vec4{CalcStatusColor(status)});
+        osc::PushStyleColor(ImGuiCol_Text, CalcStatusColor(status));
         ImGui::TextUnformatted(GetAllSimulationStatusStrings()[static_cast<size_t>(status)]);
-        ImGui::PopStyleColor();
+        osc::PopStyleColor();
     }
 
     std::string m_Label;

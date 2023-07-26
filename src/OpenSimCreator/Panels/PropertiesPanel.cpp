@@ -12,6 +12,7 @@
 #include "OpenSimCreator/ComponentRegistry.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Graphics/Color.hpp>
 #include <oscar/Panels/StandardPanel.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
@@ -56,12 +57,12 @@ namespace
         ImGui::SameLine();
         osc::DrawHelpMarker("Shows a menu containing extra actions that can be performed on this component.\n\nYou can also access the same menu by right-clicking the component in the 3D viewer, bottom status bar, or navigator panel.");
         ImGui::NextColumn();
-        ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 1.0f, 0.0f, 1.0f});
+        osc::PushStyleColor(ImGuiCol_Text, osc::Color::yellow());
         if (ImGui::Button(ICON_FA_BOLT) || ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
             editorAPI->pushComponentContextMenuPopup(osc::GetAbsolutePath(*selection));
         }
-        ImGui::PopStyleColor();
+        osc::PopStyleColor();
         ImGui::NextColumn();
         ImGui::Columns();
     }

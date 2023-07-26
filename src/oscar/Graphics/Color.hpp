@@ -43,6 +43,11 @@ namespace osc
             return {0.0f, 1.0f, 0.0f, 1.0f};
         }
 
+        static constexpr Color mutedGreen()
+        {
+            return {0.5f, 1.0f, 0.5f, 1.0f};
+        }
+
         static constexpr Color darkGreen()
         {
             return {0.0f, 0.6f, 0.0f, 1.0f};
@@ -51,6 +56,11 @@ namespace osc
         static constexpr Color red()
         {
             return {1.0f, 0.0f, 0.0f, 1.0f};
+        }
+
+        static constexpr Color mutedRed()
+        {
+            return {1.0f, 0.5f, 0.5f, 1.0f};
         }
 
         static constexpr Color white()

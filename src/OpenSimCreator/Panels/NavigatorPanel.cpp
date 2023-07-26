@@ -327,12 +327,12 @@ private:
             int styles = 0;
             if (cur == selection)
             {
-                ImGui::PushStyleColor(ImGuiCol_Text, static_cast<glm::vec4>(osc::Color::yellow()));
+                osc::PushStyleColor(ImGuiCol_Text, Color::yellow());
                 ++styles;
             }
             else if (cur == hover)
             {
-                ImGui::PushStyleColor(ImGuiCol_Text, static_cast<glm::vec4>(osc::Color::yellow()));
+                osc::PushStyleColor(ImGuiCol_Text, Color::yellow());
                 ++styles;
             }
             else if (!hasSearch || searchHit)
@@ -341,7 +341,7 @@ private:
             }
             else
             {
-                ImGui::PushStyleColor(ImGuiCol_Text, static_cast<glm::vec4>(osc::Color::halfGrey()));
+                osc::PushStyleColor(ImGuiCol_Text, Color::halfGrey());
                 ++styles;
             }
 

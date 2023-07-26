@@ -131,12 +131,12 @@ private:
         int stylesPushed = 0;
         if (&c == m_Model->getHovered())
         {
-            ImGui::PushStyleColor(ImGuiCol_Text, static_cast<glm::vec4>(osc::Color::yellow()));
+            osc::PushStyleColor(ImGuiCol_Text, osc::Color::yellow());
             ++stylesPushed;
         }
         if (&c == m_Model->getSelected())
         {
-            ImGui::PushStyleColor(ImGuiCol_Text, static_cast<glm::vec4>(osc::Color::yellow()));
+            osc::PushStyleColor(ImGuiCol_Text, osc::Color::yellow());
             ++stylesPushed;
         }
 

@@ -6,6 +6,7 @@
 #include "OpenSimCreator/Widgets/ObjectPropertiesEditor.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Graphics/Color.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
@@ -450,11 +451,11 @@ private:
     {
         if (!m_CurrentErrors.empty())
         {
-            ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 0.0f, 0.0f, 1.0f});
+            osc::PushStyleColor(ImGuiCol_Text, Color::red());
             ImGui::Dummy({0.0f, 2.0f});
             ImGui::TextWrapped("Error adding component to model: %s", m_CurrentErrors.c_str());
             ImGui::Dummy({0.0f, 2.0f});
-            ImGui::PopStyleColor();
+            osc::PopStyleColor();
         }
     }
 

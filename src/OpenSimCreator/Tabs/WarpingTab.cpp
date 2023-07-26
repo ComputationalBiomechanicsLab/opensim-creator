@@ -1001,10 +1001,10 @@ namespace
                 osc::Color color = {0.5f, 0.5f, 0.5f, 1.0f};
                 color[i] = 1.0f;
 
-                ImGui::PushStyleColor(ImGuiCol_Text, glm::vec4{color});
+                osc::PushStyleColor(ImGuiCol_Text, color);
                 ImGui::Text("%f", pos[i]);
                 ImGui::SameLine();
-                ImGui::PopStyleColor();
+                osc::PopStyleColor();
             }
             ImGui::TextUnformatted(")");
         }
