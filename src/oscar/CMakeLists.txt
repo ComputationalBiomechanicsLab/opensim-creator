@@ -251,7 +251,6 @@ add_library(oscar STATIC
     Utils/FilesystemHelpers.hpp
     Utils/HashHelpers.hpp
     Utils/Macros.hpp
-    Utils/MethodTestMacro.hpp
     Utils/ParalellizationHelpers.hpp
     Utils/Perf.cpp
     Utils/Perf.hpp
