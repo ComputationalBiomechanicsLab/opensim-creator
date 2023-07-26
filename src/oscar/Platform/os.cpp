@@ -110,7 +110,7 @@ std::optional<std::filesystem::path> osc::PromptUserForFile(
         maybeInitialDirectoryToOpen ? maybeInitialDirectoryToOpen->c_str() : nullptr,
         &path
     );
-    OSC_SCOPE_GUARD_IF(path, { free(path); });
+    ScopeGuard const g{[&path]() { if (path) { free(path); } }};
 
     if (path && result == NFD_OKAY)
     {
@@ -172,7 +172,7 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
         maybeInitialDirectoryToOpen ? maybeInitialDirectoryToOpen->c_str() : nullptr,
         &path
     );
-    OSC_SCOPE_GUARD_IF(path, { free(path); });
+    ScopeGuard const g{[&path]() { if (path) { free(path); }}};
 
     if (result != NFD_OKAY)
     {

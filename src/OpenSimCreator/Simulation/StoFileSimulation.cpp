@@ -174,7 +174,7 @@ namespace
         // temporarily unlock coords
         std::vector<OpenSim::Coordinate*> lockedCoords = GetLockedCoordinates(model);
         SetCoordsDefaultLocked(lockedCoords, false);
-        OSC_SCOPE_GUARD({ SetCoordsDefaultLocked(lockedCoords, true); });
+        osc::ScopeGuard const g{[&lockedCoords]() { SetCoordsDefaultLocked(lockedCoords, true); }};
 
         osc::InitializeModel(model);
         osc::InitializeState(model);

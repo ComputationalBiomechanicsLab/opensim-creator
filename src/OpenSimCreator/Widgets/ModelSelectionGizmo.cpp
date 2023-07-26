@@ -517,7 +517,7 @@ namespace
         // important: necessary for multi-viewport gizmos
         // also important: don't use ImGui::GetID(), because it uses an ID stack and we might want to know if "isover" etc. is true outside of a window
         ImGuizmo::SetID(static_cast<int>(std::hash<void*>{}(gizmoID)));
-        OSC_SCOPE_GUARD({ ImGuizmo::SetID(-1); });
+        osc::ScopeGuard const g{[]() { ImGuizmo::SetID(-1); }};
 
         ImGuizmo::SetRect(
             viewportRect.p1.x,

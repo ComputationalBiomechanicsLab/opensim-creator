@@ -143,7 +143,7 @@ private:
         }
 
         ImGui::PushID(m_Model->getSelected());
-        OSC_SCOPE_GUARD({ ImGui::PopID(); });
+        ScopeGuard const g{[]() { ImGui::PopID(); }};
 
         // draw an actions row with a button that opens the context menu
         //

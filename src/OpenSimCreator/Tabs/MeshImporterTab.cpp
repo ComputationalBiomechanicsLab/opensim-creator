@@ -6808,11 +6808,11 @@ private:
     void DrawAddOtherToSceneElActions(SceneEl& el, glm::vec3 const& clickPos)
     {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
-        OSC_SCOPE_GUARD({ ImGui::PopStyleVar(); });
+        osc::ScopeGuard const g1{[]() { ImGui::PopStyleVar(); }};
 
         int imguiID = 0;
         ImGui::PushID(imguiID++);
-        OSC_SCOPE_GUARD({ ImGui::PopID(); });
+        osc::ScopeGuard const g2{[]() { ImGui::PopID(); }};
 
         if (CanAttachMeshTo(el))
         {
@@ -7355,21 +7355,21 @@ private:
         {
             // context menu not open, but just draw the "nothing" menu
             PushID(UID::empty());
-            OSC_SCOPE_GUARD({ ImGui::PopID(); });
+            osc::ScopeGuard const g{[]() { ImGui::PopID(); }};
             DrawNothingContextMenuContent();
         }
         else if (m_MaybeOpenedContextMenu.ID == c_RightClickedNothingID)
         {
             // context menu was opened on "nothing" specifically
             PushID(UID::empty());
-            OSC_SCOPE_GUARD({ ImGui::PopID(); });
+            osc::ScopeGuard const g{[]() { ImGui::PopID(); }};
             DrawNothingContextMenuContent();
         }
         else if (SceneEl* el = m_Shared->UpdModelGraph().TryUpdElByID(m_MaybeOpenedContextMenu.ID))
         {
             // context menu was opened on a scene element that exists in the modelgraph
             PushID(el->GetID());
-            OSC_SCOPE_GUARD({ ImGui::PopID(); });
+            osc::ScopeGuard const g{[]() { ImGui::PopID(); }};
             DrawContextMenuContent(*el, m_MaybeOpenedContextMenu.Pos);
         }
 

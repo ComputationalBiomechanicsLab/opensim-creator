@@ -1,7 +1,5 @@
 #pragma once
 
-#include "oscar/Utils/Macros.hpp"
-
 #include <utility>
 
 namespace osc
@@ -10,7 +8,7 @@ namespace osc
     class ScopeGuard final {
     public:
         ScopeGuard(Dtor&& dtor_) noexcept :
-            m_OnScopeExit{std::move(dtor_)}
+            m_OnScopeExit{std::forward<Dtor&&>(dtor_)}
         {
         }
         ScopeGuard(ScopeGuard const&) = delete;
@@ -26,7 +24,3 @@ namespace osc
         Dtor m_OnScopeExit;
     };
 }
-
-#define OSC_SCOPE_GUARD(action) osc::ScopeGuard const OSC_TOKENPASTE2(guard_, __LINE__){[&]() action};
-
-#define OSC_SCOPE_GUARD_IF(cond, action) OSC_SCOPE_GUARD({ if (cond) { action } })

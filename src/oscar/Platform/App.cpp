@@ -252,8 +252,11 @@ public:
         // ensure retained screens are destroyed when exiting this guarded path
         //
         // this means callers can call .show multiple times on the same app
-        OSC_SCOPE_GUARD({ m_CurrentScreen.reset(); });
-        OSC_SCOPE_GUARD({ m_NextScreen.reset(); });
+        ScopeGuard const g{[this]()
+        {
+            m_CurrentScreen.reset();
+            m_NextScreen.reset();
+        }};
 
         mainLoopUnguarded();
     }
@@ -720,7 +723,7 @@ private:
         m_CurrentScreen->onMount();
 
         // ensure current screen is unmounted when exiting the main loop
-        OSC_SCOPE_GUARD_IF(m_CurrentScreen, { m_CurrentScreen->onUnmount(); });
+        ScopeGuard const g{[this]() { if (m_CurrentScreen) { m_CurrentScreen->onUnmount(); }}};
 
         // reset counters
         m_AppCounter = SDL_GetPerformanceCounter();
