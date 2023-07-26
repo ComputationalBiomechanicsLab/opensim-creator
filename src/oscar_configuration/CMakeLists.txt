@@ -123,15 +123,6 @@ target_compile_options(oscar_configuration INTERFACE
         # warn if a suspicous use of a logical operator is detected (e.g. i < 0 && i < 0)
         # -Wlogical-op
 
-        # disabled: requires newer gcc
-        # warn if a float constant does not have the 'f' suffix
-        # -Wunsuffixed-float-constants
-
-        # warn if using now-deprecated C/C++ constructs
-        #
-        # (enable occasionally and ensure that CI etc. have relevant compiler version)
-        # -Wtraditional
-
         # disable: broken in OSC (int == size_t etc.)
         -Wno-sign-compare
 
