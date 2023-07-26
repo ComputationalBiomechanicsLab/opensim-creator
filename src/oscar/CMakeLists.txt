@@ -105,7 +105,7 @@ add_library(oscar STATIC
     Graphics/Shader.hpp
     Graphics/ShaderCache.cpp
     Graphics/ShaderCache.hpp
-    Graphics/ShaderLocationIndex.hpp
+    Graphics/ShaderLocations.hpp
     Graphics/ShaderType.hpp
     Graphics/SimpleSceneDecoration.hpp
     Graphics/Texture2D.hpp

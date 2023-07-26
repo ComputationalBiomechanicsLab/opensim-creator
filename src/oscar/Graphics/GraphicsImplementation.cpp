@@ -37,7 +37,7 @@
 #include "oscar/Graphics/Image.hpp"
 #include "oscar/Graphics/MeshGen.hpp"
 #include "oscar/Graphics/Rgba32.hpp"
-#include "oscar/Graphics/ShaderLocationIndex.hpp"
+#include "oscar/Graphics/ShaderLocations.hpp"
 #include "oscar/Maths/AABB.hpp"
 #include "oscar/Maths/BVH.hpp"
 #include "oscar/Maths/Constants.hpp"
@@ -3674,32 +3674,32 @@ private:
 
 
         {  // mesh always has vertices
-            glVertexAttribPointer(SHADER_LOC_VERTEX_POSITION, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
-            glEnableVertexAttribArray(SHADER_LOC_VERTEX_POSITION);
+            glVertexAttribPointer(shader_locations::aPos, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
+            glEnableVertexAttribArray(shader_locations::aPos);
             byteOffset += sizeof(decltype(m_Vertices)::value_type);
         }
         if (hasNormals)
         {
-            glVertexAttribPointer(SHADER_LOC_VERTEX_NORMAL, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
-            glEnableVertexAttribArray(SHADER_LOC_VERTEX_NORMAL);
+            glVertexAttribPointer(shader_locations::aNormal, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
+            glEnableVertexAttribArray(shader_locations::aNormal);
             byteOffset += sizeof(decltype(m_Normals)::value_type);
         }
         if (hasTexCoords)
         {
-            glVertexAttribPointer(SHADER_LOC_VERTEX_TEXCOORD01, 2, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
-            glEnableVertexAttribArray(SHADER_LOC_VERTEX_TEXCOORD01);
+            glVertexAttribPointer(shader_locations::aTexCoord, 2, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
+            glEnableVertexAttribArray(shader_locations::aTexCoord);
             byteOffset += sizeof(decltype(m_TexCoords)::value_type);
         }
         if (hasColors)
         {
-            glVertexAttribPointer(SHADER_LOC_VERTEX_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
-            glEnableVertexAttribArray(SHADER_LOC_VERTEX_COLOR);
+            glVertexAttribPointer(shader_locations::aColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
+            glEnableVertexAttribArray(shader_locations::aColor);
             byteOffset += sizeof(decltype(m_Colors)::value_type);
         }
         if (hasTangents)
         {
-            glVertexAttribPointer(SHADER_LOC_VERTEX_TANGENT, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
-            glEnableVertexAttribArray(SHADER_LOC_VERTEX_TANGENT);
+            glVertexAttribPointer(shader_locations::aTangent, 3, GL_FLOAT, GL_FALSE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
+            glEnableVertexAttribArray(shader_locations::aTangent);
             // unused: byteOffset += sizeof(decltype(m_Tangents)::value_type);
         }
         gl::BindVertexArray();  // VAO configuration complete
