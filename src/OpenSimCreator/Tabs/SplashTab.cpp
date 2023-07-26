@@ -10,6 +10,7 @@
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Formats/SVG.hpp>
+#include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/Texture2D.hpp>
@@ -25,7 +26,6 @@
 #include <oscar/Platform/Config.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/RecentFile.hpp>
-#include <oscar/Platform/Styling.hpp>
 #include <oscar/Tabs/TabHost.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Widgets/LogViewer.hpp>
@@ -283,7 +283,7 @@ private:
         }
         else
         {
-            ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
+            ImGui::PushStyleColor(ImGuiCol_Text, static_cast<glm::vec4>(osc::Color::halfGrey()));
             ImGui::TextWrapped("No files opened recently. Try:");
             ImGui::BulletText("Creating a new model (Ctrl+N)");
             ImGui::BulletText("Opening an existing model (Ctrl+O)");

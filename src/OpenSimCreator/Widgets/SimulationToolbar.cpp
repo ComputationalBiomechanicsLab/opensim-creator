@@ -7,7 +7,6 @@
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Graphics/Color.hpp>
-#include <oscar/Platform/Styling.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -26,12 +25,12 @@ namespace
         {
         case osc::SimulationStatus::Initializing:
         case osc::SimulationStatus::Running:
-            return OSC_NEUTRAL_RGBA;
+            return osc::Color::mutedBlue();
         case osc::SimulationStatus::Completed:
-            return OSC_POSITIVE_RGBA;
+            return osc::Color::darkGreen();
         case osc::SimulationStatus::Cancelled:
         case osc::SimulationStatus::Error:
-            return OSC_NEGATIVE_RGBA;
+            return osc::Color::red();
         default:
             return osc::Color{glm::vec4{ImGui::GetStyle().Colors[ImGuiCol_Text]}};
         }

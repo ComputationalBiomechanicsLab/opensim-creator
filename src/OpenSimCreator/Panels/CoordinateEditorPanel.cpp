@@ -7,8 +7,8 @@
 #include "OpenSimCreator/Widgets/ComponentContextMenu.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Graphics/Color.hpp>
 #include <oscar/Panels/StandardPanel.hpp>
-#include <oscar/Platform/Styling.hpp>
 #include <oscar/Utils/CStringView.hpp>
 
 #include <IconsFontAwesome5.h>
@@ -131,12 +131,12 @@ private:
         int stylesPushed = 0;
         if (&c == m_Model->getHovered())
         {
-            ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
+            ImGui::PushStyleColor(ImGuiCol_Text, static_cast<glm::vec4>(osc::Color::yellow()));
             ++stylesPushed;
         }
         if (&c == m_Model->getSelected())
         {
-            ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
+            ImGui::PushStyleColor(ImGuiCol_Text, static_cast<glm::vec4>(osc::Color::yellow()));
             ++stylesPushed;
         }
 

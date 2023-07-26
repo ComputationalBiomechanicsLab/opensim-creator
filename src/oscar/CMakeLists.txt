@@ -162,7 +162,6 @@ add_library(oscar STATIC
     Platform/os.cpp
     Platform/os.hpp
     Platform/RecentFile.hpp
-    Platform/Styling.hpp
 
     Screens/CookiecutterScreen.cpp
     Screens/CookiecutterScreen.hpp

@@ -12,6 +12,7 @@
 #include <oscar/Bindings/GlmHelpers.hpp>
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Bindings/ImGuizmoHelpers.hpp>
+#include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/GraphicsHelpers.hpp>
 #include <oscar/Graphics/MeshCache.hpp>
 #include <oscar/Graphics/Mesh.hpp>
@@ -35,7 +36,6 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Platform/Styling.hpp>
 #include <oscar/Tabs/TabHost.hpp>
 #include <oscar/Utils/ArrayHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
@@ -5499,7 +5499,7 @@ namespace
         void DrawCancelButton()
         {
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
-            ImGui::PushStyleColor(ImGuiCol_Button, OSC_GREYED_RGBA);
+            ImGui::PushStyleColor(ImGuiCol_Button, static_cast<glm::vec4>(osc::Color::halfGrey()));
 
             osc::CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
             glm::vec2 const margin = {25.0f, 35.0f};
@@ -5896,7 +5896,7 @@ namespace
         void DrawCancelButton()
         {
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
-            ImGui::PushStyleColor(ImGuiCol_Button, OSC_GREYED_RGBA);
+            ImGui::PushStyleColor(ImGuiCol_Button, static_cast<glm::vec4>(osc::Color::halfGrey()));
 
             osc::CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
             glm::vec2 const margin = {25.0f, 35.0f};
@@ -6751,7 +6751,7 @@ private:
         if (CanChangePosition(e))
         {
             glm::vec3 translation = e.GetPos();
-            if (ImGui::InputFloat3("Translation", glm::value_ptr(translation), OSC_DEFAULT_FLOAT_INPUT_FORMAT))
+            if (ImGui::InputFloat3("Translation", glm::value_ptr(translation), "%.6f"))
             {
                 mg.UpdElByID(e.GetID()).SetPos(translation);
             }
@@ -6770,7 +6770,7 @@ private:
         {
             glm::vec3 eulerDegs = glm::degrees(glm::eulerAngles(e.GetRotation()));
 
-            if (ImGui::InputFloat3("Rotation (deg)", glm::value_ptr(eulerDegs), OSC_DEFAULT_FLOAT_INPUT_FORMAT))
+            if (ImGui::InputFloat3("Rotation (deg)", glm::value_ptr(eulerDegs), "%.6f"))
             {
                 glm::quat quatRads = glm::quat{glm::radians(eulerDegs)};
                 mg.UpdElByID(e.GetID()).SetRotation(quatRads);
@@ -6789,7 +6789,7 @@ private:
         if (CanChangeScale(e))
         {
             glm::vec3 scaleFactors = e.GetScale();
-            if (ImGui::InputFloat3("Scale", glm::value_ptr(scaleFactors), OSC_DEFAULT_FLOAT_INPUT_FORMAT))
+            if (ImGui::InputFloat3("Scale", glm::value_ptr(scaleFactors), "%.6f"))
             {
                 mg.UpdElByID(e.GetID()).SetScale(scaleFactors);
             }
@@ -7155,7 +7155,7 @@ private:
     void DrawMassEditor(BodyEl const& bodyEl)
     {
         auto curMass = static_cast<float>(bodyEl.getMass());
-        if (ImGui::InputFloat("Mass", &curMass, 0.0f, 0.0f, OSC_DEFAULT_FLOAT_INPUT_FORMAT))
+        if (ImGui::InputFloat("Mass", &curMass, 0.0f, 0.0f, "%.6f"))
         {
             m_Shared->UpdModelGraph().UpdElByID<BodyEl>(bodyEl.GetID()).setMass(static_cast<double>(curMass));
         }
@@ -7438,12 +7438,12 @@ private:
 
             if (id == m_MaybeHover.ID)
             {
-                ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
+                ImGui::PushStyleColor(ImGuiCol_Text, static_cast<glm::vec4>(osc::Color::yellow()));
                 ++styles;
             }
             else if (m_Shared->IsSelected(id))
             {
-                ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
+                ImGui::PushStyleColor(ImGuiCol_Text, static_cast<glm::vec4>(osc::Color::yellow()));
                 ++styles;
             }
 
@@ -7761,7 +7761,7 @@ private:
     void Draw3DViewerOverlayConvertToOpenSimModelButton()
     {
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
-        ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
+        ImGui::PushStyleColor(ImGuiCol_Button, static_cast<glm::vec4>(Color::darkGreen()));
 
         constexpr osc::CStringView text = "Convert to OpenSim Model " ICON_FA_ARROW_RIGHT;
         constexpr glm::vec2 margin = {25.0f, 35.0f};

@@ -25,12 +25,6 @@
 
 // char[]
 //
-// which GLSL version should be used by default, if it isn't already
-// specified in shader headers (e.g. as in ImGui)
-#define OSC_GLSL_VERSION "#version 330 core"
-
-// char[]
-//
 // unique build ID for this build of OSC. Bakes the build ID into
 // the binary, which is handy for user bug reports, etc.
 #define OSC_BUILD_ID "@OSC_BUILD_ID@"
@@ -50,8 +44,3 @@
 // to the repo so that users can just click and go, rather than having to separately
 // browse to the repo
 #define OSC_REPO_URL "@OSC_REPO_URL@"
-
-// char[]
-//
-// printf-style formatting string for ImGui float inputs
-#define OSC_DEFAULT_FLOAT_INPUT_FORMAT "%.6f"

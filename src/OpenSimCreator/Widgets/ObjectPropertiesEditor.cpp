@@ -364,7 +364,7 @@ namespace
             auto value = static_cast<float>(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : 0.0);
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            if (ImGui::InputFloat("##doubleeditor", &value, 0.0f, 0.0f, OSC_DEFAULT_FLOAT_INPUT_FORMAT))
+            if (ImGui::InputFloat("##doubleeditor", &value, 0.0f, 0.0f, "%.6f"))
             {
                 // update the edited property - don't rely on ImGui to remember edits
                 m_EditedProperty.setValue(idx, static_cast<double>(value));
@@ -593,7 +593,7 @@ namespace
 
                 // draw the input editor
                 ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, {1.0f, 0.0f});
-                if (ImGui::InputScalar("##valueinput", ImGuiDataType_Float, &rawValue[i], &m_StepSize, nullptr, OSC_DEFAULT_FLOAT_INPUT_FORMAT))
+                if (ImGui::InputScalar("##valueinput", ImGuiDataType_Float, &rawValue[i], &m_StepSize, nullptr, "%.6f"))
                 {
                     // un-convert the value on save
                     glm::vec3 const savedValue = (1.0f/conversionCoefficient) * rawValue;
@@ -681,7 +681,7 @@ namespace
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("Custom");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::InputFloat("##stepsizeinput", &m_StepSize, 0.0f, 0.0f, OSC_DEFAULT_FLOAT_INPUT_FORMAT);
+                    ImGui::InputFloat("##stepsizeinput", &m_StepSize, 0.0f, 0.0f, "%.6f");
 
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
@@ -864,7 +864,7 @@ namespace
                 ImGui::PushID(i);
 
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-                if (ImGui::InputFloat3("##vec6editor", rawValue.data() + 3*i, OSC_DEFAULT_FLOAT_INPUT_FORMAT))
+                if (ImGui::InputFloat3("##vec6editor", rawValue.data() + 3*i, "%.6f"))
                 {
                     m_EditedProperty.updValue(idx)[3*i + 0] = static_cast<double>(rawValue[3*i + 0]);
                     m_EditedProperty.updValue(idx)[3*i + 1] = static_cast<double>(rawValue[3*i + 1]);

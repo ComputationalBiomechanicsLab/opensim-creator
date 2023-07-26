@@ -13,6 +13,11 @@ namespace osc
     // representation of RGBA, usually in sRGB color space, with a range of 0 to 1
     struct Color final {
 
+        static constexpr Color halfGrey()
+        {
+            return {0.5f, 0.5f, 0.5f, 1.0f};
+        }
+
         static constexpr Color black()
         {
             return {0.0f, 0.0f, 0.0f, 1.0f};
@@ -23,6 +28,11 @@ namespace osc
             return {0.0f, 0.0f, 1.0f, 1.0f};
         }
 
+        static constexpr Color mutedBlue()
+        {
+            return {0.06f, 0.53f, 0.98f, 1.00f};
+        }
+
         static constexpr Color clear()
         {
             return {0.0f, 0.0f, 0.0f, 0.0f};
@@ -31,6 +41,11 @@ namespace osc
         static constexpr Color green()
         {
             return {0.0f, 1.0f, 0.0f, 1.0f};
+        }
+
+        static constexpr Color darkGreen()
+        {
+            return {0.0f, 0.6f, 0.0f, 1.0f};
         }
 
         static constexpr Color red()

@@ -427,7 +427,7 @@ void osc::DrawPointTranslationInformationWithRespectTo(
     ImGui::SameLine();
     osc::DrawHelpMarker("translation", "Translational offset (in meters) of the point expressed in the chosen frame");
     ImGui::SameLine();
-    ImGui::InputFloat3("##translation", glm::value_ptr(position), OSC_DEFAULT_FLOAT_INPUT_FORMAT, ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputFloat3("##translation", glm::value_ptr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
 void osc::DrawDirectionInformationWithRepsectTo(
@@ -442,7 +442,7 @@ void osc::DrawDirectionInformationWithRepsectTo(
     ImGui::SameLine();
     osc::DrawHelpMarker("direction", "a unit vector expressed in the given frame");
     ImGui::SameLine();
-    ImGui::InputFloat3("##direction", glm::value_ptr(direction), OSC_DEFAULT_FLOAT_INPUT_FORMAT, ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputFloat3("##direction", glm::value_ptr(direction), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
 void osc::DrawFrameInformationExpressedIn(
@@ -458,13 +458,13 @@ void osc::DrawFrameInformationExpressedIn(
     ImGui::SameLine();
     osc::DrawHelpMarker("translation", "Translational offset (in meters) of the frame's origin expressed in the chosen frame");
     ImGui::SameLine();
-    ImGui::InputFloat3("##translation", glm::value_ptr(position), OSC_DEFAULT_FLOAT_INPUT_FORMAT, ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputFloat3("##translation", glm::value_ptr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
 
     ImGui::Text("orientation");
     ImGui::SameLine();
     osc::DrawHelpMarker("orientation", "Orientation offset (in radians) of the frame, expressed in the chosen frame as a frame-fixed x-y-z rotation sequence");
     ImGui::SameLine();
-    ImGui::InputFloat3("##orientation", glm::value_ptr(rotationEulers), OSC_DEFAULT_FLOAT_INPUT_FORMAT, ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputFloat3("##orientation", glm::value_ptr(rotationEulers), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
 void osc::DrawCalculateMenu(

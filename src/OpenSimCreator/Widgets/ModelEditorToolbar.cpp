@@ -8,9 +8,9 @@
 #include "OpenSimCreator/Utils/UndoableModelActions.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/IconCache.hpp>
 #include <oscar/Platform/App.hpp>
-#include <oscar/Platform/Styling.hpp>
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -62,7 +62,7 @@ private:
     {
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
 
-        ImGui::PushStyleColor(ImGuiCol_Text, OSC_POSITIVE_RGBA);
+        ImGui::PushStyleColor(ImGuiCol_Text, static_cast<glm::vec4>(Color::darkGreen()));
         if (ImGui::Button(ICON_FA_PLAY))
         {
             osc::ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);

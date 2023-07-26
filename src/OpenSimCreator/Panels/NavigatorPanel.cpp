@@ -5,8 +5,8 @@
 #include "OpenSimCreator/Widgets/BasicWidgets.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Graphics/Color.hpp>
 #include <oscar/Panels/StandardPanel.hpp>
-#include <oscar/Platform/Styling.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 
@@ -327,12 +327,12 @@ private:
             int styles = 0;
             if (cur == selection)
             {
-                ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
+                ImGui::PushStyleColor(ImGuiCol_Text, static_cast<glm::vec4>(osc::Color::yellow()));
                 ++styles;
             }
             else if (cur == hover)
             {
-                ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
+                ImGui::PushStyleColor(ImGuiCol_Text, static_cast<glm::vec4>(osc::Color::yellow()));
                 ++styles;
             }
             else if (!hasSearch || searchHit)
@@ -341,7 +341,7 @@ private:
             }
             else
             {
-                ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
+                ImGui::PushStyleColor(ImGuiCol_Text, static_cast<glm::vec4>(osc::Color::halfGrey()));
                 ++styles;
             }
 

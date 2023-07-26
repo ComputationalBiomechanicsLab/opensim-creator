@@ -11,10 +11,6 @@
 #include <type_traits>
 #include <utility>
 
-#define GL_STRINGIFY(x) #x
-#define GL_TOSTRING(x) GL_STRINGIFY(x)
-#define GL_SOURCELOC __FILE__ ":" GL_TOSTRING(__LINE__)
-
 // gl: convenience C++ bindings to OpenGL
 namespace gl
 {
@@ -43,7 +39,7 @@ namespace gl
         {
             if (m_ShaderHandle == c_EmptyShaderSenteniel)
             {
-                throw OpenGlException{GL_SOURCELOC ": glCreateShader() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
+                throw OpenGlException{"glCreateShader() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
 
@@ -130,7 +126,7 @@ namespace gl
         {
             if (m_ProgramHandle == c_EmptyProgramSenteniel)
             {
-                throw OpenGlException{GL_SOURCELOC "glCreateProgram() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
+                throw OpenGlException{"glCreateProgram() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
 
@@ -589,7 +585,7 @@ namespace gl
 
             if (m_BufferHandle == c_EmptyBufferHandleSenteniel)
             {
-                throw OpenGlException{GL_SOURCELOC "glGenBuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
+                throw OpenGlException{"glGenBuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
 
@@ -800,7 +796,7 @@ namespace gl
 
             if (m_VaoHandle == c_EmptyVAOHandleSenteniel)
             {
-                throw OpenGlException{GL_SOURCELOC "glGenVertexArrays() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
+                throw OpenGlException{"glGenVertexArrays() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
 
@@ -858,7 +854,7 @@ namespace gl
 
             if (m_TextureHandle == c_EmptyTextureHandleSenteniel)
             {
-                throw OpenGlException{GL_SOURCELOC "glGenTextures() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
+                throw OpenGlException{"glGenTextures() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
 
@@ -961,7 +957,7 @@ namespace gl
 
             if (m_FboHandle == c_EmptyFBOSenteniel)
             {
-                throw OpenGlException{GL_SOURCELOC "glGenFramebuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
+                throw OpenGlException{"glGenFramebuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
 
@@ -1030,7 +1026,7 @@ namespace gl
 
             if (m_RenderBuffer == c_EmptyRenderBufferSenteniel)
             {
-                throw OpenGlException{GL_SOURCELOC "glGenRenderBuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
+                throw OpenGlException{"glGenRenderBuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
 

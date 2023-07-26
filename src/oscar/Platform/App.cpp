@@ -1318,7 +1318,7 @@ void osc::ImGuiInit()
     ImGui_ImplSDL2_InitForOpenGL(impl.updWindow().get(), impl.updRawGLContextHandle());
 
     // init ImGui for OpenGL
-    ImGui_ImplOpenGL3_Init(OSC_GLSL_VERSION);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
 
     ImGuiApplyDarkTheme();
 }

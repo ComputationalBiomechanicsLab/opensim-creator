@@ -14,7 +14,6 @@
 #include <oscar/Bindings/ImGuiHelpers.hpp>
 #include <oscar/Panels/StandardPanel.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Platform/Styling.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
 
 #include <IconsFontAwesome5.h>

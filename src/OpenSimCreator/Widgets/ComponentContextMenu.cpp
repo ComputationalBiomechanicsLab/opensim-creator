@@ -16,7 +16,6 @@
 #include <oscar/Panels/PanelManager.hpp>
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/os.hpp>
-#include <oscar/Platform/Styling.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
 #include <oscar/Widgets/StandardPopup.hpp>

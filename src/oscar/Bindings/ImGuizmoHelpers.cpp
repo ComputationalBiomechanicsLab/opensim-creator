@@ -1,7 +1,7 @@
 #include "ImGuizmoHelpers.hpp"
 
 #include "oscar/Bindings/ImGuiHelpers.hpp"
-#include "oscar/Platform/Styling.hpp"
+#include "oscar/Graphics/Color.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
@@ -50,7 +50,7 @@ bool osc::DrawGizmoOpSelector(
     {
         if (op == ImGuizmo::TRANSLATE)
         {
-            ImGui::PushStyleColor(ImGuiCol_Button, OSC_NEUTRAL_RGBA);
+            ImGui::PushStyleColor(ImGuiCol_Button, static_cast<glm::vec4>(osc::Color::mutedBlue()));
             ++colorsPushed;
         }
         if (ImGui::Button(ICON_FA_ARROWS_ALT))
@@ -70,7 +70,7 @@ bool osc::DrawGizmoOpSelector(
     {
         if (op == ImGuizmo::ROTATE)
         {
-            ImGui::PushStyleColor(ImGuiCol_Button, OSC_NEUTRAL_RGBA);
+            ImGui::PushStyleColor(ImGuiCol_Button, static_cast<glm::vec4>(osc::Color::mutedBlue()));
             ++colorsPushed;
         }
         if (ImGui::Button(ICON_FA_REDO_ALT))
@@ -90,7 +90,7 @@ bool osc::DrawGizmoOpSelector(
     {
         if (op == ImGuizmo::SCALE)
         {
-            ImGui::PushStyleColor(ImGuiCol_Button, OSC_NEUTRAL_RGBA);
+            ImGui::PushStyleColor(ImGuiCol_Button, static_cast<glm::vec4>(osc::Color::mutedBlue()));
             ++colorsPushed;
         }
         if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))

@@ -726,17 +726,17 @@ bool osc::InputString(CStringView label, std::string& s, ImGuiInputTextFlags fla
 
 bool osc::InputMetersFloat(CStringView label, float& v, float step, float step_fast, ImGuiInputTextFlags flags)
 {
-    return ImGui::InputFloat(label.c_str(), &v, step, step_fast, OSC_DEFAULT_FLOAT_INPUT_FORMAT, flags);
+    return ImGui::InputFloat(label.c_str(), &v, step, step_fast, "%.6f", flags);
 }
 
 bool osc::InputMetersFloat3(CStringView label, glm::vec3& vec, ImGuiInputTextFlags flags)
 {
-    return ImGui::InputFloat3(label.c_str(), glm::value_ptr(vec), OSC_DEFAULT_FLOAT_INPUT_FORMAT, flags);
+    return ImGui::InputFloat3(label.c_str(), glm::value_ptr(vec), "%.6f", flags);
 }
 
 bool osc::SliderMetersFloat(CStringView label, float& v, float v_min, float v_max, ImGuiSliderFlags flags)
 {
-    return ImGui::SliderFloat(label.c_str(), &v, v_min, v_max, OSC_DEFAULT_FLOAT_INPUT_FORMAT, flags);
+    return ImGui::SliderFloat(label.c_str(), &v, v_min, v_max, "%.6f", flags);
 }
 
 bool osc::InputKilogramFloat(CStringView label, float& v, float step, float step_fast, ImGuiInputTextFlags flags)
