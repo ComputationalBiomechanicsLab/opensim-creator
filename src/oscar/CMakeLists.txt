@@ -181,9 +181,6 @@ add_library(oscar STATIC
     Tabs/Experiments/HittestTab.hpp
     Tabs/Experiments/MeshGenTestTab.cpp
     Tabs/Experiments/MeshGenTestTab.hpp
-    Tabs/Experiments/RendererSDFTab.cpp
-    Tabs/Experiments/RendererSDFTab.hpp
-
     Tabs/LearnOpenGL/LOGLBasicLightingTab.cpp
     Tabs/LearnOpenGL/LOGLBasicLightingTab.hpp
     Tabs/LearnOpenGL/LOGLBlendingTab.cpp

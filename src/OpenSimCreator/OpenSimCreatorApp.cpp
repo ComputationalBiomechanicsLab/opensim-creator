@@ -15,7 +15,6 @@
 #include <oscar/Tabs/Experiments/CustomWidgetsTab.hpp>
 #include <oscar/Tabs/Experiments/HittestTab.hpp>
 #include <oscar/Tabs/Experiments/MeshGenTestTab.hpp>
-#include <oscar/Tabs/Experiments/RendererSDFTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/LOGLBasicLightingTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/LOGLBlendingTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/LOGLBloomTab.hpp>
@@ -205,7 +204,6 @@ namespace
         RegisterTab<osc::LOGLParallaxMappingTab>(registry);
         RegisterTab<osc::LOGLPointShadowsTab>(registry);
         RegisterTab<osc::LOGLTexturingTab>(registry);
-        RegisterTab<osc::RendererSDFTab>(registry);
         RegisterTab<osc::LOGLShadowMappingTab>(registry);
         RegisterTab<osc::LOGLSSAOTab>(registry);
         RegisterTab<osc::ImGuiDemoTab>(registry);
