@@ -74,7 +74,7 @@ namespace osc
 
     private:
         friend class GraphicsBackend;
-        friend struct std::hash<osc::Mesh>;
+        friend struct std::hash<Mesh>;
         friend bool operator==(Mesh const&, Mesh const&) noexcept;
         friend bool operator!=(Mesh const&, Mesh const&) noexcept;
         friend std::ostream& operator<<(std::ostream&, Mesh const&);

@@ -689,14 +689,14 @@ namespace
     // without having to resort to peppering visitors everywhere
     using SceneElFlags = int;
     enum SceneElFlags_ {
-        SceneElFlags_None = 0,
-        SceneElFlags_CanChangeLabel = 1<<0,
+        SceneElFlags_None              = 0,
+        SceneElFlags_CanChangeLabel    = 1<<0,
         SceneElFlags_CanChangePosition = 1<<1,
         SceneElFlags_CanChangeRotation = 1<<2,
-        SceneElFlags_CanChangeScale = 1<<3,
-        SceneElFlags_CanDelete = 1<<4,
-        SceneElFlags_CanSelect = 1<<5,
-        SceneElFlags_HasPhysicalSize = 1<<6,
+        SceneElFlags_CanChangeScale    = 1<<3,
+        SceneElFlags_CanDelete         = 1<<4,
+        SceneElFlags_CanSelect         = 1<<5,
+        SceneElFlags_HasPhysicalSize   = 1<<6,
     };
 
     // returns the "direction" of a cross reference
@@ -706,9 +706,10 @@ namespace
     // is ultimately used
     using CrossrefDirection = int;
     enum CrossrefDirection_ {
-        CrossrefDirection_None = 0,
+        CrossrefDirection_None     = 0,
         CrossrefDirection_ToParent = 1<<0,
-        CrossrefDirection_ToChild = 1<<1,
+        CrossrefDirection_ToChild  = 1<<1,
+
         CrossrefDirection_Both = CrossrefDirection_ToChild | CrossrefDirection_ToParent
     };
 

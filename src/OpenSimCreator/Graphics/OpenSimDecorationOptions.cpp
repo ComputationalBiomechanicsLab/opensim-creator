@@ -1,28 +1,27 @@
 #include "OpenSimDecorationOptions.hpp"
 
 #include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/EnumHelpers.hpp>
 
+#include <array>
 #include <cstdint>
 #include <type_traits>
 
 namespace
 {
-    using CustomDecorationOptionFlags = uint32_t;
-    enum CustomDecorationOptionFlags_ : uint32_t {
-        CustomDecorationOptionFlags_None = 0,
+    enum class CustomDecorationOptionFlags : uint32_t {
+        None                                                = 0,
+        ShouldShowScapulo                                   = 1<<0,
+        ShouldShowEffectiveLinesOfActionForOrigin           = 1<<1,
+        ShouldShowEffectiveLinesOfActionForInsertion        = 1<<2,
+        ShouldShowAnatomicalMuscleLinesOfActionForOrigin    = 1<<3,
+        ShouldShowAnatomicalMuscleLinesOfActionForInsertion = 1<<4,
+        ShouldShowCentersOfMass                             = 1<<5,
+        ShouldShowPointToPointSprings                       = 1<<6,
+        ShouldShowContactForces                             = 1<<7,
+        NUM_OPTIONS = 8,
 
-        CustomDecorationOptionFlags_ShouldShowScapulo = 1<<0,
-        CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfActionForOrigin = 1<<1,
-        CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfActionForInsertion = 1<<2,
-        CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfActionForOrigin = 1<<3,
-        CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfActionForInsertion = 1<<4,
-        CustomDecorationOptionFlags_ShouldShowCentersOfMass = 1<<5,
-        CustomDecorationOptionFlags_ShouldShowPointToPointSprings = 1<<6,
-        CustomDecorationOptionFlags_ShouldShowContactForces = 1<<7,
-
-        CustomDecorationOptionFlags_COUNT = 8,
-        CustomDecorationOptionFlags_Default =
-            CustomDecorationOptionFlags_ShouldShowPointToPointSprings,
+        Default = ShouldShowPointToPointSprings,
     };
 
     constexpr auto c_CustomDecorationOptionLabels = osc::to_array<osc::CStringView>(
@@ -36,7 +35,7 @@ namespace
         "Point-to-Point Springs",
         "Plane Contact Forces (EXPERIMENTAL)",
     });
-    static_assert(c_CustomDecorationOptionLabels.size() == CustomDecorationOptionFlags_COUNT);
+    static_assert(c_CustomDecorationOptionLabels.size() == osc::NumOptions<CustomDecorationOptionFlags>());
 
     constexpr auto c_CustomDecorationDescriptions = osc::to_array<std::optional<osc::CStringView>>(
     {
@@ -49,17 +48,22 @@ namespace
         std::nullopt,
         "Tries to draw the direction of contact forces on planes in the scene.\n\nEXPERIMENTAL: the implementation of this visualization is work-in-progress and written by someone with a highschool-level understanding of Torque. Report any bugs or implementation opinions on GitHub.\n\nOpenSim Creator's implementation of this algorithm is very roughly based on Thomas Geijtenbeek's (better) implementation in scone-studio, here:\n\n    - https://github.com/tgeijten/scone-studio \n\nThanks to @tgeijten for writing an awesome project (that OSC has probably mis-implemented ;) - again, report any bugs, folks)",
     });
-    static_assert(c_CustomDecorationDescriptions.size() == CustomDecorationOptionFlags_COUNT);
+    static_assert(c_CustomDecorationDescriptions.size() == osc::NumOptions<CustomDecorationOptionFlags>());
 
-    void SetFlag(uint32_t& flags, uint32_t flag, bool v)
+    bool GetFlag(uint32_t flags, CustomDecorationOptionFlags flag)
+    {
+        return flags & static_cast<std::underlying_type_t<CustomDecorationOptionFlags>>(flag);
+    }
+
+    void SetFlag(uint32_t& flags, CustomDecorationOptionFlags flag, bool v)
     {
         if (v)
         {
-            flags |= flag;
+            flags |= static_cast<std::underlying_type_t<CustomDecorationOptionFlags>>(flag);
         }
         else
         {
-            flags &= ~flag;
+            flags &= ~static_cast<std::underlying_type_t<CustomDecorationOptionFlags>>(flag);
         }
     }
 }
@@ -68,9 +72,9 @@ osc::OpenSimDecorationOptions::OpenSimDecorationOptions() :
     m_MuscleDecorationStyle{MuscleDecorationStyle::Default},
     m_MuscleColoringStyle{MuscleColoringStyle::Default},
     m_MuscleSizingStyle{MuscleSizingStyle::Default},
-    m_Flags{CustomDecorationOptionFlags_Default}
+    m_Flags{static_cast<std::underlying_type_t<CustomDecorationOptionFlags>>(CustomDecorationOptionFlags::Default)}
 {
-    static_assert(std::is_same_v<std::underlying_type_t<CustomDecorationOptionFlags_>, std::decay_t<decltype(m_Flags)>>);
+    static_assert(std::is_same_v<std::underlying_type_t<CustomDecorationOptionFlags>, std::decay_t<decltype(m_Flags)>>);
 }
 
 osc::MuscleDecorationStyle osc::OpenSimDecorationOptions::getMuscleDecorationStyle() const
@@ -105,7 +109,7 @@ void osc::OpenSimDecorationOptions::setMuscleSizingStyle(MuscleSizingStyle s)
 
 size_t osc::OpenSimDecorationOptions::getNumOptions() const
 {
-    return static_cast<size_t>(CustomDecorationOptionFlags_COUNT);
+    return NumOptions<CustomDecorationOptionFlags>();
 }
 
 bool osc::OpenSimDecorationOptions::getOptionValue(ptrdiff_t i) const
@@ -115,7 +119,7 @@ bool osc::OpenSimDecorationOptions::getOptionValue(ptrdiff_t i) const
 
 void osc::OpenSimDecorationOptions::setOptionValue(ptrdiff_t i, bool v)
 {
-    SetFlag(m_Flags, 1<<i, v);
+    SetFlag(m_Flags, static_cast<CustomDecorationOptionFlags>(1<<i), v);
 }
 
 osc::CStringView osc::OpenSimDecorationOptions::getOptionLabel(ptrdiff_t i) const
@@ -130,77 +134,77 @@ std::optional<osc::CStringView> osc::OpenSimDecorationOptions::getOptionDescript
 
 bool osc::OpenSimDecorationOptions::getShouldShowScapulo() const
 {
-    return m_Flags & CustomDecorationOptionFlags_ShouldShowScapulo;
+    return GetFlag(m_Flags, CustomDecorationOptionFlags::ShouldShowScapulo);
 }
 
 void osc::OpenSimDecorationOptions::setShouldShowScapulo(bool v)
 {
-    SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowScapulo, v);
+    SetFlag(m_Flags, CustomDecorationOptionFlags::ShouldShowScapulo, v);
 }
 
 bool osc::OpenSimDecorationOptions::getShouldShowEffectiveMuscleLineOfActionForOrigin() const
 {
-    return m_Flags & CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfActionForOrigin;
+    return GetFlag(m_Flags, CustomDecorationOptionFlags::ShouldShowEffectiveLinesOfActionForOrigin);
 }
 
 void osc::OpenSimDecorationOptions::setShouldShowEffectiveMuscleLineOfActionForOrigin(bool v)
 {
-    SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfActionForOrigin, v);
+    SetFlag(m_Flags, CustomDecorationOptionFlags::ShouldShowEffectiveLinesOfActionForOrigin, v);
 }
 
 bool osc::OpenSimDecorationOptions::getShouldShowEffectiveMuscleLineOfActionForInsertion() const
 {
-    return m_Flags & CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfActionForInsertion;
+    return GetFlag(m_Flags, CustomDecorationOptionFlags::ShouldShowEffectiveLinesOfActionForInsertion);
 }
 
 void osc::OpenSimDecorationOptions::setShouldShowEffectiveMuscleLineOfActionForInsertion(bool v)
 {
-    SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowEffectiveLinesOfActionForInsertion, v);
+    SetFlag(m_Flags, CustomDecorationOptionFlags::ShouldShowEffectiveLinesOfActionForInsertion, v);
 }
 
 bool osc::OpenSimDecorationOptions::getShouldShowAnatomicalMuscleLineOfActionForOrigin() const
 {
-    return m_Flags & CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfActionForOrigin;
+    return GetFlag(m_Flags, CustomDecorationOptionFlags::ShouldShowAnatomicalMuscleLinesOfActionForOrigin);
 }
 
 void osc::OpenSimDecorationOptions::setShouldShowAnatomicalMuscleLineOfActionForOrigin(bool v)
 {
-    SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfActionForOrigin, v);
+    SetFlag(m_Flags, CustomDecorationOptionFlags::ShouldShowAnatomicalMuscleLinesOfActionForOrigin, v);
 }
 
 bool osc::OpenSimDecorationOptions::getShouldShowAnatomicalMuscleLineOfActionForInsertion() const
 {
-    return m_Flags & CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfActionForInsertion;
+    return GetFlag(m_Flags, CustomDecorationOptionFlags::ShouldShowAnatomicalMuscleLinesOfActionForInsertion);
 }
 
 void osc::OpenSimDecorationOptions::setShouldShowAnatomicalMuscleLineOfActionForInsertion(bool v)
 {
-    SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowAnatomicalMuscleLinesOfActionForInsertion, v);
+    SetFlag(m_Flags, CustomDecorationOptionFlags::ShouldShowAnatomicalMuscleLinesOfActionForInsertion, v);
 }
 
 bool osc::OpenSimDecorationOptions::getShouldShowCentersOfMass() const
 {
-    return m_Flags & CustomDecorationOptionFlags_ShouldShowCentersOfMass;
+    return GetFlag(m_Flags, CustomDecorationOptionFlags::ShouldShowCentersOfMass);
 }
 
 void osc::OpenSimDecorationOptions::setShouldShowCentersOfMass(bool v)
 {
-    SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowCentersOfMass, v);
+    SetFlag(m_Flags, CustomDecorationOptionFlags::ShouldShowCentersOfMass, v);
 }
 
 bool osc::OpenSimDecorationOptions::getShouldShowPointToPointSprings() const
 {
-    return m_Flags & CustomDecorationOptionFlags_ShouldShowPointToPointSprings;
+    return GetFlag(m_Flags, CustomDecorationOptionFlags::ShouldShowPointToPointSprings);
 }
 
 void osc::OpenSimDecorationOptions::setShouldShowPointToPointSprings(bool v)
 {
-    SetFlag(m_Flags, CustomDecorationOptionFlags_ShouldShowPointToPointSprings, v);
+    SetFlag(m_Flags, CustomDecorationOptionFlags::ShouldShowPointToPointSprings, v);
 }
 
 bool osc::OpenSimDecorationOptions::getShouldShowContactForces() const
 {
-    return m_Flags & CustomDecorationOptionFlags_ShouldShowContactForces;
+    return GetFlag(m_Flags, CustomDecorationOptionFlags::ShouldShowContactForces);
 }
 
 bool osc::operator==(OpenSimDecorationOptions const& a, OpenSimDecorationOptions const& b) noexcept

@@ -517,7 +517,7 @@ namespace OpenSim
         X = 0,
         Y,
         Z,
-        NUM_OPTIONS
+        NUM_OPTIONS,
     };
 
     // returns the next `AxisIndex` in the circular sequence X -> Y -> Z

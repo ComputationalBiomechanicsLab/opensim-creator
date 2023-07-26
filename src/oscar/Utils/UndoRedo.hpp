@@ -33,7 +33,7 @@ namespace osc
             return m_Time;
         }
 
-        osc::CStringView getMessage() const
+        CStringView getMessage() const
         {
             return m_Message;
         }
@@ -79,7 +79,7 @@ namespace osc
             return m_Data->getTime();
         }
 
-        osc::CStringView getMessage() const
+        CStringView getMessage() const
         {
             return m_Data->getMessage();
         }

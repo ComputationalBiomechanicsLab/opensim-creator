@@ -60,7 +60,7 @@ namespace osc
         }
 
     private:
-        friend void osc::DrawTextureAsImGuiImage(RenderTexture const&, glm::vec2);
+        friend void DrawTextureAsImGuiImage(RenderTexture const&, glm::vec2);
         void* getTextureHandleHACK() const;  // used by ImGui... for now
 
         friend class GraphicsBackend;

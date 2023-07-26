@@ -19,11 +19,12 @@ namespace osc
 {
     // flag type that can be used to say what subfields an OpenSim output has
     enum class OutputSubfield {
-        None = 0,
-        X = 1<<0,
-        Y = 1<<1,
-        Z = 1<<2,
+        None      = 0,
+        X         = 1<<0,
+        Y         = 1<<1,
+        Z         = 1<<2,
         Magnitude = 1<<3,
+
         Default = None,
     };
 

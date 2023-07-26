@@ -13,17 +13,15 @@ namespace
     // flags that toggle the viewer's behavior
     using CustomRenderingOptionFlags = uint32_t;
     enum CustomRenderingOptionFlags_ : uint32_t {
-        CustomRenderingOptionFlags_None = 0,
-
-        CustomRenderingOptionFlags_DrawXZGrid = 1 << 0,
-        CustomRenderingOptionFlags_DrawXYGrid = 1 << 1,
-        CustomRenderingOptionFlags_DrawYZGrid = 1 << 2,
-        CustomRenderingOptionFlags_DrawAxisLines = 1 << 3,
-
-        CustomRenderingOptionFlags_DrawAABBs = 1 << 4,
-        CustomRenderingOptionFlags_DrawBVH = 1 << 5,
-
+        CustomRenderingOptionFlags_None          = 0,
+        CustomRenderingOptionFlags_DrawXZGrid    = 1<<0,
+        CustomRenderingOptionFlags_DrawXYGrid    = 1<<1,
+        CustomRenderingOptionFlags_DrawYZGrid    = 1<<2,
+        CustomRenderingOptionFlags_DrawAxisLines = 1<<3,
+        CustomRenderingOptionFlags_DrawAABBs     = 1<<4,
+        CustomRenderingOptionFlags_DrawBVH       = 1<<5,
         CustomRenderingOptionFlags_COUNT = 6,
+
         CustomRenderingOptionFlags_Default = CustomRenderingOptionFlags_None,
     };
 
@@ -33,7 +31,6 @@ namespace
         "XY Grid",
         "YZ Grid",
         "Axis Lines",
-
         "AABBs",
         "BVH",
     });
@@ -58,7 +55,6 @@ namespace
         CustomRenderingOptionGroup::Alignment,
         CustomRenderingOptionGroup::Alignment,
         CustomRenderingOptionGroup::Alignment,
-
         CustomRenderingOptionGroup::Development,
         CustomRenderingOptionGroup::Development,
     });

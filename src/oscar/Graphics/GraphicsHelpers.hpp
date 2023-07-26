@@ -171,7 +171,7 @@ namespace osc
     // throws if the image isn't representable as a GPU texture
     Texture2D ToTexture2D(Image const&);
 
-    // returns a texture loaded from disk via osc::Image
+    // returns a texture loaded from disk via Image
     //
     // throws if the image data isn't representable as a GPU texture (e.g. because it has
     // an incorrect number of color channels)

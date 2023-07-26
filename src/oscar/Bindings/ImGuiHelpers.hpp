@@ -214,10 +214,10 @@ namespace osc
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
     );
 
-    // push an osc::UID as if it were an ImGui ID (via ImGui::PushID)
+    // push an UID as if it were an ImGui ID (via ImGui::PushID)
     void PushID(UID const&);
 
-    // push an osc::Color as an ImGui style color var (via ImGui::PushStyleColor())
+    // push an Color as an ImGui style color var (via ImGui::PushStyleColor())
     void PushStyleColor(ImGuiCol, Color const&);
     void PopStyleColor(int count = 1);
 

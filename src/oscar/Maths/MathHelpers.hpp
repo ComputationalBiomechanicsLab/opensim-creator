@@ -164,7 +164,7 @@ namespace osc
         glm::mat4 const& cameraProjMatrix
     );
 
-    // ----- osc::Rect helpers -----
+    // ----- `Rect` helpers -----
 
     // returns `Min(rect.p1, rect.p2)`: i.e. the smallest X and the smallest Y of the rectangle's points
     glm::vec2 MinValuePerDimension(Rect const&) noexcept;
@@ -198,7 +198,7 @@ namespace osc
     Rect NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const& viewport) noexcept;
 
 
-    // ----- osc::Sphere helpers -----
+    // ----- `Sphere` helpers -----
 
     // returns a sphere that bounds the given vertices
     Sphere BoundingSphereOf(nonstd::span<glm::vec3 const>) noexcept;
@@ -217,7 +217,7 @@ namespace osc
     AABB ToAABB(Sphere const&) noexcept;
 
 
-    // ----- osc::Line helpers -----
+    // ----- `Line` helpers -----
 
     // returns a line that has been transformed by the supplied transform matrix
     Line TransformLine(Line const&, glm::mat4 const&) noexcept;
@@ -226,13 +226,13 @@ namespace osc
     Line InverseTransformLine(Line const&, Transform const&) noexcept;
 
 
-    // ----- osc::Disc helpers -----
+    // ----- `Disc` helpers -----
 
     // returns an xform that maps a disc to another disc
     glm::mat4 DiscToDiscMat4(Disc const&, Disc const&) noexcept;
 
 
-    // ----- osc::AABB helpers -----
+    // ----- `AABB` helpers -----
 
     // returns an AABB that is "inverted", such that it's minimum is the largest
     // possible value and its maximum is the smallest possible value
@@ -297,7 +297,7 @@ namespace osc
     );
 
 
-    // ----- osc::Segment helpers -----
+    // ----- `Segment` helpers -----
 
     // returns a transform matrix that maps a path segment to another path segment
     glm::mat4 SegmentToSegmentMat4(Segment const&, Segment const&) noexcept;
@@ -312,7 +312,7 @@ namespace osc
     Transform YToYConeToSegmentTransform(Segment const&, float radius) noexcept;
 
 
-    // ----- osc::Transform helpers -----
+    // ----- `Transform` helpers -----
 
     // returns a 3x3 transform matrix equivalent to the provided transform (ignores position)
     glm::mat3 ToMat3(Transform const&) noexcept;
@@ -331,7 +331,7 @@ namespace osc
 
     // returns a transform that *tries to* perform the equivalent transform as the provided mat4
     //
-    // - not all 4x4 matrices can be expressed as an `osc::Transform` (e.g. those containing skews)
+    // - not all 4x4 matrices can be expressed as an `Transform` (e.g. those containing skews)
     // - uses matrix decomposition to break up the provided matrix
     // - throws if decomposition of the provided matrix is not possible
     Transform ToTransform(glm::mat4 const&);

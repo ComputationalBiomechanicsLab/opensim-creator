@@ -9,7 +9,7 @@ namespace osc { class Mesh; }
 namespace osc
 {
     enum class ObjWriterFlags : uint32_t {
-        None = 0,
+        None           = 0,
         NoWriteNormals = 1u<<0u,
 
         Default = None,

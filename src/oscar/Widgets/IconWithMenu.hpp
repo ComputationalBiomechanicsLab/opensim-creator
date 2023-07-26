@@ -12,9 +12,9 @@ namespace osc
     class IconWithMenu final {
     public:
         IconWithMenu(
-            osc::Icon icon,
-            osc::CStringView title,
-            osc::CStringView description,
+            Icon icon,
+            CStringView title,
+            CStringView description,
             std::function<void()> contentRenderer
         );
 

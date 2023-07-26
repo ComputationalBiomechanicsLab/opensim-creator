@@ -28,14 +28,14 @@ namespace osc
         // register a panel that can be toggled on/off
         void registerToggleablePanel(
             std::string_view baseName,
-            std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_,
+            std::function<std::shared_ptr<Panel>(std::string_view)> constructorFunc_,
             ToggleablePanelFlags flags_ = ToggleablePanelFlags::Default
         );
 
         // register a panel that can spawn N copies (e.g. visualizers)
         void registerSpawnablePanel(
             std::string_view baseName,
-            std::function<std::shared_ptr<osc::Panel>(std::string_view)> constructorFunc_,
+            std::function<std::shared_ptr<Panel>(std::string_view)> constructorFunc_,
             size_t numInitiallyOpenedPanels
         );
 

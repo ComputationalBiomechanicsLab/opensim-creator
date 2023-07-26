@@ -66,8 +66,8 @@ namespace osc
         }
 
     private:
-        friend void osc::DrawTextureAsImGuiImage(Texture2D const&, glm::vec2, glm::vec2, glm::vec2);
-        friend bool osc::ImageButton(CStringView label, Texture2D const& t, glm::vec2, Rect const&);
+        friend void DrawTextureAsImGuiImage(Texture2D const&, glm::vec2, glm::vec2, glm::vec2);
+        friend bool ImageButton(CStringView label, Texture2D const& t, glm::vec2, Rect const&);
         void* getTextureHandleHACK() const;  // used by ImGui... for now
 
         friend class GraphicsBackend;

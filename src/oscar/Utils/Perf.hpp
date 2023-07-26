@@ -53,22 +53,22 @@ namespace osc
             return m_CallCount;
         }
 
-        osc::PerfClock::duration getLastDuration() const
+        PerfClock::duration getLastDuration() const
         {
             return m_LastDuration;
         }
 
-        osc::PerfClock::duration getAvgDuration() const
+        PerfClock::duration getAvgDuration() const
         {
-            return m_CallCount > 0 ? m_TotalDuration/m_CallCount : osc::PerfClock::duration{0};
+            return m_CallCount > 0 ? m_TotalDuration/m_CallCount : PerfClock::duration{0};
         }
 
-        osc::PerfClock::duration getTotalDuration() const
+        PerfClock::duration getTotalDuration() const
         {
             return m_TotalDuration;
         }
 
-        void submit(osc::PerfClock::time_point start, osc::PerfClock::time_point end)
+        void submit(PerfClock::time_point start, PerfClock::time_point end)
         {
             m_LastDuration = end - start;
             m_TotalDuration += m_LastDuration;
@@ -78,8 +78,8 @@ namespace osc
         void clear()
         {
             m_CallCount = 0;
-            m_TotalDuration = osc::PerfClock::duration{0};
-            m_LastDuration = osc::PerfClock::duration{0};
+            m_TotalDuration = PerfClock::duration{0};
+            m_LastDuration = PerfClock::duration{0};
         }
 
     private:
@@ -89,8 +89,8 @@ namespace osc
         unsigned int m_Line = 0;
 
         int64_t m_CallCount = 0;
-        osc::PerfClock::duration m_TotalDuration{0};
-        osc::PerfClock::duration m_LastDuration{0};
+        PerfClock::duration m_TotalDuration{0};
+        PerfClock::duration m_LastDuration{0};
     };
 
     int64_t AllocateMeasurementID(std::string_view label, std::string_view filename, unsigned int line);
