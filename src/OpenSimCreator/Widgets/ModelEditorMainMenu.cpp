@@ -4,7 +4,6 @@
 #include "OpenSimCreator/MiddlewareAPIs/EditorAPI.hpp"
 #include "OpenSimCreator/Model/UndoableModelStatePair.hpp"
 #include "OpenSimCreator/Panels/ModelMusclePlotPanel.hpp"
-#include "OpenSimCreator/Tabs/Experimental/ExcitationEditorTab.hpp"
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 #include "OpenSimCreator/Utils/UndoableModelActions.hpp"
 #include "OpenSimCreator/Widgets/ExportPointsPopup.hpp"
@@ -103,17 +102,6 @@ private:
 
             if (ImGui::BeginMenu("         Experimental Tools"))
             {
-                if (ImGui::MenuItem("Excitation Editor"))
-                {
-                    if (auto api = m_MainUIStateAPI.lock())
-                    {
-                        api->addAndSelectTab<ExcitationEditorTab>(
-                            m_MainUIStateAPI,
-                            m_Model
-                        );
-                    }
-                }
-
                 if (ImGui::MenuItem("Simulate Against All Integrators (advanced)"))
                 {
                     osc::ActionSimulateAgainstAllIntegrators(m_MainUIStateAPI, *m_Model);
