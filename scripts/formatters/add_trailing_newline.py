@@ -6,7 +6,7 @@ import argparse
 import os
 
 def ensure_all_files_have_trailing_newline(dirpath):
-    for root, subdirs, files in os.walk("src"):
+    for root, subdirs, files in os.walk(dirpath):
         for file in files:
             path = os.path.join(root, file)
             with open(path, "r") as f:

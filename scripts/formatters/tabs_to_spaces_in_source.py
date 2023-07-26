@@ -28,7 +28,7 @@ def replace_leading_tabs(line):
         return (line, False)
 
 def replace_leading_tabs_with_spaces_in(dirpath):
-    for root, subdirs, files in os.walk("src"):
+    for root, subdirs, files in os.walk(dirpath):
         for file in files:
             path = os.path.join(root, file)
             lines = read_lines(path)
