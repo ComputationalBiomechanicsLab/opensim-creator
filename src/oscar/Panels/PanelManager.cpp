@@ -80,11 +80,11 @@ namespace
             }
         }
 
-        void draw()
+        void onDraw()
         {
             if (m_Instance)
             {
-                (*m_Instance)->draw();
+                (*m_Instance)->onDraw();
             }
         }
 
@@ -143,9 +143,9 @@ namespace
             return m_Instance->isOpen();
         }
 
-        void draw()
+        void onDraw()
         {
-            m_Instance->draw();
+            m_Instance->onDraw();
         }
 
     private:
@@ -341,13 +341,13 @@ public:
         {
             if (panel.isActivated())
             {
-                panel.draw();
+                panel.onDraw();
             }
         }
 
         for (DynamicPanel& panel : m_DynamicPanels)
         {
-            panel.draw();
+            panel.onDraw();
         }
     }
 

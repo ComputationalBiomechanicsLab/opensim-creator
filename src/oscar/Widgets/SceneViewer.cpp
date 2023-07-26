@@ -18,7 +18,7 @@
 class osc::SceneViewer::Impl final {
 public:
 
-    void draw(nonstd::span<SceneDecoration const> els, SceneRendererParams const& params)
+    void onDraw(nonstd::span<SceneDecoration const> els, SceneRendererParams const& params)
     {
         m_Renderer.draw(els, params);
 
@@ -68,9 +68,9 @@ osc::SceneViewer::SceneViewer(SceneViewer&&) noexcept = default;
 osc::SceneViewer& osc::SceneViewer::operator=(SceneViewer&&) noexcept = default;
 osc::SceneViewer::~SceneViewer() noexcept = default;
 
-void osc::SceneViewer::draw(nonstd::span<SceneDecoration const> els, SceneRendererParams const& params)
+void osc::SceneViewer::onDraw(nonstd::span<SceneDecoration const> els, SceneRendererParams const& params)
 {
-    m_Impl->draw(els, params);
+    m_Impl->onDraw(els, params);
 }
 
 bool osc::SceneViewer::isHovered() const

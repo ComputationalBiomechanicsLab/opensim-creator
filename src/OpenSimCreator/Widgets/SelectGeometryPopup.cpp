@@ -277,9 +277,9 @@ bool osc::SelectGeometryPopup::implBeginPopup()
     return m_Impl->beginPopup();
 }
 
-void osc::SelectGeometryPopup::implDrawPopupContent()
+void osc::SelectGeometryPopup::implOnDraw()
 {
-    m_Impl->drawPopupContent();
+    m_Impl->onDraw();
 }
 
 void osc::SelectGeometryPopup::implEndPopup()

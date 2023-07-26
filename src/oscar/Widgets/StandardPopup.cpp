@@ -143,7 +143,7 @@ bool osc::StandardPopup::implBeginPopup()
     return true;
 }
 
-void osc::StandardPopup::implDrawPopupContent()
+void osc::StandardPopup::implOnDraw()
 {
     if (m_ShouldClose)
     {

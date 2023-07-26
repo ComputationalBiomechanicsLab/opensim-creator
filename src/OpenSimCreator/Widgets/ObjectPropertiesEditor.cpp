@@ -169,14 +169,14 @@ namespace
             return typeid(prop) == implGetTypeInfo();
         }
 
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> draw()
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> onDraw()
         {
-            return implDraw();
+            return implOnDraw();
         }
 
     private:
         virtual std::type_info const& implGetTypeInfo() const = 0;
-        virtual std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() = 0;
+        virtual std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() = 0;
     };
 }
 
@@ -202,7 +202,7 @@ namespace
             return typeid(property_type);
         }
 
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() final
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
             property_type const* maybeProp = m_Accessor();
             if (!maybeProp)
@@ -304,7 +304,7 @@ namespace
             return typeid(property_type);
         }
 
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() final
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
             property_type const* maybeProp = m_Accessor();
             if (!maybeProp)
@@ -405,7 +405,7 @@ namespace
             return typeid(property_type);
         }
 
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() final
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
             property_type const* maybeProp = m_Accessor();
             if (!maybeProp)
@@ -508,7 +508,7 @@ namespace
             return typeid(property_type);
         }
 
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() final
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
             property_type const* maybeProp = m_Accessor();
             if (!maybeProp)
@@ -798,7 +798,7 @@ namespace
             return typeid(property_type);
         }
 
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() final
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
             property_type const* maybeProp = m_Accessor();
             if (!maybeProp)
@@ -908,7 +908,7 @@ namespace
             return typeid(property_type);
         }
 
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() final
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
             property_type const* maybeProp = m_Accessor();
             if (!maybeProp)
@@ -1015,7 +1015,7 @@ namespace
             return typeid(property_type);
         }
 
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() final
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
             property_type const* maybeProp = m_Accessor();
             if (!maybeProp)
@@ -1127,7 +1127,7 @@ namespace
             return typeid(property_type);
         }
 
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() final
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
 
@@ -1153,7 +1153,7 @@ namespace
             osc::ObjectPropertiesEditor& nestedEditor = *m_MaybeNestedEditor;
 
             ImGui::Columns();
-            auto resp = nestedEditor.draw();
+            auto resp = nestedEditor.onDraw();
             ImGui::Columns(2);
 
             if (resp)
@@ -1207,7 +1207,7 @@ namespace
             return typeid(property_type);
         }
 
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implDraw() final
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
             property_type const* maybeProp = m_Accessor();
             if (!maybeProp)
@@ -1372,7 +1372,7 @@ public:
     {
     }
 
-    std::optional<ObjectPropertyEdit> draw()
+    std::optional<ObjectPropertyEdit> onDraw()
     {
         if (OpenSim::Object const* maybeObj = m_ObjectGetter())
         {
@@ -1449,7 +1449,7 @@ private:
         VirtualPropertyEditor& editor)
     {
         ImGui::PushID(prop.getName().c_str());
-        std::optional<std::function<void(OpenSim::AbstractProperty&)>> maybeUpdater = editor.draw();
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> maybeUpdater = editor.onDraw();
         ImGui::PopID();
 
         if (maybeUpdater)
@@ -1513,7 +1513,7 @@ osc::ObjectPropertiesEditor::ObjectPropertiesEditor(ObjectPropertiesEditor&&) no
 osc::ObjectPropertiesEditor& osc::ObjectPropertiesEditor::operator=(ObjectPropertiesEditor&&) noexcept = default;
 osc::ObjectPropertiesEditor::~ObjectPropertiesEditor() noexcept = default;
 
-std::optional<osc::ObjectPropertyEdit> osc::ObjectPropertiesEditor::draw()
+std::optional<osc::ObjectPropertyEdit> osc::ObjectPropertiesEditor::onDraw()
 {
-    return m_Impl->draw();
+    return m_Impl->onDraw();
 }

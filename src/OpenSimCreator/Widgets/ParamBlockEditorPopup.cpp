@@ -169,9 +169,9 @@ bool osc::ParamBlockEditorPopup::implBeginPopup()
     return m_Impl->beginPopup();
 }
 
-void osc::ParamBlockEditorPopup::implDrawPopupContent()
+void osc::ParamBlockEditorPopup::implOnDraw()
 {
-    m_Impl->drawPopupContent();
+    m_Impl->onDraw();
 }
 
 void osc::ParamBlockEditorPopup::implEndPopup()

@@ -17,7 +17,7 @@ namespace osc
     public:
         MainMenuFileTab();
 
-        void draw(std::weak_ptr<MainUIStateAPI>, UndoableModelStatePair* = nullptr);
+        void onDraw(std::weak_ptr<MainUIStateAPI>, UndoableModelStatePair* = nullptr);
 
         std::vector<std::filesystem::path> exampleOsimFiles;
         std::vector<RecentFile> recentlyOpenedFiles;
@@ -27,6 +27,7 @@ namespace osc
     class MainMenuAboutTab final {
     public:
         MainMenuAboutTab() {}
-        void draw();
+
+        void onDraw();
     };
 }

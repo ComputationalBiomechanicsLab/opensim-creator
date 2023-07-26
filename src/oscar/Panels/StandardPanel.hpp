@@ -31,7 +31,7 @@ namespace osc
         bool implIsOpen() const final;
         void implOpen() final;
         void implClose() final;
-        void implDraw() final;
+        void implOnDraw() final;
 
         // inheritors can/must provide these
         virtual void implBeforeImGuiBegin() {}

@@ -28,7 +28,7 @@ public:
     {
     }
 
-    void draw()
+    void onDraw()
     {
         drawBackwardsButtons();
         ImGui::SameLine();
@@ -201,7 +201,7 @@ osc::SimulationScrubber::SimulationScrubber(SimulationScrubber&&) noexcept = def
 osc::SimulationScrubber& osc::SimulationScrubber::operator=(SimulationScrubber&&) noexcept = default;
 osc::SimulationScrubber::~SimulationScrubber() noexcept = default;
 
-void osc::SimulationScrubber::draw()
+void osc::SimulationScrubber::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

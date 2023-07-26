@@ -64,7 +64,7 @@ public:
 
             if (ImGui::Begin("Error Log", nullptr, ImGuiWindowFlags_MenuBar))
             {
-                m_LogViewer.draw();
+                m_LogViewer.onDraw();
             }
             ImGui::End();
         }

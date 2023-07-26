@@ -381,9 +381,9 @@ namespace
             implTick(dt);
         }
 
-        void draw()
+        void onDraw()
         {
-            implDraw();
+            implOnDraw();
         }
 
     protected:
@@ -395,7 +395,7 @@ namespace
     private:
         virtual bool implOnEvent(SDL_Event const&) = 0;
         virtual void implTick(float) = 0;
-        virtual void implDraw() = 0;
+        virtual void implOnDraw() = 0;
 
         LayerHost* m_Parent;
     };
@@ -5538,7 +5538,7 @@ namespace
             }
         }
 
-        void implDraw() final
+        void implOnDraw() final
         {
             m_Shared->SetContentRegionAvailAsSceneRect();
             std::vector<DrawableThing>& drawables = GenerateDrawables();
@@ -5941,7 +5941,7 @@ namespace
             }
         }
 
-        void implDraw() final
+        void implOnDraw() final
         {
             m_Shared->SetContentRegionAvailAsSceneRect();
 
@@ -6136,7 +6136,7 @@ public:
         {
             if (ImGui::Begin("Log", &m_Shared->m_PanelStates[SharedData::PanelIndex_Log], ImGuiWindowFlags_MenuBar))
             {
-                m_Shared->m_Logviewer.draw();
+                m_Shared->m_Logviewer.onDraw();
             }
             ImGui::End();
         }
@@ -6145,7 +6145,7 @@ public:
         if (m_Shared->m_PanelStates[SharedData::PanelIndex_Performance])
         {
             m_Shared->m_PerfPanel.open();
-            m_Shared->m_PerfPanel.draw();
+            m_Shared->m_PerfPanel.onDraw();
             if (!m_Shared->m_PerfPanel.isOpen())
             {
                 m_Shared->m_PanelStates[SharedData::PanelIndex_Performance] = false;
@@ -6158,7 +6158,7 @@ public:
         // (maybe) draw popup modal
         if (m_Shared->m_MaybeSaveChangesPopup)
         {
-            m_Shared->m_MaybeSaveChangesPopup->draw();
+            m_Shared->m_MaybeSaveChangesPopup->onDraw();
         }
     }
 
@@ -8119,7 +8119,7 @@ private:
 
     void DrawMainMenuAboutMenu()
     {
-        osc::MainMenuAboutTab{}.draw();
+        osc::MainMenuAboutTab{}.onDraw();
     }
 
     // draws main 3D viewer, or a modal (if one is active)
@@ -8146,7 +8146,7 @@ private:
             if (ImGui::BeginPopupModal("##visualizermodalpopup", nullptr, modalFlags))
             {
                 ImGui::PopStyleVar();
-                ptr->draw();
+                ptr->onDraw();
                 ImGui::EndPopup();
             }
             else

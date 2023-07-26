@@ -14,7 +14,7 @@ namespace osc
 {
     class GuiRuler final {
     public:
-        void draw(
+        void onDraw(
             PolarPerspectiveCamera const&,
             Rect const& renderRect,
             std::optional<SceneCollision>

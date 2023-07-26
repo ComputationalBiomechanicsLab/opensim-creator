@@ -195,8 +195,8 @@ public:
         ImGui::InputFloat("uMaterialShininess", &m_MaterialShininess);
         ImGui::End();
 
-        m_LogViewer.draw();
-        m_PerfPanel.draw();
+        m_LogViewer.onDraw();
+        m_PerfPanel.onDraw();
     }
 
 private:

@@ -161,8 +161,8 @@ public:
         Graphics::BlitToScreen(m_RenderTexture, viewportRect, m_ScreenMaterial);
 
         // auxiliary UI
-        m_LogViewer.draw();
-        m_PerfPanel.draw();
+        m_LogViewer.onDraw();
+        m_PerfPanel.onDraw();
     }
 
 private:

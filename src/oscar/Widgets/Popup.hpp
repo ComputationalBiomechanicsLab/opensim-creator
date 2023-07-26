@@ -33,9 +33,9 @@ namespace osc
             return implBeginPopup();
         }
 
-        void drawPopupContent()
+        void onDraw()
         {
-            implDrawPopupContent();
+            implOnDraw();
         }
 
         void endPopup()
@@ -48,7 +48,7 @@ namespace osc
         virtual void implOpen() = 0;
         virtual void implClose() = 0;
         virtual bool implBeginPopup() = 0;
-        virtual void implDrawPopupContent() = 0;
+        virtual void implOnDraw() = 0;
         virtual void implEndPopup() = 0;
     };
 }

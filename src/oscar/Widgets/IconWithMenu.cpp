@@ -22,9 +22,9 @@ osc::IconWithMenu::IconWithMenu(
 {
 }
 
-void osc::IconWithMenu::draw()
+void osc::IconWithMenu::onDraw()
 {
-    if (m_IconWithoutMenu.draw())
+    if (m_IconWithoutMenu.onDraw())
     {
         ImGui::OpenPopup(m_ContextMenuID.c_str());
     }

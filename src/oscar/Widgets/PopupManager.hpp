@@ -20,7 +20,7 @@ namespace osc
         void push_back(std::shared_ptr<Popup>);
         void onMount() { openAll(); }
         void openAll();
-        void draw();
+        void onDraw();
     private:
         std::vector<std::shared_ptr<Popup>> m_Popups;
     };

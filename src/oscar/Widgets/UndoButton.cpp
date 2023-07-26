@@ -14,7 +14,7 @@ osc::UndoButton::UndoButton(std::shared_ptr<UndoRedo> undoRedo_) :
 
 osc::UndoButton::~UndoButton() noexcept = default;
 
-void osc::UndoButton::draw()
+void osc::UndoButton::onDraw()
 {
     int imguiID = 0;
 

@@ -545,7 +545,7 @@ private:
 
         if (m_MaybeSaveChangesPopup)
         {
-            m_MaybeSaveChangesPopup->draw();
+            m_MaybeSaveChangesPopup->onDraw();
         }
     }
 

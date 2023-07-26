@@ -29,7 +29,7 @@ namespace osc
         bool implIsOpen() const final;
         void implOpen() final;
         void implClose() final;
-        void implDraw() final;
+        void implOnDraw() final;
 
         class Impl;
         std::unique_ptr<Impl> m_Impl;

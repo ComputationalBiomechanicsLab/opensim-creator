@@ -39,7 +39,7 @@ void osc::StandardPanel::implClose()
     App::upd().updConfig().setIsPanelEnabled(m_PanelName, false);
 }
 
-void osc::StandardPanel::implDraw()
+void osc::StandardPanel::implOnDraw()
 {
     if (isOpen())
     {

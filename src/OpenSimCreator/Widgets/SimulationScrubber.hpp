@@ -27,7 +27,7 @@ namespace osc
         SimulationScrubber& operator=(SimulationScrubber&&) noexcept;
         ~SimulationScrubber() noexcept;
 
-        void draw();
+        void onDraw();
 
     private:
         class Impl;

@@ -143,7 +143,7 @@ void osc::PerfPanel::implClose()
     m_Impl->close();
 }
 
-void osc::PerfPanel::implDraw()
+void osc::PerfPanel::implOnDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

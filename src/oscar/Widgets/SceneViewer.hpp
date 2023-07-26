@@ -19,7 +19,7 @@ namespace osc
         SceneViewer& operator=(SceneViewer&&) noexcept;
         ~SceneViewer() noexcept;
 
-        void draw(nonstd::span<SceneDecoration const>, SceneRendererParams const&);
+        void onDraw(nonstd::span<SceneDecoration const>, SceneRendererParams const&);
 
         bool isHovered() const;
         bool isLeftClicked() const;

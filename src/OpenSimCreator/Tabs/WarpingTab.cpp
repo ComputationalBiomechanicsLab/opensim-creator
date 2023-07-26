@@ -835,7 +835,7 @@ namespace
         {
         }
 
-        void draw()
+        void onDraw()
         {
             if (osc::BeginToolbar(m_Label))
             {
@@ -859,9 +859,9 @@ namespace
             ImGui::SameLine();
 
             // undo/redo-related stuff
-            m_UndoButton.draw();
+            m_UndoButton.onDraw();
             ImGui::SameLine();
-            m_RedoButton.draw();
+            m_RedoButton.onDraw();
             ImGui::SameLine();
 
             ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
@@ -956,7 +956,7 @@ namespace
         {
         }
 
-        void draw()
+        void onDraw()
         {
             if (osc::BeginMainViewportBottomBar(m_Label))
             {
@@ -1021,7 +1021,7 @@ namespace
         {
         }
 
-        void draw()
+        void onDraw()
         {
             if (ImGui::BeginMenu("File"))
             {
@@ -1107,7 +1107,7 @@ namespace
         {
         }
 
-        void draw()
+        void onDraw()
         {
             if (ImGui::BeginMenu("Edit"))
             {
@@ -1143,12 +1143,12 @@ namespace
         {
         }
 
-        void draw()
+        void onDraw()
         {
-            m_FileMenu.draw();
-            m_EditMenu.draw();
-            m_WindowMenu.draw();
-            m_AboutTab.draw();
+            m_FileMenu.onDraw();
+            m_EditMenu.onDraw();
+            m_WindowMenu.onDraw();
+            m_AboutTab.onDraw();
         }
     private:
         TPS3DFileMenu m_FileMenu;
@@ -1861,19 +1861,19 @@ public:
 
     void onDrawMainMenu()
     {
-        m_MainMenu.draw();
+        m_MainMenu.onDraw();
     }
 
     void onDraw()
     {
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-        m_TopToolbar.draw();
+        m_TopToolbar.onDraw();
         m_SharedState->panelManager->onDraw();
-        m_StatusBar.draw();
+        m_StatusBar.onDraw();
 
         // draw active popups over the UI
-        m_SharedState->popupManager.draw();
+        m_SharedState->popupManager.onDraw();
     }
 
 private:

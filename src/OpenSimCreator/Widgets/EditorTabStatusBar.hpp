@@ -21,7 +21,7 @@ namespace osc
         EditorTabStatusBar& operator=(EditorTabStatusBar&&) noexcept;
         ~EditorTabStatusBar() noexcept;
 
-        void draw();
+        void onDraw();
 
     private:
         class Impl;

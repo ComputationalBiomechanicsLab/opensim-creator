@@ -268,9 +268,9 @@ bool osc::AddBodyPopup::implBeginPopup()
     return m_Impl->beginPopup();
 }
 
-void osc::AddBodyPopup::implDrawPopupContent()
+void osc::AddBodyPopup::implOnDraw()
 {
-    m_Impl->drawPopupContent();
+    m_Impl->onDraw();
 }
 
 void osc::AddBodyPopup::implEndPopup()

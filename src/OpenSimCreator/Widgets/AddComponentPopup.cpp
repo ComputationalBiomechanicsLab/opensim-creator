@@ -196,7 +196,7 @@ private:
 
         ImGui::Dummy({0.0f, 3.0f});
 
-        auto maybeUpdater = m_PrototypePropertiesEditor.draw();
+        auto maybeUpdater = m_PrototypePropertiesEditor.onDraw();
         if (maybeUpdater)
         {
             OpenSim::AbstractProperty* prop = osc::FindPropertyMut(*m_Proto, maybeUpdater->getPropertyName());
@@ -544,9 +544,9 @@ bool osc::AddComponentPopup::implBeginPopup()
     return m_Impl->beginPopup();
 }
 
-void osc::AddComponentPopup::implDrawPopupContent()
+void osc::AddComponentPopup::implOnDraw()
 {
-    m_Impl->drawPopupContent();
+    m_Impl->onDraw();
 }
 
 void osc::AddComponentPopup::implEndPopup()

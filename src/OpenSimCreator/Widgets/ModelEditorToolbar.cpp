@@ -38,7 +38,7 @@ public:
     {
     }
 
-    void draw()
+    void onDraw()
     {
         if (BeginToolbar(m_Label, glm::vec2{5.0f, 5.0f}))
         {
@@ -126,7 +126,7 @@ osc::ModelEditorToolbar::ModelEditorToolbar(ModelEditorToolbar&&) noexcept = def
 osc::ModelEditorToolbar& osc::ModelEditorToolbar::operator=(ModelEditorToolbar&&) noexcept = default;
 osc::ModelEditorToolbar::~ModelEditorToolbar() noexcept = default;
 
-void osc::ModelEditorToolbar::draw()
+void osc::ModelEditorToolbar::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

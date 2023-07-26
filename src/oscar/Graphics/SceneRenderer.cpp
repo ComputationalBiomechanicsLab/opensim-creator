@@ -168,7 +168,9 @@ public:
         return m_OutputTexture.getAntialiasingLevel();
     }
 
-    void draw(nonstd::span<SceneDecoration const> decorations, SceneRendererParams const& params)
+    void draw(
+        nonstd::span<SceneDecoration const> decorations,
+        SceneRendererParams const& params)
     {
         // render any other perspectives on the scene (shadows, rim highlights, etc.)
         std::optional<RimHighlights> const maybeRimHighlights = tryGenerateRimHighlights(decorations, params);
@@ -502,7 +504,9 @@ int32_t osc::SceneRenderer::getSamples() const
     return m_Impl->getSamples();
 }
 
-void osc::SceneRenderer::draw(nonstd::span<SceneDecoration const> decs, SceneRendererParams const& params)
+void osc::SceneRenderer::draw(
+    nonstd::span<SceneDecoration const> decs,
+    SceneRendererParams const& params)
 {
     m_Impl->draw(decs, params);
 }

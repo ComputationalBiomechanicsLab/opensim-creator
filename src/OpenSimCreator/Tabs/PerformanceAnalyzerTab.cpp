@@ -140,7 +140,7 @@ public:
 
         if (m_ParamEditor.beginPopup())
         {
-            m_ParamEditor.drawPopupContent();
+            m_ParamEditor.onDraw();
             m_ParamEditor.endPopup();
         }
     }

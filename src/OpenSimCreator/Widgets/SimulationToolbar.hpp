@@ -21,7 +21,7 @@ namespace osc
         SimulationToolbar& operator=(SimulationToolbar&&) noexcept;
         ~SimulationToolbar() noexcept;
 
-        void draw();
+        void onDraw();
 
     private:
         class Impl;

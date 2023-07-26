@@ -257,7 +257,7 @@ namespace
             OSC_ASSERT(m_State != nullptr);
         }
 
-        void draw()
+        void onDraw()
         {
             if (ImGui::BeginMenu("File"))
             {
@@ -285,10 +285,10 @@ namespace
         {
         }
 
-        void draw()
+        void onDraw()
         {
-            m_FileMenu.draw();
-            m_AboutMenu.draw();
+            m_FileMenu.onDraw();
+            m_AboutMenu.onDraw();
         }
 
     private:
@@ -539,7 +539,7 @@ public:
 
     void onDrawMainMenu()
     {
-        m_MainMenu.draw();
+        m_MainMenu.onDraw();
     }
 
     void onDraw()
@@ -559,7 +559,7 @@ public:
         }
         ImGui::End();
 
-        m_DebuggerPanel.draw();
+        m_DebuggerPanel.onDraw();
     }
 
     void drawMenuContent()

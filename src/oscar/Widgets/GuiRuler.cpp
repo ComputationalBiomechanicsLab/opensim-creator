@@ -16,7 +16,7 @@
 #include <string>
 #include <utility>
 
-void osc::GuiRuler::draw(
+void osc::GuiRuler::onDraw(
     PolarPerspectiveCamera const& sceneCamera,
     Rect const& renderRect,
     std::optional<SceneCollision> maybeMouseover)

@@ -53,7 +53,9 @@ osc::CachedSceneRenderer::CachedSceneRenderer(CachedSceneRenderer&&) noexcept = 
 osc::CachedSceneRenderer& osc::CachedSceneRenderer::operator=(CachedSceneRenderer&&) noexcept = default;
 osc::CachedSceneRenderer::~CachedSceneRenderer() noexcept = default;
 
-osc::RenderTexture& osc::CachedSceneRenderer::draw(nonstd::span<SceneDecoration const> decorations, SceneRendererParams const& params)
+osc::RenderTexture& osc::CachedSceneRenderer::draw(
+    nonstd::span<SceneDecoration const> decorations,
+    SceneRendererParams const& params)
 {
     return m_Impl->draw(decorations, params);
 }

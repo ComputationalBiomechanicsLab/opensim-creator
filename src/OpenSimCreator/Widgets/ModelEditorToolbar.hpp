@@ -23,7 +23,7 @@ namespace osc
         ModelEditorToolbar& operator=(ModelEditorToolbar&&) noexcept;
         ~ModelEditorToolbar() noexcept;
 
-        void draw();
+        void onDraw();
 
     private:
         class Impl;

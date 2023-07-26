@@ -35,9 +35,9 @@ namespace osc
             implClose();
         }
 
-        void draw()
+        void onDraw()
         {
-            implDraw();
+            implOnDraw();
         }
 
     private:
@@ -45,6 +45,6 @@ namespace osc
         virtual bool implIsOpen() const = 0;
         virtual void implOpen() = 0;
         virtual void implClose() = 0;
-        virtual void implDraw() = 0;
+        virtual void implOnDraw() = 0;
     };
 }

@@ -24,6 +24,6 @@ namespace osc
             OpenSim::Component const* ptr = nullptr;
         };
 
-        Response draw(SimTK::State const&, OpenSim::Component const*);
+        Response onDraw(SimTK::State const&, OpenSim::Component const*);
     };
 }

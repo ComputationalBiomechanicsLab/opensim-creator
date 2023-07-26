@@ -214,7 +214,7 @@ public:
 
     void onDrawMainMenu()
     {
-        m_MainMenu.draw();
+        m_MainMenu.onDraw();
     }
 
     void onDraw()
@@ -226,10 +226,10 @@ public:
 
         try
         {
-            m_Toolbar.draw();
+            m_Toolbar.onDraw();
             m_PanelManager->onDraw();
-            m_StatusBar.draw();
-            m_PopupManager.draw();
+            m_StatusBar.onDraw();
+            m_PopupManager.onDraw();
 
             m_ExceptionThrownLastFrame = false;
         }

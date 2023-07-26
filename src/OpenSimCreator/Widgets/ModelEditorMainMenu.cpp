@@ -36,15 +36,15 @@ public:
     {
     }
 
-    void draw()
+    void onDraw()
     {
-        m_MainMenuFileTab.draw(m_MainUIStateAPI, m_Model.get());
+        m_MainMenuFileTab.onDraw(m_MainUIStateAPI, m_Model.get());
         drawMainMenuEditTab();
         drawMainMenuAddTab();
         drawMainMenuToolsTab();
         drawMainMenuActionsTab();
-        m_WindowMenu.draw();
-        m_MainMenuAboutTab.draw();
+        m_WindowMenu.onDraw();
+        m_MainMenuAboutTab.onDraw();
     }
 
 private:
@@ -77,7 +77,7 @@ private:
     {
         if (ImGui::BeginMenu("Add"))
         {
-            m_MainMenuAddTabMenuItems.draw();
+            m_MainMenuAddTabMenuItems.onDraw();
             ImGui::EndMenu();
         }
     }
@@ -170,7 +170,7 @@ osc::ModelEditorMainMenu::ModelEditorMainMenu(ModelEditorMainMenu&&) noexcept = 
 osc::ModelEditorMainMenu& osc::ModelEditorMainMenu::operator=(ModelEditorMainMenu&&) noexcept = default;
 osc::ModelEditorMainMenu::~ModelEditorMainMenu() noexcept = default;
 
-void osc::ModelEditorMainMenu::draw()
+void osc::ModelEditorMainMenu::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

@@ -123,13 +123,13 @@ public:
         }
     }
 
-    RenderTexture& draw(
+    RenderTexture& onDraw(
         VirtualConstModelStatePair const& modelState,
         ModelRendererParams const& renderParams,
         glm::vec2 dims,
         int32_t samples)
     {
-        OSC_PERF("CachedModelRenderer/draw");
+        OSC_PERF("CachedModelRenderer/onDraw");
 
         // setup render/rasterization parameters
         SceneRendererParams const rendererParameters = CalcSceneRendererParams(
@@ -143,7 +143,7 @@ public:
         if (m_DecorationCache.update(modelState, renderParams) ||
             rendererParameters != m_PrevRendererParams)
         {
-            OSC_PERF("CachedModelRenderer/draw/render");
+            OSC_PERF("CachedModelRenderer/onDraw/render");
             m_Renderer.draw(m_DecorationCache.getDrawlist(), rendererParameters);
             m_PrevRendererParams = rendererParameters;
         }
@@ -201,13 +201,13 @@ osc::CachedModelRenderer::CachedModelRenderer(CachedModelRenderer&&) noexcept = 
 osc::CachedModelRenderer& osc::CachedModelRenderer::operator=(CachedModelRenderer&&) noexcept = default;
 osc::CachedModelRenderer::~CachedModelRenderer() noexcept = default;
 
-osc::RenderTexture& osc::CachedModelRenderer::draw(
+osc::RenderTexture& osc::CachedModelRenderer::onDraw(
     VirtualConstModelStatePair const& modelState,
     ModelRendererParams const& renderParams,
     glm::vec2 dims,
     int32_t samples)
 {
-    return m_Impl->draw(
+    return m_Impl->onDraw(
         modelState,
         renderParams,
         dims,

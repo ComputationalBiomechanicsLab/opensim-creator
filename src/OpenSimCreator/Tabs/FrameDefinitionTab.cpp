@@ -2629,11 +2629,11 @@ namespace
         {
         }
 
-        void draw()
+        void onDraw()
         {
             drawEditMenu();
-            m_WindowMenu.draw();
-            m_AboutMenu.draw();
+            m_WindowMenu.onDraw();
+            m_AboutMenu.onDraw();
         }
 
     private:
@@ -2673,7 +2673,7 @@ namespace
         {
         }
 
-        void draw()
+        void onDraw()
         {
             if (osc::BeginToolbar(m_Label, glm::vec2{5.0f, 5.0f}))
             {
@@ -2842,7 +2842,7 @@ public:
 
     void onDrawMainMenu()
     {
-        m_MainMenu.draw();
+        m_MainMenu.onDraw();
     }
 
     void onDraw()
@@ -2851,9 +2851,9 @@ public:
             ImGui::GetMainViewport(),
             ImGuiDockNodeFlags_PassthruCentralNode
         );
-        m_Toolbar.draw();
+        m_Toolbar.onDraw();
         m_PanelManager->onDraw();
-        m_PopupManager.draw();
+        m_PopupManager.onDraw();
     }
 
 private:

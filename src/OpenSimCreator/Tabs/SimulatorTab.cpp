@@ -200,9 +200,9 @@ public:
 
     void onDrawMainMenu()
     {
-        m_MainMenuFileTab.draw(m_Parent);
-        m_MainMenuWindowTab.draw();
-        m_MainMenuAboutTab.draw();
+        m_MainMenuFileTab.onDraw(m_Parent);
+        m_MainMenuWindowTab.onDraw();
+        m_MainMenuAboutTab.onDraw();
     }
 
     void onDraw()
@@ -384,7 +384,7 @@ private:
 
     void drawContent()
     {
-        m_Toolbar.draw();
+        m_Toolbar.onDraw();
 
         // only draw content if a simulation report is available
         std::optional<osc::SimulationReport> maybeReport = TrySelectReportBasedOnScrubbing(*m_Simulation);
@@ -407,7 +407,7 @@ private:
             // this might be less necessary once the integrator correctly reports errors to
             // this UI panel (#625)
             LogViewerPanel p{"Log"};
-            p.draw();
+            p.onDraw();
         }
     }
 

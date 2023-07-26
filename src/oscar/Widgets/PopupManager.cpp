@@ -23,7 +23,7 @@ void osc::PopupManager::openAll()
     }
 }
 
-void osc::PopupManager::draw()
+void osc::PopupManager::onDraw()
 {
     // begin and (if applicable) draw bottom-to-top in a nested fashion
     ptrdiff_t nOpened = 0;
@@ -32,7 +32,7 @@ void osc::PopupManager::draw()
     {
         if (m_Popups[i]->beginPopup())
         {
-            m_Popups[i]->drawPopupContent();
+            m_Popups[i]->onDraw();
             ++nOpened;
         }
         else

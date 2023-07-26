@@ -96,9 +96,9 @@ bool osc::SelectComponentPopup::implBeginPopup()
     return m_Impl->beginPopup();
 }
 
-void osc::SelectComponentPopup::implDrawPopupContent()
+void osc::SelectComponentPopup::implOnDraw()
 {
-    m_Impl->drawPopupContent();
+    m_Impl->onDraw();
 }
 
 void osc::SelectComponentPopup::implEndPopup()

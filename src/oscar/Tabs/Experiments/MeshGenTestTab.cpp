@@ -109,7 +109,7 @@ public:
                     SceneDecorationFlags{}
                 };
 
-                m_Viewer.draw(nonstd::span<SceneDecoration const>{&d, 1}, m_RenderParams);
+                m_Viewer.onDraw(nonstd::span<SceneDecoration const>{&d, 1}, m_RenderParams);
             }
         }
         ImGui::End();

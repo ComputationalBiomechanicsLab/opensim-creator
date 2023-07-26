@@ -267,7 +267,7 @@ void osc::CoordinateEditorPanel::implClose()
     m_Impl->close();
 }
 
-void osc::CoordinateEditorPanel::implDraw()
+void osc::CoordinateEditorPanel::implOnDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

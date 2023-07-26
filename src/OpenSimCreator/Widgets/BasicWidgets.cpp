@@ -772,7 +772,7 @@ void osc::DrawViewerTopButtonRow(
         "Affects how muscles appear in this visualizer panel",
         [&params]() { DrawMuscleDecorationOptionsEditor(params.decorationOptions); },
     };
-    muscleStylingButton.draw();
+    muscleStylingButton.onDraw();
     ImGui::SameLine();
 
     IconWithMenu vizAidsButton
@@ -782,7 +782,7 @@ void osc::DrawViewerTopButtonRow(
         "Affects what's shown in the 3D scene",
         [&params]() { DrawVisualAidsContextMenuContent(params); },
     };
-    vizAidsButton.draw();
+    vizAidsButton.onDraw();
     ImGui::SameLine();
 
     IconWithMenu settingsButton
@@ -792,7 +792,7 @@ void osc::DrawViewerTopButtonRow(
         "Change advanced scene settings",
         [&params, drawlist]() { DrawAdvancedParamsEditor(params, drawlist); },
     };
-    settingsButton.draw();
+    settingsButton.onDraw();
     ImGui::SameLine();
 
     // caller-provided extra buttons (usually, context-dependent)
@@ -827,7 +827,7 @@ void osc::DrawCameraControlButtons(
             "Focus Camera Along +X",
             "Rotates the camera to focus along the +X direction (Hotkey: X)",
         };
-        if (plusXbutton.draw())
+        if (plusXbutton.onDraw())
         {
             FocusAlongX(camera);
         }
@@ -840,7 +840,7 @@ void osc::DrawCameraControlButtons(
             "Focus Camera Along +Y",
             "Rotates the camera to focus along the +Y direction (Hotkey: Y)",
         };
-        if (plusYbutton.draw())
+        if (plusYbutton.onDraw())
         {
             FocusAlongY(camera);
         }
@@ -853,7 +853,7 @@ void osc::DrawCameraControlButtons(
             "Focus Camera Along +Z",
             "Rotates the camera to focus along the +Z direction",
         };
-        if (plusZbutton.draw())
+        if (plusZbutton.onDraw())
         {
             FocusAlongZ(camera);
         }
@@ -867,7 +867,7 @@ void osc::DrawCameraControlButtons(
             "Zoom in Camera",
             "Moves the camera one step towards its focus point (Hotkey: =)",
         };
-        if (zoomInButton.draw())
+        if (zoomInButton.onDraw())
         {
             ZoomIn(camera);
         }
@@ -883,7 +883,7 @@ void osc::DrawCameraControlButtons(
             "Focus Camera Along -X",
             "Rotates the camera to focus along the -X direction (Hotkey: Ctrl+X)",
         };
-        if (minusXbutton.draw())
+        if (minusXbutton.onDraw())
         {
             FocusAlongMinusX(camera);
         }
@@ -896,7 +896,7 @@ void osc::DrawCameraControlButtons(
             "Focus Camera Along -Y",
             "Rotates the camera to focus along the -Y direction",
         };
-        if (minusYbutton.draw())
+        if (minusYbutton.onDraw())
         {
             FocusAlongMinusY(camera);
         }
@@ -909,7 +909,7 @@ void osc::DrawCameraControlButtons(
             "Focus Camera Along -Z",
             "Rotates the camera to focus along the -Z direction",
         };
-        if (minusZbutton.draw())
+        if (minusZbutton.onDraw())
         {
             FocusAlongMinusZ(camera);
         }
@@ -923,7 +923,7 @@ void osc::DrawCameraControlButtons(
             "Zoom Out Camera",
             "Moves the camera one step away from its focus point (Hotkey: -)",
         };
-        if (zoomOutButton.draw())
+        if (zoomOutButton.onDraw())
         {
             ZoomOut(camera);
         }
@@ -942,7 +942,7 @@ void osc::DrawCameraControlButtons(
             "Auto-Focus Camera",
             "Try to automatically adjust the camera's zoom etc. to suit the model's dimensions (Hotkey: Ctrl+F)",
         };
-        if (autoFocusButton.draw() && maybeSceneAABB)
+        if (autoFocusButton.onDraw() && maybeSceneAABB)
         {
             osc::AutoFocus(camera, *maybeSceneAABB, osc::AspectRatio(viewerScreenRect));
         }

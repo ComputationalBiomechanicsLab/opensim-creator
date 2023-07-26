@@ -24,7 +24,7 @@ namespace osc
         bool isOver() const;
 
         bool handleKeyboardInputs();
-        void draw(Rect const& screenRect, PolarPerspectiveCamera const&);
+        void onDraw(Rect const& screenRect, PolarPerspectiveCamera const&);
 
         ImGuizmo::OPERATION getOperation() const
         {

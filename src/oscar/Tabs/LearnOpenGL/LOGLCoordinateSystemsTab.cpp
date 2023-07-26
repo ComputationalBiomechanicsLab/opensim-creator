@@ -175,7 +175,7 @@ public:
             ImGui::Text("camera eulers = (%f, %f, %f)", cameraEulers.x, cameraEulers.y, cameraEulers.z);
             ImGui::End();
 
-            m_PerfPanel.draw();
+            m_PerfPanel.onDraw();
         }
     }
 

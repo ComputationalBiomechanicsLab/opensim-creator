@@ -100,7 +100,7 @@ void osc::UndoRedoPanel::implClose()
     return m_Impl->close();
 }
 
-void osc::UndoRedoPanel::implDraw()
+void osc::UndoRedoPanel::implOnDraw()
 {
-    return m_Impl->draw();
+    return m_Impl->onDraw();
 }

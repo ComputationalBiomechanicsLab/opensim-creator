@@ -18,7 +18,7 @@ namespace osc
             std::function<void()> contentRenderer
         );
 
-        void draw();
+        void onDraw();
     private:
         IconWithoutMenu m_IconWithoutMenu;
         std::string m_ContextMenuID;

@@ -25,7 +25,7 @@ namespace osc
             return m_Title;
         }
 
-        bool draw();
+        bool onDraw();
 
     private:
         Icon m_Icon;

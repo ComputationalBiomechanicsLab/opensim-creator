@@ -40,7 +40,7 @@ private:
 
     void implDrawContent() final
     {
-        std::optional<SceneCollision> const maybeCollision = m_Viewer.draw(*m_Model);
+        std::optional<SceneCollision> const maybeCollision = m_Viewer.onDraw(*m_Model);
 
         OpenSim::Component const* maybeHover = maybeCollision ?
             osc::FindComponent(m_Model->getModel(), maybeCollision->decorationID) :
@@ -133,7 +133,7 @@ void osc::SimulationViewerPanel::implClose()
     m_Impl->close();
 }
 
-void osc::SimulationViewerPanel::implDraw()
+void osc::SimulationViewerPanel::implOnDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

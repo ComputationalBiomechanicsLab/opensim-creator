@@ -15,7 +15,7 @@ namespace osc
         WindowMenu& operator=(WindowMenu&&) noexcept;
         ~WindowMenu();
 
-        void draw();
+        void onDraw();
     private:
         void drawContent();
 

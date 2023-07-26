@@ -84,9 +84,9 @@ bool osc::SaveChangesPopup::implBeginPopup()
     return m_Impl->beginPopup();
 }
 
-void osc::SaveChangesPopup::implDrawPopupContent()
+void osc::SaveChangesPopup::implOnDraw()
 {
-    m_Impl->drawPopupContent();
+    m_Impl->onDraw();
 }
 
 void osc::SaveChangesPopup::implEndPopup()
@@ -94,11 +94,11 @@ void osc::SaveChangesPopup::implEndPopup()
     m_Impl->endPopup();
 }
 
-void osc::SaveChangesPopup::draw()
+void osc::SaveChangesPopup::onDraw()
 {
     if (m_Impl->beginPopup())
     {
-        m_Impl->drawPopupContent();
+        m_Impl->onDraw();
         m_Impl->endPopup();
     }
 }

@@ -244,7 +244,7 @@ private:
             DrawContextMenuSeparator();
             if (ImGui::BeginMenu("Add"))
             {
-                m_ModelActionsMenuBar.draw();
+                m_ModelActionsMenuBar.onDraw();
                 ImGui::EndMenu();
             }
 
@@ -505,9 +505,9 @@ bool osc::ComponentContextMenu::implBeginPopup()
     return m_Impl->beginPopup();
 }
 
-void osc::ComponentContextMenu::implDrawPopupContent()
+void osc::ComponentContextMenu::implOnDraw()
 {
-    m_Impl->drawPopupContent();
+    m_Impl->onDraw();
 }
 
 void osc::ComponentContextMenu::implEndPopup()

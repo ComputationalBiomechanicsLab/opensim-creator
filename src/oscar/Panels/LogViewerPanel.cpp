@@ -19,7 +19,7 @@ public:
 private:
     void implDrawContent() final
     {
-        m_Viewer.draw();
+        m_Viewer.onDraw();
     }
 
     LogViewer m_Viewer;
@@ -53,7 +53,7 @@ void osc::LogViewerPanel::implClose()
     m_Impl->close();
 }
 
-void osc::LogViewerPanel::implDraw()
+void osc::LogViewerPanel::implOnDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

@@ -331,9 +331,9 @@ namespace osc
     // returns true if ImGui has handled the event
     bool ImGuiOnEvent(SDL_Event const&);
 
-    // should be called at the start of `draw()`
+    // should be called at the start of a screen's `onDraw()`
     void ImGuiNewFrame();
 
-    // should be called at the end of `draw()`
+    // should be called at the end of a screen's `onDraw()`
     void ImGuiRender();
 }

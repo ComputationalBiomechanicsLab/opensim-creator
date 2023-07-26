@@ -43,7 +43,7 @@ namespace osc
             float aspectRatio
         );
 
-        RenderTexture& draw(
+        RenderTexture& onDraw(
             VirtualConstModelStatePair const&,
             ModelRendererParams const&,
             glm::vec2 dims,

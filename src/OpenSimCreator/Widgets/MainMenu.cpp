@@ -59,7 +59,7 @@ osc::MainMenuFileTab::MainMenuFileTab() :
     std::reverse(recentlyOpenedFiles.begin(), recentlyOpenedFiles.end());
 }
 
-void osc::MainMenuFileTab::draw(std::weak_ptr<MainUIStateAPI> api, UndoableModelStatePair* maybeModel)
+void osc::MainMenuFileTab::onDraw(std::weak_ptr<MainUIStateAPI> api, UndoableModelStatePair* maybeModel)
 {
     // handle hotkeys enabled by just drawing the menu
     {
@@ -92,7 +92,7 @@ void osc::MainMenuFileTab::draw(std::weak_ptr<MainUIStateAPI> api, UndoableModel
     // draw "save as", if necessary
     if (maybeSaveChangesPopup)
     {
-        maybeSaveChangesPopup->draw();
+        maybeSaveChangesPopup->onDraw();
     }
 
     if (!ImGui::BeginMenu("File"))
@@ -236,7 +236,7 @@ void osc::MainMenuFileTab::draw(std::weak_ptr<MainUIStateAPI> api, UndoableModel
 }
 
 
-void osc::MainMenuAboutTab::draw()
+void osc::MainMenuAboutTab::onDraw()
 {
     if (!ImGui::BeginMenu("About"))
     {

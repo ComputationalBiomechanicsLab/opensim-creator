@@ -21,7 +21,7 @@ namespace osc
         ModelEditorMainMenu& operator=(ModelEditorMainMenu&&) noexcept;
         ~ModelEditorMainMenu() noexcept;
 
-        void draw();
+        void onDraw();
 
     private:
         class Impl;

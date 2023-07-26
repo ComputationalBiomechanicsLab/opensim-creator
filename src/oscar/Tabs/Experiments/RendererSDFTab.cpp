@@ -108,7 +108,7 @@ public:
     void onDraw()
     {
         printText(0.0f, 0.0f, "Hello, lack of SDF support!");
-        m_LogViewer.draw();
+        m_LogViewer.onDraw();
     }
 
 private:

@@ -27,7 +27,7 @@ namespace osc
         bool isMousedOver() const;
         bool isLeftClicked() const;
         bool isRightClicked() const;
-        std::optional<SceneCollision> draw(VirtualConstModelStatePair const&);
+        std::optional<SceneCollision> onDraw(VirtualConstModelStatePair const&);
         std::optional<Rect> getScreenRect() const;
 
     private:

@@ -253,9 +253,9 @@ bool osc::ReassignSocketPopup::implBeginPopup()
     return m_Impl->beginPopup();
 }
 
-void osc::ReassignSocketPopup::implDrawPopupContent()
+void osc::ReassignSocketPopup::implOnDraw()
 {
-    m_Impl->drawPopupContent();
+    m_Impl->onDraw();
 }
 
 void osc::ReassignSocketPopup::implEndPopup()

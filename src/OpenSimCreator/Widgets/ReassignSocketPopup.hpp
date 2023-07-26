@@ -28,7 +28,7 @@ namespace osc
         void implOpen() final;
         void implClose() final;
         bool implBeginPopup() final;
-        void implDrawPopupContent() final;
+        void implOnDraw() final;
         void implEndPopup() final;
 
         class Impl;

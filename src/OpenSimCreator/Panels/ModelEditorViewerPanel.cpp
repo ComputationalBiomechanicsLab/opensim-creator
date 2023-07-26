@@ -63,7 +63,7 @@ namespace
             osc::ModelEditorViewerPanelParameters& params,
             osc::ModelEditorViewerPanelState& state) final
         {
-            m_Ruler.draw(
+            m_Ruler.onDraw(
                 params.getRenderParams().camera,
                 state.viewportRect,
                 state.maybeBaseLayerHittest
@@ -139,7 +139,7 @@ namespace
             );
 
             // draw gizmo manipulators over the top
-            m_Gizmo.draw(state.viewportRect, params.getRenderParams().camera);
+            m_Gizmo.onDraw(state.viewportRect, params.getRenderParams().camera);
         }
 
         bool implShouldClose() const final
@@ -157,7 +157,7 @@ namespace
                 "Ruler",
                 "Roughly measure something in the scene",
             };
-            if (rulerButton.draw())
+            if (rulerButton.onDraw())
             {
                 state.pushLayer(std::make_unique<RulerLayer>());
             }
@@ -370,7 +370,7 @@ private:
 
         // render the 3D scene to a texture and present it via an ImGui::Image
         {
-            osc::RenderTexture& sceneTexture = m_State.updRenderer().draw(
+            osc::RenderTexture& sceneTexture = m_State.updRenderer().onDraw(
                 *m_Parameters.getModelSharedPtr(),
                 m_Parameters.getRenderParams(),
                 Dimensions(m_State.viewportRect),
@@ -539,7 +539,7 @@ void osc::ModelEditorViewerPanel::implClose()
     m_Impl->close();
 }
 
-void osc::ModelEditorViewerPanel::implDraw()
+void osc::ModelEditorViewerPanel::implOnDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

@@ -17,13 +17,13 @@ namespace osc
         SaveChangesPopup& operator=(SaveChangesPopup&&) noexcept;
         ~SaveChangesPopup() noexcept;
 
-        void draw();
+        void onDraw();
     private:
         bool implIsOpen() const final;
         void implOpen() final;
         void implClose() final;
         bool implBeginPopup() final;
-        void implDrawPopupContent() final;
+        void implOnDraw() final;
         void implEndPopup() final;
 
         class Impl;

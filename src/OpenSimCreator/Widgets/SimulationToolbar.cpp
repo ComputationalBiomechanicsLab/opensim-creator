@@ -52,7 +52,7 @@ public:
     {
     }
 
-    void draw()
+    void onDraw()
     {
         if (BeginToolbar(m_Label, glm::vec2{5.0f, 5.0f}))
         {
@@ -70,7 +70,7 @@ private:
         ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
         ImGui::SameLine();
 
-        m_Scrubber.draw();
+        m_Scrubber.onDraw();
 
         ImGui::SameLine();
         ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
@@ -129,7 +129,7 @@ osc::SimulationToolbar::SimulationToolbar(SimulationToolbar&&) noexcept = defaul
 osc::SimulationToolbar& osc::SimulationToolbar::operator=(SimulationToolbar&&) noexcept = default;
 osc::SimulationToolbar::~SimulationToolbar() noexcept = default;
 
-void osc::SimulationToolbar::draw()
+void osc::SimulationToolbar::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

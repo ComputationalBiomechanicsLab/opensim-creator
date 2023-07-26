@@ -240,7 +240,7 @@ public:
     {
     }
 
-    void draw()
+    void onDraw()
     {
         VirtualSimulation& sim = m_API->updSimulation();
 
@@ -411,9 +411,9 @@ osc::SimulationOutputPlot::SimulationOutputPlot(SimulationOutputPlot&&) noexcept
 osc::SimulationOutputPlot& osc::SimulationOutputPlot::operator=(SimulationOutputPlot&&) noexcept = default;
 osc::SimulationOutputPlot::~SimulationOutputPlot() noexcept = default;
 
-void osc::SimulationOutputPlot::draw()
+void osc::SimulationOutputPlot::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }
 
 std::filesystem::path osc::TryPromptAndSaveOutputsAsCSV(SimulatorUIAPI& api, nonstd::span<OutputExtractor const> outputs)

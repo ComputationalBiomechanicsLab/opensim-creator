@@ -38,7 +38,7 @@ public:
         return m_MaybeLastHittest && m_MaybeLastHittest->isHovered;
     }
 
-    std::optional<SceneCollision> draw(VirtualConstModelStatePair const& rs)
+    std::optional<SceneCollision> onDraw(VirtualConstModelStatePair const& rs)
     {
         // if this is the first frame being rendered, auto-focus the scene
         if (!m_MaybeLastHittest)
@@ -61,7 +61,7 @@ public:
         }
 
         // render scene to texture
-        m_CachedModelRenderer.draw(
+        m_CachedModelRenderer.onDraw(
             rs,
             m_Params,
             ImGui::GetContentRegionAvail(),
@@ -102,7 +102,7 @@ public:
         // handle ruler and return value
         if (m_Ruler.isMeasuring())
         {
-            m_Ruler.draw(m_Params.camera, hittest.rect, hittestResult);
+            m_Ruler.onDraw(m_Params.camera, hittest.rect, hittestResult);
             return std::nullopt;  // disable hittest while measuring
         }
         else
@@ -127,7 +127,7 @@ private:
             "Ruler",
             "Roughly measure something in the scene",
         };
-        if (rulerButton.draw())
+        if (rulerButton.onDraw())
         {
             m_Ruler.toggleMeasuring();
         }
@@ -179,9 +179,9 @@ bool osc::UiModelViewer::isMousedOver() const
     return m_Impl->isMousedOver();
 }
 
-std::optional<osc::SceneCollision> osc::UiModelViewer::draw(VirtualConstModelStatePair const& rs)
+std::optional<osc::SceneCollision> osc::UiModelViewer::onDraw(VirtualConstModelStatePair const& rs)
 {
-    return m_Impl->draw(rs);
+    return m_Impl->onDraw(rs);
 }
 
 std::optional<osc::Rect> osc::UiModelViewer::getScreenRect() const

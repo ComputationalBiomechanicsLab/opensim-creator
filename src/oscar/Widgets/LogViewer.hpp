@@ -15,7 +15,7 @@ namespace osc
 
 
         // assumes caller handles `ImGui::Begin(panel_name, nullptr, ImGuiWindowFlags_MenuBar)`
-        void draw();
+        void onDraw();
 
     private:
         class Impl;

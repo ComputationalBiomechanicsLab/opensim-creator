@@ -431,9 +431,9 @@ bool osc::GeometryPathPropertyEditorPopup::implBeginPopup()
 {
     return m_Impl->beginPopup();
 }
-void osc::GeometryPathPropertyEditorPopup::implDrawPopupContent()
+void osc::GeometryPathPropertyEditorPopup::implOnDraw()
 {
-    m_Impl->drawPopupContent();
+    m_Impl->onDraw();
 }
 void osc::GeometryPathPropertyEditorPopup::implEndPopup()
 {

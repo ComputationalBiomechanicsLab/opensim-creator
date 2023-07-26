@@ -1536,9 +1536,9 @@ namespace
     public:
         virtual ~MusclePlotState() noexcept = default;
 
-        std::unique_ptr<MusclePlotState> draw()
+        std::unique_ptr<MusclePlotState> onDraw()
         {
-            return implDraw();
+            return implOnDraw();
         }
 
     protected:
@@ -1553,7 +1553,7 @@ namespace
         }
 
     private:
-        virtual std::unique_ptr<MusclePlotState> implDraw() = 0;
+        virtual std::unique_ptr<MusclePlotState> implOnDraw() = 0;
 
         SharedStateData* m_Shared;
     };
@@ -1577,7 +1577,7 @@ namespace
         }
 
     private:
-        std::unique_ptr<MusclePlotState> implDraw() final
+        std::unique_ptr<MusclePlotState> implOnDraw() final
         {
             onBeforeDrawing();  // perform pre-draw cleanups/updates etc.
 
@@ -2157,7 +2157,7 @@ namespace
         }
 
     private:
-        std::unique_ptr<MusclePlotState> implDraw() final
+        std::unique_ptr<MusclePlotState> implOnDraw() final
         {
             std::unique_ptr<MusclePlotState> rv;
 
@@ -2200,7 +2200,7 @@ namespace
         }
 
     private:
-        std::unique_ptr<MusclePlotState> implDraw() final
+        std::unique_ptr<MusclePlotState> implOnDraw() final
         {
             std::unique_ptr<MusclePlotState> rv;
 
@@ -2291,14 +2291,14 @@ public:
         m_IsOpen = false;
     }
 
-    void draw()
+    void onDraw()
     {
         if (m_IsOpen)
         {
             bool isOpen = m_IsOpen;
             if (ImGui::Begin(m_PanelName.c_str(), &isOpen))
             {
-                if (auto maybeNextState = m_ActiveState->draw())
+                if (auto maybeNextState = m_ActiveState->onDraw())
                 {
                     m_ActiveState = std::move(maybeNextState);
                 }
@@ -2374,7 +2374,7 @@ void osc::ModelMusclePlotPanel::implClose()
     m_Impl->close();
 }
 
-void osc::ModelMusclePlotPanel::implDraw()
+void osc::ModelMusclePlotPanel::implOnDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

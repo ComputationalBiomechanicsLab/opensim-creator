@@ -563,9 +563,9 @@ bool osc::ExportPointsPopup::implBeginPopup()
     return m_Impl->beginPopup();
 }
 
-void osc::ExportPointsPopup::implDrawPopupContent()
+void osc::ExportPointsPopup::implOnDraw()
 {
-    m_Impl->drawPopupContent();
+    m_Impl->onDraw();
 }
 
 void osc::ExportPointsPopup::implEndPopup()

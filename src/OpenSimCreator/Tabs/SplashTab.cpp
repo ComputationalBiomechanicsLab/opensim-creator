@@ -115,8 +115,8 @@ public:
 
     void drawMainMenu()
     {
-        m_MainMenuFileTab.draw(m_Parent);
-        m_MainMenuAboutTab.draw();
+        m_MainMenuFileTab.onDraw(m_Parent);
+        m_MainMenuAboutTab.onDraw();
     }
 
     void onDraw()

@@ -413,7 +413,7 @@ public:
         }
 
         // draw log panel (debugging)
-        m_LogViewerPanel.draw();
+        m_LogViewerPanel.onDraw();
     }
 
 

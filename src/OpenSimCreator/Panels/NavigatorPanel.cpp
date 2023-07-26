@@ -434,7 +434,7 @@ void osc::NavigatorPanel::implClose()
     m_Impl->close();
 }
 
-void osc::NavigatorPanel::implDraw()
+void osc::NavigatorPanel::implOnDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

@@ -47,7 +47,7 @@ private:
             return;
         }
 
-        m_ComponentDetailsWidget.draw(ms.getState(), selected);
+        m_ComponentDetailsWidget.onDraw(ms.getState(), selected);
 
         if (ImGui::CollapsingHeader("outputs"))
         {
@@ -65,7 +65,7 @@ private:
                     OutputExtractor{osc::ComponentOutputExtractor{*aoPtr}},
                     ImGui::GetTextLineHeight(),
                 };
-                plot.draw();
+                plot.onDraw();
                 ImGui::NextColumn();
 
                 ImGui::PopID();
@@ -107,7 +107,7 @@ void osc::SelectionDetailsPanel::implClose()
     m_Impl->close();
 }
 
-void osc::SelectionDetailsPanel::implDraw()
+void osc::SelectionDetailsPanel::implOnDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

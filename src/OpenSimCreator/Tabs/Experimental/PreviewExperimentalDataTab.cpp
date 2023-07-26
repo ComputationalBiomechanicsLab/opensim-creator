@@ -532,7 +532,7 @@ public:
 
         ImGui::End();
 
-        m_LogViewer.draw();
+        m_LogViewer.onDraw();
     }
 
 

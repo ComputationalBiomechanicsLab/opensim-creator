@@ -90,9 +90,9 @@ bool osc::Select1PFPopup::implBeginPopup()
     return m_Impl->beginPopup();
 }
 
-void osc::Select1PFPopup::implDrawPopupContent()
+void osc::Select1PFPopup::implOnDraw()
 {
-    m_Impl->drawPopupContent();
+    m_Impl->onDraw();
 }
 
 void osc::Select1PFPopup::implEndPopup()

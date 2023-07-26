@@ -20,7 +20,7 @@ namespace osc
         SimulationOutputPlot& operator=(SimulationOutputPlot&&) noexcept;
         ~SimulationOutputPlot() noexcept;
 
-        void draw();
+        void onDraw();
 
     private:
         class Impl;

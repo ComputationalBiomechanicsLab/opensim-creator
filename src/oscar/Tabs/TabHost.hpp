@@ -41,8 +41,6 @@ namespace osc
         virtual UID implAddTab(std::unique_ptr<Tab>) = 0;
         virtual void implSelectTab(UID) = 0;
         virtual void implCloseTab(UID) = 0;
-        virtual void implResetImgui()
-        {
-        }
+        virtual void implResetImgui() {}
     };
 }

@@ -16,7 +16,7 @@ namespace osc
         ModelActionsMenuItems& operator=(ModelActionsMenuItems&&) noexcept;
         ~ModelActionsMenuItems() noexcept;
 
-        void draw();
+        void onDraw();
 
     private:
         class Impl;

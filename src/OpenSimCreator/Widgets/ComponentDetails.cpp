@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-osc::ComponentDetails::Response osc::ComponentDetails::draw(SimTK::State const& state,
+osc::ComponentDetails::Response osc::ComponentDetails::onDraw(SimTK::State const& state,
                                                             OpenSim::Component const* comp)
 {
     Response rv;

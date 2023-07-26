@@ -28,7 +28,7 @@ public:
     {
     }
 
-    void draw()
+    void onDraw()
     {
         osc::BeginMainViewportBottomBar("bottom");
         drawSelectionBreadcrumbs();
@@ -108,7 +108,7 @@ osc::EditorTabStatusBar::EditorTabStatusBar(EditorTabStatusBar&&) noexcept = def
 osc::EditorTabStatusBar& osc::EditorTabStatusBar::operator=(EditorTabStatusBar&&) noexcept = default;
 osc::EditorTabStatusBar::~EditorTabStatusBar() noexcept = default;
 
-void osc::EditorTabStatusBar::draw()
+void osc::EditorTabStatusBar::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

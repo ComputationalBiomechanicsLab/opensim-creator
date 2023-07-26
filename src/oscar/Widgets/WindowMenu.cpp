@@ -16,7 +16,7 @@ osc::WindowMenu::WindowMenu(WindowMenu&&) noexcept = default;
 osc::WindowMenu& osc::WindowMenu::operator=(WindowMenu&&) noexcept = default;
 osc::WindowMenu::~WindowMenu() = default;
 
-void osc::WindowMenu::draw()
+void osc::WindowMenu::onDraw()
 {
     if (ImGui::BeginMenu("Window"))
     {

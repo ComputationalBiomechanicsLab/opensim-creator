@@ -179,7 +179,7 @@ public:
             }
             ImGui::End();
         }
-        m_PerfPanel.draw();
+        m_PerfPanel.onDraw();
     }
 
 private:

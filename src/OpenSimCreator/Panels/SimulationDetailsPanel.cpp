@@ -114,7 +114,7 @@ private:
             DrawOutputNameColumn(output, false);
             ImGui::NextColumn();
             SimulationOutputPlot plot{m_SimulatorUIAPI, output, 32.0f};
-            plot.draw();
+            plot.onDraw();
             ImGui::NextColumn();
             ImGui::PopID();
         }
@@ -161,7 +161,7 @@ void osc::SimulationDetailsPanel::implClose()
     m_Impl->close();
 }
 
-void osc::SimulationDetailsPanel::implDraw()
+void osc::SimulationDetailsPanel::implOnDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

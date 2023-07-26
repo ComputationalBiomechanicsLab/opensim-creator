@@ -74,7 +74,7 @@ namespace
         {
         }
 
-        void draw()
+        void onDraw()
         {
             OpenSim::Component const* const selected = m_Model->getSelected();
 
@@ -150,7 +150,7 @@ private:
         // it's helpful to reveal to users that actions are available (#426)
         DrawActionsMenu(m_EditorAPI, m_Model);
 
-        m_NameEditor.draw();
+        m_NameEditor.onDraw();
 
         if (!m_Model->getSelected())
         {
@@ -159,7 +159,7 @@ private:
 
         // property editors
         {
-            auto maybeUpdater = m_SelectionPropertiesEditor.draw();
+            auto maybeUpdater = m_SelectionPropertiesEditor.onDraw();
             if (maybeUpdater)
             {
                 osc::ActionApplyPropertyEdit(*m_Model, *maybeUpdater);
@@ -208,7 +208,7 @@ void osc::PropertiesPanel::implClose()
     m_Impl->close();
 }
 
-void osc::PropertiesPanel::implDraw()
+void osc::PropertiesPanel::implOnDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

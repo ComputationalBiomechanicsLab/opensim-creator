@@ -19,7 +19,7 @@ osc::IconWithoutMenu::IconWithoutMenu(
 {
 }
 
-bool osc::IconWithoutMenu::draw()
+bool osc::IconWithoutMenu::onDraw()
 {
     bool rv = osc::ImageButton(m_ButtonID, m_Icon.getTexture(), m_Icon.getDimensions(), m_Icon.getTextureCoordinates());
     osc::DrawTooltipIfItemHovered(m_Title, m_Description);

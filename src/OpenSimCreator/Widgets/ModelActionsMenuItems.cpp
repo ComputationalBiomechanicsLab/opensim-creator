@@ -37,7 +37,7 @@ public:
     {
     }
 
-    void draw()
+    void onDraw()
     {
         ImGui::PushID(this);
 
@@ -128,7 +128,7 @@ osc::ModelActionsMenuItems::ModelActionsMenuItems(ModelActionsMenuItems&&) noexc
 osc::ModelActionsMenuItems& osc::ModelActionsMenuItems::operator=(ModelActionsMenuItems&&) noexcept = default;
 osc::ModelActionsMenuItems::~ModelActionsMenuItems() noexcept = default;
 
-void osc::ModelActionsMenuItems::draw()
+void osc::ModelActionsMenuItems::onDraw()
 {
-    m_Impl->draw();
+    m_Impl->onDraw();
 }

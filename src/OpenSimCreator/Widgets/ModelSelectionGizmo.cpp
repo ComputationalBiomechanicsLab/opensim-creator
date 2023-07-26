@@ -658,7 +658,7 @@ bool osc::ModelSelectionGizmo::handleKeyboardInputs()
     return osc::UpdateImguizmoStateFromKeyboard(m_GizmoOperation, m_GizmoMode);
 }
 
-void osc::ModelSelectionGizmo::draw(
+void osc::ModelSelectionGizmo::onDraw(
     Rect const& screenRect,
     PolarPerspectiveCamera const& camera)
 {
