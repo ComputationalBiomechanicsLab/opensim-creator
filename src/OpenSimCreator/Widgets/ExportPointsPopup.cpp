@@ -228,7 +228,7 @@ namespace
                 uiState,
                 model,
                 state,
-                [](OpenSim::Component const& c) { return true; },
+                [](OpenSim::Component const&) { return true; },
                 newStateOnUserClick
             );
         }
