@@ -844,9 +844,6 @@ namespace
         // current user hover: reset per-frame
         std::optional<TPSUIViewportHover> currentHover;
 
-        // available/active panels that the user can toggle via the `window` menu
-        std::shared_ptr<osc::PanelManager> panelManager = std::make_shared<osc::PanelManager>();
-
         // currently active tab-wide popups
         osc::PopupManager popupManager;
 
@@ -1278,10 +1275,12 @@ namespace
     // widget: the main menu (contains multiple submenus: 'file', 'edit', 'about', etc.)
     class TPS3DMainMenu final {
     public:
-        explicit TPS3DMainMenu(std::shared_ptr<TPSUISharedState> const& tabState_) :
+        explicit TPS3DMainMenu(
+            std::shared_ptr<TPSUISharedState> const& tabState_,
+            std::shared_ptr<osc::PanelManager> const& panelManager_) :
             m_FileMenu{tabState_},
             m_EditMenu{tabState_},
-            m_WindowMenu{tabState_->panelManager}
+            m_WindowMenu{panelManager_}
         {
         }
 
@@ -2009,7 +2008,7 @@ public:
 
     explicit Impl(std::weak_ptr<TabHost> parent_) : m_Parent{std::move(parent_)}
     {
-        PushBackAvailablePanels(m_SharedState, *m_SharedState->panelManager);
+        PushBackAvailablePanels(m_SharedState, *m_PanelManager);
     }
 
     UID getID() const
@@ -2025,12 +2024,12 @@ public:
     void onMount()
     {
         App::upd().makeMainEventLoopWaiting();
-        m_SharedState->panelManager->onMount();
+        m_PanelManager->onMount();
     }
 
     void onUnmount()
     {
-        m_SharedState->panelManager->onUnmount();
+        m_PanelManager->onUnmount();
         App::upd().makeMainEventLoopPolling();
     }
 
@@ -2052,7 +2051,7 @@ public:
         m_SharedState->currentHover.reset();
 
         // garbage collect panel data
-        m_SharedState->panelManager->onTick();
+        m_PanelManager->onTick();
     }
 
     void onDrawMainMenu()
@@ -2065,7 +2064,7 @@ public:
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         m_TopToolbar.onDraw();
-        m_SharedState->panelManager->onDraw();
+        m_PanelManager->onDraw();
         m_StatusBar.onDraw();
 
         // draw active popups over the UI
@@ -2101,8 +2100,11 @@ private:
     // top-level state that all panels can potentially access
     std::shared_ptr<TPSUISharedState> m_SharedState = std::make_shared<TPSUISharedState>(m_TabID, m_Parent);
 
+    // available/active panels that the user can toggle via the `window` menu
+    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
+
     // not-user-toggleable widgets
-    TPS3DMainMenu m_MainMenu{m_SharedState};
+    TPS3DMainMenu m_MainMenu{m_SharedState, m_PanelManager};
     TPS3DToolbar m_TopToolbar{"##TPS3DToolbar", m_SharedState};
     TPS3DStatusBar m_StatusBar{"##TPS3DStatusBar", m_SharedState};
 };
