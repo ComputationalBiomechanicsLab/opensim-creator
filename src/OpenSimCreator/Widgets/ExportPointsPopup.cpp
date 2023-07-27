@@ -73,7 +73,8 @@ namespace
 
     void DrawExportPointsPopupDescriptionSection()
     {
-        ImGui::Text("Description:");
+        ImGui::Text("Description");
+        ImGui::Separator();
         ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
         ImGui::TextWrapped("%s", c_ExplanationText.c_str());
         ImGui::PopStyleColor();
@@ -133,7 +134,7 @@ namespace
         color.w *= 0.5f;
 
         ImGui::PushStyleColor(ImGuiCol_FrameBg, color);
-        bool const showingListBox = ImGui::BeginListBox("list");
+        bool const showingListBox = ImGui::BeginListBox("##PointsList");
         ImGui::PopStyleColor();
 
         if (showingListBox)
@@ -152,37 +153,109 @@ namespace
         }
     }
 
-    void ActionSelectAllListedComponents(
+    enum class SelectionState {
+        Selected,
+        NotSelected,
+        NUM_OPTIONS,
+    };
+
+    void ActionChangeSelectionStateIf(
         PointSelectorUiState& uiState,
         OpenSim::Model const& model,
-        SimTK::State const& state)
+        SimTK::State const& state,
+        std::function<bool(OpenSim::Component const&)> const& predicate,
+        SelectionState selectionState)
     {
         for (OpenSim::Component const& component : model.getComponentList())
         {
-            if (IsVisibleInPointList(uiState, component, state))
+            if (osc::CanExtractPointInfoFrom(component, state) && predicate(component))
             {
-                uiState.selectedPointAbsPaths.insert(osc::GetAbsolutePathString(component));
+                static_assert(osc::NumOptions<SelectionState>() == 2u);
+                switch (selectionState)
+                {
+                case SelectionState::Selected:
+                    uiState.selectedPointAbsPaths.insert(osc::GetAbsolutePathString(component));
+                    break;
+                case SelectionState::NotSelected:
+                    uiState.selectedPointAbsPaths.erase(osc::GetAbsolutePathString(component));
+                    break;
+                }
             }
         }
     }
 
-    void ActionDeselectAllListedComponents(
+    void DrawChangeSelectionStateOfPointsExpressedInMenuContent(
         PointSelectorUiState& uiState,
         OpenSim::Model const& model,
-        SimTK::State const& state)
+        SimTK::State const& state,
+        SelectionState newStateOnUserClick)
     {
-        for (OpenSim::Component const& component : model.getComponentList())
+        for (OpenSim::Frame const& f : model.getComponentList<OpenSim::Frame>())
         {
-            if (IsVisibleInPointList(uiState, component, state))
+            if (ImGui::MenuItem(f.getName().c_str()))
             {
-                uiState.selectedPointAbsPaths.erase(osc::GetAbsolutePathString(component));
+                ActionChangeSelectionStateIf(
+                    uiState,
+                    model,
+                    state,
+                    [path = osc::GetAbsolutePath(f), &state](OpenSim::Component const& c)
+                    {
+                        if (auto const pointInfo = osc::TryExtractPointInfo(c, state))
+                        {
+                            return pointInfo->frameAbsPath == path;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    },
+                    newStateOnUserClick
+                );
             }
         }
     }
 
-    void ActionClearSelectedComponents(PointSelectorUiState& uiState)
+    void DrawSelectionStateModifierMenuContent(
+        PointSelectorUiState& uiState,
+        OpenSim::Model const& model,
+        SimTK::State const& state,
+        SelectionState newStateOnUserClick)
     {
-        uiState.selectedPointAbsPaths.clear();
+        if (ImGui::MenuItem("All"))
+        {
+            ActionChangeSelectionStateIf(
+                uiState,
+                model,
+                state,
+                [](OpenSim::Component const& c) { return true; },
+                newStateOnUserClick
+            );
+        }
+
+        if (ImGui::MenuItem("Listed (searched)"))
+        {
+            ActionChangeSelectionStateIf(
+                uiState,
+                model,
+                state,
+                [&uiState, &state](OpenSim::Component const& c)
+                {
+                    return IsVisibleInPointList(uiState, c, state);
+                },
+                newStateOnUserClick
+            );
+        }
+
+        if (ImGui::BeginMenu("Expressed In"))
+        {
+            DrawChangeSelectionStateOfPointsExpressedInMenuContent(
+                uiState,
+                model,
+                state,
+                newStateOnUserClick
+            );
+            ImGui::EndMenu();
+        }
     }
 
     void DrawSelectionManipulatorButtons(
@@ -190,23 +263,32 @@ namespace
         OpenSim::Model const& model,
         SimTK::State const& state)
     {
-        if (ImGui::Button("Select Listed"))
+        ImGui::Button("Select" ICON_FA_CARET_DOWN);
+        if (ImGui::BeginPopupContextItem("##selectmenu", ImGuiPopupFlags_MouseButtonLeft))
         {
-            ActionSelectAllListedComponents(uiState, model, state);
+            DrawSelectionStateModifierMenuContent(
+                uiState,
+                model,
+                state,
+                SelectionState::Selected
+            );
+
+            ImGui::EndPopup();
         }
 
         ImGui::SameLine();
 
-        if (ImGui::Button("De-Select Listed"))
+        ImGui::Button("De-Select" ICON_FA_CARET_DOWN);
+        if (ImGui::BeginPopupContextItem("##deselectmenu", ImGuiPopupFlags_MouseButtonLeft))
         {
-            ActionDeselectAllListedComponents(uiState, model, state);
-        }
+            DrawSelectionStateModifierMenuContent(
+                uiState,
+                model,
+                state,
+                SelectionState::NotSelected
+            );
 
-        ImGui::SameLine();
-
-        if (ImGui::Button("Clear Selection"))
-        {
-            ActionClearSelectedComponents(uiState);
+            ImGui::EndPopup();
         }
     }
 
@@ -215,7 +297,8 @@ namespace
         OpenSim::Model const& model,
         SimTK::State const& state)
     {
-        ImGui::Text("Which Points:");
+        ImGui::Text("Points");
+        ImGui::Separator();
         osc::InputString("search", uiState.searchString);
         DrawPointSelectionList(uiState, model, state);
         DrawSelectionManipulatorButtons(uiState, model, state);
@@ -276,9 +359,7 @@ namespace
     void DrawFrameSelector(FrameSelectorUiState& uiState, OpenSim::Model const& model)
     {
         std::string const label = CalcComboLabel(uiState, model);
-
-        ImGui::Text("Express Points In:");
-        if (ImGui::BeginCombo("Frame", label.c_str()))
+        if (ImGui::BeginCombo("Express Points In", label.c_str()))
         {
             DrawOriginalFrameSelectable(uiState);
             DrawModelFrameSelectables(uiState, model);
@@ -486,14 +567,20 @@ private:
         OpenSim::Model const& model = m_Model->getModel();
         SimTK::State const& state = m_Model->getState();
 
+        float const sectionSpacing = 0.5f*ImGui::GetTextLineHeight();
+
         DrawExportPointsPopupDescriptionSection();
-        ImGui::Separator();
+        ImGui::Dummy({0.0f, sectionSpacing});
+
         DrawPointSelector(m_PointSelectorState, model, state);
+        ImGui::Dummy({0.0f, sectionSpacing});
+
+        ImGui::Text("Options");
         ImGui::Separator();
         DrawFrameSelector(m_FrameSelectorState, model);
-        ImGui::Separator();
         DrawOutputFormatEditor(m_OutputFormatState);
-        ImGui::Separator();
+        ImGui::Dummy({0.0f, sectionSpacing});
+
         drawBottomButtons();
     }
 
