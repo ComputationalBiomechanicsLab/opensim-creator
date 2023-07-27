@@ -177,6 +177,7 @@ namespace
                     uiState.selectedPointAbsPaths.insert(osc::GetAbsolutePathString(component));
                     break;
                 case SelectionState::NotSelected:
+                default:
                     uiState.selectedPointAbsPaths.erase(osc::GetAbsolutePathString(component));
                     break;
                 }
