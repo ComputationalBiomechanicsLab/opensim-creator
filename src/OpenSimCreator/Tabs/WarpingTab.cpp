@@ -802,16 +802,17 @@ namespace
             std::weak_ptr<osc::TabHost> parent_) :
 
             tabID{tabID_},
-            tabHost{parent_.lock()}
+            tabHost{parent_}
         {
-            OSC_ASSERT(tabHost != nullptr && "top-level tab host required for this UI");
+            // CARE: don't own it ever, though - it's a parent pointer
+            OSC_ASSERT(tabHost.lock() != nullptr && "top-level tab host required for this UI");
         }
 
         // ID of the top-level TPS3D tab
         osc::UID tabID;
 
         // handle to the screen that owns the TPS3D tab
-        std::shared_ptr<osc::TabHost> tabHost;
+        std::weak_ptr<osc::TabHost> tabHost;
 
         // cached TPS3D algorithm result (to prevent recomputing it each frame)
         TPSResultCache meshResultCache;
@@ -1188,7 +1189,7 @@ namespace
 
             if (ImGui::MenuItem(ICON_FA_TIMES " Close"))
             {
-                m_State->tabHost->closeTab(m_State->tabID);
+                m_State->tabHost.lock()->closeTab(m_State->tabID);
             }
 
             if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit"))
