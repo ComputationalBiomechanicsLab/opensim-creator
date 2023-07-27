@@ -1678,14 +1678,17 @@ namespace
             }
 
             // append non-participating landmarks as non-user-selctable purple spheres
-            for (glm::vec3 const& nonParticipatingLandmarkLocation : GetScratch(*m_State).nonParticipatingLandmarks)
+            if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source)
             {
-                AppendNonParticipatingLandmark(
-                    m_State->landmarkSphere,
-                    m_LandmarkRadius,
-                    nonParticipatingLandmarkLocation,
-                    decorationConsumer
-                );
+                for (glm::vec3 const& nonParticipatingLandmarkLocation : GetScratch(*m_State).nonParticipatingLandmarks)
+                {
+                    AppendNonParticipatingLandmark(
+                        m_State->landmarkSphere,
+                        m_LandmarkRadius,
+                        nonParticipatingLandmarkLocation,
+                        decorationConsumer
+                    );
+                }
             }
 
             // if applicable, show mouse-to-mesh collision as faded landmark as a placement hint for user
