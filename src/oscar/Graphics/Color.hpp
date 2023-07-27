@@ -73,6 +73,11 @@ namespace osc
             return {1.0f, 1.0f, 0.0f, 1.0f};
         }
 
+        static constexpr Color purple()
+        {
+            return {191.0f/255.0f, 85.0f/255.0f, 236.0f/255.0f};
+        }
+
         Color() = default;
 
         // i.e. a "solid" color (no transparency)

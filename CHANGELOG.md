@@ -5,8 +5,9 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
-- Fixed Undo/Redo hotkeys not working in the warping workflow tab (#744)
 - Added "Export Points" tool, which lets users export points in a model w.r.t. some frame as a CSV (#742)
+- Added support for non-participating landmarks in the mesh warper (#741)
+- Fixed Undo/Redo hotkeys not working in the warping workflow tab (#744)
 - The upper input size limit on many text inputs was removed
 
 

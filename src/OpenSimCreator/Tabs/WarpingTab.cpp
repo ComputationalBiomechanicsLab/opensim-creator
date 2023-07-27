@@ -130,6 +130,7 @@ namespace
         osc::Mesh sourceMesh = osc::GenUntexturedUVSphere(16, 16);
         osc::Mesh destinationMesh = osc::GenUntexturedYToYCylinder(16);
         std::vector<TPSDocumentLandmarkPair> landmarkPairs;
+        std::vector<glm::vec3> nonParticipatingLandmarks;
         float blendingFactor = 1.0f;
         size_t nextLandmarkID = 0;
     };
@@ -369,6 +370,30 @@ namespace
         doc.commitScratch("loaded landmarks");
     }
 
+    void ActionLoadNonParticipatingPointsCSV(osc::UndoRedoT<TPSDocument>& doc)
+    {
+        std::optional<std::filesystem::path> const maybeCSVPath =
+            osc::PromptUserForFile("csv");
+        if (!maybeCSVPath)
+        {
+            return;  // user didn't select anything
+        }
+
+        std::vector<glm::vec3> const landmarks = osc::LoadLandmarksFromCSVFile(*maybeCSVPath);
+        if (landmarks.empty())
+        {
+            return;  // the landmarks file was empty, or had invalid data
+        }
+
+        // add the new landmarks to the scratch space
+        doc.updScratch().nonParticipatingLandmarks.insert(
+            doc.updScratch().nonParticipatingLandmarks.end(),
+            landmarks.begin(),
+            landmarks.end()
+        );
+        doc.commitScratch("added non-participating landmarks");
+    }
+
     // sets the TPS blending factor for the result, but does not save the change to undo/redo storage
     void ActionSetBlendFactorWithoutSaving(osc::UndoRedoT<TPSDocument>& doc, float factor)
     {
@@ -394,6 +419,13 @@ namespace
     {
         doc.updScratch().landmarkPairs.clear();
         doc.commitScratch("cleared all landmarks");
+    }
+
+    // clears all non-participating landmarks in the TPS document
+    void ActionClearNonParticipatingLandmarks(osc::UndoRedoT<TPSDocument>& doc)
+    {
+        doc.updScratch().nonParticipatingLandmarks.clear();
+        doc.commitScratch("cleared all non-participating landmarks");
     }
 
     // deletes the specified landmarks from the TPS document
@@ -566,6 +598,36 @@ namespace
 
         osc::WriteMeshAsStl(outputFileStream, mesh);
     }
+
+    void ActionTrySaveWarpedNonParticipatingLandmarksToCSV(
+        nonstd::span<glm::vec3 const> nonParticipatingLandmarkPositions)
+    {
+        std::optional<std::filesystem::path> const maybeCSVPath =
+            osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+        if (!maybeCSVPath)
+        {
+            return;  // user didn't select a save location
+        }
+
+        std::ofstream fileOutputStream{*maybeCSVPath};
+        if (!fileOutputStream)
+        {
+            return;  // couldn't open file for writing
+        }
+
+        for (glm::vec3 const& nonParticipatingLandmark : nonParticipatingLandmarkPositions)
+        {
+            osc::WriteCSVRow(
+                fileOutputStream,
+                osc::to_array(
+                {
+                    std::to_string(nonParticipatingLandmark.x),
+                    std::to_string(nonParticipatingLandmark.y),
+                    std::to_string(nonParticipatingLandmark.z),
+                })
+            );
+        }
+    }
 }
 
 // TPS result cache
@@ -577,22 +639,37 @@ namespace
     // a cache for TPS mesh warping results
     class TPSResultCache final {
     public:
-        osc::Mesh const& lookup(TPSDocument const& doc)
+        osc::Mesh const& getWarpedMesh(TPSDocument const& doc)
         {
-            updateResultMesh(doc);
+            updateAll(doc);
             return m_CachedResultMesh;
         }
 
+        nonstd::span<glm::vec3 const> getWarpedNonParticipatingLandmarks(TPSDocument const& doc)
+        {
+            updateAll(doc);
+            return m_CachedResultNonParticipatingLandmarks;
+        }
+
     private:
-        // returns `true` if the cached result mesh was updated
-        bool updateResultMesh(TPSDocument const& doc)
+        void updateAll(TPSDocument const& doc)
         {
             bool const updatedCoefficients = updateCoefficients(doc);
+            bool const updatedNonParticipatingLandmarks = updateSourceNonParticipatingLandmarks(doc);
             bool const updatedMesh = updateInputMesh(doc);
 
-            if (updatedCoefficients || updatedMesh)
+            if (updatedCoefficients || updatedNonParticipatingLandmarks || updatedMesh)
             {
                 m_CachedResultMesh = ApplyThinPlateWarpToMesh(m_CachedCoefficients, m_CachedSourceMesh);
+                m_CachedResultNonParticipatingLandmarks = osc::ApplyThinPlateWarpToPoints(m_CachedCoefficients, m_CachedSourceNonParticipatingLandmarks);
+            }
+        }
+
+        bool updateSourceNonParticipatingLandmarks(TPSDocument const& doc)
+        {
+            if (m_CachedSourceNonParticipatingLandmarks != doc.nonParticipatingLandmarks)
+            {
+                m_CachedSourceNonParticipatingLandmarks = doc.nonParticipatingLandmarks;
                 return true;
             }
             else
@@ -661,6 +738,8 @@ namespace
         osc::TPSCoefficients3D m_CachedCoefficients;
         osc::Mesh m_CachedSourceMesh;
         osc::Mesh m_CachedResultMesh;
+        std::vector<glm::vec3> m_CachedSourceNonParticipatingLandmarks;
+        std::vector<glm::vec3> m_CachedResultNonParticipatingLandmarks;
     };
 }
 
@@ -787,7 +866,12 @@ namespace
     // returns a (potentially cached) post-TPS-warp mesh
     osc::Mesh const& GetResultMesh(TPSUISharedState& state)
     {
-        return state.meshResultCache.lookup(state.editedDocument->getScratch());
+        return state.meshResultCache.getWarpedMesh(state.editedDocument->getScratch());
+    }
+
+    nonstd::span<glm::vec3 const> GetResultNonParticipatingLandmarks(TPSUISharedState& state)
+    {
+        return state.meshResultCache.getWarpedNonParticipatingLandmarks(state.editedDocument->getScratch());
     }
 
     // append decorations that are common to all panels to the given output vector
@@ -816,6 +900,19 @@ namespace
         // add grid decorations
         DrawXZGrid(*sharedState.meshCache, out);
         DrawXZFloorLines(*sharedState.meshCache, out, 100.0f);
+    }
+
+    void AppendNonParticipatingLandmark(
+        osc::Mesh const& landmarkSphereMesh,
+        float baseLandmarkRadius,
+        glm::vec3 const& nonParticipatingLandmarkPos,
+        std::function<void(osc::SceneDecoration&&)> const& out)
+    {
+        osc::Transform transform{};
+        transform.scale *= 0.75f*baseLandmarkRadius;
+        transform.position = nonParticipatingLandmarkPos;
+
+        out(osc::SceneDecoration{landmarkSphereMesh, transform, osc::Color::purple()});
     }
 }
 
@@ -876,6 +973,12 @@ namespace
 
             // landmark stuff
             drawResetLandmarksButton();
+            ImGui::SameLine();
+
+            ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+            ImGui::SameLine();
+
+            drawResetNonParticipatingLandmarksButton();
         }
 
         void drawNewDocumentButton()
@@ -932,9 +1035,43 @@ namespace
 
         void drawResetLandmarksButton()
         {
+            bool const hasLandmarks =
+                !m_State->editedDocument->getScratch().landmarkPairs.empty();
+
+            if (!hasLandmarks)
+            {
+                ImGui::BeginDisabled();
+            }
+
             if (ImGui::Button(ICON_FA_ERASER " clear landmarks"))
             {
                 ActionClearAllLandmarks(*m_State->editedDocument);
+            }
+
+            if (!hasLandmarks)
+            {
+                ImGui::EndDisabled();
+            }
+        }
+
+        void drawResetNonParticipatingLandmarksButton()
+        {
+            bool const hasNonParticipatingLandmarks =
+                !m_State->editedDocument->getScratch().nonParticipatingLandmarks.empty();
+
+            if (!hasNonParticipatingLandmarks)
+            {
+                ImGui::BeginDisabled();
+            }
+
+            if (ImGui::Button(ICON_FA_ERASER " clear non-participating landmarks"))
+            {
+                ActionClearNonParticipatingLandmarks(*m_State->editedDocument);
+            }
+
+            if (!hasNonParticipatingLandmarks)
+            {
+                ImGui::EndDisabled();
             }
         }
 
@@ -1077,6 +1214,10 @@ namespace
             if (ImGui::MenuItem("Destination Landmarks from CSV"))
             {
                 ActionLoadLandmarksCSV(*m_State->editedDocument, TPSDocumentInputIdentifier::Destination);
+            }
+            if (ImGui::MenuItem("Non-Participating Landmarks from CSV"))
+            {
+                ActionLoadNonParticipatingPointsCSV(*m_State->editedDocument);
             }
         }
 
@@ -1408,6 +1549,11 @@ namespace
                 {
                     ActionLoadLandmarksCSV(*m_State->editedDocument, m_DocumentIdentifier);
                 }
+                if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source &&
+                    ImGui::MenuItem("Non-Participating Landmarks from CSV"))
+                {
+                    ActionLoadNonParticipatingPointsCSV(*m_State->editedDocument);
+                }
                 ImGui::EndPopup();
             }
         }
@@ -1481,11 +1627,14 @@ namespace
             std::vector<osc::SceneDecoration> decorations;
             decorations.reserve(6 + CountNumLandmarksForInput(GetScratch(*m_State), m_DocumentIdentifier));  // likely guess
 
+            std::function<void(osc::SceneDecoration&&)> const decorationConsumer =
+                [&decorations](osc::SceneDecoration&& dec) { decorations.push_back(std::move(dec)); };
+
             AppendCommonDecorations(
                 *m_State,
                 GetScratchMesh(*m_State, m_DocumentIdentifier),
                 m_WireframeMode,
-                [&decorations](osc::SceneDecoration&& dec) { decorations.push_back(std::move(dec)); }
+                decorationConsumer
             );
 
             // append each landmark as a sphere
@@ -1528,7 +1677,18 @@ namespace
                 }
             }
 
-            // if applicable, show mesh collision as faded landmark as a placement hint for user
+            // append non-participating landmarks as non-user-selctable purple spheres
+            for (glm::vec3 const& nonParticipatingLandmarkLocation : GetScratch(*m_State).nonParticipatingLandmarks)
+            {
+                AppendNonParticipatingLandmark(
+                    m_State->landmarkSphere,
+                    m_LandmarkRadius,
+                    nonParticipatingLandmarkLocation,
+                    decorationConsumer
+                );
+            }
+
+            // if applicable, show mouse-to-mesh collision as faded landmark as a placement hint for user
             if (maybeMeshCollision && !maybeLandmarkCollision)
             {
                 osc::Transform transform{};
@@ -1628,6 +1788,7 @@ namespace
             ImGui::SameLine();
             ImGui::Checkbox("show destination", &m_ShowDestinationMesh);
             ImGui::SameLine();
+            drawLandmarkRadiusSlider();
             drawBlendingFactorSlider();
         }
 
@@ -1673,6 +1834,7 @@ namespace
         // draws an export button that enables the user to export things from this input
         void drawExportButton()
         {
+            m_CursorXAtExportButton = ImGui::GetCursorPos().x;  // needed to align the blending factor slider
             ImGui::Button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
             if (ImGui::BeginPopupContextItem("##exportcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
             {
@@ -1683,6 +1845,10 @@ namespace
                 if (ImGui::MenuItem("Mesh to STL"))
                 {
                     ActionTrySaveMeshToStl(GetResultMesh(*m_State));
+                }
+                if (ImGui::MenuItem("Non-Participating Landmarks to CSV"))
+                {
+                    ActionTrySaveWarpedNonParticipatingLandmarksToCSV(GetResultNonParticipatingLandmarks(*m_State));
                 }
                 ImGui::EndPopup();
             }
@@ -1706,9 +1872,23 @@ namespace
             );
         }
 
+        // draws a slider that lets the user edit how large the landmarks are
+        void drawLandmarkRadiusSlider()
+        {
+            // note: log scale is important: some users have meshes that
+            // are in different scales (e.g. millimeters)
+            ImGuiSliderFlags const flags = ImGuiSliderFlags_Logarithmic;
+
+            char const* const label = "landmark radius";
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - c_OverlayPadding.x);
+            ImGui::SliderFloat(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
+        }
+
         void drawBlendingFactorSlider()
         {
-            char const* const label = "blending factor";
+            ImGui::SetCursorPosX(m_CursorXAtExportButton);  // align with "export" button in row above
+
+            char const* const label = "blending factor  ";  // deliberate trailing spaces (for alignment with "landmark radius")
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - m_OverlayPadding.x);
 
             float factor = GetScratch(*m_State).blendingFactor;
@@ -1726,18 +1906,31 @@ namespace
         std::vector<osc::SceneDecoration> generateDecorations() const
         {
             std::vector<osc::SceneDecoration> decorations;
+            std::function<void(osc::SceneDecoration&&)> const decorationConsumer =
+                [&decorations](osc::SceneDecoration&& dec) { decorations.push_back(std::move(dec)); };
 
             AppendCommonDecorations(
                 *m_State,
                 GetResultMesh(*m_State),
                 m_WireframeMode,
-                [&decorations](osc::SceneDecoration&& dec) { decorations.push_back(std::move(dec)); }
+                decorationConsumer
             );
 
             if (m_ShowDestinationMesh)
             {
                 osc::SceneDecoration& dec = decorations.emplace_back(GetScratch(*m_State).destinationMesh);
                 dec.color = {1.0f, 0.0f, 0.0f, 0.5f};
+            }
+
+            // draw non-participating landmarks
+            for (glm::vec3 const& nonParticipatingLandmarkPos : GetResultNonParticipatingLandmarks(*m_State))
+            {
+                AppendNonParticipatingLandmark(
+                    m_State->landmarkSphere,
+                    m_LandmarkRadius,
+                    nonParticipatingLandmarkPos,
+                    decorationConsumer
+                );
             }
 
             return decorations;
@@ -1767,6 +1960,8 @@ namespace
         bool m_WireframeMode = true;
         bool m_ShowDestinationMesh = false;
         glm::vec2 m_OverlayPadding = {10.0f, 10.0f};
+        float m_LandmarkRadius = 0.05f;
+        float m_CursorXAtExportButton = 0.0f;
     };
 
     // pushes all available panels the TPS3D tab can render into the out param

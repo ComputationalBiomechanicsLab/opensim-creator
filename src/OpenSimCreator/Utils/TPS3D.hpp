@@ -3,6 +3,7 @@
 #include <oscar/Graphics/Mesh.hpp>
 
 #include <glm/vec3.hpp>
+#include <nonstd/span.hpp>
 
 #include <filesystem>
 #include <iosfwd>
@@ -114,7 +115,10 @@ namespace osc
     glm::vec3 EvaluateTPSEquation(TPSCoefficients3D const&, glm::vec3);
 
     // returns a mesh that is the equivalent of applying the 3D TPS warp to the mesh
-    osc::Mesh ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, osc::Mesh const&);
+    Mesh ApplyThinPlateWarpToMesh(TPSCoefficients3D const&, Mesh const&);
+
+    // returns points that are the equivalent of applying the 3D TPS warp to each input point
+    std::vector<glm::vec3> ApplyThinPlateWarpToPoints(TPSCoefficients3D const&, nonstd::span<glm::vec3 const>);
 
     // returns 3D landmark positions loaded from a CSV (.landmarks) file
     std::vector<glm::vec3> LoadLandmarksFromCSVFile(std::filesystem::path const&);
