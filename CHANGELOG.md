@@ -5,6 +5,19 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+
+## [0.5.1] - 2023/07/27
+
+0.5.1 adds an "Export Points" tool to the osim editor and support for non-participating landmarks in the
+warping UI.
+
+The exporter enables users to export any point-like quantity in an OpenSim model (e.g. muscle
+points, stations, markers, and frame origins) with respect to a user-chosen frame as a CSV file.
+
+The non-participating landmark feature enables users to import point data from a CSV file as
+landmarks that hitch a ride through the warping kernel without participating in how the warping
+kernel is computed. The resulting warped points can then be re-exported as a CSV file.
+
 - Added "Export Points" tool, which lets users export points in a model w.r.t. some frame as a CSV (#742)
 - Added support for non-participating landmarks in the mesh warper (#741)
 - Fixed Undo/Redo hotkeys not working in the warping workflow tab (#744)
