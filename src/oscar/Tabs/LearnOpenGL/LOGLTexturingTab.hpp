@@ -14,7 +14,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        explicit LOGLTexturingTab(std::weak_ptr<TabHost>);
+        explicit LOGLTexturingTab(std::weak_ptr<TabHost> const&);
         LOGLTexturingTab(LOGLTexturingTab const&) = delete;
         LOGLTexturingTab(LOGLTexturingTab&&) noexcept;
         LOGLTexturingTab& operator=(LOGLTexturingTab const&) = delete;

@@ -3710,6 +3710,13 @@ public:
         m_Version->reset();
     }
 
+    void transformTexCoords(std::function<void(nonstd::span<glm::vec2>)> const& f)
+    {
+        f(m_TexCoords);
+
+        m_Version->reset();
+    }
+
     nonstd::span<Rgba32 const> getColors() const
     {
         return m_Colors;
@@ -4128,6 +4135,11 @@ nonstd::span<glm::vec2 const> osc::Mesh::getTexCoords() const
 void osc::Mesh::setTexCoords(nonstd::span<glm::vec2 const> coords)
 {
     m_Impl.upd()->setTexCoords(coords);
+}
+
+void osc::Mesh::transformTexCoords(std::function<void(nonstd::span<glm::vec2>)> const& f)
+{
+    m_Impl.upd()->transformTexCoords(f);
 }
 
 nonstd::span<osc::Rgba32 const> osc::Mesh::getColors() const

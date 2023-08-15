@@ -27,52 +27,80 @@ namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Texturing";
 
-    osc::Mesh GenerateMesh()
+    osc::Mesh GenerateTexturedQuadMesh()
     {
         osc::Mesh quad = osc::GenTexturedQuad();
 
+        // transform default quad verts to match LearnOpenGL
         quad.transformVerts([](nonstd::span<glm::vec3> vs)
         {
             for (glm::vec3& v : vs)
             {
-                v *= 0.5f;  // to match LearnOpenGL
+                v *= 0.5f;
             }
         });
 
-        std::vector<glm::vec2> coords{quad.getTexCoords().begin(), quad.getTexCoords().end()};
-        for (glm::vec2& coord : coords)
+        // transform default quad texture coordinates to exercise wrap modes
+        quad.transformTexCoords([](nonstd::span<glm::vec2> coords)
         {
-            coord *= 2.0f;  // to test texture wrap modes
-        }
-        quad.setTexCoords(coords);
+            for (glm::vec2& coord : coords)
+            {
+                coord *= 2.0f;
+            }
+        });
 
         return quad;
+    }
+
+    osc::Material LoadTexturedMaterial()
+    {
+        osc::Material rv
+        {
+            osc::Shader
+            {
+                osc::App::slurp("shaders/ExperimentTexturing.vert"),
+                osc::App::slurp("shaders/ExperimentTexturing.frag"),
+            },
+        };
+
+        // set uTexture1
+        {
+            osc::Texture2D container = osc::LoadTexture2DFromImage(
+                osc::App::resource("textures/container.jpg"),
+                osc::ColorSpace::sRGB,
+                osc::ImageLoadingFlags::FlipVertically
+            );
+            container.setWrapMode(osc::TextureWrapMode::Clamp);
+
+            rv.setTexture("uTexture1", std::move(container));
+        }
+
+        // set uTexture2
+        {
+            rv.setTexture(
+                "uTexture2",
+                osc::LoadTexture2DFromImage(
+                    osc::App::resource("textures/awesomeface.png"),
+                    osc::ColorSpace::sRGB,
+                    osc::ImageLoadingFlags::FlipVertically
+                )
+            );
+        }
+
+        return rv;
+    }
+
+    osc::Camera CreateIdentityCamera()
+    {
+        osc::Camera rv;
+        rv.setViewMatrixOverride(glm::mat4{1.0f});
+        rv.setProjectionMatrixOverride(glm::mat4{1.0f});
+        return rv;
     }
 }
 
 class osc::LOGLTexturingTab::Impl final {
 public:
-
-    Impl()
-    {
-        m_Camera.setViewMatrixOverride(glm::mat4{1.0f});
-        m_Camera.setProjectionMatrixOverride(glm::mat4{1.0f});
-        Texture2D container = LoadTexture2DFromImage(
-            App::resource("textures/container.jpg"),
-            ColorSpace::sRGB,
-            ImageLoadingFlags::FlipVertically
-        );
-        container.setWrapMode(osc::TextureWrapMode::Clamp);
-        m_Material.setTexture("uTexture1", std::move(container));
-        m_Material.setTexture(
-            "uTexture2",
-            LoadTexture2DFromImage(
-                App::resource("textures/awesomeface.png"),
-                ColorSpace::sRGB,
-                ImageLoadingFlags::FlipVertically
-            )
-        );
-    }
 
     UID getID() const
     {
@@ -86,22 +114,18 @@ public:
 
     void onDraw()
     {
-        Graphics::DrawMesh(m_Mesh, Transform{}, m_Material, m_Camera);
+        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
 
-        m_Camera.setPixelRect(osc::GetMainViewportWorkspaceScreenRect());
+        Graphics::DrawMesh(m_Mesh, Transform{}, m_Material, m_Camera);
         m_Camera.renderToScreen();
     }
 
 private:
     UID m_TabID;
-    Shader m_Shader
-    {
-        App::slurp("shaders/ExperimentTexturing.vert"),
-        App::slurp("shaders/ExperimentTexturing.frag"),
-    };
-    Material m_Material{m_Shader};
-    Mesh m_Mesh = GenerateMesh();
-    Camera m_Camera;
+
+    Material m_Material = LoadTexturedMaterial();
+    Mesh m_Mesh = GenerateTexturedQuadMesh();
+    Camera m_Camera = CreateIdentityCamera();
 };
 
 
@@ -112,7 +136,7 @@ osc::CStringView osc::LOGLTexturingTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::LOGLTexturingTab::LOGLTexturingTab(std::weak_ptr<TabHost>) :
+osc::LOGLTexturingTab::LOGLTexturingTab(std::weak_ptr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

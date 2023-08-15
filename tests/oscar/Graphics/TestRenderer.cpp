@@ -2174,6 +2174,35 @@ TEST_F(Renderer, MeshSetTexCoordsCausesCopiedMeshToNotBeEqualToInitialMesh)
     ASSERT_NE(m, copy);
 }
 
+TEST_F(Renderer, MeshTransformTexCoordsAppliesTransformToTexCoords)
+{
+    osc::Mesh m;
+    std::vector<glm::vec2> coords = {GenerateVec2(), GenerateVec2(), GenerateVec2()};
+
+    m.setTexCoords(coords);
+
+    ASSERT_TRUE(SpansEqual<glm::vec2>(m.getTexCoords(), coords));
+
+    auto const transformer = [](glm::vec2 v)
+    {
+        return 0.287f * v;  // arbitrary mutation
+    };
+
+    // mutate mesh
+    m.transformTexCoords([&transformer](nonstd::span<glm::vec2> ts)
+    {
+        for (glm::vec2& t : ts)
+        {
+            t = transformer(t);
+        }
+    });
+
+    // perform equivalent mutation for comparison
+    std::transform(coords.begin(), coords.end(), coords.begin(), transformer);
+
+    ASSERT_TRUE(SpansEqual<glm::vec2>(m.getTexCoords(), coords));
+}
+
 TEST_F(Renderer, MeshGetColorsInitiallyReturnsEmptySpan)
 {
     osc::Mesh m;

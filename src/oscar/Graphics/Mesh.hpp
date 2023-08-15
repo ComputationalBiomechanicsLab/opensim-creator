@@ -50,6 +50,7 @@ namespace osc
 
         nonstd::span<glm::vec2 const> getTexCoords() const;
         void setTexCoords(nonstd::span<glm::vec2 const>);
+        void transformTexCoords(std::function<void(nonstd::span<glm::vec2>)> const&);
 
         nonstd::span<Rgba32 const> getColors() const;
         void setColors(nonstd::span<Rgba32 const>);
