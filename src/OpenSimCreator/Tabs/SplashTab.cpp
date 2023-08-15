@@ -27,6 +27,7 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/RecentFile.hpp>
 #include <oscar/Tabs/TabHost.hpp>
+#include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Widgets/LogViewer.hpp>
@@ -367,8 +368,8 @@ private:
 
         ImDrawList* const dl = ImGui::GetForegroundDrawList();
         ImU32 const color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
-        char const* const content = "OpenSim Creator v" OSC_VERSION_STRING " (build " OSC_BUILD_ID ")";
-        dl->AddText(pos, color, content);
+        CStringView const content = "OpenSim Creator v" OSC_VERSION_STRING " (build " OSC_BUILD_ID ")";
+        dl->AddText(pos, color, content.c_str());
     }
 
     // tab data

@@ -1,6 +1,7 @@
 #include "MuscleDecorationStyle.hpp"
 
 #include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 
 #include <nonstd/span.hpp>
@@ -18,7 +19,7 @@ namespace
     });
     static_assert(c_Styles.size() == osc::NumOptions<osc::MuscleDecorationStyle>());
 
-    constexpr auto c_StyleStrings = osc::to_array<char const*>(
+    constexpr auto c_StyleStrings = osc::to_array<osc::CStringView>(
     {
         "OpenSim",
         "Fibers & Tendons",
@@ -32,7 +33,7 @@ nonstd::span<osc::MuscleDecorationStyle const> osc::GetAllMuscleDecorationStyles
     return c_Styles;
 }
 
-nonstd::span<char const* const> osc::GetAllMuscleDecorationStyleStrings()
+nonstd::span<osc::CStringView const> osc::GetAllMuscleDecorationStyleStrings()
 {
     return c_StyleStrings;
 }

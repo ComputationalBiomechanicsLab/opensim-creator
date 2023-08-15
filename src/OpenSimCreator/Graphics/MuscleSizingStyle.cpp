@@ -17,7 +17,7 @@ namespace
     });
     static_assert(c_Styles.size() == osc::NumOptions<osc::MuscleSizingStyle>());
 
-    constexpr auto c_StyleStrings = osc::to_array<char const*>(
+    constexpr auto c_StyleStrings = osc::to_array<osc::CStringView>(
     {
         "OpenSim",
         "PCSA-derived",
@@ -30,7 +30,7 @@ nonstd::span<osc::MuscleSizingStyle const> osc::GetAllMuscleSizingStyles()
     return c_Styles;
 }
 
-nonstd::span<char const* const> osc::GetAllMuscleSizingStyleStrings()
+nonstd::span<osc::CStringView const> osc::GetAllMuscleSizingStyleStrings()
 {
     return c_StyleStrings;
 }

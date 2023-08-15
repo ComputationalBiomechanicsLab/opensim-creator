@@ -77,14 +77,13 @@ namespace
 
         // set uTexture2
         {
-            rv.setTexture(
-                "uTexture2",
-                osc::LoadTexture2DFromImage(
-                    osc::App::resource("textures/awesomeface.png"),
-                    osc::ColorSpace::sRGB,
-                    osc::ImageLoadingFlags::FlipVertically
-                )
+            osc::Texture2D face = osc::LoadTexture2DFromImage(
+                osc::App::resource("textures/awesomeface.png"),
+                osc::ColorSpace::sRGB,
+                osc::ImageLoadingFlags::FlipVertically
             );
+
+            rv.setTexture("uTexture2", face);
         }
 
         return rv;

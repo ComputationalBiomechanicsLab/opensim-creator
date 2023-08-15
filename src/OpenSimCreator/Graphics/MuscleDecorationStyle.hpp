@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Utils/CStringView.hpp>
+
 #include <nonstd/span.hpp>
 
 #include <cstddef>
@@ -16,6 +18,6 @@ namespace osc
     };
 
     nonstd::span<MuscleDecorationStyle const> GetAllMuscleDecorationStyles();
-    nonstd::span<char const* const> GetAllMuscleDecorationStyleStrings();
+    nonstd::span<CStringView const> GetAllMuscleDecorationStyleStrings();
     ptrdiff_t GetIndexOf(MuscleDecorationStyle);
 }

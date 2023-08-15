@@ -7172,11 +7172,11 @@ private:
     // draw the "Joint Type" editor for a `JointEl`
     void DrawJointTypeEditor(JointEl const& jointEl)
     {
-        int currentIdx = static_cast<int>(jointEl.getJointTypeIndex());
-        nonstd::span<char const* const> labels = osc::JointRegistry::nameCStrings();
-        if (ImGui::Combo("Joint Type", &currentIdx, labels.data(), static_cast<int>(labels.size())))
+        size_t currentIdx = jointEl.getJointTypeIndex();
+        nonstd::span<CStringView const> const labels = osc::JointRegistry::nameStrings();
+        if (osc::Combo("Joint Type", &currentIdx, labels))
         {
-            m_Shared->UpdModelGraph().UpdElByID<JointEl>(jointEl.GetID()).setJointTypeIndex(static_cast<size_t>(currentIdx));
+            m_Shared->UpdModelGraph().UpdElByID<JointEl>(jointEl.GetID()).setJointTypeIndex(currentIdx);
             m_Shared->CommitCurrentModelGraph("changed joint type");
         }
         ImGui::SameLine();

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Utils/CStringView.hpp>
+
 #include <nonstd/span.hpp>
 
 namespace osc
@@ -16,5 +18,5 @@ namespace osc
     };
 
     nonstd::span<SimulationStatus const> GetAllSimulationStatuses();
-    nonstd::span<char const* const> GetAllSimulationStatusStrings();
+    nonstd::span<CStringView const> GetAllSimulationStatusStrings();
 }

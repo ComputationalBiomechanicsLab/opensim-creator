@@ -102,7 +102,7 @@ private:
         ImGui::TextDisabled("simulator status:");
         ImGui::SameLine();
         osc::PushStyleColor(ImGuiCol_Text, CalcStatusColor(status));
-        ImGui::TextUnformatted(GetAllSimulationStatusStrings()[static_cast<size_t>(status)]);
+        ImGui::TextUnformatted(GetAllSimulationStatusStrings()[static_cast<size_t>(status)].c_str());
         osc::PopStyleColor();
     }
 

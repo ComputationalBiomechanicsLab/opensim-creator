@@ -1,6 +1,7 @@
 #include "MuscleColoringStyle.hpp"
 
 #include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 
 #include <nonstd/span.hpp>
@@ -21,7 +22,7 @@ namespace
     });
     static_assert(c_ColorStyles.size() == osc::NumOptions<osc::MuscleColoringStyle>());
 
-    constexpr auto c_ColorStyleStrings = osc::to_array<char const*>(
+    constexpr auto c_ColorStyleStrings = osc::to_array<osc::CStringView>(
     {
         "OpenSim (Appearance Property)",
         "OpenSim",
@@ -38,7 +39,7 @@ nonstd::span<osc::MuscleColoringStyle const> osc::GetAllMuscleColoringStyles()
     return c_ColorStyles;
 }
 
-nonstd::span<char const* const> osc::GetAllMuscleColoringStyleStrings()
+nonstd::span<osc::CStringView const> osc::GetAllMuscleColoringStyleStrings()
 {
     return c_ColorStyleStrings;
 }

@@ -13,13 +13,14 @@ namespace
 {
     constexpr osc::CStringView c_TabStringID = "Experiments/CustomWidgets";
 
-    float GetWidgetTitleDescriptionHeight(const char *, const char *description)
+    float GetWidgetTitleDescriptionHeight(osc::CStringView, osc::CStringView description)
     {
         //ImGui::PushFont(g_font_mgr.m_menu_font_medium);
         float h = ImGui::GetFrameHeight();
         //ImGui::PopFont();
 
-        if (description) {
+        if (!description.empty())
+        {
             ImGuiStyle &style = ImGui::GetStyle();
             h += style.ItemInnerSpacing.y;
             //ImGui::PushFont(g_font_mgr.m_default_font);
@@ -30,7 +31,10 @@ namespace
         return h;
     }
 
-    void WidgetTitleDescription(const char *title, const char *description, ImVec2 pos)
+    void WidgetTitleDescription(
+        osc::CStringView title,
+        osc::CStringView description,
+        ImVec2 pos)
     {
         ImDrawList& draw_list = *ImGui::GetWindowDrawList();
         ImGuiStyle& style = ImGui::GetStyle();
@@ -41,14 +45,15 @@ namespace
 
         //ImGui::PushFont(g_font_mgr.m_menu_font_medium);
         float title_height = ImGui::GetTextLineHeight();
-        draw_list.AddText(text_pos, ImGui::GetColorU32(ImGuiCol_Text), title);
+        draw_list.AddText(text_pos, ImGui::GetColorU32(ImGuiCol_Text), title.c_str());
         //ImGui::PopFont();
 
-        if (description) {
+        if (!description.empty())
+        {
             text_pos.y += title_height + style.ItemInnerSpacing.y;
 
             //ImGui::PushFont(g_font_mgr.m_default_font);
-            draw_list.AddText(text_pos, ImGui::GetColorU32(ImVec4(0.94f, 0.94f, 0.94f, 0.70f)), description);
+            draw_list.AddText(text_pos, ImGui::GetColorU32(ImVec4(0.94f, 0.94f, 0.94f, 0.70f)), description.c_str());
             //ImGui::PopFont();
         }
     }
@@ -106,7 +111,10 @@ namespace
             GetSliderTrackWidth(size);
     }
 
-    void Slider(const char *str_id, float *v, const char *description)
+    void Slider(
+        osc::CStringView str_id,
+        float *v,
+        osc::CStringView description)
     {
         ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32_BLACK_TRANS);
 
@@ -199,7 +207,7 @@ namespace
         }
     }
 
-    bool Toggle(const char *str_id, bool *v, const char *description)
+    bool Toggle(osc::CStringView str_id, bool *v, osc::CStringView description)
     {
         ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32_BLACK_TRANS);
 
@@ -211,9 +219,9 @@ namespace
 
         ImVec2 p = ImGui::GetCursorScreenPos();
         ImVec2 bb(ImGui::GetColumnWidth(),
-            GetWidgetTitleDescriptionHeight(str_id, description));
+            GetWidgetTitleDescriptionHeight(str_id.c_str(), description.c_str()));
         ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0, 0));
-        ImGui::PushID(str_id);
+        ImGui::PushID(str_id.c_str());
         bool status = ImGui::Button("###toggle_button", bb);
         if (status) {
             *v = !*v;

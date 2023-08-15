@@ -58,8 +58,8 @@ namespace
     class MuscleOutput final {
     public:
         MuscleOutput(
-            char const* name,
-            char const* units,
+            osc::CStringView name,
+            osc::CStringView units,
             double(*getter)(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const& c)) :
 
             m_Name{name},
@@ -68,14 +68,14 @@ namespace
         {
         }
 
-        char const* getName() const
+        osc::CStringView getName() const
         {
-            return m_Name.c_str();
+            return m_Name;
         }
 
-        char const* getUnits() const
+        osc::CStringView getUnits() const
         {
-            return m_Units.c_str();
+            return m_Units;
         }
 
         double operator()(SimTK::State const& st, OpenSim::Muscle const& muscle, OpenSim::Coordinate const& c) const
@@ -1712,7 +1712,7 @@ namespace
                 for (MuscleOutput const& output : m_AvailableMuscleOutputs)
                 {
                     bool selected = output == current;
-                    if (ImGui::Selectable(output.getName(), &selected))
+                    if (ImGui::Selectable(output.getName().c_str(), &selected))
                     {
                         updSharedStateData().updPlotParams().setMuscleOutput(output);
                     }
@@ -2086,11 +2086,11 @@ namespace
 
         void drawPlotDataTypeSelector()
         {
-            std::vector<char const*> names;
+            std::vector<osc::CStringView> names;
             names.reserve(m_AvailableMuscleOutputs.size());
 
-            int active = -1;
-            for (int i = 0; i < static_cast<int>(m_AvailableMuscleOutputs.size()); ++i)
+            size_t active = 0;
+            for (size_t i = 0; i < m_AvailableMuscleOutputs.size(); ++i)
             {
                 MuscleOutput const& o = m_AvailableMuscleOutputs[i];
                 names.push_back(o.getName());
@@ -2100,7 +2100,7 @@ namespace
                 }
             }
 
-            if (ImGui::Combo("data type", &active, names.data(), static_cast<int>(names.size())))
+            if (osc::Combo("data type", &active, names))
             {
                 updSharedStateData().updPlotParams().setMuscleOutput(m_AvailableMuscleOutputs[active]);
             }

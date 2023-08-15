@@ -29,9 +29,7 @@ namespace osc
         static CStringView description() noexcept;
         static nonstd::span<std::shared_ptr<T const> const> prototypes() noexcept;
         static nonstd::span<CStringView const> nameStrings() noexcept;
-        static nonstd::span<char const* const> nameCStrings() noexcept;
         static nonstd::span<CStringView const> descriptionStrings() noexcept;
-        static nonstd::span<char const* const> descriptionCStrings() noexcept;
         static std::optional<size_t> indexOf(T const& v) noexcept;
 
         template<typename U>

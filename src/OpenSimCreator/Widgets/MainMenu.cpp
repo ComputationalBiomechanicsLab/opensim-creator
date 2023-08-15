@@ -18,6 +18,7 @@
 #include <oscar/Utils/ArrayHelpers.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
 #include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/UID.hpp>
@@ -42,7 +43,7 @@
 
 namespace
 {
-    constexpr auto c_AntialiasingLevels = osc::to_array<char const* const>(
+    constexpr auto c_AntialiasingLevels = osc::to_array<osc::CStringView const>(
     {
         "x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128"
     });
@@ -267,11 +268,13 @@ void osc::MainMenuAboutTab::onDraw()
         DrawHelpMarker("the level of MultiSample Anti-Aliasing to use. This only affects 3D renders *within* the UI, not the whole UI (panels etc. will not be affected)");
         ImGui::NextColumn();
         {
-            int samplesIdx = countr_zero(static_cast<uint32_t>(App::get().getMSXAASamplesRecommended()));
-            int maxSamplesIdx = countr_zero(static_cast<uint32_t>(App::get().getMSXAASamplesMax()));
-            OSC_ASSERT(static_cast<size_t>(maxSamplesIdx) < c_AntialiasingLevels.size());
+            size_t samplesIdx = countr_zero(static_cast<size_t>(App::get().getMSXAASamplesRecommended()));
+            size_t maxSamplesIdx = countr_zero(static_cast<size_t>(App::get().getMSXAASamplesMax()));
+            OSC_ASSERT(maxSamplesIdx < c_AntialiasingLevels.size());
 
-            if (ImGui::Combo("##msxaa", &samplesIdx, c_AntialiasingLevels.data(), maxSamplesIdx + 1))
+            nonstd::span<osc::CStringView const> items{c_AntialiasingLevels.begin(), c_AntialiasingLevels.begin() + (maxSamplesIdx + 1)};
+
+            if (osc::Combo("##msxaa", &samplesIdx, items))
             {
                 App::upd().setMSXAASamplesRecommended(1 << samplesIdx);
             }

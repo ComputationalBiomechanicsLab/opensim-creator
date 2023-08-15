@@ -137,10 +137,8 @@ private:
             DrawHelpMarker("The type of OpenSim::Joint that will connect the new OpenSim::Body to the selection above");
             ImGui::NextColumn();
             {
-                auto names = osc::JointRegistry::nameCStrings();
-                int idx = static_cast<int>(m_BodyDetails.jointTypeIndex);
-                ImGui::Combo("##jointtype", &idx, names.data(), static_cast<int>(names.size()));
-                m_BodyDetails.jointTypeIndex = static_cast<size_t>(idx);
+                nonstd::span<CStringView const> const names = osc::JointRegistry::nameStrings();
+                osc::Combo("##jointtype", &m_BodyDetails.jointTypeIndex, names);
                 App::upd().addFrameAnnotation("AddBodyPopup::JointTypeInput", osc::GetItemRect());
             }
             ImGui::NextColumn();

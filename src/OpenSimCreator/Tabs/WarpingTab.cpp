@@ -1597,9 +1597,9 @@ namespace
             // are in different scales (e.g. millimeters)
             ImGuiSliderFlags const flags = ImGuiSliderFlags_Logarithmic;
 
-            char const* const label = "landmark radius";
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - c_OverlayPadding.x);
-            ImGui::SliderFloat(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
+            osc::CStringView const label = "landmark radius";
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label.c_str()).x - ImGui::GetStyle().ItemInnerSpacing.x - c_OverlayPadding.x);
+            ImGui::SliderFloat(label.c_str(), &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
 
         // renders this panel's 3D scene to a texture
@@ -1881,20 +1881,20 @@ namespace
             // are in different scales (e.g. millimeters)
             ImGuiSliderFlags const flags = ImGuiSliderFlags_Logarithmic;
 
-            char const* const label = "landmark radius";
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - c_OverlayPadding.x);
-            ImGui::SliderFloat(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
+            osc::CStringView const label = "landmark radius";
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label.c_str()).x - ImGui::GetStyle().ItemInnerSpacing.x - c_OverlayPadding.x);
+            ImGui::SliderFloat(label.c_str(), &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
 
         void drawBlendingFactorSlider()
         {
             ImGui::SetCursorPosX(m_CursorXAtExportButton);  // align with "export" button in row above
 
-            char const* const label = "blending factor  ";  // deliberate trailing spaces (for alignment with "landmark radius")
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label).x - ImGui::GetStyle().ItemInnerSpacing.x - m_OverlayPadding.x);
+            osc::CStringView const label = "blending factor  ";  // deliberate trailing spaces (for alignment with "landmark radius")
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label.c_str()).x - ImGui::GetStyle().ItemInnerSpacing.x - m_OverlayPadding.x);
 
             float factor = GetScratch(*m_State).blendingFactor;
-            if (ImGui::SliderFloat(label, &factor, 0.0f, 1.0f))
+            if (ImGui::SliderFloat(label.c_str(), &factor, 0.0f, 1.0f))
             {
                 ActionSetBlendFactorWithoutSaving(*m_State->editedDocument, factor);
             }

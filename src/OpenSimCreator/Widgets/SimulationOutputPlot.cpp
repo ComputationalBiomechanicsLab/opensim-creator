@@ -30,6 +30,7 @@
 #include <ostream>
 #include <ratio>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -53,7 +54,7 @@ namespace
         float const* ts,    // times
         float const* vs,    // values @ each time in times
         size_t n,           // number of datapoints
-        char const* header)  // name of values (header)
+        std::string_view header)  // name of values (header)
     {
         // try prompt user for save location
         std::optional<std::filesystem::path> const maybeCSVPath =
@@ -126,7 +127,8 @@ namespace
         return ExportTimeseriesToCSV(times.data(),
             values.data(),
             times.size(),
-            output.getName().c_str());
+            output.getName()
+        );
     }
 
     void DrawToggleWatchOutputMenuItem(

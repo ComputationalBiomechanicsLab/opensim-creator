@@ -82,11 +82,11 @@ private:
         // action: add joint
         if (ImGui::BeginMenu(label.str().c_str()))
         {
-            auto names = osc::ComponentRegistry<T>::nameCStrings();
+            nonstd::span<CStringView const> const names = osc::ComponentRegistry<T>::nameStrings();
 
             for (size_t i = 0; i < names.size(); ++i)
             {
-                if (ImGui::MenuItem(names[i]))
+                if (ImGui::MenuItem(names[i].c_str()))
                 {
                     std::unique_ptr<T> copy{osc::ComponentRegistry<T>::prototypes()[i]->clone()};
                     auto popup = std::make_unique<AddComponentPopup>(m_EditorAPI, m_Uum, std::move(copy), "Add " + osc::ComponentRegistry<T>::name());
@@ -96,7 +96,7 @@ private:
 
                 if (ImGui::IsItemHovered())
                 {
-                    DrawTooltip(names[i], osc::ComponentRegistry<T>::descriptionCStrings()[i]);
+                    DrawTooltip(names[i].c_str(), osc::ComponentRegistry<T>::descriptionStrings()[i].c_str());
                 }
             }
 

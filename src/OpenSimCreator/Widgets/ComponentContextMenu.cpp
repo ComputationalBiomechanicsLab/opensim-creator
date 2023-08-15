@@ -68,13 +68,13 @@ namespace
             // look the Joint up in the type registry so we know where it should be in the ImGui::Combo
             std::optional<size_t> maybeTypeIndex = osc::JointRegistry::indexOf(*joint);
             int typeIndex = maybeTypeIndex ? static_cast<int>(*maybeTypeIndex) : -1;
-            auto jointNames = osc::JointRegistry::nameCStrings();
+            nonstd::span<osc::CStringView const> const jointNames = osc::JointRegistry::nameStrings();
 
             for (int i = 0; i < static_cast<int>(jointNames.size()); ++i)
             {
                 bool selected = i == typeIndex;
                 bool wasSelected = selected;
-                if (ImGui::MenuItem(jointNames[i], nullptr, &selected))
+                if (ImGui::MenuItem(jointNames[i].c_str(), nullptr, &selected))
                 {
                     if (!wasSelected)
                     {

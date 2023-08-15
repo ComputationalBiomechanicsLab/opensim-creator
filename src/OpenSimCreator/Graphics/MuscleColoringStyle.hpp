@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Utils/CStringView.hpp>
+
 #include <nonstd/span.hpp>
 
 #include <cstddef>
@@ -19,6 +21,6 @@ namespace osc
     };
 
     nonstd::span<MuscleColoringStyle const> GetAllMuscleColoringStyles();
-    nonstd::span<char const* const> GetAllMuscleColoringStyleStrings();
+    nonstd::span<CStringView const> GetAllMuscleColoringStyleStrings();
     ptrdiff_t GetIndexOf(MuscleColoringStyle);
 }

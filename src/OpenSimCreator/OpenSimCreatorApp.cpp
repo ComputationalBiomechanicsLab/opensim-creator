@@ -60,11 +60,11 @@ namespace
     // are all deduped to this one source location
     //
     // it's UNSAFE because `setlocale` is a global mutation
-    void setLocaleUNSAFE(int category, char const* locale)
+    void setLocaleUNSAFE(int category, osc::CStringView locale)
     {
         // disable lint because this function is only called once at application
         // init time
-        if (std::setlocale(category, locale) == nullptr)  // NOLINT(concurrency-mt-unsafe)
+        if (std::setlocale(category, locale.c_str()) == nullptr)  // NOLINT(concurrency-mt-unsafe)
         {
             osc::log::error("error setting locale category %i to %s", category, locale);
         }
@@ -90,7 +90,7 @@ namespace
         //
         // but it *reads* OSIM files with the assumption that numbers will be in the format 'x.y'
         osc::log::info("setting locale to US (so that numbers are always in the format '0.x'");
-        char const* locale = "C";
+        osc::CStringView const locale = "C";
         osc::SetEnv("LANG", locale, true);
         osc::SetEnv("LC_CTYPE", locale, true);
         osc::SetEnv("LC_NUMERIC", locale, true);
@@ -120,7 +120,7 @@ namespace
 #ifdef LC_ALL
         setLocaleUNSAFE(LC_ALL, locale);
 #endif
-        std::locale::global(std::locale{locale});
+        std::locale::global(std::locale{locale.c_str()});
 
         // disable OpenSim's `opensim.log` default
         //

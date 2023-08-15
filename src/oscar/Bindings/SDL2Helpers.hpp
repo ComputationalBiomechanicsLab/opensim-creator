@@ -4,6 +4,8 @@
 #undef main
 #include <glm/vec2.hpp>
 
+#include <oscar/Utils/CStringView.hpp>
+
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -81,7 +83,7 @@ namespace sdl
         }
 
     private:
-        friend Window CreateWindoww(const char* title, int x, int y, int w, int h, Uint32 flags);
+        friend Window CreateWindoww(osc::CStringView title, int x, int y, int w, int h, Uint32 flags);
         Window(SDL_Window * _ptr) : m_WindowHandle{_ptr}
         {
         }
@@ -94,9 +96,9 @@ namespace sdl
     //
     // CreateWindoww is a typo because `CreateWindow` is defined in the
     // preprocessor
-    inline Window CreateWindoww(const char* title, int x, int y, int w, int h, Uint32 flags)
+    inline Window CreateWindoww(osc::CStringView title, int x, int y, int w, int h, Uint32 flags)
     {
-        SDL_Window* const win = SDL_CreateWindow(title, x, y, w, h, flags);
+        SDL_Window* const win = SDL_CreateWindow(title.c_str(), x, y, w, h, flags);
 
         if (win == nullptr)
         {
