@@ -9,12 +9,13 @@
 #include <memory>
 
 namespace osc { class MainUIStateAPI; }
+namespace osc { template<typename T> class ParentPtr; }
 
 namespace osc
 {
     class SplashTab final : public Tab {
     public:
-        explicit SplashTab(std::weak_ptr<MainUIStateAPI>);
+        explicit SplashTab(ParentPtr<MainUIStateAPI> const&);
         SplashTab(SplashTab const&) = delete;
         SplashTab(SplashTab&&) noexcept;
         SplashTab& operator=(SplashTab const&) = delete;

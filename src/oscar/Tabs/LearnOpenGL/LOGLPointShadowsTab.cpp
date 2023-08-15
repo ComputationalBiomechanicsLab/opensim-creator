@@ -141,8 +141,7 @@ namespace
 class osc::LOGLPointShadowsTab::Impl final {
 public:
 
-    explicit Impl(std::weak_ptr<TabHost> parent_) :
-        m_Parent{std::move(parent_)}
+    Impl()
     {
         m_SceneCamera.setPosition({0.0f, 0.0f, 5.0f});
         m_SceneCamera.setCameraFOV(glm::radians(45.0f));
@@ -302,7 +301,6 @@ private:
     }
 
     UID m_TabID;
-    std::weak_ptr<TabHost> m_Parent;
 
     Material m_ShadowMappingMaterial
     {
@@ -355,8 +353,8 @@ osc::CStringView osc::LOGLPointShadowsTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::LOGLPointShadowsTab::LOGLPointShadowsTab(std::weak_ptr<TabHost> parent_) :
-    m_Impl{std::make_unique<Impl>(std::move(parent_))}
+osc::LOGLPointShadowsTab::LOGLPointShadowsTab(ParentPtr<TabHost> const&) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 

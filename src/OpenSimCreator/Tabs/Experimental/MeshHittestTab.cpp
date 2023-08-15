@@ -220,7 +220,7 @@ osc::CStringView osc::MeshHittestTab::id() noexcept
     return "OpenSim/Experimental/MeshHittest";
 }
 
-osc::MeshHittestTab::MeshHittestTab(std::weak_ptr<TabHost>) :
+osc::MeshHittestTab::MeshHittestTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

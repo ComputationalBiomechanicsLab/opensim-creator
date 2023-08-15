@@ -31,6 +31,7 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Tabs/TabHost.hpp>
 #include <oscar/Utils/SynchronizedValue.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Widgets/WindowMenu.hpp>
 
@@ -72,10 +73,10 @@ class osc::SimulatorTab::Impl final : public SimulatorUIAPI {
 public:
 
     Impl(
-        std::weak_ptr<MainUIStateAPI> parent_,
+        ParentPtr<MainUIStateAPI> const& parent_,
         std::shared_ptr<Simulation> simulation_) :
 
-        m_Parent{std::move(parent_)},
+        m_Parent{parent_},
         m_Simulation{std::move(simulation_)}
     {
         // register panels
@@ -349,32 +350,32 @@ private:
 
     int implGetNumUserOutputExtractors() const final
     {
-        return m_Parent.lock()->getNumUserOutputExtractors();
+        return m_Parent->getNumUserOutputExtractors();
     }
 
     OutputExtractor const& implGetUserOutputExtractor(int i) const final
     {
-        return m_Parent.lock()->getUserOutputExtractor(i);
+        return m_Parent->getUserOutputExtractor(i);
     }
 
     void implAddUserOutputExtractor(OutputExtractor const& outputExtractor) final
     {
-        m_Parent.lock()->addUserOutputExtractor(outputExtractor);
+        m_Parent->addUserOutputExtractor(outputExtractor);
     }
 
     void implRemoveUserOutputExtractor(int i) final
     {
-        m_Parent.lock()->removeUserOutputExtractor(i);
+        m_Parent->removeUserOutputExtractor(i);
     }
 
     bool implHasUserOutputExtractor(OutputExtractor const& oe) const final
     {
-        return m_Parent.lock()->hasUserOutputExtractor(oe);
+        return m_Parent->hasUserOutputExtractor(oe);
     }
 
     bool implRemoveUserOutputExtractor(OutputExtractor const& oe) final
     {
-        return m_Parent.lock()->removeUserOutputExtractor(oe);
+        return m_Parent->removeUserOutputExtractor(oe);
     }
 
     SimulationModelStatePair* implTryGetCurrentSimulationState() final
@@ -432,7 +433,7 @@ private:
 
     // tab data
     UID m_ID;
-    std::weak_ptr<MainUIStateAPI> m_Parent;
+    ParentPtr<MainUIStateAPI> m_Parent;
     std::string m_Name = ICON_FA_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber());
 
     // underlying simulation being shown
@@ -463,10 +464,10 @@ private:
 // public API (PIMPL)
 
 osc::SimulatorTab::SimulatorTab(
-    std::weak_ptr<MainUIStateAPI> parent_,
+    ParentPtr<MainUIStateAPI> const& parent_,
     std::shared_ptr<Simulation> simulation_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(parent_), std::move(simulation_))}
+    m_Impl{std::make_unique<Impl>(parent_, std::move(simulation_))}
 {
 }
 

@@ -12,8 +12,9 @@
 #include "OpenSimCreator/Widgets/ParamBlockEditorPopup.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
-#include <oscar/Widgets/WindowMenu.hpp>
 #include <oscar/Platform/Config.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
+#include <oscar/Widgets/WindowMenu.hpp>
 
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
@@ -24,11 +25,11 @@
 class osc::ModelEditorMainMenu::Impl final {
 public:
     Impl(
-        std::weak_ptr<MainUIStateAPI> mainStateAPI_,
+        ParentPtr<MainUIStateAPI> const& mainStateAPI_,
         EditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> model_) :
 
-        m_MainUIStateAPI{std::move(mainStateAPI_)},
+        m_MainUIStateAPI{mainStateAPI_},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)}
     {
@@ -91,7 +92,7 @@ private:
 
             if (ImGui::MenuItem(ICON_FA_EDIT " Edit simulation settings"))
             {
-                m_EditorAPI->pushPopup(std::make_unique<osc::ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI.lock()->updSimulationParams()));
+                m_EditorAPI->pushPopup(std::make_unique<osc::ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
             }
 
             if (ImGui::MenuItem("         Export Points"))
@@ -132,7 +133,7 @@ private:
         }
     }
 
-    std::weak_ptr<MainUIStateAPI> m_MainUIStateAPI;
+    ParentPtr<MainUIStateAPI> m_MainUIStateAPI;
     EditorAPI* m_EditorAPI;
     std::shared_ptr<osc::UndoableModelStatePair> m_Model;
     MainMenuFileTab m_MainMenuFileTab;
@@ -145,11 +146,11 @@ private:
 // public API (PIMPL)
 
 osc::ModelEditorMainMenu::ModelEditorMainMenu(
-    std::weak_ptr<MainUIStateAPI> mainStateAPI_,
+    ParentPtr<MainUIStateAPI> const& mainStateAPI_,
     EditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(mainStateAPI_), editorAPI_, std::move(model_))}
+    m_Impl{std::make_unique<Impl>(mainStateAPI_, editorAPI_, std::move(model_))}
 {
 }
 

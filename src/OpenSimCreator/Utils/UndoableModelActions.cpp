@@ -23,6 +23,7 @@
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/TypeHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 
@@ -64,12 +65,12 @@
 // helper functions
 namespace
 {
-    void OpenOsimInLoadingTab(std::weak_ptr<osc::MainUIStateAPI> api, std::filesystem::path p)
+    void OpenOsimInLoadingTab(osc::ParentPtr<osc::MainUIStateAPI> const& api, std::filesystem::path p)
     {
-        api.lock()->addAndSelectTab<osc::LoadingTab>(api, std::move(p));
+        api->addAndSelectTab<osc::LoadingTab>(api, std::move(p));
     }
 
-    void DoOpenFileViaDialog(std::weak_ptr<osc::MainUIStateAPI> api)
+    void DoOpenFileViaDialog(osc::ParentPtr<osc::MainUIStateAPI> const& api)
     {
         std::optional<std::filesystem::path> const maybePath = osc::PromptUserForFile("osim");
 
@@ -196,20 +197,20 @@ void osc::ActionSaveCurrentModelAs(UndoableModelStatePair& uim)
     }
 }
 
-void osc::ActionNewModel(std::weak_ptr<MainUIStateAPI> api)
+void osc::ActionNewModel(ParentPtr<MainUIStateAPI> const& api)
 {
     auto p = std::make_unique<UndoableModelStatePair>();
-    api.lock()->addAndSelectTab<ModelEditorTab>(api, std::move(p));
+    api->addAndSelectTab<ModelEditorTab>(api, std::move(p));
 }
 
-void osc::ActionOpenModel(std::weak_ptr<MainUIStateAPI> api)
+void osc::ActionOpenModel(ParentPtr<MainUIStateAPI> const& api)
 {
-    DoOpenFileViaDialog(std::move(api));
+    DoOpenFileViaDialog(api);
 }
 
-void osc::ActionOpenModel(std::weak_ptr<MainUIStateAPI> api, std::filesystem::path const& path)
+void osc::ActionOpenModel(ParentPtr<MainUIStateAPI> const& api, std::filesystem::path const& path)
 {
-    OpenOsimInLoadingTab(std::move(api), path);
+    OpenOsimInLoadingTab(api, path);
 }
 
 bool osc::ActionSaveModel(MainUIStateAPI&, UndoableModelStatePair& model)
@@ -339,7 +340,7 @@ void osc::ActionClearSelectionFromEditedModel(UndoableModelStatePair& model)
 }
 
 bool osc::ActionLoadSTOFileAgainstModel(
-    std::weak_ptr<MainUIStateAPI> parent,
+    ParentPtr<MainUIStateAPI> const& parent,
     UndoableModelStatePair const& uim,
     std::filesystem::path stoPath)
 {
@@ -351,7 +352,7 @@ bool osc::ActionLoadSTOFileAgainstModel(
 
         auto simulation = std::make_shared<Simulation>(StoFileSimulation{std::move(modelCopy), stoPath, uim.getFixupScaleFactor()});
 
-        parent.lock()->addAndSelectTab<SimulatorTab>(parent, simulation);
+        parent->addAndSelectTab<SimulatorTab>(parent, simulation);
 
         return true;
     }
@@ -362,15 +363,17 @@ bool osc::ActionLoadSTOFileAgainstModel(
     }
 }
 
-bool osc::ActionStartSimulatingModel(std::weak_ptr<MainUIStateAPI> parent, UndoableModelStatePair const& uim)
+bool osc::ActionStartSimulatingModel(
+    ParentPtr<MainUIStateAPI> const& parent,
+    UndoableModelStatePair const& uim)
 {
     BasicModelStatePair modelState{uim};
-    ForwardDynamicSimulatorParams params = osc::FromParamBlock(parent.lock()->getSimulationParams());
+    ForwardDynamicSimulatorParams params = osc::FromParamBlock(parent->getSimulationParams());
 
     auto simulation = std::make_shared<Simulation>(ForwardDynamicSimulation{std::move(modelState), params});
     auto simulationTab = std::make_unique<SimulatorTab>(parent, std::move(simulation));
 
-    parent.lock()->selectTab(parent.lock()->addTab(std::move(simulationTab)));
+    parent->selectTab(parent->addTab(std::move(simulationTab)));
 
     return true;
 }
@@ -589,13 +592,13 @@ bool osc::ActionReloadOsimFromDisk(UndoableModelStatePair& uim, MeshCache& meshC
 }
 
 bool osc::ActionSimulateAgainstAllIntegrators(
-    std::weak_ptr<MainUIStateAPI> parent,
+    ParentPtr<MainUIStateAPI> const& parent,
     UndoableModelStatePair const& uim)
 {
-    parent.lock()->addAndSelectTab<PerformanceAnalyzerTab>(
+    parent->addAndSelectTab<PerformanceAnalyzerTab>(
         parent,
         BasicModelStatePair{uim},
-        parent.lock()->getSimulationParams()
+        parent->getSimulationParams()
     );
     return true;
 }

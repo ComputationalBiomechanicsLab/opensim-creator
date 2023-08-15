@@ -134,7 +134,7 @@ osc::CStringView osc::MeshGenTestTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::MeshGenTestTab::MeshGenTestTab(std::weak_ptr<TabHost>) :
+osc::MeshGenTestTab::MeshGenTestTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

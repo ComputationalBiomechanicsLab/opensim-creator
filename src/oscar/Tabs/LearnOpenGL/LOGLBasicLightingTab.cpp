@@ -163,7 +163,7 @@ osc::CStringView osc::LOGLBasicLightingTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::LOGLBasicLightingTab::LOGLBasicLightingTab(std::weak_ptr<TabHost>) :
+osc::LOGLBasicLightingTab::LOGLBasicLightingTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

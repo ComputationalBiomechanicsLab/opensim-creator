@@ -23,6 +23,7 @@
 #include <oscar/Tabs/TabRegistry.hpp>
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <oscar/Widgets/SaveChangesPopup.hpp>
@@ -46,7 +47,6 @@
 #include <utility>
 #include <vector>
 
-
 class osc::MainUIScreen::Impl final :
     public osc::MainUIStateAPI,
     public std::enable_shared_from_this<Impl> {
@@ -56,7 +56,7 @@ public:
     {
         // CARE: the reason we delay construction is because std::enable_shared_from_this
         // does not work until after the inheriting class's constructor completes
-        m_InitialTabsCtors.emplace_back([](std::weak_ptr<MainUIStateAPI> api)
+        m_InitialTabsCtors.emplace_back([](ParentPtr<MainUIStateAPI> const& api)
         {
             return std::make_unique<SplashTab>(api);
         });
@@ -68,7 +68,7 @@ public:
         // does not work until after the inheriting class's constructor completes
 
         // always ensure the splash tab is available
-        m_InitialTabsCtors.emplace_back([](std::weak_ptr<MainUIStateAPI> api)
+        m_InitialTabsCtors.emplace_back([](ParentPtr<MainUIStateAPI> const& api)
         {
             return std::make_unique<SplashTab>(api);
         });
@@ -76,7 +76,7 @@ public:
         // queue a tab for each supplied path (i.e. load the path)
         for (std::filesystem::path const& path : paths)
         {
-            m_InitialTabsCtors.emplace_back([path](std::weak_ptr<MainUIStateAPI> api)
+            m_InitialTabsCtors.emplace_back([path](ParentPtr<MainUIStateAPI> const& api)
             {
                 return std::make_unique<LoadingTab>(api, path);
             });
@@ -92,7 +92,7 @@ public:
             size_t const nManuallyAddedTabs = m_Tabs.size();
             for (auto& initialTab : m_InitialTabsCtors)
             {
-                m_Tabs.insert(m_Tabs.end() - nManuallyAddedTabs, initialTab(weak_from_this()));
+                m_Tabs.insert(m_Tabs.end() - nManuallyAddedTabs, initialTab(updThisAsParent()));
             }
             m_RequestedTab = m_Tabs.back()->getID();
             m_InitialTabsCtors.clear();
@@ -120,7 +120,7 @@ public:
                 log::error("MainUIScreen::onUnmount: unmounting active tab threw an exception: %s", ex.what());
             }
 
-            m_ActiveTab = UID::empty();
+            m_ActiveTabID = UID::empty();
         }
 
         ImPlot::DestroyContext();
@@ -162,7 +162,7 @@ public:
                     // - the tab is faulty in some way
                     // - soak up the exception to prevent the whole application from terminating
                     // - then create a new tab containing the error message, so the user can see the error
-                    UID id = addTab(std::make_unique<ErrorTab>(weak_from_this(), ex));
+                    UID id = addTab(std::make_unique<ErrorTab>(getTabHostAPI(), ex));
                     selectTab(id);
                     implCloseTab(m_Tabs[i]->getID());
                 }
@@ -208,9 +208,9 @@ public:
                 // - the tab is faulty in some way
                 // - soak up the exception to prevent the whole application from terminating
                 // - then create a new tab containing the error message, so the user can see the error
-                UID id = addTab(std::make_unique<ErrorTab>(weak_from_this(), ex));
+                UID id = addTab(std::make_unique<ErrorTab>(getTabHostAPI(), ex));
                 selectTab(id);
-                implCloseTab(active->getID());
+                implCloseTab(m_ActiveTabID);
             }
 
             // the event may have triggered tab deletions
@@ -242,7 +242,7 @@ public:
                 // - the tab is faulty in some way
                 // - soak up the exception to prevent the whole application from terminating
                 // - then create a new tab containing the error message, so the user can see the error
-                UID id = addTab(std::make_unique<ErrorTab>(weak_from_this(), ex));
+                UID id = addTab(std::make_unique<ErrorTab>(getTabHostAPI(), ex));
                 selectTab(id);
                 implCloseTab(m_Tabs[i]->getID());
             }
@@ -276,9 +276,9 @@ public:
         {
             if (m_RequestedTab == UID::empty())
             {
-                m_RequestedTab = m_ActiveTab;
+                m_RequestedTab = m_ActiveTabID;
             }
-            m_ActiveTab = UID::empty();
+            m_ActiveTabID = UID::empty();
 
             osc::ImGuiShutdown();
             osc::ImGuiInit();
@@ -356,9 +356,9 @@ public:
         return implAddTab(std::move(tab));
     }
 
-    std::weak_ptr<TabHost> getTabHostAPI()
+    osc::ParentPtr<MainUIStateAPI> getTabHostAPI()
     {
-        return weak_from_this();
+        return osc::ParentPtr<MainUIStateAPI>{shared_from_this()};
     }
 
 private:
@@ -383,9 +383,9 @@ private:
                         // - the tab is faulty in some way
                         // - soak up the exception to prevent the whole application from terminating
                         // - then create a new tab containing the error message, so the user can see the error
-                        UID id = addTab(std::make_unique<ErrorTab>(weak_from_this(), ex));
+                        UID id = addTab(std::make_unique<ErrorTab>(getTabHostAPI(), ex));
                         selectTab(id);
-                        implCloseTab(active->getID());
+                        implCloseTab(m_ActiveTabID);
                     }
 
                     if (m_ImguiWasAggressivelyReset)
@@ -433,7 +433,7 @@ private:
                             flags |= ImGuiTabItemFlags_SetSelected;
                         }
 
-                        if (m_Tabs[i]->getID() == m_ActiveTab && m_Tabs[i]->getName() != m_ActiveTabNameLastFrame)
+                        if (m_Tabs[i]->getID() == m_ActiveTabID && m_Tabs[i]->getName() != m_ActiveTabNameLastFrame)
                         {
                             flags |= ImGuiTabItemFlags_SetSelected;
                             m_ActiveTabNameLastFrame = m_Tabs[i]->getName();
@@ -444,7 +444,7 @@ private:
 
                         if (ImGui::BeginTabItem(m_Tabs[i]->getName().c_str(), &active, flags))
                         {
-                            if (m_Tabs[i]->getID() != m_ActiveTab)
+                            if (m_Tabs[i]->getID() != m_ActiveTabID)
                             {
                                 if (Tab* activeTab = getActiveTab())
                                 {
@@ -453,10 +453,10 @@ private:
                                 m_Tabs[i]->onMount();
                             }
 
-                            m_ActiveTab = m_Tabs[i]->getID();
+                            m_ActiveTabID = m_Tabs[i]->getID();
                             m_ActiveTabNameLastFrame = m_Tabs[i]->getName();
 
-                            if (m_RequestedTab == m_ActiveTab)
+                            if (m_RequestedTab == m_ActiveTabID)
                             {
                                 m_RequestedTab = UID::empty();
                             }
@@ -529,9 +529,9 @@ private:
                 // - then create a new tab containing the error message, so the user can see the error
                 // - and indicate that ImGui was aggressively reset, because the drawcall may have thrown midway
                 //   through doing stuff in ImGui
-                UID id = addTab(std::make_unique<ErrorTab>(weak_from_this(), ex));
+                UID id = addTab(std::make_unique<ErrorTab>(getTabHostAPI(), ex));
                 selectTab(id);
-                implCloseTab(active->getID());
+                implCloseTab(m_ActiveTabID);
                 resetImgui();
             }
 
@@ -553,12 +553,12 @@ private:
     {
         if (ImGui::MenuItem(ICON_FA_EDIT " Editor"))
         {
-            selectTab(addTab(std::make_unique<ModelEditorTab>(weak_from_this(), std::make_unique<UndoableModelStatePair>())));
+            selectTab(addTab(std::make_unique<ModelEditorTab>(getTabHostAPI(), std::make_unique<UndoableModelStatePair>())));
         }
 
         if (ImGui::MenuItem(ICON_FA_CUBE " Mesh Importer"))
         {
-            selectTab(addTab(std::make_unique<MeshImporterTab>(weak_from_this())));
+            selectTab(addTab(std::make_unique<MeshImporterTab>(getTabHostAPI())));
         }
 
         std::shared_ptr<TabRegistry const> const tabs = osc::App::singleton<TabRegistry>();
@@ -571,7 +571,7 @@ private:
                     TabRegistryEntry e = (*tabs)[i];
                     if (ImGui::MenuItem(e.getName().c_str()))
                     {
-                        selectTab(addTab(e.createTab(weak_from_this())));
+                        selectTab(addTab(e.createTab(osc::ParentPtr<osc::TabHost>{getTabHostAPI()})));
                     }
                 }
                 ImGui::EndMenu();
@@ -591,7 +591,7 @@ private:
 
     Tab* getActiveTab()
     {
-        return getTabByID(m_ActiveTab);
+        return getTabByID(m_ActiveTabID);
     }
 
     Tab* getRequestedTab()
@@ -669,10 +669,10 @@ private:
 
             if (it != m_Tabs.end())
             {
-                if (id == m_ActiveTab)
+                if (id == m_ActiveTabID)
                 {
-                    it->get()->onUnmount();
-                    m_ActiveTab = UID::empty();
+                    (*it)->onUnmount();
+                    m_ActiveTabID = UID::empty();
                     lowestDeletedTab = std::min(lowestDeletedTab, static_cast<int>(std::distance(m_Tabs.begin(), it)));
                 }
                 m_Tabs.erase(it);
@@ -773,13 +773,18 @@ private:
 
         if (m_MaybeScreenshotRequest.valid() && m_MaybeScreenshotRequest.wait_for(std::chrono::seconds{0}) == std::future_status::ready)
         {
-            UID tabID = addTab(std::make_unique<ScreenshotTab>(weak_from_this(), m_MaybeScreenshotRequest.get()));
+            UID tabID = addTab(std::make_unique<ScreenshotTab>(updThisAsParent(), m_MaybeScreenshotRequest.get()));
             selectTab(tabID);
         }
     }
 
+    ParentPtr<MainUIStateAPI> updThisAsParent()
+    {
+        return ParentPtr<MainUIStateAPI>{shared_from_this()};
+    }
+
     // queued tabs, constructed on the first time this is mounted
-    std::vector<std::function<std::unique_ptr<Tab>(std::weak_ptr<MainUIStateAPI>)>> m_InitialTabsCtors;
+    std::vector<std::function<std::unique_ptr<Tab>(ParentPtr<MainUIStateAPI> const&)>> m_InitialTabsCtors;
 
     // global simulation params: dictates how the next simulation shall be ran
     ParamBlock m_SimulationParams = ToParamBlock(ForwardDynamicSimulatorParams{});
@@ -796,7 +801,7 @@ private:
     std::unordered_set<UID> m_DeletedTabs;
 
     // currently-active UI tab
-    UID m_ActiveTab = UID::empty();
+    UID m_ActiveTabID = UID::empty();
 
     // cached version of active tab name - used to ensure ImGui can re-focus a renamed tab
     std::string m_ActiveTabNameLastFrame;
@@ -844,7 +849,7 @@ osc::UID osc::MainUIScreen::addTab(std::unique_ptr<Tab> tab)
     return m_Impl->addTab(std::move(tab));
 }
 
-std::weak_ptr<osc::TabHost> osc::MainUIScreen::getTabHostAPI()
+osc::ParentPtr<osc::TabHost> osc::MainUIScreen::getTabHostAPI()
 {
     return m_Impl->getTabHostAPI();
 }

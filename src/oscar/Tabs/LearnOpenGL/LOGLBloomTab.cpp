@@ -106,8 +106,7 @@ namespace
 class osc::LOGLBloomTab::Impl final {
 public:
 
-    explicit Impl(std::weak_ptr<TabHost> parent_) :
-        m_Parent{std::move(parent_)}
+    Impl()
     {
         m_Camera.setPosition({0.0f, 0.0f, 5.0f});
         m_Camera.setNearClippingPlane(0.1f);
@@ -366,7 +365,6 @@ private:
     }
 
     UID m_TabID;
-    std::weak_ptr<TabHost> m_Parent;
 
     Material m_SceneMaterial
     {
@@ -432,8 +430,8 @@ osc::CStringView osc::LOGLBloomTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::LOGLBloomTab::LOGLBloomTab(std::weak_ptr<TabHost> parent_) :
-    m_Impl{std::make_unique<Impl>(std::move(parent_))}
+osc::LOGLBloomTab::LOGLBloomTab(ParentPtr<TabHost> const&) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 

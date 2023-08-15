@@ -7,6 +7,7 @@
 #include <string_view>
 
 namespace osc { class MainUIStateAPI; }
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc
@@ -16,7 +17,7 @@ namespace osc
         OutputWatchesPanel(
             std::string_view panelName,
             std::shared_ptr<UndoableModelStatePair>,
-            std::weak_ptr<MainUIStateAPI>
+            ParentPtr<MainUIStateAPI> const&
         );
         OutputWatchesPanel(OutputWatchesPanel const&) = delete;
         OutputWatchesPanel(OutputWatchesPanel&&) noexcept;

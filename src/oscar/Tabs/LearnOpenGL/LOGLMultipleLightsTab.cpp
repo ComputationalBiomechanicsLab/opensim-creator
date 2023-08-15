@@ -248,7 +248,7 @@ osc::CStringView osc::LOGLMultipleLightsTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::LOGLMultipleLightsTab::LOGLMultipleLightsTab(std::weak_ptr<TabHost>) :
+osc::LOGLMultipleLightsTab::LOGLMultipleLightsTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

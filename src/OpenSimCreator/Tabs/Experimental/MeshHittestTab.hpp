@@ -8,6 +8,7 @@
 
 #include <memory>
 
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class TabHost; }
 
 namespace osc
@@ -16,7 +17,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        explicit MeshHittestTab(std::weak_ptr<TabHost>);
+        explicit MeshHittestTab(ParentPtr<TabHost> const&);
         MeshHittestTab(MeshHittestTab const&) = delete;
         MeshHittestTab(MeshHittestTab&&) noexcept;
         MeshHittestTab& operator=(MeshHittestTab const&) = delete;

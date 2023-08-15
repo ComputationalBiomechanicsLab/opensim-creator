@@ -172,7 +172,7 @@ osc::CStringView osc::LOGLLightingMapsTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::LOGLLightingMapsTab::LOGLLightingMapsTab(std::weak_ptr<TabHost>) :
+osc::LOGLLightingMapsTab::LOGLLightingMapsTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

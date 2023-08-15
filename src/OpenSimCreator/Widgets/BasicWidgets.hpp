@@ -18,8 +18,9 @@ namespace osc { class CustomRenderingOptions; }
 namespace osc { class IconCache; }
 namespace osc { class MainUIStateAPI; }
 namespace osc { struct ModelRendererParams; }
-namespace osc { struct PolarPerspectiveCamera; }
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class ParamBlock; }
+namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct Rect; }
 namespace osc { struct SceneDecoration; }
 namespace osc { class UndoableModelStatePair; }
@@ -126,9 +127,9 @@ namespace osc
 
     // toolbar stuff
     bool BeginToolbar(CStringView label, std::optional<glm::vec2> padding = {});  // behaves the same as ImGui::Begin (i.e. you must call ImGui::End)
-    void DrawNewModelButton(std::weak_ptr<MainUIStateAPI> const&);
-    void DrawOpenModelButtonWithRecentFilesDropdown(std::weak_ptr<MainUIStateAPI> const&);
-    void DrawSaveModelButton(std::weak_ptr<MainUIStateAPI> const&, UndoableModelStatePair&);
+    void DrawNewModelButton(ParentPtr<MainUIStateAPI> const&);
+    void DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<MainUIStateAPI> const&);
+    void DrawSaveModelButton(ParentPtr<MainUIStateAPI> const&, UndoableModelStatePair&);
     void DrawReloadModelButton(UndoableModelStatePair&);
     void DrawUndoButton(UndoableModelStatePair&);
     void DrawRedoButton(UndoableModelStatePair&);

@@ -2,12 +2,14 @@
 
 #include "oscar/Tabs/Tab.hpp"
 #include "oscar/Utils/CStringView.hpp"
+#include "oscar/Utils/ParentPtr.hpp"
 #include "oscar/Utils/UID.hpp"
 
 #include <SDL_events.h>
 
 #include <memory>
 
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class TabHost; }
 
 namespace osc
@@ -16,7 +18,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        explicit LOGLHDRTab(std::weak_ptr<TabHost>);
+        explicit LOGLHDRTab(ParentPtr<TabHost> const&);
         LOGLHDRTab(LOGLHDRTab const&) = delete;
         LOGLHDRTab(LOGLHDRTab&&) noexcept;
         LOGLHDRTab& operator=(LOGLHDRTab const&) = delete;

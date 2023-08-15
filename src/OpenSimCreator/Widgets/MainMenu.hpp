@@ -9,6 +9,7 @@
 #include <optional>
 
 namespace osc { class MainUIStateAPI; }
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc
@@ -17,7 +18,7 @@ namespace osc
     public:
         MainMenuFileTab();
 
-        void onDraw(std::weak_ptr<MainUIStateAPI>, UndoableModelStatePair* = nullptr);
+        void onDraw(ParentPtr<MainUIStateAPI> const&, UndoableModelStatePair* = nullptr);
 
         std::vector<std::filesystem::path> exampleOsimFiles;
         std::vector<RecentFile> recentlyOpenedFiles;

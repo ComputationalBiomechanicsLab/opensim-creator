@@ -249,6 +249,7 @@ add_library(oscar STATIC
     Utils/HashHelpers.hpp
     Utils/Macros.hpp
     Utils/ParalellizationHelpers.hpp
+    Utils/ParentPtr.hpp
     Utils/Perf.cpp
     Utils/Perf.hpp
     Utils/ScopeGuard.hpp

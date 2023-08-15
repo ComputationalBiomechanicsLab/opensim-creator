@@ -8,6 +8,7 @@
 
 namespace osc { class EditorAPI; }
 namespace osc { class MainUIStateAPI; }
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc
@@ -16,7 +17,7 @@ namespace osc
     public:
         CoordinateEditorPanel(
             std::string_view panelName,
-            std::weak_ptr<MainUIStateAPI>,
+            ParentPtr<MainUIStateAPI> const&,
             EditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );

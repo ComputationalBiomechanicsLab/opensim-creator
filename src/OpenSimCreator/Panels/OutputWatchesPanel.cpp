@@ -6,6 +6,7 @@
 #include "OpenSimCreator/Outputs/OutputExtractor.hpp"
 
 #include <oscar/Panels/StandardPanel.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <IconsFontAwesome5.h>
@@ -50,10 +51,10 @@ public:
 
     Impl(std::string_view panelName_,
         std::shared_ptr<UndoableModelStatePair> model_,
-        std::weak_ptr<MainUIStateAPI> api_) :
+        ParentPtr<MainUIStateAPI> const& api_) :
 
         StandardPanel{panelName_},
-        m_API{std::move(api_)},
+        m_API{api_},
         m_Model{std::move(model_)}
     {
     }
@@ -63,17 +64,16 @@ private:
     {
         UpdateCachedSimulationReportIfNecessary(*m_Model, m_CachedReport);
 
-        std::shared_ptr<MainUIStateAPI> api = m_API.lock();
-        if (api->getNumUserOutputExtractors() > 0 && ImGui::BeginTable("##OutputWatchesTable", 2, ImGuiTableFlags_SizingStretchProp))
+        if (m_API->getNumUserOutputExtractors() > 0 && ImGui::BeginTable("##OutputWatchesTable", 2, ImGuiTableFlags_SizingStretchProp))
         {
             ImGui::TableSetupColumn("Output", ImGuiTableColumnFlags_WidthStretch);
             ImGui::TableSetupColumn("Value");
             ImGui::TableHeadersRow();
 
-            for (int outputIdx = 0; outputIdx < api->getNumUserOutputExtractors(); ++outputIdx)
+            for (int outputIdx = 0; outputIdx < m_API->getNumUserOutputExtractors(); ++outputIdx)
             {
                 int column = 0;
-                OutputExtractor o = api->getUserOutputExtractor(outputIdx);
+                OutputExtractor o = m_API->getUserOutputExtractor(outputIdx);
 
                 ImGui::PushID(outputIdx);
 
@@ -82,7 +82,7 @@ private:
                 ImGui::TableSetColumnIndex(column++);
                 if (ImGui::SmallButton(ICON_FA_TRASH))
                 {
-                    api->removeUserOutputExtractor(outputIdx);
+                    m_API->removeUserOutputExtractor(outputIdx);
                 }
                 ImGui::SameLine();
                 ImGui::TextUnformatted(o.getName().c_str());
@@ -101,7 +101,7 @@ private:
         }
     }
 
-    std::weak_ptr<MainUIStateAPI> m_API;
+    ParentPtr<MainUIStateAPI> m_API;
     std::shared_ptr<UndoableModelStatePair> m_Model;
     CachedSimulationReport m_CachedReport;
 };
@@ -112,9 +112,9 @@ private:
 osc::OutputWatchesPanel::OutputWatchesPanel(
     std::string_view panelName_,
     std::shared_ptr<UndoableModelStatePair> model_,
-    std::weak_ptr<MainUIStateAPI> api_) :
+    ParentPtr<MainUIStateAPI> const& api_) :
 
-    m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), std::move(api_))}
+    m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), api_)}
 {
 }
 

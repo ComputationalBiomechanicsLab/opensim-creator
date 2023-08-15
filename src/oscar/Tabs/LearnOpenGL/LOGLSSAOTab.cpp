@@ -188,11 +188,6 @@ namespace
 class osc::LOGLSSAOTab::Impl final {
 public:
 
-    explicit Impl(std::weak_ptr<TabHost> parent_) :
-        m_Parent{std::move(parent_)}
-    {
-    }
-
     UID getID() const
     {
         return m_TabID;
@@ -379,7 +374,6 @@ private:
     }
 
     UID m_TabID;
-    std::weak_ptr<TabHost> m_Parent;
 
     std::vector<glm::vec3> m_SampleKernel = GenerateSampleKernel(64);
     osc::Texture2D m_NoiseTexture = GenerateNoiseTexture({4, 4});
@@ -488,8 +482,8 @@ osc::CStringView osc::LOGLSSAOTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::LOGLSSAOTab::LOGLSSAOTab(std::weak_ptr<TabHost> parent_) :
-    m_Impl{std::make_unique<Impl>(std::move(parent_))}
+osc::LOGLSSAOTab::LOGLSSAOTab(ParentPtr<TabHost> const&) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 

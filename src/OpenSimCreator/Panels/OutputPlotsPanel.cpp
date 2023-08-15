@@ -8,6 +8,7 @@
 
 #include <oscar/Panels/StandardPanel.hpp>
 #include <oscar/Platform/os.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -35,26 +36,24 @@ class osc::OutputPlotsPanel::Impl final : public StandardPanel {
 public:
     Impl(
         std::string_view panelName_,
-        std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+        ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
         SimulatorUIAPI* simulatorUIAPI_) :
 
         StandardPanel{panelName_},
-        m_API{std::move(mainUIStateAPI_)},
+        m_API{mainUIStateAPI_},
         m_SimulatorUIAPI{simulatorUIAPI_}
     {
     }
 private:
     void implDrawContent() final
     {
-        std::shared_ptr<MainUIStateAPI> api = m_API.lock();
-
-        if (api->getNumUserOutputExtractors() <= 0)
+        if (m_API->getNumUserOutputExtractors() <= 0)
         {
             ImGui::TextDisabled("(no outputs requested)");
             return;
         }
 
-        if (IsAnyOutputExportableToCSV(*api))
+        if (IsAnyOutputExportableToCSV(*m_API))
         {
             ImGui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
             if (ImGui::BeginPopupContextItem("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
@@ -80,9 +79,9 @@ private:
         ImGui::Separator();
         ImGui::Dummy({0.0f, 5.0f});
 
-        for (int i = 0; i < api->getNumUserOutputExtractors(); ++i)
+        for (int i = 0; i < m_API->getNumUserOutputExtractors(); ++i)
         {
-            osc::OutputExtractor output = api->getUserOutputExtractor(i);
+            osc::OutputExtractor output = m_API->getUserOutputExtractor(i);
 
             ImGui::PushID(i);
             SimulationOutputPlot plot{m_SimulatorUIAPI, output, 64.0f};
@@ -92,16 +91,16 @@ private:
         }
     }
 
-    std::weak_ptr<MainUIStateAPI> m_API;
+    ParentPtr<MainUIStateAPI> m_API;
     SimulatorUIAPI* m_SimulatorUIAPI;
 };
 
 osc::OutputPlotsPanel::OutputPlotsPanel(
     std::string_view panelName_,
-    std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+    ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
     SimulatorUIAPI* simulatorUIAPI_) :
 
-    m_Impl{std::make_unique<Impl>(panelName_, std::move(mainUIStateAPI_), simulatorUIAPI_)}
+    m_Impl{std::make_unique<Impl>(panelName_, mainUIStateAPI_, simulatorUIAPI_)}
 {
 }
 

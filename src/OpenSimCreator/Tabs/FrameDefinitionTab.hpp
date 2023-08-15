@@ -8,6 +8,7 @@
 
 #include <memory>
 
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class TabHost; }
 
 namespace osc
@@ -16,7 +17,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        explicit FrameDefinitionTab(std::weak_ptr<TabHost>);
+        explicit FrameDefinitionTab(ParentPtr<TabHost> const&);
         FrameDefinitionTab(FrameDefinitionTab const&) = delete;
         FrameDefinitionTab(FrameDefinitionTab&&) noexcept;
         FrameDefinitionTab& operator=(FrameDefinitionTab const&) = delete;

@@ -317,7 +317,7 @@ private:
 
 // public API
 
-osc::ScreenshotTab::ScreenshotTab(std::weak_ptr<TabHost>, AnnotatedImage&& image) :
+osc::ScreenshotTab::ScreenshotTab(ParentPtr<TabHost> const&, AnnotatedImage&& image) :
     m_Impl{std::make_unique<Impl>(std::move(image))}
 {
 }

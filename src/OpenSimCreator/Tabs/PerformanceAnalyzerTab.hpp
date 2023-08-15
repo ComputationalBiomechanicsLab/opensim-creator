@@ -9,6 +9,7 @@
 #include <memory>
 
 namespace osc { class ParamBlock; }
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class TabHost; }
 
 namespace osc
@@ -16,7 +17,7 @@ namespace osc
     class PerformanceAnalyzerTab final : public Tab {
     public:
         PerformanceAnalyzerTab(
-            std::weak_ptr<TabHost>,
+            ParentPtr<TabHost> const&,
             BasicModelStatePair,
             ParamBlock const&
         );

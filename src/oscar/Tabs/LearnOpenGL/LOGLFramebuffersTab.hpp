@@ -8,6 +8,7 @@
 
 #include <memory>
 
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class TabHost; }
 
 namespace osc
@@ -16,7 +17,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        explicit LOGLFramebuffersTab(std::weak_ptr<TabHost>);
+        explicit LOGLFramebuffersTab(ParentPtr<TabHost> const&);
         LOGLFramebuffersTab(LOGLFramebuffersTab const&) = delete;
         LOGLFramebuffersTab(LOGLFramebuffersTab&&) noexcept;
         LOGLFramebuffersTab& operator=(LOGLFramebuffersTab const&) = delete;

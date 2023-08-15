@@ -6,6 +6,7 @@
 
 #include <memory>
 
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class TabHost; }
 
 namespace osc
@@ -14,7 +15,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        explicit LOGLTexturingTab(std::weak_ptr<TabHost> const&);
+        explicit LOGLTexturingTab(ParentPtr<TabHost> const&);
         LOGLTexturingTab(LOGLTexturingTab const&) = delete;
         LOGLTexturingTab(LOGLTexturingTab&&) noexcept;
         LOGLTexturingTab& operator=(LOGLTexturingTab const&) = delete;

@@ -9,6 +9,7 @@
 #include <memory>
 
 namespace osc { class MainUIStateAPI; }
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc
@@ -16,7 +17,7 @@ namespace osc
     class ModelEditorTab final : public Tab {
     public:
         ModelEditorTab(
-            std::weak_ptr<MainUIStateAPI>,
+            ParentPtr<MainUIStateAPI> const&,
             std::unique_ptr<UndoableModelStatePair>
         );
         ModelEditorTab(ModelEditorTab const&) = delete;

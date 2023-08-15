@@ -27,6 +27,7 @@
 #include <oscar/Platform/os.hpp>
 #include <oscar/Platform/RecentFile.hpp>
 #include <oscar/Tabs/TabHost.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Widgets/LogViewer.hpp>
 #include <OscarConfiguration.hpp>
@@ -69,8 +70,8 @@ namespace
 class osc::SplashTab::Impl final {
 public:
 
-    explicit Impl(std::weak_ptr<MainUIStateAPI> parent_) :
-        m_Parent{std::move(parent_)}
+    explicit Impl(ParentPtr<MainUIStateAPI> const& parent_) :
+        m_Parent{parent_}
     {
         m_MainAppLogo.setFilterMode(TextureFilterMode::Linear);
         m_CziLogo.setFilterMode(TextureFilterMode::Linear);
@@ -107,7 +108,7 @@ public:
         if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".osim"))
         {
             // if the user drops an osim file on this tab then it should be loaded
-            m_Parent.lock()->addAndSelectTab<LoadingTab>(m_Parent, e.drop.file);
+            m_Parent->addAndSelectTab<LoadingTab>(m_Parent, e.drop.file);
             return true;
         }
         return false;
@@ -240,7 +241,7 @@ private:
         }
         if (ImGui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
         {
-            m_Parent.lock()->addAndSelectTab<MeshImporterTab>(m_Parent);
+            m_Parent->addAndSelectTab<MeshImporterTab>(m_Parent);
         }
         App::upd().addFrameAnnotation("SplashTab/ImportMeshesMenuItem", GetItemRect());
         if (ImGui::MenuItem(ICON_FA_BOOK " Open Documentation"))
@@ -253,15 +254,15 @@ private:
     {
         if (ImGui::MenuItem(ICON_FA_ARROWS_ALT " Frame Definition"))
         {
-            m_Parent.lock()->addAndSelectTab<FrameDefinitionTab>(m_Parent);
+            m_Parent->addAndSelectTab<FrameDefinitionTab>(m_Parent);
         }
         if (ImGui::MenuItem(ICON_FA_MAGIC " Mesh Importer"))
         {
-            m_Parent.lock()->addAndSelectTab<MeshImporterTab>(m_Parent);
+            m_Parent->addAndSelectTab<MeshImporterTab>(m_Parent);
         }
         if (ImGui::MenuItem(ICON_FA_CUBE " Mesh Warping"))
         {
-            m_Parent.lock()->addAndSelectTab<WarpingTab>(m_Parent);
+            m_Parent->addAndSelectTab<WarpingTab>(m_Parent);
         }
     }
 
@@ -276,7 +277,7 @@ private:
                 ImGui::PushID(++imguiID);
                 if (ImGui::MenuItem(label.c_str()))
                 {
-                    m_Parent.lock()->addAndSelectTab<LoadingTab>(m_Parent, rf.path);
+                    m_Parent->addAndSelectTab<LoadingTab>(m_Parent, rf.path);
                 }
                 ImGui::PopID();
             }
@@ -326,7 +327,7 @@ private:
                 ImGui::PushID(++imguiID);
                 if (ImGui::MenuItem(label.c_str()))
                 {
-                    m_Parent.lock()->addAndSelectTab<LoadingTab>(m_Parent, ex);
+                    m_Parent->addAndSelectTab<LoadingTab>(m_Parent, ex);
                 }
                 ImGui::PopID();
             }
@@ -372,7 +373,7 @@ private:
 
     // tab data
     UID m_TabID;
-    std::weak_ptr<MainUIStateAPI> m_Parent;
+    ParentPtr<MainUIStateAPI> m_Parent;
 
     // for rendering the 3D scene
     PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();
@@ -402,8 +403,8 @@ private:
 
 // public API (PIMPL)
 
-osc::SplashTab::SplashTab(std::weak_ptr<MainUIStateAPI> parent_) :
-    m_Impl{std::make_unique<Impl>(std::move(parent_))}
+osc::SplashTab::SplashTab(ParentPtr<MainUIStateAPI> const& parent_) :
+    m_Impl{std::make_unique<Impl>(parent_)}
 {
 }
 

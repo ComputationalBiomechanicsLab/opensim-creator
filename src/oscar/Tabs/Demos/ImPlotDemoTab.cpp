@@ -51,7 +51,7 @@ osc::CStringView osc::ImPlotDemoTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::ImPlotDemoTab::ImPlotDemoTab(std::weak_ptr<TabHost>) :
+osc::ImPlotDemoTab::ImPlotDemoTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

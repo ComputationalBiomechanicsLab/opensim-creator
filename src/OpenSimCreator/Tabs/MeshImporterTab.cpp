@@ -44,6 +44,7 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/DefaultConstructOnCopy.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
 #include <oscar/Utils/Spsc.hpp>
@@ -5980,17 +5981,17 @@ namespace
 // mesh importer tab implementation
 class osc::MeshImporterTab::Impl final : public LayerHost {
 public:
-    explicit Impl(std::weak_ptr<MainUIStateAPI> parent_) :
-        m_Parent{std::move(parent_)},
+    explicit Impl(ParentPtr<MainUIStateAPI> const& parent_) :
+        m_Parent{parent_},
         m_Shared{std::make_shared<SharedData>()}
     {
     }
 
     Impl(
-        std::weak_ptr<MainUIStateAPI> parent_,
+        ParentPtr<MainUIStateAPI> const& parent_,
         std::vector<std::filesystem::path> meshPaths_) :
 
-        m_Parent{std::move(parent_)},
+        m_Parent{parent_},
         m_Shared{std::make_shared<SharedData>(std::move(meshPaths_))}
     {
     }
@@ -6070,20 +6071,20 @@ public:
         {
             auto ptr = std::make_unique<UndoableModelStatePair>(std::move(m_Shared->UpdOutputModel()));
             ptr->setFixupScaleFactor(m_Shared->GetSceneScaleFactor());
-            m_Parent.lock()->addAndSelectTab<ModelEditorTab>(m_Parent, std::move(ptr));
+            m_Parent->addAndSelectTab<ModelEditorTab>(m_Parent, std::move(ptr));
         }
 
         m_Name = m_Shared->GetRecommendedTitle();
 
         if (m_Shared->IsCloseRequested())
         {
-            m_Parent.lock()->closeTab(m_TabID);
+            m_Parent->closeTab(m_TabID);
             m_Shared->ResetRequestClose();
         }
 
         if (m_Shared->IsNewMeshImpoterTabRequested())
         {
-            m_Parent.lock()->addAndSelectTab<MeshImporterTab>(m_Parent);
+            m_Parent->addAndSelectTab<MeshImporterTab>(m_Parent);
             m_Shared->ResetRequestNewMeshImporter();
         }
     }
@@ -8175,7 +8176,7 @@ private:
 
     // tab data
     UID m_TabID;
-    std::weak_ptr<MainUIStateAPI> m_Parent;
+    ParentPtr<MainUIStateAPI> m_Parent;
     std::string m_Name = "MeshImporterTab";
 
     // data shared between states
@@ -8206,17 +8207,17 @@ private:
 // public API (PIMPL)
 
 osc::MeshImporterTab::MeshImporterTab(
-    std::weak_ptr<MainUIStateAPI> parent_) :
+    ParentPtr<MainUIStateAPI> const& parent_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(parent_))}
+    m_Impl{std::make_unique<Impl>(parent_)}
 {
 }
 
 osc::MeshImporterTab::MeshImporterTab(
-    std::weak_ptr<MainUIStateAPI> parent_,
+    ParentPtr<MainUIStateAPI> const& parent_,
     std::vector<std::filesystem::path> files_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(parent_), std::move(files_))}
+    m_Impl{std::make_unique<Impl>(parent_, std::move(files_))}
 {
 }
 

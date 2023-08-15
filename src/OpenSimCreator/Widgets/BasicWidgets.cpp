@@ -32,6 +32,7 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/RecentFile.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Widgets/GuiRuler.hpp>
 #include <oscar/Widgets/IconWithMenu.hpp>
@@ -1000,7 +1001,7 @@ bool osc::BeginToolbar(CStringView label, std::optional<glm::vec2> padding)
     return rv;
 }
 
-void osc::DrawNewModelButton(std::weak_ptr<MainUIStateAPI> const& api)
+void osc::DrawNewModelButton(ParentPtr<MainUIStateAPI> const& api)
 {
     if (ImGui::Button(ICON_FA_FILE))
     {
@@ -1009,7 +1010,7 @@ void osc::DrawNewModelButton(std::weak_ptr<MainUIStateAPI> const& api)
     osc::DrawTooltipIfItemHovered("New Model", "Creates a new OpenSim model in a new tab");
 }
 
-void osc::DrawOpenModelButtonWithRecentFilesDropdown(std::weak_ptr<MainUIStateAPI> const& api)
+void osc::DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<MainUIStateAPI> const& api)
 {
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
     if (ImGui::Button(ICON_FA_FOLDER_OPEN))
@@ -1045,12 +1046,12 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(std::weak_ptr<MainUIStateAP
 }
 
 void osc::DrawSaveModelButton(
-    std::weak_ptr<MainUIStateAPI> const& api,
+    ParentPtr<MainUIStateAPI> const& api,
     UndoableModelStatePair& model)
 {
     if (ImGui::Button(ICON_FA_SAVE))
     {
-        ActionSaveModel(*api.lock(), model);
+        ActionSaveModel(*api, model);
     }
     osc::DrawTooltipIfItemHovered("Save Model", "Saves the model to an osim file");
 }

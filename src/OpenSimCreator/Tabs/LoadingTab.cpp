@@ -11,6 +11,7 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/Log.hpp>
 #include <oscar/Tabs/TabHost.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 
 #include <glm/vec2.hpp>
 #include <imgui.h>
@@ -28,10 +29,10 @@ class osc::LoadingTab::Impl final {
 public:
 
     Impl(
-        std::weak_ptr<MainUIStateAPI> parent_,
+        ParentPtr<MainUIStateAPI> const& parent_,
         std::filesystem::path path_) :
 
-        m_Parent{std::move(parent_)},
+        m_Parent{parent_},
         m_OsimPath{std::move(path_)},
         m_LoadingResult{std::async(std::launch::async, osc::LoadOsimIntoUndoableModel, m_OsimPath)}
     {
@@ -88,8 +89,8 @@ public:
             // there is an existing editor state
             //
             // recycle it so that users can keep their running sims, local edits, etc.
-            m_Parent.lock()->addAndSelectTab<ModelEditorTab>(m_Parent, std::move(result));
-            m_Parent.lock()->closeTab(m_TabID);
+            m_Parent->addAndSelectTab<ModelEditorTab>(m_Parent, std::move(result));
+            m_Parent->closeTab(m_TabID);
         }
     }
 
@@ -127,8 +128,8 @@ public:
 
                 if (ImGui::Button("try again"))
                 {
-                    m_Parent.lock()->addAndSelectTab<LoadingTab>(m_Parent, m_OsimPath);
-                    m_Parent.lock()->closeTab(m_TabID);
+                    m_Parent->addAndSelectTab<LoadingTab>(m_Parent, m_OsimPath);
+                    m_Parent->closeTab(m_TabID);
                 }
             }
             ImGui::End();
@@ -138,7 +139,7 @@ public:
 
 private:
     UID m_TabID;
-    std::weak_ptr<MainUIStateAPI> m_Parent;
+    ParentPtr<MainUIStateAPI> m_Parent;
 
     // filesystem path to the osim being loaded
     std::filesystem::path m_OsimPath;
@@ -162,10 +163,10 @@ private:
 // public API (PIMPL)
 
 osc::LoadingTab::LoadingTab(
-    std::weak_ptr<MainUIStateAPI> parent_,
+    ParentPtr<MainUIStateAPI> const& parent_,
     std::filesystem::path path_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(parent_), std::move(path_))}
+    m_Impl{std::make_unique<Impl>(parent_, std::move(path_))}
 {
 }
 

@@ -249,7 +249,7 @@ osc::CStringView osc::LOGLBlendingTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::LOGLBlendingTab::LOGLBlendingTab(std::weak_ptr<TabHost>) :
+osc::LOGLBlendingTab::LOGLBlendingTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

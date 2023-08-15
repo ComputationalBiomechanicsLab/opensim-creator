@@ -136,7 +136,7 @@ osc::CStringView osc::LOGLTexturingTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::LOGLTexturingTab::LOGLTexturingTab(std::weak_ptr<TabHost> const&) :
+osc::LOGLTexturingTab::LOGLTexturingTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

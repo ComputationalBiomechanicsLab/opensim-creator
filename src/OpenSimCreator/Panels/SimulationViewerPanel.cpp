@@ -6,6 +6,7 @@
 #include "OpenSimCreator/Widgets/UiModelViewer.hpp"
 
 #include <oscar/Panels/StandardPanel.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 
 #include <OpenSim/Common/Component.h>
 
@@ -19,11 +20,11 @@ public:
     Impl(
         std::string_view panelName_,
         std::shared_ptr<VirtualModelStatePair> modelState_,
-        std::weak_ptr<MainUIStateAPI> mainUIStateAPI_) :
+        ParentPtr<MainUIStateAPI> const& mainUIStateAPI_) :
 
         StandardPanel{panelName_},
         m_Model{std::move(modelState_)},
-        m_API{std::move(mainUIStateAPI_)}
+        m_API{mainUIStateAPI_}
     {
     }
 
@@ -87,14 +88,14 @@ private:
                 ImGui::Dummy({0.0f, 3.0f});
 
                 DrawSelectOwnerMenu(*m_Model, *selected);
-                DrawWatchOutputMenu(*m_API.lock(), *selected);
+                DrawWatchOutputMenu(*m_API, *selected);
                 ImGui::EndPopup();
             }
         }
     }
 
     std::shared_ptr<VirtualModelStatePair> m_Model;
-    std::weak_ptr<MainUIStateAPI> m_API;
+    ParentPtr<MainUIStateAPI> m_API;
     UiModelViewer m_Viewer;
 };
 
@@ -104,9 +105,9 @@ private:
 osc::SimulationViewerPanel::SimulationViewerPanel(
     std::string_view panelName,
     std::shared_ptr<VirtualModelStatePair> modelState,
-    std::weak_ptr<MainUIStateAPI> mainUIStateAPI) :
+    ParentPtr<MainUIStateAPI> const& mainUIStateAPI) :
 
-    m_Impl{std::make_unique<Impl>(panelName, std::move(modelState), std::move(mainUIStateAPI))}
+    m_Impl{std::make_unique<Impl>(panelName, std::move(modelState), mainUIStateAPI)}
 {
 }
 osc::SimulationViewerPanel::SimulationViewerPanel(SimulationViewerPanel&&) noexcept = default;

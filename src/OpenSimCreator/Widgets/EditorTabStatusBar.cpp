@@ -6,6 +6,7 @@
 #include "OpenSimCreator/Utils/OpenSimHelpers.hpp"
 
 #include <oscar/Bindings/ImGuiHelpers.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/StringHelpers.hpp>
 
 #include <imgui.h>
@@ -18,11 +19,11 @@
 class osc::EditorTabStatusBar::Impl final {
 public:
     Impl(
-        std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+        ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
         EditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> model_) :
 
-        m_MainUIStateAPI{std::move(mainUIStateAPI_)},
+        m_MainUIStateAPI{mainUIStateAPI_},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)}
     {
@@ -88,7 +89,7 @@ private:
         }
     }
 
-    std::weak_ptr<MainUIStateAPI> m_MainUIStateAPI;
+    ParentPtr<MainUIStateAPI> m_MainUIStateAPI;
     EditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Model;
 };
@@ -96,11 +97,11 @@ private:
 // public API (PIMPL)
 
 osc::EditorTabStatusBar::EditorTabStatusBar(
-    std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+    ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
     EditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(mainUIStateAPI_), editorAPI_, std::move(model_))}
+    m_Impl{std::make_unique<Impl>(mainUIStateAPI_, editorAPI_, std::move(model_))}
 {
 }
 

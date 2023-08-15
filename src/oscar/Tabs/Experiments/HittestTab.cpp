@@ -337,7 +337,7 @@ osc::CStringView osc::HittestTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::HittestTab::HittestTab(std::weak_ptr<TabHost>) :
+osc::HittestTab::HittestTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

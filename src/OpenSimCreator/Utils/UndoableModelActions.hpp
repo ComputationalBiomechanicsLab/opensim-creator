@@ -22,6 +22,7 @@ namespace OpenSim { class WrapObject; }
 namespace osc { class MainUIStateAPI; }
 namespace osc { class MeshCache; }
 namespace osc { class ObjectPropertyEdit; }
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc
@@ -33,17 +34,17 @@ namespace osc
 
     // create a new model and show it in a new tab
     void ActionNewModel(
-        std::weak_ptr<MainUIStateAPI>
+        ParentPtr<MainUIStateAPI> const&
     );
 
     // prompt a user to open a model file and open it in a new tab
     void ActionOpenModel(
-        std::weak_ptr<MainUIStateAPI>
+        ParentPtr<MainUIStateAPI> const&
     );
 
     // open the specified model in a loading tab
     void ActionOpenModel(
-        std::weak_ptr<MainUIStateAPI>,
+        ParentPtr<MainUIStateAPI> const&,
         std::filesystem::path const&
     );
 
@@ -87,14 +88,14 @@ namespace osc
 
     // loads an STO file against the current model and opens it in a new tab
     bool ActionLoadSTOFileAgainstModel(
-        std::weak_ptr<MainUIStateAPI>,
+        ParentPtr<MainUIStateAPI> const&,
         UndoableModelStatePair const&,
         std::filesystem::path stoPath
     );
 
     // start simulating the given model in a forward-dynamic simulator tab
     bool ActionStartSimulatingModel(
-        std::weak_ptr<MainUIStateAPI>,
+        ParentPtr<MainUIStateAPI> const&,
         UndoableModelStatePair const&
     );
 
@@ -151,7 +152,7 @@ namespace osc
 
     // start performing a series of simulations against the model by opening a tab that tries all possible integrators
     bool ActionSimulateAgainstAllIntegrators(
-        std::weak_ptr<MainUIStateAPI>,
+        ParentPtr<MainUIStateAPI> const&,
         UndoableModelStatePair const&
     );
 

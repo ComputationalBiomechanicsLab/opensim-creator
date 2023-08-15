@@ -238,7 +238,7 @@ osc::CStringView osc::LOGLNormalMappingTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::LOGLNormalMappingTab::LOGLNormalMappingTab(std::weak_ptr<TabHost>) :
+osc::LOGLNormalMappingTab::LOGLNormalMappingTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

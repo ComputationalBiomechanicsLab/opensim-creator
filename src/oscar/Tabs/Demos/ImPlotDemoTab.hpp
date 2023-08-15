@@ -6,6 +6,7 @@
 
 #include <memory>
 
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class TabHost; }
 
 namespace osc
@@ -14,7 +15,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        explicit ImPlotDemoTab(std::weak_ptr<TabHost>);
+        explicit ImPlotDemoTab(ParentPtr<TabHost> const&);
         ImPlotDemoTab(ImPlotDemoTab const&) = delete;
         ImPlotDemoTab(ImPlotDemoTab&&) noexcept;
         ImPlotDemoTab& operator=(ImPlotDemoTab const&) = delete;

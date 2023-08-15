@@ -8,6 +8,7 @@
 
 #include <memory>
 
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class TabHost; }
 
 namespace osc
@@ -16,7 +17,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        explicit WarpingTab(std::weak_ptr<TabHost>);
+        explicit WarpingTab(ParentPtr<TabHost> const&);
         WarpingTab(WarpingTab const&) = delete;
         WarpingTab(WarpingTab&&) noexcept;
         WarpingTab& operator=(WarpingTab const&) = delete;

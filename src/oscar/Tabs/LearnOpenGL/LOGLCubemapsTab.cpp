@@ -80,8 +80,7 @@ namespace
 class osc::LOGLCubemapsTab::Impl final {
 public:
 
-    explicit Impl(std::weak_ptr<TabHost> parent_) :
-        m_Parent{std::move(parent_)}
+    Impl()
     {
         for (CubeMaterial& cubeMat : m_CubeMaterials)
         {
@@ -216,7 +215,6 @@ public:
 
 private:
     UID m_TabID;
-    std::weak_ptr<TabHost> m_Parent;
 
     struct CubeMaterial final {
         CStringView label;
@@ -294,8 +292,8 @@ osc::CStringView osc::LOGLCubemapsTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::LOGLCubemapsTab::LOGLCubemapsTab(std::weak_ptr<TabHost> parent_) :
-    m_Impl{std::make_unique<Impl>(std::move(parent_))}
+osc::LOGLCubemapsTab::LOGLCubemapsTab(ParentPtr<TabHost> const&) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 

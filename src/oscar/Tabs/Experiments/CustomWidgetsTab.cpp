@@ -273,7 +273,7 @@ osc::CStringView osc::CustomWidgetsTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::CustomWidgetsTab::CustomWidgetsTab(std::weak_ptr<TabHost>) :
+osc::CustomWidgetsTab::CustomWidgetsTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

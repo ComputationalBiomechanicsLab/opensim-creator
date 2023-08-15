@@ -217,7 +217,7 @@ osc::CStringView osc::LOGLFramebuffersTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::LOGLFramebuffersTab::LOGLFramebuffersTab(std::weak_ptr<TabHost>) :
+osc::LOGLFramebuffersTab::LOGLFramebuffersTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

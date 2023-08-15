@@ -42,6 +42,7 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/HashHelpers.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/Perf.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
 #include <oscar/Utils/UID.hpp>
@@ -799,20 +800,18 @@ namespace
 
         TPSUISharedState(
             osc::UID tabID_,
-            std::weak_ptr<osc::TabHost> parent_) :
+            osc::ParentPtr<osc::TabHost> parent_) :
 
             tabID{tabID_},
             tabHost{parent_}
         {
-            // CARE: don't own it ever, though - it's a parent pointer
-            OSC_ASSERT(tabHost.lock() != nullptr && "top-level tab host required for this UI");
         }
 
         // ID of the top-level TPS3D tab
         osc::UID tabID;
 
         // handle to the screen that owns the TPS3D tab
-        std::weak_ptr<osc::TabHost> tabHost;
+        osc::ParentPtr<osc::TabHost> tabHost;
 
         // cached TPS3D algorithm result (to prevent recomputing it each frame)
         TPSResultCache meshResultCache;
@@ -1186,7 +1185,7 @@ namespace
 
             if (ImGui::MenuItem(ICON_FA_TIMES " Close"))
             {
-                m_State->tabHost.lock()->closeTab(m_State->tabID);
+                m_State->tabHost->closeTab(m_State->tabID);
             }
 
             if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit"))
@@ -2009,7 +2008,7 @@ namespace
 class osc::WarpingTab::Impl final {
 public:
 
-    explicit Impl(std::weak_ptr<TabHost> parent_) : m_Parent{std::move(parent_)}
+    explicit Impl(ParentPtr<TabHost> const& parent_) : m_Parent{parent_}
     {
         PushBackAvailablePanels(m_SharedState, *m_PanelManager);
     }
@@ -2098,7 +2097,7 @@ private:
     }
 
     UID m_TabID;
-    std::weak_ptr<TabHost> m_Parent;
+    ParentPtr<TabHost> m_Parent;
 
     // top-level state that all panels can potentially access
     std::shared_ptr<TPSUISharedState> m_SharedState = std::make_shared<TPSUISharedState>(m_TabID, m_Parent);
@@ -2120,8 +2119,8 @@ osc::CStringView osc::WarpingTab::id() noexcept
     return "OpenSim/Warping";
 }
 
-osc::WarpingTab::WarpingTab(std::weak_ptr<TabHost> parent_) :
-    m_Impl{std::make_unique<Impl>(std::move(parent_))}
+osc::WarpingTab::WarpingTab(ParentPtr<TabHost> const& parent_) :
+    m_Impl{std::make_unique<Impl>(parent_)}
 {
 }
 

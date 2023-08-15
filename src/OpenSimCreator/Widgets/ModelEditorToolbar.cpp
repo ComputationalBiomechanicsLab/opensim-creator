@@ -11,6 +11,7 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Graphics/IconCache.hpp>
 #include <oscar/Platform/App.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -27,12 +28,12 @@ class osc::ModelEditorToolbar::Impl final {
 public:
     Impl(
         std::string_view label_,
-        std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+        ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
         EditorAPI* editorAPI_,
         std::shared_ptr<osc::UndoableModelStatePair> model_) :
 
         m_Label{label_},
-        m_MainUIStateAPI{std::move(mainUIStateAPI_)},
+        m_MainUIStateAPI{mainUIStateAPI_},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)}
     {
@@ -75,7 +76,7 @@ private:
 
         if (ImGui::Button(ICON_FA_EDIT))
         {
-            m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI.lock()->updSimulationParams()));
+            m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
         }
         osc::DrawTooltipIfItemHovered("Edit Simulation Settings", "Change the parameters used when simulating the model");
 
@@ -100,7 +101,7 @@ private:
     }
 
     std::string m_Label;
-    std::weak_ptr<MainUIStateAPI> m_MainUIStateAPI;
+    ParentPtr<MainUIStateAPI> m_MainUIStateAPI;
     EditorAPI* m_EditorAPI;
     std::shared_ptr<osc::UndoableModelStatePair> m_Model;
 
@@ -115,11 +116,11 @@ private:
 
 osc::ModelEditorToolbar::ModelEditorToolbar(
     std::string_view label_,
-    std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+    ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
     EditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(label_, std::move(mainUIStateAPI_), editorAPI_, std::move(model_))}
+    m_Impl{std::make_unique<Impl>(label_, mainUIStateAPI_, editorAPI_, std::move(model_))}
 {
 }
 osc::ModelEditorToolbar::ModelEditorToolbar(ModelEditorToolbar&&) noexcept = default;

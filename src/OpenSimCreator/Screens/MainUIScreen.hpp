@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Screens/Screen.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/UID.hpp>
 
 #include <SDL_events.h>
@@ -25,7 +26,7 @@ namespace osc
         ~MainUIScreen() noexcept override;
 
         UID addTab(std::unique_ptr<Tab>);
-        std::weak_ptr<TabHost> getTabHostAPI();
+        ParentPtr<TabHost> getTabHostAPI();
 
     private:
         void implOnMount() final;

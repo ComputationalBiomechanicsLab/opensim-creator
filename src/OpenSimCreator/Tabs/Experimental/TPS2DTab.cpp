@@ -549,7 +549,7 @@ osc::CStringView osc::TPS2DTab::id() noexcept
     return "OpenSim/Experimental/TPS2D";
 }
 
-osc::TPS2DTab::TPS2DTab(std::weak_ptr<TabHost>) :
+osc::TPS2DTab::TPS2DTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

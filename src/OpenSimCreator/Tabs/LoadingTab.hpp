@@ -8,12 +8,13 @@
 #include <memory>
 
 namespace osc { class MainUIStateAPI; }
+namespace osc { template<typename T> class ParentPtr; }
 
 namespace osc
 {
     class LoadingTab final : public Tab {
     public:
-        LoadingTab(std::weak_ptr<MainUIStateAPI>, std::filesystem::path);
+        LoadingTab(ParentPtr<MainUIStateAPI> const&, std::filesystem::path);
         LoadingTab(LoadingTab const&) = delete;
         LoadingTab(LoadingTab&&) noexcept;
         LoadingTab& operator=(LoadingTab const&) = delete;

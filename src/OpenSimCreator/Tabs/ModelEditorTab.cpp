@@ -35,8 +35,9 @@
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/FileChangePoller.hpp>
-#include <oscar/Utils/StringHelpers.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/Perf.hpp>
+#include <oscar/Utils/StringHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <oscar/Widgets/Popup.hpp>
 #include <oscar/Widgets/PopupManager.hpp>
@@ -63,10 +64,10 @@ class osc::ModelEditorTab::Impl final : public EditorAPI {
 public:
 
     Impl(
-        std::weak_ptr<MainUIStateAPI> parent_,
+        ParentPtr<MainUIStateAPI> const& parent_,
         std::unique_ptr<UndoableModelStatePair> model_) :
 
-        m_Parent{std::move(parent_)},
+        m_Parent{parent_},
         m_Model{std::move(model_)}
     {
         // register all panels that the editor tab supports
@@ -167,7 +168,7 @@ public:
 
     bool trySave()
     {
-        return ActionSaveModel(*m_Parent.lock(), *m_Model);
+        return ActionSaveModel(*m_Parent, *m_Model);
     }
 
     void onMount()
@@ -240,8 +241,8 @@ public:
 
             if (m_ExceptionThrownLastFrame)
             {
-                m_Parent.lock()->addAndSelectTab<ErrorTab>(m_Parent, ex);
-                m_Parent.lock()->closeTab(m_TabID);
+                m_Parent->addAndSelectTab<ErrorTab>(m_Parent, ex);
+                m_Parent->closeTab(m_TabID);
             }
             else
             {
@@ -254,12 +255,12 @@ public:
                 catch (std::exception const& ex2)
                 {
                     log::error("model rollback also thrown an exception: %s", ex2.what());
-                    m_Parent.lock()->addAndSelectTab<ErrorTab>(m_Parent, ex2);
-                    m_Parent.lock()->closeTab(m_TabID);
+                    m_Parent->addAndSelectTab<ErrorTab>(m_Parent, ex2);
+                    m_Parent->closeTab(m_TabID);
                 }
             }
 
-            m_Parent.lock()->resetImgui();
+            m_Parent->resetImgui();
         }
     }
 
@@ -282,7 +283,7 @@ private:
         else if (e.type == SDL_DROPFILE && e.file != nullptr && CStrEndsWith(e.file, ".osim"))
         {
             // if the user drops an osim file on this tab then it should be loaded
-            m_Parent.lock()->addAndSelectTab<LoadingTab>(m_Parent, e.file);
+            m_Parent->addAndSelectTab<LoadingTab>(m_Parent, e.file);
             return true;
         }
 
@@ -364,7 +365,7 @@ private:
 
     // tab top-level data
     UID m_TabID;
-    std::weak_ptr<MainUIStateAPI> m_Parent;
+    ParentPtr<MainUIStateAPI> m_Parent;
     std::string m_TabName = "ModelEditorTab";
 
     // the model being edited
@@ -396,10 +397,10 @@ private:
 // public API (PIMPL)
 
 osc::ModelEditorTab::ModelEditorTab(
-    std::weak_ptr<MainUIStateAPI> parent_,
+    ParentPtr<MainUIStateAPI> const& parent_,
     std::unique_ptr<UndoableModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(std::move(parent_), std::move(model_))}
+    m_Impl{std::make_unique<Impl>(parent_, std::move(model_))}
 {
 }
 

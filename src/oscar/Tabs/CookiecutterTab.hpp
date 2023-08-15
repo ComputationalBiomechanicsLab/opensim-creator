@@ -8,6 +8,7 @@
 
 #include <memory>
 
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class TabHost; }
 
 namespace osc
@@ -16,7 +17,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        explicit CookiecutterTab(std::weak_ptr<TabHost>);
+        explicit CookiecutterTab(ParentPtr<TabHost> const&);
         CookiecutterTab(CookiecutterTab const&) = delete;
         CookiecutterTab(CookiecutterTab&&) noexcept;
         CookiecutterTab& operator=(CookiecutterTab const&) = delete;

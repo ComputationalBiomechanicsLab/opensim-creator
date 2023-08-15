@@ -19,6 +19,7 @@
 #include <oscar/Utils/Assertions.hpp>
 #include <oscar/Utils/Cpp20Shims.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/UID.hpp>
 #include <OscarConfiguration.hpp>
 
@@ -59,7 +60,9 @@ osc::MainMenuFileTab::MainMenuFileTab() :
     std::reverse(recentlyOpenedFiles.begin(), recentlyOpenedFiles.end());
 }
 
-void osc::MainMenuFileTab::onDraw(std::weak_ptr<MainUIStateAPI> api, UndoableModelStatePair* maybeModel)
+void osc::MainMenuFileTab::onDraw(
+    ParentPtr<MainUIStateAPI> const& api,
+    UndoableModelStatePair* maybeModel)
 {
     // handle hotkeys enabled by just drawing the menu
     {
@@ -81,7 +84,7 @@ void osc::MainMenuFileTab::onDraw(std::weak_ptr<MainUIStateAPI> api, UndoableMod
         }
         else if (maybeModel && mod && ImGui::IsKeyPressed(ImGuiKey_S))
         {
-            ActionSaveModel(*api.lock(), *maybeModel);
+            ActionSaveModel(*api, *maybeModel);
         }
         else if (maybeModel && ImGui::IsKeyPressed(ImGuiKey_F5))
         {
@@ -156,7 +159,7 @@ void osc::MainMenuFileTab::onDraw(std::weak_ptr<MainUIStateAPI> api, UndoableMod
                 osc::InitializeModel(*cpy);
                 osc::InitializeState(*cpy);
 
-                api.lock()->addAndSelectTab<SimulatorTab>(api, std::make_shared<Simulation>(osc::StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
+                api->addAndSelectTab<SimulatorTab>(api, std::make_shared<Simulation>(osc::StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
             }
             catch (std::exception const& ex)
             {
@@ -171,7 +174,7 @@ void osc::MainMenuFileTab::onDraw(std::weak_ptr<MainUIStateAPI> api, UndoableMod
     {
         if (maybeModel)
         {
-            ActionSaveModel(*api.lock(), *maybeModel);
+            ActionSaveModel(*api, *maybeModel);
         }
     }
 
@@ -221,7 +224,7 @@ void osc::MainMenuFileTab::onDraw(std::weak_ptr<MainUIStateAPI> api, UndoableMod
 
     if (ImGui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
     {
-        api.lock()->addAndSelectTab<MeshImporterTab>(api);
+        api->addAndSelectTab<MeshImporterTab>(api);
     }
     App::upd().addFrameAnnotation("MainMenu/ImportMeshesMenuItem", osc::GetItemRect());
 

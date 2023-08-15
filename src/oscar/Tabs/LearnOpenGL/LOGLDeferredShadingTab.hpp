@@ -8,6 +8,7 @@
 
 #include <memory>
 
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class TabHost; }
 
 namespace osc
@@ -16,7 +17,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        explicit LOGLDeferredShadingTab(std::weak_ptr<TabHost>);
+        explicit LOGLDeferredShadingTab(ParentPtr<TabHost> const&);
         LOGLDeferredShadingTab(LOGLDeferredShadingTab const&) = delete;
         LOGLDeferredShadingTab(LOGLDeferredShadingTab&&) noexcept;
         LOGLDeferredShadingTab& operator=(LOGLDeferredShadingTab const&) = delete;

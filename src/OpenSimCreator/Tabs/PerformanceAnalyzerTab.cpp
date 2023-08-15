@@ -236,7 +236,7 @@ private:
 // public API (PIMPL)
 
 osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(
-    std::weak_ptr<TabHost>,
+    ParentPtr<TabHost> const&,
     BasicModelStatePair modelState,
     ParamBlock const& params) :
 

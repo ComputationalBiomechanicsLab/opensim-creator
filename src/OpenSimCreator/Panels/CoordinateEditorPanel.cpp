@@ -10,6 +10,7 @@
 #include <oscar/Graphics/Color.hpp>
 #include <oscar/Panels/StandardPanel.hpp>
 #include <oscar/Utils/CStringView.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
@@ -27,12 +28,12 @@ public:
 
     Impl(
         std::string_view panelName_,
-        std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+        ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
         EditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> uum_) :
 
         StandardPanel{panelName_},
-        m_MainUIStateAPI{std::move(mainUIStateAPI_)},
+        m_MainUIStateAPI{mainUIStateAPI_},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(uum_)}
     {
@@ -225,7 +226,7 @@ private:
         }
     }
 
-    std::weak_ptr<MainUIStateAPI> m_MainUIStateAPI;
+    ParentPtr<MainUIStateAPI> m_MainUIStateAPI;
     EditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Model;
 };
@@ -235,11 +236,11 @@ private:
 
 osc::CoordinateEditorPanel::CoordinateEditorPanel(
     std::string_view panelName_,
-    std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+    ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
     EditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> uum_) :
 
-    m_Impl{std::make_unique<Impl>(panelName_, std::move(mainUIStateAPI_), editorAPI_, std::move(uum_))}
+    m_Impl{std::make_unique<Impl>(panelName_, mainUIStateAPI_, editorAPI_, std::move(uum_))}
 {
 }
 

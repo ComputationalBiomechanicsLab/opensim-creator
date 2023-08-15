@@ -8,6 +8,7 @@
 
 #include <memory>
 
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class TabHost; }
 
 namespace osc
@@ -16,7 +17,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        explicit LOGLCoordinateSystemsTab(std::weak_ptr<TabHost>);
+        explicit LOGLCoordinateSystemsTab(ParentPtr<TabHost> const&);
         LOGLCoordinateSystemsTab(LOGLCoordinateSystemsTab const&) = delete;
         LOGLCoordinateSystemsTab(LOGLCoordinateSystemsTab&&) noexcept;
         LOGLCoordinateSystemsTab& operator=(LOGLCoordinateSystemsTab const&) = delete;

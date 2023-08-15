@@ -64,8 +64,7 @@ namespace
 class osc::LOGLHDRTab::Impl final {
 public:
 
-    explicit Impl(std::weak_ptr<TabHost> parent_) :
-        m_Parent{std::move(parent_)}
+    Impl()
     {
         m_SceneMaterial.setVec3Array("uSceneLightPositions", c_LightPositions);
         m_SceneMaterial.setColorArray("uSceneLightColors", GetLightColors());
@@ -191,7 +190,6 @@ public:
 
 private:
     UID m_TabID;
-    std::weak_ptr<TabHost> m_Parent;
 
     Material m_SceneMaterial
     {
@@ -233,8 +231,8 @@ osc::CStringView osc::LOGLHDRTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::LOGLHDRTab::LOGLHDRTab(std::weak_ptr<TabHost> parent_) :
-    m_Impl{std::make_unique<Impl>(std::move(parent_))}
+osc::LOGLHDRTab::LOGLHDRTab(ParentPtr<TabHost> const&) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 

@@ -48,6 +48,7 @@
 #include <oscar/Utils/CStringView.hpp>
 #include <oscar/Utils/EnumHelpers.hpp>
 #include <oscar/Utils/FilesystemHelpers.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/SetHelpers.hpp>
 #include <oscar/Utils/TypeHelpers.hpp>
 #include <oscar/Utils/UID.hpp>
@@ -1202,23 +1203,18 @@ namespace
     }
 
     void ActionExportFrameDefinitionSceneModelToEditorTab(
-        std::weak_ptr<osc::TabHost> maybeTabHost,
+        osc::ParentPtr<osc::TabHost> tabHost,
         osc::UndoableModelStatePair const& model)
     {
-        std::shared_ptr<osc::TabHost> const tabHost = maybeTabHost.lock();
-        if (!tabHost)
+        auto maybeMainUIStateAPI = osc::DynamicParentCast<osc::MainUIStateAPI>(tabHost);
+        if (!maybeMainUIStateAPI)
         {
+            osc::log::error("Tried to export frame definition scene to an OpenSim model but there is no MainUIStateAPI data");
             return;
         }
 
-        std::shared_ptr<osc::MainUIStateAPI> const mainUIStateAPI = std::dynamic_pointer_cast<osc::MainUIStateAPI>(tabHost);
-        if (!mainUIStateAPI)
-        {
-            return;
-        }
-
-        mainUIStateAPI->addAndSelectTab<osc::ModelEditorTab>(
-            mainUIStateAPI,
+        (*maybeMainUIStateAPI)->addAndSelectTab<osc::ModelEditorTab>(
+            *maybeMainUIStateAPI,
             MakeUndoableModelFromSceneModel(model)
         );
     }
@@ -2619,11 +2615,11 @@ namespace
     class FrameDefinitionTabMainMenu final {
     public:
         explicit FrameDefinitionTabMainMenu(
-            std::weak_ptr<osc::TabHost> tabHost_,
+            osc::ParentPtr<osc::TabHost> const& tabHost_,
             std::shared_ptr<osc::UndoableModelStatePair> model_,
             std::shared_ptr<osc::PanelManager> panelManager_) :
 
-            m_TabHost{std::move(tabHost_)},
+            m_TabHost{tabHost_},
             m_Model{std::move(model_)},
             m_WindowMenu{std::move(panelManager_)}
         {
@@ -2654,7 +2650,7 @@ namespace
             }
         }
 
-        std::weak_ptr<osc::TabHost> m_TabHost;
+        osc::ParentPtr<osc::TabHost> m_TabHost;
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
         osc::WindowMenu m_WindowMenu;
         osc::MainMenuAboutTab m_AboutMenu;
@@ -2664,11 +2660,11 @@ namespace
     public:
         FrameDefinitionTabToolbar(
             std::string_view label_,
-            std::weak_ptr<osc::TabHost> tabHost_,
+            osc::ParentPtr<osc::TabHost> const& tabHost_,
             std::shared_ptr<osc::UndoableModelStatePair> model_) :
 
             m_Label{label_},
-            m_TabHost{std::move(tabHost_)},
+            m_TabHost{tabHost_},
             m_Model{std::move(model_)}
         {
         }
@@ -2730,7 +2726,7 @@ namespace
         }
 
         std::string m_Label;
-        std::weak_ptr<osc::TabHost> m_TabHost;
+        osc::ParentPtr<osc::TabHost> m_TabHost;
         std::shared_ptr<osc::UndoableModelStatePair> m_Model;
     };
 }
@@ -2738,8 +2734,8 @@ namespace
 class osc::FrameDefinitionTab::Impl final : public EditorAPI {
 public:
 
-    explicit Impl(std::weak_ptr<TabHost> parent_) :
-        m_Parent{std::move(parent_)}
+    explicit Impl(ParentPtr<TabHost> const& parent_) :
+        m_Parent{parent_}
     {
         m_PanelManager->registerToggleablePanel(
             "Navigator",
@@ -2912,7 +2908,7 @@ private:
     }
 
     UID m_TabID;
-    std::weak_ptr<TabHost> m_Parent;
+    ParentPtr<TabHost> m_Parent;
 
     std::shared_ptr<UndoableModelStatePair> m_Model = MakeSharedUndoableFrameDefinitionModel();
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
@@ -2929,8 +2925,8 @@ osc::CStringView osc::FrameDefinitionTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::FrameDefinitionTab::FrameDefinitionTab(std::weak_ptr<TabHost> parent_) :
-    m_Impl{std::make_unique<Impl>(std::move(parent_))}
+osc::FrameDefinitionTab::FrameDefinitionTab(ParentPtr<TabHost> const& parent_) :
+    m_Impl{std::make_unique<Impl>(parent_)}
 {
 }
 

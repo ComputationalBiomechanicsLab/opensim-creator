@@ -6,6 +6,7 @@
 
 #include <memory>
 
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class TabHost; }
 
 namespace osc
@@ -14,7 +15,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        explicit TPS2DTab(std::weak_ptr<TabHost>);
+        explicit TPS2DTab(ParentPtr<TabHost> const&);
         TPS2DTab(TPS2DTab const&) = delete;
         TPS2DTab(TPS2DTab&&) noexcept;
         TPS2DTab& operator=(TPS2DTab const&) = delete;

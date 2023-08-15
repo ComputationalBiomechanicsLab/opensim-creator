@@ -8,6 +8,7 @@
 
 #include <memory>
 
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class TabHost; }
 
 namespace osc
@@ -16,7 +17,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        explicit LOGLShadowMappingTab(std::weak_ptr<TabHost>);
+        explicit LOGLShadowMappingTab(ParentPtr<TabHost> const&);
         LOGLShadowMappingTab(LOGLShadowMappingTab const&) = delete;
         LOGLShadowMappingTab(LOGLShadowMappingTab&&) noexcept;
         LOGLShadowMappingTab& operator=(LOGLShadowMappingTab const&) = delete;

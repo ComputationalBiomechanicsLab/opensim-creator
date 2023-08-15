@@ -87,8 +87,7 @@ namespace
 class osc::LOGLParallaxMappingTab::Impl final {
 public:
 
-    explicit Impl(std::weak_ptr<TabHost> parent_) :
-        m_Parent{std::move(parent_)}
+    Impl()
     {
         m_ParallaxMappingMaterial.setTexture("uDiffuseMap", m_DiffuseMap);
         m_ParallaxMappingMaterial.setTexture("uNormalMap", m_NormalMap);
@@ -184,7 +183,6 @@ public:
 
 private:
     UID m_TabID;
-    std::weak_ptr<TabHost> m_Parent;
     bool m_IsMouseCaptured = false;
 
     // rendering state
@@ -235,8 +233,8 @@ osc::CStringView osc::LOGLParallaxMappingTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::LOGLParallaxMappingTab::LOGLParallaxMappingTab(std::weak_ptr<TabHost> parent_) :
-    m_Impl{std::make_unique<Impl>(std::move(parent_))}
+osc::LOGLParallaxMappingTab::LOGLParallaxMappingTab(ParentPtr<TabHost> const&) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 

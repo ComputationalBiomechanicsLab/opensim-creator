@@ -17,6 +17,7 @@
 #include <oscar/Platform/App.hpp>
 #include <oscar/Platform/os.hpp>
 #include <oscar/Utils/Assertions.hpp>
+#include <oscar/Utils/ParentPtr.hpp>
 #include <oscar/Utils/ScopeGuard.hpp>
 #include <oscar/Widgets/StandardPopup.hpp>
 
@@ -217,13 +218,13 @@ class osc::ComponentContextMenu::Impl final : public osc::StandardPopup {
 public:
     Impl(
         std::string_view popupName_,
-        std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+        ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
         EditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> model_,
         OpenSim::ComponentPath const& path_) :
 
         StandardPopup{popupName_, {10.0f, 10.0f}, ImGuiWindowFlags_NoMove},
-        m_MainUIStateAPI{std::move(mainUIStateAPI_)},
+        m_MainUIStateAPI{mainUIStateAPI_},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)},
         m_Path{path_}
@@ -269,7 +270,7 @@ private:
         DrawContextMenuSeparator();
 
         //DrawSelectOwnerMenu(*m_Model, *c);
-        if (DrawWatchOutputMenu(*m_MainUIStateAPI.lock(), *c))
+        if (DrawWatchOutputMenu(*m_MainUIStateAPI, *c))
         {
             // when the user asks to watch an output, make sure the "Output Watches" panel is
             // open, so that they can immediately see the side-effect of watching an output (#567)
@@ -459,7 +460,7 @@ private:
         }
     }
 
-    std::weak_ptr<MainUIStateAPI> m_MainUIStateAPI;
+    ParentPtr<MainUIStateAPI> m_MainUIStateAPI;
     EditorAPI* m_EditorAPI = nullptr;
     std::shared_ptr<UndoableModelStatePair> m_Model;
     OpenSim::ComponentPath m_Path;
@@ -471,12 +472,12 @@ private:
 
 osc::ComponentContextMenu::ComponentContextMenu(
     std::string_view popupName_,
-    std::weak_ptr<MainUIStateAPI> mainUIStateAPI_,
+    ParentPtr<MainUIStateAPI> const& mainUIStateAPI_,
     EditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> model_,
     OpenSim::ComponentPath const& path_) :
 
-    m_Impl{std::make_unique<Impl>(popupName_, std::move(mainUIStateAPI_), editorAPI_, std::move(model_), path_)}
+    m_Impl{std::make_unique<Impl>(popupName_, mainUIStateAPI_, editorAPI_, std::move(model_), path_)}
 {
 }
 

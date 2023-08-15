@@ -79,10 +79,7 @@ private:
 
 // public API (PIMPL)
 
-osc::ErrorTab::ErrorTab(
-    std::weak_ptr<TabHost>,
-    std::exception const& ex) :
-
+osc::ErrorTab::ErrorTab(ParentPtr<TabHost> const&, std::exception const& ex) :
     m_Impl{std::make_unique<Impl>(ex)}
 {
 }

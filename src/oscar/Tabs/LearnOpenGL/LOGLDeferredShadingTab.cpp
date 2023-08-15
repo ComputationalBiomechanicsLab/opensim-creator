@@ -120,8 +120,7 @@ namespace
 class osc::LOGLDeferredShadingTab::Impl final {
 public:
 
-    explicit Impl(std::weak_ptr<TabHost> parent_) :
-        m_Parent{std::move(parent_)}
+    Impl()
     {
         m_Camera.setPosition({0.0f, 0.0f, 5.0f});
         m_Camera.setCameraFOV(glm::radians(45.0f));
@@ -307,7 +306,6 @@ public:
 
 private:
     UID m_TabID;
-    std::weak_ptr<TabHost> m_Parent;
 
     // scene state
     std::vector<glm::vec3> m_LightPositions = GenerateNSceneLightPositions(c_NumLights);
@@ -411,8 +409,8 @@ osc::CStringView osc::LOGLDeferredShadingTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::LOGLDeferredShadingTab::LOGLDeferredShadingTab(std::weak_ptr<TabHost> parent_) :
-    m_Impl{std::make_unique<Impl>(std::move(parent_))}
+osc::LOGLDeferredShadingTab::LOGLDeferredShadingTab(ParentPtr<TabHost> const&) :
+    m_Impl{std::make_unique<Impl>()}
 {
 }
 

@@ -209,7 +209,7 @@ osc::CStringView osc::LOGLCoordinateSystemsTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::LOGLCoordinateSystemsTab::LOGLCoordinateSystemsTab(std::weak_ptr<TabHost>) :
+osc::LOGLCoordinateSystemsTab::LOGLCoordinateSystemsTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

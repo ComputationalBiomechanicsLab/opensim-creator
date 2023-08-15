@@ -7,6 +7,7 @@
 #include <string_view>
 
 namespace osc { class MainUIStateAPI; }
+namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class SimulatorUIAPI; }
 
 namespace osc
@@ -15,7 +16,7 @@ namespace osc
     public:
         OutputPlotsPanel(
             std::string_view panelName,
-            std::weak_ptr<MainUIStateAPI>,
+            ParentPtr<MainUIStateAPI> const&,
             SimulatorUIAPI*
         );
         OutputPlotsPanel(OutputPlotsPanel const&) = delete;

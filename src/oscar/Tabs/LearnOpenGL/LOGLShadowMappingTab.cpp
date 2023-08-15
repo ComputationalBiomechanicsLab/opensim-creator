@@ -259,7 +259,7 @@ osc::CStringView osc::LOGLShadowMappingTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::LOGLShadowMappingTab::LOGLShadowMappingTab(std::weak_ptr<TabHost>) :
+osc::LOGLShadowMappingTab::LOGLShadowMappingTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }

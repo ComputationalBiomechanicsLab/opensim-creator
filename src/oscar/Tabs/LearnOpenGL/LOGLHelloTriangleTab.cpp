@@ -100,7 +100,7 @@ osc::CStringView osc::LOGLHelloTriangleTab::id() noexcept
     return c_TabStringID;
 }
 
-osc::LOGLHelloTriangleTab::LOGLHelloTriangleTab(std::weak_ptr<TabHost>) :
+osc::LOGLHelloTriangleTab::LOGLHelloTriangleTab(ParentPtr<TabHost> const&) :
     m_Impl{std::make_unique<Impl>()}
 {
 }
