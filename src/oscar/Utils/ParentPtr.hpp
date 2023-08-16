@@ -11,7 +11,7 @@ namespace osc
     // parent pointer
     //
     // a non-nullable, non-owning, pointer to a parent element in a hierarchy with
-    // (debug) existence checks for the parent
+    // runtime lifetime checks
     template<typename T>
     class ParentPtr final {
     public:
@@ -47,20 +47,20 @@ namespace osc
         template<typename> friend class ParentPtr;
 
         // friend function, for downcasting
-        template<typename U, typename T> friend std::optional<ParentPtr<U>> DynamicParentCast(ParentPtr<T> const&);
+        template<typename TDerived, typename TBase> friend std::optional<ParentPtr<TDerived>> DynamicParentCast(ParentPtr<TBase> const&);
 
         std::weak_ptr<T> m_Parent;
     };
 
-    template<typename U, typename T>
-    std::optional<ParentPtr<U>> DynamicParentCast(ParentPtr<T> const& p)
+    template<typename TDerived, typename TBase>
+    std::optional<ParentPtr<TDerived>> DynamicParentCast(ParentPtr<TBase> const& p)
     {
-        std::shared_ptr<T> const parentSharedPtr = p.m_Parent.lock();
+        std::shared_ptr<TBase> const parentSharedPtr = p.m_Parent.lock();
         OSC_ASSERT(parentSharedPtr != nullptr && "orphaned child tried to access a dead parent: this is a development error");
 
-        if (std::shared_ptr<U> parentDowncastedPtr = std::dynamic_pointer_cast<U>(parentSharedPtr))
+        if (auto parentDowncastedPtr = std::dynamic_pointer_cast<TDerived>(parentSharedPtr))
         {
-            return ParentPtr<U>{std::move(parentDowncastedPtr)};
+            return ParentPtr<TDerived>{std::move(parentDowncastedPtr)};
         }
         else
         {
