@@ -17,8 +17,8 @@
 
 namespace osc { struct AABB; }
 namespace osc { class BVH; }
+namespace osc { struct Color; }
 namespace osc { struct Transform; }
-namespace osc { struct Rgba32; }
 
 // note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
@@ -52,8 +52,8 @@ namespace osc
         void setTexCoords(nonstd::span<glm::vec2 const>);
         void transformTexCoords(std::function<void(nonstd::span<glm::vec2>)> const&);
 
-        nonstd::span<Rgba32 const> getColors() const;
-        void setColors(nonstd::span<Rgba32 const>);
+        nonstd::span<Color const> getColors() const;
+        void setColors(nonstd::span<Color const>);
 
         nonstd::span<glm::vec4 const> getTangents() const;
         void setTangents(nonstd::span<glm::vec4 const>);

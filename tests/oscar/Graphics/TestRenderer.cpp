@@ -2212,7 +2212,7 @@ TEST_F(Renderer, MeshGetColorsInitiallyReturnsEmptySpan)
 TEST_F(Renderer, MeshSetColorsFollowedByGetColorsReturnsColors)
 {
     osc::Mesh m;
-    std::array<osc::Rgba32, 3> colors{};
+    std::array<osc::Color, 3> colors{};
 
     m.setColors(colors);
 

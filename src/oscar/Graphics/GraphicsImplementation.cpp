@@ -3717,12 +3717,12 @@ public:
         m_Version->reset();
     }
 
-    nonstd::span<Rgba32 const> getColors() const
+    nonstd::span<Color const> getColors() const
     {
         return m_Colors;
     }
 
-    void setColors(nonstd::span<Rgba32 const> colors)
+    void setColors(nonstd::span<Color const> colors)
     {
         m_Colors.assign(colors.begin(), colors.end());
 
@@ -3914,7 +3914,7 @@ private:
         static_assert(sizeof(decltype(m_Vertices)::value_type) == 3*sizeof(float));
         static_assert(sizeof(decltype(m_Normals)::value_type) == 3*sizeof(float));
         static_assert(sizeof(decltype(m_TexCoords)::value_type) == 2*sizeof(float));
-        static_assert(sizeof(decltype(m_Colors)::value_type) == 4*sizeof(uint8_t));
+        static_assert(sizeof(decltype(m_Colors)::value_type) == 4*sizeof(float));
         static_assert(sizeof(decltype(m_Tangents)::value_type) == 4*sizeof(float));
 
         // calculate the number of bytes between each entry in the packed VBO
@@ -4032,7 +4032,7 @@ private:
         }
         if (hasColors)
         {
-            glVertexAttribPointer(shader_locations::aColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
+            glVertexAttribPointer(shader_locations::aColor, 4, GL_FLOAT, GL_TRUE, byteStride, reinterpret_cast<void*>(static_cast<uintptr_t>(byteOffset)));
             glEnableVertexAttribArray(shader_locations::aColor);
             byteOffset += sizeof(decltype(m_Colors)::value_type);
         }
@@ -4054,7 +4054,7 @@ private:
     std::vector<glm::vec3> m_Normals;
     std::vector<glm::vec2> m_TexCoords;
     std::vector<glm::vec4> m_Tangents;
-    std::vector<Rgba32> m_Colors;
+    std::vector<Color> m_Colors;
 
     bool m_IndicesAre32Bit = false;
     size_t m_NumIndices = 0;
@@ -4142,12 +4142,12 @@ void osc::Mesh::transformTexCoords(std::function<void(nonstd::span<glm::vec2>)> 
     m_Impl.upd()->transformTexCoords(f);
 }
 
-nonstd::span<osc::Rgba32 const> osc::Mesh::getColors() const
+nonstd::span<osc::Color const> osc::Mesh::getColors() const
 {
     return m_Impl->getColors();
 }
 
-void osc::Mesh::setColors(nonstd::span<osc::Rgba32 const> colors)
+void osc::Mesh::setColors(nonstd::span<osc::Color const> colors)
 {
     m_Impl.upd()->setColors(colors);
 }

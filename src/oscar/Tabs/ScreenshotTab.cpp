@@ -230,13 +230,12 @@ private:
 
                 // colors
                 {
-                    std::vector<Rgba32> colors;
+                    std::vector<Color> colors;
                     colors.reserve(drawlist.VtxBuffer.size());
                     for (ImDrawVert const& vert : drawlist.VtxBuffer)
                     {
-                        ImU32 const colorImgui = vert.col;
-                        glm::vec4 const linearColor = ImGui::ColorConvertU32ToFloat4(colorImgui);
-                        colors.push_back(ToRgba32(linearColor));
+                        Color const linearColor{glm::vec4{ImGui::ColorConvertU32ToFloat4(vert.col)}};
+                        colors.push_back(linearColor);
                     }
                     mesh.setColors(colors);
                 }

@@ -2,10 +2,10 @@
 
 #include "oscar/Bindings/ImGuiHelpers.hpp"
 #include "oscar/Graphics/Camera.hpp"
+#include "oscar/Graphics/Color.hpp"
 #include "oscar/Graphics/Graphics.hpp"
 #include "oscar/Graphics/Material.hpp"
 #include "oscar/Graphics/Mesh.hpp"
-#include "oscar/Graphics/Rgba32.hpp"
 #include "oscar/Graphics/Shader.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
@@ -34,11 +34,11 @@ namespace
 
         // care: we're using colors that are equivalent in sRGB and linear
         //       color spaces here
-        constexpr auto colors = osc::to_array<osc::Rgba32>(
+        constexpr auto colors = osc::to_array<osc::Color>(
         {
-            {0xff, 0x00, 0x00, 0xff},
-            {0x00, 0xff, 0x00, 0xff},
-            {0x00, 0x00, 0xff, 0xff},
+            osc::Color::red(),
+            osc::Color::green(),
+            osc::Color::blue(),
         });
 
         constexpr auto indices = osc::to_array<uint16_t>({0, 1, 2});
