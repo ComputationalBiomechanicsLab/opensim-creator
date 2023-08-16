@@ -15,22 +15,22 @@ namespace osc
 
         static constexpr Color halfGrey()
         {
-            return {0.5f, 0.5f, 0.5f, 1.0f};
+            return {0.5f, 0.5f, 0.5f};
         }
 
         static constexpr Color black()
         {
-            return {0.0f, 0.0f, 0.0f, 1.0f};
+            return {0.0f, 0.0f, 0.0f};
         }
 
         static constexpr Color blue()
         {
-            return {0.0f, 0.0f, 1.0f, 1.0f};
+            return {0.0f, 0.0f, 1.0f};
         }
 
         static constexpr Color mutedBlue()
         {
-            return {0.06f, 0.53f, 0.98f, 1.00f};
+            return {0.06f, 0.53f, 0.98f};
         }
 
         static constexpr Color clear()
@@ -40,37 +40,37 @@ namespace osc
 
         static constexpr Color green()
         {
-            return {0.0f, 1.0f, 0.0f, 1.0f};
+            return {0.0f, 1.0f, 0.0f};
         }
 
         static constexpr Color mutedGreen()
         {
-            return {0.5f, 1.0f, 0.5f, 1.0f};
+            return {0.5f, 1.0f, 0.5f};
         }
 
         static constexpr Color darkGreen()
         {
-            return {0.0f, 0.6f, 0.0f, 1.0f};
+            return {0.0f, 0.6f, 0.0f};
         }
 
         static constexpr Color red()
         {
-            return {1.0f, 0.0f, 0.0f, 1.0f};
+            return {1.0f, 0.0f, 0.0f};
         }
 
         static constexpr Color mutedRed()
         {
-            return {1.0f, 0.5f, 0.5f, 1.0f};
+            return {1.0f, 0.5f, 0.5f};
         }
 
         static constexpr Color white()
         {
-            return {1.0f, 1.0f, 1.0f, 1.0f};
+            return {1.0f, 1.0f, 1.0f};
         }
 
         static constexpr Color yellow()
         {
-            return {1.0f, 1.0f, 0.0f, 1.0f};
+            return {1.0f, 1.0f, 0.0f};
         }
 
         static constexpr Color purple()
