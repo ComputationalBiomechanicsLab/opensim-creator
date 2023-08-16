@@ -10,6 +10,7 @@
 #include "oscar/Graphics/MeshGen.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/CStringView.hpp"
 #include "oscar/Utils/UID.hpp"
 
@@ -22,47 +23,67 @@
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/LightingMaps";
+
+    osc::Camera CreateCamera()
+    {
+        osc::Camera rv;
+        rv.setPosition({0.0f, 0.0f, 3.0f});
+        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setNearClippingPlane(0.1f);
+        rv.setFarClippingPlane(100.0f);
+        return rv;
+    }
+
+    osc::Material CreateLightMappingMaterial()
+    {
+        osc::Texture2D diffuseMap = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/container2.png"),
+            osc::ColorSpace::sRGB,
+            osc::ImageLoadingFlags::FlipVertically
+        );
+        osc::Texture2D specularMap = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/container2_specular.png"),
+            osc::ColorSpace::sRGB,
+            osc::ImageLoadingFlags::FlipVertically
+        );
+
+        osc::Material rv
+        {
+            osc::Shader
+            {
+                osc::App::slurp("shaders/ExperimentLightingMaps.vert"),
+                osc::App::slurp("shaders/ExperimentLightingMaps.frag"),
+            },
+        };
+        rv.setTexture("uMaterialDiffuse", diffuseMap);
+        rv.setTexture("uMaterialSpecular", specularMap);
+        return rv;
+    }
 }
 
-class osc::LOGLLightingMapsTab::Impl final {
+class osc::LOGLLightingMapsTab::Impl final : public osc::StandardTabBase {
 public:
-
-    Impl()
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        m_LightingMapsMaterial.setTexture("uMaterialDiffuse", m_DiffuseMap);
-        m_LightingMapsMaterial.setTexture("uMaterialSpecular", m_SpecularMap);
-        m_Camera.setPosition({0.0f, 0.0f, 3.0f});
-        m_Camera.setCameraFOV(glm::radians(45.0f));
-        m_Camera.setNearClippingPlane(0.1f);
-        m_Camera.setFarClippingPlane(100.0f);
         m_LightTransform.position = {0.4f, 0.4f, 2.0f};
         m_LightTransform.scale = {0.2f, 0.2f, 0.2f};
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
+private:
+    void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
         m_IsMouseCaptured = true;
     }
 
-    void onUnmount()
+    void implOnUnmount() final
     {
         m_IsMouseCaptured = false;
         App::upd().setShowCursor(true);
         App::upd().makeMainEventLoopWaiting();
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool implOnEvent(SDL_Event const& e) final
     {
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
@@ -77,7 +98,7 @@ public:
         return false;
     }
 
-    void onDraw()
+    void implOnDraw() final
     {
         // handle mouse capturing
         if (m_IsMouseCaptured)
@@ -122,17 +143,7 @@ public:
         ImGui::End();
     }
 
-private:
-    UID m_TabID;
-
-    Material m_LightingMapsMaterial
-    {
-        Shader
-        {
-            App::slurp("shaders/ExperimentLightingMaps.vert"),
-            App::slurp("shaders/ExperimentLightingMaps.frag"),
-        },
-    };
+    Material m_LightingMapsMaterial = CreateLightMappingMaterial();
     Material m_LightCubeMaterial
     {
         Shader
@@ -142,19 +153,8 @@ private:
         },
     };
     Mesh m_Mesh = GenLearnOpenGLCube();
-    Texture2D m_DiffuseMap = LoadTexture2DFromImage(
-        App::resource("textures/container2.png"),
-        ColorSpace::sRGB,
-        ImageLoadingFlags::FlipVertically
-    );
-    Texture2D m_SpecularMap = LoadTexture2DFromImage(
-        App::resource("textures/container2_specular.png"),
-        ColorSpace::sRGB,
-        ImageLoadingFlags::FlipVertically
-    );
-
-    Camera m_Camera;
-    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    Camera m_Camera = CreateCamera();
+    glm::vec3 m_CameraEulers = {};
     bool m_IsMouseCaptured = false;
 
     Transform m_LightTransform;
@@ -165,7 +165,7 @@ private:
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::LOGLLightingMapsTab::id() noexcept
 {

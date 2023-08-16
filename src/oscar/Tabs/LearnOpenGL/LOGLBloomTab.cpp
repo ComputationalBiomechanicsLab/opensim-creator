@@ -16,6 +16,7 @@
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
@@ -101,46 +102,42 @@ namespace
 
         return rv;
     }
+
+    osc::Camera CreateCameraThatMatchesLearnOpenGL()
+    {
+        osc::Camera rv;
+        rv.setPosition({0.0f, 0.0f, 5.0f});
+        rv.setNearClippingPlane(0.1f);
+        rv.setFarClippingPlane(100.0f);
+        rv.setBackgroundColor({0.0f, 0.0f, 0.0f, 1.0f});
+        return rv;
+    }
 }
 
-class osc::LOGLBloomTab::Impl final {
+class osc::LOGLBloomTab::Impl final : public osc::StandardTabBase {
 public:
 
-    Impl()
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        m_Camera.setPosition({0.0f, 0.0f, 5.0f});
-        m_Camera.setNearClippingPlane(0.1f);
-        m_Camera.setFarClippingPlane(100.0f);
-        m_Camera.setBackgroundColor({0.0f, 0.0f, 0.0f, 1.0f});
-
         m_SceneMaterial.setVec3Array("uLightPositions", c_SceneLightPositions);
         m_SceneMaterial.setColorArray("uLightColors", GetSceneLightColors());
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
+private:
+    void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
         m_IsMouseCaptured = true;
     }
 
-    void onUnmount()
+    void implOnUnmount() final
     {
         App::upd().setShowCursor(true);
         App::upd().makeMainEventLoopWaiting();
         m_IsMouseCaptured = false;
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool implOnEvent(SDL_Event const& e) final
     {
         // handle mouse input
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
@@ -156,10 +153,7 @@ public:
         return false;
     }
 
-    void onTick() {}
-    void onDrawMainMenu() {}
-
-    void onDraw()
+    void implOnDraw() final
     {
         // handle mouse capturing
         if (m_IsMouseCaptured)
@@ -177,7 +171,6 @@ public:
         draw3DScene();
     }
 
-private:
     void draw3DScene()
     {
         Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
@@ -364,8 +357,6 @@ private:
         }
     }
 
-    UID m_TabID;
-
     Material m_SceneMaterial
     {
         Shader
@@ -417,13 +408,13 @@ private:
     RenderTexture m_SceneHDRThresholdedOutput;
     std::array<RenderTexture, 2> m_PingPongBlurOutputBuffers;
 
-    Camera m_Camera;
+    Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     bool m_IsMouseCaptured = true;
-    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    glm::vec3 m_CameraEulers = {};
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::LOGLBloomTab::id() noexcept
 {

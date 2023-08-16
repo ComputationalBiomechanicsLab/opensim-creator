@@ -23,6 +23,7 @@
 #include "oscar/Maths/Rect.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
@@ -115,37 +116,96 @@ namespace
         rv.setColorFormat(f);
         return rv;
     }
+
+    osc::Camera CreateCameraThatMatchesLearnOpenGL()
+    {
+        osc::Camera rv;
+        rv.setPosition({0.0f, 0.0f, 5.0f});
+        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setNearClippingPlane(0.1f);
+        rv.setFarClippingPlane(100.0f);
+        rv.setBackgroundColor(osc::Color::black());
+        return rv;
+    }
+
+    struct GBufferRenderingState final {
+        osc::Material material = LoadGBufferMaterial();
+        osc::RenderTexture albedo = RenderTextureWithColorFormat(osc::RenderTextureFormat::ARGB32);
+        osc::RenderTexture normal = RenderTextureWithColorFormat(osc::RenderTextureFormat::ARGBFloat16);
+        osc::RenderTexture position = RenderTextureWithColorFormat(osc::RenderTextureFormat::ARGBFloat16);
+        osc::RenderTarget renderTarget
+        {
+            {
+                osc::RenderTargetColorAttachment
+                {
+                    albedo.updColorBuffer(),
+                    osc::RenderBufferLoadAction::Clear,
+                    osc::RenderBufferStoreAction::Resolve,
+                    osc::Color::black(),
+                },
+                osc::RenderTargetColorAttachment
+                {
+                    normal.updColorBuffer(),
+                    osc::RenderBufferLoadAction::Clear,
+                    osc::RenderBufferStoreAction::Resolve,
+                    osc::Color::black(),
+                },
+                osc::RenderTargetColorAttachment
+                {
+                    position.updColorBuffer(),
+                    osc::RenderBufferLoadAction::Clear,
+                    osc::RenderBufferStoreAction::Resolve,
+                    osc::Color::black(),
+                },
+            },
+
+            osc::RenderTargetDepthAttachment
+            {
+                albedo.updDepthBuffer(),
+                osc::RenderBufferLoadAction::Clear,
+                osc::RenderBufferStoreAction::DontCare,
+            },
+        };
+
+        void reformat(glm::vec2 dims, int32_t samples)
+        {
+            osc::RenderTextureDescriptor desc{dims};
+            desc.setAntialiasingLevel(samples);
+
+            for (osc::RenderTexture* tex : {&albedo, &normal, &position})
+            {
+                desc.setColorFormat(tex->getColorFormat());
+                tex->reformat(desc);
+            }
+        }
+    };
+
+    struct LightPassState final {
+        osc::Material material
+        {
+            osc::Shader
+            {
+                osc::App::slurp("shaders/ExperimentDeferredShadingLightingPass.vert"),
+                osc::App::slurp("shaders/ExperimentDeferredShadingLightingPass.frag"),
+            },
+        };
+    };
 }
 
-class osc::LOGLDeferredShadingTab::Impl final {
+class osc::LOGLDeferredShadingTab::Impl final : public osc::StandardTabBase {
 public:
-
-    Impl()
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        m_Camera.setPosition({0.0f, 0.0f, 5.0f});
-        m_Camera.setCameraFOV(glm::radians(45.0f));
-        m_Camera.setNearClippingPlane(0.1f);
-        m_Camera.setFarClippingPlane(100.0f);
-        m_Camera.setBackgroundColor(Color::black());
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
+private:
+    void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
         m_IsMouseCaptured = true;
     }
 
-    void onUnmount()
+    void implOnUnmount() final
     {
         App::upd().setShowCursor(true);
         App::upd().makeMainEventLoopWaiting();
@@ -154,7 +214,7 @@ public:
         m_IsMouseCaptured = false;
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool implOnEvent(SDL_Event const& e) final
     {
         // handle mouse input
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
@@ -170,7 +230,7 @@ public:
         return false;
     }
 
-    void onDraw()
+    void implOnDraw() final
     {
         // handle mouse capturing
         if (m_IsMouseCaptured)
@@ -304,15 +364,12 @@ public:
         m_Camera.renderTo(t);
     }
 
-private:
-    UID m_TabID;
-
     // scene state
     std::vector<glm::vec3> m_LightPositions = GenerateNSceneLightPositions(c_NumLights);
     std::vector<glm::vec3> m_LightColors = GenerateNSceneLightColors(c_NumLights);
-    Camera m_Camera;
+    Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     bool m_IsMouseCaptured = true;
-    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    glm::vec3 m_CameraEulers = {};
     Mesh m_CubeMesh = GenCube();
     Mesh m_QuadMesh = GenTexturedQuad();
     Texture2D m_DiffuseMap = LoadTexture2DFromImage(
@@ -327,67 +384,8 @@ private:
     );
 
     // rendering state
-    struct GBufferRenderingState final {
-        Material material = LoadGBufferMaterial();
-        RenderTexture albedo = RenderTextureWithColorFormat(RenderTextureFormat::ARGB32);
-        RenderTexture normal = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
-        RenderTexture position = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
-        RenderTarget renderTarget
-        {
-            {
-                RenderTargetColorAttachment
-                {
-                    albedo.updColorBuffer(),
-                    RenderBufferLoadAction::Clear,
-                    RenderBufferStoreAction::Resolve,
-                    Color::black(),
-                },
-                RenderTargetColorAttachment
-                {
-                    normal.updColorBuffer(),
-                    RenderBufferLoadAction::Clear,
-                    RenderBufferStoreAction::Resolve,
-                    Color::black(),
-                },
-                RenderTargetColorAttachment
-                {
-                    position.updColorBuffer(),
-                    RenderBufferLoadAction::Clear,
-                    RenderBufferStoreAction::Resolve,
-                    Color::black(),
-                },
-            },
-            RenderTargetDepthAttachment
-            {
-                albedo.updDepthBuffer(),
-                RenderBufferLoadAction::Clear,
-                RenderBufferStoreAction::DontCare,
-            },
-        };
-
-        void reformat(glm::vec2 dims, int32_t samples)
-        {
-            RenderTextureDescriptor desc{dims};
-            desc.setAntialiasingLevel(samples);
-
-            for (RenderTexture* tex : {&albedo, &normal, &position})
-            {
-                desc.setColorFormat(tex->getColorFormat());
-                tex->reformat(desc);
-            }
-        }
-    } m_GBuffer;
-
-    struct LightPassState final {
-        Material material
-        {
-            Shader
-            {
-                App::slurp("shaders/ExperimentDeferredShadingLightingPass.vert"),
-                App::slurp("shaders/ExperimentDeferredShadingLightingPass.frag"),
-            },
-        };
-    } m_LightPass;
+    GBufferRenderingState m_GBuffer;
+    LightPassState m_LightPass;
 
     Material m_LightBoxMaterial
     {
@@ -402,7 +400,7 @@ private:
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::LOGLDeferredShadingTab::id() noexcept
 {

@@ -17,6 +17,7 @@
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 #include "oscar/Utils/UID.hpp"
@@ -118,16 +119,6 @@ namespace
         return rv;
     }
 
-    osc::Camera CreateSceneCamera()
-    {
-        osc::Camera rv;
-        rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
-        rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setNearClippingPlane(0.1f);
-        rv.setFarClippingPlane(100.0f);
-        return rv;
-    }
-
     osc::RenderTexture CreateDepthTexture()
     {
         osc::RenderTextureDescriptor desc{c_ShadowmapDims};
@@ -136,44 +127,40 @@ namespace
         desc.setColorFormat(osc::RenderTextureFormat::Depth);
         return osc::RenderTexture{desc};
     }
+
+    osc::Camera CreateCamera()
+    {
+        osc::Camera rv;
+        rv.setPosition({0.0f, 0.0f, 5.0f});
+        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setNearClippingPlane(0.1f);
+        rv.setFarClippingPlane(100.0f);
+        rv.setBackgroundColor(osc::Color::clear());
+        return rv;
+    }
 }
 
-class osc::LOGLPointShadowsTab::Impl final {
+class osc::LOGLPointShadowsTab::Impl final : public osc::StandardTabBase {
 public:
-
-    Impl()
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        m_SceneCamera.setPosition({0.0f, 0.0f, 5.0f});
-        m_SceneCamera.setCameraFOV(glm::radians(45.0f));
-        m_SceneCamera.setNearClippingPlane(0.1f);
-        m_SceneCamera.setFarClippingPlane(100.0f);
-        m_SceneCamera.setBackgroundColor(Color::clear());
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
+private:
+    void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
         m_IsMouseCaptured = true;
     }
 
-    void onUnmount()
+    void implOnUnmount() final
     {
         m_IsMouseCaptured = false;
         App::upd().makeMainEventLoopWaiting();
         App::upd().setShowCursor(true);
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool implOnEvent(SDL_Event const& e) final
     {
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
@@ -188,23 +175,20 @@ public:
         return false;
     }
 
-    void onTick()
+    void implOnTick() final
     {
         // move light position over time
         double const seconds = App::get().getFrameDeltaSinceAppStartup().count();
         m_LightPos.x = static_cast<float>(3.0 * std::sin(0.5 * seconds));
     }
 
-    void onDrawMainMenu() {}
-
-    void onDraw()
+    void implOnDraw() final
     {
         handleMouseCapture();
         draw3DScene();
         draw2DUI();
     }
 
-private:
     void handleMouseCapture()
     {
         if (m_IsMouseCaptured)
@@ -300,8 +284,6 @@ private:
         ImGui::End();
     }
 
-    UID m_TabID;
-
     Material m_ShadowMappingMaterial
     {
         Shader
@@ -329,10 +311,8 @@ private:
         }
     };
 
-
-    Camera m_SceneCamera = CreateSceneCamera();
-    bool m_IsMouseCaptured = false;
-    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    Camera m_SceneCamera = CreateCamera();
+    glm::vec3 m_CameraEulers = {};
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
         App::resource("textures/wood.png"),
         ColorSpace::sRGB
@@ -340,13 +320,14 @@ private:
     Mesh m_CubeMesh = GenCube();
     std::array<SceneCube, 6> m_SceneCubes = MakeSceneCubes();
     RenderTexture m_DepthTexture = CreateDepthTexture();
-    glm::vec3 m_LightPos = {0.0f, 0.0f, 0.0f};
+    glm::vec3 m_LightPos = {};
+    bool m_IsMouseCaptured = false;
     bool m_ShowShadows = true;
     bool m_UseSoftShadows = false;
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::LOGLPointShadowsTab::id() noexcept
 {

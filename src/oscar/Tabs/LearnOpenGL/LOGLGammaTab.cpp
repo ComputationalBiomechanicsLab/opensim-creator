@@ -11,6 +11,7 @@
 #include "oscar/Graphics/Texture2D.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
@@ -82,48 +83,61 @@ namespace
         rv.setIndices(c_PlaneIndices);
         return rv;
     }
+
+    osc::Camera CreateSceneCamera()
+    {
+        osc::Camera rv;
+        rv.setPosition({0.0f, 0.0f, 3.0f});
+        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setNearClippingPlane(0.1f);
+        rv.setFarClippingPlane(100.0f);
+        rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
+        return rv;
+    }
+
+    osc::Material CreateFloorMaterial()
+    {
+        osc::Texture2D woodTexture = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/wood.png"),
+            osc::ColorSpace::sRGB
+        );
+
+        osc::Material rv
+        {
+            osc::Shader
+            {
+                osc::App::slurp("shaders/ExperimentGamma.vert"),
+                osc::App::slurp("shaders/ExperimentGamma.frag"),
+            },
+        };
+        rv.setTexture("uFloorTexture", woodTexture);
+        rv.setVec3Array("uLightPositions", c_LightPositions);
+        rv.setColorArray("uLightColors", c_LightColors);
+        return rv;
+    }
 }
 
-class osc::LOGLGammaTab::Impl final {
+class osc::LOGLGammaTab::Impl final : public osc::StandardTabBase {
 public:
-
-    Impl()
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        m_Material.setTexture("uFloorTexture", m_WoodTexture);
-        m_Material.setVec3Array("uLightPositions", c_LightPositions);
-        m_Material.setColorArray("uLightColors", c_LightColors);
-
-        m_Camera.setPosition({0.0f, 0.0f, 3.0f});
-        m_Camera.setCameraFOV(glm::radians(45.0f));
-        m_Camera.setNearClippingPlane(0.1f);
-        m_Camera.setFarClippingPlane(100.0f);
-        m_Camera.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
+private:
+    void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
         m_IsMouseCaptured = true;
     }
 
-    void onUnmount()
+    void implOnUnmount() final
     {
         m_IsMouseCaptured = false;
         App::upd().setShowCursor(true);
         App::upd().makeMainEventLoopWaiting();
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool implOnEvent(SDL_Event const& e) final
     {
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
@@ -138,7 +152,7 @@ public:
         return false;
     }
 
-    void onDraw()
+    void implOnDraw() final
     {
         // handle mouse capturing
         if (m_IsMouseCaptured)
@@ -175,30 +189,15 @@ public:
         ImGui::End();
     }
 
-private:
-    UID m_TabID;
-
-    Material m_Material
-    {
-        Shader
-        {
-            App::slurp("shaders/ExperimentGamma.vert"),
-            App::slurp("shaders/ExperimentGamma.frag"),
-        }
-    };
+    Material m_Material = CreateFloorMaterial();
     Mesh m_PlaneMesh = GeneratePlane();
-    Texture2D m_WoodTexture = LoadTexture2DFromImage(
-        App::resource("textures/wood.png"),
-        ColorSpace::sRGB
-    );
-
-    Camera m_Camera;
+    Camera m_Camera = CreateSceneCamera();
     bool m_IsMouseCaptured = true;
-    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    glm::vec3 m_CameraEulers = {};
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::LOGLGammaTab::id() noexcept
 {

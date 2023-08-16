@@ -16,6 +16,7 @@
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Platform/App.hpp"
 #include "oscar/Platform/os.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Assertions.hpp"
 #include "oscar/Utils/SetHelpers.hpp"
 
@@ -71,26 +72,17 @@ namespace
     }
 }
 
-class osc::ScreenshotTab::Impl final {
+class osc::ScreenshotTab::Impl final : public osc::StandardTabBase {
 public:
-
     explicit Impl(AnnotatedImage&& annotatedImage) :
+        StandardTabBase{ICON_FA_COOKIE " ScreenshotTab"},
         m_AnnotatedImage{std::move(annotatedImage)}
     {
         m_ImageTexture.setFilterMode(TextureFilterMode::Mipmap);
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return ICON_FA_COOKIE " ScreenshotTab";
-    }
-
-    void onDrawMainMenu()
+private:
+    void implOnDrawMainMenu() final
     {
         if (ImGui::BeginMenu("File"))
         {
@@ -102,7 +94,7 @@ public:
         }
     }
 
-    void onDraw()
+    void implOnDraw() final
     {
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
@@ -131,8 +123,6 @@ public:
             ImGui::End();
         }
     }
-
-private:
 
     // returns screenspace rect of the screenshot within the UI
     Rect drawScreenshot()
@@ -306,8 +296,6 @@ private:
         // Graphics::ReadPixels(*rt, rv); TODO: must implement a way of writing to textures
         return rv;
     }
-
-    UID m_TabID;
 
     AnnotatedImage m_AnnotatedImage;
     Texture2D m_ImageTexture = ToTexture2D(m_AnnotatedImage.image);

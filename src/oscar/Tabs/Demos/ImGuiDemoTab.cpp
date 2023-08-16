@@ -1,10 +1,10 @@
 #include "ImGuiDemoTab.hpp"
 
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <imgui.h>
 
-#include <string>
 #include <utility>
 
 namespace
@@ -12,30 +12,21 @@ namespace
     constexpr osc::CStringView c_TabStringID = "Demos/ImGui";
 }
 
-class osc::ImGuiDemoTab::Impl final {
+class osc::ImGuiDemoTab::Impl final : public osc::StandardTabBase {
 public:
-
-    UID getID() const
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onDraw()
-    {
-        ImGui::ShowDemoWindow();
     }
 
 private:
-    UID m_TabID;
+    void implOnDraw() final
+    {
+        ImGui::ShowDemoWindow();
+    }
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::ImGuiDemoTab::id() noexcept
 {

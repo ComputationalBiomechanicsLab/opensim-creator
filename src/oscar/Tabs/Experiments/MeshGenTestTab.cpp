@@ -11,8 +11,9 @@
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Maths/PolarPerspectiveCamera.hpp"
 #include "oscar/Platform/App.hpp"
-#include "oscar/Widgets/SceneViewer.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/CStringView.hpp"
+#include "oscar/Widgets/SceneViewer.hpp"
 
 #include <glm/gtx/transform.hpp>
 #include <glm/mat4x4.hpp>
@@ -47,25 +48,15 @@ namespace
     }
 }
 
-class osc::MeshGenTestTab::Impl final {
+class osc::MeshGenTestTab::Impl final : public osc::StandardTabBase {
 public:
-
-    Impl()
+    Impl() : StandardTabBase{c_TabStringID}
     {
         m_Camera.radius = 5.0f;
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onDraw()
+private:
+    void implOnDraw() final
     {
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
@@ -115,10 +106,6 @@ public:
         ImGui::End();
     }
 
-
-private:
-    UID m_TabID;
-
     std::string m_CurrentMesh = "brick";
     std::map<std::string, osc::Mesh> m_AllMeshes = GenerateMeshLookup();
     SceneViewer m_Viewer;
@@ -127,7 +114,7 @@ private:
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::MeshGenTestTab::id() noexcept
 {

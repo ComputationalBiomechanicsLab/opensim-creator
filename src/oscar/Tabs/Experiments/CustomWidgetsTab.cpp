@@ -1,5 +1,6 @@
 #include "CustomWidgetsTab.hpp"
 
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <imgui.h>
@@ -245,20 +246,14 @@ namespace
     }
 }
 
-class osc::CustomWidgetsTab::Impl final {
+class osc::CustomWidgetsTab::Impl final : public osc::StandardTabBase {
 public:
-
-    UID getID() const
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        return m_TabID;
     }
 
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onDraw()
+private:
+    void implOnDraw() final
     {
         ImGui::Begin("window");
         Slider("lol", &m_Value, "some desc");
@@ -266,15 +261,12 @@ public:
         ImGui::End();
     }
 
-private:
-    UID m_TabID;
-
     float m_Value = 0.0f;
     bool m_Toggle = false;
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::CustomWidgetsTab::id() noexcept
 {

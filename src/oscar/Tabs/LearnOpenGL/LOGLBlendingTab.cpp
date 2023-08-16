@@ -12,6 +12,7 @@
 #include "oscar/Panels/LogViewerPanel.hpp"
 #include "oscar/Panels/PerfPanel.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
@@ -96,47 +97,43 @@ namespace
         rv.setIndices(c_TransparentIndices);
         return rv;
     }
+
+    osc::Camera CreateCameraThatMatchesLearnOpenGL()
+    {
+        osc::Camera rv;
+        rv.setPosition({0.0f, 0.0f, 3.0f});
+        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setNearClippingPlane(0.1f);
+        rv.setFarClippingPlane(100.0f);
+        rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
+        return rv;
+    }
 }
 
-class osc::LOGLBlendingTab::Impl final {
+class osc::LOGLBlendingTab::Impl final : public osc::StandardTabBase {
 public:
-    Impl()
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        m_Camera.setPosition({0.0f, 0.0f, 3.0f});
-        m_Camera.setCameraFOV(glm::radians(45.0f));
-        m_Camera.setNearClippingPlane(0.1f);
-        m_Camera.setFarClippingPlane(100.0f);
-        m_Camera.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
         m_BlendingMaterial.setTransparent(true);
-
         m_LogViewer.open();
         m_PerfPanel.open();
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
+private:
+    void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
         m_IsMouseCaptured = true;
     }
 
-    void onUnmount()
+    void implOnUnmount() final
     {
         m_IsMouseCaptured = false;
         App::upd().setShowCursor(true);
         App::upd().makeMainEventLoopWaiting();
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool implOnEvent(SDL_Event const& e) final
     {
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
@@ -151,7 +148,7 @@ public:
         return false;
     }
 
-    void onDraw()
+    void implOnDraw() final
     {
         // handle mouse capturing
         if (m_IsMouseCaptured)
@@ -207,9 +204,6 @@ public:
         m_PerfPanel.onDraw();
     }
 
-private:
-    UID m_TabID;
-
     Material m_OpaqueMaterial
     {
         Shader
@@ -222,7 +216,7 @@ private:
     Mesh m_CubeMesh = GenLearnOpenGLCube();
     Mesh m_PlaneMesh = GeneratePlane();
     Mesh m_TransparentMesh = GenerateTransparent();
-    Camera m_Camera;
+    Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     Texture2D m_MarbleTexture = LoadTexture2DFromImage(
         App::resource("textures/marble.jpg"),
         ColorSpace::sRGB
@@ -236,13 +230,13 @@ private:
         ColorSpace::sRGB
     );
     bool m_IsMouseCaptured = false;
-    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    glm::vec3 m_CameraEulers = {};
     LogViewerPanel m_LogViewer{"log"};
     PerfPanel m_PerfPanel{"perf"};
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::LOGLBlendingTab::id() noexcept
 {

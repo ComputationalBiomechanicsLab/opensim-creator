@@ -14,6 +14,7 @@
 #include "oscar/Graphics/Texture2D.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <glm/mat4x4.hpp>
@@ -77,45 +78,46 @@ namespace
         rv.setIndices(indices);
         return rv;
     }
+
+    osc::Camera CreateCamera()
+    {
+        osc::Camera rv;
+        rv.setNearClippingPlane(0.1f);
+        rv.setFarClippingPlane(100.0f);
+        return rv;
+    }
+
+    osc::RenderTexture CreateDepthTexture()
+    {
+        osc::RenderTexture rv;
+        osc::RenderTextureDescriptor shadowmapDescriptor{glm::ivec2{1024, 1024}};
+        shadowmapDescriptor.setReadWrite(osc::RenderTextureReadWrite::Linear);
+        rv.reformat(shadowmapDescriptor);
+        return rv;
+    }
 }
 
-class osc::LOGLShadowMappingTab::Impl final {
+class osc::LOGLShadowMappingTab::Impl final : public osc::StandardTabBase {
 public:
-
-    Impl()
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        m_Camera.setNearClippingPlane(0.1f);
-        m_Camera.setFarClippingPlane(100.0f);
-
-        RenderTextureDescriptor shadowmapDescriptor{glm::ivec2{1024, 1024}};
-        shadowmapDescriptor.setReadWrite(osc::RenderTextureReadWrite::Linear);
-        m_DepthTexture.reformat(shadowmapDescriptor);
     }
 
-    UID getID() const
-    {
-        return m_ID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
+private:
+    void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
         m_IsMouseCaptured = true;
     }
 
-    void onUnmount()
+    void implOnUnmount() final
     {
         m_IsMouseCaptured = false;
         App::upd().makeMainEventLoopWaiting();
         App::upd().setShowCursor(true);
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool implOnEvent(SDL_Event const& e) final
     {
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
@@ -130,13 +132,12 @@ public:
         return false;
     }
 
-    void onDraw()
+    void implOnDraw() final
     {
         handleMouseCapture();
         draw3DScene();
     }
 
-private:
     void handleMouseCapture()
     {
         if (m_IsMouseCaptured)
@@ -219,16 +220,13 @@ private:
         m_Camera.setProjectionMatrixOverride(std::nullopt);
     }
 
-    UID m_ID;
-    bool m_IsMouseCaptured = false;
-
-    Camera m_Camera;
-    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    Camera m_Camera = CreateCamera();
+    glm::vec3 m_CameraEulers = {};
     Texture2D m_WoodTexture = LoadTexture2DFromImage(
         App::resource("textures/wood.png"),
         ColorSpace::sRGB
     );
-    Mesh m_CubeMesh = osc::GenCube();
+    Mesh m_CubeMesh = GenCube();
     Mesh m_PlaneMesh = GeneratePlaneMesh();
     Material m_SceneMaterial
     {
@@ -246,9 +244,10 @@ private:
             App::slurp("shaders/ExperimentShadowMappingDepth.frag"),
         },
     };
-    RenderTexture m_DepthTexture;
+    RenderTexture m_DepthTexture = CreateDepthTexture();
     glm::mat4 m_LatestLightSpaceMatrix{1.0f};
     glm::vec3 m_LightPos = {-2.0f, 4.0f, -1.0f};
+    bool m_IsMouseCaptured = false;
 };
 
 

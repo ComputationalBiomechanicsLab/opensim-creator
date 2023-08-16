@@ -14,6 +14,7 @@
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
 #include "oscar/Platform/Config.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/ArrayHelpers.hpp"
 #include "oscar/Utils/Assertions.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
@@ -34,14 +35,14 @@ namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Cubemaps";
     constexpr auto c_SkyboxTextureFilenames = osc::to_array<osc::CStringView>(
-        {
-            "skybox_right.jpg",
-            "skybox_left.jpg",
-            "skybox_top.jpg",
-            "skybox_bottom.jpg",
-            "skybox_front.jpg",
-            "skybox_back.jpg",
-        });
+    {
+        "skybox_right.jpg",
+        "skybox_left.jpg",
+        "skybox_top.jpg",
+        "skybox_bottom.jpg",
+        "skybox_front.jpg",
+        "skybox_back.jpg",
+    });
     static_assert(c_SkyboxTextureFilenames.size() == osc::NumOptions<osc::CubemapFace>());
     static_assert(c_SkyboxTextureFilenames.size() > 1);
 
@@ -75,12 +76,70 @@ namespace
 
         return cubemap;
     }
+
+    osc::Camera CreateCameraThatMatchesLearnOpenGL()
+    {
+        osc::Camera rv;
+        rv.setPosition({0.0f, 0.0f, 3.0f});
+        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setNearClippingPlane(0.1f);
+        rv.setFarClippingPlane(100.0f);
+        rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
+        return rv;
+    }
+
+    struct CubeMaterial final {
+        osc::CStringView label;
+        osc::Material material;
+    };
+
+    std::array<CubeMaterial, 3> CreateCubeMaterials()
+    {
+        return osc::to_array(
+        {
+            CubeMaterial
+            {
+                "Basic",
+                osc::Material
+                {
+                    osc::Shader
+                    {
+                        osc::App::slurp("shaders/ExperimentCubemap.vert"),
+                        osc::App::slurp("shaders/ExperimentCubemap.frag"),
+                    },
+                },
+            },
+            CubeMaterial
+            {
+                "Reflection",
+                osc::Material
+                {
+                    osc::Shader
+                    {
+                        osc::App::slurp("shaders/ExperimentCubemapReflection.vert"),
+                        osc::App::slurp("shaders/ExperimentCubemapReflection.frag"),
+                    },
+                },
+            },
+            CubeMaterial
+            {
+                "Refraction",
+                osc::Material
+                {
+                    osc::Shader
+                    {
+                        osc::App::slurp("shaders/ExperimentCubemapRefraction.vert"),
+                        osc::App::slurp("shaders/ExperimentCubemapRefraction.frag"),
+                    },
+                },
+            },
+        });
+    }
 }
 
-class osc::LOGLCubemapsTab::Impl final {
+class osc::LOGLCubemapsTab::Impl final : public osc::StandardTabBase {
 public:
-
-    Impl()
+    Impl() : StandardTabBase{c_TabStringID}
     {
         for (CubeMaterial& cubeMat : m_CubeMaterials)
         {
@@ -96,38 +155,23 @@ public:
         // fragment shader pressure)
         m_SkyboxMaterial.setCubemap("uSkybox", m_Cubemap);
         m_SkyboxMaterial.setDepthFunction(DepthFunction::LessOrEqual);
-
-        m_Camera.setPosition({0.0f, 0.0f, 3.0f});
-        m_Camera.setCameraFOV(glm::radians(45.0f));
-        m_Camera.setNearClippingPlane(0.1f);
-        m_Camera.setFarClippingPlane(100.0f);
-        m_Camera.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
+private:
+    void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
         m_IsMouseCaptured = true;
     }
 
-    void onUnmount()
+    void implOnUnmount() final
     {
         m_IsMouseCaptured = false;
         App::upd().setShowCursor(true);
         App::upd().makeMainEventLoopWaiting();
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool implOnEvent(SDL_Event const& e) final
     {
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
@@ -142,7 +186,7 @@ public:
         return false;
     }
 
-    void onDraw()
+    void implOnDraw() final
     {
         // handle mouse capturing
         if (m_IsMouseCaptured)
@@ -213,52 +257,7 @@ public:
         ImGui::End();
     }
 
-private:
-    UID m_TabID;
-
-    struct CubeMaterial final {
-        CStringView label;
-        Material material;
-    };
-    std::array<CubeMaterial, 3> m_CubeMaterials =
-    {
-        CubeMaterial
-        {
-            "Basic",
-            Material
-            {
-                Shader
-                {
-                    App::slurp("shaders/ExperimentCubemap.vert"),
-                    App::slurp("shaders/ExperimentCubemap.frag"),
-                },
-            },
-        },
-        CubeMaterial
-        {
-            "Reflection",
-            Material
-            {
-                Shader
-                {
-                    App::slurp("shaders/ExperimentCubemapReflection.vert"),
-                    App::slurp("shaders/ExperimentCubemapReflection.frag"),
-                },
-            },
-        },
-        CubeMaterial
-        {
-            "Refraction",
-            Material
-            {
-                Shader
-                {
-                    App::slurp("shaders/ExperimentCubemapRefraction.vert"),
-                    App::slurp("shaders/ExperimentCubemapRefraction.frag"),
-                },
-            },
-        },
-    };
+    std::array<CubeMaterial, 3> m_CubeMaterials = CreateCubeMaterials();
     size_t m_CubeMaterialIndex = 0;
     MaterialPropertyBlock m_CubeProperties;
     Mesh m_Cube = GenLearnOpenGLCube();
@@ -279,13 +278,13 @@ private:
     Mesh m_Skybox = GenCube();
     Cubemap m_Cubemap = LoadCubemap(App::get().getConfig().getResourceDir());
 
-    Camera m_Camera;
+    Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     bool m_IsMouseCaptured = true;
-    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    glm::vec3 m_CameraEulers = {};
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::LOGLCubemapsTab::id() noexcept
 {

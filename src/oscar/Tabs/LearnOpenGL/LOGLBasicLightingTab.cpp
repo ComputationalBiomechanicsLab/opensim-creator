@@ -9,6 +9,7 @@
 #include "oscar/Graphics/Shader.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/CStringView.hpp"
 #include "oscar/Utils/UID.hpp"
 
@@ -21,46 +22,43 @@
 namespace
 {
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/BasicLighting";
+
+    osc::Camera CreateCameraThatMatchesLearnOpenGL()
+    {
+        osc::Camera rv;
+        rv.setPosition({0.0f, 0.0f, 3.0f});
+        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setNearClippingPlane(0.1f);
+        rv.setFarClippingPlane(100.0f);
+        rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
+        return rv;
+    }
 }
 
-class osc::LOGLBasicLightingTab::Impl final {
+class osc::LOGLBasicLightingTab::Impl final : public osc::StandardTabBase {
 public:
 
-    Impl()
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        m_Camera.setPosition({0.0f, 0.0f, 3.0f});
-        m_Camera.setCameraFOV(glm::radians(45.0f));
-        m_Camera.setNearClippingPlane(0.1f);
-        m_Camera.setFarClippingPlane(100.0f);
-        m_Camera.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
         m_LightTransform.position = {1.2f, 1.0f, 2.0f};
         m_LightTransform.scale *= 0.2f;
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
+private:
+    void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
         m_IsMouseCaptured = true;
     }
 
-    void onUnmount()
+    void implOnUnmount() final
     {
         m_IsMouseCaptured = false;
         App::upd().setShowCursor(true);
         App::upd().makeMainEventLoopWaiting();
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool implOnEvent(SDL_Event const& e) final
     {
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
@@ -75,7 +73,7 @@ public:
         return false;
     }
 
-    void onDraw()
+    void implOnDraw() final
     {
         // handle mouse capturing
         if (m_IsMouseCaptured)
@@ -121,9 +119,6 @@ public:
         ImGui::End();
     }
 
-private:
-    UID m_TabID;
-
     Material m_LightingMaterial
     {
         Shader
@@ -143,8 +138,8 @@ private:
 
     Mesh m_CubeMesh = GenLearnOpenGLCube();
 
-    Camera m_Camera;
-    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
+    glm::vec3 m_CameraEulers = {};
     bool m_IsMouseCaptured = false;
 
     Transform m_LightTransform;
@@ -156,7 +151,7 @@ private:
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::LOGLBasicLightingTab::id() noexcept
 {

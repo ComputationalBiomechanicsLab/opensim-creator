@@ -13,6 +13,7 @@
 #include "oscar/Graphics/Texture2D.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Assertions.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
@@ -84,48 +85,76 @@ namespace
         rv.setIndices(indices);
         return rv;
     }
+
+    osc::Camera CreateCamera()
+    {
+        osc::Camera rv;
+        rv.setPosition({0.0f, 0.0f, 3.0f});
+        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setNearClippingPlane(0.1f);
+        rv.setFarClippingPlane(100.0f);
+        return rv;
+    }
+
+    osc::Material CreateNormalMappingMaterial()
+    {
+        osc::Texture2D diffuseMap = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/brickwall.jpg"),
+            osc::ColorSpace::sRGB
+        );
+        osc::Texture2D normalMap = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/brickwall_normal.jpg"),
+            osc::ColorSpace::Linear
+        );
+
+        osc::Material rv
+        {
+            osc::Shader
+            {
+                osc::App::slurp("shaders/ExperimentNormalMapping.vert"),
+                osc::App::slurp("shaders/ExperimentNormalMapping.frag"),
+            },
+        };
+        rv.setTexture("uDiffuseMap", diffuseMap);
+        rv.setTexture("uNormalMap", normalMap);
+
+        return rv;
+    }
+
+    osc::Material CreateLightCubeMaterial()
+    {
+        return osc::Material
+        {
+            osc::Shader
+            {
+                osc::App::slurp("shaders/ExperimentLightCube.vert"),
+                osc::App::slurp("shaders/ExperimentLightCube.frag"),
+            },
+        };
+    }
 }
 
-class osc::LOGLNormalMappingTab::Impl final {
+class osc::LOGLNormalMappingTab::Impl final : public osc::StandardTabBase {
 public:
-
-    Impl()
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        m_NormalMappingMaterial.setTexture("uDiffuseMap", m_DiffuseMap);
-        m_NormalMappingMaterial.setTexture("uNormalMap", m_NormalMap);
-
-        // these roughly match what LearnOpenGL default to
-        m_Camera.setPosition({0.0f, 0.0f, 3.0f});
-        m_Camera.setCameraFOV(glm::radians(45.0f));
-        m_Camera.setNearClippingPlane(0.1f);
-        m_Camera.setFarClippingPlane(100.0f);
-
         m_LightTransform.position = {0.5f, 1.0f, 0.3f};
         m_LightTransform.scale *= 0.2f;
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
+private:
+    void implOnMount() final
     {
         m_IsMouseCaptured = true;
     }
 
-    void onUnmount()
+    void implOnUnmount() final
     {
         m_IsMouseCaptured = false;
         App::upd().setShowCursor(true);
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool implOnEvent(SDL_Event const& e) final
     {
         // handle mouse capturing
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
@@ -141,7 +170,7 @@ public:
         return false;
     }
 
-    void onTick()
+    void implOnTick() final
     {
         // rotate the quad over time
         AppClock::duration const dt = App::get().getFrameDeltaSinceAppStartup();
@@ -150,7 +179,7 @@ public:
         m_QuadTransform.rotation = glm::normalize(glm::quat{static_cast<float>(angle), axis});
     }
 
-    void onDraw()
+    void implOnDraw() final
     {
         // handle mouse capturing and update camera
         if (m_IsMouseCaptured)
@@ -190,48 +219,23 @@ public:
         ImGui::End();
     }
 
-private:
-    UID m_TabID;
-    bool m_IsMouseCaptured = false;
-
     // rendering state
-    Material m_NormalMappingMaterial
-    {
-        Shader
-        {
-            App::slurp("shaders/ExperimentNormalMapping.vert"),
-            App::slurp("shaders/ExperimentNormalMapping.frag"),
-        },
-    };
-    Material m_LightCubeMaterial
-    {
-        Shader
-        {
-            App::slurp("shaders/ExperimentLightCube.vert"),
-            App::slurp("shaders/ExperimentLightCube.frag"),
-        },
-    };
+    Material m_NormalMappingMaterial = CreateNormalMappingMaterial();
+    Material m_LightCubeMaterial = CreateLightCubeMaterial();
     Mesh m_CubeMesh = GenLearnOpenGLCube();
     Mesh m_QuadMesh = GenerateQuad();
-    Texture2D m_DiffuseMap = LoadTexture2DFromImage(
-        App::resource("textures/brickwall.jpg"),
-        ColorSpace::sRGB
-    );
-    Texture2D m_NormalMap = LoadTexture2DFromImage(
-        App::resource("textures/brickwall_normal.jpg"),
-        ColorSpace::Linear
-    );
 
     // scene state
-    Camera m_Camera;
-    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    Camera m_Camera = CreateCamera();
+    glm::vec3 m_CameraEulers = {};
     Transform m_QuadTransform;
     Transform m_LightTransform;
     bool m_IsNormalMappingEnabled = true;
+    bool m_IsMouseCaptured = false;
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::LOGLNormalMappingTab::id() noexcept
 {

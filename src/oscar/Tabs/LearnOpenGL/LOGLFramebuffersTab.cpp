@@ -13,6 +13,7 @@
 #include "oscar/Panels/LogViewerPanel.hpp"
 #include "oscar/Panels/PerfPanel.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Assertions.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
@@ -48,13 +49,8 @@ namespace
     });
     constexpr auto c_PlaneIndices = osc::to_array<uint16_t>(
     {
-        0,
-        2,
-        1,
-
-        3,
-        5,
-        4,
+        0, 2, 1,
+        3, 5, 4,
     });
 
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/Framebuffers";
@@ -67,45 +63,48 @@ namespace
         rv.setIndices(c_PlaneIndices);
         return rv;
     }
+
+    osc::Camera CreateSceneCamera()
+    {
+        osc::Camera rv;
+        rv.setPosition({0.0f, 0.0f, 3.0f});
+        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setNearClippingPlane(0.1f);
+        rv.setFarClippingPlane(100.0f);
+        return rv;
+    }
+
+    osc::Camera CreateScreenCamera()
+    {
+        osc::Camera rv;
+        rv.setViewMatrixOverride(glm::mat4{1.0f});
+        rv.setProjectionMatrixOverride(glm::mat4{1.0f});
+        return rv;
+    }
 }
 
-class osc::LOGLFramebuffersTab::Impl final {
+class osc::LOGLFramebuffersTab::Impl final : public osc::StandardTabBase {
 public:
 
-    Impl()
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        m_SceneCamera.setPosition({0.0f, 0.0f, 3.0f});
-        m_SceneCamera.setCameraFOV(glm::radians(45.0f));
-        m_SceneCamera.setNearClippingPlane(0.1f);
-        m_SceneCamera.setFarClippingPlane(100.0f);
-        m_ScreenCamera.setViewMatrixOverride(glm::mat4{1.0f});
-        m_ScreenCamera.setProjectionMatrixOverride(glm::mat4{1.0f});
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
+private:
+    void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
         m_IsMouseCaptured = true;
     }
 
-    void onUnmount()
+    void implOnUnmount() final
     {
         m_IsMouseCaptured = false;
         App::upd().setShowCursor(true);
         App::upd().makeMainEventLoopWaiting();
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool implOnEvent(SDL_Event const& e) final
     {
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
@@ -120,7 +119,7 @@ public:
         return false;
     }
 
-    void onDraw()
+    void implOnDraw() final
     {
         // handle mouse capturing
         if (m_IsMouseCaptured)
@@ -165,9 +164,6 @@ public:
         m_PerfPanel.onDraw();
     }
 
-private:
-    UID m_TabID;
-
     Material m_SceneRenderMaterial
     {
         Shader
@@ -177,9 +173,9 @@ private:
         }
     };
 
-    Camera m_SceneCamera;
+    Camera m_SceneCamera = CreateSceneCamera();
     bool m_IsMouseCaptured = false;
-    glm::vec3 m_CameraEulers = { 0.0f, 0.0f, 0.0f };
+    glm::vec3 m_CameraEulers = {};
 
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(
         App::resource("textures/container.jpg"),
@@ -195,7 +191,7 @@ private:
     Mesh m_QuadMesh = GenTexturedQuad();
 
     RenderTexture m_RenderTexture;
-    Camera m_ScreenCamera;
+    Camera m_ScreenCamera = CreateScreenCamera();
     Material m_ScreenMaterial
     {
         Shader
@@ -210,7 +206,7 @@ private:
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::LOGLFramebuffersTab::id() noexcept
 {

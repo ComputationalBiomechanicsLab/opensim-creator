@@ -18,6 +18,7 @@
 #include "oscar/Maths/Rect.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
@@ -59,49 +60,74 @@ namespace
         rv.scale = {2.5f, 2.5f, 27.5f};
         return rv;
     }
+
+    osc::Camera CreateSceneCamera()
+    {
+        osc::Camera rv;
+        rv.setPosition({0.0f, 0.0f, 5.0f});
+        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setNearClippingPlane(0.1f);
+        rv.setFarClippingPlane(100.0f);
+        rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
+        return rv;
+    }
+
+    osc::Material CreateSceneMaterial()
+    {
+        osc::Texture2D woodTexture = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/wood.png"),
+            osc::ColorSpace::sRGB
+        );
+
+        osc::Material rv
+        {
+            osc::Shader
+            {
+                osc::App::slurp("shaders/ExperimentHDRScene.vert"),
+                osc::App::slurp("shaders/ExperimentHDRScene.frag"),
+            },
+        };
+        rv.setVec3Array("uSceneLightPositions", c_LightPositions);
+        rv.setColorArray("uSceneLightColors", GetLightColors());
+        rv.setTexture("uDiffuseTexture", woodTexture);
+        rv.setBool("uInverseNormals", true);
+        return rv;
+    }
+
+    osc::Material CreateTonemapMaterial()
+    {
+        return osc::Material
+        {
+            osc::Shader
+            {
+                osc::App::slurp("shaders/ExperimentHDRTonemap.vert"),
+                osc::App::slurp("shaders/ExperimentHDRTonemap.frag"),
+            },
+        };
+    }
 }
 
-class osc::LOGLHDRTab::Impl final {
+class osc::LOGLHDRTab::Impl final : public osc::StandardTabBase {
 public:
-
-    Impl()
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        m_SceneMaterial.setVec3Array("uSceneLightPositions", c_LightPositions);
-        m_SceneMaterial.setColorArray("uSceneLightColors", GetLightColors());
-        m_SceneMaterial.setTexture("uDiffuseTexture", m_WoodTexture);
-        m_SceneMaterial.setBool("uInverseNormals", true);
-
-        m_Camera.setPosition({0.0f, 0.0f, 5.0f});
-        m_Camera.setCameraFOV(glm::radians(45.0f));
-        m_Camera.setNearClippingPlane(0.1f);
-        m_Camera.setFarClippingPlane(100.0f);
-        m_Camera.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
+private:
+    void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
         m_IsMouseCaptured = true;
     }
 
-    void onUnmount()
+    void implOnUnmount() final
     {
         m_IsMouseCaptured = false;
         App::upd().setShowCursor(true);
         App::upd().makeMainEventLoopWaiting();
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool implOnEvent(SDL_Event const& e) final
     {
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
@@ -116,7 +142,7 @@ public:
         return false;
     }
 
-    void onDraw()
+    void implOnDraw() final
     {
         handleMouseCapturing();
         draw3DSceneToHDRTexture();
@@ -188,43 +214,23 @@ public:
         ImGui::End();
     }
 
-private:
-    UID m_TabID;
-
-    Material m_SceneMaterial
-    {
-        Shader
-        {
-            App::slurp("shaders/ExperimentHDRScene.vert"),
-            App::slurp("shaders/ExperimentHDRScene.frag"),
-        },
-    };
-    Material m_TonemapMaterial
-    {
-        Shader
-        {
-            App::slurp("shaders/ExperimentHDRTonemap.vert"),
-            App::slurp("shaders/ExperimentHDRTonemap.frag"),
-        },
-    };
-    Camera m_Camera;
+    Material m_SceneMaterial = CreateSceneMaterial();
+    Material m_TonemapMaterial = CreateTonemapMaterial();
+    Camera m_Camera = CreateSceneCamera();
     Mesh m_CubeMesh = GenCube();
     Mesh m_QuadMesh = GenTexturedQuad();
-    Texture2D m_WoodTexture = LoadTexture2DFromImage(
-        App::resource("textures/wood.png"),
-        ColorSpace::sRGB
-    );
     Transform m_CorridoorTransform = CalcCorridoorTransform();
     RenderTexture m_SceneHDRTexture;
-    bool m_IsMouseCaptured = true;
+    float m_Exposure = 1.0f;
+
     glm::vec3 m_CameraEulers = {0.0f, osc::fpi, 0.0f};
+    bool m_IsMouseCaptured = true;
     bool m_Use16BitFormat = true;
     bool m_UseTonemap = true;
-    float m_Exposure = 1.0f;
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::LOGLHDRTab::id() noexcept
 {

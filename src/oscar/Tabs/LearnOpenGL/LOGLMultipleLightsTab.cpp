@@ -14,6 +14,7 @@
 #include "oscar/Panels/PerfPanel.hpp"
 #include "oscar/Platform/App.hpp"
 #include "oscar/Platform/Log.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 #include "oscar/Utils/UID.hpp"
@@ -58,74 +59,107 @@ namespace
     constexpr auto c_PointLightConstants = osc::to_array<float>({1.0f, 1.0f, 1.0f, 1.0f});
     constexpr auto c_PointLightLinears = osc::to_array<float>({0.09f, 0.09f, 0.09f, 0.09f});
     constexpr auto c_PointLightQuadratics = osc::to_array<float>({0.032f, 0.032f, 0.032f, 0.032f});
+
+    osc::Camera CreateCamera()
+    {
+        osc::Camera rv;
+        rv.setPosition({0.0f, 0.0f, 3.0f});
+        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setNearClippingPlane(0.1f);
+        rv.setFarClippingPlane(100.0f);
+        rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
+        return rv;
+    }
+
+    osc::Material CreateMultipleLightsMaterial()
+    {
+        osc::Texture2D diffuseMap = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/container2.png"),
+            osc::ColorSpace::sRGB,
+            osc::ImageLoadingFlags::FlipVertically
+        );
+
+        osc::Texture2D specularMap = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/container2_specular.png"),
+            osc::ColorSpace::sRGB,
+            osc::ImageLoadingFlags::FlipVertically
+        );
+
+        osc::Material rv
+        {
+            osc::Shader
+            {
+                osc::App::slurp("shaders/ExperimentMultipleLights.vert"),
+                osc::App::slurp("shaders/ExperimentMultipleLights.frag"),
+            },
+        };
+
+        rv.setTexture("uMaterialDiffuse", diffuseMap);
+        rv.setTexture("uMaterialSpecular", specularMap);
+        rv.setVec3("uDirLightDirection", {-0.2f, -1.0f, -0.3f});
+        rv.setFloat("uDirLightAmbient", 0.01f);
+        rv.setFloat("uDirLightDiffuse", 0.2f);
+        rv.setFloat("uDirLightSpecular", 0.4f);
+
+        rv.setFloat("uSpotLightAmbient", 0.0f);
+        rv.setFloat("uSpotLightDiffuse", 1.0f);
+        rv.setFloat("uSpotLightSpecular", 0.75f);
+
+        rv.setFloat("uSpotLightConstant", 1.0f);
+        rv.setFloat("uSpotLightLinear", 0.09f);
+        rv.setFloat("uSpotLightQuadratic", 0.032f);
+        rv.setFloat("uSpotLightCutoff", glm::cos(glm::radians(12.5f)));
+        rv.setFloat("uSpotLightOuterCutoff", glm::cos(glm::radians(15.0f)));
+
+        rv.setVec3Array("uPointLightPos", c_PointLightPositions);
+        rv.setFloatArray("uPointLightConstant", c_PointLightConstants);
+        rv.setFloatArray("uPointLightLinear", c_PointLightLinears);
+        rv.setFloatArray("uPointLightQuadratic", c_PointLightQuadratics);
+        rv.setFloatArray("uPointLightAmbient", c_PointLightAmbients);
+        rv.setFloatArray("uPointLightDiffuse", c_PointLightDiffuses);
+        rv.setFloatArray("uPointLightSpecular", c_PointLightSpeculars);
+
+        return rv;
+    }
+
+    osc::Material CreateLightCubeMaterial()
+    {
+        osc::Material rv
+        {
+            osc::Shader
+            {
+                osc::App::slurp("shaders/ExperimentLightCube.vert"),
+                osc::App::slurp("shaders/ExperimentLightCube.frag"),
+            },
+        };
+        rv.setColor("uLightColor", osc::Color::white());
+        return rv;
+    }
 }
 
-class osc::LOGLMultipleLightsTab::Impl final {
+class osc::LOGLMultipleLightsTab::Impl final : public osc::StandardTabBase {
 public:
-
-    Impl()
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        m_MultipleLightsMaterial.setTexture("uMaterialDiffuse", m_DiffuseMap);
-        m_MultipleLightsMaterial.setTexture("uMaterialSpecular", m_SpecularMap);
-        m_MultipleLightsMaterial.setVec3("uDirLightDirection", {-0.2f, -1.0f, -0.3f});
-        m_MultipleLightsMaterial.setFloat("uDirLightAmbient", 0.01f);
-        m_MultipleLightsMaterial.setFloat("uDirLightDiffuse", 0.2f);
-        m_MultipleLightsMaterial.setFloat("uDirLightSpecular", 0.4f);
-
-        m_MultipleLightsMaterial.setFloat("uSpotLightAmbient", 0.0f);
-        m_MultipleLightsMaterial.setFloat("uSpotLightDiffuse", 1.0f);
-        m_MultipleLightsMaterial.setFloat("uSpotLightSpecular", 0.75f);
-
-        m_MultipleLightsMaterial.setFloat("uSpotLightConstant", 1.0f);
-        m_MultipleLightsMaterial.setFloat("uSpotLightLinear", 0.09f);
-        m_MultipleLightsMaterial.setFloat("uSpotLightQuadratic", 0.032f);
-        m_MultipleLightsMaterial.setFloat("uSpotLightCutoff", glm::cos(glm::radians(12.5f)));
-        m_MultipleLightsMaterial.setFloat("uSpotLightOuterCutoff", glm::cos(glm::radians(15.0f)));
-
-        m_MultipleLightsMaterial.setVec3Array("uPointLightPos", c_PointLightPositions);
-        m_MultipleLightsMaterial.setFloatArray("uPointLightConstant", c_PointLightConstants);
-        m_MultipleLightsMaterial.setFloatArray("uPointLightLinear", c_PointLightLinears);
-        m_MultipleLightsMaterial.setFloatArray("uPointLightQuadratic", c_PointLightQuadratics);
-        m_MultipleLightsMaterial.setFloatArray("uPointLightAmbient", c_PointLightAmbients);
-        m_MultipleLightsMaterial.setFloatArray("uPointLightDiffuse", c_PointLightDiffuses);
-        m_MultipleLightsMaterial.setFloatArray("uPointLightSpecular", c_PointLightSpeculars);
-
-        m_LightCubeMaterial.setColor("uLightColor", Color::white());
-
-        m_Camera.setPosition({0.0f, 0.0f, 3.0f});
-        m_Camera.setCameraFOV(glm::radians(45.0f));
-        m_Camera.setNearClippingPlane(0.1f);
-        m_Camera.setFarClippingPlane(100.0f);
-        m_Camera.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
-
         m_LogViewer.open();
         m_PerfPanel.open();
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
+private:
+    void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
         m_IsMouseCaptured = true;
     }
 
-    void onUnmount()
+    void implOnUnmount() final
     {
         m_IsMouseCaptured = false;
         App::upd().setShowCursor(true);
         App::upd().makeMainEventLoopWaiting();
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool implOnEvent(SDL_Event const& e) final
     {
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
@@ -140,7 +174,7 @@ public:
         return false;
     }
 
-    void onDraw()
+    void implOnDraw() final
     {
         // handle mouse capturing
         if (m_IsMouseCaptured)
@@ -199,39 +233,12 @@ public:
         m_PerfPanel.onDraw();
     }
 
-private:
-    UID m_TabID;
-
-    Material m_MultipleLightsMaterial
-    {
-        Shader
-        {
-            App::slurp("shaders/ExperimentMultipleLights.vert"),
-            App::slurp("shaders/ExperimentMultipleLights.frag"),
-        },
-    };
-    Material m_LightCubeMaterial
-    {
-        Shader
-        {
-            App::slurp("shaders/ExperimentLightCube.vert"),
-            App::slurp("shaders/ExperimentLightCube.frag"),
-        },
-    };
+    Material m_MultipleLightsMaterial = CreateMultipleLightsMaterial();
+    Material m_LightCubeMaterial = CreateLightCubeMaterial();
     Mesh m_Mesh = GenLearnOpenGLCube();
-    Texture2D m_DiffuseMap = LoadTexture2DFromImage(
-        App::resource("textures/container2.png"),
-        ColorSpace::sRGB,
-        ImageLoadingFlags::FlipVertically
-    );
-    Texture2D m_SpecularMap = LoadTexture2DFromImage(
-        App::resource("textures/container2_specular.png"),
-        ColorSpace::sRGB,
-        ImageLoadingFlags::FlipVertically
-    );
 
-    Camera m_Camera;
-    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    Camera m_Camera = CreateCamera();
+    glm::vec3 m_CameraEulers = {};
     bool m_IsMouseCaptured = false;
 
     float m_MaterialShininess = 64.0f;
@@ -241,7 +248,7 @@ private:
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::LOGLMultipleLightsTab::id() noexcept
 {

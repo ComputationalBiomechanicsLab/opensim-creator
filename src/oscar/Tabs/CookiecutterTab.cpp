@@ -1,5 +1,6 @@
 #include "CookiecutterTab.hpp"
 
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <IconsFontAwesome5.h>
@@ -13,50 +14,41 @@ namespace
     constexpr osc::CStringView c_TabStringID = "CookiecutterTab";
 }
 
-class osc::CookiecutterTab::Impl final {
+class osc::CookiecutterTab::Impl final : public osc::StandardTabBase {
 public:
-
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
-    {
-    }
-
-    void onUnmount()
-    {
-    }
-
-    bool onEvent(SDL_Event const&)
-    {
-        return false;
-    }
-
-    void onTick()
-    {
-    }
-
-    void onDrawMainMenu()
-    {
-    }
-
-    void onDraw()
+    Impl() : StandardTabBase{c_TabStringID}
     {
     }
 
 private:
-    UID m_TabID;
+    void implOnMount() final
+    {
+    }
+
+    void implOnUnmount() final
+    {
+    }
+
+    bool implOnEvent(SDL_Event const&) final
+    {
+        return false;
+    }
+
+    void implOnTick() final
+    {
+    }
+
+    void implOnDrawMainMenu() final
+    {
+    }
+
+    void implOnDraw() final
+    {
+    }
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::CookiecutterTab::id() noexcept
 {

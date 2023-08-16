@@ -1,5 +1,6 @@
 #include "ImPlotDemoTab.hpp"
 
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <implot.h>
@@ -11,40 +12,31 @@ namespace
     constexpr osc::CStringView c_TabStringID = "Demos/ImPlot";
 }
 
-class osc::ImPlotDemoTab::Impl final {
+class osc::ImPlotDemoTab::Impl final : public osc::StandardTabBase {
 public:
-
-    UID getID() const
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        return m_TabID;
     }
 
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
+private:
+    void implOnMount() final
     {
         // ImPlot::CreateContext();  this is already done by MainUIScreen
     }
 
-    void onUnmount()
+    void implOnUnmount() final
     {
         // ImPlot::DestroyContext();  this is already done by MainUIScreen
     }
 
-    void onDraw()
+    void implOnDraw() final
     {
         ImPlot::ShowDemoWindow();
     }
-
-private:
-    UID m_TabID;
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::ImPlotDemoTab::id() noexcept
 {

@@ -4,6 +4,7 @@
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Maths/PolarPerspectiveCamera.hpp"
 #include "oscar/Maths/Rect.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -20,20 +21,14 @@ namespace
     constexpr osc::CStringView c_TabStringID = "Demos/ImGuizmo";
 }
 
-class osc::ImGuizmoDemoTab::Impl final {
+class osc::ImGuizmoDemoTab::Impl final : public osc::StandardTabBase {
 public:
-
-    UID getID() const
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        return m_TabID;
     }
 
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onDraw()
+private:
+    void implOnDraw() final
     {
         // ImGuizmo::BeginFrame();  already done by MainUIScreen
 
@@ -62,9 +57,6 @@ public:
         );
     }
 
-private:
-    UID m_TabID;
-
     PolarPerspectiveCamera m_SceneCamera = []()
     {
         PolarPerspectiveCamera rv;
@@ -80,7 +72,7 @@ private:
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::ImGuizmoDemoTab::id() noexcept
 {

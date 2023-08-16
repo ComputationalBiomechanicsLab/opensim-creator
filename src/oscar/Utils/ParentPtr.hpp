@@ -26,9 +26,16 @@ namespace osc
 
         // coercing constructor that applies when `T` can be implicitly converted to `U`
         template<typename U>
-        ParentPtr(ParentPtr<U> const& other) : m_Parent{other.m_Parent}
+        ParentPtr(ParentPtr<U> const& other) noexcept :
+            m_Parent{other.m_Parent}
         {
         }
+
+        ParentPtr(ParentPtr&&) noexcept = default;
+        ParentPtr(ParentPtr const&) noexcept = default;
+        ParentPtr& operator=(ParentPtr&&) noexcept = default;
+        ParentPtr& operator=(ParentPtr const&) noexcept = default;
+        ~ParentPtr() noexcept = default;
 
         T* operator->() const
         {
@@ -40,6 +47,11 @@ namespace osc
         {
             OSC_ASSERT(!m_Parent.expired() && "orphaned child tried to access a dead parent: this is a development error");
             return *m_Parent.lock();
+        }
+
+        friend void swap(ParentPtr& a, ParentPtr& b) noexcept
+        {
+            std::swap(a.m_Parent, b.m_Parent);
         }
 
     private:

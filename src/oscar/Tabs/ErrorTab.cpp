@@ -3,6 +3,7 @@
 #include "oscar/Bindings/ImGuiHelpers.hpp"
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Maths/Rect.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Widgets/LogViewer.hpp"
 
 #include <glm/vec2.hpp>
@@ -13,25 +14,16 @@
 #include <string>
 #include <utility>
 
-class osc::ErrorTab::Impl final {
+class osc::ErrorTab::Impl final : public osc::StandardTabBase {
 public:
-
     explicit Impl(std::exception const& ex) :
+        StandardTabBase{ICON_FA_SPIDER " Error"},
         m_ErrorMessage{ex.what()}
     {
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return ICON_FA_SPIDER " Error";
-    }
-
-    void onDraw()
+private:
+    void implOnDraw() final
     {
         constexpr float width = 800.0f;
         constexpr float padding = 10.0f;
@@ -70,14 +62,12 @@ public:
         }
     }
 
-private:
-    UID m_TabID;
     std::string m_ErrorMessage;
     LogViewer m_LogViewer;
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::ErrorTab::ErrorTab(ParentPtr<TabHost> const&, std::exception const& ex) :
     m_Impl{std::make_unique<Impl>(ex)}

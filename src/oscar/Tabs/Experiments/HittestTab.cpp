@@ -14,6 +14,7 @@
 #include "oscar/Maths/Sphere.hpp"
 #include "oscar/Maths/Triangle.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
@@ -118,38 +119,28 @@ namespace
     }
 }
 
-class osc::HittestTab::Impl final {
+class osc::HittestTab::Impl final : public osc::StandardTabBase {
 public:
-
-    Impl()
+    Impl() : StandardTabBase{c_TabStringID}
     {
         m_Camera.setBackgroundColor({1.0f, 1.0f, 1.0f, 0.0f});
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
+private:
+    void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
         m_IsMouseCaptured = true;
     }
 
-    void onUnmount()
+    void implOnUnmount() final
     {
         m_IsMouseCaptured = false;
         App::upd().makeMainEventLoopWaiting();
         App::upd().setShowCursor(true);
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool implOnEvent(SDL_Event const& e) final
     {
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
@@ -164,7 +155,7 @@ public:
         return false;
     }
 
-    void onTick()
+    void implOnTick() final
     {
         // hittest spheres
 
@@ -196,7 +187,7 @@ public:
         }
     }
 
-    void onDraw()
+    void implOnDraw() final
     {
         // handle mouse capturing
         if (m_IsMouseCaptured)
@@ -298,10 +289,6 @@ public:
         m_Camera.renderToScreen();
     }
 
-
-private:
-    UID m_TabID;
-
     Camera m_Camera;
     Material m_Material
     {
@@ -330,7 +317,7 @@ private:
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::HittestTab::id() noexcept
 {

@@ -15,6 +15,7 @@
 #include "oscar/Graphics/Texture2D.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
 #include <glm/vec2.hpp>
@@ -82,50 +83,81 @@ namespace
         rv.setIndices(indices);
         return rv;
     }
+
+    osc::Camera CreateCamera()
+    {
+        osc::Camera rv;
+        rv.setPosition({0.0f, 0.0f, 3.0f});
+        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setNearClippingPlane(0.1f);
+        rv.setFarClippingPlane(100.0f);
+        return rv;
+    }
+
+    osc::Material CreateParallaxMappingMaterial()
+    {
+        osc::Texture2D diffuseMap = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/bricks2.jpg"),
+            osc::ColorSpace::sRGB
+        );
+        osc::Texture2D normalMap = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/bricks2_normal.jpg"),
+            osc::ColorSpace::Linear
+        );
+        osc::Texture2D displacementMap = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/bricks2_disp.jpg"),
+            osc::ColorSpace::Linear
+        );
+
+        osc::Material rv
+        {
+            osc::Shader
+            {
+                osc::App::slurp("shaders/ExperimentParallaxMapping.vert"),
+                osc::App::slurp("shaders/ExperimentParallaxMapping.frag"),
+            },
+        };
+        rv.setTexture("uDiffuseMap", diffuseMap);
+        rv.setTexture("uNormalMap", normalMap);
+        rv.setTexture("uDisplacementMap", displacementMap);
+        rv.setFloat("uHeightScale", 0.1f);
+        return rv;
+    }
+
+    osc::Material CreateLightCubeMaterial()
+    {
+        return osc::Material
+        {
+            osc::Shader
+            {
+                osc::App::slurp("shaders/ExperimentLightCube.vert"),
+                osc::App::slurp("shaders/ExperimentLightCube.frag"),
+            },
+        };
+    }
 }
 
-class osc::LOGLParallaxMappingTab::Impl final {
+class osc::LOGLParallaxMappingTab::Impl final : public osc::StandardTabBase {
 public:
-
-    Impl()
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        m_ParallaxMappingMaterial.setTexture("uDiffuseMap", m_DiffuseMap);
-        m_ParallaxMappingMaterial.setTexture("uNormalMap", m_NormalMap);
-        m_ParallaxMappingMaterial.setTexture("uDisplacementMap", m_DisplacementMap);
-        m_ParallaxMappingMaterial.setFloat("uHeightScale", 0.1f);
-
-        // these roughly match what LearnOpenGL default to
-        m_Camera.setPosition({0.0f, 0.0f, 3.0f});
-        m_Camera.setCameraFOV(glm::radians(45.0f));
-        m_Camera.setNearClippingPlane(0.1f);
-        m_Camera.setFarClippingPlane(100.0f);
-
         m_LightTransform.position = {0.5f, 1.0f, 0.3f};
         m_LightTransform.scale *= 0.2f;
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
+private:
+    void implOnMount() final
     {
         m_IsMouseCaptured = true;
     }
 
-    void onUnmount()
+    void implOnUnmount() final
     {
         m_IsMouseCaptured = false;
         App::upd().setShowCursor(true);
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool implOnEvent(SDL_Event const& e) final
     {
         // handle mouse capturing
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
@@ -141,7 +173,7 @@ public:
         return false;
     }
 
-    void onDraw()
+    void implOnDraw()
     {
         // handle mouse capturing and update camera
         if (m_IsMouseCaptured)
@@ -182,51 +214,23 @@ public:
     }
 
 private:
-    UID m_TabID;
-    bool m_IsMouseCaptured = false;
-
     // rendering state
-    Material m_ParallaxMappingMaterial
-    {
-        Shader
-        {
-            App::slurp("shaders/ExperimentParallaxMapping.vert"),
-            App::slurp("shaders/ExperimentParallaxMapping.frag"),
-        },
-    };
-    Material m_LightCubeMaterial
-    {
-        Shader
-        {
-            App::slurp("shaders/ExperimentLightCube.vert"),
-            App::slurp("shaders/ExperimentLightCube.frag"),
-        },
-    };
+    Material m_ParallaxMappingMaterial = CreateParallaxMappingMaterial();
+    Material m_LightCubeMaterial = CreateLightCubeMaterial();
     Mesh m_CubeMesh = GenLearnOpenGLCube();
     Mesh m_QuadMesh = GenerateQuad();
-    Texture2D m_DiffuseMap = LoadTexture2DFromImage(
-        App::resource("textures/bricks2.jpg"),
-        ColorSpace::sRGB
-    );
-    Texture2D m_DisplacementMap = LoadTexture2DFromImage(
-        App::resource("textures/bricks2_disp.jpg"),
-        ColorSpace::Linear
-    );
-    Texture2D m_NormalMap = LoadTexture2DFromImage(
-        App::resource("textures/bricks2_normal.jpg"),
-        ColorSpace::Linear
-    );
 
     // scene state
-    Camera m_Camera;
-    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    Camera m_Camera = CreateCamera();
+    glm::vec3 m_CameraEulers = {};
     Transform m_QuadTransform;
     Transform m_LightTransform;
     bool m_IsMappingEnabled = true;
+    bool m_IsMouseCaptured = false;
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::LOGLParallaxMappingTab::id() noexcept
 {

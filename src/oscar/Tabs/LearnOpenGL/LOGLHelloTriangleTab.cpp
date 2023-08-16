@@ -9,6 +9,7 @@
 #include "oscar/Graphics/Shader.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
@@ -48,28 +49,37 @@ namespace
         m.setIndices(indices);
         return m;
     }
+
+    osc::Camera CreateSceneCamera()
+    {
+        osc::Camera rv;
+        rv.setViewMatrixOverride(glm::mat4{1.0f});
+        rv.setProjectionMatrixOverride(glm::mat4{1.0f});
+        return rv;
+    }
+
+    osc::Material CreateTriangleMaterial()
+    {
+        return osc::Material
+        {
+            osc::Shader
+            {
+                osc::App::slurp("shaders/ExperimentTriangle.vert"),
+                osc::App::slurp("shaders/ExperimentTriangle.frag"),
+            },
+        };
+    }
 }
 
-class osc::LOGLHelloTriangleTab::Impl final {
+class osc::LOGLHelloTriangleTab::Impl final : public osc::StandardTabBase {
 public:
 
-    Impl()
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        m_Camera.setViewMatrixOverride(glm::mat4{1.0f});
-        m_Camera.setProjectionMatrixOverride(glm::mat4{1.0f});
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onDraw()
+private:
+    void implOnDraw() final
     {
         Graphics::DrawMesh(m_TriangleMesh, osc::Transform{}, m_Material, m_Camera);
 
@@ -77,23 +87,13 @@ public:
         m_Camera.renderToScreen();
     }
 
-private:
-    UID m_TabID;
-
-    Material m_Material
-    {
-        Shader
-        {
-            App::slurp("shaders/ExperimentTriangle.vert"),
-            App::slurp("shaders/ExperimentTriangle.frag"),
-        },
-    };
+    Material m_Material = CreateTriangleMaterial();
     Mesh m_TriangleMesh = GenerateTriangleMesh();
-    Camera m_Camera;
+    Camera m_Camera = CreateSceneCamera();
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::LOGLHelloTriangleTab::id() noexcept
 {

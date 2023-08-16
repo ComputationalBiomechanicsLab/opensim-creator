@@ -13,6 +13,7 @@
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Panels/PerfPanel.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 #include "oscar/Utils/UID.hpp"
@@ -37,22 +38,28 @@ namespace
         { 1.3f, -2.0f, -2.5f },
         { 1.5f,  2.0f, -2.5f },
         { 1.5f,  0.2f, -1.5f },
-        {-1.3f,  1.0f, -1.5  },
+        {-1.3f,  1.0f, -1.5f },
     });
 
     constexpr osc::CStringView c_TabStringID = "LearnOpenGL/CoordinateSystems";
+
+    osc::Camera CreateCameraThatMatchesLearnOpenGL()
+    {
+        osc::Camera rv;
+        rv.setPosition({0.0f, 0.0f, 3.0f});
+        rv.setCameraFOV(glm::radians(45.0f));
+        rv.setNearClippingPlane(0.1f);
+        rv.setFarClippingPlane(100.0f);
+        rv.setBackgroundColor({0.2f, 0.3f, 0.3f, 1.0f});
+        return rv;
+    }
 }
 
-class osc::LOGLCoordinateSystemsTab::Impl final {
+class osc::LOGLCoordinateSystemsTab::Impl final : public osc::StandardTabBase {
 public:
 
-    Impl()
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        m_Camera.setPosition({0.0f, 0.0f, 3.0f});
-        m_Camera.setCameraFOV(glm::radians(45.0f));
-        m_Camera.setNearClippingPlane(0.1f);
-        m_Camera.setFarClippingPlane(100.0f);
-        m_Camera.setBackgroundColor({0.2f, 0.3f, 0.3f, 1.0f});
         m_Material.setTexture(
             "uTexture1",
             LoadTexture2DFromImage(
@@ -71,30 +78,21 @@ public:
         );
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onMount()
+private:
+    void implOnMount() final
     {
         App::upd().makeMainEventLoopPolling();
         m_IsMouseCaptured = true;
     }
 
-    void onUnmount()
+    void implOnUnmount() final
     {
         m_IsMouseCaptured = false;
         App::upd().setShowCursor(true);
         App::upd().makeMainEventLoopWaiting();
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool implOnEvent(SDL_Event const& e) final
     {
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
@@ -109,7 +107,7 @@ public:
         return false;
     }
 
-    void onTick()
+    void implOnTick() final
     {
         float const rotationSpeed = glm::radians(50.0f);
         double const dt = App::get().getFrameDeltaSinceAppStartup().count();
@@ -119,7 +117,7 @@ public:
         m_Step1.rotation = glm::angleAxis(angle, axis);
     }
 
-    void onDraw()
+    void implOnDraw() final
     {
         // handle mouse capturing
         if (m_IsMouseCaptured)
@@ -179,9 +177,6 @@ public:
         }
     }
 
-private:
-    UID m_TabID;
-
     Material m_Material
     {
         Shader
@@ -191,9 +186,9 @@ private:
         },
     };
     Mesh m_Mesh = GenLearnOpenGLCube();
-    Camera m_Camera;
+    Camera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     bool m_IsMouseCaptured = false;
-    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    glm::vec3 m_CameraEulers = {};
 
     bool m_ShowStep1 = false;
     Transform m_Step1;
@@ -202,7 +197,7 @@ private:
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::LOGLCoordinateSystemsTab::id() noexcept
 {

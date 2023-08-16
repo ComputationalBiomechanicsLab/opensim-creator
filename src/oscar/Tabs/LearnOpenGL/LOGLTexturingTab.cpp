@@ -11,6 +11,7 @@
 #include "oscar/Graphics/Texture2D.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
+#include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Tabs/Tab.hpp"
 #include "oscar/Tabs/TabRegistry.hpp"
 #include "oscar/Utils/CStringView.hpp"
@@ -98,20 +99,14 @@ namespace
     }
 }
 
-class osc::LOGLTexturingTab::Impl final {
+class osc::LOGLTexturingTab::Impl final : public StandardTabBase {
 public:
-
-    UID getID() const
+    Impl() : StandardTabBase{c_TabStringID}
     {
-        return m_TabID;
     }
 
-    CStringView getName() const
-    {
-        return c_TabStringID;
-    }
-
-    void onDraw()
+private:
+    void implOnDraw() final
     {
         m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
 
@@ -119,16 +114,13 @@ public:
         m_Camera.renderToScreen();
     }
 
-private:
-    UID m_TabID;
-
     Material m_Material = LoadTexturedMaterial();
     Mesh m_Mesh = GenerateTexturedQuadMesh();
     Camera m_Camera = CreateIdentityCamera();
 };
 
 
-// public API (PIMPL)
+// public API
 
 osc::CStringView osc::LOGLTexturingTab::id() noexcept
 {
