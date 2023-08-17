@@ -209,6 +209,8 @@ add_library(oscar STATIC
     Tabs/LearnOpenGL/LOGLNormalMappingTab.hpp
     Tabs/LearnOpenGL/LOGLParallaxMappingTab.cpp
     Tabs/LearnOpenGL/LOGLParallaxMappingTab.hpp
+    Tabs/LearnOpenGL/LOGLPBRLightingTab.cpp
+    Tabs/LearnOpenGL/LOGLPBRLightingTab.hpp
     Tabs/LearnOpenGL/LOGLPointShadowsTab.cpp
     Tabs/LearnOpenGL/LOGLPointShadowsTab.hpp
     Tabs/LearnOpenGL/LOGLShadowMappingTab.cpp
