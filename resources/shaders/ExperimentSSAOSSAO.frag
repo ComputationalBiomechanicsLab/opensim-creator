@@ -33,21 +33,21 @@ void main()
         // get sample position
         vec3 samplePos = TBN * uSamples[i];  // from tangent to view-space
         samplePos = fragPos + samplePos * uRadius;
-        
+
         // project sample position (to sample texture) (to get position on screen/texture)
         vec4 offset = vec4(samplePos, 1.0);
         offset = uProjMat * offset; // from view to clip-space
         offset.xyz /= offset.w; // perspective divide
         offset.xyz = offset.xyz * 0.5 + 0.5; // transform to range 0.0 - 1.0
-        
+
         // get sample depth
         float sampleDepth = texture(uPositionTex, offset.xy).z; // get depth value of kernel sample
-        
+
         // range check & accumulate
         float rangeCheck = smoothstep(0.0, 1.0, uRadius / abs(fragPos.z - sampleDepth));
         occlusion += (sampleDepth >= samplePos.z + uBias ? 1.0 : 0.0) * rangeCheck;
     }
     occlusion = 1.0 - (occlusion / uKernelSize);
-    
+
     FragColor = occlusion;
 }

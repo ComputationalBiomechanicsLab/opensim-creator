@@ -112,7 +112,7 @@ vec2 CalcSteepParallaxMapping(vec2 texCoord, vec3 tangentFrag2ViewDir)
 // calculates parallax mapping texture offset the "basic" way by projecting the
 // view vector a bit based on the depth read from the initial texture coordinate
 vec2 CalcParallaxMappingTexCoord(vec2 texCoord, vec3 tangentFrag2ViewDir)
-{ 
+{
     // the texture stores *depth*, not *height*
     float depth = texture(uDisplacementMap, texCoord).r;
 

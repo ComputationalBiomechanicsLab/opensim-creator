@@ -21,6 +21,6 @@ void main()
 
     FragPos = viewPos.xyz;
     TexCoords = aTexCoord;
-    Normal = normalMatrix * (uInvertedNormals ? -aNormal : aNormal);    
+    Normal = normalMatrix * (uInvertedNormals ? -aNormal : aNormal);
     gl_Position = uProjMat * viewPos;
 }

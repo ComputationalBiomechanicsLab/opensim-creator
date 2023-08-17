@@ -18,7 +18,7 @@ void main()
 {
     vec2 textelDims = 1.0/textureSize(uInputImage, 0);
     vec2 offsetPerStep = uHorizontal ? vec2(textelDims.x, 0.0) : vec2(0.0, textelDims.y);
-    
+
     vec3 result = uWeights[0] * texture(uInputImage, TexCoord).rgb;
     for (int i = 1; i < 5; ++i)
     {

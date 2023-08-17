@@ -150,7 +150,7 @@ vec3 CalcSpotLight(
 }
 
 void main()
-{    
+{
     vec3 norm = normalize(Normal);
     vec3 viewDir = normalize(uViewPos - FragPos);
 

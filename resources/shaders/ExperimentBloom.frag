@@ -13,7 +13,7 @@ layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 FragFilteredColor;
 
 void main()
-{           
+{
     vec3 diffuseColor = texture(uDiffuseTexture, TexCoord).rgb;
     vec3 normalWorldDir = normalize(NormalWorld);
     vec3 frag2ViewWorldDir = normalize(uViewWorldPos - FragWorldPos);
@@ -24,7 +24,7 @@ void main()
         vec3 frag2LightWorld =  uLightPositions[i] - FragWorldPos;
         float frag2LightWorldLen = length(frag2LightWorld);
         vec3 frag2LightWorldDir = frag2LightWorld / frag2LightWorldLen;
-        
+
         float diffuseBrightness = max(dot(frag2LightWorldDir, normalWorldDir), 0.0);
         vec3 unattenuatedColor = vec3(uLightColors[i]) * diffuseBrightness * diffuseColor;
         float attenuation = 1.0/(frag2LightWorldLen*frag2LightWorldLen);

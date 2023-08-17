@@ -9,8 +9,8 @@ layout (location = 1) out vec3 gNormal;
 layout (location = 2) out vec3 gPosition;
 
 void main()
-{   
+{
     gAlbedo.rgb = vec3(0.95);
     gNormal = normalize(Normal);
-    gPosition = FragPos;    
+    gPosition = FragPos;
 }
