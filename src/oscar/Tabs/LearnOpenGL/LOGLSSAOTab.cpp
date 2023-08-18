@@ -23,6 +23,7 @@
 #include "oscar/Maths/MathHelpers.hpp"
 #include "oscar/Maths/Rect.hpp"
 #include "oscar/Maths/Transform.hpp"
+#include "oscar/Panels/PerfPanel.hpp"
 #include "oscar/Platform/App.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
@@ -123,7 +124,7 @@ namespace
             osc::ColorSpace::Linear,
         };
 
-        rv.setFilterMode(osc::TextureFilterMode::Nearest);
+        rv.setFilterMode(osc::TextureFilterMode::Linear);
         rv.setWrapMode(osc::TextureWrapMode::Repeat);
 
         return rv;
@@ -243,13 +244,15 @@ public:
         }
 
         draw3DScene();
+
+        m_PerfPanel.onDraw();
     }
 private:
     void draw3DScene()
     {
         Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
         glm::vec2 const viewportDims = Dimensions(viewportRect);
-        int32_t const samples = App::get().getMSXAASamplesRecommended();
+        int32_t const samples = 1;
 
         // ensure textures/buffers have correct dimensions
         {
@@ -312,7 +315,7 @@ private:
         m_SSAO.material.setVec2("uNoiseScale", Dimensions(viewportRect) / glm::vec2{m_NoiseTexture.getDimensions()});
         m_SSAO.material.setInt("uKernelSize", static_cast<int32_t>(m_SampleKernel.size()));
         m_SSAO.material.setFloat("uRadius", 0.5f);
-        m_SSAO.material.setFloat("uBias", 0.025f);
+        m_SSAO.material.setFloat("uBias", 0.125f);
 
         Graphics::DrawMesh(m_QuadMesh, Transform{}, m_SSAO.material, m_Camera);
         m_Camera.renderTo(m_SSAO.outputTexture);
@@ -376,13 +379,13 @@ private:
     UID m_TabID;
 
     std::vector<glm::vec3> m_SampleKernel = GenerateSampleKernel(64);
-    osc::Texture2D m_NoiseTexture = GenerateNoiseTexture({4, 4});
+    Texture2D m_NoiseTexture = GenerateNoiseTexture({4, 4});
     glm::vec3 m_LightPosition = {2.0f, 4.0f, -2.0f};
     Color m_LightColor = {0.2f, 0.2f, 0.7f, 1.0f};
 
     Camera m_Camera = CreateCameraWithSameParamsAsLearnOpenGL();
     bool m_IsMouseCaptured = true;
-    glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
+    glm::vec3 m_CameraEulers = {};
 
     Mesh m_SphereMesh = GenSphere(32, 32);
     Mesh m_CubeMesh = GenCube();
@@ -400,21 +403,21 @@ private:
                 RenderTargetColorAttachment
                 {
                     albedo.updColorBuffer(),
-                    RenderBufferLoadAction::Clear,
+                    RenderBufferLoadAction::Load,
                     RenderBufferStoreAction::Resolve,
                     Color::black(),
                 },
                 RenderTargetColorAttachment
                 {
                     normal.updColorBuffer(),
-                    RenderBufferLoadAction::Clear,
+                    RenderBufferLoadAction::Load,
                     RenderBufferStoreAction::Resolve,
                     Color::black(),
                 },
                 RenderTargetColorAttachment
                 {
                     position.updColorBuffer(),
-                    RenderBufferLoadAction::Clear,
+                    RenderBufferLoadAction::Load,
                     RenderBufferStoreAction::Resolve,
                     Color::black(),
                 },
@@ -472,6 +475,8 @@ private:
             outputTexture.setAntialiasingLevel(samples);
         }
     } m_Lighting;
+
+    PerfPanel m_PerfPanel{"Perf"};
 };
 
 

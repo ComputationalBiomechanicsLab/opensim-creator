@@ -6671,6 +6671,8 @@ void osc::GraphicsBackend::CopyTexture(
         GL_COLOR_BUFFER_BIT,
         GL_LINEAR  // the two texture may have different dimensions (avoid GL_NEAREST)
     );
+
+    // TODO: download the blitted data into the texture's CPU buffer
 }
 
 void osc::GraphicsBackend::ReadPixels(Texture2D const& source, Image& dest)

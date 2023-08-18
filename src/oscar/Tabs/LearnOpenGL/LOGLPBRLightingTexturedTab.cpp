@@ -11,6 +11,7 @@
 #include "oscar/Graphics/Texture2D.hpp"
 #include "oscar/Maths/Constants.hpp"
 #include "oscar/Maths/Transform.hpp"
+#include "oscar/Panels/PerfPanel.hpp"
 #include "oscar/Platform/App.hpp"
 #include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
@@ -155,6 +156,7 @@ private:
     {
         updateCameraFromInputs();
         draw3DRender();
+        m_PerfPanel.onDraw();
     }
 
     void updateCameraFromInputs()
@@ -221,6 +223,8 @@ private:
     Material m_PBRMaterial = CreateMaterial();
     glm::vec3 m_CameraEulers = {};
     bool m_IsMouseCaptured = true;
+
+    PerfPanel m_PerfPanel{"Perf"};
 };
 
 

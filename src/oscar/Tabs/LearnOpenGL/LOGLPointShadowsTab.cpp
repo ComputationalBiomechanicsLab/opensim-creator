@@ -16,6 +16,7 @@
 #include "oscar/Graphics/TextureDimension.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Maths/MathHelpers.hpp"
+#include "oscar/Panels/PerfPanel.hpp"
 #include "oscar/Platform/App.hpp"
 #include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
@@ -282,6 +283,8 @@ private:
         ImGui::Checkbox("show shadows", &m_ShowShadows);
         ImGui::Checkbox("soften shadows", &m_UseSoftShadows);
         ImGui::End();
+
+        m_PerfPanel.onDraw();
     }
 
     Material m_ShadowMappingMaterial
@@ -324,6 +327,8 @@ private:
     bool m_IsMouseCaptured = false;
     bool m_ShowShadows = true;
     bool m_UseSoftShadows = false;
+
+    PerfPanel m_PerfPanel{"Perf"};
 };
 
 

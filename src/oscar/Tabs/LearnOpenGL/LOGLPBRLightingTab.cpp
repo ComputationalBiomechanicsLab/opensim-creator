@@ -8,6 +8,7 @@
 #include "oscar/Graphics/MeshGen.hpp"
 #include "oscar/Graphics/Shader.hpp"
 #include "oscar/Maths/Transform.hpp"
+#include "oscar/Panels/PerfPanel.hpp"
 #include "oscar/Platform/App.hpp"
 #include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
@@ -196,9 +197,7 @@ private:
 
     void draw2DUI()
     {
-        ImGui::Begin("note");
-        ImGui::Text("Work in progress");
-        ImGui::End();
+        m_PerfPanel.onDraw();
     }
 
     Camera m_Camera = CreateCamera();
@@ -206,6 +205,8 @@ private:
     Material m_PBRMaterial = CreateMaterial();
     glm::vec3 m_CameraEulers = {};
     bool m_IsMouseCaptured = true;
+
+    PerfPanel m_PerfPanel{"Perf"};
 };
 
 
