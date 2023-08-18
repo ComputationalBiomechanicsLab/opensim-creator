@@ -80,6 +80,10 @@ namespace osc::Graphics
     );
 
     // read: read pixel data from a GPU texture into CPU memory (warning: it's slow)
+    void ReadPixels(
+        RenderTexture const&,
+        Image&
+    );
 
     void ReadPixels(
         Texture2D const&,

@@ -292,7 +292,7 @@ private:
         }
 
         Image rv;
-        // Graphics::ReadPixels(*rt, rv); TODO: must implement a way of writing to textures
+        Graphics::ReadPixels(*rt, rv);
         return rv;
     }
 

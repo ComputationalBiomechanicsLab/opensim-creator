@@ -949,8 +949,13 @@ namespace osc
             CubemapFace
         );
 
-        void ReadPixels(
+        static void ReadPixels(
             Texture2D const&,
+            Image&
+        );
+
+        static void ReadPixels(
+            RenderTexture const&,
             Image&
         );
     };
@@ -5407,8 +5412,16 @@ void osc::Graphics::CopyTexture(
     GraphicsBackend::CopyTexture(src, dest, face);
 }
 
-void osc::Graphics::ReadPixels(Texture2D const&, Image&)
+void osc::Graphics::ReadPixels(
+    RenderTexture const& renderTexture,
+    Image& image)
 {
+    GraphicsBackend::ReadPixels(renderTexture, image);
+}
+
+void osc::Graphics::ReadPixels(Texture2D const& texture, Image& image)
+{
+    GraphicsBackend::ReadPixels(texture, image);
 }
 
 /////////////////////////
@@ -6667,6 +6680,8 @@ void osc::GraphicsBackend::CopyTexture(
 
 void osc::GraphicsBackend::ReadPixels(Texture2D const& source, Image& dest)
 {
+    // TODO: what format should be output have (HDR, RGB, RGBA, etc.)?
+
     TextureFormat const textureFormat = source.getTextureFormat();
     glm::ivec2 const textureDims = source.getDimensions();
     int32_t const numChannels = static_cast<int32_t>(NumChannels(source.getTextureFormat()));
@@ -6700,4 +6715,17 @@ void osc::GraphicsBackend::ReadPixels(Texture2D const& source, Image& dest)
     gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
 
     dest = Image{textureDims, pixels, numChannels, ColorSpace::sRGB};
+}
+
+void osc::GraphicsBackend::ReadPixels(
+    RenderTexture const& renderTexture,
+    Image& dest)
+{
+    // TODO: what format should be output have (HDR, RGB, RGBA, etc.)?
+
+    glm::ivec2 const dims = renderTexture.getDimensions();
+    std::vector<uint8_t> dummy(dims.x*dims.y*4);
+    Texture2D t{dims, TextureFormat::RGBA32, dummy, ColorSpace::sRGB};
+    CopyTexture(renderTexture, t);
+    ReadPixels(t, dest);
 }
