@@ -42,6 +42,7 @@ namespace
 
     void WriteFaces(std::ostream& o, osc::Mesh const& mesh, osc::ObjWriterFlags flags)
     {
+        // TODO: support osc::MeshTopology::TriangleStrip
         if (mesh.getTopology() != osc::MeshTopology::Triangles)
         {
             return;

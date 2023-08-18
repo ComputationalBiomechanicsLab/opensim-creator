@@ -3611,6 +3611,7 @@ namespace
     constexpr auto c_MeshTopologyStrings = osc::to_array<osc::CStringView>(
     {
         "Triangles",
+        "TriangleStrip",
         "Lines",
     });
     static_assert(c_MeshTopologyStrings.size() == osc::NumOptions<osc::MeshTopology>());
@@ -3625,10 +3626,13 @@ namespace
 
     GLenum ToOpenGLTopology(osc::MeshTopology t)
     {
+        static_assert(osc::NumOptions<osc::MeshTopology>() == 3);
         switch (t)
         {
         case osc::MeshTopology::Triangles:
             return GL_TRIANGLES;
+        case osc::MeshTopology::TriangleStrip:
+            return GL_TRIANGLE_STRIP;
         case osc::MeshTopology::Lines:
             return GL_LINES;
         default:
@@ -3873,6 +3877,7 @@ private:
         {
             nonstd::span<uint32_t const> const indices(&m_IndicesData.front().u32, m_NumIndices);
 
+            // TODO: support building from TriangleStrip
             if (m_Topology == MeshTopology::Triangles)
             {
                 m_TriangleBVH.buildFromIndexedTriangles(m_Vertices, indices);
@@ -3888,6 +3893,7 @@ private:
         {
             nonstd::span<uint16_t const> const indices(&m_IndicesData.front().u16.a, m_NumIndices);
 
+            // TODO: support building from TriangleStrip
             if (m_Topology == MeshTopology::Triangles)
             {
                 m_TriangleBVH.buildFromIndexedTriangles(m_Vertices, indices);

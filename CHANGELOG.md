@@ -5,6 +5,8 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Internal: LearnOpenGL's physically based rendering (PBR) examples tabs added
+- Internal: `osc::MeshTopology` now supports `TriangleStrip`
 - Internal: `osc::Mesh::set/getColors` now takes a sequence of `osc::Color`, rather than `osc::Rgba32`
 - Internal: Added `osc::StandardTabBase`, to reduce code duplication in tab implementations
 - Internal: Added `osc::ParentPtr<T>`, for parent pointer lifetime management

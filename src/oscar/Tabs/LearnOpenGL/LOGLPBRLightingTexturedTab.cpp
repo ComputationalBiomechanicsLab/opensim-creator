@@ -3,25 +3,32 @@
 #include "oscar/Bindings/ImGuiHelpers.hpp"
 #include "oscar/Graphics/Camera.hpp"
 #include "oscar/Graphics/Graphics.hpp"
+#include "oscar/Graphics/GraphicsHelpers.hpp"
 #include "oscar/Graphics/Material.hpp"
 #include "oscar/Graphics/Mesh.hpp"
 #include "oscar/Graphics/MeshGen.hpp"
 #include "oscar/Graphics/Shader.hpp"
+#include "oscar/Graphics/Texture2D.hpp"
+#include "oscar/Maths/Constants.hpp"
 #include "oscar/Maths/Transform.hpp"
 #include "oscar/Platform/App.hpp"
 #include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/Cpp20Shims.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <IconsFontAwesome5.h>
 #include <imgui.h>
 #include <SDL_events.h>
 
 #include <array>
+#include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace
 {
@@ -58,8 +65,85 @@ namespace
         return rv;
     }
 
+    // rewritten from LearnOpenGL/lighting_textured.cpp::renderSphere()
+    osc::Mesh CreateTexturedSphere()
+    {
+        std::vector<glm::vec3> positions;
+        std::vector<glm::vec2> uv;
+        std::vector<glm::vec3> normals;
+        std::vector<uint16_t> indices;
+
+        constexpr size_t c_NumXSegments = 64;
+        constexpr size_t c_NumYSegments = 64;
+
+        for (size_t x = 0; x <= c_NumXSegments; ++x)
+        {
+            for (size_t y = 0; y <= c_NumYSegments; ++y)
+            {
+                float const xSegment = static_cast<float>(x)/static_cast<float>(c_NumXSegments);
+                float const ySegment = static_cast<float>(y)/static_cast<float>(c_NumYSegments);
+                float const xPos = std::cos(xSegment * 2.0f * osc::fpi) * std::sin(ySegment * osc::fpi);
+                float const yPos = std::cos(ySegment * osc::fpi);
+                float const zPos = std::sin(xSegment * 2.0f * osc::fpi) * std::sin(ySegment * osc::fpi);
+
+                positions.emplace_back(xPos, yPos, zPos);
+                uv.emplace_back(xSegment, ySegment);
+                normals.emplace_back(xPos, yPos, zPos);
+            }
+        }
+
+        for (size_t y = 0; y < c_NumYSegments; ++y)
+        {
+            if (y % 2 == 0)
+            {
+                for (size_t x = 0; x <= c_NumXSegments; ++x)
+                {
+                    indices.push_back(y * (c_NumXSegments + 1) + x);
+                    indices.push_back((y + 1) * (c_NumXSegments + 1) + x);
+                }
+            }
+            else
+            {
+                for (ptrdiff_t x = c_NumXSegments; x >= 0; --x)
+                {
+                    indices.push_back((y + 1) * (c_NumXSegments + 1) + x);
+                    indices.push_back(y * (c_NumXSegments + 1) + x);
+                }
+            }
+        }
+
+        osc::Mesh rv;
+        rv.setTopology(osc::MeshTopology::TriangleStrip);
+        rv.setVerts(positions);
+        rv.setTexCoords(uv);
+        rv.setNormals(normals);
+        rv.setIndices(indices);
+        return rv;
+    }
+
     osc::Material CreateMaterial()
     {
+        osc::Texture2D albedo = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/pbr/rusted_iron/albedo.png"),
+            osc::ColorSpace::sRGB
+        );
+        osc::Texture2D normal = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/pbr/rusted_iron/normal.png"),
+            osc::ColorSpace::Linear
+        );
+        osc::Texture2D metallic = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/pbr/rusted_iron/metallic.png"),
+            osc::ColorSpace::Linear
+        );
+        osc::Texture2D roughness = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/pbr/rusted_iron/roughness.png"),
+            osc::ColorSpace::Linear
+        );
+        osc::Texture2D ao = osc::LoadTexture2DFromImage(
+            osc::App::resource("textures/pbr/rusted_iron/ao.png"),
+            osc::ColorSpace::Linear
+        );
+
         osc::Material rv
         {
             osc::Shader
@@ -68,7 +152,11 @@ namespace
                 osc::App::slurp("shaders/ExperimentPBRLightingTextured.frag"),
             },
         };
-        rv.setFloat("uAO", 1.0f);
+        rv.setTexture("albedoMap", albedo);
+        rv.setTexture("normalMap", normal);
+        rv.setTexture("metallicMap", metallic);
+        rv.setTexture("roughnessMap", roughness);
+        rv.setTexture("aoMap", ao);
         return rv;
     }
 }
@@ -121,7 +209,6 @@ private:
     {
         updateCameraFromInputs();
         draw3DRender();
-        draw2DUI();
     }
 
     void updateCameraFromInputs()
@@ -144,9 +231,9 @@ private:
     {
         m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
 
-        m_PBRMaterial.setVec3("uCameraWorldPos", m_Camera.getPosition());
-        m_PBRMaterial.setVec3Array("uLightPositions", c_LightPositions);
-        m_PBRMaterial.setVec3Array("uLightColors", c_LightColors);
+        m_PBRMaterial.setVec3("camPos", m_Camera.getPosition());
+        m_PBRMaterial.setVec3Array("lightPositions", c_LightPositions);
+        m_PBRMaterial.setVec3Array("lightColors", c_LightColors);
 
         drawSpheres();
         drawLights();
@@ -156,17 +243,10 @@ private:
 
     void drawSpheres()
     {
-        m_PBRMaterial.setVec3("uAlbedoColor", {0.5f, 0.0f, 0.0f});
-
         for (int row = 0; row < c_NumRows; ++row)
         {
-            m_PBRMaterial.setFloat("uMetallicity", static_cast<float>(row) / static_cast<float>(c_NumRows));
-
             for (int col = 0; col < c_NumCols; ++col)
             {
-                float const normalizedCol = static_cast<float>(col) / static_cast<float>(c_NumCols);
-                m_PBRMaterial.setFloat("uRoughness", glm::clamp(normalizedCol, 0.005f, 1.0f));
-
                 Transform t;
                 t.position =
                 {
@@ -182,8 +262,6 @@ private:
 
     void drawLights()
     {
-        m_PBRMaterial.setVec3("uAlbedoColor", {1.0f, 1.0f, 1.0f});
-
         for (glm::vec3 const& pos : c_LightPositions)
         {
             Transform t;
@@ -194,15 +272,8 @@ private:
         }
     }
 
-    void draw2DUI()
-    {
-        ImGui::Begin("note");
-        ImGui::Text("Work in progress");
-        ImGui::End();
-    }
-
     Camera m_Camera = CreateCamera();
-    Mesh m_SphereMesh = GenUntexturedUVSphere(64, 64);
+    Mesh m_SphereMesh = CreateTexturedSphere();
     Material m_PBRMaterial = CreateMaterial();
     glm::vec3 m_CameraEulers = {};
     bool m_IsMouseCaptured = true;
