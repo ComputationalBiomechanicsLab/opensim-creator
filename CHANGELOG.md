@@ -5,7 +5,10 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
-- Internal: the rendering API now supports rendering into cubemap render textures (#671)
+- Internal: `osc::Mesh::set/getColors` now takes a sequence of `osc::Color`, rather than `osc::Rgba32`
+- Internal: Added `osc::StandardTabBase`, to reduce code duplication in tab implementations
+- Internal: Added `osc::ParentPtr<T>`, for parent pointer lifetime management
+- Internal: The rendering API now supports rendering into cubemap render textures (#671)
 
 
 ## [0.5.1] - 2023/07/27
