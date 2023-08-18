@@ -90,7 +90,6 @@ namespace
 
         for (osc::SceneDecoration const& el : els)
         {
-            // TODO: support osc::MeshTopology::TriangleStrip
             if (el.mesh.getTopology() != osc::MeshTopology::Triangles)
             {
                 continue;  // unsupported

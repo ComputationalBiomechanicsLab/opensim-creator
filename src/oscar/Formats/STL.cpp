@@ -113,7 +113,6 @@ namespace
 
 void osc::WriteMeshAsStl(std::ostream& output, Mesh const& mesh)
 {
-    // TODO: support osc::MeshTopology::TriangleStrip
     if (mesh.getTopology() != MeshTopology::Triangles)
     {
         return;

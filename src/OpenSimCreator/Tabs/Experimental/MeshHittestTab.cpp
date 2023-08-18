@@ -197,7 +197,7 @@ private:
         },
     };
     Mesh m_Mesh = LoadMeshViaSimTK(App::resource("geometry/hat_ribs.vtp"));
-    Mesh m_SphereMesh = GenUntexturedUVSphere(12, 12);
+    Mesh m_SphereMesh = GenSphere(12, 12);
     Mesh m_CubeLinesMesh = GenCubeLines();
 
     // other state

@@ -202,7 +202,7 @@ private:
     }
 
     Camera m_Camera = CreateCamera();
-    Mesh m_SphereMesh = GenUntexturedUVSphere(64, 64);
+    Mesh m_SphereMesh = GenSphere(64, 64);
     Material m_PBRMaterial = CreateMaterial();
     glm::vec3 m_CameraEulers = {};
     bool m_IsMouseCaptured = true;

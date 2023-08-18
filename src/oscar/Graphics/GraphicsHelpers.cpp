@@ -237,7 +237,6 @@ std::vector<osc::SceneCollision> osc::GetAllSceneCollisions(
 
 std::optional<osc::RayCollision> osc::GetClosestWorldspaceRayCollision(Mesh const& mesh, Transform const& transform, Line const& worldspaceRay)
 {
-    // TODO: support osc::MeshTopology::TriangleStrip
     if (mesh.getTopology() != MeshTopology::Triangles)
     {
         return std::nullopt;
@@ -298,7 +297,6 @@ glm::vec3 osc::MassCenter(Mesh const& m)
     // submits an invalid mesh, this calculation could potentially produce a
     // volume that's *way* off
 
-    // TODO: support osc::MeshTopology::TriangleStrip
     if (m.getTopology() != osc::MeshTopology::Triangles)
     {
         return {0.0f, 0.0f, 0.0f};
@@ -365,7 +363,6 @@ std::vector<glm::vec4> osc::CalcTangentVectors(
 
     // edge-case: there's insufficient topological/normal/coordinate data, so
     //            return fallback-filled ({1,0,0,1}) vector
-    // TODO: support osc::MeshTopology::TriangleStrip
     if (topology != osc::MeshTopology::Triangles ||
         normals.empty() ||
         texCoords.empty())

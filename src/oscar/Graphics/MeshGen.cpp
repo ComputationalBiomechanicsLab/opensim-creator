@@ -215,7 +215,7 @@ osc::Mesh osc::GenTexturedQuad()
     return CreateMeshFromData(std::move(data));
 }
 
-osc::Mesh osc::GenUntexturedUVSphere(size_t sectors, size_t stacks)
+osc::Mesh osc::GenSphere(size_t sectors, size_t stacks)
 {
     NewMeshData data;
     data.reserve(2LL*3LL*stacks*sectors);
@@ -233,7 +233,7 @@ osc::Mesh osc::GenUntexturedUVSphere(size_t sectors, size_t stacks)
     // polar coords, with [0, 0, -1] pointing towards the screen with polar
     // coords theta = 0, phi = 0. The coordinate [0, 1, 0] is theta = (any)
     // phi = PI/2. The coordinate [1, 0, 0] is theta = PI/2, phi = 0
-    std::vector<UntexturedVert> points;
+    std::vector<TexturedVert> points;
 
     float const thetaStep = 2.0f * fpi / static_cast<float>(sectors);
     float const phiStep = fpi / static_cast<float>(stacks);
@@ -250,7 +250,12 @@ osc::Mesh osc::GenUntexturedUVSphere(size_t sectors, size_t stacks)
             float const z = -std::cos(theta) * std::cos(phi);
             glm::vec3 const pos = {x, y, z};
             glm::vec3 const normal = pos;
-            points.push_back({pos, normal});
+            glm::vec2 const uv =
+            {
+                static_cast<float>(sector) / static_cast<float>(sectors),
+                static_cast<float>(stack) / static_cast<float>(stacks),
+            };
+            points.push_back({pos, normal, uv});
         }
     }
 
@@ -258,10 +263,11 @@ osc::Mesh osc::GenUntexturedUVSphere(size_t sectors, size_t stacks)
     // points must be triangulated
 
     uint16_t index = 0;
-    auto push = [&data, &index](UntexturedVert const& v)
+    auto push = [&data, &index](TexturedVert const& v)
     {
         data.verts.push_back(v.pos);
         data.normals.push_back(v.norm);
+        data.texcoords.push_back(v.uv);
         data.indices.push_back(index++);
     };
 
@@ -275,10 +281,10 @@ osc::Mesh osc::GenUntexturedUVSphere(size_t sectors, size_t stacks)
             // 2 triangles per sector - excluding the first and last stacks
             // (which contain one triangle, at the poles)
 
-            UntexturedVert const& p1 = points[k1];
-            UntexturedVert const& p2 = points[k2];
-            UntexturedVert const& p1Plus1 = points[k1+1];
-            UntexturedVert const& p2Plus1 = points[k2+1];
+            TexturedVert const& p1 = points[k1];
+            TexturedVert const& p2 = points[k2];
+            TexturedVert const& p1Plus1 = points[k1+1];
+            TexturedVert const& p2Plus1 = points[k2+1];
 
             if (stack != 0)
             {

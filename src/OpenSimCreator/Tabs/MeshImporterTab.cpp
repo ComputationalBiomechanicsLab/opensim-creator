@@ -5195,7 +5195,7 @@ namespace
         MeshLoader m_MeshLoader;
 
         // sphere mesh used by various scene elements
-        Mesh m_SphereMesh = osc::GenUntexturedUVSphere(12, 12);
+        Mesh m_SphereMesh = osc::GenSphere(12, 12);
 
         // cylinder mesh used by various scene elements
         Mesh m_CylinderMesh = osc::GenUntexturedYToYCylinder(16);

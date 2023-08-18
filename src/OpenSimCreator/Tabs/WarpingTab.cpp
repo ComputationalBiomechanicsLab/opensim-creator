@@ -128,7 +128,7 @@ namespace
     //
     // a central datastructure that the user edits in-place via the UI
     struct TPSDocument final {
-        osc::Mesh sourceMesh = osc::GenUntexturedUVSphere(16, 16);
+        osc::Mesh sourceMesh = osc::GenSphere(16, 16);
         osc::Mesh destinationMesh = osc::GenUntexturedYToYCylinder(16);
         std::vector<TPSDocumentLandmarkPair> landmarkPairs;
         std::vector<glm::vec3> nonParticipatingLandmarks;

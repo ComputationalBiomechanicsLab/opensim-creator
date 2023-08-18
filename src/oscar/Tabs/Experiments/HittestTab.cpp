@@ -298,7 +298,7 @@ private:
             App::slurp("shaders/SolidColor.frag"),
         },
     };
-    Mesh m_SphereMesh = GenUntexturedUVSphere(12, 12);
+    Mesh m_SphereMesh = GenSphere(12, 12);
     Mesh m_WireframeCubeMesh = GenCubeLines();
     Mesh m_CircleMesh = GenCircle(36);
     Mesh m_CrosshairMesh = GenerateCrosshairMesh();

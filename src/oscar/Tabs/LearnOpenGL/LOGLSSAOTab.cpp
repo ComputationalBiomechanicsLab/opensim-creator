@@ -384,7 +384,7 @@ private:
     bool m_IsMouseCaptured = true;
     glm::vec3 m_CameraEulers = {0.0f, 0.0f, 0.0f};
 
-    Mesh m_SphereMesh = GenUntexturedUVSphere(32, 32);
+    Mesh m_SphereMesh = GenSphere(32, 32);
     Mesh m_CubeMesh = GenCube();
     Mesh m_QuadMesh = GenTexturedQuad();
 

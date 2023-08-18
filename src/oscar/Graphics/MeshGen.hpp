@@ -15,7 +15,7 @@ namespace osc
     Mesh GenTexturedQuad();
 
     // generates UV sphere centered at (0,0,0) with radius = 1
-    Mesh GenUntexturedUVSphere(size_t sectors, size_t stacks);
+    Mesh GenSphere(size_t sectors, size_t stacks);
 
     // generates an untextured cylinder, where the bottom/top are -1.0f/+1.0f in Y
     Mesh GenUntexturedYToYCylinder(size_t nsides);

@@ -65,62 +65,6 @@ namespace
         return rv;
     }
 
-    // rewritten from LearnOpenGL/lighting_textured.cpp::renderSphere()
-    osc::Mesh CreateTexturedSphere()
-    {
-        std::vector<glm::vec3> positions;
-        std::vector<glm::vec2> uv;
-        std::vector<glm::vec3> normals;
-        std::vector<uint16_t> indices;
-
-        constexpr size_t c_NumXSegments = 64;
-        constexpr size_t c_NumYSegments = 64;
-
-        for (size_t x = 0; x <= c_NumXSegments; ++x)
-        {
-            for (size_t y = 0; y <= c_NumYSegments; ++y)
-            {
-                float const xSegment = static_cast<float>(x)/static_cast<float>(c_NumXSegments);
-                float const ySegment = static_cast<float>(y)/static_cast<float>(c_NumYSegments);
-                float const xPos = std::cos(xSegment * 2.0f * osc::fpi) * std::sin(ySegment * osc::fpi);
-                float const yPos = std::cos(ySegment * osc::fpi);
-                float const zPos = std::sin(xSegment * 2.0f * osc::fpi) * std::sin(ySegment * osc::fpi);
-
-                positions.emplace_back(xPos, yPos, zPos);
-                uv.emplace_back(xSegment, ySegment);
-                normals.emplace_back(xPos, yPos, zPos);
-            }
-        }
-
-        for (size_t y = 0; y < c_NumYSegments; ++y)
-        {
-            if (y % 2 == 0)
-            {
-                for (size_t x = 0; x <= c_NumXSegments; ++x)
-                {
-                    indices.push_back(static_cast<uint16_t>(y * (c_NumXSegments + 1) + x));
-                    indices.push_back(static_cast<uint16_t>((y + 1) * (c_NumXSegments + 1) + x));
-                }
-            }
-            else
-            {
-                for (ptrdiff_t x = c_NumXSegments; x >= 0; --x)
-                {
-                    indices.push_back(static_cast<uint16_t>((y + 1) * (c_NumXSegments + 1) + x));
-                    indices.push_back(static_cast<uint16_t>(y * (c_NumXSegments + 1) + x));
-                }
-            }
-        }
-
-        osc::Mesh rv;
-        rv.setTopology(osc::MeshTopology::TriangleStrip);
-        rv.setVerts(positions);
-        rv.setTexCoords(uv);
-        rv.setNormals(normals);
-        rv.setIndices(indices);
-        return rv;
-    }
-
     osc::Material CreateMaterial()
     {
         osc::Texture2D albedo = osc::LoadTexture2DFromImage(
@@ -273,7 +217,7 @@ private:
     }
 
     Camera m_Camera = CreateCamera();
-    Mesh m_SphereMesh = CreateTexturedSphere();
+    Mesh m_SphereMesh = GenSphere(64, 64);
     Material m_PBRMaterial = CreateMaterial();
     glm::vec3 m_CameraEulers = {};
     bool m_IsMouseCaptured = true;
