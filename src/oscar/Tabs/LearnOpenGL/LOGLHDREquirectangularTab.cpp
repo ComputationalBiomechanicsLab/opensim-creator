@@ -55,7 +55,7 @@ private:
     }
 
     Texture2D m_Texture = osc::LoadTexture2DFromImage(
-        App::resource("textures/awesomeface.png"),
+        App::resource("textures/hdr/newport_loft.hdr"),
         ColorSpace::sRGB,
         ImageLoadingFlags::FlipVertically
     );

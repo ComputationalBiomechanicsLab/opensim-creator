@@ -48,7 +48,6 @@ namespace
 
     osc::Cubemap LoadCubemap(std::filesystem::path const& resourcesDir)
     {
-
         // load the first face, so we know the width
         osc::Image image = osc::LoadImageFromFile(
             resourcesDir / "textures" / std::string_view{c_SkyboxTextureFilenames.front()},

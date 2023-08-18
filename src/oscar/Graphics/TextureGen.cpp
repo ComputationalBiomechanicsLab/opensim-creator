@@ -2,8 +2,7 @@
 
 #include "oscar/Graphics/ColorSpace.hpp"
 #include "oscar/Graphics/GraphicsHelpers.hpp"
-#include "oscar/Graphics/Image.hpp"
-#include "oscar/Graphics/Rgb24.hpp"
+#include "oscar/Graphics/Rgba32.hpp"
 #include "oscar/Graphics/TextureFormat.hpp"
 
 #include <glm/vec2.hpp>
@@ -19,10 +18,10 @@ osc::Texture2D osc::GenChequeredFloorTexture()
     constexpr size_t chequerHeight = 32;
     constexpr size_t textureWidth = 2 * chequerWidth;
     constexpr size_t textureHeight = 2 * chequerHeight;
-    constexpr Rgb24 onColor = {0xff, 0xff, 0xff};
-    constexpr Rgb24 offColor = {0xf3, 0xf3, 0xf3};
+    constexpr Rgba32 onColor = {0xff, 0xff, 0xff, 0xff};
+    constexpr Rgba32 offColor = {0xf3, 0xf3, 0xf3, 0xff};
 
-    std::array<Rgb24, textureWidth * textureHeight> pixels{};
+    std::array<Rgba32, textureWidth * textureHeight> pixels{};
     for (size_t row = 0; row < textureHeight; ++row)
     {
         size_t const rowStart = row * textureWidth;
@@ -34,15 +33,13 @@ osc::Texture2D osc::GenChequeredFloorTexture()
         }
     }
 
-    Image const img
+    Texture2D rv
     {
         glm::vec2{textureWidth, textureHeight},
+        TextureFormat::RGBA32,
         nonstd::span<uint8_t const>{&pixels.front().r, sizeof(pixels)},
-        sizeof(Rgb24),  // num channels
         ColorSpace::sRGB,
     };
-
-    Texture2D rv = ToTexture2D(img);
     rv.setFilterMode(TextureFilterMode::Mipmap);
     rv.setWrapMode(TextureWrapMode::Repeat);
     return rv;
