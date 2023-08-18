@@ -197,6 +197,8 @@ add_library(oscar STATIC
     Tabs/LearnOpenGL/LOGLFramebuffersTab.hpp
     Tabs/LearnOpenGL/LOGLGammaTab.cpp
     Tabs/LearnOpenGL/LOGLGammaTab.hpp
+    Tabs/LearnOpenGL/LOGLHDREquirectangularTab.cpp
+    Tabs/LearnOpenGL/LOGLHDREquirectangularTab.hpp
     Tabs/LearnOpenGL/LOGLHDRTab.cpp
     Tabs/LearnOpenGL/LOGLHDRTab.hpp
     Tabs/LearnOpenGL/LOGLHelloTriangleTab.cpp

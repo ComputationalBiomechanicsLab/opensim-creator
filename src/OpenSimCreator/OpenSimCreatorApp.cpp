@@ -23,6 +23,7 @@
 #include <oscar/Tabs/LearnOpenGL/LOGLDeferredShadingTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/LOGLFramebuffersTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/LOGLGammaTab.hpp>
+#include <oscar/Tabs/LearnOpenGL/LOGLHDREquirectangularTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/LOGLHDRTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/LOGLHelloTriangleTab.hpp>
 #include <oscar/Tabs/LearnOpenGL/LOGLLightingMapsTab.hpp>
@@ -198,6 +199,7 @@ namespace
         RegisterTab<osc::LOGLDeferredShadingTab>(registry);
         RegisterTab<osc::LOGLFramebuffersTab>(registry);
         RegisterTab<osc::LOGLGammaTab>(registry);
+        RegisterTab<osc::LOGLHDREquirectangularTab>(registry);
         RegisterTab<osc::LOGLHDRTab>(registry);
         RegisterTab<osc::LOGLHelloTriangleTab>(registry);
         RegisterTab<osc::LOGLLightingMapsTab>(registry);
