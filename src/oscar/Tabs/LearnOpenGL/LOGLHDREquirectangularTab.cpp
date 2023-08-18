@@ -1,5 +1,11 @@
 #include "LOGLHDREquirectangularTab.hpp"
 
+#include "oscar/Bindings/ImGuiHelpers.hpp"
+#include "oscar/Graphics/Graphics.hpp"
+#include "oscar/Graphics/GraphicsHelpers.hpp"
+#include "oscar/Graphics/Texture2D.hpp"
+#include "oscar/Maths/Rect.hpp"
+#include "oscar/Platform/App.hpp"
 #include "oscar/Tabs/StandardTabBase.hpp"
 #include "oscar/Utils/CStringView.hpp"
 
@@ -44,7 +50,15 @@ private:
 
     void implOnDraw() final
     {
+        Rect const r = GetMainViewportWorkspaceScreenRect();
+        Graphics::BlitToScreen(m_Texture, r);
     }
+
+    Texture2D m_Texture = osc::LoadTexture2DFromImage(
+        App::resource("textures/awesomeface.png"),
+        ColorSpace::sRGB,
+        ImageLoadingFlags::FlipVertically
+    );
 };
 
 

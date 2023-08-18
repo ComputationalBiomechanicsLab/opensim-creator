@@ -933,6 +933,11 @@ namespace osc
             BlitFlags
         );
 
+        static void BlitToScreen(
+            Texture2D const&,
+            Rect const&
+        );
+
         static void CopyTexture(
             RenderTexture const&,
             Texture2D&
@@ -5380,6 +5385,13 @@ void osc::Graphics::BlitToScreen(
     GraphicsBackend::BlitToScreen(t, rect, material, flags);
 }
 
+void osc::Graphics::BlitToScreen(
+    Texture2D const& t,
+    Rect const& rect)
+{
+    GraphicsBackend::BlitToScreen(t, rect);
+}
+
 void osc::Graphics::CopyTexture(
     RenderTexture const& src,
     Texture2D& dest)
@@ -6555,6 +6567,26 @@ void osc::GraphicsBackend::BlitToScreen(
     Graphics::DrawMesh(g_GraphicsContextImpl->getQuadMesh(), Transform{}, copy, c);
     c.renderToScreen();
     copy.clearRenderTexture("uTexture");
+}
+
+void osc::GraphicsBackend::BlitToScreen(
+    Texture2D const& t,
+    Rect const& rect)
+{
+    OSC_ASSERT(g_GraphicsContextImpl);
+
+    Camera c;
+    c.setBackgroundColor(Color::clear());
+    c.setPixelRect(rect);
+    c.setProjectionMatrixOverride(glm::mat4{1.0f});
+    c.setViewMatrixOverride(glm::mat4{1.0f});
+    c.setClearFlags(CameraClearFlags::Nothing);
+
+    Material copy{g_GraphicsContextImpl->getQuadMaterial()};
+    copy.setTexture("uTexture", t);
+    Graphics::DrawMesh(g_GraphicsContextImpl->getQuadMesh(), Transform{}, copy, c);
+    c.renderToScreen();
+    copy.clearTexture("uTexture");
 }
 
 void osc::GraphicsBackend::CopyTexture(

@@ -61,6 +61,11 @@ namespace osc::Graphics
         BlitFlags = BlitFlags::None
     );
 
+    void BlitToScreen(
+        Texture2D const&,
+        Rect const&
+    );
+
     // copy: copy one GPU texture to another GPU texture
 
     void CopyTexture(
