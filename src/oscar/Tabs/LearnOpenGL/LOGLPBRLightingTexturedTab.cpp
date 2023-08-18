@@ -98,16 +98,16 @@ namespace
             {
                 for (size_t x = 0; x <= c_NumXSegments; ++x)
                 {
-                    indices.push_back(y * (c_NumXSegments + 1) + x);
-                    indices.push_back((y + 1) * (c_NumXSegments + 1) + x);
+                    indices.push_back(static_cast<uint16_t>(y * (c_NumXSegments + 1) + x));
+                    indices.push_back(static_cast<uint16_t>((y + 1) * (c_NumXSegments + 1) + x));
                 }
             }
             else
             {
                 for (ptrdiff_t x = c_NumXSegments; x >= 0; --x)
                 {
-                    indices.push_back((y + 1) * (c_NumXSegments + 1) + x);
-                    indices.push_back(y * (c_NumXSegments + 1) + x);
+                    indices.push_back(static_cast<uint16_t>((y + 1) * (c_NumXSegments + 1) + x));
+                    indices.push_back(static_cast<uint16_t>(y * (c_NumXSegments + 1) + x));
                 }
             }
         }
